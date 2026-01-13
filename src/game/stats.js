@@ -62,7 +62,7 @@ export function getTotalStatPointsToLevel(level) {
 export function calculateDerivedStats(primaryStats, baseLevel, equipmentBonuses = {}, isRanged = false) {
   const eq = equipmentBonuses;
 
-  // Add equipment bonuses to primary stats (includes passive bonuses from crystals)
+  // Add equipment bonuses to primary stats (includes passive bonuses from chips)
   const str = (primaryStats.str || 0) + (eq.str || 0);
   const agi = (primaryStats.agi || 0) + (eq.agi || 0);
   const vit = (primaryStats.vit || 0) + (eq.vit || 0);

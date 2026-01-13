@@ -579,7 +579,7 @@ export function allocateStat(player, statName) {
 
 /**
  * Recalculate player's max HP/SP based on current stats and equipment
- * Call this after equipment changes (buying crystals, equipping gear, etc.)
+ * Call this after equipment changes (buying chips, equipping gear, etc.)
  * @param {object} player - Player object to update
  * @param {object} equipmentBonuses - Bonuses from equipment (from calculateEquipmentBonuses)
  * @param {boolean} healDifference - If true, increase current HP/SP by the gained amount
@@ -595,7 +595,7 @@ export function recalculatePlayerResources(player, equipmentBonuses = {}, healDi
   player.maxSp = calculateMaxSp(player.level, totalInt, equipmentBonuses.maxSp || 0);
 
   if (healDifference) {
-    // Increase current HP/SP by the gained amount (crystals give immediate benefit)
+    // Increase current HP/SP by the gained amount (chips give immediate benefit)
     player.hp = Math.min(player.hp + (player.maxHp - oldMaxHp), player.maxHp);
     player.sp = Math.min(player.sp + (player.maxSp - oldMaxSp), player.maxSp);
   }

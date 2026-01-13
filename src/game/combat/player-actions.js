@@ -3,7 +3,7 @@
  * All player combat action execution
  */
 
-import { getItem, getSkill, calculateEquipmentBonuses } from '../items.js';
+import { getItem, getSkill, calculateEquipmentBonuses, processOnHitChips, processOnKillChips, processOnDamageChips } from '../items.js';
 import {
   calculateFleeChance,
   calculateItemHealing,
@@ -124,6 +124,34 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
     const brokenEffects = breakDamageEffects(enemy);
     if (brokenEffects.length > 0) {
       result.wokenFromSleep = brokenEffects.some(e => e.id === 'sleep');
+    }
+  }
+
+  // Process on-hit chip effects (only if we hit and dealt damage)
+  if (result.anyHit && result.totalDamage > 0 && !result.enemyDefeated && player.chips?.length > 0) {
+    const chipEffects = processOnHitChips(player.chips, enemy);
+    if (chipEffects.length > 0) {
+      result.chipEffects = [];
+      for (const effect of chipEffects) {
+        // Apply bonus damage from chip
+        if (effect.bonusDamage > 0) {
+          enemy.hp = Math.max(0, enemy.hp - effect.bonusDamage);
+          result.totalDamage += effect.bonusDamage;
+        }
+        // Apply status effect from chip (force apply - chip already passed its proc chance)
+        if (effect.status) {
+          const applied = applyStatusEffect(enemy, effect.status, effect.duration, true);
+          if (applied.applied) {
+            result.chipEffects.push({
+              chipName: effect.chipName,
+              status: effect.status,
+              duration: effect.duration
+            });
+          }
+        }
+      }
+      // Check if bonus damage defeated enemy
+      result.enemyDefeated = enemy.hp <= 0;
     }
   }
 

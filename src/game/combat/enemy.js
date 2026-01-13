@@ -3,7 +3,7 @@
  * Enemy turn execution, abilities, and related functions
  */
 
-import { calculateEquipmentBonuses } from '../items.js';
+import { calculateEquipmentBonuses, processOnDamageChips } from '../items.js';
 import { ENEMY_ABILITIES, getEnemyAbility } from '../enemies.js';
 import {
   hasStatusEffect,
@@ -115,6 +115,15 @@ export function executeEnemyTurn(enemy, player, intent = null, processCounterAtt
       // Apply defending damage reduction
       if (isDefending && attackResult.hit) {
         finalDamage = Math.floor(finalDamage * 0.5);
+      }
+
+      // Apply on-damage chip effects (damage reduction)
+      if (finalDamage > 0 && player.chips?.length > 0) {
+        const chipDamageResult = processOnDamageChips(player.chips, finalDamage);
+        if (chipDamageResult.triggered.length > 0) {
+          finalDamage = chipDamageResult.finalDamage;
+          result.chipDamageReduction = chipDamageResult.triggered;
+        }
       }
 
       result.damage = finalDamage;

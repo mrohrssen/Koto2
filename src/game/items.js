@@ -6,12 +6,26 @@
 export {
   // Item collections
   CONSUMABLES,
-  STAT_CRYSTALS,
   WEAPONS,
   ARMOR,
   SHIELDS,
   ACCESSORIES,
   SKILLS,
+
+  // Chip system (NEO TOKYO augmentations)
+  CHIPS,
+  CHIP_CATEGORIES,
+  CHIP_RARITIES,
+  getChip,
+  getChipPrice,
+  calculateChipStatBonuses,
+  processOnHitChips,
+  processOnKillChips,
+  processOnDamageChips,
+  updateCounterStacks,
+  calculateCounterBonuses,
+  getChipDisplayInfo,
+  generateShopChips,
 
   // Helper functions
   getItem,

@@ -4,19 +4,53 @@
  */
 
 // Import all item collections
-import { CONSUMABLES, STAT_CRYSTALS } from './consumables.js';
+import { CONSUMABLES } from './consumables.js';
 import { WEAPONS, ARMOR, SHIELDS, ACCESSORIES } from './equipment.js';
 import { SKILLS } from './skills.js';
+import {
+  CHIPS,
+  CHIP_CATEGORIES,
+  CHIP_RARITIES,
+  getChip,
+  getChipPrice,
+  calculateChipStatBonuses,
+  processOnHitChips,
+  processOnKillChips,
+  processOnDamageChips,
+  updateCounterStacks,
+  calculateCounterBonuses,
+  getChipDisplayInfo,
+  generateShopChips
+} from './chips.js';
 
 // Re-export item collections
-export { CONSUMABLES, STAT_CRYSTALS } from './consumables.js';
+export { CONSUMABLES } from './consumables.js';
 export { WEAPONS, ARMOR, SHIELDS, ACCESSORIES } from './equipment.js';
 export { SKILLS } from './skills.js';
+
+// Re-export chip system
+export {
+  CHIPS,
+  CHIP_CATEGORIES,
+  CHIP_RARITIES,
+  getChip,
+  getChipPrice,
+  calculateChipStatBonuses,
+  processOnHitChips,
+  processOnKillChips,
+  processOnDamageChips,
+  updateCounterStacks,
+  calculateCounterBonuses,
+  getChipDisplayInfo,
+  generateShopChips
+} from './chips.js';
 
 // ============ HELPER FUNCTIONS ============
 
 export function getItem(itemId) {
-  return CONSUMABLES[itemId] || STAT_CRYSTALS[itemId] || WEAPONS[itemId] || ARMOR[itemId] || SHIELDS[itemId] || ACCESSORIES[itemId] || null;
+  // Check chips first, then consumables and equipment
+  if (CHIPS[itemId]) return CHIPS[itemId];
+  return CONSUMABLES[itemId] || WEAPONS[itemId] || ARMOR[itemId] || SHIELDS[itemId] || ACCESSORIES[itemId] || null;
 }
 
 export function getSkill(skillId) {
@@ -198,17 +232,12 @@ export function calculateEquipmentBonuses(player) {
     }
   }
 
-  // Add passive bonuses from inventory items (like stat crystals)
-  if (player.items) {
-    for (const invItem of player.items) {
-      const itemDef = getItem(invItem.id);
-      if (itemDef?.passive) {
-        const qty = invItem.quantity || 1;
-        for (const [stat, value] of Object.entries(itemDef.passive)) {
-          if (typeof value === 'number' && bonuses.hasOwnProperty(stat)) {
-            bonuses[stat] += value * qty;
-          }
-        }
+  // Add passive bonuses from chips (NEO TOKYO augmentation system)
+  if (player.chips && player.chips.length > 0) {
+    const chipBonuses = calculateChipStatBonuses(player.chips);
+    for (const [stat, value] of Object.entries(chipBonuses)) {
+      if (typeof value === 'number' && bonuses.hasOwnProperty(stat)) {
+        bonuses[stat] += value;
       }
     }
   }

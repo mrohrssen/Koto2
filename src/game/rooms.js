@@ -2,6 +2,7 @@
 // Exploration through Tokyo wards controlled by SYSTEM
 
 import { WEAPONS, ARMOR, SHIELDS, ACCESSORIES } from './items.js';
+import { generateShopChips, getChipDisplayInfo } from './items/chips.js';
 
 // Tokyo Ward names (floor -> ward mapping)
 export const FLOOR_NAMES = {
@@ -681,127 +682,35 @@ export function getRoomActions(room) {
   return actions;
 }
 
-// ============ POST-COMBAT SHOP ============
+// ============ POST-COMBAT CHIP SHOP ============
 
 /**
- * Generate 3 random items for post-combat shop
- * Mix of consumables and equipment based on floor
+ * Generate 3 random chips for post-combat shop
+ * Chips are passive augmentations that provide various bonuses
  * @param {number} floor - Current floor (1-7)
- * @returns {Array} Array of 3 shop items with id, name, price, type
+ * @param {array} ownedChipIds - IDs of chips player already owns (unique only)
+ * @returns {Array} Array of 3 chip items with id, name, price, type, effects
  */
-export function generatePostCombatShop(floor) {
-  // Stat crystal items - passive bonuses when held in inventory
-  // Tier 1: +5 stat, 50 gold
-  const tier1Crystals = [
-    { itemId: 'crystalOfPower', price: 50, type: 'crystal', name: '力の結晶' },
-    { itemId: 'galeFeather', price: 50, type: 'crystal', name: '疾風の羽' },
-    { itemId: 'ironHeartStone', price: 50, type: 'crystal', name: '鉄心石' },
-    { itemId: 'sagesPrism', price: 50, type: 'crystal', name: '賢者の霊晶' },
-    { itemId: 'hawksEyeGem', price: 50, type: 'crystal', name: '鷹眼石' },
-    { itemId: 'fateFragment', price: 50, type: 'crystal', name: '運命の欠片' }
-  ];
+export function generatePostCombatShop(floor, ownedChipIds = []) {
+  const chips = generateShopChips(floor, ownedChipIds, 3);
 
-  // Tier 2: +10 stat, 125 gold
-  const tier2Crystals = [
-    { itemId: 'orbOfMight', price: 125, type: 'crystal', name: '豪力の宝珠' },
-    { itemId: 'wingsOfSwiftness', price: 125, type: 'crystal', name: '神速の翼' },
-    { itemId: 'immortalCore', price: 125, type: 'crystal', name: '不滅の魂核' },
-    { itemId: 'arcaneWisdomStone', price: 125, type: 'crystal', name: '叡智の秘石' },
-    { itemId: 'orbOfClairvoyance', price: 125, type: 'crystal', name: '千里眼の珠' },
-    { itemId: 'celestialTalisman', price: 125, type: 'crystal', name: '天運の護符' }
-  ];
-
-  // Tier 3: +15 stat, 300 gold
-  const tier3Crystals = [
-    { itemId: 'heartOfTheConqueror', price: 300, type: 'crystal', name: '覇王の心臓' },
-    { itemId: 'soulOfLightning', price: 300, type: 'crystal', name: '閃光の魂' },
-    { itemId: 'phoenixCore', price: 300, type: 'crystal', name: '不死鳥の核' },
-    { itemId: 'crystalOfOmniscience', price: 300, type: 'crystal', name: '全知の結晶' },
-    { itemId: 'divineEyeJewel', price: 300, type: 'crystal', name: '神眼の宝玉' },
-    { itemId: 'blessingOfTheStars', price: 300, type: 'crystal', name: '星辰の加護' }
-  ];
-
-  // Combine all tiers and shuffle
-  const allCrystals = [...tier1Crystals, ...tier2Crystals, ...tier3Crystals];
-  const shuffled = [...allCrystals].sort(() => Math.random() - 0.5);
-
-  // Pick 3 random crystals
-  const items = shuffled.slice(0, 3).map(item => ({
-    itemId: item.itemId,
-    name: item.name,
-    price: item.price,
-    type: item.type,
-    quantity: 1
-  }));
-
-  return items;
-
-  /* OLD SHOP ITEMS - commented out for reference
-  const items = [];
-  const rarities = getAvailableRarities(floor);
-
-  // Pool of possible items
-  const pool = [];
-
-  // Add consumables to pool
-  pool.push({ itemId: 'potion', price: 50, type: 'consumable', name: 'ポーション' });
-  pool.push({ itemId: 'antidote', price: 30, type: 'consumable', name: '解毒剤' });
-
-  if (floor >= 2) {
-    pool.push({ itemId: 'highPotion', price: 150, type: 'consumable', name: 'ハイポーション' });
-    pool.push({ itemId: 'ether', price: 80, type: 'consumable', name: 'エーテル' });
-  }
-
-  if (floor >= 3) {
-    pool.push({ itemId: 'smokeBomb', price: 100, type: 'consumable', name: '煙玉' });
-  }
-
-  if (floor >= 4) {
-    pool.push({ itemId: 'fullPotion', price: 500, type: 'consumable', name: 'フルポーション' });
-  }
-
-  if (floor >= 5) {
-    pool.push({ itemId: 'elixir', price: 1000, type: 'consumable', name: 'エリクサー' });
-  }
-
-  // Add equipment to pool based on floor rarity
-  for (const rarity of rarities) {
-    // Weapons
-    const weapons = selectRandomItems(WEAPONS, rarity, 2);
-    for (const w of weapons) {
-      pool.push({ itemId: w.id, price: w.buyPrice, type: 'equipment', name: w.name });
-    }
-
-    // Armor
-    const armors = selectRandomItems(ARMOR, rarity, 1);
-    for (const a of armors) {
-      pool.push({ itemId: a.id, price: a.buyPrice, type: 'equipment', name: a.name });
-    }
-
-    // Accessories
-    const accessories = selectRandomItems(ACCESSORIES, rarity, 1);
-    for (const acc of accessories) {
-      pool.push({ itemId: acc.id, price: acc.buyPrice, type: 'equipment', name: acc.name });
-    }
-  }
-
-  // Shuffle pool and pick 3 unique items
-  const shuffled = [...pool].sort(() => Math.random() - 0.5);
-  const seen = new Set();
-
-  for (const item of shuffled) {
-    if (!seen.has(item.itemId) && items.length < 3) {
-      seen.add(item.itemId);
-      items.push({
-        itemId: item.itemId,
-        name: item.name,
-        price: item.price,
-        type: item.type,
-        quantity: 1
-      });
-    }
-  }
-
-  return items;
-  */
+  // Transform to shop item format
+  return chips.map(chip => {
+    const displayInfo = getChipDisplayInfo(chip);
+    return {
+      itemId: chip.id,
+      name: chip.name,
+      nameEn: chip.nameEn,
+      description: chip.description,
+      price: displayInfo.price,
+      type: 'chip',
+      category: chip.category,
+      rarity: chip.rarity,
+      rarityColor: displayInfo.rarityInfo.color,
+      rarityName: displayInfo.rarityInfo.name,
+      effectText: displayInfo.effectText,
+      effects: chip.effects,
+      quantity: 1
+    };
+  });
 }

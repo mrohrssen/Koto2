@@ -633,28 +633,45 @@ export class GameManager {
     // Deduct gold
     player.gold -= item.price;
 
-    // Add item to inventory
-    const itemData = getItem(item.itemId);
-    if (itemData) {
-      // Check if it's equipment or consumable
-      if (item.type === 'equipment') {
-        // Add to equipment inventory
-        if (!player.equipmentInventory) {
-          player.equipmentInventory = [];
-        }
-        player.equipmentInventory.push({ id: item.itemId });
-      } else {
-        // Add to consumable inventory (player.items)
-        const existing = player.items.find(i => i.id === item.itemId);
-        if (existing) {
-          existing.quantity = (existing.quantity || 1) + 1;
+    // Handle item based on type
+    if (item.type === 'chip') {
+      // Add chip to player's chip inventory (unique only)
+      if (!player.chips) {
+        player.chips = [];
+      }
+      // Check if player already owns this chip
+      const alreadyOwned = player.chips.some(c => c.id === item.itemId);
+      if (!alreadyOwned) {
+        player.chips.push({
+          id: item.itemId,
+          name: item.name,
+          nameEn: item.nameEn,
+          category: item.category,
+          rarity: item.rarity,
+          effects: item.effects
+        });
+      }
+    } else {
+      // Legacy handling for equipment/consumables
+      const itemData = getItem(item.itemId);
+      if (itemData) {
+        if (item.type === 'equipment') {
+          if (!player.equipmentInventory) {
+            player.equipmentInventory = [];
+          }
+          player.equipmentInventory.push({ id: item.itemId });
         } else {
-          player.items.push({ id: item.itemId, quantity: 1 });
+          const existing = player.items.find(i => i.id === item.itemId);
+          if (existing) {
+            existing.quantity = (existing.quantity || 1) + 1;
+          } else {
+            player.items.push({ id: item.itemId, quantity: 1 });
+          }
         }
       }
     }
 
-    // Recalculate all stats in case item has passive bonuses
+    // Recalculate all stats in case item has passive bonuses (chips add stats)
     const equipBonuses = calculateEquipmentBonuses(player);
     recalculatePlayerResources(player, equipBonuses, true);
 
@@ -1270,8 +1287,20 @@ export class GameManager {
         critical: playerResult.anyCritical,
         miss: !playerResult.anyHit && !playerResult.anyDodge && !playerResult.anyPerfectDodge,
         dodged: playerResult.anyDodge,
-        perfectDodge: playerResult.anyPerfectDodge
+        perfectDodge: playerResult.anyPerfectDodge,
+        chipEffects: playerResult.chipEffects || []
       };
+
+      // Tick enemy status effects (DoT damage from defrag, overheated, etc.)
+      const enemyTickResult = tickStatusEffects(this.combat.enemy);
+      if (enemyTickResult.dotDamage > 0) {
+        result.playerAttack.dotDamage = enemyTickResult.dotDamage;
+        result.playerAttack.dotSources = enemyTickResult.dotSources;
+        // Check if DoT killed the enemy
+        if (enemyTickResult.targetDefeated) {
+          playerResult.enemyDefeated = true;
+        }
+      }
 
       // Update enemy HP in result
       result.enemyHp.current = this.combat.enemy.hp;
@@ -1303,8 +1332,9 @@ export class GameManager {
             currentRoom.interacted = true;
           }
 
-          // Generate post-combat shop with 3 random items
-          const shopItems = generatePostCombatShop(this.run.floor);
+          // Generate post-combat shop with 3 random chips
+          const ownedChipIds = (this.run.player.chips || []).map(c => c.id);
+          const shopItems = generatePostCombatShop(this.run.floor, ownedChipIds);
           this.run.postCombatShop = {
             active: true,
             items: shopItems
@@ -1798,8 +1828,9 @@ export class GameManager {
         currentRoom.interacted = true;
       }
 
-      // Generate post-combat shop with 3 random items
-      shopItems = generatePostCombatShop(this.run.floor);
+      // Generate post-combat shop with 3 random chips (excluding already owned)
+      const ownedChipIds = (this.run.player.chips || []).map(c => c.id);
+      shopItems = generatePostCombatShop(this.run.floor, ownedChipIds);
       this.run.postCombatShop = {
         active: true,
         items: shopItems

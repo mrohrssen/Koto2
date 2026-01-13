@@ -2951,6 +2951,60 @@ body {
   }
 }
 
+/* Chip Effect Notifications */
+.damage-number.chip-effect {
+  font-size: 1.2rem;
+  color: #00d4ff;
+  text-shadow:
+    0 0 10px rgba(0, 212, 255, 0.9),
+    0 0 20px rgba(0, 212, 255, 0.5),
+    1px 1px 0 #000,
+    -1px -1px 0 #000;
+  animation: chipEffectFloat 1.2s ease-out forwards;
+}
+
+@keyframes chipEffectFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.9);
+  }
+}
+
+/* DoT (Damage over Time) from status effects */
+.damage-number.dot-damage {
+  font-size: 1.4rem;
+  color: #a855f7;
+  text-shadow:
+    0 0 8px rgba(168, 85, 247, 0.9),
+    0 0 16px rgba(168, 85, 247, 0.5),
+    1px 1px 0 #000,
+    -1px -1px 0 #000;
+  animation: dotDamageFloat 1s ease-out forwards;
+}
+
+@keyframes dotDamageFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.8);
+  }
+}
+
 /* Realtime Combat Indicator */
 .combat-in-progress {
   display: flex;

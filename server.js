@@ -75,7 +75,8 @@ const PORT = process.env.PORT || 3000;
 const SETTINGS_FILE = join(__dirname, '.jrpg-settings.json');
 const GAME_SAVE_FILE = join(__dirname, '.jrpg-save.json');
 const VOCAB_CACHE_FILE = join(__dirname, '.jrpg-vocab-cache.json');
-const VOCAB_SUGGESTIONS_FILE = join(__dirname, '.jrpg-vocab-suggestions.json');
+// Use JChat's vocab suggestions file for shared word state cache
+const VOCAB_SUGGESTIONS_FILE = join(__dirname, '..', 'JChat', '.jchat-vocab-suggestions.json');
 
 // Configure JPDB with file paths
 configureJpdb({
@@ -1329,8 +1330,10 @@ app.get('/api/game/due-words', async (req, res) => {
 
   try {
     const limit = parseInt(req.query.limit) || 10;
-    const dueWords = await getDueWordsWithMeanings(settings.jpdbApiKey, limit);
-    res.json({ words: dueWords, count: dueWords.length });
+    const excludeVids = req.query.exclude ? req.query.exclude.split(',').map(v => parseInt(v, 10)) : [];
+    const result = await getDueWordsWithMeanings(settings.jpdbApiKey, limit, excludeVids);
+    // getDueWordsWithMeanings returns { words: [...], source: 'due' | 'learning' | 'none' }
+    res.json({ words: result.words, count: result.words.length, source: result.source });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

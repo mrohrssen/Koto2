@@ -136,6 +136,7 @@ const openaiModelGroup = document.getElementById('openai-model-group');
 const openaiModelSelect = document.getElementById('openai-model');
 const jlptLevelSelect = document.getElementById('jlpt-level');
 const reviewTypeSelect = document.getElementById('review-type');
+const jpdbApiKeyInput = document.getElementById('jpdb-api-key');
 const settingsStatus = document.getElementById('settings-status');
 
 // TTS Elements
@@ -1168,6 +1169,38 @@ function animateEnemyDefeat() {
   enemySprite.classList.add('defeated');
 }
 
+function showChipEffect(effectName, isPlayer = false) {
+  const targetArea = isPlayer ? document.querySelector('.vn-player-area') : document.querySelector('.vn-enemy-area');
+  if (!targetArea) return;
+
+  const effectEl = document.createElement('div');
+  effectEl.className = 'damage-number chip-effect';
+  effectEl.textContent = effectName;
+
+  // Position below the damage number
+  effectEl.style.left = `${50 + (Math.random() - 0.5) * 30}%`;
+  effectEl.style.top = `${50 + Math.random() * 15}%`;
+
+  targetArea.appendChild(effectEl);
+  setTimeout(() => effectEl.remove(), 1200);
+}
+
+function showDotDamage(damage, isPlayer = false) {
+  const targetArea = isPlayer ? document.querySelector('.vn-player-area') : document.querySelector('.vn-enemy-area');
+  if (!targetArea) return;
+
+  const damageEl = document.createElement('div');
+  damageEl.className = 'damage-number dot-damage';
+  damageEl.textContent = `-${damage}`;
+
+  // Position offset from regular damage
+  damageEl.style.left = `${60 + (Math.random() - 0.5) * 20}%`;
+  damageEl.style.top = `${40 + Math.random() * 15}%`;
+
+  targetArea.appendChild(damageEl);
+  setTimeout(() => damageEl.remove(), 1000);
+}
+
 function showDamageNumber(damage, isPlayer, isCritical = false, isHeal = false, isMiss = false, outcomeType = null) {
   const targetArea = isPlayer ? document.querySelector('.vn-player-area') : document.querySelector('.vn-enemy-area');
   if (!targetArea) return;
@@ -1328,6 +1361,27 @@ async function executePlayerAttack() {
       } else {
         showDamageNumber(pa.damage, false, pa.critical);
         animateEnemyHurt();
+
+        // Show chip effects that triggered
+        if (pa.chipEffects && pa.chipEffects.length > 0) {
+          const statusNames = {
+            defrag: 'デフラグ!', lag: 'ラグ!', bufferOverflow: 'バッファオーバーフロー!',
+            corrupted: '破損!', exposed: '露出!', overheated: 'オーバーヒート!'
+          };
+          pa.chipEffects.forEach((effect, i) => {
+            setTimeout(() => {
+              const displayName = statusNames[effect.status] || effect.status;
+              showChipEffect(displayName, false);
+            }, i * 200); // Stagger multiple effects
+          });
+        }
+
+        // Show DoT damage from status effects (defrag, overheated, etc.)
+        if (pa.dotDamage && pa.dotDamage > 0) {
+          setTimeout(() => {
+            showDotDamage(pa.dotDamage, false);
+          }, 300); // Show after chip effect text
+        }
       }
     }
 
@@ -2326,7 +2380,7 @@ function updatePlayerStats() {
   // Get primary stats (new 6-stat system) or fallback for old saves
   const stats = p.stats || {};
 
-  // Equipment bonuses from crystals and gear
+  // Equipment bonuses from chips and gear
   const equipBonuses = gameState.equipmentBonuses || {};
 
   // Calculate effective stats (base + bonuses) for derived stat calculation
@@ -2537,26 +2591,56 @@ function updateInventory() {
   }
 
   const p = gameState.run?.player || gameState.player;
-
-  if (!p.items || p.items.length === 0) {
-    inventoryList.innerHTML = '<p class="empty-msg">Empty</p>';
-    return;
-  }
+  let html = '';
 
   // Check if in combat (can't equip during combat)
   const inCombat = gameState.phase === 'combat';
 
-  inventoryList.innerHTML = p.items.map(item => {
-    const isEquipment = item.slot; // Equipment items have a slot property
-    const equipClass = isEquipment && !inCombat ? 'equippable' : '';
-    const rarityClass = item.rarity ? `rarity-${item.rarity}` : '';
-    return `
-      <div class="inventory-item ${equipClass} ${rarityClass}" ${isEquipment ? `data-item-id="${item.id}"` : ''}>
-        <span class="item-name">${item.name || item.id}</span>
-        <span class="item-qty">x${item.quantity}</span>
-      </div>
-    `;
-  }).join('');
+  // Show chips section if player has any
+  if (p.chips && p.chips.length > 0) {
+    const categoryNames = {
+      stat: 'ステータス',
+      onHit: 'オンヒット',
+      onEffect: 'オンエフェクト',
+      counter: 'カウンター'
+    };
+
+    html += '<div class="inventory-section"><h4>チップ (Chips)</h4>';
+    html += p.chips.map(chip => {
+      const rarityClass = chip.rarity ? `rarity-${chip.rarity}` : '';
+      const categoryBadge = categoryNames[chip.category] || '';
+      return `
+        <div class="inventory-item chip-item ${rarityClass}" title="${formatItemStats(chip)}">
+          <span class="chip-category">[${categoryBadge}]</span>
+          <span class="item-name">${chip.name}</span>
+        </div>
+      `;
+    }).join('');
+    html += '</div>';
+  }
+
+  // Show items section
+  if (p.items && p.items.length > 0) {
+    html += '<div class="inventory-section"><h4>アイテム (Items)</h4>';
+    html += p.items.map(item => {
+      const isEquipment = item.slot; // Equipment items have a slot property
+      const equipClass = isEquipment && !inCombat ? 'equippable' : '';
+      const rarityClass = item.rarity ? `rarity-${item.rarity}` : '';
+      return `
+        <div class="inventory-item ${equipClass} ${rarityClass}" ${isEquipment ? `data-item-id="${item.id}"` : ''}>
+          <span class="item-name">${item.name || item.id}</span>
+          <span class="item-qty">x${item.quantity}</span>
+        </div>
+      `;
+    }).join('');
+    html += '</div>';
+  }
+
+  if (!html) {
+    html = '<p class="empty-msg">Empty</p>';
+  }
+
+  inventoryList.innerHTML = html;
 
   // Add click handlers for equippable items
   inventoryList.querySelectorAll('.equippable').forEach(el => {
@@ -3041,7 +3125,82 @@ let shopInventory = [];
 function formatItemStats(item) {
   const stats = [];
 
-  // Slot type
+  // Chip category display
+  if (item.type === 'chip' || item.category) {
+    const categoryNames = {
+      stat: 'ステータス',
+      onHit: 'オンヒット',
+      onEffect: 'オンエフェクト',
+      counter: 'カウンター'
+    };
+    if (item.category && categoryNames[item.category]) {
+      stats.push(`[${categoryNames[item.category]}]`);
+    }
+
+    // Handle chip effects
+    if (item.effects) {
+      // STAT chips
+      if (item.effects.stats) {
+        const statNames = { str: 'STR', agi: 'AGI', vit: 'VIT', int: 'INT', dex: 'DEX', luk: 'LUK' };
+        for (const [stat, value] of Object.entries(item.effects.stats)) {
+          if (value && statNames[stat]) {
+            stats.push(`${statNames[stat]}+${value}`);
+          }
+        }
+      }
+
+      // ON_HIT chips
+      if (item.effects.onHit) {
+        const effect = item.effects.onHit;
+        const statusNames = {
+          defrag: 'デフラグ', lag: 'ラグ', bufferOverflow: 'バッファオーバーフロー',
+          corrupted: '破損', exposed: '露出', overheated: 'オーバーヒート'
+        };
+        const statusName = statusNames[effect.status] || effect.status;
+        stats.push(`${Math.round(effect.chance * 100)}%${statusName}(${effect.duration}秒)`);
+        if (effect.bonusDamage) stats.push(`+${effect.bonusDamage}ダメージ`);
+      }
+
+      // ON_EFFECT chips (onKill, onDamage)
+      if (item.effects.onKill) {
+        const effect = item.effects.onKill;
+        const effectParts = [];
+        if (effect.heal) effectParts.push(`HP+${effect.heal}`);
+        if (effect.aspdBoost) effectParts.push(`攻速+${Math.round(effect.aspdBoost * 100)}%`);
+        if (effect.doubleCredits) effectParts.push('2x金');
+        if (effect.aoeExplosion) effectParts.push('爆発');
+        if (effectParts.length > 0) {
+          stats.push(`撃破時${Math.round(effect.chance * 100)}%:${effectParts.join(',')}`);
+        }
+      }
+      if (item.effects.onDamage) {
+        const effect = item.effects.onDamage;
+        if (effect.damageReduction) {
+          stats.push(`被弾時${Math.round(effect.chance * 100)}%:${Math.round(effect.damageReduction * 100)}%軽減`);
+        }
+      }
+
+      // COUNTER chips
+      if (item.effects.counter) {
+        const counter = item.effects.counter;
+        const triggerNames = {
+          onKill: '撃破', onCrit: 'クリティカル', onRoomEnter: '部屋移動',
+          onStatusInflict: '状態異常', onChipCount: 'チップ数'
+        };
+        const bonusNames = {
+          damagePercent: 'ダメージ', statusDuration: '状態時間',
+          critDamage: 'クリダメ', aspd: '攻速', allStats: '全能力'
+        };
+        const triggerName = triggerNames[counter.trigger] || counter.trigger;
+        const bonusName = bonusNames[counter.bonus] || counter.bonus;
+        stats.push(`${triggerName}毎+${counter.perStack}%${bonusName}(最大${counter.maxStacks})`);
+      }
+    }
+
+    return stats.join(' ');
+  }
+
+  // Slot type (for equipment)
   const slotNames = { weapon: '武器', body: '体', shield: '盾', accessory: 'アクセ' };
   if (item.slot) {
     stats.push(`[${slotNames[item.slot] || item.slot}]`);
@@ -3131,7 +3290,7 @@ async function openShop() {
             </div>
             <div class="shop-item-meta">
               <span class="shop-item-stock">x${item.quantity}</span>
-              <span class="shop-item-price">${item.price}G</span>
+              <span class="shop-item-price">¥${item.price}</span>
               <button class="shop-item-buy"
                       onclick="buyItem('${item.itemId}')"
                       ${!canAfford || outOfStock ? 'disabled' : ''}>
@@ -3406,7 +3565,7 @@ function showPostCombatShopContent() {
             ${statsStr ? `<div class="shop-item-stats">${statsStr}</div>` : ''}
           </div>
           <div class="shop-item-meta">
-            <span class="shop-item-price">${item.price}G</span>
+            <span class="shop-item-price">¥${item.price}</span>
             <button class="shop-item-buy"
                     onclick="buyFromShop(${index})"
                     ${!canAfford ? 'disabled' : ''}>
@@ -4460,6 +4619,7 @@ async function openSettings() {
     openrouterModelInput.value = settings.openrouterModel || '';
     jlptLevelSelect.value = settings.jlptLevel || 'N4';
     reviewTypeSelect.value = settings.reviewType || 'typing';
+    jpdbApiKeyInput.value = settings.jpdbApiKey || '';
 
     // Initialize TTS settings
     initTtsSettings(settings);
@@ -4512,8 +4672,8 @@ async function saveSettings() {
     openaiModel: openaiModelSelect.value,
     openrouterModel: openrouterModelInput.value,
     jlptLevel: jlptLevelSelect.value,
-    // Preserve chat-app-specific settings that aren't managed here
-    jpdbApiKey: currentSettings.jpdbApiKey !== '********' ? currentSettings.jpdbApiKey : undefined,
+    // JPDB settings
+    jpdbApiKey: jpdbApiKeyInput.value || currentSettings.jpdbApiKey,
     jpdbDeckId: currentSettings.jpdbDeckId,
     personaName: currentSettings.personaName,
     personaDescription: currentSettings.personaDescription,
