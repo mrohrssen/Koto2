@@ -1,0 +1,806 @@
+/**
+ * JPDB API Integration Module
+ *
+ * Interfaces with jpdb.io (Japanese Dictionary Database) to:
+ * - Fetch user's known vocabulary from their decks
+ * - Parse Japanese text into component words
+ * - Look up word learning states (new, learning, known, due, etc.)
+ * - Submit vocabulary reviews
+ *
+ * @module @jchat/shared/jpdb
+ */
+
+import { readFileSync, writeFileSync, existsSync } from 'fs';
+
+const JPDB_API_BASE = 'https://jpdb.io/api/v1';
+
+// Configuration - set by the consuming app
+let config = {
+  vocabCacheFile: null,
+  vocabSuggestionsFile: null
+};
+
+/**
+ * Configure the JPDB module with file paths
+ * @param {object} options
+ * @param {string} options.vocabCacheFile - Path to vocab cache JSON file
+ * @param {string} options.vocabSuggestionsFile - Path to vocab suggestions JSON file
+ */
+export function configure(options) {
+  if (options.vocabCacheFile) {
+    config.vocabCacheFile = options.vocabCacheFile;
+  }
+  if (options.vocabSuggestionsFile) {
+    config.vocabSuggestionsFile = options.vocabSuggestionsFile;
+  }
+}
+
+// Rate limiting - prevent getting IP blocked
+let lastJpdbCall = 0;
+const MIN_CALL_INTERVAL_MS = 500;
+
+/**
+ * Rate-limited fetch for JPDB API calls
+ */
+async function jpdbFetch(url, options) {
+  const now = Date.now();
+  const timeSinceLastCall = now - lastJpdbCall;
+
+  if (timeSinceLastCall < MIN_CALL_INTERVAL_MS) {
+    await new Promise(resolve => setTimeout(resolve, MIN_CALL_INTERVAL_MS - timeSinceLastCall));
+  }
+
+  lastJpdbCall = Date.now();
+  return fetch(url, options);
+}
+
+// Cache for vocabulary
+let vocabCache = null;
+
+// Manual vocabulary storage
+let manualVocabulary = [];
+
+/**
+ * Load vocabulary from disk cache
+ */
+function loadVocabFromFile() {
+  if (!config.vocabCacheFile) return null;
+
+  if (existsSync(config.vocabCacheFile)) {
+    try {
+      const data = JSON.parse(readFileSync(config.vocabCacheFile, 'utf-8'));
+      console.log(`Loaded ${data.count} words from vocab cache file`);
+      return data;
+    } catch (e) {
+      console.warn('Failed to load vocab cache file:', e.message);
+    }
+  }
+  return null;
+}
+
+/**
+ * Save vocabulary to disk cache
+ */
+function saveVocabToFile(data) {
+  if (!config.vocabCacheFile) return;
+
+  try {
+    writeFileSync(config.vocabCacheFile, JSON.stringify(data, null, 2));
+    console.log(`Saved ${data.count} words to vocab cache file`);
+  } catch (e) {
+    console.warn('Failed to save vocab cache:', e.message);
+  }
+}
+
+/**
+ * Initialize the module - load cache from file
+ */
+export function initialize() {
+  vocabCache = loadVocabFromFile();
+}
+
+// States that count as "known" vocabulary
+const KNOWN_STATES = ['known', 'never-forget', 'due'];
+
+/**
+ * Fetches vocabulary from a JPDB deck and resolves to actual words
+ */
+export async function fetchDeckVocabulary(apiKey, deckId) {
+  if (!apiKey) {
+    throw new Error('JPDB API key is required');
+  }
+
+  if (!deckId) {
+    throw new Error('Deck ID is required');
+  }
+
+  try {
+    const listResponse = await jpdbFetch(`${JPDB_API_BASE}/deck/list-vocabulary`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        id: isNaN(Number(deckId)) ? deckId : Number(deckId)
+      })
+    });
+
+    if (!listResponse.ok) {
+      const errorData = await listResponse.json().catch(() => ({}));
+      if (listResponse.status === 403) {
+        throw new Error('Invalid JPDB API key');
+      }
+      if (listResponse.status === 429) {
+        throw new Error('JPDB rate limit hit. Please wait a minute and try again.');
+      }
+      if (errorData.error === 'bad_deck') {
+        throw new Error(`Deck ID "${deckId}" not found.`);
+      }
+      throw new Error(errorData.error_message || `JPDB API error: ${listResponse.status}`);
+    }
+
+    const listData = await listResponse.json();
+    const vocabIds = listData.vocabulary || [];
+
+    if (vocabIds.length === 0) {
+      return { words: [], count: 0 };
+    }
+
+    // Lookup spellings and card states, filter for known words only
+    const allWords = new Set();
+    const chunkSize = 1000;
+
+    for (let i = 0; i < vocabIds.length; i += chunkSize) {
+      const chunk = vocabIds.slice(i, i + chunkSize);
+
+      const lookupResponse = await jpdbFetch(`${JPDB_API_BASE}/lookup-vocabulary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          list: chunk,
+          fields: ['spelling', 'card_state']
+        })
+      });
+
+      if (lookupResponse.ok) {
+        const lookupData = await lookupResponse.json();
+        const vocabInfo = lookupData.vocabulary_info || [];
+
+        for (const info of vocabInfo) {
+          if (!info) continue;
+
+          const spelling = info[0];
+          const cardStates = info[1] || [];
+
+          // Only include words with known/due/never-forget states
+          const isKnown = cardStates.some(state => KNOWN_STATES.includes(state));
+
+          if (isKnown && spelling) {
+            allWords.add(spelling);
+          }
+        }
+      } else if (lookupResponse.status === 429) {
+        console.warn('Rate limited during lookup, using partial results');
+        break;
+      }
+    }
+
+    const words = Array.from(allWords);
+    vocabCache = { words, count: words.length };
+    saveVocabToFile(vocabCache);
+
+    return vocabCache;
+  } catch (error) {
+    console.error('JPDB fetch error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Fetches vocabulary from ALL user decks by scanning deck IDs
+ */
+export async function fetchAllDecksVocabulary(apiKey) {
+  if (!apiKey) {
+    throw new Error('JPDB API key is required');
+  }
+
+  const allVocabIds = [];
+  const foundDeckIds = [];
+
+  console.log('Scanning decks 1-50...');
+
+  // Scan deck IDs 1-50
+  for (let deckId = 1; deckId <= 50; deckId++) {
+    try {
+      const response = await jpdbFetch(`${JPDB_API_BASE}/deck/list-vocabulary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({ id: deckId })
+      });
+
+      if (response.status === 429) {
+        console.warn('Rate limited while scanning decks, stopping scan');
+        break;
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.vocabulary && data.vocabulary.length > 0) {
+          foundDeckIds.push(deckId);
+          allVocabIds.push(...data.vocabulary);
+        }
+      }
+    } catch (e) {
+      // Ignore errors for individual decks
+    }
+  }
+
+  // Also check never-forget deck
+  try {
+    const response = await jpdbFetch(`${JPDB_API_BASE}/deck/list-vocabulary`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({ id: 'never-forget' })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.vocabulary && data.vocabulary.length > 0) {
+        allVocabIds.push(...data.vocabulary);
+      }
+    }
+  } catch (e) {
+    // Ignore
+  }
+
+  console.log(`Found ${foundDeckIds.length} decks with ${allVocabIds.length} total vocab entries`);
+
+  if (allVocabIds.length === 0) {
+    return { words: [], count: 0, deckIds: foundDeckIds };
+  }
+
+  // Deduplicate vocab IDs
+  const uniqueVocabIds = [];
+  const seen = new Set();
+  for (const [vid, sid] of allVocabIds) {
+    const key = `${vid}-${sid}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      uniqueVocabIds.push([vid, sid]);
+    }
+  }
+
+  console.log(`Looking up ${uniqueVocabIds.length} unique vocab entries...`);
+
+  // Lookup spellings in chunks, filter for known words only
+  const allWords = new Set();
+  const chunkSize = 1000;
+
+  for (let i = 0; i < uniqueVocabIds.length; i += chunkSize) {
+    const chunk = uniqueVocabIds.slice(i, i + chunkSize);
+
+    try {
+      const lookupResponse = await jpdbFetch(`${JPDB_API_BASE}/lookup-vocabulary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          list: chunk,
+          fields: ['spelling', 'card_state']
+        })
+      });
+
+      if (lookupResponse.status === 429) {
+        console.warn('Rate limited during lookup, using partial results');
+        break;
+      }
+
+      if (lookupResponse.ok) {
+        const lookupData = await lookupResponse.json();
+        for (const info of (lookupData.vocabulary_info || [])) {
+          if (!info) continue;
+
+          const spelling = info[0];
+          const cardStates = info[1] || [];
+
+          // Only include words with known/due/never-forget states
+          const isKnown = cardStates.some(state => KNOWN_STATES.includes(state));
+
+          if (isKnown && spelling) {
+            allWords.add(spelling);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Lookup chunk failed:', e);
+    }
+  }
+
+  const words = Array.from(allWords);
+  console.log(`Filtered to ${words.length} known words`);
+
+  vocabCache = { words, count: words.length, deckIds: foundDeckIds };
+  saveVocabToFile(vocabCache);
+
+  return vocabCache;
+}
+
+/**
+ * Get cached or manual vocabulary
+ */
+export function getVocabulary() {
+  // Return cached vocabulary if available
+  if (vocabCache) {
+    return vocabCache;
+  }
+
+  // Try loading from file if memory cache is empty
+  const fileCache = loadVocabFromFile();
+  if (fileCache) {
+    vocabCache = fileCache;
+    return vocabCache;
+  }
+
+  if (manualVocabulary.length > 0) {
+    return { words: manualVocabulary, count: manualVocabulary.length };
+  }
+
+  return { words: [], count: 0 };
+}
+
+/**
+ * Set manual vocabulary
+ */
+export function setManualVocabulary(vocabText) {
+  if (!vocabText || !vocabText.trim()) {
+    manualVocabulary = [];
+    return { words: [], count: 0 };
+  }
+
+  const words = vocabText
+    .split(/[\n,\s]+/)
+    .map(w => w.trim())
+    .filter(w => w.length > 0);
+
+  manualVocabulary = [...new Set(words)];
+  vocabCache = { words: manualVocabulary, count: manualVocabulary.length, source: 'manual' };
+  saveVocabToFile(vocabCache);
+
+  return { words: manualVocabulary, count: manualVocabulary.length };
+}
+
+/**
+ * Clear vocabulary cache (memory only, keeps file for persistence)
+ */
+export function clearVocabCache() {
+  vocabCache = null;
+}
+
+/**
+ * Parse Japanese text into vocabulary words using JPDB
+ */
+export async function parseText(apiKey, text) {
+  if (!apiKey || !text) {
+    return [];
+  }
+
+  try {
+    const response = await jpdbFetch(`${JPDB_API_BASE}/parse`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        text,
+        token_fields: ['vocabulary_index'],
+        vocabulary_fields: ['spelling', 'reading']
+      })
+    });
+
+    if (!response.ok) {
+      console.warn('JPDB parse failed:', response.status);
+      return [];
+    }
+
+    const data = await response.json();
+    const vocabulary = data.vocabulary || [];
+
+    return vocabulary.map(v => ({
+      spelling: v[0],
+      reading: v[1]
+    }));
+  } catch (error) {
+    console.warn('JPDB parse error:', error);
+    return [];
+  }
+}
+
+/**
+ * Test JPDB API connection
+ */
+export async function testConnection(apiKey) {
+  try {
+    const response = await jpdbFetch(`${JPDB_API_BASE}/parse`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        text: 'テスト',
+        token_fields: [],
+        vocabulary_fields: ['spelling']
+      })
+    });
+
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * All possible JPDB card states
+ */
+export const CARD_STATES = [
+  'new',
+  'learning',
+  'known',
+  'never-forget',
+  'due',
+  'failed',
+  'suspended',
+  'blacklisted',
+  'not-in-deck'
+];
+
+/**
+ * Lookup card states for a list of words
+ */
+export async function lookupWordStates(apiKey, words) {
+  if (!apiKey || !words || words.length === 0) {
+    return {};
+  }
+
+  const wordStates = {};
+  const chunkSize = 1000;
+
+  for (let i = 0; i < words.length; i += chunkSize) {
+    const chunk = words.slice(i, i + chunkSize);
+    const text = chunk.join(' ');
+
+    try {
+      const parseResponse = await jpdbFetch(`${JPDB_API_BASE}/parse`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          text,
+          token_fields: ['vocabulary_index'],
+          vocabulary_fields: ['spelling', 'reading', 'vid', 'sid']
+        })
+      });
+
+      if (parseResponse.status === 429) {
+        console.warn('Rate limited during word state lookup');
+        break;
+      }
+
+      if (!parseResponse.ok) {
+        continue;
+      }
+
+      const parseData = await parseResponse.json();
+      const vocabulary = parseData.vocabulary || [];
+
+      if (vocabulary.length === 0) continue;
+
+      const vocabIds = [];
+      const vocabIdMap = {};
+      for (const v of vocabulary) {
+        const spelling = v[0];
+        const vid = v[2];
+        const sid = v[3];
+        vocabIds.push([vid, sid]);
+        vocabIdMap[spelling] = { vid, sid };
+      }
+
+      const lookupResponse = await jpdbFetch(`${JPDB_API_BASE}/lookup-vocabulary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          list: vocabIds,
+          fields: ['spelling', 'card_state', 'due_at']
+        })
+      });
+
+      if (lookupResponse.status === 429) {
+        console.warn('Rate limited during card state lookup');
+        break;
+      }
+
+      if (lookupResponse.ok) {
+        const lookupData = await lookupResponse.json();
+        const vocabInfo = lookupData.vocabulary_info || [];
+
+        for (let j = 0; j < vocabInfo.length; j++) {
+          const info = vocabInfo[j];
+          if (!info) continue;
+          const spelling = info[0];
+          const cardStates = info[1] || [];
+          const dueAt = info[2];
+          const ids = vocabIdMap[spelling] || { vid: vocabIds[j][0], sid: vocabIds[j][1] };
+
+          wordStates[spelling] = {
+            states: cardStates.length === 0 ? ['new'] : cardStates,
+            vid: ids.vid,
+            sid: ids.sid,
+            dueAt: dueAt ?? null
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('Word state lookup error:', e);
+    }
+  }
+
+  return wordStates;
+}
+
+/**
+ * Review grades for JPDB
+ */
+export const REVIEW_GRADES = {
+  1: 'nothing',
+  2: 'something',
+  3: 'hard',
+  4: 'okay',
+  5: 'easy'
+};
+
+/**
+ * Get due words with their English meanings for word practice
+ */
+export async function getDueWordsWithMeanings(apiKey, limit = 50, excludeVids = []) {
+  if (!apiKey) {
+    return { words: [], source: 'none' };
+  }
+
+  let wordStateCache = {};
+
+  // Read from configured vocab suggestions file
+  if (config.vocabSuggestionsFile) {
+    try {
+      if (existsSync(config.vocabSuggestionsFile)) {
+        const data = JSON.parse(readFileSync(config.vocabSuggestionsFile, 'utf-8'));
+        wordStateCache = data.wordStateCache || {};
+      }
+    } catch (e) {
+      console.warn('Failed to load vocab suggestions cache:', e.message);
+    }
+  }
+
+  if (Object.keys(wordStateCache).length === 0) {
+    return { words: [], source: 'none' };
+  }
+
+  const excludeSet = new Set(excludeVids);
+  const priorityOrder = ['due', 'failed', 'learning', 'known'];
+  const candidatesByPriority = {
+    due: [],
+    failed: [],
+    learning: [],
+    known: []
+  };
+
+  for (const [word, stateInfo] of Object.entries(wordStateCache)) {
+    if (!word || !stateInfo.vid || !stateInfo.sid) continue;
+
+    const states = stateInfo.states || [];
+
+    if (excludeSet.has(stateInfo.vid)) continue;
+    if (states.some(s => ['blacklisted', 'suspended', 'new'].includes(s))) continue;
+    if (word.length < 2) continue;
+
+    for (const priority of priorityOrder) {
+      if (states.includes(priority)) {
+        candidatesByPriority[priority].push({
+          word: word,
+          vid: stateInfo.vid,
+          sid: stateInfo.sid,
+          dueAt: stateInfo.dueAt ?? null
+        });
+        break;
+      }
+    }
+  }
+
+  const selected = [];
+  for (const priority of priorityOrder) {
+    const candidates = candidatesByPriority[priority];
+    candidates.sort((a, b) => {
+      if (a.dueAt && b.dueAt) return a.dueAt - b.dueAt;
+      if (a.dueAt) return -1;
+      if (b.dueAt) return 1;
+      return 0;
+    });
+    for (const candidate of candidates) {
+      if (selected.length >= limit) break;
+      selected.push(candidate);
+    }
+    if (selected.length >= limit) break;
+  }
+
+  if (selected.length === 0) {
+    return { words: [], source: 'none' };
+  }
+
+  const vocabIds = selected.map(s => [s.vid, s.sid]);
+
+  try {
+    const lookupResponse = await jpdbFetch(`${JPDB_API_BASE}/lookup-vocabulary`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        list: vocabIds,
+        fields: ['spelling', 'reading', 'meanings_chunks', 'meanings_part_of_speech']
+      })
+    });
+
+    if (!lookupResponse.ok) {
+      if (lookupResponse.status === 429) {
+        console.warn('Rate limited fetching word meanings');
+      }
+      return { words: [], source: 'error' };
+    }
+
+    const lookupData = await lookupResponse.json();
+    const vocabInfo = lookupData.vocabulary_info || [];
+
+    const results = [];
+    for (let i = 0; i < vocabInfo.length; i++) {
+      const info = vocabInfo[i];
+      if (!info) continue;
+
+      const [spelling, reading, meaningsChunks] = info;
+
+      const meanings = [];
+      if (meaningsChunks && Array.isArray(meaningsChunks)) {
+        for (const chunk of meaningsChunks) {
+          if (Array.isArray(chunk)) {
+            for (const meaning of chunk) {
+              if (meaning && typeof meaning === 'string') {
+                meanings.push(meaning);
+              }
+            }
+          }
+        }
+      }
+
+      if (meanings.length > 0) {
+        results.push({
+          word: spelling,
+          reading: reading,
+          meanings: meanings,
+          vid: selected[i].vid,
+          sid: selected[i].sid
+        });
+      }
+    }
+
+    const dueCount = candidatesByPriority.due.length;
+    const source = dueCount > 0 ? 'due' : 'learning';
+
+    return { words: results, source };
+
+  } catch (e) {
+    console.warn('Failed to fetch word meanings:', e.message);
+    return { words: [], source: 'error' };
+  }
+}
+
+/**
+ * Send a review for a vocabulary item
+ */
+export async function reviewVocabulary(apiKey, vid, sid, grade) {
+  if (!apiKey) {
+    throw new Error('JPDB API key required');
+  }
+
+  const gradeString = typeof grade === 'string' ? grade : REVIEW_GRADES[grade];
+
+  if (!gradeString) {
+    throw new Error(`Invalid grade: ${grade}`);
+  }
+
+  const body = {
+    vid: parseInt(vid, 10),
+    sid: parseInt(sid, 10),
+    grade: gradeString
+  };
+
+  console.log('Sending review to JPDB:', body);
+
+  const response = await jpdbFetch(`${JPDB_API_BASE}/review`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify(body)
+  });
+
+  const responseData = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    console.log('JPDB review error:', responseData);
+    if (response.status === 429) {
+      throw new Error('Rate limited. Please wait a moment.');
+    }
+    throw new Error(responseData.error_message || `Review failed: ${response.status}`);
+  }
+
+  return true;
+}
+
+/**
+ * Get the updated state for a single word from JPDB
+ */
+export async function getWordState(apiKey, vid, sid) {
+  if (!apiKey) {
+    throw new Error('JPDB API key required');
+  }
+
+  const response = await jpdbFetch(`${JPDB_API_BASE}/lookup-vocabulary`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      list: [[vid, sid]],
+      fields: ['spelling', 'card_state', 'due_at']
+    })
+  });
+
+  if (!response.ok) {
+    if (response.status === 429) {
+      throw new Error('Rate limited');
+    }
+    throw new Error(`Failed to get word state: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const vocabInfo = data.vocabulary_info?.[0];
+
+  if (!vocabInfo) {
+    return null;
+  }
+
+  return {
+    spelling: vocabInfo[0],
+    states: vocabInfo[1] || [],
+    dueAt: vocabInfo[2] ?? null
+  };
+}

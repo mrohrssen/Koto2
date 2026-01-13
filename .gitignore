@@ -1,0 +1,8 @@
+node_modules/
+.env
+.jrpg-settings.json
+.jrpg-save.json
+.jrpg-vocab-cache.json
+.jrpg-vocab-suggestions.json
+.jrpg-game-stats.json
+.DS_Store

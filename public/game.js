@@ -1,0 +1,5159 @@
+// JChat Dungeon - Frontend Game Logic
+
+const API_BASE = '';
+
+// ============ STATE ============
+let gameState = {
+  player: null,
+  run: null,
+  combat: null,
+  phase: 'no_save'
+};
+
+let isLoading = false;
+
+// Stat allocation state for character creation (default: evenly distributed)
+let createStats = { str: 5, agi: 5, vit: 5, int: 5, dex: 5, luk: 5 };
+let createStatPoints = 0;
+
+// TTS State
+let ttsEnabled = false;
+let ttsSpeakerId = 13; // 玄野武宏 (クール) - cool male narrator
+let ttsSpeed = 0.9;
+let ttsVolume = 1.0;
+let currentAudio = null;
+let lastSpokenNarration = null; // For repeating with 'r' key
+
+// Word Review Settings
+let reviewType = 'typing'; // 'typing' or 'self-grade'
+
+// Realtime Combat State
+let realtimeCombatActive = false;
+let playerAttackTimer = null;
+let enemyAttackTimer = null;
+let playerAttackPending = false;
+let enemyAttackPending = false;
+let currentPlayerInterval = 1500;  // Will be updated from server
+let currentEnemyInterval = 1500;   // Will be updated from server
+
+// Debug Mode - disables AI narration only (JPDB vocab calls still work)
+let debugMode = localStorage.getItem('debugMode') === 'true';
+
+// Word Practice State
+let combatWords = [];           // Array of {word, meanings} objects (meanings is array)
+let availableWords = [];        // Pool of words not yet shown
+let selectedWordIndex = 0;      // Currently selected word (0-4)
+let jpdbWordsCache = null;      // Cached JPDB due words
+let jpdbWordsFetching = false;  // Prevent duplicate fetches
+const WORD_HEAL_AMOUNT = 15;
+
+// Word Audio Cache (for TTS prefetching)
+const wordAudioCache = new Map();  // word -> { blob, url, status: 'pending'|'ready'|'error' }
+let wordAudioEnabled = true;       // Can be disabled if VOICEVOX unavailable
+
+// Fallback test data for word practice (used when JPDB unavailable)
+const FALLBACK_WORD_DATA = [
+  { word: '食べる', meanings: ['eat'] },
+  { word: '飲む', meanings: ['drink'] },
+  { word: '見る', meanings: ['see', 'watch', 'look'] },
+  { word: '聞く', meanings: ['hear', 'listen', 'ask'] },
+  { word: '行く', meanings: ['go'] },
+  { word: '来る', meanings: ['come'] },
+  { word: '言う', meanings: ['say', 'tell'] },
+  { word: '思う', meanings: ['think', 'feel'] },
+  { word: '知る', meanings: ['know'] },
+  { word: '分かる', meanings: ['understand'] },
+  { word: '読む', meanings: ['read'] },
+  { word: '書く', meanings: ['write'] },
+  { word: '話す', meanings: ['speak', 'talk'] },
+  { word: '買う', meanings: ['buy'] },
+  { word: '使う', meanings: ['use'] },
+  { word: '作る', meanings: ['make', 'create'] },
+  { word: '待つ', meanings: ['wait'] },
+  { word: '持つ', meanings: ['hold', 'have'] },
+  { word: '歩く', meanings: ['walk'] },
+  { word: '走る', meanings: ['run'] }
+];
+
+// ============ DOM ELEMENTS ============
+const narrationPanel = document.getElementById('narration-panel');
+const narrationText = document.getElementById('narration-text');
+const gameContent = document.getElementById('game-content');
+const actionPanel = document.getElementById('action-panel');
+const quickStats = document.getElementById('quick-stats');
+const playerStats = document.getElementById('player-stats');
+const equipmentList = document.getElementById('equipment-list');
+const inventoryList = document.getElementById('inventory-list');
+
+// Modals
+const createCharModal = document.getElementById('create-char-modal');
+const resultModal = document.getElementById('result-modal');
+const gameoverModal = document.getElementById('gameover-modal');
+const settingsModal = document.getElementById('settings-modal');
+const logModal = document.getElementById('log-modal');
+const upgradesModal = document.getElementById('upgrades-modal');
+const shopModal = document.getElementById('shop-modal');
+
+// Upgrades Modal Elements
+const modalEssenceCount = document.getElementById('modal-essence-count');
+const upgradesGrid = document.getElementById('upgrades-grid');
+const achievementsList = document.getElementById('achievements-list');
+const lifetimeStats = document.getElementById('lifetime-stats');
+
+// Stats Modal Elements
+const gameStatsBtn = document.getElementById('game-stats-btn');
+const gameStatsModal = document.getElementById('game-stats-modal');
+const gameStatsPeriod = document.getElementById('stats-period');
+const gameStatsKanjiGrid = document.getElementById('game-kanji-grid');
+const gameStatsWordList = document.getElementById('game-word-frequency');
+const gameStatsResetBtn = document.getElementById('reset-game-stats');
+const gameWordStateFilters = document.getElementById('game-word-state-filters');
+const gameWordStatesLoading = document.getElementById('game-word-states-loading');
+const refreshGameWordStatesBtn = document.getElementById('refresh-game-word-states');
+
+// Word states data for filtering
+let gameWordStatesData = null;
+let gameActiveStateFilter = 'all';
+
+// Narration elements
+const narrationContinue = document.getElementById('narration-continue');
+const logBtn = document.getElementById('log-btn');
+const logEntries = document.getElementById('log-entries');
+
+// Header buttons
+const newGameBtn = document.getElementById('new-game-btn');
+
+// Settings elements
+const settingsBtn = document.getElementById('settings-btn');
+const closeSettingsBtn = document.getElementById('close-settings');
+const cancelSettingsBtn = document.getElementById('cancel-settings');
+const saveSettingsBtn = document.getElementById('save-settings');
+const aiProviderSelect = document.getElementById('ai-provider');
+const aiKeyInput = document.getElementById('ai-key');
+const openrouterModelGroup = document.getElementById('openrouter-model-group');
+const openrouterModelInput = document.getElementById('openrouter-model');
+const openaiModelGroup = document.getElementById('openai-model-group');
+const openaiModelSelect = document.getElementById('openai-model');
+const jlptLevelSelect = document.getElementById('jlpt-level');
+const reviewTypeSelect = document.getElementById('review-type');
+const settingsStatus = document.getElementById('settings-status');
+
+// TTS Elements
+const gameTtsStatus = document.getElementById('game-tts-status');
+const gameTtsRefresh = document.getElementById('game-tts-refresh');
+const gameTtsEnabled = document.getElementById('game-tts-enabled');
+const gameTtsSpeaker = document.getElementById('game-tts-speaker');
+const gameTtsSpeed = document.getElementById('game-tts-speed');
+const gameTtsSpeedValue = document.getElementById('game-tts-speed-value');
+const gameTtsVolume = document.getElementById('game-tts-volume');
+const gameTtsVolumeValue = document.getElementById('game-tts-volume-value');
+const gameTtsTest = document.getElementById('game-tts-test');
+
+// VN Stage Elements
+const vnStage = document.getElementById('vn-stage');
+const vnBackground = document.getElementById('vn-background');
+const playerSprite = document.getElementById('player-sprite');
+const playerSpriteImg = document.getElementById('player-sprite-img');
+const enemySprite = document.getElementById('enemy-sprite');
+const enemySpriteImg = document.getElementById('enemy-sprite-img');
+const playerHpBar = document.getElementById('player-hp-bar');
+const enemyHpBar = document.getElementById('enemy-hp-bar');
+const playerNameDisplay = document.getElementById('player-name-display');
+const playerHpValues = document.getElementById('player-hp-values');
+const playerHpFill = document.getElementById('player-hp-fill');
+const playerMpFill = document.getElementById('player-mp-fill');
+const enemyNameDisplay = document.getElementById('enemy-name-display');
+const enemyHpValues = document.getElementById('enemy-hp-values');
+const enemyHpFill = document.getElementById('enemy-hp-fill');
+const floorDisplay = document.getElementById('floor-display');
+const roomDisplay = document.getElementById('room-display');
+const floorIndicator = document.getElementById('floor-indicator');
+
+// ============ BACKGROUND SYSTEM ============
+// Track current background to avoid unnecessary updates
+let currentBackgroundKey = '';
+
+// Update background based on current floor with random variant
+function updateBackground() {
+  if (!vnBackground) return;
+
+  // If not in a run, show hub background
+  if (!gameState.run) {
+    if (currentBackgroundKey !== 'hub') {
+      currentBackgroundKey = 'hub';
+      vnBackground.style.backgroundImage = `url('assets/backgrounds/hub.png')`;
+      vnBackground.style.backgroundSize = 'cover';
+      vnBackground.style.backgroundPosition = 'center';
+      console.log('Background set to: hub');
+    }
+    return;
+  }
+
+  const floor = gameState.run.floor || 1;
+  const currentRoom = gameState.run.currentRoom || 0;
+
+  // Create a unique key for this room position
+  const roomKey = `${floor}-${currentRoom}`;
+
+  // Only change background if we've moved to a new room
+  if (roomKey === currentBackgroundKey) return;
+  currentBackgroundKey = roomKey;
+
+  // Pick a random variant (1-5) for this room
+  const variant = Math.floor(Math.random() * 5) + 1;
+
+  // Set the background image path
+  // Backgrounds are named: floor{N}_{variant}.png
+  const bgPath = `assets/backgrounds/floor${floor}_${variant}.png`;
+
+  vnBackground.style.backgroundImage = `url('${bgPath}')`;
+  vnBackground.style.backgroundSize = 'cover';
+  vnBackground.style.backgroundPosition = 'center';
+
+  console.log(`Background set to: ${bgPath}`);
+}
+
+// Reset background tracking (for new runs)
+function resetBackground() {
+  currentBackgroundKey = '';
+}
+
+// ============ NARRATION SYSTEM ============
+// Narration comes from server - can be simple Japanese or AI-generated based on user's vocab
+
+// Narration queue for video game-style "press to continue"
+let narrationQueue = [];
+let isNarrationWaiting = false;
+let narrationLog = []; // Log of all narrations for current run
+
+// Keyboard navigation for action buttons
+let selectedActionIndex = 0;
+
+// Setting for AI narration (can be toggled)
+let useAINarration = true;
+
+// Fetch AI-generated narration using player's JPDB vocabulary
+async function fetchAINarration(event, context = {}) {
+  if (!useAINarration) return null;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/game/narrate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event, context })
+    });
+    const data = await response.json();
+    console.log('AI Narration:', data.source, data.narration?.substring(0, 50) + '...');
+    return data.narration || null;
+  } catch (error) {
+    console.error('AI Narration fetch error:', error);
+    return null;
+  }
+}
+
+// Simple fallback narrations (Japanese) for when server narration isn't available
+const FALLBACK_NARRATIONS = {
+  welcome: 'シャドウゲートへようこそ！影の門が待っている。冒険を始めましょう。',
+  hub: (player) => `${player.name}はハンターギルドにいる。他のハンターたちが話している。ダンジョンの入り口が近くで暗く光っている。`,
+  enterDungeon: (floor) => {
+    const desc = {
+      1: '第1階に入った。暗い通路が続く。遠くで何かが動いている...',
+      2: '第2階。空気が重い。壁に古い血の跡がある。',
+      3: '第3階。骨が散らばっている。死者の気配がする。',
+      4: '第4階。熱い！溶岩の光が見える。',
+      5: '第5階。暗い森だ。木々が動いているように見える。',
+      6: '第6階。大きな骨がある。竜の住処だ。',
+      7: '最後の階。影が渦巻いている。最終決戦の時だ。'
+    };
+    return desc[floor] || `第${floor}階に入った。`;
+  },
+  combatStart: (enemy) => `${enemy?.name || '敵'}が現れた！戦いの準備をしろ！`,
+  playerAttack: (result) => {
+    const dmg = result?.damage || result?.totalDamage || 0;
+    if (result?.miss) return `攻撃が外れた！MISS!`;
+    if (result?.dodge || result?.perfectDodge) return `敵が攻撃をかわした！`;
+    if (result?.critical) return `クリティカル！完璧な一撃！${dmg}ダメージ！`;
+    if (dmg >= 20) return `強い攻撃！${dmg}ダメージを与えた！`;
+    if (dmg >= 10) return `攻撃が当たった！${dmg}ダメージ！`;
+    return `攻撃！${dmg}ダメージ。`;
+  },
+  enemyAttack: (result, enemy) => {
+    const dmg = result?.damage || 0;
+    const name = enemy?.name || '敵';
+    if (result?.miss) return `${name}の攻撃が外れた！`;
+    if (result?.dodge) return `${name}の攻撃をかわした！DODGE!`;
+    if (result?.perfectDodge) return `完璧な回避！${name}の攻撃を読み切った！`;
+    if (result?.critical) return `痛い！${name}の強い攻撃！${dmg}ダメージを受けた！`;
+    if (dmg >= 15) return `${name}の攻撃！${dmg}ダメージ！気をつけろ！`;
+    if (dmg >= 5) return `${name}が攻撃してきた。${dmg}ダメージ。`;
+    if (dmg > 0) return `${name}の攻撃。${dmg}ダメージ。大丈夫だ。`;
+    return `${name}の攻撃をかわした！`;
+  },
+  victory: (enemy, rewards) => `${enemy?.name || '敵'}を倒した！勝利だ！${rewards?.xp || 0}XP、${rewards?.gold || 0}ゴールド獲得！`,
+  bossVictory: (enemy, rewards) => `ボス「${enemy?.name}」を倒した！強い敵だった。よくやった！`,
+  defeat: (enemy) => `力が足りなかった...${enemy?.name || '敵'}に倒された。目の前が暗くなる...`,
+  levelUp: (player) => `レベルアップ！レベル${player?.level}になった！体に力が満ちる。強くなった！`,
+  floorClear: (floor) => `第${floor}階をクリアした！次の階への道が見える。`,
+  usePotion: (healed) => `ポーションを使った。体が温かくなる。${healed}HP回復！`,
+  useMagic: (skill, result) => `${skill?.name || '魔法'}を使った！光が敵を包む。`,
+  flee: (success) => success ? '逃げた！また戦おう。' : '逃げられない！敵が道を塞いでいる！',
+  gameVictory: (player) => `ダンジョン制覇！影の君主を倒した！おめでとう、${player?.name}！君は本当の勇者だ！`
+};
+
+// ============ INITIALIZATION ============
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadGameState();
+  setupEventListeners();
+  updateUI();
+  // Restore debug mode from localStorage
+  initDebugMode();
+  // Load review type setting
+  loadReviewTypeSetting();
+  // Trigger JPDB parse after a short delay to let extension initialize
+  setTimeout(triggerJpdbParse, 500);
+  // Warm vocab cache in background
+  warmVocabCache();
+});
+
+async function loadReviewTypeSetting() {
+  try {
+    const response = await fetch(`${API_BASE}/api/settings`);
+    const settings = await response.json();
+    reviewType = settings.reviewType || 'typing';
+  } catch (e) {
+    console.warn('Could not load review type setting:', e);
+  }
+}
+
+async function warmVocabCache() {
+  try {
+    const response = await fetch('/api/game/vocab-cache/warm', { method: 'POST' });
+    const result = await response.json();
+
+    if (result.status === 'refreshed') {
+      showToast(`Loaded ${result.wordCount} word states from JPDB`, 'info');
+    }
+    // Don't show anything for 'cached' status - it's seamless
+  } catch (error) {
+    // Silently fail - vocab suggestions are optional
+    console.warn('Vocab cache warm failed:', error);
+  }
+}
+
+function setupEventListeners() {
+  // Create character
+  document.getElementById('create-char-btn').addEventListener('click', createCharacter);
+
+  // Stat allocation buttons in create character modal
+  document.querySelectorAll('.stat-allocation-grid .stat-plus').forEach(btn => {
+    btn.addEventListener('click', () => handleStatIncrease(btn.dataset.stat));
+  });
+  document.querySelectorAll('.stat-allocation-grid .stat-minus').forEach(btn => {
+    btn.addEventListener('click', () => handleStatDecrease(btn.dataset.stat));
+  });
+  document.getElementById('reset-stats-btn')?.addEventListener('click', resetCreateStats);
+
+  // Result modal
+  document.getElementById('result-continue-btn').addEventListener('click', handleResultContinue);
+
+  // Shop modal
+  document.getElementById('shop-skip-btn')?.addEventListener('click', skipShop);
+
+  // Game over modal
+  document.getElementById('gameover-retry-btn').addEventListener('click', () => {
+    gameoverModal.classList.add('hidden');
+    startNewRun();
+  });
+  document.getElementById('gameover-hub-btn').addEventListener('click', () => {
+    gameoverModal.classList.add('hidden');
+    returnToHub();
+  });
+
+  // Settings modal
+  settingsBtn.addEventListener('click', openSettings);
+  closeSettingsBtn.addEventListener('click', closeSettings);
+  cancelSettingsBtn.addEventListener('click', closeSettings);
+  saveSettingsBtn.addEventListener('click', saveSettings);
+  aiProviderSelect.addEventListener('change', updateProviderVisibility);
+
+  // New game button
+  newGameBtn.addEventListener('click', confirmNewGame);
+
+  // Debug mode button
+  document.getElementById('debug-mode-btn')?.addEventListener('click', toggleDebugMode);
+
+  // Word practice keyboard handler (Enter to submit, Esc to cancel)
+  document.addEventListener('keydown', handleWordPracticeKeydown);
+
+  // Self-grade button click handlers
+  document.querySelectorAll('.self-grade-buttons .review-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const grade = parseInt(btn.dataset.grade);
+      submitSelfGradeReview(grade);
+    });
+  });
+
+  // Log modal
+  logBtn.addEventListener('click', openLogModal);
+  document.getElementById('close-log').addEventListener('click', closeLogModal);
+
+  // Upgrades modal
+  document.getElementById('close-upgrades')?.addEventListener('click', closeUpgradesModal);
+
+  // Upgrades tabs
+  document.querySelectorAll('.upgrades-tabs .tab-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => switchUpgradesTab(e.target.dataset.tab));
+  });
+
+  // Game stats modal
+  gameStatsBtn?.addEventListener('click', openGameStatsModal);
+  document.getElementById('close-game-stats')?.addEventListener('click', closeGameStatsModal);
+  gameStatsPeriod?.addEventListener('change', loadGameStatsData);
+  gameStatsResetBtn?.addEventListener('click', resetGameStats);
+  refreshGameWordStatesBtn?.addEventListener('click', refreshGameWordStates);
+
+  // Shop modal
+  document.getElementById('close-shop')?.addEventListener('click', closeShop);
+  document.getElementById('shop-close-btn')?.addEventListener('click', closeShop);
+
+  // Blacksmith modal
+  document.getElementById('close-blacksmith')?.addEventListener('click', closeBlacksmith);
+  document.getElementById('blacksmith-close-btn')?.addEventListener('click', closeBlacksmith);
+
+  // Filter chips for word states
+  document.querySelectorAll('#game-word-state-filters .filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => handleGameFilterClick(chip.dataset.state));
+  });
+
+  // TTS controls
+  gameTtsRefresh?.addEventListener('click', checkTtsStatus);
+  gameTtsEnabled?.addEventListener('change', (e) => {
+    ttsEnabled = e.target.checked;
+  });
+  gameTtsSpeaker?.addEventListener('change', (e) => {
+    ttsSpeakerId = parseInt(e.target.value) || 13;
+  });
+  gameTtsSpeed?.addEventListener('input', (e) => {
+    ttsSpeed = parseFloat(e.target.value);
+    if (gameTtsSpeedValue) gameTtsSpeedValue.textContent = ttsSpeed.toFixed(1);
+  });
+  gameTtsVolume?.addEventListener('input', (e) => {
+    ttsVolume = parseFloat(e.target.value);
+    if (gameTtsVolumeValue) gameTtsVolumeValue.textContent = Math.round(ttsVolume * 100);
+  });
+  gameTtsTest?.addEventListener('click', testTts);
+
+  // Keyboard navigation (handles both narration and action buttons)
+  document.addEventListener('keydown', handleKeypress);
+
+  // Narration "press to continue" - click
+  narrationPanel.addEventListener('click', advanceNarration);
+}
+
+// ============ API CALLS ============
+async function loadGameState() {
+  try {
+    const response = await fetch(`${API_BASE}/api/game/state`);
+    const data = await response.json();
+
+    if (data.player) {
+      gameState = data;
+      window.gameState = gameState; // Keep window reference in sync
+    } else {
+      gameState.phase = 'no_save';
+    }
+  } catch (error) {
+    console.error('Failed to load game state:', error);
+    gameState.phase = 'no_save';
+  }
+}
+
+async function apiCall(endpoint, method = 'POST', body = null) {
+  if (isLoading) {
+    console.warn('apiCall blocked - isLoading is true for:', endpoint);
+    return null;
+  }
+  isLoading = true;
+  console.log('apiCall starting:', endpoint);
+
+  try {
+    const options = {
+      method,
+      headers: { 'Content-Type': 'application/json' }
+    };
+    if (body) options.body = JSON.stringify(body);
+
+    console.log('apiCall fetching:', endpoint);
+    const response = await fetch(`${API_BASE}/api/game${endpoint}`, options);
+    console.log('apiCall got response:', endpoint, response.status);
+    const data = await response.json();
+    console.log('apiCall parsed JSON:', endpoint);
+
+    if (!response.ok) {
+      throw new Error(data.error || 'API call failed');
+    }
+
+    // Update state if returned
+    if (data.state) {
+      gameState = data.state;
+      window.gameState = gameState; // Keep window reference in sync
+    }
+
+    return data;
+  } catch (error) {
+    console.error('API Error:', error);
+    showError(error.message);
+    return null;
+  } finally {
+    isLoading = false;
+  }
+}
+
+// ============ GAME ACTIONS ============
+async function createCharacter() {
+  const name = document.getElementById('char-name').value.trim() || 'Hunter';
+
+  // Include allocated stats in player creation
+  const result = await apiCall('/create-player', 'POST', {
+    name,
+    stats: { ...createStats },
+    statPoints: createStatPoints
+  });
+  if (result) {
+    createCharModal.classList.add('hidden');
+    // Reset create stats for next time
+    resetCreateStats();
+    // Use server narration or fallback
+    const narration = result.narration || FALLBACK_NARRATIONS.hub(gameState.player);
+    showNarration(narration);
+    updateUI();
+  }
+}
+
+// ============ STAT ALLOCATION (CHARACTER CREATION) ============
+
+// Calculate cost to raise a stat from X to X+1 (iRO formula)
+function getStatPointCost(currentValue) {
+  return Math.floor((currentValue - 1) / 10) + 2;
+}
+
+// Calculate derived stats for preview (simplified from server formulas)
+function calculateDerivedPreview(stats, level = 1) {
+  const { str, agi, vit, int, dex, luk } = stats;
+
+  // ATK = STR + floor(DEX/5) + floor(LUK/3) + floor(Level/4)
+  const atk = str + Math.floor(dex / 5) + Math.floor(luk / 3) + Math.floor(level / 4);
+
+  // DEF = floor(VIT/2) + floor(AGI/5) + floor(Level/2)
+  const def = Math.floor(vit / 2) + Math.floor(agi / 5) + Math.floor(level / 2);
+
+  // MATK = floor(INT * 1.5) + floor(DEX/5) + floor(LUK/3) + floor(Level/4)
+  const matk = Math.floor(int * 1.5) + Math.floor(dex / 5) + Math.floor(luk / 3) + Math.floor(level / 4);
+
+  // MDEF = INT + floor(VIT/5) + floor(DEX/5) + floor(Level/4)
+  const mdef = int + Math.floor(vit / 5) + Math.floor(dex / 5) + Math.floor(level / 4);
+
+  // HIT = 175 + Level + DEX + floor(LUK/3)
+  const hit = 175 + level + dex + Math.floor(luk / 3);
+
+  // FLEE = 100 + Level + AGI + floor(LUK/5)
+  const flee = 100 + level + agi + Math.floor(luk / 5);
+
+  // CRIT = LUK * 0.3
+  const crit = (luk * 0.3).toFixed(1);
+
+  // HP = BaseHP * (1 + VIT * 0.01), BaseHP = 35 + (Level * 5) * Level / 2
+  const baseHp = 35 + (level * 5) * level / 2;
+  const hp = Math.floor(baseHp * (1 + vit * 0.01));
+
+  // SP = BaseSP * (1 + INT * 0.01), BaseSP = 10 + (Level * 3)
+  const baseSp = 10 + (level * 3);
+  const sp = Math.floor(baseSp * (1 + int * 0.01));
+
+  return { atk, def, matk, mdef, hit, flee, crit, hp, sp };
+}
+
+// Open character creation modal and initialize stats display
+function openCreateCharModal() {
+  createCharModal.classList.remove('hidden');
+  updateCreateStatDisplay();
+}
+
+// Update the create character stat display
+function updateCreateStatDisplay() {
+  // Update stat values
+  Object.keys(createStats).forEach(stat => {
+    const valueEl = document.getElementById(`create-${stat}`);
+    const costEl = document.getElementById(`create-${stat}-cost`);
+    if (valueEl) valueEl.textContent = createStats[stat];
+    if (costEl) costEl.textContent = `${getStatPointCost(createStats[stat])} pts`;
+  });
+
+  // Update stat points remaining
+  const pointsEl = document.getElementById('create-stat-points');
+  if (pointsEl) pointsEl.textContent = createStatPoints;
+
+  // Update derived stats preview
+  const preview = calculateDerivedPreview(createStats);
+  document.getElementById('preview-atk').textContent = preview.atk;
+  document.getElementById('preview-def').textContent = preview.def;
+  document.getElementById('preview-matk').textContent = preview.matk;
+  document.getElementById('preview-mdef').textContent = preview.mdef;
+  document.getElementById('preview-hit').textContent = preview.hit;
+  document.getElementById('preview-flee').textContent = preview.flee;
+  document.getElementById('preview-crit').textContent = `${preview.crit}%`;
+  document.getElementById('preview-hp').textContent = preview.hp;
+  document.getElementById('preview-sp').textContent = preview.sp;
+
+  // Update button states (disable minus at 1, disable plus if not enough points)
+  Object.keys(createStats).forEach(stat => {
+    const minusBtn = document.querySelector(`.stat-minus[data-stat="${stat}"]`);
+    const plusBtn = document.querySelector(`.stat-plus[data-stat="${stat}"]`);
+    if (minusBtn) minusBtn.disabled = createStats[stat] <= 1;
+    if (plusBtn) plusBtn.disabled = createStatPoints < getStatPointCost(createStats[stat]) || createStats[stat] >= 99;
+  });
+}
+
+// Handle stat increase
+function handleStatIncrease(stat) {
+  const cost = getStatPointCost(createStats[stat]);
+  if (createStatPoints >= cost && createStats[stat] < 99) {
+    createStatPoints -= cost;
+    createStats[stat]++;
+    updateCreateStatDisplay();
+  }
+}
+
+// Handle stat decrease
+function handleStatDecrease(stat) {
+  if (createStats[stat] > 1) {
+    createStats[stat]--;
+    const refund = getStatPointCost(createStats[stat]); // Cost to go from new value to previous
+    createStatPoints += refund;
+    updateCreateStatDisplay();
+  }
+}
+
+// Reset stats to initial values
+function resetCreateStats() {
+  createStats = { str: 5, agi: 5, vit: 5, int: 5, dex: 5, luk: 5 };
+  createStatPoints = 0;
+  updateCreateStatDisplay();
+}
+
+async function startNewRun() {
+  // Clear narration log for new run
+  clearNarrationLog();
+  // Reset background tracking for new run
+  resetBackground();
+  // Clear word cache to get fresh due words for this run
+  clearWordCache();
+
+  const result = await apiCall('/start-run', 'POST');
+  if (result) {
+    // Try AI narration for immersive experience, fall back to simple
+    let narration = result.narration || FALLBACK_NARRATIONS.enterDungeon(gameState.run.floor);
+    showNarration(narration);
+    updateBackground();
+    updateUI();
+
+    // Fetch richer AI narration in background
+    fetchAINarration('enterFloor', gameState.run.floor).then(aiNarr => {
+      if (aiNarr) showNarration(aiNarr);
+    });
+  }
+}
+
+async function startEncounter() {
+  const result = await apiCall('/start-encounter', 'POST');
+  // Enemy is in result.result.enemy or gameState.combat.enemy
+  const enemy = result?.result?.enemy || gameState.combat?.enemy;
+  if (result && enemy) {
+    // Show immediate fallback narration for encounter start
+    let narration = result.narration || FALLBACK_NARRATIONS.combatStart(enemy);
+    showNarration(narration);
+    updateUI();
+
+    // Brief pause to show enemy, then start realtime combat
+    await delay(800);
+    startRealtimeCombat();
+  } else if (result) {
+    // Just update UI if no enemy data available
+    updateUI();
+  }
+}
+
+async function startBossEncounter() {
+  const result = await apiCall('/start-boss', 'POST');
+  // Enemy is in result.result.enemy or gameState.combat.enemy
+  const enemy = result?.result?.enemy || gameState.combat?.enemy;
+  if (result && enemy) {
+    // Show immediate fallback narration for boss encounter
+    let narration = result.narration || FALLBACK_NARRATIONS.combatStart(enemy);
+    showNarration(narration);
+    updateUI();
+
+    // Brief pause to show boss, then start realtime combat
+    await delay(1000);
+    startRealtimeCombat();
+  } else if (result) {
+    updateUI();
+  }
+}
+
+async function nextFloor() {
+  const result = await apiCall('/next-floor', 'POST');
+  if (result) {
+    // Use server narration or fallback
+    const narration = result.narration || FALLBACK_NARRATIONS.enterDungeon(gameState.run.floor);
+    showNarration(narration);
+    updateBackground();
+    updateUI();
+  }
+}
+
+async function returnToHub() {
+  await apiCall('/forfeit', 'POST');
+  gameState.run = null;
+  gameState.combat = null;
+  // Clear word cache so next run gets fresh due words
+  clearWordCache();
+  gameState.phase = 'hub';
+  showNarration(FALLBACK_NARRATIONS.hub(gameState.player));
+  updateBackground();
+  updateUI();
+}
+
+// ============ COMBAT ACTIONS ============
+async function performAttack(attackType = 'normal') {
+  // Check if it's player turn before attacking
+  if (!gameState.combat?.active || gameState.combat.turn !== 'player') {
+    console.log('Cannot attack: not player turn');
+    return;
+  }
+
+  closeCombatSubmenu();
+  disableCombatActions();
+
+  const enemy = gameState.combat?.enemy;
+  const result = await apiCall('/attack', 'POST', { attackType });
+
+  if (result) {
+    // Combat data is in result.result.result (nested)
+    const attackData = result.result?.result || result.result;
+    if (attackData) {
+      // Animate player attack
+      animatePlayerAttack();
+      await delay(300);
+
+      // Show damage number and animate enemy hurt
+      const damage = attackData.totalDamage || attackData.damage || 0;
+      if (damage > 0) {
+        showDamageNumber(damage, false, attackData.critical);
+        animateEnemyHurt();
+      }
+
+      // Use server narration or fallback
+      const narration = result.narration || FALLBACK_NARRATIONS.playerAttack(attackData);
+      appendNarration(narration);
+
+      if (attackData.enemyDefeated || result.type === 'victory' || result.type === 'game_victory') {
+        animateEnemyDefeat();
+        await handleCombatEnd(result);
+      } else if (result.continue) {
+        updateUI();
+        await delay(800);
+        await enemyTurn();
+      } else {
+        updateUI();
+      }
+    }
+  }
+
+  enableCombatActions();
+}
+
+async function performDefend() {
+  // Check if it's player turn
+  if (!gameState.combat?.active || gameState.combat.turn !== 'player') {
+    console.log('Cannot defend: not player turn');
+    return;
+  }
+
+  disableCombatActions();
+
+  const result = await apiCall('/defend', 'POST');
+
+  if (result) {
+    const defendData = result.result || {};
+
+    // Use server narration or fallback
+    const narration = result.narration || `防御態勢を取った。HP+${defendData.hpRecovered || 0}, SP+${defendData.spRecovered || 0}回復。`;
+    appendNarration(narration);
+
+    updateUI();
+
+    if (result.continue) {
+      await delay(800);
+      await enemyTurn();
+    }
+  }
+
+  enableCombatActions();
+}
+
+async function performMagic(skillId) {
+  // Check if it's player turn before casting
+  if (!gameState.combat?.active || gameState.combat.turn !== 'player') {
+    console.log('Cannot cast magic: not player turn');
+    return;
+  }
+
+  disableCombatActions();
+
+  const result = await apiCall('/magic', 'POST', { skillId });
+
+  if (result) {
+    if (result.type === 'error') {
+      showError(result.error);
+    } else {
+      const magicData = result.result?.result || result.result;
+      const skill = gameState.run?.player?.skills?.find(s => s.id === skillId) || { name: '魔法' };
+
+      // Animate player cast
+      animatePlayerAttack();
+      await delay(300);
+
+      // Show damage/healing number
+      if (magicData?.damage > 0) {
+        showDamageNumber(magicData.damage, false, magicData.critical);
+        animateEnemyHurt();
+      } else if (magicData?.healing > 0) {
+        showDamageNumber(magicData.healing, true, false, true);
+      }
+
+      // Use server narration or fallback
+      const narration = result.narration || FALLBACK_NARRATIONS.useMagic(skill, magicData);
+      appendNarration(narration);
+
+      if (magicData?.enemyDefeated || result.type === 'victory' || result.type === 'game_victory') {
+        animateEnemyDefeat();
+        await handleCombatEnd(result);
+      } else if (result.continue) {
+        updateUI();
+        await delay(800);
+        await enemyTurn();
+      } else {
+        updateUI();
+      }
+    }
+  }
+
+  enableCombatActions();
+}
+
+async function performItem(itemId) {
+  // Check if it's player turn before using item
+  if (!gameState.combat?.active || gameState.combat.turn !== 'player') {
+    console.log('Cannot use item: not player turn');
+    return;
+  }
+
+  disableCombatActions();
+
+  const result = await apiCall('/use-item', 'POST', { itemId });
+
+  if (result) {
+    if (result.type === 'error') {
+      showError(result.error);
+    } else {
+      const itemData = result.result?.result || result.result;
+
+      // Show healing number
+      if (itemData?.healing > 0) {
+        showDamageNumber(itemData.healing, true, false, true);
+      }
+
+      // Use server narration or fallback
+      const narration = result.narration || FALLBACK_NARRATIONS.usePotion(itemData?.healing || 0);
+      appendNarration(narration);
+
+      if (itemData?.enemyDefeated || result.type === 'victory') {
+        await handleCombatEnd(result);
+      } else if (result.continue) {
+        updateUI();
+        await delay(800);
+        await enemyTurn();
+      } else {
+        updateUI();
+      }
+    }
+  }
+
+  enableCombatActions();
+}
+
+async function performFlee() {
+  // Check if it's player turn before fleeing
+  if (!gameState.combat?.active || gameState.combat.turn !== 'player') {
+    console.log('Cannot flee: not player turn');
+    return;
+  }
+
+  disableCombatActions();
+
+  const result = await apiCall('/flee', 'POST');
+
+  if (result) {
+    if (result.type === 'error') {
+      showError(result.error);
+      enableCombatActions();
+    } else if (result.success) {
+      // Use server narration or fallback
+      const narration = result.narration || FALLBACK_NARRATIONS.flee(true);
+      appendNarration(narration);
+      await delay(1000);
+      updateUI();
+    } else {
+      // Use server narration or fallback
+      const narration = result.narration || FALLBACK_NARRATIONS.flee(false);
+      appendNarration(narration);
+      updateUI();
+      await delay(800);
+      await enemyTurn();
+      enableCombatActions();
+    }
+  } else {
+    enableCombatActions();
+  }
+}
+
+async function enemyTurn() {
+  if (!gameState.combat?.active || gameState.combat.turn !== 'enemy') return;
+
+  const enemy = gameState.combat.enemy;
+  const result = await apiCall('/enemy-turn', 'POST');
+
+  if (result) {
+    // Enemy attack data is in result.result.result
+    const attackData = result.result?.result || result.result;
+
+    // Animate enemy attack
+    animateEnemyAttack();
+    await delay(300);
+
+    // Show damage on player and animate hurt
+    const damage = attackData?.damage || 0;
+    if (damage > 0) {
+      showDamageNumber(damage, true, attackData?.critical);
+      animatePlayerHurt();
+    }
+
+    // Use server narration or fallback
+    const narration = result.narration || FALLBACK_NARRATIONS.enemyAttack(attackData, enemy);
+    appendNarration(narration);
+
+    if (attackData?.playerDefeated) {
+      await handlePlayerDefeat(result);
+    } else {
+      updateUI();
+    }
+  }
+}
+
+async function handleCombatEnd(result) {
+  await delay(500);
+
+  const enemy = gameState.combat?.enemy;
+  // Rewards are in result.result.rewards
+  const rewards = result.result?.rewards || result.rewards || { xp: 0, gold: 0, drops: [] };
+  const levelUps = result.result?.levelUps || result.levelUps || [];
+
+  if (result.type === 'victory') {
+    // Use server narration or fallback
+    const narr = enemy?.isBoss
+      ? FALLBACK_NARRATIONS.bossVictory(enemy, rewards)
+      : FALLBACK_NARRATIONS.victory(enemy, rewards);
+    appendNarration(narr);
+
+    if (levelUps.length > 0) {
+      await delay(500);
+      appendNarration(FALLBACK_NARRATIONS.levelUp(gameState.run?.player));
+    }
+
+    await delay(1000);
+    showVictoryModal({ ...result, rewards, levelUps });
+  } else if (result.type === 'game_victory') {
+    appendNarration(FALLBACK_NARRATIONS.gameVictory(gameState.run?.player));
+    await delay(1500);
+    showGameVictoryModal({ ...result, rewards, levelUps });
+  }
+
+  updateUI();
+}
+
+async function handlePlayerDefeat(result) {
+  const enemy = gameState.combat?.enemy;
+  appendNarration(FALLBACK_NARRATIONS.defeat(enemy));
+  await delay(1500);
+  showGameOverModal(result);
+}
+
+// ============ UI UPDATES ============
+function updateUI() {
+  updateQuickStats();
+  updatePlayerStats();
+  updateEquipment();
+  updateInventory();
+  updateGameContent();
+  updateActionPanel();
+  updateVNStage();
+}
+
+// ============ VN STAGE UPDATES ============
+function updateVNStage() {
+  if (!vnStage) return;
+
+  const phase = gameState.phase;
+  const isInDungeon = ['room', 'room_encounter', 'combat', 'trap', 'treasure', 'shrine', 'floor_complete', 'boss', 'post_combat_shop'].includes(phase);
+  const isInCombat = phase === 'combat';
+
+  // Show/hide VN stage based on phase
+  if (isInDungeon) {
+    vnStage.classList.remove('hub-mode');
+    gameContent.classList.remove('hub-mode');
+    gameContent.classList.add('hidden');
+  } else {
+    vnStage.classList.add('hub-mode');
+    gameContent.classList.add('hub-mode');
+    gameContent.classList.remove('hidden');
+  }
+
+  // Update player HP/MP bars
+  const p = gameState.run?.player || gameState.player;
+  if (p) {
+    // Ensure valid values with fallbacks
+    const hp = p.hp || 0;
+    const maxHp = p.maxHp || 100;
+    const mp = p.mp || 0;
+    const maxMp = p.maxMp || 100;
+    const hpPercent = Math.max(0, Math.min(100, (hp / maxHp) * 100));
+    const mpPercent = Math.max(0, Math.min(100, (mp / maxMp) * 100));
+
+    playerNameDisplay.textContent = p.name || 'Hunter';
+    playerHpValues.textContent = `${hp}/${maxHp}`;
+    playerHpFill.style.width = `${hpPercent}%`;
+    playerMpFill.style.width = `${mpPercent}%`;
+
+    // HP color classes
+    playerHpFill.classList.remove('low', 'critical');
+    if (hpPercent <= 25) {
+      playerHpFill.classList.add('critical');
+    } else if (hpPercent <= 50) {
+      playerHpFill.classList.add('low');
+    }
+
+    // Add idle animation to player
+    playerSprite.classList.add('idle');
+  }
+
+  // Update floor/room indicator
+  if (gameState.run) {
+    floorDisplay.textContent = `Floor ${gameState.run.floor || 1}`;
+    roomDisplay.textContent = `Room ${gameState.run.currentRoom || 0}/${gameState.run.totalRooms || '?'}`;
+    floorIndicator.classList.remove('hidden');
+  } else {
+    floorIndicator.classList.add('hidden');
+  }
+
+  // Update enemy visibility and stats
+  const enemy = gameState.combat?.enemy;
+  if (isInCombat && enemy && enemy.hp > 0) {
+    // Remove defeated class from previous combat and show enemy
+    enemySprite.classList.remove('hidden', 'defeated');
+    enemyHpBar.classList.remove('hidden');
+
+    const enemyHpPercent = (enemy.hp / enemy.maxHp) * 100;
+    enemyNameDisplay.textContent = enemy.name || 'Enemy';
+    enemyHpValues.textContent = `${enemy.hp}/${enemy.maxHp}`;
+    enemyHpFill.style.width = `${enemyHpPercent}%`;
+
+    // Set enemy sprite image based on enemy ID
+    const spriteId = enemy.id || 'enemy';
+    const newSpritePath = `assets/sprites/enemies/${spriteId}.png`;
+    // Only update src if it changed (avoid flickering)
+    if (!enemySpriteImg.src.endsWith(newSpritePath)) {
+      enemySpriteImg.onerror = () => {
+        // Fallback to generic enemy sprite if specific one not found
+        if (!enemySpriteImg.src.endsWith('enemy.png')) {
+          enemySpriteImg.src = 'assets/sprites/enemies/enemy.png';
+        }
+      };
+      enemySpriteImg.src = newSpritePath;
+      enemySpriteImg.alt = enemy.name || 'Enemy';
+    }
+
+    // Add idle animation
+    enemySprite.classList.add('idle');
+  } else {
+    enemySprite.classList.add('hidden');
+    enemyHpBar.classList.add('hidden');
+  }
+}
+
+// Sprite animation helpers
+function animatePlayerAttack() {
+  playerSprite.classList.remove('idle');
+  playerSprite.classList.add('attacking');
+  setTimeout(() => {
+    playerSprite.classList.remove('attacking');
+    playerSprite.classList.add('idle');
+  }, 500);
+}
+
+function animateEnemyAttack() {
+  enemySprite.classList.remove('idle');
+  enemySprite.classList.add('attacking');
+  setTimeout(() => {
+    enemySprite.classList.remove('attacking');
+    enemySprite.classList.add('idle');
+  }, 500);
+}
+
+function animatePlayerHurt() {
+  playerSprite.classList.add('hurt');
+  setTimeout(() => {
+    playerSprite.classList.remove('hurt');
+  }, 400);
+}
+
+function animateEnemyHurt() {
+  enemySprite.classList.add('hurt');
+  setTimeout(() => {
+    enemySprite.classList.remove('hurt');
+  }, 400);
+}
+
+// Show critical hit splash effect on enemy
+function showCriticalSplash() {
+  const enemyArea = document.querySelector('.vn-enemy-area');
+  if (!enemyArea) return;
+
+  const splash = document.createElement('div');
+  splash.className = 'critical-splash';
+  splash.innerHTML = `
+    <div class="critical-splash-inner">
+      <div class="critical-flash"></div>
+      <div class="critical-spike"></div>
+      <div class="critical-spike"></div>
+      <div class="critical-spike"></div>
+      <div class="critical-spike"></div>
+      <div class="critical-spike"></div>
+      <div class="critical-spike"></div>
+      <div class="critical-spike"></div>
+      <div class="critical-spike"></div>
+      <div class="critical-ring"></div>
+      <div class="critical-text">CRITICAL!</div>
+    </div>
+  `;
+
+  enemyArea.appendChild(splash);
+
+  // Remove after animation completes
+  setTimeout(() => splash.remove(), 700);
+}
+
+function animateEnemyDefeat() {
+  enemySprite.classList.remove('idle', 'hurt');
+  enemySprite.classList.add('defeated');
+}
+
+function showDamageNumber(damage, isPlayer, isCritical = false, isHeal = false, isMiss = false, outcomeType = null) {
+  const targetArea = isPlayer ? document.querySelector('.vn-player-area') : document.querySelector('.vn-enemy-area');
+  if (!targetArea) return;
+
+  const damageEl = document.createElement('div');
+  damageEl.className = 'damage-number';
+
+  // Handle outcome types: 'miss', 'dodge', 'perfect'
+  if (outcomeType) {
+    damageEl.classList.add(outcomeType);
+    switch (outcomeType) {
+      case 'miss':
+        damageEl.textContent = 'MISS';
+        break;
+      case 'dodge':
+        damageEl.textContent = 'DODGE';
+        break;
+      case 'perfect':
+        damageEl.textContent = 'PERFECT!';
+        break;
+    }
+  } else if (isMiss) {
+    damageEl.classList.add('miss');
+    damageEl.textContent = 'MISS';
+  } else if (isHeal) {
+    damageEl.classList.add('heal');
+    damageEl.textContent = `+${damage}`;
+  } else {
+    if (isCritical) damageEl.classList.add('critical');
+    damageEl.textContent = `-${damage}`;
+
+    // Show critical splash effect on enemy (not on player)
+    if (isCritical && !isPlayer) {
+      showCriticalSplash();
+    }
+  }
+
+  // Position randomly around the sprite
+  damageEl.style.left = `${50 + (Math.random() - 0.5) * 40}%`;
+  damageEl.style.top = `${30 + Math.random() * 20}%`;
+
+  targetArea.appendChild(damageEl);
+
+  // Remove after animation
+  setTimeout(() => damageEl.remove(), 1000);
+}
+
+// ============ REALTIME COMBAT FUNCTIONS ============
+
+function updateEnemyHPBar(hp) {
+  const hpFill = document.getElementById('enemy-hp-fill');
+  const hpText = document.getElementById('enemy-hp-values');
+
+  if (hpFill) {
+    const percent = Math.max(0, (hp.current / hp.max) * 100);
+    hpFill.style.width = `${percent}%`;
+  }
+
+  if (hpText) {
+    hpText.textContent = `${hp.current}/${hp.max}`;
+  }
+}
+
+function updatePlayerHPBar(hp) {
+  const hpFill = document.getElementById('player-hp-fill');
+  const hpText = document.getElementById('player-hp-values');
+
+  // Ensure valid values
+  const current = hp.current || 0;
+  const max = hp.max || 100;
+  const percent = Math.max(0, Math.min(100, (current / max) * 100));
+
+  if (hpFill) {
+    hpFill.style.width = `${percent}%`;
+
+    // Update HP color classes based on percentage
+    hpFill.classList.remove('low', 'critical');
+    if (percent <= 25) {
+      hpFill.classList.add('critical');
+    } else if (percent <= 50) {
+      hpFill.classList.add('low');
+    }
+  }
+
+  if (hpText) {
+    hpText.textContent = `${current}/${max}`;
+  }
+
+  // Also update the gameState for consistency
+  if (gameState.run?.player) {
+    gameState.run.player.hp = current;
+    gameState.run.player.maxHp = max;
+  }
+  if (gameState.player) {
+    gameState.player.hp = current;
+    gameState.player.maxHp = max;
+  }
+}
+
+function startRealtimeCombat() {
+  if (realtimeCombatActive) return;
+
+  realtimeCombatActive = true;
+  playerAttackPending = false;
+  enemyAttackPending = false;
+
+  // Update action panel to show combat indicator
+  updateActionPanel();
+
+  // Initialize word practice cards
+  initCombatWords();
+
+  console.log('[Combat] Starting realtime combat with separate timers');
+
+  // Get initial intervals from first attack
+  executePlayerAttack();
+  // Enemy attacks start after a slight offset to desync
+  enemyAttackTimer = setTimeout(executeEnemyAttack, 500);
+}
+
+// Execute a single player attack and schedule the next one
+async function executePlayerAttack() {
+  if (!realtimeCombatActive || playerAttackPending) return;
+
+  playerAttackPending = true;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/game/realtime-attack`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ attackerType: 'player' })
+    });
+    const result = await response.json();
+    console.log('[Combat] Player attack:', result.playerAttack?.damage, 'interval:', result.playerInterval);
+
+    if (result.error) {
+      console.error('Player attack error:', result.error);
+      // Only trigger defeat if combat hasn't already ended (prevents race condition with victory)
+      if (realtimeCombatActive) {
+        stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
+      }
+      return;
+    }
+
+    // Update intervals from server
+    if (result.playerInterval) currentPlayerInterval = result.playerInterval;
+    if (result.enemyInterval) currentEnemyInterval = result.enemyInterval;
+
+    // Show player's attack result
+    if (result.playerAttack) {
+      const pa = result.playerAttack;
+      if (pa.perfectDodge) {
+        showDamageNumber(0, false, false, false, false, 'perfect');
+      } else if (pa.dodged) {
+        showDamageNumber(0, false, false, false, false, 'dodge');
+      } else if (pa.miss) {
+        showDamageNumber(0, false, false, false, false, 'miss');
+      } else {
+        showDamageNumber(pa.damage, false, pa.critical);
+        animateEnemyHurt();
+      }
+    }
+
+    // Update HP bars
+    updateEnemyHPBar(result.enemyHp);
+    updatePlayerHPBar(result.playerHp);
+
+    // Check if combat ended
+    if (result.combatEnded) {
+      stopRealtimeCombat(result);
+      return;
+    }
+
+    // Schedule next player attack
+    playerAttackPending = false;
+    if (realtimeCombatActive) {
+      playerAttackTimer = setTimeout(executePlayerAttack, currentPlayerInterval);
+    }
+
+  } catch (error) {
+    console.error('Player attack error:', error);
+    // Only trigger defeat if combat hasn't already ended (prevents race condition with victory)
+    if (realtimeCombatActive) {
+      stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
+    }
+  }
+}
+
+// Execute a single enemy attack and schedule the next one
+async function executeEnemyAttack() {
+  if (!realtimeCombatActive || enemyAttackPending) return;
+
+  enemyAttackPending = true;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/game/realtime-attack`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ attackerType: 'enemy' })
+    });
+    const result = await response.json();
+    console.log('[Combat] Enemy attack:', result.enemyAttack?.damage, 'interval:', result.enemyInterval);
+
+    if (result.error) {
+      console.error('Enemy attack error:', result.error);
+      // Only trigger defeat if combat hasn't already ended (prevents race condition with victory)
+      if (realtimeCombatActive) {
+        stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
+      }
+      return;
+    }
+
+    // Update intervals from server
+    if (result.playerInterval) currentPlayerInterval = result.playerInterval;
+    if (result.enemyInterval) currentEnemyInterval = result.enemyInterval;
+
+    // Show enemy's attack result
+    if (result.enemyAttack) {
+      const ea = result.enemyAttack;
+      if (ea.perfectDodge) {
+        showDamageNumber(0, true, false, false, false, 'perfect');
+      } else if (ea.dodged) {
+        showDamageNumber(0, true, false, false, false, 'dodge');
+      } else if (ea.miss) {
+        showDamageNumber(0, true, false, false, false, 'miss');
+      } else {
+        showDamageNumber(ea.damage, true, ea.critical);
+        animatePlayerHurt();
+      }
+    }
+
+    // Update HP bars
+    updateEnemyHPBar(result.enemyHp);
+    updatePlayerHPBar(result.playerHp);
+
+    // Check if combat ended
+    if (result.combatEnded) {
+      stopRealtimeCombat(result);
+      return;
+    }
+
+    // Schedule next enemy attack
+    enemyAttackPending = false;
+    if (realtimeCombatActive) {
+      enemyAttackTimer = setTimeout(executeEnemyAttack, currentEnemyInterval);
+    }
+
+  } catch (error) {
+    console.error('Enemy attack error:', error);
+    // Only trigger defeat if combat hasn't already ended (prevents race condition with victory)
+    if (realtimeCombatActive) {
+      stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
+    }
+  }
+}
+
+async function stopRealtimeCombat(result) {
+  // Clear both attack timers
+  if (playerAttackTimer) {
+    clearTimeout(playerAttackTimer);
+    playerAttackTimer = null;
+  }
+  if (enemyAttackTimer) {
+    clearTimeout(enemyAttackTimer);
+    enemyAttackTimer = null;
+  }
+
+  realtimeCombatActive = false;
+  playerAttackPending = false;
+  enemyAttackPending = false;
+
+  // Hide word practice cards and close modal
+  hideWordCards();
+  closeWordInputModal();
+
+  // Refresh server cache for all reviewed words (runs in background)
+  if (recentlyReviewedVids.length > 0) {
+    const vidsToRefresh = [...recentlyReviewedVids];
+    recentlyReviewedVids = [];
+    fetch(`${API_BASE}/api/game/refresh-word-states`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vids: vidsToRefresh })
+    }).then(r => r.json()).then(data => {
+      console.log(`[WordPractice] Refreshed ${data.updated || 0} word states from JPDB`);
+    }).catch(e => console.warn('[WordPractice] Failed to refresh word states:', e));
+  }
+
+  // Brief pause before narration (let final damage numbers display)
+  await delay(600);
+
+  // Animate victory or defeat
+  if (result.victory) {
+    animateEnemyDefeat();
+  }
+
+  // Request narration from server
+  try {
+    const response = await fetch(`${API_BASE}/api/game/combat-end-narration`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        victory: result.victory,
+        expGained: result.expGained,
+        goldGained: result.goldGained,
+        loot: result.loot,
+        leveledUp: result.leveledUp,
+        newLevel: result.newLevel,
+        isBoss: result.isBoss
+      })
+    });
+    const narrationResult = await response.json();
+
+    // Display narration
+    if (narrationResult.narration) {
+      showNarration(narrationResult.narration);
+    }
+
+    // Update game state from server
+    if (narrationResult.state) {
+      gameState = { ...gameState, ...narrationResult.state };
+    }
+
+    // Play TTS if available
+    if (narrationResult.audio) {
+      playNarrationAudio(narrationResult.audio);
+    }
+
+    // Show victory or defeat modal
+    if (result.victory) {
+      showVictoryModal(result);
+    } else {
+      showGameOverModal(result);
+    }
+
+  } catch (error) {
+    console.error('Error getting combat end narration:', error);
+    // Fallback narration
+    if (result.victory) {
+      showNarration('勝利！');
+      showVictoryModal(result);
+    } else {
+      showNarration('敗北...');
+      showGameOverModal(result);
+    }
+  }
+
+  // Refresh full UI state
+  updateUI();
+}
+
+// ============ WORD PRACTICE FUNCTIONS ============
+
+// Shuffle array (Fisher-Yates)
+function shuffleArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Fetch due words from JPDB API
+async function fetchJpdbDueWords() {
+  if (jpdbWordsFetching) return jpdbWordsCache;
+  if (jpdbWordsCache && jpdbWordsCache.length > 0) return jpdbWordsCache;
+
+  jpdbWordsFetching = true;
+  try {
+    const response = await fetch(`${API_BASE}/api/game/due-words?limit=50`);
+    const data = await response.json();
+
+    if (data.words && data.words.length > 0) {
+      jpdbWordsCache = data.words;
+      console.log(`[WordPractice] Loaded ${data.words.length} words from JPDB (source: ${data.source})`);
+      return jpdbWordsCache;
+    }
+  } catch (e) {
+    console.warn('[WordPractice] Failed to fetch JPDB words:', e);
+  } finally {
+    jpdbWordsFetching = false;
+  }
+  return null;
+}
+
+// Track recently reviewed vids to prevent them from being fetched again
+let recentlyReviewedVids = [];
+
+// Fetch a replacement word after successful review (keeps queue at 30)
+async function fetchReplacementWord(justReviewedVid = null) {
+  try {
+    // Get all current vids in the queue
+    const currentVids = [...combatWords, ...availableWords]
+      .filter(w => w.vid)
+      .map(w => w.vid);
+
+    // Also exclude recently reviewed words (server cache may be stale)
+    if (justReviewedVid) {
+      recentlyReviewedVids.push(justReviewedVid);
+    }
+    const allExcludeVids = [...new Set([...currentVids, ...recentlyReviewedVids])];
+
+    if (allExcludeVids.length === 0) return null;
+
+    const excludeParam = allExcludeVids.join(',');
+    const response = await fetch(`${API_BASE}/api/game/due-words?limit=1&exclude=${excludeParam}`);
+    const data = await response.json();
+
+    if (data.words && data.words.length > 0) {
+      console.log(`[WordPractice] Fetched replacement word: ${data.words[0].word}`);
+      return data.words[0];
+    }
+  } catch (e) {
+    console.warn('[WordPractice] Failed to fetch replacement word:', e);
+  }
+  return null;
+}
+
+// Initialize word cards for combat
+async function initCombatWords() {
+  // Try to fetch JPDB due words first
+  let wordData = await fetchJpdbDueWords();
+
+  // Fallback to hardcoded data if JPDB unavailable
+  if (!wordData || wordData.length === 0) {
+    console.log('[WordPractice] Using fallback word data');
+    wordData = FALLBACK_WORD_DATA;
+  }
+
+  const shuffled = shuffleArray([...wordData]);
+  combatWords = shuffled.slice(0, 5);
+  availableWords = shuffled.slice(5);
+  selectedWordIndex = 0;
+  renderWordCards();
+  showWordCards();
+}
+
+// Render word cards to DOM
+function renderWordCards() {
+  const container = document.getElementById('word-cards');
+  if (!container) return;
+
+  if (combatWords.length === 0) {
+    container.innerHTML = '<div class="word-card" style="opacity: 0.5;">All words cleared!</div>';
+    return;
+  }
+
+  container.innerHTML = combatWords.map((w, i) => `
+    <div class="word-card ${i === selectedWordIndex ? 'selected' : ''}" data-index="${i}">
+      ${w.word}
+    </div>
+  `).join('');
+
+  // Add click handlers
+  container.querySelectorAll('.word-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const idx = parseInt(card.dataset.index);
+      if (!isNaN(idx)) {
+        selectedWordIndex = idx;
+        renderWordCards();
+        openWordInputModal();
+      }
+    });
+  });
+
+  // Prefetch TTS audio for visible words
+  prefetchCombatWordAudio();
+}
+
+// Show/hide word cards
+function showWordCards() {
+  document.getElementById('word-cards')?.classList.remove('hidden');
+}
+
+function hideWordCards() {
+  document.getElementById('word-cards')?.classList.add('hidden');
+}
+
+// ============ WORD AUDIO TTS FUNCTIONS ============
+
+// Prefetch audio for a single word
+async function prefetchWordAudio(word) {
+  if (!wordAudioEnabled || !word) return;
+
+  // Already cached or pending
+  if (wordAudioCache.has(word)) return;
+
+  // Mark as pending
+  wordAudioCache.set(word, { status: 'pending', blob: null, url: null });
+
+  try {
+    const response = await fetch(`${API_BASE}/api/tts/synthesize`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: word })
+    });
+
+    if (!response.ok) {
+      throw new Error(`TTS failed: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+
+    wordAudioCache.set(word, { status: 'ready', blob, url });
+    console.log(`[WordAudio] Prefetched: ${word}`);
+  } catch (e) {
+    console.warn(`[WordAudio] Failed to prefetch "${word}":`, e.message);
+    wordAudioCache.set(word, { status: 'error', blob: null, url: null });
+
+    // Disable audio if VOICEVOX is unavailable
+    if (e.message.includes('500') || e.message.includes('fetch')) {
+      wordAudioEnabled = false;
+      console.log('[WordAudio] Disabled - VOICEVOX unavailable');
+    }
+  }
+}
+
+// Prefetch audio for all visible combat words
+function prefetchCombatWordAudio() {
+  if (!wordAudioEnabled) return;
+
+  // Prefetch current 5 visible words
+  for (const wordData of combatWords) {
+    prefetchWordAudio(wordData.word);
+  }
+
+  // Also prefetch next few from available pool
+  for (let i = 0; i < 3 && i < availableWords.length; i++) {
+    prefetchWordAudio(availableWords[i].word);
+  }
+}
+
+// Play cached audio for a word
+function playWordAudio(word) {
+  if (!wordAudioEnabled || !word) return;
+
+  const cached = wordAudioCache.get(word);
+  if (!cached || cached.status !== 'ready' || !cached.url) {
+    console.log(`[WordAudio] No cached audio for: ${word}`);
+    return;
+  }
+
+  try {
+    const audio = new Audio(cached.url);
+    audio.volume = ttsVolume || 1.0;
+    audio.play().catch(e => console.warn('[WordAudio] Playback failed:', e.message));
+  } catch (e) {
+    console.warn('[WordAudio] Error playing audio:', e.message);
+  }
+}
+
+// Keyboard handler for word practice
+function handleWordPracticeKeydown(e) {
+  // Only during combat
+  if (!realtimeCombatActive) return;
+
+  const typingModal = document.getElementById('word-input-modal');
+  const selfGradeModal = document.getElementById('self-grade-modal');
+  const typingOpen = typingModal && !typingModal.classList.contains('hidden');
+  const selfGradeOpen = selfGradeModal && !selfGradeModal.classList.contains('hidden');
+
+  if (selfGradeOpen) {
+    // Self-grade modal open - arrow keys to navigate, Enter to submit, 1-5 direct submit
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeSelfGradeModal();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      selfGradeSelectedIndex = Math.max(0, selfGradeSelectedIndex - 1);
+      updateSelfGradeSelection();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      selfGradeSelectedIndex = Math.min(4, selfGradeSelectedIndex + 1);
+      updateSelfGradeSelection();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      submitSelfGradeReview(selfGradeSelectedIndex + 1); // grades are 1-5
+    } else {
+      const gradeKey = parseInt(e.key);
+      if (gradeKey >= 1 && gradeKey <= 5) {
+        e.preventDefault();
+        submitSelfGradeReview(gradeKey);
+      }
+    }
+  } else if (typingOpen) {
+    // Typing modal open - Enter to submit, Escape to close
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeWordInputModal();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      checkWordAnswer();
+    }
+  } else {
+    // Modal closed - handle arrow navigation, Enter to open, R to refresh
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      selectedWordIndex = Math.max(0, selectedWordIndex - 1);
+      renderWordCards();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      selectedWordIndex = Math.min(combatWords.length - 1, selectedWordIndex + 1);
+      renderWordCards();
+    } else if (e.key === 'Enter' && combatWords.length > 0) {
+      e.preventDefault();
+      openWordInputModal();
+    } else if (e.key === 'r' || e.key === 'R') {
+      // Refresh word cards with new random words from pool (costs 2 HP)
+      e.preventDefault();
+      refreshWordCards();
+      damagePlayerForRefresh(2);
+    } else if (e.key === 'f' || e.key === 'F') {
+      // Quick fail - mark selected word as failed without typing
+      e.preventDefault();
+      quickFailWord();
+    }
+  }
+}
+
+// Quick fail the currently selected word (F key shortcut)
+function quickFailWord() {
+  if (combatWords.length === 0) return;
+
+  const word = combatWords[selectedWordIndex];
+  if (!word) return;
+
+  // Get meanings for the reveal modal
+  const meanings = word.meanings || (word.definition ? [word.definition] : []);
+
+  // Play audio for the word
+  playWordAudio(word.word);
+
+  // Send JPDB review (grade 1 = Nothing/Failed)
+  if (word.vid && word.sid) {
+    sendJpdbReview(word.vid, word.sid, 1);
+  }
+
+  // Remove the failed word from combatWords
+  combatWords.splice(selectedWordIndex, 1);
+  selectedWordIndex = Math.min(selectedWordIndex, Math.max(0, combatWords.length - 1));
+
+  // Replenish from available pool if possible
+  if (availableWords.length > 0) {
+    combatWords.push(availableWords.shift());
+  }
+
+  // Show definitions reveal and update cards
+  showDefinitionsReveal(word.word, meanings, word.reading);
+  renderWordCards();
+
+  console.log(`[WordPractice] Quick failed: ${word.word}`);
+}
+
+// Refresh word cards with new words from the pool
+function refreshWordCards() {
+  if (availableWords.length === 0) {
+    console.log('[WordPractice] No more words in pool to refresh');
+    return;
+  }
+
+  // Replace all current words with new ones from the pool
+  const newWords = [];
+  for (let i = 0; i < 5 && availableWords.length > 0; i++) {
+    newWords.push(availableWords.shift());
+  }
+
+  // Put old words back in the pool (shuffle them in)
+  availableWords.push(...combatWords);
+  combatWords = newWords;
+  selectedWordIndex = 0;
+
+  renderWordCards();
+  console.log(`[WordPractice] Refreshed cards. ${availableWords.length} words remaining in pool`);
+}
+
+// Open typing modal for selected word
+function openWordInputModal() {
+  const word = combatWords[selectedWordIndex];
+  if (!word) return;
+
+  if (reviewType === 'self-grade') {
+    // Self-grade mode: use definitions-reveal style modal
+    openSelfGradeModal(word);
+  } else {
+    // Typing mode: show input field
+    document.getElementById('word-to-define').textContent = word.word;
+    document.getElementById('word-feedback').classList.add('hidden');
+    document.getElementById('word-input-modal').classList.remove('hidden');
+    document.getElementById('word-definition-input').value = '';
+    document.getElementById('word-definition-input').focus();
+  }
+}
+
+// Self-grade modal state
+let selfGradeSelectedIndex = 3; // Default to "Okay"
+
+function openSelfGradeModal(word) {
+  const modal = document.getElementById('self-grade-modal');
+  const wordEl = document.getElementById('self-grade-word');
+  const meaningsList = document.getElementById('self-grade-meanings');
+
+  // Set word with furigana if reading is available and different from word
+  if (word.reading && word.reading !== word.word) {
+    wordEl.innerHTML = `<ruby>${escapeHtml(word.word)}<rt>${escapeHtml(word.reading)}</rt></ruby>`;
+  } else {
+    wordEl.textContent = word.word;
+  }
+
+  // Populate meanings (top 5)
+  const meanings = word.meanings || [word.definition];
+  meaningsList.innerHTML = meanings.slice(0, 5).map(m => `<li>${escapeHtml(m)}</li>`).join('');
+
+  // Reset selection to Okay (most common choice)
+  selfGradeSelectedIndex = 3;
+  updateSelfGradeSelection();
+
+  // Show modal
+  modal.classList.remove('hidden', 'fading');
+}
+
+function closeSelfGradeModal() {
+  document.getElementById('self-grade-modal').classList.add('hidden');
+}
+
+function updateSelfGradeSelection() {
+  const buttons = document.querySelectorAll('#self-grade-modal .review-btn');
+  buttons.forEach((btn, i) => {
+    btn.classList.toggle('selected', i === selfGradeSelectedIndex);
+  });
+}
+
+// Close modal
+function closeWordInputModal() {
+  document.getElementById('word-input-modal').classList.add('hidden');
+}
+
+// Calculate Levenshtein distance for fuzzy matching
+function levenshteinDistance(a, b) {
+  const matrix = [];
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
+      }
+    }
+  }
+  return matrix[b.length][a.length];
+}
+
+// Normalize meaning for comparison (strip common prefixes)
+function normalizeMeaning(meaning) {
+  return meaning
+    .toLowerCase()
+    .replace(/^to\s+/, '')           // Remove "to " prefix
+    .replace(/^(a|an|the)\s+/i, '')  // Remove articles
+    .replace(/\s*\([^)]*\)/g, '')    // Remove parenthetical notes
+    .trim();
+}
+
+// Send JPDB review and remove word from cache
+function sendJpdbReview(vid, sid, grade) {
+  fetch(`${API_BASE}/api/jpdb/review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ vid, sid, grade })
+  }).then(response => {
+    if (response.ok) {
+      console.log(`[JPDB] Review sent: vid=${vid}, grade=${grade}`);
+      // Remove reviewed word from cache so it won't show up again
+      removeWordFromCache(vid);
+    } else {
+      console.warn('[JPDB] Review failed:', response.status);
+    }
+  }).catch(err => {
+    console.warn('[JPDB] Review error:', err.message);
+  });
+}
+
+// Remove a word from all caches by vid
+function removeWordFromCache(vid) {
+  // Remove from jpdbWordsCache
+  if (jpdbWordsCache) {
+    const cacheIndex = jpdbWordsCache.findIndex(w => w.vid === vid);
+    if (cacheIndex !== -1) {
+      jpdbWordsCache.splice(cacheIndex, 1);
+      console.log(`[WordPractice] Removed vid=${vid} from cache. ${jpdbWordsCache.length} words remaining in cache.`);
+    }
+  }
+  // Remove from availableWords pool (in case of duplicates)
+  const availIndex = availableWords.findIndex(w => w.vid === vid);
+  if (availIndex !== -1) {
+    availableWords.splice(availIndex, 1);
+  }
+}
+
+// Clear word cache to force fresh fetch
+function clearWordCache() {
+  jpdbWordsCache = null;
+  jpdbWordsFetching = false;
+  recentlyReviewedVids = [];
+  console.log('[WordPractice] Cache cleared - will fetch fresh words on next combat');
+}
+
+// Multi-tier answer checking
+function checkAnswerMatch(input, meanings) {
+  // Normalize input the same way we normalize meanings
+  const normalized = normalizeMeaning(input.trim().toLowerCase());
+  if (!normalized) return { correct: false };
+
+  // Minimum length to prevent single-letter matches
+  const MIN_LENGTH_FOR_PARTIAL = 3;
+
+  // Normalize all meanings
+  const normalizedMeanings = meanings.map(normalizeMeaning);
+
+  // Tier 1: Exact match (any meaning) - no minimum length
+  if (normalizedMeanings.some(m => m === normalized)) {
+    return { correct: true, confidence: 'exact' };
+  }
+
+  // Tier 2: Contains match (input found in meaning) - requires min length
+  if (normalized.length >= MIN_LENGTH_FOR_PARTIAL &&
+      normalizedMeanings.some(m => m.includes(normalized))) {
+    return { correct: true, confidence: 'partial' };
+  }
+
+  // Tier 3: Word match (input matches any word in any meaning)
+  const meaningWords = normalizedMeanings.flatMap(m =>
+    m.split(/[\s,;]+/).filter(w => w.length > 0)
+  );
+  if (meaningWords.includes(normalized)) {
+    return { correct: true, confidence: 'word' };
+  }
+
+  // Tier 4: Fuzzy match - requires min length, stricter for short words
+  if (normalized.length >= MIN_LENGTH_FOR_PARTIAL) {
+    for (const meaning of normalizedMeanings) {
+      // For short meanings (< 6 chars), only allow 1 typo; longer allow 2
+      const maxDistance = meaning.length < 6 ? 1 : 2;
+      if (levenshteinDistance(normalized, meaning) <= maxDistance) {
+        return { correct: true, confidence: 'fuzzy' };
+      }
+      // Also check each word in the meaning (only allow 1 typo for words)
+      for (const word of meaning.split(/[\s,;]+/)) {
+        if (word.length >= 4 && levenshteinDistance(normalized, word) <= 1) {
+          return { correct: true, confidence: 'fuzzy' };
+        }
+      }
+    }
+  }
+
+  return { correct: false };
+}
+
+// Check answer
+function checkWordAnswer() {
+  const input = document.getElementById('word-definition-input').value.trim().toLowerCase();
+  const word = combatWords[selectedWordIndex];
+
+  if (!word || input.length === 0) {
+    showWordFeedback('Please enter an answer!', 'error');
+    return;
+  }
+
+  // Support both old format (definition string) and new format (meanings array)
+  const meanings = word.meanings || (word.definition ? [word.definition] : []);
+
+  const result = checkAnswerMatch(input, meanings);
+
+  // Play audio for the word (both correct and incorrect)
+  playWordAudio(word.word);
+
+  if (result.correct) {
+    // Correct!
+    showWordFeedback(`Correct! +${WORD_HEAL_AMOUNT} HP`, 'success');
+    healPlayerFromWord(WORD_HEAL_AMOUNT);
+
+    // Send JPDB review (grade 4 = Okay)
+    if (word.vid && word.sid) {
+      sendJpdbReview(word.vid, word.sid, 4);
+
+      // Remove this word from availableWords pool (in case it was loaded at start)
+      availableWords = availableWords.filter(w => w.vid !== word.vid);
+
+      // Fetch a replacement word to keep queue full (runs in background)
+      // Pass the just-reviewed vid to exclude it (server cache may be stale)
+      fetchReplacementWord(word.vid).then(newWord => {
+        if (newWord) {
+          availableWords.push(newWord);
+        }
+      });
+    }
+
+    // Replace word with a new one from the pool, or remove if pool is empty
+    if (availableWords.length > 0) {
+      const newWord = availableWords.shift();
+      combatWords[selectedWordIndex] = newWord;
+    } else {
+      combatWords.splice(selectedWordIndex, 1);
+      selectedWordIndex = Math.min(selectedWordIndex, Math.max(0, combatWords.length - 1));
+    }
+
+    // Close modal, show definitions, and update display after short delay
+    setTimeout(() => {
+      closeWordInputModal();
+      showDefinitionsReveal(word.word, meanings, word.reading);
+      renderWordCards();
+    }, 800);
+  } else {
+    // Wrong - show definitions and close input modal
+    showWordFeedback('Incorrect!', 'error');
+
+    // Send JPDB review (grade 1 = Nothing/Failed)
+    if (word.vid && word.sid) {
+      sendJpdbReview(word.vid, word.sid, 1);
+      // Remove this word from availableWords pool (in case it was loaded at start)
+      availableWords = availableWords.filter(w => w.vid !== word.vid);
+      // Track this vid to prevent it from being fetched again this session
+      recentlyReviewedVids.push(word.vid);
+
+      // Fetch a replacement word to keep queue full
+      fetchReplacementWord(word.vid).then(newWord => {
+        if (newWord) {
+          availableWords.push(newWord);
+        }
+      });
+    }
+
+    // Remove the failed word from the pool entirely (it will come back naturally if due soon)
+    combatWords.splice(selectedWordIndex, 1);
+    selectedWordIndex = Math.min(selectedWordIndex, Math.max(0, combatWords.length - 1));
+
+    // Replenish from available pool if possible
+    if (availableWords.length > 0) {
+      combatWords.push(availableWords.shift());
+    }
+
+    // Close input modal and show definitions reveal
+    setTimeout(() => {
+      closeWordInputModal();
+      showDefinitionsReveal(word.word, meanings, word.reading);
+      renderWordCards();
+    }, 300);
+  }
+}
+
+// Submit self-grade review (grade 1-5)
+function submitSelfGradeReview(grade) {
+  const word = combatWords[selectedWordIndex];
+  if (!word) return;
+
+  const gradeNames = ['', 'Nothing', 'Something', 'Hard', 'Okay', 'Easy'];
+  const isPass = grade >= 3; // Hard, Okay, Easy count as pass
+
+  // Close modal immediately
+  closeSelfGradeModal();
+
+  // Play audio for the word
+  playWordAudio(word.word);
+
+  // Send JPDB review
+  if (word.vid && word.sid) {
+    sendJpdbReview(word.vid, word.sid, grade);
+
+    // Remove this word from availableWords pool (in case it was loaded at start)
+    availableWords = availableWords.filter(w => w.vid !== word.vid);
+
+    // Track reviewed words to prevent re-fetching
+    recentlyReviewedVids.push(word.vid);
+
+    // Fetch replacement word to keep queue full
+    fetchReplacementWord(word.vid).then(newWord => {
+      if (newWord) {
+        availableWords.push(newWord);
+      }
+    });
+  }
+
+  if (isPass) {
+    // Pass: heal and replace word
+    healPlayerFromWord(WORD_HEAL_AMOUNT);
+    showToast(`${gradeNames[grade]}! +${WORD_HEAL_AMOUNT} HP`, 'success');
+
+    if (availableWords.length > 0) {
+      combatWords[selectedWordIndex] = availableWords.shift();
+    } else {
+      combatWords.splice(selectedWordIndex, 1);
+      selectedWordIndex = Math.min(selectedWordIndex, Math.max(0, combatWords.length - 1));
+    }
+  } else {
+    // Fail: remove word without healing
+    showToast(`${gradeNames[grade]}`, 'error');
+
+    combatWords.splice(selectedWordIndex, 1);
+    selectedWordIndex = Math.min(selectedWordIndex, Math.max(0, combatWords.length - 1));
+
+    if (availableWords.length > 0) {
+      combatWords.push(availableWords.shift());
+    }
+  }
+
+  renderWordCards();
+}
+
+// Show feedback in modal
+function showWordFeedback(message, type) {
+  const feedback = document.getElementById('word-feedback');
+  feedback.textContent = message;
+  feedback.className = `word-feedback ${type}`;
+  feedback.classList.remove('hidden');
+}
+
+// Show definitions reveal modal (auto-fades after 3 seconds)
+function showDefinitionsReveal(word, meanings, reading = null) {
+  const modal = document.getElementById('definitions-reveal');
+  const wordEl = document.getElementById('definitions-word');
+  const listEl = document.getElementById('definitions-list');
+
+  if (!modal || !wordEl || !listEl) return;
+
+  // Set the word with furigana if reading is available and different
+  if (reading && reading !== word) {
+    wordEl.innerHTML = `<ruby>${escapeHtml(word)}<rt>${escapeHtml(reading)}</rt></ruby>`;
+  } else {
+    wordEl.textContent = word;
+  }
+
+  // Show top 5 definitions
+  const top5 = meanings.slice(0, 5);
+  listEl.innerHTML = top5.map(m => `<li>${escapeHtml(m)}</li>`).join('');
+
+  // Show modal (reset animation)
+  modal.classList.remove('fading', 'hidden');
+
+  // Auto-fade after 3 seconds
+  setTimeout(() => {
+    modal.classList.add('fading');
+    // Hide completely after fade animation (0.5s)
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      modal.classList.remove('fading');
+    }, 500);
+  }, 3000);
+}
+
+// Heal player from correct word answer
+function healPlayerFromWord(amount) {
+  if (!gameState.player && !gameState.run?.player) return;
+
+  const player = gameState.run?.player || gameState.player;
+  const maxHp = player.maxHp || 100; // Fallback to 100 if maxHp not set
+  const currentHp = player.hp || 0;
+  const newHp = Math.min(currentHp + amount, maxHp);
+
+  // Update player state
+  player.hp = newHp;
+
+  // Also update top-level player if exists
+  if (gameState.player) {
+    gameState.player.hp = newHp;
+  }
+
+  // Update HP bar with validated values
+  updatePlayerHPBar({ current: newHp, max: maxHp });
+
+  // Show heal number
+  showDamageNumber(amount, true, false, true); // isPlayer=true, isHeal=true
+
+  // Sync to server (fire and forget)
+  fetch(`${API_BASE}/api/game/heal`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount })
+  }).catch(err => console.warn('Heal sync failed:', err));
+}
+
+// Damage player for refreshing word cards (costs HP)
+function damagePlayerForRefresh(amount) {
+  if (!gameState.player && !gameState.run?.player) return;
+
+  const player = gameState.run?.player || gameState.player;
+  const maxHp = player.maxHp || 100; // Fallback to 100 if maxHp not set
+  const currentHp = player.hp || 0;
+  const newHp = Math.max(1, currentHp - amount); // Don't let refresh kill player
+
+  // Update player state
+  player.hp = newHp;
+
+  // Also update top-level player if exists
+  if (gameState.player) {
+    gameState.player.hp = newHp;
+  }
+
+  // Update HP bar with validated values
+  updatePlayerHPBar({ current: newHp, max: maxHp });
+
+  // Show damage number
+  showDamageNumber(amount, true, false, false); // isPlayer=true, isHeal=false
+
+  // Sync to server (fire and forget)
+  fetch(`${API_BASE}/api/game/damage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount })
+  }).catch(err => console.warn('Damage sync failed:', err));
+}
+
+function updateQuickStats() {
+  if (!gameState.player) {
+    quickStats.innerHTML = '';
+    return;
+  }
+
+  const p = gameState.run?.player || gameState.player;
+  const floorText = gameState.run ? `Floor ${gameState.run.floor}/7` : '';
+
+  quickStats.innerHTML = `
+    <div class="quick-stat">
+      <span class="rank">${p.rank}</span>
+      <span>Rank</span>
+    </div>
+    <div class="quick-stat">
+      <span>Lv.${p.level}</span>
+    </div>
+    ${floorText ? `<div class="quick-stat"><span class="floor">${floorText}</span></div>` : ''}
+  `;
+}
+
+function updatePlayerStats() {
+  if (!gameState.player) {
+    playerStats.innerHTML = '<p class="no-save-msg">No character yet</p>';
+    return;
+  }
+
+  const p = gameState.run?.player || gameState.player;
+  const hpPercent = (p.hp / p.maxHp) * 100;
+  // Support both sp (new) and mp (legacy) for compatibility
+  const sp = p.sp ?? p.mp ?? 0;
+  const maxSp = p.maxSp ?? p.maxMp ?? 1;
+  const spPercent = (sp / maxSp) * 100;
+
+  // Get primary stats (new 6-stat system) or fallback for old saves
+  const stats = p.stats || {};
+
+  // Equipment bonuses from crystals and gear
+  const equipBonuses = gameState.equipmentBonuses || {};
+
+  // Calculate effective stats (base + bonuses) for derived stat calculation
+  const effectiveStats = {
+    str: (stats.str || 0) + (equipBonuses.str || 0),
+    agi: (stats.agi || 0) + (equipBonuses.agi || 0),
+    vit: (stats.vit || 0) + (equipBonuses.vit || 0),
+    int: (stats.int || 0) + (equipBonuses.int || 0),
+    dex: (stats.dex || 0) + (equipBonuses.dex || 0),
+    luk: (stats.luk || 0) + (equipBonuses.luk || 0)
+  };
+
+  // Calculate derived stats using effective stats (base + equipment bonuses)
+  let derived = p.derivedStats || {};
+  if (!derived.atk && stats.str) {
+    try {
+      derived = calculateDerivedPreview(effectiveStats, p.level || 1);
+    } catch (e) {
+      console.warn('Failed to calculate derived stats:', e);
+    }
+  }
+
+  // Stat points available for allocation
+  const hasStatPoints = p.statPoints && p.statPoints > 0;
+  const statPointsHtml = hasStatPoints ?
+    `<div class="stat-points-available">+${p.statPoints} stat points available!</div>` : '';
+
+  // Helper to render stat row with optional + button and bonus display
+  const statCosts = p.statCosts || {};
+  const renderStatRow = (label, statKey, value) => {
+    const cost = statCosts[statKey] || 2;
+    const canAllocate = hasStatPoints && p.statPoints >= cost;
+    const plusBtn = hasStatPoints ?
+      `<button class="stat-allocate-btn ${canAllocate ? '' : 'disabled'}"
+               onclick="allocateStatPoint('${statKey}')"
+               ${canAllocate ? '' : 'disabled'}
+               title="Cost: ${cost} points">+</button>` : '';
+    const bonus = equipBonuses[statKey] || 0;
+    const bonusHtml = bonus > 0 ? `<span class="stat-bonus">(+${bonus})</span>` : '';
+    return `<div class="stat-row mini allocatable">
+      <span class="label">${label}</span>
+      <span class="value">${value}${bonusHtml}</span>
+      ${plusBtn}
+    </div>`;
+  };
+
+  playerStats.innerHTML = `
+    <div class="stat-row">
+      <span class="label">Name</span>
+      <span class="value">${escapeHtml(p.name)}</span>
+    </div>
+    <div class="stat-row">
+      <span class="label">Rank</span>
+      <span class="value rank">${p.rank}</span>
+    </div>
+    <div class="stat-row">
+      <span class="label">Level</span>
+      <span class="value">${p.level}</span>
+    </div>
+    <div class="stat-row">
+      <span class="label">XP</span>
+      <span class="value">${p.xp}/${p.xpToNext}</span>
+    </div>
+    <div class="hp-mp-bars">
+      <div class="bar-row">
+        <div class="bar-label-row">
+          <span>HP</span>
+          <span class="value hp">${p.hp}/${p.maxHp}</span>
+        </div>
+        <div class="bar-container">
+          <div class="bar-fill hp" style="width: ${hpPercent}%"></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label-row">
+          <span>SP</span>
+          <span class="value sp">${sp}/${maxSp}</span>
+        </div>
+        <div class="bar-container">
+          <div class="bar-fill sp" style="width: ${spPercent}%"></div>
+        </div>
+      </div>
+    </div>
+    ${statPointsHtml}
+    <div class="stats-grid">
+      <div class="primary-stats">
+        ${renderStatRow('STR', 'str', stats.str ?? p.attack ?? '?')}
+        ${renderStatRow('AGI', 'agi', stats.agi ?? p.speed ?? '?')}
+        ${renderStatRow('VIT', 'vit', stats.vit ?? '?')}
+        ${renderStatRow('INT', 'int', stats.int ?? p.magic ?? '?')}
+        ${renderStatRow('DEX', 'dex', stats.dex ?? '?')}
+        ${renderStatRow('LUK', 'luk', stats.luk ?? '?')}
+      </div>
+      <div class="derived-stats">
+        <div class="stat-row mini"><span class="label">ATK</span><span class="value">${derived.atk ?? p.attack ?? '?'}</span></div>
+        <div class="stat-row mini"><span class="label">DEF</span><span class="value">${derived.def ?? p.defense ?? '?'}</span></div>
+        <div class="stat-row mini"><span class="label">MATK</span><span class="value">${derived.matk ?? p.magic ?? '?'}</span></div>
+        <div class="stat-row mini"><span class="label">MDEF</span><span class="value">${derived.mdef ?? '?'}</span></div>
+        <div class="stat-row mini"><span class="label">HIT</span><span class="value">${derived.hit ?? '?'}</span></div>
+        <div class="stat-row mini"><span class="label">FLEE</span><span class="value">${derived.flee ?? '?'}</span></div>
+        <div class="stat-row mini"><span class="label">CRIT</span><span class="value">${derived.crit != null ? (typeof derived.crit === 'number' ? derived.crit.toFixed(1) : derived.crit) + '%' : '?'}</span></div>
+      </div>
+    </div>
+    <div class="stat-row">
+      <span class="label">Gold</span>
+      <span class="value" style="color: #ffd700">${p.gold}</span>
+    </div>
+  `;
+}
+
+function updateEquipment() {
+  if (!gameState.player) {
+    equipmentList.innerHTML = '<p class="empty-msg">None</p>';
+    return;
+  }
+
+  const p = gameState.run?.player || gameState.player;
+  const eq = p.equipment;
+
+  const renderSlot = (slotName, slotKey) => {
+    const item = eq[slotKey];
+    if (item) {
+      return `
+        <div class="equipment-slot equipped">
+          <span class="slot-name">${slotName}</span>
+          <span class="item-name">${item.name}</span>
+          <button class="unequip-btn" onclick="unequipItem('${slotKey}')" title="Unequip">✕</button>
+        </div>
+      `;
+    }
+    return `
+      <div class="equipment-slot empty">
+        <span class="slot-name">${slotName}</span>
+        <span class="item-name empty-slot">Empty</span>
+      </div>
+    `;
+  };
+
+  equipmentList.innerHTML = `
+    ${renderSlot('Weapon', 'weapon')}
+    ${renderSlot('Body', 'body')}
+    ${renderSlot('Shield', 'shield')}
+    ${renderSlot('Accessory', 'accessory')}
+  `;
+}
+
+async function equipItem(itemId) {
+  try {
+    const response = await fetch('/api/game/equip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || 'Equip failed');
+    }
+
+    const result = await response.json();
+    if (result.state) {
+      gameState = result.state;
+    }
+    if (result.message) {
+      showNarration(result.message);
+    }
+    updateUI();
+  } catch (error) {
+    console.error('Equip error:', error);
+    showNarration(`装備に失敗: ${error.message}`);
+  }
+}
+
+async function unequipItem(slot) {
+  try {
+    const response = await fetch('/api/game/unequip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slot })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || 'Unequip failed');
+    }
+
+    const result = await response.json();
+    if (result.state) {
+      gameState = result.state;
+    }
+    if (result.message) {
+      showNarration(result.message);
+    }
+    updateUI();
+  } catch (error) {
+    console.error('Unequip error:', error);
+    showNarration(`装備解除に失敗: ${error.message}`);
+  }
+}
+
+window.equipItem = equipItem;
+window.unequipItem = unequipItem;
+
+function updateInventory() {
+  if (!gameState.player) {
+    inventoryList.innerHTML = '<p class="empty-msg">Empty</p>';
+    return;
+  }
+
+  const p = gameState.run?.player || gameState.player;
+
+  if (!p.items || p.items.length === 0) {
+    inventoryList.innerHTML = '<p class="empty-msg">Empty</p>';
+    return;
+  }
+
+  // Check if in combat (can't equip during combat)
+  const inCombat = gameState.phase === 'combat';
+
+  inventoryList.innerHTML = p.items.map(item => {
+    const isEquipment = item.slot; // Equipment items have a slot property
+    const equipClass = isEquipment && !inCombat ? 'equippable' : '';
+    const rarityClass = item.rarity ? `rarity-${item.rarity}` : '';
+    return `
+      <div class="inventory-item ${equipClass} ${rarityClass}" ${isEquipment ? `data-item-id="${item.id}"` : ''}>
+        <span class="item-name">${item.name || item.id}</span>
+        <span class="item-qty">x${item.quantity}</span>
+      </div>
+    `;
+  }).join('');
+
+  // Add click handlers for equippable items
+  inventoryList.querySelectorAll('.equippable').forEach(el => {
+    el.addEventListener('click', async () => {
+      const itemId = el.dataset.itemId;
+      await equipItem(itemId);
+    });
+  });
+}
+
+function updateGameContent() {
+  const phase = gameState.phase;
+
+  switch (phase) {
+    case 'no_save':
+      showNoSaveContent();
+      break;
+    case 'hub':
+      showHubContent();
+      break;
+    case 'exploring':
+      showExploringContent();
+      break;
+    case 'room':
+    case 'room_encounter':
+      showRoomContent();
+      break;
+    case 'boss_ready':
+      showBossReadyContent();
+      break;
+    case 'floor_complete':
+      showFloorCompleteContent();
+      break;
+    case 'post_combat_shop':
+      showPostCombatShopContent();
+      break;
+    case 'combat':
+      showCombatContent();
+      break;
+    case 'run_ended':
+      showRunEndedContent();
+      break;
+  }
+}
+
+function updateActionPanel() {
+  // During realtime combat, show combat indicator instead of actions
+  if (realtimeCombatActive) {
+    actionPanel.innerHTML = `
+      <div class="combat-in-progress">
+        <div class="combat-indicator">⚔️ 戦闘中...</div>
+      </div>
+    `;
+    return;
+  }
+
+  const phase = gameState.phase;
+
+  switch (phase) {
+    case 'no_save':
+      actionPanel.innerHTML = `
+        <button class="action-btn primary" onclick="openCreateCharModal()">
+          Create Hunter
+        </button>
+      `;
+      break;
+    case 'hub':
+      actionPanel.innerHTML = `
+        <button class="action-btn primary" onclick="startNewRun()">
+          Enter Dungeon
+        </button>
+        <button class="action-btn secondary" onclick="openUpgradesModal()">
+          Upgrades
+        </button>
+      `;
+      break;
+    case 'exploring':
+      actionPanel.innerHTML = `
+        <button class="action-btn primary" onclick="startEncounter()">
+          Explore
+        </button>
+      `;
+      break;
+    case 'room':
+    case 'room_encounter':
+      showRoomActions();
+      break;
+    case 'boss_ready':
+      actionPanel.innerHTML = `
+        <button class="action-btn boss" onclick="startBossEncounter()">
+          Challenge Boss
+        </button>
+      `;
+      break;
+    case 'floor_complete':
+      if (gameState.run?.floor < 7) {
+        actionPanel.innerHTML = `
+          <button class="action-btn primary" onclick="nextFloor()">
+            Descend to Next Floor
+          </button>
+        `;
+      } else {
+        actionPanel.innerHTML = `
+          <button class="action-btn primary" onclick="returnToHub()">
+            Return Home Victorious
+          </button>
+        `;
+      }
+      break;
+    case 'post_combat_shop':
+      // Actions are in the shop content itself
+      actionPanel.innerHTML = `
+        <button class="action-btn secondary" onclick="skipShop()">
+          Skip (Save Gold)
+        </button>
+      `;
+      break;
+    case 'combat':
+      showCombatActions();
+      break;
+    case 'run_ended':
+      actionPanel.innerHTML = `
+        <button class="action-btn primary" onclick="returnToHub()">
+          Return to Guild
+        </button>
+      `;
+      break;
+  }
+
+  // Reset keyboard selection after updating actions
+  setTimeout(resetActionSelection, 50);
+
+  // Disable buttons if narration is pending
+  updateActionButtonsState();
+}
+
+// Disable/enable action buttons based on narration state
+function updateActionButtonsState() {
+  // Block buttons only when there are MORE messages to show
+  // Allow actions immediately after the last message displays
+  const shouldBlock = isNarrationWaiting && narrationQueue.length > 0;
+  const buttons = actionPanel.querySelectorAll('.action-btn, .combat-btn');
+
+  buttons.forEach(btn => {
+    if (shouldBlock) {
+      btn.disabled = true;
+      btn.classList.add('waiting-narration');
+    } else {
+      // Don't re-enable buttons that were disabled for other reasons (e.g., not enough SP)
+      if (btn.classList.contains('waiting-narration')) {
+        btn.disabled = false;
+        btn.classList.remove('waiting-narration');
+      }
+    }
+  });
+}
+
+// ============ CONTENT VIEWS ============
+function showNoSaveContent() {
+  gameContent.innerHTML = `
+    <div class="content-center">
+      <div class="welcome-icon">&#x2694;</div>
+      <h2>Shadow Gate Dungeon</h2>
+      <p>Create your hunter to begin the journey into darkness.</p>
+    </div>
+  `;
+  showNarration(FALLBACK_NARRATIONS.welcome);
+}
+
+function showHubContent() {
+  const essence = gameState.meta?.essence || 0;
+
+  gameContent.innerHTML = `
+    <div class="content-center">
+      <div class="hub-icon">&#x1F3F0;</div>
+      <h2>Hunter's Guild</h2>
+      <p>The Shadow Gate awaits. Are you ready to descend?</p>
+      <div class="hub-essence" onclick="openUpgradesModal()">
+        <span class="hub-essence-label">Shadow Essence</span>
+        <div class="hub-essence-value">
+          <span class="essence-icon">&#x2728;</span>
+          <span>${essence}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function showExploringContent() {
+  const run = gameState.run;
+  if (!run) return;
+
+  const progress = [];
+  for (let i = 0; i < run.encountersNeeded; i++) {
+    const completed = i < run.encountersCompleted;
+    progress.push(`<div class="progress-dot ${completed ? 'completed' : ''}"></div>`);
+  }
+  progress.push(`<div class="progress-dot boss-dot"></div>`);
+
+  gameContent.innerHTML = `
+    <div class="floor-display">
+      <div class="floor-header">
+        <span class="floor-number">Floor ${run.floor}</span>
+        <span class="floor-status">Exploring...</span>
+      </div>
+      <div class="progress-bar">
+        ${progress.join('')}
+      </div>
+      <div class="encounters-text">
+        ${run.encountersCompleted}/${run.encountersNeeded} encounters cleared
+      </div>
+    </div>
+  `;
+}
+
+// ============ ROOM EXPLORATION UI ============
+function showRoomContent() {
+  const run = gameState.run;
+  const room = gameState.room;
+  if (!run || !room) return;
+
+  const roomIcon = getRoomIcon(room.type);
+  const roomTypeName = getRoomTypeName(room.type);
+
+  // Progress dots showing rooms
+  const totalRooms = run.totalRooms || room.totalRooms || 15;
+  const currentRoom = run.currentRoom || 0;
+
+  // Create a simplified progress bar for rooms
+  let progressHTML = '<div class="room-progress">';
+  for (let i = 0; i < totalRooms; i++) {
+    let dotClass = 'room-dot';
+    if (i < currentRoom) dotClass += ' explored';
+    else if (i === currentRoom) dotClass += ' current';
+    if (i === totalRooms - 1) dotClass += ' boss-room';
+    progressHTML += `<div class="${dotClass}"></div>`;
+  }
+  progressHTML += '</div>';
+
+  gameContent.innerHTML = `
+    <div class="floor-display room-display">
+      <div class="floor-header">
+        <span class="floor-number">Floor ${run.floor}</span>
+        <span class="room-number">Room ${currentRoom + 1}/${totalRooms}</span>
+      </div>
+      ${progressHTML}
+      <div class="room-info">
+        <div class="room-icon">${roomIcon}</div>
+        <div class="room-type">${roomTypeName}</div>
+      </div>
+    </div>
+  `;
+}
+
+function showRoomActions() {
+  const room = gameState.room;
+  if (!room) {
+    actionPanel.innerHTML = '<button class="action-btn primary" onclick="proceedToNextRoom()">進む</button>';
+    return;
+  }
+
+  const actions = room.actions || [];
+  let buttonsHTML = '';
+
+  for (const action of actions) {
+    let btnClass;
+    if (action.id === 'boss_fight') {
+      btnClass = 'boss';
+    } else if (action.id === 'fight') {
+      btnClass = 'danger';
+    } else if (action.id === 'proceed') {
+      btnClass = 'primary';
+    } else if (action.id === 'ignore_body' || action.id === 'ignore_treasure') {
+      btnClass = 'muted';  // Safe but no reward
+    } else if (action.id === 'loot' || action.id === 'open') {
+      btnClass = 'warning';  // Risky but rewarding
+    } else {
+      btnClass = 'secondary';
+    }
+
+    buttonsHTML += `
+      <button class="action-btn ${btnClass}" onclick="handleRoomAction('${action.id}')" title="${action.description || ''}">
+        ${action.name}
+      </button>
+    `;
+  }
+
+  actionPanel.innerHTML = buttonsHTML || '<button class="action-btn primary" onclick="proceedToNextRoom()">進む</button>';
+}
+
+function getRoomIcon(type) {
+  const icons = {
+    empty: '🚪',
+    encounter: '⚔️',
+    trap: '⚠️',
+    body: '💀',
+    treasure: '📦',
+    shrine: '⛩️',
+    merchant: '🛒',
+    blacksmith: '🔨',
+    boss: '👹'
+  };
+  return icons[type] || '❓';
+}
+
+function getRoomTypeName(type) {
+  const names = {
+    empty: '何もない部屋',
+    encounter: '敵がいる！',
+    trap: '罠がある...',
+    body: '冒険者の遺体',
+    treasure: '宝箱！',
+    shrine: '神秘的な祠',
+    merchant: '商人',
+    blacksmith: '鍛冶屋',
+    boss: 'ボスの間'
+  };
+  return names[type] || '不明な部屋';
+}
+
+async function handleRoomAction(actionId) {
+  console.log('handleRoomAction called with:', actionId);
+  switch (actionId) {
+    case 'proceed':
+      console.log('Calling proceedToNextRoom...');
+      await proceedToNextRoom();
+      break;
+    case 'fight':
+      await startEncounter();
+      break;
+    case 'boss_fight':
+      await startBossEncounter();
+      break;
+    case 'disarm':
+      await disarmTrap();
+      break;
+    case 'trigger':
+      await triggerTrap();
+      break;
+    case 'loot':
+      await lootBody();
+      break;
+    case 'ignore_body':
+      await skipBody();
+      break;
+    case 'open':
+      await openTreasure();
+      break;
+    case 'ignore_treasure':
+      await skipTreasure();
+      break;
+    case 'pray':
+      await useShrine();
+      break;
+    case 'shop':
+      await openShop();
+      break;
+    case 'refine':
+      await openBlacksmith();
+      break;
+    default:
+      console.warn('Unknown room action:', actionId);
+  }
+}
+
+async function proceedToNextRoom() {
+  console.log('proceedToNextRoom called');
+  const result = await apiCall('/proceed', 'POST');
+  console.log('proceedToNextRoom result:', result ? 'success' : 'null');
+  if (result) {
+    showNarration(result.narration || '次の部屋に入った。');
+    updateBackground();
+    updateUI();
+    triggerJpdbParse();
+  }
+}
+
+async function startRoomEncounter() {
+  const result = await apiCall('/room-encounter', 'POST');
+  if (result) {
+    const enemy = result.enemy || gameState.combat?.enemy;
+    showNarration(result.narration || FALLBACK_NARRATIONS.combatStart(enemy));
+    updateUI();
+    triggerJpdbParse();
+
+    // If enemy goes first, trigger enemy turn automatically
+    if (!result.playerGoesFirst) {
+      await delay(1000);
+      await enemyTurn();
+    }
+  }
+}
+
+async function disarmTrap() {
+  const result = await apiCall('/disarm', 'POST');
+  if (result) {
+    showNarration(result.narration);
+    updateUI();
+    triggerJpdbParse();
+
+    // Check for defeat
+    if (result.type === 'defeat') {
+      await handlePlayerDefeat(result);
+    }
+  }
+}
+
+async function triggerTrap() {
+  const result = await apiCall('/trigger-trap', 'POST');
+  if (result) {
+    showNarration(result.narration);
+    updateUI();
+    triggerJpdbParse();
+
+    // Check for defeat
+    if (result.type === 'defeat') {
+      await handlePlayerDefeat(result);
+    }
+  }
+}
+
+async function lootBody() {
+  const result = await apiCall('/loot', 'POST');
+  if (result) {
+    showNarration(result.narration);
+    updateUI();
+    triggerJpdbParse();
+
+    // Check for defeat from trapped body
+    if (result.type === 'defeat') {
+      await handlePlayerDefeat(result);
+    }
+  }
+}
+
+async function skipBody() {
+  const result = await apiCall('/skip-body', 'POST');
+  if (result) {
+    showNarration(result.narration);
+    updateUI();
+    triggerJpdbParse();
+  }
+}
+
+async function skipTreasure() {
+  const result = await apiCall('/skip-treasure', 'POST');
+  if (result) {
+    showNarration(result.narration);
+    updateUI();
+    triggerJpdbParse();
+  }
+}
+
+async function openTreasure() {
+  const result = await apiCall('/open-treasure', 'POST');
+  if (result) {
+    showNarration(result.narration);
+    updateUI();
+    triggerJpdbParse();
+
+    // Check for defeat from trapped chest
+    if (result.type === 'defeat') {
+      await handlePlayerDefeat(result);
+    }
+  }
+}
+
+async function useShrine() {
+  const result = await apiCall('/use-shrine', 'POST');
+  if (result) {
+    showNarration(result.narration);
+    updateUI();
+    triggerJpdbParse();
+  }
+}
+
+// ============ SHOP FUNCTIONS ============
+
+let shopInventory = [];
+
+// Format item stats for display in Japanese
+function formatItemStats(item) {
+  const stats = [];
+
+  // Slot type
+  const slotNames = { weapon: '武器', body: '体', shield: '盾', accessory: 'アクセ' };
+  if (item.slot) {
+    stats.push(`[${slotNames[item.slot] || item.slot}]`);
+  }
+
+  // Primary combat stats
+  if (item.atk) stats.push(`攻撃+${item.atk}`);
+  if (item.def) stats.push(`防御+${item.def}`);
+  if (item.matk) stats.push(`魔攻+${item.matk}`);
+  if (item.mdef) stats.push(`魔防+${item.mdef}`);
+  if (item.hit) stats.push(`命中+${item.hit}`);
+  if (item.flee) stats.push(`回避+${item.flee}`);
+  if (item.crit) stats.push(`会心+${item.crit}`);
+
+  // Base stats
+  if (item.str) stats.push(`STR+${item.str}`);
+  if (item.agi) stats.push(`AGI+${item.agi}`);
+  if (item.vit) stats.push(`VIT+${item.vit}`);
+  if (item.int) stats.push(`INT+${item.int}`);
+  if (item.dex) stats.push(`DEX+${item.dex}`);
+  if (item.luk) stats.push(`LUK+${item.luk}`);
+
+  // Special effects
+  if (item.doubleStrike) stats.push(`二連撃${item.doubleStrike}%`);
+  if (item.armorPen) stats.push(`貫通${Math.round(item.armorPen * 100)}%`);
+  if (item.onKillHp) stats.push(`撃破HP+${item.onKillHp}`);
+  if (item.onKillSp) stats.push(`撃破SP+${item.onKillSp}`);
+  if (item.healingBonus) stats.push(`回復+${Math.round(item.healingBonus * 100)}%`);
+  if (item.goldFind) stats.push(`金運+${Math.round(item.goldFind * 100)}%`);
+  if (item.statusInflict) stats.push(`${item.statusInflict.status}付与${item.statusInflict.chance}%`);
+  if (item.setId) stats.push(`【${item.setId}】`);
+
+  return stats.join(' ');
+}
+
+async function openShop() {
+  try {
+    const response = await fetch('/api/game/shop');
+    if (!response.ok) {
+      throw new Error('Failed to load shop');
+    }
+    const data = await response.json();
+    shopInventory = data.inventory;
+
+    const shopModal = document.getElementById('shop-modal');
+    const shopGold = document.getElementById('shop-player-gold');
+    const shopItems = document.getElementById('shop-items');
+
+    // Reset to normal merchant mode
+    const shopTitle = document.getElementById('shop-title');
+    const shopGreeting = document.getElementById('shop-greeting');
+    const closeBtn = document.getElementById('shop-close-btn');
+    const skipBtn = document.getElementById('shop-skip-btn');
+    const closeX = document.getElementById('close-shop');
+    if (shopTitle) shopTitle.textContent = 'Merchant';
+    if (shopGreeting) shopGreeting.textContent = '「いらっしゃい、冒険者よ。何が欲しい？」';
+    if (closeBtn) closeBtn.classList.remove('hidden');
+    if (skipBtn) skipBtn.classList.add('hidden');
+    if (closeX) closeX.classList.remove('hidden');
+
+    // Update gold display
+    shopGold.textContent = data.playerGold;
+
+    // Render items
+    if (shopInventory.length === 0) {
+      shopItems.innerHTML = '<p class="shop-empty">「もう売り切れだ」</p>';
+    } else {
+      shopItems.innerHTML = shopInventory.map(item => {
+        const canAfford = data.playerGold >= item.price;
+        const outOfStock = item.quantity <= 0;
+        let itemClass = `shop-item rarity-${item.rarity || 'common'}`;
+        if (outOfStock) itemClass += ' out-of-stock';
+        else if (!canAfford) itemClass += ' cannot-afford';
+
+        // Build stats string in Japanese
+        const statsStr = formatItemStats(item);
+
+        return `
+          <div class="${itemClass}" data-item-id="${item.itemId}">
+            <div class="shop-item-info">
+              <div class="shop-item-name">
+                ${item.name}
+                <span class="shop-item-name-en">(${item.nameEn})</span>
+              </div>
+              <div class="shop-item-desc">${item.description}</div>
+              ${statsStr ? `<div class="shop-item-stats">${statsStr}</div>` : ''}
+            </div>
+            <div class="shop-item-meta">
+              <span class="shop-item-stock">x${item.quantity}</span>
+              <span class="shop-item-price">${item.price}G</span>
+              <button class="shop-item-buy"
+                      onclick="buyItem('${item.itemId}')"
+                      ${!canAfford || outOfStock ? 'disabled' : ''}>
+                Buy
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    shopModal.classList.remove('hidden');
+  } catch (error) {
+    console.error('Shop error:', error);
+    showNarration('商人との取引に失敗した。');
+  }
+}
+
+async function buyItem(itemId) {
+  try {
+    const response = await fetch('/api/game/shop/buy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId, quantity: 1 })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || 'Purchase failed');
+    }
+
+    const result = await response.json();
+
+    // Update game state
+    if (result.state) {
+      gameState = result.state;
+    }
+
+    // Show narration
+    if (result.narration) {
+      showNarration(result.narration);
+      triggerJpdbParse();
+    }
+
+    // Refresh shop display
+    await openShop();
+    updateUI();
+  } catch (error) {
+    console.error('Buy error:', error);
+    showNarration(`購入に失敗した: ${error.message}`);
+  }
+}
+
+function closeShop() {
+  document.getElementById('shop-modal').classList.add('hidden');
+}
+
+// Make buyItem available globally for onclick
+window.buyItem = buyItem;
+
+// ============ BLACKSMITH FUNCTIONS ============
+
+async function openBlacksmith() {
+  try {
+    const response = await fetch('/api/game/refine-preview');
+    if (!response.ok) {
+      throw new Error('Failed to load blacksmith');
+    }
+    const data = await response.json();
+
+    const blacksmithModal = document.getElementById('blacksmith-modal');
+    const blacksmithGold = document.getElementById('blacksmith-player-gold');
+    const blacksmithItems = document.getElementById('blacksmith-items');
+
+    // Update gold display
+    blacksmithGold.textContent = data.playerGold;
+
+    // Render equipment items for refinement
+    const previews = data.previews || {};
+    const slots = ['weapon', 'body', 'shield', 'accessory'];
+    const slotNames = { weapon: '武器', body: '体', shield: '盾', accessory: 'アクセサリー' };
+
+    if (Object.keys(previews).length === 0) {
+      blacksmithItems.innerHTML = '<p class="blacksmith-empty">「装備がないな...何も鍛えられない」</p>';
+    } else {
+      blacksmithItems.innerHTML = slots.map(slot => {
+        const preview = previews[slot];
+        if (!preview) return '';
+
+        const canAfford = data.playerGold >= (preview.cost || 0);
+        const isMaxed = preview.maxed;
+        const breakChance = preview.breakChance || 0;
+        const isRisky = breakChance > 0;
+
+        let itemClass = 'blacksmith-item';
+        if (isMaxed) itemClass += ' maxed';
+        else if (!canAfford) itemClass += ' cannot-afford';
+
+        const currentLevel = preview.currentLevel || 0;
+        const displayName = currentLevel > 0 ? `${preview.itemName} +${currentLevel}` : preview.itemName;
+
+        if (isMaxed) {
+          return `
+            <div class="${itemClass}">
+              <div class="blacksmith-item-info">
+                <div class="blacksmith-slot-name">${slotNames[slot]}</div>
+                <div class="blacksmith-item-name">${displayName}</div>
+                <div class="blacksmith-item-status">MAX +10</div>
+              </div>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="${itemClass}" data-slot="${slot}">
+            <div class="blacksmith-item-info">
+              <div class="blacksmith-slot-name">${slotNames[slot]}</div>
+              <div class="blacksmith-item-name">${displayName} → +${preview.targetLevel}</div>
+              <div class="blacksmith-item-meta">
+                <span class="blacksmith-cost">${preview.cost}G</span>
+                ${isRisky ? `<span class="blacksmith-risk ${breakChance >= 30 ? 'high-risk' : ''}">${breakChance}% 破壊</span>` : '<span class="blacksmith-safe">安全</span>'}
+                ${preview.indestructible ? '<span class="blacksmith-protected">破壊不可</span>' : ''}
+              </div>
+            </div>
+            <button class="blacksmith-refine-btn"
+                    onclick="refineItem('${slot}')"
+                    ${!canAfford ? 'disabled' : ''}>
+              ${isRisky ? '精錬!' : '精錬'}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    blacksmithModal.classList.remove('hidden');
+  } catch (error) {
+    console.error('Blacksmith error:', error);
+    showNarration('鍛冶屋との会話に失敗した。');
+  }
+}
+
+async function refineItem(slot) {
+  try {
+    // Close modal during refinement
+    closeBlacksmith();
+
+    const response = await fetch('/api/game/refine', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slot })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || 'Refinement failed');
+    }
+
+    const result = await response.json();
+
+    // Update game state
+    if (result.state) {
+      gameState = result.state;
+    }
+
+    // Show narration
+    if (result.narration) {
+      showNarration(result.narration);
+      triggerJpdbParse();
+    }
+
+    updateUI();
+
+    // Reopen blacksmith after a delay
+    await delay(500);
+    await openBlacksmith();
+  } catch (error) {
+    console.error('Refine error:', error);
+    showNarration(`精錬に失敗した: ${error.message}`);
+  }
+}
+
+function closeBlacksmith() {
+  document.getElementById('blacksmith-modal').classList.add('hidden');
+}
+
+// Make refineItem available globally for onclick
+window.refineItem = refineItem;
+
+function showBossReadyContent() {
+  const run = gameState.run;
+  if (!run) return;
+
+  gameContent.innerHTML = `
+    <div class="floor-display boss-ready">
+      <div class="floor-header">
+        <span class="floor-number">Floor ${run.floor}</span>
+        <span class="floor-status boss-status">BOSS AHEAD</span>
+      </div>
+      <div class="boss-warning">
+        <span class="skull-icon">&#x1F480;</span>
+        <p>The floor guardian awaits...</p>
+      </div>
+    </div>
+  `;
+}
+
+function showFloorCompleteContent() {
+  const run = gameState.run;
+  if (!run) return;
+
+  const isComplete = run.floor >= 7;
+
+  gameContent.innerHTML = `
+    <div class="floor-display floor-complete">
+      <div class="floor-header">
+        <span class="floor-number">Floor ${run.floor}</span>
+        <span class="floor-status complete-status">${isComplete ? 'DUNGEON CLEARED!' : 'CLEARED!'}</span>
+      </div>
+      <div class="complete-message">
+        <span class="victory-icon">${isComplete ? '&#x1F451;' : '&#x2B06;'}</span>
+        <p>${isComplete ? 'You have conquered the Shadow Gate!' : 'A stairway descends into darkness...'}</p>
+      </div>
+    </div>
+  `;
+}
+
+function showPostCombatShopContent() {
+  const run = gameState.run;
+  if (!run || !run.postCombatShop) return;
+
+  const shop = run.postCombatShop;
+  const player = run.player || gameState.player;
+  const gold = player?.gold || 0;
+
+  // Update title and greeting for post-combat shop
+  const shopTitle = document.getElementById('shop-title');
+  const shopGreeting = document.getElementById('shop-greeting');
+  if (shopTitle) shopTitle.textContent = '商人が現れた！';
+  if (shopGreeting) shopGreeting.textContent = '「戦いの後はいい買い物日和だな。一つだけ選びな」';
+
+  // Update gold display
+  const goldDisplay = document.getElementById('shop-player-gold');
+  if (goldDisplay) goldDisplay.textContent = gold;
+
+  // Show skip button, hide close button for post-combat shop
+  const closeBtn = document.getElementById('shop-close-btn');
+  const skipBtn = document.getElementById('shop-skip-btn');
+  const closeX = document.getElementById('close-shop');
+  if (closeBtn) closeBtn.classList.add('hidden');
+  if (skipBtn) skipBtn.classList.remove('hidden');
+  if (closeX) closeX.classList.add('hidden');
+
+  // Generate shop items HTML using same format as regular shop
+  const shopItemsContainer = document.getElementById('shop-items');
+  if (shopItemsContainer) {
+    const itemsHtml = shop.items.map((item, index) => {
+      const canAfford = gold >= item.price;
+      let itemClass = `shop-item rarity-${item.rarity || 'common'}`;
+      if (!canAfford) itemClass += ' cannot-afford';
+
+      // Build stats string
+      const statsStr = formatItemStats(item);
+
+      return `
+        <div class="${itemClass}" data-item-index="${index}">
+          <div class="shop-item-info">
+            <div class="shop-item-name">
+              ${item.name}
+              ${item.nameEn ? `<span class="shop-item-name-en">(${item.nameEn})</span>` : ''}
+            </div>
+            <div class="shop-item-desc">${item.description || ''}</div>
+            ${statsStr ? `<div class="shop-item-stats">${statsStr}</div>` : ''}
+          </div>
+          <div class="shop-item-meta">
+            <span class="shop-item-price">${item.price}G</span>
+            <button class="shop-item-buy"
+                    onclick="buyFromShop(${index})"
+                    ${!canAfford ? 'disabled' : ''}>
+              Buy
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+    shopItemsContainer.innerHTML = itemsHtml;
+  }
+
+  // Show the modal
+  if (shopModal) shopModal.classList.remove('hidden');
+}
+
+function resetShopModal() {
+  // Reset shop modal back to default state
+  const shopTitle = document.getElementById('shop-title');
+  const shopGreeting = document.getElementById('shop-greeting');
+  const closeBtn = document.getElementById('shop-close-btn');
+  const skipBtn = document.getElementById('shop-skip-btn');
+  const closeX = document.getElementById('close-shop');
+  if (shopTitle) shopTitle.textContent = 'Merchant';
+  if (shopGreeting) shopGreeting.textContent = '「いらっしゃい、冒険者よ。何が欲しい？」';
+  if (closeBtn) closeBtn.classList.remove('hidden');
+  if (skipBtn) skipBtn.classList.add('hidden');
+  if (closeX) closeX.classList.remove('hidden');
+}
+
+async function buyFromShop(itemIndex) {
+  try {
+    const result = await apiCall('/shop-buy', 'POST', { itemIndex });
+    if (result) {
+      // Hide shop modal and reset state
+      if (shopModal) shopModal.classList.add('hidden');
+      resetShopModal();
+      // Update state from server
+      if (result.state) {
+        gameState = { ...gameState, ...result.state };
+      }
+      showNarration(result.result?.item?.name + 'を購入した！');
+      updateUI();
+    }
+  } catch (error) {
+    console.error('Shop buy error:', error);
+  }
+}
+
+async function skipShop() {
+  try {
+    const result = await apiCall('/shop-skip', 'POST');
+    if (result) {
+      // Hide shop modal and reset state
+      if (shopModal) shopModal.classList.add('hidden');
+      resetShopModal();
+      // Update state from server
+      if (result.state) {
+        gameState = { ...gameState, ...result.state };
+      }
+      updateUI();
+    }
+  } catch (error) {
+    console.error('Shop skip error:', error);
+  }
+}
+
+// Expose shop functions to window for onclick handlers
+window.buyFromShop = buyFromShop;
+window.skipShop = skipShop;
+
+function showRunEndedContent() {
+  gameContent.innerHTML = `
+    <div class="content-center">
+      <h2>Run Ended</h2>
+      <p>Return to the guild to recover and try again.</p>
+    </div>
+  `;
+}
+
+// ============ COMBAT UI ============
+function showCombatContent() {
+  const combat = gameState.combat;
+  if (!combat) return;
+
+  const enemy = combat.enemy;
+  const player = gameState.run?.player;
+
+  const enemyHpPercent = (enemy.hp / enemy.maxHp) * 100;
+  const playerHpPercent = player ? (player.hp / player.maxHp) * 100 : 100;
+  const playerMpPercent = player ? (player.mp / player.maxMp) * 100 : 100;
+
+  const isBoss = enemy.isBoss;
+  const enemyClass = isBoss ? 'enemy-display boss-enemy' : 'enemy-display';
+
+  gameContent.innerHTML = `
+    <div class="combat-view">
+      <div class="${enemyClass}">
+        <div class="enemy-sprite ${isBoss ? 'boss-sprite' : ''}">${getEnemyEmoji(enemy)}</div>
+        <div class="enemy-info">
+          <div class="enemy-name">${enemy.name} <span class="enemy-name-en">(${enemy.nameEn})</span></div>
+          <div class="enemy-hp-bar">
+            <div class="hp-fill" style="width: ${enemyHpPercent}%"></div>
+            <span class="hp-text">${enemy.hp}/${enemy.maxHp}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="combat-divider">
+        <span class="vs-text">VS</span>
+      </div>
+
+      <div class="player-combat-display">
+        <div class="player-bars">
+          <div class="bar-group">
+            <span class="bar-label">HP</span>
+            <div class="hp-bar">
+              <div class="hp-fill player-hp" style="width: ${playerHpPercent}%"></div>
+              <span class="hp-text">${player?.hp || 0}/${player?.maxHp || 100}</span>
+            </div>
+          </div>
+          <div class="bar-group">
+            <span class="bar-label">MP</span>
+            <div class="mp-bar">
+              <div class="mp-fill" style="width: ${playerMpPercent}%"></div>
+              <span class="mp-text">${player?.mp || 0}/${player?.maxMp || 50}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function showCombatActions() {
+  const combat = gameState.combat;
+  const player = gameState.run?.player;
+  const isBoss = combat?.enemy?.isBoss;
+
+  actionPanel.innerHTML = `
+    <div class="combat-actions-grid">
+      <button class="combat-btn attack-btn" onclick="showAttackMenu()">
+        <span class="btn-icon">&#x2694;</span> 攻撃
+      </button>
+      <button class="combat-btn defend-btn" onclick="performDefend()">
+        <span class="btn-icon">&#x1F6E1;</span> 防御
+      </button>
+      <button class="combat-btn magic-btn" onclick="showMagicMenu()">
+        <span class="btn-icon">&#x2728;</span> 魔法
+      </button>
+      <button class="combat-btn item-btn" onclick="showItemMenu()">
+        <span class="btn-icon">&#x1F48A;</span> 道具
+      </button>
+      <button class="combat-btn flee-btn" onclick="performFlee()" ${isBoss ? 'disabled title="ボスから逃げられない！"' : ''}>
+        <span class="btn-icon">&#x1F3C3;</span> 逃走
+      </button>
+    </div>
+    <div class="combat-submenu hidden" id="combat-submenu"></div>
+  `;
+}
+
+function showAttackMenu() {
+  const submenu = document.getElementById('combat-submenu');
+
+  submenu.innerHTML = `
+    <div class="submenu-header">
+      <span>攻撃タイプ</span>
+      <button class="back-btn" onclick="closeCombatSubmenu()">戻る</button>
+    </div>
+    <div class="submenu-list attack-types">
+      <button class="submenu-option attack-quick" onclick="performAttack('quick')">
+        <span class="option-name">速攻 (Quick)</span>
+        <span class="option-desc">70%威力 / スタン付与chance</span>
+      </button>
+      <button class="submenu-option attack-normal" onclick="performAttack('normal')">
+        <span class="option-name">通常攻撃 (Normal)</span>
+        <span class="option-desc">100%威力 / 標準攻撃</span>
+      </button>
+      <button class="submenu-option attack-heavy" onclick="performAttack('heavy')">
+        <span class="option-name">強撃 (Heavy)</span>
+        <span class="option-desc">200%威力 / 自己スタンrisk</span>
+      </button>
+    </div>
+  `;
+
+  submenu.classList.remove('hidden');
+}
+
+function showMagicMenu() {
+  const player = gameState.run?.player;
+  const submenu = document.getElementById('combat-submenu');
+
+  if (!player?.skills || player.skills.length === 0) {
+    submenu.innerHTML = `
+      <div class="submenu-header">
+        <span>Magic</span>
+        <button class="back-btn" onclick="closeCombatSubmenu()">Back</button>
+      </div>
+      <p class="empty-submenu">No magic skills learned yet.</p>
+    `;
+  } else {
+    submenu.innerHTML = `
+      <div class="submenu-header">
+        <span>Magic</span>
+        <button class="back-btn" onclick="closeCombatSubmenu()">Back</button>
+      </div>
+      <div class="submenu-list">
+        ${player.skills.map(skill => {
+          const disabled = skill.mpCost > player.mp;
+          return `
+            <button class="submenu-option ${disabled ? 'disabled' : ''}"
+                    onclick="${disabled ? '' : `performMagic('${skill.id}')`}"
+                    ${disabled ? 'disabled' : ''}>
+              <span class="option-name">${skill.name || skill.id}</span>
+              <span class="option-cost">${skill.mpCost} MP</span>
+            </button>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  submenu.classList.remove('hidden');
+}
+
+function showItemMenu() {
+  const player = gameState.run?.player;
+  const submenu = document.getElementById('combat-submenu');
+
+  const usableItems = player?.items?.filter(i => i.quantity > 0) || [];
+
+  if (usableItems.length === 0) {
+    submenu.innerHTML = `
+      <div class="submenu-header">
+        <span>Items</span>
+        <button class="back-btn" onclick="closeCombatSubmenu()">Back</button>
+      </div>
+      <p class="empty-submenu">No items to use.</p>
+    `;
+  } else {
+    submenu.innerHTML = `
+      <div class="submenu-header">
+        <span>Items</span>
+        <button class="back-btn" onclick="closeCombatSubmenu()">Back</button>
+      </div>
+      <div class="submenu-list">
+        ${usableItems.map(item => `
+          <button class="submenu-option" onclick="performItem('${item.id}')">
+            <span class="option-name">${item.name || item.id}</span>
+            <span class="option-qty">x${item.quantity}</span>
+          </button>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  submenu.classList.remove('hidden');
+}
+
+function closeCombatSubmenu() {
+  const submenu = document.getElementById('combat-submenu');
+  if (submenu) submenu.classList.add('hidden');
+}
+
+function getEnemyEmoji(enemy) {
+  const emojiMap = {
+    'slime': '&#x1F7E2;',
+    'goblin': '&#x1F47A;',
+    'wolf': '&#x1F43A;',
+    'skeleton': '&#x1F480;',
+    'orc': '&#x1F479;',
+    'mage': '&#x1F9D9;',
+    'knight': '&#x2694;',
+    'demon': '&#x1F608;',
+    'golem': '&#x1FAA8;',
+    'shadow': '&#x1F47B;',
+    'dragon': '&#x1F409;',
+    'boss_goblin_king': '&#x1F451;',
+    'boss_wolf_alpha': '&#x1F43A;',
+    'boss_lich': '&#x1F9DF;',
+    'boss_ogre': '&#x1F479;',
+    'boss_demon_lord': '&#x1F608;',
+    'boss_dragon_elder': '&#x1F432;',
+    'boss_shadow_monarch': '&#x1F👑'
+  };
+
+  return emojiMap[enemy.id] || '&#x1F47E;';
+}
+
+function disableCombatActions() {
+  document.querySelectorAll('.combat-btn').forEach(btn => btn.disabled = true);
+}
+
+function enableCombatActions() {
+  document.querySelectorAll('.combat-btn').forEach(btn => {
+    if (btn.classList.contains('flee-btn') && gameState.combat?.enemy?.isBoss) {
+      btn.disabled = true;
+    } else {
+      btn.disabled = false;
+    }
+  });
+}
+
+// ============ MODALS ============
+function showVictoryModal(result) {
+  // Skip victory modal if post-combat shop is active - go straight to shop
+  if (gameState.run?.postCombatShop?.active) {
+    showPostCombatShopContent();
+    return;
+  }
+
+  const title = document.getElementById('result-title');
+  const message = document.getElementById('result-message');
+  const rewards = document.getElementById('result-rewards');
+
+  const enemy = gameState.combat?.enemy;
+  title.textContent = enemy?.isBoss ? 'ボス撃破！' : '勝利！';
+  title.className = 'victory';
+
+  message.textContent = '';
+
+  let rewardsHtml = '';
+  if (result.rewards) {
+    if (result.rewards.xp) {
+      rewardsHtml += `<div class="reward-item"><span class="reward-label">経験値</span><span class="reward-value xp">+${result.rewards.xp} XP</span></div>`;
+    }
+    if (result.rewards.gold) {
+      rewardsHtml += `<div class="reward-item"><span class="reward-label">ゴールド</span><span class="reward-value gold">+${result.rewards.gold}</span></div>`;
+    }
+    // Show regular drops
+    if (result.rewards.drops && result.rewards.drops.length > 0) {
+      for (const drop of result.rewards.drops) {
+        const dropName = typeof drop === 'object' ? drop.name : drop;
+        rewardsHtml += `<div class="reward-item"><span class="reward-label">ドロップ</span><span class="reward-value item">${dropName}</span></div>`;
+      }
+    }
+    // Show boss drop
+    if (result.rewards.bossDrop) {
+      rewardsHtml += `<div class="reward-item boss-drop"><span class="reward-label">ボス報酬</span><span class="reward-value item">${result.rewards.bossDrop.name}</span></div>`;
+    }
+  }
+  if (result.levelUps?.length > 0) {
+    for (const lu of result.levelUps) {
+      rewardsHtml += `<div class="reward-item level-up"><span class="reward-label">レベルアップ！</span><span class="reward-value">Lv.${lu.newLevel}</span></div>`;
+    }
+  }
+
+  rewards.innerHTML = rewardsHtml || '<p>報酬なし</p>';
+  resultModal.classList.remove('hidden');
+}
+
+function showGameVictoryModal(result) {
+  const title = document.getElementById('result-title');
+  const message = document.getElementById('result-message');
+  const rewards = document.getElementById('result-rewards');
+  const essenceEarned = result.essenceEarned || 0;
+
+  title.textContent = 'DUNGEON CONQUERED!';
+  title.className = 'victory game-victory';
+
+  message.innerHTML = '<p>You have defeated the Shadow Monarch and conquered the dungeon!</p>';
+
+  rewards.innerHTML = `
+    <div class="reward-item"><span class="reward-label">Floors Cleared</span><span class="reward-value">7/7</span></div>
+    <div class="reward-item"><span class="reward-label">Enemies Defeated</span><span class="reward-value">${result.stats?.enemiesDefeated || 0}</span></div>
+    ${essenceEarned > 0 ? `
+      <div class="essence-earned">
+        <span class="essence-earned-label">Shadow Essence Gained</span>
+        <div class="essence-earned-value">
+          <span class="essence-icon">&#x2728;</span>
+          <span>+${essenceEarned}</span>
+        </div>
+      </div>
+    ` : ''}
+  `;
+
+  // Show achievement notifications
+  if (result.newAchievements?.length > 0) {
+    result.newAchievements.forEach((ach, i) => {
+      setTimeout(() => showAchievementNotification(ach), i * 500);
+    });
+  }
+
+  resultModal.classList.remove('hidden');
+}
+
+function showGameOverModal(result) {
+  const stats = document.getElementById('gameover-stats');
+  const runStats = result.stats || gameState.run?.stats || {};
+  const essenceEarned = result.essenceEarned || 0;
+
+  stats.innerHTML = `
+    <div class="gameover-stat"><span>Floor Reached</span><span>${gameState.run?.floor || 1}</span></div>
+    <div class="gameover-stat"><span>Enemies Defeated</span><span>${runStats.enemiesDefeated || 0}</span></div>
+    <div class="gameover-stat"><span>Damage Dealt</span><span>${runStats.damageDealt || 0}</span></div>
+    <div class="gameover-stat"><span>Damage Taken</span><span>${runStats.damageTaken || 0}</span></div>
+    ${essenceEarned > 0 ? `
+      <div class="essence-earned">
+        <span class="essence-earned-label">Shadow Essence Gained</span>
+        <div class="essence-earned-value">
+          <span class="essence-icon">&#x2728;</span>
+          <span>+${essenceEarned}</span>
+        </div>
+      </div>
+    ` : ''}
+  `;
+
+  // Show achievement notifications
+  if (result.newAchievements?.length > 0) {
+    result.newAchievements.forEach((ach, i) => {
+      setTimeout(() => showAchievementNotification(ach), i * 500);
+    });
+  }
+
+  gameoverModal.classList.remove('hidden');
+}
+
+function handleResultContinue() {
+  resultModal.classList.add('hidden');
+
+  // Check if there's a post-combat shop to show
+  if (gameState.run?.postCombatShop?.active) {
+    showPostCombatShopContent();
+  } else {
+    updateUI();
+  }
+}
+
+// ============ NARRATION (Visual Novel Style) ============
+
+// Queue a narration message
+function queueNarration(text) {
+  narrationQueue.push(text);
+
+  // Add to log
+  narrationLog.push({
+    text,
+    timestamp: Date.now(),
+    floor: gameState.run?.floor || 0,
+    phase: gameState.phase
+  });
+
+  // Immediately disable buttons when message is queued
+  updateActionButtonsState();
+
+  // Only display immediately if nothing is currently shown
+  if (!isNarrationWaiting) {
+    displayNextNarration();
+  } else {
+    // Just update the indicator to show more messages are queued
+    updateContinueIndicator();
+  }
+}
+
+// Display the next narration in queue (replaces current message - VN style)
+function displayNextNarration() {
+  if (narrationQueue.length === 0) {
+    // No more messages - allow new messages to display immediately
+    isNarrationWaiting = false;
+    updateContinueIndicator();
+    updateActionButtonsState(); // Re-enable buttons when narration is done
+    return;
+  }
+
+  const text = narrationQueue.shift();
+
+  // Replace the text (visual novel style - one message at a time)
+  narrationText.innerHTML = `<p class="vn-message">${text}</p>`;
+
+  // Always mark as waiting - user must acknowledge message was displayed
+  // This ensures back-to-back messages wait for space between them
+  isNarrationWaiting = true;
+  updateContinueIndicator();
+  updateActionButtonsState();
+
+  // Speak the narration if TTS is enabled
+  speakNarration(text);
+
+  // Trigger JPDB extension to parse Japanese text
+  triggerJpdbParse();
+}
+
+// Update the continue indicator
+function updateContinueIndicator() {
+  // Show indicator only when there are MORE messages waiting in queue
+  // Don't show on the last message - user can take action immediately
+  if (isNarrationWaiting && narrationQueue.length > 0) {
+    narrationContinue?.classList.remove('hidden');
+    narrationPanel.classList.add('waiting-continue');
+  } else {
+    narrationContinue?.classList.add('hidden');
+    narrationPanel.classList.remove('waiting-continue');
+  }
+}
+
+// Advance to next narration (Space key or click)
+function advanceNarration() {
+  // Stop any currently playing TTS before advancing
+  stopTts();
+
+  if (narrationQueue.length > 0) {
+    // Show next message
+    displayNextNarration();
+  } else {
+    // No more messages - unlock for new messages
+    isNarrationWaiting = false;
+    updateContinueIndicator();
+  }
+
+  // Update action buttons when narration state changes
+  updateActionButtonsState();
+}
+
+// Handle all keyboard input (narration + action buttons)
+function handleKeypress(e) {
+  // Don't trigger if user is typing in an input
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  // Enter to continue on result modal (after beating enemy)
+  if (e.key === 'Enter' && !resultModal.classList.contains('hidden')) {
+    e.preventDefault();
+    handleResultContinue();
+    return;
+  }
+
+  // Don't trigger if a modal is open
+  if (!settingsModal.classList.contains('hidden') ||
+      !createCharModal.classList.contains('hidden') ||
+      !resultModal.classList.contains('hidden') ||
+      !gameoverModal.classList.contains('hidden') ||
+      !logModal.classList.contains('hidden') ||
+      (upgradesModal && !upgradesModal.classList.contains('hidden')) ||
+      (gameStatsModal && !gameStatsModal.classList.contains('hidden'))) {
+    return;
+  }
+
+  // Space key: advance narration if messages queued
+  if (e.key === ' ') {
+    if (narrationQueue.length > 0) {
+      e.preventDefault();
+      advanceNarration();
+      return;
+    }
+  }
+
+  // R key: repeat last narration voice (but not during combat - R refreshes words there)
+  if (e.key === 'r' || e.key === 'R') {
+    if (!realtimeCombatActive && lastSpokenNarration && ttsEnabled) {
+      e.preventDefault();
+      speakNarration(lastSpokenNarration);
+      return;
+    }
+  }
+
+  // Get action buttons
+  const actionButtons = getActionButtons();
+  if (actionButtons.length === 0) return;
+
+  // Handle arrow key navigation
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    navigateActions(-1, actionButtons);
+  } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    navigateActions(1, actionButtons);
+  } else if (e.key === 'Enter') {
+    // Enter only triggers actions, not narration
+    e.preventDefault();
+    triggerSelectedAction(actionButtons);
+  }
+}
+
+// Get all action buttons currently visible
+function getActionButtons() {
+  // Check for combat actions first
+  const combatButtons = document.querySelectorAll('.combat-btn:not(:disabled)');
+  if (combatButtons.length > 0) return Array.from(combatButtons);
+
+  // Check for regular action buttons
+  const actionButtons = document.querySelectorAll('.action-btn:not(:disabled)');
+  if (actionButtons.length > 0) return Array.from(actionButtons);
+
+  // Check for submenu options
+  const submenuButtons = document.querySelectorAll('.submenu-option:not(:disabled)');
+  if (submenuButtons.length > 0) return Array.from(submenuButtons);
+
+  return [];
+}
+
+// Navigate through action buttons
+function navigateActions(direction, buttons) {
+  // Remove selection from current
+  buttons.forEach(btn => btn.classList.remove('keyboard-selected'));
+
+  // Calculate new index
+  selectedActionIndex += direction;
+  if (selectedActionIndex < 0) selectedActionIndex = buttons.length - 1;
+  if (selectedActionIndex >= buttons.length) selectedActionIndex = 0;
+
+  // Add selection to new button
+  const selectedButton = buttons[selectedActionIndex];
+  selectedButton.classList.add('keyboard-selected');
+  selectedButton.focus();
+}
+
+// Trigger the currently selected action
+function triggerSelectedAction(buttons) {
+  if (selectedActionIndex >= 0 && selectedActionIndex < buttons.length) {
+    const selectedButton = buttons[selectedActionIndex];
+    if (selectedButton && !selectedButton.disabled) {
+      selectedButton.click();
+    }
+  }
+}
+
+// Reset action selection (call when UI updates)
+function resetActionSelection() {
+  selectedActionIndex = 0;
+  document.querySelectorAll('.keyboard-selected').forEach(el => {
+    el.classList.remove('keyboard-selected');
+  });
+
+  // Auto-select first button
+  const buttons = getActionButtons();
+  if (buttons.length > 0) {
+    buttons[0].classList.add('keyboard-selected');
+  }
+}
+
+// Show narration - clears queue and displays immediately
+function showNarration(text) {
+  // Clear any pending messages
+  narrationQueue = [];
+  isNarrationWaiting = false;
+
+  // Queue and display immediately
+  queueNarration(text);
+
+  // Update button states after narration change
+  updateActionButtonsState();
+}
+
+// Append narration - adds to queue
+function appendNarration(text) {
+  queueNarration(text);
+  updateActionButtonsState();
+}
+
+// Clear narration log (call when starting new run)
+function clearNarrationLog() {
+  narrationLog = [];
+  narrationQueue = [];
+  isNarrationWaiting = false;
+  narrationText.innerHTML = '<p class="vn-message">...</p>';
+  updateContinueIndicator();
+  updateActionButtonsState(); // Re-enable buttons when narration is cleared
+}
+
+// ============ LOG MODAL ============
+function openLogModal() {
+  if (narrationLog.length === 0) {
+    logEntries.innerHTML = '<p class="empty-msg">No system messages yet.</p>';
+  } else {
+    // Group by floor for better readability
+    let html = '';
+    let currentFloor = -1;
+
+    for (const entry of narrationLog) {
+      if (entry.floor !== currentFloor && entry.floor > 0) {
+        currentFloor = entry.floor;
+        html += `<div class="log-floor-header">Floor ${currentFloor}</div>`;
+      }
+      html += `<div class="log-entry"><p>${entry.text}</p></div>`;
+    }
+
+    logEntries.innerHTML = html;
+  }
+
+  logModal.classList.remove('hidden');
+
+  // Scroll to bottom of log
+  requestAnimationFrame(() => {
+    logEntries.scrollTop = logEntries.scrollHeight;
+  });
+}
+
+function closeLogModal() {
+  logModal.classList.add('hidden');
+}
+
+// ============ META-PROGRESSION UI ============
+
+/**
+ * Open the upgrades modal
+ */
+async function openUpgradesModal() {
+  await loadUpgradesData();
+  upgradesModal?.classList.remove('hidden');
+  switchUpgradesTab('upgrades');
+}
+
+/**
+ * Close the upgrades modal
+ */
+function closeUpgradesModal() {
+  upgradesModal?.classList.add('hidden');
+}
+
+/**
+ * Switch tabs in the upgrades modal
+ */
+function switchUpgradesTab(tabName) {
+  // Update tab buttons
+  document.querySelectorAll('.upgrades-tabs .tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+
+  // Update tab content
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.classList.toggle('active', content.id === `tab-${tabName}`);
+  });
+
+  // Load content for the selected tab
+  if (tabName === 'upgrades') {
+    loadUpgradesData();
+  } else if (tabName === 'achievements') {
+    loadAchievementsData();
+  } else if (tabName === 'stats') {
+    loadLifetimeStats();
+  }
+}
+
+/**
+ * Load and display upgrades data
+ */
+async function loadUpgradesData() {
+  try {
+    const response = await fetch(`${API_BASE}/api/game/upgrades`);
+    const data = await response.json();
+
+    // Update essence count
+    if (modalEssenceCount) {
+      modalEssenceCount.textContent = data.essence || 0;
+    }
+
+    // Render upgrades
+    if (upgradesGrid) {
+      upgradesGrid.innerHTML = data.upgrades.map(upgrade => `
+        <div class="upgrade-card ${upgrade.maxed ? 'maxed' : ''}">
+          <div class="upgrade-header">
+            <div>
+              <div class="upgrade-name">${upgrade.name}</div>
+              <div class="upgrade-name-en">${upgrade.nameEn}</div>
+            </div>
+            <span class="upgrade-level ${upgrade.maxed ? 'max' : ''}">
+              ${upgrade.maxed ? 'MAX' : `Lv.${upgrade.currentLevel}/${upgrade.maxLevel}`}
+            </span>
+          </div>
+          <div class="upgrade-description">${upgrade.description}</div>
+          <div class="upgrade-footer">
+            ${upgrade.maxed ? '' : `
+              <button class="upgrade-buy-btn"
+                      onclick="purchaseUpgrade('${upgrade.id}')"
+                      ${!upgrade.canAfford ? 'disabled' : ''}>
+                <span class="cost-icon">&#x2728;</span>
+                ${upgrade.nextCost}
+              </button>
+            `}
+          </div>
+        </div>
+      `).join('');
+    }
+  } catch (error) {
+    console.error('Failed to load upgrades:', error);
+  }
+}
+
+/**
+ * Load and display achievements data
+ */
+async function loadAchievementsData() {
+  try {
+    const response = await fetch(`${API_BASE}/api/game/achievements`);
+    const data = await response.json();
+
+    if (achievementsList) {
+      achievementsList.innerHTML = data.achievements.map(ach => `
+        <div class="achievement-card ${ach.earned ? 'earned' : ''}">
+          <div class="achievement-icon">${ach.earned ? '&#x1F3C6;' : '&#x1F512;'}</div>
+          <div class="achievement-info">
+            <div class="achievement-name">${ach.name} (${ach.nameEn})</div>
+            <div class="achievement-description">${ach.description}</div>
+          </div>
+          <div class="achievement-reward">
+            <span class="essence-icon">&#x2728;</span>
+            +${ach.reward?.essence || 0}
+          </div>
+        </div>
+      `).join('');
+    }
+  } catch (error) {
+    console.error('Failed to load achievements:', error);
+  }
+}
+
+/**
+ * Load and display lifetime stats
+ */
+async function loadLifetimeStats() {
+  try {
+    const response = await fetch(`${API_BASE}/api/game/lifetime-stats`);
+    const data = await response.json();
+    const stats = data.stats || {};
+
+    if (lifetimeStats) {
+      lifetimeStats.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">Total Runs</div>
+          <div class="stat-value">${stats.totalRuns || 0}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Runs Completed</div>
+          <div class="stat-value">${stats.runsCompleted || 0}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Highest Floor</div>
+          <div class="stat-value">${stats.highestFloor || 0}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Enemies Defeated</div>
+          <div class="stat-value">${stats.totalEnemiesDefeated || 0}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Bosses Defeated</div>
+          <div class="stat-value">${stats.totalBossesDefeated || 0}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Essence</div>
+          <div class="stat-value">${stats.totalEssenceEarned || 0}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Damage Dealt</div>
+          <div class="stat-value">${stats.totalDamageDealt || 0}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Gold Earned</div>
+          <div class="stat-value">${stats.totalGoldEarned || 0}</div>
+        </div>
+      `;
+    }
+  } catch (error) {
+    console.error('Failed to load lifetime stats:', error);
+  }
+}
+
+/**
+ * Purchase an upgrade
+ */
+async function purchaseUpgrade(upgradeId) {
+  try {
+    const response = await fetch(`${API_BASE}/api/game/purchase-upgrade`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ upgradeId })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      // Show success feedback
+      showNarration(`アップグレード完了！ ${data.upgrade.newLevel}レベルになった！`);
+
+      // Reload upgrades display
+      await loadUpgradesData();
+    } else {
+      showError(data.error || 'Purchase failed');
+    }
+  } catch (error) {
+    console.error('Failed to purchase upgrade:', error);
+    showError('Failed to purchase upgrade');
+  }
+}
+
+/**
+ * Show achievement notification
+ */
+function showAchievementNotification(achievement) {
+  const notification = document.createElement('div');
+  notification.className = 'achievement-notification';
+  notification.innerHTML = `
+    <h3>Achievement Unlocked!</h3>
+    <p>${achievement.name} (${achievement.nameEn})</p>
+  `;
+  document.body.appendChild(notification);
+
+  // Remove after animation
+  setTimeout(() => notification.remove(), 3000);
+}
+
+/**
+ * Get essence display HTML for hub
+ */
+function getEssenceDisplayHTML() {
+  const essence = gameState.meta?.essence || 0;
+  return `
+    <div class="hub-essence" onclick="openUpgradesModal()">
+      <span class="hub-essence-label">Shadow Essence</span>
+      <div class="hub-essence-value">
+        <span class="essence-icon">&#x2728;</span>
+        <span>${essence}</span>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Trigger JPDB browser extension to parse the page
+ * Simulates Alt+P keypress which is the default parse keybind
+ * Debounced to prevent too many rapid calls
+ */
+let jpdbParseTimeout = null;
+function triggerJpdbParse() {
+  return; // DISABLED - too many server pings
+  // Debounce: cancel pending parse and schedule a new one
+  if (jpdbParseTimeout) {
+    clearTimeout(jpdbParseTimeout);
+  }
+
+  jpdbParseTimeout = setTimeout(() => {
+    jpdbParseTimeout = null;
+    try {
+      const event = new KeyboardEvent('keydown', {
+        key: 'p',
+        code: 'KeyP',
+        altKey: true,
+        bubbles: true,
+        cancelable: true
+      });
+      document.dispatchEvent(event);
+
+      // Also dispatch keyup to complete the sequence
+      setTimeout(() => {
+        const upEvent = new KeyboardEvent('keyup', {
+          key: 'p',
+          code: 'KeyP',
+          altKey: true,
+          bubbles: true,
+          cancelable: true
+        });
+        document.dispatchEvent(upEvent);
+      }, 50);
+    } catch (e) {
+      // Silently ignore JPDB extension errors
+      console.debug('JPDB parse trigger failed:', e);
+    }
+  }, 300);
+}
+
+// ============ NEW GAME ============
+function confirmNewGame() {
+  if (confirm('Start a new game? This will reset all progress.')) {
+    resetGame();
+  }
+}
+
+async function resetGame() {
+  try {
+    await fetch(`${API_BASE}/api/game/reset`, { method: 'POST' });
+    await loadGameState();
+    showNarration('Welcome to Shadow Gate! Create a character to begin your adventure.');
+    updateUI();
+  } catch (error) {
+    console.error('Failed to reset game:', error);
+    showError('Failed to reset game');
+  }
+}
+
+// ============ DEBUG MODE ============
+async function toggleDebugMode() {
+  try {
+    const response = await fetch(`${API_BASE}/api/game/debug-mode`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: !debugMode })
+    });
+    const result = await response.json();
+    debugMode = result.debugMode;
+
+    // Persist to localStorage
+    localStorage.setItem('debugMode', debugMode);
+
+    // Update button visual
+    updateDebugModeButton();
+
+    if (debugMode) {
+      showToast('Debug mode ON - No AI calls', 'info');
+    } else {
+      showToast('Debug mode OFF - AI enabled', 'info');
+    }
+  } catch (error) {
+    console.error('Failed to toggle debug mode:', error);
+  }
+}
+
+// Update debug mode button visual
+function updateDebugModeButton() {
+  const btn = document.getElementById('debug-mode-btn');
+  if (!btn) return;
+
+  if (debugMode) {
+    btn.classList.add('active');
+    btn.style.color = '#ff6b6b';
+  } else {
+    btn.classList.remove('active');
+    btn.style.color = '';
+  }
+}
+
+// Initialize debug mode from localStorage on page load
+async function initDebugMode() {
+  if (debugMode) {
+    // Sync with server
+    try {
+      await fetch(`${API_BASE}/api/game/debug-mode`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: true })
+      });
+    } catch (e) {
+      console.warn('Failed to sync debug mode with server:', e);
+    }
+  }
+  updateDebugModeButton();
+}
+
+// ============ SETTINGS ============
+async function openSettings() {
+  // Load current settings
+  try {
+    const response = await fetch(`${API_BASE}/api/settings`);
+    const settings = await response.json();
+
+    aiProviderSelect.value = settings.aiProvider || 'openai';
+    aiKeyInput.value = settings.aiApiKey || '';
+    openaiModelSelect.value = settings.openaiModel || 'gpt-4o-mini';
+    openrouterModelInput.value = settings.openrouterModel || '';
+    jlptLevelSelect.value = settings.jlptLevel || 'N4';
+    reviewTypeSelect.value = settings.reviewType || 'typing';
+
+    // Initialize TTS settings
+    initTtsSettings(settings);
+
+    updateProviderVisibility();
+  } catch (error) {
+    console.error('Failed to load settings:', error);
+  }
+
+  settingsStatus.textContent = '';
+  settingsStatus.className = 'settings-status';
+  settingsModal.classList.remove('hidden');
+}
+
+function closeSettings() {
+  settingsModal.classList.add('hidden');
+}
+
+function updateProviderVisibility() {
+  const provider = aiProviderSelect.value;
+
+  // Show OpenAI model selector only for OpenAI
+  if (provider === 'openai') {
+    openaiModelGroup.classList.remove('hidden');
+  } else {
+    openaiModelGroup.classList.add('hidden');
+  }
+
+  // Show OpenRouter model input only for OpenRouter
+  if (provider === 'openrouter') {
+    openrouterModelGroup.classList.remove('hidden');
+  } else {
+    openrouterModelGroup.classList.add('hidden');
+  }
+}
+
+async function saveSettings() {
+  // Get current settings to preserve fields we don't manage here
+  let currentSettings = {};
+  try {
+    const currentRes = await fetch(`${API_BASE}/api/settings`);
+    currentSettings = await currentRes.json();
+  } catch (e) {
+    console.warn('Could not fetch current settings:', e);
+  }
+
+  const settings = {
+    aiProvider: aiProviderSelect.value,
+    aiApiKey: aiKeyInput.value,
+    openaiModel: openaiModelSelect.value,
+    openrouterModel: openrouterModelInput.value,
+    jlptLevel: jlptLevelSelect.value,
+    // Preserve chat-app-specific settings that aren't managed here
+    jpdbApiKey: currentSettings.jpdbApiKey !== '********' ? currentSettings.jpdbApiKey : undefined,
+    jpdbDeckId: currentSettings.jpdbDeckId,
+    personaName: currentSettings.personaName,
+    personaDescription: currentSettings.personaDescription,
+    ttsEnabled: currentSettings.ttsEnabled,
+    ttsSpeakerId: currentSettings.ttsSpeakerId,
+    ttsSpeed: currentSettings.ttsSpeed,
+    ttsVolume: currentSettings.ttsVolume,
+    // Game TTS settings
+    gameTtsEnabled: gameTtsEnabled?.checked || false,
+    gameTtsSpeakerId: parseInt(gameTtsSpeaker?.value) || 13,
+    gameTtsSpeed: parseFloat(gameTtsSpeed?.value) || 0.9,
+    gameTtsVolume: parseFloat(gameTtsVolume?.value) || 1.0,
+    // Word review settings
+    reviewType: reviewTypeSelect.value
+  };
+
+  // Update local TTS state
+  ttsEnabled = settings.gameTtsEnabled;
+  ttsSpeakerId = settings.gameTtsSpeakerId;
+  ttsSpeed = settings.gameTtsSpeed;
+  ttsVolume = settings.gameTtsVolume;
+
+  // Update local review type
+  reviewType = settings.reviewType;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    });
+
+    if (response.ok) {
+      settingsStatus.textContent = 'Settings saved!';
+      settingsStatus.className = 'settings-status success';
+      setTimeout(() => {
+        closeSettings();
+      }, 1000);
+    } else {
+      throw new Error('Failed to save');
+    }
+  } catch (error) {
+    console.error('Failed to save settings:', error);
+    settingsStatus.textContent = 'Failed to save settings';
+    settingsStatus.className = 'settings-status error';
+  }
+}
+
+// ============ GAME STATS MODAL ============
+
+/**
+ * Open the game stats modal
+ */
+async function openGameStatsModal() {
+  await loadGameStatsData();
+  await loadCachedWordStates();
+  gameStatsModal?.classList.remove('hidden');
+}
+
+/**
+ * Load cached word states if available
+ */
+async function loadCachedWordStates() {
+  try {
+    const response = await fetch(`${API_BASE}/api/game/stats/word-states`);
+    const data = await response.json();
+
+    if (data.cached && data.words && data.words.length > 0) {
+      gameWordStatesData = data;
+      gameActiveStateFilter = 'all';
+
+      // Show filter chips and update counts
+      gameWordStateFilters?.classList.remove('hidden');
+      updateGameFilterCounts(data.stateCounts, data.totalWords);
+
+      // Render the words
+      renderGameFilteredWords();
+
+      // Update button text with cache time
+      if (refreshGameWordStatesBtn && data.cachedAt) {
+        const timeAgo = getTimeAgo(data.cachedAt);
+        refreshGameWordStatesBtn.textContent = `Refresh (cached ${timeAgo})`;
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load cached word states:', error);
+  }
+}
+
+/**
+ * Get human-readable time ago string
+ */
+function getTimeAgo(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  return `${diffDays}d ago`;
+}
+
+/**
+ * Close the game stats modal
+ */
+function closeGameStatsModal() {
+  gameStatsModal?.classList.add('hidden');
+}
+
+/**
+ * Load and display game stats data
+ */
+async function loadGameStatsData() {
+  try {
+    const period = gameStatsPeriod?.value || 'all';
+    const response = await fetch(`${API_BASE}/api/game/stats?period=${period}`);
+    const stats = await response.json();
+
+    if (stats) {
+      updateGameStatsDisplay(stats);
+    }
+  } catch (error) {
+    console.error('Failed to load game stats:', error);
+  }
+}
+
+/**
+ * Update the stats display with data
+ */
+function updateGameStatsDisplay(stats) {
+  // Update overview cards
+  const totalNarrations = document.getElementById('game-stat-narrations');
+  const totalJapaneseChars = document.getElementById('game-stat-jp-chars');
+  const uniqueKanji = document.getElementById('game-stat-kanji');
+  const uniqueWords = document.getElementById('game-stat-words');
+
+  if (totalNarrations) totalNarrations.textContent = stats.totalNarrations || 0;
+  if (totalJapaneseChars) totalJapaneseChars.textContent = stats.totalJapaneseCharacters || 0;
+  if (uniqueKanji) uniqueKanji.textContent = stats.uniqueKanjiCount || 0;
+  if (uniqueWords) uniqueWords.textContent = stats.uniqueWordsCount || 0;
+
+  // Update kanji grid
+  if (gameStatsKanjiGrid) {
+    const kanjiList = stats.uniqueKanji || [];
+    if (kanjiList.length === 0) {
+      gameStatsKanjiGrid.innerHTML = '<p class="empty-msg">まだ漢字がありません</p>';
+    } else {
+      gameStatsKanjiGrid.innerHTML = kanjiList.map(k => `<span class="kanji-char">${k}</span>`).join('');
+    }
+  }
+
+  // Update word frequency list
+  if (gameStatsWordList) {
+    const wordFreq = stats.wordFrequency || [];
+    if (wordFreq.length === 0) {
+      gameStatsWordList.innerHTML = '<p class="empty-msg">まだ単語がありません</p>';
+    } else {
+      // Show top 50 words
+      const topWords = wordFreq.slice(0, 50);
+      gameStatsWordList.innerHTML = topWords.map(([word, count]) => `
+        <div class="word-item">
+          <span class="word-text">${escapeHtml(word)}</span>
+          <span class="word-count">${count}</span>
+        </div>
+      `).join('');
+    }
+  }
+}
+
+/**
+ * Reset game stats with confirmation
+ */
+async function resetGameStats() {
+  if (!confirm('ゲームの日本語統計をリセットしますか？\nこの操作は取り消せません。')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/api/game/stats/reset`, {
+      method: 'POST'
+    });
+
+    if (response.ok) {
+      showNarration('統計がリセットされました。');
+      await loadGameStatsData();
+    } else {
+      showError('Failed to reset stats');
+    }
+  } catch (error) {
+    console.error('Failed to reset stats:', error);
+    showError('Failed to reset stats');
+  }
+}
+
+// ============ WORD STATES FUNCTIONS ============
+
+/**
+ * Refresh word states from JPDB
+ */
+async function refreshGameWordStates() {
+  const period = gameStatsPeriod?.value || 'all';
+
+  if (refreshGameWordStatesBtn) {
+    refreshGameWordStatesBtn.disabled = true;
+    refreshGameWordStatesBtn.textContent = 'Loading...';
+  }
+  gameWordStatesLoading?.classList.remove('hidden');
+  gameStatsWordList?.classList.add('hidden');
+
+  try {
+    const response = await fetch(`${API_BASE}/api/game/stats/word-states`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ period })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to fetch word states');
+    }
+
+    gameWordStatesData = data;
+    gameActiveStateFilter = 'all';
+
+    // Show the filter chips and update counts
+    gameWordStateFilters?.classList.remove('hidden');
+    updateGameFilterCounts(data.stateCounts, data.totalWords);
+
+    // Render the words with state badges
+    renderGameFilteredWords();
+
+    if (refreshGameWordStatesBtn) {
+      refreshGameWordStatesBtn.textContent = 'Refresh (cached just now)';
+    }
+
+  } catch (error) {
+    console.error('Failed to refresh word states:', error);
+    if (gameStatsWordList) {
+      gameStatsWordList.innerHTML = '<p class="empty-msg">Failed to load word states. Check your JPDB API key.</p>';
+      gameStatsWordList.classList.remove('hidden');
+    }
+    if (refreshGameWordStatesBtn) {
+      refreshGameWordStatesBtn.textContent = 'Refresh JPDB States';
+    }
+  } finally {
+    if (refreshGameWordStatesBtn) {
+      refreshGameWordStatesBtn.disabled = false;
+    }
+    gameWordStatesLoading?.classList.add('hidden');
+  }
+}
+
+/**
+ * Update filter chip counts
+ */
+function updateGameFilterCounts(stateCounts, totalWords) {
+  document.querySelectorAll('#game-word-state-filters .filter-chip').forEach(chip => {
+    const state = chip.dataset.state;
+    const countEl = chip.querySelector('.chip-count');
+
+    if (state === 'all') {
+      countEl.textContent = `(${totalWords})`;
+    } else if (stateCounts && stateCounts[state] !== undefined) {
+      const count = stateCounts[state];
+      countEl.textContent = count > 0 ? `(${count})` : '';
+      chip.style.display = count > 0 ? '' : 'none';
+    }
+  });
+
+  // Update active state
+  document.querySelectorAll('#game-word-state-filters .filter-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.state === gameActiveStateFilter);
+  });
+}
+
+/**
+ * Handle filter chip click
+ */
+function handleGameFilterClick(state) {
+  gameActiveStateFilter = state;
+
+  document.querySelectorAll('#game-word-state-filters .filter-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.state === state);
+  });
+
+  renderGameFilteredWords();
+}
+
+/**
+ * Render filtered words with state badges and review buttons
+ */
+function renderGameFilteredWords() {
+  if (!gameWordStatesData || !gameWordStatesData.words) {
+    if (gameStatsWordList) {
+      gameStatsWordList.innerHTML = '<p class="empty-msg">No word state data. Click "Refresh JPDB States" to load.</p>';
+      gameStatsWordList.classList.remove('hidden');
+    }
+    return;
+  }
+
+  const words = gameWordStatesData.words;
+
+  // Filter words based on active filter
+  const filteredWords = gameActiveStateFilter === 'all'
+    ? words
+    : words.filter(w => w.states && w.states.includes(gameActiveStateFilter));
+
+  if (filteredWords.length === 0) {
+    if (gameStatsWordList) {
+      gameStatsWordList.innerHTML = `<p class="empty-msg">No words with state "${gameActiveStateFilter}".</p>`;
+      gameStatsWordList.classList.remove('hidden');
+    }
+    return;
+  }
+
+  // Render the filtered words with state badges and review buttons
+  if (gameStatsWordList) {
+    gameStatsWordList.innerHTML = filteredWords
+      .map(({ word, count, states, vid, sid }) => {
+        const stateBadges = (states || [])
+          .map(s => `<span class="word-state-badge state-${s}">${s}</span>`)
+          .join('');
+
+        // Only show review buttons if we have vid/sid
+        const reviewButtons = (vid !== null && vid !== undefined && sid !== null && sid !== undefined) ? `
+          <div class="review-buttons" data-vid="${vid}" data-sid="${sid}" data-word="${escapeHtml(word)}">
+            <button class="review-btn review-nothing" data-grade="1" title="Forgot completely">Nothing</button>
+            <button class="review-btn review-something" data-grade="2" title="Recognized but couldn't recall">Something</button>
+            <button class="review-btn review-hard" data-grade="3" title="Recalled with difficulty">Hard</button>
+            <button class="review-btn review-okay" data-grade="4" title="Recalled correctly">Okay</button>
+            <button class="review-btn review-easy" data-grade="5" title="Very easy">Easy</button>
+          </div>
+        ` : '';
+
+        return `
+          <div class="word-item">
+            <div class="word-left">
+              <span class="word-text">${escapeHtml(word)}${stateBadges}</span>
+            </div>
+            <div class="word-right">
+              ${reviewButtons}
+              <span class="word-count">${count}</span>
+            </div>
+          </div>
+        `;
+      })
+      .join('');
+
+    // Add click handlers for review buttons
+    gameStatsWordList.querySelectorAll('.review-btn').forEach(btn => {
+      btn.addEventListener('click', handleGameReviewClick);
+    });
+
+    gameStatsWordList.classList.remove('hidden');
+  }
+}
+
+/**
+ * Handle review button click
+ */
+async function handleGameReviewClick(e) {
+  const btn = e.target;
+  const container = btn.closest('.review-buttons');
+  const vid = parseInt(container.dataset.vid);
+  const sid = parseInt(container.dataset.sid);
+  const word = container.dataset.word;
+  const grade = parseInt(btn.dataset.grade);
+
+  // Disable all buttons in this row while processing
+  container.querySelectorAll('.review-btn').forEach(b => b.disabled = true);
+  btn.classList.add('loading');
+
+  try {
+    const response = await fetch(`${API_BASE}/api/jpdb/review`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vid, sid, grade })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Review failed');
+    }
+
+    // Show success feedback
+    btn.classList.remove('loading');
+    btn.classList.add('success');
+    container.classList.add('reviewed');
+
+    // Show toast (don't use showNarration to avoid TTS)
+    const gradeNames = ['', 'Nothing', 'Something', 'Hard', 'Okay', 'Easy'];
+    console.log(`Reviewed "${word}" as ${gradeNames[grade]}`);
+
+  } catch (error) {
+    btn.classList.remove('loading');
+    container.querySelectorAll('.review-btn').forEach(b => b.disabled = false);
+    showError(error.message);
+  }
+}
+
+// ============ TTS (VOICEVOX) FUNCTIONS ============
+
+/**
+ * Check VOICEVOX status
+ */
+async function checkTtsStatus() {
+  if (!gameTtsStatus) return;
+
+  gameTtsStatus.textContent = 'Checking...';
+  gameTtsStatus.className = '';
+
+  try {
+    const response = await fetch(`${API_BASE}/api/tts/status`);
+    const data = await response.json();
+
+    if (data.running) {
+      gameTtsStatus.textContent = `VOICEVOX running (v${data.version})`;
+      gameTtsStatus.className = 'status-running';
+      await loadTtsSpeakers();
+    } else {
+      gameTtsStatus.textContent = 'VOICEVOX not running';
+      gameTtsStatus.className = 'status-stopped';
+      if (gameTtsSpeaker) {
+        gameTtsSpeaker.innerHTML = '<option value="">Start VOICEVOX first</option>';
+      }
+    }
+  } catch (error) {
+    gameTtsStatus.textContent = 'Could not connect';
+    gameTtsStatus.className = 'status-stopped';
+  }
+}
+
+/**
+ * Load available TTS speakers/voices
+ */
+async function loadTtsSpeakers() {
+  if (!gameTtsSpeaker) return;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/tts/speakers`);
+    const data = await response.json();
+
+    gameTtsSpeaker.innerHTML = '';
+    for (const speaker of data.speakers) {
+      const option = document.createElement('option');
+      option.value = speaker.id;
+      option.textContent = speaker.displayName;
+      if (speaker.id === ttsSpeakerId) {
+        option.selected = true;
+      }
+      gameTtsSpeaker.appendChild(option);
+    }
+  } catch (error) {
+    gameTtsSpeaker.innerHTML = '<option value="">Failed to load voices</option>';
+  }
+}
+
+/**
+ * Test TTS with sample narration
+ */
+async function testTts() {
+  const testText = 'ダンジョンに入る。暗い通路が続く。冒険が始まる。';
+  await speakNarration(testText);
+}
+
+/**
+ * Speak narration text using VOICEVOX
+ */
+async function speakNarration(text) {
+  // Stop any currently playing audio
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+
+  if (!text || text.trim().length === 0) return;
+
+  // Store for repeat with 'r' key
+  lastSpokenNarration = text;
+
+  if (!ttsEnabled) return;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/tts/synthesize`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text,
+        speakerId: ttsSpeakerId,
+        speed: ttsSpeed,
+        volume: ttsVolume
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.warn('TTS error:', error.error);
+      return;
+    }
+
+    const audioBlob = await response.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+
+    currentAudio = new Audio(audioUrl);
+    currentAudio.volume = Math.min(ttsVolume, 1.0);
+    currentAudio.onended = () => {
+      URL.revokeObjectURL(audioUrl);
+      currentAudio = null;
+    };
+    currentAudio.play();
+  } catch (error) {
+    console.warn('TTS playback error:', error);
+  }
+}
+
+/**
+ * Stop any currently playing TTS audio
+ */
+function stopTts() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+}
+
+/**
+ * Initialize TTS settings from loaded settings
+ */
+function initTtsSettings(settings) {
+  ttsEnabled = settings.gameTtsEnabled || false;
+  ttsSpeakerId = settings.gameTtsSpeakerId || 13;
+  ttsSpeed = settings.gameTtsSpeed || 0.9;
+  ttsVolume = settings.gameTtsVolume || 1.0;
+
+  if (gameTtsEnabled) gameTtsEnabled.checked = ttsEnabled;
+  if (gameTtsSpeed) {
+    gameTtsSpeed.value = ttsSpeed;
+    if (gameTtsSpeedValue) gameTtsSpeedValue.textContent = ttsSpeed.toFixed(1);
+  }
+  if (gameTtsVolume) {
+    gameTtsVolume.value = ttsVolume;
+    if (gameTtsVolumeValue) gameTtsVolumeValue.textContent = Math.round(ttsVolume * 100);
+  }
+
+  // Check VOICEVOX status
+  checkTtsStatus();
+}
+
+// ============ UTILITIES ============
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function showError(message) {
+  const toast = document.createElement('div');
+  toast.className = 'error-toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Stat allocation
+async function allocateStatPoint(statKey) {
+  const result = await apiCall('/allocate-stat', 'POST', { stat: statKey });
+
+  if (result?.success) {
+    // Update game state
+    gameState.player = result.state.player;
+    if (result.state.run) {
+      gameState.run = result.state.run;
+    }
+
+    // Show feedback
+    const statNames = { str: 'STR', agi: 'AGI', vit: 'VIT', int: 'INT', dex: 'DEX', luk: 'LUK' };
+    showToast(`${statNames[statKey] || statKey} +1!`, 'success');
+
+    // Refresh UI
+    updateUI();
+  } else if (result?.error) {
+    showToast(result.error, 'error');
+  }
+}
+
+// Expose functions to global scope for onclick handlers
+window.openCreateCharModal = openCreateCharModal;
+window.startNewRun = startNewRun;
+window.startEncounter = startEncounter;
+window.startBossEncounter = startBossEncounter;
+window.nextFloor = nextFloor;
+window.returnToHub = returnToHub;
+window.performAttack = performAttack;
+window.performDefend = performDefend;
+window.performMagic = performMagic;
+window.performItem = performItem;
+window.performFlee = performFlee;
+window.showAttackMenu = showAttackMenu;
+window.showMagicMenu = showMagicMenu;
+window.showItemMenu = showItemMenu;
+window.closeCombatSubmenu = closeCombatSubmenu;
+
+// Room exploration functions
+window.proceedToNextRoom = proceedToNextRoom;
+window.handleRoomAction = handleRoomAction;
+window.disarmTrap = disarmTrap;
+window.triggerTrap = triggerTrap;
+window.lootBody = lootBody;
+window.openTreasure = openTreasure;
+window.useShrine = useShrine;
+window.startRoomEncounter = startRoomEncounter;
+
+// Narration functions
+window.advanceNarration = advanceNarration;
+window.openLogModal = openLogModal;
+window.closeLogModal = closeLogModal;
+
+// Meta-progression functions
+window.openUpgradesModal = openUpgradesModal;
+window.closeUpgradesModal = closeUpgradesModal;
+window.purchaseUpgrade = purchaseUpgrade;
+window.allocateStatPoint = allocateStatPoint;
+
+// Game stats functions
+window.openGameStatsModal = openGameStatsModal;
+window.closeGameStatsModal = closeGameStatsModal;
+window.resetGameStats = resetGameStats;
+
+// For testing - expose gameState
+window.gameState = gameState;

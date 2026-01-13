@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JChat Dungeon - Shadow Gate</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔</text></svg>">
+  <link rel="stylesheet" href="game.css">
+</head>
+<body>
+  <div class="game-app">
+    <!-- Header -->
+    <header class="game-header">
+      <div class="header-left">
+        <h1>Shadow Gate</h1>
+      </div>
+      <div class="header-right">
+        <div class="player-quick-stats" id="quick-stats">
+          <!-- Filled by JS -->
+        </div>
+        <button id="new-game-btn" class="btn-icon" title="New Game">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+        </button>
+        <button id="game-stats-btn" class="btn-icon" title="Japanese Stats">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 20V10"/>
+            <path d="M12 20V4"/>
+            <path d="M6 20v-6"/>
+          </svg>
+        </button>
+        <button id="debug-mode-btn" class="btn-icon" title="Debug Mode (No AI)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M9 14a1 1 0 1 0 0 2 1 1 0 0 0 0-2m6 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
+          </svg>
+        </button>
+        <button id="settings-btn" class="btn-icon" title="Settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Game Area -->
+    <main class="game-main">
+      <!-- VN-Style Battle Stage -->
+      <div class="vn-stage" id="vn-stage">
+        <!-- Background -->
+        <div class="vn-background" id="vn-background"></div>
+
+        <!-- Player Side -->
+        <div class="vn-player-area">
+          <div class="vn-hp-bar player-hp-bar" id="player-hp-bar">
+            <div class="hp-bar-label">
+              <span class="hp-name" id="player-name-display">Hunter</span>
+              <span class="hp-values" id="player-hp-values">120/120</span>
+            </div>
+            <div class="hp-bar-track">
+              <div class="hp-bar-fill" id="player-hp-fill" style="width: 100%"></div>
+            </div>
+            <div class="mp-bar-track">
+              <div class="mp-bar-fill" id="player-mp-fill" style="width: 100%"></div>
+            </div>
+          </div>
+          <div class="vn-sprite player-sprite" id="player-sprite">
+            <img src="assets/sprites/player/hunter.png" alt="Player" id="player-sprite-img">
+          </div>
+        </div>
+
+        <!-- Enemy Side -->
+        <div class="vn-enemy-area">
+          <div class="vn-hp-bar enemy-hp-bar hidden" id="enemy-hp-bar">
+            <div class="hp-bar-label">
+              <span class="hp-name" id="enemy-name-display">Enemy</span>
+              <span class="hp-values" id="enemy-hp-values">35/35</span>
+            </div>
+            <div class="hp-bar-track">
+              <div class="hp-bar-fill enemy" id="enemy-hp-fill" style="width: 100%"></div>
+            </div>
+          </div>
+          <div class="vn-sprite enemy-sprite hidden" id="enemy-sprite">
+            <img src="assets/sprites/enemies/enemy.png" alt="Enemy" id="enemy-sprite-img">
+          </div>
+        </div>
+
+        <!-- Floor/Room indicator -->
+        <div class="vn-floor-indicator" id="floor-indicator">
+          <span id="floor-display">Floor 1</span>
+          <span id="room-display">Room 1/5</span>
+        </div>
+
+        <!-- Word Practice Cards (during combat) -->
+        <div class="word-card-container hidden" id="word-cards">
+          <!-- Populated by JS during combat -->
+        </div>
+
+        <!-- Definitions Reveal Modal (auto-fades) -->
+        <div class="definitions-reveal hidden" id="definitions-reveal">
+          <div class="definitions-word" id="definitions-word">言葉</div>
+          <ul class="definitions-list" id="definitions-list"></ul>
+        </div>
+
+        <!-- Self-grade modal (uses definitions-reveal style) -->
+        <div class="definitions-reveal hidden" id="self-grade-modal">
+          <div class="definitions-word" id="self-grade-word">言葉</div>
+          <ul class="definitions-list" id="self-grade-meanings"></ul>
+          <div class="self-grade-buttons">
+            <button class="review-btn review-nothing" data-grade="1" title="1 - Forgot completely">Nothing</button>
+            <button class="review-btn review-something" data-grade="2" title="2 - Recognized but couldn't recall">Something</button>
+            <button class="review-btn review-hard" data-grade="3" title="3 - Recalled with difficulty">Hard</button>
+            <button class="review-btn review-okay" data-grade="4" title="4 - Recalled correctly">Okay</button>
+            <button class="review-btn review-easy" data-grade="5" title="5 - Very easy">Easy</button>
+          </div>
+        </div>
+
+        <!-- Word Practice Input Modal (typing mode only) -->
+        <div class="word-input-popup hidden" id="word-input-modal">
+          <span class="word-to-define" id="word-to-define">言葉</span>
+          <input type="text" id="word-definition-input" placeholder="English meaning..." autocomplete="off">
+          <span class="word-feedback hidden" id="word-feedback"></span>
+        </div>
+      </div>
+
+      <!-- Game Content (for hub/non-combat screens) -->
+      <div class="game-content hidden" id="game-content">
+        <!-- Will be populated by JS based on game phase -->
+      </div>
+
+      <!-- Bottom Section: Narration + Actions -->
+      <div class="bottom-panel">
+        <!-- Narration Panel (SYSTEM messages) - Now above actions -->
+        <div class="narration-panel" id="narration-panel">
+          <div class="narration-header">
+            <span class="dm-label">SYSTEM</span>
+            <div class="narration-header-right">
+              <span class="narration-continue hidden" id="narration-continue">
+                <span class="continue-text">SPACE</span>
+                <span class="continue-arrow">▼</span>
+              </span>
+              <button id="log-btn" class="btn-icon-small" title="System Log">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="narration-text" id="narration-text">
+            <p>Welcome to Shadow Gate. Create a hunter to begin.</p>
+          </div>
+        </div>
+
+        <!-- Action Panel -->
+        <div class="action-panel" id="action-panel">
+          <!-- Will be populated by JS based on game phase -->
+        </div>
+      </div>
+    </main>
+
+    <!-- Player Status Panel (sidebar on desktop, bottom on mobile) -->
+    <aside class="status-panel" id="status-panel">
+      <div class="status-section">
+        <h3>Hunter Status</h3>
+        <div class="player-stats" id="player-stats">
+          <p class="no-save-msg">No character yet</p>
+        </div>
+      </div>
+      <div class="status-section">
+        <h3>Equipment</h3>
+        <div class="equipment-list" id="equipment-list">
+          <p class="empty-msg">None</p>
+        </div>
+      </div>
+      <div class="status-section">
+        <h3>Inventory</h3>
+        <div class="inventory-list" id="inventory-list">
+          <p class="empty-msg">Empty</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Create Character Modal -->
+    <div class="modal hidden" id="create-char-modal">
+      <div class="modal-content create-char-content">
+        <div class="modal-header">
+          <h2>Create Hunter</h2>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="char-name">Hunter Name</label>
+            <input type="text" id="char-name" placeholder="Enter your name" maxlength="20" value="Hunter">
+          </div>
+          <div class="char-preview">
+            <p class="stat-points-display">Stat Points: <span id="create-stat-points">48</span></p>
+            <p class="stat-hint">Allocate your stat points below. Points unspent will be available later.</p>
+            <div class="stat-allocation-grid">
+              <div class="stat-row" data-stat="str">
+                <span class="stat-name">STR</span>
+                <span class="stat-desc">Physical melee damage</span>
+                <div class="stat-controls">
+                  <button class="stat-btn stat-minus" data-stat="str">−</button>
+                  <span class="stat-value" id="create-str">1</span>
+                  <button class="stat-btn stat-plus" data-stat="str">+</button>
+                </div>
+                <span class="stat-cost" id="create-str-cost">2 pts</span>
+              </div>
+              <div class="stat-row" data-stat="agi">
+                <span class="stat-name">AGI</span>
+                <span class="stat-desc">Evasion (FLEE)</span>
+                <div class="stat-controls">
+                  <button class="stat-btn stat-minus" data-stat="agi">−</button>
+                  <span class="stat-value" id="create-agi">1</span>
+                  <button class="stat-btn stat-plus" data-stat="agi">+</button>
+                </div>
+                <span class="stat-cost" id="create-agi-cost">2 pts</span>
+              </div>
+              <div class="stat-row" data-stat="vit">
+                <span class="stat-name">VIT</span>
+                <span class="stat-desc">HP and physical defense</span>
+                <div class="stat-controls">
+                  <button class="stat-btn stat-minus" data-stat="vit">−</button>
+                  <span class="stat-value" id="create-vit">1</span>
+                  <button class="stat-btn stat-plus" data-stat="vit">+</button>
+                </div>
+                <span class="stat-cost" id="create-vit-cost">2 pts</span>
+              </div>
+              <div class="stat-row" data-stat="int">
+                <span class="stat-name">INT</span>
+                <span class="stat-desc">Magic damage and SP</span>
+                <div class="stat-controls">
+                  <button class="stat-btn stat-minus" data-stat="int">−</button>
+                  <span class="stat-value" id="create-int">1</span>
+                  <button class="stat-btn stat-plus" data-stat="int">+</button>
+                </div>
+                <span class="stat-cost" id="create-int-cost">2 pts</span>
+              </div>
+              <div class="stat-row" data-stat="dex">
+                <span class="stat-name">DEX</span>
+                <span class="stat-desc">Accuracy (HIT)</span>
+                <div class="stat-controls">
+                  <button class="stat-btn stat-minus" data-stat="dex">−</button>
+                  <span class="stat-value" id="create-dex">1</span>
+                  <button class="stat-btn stat-plus" data-stat="dex">+</button>
+                </div>
+                <span class="stat-cost" id="create-dex-cost">2 pts</span>
+              </div>
+              <div class="stat-row" data-stat="luk">
+                <span class="stat-name">LUK</span>
+                <span class="stat-desc">Critical hits</span>
+                <div class="stat-controls">
+                  <button class="stat-btn stat-minus" data-stat="luk">−</button>
+                  <span class="stat-value" id="create-luk">1</span>
+                  <button class="stat-btn stat-plus" data-stat="luk">+</button>
+                </div>
+                <span class="stat-cost" id="create-luk-cost">2 pts</span>
+              </div>
+            </div>
+            <div class="derived-preview">
+              <h4>Derived Stats Preview</h4>
+              <div class="derived-grid">
+                <div class="derived-stat"><span>ATK:</span> <span id="preview-atk">2</span></div>
+                <div class="derived-stat"><span>DEF:</span> <span id="preview-def">1</span></div>
+                <div class="derived-stat"><span>MATK:</span> <span id="preview-matk">2</span></div>
+                <div class="derived-stat"><span>MDEF:</span> <span id="preview-mdef">1</span></div>
+                <div class="derived-stat"><span>HIT:</span> <span id="preview-hit">177</span></div>
+                <div class="derived-stat"><span>FLEE:</span> <span id="preview-flee">102</span></div>
+                <div class="derived-stat"><span>CRIT:</span> <span id="preview-crit">0.3%</span></div>
+                <div class="derived-stat"><span>HP:</span> <span id="preview-hp">40</span></div>
+                <div class="derived-stat"><span>SP:</span> <span id="preview-sp">13</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="reset-stats-btn">Reset Stats</button>
+          <button class="btn-primary" id="create-char-btn">Begin Adventure</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Victory/Defeat Modal -->
+    <div class="modal hidden" id="result-modal">
+      <div class="modal-content result-content">
+        <div class="modal-header">
+          <h2 id="result-title">Victory!</h2>
+        </div>
+        <div class="modal-body">
+          <div id="result-message"></div>
+          <div id="result-rewards" class="rewards-display"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-primary" id="result-continue-btn">Continue</button>
+        </div>
+      </div>
+    </div>
+    <!-- Game Over Modal -->
+    <div class="modal hidden" id="gameover-modal">
+      <div class="modal-content gameover-content">
+        <div class="modal-header">
+          <h2>Game Over</h2>
+        </div>
+        <div class="modal-body">
+          <div id="gameover-stats"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-primary" id="gameover-retry-btn">Try Again</button>
+          <button class="btn-secondary" id="gameover-hub-btn">Return to Hub</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal hidden" id="settings-modal">
+      <div class="modal-content settings-content">
+        <div class="modal-header">
+          <h2>Settings</h2>
+          <button id="close-settings" class="btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body settings-body">
+          <section class="settings-section">
+            <h3>AI Narration</h3>
+            <p class="settings-hint">Configure AI to generate dynamic narration using your JPDB vocabulary.</p>
+
+            <div class="form-group">
+              <label for="ai-provider">AI Provider</label>
+              <select id="ai-provider">
+                <option value="openai">OpenAI</option>
+                <option value="claude">Claude (Sonnet)</option>
+                <option value="gemini">Gemini (1.5 Flash)</option>
+                <option value="openrouter">OpenRouter (Custom Model)</option>
+              </select>
+            </div>
+
+            <div id="openai-model-group" class="form-group">
+              <label for="openai-model">OpenAI Model</label>
+              <select id="openai-model">
+                <option value="gpt-4o-mini">GPT-4o Mini (Fast, Cheap)</option>
+                <option value="gpt-4o">GPT-4o (Balanced)</option>
+                <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
+                <option value="gpt-4.1">GPT-4.1</option>
+                <option value="gpt-5-nano">GPT-5 Nano (Reasoning)</option>
+                <option value="gpt-5-mini">GPT-5 Mini (Reasoning)</option>
+                <option value="gpt-5">GPT-5 (Reasoning)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="ai-key">API Key</label>
+              <input type="password" id="ai-key" placeholder="Your AI provider API key">
+            </div>
+
+            <div id="openrouter-model-group" class="form-group hidden">
+              <label for="openrouter-model">OpenRouter Model</label>
+              <input type="text" id="openrouter-model" placeholder="e.g., anthropic/claude-3.5-sonnet">
+              <small>See <a href="https://openrouter.ai/models" target="_blank">openrouter.ai/models</a></small>
+            </div>
+          </section>
+
+          <section class="settings-section">
+            <h3>Grammar Level</h3>
+            <div class="form-group">
+              <label for="jlpt-level">JLPT Level</label>
+              <select id="jlpt-level">
+                <option value="N5">N5 - Beginner</option>
+                <option value="N4">N4 - Elementary</option>
+                <option value="N3">N3 - Intermediate</option>
+                <option value="N2">N2 - Upper-Intermediate</option>
+                <option value="N1">N1 - Advanced</option>
+              </select>
+            </div>
+          </section>
+
+          <section class="settings-section">
+            <h3>Word Review</h3>
+            <div class="form-group">
+              <label for="review-type">Review Type</label>
+              <select id="review-type">
+                <option value="typing">Typing</option>
+                <option value="self-grade">Self Grade</option>
+              </select>
+            </div>
+          </section>
+
+          <section class="settings-section">
+            <h3>Narrator Voice (VOICEVOX)</h3>
+            <p class="settings-hint">Enable text-to-speech for game narrations. Requires VOICEVOX running locally.</p>
+
+            <div class="form-group">
+              <div class="tts-status-row">
+                <span id="game-tts-status" class="status-stopped">Checking...</span>
+                <button type="button" id="game-tts-refresh" class="btn-icon-small" title="Refresh Status">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="game-tts-enabled">
+                <span>Enable Narrator Voice</span>
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label for="game-tts-speaker">Narrator Voice</label>
+              <select id="game-tts-speaker">
+                <option value="">Loading voices...</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="game-tts-speed">Speed: <span id="game-tts-speed-value">0.9</span>x</label>
+              <input type="range" id="game-tts-speed" min="0.5" max="2.0" step="0.1" value="0.9">
+            </div>
+
+            <div class="form-group">
+              <label for="game-tts-volume">Volume: <span id="game-tts-volume-value">100</span>%</label>
+              <input type="range" id="game-tts-volume" min="0.1" max="1.0" step="0.1" value="1.0">
+            </div>
+
+            <button type="button" id="game-tts-test" class="btn-secondary">Test Voice</button>
+          </section>
+
+          <div class="settings-status" id="settings-status"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="cancel-settings">Cancel</button>
+          <button class="btn-primary" id="save-settings">Save Settings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Log Modal -->
+    <div class="modal hidden" id="log-modal">
+      <div class="modal-content log-content">
+        <div class="modal-header">
+          <h2>System Log</h2>
+          <button id="close-log" class="btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body log-body" id="log-entries">
+          <p class="empty-msg">No system messages yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upgrades Modal -->
+    <div class="modal hidden" id="upgrades-modal">
+      <div class="modal-content upgrades-content">
+        <div class="modal-header">
+          <h2>Shadow Essence</h2>
+          <div class="essence-display">
+            <span class="essence-icon">&#x2728;</span>
+            <span class="essence-count" id="modal-essence-count">0</span>
+          </div>
+          <button id="close-upgrades" class="btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body upgrades-body">
+          <div class="upgrades-tabs">
+            <button class="tab-btn active" data-tab="upgrades">Upgrades</button>
+            <button class="tab-btn" data-tab="achievements">Achievements</button>
+            <button class="tab-btn" data-tab="stats">Stats</button>
+          </div>
+          <div class="tab-content active" id="tab-upgrades">
+            <div class="upgrades-grid" id="upgrades-grid">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+          <div class="tab-content" id="tab-achievements">
+            <div class="achievements-list" id="achievements-list">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+          <div class="tab-content" id="tab-stats">
+            <div class="lifetime-stats" id="lifetime-stats">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Japanese Stats Modal -->
+    <div class="modal hidden" id="game-stats-modal">
+      <div class="modal-content stats-modal-content">
+        <div class="modal-header">
+          <h2>Japanese Stats</h2>
+          <button id="close-game-stats" class="btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body stats-modal-body">
+          <!-- Period Filter -->
+          <div class="stats-period-filter">
+            <label for="stats-period">Time Period:</label>
+            <select id="stats-period">
+              <option value="today">Today</option>
+              <option value="7days">Last 7 Days</option>
+              <option value="14days">Last 14 Days</option>
+              <option value="30days">Last 30 Days</option>
+              <option value="3months">Last 3 Months</option>
+              <option value="12months">Last 12 Months</option>
+              <option value="all" selected>All Time</option>
+            </select>
+          </div>
+
+          <!-- Overview Cards -->
+          <div class="stats-overview">
+            <div class="stats-card">
+              <div class="stats-card-value" id="game-stat-narrations">0</div>
+              <div class="stats-card-label">Narrations</div>
+            </div>
+            <div class="stats-card">
+              <div class="stats-card-value" id="game-stat-jp-chars">0</div>
+              <div class="stats-card-label">Japanese Chars</div>
+            </div>
+            <div class="stats-card">
+              <div class="stats-card-value" id="game-stat-kanji">0</div>
+              <div class="stats-card-label">Unique Kanji</div>
+            </div>
+            <div class="stats-card">
+              <div class="stats-card-value" id="game-stat-words">0</div>
+              <div class="stats-card-label">Unique Words</div>
+            </div>
+          </div>
+
+          <!-- Kanji Grid -->
+          <div class="stats-section">
+            <h3>Kanji Encountered</h3>
+            <div class="kanji-grid" id="game-kanji-grid">
+              <p class="empty-msg">No kanji encountered yet.</p>
+            </div>
+          </div>
+
+          <!-- Word Frequency -->
+          <div class="stats-section">
+            <div class="word-frequency-header">
+              <h3>Word Frequency</h3>
+              <button id="refresh-game-word-states" class="btn-secondary btn-sm">Refresh JPDB States</button>
+            </div>
+
+            <!-- Card State Filters -->
+            <div id="game-word-state-filters" class="word-state-filters hidden">
+              <span class="filter-label">Filter by state:</span>
+              <div class="filter-chips">
+                <button class="filter-chip active" data-state="all">All <span class="chip-count"></span></button>
+                <button class="filter-chip" data-state="new">New <span class="chip-count"></span></button>
+                <button class="filter-chip" data-state="learning">Learning <span class="chip-count"></span></button>
+                <button class="filter-chip" data-state="known">Known <span class="chip-count"></span></button>
+                <button class="filter-chip" data-state="never-forget">Never Forget <span class="chip-count"></span></button>
+                <button class="filter-chip" data-state="due">Due <span class="chip-count"></span></button>
+                <button class="filter-chip" data-state="failed">Failed <span class="chip-count"></span></button>
+                <button class="filter-chip" data-state="suspended">Suspended <span class="chip-count"></span></button>
+                <button class="filter-chip" data-state="blacklisted">Blacklisted <span class="chip-count"></span></button>
+              </div>
+            </div>
+
+            <div id="game-word-states-loading" class="loading-indicator hidden">
+              <span class="spinner"></span> Loading word states from JPDB...
+            </div>
+
+            <div class="word-frequency-list" id="game-word-frequency">
+              <p class="empty-msg">No words tracked yet.</p>
+            </div>
+          </div>
+
+          <!-- Reset Button -->
+          <div class="stats-actions">
+            <button class="btn-secondary btn-danger" id="reset-game-stats">Reset Stats</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shop Modal -->
+    <div class="modal hidden" id="shop-modal">
+      <div class="modal-content shop-content">
+        <div class="modal-header">
+          <h2 id="shop-title">Merchant</h2>
+          <div class="shop-gold">
+            <span class="gold-icon">&#x1FA99;</span>
+            <span class="gold-amount" id="shop-player-gold">0</span> G
+          </div>
+          <button id="close-shop" class="btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body shop-body">
+          <p class="shop-greeting" id="shop-greeting">「いらっしゃい、冒険者よ。何が欲しい？」</p>
+          <div class="shop-items" id="shop-items">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="shop-close-btn">Leave Shop</button>
+          <button class="btn-secondary hidden" id="shop-skip-btn">スキップ（ゴールドを貯める）</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blacksmith Modal -->
+    <div class="modal hidden" id="blacksmith-modal">
+      <div class="modal-content blacksmith-content">
+        <div class="modal-header">
+          <h2>Blacksmith</h2>
+          <div class="shop-gold">
+            <span class="gold-icon">&#x1FA99;</span>
+            <span class="gold-amount" id="blacksmith-player-gold">0</span> G
+          </div>
+          <button id="close-blacksmith" class="btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body blacksmith-body">
+          <p class="blacksmith-greeting">「おう、冒険者。武器を鍛えてやろうか？」</p>
+          <div class="blacksmith-items" id="blacksmith-items">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="blacksmith-close-btn">Leave Blacksmith</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="game.js"></script>
+</body>
+</html>
