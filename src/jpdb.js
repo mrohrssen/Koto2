@@ -765,6 +765,50 @@ export async function reviewVocabulary(apiKey, vid, sid, grade) {
 }
 
 /**
+ * Invalidate a word in the local state cache after it has been reviewed.
+ * This removes the 'due' state so the word won't appear in due words list
+ * until the cache is refreshed from JPDB.
+ * @param {number} vid - Vocabulary ID
+ */
+export function invalidateWordStateCache(vid) {
+  if (!config.vocabSuggestionsFile) {
+    return false;
+  }
+
+  try {
+    if (!existsSync(config.vocabSuggestionsFile)) {
+      return false;
+    }
+
+    const data = JSON.parse(readFileSync(config.vocabSuggestionsFile, 'utf-8'));
+    const wordStateCache = data.wordStateCache || {};
+
+    // Find the entry with matching vid and remove 'due' from states
+    for (const [word, stateInfo] of Object.entries(wordStateCache)) {
+      if (stateInfo.vid === vid) {
+        const states = stateInfo.states || [];
+        const dueIndex = states.indexOf('due');
+        if (dueIndex !== -1) {
+          states.splice(dueIndex, 1);
+          stateInfo.states = states;
+          // Set dueAt far in the future so it won't be prioritized
+          stateInfo.dueAt = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days from now
+          console.log(`[JPDB Cache] Invalidated word "${word}" (vid=${vid}) - removed 'due' state`);
+        }
+        break;
+      }
+    }
+
+    // Write back the updated cache
+    writeFileSync(config.vocabSuggestionsFile, JSON.stringify(data, null, 2));
+    return true;
+  } catch (e) {
+    console.warn('[JPDB Cache] Failed to invalidate word state:', e.message);
+    return false;
+  }
+}
+
+/**
  * Get the updated state for a single word from JPDB
  */
 export async function getWordState(apiKey, vid, sid) {

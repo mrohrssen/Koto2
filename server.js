@@ -23,7 +23,8 @@ import {
   reviewVocabulary,
   REVIEW_GRADES,
   getDueWordsWithMeanings,
-  getWordState
+  getWordState,
+  invalidateWordStateCache
 } from './src/jpdb.js';
 
 import {
@@ -484,6 +485,10 @@ app.post('/api/jpdb/review', async (req, res) => {
 
   try {
     const result = await reviewVocabulary(settings.jpdbApiKey, vid, sid, grade);
+
+    // Invalidate local cache so this word won't reappear as "due" immediately
+    invalidateWordStateCache(parseInt(vid, 10));
+
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
