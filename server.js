@@ -756,11 +756,13 @@ app.post('/api/game/realtime-attack', (req, res) => {
 });
 
 app.post('/api/game/combat-end-narration', async (req, res) => {
-  const { outcome, rewards, enemy } = req.body;
+  const { victory, expGained, goldGained, loot, leveledUp, newLevel, isBoss } = req.body;
   try {
     let narration;
+    const enemy = gameManager.combat?.enemy;
 
-    if (outcome === 'victory') {
+    if (victory) {
+      const rewards = { xp: expGained, gold: goldGained, drops: loot };
       const enrichedRewards = enrichRewardDrops(rewards);
       updateGameStatsWithEvent(gameStats, 'combat', {
         victory: true,
@@ -780,7 +782,7 @@ app.post('/api/game/combat-end-narration', async (req, res) => {
       });
     }
 
-    res.json({ narration });
+    res.json({ narration, state: getEnrichedGameState() });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -970,6 +972,17 @@ app.post('/api/game/shop-buy', async (req, res) => {
 app.post('/api/game/shop-skip', async (req, res) => {
   try {
     const result = gameManager.skipShop();
+    saveGameData();
+    res.json({ ...result, state: getEnrichedGameState() });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post('/api/game/post-combat-shop-buy', async (req, res) => {
+  const { itemIndex } = req.body;
+  try {
+    const result = gameManager.buyFromPostCombatShop(itemIndex);
     saveGameData();
     res.json({ ...result, state: getEnrichedGameState() });
   } catch (error) {
@@ -1211,10 +1224,11 @@ app.post('/api/game/debug-mode', (req, res) => {
 });
 
 app.post('/api/game/heal', (req, res) => {
+  const { amount } = req.body;
   const player = gameManager.run?.player || gameManager.player;
   if (player) {
-    player.hp = player.maxHp;
-    player.sp = player.maxSp;
+    const healAmount = amount || 0;
+    player.hp = Math.min(player.hp + healAmount, player.maxHp);
     saveGameData();
     res.json({ success: true, state: getEnrichedGameState() });
   } else {

@@ -3439,7 +3439,12 @@ function resetShopModal() {
 
 async function buyFromShop(itemIndex) {
   try {
-    const result = await apiCall('/shop-buy', 'POST', { itemIndex });
+    // Check if this is a post-combat shop or regular merchant
+    const isPostCombatShop = gameState.run?.postCombatShop?.active;
+    const endpoint = isPostCombatShop ? '/post-combat-shop-buy' : '/shop-buy';
+    const payload = isPostCombatShop ? { itemIndex } : { itemId: itemIndex };
+
+    const result = await apiCall(endpoint, 'POST', payload);
     if (result) {
       // Hide shop modal and reset state
       if (shopModal) shopModal.classList.add('hidden');
@@ -3448,7 +3453,7 @@ async function buyFromShop(itemIndex) {
       if (result.state) {
         gameState = { ...gameState, ...result.state };
       }
-      showNarration(result.result?.item?.name + 'を購入した！');
+      showNarration(result.item?.name ? result.item.name + 'を購入した！' : '購入完了！');
       updateUI();
     }
   } catch (error) {

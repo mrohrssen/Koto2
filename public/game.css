@@ -68,6 +68,11 @@ body {
   line-height: 1.6;
 }
 
+/* Global utility class */
+.hidden {
+  display: none !important;
+}
+
 /* ============ BASE LAYOUT ============ */
 .game-app {
   display: grid;
