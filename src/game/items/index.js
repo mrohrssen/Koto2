@@ -6,6 +6,7 @@
 // Import all item collections
 import { CONSUMABLES } from './consumables.js';
 import { WEAPONS, ARMOR, SHIELDS, ACCESSORIES } from './equipment.js';
+import { HACKER_EQUIPMENT, getClassStartingEquipment } from './class-equipment.js';
 import { SKILLS } from './skills.js';
 import {
   CHIPS,
@@ -26,6 +27,7 @@ import {
 // Re-export item collections
 export { CONSUMABLES } from './consumables.js';
 export { WEAPONS, ARMOR, SHIELDS, ACCESSORIES } from './equipment.js';
+export { HACKER_EQUIPMENT, getClassStartingEquipment } from './class-equipment.js';
 export { SKILLS } from './skills.js';
 
 // Re-export chip system
@@ -48,8 +50,12 @@ export {
 // ============ HELPER FUNCTIONS ============
 
 export function getItem(itemId) {
-  // Check chips first, then consumables and equipment
+  // Check chips first, then class equipment, consumables, and equipment
   if (CHIPS[itemId]) return CHIPS[itemId];
+  // Check Hacker class equipment
+  for (const equip of Object.values(HACKER_EQUIPMENT)) {
+    if (equip.id === itemId) return equip;
+  }
   return CONSUMABLES[itemId] || WEAPONS[itemId] || ARMOR[itemId] || SHIELDS[itemId] || ACCESSORIES[itemId] || null;
 }
 

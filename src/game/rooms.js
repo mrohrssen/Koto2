@@ -1,7 +1,6 @@
 // Room System - NEO TOKYO: System Liberation
 // Exploration through Tokyo wards controlled by SYSTEM
 
-import { WEAPONS, ARMOR, SHIELDS, ACCESSORIES } from './items.js';
 import { generateShopChips, getChipDisplayInfo } from './items/chips.js';
 
 // Tokyo Ward names (floor -> ward mapping)
@@ -323,46 +322,6 @@ function selectTreasureTier(floor) {
 }
 
 /**
- * Get items by rarity from a category
- */
-function getItemsByRarity(category, rarity) {
-  return Object.values(category).filter(item => item.rarity === rarity && item.buyPrice !== null);
-}
-
-/**
- * Select random items from a category
- */
-function selectRandomItems(category, rarity, count) {
-  const available = getItemsByRarity(category, rarity);
-  if (available.length === 0) return [];
-
-  const selected = [];
-  const shuffled = [...available].sort(() => Math.random() - 0.5);
-
-  for (let i = 0; i < Math.min(count, shuffled.length); i++) {
-    selected.push(shuffled[i]);
-  }
-
-  return selected;
-}
-
-/**
- * Get equipment rarity available for a floor
- * Floor 1-2: Common
- * Floor 2-3: Common + Uncommon
- * Floor 3-4: Uncommon + Rare
- * Floor 5-6: Rare + Epic
- * Floor 7: Epic (Legendary only from boss drops)
- */
-function getAvailableRarities(floor) {
-  if (floor <= 1) return ['common'];
-  if (floor <= 2) return ['common', 'uncommon'];
-  if (floor <= 4) return ['uncommon', 'rare'];
-  if (floor <= 6) return ['rare', 'epic'];
-  return ['epic'];
-}
-
-/**
  * Generate merchant inventory based on floor
  * Higher floors have better items but fewer basic supplies
  */
@@ -430,67 +389,8 @@ function generateMerchantInventory(floor) {
     }
   }
 
-  // ============ EQUIPMENT ============
-
-  const rarities = getAvailableRarities(floor);
-
-  // Weapons: 2-3 random weapons of appropriate rarity
-  for (const rarity of rarities) {
-    const weaponCount = rarity === rarities[rarities.length - 1] ? 2 : 1;
-    const selectedWeapons = selectRandomItems(WEAPONS, rarity, weaponCount);
-    for (const weapon of selectedWeapons) {
-      items.push({
-        itemId: weapon.id,
-        price: weapon.buyPrice,
-        quantity: 1,
-        type: 'equipment'
-      });
-    }
-  }
-
-  // Body Armor: 1-2 random armors
-  for (const rarity of rarities) {
-    const armorCount = rarity === rarities[rarities.length - 1] ? 1 : 1;
-    const selectedArmors = selectRandomItems(ARMOR, rarity, armorCount);
-    for (const armor of selectedArmors) {
-      items.push({
-        itemId: armor.id,
-        price: armor.buyPrice,
-        quantity: 1,
-        type: 'equipment'
-      });
-    }
-  }
-
-  // Shields: 1 random shield (50% chance)
-  if (Math.random() < 0.5) {
-    for (const rarity of rarities) {
-      const selectedShields = selectRandomItems(SHIELDS, rarity, 1);
-      if (selectedShields.length > 0) {
-        items.push({
-          itemId: selectedShields[0].id,
-          price: selectedShields[0].buyPrice,
-          quantity: 1,
-          type: 'equipment'
-        });
-        break; // Only add one shield
-      }
-    }
-  }
-
-  // Accessories: 1-2 random accessories
-  for (const rarity of rarities) {
-    const accCount = rarity === rarities[rarities.length - 1] ? 1 : 1;
-    const selectedAccessories = selectRandomItems(ACCESSORIES, rarity, accCount);
-    for (const accessory of selectedAccessories) {
-      items.push({
-        itemId: accessory.id,
-        price: accessory.buyPrice,
-        quantity: 1,
-        type: 'equipment'
-      });
-    }
-  }
+  // NOTE: Equipment removed - players use fixed Hacker class equipment
+  // Shops now only sell consumables and chips (chips sold via post-combat shop)
 
   return items;
 }

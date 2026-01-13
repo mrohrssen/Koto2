@@ -12,6 +12,10 @@ export {
   ACCESSORIES,
   SKILLS,
 
+  // Hacker class equipment (NEO TOKYO)
+  HACKER_EQUIPMENT,
+  getClassStartingEquipment,
+
   // Chip system (NEO TOKYO augmentations)
   CHIPS,
   CHIP_CATEGORIES,

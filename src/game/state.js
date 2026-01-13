@@ -9,7 +9,7 @@ import {
   calculateMaxSp,
   getStartingPlayerStats
 } from './stats.js';
-import { calculateEquipmentBonuses } from './items.js';
+import { calculateEquipmentBonuses, getClassStartingEquipment } from './items.js';
 
 // ============ META-PROGRESSION STATE ============
 
@@ -363,13 +363,8 @@ export function createNewPlayer(name = "Hunter", customStats = null, customStatP
       { id: "potion", quantity: 3 }
     ],
 
-    // Equipped gear (4 slots) - start with basic equipment
-    equipment: {
-      weapon: { id: "steelSword" },
-      body: { id: "leatherArmor" },
-      shield: null,
-      accessory: { id: "adventurersHeadband" }
-    },
+    // Equipped gear (4 slots) - fixed Hacker class equipment
+    equipment: getClassStartingEquipment('hacker'),
 
     // Learned skills
     skills: [
