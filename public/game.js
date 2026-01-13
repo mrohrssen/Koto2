@@ -675,6 +675,13 @@ async function startEncounter() {
     showNarration(narration);
     updateUI();
 
+    // Show possessed dialogue if available
+    const dialogue = result?.result?.dialogue || enemy?.dialogue?.possessed;
+    if (dialogue) {
+      await delay(400);
+      showEnemyDialogue(dialogue, 'possessed');
+    }
+
     // Brief pause to show enemy, then start realtime combat
     await delay(800);
     startRealtimeCombat();
@@ -694,12 +701,38 @@ async function startBossEncounter() {
     showNarration(narration);
     updateUI();
 
+    // Show possessed dialogue if available
+    const dialogue = result?.result?.dialogue || enemy?.dialogue?.possessed;
+    if (dialogue) {
+      await delay(500);
+      showEnemyDialogue(dialogue, 'possessed');
+    }
+
     // Brief pause to show boss, then start realtime combat
     await delay(1000);
     startRealtimeCombat();
   } else if (result) {
     updateUI();
   }
+}
+
+// Show enemy dialogue bubble (possessed/glitching/liberated)
+function showEnemyDialogue(text, type = 'possessed') {
+  const enemyArea = document.querySelector('.vn-enemy-area');
+  if (!enemyArea || !text) return;
+
+  // Remove any existing dialogue
+  const existing = enemyArea.querySelector('.enemy-dialogue');
+  if (existing) existing.remove();
+
+  const dialogue = document.createElement('div');
+  dialogue.className = `enemy-dialogue enemy-dialogue-${type}`;
+  dialogue.innerHTML = `<span class="dialogue-text">${text}</span>`;
+  enemyArea.appendChild(dialogue);
+
+  // Auto-remove after delay based on type
+  const duration = type === 'liberated' ? 4000 : type === 'glitching' ? 3000 : 2500;
+  setTimeout(() => dialogue.remove(), duration);
 }
 
 async function nextFloor() {
@@ -1389,8 +1422,17 @@ async function executePlayerAttack() {
     updateEnemyHPBar(result.enemyHp);
     updatePlayerHPBar(result.playerHp);
 
+    // Show glitching dialogue when enemy HP drops below 30%
+    if (result.enemyGlitching && result.glitchingDialogue) {
+      showEnemyDialogue(result.glitchingDialogue, 'glitching');
+    }
+
     // Check if combat ended
     if (result.combatEnded) {
+      // Show liberated dialogue on victory
+      if (result.victory && result.liberatedDialogue) {
+        showEnemyDialogue(result.liberatedDialogue, 'liberated');
+      }
       stopRealtimeCombat(result);
       return;
     }

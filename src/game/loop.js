@@ -1213,7 +1213,8 @@ export class GameManager {
     return {
       enemy: this.combat.enemy,
       intent: this.combat.intent,
-      playerGoesFirst: this.combat.turn === 'player'
+      playerGoesFirst: this.combat.turn === 'player',
+      dialogue: enemy.dialogue?.possessed || null  // SYSTEM-controlled dialogue
     };
   }
 
@@ -1240,7 +1241,8 @@ export class GameManager {
       enemy: this.combat.enemy,
       intent: this.combat.intent,
       playerGoesFirst: this.combat.turn === 'player',
-      isFinalBoss: isFinal
+      isFinalBoss: isFinal,
+      dialogue: boss.dialogue?.possessed || null  // SYSTEM-controlled dialogue
     };
   }
 
@@ -1308,6 +1310,14 @@ export class GameManager {
       // Track damage dealt
       this.run.stats.damageDealt += playerResult.totalDamage;
 
+      // Check if enemy is glitching (HP < 30% but not defeated)
+      const hpPercent = this.combat.enemy.hp / this.combat.enemy.maxHp;
+      if (hpPercent > 0 && hpPercent <= 0.3 && !this.combat.glitchingShown) {
+        result.enemyGlitching = true;
+        result.glitchingDialogue = this.combat.enemy.dialogue?.glitching || null;
+        this.combat.glitchingShown = true;  // Only show once per combat
+      }
+
       // Check if enemy defeated
       if (playerResult.enemyDefeated) {
         result.combatEnded = true;
@@ -1315,6 +1325,7 @@ export class GameManager {
 
         // Process victory rewards (but don't narrate)
         const enemy = this.combat.enemy;
+        result.liberatedDialogue = enemy.dialogue?.liberated || null;
         const isBoss = enemy.isBoss;
 
         let rewards;

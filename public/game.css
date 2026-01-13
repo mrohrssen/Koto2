@@ -4737,3 +4737,107 @@ body::before {
   text-shadow: 0 0 10px var(--liberation-glow);
 }
 
+/* ============ ENEMY DIALOGUE SYSTEM ============ */
+
+.enemy-dialogue {
+  position: absolute;
+  bottom: 55%;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 280px;
+  padding: 0.8rem 1.2rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  text-align: center;
+  z-index: 100;
+  animation: dialogueFadeIn 0.4s ease-out;
+}
+
+.enemy-dialogue::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+}
+
+/* Possessed - cold SYSTEM blue, robotic */
+.enemy-dialogue-possessed {
+  background: rgba(0, 20, 40, 0.95);
+  border: 1px solid var(--system-cyan);
+  color: var(--system-cyan);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3), inset 0 0 20px rgba(0, 212, 255, 0.1);
+}
+
+.enemy-dialogue-possessed::after {
+  border-top: 10px solid var(--system-cyan);
+}
+
+.enemy-dialogue-possessed .dialogue-text {
+  text-shadow: 0 0 5px rgba(0, 212, 255, 0.5);
+}
+
+/* Glitching - unstable, flickering */
+.enemy-dialogue-glitching {
+  background: rgba(40, 10, 30, 0.95);
+  border: 1px solid var(--liberation-pink);
+  color: #fff;
+  box-shadow: 0 0 15px rgba(255, 20, 147, 0.3);
+  animation: dialogueFadeIn 0.4s ease-out, dialogueGlitch 0.3s ease-in-out infinite;
+}
+
+.enemy-dialogue-glitching::after {
+  border-top: 10px solid var(--liberation-pink);
+}
+
+.enemy-dialogue-glitching .dialogue-text {
+  text-shadow:
+    -1px 0 var(--system-cyan),
+    1px 0 var(--liberation-pink);
+}
+
+/* Liberated - warm, human */
+.enemy-dialogue-liberated {
+  background: rgba(40, 25, 10, 0.95);
+  border: 1px solid var(--liberation-orange);
+  color: var(--liberation-yellow);
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.4), inset 0 0 15px rgba(255, 215, 0, 0.1);
+}
+
+.enemy-dialogue-liberated::after {
+  border-top: 10px solid var(--liberation-orange);
+}
+
+.enemy-dialogue-liberated .dialogue-text {
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+}
+
+@keyframes dialogueFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes dialogueGlitch {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  25% {
+    transform: translateX(-48%) translateY(-1px);
+  }
+  50% {
+    transform: translateX(-52%) translateY(1px);
+  }
+  75% {
+    transform: translateX(-50%) translateY(-1px);
+  }
+}
+
