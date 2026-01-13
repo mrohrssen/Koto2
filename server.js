@@ -708,7 +708,7 @@ app.post('/api/game/enter-floor', async (req, res) => {
 app.post('/api/game/attack', async (req, res) => {
   const { attackType } = req.body;
   try {
-    const result = gameManager.playerAttack(attackType);
+    const result = gameManager.attack(attackType);
 
     let narration = null;
     if (result.enemyDefeated) {
@@ -745,9 +745,9 @@ app.post('/api/game/attack', async (req, res) => {
 });
 
 app.post('/api/game/realtime-attack', (req, res) => {
-  const { attackType, timing } = req.body;
+  const { attackerType } = req.body;
   try {
-    const result = gameManager.playerAttack(attackType, { timing });
+    const result = gameManager.realtimeAttackCycle(attackerType || 'player');
     saveGameData();
     res.json({ ...result, state: getEnrichedGameState() });
   } catch (error) {
@@ -788,7 +788,7 @@ app.post('/api/game/combat-end-narration', async (req, res) => {
 
 app.post('/api/game/defend', async (req, res) => {
   try {
-    const result = gameManager.playerDefend();
+    const result = gameManager.defend();
     const narration = await generateGameNarration('playerDefend', {
       player: gameManager.run.player,
       enemy: gameManager.combat?.enemy,
@@ -805,7 +805,7 @@ app.post('/api/game/defend', async (req, res) => {
 app.post('/api/game/magic', async (req, res) => {
   const { skillId } = req.body;
   try {
-    const result = gameManager.playerMagic(skillId);
+    const result = gameManager.magic(skillId);
 
     let narration = null;
     if (result.enemyDefeated) {
@@ -939,7 +939,7 @@ app.post('/api/game/next-floor', async (req, res) => {
 
 app.post('/api/game/proceed', async (req, res) => {
   try {
-    const room = gameManager.proceed();
+    const room = gameManager.proceedToNextRoom();
 
     let narration = null;
     if (room.type === 'monster') {
@@ -959,7 +959,7 @@ app.post('/api/game/proceed', async (req, res) => {
 app.post('/api/game/shop-buy', async (req, res) => {
   const { itemId } = req.body;
   try {
-    const result = gameManager.shopBuy(itemId);
+    const result = gameManager.buyFromShop(itemId);
     saveGameData();
     res.json({ ...result, state: getEnrichedGameState() });
   } catch (error) {
@@ -969,7 +969,7 @@ app.post('/api/game/shop-buy', async (req, res) => {
 
 app.post('/api/game/shop-skip', async (req, res) => {
   try {
-    const result = gameManager.shopSkip();
+    const result = gameManager.skipShop();
     saveGameData();
     res.json({ ...result, state: getEnrichedGameState() });
   } catch (error) {
@@ -1078,14 +1078,14 @@ app.post('/api/game/use-shrine', async (req, res) => {
 });
 
 app.get('/api/game/shop', (req, res) => {
-  const shop = gameManager.getShop();
+  const shop = gameManager.getShopInventory();
   res.json(shop || { items: [] });
 });
 
 app.post('/api/game/shop/buy', (req, res) => {
   const { itemId } = req.body;
   try {
-    const result = gameManager.shopBuy(itemId);
+    const result = gameManager.buyFromShop(itemId);
     saveGameData();
     res.json({ ...result, state: getEnrichedGameState() });
   } catch (error) {
@@ -1102,7 +1102,7 @@ app.get('/api/game/refine-preview', (req, res) => {
 app.post('/api/game/refine', async (req, res) => {
   const { itemId } = req.body;
   try {
-    const result = gameManager.refineItem(itemId);
+    const result = gameManager.refineEquipment(itemId);
     saveGameData();
     res.json({ ...result, state: getEnrichedGameState() });
   } catch (error) {
@@ -1127,7 +1127,7 @@ app.post('/api/game/start-encounter', async (req, res) => {
 
 app.post('/api/game/start-boss', async (req, res) => {
   try {
-    const encounter = gameManager.startBoss();
+    const encounter = gameManager.startBossEncounter();
     const narration = await generateGameNarration('bossStart', {
       enemy: encounter.enemy,
       player: gameManager.run.player
@@ -1141,7 +1141,7 @@ app.post('/api/game/start-boss', async (req, res) => {
 });
 
 app.post('/api/game/forfeit', (req, res) => {
-  const result = gameManager.forfeit();
+  const result = gameManager.forfeitRun();
   cancelPendingPrefetches();
   clearPrefetchCache();
   saveGameData();
