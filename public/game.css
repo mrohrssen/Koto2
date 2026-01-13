@@ -969,6 +969,309 @@ body::before {
   box-shadow: 0 0 8px #ff6b6b;
 }
 
+/* Equipment actions (modify + unequip buttons) */
+.equipment-actions {
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.modify-btn {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  border: 1px solid var(--cyber-cyan);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(0, 255, 255, 0.1);
+  color: var(--cyber-cyan);
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.modify-btn:hover {
+  background: rgba(0, 255, 255, 0.25);
+  box-shadow: 0 0 8px var(--cyber-cyan);
+}
+
+.modify-btn .chip-count {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.1rem 0.25rem;
+  border-radius: 2px;
+  font-size: 0.55rem;
+}
+
+/* ============ CHIP MODAL ============ */
+
+.chip-modal-content {
+  max-width: 500px;
+}
+
+.chip-modal-equipment {
+  text-align: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1rem;
+}
+
+.chip-modal-equipment h3 {
+  margin: 0;
+  color: var(--cyber-cyan);
+  font-size: 1.1rem;
+}
+
+.chip-modal-equipment .slots-used {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Chip slots grid */
+.chip-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.chip-slot {
+  aspect-ratio: 1;
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  text-align: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.chip-slot.empty {
+  opacity: 0.6;
+}
+
+.chip-slot.empty:hover {
+  opacity: 1;
+  border-color: var(--cyber-cyan);
+}
+
+.chip-slot.filled {
+  border-style: solid;
+  border-color: var(--cyber-cyan);
+  background: rgba(0, 255, 255, 0.1);
+}
+
+.chip-slot.filled:hover {
+  background: rgba(255, 100, 100, 0.2);
+  border-color: #ff6b6b;
+}
+
+.chip-slot .slot-label {
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+}
+
+.chip-slot .chip-name {
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.chip-slot .chip-category {
+  font-size: 0.5rem;
+  color: var(--cyber-cyan);
+  margin-top: 0.2rem;
+}
+
+/* Chip slot rarity colors */
+.chip-slot.rarity-uncommon {
+  border-color: #2ecc71;
+  background: rgba(46, 204, 113, 0.15);
+}
+
+.chip-slot.rarity-rare {
+  border-color: #3498db;
+  background: rgba(52, 152, 219, 0.15);
+}
+
+.chip-slot.rarity-epic {
+  border-color: #9b59b6;
+  background: rgba(155, 89, 182, 0.15);
+}
+
+.chip-slot.rarity-legendary {
+  border-color: #f39c12;
+  background: rgba(243, 156, 18, 0.15);
+}
+
+/* Chip inventory section */
+.chip-inventory-section h4 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.chip-inventory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.inventory-chip {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.inventory-chip:hover {
+  background: rgba(0, 255, 255, 0.15);
+  border-color: var(--cyber-cyan);
+}
+
+.inventory-chip .chip-name {
+  font-weight: bold;
+  font-size: 0.85rem;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.inventory-chip .chip-info {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  margin-bottom: 0.25rem;
+}
+
+.inventory-chip .chip-category {
+  color: var(--cyber-cyan);
+  font-weight: 600;
+}
+
+.inventory-chip .chip-cost {
+  color: var(--text-secondary);
+}
+
+.inventory-chip .chip-effect {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+/* Inventory chip rarity colors */
+.inventory-chip.rarity-uncommon {
+  border-color: #2ecc71;
+}
+
+.inventory-chip.rarity-uncommon .chip-name {
+  color: #2ecc71;
+}
+
+.inventory-chip.rarity-rare {
+  border-color: #3498db;
+}
+
+.inventory-chip.rarity-rare .chip-name {
+  color: #3498db;
+}
+
+.inventory-chip.rarity-epic {
+  border-color: #9b59b6;
+}
+
+.inventory-chip.rarity-epic .chip-name {
+  color: #9b59b6;
+}
+
+.inventory-chip.rarity-legendary {
+  border-color: #f39c12;
+}
+
+.inventory-chip.rarity-legendary .chip-name {
+  color: #f39c12;
+}
+
+/* ============ WARD SELECTION ============ */
+
+.ward-selection {
+  text-align: center;
+  padding: 1rem;
+}
+
+.ward-selection h2 {
+  color: var(--cyber-cyan);
+  margin-bottom: 0.5rem;
+}
+
+.ward-selection-desc {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.ward-cards {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.ward-card {
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  min-width: 140px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.ward-card:hover {
+  border-color: var(--cyber-cyan);
+  background: rgba(0, 255, 255, 0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 4px 20px rgba(0, 255, 255, 0.3);
+}
+
+.ward-card .ward-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.ward-card .ward-name-en {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.ward-card .ward-theme {
+  font-size: 0.8rem;
+  color: var(--cyber-cyan);
+  margin-bottom: 0.5rem;
+}
+
+.ward-card .ward-tier {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
 /* Rarity colors for inventory items */
 .inventory-item.rarity-uncommon .item-name {
   color: #2ecc71;
@@ -3804,6 +4107,20 @@ body::before {
 .shop-item.rarity-rare { border-left: 3px solid #3b82f6; }
 .shop-item.rarity-epic { border-left: 3px solid #a855f7; }
 .shop-item.rarity-legendary { border-left: 3px solid #f59e0b; }
+
+/* Rarity badge in shop item name */
+.shop-item-rarity {
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+}
+.shop-item-rarity.rarity-common { color: #9ca3af; }
+.shop-item-rarity.rarity-uncommon { color: #22c55e; }
+.shop-item-rarity.rarity-rare { color: #3b82f6; }
+.shop-item-rarity.rarity-epic { color: #a855f7; }
+.shop-item-rarity.rarity-legendary { color: #f59e0b; text-shadow: 0 0 5px #f59e0b; }
 
 .shop-empty {
   text-align: center;

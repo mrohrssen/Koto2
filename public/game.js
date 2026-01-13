@@ -747,6 +747,26 @@ async function nextFloor() {
 }
 
 async function returnToHub() {
+  // Stop realtime combat if active
+  if (realtimeCombatActive) {
+    if (playerAttackTimer) {
+      clearTimeout(playerAttackTimer);
+      playerAttackTimer = null;
+    }
+    if (enemyAttackTimer) {
+      clearTimeout(enemyAttackTimer);
+      enemyAttackTimer = null;
+    }
+    realtimeCombatActive = false;
+    playerAttackPending = false;
+    enemyAttackPending = false;
+  }
+
+  // Close any open combat-related modals
+  hideWordCards();
+  closeWordInputModal();
+  closeSelfGradeModal();
+
   await apiCall('/forfeit', 'POST');
   gameState.run = null;
   gameState.combat = null;
@@ -2545,11 +2565,17 @@ function updateEquipment() {
   const renderSlot = (slotName, slotKey) => {
     const item = eq[slotKey];
     if (item) {
+      const chipsEquipped = item.equippedChips?.length || 0;
       return `
         <div class="equipment-slot equipped">
           <span class="slot-name">${slotName}</span>
           <span class="item-name">${item.name}</span>
-          <button class="unequip-btn" onclick="unequipItem('${slotKey}')" title="Unequip">✕</button>
+          <div class="equipment-actions">
+            <button class="modify-btn" onclick="openChipModal('${slotKey}')" title="Modify Chips">
+              <span class="chip-count">${chipsEquipped}/5</span> Modify
+            </button>
+            <button class="unequip-btn" onclick="unequipItem('${slotKey}')" title="Unequip">✕</button>
+          </div>
         </div>
       `;
     }
@@ -2703,6 +2729,9 @@ function updateGameContent() {
     case 'hub':
       showHubContent();
       break;
+    case 'ward_selection':
+      showWardSelectionContent();
+      break;
     case 'exploring':
       showExploringContent();
       break;
@@ -2758,6 +2787,10 @@ function updateActionPanel() {
           Upgrades
         </button>
       `;
+      break;
+    case 'ward_selection':
+      // Actions handled by showWardSelectionContent
+      actionPanel.innerHTML = '';
       break;
     case 'exploring':
       actionPanel.innerHTML = `
@@ -2870,6 +2903,86 @@ function showHubContent() {
     </div>
   `;
 }
+
+async function showWardSelectionContent() {
+  // Determine if this is starting ward or next ward selection
+  const isNextWard = gameState.run?.currentWard != null;
+  const currentWard = gameState.run?.currentWard;
+  const currentFloor = gameState.run?.floor || 1;
+
+  // Fetch ward options from appropriate API
+  let wardOptions = [];
+  try {
+    const endpoint = isNextWard ? '/api/game/next-ward-options' : '/api/game/starting-wards';
+    const response = await fetch(endpoint);
+    wardOptions = await response.json();
+  } catch (error) {
+    console.error('Failed to fetch ward options:', error);
+  }
+
+  if (wardOptions.length === 0) {
+    gameContent.innerHTML = `
+      <div class="content-center">
+        <h2>Error</h2>
+        <p>Failed to load ward options</p>
+      </div>
+    `;
+    return;
+  }
+
+  const wardCardsHtml = wardOptions.map(ward => `
+    <div class="ward-card" onclick="selectWard('${ward.id}', ${isNextWard})">
+      <div class="ward-name">${ward.name}</div>
+      <div class="ward-name-en">${ward.nameEn}</div>
+      <div class="ward-theme">${ward.theme}</div>
+      <div class="ward-tier">Tier ${ward.tier || 1}</div>
+    </div>
+  `).join('');
+
+  const title = isNextWard ? '次の区を選択 (Select Next Ward)' : '区を選択 (Select Ward)';
+  const desc = isNextWard
+    ? `${currentWard}区クリア！次はどこへ向かう？`
+    : 'どこから潜入を開始する？';
+
+  gameContent.innerHTML = `
+    <div class="ward-selection">
+      <h2>${title}</h2>
+      <p class="ward-selection-desc">${desc}</p>
+      <div class="ward-cards">
+        ${wardCardsHtml}
+      </div>
+    </div>
+  `;
+}
+
+async function selectWard(wardId, isNextWard = false) {
+  try {
+    const endpoint = isNextWard ? '/api/game/select-next-ward' : '/api/game/select-starting-ward';
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ wardId })
+    });
+
+    const result = await response.json();
+
+    if (result.error) {
+      showNarration(`選択失敗: ${result.error}`);
+      return;
+    }
+
+    if (result.state) {
+      gameState = result.state;
+    }
+
+    updateUI();
+  } catch (error) {
+    console.error('Failed to select ward:', error);
+    showNarration('区の選択に失敗しました');
+  }
+}
+
+window.selectWard = selectWard;
 
 function showExploringContent() {
   const run = gameState.run;
@@ -3203,7 +3316,7 @@ function formatItemStats(item) {
         if (effect.bonusDamage) stats.push(`+${effect.bonusDamage}ダメージ`);
       }
 
-      // ON_EFFECT chips (onKill, onDamage)
+      // ON_EFFECT chips (onKill, onDamage, onDodge, onCrit, onHeal, onLowHp, onRoomEnter, onStatusInflict)
       if (item.effects.onKill) {
         const effect = item.effects.onKill;
         const effectParts = [];
@@ -3219,6 +3332,68 @@ function formatItemStats(item) {
         const effect = item.effects.onDamage;
         if (effect.damageReduction) {
           stats.push(`被弾時${Math.round(effect.chance * 100)}%:${Math.round(effect.damageReduction * 100)}%軽減`);
+        }
+        if (effect.heal) {
+          stats.push(`被弾時${Math.round(effect.chance * 100)}%:HP+${effect.heal}`);
+        }
+      }
+      if (item.effects.onDodge) {
+        const effect = item.effects.onDodge;
+        const effectParts = [];
+        if (effect.buff === 'speed') effectParts.push(`加速+${Math.round(effect.value * 100)}%`);
+        if (effect.counterAttack) effectParts.push('反撃');
+        if (effect.heal) effectParts.push(`HP+${effect.heal}`);
+        if (effectParts.length > 0) {
+          stats.push(`回避時${Math.round(effect.chance * 100)}%:${effectParts.join(',')}`);
+        }
+      }
+      if (item.effects.onCrit) {
+        const effect = item.effects.onCrit;
+        const effectParts = [];
+        if (effect.heal) effectParts.push(`HP+${effect.heal}`);
+        if (effect.healPercent) effectParts.push(`HP+${Math.round(effect.healPercent * 100)}%`);
+        if (effect.bonusDamage) effectParts.push(`+${effect.bonusDamage}ダメ`);
+        if (effect.damageBonus) effectParts.push(`ダメ+${Math.round(effect.damageBonus * 100)}%`);
+        if (effectParts.length > 0) {
+          stats.push(`クリ時${Math.round(effect.chance * 100)}%:${effectParts.join(',')}`);
+        }
+      }
+      if (item.effects.onHeal) {
+        const effect = item.effects.onHeal;
+        const effectParts = [];
+        if (effect.bonusHeal) effectParts.push(`+${effect.bonusHeal}回復`);
+        if (effect.healBonus) effectParts.push(`回復+${Math.round(effect.healBonus * 100)}%`);
+        if (effectParts.length > 0) {
+          stats.push(`回復時:${effectParts.join(',')}`);
+        }
+      }
+      if (item.effects.onLowHp) {
+        const effect = item.effects.onLowHp;
+        const effectParts = [];
+        if (effect.damageBonus) effectParts.push(`ダメ+${Math.round(effect.damageBonus * 100)}%`);
+        if (effect.defenseBonus) effectParts.push(`防御+${Math.round(effect.defenseBonus * 100)}%`);
+        if (effectParts.length > 0) {
+          const threshold = effect.threshold ? Math.round(effect.threshold * 100) : 30;
+          stats.push(`HP${threshold}%以下:${effectParts.join(',')}`);
+        }
+      }
+      if (item.effects.onRoomEnter) {
+        const effect = item.effects.onRoomEnter;
+        const effectParts = [];
+        if (effect.heal) effectParts.push(`HP+${effect.heal}`);
+        if (effect.goldBonus) effectParts.push(`金+${Math.round(effect.goldBonus * 100)}%`);
+        if (effect.xpBonus) effectParts.push(`経験+${Math.round(effect.xpBonus * 100)}%`);
+        if (effectParts.length > 0) {
+          stats.push(`部屋移動時:${effectParts.join(',')}`);
+        }
+      }
+      if (item.effects.onStatusInflict) {
+        const effect = item.effects.onStatusInflict;
+        const effectParts = [];
+        if (effect.bonusDamage) effectParts.push(`+${effect.bonusDamage}ダメ`);
+        if (effect.extendDuration) effectParts.push(`時間+${effect.extendDuration}`);
+        if (effectParts.length > 0) {
+          stats.push(`状態異常付与時:${effectParts.join(',')}`);
         }
       }
 
@@ -3320,12 +3495,21 @@ async function openShop() {
         // Build stats string in Japanese
         const statsStr = formatItemStats(item);
 
+        const rarityLabel = {
+          common: 'コモン',
+          uncommon: 'アンコモン',
+          rare: 'レア',
+          epic: 'エピック',
+          legendary: 'レジェンド'
+        }[item.rarity] || '';
+
         return `
           <div class="${itemClass}" data-item-id="${item.itemId}">
             <div class="shop-item-info">
               <div class="shop-item-name">
                 ${item.name}
                 <span class="shop-item-name-en">(${item.nameEn})</span>
+                ${rarityLabel ? `<span class="shop-item-rarity rarity-${item.rarity}">[${rarityLabel}]</span>` : ''}
               </div>
               <div class="shop-item-desc">${item.description}</div>
               ${statsStr ? `<div class="shop-item-stats">${statsStr}</div>` : ''}
@@ -3596,12 +3780,21 @@ function showPostCombatShopContent() {
       // Build stats string
       const statsStr = formatItemStats(item);
 
+      const rarityLabel = {
+        common: 'コモン',
+        uncommon: 'アンコモン',
+        rare: 'レア',
+        epic: 'エピック',
+        legendary: 'レジェンド'
+      }[item.rarity] || '';
+
       return `
         <div class="${itemClass}" data-item-index="${index}">
           <div class="shop-item-info">
             <div class="shop-item-name">
               ${item.name}
               ${item.nameEn ? `<span class="shop-item-name-en">(${item.nameEn})</span>` : ''}
+              ${rarityLabel ? `<span class="shop-item-rarity rarity-${item.rarity}">[${rarityLabel}]</span>` : ''}
             </div>
             <div class="shop-item-desc">${item.description || ''}</div>
             ${statsStr ? `<div class="shop-item-stats">${statsStr}</div>` : ''}
@@ -4320,6 +4513,247 @@ async function openUpgradesModal() {
 function closeUpgradesModal() {
   upgradesModal?.classList.add('hidden');
 }
+
+// ============ CHIP SLOT MODAL ============
+
+let currentChipModalSlot = null;
+let chipLoadoutCache = null;
+
+/**
+ * Open the chip modification modal for an equipment slot
+ */
+async function openChipModal(equipmentSlot) {
+  currentChipModalSlot = equipmentSlot;
+
+  // Fetch current chip loadout
+  try {
+    const response = await fetch('/api/game/chip-loadout');
+    chipLoadoutCache = await response.json();
+  } catch (error) {
+    console.error('Failed to fetch chip loadout:', error);
+    showNarration('チップ情報の取得に失敗しました');
+    return;
+  }
+
+  const modal = document.getElementById('chip-modal');
+  if (!modal) {
+    console.error('Chip modal not found');
+    return;
+  }
+
+  renderChipModal();
+  modal.classList.remove('hidden');
+}
+
+/**
+ * Close the chip modal
+ */
+function closeChipModal() {
+  const modal = document.getElementById('chip-modal');
+  modal?.classList.add('hidden');
+  currentChipModalSlot = null;
+}
+
+/**
+ * Render the chip modal content
+ */
+function renderChipModal() {
+  if (!chipLoadoutCache || !currentChipModalSlot) return;
+
+  const slotData = chipLoadoutCache.equipment[currentChipModalSlot];
+  const inventory = chipLoadoutCache.inventory || [];
+  const p = gameState.run?.player || gameState.player;
+  const equipmentItem = p?.equipment?.[currentChipModalSlot];
+
+  const slotNames = {
+    weapon: 'Weapon',
+    body: 'Body',
+    shield: 'Shield',
+    accessory: 'Accessory'
+  };
+
+  // Build slot grid (5 slots)
+  let slotsHtml = '';
+  for (let i = 0; i < 5; i++) {
+    const chip = slotData.equippedChips[i];
+    if (chip) {
+      const rarityClass = `rarity-${chip.rarity || 'common'}`;
+      slotsHtml += `
+        <div class="chip-slot filled ${rarityClass}" onclick="removeChipFromSlot('${chip.id}')" title="Click to remove">
+          <span class="chip-name">${chip.name}</span>
+          <span class="chip-category">${getCategoryLabel(chip.category)}</span>
+        </div>
+      `;
+    } else {
+      slotsHtml += `
+        <div class="chip-slot empty">
+          <span class="slot-label">Empty</span>
+        </div>
+      `;
+    }
+  }
+
+  // Build inventory chips
+  let inventoryHtml = '';
+  if (inventory.length === 0) {
+    inventoryHtml = '<p class="empty-msg">No chips in inventory. Defeat enemies to collect chips!</p>';
+  } else {
+    for (const chip of inventory) {
+      const rarityClass = `rarity-${chip.rarity || 'common'}`;
+      const slotCost = chip.rarity === 'legendary' ? 3 : chip.rarity === 'epic' ? 2 : 1;
+      inventoryHtml += `
+        <div class="inventory-chip ${rarityClass}" onclick="addChipToSlot('${chip.id}')" title="Click to equip">
+          <span class="chip-name">${chip.name}</span>
+          <span class="chip-info">
+            <span class="chip-category">${getCategoryLabel(chip.category)}</span>
+            <span class="chip-cost">${slotCost} slot${slotCost > 1 ? 's' : ''}</span>
+          </span>
+          <span class="chip-effect">${getChipEffectText(chip)}</span>
+        </div>
+      `;
+    }
+  }
+
+  const modalBody = document.querySelector('#chip-modal .modal-body');
+  if (modalBody) {
+    modalBody.innerHTML = `
+      <div class="chip-modal-equipment">
+        <h3>${equipmentItem?.name || slotNames[currentChipModalSlot]}</h3>
+        <p class="slots-used">${slotData.slotsUsed}/${slotData.maxSlots} slots used</p>
+      </div>
+      <div class="chip-slots-grid">
+        ${slotsHtml}
+      </div>
+      <div class="chip-inventory-section">
+        <h4>Available Chips</h4>
+        <div class="chip-inventory-list">
+          ${inventoryHtml}
+        </div>
+      </div>
+    `;
+  }
+}
+
+/**
+ * Get category label for display
+ */
+function getCategoryLabel(category) {
+  const labels = {
+    stat: 'STAT',
+    onHit: 'ON HIT',
+    onEffect: 'ON EFFECT',
+    counter: 'COUNTER'
+  };
+  return labels[category] || category?.toUpperCase() || '???';
+}
+
+/**
+ * Get chip effect text for display
+ */
+function getChipEffectText(chip) {
+  if (!chip.effects) return '';
+
+  if (chip.effects.stats) {
+    const stats = Object.entries(chip.effects.stats)
+      .map(([stat, val]) => `+${val} ${stat.toUpperCase()}`)
+      .join(', ');
+    return stats;
+  }
+
+  if (chip.effects.onHit) {
+    const hit = chip.effects.onHit;
+    return `${Math.round(hit.chance * 100)}% ${hit.status}`;
+  }
+
+  if (chip.effects.counter) {
+    const c = chip.effects.counter;
+    return `+${c.perStack} ${c.stat} per ${c.trigger}`;
+  }
+
+  return '';
+}
+
+/**
+ * Add a chip from inventory to the current equipment slot
+ */
+async function addChipToSlot(chipId) {
+  if (!currentChipModalSlot) return;
+
+  try {
+    const response = await fetch('/api/game/equip-chip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        equipmentSlot: currentChipModalSlot,
+        chipId: chipId
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.error) {
+      showNarration(`装着失敗: ${result.error}`);
+      return;
+    }
+
+    // Refresh loadout and re-render
+    const loadoutResponse = await fetch('/api/game/chip-loadout');
+    chipLoadoutCache = await loadoutResponse.json();
+    renderChipModal();
+
+    // Also refresh main game state
+    await loadGameState();
+    updateUI();
+
+  } catch (error) {
+    console.error('Failed to equip chip:', error);
+    showNarration('チップの装着に失敗しました');
+  }
+}
+
+/**
+ * Remove a chip from the current equipment slot
+ */
+async function removeChipFromSlot(chipId) {
+  if (!currentChipModalSlot) return;
+
+  try {
+    const response = await fetch('/api/game/unequip-chip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        equipmentSlot: currentChipModalSlot,
+        chipId: chipId
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.error) {
+      showNarration(`取り外し失敗: ${result.error}`);
+      return;
+    }
+
+    // Refresh loadout and re-render
+    const loadoutResponse = await fetch('/api/game/chip-loadout');
+    chipLoadoutCache = await loadoutResponse.json();
+    renderChipModal();
+
+    // Also refresh main game state
+    await loadGameState();
+    updateUI();
+
+  } catch (error) {
+    console.error('Failed to unequip chip:', error);
+    showNarration('チップの取り外しに失敗しました');
+  }
+}
+
+// Make chip modal functions globally accessible
+window.openChipModal = openChipModal;
+window.closeChipModal = closeChipModal;
+window.addChipToSlot = addChipToSlot;
+window.removeChipFromSlot = removeChipFromSlot;
 
 /**
  * Switch tabs in the upgrades modal

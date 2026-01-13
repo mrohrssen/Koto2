@@ -14,6 +14,164 @@ export const FLOOR_NAMES = {
   7: { name: '皇居', nameEn: 'Imperial Palace', theme: 'system' }
 };
 
+// ============ WARD PATH SYSTEM ============
+// Tokyo ward graph for path selection - converges to Imperial Palace
+
+export const WARD_INFO = {
+  nerima: {
+    id: 'nerima',
+    name: '練馬区',
+    nameEn: 'Nerima Ward',
+    theme: '住宅街',
+    themeEn: 'Residential',
+    tier: 1,
+    description: '静かな住宅街。多くの市民がここからSYSTEMに取り込まれた。'
+  },
+  setagaya: {
+    id: 'setagaya',
+    name: '世田谷区',
+    nameEn: 'Setagaya Ward',
+    theme: '学園',
+    themeEn: 'Academic',
+    tier: 1,
+    description: '大学と学校が多い。若い市民たちがSYSTEMに洗脳されている。'
+  },
+  nakano: {
+    id: 'nakano',
+    name: '中野区',
+    nameEn: 'Nakano Ward',
+    theme: 'オタク',
+    themeEn: 'Otaku',
+    tier: 2,
+    description: 'マンガやアニメの聖地。サブカルチャーもSYSTEMに制御されている。'
+  },
+  shibuya: {
+    id: 'shibuya',
+    name: '渋谷区',
+    nameEn: 'Shibuya Ward',
+    theme: 'ファッション',
+    themeEn: 'Fashion',
+    tier: 2,
+    description: '若者の街。トレンドセッターたちがSYSTEMの広告塔に。'
+  },
+  shinjuku: {
+    id: 'shinjuku',
+    name: '新宿区',
+    nameEn: 'Shinjuku Ward',
+    theme: '歓楽街',
+    themeEn: 'Entertainment',
+    tier: 3,
+    description: '眠らない街。ネオンの裏でSYSTEMが全てを監視している。'
+  },
+  ikebukuro: {
+    id: 'ikebukuro',
+    name: '池袋区',
+    nameEn: 'Ikebukuro Ward',
+    theme: '商業',
+    themeEn: 'Commerce',
+    tier: 3,
+    description: '巨大デパートが立ち並ぶ。消費もSYSTEMに最適化されている。'
+  },
+  minato: {
+    id: 'minato',
+    name: '港区',
+    nameEn: 'Minato Ward',
+    theme: '企業',
+    themeEn: 'Corporate',
+    tier: 4,
+    description: '高層ビルが立ち並ぶ。SYSTEMの経済基盤がここにある。'
+  },
+  chiyoda: {
+    id: 'chiyoda',
+    name: '千代田区',
+    nameEn: 'Chiyoda Ward',
+    theme: '政府',
+    themeEn: 'Government',
+    tier: 4,
+    description: '官公庁街。SYSTEMは政治すら支配している。'
+  },
+  palace: {
+    id: 'palace',
+    name: '皇居',
+    nameEn: 'Imperial Palace',
+    theme: 'SYSTEM',
+    themeEn: 'System Core',
+    tier: 5,
+    description: 'SYSTEMのコアが眠る場所。ここで全てが決まる。'
+  }
+};
+
+// Ward paths - which wards connect to which
+export const WARD_PATHS = {
+  // Starting wards (outer Tokyo)
+  nerima: { next: ['nakano', 'shibuya'], tier: 1 },
+  setagaya: { next: ['nakano', 'shibuya'], tier: 1 },
+
+  // Mid wards
+  nakano: { next: ['shinjuku', 'ikebukuro'], tier: 2 },
+  shibuya: { next: ['shinjuku', 'ikebukuro'], tier: 2 },
+
+  // Inner wards
+  shinjuku: { next: ['minato', 'chiyoda'], tier: 3 },
+  ikebukuro: { next: ['minato', 'chiyoda'], tier: 3 },
+
+  // Core wards
+  minato: { next: ['palace'], tier: 4 },
+  chiyoda: { next: ['palace'], tier: 4 },
+
+  // Final
+  palace: { next: [], tier: 5, isFinal: true }
+};
+
+// Starting ward options
+export const STARTING_WARDS = ['nerima', 'setagaya'];
+
+/**
+ * Get starting ward options for run start
+ * @returns {Array} Array of ward info objects
+ */
+export function getStartingWardOptions() {
+  return STARTING_WARDS.map(id => ({
+    ...WARD_INFO[id],
+    paths: WARD_PATHS[id]
+  }));
+}
+
+/**
+ * Get next ward options after clearing current ward
+ * @param {string} currentWard - Current ward ID
+ * @returns {Array} Array of ward info objects (or empty if at palace)
+ */
+export function getNextWardOptions(currentWard) {
+  const paths = WARD_PATHS[currentWard];
+  if (!paths || paths.next.length === 0) {
+    return [];
+  }
+
+  return paths.next.map(id => ({
+    ...WARD_INFO[id],
+    paths: WARD_PATHS[id]
+  }));
+}
+
+/**
+ * Get ward tier (difficulty level)
+ * @param {string} wardId - Ward ID
+ * @returns {number} Tier (1-5)
+ */
+export function getWardTier(wardId) {
+  return WARD_PATHS[wardId]?.tier || 1;
+}
+
+/**
+ * Get ward info by ID
+ * @param {string} wardId - Ward ID
+ * @returns {object} Ward info or null
+ */
+export function getWardInfo(wardId) {
+  return WARD_INFO[wardId] || null;
+}
+
 // Room types and their distribution
 export const ROOM_TYPES = {
   empty: 'empty',           // Nothing of interest

@@ -3,7 +3,7 @@
  * All player combat action execution
  */
 
-import { getItem, getSkill, calculateEquipmentBonuses, processOnHitChips, processOnKillChips, processOnDamageChips } from '../items.js';
+import { getItem, getSkill, calculateEquipmentBonuses, processOnHitChips, processOnKillChips, processOnDamageChips, getEquippedChips } from '../items.js';
 import {
   calculateFleeChance,
   calculateItemHealing,
@@ -16,7 +16,8 @@ import {
   STATUS_EFFECTS,
   applyStatusEffect,
   hasStatusEffect,
-  breakDamageEffects
+  breakDamageEffects,
+  processMaxStackExplosion
 } from './status-effects.js';
 import {
   getPlayerCombatStats,
@@ -128,8 +129,9 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
   }
 
   // Process on-hit chip effects (only if we hit and dealt damage)
-  if (result.anyHit && result.totalDamage > 0 && !result.enemyDefeated && player.chips?.length > 0) {
-    const chipEffects = processOnHitChips(player.chips, enemy);
+  const equippedChips = getEquippedChips(player);
+  if (result.anyHit && result.totalDamage > 0 && !result.enemyDefeated && equippedChips.length > 0) {
+    const chipEffects = processOnHitChips(equippedChips, enemy);
     if (chipEffects.length > 0) {
       result.chipEffects = [];
       for (const effect of chipEffects) {
@@ -145,8 +147,26 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
             result.chipEffects.push({
               chipName: effect.chipName,
               status: effect.status,
-              duration: effect.duration
+              duration: effect.duration,
+              stacks: applied.stacks
             });
+
+            // Check for max stack explosion (OVERHEATED at 5 stacks)
+            if (applied.maxStacksReached && applied.explosionDamage) {
+              const explosion = processMaxStackExplosion(enemy, effect.status);
+              if (explosion.triggered) {
+                result.chipEffects.push({
+                  chipName: effect.chipName,
+                  explosion: true,
+                  explosionDamage: explosion.damage
+                });
+                result.totalDamage += explosion.damage;
+                // Check if explosion defeated enemy
+                if (explosion.targetDefeated) {
+                  result.enemyDefeated = true;
+                }
+              }
+            }
           }
         }
       }
@@ -169,7 +189,22 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
           const statusDuration = duration || statusDef?.duration || 2;
           const applied = applyStatusEffect(enemy, status, statusDuration);
           if (applied.applied) {
-            result.statusInflicted = { status, duration: statusDuration };
+            result.statusInflicted = { status, duration: statusDuration, stacks: applied.stacks };
+
+            // Check for max stack explosion (OVERHEATED at 5 stacks)
+            if (applied.maxStacksReached && applied.explosionDamage) {
+              const explosion = processMaxStackExplosion(enemy, status);
+              if (explosion.triggered) {
+                result.statusExplosion = {
+                  status: status,
+                  damage: explosion.damage
+                };
+                result.totalDamage += explosion.damage;
+                if (explosion.targetDefeated) {
+                  result.enemyDefeated = true;
+                }
+              }
+            }
           }
         }
       }

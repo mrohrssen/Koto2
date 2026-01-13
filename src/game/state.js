@@ -383,6 +383,11 @@ export function createNewRun(player) {
     floor: 1,
     maxFloors: 7,
 
+    // Ward path system (NEO TOKYO)
+    currentWard: null,      // Current ward ID (e.g., 'nerima')
+    wardPath: [],           // Array of ward IDs visited in order
+    wardSelectionRequired: true,  // True at start and after each boss
+
     // Room-based exploration
     rooms: [],              // Array of room objects for current floor
     currentRoom: 0,         // Index of current room (0-based)
@@ -416,6 +421,26 @@ export function createNewRun(player) {
       treasuresOpened: 0,
       startTime: Date.now(),
       endTime: null
+    },
+
+    // Counter chip tracking stats (reset each run)
+    runStats: {
+      kills: 0,
+      critsLanded: 0,
+      dodges: 0,
+      roomsCleared: 0,
+      damageDealt: 0,
+      damageHealed: 0,
+      statusesApplied: {
+        defrag: 0,
+        lag: 0,
+        bufferOverflow: 0,
+        corrupted: 0,
+        exposed: 0,
+        glitched: 0,
+        overheated: 0,
+        debug: 0
+      }
     }
   };
 }

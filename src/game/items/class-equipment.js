@@ -1,6 +1,7 @@
 // Fixed Class Equipment - Hacker Class
 // Players start with fixed equipment that defines their class identity
-// Equipment cannot be changed, only upgraded (future feature: chip slots)
+// Equipment cannot be changed, only upgraded
+// Each equipment has chip slots for passive augmentations
 
 export const HACKER_EQUIPMENT = {
   tool: {
@@ -13,7 +14,7 @@ export const HACKER_EQUIPMENT = {
     rarity: 'uncommon',
     atk: 25,
     dex: 2,
-    chipSlots: 2,  // Future: slots for equipping chips
+    maxChipSlots: 5,  // 5 chip slots per equipment piece
     buyPrice: 0,
     sellPrice: 0
   },
@@ -29,7 +30,7 @@ export const HACKER_EQUIPMENT = {
     def: 8,
     mdef: 5,
     int: 1,
-    chipSlots: 2,
+    maxChipSlots: 5,
     buyPrice: 0,
     sellPrice: 0
   },
@@ -44,7 +45,7 @@ export const HACKER_EQUIPMENT = {
     rarity: 'uncommon',
     maxHp: 20,
     luk: 2,
-    chipSlots: 2,
+    maxChipSlots: 5,
     buyPrice: 0,
     sellPrice: 0
   },
@@ -59,7 +60,7 @@ export const HACKER_EQUIPMENT = {
     rarity: 'uncommon',
     int: 2,
     maxSp: 15,
-    chipSlots: 2,
+    maxChipSlots: 5,
     buyPrice: 0,
     sellPrice: 0
   }
@@ -73,18 +74,28 @@ export const HACKER_EQUIPMENT = {
 export function getClassStartingEquipment(className = 'hacker') {
   if (className === 'hacker') {
     return {
-      weapon: { id: HACKER_EQUIPMENT.tool.id },
-      body: { id: HACKER_EQUIPMENT.outfit.id },
-      shield: { id: HACKER_EQUIPMENT.device.id },
-      accessory: { id: HACKER_EQUIPMENT.bag.id }
+      weapon: { id: HACKER_EQUIPMENT.tool.id, equippedChips: [] },
+      body: { id: HACKER_EQUIPMENT.outfit.id, equippedChips: [] },
+      shield: { id: HACKER_EQUIPMENT.device.id, equippedChips: [] },
+      accessory: { id: HACKER_EQUIPMENT.bag.id, equippedChips: [] }
     };
   }
 
   // Default fallback (shouldn't happen)
   return {
-    weapon: { id: 'modifiedUmbrella' },
-    body: { id: 'hackerHoodie' },
-    shield: { id: 'brokenSmartwatch' },
-    accessory: { id: 'messengerBag' }
+    weapon: { id: 'modifiedUmbrella', equippedChips: [] },
+    body: { id: 'hackerHoodie', equippedChips: [] },
+    shield: { id: 'brokenSmartwatch', equippedChips: [] },
+    accessory: { id: 'messengerBag', equippedChips: [] }
   };
+}
+
+/**
+ * Get max chip slots for an equipment piece
+ * @param {string} equipmentId - Equipment item ID
+ * @returns {number} Max chip slots (default 5)
+ */
+export function getMaxChipSlots(equipmentId) {
+  const equipment = Object.values(HACKER_EQUIPMENT).find(e => e.id === equipmentId);
+  return equipment?.maxChipSlots || 5;
 }

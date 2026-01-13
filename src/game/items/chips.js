@@ -532,6 +532,1363 @@ export const CHIPS = {
         maxStacks: 10 // max 30% (10 stat chips)
       }
     }
+  },
+
+  // ========== ADDITIONAL STAT CHIPS (40) ==========
+  // Office Supplies - INT/DEX focused
+  mechanicalPencil: {
+    id: 'mechanicalPencil',
+    name: 'シャーペン',
+    nameEn: 'Mechanical Pencil',
+    description: '精密な0.5mmのシャーペン。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { dex: 2, int: 1 } }
+  },
+  eraser: {
+    id: 'eraser',
+    name: '消しゴム',
+    nameEn: 'Eraser',
+    description: 'よく消える消しゴム。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { int: 2 } }
+  },
+  ruler: {
+    id: 'ruler',
+    name: '定規',
+    nameEn: 'Ruler',
+    description: '15cmの透明定規。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { dex: 3 } }
+  },
+  stapler: {
+    id: 'stapler',
+    name: 'ホッチキス',
+    nameEn: 'Stapler',
+    description: 'オフィス用ホッチキス。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { str: 2, dex: 1 } }
+  },
+  paperClips: {
+    id: 'paperClips',
+    name: 'クリップ',
+    nameEn: 'Paper Clips',
+    description: 'カラフルなクリップの束。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { dex: 1, luk: 1 } }
+  },
+  scissors: {
+    id: 'scissors',
+    name: 'はさみ',
+    nameEn: 'Scissors',
+    description: '事務用はさみ。切れ味抜群。',
+    category: 'stat',
+    rarity: 'uncommon',
+    effects: { stats: { str: 2, dex: 2 } }
+  },
+  notebook: {
+    id: 'notebook',
+    name: 'ノート',
+    nameEn: 'Notebook',
+    description: '罫線入りのノート。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { int: 4 } }
+  },
+  highlighter: {
+    id: 'highlighter',
+    name: '蛍光ペン',
+    nameEn: 'Highlighter',
+    description: '黄色い蛍光ペン。重要な部分を強調。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { int: 2, dex: 1 } }
+  },
+  stickyNotes: {
+    id: 'stickyNotes',
+    name: '付箋',
+    nameEn: 'Sticky Notes',
+    description: 'カラフルな付箋。忘れない。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { int: 1, luk: 2 } }
+  },
+  binder: {
+    id: 'binder',
+    name: 'バインダー',
+    nameEn: 'Binder',
+    description: '整理整頓に便利なバインダー。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { int: 3 } }
+  },
+
+  // Kitchen Items - STR/VIT focused
+  fryingPan: {
+    id: 'fryingPan',
+    name: 'フライパン',
+    nameEn: 'Frying Pan',
+    description: '鉄製の重いフライパン。武器にもなる。',
+    category: 'stat',
+    rarity: 'uncommon',
+    effects: { stats: { str: 4, vit: 1 } }
+  },
+  ladle: {
+    id: 'ladle',
+    name: 'おたま',
+    nameEn: 'Ladle',
+    description: '大きなおたま。汁物に便利。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { str: 2, vit: 2 } }
+  },
+  chopsticks: {
+    id: 'chopsticks',
+    name: '箸',
+    nameEn: 'Chopsticks',
+    description: '塗り箸。器用さが上がる。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { dex: 2, agi: 1 } }
+  },
+  riceCooker: {
+    id: 'riceCooker',
+    name: '炊飯器',
+    nameEn: 'Rice Cooker',
+    description: '小型の炊飯器。ご飯で元気。',
+    category: 'stat',
+    rarity: 'uncommon',
+    effects: { stats: { vit: 3, int: 1 } }
+  },
+  kettle: {
+    id: 'kettle',
+    name: 'やかん',
+    nameEn: 'Kettle',
+    description: 'お湯を沸かすやかん。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { vit: 2, int: 1 } }
+  },
+  cuttingBoard: {
+    id: 'cuttingBoard',
+    name: 'まな板',
+    nameEn: 'Cutting Board',
+    description: '木製のまな板。盾としても使える。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { vit: 3 } }
+  },
+  whisk: {
+    id: 'whisk',
+    name: '泡立て器',
+    nameEn: 'Whisk',
+    description: '金属製の泡立て器。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { agi: 2, dex: 1 } }
+  },
+  spatula: {
+    id: 'spatula',
+    name: 'フライ返し',
+    nameEn: 'Spatula',
+    description: 'ステンレスのフライ返し。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { str: 2, agi: 1 } }
+  },
+  grater: {
+    id: 'grater',
+    name: 'おろし金',
+    nameEn: 'Grater',
+    description: '大根おろしに使うおろし金。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { str: 3 } }
+  },
+  tongs: {
+    id: 'tongs',
+    name: 'トング',
+    nameEn: 'Tongs',
+    description: '料理用のトング。挟む力。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { dex: 2, str: 1 } }
+  },
+
+  // Cleaning Supplies - VIT/LUK focused
+  dustpan: {
+    id: 'dustpan',
+    name: 'ちりとり',
+    nameEn: 'Dustpan',
+    description: 'プラスチックのちりとり。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { vit: 2 } }
+  },
+  mop: {
+    id: 'mop',
+    name: 'モップ',
+    nameEn: 'Mop',
+    description: '柄の長いモップ。リーチがある。',
+    category: 'stat',
+    rarity: 'uncommon',
+    effects: { stats: { vit: 3, str: 1 } }
+  },
+  bucket: {
+    id: 'bucket',
+    name: 'バケツ',
+    nameEn: 'Bucket',
+    description: 'プラスチックのバケツ。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { vit: 3 } }
+  },
+  sponge: {
+    id: 'sponge',
+    name: 'スポンジ',
+    nameEn: 'Sponge',
+    description: '黄色いスポンジ。吸収力抜群。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { vit: 2, luk: 1 } }
+  },
+  sprayBottle: {
+    id: 'sprayBottle',
+    name: 'スプレー',
+    nameEn: 'Spray Bottle',
+    description: '霧吹きスプレー。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { dex: 2, agi: 1 } }
+  },
+  lintRoller: {
+    id: 'lintRoller',
+    name: 'コロコロ',
+    nameEn: 'Lint Roller',
+    description: '粘着ローラー。幸運を引き寄せる。',
+    category: 'stat',
+    rarity: 'uncommon',
+    effects: { stats: { dex: 1, luk: 3 } }
+  },
+  rubberGloves: {
+    id: 'rubberGloves',
+    name: 'ゴム手袋',
+    nameEn: 'Rubber Gloves',
+    description: '黄色いゴム手袋。防御力アップ。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { vit: 2, str: 1 } }
+  },
+
+  // Fashion Items - AGI/LUK focused
+  sunglasses: {
+    id: 'sunglasses',
+    name: 'サングラス',
+    nameEn: 'Sunglasses',
+    description: 'クールなサングラス。',
+    category: 'stat',
+    rarity: 'uncommon',
+    effects: { stats: { luk: 2, dex: 1 } }
+  },
+  watch: {
+    id: 'watch',
+    name: '腕時計',
+    nameEn: 'Wristwatch',
+    description: 'デジタル腕時計。時間厳守。',
+    category: 'stat',
+    rarity: 'uncommon',
+    effects: { stats: { dex: 2, int: 2 } }
+  },
+  belt: {
+    id: 'belt',
+    name: 'ベルト',
+    nameEn: 'Belt',
+    description: '革製のベルト。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { str: 2, vit: 1 } }
+  },
+  scarf: {
+    id: 'scarf',
+    name: 'マフラー',
+    nameEn: 'Scarf',
+    description: '暖かいマフラー。冬の必需品。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { vit: 2, luk: 1 } }
+  },
+  cap: {
+    id: 'cap',
+    name: 'キャップ',
+    nameEn: 'Cap',
+    description: '野球帽。日差しを避ける。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { agi: 2, luk: 1 } }
+  },
+  ring: {
+    id: 'ring',
+    name: '指輪',
+    nameEn: 'Ring',
+    description: 'シンプルな指輪。幸運の象徴。',
+    category: 'stat',
+    rarity: 'uncommon',
+    effects: { stats: { luk: 2, int: 1 } }
+  },
+  bandana: {
+    id: 'bandana',
+    name: 'バンダナ',
+    nameEn: 'Bandana',
+    description: '赤いバンダナ。気合が入る。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { agi: 2 } }
+  },
+  gloves: {
+    id: 'gloves',
+    name: '手袋',
+    nameEn: 'Gloves',
+    description: '革の手袋。グリップ力アップ。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { dex: 2, vit: 1 } }
+  },
+
+  // Electronics - INT/DEX focused
+  earphones: {
+    id: 'earphones',
+    name: 'イヤホン',
+    nameEn: 'Earphones',
+    description: 'ワイヤレスイヤホン。集中力アップ。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { int: 2, agi: 1 } }
+  },
+  powerBank: {
+    id: 'powerBank',
+    name: 'モバイルバッテリー',
+    nameEn: 'Power Bank',
+    description: '大容量バッテリー。持久力アップ。',
+    category: 'stat',
+    rarity: 'uncommon',
+    effects: { stats: { vit: 3, int: 1 } }
+  },
+  usbCable: {
+    id: 'usbCable',
+    name: 'USBケーブル',
+    nameEn: 'USB Cable',
+    description: 'Type-Cケーブル。接続力。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { int: 2, dex: 1 } }
+  },
+  mouse: {
+    id: 'mouse',
+    name: 'マウス',
+    nameEn: 'Mouse',
+    description: 'ゲーミングマウス。精度が上がる。',
+    category: 'stat',
+    rarity: 'uncommon',
+    effects: { stats: { dex: 3 } }
+  },
+  keyboard: {
+    id: 'keyboard',
+    name: 'キーボード',
+    nameEn: 'Keyboard',
+    description: 'メカニカルキーボード。入力速度アップ。',
+    category: 'stat',
+    rarity: 'rare',
+    effects: { stats: { int: 3, dex: 2 } }
+  },
+  flashlight: {
+    id: 'flashlight',
+    name: '懐中電灯',
+    nameEn: 'Flashlight',
+    description: 'LEDライト。暗闘でも見える。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { dex: 2, int: 1 } }
+  },
+  remoteControl: {
+    id: 'remoteControl',
+    name: 'リモコン',
+    nameEn: 'Remote Control',
+    description: 'TVリモコン。遠隔操作。',
+    category: 'stat',
+    rarity: 'common',
+    effects: { stats: { int: 2, luk: 1 } }
+  },
+  sdCard: {
+    id: 'sdCard',
+    name: 'SDカード',
+    nameEn: 'SD Card',
+    description: '64GBのSDカード。記憶力アップ。',
+    category: 'stat',
+    rarity: 'uncommon',
+    effects: { stats: { int: 3 } }
+  },
+
+  // ========== ADDITIONAL ON_HIT CHIPS (30) ==========
+  // Sharp Objects - Defrag
+  toothpick: {
+    id: 'toothpick',
+    name: '爪楊枝',
+    nameEn: 'Toothpick',
+    description: '先の尖った爪楊枝。',
+    category: 'onHit',
+    rarity: 'common',
+    effects: {
+      onHit: { chance: 0.12, status: 'defrag', duration: 1 }
+    }
+  },
+  safetyPin: {
+    id: 'safetyPin',
+    name: '安全ピン',
+    nameEn: 'Safety Pin',
+    description: '開いた安全ピン。意外と痛い。',
+    category: 'onHit',
+    rarity: 'common',
+    effects: {
+      onHit: { chance: 0.07, status: 'defrag', duration: 4 }
+    }
+  },
+  compass: {
+    id: 'compass',
+    name: 'コンパス',
+    nameEn: 'Drafting Compass',
+    description: '製図用コンパス。鋭い先端。',
+    category: 'onHit',
+    rarity: 'uncommon',
+    effects: {
+      onHit: { chance: 0.15, status: 'defrag', duration: 2 }
+    }
+  },
+  boxCutter: {
+    id: 'boxCutter',
+    name: 'カッター',
+    nameEn: 'Box Cutter',
+    description: '鋭いカッターナイフ。',
+    category: 'onHit',
+    rarity: 'uncommon',
+    effects: {
+      onHit: { chance: 0.10, status: 'defrag', duration: 3, bonusDamage: 5 }
+    }
+  },
+  dart: {
+    id: 'dart',
+    name: 'ダーツ',
+    nameEn: 'Dart',
+    description: 'ダーツの矢。的確に刺さる。',
+    category: 'onHit',
+    rarity: 'uncommon',
+    effects: {
+      onHit: { chance: 0.20, status: 'defrag', duration: 1 }
+    }
+  },
+
+  // Cold Objects - Lag
+  frozenFood: {
+    id: 'frozenFood',
+    name: '冷凍食品',
+    nameEn: 'Frozen Food',
+    description: 'カチカチに凍った食品。',
+    category: 'onHit',
+    rarity: 'common',
+    effects: {
+      onHit: { chance: 0.08, status: 'lag', duration: 3 }
+    }
+  },
+  iceCream: {
+    id: 'iceCream',
+    name: 'アイス',
+    nameEn: 'Ice Cream',
+    description: '溶けかけのアイスクリーム。',
+    category: 'onHit',
+    rarity: 'common',
+    effects: {
+      onHit: { chance: 0.12, status: 'lag', duration: 2 }
+    }
+  },
+  coldDrink: {
+    id: 'coldDrink',
+    name: '冷たい飲み物',
+    nameEn: 'Cold Drink',
+    description: '氷入りの冷たいドリンク。',
+    category: 'onHit',
+    rarity: 'common',
+    effects: {
+      onHit: { chance: 0.07, status: 'lag', duration: 4 }
+    }
+  },
+  popsicle: {
+    id: 'popsicle',
+    name: 'アイスキャンディー',
+    nameEn: 'Popsicle',
+    description: '棒付きのアイス。ガリガリ君。',
+    category: 'onHit',
+    rarity: 'uncommon',
+    effects: {
+      onHit: { chance: 0.15, status: 'lag', duration: 2 }
+    }
+  },
+
+  // Heavy Objects - Buffer Overflow
+  paperweight: {
+    id: 'paperweight',
+    name: '文鎮',
+    nameEn: 'Paperweight',
+    description: '重い文鎮。頭に当たると痛い。',
+    category: 'onHit',
+    rarity: 'uncommon',
+    effects: {
+      onHit: { chance: 0.05, status: 'bufferOverflow', duration: 1 }
+    }
+  },
+  brick: {
+    id: 'brick',
+    name: 'レンガ',
+    nameEn: 'Brick',
+    description: '赤いレンガ。重くて硬い。',
+    category: 'onHit',
+    rarity: 'uncommon',
+    effects: {
+      onHit: { chance: 0.06, status: 'bufferOverflow', duration: 2 }
+    }
+  },
+  castIronPan: {
+    id: 'castIronPan',
+    name: '鉄鍋',
+    nameEn: 'Cast Iron Pan',
+    description: '重い鋳鉄の鍋。一撃必殺。',
+    category: 'onHit',
+    rarity: 'rare',
+    effects: {
+      onHit: { chance: 0.07, status: 'bufferOverflow', duration: 2 }
+    }
+  },
+  bowlingBall: {
+    id: 'bowlingBall',
+    name: 'ボウリング球',
+    nameEn: 'Bowling Ball',
+    description: '14ポンドのボウリング球。',
+    category: 'onHit',
+    rarity: 'rare',
+    effects: {
+      onHit: { chance: 0.12, status: 'bufferOverflow', duration: 1 }
+    }
+  },
+  textbook: {
+    id: 'textbook',
+    name: '教科書',
+    nameEn: 'Textbook',
+    description: '分厚い数学の教科書。',
+    category: 'onHit',
+    rarity: 'common',
+    effects: {
+      onHit: { chance: 0.05, status: 'bufferOverflow', duration: 1 }
+    }
+  },
+
+  // Liquid Objects - Corrupted
+  perfume: {
+    id: 'perfume',
+    name: '香水',
+    nameEn: 'Perfume',
+    description: '強い香りの香水。感覚を狂わせる。',
+    category: 'onHit',
+    rarity: 'uncommon',
+    effects: {
+      onHit: { chance: 0.08, status: 'corrupted', duration: 4 }
+    }
+  },
+  bugSpray: {
+    id: 'bugSpray',
+    name: '殺虫剤',
+    nameEn: 'Bug Spray',
+    description: '強力な殺虫スプレー。',
+    category: 'onHit',
+    rarity: 'uncommon',
+    effects: {
+      onHit: { chance: 0.12, status: 'corrupted', duration: 2 }
+    }
+  },
+  deodorant: {
+    id: 'deodorant',
+    name: 'デオドラント',
+    nameEn: 'Deodorant',
+    description: '制汗スプレー。目にしみる。',
+    category: 'onHit',
+    rarity: 'common',
+    effects: {
+      onHit: { chance: 0.07, status: 'corrupted', duration: 3 }
+    }
+  },
+  hairSpray: {
+    id: 'hairSpray',
+    name: 'ヘアスプレー',
+    nameEn: 'Hair Spray',
+    description: '髪型を固めるスプレー。',
+    category: 'onHit',
+    rarity: 'uncommon',
+    effects: {
+      onHit: { chance: 0.10, status: 'corrupted', duration: 2 }
+    }
+  },
+  sauce: {
+    id: 'sauce',
+    name: 'ソース',
+    nameEn: 'Sauce',
+    description: 'ウスターソース。目に入ると痛い。',
+    category: 'onHit',
+    rarity: 'common',
+    effects: {
+      onHit: { chance: 0.15, status: 'corrupted', duration: 1 }
+    }
+  },
+
+  // Reflective Objects - Exposed
+  cameraFlash: {
+    id: 'cameraFlash',
+    name: 'カメラフラッシュ',
+    nameEn: 'Camera Flash',
+    description: '眩しいフラッシュ。目がくらむ。',
+    category: 'onHit',
+    rarity: 'rare',
+    effects: {
+      onHit: { chance: 0.15, status: 'exposed', duration: 2 }
+    }
+  },
+  discoBall: {
+    id: 'discoBall',
+    name: 'ミラーボール',
+    nameEn: 'Disco Ball',
+    description: '小型のミラーボール。乱反射。',
+    category: 'onHit',
+    rarity: 'rare',
+    effects: {
+      onHit: { chance: 0.08, status: 'exposed', duration: 4 }
+    }
+  },
+  aluminumFoil: {
+    id: 'aluminumFoil',
+    name: 'アルミホイル',
+    nameEn: 'Aluminum Foil',
+    description: '光を反射するアルミホイル。',
+    category: 'onHit',
+    rarity: 'common',
+    effects: {
+      onHit: { chance: 0.12, status: 'exposed', duration: 2 }
+    }
+  },
+  cd: {
+    id: 'cd',
+    name: 'CD',
+    nameEn: 'CD',
+    description: '虹色に光るCD。投げると危険。',
+    category: 'onHit',
+    rarity: 'uncommon',
+    effects: {
+      onHit: { chance: 0.10, status: 'exposed', duration: 2 }
+    }
+  },
+  phoneScreen: {
+    id: 'phoneScreen',
+    name: 'スマホ画面',
+    nameEn: 'Phone Screen',
+    description: '明るいスマホの画面。',
+    category: 'onHit',
+    rarity: 'common',
+    effects: {
+      onHit: { chance: 0.08, status: 'exposed', duration: 3 }
+    }
+  },
+
+  // Hot Objects - Overheated (stacking)
+  curlingIron: {
+    id: 'curlingIron',
+    name: 'ヘアアイロン',
+    nameEn: 'Curling Iron',
+    description: '熱いヘアアイロン。火傷注意。',
+    category: 'onHit',
+    rarity: 'uncommon',
+    effects: {
+      onHit: { chance: 0.10, status: 'overheated', duration: 1 }
+    }
+  },
+  hotCoffee: {
+    id: 'hotCoffee',
+    name: '熱いコーヒー',
+    nameEn: 'Hot Coffee',
+    description: '淹れたてのコーヒー。熱々。',
+    category: 'onHit',
+    rarity: 'uncommon',
+    effects: {
+      onHit: { chance: 0.08, status: 'overheated', duration: 2 }
+    }
+  },
+  handWarmer: {
+    id: 'handWarmer',
+    name: 'カイロ',
+    nameEn: 'Hand Warmer',
+    description: '使い捨てカイロ。じわじわ熱い。',
+    category: 'onHit',
+    rarity: 'common',
+    effects: {
+      onHit: { chance: 0.10, status: 'overheated', duration: 1 }
+    }
+  },
+  solderingIron: {
+    id: 'solderingIron',
+    name: 'はんだごて',
+    nameEn: 'Soldering Iron',
+    description: '高温のはんだごて。触ると火傷。',
+    category: 'onHit',
+    rarity: 'rare',
+    effects: {
+      onHit: { chance: 0.12, status: 'overheated', duration: 2 }
+    }
+  },
+  hotPot: {
+    id: 'hotPot',
+    name: '熱い鍋',
+    nameEn: 'Hot Pot',
+    description: '煮えたぎる鍋。中身をぶちまける。',
+    category: 'onHit',
+    rarity: 'rare',
+    effects: {
+      onHit: { chance: 0.07, status: 'overheated', duration: 3 }
+    }
+  },
+
+  // ========== ADDITIONAL ON_EFFECT CHIPS (35) ==========
+  // Food - Healing
+  bento: {
+    id: 'bento',
+    name: '弁当',
+    nameEn: 'Bento',
+    description: '手作り弁当。倒すと大回復。',
+    category: 'onEffect',
+    rarity: 'rare',
+    effects: {
+      onKill: { chance: 0.20, heal: 25 }
+    }
+  },
+  candy: {
+    id: 'candy',
+    name: '飴',
+    nameEn: 'Candy',
+    description: '甘い飴。クリティカルで回復。',
+    category: 'onEffect',
+    rarity: 'common',
+    effects: {
+      onCrit: { chance: 0.15, heal: 5 }
+    }
+  },
+  bread: {
+    id: 'bread',
+    name: 'パン',
+    nameEn: 'Bread',
+    description: '食パン。ダメージを受けると回復。',
+    category: 'onEffect',
+    rarity: 'uncommon',
+    effects: {
+      onDamage: { chance: 0.10, heal: 8 }
+    }
+  },
+  banana: {
+    id: 'banana',
+    name: 'バナナ',
+    nameEn: 'Banana',
+    description: '栄養満点のバナナ。',
+    category: 'onEffect',
+    rarity: 'uncommon',
+    effects: {
+      onStatusInflict: { chance: 0.25, heal: 15, statusType: 'defrag' }
+    }
+  },
+  chocolate: {
+    id: 'chocolate',
+    name: 'チョコレート',
+    nameEn: 'Chocolate',
+    description: '甘いチョコ。スタンさせると回復。',
+    category: 'onEffect',
+    rarity: 'uncommon',
+    effects: {
+      onStatusInflict: { chance: 0.20, heal: 10, statusType: 'bufferOverflow' }
+    }
+  },
+  mochi: {
+    id: 'mochi',
+    name: '餅',
+    nameEn: 'Mochi',
+    description: 'もちもちの餅。大回復の可能性。',
+    category: 'onEffect',
+    rarity: 'rare',
+    effects: {
+      onKill: { chance: 0.15, heal: 30 }
+    }
+  },
+  apple: {
+    id: 'apple',
+    name: 'りんご',
+    nameEn: 'Apple',
+    description: '赤いりんご。部屋に入ると少し回復。',
+    category: 'onEffect',
+    rarity: 'common',
+    effects: {
+      onRoomEnter: { chance: 0.10, heal: 5 }
+    }
+  },
+  cupRamen: {
+    id: 'cupRamen',
+    name: 'カップ麺',
+    nameEn: 'Cup Ramen',
+    description: '定番のカップ麺。回復効果アップ。',
+    category: 'onEffect',
+    rarity: 'uncommon',
+    effects: {
+      onHeal: { chance: 0.25, bonusHeal: 10 }
+    }
+  },
+
+  // Drinks - Buffs
+  coffee: {
+    id: 'coffee',
+    name: 'コーヒー',
+    nameEn: 'Coffee',
+    description: '濃いコーヒー。ダメージで攻撃力アップ。',
+    category: 'onEffect',
+    rarity: 'uncommon',
+    effects: {
+      onDamage: { chance: 0.15, buff: 'attack', value: 0.15, duration: 3000 }
+    }
+  },
+  greenTea: {
+    id: 'greenTea',
+    name: '緑茶',
+    nameEn: 'Green Tea',
+    description: '落ち着く緑茶。クリティカル時に強化。',
+    category: 'onEffect',
+    rarity: 'rare',
+    effects: {
+      onCrit: { chance: 0.10, buff: 'critRate', value: 0.20, duration: 5000 }
+    }
+  },
+  sportsDrink: {
+    id: 'sportsDrink',
+    name: 'スポーツドリンク',
+    nameEn: 'Sports Drink',
+    description: '電解質補給。回避時に加速。',
+    category: 'onEffect',
+    rarity: 'uncommon',
+    effects: {
+      onDodge: { chance: 0.25, buff: 'speed', value: 0.10, duration: 3000 }
+    }
+  },
+  milk: {
+    id: 'milk',
+    name: '牛乳',
+    nameEn: 'Milk',
+    description: '新鮮な牛乳。回復時にVITアップ。',
+    category: 'onEffect',
+    rarity: 'uncommon',
+    effects: {
+      onHeal: { chance: 0.30, buff: 'vit', value: 10, duration: 10000 }
+    }
+  },
+  sake: {
+    id: 'sake',
+    name: '日本酒',
+    nameEn: 'Sake',
+    description: '辛口の日本酒。攻撃力大幅アップ、命中ダウン。',
+    category: 'onEffect',
+    rarity: 'epic',
+    effects: {
+      onKill: { chance: 0.10, buff: 'damage', value: 0.25, duration: 5000 }
+    }
+  },
+  ramune: {
+    id: 'ramune',
+    name: 'ラムネ',
+    nameEn: 'Ramune',
+    description: '夏の定番ラムネ。部屋全体で強化。',
+    category: 'onEffect',
+    rarity: 'rare',
+    effects: {
+      onRoomEnter: { chance: 0.15, buff: 'allStats', value: 0.05, duration: 30000 }
+    }
+  },
+
+  // Lucky Items - Drops/Special
+  lotteryTicket: {
+    id: 'lotteryTicket',
+    name: '宝くじ',
+    nameEn: 'Lottery Ticket',
+    description: 'まだ当選確認してない宝くじ。',
+    category: 'onEffect',
+    rarity: 'epic',
+    effects: {
+      onRoomEnter: { chance: 0.05, rareSpawn: true }
+    }
+  },
+  fortuneSlip: {
+    id: 'fortuneSlip',
+    name: 'おみくじ',
+    nameEn: 'Fortune Slip',
+    description: '大吉のおみくじ。報酬アップ。',
+    category: 'onEffect',
+    rarity: 'uncommon',
+    effects: {
+      onKill: { chance: 0.10, bonusCurrency: 0.25 }
+    }
+  },
+  daruma: {
+    id: 'daruma',
+    name: 'だるま',
+    nameEn: 'Daruma',
+    description: '目を入れただるま。ピンチで生き残る。',
+    category: 'onEffect',
+    rarity: 'legendary',
+    effects: {
+      onLowHp: { chance: 0.25, surviveWithOneHp: true }
+    }
+  },
+  manekiNeko: {
+    id: 'manekiNeko',
+    name: '招き猫',
+    nameEn: 'Lucky Cat',
+    description: '福を呼ぶ招き猫。ドロップ率アップ。',
+    category: 'onEffect',
+    rarity: 'epic',
+    effects: {
+      onKill: { chance: 0.20, extraChipDrop: true }
+    }
+  },
+  pachinkoBall: {
+    id: 'pachinkoBall',
+    name: 'パチンコ玉',
+    nameEn: 'Pachinko Ball',
+    description: '連続ヒットの可能性。',
+    category: 'onEffect',
+    rarity: 'rare',
+    effects: {
+      onHit: { chance: 0.05, cascade: true }
+    }
+  },
+  dice: {
+    id: 'dice',
+    name: 'サイコロ',
+    nameEn: 'Dice',
+    description: 'ラッキーダイス。効果が再発動することも。',
+    category: 'onEffect',
+    rarity: 'epic',
+    effects: {
+      onEffectTrigger: { chance: 0.10, retrigger: true }
+    }
+  },
+
+  // Protective Items
+  kneePads: {
+    id: 'kneePads',
+    name: '膝パッド',
+    nameEn: 'Knee Pads',
+    description: '膝を守るパッド。回避時に反撃。',
+    category: 'onEffect',
+    rarity: 'rare',
+    effects: {
+      onDodge: { chance: 0.15, counterAttack: true }
+    }
+  },
+  bubbleWrap: {
+    id: 'bubbleWrap',
+    name: 'プチプチ',
+    nameEn: 'Bubble Wrap',
+    description: '衝撃吸収材。ダメージ無効化の可能性。',
+    category: 'onEffect',
+    rarity: 'rare',
+    effects: {
+      onDamage: { chance: 0.10, negateDamage: true }
+    }
+  },
+  cardboard: {
+    id: 'cardboard',
+    name: 'ダンボール',
+    nameEn: 'Cardboard Box',
+    description: '身を隠せるダンボール。ステルス効果。',
+    category: 'onEffect',
+    rarity: 'epic',
+    effects: {
+      onRoomEnter: { chance: 0.25, stealth: true }
+    }
+  },
+  pillow: {
+    id: 'pillow',
+    name: '枕',
+    nameEn: 'Pillow',
+    description: 'ふかふかの枕。ダメージ軽減。',
+    category: 'onEffect',
+    rarity: 'uncommon',
+    effects: {
+      onDamage: { chance: 0.15, damageReduction: 0.30 }
+    }
+  },
+  cushion: {
+    id: 'cushion',
+    name: 'クッション',
+    nameEn: 'Cushion',
+    description: '座布団クッション。ピンチでシールド。',
+    category: 'onEffect',
+    rarity: 'rare',
+    effects: {
+      onLowHp: { chance: 0.20, shield: 20 }
+    }
+  },
+
+  // Offensive Items
+  rubberBand: {
+    id: 'rubberBand',
+    name: '輪ゴム',
+    nameEn: 'Rubber Band',
+    description: '伸びる輪ゴム。クリティカルで追撃。',
+    category: 'onEffect',
+    rarity: 'uncommon',
+    effects: {
+      onCrit: { chance: 0.25, bonusHit: true }
+    }
+  },
+  pepper: {
+    id: 'pepper',
+    name: 'コショウ',
+    nameEn: 'Pepper',
+    description: '黒コショウ。敵がくしゃみ。',
+    category: 'onEffect',
+    rarity: 'uncommon',
+    effects: {
+      onHit: { chance: 0.10, enemyMissNextTurn: true }
+    }
+  },
+  wasabi: {
+    id: 'wasabi',
+    name: 'わさび',
+    nameEn: 'Wasabi',
+    description: '鼻にツーンとくるわさび。クリダメ倍。',
+    category: 'onEffect',
+    rarity: 'epic',
+    effects: {
+      onCrit: { chance: 0.15, doubleCritDamage: true }
+    }
+  },
+  partyPopper: {
+    id: 'partyPopper',
+    name: 'クラッカー',
+    nameEn: 'Party Popper',
+    description: 'お祝いクラッカー。スタン延長。',
+    category: 'onEffect',
+    rarity: 'rare',
+    effects: {
+      onStatusInflict: { chance: 0.40, extendStun: 1000, statusType: 'bufferOverflow' }
+    }
+  },
+  airHorn: {
+    id: 'airHorn',
+    name: 'エアホーン',
+    nameEn: 'Air Horn',
+    description: '大音量のエアホーン。全敵スタン。',
+    category: 'onEffect',
+    rarity: 'legendary',
+    effects: {
+      onRoomEnter: { chance: 0.05, stunAllEnemies: 1000 }
+    }
+  },
+
+  // ========== ADDITIONAL COUNTER CHIPS (25) ==========
+  // Work Items - Per Kill
+  timecard: {
+    id: 'timecard',
+    name: 'タイムカード',
+    nameEn: 'Time Card',
+    description: '出勤記録。倒すたびに強くなる。',
+    category: 'counter',
+    rarity: 'rare',
+    effects: {
+      counter: { trigger: 'onKill', bonus: 'str', perStack: 1, maxStacks: 10 }
+    }
+  },
+  stamp: {
+    id: 'stamp',
+    name: '印鑑',
+    nameEn: 'Stamp',
+    description: '認印。クリティカル率アップ。',
+    category: 'counter',
+    rarity: 'rare',
+    effects: {
+      counter: { trigger: 'onKill', bonus: 'critChance', perStack: 0.3, maxStacks: 50 }
+    }
+  },
+  briefcase: {
+    id: 'briefcase',
+    name: 'ブリーフケース',
+    nameEn: 'Briefcase',
+    description: '革のブリーフケース。総合力アップ。',
+    category: 'counter',
+    rarity: 'epic',
+    effects: {
+      counter: { trigger: 'onKill', bonus: 'allStats', perStack: 0.2, maxStacks: 50 }
+    }
+  },
+  necktie: {
+    id: 'necktie',
+    name: 'ネクタイ',
+    nameEn: 'Necktie',
+    description: 'シルクのネクタイ。攻撃速度アップ。',
+    category: 'counter',
+    rarity: 'rare',
+    effects: {
+      counter: { trigger: 'onKill', bonus: 'aspd', perStack: 1, maxStacks: 15 }
+    }
+  },
+  idBadge: {
+    id: 'idBadge',
+    name: '社員証',
+    nameEn: 'ID Badge',
+    description: '会社の社員証。DEXアップ。',
+    category: 'counter',
+    rarity: 'uncommon',
+    effects: {
+      counter: { trigger: 'onKill', bonus: 'dex', perStack: 1, maxStacks: 12 }
+    }
+  },
+  coffeeMug: {
+    id: 'coffeeMug',
+    name: 'コーヒーマグ',
+    nameEn: 'Coffee Mug',
+    description: 'マイカップ。最大HPアップ。',
+    category: 'counter',
+    rarity: 'rare',
+    effects: {
+      counter: { trigger: 'onKill', bonus: 'maxHp', perStack: 2, maxStacks: 50 }
+    }
+  },
+
+  // School Items - Per Status
+  homework: {
+    id: 'homework',
+    name: '宿題',
+    nameEn: 'Homework',
+    description: '終わらない宿題。状態異常確率アップ。',
+    category: 'counter',
+    rarity: 'rare',
+    effects: {
+      counter: { trigger: 'onStatusInflict', bonus: 'statusChance', perStack: 1, maxStacks: 20 }
+    }
+  },
+  schoolBadge: {
+    id: 'schoolBadge',
+    name: '校章',
+    nameEn: 'School Badge',
+    description: '学校のバッジ。INTアップ。',
+    category: 'counter',
+    rarity: 'uncommon',
+    effects: {
+      counter: { trigger: 'onStatusInflict', bonus: 'int', perStack: 1, maxStacks: 15 }
+    }
+  },
+  gymUniform: {
+    id: 'gymUniform',
+    name: '体操着',
+    nameEn: 'Gym Uniform',
+    description: '学校指定の体操着。回避率アップ。',
+    category: 'counter',
+    rarity: 'rare',
+    effects: {
+      counter: { trigger: 'onStatusInflict', bonus: 'dodge', perStack: 0.5, maxStacks: 20 }
+    }
+  },
+  pencilCase: {
+    id: 'pencilCase',
+    name: '筆箱',
+    nameEn: 'Pencil Case',
+    description: '文房具が入った筆箱。ダメージアップ。',
+    category: 'counter',
+    rarity: 'rare',
+    effects: {
+      counter: { trigger: 'onStatusInflict', bonus: 'damagePercent', perStack: 1, maxStacks: 10 }
+    }
+  },
+
+  // Sports Items - Per Crit
+  tennisBall: {
+    id: 'tennisBall',
+    name: 'テニスボール',
+    nameEn: 'Tennis Ball',
+    description: '黄色いテニスボール。クリ率アップ。',
+    category: 'counter',
+    rarity: 'rare',
+    effects: {
+      counter: { trigger: 'onCrit', bonus: 'critChance', perStack: 0.2, maxStacks: 50 }
+    }
+  },
+  soccerBall: {
+    id: 'soccerBall',
+    name: 'サッカーボール',
+    nameEn: 'Soccer Ball',
+    description: 'サッカーボール。STRアップ。',
+    category: 'counter',
+    rarity: 'rare',
+    effects: {
+      counter: { trigger: 'onCrit', bonus: 'str', perStack: 1, maxStacks: 10 }
+    }
+  },
+  basketball: {
+    id: 'basketball',
+    name: 'バスケットボール',
+    nameEn: 'Basketball',
+    description: 'オレンジのバスケットボール。攻撃速度アップ。',
+    category: 'counter',
+    rarity: 'rare',
+    effects: {
+      counter: { trigger: 'onCrit', bonus: 'aspd', perStack: 0.5, maxStacks: 30 }
+    }
+  },
+  golfBall: {
+    id: 'golfBall',
+    name: 'ゴルフボール',
+    nameEn: 'Golf Ball',
+    description: '白いゴルフボール。固定ダメージアップ。',
+    category: 'counter',
+    rarity: 'epic',
+    effects: {
+      counter: { trigger: 'onCrit', bonus: 'flatDamage', perStack: 2, maxStacks: 10 }
+    }
+  },
+  shuttlecock: {
+    id: 'shuttlecock',
+    name: 'シャトル',
+    nameEn: 'Shuttlecock',
+    description: 'バドミントンのシャトル。回避率アップ。',
+    category: 'counter',
+    rarity: 'uncommon',
+    effects: {
+      counter: { trigger: 'onCrit', bonus: 'dodge', perStack: 0.4, maxStacks: 20 }
+    }
+  },
+  jumpRope: {
+    id: 'jumpRope',
+    name: '縄跳び',
+    nameEn: 'Jump Rope',
+    description: 'カラフルな縄跳び。AGIアップ。',
+    category: 'counter',
+    rarity: 'uncommon',
+    effects: {
+      counter: { trigger: 'onCrit', bonus: 'agi', perStack: 1, maxStacks: 10 }
+    }
+  },
+
+  // Travel Items - Per Room
+  map: {
+    id: 'map',
+    name: '地図',
+    nameEn: 'Map',
+    description: '東京の地図。アイテム発見率アップ。',
+    category: 'counter',
+    rarity: 'rare',
+    effects: {
+      counter: { trigger: 'onRoomEnter', bonus: 'itemFind', perStack: 1, maxStacks: 15 }
+    }
+  },
+  compassNav: {
+    id: 'compassNav',
+    name: '方位磁石',
+    nameEn: 'Compass',
+    description: '方角を示すコンパス。LUKアップ。',
+    category: 'counter',
+    rarity: 'uncommon',
+    effects: {
+      counter: { trigger: 'onRoomEnter', bonus: 'luk', perStack: 1, maxStacks: 10 }
+    }
+  },
+  luggage: {
+    id: 'luggage',
+    name: 'スーツケース',
+    nameEn: 'Luggage',
+    description: '旅行用スーツケース。インベントリ拡大。',
+    category: 'counter',
+    rarity: 'legendary',
+    effects: {
+      counter: { trigger: 'onRoomEnter', bonus: 'inventorySlots', perStack: 1, maxStacks: 3 }
+    }
+  },
+  passport: {
+    id: 'passport',
+    name: 'パスポート',
+    nameEn: 'Passport',
+    description: '日本国パスポート。報酬アップ。',
+    category: 'counter',
+    rarity: 'epic',
+    effects: {
+      counter: { trigger: 'onRoomEnter', bonus: 'currencyGain', perStack: 3, maxStacks: 10 }
+    }
+  },
+  travelPillow: {
+    id: 'travelPillow',
+    name: 'ネックピロー',
+    nameEn: 'Travel Pillow',
+    description: '首用の枕。部屋ごとに少し回復。',
+    category: 'counter',
+    rarity: 'rare',
+    effects: {
+      counter: { trigger: 'onRoomEnter', bonus: 'healAtRoomStart', perStack: 5, maxStacks: 1 }
+    }
+  },
+  guidebook: {
+    id: 'guidebook',
+    name: 'ガイドブック',
+    nameEn: 'Guidebook',
+    description: '東京ガイドブック。ダメージアップ。',
+    category: 'counter',
+    rarity: 'epic',
+    effects: {
+      counter: { trigger: 'onRoomEnter', bonus: 'damagePercent', perStack: 2, maxStacks: 10 }
+    }
+  },
+
+  // Collection Items - Per Chip Count
+  album: {
+    id: 'album',
+    name: 'アルバム',
+    nameEn: 'Album',
+    description: '写真アルバム。ON_HITチップで発動率アップ。',
+    category: 'counter',
+    rarity: 'legendary',
+    effects: {
+      counter: { trigger: 'onChipCount', chipCategory: 'onHit', bonus: 'triggerChance', perStack: 5, maxStacks: 10 }
+    }
+  },
+  tradingCards: {
+    id: 'tradingCards',
+    name: 'トレカ',
+    nameEn: 'Trading Cards',
+    description: 'レアカードコレクション。ON_EFFECTが強化。',
+    category: 'counter',
+    rarity: 'legendary',
+    effects: {
+      counter: { trigger: 'onChipCount', chipCategory: 'onEffect', bonus: 'effectPotency', perStack: 4, maxStacks: 10 }
+    }
+  },
+  gachaFigure: {
+    id: 'gachaFigure',
+    name: 'ガチャフィギュア',
+    nameEn: 'Gacha Figure',
+    description: 'カプセルトイ。チップ種類で総合強化。',
+    category: 'counter',
+    rarity: 'legendary',
+    effects: {
+      counter: { trigger: 'onUniqueChipType', bonus: 'allStats', perStack: 1, maxStacks: 4 }
+    }
   }
 };
 
@@ -541,7 +1898,33 @@ export const CHIPS = {
  * Get chip by ID
  */
 export function getChip(chipId) {
-  return CHIPS[chipId] || null;
+  // First try direct lookup (for base chips)
+  if (CHIPS[chipId]) {
+    return CHIPS[chipId];
+  }
+
+  // Handle rarity-suffixed IDs (e.g., "ballpointPen_rare")
+  // Extract base ID and return base chip info (caller should use player inventory for scaled version)
+  const parts = chipId.split('_');
+  if (parts.length >= 2) {
+    const rarities = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+    const lastPart = parts[parts.length - 1];
+    if (rarities.includes(lastPart)) {
+      const baseId = parts.slice(0, -1).join('_');
+      return CHIPS[baseId] || null;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Get a chip from player's inventory by ID
+ * This returns the full chip object with scaled effects for rarity-suffixed chips
+ */
+export function getChipFromInventory(player, chipId) {
+  if (!player?.chips) return null;
+  return player.chips.find(c => c.id === chipId) || null;
 }
 
 /**
@@ -560,8 +1943,21 @@ export function getChipsByRarity(rarity) {
 
 /**
  * Get chip price based on rarity
+ * Handles both base chip IDs and rarity-suffixed IDs (e.g., "ballpointPen_rare")
  */
 export function getChipPrice(chipId) {
+  // Check if it's a rarity-suffixed ID
+  const parts = chipId.split('_');
+  const rarities = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+  const lastPart = parts[parts.length - 1];
+
+  if (parts.length >= 2 && rarities.includes(lastPart)) {
+    // Use the rarity from the ID
+    const rarity = CHIP_RARITIES[lastPart];
+    return Math.floor(BASE_CHIP_PRICE * rarity.priceMultiplier);
+  }
+
+  // Fallback to base chip lookup
   const chip = getChip(chipId);
   if (!chip) return 0;
 
@@ -570,54 +1966,143 @@ export function getChipPrice(chipId) {
 }
 
 /**
- * Get available rarities for a floor
- * Floor 1-2: Common, Uncommon
- * Floor 3-4: Uncommon, Rare, Epic
- * Floor 5+: Rare, Epic, Legendary
+ * Rarity weights for shop generation
+ * Higher weight = more likely to appear
  */
-export function getAvailableRaritiesForFloor(floor) {
-  if (floor <= 2) {
-    return ['common', 'uncommon'];
-  } else if (floor <= 4) {
-    return ['uncommon', 'rare', 'epic'];
-  } else {
-    return ['rare', 'epic', 'legendary'];
+const RARITY_WEIGHTS = {
+  common: 50,      // Most likely
+  uncommon: 30,
+  rare: 12,
+  epic: 6,
+  legendary: 2     // Least likely
+};
+
+/**
+ * Roll a random rarity based on weights
+ * @returns {string} Rarity id
+ */
+function rollRandomRarity() {
+  const total = Object.values(RARITY_WEIGHTS).reduce((a, b) => a + b, 0);
+  let roll = Math.random() * total;
+
+  for (const [rarity, weight] of Object.entries(RARITY_WEIGHTS)) {
+    roll -= weight;
+    if (roll <= 0) {
+      return rarity;
+    }
   }
+  return 'common'; // Fallback
+}
+
+/**
+ * Apply rarity multiplier to chip effects
+ * Handles all effect types: stats, onHit, onKill, onDamage, onDodge, onCrit,
+ * onHeal, onLowHp, onRoomEnter, onStatusInflict, onEffectTrigger, counter
+ * @param {object} effects - Base chip effects
+ * @param {number} multiplier - Rarity stat multiplier
+ * @returns {object} Scaled effects
+ */
+function applyRarityMultiplier(effects, multiplier) {
+  const scaled = {};
+
+  // Helper to scale common numeric fields in an effect object
+  const scaleEffect = (effect) => {
+    const s = { ...effect };
+    // Scale chance (cap at reasonable values)
+    if (s.chance !== undefined) s.chance = Math.min(s.chance * multiplier, 0.8);
+    // Scale numeric values
+    if (s.heal !== undefined) s.heal = Math.floor(s.heal * multiplier);
+    if (s.healPercent !== undefined) s.healPercent = s.healPercent * multiplier;
+    if (s.bonusDamage !== undefined) s.bonusDamage = Math.floor(s.bonusDamage * multiplier);
+    if (s.damage !== undefined) s.damage = Math.floor(s.damage * multiplier);
+    if (s.aoeDamage !== undefined) s.aoeDamage = Math.floor(s.aoeDamage * multiplier);
+    if (s.value !== undefined) s.value = s.value * multiplier;
+    if (s.damageReduction !== undefined) s.damageReduction = Math.min(s.damageReduction * multiplier, 0.5);
+    if (s.damageBonus !== undefined) s.damageBonus = s.damageBonus * multiplier;
+    if (s.critBonus !== undefined) s.critBonus = s.critBonus * multiplier;
+    if (s.defenseBonus !== undefined) s.defenseBonus = s.defenseBonus * multiplier;
+    if (s.goldBonus !== undefined) s.goldBonus = s.goldBonus * multiplier;
+    if (s.xpBonus !== undefined) s.xpBonus = s.xpBonus * multiplier;
+    return s;
+  };
+
+  // Scale stat bonuses
+  if (effects.stats) {
+    scaled.stats = {};
+    for (const [stat, value] of Object.entries(effects.stats)) {
+      scaled.stats[stat] = Math.floor(value * multiplier);
+    }
+  }
+
+  // Scale all trigger-based effects
+  if (effects.onHit) scaled.onHit = scaleEffect(effects.onHit);
+  if (effects.onKill) scaled.onKill = scaleEffect(effects.onKill);
+  if (effects.onDamage) scaled.onDamage = scaleEffect(effects.onDamage);
+  if (effects.onDodge) scaled.onDodge = scaleEffect(effects.onDodge);
+  if (effects.onCrit) scaled.onCrit = scaleEffect(effects.onCrit);
+  if (effects.onHeal) scaled.onHeal = scaleEffect(effects.onHeal);
+  if (effects.onLowHp) scaled.onLowHp = scaleEffect(effects.onLowHp);
+  if (effects.onRoomEnter) scaled.onRoomEnter = scaleEffect(effects.onRoomEnter);
+  if (effects.onStatusInflict) scaled.onStatusInflict = scaleEffect(effects.onStatusInflict);
+  if (effects.onEffectTrigger) scaled.onEffectTrigger = scaleEffect(effects.onEffectTrigger);
+
+  // Scale counter effects
+  if (effects.counter) {
+    scaled.counter = { ...effects.counter };
+    if (scaled.counter.bonusPerStack) scaled.counter.bonusPerStack = effects.counter.bonusPerStack * multiplier;
+    if (scaled.counter.perStack) scaled.counter.perStack = effects.counter.perStack * multiplier;
+    if (scaled.counter.maxBonus) scaled.counter.maxBonus = effects.counter.maxBonus * multiplier;
+  }
+
+  return scaled;
 }
 
 /**
  * Generate random chips for post-combat shop
- * @param {number} floor - Current floor
+ * All rarities available from any floor, weighted toward common
+ * Each chip gets a randomly assigned rarity with scaled stats
+ * @param {number} floor - Current floor (unused now, kept for API compatibility)
  * @param {array} ownedChipIds - IDs of chips player already owns
  * @param {number} count - Number of chips to generate (default 3)
  */
 export function generateShopChips(floor, ownedChipIds = [], count = 3) {
-  const availableRarities = getAvailableRaritiesForFloor(floor);
-
-  // Get all chips of available rarities that player doesn't own
+  // Get all base chips (we'll assign rarity randomly)
+  // Filter out chips player already owns (by base ID)
+  const ownedBaseIds = ownedChipIds.map(id => id.split('_')[0]);
   const availableChips = Object.values(CHIPS).filter(chip =>
-    availableRarities.includes(chip.rarity) &&
-    !ownedChipIds.includes(chip.id)
+    !ownedBaseIds.includes(chip.id)
   );
 
   if (availableChips.length === 0) {
     return []; // No chips available
   }
 
-  // Shuffle and pick
+  // Shuffle and pick base chips
   const shuffled = [...availableChips].sort(() => Math.random() - 0.5);
   const selected = shuffled.slice(0, Math.min(count, shuffled.length));
 
-  return selected.map(chip => ({
-    id: chip.id,
-    name: chip.name,
-    nameEn: chip.nameEn,
-    description: chip.description,
-    category: chip.category,
-    rarity: chip.rarity,
-    price: getChipPrice(chip.id),
-    effects: chip.effects
-  }));
+  // Assign random rarity to each chip and scale effects
+  return selected.map(chip => {
+    const rolledRarity = rollRandomRarity();
+    const rarityInfo = CHIP_RARITIES[rolledRarity];
+    const scaledEffects = applyRarityMultiplier(chip.effects, rarityInfo.statMultiplier);
+
+    // Generate unique ID for this rarity version
+    const uniqueId = `${chip.id}_${rolledRarity}`;
+
+    return {
+      id: uniqueId,
+      baseId: chip.id,
+      name: chip.name,
+      nameEn: chip.nameEn,
+      description: chip.description,
+      category: chip.category,
+      rarity: rolledRarity,
+      price: Math.floor(BASE_CHIP_PRICE * rarityInfo.priceMultiplier),
+      effects: scaledEffects,
+      baseEffects: chip.effects  // Keep original for reference
+    };
+  });
 }
 
 /**
@@ -763,25 +2248,86 @@ export function updateCounterStacks(counterStacks, chips, trigger, context = {})
 }
 
 /**
- * Calculate counter chip bonuses
- * @param {object} counterStacks - Current stack counts
+ * Calculate counter chip bonuses based on run stats
  * @param {array} chips - Player's chips
+ * @param {object} runStats - Run-wide statistics tracking
  */
-export function calculateCounterBonuses(counterStacks, chips) {
+export function calculateCounterBonuses(chips, runStats = {}) {
   const bonuses = {
+    // Stats
+    str: 0,
+    agi: 0,
+    vit: 0,
+    int: 0,
+    dex: 0,
+    luk: 0,
+    // Combat
     damagePercent: 0,
-    statusDuration: 0,
+    flatDamage: 0,
+    critChance: 0,
     critDamage: 0,
     aspd: 0,
-    allStats: 0
+    dodge: 0,
+    // Status
+    statusDuration: 0,
+    statusChance: 0,
+    triggerChance: 0,
+    effectPotency: 0,
+    // Utility
+    allStats: 0,
+    maxHp: 0,
+    itemFind: 0,
+    currencyGain: 0,
+    inventorySlots: 0,
+    healAtRoomStart: 0
   };
 
   for (const chip of chips) {
     if (chip.category === 'counter' && chip.effects?.counter) {
       const counter = chip.effects.counter;
-      const stacks = counterStacks[chip.id] || 0;
+      let stacks = 0;
+
+      // Calculate stacks based on trigger type
+      switch (counter.trigger) {
+        case 'onKill':
+          stacks = runStats.kills || 0;
+          break;
+        case 'onCrit':
+          stacks = runStats.critsLanded || 0;
+          break;
+        case 'onStatusInflict':
+          // Count specific status type or all statuses
+          if (counter.statusType && runStats.statusesApplied) {
+            stacks = runStats.statusesApplied[counter.statusType] || 0;
+          } else if (runStats.statusesApplied) {
+            stacks = Object.values(runStats.statusesApplied).reduce((sum, v) => sum + v, 0);
+          }
+          break;
+        case 'onRoomEnter':
+          stacks = runStats.roomsCleared || 0;
+          break;
+        case 'onChipCount':
+          // Count chips in specific category
+          if (counter.chipCategory) {
+            stacks = chips.filter(c => c.category === counter.chipCategory).length;
+          }
+          break;
+        case 'onUniqueChipType':
+          // Count unique chip categories owned
+          const uniqueCategories = new Set(chips.map(c => c.category));
+          stacks = uniqueCategories.size;
+          break;
+        default:
+          stacks = 0;
+      }
+
+      // Apply max stacks cap
+      stacks = Math.min(stacks, counter.maxStacks);
+
+      // Calculate bonus
       const bonus = stacks * counter.perStack;
 
+      // Add to appropriate bonus type
       if (bonuses.hasOwnProperty(counter.bonus)) {
         bonuses[counter.bonus] += bonus;
       }
@@ -833,5 +2379,266 @@ export function getChipDisplayInfo(chip) {
     categoryInfo: category,
     effectText,
     price: getChipPrice(chip.id)
+  };
+}
+
+// ============ CHIP SLOT MANAGEMENT ============
+
+/**
+ * Get the number of slots a chip uses
+ * All chips use 1 slot regardless of rarity
+ */
+export function getChipSlotCost(chip) {
+  return 1;
+}
+
+/**
+ * Get all equipped chips from all equipment pieces
+ * Returns full chip objects with scaled effects from player inventory
+ * @param {object} player - Player object with equipment
+ * @returns {array} Array of equipped chip objects
+ */
+export function getEquippedChips(player) {
+  const chips = [];
+  const slots = ['weapon', 'body', 'shield', 'accessory'];
+
+  for (const slot of slots) {
+    const equipment = player.equipment?.[slot];
+    if (equipment?.equippedChips) {
+      for (const chipId of equipment.equippedChips) {
+        // First try to get from player inventory (has scaled effects)
+        const inventoryChip = getChipFromInventory(player, chipId);
+        if (inventoryChip) {
+          chips.push(inventoryChip);
+        } else {
+          // Fallback to base chip definition
+          const chip = getChip(chipId);
+          if (chip) {
+            chips.push(chip);
+          }
+        }
+      }
+    }
+  }
+
+  return chips;
+}
+
+/**
+ * Get the count of used slots in an equipment piece
+ * @param {object} equipment - Equipment object with equippedChips array
+ * @returns {number} Number of slots used
+ */
+export function getUsedChipSlots(equipment) {
+  if (!equipment?.equippedChips) return 0;
+
+  let used = 0;
+  for (const chipId of equipment.equippedChips) {
+    const chip = getChip(chipId);
+    if (chip) {
+      used += getChipSlotCost(chip);
+    }
+  }
+  return used;
+}
+
+/**
+ * Equip a chip from inventory to an equipment piece
+ * @param {object} player - Player object
+ * @param {string} equipmentSlot - Equipment slot ('weapon', 'body', 'shield', 'accessory')
+ * @param {string} chipId - ID of chip to equip
+ * @param {number} maxSlots - Max chip slots for this equipment (default 5)
+ * @returns {object} Result with success/error
+ */
+export function equipChip(player, equipmentSlot, chipId, maxSlots = 5) {
+  // Validate equipment exists
+  const equipment = player.equipment?.[equipmentSlot];
+  if (!equipment) {
+    return { success: false, error: 'Invalid equipment slot' };
+  }
+
+  // Initialize equippedChips if needed
+  if (!equipment.equippedChips) {
+    equipment.equippedChips = [];
+  }
+
+  // Check if chip exists
+  const chip = getChip(chipId);
+  if (!chip) {
+    return { success: false, error: 'Unknown chip' };
+  }
+
+  // Check if player owns the chip in inventory
+  const ownedChip = player.chips?.find(c => c.id === chipId);
+  if (!ownedChip) {
+    return { success: false, error: 'Chip not in inventory' };
+  }
+
+  // Check if chip is already equipped somewhere
+  const slots = ['weapon', 'body', 'shield', 'accessory'];
+  for (const slot of slots) {
+    const eq = player.equipment?.[slot];
+    if (eq?.equippedChips?.includes(chipId)) {
+      return { success: false, error: 'Chip already equipped' };
+    }
+  }
+
+  // Check if there are enough slots
+  const slotsNeeded = getChipSlotCost(chip);
+  const slotsUsed = getUsedChipSlots(equipment);
+  if (slotsUsed + slotsNeeded > maxSlots) {
+    return { success: false, error: `Not enough slots (need ${slotsNeeded}, have ${maxSlots - slotsUsed})` };
+  }
+
+  // Equip the chip
+  equipment.equippedChips.push(chipId);
+
+  // Remove from inventory
+  player.chips = player.chips.filter(c => c.id !== chipId);
+
+  return {
+    success: true,
+    chipId,
+    chipName: chip.name,
+    slot: equipmentSlot,
+    slotsUsed: slotsUsed + slotsNeeded,
+    maxSlots
+  };
+}
+
+/**
+ * Unequip a chip from an equipment piece back to inventory
+ * @param {object} player - Player object
+ * @param {string} equipmentSlot - Equipment slot
+ * @param {string} chipId - ID of chip to unequip
+ * @returns {object} Result with success/error
+ */
+export function unequipChip(player, equipmentSlot, chipId) {
+  // Validate equipment exists
+  const equipment = player.equipment?.[equipmentSlot];
+  if (!equipment) {
+    return { success: false, error: 'Invalid equipment slot' };
+  }
+
+  // Check if chip is equipped
+  if (!equipment.equippedChips?.includes(chipId)) {
+    return { success: false, error: 'Chip not equipped in this slot' };
+  }
+
+  // Get chip definition
+  const chip = getChip(chipId);
+  if (!chip) {
+    return { success: false, error: 'Unknown chip' };
+  }
+
+  // Remove from equipment
+  equipment.equippedChips = equipment.equippedChips.filter(id => id !== chipId);
+
+  // Add back to inventory
+  if (!player.chips) {
+    player.chips = [];
+  }
+  player.chips.push({
+    id: chip.id,
+    name: chip.name,
+    nameEn: chip.nameEn,
+    category: chip.category,
+    rarity: chip.rarity,
+    effects: chip.effects
+  });
+
+  return {
+    success: true,
+    chipId,
+    chipName: chip.name
+  };
+}
+
+/**
+ * Calculate total bonuses from all equipped chips
+ * Combines STAT chip bonuses and COUNTER chip bonuses
+ * @param {object} player - Player object
+ * @param {object} runStats - Run-wide statistics for counter chips
+ * @returns {object} Combined bonus object
+ */
+export function calculateEquippedChipBonuses(player, runStats = {}) {
+  const equippedChips = getEquippedChips(player);
+
+  // Get STAT chip bonuses
+  const statBonuses = calculateChipStatBonuses(equippedChips);
+
+  // Get COUNTER chip bonuses
+  const counterBonuses = calculateCounterBonuses(equippedChips, runStats);
+
+  // Combine all bonuses
+  return {
+    // Primary stats from STAT chips
+    str: statBonuses.str,
+    agi: statBonuses.agi,
+    vit: statBonuses.vit,
+    int: statBonuses.int,
+    dex: statBonuses.dex,
+    luk: statBonuses.luk,
+
+    // Counter bonuses
+    damagePercent: counterBonuses.damagePercent,
+    flatDamage: counterBonuses.flatDamage,
+    critChance: counterBonuses.critChance,
+    critDamage: counterBonuses.critDamage,
+    aspd: counterBonuses.aspd,
+    dodge: counterBonuses.dodge,
+    statusDuration: counterBonuses.statusDuration,
+    statusChance: counterBonuses.statusChance,
+    triggerChance: counterBonuses.triggerChance,
+    effectPotency: counterBonuses.effectPotency,
+    allStats: counterBonuses.allStats,
+    maxHp: counterBonuses.maxHp,
+    itemFind: counterBonuses.itemFind,
+    currencyGain: counterBonuses.currencyGain,
+    inventorySlots: counterBonuses.inventorySlots,
+    healAtRoomStart: counterBonuses.healAtRoomStart
+  };
+}
+
+/**
+ * Get chip loadout information for UI
+ * @param {object} player - Player object
+ * @param {object} runStats - Run-wide statistics
+ * @returns {object} Loadout with equipment, inventory, and bonuses
+ */
+export function getChipLoadout(player, runStats = {}) {
+  const slots = ['weapon', 'body', 'shield', 'accessory'];
+  const equipmentLoadout = {};
+
+  for (const slot of slots) {
+    const equipment = player.equipment?.[slot];
+    if (equipment) {
+      const equippedChips = (equipment.equippedChips || []).map(chipId => {
+        const chip = getChip(chipId);
+        return chip ? getChipDisplayInfo(chip) : null;
+      }).filter(Boolean);
+
+      equipmentLoadout[slot] = {
+        equipmentId: equipment.id,
+        equippedChips,
+        slotsUsed: getUsedChipSlots(equipment),
+        maxSlots: 5
+      };
+    }
+  }
+
+  // Inventory chips
+  const inventoryChips = (player.chips || []).map(chip => {
+    const fullChip = getChip(chip.id) || chip;
+    return getChipDisplayInfo(fullChip);
+  });
+
+  // Total bonuses
+  const totalBonuses = calculateEquippedChipBonuses(player, runStats);
+
+  return {
+    equipment: equipmentLoadout,
+    inventory: inventoryChips,
+    totalBonuses
   };
 }

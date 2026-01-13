@@ -3,9 +3,10 @@
  * Victory handling and equipment refinement
  */
 
-import { getItem, calculateEquipmentBonuses, getRefinementCost, getBreakChance, REFINEMENT_CONFIG, processOnKillChips } from '../items.js';
+import { getItem, calculateEquipmentBonuses, getRefinementCost, getBreakChance, REFINEMENT_CONFIG, processOnKillChips, getEquippedChips } from '../items.js';
 import { getPlayerCombatStats, getEnemyCombatStats } from './mechanics.js';
 import { applyDamageToEnemy } from './enemy.js';
+import { processDeathEffects } from './status-effects.js';
 
 // ============ VICTORY HANDLING ============
 
@@ -67,9 +68,17 @@ export function processVictory(player, enemy, run) {
     rewards.onKillSp = player.sp - spBefore;
   }
 
-  // Apply on-kill effects from chips
-  if (player.chips?.length > 0) {
-    const chipEffects = processOnKillChips(player.chips);
+  // Process death effects (DEBUG heal-on-death, etc.)
+  const deathEffects = processDeathEffects(enemy, player);
+  if (deathEffects.healAmount > 0) {
+    rewards.debugHeal = deathEffects.healAmount;
+    rewards.deathEffectsTriggered = deathEffects.effectsTriggered;
+  }
+
+  // Apply on-kill effects from equipped chips only
+  const equippedChips = getEquippedChips(player);
+  if (equippedChips.length > 0) {
+    const chipEffects = processOnKillChips(equippedChips);
     rewards.chipEffects = {};
 
     // Healing from chips

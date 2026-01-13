@@ -44,6 +44,7 @@ import {
 // Game imports
 import { GameManager } from './src/game/loop.js';
 import { getItem, getSkill, CONSUMABLES, SKILLS, calculateEquipmentBonuses } from './src/game/items.js';
+import { getChipLoadout, equipChip, unequipChip } from './src/game/items/chips.js';
 import { generateNarration, getSimpleNarration } from './src/game/dm.js';
 import { ACHIEVEMENTS, allocateStat, getFullPlayerStats } from './src/game/state.js';
 import { calculateDerivedStats, getStatPointCost, STAT_NAMES, STAT_DESCRIPTIONS } from './src/game/stats.js';
@@ -688,6 +689,90 @@ app.post('/api/game/start-run', async (req, res) => {
   }
 });
 
+// Ward selection endpoints (Phase 12)
+app.get('/api/game/starting-wards', (req, res) => {
+  try {
+    const options = gameManager.getStartingWardOptions();
+    res.json(options);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post('/api/game/select-starting-ward', async (req, res) => {
+  try {
+    const { wardId } = req.body;
+    const result = gameManager.selectStartingWard(wardId);
+    saveGameData();
+    res.json({
+      ...result,
+      state: getEnrichedGameState()
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.get('/api/game/next-ward-options', (req, res) => {
+  try {
+    const options = gameManager.getNextWardOptions();
+    res.json(options);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post('/api/game/select-next-ward', async (req, res) => {
+  try {
+    const { wardId } = req.body;
+    const result = gameManager.selectNextWard(wardId);
+    saveGameData();
+    res.json({
+      ...result,
+      state: getEnrichedGameState()
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Chip loadout endpoints (Phase 11)
+app.get('/api/game/chip-loadout', (req, res) => {
+  try {
+    // Use run player if in a run, otherwise base player
+    const player = gameManager.run?.player || gameManager.player;
+    const runStats = gameManager.run?.runStats || {};
+    const loadout = getChipLoadout(player, runStats);
+    res.json(loadout);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post('/api/game/equip-chip', (req, res) => {
+  try {
+    const { equipmentSlot, chipId } = req.body;
+    const player = gameManager.run?.player || gameManager.player;
+    const result = equipChip(player, equipmentSlot, chipId);
+    if (result.success) saveGameData();
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post('/api/game/unequip-chip', (req, res) => {
+  try {
+    const { equipmentSlot, chipId } = req.body;
+    const player = gameManager.run?.player || gameManager.player;
+    const result = unequipChip(player, equipmentSlot, chipId);
+    if (result.success) saveGameData();
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 app.post('/api/game/enter-floor', async (req, res) => {
   try {
     const floor = gameManager.enterFloor();
@@ -1222,6 +1307,27 @@ app.post('/api/game/debug-mode', (req, res) => {
   debugMode = !!enabled;
   console.log(`Debug mode ${debugMode ? 'enabled' : 'disabled'}`);
   res.json({ debugMode });
+});
+
+// Debug: Give player test chips
+app.post('/api/game/debug-chips', (req, res) => {
+  const player = gameManager.run?.player || gameManager.player;
+  if (!player) {
+    return res.status(400).json({ error: 'No player found' });
+  }
+
+  // Add some test chips
+  const testChips = [
+    { id: 'fryingPan', name: 'フライパン', nameEn: 'Frying Pan', category: 'stat', rarity: 'uncommon', effects: { stats: { str: 4, vit: 1 } } },
+    { id: 'compass', name: 'コンパス', nameEn: 'Drafting Compass', category: 'onHit', rarity: 'rare', effects: { onHit: { chance: 0.15, status: 'defrag', duration: 2 } } },
+    { id: 'businessCard', name: '名刺', nameEn: 'Business Card', category: 'counter', rarity: 'uncommon', effects: { counter: { trigger: 'onKill', stat: 'str', perStack: 1, maxStacks: 10 } } }
+  ];
+
+  player.chips = player.chips || [];
+  player.chips.push(...testChips);
+  saveGameData();
+
+  res.json({ success: true, chipsAdded: testChips.length, totalChips: player.chips.length });
 });
 
 app.post('/api/game/heal', (req, res) => {

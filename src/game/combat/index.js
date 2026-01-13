@@ -13,7 +13,11 @@ export {
   getActiveStatusEffects,
   breakDamageEffects,
   tickStatusEffects,
-  tickEnemyStatusEffects
+  tickEnemyStatusEffects,
+  getStatusDisplayName,
+  processDeathEffects,
+  processMaxStackExplosion,
+  getStatusStacks
 } from './status-effects.js';
 
 // Combat mechanics

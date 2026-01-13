@@ -31,6 +31,15 @@ export {
   getChipDisplayInfo,
   generateShopChips,
 
+  // Chip slot management
+  getChipSlotCost,
+  getEquippedChips,
+  getUsedChipSlots,
+  equipChip,
+  unequipChip,
+  calculateEquippedChipBonuses,
+  getChipLoadout,
+
   // Helper functions
   getItem,
   getSkill,

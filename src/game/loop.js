@@ -63,7 +63,15 @@ import {
   attemptAvoid,
   calculateTrapDamage,
   TRAP_TYPES,
-  generatePostCombatShop
+  generatePostCombatShop,
+  // Ward path system
+  STARTING_WARDS,
+  WARD_INFO,
+  WARD_PATHS,
+  getStartingWardOptions,
+  getNextWardOptions,
+  getWardTier,
+  getWardInfo
 } from './rooms.js';
 
 import { getItem, calculateEquipmentBonuses } from './items.js';
@@ -371,6 +379,12 @@ export class GameManager {
         bossDefeated: this.run.bossDefeated,
         active: this.run.active,
         stats: this.run.stats,
+        // Ward path system (Phase 12)
+        currentWard: this.run.currentWard,
+        wardPath: this.run.wardPath,
+        wardSelectionRequired: this.run.wardSelectionRequired,
+        // Counter chip tracking (Phase 10)
+        runStats: this.run.runStats,
         postCombatShop: this.run.postCombatShop ? {
           active: this.run.postCombatShop.active,
           items: this.run.postCombatShop.items.map(item => {
@@ -438,6 +452,10 @@ export class GameManager {
     if (!this.player) return 'no_save';
     if (!this.run) return 'hub';
     if (!this.run.active) return 'run_ended';
+
+    // Ward selection required at start or between floors
+    if (this.run.wardSelectionRequired) return 'ward_selection';
+
     if (this.combat?.active) return 'combat';
     if (this.run.postCombatShop?.active) return 'post_combat_shop';
     if (this.run.bossDefeated) return 'floor_complete';
@@ -503,10 +521,98 @@ export class GameManager {
     this.run.player.hp = this.run.player.maxHp;
     this.run.player.sp = this.run.player.maxSp;
 
-    // Generate first floor rooms
+    // Ward selection is required at start
+    this.run.wardSelectionRequired = true;
+
+    this.emitState();
+
+    return {
+      run: this.run,
+      wardSelectionRequired: true,
+      wardOptions: getStartingWardOptions()
+    };
+  }
+
+  // ============ WARD PATH SELECTION ============
+
+  /**
+   * Get starting ward options for run start
+   */
+  getStartingWardOptions() {
+    return getStartingWardOptions();
+  }
+
+  /**
+   * Select starting ward for a new run
+   * @param {string} wardId - Ward ID (e.g., 'nerima' or 'setagaya')
+   */
+  selectStartingWard(wardId) {
+    if (!this.run) {
+      throw new Error('No active run');
+    }
+
+    if (!STARTING_WARDS.includes(wardId)) {
+      throw new Error(`Invalid starting ward: ${wardId}`);
+    }
+
+    this.run.currentWard = wardId;
+    this.run.wardPath = [wardId];
+    this.run.floor = 1;
+    this.run.wardSelectionRequired = false;
+
+    // Now enter the floor
     this.enterFloor();
 
-    return this.run;
+    const wardInfo = getWardInfo(wardId);
+
+    return {
+      success: true,
+      ward: wardInfo,
+      floor: this.run.floor
+    };
+  }
+
+  /**
+   * Get next ward options after clearing current ward (boss defeated)
+   */
+  getNextWardOptions() {
+    if (!this.run?.currentWard) {
+      return [];
+    }
+    return getNextWardOptions(this.run.currentWard);
+  }
+
+  /**
+   * Select next ward after defeating boss
+   * @param {string} wardId - Ward ID to advance to
+   */
+  selectNextWard(wardId) {
+    if (!this.run?.bossDefeated) {
+      throw new Error('Boss not defeated');
+    }
+
+    const options = getNextWardOptions(this.run.currentWard);
+    const validOption = options.find(o => o.id === wardId);
+
+    if (!validOption) {
+      throw new Error(`Invalid ward selection: ${wardId}`);
+    }
+
+    this.run.currentWard = wardId;
+    this.run.wardPath.push(wardId);
+    this.run.floor++;
+    this.run.wardSelectionRequired = false;
+
+    // Enter the new floor
+    this.enterFloor();
+
+    const wardInfo = getWardInfo(wardId);
+
+    return {
+      success: true,
+      ward: wardInfo,
+      floor: this.run.floor
+    };
   }
 
   /**
@@ -591,6 +697,11 @@ export class GameManager {
     nextRoom.explored = true;
     this.run.roomsExplored++;
     this.run.stats.roomsExplored++;
+
+    // Track room clears for counter chips
+    if (this.run.runStats) {
+      this.run.runStats.roomsCleared++;
+    }
 
     // Get narration for new room
     const narration = getRoomEntryNarration(nextRoom);
@@ -948,6 +1059,11 @@ export class GameManager {
     const healAmount = Math.floor(this.run.player.maxHp * room.shrine.healPercent);
     const actualHeal = Math.min(healAmount, this.run.player.maxHp - this.run.player.hp);
     this.run.player.hp = Math.min(this.run.player.maxHp, this.run.player.hp + healAmount);
+
+    // Track healing for counter chips
+    if (this.run.runStats && actualHeal > 0) {
+      this.run.runStats.damageHealed += actualHeal;
+    }
 
     this.narrate(`祠に祈りを捧げた。${actualHeal} HPが回復した！`);
 
@@ -1310,6 +1426,29 @@ export class GameManager {
       // Track damage dealt
       this.run.stats.damageDealt += playerResult.totalDamage;
 
+      // Track counter chip stats
+      if (this.run.runStats) {
+        if (result.playerAttack.critical) {
+          this.run.runStats.critsLanded++;
+        }
+        this.run.runStats.damageDealt += playerResult.totalDamage;
+
+        // Track status applications for counter chips
+        if (playerResult.chipEffects) {
+          for (const effect of playerResult.chipEffects) {
+            if (effect.status && this.run.runStats.statusesApplied.hasOwnProperty(effect.status)) {
+              this.run.runStats.statusesApplied[effect.status]++;
+            }
+          }
+        }
+        if (playerResult.statusInflicted?.status) {
+          const status = playerResult.statusInflicted.status;
+          if (this.run.runStats.statusesApplied.hasOwnProperty(status)) {
+            this.run.runStats.statusesApplied[status]++;
+          }
+        }
+      }
+
       // Check if enemy is glitching (HP < 30% but not defeated)
       const hpPercent = this.combat.enemy.hp / this.combat.enemy.maxHp;
       if (hpPercent > 0 && hpPercent <= 0.3 && !this.combat.glitchingShown) {
@@ -1322,6 +1461,11 @@ export class GameManager {
       if (playerResult.enemyDefeated) {
         result.combatEnded = true;
         result.victory = true;
+
+        // Track kill for counter chips
+        if (this.run.runStats) {
+          this.run.runStats.kills++;
+        }
 
         // Process victory rewards (but don't narrate)
         const enemy = this.combat.enemy;
@@ -1388,6 +1532,11 @@ export class GameManager {
 
       // Track damage taken
       this.run.stats.damageTaken += enemyResult.damage || 0;
+
+      // Track dodges for counter chips
+      if (this.run.runStats && (enemyResult.dodge || enemyResult.perfectDodge)) {
+        this.run.runStats.dodges++;
+      }
 
       // Check if player defeated
       if (enemyResult.playerDefeated) {
@@ -1858,11 +2007,17 @@ export class GameManager {
     this.combat.active = false;
 
     // Check if floor complete
+    let nextWardOptions = null;
     if (isBoss) {
       if (this.run.floor === 7) {
         // Game complete!
         return this._handleGameVictory();
       }
+
+      // Ward selection required for next floor
+      this.run.wardSelectionRequired = true;
+      nextWardOptions = getNextWardOptions(this.run.currentWard);
+
       this.narrate(getSimpleNarration('floorClear', this.run.floor));
     }
 
@@ -1874,7 +2029,10 @@ export class GameManager {
       levelUps,
       isBoss,
       floorComplete: isBoss,
-      shopItems
+      shopItems,
+      // Ward path info
+      wardSelectionRequired: isBoss,
+      nextWardOptions
     };
   }
 

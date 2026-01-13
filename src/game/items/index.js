@@ -6,13 +6,14 @@
 // Import all item collections
 import { CONSUMABLES } from './consumables.js';
 import { WEAPONS, ARMOR, SHIELDS, ACCESSORIES } from './equipment.js';
-import { HACKER_EQUIPMENT, getClassStartingEquipment } from './class-equipment.js';
+import { HACKER_EQUIPMENT, getClassStartingEquipment, getMaxChipSlots } from './class-equipment.js';
 import { SKILLS } from './skills.js';
 import {
   CHIPS,
   CHIP_CATEGORIES,
   CHIP_RARITIES,
   getChip,
+  getChipFromInventory,
   getChipPrice,
   calculateChipStatBonuses,
   processOnHitChips,
@@ -21,13 +22,21 @@ import {
   updateCounterStacks,
   calculateCounterBonuses,
   getChipDisplayInfo,
-  generateShopChips
+  generateShopChips,
+  // Chip slot management
+  getChipSlotCost,
+  getEquippedChips,
+  getUsedChipSlots,
+  equipChip,
+  unequipChip,
+  calculateEquippedChipBonuses,
+  getChipLoadout
 } from './chips.js';
 
 // Re-export item collections
 export { CONSUMABLES } from './consumables.js';
 export { WEAPONS, ARMOR, SHIELDS, ACCESSORIES } from './equipment.js';
-export { HACKER_EQUIPMENT, getClassStartingEquipment } from './class-equipment.js';
+export { HACKER_EQUIPMENT, getClassStartingEquipment, getMaxChipSlots } from './class-equipment.js';
 export { SKILLS } from './skills.js';
 
 // Re-export chip system
@@ -36,6 +45,7 @@ export {
   CHIP_CATEGORIES,
   CHIP_RARITIES,
   getChip,
+  getChipFromInventory,
   getChipPrice,
   calculateChipStatBonuses,
   processOnHitChips,
@@ -44,7 +54,15 @@ export {
   updateCounterStacks,
   calculateCounterBonuses,
   getChipDisplayInfo,
-  generateShopChips
+  generateShopChips,
+  // Chip slot management
+  getChipSlotCost,
+  getEquippedChips,
+  getUsedChipSlots,
+  equipChip,
+  unequipChip,
+  calculateEquippedChipBonuses,
+  getChipLoadout
 } from './chips.js';
 
 // ============ HELPER FUNCTIONS ============
@@ -238,9 +256,12 @@ export function calculateEquipmentBonuses(player) {
     }
   }
 
-  // Add passive bonuses from chips (NEO TOKYO augmentation system)
-  if (player.chips && player.chips.length > 0) {
-    const chipBonuses = calculateChipStatBonuses(player.chips);
+  // Add passive bonuses from equipped chips only (NEO TOKYO augmentation system)
+  // Chips must be equipped to equipment slots to provide bonuses
+  const equippedChips = getEquippedChips(player);
+
+  if (equippedChips.length > 0) {
+    const chipBonuses = calculateChipStatBonuses(equippedChips);
     for (const [stat, value] of Object.entries(chipBonuses)) {
       if (typeof value === 'number' && bonuses.hasOwnProperty(stat)) {
         bonuses[stat] += value;

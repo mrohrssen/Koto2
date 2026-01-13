@@ -57,15 +57,18 @@ export const STATUS_EFFECTS = {
     duration: 2,
     description: 'Data corrupted - cannot use skills'
   },
-  // オーバーヒート - Thermal runaway causing sustained damage
+  // オーバーヒート - Thermal runaway with stacking heat buildup
   OVERHEATED: {
     id: 'overheated',
     name: 'オーバーヒート',
     nameEn: 'Overheated',
     resistStat: 'vit',
-    dotDamage: 8,
-    duration: 3,
-    description: 'Thermal overload - takes heat damage each cycle'
+    dotDamage: 3, // Lower damage per tick since it stacks
+    duration: 8, // Longer duration for stack window
+    stackable: true,
+    maxStacks: 5,
+    explosionDamage: 50, // Damage when max stacks reached
+    description: 'Thermal buildup - stacks to 5, then explodes'
   },
   // ラグ - Network latency causing delayed responses
   LAG: {
@@ -77,6 +80,28 @@ export const STATUS_EFFECTS = {
     brokenByDamage: true,
     duration: 2,
     description: 'Network lag - cannot act, clears on damage'
+  },
+  // グリッチ - Random system errors causing cascading failures
+  GLITCHED: {
+    id: 'glitched',
+    name: 'グリッチ',
+    nameEn: 'Glitched',
+    resistStat: 'int',
+    duration: 3,
+    special: 'randomEffect',
+    randomEffects: ['defrag', 'lag', 'exposed', 'corrupted'],
+    description: 'Unstable code - random negative effect each cycle'
+  },
+  // デバッグ - Marks target for data extraction on termination
+  DEBUG: {
+    id: 'debug',
+    name: 'デバッグ',
+    nameEn: 'Debug',
+    resistStat: 'int',
+    duration: 10,
+    special: 'healOnDeath',
+    healAmount: 20,
+    description: 'Debug flag set - heals attacker if target terminated'
   }
 };
 
@@ -133,9 +158,34 @@ export function applyStatusEffect(target, statusId, durationOverride = null, for
     target.statuses = [];
   }
 
-  // Check if already has this status - refresh duration instead of stacking
+  // Check if already has this status
   const existing = target.statuses.find(s => s.id === statusId);
   if (existing) {
+    // Handle stackable effects (like OVERHEATED)
+    if (statusDef.stackable) {
+      const currentStacks = existing.stacks || 1;
+      const maxStacks = statusDef.maxStacks || 5;
+
+      if (currentStacks < maxStacks) {
+        existing.stacks = currentStacks + 1;
+        existing.turnsRemaining = durationOverride || statusDef.duration; // Reset duration on stack
+
+        // Check if max stacks reached - trigger explosion
+        if (existing.stacks >= maxStacks) {
+          return {
+            applied: true,
+            stacked: true,
+            stacks: existing.stacks,
+            maxStacksReached: true,
+            explosionDamage: statusDef.explosionDamage || 50
+          };
+        }
+        return { applied: true, stacked: true, stacks: existing.stacks };
+      }
+      return { applied: false, maxStacks: true };
+    }
+
+    // Non-stackable: refresh duration
     const newDuration = durationOverride || statusDef.duration;
     existing.turnsRemaining = Math.max(existing.turnsRemaining, newDuration);
     return { applied: true, refreshed: true };
@@ -156,13 +206,20 @@ export function applyStatusEffect(target, statusId, durationOverride = null, for
 
   // Apply the status effect
   const duration = durationOverride || statusDef.duration;
-  target.statuses.push({
+  const newStatus = {
     id: statusId,
     turnsRemaining: duration,
     ...statusDef
-  });
+  };
 
-  return { applied: true, resisted: false, duration };
+  // Initialize stacks for stackable effects
+  if (statusDef.stackable) {
+    newStatus.stacks = 1;
+  }
+
+  target.statuses.push(newStatus);
+
+  return { applied: true, resisted: false, duration, stacks: newStatus.stacks };
 }
 
 /**
@@ -238,20 +295,39 @@ export function tickStatusEffects(target) {
   const result = {
     expired: [],
     dotDamage: 0,
-    dotSources: []
+    dotSources: [],
+    randomEffectsApplied: [],
+    explosionDamage: 0
   };
 
   if (!target.statuses || !Array.isArray(target.statuses)) {
     return result;
   }
 
+  // Track effects to apply after iteration (to avoid modifying during iteration)
+  const effectsToApply = [];
+
   target.statuses = target.statuses.filter(status => {
+    // Handle GLITCHED random effect application
+    if (status.special === 'randomEffect' && status.randomEffects) {
+      const randomEffect = status.randomEffects[Math.floor(Math.random() * status.randomEffects.length)];
+      effectsToApply.push(randomEffect);
+      result.randomEffectsApplied.push({
+        source: status.id,
+        effect: randomEffect
+      });
+    }
+
     // Apply DoT damage for effects that have it
     if (status.dotDamage && status.dotDamage > 0) {
-      result.dotDamage += status.dotDamage;
+      // Stack-based DoT: multiply damage by stack count
+      const stacks = status.stacks || 1;
+      const damage = status.dotDamage * stacks;
+      result.dotDamage += damage;
       result.dotSources.push({
         id: status.id,
-        damage: status.dotDamage
+        damage: damage,
+        stacks: stacks
       });
     }
 
@@ -263,6 +339,11 @@ export function tickStatusEffects(target) {
     }
     return true;
   });
+
+  // Apply random effects from GLITCHED
+  for (const effectId of effectsToApply) {
+    applyStatusEffect(target, effectId, null, true); // Force apply (no resistance check)
+  }
 
   // Apply DoT damage to target
   if (result.dotDamage > 0) {
@@ -324,4 +405,90 @@ export function getStatusDisplayName(statusId, japanese = true) {
   const def = getStatusEffectDef(statusId);
   if (!def) return statusId;
   return japanese ? def.name : def.nameEn;
+}
+
+/**
+ * Handle death effects (like DEBUG's heal-on-death)
+ * Should be called when an enemy is defeated
+ * @param {object} target - The target that died
+ * @param {object} attacker - The attacker (player)
+ * @returns {object} Result with heal amount if applicable
+ */
+export function processDeathEffects(target, attacker) {
+  const result = {
+    healAmount: 0,
+    effectsTriggered: []
+  };
+
+  if (!target.statuses || !Array.isArray(target.statuses)) {
+    return result;
+  }
+
+  for (const status of target.statuses) {
+    // Handle DEBUG heal-on-death
+    if (status.special === 'healOnDeath' && status.healAmount) {
+      result.healAmount += status.healAmount;
+      result.effectsTriggered.push({
+        id: status.id,
+        effect: 'heal',
+        amount: status.healAmount
+      });
+    }
+  }
+
+  // Apply healing to attacker
+  if (result.healAmount > 0 && attacker) {
+    const maxHp = attacker.maxHp || attacker.stats?.maxHp || 100;
+    attacker.hp = Math.min(maxHp, (attacker.hp || 0) + result.healAmount);
+  }
+
+  return result;
+}
+
+/**
+ * Handle max stack explosion (like OVERHEATED at 5 stacks)
+ * @param {object} target - The target with max stacks
+ * @param {string} statusId - The status that reached max stacks
+ * @returns {object} Result with explosion damage
+ */
+export function processMaxStackExplosion(target, statusId) {
+  const result = {
+    damage: 0,
+    triggered: false
+  };
+
+  if (!target.statuses) return result;
+
+  const statusIndex = target.statuses.findIndex(s => s.id === statusId);
+  if (statusIndex === -1) return result;
+
+  const status = target.statuses[statusIndex];
+  if (status.explosionDamage) {
+    result.damage = status.explosionDamage;
+    result.triggered = true;
+
+    // Remove the status after explosion
+    target.statuses.splice(statusIndex, 1);
+
+    // Apply damage
+    target.hp = Math.max(0, (target.hp || 0) - result.damage);
+    result.targetDefeated = target.hp <= 0;
+  }
+
+  return result;
+}
+
+/**
+ * Get current stack count for a status effect
+ * @param {object} target - The target to check
+ * @param {string} statusId - The status effect ID
+ * @returns {number} Current stack count (0 if not present)
+ */
+export function getStatusStacks(target, statusId) {
+  if (!target.statuses || !Array.isArray(target.statuses)) {
+    return 0;
+  }
+
+  const status = target.statuses.find(s => s.id === statusId);
+  return status ? (status.stacks || 1) : 0;
 }
