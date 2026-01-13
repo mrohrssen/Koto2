@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JChat Dungeon - Shadow Gate</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔</text></svg>">
+  <title>NEO TOKYO: System Liberation</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌃</text></svg>">
   <link rel="stylesheet" href="game.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
     <!-- Header -->
     <header class="game-header">
       <div class="header-left">
-        <h1>Shadow Gate</h1>
+        <h1>NEO TOKYO</h1>
       </div>
       <div class="header-right">
         <div class="player-quick-stats" id="quick-stats">
@@ -56,7 +56,7 @@
         <div class="vn-player-area">
           <div class="vn-hp-bar player-hp-bar" id="player-hp-bar">
             <div class="hp-bar-label">
-              <span class="hp-name" id="player-name-display">Hunter</span>
+              <span class="hp-name" id="player-name-display">Hacker</span>
               <span class="hp-values" id="player-hp-values">120/120</span>
             </div>
             <div class="hp-bar-track">
@@ -87,10 +87,10 @@
           </div>
         </div>
 
-        <!-- Floor/Room indicator -->
+        <!-- Ward/Area indicator -->
         <div class="vn-floor-indicator" id="floor-indicator">
-          <span id="floor-display">Floor 1</span>
-          <span id="room-display">Room 1/5</span>
+          <span id="floor-display">Ward 1</span>
+          <span id="room-display">Area 1/5</span>
         </div>
 
         <!-- Word Practice Cards (during combat) -->
@@ -152,7 +152,7 @@
             </div>
           </div>
           <div class="narration-text" id="narration-text">
-            <p>Welcome to Shadow Gate. Create a hunter to begin.</p>
+            <p>Welcome to NEO TOKYO. Create a hacker to begin the liberation.</p>
           </div>
         </div>
 
@@ -166,7 +166,7 @@
     <!-- Player Status Panel (sidebar on desktop, bottom on mobile) -->
     <aside class="status-panel" id="status-panel">
       <div class="status-section">
-        <h3>Hunter Status</h3>
+        <h3>Hacker Status</h3>
         <div class="player-stats" id="player-stats">
           <p class="no-save-msg">No character yet</p>
         </div>
@@ -189,12 +189,12 @@
     <div class="modal hidden" id="create-char-modal">
       <div class="modal-content create-char-content">
         <div class="modal-header">
-          <h2>Create Hunter</h2>
+          <h2>Create Hacker</h2>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label for="char-name">Hunter Name</label>
-            <input type="text" id="char-name" placeholder="Enter your name" maxlength="20" value="Hunter">
+            <label for="char-name">Hacker Name</label>
+            <input type="text" id="char-name" placeholder="Enter your handle" maxlength="20" value="Hacker">
           </div>
           <div class="char-preview">
             <p class="stat-points-display">Stat Points: <span id="create-stat-points">48</span></p>
@@ -474,7 +474,7 @@
     <div class="modal hidden" id="upgrades-modal">
       <div class="modal-content upgrades-content">
         <div class="modal-header">
-          <h2>Shadow Essence</h2>
+          <h2>解放データ (Liberation Data)</h2>
           <div class="essence-display">
             <span class="essence-icon">&#x2728;</span>
             <span class="essence-count" id="modal-essence-count">0</span>

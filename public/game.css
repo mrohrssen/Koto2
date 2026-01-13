@@ -1,58 +1,71 @@
 /* ============================================
-   GENSHIN IMPACT STYLE UI
-   JChat Dungeon - Light Fantasy Theme
+   NEO TOKYO: System Liberation
+   Cyberpunk Dark Theme
    ============================================ */
 
 /* ============ FONTS ============ */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap');
 
 /* ============ CSS VARIABLES ============ */
 :root {
-  /* Background colors */
-  --bg-primary: #f8f4e8;
-  --bg-secondary: #fffcf5;
-  --bg-tertiary: #efe9dc;
-  --bg-panel: rgba(255, 252, 245, 0.97);
+  /* Background colors - Dark cyberpunk */
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-tertiary: #1a1a24;
+  --bg-panel: rgba(18, 18, 26, 0.97);
 
   /* Text colors */
-  --text-primary: #3d3d3d;
-  --text-secondary: #6b6b6b;
-  --text-system: #b8860b;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --text-system: #00d4ff;
 
-  /* Genshin Gold Accent System */
-  --gi-gold: #d4a853;
-  --gi-gold-bright: #ffd700;
-  --gi-gold-muted: #c4954a;
-  --gi-gold-dark: #b8860b;
-  --gi-gold-glow: rgba(212, 168, 83, 0.4);
+  /* SYSTEM Colors (enemies, cold, digital) */
+  --system-cyan: #00d4ff;
+  --system-cyan-bright: #40e0ff;
+  --system-cyan-muted: #0099cc;
+  --system-cyan-dark: #006688;
+  --system-cyan-glow: rgba(0, 212, 255, 0.4);
 
-  /* Accent Colors */
-  --accent: var(--gi-gold);
-  --accent-hover: var(--gi-gold-muted);
-  --accent-glow: 0 0 20px var(--gi-gold-glow), 0 0 40px rgba(212, 168, 83, 0.2);
+  /* Liberation Colors (player, warm, alive) */
+  --liberation-orange: #ff6b35;
+  --liberation-pink: #ff1493;
+  --liberation-yellow: #ffd700;
+  --liberation-glow: rgba(255, 107, 53, 0.4);
+
+  /* Accent Colors - Use liberation orange for player actions */
+  --accent: var(--liberation-orange);
+  --accent-hover: var(--liberation-pink);
+  --accent-glow: 0 0 20px var(--liberation-glow), 0 0 40px rgba(255, 107, 53, 0.2);
+
+  /* Legacy gold mapping (for compatibility) */
+  --gi-gold: var(--liberation-orange);
+  --gi-gold-bright: var(--liberation-yellow);
+  --gi-gold-muted: #e05a2d;
+  --gi-gold-dark: #cc4422;
+  --gi-gold-glow: var(--liberation-glow);
 
   /* Status Colors */
-  --hp-color: #5cb85c;
-  --hp-glow: rgba(92, 184, 92, 0.4);
-  --mp-color: #5bc0de;
-  --mp-glow: rgba(91, 192, 222, 0.4);
-  --xp-color: #c77dff;
-  --xp-glow: rgba(199, 125, 255, 0.4);
+  --hp-color: #00ff88;
+  --hp-glow: rgba(0, 255, 136, 0.4);
+  --mp-color: #00d4ff;
+  --mp-glow: rgba(0, 212, 255, 0.4);
+  --xp-color: #ff1493;
+  --xp-glow: rgba(255, 20, 147, 0.4);
 
   /* Combat */
-  --enemy-red: #e74c3c;
-  --enemy-glow: rgba(231, 76, 60, 0.4);
-  --damage-color: #e74c3c;
-  --heal-color: #5cb85c;
-  --critical-color: var(--gi-gold-bright);
+  --enemy-red: #ff3366;
+  --enemy-glow: rgba(255, 51, 102, 0.4);
+  --damage-color: #ff3366;
+  --heal-color: #00ff88;
+  --critical-color: var(--liberation-yellow);
 
   /* UI Elements */
-  --border: rgba(212, 168, 83, 0.3);
-  --border-glow: var(--gi-gold-glow);
-  --border-bright: rgba(255, 215, 0, 0.5);
-  --success: #5cb85c;
-  --error: #e74c3c;
-  --warning: #f0ad4e;
+  --border: rgba(0, 212, 255, 0.3);
+  --border-glow: var(--system-cyan-glow);
+  --border-bright: rgba(0, 212, 255, 0.5);
+  --success: #00ff88;
+  --error: #ff3366;
+  --warning: #ffd700;
 }
 
 * {
@@ -62,10 +75,30 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans JP', sans-serif;
+  font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.6;
+}
+
+/* Cyberpunk scanline overlay effect */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1) 0px,
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  z-index: 9999;
+  opacity: 0.3;
 }
 
 /* Global utility class */
@@ -95,8 +128,8 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(180deg, rgba(255, 252, 245, 0.98) 0%, rgba(248, 244, 232, 0.95) 100%);
-  border-bottom: 2px solid var(--gi-gold-muted);
+  background: linear-gradient(180deg, rgba(18, 18, 26, 0.98) 0%, rgba(10, 10, 15, 0.95) 100%);
+  border-bottom: 2px solid var(--system-cyan-muted);
   position: relative;
 }
 
@@ -111,7 +144,7 @@ body {
 }
 
 .game-header h1 {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1.4rem;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -186,7 +219,7 @@ body {
 }
 
 .quick-stat .rank {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-weight: 700;
   font-size: 1.1rem;
   padding: 0.15rem 0.5rem;
@@ -198,7 +231,7 @@ body {
 
 .quick-stat .floor {
   color: var(--gi-gold-dark);
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
 }
 
 /* ============ MAIN GAME AREA ============ */
@@ -278,7 +311,7 @@ body {
 }
 
 .dm-label {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -296,7 +329,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.55rem;
   font-weight: 600;
   color: var(--gi-gold-dark);
@@ -397,7 +430,7 @@ body {
 }
 
 .hub-title {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1.8rem;
   font-weight: 700;
   color: var(--sl-blue-bright);
@@ -422,7 +455,7 @@ body {
 }
 
 .floor-title {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1rem;
   font-weight: 600;
   color: var(--sl-blue-bright);
@@ -487,7 +520,7 @@ body {
 }
 
 .room-number {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.85rem;
   color: var(--text-secondary);
   margin-left: 0.5rem;
@@ -546,7 +579,7 @@ body {
 }
 
 .room-type {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -577,7 +610,7 @@ body {
   color: #5a5a5a;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -719,7 +752,7 @@ body {
 }
 
 .status-section h3 {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -758,7 +791,7 @@ body {
 }
 
 .stat-row .value {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -793,7 +826,7 @@ body {
   justify-content: space-between;
   font-size: 0.7rem;
   margin-bottom: 0.25rem;
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-weight: 500;
 }
 
@@ -884,7 +917,7 @@ body {
 }
 
 .inventory-item .item-qty {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   color: var(--sl-blue-bright);
   font-weight: 600;
   font-size: 0.8rem;
@@ -1024,7 +1057,7 @@ body {
 }
 
 .enemy-name {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1.3rem;
   font-weight: 700;
   color: var(--enemy-red);
@@ -1066,7 +1099,7 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.75rem;
   font-weight: 600;
   color: white;
@@ -1083,7 +1116,7 @@ body {
 }
 
 .vs-text {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1rem;
   font-weight: 700;
   color: var(--sl-blue-bright);
@@ -1129,7 +1162,7 @@ body {
 }
 
 .player-combat-name {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-weight: 600;
   font-size: 1rem;
   margin-bottom: 0.5rem;
@@ -1151,7 +1184,7 @@ body {
 }
 
 .player-bar-label {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.65rem;
   font-weight: 600;
   width: 24px;
@@ -1188,7 +1221,7 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.6rem;
   font-weight: 600;
   color: white;
@@ -1216,7 +1249,7 @@ body {
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.25s ease;
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1391,7 +1424,7 @@ body {
 }
 
 #submenu-title {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-weight: 600;
   font-size: 0.85rem;
   color: var(--text-system);
@@ -1450,13 +1483,13 @@ body {
 }
 
 .submenu-option .option-cost {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.75rem;
   color: var(--mp-color);
 }
 
 .submenu-option .option-qty {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.75rem;
   color: var(--text-secondary);
 }
@@ -1488,19 +1521,19 @@ body {
 
 .combat-log-entry .damage {
   color: var(--damage-color);
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-weight: 600;
 }
 
 .combat-log-entry .heal {
   color: var(--heal-color);
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-weight: 600;
 }
 
 .combat-log-entry .critical {
   color: var(--critical-color);
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-weight: 700;
   text-shadow: 0 0 10px rgba(255, 215, 64, 0.5);
 }
@@ -1508,7 +1541,7 @@ body {
 /* Turn Indicator */
 .turn-indicator {
   text-align: center;
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-secondary);
@@ -1593,7 +1626,7 @@ body {
 }
 
 .modal-header h2 {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1.1rem;
   font-weight: 600;
   color: #4a4a4a;
@@ -1624,7 +1657,7 @@ body {
 
 .form-group label {
   display: block;
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.7rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -1680,7 +1713,7 @@ body {
 }
 
 .char-preview p {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.75rem;
   color: var(--text-system);
   text-transform: uppercase;
@@ -1705,7 +1738,7 @@ body {
 
 /* Buttons */
 .btn-primary {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1788,7 +1821,7 @@ body {
 }
 
 .reward-item .reward-value {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-weight: 600;
 }
 
@@ -1831,7 +1864,7 @@ body {
 }
 
 .settings-section h3 {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-system);
@@ -1959,7 +1992,7 @@ body {
 }
 
 .log-entry-time {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.6rem;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -1996,7 +2029,7 @@ body {
 }
 
 .log-floor-header {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--sl-blue-bright);
@@ -2195,7 +2228,7 @@ body {
 }
 
 .essence-count {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.9rem;
   font-weight: 600;
   color: #b388ff;
@@ -2219,7 +2252,7 @@ body {
 .upgrades-content .modal-header h2 {
   flex: 1;
   margin: 0;
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1.3rem;
   background: linear-gradient(135deg, #b388ff 0%, #8c9eff 100%);
   -webkit-background-clip: text;
@@ -2328,7 +2361,7 @@ body {
 }
 
 .upgrade-level {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.7rem;
   color: #b388ff;
   padding: 0.2rem 0.5rem;
@@ -2362,7 +2395,7 @@ body {
   border: 1px solid rgba(138, 43, 226, 0.4);
   border-radius: 4px;
   color: #b388ff;
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.7rem;
   font-weight: 600;
   cursor: pointer;
@@ -2439,7 +2472,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.75rem;
   color: #b388ff;
 }
@@ -2466,7 +2499,7 @@ body {
 }
 
 .stat-value {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1.4rem;
   font-weight: 600;
   color: var(--sl-blue);
@@ -2495,7 +2528,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1.3rem;
   font-weight: 600;
   color: #b388ff;
@@ -2526,7 +2559,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1.8rem;
   font-weight: 700;
   color: #b388ff;
@@ -2554,7 +2587,7 @@ body {
 
 .achievement-notification h3 {
   margin: 0 0 0.5rem 0;
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1rem;
   color: #ffd54f;
   text-align: center;
@@ -2718,7 +2751,7 @@ body {
 }
 
 .hp-name {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.9rem;
   font-weight: 600;
   color: #4a4a4a;
@@ -2824,7 +2857,7 @@ body {
 }
 
 .vn-floor-indicator span {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--gi-gold-dark);
@@ -2878,7 +2911,7 @@ body {
 /* Damage Numbers */
 .damage-number {
   position: absolute;
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 2rem;
   font-weight: 700;
   color: #ef4444;
@@ -3104,7 +3137,7 @@ body {
   top: 15%;
   left: 50%;
   transform: translateX(-50%);
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1.2rem;
   font-weight: 700;
   color: #fff;
@@ -3274,7 +3307,7 @@ body {
 }
 
 .stats-card-value {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1.8rem;
   font-weight: 700;
   color: var(--sl-blue-bright);
@@ -3297,7 +3330,7 @@ body {
 }
 
 .stats-section h3 {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1rem;
   color: var(--sl-blue-bright);
   margin-bottom: 1rem;
@@ -3455,7 +3488,7 @@ body {
 }
 
 .word-frequency-list .word-count {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.85rem;
   color: var(--sl-blue);
   background: rgba(27, 69, 215, 0.1);
@@ -3747,7 +3780,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   text-transform: uppercase;
   font-size: 0.85rem;
 }
@@ -3929,7 +3962,7 @@ body {
 
 /* Stat Points Display */
 .stat-points-display {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1rem;
   color: var(--sl-cyan);
   text-align: center;
@@ -3976,7 +4009,7 @@ body {
 }
 
 .stat-row .stat-name {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--sl-blue-bright);
@@ -4034,7 +4067,7 @@ body {
 }
 
 .stat-value {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 1rem;
   font-weight: 700;
   color: white;
@@ -4059,7 +4092,7 @@ body {
 }
 
 .derived-preview h4 {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--sl-blue-bright);
@@ -4088,7 +4121,7 @@ body {
 }
 
 .derived-stat span:last-child {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-weight: 600;
   color: var(--sl-cyan);
 }
@@ -4119,7 +4152,7 @@ body {
 }
 
 .stat-row.mini .label {
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.65rem;
   font-weight: 600;
   color: var(--text-system);
@@ -4144,7 +4177,7 @@ body {
   padding: 0.5rem;
   margin: 0.5rem 0;
   text-align: center;
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.75rem;
   font-weight: 600;
   color: #4ade80;
@@ -4166,7 +4199,7 @@ body {
   border: 1px solid rgba(74, 222, 128, 0.5);
   border-radius: 3px;
   color: #4ade80;
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-size: 0.75rem;
   font-weight: 700;
   width: 20px;
@@ -4213,7 +4246,7 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: 'Cinzel', serif;
+  font-family: 'Orbitron', serif;
   font-weight: 900;
   font-size: 2.5rem;
   text-transform: uppercase;
@@ -4578,5 +4611,129 @@ body {
   .word-input-popup #word-definition-input {
     width: 140px;
   }
+}
+
+/* ============ NEO TOKYO GLITCH EFFECTS ============ */
+
+/* Glitch animation for SYSTEM elements */
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+    opacity: 1;
+  }
+  20% {
+    transform: translate(-2px, 2px);
+    opacity: 0.8;
+  }
+  40% {
+    transform: translate(2px, -2px);
+    opacity: 0.9;
+  }
+  60% {
+    transform: translate(-1px, 1px);
+    opacity: 0.85;
+  }
+  80% {
+    transform: translate(1px, -1px);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(0);
+    opacity: 1;
+  }
+}
+
+@keyframes glitchText {
+  0%, 100% {
+    text-shadow:
+      -1px 0 var(--system-cyan),
+      1px 0 var(--liberation-pink);
+  }
+  25% {
+    text-shadow:
+      1px 0 var(--system-cyan),
+      -1px 0 var(--liberation-pink);
+  }
+  50% {
+    text-shadow:
+      -2px 0 var(--system-cyan),
+      2px 0 var(--liberation-pink);
+  }
+  75% {
+    text-shadow:
+      0 0 var(--system-cyan),
+      0 0 var(--liberation-pink);
+  }
+}
+
+@keyframes neonPulse {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--system-cyan), 0 0 10px var(--system-cyan-muted);
+  }
+  50% {
+    box-shadow: 0 0 15px var(--system-cyan), 0 0 25px var(--system-cyan-muted), 0 0 35px var(--system-cyan-dark);
+  }
+}
+
+/* Apply glitch to enemy elements (SYSTEM-controlled) */
+.enemy-hp-bar .hp-name {
+  animation: glitchText 3s infinite;
+}
+
+/* Victory modal glitch effect */
+.victory.game-victory {
+  animation: glitchText 0.5s ease-in-out 3;
+  color: var(--liberation-orange);
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* SYSTEM indicator on enemies */
+.vn-enemy-area::before {
+  content: 'SYSTEM';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.6rem;
+  color: var(--system-cyan);
+  opacity: 0.6;
+  letter-spacing: 2px;
+  animation: neonPulse 2s infinite;
+  padding: 2px 8px;
+  border: 1px solid var(--system-cyan-dark);
+}
+
+/* Header title cyberpunk styling */
+.game-header h1 {
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, var(--system-cyan) 0%, var(--liberation-pink) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Ward indicator neon styling */
+.vn-floor-indicator {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid var(--system-cyan-dark);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+.vn-floor-indicator span {
+  font-family: 'Orbitron', monospace;
+  color: var(--system-cyan);
+  letter-spacing: 1px;
+}
+
+/* Liberation message styling */
+#result-title.victory {
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 2px;
+  color: var(--liberation-orange);
+  text-shadow: 0 0 10px var(--liberation-glow);
 }
 

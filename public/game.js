@@ -254,21 +254,21 @@ async function fetchAINarration(event, context = {}) {
 
 // Simple fallback narrations (Japanese) for when server narration isn't available
 const FALLBACK_NARRATIONS = {
-  welcome: 'シャドウゲートへようこそ！影の門が待っている。冒険を始めましょう。',
-  hub: (player) => `${player.name}はハンターギルドにいる。他のハンターたちが話している。ダンジョンの入り口が近くで暗く光っている。`,
+  welcome: 'NEO TOKYOへようこそ。SYSTEMに支配された東京を解放せよ。',
+  hub: (player) => `${player.name}は地下のハッカー拠点にいる。モニターが明滅している。東京のマップが表示されている。`,
   enterDungeon: (floor) => {
     const desc = {
-      1: '第1階に入った。暗い通路が続く。遠くで何かが動いている...',
-      2: '第2階。空気が重い。壁に古い血の跡がある。',
-      3: '第3階。骨が散らばっている。死者の気配がする。',
-      4: '第4階。熱い！溶岩の光が見える。',
-      5: '第5階。暗い森だ。木々が動いているように見える。',
-      6: '第6階。大きな骨がある。竜の住処だ。',
-      7: '最後の階。影が渦巻いている。最終決戦の時だ。'
+      1: '練馬区に侵入した。住宅街にSYSTEMの影響が見える。市民たちが無表情で歩いている...',
+      2: '中野区。ブロードウェイのネオンが異常に点滅している。オタク文化がSYSTEMに汚染されている。',
+      3: '新宿区。歌舞伎町のネオンが冷たく光る。SYSTEM制御下のホストたちが徘徊している。',
+      4: '池袋区。サンシャインシティの電光掲示板がSYSTEMのプロパガンダを流している。',
+      5: '港区。六本木ヒルズの企業ビルが威圧的にそびえる。外資系CEOたちがSYSTEMの手先だ。',
+      6: '千代田区。官庁街がSYSTEMの中枢に近づいている。官僚たちが無機質に動いている。',
+      7: '皇居。SYSTEMの心臓部。デジタルと伝統が融合した異様な空間。システム天皇が待っている。'
     };
-    return desc[floor] || `第${floor}階に入った。`;
+    return desc[floor] || `エリア${floor}に侵入した。`;
   },
-  combatStart: (enemy) => `${enemy?.name || '敵'}が現れた！戦いの準備をしろ！`,
+  combatStart: (enemy) => `${enemy?.name || '市民'}がSYSTEMに操られている！解放しろ！`,
   playerAttack: (result) => {
     const dmg = result?.damage || result?.totalDamage || 0;
     if (result?.miss) return `攻撃が外れた！MISS!`;
@@ -1058,10 +1058,10 @@ function updateVNStage() {
     playerSprite.classList.add('idle');
   }
 
-  // Update floor/room indicator
+  // Update ward/area indicator
   if (gameState.run) {
-    floorDisplay.textContent = `Floor ${gameState.run.floor || 1}`;
-    roomDisplay.textContent = `Room ${gameState.run.currentRoom || 0}/${gameState.run.totalRooms || '?'}`;
+    floorDisplay.textContent = `Ward ${gameState.run.floor || 1}`;
+    roomDisplay.textContent = `Area ${gameState.run.currentRoom || 0}/${gameState.run.totalRooms || '?'}`;
     floorIndicator.classList.remove('hidden');
   } else {
     floorIndicator.classList.add('hidden');
@@ -1561,7 +1561,7 @@ async function stopRealtimeCombat(result) {
     console.error('Error getting combat end narration:', error);
     // Fallback narration
     if (result.victory) {
-      showNarration('勝利！');
+      showNarration('市民解放！');
       showVictoryModal(result);
     } else {
       showNarration('敗北...');
@@ -2350,7 +2350,7 @@ function updateQuickStats() {
   }
 
   const p = gameState.run?.player || gameState.player;
-  const floorText = gameState.run ? `Floor ${gameState.run.floor}/7` : '';
+  const floorText = gameState.run ? `Ward ${gameState.run.floor}/7` : '';
 
   quickStats.innerHTML = `
     <div class="quick-stat">
@@ -2703,14 +2703,14 @@ function updateActionPanel() {
     case 'no_save':
       actionPanel.innerHTML = `
         <button class="action-btn primary" onclick="openCreateCharModal()">
-          Create Hunter
+          Create Hacker
         </button>
       `;
       break;
     case 'hub':
       actionPanel.innerHTML = `
         <button class="action-btn primary" onclick="startNewRun()">
-          Enter Dungeon
+          Infiltrate Tokyo
         </button>
         <button class="action-btn secondary" onclick="openUpgradesModal()">
           Upgrades
@@ -2731,7 +2731,7 @@ function updateActionPanel() {
     case 'boss_ready':
       actionPanel.innerHTML = `
         <button class="action-btn boss" onclick="startBossEncounter()">
-          Challenge Boss
+          Liberate Boss
         </button>
       `;
       break;
@@ -2803,7 +2803,7 @@ function showNoSaveContent() {
   gameContent.innerHTML = `
     <div class="content-center">
       <div class="welcome-icon">&#x2694;</div>
-      <h2>Shadow Gate Dungeon</h2>
+      <h2>NEO TOKYO: System Liberation</h2>
       <p>Create your hunter to begin the journey into darkness.</p>
     </div>
   `;
@@ -2843,7 +2843,7 @@ function showExploringContent() {
   gameContent.innerHTML = `
     <div class="floor-display">
       <div class="floor-header">
-        <span class="floor-number">Floor ${run.floor}</span>
+        <span class="floor-number">Ward ${run.floor}</span>
         <span class="floor-status">Exploring...</span>
       </div>
       <div class="progress-bar">
@@ -2883,7 +2883,7 @@ function showRoomContent() {
   gameContent.innerHTML = `
     <div class="floor-display room-display">
       <div class="floor-header">
-        <span class="floor-number">Floor ${run.floor}</span>
+        <span class="floor-number">Ward ${run.floor}</span>
         <span class="room-number">Room ${currentRoom + 1}/${totalRooms}</span>
       </div>
       ${progressHTML}
@@ -3486,7 +3486,7 @@ function showBossReadyContent() {
   gameContent.innerHTML = `
     <div class="floor-display boss-ready">
       <div class="floor-header">
-        <span class="floor-number">Floor ${run.floor}</span>
+        <span class="floor-number">Ward ${run.floor}</span>
         <span class="floor-status boss-status">BOSS AHEAD</span>
       </div>
       <div class="boss-warning">
@@ -3506,7 +3506,7 @@ function showFloorCompleteContent() {
   gameContent.innerHTML = `
     <div class="floor-display floor-complete">
       <div class="floor-header">
-        <span class="floor-number">Floor ${run.floor}</span>
+        <span class="floor-number">Ward ${run.floor}</span>
         <span class="floor-status complete-status">${isComplete ? 'DUNGEON CLEARED!' : 'CLEARED!'}</span>
       </div>
       <div class="complete-message">
@@ -3887,7 +3887,7 @@ function showVictoryModal(result) {
   const rewards = document.getElementById('result-rewards');
 
   const enemy = gameState.combat?.enemy;
-  title.textContent = enemy?.isBoss ? 'ボス撃破！' : '勝利！';
+  title.textContent = enemy?.isBoss ? 'BOSS LIBERATED!' : 'CITIZEN FREED!';
   title.className = 'victory';
 
   message.textContent = '';
@@ -4241,7 +4241,7 @@ function openLogModal() {
     for (const entry of narrationLog) {
       if (entry.floor !== currentFloor && entry.floor > 0) {
         currentFloor = entry.floor;
-        html += `<div class="log-floor-header">Floor ${currentFloor}</div>`;
+        html += `<div class="log-floor-header">Ward ${currentFloor}</div>`;
       }
       html += `<div class="log-entry"><p>${entry.text}</p></div>`;
     }
@@ -5141,7 +5141,7 @@ async function loadTtsSpeakers() {
  * Test TTS with sample narration
  */
 async function testTts() {
-  const testText = 'ダンジョンに入る。暗い通路が続く。冒険が始まる。';
+  const testText = 'NEO TOKYOに侵入する。SYSTEMの支配が見える。解放作戦が始まる。';
   await speakNarration(testText);
 }
 
