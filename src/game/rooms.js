@@ -1,18 +1,29 @@
-// Room System
-// D&D-style room exploration with traps, loot, and encounters
+// Room System - NEO TOKYO: System Liberation
+// Exploration through Tokyo wards controlled by SYSTEM
 
 import { WEAPONS, ARMOR, SHIELDS, ACCESSORIES } from './items.js';
+
+// Tokyo Ward names (floor -> ward mapping)
+export const FLOOR_NAMES = {
+  1: { name: '練馬区', nameEn: 'Nerima Ward', theme: 'residential' },
+  2: { name: '中野区', nameEn: 'Nakano Ward', theme: 'otaku' },
+  3: { name: '新宿区', nameEn: 'Shinjuku Ward', theme: 'nightlife' },
+  4: { name: '池袋区', nameEn: 'Ikebukuro Ward', theme: 'shopping' },
+  5: { name: '港区', nameEn: 'Minato Ward', theme: 'corporate' },
+  6: { name: '千代田区', nameEn: 'Chiyoda Ward', theme: 'government' },
+  7: { name: '皇居', nameEn: 'Imperial Palace', theme: 'system' }
+};
 
 // Room types and their distribution
 export const ROOM_TYPES = {
   empty: 'empty',           // Nothing of interest
-  encounter: 'encounter',   // Combat encounter
-  trap: 'trap',             // Trap that can be interacted with
-  body: 'body',             // Dead adventurer with potential loot
-  treasure: 'treasure',     // Treasure chest
-  shrine: 'shrine',         // Healing shrine
-  merchant: 'merchant',     // Wandering merchant (rare)
-  blacksmith: 'blacksmith'  // Equipment refinement (floor 3+)
+  encounter: 'encounter',   // Combat encounter (possessed citizen)
+  trap: 'trap',             // SYSTEM security trap
+  body: 'body',             // Offline citizen (was: dead adventurer)
+  treasure: 'treasure',     // Vending machine / data cache
+  shrine: 'shrine',         // Charging station (was: healing shrine)
+  merchant: 'merchant',     // Black market dealer
+  blacksmith: 'blacksmith'  // Modder (commented out for now)
 };
 
 // Room distribution by floor (weights) - merchant/blacksmith are 0 because we guarantee placement
@@ -27,50 +38,50 @@ const ROOM_WEIGHTS = {
   7: { empty: 0, encounter: 42, trap: 26, body: 12, treasure: 12, shrine: 8, merchant: 0, blacksmith: 0 }
 };
 
-// Trap types with effects
+// Trap types with effects - SYSTEM Security measures
 export const TRAP_TYPES = {
   spike: {
     id: 'spike',
-    name: 'スパイクトラップ',
-    nameEn: 'Spike Trap',
-    description: '床から飛び出す鋭い棘。',
+    name: 'セキュリティレーザー',
+    nameEn: 'Security Laser',
+    description: '壁から放射されるレーザーグリッド。',
     damage: { min: 10, max: 25 },
     avoidChance: 0.4,  // 40% chance to avoid with speed check
     disarmChance: 0.3  // 30% base chance to disarm
   },
   poison: {
     id: 'poison',
-    name: '毒ガストラップ',
-    nameEn: 'Poison Gas Trap',
-    description: '緑色の毒ガスが噴き出す。',
+    name: 'ウイルス散布',
+    nameEn: 'Virus Dispenser',
+    description: 'SYSTEMウイルスを含むナノマシンが噴出。',
     damage: { min: 8, max: 20 },
-    statusEffect: 'poison',
+    statusEffect: 'overheated',
     avoidChance: 0.3,
     disarmChance: 0.25
   },
   fire: {
     id: 'fire',
-    name: '火炎トラップ',
-    nameEn: 'Fire Trap',
-    description: '床から炎が噴き上がる。',
+    name: 'サーマルオーバーロード',
+    nameEn: 'Thermal Overload',
+    description: 'サーバールームの冷却システムが暴走。',
     damage: { min: 15, max: 35 },
     avoidChance: 0.35,
     disarmChance: 0.2
   },
   arrow: {
     id: 'arrow',
-    name: '矢のトラップ',
-    nameEn: 'Arrow Trap',
-    description: '壁から矢が飛んでくる。',
+    name: 'ドローン迎撃',
+    nameEn: 'Drone Interception',
+    description: '監視ドローンが警告なしに攻撃。',
     damage: { min: 12, max: 28 },
     avoidChance: 0.45,
     disarmChance: 0.35
   },
   pitfall: {
     id: 'pitfall',
-    name: '落とし穴',
-    nameEn: 'Pitfall Trap',
-    description: '床が崩れて落下する。',
+    name: 'EMPトラップ',
+    nameEn: 'EMP Trap',
+    description: '電磁パルスが機器をシャットダウン。',
     damage: { min: 20, max: 40 },
     avoidChance: 0.5,
     disarmChance: 0.15
@@ -123,24 +134,24 @@ export const CHEST_LOOT = {
   ]
 };
 
-// Body descriptions
+// Body descriptions - Offline citizens (disconnected from SYSTEM)
 const BODY_DESCRIPTIONS = [
-  '冒険者の遺体が壁にもたれかかっている。',
-  '骨と破れた服だけが残っている。何かが光っている。',
-  '最近死んだ冒険者がいる。まだ暖かい。',
-  '古い骸骨が宝を握りしめている。',
-  '傷だらけの戦士が倒れている。荷物が散らばっている。'
+  'オフラインの市民が壁にもたれて座っている。何かを握りしめている。',
+  'SYSTEM接続が切れた住人がいる。データパッドが落ちている。',
+  '最近オフラインになった市民。まだ意識がありそうだ。',
+  '古いハッカーの遺体が見つかった。レアなチップを持っているかも。',
+  '解放済みの市民が休んでいる。物資を分けてくれるかもしれない。'
 ];
 
-// Empty room descriptions
+// Empty room descriptions - Tokyo urban environment
 const EMPTY_DESCRIPTIONS = [
-  '何もない暗い部屋。壁にはひび割れがある。',
-  '埃っぽい部屋。誰かがここを通った跡がある。',
-  '静かな部屋。天井から水滴が落ちる音がする。',
-  '壁に古い絵が描かれている。意味がわからない。',
-  '冷たい風が吹いている。どこかに穴があるようだ。',
-  '床に血の跡がある。何かがあったようだ。',
-  '古びた部屋。何年も誰も来ていないようだ。'
+  '暗い路地裏。ネオンサインがチカチカと点滅している。',
+  '放置された店舗。誰かがここを通った形跡がある。',
+  '静かなビルの廊下。監視カメラの赤いLEDが光っている。',
+  '壁にグラフィティがある。「SYSTEM反対」と書かれている。',
+  'エアコンの室外機が唸っている。蒸し暑い。',
+  '床に壊れたスマホが落ちている。何かがあったようだ。',
+  '廃墟になったアーケード。ゲーム機の画面がまだ光っている。'
 ];
 
 // ============ ROOM GENERATION ============
@@ -571,35 +582,36 @@ export function attemptAvoid(trap, player) {
  * Get narration for entering a room
  */
 export function getRoomEntryNarration(room) {
-  const roomNum = `部屋${room.roomNumber}/${room.totalRooms}`;
+  const wardInfo = FLOOR_NAMES[room.floor] || { name: '不明なエリア' };
+  const roomNum = `エリア${room.roomNumber}/${room.totalRooms}`;
 
   switch (room.type) {
     case ROOM_TYPES.empty:
-      return `${roomNum}に入った。${room.description || '何もない部屋だ。'}`;
+      return `${roomNum}に入った。${room.description || '静かなエリアだ。'}`;
 
     case ROOM_TYPES.encounter:
-      return `${roomNum}に入った。何かがいる！`;
+      return `${roomNum}に入った。SYSTEM接続された市民がいる！`;
 
     case ROOM_TYPES.trap:
-      return `${roomNum}に入った。床に何か光るものが見える...罠かもしれない。`;
+      return `${roomNum}に入った。セキュリティシステムが作動している...罠かもしれない。`;
 
     case ROOM_TYPES.body:
       return `${roomNum}に入った。${room.body.description}`;
 
     case ROOM_TYPES.treasure:
-      return `${roomNum}に入った。宝箱がある！${room.treasure.trapped ? '...何か怪しい。' : ''}`;
+      return `${roomNum}に入った。自販機がある！${room.treasure.trapped ? '...セキュリティ付きだ。' : ''}`;
 
     case ROOM_TYPES.shrine:
-      return `${roomNum}に入った。神秘的な祠がある。光が漂っている。`;
+      return `${roomNum}に入った。充電ステーションがある。エネルギーが満ちている。`;
 
     case ROOM_TYPES.merchant:
-      return `${roomNum}に入った。「いらっしゃい、冒険者よ。」商人がいる！`;
+      return `${roomNum}に入った。「おい、ハッカー。いいモノあるぜ。」闇商人がいる！`;
 
     case ROOM_TYPES.blacksmith:
-      return `${roomNum}に入った。「おう、冒険者。武器を鍛えてやろうか？」鍛冶屋がいる！`;
+      return `${roomNum}に入った。「改造が必要か？」改造屋がいる！`;
 
     case 'boss':
-      return `最後の部屋に入った。強大な気配がする...ボスがいる！`;
+      return `${wardInfo.name}の中心部に入った。強力なSYSTEM反応がある...ボスがいる！`;
 
     default:
       return `${roomNum}に入った。`;
@@ -615,54 +627,54 @@ export function getRoomActions(room) {
   // All rooms have "proceed" except boss room and unfinished encounter rooms
   const isUnfinishedEncounter = room.type === 'encounter' && !room.interacted;
   if (!room.isBossRoom && !isUnfinishedEncounter) {
-    actions.push({ id: 'proceed', name: '進む', description: '次の部屋へ進む' });
+    actions.push({ id: 'proceed', name: '進む', description: '次のエリアへ進む' });
   }
 
   switch (room.type) {
     case ROOM_TYPES.trap:
       if (!room.trap.triggered && !room.trap.disarmed) {
-        actions.push({ id: 'disarm', name: '解除する', description: '罠を解除しようとする' });
-        actions.push({ id: 'trigger', name: '避ける', description: '罠を避けて通る' });
+        actions.push({ id: 'disarm', name: 'ハック', description: 'セキュリティをハックする' });
+        actions.push({ id: 'trigger', name: '回避', description: 'トラップを回避する' });
       }
       break;
 
     case ROOM_TYPES.body:
       if (!room.body.looted && !room.body.skipped) {
-        actions.push({ id: 'loot', name: '調べる', description: '遺体を調べる（罠の可能性あり）' });
-        actions.push({ id: 'ignore_body', name: '無視する', description: '遺体を無視して進む' });
+        actions.push({ id: 'loot', name: '調べる', description: '市民を調べる（罠の可能性あり）' });
+        actions.push({ id: 'ignore_body', name: '無視', description: '市民を無視して進む' });
       }
       break;
 
     case ROOM_TYPES.treasure:
       if (!room.treasure.opened && !room.treasure.skipped) {
-        actions.push({ id: 'open', name: '開ける', description: '宝箱を開ける（罠の可能性あり）' });
-        actions.push({ id: 'ignore_treasure', name: '無視する', description: '宝箱を無視して進む' });
+        actions.push({ id: 'open', name: 'アクセス', description: '自販機にアクセス（セキュリティ注意）' });
+        actions.push({ id: 'ignore_treasure', name: '無視', description: '自販機を無視して進む' });
       }
       break;
 
     case ROOM_TYPES.shrine:
       if (!room.shrine.used) {
-        actions.push({ id: 'pray', name: '祈る', description: '祠に祈りを捧げる' });
+        actions.push({ id: 'pray', name: '充電', description: '充電ステーションを使う' });
       }
       break;
 
     case ROOM_TYPES.merchant:
-      actions.push({ id: 'shop', name: '買い物', description: '商人と取引する' });
+      actions.push({ id: 'shop', name: '取引', description: '闇商人と取引する' });
       break;
 
     case ROOM_TYPES.blacksmith:
-      actions.push({ id: 'refine', name: '精錬', description: '装備を強化する' });
+      actions.push({ id: 'refine', name: '改造', description: '装備を改造する' });
       break;
 
     case ROOM_TYPES.encounter:
       // Only show fight action if encounter not completed
       if (!room.interacted) {
-        actions.push({ id: 'fight', name: '戦う', description: '敵と戦う' });
+        actions.push({ id: 'fight', name: '解放', description: '市民を解放する' });
       }
       break;
 
     case 'boss':
-      actions.push({ id: 'boss_fight', name: 'ボス戦', description: 'ボスに挑む' });
+      actions.push({ id: 'boss_fight', name: 'ボス戦', description: 'エリアボスに挑む' });
       break;
   }
 

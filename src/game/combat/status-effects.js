@@ -1,6 +1,8 @@
 /**
- * Status Effects System
+ * Status Effects System - NEO TOKYO: System Liberation
  * Defines status effects and provides functions for applying/managing them
+ *
+ * Cyberpunk-themed status effects representing SYSTEM disruption
  */
 
 // ============ STATUS EFFECTS DEFINITIONS ============
@@ -10,65 +12,104 @@
  * resistStat: The stat used to resist this effect (higher = more resistance)
  * dotDamage: Damage per turn for DoT effects
  * skipTurn: Whether this effect causes the target to skip their turn
- * hitPenalty: Accuracy reduction percentage for the affected target
- * blockMagic: Whether this effect prevents casting magic
+ * damageTakenMultiplier: Multiplier for damage received (e.g., 1.5 = 50% more damage)
+ * blockMagic: Whether this effect prevents casting magic/skills
  * brokenByDamage: Whether taking damage removes this effect
  */
 export const STATUS_EFFECTS = {
-  BLEED: {
-    id: 'bleed',
+  // デフラグ - Fragments SYSTEM code, causing data corruption damage
+  DEFRAG: {
+    id: 'defrag',
+    name: 'デフラグ',
+    nameEn: 'Defrag',
     resistStat: 'agi',
     dotDamage: 5,
     duration: 2,
-    description: 'Takes damage each turn'
+    description: 'SYSTEM fragmentation - takes damage each cycle'
   },
-  STUN: {
-    id: 'stun',
+  // バッファオーバーフロー - Overloads processing, causing system freeze
+  BUFFER_OVERFLOW: {
+    id: 'bufferOverflow',
+    name: 'バッファオーバーフロー',
+    nameEn: 'Buffer Overflow',
     resistStat: 'vit',
     skipTurn: true,
     duration: 1,
-    description: 'Cannot act'
+    description: 'SYSTEM overload - cannot act'
   },
-  BLIND: {
-    id: 'blind',
+  // 露出 - Exposes vulnerabilities, increasing damage taken
+  EXPOSED: {
+    id: 'exposed',
+    name: '露出',
+    nameEn: 'Exposed',
     resistStat: 'int',
-    hitPenalty: 50,
+    damageTakenMultiplier: 1.5,
     duration: 2,
-    description: 'Reduced accuracy'
+    description: 'Vulnerabilities exposed - takes 50% more damage'
   },
-  SILENCE: {
-    id: 'silence',
+  // 破損 - Corrupts ability data, blocking skill usage
+  CORRUPTED: {
+    id: 'corrupted',
+    name: '破損',
+    nameEn: 'Corrupted',
     resistStat: 'int',
     blockMagic: true,
     duration: 2,
-    description: 'Cannot use magic'
+    description: 'Data corrupted - cannot use skills'
   },
-  POISON: {
-    id: 'poison',
+  // オーバーヒート - Thermal runaway causing sustained damage
+  OVERHEATED: {
+    id: 'overheated',
+    name: 'オーバーヒート',
+    nameEn: 'Overheated',
     resistStat: 'vit',
     dotDamage: 8,
     duration: 3,
-    description: 'Takes poison damage each turn'
+    description: 'Thermal overload - takes heat damage each cycle'
   },
-  SLEEP: {
-    id: 'sleep',
+  // ラグ - Network latency causing delayed responses
+  LAG: {
+    id: 'lag',
+    name: 'ラグ',
+    nameEn: 'Lag',
     resistStat: 'agi',
     skipTurn: true,
     brokenByDamage: true,
     duration: 2,
-    description: 'Cannot act, wakes on damage'
+    description: 'Network lag - cannot act, clears on damage'
   }
+};
+
+// Legacy mappings for backwards compatibility with existing save data
+export const STATUS_LEGACY_MAP = {
+  'bleed': 'defrag',
+  'stun': 'bufferOverflow',
+  'blind': 'exposed',
+  'silence': 'corrupted',
+  'poison': 'overheated',
+  'sleep': 'lag'
 };
 
 // ============ STATUS EFFECT FUNCTIONS ============
 
 /**
  * Get status effect definition by ID
- * @param {string} statusId - The status effect ID (e.g., 'bleed', 'stun')
+ * @param {string} statusId - The status effect ID (e.g., 'defrag', 'bufferOverflow')
  * @returns {object|null} The status effect definition or null
  */
 export function getStatusEffectDef(statusId) {
-  const upperKey = statusId.toUpperCase();
+  // Handle legacy status IDs from old save data
+  const mappedId = STATUS_LEGACY_MAP[statusId] || statusId;
+
+  // Try direct lookup by id field
+  for (const key in STATUS_EFFECTS) {
+    if (STATUS_EFFECTS[key].id === mappedId) {
+      return STATUS_EFFECTS[key];
+    }
+  }
+
+  // Fallback to uppercase key lookup
+  const upperKey = mappedId.toUpperCase().replace(/([a-z])([A-Z])/g, '$1_$2');
   return STATUS_EFFECTS[upperKey] || null;
 }
 
@@ -252,4 +293,35 @@ export function tickEnemyStatusEffects(enemy) {
   });
 
   return expired;
+}
+
+/**
+ * Calculate damage multiplier from status effects (e.g., EXPOSED)
+ * @param {object} target - The target receiving damage
+ * @returns {number} Damage multiplier (1.0 = normal, 1.5 = 50% more damage)
+ */
+export function getDamageTakenMultiplier(target) {
+  if (!target.statuses || !Array.isArray(target.statuses)) {
+    return 1.0;
+  }
+
+  let multiplier = 1.0;
+  for (const status of target.statuses) {
+    if (status.damageTakenMultiplier) {
+      multiplier *= status.damageTakenMultiplier;
+    }
+  }
+  return multiplier;
+}
+
+/**
+ * Get display name for a status effect
+ * @param {string} statusId - The status effect ID
+ * @param {boolean} japanese - Whether to return Japanese name
+ * @returns {string} The display name
+ */
+export function getStatusDisplayName(statusId, japanese = true) {
+  const def = getStatusEffectDef(statusId);
+  if (!def) return statusId;
+  return japanese ? def.name : def.nameEn;
 }

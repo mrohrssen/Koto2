@@ -8,7 +8,8 @@ import { ENEMY_ABILITIES, getEnemyAbility } from '../enemies.js';
 import {
   hasStatusEffect,
   getStatusEffectDef,
-  breakDamageEffects
+  breakDamageEffects,
+  getDamageTakenMultiplier
 } from './status-effects.js';
 import {
   getPlayerCombatStats,
@@ -30,12 +31,7 @@ export function executeEnemyTurn(enemy, player, intent = null, processCounterAtt
   const playerStats = getPlayerCombatStats(player);
   const enemyStats = getEnemyCombatStats(enemy);
 
-  // Check for BLIND status - reduces enemy hit chance
-  if (hasStatusEffect(enemy, 'blind')) {
-    const blindDef = getStatusEffectDef('blind');
-    const hitReduction = blindDef?.hitPenalty || 50;
-    enemyStats.hit = Math.max(1, enemyStats.hit - hitReduction);
-  }
+  // EXPOSED status is now handled via getDamageTakenMultiplier() in damage calculations
 
   // Check if player is defending
   const isDefending = player.statuses.some(s => s.id === 'defending');
@@ -161,14 +157,20 @@ export function isEnemyDefending(enemy) {
 }
 
 /**
- * Apply damage to enemy, accounting for their defense status
+ * Apply damage to enemy, accounting for their defense status and EXPOSED multiplier
  */
 export function applyDamageToEnemy(enemy, damage) {
   let finalDamage = damage;
 
-  // Check for defending status
+  // Apply EXPOSED status damage multiplier (takes more damage when exposed)
+  const damageMultiplier = getDamageTakenMultiplier(enemy);
+  if (damageMultiplier > 1.0) {
+    finalDamage = Math.floor(finalDamage * damageMultiplier);
+  }
+
+  // Check for defending status (reduces damage by 50%)
   if (isEnemyDefending(enemy)) {
-    finalDamage = Math.floor(damage * 0.5);
+    finalDamage = Math.floor(finalDamage * 0.5);
   }
 
   enemy.hp = Math.max(0, enemy.hp - finalDamage);
@@ -176,7 +178,8 @@ export function applyDamageToEnemy(enemy, damage) {
   return {
     originalDamage: damage,
     finalDamage,
-    wasDefending: finalDamage < damage,
+    wasDefending: isEnemyDefending(enemy),
+    wasExposed: damageMultiplier > 1.0,
     enemyDefeated: enemy.hp <= 0
   };
 }

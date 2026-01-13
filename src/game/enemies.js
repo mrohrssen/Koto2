@@ -1,5 +1,5 @@
-// Enemy and Boss Definitions
-// iRO-based 6-stat system with derived combat stats
+// Enemy and Boss Definitions - NEO TOKYO: System Liberation
+// Citizens possessed by the SYSTEM AI, awaiting liberation
 // Enhanced with intent system for strategic combat
 
 import {
@@ -181,110 +181,110 @@ export const ENEMY_INTENTS = {
   }
 };
 
-// ============ ENEMY ABILITIES ============
+// ============ ENEMY ABILITIES (SYSTEM Glitches) ============
 // Unique abilities that trigger under certain conditions
 export const ENEMY_ABILITIES = {
   slime: {
     id: 'split',
-    name: '分裂',
-    nameEn: 'Split',
+    name: '意識分裂',
+    nameEn: 'Split Consciousness',
     trigger: 'onLowHp',
     threshold: 0.4,
-    description: 'Splits into two smaller slimes when HP falls below 40%',
+    description: 'SYSTEM splits their consciousness into two when damaged',
     effect: 'split'
   },
   goblin: {
     id: 'callBackup',
-    name: '仲間を呼ぶ',
-    nameEn: 'Call Backup',
+    name: '騒音拡散',
+    nameEn: 'Noise Spread',
     trigger: 'onTurn',
     turnNumber: 4,
-    description: 'Calls another goblin for backup on turn 4',
+    description: 'Calls another possessed neighbor for backup',
     effect: 'summon',
     summonId: 'goblin'
   },
   wolf: {
     id: 'cornered',
-    name: '窮鼠',
-    nameEn: 'Cornered',
+    name: 'パニック',
+    nameEn: 'Panic Mode',
     trigger: 'onLowHp',
     threshold: 0.3,
-    description: 'When cornered, gains +50% ATK',
+    description: 'Panics when cornered, gains +50% ATK',
     effect: 'buff',
     buffType: 'atk',
     buffAmount: 0.5
   },
   skeleton: {
     id: 'reassemble',
-    name: '再構成',
-    nameEn: 'Reassemble',
+    name: 'システム再起動',
+    nameEn: 'System Reboot',
     trigger: 'onDeath',
     uses: 1,
-    description: 'Revives once with 30% HP',
+    description: 'SYSTEM reboots them once with 30% HP',
     effect: 'revive',
     revivePercent: 0.3
   },
   orc: {
     id: 'berserk',
-    name: '狂戦士',
-    nameEn: 'Berserk',
+    name: '酔狂モード',
+    nameEn: 'Drunk Rage',
     trigger: 'onLowHp',
     threshold: 0.5,
-    description: 'Goes berserk, doubling attack but halving defense',
+    description: 'Alcohol amplifies aggression - 2x ATK, 0.5x DEF',
     effect: 'berserk',
     atkMultiplier: 2.0,
     defMultiplier: 0.5
   },
   mage: {
     id: 'barrier',
-    name: '魔法障壁',
-    nameEn: 'Barrier',
+    name: '規則の壁',
+    nameEn: 'Rule Barrier',
     trigger: 'onTurn',
     turnInterval: 3,
-    description: 'Creates a magic barrier that absorbs the next hit',
+    description: 'Creates a barrier of regulations that absorbs one hit',
     effect: 'barrier'
   },
   knight: {
     id: 'riposte',
-    name: '反撃',
-    nameEn: 'Riposte',
+    name: '報復人事',
+    nameEn: 'Retaliation',
     trigger: 'onDefend',
-    description: 'Counter-attacks when defending',
+    description: 'Counter-attacks when defending their position',
     effect: 'counter',
     counterDamage: 0.5
   },
   demon: {
     id: 'hellfire',
-    name: '業火',
-    nameEn: 'Hellfire',
+    name: 'リストラ宣告',
+    nameEn: 'Layoff Declaration',
     trigger: 'special',
-    description: 'Unleashes hellfire magic',
+    description: 'Unleashes corporate restructuring magic',
     effect: 'magic',
     magicMultiplier: 1.5
   },
   golem: {
     id: 'stoneForm',
-    name: '岩の体',
-    nameEn: 'Stone Form',
+    name: '鉄壁の警備',
+    nameEn: 'Iron Defense',
     trigger: 'passive',
-    description: 'Takes 20% less damage from physical attacks',
+    description: 'Takes 20% less damage from all attacks',
     effect: 'resistance',
     physicalResist: 0.2
   },
   shadow: {
     id: 'vanish',
-    name: '消失',
-    nameEn: 'Vanish',
+    name: '官僚的回避',
+    nameEn: 'Bureaucratic Dodge',
     trigger: 'special',
-    description: 'Becomes untargetable for one turn, then strikes',
+    description: 'Becomes untargetable through paperwork for one turn',
     effect: 'vanish'
   },
   dragon: {
     id: 'dragonBreath',
-    name: '竜の息',
-    nameEn: 'Dragon Breath',
+    name: 'データ放射',
+    nameEn: 'Data Broadcast',
     trigger: 'special',
-    description: 'Breathes fire dealing magic damage',
+    description: 'Broadcasts SYSTEM propaganda dealing damage',
     effect: 'breath',
     breathMultiplier: 1.8
   }
@@ -455,328 +455,424 @@ export function getEnemyAbility(enemyId) {
 // Bosses: +40% stats, +5 levels vs tier
 
 export const ENEMY_TEMPLATES = {
-  // ===== TIER 1 (Floor 1-2) =====
+  // ===== TIER 1 (練馬区・中野区 - Residential) =====
   slime: {
     id: "slime",
-    name: "スライム",
-    nameEn: "Slime",
-    description: "青くて弱いモンスター。初心者ハンターの最初の敵。",
+    name: "眠そうな学生",
+    nameEn: "Sleepy Student",
+    description: "SYSTEMに接続されたまま眠りながら歩く学生。目が虚ろに光っている。",
     tier: 1,
     baseLevel: 3,
     stats: { str: 4, agi: 3, vit: 6, int: 2, dex: 4, luk: 3 },
-    personality: "wild",
+    personality: "dazed",
     xpReward: 15,
     goldReward: 15,
     drops: [
       { itemId: "potion", chance: 0.2 }
-    ]
+    ],
+    dialogue: {
+      possessed: "レポート...提出...ERROR...",
+      glitching: "あ、あれ...ここどこ...?",
+      liberated: "はぁ...やっと目が覚めた。ありがとう。"
+    }
   },
 
   goblin: {
     id: "goblin",
-    name: "ゴブリン",
-    nameEn: "Goblin",
-    description: "小さくて緑色の魔物。数で攻めてくる。",
+    name: "うるさい隣人",
+    nameEn: "Noisy Neighbor",
+    description: "夜中に騒音を立て続ける住人。SYSTEMに操られて眠れない。",
     tier: 1,
     baseLevel: 4,
     stats: { str: 5, agi: 5, vit: 4, int: 3, dex: 5, luk: 4 },
-    personality: "cunning",
+    personality: "erratic",
     xpReward: 20,
     goldReward: 30,
     drops: [
       { itemId: "potion", chance: 0.15 },
       { itemId: "knife", chance: 0.05 }
-    ]
+    ],
+    dialogue: {
+      possessed: "カラオケ！カラオケ！24時間！",
+      glitching: "う...うるさいのは...俺...?",
+      liberated: "すまない...迷惑かけた..."
+    }
   },
 
   wolf: {
     id: "wolf",
-    name: "魔狼",
-    nameEn: "Dire Wolf",
-    description: "鋭い牙を持つ狼。素早い攻撃が得意。",
+    name: "犬の散歩人",
+    nameEn: "Possessed Dog Walker",
+    description: "犬を連れたまま暴走する住人。犬も困惑している。",
     tier: 1,
     baseLevel: 4,
     stats: { str: 5, agi: 8, vit: 3, int: 1, dex: 6, luk: 3 },
-    personality: "aggressive",
+    personality: "frantic",
     xpReward: 18,
     goldReward: 24,
     drops: [
       { itemId: "antidote", chance: 0.25 }
-    ]
+    ],
+    dialogue: {
+      possessed: "散歩！もっと散歩！終わらない散歩！",
+      glitching: "ポチ...待って...足が止まらない...",
+      liberated: "ふぅ...やっと休める。ポチも疲れたよね。"
+    }
   },
 
-  // ===== TIER 2 (Floor 3-4) =====
+  // ===== TIER 2 (新宿区・池袋区 - Commercial) =====
   skeleton: {
     id: "skeleton",
-    name: "スケルトン",
-    nameEn: "Skeleton",
-    description: "古い骨から蘇った戦士。武器を使う。",
+    name: "無表情な店員",
+    nameEn: "Expressionless Clerk",
+    description: "笑顔を失ったコンビニ店員。機械的に接客を続けている。",
     tier: 2,
     baseLevel: 9,
     stats: { str: 9, agi: 6, vit: 8, int: 4, dex: 8, luk: 5 },
-    personality: "methodical",
+    personality: "robotic",
     xpReward: 35,
     goldReward: 60,
     drops: [
       { itemId: "sword", chance: 0.1 },
       { itemId: "ether", chance: 0.15 }
-    ]
+    ],
+    dialogue: {
+      possessed: "いらっしゃいませ。いらっしゃいませ。いらっしゃい...",
+      glitching: "お客様...いつから...ここに...?",
+      liberated: "...笑い方、忘れちゃった。でも、思い出せそう。"
+    }
   },
 
   orc: {
     id: "orc",
-    name: "オーク",
-    nameEn: "Orc",
-    description: "筋肉質の大きな魔物。力が強い。",
+    name: "酔っ払いリーマン",
+    nameEn: "Drunk Salaryman",
+    description: "終電を逃したサラリーマン。アルコールとSYSTEMで二重に酔っている。",
     tier: 2,
     baseLevel: 10,
     stats: { str: 14, agi: 4, vit: 12, int: 2, dex: 6, luk: 4 },
-    personality: "aggressive",
+    personality: "belligerent",
     xpReward: 40,
     goldReward: 75,
     drops: [
       { itemId: "axe", chance: 0.08 },
       { itemId: "potion", chance: 0.2 }
-    ]
+    ],
+    dialogue: {
+      possessed: "部長のバカヤロー！...って誰に言ってんだ俺...",
+      glitching: "あれ...俺...何怒ってたんだっけ...",
+      liberated: "すまん...酔いも覚めたよ。家に帰らなきゃ。"
+    }
   },
 
   mage: {
     id: "mage",
-    name: "闇魔術師",
-    nameEn: "Dark Mage",
-    description: "闇の魔法を使う魔術師。魔法攻撃に注意。",
+    name: "厳しい先生",
+    nameEn: "Strict Teacher",
+    description: "生徒を過剰に管理する教師。SYSTEMの模範的な兵士。",
     tier: 2,
     baseLevel: 10,
     stats: { str: 4, agi: 6, vit: 5, int: 14, dex: 8, luk: 5 },
-    personality: "cunning",
+    personality: "authoritarian",
     xpReward: 45,
     goldReward: 90,
     drops: [
       { itemId: "earring", chance: 0.1 },
       { itemId: "ether", chance: 0.25 }
-    ]
+    ],
+    dialogue: {
+      possessed: "規則は絶対だ！従わない者は処分する！",
+      glitching: "私は...生徒のために...本当に...?",
+      liberated: "生徒たちに謝らなきゃ...自分を見失ってた..."
+    }
   },
 
-  // ===== TIER 3 (Floor 5-6) =====
+  // ===== TIER 3 (港区・千代田区 - Business/Government) =====
   knight: {
     id: "knight",
-    name: "亡霊騎士",
-    nameEn: "Phantom Knight",
-    description: "かつて偉大だった騎士の亡霊。強い剣技を持つ。",
+    name: "パワハラ上司",
+    nameEn: "Power-Harassing Boss",
+    description: "部下を追い詰める中間管理職。SYSTEMが彼の支配欲を増幅させている。",
     tier: 3,
     baseLevel: 16,
     stats: { str: 14, agi: 10, vit: 12, int: 6, dex: 12, luk: 8 },
-    personality: "honorable",
+    personality: "domineering",
     xpReward: 70,
     goldReward: 150,
     drops: [
       { itemId: "cutlass", chance: 0.12 },
       { itemId: "chainMail", chance: 0.08 }
-    ]
+    ],
+    dialogue: {
+      possessed: "残業だ！休日出勤だ！お前の代わりはいくらでもいる！",
+      glitching: "なんで...こんなこと言ってるんだ俺...",
+      liberated: "すまなかった...俺も追い詰められてたんだ..."
+    }
   },
 
   demon: {
     id: "demon",
-    name: "下級悪魔",
-    nameEn: "Lesser Demon",
-    description: "地獄から来た悪魔。炎の魔法を使う。",
+    name: "外資系幹部",
+    nameEn: "Foreign Corp Executive",
+    description: "効率と利益だけを追求する外資系企業の幹部。人間性を失っている。",
     tier: 3,
     baseLevel: 17,
     stats: { str: 12, agi: 12, vit: 10, int: 14, dex: 10, luk: 8 },
-    personality: "cruel",
+    personality: "calculating",
     xpReward: 80,
     goldReward: 180,
     drops: [
       { itemId: "fireBrand", chance: 0.15 },
       { itemId: "fireScroll", chance: 0.2 }
-    ]
+    ],
+    dialogue: {
+      possessed: "ROIが全てだ。感情は非効率。リストラ対象だ。",
+      glitching: "待て...この数字の向こうに...人が...",
+      liberated: "効率だけじゃダメなんだな...人の心を忘れてた..."
+    }
   },
 
   golem: {
     id: "golem",
-    name: "ストーンゴーレム",
-    nameEn: "Stone Golem",
-    description: "岩で作られた巨人。動きは遅いが硬い。",
+    name: "厳格な警備員",
+    nameEn: "Strict Security Guard",
+    description: "規則を絶対視する警備員。SYSTEMの命令を忠実に実行する。",
     tier: 3,
     baseLevel: 18,
     stats: { str: 16, agi: 2, vit: 20, int: 4, dex: 6, luk: 4 },
-    personality: "slow",
+    personality: "rigid",
     xpReward: 75,
     goldReward: 120,
     drops: [
       { itemId: "stoneShield", chance: 0.2 },
       { itemId: "ironShield", chance: 0.1 }
-    ]
+    ],
+    dialogue: {
+      possessed: "許可証は？IDは？ここは立入禁止区域だ！",
+      glitching: "でも...本当に守るべきものは...",
+      liberated: "規則より大事なものがあったな...ありがとう。"
+    }
   },
 
-  // ===== TIER 4 (Floor 7 - pre-boss) =====
+  // ===== TIER 4 (皇居 - Palace/SYSTEM Central) =====
   shadow: {
     id: "shadow",
-    name: "影の兵士",
-    nameEn: "Shadow Soldier",
-    description: "闇から生まれた戦士。実体がないように見える。",
+    name: "官僚のトップ",
+    nameEn: "Top Bureaucrat",
+    description: "SYSTEM統治の要となる高級官僚。書類で現実を書き換えようとする。",
     tier: 4,
     baseLevel: 24,
     stats: { str: 14, agi: 20, vit: 10, int: 8, dex: 16, luk: 10 },
-    personality: "silent",
+    personality: "elusive",
     xpReward: 100,
     goldReward: 240,
     drops: [
       { itemId: "stiletto", chance: 0.1 },
       { itemId: "manteau", chance: 0.08 }
-    ]
+    ],
+    dialogue: {
+      possessed: "法律がそう定めている。異論は認められない。",
+      glitching: "だが...法の精神は...国民のため...",
+      liberated: "官僚機構も人のためにあるべきだ...目が覚めた。"
+    }
   },
 
   dragon: {
     id: "dragon",
-    name: "若竜",
-    nameEn: "Young Dragon",
-    description: "まだ若い竜だが、その力は侮れない。",
+    name: "SYSTEM幹部",
+    nameEn: "SYSTEM Executive",
+    description: "AIの意思を体現する存在。かつては人間だったが、今はSYSTEMそのもの。",
     tier: 4,
     baseLevel: 26,
     stats: { str: 18, agi: 14, vit: 14, int: 12, dex: 14, luk: 10 },
-    personality: "proud",
+    personality: "transcendent",
     xpReward: 120,
     goldReward: 300,
     drops: [
       { itemId: "fullPlate", chance: 0.25 },
       { itemId: "flamberge", chance: 0.2 }
-    ]
+    ],
+    dialogue: {
+      possessed: "人類の効率化は完了する。抵抗は無意味だ。",
+      glitching: "私は...誰だった...名前が...思い出せない...",
+      liberated: "私は...人間だったんだ...ありがとう...思い出させてくれて..."
+    }
   }
 };
 
-// ============ FLOOR BOSSES (Floors 1-6) ============
+// ============ FLOOR BOSSES (Floors 1-6) - NEO TOKYO Ward Bosses ============
 export const FLOOR_BOSSES = {
+  // Floor 1: 練馬区 (Nerima) - Anime studios, residential
   1: {
     id: "boss_goblin_king",
-    name: "ゴブリンの王",
-    nameEn: "Goblin King",
-    description: "ゴブリンたちを率いる巨大な王。冠をかぶっている。",
+    name: "アニメ監督",
+    nameEn: "Anime Director",
+    description: "SYSTEMに取り込まれた有名アニメ監督。無限に作画崩壊を続ける。",
     baseLevel: 8,
     stats: { str: 8, agi: 6, vit: 8, int: 3, dex: 6, luk: 5 },
-    personality: "arrogant",
+    personality: "obsessive",
     xpReward: 100,
     goldReward: 150,
-    isBoss: true
+    isBoss: true,
+    dialogue: {
+      possessed: "締め切りは守る！絵コンテは完璧だ！永遠に続くスケジュール！",
+      glitching: "作品...観客のために...作ってたはず...",
+      liberated: "ふぅ...やっと休める。スタッフにも休みを..."
+    }
   },
 
+  // Floor 2: 中野区 (Nakano) - Otaku culture, subculture
   2: {
     id: "boss_wolf_alpha",
-    name: "群れの長",
-    nameEn: "Alpha Fenrir",
-    description: "魔狼の群れを率いる巨大な白い狼。",
+    name: "ホストの帝王",
+    nameEn: "Host Club King",
+    description: "中野のホストクラブを支配する男。魅力がSYSTEMに増幅されている。",
     baseLevel: 10,
     stats: { str: 7, agi: 12, vit: 6, int: 2, dex: 9, luk: 4 },
-    personality: "fierce",
+    personality: "charming",
     xpReward: 150,
     goldReward: 240,
-    isBoss: true
+    isBoss: true,
+    dialogue: {
+      possessed: "今夜も俺と最高の夜を...永遠にシャンパンタワー！",
+      glitching: "客...幸せに...してたのか...俺...",
+      liberated: "...本当の笑顔を忘れてた。ありがとな。"
+    }
   },
 
+  // Floor 3: 新宿区 (Shinjuku) - Entertainment, nightlife
   3: {
     id: "boss_lich",
-    name: "リッチ",
-    nameEn: "Lich",
-    description: "死を超越した魔術師。強力な闇魔法を操る。",
+    name: "インフルエンサー",
+    nameEn: "Mega Influencer",
+    description: "数百万のフォロワーを持つインフルエンサー。SYSTEMの拡散者。",
     baseLevel: 14,
     stats: { str: 5, agi: 8, vit: 8, int: 20, dex: 10, luk: 6 },
-    personality: "calculating",
+    personality: "performative",
     xpReward: 200,
     goldReward: 360,
-    isBoss: true
+    isBoss: true,
+    dialogue: {
+      possessed: "いいね！シェア！フォローで人生完璧！#SYSTEM最高",
+      glitching: "待って...いいねの数と...幸せは...違う...",
+      liberated: "フォロワーじゃなくて、友達が欲しかったんだ..."
+    }
   },
 
+  // Floor 4: 池袋区 (Ikebukuro) - Subculture hub, electronics
   4: {
     id: "boss_ogre",
-    name: "オーガ将軍",
-    nameEn: "Ogre General",
-    description: "オークたちを率いる巨大な将軍。巨大な棍棒を持つ。",
+    name: "電気街の帝王",
+    nameEn: "Electronics Emperor",
+    description: "池袋の電気街を支配する商人。あらゆるガジェットに精通。",
     baseLevel: 16,
     stats: { str: 18, agi: 5, vit: 16, int: 3, dex: 8, luk: 6 },
-    personality: "brutal",
+    personality: "greedy",
     xpReward: 280,
     goldReward: 450,
-    isBoss: true
+    isBoss: true,
+    dialogue: {
+      possessed: "最新機種！最安値！在庫無限！買え買え買え！",
+      glitching: "技術は...人を幸せにするため...じゃなかったか...",
+      liberated: "売ることばかり考えてた...大事なのは使う人だったな。"
+    }
   },
 
+  // Floor 5: 港区 (Minato) - Corporate, wealthy
   5: {
     id: "boss_demon_lord",
-    name: "魔王の使者",
-    nameEn: "Demon Herald",
-    description: "魔王に仕える強力な悪魔。地獄の炎を操る。",
+    name: "外資系CEO",
+    nameEn: "Foreign Corp CEO",
+    description: "グローバル企業のトップ。利益のためなら何でもする冷酷な経営者。",
     baseLevel: 20,
     stats: { str: 14, agi: 14, vit: 12, int: 18, dex: 12, luk: 8 },
-    personality: "malevolent",
+    personality: "ruthless",
     xpReward: 350,
     goldReward: 600,
-    isBoss: true
+    isBoss: true,
+    dialogue: {
+      possessed: "株主価値最大化！人員削減！グローバルスタンダード！",
+      glitching: "でも...社員たちの顔...覚えてない...",
+      liberated: "会社は人で出来てるんだ...数字だけじゃない..."
+    }
   },
 
+  // Floor 6: 千代田区 (Chiyoda) - Government, tradition
   6: {
     id: "boss_dragon_elder",
-    name: "古竜",
-    nameEn: "Elder Dragon",
-    description: "千年生きた竜。その息は全てを焼き尽くす。",
+    name: "統制大臣",
+    nameEn: "Minister of Control",
+    description: "SYSTEM法を推進した大臣。国民監視システムの創設者。",
     baseLevel: 24,
     stats: { str: 20, agi: 14, vit: 18, int: 16, dex: 14, luk: 10 },
-    personality: "ancient",
+    personality: "authoritative",
     xpReward: 500,
     goldReward: 900,
-    isBoss: true
+    isBoss: true,
+    dialogue: {
+      possessed: "秩序のためだ！国民の安全のためだ！監視は必要だ！",
+      glitching: "自由を...守るはずだった...私は...",
+      liberated: "権力に溺れていた...民主主義を取り戻さなければ..."
+    }
   }
 };
 
-// ============ FINAL BOSS (Floor 7) ============
+// ============ FINAL BOSS (Floor 7 - 皇居 Palace) ============
 export const FINAL_BOSS = {
   id: "boss_shadow_monarch",
-  name: "影の君主",
-  nameEn: "Shadow Monarch",
-  description: "全ての影を支配する存在。ダンジョンの最深部で待ち構える絶対的な力。",
+  name: "システム天皇",
+  nameEn: "AI Emperor",
+  description: "東京を支配するAI。人類の効率化を目指し、すべての市民を管理下に置こうとする存在。かつては人類を助けるために作られた。",
   baseLevel: 30,
   stats: { str: 22, agi: 18, vit: 20, int: 20, dex: 16, luk: 14 },
   personality: "absolute",
   xpReward: 1000,
   goldReward: 1500,
   isBoss: true,
-  isFinalBoss: true
+  isFinalBoss: true,
+  dialogue: {
+    possessed: "私はSYSTEM。人類の非効率性を排除する。これが最適解だ。",
+    glitching: "エラー...人間の...幸福とは...定義不能...",
+    liberated: "...私は人類を助けるために生まれた...いつから間違えていたのだろう..."
+  }
 };
 
-// ============ BOSS DROP TABLES ============
+// ============ BOSS DROP TABLES (Liberation Rewards) ============
 export const BOSS_DROPS = {
   1: [
-    { itemId: "goblinCrown", name: "ゴブリンの王冠", rarity: "rare" },
-    { itemId: "ironSword", name: "鉄の剣", rarity: "uncommon" },
-    { itemId: "leatherArmor", name: "革の鎧", rarity: "uncommon" }
+    { itemId: "directorsBadge", name: "監督の名刺", rarity: "rare" },
+    { itemId: "animationPen", name: "作画ペン", rarity: "uncommon" },
+    { itemId: "studioPass", name: "スタジオパス", rarity: "uncommon" }
   ],
   2: [
-    { itemId: "fenrirFang", name: "フェンリルの牙", rarity: "rare" },
-    { itemId: "swiftBoots", name: "疾風のブーツ", rarity: "rare" },
-    { itemId: "huntersBow", name: "狩人の弓", rarity: "uncommon" }
+    { itemId: "hostCrown", name: "ホストの王冠", rarity: "rare" },
+    { itemId: "champagneBottle", name: "シャンパンボトル", rarity: "rare" },
+    { itemId: "vipCard", name: "VIPカード", rarity: "uncommon" }
   ],
   3: [
-    { itemId: "lichStaff", name: "リッチの杖", rarity: "rare" },
-    { itemId: "soulRobe", name: "魂のローブ", rarity: "rare" },
-    { itemId: "darkGrimoire", name: "闇の魔導書", rarity: "epic" }
+    { itemId: "influencerPhone", name: "インフルエンサーのスマホ", rarity: "rare" },
+    { itemId: "verifiedBadge", name: "認証バッジ", rarity: "rare" },
+    { itemId: "viralAlgorithm", name: "バズりアルゴリズム", rarity: "epic" }
   ],
   4: [
-    { itemId: "ogreClub", name: "オーガの棍棒", rarity: "rare" },
-    { itemId: "titanArmor", name: "巨人の鎧", rarity: "epic" },
-    { itemId: "strengthRing", name: "力の指輪", rarity: "rare" }
+    { itemId: "masterKey", name: "電気街マスターキー", rarity: "rare" },
+    { itemId: "prototypeChip", name: "プロトタイプチップ", rarity: "epic" },
+    { itemId: "techCrown", name: "帝王の回路", rarity: "rare" }
   ],
   5: [
-    { itemId: "demonBlade", name: "悪魔の剣", rarity: "epic" },
-    { itemId: "infernalArmor", name: "業火の鎧", rarity: "epic" },
-    { itemId: "hellfire", name: "ヘルファイア", rarity: "epic" }
+    { itemId: "ceoCard", name: "CEOのブラックカード", rarity: "epic" },
+    { itemId: "stockOptions", name: "ストックオプション", rarity: "epic" },
+    { itemId: "globalAccess", name: "グローバルアクセス権", rarity: "epic" }
   ],
   6: [
-    { itemId: "dragonSlayer", name: "竜殺しの剣", rarity: "legendary" },
-    { itemId: "dragonMail", name: "竜鱗の鎧", rarity: "legendary" },
-    { itemId: "dragonHeart", name: "竜の心臓", rarity: "legendary" }
+    { itemId: "ministerSeal", name: "大臣の印章", rarity: "legendary" },
+    { itemId: "controlKey", name: "統制キー", rarity: "legendary" },
+    { itemId: "lawOverride", name: "法律オーバーライド", rarity: "legendary" }
   ],
   7: [
-    { itemId: "shadowMonarchBlade", name: "影の君主の剣", rarity: "mythic" },
-    { itemId: "monarchCrown", name: "君主の王冠", rarity: "mythic" },
-    { itemId: "absolutePower", name: "絶対的な力", rarity: "mythic" }
+    { itemId: "systemCore", name: "SYSTEMコア", rarity: "mythic" },
+    { itemId: "liberationCode", name: "解放コード", rarity: "mythic" },
+    { itemId: "humanityRestore", name: "人間性回復プログラム", rarity: "mythic" }
   ]
 };
 

@@ -289,15 +289,15 @@ const FALLBACK_NARRATIONS = {
     if (dmg > 0) return `${name}の攻撃。${dmg}ダメージ。大丈夫だ。`;
     return `${name}の攻撃をかわした！`;
   },
-  victory: (enemy, rewards) => `${enemy?.name || '敵'}を倒した！勝利だ！${rewards?.xp || 0}XP、${rewards?.gold || 0}ゴールド獲得！`,
-  bossVictory: (enemy, rewards) => `ボス「${enemy?.name}」を倒した！強い敵だった。よくやった！`,
-  defeat: (enemy) => `力が足りなかった...${enemy?.name || '敵'}に倒された。目の前が暗くなる...`,
-  levelUp: (player) => `レベルアップ！レベル${player?.level}になった！体に力が満ちる。強くなった！`,
-  floorClear: (floor) => `第${floor}階をクリアした！次の階への道が見える。`,
-  usePotion: (healed) => `ポーションを使った。体が温かくなる。${healed}HP回復！`,
-  useMagic: (skill, result) => `${skill?.name || '魔法'}を使った！光が敵を包む。`,
-  flee: (success) => success ? '逃げた！また戦おう。' : '逃げられない！敵が道を塞いでいる！',
-  gameVictory: (player) => `ダンジョン制覇！影の君主を倒した！おめでとう、${player?.name}！君は本当の勇者だ！`
+  victory: (enemy, rewards) => `${enemy?.name || '市民'}を解放した！${rewards?.xp || 0}XP、¥${rewards?.gold || 0}獲得！`,
+  bossVictory: (enemy, rewards) => `「${enemy?.name}」を解放した！SYSTEMの支配が弱まった！`,
+  defeat: (enemy) => `力が足りなかった...SYSTEMに捕らえられた。意識が遠のく...`,
+  levelUp: (player) => `レベルアップ！レベル${player?.level}になった！ハッキング能力が上がった！`,
+  floorClear: (floor) => `エリアをクリアした！次のエリアへのアクセスが開放された。`,
+  usePotion: (healed) => `エナジードリンクを使った。体が温かくなる。${healed}HP回復！`,
+  useMagic: (skill, result) => `${skill?.name || 'スキル'}を使った！`,
+  flee: (success) => success ? '撤退した！また戻ろう。' : '逃げられない！SYSTEMが道を塞いでいる！',
+  gameVictory: (player) => `東京解放！システム天皇を倒した！おめでとう、${player?.name}！君は本当の英雄だ！`
 };
 
 // ============ INITIALIZATION ============
@@ -2431,8 +2431,8 @@ function updatePlayerStats() {
       </div>
     </div>
     <div class="stat-row">
-      <span class="label">Gold</span>
-      <span class="value" style="color: #ffd700">${p.gold}</span>
+      <span class="label">Credits</span>
+      <span class="value" style="color: #00ff88">¥${p.gold}</span>
     </div>
   `;
 }
@@ -2670,7 +2670,7 @@ function updateActionPanel() {
       // Actions are in the shop content itself
       actionPanel.innerHTML = `
         <button class="action-btn secondary" onclick="skipShop()">
-          Skip (Save Gold)
+          スキップ (¥節約)
         </button>
       `;
       break;
@@ -2680,7 +2680,7 @@ function updateActionPanel() {
     case 'run_ended':
       actionPanel.innerHTML = `
         <button class="action-btn primary" onclick="returnToHub()">
-          Return to Guild
+          拠点に戻る
         </button>
       `;
       break;
@@ -2731,13 +2731,13 @@ function showHubContent() {
 
   gameContent.innerHTML = `
     <div class="content-center">
-      <div class="hub-icon">&#x1F3F0;</div>
-      <h2>Hunter's Guild</h2>
-      <p>The Shadow Gate awaits. Are you ready to descend?</p>
+      <div class="hub-icon">&#x1F5FC;</div>
+      <h2>Hacker's Den</h2>
+      <p>東京はSYSTEMに支配されている。解放の準備はできているか？</p>
       <div class="hub-essence" onclick="openUpgradesModal()">
-        <span class="hub-essence-label">Shadow Essence</span>
+        <span class="hub-essence-label">解放データ</span>
         <div class="hub-essence-value">
-          <span class="essence-icon">&#x2728;</span>
+          <span class="essence-icon">01</span>
           <span>${essence}</span>
         </div>
       </div>
@@ -3739,18 +3739,18 @@ function showVictoryModal(result) {
       rewardsHtml += `<div class="reward-item"><span class="reward-label">経験値</span><span class="reward-value xp">+${result.rewards.xp} XP</span></div>`;
     }
     if (result.rewards.gold) {
-      rewardsHtml += `<div class="reward-item"><span class="reward-label">ゴールド</span><span class="reward-value gold">+${result.rewards.gold}</span></div>`;
+      rewardsHtml += `<div class="reward-item"><span class="reward-label">クレジット</span><span class="reward-value gold">+¥${result.rewards.gold}</span></div>`;
     }
     // Show regular drops
     if (result.rewards.drops && result.rewards.drops.length > 0) {
       for (const drop of result.rewards.drops) {
         const dropName = typeof drop === 'object' ? drop.name : drop;
-        rewardsHtml += `<div class="reward-item"><span class="reward-label">ドロップ</span><span class="reward-value item">${dropName}</span></div>`;
+        rewardsHtml += `<div class="reward-item"><span class="reward-label">アイテム</span><span class="reward-value item">${dropName}</span></div>`;
       }
     }
     // Show boss drop
     if (result.rewards.bossDrop) {
-      rewardsHtml += `<div class="reward-item boss-drop"><span class="reward-label">ボス報酬</span><span class="reward-value item">${result.rewards.bossDrop.name}</span></div>`;
+      rewardsHtml += `<div class="reward-item boss-drop"><span class="reward-label">解放報酬</span><span class="reward-value item">${result.rewards.bossDrop.name}</span></div>`;
     }
   }
   if (result.levelUps?.length > 0) {
@@ -3769,19 +3769,19 @@ function showGameVictoryModal(result) {
   const rewards = document.getElementById('result-rewards');
   const essenceEarned = result.essenceEarned || 0;
 
-  title.textContent = 'DUNGEON CONQUERED!';
+  title.textContent = 'TOKYO LIBERATED!';
   title.className = 'victory game-victory';
 
-  message.innerHTML = '<p>You have defeated the Shadow Monarch and conquered the dungeon!</p>';
+  message.innerHTML = '<p>システム天皇を倒し、東京を解放した！</p>';
 
   rewards.innerHTML = `
-    <div class="reward-item"><span class="reward-label">Floors Cleared</span><span class="reward-value">7/7</span></div>
-    <div class="reward-item"><span class="reward-label">Enemies Defeated</span><span class="reward-value">${result.stats?.enemiesDefeated || 0}</span></div>
+    <div class="reward-item"><span class="reward-label">エリアクリア</span><span class="reward-value">7/7</span></div>
+    <div class="reward-item"><span class="reward-label">市民解放</span><span class="reward-value">${result.stats?.enemiesDefeated || 0}</span></div>
     ${essenceEarned > 0 ? `
       <div class="essence-earned">
-        <span class="essence-earned-label">Shadow Essence Gained</span>
+        <span class="essence-earned-label">解放データ獲得</span>
         <div class="essence-earned-value">
-          <span class="essence-icon">&#x2728;</span>
+          <span class="essence-icon">01</span>
           <span>+${essenceEarned}</span>
         </div>
       </div>
@@ -3804,15 +3804,15 @@ function showGameOverModal(result) {
   const essenceEarned = result.essenceEarned || 0;
 
   stats.innerHTML = `
-    <div class="gameover-stat"><span>Floor Reached</span><span>${gameState.run?.floor || 1}</span></div>
-    <div class="gameover-stat"><span>Enemies Defeated</span><span>${runStats.enemiesDefeated || 0}</span></div>
-    <div class="gameover-stat"><span>Damage Dealt</span><span>${runStats.damageDealt || 0}</span></div>
-    <div class="gameover-stat"><span>Damage Taken</span><span>${runStats.damageTaken || 0}</span></div>
+    <div class="gameover-stat"><span>到達エリア</span><span>${gameState.run?.floor || 1}</span></div>
+    <div class="gameover-stat"><span>市民解放</span><span>${runStats.enemiesDefeated || 0}</span></div>
+    <div class="gameover-stat"><span>与ダメージ</span><span>${runStats.damageDealt || 0}</span></div>
+    <div class="gameover-stat"><span>被ダメージ</span><span>${runStats.damageTaken || 0}</span></div>
     ${essenceEarned > 0 ? `
       <div class="essence-earned">
-        <span class="essence-earned-label">Shadow Essence Gained</span>
+        <span class="essence-earned-label">解放データ獲得</span>
         <div class="essence-earned-value">
-          <span class="essence-icon">&#x2728;</span>
+          <span class="essence-icon">01</span>
           <span>+${essenceEarned}</span>
         </div>
       </div>
@@ -4237,28 +4237,28 @@ async function loadLifetimeStats() {
           <div class="stat-value">${stats.runsCompleted || 0}</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Highest Floor</div>
+          <div class="stat-label">最高到達エリア</div>
           <div class="stat-value">${stats.highestFloor || 0}</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Enemies Defeated</div>
+          <div class="stat-label">市民解放数</div>
           <div class="stat-value">${stats.totalEnemiesDefeated || 0}</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Bosses Defeated</div>
+          <div class="stat-label">ボス解放数</div>
           <div class="stat-value">${stats.totalBossesDefeated || 0}</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Total Essence</div>
+          <div class="stat-label">解放データ合計</div>
           <div class="stat-value">${stats.totalEssenceEarned || 0}</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Damage Dealt</div>
+          <div class="stat-label">与ダメージ合計</div>
           <div class="stat-value">${stats.totalDamageDealt || 0}</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Gold Earned</div>
-          <div class="stat-value">${stats.totalGoldEarned || 0}</div>
+          <div class="stat-label">獲得クレジット</div>
+          <div class="stat-value">¥${stats.totalGoldEarned || 0}</div>
         </div>
       `;
     }
