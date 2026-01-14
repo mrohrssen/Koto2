@@ -57,7 +57,7 @@ import {
 } from './src/game-stats.js';
 import {
   initVocabManager, getSuggestionsForNarration, addUsedWords,
-  refreshWordStateCache, getVocabManagerStats, invalidateWordStateCache
+  refreshWordStateCache, getVocabManagerStats, invalidateWordStateCache as invalidateVocabManagerCache
 } from './src/game/vocab-manager.js';
 import {
   getCachedNarration, getCachedAudio, clearCache as clearPrefetchCache,
@@ -1491,7 +1491,7 @@ app.post('/api/game/refresh-word-states', async (req, res) => {
     }
 
     const states = await refreshWordStateCache(settings.jpdbApiKey, vocabResult.words);
-    invalidateWordStateCache();
+    invalidateVocabManagerCache();
 
     res.json({
       refreshed: Object.keys(states).length,
