@@ -7,7 +7,9 @@ node_modules/
 # Local work files
 *.pdf
 *.log
-data/
+# Keep game content suggestions, ignore other data files
+data/*
+!data/game-content-suggestions.json
 generate_assets.py
 regenerate_unique_enemies.py
 test-*.js
