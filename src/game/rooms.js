@@ -816,6 +816,7 @@ export function generatePostCombatShop(floor, ownedChipIds = []) {
     const displayInfo = getChipDisplayInfo(chip);
     return {
       itemId: chip.id,
+      baseId: chip.baseId,  // Base chip ID for icon lookup
       name: chip.name,
       nameEn: chip.nameEn,
       description: chip.description,

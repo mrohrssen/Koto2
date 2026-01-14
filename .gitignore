@@ -15,5 +15,8 @@ generate_chip_icons.py
 fix_chip_icons*.py
 regenerate_unique_enemies.py
 test-*.js
+test-results/
+tests/e2e/playwright-report/
+.github/workflows/
 ASSET-GENERATION-PLAN.md
 public/assets/sprites/player/hacker.png

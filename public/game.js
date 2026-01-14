@@ -3818,10 +3818,12 @@ async function openShop() {
           legendary: 'レジェンド - 効果3.0x'
         }[item.rarity] || '';
 
-        const baseChipId = item.itemId.replace(/_(common|uncommon|rare|epic|legendary)$/, '');
+        // Extract base chip ID for icon (strip rarity suffix)
+      const itemIdParts = item.itemId?.split('_') || [];
+      const iconId = item.baseId || (itemIdParts.length > 1 ? itemIdParts.slice(0, -1).join('_') : item.itemId) || '';
         return `
           <div class="${itemClass}" data-item-id="${item.itemId}">
-            <img class="shop-item-icon" src="/assets/icons/chips/${baseChipId}.png" alt="" onerror="this.style.display='none'">
+            <img class="shop-item-icon" src="/assets/icons/chips/${iconId}.png" alt="" onerror="this.style.display='none'">
             <div class="shop-item-info">
               <div class="shop-item-name">
                 ${item.name}
@@ -4105,10 +4107,12 @@ function showPostCombatShopContent() {
         legendary: 'レジェンド - 効果3.0x'
       }[item.rarity] || '';
 
-      const baseChipId = item.itemId.replace(/_(common|uncommon|rare|epic|legendary)$/, '');
+      // Extract base chip ID for icon (strip rarity suffix)
+      const itemIdParts = item.itemId?.split('_') || [];
+      const iconId = item.baseId || (itemIdParts.length > 1 ? itemIdParts.slice(0, -1).join('_') : item.itemId) || '';
       return `
         <div class="${itemClass}" data-item-index="${index}" onclick="selectShopItem(${index})">
-          <img class="shop-item-icon" src="/assets/icons/chips/${baseChipId}.png" alt="" onerror="this.style.display='none'">
+          <img class="shop-item-icon" src="/assets/icons/chips/${iconId}.png" alt="" onerror="this.style.display='none'">
           <div class="shop-item-info">
             <div class="shop-item-name">
               ${item.name}
