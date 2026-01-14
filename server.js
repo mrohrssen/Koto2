@@ -23,7 +23,9 @@ import {
   reviewVocabulary,
   REVIEW_GRADES,
   getDueWordsWithMeanings,
-  getWordState
+  getWordState,
+  invalidateWordStateCache,
+  lookupVocabularyMeaning
 } from './src/jpdb.js';
 
 import {
@@ -486,6 +488,38 @@ app.post('/api/jpdb/review', async (req, res) => {
 
   try {
     const result = await reviewVocabulary(settings.jpdbApiKey, vid, sid, grade);
+
+    // Invalidate local cache so this word won't reappear as "due" immediately
+    invalidateWordStateCache(parseInt(vid, 10));
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/jpdb/lookup', async (req, res) => {
+  const { vid, sid } = req.query;
+
+  if (!settings.jpdbApiKey) {
+    return res.status(400).json({ error: 'JPDB API key not configured' });
+  }
+
+  if (!vid || !sid) {
+    return res.status(400).json({ error: 'vid and sid are required' });
+  }
+
+  try {
+    const result = await lookupVocabularyMeaning(
+      settings.jpdbApiKey,
+      parseInt(vid, 10),
+      parseInt(sid, 10)
+    );
+
+    if (!result) {
+      return res.status(404).json({ error: 'Vocabulary not found' });
+    }
+
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });

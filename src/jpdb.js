@@ -405,8 +405,8 @@ export async function parseText(apiKey, text) {
       },
       body: JSON.stringify({
         text,
-        token_fields: ['vocabulary_index'],
-        vocabulary_fields: ['spelling', 'reading']
+        token_fields: ['vocabulary_index', 'position', 'length'],
+        vocabulary_fields: ['spelling', 'reading', 'vid', 'sid']
       })
     });
 
@@ -417,11 +417,67 @@ export async function parseText(apiKey, text) {
 
     const data = await response.json();
     const vocabulary = data.vocabulary || [];
+    const tokens = data.tokens || [];
 
-    return vocabulary.map(v => ({
+    // Build vocabulary lookup by index
+    const vocabLookup = vocabulary.map(v => ({
       spelling: v[0],
-      reading: v[1]
+      reading: v[1],
+      vid: v[2],
+      sid: v[3]
     }));
+
+    // Build result array preserving text order using tokens
+    const result = [];
+    let lastEnd = 0;
+
+    for (const token of tokens) {
+      const [vocabIndex, position, length] = token;
+
+      // Add any text between tokens (punctuation, spaces, etc.)
+      if (position > lastEnd) {
+        const betweenText = text.slice(lastEnd, position);
+        result.push({
+          spelling: betweenText,
+          reading: null,
+          vid: null,
+          sid: null,
+          isWord: false
+        });
+      }
+
+      // Add the token
+      if (vocabIndex !== null && vocabLookup[vocabIndex]) {
+        result.push({
+          ...vocabLookup[vocabIndex],
+          isWord: true
+        });
+      } else {
+        // Token without vocabulary entry
+        result.push({
+          spelling: text.slice(position, position + length),
+          reading: null,
+          vid: null,
+          sid: null,
+          isWord: false
+        });
+      }
+
+      lastEnd = position + length;
+    }
+
+    // Add any remaining text after the last token
+    if (lastEnd < text.length) {
+      result.push({
+        spelling: text.slice(lastEnd),
+        reading: null,
+        vid: null,
+        sid: null,
+        isWord: false
+      });
+    }
+
+    return result;
   } catch (error) {
     console.warn('JPDB parse error:', error);
     return [];
@@ -765,6 +821,50 @@ export async function reviewVocabulary(apiKey, vid, sid, grade) {
 }
 
 /**
+ * Invalidate a word in the local state cache after it has been reviewed.
+ * This removes the 'due' state so the word won't appear in due words list
+ * until the cache is refreshed from JPDB.
+ * @param {number} vid - Vocabulary ID
+ */
+export function invalidateWordStateCache(vid) {
+  if (!config.vocabSuggestionsFile) {
+    return false;
+  }
+
+  try {
+    if (!existsSync(config.vocabSuggestionsFile)) {
+      return false;
+    }
+
+    const data = JSON.parse(readFileSync(config.vocabSuggestionsFile, 'utf-8'));
+    const wordStateCache = data.wordStateCache || {};
+
+    // Find the entry with matching vid and remove 'due' from states
+    for (const [word, stateInfo] of Object.entries(wordStateCache)) {
+      if (stateInfo.vid === vid) {
+        const states = stateInfo.states || [];
+        const dueIndex = states.indexOf('due');
+        if (dueIndex !== -1) {
+          states.splice(dueIndex, 1);
+          stateInfo.states = states;
+          // Set dueAt far in the future so it won't be prioritized
+          stateInfo.dueAt = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days from now
+          console.log(`[JPDB Cache] Invalidated word "${word}" (vid=${vid}) - removed 'due' state`);
+        }
+        break;
+      }
+    }
+
+    // Write back the updated cache
+    writeFileSync(config.vocabSuggestionsFile, JSON.stringify(data, null, 2));
+    return true;
+  } catch (e) {
+    console.warn('[JPDB Cache] Failed to invalidate word state:', e.message);
+    return false;
+  }
+}
+
+/**
  * Get the updated state for a single word from JPDB
  */
 export async function getWordState(apiKey, vid, sid) {
@@ -802,5 +902,68 @@ export async function getWordState(apiKey, vid, sid) {
     spelling: vocabInfo[0],
     states: vocabInfo[1] || [],
     dueAt: vocabInfo[2] ?? null
+  };
+}
+
+/**
+ * Look up vocabulary meaning for popup dictionary
+ * @param {string} apiKey - JPDB API key
+ * @param {number} vid - Vocabulary ID
+ * @param {number} sid - Sense ID
+ * @returns {Promise<{spelling, reading, meanings, partOfSpeech}>}
+ */
+export async function lookupVocabularyMeaning(apiKey, vid, sid) {
+  if (!apiKey) {
+    throw new Error('JPDB API key required');
+  }
+
+  const response = await jpdbFetch(`${JPDB_API_BASE}/lookup-vocabulary`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      list: [[vid, sid]],
+      fields: ['spelling', 'reading', 'meanings_chunks', 'meanings_part_of_speech', 'card_state']
+    })
+  });
+
+  if (!response.ok) {
+    if (response.status === 429) {
+      throw new Error('Rate limited');
+    }
+    throw new Error(`Failed to lookup vocabulary: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const vocabInfo = data.vocabulary_info?.[0];
+
+  if (!vocabInfo) {
+    return null;
+  }
+
+  const [spelling, reading, meaningsChunks, partOfSpeech, cardState] = vocabInfo;
+
+  // Flatten meanings chunks into array of strings
+  const meanings = [];
+  if (meaningsChunks && Array.isArray(meaningsChunks)) {
+    for (const chunk of meaningsChunks) {
+      if (Array.isArray(chunk)) {
+        for (const meaning of chunk) {
+          if (meaning && typeof meaning === 'string') {
+            meanings.push(meaning);
+          }
+        }
+      }
+    }
+  }
+
+  return {
+    spelling,
+    reading,
+    meanings,
+    partOfSpeech: partOfSpeech || [],
+    cardState: cardState || []
   };
 }
