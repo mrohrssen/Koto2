@@ -392,9 +392,9 @@ export class GameManager {
             return {
               ...item,
               name: itemData?.name || item.name,
-              nameEn: itemData?.nameEn || item.itemId,
-              description: itemData?.description || '',
-              rarity: itemData?.rarity || 'common',
+              nameEn: itemData?.nameEn || item.nameEn || item.itemId,
+              description: itemData?.description || item.description || '',
+              rarity: itemData?.rarity || item.rarity || 'common',
               slot: itemData?.slot || null,
               // Combat stats
               atk: itemData?.atk || 0,

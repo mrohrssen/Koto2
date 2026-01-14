@@ -39,6 +39,51 @@ let currentEnemyInterval = 1500;   // Will be updated from server
 // Debug Mode - disables AI narration only (JPDB vocab calls still work)
 let debugMode = localStorage.getItem('debugMode') === 'true';
 
+// ============ PER-USER API KEY MANAGEMENT (localStorage) ============
+
+/**
+ * Get stored API keys from localStorage
+ * Each user stores their own keys in their browser
+ */
+function getStoredApiKeys() {
+  return {
+    jpdbApiKey: localStorage.getItem('jrpg_jpdbApiKey') || '',
+    aiApiKey: localStorage.getItem('jrpg_aiApiKey') || '',
+    aiProvider: localStorage.getItem('jrpg_aiProvider') || 'openai',
+    openaiModel: localStorage.getItem('jrpg_openaiModel') || 'gpt-4o-mini',
+    openrouterModel: localStorage.getItem('jrpg_openrouterModel') || '',
+    jlptLevel: localStorage.getItem('jrpg_jlptLevel') || 'N4'
+  };
+}
+
+/**
+ * Save API keys to localStorage
+ */
+function saveStoredApiKeys(keys) {
+  if (keys.jpdbApiKey !== undefined) localStorage.setItem('jrpg_jpdbApiKey', keys.jpdbApiKey);
+  if (keys.aiApiKey !== undefined) localStorage.setItem('jrpg_aiApiKey', keys.aiApiKey);
+  if (keys.aiProvider !== undefined) localStorage.setItem('jrpg_aiProvider', keys.aiProvider);
+  if (keys.openaiModel !== undefined) localStorage.setItem('jrpg_openaiModel', keys.openaiModel);
+  if (keys.openrouterModel !== undefined) localStorage.setItem('jrpg_openrouterModel', keys.openrouterModel);
+  if (keys.jlptLevel !== undefined) localStorage.setItem('jrpg_jlptLevel', keys.jlptLevel);
+}
+
+/**
+ * Check if user has configured required API keys
+ */
+function hasRequiredApiKeys() {
+  const keys = getStoredApiKeys();
+  return keys.aiApiKey && keys.aiApiKey.length > 0;
+}
+
+/**
+ * Check if JPDB key is configured
+ */
+function hasJpdbApiKey() {
+  const keys = getStoredApiKeys();
+  return keys.jpdbApiKey && keys.jpdbApiKey.length > 0;
+}
+
 // Word Practice State
 let combatWords = [];           // Array of {word, meanings} objects (meanings is array)
 let availableWords = [];        // Pool of words not yet shown
@@ -478,11 +523,15 @@ async function apiCall(endpoint, method = 'POST', body = null) {
   console.log('apiCall starting:', endpoint);
 
   try {
+    // Include per-user API keys from localStorage in every request
+    const apiKeys = getStoredApiKeys();
+    const payload = body ? { ...body, ...apiKeys } : apiKeys;
+
     const options = {
       method,
       headers: { 'Content-Type': 'application/json' }
     };
-    if (body) options.body = JSON.stringify(body);
+    if (method !== 'GET') options.body = JSON.stringify(payload);
 
     console.log('apiCall fetching:', endpoint);
     const response = await fetch(`${API_BASE}/api/game${endpoint}`, options);
@@ -1471,10 +1520,11 @@ async function executePlayerAttack() {
   playerAttackPending = true;
 
   try {
+    const apiKeys = getStoredApiKeys();
     const response = await fetch(`${API_BASE}/api/game/realtime-attack`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ attackerType: 'player' })
+      body: JSON.stringify({ attackerType: 'player', ...apiKeys })
     });
     const result = await response.json();
     console.log('[Combat] Player attack:', result.playerAttack?.damage, 'interval:', result.playerInterval);
@@ -1569,10 +1619,11 @@ async function executeEnemyAttack() {
   enemyAttackPending = true;
 
   try {
+    const apiKeys = getStoredApiKeys();
     const response = await fetch(`${API_BASE}/api/game/realtime-attack`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ attackerType: 'enemy' })
+      body: JSON.stringify({ attackerType: 'enemy', ...apiKeys })
     });
     const result = await response.json();
     console.log('[Combat] Enemy attack:', result.enemyAttack?.damage, 'interval:', result.enemyInterval);
@@ -1653,10 +1704,11 @@ async function stopRealtimeCombat(result) {
   if (recentlyReviewedVids.length > 0) {
     const vidsToRefresh = [...recentlyReviewedVids];
     recentlyReviewedVids = [];
+    const { jpdbApiKey } = getStoredApiKeys();
     fetch(`${API_BASE}/api/game/refresh-word-states`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vids: vidsToRefresh })
+      body: JSON.stringify({ vids: vidsToRefresh, jpdbApiKey })
     }).then(r => r.json()).then(data => {
       console.log(`[WordPractice] Refreshed ${data.updated || 0} word states from JPDB`);
     }).catch(e => console.warn('[WordPractice] Failed to refresh word states:', e));
@@ -1672,6 +1724,7 @@ async function stopRealtimeCombat(result) {
 
   // Request narration from server
   try {
+    const apiKeys = getStoredApiKeys();
     const response = await fetch(`${API_BASE}/api/game/combat-end-narration`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1682,7 +1735,8 @@ async function stopRealtimeCombat(result) {
         loot: result.loot,
         leveledUp: result.leveledUp,
         newLevel: result.newLevel,
-        isBoss: result.isBoss
+        isBoss: result.isBoss,
+        ...apiKeys
       })
     });
     const narrationResult = await response.json();
@@ -1744,7 +1798,12 @@ async function fetchJpdbDueWords() {
 
   jpdbWordsFetching = true;
   try {
-    const response = await fetch(`${API_BASE}/api/game/due-words?limit=50`);
+    const { jpdbApiKey } = getStoredApiKeys();
+    const response = await fetch(`${API_BASE}/api/game/due-words`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ limit: 50, jpdbApiKey })
+    });
     const data = await response.json();
 
     if (data.words && data.words.length > 0) {
@@ -1779,8 +1838,12 @@ async function fetchReplacementWord(justReviewedVid = null) {
 
     if (allExcludeVids.length === 0) return null;
 
-    const excludeParam = allExcludeVids.join(',');
-    const response = await fetch(`${API_BASE}/api/game/due-words?limit=1&exclude=${excludeParam}`);
+    const { jpdbApiKey } = getStoredApiKeys();
+    const response = await fetch(`${API_BASE}/api/game/due-words`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ limit: 1, exclude: allExcludeVids, jpdbApiKey })
+    });
     const data = await response.json();
 
     if (data.words && data.words.length > 0) {
@@ -2149,10 +2212,11 @@ function normalizeMeaning(meaning) {
 
 // Send JPDB review and remove word from cache
 function sendJpdbReview(vid, sid, grade) {
+  const { jpdbApiKey } = getStoredApiKeys();
   fetch(`${API_BASE}/api/jpdb/review`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ vid, sid, grade })
+    body: JSON.stringify({ vid, sid, grade, jpdbApiKey })
   }).then(response => {
     if (response.ok) {
       console.log(`[JPDB] Review sent: vid=${vid}, grade=${grade}`);
@@ -3586,11 +3650,11 @@ async function openShop() {
         const statsStr = formatItemStats(item);
 
         const rarityLabel = {
-          common: 'コモン',
-          uncommon: 'アンコモン',
-          rare: 'レア',
-          epic: 'エピック',
-          legendary: 'レジェンド'
+          common: 'コモン - 効果1.0x',
+          uncommon: 'アンコモン - 効果1.5x',
+          rare: 'レア - 効果2.0x',
+          epic: 'エピック - 効果2.5x',
+          legendary: 'レジェンド - 効果3.0x'
         }[item.rarity] || '';
 
         return `
@@ -3598,7 +3662,7 @@ async function openShop() {
             <div class="shop-item-info">
               <div class="shop-item-name">
                 ${item.name}
-                <span class="shop-item-name-en">(${item.nameEn})</span>
+                ${item.nameEn && !item.nameEn.includes('_') ? `<span class="shop-item-name-en">(${item.nameEn})</span>` : ''}
                 ${rarityLabel ? `<span class="shop-item-rarity rarity-${item.rarity}">[${rarityLabel}]</span>` : ''}
               </div>
               <div class="shop-item-desc">${item.description}</div>
@@ -3871,11 +3935,11 @@ function showPostCombatShopContent() {
       const statsStr = formatItemStats(item);
 
       const rarityLabel = {
-        common: 'コモン',
-        uncommon: 'アンコモン',
-        rare: 'レア',
-        epic: 'エピック',
-        legendary: 'レジェンド'
+        common: 'コモン - 効果1.0x',
+        uncommon: 'アンコモン - 効果1.5x',
+        rare: 'レア - 効果2.0x',
+        epic: 'エピック - 効果2.5x',
+        legendary: 'レジェンド - 効果3.0x'
       }[item.rarity] || '';
 
       return `
@@ -3883,7 +3947,7 @@ function showPostCombatShopContent() {
           <div class="shop-item-info">
             <div class="shop-item-name">
               ${item.name}
-              ${item.nameEn ? `<span class="shop-item-name-en">(${item.nameEn})</span>` : ''}
+              ${item.nameEn && !item.nameEn.includes('_') ? `<span class="shop-item-name-en">(${item.nameEn})</span>` : ''}
               ${rarityLabel ? `<span class="shop-item-rarity rarity-${item.rarity}">[${rarityLabel}]</span>` : ''}
             </div>
             <div class="shop-item-desc">${item.description || ''}</div>
@@ -5310,7 +5374,12 @@ async function openGameStatsModal() {
  */
 async function loadCachedWordStates() {
   try {
-    const response = await fetch(`${API_BASE}/api/game/stats/word-states`);
+    const { jpdbApiKey } = getStoredApiKeys();
+    const response = await fetch(`${API_BASE}/api/game/stats/word-states`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jpdbApiKey })
+    });
     const data = await response.json();
 
     if (data.cached && data.words && data.words.length > 0) {
@@ -5460,10 +5529,11 @@ async function refreshGameWordStates() {
   gameStatsWordList?.classList.add('hidden');
 
   try {
+    const { jpdbApiKey } = getStoredApiKeys();
     const response = await fetch(`${API_BASE}/api/game/stats/word-states`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ period })
+      body: JSON.stringify({ period, jpdbApiKey })
     });
 
     const data = await response.json();
@@ -5624,10 +5694,11 @@ async function handleGameReviewClick(e) {
   btn.classList.add('loading');
 
   try {
+    const { jpdbApiKey } = getStoredApiKeys();
     const response = await fetch(`${API_BASE}/api/jpdb/review`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vid, sid, grade })
+      body: JSON.stringify({ vid, sid, grade, jpdbApiKey })
     });
 
     const data = await response.json();
@@ -5844,10 +5915,11 @@ async function parseAndWrapText(text) {
   }
 
   try {
+    const { jpdbApiKey } = getStoredApiKeys();
     const response = await fetch(`${API_BASE}/api/jpdb/parse`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text })
+      body: JSON.stringify({ text, jpdbApiKey })
     });
 
     if (!response.ok) {
@@ -5885,7 +5957,12 @@ async function fetchWordMeaning(vid, sid) {
   }
 
   try {
-    const response = await fetch(`${API_BASE}/api/jpdb/lookup?vid=${vid}&sid=${sid}`);
+    const { jpdbApiKey } = getStoredApiKeys();
+    const response = await fetch(`${API_BASE}/api/jpdb/lookup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vid, sid, jpdbApiKey })
+    });
 
     if (!response.ok) {
       console.warn('JPDB lookup failed:', response.status);

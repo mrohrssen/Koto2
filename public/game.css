@@ -110,13 +110,12 @@ body::before {
 .game-app {
   display: grid;
   grid-template-rows: auto 1fr;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: 1fr clamp(280px, 18vw, 380px);
   grid-template-areas:
     "header header"
     "main sidebar";
   height: 100vh;
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
   background: var(--bg-primary);
   font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
 }
@@ -2428,6 +2427,77 @@ body::before {
 }
 
 /* ============ RESPONSIVE ============ */
+
+/* Large screens (Mac displays, external monitors) */
+@media (min-width: 1600px) {
+  .game-header {
+    padding: 1rem 2rem;
+  }
+
+  .game-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .player-quick-stats {
+    gap: 2rem;
+    font-size: 1rem;
+  }
+
+  .quick-stat .rank {
+    font-size: 1.2rem;
+  }
+
+  .status-panel {
+    padding: 1.25rem;
+    gap: 1.25rem;
+  }
+
+  .status-section {
+    padding: 1.25rem;
+  }
+
+  .status-section h3 {
+    font-size: 0.85rem;
+  }
+
+  .narration-panel {
+    min-height: 120px;
+    max-height: 180px;
+  }
+
+  .narration-text {
+    font-size: 1.1rem;
+  }
+
+  .action-btn {
+    padding: 0.9rem 1.5rem;
+    min-width: 100px;
+  }
+
+  .action-btn .action-label {
+    font-size: 1rem;
+  }
+}
+
+/* Extra large screens (5K, ultra-wide) */
+@media (min-width: 2200px) {
+  .game-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .status-section h3 {
+    font-size: 0.9rem;
+  }
+
+  .narration-text {
+    font-size: 1.2rem;
+  }
+
+  .action-btn .action-label {
+    font-size: 1.1rem;
+  }
+}
+
 @media (max-width: 900px) {
   .game-app {
     grid-template-columns: 1fr;
@@ -2981,18 +3051,18 @@ body::before {
   gap: 0.5rem;
 }
 
-/* Sprite Containers */
+/* Sprite Containers - scales with viewport */
 .vn-sprite {
   position: relative;
-  max-width: 250px;
-  max-height: 350px;
+  max-width: clamp(200px, 18vw, 400px);
+  max-height: clamp(280px, 35vh, 550px);
   filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
   transition: all 0.3s ease;
 }
 
 .vn-sprite img {
   max-width: 100%;
-  max-height: 350px;
+  max-height: clamp(280px, 35vh, 550px);
   object-fit: contain;
 }
 
@@ -3012,8 +3082,8 @@ body::before {
   border: 2px solid var(--gi-gold-muted);
   border-radius: 12px;
   padding: 10px 16px;
-  min-width: 200px;
-  max-width: 280px;
+  min-width: clamp(180px, 12vw, 240px);
+  max-width: clamp(240px, 18vw, 360px);
   backdrop-filter: blur(5px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   position: relative;
@@ -4813,18 +4883,17 @@ body::before {
   transform: scale(1.08);
 }
 
-/* Definitions reveal modal (auto-fades) - positioned above word cards */
+/* Definitions reveal modal (auto-fades) - fixed position for visibility anywhere */
 .definitions-reveal {
-  position: absolute;
-  bottom: 40%;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background: rgba(20, 20, 20, 0.95);
   border: 2px solid var(--gi-gold);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
-  z-index: 150;
+  z-index: 1000;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
   width: fit-content;
   min-width: 280px;
@@ -4843,22 +4912,22 @@ body::before {
 @keyframes fadeInScale {
   from {
     opacity: 0;
-    transform: scale(0.9);
+    transform: translate(-50%, -50%) scale(0.9);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
 @keyframes fadeOutScale {
   from {
     opacity: 1;
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
   to {
     opacity: 0;
-    transform: scale(0.95);
+    transform: translate(-50%, -50%) scale(0.95);
   }
 }
 
