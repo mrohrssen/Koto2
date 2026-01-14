@@ -716,6 +716,9 @@ async function startBossEncounter() {
   }
 }
 
+// Track if enemy dialogue TTS is currently playing
+let enemyDialogueTtsPlaying = false;
+
 // Show enemy dialogue bubble (possessed/glitching/liberated)
 function showEnemyDialogue(text, type = 'possessed') {
   const enemyArea = document.querySelector('.vn-enemy-area');
@@ -733,6 +736,93 @@ function showEnemyDialogue(text, type = 'possessed') {
   // Auto-remove after delay based on type
   const duration = type === 'liberated' ? 4000 : type === 'glitching' ? 3000 : 2500;
   setTimeout(() => dialogue.remove(), duration);
+
+  // Speak enemy dialogue via TTS and temporarily hide word cards
+  speakEnemyDialogue(text, duration);
+}
+
+/**
+ * Speak enemy dialogue using TTS
+ * Hides word cards during playback if combat is active
+ */
+async function speakEnemyDialogue(text, dialogueDuration) {
+  if (!ttsEnabled || !text || text.trim().length === 0) return;
+
+  // Hide word cards while enemy is speaking (if in combat)
+  const wasInCombat = realtimeCombatActive;
+  if (wasInCombat) {
+    hideWordCards();
+    enemyDialogueTtsPlaying = true;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/api/tts/synthesize`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text,
+        speakerId: ttsSpeakerId,
+        speed: ttsSpeed,
+        volume: ttsVolume
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.warn('Enemy dialogue TTS error:', error.error);
+      // Restore word cards on error
+      if (wasInCombat && realtimeCombatActive) {
+        showWordCards();
+        enemyDialogueTtsPlaying = false;
+      }
+      return;
+    }
+
+    const audioBlob = await response.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+
+    // Stop any currently playing narration audio
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio = null;
+    }
+
+    const enemyAudio = new Audio(audioUrl);
+    enemyAudio.volume = Math.min(ttsVolume, 1.0);
+    enemyAudio.onended = () => {
+      URL.revokeObjectURL(audioUrl);
+      // Restore word cards after TTS finishes (if still in combat)
+      if (wasInCombat && realtimeCombatActive) {
+        showWordCards();
+        enemyDialogueTtsPlaying = false;
+      }
+    };
+    enemyAudio.onerror = () => {
+      URL.revokeObjectURL(audioUrl);
+      // Restore word cards on error
+      if (wasInCombat && realtimeCombatActive) {
+        showWordCards();
+        enemyDialogueTtsPlaying = false;
+      }
+    };
+    enemyAudio.play();
+
+    // Fallback: restore word cards after dialogue duration if audio hasn't ended
+    setTimeout(() => {
+      if (wasInCombat && realtimeCombatActive && enemyDialogueTtsPlaying) {
+        showWordCards();
+        enemyDialogueTtsPlaying = false;
+      }
+    }, dialogueDuration + 500);
+
+  } catch (error) {
+    console.warn('Enemy dialogue TTS playback error:', error);
+    // Restore word cards on error
+    if (wasInCombat && realtimeCombatActive) {
+      showWordCards();
+      enemyDialogueTtsPlaying = false;
+    }
+  }
 }
 
 async function nextFloor() {
