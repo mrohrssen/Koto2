@@ -3,3 +3,13 @@ node_modules/
 .jrpg-*.json
 .jchat-*.json
 .DS_Store
+
+# Local work files
+*.pdf
+*.log
+data/
+generate_assets.py
+regenerate_unique_enemies.py
+test-*.js
+ASSET-GENERATION-PLAN.md
+public/assets/sprites/player/hacker.png
