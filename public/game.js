@@ -1687,12 +1687,14 @@ async function executePlayerAttack() {
     console.log('[Combat] Player attack:', result.playerAttack?.damage, 'interval:', result.playerInterval);
 
     if (result.error) {
-      // Ignore "No active combat" errors if combat already ended (race condition with enemy kill)
-      if (result.error === 'No active combat' && !realtimeCombatActive) {
-        return; // Combat ended normally via enemy attack, ignore stale player attack
+      // "No active combat" means server state is out of sync - don't trigger false game over
+      if (result.error === 'No active combat') {
+        console.warn('[Combat] Stale player attack ignored (combat ended on server)');
+        realtimeCombatActive = false; // Sync client state
+        return;
       }
       console.error('Player attack error:', result.error);
-      // Only trigger defeat if combat hasn't already ended (prevents race condition with victory)
+      // Only trigger defeat for real errors, not sync issues
       if (realtimeCombatActive) {
         stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
       }
@@ -1790,12 +1792,14 @@ async function executeEnemyAttack() {
     console.log('[Combat] Enemy attack:', result.enemyAttack?.damage, 'interval:', result.enemyInterval);
 
     if (result.error) {
-      // Ignore "No active combat" errors if combat already ended (race condition with player victory)
-      if (result.error === 'No active combat' && !realtimeCombatActive) {
-        return; // Combat ended normally via player victory, ignore stale enemy attack
+      // "No active combat" means server state is out of sync - don't trigger false game over
+      if (result.error === 'No active combat') {
+        console.warn('[Combat] Stale enemy attack ignored (combat ended on server)');
+        realtimeCombatActive = false; // Sync client state
+        return;
       }
       console.error('Enemy attack error:', result.error);
-      // Only trigger defeat if combat hasn't already ended (prevents race condition with victory)
+      // Only trigger defeat for real errors, not sync issues
       if (realtimeCombatActive) {
         stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
       }
