@@ -1687,6 +1687,10 @@ async function executePlayerAttack() {
     console.log('[Combat] Player attack:', result.playerAttack?.damage, 'interval:', result.playerInterval);
 
     if (result.error) {
+      // Ignore "No active combat" errors if combat already ended (race condition with enemy kill)
+      if (result.error === 'No active combat' && !realtimeCombatActive) {
+        return; // Combat ended normally via enemy attack, ignore stale player attack
+      }
       console.error('Player attack error:', result.error);
       // Only trigger defeat if combat hasn't already ended (prevents race condition with victory)
       if (realtimeCombatActive) {
@@ -1786,6 +1790,10 @@ async function executeEnemyAttack() {
     console.log('[Combat] Enemy attack:', result.enemyAttack?.damage, 'interval:', result.enemyInterval);
 
     if (result.error) {
+      // Ignore "No active combat" errors if combat already ended (race condition with player victory)
+      if (result.error === 'No active combat' && !realtimeCombatActive) {
+        return; // Combat ended normally via player victory, ignore stale enemy attack
+      }
       console.error('Enemy attack error:', result.error);
       // Only trigger defeat if combat hasn't already ended (prevents race condition with victory)
       if (realtimeCombatActive) {
