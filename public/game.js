@@ -3867,7 +3867,7 @@ function queueNarration(text) {
 }
 
 // Display the next narration in queue (replaces current message - VN style)
-function displayNextNarration() {
+async function displayNextNarration() {
   if (narrationQueue.length === 0) {
     // No more messages - allow new messages to display immediately
     isNarrationWaiting = false;
@@ -3878,8 +3878,11 @@ function displayNextNarration() {
 
   const text = narrationQueue.shift();
 
+  // Parse and wrap Japanese text for popup dictionary
+  const wrappedText = await parseAndWrapText(text);
+
   // Replace the text (visual novel style - one message at a time)
-  narrationText.innerHTML = `<p class="vn-message">${text}</p>`;
+  narrationText.innerHTML = `<p class="vn-message">${wrappedText}</p>`;
 
   // Always mark as waiting - user must acknowledge message was displayed
   // This ensures back-to-back messages wait for space between them
@@ -4071,7 +4074,7 @@ function clearNarrationLog() {
 }
 
 // ============ LOG MODAL ============
-function openLogModal() {
+async function openLogModal() {
   if (narrationLog.length === 0) {
     logEntries.innerHTML = '<p class="empty-msg">No system messages yet.</p>';
   } else {
@@ -4084,7 +4087,10 @@ function openLogModal() {
         currentFloor = entry.floor;
         html += `<div class="log-floor-header">Floor ${currentFloor}</div>`;
       }
-      html += `<div class="log-entry"><p>${entry.text}</p></div>`;
+      // Use cached parsed HTML if available, otherwise parse now
+      const parsedText = entry.parsedHtml || await parseAndWrapText(entry.text);
+      entry.parsedHtml = parsedText; // Cache for next time
+      html += `<div class="log-entry"><p>${parsedText}</p></div>`;
     }
 
     logEntries.innerHTML = html;
@@ -5074,6 +5080,134 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
+
+// ============ POPUP DICTIONARY ============
+// Cache for word meanings to avoid repeated API calls
+const meaningCache = new Map();
+
+// Track parsed text to avoid re-parsing
+const parsedTextCache = new Map();
+
+/**
+ * Wrap parsed tokens in clickable spans for popup dictionary
+ * @param {Array} tokens - Array of {spelling, reading, vid, sid, isWord}
+ * @returns {string} HTML string with clickable word spans
+ */
+function wrapWordsWithSpans(tokens) {
+  return tokens.map(token => {
+    if (token.isWord && token.vid && token.sid) {
+      const reading = token.reading && token.reading !== token.spelling ? token.reading : '';
+      return `<span class="jpdb-word" data-vid="${token.vid}" data-sid="${token.sid}" data-reading="${escapeHtml(reading)}">${escapeHtml(token.spelling)}</span>`;
+    }
+    // Non-word tokens (punctuation, particles without vid, etc.)
+    return escapeHtml(token.spelling);
+  }).join('');
+}
+
+/**
+ * Parse Japanese text and wrap words in clickable spans
+ * @param {string} text - Raw Japanese text
+ * @returns {Promise<string>} HTML string with clickable word spans
+ */
+async function parseAndWrapText(text) {
+  if (!text || text.trim() === '') return text;
+
+  // Check cache first
+  if (parsedTextCache.has(text)) {
+    return parsedTextCache.get(text);
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/api/jpdb/parse`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+
+    if (!response.ok) {
+      console.warn('JPDB parse failed:', response.status);
+      return escapeHtml(text);
+    }
+
+    const data = await response.json();
+    const tokens = data.tokens || [];
+
+    if (tokens.length === 0) {
+      return escapeHtml(text);
+    }
+
+    const wrappedHtml = wrapWordsWithSpans(tokens);
+    parsedTextCache.set(text, wrappedHtml);
+    return wrappedHtml;
+  } catch (error) {
+    console.warn('Failed to parse text for dictionary:', error);
+    return escapeHtml(text);
+  }
+}
+
+/**
+ * Fetch word meaning from API (with caching)
+ * @param {number} vid - Vocabulary ID
+ * @param {number} sid - Sense ID
+ * @returns {Promise<{spelling, reading, meanings}|null>}
+ */
+async function fetchWordMeaning(vid, sid) {
+  const cacheKey = `${vid}-${sid}`;
+
+  if (meaningCache.has(cacheKey)) {
+    return meaningCache.get(cacheKey);
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/api/jpdb/lookup?vid=${vid}&sid=${sid}`);
+
+    if (!response.ok) {
+      console.warn('JPDB lookup failed:', response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    meaningCache.set(cacheKey, data);
+    return data;
+  } catch (error) {
+    console.warn('Failed to fetch word meaning:', error);
+    return null;
+  }
+}
+
+/**
+ * Show popup dictionary for a clicked word
+ * @param {HTMLElement} wordEl - The clicked .jpdb-word element
+ */
+async function showWordPopup(wordEl) {
+  const vid = parseInt(wordEl.dataset.vid);
+  const sid = parseInt(wordEl.dataset.sid);
+  const reading = wordEl.dataset.reading || null;
+  const word = wordEl.textContent;
+
+  if (!vid || !sid) return;
+
+  // Show loading state
+  wordEl.classList.add('loading');
+
+  const data = await fetchWordMeaning(vid, sid);
+
+  wordEl.classList.remove('loading');
+
+  if (data && data.meanings && data.meanings.length > 0) {
+    showDefinitionsReveal(word, data.meanings, reading || data.reading);
+  }
+}
+
+// Global click handler for popup dictionary (event delegation)
+document.addEventListener('click', (e) => {
+  const wordEl = e.target.closest('.jpdb-word');
+  if (wordEl) {
+    e.preventDefault();
+    e.stopPropagation();
+    showWordPopup(wordEl);
+  }
+});
 
 function showError(message) {
   const toast = document.createElement('div');

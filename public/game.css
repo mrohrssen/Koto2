@@ -4526,3 +4526,49 @@ body {
   }
 }
 
+/* ============ POPUP DICTIONARY ============ */
+
+/* Clickable Japanese words */
+.jpdb-word {
+  cursor: pointer;
+  position: relative;
+  transition: color 0.15s ease, text-shadow 0.15s ease;
+  border-bottom: 1px dotted rgba(212, 168, 83, 0.4);
+}
+
+.jpdb-word:hover {
+  color: var(--gi-gold);
+  text-shadow: 0 0 8px var(--gi-gold-glow);
+  border-bottom-color: var(--gi-gold);
+}
+
+.jpdb-word.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.jpdb-word.loading::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gi-gold), transparent);
+  animation: shimmer 1s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Log entries with clickable words */
+.log-entry .jpdb-word {
+  border-bottom-color: rgba(212, 168, 83, 0.3);
+}
+
+.log-entry .jpdb-word:hover {
+  color: var(--gi-gold-bright);
+}
+
