@@ -99,14 +99,10 @@ initVocabManager();
 
 // Load settings from file or use defaults
 function loadSettings() {
+  // API keys are now stored client-side in localStorage, not server-side
   const defaults = {
-    jpdbApiKey: process.env.JPDB_API_KEY || '',
     jpdbDeckId: 'all',
-    aiProvider: 'openai',
-    aiApiKey: process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY || process.env.GOOGLE_API_KEY || '',
     jlptLevel: 'N5',
-    openaiModel: 'gpt-4o-mini',
-    openrouterModel: 'anthropic/claude-3.5-sonnet',
     // Game TTS Settings (narrator voice)
     gameTtsEnabled: false,
     gameTtsSpeakerId: 13, // Cool male narrator voice
@@ -319,37 +315,29 @@ app.get('/api/settings', (req, res) => {
     volume: settings.gameTtsVolume || 1.0
   });
 
+  // API keys are now stored client-side in localStorage, not returned here
   res.json({
-    ...settings,
-    jpdbApiKey: settings.jpdbApiKey ? '********' : '',
-    aiApiKey: settings.aiApiKey ? '********' : '',
-    openaiModel: settings.openaiModel || 'gpt-4o-mini',
-    openrouterModel: settings.openrouterModel || '',
+    jpdbDeckId: settings.jpdbDeckId || '',
+    jlptLevel: settings.jlptLevel || 'N4',
     gameTtsEnabled: settings.gameTtsEnabled || false,
     gameTtsSpeakerId: settings.gameTtsSpeakerId || 13,
     gameTtsSpeed: settings.gameTtsSpeed || 0.9,
-    gameTtsVolume: settings.gameTtsVolume || 1.0
+    gameTtsVolume: settings.gameTtsVolume || 1.0,
+    reviewType: settings.reviewType || 'dialog'
   });
 });
 
 app.post('/api/settings', (req, res) => {
-  const { jpdbApiKey, jpdbDeckId, aiProvider, aiApiKey, jlptLevel, openaiModel, openrouterModel,
+  // API keys are now stored client-side in localStorage, not on server
+  const { jpdbDeckId, jlptLevel,
           gameTtsEnabled, gameTtsSpeakerId, gameTtsSpeed, gameTtsVolume,
           reviewType } = req.body;
 
-  if (jpdbApiKey && jpdbApiKey !== '********') {
-    settings.jpdbApiKey = jpdbApiKey;
-    clearVocabCache();
-  }
   if (jpdbDeckId !== undefined) {
     settings.jpdbDeckId = jpdbDeckId;
     clearVocabCache();
   }
-  if (aiProvider) settings.aiProvider = aiProvider;
-  if (aiApiKey && aiApiKey !== '********') settings.aiApiKey = aiApiKey;
   if (jlptLevel) settings.jlptLevel = jlptLevel;
-  if (openaiModel !== undefined) settings.openaiModel = openaiModel;
-  if (openrouterModel !== undefined) settings.openrouterModel = openrouterModel;
 
   if (gameTtsEnabled !== undefined) settings.gameTtsEnabled = gameTtsEnabled;
   if (gameTtsSpeakerId !== undefined) settings.gameTtsSpeakerId = gameTtsSpeakerId;
@@ -428,12 +416,13 @@ app.get('/api/tts/cached/:key', async (req, res) => {
 });
 
 // JPDB/Vocab Routes
-app.get('/api/vocab/status', async (req, res) => {
-  if (!settings.jpdbApiKey) {
+app.post('/api/vocab/status', async (req, res) => {
+  const { jpdbApiKey } = req.body;
+  if (!jpdbApiKey) {
     return res.json({ connected: false, error: 'No API key configured' });
   }
 
-  const result = await testConnection(settings.jpdbApiKey);
+  const result = await testConnection(jpdbApiKey);
   res.json(result);
 });
 
@@ -447,16 +436,17 @@ app.get('/api/vocab/words', async (req, res) => {
 });
 
 app.post('/api/vocab/fetch', async (req, res) => {
-  if (!settings.jpdbApiKey) {
+  const { jpdbApiKey } = req.body;
+  if (!jpdbApiKey) {
     return res.status(400).json({ error: 'JPDB API key not configured' });
   }
 
   try {
     let result;
     if (settings.jpdbDeckId === 'all') {
-      result = await fetchAllDecksVocabulary(settings.jpdbApiKey);
+      result = await fetchAllDecksVocabulary(jpdbApiKey);
     } else {
-      result = await fetchDeckVocabulary(settings.jpdbApiKey, settings.jpdbDeckId);
+      result = await fetchDeckVocabulary(jpdbApiKey, settings.jpdbDeckId);
     }
     res.json(result);
   } catch (error) {
@@ -465,14 +455,14 @@ app.post('/api/vocab/fetch', async (req, res) => {
 });
 
 app.post('/api/jpdb/parse', async (req, res) => {
-  const { text } = req.body;
+  const { text, jpdbApiKey } = req.body;
 
-  if (!settings.jpdbApiKey) {
+  if (!jpdbApiKey) {
     return res.status(400).json({ error: 'JPDB API key not configured' });
   }
 
   try {
-    const tokens = await parseText(settings.jpdbApiKey, text);
+    const tokens = await parseText(jpdbApiKey, text);
     res.json({ tokens });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -480,14 +470,14 @@ app.post('/api/jpdb/parse', async (req, res) => {
 });
 
 app.post('/api/jpdb/review', async (req, res) => {
-  const { vid, sid, grade } = req.body;
+  const { vid, sid, grade, jpdbApiKey } = req.body;
 
-  if (!settings.jpdbApiKey) {
+  if (!jpdbApiKey) {
     return res.status(400).json({ error: 'JPDB API key not configured' });
   }
 
   try {
-    const result = await reviewVocabulary(settings.jpdbApiKey, vid, sid, grade);
+    const result = await reviewVocabulary(jpdbApiKey, vid, sid, grade);
 
     // Invalidate local cache so this word won't reappear as "due" immediately
     invalidateWordStateCache(parseInt(vid, 10));
@@ -498,10 +488,10 @@ app.post('/api/jpdb/review', async (req, res) => {
   }
 });
 
-app.get('/api/jpdb/lookup', async (req, res) => {
-  const { vid, sid } = req.query;
+app.post('/api/jpdb/lookup', async (req, res) => {
+  const { vid, sid, jpdbApiKey } = req.body;
 
-  if (!settings.jpdbApiKey) {
+  if (!jpdbApiKey) {
     return res.status(400).json({ error: 'JPDB API key not configured' });
   }
 
@@ -511,7 +501,7 @@ app.get('/api/jpdb/lookup', async (req, res) => {
 
   try {
     const result = await lookupVocabularyMeaning(
-      settings.jpdbApiKey,
+      jpdbApiKey,
       parseInt(vid, 10),
       parseInt(sid, 10)
     );
@@ -527,38 +517,39 @@ app.get('/api/jpdb/lookup', async (req, res) => {
 });
 
 // Narration helpers
-function trackNarrationStats(narration) {
+function trackNarrationStats(narration, jpdbApiKey = null) {
   if (!narration) return;
 
   updateGameStatsWithNarration(gameStats, narration);
   saveGameStats(gameStats);
 
-  if (settings.jpdbApiKey) {
+  if (jpdbApiKey) {
     try {
-      addUsedWords(narration, settings.jpdbApiKey);
+      addUsedWords(narration, jpdbApiKey);
     } catch (e) {}
   }
 }
 
-async function applyVocabRepair(narration, vocabulary, gameTerms = []) {
-  if (!settings.jpdbApiKey || !vocabulary?.length) return narration;
+async function applyVocabRepair(narration, vocabulary, userKeys, gameTerms = []) {
+  const { jpdbApiKey, aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel } = userKeys || {};
+  if (!jpdbApiKey || !vocabulary?.length) return narration;
 
   try {
     const aiConfig = {
-      provider: settings.aiProvider,
-      apiKey: settings.aiApiKey,
-      openaiModel: settings.openaiModel,
-      openrouterModel: settings.openrouterModel
+      provider: aiProvider || 'openai',
+      apiKey: aiApiKey,
+      openaiModel: openaiModel || 'gpt-4o-mini',
+      openrouterModel: openrouterModel || ''
     };
 
     const repaired = await enforceVocabLimit(
       narration,
       vocabulary,
-      settings.jpdbApiKey,
+      jpdbApiKey,
       gameTerms,
       chat,
       aiConfig,
-      settings.jlptLevel || 'N4'
+      jlptLevel || 'N4'
     );
 
     return repaired || narration;
@@ -568,28 +559,29 @@ async function applyVocabRepair(narration, vocabulary, gameTerms = []) {
   }
 }
 
-async function generateGameNarration(event, context) {
+async function generateGameNarration(event, context, userKeys = {}) {
   if (debugMode) {
     console.log(`[Debug] Returning fallback narration for ${event}`);
     return getSimpleNarration(event, context);
   }
 
+  const { jpdbApiKey, aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel } = userKeys;
+
   const cachedNarration = getCachedNarration(event, context);
   if (cachedNarration) {
     console.log(`[Prefetch] Using cached narration for ${event}`);
-    trackNarrationStats(cachedNarration);
+    trackNarrationStats(cachedNarration, jpdbApiKey);
     triggerPrefetch(event, context);
     return cachedNarration;
   }
 
   const vocabResult = getVocabulary();
   const vocabulary = vocabResult.words;
-  const jlptLevel = settings.jlptLevel || 'N4';
   const aiConfig = {
-    provider: settings.aiProvider,
-    apiKey: settings.aiApiKey,
-    openaiModel: settings.openaiModel,
-    openrouterModel: settings.openrouterModel
+    provider: aiProvider || 'openai',
+    apiKey: aiApiKey,
+    openaiModel: openaiModel || 'gpt-4o-mini',
+    openrouterModel: openrouterModel || ''
   };
 
   let narration;
@@ -598,9 +590,9 @@ async function generateGameNarration(event, context) {
   if (!aiConfig.apiKey || vocabulary.length === 0) {
     narration = getSimpleNarration(event, context);
   } else {
-    if (settings.jpdbApiKey && vocabulary.length > 0) {
+    if (jpdbApiKey && vocabulary.length > 0) {
       try {
-        suggestedWords = await getSuggestionsForNarration(settings.jpdbApiKey, vocabulary);
+        suggestedWords = await getSuggestionsForNarration(jpdbApiKey, vocabulary);
       } catch (e) {}
     }
 
@@ -620,7 +612,7 @@ async function generateGameNarration(event, context) {
       event,
       context,
       vocabulary,
-      jlptLevel,
+      jlptLevel || 'N4',
       aiConfig,
       suggestedWords
     );
@@ -634,9 +626,9 @@ async function generateGameNarration(event, context) {
   if (gameManager.combat?.enemy?.name) {
     gameTerms.push(gameManager.combat.enemy.name);
   }
-  narration = await applyVocabRepair(narration, vocabulary, gameTerms);
+  narration = await applyVocabRepair(narration, vocabulary, userKeys, gameTerms);
 
-  trackNarrationStats(narration);
+  trackNarrationStats(narration, jpdbApiKey);
   triggerPrefetch(event, context);
 
   return narration;
@@ -695,7 +687,7 @@ app.post('/api/game/create-player', async (req, res) => {
   gameManager.createPlayer(name || 'Hunter', stats || null, statPoints ?? null);
   saveGameData();
 
-  const narration = await generateGameNarration('runStart', gameManager.player);
+  const narration = await generateGameNarration('runStart', gameManager.player, req.body);
   queueRunStartPrefetch();
 
   res.json({
@@ -711,7 +703,7 @@ app.post('/api/game/start-run', async (req, res) => {
 
     const narration = await generateGameNarration('runStart', {
       player: gameManager.run.player
-    });
+    }, req.body);
 
     saveGameData();
     res.json({
@@ -813,7 +805,7 @@ app.post('/api/game/enter-floor', async (req, res) => {
     const narration = await generateGameNarration('floorEnter', {
       floor,
       player: gameManager.run.player
-    });
+    }, req.body);
 
     saveGameData();
     res.json({
@@ -850,7 +842,7 @@ app.post('/api/game/attack', async (req, res) => {
         player: gameManager.run.player,
         enemy: result.enemy,
         rewards: result.rewards
-      });
+      }, req.body);
     }
 
     saveGameData();
@@ -894,12 +886,12 @@ app.post('/api/game/combat-end-narration', async (req, res) => {
         player: gameManager.run?.player,
         enemy,
         rewards: enrichedRewards
-      });
+      }, req.body);
     } else {
       narration = await generateGameNarration('defeat', {
         player: gameManager.run?.player,
         enemy
-      });
+      }, req.body);
     }
 
     res.json({ narration, state: getEnrichedGameState() });
@@ -915,7 +907,7 @@ app.post('/api/game/defend', async (req, res) => {
       player: gameManager.run.player,
       enemy: gameManager.combat?.enemy,
       result
-    });
+    }, req.body);
 
     saveGameData();
     res.json({ ...result, state: getEnrichedGameState(), narration });
@@ -935,7 +927,7 @@ app.post('/api/game/magic', async (req, res) => {
         player: gameManager.run.player,
         enemy: result.enemy,
         rewards: result.rewards
-      });
+      }, req.body);
     }
 
     saveGameData();
@@ -956,7 +948,7 @@ app.post('/api/game/use-item', async (req, res) => {
         player: gameManager.run.player,
         item: result.item,
         effect: result.message
-      });
+      }, req.body);
     }
 
     saveGameData();
@@ -995,7 +987,7 @@ app.post('/api/game/flee', async (req, res) => {
     const narration = await generateGameNarration(result.success ? 'fleeSuccess' : 'fleeFail', {
       player: gameManager.run.player,
       enemy: gameManager.combat?.enemy
-    });
+    }, req.body);
 
     saveGameData();
     res.json({ ...result, state: getEnrichedGameState(), narration });
@@ -1029,7 +1021,7 @@ app.post('/api/game/enemy-turn', async (req, res) => {
         player: gameManager.run.player,
         enemy: gameManager.combat?.enemy,
         attack: result.attack
-      });
+      }, req.body);
     }
 
     saveGameData();
@@ -1050,7 +1042,7 @@ app.post('/api/game/next-floor', async (req, res) => {
     const narration = await generateGameNarration('floorEnter', {
       floor: gameManager.run.floor,
       player: gameManager.run.player
-    });
+    }, req.body);
 
     saveGameData();
     res.json({ state: getEnrichedGameState(), narration });
@@ -1068,7 +1060,7 @@ app.post('/api/game/proceed', async (req, res) => {
       narration = await generateGameNarration('encounterStart', {
         enemy: room.enemy,
         player: gameManager.run.player
-      });
+      }, req.body);
     }
 
     saveGameData();
@@ -1117,7 +1109,7 @@ app.post('/api/game/disarm', async (req, res) => {
     const narration = await generateGameNarration(result.success ? 'trapDisarm' : 'trapFail', {
       player: gameManager.run.player,
       trap: result.trap
-    });
+    }, req.body);
 
     saveGameData();
     res.json({ ...result, state: getEnrichedGameState(), narration });
@@ -1133,7 +1125,7 @@ app.post('/api/game/trigger-trap', async (req, res) => {
     const narration = await generateGameNarration('trapTrigger', {
       player: gameManager.run.player,
       damage: result.damage
-    });
+    }, req.body);
 
     saveGameData();
     res.json({ ...result, state: getEnrichedGameState(), narration });
@@ -1149,7 +1141,7 @@ app.post('/api/game/loot', async (req, res) => {
     const narration = await generateGameNarration('loot', {
       player: gameManager.run.player,
       loot: result.loot
-    });
+    }, req.body);
 
     saveGameData();
     res.json({ ...result, state: getEnrichedGameState(), narration });
@@ -1185,7 +1177,7 @@ app.post('/api/game/open-treasure', async (req, res) => {
     const narration = await generateGameNarration('treasure', {
       player: gameManager.run.player,
       treasure: result.item
-    });
+    }, req.body);
 
     saveGameData();
     res.json({ ...result, state: getEnrichedGameState(), narration });
@@ -1201,7 +1193,7 @@ app.post('/api/game/use-shrine', async (req, res) => {
     const narration = await generateGameNarration('shrine', {
       player: gameManager.run.player,
       effect: result.effect
-    });
+    }, req.body);
 
     saveGameData();
     res.json({ ...result, state: getEnrichedGameState(), narration });
@@ -1249,7 +1241,7 @@ app.post('/api/game/start-encounter', async (req, res) => {
     const narration = await generateGameNarration('encounterStart', {
       enemy: encounter.enemy,
       player: gameManager.run.player
-    });
+    }, req.body);
 
     saveGameData();
     res.json({ ...encounter, state: getEnrichedGameState(), narration });
@@ -1264,7 +1256,7 @@ app.post('/api/game/start-boss', async (req, res) => {
     const narration = await generateGameNarration('bossStart', {
       enemy: encounter.enemy,
       player: gameManager.run.player
-    });
+    }, req.body);
 
     saveGameData();
     res.json({ ...encounter, state: getEnrichedGameState(), narration });
@@ -1284,7 +1276,7 @@ app.post('/api/game/forfeit', (req, res) => {
 app.post('/api/game/narrate', async (req, res) => {
   const { event, context } = req.body;
   try {
-    const narration = await generateGameNarration(event, context);
+    const narration = await generateGameNarration(event, context, req.body);
     res.json({ narration });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -1443,7 +1435,8 @@ app.get('/api/game/stats/word-states', (req, res) => {
 });
 
 app.post('/api/game/vocab-cache/warm', async (req, res) => {
-  if (!settings.jpdbApiKey) {
+  const { jpdbApiKey } = req.body;
+  if (!jpdbApiKey) {
     return res.status(400).json({ error: 'JPDB API key not configured' });
   }
 
@@ -1453,7 +1446,7 @@ app.post('/api/game/vocab-cache/warm', async (req, res) => {
       return res.json({ warmed: 0, message: 'No vocabulary to warm' });
     }
 
-    await refreshWordStateCache(settings.jpdbApiKey, vocabResult.words);
+    await refreshWordStateCache(jpdbApiKey, vocabResult.words);
     res.json({
       warmed: vocabResult.words.length,
       message: 'Cache warmed successfully'
@@ -1463,15 +1456,19 @@ app.post('/api/game/vocab-cache/warm', async (req, res) => {
   }
 });
 
-app.get('/api/game/due-words', async (req, res) => {
-  if (!settings.jpdbApiKey) {
+app.post('/api/game/due-words', async (req, res) => {
+  const { jpdbApiKey, limit: bodyLimit, exclude } = req.body;
+  if (!jpdbApiKey) {
     return res.status(400).json({ error: 'JPDB API key not configured' });
   }
 
   try {
-    const limit = parseInt(req.query.limit) || 10;
-    const excludeVids = req.query.exclude ? req.query.exclude.split(',').map(v => parseInt(v, 10)) : [];
-    const result = await getDueWordsWithMeanings(settings.jpdbApiKey, limit, excludeVids);
+    const limit = parseInt(bodyLimit) || 10;
+    // Handle both array (from POST body) and comma-separated string formats
+    const excludeVids = exclude
+      ? (Array.isArray(exclude) ? exclude.map(v => parseInt(v, 10)) : exclude.split(',').map(v => parseInt(v, 10)))
+      : [];
+    const result = await getDueWordsWithMeanings(jpdbApiKey, limit, excludeVids);
     // getDueWordsWithMeanings returns { words: [...], source: 'due' | 'learning' | 'none' }
     res.json({ words: result.words, count: result.words.length, source: result.source });
   } catch (error) {
@@ -1480,7 +1477,8 @@ app.get('/api/game/due-words', async (req, res) => {
 });
 
 app.post('/api/game/refresh-word-states', async (req, res) => {
-  if (!settings.jpdbApiKey) {
+  const { jpdbApiKey } = req.body;
+  if (!jpdbApiKey) {
     return res.status(400).json({ error: 'JPDB API key not configured' });
   }
 
@@ -1490,7 +1488,7 @@ app.post('/api/game/refresh-word-states', async (req, res) => {
       return res.json({ refreshed: 0 });
     }
 
-    const states = await refreshWordStateCache(settings.jpdbApiKey, vocabResult.words);
+    const states = await refreshWordStateCache(jpdbApiKey, vocabResult.words);
     invalidateVocabManagerCache();
 
     res.json({
@@ -1503,7 +1501,8 @@ app.post('/api/game/refresh-word-states', async (req, res) => {
 });
 
 app.post('/api/game/stats/word-states', async (req, res) => {
-  if (!settings.jpdbApiKey) {
+  const { jpdbApiKey } = req.body;
+  if (!jpdbApiKey) {
     return res.status(400).json({ error: 'JPDB API key not configured' });
   }
 
@@ -1513,7 +1512,7 @@ app.post('/api/game/stats/word-states', async (req, res) => {
       return res.json({ words: [], stateCounts: {}, totalWords: 0 });
     }
 
-    const states = await lookupWordStates(settings.jpdbApiKey, usedWords);
+    const states = await lookupWordStates(jpdbApiKey, usedWords);
 
     const stateCounts = {};
     const wordsWithStates = usedWords.map(word => {
@@ -1551,57 +1550,9 @@ app.get('/', (req, res) => {
 // ============ Prefetch Initialization ============
 
 async function prefetchGeneratorFn(event, context) {
-  const vocabResult = getVocabulary();
-  const vocabulary = vocabResult.words;
-  const jlptLevel = settings.jlptLevel || 'N4';
-  const aiConfig = {
-    provider: settings.aiProvider,
-    apiKey: settings.aiApiKey,
-    openaiModel: settings.openaiModel,
-    openrouterModel: settings.openrouterModel
-  };
-
-  if (!aiConfig.apiKey || vocabulary.length === 0) {
-    return null;
-  }
-
-  let suggestedWords = null;
-  if (settings.jpdbApiKey && vocabulary.length > 0) {
-    try {
-      suggestedWords = await getSuggestionsForNarration(settings.jpdbApiKey, vocabulary);
-    } catch (e) {}
-  }
-
-  const gameState = {
-    player: gameManager.run?.player || gameManager.player,
-    floor: gameManager.run?.floor || 1,
-    enemy: gameManager.combat?.enemy,
-    combat: gameManager.combat ? {
-      active: gameManager.combat.active,
-      turn: gameManager.combat.turn
-    } : null
-  };
-
-  let narration = await generateNarration(
-    chat,
-    gameState,
-    event,
-    context,
-    vocabulary,
-    jlptLevel,
-    aiConfig,
-    suggestedWords
-  );
-
-  if (narration) {
-    const gameTerms = [];
-    if (gameManager.combat?.enemy?.name) {
-      gameTerms.push(gameManager.combat.enemy.name);
-    }
-    narration = await applyVocabRepair(narration, vocabulary, gameTerms);
-  }
-
-  return narration;
+  // Prefetch disabled in per-user API key mode
+  // API keys are stored client-side, not available for server-side prefetch
+  return null;
 }
 
 setPrefetchGenerator(prefetchGeneratorFn);

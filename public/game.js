@@ -5244,26 +5244,29 @@ async function initDebugMode() {
 
 // ============ SETTINGS ============
 async function openSettings() {
-  // Load current settings
+  // Load API keys from localStorage (per-user storage)
+  const storedKeys = getStoredApiKeys();
+  aiProviderSelect.value = storedKeys.aiProvider || 'openai';
+  aiKeyInput.value = storedKeys.aiApiKey || '';
+  openaiModelSelect.value = storedKeys.openaiModel || 'gpt-4o-mini';
+  openrouterModelInput.value = storedKeys.openrouterModel || '';
+  jlptLevelSelect.value = storedKeys.jlptLevel || 'N4';
+  jpdbApiKeyInput.value = storedKeys.jpdbApiKey || '';
+
+  // Load non-sensitive settings from server
   try {
     const response = await fetch(`${API_BASE}/api/settings`);
     const settings = await response.json();
 
-    aiProviderSelect.value = settings.aiProvider || 'openai';
-    aiKeyInput.value = settings.aiApiKey || '';
-    openaiModelSelect.value = settings.openaiModel || 'gpt-4o-mini';
-    openrouterModelInput.value = settings.openrouterModel || '';
-    jlptLevelSelect.value = settings.jlptLevel || 'N4';
     reviewTypeSelect.value = settings.reviewType || 'typing';
-    jpdbApiKeyInput.value = settings.jpdbApiKey || '';
 
-    // Initialize TTS settings
+    // Initialize TTS settings from server
     initTtsSettings(settings);
-
-    updateProviderVisibility();
   } catch (error) {
     console.error('Failed to load settings:', error);
   }
+
+  updateProviderVisibility();
 
   settingsStatus.textContent = '';
   settingsStatus.className = 'settings-status';
@@ -5293,7 +5296,17 @@ function updateProviderVisibility() {
 }
 
 async function saveSettings() {
-  // Get current settings to preserve fields we don't manage here
+  // Save API keys to localStorage (per-user storage)
+  saveStoredApiKeys({
+    aiApiKey: aiKeyInput.value,
+    aiProvider: aiProviderSelect.value,
+    openaiModel: openaiModelSelect.value,
+    openrouterModel: openrouterModelInput.value,
+    jlptLevel: jlptLevelSelect.value,
+    jpdbApiKey: jpdbApiKeyInput.value
+  });
+
+  // Get current server settings to preserve fields we don't manage here
   let currentSettings = {};
   try {
     const currentRes = await fetch(`${API_BASE}/api/settings`);
@@ -5302,22 +5315,9 @@ async function saveSettings() {
     console.warn('Could not fetch current settings:', e);
   }
 
-  const settings = {
-    aiProvider: aiProviderSelect.value,
-    aiApiKey: aiKeyInput.value,
-    openaiModel: openaiModelSelect.value,
-    openrouterModel: openrouterModelInput.value,
-    jlptLevel: jlptLevelSelect.value,
-    // JPDB settings
-    jpdbApiKey: jpdbApiKeyInput.value || currentSettings.jpdbApiKey,
-    jpdbDeckId: currentSettings.jpdbDeckId,
-    personaName: currentSettings.personaName,
-    personaDescription: currentSettings.personaDescription,
-    ttsEnabled: currentSettings.ttsEnabled,
-    ttsSpeakerId: currentSettings.ttsSpeakerId,
-    ttsSpeed: currentSettings.ttsSpeed,
-    ttsVolume: currentSettings.ttsVolume,
-    // Game TTS settings
+  // Only send non-sensitive settings to server
+  const serverSettings = {
+    // TTS settings (server-side for VOICEVOX)
     gameTtsEnabled: gameTtsEnabled?.checked || false,
     gameTtsSpeakerId: parseInt(gameTtsSpeaker?.value) || 13,
     gameTtsSpeed: parseFloat(gameTtsSpeed?.value) || 0.9,
@@ -5327,19 +5327,19 @@ async function saveSettings() {
   };
 
   // Update local TTS state
-  ttsEnabled = settings.gameTtsEnabled;
-  ttsSpeakerId = settings.gameTtsSpeakerId;
-  ttsSpeed = settings.gameTtsSpeed;
-  ttsVolume = settings.gameTtsVolume;
+  ttsEnabled = serverSettings.gameTtsEnabled;
+  ttsSpeakerId = serverSettings.gameTtsSpeakerId;
+  ttsSpeed = serverSettings.gameTtsSpeed;
+  ttsVolume = serverSettings.gameTtsVolume;
 
   // Update local review type
-  reviewType = settings.reviewType;
+  reviewType = serverSettings.reviewType;
 
   try {
     const response = await fetch(`${API_BASE}/api/settings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(settings)
+      body: JSON.stringify(serverSettings)
     });
 
     if (response.ok) {
