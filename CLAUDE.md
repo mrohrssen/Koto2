@@ -92,3 +92,4 @@ src/
 - File-based caching for JPDB responses and TTS audio
 - Frontend uses localStorage for user API keys and preferences
 - Deployment requires persistent storage (Railway recommended, not Vercel)
+- **Always use system git/curl** (`/usr/bin/git`, `/usr/bin/curl`) - Homebrew versions have library conflicts
