@@ -98,25 +98,6 @@
           <!-- Populated by JS during combat -->
         </div>
 
-        <!-- Definitions Reveal Modal (auto-fades) -->
-        <div class="definitions-reveal hidden" id="definitions-reveal">
-          <div class="definitions-word" id="definitions-word">言葉</div>
-          <ul class="definitions-list" id="definitions-list"></ul>
-        </div>
-
-        <!-- Self-grade modal (uses definitions-reveal style) -->
-        <div class="definitions-reveal hidden" id="self-grade-modal">
-          <div class="definitions-word" id="self-grade-word">言葉</div>
-          <ul class="definitions-list" id="self-grade-meanings"></ul>
-          <div class="self-grade-buttons">
-            <button class="review-btn review-nothing" data-grade="1" title="1 - Forgot completely">Nothing</button>
-            <button class="review-btn review-something" data-grade="2" title="2 - Recognized but couldn't recall">Something</button>
-            <button class="review-btn review-hard" data-grade="3" title="3 - Recalled with difficulty">Hard</button>
-            <button class="review-btn review-okay" data-grade="4" title="4 - Recalled correctly">Okay</button>
-            <button class="review-btn review-easy" data-grade="5" title="5 - Very easy">Easy</button>
-          </div>
-        </div>
-
         <!-- Word Practice Input Modal (typing mode only) -->
         <div class="word-input-popup hidden" id="word-input-modal">
           <span class="word-to-define" id="word-to-define">言葉</span>
@@ -159,6 +140,25 @@
         <!-- Action Panel -->
         <div class="action-panel" id="action-panel">
           <!-- Will be populated by JS based on game phase -->
+        </div>
+      </div>
+
+      <!-- Definitions Reveal Modal (auto-fades) - outside vn-stage so always visible -->
+      <div class="definitions-reveal hidden" id="definitions-reveal">
+        <div class="definitions-word" id="definitions-word">言葉</div>
+        <ul class="definitions-list" id="definitions-list"></ul>
+      </div>
+
+      <!-- Self-grade modal (uses definitions-reveal style) -->
+      <div class="definitions-reveal hidden" id="self-grade-modal">
+        <div class="definitions-word" id="self-grade-word">言葉</div>
+        <ul class="definitions-list" id="self-grade-meanings"></ul>
+        <div class="self-grade-buttons">
+          <button class="review-btn review-nothing" data-grade="1" title="1 - Forgot completely">Nothing</button>
+          <button class="review-btn review-something" data-grade="2" title="2 - Recognized but couldn't recall">Something</button>
+          <button class="review-btn review-hard" data-grade="3" title="3 - Recalled with difficulty">Hard</button>
+          <button class="review-btn review-okay" data-grade="4" title="4 - Recalled correctly">Okay</button>
+          <button class="review-btn review-easy" data-grade="5" title="5 - Very easy">Easy</button>
         </div>
       </div>
     </main>
