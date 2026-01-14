@@ -4076,6 +4076,13 @@ body::before {
   background: rgba(212, 168, 83, 0.08);
 }
 
+.shop-item.keyboard-selected {
+  border-color: var(--gi-gold);
+  background: rgba(212, 168, 83, 0.15);
+  box-shadow: 0 0 12px rgba(212, 168, 83, 0.3);
+  cursor: pointer;
+}
+
 .shop-item.out-of-stock {
   opacity: 0.5;
   pointer-events: none;

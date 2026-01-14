@@ -27,6 +27,9 @@ let lastSpokenNarration = null; // For repeating with 'r' key
 // Word Review Settings
 let reviewType = 'typing'; // 'typing' or 'self-grade'
 
+// Shop Selection State
+let selectedShopIndex = -1;
+
 // Realtime Combat State
 let realtimeCombatActive = false;
 let playerAttackTimer = null;
@@ -871,6 +874,47 @@ async function speakEnemyDialogue(text, dialogueDuration) {
       showWordCards();
       enemyDialogueTtsPlaying = false;
     }
+  }
+}
+
+/**
+ * Simple TTS for short text (chip names, UI feedback)
+ * Doesn't interrupt combat or manage word cards
+ */
+let currentUiAudio = null;
+async function speakText(text) {
+  if (!ttsEnabled || !text || text.trim().length === 0) return;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/tts/synthesize`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text,
+        speakerId: ttsSpeakerId,
+        speed: ttsSpeed,
+        volume: ttsVolume
+      })
+    });
+
+    if (!response.ok) return;
+
+    const audioBlob = await response.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+
+    // Stop previous UI audio if playing
+    if (currentUiAudio) {
+      currentUiAudio.pause();
+      currentUiAudio = null;
+    }
+
+    currentUiAudio = new Audio(audioUrl);
+    currentUiAudio.volume = Math.min(ttsVolume, 1.0);
+    currentUiAudio.onended = () => URL.revokeObjectURL(audioUrl);
+    currentUiAudio.onerror = () => URL.revokeObjectURL(audioUrl);
+    currentUiAudio.play();
+  } catch (error) {
+    console.warn('UI TTS error:', error);
   }
 }
 
@@ -2769,6 +2813,10 @@ async function equipItem(itemId) {
     if (result.message) {
       showNarration(result.message);
     }
+    // Speak "[item name]を装備" via TTS
+    if (result.equipped) {
+      speakText(`${result.equipped}を装備`);
+    }
     updateUI();
   } catch (error) {
     console.error('Equip error:', error);
@@ -3943,7 +3991,7 @@ function showPostCombatShopContent() {
       }[item.rarity] || '';
 
       return `
-        <div class="${itemClass}" data-item-index="${index}">
+        <div class="${itemClass}" data-item-index="${index}" onclick="selectShopItem(${index})">
           <div class="shop-item-info">
             <div class="shop-item-name">
               ${item.name}
@@ -3956,7 +4004,7 @@ function showPostCombatShopContent() {
           <div class="shop-item-meta">
             <span class="shop-item-price">¥${item.price}</span>
             <button class="shop-item-buy"
-                    onclick="buyFromShop(${index})"
+                    onclick="event.stopPropagation(); buyFromShop(${index})"
                     ${!canAfford ? 'disabled' : ''}>
               Buy
             </button>
@@ -3967,11 +4015,14 @@ function showPostCombatShopContent() {
     shopItemsContainer.innerHTML = itemsHtml;
   }
 
-  // Show the modal
+  // Reset shop selection and show the modal
+  selectedShopIndex = -1;
   if (shopModal) shopModal.classList.remove('hidden');
 }
 
 function resetShopModal() {
+  // Reset shop selection
+  selectedShopIndex = -1;
   // Reset shop modal back to default state
   const shopTitle = document.getElementById('shop-title');
   const shopGreeting = document.getElementById('shop-greeting');
@@ -4030,6 +4081,7 @@ async function skipShop() {
 // Expose shop functions to window for onclick handlers
 window.buyFromShop = buyFromShop;
 window.skipShop = skipShop;
+window.selectShopItem = selectShopItem;
 
 function showRunEndedContent() {
   gameContent.innerHTML = `
@@ -4488,6 +4540,27 @@ function handleKeypress(e) {
     return;
   }
 
+  // Handle shop modal keyboard navigation
+  if (shopModal && !shopModal.classList.contains('hidden')) {
+    const shopItems = shopModal.querySelectorAll('.shop-item');
+    if (shopItems.length > 0) {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        navigateShopItems(-1, shopItems);
+        return;
+      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        navigateShopItems(1, shopItems);
+        return;
+      } else if (e.key === 'Enter' && selectedShopIndex >= 0) {
+        e.preventDefault();
+        buyFromShop(selectedShopIndex);
+        return;
+      }
+    }
+    return; // Don't process other keys while shop is open
+  }
+
   // Don't trigger if a modal is open
   if (!settingsModal.classList.contains('hidden') ||
       !createCharModal.classList.contains('hidden') ||
@@ -4575,6 +4648,51 @@ function triggerSelectedAction(buttons) {
     if (selectedButton && !selectedButton.disabled) {
       selectedButton.click();
     }
+  }
+}
+
+// Navigate through shop items with keyboard
+function navigateShopItems(direction, items) {
+  // Remove selection from all items
+  items.forEach(item => item.classList.remove('keyboard-selected'));
+
+  // Calculate new index
+  if (selectedShopIndex < 0) {
+    selectedShopIndex = direction > 0 ? 0 : items.length - 1;
+  } else {
+    selectedShopIndex += direction;
+    if (selectedShopIndex < 0) selectedShopIndex = items.length - 1;
+    if (selectedShopIndex >= items.length) selectedShopIndex = 0;
+  }
+
+  // Add selection to new item and speak the chip name
+  const selectedItem = items[selectedShopIndex];
+  selectedItem.classList.add('keyboard-selected');
+  selectedItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Get chip name and speak it
+  const chipName = selectedItem.querySelector('.shop-item-name')?.childNodes[0]?.textContent?.trim();
+  if (chipName) {
+    speakText(chipName);
+  }
+}
+
+// Select a shop item by click (also speaks the name)
+function selectShopItem(index) {
+  const shopItems = shopModal?.querySelectorAll('.shop-item');
+  if (!shopItems || index < 0 || index >= shopItems.length) return;
+
+  // Remove selection from all items
+  shopItems.forEach(item => item.classList.remove('keyboard-selected'));
+
+  // Select the clicked item
+  selectedShopIndex = index;
+  shopItems[index].classList.add('keyboard-selected');
+
+  // Speak the chip name
+  const chipName = shopItems[index].querySelector('.shop-item-name')?.childNodes[0]?.textContent?.trim();
+  if (chipName) {
+    speakText(chipName);
   }
 }
 
@@ -4854,6 +4972,11 @@ async function addChipToSlot(chipId) {
     if (result.error) {
       showNarration(`装着失敗: ${result.error}`);
       return;
+    }
+
+    // Speak "[chip name]を装備" via TTS
+    if (result.chipName) {
+      speakText(`${result.chipName}を装備`);
     }
 
     // Refresh loadout and re-render
