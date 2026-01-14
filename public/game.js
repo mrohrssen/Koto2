@@ -1,4 +1,83 @@
-// JChat Dungeon - Frontend Game Logic
+/**
+ * @fileoverview Frontend game UI, state management, and server communication
+ * @module public/game.js
+ *
+ * PURPOSE:
+ * Main frontend JavaScript for the JRPG. Handles all UI rendering, user input,
+ * API communication with the server, TTS playback, vocabulary word practice,
+ * and visual novel-style narration display. This is a single-page application
+ * with no framework - vanilla JS with direct DOM manipulation.
+ *
+ * KEY EXPORTS: (None - this is a browser script, all functions are global)
+ *
+ * KEY FUNCTIONS:
+ * - loadGameState() - Fetches game state from server, updates UI
+ * - apiCall(endpoint, method, body) - Generic API wrapper, auto-includes API keys
+ * - updateUI() - Master UI refresh, calls phase-specific renderers
+ * - updateVNStage() - Updates visual novel character/enemy sprites
+ *
+ * Game Flow:
+ * - createCharacter() - Character creation with stat allocation
+ * - startNewRun() - Begins dungeon run, ward selection
+ * - startEncounter()/startBossEncounter() - Initiates combat
+ * - performAttack/Defend/Magic/Item/Flee() - Combat actions
+ * - handleCombatEnd() - Victory/defeat processing
+ *
+ * UI Systems:
+ * - showNarration()/appendNarration() - VN-style text display with JPDB parsing
+ * - openSettings()/saveSettings() - Configuration modal
+ * - openChipModal()/renderChipModal() - Equipment chip management
+ * - openUpgradesModal() - Meta-progression upgrades
+ * - openGameStatsModal() - Statistics and word state tracking
+ *
+ * Word Practice:
+ * - showWordCards()/hideWordCards() - Vocabulary review during combat
+ * - handleWordSelection() - Process word review answers
+ * - fetchJpdbWords() - Load due words from JPDB
+ * - speakWord() - TTS pronunciation for vocabulary
+ *
+ * TTS:
+ * - speakNarration(text) - Speaks game narration via VOICEVOX
+ * - speakEnemyDialogue(text) - Enemy dialogue TTS
+ * - stopTts() - Cancels current audio
+ *
+ * DEPENDENCIES:
+ * - Server API endpoints (/api/game/*, /api/jpdb/*, /api/vocab/*, /api/tts/*)
+ * - VOICEVOX for TTS (via server proxy)
+ * - localStorage for user API keys and settings
+ *
+ * STATE VARIABLES:
+ * - gameState: { player, run, combat, phase } - Current game state from server
+ * - ttsEnabled, ttsSpeakerId, ttsSpeed, ttsVolume - TTS configuration
+ * - combatWords[], availableWords[] - Word practice state
+ * - realtimeCombatActive - Timer-based combat mode flag
+ *
+ * UI PHASES (gameState.phase):
+ * - 'no_save' - No character exists, show create button
+ * - 'hub' - In town, can start run or manage equipment
+ * - 'ward_selection' - Choosing next ward/area
+ * - 'exploring' - Navigating dungeon rooms
+ * - 'combat' - In battle
+ * - 'victory'/'defeat' - Post-combat state
+ * - 'shop' - Buying/selling items
+ * - 'blacksmith' - Equipment refinement
+ *
+ * ARCHITECTURE NOTES:
+ * - No build step - vanilla JS loaded directly by browser
+ * - DOM elements cached in variables at top (statsDisplay, combatArea, etc.)
+ * - All server communication via apiCall() which adds API keys from localStorage
+ * - JPDB integration parses narration text, wraps words with clickable spans
+ * - Background images change based on current ward/floor
+ * - Keyboard shortcuts: Enter (advance), R (repeat TTS), 1-5 (word selection)
+ *
+ * CLAUDE HINTS:
+ * - For combat mechanics, check server.js and src/game/combat/
+ * - For word practice logic, look at WORD PRACTICE FUNCTIONS section (~line 1880)
+ * - For UI updates after actions, trace through updateUI() and updateVNStage()
+ * - Settings are split: API keys in localStorage, other settings on server
+ * - TTS requires VOICEVOX running (server proxies to VOICEVOX_URL)
+ * - Section headers marked with // ============ SECTION NAME ============
+ */
 
 const API_BASE = '';
 
@@ -221,8 +300,35 @@ const floorIndicator = document.getElementById('floor-indicator');
 // ============ BACKGROUND SYSTEM ============
 // Track current background to avoid unnecessary updates
 let currentBackgroundKey = '';
+let lastPrefetchedFloor = 0;
 
-// Update background based on current floor with random variant
+// Simple hash for deterministic variant selection (enables caching)
+function hashCode(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+// Prefetch backgrounds for a floor (call when entering new floor)
+function prefetchFloorBackgrounds(floor) {
+  if (floor === lastPrefetchedFloor || floor > 7) return;
+  lastPrefetchedFloor = floor;
+
+  // Prefetch all variants for this floor and next floor
+  const floorsToPreload = [floor, Math.min(floor + 1, 7)];
+  for (const f of floorsToPreload) {
+    for (let v = 1; v <= 5; v++) {
+      const img = new Image();
+      img.src = `assets/backgrounds/floor${f}_${v}.png`;
+    }
+  }
+  console.log(`Prefetched backgrounds for floors ${floorsToPreload.join(', ')}`);
+}
+
+// Update background based on current floor with deterministic variant
 function updateBackground() {
   if (!vnBackground) return;
 
@@ -248,8 +354,11 @@ function updateBackground() {
   if (roomKey === currentBackgroundKey) return;
   currentBackgroundKey = roomKey;
 
-  // Pick a random variant (1-5) for this room
-  const variant = Math.floor(Math.random() * 5) + 1;
+  // Prefetch next floor backgrounds when entering a new floor
+  prefetchFloorBackgrounds(floor);
+
+  // Pick a deterministic variant (1-5) based on floor+room for better caching
+  const variant = (hashCode(roomKey) % 5) + 1;
 
   // Set the background image path
   // Backgrounds are named: floor{N}_{variant}.png
@@ -265,6 +374,7 @@ function updateBackground() {
 // Reset background tracking (for new runs)
 function resetBackground() {
   currentBackgroundKey = '';
+  lastPrefetchedFloor = 0;
 }
 
 // ============ NARRATION SYSTEM ============

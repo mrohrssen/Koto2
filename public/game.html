@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEO TOKYO: System Liberation</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌃</text></svg>">
+
+  <!-- Preload critical assets -->
+  <link rel="preload" href="game.css" as="style">
+  <link rel="preload" href="game.js" as="script">
+  <link rel="preload" href="assets/backgrounds/hub.png" as="image">
+  <link rel="preload" href="assets/sprites/player/hunter.png" as="image">
+
+  <!-- Prefetch first floor backgrounds -->
+  <link rel="prefetch" href="assets/backgrounds/floor1_1.png" as="image">
+  <link rel="prefetch" href="assets/backgrounds/floor1_2.png" as="image">
+
   <link rel="stylesheet" href="game.css">
 </head>
 <body>

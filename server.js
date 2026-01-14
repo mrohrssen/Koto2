@@ -1,8 +1,73 @@
-// JRPG Server
-// Japanese vocabulary learning RPG
+/**
+ * @fileoverview Express server - API endpoints, game orchestration, AI integration
+ * @module server
+ *
+ * PURPOSE:
+ * Main Express.js server providing REST API for the JRPG frontend. Handles game
+ * state management, AI narration generation, JPDB vocabulary integration, TTS
+ * synthesis via VOICEVOX, and all game actions. Uses GameManager for game logic.
+ *
+ * KEY EXPORTS: (None - this is the server entry point)
+ *
+ * API ENDPOINT GROUPS:
+ * /api/settings - Server settings (GET/POST, non-sensitive only)
+ * /api/tts/* - VOICEVOX TTS (status, speakers, synthesize, cached)
+ * /api/vocab/* - Vocabulary (status, words, fetch from JPDB)
+ * /api/jpdb/* - JPDB integration (parse, review, lookup)
+ * /api/game/* - Game actions (~40 endpoints)
+ *
+ * GAME ENDPOINTS:
+ * State: /game/state, /game/meta, /game/achievements, /game/lifetime-stats
+ * Player: /game/create-player, /game/allocate-stat
+ * Run: /game/start-run, /game/forfeit, /game/enter-floor, /game/next-floor
+ * Ward: /game/starting-wards, /game/select-starting-ward, /game/next-ward-options
+ * Room: /game/room, /game/proceed, /game/interact-trap, /game/loot-body
+ * Combat: /game/start-encounter, /game/attack, /game/defend, /game/magic,
+ *         /game/use-item, /game/flee, /game/enemy-turn
+ * Economy: /game/shop, /game/shop/buy, /game/refine, /game/open-treasure
+ * Chips: /game/chip-loadout, /game/equip-chip, /game/unequip-chip
+ * Meta: /game/upgrades, /game/purchase-upgrade
+ *
+ * DEPENDENCIES:
+ * - ./src/jpdb.js - JPDB API integration
+ * - ./src/ai-providers.js - OpenAI/Anthropic/Google AI
+ * - ./src/voicevox.js - TTS synthesis
+ * - ./src/game/loop.js - GameManager class
+ * - ./src/game/dm.js - AI narration generation
+ * - ./src/game/state.js - State factories
+ * - ./src/game-stats.js - Statistics tracking
+ *
+ * KEY INTERNAL FUNCTIONS:
+ * - loadSettings() / saveSettings() - Settings persistence
+ * - generateGameNarration(event, context, userKeys) - AI narration with vocab
+ * - applyVocabRepair(narration, vocab, userKeys) - Fix AI vocab errors
+ * - trackNarrationStats(narration, jpdbApiKey) - Track word usage
+ * - getEnrichedGameState() - Add computed fields to game state
+ *
+ * STATE:
+ * - gameManager - GameManager singleton instance
+ * - settings - Server settings (non-sensitive, persisted to file)
+ * - gameStats - Usage statistics
+ *
+ * ARCHITECTURE NOTES:
+ * - API keys now in request body (per-user via localStorage)
+ * - GameManager instantiated once, persists game state
+ * - AI narration generated via generateNarration() with vocab suggestions
+ * - Prefetch system disabled (requires server-side keys)
+ * - TTS proxied to VOICEVOX_URL environment variable
+ * - Game data saved to .jrpg-*.json files
+ *
+ * CLAUDE HINTS:
+ * - For game logic, trace through GameManager methods in loop.js
+ * - AI narration flow: endpoint -> generateGameNarration -> dm.js
+ * - JPDB endpoints extract jpdbApiKey from req.body
+ * - Game endpoints pass req.body as userKeys to helper functions
+ * - Settings split: API keys in client localStorage, TTS/JLPT on server
+ */
 
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
@@ -134,8 +199,25 @@ function saveSettings(settings) {
 
 // Middleware
 app.use(cors());
+app.use(compression()); // Gzip/Brotli compression for all responses
 app.use(express.json());
-app.use(express.static(join(__dirname, 'public')));
+
+// Static files with aggressive caching
+app.use(express.static(join(__dirname, 'public'), {
+  maxAge: '1d',           // Cache for 1 day by default
+  etag: true,             // Enable ETags for cache validation
+  lastModified: true,     // Enable Last-Modified headers
+  setHeaders: (res, path) => {
+    // Long cache for assets (images, icons, sprites)
+    if (path.includes('/assets/')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 year
+    }
+    // Short cache for HTML
+    if (path.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour
+    }
+  }
+}));
 
 // Load persisted data
 let settings = loadSettings();
