@@ -15,8 +15,9 @@
   --bg-panel: rgba(18, 18, 26, 0.97);
 
   /* Text colors */
-  --text-primary: #e0e0e0;
-  --text-secondary: #a0a0a0;
+  --text-primary: #e8e8e8;
+  --text-secondary: #b8b8b8;
+  --text-muted: #909090;
   --text-system: #00d4ff;
 
   /* SYSTEM Colors (enemies, cold, digital) */
@@ -706,15 +707,15 @@ body::before {
 
 /* Muted Action (safe but no reward - ignore/skip) */
 .action-btn.muted {
-  border-color: rgba(100, 100, 100, 0.3);
-  color: #888;
+  border-color: rgba(120, 120, 120, 0.4);
+  color: #a8a8a8;
   background: transparent;
 }
 
 .action-btn.muted:hover:not(:disabled) {
-  border-color: rgba(150, 150, 150, 0.5);
-  color: #aaa;
-  background: rgba(100, 100, 100, 0.1);
+  border-color: rgba(160, 160, 160, 0.6);
+  color: #c8c8c8;
+  background: rgba(100, 100, 100, 0.15);
 }
 
 /* ============ STATUS PANEL (SIDEBAR) ============ */
@@ -3340,9 +3341,9 @@ body::before {
 
 .damage-number.miss {
   font-size: 1.5rem;
-  color: #888;
+  color: #a0a0a0;
   text-shadow:
-    0 0 5px rgba(136, 136, 136, 0.5),
+    0 0 5px rgba(160, 160, 160, 0.5),
     2px 2px 0 #000,
     -2px -2px 0 #000;
 }

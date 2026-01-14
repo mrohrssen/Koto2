@@ -605,8 +605,11 @@ function setupEventListeners() {
   // Keyboard navigation (handles both narration and action buttons)
   document.addEventListener('keydown', handleKeypress);
 
-  // Narration "press to continue" - click
-  narrationPanel.addEventListener('click', advanceNarration);
+  // Narration "press to continue" - click (but not on clickable words)
+  narrationPanel.addEventListener('click', (e) => {
+    if (e.target.closest('.jpdb-word')) return; // Let word popup handle it
+    advanceNarration();
+  });
 }
 
 // ============ API CALLS ============
@@ -3815,9 +3818,10 @@ async function openShop() {
           legendary: 'レジェンド - 効果3.0x'
         }[item.rarity] || '';
 
+        const baseChipId = item.itemId.replace(/_(common|uncommon|rare|epic|legendary)$/, '');
         return `
           <div class="${itemClass}" data-item-id="${item.itemId}">
-            <img class="shop-item-icon" src="/assets/icons/chips/${item.itemId}.png" alt="" onerror="this.style.display='none'">
+            <img class="shop-item-icon" src="/assets/icons/chips/${baseChipId}.png" alt="" onerror="this.style.display='none'">
             <div class="shop-item-info">
               <div class="shop-item-name">
                 ${item.name}
@@ -4101,9 +4105,10 @@ function showPostCombatShopContent() {
         legendary: 'レジェンド - 効果3.0x'
       }[item.rarity] || '';
 
+      const baseChipId = item.itemId.replace(/_(common|uncommon|rare|epic|legendary)$/, '');
       return `
         <div class="${itemClass}" data-item-index="${index}" onclick="selectShopItem(${index})">
-          <img class="shop-item-icon" src="/assets/icons/chips/${item.itemId}.png" alt="" onerror="this.style.display='none'">
+          <img class="shop-item-icon" src="/assets/icons/chips/${baseChipId}.png" alt="" onerror="this.style.display='none'">
           <div class="shop-item-info">
             <div class="shop-item-name">
               ${item.name}
@@ -4968,9 +4973,10 @@ function renderChipModal() {
     const chip = slotData.equippedChips[i];
     if (chip) {
       const rarityClass = `rarity-${chip.rarity || 'common'}`;
+      const iconId = chip.baseId || chip.id.replace(/_(common|uncommon|rare|epic|legendary)$/, '');
       slotsHtml += `
         <div class="chip-slot filled ${rarityClass}" onclick="removeChipFromSlot('${chip.id}')" title="Click to remove">
-          <img class="chip-slot-icon" src="/assets/icons/chips/${chip.id}.png" alt="" onerror="this.style.display='none'">
+          <img class="chip-slot-icon" src="/assets/icons/chips/${iconId}.png" alt="" onerror="this.style.display='none'">
           <span class="chip-name">${chip.name}</span>
           <span class="chip-category">${getCategoryLabel(chip.category)}</span>
         </div>
@@ -4992,9 +4998,10 @@ function renderChipModal() {
     for (const chip of inventory) {
       const rarityClass = `rarity-${chip.rarity || 'common'}`;
       const slotCost = chip.rarity === 'legendary' ? 3 : chip.rarity === 'epic' ? 2 : 1;
+      const iconId = chip.baseId || chip.id.replace(/_(common|uncommon|rare|epic|legendary)$/, '');
       inventoryHtml += `
         <div class="inventory-chip ${rarityClass}" onclick="addChipToSlot('${chip.id}')" title="Click to equip">
-          <img class="inventory-chip-icon" src="/assets/icons/chips/${chip.id}.png" alt="" onerror="this.style.display='none'">
+          <img class="inventory-chip-icon" src="/assets/icons/chips/${iconId}.png" alt="" onerror="this.style.display='none'">
           <div class="inventory-chip-content">
             <span class="chip-name">${chip.name}</span>
             <span class="chip-info">
