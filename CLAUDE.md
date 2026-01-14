@@ -1,5 +1,12 @@
 # NEO TOKYO: System Liberation
 
+> **BEFORE WRITING ANY CODE** - Multiple Claude sessions may be active. Run these commands first:
+> ```bash
+> /usr/bin/git fetch origin && /usr/bin/git status
+> /usr/bin/git checkout -b feature/your-feature-name   # ALWAYS work on a branch
+> ```
+> When done: commit, checkout master, pull, merge your branch, push, delete branch.
+
 Japanese vocabulary learning RPG. Cyberpunk Tokyo where citizens are possessed by the SYSTEM AI and need liberation. Turn-based dungeon crawling with JPDB vocabulary integration and AI-generated narration.
 
 ## Tech Stack
@@ -15,7 +22,36 @@ Japanese vocabulary learning RPG. Cyberpunk Tokyo where citizens are possessed b
 npm install    # Install dependencies
 npm run dev    # Development with watch
 npm start      # Production
+npm test       # Run e2e tests (Playwright)
 ```
+
+## Testing
+
+**Always run e2e tests after adding a feature.** Tests are in `tests/` using Playwright.
+
+```bash
+npm test                    # Run all tests
+npx playwright test --ui    # Interactive test UI
+```
+
+## Git Workflow (Multi-Session Safe)
+
+Multiple Claude Code sessions run in parallel. **Never work directly on master.**
+
+```bash
+# START: Always do this first
+/usr/bin/git fetch origin && /usr/bin/git status
+/usr/bin/git checkout -b feature/your-feature-name
+
+# FINISH: When done with your feature
+/usr/bin/git add -A && /usr/bin/git commit -m "Your message"
+/usr/bin/git checkout master && /usr/bin/git pull origin master
+/usr/bin/git merge feature/your-feature-name
+/usr/bin/git push origin master
+/usr/bin/git branch -d feature/your-feature-name
+```
+
+Branch prefixes: `feature/`, `fix/`, `refactor/`
 
 ## Key Directories
 
@@ -92,6 +128,12 @@ Major files have comprehensive JSDoc headers (first 50-80 lines) with:
 - `/api/vocab/` - Word suggestion system
 - `/api/tts/` - VOICEVOX text-to-speech
 
+## Deployment
+
+- **Production URL**: https://jrpg-production.up.railway.app
+- **VOICEVOX URL**: https://voicevox-production.up.railway.app
+- **Railway Dashboard**: https://railway.com/project/3bf46306-66b8-4d9c-9afa-93156f95bbc3
+
 ## Environment Variables
 
 - `JPDB_API_KEY` - Required for vocabulary integration
@@ -100,6 +142,7 @@ Major files have comprehensive JSDoc headers (first 50-80 lines) with:
 
 ## Important Notes
 
+- **Always run `npm test` after adding features** - e2e tests catch UI regressions
 - Rate limit external APIs (500ms intervals for JPDB)
 - File-based caching for JPDB responses and TTS audio
 - Frontend uses localStorage for user API keys and preferences
