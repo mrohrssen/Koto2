@@ -11,6 +11,7 @@ node_modules/
 data/*
 !data/game-content-suggestions.json
 generate_assets.py
+generate_chip_icons.py
 regenerate_unique_enemies.py
 test-*.js
 ASSET-GENERATION-PLAN.md
