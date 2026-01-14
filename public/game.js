@@ -3837,7 +3837,6 @@ async function openShop() {
             <div class="shop-item-info">
               <div class="shop-item-name">
                 ${item.name}
-                ${item.nameEn && !item.nameEn.includes('_') ? `<span class="shop-item-name-en">(${item.nameEn})</span>` : ''}
                 ${rarityLabel ? `<span class="shop-item-rarity rarity-${item.rarity}">[${rarityLabel}]</span>` : ''}
               </div>
               <div class="shop-item-desc">${item.description}</div>

@@ -4924,11 +4924,11 @@ body::before {
   transform: scale(1.08);
 }
 
-/* Definitions reveal modal (auto-fades) - fixed position for visibility anywhere */
+/* Definitions reveal modal (auto-fades) - fixed position, centered in game area (accounting for sidebar) */
 .definitions-reveal {
   position: fixed;
   top: 50%;
-  left: 50%;
+  left: calc(50% - 9vw);
   transform: translate(-50%, -50%);
   background: rgba(20, 20, 20, 0.95);
   border: 2px solid var(--gi-gold);

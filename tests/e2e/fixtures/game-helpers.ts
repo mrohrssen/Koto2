@@ -97,21 +97,15 @@ export class GameHelper {
     // Wait a moment for ward selection to be ready
     await this.page.waitForTimeout(500);
 
-    // Try specific ward first
-    const wardOption = this.page.locator(`[data-ward="${wardId}"]`);
-    if (await wardOption.isVisible().catch(() => false)) {
-      await wardOption.click();
+    // The game renders ward cards with class .ward-card
+    const wardCards = this.page.locator('.ward-card');
+    if (await wardCards.first().isVisible().catch(() => false)) {
+      await wardCards.first().click();
     } else {
-      // Fall back to first ward option
-      const wardOptions = this.page.locator('.ward-option');
-      if (await wardOptions.first().isVisible().catch(() => false)) {
-        await wardOptions.first().click();
-      } else {
-        // Try any button in action panel
-        const btn = this.page.locator(`${SELECTORS.actionPanel} button`).first();
-        if (await btn.isVisible().catch(() => false)) {
-          await btn.click();
-        }
+      // Try any button in action panel as fallback
+      const btn = this.page.locator(`${SELECTORS.actionPanel} button`).first();
+      if (await btn.isVisible().catch(() => false)) {
+        await btn.click();
       }
     }
 

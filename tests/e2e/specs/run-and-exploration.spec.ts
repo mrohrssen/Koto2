@@ -62,9 +62,9 @@ test.describe('Ward Selection', () => {
     await setupCharacter(gameHelper);
     await gameHelper.startRun();
 
-    // Should show ward options
-    const wardOptions = page.locator('.ward-option');
-    const count = await wardOptions.count();
+    // Should show ward cards
+    const wardCards = page.locator('.ward-card');
+    const count = await wardCards.count();
     expect(count).toBeGreaterThanOrEqual(1);
   });
 });
