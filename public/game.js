@@ -3817,6 +3817,7 @@ async function openShop() {
 
         return `
           <div class="${itemClass}" data-item-id="${item.itemId}">
+            <img class="shop-item-icon" src="/assets/icons/chips/${item.itemId}.png" alt="" onerror="this.style.display='none'">
             <div class="shop-item-info">
               <div class="shop-item-name">
                 ${item.name}
@@ -4102,6 +4103,7 @@ function showPostCombatShopContent() {
 
       return `
         <div class="${itemClass}" data-item-index="${index}" onclick="selectShopItem(${index})">
+          <img class="shop-item-icon" src="/assets/icons/chips/${item.itemId}.png" alt="" onerror="this.style.display='none'">
           <div class="shop-item-info">
             <div class="shop-item-name">
               ${item.name}
@@ -4968,6 +4970,7 @@ function renderChipModal() {
       const rarityClass = `rarity-${chip.rarity || 'common'}`;
       slotsHtml += `
         <div class="chip-slot filled ${rarityClass}" onclick="removeChipFromSlot('${chip.id}')" title="Click to remove">
+          <img class="chip-slot-icon" src="/assets/icons/chips/${chip.id}.png" alt="" onerror="this.style.display='none'">
           <span class="chip-name">${chip.name}</span>
           <span class="chip-category">${getCategoryLabel(chip.category)}</span>
         </div>
@@ -4991,12 +4994,15 @@ function renderChipModal() {
       const slotCost = chip.rarity === 'legendary' ? 3 : chip.rarity === 'epic' ? 2 : 1;
       inventoryHtml += `
         <div class="inventory-chip ${rarityClass}" onclick="addChipToSlot('${chip.id}')" title="Click to equip">
-          <span class="chip-name">${chip.name}</span>
-          <span class="chip-info">
-            <span class="chip-category">${getCategoryLabel(chip.category)}</span>
-            <span class="chip-cost">${slotCost} slot${slotCost > 1 ? 's' : ''}</span>
-          </span>
-          <span class="chip-effect">${getChipEffectText(chip)}</span>
+          <img class="inventory-chip-icon" src="/assets/icons/chips/${chip.id}.png" alt="" onerror="this.style.display='none'">
+          <div class="inventory-chip-content">
+            <span class="chip-name">${chip.name}</span>
+            <span class="chip-info">
+              <span class="chip-category">${getCategoryLabel(chip.category)}</span>
+              <span class="chip-cost">${slotCost} slot${slotCost > 1 ? 's' : ''}</span>
+            </span>
+            <span class="chip-effect">${getChipEffectText(chip)}</span>
+          </div>
         </div>
       `;
     }
