@@ -712,9 +712,9 @@ export function getFullPlayerStats(player, equipmentBonuses = {}) {
 
 // ============ ENCOUNTER GENERATION ============
 export function generateEncounterCount(floor) {
-  // Floors have 4-5 encounters before the boss (5-6 rooms total)
-  const min = 4;
-  const max = 5;
+  // Floors have 7-10 encounters before the boss (8-11 rooms total)
+  const min = 7;
+  const max = 10;
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
