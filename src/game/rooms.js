@@ -1,5 +1,64 @@
-// Room System - NEO TOKYO: System Liberation
-// Exploration through Tokyo wards controlled by SYSTEM
+/**
+ * @fileoverview Room generation, ward system, and exploration mechanics
+ * @module src/game/rooms
+ *
+ * PURPOSE:
+ * Manages dungeon exploration through NEO TOKYO wards. Generates room sequences
+ * for each floor with encounters, traps, treasures, shops, and shrines. Implements
+ * the ward path system where players choose their route through Tokyo converging
+ * on the Imperial Palace (floor 7).
+ *
+ * KEY EXPORTS:
+ * Ward System:
+ * - WARD_INFO - All ward definitions (nerima, shibuya, shinjuku, etc.)
+ * - WARD_PATHS - Graph of ward connections
+ * - STARTING_WARDS - Available starting ward choices
+ * - getStartingWardOptions() / getNextWardOptions(currentWard) - Path selection
+ * - getWardInfo(wardId) / getWardTier(wardId) - Ward data access
+ *
+ * Room Generation:
+ * - generateFloorRooms(floor, ward) - Create room sequence for floor
+ * - getRoomEntryNarration(room, floor) - Get narrative text for room type
+ * - getRoomActions(room) - Get available actions for current room
+ *
+ * Room Interactions:
+ * - calculateTrapDamage(trap, player) - Calculate trap damage
+ * - attemptDisarm(trap, player) - Try to disarm trap
+ * - attemptAvoid(trap, player) - Try to avoid trap
+ * - generateBodyLoot(floor) / generateChestLoot(floor) - Generate loot
+ * - generatePostCombatShop(floor, ownedChips) - Post-battle chip shop
+ *
+ * Constants:
+ * - ROOM_TYPES - Encounter, trap, treasure, shop, shrine, boss
+ * - TRAP_TYPES - Various trap definitions with damage/effects
+ * - FLOOR_NAMES - Ward names for each floor
+ *
+ * DEPENDENCIES:
+ * - ./items/chips.js - generateShopChips, getChipDisplayInfo
+ *
+ * WARD STRUCTURE:
+ * Tier 1 (Floor 1): Nerima, Setagaya, Itabashi (residential, academic)
+ * Tier 2 (Floor 2-3): Nakano, Shibuya, Toshima (entertainment, nightlife)
+ * Tier 3 (Floor 4-5): Shinjuku, Minato (corporate, business)
+ * Tier 4 (Floor 6): Chiyoda (government)
+ * Tier 5 (Floor 7): Imperial Palace (SYSTEM core)
+ *
+ * ROOM SEQUENCE:
+ * Each floor has 5-6 rooms: mix of encounters, 0-1 trap, 0-1 treasure/shop/shrine
+ * Boss room always last. Post-combat shop appears after enemy defeats.
+ *
+ * ARCHITECTURE NOTES:
+ * - Ward path is stored in run.wardPath[], selected via selectStartingWard/selectNextWard
+ * - Rooms stored in run.rooms[], currentRoom index tracks position
+ * - Trap disarm/avoid use DEX-based success chance
+ * - Post-combat shop offers chips at discounted prices
+ *
+ * CLAUDE HINTS:
+ * - For ward selection UI, see game.js ward_selection phase
+ * - Room generation called by GameManager.enterFloor()
+ * - Trap/treasure interactions through GameManager methods
+ * - Post-combat shop triggered after processVictory() in combat
+ */
 
 import { generateShopChips, getChipDisplayInfo } from './items/chips.js';
 

@@ -1,6 +1,68 @@
-// Enemy and Boss Definitions - NEO TOKYO: System Liberation
-// Citizens possessed by the SYSTEM AI, awaiting liberation
-// Enhanced with intent system for strategic combat
+/**
+ * @fileoverview Enemy definitions, boss data, intent AI, and dialogue system
+ * @module src/game/enemies
+ *
+ * PURPOSE:
+ * Defines all enemies and bosses for NEO TOKYO. Each enemy is a citizen possessed
+ * by the SYSTEM AI. Contains enemy templates with stats, intent patterns for AI
+ * decision-making, special abilities, dialogue lines, and boss encounters. Also
+ * handles enemy generation based on floor/ward.
+ *
+ * KEY EXPORTS:
+ * Constants:
+ * - INTENT_TYPES - Attack/heavy/defend/special/rage intent definitions
+ * - ENEMY_INTENTS - Per-enemy AI patterns (weighted random)
+ * - ENEMY_ABILITIES - Special abilities (buff, heal, debuff, barrier)
+ * - BOSS_INTENTS - Boss-specific AI patterns
+ * - ENEMY_TEMPLATES - All enemy definitions with stats, sprites, dialogue
+ * - FLOOR_BOSSES - Boss for each floor (1-7)
+ * - FINAL_BOSS - Floor 7 boss definition
+ * - BOSS_DROPS - Loot tables for boss rewards
+ * - WARD_LOCATIONS - Enemy spawn locations by ward
+ *
+ * Functions:
+ * - selectEnemyIntent(enemy, turn) - AI intent selection (weighted random)
+ * - getEnemyAbility(enemyId) - Get enemy's special ability
+ * - generateEnemy(floor) - Create enemy instance for floor
+ * - getBossForFloor(floor) - Get boss definition for floor
+ * - getBossDrop(floor) - Get boss loot table
+ * - getEnemiesForFloor(floor) - Get valid enemies for floor/ward
+ * - transformEnemy(enemy, tier) - Scale enemy to different tier
+ *
+ * DEPENDENCIES:
+ * - ./stats.js - calculateDerivedStats, calculateMaxHp, calculateMaxSp
+ *
+ * DATA STRUCTURES:
+ * - EnemyTemplate: { id, name, tier, baseStats{}, intents[], abilities[],
+ *                   sprite, dialogue{ possessed, breaking, freed } }
+ * - Intent: { id, icon, name, damageMultiplier, defenseMultiplier? }
+ * - IntentPattern: { default: [{intent, weight}], lowHp: [...] }
+ *
+ * ENEMY TIERS (by floor):
+ * - Tier 1 (Floors 1-2): Citizens, students - low stats
+ * - Tier 2 (Floors 3-4): Workers, professionals - medium stats
+ * - Tier 3 (Floors 5-6): Specialists, officials - high stats
+ * - Tier 4 (Floor 7): Elite enemies before final boss
+ *
+ * DIALOGUE STATES:
+ * - possessed: Enemy is fully controlled by SYSTEM
+ * - breaking: Enemy is resisting, showing humanity
+ * - freed: Enemy is defeated/liberated
+ *
+ * ARCHITECTURE NOTES:
+ * - Enemies spawned via generateEnemy() which picks from floor-appropriate pool
+ * - Intent selection uses weighted random from ENEMY_INTENTS
+ * - Bosses have unique mechanics via BOSS_INTENTS and ENEMY_ABILITIES
+ * - Ward system filters enemies by location (Nerima, Shibuya, etc.)
+ * - Stats calculated via iRO formulas from base values
+ *
+ * CLAUDE HINTS:
+ * - For combat execution, see combat/enemy.js
+ * - Enemy dialogue displayed via game.js showEnemyDialogue()
+ * - To add new enemy: add to ENEMY_TEMPLATES, add intents to ENEMY_INTENTS
+ * - Boss special abilities defined in ENEMY_ABILITIES
+ * - Ward-based enemy pools in WARD_LOCATIONS
+ */
 
 import {
   calculateDerivedStats,

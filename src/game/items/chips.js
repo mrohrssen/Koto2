@@ -1,7 +1,73 @@
 /**
- * Chip System - NEO TOKYO: System Liberation
- * Chips are passive augmentations bought with credits after combat
- * They provide stat bonuses, on-hit effects, conditional triggers, and scaling bonuses
+ * @fileoverview Chip equipment system - passive augmentations for gear
+ * @module src/game/items/chips
+ *
+ * PURPOSE:
+ * Implements the chip system where players buy and equip passive augmentations
+ * to their equipment. Chips provide stat bonuses, on-hit effects, conditional
+ * triggers, and scaling bonuses. Each equipment slot has limited chip capacity.
+ * Chips have 5 rarities affecting their power and cost.
+ *
+ * KEY EXPORTS:
+ * Constants:
+ * - CHIP_CATEGORIES - Stat, OnHit, OnEffect, Counter categories
+ * - CHIP_RARITIES - Common, Uncommon, Rare, Epic, Legendary with multipliers
+ * - CHIPS - All chip definitions (100+ chips with effects)
+ *
+ * Functions:
+ * - getChip(chipId) - Get chip definition by ID
+ * - getChipsByCategory(category) - Filter chips by category
+ * - getChipsByRarity(rarity) - Filter chips by rarity
+ * - getChipPrice(chipId) - Calculate chip purchase price
+ * - generateShopChips(floor, owned, count) - Generate shop inventory
+ * - calculateChipStatBonuses(chips) - Sum stat bonuses from equipped chips
+ * - processOnHitChips(chips, target) - Execute on-hit effects
+ * - processOnKillChips(chips) - Execute on-kill effects
+ * - processOnDamageChips(chips, damage) - Execute damage-triggered effects
+ * - updateCounterStacks(stacks, chips, trigger, context) - Track counter chips
+ * - calculateCounterBonuses(chips, runStats) - Calculate counter-based bonuses
+ * - getEquippedChips(player) - Get all chips equipped on player
+ * - equipChip(player, slot, chipId, maxSlots) - Equip chip to equipment slot
+ *
+ * DEPENDENCIES:
+ * - None (self-contained data module)
+ *
+ * CHIP CATEGORIES:
+ * - STAT: Flat bonuses (+5 ATK, +10 HP, etc.)
+ * - ON_HIT: Chance effects when attacking (poison, lifesteal, etc.)
+ * - ON_EFFECT: Conditional triggers (on kill, on crit, on low HP)
+ * - COUNTER: Scaling bonuses (damage per kill, crit per dodge, etc.)
+ *
+ * CHIP RARITIES:
+ * - Common (gray): 1.0x stats, 1.0x price
+ * - Uncommon (green): 1.5x stats, 2.5x price
+ * - Rare (blue): 2.0x stats, 5.0x price
+ * - Epic (purple): 2.5x stats, 10.0x price
+ * - Legendary (orange): 3.0x stats, 20.0x price
+ *
+ * DATA STRUCTURES:
+ * - Chip: { id, name, category, rarity, basePrice, description,
+ *          effects: { stat?, chance?, trigger?, scaling? } }
+ * - EquippedChip: { chipId, slotCost } stored in equipment.equippedChips[]
+ *
+ * SLOT SYSTEM:
+ * - Each equipment piece has chip slots (default 5)
+ * - Chips cost 1-3 slots based on power
+ * - Legendary chips cost more slots than common
+ *
+ * ARCHITECTURE NOTES:
+ * - Chip effects applied via calculateChipStatBonuses() at combat start
+ * - On-hit/on-kill effects processed during combat in combat/mechanics.js
+ * - Counter stacks tracked in run.runStats and reset each run
+ * - Shop chips generated with weighted random by floor and rarity
+ * - Rarity generation uses floor-based weighted tables
+ *
+ * CLAUDE HINTS:
+ * - For equipping chips, see equipChip() and game.js openChipModal()
+ * - Counter chips reference run.runStats for their scaling
+ * - Chip effects defined in effects{} object, vary by category
+ * - Price calculation in getChipPrice() includes rarity multiplier
+ * - Shop generation excludes already-owned chips
  */
 
 // ============ CHIP CATEGORIES ============

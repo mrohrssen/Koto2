@@ -1,4 +1,60 @@
-// Equipment: Weapons, Armor, Shields, Accessories
+/**
+ * @fileoverview Equipment definitions - weapons, armor, shields, accessories
+ * @module src/game/items/equipment
+ *
+ * PURPOSE:
+ * Defines all equipment items (weapons, armor, shields, accessories) with their
+ * stats, prices, and set bonuses. Based on Ragnarok Online item database for
+ * stat balance. Equipment can be refined at blacksmith and have chips equipped.
+ *
+ * KEY EXPORTS:
+ * - WEAPONS - 50 weapons (daggers, swords, maces, staves, bows, katars)
+ * - ARMOR - Body armor pieces
+ * - SHIELDS - Off-hand defensive gear
+ * - ACCESSORIES - Rings, amulets, and utility items
+ * - EQUIPMENT_SETS - Set bonuses when multiple pieces equipped
+ * - getEquipment(id) - Get equipment definition by ID
+ * - getEquipmentBySlot(slot) - Get all equipment for a slot
+ * - getEquipmentByRarity(rarity) - Filter by rarity
+ *
+ * EQUIPMENT SLOTS:
+ * - weapon: Primary weapon (ATK-focused)
+ * - body: Armor (DEF, HP)
+ * - shield: Off-hand (DEF, special effects)
+ * - accessory: Utility (varied stats)
+ *
+ * STAT PROPERTIES:
+ * - atk/def/matk/mdef - Combat stats
+ * - str/agi/vit/int/dex/luk - Primary stat bonuses
+ * - maxHp/maxSp - Resource bonuses
+ * - crit/hit/flee - Combat modifiers
+ * - armorPen/damageBonus - Damage modifiers
+ * - doubleStrike - % chance for extra attack
+ * - setId - For set bonus linking
+ *
+ * RARITIES:
+ * - common (gray): Basic stats
+ * - uncommon (green): Moderate stats + minor bonus
+ * - rare (blue): Good stats + special effect
+ * - epic (purple): High stats + powerful effect
+ * - legendary (orange): Best stats + unique effects
+ *
+ * DEPENDENCIES:
+ * - None (pure data module)
+ *
+ * ARCHITECTURE NOTES:
+ * - Equipment stored in player.equipment{} by slot
+ * - Each piece can have equippedChips[] array
+ * - Set bonuses calculated in calculateEquipmentBonuses()
+ * - Refinement increases base stats (handled in loop.js)
+ *
+ * CLAUDE HINTS:
+ * - For bonus calculation, see items/index.js calculateEquipmentBonuses()
+ * - Equipment bought from shop or dropped by bosses
+ * - Starting equipment defined in class-equipment.js
+ * - Set bonuses activate with 2+ pieces from same setId
+ */
+
 // ============ WEAPONS (50) ============
 // Based on RateMyServer Ragnarok Online item database
 export const WEAPONS = {

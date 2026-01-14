@@ -44,6 +44,18 @@ src/
       skills.js        # Character abilities
 ```
 
+## File Summaries
+
+Major files have comprehensive JSDoc headers (first 50-80 lines) with:
+- **PURPOSE**: What the file does and why it exists
+- **KEY EXPORTS**: Functions, classes, and constants
+- **DEPENDENCIES**: What it imports and why
+- **DATA STRUCTURES**: Key object shapes and their fields
+- **ARCHITECTURE NOTES**: How it fits in the system
+- **CLAUDE HINTS**: Specific guidance for working with the file
+
+**Read summaries first** before diving into full file contents to quickly understand if a file is relevant to your task. Files with summaries: `game.js`, `loop.js`, `state.js`, `enemies.js`, `chips.js`, `equipment.js`, `rooms.js`, `prefetch.js`, `server.js`.
+
 ## Key Game Systems
 
 - **Chips**: Passive augmentations with rarities (Common 1.0x → Legendary 3.0x stat multipliers)

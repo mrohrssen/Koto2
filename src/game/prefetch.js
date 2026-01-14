@@ -1,6 +1,50 @@
-// Prefetch System for AI Narration and TTS Audio
-// Pre-generates narrations and voiceovers for likely next events
-// Cache entries are use-once: deleted after retrieval
+/**
+ * @fileoverview Prefetch system for AI narration and TTS audio caching
+ * @module src/game/prefetch
+ *
+ * PURPOSE:
+ * Pre-generates AI narrations and TTS voiceovers for likely next game events
+ * to reduce latency. Implements predictive caching based on game state to
+ * achieve high hit rates. Cache entries are use-once (deleted after retrieval).
+ * NOTE: Currently disabled in per-user API key mode (no server-side keys).
+ *
+ * KEY EXPORTS:
+ * - setPrefetchGenerator(fn) - Set the narration generator function
+ * - setTTSSynthesizer(fn) - Set the TTS synthesis function
+ * - triggerPrefetch(event, context) - Queue prefetch for likely next events
+ * - getCachedNarration(event, context) - Retrieve cached narration (use-once)
+ * - getCachedAudio(text) - Retrieve cached TTS audio
+ * - cancelPendingPrefetches() - Cancel all queued prefetches
+ * - clearPrefetchCache() - Clear all cached data
+ * - getPrefetchStats() - Get cache hit/miss statistics
+ *
+ * ARCHITECTURE:
+ * - Narration cache: Map<cacheKey, { narration, createdAt, event, context }>
+ * - Audio cache: Map<text, { blob, url, createdAt }>
+ * - Priority queue for prefetch ordering
+ * - Concurrent limits for AI (6) and TTS (1) calls
+ *
+ * PREFETCH STRATEGY:
+ * After each event, predicts likely next events based on game phase:
+ * - Combat: attack results, defend, enemy turn, victory, defeat
+ * - Exploration: room entry, trap, treasure, encounter
+ * - Between floors: next floor entry, ward selection
+ *
+ * CONFIGURATION:
+ * - maxCacheSize: 100 narrations
+ * - maxAudioCacheSize: 30 audio clips
+ * - cacheTTL: 5 minutes per entry
+ * - maxConcurrentPrefetch: 6 parallel AI calls
+ *
+ * DEPENDENCIES:
+ * - None (receives generator functions via setters)
+ *
+ * CLAUDE HINTS:
+ * - prefetchGeneratorFn in server.js returns null (disabled)
+ * - Cache keys generated from event + context hash
+ * - Stats tracking for hit rate optimization
+ * - Audio prefetch follows narration prefetch with 200ms delay
+ */
 
 // ============ CONFIGURATION ============
 

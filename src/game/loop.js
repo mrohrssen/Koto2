@@ -1,5 +1,93 @@
-// Main Game Loop
-// Orchestrates the dungeon crawling experience
+/**
+ * @fileoverview GameManager class - core game orchestration and state machine
+ * @module src/game/loop
+ *
+ * PURPOSE:
+ * Central orchestrator for the entire game. Contains the GameManager class which
+ * manages player state, dungeon runs, combat encounters, room exploration, shops,
+ * and meta-progression. This is the main interface between the server endpoints
+ * and the game logic modules.
+ *
+ * KEY EXPORTS:
+ * - GameManager (class) - Main game orchestration class, singleton instance used by server
+ *
+ * GAMEMANAGER METHODS:
+ * Meta-progression:
+ * - initMeta(data) - Initialize or load meta-progression
+ * - purchaseUpgrade(id) - Buy permanent upgrades with essence
+ * - awardRunEssence(isVictory) - Calculate and award end-of-run essence
+ * - checkAchievements() - Check and unlock achievements
+ *
+ * Player/Run Management:
+ * - createPlayer(name, stats, points) - Create new player character
+ * - startRun() - Begin new dungeon run
+ * - forfeitRun() - Abandon current run
+ * - reset() / fullReset() - Reset run or entire game
+ *
+ * Ward/Floor Navigation:
+ * - getStartingWardOptions() / selectStartingWard(id) - Initial ward selection
+ * - getNextWardOptions() / selectNextWard(id) - Post-boss ward selection
+ * - enterFloor() - Generate rooms for current floor
+ * - nextFloor() - Advance to next floor after boss
+ *
+ * Room Exploration:
+ * - getCurrentRoom() / proceedToNextRoom() - Room navigation
+ * - disarmTrap() / triggerTrap() - Trap handling
+ * - lootBody() / openTreasure() - Loot interactions
+ * - useShrine() - Shrine healing/buffs
+ *
+ * Combat:
+ * - startEncounter() / startBossEncounter() - Begin battles
+ * - attack(type) / defend() / magic(id) / useItem(id) / flee() - Player actions
+ * - enemyTurn() - Process enemy action
+ * - realtimeAttackCycle(type) - Timer-based combat mode
+ *
+ * Economy:
+ * - getShopInventory() / buyFromShop(id) - Town shop
+ * - buyFromPostCombatShop(index) - Post-combat drops
+ * - refineEquipment(slot) - Blacksmith refinement
+ *
+ * DEPENDENCIES:
+ * - ./state.js - State factories (createNewPlayer, createNewRun, createCombatState)
+ * - ./enemies.js - Enemy generation and boss definitions
+ * - ./combat.js - Combat mechanics (attack, defend, magic, status effects)
+ * - ./rooms.js - Room generation, ward system, traps, loot
+ * - ./items.js - Item/equipment data and bonuses
+ * - ./stats.js - Stat calculations
+ * - ./dm.js - Fallback narration
+ *
+ * STATE STRUCTURE:
+ * - this.player - Base player (persists between runs)
+ * - this.run - Current run state (null when in hub)
+ * - this.combat - Current combat (null when not fighting)
+ * - this.meta - Meta-progression (essence, upgrades, achievements)
+ *
+ * GAME PHASES (returned by getPhase()):
+ * - 'no_save' - No player exists
+ * - 'hub' - In town between runs
+ * - 'ward_selection' - Choosing starting/next ward
+ * - 'exploring' - In dungeon, navigating rooms
+ * - 'combat' - In battle (also 'victory', 'defeat')
+ * - 'shop' / 'blacksmith' - Economic interactions
+ * - 'post_combat_shop' - Buying drops after combat
+ * - 'boss_defeated' - Just beat floor boss
+ * - 'run_complete' - Beat final boss
+ *
+ * ARCHITECTURE NOTES:
+ * - GameManager is instantiated once by server.js
+ * - State changes emit via onStateChange() callbacks
+ * - Narration emits via onNarration() callbacks (server adds AI narration)
+ * - Combat can be turn-based or realtime (realtimeAttackCycle)
+ * - Meta-progression persists via server file saves
+ * - Run state deep-clones player to allow death without losing base progress
+ *
+ * CLAUDE HINTS:
+ * - For combat damage formulas, see combat/mechanics.js
+ * - For enemy AI/intents, see enemies.js selectEnemyIntent()
+ * - For room types and generation, see rooms.js
+ * - Server endpoints mostly call GameManager methods directly
+ * - Equipment bonuses recalculated via recalculatePlayerResources() after changes
+ */
 
 import {
   createNewPlayer,

@@ -1,5 +1,55 @@
-// Game State Management
-// Handles player, run, and combat state
+/**
+ * @fileoverview Player, run, combat, and meta-progression state management
+ * @module src/game/state
+ *
+ * PURPOSE:
+ * Central state management for all game entities. Provides factory functions
+ * for creating players, runs, and combat instances. Handles meta-progression
+ * (essence, upgrades, achievements) that persists across deaths. Also manages
+ * stat allocation, level-up logic, and save/load functionality.
+ *
+ * KEY EXPORTS:
+ * - createNewPlayer(name, customStats, customStatPoints) - Creates player with class-based stats
+ * - createNewRun(player) - Initializes dungeon run with ward system
+ * - createCombatState(enemy) - Creates combat instance
+ * - createMetaProgression() - Creates fresh meta-save (essence, upgrades, achievements)
+ * - allocateStat(player, statName) - Spends stat points (iRO cost formula)
+ * - checkLevelUp(player) - Processes XP and awards stat points
+ * - getMetaUpgradeEffects(meta) - Aggregates all purchased upgrade bonuses
+ * - calculateEssenceReward(runStats, floor, isVictory) - Calculates run rewards
+ * - recalculatePlayerResources(player, equipBonuses) - Updates maxHp/maxSp after gear change
+ * - getFullPlayerStats(player, equipBonuses) - Returns complete stats with derived values
+ * - META_UPGRADES - Upgrade definitions (vitality, attackPower, skills, etc.)
+ * - ACHIEVEMENTS - Achievement definitions with check functions
+ * - saveGame/loadGame/deleteSave - File-based persistence
+ *
+ * DEPENDENCIES:
+ * - ./stats.js - iRO stat formulas (calculateDerivedStats, calculateMaxHp/Sp, getStatPointCost)
+ * - ./items.js - Equipment bonuses (calculateEquipmentBonuses, getClassStartingEquipment)
+ *
+ * DATA STRUCTURES:
+ * - Player: { name, rank, level, xp, xpToNext, stats{str,agi,vit,int,dex,luk},
+ *            statPoints, hp, maxHp, sp, maxSp, gold, items[], equipment{}, skills[], statuses[] }
+ * - Run: { active, floor, maxFloors, currentWard, wardPath[], rooms[], currentRoom,
+ *         encountersCompleted, encountersNeeded, bossDefeated, stats{}, runStats{} }
+ * - Combat: { active, turn, turnCount, enemy{}, lastAction, log[] }
+ * - Meta: { essence, upgrades{}, lifetimeStats{}, unlocks[], achievements[] }
+ *
+ * ARCHITECTURE NOTES:
+ * - State objects are mutable; GameManager in loop.js owns canonical copies
+ * - createNewRun() deep-clones player to isolate run state from base player
+ * - Stat allocation uses iRO cost formula: higher stats cost more points
+ * - Level-up fully restores HP/SP and awards stat points per iRO formula
+ * - Meta-progression essence is earned at run end based on floor + kills + bosses
+ * - Rank system: E→D→C→B→A→S, advances every 5 levels
+ *
+ * CLAUDE HINTS:
+ * - For stat formulas (ATK, DEF, crit, etc.), see stats.js
+ * - Equipment bonuses are calculated in items.js, applied here
+ * - Ward system (currentWard, wardPath) connects to rooms.js
+ * - Player starts with Hacker class equipment from class-equipment.js
+ * - Run stats vs runStats: stats{} is for meta tracking, runStats{} is for chip counters
+ */
 
 import {
   getStatPointCost,
