@@ -115,6 +115,7 @@ import { getChipLoadout, equipChip, unequipChip } from './src/game/items/chips.j
 import { generateNarration, getSimpleNarration } from './src/game/dm.js';
 import { ACHIEVEMENTS, allocateStat, getFullPlayerStats } from './src/game/state.js';
 import { calculateDerivedStats, getStatPointCost, STAT_NAMES, STAT_DESCRIPTIONS } from './src/game/stats.js';
+import { getLiberationTrackerData } from './src/game/enemies.js';
 import {
   loadGameStats, saveGameStats, updateGameStatsWithNarration,
   updateGameStatsWithWords, updateGameStatsWithEvent,
@@ -1400,6 +1401,11 @@ app.get('/api/game/lifetime-stats', (req, res) => {
   res.json({
     stats: gameManager.meta?.lifetimeStats || {}
   });
+});
+
+app.get('/api/game/liberation-tracker', (req, res) => {
+  const tracker = gameManager.meta?.lifetimeStats?.liberationTracker || {};
+  res.json(getLiberationTrackerData(tracker));
 });
 
 app.post('/api/game/reset', (req, res) => {

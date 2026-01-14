@@ -90,7 +90,8 @@ export function createMetaProgression() {
       highestLevel: 0,
       totalPlayTime: 0,      // in milliseconds
       firstPlayDate: null,
-      lastPlayDate: null
+      lastPlayDate: null,
+      liberationTracker: {}  // { enemyId: { count, firstLiberated } }
     },
 
     // Unlocked features (achievements unlock these)

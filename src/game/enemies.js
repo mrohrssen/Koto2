@@ -2576,3 +2576,78 @@ export function transformEnemy(enemy, targetTier = 1) {
 
   return transformed;
 }
+
+// ============ LIBERATION TRACKER HELPERS ============
+
+/**
+ * Get all unique enemy IDs (regular + bosses)
+ */
+export function getAllEnemyIds() {
+  const regularIds = Object.keys(ENEMY_TEMPLATES);
+  const bossIds = Object.values(FLOOR_BOSSES).map(b => b.id);
+  return [...regularIds, ...bossIds, FINAL_BOSS.id];
+}
+
+/**
+ * Get enemy template by ID (regular or boss)
+ */
+export function getEnemyById(id) {
+  // Check regular enemies first
+  if (ENEMY_TEMPLATES[id]) {
+    return { ...ENEMY_TEMPLATES[id], id };
+  }
+  // Check floor bosses
+  for (const boss of Object.values(FLOOR_BOSSES)) {
+    if (boss.id === id) {
+      return boss;
+    }
+  }
+  // Check final boss
+  if (FINAL_BOSS.id === id) {
+    return FINAL_BOSS;
+  }
+  return null;
+}
+
+/**
+ * Get liberation tracker data formatted for UI
+ */
+export function getLiberationTrackerData(liberationTracker = {}) {
+  const allIds = getAllEnemyIds();
+  const data = {
+    liberated: [],
+    notLiberated: [],
+    totalCount: allIds.length,
+    liberatedCount: 0
+  };
+
+  for (const id of allIds) {
+    const enemy = getEnemyById(id);
+    if (!enemy) continue;
+
+    const tracker = liberationTracker[id];
+    if (tracker && tracker.count > 0) {
+      data.liberated.push({
+        id,
+        name: enemy.name,
+        nameEn: enemy.nameEn,
+        tier: enemy.tier || 'boss',
+        isBoss: enemy.isBoss || false,
+        count: tracker.count,
+        firstLiberated: tracker.firstLiberated,
+        dialogue: enemy.dialogue?.liberated || ''
+      });
+      data.liberatedCount++;
+    } else {
+      data.notLiberated.push({
+        id,
+        name: '???',
+        nameEn: '???',
+        tier: enemy.tier || 'boss',
+        isBoss: enemy.isBoss || false
+      });
+    }
+  }
+
+  return data;
+}

@@ -2091,6 +2091,23 @@ export class GameManager {
       this.narrate(getSimpleNarration('levelUp', { level: lu.newLevel }));
     }
 
+    // Track liberation in meta-progression
+    if (this.meta?.lifetimeStats) {
+      if (!this.meta.lifetimeStats.liberationTracker) {
+        this.meta.lifetimeStats.liberationTracker = {};
+      }
+      const tracker = this.meta.lifetimeStats.liberationTracker;
+      const enemyId = enemy.id;
+
+      if (!tracker[enemyId]) {
+        tracker[enemyId] = {
+          count: 0,
+          firstLiberated: new Date().toISOString()
+        };
+      }
+      tracker[enemyId].count++;
+    }
+
     // End combat
     this.combat.active = false;
 

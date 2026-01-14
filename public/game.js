@@ -2934,6 +2934,7 @@ async function equipItem(itemId) {
     const result = await response.json();
     if (result.state) {
       gameState = result.state;
+      window.gameState = gameState; // Keep window reference in sync
     }
     if (result.message) {
       showNarration(result.message);
@@ -2965,6 +2966,7 @@ async function unequipItem(slot) {
     const result = await response.json();
     if (result.state) {
       gameState = result.state;
+      window.gameState = gameState; // Keep window reference in sync
     }
     if (result.message) {
       showNarration(result.message);
@@ -3112,6 +3114,9 @@ function updateActionPanel() {
         </button>
         <button class="action-btn secondary" onclick="openUpgradesModal()">
           Upgrades
+        </button>
+        <button class="action-btn secondary" onclick="openLiberationTracker()">
+          解放記録
         </button>
       `;
       break;
@@ -3300,6 +3305,7 @@ async function selectWard(wardId, isNextWard = false) {
 
     if (result.state) {
       gameState = result.state;
+      window.gameState = gameState; // Keep window reference in sync
     }
 
     updateUI();
@@ -3881,6 +3887,7 @@ async function buyItem(itemId) {
     // Update game state
     if (result.state) {
       gameState = result.state;
+      window.gameState = gameState; // Keep window reference in sync
     }
 
     // Show narration
@@ -4007,6 +4014,7 @@ async function refineItem(slot) {
     // Update game state
     if (result.state) {
       gameState = result.state;
+      window.gameState = gameState; // Keep window reference in sync
     }
 
     // Show narration
@@ -5171,6 +5179,147 @@ window.openChipModal = openChipModal;
 window.closeChipModal = closeChipModal;
 window.addChipToSlot = addChipToSlot;
 window.removeChipFromSlot = removeChipFromSlot;
+
+// ============ LIBERATION TRACKER MODAL ============
+let liberationTrackerCache = null;
+
+/**
+ * Open the Liberation Tracker modal
+ */
+async function openLiberationTracker() {
+  try {
+    const response = await fetch('/api/game/liberation-tracker');
+    liberationTrackerCache = await response.json();
+  } catch (error) {
+    console.error('Failed to fetch liberation tracker:', error);
+    showNarration('解放記録の取得に失敗しました');
+    return;
+  }
+
+  const modal = document.getElementById('liberation-modal');
+  if (!modal) {
+    console.error('Liberation modal not found');
+    return;
+  }
+
+  renderLiberationTracker();
+  modal.classList.remove('hidden');
+}
+
+/**
+ * Close the Liberation Tracker modal
+ */
+function closeLiberationTracker() {
+  const modal = document.getElementById('liberation-modal');
+  modal?.classList.add('hidden');
+}
+
+/**
+ * Render the Liberation Tracker content
+ */
+function renderLiberationTracker() {
+  if (!liberationTrackerCache) return;
+
+  const { liberated, notLiberated, totalCount, liberatedCount } = liberationTrackerCache;
+  const progressPercent = Math.round((liberatedCount / totalCount) * 100);
+
+  // Build liberated entries
+  let liberatedHtml = '';
+  for (const entry of liberated) {
+    const tierClass = entry.isBoss ? 'tier-boss' : `tier-${entry.tier}`;
+    liberatedHtml += `
+      <div class="liberation-entry ${tierClass}" onclick="showLiberationDetail('${entry.id}')">
+        <div class="entry-header">
+          <span class="entry-name">${entry.name}</span>
+          <span class="entry-count">x${entry.count}</span>
+        </div>
+        <span class="entry-name-en">${entry.nameEn}</span>
+      </div>
+    `;
+  }
+
+  // Build not-yet-liberated entries
+  let lockedHtml = '';
+  for (const entry of notLiberated) {
+    const tierClass = entry.isBoss ? 'tier-boss' : `tier-${entry.tier}`;
+    lockedHtml += `
+      <div class="liberation-entry locked ${tierClass}">
+        <div class="entry-header">
+          <span class="entry-name">???</span>
+        </div>
+        <span class="entry-hint">${entry.isBoss ? 'BOSS' : `Tier ${entry.tier}`}</span>
+      </div>
+    `;
+  }
+
+  const modalBody = document.querySelector('#liberation-modal .modal-body');
+  if (modalBody) {
+    modalBody.innerHTML = `
+      <div class="liberation-progress">
+        <div class="progress-text">解放進捗: ${liberatedCount}/${totalCount}</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${progressPercent}%"></div>
+        </div>
+      </div>
+      <div class="liberation-tabs">
+        <button class="lib-tab active" onclick="showLiberationTab('liberated')">解放済み (${liberatedCount})</button>
+        <button class="lib-tab" onclick="showLiberationTab('locked')">未解放 (${notLiberated.length})</button>
+      </div>
+      <div class="liberation-list" id="liberation-liberated">
+        ${liberatedHtml || '<p class="empty-msg">まだ誰も解放していません</p>'}
+      </div>
+      <div class="liberation-list hidden" id="liberation-locked">
+        ${lockedHtml}
+      </div>
+    `;
+  }
+}
+
+/**
+ * Show detail view for a liberated enemy
+ */
+function showLiberationDetail(enemyId) {
+  const entry = liberationTrackerCache?.liberated?.find(e => e.id === enemyId);
+  if (!entry) return;
+
+  const modalBody = document.querySelector('#liberation-modal .modal-body');
+  if (modalBody) {
+    const firstDate = new Date(entry.firstLiberated).toLocaleDateString('ja-JP');
+    modalBody.innerHTML = `
+      <div class="liberation-detail">
+        <button class="back-btn" onclick="renderLiberationTracker()">← 戻る</button>
+        <h3>${entry.name}</h3>
+        <p class="detail-en">${entry.nameEn}</p>
+        <div class="detail-stats">
+          <span>解放回数: ${entry.count}</span>
+          <span>初回解放: ${firstDate}</span>
+        </div>
+        <div class="detail-dialogue">
+          <h4>解放メッセージ</h4>
+          <p class="dialogue-text">"${entry.dialogue}"</p>
+        </div>
+      </div>
+    `;
+  }
+}
+
+/**
+ * Switch tabs in liberation tracker
+ */
+function showLiberationTab(tab) {
+  document.querySelectorAll('.lib-tab').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`.lib-tab[onclick*="${tab}"]`)?.classList.add('active');
+
+  document.getElementById('liberation-liberated')?.classList.toggle('hidden', tab !== 'liberated');
+  document.getElementById('liberation-locked')?.classList.toggle('hidden', tab !== 'locked');
+}
+
+// Make liberation tracker functions globally accessible
+window.openLiberationTracker = openLiberationTracker;
+window.closeLiberationTracker = closeLiberationTracker;
+window.showLiberationDetail = showLiberationDetail;
+window.showLiberationTab = showLiberationTab;
+window.renderLiberationTracker = renderLiberationTracker;
 
 /**
  * Switch tabs in the upgrades modal
