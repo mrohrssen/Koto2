@@ -1,11 +1,16 @@
 # NEO TOKYO: System Liberation
 
-> **BEFORE WRITING ANY CODE** - Multiple Claude sessions may be active. Run these commands first:
+> **BEFORE WRITING ANY CODE** - Multiple Claude sessions share this repo. Use git worktrees to isolate your work:
 > ```bash
-> /usr/bin/git fetch origin && /usr/bin/git status
-> /usr/bin/git checkout -b feature/your-feature-name   # ALWAYS work on a branch
+> # Check if you're in a worktree or main repo
+> /usr/bin/git rev-parse --show-toplevel
+>
+> # If in main repo (/Users/michia/Documents/jrpg), create a worktree:
+> cd /Users/michia/Documents/jrpg
+> /usr/bin/git worktree add ../jrpg-wt-yourfeature -b feature/your-feature-name
+> cd ../jrpg-wt-yourfeature
+> # Now work here - this directory is isolated from other sessions
 > ```
-> When done: commit, checkout master, pull, merge your branch, push, delete branch.
 
 Japanese vocabulary learning RPG. Cyberpunk Tokyo where citizens are possessed by the SYSTEM AI and need liberation. Turn-based dungeon crawling with JPDB vocabulary integration and AI-generated narration.
 
@@ -34,22 +39,37 @@ npm test                    # Run all tests
 npx playwright test --ui    # Interactive test UI
 ```
 
-## Git Workflow (Multi-Session Safe)
+## Git Workflow (Multi-Session Safe with Worktrees)
 
-Multiple Claude Code sessions run in parallel. **Never work directly on master.**
+Multiple Claude sessions share the same repo. **Branches alone don't work** - switching branches in one terminal affects all terminals. Use **git worktrees** to isolate each session's work.
 
 ```bash
-# START: Always do this first
-/usr/bin/git fetch origin && /usr/bin/git status
-/usr/bin/git checkout -b feature/your-feature-name
+# ============ START: Create isolated worktree ============
+cd /Users/michia/Documents/jrpg
+/usr/bin/git fetch origin
+/usr/bin/git worktree add ../jrpg-wt-myfeature -b feature/my-feature-name
 
-# FINISH: When done with your feature
+# Work in the new directory (isolated from main repo)
+cd ../jrpg-wt-myfeature
+npm install  # If needed
+
+# ============ FINISH: Merge and cleanup ============
+# Commit your changes in the worktree
 /usr/bin/git add -A && /usr/bin/git commit -m "Your message"
-/usr/bin/git checkout master && /usr/bin/git pull origin master
-/usr/bin/git merge feature/your-feature-name
+
+# Go to main repo to merge
+cd /Users/michia/Documents/jrpg
+/usr/bin/git checkout master
+/usr/bin/git pull origin master
+/usr/bin/git merge feature/my-feature-name
 /usr/bin/git push origin master
-/usr/bin/git branch -d feature/your-feature-name
+
+# Remove the worktree and branch
+/usr/bin/git worktree remove ../jrpg-wt-myfeature
+/usr/bin/git branch -d feature/my-feature-name
 ```
+
+**Why worktrees?** Each worktree is a separate directory with its own branch. Multiple Claude sessions can work on different features simultaneously without conflicts.
 
 Branch prefixes: `feature/`, `fix/`, `refactor/`
 
