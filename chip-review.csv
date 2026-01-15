@@ -1,0 +1,158 @@
+chip_id,current_name,current_nameEn,current_description,status,proposed_name,proposed_nameEn,proposed_description,noun_rank,adjective_rank,notes
+ballpointPen,ボールペン,Ballpoint Pen,普通のボールペン。意外と便利。,MODIFY,古いボールペン,Old Ballpoint Pen,使い込んだボールペン。意外と便利。,5700,800,Added 古い (old) - fits well-used office item
+kitchenKnife,包丁,Kitchen Knife,料理用の包丁。攻撃力アップ。,MODIFY,鋭い包丁,Sharp Kitchen Knife,切れ味のいい包丁。攻撃力アップ。,5700,1900,Added 鋭い (sharp) - natural fit for knife
+sneakers,スニーカー,Sneakers,履き慣れたスニーカー。素早く動ける。,KEEP,履き慣れたスニーカー,Worn Sneakers,履き慣れたスニーカー。素早く動ける。,2800,-,Already has adjective in description; using same
+pot,鍋,Pot,頑丈な鍋。盾代わりになる。,MODIFY,重い鍋,Heavy Pot,頑丈で重い鍋。盾代わりになる。,3500,1200,Added 重い (heavy) - emphasizes defensive use
+smartphone,スマホ,Smartphone,ハッキング用にカスタマイズされたスマホ。,MODIFY,改造スマホ,Modded Smartphone,ハッキング用にカスタマイズされたスマホ。,1800,2500,Added 改造 (modded) - fits hacking theme
+wallet,財布,Wallet,幸運のお守りが入った財布。,MODIFY,古い財布,Old Wallet,お守りが入った使い込んだ財布。,3200,800,Added 古い (old) - well-used lucky item
+broom,ほうき,Broom,掃除用のほうき。リーチが長い。,MODIFY,長いほうき,Long Broom,柄の長いほうき。リーチがある。,3800,500,Added 長い (long) - emphasizes reach
+calculator,電卓,Calculator,高性能電卓。計算が速くなる。,KEEP,高性能電卓,High-Performance Calculator,高性能電卓。計算が速くなる。,4500,-,Already has 高性能 (high-performance)
+dumbbell,ダンベル,Dumbbell,筋トレ用のダンベル。パワーアップ。,MODIFY,重いダンベル,Heavy Dumbbell,筋トレ用の重いダンベル。パワーアップ。,6500,1200,Added 重い (heavy) - natural for weight training
+earrings,イヤリング,Earrings,幸運を呼ぶイヤリング。,MODIFY,きれいなイヤリング,Pretty Earrings,幸運を呼ぶきれいなイヤリング。,5500,1500,Added きれいな (pretty) - fits accessory
+thumbtack,画鋲,Thumbtack,踏んだら痛い。データ破損を引き起こす。,MODIFY,鋭い画鋲,Sharp Thumbtack,踏んだら痛い鋭い画鋲。,2500,1900,Added 鋭い (sharp) - natural for tack
+icePack,保冷剤,Ice Pack,冷たい保冷剤。敵の動きを遅くする。,KEEP,冷たい保冷剤,Cold Ice Pack,冷たい保冷剤。敵の動きを遅くする。,7000,-,Already has 冷たい (cold) in description
+hammer,ハンマー,Hammer,重いハンマー。衝撃でシステムをフリーズ。,KEEP,重いハンマー,Heavy Hammer,重いハンマー。衝撃でシステムをフリーズ。,4500,-,Already has 重い (heavy) in description
+sprayPaint,スプレー塗料,Spray Paint,視界を塞ぐスプレー。スキルを封じる。,MODIFY,赤いスプレー,Red Spray Paint,視界を塞ぐ赤いスプレー。,4500,700,Added 赤い (red) - vivid color for paint
+mirror,鏡,Mirror,割れた鏡。弱点を露出させる。,KEEP,割れた鏡,Broken Mirror,割れた鏡。弱点を露出させる。,3200,-,Already has 割れた (broken)
+lighter,ライター,Lighter,100円ライター。オーバーヒートを誘発。,MODIFY,安いライター,Cheap Lighter,100円の安いライター。オーバーヒートを誘発。,4200,600,Added 安い (cheap) - fits 100 yen theme
+sewingNeedle,縫い針,Sewing Needle,細い針。データを断片化させる。,KEEP,細い縫い針,Thin Sewing Needle,細い針。データを断片化させる。,5500,-,Already has 細い (thin)
+frozenGyoza,冷凍餃子,Frozen Gyoza,凍った餃子。当たると痛い。,KEEP,冷凍餃子,Frozen Gyoza,凍った餃子。当たると痛い。,5000,-,Already has 冷凍 (frozen)
+dictionary,辞書,Dictionary,分厚い辞書。頭に当たるとスタン。,KEEP,分厚い辞書,Thick Dictionary,分厚い辞書。頭に当たるとスタン。,3500,-,Already has 分厚い (thick)
+soySauce,醤油,Soy Sauce,目に入ると痛い。スキルを妨害。,MODIFY,濃い醤油,Dark Soy Sauce,目に入ると痛い濃い醤油。,3800,2200,Added 濃い (dark/strong) - fits soy sauce
+onigiri,おにぎり,Onigiri,お母さんのおにぎり。倒すと回復。,KEEP,おかあさんのおにぎり,Mom's Onigiri,お母さんのおにぎり。倒すと回復。,9100,-,Already has お母さんの (mom's)
+energyDrink,エナジードリンク,Energy Drink,カフェイン大量。倒すと加速。,MODIFY,強いエナジードリンク,Strong Energy Drink,カフェイン大量の強いエナジードリンク。,7000,200,Added 強い (strong) - fits energy theme
+fourLeafClover,四つ葉のクローバー,Four-Leaf Clover,幸運の象徴。報酬が倍になることも。,MODIFY,珍しい四つ葉のクローバー,Rare Four-Leaf Clover,珍しい四つ葉のクローバー。報酬が倍になることも。,8500,1800,Added 珍しい (rare) - fits lucky item
+helmet,ヘルメット,Helmet,工事現場のヘルメット。ダメージ軽減。,MODIFY,黄色いヘルメット,Yellow Helmet,工事現場の黄色いヘルメット。ダメージ軽減。,5500,1000,Added 黄色い (yellow) - typical construction color
+firecracker,爆竹,Firecracker,中国の爆竹。倒すと爆発。,MODIFY,大きい爆竹,Big Firecracker,中国の大きい爆竹。倒すと爆発。,4400,300,Added 大きい (big) - emphasizes explosion
+businessCard,名刺,Business Card,集めた名刺。倒すたびに強くなる。,MODIFY,たくさんの名刺,Many Business Cards,集めたたくさんの名刺。倒すたびに強くなる。,4500,1000,Added たくさんの (many) - fits collection
+reportCard,通知表,Report Card,成績表。状態異常の持続が延びる。,MODIFY,古い通知表,Old Report Card,古い成績表。状態異常の持続が延びる。,7500,800,Added 古い (old) - nostalgic school item
+baseball,野球ボール,Baseball,サイン入りボール。クリティカルが強化。,KEEP,サイン入り野球ボール,Signed Baseball,サイン入りボール。クリティカルが強化。,4500,-,Already has サイン入り (signed)
+trainPass,定期券,Train Pass,使い古した定期。移動速度アップ。,KEEP,使い古した定期券,Worn Train Pass,使い古した定期。移動速度アップ。,5500,-,Already has 使い古した (worn)
+stampBook,スタンプ帳,Stamp Book,集めたスタンプ。チップが多いほど強化。,MODIFY,分厚いスタンプ帳,Thick Stamp Book,分厚いスタンプ帳。チップが多いほど強化。,6500,1500,Added 分厚い (thick) - lots of stamps
+mechanicalPencil,シャーペン,Mechanical Pencil,精密な0.5mmのシャーペン。,KEEP,精密なシャーペン,Precise Mechanical Pencil,精密な0.5mmのシャーペン。,4000,-,Already has 精密な (precise)
+eraser,消しゴム,Eraser,よく消える消しゴム。,MODIFY,白い消しゴム,White Eraser,よく消える白い消しゴム。,4500,800,Added 白い (white) - common eraser color
+ruler,定規,Ruler,15cmの透明定規。,MODIFY,透明な定規,Clear Ruler,15cmの透明な定規。,3500,2500,Added 透明な (clear) - common ruler type
+stapler,ホッチキス,Stapler,オフィス用ホッチキス。,MODIFY,黒いホッチキス,Black Stapler,オフィス用の黒いホッチキス。,6000,1100,Added 黒い (black) - common office color
+paperClips,クリップ,Paper Clips,カラフルなクリップの束。,KEEP,カラフルなクリップ,Colorful Paper Clips,カラフルなクリップの束。,4000,-,Already has カラフルな (colorful)
+scissors,はさみ,Scissors,事務用はさみ。切れ味抜群。,MODIFY,鋭いはさみ,Sharp Scissors,切れ味抜群の鋭いはさみ。,3500,1900,Added 鋭い (sharp) - fits cutting tool
+notebook,ノート,Notebook,罫線入りのノート。,MODIFY,新しいノート,New Notebook,新しい罫線入りのノート。,3000,600,Added 新しい (new) - fresh notebook
+highlighter,蛍光ペン,Highlighter,黄色い蛍光ペン。重要な部分を強調。,KEEP,黄色い蛍光ペン,Yellow Highlighter,黄色い蛍光ペン。重要な部分を強調。,6500,-,Already has 黄色い (yellow)
+stickyNotes,付箋,Sticky Notes,カラフルな付箋。忘れない。,KEEP,カラフルな付箋,Colorful Sticky Notes,カラフルな付箋。忘れない。,5500,-,Already has カラフルな (colorful)
+binder,バインダー,Binder,整理整頓に便利なバインダー。,MODIFY,大きいバインダー,Large Binder,整理整頓に便利な大きいバインダー。,6500,300,Added 大きい (large) - holds many papers
+fryingPan,フライパン,Frying Pan,鉄製の重いフライパン。武器にもなる。,KEEP,重いフライパン,Heavy Frying Pan,鉄製の重いフライパン。武器にもなる。,4500,-,Already has 重い (heavy)
+ladle,おたま,Ladle,大きなおたま。汁物に便利。,KEEP,大きなおたま,Large Ladle,大きなおたま。汁物に便利。,5500,-,Already has 大きな (large)
+chopsticks,箸,Chopsticks,塗り箸。器用さが上がる。,MODIFY,きれいな箸,Pretty Chopsticks,きれいな塗り箸。器用さが上がる。,2500,1500,Added きれいな (pretty) - lacquered chopsticks
+riceCooker,炊飯器,Rice Cooker,小型の炊飯器。ご飯で元気。,KEEP,小型の炊飯器,Compact Rice Cooker,小型の炊飯器。ご飯で元気。,4500,-,Already has 小型の (compact)
+kettle,やかん,Kettle,お湯を沸かすやかん。,MODIFY,古いやかん,Old Kettle,使い込んだ古いやかん。,4500,800,Added 古い (old) - traditional kitchen item
+cuttingBoard,まな板,Cutting Board,木製のまな板。盾としても使える。,KEEP,木製のまな板,Wooden Cutting Board,木製のまな板。盾としても使える。,5500,-,Already has 木製の (wooden)
+whisk,泡立て器,Whisk,金属製の泡立て器。,KEEP,金属製の泡立て器,Metal Whisk,金属製の泡立て器。,7000,-,Already has 金属製の (metal)
+spatula,フライ返し,Spatula,ステンレスのフライ返し。,KEEP,ステンレスのフライ返し,Stainless Spatula,ステンレスのフライ返し。,6500,-,Already has ステンレス (stainless)
+grater,おろし金,Grater,大根おろしに使うおろし金。,MODIFY,鋭いおろし金,Sharp Grater,鋭いおろし金。大根おろしに使う。,7000,1900,Added 鋭い (sharp) - fits grating surface
+tongs,トング,Tongs,料理用のトング。挟む力。,MODIFY,大きいトング,Large Tongs,料理用の大きいトング。挟む力。,5500,300,Added 大きい (large) - emphasizes grip
+dustpan,ちりとり,Dustpan,プラスチックのちりとり。,KEEP,プラスチックのちりとり,Plastic Dustpan,プラスチックのちりとり。,5500,-,Already has プラスチックの (plastic)
+mop,モップ,Mop,柄の長いモップ。リーチがある。,KEEP,長いモップ,Long Mop,柄の長いモップ。リーチがある。,5000,-,Already has 長い (long)
+bucket,バケツ,Bucket,プラスチックのバケツ。,KEEP,プラスチックのバケツ,Plastic Bucket,プラスチックのバケツ。,5500,-,Already has プラスチックの (plastic)
+sponge,スポンジ,Sponge,黄色いスポンジ。吸収力抜群。,KEEP,黄色いスポンジ,Yellow Sponge,黄色いスポンジ。吸収力抜群。,5500,-,Already has 黄色い (yellow)
+sprayBottle,スプレー,Spray Bottle,霧吹きスプレー。,MODIFY,小さいスプレー,Small Spray Bottle,小さい霧吹きスプレー。,4500,500,Added 小さい (small) - handheld bottle
+lintRoller,コロコロ,Lint Roller,粘着ローラー。幸運を引き寄せる。,MODIFY,便利なコロコロ,Handy Lint Roller,便利な粘着ローラー。幸運を引き寄せる。,7000,2000,Added 便利な (handy) - useful cleaning tool
+rubberGloves,ゴム手袋,Rubber Gloves,黄色いゴム手袋。防御力アップ。,KEEP,黄色いゴム手袋,Yellow Rubber Gloves,黄色いゴム手袋。防御力アップ。,5500,-,Already has 黄色い (yellow)
+sunglasses,サングラス,Sunglasses,クールなサングラス。,KEEP,クールなサングラス,Cool Sunglasses,クールなサングラス。,4500,-,Already has クールな (cool)
+watch,腕時計,Wristwatch,デジタル腕時計。時間厳守。,KEEP,デジタル腕時計,Digital Wristwatch,デジタル腕時計。時間厳守。,3800,-,Already has デジタル (digital)
+belt,ベルト,Belt,革製のベルト。,KEEP,革製のベルト,Leather Belt,革製のベルト。,3500,-,Already has 革製の (leather)
+scarf,マフラー,Scarf,暖かいマフラー。冬の必需品。,KEEP,暖かいマフラー,Warm Scarf,暖かいマフラー。冬の必需品。,4500,-,Already has 暖かい (warm)
+cap,キャップ,Cap,野球帽。日差しを避ける。,MODIFY,白いキャップ,White Cap,白い野球帽。日差しを避ける。,3500,800,Added 白い (white) - common cap color
+ring,指輪,Ring,シンプルな指輪。幸運の象徴。,KEEP,シンプルな指輪,Simple Ring,シンプルな指輪。幸運の象徴。,3200,-,Already has シンプルな (simple)
+bandana,バンダナ,Bandana,赤いバンダナ。気合が入る。,KEEP,赤いバンダナ,Red Bandana,赤いバンダナ。気合が入る。,5500,-,Already has 赤い (red)
+gloves,手袋,Gloves,革の手袋。グリップ力アップ。,KEEP,革の手袋,Leather Gloves,革の手袋。グリップ力アップ。,5500,-,Already has 革の (leather)
+earphones,イヤホン,Earphones,ワイヤレスイヤホン。集中力アップ。,KEEP,ワイヤレスイヤホン,Wireless Earphones,ワイヤレスイヤホン。集中力アップ。,4500,-,Already has ワイヤレス (wireless)
+powerBank,モバイルバッテリー,Power Bank,大容量バッテリー。持久力アップ。,KEEP,大容量モバイルバッテリー,Large Power Bank,大容量バッテリー。持久力アップ。,7000,-,Already has 大容量 (large capacity)
+usbCable,USBケーブル,USB Cable,Type-Cケーブル。接続力。,MODIFY,長いUSBケーブル,Long USB Cable,長いType-Cケーブル。接続力。,6500,500,Added 長い (long) - practical cable
+mouse,マウス,Mouse,ゲーミングマウス。精度が上がる。,KEEP,ゲーミングマウス,Gaming Mouse,ゲーミングマウス。精度が上がる。,3000,-,Already has ゲーミング (gaming)
+keyboard,キーボード,Keyboard,メカニカルキーボード。入力速度アップ。,KEEP,メカニカルキーボード,Mechanical Keyboard,メカニカルキーボード。入力速度アップ。,4500,-,Already has メカニカル (mechanical)
+flashlight,懐中電灯,Flashlight,LEDライト。暗闘でも見える。,MODIFY,明るい懐中電灯,Bright Flashlight,明るいLEDライト。暗闘でも見える。,5500,800,Added 明るい (bright) - fits LED light
+remoteControl,リモコン,Remote Control,TVリモコン。遠隔操作。,MODIFY,古いリモコン,Old Remote Control,古いTVリモコン。遠隔操作。,4500,800,Added 古い (old) - well-used item
+sdCard,SDカード,SD Card,64GBのSDカード。記憶力アップ。,MODIFY,大容量のSDカード,Large SD Card,大容量のSDカード。記憶力アップ。,7500,3000,Added 大容量の (large capacity) - fits storage
+toothpick,爪楊枝,Toothpick,先の尖った爪楊枝。,KEEP,尖った爪楊枝,Sharp Toothpick,先の尖った爪楊枝。,5500,-,Already has 尖った (sharp)
+safetyPin,安全ピン,Safety Pin,開いた安全ピン。意外と痛い。,KEEP,開いた安全ピン,Open Safety Pin,開いた安全ピン。意外と痛い。,6000,-,Already has 開いた (open)
+compass,コンパス,Drafting Compass,製図用コンパス。鋭い先端。,MODIFY,鋭いコンパス,Sharp Compass,製図用の鋭いコンパス。,4500,1900,Added 鋭い (sharp) - fits pointed compass
+boxCutter,カッター,Box Cutter,鋭いカッターナイフ。,KEEP,鋭いカッター,Sharp Box Cutter,鋭いカッターナイフ。,4500,-,Already has 鋭い (sharp)
+dart,ダーツ,Dart,ダーツの矢。的確に刺さる。,MODIFY,鋭いダーツ,Sharp Dart,鋭いダーツの矢。的確に刺さる。,5500,1900,Added 鋭い (sharp) - fits pointed dart
+frozenFood,冷凍食品,Frozen Food,カチカチに凍った食品。,KEEP,冷凍食品,Frozen Food,カチカチに凍った食品。,5500,-,Already has 冷凍 (frozen) implied
+iceCream,アイス,Ice Cream,溶けかけのアイスクリーム。,KEEP,溶けかけのアイス,Melting Ice Cream,溶けかけのアイスクリーム。,8500,-,Already has 溶けかけの (melting)
+coldDrink,冷たい飲み物,Cold Drink,氷入りの冷たいドリンク。,KEEP,冷たい飲み物,Cold Drink,氷入りの冷たいドリンク。,3900,-,Already has 冷たい (cold)
+popsicle,アイスキャンディー,Popsicle,棒付きのアイス。ガリガリ君。,MODIFY,冷たいアイスキャンディー,Cold Popsicle,冷たい棒付きのアイス。,7500,1300,Added 冷たい (cold) - fits frozen treat
+paperweight,文鎮,Paperweight,重い文鎮。頭に当たると痛い。,KEEP,重い文鎮,Heavy Paperweight,重い文鎮。頭に当たると痛い。,7000,-,Already has 重い (heavy)
+brick,レンガ,Brick,赤いレンガ。重くて硬い。,KEEP,赤いレンガ,Red Brick,赤いレンガ。重くて硬い。,5500,-,Already has 赤い (red)
+castIronPan,鉄鍋,Cast Iron Pan,重い鋳鉄の鍋。一撃必殺。,KEEP,重い鉄鍋,Heavy Cast Iron Pan,重い鋳鉄の鍋。一撃必殺。,6500,-,Already has 重い (heavy)
+bowlingBall,ボウリング球,Bowling Ball,14ポンドのボウリング球。,MODIFY,重いボウリング球,Heavy Bowling Ball,重い14ポンドのボウリング球。,8000,1200,Added 重い (heavy) - emphasizes weight
+textbook,教科書,Textbook,分厚い数学の教科書。,KEEP,分厚い教科書,Thick Textbook,分厚い数学の教科書。,3500,-,Already has 分厚い (thick)
+perfume,香水,Perfume,強い香りの香水。感覚を狂わせる。,KEEP,強い香水,Strong Perfume,強い香りの香水。感覚を狂わせる。,4500,-,Already has 強い (strong)
+bugSpray,殺虫剤,Bug Spray,強力な殺虫スプレー。,KEEP,強力な殺虫剤,Powerful Bug Spray,強力な殺虫スプレー。,6500,-,Already has 強力な (powerful)
+deodorant,デオドラント,Deodorant,制汗スプレー。目にしみる。,MODIFY,強いデオドラント,Strong Deodorant,強い制汗スプレー。目にしみる。,7500,200,Added 強い (strong) - emphasizes effect
+hairSpray,ヘアスプレー,Hair Spray,髪型を固めるスプレー。,MODIFY,強いヘアスプレー,Strong Hair Spray,髪型を固める強いスプレー。,7500,200,Added 強い (strong) - fits holding power
+sauce,ソース,Sauce,ウスターソース。目に入ると痛い。,MODIFY,濃いソース,Dark Sauce,濃いウスターソース。目に入ると痛い。,3000,2200,Added 濃い (dark/strong) - fits Worcestershire
+cameraFlash,カメラフラッシュ,Camera Flash,眩しいフラッシュ。目がくらむ。,KEEP,眩しいカメラフラッシュ,Blinding Camera Flash,眩しいフラッシュ。目がくらむ。,6500,-,Already has 眩しい (blinding)
+discoBall,ミラーボール,Disco Ball,小型のミラーボール。乱反射。,KEEP,小型のミラーボール,Small Disco Ball,小型のミラーボール。乱反射。,8000,-,Already has 小型の (small)
+aluminumFoil,アルミホイル,Aluminum Foil,光を反射するアルミホイル。,MODIFY,きらきらのアルミホイル,Shiny Aluminum Foil,光を反射するきらきらのアルミホイル。,7500,3500,Added きらきらの (shiny) - reflective surface
+cd,CD,CD,虹色に光るCD。投げると危険。,MODIFY,古いCD,Old CD,虹色に光る古いCD。投げると危険。,3500,800,Added 古い (old) - obsolete media
+phoneScreen,スマホ画面,Phone Screen,明るいスマホの画面。,KEEP,明るいスマホ画面,Bright Phone Screen,明るいスマホの画面。,4500,-,Already has 明るい (bright)
+curlingIron,ヘアアイロン,Curling Iron,熱いヘアアイロン。火傷注意。,KEEP,熱いヘアアイロン,Hot Curling Iron,熱いヘアアイロン。火傷注意。,7500,-,Already has 熱い (hot)
+hotCoffee,熱いコーヒー,Hot Coffee,淹れたてのコーヒー。熱々。,KEEP,熱いコーヒー,Hot Coffee,淹れたてのコーヒー。熱々。,3400,-,Already has 熱い (hot)
+handWarmer,カイロ,Hand Warmer,使い捨てカイロ。じわじわ熱い。,MODIFY,熱いカイロ,Hot Hand Warmer,熱い使い捨てカイロ。じわじわ熱い。,7000,1100,Added 熱い (hot) - emphasizes warmth
+solderingIron,はんだごて,Soldering Iron,高温のはんだごて。触ると火傷。,KEEP,高温のはんだごて,Hot Soldering Iron,高温のはんだごて。触ると火傷。,8500,-,Already has 高温の (high-temperature)
+hotPot,熱い鍋,Hot Pot,煮えたぎる鍋。中身をぶちまける。,KEEP,熱い鍋,Hot Pot,煮えたぎる鍋。中身をぶちまける。,3500,-,Already has 熱い (hot)
+bento,弁当,Bento,手作り弁当。倒すと大回復。,KEEP,手作り弁当,Homemade Bento,手作り弁当。倒すと大回復。,4200,-,Already has 手作り (homemade)
+candy,飴,Candy,甘い飴。クリティカルで回復。,KEEP,甘い飴,Sweet Candy,甘い飴。クリティカルで回復。,5500,-,Already has 甘い (sweet)
+bread,パン,Bread,食パン。ダメージを受けると回復。,MODIFY,美味しいパン,Delicious Bread,美味しい食パン。ダメージを受けると回復。,2500,900,Added 美味しい (delicious) - food appeal
+banana,バナナ,Banana,栄養満点のバナナ。,KEEP,栄養満点のバナナ,Nutritious Banana,栄養満点のバナナ。,5500,-,Already has 栄養満点の (nutritious)
+chocolate,チョコレート,Chocolate,甘いチョコ。スタンさせると回復。,KEEP,甘いチョコレート,Sweet Chocolate,甘いチョコ。スタンさせると回復。,8600,-,Already has 甘い (sweet)
+mochi,餅,Mochi,もちもちの餅。大回復の可能性。,KEEP,もちもちの餅,Soft Mochi,もちもちの餅。大回復の可能性。,7800,-,Already has もちもちの (soft/chewy)
+apple,りんご,Apple,赤いりんご。部屋に入ると少し回復。,KEEP,赤いりんご,Red Apple,赤いりんご。部屋に入ると少し回復。,8800,-,Already has 赤い (red)
+cupRamen,カップ麺,Cup Ramen,定番のカップ麺。回復効果アップ。,MODIFY,熱いカップ麺,Hot Cup Ramen,熱い定番のカップ麺。回復効果アップ。,9000,1100,Added 熱い (hot) - freshly made
+coffee,コーヒー,Coffee,濃いコーヒー。ダメージで攻撃力アップ。,KEEP,濃いコーヒー,Strong Coffee,濃いコーヒー。ダメージで攻撃力アップ。,3400,-,Already has 濃い (strong)
+greenTea,緑茶,Green Tea,落ち着く緑茶。クリティカル時に強化。,MODIFY,熱い緑茶,Hot Green Tea,熱くて落ち着く緑茶。クリティカル時に強化。,5500,1100,Added 熱い (hot) - traditional tea
+sportsDrink,スポーツドリンク,Sports Drink,電解質補給。回避時に加速。,MODIFY,冷たいスポーツドリンク,Cold Sports Drink,冷たいスポーツドリンク。回避時に加速。,8000,1300,Added 冷たい (cold) - refreshing
+milk,牛乳,Milk,新鮮な牛乳。回復時にVITアップ。,KEEP,新鮮な牛乳,Fresh Milk,新鮮な牛乳。回復時にVITアップ。,6200,-,Already has 新鮮な (fresh)
+sake,日本酒,Sake,辛口の日本酒。攻撃力大幅アップ、命中ダウン。,KEEP,辛口の日本酒,Dry Sake,辛口の日本酒。攻撃力大幅アップ、命中ダウン。,4500,-,Already has 辛口の (dry)
+ramune,ラムネ,Ramune,夏の定番ラムネ。部屋全体で強化。,MODIFY,冷たいラムネ,Cold Ramune,夏の冷たい定番ラムネ。部屋全体で強化。,9000,1300,Added 冷たい (cold) - summer drink
+lotteryTicket,宝くじ,Lottery Ticket,まだ当選確認してない宝くじ。,MODIFY,古い宝くじ,Old Lottery Ticket,まだ当選確認してない古い宝くじ。,6500,800,Added 古い (old) - unclaimed ticket
+fortuneSlip,おみくじ,Fortune Slip,大吉のおみくじ。報酬アップ。,KEEP,大吉のおみくじ,Lucky Fortune Slip,大吉のおみくじ。報酬アップ。,7000,-,Already has 大吉の (great blessing)
+daruma,だるま,Daruma,目を入れただるま。ピンチで生き残る。,MODIFY,赤いだるま,Red Daruma,目を入れた赤いだるま。ピンチで生き残る。,8500,700,Added 赤い (red) - traditional color
+manekiNeko,招き猫,Lucky Cat,福を呼ぶ招き猫。ドロップ率アップ。,MODIFY,金色の招き猫,Golden Lucky Cat,福を呼ぶ金色の招き猫。ドロップ率アップ。,8000,2500,Added 金色の (golden) - lucky gold cat
+pachinkoBall,パチンコ玉,Pachinko Ball,連続ヒットの可能性。,MODIFY,銀色のパチンコ玉,Silver Pachinko Ball,銀色のパチンコ玉。連続ヒットの可能性。,9500,2500,Added 銀色の (silver) - metal ball
+dice,サイコロ,Dice,ラッキーダイス。効果が再発動することも。,MODIFY,赤いサイコロ,Red Dice,赤いラッキーダイス。効果が再発動することも。,6500,700,Added 赤い (red) - casino dice color
+kneePads,膝パッド,Knee Pads,膝を守るパッド。回避時に反撃。,MODIFY,硬い膝パッド,Hard Knee Pads,硬い膝を守るパッド。回避時に反撃。,7000,1900,Added 硬い (hard) - protective gear
+bubbleWrap,プチプチ,Bubble Wrap,衝撃吸収材。ダメージ無効化の可能性。,MODIFY,大きいプチプチ,Large Bubble Wrap,大きい衝撃吸収材。ダメージ無効化の可能性。,8000,300,Added 大きい (large) - more protection
+cardboard,ダンボール,Cardboard Box,身を隠せるダンボール。ステルス効果。,MODIFY,大きいダンボール,Large Cardboard Box,身を隠せる大きいダンボール。ステルス効果。,7000,300,Added 大きい (large) - hide inside
+pillow,枕,Pillow,ふかふかの枕。ダメージ軽減。,KEEP,ふかふかの枕,Soft Pillow,ふかふかの枕。ダメージ軽減。,4500,-,Already has ふかふかの (fluffy)
+cushion,クッション,Cushion,座布団クッション。ピンチでシールド。,MODIFY,柔らかいクッション,Soft Cushion,柔らかい座布団クッション。ピンチでシールド。,5500,1500,Added 柔らかい (soft) - comfortable
+rubberBand,輪ゴム,Rubber Band,伸びる輪ゴム。クリティカルで追撃。,MODIFY,強い輪ゴム,Strong Rubber Band,強い伸びる輪ゴム。クリティカルで追撃。,6500,200,Added 強い (strong) - elastic power
+pepper,コショウ,Pepper,黒コショウ。敵がくしゃみ。,KEEP,黒コショウ,Black Pepper,黒コショウ。敵がくしゃみ。,5500,-,Already has 黒 (black)
+wasabi,わさび,Wasabi,鼻にツーンとくるわさび。クリダメ倍。,MODIFY,辛いわさび,Spicy Wasabi,鼻にツーンとくる辛いわさび。クリダメ倍。,8000,2000,Added 辛い (spicy) - wasabi characteristic
+partyPopper,クラッカー,Party Popper,お祝いクラッカー。スタン延長。,MODIFY,大きいクラッカー,Large Party Popper,大きいお祝いクラッカー。スタン延長。,8500,300,Added 大きい (large) - more bang
+airHorn,エアホーン,Air Horn,大音量のエアホーン。全敵スタン。,KEEP,大音量のエアホーン,Loud Air Horn,大音量のエアホーン。全敵スタン。,9000,-,Already has 大音量の (loud)
+timecard,タイムカード,Time Card,出勤記録。倒すたびに強くなる。,MODIFY,古いタイムカード,Old Time Card,古い出勤記録。倒すたびに強くなる。,7500,800,Added 古い (old) - accumulated time
+stamp,印鑑,Stamp,認印。クリティカル率アップ。,MODIFY,重い印鑑,Heavy Stamp,重い認印。クリティカル率アップ。,5000,1200,Added 重い (heavy) - official seal
+briefcase,ブリーフケース,Briefcase,革のブリーフケース。総合力アップ。,KEEP,革のブリーフケース,Leather Briefcase,革のブリーフケース。総合力アップ。,8500,-,Already has 革の (leather)
+necktie,ネクタイ,Necktie,シルクのネクタイ。攻撃速度アップ。,KEEP,シルクのネクタイ,Silk Necktie,シルクのネクタイ。攻撃速度アップ。,5500,-,Already has シルクの (silk)
+idBadge,社員証,ID Badge,会社の社員証。DEXアップ。,MODIFY,古い社員証,Old ID Badge,使い込んだ古い社員証。DEXアップ。,8000,800,Added 古い (old) - long-time employee
+coffeeMug,コーヒーマグ,Coffee Mug,マイカップ。最大HPアップ。,MODIFY,大きいコーヒーマグ,Large Coffee Mug,大きいマイカップ。最大HPアップ。,6500,300,Added 大きい (large) - more coffee
+homework,宿題,Homework,終わらない宿題。状態異常確率アップ。,MODIFY,難しい宿題,Hard Homework,終わらない難しい宿題。状態異常確率アップ。,5500,700,Added 難しい (hard/difficult) - never-ending
+schoolBadge,校章,School Badge,学校のバッジ。INTアップ。,MODIFY,古い校章,Old School Badge,古い学校のバッジ。INTアップ。,7500,800,Added 古い (old) - nostalgic
+gymUniform,体操着,Gym Uniform,学校指定の体操着。回避率アップ。,MODIFY,古い体操着,Old Gym Uniform,古い学校指定の体操着。回避率アップ。,7500,800,Added 古い (old) - well-worn
+pencilCase,筆箱,Pencil Case,文房具が入った筆箱。ダメージアップ。,MODIFY,大きい筆箱,Large Pencil Case,文房具が入った大きい筆箱。ダメージアップ。,6500,300,Added 大きい (large) - more supplies
+tennisBall,テニスボール,Tennis Ball,黄色いテニスボール。クリ率アップ。,KEEP,黄色いテニスボール,Yellow Tennis Ball,黄色いテニスボール。クリ率アップ。,8000,-,Already has 黄色い (yellow)
+soccerBall,サッカーボール,Soccer Ball,サッカーボール。STRアップ。,MODIFY,白いサッカーボール,White Soccer Ball,白いサッカーボール。STRアップ。,7500,800,Added 白い (white) - classic color
+basketball,バスケットボール,Basketball,オレンジのバスケットボール。攻撃速度アップ。,KEEP,オレンジのバスケットボール,Orange Basketball,オレンジのバスケットボール。攻撃速度アップ。,8500,-,Already has オレンジの (orange)
+golfBall,ゴルフボール,Golf Ball,白いゴルフボール。固定ダメージアップ。,KEEP,白いゴルフボール,White Golf Ball,白いゴルフボール。固定ダメージアップ。,8000,-,Already has 白い (white)
+shuttlecock,シャトル,Shuttlecock,バドミントンのシャトル。回避率アップ。,MODIFY,白いシャトル,White Shuttlecock,白いバドミントンのシャトル。回避率アップ。,8000,800,Added 白い (white) - standard color
+jumpRope,縄跳び,Jump Rope,カラフルな縄跳び。AGIアップ。,KEEP,カラフルな縄跳び,Colorful Jump Rope,カラフルな縄跳び。AGIアップ。,7500,-,Already has カラフルな (colorful)
+map,地図,Map,東京の地図。アイテム発見率アップ。,MODIFY,古い地図,Old Map,古い東京の地図。アイテム発見率アップ。,2500,800,Added 古い (old) - well-used for exploration
+compassNav,方位磁石,Compass,方角を示すコンパス。LUKアップ。,MODIFY,古い方位磁石,Old Compass,古い方角を示すコンパス。LUKアップ。,6500,800,Added 古い (old) - reliable navigator
+luggage,スーツケース,Luggage,旅行用スーツケース。インベントリ拡大。,MODIFY,大きいスーツケース,Large Luggage,大きい旅行用スーツケース。インベントリ拡大。,7000,300,Added 大きい (large) - more storage
+passport,パスポート,Passport,日本国パスポート。報酬アップ。,MODIFY,古いパスポート,Old Passport,使い込んだ日本国パスポート。報酬アップ。,6500,800,Added 古い (old) - well-traveled
+travelPillow,ネックピロー,Travel Pillow,首用の枕。部屋ごとに少し回復。,MODIFY,柔らかいネックピロー,Soft Travel Pillow,柔らかい首用の枕。部屋ごとに少し回復。,8000,1500,Added 柔らかい (soft) - comfortable
+guidebook,ガイドブック,Guidebook,東京ガイドブック。ダメージアップ。,MODIFY,分厚いガイドブック,Thick Guidebook,分厚い東京ガイドブック。ダメージアップ。,8000,1500,Added 分厚い (thick) - comprehensive
+album,アルバム,Album,写真アルバム。ON_HITチップで発動率アップ。,MODIFY,古いアルバム,Old Album,古い写真アルバム。ON_HITチップで発動率アップ。,5000,800,Added 古い (old) - nostalgic memories
+tradingCards,トレカ,Trading Cards,レアカードコレクション。ON_EFFECTが強化。,KEEP,レアトレカ,Rare Trading Cards,レアカードコレクション。ON_EFFECTが強化。,8500,-,Already has レア (rare)
+gachaFigure,ガチャフィギュア,Gacha Figure,カプセルトイ。チップ種類で総合強化。,MODIFY,小さいガチャフィギュア,Small Gacha Figure,小さいカプセルトイ。チップ種類で総合強化。,9500,500,Added 小さい (small) - capsule toy size

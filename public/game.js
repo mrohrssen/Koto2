@@ -924,7 +924,11 @@ async function startEncounter() {
     const dialogue = result?.result?.dialogue || enemy?.dialogue?.possessed;
     if (dialogue) {
       await delay(400);
-      await showEnemyDialogue(dialogue, 'possessed');
+      showEnemyDialogue(dialogue, 'possessed');
+      // Wait for dialogue to be dismissed (polling as backup to promise)
+      while (enemyDialogueActive) {
+        await delay(100);
+      }
     }
 
     // Brief pause to show enemy, then start realtime combat
@@ -951,7 +955,11 @@ async function startBossEncounter() {
     const dialogue = result?.result?.dialogue || enemy?.dialogue?.possessed;
     if (dialogue) {
       await delay(500);
-      await showEnemyDialogue(dialogue, 'possessed');
+      showEnemyDialogue(dialogue, 'possessed');
+      // Wait for dialogue to be dismissed (polling as backup to promise)
+      while (enemyDialogueActive) {
+        await delay(100);
+      }
     }
 
     // Brief pause to show boss, then start realtime combat

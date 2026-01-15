@@ -170,7 +170,7 @@ function loadSettings() {
     jpdbDeckId: 'all',
     jlptLevel: 'N5',
     // Game TTS Settings (narrator voice)
-    gameTtsEnabled: false,
+    gameTtsEnabled: true,
     gameTtsSpeakerId: 13, // Cool male narrator voice
     gameTtsSpeed: 0.9,
     gameTtsVolume: 1.0,
@@ -392,7 +392,7 @@ app.get('/api/config', (req, res) => {
 // Settings
 app.get('/api/settings', (req, res) => {
   updateTTSConfig({
-    enabled: settings.gameTtsEnabled || false,
+    enabled: settings.gameTtsEnabled ?? true,
     speakerId: settings.gameTtsSpeakerId || 13,
     speed: settings.gameTtsSpeed || 0.9,
     volume: settings.gameTtsVolume || 1.0
@@ -402,7 +402,7 @@ app.get('/api/settings', (req, res) => {
   res.json({
     jpdbDeckId: settings.jpdbDeckId || '',
     jlptLevel: settings.jlptLevel || 'N4',
-    gameTtsEnabled: settings.gameTtsEnabled || false,
+    gameTtsEnabled: settings.gameTtsEnabled ?? true,
     gameTtsSpeakerId: settings.gameTtsSpeakerId || 13,
     gameTtsSpeed: settings.gameTtsSpeed || 0.9,
     gameTtsVolume: settings.gameTtsVolume || 1.0,
@@ -1302,15 +1302,18 @@ app.post('/api/game/shop/buy', (req, res) => {
 });
 
 app.get('/api/game/refine-preview', (req, res) => {
-  const { itemId } = req.query;
-  const preview = gameManager.getRefinePreview(itemId);
-  res.json(preview || { error: 'Cannot preview' });
+  try {
+    const preview = gameManager.getRefinePreview();
+    res.json(preview || { error: 'Cannot preview' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 app.post('/api/game/refine', async (req, res) => {
-  const { itemId } = req.body;
+  const { slot } = req.body;
   try {
-    const result = gameManager.refineEquipment(itemId);
+    const result = gameManager.refineEquipment(slot);
     saveGameData();
     res.json({ ...result, state: getEnrichedGameState() });
   } catch (error) {

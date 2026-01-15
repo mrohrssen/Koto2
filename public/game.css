@@ -67,6 +67,16 @@
   --success: #00ff88;
   --error: #ff3366;
   --warning: #ffd700;
+
+  /* Solo Leveling Blue (primary buttons, UI accents) */
+  --sl-blue: #1b45d7;
+  --sl-blue-bright: #4d7cff;
+  --sl-blue-glow: rgba(27, 69, 215, 0.5);
+
+  /* Solo Leveling Cyan (equipment, items) */
+  --sl-cyan: #00d4aa;
+  --sl-cyan-bright: #00ffcc;
+  --sl-cyan-glow: rgba(0, 212, 170, 0.5);
 }
 
 * {
@@ -373,13 +383,14 @@ body::before {
   padding: 0.75rem 1rem;
   font-size: 1.05rem;
   line-height: 1.7;
-  color: var(--text-primary);
+  color: #2a2a2a;
   display: flex;
   align-items: center;
 }
 
 .narration-text p {
   margin: 0;
+  color: #2a2a2a;
 }
 
 /* Visual Novel style message */
@@ -399,12 +410,12 @@ body::before {
 .narration-text .jp-text {
   font-size: 1.15rem;
   margin-bottom: 0.35rem;
-  color: #fff;
+  color: #1a1a1a;
 }
 
 .narration-text .en-text {
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: #444444;
   font-style: italic;
 }
 
@@ -783,7 +794,7 @@ body::before {
 }
 
 .stat-row .label {
-  color: var(--text-secondary);
+  color: #555555;
   font-weight: 500;
   text-transform: uppercase;
   font-size: 0.75rem;
@@ -793,7 +804,7 @@ body::before {
 .stat-row .value {
   font-family: 'Orbitron', serif;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #2a2a2a;
 }
 
 .stat-row .value.rank {
@@ -901,7 +912,7 @@ body::before {
 }
 
 .equipment-slot .slot-name {
-  color: var(--text-secondary);
+  color: #aaaaaa;
   font-size: 0.75rem;
   text-transform: uppercase;
 }
@@ -913,7 +924,7 @@ body::before {
 
 .inventory-item .item-name {
   flex: 1;
-  color: var(--text-primary);
+  color: #2a2a2a;
 }
 
 .inventory-item .item-qty {
@@ -929,7 +940,7 @@ body::before {
 }
 
 .equipment-slot .empty-slot {
-  color: var(--text-secondary);
+  color: #888888;
   font-style: italic;
   opacity: 0.6;
 }
@@ -1435,13 +1446,14 @@ body::before {
 }
 
 .ward-card {
-  background: rgba(0, 0, 0, 0.3);
-  border: 2px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid var(--sl-blue-bright, #4d7cff);
   border-radius: 12px;
   padding: 1.5rem 1rem;
   min-width: 140px;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 0 10px var(--sl-blue-glow, rgba(27, 69, 215, 0.3));
 }
 
 .ward-card:hover {
@@ -1497,7 +1509,7 @@ body::before {
 }
 
 .empty-msg, .no-save-msg {
-  color: var(--text-secondary);
+  color: #777777;
   font-size: 0.8rem;
   text-align: center;
   padding: 0.75rem;
@@ -2254,18 +2266,21 @@ body::before {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(180deg, var(--sl-blue) 0%, #1338a8 100%);
+  background: rgba(0, 0, 0, 0.8);
   border: 1px solid var(--sl-blue-bright);
   border-radius: 3px;
-  color: white;
+  color: var(--sl-blue-bright);
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 0 20px var(--sl-blue-glow);
+  text-shadow: 0 0 10px var(--sl-blue-glow);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(180deg, var(--sl-blue-bright) 0%, var(--sl-blue) 100%);
+  background: rgba(27, 69, 215, 0.3);
+  border-color: var(--sl-blue-bright);
   box-shadow: 0 0 30px var(--sl-blue-glow), 0 0 50px rgba(27, 69, 215, 0.3);
+  text-shadow: 0 0 15px var(--sl-blue-glow);
   transform: translateY(-2px);
 }
 
@@ -5249,11 +5264,16 @@ body::before {
   color: #f87171;
 }
 
-/* Self-grade modal - positioned lower and wider */
+/* Self-grade modal - centered in game area (accounting for sidebar) */
 #self-grade-modal {
-  bottom: 28%;
+  position: fixed;
+  top: 50%;
+  left: calc(50% - 9vw);
+  transform: translate(-50%, -50%);
+  bottom: auto;
   min-width: 380px;
   max-width: 480px;
+  z-index: 100;
 }
 
 /* Self-grade modal buttons */
@@ -5599,6 +5619,25 @@ body::before {
 
 .enemy-dialogue-liberated .dialogue-text {
   text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+}
+
+/* Press Enter indicator */
+.dialogue-continue {
+  display: block;
+  margin-top: 8px;
+  padding: 2px 8px;
+  font-size: 0.7em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.7;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  animation: dialogueContinuePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes dialogueContinuePulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
 
 @keyframes dialogueFadeIn {

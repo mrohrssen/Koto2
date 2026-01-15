@@ -2801,10 +2801,12 @@ export function getChipLoadout(player, runStats = {}) {
     }
   }
 
-  // Inventory chips
+  // Inventory chips - preserve player's chip data (id, rarity, effects) over base definition
   const inventoryChips = (player.chips || []).map(chip => {
-    const fullChip = getChip(chip.id) || chip;
-    return getChipDisplayInfo(fullChip);
+    const baseChip = getChip(chip.id);
+    // Merge: base chip info + player's chip data (player's data takes priority for id, rarity, effects)
+    const mergedChip = baseChip ? { ...baseChip, ...chip } : chip;
+    return getChipDisplayInfo(mergedChip);
   });
 
   // Total bonuses
