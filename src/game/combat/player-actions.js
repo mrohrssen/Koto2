@@ -3,7 +3,7 @@
  * All player combat action execution
  */
 
-import { getItem, getSkill, calculateEquipmentBonuses, processOnHitChips, processOnKillChips, processOnDamageChips, getEquippedChips } from '../items.js';
+import { getItem, getSkill, calculateEquipmentBonuses, processOnHitChips, processOnKillChips, processOnDamageChips, processOnCritChips, processOnHealChips, processOnStatusInflictChips, processSpecialOnHitChips, getEquippedChips } from '../items.js';
 import {
   calculateFleeChance,
   calculateItemHealing,
@@ -90,7 +90,30 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
       result.damageBonus = bonusDamage;
     }
   }
-  if (attackResult.critical) result.anyCritical = true;
+  if (attackResult.critical) {
+    result.anyCritical = true;
+    // Process on-crit chip effects
+    const equippedChipsForCrit = getEquippedChips(player);
+    if (equippedChipsForCrit.length > 0) {
+      const critEffects = processOnCritChips(equippedChipsForCrit);
+      if (critEffects.heal > 0) {
+        const playerStats = getPlayerCombatStats(player);
+        const hpBefore = player.hp;
+        player.hp = Math.min(playerStats.maxHp, player.hp + critEffects.heal);
+        result.onCritHeal = player.hp - hpBefore;
+      }
+      if (critEffects.doubleCritDamage) {
+        result.totalDamage *= 2;
+        result.doubleCritDamage = true;
+      }
+      if (critEffects.bonusHit) {
+        result.bonusHitFromCrit = true;
+      }
+      if (critEffects.buffs.length > 0) {
+        result.onCritBuffs = critEffects.buffs;
+      }
+    }
+  }
   if (attackResult.dodge) result.anyDodge = true;
   if (attackResult.perfectDodge) result.anyPerfectDodge = true;
 
@@ -338,7 +361,21 @@ export function executeMagic(player, enemy, skill) {
     // Healing magic - scales with MATK + healing bonus from equipment
     const equipBonuses = calculateEquipmentBonuses(player);
     const baseHeal = skillDef.power + Math.floor(playerStats.matk * 0.5);
-    const boostedHeal = Math.floor(baseHeal * (1 + equipBonuses.healingBonus));
+    let boostedHeal = Math.floor(baseHeal * (1 + equipBonuses.healingBonus));
+
+    // Process on-heal chip effects
+    const equippedChipsForHeal = getEquippedChips(player);
+    if (equippedChipsForHeal.length > 0) {
+      const healEffects = processOnHealChips(equippedChipsForHeal, boostedHeal);
+      boostedHeal = healEffects.finalHeal;
+      if (healEffects.bonusHeal > 0) {
+        result.onHealBonus = healEffects.bonusHeal;
+      }
+      if (healEffects.buffs.length > 0) {
+        result.onHealBuffs = healEffects.buffs;
+      }
+    }
+
     const healing = Math.min(boostedHeal, playerStats.maxHp - player.hp);
     player.hp = Math.min(playerStats.maxHp, player.hp + boostedHeal);
     result.healing = healing;
@@ -437,7 +474,21 @@ export function executeItem(player, enemy, itemId) {
       // HP items scale with VIT (2% per point) + healing bonus from equipment
       const equipBonuses = calculateEquipmentBonuses(player);
       const baseHealing = calculateItemHealing(itemDef.power, player.stats.vit, true);
-      const healing = Math.floor(baseHealing * (1 + equipBonuses.healingBonus));
+      let healing = Math.floor(baseHealing * (1 + equipBonuses.healingBonus));
+
+      // Process on-heal chip effects
+      const equippedChipsForItemHeal = getEquippedChips(player);
+      if (equippedChipsForItemHeal.length > 0) {
+        const healEffects = processOnHealChips(equippedChipsForItemHeal, healing);
+        healing = healEffects.finalHeal;
+        if (healEffects.bonusHeal > 0) {
+          result.onHealBonus = healEffects.bonusHeal;
+        }
+        if (healEffects.buffs.length > 0) {
+          result.onHealBuffs = healEffects.buffs;
+        }
+      }
+
       const actualHealing = Math.min(healing, playerStats.maxHp - player.hp);
       player.hp = Math.min(playerStats.maxHp, player.hp + healing);
       result.healing = actualHealing;

@@ -2338,7 +2338,10 @@ export function processOnKillChips(chips) {
     aspdDuration: 0,
     doubleCredits: false,
     aoeExplosion: false,
-    aoeDamage: 0
+    aoeDamage: 0,
+    buffs: [],
+    bonusCurrency: 0,
+    extraChipDrop: false
   };
 
   for (const chip of chips) {
@@ -2355,6 +2358,17 @@ export function processOnKillChips(chips) {
           effects.aoeExplosion = true;
           effects.aoeDamage += effect.aoeDamage || 0;
         }
+        if (effect.buff) {
+          effects.buffs.push({
+            chipId: chip.id,
+            chipName: chip.name,
+            buff: effect.buff,
+            value: effect.value,
+            duration: effect.duration
+          });
+        }
+        if (effect.bonusCurrency) effects.bonusCurrency += effect.bonusCurrency;
+        if (effect.extraChipDrop) effects.extraChipDrop = true;
       }
     }
   }
@@ -2371,6 +2385,9 @@ export function processOnKillChips(chips) {
 export function processOnDamageChips(chips, damage) {
   let finalDamage = damage;
   const triggered = [];
+  let heal = 0;
+  const buffs = [];
+  let negated = false;
 
   for (const chip of chips) {
     if (chip.category === 'onEffect' && chip.effects?.onDamage) {
@@ -2384,11 +2401,256 @@ export function processOnDamageChips(chips, damage) {
             reduction: effect.damageReduction
           });
         }
+        if (effect.heal) {
+          heal += effect.heal;
+          triggered.push({
+            chipId: chip.id,
+            chipName: chip.name,
+            heal: effect.heal
+          });
+        }
+        if (effect.buff) {
+          buffs.push({
+            chipId: chip.id,
+            chipName: chip.name,
+            buff: effect.buff,
+            value: effect.value,
+            duration: effect.duration
+          });
+        }
+        if (effect.negateDamage) {
+          negated = true;
+          finalDamage = 0;
+          triggered.push({
+            chipId: chip.id,
+            chipName: chip.name,
+            negated: true
+          });
+        }
       }
     }
   }
 
-  return { finalDamage, triggered };
+  return { finalDamage, triggered, heal, buffs, negated };
+}
+
+/**
+ * Process on-crit chip effects
+ * @param {array} chips - Array of chip objects
+ * @returns {object} Combined effects from all triggered chips
+ */
+export function processOnCritChips(chips) {
+  const effects = {
+    heal: 0,
+    buffs: [],
+    bonusHit: false,
+    doubleCritDamage: false
+  };
+
+  for (const chip of chips) {
+    if (chip.category === 'onEffect' && chip.effects?.onCrit) {
+      const effect = chip.effects.onCrit;
+      if (Math.random() < effect.chance) {
+        if (effect.heal) effects.heal += effect.heal;
+        if (effect.buff) {
+          effects.buffs.push({
+            chipId: chip.id,
+            chipName: chip.name,
+            buff: effect.buff,
+            value: effect.value,
+            duration: effect.duration
+          });
+        }
+        if (effect.bonusHit) effects.bonusHit = true;
+        if (effect.doubleCritDamage) effects.doubleCritDamage = true;
+      }
+    }
+  }
+
+  return effects;
+}
+
+/**
+ * Process on-dodge chip effects
+ * @param {array} chips - Array of chip objects
+ * @returns {object} Combined effects from all triggered chips
+ */
+export function processOnDodgeChips(chips) {
+  const effects = {
+    buffs: [],
+    counterAttack: false
+  };
+
+  for (const chip of chips) {
+    if (chip.category === 'onEffect' && chip.effects?.onDodge) {
+      const effect = chip.effects.onDodge;
+      if (Math.random() < effect.chance) {
+        if (effect.buff) {
+          effects.buffs.push({
+            chipId: chip.id,
+            chipName: chip.name,
+            buff: effect.buff,
+            value: effect.value,
+            duration: effect.duration
+          });
+        }
+        if (effect.counterAttack) effects.counterAttack = true;
+      }
+    }
+  }
+
+  return effects;
+}
+
+/**
+ * Process on-low-hp chip effects (when player would die)
+ * @param {array} chips - Array of chip objects
+ * @returns {object} Combined effects from all triggered chips
+ */
+export function processOnLowHpChips(chips) {
+  const effects = {
+    surviveWithOneHp: false,
+    shield: 0
+  };
+
+  for (const chip of chips) {
+    if (chip.category === 'onEffect' && chip.effects?.onLowHp) {
+      const effect = chip.effects.onLowHp;
+      if (Math.random() < effect.chance) {
+        if (effect.surviveWithOneHp) effects.surviveWithOneHp = true;
+        if (effect.shield) effects.shield += effect.shield;
+      }
+    }
+  }
+
+  return effects;
+}
+
+/**
+ * Process on-heal chip effects
+ * @param {array} chips - Array of chip objects
+ * @param {number} healAmount - Base heal amount
+ * @returns {object} Modified heal amount and effects
+ */
+export function processOnHealChips(chips, healAmount) {
+  let finalHeal = healAmount;
+  const effects = {
+    bonusHeal: 0,
+    buffs: []
+  };
+
+  for (const chip of chips) {
+    if (chip.category === 'onEffect' && chip.effects?.onHeal) {
+      const effect = chip.effects.onHeal;
+      if (Math.random() < effect.chance) {
+        if (effect.bonusHeal) {
+          effects.bonusHeal += effect.bonusHeal;
+          finalHeal += effect.bonusHeal;
+        }
+        if (effect.buff) {
+          effects.buffs.push({
+            chipId: chip.id,
+            chipName: chip.name,
+            buff: effect.buff,
+            value: effect.value,
+            duration: effect.duration
+          });
+        }
+      }
+    }
+  }
+
+  return { finalHeal, ...effects };
+}
+
+/**
+ * Process on-room-enter chip effects
+ * @param {array} chips - Array of chip objects
+ * @returns {object} Combined effects from all triggered chips
+ */
+export function processOnRoomEnterChips(chips) {
+  const effects = {
+    heal: 0,
+    buffs: [],
+    rareSpawn: false,
+    stealth: false,
+    stunAllEnemies: 0
+  };
+
+  for (const chip of chips) {
+    if (chip.category === 'onEffect' && chip.effects?.onRoomEnter) {
+      const effect = chip.effects.onRoomEnter;
+      if (Math.random() < effect.chance) {
+        if (effect.heal) effects.heal += effect.heal;
+        if (effect.buff) {
+          effects.buffs.push({
+            chipId: chip.id,
+            chipName: chip.name,
+            buff: effect.buff,
+            value: effect.value,
+            duration: effect.duration
+          });
+        }
+        if (effect.rareSpawn) effects.rareSpawn = true;
+        if (effect.stealth) effects.stealth = true;
+        if (effect.stunAllEnemies) effects.stunAllEnemies = Math.max(effects.stunAllEnemies, effect.stunAllEnemies);
+      }
+    }
+  }
+
+  return effects;
+}
+
+/**
+ * Process on-status-inflict chip effects
+ * @param {array} chips - Array of chip objects
+ * @param {string} statusType - The type of status that was inflicted
+ * @returns {object} Combined effects from all triggered chips
+ */
+export function processOnStatusInflictChips(chips, statusType) {
+  const effects = {
+    heal: 0,
+    extendDuration: 0
+  };
+
+  for (const chip of chips) {
+    if (chip.category === 'onEffect' && chip.effects?.onStatusInflict) {
+      const effect = chip.effects.onStatusInflict;
+      // Check if this chip triggers for this status type
+      if (effect.statusType && effect.statusType !== statusType) continue;
+
+      if (Math.random() < effect.chance) {
+        if (effect.heal) effects.heal += effect.heal;
+        if (effect.extendStun) effects.extendDuration += effect.extendStun;
+      }
+    }
+  }
+
+  return effects;
+}
+
+/**
+ * Process special on-hit chip effects (cascade, enemyMissNextTurn)
+ * @param {array} chips - Array of chip objects
+ * @returns {object} Special effects to apply
+ */
+export function processSpecialOnHitChips(chips) {
+  const effects = {
+    cascade: false,
+    enemyMissNextTurn: false
+  };
+
+  for (const chip of chips) {
+    if (chip.category === 'onEffect' && chip.effects?.onHit) {
+      const effect = chip.effects.onHit;
+      if (Math.random() < effect.chance) {
+        if (effect.cascade) effects.cascade = true;
+        if (effect.enemyMissNextTurn) effects.enemyMissNextTurn = true;
+      }
+    }
+  }
+
+  return effects;
 }
 
 /**

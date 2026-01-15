@@ -163,7 +163,7 @@ import {
   getWardInfo
 } from './rooms.js';
 
-import { getItem, calculateEquipmentBonuses } from './items.js';
+import { getItem, calculateEquipmentBonuses, processOnRoomEnterChips, getEquippedChips } from './items.js';
 
 import { getEntityAttackInterval } from './stats.js';
 
@@ -801,6 +801,32 @@ export class GameManager {
       this.run.runStats.roomsCleared++;
     }
 
+    // Process on-room-enter chip effects
+    const roomEnterEffects = {};
+    const equippedChips = getEquippedChips(this.run.player);
+    if (equippedChips.length > 0) {
+      const roomEffects = processOnRoomEnterChips(equippedChips);
+      if (roomEffects.heal > 0) {
+        const hpBefore = this.run.player.hp;
+        this.run.player.hp = Math.min(this.run.player.maxHp, this.run.player.hp + roomEffects.heal);
+        roomEnterEffects.heal = this.run.player.hp - hpBefore;
+      }
+      if (roomEffects.buffs.length > 0) {
+        roomEnterEffects.buffs = roomEffects.buffs;
+      }
+      if (roomEffects.rareSpawn) {
+        roomEnterEffects.rareSpawn = true;
+      }
+      if (roomEffects.stealth) {
+        roomEnterEffects.stealth = true;
+        // Mark player as stealthed for potential combat avoidance
+        this.run.player.stealth = true;
+      }
+      if (roomEffects.stunAllEnemies > 0) {
+        roomEnterEffects.stunAllEnemies = roomEffects.stunAllEnemies;
+      }
+    }
+
     // Get narration for new room
     const narration = getRoomEntryNarration(nextRoom);
     this.narrate(narration);
@@ -811,7 +837,8 @@ export class GameManager {
       roomNumber: this.run.currentRoom + 1,
       totalRooms: this.run.rooms.length,
       actions: getRoomActions(nextRoom),
-      narration
+      narration,
+      chipEffects: Object.keys(roomEnterEffects).length > 0 ? roomEnterEffects : null
     };
   }
 
