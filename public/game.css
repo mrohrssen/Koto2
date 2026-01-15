@@ -4563,6 +4563,181 @@ body::before {
 }
 
 /* ============================================
+   CHIP UPGRADE MODAL (MODDER)
+   ============================================ */
+
+.chip-upgrade-content {
+  max-width: 550px;
+}
+
+.chip-upgrade-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 450px;
+  overflow-y: auto;
+}
+
+.chip-upgrade-greeting {
+  font-style: italic;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.chip-upgrade-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chip-upgrade-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--sl-bg-medium);
+  border-radius: var(--radius);
+  border: 1px solid var(--sl-border);
+  transition: all 0.2s ease;
+}
+
+.chip-upgrade-item:hover {
+  border-color: var(--sl-blue);
+  background: var(--sl-bg-light);
+}
+
+.chip-upgrade-item.cannot-afford {
+  opacity: 0.6;
+}
+
+.chip-upgrade-item-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px;
+}
+
+.chip-upgrade-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.chip-upgrade-item-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.chip-upgrade-item-rarity {
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chip-upgrade-rarity-current {
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.chip-upgrade-rarity-arrow {
+  color: var(--text-muted);
+}
+
+.chip-upgrade-rarity-next {
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+/* Rarity colors for chip upgrade */
+.chip-upgrade-rarity-current.rarity-common,
+.chip-upgrade-rarity-next.rarity-common { color: #9ca3af; background: rgba(156, 163, 175, 0.2); }
+.chip-upgrade-rarity-current.rarity-uncommon,
+.chip-upgrade-rarity-next.rarity-uncommon { color: #22c55e; background: rgba(34, 197, 94, 0.2); }
+.chip-upgrade-rarity-current.rarity-rare,
+.chip-upgrade-rarity-next.rarity-rare { color: #3b82f6; background: rgba(59, 130, 246, 0.2); }
+.chip-upgrade-rarity-current.rarity-epic,
+.chip-upgrade-rarity-next.rarity-epic { color: #a855f7; background: rgba(168, 85, 247, 0.2); }
+.chip-upgrade-rarity-current.rarity-legendary,
+.chip-upgrade-rarity-next.rarity-legendary { color: #f59e0b; background: rgba(245, 158, 11, 0.2); text-shadow: 0 0 5px #f59e0b; }
+
+.chip-upgrade-item-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  min-width: 100px;
+}
+
+.chip-upgrade-cost {
+  color: var(--sl-gold);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.chip-upgrade-risk {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.chip-upgrade-risk.low {
+  color: var(--sl-green);
+}
+
+.chip-upgrade-risk.medium {
+  color: var(--sl-orange);
+}
+
+.chip-upgrade-risk.high {
+  color: var(--sl-red);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.chip-upgrade-btn {
+  padding: 0.5rem 1rem;
+  background: var(--sl-blue);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+  margin-top: 0.25rem;
+}
+
+.chip-upgrade-btn:hover {
+  background: var(--sl-blue-bright);
+  transform: translateY(-1px);
+}
+
+.chip-upgrade-btn:disabled {
+  background: var(--sl-bg-dark);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.chip-upgrade-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 2rem;
+  font-style: italic;
+}
+
+/* Left border for rarity */
+.chip-upgrade-item.rarity-common { border-left: 3px solid #9ca3af; }
+.chip-upgrade-item.rarity-uncommon { border-left: 3px solid #22c55e; }
+.chip-upgrade-item.rarity-rare { border-left: 3px solid #3b82f6; }
+.chip-upgrade-item.rarity-epic { border-left: 3px solid #a855f7; }
+.chip-upgrade-item.rarity-legendary { border-left: 3px solid #f59e0b; }
+
+/* ============================================
    iRO STAT ALLOCATION SYSTEM
    ============================================ */
 

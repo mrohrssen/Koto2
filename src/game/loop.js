@@ -46,6 +46,7 @@
  * - getShopInventory() / buyFromShop(id) - Town shop
  * - buyFromPostCombatShop(index) - Post-combat drops
  * - refineEquipment(slot) - Blacksmith refinement
+ * - getChipUpgradePreview() / performChipUpgrade(chipId) - Blacksmith chip upgrade
  *
  * DEPENDENCIES:
  * - ./state.js - State factories (createNewPlayer, createNewRun, createCombatState)
@@ -165,6 +166,15 @@ import {
 import { getItem, calculateEquipmentBonuses } from './items.js';
 
 import { getEntityAttackInterval } from './stats.js';
+
+import {
+  getNextRarity,
+  getUpgradeCost,
+  getUpgradeFailureChance,
+  createUpgradedChip,
+  attemptChipUpgrade,
+  CHIP_RARITIES
+} from './items/chips.js';
 
 // ============ GAME MANAGER ============
 
@@ -1282,6 +1292,135 @@ export class GameManager {
 
     this.emitState();
     return result;
+  }
+
+  /**
+   * Get chip upgrade preview for blacksmith
+   * Returns 3 random upgradeable chips from player inventory
+   * @returns {object} { chips: Array, playerGold: number }
+   */
+  getChipUpgradePreview() {
+    if (!this.run || !this.run.player) {
+      throw new Error('No active run');
+    }
+
+    const room = this.getCurrentRoom();
+    if (!room || room.type !== 'blacksmith') {
+      throw new Error('No blacksmith here');
+    }
+
+    const player = this.run.player;
+    const floorBonus = room.blacksmith?.successBonus || 0;
+
+    // Get upgradeable chips (not legendary)
+    const upgradeableChips = (player.chips || []).filter(chip => {
+      const nextRarity = getNextRarity(chip.rarity);
+      return nextRarity !== null; // Can upgrade if not legendary
+    });
+
+    // Shuffle and pick up to 3
+    const shuffled = [...upgradeableChips].sort(() => Math.random() - 0.5);
+    const selectedChips = shuffled.slice(0, 3);
+
+    // Add upgrade info to each chip
+    const chipsWithInfo = selectedChips.map(chip => ({
+      ...chip,
+      upgradeCost: getUpgradeCost(chip),
+      failureChance: getUpgradeFailureChance(chip, floorBonus),
+      nextRarity: getNextRarity(chip.rarity),
+      nextRarityInfo: CHIP_RARITIES[getNextRarity(chip.rarity)]
+    }));
+
+    // Store selected chips in room for validation
+    room.blacksmith.selectedChipIds = chipsWithInfo.map(c => c.id);
+
+    return {
+      chips: chipsWithInfo,
+      playerGold: player.gold,
+      floorBonus,
+      greeting: '「チップを強化してやろうか？失敗すると...まあ、分かるだろ？」'
+    };
+  }
+
+  /**
+   * Attempt to upgrade a chip at the blacksmith
+   * @param {string} chipId - ID of chip to upgrade
+   * @returns {object} { success: boolean, message: string, chip?: object }
+   */
+  performChipUpgrade(chipId) {
+    if (!this.run || !this.run.player) {
+      throw new Error('No active run');
+    }
+
+    const room = this.getCurrentRoom();
+    if (!room || room.type !== 'blacksmith') {
+      throw new Error('No blacksmith here');
+    }
+
+    if (room.blacksmith?.interacted) {
+      throw new Error('Blacksmith already used');
+    }
+
+    const player = this.run.player;
+    const floorBonus = room.blacksmith?.successBonus || 0;
+
+    // Validate chip is in the offered selection
+    if (!room.blacksmith?.selectedChipIds?.includes(chipId)) {
+      throw new Error('Invalid chip selection');
+    }
+
+    // Find chip in player inventory
+    const chipIndex = player.chips.findIndex(c => c.id === chipId);
+    if (chipIndex === -1) {
+      throw new Error('Chip not found in inventory');
+    }
+
+    const chip = player.chips[chipIndex];
+    const upgradeCost = getUpgradeCost(chip);
+
+    // Check player has enough gold
+    if (player.gold < upgradeCost) {
+      throw new Error('Not enough credits');
+    }
+
+    // Deduct gold
+    player.gold -= upgradeCost;
+
+    // Attempt upgrade
+    const result = attemptChipUpgrade(chip, floorBonus);
+
+    // Mark blacksmith as interacted
+    room.blacksmith.interacted = true;
+
+    if (result.success) {
+      // Remove old chip
+      player.chips.splice(chipIndex, 1);
+      // Add upgraded chip
+      player.chips.push(result.upgradedChip);
+
+      this.emitNarration(`「よし、成功だ。」${chip.name || chip.nameEn}が${CHIP_RARITIES[result.newRarity].name}に強化された！`);
+      this.emitState();
+
+      return {
+        success: true,
+        message: `${chip.name || chip.nameEn}が${CHIP_RARITIES[result.newRarity].name}に強化された！`,
+        chip: result.upgradedChip,
+        previousRarity: result.previousRarity,
+        newRarity: result.newRarity
+      };
+    } else {
+      // Remove destroyed chip
+      player.chips.splice(chipIndex, 1);
+
+      this.emitNarration(`「...失敗だ。チップは壊れた。」${chip.name || chip.nameEn}は破壊された...`);
+      this.emitState();
+
+      return {
+        success: false,
+        message: `${chip.name || chip.nameEn}は破壊された...`,
+        destroyedChip: chip
+      };
+    }
   }
 
   /**

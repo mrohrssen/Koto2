@@ -1318,6 +1318,27 @@ app.post('/api/game/refine', async (req, res) => {
   }
 });
 
+// Chip upgrade (blacksmith) endpoints
+app.get('/api/game/chip-upgrade-preview', (req, res) => {
+  try {
+    const preview = gameManager.getChipUpgradePreview();
+    res.json({ ...preview, state: getEnrichedGameState() });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post('/api/game/chip-upgrade', async (req, res) => {
+  const { chipId } = req.body;
+  try {
+    const result = gameManager.performChipUpgrade(chipId);
+    saveGameData();
+    res.json({ ...result, state: getEnrichedGameState() });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 app.post('/api/game/start-encounter', async (req, res) => {
   try {
     const encounter = gameManager.startEncounter();
