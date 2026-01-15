@@ -1912,8 +1912,10 @@ async function executePlayerAttack() {
     updatePlayerHPBar(result.playerHp);
 
     // Show glitching dialogue when enemy HP drops below 30%
+    // Combat pauses until Enter is pressed - don't schedule next attack
     if (result.enemyGlitching && result.glitchingDialogue) {
       showEnemyDialogue(result.glitchingDialogue, 'glitching');
+      return; // Timers cleared in showEnemyDialogue, restarted in dismissEnemyDialogue
     }
 
     // Check if combat ended
