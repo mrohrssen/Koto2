@@ -1463,6 +1463,13 @@ body::before {
   box-shadow: 0 4px 20px rgba(0, 255, 255, 0.3);
 }
 
+.ward-card.selected {
+  border-color: var(--cyber-cyan);
+  background: rgba(0, 255, 255, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 4px 20px rgba(0, 255, 255, 0.4);
+}
+
 .ward-card .ward-name {
   font-size: 1.2rem;
   font-weight: bold;

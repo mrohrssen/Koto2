@@ -146,6 +146,8 @@ let reviewType = 'typing'; // 'typing' or 'self-grade'
 
 // Shop Selection State
 let selectedShopIndex = -1;
+let selectedWardIndex = 0;
+let wardSelectionData = []; // Store ward options for keyboard selection
 
 // Realtime Combat State
 let realtimeCombatActive = false;
@@ -3440,8 +3442,12 @@ async function showWardSelectionContent() {
     return;
   }
 
-  const wardCardsHtml = wardOptions.map(ward => `
-    <div class="ward-card" onclick="selectWard('${ward.id}', ${isNextWard})">
+  // Store for keyboard navigation
+  wardSelectionData = wardOptions.map(w => ({ id: w.id, isNextWard }));
+  selectedWardIndex = 0;
+
+  const wardCardsHtml = wardOptions.map((ward, index) => `
+    <div class="ward-card${index === 0 ? ' selected' : ''}" data-ward-index="${index}" onclick="selectWard('${ward.id}', ${isNextWard})">
       <div class="ward-name">${ward.name}</div>
       <div class="ward-name-en">${ward.nameEn}</div>
       <div class="ward-theme">${ward.theme}</div>
@@ -3494,6 +3500,13 @@ async function selectWard(wardId, isNextWard = false) {
 }
 
 window.selectWard = selectWard;
+
+// Update ward card selection visuals
+function updateWardSelection(wardCards) {
+  wardCards.forEach((card, i) => {
+    card.classList.toggle('selected', i === selectedWardIndex);
+  });
+}
 
 function showExploringContent() {
   const run = gameState.run;
@@ -5019,6 +5032,29 @@ function handleKeypress(e) {
       }
     }
     return; // Don't process other keys while shop is open
+  }
+
+  // Ward selection keyboard navigation
+  if (gameState.phase === 'ward_selection' && wardSelectionData.length > 0) {
+    const wardCards = document.querySelectorAll('.ward-card');
+    if (wardCards.length > 0) {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedWardIndex = (selectedWardIndex - 1 + wardCards.length) % wardCards.length;
+        updateWardSelection(wardCards);
+        return;
+      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedWardIndex = (selectedWardIndex + 1) % wardCards.length;
+        updateWardSelection(wardCards);
+        return;
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const ward = wardSelectionData[selectedWardIndex];
+        if (ward) selectWard(ward.id, ward.isNextWard);
+        return;
+      }
+    }
   }
 
   // Don't trigger if a modal is open
