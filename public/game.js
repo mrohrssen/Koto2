@@ -918,16 +918,17 @@ async function startEncounter() {
     let narration = result.narration || FALLBACK_NARRATIONS.combatStart(enemy);
     showNarration(narration);
     updateUI();
+    updateBackground(); // Switch to enemy's location background
 
-    // Show possessed dialogue if available
+    // Show possessed dialogue if available - wait for Enter to dismiss before combat starts
     const dialogue = result?.result?.dialogue || enemy?.dialogue?.possessed;
     if (dialogue) {
       await delay(400);
-      showEnemyDialogue(dialogue, 'possessed');
+      await showEnemyDialogue(dialogue, 'possessed');
     }
 
     // Brief pause to show enemy, then start realtime combat
-    await delay(800);
+    await delay(300);
     startRealtimeCombat();
   } else if (result) {
     // Just update UI if no enemy data available
@@ -944,16 +945,17 @@ async function startBossEncounter() {
     let narration = result.narration || FALLBACK_NARRATIONS.combatStart(enemy);
     showNarration(narration);
     updateUI();
+    updateBackground(); // Switch to enemy's location background
 
-    // Show possessed dialogue if available
+    // Show possessed dialogue if available - wait for Enter to dismiss before combat starts
     const dialogue = result?.result?.dialogue || enemy?.dialogue?.possessed;
     if (dialogue) {
       await delay(500);
-      showEnemyDialogue(dialogue, 'possessed');
+      await showEnemyDialogue(dialogue, 'possessed');
     }
 
     // Brief pause to show boss, then start realtime combat
-    await delay(1000);
+    await delay(500);
     startRealtimeCombat();
   } else if (result) {
     updateUI();
@@ -966,16 +968,25 @@ let enemyDialogueTtsPlaying = false;
 // Track if enemy dialogue is active and blocking input (waiting for Enter)
 let enemyDialogueActive = false;
 let enemyDialogueType = null; // 'possessed', 'glitching', or 'liberated'
+let dialogueDismissResolve = null; // Promise resolver for waiting on dialogue dismissal
+let dialogueDismissPromise = null; // Promise that resolves when dialogue is dismissed
 
 // Show enemy dialogue bubble (possessed/glitching/liberated)
 // Pauses combat and waits for Enter key to dismiss
+// Returns a Promise that resolves when dialogue is dismissed
 function showEnemyDialogue(text, type = 'possessed') {
   const enemyArea = document.querySelector('.vn-enemy-area');
-  if (!enemyArea || !text) return;
+  if (!enemyArea || !text) return Promise.resolve();
 
-  // Remove any existing dialogue
+  // Remove any existing dialogue and resolve any pending promise
   const existing = enemyArea.querySelector('.enemy-dialogue');
-  if (existing) existing.remove();
+  if (existing) {
+    existing.remove();
+    if (dialogueDismissResolve) {
+      dialogueDismissResolve();
+      dialogueDismissResolve = null;
+    }
+  }
 
   const dialogue = document.createElement('div');
   dialogue.className = `enemy-dialogue enemy-dialogue-${type}`;
@@ -989,6 +1000,18 @@ function showEnemyDialogue(text, type = 'possessed') {
   enemyDialogueActive = true;
   enemyDialogueType = type;
 
+  // Pause combat timers while dialogue is active (for glitching dialogue mid-combat)
+  if (type === 'glitching' && realtimeCombatActive) {
+    if (playerAttackTimer) {
+      clearTimeout(playerAttackTimer);
+      playerAttackTimer = null;
+    }
+    if (enemyAttackTimer) {
+      clearTimeout(enemyAttackTimer);
+      enemyAttackTimer = null;
+    }
+  }
+
   // Get enemy personality for voice selection
   const personality = gameState.combat?.enemy?.personality || 'default';
 
@@ -996,6 +1019,43 @@ function showEnemyDialogue(text, type = 'possessed') {
   // Use a reasonable duration for TTS pacing
   const ttsDuration = type === 'liberated' ? 4000 : type === 'glitching' ? 3000 : 2500;
   speakEnemyDialogue(text, ttsDuration, personality);
+
+  // Create and store promise that resolves when dialogue is dismissed
+  dialogueDismissPromise = new Promise(resolve => {
+    dialogueDismissResolve = resolve;
+  });
+  return dialogueDismissPromise;
+}
+
+// Dismiss enemy dialogue when user presses Enter
+function dismissEnemyDialogue() {
+  const enemyArea = document.querySelector('.vn-enemy-area');
+  const dialogue = enemyArea?.querySelector('.enemy-dialogue');
+  if (dialogue) {
+    dialogue.remove();
+  }
+
+  // Save type before clearing for timer restart logic
+  const wasGlitching = enemyDialogueType === 'glitching';
+
+  // Clear state flags
+  enemyDialogueActive = false;
+  enemyDialogueType = null;
+
+  // Resume combat timers if we were paused during glitching dialogue
+  if (wasGlitching && realtimeCombatActive) {
+    playerAttackPending = false;
+    enemyAttackPending = false;
+    playerAttackTimer = setTimeout(executePlayerAttack, currentPlayerInterval);
+    enemyAttackTimer = setTimeout(executeEnemyAttack, currentEnemyInterval);
+  }
+
+  // Resolve the promise so waiting code can continue
+  if (dialogueDismissResolve) {
+    dialogueDismissResolve();
+    dialogueDismissResolve = null;
+    dialogueDismissPromise = null;
+  }
 }
 
 /**
@@ -1981,6 +2041,11 @@ async function stopRealtimeCombat(result) {
 
   // Brief pause before narration (let final damage numbers display)
   await delay(600);
+
+  // Wait for enemy dialogue to be dismissed (e.g., liberated dialogue on victory)
+  if (dialogueDismissPromise) {
+    await dialogueDismissPromise;
+  }
 
   // Animate victory or defeat
   if (result.victory) {
@@ -4909,6 +4974,13 @@ function advanceNarration() {
 function handleKeypress(e) {
   // Don't trigger if user is typing in an input
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  // Enter to dismiss enemy dialogue (highest priority)
+  if (e.key === 'Enter' && enemyDialogueActive) {
+    e.preventDefault();
+    dismissEnemyDialogue();
+    return;
+  }
 
   // Enter to continue on result modal (after beating enemy)
   if (e.key === 'Enter' && !resultModal.classList.contains('hidden')) {
