@@ -33,6 +33,7 @@ export {
   processOnRoomEnterChips,
   processOnStatusInflictChips,
   processSpecialOnHitChips,
+  checkDiceRetrigger,
   updateCounterStacks,
   calculateCounterBonuses,
   getChipDisplayInfo,

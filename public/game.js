@@ -1276,6 +1276,9 @@ async function performAttack(attackType = 'normal') {
         animateEnemyHurt();
       }
 
+      // Display chip effect feedback
+      displayChipEffects(attackData, true);
+
       // Use server narration or fallback
       const narration = result.narration || FALLBACK_NARRATIONS.playerAttack(attackData);
       appendNarration(narration);
@@ -1470,7 +1473,13 @@ async function enemyTurn() {
     if (damage > 0) {
       showDamageNumber(damage, true, attackData?.critical);
       animatePlayerHurt();
+    } else if (attackData?.dodge || attackData?.perfectDodge) {
+      // Show dodge feedback
+      showDamageNumber(0, true, false, false, false, attackData.perfectDodge ? 'perfect' : 'dodge');
     }
+
+    // Display chip effect feedback (player defensive effects)
+    displayChipEffects(attackData, false);
 
     // Use server narration or fallback
     const narration = result.narration || FALLBACK_NARRATIONS.enemyAttack(attackData, enemy);
@@ -1691,20 +1700,20 @@ function animateEnemyDefeat() {
   enemySprite.classList.add('defeated');
 }
 
-function showChipEffect(effectName, isPlayer = false) {
+function showChipEffect(effectName, isPlayer = false, type = 'buff') {
   const targetArea = isPlayer ? document.querySelector('.vn-player-area') : document.querySelector('.vn-enemy-area');
   if (!targetArea) return;
 
   const effectEl = document.createElement('div');
-  effectEl.className = 'damage-number chip-effect';
+  effectEl.className = `chip-effect ${type}`;
   effectEl.textContent = effectName;
 
   // Position below the damage number
   effectEl.style.left = `${50 + (Math.random() - 0.5) * 30}%`;
-  effectEl.style.top = `${50 + Math.random() * 15}%`;
+  effectEl.style.top = `${55 + Math.random() * 10}%`;
 
   targetArea.appendChild(effectEl);
-  setTimeout(() => effectEl.remove(), 1200);
+  setTimeout(() => effectEl.remove(), 1500);
 }
 
 function showDotDamage(damage, isPlayer = false) {
@@ -1768,6 +1777,67 @@ function showDamageNumber(damage, isPlayer, isCritical = false, isHeal = false, 
 
   // Remove after animation
   setTimeout(() => damageEl.remove(), 1000);
+}
+
+/**
+ * Process and display chip effects from attack result
+ */
+function displayChipEffects(attackData, isPlayerAttack = true) {
+  // On-crit effects (player attacking)
+  if (isPlayerAttack && attackData.anyCritical) {
+    if (attackData.onCritHeal > 0) {
+      setTimeout(() => showChipEffect(`CHIP +${attackData.onCritHeal} HP`, true, 'heal'), 200);
+    }
+    if (attackData.doubleCritDamage) {
+      setTimeout(() => showChipEffect('DOUBLE CRIT!', false, 'special'), 300);
+    }
+    if (attackData.onCritBuffs?.length > 0) {
+      setTimeout(() => showChipEffect('BUFF!', true, 'buff'), 400);
+    }
+  }
+
+  // On-dodge effects (player dodging enemy attack)
+  if (!isPlayerAttack && (attackData.dodge || attackData.perfectDodge)) {
+    if (attackData.onDodgeBuffs?.length > 0) {
+      setTimeout(() => showChipEffect('SPEED UP!', true, 'buff'), 300);
+    }
+    if (attackData.onDodgeCounterAttack) {
+      setTimeout(() => showChipEffect('COUNTER!', true, 'special'), 400);
+    }
+  }
+
+  // On-damage effects (player taking damage)
+  if (!isPlayerAttack && attackData.damage > 0) {
+    if (attackData.onDamageHeal > 0) {
+      setTimeout(() => showChipEffect(`CHIP +${attackData.onDamageHeal} HP`, true, 'heal'), 300);
+    }
+    if (attackData.damageNegated) {
+      setTimeout(() => showChipEffect('NEGATED!', true, 'special'), 200);
+    }
+    if (attackData.chipDamageReduction?.length > 0) {
+      setTimeout(() => showChipEffect('REDUCED!', true, 'buff'), 300);
+    }
+  }
+
+  // On-low-hp effects (player surviving lethal)
+  if (!isPlayerAttack) {
+    if (attackData.survivedWithOneHp) {
+      setTimeout(() => showChipEffect('SURVIVE!', true, 'survive'), 100);
+    }
+    if (attackData.shieldAbsorbed > 0) {
+      setTimeout(() => showChipEffect(`SHIELD -${attackData.shieldAbsorbed}`, true, 'buff'), 200);
+    }
+  }
+
+  // Chip status effects applied to enemy
+  if (isPlayerAttack && attackData.chipEffects?.length > 0) {
+    for (let i = 0; i < attackData.chipEffects.length; i++) {
+      const effect = attackData.chipEffects[i];
+      if (effect.status) {
+        setTimeout(() => showChipEffect(effect.status.toUpperCase(), false, 'special'), 400 + i * 150);
+      }
+    }
+  }
 }
 
 // ============ REALTIME COMBAT FUNCTIONS ============

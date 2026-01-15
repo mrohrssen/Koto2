@@ -3,7 +3,7 @@
  * All player combat action execution
  */
 
-import { getItem, getSkill, calculateEquipmentBonuses, processOnHitChips, processOnKillChips, processOnDamageChips, processOnCritChips, processOnHealChips, processOnStatusInflictChips, processSpecialOnHitChips, getEquippedChips } from '../items.js';
+import { getItem, getSkill, calculateEquipmentBonuses, processOnHitChips, processOnKillChips, processOnDamageChips, processOnCritChips, processOnHealChips, processOnStatusInflictChips, processSpecialOnHitChips, checkDiceRetrigger, getEquippedChips } from '../items.js';
 import {
   calculateFleeChance,
   calculateItemHealing,
@@ -96,21 +96,36 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
     const equippedChipsForCrit = getEquippedChips(player);
     if (equippedChipsForCrit.length > 0) {
       const critEffects = processOnCritChips(equippedChipsForCrit);
+      let anyEffectTriggered = false;
       if (critEffects.heal > 0) {
+        anyEffectTriggered = true;
         const playerStats = getPlayerCombatStats(player);
         const hpBefore = player.hp;
         player.hp = Math.min(playerStats.maxHp, player.hp + critEffects.heal);
         result.onCritHeal = player.hp - hpBefore;
       }
       if (critEffects.doubleCritDamage) {
+        anyEffectTriggered = true;
         result.totalDamage *= 2;
         result.doubleCritDamage = true;
       }
       if (critEffects.bonusHit) {
+        anyEffectTriggered = true;
         result.bonusHitFromCrit = true;
       }
       if (critEffects.buffs.length > 0) {
+        anyEffectTriggered = true;
         result.onCritBuffs = critEffects.buffs;
+      }
+      // Dice chip: retrigger effects
+      if (anyEffectTriggered && checkDiceRetrigger(equippedChipsForCrit)) {
+        result.diceRetriggered = true;
+        if (critEffects.heal > 0 && result.onCritHeal > 0) {
+          const playerStats = getPlayerCombatStats(player);
+          const hpBefore = player.hp;
+          player.hp = Math.min(playerStats.maxHp, player.hp + critEffects.heal);
+          result.onCritHeal += (player.hp - hpBefore);
+        }
       }
     }
   }
@@ -195,6 +210,28 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
       }
       // Check if bonus damage defeated enemy
       result.enemyDefeated = enemy.hp <= 0;
+    }
+
+    // Process special on-hit chips (pepper, pachinkoBall)
+    const specialOnHitEffects = processSpecialOnHitChips(equippedChips);
+
+    // Pepper chip: enemyMissNextTurn - apply BUFFER_OVERFLOW to make enemy skip next turn
+    if (specialOnHitEffects.enemyMissNextTurn && !result.enemyDefeated) {
+      const applied = applyStatusEffect(enemy, 'bufferOverflow', 1, true);
+      if (applied.applied) {
+        result.enemyMissNextTurn = true;
+        if (!result.chipEffects) result.chipEffects = [];
+        result.chipEffects.push({
+          chipName: 'コショウ', // Pepper
+          special: 'enemyMissNextTurn',
+          status: 'bufferOverflow'
+        });
+      }
+    }
+
+    // Cascade chip effect will be handled by the caller (needs to trigger additional attack)
+    if (specialOnHitEffects.cascade) {
+      result.cascadeTriggered = true;
     }
   }
 

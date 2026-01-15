@@ -1654,13 +1654,31 @@ export class GameManager {
     if (attackerType === 'player') {
       // Player attack
       const playerResult = executePlayerAttack(this.run.player, this.combat.enemy, 'normal');
+
+      // Handle cascade effect (pachinkoBall chip) - bonus hit with same damage
+      if (playerResult.cascadeTriggered && playerResult.anyHit && !playerResult.enemyDefeated) {
+        const cascadeDamage = playerResult.totalDamage;
+        this.combat.enemy.hp = Math.max(0, this.combat.enemy.hp - cascadeDamage);
+        playerResult.cascadeDamage = cascadeDamage;
+        playerResult.totalDamage += cascadeDamage;
+        playerResult.enemyDefeated = this.combat.enemy.hp <= 0;
+        if (!playerResult.chipEffects) playerResult.chipEffects = [];
+        playerResult.chipEffects.push({
+          chipName: 'パチンコ玉', // Pachinko Ball
+          special: 'cascade',
+          bonusDamage: cascadeDamage
+        });
+      }
+
       result.playerAttack = {
         damage: playerResult.totalDamage,
         critical: playerResult.anyCritical,
         miss: !playerResult.anyHit && !playerResult.anyDodge && !playerResult.anyPerfectDodge,
         dodged: playerResult.anyDodge,
         perfectDodge: playerResult.anyPerfectDodge,
-        chipEffects: playerResult.chipEffects || []
+        chipEffects: playerResult.chipEffects || [],
+        cascadeTriggered: playerResult.cascadeTriggered,
+        cascadeDamage: playerResult.cascadeDamage
       };
 
       // Tick enemy status effects (DoT damage from defrag, overheated, etc.)
@@ -1867,6 +1885,21 @@ export class GameManager {
     // Execute the attack with the specified type
     const result = executePlayerAttack(this.run.player, this.combat.enemy, attackType);
     this.combat.lastAction = result;
+
+    // Handle cascade effect (pachinkoBall chip) - bonus hit with same damage
+    if (result.cascadeTriggered && result.anyHit && !result.enemyDefeated) {
+      const cascadeDamage = result.totalDamage;
+      this.combat.enemy.hp = Math.max(0, this.combat.enemy.hp - cascadeDamage);
+      result.cascadeDamage = cascadeDamage;
+      result.totalDamage += cascadeDamage;
+      result.enemyDefeated = this.combat.enemy.hp <= 0;
+      if (!result.chipEffects) result.chipEffects = [];
+      result.chipEffects.push({
+        chipName: 'パチンコ玉', // Pachinko Ball
+        special: 'cascade',
+        bonusDamage: cascadeDamage
+      });
+    }
 
     // Apply passive damage reduction (e.g., golem's stone form)
     const reduction = getPassiveDamageReduction(this.combat.enemy);
@@ -2092,6 +2125,21 @@ export class GameManager {
 
       return {
         type: 'enemy_sleeping',
+        skipped: true,
+        nextIntent: this.combat.intent,
+        continue: true
+      };
+    }
+
+    // Check if enemy has buffer overflow (from pepper chip - skip their turn)
+    if (hasStatusEffect(this.combat.enemy, 'bufferOverflow')) {
+      this.narrate(`${this.combat.enemy.name}のシステムがオーバーロード！攻撃できない！`);
+
+      // Still tick effects and select next intent
+      this._endEnemyTurn();
+
+      return {
+        type: 'enemy_overloaded',
         skipped: true,
         nextIntent: this.combat.intent,
         continue: true

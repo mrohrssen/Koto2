@@ -2654,6 +2654,21 @@ export function processSpecialOnHitChips(chips) {
 }
 
 /**
+ * Check if dice chip triggers a retrigger of chip effects
+ * @param {array} chips - Player's equipped chips
+ * @returns {boolean} Whether retrigger should occur
+ */
+export function checkDiceRetrigger(chips) {
+  const diceChip = chips.find(c => c.id === 'dice');
+  if (!diceChip) return false;
+
+  const effect = diceChip.effects?.onEffectTrigger;
+  if (!effect || !effect.retrigger) return false;
+
+  return Math.random() < effect.chance;
+}
+
+/**
  * Update counter chip stacks
  * @param {object} counterStacks - Current stack counts { chipId: count }
  * @param {array} chips - Player's chips
