@@ -25,50 +25,23 @@ export class GameHelper {
   // ============ CHARACTER CREATION ============
 
   async createCharacter(name: string = 'TestHacker', stats?: Partial<Stats>): Promise<void> {
-    this.log('createCharacter', `name=${name}`);
-    const modal = this.page.locator(SELECTORS.createCharModal);
+    this.log('createCharacter', 'clicking Start Game button');
 
-    // If modal not visible, click the first button in action panel
-    if (!(await modal.isVisible())) {
-      const actionPanel = this.page.locator(SELECTORS.actionPanel);
-      const firstBtn = actionPanel.locator('button').first();
-      if (await firstBtn.isVisible()) {
-        await firstBtn.click();
-      }
-    }
-    await expect(modal).toBeVisible({ timeout: 5000 });
+    // Just click the Start Game button - no modal anymore
+    const actionPanel = this.page.locator(SELECTORS.actionPanel);
+    const startBtn = actionPanel.locator('button').first();
 
-    // Set character name
-    if (name) {
-      await this.page.fill(SELECTORS.charName, name);
+    if (await startBtn.isVisible()) {
+      await startBtn.click();
     }
 
-    // Allocate stats if provided
-    if (stats) {
-      for (const [stat, targetValue] of Object.entries(stats)) {
-        await this.allocateStat(stat as keyof Stats, targetValue);
-      }
-    }
+    // Wait for hub phase
+    await this.page.waitForFunction(() => {
+      const state = (window as any).gameState;
+      return state?.phase === 'hub';
+    }, { timeout: 5000 });
 
-    // Click create button
-    await this.page.click(SELECTORS.createCharBtn);
-    await expect(modal).toBeHidden({ timeout: 5000 });
     this.log('createCharacter', 'done');
-  }
-
-  async allocateStat(stat: keyof Stats, targetValue: number): Promise<void> {
-    const currentValue = await this.getCreateStatValue(stat);
-    const diff = targetValue - currentValue;
-
-    if (diff > 0) {
-      for (let i = 0; i < diff; i++) {
-        await this.page.click(`${SELECTORS.statPlus}[data-stat="${stat}"]`);
-      }
-    } else if (diff < 0) {
-      for (let i = 0; i < Math.abs(diff); i++) {
-        await this.page.click(`${SELECTORS.statMinus}[data-stat="${stat}"]`);
-      }
-    }
   }
 
   async getCreateStatValue(stat: keyof Stats): Promise<number> {

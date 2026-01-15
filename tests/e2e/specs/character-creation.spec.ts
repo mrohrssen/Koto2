@@ -12,131 +12,29 @@ test.describe('Character Creation', () => {
     await cleanupAfterTest(page);
   });
 
-  test('should show create character modal for new game', async ({ page }) => {
-    // On a fresh game, the create character modal or button should be visible
-    const modal = page.locator(SELECTORS.createCharModal);
+  test('should show start game button for new game', async ({ page }) => {
     const actionPanel = page.locator(SELECTORS.actionPanel);
+    const startBtn = actionPanel.locator('button').first();
 
-    // Either modal is shown or there's a button to create character
-    const modalVisible = await modal.isVisible();
-    const hasCreateBtn = await actionPanel.locator('button').first().isVisible();
-
-    expect(modalVisible || hasCreateBtn).toBeTruthy();
+    await expect(startBtn).toBeVisible();
+    await expect(startBtn).toContainText('Start Game');
   });
 
-  test('should create character with default name', async ({ gameHelper }) => {
+  test('should create character and go to hub', async ({ gameHelper }) => {
     await gameHelper.createCharacter('');
     const phase = await gameHelper.getPhase();
     expect(phase).toBe('hub');
   });
 
-  test('should create character with custom name', async ({ page, gameHelper }) => {
-    await gameHelper.createCharacter('CyberNinja');
+  test('should start with default stats', async ({ page, gameHelper }) => {
+    await gameHelper.createCharacter('');
 
-    const playerName = await page.locator(SELECTORS.playerNameDisplay).textContent();
-    expect(playerName).toContain('CyberNinja');
-  });
+    // Should be at hub with a player
+    const phase = await gameHelper.getPhase();
+    expect(phase).toBe('hub');
 
-  test('should have stat points to allocate', async ({ page, gameHelper }) => {
-    // Open character creation
-    const modal = page.locator(SELECTORS.createCharModal);
-    if (!(await modal.isVisible())) {
-      const createBtn = page.locator(`${SELECTORS.actionPanel} button`).first();
-      if (await createBtn.isVisible()) {
-        await createBtn.click();
-      }
-    }
-    await expect(modal).toBeVisible();
-
-    // Stat points display should exist and have a number
-    const pointsText = await page.locator(SELECTORS.createStatPoints).textContent();
-    expect(pointsText).toBeTruthy();
-    expect(parseInt(pointsText || '0')).toBeGreaterThanOrEqual(0);
-  });
-
-  test('should allocate stat points during creation', async ({ page, gameHelper }) => {
-    const modal = page.locator(SELECTORS.createCharModal);
-    if (!(await modal.isVisible())) {
-      const createBtn = page.locator(`${SELECTORS.actionPanel} button`).first();
-      if (await createBtn.isVisible()) {
-        await createBtn.click();
-      }
-    }
-    await expect(modal).toBeVisible();
-
-    // Default STR starts at 5
-    const initialStr = await gameHelper.getCreateStatValue('str');
-    expect(initialStr).toBe(5);
-
-    // First decrease LUK to free up points (all points are pre-allocated)
-    await page.click(`${SELECTORS.statMinus}[data-stat="luk"]`);
-    await page.click(`${SELECTORS.statMinus}[data-stat="luk"]`);
-
-    // Now click plus button to increase STR
-    await page.click(`${SELECTORS.statPlus}[data-stat="str"]`);
-
-    const newStr = await gameHelper.getCreateStatValue('str');
-    expect(newStr).toBeGreaterThan(initialStr);
-  });
-
-  test('should update derived stats preview when allocating', async ({ page }) => {
-    const modal = page.locator(SELECTORS.createCharModal);
-    if (!(await modal.isVisible())) {
-      const createBtn = page.locator(`${SELECTORS.actionPanel} button`).first();
-      if (await createBtn.isVisible()) {
-        await createBtn.click();
-      }
-    }
-    await expect(modal).toBeVisible();
-
-    const initialAtk = await page.locator(SELECTORS.previewAtk).textContent();
-
-    // First decrease LUK significantly to free up enough points
-    await page.click(`${SELECTORS.statMinus}[data-stat="luk"]`);
-    await page.click(`${SELECTORS.statMinus}[data-stat="luk"]`);
-    await page.click(`${SELECTORS.statMinus}[data-stat="luk"]`);
-    await page.click(`${SELECTORS.statMinus}[data-stat="luk"]`);
-
-    // Now increase STR multiple times to affect ATK
-    await page.click(`${SELECTORS.statPlus}[data-stat="str"]`);
-    await page.click(`${SELECTORS.statPlus}[data-stat="str"]`);
-
-    const newAtk = await page.locator(SELECTORS.previewAtk).textContent();
-    // ATK should have increased after adding STR
-    expect(parseInt(newAtk || '0')).toBeGreaterThan(parseInt(initialAtk || '0'));
-  });
-
-  test('should reset stats to default values', async ({ page, gameHelper }) => {
-    const modal = page.locator(SELECTORS.createCharModal);
-    if (!(await modal.isVisible())) {
-      const createBtn = page.locator(`${SELECTORS.actionPanel} button`).first();
-      if (await createBtn.isVisible()) {
-        await createBtn.click();
-      }
-    }
-    await expect(modal).toBeVisible();
-
-    // Note initial STR value (default is 5)
-    const initialStr = await gameHelper.getCreateStatValue('str');
-    expect(initialStr).toBe(5);
-
-    // Decrease STR to change it (since all points are pre-allocated)
-    await page.click(`${SELECTORS.statMinus}[data-stat="str"]`);
-    await page.click(`${SELECTORS.statMinus}[data-stat="str"]`);
-
-    // STR should have decreased
-    const midStr = await gameHelper.getCreateStatValue('str');
-    expect(midStr).toBeLessThan(initialStr);
-
-    // Reset
-    await page.click(SELECTORS.resetStatsBtn);
-
-    // Check stats are back to default (5 is the default)
-    const strValue = await gameHelper.getCreateStatValue('str');
-    expect(strValue).toBe(5);
-
-    // Points should be back to 0 (all allocated)
-    const finalPoints = await gameHelper.getCreateStatPoints();
-    expect(finalPoints).toBe(0);
+    // Player stats panel should be visible
+    const statsPanel = page.locator(SELECTORS.playerStats);
+    await expect(statsPanel).toBeVisible();
   });
 });

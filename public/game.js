@@ -3374,8 +3374,8 @@ function updateActionPanel() {
   switch (phase) {
     case 'no_save':
       actionPanel.innerHTML = `
-        <button class="action-btn primary" onclick="openCreateCharModal()">
-          Create Hacker
+        <button class="action-btn primary" onclick="createCharacter()">
+          Start Game
         </button>
       `;
       break;
@@ -5504,20 +5504,50 @@ function renderChipModal() {
     }
   }
 
-  // Build inventory chips
+  // Build inventory chips - check if each chip is equipped somewhere
   let inventoryHtml = '';
   if (inventory.length === 0) {
     inventoryHtml = '<p class="empty-msg">No chips in inventory. Defeat enemies to collect chips!</p>';
   } else {
+    // Build map of which chips are equipped where
+    const equippedMap = {};
+    for (const slot of ['weapon', 'body', 'shield', 'accessory']) {
+      const slotChips = chipLoadoutCache.equipment[slot]?.equippedChips || [];
+      for (const c of slotChips) {
+        equippedMap[c.id] = slot;
+      }
+    }
+
     for (const chip of inventory) {
       const rarityClass = `rarity-${chip.rarity || 'common'}`;
       const slotCost = chip.rarity === 'legendary' ? 3 : chip.rarity === 'epic' ? 2 : 1;
       const iconId = chip.baseId || chip.id.replace(/_(common|uncommon|rare|epic|legendary)$/, '');
+
+      // Check if chip is equipped somewhere
+      const equippedSlot = equippedMap[chip.id];
+      const isEquippedHere = equippedSlot === currentChipModalSlot;
+      const isEquippedElsewhere = equippedSlot && equippedSlot !== currentChipModalSlot;
+
+      // Determine click action and styling
+      let onClick, title, extraClass = '';
+      if (isEquippedHere) {
+        onClick = `removeChipFromSlot('${chip.id}')`;
+        title = 'Click to unequip';
+        extraClass = ' equipped-here';
+      } else if (isEquippedElsewhere) {
+        onClick = `toggleChipEquip('${chip.id}', '${equippedSlot}')`;
+        title = `Equipped on ${equippedSlot} - click to move here`;
+        extraClass = ' equipped-elsewhere';
+      } else {
+        onClick = `addChipToSlot('${chip.id}')`;
+        title = 'Click to equip';
+      }
+
       inventoryHtml += `
-        <div class="inventory-chip ${rarityClass}" onclick="addChipToSlot('${chip.id}')" title="Click to equip">
+        <div class="inventory-chip ${rarityClass}${extraClass}" onclick="${onClick}" title="${title}">
           <img class="inventory-chip-icon" src="/assets/icons/chips/${iconId}.png" alt="" onerror="this.style.display='none'">
           <div class="inventory-chip-content">
-            <span class="chip-name">${chip.name}</span>
+            <span class="chip-name">${chip.name}${isEquippedHere ? ' ✓' : ''}${isEquippedElsewhere ? ' (' + equippedSlot + ')' : ''}</span>
             <span class="chip-info">
               <span class="chip-category">${getCategoryLabel(chip.category)}</span>
               <span class="chip-cost">${slotCost} slot${slotCost > 1 ? 's' : ''}</span>
@@ -5697,11 +5727,65 @@ async function removeChipFromSlot(chipId) {
   }
 }
 
+/**
+ * Toggle chip equip - unequip from one slot and optionally equip to current slot
+ */
+async function toggleChipEquip(chipId, fromSlot) {
+  try {
+    // First unequip from the other slot
+    const unequipResponse = await fetch('/api/game/unequip-chip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        equipmentSlot: fromSlot,
+        chipId: chipId
+      })
+    });
+
+    const unequipResult = await unequipResponse.json();
+    if (unequipResult.error) {
+      showNarration(`取り外し失敗: ${unequipResult.error}`);
+      return;
+    }
+
+    // Then equip to current slot
+    if (currentChipModalSlot) {
+      const equipResponse = await fetch('/api/game/equip-chip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          equipmentSlot: currentChipModalSlot,
+          chipId: chipId
+        })
+      });
+
+      const equipResult = await equipResponse.json();
+      if (equipResult.error) {
+        showNarration(`装着失敗: ${equipResult.error}`);
+      }
+    }
+
+    // Refresh loadout and re-render
+    const loadoutResponse = await fetch('/api/game/chip-loadout');
+    chipLoadoutCache = await loadoutResponse.json();
+    renderChipModal();
+
+    // Also refresh main game state
+    await loadGameState();
+    updateUI();
+
+  } catch (error) {
+    console.error('Failed to toggle chip:', error);
+    showNarration('チップの移動に失敗しました');
+  }
+}
+
 // Make chip modal functions globally accessible
 window.openChipModal = openChipModal;
 window.closeChipModal = closeChipModal;
 window.addChipToSlot = addChipToSlot;
 window.removeChipFromSlot = removeChipFromSlot;
+window.toggleChipEquip = toggleChipEquip;
 
 // ============ LIBERATION TRACKER MODAL ============
 let liberationTrackerCache = null;
@@ -7001,6 +7085,7 @@ async function allocateStatPoint(statKey) {
 }
 
 // Expose functions to global scope for onclick handlers
+window.createCharacter = createCharacter;
 window.openCreateCharModal = openCreateCharModal;
 window.startNewRun = startNewRun;
 window.startEncounter = startEncounter;
