@@ -1022,13 +1022,15 @@ function showEnemyDialogue(text, type = 'possessed') {
     }
   }
 
-  // Get enemy personality for voice selection
-  const personality = gameState.combat?.enemy?.personality || 'default';
+  // Get enemy personality and speakerId for voice selection
+  const enemy = gameState.combat?.enemy;
+  const personality = enemy?.personality || 'default';
+  const speakerId = enemy?.speakerId; // Direct speaker assignment from enemy template
 
   // Speak enemy dialogue via TTS with personality-based voice
   // Use a reasonable duration for TTS pacing
   const ttsDuration = type === 'liberated' ? 4000 : type === 'glitching' ? 3000 : 2500;
-  speakEnemyDialogue(text, ttsDuration, personality);
+  speakEnemyDialogue(text, ttsDuration, personality, speakerId);
 
   // Create and store promise that resolves when dialogue is dismissed
   dialogueDismissPromise = new Promise(resolve => {
@@ -1070,14 +1072,14 @@ function dismissEnemyDialogue() {
 
 /**
  * Speak enemy dialogue using TTS
- * Uses personality-based voice selection
+ * Uses direct speakerId if available, otherwise falls back to personality-based voice selection
  * Hides word cards during playback if combat is active
  */
-async function speakEnemyDialogue(text, dialogueDuration, personality = 'default') {
+async function speakEnemyDialogue(text, dialogueDuration, personality = 'default', speakerId = null) {
   if (!ttsEnabled || !text || text.trim().length === 0) return;
 
-  // Get speaker ID based on personality
-  const enemySpeakerId = PERSONALITY_SPEAKERS[personality] || PERSONALITY_SPEAKERS.default;
+  // Use direct speakerId if provided, otherwise fall back to personality mapping
+  const enemySpeakerId = speakerId ?? PERSONALITY_SPEAKERS[personality] ?? PERSONALITY_SPEAKERS.default;
 
   // Hide word cards while enemy is speaking (if in combat)
   const wasInCombat = realtimeCombatActive;
