@@ -11,7 +11,8 @@ test.describe('Meta-Progression', () => {
   });
 
   test('should show upgrades button in hub', async ({ page }) => {
-    const upgradesBtn = page.locator(ACTION_BTNS.upgrades);
+    // The upgrades button has text "Upgrades" and class "secondary"
+    const upgradesBtn = page.locator('#action-panel button.secondary:has-text("Upgrades")');
     await expect(upgradesBtn).toBeVisible();
   });
 
@@ -48,25 +49,19 @@ test.describe('Meta-Progression', () => {
   test('should switch to achievements tab', async ({ page, gameHelper }) => {
     await gameHelper.openUpgrades();
 
-    // Click achievements tab
-    await page.click('[data-tab="achievements"]');
-    await page.waitForTimeout(300);
-
+    // Click achievements tab and wait for it to become active
     const achievementsTab = page.locator(SELECTORS.tabAchievements);
-    const isActive = await achievementsTab.evaluate(el => el.classList.contains('active'));
-    expect(isActive).toBeTruthy();
+    await page.click('[data-tab="achievements"]');
+    await expect(achievementsTab).toHaveClass(/active/);
   });
 
   test('should switch to stats tab', async ({ page, gameHelper }) => {
     await gameHelper.openUpgrades();
 
-    // Click stats tab
-    await page.click('[data-tab="stats"]');
-    await page.waitForTimeout(300);
-
+    // Click stats tab and wait for it to become active
     const statsTab = page.locator(SELECTORS.tabStats);
-    const isActive = await statsTab.evaluate(el => el.classList.contains('active'));
-    expect(isActive).toBeTruthy();
+    await page.click('[data-tab="stats"]');
+    await expect(statsTab).toHaveClass(/active/);
   });
 
   test('should close upgrades modal', async ({ page, gameHelper }) => {

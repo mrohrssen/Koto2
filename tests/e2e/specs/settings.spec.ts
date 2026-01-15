@@ -40,7 +40,7 @@ test.describe('Settings', () => {
     await gameHelper.openSettings();
 
     const ttsEnabled = page.locator(SELECTORS.gameTtsEnabled);
-    await expect(ttsEnabled).toBeAttached();
+    await expect(ttsEnabled).toBeVisible();
   });
 
   test('should have review type selector', async ({ page, gameHelper }) => {

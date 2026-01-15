@@ -17,9 +17,15 @@ export interface Stats {
 export class GameHelper {
   constructor(public page: Page) {}
 
+  private log(action: string, details?: string) {
+    const msg = details ? `[GameHelper] ${action}: ${details}` : `[GameHelper] ${action}`;
+    console.log(msg);
+  }
+
   // ============ CHARACTER CREATION ============
 
   async createCharacter(name: string = 'TestHacker', stats?: Partial<Stats>): Promise<void> {
+    this.log('createCharacter', `name=${name}`);
     const modal = this.page.locator(SELECTORS.createCharModal);
 
     // If modal not visible, click the first button in action panel
@@ -47,6 +53,7 @@ export class GameHelper {
     // Click create button
     await this.page.click(SELECTORS.createCharBtn);
     await expect(modal).toBeHidden({ timeout: 5000 });
+    this.log('createCharacter', 'done');
   }
 
   async allocateStat(stat: keyof Stats, targetValue: number): Promise<void> {
@@ -77,49 +84,67 @@ export class GameHelper {
   // ============ RUN MANAGEMENT ============
 
   async startRun(): Promise<void> {
+    this.log('startRun', 'starting...');
+    const phase = await this.getPhase();
+    this.log('startRun', `current phase: ${phase}`);
+
     // Find the "Infiltrate Tokyo" or start run button
     const actionPanel = this.page.locator(SELECTORS.actionPanel);
 
     // Try different selectors for start button
     let startBtn = actionPanel.locator('button.primary').first();
     if (!(await startBtn.isVisible({ timeout: 1000 }).catch(() => false))) {
-      // Fall back to any button in the action panel
+      this.log('startRun', 'no .primary button, trying first button');
       startBtn = actionPanel.locator('button').first();
     }
 
     if (await startBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      const btnText = await startBtn.textContent();
+      this.log('startRun', `clicking button: "${btnText}"`);
       await startBtn.click();
+      this.log('startRun', 'waiting for ward_selection phase...');
       await this.waitForPhase(['ward_selection'], 15000);
+      this.log('startRun', 'done');
+    } else {
+      this.log('startRun', 'ERROR: no visible button found');
     }
   }
 
   async selectWard(wardId: string): Promise<void> {
-    // Wait a moment for ward selection to be ready
-    await this.page.waitForTimeout(500);
+    this.log('selectWard', `wardId=${wardId}`);
 
-    // The game renders ward cards with class .ward-card
+    // Wait for ward cards to be visible first
     const wardCards = this.page.locator('.ward-card');
-    if (await wardCards.first().isVisible().catch(() => false)) {
-      await wardCards.first().click();
-    } else {
-      // Try any button in action panel as fallback
-      const btn = this.page.locator(`${SELECTORS.actionPanel} button`).first();
-      if (await btn.isVisible().catch(() => false)) {
-        await btn.click();
-      }
+    try {
+      await wardCards.first().waitFor({ state: 'visible', timeout: 5000 });
+    } catch (e) {
+      this.log('selectWard', 'ward cards not visible, waiting for UI render');
+      await this.page.waitForTimeout(1000);
     }
 
-    // Wait for any exploration-related phase
-    try {
-      await this.waitForPhase(['exploring', 'room', 'room_encounter', 'combat', 'boss_ready'], 15000);
-    } catch (e) {
-      // If timeout, check current phase and accept any non-ward_selection phase
-      const phase = await this.getPhase();
-      if (phase === 'ward_selection') {
-        throw e; // Still in ward selection, rethrow
+    if (await wardCards.count() > 0) {
+      await wardCards.first().click({ force: true });
+
+      // Wait for phase to change from ward_selection
+      try {
+        await this.page.waitForFunction(
+          () => {
+            const phase = (window as any).gameState?.phase;
+            return phase && phase !== 'ward_selection';
+          },
+          { timeout: 10000 }
+        );
+        this.log('selectWard', 'phase changed');
+      } catch (e) {
+        // Fallback to fixed wait if phase doesn't change
+        this.log('selectWard', 'phase wait timeout, using fixed wait');
+        await this.page.waitForTimeout(2000);
       }
-      // Otherwise we're in some other phase, continue
+    } else {
+      this.log('selectWard', 'no ward cards found');
     }
+
+    this.log('selectWard', 'done');
   }
 
   // ============ EXPLORATION ============

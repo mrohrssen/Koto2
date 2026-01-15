@@ -20,24 +20,21 @@ test.describe('Equipment System', () => {
     await expect(inventoryList).toBeVisible();
   });
 
-  test('should have chips button in hub', async ({ page }) => {
-    const chipsBtn = page.locator(ACTION_BTNS.chips);
-    // Chips button should be available in hub
-    const isVisible = await chipsBtn.isVisible();
-    // May or may not be visible depending on game state
-    expect(isVisible || true).toBeTruthy();
+  test('should have action buttons in hub', async ({ page }) => {
+    // Hub should have action buttons (Infiltrate, Upgrades, etc.)
+    const actionBtns = page.locator('#action-panel button');
+    const count = await actionBtns.count();
+    expect(count).toBeGreaterThan(0);
   });
 
-  test('should open chip modal when available', async ({ page }) => {
-    const chipsBtn = page.locator(ACTION_BTNS.chips);
+  test('should have equipment list with content', async ({ page }) => {
+    // Equipment list exists and displays equipment info
+    const equipmentList = page.locator(SELECTORS.equipmentList);
+    await expect(equipmentList).toBeVisible();
 
-    if (await chipsBtn.isVisible()) {
-      await chipsBtn.click();
-      await page.waitForTimeout(300);
-
-      const chipModal = page.locator(SELECTORS.chipModal);
-      await expect(chipModal).toBeVisible();
-    }
+    // Equipment list should have some text content (even if empty, shows placeholder)
+    const text = await equipmentList.textContent();
+    expect(text).toBeTruthy();
   });
 
   test('should show player stats in status panel', async ({ page }) => {

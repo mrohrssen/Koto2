@@ -4,7 +4,7 @@ import { SELECTORS } from '../utils/selectors';
 test.describe('Character Creation', () => {
   test.beforeEach(async ({ page }) => {
     await resetGameState(page);
-    await page.goto('/');
+    await page.goto('http://localhost:3000');
     await page.waitForLoadState('networkidle');
   });
 
@@ -68,8 +68,11 @@ test.describe('Character Creation', () => {
     const initialStr = await gameHelper.getCreateStatValue('str');
     expect(initialStr).toBe(5);
 
-    // Click plus button to increase
-    await page.click(`${SELECTORS.statPlus}[data-stat="str"]`);
+    // First decrease LUK to free up points (all points are pre-allocated)
+    await page.click(`${SELECTORS.statMinus}[data-stat="luk"]`);
+    await page.click(`${SELECTORS.statMinus}[data-stat="luk"]`);
+
+    // Now click plus button to increase STR
     await page.click(`${SELECTORS.statPlus}[data-stat="str"]`);
 
     const newStr = await gameHelper.getCreateStatValue('str');
@@ -87,11 +90,19 @@ test.describe('Character Creation', () => {
     await expect(modal).toBeVisible();
 
     const initialAtk = await page.locator(SELECTORS.previewAtk).textContent();
-    await page.click(`${SELECTORS.statPlus}[data-stat="str"]`);
+
+    // First decrease LUK significantly to free up enough points
+    await page.click(`${SELECTORS.statMinus}[data-stat="luk"]`);
+    await page.click(`${SELECTORS.statMinus}[data-stat="luk"]`);
+    await page.click(`${SELECTORS.statMinus}[data-stat="luk"]`);
+    await page.click(`${SELECTORS.statMinus}[data-stat="luk"]`);
+
+    // Now increase STR multiple times to affect ATK
     await page.click(`${SELECTORS.statPlus}[data-stat="str"]`);
     await page.click(`${SELECTORS.statPlus}[data-stat="str"]`);
 
     const newAtk = await page.locator(SELECTORS.previewAtk).textContent();
+    // ATK should have increased after adding STR
     expect(parseInt(newAtk || '0')).toBeGreaterThan(parseInt(initialAtk || '0'));
   });
 
@@ -105,16 +116,17 @@ test.describe('Character Creation', () => {
     }
     await expect(modal).toBeVisible();
 
-    // Note initial stat points
-    const initialPoints = await gameHelper.getCreateStatPoints();
+    // Note initial STR value (default is 5)
+    const initialStr = await gameHelper.getCreateStatValue('str');
+    expect(initialStr).toBe(5);
 
-    // Allocate some stats
-    await page.click(`${SELECTORS.statPlus}[data-stat="str"]`);
-    await page.click(`${SELECTORS.statPlus}[data-stat="str"]`);
+    // Decrease STR to change it (since all points are pre-allocated)
+    await page.click(`${SELECTORS.statMinus}[data-stat="str"]`);
+    await page.click(`${SELECTORS.statMinus}[data-stat="str"]`);
 
-    // Points should have decreased
-    const midPoints = await gameHelper.getCreateStatPoints();
-    expect(midPoints).toBeLessThan(initialPoints);
+    // STR should have decreased
+    const midStr = await gameHelper.getCreateStatValue('str');
+    expect(midStr).toBeLessThan(initialStr);
 
     // Reset
     await page.click(SELECTORS.resetStatsBtn);
@@ -123,8 +135,8 @@ test.describe('Character Creation', () => {
     const strValue = await gameHelper.getCreateStatValue('str');
     expect(strValue).toBe(5);
 
-    // Points should be restored
+    // Points should be back to 0 (all allocated)
     const finalPoints = await gameHelper.getCreateStatPoints();
-    expect(finalPoints).toBe(initialPoints);
+    expect(finalPoints).toBe(0);
   });
 });

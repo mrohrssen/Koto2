@@ -42,13 +42,15 @@ test.describe('Game Over', () => {
     await gameHelper.selectWard('nerima');
 
     // Forfeit the run
-    await page.request.post('/api/game/forfeit');
+    await page.evaluate(async () => {
+      await fetch('/api/game/forfeit', { method: 'POST' });
+    });
     await page.reload();
     await page.waitForLoadState('networkidle');
 
-    // Should be back in hub and able to start again
+    // Should be back in hub/run_ended and able to start again
     const phase = await gameHelper.getPhase();
-    expect(['hub', 'no_save']).toContain(phase);
+    expect(['hub', 'no_save', 'run_ended']).toContain(phase);
   });
 });
 

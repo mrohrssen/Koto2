@@ -32,7 +32,9 @@ test.describe('Shop System', () => {
 
   test('should track player gold', async ({ gameHelper }) => {
     const gold = await gameHelper.getPlayerGold();
-    expect(gold).toBeGreaterThanOrEqual(0);
+    // Players start with gold, should have positive amount
+    expect(typeof gold).toBe('number');
+    expect(gold).toBeGreaterThan(0);
   });
 });
 

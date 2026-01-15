@@ -8,7 +8,7 @@ export default defineConfig({
   workers: 1,
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
-    process.env.CI ? ['github'] : ['list']
+    ['list', { printSteps: true }]
   ],
 
   use: {
