@@ -1930,9 +1930,9 @@ async function executePlayerAttack() {
       return;
     }
 
-    // Schedule next player attack
+    // Schedule next player attack (unless dialogue is pausing combat)
     playerAttackPending = false;
-    if (realtimeCombatActive) {
+    if (realtimeCombatActive && !enemyDialogueActive) {
       playerAttackTimer = setTimeout(executePlayerAttack, currentPlayerInterval);
     }
 
@@ -2005,9 +2005,9 @@ async function executeEnemyAttack() {
       return;
     }
 
-    // Schedule next enemy attack
+    // Schedule next enemy attack (unless dialogue is pausing combat)
     enemyAttackPending = false;
-    if (realtimeCombatActive) {
+    if (realtimeCombatActive && !enemyDialogueActive) {
       enemyAttackTimer = setTimeout(executeEnemyAttack, currentEnemyInterval);
     }
 
