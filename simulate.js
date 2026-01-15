@@ -18,6 +18,7 @@
 
 import { runSimulation, DEFAULT_OPTIONS } from './src/game/simulation/simulator.js';
 import { SimulationStats } from './src/game/simulation/stats.js';
+import { getChip } from './src/game/items/chips.js';
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -212,6 +213,79 @@ function formatSummary(s) {
   // Performance
   lines.push(`Time: ${s.elapsed.toFixed(1)}s (${s.runsPerSecond.toFixed(1)} runs/sec)`);
   lines.push('');
+
+  // Best run details
+  if (s.bestRun) {
+    lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    lines.push('Best Run:');
+    lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    const b = s.bestRun;
+    lines.push(`  Floor: ${b.floor} | Bosses: ${b.bossesDefeated} | Enemies: ${b.enemiesDefeated}`);
+    lines.push(`  Level: ${b.playerLevel} | Damage Dealt: ${b.damageDealt.toLocaleString()}`);
+    lines.push(`  Victory: ${b.victory ? 'Yes' : 'No'}`);
+    lines.push('');
+    lines.push('  Chips Equipped:');
+    if (b.chips && b.chips.length > 0) {
+      // Count rarities
+      const rarityCounts = { common: 0, uncommon: 0, rare: 0, epic: 0, legendary: 0 };
+
+      for (const chipId of b.chips) {
+        // Parse rarity from chip ID (e.g., "boxCutter_uncommon")
+        const parts = chipId.split('_');
+        const rarity = parts[parts.length - 1];
+        if (rarityCounts[rarity] !== undefined) {
+          rarityCounts[rarity]++;
+        }
+      }
+
+      // Show rarity summary
+      const rarityParts = [];
+      if (rarityCounts.legendary > 0) rarityParts.push(`${rarityCounts.legendary} legendary`);
+      if (rarityCounts.epic > 0) rarityParts.push(`${rarityCounts.epic} epic`);
+      if (rarityCounts.rare > 0) rarityParts.push(`${rarityCounts.rare} rare`);
+      if (rarityCounts.uncommon > 0) rarityParts.push(`${rarityCounts.uncommon} uncommon`);
+      if (rarityCounts.common > 0) rarityParts.push(`${rarityCounts.common} common`);
+      lines.push(`  Total: ${b.chips.length} chips (${rarityParts.join(', ')})`);
+      lines.push('');
+
+      // Show each chip with effects
+      for (const chipId of b.chips) {
+        const chip = getChip(chipId);
+        if (chip) {
+          // Parse rarity from ID
+          const parts = chipId.split('_');
+          const rarity = parts[parts.length - 1];
+          const rarityTag = rarity !== 'common' ? ` [${rarity}]` : '';
+
+          // Format effects
+          let effectStr = '';
+          if (chip.effects?.stats) {
+            const statParts = Object.entries(chip.effects.stats)
+              .map(([stat, val]) => `+${val} ${stat.toUpperCase()}`)
+              .join(', ');
+            effectStr = statParts;
+          } else if (chip.effects?.onHit) {
+            effectStr = `on-hit: ${chip.effects.onHit.effect || 'special'}`;
+          } else if (chip.effects?.onKill) {
+            effectStr = `on-kill: ${chip.effects.onKill.effect || 'special'}`;
+          } else if (chip.effects?.onDamage) {
+            effectStr = `on-damage: ${chip.effects.onDamage.effect || 'special'}`;
+          } else if (chip.effects?.onCrit) {
+            effectStr = `on-crit: ${chip.effects.onCrit.effect || 'special'}`;
+          } else if (chip.category) {
+            effectStr = `[${chip.category}]`;
+          }
+
+          lines.push(`    - ${chip.nameEn || chip.name}${rarityTag}: ${effectStr}`);
+        } else {
+          lines.push(`    - ${chipId}`);
+        }
+      }
+    } else {
+      lines.push('    (none)');
+    }
+    lines.push('');
+  }
 
   return lines.join('\n');
 }

@@ -134,8 +134,8 @@ function simulateSingleRun(config) {
       case 'post_combat_shop':
         // Auto-allocate any stat points earned from level ups
         autoAllocateStats(gm);
-        // Skip post-combat shop for speed
-        gm.run.postCombatShop.active = false;
+        // Buy chips from shop if affordable
+        handlePostCombatShop(gm, config);
         break;
 
       case 'floor_complete':
@@ -377,6 +377,69 @@ function executePlayerAction(gm, action) {
 }
 
 /**
+ * Handle post-combat shop - buy affordable chips
+ */
+function handlePostCombatShop(gm, config) {
+  const shop = gm.run?.postCombatShop;
+  if (!shop?.active || !shop.items) {
+    gm.run.postCombatShop.active = false;
+    return;
+  }
+
+  const player = gm.run.player;
+
+  // Sort items by price (cheapest first) to maximize chip count
+  const sortedItems = [...shop.items].sort((a, b) => a.price - b.price);
+
+  // Try to buy chips we can afford
+  for (let i = 0; i < sortedItems.length; i++) {
+    const item = sortedItems[i];
+
+    // Find the original index in shop.items
+    const originalIndex = shop.items.findIndex(si => si.itemId === item.itemId);
+
+    if (player.gold >= item.price && originalIndex !== -1) {
+      try {
+        const result = gm.buyFromPostCombatShop(originalIndex);
+        if (result.success && config.verbose) {
+          console.log(`  Bought chip: ${item.nameEn || item.name} (${item.rarity}) for ${item.price}g`);
+        }
+        // After buying, try to equip the chip
+        if (result.success) {
+          tryEquipNewChip(gm, item.itemId);
+        }
+      } catch (e) {
+        // Skip if purchase fails
+      }
+    }
+  }
+
+  // Close shop when done
+  if (gm.run.postCombatShop?.active) {
+    gm.run.postCombatShop.active = false;
+  }
+}
+
+/**
+ * Try to equip a newly purchased chip to an available slot
+ */
+function tryEquipNewChip(gm, chipId) {
+  const player = gm.run?.player;
+  if (!player) return;
+
+  const slots = ['weapon', 'body', 'shield', 'accessory'];
+
+  // Find a slot with room for the chip
+  for (const slot of slots) {
+    const result = equipChip(player, slot, chipId);
+    if (result.success) {
+      return; // Successfully equipped
+    }
+  }
+  // If no slot has room, chip stays in inventory (still useful for some effects)
+}
+
+/**
  * Handle ward selection between floors
  */
 function handleWardSelection(gm) {
@@ -404,6 +467,16 @@ function extractRunResult(gm) {
   const floorsCleared = run?.stats?.floorsCleared || run?.floor || 1;
   const victory = floorsCleared >= 5 && run?.stats?.bossesDefeated >= 5;
 
+  // Extract equipped chips from all equipment slots
+  const equippedChips = [];
+  const slots = ['weapon', 'body', 'shield', 'accessory'];
+  for (const slot of slots) {
+    const eq = player?.equipment?.[slot];
+    if (eq?.equippedChips) {
+      equippedChips.push(...eq.equippedChips);
+    }
+  }
+
   return {
     victory,
     floor: run?.floor || 1,
@@ -416,7 +489,7 @@ function extractRunResult(gm) {
     playerLevel: player?.level || 1,
     playerHp: player?.hp || 0,
     playerMaxHp: player?.maxHp || 0,
-    chips: (player?.chips || []).map(c => c.id)
+    chips: equippedChips
   };
 }
 

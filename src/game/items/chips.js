@@ -294,7 +294,7 @@ export const CHIPS = {
     rarity: 'common',
     effects: {
       onHit: {
-        chance: 0.08,
+        chance: 0.24,
         status: 'defrag',
         duration: 3
       }
@@ -310,7 +310,7 @@ export const CHIPS = {
     rarity: 'common',
     effects: {
       onHit: {
-        chance: 0.10,
+        chance: 0.30,
         status: 'lag',
         duration: 2
       }
@@ -326,7 +326,7 @@ export const CHIPS = {
     rarity: 'uncommon',
     effects: {
       onHit: {
-        chance: 0.10,
+        chance: 0.300,
         status: 'bufferOverflow',
         duration: 1
       }
@@ -342,7 +342,7 @@ export const CHIPS = {
     rarity: 'uncommon',
     effects: {
       onHit: {
-        chance: 0.10,
+        chance: 0.300,
         status: 'corrupted',
         duration: 3
       }
@@ -358,7 +358,7 @@ export const CHIPS = {
     rarity: 'rare',
     effects: {
       onHit: {
-        chance: 0.10,
+        chance: 0.300,
         status: 'exposed',
         duration: 3
       }
@@ -374,7 +374,7 @@ export const CHIPS = {
     rarity: 'common',
     effects: {
       onHit: {
-        chance: 0.15,
+        chance: 0.45,
         status: 'overheated',
         duration: 1
       }
@@ -390,7 +390,7 @@ export const CHIPS = {
     rarity: 'common',
     effects: {
       onHit: {
-        chance: 0.10,
+        chance: 0.300,
         status: 'defrag',
         duration: 2
       }
@@ -406,7 +406,7 @@ export const CHIPS = {
     rarity: 'rare',
     effects: {
       onHit: {
-        chance: 0.10,
+        chance: 0.300,
         status: 'lag',
         duration: 2,
         bonusDamage: 3
@@ -423,7 +423,7 @@ export const CHIPS = {
     rarity: 'rare',
     effects: {
       onHit: {
-        chance: 0.08,
+        chance: 0.24,
         status: 'bufferOverflow',
         duration: 2
       }
@@ -439,7 +439,7 @@ export const CHIPS = {
     rarity: 'uncommon',
     effects: {
       onHit: {
-        chance: 0.10,
+        chance: 0.300,
         status: 'corrupted',
         duration: 2
       }
@@ -457,7 +457,7 @@ export const CHIPS = {
     rarity: 'uncommon',
     effects: {
       onKill: {
-        chance: 0.30,
+        chance: 0.900,
         heal: 10
       }
     }
@@ -472,7 +472,7 @@ export const CHIPS = {
     rarity: 'rare',
     effects: {
       onKill: {
-        chance: 0.20,
+        chance: 0.600,
         aspdBoost: 0.10,
         duration: 5000 // 5 seconds in ms
       }
@@ -488,7 +488,7 @@ export const CHIPS = {
     rarity: 'epic',
     effects: {
       onKill: {
-        chance: 0.15,
+        chance: 0.45,
         doubleCredits: true
       }
     }
@@ -503,7 +503,7 @@ export const CHIPS = {
     rarity: 'rare',
     effects: {
       onDamage: {
-        chance: 0.20,
+        chance: 0.600,
         damageReduction: 0.50
       }
     }
@@ -518,7 +518,7 @@ export const CHIPS = {
     rarity: 'epic',
     effects: {
       onKill: {
-        chance: 0.30,
+        chance: 0.900,
         aoeExplosion: true,
         aoeDamage: 15
       }
@@ -1022,7 +1022,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'common',
     effects: {
-      onHit: { chance: 0.12, status: 'defrag', duration: 1 }
+      onHit: { chance: 0.36, status: 'defrag', duration: 1 }
     }
   },
   safetyPin: {
@@ -1033,7 +1033,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'common',
     effects: {
-      onHit: { chance: 0.07, status: 'defrag', duration: 4 }
+      onHit: { chance: 0.21, status: 'defrag', duration: 4 }
     }
   },
   compass: {
@@ -1044,7 +1044,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'uncommon',
     effects: {
-      onHit: { chance: 0.15, status: 'defrag', duration: 2 }
+      onHit: { chance: 0.45, status: 'defrag', duration: 2 }
     }
   },
   boxCutter: {
@@ -1055,7 +1055,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'uncommon',
     effects: {
-      onHit: { chance: 0.10, status: 'defrag', duration: 3, bonusDamage: 5 }
+      onHit: { chance: 0.300, status: 'defrag', duration: 3, bonusDamage: 5 }
     }
   },
   dart: {
@@ -1066,7 +1066,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'uncommon',
     effects: {
-      onHit: { chance: 0.20, status: 'defrag', duration: 1 }
+      onHit: { chance: 0.600, status: 'defrag', duration: 1 }
     }
   },
 
@@ -1079,7 +1079,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'common',
     effects: {
-      onHit: { chance: 0.08, status: 'lag', duration: 3 }
+      onHit: { chance: 0.24, status: 'lag', duration: 3 }
     }
   },
   iceCream: {
@@ -1090,7 +1090,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'common',
     effects: {
-      onHit: { chance: 0.12, status: 'lag', duration: 2 }
+      onHit: { chance: 0.36, status: 'lag', duration: 2 }
     }
   },
   coldDrink: {
@@ -1101,7 +1101,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'common',
     effects: {
-      onHit: { chance: 0.07, status: 'lag', duration: 4 }
+      onHit: { chance: 0.21, status: 'lag', duration: 4 }
     }
   },
   popsicle: {
@@ -1112,7 +1112,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'uncommon',
     effects: {
-      onHit: { chance: 0.15, status: 'lag', duration: 2 }
+      onHit: { chance: 0.45, status: 'lag', duration: 2 }
     }
   },
 
@@ -1125,7 +1125,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'uncommon',
     effects: {
-      onHit: { chance: 0.05, status: 'bufferOverflow', duration: 1 }
+      onHit: { chance: 0.15, status: 'bufferOverflow', duration: 1 }
     }
   },
   brick: {
@@ -1136,7 +1136,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'uncommon',
     effects: {
-      onHit: { chance: 0.06, status: 'bufferOverflow', duration: 2 }
+      onHit: { chance: 0.18, status: 'bufferOverflow', duration: 2 }
     }
   },
   castIronPan: {
@@ -1147,7 +1147,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'rare',
     effects: {
-      onHit: { chance: 0.07, status: 'bufferOverflow', duration: 2 }
+      onHit: { chance: 0.21, status: 'bufferOverflow', duration: 2 }
     }
   },
   bowlingBall: {
@@ -1158,7 +1158,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'rare',
     effects: {
-      onHit: { chance: 0.12, status: 'bufferOverflow', duration: 1 }
+      onHit: { chance: 0.36, status: 'bufferOverflow', duration: 1 }
     }
   },
   textbook: {
@@ -1169,7 +1169,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'common',
     effects: {
-      onHit: { chance: 0.05, status: 'bufferOverflow', duration: 1 }
+      onHit: { chance: 0.15, status: 'bufferOverflow', duration: 1 }
     }
   },
 
@@ -1182,7 +1182,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'uncommon',
     effects: {
-      onHit: { chance: 0.08, status: 'corrupted', duration: 4 }
+      onHit: { chance: 0.24, status: 'corrupted', duration: 4 }
     }
   },
   bugSpray: {
@@ -1193,7 +1193,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'uncommon',
     effects: {
-      onHit: { chance: 0.12, status: 'corrupted', duration: 2 }
+      onHit: { chance: 0.36, status: 'corrupted', duration: 2 }
     }
   },
   deodorant: {
@@ -1204,7 +1204,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'common',
     effects: {
-      onHit: { chance: 0.07, status: 'corrupted', duration: 3 }
+      onHit: { chance: 0.21, status: 'corrupted', duration: 3 }
     }
   },
   hairSpray: {
@@ -1215,7 +1215,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'uncommon',
     effects: {
-      onHit: { chance: 0.10, status: 'corrupted', duration: 2 }
+      onHit: { chance: 0.300, status: 'corrupted', duration: 2 }
     }
   },
   sauce: {
@@ -1226,7 +1226,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'common',
     effects: {
-      onHit: { chance: 0.15, status: 'corrupted', duration: 1 }
+      onHit: { chance: 0.45, status: 'corrupted', duration: 1 }
     }
   },
 
@@ -1239,7 +1239,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'rare',
     effects: {
-      onHit: { chance: 0.15, status: 'exposed', duration: 2 }
+      onHit: { chance: 0.45, status: 'exposed', duration: 2 }
     }
   },
   discoBall: {
@@ -1250,7 +1250,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'rare',
     effects: {
-      onHit: { chance: 0.08, status: 'exposed', duration: 4 }
+      onHit: { chance: 0.24, status: 'exposed', duration: 4 }
     }
   },
   aluminumFoil: {
@@ -1261,7 +1261,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'common',
     effects: {
-      onHit: { chance: 0.12, status: 'exposed', duration: 2 }
+      onHit: { chance: 0.36, status: 'exposed', duration: 2 }
     }
   },
   cd: {
@@ -1272,7 +1272,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'uncommon',
     effects: {
-      onHit: { chance: 0.10, status: 'exposed', duration: 2 }
+      onHit: { chance: 0.300, status: 'exposed', duration: 2 }
     }
   },
   phoneScreen: {
@@ -1283,7 +1283,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'common',
     effects: {
-      onHit: { chance: 0.08, status: 'exposed', duration: 3 }
+      onHit: { chance: 0.24, status: 'exposed', duration: 3 }
     }
   },
 
@@ -1296,7 +1296,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'uncommon',
     effects: {
-      onHit: { chance: 0.10, status: 'overheated', duration: 1 }
+      onHit: { chance: 0.300, status: 'overheated', duration: 1 }
     }
   },
   hotCoffee: {
@@ -1307,7 +1307,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'uncommon',
     effects: {
-      onHit: { chance: 0.08, status: 'overheated', duration: 2 }
+      onHit: { chance: 0.24, status: 'overheated', duration: 2 }
     }
   },
   handWarmer: {
@@ -1318,7 +1318,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'common',
     effects: {
-      onHit: { chance: 0.10, status: 'overheated', duration: 1 }
+      onHit: { chance: 0.300, status: 'overheated', duration: 1 }
     }
   },
   solderingIron: {
@@ -1329,7 +1329,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'rare',
     effects: {
-      onHit: { chance: 0.12, status: 'overheated', duration: 2 }
+      onHit: { chance: 0.36, status: 'overheated', duration: 2 }
     }
   },
   hotPot: {
@@ -1340,7 +1340,7 @@ export const CHIPS = {
     category: 'onHit',
     rarity: 'rare',
     effects: {
-      onHit: { chance: 0.07, status: 'overheated', duration: 3 }
+      onHit: { chance: 0.21, status: 'overheated', duration: 3 }
     }
   },
 
@@ -1354,7 +1354,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'rare',
     effects: {
-      onKill: { chance: 0.20, heal: 25 }
+      onKill: { chance: 0.600, heal: 25 }
     }
   },
   candy: {
@@ -1365,7 +1365,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'common',
     effects: {
-      onCrit: { chance: 0.15, heal: 5 }
+      onCrit: { chance: 0.45, heal: 5 }
     }
   },
   bread: {
@@ -1376,7 +1376,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'uncommon',
     effects: {
-      onDamage: { chance: 0.10, heal: 8 }
+      onDamage: { chance: 0.300, heal: 8 }
     }
   },
   banana: {
@@ -1387,7 +1387,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'uncommon',
     effects: {
-      onStatusInflict: { chance: 0.25, heal: 15, statusType: 'defrag' }
+      onStatusInflict: { chance: 0.75, heal: 15, statusType: 'defrag' }
     }
   },
   chocolate: {
@@ -1398,7 +1398,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'uncommon',
     effects: {
-      onStatusInflict: { chance: 0.20, heal: 10, statusType: 'bufferOverflow' }
+      onStatusInflict: { chance: 0.600, heal: 10, statusType: 'bufferOverflow' }
     }
   },
   mochi: {
@@ -1409,7 +1409,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'rare',
     effects: {
-      onKill: { chance: 0.15, heal: 30 }
+      onKill: { chance: 0.45, heal: 30 }
     }
   },
   apple: {
@@ -1420,7 +1420,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'common',
     effects: {
-      onRoomEnter: { chance: 0.10, heal: 5 }
+      onRoomEnter: { chance: 0.300, heal: 5 }
     }
   },
   cupRamen: {
@@ -1431,7 +1431,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'uncommon',
     effects: {
-      onHeal: { chance: 0.25, bonusHeal: 10 }
+      onHeal: { chance: 0.75, bonusHeal: 10 }
     }
   },
 
@@ -1444,7 +1444,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'uncommon',
     effects: {
-      onDamage: { chance: 0.15, buff: 'attack', value: 0.15, duration: 3000 }
+      onDamage: { chance: 0.45, buff: 'attack', value: 0.15, duration: 3000 }
     }
   },
   greenTea: {
@@ -1455,7 +1455,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'rare',
     effects: {
-      onCrit: { chance: 0.10, buff: 'critRate', value: 0.20, duration: 5000 }
+      onCrit: { chance: 0.300, buff: 'critRate', value: 0.20, duration: 5000 }
     }
   },
   sportsDrink: {
@@ -1466,7 +1466,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'uncommon',
     effects: {
-      onDodge: { chance: 0.25, buff: 'speed', value: 0.10, duration: 3000 }
+      onDodge: { chance: 0.75, buff: 'speed', value: 0.10, duration: 3000 }
     }
   },
   milk: {
@@ -1477,7 +1477,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'uncommon',
     effects: {
-      onHeal: { chance: 0.30, buff: 'vit', value: 10, duration: 10000 }
+      onHeal: { chance: 0.900, buff: 'vit', value: 10, duration: 10000 }
     }
   },
   sake: {
@@ -1488,7 +1488,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'epic',
     effects: {
-      onKill: { chance: 0.10, buff: 'damage', value: 0.25, duration: 5000 }
+      onKill: { chance: 0.300, buff: 'damage', value: 0.25, duration: 5000 }
     }
   },
   ramune: {
@@ -1499,7 +1499,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'rare',
     effects: {
-      onRoomEnter: { chance: 0.15, buff: 'allStats', value: 0.05, duration: 30000 }
+      onRoomEnter: { chance: 0.45, buff: 'allStats', value: 0.05, duration: 30000 }
     }
   },
 
@@ -1512,7 +1512,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'epic',
     effects: {
-      onRoomEnter: { chance: 0.05, rareSpawn: true }
+      onRoomEnter: { chance: 0.15, rareSpawn: true }
     }
   },
   fortuneSlip: {
@@ -1523,7 +1523,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'uncommon',
     effects: {
-      onKill: { chance: 0.10, bonusCurrency: 0.25 }
+      onKill: { chance: 0.300, bonusCurrency: 0.25 }
     }
   },
   daruma: {
@@ -1534,7 +1534,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'legendary',
     effects: {
-      onLowHp: { chance: 0.25, surviveWithOneHp: true }
+      onLowHp: { chance: 0.75, surviveWithOneHp: true }
     }
   },
   manekiNeko: {
@@ -1545,7 +1545,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'epic',
     effects: {
-      onKill: { chance: 0.20, extraChipDrop: true }
+      onKill: { chance: 0.600, extraChipDrop: true }
     }
   },
   pachinkoBall: {
@@ -1556,7 +1556,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'rare',
     effects: {
-      onHit: { chance: 0.05, cascade: true }
+      onHit: { chance: 0.45, cascade: true }
     }
   },
   dice: {
@@ -1567,7 +1567,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'epic',
     effects: {
-      onEffectTrigger: { chance: 0.10, retrigger: true }
+      onEffectTrigger: { chance: 0.300, retrigger: true }
     }
   },
 
@@ -1580,7 +1580,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'rare',
     effects: {
-      onDodge: { chance: 0.15, counterAttack: true }
+      onDodge: { chance: 0.45, counterAttack: true }
     }
   },
   bubbleWrap: {
@@ -1591,7 +1591,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'rare',
     effects: {
-      onDamage: { chance: 0.10, negateDamage: true }
+      onDamage: { chance: 0.300, negateDamage: true }
     }
   },
   cardboard: {
@@ -1602,7 +1602,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'epic',
     effects: {
-      onRoomEnter: { chance: 0.25, stealth: true }
+      onRoomEnter: { chance: 0.75, stealth: true }
     }
   },
   pillow: {
@@ -1613,7 +1613,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'uncommon',
     effects: {
-      onDamage: { chance: 0.15, damageReduction: 0.30 }
+      onDamage: { chance: 0.45, damageReduction: 0.30 }
     }
   },
   cushion: {
@@ -1624,7 +1624,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'rare',
     effects: {
-      onLowHp: { chance: 0.20, shield: 20 }
+      onLowHp: { chance: 0.600, shield: 20 }
     }
   },
 
@@ -1637,7 +1637,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'uncommon',
     effects: {
-      onCrit: { chance: 0.25, bonusHit: true }
+      onCrit: { chance: 0.75, bonusHit: true }
     }
   },
   pepper: {
@@ -1648,7 +1648,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'uncommon',
     effects: {
-      onHit: { chance: 0.10, enemyMissNextTurn: true }
+      onHit: { chance: 0.300, enemyMissNextTurn: true }
     }
   },
   wasabi: {
@@ -1659,7 +1659,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'epic',
     effects: {
-      onCrit: { chance: 0.15, doubleCritDamage: true }
+      onCrit: { chance: 0.45, doubleCritDamage: true }
     }
   },
   partyPopper: {
@@ -1670,7 +1670,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'rare',
     effects: {
-      onStatusInflict: { chance: 0.40, extendStun: 1000, statusType: 'bufferOverflow' }
+      onStatusInflict: { chance: 1.000, extendStun: 1000, statusType: 'bufferOverflow' }
     }
   },
   airHorn: {
@@ -1681,7 +1681,7 @@ export const CHIPS = {
     category: 'onEffect',
     rarity: 'legendary',
     effects: {
-      onRoomEnter: { chance: 0.05, stunAllEnemies: 1000 }
+      onRoomEnter: { chance: 0.15, stunAllEnemies: 1000 }
     }
   },
 

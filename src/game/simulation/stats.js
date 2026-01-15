@@ -88,6 +88,9 @@ export class SimulationStats {
 
       // Chip usage (if tracked)
       chipStats: this.aggregateChips(),
+
+      // Best run details
+      bestRun: this.getBestRun(),
     };
   }
 
@@ -144,6 +147,34 @@ export class SimulationStats {
       .slice(0, 10); // Top 10
 
     return Object.fromEntries(sorted);
+  }
+
+  /**
+   * Find the best performing run
+   * Sorted by: floor (desc), bossesDefeated (desc), enemiesDefeated (desc), damageDealt (desc)
+   */
+  getBestRun() {
+    if (this.runs.length === 0) return null;
+
+    return this.runs.reduce((best, run) => {
+      if (!best) return run;
+
+      // Compare by floor first
+      if (run.floor > best.floor) return run;
+      if (run.floor < best.floor) return best;
+
+      // Then by bosses defeated
+      if (run.bossesDefeated > best.bossesDefeated) return run;
+      if (run.bossesDefeated < best.bossesDefeated) return best;
+
+      // Then by enemies defeated
+      if (run.enemiesDefeated > best.enemiesDefeated) return run;
+      if (run.enemiesDefeated < best.enemiesDefeated) return best;
+
+      // Finally by damage dealt
+      if (run.damageDealt > best.damageDealt) return run;
+      return best;
+    }, null);
   }
 
   /**
