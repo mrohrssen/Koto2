@@ -1010,7 +1010,9 @@ function showEnemyDialogue(text, type = 'possessed') {
   enemyDialogueActive = true;
   enemyDialogueType = type;
 
-  // Pause combat timers while dialogue is active (for glitching dialogue mid-combat)
+  // Pause combat while dialogue is active (for glitching dialogue mid-combat)
+  // Setting realtimeCombatActive = false ensures ALL checks work correctly,
+  // including any in-flight fetch requests that complete after this
   if (type === 'glitching' && realtimeCombatActive) {
     if (playerAttackTimer) {
       clearTimeout(playerAttackTimer);
@@ -1020,6 +1022,7 @@ function showEnemyDialogue(text, type = 'possessed') {
       clearTimeout(enemyAttackTimer);
       enemyAttackTimer = null;
     }
+    realtimeCombatActive = false;  // Nuclear pause - all attack functions will bail out
   }
 
   // Get enemy personality and speakerId for voice selection
@@ -1054,8 +1057,10 @@ function dismissEnemyDialogue() {
   enemyDialogueActive = false;
   enemyDialogueType = null;
 
-  // Resume combat timers if we were paused during glitching dialogue
-  if (wasGlitching && realtimeCombatActive) {
+  // Resume combat if we were paused during glitching dialogue
+  // Note: realtimeCombatActive was set to false in showEnemyDialogue for glitching
+  if (wasGlitching) {
+    realtimeCombatActive = true;  // Re-enable combat
     playerAttackPending = false;
     enemyAttackPending = false;
     playerAttackTimer = setTimeout(executePlayerAttack, currentPlayerInterval);
