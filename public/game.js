@@ -5504,50 +5504,20 @@ function renderChipModal() {
     }
   }
 
-  // Build inventory chips - check if each chip is equipped somewhere
+  // Build inventory chips (equipped chips are filtered out server-side)
   let inventoryHtml = '';
   if (inventory.length === 0) {
-    inventoryHtml = '<p class="empty-msg">No chips in inventory. Defeat enemies to collect chips!</p>';
+    inventoryHtml = '<p class="empty-msg">No chips available. Defeat enemies to collect chips!</p>';
   } else {
-    // Build map of which chips are equipped where
-    const equippedMap = {};
-    for (const slot of ['weapon', 'body', 'shield', 'accessory']) {
-      const slotChips = chipLoadoutCache.equipment[slot]?.equippedChips || [];
-      for (const c of slotChips) {
-        equippedMap[c.id] = slot;
-      }
-    }
-
     for (const chip of inventory) {
       const rarityClass = `rarity-${chip.rarity || 'common'}`;
       const slotCost = chip.rarity === 'legendary' ? 3 : chip.rarity === 'epic' ? 2 : 1;
       const iconId = chip.baseId || chip.id.replace(/_(common|uncommon|rare|epic|legendary)$/, '');
-
-      // Check if chip is equipped somewhere
-      const equippedSlot = equippedMap[chip.id];
-      const isEquippedHere = equippedSlot === currentChipModalSlot;
-      const isEquippedElsewhere = equippedSlot && equippedSlot !== currentChipModalSlot;
-
-      // Determine click action and styling
-      let onClick, title, extraClass = '';
-      if (isEquippedHere) {
-        onClick = `removeChipFromSlot('${chip.id}')`;
-        title = 'Click to unequip';
-        extraClass = ' equipped-here';
-      } else if (isEquippedElsewhere) {
-        onClick = `toggleChipEquip('${chip.id}', '${equippedSlot}')`;
-        title = `Equipped on ${equippedSlot} - click to move here`;
-        extraClass = ' equipped-elsewhere';
-      } else {
-        onClick = `addChipToSlot('${chip.id}')`;
-        title = 'Click to equip';
-      }
-
       inventoryHtml += `
-        <div class="inventory-chip ${rarityClass}${extraClass}" onclick="${onClick}" title="${title}">
+        <div class="inventory-chip ${rarityClass}" onclick="addChipToSlot('${chip.id}')" title="Click to equip">
           <img class="inventory-chip-icon" src="/assets/icons/chips/${iconId}.png" alt="" onerror="this.style.display='none'">
           <div class="inventory-chip-content">
-            <span class="chip-name">${chip.name}${isEquippedHere ? ' ✓' : ''}${isEquippedElsewhere ? ' (' + equippedSlot + ')' : ''}</span>
+            <span class="chip-name">${chip.name}</span>
             <span class="chip-info">
               <span class="chip-category">${getCategoryLabel(chip.category)}</span>
               <span class="chip-cost">${slotCost} slot${slotCost > 1 ? 's' : ''}</span>

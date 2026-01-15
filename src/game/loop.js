@@ -1364,6 +1364,7 @@ export class GameManager {
     const player = this.run.player;
     const floorBonus = room.blacksmith?.successBonus || 0;
 
+    // All chips are in player.chips (both equipped and unequipped)
     // Get upgradeable chips (not legendary)
     const upgradeableChips = (player.chips || []).filter(chip => {
       const nextRarity = getNextRarity(chip.rarity);
@@ -1444,11 +1445,31 @@ export class GameManager {
     // Mark blacksmith as interacted
     room.blacksmith.interacted = true;
 
+    // Find if chip is equipped to any equipment slot
+    const slots = ['weapon', 'body', 'shield', 'accessory'];
+    let equippedSlot = null;
+    for (const slot of slots) {
+      const equipment = player.equipment?.[slot];
+      if (equipment?.equippedChips?.includes(chipId)) {
+        equippedSlot = slot;
+        break;
+      }
+    }
+
     if (result.success) {
       // Remove old chip
       player.chips.splice(chipIndex, 1);
       // Add upgraded chip
       player.chips.push(result.upgradedChip);
+
+      // Update equipment reference if chip was equipped
+      if (equippedSlot) {
+        const equipment = player.equipment[equippedSlot];
+        const chipIdx = equipment.equippedChips.indexOf(chipId);
+        if (chipIdx !== -1) {
+          equipment.equippedChips[chipIdx] = result.upgradedChip.id;
+        }
+      }
 
       this.emitNarration(`「よし、成功だ。」${chip.name || chip.nameEn}が${CHIP_RARITIES[result.newRarity].name}に強化された！`);
       this.emitState();
@@ -1463,6 +1484,12 @@ export class GameManager {
     } else {
       // Remove destroyed chip
       player.chips.splice(chipIndex, 1);
+
+      // Remove from equipment if chip was equipped
+      if (equippedSlot) {
+        const equipment = player.equipment[equippedSlot];
+        equipment.equippedChips = equipment.equippedChips.filter(id => id !== chipId);
+      }
 
       this.emitNarration(`「...失敗だ。チップは壊れた。」${chip.name || chip.nameEn}は破壊された...`);
       this.emitState();

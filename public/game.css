@@ -1146,6 +1146,7 @@ body::before {
 }
 
 .inventory-chip {
+  position: relative;
   padding: 0.6rem 0.8rem;
   border: 1px solid var(--border-color);
   border-radius: 6px;
@@ -1235,6 +1236,29 @@ body::before {
 
 .inventory-chip.rarity-legendary .chip-name {
   color: #f39c12;
+}
+
+/* Equipped chip states */
+.inventory-chip.equipped-here {
+  border: 2px solid var(--gi-gold-bright);
+  background: rgba(212, 168, 83, 0.15);
+}
+
+.inventory-chip.equipped-here::after {
+  content: '装備中';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.65rem;
+  background: var(--gi-gold);
+  color: #1a1a2e;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.inventory-chip.equipped-elsewhere {
+  opacity: 0.7;
+  border-style: dashed;
 }
 
 /* ============ LIBERATION TRACKER ============ */

@@ -2941,11 +2941,8 @@ export function equipChip(player, equipmentSlot, chipId, maxSlots = 5) {
     return { success: false, error: `Not enough slots (need ${slotsNeeded}, have ${maxSlots - slotsUsed})` };
   }
 
-  // Equip the chip
+  // Equip the chip (keep in inventory - just reference by ID)
   equipment.equippedChips.push(chipId);
-
-  // Remove from inventory
-  player.chips = player.chips.filter(c => c.id !== chipId);
 
   return {
     success: true,
@@ -2982,21 +2979,8 @@ export function unequipChip(player, equipmentSlot, chipId) {
     return { success: false, error: 'Unknown chip' };
   }
 
-  // Remove from equipment
+  // Remove from equipment (chip stays in inventory)
   equipment.equippedChips = equipment.equippedChips.filter(id => id !== chipId);
-
-  // Add back to inventory
-  if (!player.chips) {
-    player.chips = [];
-  }
-  player.chips.push({
-    id: chip.id,
-    name: chip.name,
-    nameEn: chip.nameEn,
-    category: chip.category,
-    rarity: chip.rarity,
-    effects: chip.effects
-  });
 
   return {
     success: true,
@@ -3078,13 +3062,26 @@ export function getChipLoadout(player, runStats = {}) {
     }
   }
 
-  // Inventory chips - preserve player's chip data (id, rarity, effects) over base definition
-  const inventoryChips = (player.chips || []).map(chip => {
-    const baseChip = getChip(chip.id);
-    // Merge: base chip info + player's chip data (player's data takes priority for id, rarity, effects)
-    const mergedChip = baseChip ? { ...baseChip, ...chip } : chip;
-    return getChipDisplayInfo(mergedChip);
-  });
+  // Collect all equipped chip IDs
+  const equippedChipIds = new Set();
+  for (const slot of slots) {
+    const equipment = player.equipment?.[slot];
+    if (equipment?.equippedChips) {
+      for (const chipId of equipment.equippedChips) {
+        equippedChipIds.add(chipId);
+      }
+    }
+  }
+
+  // Inventory chips - filter out equipped ones, preserve player's chip data
+  const inventoryChips = (player.chips || [])
+    .filter(chip => !equippedChipIds.has(chip.id))
+    .map(chip => {
+      const baseChip = getChip(chip.id);
+      // Merge: base chip info + player's chip data (player's data takes priority for id, rarity, effects)
+      const mergedChip = baseChip ? { ...baseChip, ...chip } : chip;
+      return getChipDisplayInfo(mergedChip);
+    });
 
   // Total bonuses
   const totalBonuses = calculateEquippedChipBonuses(player, runStats);
