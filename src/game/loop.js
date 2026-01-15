@@ -2204,6 +2204,14 @@ export class GameManager {
       rewards = processBossVictory(this.run.player, enemy, this.run.floor, drop, this.run);
       this.narrate(getSimpleNarration('bossVictory', { ...enemy, rewards }));
       this.run.bossDefeated = true;
+
+      // Award essence immediately on boss defeat
+      const baseEssence = Math.floor(Math.random() * 16) + 10; // 10-25
+      const floorBonus = this.run.floor * 3; // +3 per floor (3-21)
+      const essenceDrop = baseEssence + floorBonus; // Total: 13-46
+      this.meta.essence += essenceDrop;
+      this.meta.lifetimeStats.totalEssenceEarned += essenceDrop;
+      rewards.essenceDrop = essenceDrop;
     } else {
       rewards = processVictory(this.run.player, enemy, this.run);
       this.narrate(getSimpleNarration('victory', { ...enemy, rewards }));

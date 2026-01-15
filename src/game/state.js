@@ -324,8 +324,7 @@ export function calculateEssenceReward(runStats, floor, isVictory) {
     essence += 100;
   }
 
-  // Bonus per boss killed
-  essence += (runStats?.bossesDefeated || 0) * 15;
+  // Note: Boss essence is awarded immediately on defeat, not at run end
 
   // Bonus per 10 enemies
   essence += Math.floor((runStats?.enemiesDefeated || 0) / 10) * 5;
