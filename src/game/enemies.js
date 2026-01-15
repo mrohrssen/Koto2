@@ -1182,6 +1182,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 3,
     stats: { str: 3, agi: 2, vit: 5, int: 4, dex: 3, luk: 5 },
     personality: "controlled",
+    speakerId: 46, // 小夜/SAYO - gentle elderly female
     locations: ["residential"],
     xpReward: 15,
     goldReward: 12,
@@ -1204,6 +1205,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 3,
     stats: { str: 4, agi: 5, vit: 4, int: 3, dex: 5, luk: 4 },
     personality: "frantic",
+    speakerId: 8, // 春日部つむぎ - frantic female
     locations: ["residential", "shopping"],
     xpReward: 16,
     goldReward: 18,
@@ -1226,6 +1228,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 4,
     stats: { str: 5, agi: 7, vit: 4, int: 2, dex: 5, luk: 3 },
     personality: "rushed",
+    speakerId: 8, // 春日部つむぎ - energetic young female
     locations: ["residential", "convenience"],
     xpReward: 18,
     goldReward: 20,
@@ -1248,6 +1251,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 2,
     stats: { str: 2, agi: 6, vit: 3, int: 2, dex: 4, luk: 6 },
     personality: "robotic",
+    speakerId: 8, // 春日部つむぎ - young girl
     locations: ["residential", "school"],
     xpReward: 12,
     goldReward: 8,
@@ -1271,6 +1275,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 4,
     stats: { str: 6, agi: 4, vit: 4, int: 2, dex: 4, luk: 3 },
     personality: "aggressive",
+    speakerId: 2, // 四国めたん - assertive female
     locations: ["convenience", "shopping"],
     xpReward: 18,
     goldReward: 25,
@@ -1293,6 +1298,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 3,
     stats: { str: 4, agi: 3, vit: 5, int: 3, dex: 4, luk: 4 },
     personality: "exhausted",
+    speakerId: 13, // 青山龍星 - tired male
     locations: ["convenience"],
     xpReward: 14,
     goldReward: 16,
@@ -1315,6 +1321,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 3,
     stats: { str: 3, agi: 2, vit: 5, int: 3, dex: 3, luk: 4 },
     personality: "confused",
+    speakerId: 13, // 青山龍星 - elderly male
     locations: ["convenience", "shopping"],
     xpReward: 13,
     goldReward: 14,
@@ -1337,6 +1344,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 8,
     stats: { str: 7, agi: 10, vit: 6, int: 6, dex: 7, luk: 4 },
     personality: "rushed",
+    speakerId: 8, // 春日部つむぎ - rushing female
     locations: ["convenience", "station"],
     xpReward: 32,
     goldReward: 55,
@@ -1360,6 +1368,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 9,
     stats: { str: 8, agi: 8, vit: 7, int: 10, dex: 8, luk: 5 },
     personality: "authoritarian",
+    speakerId: 2, // 四国めたん - authoritative young female
     locations: ["school"],
     xpReward: 38,
     goldReward: 65,
@@ -1382,6 +1391,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 8,
     stats: { str: 5, agi: 4, vit: 8, int: 12, dex: 6, luk: 5 },
     personality: "denying",
+    speakerId: 46, // 小夜/SAYO - gentle female (nurse)
     locations: ["school"],
     xpReward: 35,
     goldReward: 60,
@@ -1404,6 +1414,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 10,
     stats: { str: 12, agi: 8, vit: 10, int: 3, dex: 7, luk: 4 },
     personality: "intense",
+    speakerId: 12, // 白上虎太郎 - intense male
     locations: ["school"],
     xpReward: 42,
     goldReward: 70,
@@ -1426,6 +1437,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 4,
     stats: { str: 3, agi: 4, vit: 4, int: 8, dex: 5, luk: 4 },
     personality: "obsessive",
+    speakerId: 10, // 雨晴はう - soft/quiet female
     locations: ["school"],
     xpReward: 18,
     goldReward: 22,
@@ -1448,6 +1460,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 9,
     stats: { str: 11, agi: 9, vit: 7, int: 2, dex: 6, luk: 5 },
     personality: "aggressive",
+    speakerId: 39, // 玄野武宏 - aggressive male
     locations: ["school", "station"],
     xpReward: 36,
     goldReward: 50,
@@ -1471,6 +1484,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 9,
     stats: { str: 8, agi: 5, vit: 9, int: 6, dex: 7, luk: 4 },
     personality: "exhausted",
+    speakerId: 13, // 青山龍星 - tired male
     locations: ["office", "station"],
     xpReward: 35,
     goldReward: 65,
@@ -1493,6 +1507,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 8,
     stats: { str: 6, agi: 7, vit: 6, int: 7, dex: 8, luk: 6 },
     personality: "eager",
+    speakerId: 8, // 春日部つむぎ - eager young female
     locations: ["office"],
     xpReward: 32,
     goldReward: 55,
@@ -1515,6 +1530,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 9,
     stats: { str: 5, agi: 6, vit: 6, int: 9, dex: 7, luk: 7 },
     personality: "gossipy",
+    speakerId: 46, // 小夜/SAYO - chatty female
     locations: ["office"],
     xpReward: 34,
     goldReward: 60,
@@ -1537,6 +1553,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 8,
     stats: { str: 4, agi: 5, vit: 7, int: 8, dex: 9, luk: 6 },
     personality: "cold",
+    speakerId: 2, // 四国めたん - cold female
     locations: ["office", "hospital"],
     xpReward: 30,
     goldReward: 50,
@@ -1559,6 +1576,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 15,
     stats: { str: 12, agi: 6, vit: 14, int: 8, dex: 8, luk: 6 },
     personality: "lethargic",
+    speakerId: 13, // 青山龍星 - tired older male
     locations: ["office"],
     xpReward: 65,
     goldReward: 120,
@@ -1581,6 +1599,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 16,
     stats: { str: 8, agi: 8, vit: 8, int: 16, dex: 12, luk: 6 },
     personality: "merged",
+    speakerId: 13, // 青山龍星 - IT male
     locations: ["office"],
     xpReward: 70,
     goldReward: 140,
@@ -1604,6 +1623,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 10,
     stats: { str: 8, agi: 8, vit: 9, int: 8, dex: 10, luk: 5 },
     personality: "precise",
+    speakerId: 12, // 白上虎太郎 - precise male
     locations: ["station"],
     xpReward: 40,
     goldReward: 70,
@@ -1626,6 +1646,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 8,
     stats: { str: 5, agi: 6, vit: 6, int: 4, dex: 5, luk: 8 },
     personality: "confused",
+    speakerId: 20, // もち子さん - confused female
     locations: ["station"],
     xpReward: 30,
     goldReward: 55,
@@ -1648,6 +1669,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 10,
     stats: { str: 12, agi: 6, vit: 10, int: 3, dex: 6, luk: 4 },
     personality: "forceful",
+    speakerId: 2, // 四国めたん - professional female
     locations: ["station"],
     xpReward: 38,
     goldReward: 65,
@@ -1670,6 +1692,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 8,
     stats: { str: 6, agi: 12, vit: 5, int: 4, dex: 7, luk: 5 },
     personality: "panicked",
+    speakerId: 8, // 春日部つむぎ - panicked young female
     locations: ["station", "school"],
     xpReward: 32,
     goldReward: 50,
@@ -1692,6 +1715,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 9,
     stats: { str: 6, agi: 4, vit: 7, int: 12, dex: 8, luk: 4 },
     personality: "obsessive",
+    speakerId: 13, // 青山龍星 - obsessive male
     locations: ["station"],
     xpReward: 36,
     goldReward: 60,
@@ -1715,6 +1739,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 10,
     stats: { str: 9, agi: 9, vit: 8, int: 6, dex: 8, luk: 6 },
     personality: "hyper",
+    speakerId: 8, // 春日部つむぎ - energetic female (maid outfit sprite)
     locations: ["restaurant"],
     xpReward: 42,
     goldReward: 75,
@@ -1737,6 +1762,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 10,
     stats: { str: 10, agi: 6, vit: 9, int: 8, dex: 12, luk: 4 },
     personality: "silent",
+    speakerId: 13, // 青山龍星 - quiet male chef
     locations: ["restaurant"],
     xpReward: 40,
     goldReward: 70,
@@ -1759,6 +1785,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 9,
     stats: { str: 6, agi: 8, vit: 7, int: 7, dex: 9, luk: 8 },
     personality: "invasive",
+    speakerId: 13, // 青山龍星 - friendly male waiter
     locations: ["restaurant"],
     xpReward: 36,
     goldReward: 65,
@@ -1781,6 +1808,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 8,
     stats: { str: 7, agi: 4, vit: 10, int: 5, dex: 5, luk: 6 },
     personality: "habitual",
+    speakerId: 2, // 四国めたん - young female (sprite shows female)
     locations: ["restaurant", "convenience"],
     xpReward: 32,
     goldReward: 55,
@@ -1803,6 +1831,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 11,
     stats: { str: 12, agi: 5, vit: 11, int: 2, dex: 5, luk: 6 },
     personality: "rowdy",
+    speakerId: 39, // 玄野武宏 - rowdy male voice for group
     locations: ["restaurant"],
     xpReward: 45,
     goldReward: 80,
@@ -1825,6 +1854,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 5,
     stats: { str: 5, agi: 6, vit: 5, int: 6, dex: 6, luk: 5 },
     personality: "stressed",
+    speakerId: 8, // 春日部つむぎ - stressed young female
     locations: ["restaurant", "convenience"],
     xpReward: 20,
     goldReward: 30,
@@ -1848,6 +1878,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 15,
     stats: { str: 10, agi: 4, vit: 14, int: 10, dex: 8, luk: 6 },
     personality: "apathetic",
+    speakerId: 13, // 青山龍星 - bored older male
     locations: ["government"],
     xpReward: 65,
     goldReward: 130,
@@ -1870,6 +1901,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 14,
     stats: { str: 8, agi: 6, vit: 10, int: 6, dex: 6, luk: 8 },
     personality: "lost",
+    speakerId: 20, // もち子さん - confused young female
     locations: ["government"],
     xpReward: 58,
     goldReward: 110,
@@ -1892,6 +1924,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 17,
     stats: { str: 12, agi: 8, vit: 12, int: 12, dex: 10, luk: 6 },
     personality: "rigid",
+    speakerId: 12, // 白上虎太郎 - strict authoritative male
     locations: ["government"],
     xpReward: 72,
     goldReward: 150,
@@ -1914,6 +1947,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 14,
     stats: { str: 6, agi: 6, vit: 10, int: 10, dex: 10, luk: 8 },
     personality: "frozen",
+    speakerId: 46, // 小夜/SAYO - kind female
     locations: ["government"],
     xpReward: 60,
     goldReward: 115,
@@ -1936,6 +1970,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 16,
     stats: { str: 14, agi: 10, vit: 10, int: 4, dex: 8, luk: 6 },
     personality: "furious",
+    speakerId: 39, // 玄野武宏 - angry male
     locations: ["government"],
     xpReward: 68,
     goldReward: 135,
@@ -1959,6 +1994,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 15,
     stats: { str: 8, agi: 8, vit: 10, int: 12, dex: 10, luk: 8 },
     personality: "mechanical",
+    speakerId: 46, // 小夜/SAYO - gentle female nurse
     locations: ["hospital"],
     xpReward: 62,
     goldReward: 125,
@@ -1981,6 +2017,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 17,
     stats: { str: 8, agi: 6, vit: 10, int: 18, dex: 10, luk: 6 },
     personality: "clinical",
+    speakerId: 2, // 四国めたん - cold female doctor
     locations: ["hospital"],
     xpReward: 75,
     goldReward: 160,
@@ -2003,6 +2040,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 14,
     stats: { str: 6, agi: 5, vit: 12, int: 8, dex: 6, luk: 6 },
     personality: "anxious",
+    speakerId: 20, // もち子さん - worried female
     locations: ["hospital"],
     xpReward: 55,
     goldReward: 100,
@@ -2025,6 +2063,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 15,
     stats: { str: 6, agi: 6, vit: 10, int: 14, dex: 12, luk: 6 },
     personality: "detached",
+    speakerId: 2, // 四国めたん - calm female pharmacist
     locations: ["hospital"],
     xpReward: 60,
     goldReward: 120,
@@ -2047,6 +2086,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 6,
     stats: { str: 3, agi: 8, vit: 4, int: 3, dex: 4, luk: 8 },
     personality: "terrified",
+    speakerId: 8, // 春日部つむぎ - young child female
     locations: ["hospital"],
     xpReward: 25,
     goldReward: 20,
@@ -2070,6 +2110,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 15,
     stats: { str: 10, agi: 10, vit: 8, int: 8, dex: 10, luk: 8 },
     personality: "aggressive",
+    speakerId: 8, // 春日部つむぎ - pushy female
     locations: ["shopping"],
     xpReward: 64,
     goldReward: 130,
@@ -2092,6 +2133,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 9,
     stats: { str: 6, agi: 5, vit: 8, int: 6, dex: 6, luk: 7 },
     personality: "paralyzed",
+    speakerId: 20, // もち子さん - indecisive female
     locations: ["shopping"],
     xpReward: 35,
     goldReward: 60,
@@ -2114,6 +2156,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 10,
     stats: { str: 7, agi: 12, vit: 8, int: 5, dex: 14, luk: 4 },
     personality: "machine-like",
+    speakerId: 2, // 四国めたん - veteran female cashier
     locations: ["shopping", "convenience"],
     xpReward: 40,
     goldReward: 70,
@@ -2136,6 +2179,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 8,
     stats: { str: 8, agi: 6, vit: 8, int: 4, dex: 8, luk: 5 },
     personality: "repetitive",
+    speakerId: 8, // 春日部つむぎ - young female worker
     locations: ["shopping", "convenience"],
     xpReward: 32,
     goldReward: 55,
@@ -2158,6 +2202,7 @@ export const ENEMY_TEMPLATES = {
     baseLevel: 14,
     stats: { str: 12, agi: 8, vit: 10, int: 6, dex: 6, luk: 4 },
     personality: "hostile",
+    speakerId: 2, // 四国めたん - complaining female
     locations: ["shopping", "restaurant"],
     xpReward: 60,
     goldReward: 100,
