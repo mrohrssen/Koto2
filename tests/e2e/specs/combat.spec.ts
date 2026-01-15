@@ -31,22 +31,28 @@ test.describe('Combat System', () => {
     await expect(enemyHpBar).toBeAttached();
   });
 
-  test.skip('should have attack button element when in combat', async ({ page, gameHelper }) => {
-    // Skipped: Combat entry is flaky in e2e tests
+  test('should show word cards during realtime combat', async ({ page, gameHelper }) => {
     const inCombat = await setupCombat(gameHelper);
-    if (inCombat) {
-      const attackBtn = page.locator(ACTION_BTNS.attack);
-      await expect(attackBtn).toBeVisible();
-    }
+    expect(inCombat).toBe(true);
+
+    // Wait for realtime combat to start and word cards to render
+    await page.waitForTimeout(1000);
+
+    // Word cards container should be visible during realtime combat
+    const wordCards = page.locator(SELECTORS.wordCards);
+    await expect(wordCards).toBeVisible({ timeout: 5000 });
   });
 
-  test.skip('should have defend button element when in combat', async ({ page, gameHelper }) => {
-    // Skipped: Combat entry is flaky in e2e tests
+  test('should show enemy sprite during combat', async ({ page, gameHelper }) => {
     const inCombat = await setupCombat(gameHelper);
-    if (inCombat) {
-      const defendBtn = page.locator(ACTION_BTNS.defend);
-      await expect(defendBtn).toBeVisible();
-    }
+    expect(inCombat).toBe(true);
+
+    // Wait for combat UI to render
+    await page.waitForTimeout(500);
+
+    // Enemy sprite should be visible during combat
+    const enemySprite = page.locator(SELECTORS.enemySprite);
+    await expect(enemySprite).toBeVisible({ timeout: 5000 });
   });
 
   test('should track player HP', async ({ gameHelper }) => {
@@ -59,24 +65,22 @@ test.describe('Combat System', () => {
     expect(hp).toBeLessThanOrEqual(maxHp);
   });
 
-  test.skip('should show VN stage during gameplay', async ({ page, gameHelper }) => {
-    // Skipped: VN stage has hub-mode class after ward selection - needs investigation
-    await setupCharacter(gameHelper);
-    await gameHelper.startRun();
-    await gameHelper.selectWard('nerima');
+  test('should show VN stage during combat', async ({ page, gameHelper }) => {
+    const inCombat = await setupCombat(gameHelper);
+    expect(inCombat).toBe(true);
 
+    // VN stage should be visible during combat
     const vnStage = page.locator(SELECTORS.vnStage);
-    await expect(vnStage).toBeVisible();
+    await expect(vnStage).toBeVisible({ timeout: 5000 });
   });
 
-  test.skip('should show floor indicator during run', async ({ page, gameHelper }) => {
-    // Skipped: Floor indicator hidden after ward selection - needs investigation
-    await setupCharacter(gameHelper);
-    await gameHelper.startRun();
-    await gameHelper.selectWard('nerima');
+  test('should show floor indicator during combat', async ({ page, gameHelper }) => {
+    const inCombat = await setupCombat(gameHelper);
+    expect(inCombat).toBe(true);
 
+    // Floor indicator should be visible during combat
     const floorIndicator = page.locator(SELECTORS.floorIndicator);
-    await expect(floorIndicator).toBeVisible();
+    await expect(floorIndicator).toBeVisible({ timeout: 5000 });
   });
 });
 
@@ -85,39 +89,48 @@ test.describe('Combat Actions', () => {
     await cleanupAfterTest(page);
   });
 
-  test.skip('should have combat buttons when in combat', async ({ page, gameHelper }) => {
-    // Skipped: Combat entry is flaky in e2e tests
+  test('should show combat indicator during realtime combat', async ({ page, gameHelper }) => {
     const inCombat = await setupCombat(gameHelper);
+    expect(inCombat).toBe(true);
 
-    if (inCombat) {
-      const attackBtn = page.locator(ACTION_BTNS.attack);
-      const defendBtn = page.locator(ACTION_BTNS.defend);
+    // Wait for realtime combat to start
+    await page.waitForTimeout(1000);
 
-      const attackVisible = await attackBtn.isVisible();
-      const defendVisible = await defendBtn.isVisible();
+    // Action panel should show combat indicator during realtime combat
+    const actionPanel = page.locator(SELECTORS.actionPanel);
+    await expect(actionPanel).toBeVisible({ timeout: 5000 });
 
-      expect(attackVisible || defendVisible).toBeTruthy();
-    }
+    // Combat indicator text should be present (either 戦闘中 or 戦闘開始)
+    const combatText = await actionPanel.textContent();
+    expect(combatText).toMatch(/戦闘/);
   });
 
   test('should show enemy name when in combat', async ({ page, gameHelper }) => {
     const inCombat = await setupCombat(gameHelper);
-    test.skip(!inCombat, 'Could not enter combat state');
+    expect(inCombat).toBe(true);
 
+    // Wait for combat UI to render
     await page.waitForTimeout(500);
+
+    // Enemy name should be displayed
     const enemyName = await page.locator(SELECTORS.enemyNameDisplay).textContent();
     expect(enemyName).toBeTruthy();
   });
 
-  test.skip('should have enemy HP when in combat', async ({ gameHelper }) => {
-    // Skipped: Combat entry is flaky in e2e tests
+  test('should have enemy HP when in combat', async ({ page, gameHelper }) => {
     const inCombat = await setupCombat(gameHelper);
+    expect(inCombat).toBe(true);
 
-    if (inCombat) {
-      await gameHelper.page.waitForTimeout(500);
-      const enemyMaxHp = await gameHelper.getEnemyMaxHp();
-      expect(enemyMaxHp).toBeGreaterThan(0);
-    }
+    // Wait for combat UI to render
+    await page.waitForTimeout(500);
+
+    // Enemy should have HP in combat
+    const enemyMaxHp = await gameHelper.getEnemyMaxHp();
+    expect(enemyMaxHp).toBeGreaterThan(0);
+
+    const enemyHp = await gameHelper.getEnemyHp();
+    expect(enemyHp).toBeGreaterThan(0);
+    expect(enemyHp).toBeLessThanOrEqual(enemyMaxHp);
   });
 });
 

@@ -1457,6 +1457,22 @@ app.post('/api/game/debug-mode', (req, res) => {
   res.json({ debugMode });
 });
 
+// Debug: Force combat state for e2e testing
+app.post('/api/game/debug-force-combat', (req, res) => {
+  if (!debugMode) {
+    return res.status(403).json({ error: 'Debug mode not enabled' });
+  }
+
+  try {
+    const { enemyId } = req.body;
+    const result = gameManager.debugForceCombat(enemyId);
+    saveGameData();
+    res.json({ ...result, state: getEnrichedGameState() });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // Debug: Give player test chips
 app.post('/api/game/debug-chips', (req, res) => {
   const player = gameManager.run?.player || gameManager.player;

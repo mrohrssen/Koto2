@@ -1015,7 +1015,6 @@ function showEnemyDialogue(text, type = 'possessed') {
   // Setting realtimeCombatActive = false ensures ALL checks work correctly,
   // including any in-flight fetch requests that complete after this
   if (type === 'glitching' && realtimeCombatActive) {
-    console.log('[DEBUG] showEnemyDialogue: PAUSING combat for glitching');
     if (playerAttackTimer) {
       clearTimeout(playerAttackTimer);
       playerAttackTimer = null;
@@ -1024,8 +1023,7 @@ function showEnemyDialogue(text, type = 'possessed') {
       clearTimeout(enemyAttackTimer);
       enemyAttackTimer = null;
     }
-    realtimeCombatActive = false;  // Nuclear pause - all attack functions will bail out
-    console.log('[DEBUG] showEnemyDialogue: realtimeCombatActive =', realtimeCombatActive);
+    realtimeCombatActive = false;
   }
 
   // Get enemy personality and speakerId for voice selection
@@ -1062,16 +1060,12 @@ function dismissEnemyDialogue() {
 
   // Resume combat if we were paused during glitching dialogue
   // Note: realtimeCombatActive was set to false in showEnemyDialogue for glitching
-  console.log('[DEBUG] dismissEnemyDialogue: wasGlitching =', wasGlitching);
   if (wasGlitching) {
-    console.log('[DEBUG] dismissEnemyDialogue: RESUMING combat');
-    console.log('[DEBUG] dismissEnemyDialogue: intervals =', currentPlayerInterval, currentEnemyInterval);
-    realtimeCombatActive = true;  // Re-enable combat
+    realtimeCombatActive = true;
     playerAttackPending = false;
     enemyAttackPending = false;
     playerAttackTimer = setTimeout(executePlayerAttack, currentPlayerInterval);
     enemyAttackTimer = setTimeout(executeEnemyAttack, currentEnemyInterval);
-    console.log('[DEBUG] dismissEnemyDialogue: realtimeCombatActive =', realtimeCombatActive);
   }
 
   // Resolve the promise so waiting code can continue
@@ -1608,6 +1602,12 @@ function updateVNStage() {
   // Update enemy visibility and stats
   const enemy = gameState.combat?.enemy;
   if (isInCombat && enemy && enemy.hp > 0) {
+    // Auto-start realtime combat if we're in combat phase but combat hasn't started
+    // This handles page reloads during combat or debug API setup
+    if (!realtimeCombatActive) {
+      startRealtimeCombat();
+    }
+
     // Remove defeated class from previous combat and show enemy
     enemySprite.classList.remove('hidden', 'defeated');
     enemyHpBar.classList.remove('hidden');
@@ -1922,11 +1922,7 @@ function startRealtimeCombat() {
 
 // Execute a single player attack and schedule the next one
 async function executePlayerAttack() {
-  console.log('[DEBUG] executePlayerAttack: realtimeCombatActive=', realtimeCombatActive, 'playerAttackPending=', playerAttackPending, 'enemyDialogueActive=', enemyDialogueActive);
-  if (!realtimeCombatActive || playerAttackPending || enemyDialogueActive) {
-    console.log('[DEBUG] executePlayerAttack: RETURNING EARLY');
-    return;
-  }
+  if (!realtimeCombatActive || playerAttackPending || enemyDialogueActive) return;
 
   playerAttackPending = true;
 

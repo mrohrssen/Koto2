@@ -2524,6 +2524,58 @@ export class GameManager {
     this.meta = null;
     this.emitState();
   }
+
+  // ============ DEBUG/TESTING ============
+
+  /**
+   * Force enter combat state for e2e testing
+   * Only works when debug mode is enabled
+   * @param {string} enemyId - Optional specific enemy ID to spawn
+   */
+  debugForceCombat(enemyId = null) {
+    // Ensure player exists
+    if (!this.player) {
+      this.createPlayer('TestPlayer');
+    }
+
+    // Ensure we have an active run
+    if (!this.run || !this.run.active) {
+      this.startRun();
+      // Auto-select first ward for testing
+      if (this.run.wardSelectionRequired) {
+        this.selectStartingWard('nerima');
+      }
+    }
+
+    // Generate enemy using real enemy generation
+    const enemy = generateEnemy(this.run.floor);
+
+    // Create real combat state
+    this.combat = createCombatState(enemy);
+    this.combat.turn = determineTurnOrder(this.run.player, enemy);
+    this.combat.intent = selectEnemyIntent(enemy, 1);
+
+    // Ensure current room reflects combat state
+    const currentRoom = this.getCurrentRoom();
+    if (currentRoom) {
+      currentRoom.type = 'encounter';
+      currentRoom.enemy = enemy;
+      currentRoom.interacted = false;
+    }
+
+    this.emitState();
+
+    return {
+      success: true,
+      enemy: {
+        name: enemy.name,
+        nameEn: enemy.nameEn,
+        hp: enemy.hp,
+        maxHp: enemy.maxHp
+      },
+      phase: this.getPhase()
+    };
+  }
 }
 
 // Export singleton instance

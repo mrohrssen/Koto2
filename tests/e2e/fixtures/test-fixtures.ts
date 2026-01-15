@@ -49,38 +49,41 @@ export async function setupCharacter(gameHelper: GameHelper, name: string = 'Tes
 }
 
 /**
- * Helper to get into combat state (best effort)
+ * Helper to get into combat state reliably using debug API
  * Returns true if combat was reached, false otherwise
  */
 export async function setupCombat(gameHelper: GameHelper): Promise<boolean> {
   await setupCharacter(gameHelper);
 
   try {
-    await gameHelper.startRun();
-    await gameHelper.selectWard('nerima');
+    // Use debug API to reliably enter combat
+    // This creates a real combat state with a real enemy
+    const response = await gameHelper.page.evaluate(async () => {
+      const res = await fetch('/api/game/debug-force-combat', { method: 'POST' });
+      return res.json();
+    });
 
-    // Try to proceed to combat, but don't fail if we can't
-    for (let i = 0; i < 5; i++) {
-      const phase = await gameHelper.getPhase();
-      if (phase === 'combat' || phase === 'room_encounter') {
-        return true;
-      }
-
-      // Try proceeding
-      const canProceed = await gameHelper.isActionVisible('proceed');
-      if (canProceed) {
-        await gameHelper.proceedToNextRoom();
-        await gameHelper.page.waitForTimeout(500);
-      } else {
-        break;
-      }
+    if (!response.success) {
+      console.log('[setupCombat] Debug API failed:', response.error);
+      return false;
     }
 
-    // Check final state
+    // Reload page to ensure UI reflects new state
+    await gameHelper.page.reload();
+    await gameHelper.page.waitForLoadState('networkidle');
+
+    // Wait for combat phase
+    const phase = await gameHelper.getPhase();
+    if (phase === 'combat') {
+      return true;
+    }
+
+    // Give UI a moment to update
+    await gameHelper.page.waitForTimeout(500);
     const finalPhase = await gameHelper.getPhase();
-    return finalPhase === 'combat' || finalPhase === 'room_encounter';
+    return finalPhase === 'combat';
   } catch (e) {
-    // If setup fails, return false but don't throw
+    console.log('[setupCombat] Error:', e);
     return false;
   }
 }
