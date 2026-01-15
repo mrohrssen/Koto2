@@ -7,7 +7,7 @@
  */
 
 import { GameManager } from '../loop.js';
-import { CHIPS, getChipsByRarity } from '../items/chips.js';
+import { CHIPS, getChipsByRarity, equipChip } from '../items/chips.js';
 import { allocateStat } from '../state.js';
 import { AIPlayer } from './ai-player.js';
 import { SimulationStats } from './stats.js';
@@ -182,22 +182,35 @@ function createHeadlessGameManager(config) {
 }
 
 /**
- * Equip random chips to player
+ * Equip random chips to player equipment slots
  */
 function equipRandomChips(gm, count) {
   const rarities = ['common', 'uncommon', 'rare'];
+  const slots = ['weapon', 'body', 'shield', 'accessory'];
+  const player = gm.run?.player;
+
+  if (!player) return;
 
   for (let i = 0; i < count && i < 4; i++) {
     const rarity = rarities[Math.floor(Math.random() * rarities.length)];
     const chipsOfRarity = getChipsByRarity(rarity);
-    if (chipsOfRarity.length > 0 && gm.run?.player) {
+
+    if (chipsOfRarity.length > 0) {
       const chip = chipsOfRarity[Math.floor(Math.random() * chipsOfRarity.length)];
-      gm.run.player.chips = gm.run.player.chips || [];
-      gm.run.player.chips.push({
-        id: chip.id,
+      const slot = slots[i % slots.length];
+
+      // Add chip to inventory first
+      player.chips = player.chips || [];
+      const chipInstance = {
+        id: `${chip.id}_${rarity}`,
+        baseId: chip.id,
         rarity: rarity,
         effects: chip.effects
-      });
+      };
+      player.chips.push(chipInstance);
+
+      // Equip chip to slot
+      equipChip(player, slot, chipInstance.id);
     }
   }
 }
