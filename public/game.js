@@ -2333,6 +2333,9 @@ function handleWordPracticeKeydown(e) {
   // Only during combat
   if (!realtimeCombatActive) return;
 
+  // Don't process if enemy dialogue is active (Enter dismisses dialogue first)
+  if (enemyDialogueActive) return;
+
   const typingModal = document.getElementById('word-input-modal');
   const selfGradeModal = document.getElementById('self-grade-modal');
   const typingOpen = typingModal && !typingModal.classList.contains('hidden');
