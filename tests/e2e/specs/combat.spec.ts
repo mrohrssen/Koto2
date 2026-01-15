@@ -35,24 +35,16 @@ test.describe('Combat System', () => {
     const inCombat = await setupCombat(gameHelper);
     expect(inCombat).toBe(true);
 
-    // Wait for realtime combat to start and word cards to render
-    await page.waitForTimeout(1000);
-
     // Word cards container should be visible during realtime combat
-    const wordCards = page.locator(SELECTORS.wordCards);
-    await expect(wordCards).toBeVisible({ timeout: 5000 });
+    await expect(page.locator(SELECTORS.wordCards)).toBeVisible({ timeout: 10000 });
   });
 
   test('should show enemy sprite during combat', async ({ page, gameHelper }) => {
     const inCombat = await setupCombat(gameHelper);
     expect(inCombat).toBe(true);
 
-    // Wait for combat UI to render
-    await page.waitForTimeout(500);
-
     // Enemy sprite should be visible during combat
-    const enemySprite = page.locator(SELECTORS.enemySprite);
-    await expect(enemySprite).toBeVisible({ timeout: 5000 });
+    await expect(page.locator(SELECTORS.enemySprite)).toBeVisible({ timeout: 10000 });
   });
 
   test('should track player HP', async ({ gameHelper }) => {
@@ -93,36 +85,30 @@ test.describe('Combat Actions', () => {
     const inCombat = await setupCombat(gameHelper);
     expect(inCombat).toBe(true);
 
-    // Wait for realtime combat to start
-    await page.waitForTimeout(1000);
-
     // Action panel should show combat indicator during realtime combat
     const actionPanel = page.locator(SELECTORS.actionPanel);
-    await expect(actionPanel).toBeVisible({ timeout: 5000 });
+    await expect(actionPanel).toBeVisible({ timeout: 10000 });
 
-    // Combat indicator text should be present (either 戦闘中 or 戦闘開始)
-    const combatText = await actionPanel.textContent();
-    expect(combatText).toMatch(/戦闘/);
+    // Wait for combat indicator text (戦闘中 or 戦闘開始)
+    await expect(actionPanel).toContainText(/戦闘/, { timeout: 10000 });
   });
 
   test('should show enemy name when in combat', async ({ page, gameHelper }) => {
     const inCombat = await setupCombat(gameHelper);
     expect(inCombat).toBe(true);
 
-    // Wait for combat UI to render
-    await page.waitForTimeout(500);
-
-    // Enemy name should be displayed
-    const enemyName = await page.locator(SELECTORS.enemyNameDisplay).textContent();
-    expect(enemyName).toBeTruthy();
+    // Enemy name should be displayed (wait for non-empty text)
+    const enemyNameEl = page.locator(SELECTORS.enemyNameDisplay);
+    await expect(enemyNameEl).toBeVisible({ timeout: 10000 });
+    await expect(enemyNameEl).not.toBeEmpty({ timeout: 5000 });
   });
 
   test('should have enemy HP when in combat', async ({ page, gameHelper }) => {
     const inCombat = await setupCombat(gameHelper);
     expect(inCombat).toBe(true);
 
-    // Wait for combat UI to render
-    await page.waitForTimeout(500);
+    // Wait for enemy HP bar to be visible
+    await expect(page.locator(SELECTORS.enemyHpBar)).toBeVisible({ timeout: 10000 });
 
     // Enemy should have HP in combat
     const enemyMaxHp = await gameHelper.getEnemyMaxHp();
@@ -131,6 +117,36 @@ test.describe('Combat Actions', () => {
     const enemyHp = await gameHelper.getEnemyHp();
     expect(enemyHp).toBeGreaterThan(0);
     expect(enemyHp).toBeLessThanOrEqual(enemyMaxHp);
+  });
+
+  test('should deal damage during realtime combat', async ({ page, gameHelper }) => {
+    const inCombat = await setupCombat(gameHelper);
+    expect(inCombat).toBe(true);
+
+    // Wait for combat UI to be visible
+    await expect(page.locator(SELECTORS.enemyHpBar)).toBeVisible({ timeout: 10000 });
+
+    // Get initial HP from DOM
+    const initialHpText = await page.locator(SELECTORS.enemyHpValues).textContent();
+    const initialHp = parseInt(initialHpText?.split('/')[0] || '0');
+    expect(initialHp).toBeGreaterThan(0);
+
+    // Wait for realtime combat to deal damage (attacks happen automatically)
+    // This verifies actual combat is working, not just UI rendering
+    await page.waitForFunction(
+      (hp: number) => {
+        const hpText = document.querySelector('#enemy-hp-values')?.textContent;
+        const currentHp = parseInt(hpText?.split('/')[0] || '0');
+        return currentHp < hp;
+      },
+      initialHp,
+      { timeout: 15000 }
+    );
+
+    // Verify HP decreased (read from DOM for consistency)
+    const newHpText = await page.locator(SELECTORS.enemyHpValues).textContent();
+    const newHp = parseInt(newHpText?.split('/')[0] || '0');
+    expect(newHp).toBeLessThan(initialHp);
   });
 });
 

@@ -64,8 +64,7 @@ export async function setupCombat(gameHelper: GameHelper): Promise<boolean> {
     });
 
     if (!response.success) {
-      console.log('[setupCombat] Debug API failed:', response.error);
-      return false;
+      throw new Error(`[setupCombat] Debug API failed: ${response.error || 'Unknown error'}`);
     }
 
     // Reload page to ensure UI reflects new state
@@ -83,7 +82,6 @@ export async function setupCombat(gameHelper: GameHelper): Promise<boolean> {
     const finalPhase = await gameHelper.getPhase();
     return finalPhase === 'combat';
   } catch (e) {
-    console.log('[setupCombat] Error:', e);
-    return false;
+    throw new Error(`[setupCombat] Failed to setup combat: ${e instanceof Error ? e.message : String(e)}`);
   }
 }
