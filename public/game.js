@@ -96,12 +96,50 @@ let createStats = { str: 5, agi: 5, vit: 5, int: 5, dex: 5, luk: 5 };
 let createStatPoints = 0;
 
 // TTS State
-let ttsEnabled = false;
+let ttsEnabled = true; // Enabled by default
 let ttsSpeakerId = 13; // 玄野武宏 (クール) - cool male narrator
 let ttsSpeed = 0.9;
 let ttsVolume = 1.0;
 let currentAudio = null;
 let lastSpokenNarration = null; // For repeating with 'r' key
+let ttsRequestId = 0; // For canceling pending TTS requests
+
+// Personality to VoiceVox speaker mapping
+// Maps enemy personality types to appropriate voice styles
+const PERSONALITY_SPEAKERS = {
+  // Aggressive/Angry - 玄野武宏 (ツンギレ) male angry
+  aggressive: 39, belligerent: 39, furious: 39, hostile: 39, rowdy: 39,
+
+  // Cold/Calculating - 四国めたん (ノーマル) cool female
+  cold: 2, calculating: 2, clinical: 2, detached: 2, precise: 2,
+
+  // Robotic/Mechanical - ナースロボ_タイプT robotic
+  robotic: 47, mechanical: 47, 'machine-like': 47, rigid: 47, repetitive: 47,
+
+  // Nervous/Panicked - 春日部つむぎ higher pitched female
+  frantic: 8, panicked: 8, terrified: 8, anxious: 8, stressed: 8,
+
+  // Exhausted/Slow - 青山龍星 (ノーマル) slow male
+  exhausted: 13, lethargic: 13, apathetic: 13, dazed: 13,
+
+  // Erratic/Chaotic - ずんだもん (あまあま) expressive
+  erratic: 1, hyper: 1, obsessive: 1, intense: 1, eager: 1,
+
+  // Authoritative/Proud - 白上虎太郎 (ノーマル) deep male
+  authoritarian: 12, domineering: 12, authoritative: 12, ruthless: 12,
+
+  // Mysterious/Silent - 雨晴はう (ノーマル) soft whisper
+  silent: 10, elusive: 10, transcendent: 10,
+
+  // Confused/Lost - もち子さん (ノーマル) uncertain
+  confused: 20, lost: 20, paralyzed: 20, frozen: 20,
+
+  // Cheerful/Performative - 小夜/SAYO gentle female
+  charming: 46, performative: 46, gossipy: 46,
+
+  // Default for unmapped - cool narrator
+  default: 13
+};
 
 // Word Review Settings
 let reviewType = 'typing'; // 'typing' or 'self-grade'
@@ -328,6 +366,22 @@ function prefetchFloorBackgrounds(floor) {
   console.log(`Prefetched backgrounds for floors ${floorsToPreload.join(', ')}`);
 }
 
+// All location types for enemy-specific backgrounds
+const LOCATION_TYPES = ['residential', 'school', 'convenience', 'shopping', 'restaurant', 'station', 'office', 'government', 'hospital'];
+let locationBackgroundsPrefetched = false;
+
+// Prefetch all location backgrounds (call once when starting a run)
+function prefetchLocationBackgrounds() {
+  if (locationBackgroundsPrefetched) return;
+  locationBackgroundsPrefetched = true;
+
+  for (const location of LOCATION_TYPES) {
+    const img = new Image();
+    img.src = `assets/backgrounds/locations/${location}.png`;
+  }
+  console.log('Prefetched all location backgrounds');
+}
+
 // Update background based on current floor with deterministic variant
 function updateBackground() {
   if (!vnBackground) return;
@@ -340,6 +394,25 @@ function updateBackground() {
       vnBackground.style.backgroundSize = 'cover';
       vnBackground.style.backgroundPosition = 'center';
       console.log('Background set to: hub');
+    }
+    return;
+  }
+
+  // In combat - use enemy's location-specific background
+  if (gameState.combat?.enemy) {
+    const enemy = gameState.combat.enemy;
+    // Use enemy's primary location, default to 'residential' if none specified
+    const location = enemy.locations?.[0] || 'residential';
+    const locationKey = `location-${location}`;
+
+    // Only change if different from current
+    if (locationKey !== currentBackgroundKey) {
+      currentBackgroundKey = locationKey;
+      const bgPath = `assets/backgrounds/locations/${location}.png`;
+      vnBackground.style.backgroundImage = `url('${bgPath}')`;
+      vnBackground.style.backgroundSize = 'cover';
+      vnBackground.style.backgroundPosition = 'center';
+      console.log(`Background set to: ${bgPath} (enemy location: ${location})`);
     }
     return;
   }
@@ -818,6 +891,8 @@ async function startNewRun() {
   resetBackground();
   // Clear word cache to get fresh due words for this run
   clearWordCache();
+  // Prefetch all location backgrounds for combat scenes
+  prefetchLocationBackgrounds();
 
   const result = await apiCall('/start-run', 'POST');
   if (result) {
@@ -888,7 +963,12 @@ async function startBossEncounter() {
 // Track if enemy dialogue TTS is currently playing
 let enemyDialogueTtsPlaying = false;
 
+// Track if enemy dialogue is active and blocking input (waiting for Enter)
+let enemyDialogueActive = false;
+let enemyDialogueType = null; // 'possessed', 'glitching', or 'liberated'
+
 // Show enemy dialogue bubble (possessed/glitching/liberated)
+// Pauses combat and waits for Enter key to dismiss
 function showEnemyDialogue(text, type = 'possessed') {
   const enemyArea = document.querySelector('.vn-enemy-area');
   if (!enemyArea || !text) return;
@@ -899,23 +979,35 @@ function showEnemyDialogue(text, type = 'possessed') {
 
   const dialogue = document.createElement('div');
   dialogue.className = `enemy-dialogue enemy-dialogue-${type}`;
-  dialogue.innerHTML = `<span class="dialogue-text">${text}</span>`;
+  dialogue.innerHTML = `
+    <span class="dialogue-text">${text}</span>
+    <span class="dialogue-continue">Enter</span>
+  `;
   enemyArea.appendChild(dialogue);
 
-  // Auto-remove after delay based on type
-  const duration = type === 'liberated' ? 4000 : type === 'glitching' ? 3000 : 2500;
-  setTimeout(() => dialogue.remove(), duration);
+  // Set state flags to block input and track dialogue type
+  enemyDialogueActive = true;
+  enemyDialogueType = type;
 
-  // Speak enemy dialogue via TTS and temporarily hide word cards
-  speakEnemyDialogue(text, duration);
+  // Get enemy personality for voice selection
+  const personality = gameState.combat?.enemy?.personality || 'default';
+
+  // Speak enemy dialogue via TTS with personality-based voice
+  // Use a reasonable duration for TTS pacing
+  const ttsDuration = type === 'liberated' ? 4000 : type === 'glitching' ? 3000 : 2500;
+  speakEnemyDialogue(text, ttsDuration, personality);
 }
 
 /**
  * Speak enemy dialogue using TTS
+ * Uses personality-based voice selection
  * Hides word cards during playback if combat is active
  */
-async function speakEnemyDialogue(text, dialogueDuration) {
+async function speakEnemyDialogue(text, dialogueDuration, personality = 'default') {
   if (!ttsEnabled || !text || text.trim().length === 0) return;
+
+  // Get speaker ID based on personality
+  const enemySpeakerId = PERSONALITY_SPEAKERS[personality] || PERSONALITY_SPEAKERS.default;
 
   // Hide word cards while enemy is speaking (if in combat)
   const wasInCombat = realtimeCombatActive;
@@ -930,7 +1022,7 @@ async function speakEnemyDialogue(text, dialogueDuration) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         text,
-        speakerId: ttsSpeakerId,
+        speakerId: enemySpeakerId,
         speed: ttsSpeed,
         volume: ttsVolume
       })
@@ -3170,7 +3262,13 @@ function updateActionPanel() {
       `;
       break;
     case 'combat':
-      showCombatActions();
+      // Don't show old turn-based combat actions - realtime combat will start shortly
+      // Show a brief "combat starting" indicator instead
+      actionPanel.innerHTML = `
+        <div class="combat-in-progress">
+          <div class="combat-indicator">⚔️ 戦闘開始...</div>
+        </div>
+      `;
       break;
     case 'run_ended':
       actionPanel.innerHTML = `
@@ -4275,7 +4373,6 @@ function showPostCombatShopContent() {
           <div class="shop-item-info">
             <div class="shop-item-name">
               ${item.name}
-              ${item.nameEn && !item.nameEn.includes('_') ? `<span class="shop-item-name-en">(${item.nameEn})</span>` : ''}
               ${rarityLabel ? `<span class="shop-item-rarity rarity-${item.rarity}">[${rarityLabel}]</span>` : ''}
             </div>
             <div class="shop-item-desc">${item.description || ''}</div>
@@ -5118,7 +5215,11 @@ function closeChipModal() {
 function renderChipModal() {
   if (!chipLoadoutCache || !currentChipModalSlot) return;
 
-  const slotData = chipLoadoutCache.equipment[currentChipModalSlot];
+  const slotData = chipLoadoutCache.equipment[currentChipModalSlot] || {
+    equippedChips: [],
+    slotsUsed: 0,
+    maxSlots: 5
+  };
   const inventory = chipLoadoutCache.inventory || [];
   const p = gameState.run?.player || gameState.player;
   const equipmentItem = p?.equipment?.[currentChipModalSlot];
@@ -5232,6 +5333,34 @@ function getChipEffectText(chip) {
   if (chip.effects.counter) {
     const c = chip.effects.counter;
     return `+${c.perStack} ${c.stat} per ${c.trigger}`;
+  }
+
+  // Handle onEffect category (onKill, onDamage, etc.)
+  if (chip.effects.onKill) {
+    const e = chip.effects.onKill;
+    const parts = [];
+    if (e.heal) parts.push(`回復${e.heal}HP`);
+    if (e.aspdBoost) parts.push(`ASPD+${Math.round(e.aspdBoost * 100)}%`);
+    if (e.doubleCredits) parts.push('報酬2倍');
+    if (e.aoeExplosion) parts.push(`爆発${e.aoeDamage}dmg`);
+    return `${Math.round((e.chance || 1) * 100)}% ${parts.join(', ') || '撃破時効果'}`;
+  }
+
+  if (chip.effects.onDamage) {
+    const e = chip.effects.onDamage;
+    return `${Math.round((e.chance || 1) * 100)}% ダメージ${Math.round((e.damageReduction || 0) * 100)}%軽減`;
+  }
+
+  if (chip.effects.onDodge) {
+    return '回避時効果';
+  }
+
+  if (chip.effects.onCrit) {
+    return 'クリティカル時効果';
+  }
+
+  if (chip.effects.onLowHp) {
+    return 'HP低下時効果';
   }
 
   return '';
@@ -6355,6 +6484,9 @@ async function speakNarration(text) {
 
   if (!ttsEnabled) return;
 
+  // Increment request ID to cancel any pending requests
+  const thisRequestId = ++ttsRequestId;
+
   try {
     const response = await fetch(`${API_BASE}/api/tts/synthesize`, {
       method: 'POST',
@@ -6367,6 +6499,11 @@ async function speakNarration(text) {
       })
     });
 
+    // Check if this request was canceled while waiting
+    if (thisRequestId !== ttsRequestId) {
+      return; // A newer request has started, don't play this one
+    }
+
     if (!response.ok) {
       const error = await response.json();
       console.warn('TTS error:', error.error);
@@ -6375,6 +6512,12 @@ async function speakNarration(text) {
 
     const audioBlob = await response.blob();
     const audioUrl = URL.createObjectURL(audioBlob);
+
+    // Double-check cancellation after getting the audio blob
+    if (thisRequestId !== ttsRequestId) {
+      URL.revokeObjectURL(audioUrl);
+      return;
+    }
 
     currentAudio = new Audio(audioUrl);
     currentAudio.volume = Math.min(ttsVolume, 1.0);
@@ -6389,9 +6532,12 @@ async function speakNarration(text) {
 }
 
 /**
- * Stop any currently playing TTS audio
+ * Stop any currently playing TTS audio and cancel pending requests
  */
 function stopTts() {
+  // Increment request ID to cancel any pending TTS fetches
+  ttsRequestId++;
+
   if (currentAudio) {
     currentAudio.pause();
     currentAudio = null;
@@ -6402,7 +6548,7 @@ function stopTts() {
  * Initialize TTS settings from loaded settings
  */
 function initTtsSettings(settings) {
-  ttsEnabled = settings.gameTtsEnabled || false;
+  ttsEnabled = settings.gameTtsEnabled ?? true; // Default to true if undefined
   ttsSpeakerId = settings.gameTtsSpeakerId || 13;
   ttsSpeed = settings.gameTtsSpeed || 0.9;
   ttsVolume = settings.gameTtsVolume || 1.0;
