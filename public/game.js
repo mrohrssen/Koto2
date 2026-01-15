@@ -1840,7 +1840,7 @@ function startRealtimeCombat() {
 
 // Execute a single player attack and schedule the next one
 async function executePlayerAttack() {
-  if (!realtimeCombatActive || playerAttackPending) return;
+  if (!realtimeCombatActive || playerAttackPending || enemyDialogueActive) return;
 
   playerAttackPending = true;
 
@@ -1947,7 +1947,7 @@ async function executePlayerAttack() {
 
 // Execute a single enemy attack and schedule the next one
 async function executeEnemyAttack() {
-  if (!realtimeCombatActive || enemyAttackPending) return;
+  if (!realtimeCombatActive || enemyAttackPending || enemyDialogueActive) return;
 
   enemyAttackPending = true;
 
