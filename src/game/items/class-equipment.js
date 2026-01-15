@@ -1,8 +1,21 @@
-// Fixed Class Equipment - Hacker Class
+// Fixed Class Equipment - Class Definitions
 // Players start with fixed equipment that defines their class identity
 // Equipment cannot be changed, only upgraded
 // Each equipment has chip slots for passive augmentations
 
+// ============ CLASS CONFIGURATION ============
+export const CLASS_CONFIG = {
+  hacker: {
+    id: 'hacker',
+    name: 'ハッカー',
+    nameEn: 'Hacker',
+    description: 'Tech-focused class. Auto-distributes stat points on level up.',
+    autoAllocateStats: true,  // Auto-distributes stat points on level up
+    statPriority: ['vit', 'str', 'agi', 'dex', 'int', 'luk']  // Balanced round-robin
+  }
+};
+
+// ============ HACKER EQUIPMENT ============
 export const HACKER_EQUIPMENT = {
   tool: {
     id: 'modifiedUmbrella',
@@ -72,21 +85,11 @@ export const HACKER_EQUIPMENT = {
  * @returns {object} Equipment object for player.equipment
  */
 export function getClassStartingEquipment(className = 'hacker') {
-  if (className === 'hacker') {
-    return {
-      weapon: { id: HACKER_EQUIPMENT.tool.id, equippedChips: [] },
-      body: { id: HACKER_EQUIPMENT.outfit.id, equippedChips: [] },
-      shield: { id: HACKER_EQUIPMENT.device.id, equippedChips: [] },
-      accessory: { id: HACKER_EQUIPMENT.bag.id, equippedChips: [] }
-    };
-  }
-
-  // Default fallback (shouldn't happen)
   return {
-    weapon: { id: 'modifiedUmbrella', equippedChips: [] },
-    body: { id: 'hackerHoodie', equippedChips: [] },
-    shield: { id: 'brokenSmartwatch', equippedChips: [] },
-    accessory: { id: 'messengerBag', equippedChips: [] }
+    weapon: { id: HACKER_EQUIPMENT.tool.id, equippedChips: [] },
+    body: { id: HACKER_EQUIPMENT.outfit.id, equippedChips: [] },
+    shield: { id: HACKER_EQUIPMENT.device.id, equippedChips: [] },
+    accessory: { id: HACKER_EQUIPMENT.bag.id, equippedChips: [] }
   };
 }
 

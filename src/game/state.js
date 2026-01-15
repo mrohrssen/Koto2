@@ -60,6 +60,7 @@ import {
   getStartingPlayerStats
 } from './stats.js';
 import { calculateEquipmentBonuses, getClassStartingEquipment } from './items.js';
+import { CLASS_CONFIG } from './items/class-equipment.js';
 
 // ============ META-PROGRESSION STATE ============
 
@@ -376,7 +377,7 @@ export function getMetaUpgradeEffects(metaProgression) {
 }
 
 // ============ DEFAULT PLAYER STATE ============
-export function createNewPlayer(name = "Hunter", customStats = null, customStatPoints = null) {
+export function createNewPlayer(name = "Hunter", customStats = null, customStatPoints = null, playerClass = 'hacker') {
   const level = 1;
 
   // Use custom stats if provided (from character creation), otherwise defaults
@@ -390,6 +391,7 @@ export function createNewPlayer(name = "Hunter", customStats = null, customStatP
 
   return {
     name,
+    class: playerClass,  // 'hacker' - auto-allocates stats on level up
     rank: "E",  // E, D, C, B, A, S
     level,
     xp: 0,
@@ -413,8 +415,8 @@ export function createNewPlayer(name = "Hunter", customStats = null, customStatP
       { id: "potion", quantity: 3 }
     ],
 
-    // Equipped gear (4 slots) - fixed Hacker class equipment
-    equipment: getClassStartingEquipment('hacker'),
+    // Equipped gear (4 slots) - class-specific equipment
+    equipment: getClassStartingEquipment(playerClass),
 
     // Learned skills
     skills: [
@@ -543,6 +545,47 @@ export function calculateXpToNext(level) {
   return Math.floor(base + linear + quadratic);
 }
 
+/**
+ * Auto-allocate stat points for classes with autoAllocateStats: true
+ * Uses round-robin distribution through statPriority array
+ * @param {object} player - Player object
+ * @returns {object} Stats that were increased { str: 1, vit: 2, ... }
+ */
+function autoAllocateStatPoints(player) {
+  const classConfig = CLASS_CONFIG[player.class];
+  if (!classConfig || !classConfig.autoAllocateStats) {
+    return {};
+  }
+
+  const statsAllocated = {};
+  const priority = classConfig.statPriority || ['vit', 'str', 'agi', 'dex', 'int', 'luk'];
+  let priorityIndex = 0;
+  let failedAttempts = 0;
+
+  // Keep allocating until we can't afford any stat
+  while (player.statPoints > 0 && failedAttempts < priority.length) {
+    const statName = priority[priorityIndex];
+    const currentValue = player.stats[statName];
+    const cost = getStatPointCost(currentValue);
+
+    if (currentValue < 99 && player.statPoints >= cost) {
+      // Can afford this stat - allocate it
+      player.statPoints -= cost;
+      player.stats[statName]++;
+      statsAllocated[statName] = (statsAllocated[statName] || 0) + 1;
+      failedAttempts = 0;  // Reset failed counter
+    } else {
+      // Can't afford or maxed - try next stat
+      failedAttempts++;
+    }
+
+    // Move to next stat in priority (round-robin)
+    priorityIndex = (priorityIndex + 1) % priority.length;
+  }
+
+  return statsAllocated;
+}
+
 export function checkLevelUp(player) {
   const levelUps = [];
 
@@ -554,6 +597,9 @@ export function checkLevelUp(player) {
     // Award stat points based on level (iRO formula)
     const pointsEarned = getStatPointsForLevel(player.level);
     player.statPoints += pointsEarned;
+
+    // Auto-allocate stats for Newbie class (and any class with autoAllocateStats)
+    const autoAllocated = autoAllocateStatPoints(player);
 
     // Recalculate max HP/SP (they scale with level even without stat changes)
     // Include equipment bonuses for VIT/INT
@@ -574,7 +620,8 @@ export function checkLevelUp(player) {
       statPointsEarned: pointsEarned,
       totalStatPoints: player.statPoints,
       maxHpGain: player.maxHp - oldMaxHp,
-      maxSpGain: player.maxSp - oldMaxSp
+      maxSpGain: player.maxSp - oldMaxSp,
+      autoAllocated  // Include which stats were auto-allocated
     });
 
     // Check for rank up (every 5 levels)
