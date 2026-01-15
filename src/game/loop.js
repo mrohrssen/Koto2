@@ -946,6 +946,29 @@ export class GameManager {
   }
 
   /**
+   * Refresh the post-combat shop with 3 new random chips
+   */
+  refreshPostCombatShop() {
+    if (!this.run?.postCombatShop?.active) {
+      throw new Error('No active shop');
+    }
+
+    // Generate new shop items (excluding already owned chips)
+    const ownedChipIds = (this.run.player.chips || []).map(c => c.id);
+    const shopItems = generatePostCombatShop(this.run.floor, ownedChipIds);
+
+    this.run.postCombatShop.items = shopItems;
+
+    this.narrate('商人が新しい品を出してきた。');
+    this.emitState();
+
+    return {
+      success: true,
+      items: shopItems
+    };
+  }
+
+  /**
    * Interact with trap - attempt to disarm
    */
   disarmTrap() {

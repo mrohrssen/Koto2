@@ -592,6 +592,7 @@ function setupEventListeners() {
 
   // Shop modal
   document.getElementById('shop-skip-btn')?.addEventListener('click', skipShop);
+  document.getElementById('shop-refresh-btn')?.addEventListener('click', refreshShop);
 
   // Game over modal
   document.getElementById('gameover-retry-btn').addEventListener('click', () => {
@@ -4519,12 +4520,14 @@ function showPostCombatShopContent() {
   const goldDisplay = document.getElementById('shop-player-gold');
   if (goldDisplay) goldDisplay.textContent = gold;
 
-  // Show skip button, hide close button for post-combat shop
+  // Show skip and refresh buttons, hide close button for post-combat shop
   const closeBtn = document.getElementById('shop-close-btn');
   const skipBtn = document.getElementById('shop-skip-btn');
+  const refreshBtn = document.getElementById('shop-refresh-btn');
   const closeX = document.getElementById('close-shop');
   if (closeBtn) closeBtn.classList.add('hidden');
   if (skipBtn) skipBtn.classList.remove('hidden');
+  if (refreshBtn) refreshBtn.classList.remove('hidden');
   if (closeX) closeX.classList.add('hidden');
 
   // Generate shop items HTML using same format as regular shop
@@ -4585,11 +4588,13 @@ function resetShopModal() {
   const shopGreeting = document.getElementById('shop-greeting');
   const closeBtn = document.getElementById('shop-close-btn');
   const skipBtn = document.getElementById('shop-skip-btn');
+  const refreshBtn = document.getElementById('shop-refresh-btn');
   const closeX = document.getElementById('close-shop');
   if (shopTitle) shopTitle.textContent = 'Merchant';
   if (shopGreeting) shopGreeting.textContent = '「いらっしゃい、冒険者よ。何が欲しい？」';
   if (closeBtn) closeBtn.classList.remove('hidden');
   if (skipBtn) skipBtn.classList.add('hidden');
+  if (refreshBtn) refreshBtn.classList.add('hidden');
   if (closeX) closeX.classList.remove('hidden');
 }
 
@@ -4635,9 +4640,27 @@ async function skipShop() {
   }
 }
 
+async function refreshShop() {
+  try {
+    const result = await apiCall('/post-combat-shop-refresh', 'POST');
+    if (result) {
+      // Update state from server
+      if (result.state) {
+        gameState = { ...gameState, ...result.state };
+      }
+      // Re-render the shop with new items
+      showPostCombatShopContent();
+      showNarration('商人が新しい品を出してきた！');
+    }
+  } catch (error) {
+    console.error('Shop refresh error:', error);
+  }
+}
+
 // Expose shop functions to window for onclick handlers
 window.buyFromShop = buyFromShop;
 window.skipShop = skipShop;
+window.refreshShop = refreshShop;
 window.selectShopItem = selectShopItem;
 
 function showRunEndedContent() {

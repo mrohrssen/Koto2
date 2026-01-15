@@ -1185,6 +1185,16 @@ app.post('/api/game/post-combat-shop-buy', async (req, res) => {
   }
 });
 
+app.post('/api/game/post-combat-shop-refresh', async (req, res) => {
+  try {
+    const result = gameManager.refreshPostCombatShop();
+    saveGameData();
+    res.json({ ...result, state: getEnrichedGameState() });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 app.post('/api/game/disarm', async (req, res) => {
   try {
     const result = gameManager.disarmTrap();

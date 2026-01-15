@@ -205,7 +205,10 @@ function equipRandomChips(gm, count) {
         id: `${chip.id}_${rarity}`,
         baseId: chip.id,
         rarity: rarity,
-        effects: chip.effects
+        category: chip.category,
+        effects: chip.effects,
+        name: chip.name,
+        nameEn: chip.nameEn
       };
       player.chips.push(chipInstance);
 
