@@ -1869,6 +1869,12 @@ async function executePlayerAttack() {
       return;
     }
 
+    // If dialogue appeared during fetch, don't process results
+    if (enemyDialogueActive) {
+      playerAttackPending = false;
+      return;
+    }
+
     // Update intervals from server
     if (result.playerInterval) currentPlayerInterval = result.playerInterval;
     if (result.enemyInterval) currentEnemyInterval = result.enemyInterval;
@@ -1973,6 +1979,12 @@ async function executeEnemyAttack() {
       if (realtimeCombatActive) {
         stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
       }
+      return;
+    }
+
+    // If dialogue appeared during fetch, don't process results
+    if (enemyDialogueActive) {
+      enemyAttackPending = false;
       return;
     }
 
