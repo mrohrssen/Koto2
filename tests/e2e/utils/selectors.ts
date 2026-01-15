@@ -149,12 +149,20 @@ export const SELECTORS = {
   shopCloseBtn: '#shop-close-btn',
   shopSkipBtn: '#shop-skip-btn',
 
-  // Blacksmith Modal
+  // Blacksmith Modal (Equipment Refinement)
   blacksmithModal: '#blacksmith-modal',
   blacksmithPlayerGold: '#blacksmith-player-gold',
   closeBlacksmith: '#close-blacksmith',
   blacksmithItems: '#blacksmith-items',
   blacksmithCloseBtn: '#blacksmith-close-btn',
+
+  // Chip Upgrade Modal (Modder)
+  chipUpgradeModal: '#chip-upgrade-modal',
+  chipUpgradeGold: '#chip-upgrade-gold',
+  closeChipUpgrade: '#close-chip-upgrade',
+  chipUpgradeGreeting: '#chip-upgrade-greeting',
+  chipUpgradeItems: '#chip-upgrade-items',
+  chipUpgradeCloseBtn: '#chip-upgrade-close-btn',
 
   // Log Modal
   logModal: '#log-modal',

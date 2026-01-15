@@ -1473,6 +1473,52 @@ app.post('/api/game/debug-force-combat', (req, res) => {
   }
 });
 
+// Debug: Force blacksmith room state for e2e testing
+app.post('/api/game/debug-force-blacksmith', (req, res) => {
+  if (!debugMode) {
+    return res.status(403).json({ error: 'Debug mode not enabled' });
+  }
+
+  try {
+    // Need a run first
+    if (!gameManager.run) {
+      return res.status(400).json({ error: 'No active run' });
+    }
+
+    // Create a blacksmith room and set it as current
+    const room = {
+      id: 'debug_blacksmith',
+      type: 'blacksmith',
+      roomNumber: 1,
+      totalRooms: 5,
+      floor: 1,
+      explored: true,
+      interacted: false,
+      blacksmith: {
+        interacted: false,
+        successBonus: 0.02
+      }
+    };
+
+    // Replace current room or add to rooms array
+    if (!gameManager.run.rooms) {
+      gameManager.run.rooms = [room];
+      gameManager.run.currentRoom = 0;
+    } else {
+      gameManager.run.rooms[gameManager.run.currentRoom] = room;
+    }
+
+    // Clear combat state if any
+    gameManager.combat = null;
+    gameManager.run.postCombatShop = null;
+
+    saveGameData();
+    res.json({ success: true, room, state: getEnrichedGameState() });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // Debug: Give player test chips
 app.post('/api/game/debug-chips', (req, res) => {
   const player = gameManager.run?.player || gameManager.player;

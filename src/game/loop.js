@@ -1350,11 +1350,13 @@ export class GameManager {
    * @returns {object} { chips: Array, playerGold: number }
    */
   getChipUpgradePreview() {
+    console.log('[getChipUpgradePreview] Called');
     if (!this.run || !this.run.player) {
       throw new Error('No active run');
     }
 
     const room = this.getCurrentRoom();
+    console.log('[getChipUpgradePreview] Room type:', room?.type, 'Room:', room);
     if (!room || room.type !== 'blacksmith') {
       throw new Error('No blacksmith here');
     }

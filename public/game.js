@@ -3677,6 +3677,7 @@ function showRoomContent() {
 
 function showRoomActions() {
   const room = gameState.room;
+  console.log('[showRoomActions] room:', room?.type, 'actions:', room?.actions);
   if (!room) {
     actionPanel.innerHTML = '<button class="action-btn primary" onclick="proceedToNextRoom()">進む</button>';
     return;
@@ -4347,12 +4348,18 @@ const RARITY_NAMES = {
 };
 
 async function openChipUpgradeModal() {
+  console.log('[openChipUpgradeModal] Called');
   try {
+    console.log('[openChipUpgradeModal] Fetching preview...');
     const response = await fetch(`${API_BASE}/api/game/chip-upgrade-preview`);
+    console.log('[openChipUpgradeModal] Response status:', response.status);
     if (!response.ok) {
-      throw new Error('Failed to load chip upgrade preview');
+      const errorData = await response.json().catch(() => ({}));
+      console.error('[openChipUpgradeModal] Error response:', errorData);
+      throw new Error(errorData.error || 'Failed to load chip upgrade preview');
     }
     const data = await response.json();
+    console.log('[openChipUpgradeModal] Data:', data);
 
     const modal = document.getElementById('chip-upgrade-modal');
     const goldDisplay = document.getElementById('chip-upgrade-gold');
@@ -4415,6 +4422,7 @@ async function openChipUpgradeModal() {
     }
 
     modal.classList.remove('hidden');
+    console.log('[openChipUpgradeModal] Modal opened successfully');
 
     // Update game state if provided
     if (data.state) {
@@ -4422,7 +4430,7 @@ async function openChipUpgradeModal() {
       window.gameState = gameState;
     }
   } catch (error) {
-    console.error('Chip upgrade modal error:', error);
+    console.error('[openChipUpgradeModal] Error:', error);
     showNarration('改造屋との会話に失敗した。');
   }
 }
