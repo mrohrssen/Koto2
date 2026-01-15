@@ -1015,6 +1015,7 @@ function showEnemyDialogue(text, type = 'possessed') {
   // Setting realtimeCombatActive = false ensures ALL checks work correctly,
   // including any in-flight fetch requests that complete after this
   if (type === 'glitching' && realtimeCombatActive) {
+    console.log('[DEBUG] showEnemyDialogue: PAUSING combat for glitching');
     if (playerAttackTimer) {
       clearTimeout(playerAttackTimer);
       playerAttackTimer = null;
@@ -1024,6 +1025,7 @@ function showEnemyDialogue(text, type = 'possessed') {
       enemyAttackTimer = null;
     }
     realtimeCombatActive = false;  // Nuclear pause - all attack functions will bail out
+    console.log('[DEBUG] showEnemyDialogue: realtimeCombatActive =', realtimeCombatActive);
   }
 
   // Get enemy personality and speakerId for voice selection
@@ -1060,12 +1062,16 @@ function dismissEnemyDialogue() {
 
   // Resume combat if we were paused during glitching dialogue
   // Note: realtimeCombatActive was set to false in showEnemyDialogue for glitching
+  console.log('[DEBUG] dismissEnemyDialogue: wasGlitching =', wasGlitching);
   if (wasGlitching) {
+    console.log('[DEBUG] dismissEnemyDialogue: RESUMING combat');
+    console.log('[DEBUG] dismissEnemyDialogue: intervals =', currentPlayerInterval, currentEnemyInterval);
     realtimeCombatActive = true;  // Re-enable combat
     playerAttackPending = false;
     enemyAttackPending = false;
     playerAttackTimer = setTimeout(executePlayerAttack, currentPlayerInterval);
     enemyAttackTimer = setTimeout(executeEnemyAttack, currentEnemyInterval);
+    console.log('[DEBUG] dismissEnemyDialogue: realtimeCombatActive =', realtimeCombatActive);
   }
 
   // Resolve the promise so waiting code can continue
@@ -1916,7 +1922,11 @@ function startRealtimeCombat() {
 
 // Execute a single player attack and schedule the next one
 async function executePlayerAttack() {
-  if (!realtimeCombatActive || playerAttackPending || enemyDialogueActive) return;
+  console.log('[DEBUG] executePlayerAttack: realtimeCombatActive=', realtimeCombatActive, 'playerAttackPending=', playerAttackPending, 'enemyDialogueActive=', enemyDialogueActive);
+  if (!realtimeCombatActive || playerAttackPending || enemyDialogueActive) {
+    console.log('[DEBUG] executePlayerAttack: RETURNING EARLY');
+    return;
+  }
 
   playerAttackPending = true;
 
@@ -3426,6 +3436,9 @@ function updateActionPanel() {
     case 'post_combat_shop':
       // Actions are in the shop content itself
       actionPanel.innerHTML = `
+        <button class="action-btn primary" onclick="refreshShop()">
+          リフレッシュ
+        </button>
         <button class="action-btn secondary" onclick="skipShop()">
           スキップ (¥節約)
         </button>
