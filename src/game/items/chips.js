@@ -145,6 +145,20 @@ export const CHIP_RARITIES = {
 // Base price for chips
 const BASE_CHIP_PRICE = 30;
 
+// ============ CHIP UPGRADE CONFIG ============
+export const CHIP_UPGRADE_CONFIG = {
+  failureRates: {
+    common: 0.05,      // 5% chance to fail
+    uncommon: 0.10,    // 10% chance to fail
+    rare: 0.15,        // 15% chance to fail
+    epic: 0.25         // 25% chance to fail
+    // legendary cannot be upgraded
+  },
+  rarityOrder: ['common', 'uncommon', 'rare', 'epic', 'legendary'],
+  // Cost to upgrade = purchase price of current rarity
+  getUpgradeCost: (rarity) => Math.floor(BASE_CHIP_PRICE * CHIP_RARITIES[rarity].priceMultiplier)
+};
+
 // ============ CHIP DEFINITIONS ============
 export const CHIPS = {
   // ========== STAT CHIPS (10) ==========
@@ -2029,6 +2043,100 @@ export function getChipPrice(chipId) {
 
   const rarity = CHIP_RARITIES[chip.rarity];
   return Math.floor(BASE_CHIP_PRICE * rarity.priceMultiplier);
+}
+
+// ============ CHIP UPGRADE FUNCTIONS ============
+
+/**
+ * Get the next rarity tier
+ * @param {string} currentRarity - Current rarity
+ * @returns {string|null} Next rarity or null if already legendary
+ */
+export function getNextRarity(currentRarity) {
+  const order = CHIP_UPGRADE_CONFIG.rarityOrder;
+  const currentIndex = order.indexOf(currentRarity);
+  if (currentIndex === -1 || currentIndex >= order.length - 1) {
+    return null; // Invalid or already legendary
+  }
+  return order[currentIndex + 1];
+}
+
+/**
+ * Get the cost to upgrade a chip
+ * @param {object} chip - Chip object with rarity
+ * @returns {number} Upgrade cost in credits
+ */
+export function getUpgradeCost(chip) {
+  const rarity = chip.rarity || 'common';
+  return CHIP_UPGRADE_CONFIG.getUpgradeCost(rarity);
+}
+
+/**
+ * Get the failure chance for upgrading a chip
+ * @param {object} chip - Chip object with rarity
+ * @param {number} floorBonus - Optional bonus from floor (reduces failure chance)
+ * @returns {number} Failure chance (0-1)
+ */
+export function getUpgradeFailureChance(chip, floorBonus = 0) {
+  const rarity = chip.rarity || 'common';
+  const baseFailure = CHIP_UPGRADE_CONFIG.failureRates[rarity] || 0;
+  // Floor bonus reduces failure chance
+  return Math.max(0, baseFailure - floorBonus);
+}
+
+/**
+ * Create an upgraded version of a chip
+ * @param {object} chip - Original chip from player inventory
+ * @param {string} newRarity - Target rarity
+ * @returns {object} New chip with upgraded rarity and scaled effects
+ */
+export function createUpgradedChip(chip, newRarity) {
+  // Get base chip definition
+  const baseId = chip.baseId || chip.id.split('_')[0];
+  const baseChip = CHIPS[baseId];
+  if (!baseChip) {
+    throw new Error(`Base chip not found: ${baseId}`);
+  }
+
+  const rarityInfo = CHIP_RARITIES[newRarity];
+  const scaledEffects = applyRarityMultiplier(baseChip.effects, rarityInfo.statMultiplier);
+
+  return {
+    id: `${baseId}_${newRarity}`,
+    baseId: baseId,
+    name: baseChip.name,
+    nameEn: baseChip.nameEn,
+    category: baseChip.category,
+    rarity: newRarity,
+    description: baseChip.description,
+    effects: scaledEffects,
+    baseEffects: baseChip.effects
+  };
+}
+
+/**
+ * Attempt to upgrade a chip (roll for success/failure)
+ * @param {object} chip - Chip to upgrade
+ * @param {number} floorBonus - Optional floor bonus reducing failure chance
+ * @returns {object} { success: boolean, upgradedChip?: object }
+ */
+export function attemptChipUpgrade(chip, floorBonus = 0) {
+  const nextRarity = getNextRarity(chip.rarity);
+  if (!nextRarity) {
+    return { success: false, reason: 'already_max' };
+  }
+
+  const failureChance = getUpgradeFailureChance(chip, floorBonus);
+  const roll = Math.random();
+
+  if (roll < failureChance) {
+    // Upgrade failed - chip destroyed
+    return { success: false, reason: 'failed', failureChance };
+  }
+
+  // Success - create upgraded chip
+  const upgradedChip = createUpgradedChip(chip, nextRarity);
+  return { success: true, upgradedChip, previousRarity: chip.rarity, newRarity: nextRarity };
 }
 
 /**

@@ -703,6 +703,33 @@
         </div>
       </div>
     </div>
+
+    <!-- Chip Upgrade Modal (Modder) -->
+    <div class="modal hidden" id="chip-upgrade-modal">
+      <div class="modal-content chip-upgrade-content">
+        <div class="modal-header">
+          <h2>改造屋</h2>
+          <div class="shop-gold">
+            <span class="gold-icon">&#x1FA99;</span>
+            <span class="gold-amount" id="chip-upgrade-gold">0</span> G
+          </div>
+          <button id="close-chip-upgrade" class="btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body chip-upgrade-body">
+          <p class="chip-upgrade-greeting" id="chip-upgrade-greeting">「チップを強化してやろうか？失敗すると...まあ、分かるだろ？」</p>
+          <div class="chip-upgrade-items" id="chip-upgrade-items">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="chip-upgrade-leave-btn">立ち去る</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="game.js?v=4"></script>

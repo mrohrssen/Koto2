@@ -375,7 +375,7 @@ const EMPTY_DESCRIPTIONS = [
 
 /**
  * Generate rooms for a floor
- * NEW SYSTEM: Every room is an encounter, shop appears after each kill
+ * NEW SYSTEM: Every room is an encounter (with 10% chance of blacksmith), shop appears after each kill
  * @param {number} floor - Current floor (1-7)
  * @param {number} encountersNeeded - Number of encounters before boss
  * @returns {Array} Array of room objects
@@ -384,16 +384,39 @@ export function generateFloorRooms(floor, encountersNeeded = 3) {
   // Fixed number of encounters per floor + boss room
   const totalRooms = encountersNeeded + 1; // encounters + boss
   const rooms = [];
+  const BLACKSMITH_CHANCE = 0.10; // 10% chance per room
 
-  // Generate encounter rooms
+  // First pass: determine room types
+  const roomTypes = [];
+  let hasBlacksmith = false;
+  let encounterCount = 0;
+
   for (let i = 0; i < totalRooms; i++) {
-    // Last room is always boss room
     if (i === totalRooms - 1) {
-      rooms.push(createRoom('boss', floor, i + 1, totalRooms));
+      // Last room is always boss
+      roomTypes.push('boss');
+    } else if (Math.random() < BLACKSMITH_CHANCE) {
+      // 10% chance for blacksmith
+      roomTypes.push(ROOM_TYPES.blacksmith);
+      hasBlacksmith = true;
     } else {
-      // All other rooms are encounters
-      rooms.push(createRoom(ROOM_TYPES.encounter, floor, i + 1, totalRooms));
+      roomTypes.push(ROOM_TYPES.encounter);
+      encounterCount++;
     }
+  }
+
+  // Ensure at least one encounter exists (convert a blacksmith if needed)
+  if (encounterCount === 0 && hasBlacksmith) {
+    // Find first blacksmith and convert to encounter
+    const blacksmithIndex = roomTypes.findIndex(t => t === ROOM_TYPES.blacksmith);
+    if (blacksmithIndex !== -1) {
+      roomTypes[blacksmithIndex] = ROOM_TYPES.encounter;
+    }
+  }
+
+  // Create room objects
+  for (let i = 0; i < totalRooms; i++) {
+    rooms.push(createRoom(roomTypes[i], floor, i + 1, totalRooms));
   }
 
   return rooms;
@@ -726,7 +749,7 @@ export function getRoomEntryNarration(room) {
       return `${roomNum}に入った。「おい、ハッカー。いいモノあるぜ。」闇商人がいる！`;
 
     case ROOM_TYPES.blacksmith:
-      return `${roomNum}に入った。「改造が必要か？」改造屋がいる！`;
+      return `${roomNum}に入った。「チップを強化してやろうか？失敗すると...まあ、分かるだろ？」改造屋がいる！`;
 
     case 'boss':
       return `${wardInfo.name}の中心部に入った。強力なSYSTEM反応がある...ボスがいる！`;
@@ -781,7 +804,9 @@ export function getRoomActions(room) {
       break;
 
     case ROOM_TYPES.blacksmith:
-      actions.push({ id: 'refine', name: '改造', description: '装備を改造する' });
+      if (!room.blacksmith?.interacted) {
+        actions.push({ id: 'upgrade', name: '強化', description: 'チップを強化する' });
+      }
       break;
 
     case ROOM_TYPES.encounter:

@@ -579,6 +579,10 @@ function setupEventListeners() {
   document.getElementById('close-blacksmith')?.addEventListener('click', closeBlacksmith);
   document.getElementById('blacksmith-close-btn')?.addEventListener('click', closeBlacksmith);
 
+  // Chip upgrade modal (Modder)
+  document.getElementById('close-chip-upgrade')?.addEventListener('click', closeChipUpgradeModal);
+  document.getElementById('chip-upgrade-leave-btn')?.addEventListener('click', closeChipUpgradeModal);
+
   // Filter chips for word states
   document.querySelectorAll('#game-word-state-filters .filter-chip').forEach(chip => {
     chip.addEventListener('click', () => handleGameFilterClick(chip.dataset.state));
@@ -3489,6 +3493,9 @@ async function handleRoomAction(actionId) {
     case 'refine':
       await openBlacksmith();
       break;
+    case 'upgrade':
+      await openChipUpgradeModal();
+      break;
     default:
       console.warn('Unknown room action:', actionId);
   }
@@ -4040,6 +4047,143 @@ function closeBlacksmith() {
 
 // Make refineItem available globally for onclick
 window.refineItem = refineItem;
+
+// ============ CHIP UPGRADE (MODDER) FUNCTIONS ============
+
+const RARITY_NAMES = {
+  common: 'ノーマル',
+  uncommon: 'アンコモン',
+  rare: 'レア',
+  epic: 'エピック',
+  legendary: 'レジェンダリー'
+};
+
+async function openChipUpgradeModal() {
+  try {
+    const response = await fetch(`${API_BASE}/api/game/chip-upgrade-preview`);
+    if (!response.ok) {
+      throw new Error('Failed to load chip upgrade preview');
+    }
+    const data = await response.json();
+
+    const modal = document.getElementById('chip-upgrade-modal');
+    const goldDisplay = document.getElementById('chip-upgrade-gold');
+    const greetingDisplay = document.getElementById('chip-upgrade-greeting');
+    const itemsContainer = document.getElementById('chip-upgrade-items');
+
+    // Update gold display
+    goldDisplay.textContent = data.playerGold;
+
+    // Show greeting
+    if (greetingDisplay && data.greeting) {
+      greetingDisplay.textContent = data.greeting;
+    }
+
+    // Render chips
+    const chips = data.chips || [];
+    if (chips.length === 0) {
+      itemsContainer.innerHTML = '<p class="chip-upgrade-empty">「強化できるチップがないな...」</p>';
+    } else {
+      itemsContainer.innerHTML = chips.map(chip => {
+        const canAfford = data.playerGold >= chip.upgradeCost;
+        const failurePercent = Math.round(chip.failureChance * 100);
+
+        // Determine risk level for styling
+        let riskClass = 'low';
+        if (failurePercent >= 20) riskClass = 'high';
+        else if (failurePercent >= 10) riskClass = 'medium';
+
+        // Get icon path (strip rarity suffix for icon lookup)
+        const baseId = chip.baseId || chip.id.split('_')[0];
+        const iconPath = `/assets/icons/chips/${baseId}.png`;
+
+        const chipName = chip.name || chip.nameEn || baseId;
+        const currentRarityName = RARITY_NAMES[chip.rarity] || chip.rarity;
+        const nextRarityName = RARITY_NAMES[chip.nextRarity] || chip.nextRarity;
+
+        return `
+          <div class="chip-upgrade-item rarity-${chip.rarity} ${!canAfford ? 'cannot-afford' : ''}" data-chip-id="${chip.id}">
+            <img class="chip-upgrade-item-icon" src="${iconPath}" alt="${chipName}" onerror="this.src='/assets/icons/chips/default.png'">
+            <div class="chip-upgrade-item-info">
+              <div class="chip-upgrade-item-name">${chipName}</div>
+              <div class="chip-upgrade-item-rarity">
+                <span class="chip-upgrade-rarity-current rarity-${chip.rarity}">${currentRarityName}</span>
+                <span class="chip-upgrade-rarity-arrow">→</span>
+                <span class="chip-upgrade-rarity-next rarity-${chip.nextRarity}">${nextRarityName}</span>
+              </div>
+            </div>
+            <div class="chip-upgrade-item-meta">
+              <span class="chip-upgrade-cost">${chip.upgradeCost}G</span>
+              <span class="chip-upgrade-risk ${riskClass}">${failurePercent}% 失敗</span>
+              <button class="chip-upgrade-btn"
+                      onclick="performChipUpgrade('${chip.id}')"
+                      ${!canAfford ? 'disabled' : ''}>
+                強化
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    modal.classList.remove('hidden');
+
+    // Update game state if provided
+    if (data.state) {
+      gameState = data.state;
+      window.gameState = gameState;
+    }
+  } catch (error) {
+    console.error('Chip upgrade modal error:', error);
+    showNarration('改造屋との会話に失敗した。');
+  }
+}
+
+async function performChipUpgrade(chipId) {
+  try {
+    // Close modal during upgrade
+    closeChipUpgradeModal();
+
+    const response = await fetch(`${API_BASE}/api/game/chip-upgrade`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chipId })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || 'Upgrade failed');
+    }
+
+    const result = await response.json();
+
+    // Update game state
+    if (result.state) {
+      gameState = result.state;
+      window.gameState = gameState;
+    }
+
+    // Show result narration
+    if (result.message) {
+      showNarration(result.message);
+      triggerJpdbParse();
+    }
+
+    updateUI();
+  } catch (error) {
+    console.error('Chip upgrade error:', error);
+    showNarration(`強化に失敗した: ${error.message}`);
+    updateUI();
+  }
+}
+
+function closeChipUpgradeModal() {
+  document.getElementById('chip-upgrade-modal').classList.add('hidden');
+}
+
+// Make chip upgrade functions available globally
+window.performChipUpgrade = performChipUpgrade;
+window.closeChipUpgradeModal = closeChipUpgradeModal;
 
 function showBossReadyContent() {
   const run = gameState.run;
