@@ -3,7 +3,7 @@
  * All player combat action execution
  */
 
-import { getItem, getSkill, calculateEquipmentBonuses, processOnHitChips, processOnKillChips, processOnDamageChips, processOnCritChips, processOnHealChips, processOnStatusInflictChips, processSpecialOnHitChips, checkDiceRetrigger, getEquippedChips } from '../items.js';
+import { getItem, getSkill, calculateEquipmentBonuses, processOnHitChips, processOnKillChips, processOnDamageChips, processOnCritChips, processOnHealChips, processOnStatusInflictChips, processSpecialOnHitChips, checkDiceRetrigger, getEquippedChips, executeChipPipeline, getWeaponPipelineChips } from '../items.js';
 import {
   calculateFleeChance,
   calculateItemHealing,
@@ -68,7 +68,21 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
 
   if (attackResult.hit) {
     result.anyHit = true;
-    result.totalDamage = attackResult.damage;
+
+    // Get weapon chips in slot order and execute pipeline
+    const weaponChips = getWeaponPipelineChips(player);
+    if (weaponChips.length > 0) {
+      const pipelineResult = executeChipPipeline(weaponChips, {
+        baseDamage: attackResult.damage,
+        isCrit: attackResult.critical,
+        critChance: attackResult.critChance,
+        target: enemy
+      });
+      result.totalDamage = pipelineResult.finalDamage;
+      result.pipelineResult = pipelineResult;  // For UI animation
+    } else {
+      result.totalDamage = attackResult.damage;
+    }
 
     // Double Strike check - chance to deal 2x damage
     if (equipBonuses.doubleStrike > 0 && Math.random() * 100 < equipBonuses.doubleStrike) {

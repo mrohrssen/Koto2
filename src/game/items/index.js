@@ -12,6 +12,7 @@ import {
   CHIPS,
   CHIP_CATEGORIES,
   CHIP_RARITIES,
+  PIPELINE_EFFECTS,
   getChip,
   getChipFromInventory,
   getChipPrice,
@@ -38,7 +39,10 @@ import {
   equipChip,
   unequipChip,
   calculateEquippedChipBonuses,
-  getChipLoadout
+  getChipLoadout,
+  // Pipeline execution
+  executeChipPipeline,
+  getWeaponPipelineChips
 } from './chips.js';
 
 // Re-export item collections
@@ -52,6 +56,7 @@ export {
   CHIPS,
   CHIP_CATEGORIES,
   CHIP_RARITIES,
+  PIPELINE_EFFECTS,
   getChip,
   getChipFromInventory,
   getChipPrice,
@@ -78,7 +83,10 @@ export {
   equipChip,
   unequipChip,
   calculateEquippedChipBonuses,
-  getChipLoadout
+  getChipLoadout,
+  // Pipeline execution
+  executeChipPipeline,
+  getWeaponPipelineChips
 } from './chips.js';
 
 // ============ HELPER FUNCTIONS ============

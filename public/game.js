@@ -1985,6 +1985,11 @@ async function executePlayerAttack() {
         showDamageNumber(pa.damage, false, pa.critical);
         animateEnemyHurt();
 
+        // Animate chip pipeline if present
+        if (pa.pipelineResult) {
+          animateChipPipeline(pa.pipelineResult);
+        }
+
         // Show chip effects that triggered
         if (pa.chipEffects && pa.chipEffects.length > 0) {
           const statusNames = {
@@ -5567,8 +5572,9 @@ function renderChipModal() {
 
 /**
  * Render equipped weapon chips for combat display (display-only, no click handlers)
+ * @param {object} pipelineResult - Optional pipeline result for showing fired state
  */
-function renderCombatChips() {
+function renderCombatChips(pipelineResult = null) {
   if (!chipLoadoutCache?.equipment?.weapon) return '';
 
   const weaponChips = chipLoadoutCache.equipment.weapon.equippedChips || [];
@@ -5579,16 +5585,80 @@ function renderCombatChips() {
     if (chip) {
       const rarityClass = `rarity-${chip.rarity || 'common'}`;
       const iconId = chip.baseId || chip.id.replace(/_(common|uncommon|rare|epic|legendary)$/, '');
+
+      // Get pipeline fire state for this chip
+      const fireState = pipelineResult?.firedChips?.[i];
+      let stateClass = '';
+      if (fireState && !fireState.skipped && !fireState.notPipeline) {
+        stateClass = fireState.triggered ? 'triggered' : 'failed';
+      }
+
       html += `
-        <div class="chip-slot filled ${rarityClass}" title="${chip.name}">
+        <div class="chip-slot filled ${rarityClass} ${stateClass}" title="${chip.name}" data-index="${i}">
           <img class="chip-slot-icon" src="/assets/icons/chips/${iconId}.png" alt="" onerror="this.style.display='none'">
+          ${fireState?.triggered ? `<span class="chip-effect-text">${fireState.displayText}</span>` : ''}
         </div>
       `;
     } else {
-      html += `<div class="chip-slot empty"></div>`;
+      html += `<div class="chip-slot empty" data-index="${i}"></div>`;
     }
   }
   return html;
+}
+
+// Cache for the latest pipeline result (for UI updates)
+let lastPipelineResult = null;
+
+/**
+ * Animate the chip pipeline firing sequentially
+ * @param {object} pipelineResult - Result from executeChipPipeline
+ */
+async function animateChipPipeline(pipelineResult) {
+  if (!pipelineResult?.firedChips) return;
+
+  lastPipelineResult = pipelineResult;
+
+  const slots = document.querySelectorAll('.combat-chips-display .chip-slot');
+  if (slots.length === 0) return;
+
+  // Reset all slots first
+  slots.forEach(slot => {
+    slot.classList.remove('firing', 'triggered', 'failed');
+    const effectText = slot.querySelector('.chip-effect-text');
+    if (effectText) effectText.remove();
+  });
+
+  // Animate each chip sequentially
+  for (let i = 0; i < pipelineResult.firedChips.length; i++) {
+    const result = pipelineResult.firedChips[i];
+    const slot = slots[i];
+    if (!slot || result.skipped || result.notPipeline) continue;
+
+    // Add firing class briefly
+    slot.classList.add('firing');
+    await delay(120);
+    slot.classList.remove('firing');
+
+    // Add final state
+    slot.classList.add(result.triggered ? 'triggered' : 'failed');
+
+    // Show effect text for triggered chips
+    if (result.triggered && result.displayText) {
+      const effectSpan = document.createElement('span');
+      effectSpan.className = 'chip-effect-text';
+      effectSpan.textContent = result.displayText;
+      slot.appendChild(effectSpan);
+    }
+
+    await delay(80);
+  }
+}
+
+/**
+ * Simple delay helper for animations
+ */
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /**
@@ -5599,7 +5669,8 @@ function getCategoryLabel(category) {
     stat: 'STAT',
     onHit: 'ON HIT',
     onEffect: 'ON EFFECT',
-    counter: 'COUNTER'
+    counter: 'COUNTER',
+    pipeline: 'PIPELINE'
   };
   return labels[category] || category?.toUpperCase() || '???';
 }

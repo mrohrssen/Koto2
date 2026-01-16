@@ -1159,6 +1159,46 @@ body::before {
   border-color: var(--cyber-cyan);
 }
 
+/* Chip pipeline firing states */
+.combat-chips-display .chip-slot.firing {
+  animation: chipFiring 0.12s ease-out;
+  filter: brightness(1.5);
+}
+
+.combat-chips-display .chip-slot.triggered {
+  animation: chipFire 0.3s ease-out;
+  border-color: var(--cyber-cyan);
+  box-shadow: 0 0 15px var(--cyber-cyan);
+}
+
+.combat-chips-display .chip-slot.failed {
+  opacity: 0.4;
+}
+
+.chip-effect-text {
+  position: absolute;
+  bottom: -1.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  color: var(--cyber-cyan);
+  font-weight: bold;
+  text-shadow: 0 0 5px var(--cyber-cyan);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+@keyframes chipFiring {
+  0% { transform: scale(1); filter: brightness(1); }
+  100% { transform: scale(1.1); filter: brightness(1.5); }
+}
+
+@keyframes chipFire {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); filter: brightness(1.5); }
+  100% { transform: scale(1); }
+}
+
 /* Chip inventory section */
 .chip-inventory-section h4 {
   margin: 0 0 0.75rem;
