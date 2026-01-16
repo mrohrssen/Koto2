@@ -6150,7 +6150,7 @@ function triggerJpdbParse() {
 
 // ============ NEW GAME ============
 function confirmNewGame() {
-  if (confirm('Start a new game? This will reset all progress.')) {
+  if (confirm('FULL RESET: This will erase ALL progress including meta-upgrades, achievements, and essence. Continue?')) {
     resetGame();
   }
 }
@@ -6158,8 +6158,13 @@ function confirmNewGame() {
 async function resetGame() {
   try {
     await fetch(`${API_BASE}/api/game/reset`, { method: 'POST' });
+    
+    // Clear local storage game state (keep API keys)
+    localStorage.removeItem('debugMode');
+    debugMode = false;
+    
     await loadGameState();
-    showNarration('Welcome to Shadow Gate! Create a character to begin your adventure.');
+    showNarration('Welcome to NEO TOKYO! Create a character to begin your adventure.');
     updateUI();
   } catch (error) {
     console.error('Failed to reset game:', error);
