@@ -1906,6 +1906,17 @@ function startRealtimeCombat() {
   playerAttackPending = false;
   enemyAttackPending = false;
 
+  // Fetch chip loadout for combat display (non-blocking)
+  if (!chipLoadoutCache) {
+    fetch(`${API_BASE}/api/game/chip-loadout`)
+      .then(r => r.json())
+      .then(data => {
+        chipLoadoutCache = data;
+        updateActionPanel(); // Re-render with chips
+      })
+      .catch(err => console.warn('[Combat] Failed to fetch chip loadout:', err));
+  }
+
   // Update action panel to show combat indicator
   updateActionPanel();
 
@@ -3362,8 +3373,13 @@ function updateActionPanel() {
   // During realtime combat, show combat indicator instead of actions
   if (realtimeCombatActive) {
     actionPanel.innerHTML = `
-      <div class="combat-in-progress">
-        <div class="combat-indicator">⚔️ 戦闘中...</div>
+      <div class="combat-status-container">
+        <div class="combat-chips-display">
+          ${renderCombatChips()}
+        </div>
+        <div class="combat-in-progress">
+          <div class="combat-indicator">⚔️ 戦闘中...</div>
+        </div>
       </div>
     `;
     return;
@@ -5547,6 +5563,32 @@ function renderChipModal() {
       </div>
     `;
   }
+}
+
+/**
+ * Render equipped weapon chips for combat display (display-only, no click handlers)
+ */
+function renderCombatChips() {
+  if (!chipLoadoutCache?.equipment?.weapon) return '';
+
+  const weaponChips = chipLoadoutCache.equipment.weapon.equippedChips || [];
+  let html = '';
+
+  for (let i = 0; i < 5; i++) {
+    const chip = weaponChips[i];
+    if (chip) {
+      const rarityClass = `rarity-${chip.rarity || 'common'}`;
+      const iconId = chip.baseId || chip.id.replace(/_(common|uncommon|rare|epic|legendary)$/, '');
+      html += `
+        <div class="chip-slot filled ${rarityClass}" title="${chip.name}">
+          <img class="chip-slot-icon" src="/assets/icons/chips/${iconId}.png" alt="" onerror="this.style.display='none'">
+        </div>
+      `;
+    } else {
+      html += `<div class="chip-slot empty"></div>`;
+    }
+  }
+  return html;
 }
 
 /**
