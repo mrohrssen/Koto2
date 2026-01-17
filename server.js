@@ -70,7 +70,7 @@ import cors from 'cors';
 import compression from 'compression';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs';
 import dotenv from 'dotenv';
 
 // Local module imports
@@ -1443,11 +1443,24 @@ app.get('/api/game/liberation-tracker', (req, res) => {
 });
 
 app.post('/api/game/reset', (req, res) => {
-  gameManager.createPlayer('Hunter');
+  // Full reset: wipe all game state and meta-progression
+  gameManager.fullReset();
   cancelPendingPrefetches();
   clearPrefetchCache();
-  saveGameData();
-  res.json({ state: gameManager.getState() });
+  
+  // Delete save files from disk
+  try {
+    if (existsSync(GAME_SAVE_FILE)) {
+      unlinkSync(GAME_SAVE_FILE);
+    }
+    if (existsSync(VOCAB_CACHE_FILE)) {
+      unlinkSync(VOCAB_CACHE_FILE);
+    }
+  } catch (err) {
+    console.error('Error deleting save files:', err);
+  }
+  
+  res.json({ state: gameManager.getState(), fullReset: true });
 });
 
 app.post('/api/game/debug-mode', (req, res) => {

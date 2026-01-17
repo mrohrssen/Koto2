@@ -920,11 +920,17 @@ async function startEncounter() {
     // Show immediate fallback narration for encounter start
     let narration = result.narration || FALLBACK_NARRATIONS.combatStart(enemy);
     showNarration(narration);
+
+    // Check for dialogue BEFORE updateUI to prevent auto-start race condition
+    const dialogue = result?.result?.dialogue || enemy?.dialogue?.possessed;
+    if (dialogue) {
+      enemyDialogueActive = true; // Block updateUI from auto-starting combat
+    }
+
     updateUI();
     updateBackground(); // Switch to enemy's location background
 
     // Show possessed dialogue if available - wait for Enter to dismiss before combat starts
-    const dialogue = result?.result?.dialogue || enemy?.dialogue?.possessed;
     if (dialogue) {
       await delay(400);
       showEnemyDialogue(dialogue, 'possessed');
@@ -951,11 +957,17 @@ async function startBossEncounter() {
     // Show immediate fallback narration for boss encounter
     let narration = result.narration || FALLBACK_NARRATIONS.combatStart(enemy);
     showNarration(narration);
+
+    // Check for dialogue BEFORE updateUI to prevent auto-start race condition
+    const dialogue = result?.result?.dialogue || enemy?.dialogue?.possessed;
+    if (dialogue) {
+      enemyDialogueActive = true; // Block updateUI from auto-starting combat
+    }
+
     updateUI();
     updateBackground(); // Switch to enemy's location background
 
     // Show possessed dialogue if available - wait for Enter to dismiss before combat starts
-    const dialogue = result?.result?.dialogue || enemy?.dialogue?.possessed;
     if (dialogue) {
       await delay(500);
       showEnemyDialogue(dialogue, 'possessed');
@@ -1604,7 +1616,8 @@ function updateVNStage() {
   if (isInCombat && enemy && enemy.hp > 0) {
     // Auto-start realtime combat if we're in combat phase but combat hasn't started
     // This handles page reloads during combat or debug API setup
-    if (!realtimeCombatActive) {
+    // Skip if enemyDialogueActive - encounter setup will start combat after dialogue
+    if (!realtimeCombatActive && !enemyDialogueActive) {
       startRealtimeCombat();
     }
 
@@ -1906,6 +1919,17 @@ function startRealtimeCombat() {
   playerAttackPending = false;
   enemyAttackPending = false;
 
+  // Fetch chip loadout for combat display (non-blocking)
+  if (!chipLoadoutCache) {
+    fetch(`${API_BASE}/api/game/chip-loadout`)
+      .then(r => r.json())
+      .then(data => {
+        chipLoadoutCache = data;
+        updateActionPanel(); // Re-render with chips
+      })
+      .catch(err => console.warn('[Combat] Failed to fetch chip loadout:', err));
+  }
+
   // Update action panel to show combat indicator
   updateActionPanel();
 
@@ -1973,6 +1997,11 @@ async function executePlayerAttack() {
       } else {
         showDamageNumber(pa.damage, false, pa.critical);
         animateEnemyHurt();
+
+        // Animate chip pipeline if present
+        if (pa.pipelineResult) {
+          animateChipPipeline(pa.pipelineResult);
+        }
 
         // Show chip effects that triggered
         if (pa.chipEffects && pa.chipEffects.length > 0) {
@@ -3362,8 +3391,13 @@ function updateActionPanel() {
   // During realtime combat, show combat indicator instead of actions
   if (realtimeCombatActive) {
     actionPanel.innerHTML = `
-      <div class="combat-in-progress">
-        <div class="combat-indicator">⚔️ 戦闘中...</div>
+      <div class="combat-status-container">
+        <div class="combat-chips-display">
+          ${renderCombatChips()}
+        </div>
+        <div class="combat-in-progress">
+          <div class="combat-indicator">⚔️ 戦闘中...</div>
+        </div>
       </div>
     `;
     return;
@@ -5550,6 +5584,90 @@ function renderChipModal() {
 }
 
 /**
+ * Render equipped weapon chips for combat display (display-only, no click handlers)
+ * @param {object} pipelineResult - Optional pipeline result for showing fired state
+ */
+function renderCombatChips(pipelineResult = null) {
+  if (!chipLoadoutCache?.equipment?.weapon) return '';
+
+  const weaponChips = chipLoadoutCache.equipment.weapon.equippedChips || [];
+  let html = '';
+
+  for (let i = 0; i < 5; i++) {
+    const chip = weaponChips[i];
+    if (chip) {
+      const rarityClass = `rarity-${chip.rarity || 'common'}`;
+      const iconId = chip.baseId || chip.id.replace(/_(common|uncommon|rare|epic|legendary)$/, '');
+
+      // Get pipeline fire state for this chip
+      const fireState = pipelineResult?.firedChips?.[i];
+      let stateClass = '';
+      if (fireState && !fireState.skipped && !fireState.notPipeline) {
+        stateClass = fireState.triggered ? 'triggered' : 'failed';
+      }
+
+      html += `
+        <div class="chip-slot filled ${rarityClass} ${stateClass}" title="${chip.name}" data-index="${i}">
+          <img class="chip-slot-icon" src="/assets/icons/chips/${iconId}.png" alt="" onerror="this.style.display='none'">
+          ${fireState?.triggered ? `<span class="chip-effect-text">${fireState.displayText}</span>` : ''}
+        </div>
+      `;
+    } else {
+      html += `<div class="chip-slot empty" data-index="${i}"></div>`;
+    }
+  }
+  return html;
+}
+
+// Cache for the latest pipeline result (for UI updates)
+let lastPipelineResult = null;
+
+/**
+ * Animate the chip pipeline firing sequentially
+ * @param {object} pipelineResult - Result from executeChipPipeline
+ */
+async function animateChipPipeline(pipelineResult) {
+  if (!pipelineResult?.firedChips) return;
+
+  lastPipelineResult = pipelineResult;
+
+  const slots = document.querySelectorAll('.combat-chips-display .chip-slot');
+  if (slots.length === 0) return;
+
+  // Reset all slots first
+  slots.forEach(slot => {
+    slot.classList.remove('firing', 'triggered', 'failed');
+    const effectText = slot.querySelector('.chip-effect-text');
+    if (effectText) effectText.remove();
+  });
+
+  // Animate each chip sequentially
+  for (let i = 0; i < pipelineResult.firedChips.length; i++) {
+    const result = pipelineResult.firedChips[i];
+    const slot = slots[i];
+    if (!slot || result.skipped || result.notPipeline) continue;
+
+    // Add firing class briefly
+    slot.classList.add('firing');
+    await delay(120);
+    slot.classList.remove('firing');
+
+    // Add final state
+    slot.classList.add(result.triggered ? 'triggered' : 'failed');
+
+    // Show effect text for triggered chips
+    if (result.triggered && result.displayText) {
+      const effectSpan = document.createElement('span');
+      effectSpan.className = 'chip-effect-text';
+      effectSpan.textContent = result.displayText;
+      slot.appendChild(effectSpan);
+    }
+
+    await delay(80);
+  }
+}
+
+/**
  * Get category label for display
  */
 function getCategoryLabel(category) {
@@ -5557,7 +5675,8 @@ function getCategoryLabel(category) {
     stat: 'STAT',
     onHit: 'ON HIT',
     onEffect: 'ON EFFECT',
-    counter: 'COUNTER'
+    counter: 'COUNTER',
+    pipeline: 'PIPELINE'
   };
   return labels[category] || category?.toUpperCase() || '???';
 }
@@ -6150,7 +6269,7 @@ function triggerJpdbParse() {
 
 // ============ NEW GAME ============
 function confirmNewGame() {
-  if (confirm('Start a new game? This will reset all progress.')) {
+  if (confirm('FULL RESET: This will erase ALL progress including meta-upgrades, achievements, and essence. Continue?')) {
     resetGame();
   }
 }
@@ -6158,8 +6277,13 @@ function confirmNewGame() {
 async function resetGame() {
   try {
     await fetch(`${API_BASE}/api/game/reset`, { method: 'POST' });
+    
+    // Clear local storage game state (keep API keys)
+    localStorage.removeItem('debugMode');
+    debugMode = false;
+    
     await loadGameState();
-    showNarration('Welcome to Shadow Gate! Create a character to begin your adventure.');
+    showNarration('Welcome to NEO TOKYO! Create a character to begin your adventure.');
     updateUI();
   } catch (error) {
     console.error('Failed to reset game:', error);

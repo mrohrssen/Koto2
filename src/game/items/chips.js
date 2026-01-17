@@ -95,7 +95,21 @@ export const CHIP_CATEGORIES = {
     name: 'カウンター',
     nameEn: 'Counter',
     description: 'Scales with accumulation during run'
+  },
+  PIPELINE: {
+    id: 'pipeline',
+    name: 'パイプライン',
+    nameEn: 'Pipeline',
+    description: 'Sequential damage modification - fires in weapon slot order'
   }
+};
+
+// ============ PIPELINE EFFECT TYPES ============
+export const PIPELINE_EFFECTS = {
+  FLAT_ADD: 'flatAdd',        // +X damage
+  MULTIPLY: 'multiply',        // damage * X
+  CONDITIONAL: 'conditional',  // multiply if condition met
+  CRIT_MOD: 'critMod'         // modify crit chance/damage
 };
 
 // ============ CHIP RARITIES ============
@@ -1969,6 +1983,96 @@ export const CHIPS = {
     effects: {
       counter: { trigger: 'onUniqueChipType', bonus: 'allStats', perStack: 1, maxStacks: 4 }
     }
+  },
+
+  // ========== PIPELINE CHIPS (5) ==========
+  // Sequential damage modification chips - fire in weapon slot order
+
+  powerCell: {
+    id: 'powerCell',
+    name: 'パワーセル',
+    nameEn: 'Power Cell',
+    description: '小型エネルギーセル。攻撃に+5ダメージ。',
+    descriptionEn: 'Compact energy cell. Adds +5 damage to attacks.',
+    category: 'pipeline',
+    rarity: 'common',
+    effects: {
+      pipeline: {
+        type: 'flatAdd',
+        value: 5,
+        triggerChance: 1.0,
+        displayText: '+5'
+      }
+    }
+  },
+  amplifier: {
+    id: 'amplifier',
+    name: 'アンプ',
+    nameEn: 'Amplifier',
+    description: '信号増幅器。80%でダメージ1.5倍。',
+    descriptionEn: 'Signal amplifier. 80% chance to multiply damage by 1.5.',
+    category: 'pipeline',
+    rarity: 'uncommon',
+    effects: {
+      pipeline: {
+        type: 'multiply',
+        value: 1.5,
+        triggerChance: 0.8,
+        displayText: '×1.5'
+      }
+    }
+  },
+  critBooster: {
+    id: 'critBooster',
+    name: 'クリットブースター',
+    nameEn: 'Crit Booster',
+    description: 'クリティカル強化モジュール。CRIT率+20%。',
+    descriptionEn: 'Critical enhancement module. +20% crit chance.',
+    category: 'pipeline',
+    rarity: 'rare',
+    effects: {
+      pipeline: {
+        type: 'critMod',
+        value: 20,
+        triggerChance: 1.0,
+        displayText: '+20% CRIT'
+      }
+    }
+  },
+  overloader: {
+    id: 'overloader',
+    name: 'オーバーロード',
+    nameEn: 'Overloader',
+    description: '過負荷装置。50%でダメージ2倍。',
+    descriptionEn: 'Overload device. 50% chance to double damage.',
+    category: 'pipeline',
+    rarity: 'epic',
+    effects: {
+      pipeline: {
+        type: 'multiply',
+        value: 2.0,
+        triggerChance: 0.5,
+        displayText: '×2'
+      }
+    }
+  },
+  finisher: {
+    id: 'finisher',
+    name: 'フィニッシャー',
+    nameEn: 'Finisher',
+    description: '止めの一撃。敵HP30%以下でダメージ+50%。',
+    descriptionEn: 'Finishing blow. +50% damage when enemy below 30% HP.',
+    category: 'pipeline',
+    rarity: 'rare',
+    effects: {
+      pipeline: {
+        type: 'conditional',
+        value: 1.5,
+        triggerChance: 1.0,
+        displayText: '+50%',
+        condition: { type: 'enemyLowHp', threshold: 0.3 }
+      }
+    }
   }
 };
 
@@ -2228,6 +2332,20 @@ function applyRarityMultiplier(effects, multiplier) {
     if (scaled.counter.maxBonus) scaled.counter.maxBonus = effects.counter.maxBonus * multiplier;
   }
 
+  // Scale pipeline effects
+  if (effects.pipeline) {
+    scaled.pipeline = { ...effects.pipeline };
+    // Scale value for flatAdd and critMod types
+    if (effects.pipeline.type === 'flatAdd' || effects.pipeline.type === 'critMod') {
+      scaled.pipeline.value = Math.floor(effects.pipeline.value * multiplier);
+    }
+    // For multiply/conditional, scale the multiplier slightly (e.g., 1.5 -> 1.75 at rare)
+    if (effects.pipeline.type === 'multiply' || effects.pipeline.type === 'conditional') {
+      const baseBonus = effects.pipeline.value - 1; // e.g., 1.5 -> 0.5
+      scaled.pipeline.value = 1 + (baseBonus * multiplier); // e.g., 1 + (0.5 * 1.5) = 1.75
+    }
+  }
+
   return scaled;
 }
 
@@ -2238,13 +2356,16 @@ function applyRarityMultiplier(effects, multiplier) {
  * @param {number} floor - Current floor (unused now, kept for API compatibility)
  * @param {array} ownedChipIds - IDs of chips player already owns
  * @param {number} count - Number of chips to generate (default 3)
+ * @param {string} category - Optional category filter (e.g., 'pipeline')
  */
-export function generateShopChips(floor, ownedChipIds = [], count = 3) {
+export function generateShopChips(floor, ownedChipIds = [], count = 3, category = null) {
   // Get all base chips (we'll assign rarity randomly)
   // Filter out chips player already owns (by base ID)
+  // Optionally filter by category
   const ownedBaseIds = ownedChipIds.map(id => id.split('_')[0]);
   const availableChips = Object.values(CHIPS).filter(chip =>
-    !ownedBaseIds.includes(chip.id)
+    !ownedBaseIds.includes(chip.id) &&
+    (category === null || chip.category === category)
   );
 
   if (availableChips.length === 0) {
@@ -2666,6 +2787,155 @@ export function checkDiceRetrigger(chips) {
   if (!effect || !effect.retrigger) return false;
 
   return Math.random() < effect.chance;
+}
+
+// ============ PIPELINE CHIP EXECUTION ============
+
+/**
+ * Check if a pipeline condition is met
+ * @param {object} condition - Condition definition { type, threshold?, status? }
+ * @param {object} state - Pipeline state with target info
+ * @returns {boolean} Whether condition is met
+ */
+function checkPipelineCondition(condition, state) {
+  if (!condition) return true;
+
+  switch (condition.type) {
+    case 'enemyLowHp':
+      return state.target && (state.target.hp / state.target.maxHp) < condition.threshold;
+    case 'enemyHasStatus':
+      return state.target?.statuses?.some(s => s.id === condition.status);
+    case 'isCrit':
+      return state.isCrit;
+    default:
+      return true;
+  }
+}
+
+/**
+ * Process a single pipeline chip
+ * @param {object} chip - The chip to process
+ * @param {object} state - Current pipeline state
+ * @returns {object} Result of processing this chip
+ */
+function processPipelineChip(chip, state) {
+  const effect = chip.effects?.pipeline;
+  if (!effect) return { chipId: chip.id, skipped: true };
+
+  // Roll trigger chance
+  const triggered = Math.random() < effect.triggerChance;
+  if (!triggered) {
+    return {
+      chipId: chip.id,
+      chipName: chip.nameEn || chip.name,
+      triggered: false,
+      displayText: effect.displayText
+    };
+  }
+
+  // Check condition for conditional effects
+  if (effect.condition && !checkPipelineCondition(effect.condition, state)) {
+    return {
+      chipId: chip.id,
+      chipName: chip.nameEn || chip.name,
+      triggered: false,
+      conditionFailed: true,
+      displayText: effect.displayText
+    };
+  }
+
+  // Apply effect based on type
+  let newDamage = state.currentDamage;
+  let critChanceBonus = 0;
+
+  switch (effect.type) {
+    case 'flatAdd':
+      newDamage = state.currentDamage + effect.value;
+      break;
+    case 'multiply':
+      newDamage = state.currentDamage * effect.value;
+      break;
+    case 'conditional':
+      newDamage = state.currentDamage * effect.value;
+      break;
+    case 'critMod':
+      critChanceBonus = effect.value;
+      break;
+  }
+
+  return {
+    chipId: chip.id,
+    chipName: chip.nameEn || chip.name,
+    triggered: true,
+    previousDamage: Math.floor(state.currentDamage),
+    newDamage: Math.floor(newDamage),
+    displayText: effect.displayText,
+    critChanceBonus
+  };
+}
+
+/**
+ * Execute the weapon chip pipeline sequentially
+ * @param {Array} weaponChips - Chips in weapon slots (in order)
+ * @param {Object} context - { baseDamage, isCrit, critChance, critMultiplier, target }
+ * @returns {Object} { finalDamage, firedChips[], critChance, damageMultiplier }
+ */
+export function executeChipPipeline(weaponChips, context) {
+  const state = {
+    currentDamage: context.baseDamage,
+    isCrit: context.isCrit,
+    critChance: context.critChance || 0,
+    critMultiplier: context.critMultiplier || 1.4,
+    target: context.target,
+    firedChips: []
+  };
+
+  for (const chip of weaponChips) {
+    // Only process pipeline category chips
+    if (chip.category !== 'pipeline') {
+      state.firedChips.push({ chipId: chip.id, skipped: true, notPipeline: true });
+      continue;
+    }
+
+    const result = processPipelineChip(chip, state);
+    state.firedChips.push(result);
+
+    if (result.triggered) {
+      state.currentDamage = result.newDamage;
+      if (result.critChanceBonus) state.critChance += result.critChanceBonus;
+    }
+  }
+
+  return {
+    finalDamage: Math.floor(state.currentDamage),
+    firedChips: state.firedChips,
+    critChance: state.critChance,
+    damageMultiplier: context.baseDamage > 0 ? state.currentDamage / context.baseDamage : 1
+  };
+}
+
+/**
+ * Get weapon pipeline chips in slot order
+ * @param {object} player - Player object
+ * @returns {Array} Array of chip objects in slot order
+ */
+export function getWeaponPipelineChips(player) {
+  const weapon = player.equipment?.weapon;
+  if (!weapon?.equippedChips) return [];
+
+  return weapon.equippedChips
+    .map(chipId => {
+      // Get from inventory or definitions
+      const inventoryChip = player.chips?.find(c => c.id === chipId);
+      const baseChip = getChip(chipId);
+
+      // Merge: base chip provides category/effects structure, inventory chip provides rarity/scaled values
+      if (inventoryChip && baseChip) {
+        return { ...baseChip, ...inventoryChip, category: baseChip.category };
+      }
+      return inventoryChip || baseChip;
+    })
+    .filter(Boolean);
 }
 
 /**

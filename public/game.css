@@ -1128,6 +1128,77 @@ body::before {
   background: rgba(243, 156, 18, 0.15);
 }
 
+/* Combat status container */
+.combat-status-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Combat chips display - uses grid like chip-slots-grid but inline/centered */
+.combat-chips-display {
+  display: inline-grid;
+  grid-template-columns: repeat(5, 50px);
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  justify-content: center;
+}
+
+.combat-chips-display .chip-slot {
+  width: 50px;
+  height: 50px;
+  min-height: 50px;
+  max-height: 50px;
+  cursor: default;
+  padding: 0.25rem;
+}
+
+.combat-chips-display .chip-slot.filled:hover {
+  background: rgba(0, 255, 255, 0.1);
+  border-color: var(--cyber-cyan);
+}
+
+/* Chip pipeline firing states */
+.combat-chips-display .chip-slot.firing {
+  animation: chipFiring 0.12s ease-out;
+  filter: brightness(1.5);
+}
+
+.combat-chips-display .chip-slot.triggered {
+  animation: chipFire 0.3s ease-out;
+  border-color: var(--cyber-cyan);
+  box-shadow: 0 0 15px var(--cyber-cyan);
+}
+
+.combat-chips-display .chip-slot.failed {
+  opacity: 0.4;
+}
+
+.chip-effect-text {
+  position: absolute;
+  bottom: -1.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  color: var(--cyber-cyan);
+  font-weight: bold;
+  text-shadow: 0 0 5px var(--cyber-cyan);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+@keyframes chipFiring {
+  0% { transform: scale(1); filter: brightness(1); }
+  100% { transform: scale(1.1); filter: brightness(1.5); }
+}
+
+@keyframes chipFire {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); filter: brightness(1.5); }
+  100% { transform: scale(1); }
+}
+
 /* Chip inventory section */
 .chip-inventory-section h4 {
   margin: 0 0 0.75rem;
