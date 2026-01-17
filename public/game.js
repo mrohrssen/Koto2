@@ -920,11 +920,17 @@ async function startEncounter() {
     // Show immediate fallback narration for encounter start
     let narration = result.narration || FALLBACK_NARRATIONS.combatStart(enemy);
     showNarration(narration);
+
+    // Check for dialogue BEFORE updateUI to prevent auto-start race condition
+    const dialogue = result?.result?.dialogue || enemy?.dialogue?.possessed;
+    if (dialogue) {
+      enemyDialogueActive = true; // Block updateUI from auto-starting combat
+    }
+
     updateUI();
     updateBackground(); // Switch to enemy's location background
 
     // Show possessed dialogue if available - wait for Enter to dismiss before combat starts
-    const dialogue = result?.result?.dialogue || enemy?.dialogue?.possessed;
     if (dialogue) {
       await delay(400);
       showEnemyDialogue(dialogue, 'possessed');
@@ -951,11 +957,17 @@ async function startBossEncounter() {
     // Show immediate fallback narration for boss encounter
     let narration = result.narration || FALLBACK_NARRATIONS.combatStart(enemy);
     showNarration(narration);
+
+    // Check for dialogue BEFORE updateUI to prevent auto-start race condition
+    const dialogue = result?.result?.dialogue || enemy?.dialogue?.possessed;
+    if (dialogue) {
+      enemyDialogueActive = true; // Block updateUI from auto-starting combat
+    }
+
     updateUI();
     updateBackground(); // Switch to enemy's location background
 
     // Show possessed dialogue if available - wait for Enter to dismiss before combat starts
-    const dialogue = result?.result?.dialogue || enemy?.dialogue?.possessed;
     if (dialogue) {
       await delay(500);
       showEnemyDialogue(dialogue, 'possessed');
@@ -1604,7 +1616,8 @@ function updateVNStage() {
   if (isInCombat && enemy && enemy.hp > 0) {
     // Auto-start realtime combat if we're in combat phase but combat hasn't started
     // This handles page reloads during combat or debug API setup
-    if (!realtimeCombatActive) {
+    // Skip if enemyDialogueActive - encounter setup will start combat after dialogue
+    if (!realtimeCombatActive && !enemyDialogueActive) {
       startRealtimeCombat();
     }
 
