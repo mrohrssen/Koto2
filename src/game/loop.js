@@ -110,7 +110,8 @@ import {
   getBossDrop,
   FINAL_BOSS,
   selectEnemyIntent,
-  INTENT_TYPES
+  INTENT_TYPES,
+  pickRandomVoiceLine
 } from './enemies.js';
 
 import {
@@ -1638,7 +1639,7 @@ export class GameManager {
       enemy: this.combat.enemy,
       intent: this.combat.intent,
       playerGoesFirst: this.combat.turn === 'player',
-      dialogue: enemy.dialogue?.possessed || null  // SYSTEM-controlled dialogue
+      dialogue: pickRandomVoiceLine(enemy.dialogue?.possessed)  // SYSTEM-controlled dialogue
     };
   }
 
@@ -1667,7 +1668,7 @@ export class GameManager {
       intent: this.combat.intent,
       playerGoesFirst: this.combat.turn === 'player',
       isFinalBoss: isFinal,
-      dialogue: boss.dialogue?.possessed || null  // SYSTEM-controlled dialogue
+      dialogue: pickRandomVoiceLine(boss.dialogue?.possessed)  // SYSTEM-controlled dialogue
     };
   }
 
@@ -1833,7 +1834,7 @@ export class GameManager {
       const hpPercent = this.combat.enemy.hp / this.combat.enemy.maxHp;
       if (hpPercent > 0 && hpPercent <= 0.3 && !this.combat.glitchingShown) {
         result.enemyGlitching = true;
-        result.glitchingDialogue = this.combat.enemy.dialogue?.glitching || null;
+        result.glitchingDialogue = pickRandomVoiceLine(this.combat.enemy.dialogue?.glitching);
         this.combat.glitchingShown = true;  // Only show once per combat
       }
 
@@ -1855,7 +1856,7 @@ export class GameManager {
 
         // Process victory rewards (but don't narrate)
         const enemy = this.combat.enemy;
-        result.liberatedDialogue = enemy.dialogue?.liberated || null;
+        result.liberatedDialogue = pickRandomVoiceLine(enemy.dialogue?.liberated);
         const isBoss = enemy.isBoss;
 
         let rewards;
