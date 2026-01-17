@@ -521,6 +521,10 @@ export class GameManager {
               setId: itemData?.setId || null
             };
           })
+        } : null,
+        startingChipShop: this.run.startingChipShop ? {
+          active: this.run.startingChipShop.active,
+          items: this.run.startingChipShop.items
         } : null
       } : null,
       room: currentRoom ? {
@@ -623,12 +627,60 @@ export class GameManager {
     // Ward selection is required at start
     this.run.wardSelectionRequired = true;
 
+    // Generate starting chip choices (3 free chips to choose from)
+    const ownedChipIds = (this.run.player.chips || []).map(c => c.id);
+    const startingChips = generatePostCombatShop(1, ownedChipIds);
+    // Make them free
+    startingChips.forEach(chip => chip.price = 0);
+    this.run.startingChipShop = {
+      active: true,
+      items: startingChips
+    };
+
     this.emitState();
 
     return {
       run: this.run,
       wardSelectionRequired: true,
-      wardOptions: getStartingWardOptions()
+      wardOptions: getStartingWardOptions(),
+      startingChipShop: this.run.startingChipShop
+    };
+  }
+
+  /**
+   * Claim a free starting chip
+   */
+  claimStartingChip(itemIndex) {
+    if (!this.run?.startingChipShop?.active) {
+      throw new Error('No starting chip selection active');
+    }
+
+    const shop = this.run.startingChipShop;
+    if (itemIndex < 0 || itemIndex >= shop.items.length) {
+      throw new Error('Invalid chip selection');
+    }
+
+    const item = shop.items[itemIndex];
+
+    // Add chip to player inventory
+    if (!this.run.player.chips) {
+      this.run.player.chips = [];
+    }
+    this.run.player.chips.push({
+      id: item.itemId,
+      baseId: item.baseId,
+      name: item.name,
+      rarity: item.rarity
+    });
+
+    // Clear the starting chip shop
+    this.run.startingChipShop.active = false;
+
+    this.emitState();
+
+    return {
+      success: true,
+      chip: item
     };
   }
 

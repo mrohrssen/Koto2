@@ -3562,8 +3562,8 @@ function buildEnemy(template, levelBonus = 0) {
   // Calculate derived stats (enemies don't have equipment)
   const derived = calculateDerivedStats(template.stats, level);
 
-  // Calculate HP/SP from formulas
-  const maxHp = calculateMaxHp(level, template.stats.vit);
+  // Calculate HP/SP from formulas (enemies get 2x HP for turn-based combat pacing)
+  const maxHp = calculateMaxHp(level, template.stats.vit) * 2;
   const maxSp = calculateMaxSp(level, template.stats.int);
 
   return {

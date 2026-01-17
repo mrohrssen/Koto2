@@ -213,7 +213,6 @@ let availableWords = [];        // Pool of words not yet shown
 let selectedWordIndex = 0;      // Currently selected word (0-4)
 let jpdbWordsCache = null;      // Cached JPDB due words
 let jpdbWordsFetching = false;  // Prevent duplicate fetches
-const WORD_HEAL_AMOUNT = 15;
 
 // Word Audio Cache (for TTS prefetching)
 const wordAudioCache = new Map();  // word -> { blob, url, status: 'pending'|'ready'|'error' }
@@ -900,6 +899,17 @@ async function startNewRun() {
 
   const result = await apiCall('/start-run', 'POST');
   if (result) {
+    // Show starting chip selection using the post-combat shop modal
+    if (gameState.run?.startingChipShop?.active) {
+      // Copy starting chips to postCombatShop so we can reuse the modal
+      gameState.run.postCombatShop = {
+        active: true,
+        items: gameState.run.startingChipShop.items,
+        isStartingChips: true  // Flag to customize behavior
+      };
+      showPostCombatShopContent();
+    }
+
     // Try AI narration for immersive experience, fall back to simple
     let narration = result.narration || FALLBACK_NARRATIONS.enterDungeon(gameState.run.floor);
     showNarration(narration);
@@ -923,7 +933,12 @@ async function startEncounter() {
     showNarration(narration);
 
     // Check for dialogue BEFORE updateUI to prevent auto-start race condition
-    const dialogue = result?.result?.dialogue || enemy?.dialogue?.possessed;
+    // Server returns a single string, but fallback to enemy.dialogue.possessed is an array
+    let dialogue = result?.result?.dialogue;
+    if (!dialogue && enemy?.dialogue?.possessed) {
+      const lines = enemy.dialogue.possessed;
+      dialogue = Array.isArray(lines) ? lines[Math.floor(Math.random() * lines.length)] : lines;
+    }
     if (dialogue) {
       enemyDialogueActive = true; // Block updateUI from auto-starting combat
     }
@@ -960,7 +975,12 @@ async function startBossEncounter() {
     showNarration(narration);
 
     // Check for dialogue BEFORE updateUI to prevent auto-start race condition
-    const dialogue = result?.result?.dialogue || enemy?.dialogue?.possessed;
+    // Server returns a single string, but fallback to enemy.dialogue.possessed is an array
+    let dialogue = result?.result?.dialogue;
+    if (!dialogue && enemy?.dialogue?.possessed) {
+      const lines = enemy.dialogue.possessed;
+      dialogue = Array.isArray(lines) ? lines[Math.floor(Math.random() * lines.length)] : lines;
+    }
     if (dialogue) {
       enemyDialogueActive = true; // Block updateUI from auto-starting combat
     }
@@ -1077,8 +1097,8 @@ function dismissEnemyDialogue() {
     realtimeCombatActive = true;
     playerAttackPending = false;
     enemyAttackPending = false;
-    playerAttackTimer = setTimeout(executePlayerAttack, currentPlayerInterval);
-    enemyAttackTimer = setTimeout(executeEnemyAttack, currentEnemyInterval);
+    // Use the new vocab pause flow - player attacks, chains to enemy, then pauses
+    executePlayerAttack();
   }
 
   // Resolve the promise so waiting code can continue
@@ -2132,11 +2152,8 @@ async function executeEnemyAttack() {
       return;
     }
 
-    // Schedule next enemy attack (unless dialogue is pausing combat)
+    // Don't reschedule - the vocab pause flow handles attack cycling
     enemyAttackPending = false;
-    if (realtimeCombatActive && !enemyDialogueActive) {
-      enemyAttackTimer = setTimeout(executeEnemyAttack, currentEnemyInterval);
-    }
 
   } catch (error) {
     console.error('Enemy attack error:', error);
@@ -2888,8 +2905,7 @@ function checkWordAnswer() {
 
   if (result.correct) {
     // Correct!
-    showWordFeedback(`Correct! +${WORD_HEAL_AMOUNT} HP`, 'success');
-    healPlayerFromWord(WORD_HEAL_AMOUNT);
+    showWordFeedback(`Correct!`, 'success');
 
     // Send JPDB review (grade 4 = Okay)
     if (word.vid && word.sid) {
@@ -2997,9 +3013,8 @@ function submitSelfGradeReview(grade) {
   }
 
   if (isPass) {
-    // Pass: heal and replace word
-    healPlayerFromWord(WORD_HEAL_AMOUNT);
-    showToast(`${gradeNames[grade]}! +${WORD_HEAL_AMOUNT} HP`, 'success');
+    // Pass: replace word
+    showToast(`${gradeNames[grade]}!`, 'success');
 
     if (availableWords.length > 0) {
       combatWords[selectedWordIndex] = availableWords.shift();
@@ -4659,12 +4674,18 @@ function showPostCombatShopContent() {
   const shop = run.postCombatShop;
   const player = run.player || gameState.player;
   const gold = player?.gold || 0;
+  const isStartingChips = shop.isStartingChips;
 
-  // Update title and greeting for post-combat shop
+  // Update title and greeting
   const shopTitle = document.getElementById('shop-title');
   const shopGreeting = document.getElementById('shop-greeting');
-  if (shopTitle) shopTitle.textContent = '商人が現れた！';
-  if (shopGreeting) shopGreeting.textContent = '「戦いの後はいい買い物日和だな。一つだけ選びな」';
+  if (isStartingChips) {
+    if (shopTitle) shopTitle.textContent = 'チップを選択';
+    if (shopGreeting) shopGreeting.textContent = '「冒険の始まりに、一つチップをあげよう。選びな」';
+  } else {
+    if (shopTitle) shopTitle.textContent = '商人が現れた！';
+    if (shopGreeting) shopGreeting.textContent = '「戦いの後はいい買い物日和だな。一つだけ選びな」';
+  }
 
   // Update gold display
   const goldDisplay = document.getElementById('shop-player-gold');
@@ -4684,7 +4705,7 @@ function showPostCombatShopContent() {
   const shopItemsContainer = document.getElementById('shop-items');
   if (shopItemsContainer) {
     const itemsHtml = shop.items.map((item, index) => {
-      const canAfford = gold >= item.price;
+      const canAfford = isStartingChips || gold >= item.price;
       let itemClass = `shop-item rarity-${item.rarity || 'common'}`;
       if (!canAfford) itemClass += ' cannot-afford';
 
@@ -4700,6 +4721,10 @@ function showPostCombatShopContent() {
       }[item.rarity] || '';
 
       const iconId = item.baseId || item.itemId.replace(/_(common|uncommon|rare|epic|legendary)$/, '');
+      const priceDisplay = isStartingChips ? 'FREE' : `¥${item.price}`;
+      const buyAction = isStartingChips ? `claimStartingChip(${index})` : `buyFromShop(${index})`;
+      const buyLabel = isStartingChips ? '選択' : 'Buy';
+
       return `
         <div class="${itemClass}" data-item-index="${index}" onclick="selectShopItem(${index})">
           <img class="shop-item-icon" src="/assets/icons/chips/${iconId}.png" alt="" onerror="this.style.display='none'">
@@ -4712,11 +4737,11 @@ function showPostCombatShopContent() {
             ${statsStr ? `<div class="shop-item-stats">${statsStr}</div>` : ''}
           </div>
           <div class="shop-item-meta">
-            <span class="shop-item-price">¥${item.price}</span>
+            <span class="shop-item-price${isStartingChips ? ' free-chip' : ''}">${priceDisplay}</span>
             <button class="shop-item-buy"
-                    onclick="event.stopPropagation(); buyFromShop(${index})"
+                    onclick="event.stopPropagation(); ${buyAction}"
                     ${!canAfford ? 'disabled' : ''}>
-              Buy
+              ${buyLabel}
             </button>
           </div>
         </div>
@@ -4729,6 +4754,34 @@ function showPostCombatShopContent() {
   selectedShopIndex = -1;
   if (shopModal) shopModal.classList.remove('hidden');
 }
+
+// Claim free starting chip
+async function claimStartingChip(itemIndex) {
+  try {
+    const result = await apiCall('/claim-starting-chip', 'POST', { itemIndex });
+    if (result) {
+      // Hide shop modal and reset state
+      if (shopModal) shopModal.classList.add('hidden');
+      resetShopModal();
+      // Clear the starting chip shop flag
+      if (gameState.run) {
+        gameState.run.startingChipShop = { active: false };
+        gameState.run.postCombatShop = { active: false };
+      }
+      // Update state from server
+      if (result.state) {
+        gameState = { ...gameState, ...result.state };
+      }
+      showNarration(result.chip?.name ? result.chip.name + 'を獲得した！' : 'チップを獲得！');
+      updateUI();
+    }
+  } catch (error) {
+    console.error('Failed to claim starting chip:', error);
+  }
+}
+
+// Make claimStartingChip globally accessible
+window.claimStartingChip = claimStartingChip;
 
 function resetShopModal() {
   // Reset shop selection
@@ -5760,6 +5813,11 @@ async function animateChipPipeline(pipelineResult) {
       effectSpan.className = 'chip-effect-text';
       effectSpan.textContent = result.displayText;
       slot.appendChild(effectSpan);
+    }
+
+    // Show heal number for chips that heal (like Siphon)
+    if (result.triggered && result.healPlayer > 0) {
+      showDamageNumber(result.healPlayer, true, false, true); // isPlayer=true, isHeal=true
     }
 
     await delay(80);
