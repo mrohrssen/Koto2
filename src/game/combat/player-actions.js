@@ -72,12 +72,26 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
     // Get weapon chips in slot order and execute pipeline
     const weaponChips = getWeaponPipelineChips(player);
     if (weaponChips.length > 0) {
+      // Calculate weapon slot info for minimalist chip
+      const weapon = player.equipment?.weapon;
+      const weaponMaxSlots = weapon?.maxChipSlots || 5;
+      const weaponUsedSlots = weapon?.equippedChips?.length || 0;
+      
       const pipelineResult = executeChipPipeline(weaponChips, {
         baseDamage: attackResult.damage,
         isCrit: attackResult.critical,
         critChance: attackResult.critChance,
-        target: enemy
+        target: enemy,
+        combatStacks: player._combatStacks || {},  // Persistent during combat
+        weaponMaxSlots,
+        weaponUsedSlots,
+        runKills: player._runKills || 0,  // Total kills this run for Bounty Hunter
+        runChipsDestroyed: player._runChipsDestroyed || 0  // Chips sacrificed for Phoenix
       });
+      
+      // Update combat stacks for next attack
+      player._combatStacks = pipelineResult.combatStacks;
+
       result.totalDamage = pipelineResult.finalDamage;
       result.pipelineResult = pipelineResult;  // For UI animation
     } else {
