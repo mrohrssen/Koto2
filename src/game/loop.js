@@ -1624,6 +1624,8 @@ export class GameManager {
 
     const enemy = generateEnemy(this.run.floor);
     this.combat = createCombatState(enemy);
+    this.run.player._combatStacks = {};  // Reset stacking chip counters
+    if (this.run.player._runKills === undefined) this.run.player._runKills = 0;  // Init kill counter
     this.combat.turn = determineTurnOrder(this.run.player, enemy);
 
     // Select initial enemy intent
@@ -1650,6 +1652,7 @@ export class GameManager {
 
     const boss = getBossForFloor(this.run.floor);
     this.combat = createCombatState(boss);
+    this.run.player._combatStacks = {};  // Reset stacking chip counters
     this.combat.turn = determineTurnOrder(this.run.player, boss);
 
     // Select initial boss intent
@@ -1938,6 +1941,63 @@ export class GameManager {
     // Execute the attack with the specified type
     const result = executePlayerAttack(this.run.player, this.combat.enemy, attackType);
     this.combat.lastAction = result;
+
+    // Handle SACRIFICE - permanently destroy sacrificed chips
+    if (result.pipelineResult?.sacrificedChips?.length > 0) {
+      for (const chipId of result.pipelineResult.sacrificedChips) {
+        // Remove from player's chip inventory
+        const chipIndex = this.run.player.chips?.findIndex(c => c.id === chipId);
+        if (chipIndex >= 0) {
+          this.run.player.chips.splice(chipIndex, 1);
+        }
+        // Remove from weapon's equipped chips
+        const weapon = this.run.player.equipment?.weapon;
+        if (weapon?.equippedChips) {
+          const eqIndex = weapon.equippedChips.indexOf(chipId);
+          if (eqIndex >= 0) {
+            weapon.equippedChips.splice(eqIndex, 1);
+          }
+        }
+        // Track total chips destroyed for Phoenix chip
+        this.run.player._runChipsDestroyed = (this.run.player._runChipsDestroyed || 0) + 1;
+      }
+      // Mark in result for UI feedback
+      result.chipsDestroyed = result.pipelineResult.sacrificedChips;
+    }
+
+    // Handle LIFELINK healing from pipeline chips
+    if (result.pipelineResult?.healPlayer > 0) {
+      const healAmount = result.pipelineResult.healPlayer;
+      const oldHp = this.run.player.hp;
+      this.run.player.hp = Math.min(this.run.player.maxHp, this.run.player.hp + healAmount);
+      const actualHeal = this.run.player.hp - oldHp;
+      if (actualHeal > 0) {
+        result.pipelineHeal = actualHeal;
+      }
+    }
+
+    // Handle UNSTABLE CORE - random chip destruction
+    if (result.pipelineResult?.randomDestroyTriggered) {
+      const weapon = this.run.player.equipment?.weapon;
+      const equippedChips = weapon?.equippedChips || [];
+      // Filter out chips that were already sacrificed this attack, and unstable itself
+      const destroyableChips = equippedChips.filter(id => 
+        !result.pipelineResult.sacrificedChips?.includes(id) && id !== 'unstable'
+      );
+      if (destroyableChips.length > 0) {
+        const randomIndex = Math.floor(Math.random() * destroyableChips.length);
+        const victimId = destroyableChips[randomIndex];
+        // Remove from inventory
+        const chipIndex = this.run.player.chips?.findIndex(c => c.id === victimId);
+        if (chipIndex >= 0) this.run.player.chips.splice(chipIndex, 1);
+        // Remove from weapon
+        const eqIndex = weapon.equippedChips.indexOf(victimId);
+        if (eqIndex >= 0) weapon.equippedChips.splice(eqIndex, 1);
+        // Track for Phoenix
+        this.run.player._runChipsDestroyed = (this.run.player._runChipsDestroyed || 0) + 1;
+        result.randomChipDestroyed = victimId;
+      }
+    }
 
     // Handle cascade effect (pachinkoBall chip) - bonus hit with same damage
     if (result.cascadeTriggered && result.anyHit && !result.enemyDefeated) {
@@ -2321,6 +2381,12 @@ export class GameManager {
   // ============ COMBAT RESOLUTION ============
 
   _handleVictory() {
+    // Reset combat stacks (for Stack Overflow chip)
+    this.run.player._combatStacks = {};
+    
+    // Increment kill count for Bounty Hunter chip
+    this.run.player._runKills = (this.run.player._runKills || 0) + 1;
+    
     const enemy = this.combat.enemy;
     const isBoss = enemy.isBoss;
 

@@ -2073,6 +2073,235 @@ export const CHIPS = {
         condition: { type: 'enemyLowHp', threshold: 0.3 }
       }
     }
+  },
+
+  // ========== CRAZY PIPELINE CHIPS ==========
+  recursion: {
+    id: 'recursion',
+    name: '無限再帰',
+    nameEn: 'Recursion',
+    description: '10%でパイプライン再起動。何度でも発動可能。',
+    descriptionEn: 'The pipeline that never ends. 10% chance to restart pipeline from chip 1. Can trigger multiple times.',
+    category: 'pipeline',
+    rarity: 'legendary',
+    effects: {
+      pipeline: {
+        type: 'recursion',
+        value: 0,
+        triggerChance: 0.10,
+        displayText: '∞ LOOP',
+        maxRecursions: 10
+      }
+    }
+  },
+  sacrifice: {
+    id: 'sacrifice',
+    name: '生贄プロトコル',
+    nameEn: 'Sacrifice',
+    description: 'このチップを永久に破壊。ダメージ10倍。',
+    descriptionEn: 'Destroy this chip permanently. Deal 10× current pipeline damage. Gone forever.',
+    category: 'pipeline',
+    rarity: 'legendary',
+    effects: {
+      pipeline: {
+        type: 'sacrifice',
+        value: 10,
+        triggerChance: 1.0,
+        displayText: '×10 SACRIFICE'
+      }
+    }
+  },
+  stackOverflow: {
+    id: 'stackOverflow',
+    name: 'スタックオーバーフロー',
+    nameEn: 'Stack Overflow',
+    description: '25%で+3ダメージ。戦闘中スタック。敵撃破でリセット。',
+    descriptionEn: 'Builds pressure. 25% chance for +3 damage. Stacks during combat, resets when enemy dies.',
+    category: 'pipeline',
+    rarity: 'epic',
+    effects: {
+      pipeline: {
+        type: 'stacking',
+        value: 3,
+        triggerChance: 0.25,
+        displayText: '+3 STACK'
+      }
+    }
+  },
+  minimalist: {
+    id: 'minimalist',
+    name: 'ミニマリスト',
+    nameEn: 'Minimalist',
+    description: '武器に空きスロット2つ以上で+40ダメージ。',
+    descriptionEn: 'Less is more. If weapon has 2+ empty chip slots, gain +40 damage.',
+    category: 'pipeline',
+    rarity: 'rare',
+    effects: {
+      pipeline: {
+        type: 'emptySlots',
+        value: 40,
+        requiredEmpty: 2,
+        triggerChance: 1.0,
+        displayText: '+40 MINIMAL'
+      }
+    }
+  },
+  lifelink: {
+    id: 'lifelink',
+    name: 'ライフリンク',
+    nameEn: 'Lifelink',
+    description: '+5ダメージ、5HP回復。毎回発動。',
+    descriptionEn: 'Balanced protocol. +5 damage and heal 5 HP. Every time.',
+    category: 'pipeline',
+    rarity: 'uncommon',
+    effects: {
+      pipeline: {
+        type: 'damageAndHeal',
+        value: 5,
+        healValue: 5,
+        triggerChance: 1.0,
+        displayText: '+5 ❤️5'
+      }
+    }
+  },
+  bountyHunter: {
+    id: 'bountyHunter',
+    name: 'バウンティハンター',
+    nameEn: 'Bounty Hunter',
+    description: '敵を倒すたび+1ダメージ。無限スタック。',
+    descriptionEn: 'The more you kill, the stronger you get. +1 damage per enemy killed this run. Stacks infinitely.',
+    category: 'pipeline',
+    rarity: 'epic',
+    effects: {
+      pipeline: {
+        type: 'killCounter',
+        value: 1,
+        triggerChance: 1.0,
+        displayText: '+KILLS'
+      }
+    }
+  },
+  siphon: {
+    id: 'siphon',
+    name: 'サイフォン',
+    nameEn: 'Siphon',
+    description: '-2ダメージ、10HP回復。生存優先。',
+    descriptionEn: 'Survival mode. -2 damage but heal 10 HP. Stay alive.',
+    category: 'pipeline',
+    rarity: 'uncommon',
+    effects: {
+      pipeline: {
+        type: 'damageAndHeal',
+        value: -2,
+        healValue: 10,
+        triggerChance: 1.0,
+        displayText: '-2 ❤️10'
+      }
+    }
+  },
+  executiveOverride: {
+    id: 'executiveOverride',
+    name: 'エグゼクティブ',
+    nameEn: 'Executive Override',
+    description: 'ボスに10%追加ダメージ。',
+    descriptionEn: 'Target the top. Deal 10% more damage to bosses.',
+    category: 'pipeline',
+    rarity: 'rare',
+    effects: {
+      pipeline: {
+        type: 'vsBoss',
+        value: 1.10,
+        triggerChance: 1.0,
+        displayText: '+10% BOSS'
+      }
+    }
+  },
+  phoenix: {
+    id: 'phoenix',
+    name: 'フェニックス',
+    nameEn: 'Phoenix Protocol',
+    description: 'x1攻撃。チップ破壊ごとに+1x。永久スタック。',
+    descriptionEn: 'Rise from sacrifice. x1 attack, gains +1x for every chip destroyed this run.',
+    category: 'pipeline',
+    rarity: 'legendary',
+    effects: {
+      pipeline: {
+        type: 'destroyedMultiplier',
+        baseValue: 1,
+        perDestroyed: 1,
+        triggerChance: 1.0,
+        displayText: 'xPHOENIX'
+      }
+    }
+  },
+  unstable: {
+    id: 'unstable',
+    name: '不安定コア',
+    nameEn: 'Unstable Core',
+    description: '+50ダメージ。10%でランダムなチップを破壊。',
+    descriptionEn: 'Volatile power. +50 damage but 10% chance to randomly destroy one of your chips.',
+    category: 'pipeline',
+    rarity: 'epic',
+    effects: {
+      pipeline: {
+        type: 'riskyFlat',
+        value: 50,
+        destroyChance: 0.10,
+        triggerChance: 1.0,
+        displayText: '+50 ⚠️'
+      }
+    }
+  },
+  copycat: {
+    id: 'copycat',
+    name: 'コピーキャット',
+    nameEn: 'Copycat',
+    description: '前のチップの効果をコピー。',
+    descriptionEn: 'Mirror protocol. Copies the previous chip effect.',
+    category: 'pipeline',
+    rarity: 'rare',
+    effects: {
+      pipeline: {
+        type: 'copy',
+        triggerChance: 1.0,
+        displayText: 'COPY'
+      }
+    }
+  },
+  lightweight: {
+    id: 'lightweight',
+    name: 'ライトウェイト',
+    nameEn: 'Lightweight',
+    description: '空きスロットごとに+20ダメージ。',
+    descriptionEn: 'Travel light. +20 damage for each empty chip slot.',
+    category: 'pipeline',
+    rarity: 'uncommon',
+    effects: {
+      pipeline: {
+        type: 'perEmptySlot',
+        value: 20,
+        triggerChance: 1.0,
+        displayText: '+EMPTY'
+      }
+    }
+  },
+  burstCycle: {
+    id: 'burstCycle',
+    name: 'バーストサイクル',
+    nameEn: 'Burst Cycle',
+    description: '5回目の攻撃でx3ダメージ。',
+    descriptionEn: 'Building power. Every 5th attack deals x3 damage.',
+    category: 'pipeline',
+    rarity: 'rare',
+    effects: {
+      pipeline: {
+        type: 'nthAttack',
+        interval: 5,
+        multiplier: 3,
+        triggerChance: 1.0,
+        displayText: 'BURST'
+      }
+    }
   }
 };
 
@@ -2861,6 +3090,255 @@ function processPipelineChip(chip, state) {
     case 'critMod':
       critChanceBonus = effect.value;
       break;
+    case 'recursion':
+      // Signal to restart pipeline - handled in executeChipPipeline
+      return {
+        chipId: chip.id,
+        chipName: chip.nameEn || chip.name,
+        triggered: true,
+        recursion: true,
+        displayText: effect.displayText,
+        previousDamage: Math.floor(state.currentDamage),
+        newDamage: Math.floor(state.currentDamage)
+      };
+    case 'sacrifice':
+      // 10× damage, mark chip for permanent destruction
+      newDamage = state.currentDamage * effect.value;
+      return {
+        chipId: chip.id,
+        chipName: chip.nameEn || chip.name,
+        triggered: true,
+        sacrifice: true,
+        destroyed: true,
+        previousDamage: Math.floor(state.currentDamage),
+        newDamage: Math.floor(newDamage),
+        displayText: effect.displayText
+      };
+    case 'stacking':
+      // Increment stack count and add (value * stacks) damage
+      if (!state.combatStacks) state.combatStacks = {};
+      if (!state.combatStacks[chip.id]) state.combatStacks[chip.id] = 0;
+      state.combatStacks[chip.id]++;
+      const stackCount = state.combatStacks[chip.id];
+      const stackDamage = effect.value * stackCount;
+      newDamage = state.currentDamage + stackDamage;
+      return {
+        chipId: chip.id,
+        chipName: chip.nameEn || chip.name,
+        triggered: true,
+        stacking: true,
+        stackCount: stackCount,
+        previousDamage: Math.floor(state.currentDamage),
+        newDamage: Math.floor(newDamage),
+        displayText: `+${stackDamage} (×${stackCount})`
+      };
+    case 'emptySlots':
+      // Check if weapon has enough empty slots
+      const totalSlots = state.weaponMaxSlots || 5;
+      const usedSlots = state.weaponUsedSlots || 0;
+      const emptySlots = totalSlots - usedSlots;
+      if (emptySlots >= effect.requiredEmpty) {
+        newDamage = state.currentDamage + effect.value;
+        return {
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name,
+          triggered: true,
+          emptySlotBonus: true,
+          emptySlots: emptySlots,
+          previousDamage: Math.floor(state.currentDamage),
+          newDamage: Math.floor(newDamage),
+          displayText: effect.displayText
+        };
+      } else {
+        return {
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name,
+          triggered: false,
+          conditionFailed: true,
+          emptySlots: emptySlots,
+          required: effect.requiredEmpty,
+          displayText: effect.displayText
+        };
+      }
+    case 'damageAndHeal':
+      // Add damage and heal the player
+      newDamage = state.currentDamage + effect.value;
+      return {
+        chipId: chip.id,
+        chipName: chip.nameEn || chip.name,
+        triggered: true,
+        healPlayer: effect.healValue,
+        previousDamage: Math.floor(state.currentDamage),
+        newDamage: Math.floor(newDamage),
+        displayText: effect.displayText
+      };
+    case 'killCounter':
+      // Add damage based on total kills this run
+      const kills = state.runKills || 0;
+      const killBonus = effect.value * kills;
+      newDamage = state.currentDamage + killBonus;
+      return {
+        chipId: chip.id,
+        chipName: chip.nameEn || chip.name,
+        triggered: true,
+        killBonus: true,
+        kills: kills,
+        previousDamage: Math.floor(state.currentDamage),
+        newDamage: Math.floor(newDamage),
+        displayText: `+${killBonus} (${kills} kills)`
+      };
+    case 'vsBoss':
+      // Multiply damage only against bosses
+      if (state.target?.isBoss) {
+        newDamage = state.currentDamage * effect.value;
+        return {
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name,
+          triggered: true,
+          vsBoss: true,
+          previousDamage: Math.floor(state.currentDamage),
+          newDamage: Math.floor(newDamage),
+          displayText: effect.displayText
+        };
+      } else {
+        return {
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name,
+          triggered: false,
+          conditionFailed: true,
+          notBoss: true,
+          displayText: effect.displayText
+        };
+      }
+    case 'destroyedMultiplier':
+      // Multiply based on chips destroyed this run
+      const destroyed = state.runChipsDestroyed || 0;
+      const phoenixMultiplier = effect.baseValue + (effect.perDestroyed * destroyed);
+      newDamage = state.currentDamage * phoenixMultiplier;
+      return {
+        chipId: chip.id,
+        chipName: chip.nameEn || chip.name,
+        triggered: true,
+        phoenixBonus: true,
+        chipsDestroyed: destroyed,
+        multiplier: phoenixMultiplier,
+        previousDamage: Math.floor(state.currentDamage),
+        newDamage: Math.floor(newDamage),
+        displayText: `×${phoenixMultiplier} (${destroyed} sacrificed)`
+      };
+    case 'riskyFlat':
+      // Add flat damage but risk destroying a random chip
+      newDamage = state.currentDamage + effect.value;
+      const riskyResult = {
+        chipId: chip.id,
+        chipName: chip.nameEn || chip.name,
+        triggered: true,
+        previousDamage: Math.floor(state.currentDamage),
+        newDamage: Math.floor(newDamage),
+        displayText: effect.displayText
+      };
+      // Roll for random destruction
+      if (Math.random() < effect.destroyChance) {
+        riskyResult.randomDestroy = true;  // Signal to destroy a random chip
+        riskyResult.displayText = '+50 💀UNSTABLE!';
+      }
+      return riskyResult;
+    case 'copy':
+      // Copy the previous chip's effect
+      if (!state.lastChipEffect) {
+        return {
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name,
+          triggered: false,
+          noPreviousChip: true,
+          displayText: 'NO TARGET'
+        };
+      }
+      // Re-apply the last chip's effect
+      const copied = state.lastChipEffect;
+      switch (copied.type) {
+        case 'flatAdd':
+          newDamage = state.currentDamage + copied.value;
+          break;
+        case 'multiply':
+        case 'conditional':
+          newDamage = state.currentDamage * copied.value;
+          break;
+        case 'damageAndHeal':
+          newDamage = state.currentDamage + copied.value;
+          return {
+            chipId: chip.id,
+            chipName: chip.nameEn || chip.name,
+            triggered: true,
+            copied: true,
+            copiedFrom: copied.chipName,
+            healPlayer: copied.healValue,
+            previousDamage: Math.floor(state.currentDamage),
+            newDamage: Math.floor(newDamage),
+            displayText: `COPY: ${copied.displayText}`
+          };
+        default:
+          newDamage = state.currentDamage;
+      }
+      return {
+        chipId: chip.id,
+        chipName: chip.nameEn || chip.name,
+        triggered: true,
+        copied: true,
+        copiedFrom: copied.chipName,
+        previousDamage: Math.floor(state.currentDamage),
+        newDamage: Math.floor(newDamage),
+        displayText: `COPY: ${copied.displayText}`
+      };
+    case 'perEmptySlot':
+      // Add damage per empty slot
+      const totalSlots2 = state.weaponMaxSlots || 5;
+      const usedSlots2 = state.weaponUsedSlots || 0;
+      const emptySlots2 = totalSlots2 - usedSlots2;
+      const emptyBonus = effect.value * emptySlots2;
+      newDamage = state.currentDamage + emptyBonus;
+      return {
+        chipId: chip.id,
+        chipName: chip.nameEn || chip.name,
+        triggered: true,
+        emptySlotScaling: true,
+        emptySlots: emptySlots2,
+        previousDamage: Math.floor(state.currentDamage),
+        newDamage: Math.floor(newDamage),
+        displayText: `+${emptyBonus} (${emptySlots2} empty)`
+      };
+    case 'nthAttack':
+      // Multiply damage every Nth attack
+      if (!state.combatStacks) state.combatStacks = {};
+      const attackKey = chip.id + '_attacks';
+      state.combatStacks[attackKey] = (state.combatStacks[attackKey] || 0) + 1;
+      const attackNum = state.combatStacks[attackKey];
+      const isBurstAttack = attackNum % effect.interval === 0;
+      if (isBurstAttack) {
+        newDamage = state.currentDamage * effect.multiplier;
+        return {
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name,
+          triggered: true,
+          burstAttack: true,
+          attackNumber: attackNum,
+          previousDamage: Math.floor(state.currentDamage),
+          newDamage: Math.floor(newDamage),
+          displayText: `×${effect.multiplier} BURST!`
+        };
+      } else {
+        return {
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name,
+          triggered: true,
+          charging: true,
+          attackNumber: attackNum,
+          untilBurst: effect.interval - (attackNum % effect.interval),
+          previousDamage: Math.floor(state.currentDamage),
+          newDamage: Math.floor(state.currentDamage),
+          displayText: `${attackNum % effect.interval}/${effect.interval}`
+        };
+      }
   }
 
   return {
@@ -2887,13 +3365,34 @@ export function executeChipPipeline(weaponChips, context) {
     critChance: context.critChance || 0,
     critMultiplier: context.critMultiplier || 1.4,
     target: context.target,
-    firedChips: []
+    firedChips: [],
+    recursionCount: 0,
+    sacrificedChips: [],
+    combatStacks: context.combatStacks || {},  // Persistent stacks for this combat
+    weaponMaxSlots: context.weaponMaxSlots || 5,
+    weaponUsedSlots: context.weaponUsedSlots || 0,
+    totalHealPlayer: 0,
+    runKills: context.runKills || 0,
+    runChipsDestroyed: context.runChipsDestroyed || 0
   };
 
-  for (const chip of weaponChips) {
+  const MAX_RECURSIONS = 10; // Safety cap
+  let chipIndex = 0;
+
+  while (chipIndex < weaponChips.length) {
+    const chip = weaponChips[chipIndex];
+
     // Only process pipeline category chips
     if (chip.category !== 'pipeline') {
       state.firedChips.push({ chipId: chip.id, skipped: true, notPipeline: true });
+      chipIndex++;
+      continue;
+    }
+
+    // Skip sacrificed chips (already destroyed this attack)
+    if (state.sacrificedChips.includes(chip.id)) {
+      state.firedChips.push({ chipId: chip.id, skipped: true, alreadySacrificed: true });
+      chipIndex++;
       continue;
     }
 
@@ -2903,14 +3402,45 @@ export function executeChipPipeline(weaponChips, context) {
     if (result.triggered) {
       state.currentDamage = result.newDamage;
       if (result.critChanceBonus) state.critChance += result.critChanceBonus;
+      if (result.healPlayer) state.totalHealPlayer += result.healPlayer;
+
+      // Track last chip effect for Copycat (don't track copy itself)
+      const effect = chip.effects?.pipeline;
+      if (effect && effect.type !== 'copy') {
+        state.lastChipEffect = { ...effect, chipName: chip.nameEn || chip.name };
+      }
+
+      // Handle recursion - restart pipeline from beginning
+      if (result.recursion && state.recursionCount < MAX_RECURSIONS) {
+        state.recursionCount++;
+        chipIndex = 0; // Restart from first chip
+        continue;
+      }
+
+      // Handle sacrifice - mark chip for permanent destruction
+      if (result.sacrifice) {
+        state.sacrificedChips.push(chip.id);
+      }
+
+      // Handle random destruction from Unstable Core
+      if (result.randomDestroy) {
+        state.randomDestroyTriggered = true;
+      }
     }
+
+    chipIndex++;
   }
 
   return {
     finalDamage: Math.floor(state.currentDamage),
     firedChips: state.firedChips,
     critChance: state.critChance,
-    damageMultiplier: context.baseDamage > 0 ? state.currentDamage / context.baseDamage : 1
+    damageMultiplier: context.baseDamage > 0 ? state.currentDamage / context.baseDamage : 1,
+    recursionCount: state.recursionCount,
+    sacrificedChips: state.sacrificedChips,
+    combatStacks: state.combatStacks,
+    healPlayer: state.totalHealPlayer,
+    randomDestroyTriggered: state.randomDestroyTriggered || false
   };
 }
 
