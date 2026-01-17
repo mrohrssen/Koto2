@@ -1710,6 +1710,58 @@ export class GameManager {
       // Player attack
       const playerResult = executePlayerAttack(this.run.player, this.combat.enemy, 'normal');
 
+      // Handle SACRIFICE - permanently destroy sacrificed chips
+      if (playerResult.pipelineResult?.sacrificedChips?.length > 0) {
+        for (const chipId of playerResult.pipelineResult.sacrificedChips) {
+          // Remove from player's chip inventory
+          const chipIndex = this.run.player.chips?.findIndex(c => c.id === chipId);
+          if (chipIndex >= 0) {
+            this.run.player.chips.splice(chipIndex, 1);
+          }
+          // Remove from weapon's equipped chips
+          const weapon = this.run.player.equipment?.weapon;
+          if (weapon?.equippedChips) {
+            const eqIndex = weapon.equippedChips.indexOf(chipId);
+            if (eqIndex >= 0) {
+              weapon.equippedChips.splice(eqIndex, 1);
+            }
+          }
+          // Track total chips destroyed for Phoenix chip
+          this.run.player._runChipsDestroyed = (this.run.player._runChipsDestroyed || 0) + 1;
+        }
+        playerResult.chipsDestroyed = playerResult.pipelineResult.sacrificedChips;
+      }
+
+      // Handle LIFELINK/SIPHON healing from pipeline chips
+      if (playerResult.pipelineResult?.healPlayer > 0) {
+        const healAmount = playerResult.pipelineResult.healPlayer;
+        const oldHp = this.run.player.hp;
+        this.run.player.hp = Math.min(this.run.player.maxHp, this.run.player.hp + healAmount);
+        const actualHeal = this.run.player.hp - oldHp;
+        if (actualHeal > 0) {
+          playerResult.pipelineHeal = actualHeal;
+        }
+      }
+
+      // Handle UNSTABLE CORE - random chip destruction
+      if (playerResult.pipelineResult?.randomDestroyTriggered) {
+        const weapon = this.run.player.equipment?.weapon;
+        const equippedChips = weapon?.equippedChips || [];
+        const destroyableChips = equippedChips.filter(id =>
+          !playerResult.pipelineResult.sacrificedChips?.includes(id) && id !== 'unstable'
+        );
+        if (destroyableChips.length > 0) {
+          const randomIndex = Math.floor(Math.random() * destroyableChips.length);
+          const victimId = destroyableChips[randomIndex];
+          const chipIndex = this.run.player.chips?.findIndex(c => c.id === victimId);
+          if (chipIndex >= 0) this.run.player.chips.splice(chipIndex, 1);
+          const eqIndex = weapon.equippedChips.indexOf(victimId);
+          if (eqIndex >= 0) weapon.equippedChips.splice(eqIndex, 1);
+          this.run.player._runChipsDestroyed = (this.run.player._runChipsDestroyed || 0) + 1;
+          playerResult.randomChipDestroyed = victimId;
+        }
+      }
+
       // Handle cascade effect (pachinkoBall chip) - bonus hit with same damage
       if (playerResult.cascadeTriggered && playerResult.anyHit && !playerResult.enemyDefeated) {
         const cascadeDamage = playerResult.totalDamage;
@@ -1789,6 +1841,12 @@ export class GameManager {
       if (playerResult.enemyDefeated) {
         result.combatEnded = true;
         result.victory = true;
+
+        // Reset combat stacks (for Stack Overflow, Burst Cycle chips)
+        this.run.player._combatStacks = {};
+
+        // Increment kill count for Bounty Hunter chip
+        this.run.player._runKills = (this.run.player._runKills || 0) + 1;
 
         // Track kill for counter chips
         if (this.run.runStats) {

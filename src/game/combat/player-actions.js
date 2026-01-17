@@ -91,7 +91,7 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
       
       // Update combat stacks for next attack
       player._combatStacks = pipelineResult.combatStacks;
-      
+
       result.totalDamage = pipelineResult.finalDamage;
       result.pipelineResult = pipelineResult;  // For UI animation
     } else {
