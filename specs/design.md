@@ -1,12 +1,12 @@
 # Design Spec
 
 ## Phase 1 - Make the Game Fun (Core Loop)
-- p0: 5 chip MVP
-- p0: New chip system (exponential effects, stack order matters)
-- p0: Show chip order during combat (below combat screen)
-- p1: Chip sequential order firing 1 by 1 (chip order matters)
+- [x] p0: 5 chip MVP
+- [x] p0: New chip system (exponential effects, stack order matters)
+- [x] p0: Show chip order during combat (below combat screen)
+- [x] p1: Chip sequential order firing 1 by 1 (chip order matters)
 - p1: Exponential enemy health
-- p2: Chip firing effects (visual feedback)
+- [x] p2: Chip firing effects (visual feedback)
 - p2: Meta Progression Upgrades (themed to cyberpunk/system liberation)
 - p3: Persistent story
 
