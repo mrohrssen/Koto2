@@ -2342,13 +2342,16 @@ function applyRarityMultiplier(effects, multiplier) {
  * @param {number} floor - Current floor (unused now, kept for API compatibility)
  * @param {array} ownedChipIds - IDs of chips player already owns
  * @param {number} count - Number of chips to generate (default 3)
+ * @param {string} category - Optional category filter (e.g., 'pipeline')
  */
-export function generateShopChips(floor, ownedChipIds = [], count = 3) {
+export function generateShopChips(floor, ownedChipIds = [], count = 3, category = null) {
   // Get all base chips (we'll assign rarity randomly)
   // Filter out chips player already owns (by base ID)
+  // Optionally filter by category
   const ownedBaseIds = ownedChipIds.map(id => id.split('_')[0]);
   const availableChips = Object.values(CHIPS).filter(chip =>
-    !ownedBaseIds.includes(chip.id)
+    !ownedBaseIds.includes(chip.id) &&
+    (category === null || chip.category === category)
   );
 
   if (availableChips.length === 0) {
