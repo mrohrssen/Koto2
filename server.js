@@ -798,6 +798,18 @@ app.post('/api/game/start-run', async (req, res) => {
   }
 });
 
+// Claim free starting chip
+app.post('/api/game/claim-starting-chip', (req, res) => {
+  try {
+    const { itemIndex } = req.body;
+    const result = gameManager.claimStartingChip(itemIndex);
+    saveGameData();
+    res.json({ ...result, state: getEnrichedGameState() });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // Ward selection endpoints (Phase 12)
 app.get('/api/game/starting-wards', (req, res) => {
   try {

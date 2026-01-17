@@ -137,11 +137,8 @@ export function calculateDerivedStats(primaryStats, baseLevel, equipmentBonuses 
  * @returns {number} Maximum HP
  */
 export function calculateMaxHp(baseLevel, vit, equipmentBonus = 0) {
-  // BaseHP formula gives roughly:
-  // Lv1: 40, Lv5: 85, Lv10: 285, Lv20: 1035, Lv50: 6285
-  // Multiplied by 5 for bigger numbers
   const baseHp = 35 + (baseLevel * 5) * baseLevel / 2;
-  return Math.floor(baseHp * (1 + vit * 0.01) * 5) + equipmentBonus;
+  return Math.floor(baseHp * (1 + vit * 0.01)) + equipmentBonus;
 }
 
 /**
