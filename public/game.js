@@ -157,6 +157,7 @@ let playerAttackPending = false;
 let enemyAttackPending = false;
 let currentPlayerInterval = 1500;  // Will be updated from server
 let currentEnemyInterval = 1500;   // Will be updated from server
+let combatPausedForVocab = false;  // Pause combat until user reviews a word
 
 // Debug Mode - disables AI narration only (JPDB vocab calls still work)
 let debugMode = localStorage.getItem('debugMode') === 'true';
@@ -1918,6 +1919,7 @@ function startRealtimeCombat() {
   realtimeCombatActive = true;
   playerAttackPending = false;
   enemyAttackPending = false;
+  combatPausedForVocab = false;
 
   // Fetch chip loadout for combat display (non-blocking)
   if (!chipLoadoutCache) {
@@ -1936,12 +1938,10 @@ function startRealtimeCombat() {
   // Initialize word practice cards
   initCombatWords();
 
-  console.log('[Combat] Starting realtime combat with separate timers');
+  console.log('[Combat] Starting realtime combat with vocab pause mode');
 
-  // Get initial intervals from first attack
+  // Execute first player attack, which will chain into enemy attack, then pause
   executePlayerAttack();
-  // Enemy attacks start after a slight offset to desync
-  enemyAttackTimer = setTimeout(executeEnemyAttack, 500);
 }
 
 // Execute a single player attack and schedule the next one
@@ -2047,10 +2047,14 @@ async function executePlayerAttack() {
       return;
     }
 
-    // Schedule next player attack (unless dialogue is pausing combat)
     playerAttackPending = false;
+
+    // Combat pause mode: trigger enemy attack after player, then pause for vocab review
     if (realtimeCombatActive && !enemyDialogueActive) {
-      playerAttackTimer = setTimeout(executePlayerAttack, currentPlayerInterval);
+      // Small delay before enemy attacks back
+      setTimeout(() => {
+        executeEnemyAttackThenPause();
+      }, 400);
     }
 
   } catch (error) {
@@ -2143,6 +2147,93 @@ async function executeEnemyAttack() {
   }
 }
 
+// Execute enemy attack and then pause combat for vocab review
+async function executeEnemyAttackThenPause() {
+  if (!realtimeCombatActive || enemyAttackPending || enemyDialogueActive) return;
+
+  enemyAttackPending = true;
+
+  try {
+    const apiKeys = getStoredApiKeys();
+    const response = await fetch(`${API_BASE}/api/game/realtime-attack`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ attackerType: 'enemy', ...apiKeys })
+    });
+    const result = await response.json();
+    console.log('[Combat] Enemy attack (then pause):', result.enemyAttack?.damage);
+
+    if (result.error) {
+      if (result.error === 'No active combat') {
+        console.warn('[Combat] Stale enemy attack ignored (combat ended on server)');
+        realtimeCombatActive = false;
+        return;
+      }
+      console.error('Enemy attack error:', result.error);
+      if (realtimeCombatActive) {
+        stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
+      }
+      return;
+    }
+
+    if (enemyDialogueActive) {
+      enemyAttackPending = false;
+      return;
+    }
+
+    // Update intervals from server
+    if (result.playerInterval) currentPlayerInterval = result.playerInterval;
+    if (result.enemyInterval) currentEnemyInterval = result.enemyInterval;
+
+    // Show enemy's attack result
+    if (result.enemyAttack) {
+      const ea = result.enemyAttack;
+      if (ea.perfectDodge) {
+        showDamageNumber(0, true, false, false, false, 'perfect');
+      } else if (ea.dodged) {
+        showDamageNumber(0, true, false, false, false, 'dodge');
+      } else if (ea.miss) {
+        showDamageNumber(0, true, false, false, false, 'miss');
+      } else {
+        showDamageNumber(ea.damage, true, ea.critical);
+        animatePlayerHurt();
+      }
+    }
+
+    // Update HP bars
+    updateEnemyHPBar(result.enemyHp);
+    updatePlayerHPBar(result.playerHp);
+
+    // Check if combat ended
+    if (result.combatEnded) {
+      stopRealtimeCombat(result);
+      return;
+    }
+
+    // Pause combat - wait for vocab review before next cycle
+    enemyAttackPending = false;
+    combatPausedForVocab = true;
+    console.log('[Combat] Paused for vocab review. Review a word to continue.');
+
+  } catch (error) {
+    console.error('Enemy attack error:', error);
+    if (realtimeCombatActive) {
+      stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
+    }
+  }
+}
+
+// Resume combat after vocab review - triggers next attack cycle
+function resumeCombatAfterVocab() {
+  if (!realtimeCombatActive || !combatPausedForVocab) return;
+
+  combatPausedForVocab = false;
+  console.log('[Combat] Resuming after vocab review');
+
+  // Trigger player attack, which will chain into enemy attack, then pause again
+  executePlayerAttack();
+}
+
 async function stopRealtimeCombat(result) {
   // Clear both attack timers
   if (playerAttackTimer) {
@@ -2157,6 +2248,7 @@ async function stopRealtimeCombat(result) {
   realtimeCombatActive = false;
   playerAttackPending = false;
   enemyAttackPending = false;
+  combatPausedForVocab = false;
 
   // Hide word practice cards and close modal
   hideWordCards();
@@ -2829,6 +2921,8 @@ function checkWordAnswer() {
       closeWordInputModal();
       showDefinitionsReveal(word.word, meanings, word.reading);
       renderWordCards();
+      // Resume combat after vocab review
+      resumeCombatAfterVocab();
     }, 800);
   } else {
     // Wrong - show definitions and close input modal
@@ -2864,6 +2958,8 @@ function checkWordAnswer() {
       closeWordInputModal();
       showDefinitionsReveal(word.word, meanings, word.reading);
       renderWordCards();
+      // Resume combat after vocab review
+      resumeCombatAfterVocab();
     }, 300);
   }
 }
@@ -2924,6 +3020,9 @@ function submitSelfGradeReview(grade) {
   }
 
   renderWordCards();
+
+  // Resume combat after vocab review
+  resumeCombatAfterVocab();
 }
 
 // Show feedback in modal
