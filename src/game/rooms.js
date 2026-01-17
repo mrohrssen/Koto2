@@ -827,14 +827,15 @@ export function getRoomActions(room) {
 // ============ POST-COMBAT CHIP SHOP ============
 
 /**
- * Generate 3 random chips for post-combat shop
- * Chips are passive augmentations that provide various bonuses
+ * Generate 3 random pipeline chips for post-combat shop
+ * Pipeline chips provide sequential damage modification during attacks
  * @param {number} floor - Current floor (1-7)
  * @param {array} ownedChipIds - IDs of chips player already owns (unique only)
  * @returns {Array} Array of 3 chip items with id, name, price, type, effects
  */
 export function generatePostCombatShop(floor, ownedChipIds = []) {
-  const chips = generateShopChips(floor, ownedChipIds, 3);
+  // Only show pipeline chips in post-combat shop
+  const chips = generateShopChips(floor, ownedChipIds, 3, 'pipeline');
 
   // Transform to shop item format
   return chips.map(chip => {

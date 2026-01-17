@@ -48,6 +48,11 @@ export {
   calculateEquippedChipBonuses,
   getChipLoadout,
 
+  // Pipeline execution
+  PIPELINE_EFFECTS,
+  executeChipPipeline,
+  getWeaponPipelineChips,
+
   // Helper functions
   getItem,
   getSkill,
