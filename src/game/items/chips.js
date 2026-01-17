@@ -2332,6 +2332,20 @@ function applyRarityMultiplier(effects, multiplier) {
     if (scaled.counter.maxBonus) scaled.counter.maxBonus = effects.counter.maxBonus * multiplier;
   }
 
+  // Scale pipeline effects
+  if (effects.pipeline) {
+    scaled.pipeline = { ...effects.pipeline };
+    // Scale value for flatAdd and critMod types
+    if (effects.pipeline.type === 'flatAdd' || effects.pipeline.type === 'critMod') {
+      scaled.pipeline.value = Math.floor(effects.pipeline.value * multiplier);
+    }
+    // For multiply/conditional, scale the multiplier slightly (e.g., 1.5 -> 1.75 at rare)
+    if (effects.pipeline.type === 'multiply' || effects.pipeline.type === 'conditional') {
+      const baseBonus = effects.pipeline.value - 1; // e.g., 1.5 -> 0.5
+      scaled.pipeline.value = 1 + (baseBonus * multiplier); // e.g., 1 + (0.5 * 1.5) = 1.75
+    }
+  }
+
   return scaled;
 }
 
@@ -2913,7 +2927,13 @@ export function getWeaponPipelineChips(player) {
     .map(chipId => {
       // Get from inventory or definitions
       const inventoryChip = player.chips?.find(c => c.id === chipId);
-      return inventoryChip || getChip(chipId);
+      const baseChip = getChip(chipId);
+
+      // Merge: base chip provides category/effects structure, inventory chip provides rarity/scaled values
+      if (inventoryChip && baseChip) {
+        return { ...baseChip, ...inventoryChip, category: baseChip.category };
+      }
+      return inventoryChip || baseChip;
     })
     .filter(Boolean);
 }

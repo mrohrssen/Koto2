@@ -5655,13 +5655,6 @@ async function animateChipPipeline(pipelineResult) {
 }
 
 /**
- * Simple delay helper for animations
- */
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-/**
  * Get category label for display
  */
 function getCategoryLabel(category) {
