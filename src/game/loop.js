@@ -1730,7 +1730,8 @@ export class GameManager {
         perfectDodge: playerResult.anyPerfectDodge,
         chipEffects: playerResult.chipEffects || [],
         cascadeTriggered: playerResult.cascadeTriggered,
-        cascadeDamage: playerResult.cascadeDamage
+        cascadeDamage: playerResult.cascadeDamage,
+        pipelineResult: playerResult.pipelineResult || null
       };
 
       // Tick enemy status effects (DoT damage from defrag, overheated, etc.)
