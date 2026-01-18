@@ -81,7 +81,13 @@
 
 // API module - will be used incrementally as we extract endpoints
 // apiCall import deferred until local function is removed in Step 1.10
-import { getStoredApiKeys as apiGetStoredApiKeys, saveStoredApiKeys as apiSaveStoredApiKeys } from './js/api.js';
+import {
+  getStoredApiKeys as apiGetStoredApiKeys,
+  saveStoredApiKeys as apiSaveStoredApiKeys,
+  getGameState as apiGetGameState,
+  getMetaProgression as apiGetMetaProgression,
+  getSettings as apiGetSettings
+} from './js/api.js';
 
 const API_BASE = '';
 
@@ -554,13 +560,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadReviewTypeSetting() {
-  try {
-    const response = await fetch(`${API_BASE}/api/settings`);
-    const settings = await response.json();
-    reviewType = settings.reviewType || 'typing';
-  } catch (e) {
-    console.warn('Could not load review type setting:', e);
-  }
+  const settings = await apiGetSettings();
+  reviewType = settings.reviewType || 'typing';
 }
 
 async function warmVocabCache(force = false) {
@@ -726,18 +727,11 @@ function setupEventListeners() {
 
 // ============ API CALLS ============
 async function loadGameState() {
-  try {
-    const response = await fetch(`${API_BASE}/api/game/state`);
-    const data = await response.json();
-
-    if (data.player) {
-      gameState = data;
-      window.gameState = gameState; // Keep window reference in sync
-    } else {
-      gameState.phase = 'no_save';
-    }
-  } catch (error) {
-    console.error('Failed to load game state:', error);
+  const data = await apiGetGameState();
+  if (data.player) {
+    gameState = data;
+    window.gameState = gameState; // Keep window reference in sync
+  } else {
     gameState.phase = 'no_save';
   }
 }
@@ -5792,44 +5786,39 @@ function switchUpgradesTab(tabName) {
  * Load and display upgrades data
  */
 async function loadUpgradesData() {
-  try {
-    const response = await fetch(`${API_BASE}/api/game/upgrades`);
-    const data = await response.json();
+  const data = await apiGetMetaProgression();
 
-    // Update essence count
-    if (modalEssenceCount) {
-      modalEssenceCount.textContent = data.essence || 0;
-    }
+  // Update essence count
+  if (modalEssenceCount) {
+    modalEssenceCount.textContent = data.essence || 0;
+  }
 
-    // Render upgrades
-    if (upgradesGrid) {
-      upgradesGrid.innerHTML = data.upgrades.map(upgrade => `
-        <div class="upgrade-card ${upgrade.maxed ? 'maxed' : ''}">
-          <div class="upgrade-header">
-            <div>
-              <div class="upgrade-name">${upgrade.name}</div>
-              <div class="upgrade-name-en">${upgrade.nameEn}</div>
-            </div>
-            <span class="upgrade-level ${upgrade.maxed ? 'max' : ''}">
-              ${upgrade.maxed ? 'MAX' : `Lv.${upgrade.currentLevel}/${upgrade.maxLevel}`}
-            </span>
+  // Render upgrades
+  if (upgradesGrid) {
+    upgradesGrid.innerHTML = data.upgrades.map(upgrade => `
+      <div class="upgrade-card ${upgrade.maxed ? 'maxed' : ''}">
+        <div class="upgrade-header">
+          <div>
+            <div class="upgrade-name">${upgrade.name}</div>
+            <div class="upgrade-name-en">${upgrade.nameEn}</div>
           </div>
-          <div class="upgrade-description">${upgrade.description}</div>
-          <div class="upgrade-footer">
-            ${upgrade.maxed ? '' : `
-              <button class="upgrade-buy-btn"
-                      onclick="purchaseUpgrade('${upgrade.id}')"
-                      ${!upgrade.canAfford ? 'disabled' : ''}>
-                <span class="cost-icon">&#x2728;</span>
-                ${upgrade.nextCost}
-              </button>
-            `}
-          </div>
+          <span class="upgrade-level ${upgrade.maxed ? 'max' : ''}">
+            ${upgrade.maxed ? 'MAX' : `Lv.${upgrade.currentLevel}/${upgrade.maxLevel}`}
+          </span>
         </div>
-      `).join('');
-    }
-  } catch (error) {
-    console.error('Failed to load upgrades:', error);
+        <div class="upgrade-description">${upgrade.description}</div>
+        <div class="upgrade-footer">
+          ${upgrade.maxed ? '' : `
+            <button class="upgrade-buy-btn"
+                    onclick="purchaseUpgrade('${upgrade.id}')"
+                    ${!upgrade.canAfford ? 'disabled' : ''}>
+              <span class="cost-icon">&#x2728;</span>
+              ${upgrade.nextCost}
+            </button>
+          `}
+        </div>
+      </div>
+    `).join('');
   }
 }
 

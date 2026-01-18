@@ -98,9 +98,57 @@ function isApiLoading() {
   return isLoading;
 }
 
+// ============ GAME STATE ENDPOINTS ============
+
+/**
+ * Get current game state from server
+ * @returns {Promise<object>} Game state with player, run, combat, phase
+ */
+async function getGameState() {
+  try {
+    const response = await fetch('/api/game/state');
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch game state:', error);
+    return { phase: 'no_save' };
+  }
+}
+
+/**
+ * Get meta-progression data (upgrades, essence, achievements)
+ * @returns {Promise<object>} Upgrades data with essence count
+ */
+async function getMetaProgression() {
+  try {
+    const response = await fetch('/api/game/upgrades');
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch meta-progression:', error);
+    return { essence: 0, upgrades: [] };
+  }
+}
+
+/**
+ * Get server settings
+ * @returns {Promise<object>} Settings object
+ */
+async function getSettings() {
+  try {
+    const response = await fetch('/api/settings');
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch settings:', error);
+    return {};
+  }
+}
+
 export {
   apiCall,
   getStoredApiKeys,
   saveStoredApiKeys,
-  isApiLoading
+  isApiLoading,
+  // Game state endpoints
+  getGameState,
+  getMetaProgression,
+  getSettings
 };
