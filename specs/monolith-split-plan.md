@@ -1265,6 +1265,168 @@ Each step is designed for a single Claude session to complete:
 - [ ] 5.4 Extract narration module
 - [ ] 5.5 Extract word practice module
 
+### Phase 6: Frontend UI Module Extraction
+- [ ] 6.0 Extract Combat UI module
+- [ ] 6.1 Extract Room/Exploration UI module
+- [ ] 6.2 Extract Shop/Economy UI module
+- [ ] 6.3 Extract Character/Stats UI module
+- [ ] 6.4 Extract Modals module
+- [ ] 6.5 Extract Realtime Combat module
+- [ ] 6.6 Game.js becomes UI coordinator
+
+---
+
+## Phase 6: Frontend UI Module Extraction
+
+**Goal**: Break down the remaining game.js UI code into focused modules
+**Impact**: Reduce game.js from ~5,900 to ~2,500 lines (core orchestration only)
+**Prerequisite**: Phase 5 complete (store foundation in place)
+**Architecture**: Component-style modules that subscribe to store slices
+
+### Step 6.0: Extract Combat UI module
+
+**What**: Move combat rendering, action buttons, and combat-specific UI updates.
+
+**Files changed**:
+- Create `public/js/ui/combat.js` (~500 lines)
+- `public/game.js` (import and delegate, -480 lines)
+
+**Includes**:
+- `COMBAT ACTIONS` section (~284 lines)
+- `COMBAT UI` section (~223 lines)
+- Combat-related parts of `updateUI()`
+
+**Verification**: Combat UI renders correctly, actions work
+
+---
+
+### Step 6.1: Extract Room/Exploration UI module
+
+**What**: Move room exploration, dungeon navigation, and content views.
+
+**Files changed**:
+- Create `public/js/ui/exploration.js` (~450 lines)
+- `public/game.js` (import and delegate, -430 lines)
+
+**Includes**:
+- `ROOM EXPLORATION UI` section (~265 lines)
+- `CONTENT VIEWS` section (~150 lines)
+- Room-related parts of `updateUI()`
+
+**Verification**: Room navigation works, content displays
+
+---
+
+### Step 6.2: Extract Shop/Economy UI module
+
+**What**: Move shop, blacksmith, and chip upgrade UI.
+
+**Files changed**:
+- Create `public/js/ui/economy.js` (~850 lines)
+- `public/game.js` (import and delegate, -820 lines)
+
+**Includes**:
+- `SHOP FUNCTIONS` section (~307 lines)
+- `BLACKSMITH FUNCTIONS` section (~129 lines)
+- `CHIP UPGRADE (MODDER) FUNCTIONS` section (~390 lines)
+
+**Verification**: Shop, blacksmith, and modder all work
+
+---
+
+### Step 6.3: Extract Character/Stats UI module
+
+**What**: Move stat allocation, character creation, and VN stage rendering.
+
+**Files changed**:
+- Create `public/js/ui/character.js` (~800 lines)
+- `public/game.js` (import and delegate, -780 lines)
+
+**Includes**:
+- `STAT ALLOCATION` section (~488 lines)
+- `VN STAGE UPDATES` section (~305 lines)
+
+**Verification**: Character creation works, sprites render
+
+---
+
+### Step 6.4: Extract Modals module
+
+**What**: Move all modal dialogs to a dedicated module.
+
+**Files changed**:
+- Create `public/js/ui/modals.js` (~1,000 lines)
+- `public/game.js` (import and delegate, -950 lines)
+
+**Includes**:
+- `MODALS` section (~125 lines)
+- `CHIP SLOT MODAL` section (~428 lines)
+- `LIBERATION TRACKER` section (~391 lines)
+- `GAME STATS MODAL` section (~155 lines)
+
+**Verification**: All modals open/close correctly
+
+---
+
+### Step 6.5: Extract Realtime Combat module
+
+**What**: Move the realtime/timer-based combat system (if still used).
+
+**Files changed**:
+- Create `public/js/ui/realtime-combat.js` (~480 lines)
+- `public/game.js` (import and delegate, -470 lines)
+
+**Includes**:
+- `REALTIME COMBAT FUNCTIONS` section (~474 lines)
+
+**Verification**: Realtime combat mode works (if enabled)
+
+---
+
+### Step 6.6: Game.js becomes UI coordinator
+
+**What**: Final cleanup - game.js only handles initialization and orchestration.
+
+**Files changed**:
+- `public/game.js` (final cleanup)
+- Create `public/js/ui/index.js` (re-export all UI modules)
+
+**Final game.js structure**:
+```javascript
+// public/game.js (~2,500 lines - down from 7,301)
+import { store } from './js/store.js';
+import { api } from './js/api.js';
+import * as ui from './js/ui/index.js';
+
+// Initialization
+document.addEventListener('DOMContentLoaded', init);
+
+async function init() {
+  // Load initial state
+  const state = await api.getGameState();
+  store.update({ gameState: state });
+
+  // Wire up UI modules to store
+  store.subscribe(ui.updateAll);
+
+  // Set up keyboard shortcuts
+  setupKeyboardShortcuts();
+}
+
+// Remaining: DOM element cache, keyboard handling, main updateUI coordinator
+```
+
+**Verification**:
+- `npm test` passes
+- All UI features work
+- game.js under 2,500 lines
+
+**Phase 6 Complete**:
+- game.js: 5,900 → ~2,500 lines
+- 6 focused UI modules in `public/js/ui/`
+- Each module subscribes to relevant store slices
+- Clear separation: orchestration vs rendering
+
 ---
 
 ## Summary
@@ -1276,8 +1438,9 @@ Each step is designed for a single Claude session to complete:
 | 3 | 10 | ~6,500 | chips.js + enemies.js → 10 files | Data/Logic Separation |
 | 4 | 7 | ~2,400 | loop.js: 2,789 → ~400 | Service Layer + Event Bus |
 | 5 | 6 | ~900 | game.js: 6,800 → ~5,900 | Observable Store |
+| 6 | 7 | ~3,400 | game.js: 5,900 → ~2,500 | UI Components |
 
-**Total: 43 steps, each independently committable and testable**
+**Total: 50 steps, each independently committable and testable**
 
 After completion:
 - No file over 1,000 lines (except data definition files)
@@ -1326,11 +1489,21 @@ public/js/
 ├── api.js                     # Server communication
 ├── store.js                   # Observable state
 ├── tts.js                     # Audio
+├── settings.js                # Configuration
+├── background.js              # Ward visuals
 ├── narration.js               # VN system
-└── word-practice.js           # Vocab review
+├── word-practice.js           # Vocab review
+└── ui/                        # UI components
+    ├── index.js               # Re-exports
+    ├── combat.js              # Combat UI (~500 lines)
+    ├── exploration.js         # Room/dungeon UI (~450 lines)
+    ├── economy.js             # Shop/blacksmith/modder (~850 lines)
+    ├── character.js           # Stats/VN stage (~800 lines)
+    ├── modals.js              # All modals (~1,000 lines)
+    └── realtime-combat.js     # Timer combat (~480 lines)
 
 server.js (~100 lines)         # Just wiring
-game.js (~5,000 lines)         # UI rendering only
+game.js (~2,500 lines)         # UI coordinator only
 ```
 
 This architecture enables:
