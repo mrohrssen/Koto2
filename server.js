@@ -1634,7 +1634,7 @@ app.get('/api/game/stats/word-states', (req, res) => {
 });
 
 app.post('/api/game/vocab-cache/warm', async (req, res) => {
-  const { jpdbApiKey } = req.body;
+  const { jpdbApiKey, force } = req.body;
   if (!jpdbApiKey) {
     return res.status(400).json({ error: 'JPDB API key not configured' });
   }
@@ -1645,7 +1645,7 @@ app.post('/api/game/vocab-cache/warm', async (req, res) => {
       return res.json({ warmed: 0, message: 'No vocabulary to warm' });
     }
 
-    await refreshWordStateCache(jpdbApiKey, vocabResult.words);
+    await refreshWordStateCache(jpdbApiKey, vocabResult.words, force);
     res.json({
       warmed: vocabResult.words.length,
       message: 'Cache warmed successfully'
