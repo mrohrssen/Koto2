@@ -183,6 +183,90 @@ async function purchaseUpgrade(upgradeId) {
   }
 }
 
+// ============ RUN MANAGEMENT ENDPOINTS ============
+
+/**
+ * Start a new dungeon run
+ * @returns {Promise<object>} Result with state and narration
+ */
+async function startRun() {
+  return apiCall('/start-run', 'POST');
+}
+
+/**
+ * Forfeit the current run
+ * @returns {Promise<object>} Result
+ */
+async function forfeitRun() {
+  return apiCall('/forfeit', 'POST');
+}
+
+/**
+ * Get starting ward options for a new run
+ * @returns {Promise<Array>} Array of ward options
+ */
+async function getStartingWards() {
+  try {
+    const response = await fetch('/api/game/starting-wards');
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch starting wards:', error);
+    return [];
+  }
+}
+
+/**
+ * Select a starting ward
+ * @param {string} wardId - Ward identifier
+ * @returns {Promise<object>} Result with state
+ */
+async function selectStartingWard(wardId) {
+  try {
+    const response = await fetch('/api/game/select-starting-ward', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ wardId })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to select starting ward:', error);
+    return { error: 'Network error' };
+  }
+}
+
+/**
+ * Get next ward options after completing a floor
+ * @returns {Promise<Array>} Array of ward options
+ */
+async function getNextWardOptions() {
+  try {
+    const response = await fetch('/api/game/next-ward-options');
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch next ward options:', error);
+    return [];
+  }
+}
+
+/**
+ * Select the next ward
+ * @param {string} wardId - Ward identifier
+ * @returns {Promise<object>} Result with state
+ */
+async function selectNextWard(wardId) {
+  try {
+    const response = await fetch('/api/game/select-next-ward', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ wardId })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to select next ward:', error);
+    return { error: 'Network error' };
+  }
+}
+
 export {
   apiCall,
   getStoredApiKeys,
@@ -195,5 +279,12 @@ export {
   // Player management endpoints
   createPlayer,
   allocateStat,
-  purchaseUpgrade
+  purchaseUpgrade,
+  // Run management endpoints
+  startRun,
+  forfeitRun,
+  getStartingWards,
+  selectStartingWard,
+  getNextWardOptions,
+  selectNextWard
 };

@@ -89,7 +89,13 @@ import {
   getSettings as apiGetSettings,
   createPlayer as apiCreatePlayer,
   allocateStat as apiAllocateStat,
-  purchaseUpgrade as apiPurchaseUpgrade
+  purchaseUpgrade as apiPurchaseUpgrade,
+  startRun as apiStartRun,
+  forfeitRun as apiForfeitRun,
+  getStartingWards as apiGetStartingWards,
+  selectStartingWard as apiSelectStartingWard,
+  getNextWardOptions as apiGetNextWardOptions,
+  selectNextWard as apiSelectNextWard
 } from './js/api.js';
 
 const API_BASE = '';
@@ -910,8 +916,14 @@ async function startNewRun() {
   // Fetch JPDB vocabulary and force refresh word states for fresh dueAt values
   fetchJpdbVocabulary();
 
-  const result = await apiCall('/start-run', 'POST');
+  const result = await apiStartRun();
   if (result) {
+    // Update local state from server response
+    if (result.state) {
+      gameState = result.state;
+      window.gameState = gameState;
+    }
+
     // Show starting chip selection using the post-combat shop modal
     if (gameState.run?.startingChipShop?.active) {
       // Copy starting chips to postCombatShop so we can reuse the modal
@@ -1283,7 +1295,7 @@ async function returnToHub() {
   closeWordInputModal();
   closeSelfGradeModal();
 
-  await apiCall('/forfeit', 'POST');
+  await apiForfeitRun();
   gameState.run = null;
   gameState.combat = null;
   // Clear word cache so next run gets fresh due words
@@ -3394,14 +3406,9 @@ async function showWardSelectionContent() {
   const currentFloor = gameState.run?.floor || 1;
 
   // Fetch ward options from appropriate API
-  let wardOptions = [];
-  try {
-    const endpoint = isNextWard ? '/api/game/next-ward-options' : '/api/game/starting-wards';
-    const response = await fetch(endpoint);
-    wardOptions = await response.json();
-  } catch (error) {
-    console.error('Failed to fetch ward options:', error);
-  }
+  const wardOptions = isNextWard
+    ? await apiGetNextWardOptions()
+    : await apiGetStartingWards();
 
   if (wardOptions.length === 0) {
     gameContent.innerHTML = `
@@ -3443,31 +3450,21 @@ async function showWardSelectionContent() {
 }
 
 async function selectWard(wardId, isNextWard = false) {
-  try {
-    const endpoint = isNextWard ? '/api/game/select-next-ward' : '/api/game/select-starting-ward';
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ wardId })
-    });
+  const result = isNextWard
+    ? await apiSelectNextWard(wardId)
+    : await apiSelectStartingWard(wardId);
 
-    const result = await response.json();
-
-    if (result.error) {
-      showNarration(`選択失敗: ${result.error}`);
-      return;
-    }
-
-    if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState; // Keep window reference in sync
-    }
-
-    updateUI();
-  } catch (error) {
-    console.error('Failed to select ward:', error);
-    showNarration('区の選択に失敗しました');
+  if (result.error) {
+    showNarration(`選択失敗: ${result.error}`);
+    return;
   }
+
+  if (result.state) {
+    gameState = result.state;
+    window.gameState = gameState; // Keep window reference in sync
+  }
+
+  updateUI();
 }
 
 window.selectWard = selectWard;
