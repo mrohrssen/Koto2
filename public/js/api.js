@@ -267,6 +267,53 @@ async function selectNextWard(wardId) {
   }
 }
 
+// ============ ROOM EXPLORATION ENDPOINTS ============
+
+/** Proceed to next room */
+async function proceed() {
+  return apiCall('/proceed', 'POST');
+}
+
+/** Start room encounter */
+async function roomEncounter() {
+  return apiCall('/room-encounter', 'POST');
+}
+
+/** Disarm a trap */
+async function disarmTrap() {
+  return apiCall('/disarm', 'POST');
+}
+
+/** Trigger a trap */
+async function triggerTrap() {
+  return apiCall('/trigger-trap', 'POST');
+}
+
+/** Loot a body */
+async function lootBody() {
+  return apiCall('/loot', 'POST');
+}
+
+/** Skip looting a body */
+async function skipBody() {
+  return apiCall('/skip-body', 'POST');
+}
+
+/** Open a treasure chest */
+async function openTreasure() {
+  return apiCall('/open-treasure', 'POST');
+}
+
+/** Skip a treasure chest */
+async function skipTreasure() {
+  return apiCall('/skip-treasure', 'POST');
+}
+
+/** Use a shrine */
+async function useShrine() {
+  return apiCall('/use-shrine', 'POST');
+}
+
 export {
   apiCall,
   getStoredApiKeys,
@@ -286,5 +333,15 @@ export {
   getStartingWards,
   selectStartingWard,
   getNextWardOptions,
-  selectNextWard
+  selectNextWard,
+  // Room exploration endpoints
+  proceed,
+  roomEncounter,
+  disarmTrap,
+  triggerTrap,
+  lootBody,
+  skipBody,
+  openTreasure,
+  skipTreasure,
+  useShrine
 };

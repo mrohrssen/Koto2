@@ -95,7 +95,16 @@ import {
   getStartingWards as apiGetStartingWards,
   selectStartingWard as apiSelectStartingWard,
   getNextWardOptions as apiGetNextWardOptions,
-  selectNextWard as apiSelectNextWard
+  selectNextWard as apiSelectNextWard,
+  proceed as apiProceed,
+  roomEncounter as apiRoomEncounter,
+  disarmTrap as apiDisarmTrap,
+  triggerTrap as apiTriggerTrap,
+  lootBody as apiLootBody,
+  skipBody as apiSkipBody,
+  openTreasure as apiOpenTreasure,
+  skipTreasure as apiSkipTreasure,
+  useShrine as apiUseShrine
 } from './js/api.js';
 
 const API_BASE = '';
@@ -3659,9 +3668,14 @@ async function handleRoomAction(actionId) {
 
 async function proceedToNextRoom() {
   console.log('proceedToNextRoom called');
-  const result = await apiCall('/proceed', 'POST');
+  const result = await apiProceed();
   console.log('proceedToNextRoom result:', result ? 'success' : 'null');
   if (result) {
+    // Update local state from server response
+    if (result.state) {
+      gameState = result.state;
+      window.gameState = gameState;
+    }
     showNarration(result.narration || '次の部屋に入った。');
     updateBackground();
     updateUI();
@@ -3670,19 +3684,28 @@ async function proceedToNextRoom() {
 }
 
 async function startRoomEncounter() {
-  const result = await apiCall('/room-encounter', 'POST');
+  const result = await apiRoomEncounter();
   if (result) {
+    // Update local state from server response
+    if (result.state) {
+      gameState = result.state;
+      window.gameState = gameState;
+    }
     const enemy = result.enemy || gameState.combat?.enemy;
     showNarration(result.narration || FALLBACK_NARRATIONS.combatStart(enemy));
     updateUI();
     triggerJpdbParse();
-
   }
 }
 
 async function disarmTrap() {
-  const result = await apiCall('/disarm', 'POST');
+  const result = await apiDisarmTrap();
   if (result) {
+    // Update local state from server response
+    if (result.state) {
+      gameState = result.state;
+      window.gameState = gameState;
+    }
     showNarration(result.narration);
     updateUI();
     triggerJpdbParse();
@@ -3695,8 +3718,13 @@ async function disarmTrap() {
 }
 
 async function triggerTrap() {
-  const result = await apiCall('/trigger-trap', 'POST');
+  const result = await apiTriggerTrap();
   if (result) {
+    // Update local state from server response
+    if (result.state) {
+      gameState = result.state;
+      window.gameState = gameState;
+    }
     showNarration(result.narration);
     updateUI();
     triggerJpdbParse();
@@ -3709,8 +3737,13 @@ async function triggerTrap() {
 }
 
 async function lootBody() {
-  const result = await apiCall('/loot', 'POST');
+  const result = await apiLootBody();
   if (result) {
+    // Update local state from server response
+    if (result.state) {
+      gameState = result.state;
+      window.gameState = gameState;
+    }
     showNarration(result.narration);
     updateUI();
     triggerJpdbParse();
@@ -3723,8 +3756,13 @@ async function lootBody() {
 }
 
 async function skipBody() {
-  const result = await apiCall('/skip-body', 'POST');
+  const result = await apiSkipBody();
   if (result) {
+    // Update local state from server response
+    if (result.state) {
+      gameState = result.state;
+      window.gameState = gameState;
+    }
     showNarration(result.narration);
     updateUI();
     triggerJpdbParse();
@@ -3732,8 +3770,13 @@ async function skipBody() {
 }
 
 async function skipTreasure() {
-  const result = await apiCall('/skip-treasure', 'POST');
+  const result = await apiSkipTreasure();
   if (result) {
+    // Update local state from server response
+    if (result.state) {
+      gameState = result.state;
+      window.gameState = gameState;
+    }
     showNarration(result.narration);
     updateUI();
     triggerJpdbParse();
@@ -3741,8 +3784,13 @@ async function skipTreasure() {
 }
 
 async function openTreasure() {
-  const result = await apiCall('/open-treasure', 'POST');
+  const result = await apiOpenTreasure();
   if (result) {
+    // Update local state from server response
+    if (result.state) {
+      gameState = result.state;
+      window.gameState = gameState;
+    }
     showNarration(result.narration);
     updateUI();
     triggerJpdbParse();
@@ -3755,8 +3803,13 @@ async function openTreasure() {
 }
 
 async function useShrine() {
-  const result = await apiCall('/use-shrine', 'POST');
+  const result = await apiUseShrine();
   if (result) {
+    // Update local state from server response
+    if (result.state) {
+      gameState = result.state;
+      window.gameState = gameState;
+    }
     showNarration(result.narration);
     updateUI();
     triggerJpdbParse();

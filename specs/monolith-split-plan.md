@@ -1218,7 +1218,7 @@ Each step is designed for a single Claude session to complete:
 - [x] 1.3 Extract game state endpoints
 - [x] 1.4 Extract player management endpoints
 - [x] 1.5 Extract run management endpoints
-- [ ] 1.6 Extract room exploration endpoints
+- [x] 1.6 Extract room exploration endpoints
 - [ ] 1.7 Extract combat endpoints
 - [ ] 1.8 Extract shop/economy endpoints
 - [ ] 1.9 Extract vocab/JPDB endpoints
