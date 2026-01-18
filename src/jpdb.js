@@ -674,7 +674,6 @@ export async function getDueWordsWithMeanings(apiKey, limit = 50, excludeVids = 
 
     if (excludeSet.has(stateInfo.vid)) continue;
     if (states.some(s => ['blacklisted', 'suspended', 'new'].includes(s))) continue;
-    if (word.length < 2) continue;
 
     for (const priority of priorityOrder) {
       if (states.includes(priority)) {
