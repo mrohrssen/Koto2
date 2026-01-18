@@ -1,6 +1,10 @@
 /**
  * Items Module - Main Entry Point
  * Re-exports all item definitions and utility functions
+ *
+ * SIMPLIFIED MODE:
+ * Equipment provides no stat bonuses.
+ * Items are kept for cosmetic/future use only.
  */
 
 // Import all item collections
@@ -213,87 +217,24 @@ export { ITEM_SETS, getEquippedSetBonuses } from './sets.js';
 import { getEquippedSetBonuses } from './sets.js';
 
 /**
- * Calculate equipment stat bonuses for derived stat calculation
- * Returns bonuses in the format expected by calculateDerivedStats
- * @param {object} player - Player object with equipment
- * @returns {object} Equipment bonuses for stats.js functions
+ * Calculate equipment stat bonuses - SIMPLIFIED
+ * Returns empty bonuses (no stat bonuses in simplified mode)
+ * Equipment is kept for cosmetic/future use but provides no stats
  */
 export function calculateEquipmentBonuses(player) {
-  const bonuses = {
-    // Primary stat bonuses
+  // SIMPLIFIED: No equipment stat bonuses
+  return {
     str: 0, agi: 0, vit: 0, int: 0, dex: 0, luk: 0,
-    // Derived stat bonuses (direct additions to calculated values)
     atk: 0, def: 0, matk: 0, mdef: 0, hit: 0, flee: 0, crit: 0, perfectDodge: 0,
-    // Resource bonuses
     maxHp: 0, maxSp: 0,
-    // Combat effect bonuses
     doubleStrike: 0, armorPen: 0, damageBonus: 0, vsBossDamage: 0, damageReduction: 0,
-    // On-kill effects
     onKillHp: 0, onKillSp: 0,
-    // Healing bonuses
     healingBonus: 0,
-    // Status effect bonuses
     statusInflictBonus: 0, statusImmune: [],
-    // Loot bonuses
     goldFind: 0, dropRate: 0, xpGain: 0,
-    // Special abilities
     grantsTeleport: false,
-    // Counter-attack
     counterAttack: 0
   };
-
-  // Check each equipment slot
-  for (const slot of ['weapon', 'body', 'shield', 'accessory']) {
-    const equipped = player.equipment?.[slot];
-    if (!equipped) continue;
-
-    const itemDef = getItem(equipped.id || equipped) || (typeof equipped === 'object' ? equipped : null);
-    if (!itemDef) continue;
-
-    const refineMult = getRefinementBonus(equipped);
-    const refinableStats = ['atk', 'def', 'matk', 'mdef'];
-
-    for (const stat of Object.keys(bonuses)) {
-      if (stat === 'statusImmune') {
-        if (itemDef.statusImmune) {
-          bonuses.statusImmune = [...bonuses.statusImmune, ...itemDef.statusImmune];
-        }
-      } else if (stat === 'grantsTeleport') {
-        if (itemDef.grantsTeleport) bonuses.grantsTeleport = true;
-      } else if (itemDef[stat]) {
-        if (refinableStats.includes(stat)) {
-          bonuses[stat] += Math.floor(itemDef[stat] * refineMult);
-        } else {
-          bonuses[stat] += itemDef[stat];
-        }
-      }
-    }
-  }
-
-  // Add set bonuses
-  const setBonuses = getEquippedSetBonuses(player);
-  for (const [stat, value] of Object.entries(setBonuses)) {
-    if (stat === 'statusImmune') {
-      bonuses.statusImmune = [...bonuses.statusImmune, ...value];
-    } else if (typeof value === 'number') {
-      bonuses[stat] = (bonuses[stat] || 0) + value;
-    }
-  }
-
-  // Add passive bonuses from equipped chips only (NEO TOKYO augmentation system)
-  // Chips must be equipped to equipment slots to provide bonuses
-  const equippedChips = getEquippedChips(player);
-
-  if (equippedChips.length > 0) {
-    const chipBonuses = calculateChipStatBonuses(equippedChips);
-    for (const [stat, value] of Object.entries(chipBonuses)) {
-      if (typeof value === 'number' && bonuses.hasOwnProperty(stat)) {
-        bonuses[stat] += value;
-      }
-    }
-  }
-
-  return bonuses;
 }
 
 /**

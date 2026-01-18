@@ -307,31 +307,21 @@ function enrichPlayerItems(player) {
     });
   }
 
-  if (enriched.stats) {
-    const equipBonuses = calculateEquipmentBonuses(enriched);
-    const derived = calculateDerivedStats(enriched.stats, enriched.level, equipBonuses);
+  // SIMPLIFIED: No derived stats calculation, just pass through attack
+  enriched.derivedStats = {
+    atk: enriched.attack || 15,
+    def: 0,
+    matk: 0,
+    mdef: 0,
+    hit: 100,
+    flee: 0,
+    crit: 0,
+    critShield: 0,
+    perfectDodge: 0
+  };
 
-    enriched.derivedStats = {
-      atk: derived.atk,
-      def: derived.def,
-      matk: derived.matk,
-      mdef: derived.mdef,
-      hit: derived.hit,
-      flee: derived.flee,
-      crit: derived.crit,
-      critShield: derived.critShield,
-      perfectDodge: derived.perfectDodge
-    };
-
-    enriched.statCosts = {
-      str: getStatPointCost(enriched.stats.str),
-      agi: getStatPointCost(enriched.stats.agi),
-      vit: getStatPointCost(enriched.stats.vit),
-      int: getStatPointCost(enriched.stats.int),
-      dex: getStatPointCost(enriched.stats.dex),
-      luk: getStatPointCost(enriched.stats.luk)
-    };
-  }
+  // SIMPLIFIED: No stat costs (no stat allocation)
+  enriched.statCosts = {};
 
   return enriched;
 }
