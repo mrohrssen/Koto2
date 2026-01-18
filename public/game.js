@@ -86,7 +86,10 @@ import {
   saveStoredApiKeys as apiSaveStoredApiKeys,
   getGameState as apiGetGameState,
   getMetaProgression as apiGetMetaProgression,
-  getSettings as apiGetSettings
+  getSettings as apiGetSettings,
+  createPlayer as apiCreatePlayer,
+  allocateStat as apiAllocateStat,
+  purchaseUpgrade as apiPurchaseUpgrade
 } from './js/api.js';
 
 const API_BASE = '';
@@ -786,12 +789,13 @@ async function createCharacter() {
   const name = document.getElementById('char-name').value.trim() || 'Hunter';
 
   // Include allocated stats in player creation
-  const result = await apiCall('/create-player', 'POST', {
-    name,
-    stats: { ...createStats },
-    statPoints: createStatPoints
-  });
+  const result = await apiCreatePlayer(name, { ...createStats }, createStatPoints);
   if (result) {
+    // Update local state from server response
+    if (result.state) {
+      gameState = result.state;
+      window.gameState = gameState;
+    }
     createCharModal.classList.add('hidden');
     // Reset create stats for next time
     resetCreateStats();
@@ -5904,27 +5908,16 @@ async function loadLifetimeStats() {
  * Purchase an upgrade
  */
 async function purchaseUpgrade(upgradeId) {
-  try {
-    const response = await fetch(`${API_BASE}/api/game/purchase-upgrade`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ upgradeId })
-    });
+  const data = await apiPurchaseUpgrade(upgradeId);
 
-    const data = await response.json();
+  if (data.success) {
+    // Show success feedback
+    showNarration(`アップグレード完了！ ${data.upgrade.newLevel}レベルになった！`);
 
-    if (data.success) {
-      // Show success feedback
-      showNarration(`アップグレード完了！ ${data.upgrade.newLevel}レベルになった！`);
-
-      // Reload upgrades display
-      await loadUpgradesData();
-    } else {
-      showError(data.error || 'Purchase failed');
-    }
-  } catch (error) {
-    console.error('Failed to purchase upgrade:', error);
-    showError('Failed to purchase upgrade');
+    // Reload upgrades display
+    await loadUpgradesData();
+  } else {
+    showError(data.error || 'Purchase failed');
   }
 }
 
@@ -6894,7 +6887,7 @@ function delay(ms) {
 
 // Stat allocation
 async function allocateStatPoint(statKey) {
-  const result = await apiCall('/allocate-stat', 'POST', { stat: statKey });
+  const result = await apiAllocateStat(statKey);
 
   if (result?.success) {
     // Update game state

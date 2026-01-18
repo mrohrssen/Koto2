@@ -142,6 +142,47 @@ async function getSettings() {
   }
 }
 
+// ============ PLAYER MANAGEMENT ENDPOINTS ============
+
+/**
+ * Create a new player character
+ * @param {string} name - Character name
+ * @param {object} stats - Initial stat allocation {str, agi, vit, int, dex, luk}
+ * @param {number} statPoints - Remaining stat points
+ * @returns {Promise<object>} Result with state and narration
+ */
+async function createPlayer(name, stats, statPoints) {
+  return apiCall('/create-player', 'POST', { name, stats, statPoints });
+}
+
+/**
+ * Allocate a stat point
+ * @param {string} stat - Stat key (str, agi, vit, int, dex, luk)
+ * @returns {Promise<object>} Result with success and state
+ */
+async function allocateStat(stat) {
+  return apiCall('/allocate-stat', 'POST', { stat });
+}
+
+/**
+ * Purchase a meta-progression upgrade
+ * @param {string} upgradeId - Upgrade identifier
+ * @returns {Promise<object>} Result with success and upgrade info
+ */
+async function purchaseUpgrade(upgradeId) {
+  try {
+    const response = await fetch('/api/game/purchase-upgrade', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ upgradeId })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to purchase upgrade:', error);
+    return { success: false, error: 'Network error' };
+  }
+}
+
 export {
   apiCall,
   getStoredApiKeys,
@@ -150,5 +191,9 @@ export {
   // Game state endpoints
   getGameState,
   getMetaProgression,
-  getSettings
+  getSettings,
+  // Player management endpoints
+  createPlayer,
+  allocateStat,
+  purchaseUpgrade
 };
