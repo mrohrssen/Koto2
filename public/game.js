@@ -783,40 +783,21 @@ function getStatPointCost(currentValue) {
   return Math.floor((currentValue - 1) / 10) + 2;
 }
 
-// Calculate derived stats for preview (simplified from server formulas)
+// Calculate derived stats for preview - SIMPLIFIED
+// Only returns attack and hp (no complex stat formulas)
 function calculateDerivedPreview(stats, level = 1) {
-  const { str, agi, vit, int, dex, luk } = stats;
-
-  // ATK = STR + floor(DEX/5) + floor(LUK/3) + floor(Level/4)
-  const atk = str + Math.floor(dex / 5) + Math.floor(luk / 3) + Math.floor(level / 4);
-
-  // DEF = floor(VIT/2) + floor(AGI/5) + floor(Level/2)
-  const def = Math.floor(vit / 2) + Math.floor(agi / 5) + Math.floor(level / 2);
-
-  // MATK = floor(INT * 1.5) + floor(DEX/5) + floor(LUK/3) + floor(Level/4)
-  const matk = Math.floor(int * 1.5) + Math.floor(dex / 5) + Math.floor(luk / 3) + Math.floor(level / 4);
-
-  // MDEF = INT + floor(VIT/5) + floor(DEX/5) + floor(Level/4)
-  const mdef = int + Math.floor(vit / 5) + Math.floor(dex / 5) + Math.floor(level / 4);
-
-  // HIT = 175 + Level + DEX + floor(LUK/3)
-  const hit = 175 + level + dex + Math.floor(luk / 3);
-
-  // FLEE = 100 + Level + AGI + floor(LUK/5)
-  const flee = 100 + level + agi + Math.floor(luk / 5);
-
-  // CRIT = LUK * 0.3
-  const crit = (luk * 0.3).toFixed(1);
-
-  // HP = BaseHP * (1 + VIT * 0.01), BaseHP = 35 + (Level * 5) * Level / 2
-  const baseHp = 35 + (level * 5) * level / 2;
-  const hp = Math.floor(baseHp * (1 + vit * 0.01));
-
-  // SP = BaseSP * (1 + INT * 0.01), BaseSP = 10 + (Level * 3)
-  const baseSp = 10 + (level * 3);
-  const sp = Math.floor(baseSp * (1 + int * 0.01));
-
-  return { atk, def, matk, mdef, hit, flee, crit, hp, sp };
+  // SIMPLIFIED: Fixed values, no stat-based calculations
+  return {
+    atk: 15,
+    def: 0,
+    matk: 0,
+    mdef: 0,
+    hit: 100,
+    flee: 0,
+    crit: 0,
+    hp: 100,
+    sp: 50
+  };
 }
 
 // Open character creation modal and initialize stats display
@@ -3152,14 +3133,8 @@ function updateQuickStats() {
   const p = gameState.run?.player || gameState.player;
   const floorText = gameState.run ? `Ward ${gameState.run.floor}/7` : '';
 
+  // SIMPLIFIED: Just show floor progress
   quickStats.innerHTML = `
-    <div class="quick-stat">
-      <span class="rank">${p.rank}</span>
-      <span>Rank</span>
-    </div>
-    <div class="quick-stat">
-      <span>Lv.${p.level}</span>
-    </div>
     ${floorText ? `<div class="quick-stat"><span class="floor">${floorText}</span></div>` : ''}
   `;
 }
@@ -3172,77 +3147,14 @@ function updatePlayerStats() {
 
   const p = gameState.run?.player || gameState.player;
   const hpPercent = (p.hp / p.maxHp) * 100;
-  // Support both sp (new) and mp (legacy) for compatibility
-  const sp = p.sp ?? p.mp ?? 0;
-  const maxSp = p.maxSp ?? p.maxMp ?? 1;
-  const spPercent = (sp / maxSp) * 100;
 
-  // Get primary stats (new 6-stat system) or fallback for old saves
-  const stats = p.stats || {};
-
-  // Equipment bonuses from chips and gear
-  const equipBonuses = gameState.equipmentBonuses || {};
-
-  // Calculate effective stats (base + bonuses) for derived stat calculation
-  const effectiveStats = {
-    str: (stats.str || 0) + (equipBonuses.str || 0),
-    agi: (stats.agi || 0) + (equipBonuses.agi || 0),
-    vit: (stats.vit || 0) + (equipBonuses.vit || 0),
-    int: (stats.int || 0) + (equipBonuses.int || 0),
-    dex: (stats.dex || 0) + (equipBonuses.dex || 0),
-    luk: (stats.luk || 0) + (equipBonuses.luk || 0)
-  };
-
-  // Calculate derived stats using effective stats (base + equipment bonuses)
-  let derived = p.derivedStats || {};
-  if (!derived.atk && stats.str) {
-    try {
-      derived = calculateDerivedPreview(effectiveStats, p.level || 1);
-    } catch (e) {
-      console.warn('Failed to calculate derived stats:', e);
-    }
-  }
-
-  // Stat points available for allocation
-  const hasStatPoints = p.statPoints && p.statPoints > 0;
-  const statPointsHtml = hasStatPoints ?
-    `<div class="stat-points-available">+${p.statPoints} stat points available!</div>` : '';
-
-  // Helper to render stat row with optional + button and bonus display
-  const statCosts = p.statCosts || {};
-  const renderStatRow = (label, statKey, value) => {
-    const cost = statCosts[statKey] || 2;
-    const canAllocate = hasStatPoints && p.statPoints >= cost;
-    const plusBtn = hasStatPoints ?
-      `<button class="stat-allocate-btn ${canAllocate ? '' : 'disabled'}"
-               onclick="allocateStatPoint('${statKey}')"
-               ${canAllocate ? '' : 'disabled'}
-               title="Cost: ${cost} points">+</button>` : '';
-    const bonus = equipBonuses[statKey] || 0;
-    const bonusHtml = bonus > 0 ? `<span class="stat-bonus">(+${bonus})</span>` : '';
-    return `<div class="stat-row mini allocatable">
-      <span class="label">${label}</span>
-      <span class="value">${value}${bonusHtml}</span>
-      ${plusBtn}
-    </div>`;
-  };
+  // SIMPLIFIED: Only show Name, HP, Attack, and Credits
+  // No levels, no XP, no 6-stat system, no derived stats
 
   playerStats.innerHTML = `
     <div class="stat-row">
       <span class="label">Name</span>
       <span class="value">${escapeHtml(p.name)}</span>
-    </div>
-    <div class="stat-row">
-      <span class="label">Rank</span>
-      <span class="value rank">${p.rank}</span>
-    </div>
-    <div class="stat-row">
-      <span class="label">Level</span>
-      <span class="value">${p.level}</span>
-    </div>
-    <div class="stat-row">
-      <span class="label">XP</span>
-      <span class="value">${p.xp}/${p.xpToNext}</span>
     </div>
     <div class="hp-mp-bars">
       <div class="bar-row">
@@ -3254,34 +3166,10 @@ function updatePlayerStats() {
           <div class="bar-fill hp" style="width: ${hpPercent}%"></div>
         </div>
       </div>
-      <div class="bar-row">
-        <div class="bar-label-row">
-          <span>SP</span>
-          <span class="value sp">${sp}/${maxSp}</span>
-        </div>
-        <div class="bar-container">
-          <div class="bar-fill sp" style="width: ${spPercent}%"></div>
-        </div>
-      </div>
     </div>
-    ${statPointsHtml}
     <div class="stats-grid">
-      <div class="primary-stats">
-        ${renderStatRow('STR', 'str', stats.str ?? p.attack ?? '?')}
-        ${renderStatRow('AGI', 'agi', stats.agi ?? p.speed ?? '?')}
-        ${renderStatRow('VIT', 'vit', stats.vit ?? '?')}
-        ${renderStatRow('INT', 'int', stats.int ?? p.magic ?? '?')}
-        ${renderStatRow('DEX', 'dex', stats.dex ?? '?')}
-        ${renderStatRow('LUK', 'luk', stats.luk ?? '?')}
-      </div>
       <div class="derived-stats">
-        <div class="stat-row mini"><span class="label">ATK</span><span class="value">${derived.atk ?? p.attack ?? '?'}</span></div>
-        <div class="stat-row mini"><span class="label">DEF</span><span class="value">${derived.def ?? p.defense ?? '?'}</span></div>
-        <div class="stat-row mini"><span class="label">MATK</span><span class="value">${derived.matk ?? p.magic ?? '?'}</span></div>
-        <div class="stat-row mini"><span class="label">MDEF</span><span class="value">${derived.mdef ?? '?'}</span></div>
-        <div class="stat-row mini"><span class="label">HIT</span><span class="value">${derived.hit ?? '?'}</span></div>
-        <div class="stat-row mini"><span class="label">FLEE</span><span class="value">${derived.flee ?? '?'}</span></div>
-        <div class="stat-row mini"><span class="label">CRIT</span><span class="value">${derived.crit != null ? (typeof derived.crit === 'number' ? derived.crit.toFixed(1) : derived.crit) + '%' : '?'}</span></div>
+        <div class="stat-row mini"><span class="label">ATK</span><span class="value">${p.attack ?? 15}</span></div>
       </div>
     </div>
     <div class="stat-row">

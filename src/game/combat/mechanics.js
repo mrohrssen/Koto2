@@ -1,6 +1,11 @@
 /**
- * Combat Mechanics
- * Combat stats calculation, attack resolution, and attack type definitions
+ * Combat Mechanics - SIMPLIFIED
+ *
+ * Simplified combat with only attack and maxHp.
+ * Damage = attack * random(0.85, 1.15)
+ * No hit/miss, no crits, no defense.
+ *
+ * See combat/mechanics.full.js for the original iRO-style system (if preserved).
  */
 
 import { calculateEquipmentBonuses } from '../items.js';
@@ -12,130 +17,86 @@ import {
   calculateMagicDamage
 } from '../stats.js';
 
-// ============ COMBAT STATS HELPERS ============
+// ============ COMBAT STATS HELPERS (SIMPLIFIED) ============
 
 /**
- * Get player's complete combat stats including equipment
+ * Get player's combat stats - SIMPLIFIED
+ * Only attack and maxHp matter now
  */
 export function getPlayerCombatStats(player) {
-  const equipBonuses = calculateEquipmentBonuses(player);
-  const derived = calculateDerivedStats(player.stats, player.level, equipBonuses);
-
   return {
-    // Primary stats
-    ...player.stats,
-    level: player.level,
-    // Resources
     hp: player.hp,
     maxHp: player.maxHp,
-    sp: player.sp,
-    maxSp: player.maxSp,
-    // Derived combat stats
-    atk: derived.atk,
-    def: derived.def,
-    matk: derived.matk,
-    mdef: derived.mdef,
-    hit: derived.hit,
-    flee: derived.flee,
-    crit: derived.crit,
-    critShield: derived.critShield,
-    perfectDodge: derived.perfectDodge
+    sp: player.sp || 0,
+    maxSp: player.maxSp || 0,
+    atk: player.attack || 10,  // Use simplified attack stat
+    // Stub out old stats for compatibility
+    def: 0,
+    matk: player.attack || 10,
+    mdef: 0,
+    hit: 100,
+    flee: 0,
+    crit: 0,
+    critShield: 0,
+    perfectDodge: 0
   };
 }
 
 /**
- * Get enemy's combat stats (already calculated on generation)
+ * Get enemy's combat stats - SIMPLIFIED
  */
 export function getEnemyCombatStats(enemy) {
   return {
-    level: enemy.level,
     hp: enemy.hp,
     maxHp: enemy.maxHp,
-    sp: enemy.sp,
-    maxSp: enemy.maxSp,
-    atk: enemy.atk,
-    def: enemy.def,
-    matk: enemy.matk,
-    mdef: enemy.mdef,
-    hit: enemy.hit,
-    flee: enemy.flee,
-    crit: enemy.crit,
-    critShield: enemy.critShield,
-    perfectDodge: enemy.perfectDodge,
-    stats: enemy.stats
+    sp: enemy.sp || 0,
+    maxSp: enemy.maxSp || 0,
+    atk: enemy.attack || enemy.atk || 10,  // Use simplified attack stat
+    // Stub out old stats for compatibility
+    def: 0,
+    matk: enemy.attack || enemy.atk || 10,
+    mdef: 0,
+    hit: 100,
+    flee: 0,
+    crit: 0,
+    critShield: 0,
+    perfectDodge: 0
   };
 }
 
-// ============ ATTACK RESOLUTION ============
+// ============ ATTACK RESOLUTION (SIMPLIFIED) ============
 
 /**
- * Resolve a physical attack with HIT/FLEE/CRIT mechanics
- * @param {object} attacker - Attacker's combat stats
- * @param {object} defender - Defender's combat stats
- * @param {number} skillMultiplier - Skill damage multiplier (default 1.0)
- * @param {number} armorPen - Armor penetration (0-1, ignores % of DEF)
- * @returns {object} Attack result
+ * Resolve a physical attack - SIMPLIFIED
+ * Always hits, damage = attack * random(0.85, 1.15)
+ * No hit/miss, no crits, no defense
  */
 export function resolvePhysicalAttack(attacker, defender, skillMultiplier = 1.0, armorPen = 0) {
-  const result = {
-    hit: false,
+  // Simplified: always hits, damage = atk * variance
+  const variance = 0.85 + Math.random() * 0.30;  // 0.85 to 1.15
+  const damage = Math.max(1, Math.floor(attacker.atk * skillMultiplier * variance));
+
+  return {
+    hit: true,
     miss: false,
     dodge: false,
     perfectDodge: false,
     critical: false,
-    damage: 0,
-    hitChance: 0,
+    damage,
+    hitChance: 100,
     critChance: 0
   };
-
-  // Step 1: Perfect Dodge check (LUK-based, checked before anything else)
-  const perfectDodgeRoll = Math.random() * 100;
-  if (perfectDodgeRoll < defender.perfectDodge) {
-    result.perfectDodge = true;
-    return result;
-  }
-
-  // Step 2: Critical check (crits bypass accuracy check)
-  const effectiveCrit = calculateEffectiveCrit(attacker.crit, defender.critShield);
-  result.critChance = effectiveCrit;
-  const critRoll = Math.random() * 100;
-
-  if (critRoll < effectiveCrit) {
-    // Critical hit - always hits, 140% damage
-    result.hit = true;
-    result.critical = true;
-    result.damage = calculatePhysicalDamage(attacker.atk * skillMultiplier, defender.def, true, 0.1, armorPen);
-    return result;
-  }
-
-  // Step 3: Normal hit check
-  const hitChance = calculateHitChance(attacker.hit, defender.flee);
-  result.hitChance = hitChance;
-  const hitRoll = Math.random() * 100;
-
-  if (hitRoll < hitChance) {
-    // Normal hit
-    result.hit = true;
-    result.damage = calculatePhysicalDamage(attacker.atk * skillMultiplier, defender.def, false, 0.1, armorPen);
-  } else {
-    // Miss (defender dodged)
-    result.miss = true;
-    result.dodge = true;
-  }
-
-  return result;
 }
 
 /**
- * Resolve a magic attack (always hits, uses MATK vs MDEF)
- * @param {object} attacker - Attacker's combat stats
- * @param {object} defender - Defender's combat stats
- * @param {number} skillMultiplier - Skill damage multiplier
- * @returns {object} Attack result
+ * Resolve a magic attack - SIMPLIFIED
+ * Uses same logic as physical (atk with variance)
  */
 export function resolveMagicAttack(attacker, defender, skillMultiplier = 1.0) {
-  // Magic always hits
-  const damage = calculateMagicDamage(attacker.matk, defender.mdef, skillMultiplier);
+  // Simplified: use atk (or matk if available) with variance
+  const baseAtk = attacker.matk || attacker.atk || 10;
+  const variance = 0.85 + Math.random() * 0.30;
+  const damage = Math.max(1, Math.floor(baseAtk * skillMultiplier * variance));
 
   return {
     hit: true,
@@ -179,76 +140,63 @@ export const PLAYER_ATTACK_TYPES = {
 };
 
 /**
- * Calculate stagger chance for quick attack
- * Higher AGI = higher stagger chance
+ * Calculate stagger chance - SIMPLIFIED (fixed value)
  */
 export function calculateStaggerChance(playerAgi, enemyAgi) {
-  const base = PLAYER_ATTACK_TYPES.quick.baseStaggerChance;
-  const agiDiff = playerAgi - enemyAgi;
-  // +2% per AGI advantage, -1% per AGI disadvantage
-  const bonus = agiDiff > 0 ? agiDiff * 2 : agiDiff;
-  return Math.max(5, Math.min(70, base + bonus)); // Clamp 5-70%
+  return 30;  // Fixed 30% chance
 }
 
 /**
- * Calculate exhaustion chance for heavy attack
- * Higher AGI = lower exhaustion chance
+ * Calculate exhaustion chance - SIMPLIFIED (fixed value)
  */
 export function calculateExhaustChance(playerAgi) {
-  const base = PLAYER_ATTACK_TYPES.heavy.baseExhaustChance;
-  // -2% per AGI point
-  const reduction = playerAgi * 2;
-  return Math.max(10, Math.min(80, base - reduction)); // Clamp 10-80%
+  return 30;  // Fixed 30% chance
 }
 
-// ============ TURN ORDER ============
+// ============ TURN ORDER (SIMPLIFIED) ============
 
 /**
- * Determine who goes first based on AGI
+ * Determine who goes first - SIMPLIFIED
+ * Player always goes first
  */
 export function determineTurnOrder(player, enemy) {
-  // AGI determines turn order
-  // Tie-breaker: player goes first
-  return player.stats.agi >= enemy.stats.agi ? 'player' : 'enemy';
+  return 'player';  // Player always goes first
 }
 
-// ============ COMBAT INFO FOR UI ============
+// ============ COMBAT INFO FOR UI (SIMPLIFIED) ============
 
 /**
- * Get pre-attack info for UI display
+ * Get pre-attack info for UI display - SIMPLIFIED
  */
 export function getAttackPreview(player, enemy) {
   const playerStats = getPlayerCombatStats(player);
-  const enemyStats = getEnemyCombatStats(enemy);
 
-  const hitChance = calculateHitChance(playerStats.hit, enemyStats.flee);
-  const effectiveCrit = calculateEffectiveCrit(playerStats.crit, enemyStats.critShield);
-
-  // Estimate damage range (without crit)
-  const minDamage = Math.max(1, Math.floor((playerStats.atk - enemyStats.def) * 0.9));
-  const maxDamage = Math.max(1, Math.floor((playerStats.atk - enemyStats.def) * 1.1));
+  // Damage range with ±15% variance
+  const baseAtk = playerStats.atk;
+  const minDamage = Math.max(1, Math.floor(baseAtk * 0.85));
+  const maxDamage = Math.max(1, Math.floor(baseAtk * 1.15));
 
   return {
-    hitChance: Math.round(hitChance),
-    critChance: Math.round(effectiveCrit * 10) / 10,
+    hitChance: 100,  // Always hits
+    critChance: 0,   // No crits
     estimatedDamage: { min: minDamage, max: maxDamage },
-    enemyPerfectDodge: enemyStats.perfectDodge
+    enemyPerfectDodge: 0
   };
 }
 
 /**
- * Get enemy attack preview for UI
+ * Get enemy attack preview for UI - SIMPLIFIED
  */
 export function getEnemyAttackPreview(player, enemy) {
-  const playerStats = getPlayerCombatStats(player);
   const enemyStats = getEnemyCombatStats(enemy);
 
-  const hitChance = calculateHitChance(enemyStats.hit, playerStats.flee);
-  const effectiveCrit = calculateEffectiveCrit(enemyStats.crit, playerStats.critShield);
+  const minDamage = Math.max(1, Math.floor(enemyStats.atk * 0.85));
+  const maxDamage = Math.max(1, Math.floor(enemyStats.atk * 1.15));
 
   return {
-    hitChance: Math.round(hitChance),
-    critChance: Math.round(effectiveCrit * 10) / 10,
-    playerPerfectDodge: playerStats.perfectDodge
+    hitChance: 100,
+    critChance: 0,
+    estimatedDamage: { min: minDamage, max: maxDamage },
+    playerPerfectDodge: 0
   };
 }

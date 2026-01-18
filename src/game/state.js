@@ -4,51 +4,24 @@
  *
  * PURPOSE:
  * Central state management for all game entities. Provides factory functions
- * for creating players, runs, and combat instances. Handles meta-progression
- * (essence, upgrades, achievements) that persists across deaths. Also manages
- * stat allocation, level-up logic, and save/load functionality.
+ * for creating players, runs, and combat instances.
+ *
+ * SIMPLIFIED SYSTEM:
+ * - No levels, no XP
+ * - No stat allocation (STR, AGI, etc.)
+ * - Players have only: attack, maxHp
+ * - See state.full.js for the original complex system
  *
  * KEY EXPORTS:
- * - createNewPlayer(name, customStats, customStatPoints) - Creates player with class-based stats
+ * - createNewPlayer(name) - Creates player with attack and maxHp
  * - createNewRun(player) - Initializes dungeon run with ward system
  * - createCombatState(enemy) - Creates combat instance
- * - createMetaProgression() - Creates fresh meta-save (essence, upgrades, achievements)
- * - allocateStat(player, statName) - Spends stat points (iRO cost formula)
- * - checkLevelUp(player) - Processes XP and awards stat points
- * - getMetaUpgradeEffects(meta) - Aggregates all purchased upgrade bonuses
- * - calculateEssenceReward(runStats, floor, isVictory) - Calculates run rewards
- * - recalculatePlayerResources(player, equipBonuses) - Updates maxHp/maxSp after gear change
- * - getFullPlayerStats(player, equipBonuses) - Returns complete stats with derived values
- * - META_UPGRADES - Upgrade definitions (vitality, attackPower, skills, etc.)
- * - ACHIEVEMENTS - Achievement definitions with check functions
+ * - createMetaProgression() - Creates fresh meta-save
  * - saveGame/loadGame/deleteSave - File-based persistence
  *
  * DEPENDENCIES:
- * - ./stats.js - iRO stat formulas (calculateDerivedStats, calculateMaxHp/Sp, getStatPointCost)
- * - ./items.js - Equipment bonuses (calculateEquipmentBonuses, getClassStartingEquipment)
- *
- * DATA STRUCTURES:
- * - Player: { name, rank, level, xp, xpToNext, stats{str,agi,vit,int,dex,luk},
- *            statPoints, hp, maxHp, sp, maxSp, gold, items[], equipment{}, skills[], statuses[] }
- * - Run: { active, floor, maxFloors, currentWard, wardPath[], rooms[], currentRoom,
- *         encountersCompleted, encountersNeeded, bossDefeated, stats{}, runStats{} }
- * - Combat: { active, turn, turnCount, enemy{}, lastAction, log[] }
- * - Meta: { essence, upgrades{}, lifetimeStats{}, unlocks[], achievements[] }
- *
- * ARCHITECTURE NOTES:
- * - State objects are mutable; GameManager in loop.js owns canonical copies
- * - createNewRun() deep-clones player to isolate run state from base player
- * - Stat allocation uses iRO cost formula: higher stats cost more points
- * - Level-up fully restores HP/SP and awards stat points per iRO formula
- * - Meta-progression essence is earned at run end based on floor + kills + bosses
- * - Rank system: E→D→C→B→A→S, advances every 5 levels
- *
- * CLAUDE HINTS:
- * - For stat formulas (ATK, DEF, crit, etc.), see stats.js
- * - Equipment bonuses are calculated in items.js, applied here
- * - Ward system (currentWard, wardPath) connects to rooms.js
- * - Player starts with Hacker class equipment from class-equipment.js
- * - Run stats vs runStats: stats{} is for meta tracking, runStats{} is for chip counters
+ * - ./stats.js - Simplified stats (just attack/maxHp stubs)
+ * - ./items.js - Equipment (no stat bonuses in simplified mode)
  */
 
 import {
@@ -376,32 +349,29 @@ export function getMetaUpgradeEffects(metaProgression) {
   return effects;
 }
 
-// ============ DEFAULT PLAYER STATE ============
+// ============ DEFAULT PLAYER STATE (SIMPLIFIED) ============
 export function createNewPlayer(name = "Hunter", customStats = null, customStatPoints = null, playerClass = 'hacker') {
-  const level = 1;
-
-  // Use custom stats if provided (from character creation), otherwise defaults
-  const defaultData = getStartingPlayerStats();
-  const stats = customStats || defaultData.stats;
-  const statPoints = customStatPoints !== null ? customStatPoints : defaultData.statPoints;
-
-  // Calculate initial HP/SP from formulas
-  const maxHp = calculateMaxHp(level, stats.vit);
-  const maxSp = calculateMaxSp(level, stats.int);
+  // SIMPLIFIED: Fixed attack and maxHp, no levels
+  const attack = 15;   // Starting attack power
+  const maxHp = 100;   // Starting max HP
+  const maxSp = 50;    // Starting max SP (for skills)
 
   return {
     name,
-    class: playerClass,  // 'hacker' - auto-allocates stats on level up
-    rank: "E",  // E, D, C, B, A, S
-    level,
+    class: playerClass,
+    rank: "E",  // Kept for display but doesn't change
+
+    // SIMPLIFIED: No levels, no XP
+    level: 1,  // Fixed at 1 (kept for compatibility)
     xp: 0,
-    xpToNext: calculateXpToNext(level),
+    xpToNext: 999999,  // Never levels up
 
-    // Primary stats (iRO-style)
-    stats: { ...stats },
-    statPoints,  // Points available to allocate
+    // SIMPLIFIED: No primary stats, just attack
+    attack,
+    stats: {},  // Empty - no stat allocation
+    statPoints: 0,
 
-    // Core resources (derived from stats)
+    // Core resources
     hp: maxHp,
     maxHp,
     sp: maxSp,
@@ -415,12 +385,12 @@ export function createNewPlayer(name = "Hunter", customStats = null, customStatP
       { id: "potion", quantity: 3 }
     ],
 
-    // Equipped gear (4 slots) - class-specific equipment
+    // Equipped gear (4 slots)
     equipment: getClassStartingEquipment(playerClass),
 
     // Learned skills
     skills: [
-      { id: "strike" }  // Basic attack skill everyone starts with
+      { id: "strike" }
     ],
 
     // Status effects
@@ -529,231 +499,57 @@ export function getNextRank(rank) {
   return rank;
 }
 
-// ============ LEVEL UP LOGIC ============
+// ============ LEVEL UP LOGIC (DISABLED IN SIMPLIFIED MODE) ============
+
 export function calculateXpToNext(level) {
-  // New XP curve: fast early, slower late
-  // Level 2: 20 XP (1 enemy)
-  // Level 3: 28 XP (1-2 enemies)
-  // Level 4: 36 XP (2 enemies)
-  // Level 5: 49 XP (2-3 enemies)
-  // Level 6: 72 XP (3-4 enemies)
-  // Level 7: 105 XP (5-6 enemies)
-  // Level 8+: grows faster
-  const base = 20;
-  const linear = (level - 1) * 8;
-  const quadratic = Math.pow(Math.max(0, level - 3), 2) * 5;
-  return Math.floor(base + linear + quadratic);
+  return 999999;  // Never levels up in simplified mode
 }
 
 /**
- * Auto-allocate stat points for classes with autoAllocateStats: true
- * Uses round-robin distribution through statPriority array
- * @param {object} player - Player object
- * @returns {object} Stats that were increased { str: 1, vit: 2, ... }
+ * Check for level up - DISABLED in simplified mode
  */
-function autoAllocateStatPoints(player) {
-  const classConfig = CLASS_CONFIG[player.class];
-  if (!classConfig || !classConfig.autoAllocateStats) {
-    return {};
-  }
-
-  const statsAllocated = {};
-  const priority = classConfig.statPriority || ['vit', 'str', 'agi', 'dex', 'int', 'luk'];
-  let priorityIndex = 0;
-  let failedAttempts = 0;
-
-  // Keep allocating until we can't afford any stat
-  while (player.statPoints > 0 && failedAttempts < priority.length) {
-    const statName = priority[priorityIndex];
-    const currentValue = player.stats[statName];
-    const cost = getStatPointCost(currentValue);
-
-    if (currentValue < 99 && player.statPoints >= cost) {
-      // Can afford this stat - allocate it
-      player.statPoints -= cost;
-      player.stats[statName]++;
-      statsAllocated[statName] = (statsAllocated[statName] || 0) + 1;
-      failedAttempts = 0;  // Reset failed counter
-    } else {
-      // Can't afford or maxed - try next stat
-      failedAttempts++;
-    }
-
-    // Move to next stat in priority (round-robin)
-    priorityIndex = (priorityIndex + 1) % priority.length;
-  }
-
-  return statsAllocated;
-}
-
 export function checkLevelUp(player) {
-  const levelUps = [];
-
-  while (player.xp >= player.xpToNext) {
-    player.xp -= player.xpToNext;
-    player.level++;
-    player.xpToNext = calculateXpToNext(player.level);
-
-    // Award stat points based on level (iRO formula)
-    const pointsEarned = getStatPointsForLevel(player.level);
-    player.statPoints += pointsEarned;
-
-    // Auto-allocate stats for Newbie class (and any class with autoAllocateStats)
-    const autoAllocated = autoAllocateStatPoints(player);
-
-    // Recalculate max HP/SP (they scale with level even without stat changes)
-    // Include equipment bonuses for VIT/INT
-    const equipBonuses = calculateEquipmentBonuses(player);
-    const totalVit = player.stats.vit + (equipBonuses.vit || 0);
-    const totalInt = player.stats.int + (equipBonuses.int || 0);
-    const oldMaxHp = player.maxHp;
-    const oldMaxSp = player.maxSp;
-    player.maxHp = calculateMaxHp(player.level, totalVit, equipBonuses.maxHp || 0);
-    player.maxSp = calculateMaxSp(player.level, totalInt, equipBonuses.maxSp || 0);
-
-    // Heal on level up (full restore)
-    player.hp = player.maxHp;
-    player.sp = player.maxSp;
-
-    levelUps.push({
-      newLevel: player.level,
-      statPointsEarned: pointsEarned,
-      totalStatPoints: player.statPoints,
-      maxHpGain: player.maxHp - oldMaxHp,
-      maxSpGain: player.maxSp - oldMaxSp,
-      autoAllocated  // Include which stats were auto-allocated
-    });
-
-    // Check for rank up (every 5 levels)
-    if (player.level % 5 === 0) {
-      player.rank = getNextRank(player.rank);
-    }
-  }
-
-  return levelUps;
+  // No leveling in simplified mode
+  return [];
 }
 
-// ============ STAT ALLOCATION ============
+// ============ STAT ALLOCATION (DISABLED IN SIMPLIFIED MODE) ============
 
 /**
- * Allocate a stat point to a primary stat
- * @param {object} player - Player object
- * @param {string} statName - 'str', 'agi', 'vit', 'int', 'dex', or 'luk'
- * @returns {object} Result with success status and updated values
+ * Allocate stat point - DISABLED in simplified mode
  */
 export function allocateStat(player, statName) {
-  const validStats = ['str', 'agi', 'vit', 'int', 'dex', 'luk'];
-
-  if (!validStats.includes(statName)) {
-    return { success: false, error: `Invalid stat: ${statName}` };
-  }
-
-  const currentValue = player.stats[statName];
-
-  // Check stat cap (99)
-  if (currentValue >= 99) {
-    return { success: false, error: `${statName.toUpperCase()} is already at maximum (99)` };
-  }
-
-  // Calculate cost
-  const cost = getStatPointCost(currentValue);
-
-  if (player.statPoints < cost) {
-    return { success: false, error: `Not enough stat points (need ${cost}, have ${player.statPoints})` };
-  }
-
-  // Spend points and increase stat
-  player.statPoints -= cost;
-  player.stats[statName]++;
-
-  // Recalculate HP/SP if VIT or INT changed (include equipment bonuses)
-  const equipBonuses = calculateEquipmentBonuses(player);
-  if (statName === 'vit') {
-    const totalVit = player.stats.vit + (equipBonuses.vit || 0);
-    const oldMaxHp = player.maxHp;
-    player.maxHp = calculateMaxHp(player.level, totalVit, equipBonuses.maxHp || 0);
-    // Heal the difference (don't lose HP from stat changes)
-    player.hp = Math.min(player.hp + (player.maxHp - oldMaxHp), player.maxHp);
-  }
-
-  if (statName === 'int') {
-    const totalInt = player.stats.int + (equipBonuses.int || 0);
-    const oldMaxSp = player.maxSp;
-    player.maxSp = calculateMaxSp(player.level, totalInt, equipBonuses.maxSp || 0);
-    player.sp = Math.min(player.sp + (player.maxSp - oldMaxSp), player.maxSp);
-  }
-
-  return {
-    success: true,
-    stat: statName,
-    newValue: player.stats[statName],
-    pointsSpent: cost,
-    pointsRemaining: player.statPoints,
-    maxHp: player.maxHp,
-    maxSp: player.maxSp
-  };
+  return { success: false, error: 'Stat allocation disabled in simplified mode' };
 }
 
 /**
- * Recalculate player's max HP/SP based on current stats and equipment
- * Call this after equipment changes (buying chips, equipping gear, etc.)
- * @param {object} player - Player object to update
- * @param {object} equipmentBonuses - Bonuses from equipment (from calculateEquipmentBonuses)
- * @param {boolean} healDifference - If true, increase current HP/SP by the gained amount
+ * Recalculate player resources - SIMPLIFIED
+ * No stat-based calculations, just pass through
  */
 export function recalculatePlayerResources(player, equipmentBonuses = {}, healDifference = true) {
-  const totalVit = player.stats.vit + (equipmentBonuses.vit || 0);
-  const totalInt = player.stats.int + (equipmentBonuses.int || 0);
-
-  const oldMaxHp = player.maxHp;
-  const oldMaxSp = player.maxSp;
-
-  player.maxHp = calculateMaxHp(player.level, totalVit, equipmentBonuses.maxHp || 0);
-  player.maxSp = calculateMaxSp(player.level, totalInt, equipmentBonuses.maxSp || 0);
-
-  if (healDifference) {
-    // Increase current HP/SP by the gained amount (chips give immediate benefit)
-    player.hp = Math.min(player.hp + (player.maxHp - oldMaxHp), player.maxHp);
-    player.sp = Math.min(player.sp + (player.maxSp - oldMaxSp), player.maxSp);
-  }
+  // In simplified mode, maxHp/maxSp are fixed
+  // No recalculation needed
 }
 
 /**
- * Get full player stats including derived stats from equipment
- * @param {object} player - Player object
- * @param {object} equipmentBonuses - Bonuses from equipped gear
- * @returns {object} Complete stats object
+ * Get full player stats - SIMPLIFIED
  */
 export function getFullPlayerStats(player, equipmentBonuses = {}) {
-  // Get derived combat stats
-  const derived = calculateDerivedStats(
-    player.stats,
-    player.level,
-    equipmentBonuses,
-    false  // isRanged - TODO: check weapon type
-  );
-
   return {
-    // Primary stats
-    ...player.stats,
-    statPoints: player.statPoints,
-
-    // Derived combat stats
-    atk: derived.atk,
-    def: derived.def,
-    matk: derived.matk,
-    mdef: derived.mdef,
-    hit: derived.hit,
-    flee: derived.flee,
-    crit: derived.crit,
-    critShield: derived.critShield,
-    perfectDodge: derived.perfectDodge,
-
-    // Resources
+    attack: player.attack || 15,
     hp: player.hp,
     maxHp: player.maxHp,
     sp: player.sp,
-    maxSp: player.maxSp
+    maxSp: player.maxSp,
+    // Stub out old stats for compatibility
+    atk: player.attack || 15,
+    def: 0,
+    matk: 0,
+    mdef: 0,
+    hit: 100,
+    flee: 0,
+    crit: 0,
+    statPoints: 0
   };
 }
 

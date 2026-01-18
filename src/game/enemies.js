@@ -4,64 +4,20 @@
  *
  * PURPOSE:
  * Defines all enemies and bosses for NEO TOKYO. Each enemy is a citizen possessed
- * by the SYSTEM AI. Contains enemy templates with stats, intent patterns for AI
- * decision-making, special abilities, dialogue lines, and boss encounters. Also
- * handles enemy generation based on floor/ward.
+ * by the SYSTEM AI.
  *
- * KEY EXPORTS:
- * Constants:
- * - INTENT_TYPES - Attack/heavy/defend/special/rage intent definitions
- * - ENEMY_INTENTS - Per-enemy AI patterns (weighted random)
- * - ENEMY_ABILITIES - Special abilities (buff, heal, debuff, barrier)
- * - BOSS_INTENTS - Boss-specific AI patterns
- * - ENEMY_TEMPLATES - All enemy definitions with stats, sprites, dialogue
- * - FLOOR_BOSSES - Boss for each floor (1-7)
- * - FINAL_BOSS - Floor 7 boss definition
- * - BOSS_DROPS - Loot tables for boss rewards
- * - WARD_LOCATIONS - Enemy spawn locations by ward
+ * SIMPLIFIED SYSTEM:
+ * - Enemies have only: attack and maxHp
+ * - No levels, no derived stats
+ * - Attack/HP based on tier (1-4)
+ * - See enemies.full.js for original iRO-style system (if preserved)
  *
- * Functions:
- * - selectEnemyIntent(enemy, turn) - AI intent selection (weighted random)
- * - getEnemyAbility(enemyId) - Get enemy's special ability
- * - generateEnemy(floor) - Create enemy instance for floor
- * - getBossForFloor(floor) - Get boss definition for floor
- * - getBossDrop(floor) - Get boss loot table
- * - getEnemiesForFloor(floor) - Get valid enemies for floor/ward
- * - transformEnemy(enemy, tier) - Scale enemy to different tier
- *
- * DEPENDENCIES:
- * - ./stats.js - calculateDerivedStats, calculateMaxHp, calculateMaxSp
- *
- * DATA STRUCTURES:
- * - EnemyTemplate: { id, name, tier, baseStats{}, intents[], abilities[],
- *                   sprite, dialogue{ possessed, breaking, freed } }
- * - Intent: { id, icon, name, damageMultiplier, defenseMultiplier? }
- * - IntentPattern: { default: [{intent, weight}], lowHp: [...] }
- *
- * ENEMY TIERS (by floor):
- * - Tier 1 (Floors 1-2): Citizens, students - low stats
- * - Tier 2 (Floors 3-4): Workers, professionals - medium stats
- * - Tier 3 (Floors 5-6): Specialists, officials - high stats
- * - Tier 4 (Floor 7): Elite enemies before final boss
- *
- * DIALOGUE STATES:
- * - possessed: Enemy is fully controlled by SYSTEM
- * - breaking: Enemy is resisting, showing humanity
- * - freed: Enemy is defeated/liberated
- *
- * ARCHITECTURE NOTES:
- * - Enemies spawned via generateEnemy() which picks from floor-appropriate pool
- * - Intent selection uses weighted random from ENEMY_INTENTS
- * - Bosses have unique mechanics via BOSS_INTENTS and ENEMY_ABILITIES
- * - Ward system filters enemies by location (Nerima, Shibuya, etc.)
- * - Stats calculated via iRO formulas from base values
- *
- * CLAUDE HINTS:
- * - For combat execution, see combat/enemy.js
- * - Enemy dialogue displayed via game.js showEnemyDialogue()
- * - To add new enemy: add to ENEMY_TEMPLATES, add intents to ENEMY_INTENTS
- * - Boss special abilities defined in ENEMY_ABILITIES
- * - Ward-based enemy pools in WARD_LOCATIONS
+ * ENEMY TIERS:
+ * - Tier 1: attack ~10, HP ~40
+ * - Tier 2: attack ~15, HP ~70
+ * - Tier 3: attack ~20, HP ~100
+ * - Tier 4: attack ~30, HP ~150
+ * - Bosses: attack ~30-40, HP ~200-300
  */
 
 import {
@@ -3553,41 +3509,59 @@ export const FLOOR_TO_WARD = {
 // ============ HELPER FUNCTIONS ============
 
 /**
- * Build a combat-ready enemy from a template
- * Calculates HP, SP, and all derived stats
+ * Build a combat-ready enemy from a template - SIMPLIFIED
+ * Uses flat attack/maxHp based on tier, no levels
  */
 function buildEnemy(template, levelBonus = 0) {
-  const level = template.baseLevel + levelBonus;
+  // SIMPLIFIED: attack and maxHp based on tier
+  // Tier 1: attack 8-12, HP 40-60
+  // Tier 2: attack 12-18, HP 60-90
+  // Tier 3: attack 18-25, HP 90-130
+  // Tier 4: attack 25-35, HP 130-180
+  // Bosses: attack 20-40, HP 150-300
 
-  // Calculate derived stats (enemies don't have equipment)
-  const derived = calculateDerivedStats(template.stats, level);
+  const tier = template.tier || 1;
+  const isBoss = template.isBoss || false;
 
-  // Calculate HP/SP from formulas (enemies get 2x HP for turn-based combat pacing)
-  const maxHp = calculateMaxHp(level, template.stats.vit) * 2;
-  const maxSp = calculateMaxSp(level, template.stats.int);
+  let baseAttack, baseHp;
+
+  if (isBoss) {
+    // Bosses are stronger
+    baseAttack = 20 + (tier * 5);
+    baseHp = 150 + (tier * 40);
+  } else {
+    // Regular enemies scale by tier
+    baseAttack = 5 + (tier * 4);
+    baseHp = 30 + (tier * 20);
+  }
+
+  // Add some variance (±20%)
+  const attackVariance = 0.8 + Math.random() * 0.4;
+  const hpVariance = 0.8 + Math.random() * 0.4;
+
+  const attack = Math.floor(baseAttack * attackVariance);
+  const maxHp = Math.floor(baseHp * hpVariance);
 
   return {
     ...template,
-    level,
-    // Primary stats
-    stats: { ...template.stats },
-    // Resources
+    level: 1,  // Fixed level for compatibility
+    stats: {},  // No primary stats in simplified mode
+    // SIMPLIFIED: just attack and maxHp
+    attack,
+    atk: attack,  // Alias for compatibility
     hp: maxHp,
     maxHp,
-    sp: maxSp,
-    maxSp,
-    // Derived combat stats (ATK multiplied by 3 for bigger numbers)
-    atk: derived.atk * 3,
-    def: derived.def,
-    matk: derived.matk * 3,
-    mdef: derived.mdef,
-    // Monster HIT: 170 + Level + DEX
-    hit: 170 + level + template.stats.dex,
-    // Monster FLEE: 100 + Level + AGI (no LUK)
-    flee: 100 + level + template.stats.agi,
-    crit: derived.crit,
-    critShield: derived.critShield,
-    perfectDodge: derived.perfectDodge
+    sp: 0,
+    maxSp: 0,
+    // Stub out old stats for compatibility
+    def: 0,
+    matk: attack,
+    mdef: 0,
+    hit: 100,
+    flee: 0,
+    crit: 0,
+    critShield: 0,
+    perfectDodge: 0
   };
 }
 
@@ -3644,22 +3618,17 @@ export function getEnemiesForFloor(floor, useLocations = true) {
   return locationEnemies;
 }
 
-// Generate a random enemy for the floor
+// Generate a random enemy for the floor - SIMPLIFIED
 export function generateEnemy(floor) {
   const enemies = getEnemiesForFloor(floor);
   const template = enemies[Math.floor(Math.random() * enemies.length)];
 
-  // Add level bonus based on floor progression within tier
-  // Floor 1-2: +0-1, Floor 3-4: +0-1, etc.
-  const floorWithinTier = ((floor - 1) % 2);
-  const levelBonus = floorWithinTier;
+  // SIMPLIFIED: no level bonus
+  const enemy = buildEnemy(template, 0);
 
-  const enemy = buildEnemy(template, levelBonus);
-
-  // Scale rewards based on floor (15% per floor)
-  const scaling = 1 + (floor - 1) * 0.15;
-  enemy.xpReward = Math.floor(template.xpReward * scaling);
-  enemy.goldReward = Math.floor(template.goldReward * scaling);
+  // SIMPLIFIED: no XP (no leveling), but keep gold rewards
+  enemy.xpReward = 0;  // No XP in simplified mode
+  enemy.goldReward = template.goldReward || 20;
 
   return enemy;
 }
