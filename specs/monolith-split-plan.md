@@ -37,6 +37,249 @@ src/game/combat/
 
 ---
 
+## Architectural Decisions
+
+This section documents the architectural patterns to adopt **incrementally** during the refactor. These aren't separate phases—they're design decisions applied as we split files.
+
+### Current Architecture Analysis
+
+**What exists now:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        server.js                            │
+│  (86 endpoints, persistence, narration, all glued together) │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     GameManager (loop.js)                   │
+│  - God class: 2,789 lines, 80+ methods                      │
+│  - Combat, exploration, economy, progression all mixed      │
+│  - Manual emitState() calls (50+ places, easy to forget)    │
+│  - Callbacks: onStateChange(), onNarration()                │
+└─────────────────────────────────────────────────────────────┘
+                              │
+          ┌───────────────────┼───────────────────┐
+          ▼                   ▼                   ▼
+    ┌──────────┐        ┌──────────┐        ┌──────────┐
+    │ combat/  │        │ items/   │        │ enemies  │
+    │ (split)  │        │ (split)  │        │ (monolith)│
+    └──────────┘        └──────────┘        └──────────┘
+```
+
+**Frontend (game.js):**
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      game.js (7,301 lines)                  │
+│  - Global state: gameState object (no reactivity)           │
+│  - 50+ inline fetch() calls scattered everywhere            │
+│  - Direct DOM manipulation (tightly coupled)                │
+│  - No state management pattern                              │
+│  - TTS, narration, word practice all interleaved            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Target Architecture
+
+**Pattern 1: Event Bus (Backend)**
+
+Replace callback-based events with pub/sub for decoupling.
+
+```javascript
+// Current (tightly coupled):
+this.stateCallback = null;
+this.emitState(); // Manual call in 50+ places, easy to forget
+
+// Target (decoupled):
+import { eventBus } from './events.js';
+eventBus.emit('state:changed', this.getState());
+eventBus.on('combat:damage', (data) => this.trackDamage(data));
+```
+
+**When to apply:** During Phase 4 (GameManager decomposition). Create `src/game/events.js` as first step, then managers subscribe to events instead of direct coupling.
+
+---
+
+**Pattern 2: Command Pattern (Backend)**
+
+Game actions become command objects for logging, undo, and replay.
+
+```javascript
+// Current (direct method calls):
+gameManager.attack('light');
+gameManager.useItem('potion_hp');
+
+// Target (command objects):
+const cmd = new AttackCommand({ type: 'light', target: enemy });
+commandExecutor.execute(cmd);
+// Automatically logs, validates, and emits state changes
+```
+
+**When to apply:** Not required for initial split. Add after Phase 4 if replay/logging needed. This is a future enhancement, not part of the core refactor.
+
+---
+
+**Pattern 3: Repository Pattern (Backend)**
+
+Separate persistence from business logic.
+
+```javascript
+// Current (mixed in server.js):
+function loadGameSave() { /* file I/O */ }
+function saveGameData(player, meta) { /* file I/O */ }
+
+// Target (abstracted):
+// src/repositories/save-repository.js
+export class SaveRepository {
+  async load() { /* file I/O */ }
+  async save(state) { /* file I/O */ }
+}
+
+// server.js just uses:
+const repo = new SaveRepository();
+const state = await repo.load();
+```
+
+**When to apply:** During Phase 2 Step 2.10 (server cleanup). Extract persistence to `src/repositories/` before final server.js cleanup.
+
+---
+
+**Pattern 4: State Machine (Backend)**
+
+Make phase transitions explicit and validated.
+
+```javascript
+// Current (implicit):
+getPhase() {
+  if (!this.player) return 'no_save';
+  if (this.combat) return 'combat';
+  // ... complex conditionals
+}
+
+// Target (explicit state machine):
+// src/game/phase-machine.js
+const VALID_TRANSITIONS = {
+  'hub': ['ward_selection', 'shop', 'blacksmith'],
+  'ward_selection': ['exploring'],
+  'exploring': ['combat', 'shop', 'blacksmith', 'hub'],
+  'combat': ['victory', 'defeat'],
+  // ...
+};
+
+export function transition(from, to) {
+  if (!VALID_TRANSITIONS[from]?.includes(to)) {
+    throw new Error(`Invalid transition: ${from} → ${to}`);
+  }
+  return to;
+}
+```
+
+**When to apply:** During Phase 4 Step 4.2 (RunManager extraction). The phase logic naturally belongs in RunManager.
+
+---
+
+**Pattern 5: Service Layer (Backend)**
+
+Domain services with single responsibilities.
+
+```javascript
+// Current (GameManager does everything):
+class GameManager {
+  attack() { /* combat */ }
+  buyFromShop() { /* economy */ }
+  purchaseUpgrade() { /* progression */ }
+  proceedToNextRoom() { /* exploration */ }
+}
+
+// Target (focused services):
+// src/game/services/combat-service.js
+export class CombatService {
+  constructor(eventBus) { this.events = eventBus; }
+  executeAttack(attacker, defender, type) { /* only combat */ }
+}
+
+// src/game/services/economy-service.js
+export class EconomyService {
+  buyItem(player, item, shop) { /* only economy */ }
+}
+
+// GameManager becomes coordinator:
+class GameManager {
+  constructor() {
+    this.combat = new CombatService(eventBus);
+    this.economy = new EconomyService(eventBus);
+  }
+}
+```
+
+**When to apply:** This IS Phase 4. The "managers" we extract become services.
+
+---
+
+**Pattern 6: Observable Store (Frontend)**
+
+Reactive state management for UI updates.
+
+```javascript
+// Current (manual updates):
+gameState = await apiCall('/api/game/state');
+updateUI(); // Must remember to call this everywhere
+
+// Target (reactive):
+// public/js/store.js
+class Store {
+  constructor() {
+    this.state = {};
+    this.listeners = [];
+  }
+  setState(newState) {
+    this.state = newState;
+    this.listeners.forEach(fn => fn(this.state));
+  }
+  subscribe(fn) {
+    this.listeners.push(fn);
+  }
+}
+
+export const store = new Store();
+
+// In game.js:
+store.subscribe(updateUI); // Auto-updates on any state change
+store.setState(await api.getGameState());
+```
+
+**When to apply:** During Phase 5 Step 5.2 (settings module). Create `public/js/store.js` as foundation, then modules subscribe to relevant state slices.
+
+---
+
+### Architecture Integration into Phases
+
+| Phase | Architectural Pattern Applied |
+|-------|------------------------------|
+| Phase 1 | **API Client**: Single source of truth for server communication |
+| Phase 2 | **Repository Pattern**: Extract persistence to `src/repositories/` |
+| Phase 3 | **Data/Logic Separation**: Definitions vs behavior in separate files |
+| Phase 4 | **Service Layer + Event Bus**: Managers become services with events |
+| Phase 5 | **Observable Store**: Frontend state management foundation |
+
+### What We're NOT Doing (Intentionally)
+
+1. **No framework adoption** (React, Vue, etc.) - Keep vanilla JS, but organized
+2. **No Entity-Component-System** - Overkill for this game's complexity
+3. **No full CQRS** - Simple state sync is sufficient
+4. **No microservices** - Stay monorepo, just better organized
+5. **No GraphQL** - REST endpoints are fine, just organized
+
+### Migration Safety Rules
+
+1. **Never break the API contract** - Frontend expects specific response shapes
+2. **Never change behavior during extraction** - Pure refactor, no fixes
+3. **Always maintain backwards compatibility** - Old imports still work via re-exports
+4. **Test after every step** - `npm test` must pass
+5. **One concern per step** - Don't mix extraction with architecture changes
+
+---
+
 ## Phase 1: Frontend API Extraction
 
 **Goal**: Extract all server calls from `game.js` into `public/js/api.js`
@@ -509,77 +752,368 @@ app.use('/api', routes);
 
 ## Phase 4: GameManager Decomposition
 
-**Goal**: Split loop.js (GameManager) into focused manager classes
-**Impact**: Single responsibility, easier testing
+**Goal**: Split loop.js (GameManager) into focused services with event-based communication
+**Impact**: Single responsibility, easier testing, decoupled components
 **Prerequisite**: Phase 3 complete (cleaner dependencies)
+**Architecture**: Applies Service Layer + Event Bus patterns
 
-### Step 4.1: Extract CombatManager
+### Step 4.0: Create Event Bus foundation
 
-**What**: Move combat orchestration from GameManager to dedicated class.
+**What**: Create lightweight event bus for decoupled communication between services.
 
 **Files changed**:
-- Create `src/game/managers/combat-manager.js` (~300 lines)
-- `src/game/loop.js` (delegate to CombatManager, -250 lines)
+- Create `src/game/events.js` (~50 lines)
+
+**Implementation**:
+```javascript
+// src/game/events.js
+class EventBus {
+  constructor() {
+    this.listeners = new Map();
+  }
+
+  on(event, callback) {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, []);
+    }
+    this.listeners.get(event).push(callback);
+    return () => this.off(event, callback); // Return unsubscribe fn
+  }
+
+  off(event, callback) {
+    const callbacks = this.listeners.get(event);
+    if (callbacks) {
+      const idx = callbacks.indexOf(callback);
+      if (idx > -1) callbacks.splice(idx, 1);
+    }
+  }
+
+  emit(event, data) {
+    const callbacks = this.listeners.get(event) || [];
+    callbacks.forEach(cb => cb(data));
+  }
+}
+
+export const eventBus = new EventBus();
+
+// Event types for type safety and documentation
+export const GameEvents = {
+  STATE_CHANGED: 'state:changed',
+  COMBAT_STARTED: 'combat:started',
+  COMBAT_ENDED: 'combat:ended',
+  DAMAGE_DEALT: 'combat:damage',
+  ROOM_ENTERED: 'exploration:room',
+  ITEM_ACQUIRED: 'inventory:item',
+  GOLD_CHANGED: 'economy:gold',
+  NARRATION: 'ui:narration'
+};
+```
+
+**Verification**: Unit test the event bus (create simple test)
+
+**Why first**: All services will import this. Must exist before extraction.
+
+---
+
+### Step 4.1: Create Phase State Machine
+
+**What**: Extract phase logic into explicit state machine with valid transitions.
+
+**Files changed**:
+- Create `src/game/phase-machine.js` (~80 lines)
+- `src/game/loop.js` (use phase machine in getPhase(), -20 lines)
+
+**Implementation**:
+```javascript
+// src/game/phase-machine.js
+export const PHASES = {
+  NO_SAVE: 'no_save',
+  HUB: 'hub',
+  WARD_SELECTION: 'ward_selection',
+  EXPLORING: 'exploring',
+  COMBAT: 'combat',
+  VICTORY: 'victory',
+  DEFEAT: 'defeat',
+  SHOP: 'shop',
+  BLACKSMITH: 'blacksmith',
+  POST_COMBAT_SHOP: 'post_combat_shop',
+  BOSS_DEFEATED: 'boss_defeated',
+  RUN_COMPLETE: 'run_complete'
+};
+
+const VALID_TRANSITIONS = {
+  [PHASES.NO_SAVE]: [PHASES.HUB],
+  [PHASES.HUB]: [PHASES.WARD_SELECTION, PHASES.SHOP, PHASES.BLACKSMITH],
+  [PHASES.WARD_SELECTION]: [PHASES.EXPLORING],
+  [PHASES.EXPLORING]: [PHASES.COMBAT, PHASES.SHOP, PHASES.BLACKSMITH, PHASES.BOSS_DEFEATED],
+  [PHASES.COMBAT]: [PHASES.VICTORY, PHASES.DEFEAT],
+  [PHASES.VICTORY]: [PHASES.POST_COMBAT_SHOP, PHASES.EXPLORING],
+  [PHASES.DEFEAT]: [PHASES.HUB],
+  // ... complete mapping
+};
+
+export function canTransition(from, to) {
+  return VALID_TRANSITIONS[from]?.includes(to) ?? false;
+}
+
+export function derivePhase(state) {
+  // Extract current getPhase() logic here
+}
+```
+
+**Verification**: `npm test` - phase transitions still work correctly
+
+---
+
+### Step 4.2: Extract CombatService
+
+**What**: Move combat orchestration to dedicated service with event emissions.
+
+**Files changed**:
+- Create `src/game/services/combat-service.js` (~350 lines)
+- Create `src/game/services/index.js` (~20 lines)
+- `src/game/loop.js` (delegate to CombatService, -300 lines)
+
+**Key changes**:
+```javascript
+// src/game/services/combat-service.js
+import { eventBus, GameEvents } from '../events.js';
+
+export class CombatService {
+  constructor(gameState) {
+    this.state = gameState;
+  }
+
+  executeAttack(attackType) {
+    // Move attack logic from GameManager
+    const result = executePlayerAttack(/*...*/);
+
+    // Emit events instead of manual callbacks
+    eventBus.emit(GameEvents.DAMAGE_DEALT, {
+      source: 'player',
+      target: this.state.combat.enemy,
+      damage: result.damage
+    });
+
+    return result;
+  }
+
+  // ... other combat methods
+}
+```
 
 **Verification**: `npm test` - combat works
 
 ---
 
-### Step 4.2: Extract RunManager
+### Step 4.3: Extract ExplorationService
 
-**What**: Move run/dungeon progression logic.
+**What**: Move room navigation, ward selection, and dungeon progression.
 
 **Files changed**:
-- Create `src/game/managers/run-manager.js` (~400 lines)
-- `src/game/loop.js` (delegate to RunManager, -350 lines)
+- Create `src/game/services/exploration-service.js` (~400 lines)
+- `src/game/services/index.js` (add export)
+- `src/game/loop.js` (delegate, -350 lines)
 
-**Verification**: `npm test` - runs work
+**Verification**: `npm test` - exploration works
 
 ---
 
-### Step 4.3: Extract EconomyManager
+### Step 4.4: Extract EconomyService
 
-**What**: Move shop/economy/chip management logic.
+**What**: Move shop, refinement, and chip management.
 
 **Files changed**:
-- Create `src/game/managers/economy-manager.js` (~300 lines)
-- `src/game/loop.js` (delegate to EconomyManager, -250 lines)
+- Create `src/game/services/economy-service.js` (~300 lines)
+- `src/game/services/index.js` (add export)
+- `src/game/loop.js` (delegate, -250 lines)
 
-**Verification**: `npm test` - shop works
+**Verification**: `npm test` - shop and chips work
 
 ---
 
-### Step 4.4: Extract ProgressionManager
+### Step 4.5: Extract ProgressionService
 
-**What**: Move meta-progression/upgrades logic.
+**What**: Move meta-progression, upgrades, and achievements.
 
 **Files changed**:
-- Create `src/game/managers/progression-manager.js` (~200 lines)
+- Create `src/game/services/progression-service.js` (~200 lines)
+- `src/game/services/index.js` (add export)
 - `src/game/loop.js` (delegate, -150 lines)
 
 **Verification**: `npm test` - upgrades work
 
 ---
 
-### Step 4.5: GameManager cleanup
+### Step 4.6: GameManager becomes Coordinator
 
-**What**: GameManager becomes coordinator that delegates to sub-managers.
+**What**: GameManager now only coordinates services, holds shared state, and handles persistence hooks.
 
 **Files changed**:
-- Create `src/game/managers/index.js` (re-export)
-- `src/game/loop.js` (final cleanup)
+- `src/game/loop.js` (final refactor to coordinator pattern)
 
-**Verification**: `npm test` passes
+**Final GameManager structure**:
+```javascript
+// src/game/loop.js (~400 lines - down from 2,789)
+import { eventBus, GameEvents } from './events.js';
+import { CombatService } from './services/combat-service.js';
+import { ExplorationService } from './services/exploration-service.js';
+import { EconomyService } from './services/economy-service.js';
+import { ProgressionService } from './services/progression-service.js';
+import { derivePhase } from './phase-machine.js';
 
-**loop.js complete**: 2,789 lines → 5 files of ~300-500 lines each
+export class GameManager {
+  constructor() {
+    // Shared state
+    this.player = null;
+    this.run = null;
+    this.combat = null;
+    this.meta = null;
+
+    // Services (lazy init or inject)
+    this.combatService = null;
+    this.explorationService = null;
+    this.economyService = null;
+    this.progressionService = null;
+
+    // Subscribe to events for state sync
+    eventBus.on(GameEvents.STATE_CHANGED, () => this.onStateChanged());
+  }
+
+  // Delegate to services
+  attack(type) {
+    return this.combatService.executeAttack(type);
+  }
+
+  // Coordinator methods
+  getPhase() {
+    return derivePhase({ player: this.player, run: this.run, combat: this.combat });
+  }
+
+  getState() {
+    return { player: this.player, run: this.run, combat: this.combat, meta: this.meta };
+  }
+}
+```
+
+**Verification**:
+- `npm test` passes
+- `loop.js` under 500 lines
+- All game features work
+
+**Phase 4 Complete**:
+- loop.js: 2,789 → ~400 lines (coordinator only)
+- 4 focused services + event bus + phase machine
+- Decoupled via events, testable in isolation
 
 ---
 
 ## Phase 5: Frontend Secondary Extractions
 
-**Goal**: Further modularize game.js beyond API layer
+**Goal**: Further modularize game.js beyond API layer with reactive state management
 **Impact**: Prepare for future React/framework migration
 **Prerequisite**: Phase 1 complete
+**Architecture**: Applies Observable Store pattern
+
+### Step 5.0: Create Observable Store foundation
+
+**What**: Create a simple reactive store that auto-triggers UI updates on state changes.
+
+**Files changed**:
+- Create `public/js/store.js` (~60 lines)
+- `public/game.js` (integrate store, wire up updateUI)
+
+**Implementation**:
+```javascript
+// public/js/store.js
+class Store {
+  constructor(initialState = {}) {
+    this.state = initialState;
+    this.listeners = new Map(); // key -> [callbacks]
+  }
+
+  // Get current state or a slice
+  get(key = null) {
+    return key ? this.state[key] : this.state;
+  }
+
+  // Update state and notify listeners
+  set(key, value) {
+    const oldValue = this.state[key];
+    this.state[key] = value;
+
+    // Notify key-specific listeners
+    if (this.listeners.has(key)) {
+      this.listeners.get(key).forEach(cb => cb(value, oldValue));
+    }
+
+    // Notify global listeners
+    if (this.listeners.has('*')) {
+      this.listeners.get('*').forEach(cb => cb(this.state));
+    }
+  }
+
+  // Batch update multiple keys
+  update(updates) {
+    Object.entries(updates).forEach(([key, value]) => {
+      this.state[key] = value;
+    });
+
+    // Single notification for batch
+    if (this.listeners.has('*')) {
+      this.listeners.get('*').forEach(cb => cb(this.state));
+    }
+  }
+
+  // Subscribe to changes
+  subscribe(keyOrCallback, callback = null) {
+    const key = callback ? keyOrCallback : '*';
+    const cb = callback || keyOrCallback;
+
+    if (!this.listeners.has(key)) {
+      this.listeners.set(key, []);
+    }
+    this.listeners.get(key).push(cb);
+
+    // Return unsubscribe function
+    return () => {
+      const callbacks = this.listeners.get(key);
+      const idx = callbacks.indexOf(cb);
+      if (idx > -1) callbacks.splice(idx, 1);
+    };
+  }
+}
+
+export const store = new Store({
+  gameState: null,
+  ttsEnabled: true,
+  isLoading: false
+});
+```
+
+**Integration in game.js**:
+```javascript
+import { store } from './js/store.js';
+
+// Replace: gameState = await apiCall('/api/game/state');
+// With:
+const response = await apiCall('/api/game/state');
+store.update({ gameState: response, isLoading: false });
+
+// Auto-update UI on any state change
+store.subscribe(updateUI);
+
+// Modules can subscribe to specific slices
+store.subscribe('ttsEnabled', (enabled) => {
+  // React to TTS toggle
+});
+```
+
+**Verification**: UI still updates correctly, no manual updateUI() calls needed after state changes
+
+**Why first**: All other Phase 5 modules will use the store for their state.
+
+---
 
 ### Step 5.1: Extract TTS module
 
@@ -715,13 +1249,16 @@ Each step is designed for a single Claude session to complete:
 - [ ] 3.10 Cleanup enemies.js
 
 ### Phase 4: GameManager Decomposition
-- [ ] 4.1 Extract CombatManager
-- [ ] 4.2 Extract RunManager
-- [ ] 4.3 Extract EconomyManager
-- [ ] 4.4 Extract ProgressionManager
-- [ ] 4.5 GameManager cleanup
+- [ ] 4.0 Create Event Bus foundation
+- [ ] 4.1 Create Phase State Machine
+- [ ] 4.2 Extract CombatService
+- [ ] 4.3 Extract ExplorationService
+- [ ] 4.4 Extract EconomyService
+- [ ] 4.5 Extract ProgressionService
+- [ ] 4.6 GameManager becomes Coordinator
 
 ### Phase 5: Frontend Secondary Extractions
+- [ ] 5.0 Create Observable Store foundation
 - [ ] 5.1 Extract TTS module
 - [ ] 5.2 Extract settings module
 - [ ] 5.3 Extract background module
@@ -732,18 +1269,73 @@ Each step is designed for a single Claude session to complete:
 
 ## Summary
 
-| Phase | Steps | Lines Moved | Primary File Impact |
-|-------|-------|-------------|---------------------|
-| 1 | 10 | ~500 | game.js: 7,301 → 6,800 |
-| 2 | 10 | ~1,200 | server.js: 1,798 → ~100 |
-| 3 | 10 | ~6,500 | chips.js + enemies.js → 10 focused files |
-| 4 | 5 | ~1,200 | loop.js: 2,789 → ~500 coordinator |
-| 5 | 5 | ~800 | game.js: 6,800 → ~6,000 |
+| Phase | Steps | Lines Moved | Primary File Impact | Architecture Pattern |
+|-------|-------|-------------|---------------------|---------------------|
+| 1 | 10 | ~500 | game.js: 7,301 → 6,800 | API Client |
+| 2 | 10 | ~1,200 | server.js: 1,798 → ~100 | Repository Pattern |
+| 3 | 10 | ~6,500 | chips.js + enemies.js → 10 files | Data/Logic Separation |
+| 4 | 7 | ~2,400 | loop.js: 2,789 → ~400 | Service Layer + Event Bus |
+| 5 | 6 | ~900 | game.js: 6,800 → ~5,900 | Observable Store |
 
-**Total: 40 steps, each independently committable and testable**
+**Total: 43 steps, each independently committable and testable**
 
 After completion:
 - No file over 1,000 lines (except data definition files)
 - Clear module boundaries with single responsibilities
+- Event-driven backend communication
+- Reactive frontend state management
 - Easy to find code by feature area
 - Ready for React migration or other framework adoption
+
+---
+
+## Architecture Before/After
+
+**Before:**
+```
+server.js (1,798 lines, 86 endpoints)
+    └─ GameManager (2,789 lines, god class)
+           └─ Manual emitState() everywhere
+
+game.js (7,301 lines, everything global)
+    └─ Manual updateUI() everywhere
+```
+
+**After:**
+```
+src/
+├── routes/                    # HTTP layer only
+│   ├── game/
+│   │   ├── combat.js
+│   │   ├── exploration.js
+│   │   └── economy.js
+│   └── index.js
+├── repositories/
+│   └── save-repository.js     # Persistence abstraction
+├── game/
+│   ├── events.js              # Event bus
+│   ├── phase-machine.js       # State machine
+│   ├── services/              # Business logic
+│   │   ├── combat-service.js
+│   │   ├── exploration-service.js
+│   │   ├── economy-service.js
+│   │   └── progression-service.js
+│   └── loop.js                # Coordinator (~400 lines)
+
+public/js/
+├── api.js                     # Server communication
+├── store.js                   # Observable state
+├── tts.js                     # Audio
+├── narration.js               # VN system
+└── word-practice.js           # Vocab review
+
+server.js (~100 lines)         # Just wiring
+game.js (~5,000 lines)         # UI rendering only
+```
+
+This architecture enables:
+- **Unit testing** services in isolation
+- **Swapping implementations** (different persistence, different AI)
+- **Framework migration** (React could consume the store)
+- **Feature flags** via event bus
+- **Debugging** with event logging
