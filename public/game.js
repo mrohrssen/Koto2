@@ -559,9 +559,16 @@ async function loadReviewTypeSetting() {
   }
 }
 
-async function warmVocabCache() {
+async function warmVocabCache(force = false) {
   try {
-    const response = await fetch('/api/game/vocab-cache/warm', { method: 'POST' });
+    const keys = getStoredApiKeys();
+    if (!keys.jpdbApiKey) return; // No key configured, skip silently
+
+    const response = await fetch('/api/game/vocab-cache/warm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jpdbApiKey: keys.jpdbApiKey, force })
+    });
     const result = await response.json();
 
     if (result.status === 'refreshed') {
@@ -572,6 +579,27 @@ async function warmVocabCache() {
     // Silently fail - vocab suggestions are optional
     console.warn('Vocab cache warm failed:', error);
   }
+}
+
+// Fetch vocabulary from JPDB decks and force refresh word states (runs at run start)
+function fetchJpdbVocabulary() {
+  const keys = getStoredApiKeys();
+  if (!keys.jpdbApiKey) return; // No key configured, skip silently
+
+  fetch('/api/vocab/fetch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jpdbApiKey: keys.jpdbApiKey })
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.count > 0) {
+        console.log(`[JPDB] Fetched ${data.count} vocabulary words from decks`);
+        // Force refresh word state cache to get fresh dueAt values from JPDB
+        warmVocabCache(true);
+      }
+    })
+    .catch(e => console.warn('[JPDB] Vocab fetch failed:', e));
 }
 
 function setupEventListeners() {
@@ -877,6 +905,8 @@ async function startNewRun() {
   clearWordCache();
   // Prefetch all location backgrounds for combat scenes
   prefetchLocationBackgrounds();
+  // Fetch JPDB vocabulary and force refresh word states for fresh dueAt values
+  fetchJpdbVocabulary();
 
   const result = await apiCall('/start-run', 'POST');
   if (result) {
