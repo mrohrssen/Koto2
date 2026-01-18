@@ -3,14 +3,7 @@
  * All player combat action execution
  */
 
-import { getItem, getSkill, calculateEquipmentBonuses, processOnHitChips, processOnKillChips, processOnDamageChips, processOnCritChips, processOnHealChips, processOnStatusInflictChips, processSpecialOnHitChips, checkDiceRetrigger, getEquippedChips, executeChipPipeline, getWeaponPipelineChips } from '../items.js';
-import {
-  calculateFleeChance,
-  calculateItemHealing,
-  calculateDefendRecovery,
-  calculateHpRegen,
-  calculateSpRegen
-} from '../stats.js';
+import { getItem, getSkill, calculateEquipmentBonuses, processOnHitChips, processOnKillChips, processOnDamageChips, processOnCritChips, processOnStatusInflictChips, processSpecialOnHitChips, checkDiceRetrigger, getEquippedChips, executeChipPipeline, getWeaponPipelineChips } from '../items.js';
 import { transformEnemy } from '../enemies.js';
 import {
   STATUS_EFFECTS,
@@ -23,19 +16,16 @@ import {
   getPlayerCombatStats,
   getEnemyCombatStats,
   resolvePhysicalAttack,
-  resolveMagicAttack,
-  PLAYER_ATTACK_TYPES,
-  calculateStaggerChance,
-  calculateExhaustChance
+  PLAYER_ATTACK_TYPES
 } from './mechanics.js';
 
 // ============ PLAYER ATTACK EXECUTION ============
 
 /**
- * Execute player physical attack with attack type
+ * Execute player physical attack
  * @param {object} player - The player
  * @param {object} enemy - The enemy
- * @param {string} attackType - 'quick', 'normal', or 'heavy'
+ * @param {string} attackType - Attack type (only 'normal' supported)
  */
 export function executePlayerAttack(player, enemy, attackType = 'normal') {
   const playerStats = getPlayerCombatStats(player);
@@ -55,8 +45,6 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
     hitChance: 0,
     critChance: 0,
     enemyDefeated: false,
-    staggered: false,
-    playerExhausted: false,
     doubleStrike: false
   };
 
@@ -159,28 +147,6 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
   }
   if (attackResult.dodge) result.anyDodge = true;
   if (attackResult.perfectDodge) result.anyPerfectDodge = true;
-
-  // Quick Attack: Check for stagger (applies STUN for 1 turn)
-  if (attackType === 'quick' && attackResult.hit) {
-    const staggerChance = calculateStaggerChance(player.stats.agi, enemy.stats.agi);
-    result.staggerChance = staggerChance;
-    if (Math.random() * 100 < staggerChance) {
-      result.staggered = true;
-      // Use the status effect system - force apply since we already passed the stagger check
-      applyStatusEffect(enemy, 'stun', 1, true);
-    }
-  }
-
-  // Heavy Attack: Check for exhaustion (applies STUN to self for 1 turn)
-  if (attackType === 'heavy') {
-    const exhaustChance = calculateExhaustChance(player.stats.agi);
-    result.exhaustChance = exhaustChance;
-    if (Math.random() * 100 < exhaustChance) {
-      result.playerExhausted = true;
-      // Use the status effect system - force apply since we already passed the exhaust check
-      applyStatusEffect(player, 'stun', 1, true);
-    }
-  }
 
   // Apply damage to enemy
   enemy.hp = Math.max(0, enemy.hp - result.totalDamage);
@@ -371,295 +337,4 @@ export function executeAttack(player, enemy, skill = null) {
   result.enemyDefeated = enemy.hp <= 0;
 
   return result;
-}
-
-/**
- * Execute player magic
- */
-export function executeMagic(player, enemy, skill) {
-  // Check for SILENCE status - cannot use magic while silenced
-  if (hasStatusEffect(player, 'silence')) {
-    return { error: 'Silenced', silenced: true };
-  }
-
-  const playerStats = getPlayerCombatStats(player);
-  const enemyStats = getEnemyCombatStats(enemy);
-  const skillDef = getSkill(skill.id || skill);
-
-  if (!skillDef) {
-    return { error: 'Unknown skill' };
-  }
-
-  // Check SP
-  if (player.sp < skillDef.spCost) {
-    return { error: 'Not enough SP', required: skillDef.spCost, current: player.sp };
-  }
-
-  // Deduct SP
-  player.sp -= skillDef.spCost;
-
-  let result = {
-    action: 'magic',
-    skill: skillDef,
-    spUsed: skillDef.spCost
-  };
-
-  if (skillDef.type === 'magic') {
-    // Offensive magic
-    const attackResult = resolveMagicAttack(playerStats, enemyStats, skillDef.power);
-    result.hit = true;
-    result.damage = attackResult.damage;
-    result.element = skillDef.element;
-
-    enemy.hp = Math.max(0, enemy.hp - attackResult.damage);
-    result.enemyDefeated = enemy.hp <= 0;
-
-    // Break damage-sensitive status effects (like SLEEP)
-    if (attackResult.damage > 0) {
-      const brokenEffects = breakDamageEffects(enemy);
-      if (brokenEffects.length > 0) {
-        result.wokenFromSleep = brokenEffects.some(e => e.id === 'sleep');
-      }
-    }
-
-  } else if (skillDef.type === 'healing') {
-    // Healing magic - scales with MATK + healing bonus from equipment
-    const equipBonuses = calculateEquipmentBonuses(player);
-    const baseHeal = skillDef.power + Math.floor(playerStats.matk * 0.5);
-    let boostedHeal = Math.floor(baseHeal * (1 + equipBonuses.healingBonus));
-
-    // Process on-heal chip effects
-    const equippedChipsForHeal = getEquippedChips(player);
-    if (equippedChipsForHeal.length > 0) {
-      const healEffects = processOnHealChips(equippedChipsForHeal, boostedHeal);
-      boostedHeal = healEffects.finalHeal;
-      if (healEffects.bonusHeal > 0) {
-        result.onHealBonus = healEffects.bonusHeal;
-      }
-      if (healEffects.buffs.length > 0) {
-        result.onHealBuffs = healEffects.buffs;
-      }
-    }
-
-    const healing = Math.min(boostedHeal, playerStats.maxHp - player.hp);
-    player.hp = Math.min(playerStats.maxHp, player.hp + boostedHeal);
-    result.healing = healing;
-
-  } else if (skillDef.type === 'buff') {
-    // Buff magic
-    player.statuses.push({
-      id: skillDef.id,
-      effect: skillDef.effect,
-      amount: skillDef.amount,
-      turnsRemaining: skillDef.turns
-    });
-    result.buff = {
-      stat: skillDef.effect,
-      amount: skillDef.amount,
-      turns: skillDef.turns
-    };
-  }
-
-  return result;
-}
-
-/**
- * Execute defend action
- * Reduces incoming damage and recovers some HP/SP
- */
-export function executeDefend(player) {
-  const playerStats = getPlayerCombatStats(player);
-  const equipBonuses = calculateEquipmentBonuses(player);
-
-  // Calculate recovery amounts with healing bonus
-  const baseRecovery = calculateDefendRecovery(
-    playerStats.maxHp,
-    playerStats.maxSp,
-    player.stats.vit,
-    player.stats.int
-  );
-
-  // Apply healing bonus to recovery
-  const boostedHpRecovery = Math.floor(baseRecovery.hpRecovery * (1 + equipBonuses.healingBonus));
-  const boostedSpRecovery = Math.floor(baseRecovery.spRecovery * (1 + equipBonuses.healingBonus));
-
-  // Apply recovery
-  const hpHealed = Math.min(boostedHpRecovery, playerStats.maxHp - player.hp);
-  const spRecovered = Math.min(boostedSpRecovery, playerStats.maxSp - player.sp);
-
-  player.hp = Math.min(playerStats.maxHp, player.hp + boostedHpRecovery);
-  player.sp = Math.min(playerStats.maxSp, player.sp + boostedSpRecovery);
-
-  // Add defending status (50% damage reduction until next turn)
-  player.statuses.push({
-    id: 'defending',
-    effect: 'damageReduction',
-    amount: 0.5,
-    turnsRemaining: 1
-  });
-
-  return {
-    action: 'defend',
-    hpRecovered: hpHealed,
-    spRecovered: spRecovered,
-    defenseBoost: true
-  };
-}
-
-/**
- * Execute item use
- */
-export function executeItem(player, enemy, itemId) {
-  const playerStats = getPlayerCombatStats(player);
-  const itemDef = getItem(itemId);
-
-  if (!itemDef) {
-    return { error: 'Unknown item' };
-  }
-
-  // Find item in inventory
-  const invItem = player.items.find(i => i.id === itemId);
-  if (!invItem || invItem.quantity <= 0) {
-    return { error: 'Item not in inventory' };
-  }
-
-  // Use item
-  invItem.quantity--;
-  if (invItem.quantity <= 0) {
-    player.items = player.items.filter(i => i.id !== itemId);
-  }
-
-  let result = {
-    action: 'item',
-    item: itemDef
-  };
-
-  switch (itemDef.effect) {
-    case 'heal': {
-      // HP items scale with VIT (2% per point) + healing bonus from equipment
-      const equipBonuses = calculateEquipmentBonuses(player);
-      const baseHealing = calculateItemHealing(itemDef.power, player.stats.vit, true);
-      let healing = Math.floor(baseHealing * (1 + equipBonuses.healingBonus));
-
-      // Process on-heal chip effects
-      const equippedChipsForItemHeal = getEquippedChips(player);
-      if (equippedChipsForItemHeal.length > 0) {
-        const healEffects = processOnHealChips(equippedChipsForItemHeal, healing);
-        healing = healEffects.finalHeal;
-        if (healEffects.bonusHeal > 0) {
-          result.onHealBonus = healEffects.bonusHeal;
-        }
-        if (healEffects.buffs.length > 0) {
-          result.onHealBuffs = healEffects.buffs;
-        }
-      }
-
-      const actualHealing = Math.min(healing, playerStats.maxHp - player.hp);
-      player.hp = Math.min(playerStats.maxHp, player.hp + healing);
-      result.healing = actualHealing;
-      break;
-    }
-
-    case 'fullHeal': {
-      const fullHealAmount = playerStats.maxHp - player.hp;
-      player.hp = playerStats.maxHp;
-      result.healing = fullHealAmount;
-      break;
-    }
-
-    case 'restoreSp': {
-      // SP items scale with INT (1% per point) + healing bonus from equipment
-      const equipBonuses = calculateEquipmentBonuses(player);
-      const baseSpRestore = calculateItemHealing(itemDef.power, player.stats.int, false);
-      const spRestore = Math.floor(baseSpRestore * (1 + equipBonuses.healingBonus));
-      const actualRestore = Math.min(spRestore, playerStats.maxSp - player.sp);
-      player.sp = Math.min(playerStats.maxSp, player.sp + spRestore);
-      result.spRestored = actualRestore;
-      break;
-    }
-
-    case 'fullRestore': {
-      const hpRestored = playerStats.maxHp - player.hp;
-      const spRestored = playerStats.maxSp - player.sp;
-      player.hp = playerStats.maxHp;
-      player.sp = playerStats.maxSp;
-      result.healing = hpRestored;
-      result.spRestored = spRestored;
-      break;
-    }
-
-    case 'cure':
-      player.statuses = player.statuses.filter(s => !itemDef.cures.includes(s.id));
-      result.cured = itemDef.cures;
-      break;
-
-    case 'flee':
-      result.flee = true;
-      result.fleeSuccess = true;
-      break;
-
-    case 'damage': {
-      // Damage items use magic damage formula
-      const enemyStats = getEnemyCombatStats(enemy);
-      const attackResult = resolveMagicAttack({ matk: itemDef.power }, enemyStats, 1.0);
-      enemy.hp = Math.max(0, enemy.hp - attackResult.damage);
-      result.damage = attackResult.damage;
-      result.element = itemDef.element;
-      result.enemyDefeated = enemy.hp <= 0;
-      break;
-    }
-  }
-
-  return result;
-}
-
-/**
- * Attempt to flee from combat (AGI-based)
- * If player has grantsTeleport from equipment, they always succeed
- */
-export function attemptFlee(player, enemy) {
-  // Check for teleport ability from equipment
-  const equipBonuses = calculateEquipmentBonuses(player);
-  if (equipBonuses.grantsTeleport) {
-    return {
-      action: 'flee',
-      success: true,
-      teleport: true,
-      chance: 100
-    };
-  }
-
-  const fleeChance = calculateFleeChance(player.stats.agi, enemy.stats.agi);
-  const roll = Math.random() * 100;
-  const success = roll < fleeChance;
-
-  return {
-    action: 'flee',
-    success,
-    chance: Math.round(fleeChance)
-  };
-}
-
-/**
- * Check if player has teleport ability from equipment
- */
-export function hasTeleportAbility(player) {
-  const equipBonuses = calculateEquipmentBonuses(player);
-  return equipBonuses.grantsTeleport === true;
-}
-
-/**
- * Apply passive HP/SP regeneration (at start of turn)
- */
-export function applyPassiveRegen(player) {
-  const hpRegen = calculateHpRegen(player.stats.vit);
-  const spRegen = calculateSpRegen(player.stats.int);
-
-  const hpHealed = Math.min(hpRegen, player.maxHp - player.hp);
-  const spRecovered = Math.min(spRegen, player.maxSp - player.sp);
-
-  player.hp = Math.min(player.maxHp, player.hp + hpRegen);
-  player.sp = Math.min(player.maxSp, player.sp + spRegen);
-
-  return { hpRegen: hpHealed, spRegen: spRecovered };
 }

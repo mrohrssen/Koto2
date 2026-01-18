@@ -109,49 +109,14 @@ export function resolveMagicAttack(attacker, defender, skillMultiplier = 1.0) {
 // ============ PLAYER ATTACK TYPES ============
 
 export const PLAYER_ATTACK_TYPES = {
-  quick: {
-    id: 'quick',
-    name: '速攻',
-    nameEn: 'Quick Attack',
-    description: 'Fast attack with chance to stagger enemy',
-    damageMultiplier: 0.7,
-    canStagger: true,
-    baseStaggerChance: 30, // Base 30% + AGI bonus
-    exhaustChance: 0
-  },
   normal: {
     id: 'normal',
     name: '攻撃',
     nameEn: 'Attack',
     description: 'Standard attack',
-    damageMultiplier: 1.0,
-    canStagger: false,
-    exhaustChance: 0
-  },
-  heavy: {
-    id: 'heavy',
-    name: '強撃',
-    nameEn: 'Heavy Attack',
-    description: 'Powerful attack but may exhaust you',
-    damageMultiplier: 2.0,
-    canStagger: false,
-    baseExhaustChance: 50 // Base 50% - AGI reduction
+    damageMultiplier: 1.0
   }
 };
-
-/**
- * Calculate stagger chance - SIMPLIFIED (fixed value)
- */
-export function calculateStaggerChance(playerAgi, enemyAgi) {
-  return 30;  // Fixed 30% chance
-}
-
-/**
- * Calculate exhaustion chance - SIMPLIFIED (fixed value)
- */
-export function calculateExhaustChance(playerAgi) {
-  return 30;  // Fixed 30% chance
-}
 
 // ============ TURN ORDER (SIMPLIFIED) ============
 

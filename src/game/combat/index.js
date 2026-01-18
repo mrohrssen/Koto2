@@ -27,8 +27,6 @@ export {
   resolvePhysicalAttack,
   resolveMagicAttack,
   PLAYER_ATTACK_TYPES,
-  calculateStaggerChance,
-  calculateExhaustChance,
   determineTurnOrder,
   getAttackPreview,
   getEnemyAttackPreview
@@ -37,13 +35,7 @@ export {
 // Player actions
 export {
   executePlayerAttack,
-  executeAttack,
-  executeMagic,
-  executeDefend,
-  executeItem,
-  attemptFlee,
-  hasTeleportAbility,
-  applyPassiveRegen
+  executeAttack
 } from './player-actions.js';
 
 // Enemy combat

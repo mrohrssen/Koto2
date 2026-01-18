@@ -22,8 +22,7 @@
  * Run: /game/start-run, /game/forfeit, /game/enter-floor, /game/next-floor
  * Ward: /game/starting-wards, /game/select-starting-ward, /game/next-ward-options
  * Room: /game/room, /game/proceed, /game/interact-trap, /game/loot-body
- * Combat: /game/start-encounter, /game/attack, /game/defend, /game/magic,
- *         /game/use-item, /game/flee, /game/enemy-turn
+ * Combat: /game/start-encounter, /game/attack, /game/realtime-attack
  * Economy: /game/shop, /game/shop/buy, /game/refine, /game/open-treasure
  * Chips: /game/chip-loadout, /game/equip-chip, /game/unequip-chip
  * Meta: /game/upgrades, /game/purchase-upgrade
@@ -985,64 +984,6 @@ app.post('/api/game/combat-end-narration', async (req, res) => {
   }
 });
 
-app.post('/api/game/defend', async (req, res) => {
-  try {
-    const result = gameManager.defend();
-    const narration = await generateGameNarration('playerDefend', {
-      player: gameManager.run.player,
-      enemy: gameManager.combat?.enemy,
-      result
-    }, req.body);
-
-    saveGameData();
-    res.json({ ...result, state: getEnrichedGameState(), narration });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-app.post('/api/game/magic', async (req, res) => {
-  const { skillId } = req.body;
-  try {
-    const result = gameManager.magic(skillId);
-
-    let narration = null;
-    if (result.enemyDefeated) {
-      narration = await generateGameNarration('victory', {
-        player: gameManager.run.player,
-        enemy: result.enemy,
-        rewards: result.rewards
-      }, req.body);
-    }
-
-    saveGameData();
-    res.json({ ...result, state: getEnrichedGameState(), narration });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-app.post('/api/game/use-item', async (req, res) => {
-  const { itemId } = req.body;
-  try {
-    const result = gameManager.useItem(itemId);
-
-    let narration = null;
-    if (gameManager.combat?.active) {
-      narration = await generateGameNarration('itemUsed', {
-        player: gameManager.run.player,
-        item: result.item,
-        effect: result.message
-      }, req.body);
-    }
-
-    saveGameData();
-    res.json({ ...result, state: getEnrichedGameState(), narration });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
 app.post('/api/game/equip', (req, res) => {
   const { itemId } = req.body;
   try {
@@ -1060,62 +1001,6 @@ app.post('/api/game/unequip', (req, res) => {
     const result = gameManager.unequipItem(slot);
     saveGameData();
     res.json({ ...result, state: getEnrichedGameState() });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-app.post('/api/game/flee', async (req, res) => {
-  try {
-    const result = gameManager.flee();
-
-    const narration = await generateGameNarration(result.success ? 'fleeSuccess' : 'fleeFail', {
-      player: gameManager.run.player,
-      enemy: gameManager.combat?.enemy
-    }, req.body);
-
-    saveGameData();
-    res.json({ ...result, state: getEnrichedGameState(), narration });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-app.post('/api/game/enemy-turn', async (req, res) => {
-  try {
-    const result = gameManager.enemyTurn();
-
-    let narration = null;
-    let isGameOver = false;
-
-    if (result.playerDefeated) {
-      clearCombatCache();
-
-      updateGameStatsWithEvent(gameStats, 'combat', {
-        victory: false,
-        enemyName: gameManager.combat?.enemy?.name
-      });
-      updateGameStatsWithEvent(gameStats, 'death', {
-        floor: gameManager.run.floor,
-        cause: 'combat'
-      });
-      saveGameStats(gameStats);
-
-      isGameOver = true;
-      narration = await generateGameNarration('defeat', {
-        player: gameManager.run.player,
-        enemy: gameManager.combat?.enemy,
-        attack: result.attack
-      }, req.body);
-    }
-
-    saveGameData();
-    res.json({
-      ...result,
-      state: getEnrichedGameState(),
-      narration,
-      isGameOver
-    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

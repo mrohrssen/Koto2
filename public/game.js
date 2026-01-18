@@ -1331,10 +1331,6 @@ async function performAttack(attackType = 'normal') {
       if (attackData.enemyDefeated || result.type === 'victory' || result.type === 'game_victory') {
         animateEnemyDefeat();
         await handleCombatEnd(result);
-      } else if (result.continue) {
-        updateUI();
-        await delay(800);
-        await enemyTurn();
       } else {
         updateUI();
       }
@@ -1342,200 +1338,6 @@ async function performAttack(attackType = 'normal') {
   }
 
   enableCombatActions();
-}
-
-async function performDefend() {
-  // Check if it's player turn
-  if (!gameState.combat?.active || gameState.combat.turn !== 'player') {
-    console.log('Cannot defend: not player turn');
-    return;
-  }
-
-  disableCombatActions();
-
-  const result = await apiCall('/defend', 'POST');
-
-  if (result) {
-    const defendData = result.result || {};
-
-    // Use server narration or fallback
-    const narration = result.narration || `防御態勢を取った。HP+${defendData.hpRecovered || 0}, SP+${defendData.spRecovered || 0}回復。`;
-    appendNarration(narration);
-
-    updateUI();
-
-    if (result.continue) {
-      await delay(800);
-      await enemyTurn();
-    }
-  }
-
-  enableCombatActions();
-}
-
-async function performMagic(skillId) {
-  // Check if it's player turn before casting
-  if (!gameState.combat?.active || gameState.combat.turn !== 'player') {
-    console.log('Cannot cast magic: not player turn');
-    return;
-  }
-
-  disableCombatActions();
-
-  const result = await apiCall('/magic', 'POST', { skillId });
-
-  if (result) {
-    if (result.type === 'error') {
-      showError(result.error);
-    } else {
-      const magicData = result.result?.result || result.result;
-      const skill = gameState.run?.player?.skills?.find(s => s.id === skillId) || { name: '魔法' };
-
-      // Animate player cast
-      animatePlayerAttack();
-      await delay(300);
-
-      // Show damage/healing number
-      if (magicData?.damage > 0) {
-        showDamageNumber(magicData.damage, false, magicData.critical);
-        animateEnemyHurt();
-      } else if (magicData?.healing > 0) {
-        showDamageNumber(magicData.healing, true, false, true);
-      }
-
-      // Use server narration or fallback
-      const narration = result.narration || FALLBACK_NARRATIONS.useMagic(skill, magicData);
-      appendNarration(narration);
-
-      if (magicData?.enemyDefeated || result.type === 'victory' || result.type === 'game_victory') {
-        animateEnemyDefeat();
-        await handleCombatEnd(result);
-      } else if (result.continue) {
-        updateUI();
-        await delay(800);
-        await enemyTurn();
-      } else {
-        updateUI();
-      }
-    }
-  }
-
-  enableCombatActions();
-}
-
-async function performItem(itemId) {
-  // Check if it's player turn before using item
-  if (!gameState.combat?.active || gameState.combat.turn !== 'player') {
-    console.log('Cannot use item: not player turn');
-    return;
-  }
-
-  disableCombatActions();
-
-  const result = await apiCall('/use-item', 'POST', { itemId });
-
-  if (result) {
-    if (result.type === 'error') {
-      showError(result.error);
-    } else {
-      const itemData = result.result?.result || result.result;
-
-      // Show healing number
-      if (itemData?.healing > 0) {
-        showDamageNumber(itemData.healing, true, false, true);
-      }
-
-      // Use server narration or fallback
-      const narration = result.narration || FALLBACK_NARRATIONS.usePotion(itemData?.healing || 0);
-      appendNarration(narration);
-
-      if (itemData?.enemyDefeated || result.type === 'victory') {
-        await handleCombatEnd(result);
-      } else if (result.continue) {
-        updateUI();
-        await delay(800);
-        await enemyTurn();
-      } else {
-        updateUI();
-      }
-    }
-  }
-
-  enableCombatActions();
-}
-
-async function performFlee() {
-  // Check if it's player turn before fleeing
-  if (!gameState.combat?.active || gameState.combat.turn !== 'player') {
-    console.log('Cannot flee: not player turn');
-    return;
-  }
-
-  disableCombatActions();
-
-  const result = await apiCall('/flee', 'POST');
-
-  if (result) {
-    if (result.type === 'error') {
-      showError(result.error);
-      enableCombatActions();
-    } else if (result.success) {
-      // Use server narration or fallback
-      const narration = result.narration || FALLBACK_NARRATIONS.flee(true);
-      appendNarration(narration);
-      await delay(1000);
-      updateUI();
-    } else {
-      // Use server narration or fallback
-      const narration = result.narration || FALLBACK_NARRATIONS.flee(false);
-      appendNarration(narration);
-      updateUI();
-      await delay(800);
-      await enemyTurn();
-      enableCombatActions();
-    }
-  } else {
-    enableCombatActions();
-  }
-}
-
-async function enemyTurn() {
-  if (!gameState.combat?.active || gameState.combat.turn !== 'enemy') return;
-
-  const enemy = gameState.combat.enemy;
-  const result = await apiCall('/enemy-turn', 'POST');
-
-  if (result) {
-    // Enemy attack data is in result.result.result
-    const attackData = result.result?.result || result.result;
-
-    // Animate enemy attack
-    animateEnemyAttack();
-    await delay(300);
-
-    // Show damage on player and animate hurt
-    const damage = attackData?.damage || 0;
-    if (damage > 0) {
-      showDamageNumber(damage, true, attackData?.critical);
-      animatePlayerHurt();
-    } else if (attackData?.dodge || attackData?.perfectDodge) {
-      // Show dodge feedback
-      showDamageNumber(0, true, false, false, false, attackData.perfectDodge ? 'perfect' : 'dodge');
-    }
-
-    // Display chip effect feedback (player defensive effects)
-    displayChipEffects(attackData, false);
-
-    // Use server narration or fallback
-    const narration = result.narration || FALLBACK_NARRATIONS.enemyAttack(attackData, enemy);
-    appendNarration(narration);
-
-    if (attackData?.playerDefeated) {
-      await handlePlayerDefeat(result);
-    } else {
-      updateUI();
-    }
-  }
 }
 
 async function handleCombatEnd(result) {
@@ -3876,11 +3678,6 @@ async function startRoomEncounter() {
     updateUI();
     triggerJpdbParse();
 
-    // If enemy goes first, trigger enemy turn automatically
-    if (!result.playerGoesFirst) {
-      await delay(1000);
-      await enemyTurn();
-    }
   }
 }
 
@@ -4847,131 +4644,6 @@ function showCombatContent() {
   `;
 }
 
-function showCombatActions() {
-  const combat = gameState.combat;
-  const player = gameState.run?.player;
-  const isBoss = combat?.enemy?.isBoss;
-
-  actionPanel.innerHTML = `
-    <div class="combat-actions-grid">
-      <button class="combat-btn attack-btn" onclick="showAttackMenu()">
-        <span class="btn-icon">&#x2694;</span> 攻撃
-      </button>
-      <button class="combat-btn defend-btn" onclick="performDefend()">
-        <span class="btn-icon">&#x1F6E1;</span> 防御
-      </button>
-      <button class="combat-btn magic-btn" onclick="showMagicMenu()">
-        <span class="btn-icon">&#x2728;</span> 魔法
-      </button>
-      <button class="combat-btn item-btn" onclick="showItemMenu()">
-        <span class="btn-icon">&#x1F48A;</span> 道具
-      </button>
-      <button class="combat-btn flee-btn" onclick="performFlee()" ${isBoss ? 'disabled title="ボスから逃げられない！"' : ''}>
-        <span class="btn-icon">&#x1F3C3;</span> 逃走
-      </button>
-    </div>
-    <div class="combat-submenu hidden" id="combat-submenu"></div>
-  `;
-}
-
-function showAttackMenu() {
-  const submenu = document.getElementById('combat-submenu');
-
-  submenu.innerHTML = `
-    <div class="submenu-header">
-      <span>攻撃タイプ</span>
-      <button class="back-btn" onclick="closeCombatSubmenu()">戻る</button>
-    </div>
-    <div class="submenu-list attack-types">
-      <button class="submenu-option attack-quick" onclick="performAttack('quick')">
-        <span class="option-name">速攻 (Quick)</span>
-        <span class="option-desc">70%威力 / スタン付与chance</span>
-      </button>
-      <button class="submenu-option attack-normal" onclick="performAttack('normal')">
-        <span class="option-name">通常攻撃 (Normal)</span>
-        <span class="option-desc">100%威力 / 標準攻撃</span>
-      </button>
-      <button class="submenu-option attack-heavy" onclick="performAttack('heavy')">
-        <span class="option-name">強撃 (Heavy)</span>
-        <span class="option-desc">200%威力 / 自己スタンrisk</span>
-      </button>
-    </div>
-  `;
-
-  submenu.classList.remove('hidden');
-}
-
-function showMagicMenu() {
-  const player = gameState.run?.player;
-  const submenu = document.getElementById('combat-submenu');
-
-  if (!player?.skills || player.skills.length === 0) {
-    submenu.innerHTML = `
-      <div class="submenu-header">
-        <span>Magic</span>
-        <button class="back-btn" onclick="closeCombatSubmenu()">Back</button>
-      </div>
-      <p class="empty-submenu">No magic skills learned yet.</p>
-    `;
-  } else {
-    submenu.innerHTML = `
-      <div class="submenu-header">
-        <span>Magic</span>
-        <button class="back-btn" onclick="closeCombatSubmenu()">Back</button>
-      </div>
-      <div class="submenu-list">
-        ${player.skills.map(skill => {
-          const disabled = skill.mpCost > player.mp;
-          return `
-            <button class="submenu-option ${disabled ? 'disabled' : ''}"
-                    onclick="${disabled ? '' : `performMagic('${skill.id}')`}"
-                    ${disabled ? 'disabled' : ''}>
-              <span class="option-name">${skill.name || skill.id}</span>
-              <span class="option-cost">${skill.mpCost} MP</span>
-            </button>
-          `;
-        }).join('')}
-      </div>
-    `;
-  }
-
-  submenu.classList.remove('hidden');
-}
-
-function showItemMenu() {
-  const player = gameState.run?.player;
-  const submenu = document.getElementById('combat-submenu');
-
-  const usableItems = player?.items?.filter(i => i.quantity > 0) || [];
-
-  if (usableItems.length === 0) {
-    submenu.innerHTML = `
-      <div class="submenu-header">
-        <span>Items</span>
-        <button class="back-btn" onclick="closeCombatSubmenu()">Back</button>
-      </div>
-      <p class="empty-submenu">No items to use.</p>
-    `;
-  } else {
-    submenu.innerHTML = `
-      <div class="submenu-header">
-        <span>Items</span>
-        <button class="back-btn" onclick="closeCombatSubmenu()">Back</button>
-      </div>
-      <div class="submenu-list">
-        ${usableItems.map(item => `
-          <button class="submenu-option" onclick="performItem('${item.id}')">
-            <span class="option-name">${item.name || item.id}</span>
-            <span class="option-qty">x${item.quantity}</span>
-          </button>
-        `).join('')}
-      </div>
-    `;
-  }
-
-  submenu.classList.remove('hidden');
-}
-
 function closeCombatSubmenu() {
   const submenu = document.getElementById('combat-submenu');
   if (submenu) submenu.classList.add('hidden');
@@ -5008,11 +4680,7 @@ function disableCombatActions() {
 
 function enableCombatActions() {
   document.querySelectorAll('.combat-btn').forEach(btn => {
-    if (btn.classList.contains('flee-btn') && gameState.combat?.enemy?.isBoss) {
-      btn.disabled = true;
-    } else {
-      btn.disabled = false;
-    }
+    btn.disabled = false;
   });
 }
 
@@ -7262,14 +6930,6 @@ window.startBossEncounter = startBossEncounter;
 window.nextFloor = nextFloor;
 window.returnToHub = returnToHub;
 window.performAttack = performAttack;
-window.performDefend = performDefend;
-window.performMagic = performMagic;
-window.performItem = performItem;
-window.performFlee = performFlee;
-window.showAttackMenu = showAttackMenu;
-window.showMagicMenu = showMagicMenu;
-window.showItemMenu = showItemMenu;
-window.closeCombatSubmenu = closeCombatSubmenu;
 
 // Room exploration functions
 window.proceedToNextRoom = proceedToNextRoom;

@@ -23,12 +23,6 @@ export {
   // Player actions
   executePlayerAttack,
   executeAttack,
-  executeMagic,
-  executeDefend,
-  executeItem,
-  attemptFlee,
-  hasTeleportAbility,
-  applyPassiveRegen,
 
   // Enemy combat
   executeEnemyTurn,
