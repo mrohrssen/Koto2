@@ -1393,36 +1393,55 @@ Each step is designed for a single Claude session to complete:
 
 **Final game.js structure**:
 ```javascript
-// public/game.js (~2,500 lines - down from 7,301)
+// public/game.js (~800 lines - down from 7,301)
 import { store } from './js/store.js';
 import { api } from './js/api.js';
 import * as ui from './js/ui/index.js';
 
-// Initialization
+// ============ STATE ============
+// ~80 lines - gameState, ttsEnabled, etc.
+
+// ============ DOM ELEMENTS ============
+// ~95 lines - cached element references
+
+// ============ INITIALIZATION ============
 document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
-  // Load initial state
   const state = await api.getGameState();
   store.update({ gameState: state });
-
-  // Wire up UI modules to store
   store.subscribe(ui.updateAll);
-
-  // Set up keyboard shortcuts
   setupKeyboardShortcuts();
 }
 
-// Remaining: DOM element cache, keyboard handling, main updateUI coordinator
+// ============ KEYBOARD SHORTCUTS ============
+// ~100 lines - event listeners for Enter, R, 1-5, etc.
+
+// ============ UI COORDINATOR ============
+// ~50 lines - updateUI() that dispatches to ui modules
+
+// ============ EVENT WIRING ============
+// ~200 lines - connecting UI events to API calls
 ```
+
+**What remains in game.js:**
+| Section | Lines | Why it stays |
+|---------|-------|--------------|
+| State variables | ~80 | Shared across modules |
+| DOM element cache | ~95 | Shared element refs |
+| Initialization | ~180 | App bootstrap |
+| Keyboard shortcuts | ~100 | Global handlers |
+| updateUI coordinator | ~50 | Dispatch to modules |
+| Event wiring | ~200 | Glue code |
+| **Total** | **~700-800** | |
 
 **Verification**:
 - `npm test` passes
 - All UI features work
-- game.js under 2,500 lines
+- game.js under 1,000 lines ✓
 
 **Phase 6 Complete**:
-- game.js: 5,900 → ~2,500 lines
+- game.js: 5,900 → ~800 lines (89% reduction from original 7,301)
 - 6 focused UI modules in `public/js/ui/`
 - Each module subscribes to relevant store slices
 - Clear separation: orchestration vs rendering
@@ -1438,12 +1457,12 @@ async function init() {
 | 3 | 10 | ~6,500 | chips.js + enemies.js → 10 files | Data/Logic Separation |
 | 4 | 7 | ~2,400 | loop.js: 2,789 → ~400 | Service Layer + Event Bus |
 | 5 | 6 | ~900 | game.js: 6,800 → ~5,900 | Observable Store |
-| 6 | 7 | ~3,400 | game.js: 5,900 → ~2,500 | UI Components |
+| 6 | 7 | ~5,100 | game.js: 5,900 → ~800 | UI Components |
 
 **Total: 50 steps, each independently committable and testable**
 
 After completion:
-- No file over 1,000 lines (except data definition files)
+- **No file over 1,000 lines** (enforced, not aspirational)
 - Clear module boundaries with single responsibilities
 - Event-driven backend communication
 - Reactive frontend state management
@@ -1503,7 +1522,7 @@ public/js/
     └── realtime-combat.js     # Timer combat (~480 lines)
 
 server.js (~100 lines)         # Just wiring
-game.js (~2,500 lines)         # UI coordinator only
+game.js (~800 lines)           # UI coordinator only
 ```
 
 This architecture enables:
