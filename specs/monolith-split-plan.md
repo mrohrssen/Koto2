@@ -1214,7 +1214,7 @@ Each step is designed for a single Claude session to complete:
 
 ### Phase 1: Frontend API Extraction
 - [x] 1.1 Create API module scaffold
-- [ ] 1.2 Convert game.html to ES modules
+- [x] 1.2 Convert game.html to ES modules
 - [ ] 1.3 Extract game state endpoints
 - [ ] 1.4 Extract player management endpoints
 - [ ] 1.5 Extract run management endpoints

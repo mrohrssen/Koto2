@@ -79,6 +79,10 @@
  * - Section headers marked with // ============ SECTION NAME ============
  */
 
+// API module - will be used incrementally as we extract endpoints
+// apiCall import deferred until local function is removed in Step 1.10
+import { getStoredApiKeys as apiGetStoredApiKeys, saveStoredApiKeys as apiSaveStoredApiKeys } from './js/api.js';
+
 const API_BASE = '';
 
 // ============ STATE ============
