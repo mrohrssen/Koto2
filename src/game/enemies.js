@@ -29,6 +29,7 @@ import {
 // Enemy template data extracted to JSON for maintainability
 import enemyTemplatesData from '../../data/enemies.json' with { type: 'json' };
 import bossData from '../../data/bosses.json' with { type: 'json' };
+import enemyMappings from '../../data/enemy-mappings.json' with { type: 'json' };
 
 // ============ INTENT TYPES ============
 // Each intent determines what the enemy will do on their turn
@@ -886,28 +887,9 @@ export const FLOOR_BOSSES = bossData.floorBosses;
 export const FINAL_BOSS = bossData.finalBoss;
 export const BOSS_DROPS = bossData.bossDrops;
 
-// ============ WARD LOCATIONS MAPPING ============
-// Maps each ward to the location types that appear there
-export const WARD_LOCATIONS = {
-  nerima: ['residential', 'convenience', 'school'],
-  nakano: ['shopping', 'restaurant', 'convenience'],
-  shinjuku: ['restaurant', 'station', 'shopping'],
-  ikebukuro: ['shopping', 'station', 'restaurant'],
-  minato: ['office', 'restaurant', 'shopping'],
-  chiyoda: ['government', 'office', 'station'],
-  palace: ['government', 'hospital', 'office']
-};
-
-// Maps floor numbers to ward names
-export const FLOOR_TO_WARD = {
-  1: 'nerima',
-  2: 'nakano',
-  3: 'shinjuku',
-  4: 'ikebukuro',
-  5: 'minato',
-  6: 'chiyoda',
-  7: 'palace'
-};
+// Re-export ward/floor mappings from JSON
+export const WARD_LOCATIONS = enemyMappings.wardLocations;
+export const FLOOR_TO_WARD = enemyMappings.floorToWard;
 
 // ============ HELPER FUNCTIONS ============
 
