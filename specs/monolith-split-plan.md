@@ -1557,6 +1557,11 @@ These are lower-priority cleanup tasks to do after all phases are complete:
 - [ ] Remove `drops` arrays (drops system not currently used)
 - [ ] Remove `baseLevel` field (no longer used)
 
+### bosses.json Data Cleanup
+- [ ] Remove `stats` object (replace with just `hp` and `attack` at top level)
+- [ ] Remove `drops` arrays (drops system not currently used)
+- [ ] Remove `baseLevel` field (no longer used)
+
 ---
 
 ## Architecture Before/After
