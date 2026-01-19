@@ -20,12 +20,19 @@ export { expect };
  * Helper to reset game state before a test
  */
 export async function resetGameState(page: any): Promise<void> {
-  try {
-    await page.request.post('http://localhost:3000/api/game/full-reset');
-  } catch (e) {
-    // Ignore errors - reset is best effort
+  // Call reset API and wait for response
+  const response = await page.request.post('http://localhost:3000/api/game/full-reset');
+
+  if (!response.ok()) {
+    console.error('Reset failed:', response.status());
   }
-  await page.waitForTimeout(100);
+
+  // Wait for server to stabilize
+  await page.waitForTimeout(200);
+
+  // Reload page to ensure fresh state
+  await page.goto('http://localhost:3000/');
+  await page.waitForLoadState('load');
 }
 
 /**
@@ -41,10 +48,8 @@ export async function cleanupAfterTest(page: any): Promise<void> {
  * Helper to create a character and get to hub
  */
 export async function setupCharacter(gameHelper: GameHelper, name: string = 'TestHacker'): Promise<void> {
-  // Reset game state first to ensure fresh start
+  // Reset game state first to ensure fresh start (includes page reload)
   await resetGameState(gameHelper.page);
-  await gameHelper.page.goto('http://localhost:3000');
-  await gameHelper.page.waitForLoadState('load');
   await gameHelper.createCharacter(name);
 }
 

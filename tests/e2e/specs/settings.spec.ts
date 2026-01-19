@@ -4,8 +4,6 @@ import { SELECTORS } from '../utils/selectors';
 test.describe('Settings', () => {
   test.beforeEach(async ({ page }) => {
     await resetGameState(page);
-    await page.goto('http://localhost:3000/');
-    await page.waitForLoadState('load');
   });
 
   test.afterEach(async ({ page }) => {
