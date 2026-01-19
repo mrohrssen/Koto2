@@ -314,6 +314,44 @@ async function useShrine() {
   return apiCall('/use-shrine', 'POST');
 }
 
+// ============ COMBAT ENDPOINTS ============
+
+/** Start a regular enemy encounter */
+async function startEncounter() {
+  return apiCall('/start-encounter', 'POST');
+}
+
+/** Start a boss encounter */
+async function startBoss() {
+  return apiCall('/start-boss', 'POST');
+}
+
+/** Perform an attack
+ * @param {string} attackType - Attack type (normal, light, heavy)
+ */
+async function attack(attackType = 'normal') {
+  return apiCall('/attack', 'POST', { attackType });
+}
+
+/** Use an item in combat
+ * @param {string} itemId - Item identifier
+ */
+async function useItem(itemId) {
+  return apiCall('/use-item', 'POST', { itemId });
+}
+
+/** Use a skill in combat
+ * @param {string} skillId - Skill identifier
+ */
+async function useSkill(skillId) {
+  return apiCall('/use-skill', 'POST', { skillId });
+}
+
+/** Process enemy turn */
+async function enemyTurn() {
+  return apiCall('/enemy-turn', 'POST');
+}
+
 export {
   apiCall,
   getStoredApiKeys,
@@ -343,5 +381,12 @@ export {
   skipBody,
   openTreasure,
   skipTreasure,
-  useShrine
+  useShrine,
+  // Combat endpoints
+  startEncounter,
+  startBoss,
+  attack,
+  useItem,
+  useSkill,
+  enemyTurn
 };

@@ -104,7 +104,13 @@ import {
   skipBody as apiSkipBody,
   openTreasure as apiOpenTreasure,
   skipTreasure as apiSkipTreasure,
-  useShrine as apiUseShrine
+  useShrine as apiUseShrine,
+  startEncounter as apiStartEncounter,
+  startBoss as apiStartBoss,
+  attack as apiAttack,
+  useItem as apiUseItem,
+  useSkill as apiUseSkill,
+  enemyTurn as apiEnemyTurn
 } from './js/api.js';
 
 const API_BASE = '';
@@ -958,7 +964,7 @@ async function startNewRun() {
 }
 
 async function startEncounter() {
-  const result = await apiCall('/start-encounter', 'POST');
+  const result = await apiStartEncounter();
   // Enemy is in result.result.enemy or gameState.combat.enemy
   const enemy = result?.result?.enemy || gameState.combat?.enemy;
   if (result && enemy) {
@@ -1000,7 +1006,7 @@ async function startEncounter() {
 }
 
 async function startBossEncounter() {
-  const result = await apiCall('/start-boss', 'POST');
+  const result = await apiStartBoss();
   // Enemy is in result.result.enemy or gameState.combat.enemy
   const enemy = result?.result?.enemy || gameState.combat?.enemy;
   if (result && enemy) {
@@ -1327,7 +1333,7 @@ async function performAttack(attackType = 'normal') {
   disableCombatActions();
 
   const enemy = gameState.combat?.enemy;
-  const result = await apiCall('/attack', 'POST', { attackType });
+  const result = await apiAttack(attackType);
 
   if (result) {
     // Combat data is in result.result.result (nested)
