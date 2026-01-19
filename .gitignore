@@ -7,9 +7,10 @@ node_modules/
 # Local work files
 *.pdf
 *.log
-# Keep game content suggestions, ignore other data files
+# Data directory: ignore temp files, keep JSON data and README
 data/*
-!data/game-content-suggestions.json
+!data/README.md
+!data/*.json
 generate_assets.py
 generate_chip_icons.py
 fix_chip_icons*.py
