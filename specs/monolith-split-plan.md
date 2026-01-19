@@ -6,15 +6,45 @@ A meticulous, incremental refactoring plan for splitting the JRPG monolith. Each
 - **Verifiable**: `npm test` passes after each step
 - **Committable**: Can be reviewed and merged independently
 
+---
+
+## ⚠️ CRITICAL: Workflow for Claude Sessions
+
+**All phases must be completed in a SINGLE worktree.** Do NOT create new worktrees between phases.
+
+```bash
+# At the START of the refactor (once only):
+cd /Users/michia/Documents/jrpg
+git worktree add ../jrpg-wt-refactor -b refactor/monolith-split
+cd ../jrpg-wt-refactor
+
+# Work through ALL phases sequentially in this directory:
+# Phase 1 → commit → Phase 2 → commit → Phase 3 → ... → Phase 6
+
+# Merge to master only when complete (or at major checkpoints)
+```
+
+**Why?** Each phase builds on the previous. Creating new worktrees loses accumulated work and causes merge conflicts.
+
+**Worktrees are for:** Multiple Claude sessions working **in parallel** on **different features** - NOT for sequential phases of the same refactor.
+
+---
+
 ## Current State
 
-| File | Lines | Problem |
-|------|-------|---------|
-| `public/game.js` | 7,301 | Frontend monolith - all UI, state, API calls mixed |
-| `server.js` | 1,798 | 86 endpoints in one file |
-| `src/game/items/chips.js` | 3,894 | Data + logic + pipeline + upgrades mixed |
-| `src/game/enemies.js` | 3,818 | Data + generation + AI behavior mixed |
-| `src/game/loop.js` | 2,789 | GameManager handles 8+ different concerns |
+**After Phase 1 & 2 (completed):**
+
+| File | Before | After | Status |
+|------|--------|-------|--------|
+| `public/game.js` | 6,961 | ~6,900 | ✅ API calls extracted to `public/js/api.js` (637 lines) |
+| `server.js` | 1,683 | ~580 | ✅ Routes extracted to `src/routes/` (12 modules) |
+| `src/game/items/chips.js` | 3,894 | 3,894 | ⏳ Phase 3 |
+| `src/game/enemies.js` | 3,818 | 3,818 | ⏳ Phase 3 |
+| `src/game/loop.js` | 2,448 | 2,448 | ⏳ Phase 4 |
+
+**Completed work:**
+- Phase 1: `public/js/api.js` created (637 lines) - all fetch calls centralized
+- Phase 2: `src/routes/` created (12 modules) - 81 endpoints organized
 
 ## Existing Successful Patterns
 
@@ -620,133 +650,168 @@ app.use('/api', routes);
 
 ---
 
-## Phase 3: Backend Large File Splits
+## Phase 3: Data Extraction & Dead Code Cleanup
 
-**Goal**: Split 3,800+ line files into focused modules
-**Impact**: Easier maintenance, better code navigation
+**Goal**: Extract data to JSON, remove dead code, reduce file sizes dramatically
+**Impact**: enemies.js 3,818→~1,200 (69% reduction), chips.js 3,894→~2,200 (43% reduction)
 **Prerequisite**: None (independent of Phases 1-2)
 
-### Step 3.1: Split chips.js - Extract definitions
+### Analysis Summary
 
-**What**: Move CHIPS constant and category definitions to separate file.
+| File | Total | Data | Logic | Dead Code |
+|------|-------|------|-------|-----------|
+| enemies.js | 3,818 | **71%** (2,694 lines) | 7% (250 lines) | ~85 lines |
+| chips.js | 3,894 | **55%** (2,136 lines) | 41% (1,582 lines) | Minimal |
 
-**Files changed**:
-- Create `src/game/items/chip-definitions.js` (~600 lines)
-- `src/game/items/chips.js` (import from definitions, -500 lines)
-
-**Verification**: `npm test` - chips work
-
----
-
-### Step 3.2: Split chips.js - Extract pipeline
-
-**What**: Move `executeChipPipeline()` and related functions.
-
-**Files changed**:
-- Create `src/game/items/chip-pipeline.js` (~400 lines)
-- `src/game/items/chips.js` (import and re-export, -350 lines)
-
-**Verification**: `npm test` - pipeline chips work
+**Key insight**: These files are mostly DATA, not code. JSON extraction is better than JS splitting.
 
 ---
 
-### Step 3.3: Split chips.js - Extract upgrades
+### Step 3.1: Create data directory structure
 
-**What**: Move chip upgrade/refinement logic.
+**What**: Create `data/` directory for JSON data files.
 
 **Files changed**:
-- Create `src/game/items/chip-upgrades.js` (~300 lines)
-- `src/game/items/chips.js` (import and re-export, -250 lines)
+- Create `data/` directory
+- Create `data/README.md` explaining the data file structure
 
-**Verification**: `npm test` - chip upgrades work
+**Verification**: Directory exists
 
 ---
 
-### Step 3.4: Split chips.js - Extract on-event processors
+### Step 3.2: Extract enemy templates to JSON
 
-**What**: Move `processChipEffects()` and event handlers.
-
-**Files changed**:
-- Create `src/game/items/chip-events.js` (~500 lines)
-- `src/game/items/chips.js` (import and re-export, -450 lines)
-
-**Verification**: `npm test` - chip effects trigger correctly
-
----
-
-### Step 3.5: Cleanup chips.js index
-
-**What**: Convert chips.js to a re-export index file.
+**What**: Move ENEMY_TEMPLATES (~2,000 lines of pure data) to JSON.
 
 **Files changed**:
-- `src/game/items/chips.js` (becomes ~100 line re-export file)
-- `src/game/items/index.js` (update if needed)
+- Create `data/enemies.json` (~2,000 lines)
+- `src/game/enemies.js` (import JSON, -2,000 lines)
 
-**Verification**: `npm test` - all chip features work
-
-**chips.js complete**: 3,894 lines → 5 files of ~400-600 lines each
-
----
-
-### Step 3.6: Split enemies.js - Extract definitions
-
-**What**: Move ENEMIES constant to separate file.
-
-**Files changed**:
-- Create `src/game/enemies/definitions.js` (~1,200 lines)
-- Create `src/game/enemies/index.js` (~30 lines)
-- `src/game/enemies.js` (becomes re-export wrapper)
+**JSON structure**:
+```json
+{
+  "slime_basic": {
+    "name": "スライム",
+    "nameEn": "Slime",
+    "tier": 1,
+    "hp": 30,
+    "attack": 8,
+    ...
+  }
+}
+```
 
 **Verification**: `npm test` - enemies spawn correctly
 
 ---
 
-### Step 3.7: Split enemies.js - Extract generation
+### Step 3.3: Extract boss data to JSON
 
-**What**: Move `generateEnemy()` and related functions.
-
-**Files changed**:
-- Create `src/game/enemies/generation.js` (~400 lines)
-- `src/game/enemies/index.js` (add export)
-
-**Verification**: `npm test` - enemy generation works
-
----
-
-### Step 3.8: Split enemies.js - Extract boss logic
-
-**What**: Move boss definitions and boss-specific behavior.
+**What**: Move FLOOR_BOSSES, FINAL_BOSS, BOSS_DROPS to JSON.
 
 **Files changed**:
-- Create `src/game/enemies/bosses.js` (~400 lines)
-- `src/game/enemies/index.js` (add export)
+- Create `data/bosses.json` (~400 lines)
+- `src/game/enemies.js` (import JSON, -400 lines)
 
 **Verification**: `npm test` - boss fights work
 
 ---
 
-### Step 3.9: Split enemies.js - Extract AI/intent
+### Step 3.4: Extract enemy mappings to JSON
 
-**What**: Move intent selection and behavior logic.
+**What**: Move WARD_LOCATIONS, FLOOR_TO_WARD mapping data.
 
 **Files changed**:
-- Create `src/game/enemies/ai.js` (~600 lines)
-- `src/game/enemies/index.js` (add export)
+- Create `data/enemy-mappings.json` (~100 lines)
+- `src/game/enemies.js` (import JSON, -100 lines)
 
-**Verification**: `npm test` - enemy behavior works
+**Verification**: `npm test` - ward/floor enemy selection works
 
 ---
 
-### Step 3.10: Cleanup enemies.js
+### Step 3.5: Remove dead code from enemies.js
 
-**What**: Final cleanup, ensure enemies.js is just a re-export.
+**What**: Remove stub stats fields and legacy compatibility code.
+
+**Dead code to remove**:
+- Stub stats fields: `stats: {}`, `def: 0`, `matk: attack`, `mdef: 0` (~50 lines)
+- Legacy location handling fallbacks (~15 lines)
+- Old/new format migration code (~20 lines)
 
 **Files changed**:
-- `src/game/enemies.js` (slim down to re-export only)
+- `src/game/enemies.js` (-85 lines)
 
-**Verification**: `npm test` passes
+**Verification**: `npm test` - all enemy features still work
 
-**enemies.js complete**: 3,818 lines → 5 files of ~400-600 lines each
+**enemies.js complete**: 3,818 → ~1,200 lines (69% reduction)
+
+---
+
+### Step 3.6: Extract chip definitions to JSON
+
+**What**: Move CHIPS constant (~2,100 lines of definitions) to JSON.
+
+**Files changed**:
+- Create `data/chips.json` (~2,100 lines)
+- `src/game/items/chips.js` (import JSON, -2,100 lines)
+
+**Note**: Effect functions stay in JS - only static data moves to JSON.
+
+**Verification**: `npm test` - chips work
+
+---
+
+### Step 3.7: Extract chip constants to JSON
+
+**What**: Move CHIP_CATEGORIES, CHIP_RARITIES, CHIP_UPGRADE_CONFIG to JSON.
+
+**Files changed**:
+- Create `data/chip-config.json` (~150 lines)
+- `src/game/items/chips.js` (import JSON, -150 lines)
+
+**Verification**: `npm test` - chip categories/rarities work
+
+---
+
+### Step 3.8: Consolidate chip effect processors
+
+**What**: Unify similar on-effect processors (onHit, onKill, onDefend, etc.).
+
+**Files changed**:
+- `src/game/items/chips.js` (refactor effect processing, -200 lines estimated)
+
+**Verification**: `npm test` - all chip effects trigger correctly
+
+---
+
+### Step 3.9: Create chips.js index with clean exports
+
+**What**: Reorganize exports, ensure clean public API.
+
+**Files changed**:
+- `src/game/items/chips.js` (clean up exports)
+- `src/game/items/index.js` (update if needed)
+
+**Verification**: `npm test` - all chip features work
+
+**chips.js complete**: 3,894 → ~2,200 lines (43% reduction)
+
+---
+
+### Step 3.10: Final cleanup and verification
+
+**What**: Run full test suite, verify all data loads correctly.
+
+**Verification**:
+- `npm test` - all tests pass
+- Manual verification: enemies spawn with correct stats, chips have correct effects
+- Verify JSON files are valid and loadable
+
+**Phase 3 Complete**:
+- enemies.js: 3,818 → ~1,200 lines (69% reduction)
+- chips.js: 3,894 → ~2,200 lines (43% reduction)
+- New data files: `data/enemies.json`, `data/bosses.json`, `data/enemy-mappings.json`, `data/chips.json`, `data/chip-config.json`
+- ~85 lines of dead code removed
 
 ---
 
@@ -1212,7 +1277,7 @@ Each step is designed for a single Claude session to complete:
 
 ## Progress Tracking
 
-### Phase 1: Frontend API Extraction
+### Phase 1: Frontend API Extraction ✅
 - [x] 1.1 Create API module scaffold
 - [x] 1.2 Convert game.html to ES modules
 - [x] 1.3 Extract game state endpoints
@@ -1224,29 +1289,33 @@ Each step is designed for a single Claude session to complete:
 - [x] 1.9 Extract vocab/JPDB endpoints
 - [x] 1.10 Extract remaining endpoints and cleanup
 
-### Phase 2: Server Route Organization
-- [ ] 2.1 Create route directory structure
-- [ ] 2.2 Extract settings routes
-- [ ] 2.3 Extract TTS routes
-- [ ] 2.4 Extract vocab routes
-- [ ] 2.5 Extract game state routes
-- [ ] 2.6 Extract player routes
-- [ ] 2.7 Extract run routes
-- [ ] 2.8 Extract combat routes
-- [ ] 2.9 Extract economy routes
-- [ ] 2.10 Extract remaining routes and cleanup
+**Phase 1 Result:** Created `public/js/api.js` (637 lines). All fetch calls centralized. Commit: 918f187
 
-### Phase 3: Backend Large File Splits
-- [ ] 3.1 Split chips.js - Extract definitions
-- [ ] 3.2 Split chips.js - Extract pipeline
-- [ ] 3.3 Split chips.js - Extract upgrades
-- [ ] 3.4 Split chips.js - Extract on-event processors
-- [ ] 3.5 Cleanup chips.js index
-- [ ] 3.6 Split enemies.js - Extract definitions
-- [ ] 3.7 Split enemies.js - Extract generation
-- [ ] 3.8 Split enemies.js - Extract boss logic
-- [ ] 3.9 Split enemies.js - Extract AI/intent
-- [ ] 3.10 Cleanup enemies.js
+### Phase 2: Server Route Organization ✅
+- [x] 2.1 Create route directory structure
+- [x] 2.2 Extract settings routes
+- [x] 2.3 Extract TTS routes
+- [x] 2.4 Extract vocab routes
+- [x] 2.5 Extract game state routes
+- [x] 2.6 Extract player routes
+- [x] 2.7 Extract run routes
+- [x] 2.8 Extract combat routes
+- [x] 2.9 Extract economy routes
+- [x] 2.10 Extract remaining routes and cleanup
+
+**Phase 2 Result:** server.js reduced from 1,683 to ~580 lines. 12 route modules in `src/routes/`. Commit: a720cfc
+
+### Phase 3: Data Extraction & Dead Code Cleanup
+- [ ] 3.1 Create data directory structure
+- [ ] 3.2 Extract enemy templates to JSON
+- [ ] 3.3 Extract boss data to JSON
+- [ ] 3.4 Extract enemy mappings to JSON
+- [ ] 3.5 Remove dead code from enemies.js
+- [ ] 3.6 Extract chip definitions to JSON
+- [ ] 3.7 Extract chip constants to JSON
+- [ ] 3.8 Consolidate chip effect processors
+- [ ] 3.9 Create chips.js index with clean exports
+- [ ] 3.10 Final cleanup and verification
 
 ### Phase 4: GameManager Decomposition
 - [ ] 4.0 Create Event Bus foundation
@@ -1452,12 +1521,12 @@ async function init() {
 
 | Phase | Steps | Lines Moved | Primary File Impact | Architecture Pattern |
 |-------|-------|-------------|---------------------|---------------------|
-| 1 | 10 | ~500 | game.js: 7,301 → 6,800 | API Client |
-| 2 | 10 | ~1,200 | server.js: 1,798 → ~100 | Repository Pattern |
-| 3 | 10 | ~6,500 | chips.js + enemies.js → 10 files | Data/Logic Separation |
-| 4 | 7 | ~2,400 | loop.js: 2,789 → ~400 | Service Layer + Event Bus |
-| 5 | 6 | ~900 | game.js: 6,800 → ~5,900 | Observable Store |
-| 6 | 7 | ~5,100 | game.js: 5,900 → ~800 | UI Components |
+| 1 ✅ | 10 | ~480 | game.js: 6,961 → 6,480 | API Client |
+| 2 ✅ | 10 | ~1,100 | server.js: 1,683 → ~580 | Route Modules |
+| 3 | 10 | ~4,900 | enemies.js: 3,818→~1,200, chips.js: 3,894→~2,200 | JSON Data Extraction |
+| 4 | 7 | ~2,000 | loop.js: 2,448 → ~400 | Service Layer + Event Bus |
+| 5 | 6 | ~900 | game.js: 6,480 → ~5,580 | Observable Store |
+| 6 | 7 | ~4,800 | game.js: 5,580 → ~800 | UI Components |
 
 **Total: 50 steps, each independently committable and testable**
 
@@ -1473,46 +1542,53 @@ After completion:
 
 ## Architecture Before/After
 
-**Before:**
+**Before (original):**
 ```
-server.js (1,798 lines, 86 endpoints)
-    └─ GameManager (2,789 lines, god class)
+server.js (1,683 lines, 81 endpoints)
+    └─ GameManager (2,448 lines, god class)
            └─ Manual emitState() everywhere
 
-game.js (7,301 lines, everything global)
+game.js (6,961 lines, everything global)
     └─ Manual updateUI() everywhere
 ```
 
 **After:**
 ```
+data/                          # JSON data files (Phase 3)
+├── enemies.json               # Enemy definitions (~2,000 lines)
+├── bosses.json                # Boss definitions (~400 lines)
+├── enemy-mappings.json        # Ward/floor mappings (~100 lines)
+├── chips.json                 # Chip definitions (~2,100 lines)
+└── chip-config.json           # Chip categories/rarities (~150 lines)
+
 src/
-├── routes/                    # HTTP layer only
+├── routes/                    # HTTP layer only (Phase 2 ✅)
 │   ├── game/
 │   │   ├── combat.js
-│   │   ├── exploration.js
-│   │   └── economy.js
+│   │   ├── economy.js
+│   │   └── ...
 │   └── index.js
-├── repositories/
-│   └── save-repository.js     # Persistence abstraction
 ├── game/
-│   ├── events.js              # Event bus
-│   ├── phase-machine.js       # State machine
-│   ├── services/              # Business logic
+│   ├── events.js              # Event bus (Phase 4)
+│   ├── phase-machine.js       # State machine (Phase 4)
+│   ├── services/              # Business logic (Phase 4)
 │   │   ├── combat-service.js
 │   │   ├── exploration-service.js
 │   │   ├── economy-service.js
 │   │   └── progression-service.js
+│   ├── enemies.js             # ~1,200 lines (down from 3,818)
+│   ├── items/chips.js         # ~2,200 lines (down from 3,894)
 │   └── loop.js                # Coordinator (~400 lines)
 
 public/js/
-├── api.js                     # Server communication
-├── store.js                   # Observable state
-├── tts.js                     # Audio
-├── settings.js                # Configuration
-├── background.js              # Ward visuals
-├── narration.js               # VN system
-├── word-practice.js           # Vocab review
-└── ui/                        # UI components
+├── api.js                     # Server communication (Phase 1 ✅)
+├── store.js                   # Observable state (Phase 5)
+├── tts.js                     # Audio (Phase 5)
+├── settings.js                # Configuration (Phase 5)
+├── background.js              # Ward visuals (Phase 5)
+├── narration.js               # VN system (Phase 5)
+├── word-practice.js           # Vocab review (Phase 5)
+└── ui/                        # UI components (Phase 6)
     ├── index.js               # Re-exports
     ├── combat.js              # Combat UI (~500 lines)
     ├── exploration.js         # Room/dungeon UI (~450 lines)
@@ -1521,7 +1597,7 @@ public/js/
     ├── modals.js              # All modals (~1,000 lines)
     └── realtime-combat.js     # Timer combat (~480 lines)
 
-server.js (~100 lines)         # Just wiring
+server.js (~580 lines)         # Middleware + route mounting
 game.js (~800 lines)           # UI coordinator only
 ```
 
