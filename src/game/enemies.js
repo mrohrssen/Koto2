@@ -20,12 +20,6 @@
  * - Bosses: attack ~30-40, HP ~200-300
  */
 
-import {
-  calculateDerivedStats,
-  calculateMaxHp,
-  calculateMaxSp
-} from './stats.js';
-
 // Enemy template data extracted to JSON for maintainability
 import enemyTemplatesData from '../../data/enemies.json' with { type: 'json' };
 import bossData from '../../data/bosses.json' with { type: 'json' };
@@ -868,15 +862,6 @@ export function getEnemyAbility(enemyId) {
   const id = enemyId.replace('boss_', '');
   return ENEMY_ABILITIES[id] || null;
 }
-
-// ============ ENEMY TIERS ============
-// Stats are distributed based on enemy archetype
-// Tier 1: ~25 total stats, Level 3-5
-// Tier 2: ~45 total stats, Level 8-12
-// Tier 3: ~70 total stats, Level 15-20
-// Tier 4: ~90 total stats, Level 22-28
-// Bosses: +40% stats, +5 levels vs tier
-
 
 // Re-export the imported JSON data
 export const ENEMY_TEMPLATES = enemyTemplatesData;
