@@ -12,7 +12,6 @@
  *
  * KEY FUNCTIONS:
  * - loadGameState() - Fetches game state from server, updates UI
- * - apiCall(endpoint, method, body) - Generic API wrapper, auto-includes API keys
  * - updateUI() - Master UI refresh, calls phase-specific renderers
  * - updateVNStage() - Updates visual novel character/enemy sprites
  *
@@ -65,7 +64,7 @@
  * ARCHITECTURE NOTES:
  * - No build step - vanilla JS loaded directly by browser
  * - DOM elements cached in variables at top (statsDisplay, combatArea, etc.)
- * - All server communication via apiCall() which adds API keys from localStorage
+ * - All server communication via api.js module which handles API keys from localStorage
  * - JPDB integration parses narration text, wraps words with clickable spans
  * - Background images change based on current ward/floor
  * - Keyboard shortcuts: Enter (advance), R (repeat TTS), 1-5 (word selection)
@@ -79,8 +78,7 @@
  * - Section headers marked with // ============ SECTION NAME ============
  */
 
-// API module - will be used incrementally as we extract endpoints
-// apiCall import deferred until local function is removed in Step 1.10
+// API module - centralized server communication
 import {
   getStoredApiKeys as apiGetStoredApiKeys,
   saveStoredApiKeys as apiSaveStoredApiKeys,
@@ -749,51 +747,6 @@ async function loadGameState() {
     window.gameState = gameState; // Keep window reference in sync
   } else {
     gameState.phase = 'no_save';
-  }
-}
-
-async function apiCall(endpoint, method = 'POST', body = null) {
-  if (isLoading) {
-    console.warn('apiCall blocked - isLoading is true for:', endpoint);
-    return null;
-  }
-  isLoading = true;
-  console.log('apiCall starting:', endpoint);
-
-  try {
-    // Include per-user API keys from localStorage in every request
-    const apiKeys = getStoredApiKeys();
-    const payload = body ? { ...body, ...apiKeys } : apiKeys;
-
-    const options = {
-      method,
-      headers: { 'Content-Type': 'application/json' }
-    };
-    if (method !== 'GET') options.body = JSON.stringify(payload);
-
-    console.log('apiCall fetching:', endpoint);
-    const response = await fetch(`${API_BASE}/api/game${endpoint}`, options);
-    console.log('apiCall got response:', endpoint, response.status);
-    const data = await response.json();
-    console.log('apiCall parsed JSON:', endpoint);
-
-    if (!response.ok) {
-      throw new Error(data.error || 'API call failed');
-    }
-
-    // Update state if returned
-    if (data.state) {
-      gameState = data.state;
-      window.gameState = gameState; // Keep window reference in sync
-    }
-
-    return data;
-  } catch (error) {
-    console.error('API Error:', error);
-    showError(error.message);
-    return null;
-  } finally {
-    isLoading = false;
   }
 }
 
