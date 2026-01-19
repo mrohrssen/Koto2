@@ -15,6 +15,11 @@ test.describe('Blacksmith/Chip Upgrade', () => {
     const initialPhase = await gameHelper.getPhase();
     expect(['room', 'room_encounter', 'exploring']).toContain(initialPhase);
 
+    // Enable debug mode first
+    await page.request.post('http://localhost:3000/api/game/debug-mode', {
+      data: { enabled: true }
+    });
+
     // Use debug API to force blacksmith room
     const response = await page.evaluate(async () => {
       const res = await fetch('/api/game/debug-force-blacksmith', { method: 'POST' });
@@ -67,6 +72,11 @@ test.describe('Blacksmith/Chip Upgrade', () => {
     await setupCharacter(gameHelper);
     await gameHelper.startRun();
     await gameHelper.selectWard('nerima');
+
+    // Enable debug mode first
+    await page.request.post('http://localhost:3000/api/game/debug-mode', {
+      data: { enabled: true }
+    });
 
     // Force blacksmith room
     await page.evaluate(async () => {
