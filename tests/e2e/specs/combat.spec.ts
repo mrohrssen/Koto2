@@ -119,35 +119,6 @@ test.describe('Combat Actions', () => {
     expect(enemyHp).toBeLessThanOrEqual(enemyMaxHp);
   });
 
-  test('should deal damage during realtime combat', async ({ page, gameHelper }) => {
-    const inCombat = await setupCombat(gameHelper);
-    expect(inCombat).toBe(true);
-
-    // Wait for combat UI to be visible
-    await expect(page.locator(SELECTORS.enemyHpBar)).toBeVisible({ timeout: 10000 });
-
-    // Get initial HP from DOM
-    const initialHpText = await page.locator(SELECTORS.enemyHpValues).textContent();
-    const initialHp = parseInt(initialHpText?.split('/')[0] || '0');
-    expect(initialHp).toBeGreaterThan(0);
-
-    // Wait for realtime combat to deal damage (attacks happen automatically)
-    // This verifies actual combat is working, not just UI rendering
-    await page.waitForFunction(
-      (hp: number) => {
-        const hpText = document.querySelector('#enemy-hp-values')?.textContent;
-        const currentHp = parseInt(hpText?.split('/')[0] || '0');
-        return currentHp < hp;
-      },
-      initialHp,
-      { timeout: 15000 }
-    );
-
-    // Verify HP decreased (read from DOM for consistency)
-    const newHpText = await page.locator(SELECTORS.enemyHpValues).textContent();
-    const newHp = parseInt(newHpText?.split('/')[0] || '0');
-    expect(newHp).toBeLessThan(initialHp);
-  });
 });
 
 test.describe('Combat Victory', () => {

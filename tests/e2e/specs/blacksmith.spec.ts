@@ -30,9 +30,10 @@ test.describe('Blacksmith/Chip Upgrade', () => {
       throw new Error(`Debug API failed: ${response.error || 'Unknown error'}`);
     }
 
-    // Reload to see new room state
-    await page.reload();
+    // Navigate to refresh UI with new server state
+    await page.goto('http://localhost:3000/');
     await page.waitForLoadState('load');
+    await page.waitForTimeout(500);
 
     // Verify we're in a room phase
     const phase = await gameHelper.getPhase();
@@ -82,8 +83,11 @@ test.describe('Blacksmith/Chip Upgrade', () => {
     await page.evaluate(async () => {
       await fetch('/api/game/debug-force-blacksmith', { method: 'POST' });
     });
-    await page.reload();
+
+    // Navigate to refresh UI with new server state
+    await page.goto('http://localhost:3000/');
     await page.waitForLoadState('load');
+    await page.waitForTimeout(500);
 
     // Click upgrade button
     const upgradeBtn = page.locator(`${SELECTORS.actionPanel} button`, { hasText: '強化' });
