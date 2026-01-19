@@ -83,41 +83,28 @@ export class GameHelper {
     }
   }
 
-  async selectWard(wardId: string): Promise<void> {
+  async selectWard(wardId: string = 'nerima'): Promise<void> {
     this.log('selectWard', `wardId=${wardId}`);
 
-    // Wait for ward cards to be visible first
-    const wardCards = this.page.locator('.ward-card');
-    try {
-      await wardCards.first().waitFor({ state: 'visible', timeout: 5000 });
-    } catch (e) {
-      this.log('selectWard', 'ward cards not visible, waiting for UI render');
-      await this.page.waitForTimeout(1000);
-    }
+    // Wait for ward cards to be visible
+    const wardCard = this.page.locator('.ward-card').first();
+    await wardCard.waitFor({ state: 'visible', timeout: 5000 });
 
-    if (await wardCards.count() > 0) {
-      await wardCards.first().click({ force: true });
+    // Call the selectWard function directly via evaluate - more reliable than clicking
+    await this.page.evaluate((id) => {
+      (window as any).selectWard(id, false);
+    }, wardId);
 
-      // Wait for phase to change from ward_selection
-      try {
-        await this.page.waitForFunction(
-          () => {
-            const phase = (window as any).gameState?.phase;
-            return phase && phase !== 'ward_selection';
-          },
-          { timeout: 10000 }
-        );
-        this.log('selectWard', 'phase changed');
-      } catch (e) {
-        // Fallback to fixed wait if phase doesn't change
-        this.log('selectWard', 'phase wait timeout, using fixed wait');
-        await this.page.waitForTimeout(2000);
-      }
-    } else {
-      this.log('selectWard', 'no ward cards found');
-    }
+    // Wait for phase to change from ward_selection
+    await this.page.waitForFunction(
+      () => {
+        const phase = (window as any).gameState?.phase;
+        return phase && phase !== 'ward_selection';
+      },
+      { timeout: 10000 }
+    );
 
-    this.log('selectWard', 'done');
+    this.log('selectWard', 'phase changed successfully');
   }
 
   // ============ EXPLORATION ============
