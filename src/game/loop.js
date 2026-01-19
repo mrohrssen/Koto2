@@ -172,6 +172,7 @@ import {
 } from './items/chips.js';
 
 import { derivePhase } from './phase-machine.js';
+import { CombatService } from './services/index.js';
 
 // ============ GAME MANAGER ============
 
@@ -183,6 +184,9 @@ export class GameManager {
     this.meta = null;               // Meta-progression (persists across runs)
     this.narrationCallback = null;  // Called with narration text
     this.stateCallback = null;      // Called when state changes
+
+    // Services (extracted from monolithic GameManager)
+    this.combatService = new CombatService(this);
   }
 
   // ============ META-PROGRESSION ============
@@ -1646,62 +1650,14 @@ export class GameManager {
    * Start a random encounter
    */
   startEncounter() {
-    if (!this.run || !this.run.active) {
-      throw new Error('No active run');
-    }
-
-    // Passive HP recovery between encounters (rest) - small amount
-    const player = this.run.player;
-    const restHeal = Math.floor(player.maxHp * 0.05);
-    player.hp = Math.min(player.maxHp, player.hp + restHeal);
-
-    const enemy = generateEnemy(this.run.floor);
-    this.combat = createCombatState(enemy);
-    this.run.player._combatStacks = {};  // Reset stacking chip counters
-    if (this.run.player._runKills === undefined) this.run.player._runKills = 0;  // Init kill counter
-    this.combat.turn = determineTurnOrder(this.run.player, enemy);
-
-    // Select initial enemy intent
-    this.combat.intent = selectEnemyIntent(enemy, 1);
-
-    this.narrate(getSimpleNarration('combatStart', enemy));
-    this.emitState();
-
-    return {
-      enemy: this.combat.enemy,
-      intent: this.combat.intent,
-      playerGoesFirst: this.combat.turn === 'player',
-      dialogue: pickRandomVoiceLine(enemy.dialogue?.possessed)  // SYSTEM-controlled dialogue
-    };
+    return this.combatService.startEncounter();
   }
 
   /**
    * Start boss encounter
    */
   startBossEncounter() {
-    if (!this.run || !this.run.active) {
-      throw new Error('No active run');
-    }
-
-    const boss = getBossForFloor(this.run.floor);
-    this.combat = createCombatState(boss);
-    this.run.player._combatStacks = {};  // Reset stacking chip counters
-    this.combat.turn = determineTurnOrder(this.run.player, boss);
-
-    // Select initial boss intent
-    this.combat.intent = selectEnemyIntent(boss, 1);
-
-    const isFinal = this.run.floor === 7;
-    this.narrate(getSimpleNarration(isFinal ? 'finalBossAppear' : 'bossAppear', boss));
-    this.emitState();
-
-    return {
-      enemy: this.combat.enemy,
-      intent: this.combat.intent,
-      playerGoesFirst: this.combat.turn === 'player',
-      isFinalBoss: isFinal,
-      dialogue: pickRandomVoiceLine(boss.dialogue?.possessed)  // SYSTEM-controlled dialogue
-    };
+    return this.combatService.startBossEncounter();
   }
 
   // ============ REALTIME COMBAT ============
