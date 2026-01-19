@@ -1213,16 +1213,16 @@ Each step is designed for a single Claude session to complete:
 ## Progress Tracking
 
 ### Phase 1: Frontend API Extraction
-- [ ] 1.1 Create API module scaffold
-- [ ] 1.2 Convert game.html to ES modules
-- [ ] 1.3 Extract game state endpoints
-- [ ] 1.4 Extract player management endpoints
-- [ ] 1.5 Extract run management endpoints
-- [ ] 1.6 Extract room exploration endpoints
-- [ ] 1.7 Extract combat endpoints
-- [ ] 1.8 Extract shop/economy endpoints
-- [ ] 1.9 Extract vocab/JPDB endpoints
-- [ ] 1.10 Extract remaining endpoints and cleanup
+- [x] 1.1 Create API module scaffold
+- [x] 1.2 Convert game.html to ES modules
+- [x] 1.3 Extract game state endpoints
+- [x] 1.4 Extract player management endpoints
+- [x] 1.5 Extract run management endpoints
+- [x] 1.6 Extract room exploration endpoints
+- [x] 1.7 Extract combat endpoints
+- [x] 1.8 Extract shop/economy endpoints
+- [x] 1.9 Extract vocab/JPDB endpoints
+- [x] 1.10 Extract remaining endpoints and cleanup
 
 ### Phase 2: Server Route Organization
 - [ ] 2.1 Create route directory structure
