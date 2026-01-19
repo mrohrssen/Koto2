@@ -32,19 +32,20 @@ cd ../jrpg-wt-refactor
 
 ## Current State
 
-**After Phase 1 & 2 (completed):**
+**After Phase 1, 2, & 3 (completed):**
 
 | File | Before | After | Status |
 |------|--------|-------|--------|
 | `public/game.js` | 6,961 | ~6,900 | ✅ API calls extracted to `public/js/api.js` (637 lines) |
 | `server.js` | 1,683 | ~580 | ✅ Routes extracted to `src/routes/` (12 modules) |
-| `src/game/items/chips.js` | 3,894 | 3,894 | ⏳ Phase 3 |
-| `src/game/enemies.js` | 3,818 | 3,818 | ⏳ Phase 3 |
+| `src/game/items/chips.js` | 3,894 | 1,687 | ✅ Data extracted to `data/chips.json` + `data/chip-config.json` |
+| `src/game/enemies.js` | 3,818 | 1,188 | ✅ Data extracted to `data/enemies.json` + `data/bosses.json` |
 | `src/game/loop.js` | 2,448 | 2,448 | ⏳ Phase 4 |
 
 **Completed work:**
 - Phase 1: `public/js/api.js` created (637 lines) - all fetch calls centralized
 - Phase 2: `src/routes/` created (12 modules) - 81 endpoints organized
+- Phase 3: Data files created in `data/` (6,140 lines) - enemies.js/chips.js reduced by 63%
 
 ## Existing Successful Patterns
 
@@ -1313,17 +1314,33 @@ Before Phase 3, fixed e2e test infrastructure to establish reliable baseline:
 - **Result:** 87/87 tests passing (100%)
 - See `specs/test-infrastructure-fix.md` for details
 
-### Phase 3: Data Extraction & Dead Code Cleanup
-- [ ] 3.1 Create data directory structure
-- [ ] 3.2 Extract enemy templates to JSON
-- [ ] 3.3 Extract boss data to JSON
-- [ ] 3.4 Extract enemy mappings to JSON
-- [ ] 3.5 Remove dead code from enemies.js
-- [ ] 3.6 Extract chip definitions to JSON
-- [ ] 3.7 Extract chip constants to JSON
-- [ ] 3.8 Consolidate chip effect processors
-- [ ] 3.9 Create chips.js index with clean exports
-- [ ] 3.10 Final cleanup and verification
+### Phase 3: Data Extraction & Dead Code Cleanup ✅
+- [x] 3.1 Create data directory structure
+- [x] 3.2 Extract enemy templates to JSON
+- [x] 3.3 Extract boss data to JSON
+- [x] 3.4 Extract enemy mappings to JSON
+- [x] 3.5 Remove dead code from enemies.js
+- [x] 3.6 Extract chip definitions to JSON
+- [x] 3.7 Extract chip constants to JSON
+- [x] 3.8 Consolidate chip effect processors (reviewed - no changes needed, already well-structured)
+- [x] 3.9 Create chips.js index with clean exports
+- [x] 3.10 Final cleanup and verification
+
+**Phase 3 Result:**
+
+| File | Before | After | Reduction |
+|------|--------|-------|-----------|
+| `enemies.js` | 3,818 | 1,188 | 69% |
+| `chips.js` | 3,894 | 1,687 | 57% |
+
+Data files created:
+- `data/enemies.json`: 2,959 lines (56 enemies)
+- `data/bosses.json`: 419 lines (floor bosses, final boss, drops)
+- `data/enemy-mappings.json`: 20 lines (ward/floor mappings)
+- `data/chips.json`: 2,650 lines (175 chips)
+- `data/chip-config.json`: 92 lines (categories, rarities, upgrade config)
+
+**Total lines moved to data/: 6,140 lines**
 
 ### Phase 4: GameManager Decomposition
 - [ ] 4.0 Create Event Bus foundation
@@ -1551,6 +1568,9 @@ After completion:
 ## Post-Refactor Cleanup Tasks
 
 These are lower-priority cleanup tasks to do after all phases are complete:
+
+### Test Infrastructure
+- [ ] Fix flaky integration test (10/11 intermittent failure) - investigate root cause and stabilize
 
 ### enemies.json Data Cleanup
 - [ ] Remove `stats` object (replace with just `hp` and `attack` at top level)
