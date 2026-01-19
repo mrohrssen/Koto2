@@ -110,7 +110,19 @@ import {
   attack as apiAttack,
   useItem as apiUseItem,
   useSkill as apiUseSkill,
-  enemyTurn as apiEnemyTurn
+  enemyTurn as apiEnemyTurn,
+  claimStartingChip as apiClaimStartingChip,
+  shopBuy as apiShopBuy,
+  postCombatShopBuy as apiPostCombatShopBuy,
+  shopSkip as apiShopSkip,
+  postCombatShopRefresh as apiPostCombatShopRefresh,
+  equipChip as apiEquipChip,
+  unequipChip as apiUnequipChip,
+  getRefinePreview as apiGetRefinePreview,
+  refineItem as apiRefineItem,
+  unequipItem as apiUnequipItem,
+  nextFloor as apiNextFloor,
+  getChipLoadout as apiGetChipLoadout
 } from './js/api.js';
 
 const API_BASE = '';
@@ -1279,7 +1291,7 @@ async function speakText(text) {
 }
 
 async function nextFloor() {
-  const result = await apiCall('/next-floor', 'POST');
+  const result = await apiNextFloor();
   if (result) {
     // Use server narration or fallback
     const narration = result.narration || FALLBACK_NARRATIONS.enterDungeon(gameState.run.floor);
@@ -3114,36 +3126,25 @@ async function equipItem(itemId) {
   }
 }
 
-async function unequipItem(slot) {
-  try {
-    const response = await fetch('/api/game/unequip', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slot })
-    });
-
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error || 'Unequip failed');
-    }
-
-    const result = await response.json();
-    if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState; // Keep window reference in sync
-    }
-    if (result.message) {
-      showNarration(result.message);
-    }
-    updateUI();
-  } catch (error) {
-    console.error('Unequip error:', error);
-    showNarration(`装備解除に失敗: ${error.message}`);
+async function unequipItemHandler(slot) {
+  const result = await apiUnequipItem(slot);
+  if (result.error) {
+    console.error('Unequip error:', result.error);
+    showNarration(`装備解除に失敗: ${result.error}`);
+    return;
   }
+  if (result.state) {
+    gameState = result.state;
+    window.gameState = gameState; // Keep window reference in sync
+  }
+  if (result.message) {
+    showNarration(result.message);
+  }
+  updateUI();
 }
 
 window.equipItem = equipItem;
-window.unequipItem = unequipItem;
+window.unequipItem = unequipItemHandler;
 
 function updateInventory() {
   if (!gameState.player) {
@@ -4133,11 +4134,10 @@ window.buyItem = buyItem;
 
 async function openBlacksmith() {
   try {
-    const response = await fetch('/api/game/refine-preview');
-    if (!response.ok) {
-      throw new Error('Failed to load blacksmith');
+    const data = await apiGetRefinePreview();
+    if (data.error) {
+      throw new Error(data.error);
     }
-    const data = await response.json();
 
     const blacksmithModal = document.getElementById('blacksmith-modal');
     const blacksmithGold = document.getElementById('blacksmith-player-gold');
@@ -4210,23 +4210,15 @@ async function openBlacksmith() {
   }
 }
 
-async function refineItem(slot) {
+async function refineItemHandler(slot) {
   try {
     // Close modal during refinement
     closeBlacksmith();
 
-    const response = await fetch('/api/game/refine', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slot })
-    });
-
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error || 'Refinement failed');
+    const result = await apiRefineItem(slot);
+    if (result.error) {
+      throw new Error(result.error);
     }
-
-    const result = await response.json();
 
     // Update game state
     if (result.state) {
@@ -4256,7 +4248,7 @@ function closeBlacksmith() {
 }
 
 // Make refineItem available globally for onclick
-window.refineItem = refineItem;
+window.refineItem = refineItemHandler;
 
 // ============ CHIP UPGRADE (MODDER) FUNCTIONS ============
 
@@ -4529,32 +4521,28 @@ function showPostCombatShopContent() {
 }
 
 // Claim free starting chip
-async function claimStartingChip(itemIndex) {
-  try {
-    const result = await apiCall('/claim-starting-chip', 'POST', { itemIndex });
-    if (result) {
-      // Hide shop modal and reset state
-      if (shopModal) shopModal.classList.add('hidden');
-      resetShopModal();
-      // Clear the starting chip shop flag
-      if (gameState.run) {
-        gameState.run.startingChipShop = { active: false };
-        gameState.run.postCombatShop = { active: false };
-      }
-      // Update state from server
-      if (result.state) {
-        gameState = { ...gameState, ...result.state };
-      }
-      showNarration(result.chip?.name ? result.chip.name + 'を獲得した！' : 'チップを獲得！');
-      updateUI();
+async function claimStartingChipHandler(itemIndex) {
+  const result = await apiClaimStartingChip(itemIndex);
+  if (result) {
+    // Hide shop modal and reset state
+    if (shopModal) shopModal.classList.add('hidden');
+    resetShopModal();
+    // Clear the starting chip shop flag
+    if (gameState.run) {
+      gameState.run.startingChipShop = { active: false };
+      gameState.run.postCombatShop = { active: false };
     }
-  } catch (error) {
-    console.error('Failed to claim starting chip:', error);
+    // Update state from server
+    if (result.state) {
+      gameState = { ...gameState, ...result.state };
+    }
+    showNarration(result.chip?.name ? result.chip.name + 'を獲得した！' : 'チップを獲得！');
+    updateUI();
   }
 }
 
 // Make claimStartingChip globally accessible
-window.claimStartingChip = claimStartingChip;
+window.claimStartingChip = claimStartingChipHandler;
 
 function resetShopModal() {
   // Reset shop selection
@@ -4575,61 +4563,49 @@ function resetShopModal() {
 }
 
 async function buyFromShop(itemIndex) {
-  try {
-    // Check if this is a post-combat shop or regular merchant
-    const isPostCombatShop = gameState.run?.postCombatShop?.active;
-    const endpoint = isPostCombatShop ? '/post-combat-shop-buy' : '/shop-buy';
-    const payload = isPostCombatShop ? { itemIndex } : { itemId: itemIndex };
+  // Check if this is a post-combat shop or regular merchant
+  const isPostCombatShop = gameState.run?.postCombatShop?.active;
+  const result = isPostCombatShop
+    ? await apiPostCombatShopBuy(itemIndex)
+    : await apiShopBuy(itemIndex);
 
-    const result = await apiCall(endpoint, 'POST', payload);
-    if (result) {
-      // Hide shop modal and reset state
-      if (shopModal) shopModal.classList.add('hidden');
-      resetShopModal();
-      // Update state from server
-      if (result.state) {
-        gameState = { ...gameState, ...result.state };
-      }
-      showNarration(result.item?.name ? result.item.name + 'を購入した！' : '購入完了！');
-      updateUI();
+  if (result) {
+    // Hide shop modal and reset state
+    if (shopModal) shopModal.classList.add('hidden');
+    resetShopModal();
+    // Update state from server
+    if (result.state) {
+      gameState = { ...gameState, ...result.state };
     }
-  } catch (error) {
-    console.error('Shop buy error:', error);
+    showNarration(result.item?.name ? result.item.name + 'を購入した！' : '購入完了！');
+    updateUI();
   }
 }
 
 async function skipShop() {
-  try {
-    const result = await apiCall('/shop-skip', 'POST');
-    if (result) {
-      // Hide shop modal and reset state
-      if (shopModal) shopModal.classList.add('hidden');
-      resetShopModal();
-      // Update state from server
-      if (result.state) {
-        gameState = { ...gameState, ...result.state };
-      }
-      updateUI();
+  const result = await apiShopSkip();
+  if (result) {
+    // Hide shop modal and reset state
+    if (shopModal) shopModal.classList.add('hidden');
+    resetShopModal();
+    // Update state from server
+    if (result.state) {
+      gameState = { ...gameState, ...result.state };
     }
-  } catch (error) {
-    console.error('Shop skip error:', error);
+    updateUI();
   }
 }
 
 async function refreshShop() {
-  try {
-    const result = await apiCall('/post-combat-shop-refresh', 'POST');
-    if (result) {
-      // Update state from server
-      if (result.state) {
-        gameState = { ...gameState, ...result.state };
-      }
-      // Re-render the shop with new items
-      showPostCombatShopContent();
-      showNarration('商人が新しい品を出してきた！');
+  const result = await apiPostCombatShopRefresh();
+  if (result) {
+    // Update state from server
+    if (result.state) {
+      gameState = { ...gameState, ...result.state };
     }
-  } catch (error) {
-    console.error('Shop refresh error:', error);
+    // Re-render the shop with new items
+    showPostCombatShopContent();
+    showNarration('商人が新しい品を出してきた！');
   }
 }
 
@@ -5542,41 +5518,25 @@ function getChipEffectText(chip) {
 async function addChipToSlot(chipId) {
   if (!currentChipModalSlot) return;
 
-  try {
-    const response = await fetch('/api/game/equip-chip', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        equipmentSlot: currentChipModalSlot,
-        chipId: chipId
-      })
-    });
+  const result = await apiEquipChip(currentChipModalSlot, chipId);
 
-    const result = await response.json();
-
-    if (result.error) {
-      showNarration(`装着失敗: ${result.error}`);
-      return;
-    }
-
-    // Speak "[chip name]を装備" via TTS
-    if (result.chipName) {
-      speakText(`${result.chipName}を装備`);
-    }
-
-    // Refresh loadout and re-render
-    const loadoutResponse = await fetch('/api/game/chip-loadout');
-    chipLoadoutCache = await loadoutResponse.json();
-    renderChipModal();
-
-    // Also refresh main game state
-    await loadGameState();
-    updateUI();
-
-  } catch (error) {
-    console.error('Failed to equip chip:', error);
-    showNarration('チップの装着に失敗しました');
+  if (result.error) {
+    showNarration(`装着失敗: ${result.error}`);
+    return;
   }
+
+  // Speak "[chip name]を装備" via TTS
+  if (result.chipName) {
+    speakText(`${result.chipName}を装備`);
+  }
+
+  // Refresh loadout and re-render
+  chipLoadoutCache = await apiGetChipLoadout();
+  renderChipModal();
+
+  // Also refresh main game state
+  await loadGameState();
+  updateUI();
 }
 
 /**
@@ -5585,89 +5545,48 @@ async function addChipToSlot(chipId) {
 async function removeChipFromSlot(chipId) {
   if (!currentChipModalSlot) return;
 
-  try {
-    const response = await fetch('/api/game/unequip-chip', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        equipmentSlot: currentChipModalSlot,
-        chipId: chipId
-      })
-    });
+  const result = await apiUnequipChip(currentChipModalSlot);
 
-    const result = await response.json();
-
-    if (result.error) {
-      showNarration(`取り外し失敗: ${result.error}`);
-      return;
-    }
-
-    // Refresh loadout and re-render
-    const loadoutResponse = await fetch('/api/game/chip-loadout');
-    chipLoadoutCache = await loadoutResponse.json();
-    renderChipModal();
-
-    // Also refresh main game state
-    await loadGameState();
-    updateUI();
-
-  } catch (error) {
-    console.error('Failed to unequip chip:', error);
-    showNarration('チップの取り外しに失敗しました');
+  if (result.error) {
+    showNarration(`取り外し失敗: ${result.error}`);
+    return;
   }
+
+  // Refresh loadout and re-render
+  chipLoadoutCache = await apiGetChipLoadout();
+  renderChipModal();
+
+  // Also refresh main game state
+  await loadGameState();
+  updateUI();
 }
 
 /**
  * Toggle chip equip - unequip from one slot and optionally equip to current slot
  */
 async function toggleChipEquip(chipId, fromSlot) {
-  try {
-    // First unequip from the other slot
-    const unequipResponse = await fetch('/api/game/unequip-chip', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        equipmentSlot: fromSlot,
-        chipId: chipId
-      })
-    });
-
-    const unequipResult = await unequipResponse.json();
-    if (unequipResult.error) {
-      showNarration(`取り外し失敗: ${unequipResult.error}`);
-      return;
-    }
-
-    // Then equip to current slot
-    if (currentChipModalSlot) {
-      const equipResponse = await fetch('/api/game/equip-chip', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          equipmentSlot: currentChipModalSlot,
-          chipId: chipId
-        })
-      });
-
-      const equipResult = await equipResponse.json();
-      if (equipResult.error) {
-        showNarration(`装着失敗: ${equipResult.error}`);
-      }
-    }
-
-    // Refresh loadout and re-render
-    const loadoutResponse = await fetch('/api/game/chip-loadout');
-    chipLoadoutCache = await loadoutResponse.json();
-    renderChipModal();
-
-    // Also refresh main game state
-    await loadGameState();
-    updateUI();
-
-  } catch (error) {
-    console.error('Failed to toggle chip:', error);
-    showNarration('チップの移動に失敗しました');
+  // First unequip from the other slot
+  const unequipResult = await apiUnequipChip(fromSlot);
+  if (unequipResult.error) {
+    showNarration(`取り外し失敗: ${unequipResult.error}`);
+    return;
   }
+
+  // Then equip to current slot
+  if (currentChipModalSlot) {
+    const equipResult = await apiEquipChip(currentChipModalSlot, chipId);
+    if (equipResult.error) {
+      showNarration(`装着失敗: ${equipResult.error}`);
+    }
+  }
+
+  // Refresh loadout and re-render
+  chipLoadoutCache = await apiGetChipLoadout();
+  renderChipModal();
+
+  // Also refresh main game state
+  await loadGameState();
+  updateUI();
 }
 
 // Make chip modal functions globally accessible

@@ -352,6 +352,135 @@ async function enemyTurn() {
   return apiCall('/enemy-turn', 'POST');
 }
 
+// ============ SHOP/ECONOMY ENDPOINTS ============
+
+/** Claim a free starting chip
+ * @param {number} itemIndex - Index of the chip to claim
+ */
+async function claimStartingChip(itemIndex) {
+  return apiCall('/claim-starting-chip', 'POST', { itemIndex });
+}
+
+/** Buy an item from the regular shop
+ * @param {string} itemId - Item identifier
+ */
+async function shopBuy(itemId) {
+  return apiCall('/shop-buy', 'POST', { itemId });
+}
+
+/** Buy an item from the post-combat shop
+ * @param {number} itemIndex - Index of the item to buy
+ */
+async function postCombatShopBuy(itemIndex) {
+  return apiCall('/post-combat-shop-buy', 'POST', { itemIndex });
+}
+
+/** Skip the current shop */
+async function shopSkip() {
+  return apiCall('/shop-skip', 'POST');
+}
+
+/** Refresh the post-combat shop */
+async function postCombatShopRefresh() {
+  return apiCall('/post-combat-shop-refresh', 'POST');
+}
+
+/** Equip a chip to a slot
+ * @param {number} slot - Slot number (1-3)
+ * @param {string} chipId - Chip identifier
+ */
+async function equipChip(slot, chipId) {
+  try {
+    const response = await fetch('/api/game/equip-chip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slot, chipId })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to equip chip:', error);
+    return { error: 'Network error' };
+  }
+}
+
+/** Unequip a chip from a slot
+ * @param {number} slot - Slot number (1-3)
+ */
+async function unequipChip(slot) {
+  try {
+    const response = await fetch('/api/game/unequip-chip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slot })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to unequip chip:', error);
+    return { error: 'Network error' };
+  }
+}
+
+/** Get refine preview for blacksmith */
+async function getRefinePreview() {
+  try {
+    const response = await fetch('/api/game/refine-preview');
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to get refine preview:', error);
+    return { error: 'Network error' };
+  }
+}
+
+/** Refine an item at the blacksmith
+ * @param {string} slot - Equipment slot to refine
+ */
+async function refineItem(slot) {
+  try {
+    const response = await fetch('/api/game/refine', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slot })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to refine item:', error);
+    return { error: 'Network error' };
+  }
+}
+
+/** Unequip an equipment item
+ * @param {string} slot - Equipment slot to unequip
+ */
+async function unequipItem(slot) {
+  try {
+    const response = await fetch('/api/game/unequip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slot })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to unequip item:', error);
+    return { error: 'Network error' };
+  }
+}
+
+/** Advance to the next floor */
+async function nextFloor() {
+  return apiCall('/next-floor', 'POST');
+}
+
+/** Get chip loadout for all equipment slots */
+async function getChipLoadout() {
+  try {
+    const response = await fetch('/api/game/chip-loadout');
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to get chip loadout:', error);
+    return { error: 'Network error' };
+  }
+}
+
 export {
   apiCall,
   getStoredApiKeys,
@@ -388,5 +517,18 @@ export {
   attack,
   useItem,
   useSkill,
-  enemyTurn
+  enemyTurn,
+  // Shop/economy endpoints
+  claimStartingChip,
+  shopBuy,
+  postCombatShopBuy,
+  shopSkip,
+  postCombatShopRefresh,
+  equipChip,
+  unequipChip,
+  getRefinePreview,
+  refineItem,
+  unequipItem,
+  nextFloor,
+  getChipLoadout
 };
