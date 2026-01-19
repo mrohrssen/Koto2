@@ -72,108 +72,26 @@
 
 // Import chip definitions from JSON
 import chipData from '../../../data/chips.json' with { type: 'json' };
+import chipConfig from '../../../data/chip-config.json' with { type: 'json' };
 
 // ============ CHIP CATEGORIES ============
-export const CHIP_CATEGORIES = {
-  STAT: {
-    id: 'stat',
-    name: 'ステータス',
-    nameEn: 'Stat',
-    description: 'Flat stat bonuses'
-  },
-  ON_HIT: {
-    id: 'onHit',
-    name: 'オンヒット',
-    nameEn: 'On Hit',
-    description: 'Chance to trigger effect when hitting enemy'
-  },
-  ON_EFFECT: {
-    id: 'onEffect',
-    name: 'オンエフェクト',
-    nameEn: 'On Effect',
-    description: 'Triggers on specific conditions'
-  },
-  COUNTER: {
-    id: 'counter',
-    name: 'カウンター',
-    nameEn: 'Counter',
-    description: 'Scales with accumulation during run'
-  },
-  PIPELINE: {
-    id: 'pipeline',
-    name: 'パイプライン',
-    nameEn: 'Pipeline',
-    description: 'Sequential damage modification - fires in weapon slot order'
-  }
-};
+// Loaded from data/chip-config.json
+export const CHIP_CATEGORIES = chipConfig.categories;
 
 // ============ PIPELINE EFFECT TYPES ============
-export const PIPELINE_EFFECTS = {
-  FLAT_ADD: 'flatAdd',        // +X damage
-  MULTIPLY: 'multiply',        // damage * X
-  CONDITIONAL: 'conditional',  // multiply if condition met
-  CRIT_MOD: 'critMod'         // modify crit chance/damage
-};
+// Loaded from data/chip-config.json
+export const PIPELINE_EFFECTS = chipConfig.pipelineEffects;
 
 // ============ CHIP RARITIES ============
-export const CHIP_RARITIES = {
-  common: {
-    id: 'common',
-    name: 'ノーマル',
-    nameEn: 'Common',
-    color: '#9d9d9d',
-    priceMultiplier: 1.0,
-    statMultiplier: 1.0
-  },
-  uncommon: {
-    id: 'uncommon',
-    name: 'アンコモン',
-    nameEn: 'Uncommon',
-    color: '#1eff00',
-    priceMultiplier: 2.5,
-    statMultiplier: 1.5
-  },
-  rare: {
-    id: 'rare',
-    name: 'レア',
-    nameEn: 'Rare',
-    color: '#0070dd',
-    priceMultiplier: 5.0,
-    statMultiplier: 2.0
-  },
-  epic: {
-    id: 'epic',
-    name: 'エピック',
-    nameEn: 'Epic',
-    color: '#a335ee',
-    priceMultiplier: 10.0,
-    statMultiplier: 2.5
-  },
-  legendary: {
-    id: 'legendary',
-    name: 'レジェンダリー',
-    nameEn: 'Legendary',
-    color: '#ff8000',
-    priceMultiplier: 20.0,
-    statMultiplier: 3.0
-  }
-};
-
-// Base price for chips
-const BASE_CHIP_PRICE = 30;
+// Loaded from data/chip-config.json
+export const CHIP_RARITIES = chipConfig.rarities;
 
 // ============ CHIP UPGRADE CONFIG ============
+// Loaded from data/chip-config.json with getUpgradeCost function added
 export const CHIP_UPGRADE_CONFIG = {
-  failureRates: {
-    common: 0.05,      // 5% chance to fail
-    uncommon: 0.10,    // 10% chance to fail
-    rare: 0.15,        // 15% chance to fail
-    epic: 0.25         // 25% chance to fail
-    // legendary cannot be upgraded
-  },
-  rarityOrder: ['common', 'uncommon', 'rare', 'epic', 'legendary'],
+  ...chipConfig.upgradeConfig,
   // Cost to upgrade = purchase price of current rarity
-  getUpgradeCost: (rarity) => Math.floor(BASE_CHIP_PRICE * CHIP_RARITIES[rarity].priceMultiplier)
+  getUpgradeCost: (rarity) => Math.floor(chipConfig.upgradeConfig.basePrice * CHIP_RARITIES[rarity].priceMultiplier)
 };
 
 // ============ CHIP DEFINITIONS ============
@@ -242,7 +160,7 @@ export function getChipPrice(chipId) {
   if (parts.length >= 2 && rarities.includes(lastPart)) {
     // Use the rarity from the ID
     const rarity = CHIP_RARITIES[lastPart];
-    return Math.floor(BASE_CHIP_PRICE * rarity.priceMultiplier);
+    return Math.floor(chipConfig.upgradeConfig.basePrice * rarity.priceMultiplier);
   }
 
   // Fallback to base chip lookup
@@ -250,7 +168,7 @@ export function getChipPrice(chipId) {
   if (!chip) return 0;
 
   const rarity = CHIP_RARITIES[chip.rarity];
-  return Math.floor(BASE_CHIP_PRICE * rarity.priceMultiplier);
+  return Math.floor(chipConfig.upgradeConfig.basePrice * rarity.priceMultiplier);
 }
 
 // ============ CHIP UPGRADE FUNCTIONS ============
@@ -497,7 +415,7 @@ export function generateShopChips(floor, ownedChipIds = [], count = 3, category 
       description: chip.description,
       category: chip.category,
       rarity: rolledRarity,
-      price: Math.floor(BASE_CHIP_PRICE * rarityInfo.priceMultiplier),
+      price: Math.floor(chipConfig.upgradeConfig.basePrice * rarityInfo.priceMultiplier),
       effects: scaledEffects,
       baseEffects: chip.effects  // Keep original for reference
     };

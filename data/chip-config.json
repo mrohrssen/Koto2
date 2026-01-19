@@ -1,0 +1,92 @@
+{
+  "categories": {
+    "STAT": {
+      "id": "stat",
+      "name": "ステータス",
+      "nameEn": "Stat",
+      "description": "Flat stat bonuses"
+    },
+    "ON_HIT": {
+      "id": "onHit",
+      "name": "オンヒット",
+      "nameEn": "On Hit",
+      "description": "Chance to trigger effect when hitting enemy"
+    },
+    "ON_EFFECT": {
+      "id": "onEffect",
+      "name": "オンエフェクト",
+      "nameEn": "On Effect",
+      "description": "Triggers on specific conditions"
+    },
+    "COUNTER": {
+      "id": "counter",
+      "name": "カウンター",
+      "nameEn": "Counter",
+      "description": "Scales with accumulation during run"
+    },
+    "PIPELINE": {
+      "id": "pipeline",
+      "name": "パイプライン",
+      "nameEn": "Pipeline",
+      "description": "Sequential damage modification - fires in weapon slot order"
+    }
+  },
+  "pipelineEffects": {
+    "FLAT_ADD": "flatAdd",
+    "MULTIPLY": "multiply",
+    "CONDITIONAL": "conditional",
+    "CRIT_MOD": "critMod"
+  },
+  "rarities": {
+    "common": {
+      "id": "common",
+      "name": "ノーマル",
+      "nameEn": "Common",
+      "color": "#9d9d9d",
+      "priceMultiplier": 1.0,
+      "statMultiplier": 1.0
+    },
+    "uncommon": {
+      "id": "uncommon",
+      "name": "アンコモン",
+      "nameEn": "Uncommon",
+      "color": "#1eff00",
+      "priceMultiplier": 2.5,
+      "statMultiplier": 1.5
+    },
+    "rare": {
+      "id": "rare",
+      "name": "レア",
+      "nameEn": "Rare",
+      "color": "#0070dd",
+      "priceMultiplier": 5.0,
+      "statMultiplier": 2.0
+    },
+    "epic": {
+      "id": "epic",
+      "name": "エピック",
+      "nameEn": "Epic",
+      "color": "#a335ee",
+      "priceMultiplier": 10.0,
+      "statMultiplier": 2.5
+    },
+    "legendary": {
+      "id": "legendary",
+      "name": "レジェンダリー",
+      "nameEn": "Legendary",
+      "color": "#ff8000",
+      "priceMultiplier": 20.0,
+      "statMultiplier": 3.0
+    }
+  },
+  "upgradeConfig": {
+    "basePrice": 30,
+    "failureRates": {
+      "common": 0.05,
+      "uncommon": 0.10,
+      "rare": 0.15,
+      "epic": 0.25
+    },
+    "rarityOrder": ["common", "uncommon", "rare", "epic", "legendary"]
+  }
+}
