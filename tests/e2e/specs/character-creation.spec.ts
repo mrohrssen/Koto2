@@ -5,7 +5,7 @@ test.describe('Character Creation', () => {
   test.beforeEach(async ({ page }) => {
     await resetGameState(page);
     await page.goto('http://localhost:3000');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test.afterEach(async ({ page }) => {

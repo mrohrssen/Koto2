@@ -46,7 +46,7 @@ test.describe('Game Over', () => {
       await fetch('/api/game/forfeit', { method: 'POST' });
     });
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should be back in hub/run_ended and able to start again
     const phase = await gameHelper.getPhase();

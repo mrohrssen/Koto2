@@ -62,7 +62,7 @@ test.describe('Run State', () => {
       await fetch('/api/game/forfeit', { method: 'POST' });
     });
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should still have player (phase is 'run_ended' or 'hub' after forfeit)
     const phase = await gameHelper.getPhase();

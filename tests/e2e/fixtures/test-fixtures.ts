@@ -44,7 +44,7 @@ export async function setupCharacter(gameHelper: GameHelper, name: string = 'Tes
   // Reset game state first to ensure fresh start
   await resetGameState(gameHelper.page);
   await gameHelper.page.goto('http://localhost:3000');
-  await gameHelper.page.waitForLoadState('networkidle');
+  await gameHelper.page.waitForLoadState('load');
   await gameHelper.createCharacter(name);
 }
 
@@ -69,7 +69,7 @@ export async function setupCombat(gameHelper: GameHelper): Promise<boolean> {
 
     // Reload page to ensure UI reflects new state
     await gameHelper.page.reload();
-    await gameHelper.page.waitForLoadState('networkidle');
+    await gameHelper.page.waitForLoadState('load');
 
     // Wait for combat phase
     const phase = await gameHelper.getPhase();

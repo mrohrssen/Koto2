@@ -5,7 +5,7 @@ test.describe('Settings', () => {
   test.beforeEach(async ({ page }) => {
     await resetGameState(page);
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test.afterEach(async ({ page }) => {

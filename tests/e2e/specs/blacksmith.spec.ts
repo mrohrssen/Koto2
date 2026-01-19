@@ -27,7 +27,7 @@ test.describe('Blacksmith/Chip Upgrade', () => {
 
     // Reload to see new room state
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Verify we're in a room phase
     const phase = await gameHelper.getPhase();
@@ -73,7 +73,7 @@ test.describe('Blacksmith/Chip Upgrade', () => {
       await fetch('/api/game/debug-force-blacksmith', { method: 'POST' });
     });
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Click upgrade button
     const upgradeBtn = page.locator(`${SELECTORS.actionPanel} button`, { hasText: '強化' });
