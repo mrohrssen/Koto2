@@ -56,6 +56,11 @@ export async function setupCombat(gameHelper: GameHelper): Promise<boolean> {
   await setupCharacter(gameHelper);
 
   try {
+    // Enable debug mode first (resetGameState may have disabled it)
+    await gameHelper.page.request.post('http://localhost:3000/api/game/debug-mode', {
+      data: { enabled: true }
+    });
+
     // Use debug API to reliably enter combat
     // This creates a real combat state with a real enemy
     const response = await gameHelper.page.evaluate(async () => {
