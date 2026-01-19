@@ -11,21 +11,28 @@
  *
  * DEPENDENCIES:
  * - ../events.js - Event bus for combat notifications
- * - ../state.js - Combat state factory
- * - ../enemies.js - Enemy generation
- * - ../combat/index.js - Combat mechanics
+ * - ../state.js - Combat state factory, level up checks
+ * - ../enemies.js - Enemy generation, boss drops
+ * - ../combat/index.js - Combat mechanics, victory processing
+ * - ../rooms.js - Post-combat shop, ward navigation
  * - ../dm.js - Narration helpers
  */
 
 import { eventBus, GameEvents } from '../events.js';
-import { createCombatState } from '../state.js';
+import { createCombatState, checkLevelUp } from '../state.js';
 import {
   generateEnemy,
   getBossForFloor,
+  getBossDrop,
   selectEnemyIntent,
   pickRandomVoiceLine
 } from '../enemies.js';
-import { determineTurnOrder } from '../combat/index.js';
+import {
+  determineTurnOrder,
+  processVictory,
+  processBossVictory
+} from '../combat/index.js';
+import { generatePostCombatShop, getNextWardOptions } from '../rooms.js';
 import { getSimpleNarration } from '../dm.js';
 
 /**
@@ -128,18 +135,188 @@ export class CombatService {
   }
 
   /**
-   * Handle combat victory
-   * @returns {object} Victory rewards
+   * Handle combat victory (regular enemy or boss)
+   * @returns {object} Victory result with rewards, level ups, shop items
    */
   handleVictory() {
-    // TODO: move from GameManager
+    // Reset combat stacks (for Stack Overflow chip)
+    this.gm.run.player._combatStacks = {};
+
+    // Increment kill count for Bounty Hunter chip
+    this.gm.run.player._runKills = (this.gm.run.player._runKills || 0) + 1;
+
+    const enemy = this.gm.combat.enemy;
+    const isBoss = enemy.isBoss;
+
+    let rewards;
+    let shopItems = null;
+
+    if (isBoss) {
+      const drop = getBossDrop(this.gm.run.floor);
+      rewards = processBossVictory(this.gm.run.player, enemy, this.gm.run.floor, drop, this.gm.run);
+      this.gm.narrate(getSimpleNarration('bossVictory', { ...enemy, rewards }));
+      this.gm.run.bossDefeated = true;
+
+      // Award essence immediately on boss defeat
+      const baseEssence = Math.floor(Math.random() * 16) + 10; // 10-25
+      const floorBonus = this.gm.run.floor * 3; // +3 per floor (3-21)
+      const essenceDrop = baseEssence + floorBonus; // Total: 13-46
+      this.gm.meta.essence += essenceDrop;
+      this.gm.meta.lifetimeStats.totalEssenceEarned += essenceDrop;
+      rewards.essenceDrop = essenceDrop;
+    } else {
+      rewards = processVictory(this.gm.run.player, enemy, this.gm.run);
+      this.gm.narrate(getSimpleNarration('victory', { ...enemy, rewards }));
+      this.gm.run.encountersCompleted++;
+
+      // Mark room encounter as completed
+      const currentRoom = this.gm.getCurrentRoom();
+      if (currentRoom && currentRoom.type === 'encounter') {
+        currentRoom.interacted = true;
+      }
+
+      // Generate post-combat shop with 3 random chips (excluding already owned)
+      const ownedChipIds = (this.gm.run.player.chips || []).map(c => c.id);
+      shopItems = generatePostCombatShop(this.gm.run.floor, ownedChipIds);
+      this.gm.run.postCombatShop = {
+        active: true,
+        items: shopItems
+      };
+    }
+
+    // Check level up
+    const levelUps = checkLevelUp(this.gm.run.player);
+    for (const lu of levelUps) {
+      this.gm.narrate(getSimpleNarration('levelUp', { level: lu.newLevel }));
+    }
+
+    // Track liberation in meta-progression
+    if (this.gm.meta?.lifetimeStats) {
+      if (!this.gm.meta.lifetimeStats.liberationTracker) {
+        this.gm.meta.lifetimeStats.liberationTracker = {};
+      }
+      const tracker = this.gm.meta.lifetimeStats.liberationTracker;
+      const enemyId = enemy.id;
+
+      if (!tracker[enemyId]) {
+        tracker[enemyId] = {
+          count: 0,
+          firstLiberated: new Date().toISOString()
+        };
+      }
+      tracker[enemyId].count++;
+    }
+
+    // End combat
+    this.gm.combat.active = false;
+
+    // Check if floor complete
+    let nextWardOptions = null;
+    if (isBoss) {
+      if (this.gm.run.floor === 7) {
+        // Game complete!
+        return this.handleGameVictory();
+      }
+
+      // Ward selection required for next floor
+      this.gm.run.wardSelectionRequired = true;
+      nextWardOptions = getNextWardOptions(this.gm.run.currentWard);
+
+      this.gm.narrate(getSimpleNarration('floorClear', this.gm.run.floor));
+    }
+
+    this.gm.emitState();
+
+    // Emit event for other services
+    eventBus.emit(GameEvents.COMBAT_ENDED, {
+      outcome: 'victory',
+      isBoss,
+      rewards: { gold: rewards.goldGained, xp: rewards.xpGained, chips: rewards.chipsDropped }
+    });
+
+    return {
+      type: 'victory',
+      rewards,
+      levelUps,
+      isBoss,
+      floorComplete: isBoss,
+      shopItems,
+      // Ward path info
+      wardSelectionRequired: isBoss,
+      nextWardOptions
+    };
   }
 
   /**
-   * Handle player defeat
-   * @returns {object} Defeat result
+   * Handle player defeat (death)
+   * @returns {object} Defeat result with stats and essence earned
    */
   handleDefeat() {
-    // TODO: move from GameManager
+    this.gm.combat.active = false;
+    this.gm.run.active = false;
+    this.gm.run.stats.endTime = Date.now();
+
+    // Award essence and update meta stats (delegated to GameManager)
+    const essenceReward = this.gm.awardRunEssence(false);
+    this.gm.updateLifetimeStats(false);
+    const newAchievements = this.gm.checkAchievements(this.gm.run.stats);
+
+    this.gm.narrate(getSimpleNarration('defeat', this.gm.combat.enemy));
+    this.gm.emitState();
+
+    // Emit event for other services
+    eventBus.emit(GameEvents.COMBAT_ENDED, {
+      outcome: 'defeat'
+    });
+
+    return {
+      type: 'defeat',
+      stats: this.gm.run.stats,
+      essenceEarned: essenceReward.essence,
+      newAchievements
+    };
+  }
+
+  /**
+   * Handle final boss victory (game complete)
+   * @returns {object} Game victory result with final stats
+   */
+  handleGameVictory() {
+    this.gm.combat.active = false;
+    this.gm.run.active = false;
+    this.gm.run.stats.endTime = Date.now();
+    this.gm.run.stats.floorsCleared = 7;
+
+    // Award essence and update meta stats (victory!)
+    const essenceReward = this.gm.awardRunEssence(true);
+    this.gm.updateLifetimeStats(true);
+    const newAchievements = this.gm.checkAchievements(this.gm.run.stats);
+
+    this.gm.narrate(getSimpleNarration('gameVictory', this.gm.run.player));
+
+    // Update persistent player with run rewards
+    this.gm.player.gold += this.gm.run.player.gold;
+    this.gm.player.level = this.gm.run.player.level;
+    this.gm.player.xp = this.gm.run.player.xp;
+    // Keep best rank
+    const ranks = ['E', 'D', 'C', 'B', 'A', 'S'];
+    if (ranks.indexOf(this.gm.run.player.rank) > ranks.indexOf(this.gm.player.rank)) {
+      this.gm.player.rank = this.gm.run.player.rank;
+    }
+
+    this.gm.emitState();
+
+    // Emit event for other services
+    eventBus.emit(GameEvents.COMBAT_ENDED, {
+      outcome: 'game_victory'
+    });
+
+    return {
+      type: 'game_victory',
+      stats: this.gm.run.stats,
+      player: this.gm.run.player,
+      essenceEarned: essenceReward.essence,
+      newAchievements
+    };
   }
 }
