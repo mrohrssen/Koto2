@@ -171,6 +171,8 @@ import {
   CHIP_RARITIES
 } from './items/chips.js';
 
+import { derivePhase } from './phase-machine.js';
+
 // ============ GAME MANAGER ============
 
 export class GameManager {
@@ -544,30 +546,14 @@ export class GameManager {
 
   /**
    * Get current game phase
+   * Delegates to phase-machine.js for centralized phase logic
    */
   getPhase() {
-    if (!this.player) return 'no_save';
-    if (!this.run) return 'hub';
-    if (!this.run.active) return 'run_ended';
-
-    // Ward selection required at start or between floors
-    if (this.run.wardSelectionRequired) return 'ward_selection';
-
-    if (this.combat?.active) return 'combat';
-    if (this.run.postCombatShop?.active) return 'post_combat_shop';
-    if (this.run.bossDefeated) return 'floor_complete';
-
-    // Room-based phases
-    const currentRoom = this.run.rooms?.[this.run.currentRoom];
-    if (currentRoom) {
-      if (currentRoom.isBossRoom) return 'boss_ready';
-      if (currentRoom.type === 'encounter' && !currentRoom.interacted) return 'room_encounter';
-      return 'room';
-    }
-
-    // Fallback for old system
-    if (this.run.encountersCompleted >= this.run.encountersNeeded) return 'boss_ready';
-    return 'exploring';
+    return derivePhase({
+      player: this.player,
+      run: this.run,
+      combat: this.combat
+    });
   }
 
   // ============ INITIALIZATION ============
