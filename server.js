@@ -132,6 +132,7 @@ import {
   getCacheContents, eagerPrefetchForRun, queuePrefetch
 } from './src/game/prefetch.js';
 import { enforceVocabLimit } from './src/game/vocab-repair.js';
+import routes from './src/routes/index.js';
 
 dotenv.config();
 
