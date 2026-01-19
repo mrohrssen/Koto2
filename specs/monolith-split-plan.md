@@ -1305,6 +1305,14 @@ Each step is designed for a single Claude session to complete:
 
 **Phase 2 Result:** server.js reduced from 1,683 to ~580 lines. 12 route modules in `src/routes/`. Commit: a720cfc
 
+### Test Infrastructure Fix ✅ (Pre-Phase 3)
+
+Before Phase 3, fixed e2e test infrastructure to establish reliable baseline:
+- Fixed `networkidle` timeouts (6 files)
+- Fixed settings URL, debug mode enables, obsolete tests
+- **Result:** 87/87 tests passing (100%)
+- See `specs/test-infrastructure-fix.md` for details
+
 ### Phase 3: Data Extraction & Dead Code Cleanup
 - [ ] 3.1 Create data directory structure
 - [ ] 3.2 Extract enemy templates to JSON
@@ -1537,6 +1545,17 @@ After completion:
 - Reactive frontend state management
 - Easy to find code by feature area
 - Ready for React migration or other framework adoption
+
+---
+
+## Post-Refactor Cleanup Tasks
+
+These are lower-priority cleanup tasks to do after all phases are complete:
+
+### enemies.json Data Cleanup
+- [ ] Remove `stats` object (replace with just `hp` and `attack` at top level)
+- [ ] Remove `drops` arrays (drops system not currently used)
+- [ ] Remove `baseLevel` field (no longer used)
 
 ---
 
