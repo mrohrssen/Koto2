@@ -481,6 +481,103 @@ async function getChipLoadout() {
   }
 }
 
+// ============ VOCAB/JPDB ENDPOINTS ============
+
+/** Warm the vocabulary cache
+ * @param {boolean} force - Force refresh even if cached
+ */
+async function warmVocabCache(force = false) {
+  try {
+    const apiKeys = getStoredApiKeys();
+    if (!apiKeys.jpdbApiKey) return { status: 'no_key' };
+
+    const response = await fetch('/api/game/vocab-cache/warm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jpdbApiKey: apiKeys.jpdbApiKey, force })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to warm vocab cache:', error);
+    return { error: 'Network error' };
+  }
+}
+
+/** Fetch vocabulary from JPDB decks */
+async function fetchJpdbVocab() {
+  try {
+    const apiKeys = getStoredApiKeys();
+    if (!apiKeys.jpdbApiKey) return { count: 0 };
+
+    const response = await fetch('/api/vocab/fetch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jpdbApiKey: apiKeys.jpdbApiKey })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch JPDB vocab:', error);
+    return { error: 'Network error' };
+  }
+}
+
+/** Send JPDB review
+ * @param {number} vid - Vocabulary ID
+ * @param {number} sid - Sense ID
+ * @param {number} grade - Review grade (1-5)
+ */
+async function sendJpdbReview(vid, sid, grade) {
+  try {
+    const apiKeys = getStoredApiKeys();
+    const response = await fetch('/api/jpdb/review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vid, sid, grade, jpdbApiKey: apiKeys.jpdbApiKey })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to send JPDB review:', error);
+    return { error: 'Network error' };
+  }
+}
+
+/** Parse text for clickable words
+ * @param {string} text - Text to parse
+ */
+async function parseJpdbText(text) {
+  try {
+    const apiKeys = getStoredApiKeys();
+    const response = await fetch('/api/jpdb/parse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, jpdbApiKey: apiKeys.jpdbApiKey })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to parse JPDB text:', error);
+    return { error: 'Network error' };
+  }
+}
+
+/** Lookup word meaning
+ * @param {number} vid - Vocabulary ID
+ * @param {number} sid - Sense ID
+ */
+async function lookupJpdbWord(vid, sid) {
+  try {
+    const apiKeys = getStoredApiKeys();
+    const response = await fetch('/api/jpdb/lookup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vid, sid, jpdbApiKey: apiKeys.jpdbApiKey })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to lookup JPDB word:', error);
+    return { error: 'Network error' };
+  }
+}
+
 export {
   apiCall,
   getStoredApiKeys,
@@ -530,5 +627,11 @@ export {
   refineItem,
   unequipItem,
   nextFloor,
-  getChipLoadout
+  getChipLoadout,
+  // Vocab/JPDB endpoints
+  warmVocabCache,
+  fetchJpdbVocab,
+  sendJpdbReview,
+  parseJpdbText,
+  lookupJpdbWord
 };

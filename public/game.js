@@ -122,7 +122,12 @@ import {
   refineItem as apiRefineItem,
   unequipItem as apiUnequipItem,
   nextFloor as apiNextFloor,
-  getChipLoadout as apiGetChipLoadout
+  getChipLoadout as apiGetChipLoadout,
+  warmVocabCache as apiWarmVocabCache,
+  fetchJpdbVocab as apiFetchJpdbVocab,
+  sendJpdbReview as apiSendJpdbReview,
+  parseJpdbText as apiParseJpdbText,
+  lookupJpdbWord as apiLookupJpdbWord
 } from './js/api.js';
 
 const API_BASE = '';
@@ -592,7 +597,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Trigger JPDB parse after a short delay to let extension initialize
   setTimeout(triggerJpdbParse, 500);
   // Warm vocab cache in background
-  warmVocabCache();
+  warmVocabCacheHandler();
 });
 
 async function loadReviewTypeSetting() {
@@ -600,47 +605,22 @@ async function loadReviewTypeSetting() {
   reviewType = settings.reviewType || 'typing';
 }
 
-async function warmVocabCache(force = false) {
-  try {
-    const keys = getStoredApiKeys();
-    if (!keys.jpdbApiKey) return; // No key configured, skip silently
-
-    const response = await fetch('/api/game/vocab-cache/warm', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jpdbApiKey: keys.jpdbApiKey, force })
-    });
-    const result = await response.json();
-
-    if (result.status === 'refreshed') {
-      showToast(`Loaded ${result.wordCount} word states from JPDB`, 'info');
-    }
-    // Don't show anything for 'cached' status - it's seamless
-  } catch (error) {
-    // Silently fail - vocab suggestions are optional
-    console.warn('Vocab cache warm failed:', error);
+async function warmVocabCacheHandler(force = false) {
+  const result = await apiWarmVocabCache(force);
+  if (result.status === 'refreshed') {
+    showToast(`Loaded ${result.wordCount} word states from JPDB`, 'info');
   }
+  // Don't show anything for 'cached' or 'no_key' status - it's seamless
 }
 
 // Fetch vocabulary from JPDB decks and force refresh word states (runs at run start)
-function fetchJpdbVocabulary() {
-  const keys = getStoredApiKeys();
-  if (!keys.jpdbApiKey) return; // No key configured, skip silently
-
-  fetch('/api/vocab/fetch', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ jpdbApiKey: keys.jpdbApiKey })
-  })
-    .then(r => r.json())
-    .then(data => {
-      if (data.count > 0) {
-        console.log(`[JPDB] Fetched ${data.count} vocabulary words from decks`);
-        // Force refresh word state cache to get fresh dueAt values from JPDB
-        warmVocabCache(true);
-      }
-    })
-    .catch(e => console.warn('[JPDB] Vocab fetch failed:', e));
+async function fetchJpdbVocabulary() {
+  const data = await apiFetchJpdbVocab();
+  if (data.count > 0) {
+    console.log(`[JPDB] Fetched ${data.count} vocabulary words from decks`);
+    // Force refresh word state cache to get fresh dueAt values from JPDB
+    warmVocabCacheHandler(true);
+  }
 }
 
 function setupEventListeners() {
@@ -2506,7 +2486,7 @@ function quickFailWord() {
 
   // Send JPDB review (grade 1 = Nothing/Failed)
   if (word.vid && word.sid) {
-    sendJpdbReview(word.vid, word.sid, 1);
+    sendJpdbReviewHandler(word.vid, word.sid, 1);
   }
 
   // Remove the failed word from combatWords
@@ -2644,23 +2624,15 @@ function normalizeMeaning(meaning) {
 }
 
 // Send JPDB review and remove word from cache
-function sendJpdbReview(vid, sid, grade) {
-  const { jpdbApiKey } = getStoredApiKeys();
-  fetch(`${API_BASE}/api/jpdb/review`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ vid, sid, grade, jpdbApiKey })
-  }).then(response => {
-    if (response.ok) {
-      console.log(`[JPDB] Review sent: vid=${vid}, grade=${grade}`);
-      // Remove reviewed word from cache so it won't show up again
-      removeWordFromCache(vid);
-    } else {
-      console.warn('[JPDB] Review failed:', response.status);
-    }
-  }).catch(err => {
-    console.warn('[JPDB] Review error:', err.message);
-  });
+async function sendJpdbReviewHandler(vid, sid, grade) {
+  const result = await apiSendJpdbReview(vid, sid, grade);
+  if (!result.error) {
+    console.log(`[JPDB] Review sent: vid=${vid}, grade=${grade}`);
+    // Remove reviewed word from cache so it won't show up again
+    removeWordFromCache(vid);
+  } else {
+    console.warn('[JPDB] Review failed:', result.error);
+  }
 }
 
 // Remove a word from all caches by vid
@@ -2763,7 +2735,7 @@ function checkWordAnswer() {
 
     // Send JPDB review (grade 4 = Okay)
     if (word.vid && word.sid) {
-      sendJpdbReview(word.vid, word.sid, 4);
+      sendJpdbReviewHandler(word.vid, word.sid, 4);
 
       // Remove this word from availableWords pool (in case it was loaded at start)
       availableWords = availableWords.filter(w => w.vid !== word.vid);
@@ -2800,7 +2772,7 @@ function checkWordAnswer() {
 
     // Send JPDB review (grade 1 = Nothing/Failed)
     if (word.vid && word.sid) {
-      sendJpdbReview(word.vid, word.sid, 1);
+      sendJpdbReviewHandler(word.vid, word.sid, 1);
       // Remove this word from availableWords pool (in case it was loaded at start)
       availableWords = availableWords.filter(w => w.vid !== word.vid);
       // Track this vid to prevent it from being fetched again this session
@@ -2850,7 +2822,7 @@ function submitSelfGradeReview(grade) {
 
   // Send JPDB review
   if (word.vid && word.sid) {
-    sendJpdbReview(word.vid, word.sid, grade);
+    sendJpdbReviewHandler(word.vid, word.sid, grade);
 
     // Remove this word from availableWords pool (in case it was loaded at start)
     availableWords = availableWords.filter(w => w.vid !== word.vid);
@@ -6505,17 +6477,10 @@ async function handleGameReviewClick(e) {
   btn.classList.add('loading');
 
   try {
-    const { jpdbApiKey } = getStoredApiKeys();
-    const response = await fetch(`${API_BASE}/api/jpdb/review`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vid, sid, grade, jpdbApiKey })
-    });
+    const result = await apiSendJpdbReview(vid, sid, grade);
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Review failed');
+    if (result.error) {
+      throw new Error(result.error);
     }
 
     // Show success feedback
@@ -6742,33 +6707,22 @@ async function parseAndWrapText(text) {
     return parsedTextCache.get(text);
   }
 
-  try {
-    const { jpdbApiKey } = getStoredApiKeys();
-    const response = await fetch(`${API_BASE}/api/jpdb/parse`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, jpdbApiKey })
-    });
+  const data = await apiParseJpdbText(text);
 
-    if (!response.ok) {
-      console.warn('JPDB parse failed:', response.status);
-      return escapeHtml(text);
-    }
-
-    const data = await response.json();
-    const tokens = data.tokens || [];
-
-    if (tokens.length === 0) {
-      return escapeHtml(text);
-    }
-
-    const wrappedHtml = wrapWordsWithSpans(tokens);
-    parsedTextCache.set(text, wrappedHtml);
-    return wrappedHtml;
-  } catch (error) {
-    console.warn('Failed to parse text for dictionary:', error);
+  if (data.error) {
+    console.warn('JPDB parse failed:', data.error);
     return escapeHtml(text);
   }
+
+  const tokens = data.tokens || [];
+
+  if (tokens.length === 0) {
+    return escapeHtml(text);
+  }
+
+  const wrappedHtml = wrapWordsWithSpans(tokens);
+  parsedTextCache.set(text, wrappedHtml);
+  return wrappedHtml;
 }
 
 /**
@@ -6784,26 +6738,15 @@ async function fetchWordMeaning(vid, sid) {
     return meaningCache.get(cacheKey);
   }
 
-  try {
-    const { jpdbApiKey } = getStoredApiKeys();
-    const response = await fetch(`${API_BASE}/api/jpdb/lookup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vid, sid, jpdbApiKey })
-    });
+  const data = await apiLookupJpdbWord(vid, sid);
 
-    if (!response.ok) {
-      console.warn('JPDB lookup failed:', response.status);
-      return null;
-    }
-
-    const data = await response.json();
-    meaningCache.set(cacheKey, data);
-    return data;
-  } catch (error) {
-    console.warn('Failed to fetch word meaning:', error);
+  if (data.error) {
+    console.warn('JPDB lookup failed:', data.error);
     return null;
   }
+
+  meaningCache.set(cacheKey, data);
+  return data;
 }
 
 /**
