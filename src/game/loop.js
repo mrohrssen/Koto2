@@ -172,7 +172,7 @@ import {
 } from './items/chips.js';
 
 import { derivePhase } from './phase-machine.js';
-import { CombatService } from './services/index.js';
+import { CombatService, ExplorationService } from './services/index.js';
 
 // ============ GAME MANAGER ============
 
@@ -187,6 +187,7 @@ export class GameManager {
 
     // Services (extracted from monolithic GameManager)
     this.combatService = new CombatService(this);
+    this.explorationService = new ExplorationService(this);
   }
 
   // ============ META-PROGRESSION ============
@@ -674,7 +675,7 @@ export class GameManager {
    * Get starting ward options for run start
    */
   getStartingWardOptions() {
-    return getStartingWardOptions();
+    return this.explorationService.getStartingWardOptions();
   }
 
   /**
@@ -682,39 +683,14 @@ export class GameManager {
    * @param {string} wardId - Ward ID (e.g., 'nerima' or 'setagaya')
    */
   selectStartingWard(wardId) {
-    if (!this.run) {
-      throw new Error('No active run');
-    }
-
-    if (!STARTING_WARDS.includes(wardId)) {
-      throw new Error(`Invalid starting ward: ${wardId}`);
-    }
-
-    this.run.currentWard = wardId;
-    this.run.wardPath = [wardId];
-    this.run.floor = 1;
-    this.run.wardSelectionRequired = false;
-
-    // Now enter the floor
-    this.enterFloor();
-
-    const wardInfo = getWardInfo(wardId);
-
-    return {
-      success: true,
-      ward: wardInfo,
-      floor: this.run.floor
-    };
+    return this.explorationService.selectStartingWard(wardId);
   }
 
   /**
    * Get next ward options after clearing current ward (boss defeated)
    */
   getNextWardOptions() {
-    if (!this.run?.currentWard) {
-      return [];
-    }
-    return getNextWardOptions(this.run.currentWard);
+    return this.explorationService.getNextWardOptions();
   }
 
   /**
@@ -722,67 +698,14 @@ export class GameManager {
    * @param {string} wardId - Ward ID to advance to
    */
   selectNextWard(wardId) {
-    if (!this.run?.bossDefeated) {
-      throw new Error('Boss not defeated');
-    }
-
-    const options = getNextWardOptions(this.run.currentWard);
-    const validOption = options.find(o => o.id === wardId);
-
-    if (!validOption) {
-      throw new Error(`Invalid ward selection: ${wardId}`);
-    }
-
-    this.run.currentWard = wardId;
-    this.run.wardPath.push(wardId);
-    this.run.floor++;
-    this.run.wardSelectionRequired = false;
-
-    // Enter the new floor
-    this.enterFloor();
-
-    const wardInfo = getWardInfo(wardId);
-
-    return {
-      success: true,
-      ward: wardInfo,
-      floor: this.run.floor
-    };
+    return this.explorationService.selectNextWard(wardId);
   }
 
   /**
    * Enter a floor
    */
   enterFloor() {
-    if (!this.run) {
-      throw new Error('No active run');
-    }
-
-    // Reset floor state
-    this.run.encountersCompleted = 0;
-    this.run.encountersNeeded = generateEncounterCount(this.run.floor);
-    this.run.bossDefeated = false;
-
-    // Generate rooms for this floor
-    this.run.rooms = generateFloorRooms(this.run.floor, this.run.encountersNeeded);
-    this.run.currentRoom = 0;
-    this.run.roomsExplored = 0;
-
-    // Mark first room as explored
-    if (this.run.rooms.length > 0) {
-      this.run.rooms[0].explored = true;
-      this.run.roomsExplored = 1;
-    }
-
-    this.narrate(getSimpleNarration('enterFloor', this.run.floor));
-    this.emitState();
-
-    return {
-      floor: this.run.floor,
-      totalRooms: this.run.rooms.length,
-      encountersNeeded: this.run.encountersNeeded,
-      firstRoom: this.run.rooms[0]
-    };
+    return this.explorationService.enterFloor();
   }
 
   // ============ ROOM EXPLORATION ============
@@ -791,92 +714,14 @@ export class GameManager {
    * Get current room info
    */
   getCurrentRoom() {
-    if (!this.run?.rooms?.length) {
-      return null;
-    }
-    return this.run.rooms[this.run.currentRoom];
+    return this.explorationService.getCurrentRoom();
   }
 
   /**
    * Proceed to next room
    */
   proceedToNextRoom() {
-    if (!this.run || !this.run.active) {
-      throw new Error('No active run');
-    }
-
-    const currentRoom = this.getCurrentRoom();
-    if (!currentRoom) {
-      throw new Error('No current room');
-    }
-
-    // Can't proceed if encounter not completed
-    if (currentRoom.type === 'encounter' && !currentRoom.interacted) {
-      throw new Error('Must complete encounter before proceeding');
-    }
-
-    // Can't proceed from boss room (use nextFloor instead)
-    if (currentRoom.isBossRoom) {
-      throw new Error('Cannot proceed past boss room');
-    }
-
-    // Move to next room
-    this.run.currentRoom++;
-    const nextRoom = this.run.rooms[this.run.currentRoom];
-
-    if (!nextRoom) {
-      throw new Error('No more rooms');
-    }
-
-    // Mark as explored
-    nextRoom.explored = true;
-    this.run.roomsExplored++;
-    this.run.stats.roomsExplored++;
-
-    // Track room clears for counter chips
-    if (this.run.runStats) {
-      this.run.runStats.roomsCleared++;
-    }
-
-    // Process on-room-enter chip effects
-    const roomEnterEffects = {};
-    const equippedChips = getEquippedChips(this.run.player);
-    if (equippedChips.length > 0) {
-      const roomEffects = processOnRoomEnterChips(equippedChips);
-      if (roomEffects.heal > 0) {
-        const hpBefore = this.run.player.hp;
-        this.run.player.hp = Math.min(this.run.player.maxHp, this.run.player.hp + roomEffects.heal);
-        roomEnterEffects.heal = this.run.player.hp - hpBefore;
-      }
-      if (roomEffects.buffs.length > 0) {
-        roomEnterEffects.buffs = roomEffects.buffs;
-      }
-      if (roomEffects.rareSpawn) {
-        roomEnterEffects.rareSpawn = true;
-      }
-      if (roomEffects.stealth) {
-        roomEnterEffects.stealth = true;
-        // Mark player as stealthed for potential combat avoidance
-        this.run.player.stealth = true;
-      }
-      if (roomEffects.stunAllEnemies > 0) {
-        roomEnterEffects.stunAllEnemies = roomEffects.stunAllEnemies;
-      }
-    }
-
-    // Get narration for new room
-    const narration = getRoomEntryNarration(nextRoom);
-    this.narrate(narration);
-    this.emitState();
-
-    return {
-      room: nextRoom,
-      roomNumber: this.run.currentRoom + 1,
-      totalRooms: this.run.rooms.length,
-      actions: getRoomActions(nextRoom),
-      narration,
-      chipEffects: Object.keys(roomEnterEffects).length > 0 ? roomEnterEffects : null
-    };
+    return this.explorationService.proceedToNextRoom();
   }
 
   // ============ POST-COMBAT SHOP ============
@@ -886,437 +731,84 @@ export class GameManager {
    * @param {number} itemIndex - Index of item to buy (0, 1, or 2)
    */
   buyFromPostCombatShop(itemIndex) {
-    if (!this.run?.postCombatShop?.active) {
-      throw new Error('No active shop');
-    }
-
-    const shop = this.run.postCombatShop;
-    if (itemIndex < 0 || itemIndex >= shop.items.length) {
-      throw new Error('Invalid item index');
-    }
-
-    const item = shop.items[itemIndex];
-    const player = this.run.player;
-
-    // Check if player has enough gold
-    if (player.gold < item.price) {
-      throw new Error('Not enough gold');
-    }
-
-    // Deduct gold
-    player.gold -= item.price;
-
-    // Handle item based on type
-    if (item.type === 'chip') {
-      // Add chip to player's chip inventory (unique only)
-      if (!player.chips) {
-        player.chips = [];
-      }
-      // Check if player already owns this chip
-      const alreadyOwned = player.chips.some(c => c.id === item.itemId);
-      if (!alreadyOwned) {
-        player.chips.push({
-          id: item.itemId,
-          name: item.name,
-          nameEn: item.nameEn,
-          category: item.category,
-          rarity: item.rarity,
-          effects: item.effects
-        });
-      }
-    } else {
-      // Legacy handling for equipment/consumables
-      const itemData = getItem(item.itemId);
-      if (itemData) {
-        if (item.type === 'equipment') {
-          if (!player.equipmentInventory) {
-            player.equipmentInventory = [];
-          }
-          player.equipmentInventory.push({ id: item.itemId });
-        } else {
-          const existing = player.items.find(i => i.id === item.itemId);
-          if (existing) {
-            existing.quantity = (existing.quantity || 1) + 1;
-          } else {
-            player.items.push({ id: item.itemId, quantity: 1 });
-          }
-        }
-      }
-    }
-
-    // Recalculate all stats in case item has passive bonuses (chips add stats)
-    const equipBonuses = calculateEquipmentBonuses(player);
-    recalculatePlayerResources(player, equipBonuses, true);
-
-    // Close shop
-    this.run.postCombatShop.active = false;
-
-    this.narrate(`${item.name}を購入した！`);
-    this.emitState();
-
-    return {
-      success: true,
-      item: item,
-      goldSpent: item.price,
-      goldRemaining: player.gold
-    };
+    return this.explorationService.buyFromPostCombatShop(itemIndex);
   }
 
   /**
    * Skip the post-combat shop without buying
    */
   skipShop() {
-    if (!this.run?.postCombatShop?.active) {
-      throw new Error('No active shop');
-    }
-
-    // Close shop without buying
-    this.run.postCombatShop.active = false;
-
-    this.narrate('先に進むことにした。');
-    this.emitState();
-
-    return {
-      success: true,
-      skipped: true
-    };
+    return this.explorationService.skipShop();
   }
 
   /**
    * Refresh the post-combat shop with 3 new random chips
    */
   refreshPostCombatShop() {
-    if (!this.run?.postCombatShop?.active) {
-      throw new Error('No active shop');
-    }
-
-    // Generate new shop items (excluding already owned chips)
-    const ownedChipIds = (this.run.player.chips || []).map(c => c.id);
-    const shopItems = generatePostCombatShop(this.run.floor, ownedChipIds);
-
-    this.run.postCombatShop.items = shopItems;
-
-    this.narrate('商人が新しい品を出してきた。');
-    this.emitState();
-
-    return {
-      success: true,
-      items: shopItems
-    };
+    return this.explorationService.refreshPostCombatShop();
   }
 
   /**
    * Interact with trap - attempt to disarm
    */
   disarmTrap() {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'trap') {
-      throw new Error('No trap to disarm');
-    }
-
-    if (room.trap.triggered || room.trap.disarmed) {
-      throw new Error('Trap already handled');
-    }
-
-    const result = attemptDisarm(room.trap, this.run.player);
-
-    if (result.success) {
-      room.trap.disarmed = true;
-      room.interacted = true;
-      this.run.stats.trapsDisarmed++;
-      this.run.player.xp += result.xpReward;
-      this.narrate(`罠を解除した！${result.xpReward} XPを獲得！`);
-    } else {
-      room.trap.triggered = true;
-      room.interacted = true;
-      this.run.player.hp = Math.max(0, this.run.player.hp - result.damage);
-      this.run.stats.damageTaken += result.damage;
-      this.narrate(`罠の解除に失敗！${result.damage}ダメージ！`);
-
-      if (this.run.player.hp <= 0) {
-        return this._handleDefeat();
-      }
-    }
-
-    this.emitState();
-    return { type: result.success ? 'disarm_success' : 'disarm_fail', ...result };
+    return this.explorationService.disarmTrap();
   }
 
   /**
    * Interact with trap - attempt to avoid/trigger
    */
   triggerTrap() {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'trap') {
-      throw new Error('No trap to trigger');
-    }
-
-    if (room.trap.triggered || room.trap.disarmed) {
-      throw new Error('Trap already handled');
-    }
-
-    const result = attemptAvoid(room.trap, this.run.player);
-    room.trap.triggered = true;
-    room.interacted = true;
-
-    if (result.avoided) {
-      this.narrate('罠を避けた！素早く通り抜けた。');
-    } else {
-      this.run.player.hp = Math.max(0, this.run.player.hp - result.damage);
-      this.run.stats.damageTaken += result.damage;
-      this.narrate(`罠に引っかかった！${result.damage}ダメージ！`);
-
-      if (this.run.player.hp <= 0) {
-        return this._handleDefeat();
-      }
-    }
-
-    this.emitState();
-    return { type: result.avoided ? 'avoid_success' : 'avoid_fail', ...result };
+    return this.explorationService.triggerTrap();
   }
 
   /**
    * Loot a body
    */
   lootBody() {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'body') {
-      throw new Error('No body to loot');
-    }
-
-    if (room.body.looted) {
-      throw new Error('Body already looted');
-    }
-
-    if (room.body.skipped) {
-      throw new Error('Body was ignored');
-    }
-
-    room.body.looted = true;
-    room.interacted = true;
-
-    // Check for trap
-    let trapTriggered = false;
-    let trapDamage = 0;
-    if (room.body.trapped) {
-      const trap = TRAP_TYPES[room.body.trapType];
-      trapDamage = calculateTrapDamage(trap);
-      this.run.player.hp = Math.max(0, this.run.player.hp - trapDamage);
-      this.run.stats.damageTaken += trapDamage;
-      trapTriggered = true;
-      this.narrate(`遺体を調べた...罠だ！${trapDamage}ダメージ！`);
-
-      if (this.run.player.hp <= 0) {
-        return this._handleDefeat();
-      }
-    }
-
-    const loot = generateBodyLoot(room.body.lootTier);
-
-    // Add loot to player inventory
-    for (const item of loot) {
-      this._addItemToInventory(item.itemId, item.quantity);
-    }
-
-    const lootDesc = loot.length > 0
-      ? `見つけた: ${loot.map(l => `${l.itemId}×${l.quantity}`).join(', ')}`
-      : '何も見つからなかった。';
-
-    if (!trapTriggered) {
-      this.narrate(`遺体を調べた。${lootDesc}`);
-    } else {
-      this.narrate(`それでも...${lootDesc}`);
-    }
-
-    this.emitState();
-    return { type: 'loot', loot, trapped: trapTriggered, damage: trapDamage };
+    return this.explorationService.lootBody();
   }
 
   /**
    * Skip looting a body (ignore it)
    */
   skipBody() {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'body') {
-      throw new Error('No body to skip');
-    }
-
-    if (room.body.looted || room.body.skipped) {
-      throw new Error('Body already interacted with');
-    }
-
-    room.body.skipped = true;
-    room.interacted = true;
-    this.narrate('遺体を無視して進むことにした。');
-
-    this.emitState();
-    return { type: 'skip', skipped: 'body' };
+    return this.explorationService.skipBody();
   }
 
   /**
    * Skip opening a treasure chest (ignore it)
    */
   skipTreasure() {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'treasure') {
-      throw new Error('No treasure to skip');
-    }
-
-    if (room.treasure.opened || room.treasure.skipped) {
-      throw new Error('Treasure already interacted with');
-    }
-
-    room.treasure.skipped = true;
-    room.interacted = true;
-    this.narrate('宝箱を無視して進むことにした。怪しすぎる。');
-
-    this.emitState();
-    return { type: 'skip', skipped: 'treasure' };
+    return this.explorationService.skipTreasure();
   }
 
   /**
    * Open a treasure chest
    */
   openTreasure() {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'treasure') {
-      throw new Error('No treasure to open');
-    }
-
-    if (room.treasure.opened) {
-      throw new Error('Treasure already opened');
-    }
-
-    room.treasure.opened = true;
-    room.interacted = true;
-    this.run.stats.treasuresOpened++;
-
-    // Check for trap
-    if (room.treasure.trapped) {
-      const trap = TRAP_TYPES[room.treasure.trapType];
-      const damage = calculateTrapDamage(trap);
-      this.run.player.hp = Math.max(0, this.run.player.hp - damage);
-      this.run.stats.damageTaken += damage;
-      this.narrate(`宝箱を開けた...罠だ！${damage}ダメージ！`);
-
-      if (this.run.player.hp <= 0) {
-        return this._handleDefeat();
-      }
-    }
-
-    const loot = generateChestLoot(room.treasure.tier);
-
-    // Add loot to player inventory
-    for (const item of loot) {
-      this._addItemToInventory(item.itemId, item.quantity);
-    }
-
-    const lootDesc = loot.length > 0
-      ? `見つけた: ${loot.map(l => `${l.itemId}×${l.quantity}`).join(', ')}`
-      : '空だった...';
-
-    if (!room.treasure.trapped) {
-      this.narrate(`宝箱を開けた！${lootDesc}`);
-    } else {
-      this.narrate(`それでも...${lootDesc}`);
-    }
-
-    this.emitState();
-    return { type: 'treasure', loot, trapped: room.treasure.trapped };
+    return this.explorationService.openTreasure();
   }
 
   /**
    * Use a shrine to heal
    */
   useShrine() {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'shrine') {
-      throw new Error('No shrine here');
-    }
-
-    if (room.shrine.used) {
-      throw new Error('Shrine already used');
-    }
-
-    room.shrine.used = true;
-    room.interacted = true;
-
-    const healAmount = Math.floor(this.run.player.maxHp * room.shrine.healPercent);
-    const actualHeal = Math.min(healAmount, this.run.player.maxHp - this.run.player.hp);
-    this.run.player.hp = Math.min(this.run.player.maxHp, this.run.player.hp + healAmount);
-
-    // Track healing for counter chips
-    if (this.run.runStats && actualHeal > 0) {
-      this.run.runStats.damageHealed += actualHeal;
-    }
-
-    this.narrate(`祠に祈りを捧げた。${actualHeal} HPが回復した！`);
-
-    this.emitState();
-    return { type: 'shrine', healed: actualHeal };
+    return this.explorationService.useShrine();
   }
 
   /**
    * Get merchant inventory for current room
    */
   getShopInventory() {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'merchant') {
-      throw new Error('No merchant here');
-    }
-
-    return {
-      inventory: room.merchant.inventory,
-      playerGold: this.run.player.gold
-    };
+    return this.explorationService.getShopInventory();
   }
 
   /**
    * Buy item from merchant
    */
   buyFromShop(itemId, quantity = 1) {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'merchant') {
-      throw new Error('No merchant here');
-    }
-
-    // Find item in merchant inventory
-    const shopItem = room.merchant.inventory.find(i => i.itemId === itemId);
-    if (!shopItem) {
-      throw new Error('Item not available');
-    }
-
-    if (shopItem.quantity < quantity) {
-      throw new Error('Not enough stock');
-    }
-
-    const totalCost = shopItem.price * quantity;
-    if (this.run.player.gold < totalCost) {
-      throw new Error('Not enough gold');
-    }
-
-    // Make the purchase
-    this.run.player.gold -= totalCost;
-    shopItem.quantity -= quantity;
-
-    // Remove item from shop if sold out
-    if (shopItem.quantity <= 0) {
-      room.merchant.inventory = room.merchant.inventory.filter(i => i.itemId !== itemId);
-    }
-
-    // Add item to player inventory
-    this._addItemToInventory(itemId, quantity);
-
-    this.narrate(`${quantity}個を${totalCost}Gで買った。`);
-
-    this.emitState();
-    return {
-      type: 'purchase',
-      itemId,
-      quantity,
-      cost: totalCost,
-      remainingGold: this.run.player.gold
-    };
+    return this.explorationService.buyFromShop(itemId, quantity);
   }
 
   // ============ BLACKSMITH / REFINEMENT ============
@@ -1325,30 +817,7 @@ export class GameManager {
    * Get refinement preview for all equipped items
    */
   getRefinePreview() {
-    if (!this.run || !this.run.player) {
-      throw new Error('No active run');
-    }
-
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'blacksmith') {
-      throw new Error('No blacksmith here');
-    }
-
-    const previews = {};
-    const slots = ['weapon', 'body', 'shield', 'accessory'];
-
-    for (const slot of slots) {
-      const preview = getRefinementPreview(this.run.player, slot);
-      if (preview) {
-        previews[slot] = preview;
-      }
-    }
-
-    return {
-      previews,
-      playerGold: this.run.player.gold,
-      floorBonus: room.blacksmith?.successBonus || 0
-    };
+    return this.explorationService.getRefinePreview();
   }
 
   /**
@@ -1356,29 +825,7 @@ export class GameManager {
    * @param {string} slot - Equipment slot to refine
    */
   refineEquipment(slot) {
-    if (!this.run || !this.run.player) {
-      throw new Error('No active run');
-    }
-
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'blacksmith') {
-      throw new Error('No blacksmith here');
-    }
-
-    const floorBonus = room.blacksmith?.successBonus || 0;
-    const result = attemptRefinement(this.run.player, slot, floorBonus);
-
-    if (result.error) {
-      throw new Error(result.error);
-    }
-
-    // Mark blacksmith as interacted
-    if (room.blacksmith) {
-      room.blacksmith.interacted = true;
-    }
-
-    this.emitState();
-    return result;
+    return this.explorationService.refineEquipment(slot);
   }
 
   /**
@@ -1387,49 +834,7 @@ export class GameManager {
    * @returns {object} { chips: Array, playerGold: number }
    */
   getChipUpgradePreview() {
-    console.log('[getChipUpgradePreview] Called');
-    if (!this.run || !this.run.player) {
-      throw new Error('No active run');
-    }
-
-    const room = this.getCurrentRoom();
-    console.log('[getChipUpgradePreview] Room type:', room?.type, 'Room:', room);
-    if (!room || room.type !== 'blacksmith') {
-      throw new Error('No blacksmith here');
-    }
-
-    const player = this.run.player;
-    const floorBonus = room.blacksmith?.successBonus || 0;
-
-    // All chips are in player.chips (both equipped and unequipped)
-    // Get upgradeable chips (not legendary)
-    const upgradeableChips = (player.chips || []).filter(chip => {
-      const nextRarity = getNextRarity(chip.rarity);
-      return nextRarity !== null; // Can upgrade if not legendary
-    });
-
-    // Shuffle and pick up to 3
-    const shuffled = [...upgradeableChips].sort(() => Math.random() - 0.5);
-    const selectedChips = shuffled.slice(0, 3);
-
-    // Add upgrade info to each chip
-    const chipsWithInfo = selectedChips.map(chip => ({
-      ...chip,
-      upgradeCost: getUpgradeCost(chip),
-      failureChance: getUpgradeFailureChance(chip, floorBonus),
-      nextRarity: getNextRarity(chip.rarity),
-      nextRarityInfo: CHIP_RARITIES[getNextRarity(chip.rarity)]
-    }));
-
-    // Store selected chips in room for validation
-    room.blacksmith.selectedChipIds = chipsWithInfo.map(c => c.id);
-
-    return {
-      chips: chipsWithInfo,
-      playerGold: player.gold,
-      floorBonus,
-      greeting: '「チップを強化してやろうか？失敗すると...まあ、分かるだろ？」'
-    };
+    return this.explorationService.getChipUpgradePreview();
   }
 
   /**
@@ -1438,143 +843,21 @@ export class GameManager {
    * @returns {object} { success: boolean, message: string, chip?: object }
    */
   performChipUpgrade(chipId) {
-    if (!this.run || !this.run.player) {
-      throw new Error('No active run');
-    }
-
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'blacksmith') {
-      throw new Error('No blacksmith here');
-    }
-
-    if (room.blacksmith?.interacted) {
-      throw new Error('Blacksmith already used');
-    }
-
-    const player = this.run.player;
-    const floorBonus = room.blacksmith?.successBonus || 0;
-
-    // Validate chip is in the offered selection
-    if (!room.blacksmith?.selectedChipIds?.includes(chipId)) {
-      throw new Error('Invalid chip selection');
-    }
-
-    // Find chip in player inventory
-    const chipIndex = player.chips.findIndex(c => c.id === chipId);
-    if (chipIndex === -1) {
-      throw new Error('Chip not found in inventory');
-    }
-
-    const chip = player.chips[chipIndex];
-    const upgradeCost = getUpgradeCost(chip);
-
-    // Check player has enough gold
-    if (player.gold < upgradeCost) {
-      throw new Error('Not enough credits');
-    }
-
-    // Deduct gold
-    player.gold -= upgradeCost;
-
-    // Attempt upgrade
-    const result = attemptChipUpgrade(chip, floorBonus);
-
-    // Mark blacksmith as interacted
-    room.blacksmith.interacted = true;
-
-    // Find if chip is equipped to any equipment slot
-    const slots = ['weapon', 'body', 'shield', 'accessory'];
-    let equippedSlot = null;
-    for (const slot of slots) {
-      const equipment = player.equipment?.[slot];
-      if (equipment?.equippedChips?.includes(chipId)) {
-        equippedSlot = slot;
-        break;
-      }
-    }
-
-    if (result.success) {
-      // Remove old chip
-      player.chips.splice(chipIndex, 1);
-      // Add upgraded chip
-      player.chips.push(result.upgradedChip);
-
-      // Update equipment reference if chip was equipped
-      if (equippedSlot) {
-        const equipment = player.equipment[equippedSlot];
-        const chipIdx = equipment.equippedChips.indexOf(chipId);
-        if (chipIdx !== -1) {
-          equipment.equippedChips[chipIdx] = result.upgradedChip.id;
-        }
-      }
-
-      this.emitNarration(`「よし、成功だ。」${chip.name || chip.nameEn}が${CHIP_RARITIES[result.newRarity].name}に強化された！`);
-      this.emitState();
-
-      return {
-        success: true,
-        message: `${chip.name || chip.nameEn}が${CHIP_RARITIES[result.newRarity].name}に強化された！`,
-        chip: result.upgradedChip,
-        previousRarity: result.previousRarity,
-        newRarity: result.newRarity
-      };
-    } else {
-      // Remove destroyed chip
-      player.chips.splice(chipIndex, 1);
-
-      // Remove from equipment if chip was equipped
-      if (equippedSlot) {
-        const equipment = player.equipment[equippedSlot];
-        equipment.equippedChips = equipment.equippedChips.filter(id => id !== chipId);
-      }
-
-      this.emitNarration(`「...失敗だ。チップは壊れた。」${chip.name || chip.nameEn}は破壊された...`);
-      this.emitState();
-
-      return {
-        success: false,
-        message: `${chip.name || chip.nameEn}は破壊された...`,
-        destroyedChip: chip
-      };
-    }
+    return this.explorationService.performChipUpgrade(chipId);
   }
 
   /**
    * Start room encounter
    */
   startRoomEncounter() {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'encounter') {
-      throw new Error('No encounter in this room');
-    }
-
-    if (room.interacted) {
-      throw new Error('Encounter already completed');
-    }
-
-    // Mark as interacted (will be fully marked after combat)
-    room.encounterStarted = true;
-
-    // Start encounter using existing method
-    return this.startEncounter();
+    return this.explorationService.startRoomEncounter();
   }
 
   /**
    * Add item to player inventory
    */
   _addItemToInventory(itemId, quantity) {
-    if (itemId === 'gold') {
-      this.run.player.gold += quantity;
-      this.run.stats.goldEarned += quantity;
-      return;
-    }
-
-    const existing = this.run.player.items.find(i => i.id === itemId);
-    if (existing) {
-      existing.quantity += quantity;
-    } else {
-      this.run.player.items.push({ id: itemId, quantity });
-    }
+    return this.explorationService.addItemToInventory(itemId, quantity);
   }
 
   /**
@@ -1583,65 +866,7 @@ export class GameManager {
    * @returns {object} Result with equipped item info
    */
   equipItem(itemId) {
-    const player = this.run?.player || this.player;
-    if (!player) {
-      throw new Error('No player found');
-    }
-
-    // Find item in inventory
-    const invItem = player.items.find(i => i.id === itemId);
-    if (!invItem || invItem.quantity <= 0) {
-      throw new Error('Item not in inventory');
-    }
-
-    // Get item definition
-    const itemDef = getItem(itemId);
-    if (!itemDef) {
-      throw new Error('Unknown item');
-    }
-
-    // Check if it's equipment
-    if (!itemDef.slot) {
-      throw new Error('Item cannot be equipped');
-    }
-
-    const slot = itemDef.slot;
-    const currentEquipped = player.equipment[slot];
-
-    // Unequip current item if any (put back in inventory)
-    if (currentEquipped) {
-      const currentId = currentEquipped.id || currentEquipped;
-      const existingInv = player.items.find(i => i.id === currentId);
-      if (existingInv) {
-        existingInv.quantity += 1;
-      } else {
-        player.items.push({ id: currentId, quantity: 1 });
-      }
-    }
-
-    // Equip new item
-    player.equipment[slot] = { id: itemId, refinement: invItem.refinement || 0 };
-
-    // Remove from inventory
-    invItem.quantity -= 1;
-    if (invItem.quantity <= 0) {
-      player.items = player.items.filter(i => i.id !== itemId);
-    }
-
-    // Sync to base player if in run
-    if (this.run?.player && this.player) {
-      this.player.equipment = { ...player.equipment };
-      this.player.items = [...player.items];
-    }
-
-    // Note: saveGame is handled by the server after equipItem returns
-    this.emitState();
-
-    return {
-      equipped: itemDef.name,
-      slot: slot,
-      unequipped: currentEquipped ? getItem(currentEquipped.id || currentEquipped)?.name : null
-    };
+    return this.explorationService.equipItem(itemId);
   }
 
   // ============ ENCOUNTER MANAGEMENT ============
@@ -1701,16 +926,7 @@ export class GameManager {
    * Proceed to next floor after boss defeat
    */
   nextFloor() {
-    if (!this.run?.bossDefeated) {
-      throw new Error('Boss not defeated');
-    }
-
-    if (this.run.floor >= 7) {
-      throw new Error('Already at final floor');
-    }
-
-    this.run.floor++;
-    return this.enterFloor();
+    return this.explorationService.nextFloor();
   }
 
   // ============ UTILITY ============

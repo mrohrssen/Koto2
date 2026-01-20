@@ -4,3 +4,4 @@
  */
 
 export { CombatService } from './combat-service.js';
+export { ExplorationService } from './exploration-service.js';
