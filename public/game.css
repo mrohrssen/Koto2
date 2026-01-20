@@ -1181,11 +1181,20 @@ body::before {
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.65rem;
-  color: var(--cyber-cyan);
+  color: black;
   font-weight: bold;
-  text-shadow: 0 0 5px var(--cyber-cyan);
   white-space: nowrap;
   pointer-events: none;
+}
+
+/* Chip math breakdown - shows damage calculation step by step */
+.chip-math-breakdown {
+  margin-top: 1rem;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: black;
+  text-align: left;
+  min-height: 1.5rem;
 }
 
 @keyframes chipFiring {

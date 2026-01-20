@@ -445,12 +445,30 @@ export async function animateChipPipeline(pipelineResult) {
   const slots = document.querySelectorAll('.combat-chips-display .chip-slot');
   if (slots.length === 0) return;
 
+  // Get the math breakdown element
+  const mathBreakdown = document.querySelector('.chip-math-breakdown');
+
   // Reset all slots first
   slots.forEach(slot => {
     slot.classList.remove('firing', 'triggered', 'failed');
     const effectText = slot.querySelector('.chip-effect-text');
     if (effectText) effectText.remove();
   });
+
+  // Clear math breakdown
+  if (mathBreakdown) {
+    mathBreakdown.innerHTML = '';
+  }
+
+  // Find the first triggered chip to get the base damage
+  const firstTriggered = pipelineResult.firedChips.find(c => c.triggered && c.previousDamage !== undefined);
+  const baseDamage = firstTriggered?.previousDamage || pipelineResult.finalDamage;
+
+  // Show base damage first
+  if (mathBreakdown && firstTriggered) {
+    mathBreakdown.innerHTML = `Base: ${baseDamage}`;
+    await delay(500);
+  }
 
   // Animate each chip sequentially
   for (let i = 0; i < pipelineResult.firedChips.length; i++) {
@@ -472,6 +490,11 @@ export async function animateChipPipeline(pipelineResult) {
       effectSpan.className = 'chip-effect-text';
       effectSpan.textContent = result.displayText;
       slot.appendChild(effectSpan);
+
+      // Update math breakdown
+      if (mathBreakdown) {
+        mathBreakdown.innerHTML += `<br>[${result.chipName || 'Chip'}] ${result.previousDamage} → ${result.newDamage} (${result.displayText})`;
+      }
     }
 
     // Show heal number for chips that heal (like Siphon)
@@ -479,7 +502,15 @@ export async function animateChipPipeline(pipelineResult) {
       showDamageNumber(result.healPlayer, true, false, true); // isPlayer=true, isHeal=true
     }
 
-    await delay(80);
+    await delay(500); // 500ms per chip as requested
+  }
+
+  // Show final damage for 1.5 seconds
+  if (mathBreakdown && pipelineResult.finalDamage !== undefined) {
+    mathBreakdown.innerHTML += `<br>═══════════════<br>FINAL: ${pipelineResult.finalDamage}`;
+    await delay(1500);
+    // Clear after showing
+    mathBreakdown.innerHTML = '';
   }
 }
 

@@ -1215,6 +1215,7 @@ function updateActionPanel() {
         <div class="combat-chips-display">
           ${renderCombatChips()}
         </div>
+        <div class="chip-math-breakdown"></div>
         <div class="combat-in-progress">
           <div class="combat-indicator">⚔️ 戦闘中...</div>
         </div>
