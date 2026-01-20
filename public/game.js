@@ -23,7 +23,7 @@
  * - handleCombatEnd() - Victory/defeat processing
  *
  * UI Systems:
- * - showNarration()/appendNarration() - VN-style text display with JPDB parsing
+ * - narration.showNarration()/narration.appendNarration() - VN-style text display with JPDB parsing
  * - openSettings()/saveSettings() - Configuration modal
  * - openChipModal()/renderChipModal() - Equipment chip management
  * - openUpgradesModal() - Meta-progression upgrades
@@ -89,6 +89,9 @@ import * as settings from './js/settings.js';
 
 // Background module for ward/floor background images
 import * as background from './js/background.js';
+
+// Narration module for VN-style text display
+import * as narration from './js/narration.js';
 
 // API module - centralized server communication
 import {
@@ -318,38 +321,8 @@ const floorIndicator = document.getElementById('floor-indicator');
 // Initialize background module with DOM element and state getter
 background.init(vnBackground, () => gameState);
 
-// ============ NARRATION SYSTEM ============
-// Narration comes from server - can be simple Japanese or AI-generated based on user's vocab
-
-// Narration queue for video game-style "press to continue"
-let narrationQueue = [];
-let isNarrationWaiting = false;
-let narrationLog = []; // Log of all narrations for current run
-
 // Keyboard navigation for action buttons
 let selectedActionIndex = 0;
-
-// Setting for AI narration (can be toggled)
-let useAINarration = true;
-
-// Fetch AI-generated narration using player's JPDB vocabulary
-async function fetchAINarration(event, context = {}) {
-  if (!useAINarration) return null;
-
-  try {
-    const response = await fetch(`${API_BASE}/api/game/narrate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ event, context })
-    });
-    const data = await response.json();
-    console.log('AI Narration:', data.source, data.narration?.substring(0, 50) + '...');
-    return data.narration || null;
-  } catch (error) {
-    console.error('AI Narration fetch error:', error);
-    return null;
-  }
-}
 
 // Simple fallback narrations (Japanese) for when server narration isn't available
 const FALLBACK_NARRATIONS = {
@@ -402,6 +375,18 @@ const FALLBACK_NARRATIONS = {
 
 // ============ INITIALIZATION ============
 document.addEventListener('DOMContentLoaded', async () => {
+  // Initialize narration module with DOM elements and callbacks
+  narration.init({
+    textElement: narrationText,
+    continueElement: narrationContinue,
+    panelElement: narrationPanel,
+    getGameState: () => gameState,
+    parseAndWrapText: parseAndWrapText,
+    triggerJpdbParse: triggerJpdbParse,
+    updateActionButtonsState: updateActionButtonsState,
+    apiBase: API_BASE
+  });
+
   await loadGameState();
   setupEventListeners();
   updateUI();
@@ -556,7 +541,7 @@ function setupEventListeners() {
   // Narration "press to continue" - click (but not on clickable words)
   narrationPanel.addEventListener('click', (e) => {
     if (e.target.closest('.jpdb-word')) return; // Let word popup handle it
-    advanceNarration();
+    narration.advanceNarration();
   });
 }
 
@@ -586,7 +571,7 @@ async function createCharacter() {
     resetCreateStats();
     // Use server narration or fallback
     const narration = result.narration || FALLBACK_NARRATIONS.hub(gameState.player);
-    showNarration(narration);
+    narration.showNarration(narration);
   }
 }
 
@@ -684,7 +669,7 @@ function resetCreateStats() {
 
 async function startNewRun() {
   // Clear narration log for new run
-  clearNarrationLog();
+  narration.clearNarrationLog();
   // Reset background tracking for new run
   background.resetBackground();
   // Clear word cache to get fresh due words for this run
@@ -714,13 +699,13 @@ async function startNewRun() {
 
     // Try AI narration for immersive experience, fall back to simple
     let narration = result.narration || FALLBACK_NARRATIONS.enterDungeon(gameState.run.floor);
-    showNarration(narration);
+    narration.showNarration(narration);
     background.updateBackground();
     updateUI();
 
     // Fetch richer AI narration in background
-    fetchAINarration('enterFloor', gameState.run.floor).then(aiNarr => {
-      if (aiNarr) showNarration(aiNarr);
+    narration.fetchAINarration('enterFloor', gameState.run.floor).then(aiNarr => {
+      if (aiNarr) narration.showNarration(aiNarr);
     });
   }
 }
@@ -732,7 +717,7 @@ async function startEncounter() {
   if (result && enemy) {
     // Show immediate fallback narration for encounter start
     let narration = result.narration || FALLBACK_NARRATIONS.combatStart(enemy);
-    showNarration(narration);
+    narration.showNarration(narration);
 
     // Check for dialogue BEFORE updateUI to prevent auto-start race condition
     // Server returns a single string, but fallback to enemy.dialogue.possessed is an array
@@ -774,7 +759,7 @@ async function startBossEncounter() {
   if (result && enemy) {
     // Show immediate fallback narration for boss encounter
     let narration = result.narration || FALLBACK_NARRATIONS.combatStart(enemy);
-    showNarration(narration);
+    narration.showNarration(narration);
 
     // Check for dialogue BEFORE updateUI to prevent auto-start race condition
     // Server returns a single string, but fallback to enemy.dialogue.possessed is an array
@@ -967,7 +952,7 @@ async function nextFloor() {
   if (result) {
     // Use server narration or fallback
     const narration = result.narration || FALLBACK_NARRATIONS.enterDungeon(gameState.run.floor);
-    showNarration(narration);
+    narration.showNarration(narration);
     background.updateBackground();
     updateUI();
   }
@@ -1000,7 +985,7 @@ async function returnToHub() {
   // Clear word cache so next run gets fresh due words
   clearWordCache();
   gameState.phase = 'hub';
-  showNarration(FALLBACK_NARRATIONS.hub(gameState.player));
+  narration.showNarration(FALLBACK_NARRATIONS.hub(gameState.player));
   background.updateBackground();
   updateUI();
 }
@@ -1039,7 +1024,7 @@ async function performAttack(attackType = 'normal') {
 
       // Use server narration or fallback
       const narration = result.narration || FALLBACK_NARRATIONS.playerAttack(attackData);
-      appendNarration(narration);
+      narration.appendNarration(narration);
 
       if (attackData.enemyDefeated || result.type === 'victory' || result.type === 'game_victory') {
         animateEnemyDefeat();
@@ -1066,17 +1051,17 @@ async function handleCombatEnd(result) {
     const narr = enemy?.isBoss
       ? FALLBACK_NARRATIONS.bossVictory(enemy, rewards)
       : FALLBACK_NARRATIONS.victory(enemy, rewards);
-    appendNarration(narr);
+    narration.appendNarration(narr);
 
     if (levelUps.length > 0) {
       await delay(500);
-      appendNarration(FALLBACK_NARRATIONS.levelUp(gameState.run?.player));
+      narration.appendNarration(FALLBACK_NARRATIONS.levelUp(gameState.run?.player));
     }
 
     await delay(1000);
     showVictoryModal({ ...result, rewards, levelUps });
   } else if (result.type === 'game_victory') {
-    appendNarration(FALLBACK_NARRATIONS.gameVictory(gameState.run?.player));
+    narration.appendNarration(FALLBACK_NARRATIONS.gameVictory(gameState.run?.player));
     await delay(1500);
     showGameVictoryModal({ ...result, rewards, levelUps });
   }
@@ -1086,7 +1071,7 @@ async function handleCombatEnd(result) {
 
 async function handlePlayerDefeat(result) {
   const enemy = gameState.combat?.enemy;
-  appendNarration(FALLBACK_NARRATIONS.defeat(enemy));
+  narration.appendNarration(FALLBACK_NARRATIONS.defeat(enemy));
   await delay(1500);
   showGameOverModal(result);
 }
@@ -1845,7 +1830,7 @@ async function stopRealtimeCombat(result) {
 
     // Display narration
     if (narrationResult.narration) {
-      showNarration(narrationResult.narration);
+      narration.showNarration(narrationResult.narration);
     }
 
     // Update game state from server
@@ -1869,10 +1854,10 @@ async function stopRealtimeCombat(result) {
     console.error('Error getting combat end narration:', error);
     // Fallback narration
     if (result.victory) {
-      showNarration('市民解放！');
+      narration.showNarration('市民解放！');
       showVictoryModal(result);
     } else {
-      showNarration('敗北...');
+      narration.showNarration('敗北...');
       showGameOverModal(result);
     }
   }
@@ -2719,7 +2704,7 @@ async function equipItem(itemId) {
       updateGameState(result.state); // Keep window reference in sync
     }
     if (result.message) {
-      showNarration(result.message);
+      narration.showNarration(result.message);
     }
     // Speak "[item name]を装備" via TTS
     if (result.equipped) {
@@ -2728,7 +2713,7 @@ async function equipItem(itemId) {
     updateUI();
   } catch (error) {
     console.error('Equip error:', error);
-    showNarration(`装備に失敗: ${error.message}`);
+    narration.showNarration(`装備に失敗: ${error.message}`);
   }
 }
 
@@ -2736,14 +2721,14 @@ async function unequipItemHandler(slot) {
   const result = await apiUnequipItem(slot);
   if (result.error) {
     console.error('Unequip error:', result.error);
-    showNarration(`装備解除に失敗: ${result.error}`);
+    narration.showNarration(`装備解除に失敗: ${result.error}`);
     return;
   }
   if (result.state) {
     updateGameState(result.state);
   }
   if (result.message) {
-    showNarration(result.message);
+    narration.showNarration(result.message);
   }
   updateUI();
 }
@@ -2972,7 +2957,7 @@ function updateActionPanel() {
 function updateActionButtonsState() {
   // Block buttons only when there are MORE messages to show
   // Allow actions immediately after the last message displays
-  const shouldBlock = isNarrationWaiting && narrationQueue.length > 0;
+  const shouldBlock = narration.shouldBlockActions();
   const buttons = actionPanel.querySelectorAll('.action-btn, .combat-btn');
 
   buttons.forEach(btn => {
@@ -2998,7 +2983,7 @@ function showNoSaveContent() {
       <p>Create your hunter to begin the journey into darkness.</p>
     </div>
   `;
-  showNarration(FALLBACK_NARRATIONS.welcome);
+  narration.showNarration(FALLBACK_NARRATIONS.welcome);
 }
 
 function showHubContent() {
@@ -3076,7 +3061,7 @@ async function selectWard(wardId, isNextWard = false) {
     : await apiSelectStartingWard(wardId);
 
   if (result.error) {
-    showNarration(`選択失敗: ${result.error}`);
+    narration.showNarration(`選択失敗: ${result.error}`);
     return;
   }
 
@@ -3286,7 +3271,7 @@ async function proceedToNextRoom() {
     if (result.state) {
       updateGameState(result.state);
     }
-    showNarration(result.narration || '次の部屋に入った。');
+    narration.showNarration(result.narration || '次の部屋に入った。');
     background.updateBackground();
     updateUI();
     triggerJpdbParse();
@@ -3301,7 +3286,7 @@ async function startRoomEncounter() {
       updateGameState(result.state);
     }
     const enemy = result.enemy || gameState.combat?.enemy;
-    showNarration(result.narration || FALLBACK_NARRATIONS.combatStart(enemy));
+    narration.showNarration(result.narration || FALLBACK_NARRATIONS.combatStart(enemy));
     updateUI();
     triggerJpdbParse();
   }
@@ -3314,7 +3299,7 @@ async function disarmTrap() {
     if (result.state) {
       updateGameState(result.state);
     }
-    showNarration(result.narration);
+    narration.showNarration(result.narration);
     updateUI();
     triggerJpdbParse();
 
@@ -3332,7 +3317,7 @@ async function triggerTrap() {
     if (result.state) {
       updateGameState(result.state);
     }
-    showNarration(result.narration);
+    narration.showNarration(result.narration);
     updateUI();
     triggerJpdbParse();
 
@@ -3350,7 +3335,7 @@ async function lootBody() {
     if (result.state) {
       updateGameState(result.state);
     }
-    showNarration(result.narration);
+    narration.showNarration(result.narration);
     updateUI();
     triggerJpdbParse();
 
@@ -3368,7 +3353,7 @@ async function skipBody() {
     if (result.state) {
       updateGameState(result.state);
     }
-    showNarration(result.narration);
+    narration.showNarration(result.narration);
     updateUI();
     triggerJpdbParse();
   }
@@ -3381,7 +3366,7 @@ async function skipTreasure() {
     if (result.state) {
       updateGameState(result.state);
     }
-    showNarration(result.narration);
+    narration.showNarration(result.narration);
     updateUI();
     triggerJpdbParse();
   }
@@ -3394,7 +3379,7 @@ async function openTreasure() {
     if (result.state) {
       updateGameState(result.state);
     }
-    showNarration(result.narration);
+    narration.showNarration(result.narration);
     updateUI();
     triggerJpdbParse();
 
@@ -3412,7 +3397,7 @@ async function useShrine() {
     if (result.state) {
       updateGameState(result.state);
     }
-    showNarration(result.narration);
+    narration.showNarration(result.narration);
     updateUI();
     triggerJpdbParse();
   }
@@ -3678,7 +3663,7 @@ async function openShop() {
     shopModal.classList.remove('hidden');
   } catch (error) {
     console.error('Shop error:', error);
-    showNarration('商人との取引に失敗した。');
+    narration.showNarration('商人との取引に失敗した。');
   }
 }
 
@@ -3704,7 +3689,7 @@ async function buyItem(itemId) {
 
     // Show narration
     if (result.narration) {
-      showNarration(result.narration);
+      narration.showNarration(result.narration);
       triggerJpdbParse();
     }
 
@@ -3713,7 +3698,7 @@ async function buyItem(itemId) {
     updateUI();
   } catch (error) {
     console.error('Buy error:', error);
-    showNarration(`購入に失敗した: ${error.message}`);
+    narration.showNarration(`購入に失敗した: ${error.message}`);
   }
 }
 
@@ -3800,7 +3785,7 @@ async function openBlacksmith() {
     blacksmithModal.classList.remove('hidden');
   } catch (error) {
     console.error('Blacksmith error:', error);
-    showNarration('鍛冶屋との会話に失敗した。');
+    narration.showNarration('鍛冶屋との会話に失敗した。');
   }
 }
 
@@ -3821,7 +3806,7 @@ async function refineItemHandler(slot) {
 
     // Show narration
     if (result.narration) {
-      showNarration(result.narration);
+      narration.showNarration(result.narration);
       triggerJpdbParse();
     }
 
@@ -3832,7 +3817,7 @@ async function refineItemHandler(slot) {
     await openBlacksmith();
   } catch (error) {
     console.error('Refine error:', error);
-    showNarration(`精錬に失敗した: ${error.message}`);
+    narration.showNarration(`精錬に失敗した: ${error.message}`);
   }
 }
 
@@ -3936,7 +3921,7 @@ async function openChipUpgradeModal() {
     }
   } catch (error) {
     console.error('[openChipUpgradeModal] Error:', error);
-    showNarration('改造屋との会話に失敗した。');
+    narration.showNarration('改造屋との会話に失敗した。');
   }
 }
 
@@ -3965,14 +3950,14 @@ async function performChipUpgrade(chipId) {
 
     // Show result narration
     if (result.message) {
-      showNarration(result.message);
+      narration.showNarration(result.message);
       triggerJpdbParse();
     }
 
     updateUI();
   } catch (error) {
     console.error('Chip upgrade error:', error);
-    showNarration(`強化に失敗した: ${error.message}`);
+    narration.showNarration(`強化に失敗した: ${error.message}`);
     updateUI();
   }
 }
@@ -4127,7 +4112,7 @@ async function claimStartingChipHandler(itemIndex) {
     if (result.state) {
       updateGameState({ ...gameState, ...result.state });
     }
-    showNarration(result.chip?.name ? result.chip.name + 'を獲得した！' : 'チップを獲得！');
+    narration.showNarration(result.chip?.name ? result.chip.name + 'を獲得した！' : 'チップを獲得！');
   }
 }
 
@@ -4167,7 +4152,7 @@ async function buyFromShop(itemIndex) {
     if (result.state) {
       updateGameState({ ...gameState, ...result.state });
     }
-    showNarration(result.item?.name ? result.item.name + 'を購入した！' : '購入完了！');
+    narration.showNarration(result.item?.name ? result.item.name + 'を購入した！' : '購入完了！');
   }
 }
 
@@ -4193,7 +4178,7 @@ async function refreshShop() {
     }
     // Re-render the shop with new items
     showPostCombatShopContent();
-    showNarration('商人が新しい品を出してきた！');
+    narration.showNarration('商人が新しい品を出してきた！');
   }
 }
 
@@ -4431,94 +4416,6 @@ function handleResultContinue() {
   }
 }
 
-// ============ NARRATION (Visual Novel Style) ============
-
-// Queue a narration message
-function queueNarration(text) {
-  narrationQueue.push(text);
-
-  // Add to log
-  narrationLog.push({
-    text,
-    timestamp: Date.now(),
-    floor: gameState.run?.floor || 0,
-    phase: gameState.phase
-  });
-
-  // Immediately disable buttons when message is queued
-  updateActionButtonsState();
-
-  // Only display immediately if nothing is currently shown
-  if (!isNarrationWaiting) {
-    displayNextNarration();
-  } else {
-    // Just update the indicator to show more messages are queued
-    updateContinueIndicator();
-  }
-}
-
-// Display the next narration in queue (replaces current message - VN style)
-async function displayNextNarration() {
-  if (narrationQueue.length === 0) {
-    // No more messages - allow new messages to display immediately
-    isNarrationWaiting = false;
-    updateContinueIndicator();
-    updateActionButtonsState(); // Re-enable buttons when narration is done
-    return;
-  }
-
-  const text = narrationQueue.shift();
-
-  // Parse and wrap Japanese text for popup dictionary
-  const wrappedText = await parseAndWrapText(text);
-
-  // Replace the text (visual novel style - one message at a time)
-  narrationText.innerHTML = `<p class="vn-message">${wrappedText}</p>`;
-
-  // Always mark as waiting - user must acknowledge message was displayed
-  // This ensures back-to-back messages wait for space between them
-  isNarrationWaiting = true;
-  updateContinueIndicator();
-  updateActionButtonsState();
-
-  // Speak the narration if TTS is enabled
-  tts.speakNarration(text);
-
-  // Trigger JPDB extension to parse Japanese text
-  triggerJpdbParse();
-}
-
-// Update the continue indicator
-function updateContinueIndicator() {
-  // Show indicator only when there are MORE messages waiting in queue
-  // Don't show on the last message - user can take action immediately
-  if (isNarrationWaiting && narrationQueue.length > 0) {
-    narrationContinue?.classList.remove('hidden');
-    narrationPanel.classList.add('waiting-continue');
-  } else {
-    narrationContinue?.classList.add('hidden');
-    narrationPanel.classList.remove('waiting-continue');
-  }
-}
-
-// Advance to next narration (Space key or click)
-function advanceNarration() {
-  // Stop any currently playing TTS before advancing
-  tts.stop();
-
-  if (narrationQueue.length > 0) {
-    // Show next message
-    displayNextNarration();
-  } else {
-    // No more messages - unlock for new messages
-    isNarrationWaiting = false;
-    updateContinueIndicator();
-  }
-
-  // Update action buttons when narration state changes
-  updateActionButtonsState();
-}
-
 // Handle all keyboard input (narration + action buttons)
 function handleKeypress(e) {
   // Don't trigger if user is typing in an input
@@ -4595,9 +4492,9 @@ function handleKeypress(e) {
 
   // Space key: advance narration if messages queued
   if (e.key === ' ') {
-    if (narrationQueue.length > 0) {
+    if (narration.getQueueLength() > 0) {
       e.preventDefault();
-      advanceNarration();
+      narration.advanceNarration();
       return;
     }
   }
@@ -4732,37 +4629,9 @@ function resetActionSelection() {
   }
 }
 
-// Show narration - clears queue and displays immediately
-function showNarration(text) {
-  // Clear any pending messages
-  narrationQueue = [];
-  isNarrationWaiting = false;
-
-  // Queue and display immediately
-  queueNarration(text);
-
-  // Update button states after narration change
-  updateActionButtonsState();
-}
-
-// Append narration - adds to queue
-function appendNarration(text) {
-  queueNarration(text);
-  updateActionButtonsState();
-}
-
-// Clear narration log (call when starting new run)
-function clearNarrationLog() {
-  narrationLog = [];
-  narrationQueue = [];
-  isNarrationWaiting = false;
-  narrationText.innerHTML = '<p class="vn-message">...</p>';
-  updateContinueIndicator();
-  updateActionButtonsState(); // Re-enable buttons when narration is cleared
-}
-
 // ============ LOG MODAL ============
 async function openLogModal() {
+  const narrationLog = narration.getNarrationLog();
   if (narrationLog.length === 0) {
     logEntries.innerHTML = '<p class="empty-msg">No system messages yet.</p>';
   } else {
@@ -4831,7 +4700,7 @@ async function openChipModal(equipmentSlot) {
     chipLoadoutCache = await response.json();
   } catch (error) {
     console.error('Failed to fetch chip loadout:', error);
-    showNarration('チップ情報の取得に失敗しました');
+    narration.showNarration('チップ情報の取得に失敗しました');
     return;
   }
 
@@ -5110,7 +4979,7 @@ async function addChipToSlot(chipId) {
   const result = await apiEquipChip(currentChipModalSlot, chipId);
 
   if (result.error) {
-    showNarration(`装着失敗: ${result.error}`);
+    narration.showNarration(`装着失敗: ${result.error}`);
     return;
   }
 
@@ -5137,7 +5006,7 @@ async function removeChipFromSlot(chipId) {
   const result = await apiUnequipChip(currentChipModalSlot);
 
   if (result.error) {
-    showNarration(`取り外し失敗: ${result.error}`);
+    narration.showNarration(`取り外し失敗: ${result.error}`);
     return;
   }
 
@@ -5157,7 +5026,7 @@ async function toggleChipEquip(chipId, fromSlot) {
   // First unequip from the other slot
   const unequipResult = await apiUnequipChip(fromSlot);
   if (unequipResult.error) {
-    showNarration(`取り外し失敗: ${unequipResult.error}`);
+    narration.showNarration(`取り外し失敗: ${unequipResult.error}`);
     return;
   }
 
@@ -5165,7 +5034,7 @@ async function toggleChipEquip(chipId, fromSlot) {
   if (currentChipModalSlot) {
     const equipResult = await apiEquipChip(currentChipModalSlot, chipId);
     if (equipResult.error) {
-      showNarration(`装着失敗: ${equipResult.error}`);
+      narration.showNarration(`装着失敗: ${equipResult.error}`);
     }
   }
 
@@ -5197,7 +5066,7 @@ async function openLiberationTracker() {
     liberationTrackerCache = await response.json();
   } catch (error) {
     console.error('Failed to fetch liberation tracker:', error);
-    showNarration('解放記録の取得に失敗しました');
+    narration.showNarration('解放記録の取得に失敗しました');
     return;
   }
 
@@ -5476,7 +5345,7 @@ async function purchaseUpgrade(upgradeId) {
 
   if (data.success) {
     // Show success feedback
-    showNarration(`アップグレード完了！ ${data.upgrade.newLevel}レベルになった！`);
+    narration.showNarration(`アップグレード完了！ ${data.upgrade.newLevel}レベルになった！`);
 
     // Reload upgrades display
     await loadUpgradesData();
@@ -5576,7 +5445,7 @@ async function resetGame() {
     debugMode = false;
 
     await loadGameState();
-    showNarration('Welcome to NEO TOKYO! Create a character to begin your adventure.');
+    narration.showNarration('Welcome to NEO TOKYO! Create a character to begin your adventure.');
     updateUI();
   } catch (error) {
     console.error('Failed to reset game:', error);
@@ -5902,7 +5771,7 @@ async function resetGameStats() {
     });
 
     if (response.ok) {
-      showNarration('統計がリセットされました。');
+      narration.showNarration('統計がリセットされました。');
       await loadGameStatsData();
     } else {
       showError('Failed to reset stats');
@@ -6378,7 +6247,7 @@ window.useShrine = useShrine;
 window.startRoomEncounter = startRoomEncounter;
 
 // Narration functions
-window.advanceNarration = advanceNarration;
+window.advanceNarration = narration.advanceNarration;
 window.openLogModal = openLogModal;
 window.closeLogModal = closeLogModal;
 
