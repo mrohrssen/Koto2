@@ -4,3 +4,4 @@
 
 export * as combat from './combat.js';
 export * as exploration from './exploration.js';
+export * as economy from './economy.js';
