@@ -9,7 +9,8 @@ import { existsSync, unlinkSync } from 'fs';
 import {
   getVocabulary,
   lookupWordStates,
-  getDueWordsWithMeanings
+  getDueWordsWithMeanings,
+  fetchDueWordsDirectly
 } from '../../jpdb.js';
 import {
   refreshWordStateCache,
@@ -258,7 +259,7 @@ export default function createMiscRoutes({
 
   // Due words
   router.post('/due-words', async (req, res) => {
-    const { jpdbApiKey, limit: bodyLimit, exclude } = req.body;
+    const { jpdbApiKey, limit: bodyLimit, exclude, bypassCache } = req.body;
     if (!jpdbApiKey) {
       return res.status(400).json({ error: 'JPDB API key not configured' });
     }
@@ -268,7 +269,15 @@ export default function createMiscRoutes({
       const excludeVids = exclude
         ? (Array.isArray(exclude) ? exclude.map(v => parseInt(v, 10)) : exclude.split(',').map(v => parseInt(v, 10)))
         : [];
-      const result = await getDueWordsWithMeanings(jpdbApiKey, limit, excludeVids);
+
+      let result;
+      if (bypassCache) {
+        // Fetch fresh due words directly from JPDB
+        result = await fetchDueWordsDirectly(jpdbApiKey, limit, excludeVids);
+      } else {
+        // Use cached word states
+        result = await getDueWordsWithMeanings(jpdbApiKey, limit, excludeVids);
+      }
       res.json({ words: result.words, count: result.words.length, source: result.source });
     } catch (error) {
       res.status(500).json({ error: error.message });

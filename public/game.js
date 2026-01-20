@@ -734,8 +734,8 @@ async function startNewRun() {
     }
 
     // Try AI narration for immersive experience, fall back to simple
-    let narration = result.narration || FALLBACK_NARRATIONS.enterDungeon(gameState.run.floor);
-    narration.showNarration(narration);
+    let narrationText = result.narration || FALLBACK_NARRATIONS.enterDungeon(gameState.run.floor);
+    narration.showNarration(narrationText);
     background.updateBackground();
     updateUI();
 
@@ -985,8 +985,8 @@ async function nextFloor() {
   const result = await apiNextFloor();
   if (result) {
     // Use server narration or fallback
-    const narration = result.narration || FALLBACK_NARRATIONS.enterDungeon(gameState.run.floor);
-    narration.showNarration(narration);
+    const narrationText = result.narration || FALLBACK_NARRATIONS.enterDungeon(gameState.run.floor);
+    narration.showNarration(narrationText);
     background.updateBackground();
     updateUI();
   }
@@ -1047,8 +1047,8 @@ async function performAttack(attackType = 'normal') {
       displayChipEffects(attackData, true);
 
       // Use server narration or fallback
-      const narration = result.narration || FALLBACK_NARRATIONS.playerAttack(attackData);
-      narration.appendNarration(narration);
+      const narrationText = result.narration || FALLBACK_NARRATIONS.playerAttack(attackData);
+      narration.appendNarration(narrationText);
 
       if (attackData.enemyDefeated || result.type === 'victory' || result.type === 'game_victory') {
         animateEnemyDefeat();

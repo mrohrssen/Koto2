@@ -13,11 +13,11 @@
  * - See enemies.full.js for original iRO-style system (if preserved)
  *
  * ENEMY TIERS:
- * - Tier 1: attack ~10, HP ~40
- * - Tier 2: attack ~15, HP ~70
- * - Tier 3: attack ~20, HP ~100
- * - Tier 4: attack ~30, HP ~150
- * - Bosses: attack ~30-40, HP ~200-300
+ * - Tier 1: attack ~10, HP ~120
+ * - Tier 2: attack ~15, HP ~210
+ * - Tier 3: attack ~20, HP ~300
+ * - Tier 4: attack ~30, HP ~450
+ * - Bosses: attack ~30-40, HP ~600-900
  */
 
 // Enemy template data extracted to JSON for maintainability
@@ -884,11 +884,11 @@ export const FLOOR_TO_WARD = enemyMappings.floorToWard;
  */
 function buildEnemy(template, levelBonus = 0) {
   // SIMPLIFIED: attack and maxHp based on tier
-  // Tier 1: attack 8-12, HP 40-60
-  // Tier 2: attack 12-18, HP 60-90
-  // Tier 3: attack 18-25, HP 90-130
-  // Tier 4: attack 25-35, HP 130-180
-  // Bosses: attack 20-40, HP 150-300
+  // Tier 1: attack 8-12, HP 120-180
+  // Tier 2: attack 12-18, HP 180-270
+  // Tier 3: attack 18-25, HP 270-390
+  // Tier 4: attack 25-35, HP 390-540
+  // Bosses: attack 20-40, HP 450-900
 
   const tier = template.tier || 1;
   const isBoss = template.isBoss || false;
@@ -898,11 +898,11 @@ function buildEnemy(template, levelBonus = 0) {
   if (isBoss) {
     // Bosses are stronger
     baseAttack = 20 + (tier * 5);
-    baseHp = 150 + (tier * 40);
+    baseHp = 450 + (tier * 120);
   } else {
     // Regular enemies scale by tier
     baseAttack = 5 + (tier * 4);
-    baseHp = 30 + (tier * 20);
+    baseHp = 90 + (tier * 60);
   }
 
   // Add some variance (±20%)

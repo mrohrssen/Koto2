@@ -659,12 +659,12 @@ export async function getDueWordsWithMeanings(apiKey, limit = 50, excludeVids = 
   }
 
   const excludeSet = new Set(excludeVids);
-  const priorityOrder = ['due', 'failed', 'learning', 'known'];
+  // Only include words that actually need review - not "known" words
+  const priorityOrder = ['due', 'failed', 'learning'];
   const candidatesByPriority = {
     due: [],
     failed: [],
-    learning: [],
-    known: []
+    learning: []
   };
 
   for (const [word, stateInfo] of Object.entries(wordStateCache)) {
@@ -673,7 +673,8 @@ export async function getDueWordsWithMeanings(apiKey, limit = 50, excludeVids = 
     const states = stateInfo.states || [];
 
     if (excludeSet.has(stateInfo.vid)) continue;
-    if (states.some(s => ['blacklisted', 'suspended', 'new'].includes(s))) continue;
+    // Skip words with states that shouldn't be reviewed
+    if (states.some(s => ['blacklisted', 'suspended', 'new', 'redundant'].includes(s))) continue;
 
     for (const priority of priorityOrder) {
       if (states.includes(priority)) {
@@ -902,6 +903,276 @@ export async function getWordState(apiKey, vid, sid) {
     states: vocabInfo[1] || [],
     dueAt: vocabInfo[2] ?? null
   };
+}
+
+/**
+ * Fetch due words directly from JPDB, bypassing local cache.
+ * This ensures we get accurate due word states fresh from the API.
+ *
+ * Uses cached vocab IDs from the suggestions file for speed,
+ * falling back to full deck scanning only if no cache exists.
+ *
+ * @param {string} apiKey - JPDB API key
+ * @param {number} limit - Max words to return (default 50)
+ * @param {number[]} excludeVids - Vocabulary IDs to exclude
+ * @returns {Promise<{words: Array, source: string}>}
+ */
+export async function fetchDueWordsDirectly(apiKey, limit = 50, excludeVids = []) {
+  if (!apiKey) {
+    return { words: [], source: 'none' };
+  }
+
+  console.log('[JPDB Direct] Fetching due words directly from JPDB...');
+
+  // Step 1: Try to get vocab IDs from local cache first (much faster)
+  let uniqueVocabIds = [];
+
+  // Read vocab IDs from cached word states if available
+  if (config.vocabSuggestionsFile) {
+    try {
+      if (existsSync(config.vocabSuggestionsFile)) {
+        const data = JSON.parse(readFileSync(config.vocabSuggestionsFile, 'utf-8'));
+        const wordStateCache = data.wordStateCache || {};
+
+        // Extract all [vid, sid] pairs from the cache
+        const seen = new Set();
+        for (const [word, stateInfo] of Object.entries(wordStateCache)) {
+          if (stateInfo.vid && stateInfo.sid) {
+            const key = `${stateInfo.vid}-${stateInfo.sid}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              uniqueVocabIds.push([stateInfo.vid, stateInfo.sid]);
+            }
+          }
+        }
+        console.log(`[JPDB Direct] Using ${uniqueVocabIds.length} vocab IDs from local cache`);
+      }
+    } catch (e) {
+      console.warn('[JPDB Direct] Failed to read vocab cache:', e.message);
+    }
+  }
+
+  // Fall back to deck scanning if no cached vocab IDs
+  if (uniqueVocabIds.length === 0) {
+    console.log('[JPDB Direct] No cached vocab IDs, scanning decks...');
+    const allVocabIds = [];
+
+    // Scan decks 1-50
+    for (let deckId = 1; deckId <= 50; deckId++) {
+      try {
+        const response = await jpdbFetch(`${JPDB_API_BASE}/deck/list-vocabulary`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({ id: deckId })
+        });
+
+        if (response.status === 429) {
+          console.warn('[JPDB Direct] Rate limited while scanning decks');
+          break;
+        }
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.vocabulary && data.vocabulary.length > 0) {
+            allVocabIds.push(...data.vocabulary);
+          }
+        }
+      } catch (e) {
+        // Ignore errors for individual decks
+      }
+    }
+
+    // Also check never-forget deck
+    try {
+      const response = await jpdbFetch(`${JPDB_API_BASE}/deck/list-vocabulary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({ id: 'never-forget' })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.vocabulary && data.vocabulary.length > 0) {
+          allVocabIds.push(...data.vocabulary);
+        }
+      }
+    } catch (e) {
+      // Ignore
+    }
+
+    if (allVocabIds.length === 0) {
+      console.log('[JPDB Direct] No vocabulary found in decks');
+      return { words: [], source: 'none' };
+    }
+
+    // Deduplicate vocab IDs
+    const seen = new Set();
+    for (const [vid, sid] of allVocabIds) {
+      const key = `${vid}-${sid}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueVocabIds.push([vid, sid]);
+      }
+    }
+  }
+
+  console.log(`[JPDB Direct] Looking up fresh card states for ${uniqueVocabIds.length} vocab entries`);
+
+  // Step 2: Lookup card states and filter for due/failed
+  const excludeSet = new Set(excludeVids.map(v => parseInt(v, 10)));
+  const dueWords = [];
+  const chunkSize = 1000;
+
+  for (let i = 0; i < uniqueVocabIds.length; i += chunkSize) {
+    const chunk = uniqueVocabIds.slice(i, i + chunkSize);
+
+    try {
+      const lookupResponse = await jpdbFetch(`${JPDB_API_BASE}/lookup-vocabulary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          list: chunk,
+          fields: ['spelling', 'reading', 'card_state', 'due_at']
+        })
+      });
+
+      if (lookupResponse.status === 429) {
+        console.warn('[JPDB Direct] Rate limited during lookup');
+        break;
+      }
+
+      if (lookupResponse.ok) {
+        const lookupData = await lookupResponse.json();
+        const vocabInfo = lookupData.vocabulary_info || [];
+
+        for (let j = 0; j < vocabInfo.length; j++) {
+          const info = vocabInfo[j];
+          if (!info) continue;
+
+          const [spelling, reading, cardStates, dueAt] = info;
+          const [vid, sid] = chunk[j];
+
+          // Skip excluded words
+          if (excludeSet.has(vid)) continue;
+
+          // Only include words that are due or failed
+          const isDue = cardStates && cardStates.some(s => ['due', 'failed'].includes(s));
+          if (isDue && spelling) {
+            dueWords.push({
+              spelling,
+              reading,
+              vid,
+              sid,
+              dueAt: dueAt ?? null,
+              states: cardStates
+            });
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[JPDB Direct] Lookup chunk failed:', e);
+    }
+  }
+
+  console.log(`[JPDB Direct] Found ${dueWords.length} due/failed words`);
+
+  if (dueWords.length === 0) {
+    return { words: [], source: 'none' };
+  }
+
+  // Sort by due date (oldest first) and take top N
+  dueWords.sort((a, b) => {
+    if (a.dueAt && b.dueAt) return a.dueAt - b.dueAt;
+    if (a.dueAt) return -1;
+    if (b.dueAt) return 1;
+    return 0;
+  });
+
+  const selected = dueWords.slice(0, limit);
+
+  // Step 3: Fetch meanings for selected words
+  const vocabIds = selected.map(w => [w.vid, w.sid]);
+
+  try {
+    const meaningResponse = await jpdbFetch(`${JPDB_API_BASE}/lookup-vocabulary`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        list: vocabIds,
+        fields: ['spelling', 'reading', 'meanings_chunks', 'meanings_part_of_speech']
+      })
+    });
+
+    if (!meaningResponse.ok) {
+      if (meaningResponse.status === 429) {
+        console.warn('[JPDB Direct] Rate limited fetching meanings');
+      }
+      // Return words without meanings
+      return {
+        words: selected.map(w => ({
+          word: w.spelling,
+          reading: w.reading,
+          meanings: [],
+          vid: w.vid,
+          sid: w.sid
+        })),
+        source: 'due'
+      };
+    }
+
+    const meaningData = await meaningResponse.json();
+    const vocabInfo = meaningData.vocabulary_info || [];
+
+    const results = [];
+    for (let i = 0; i < vocabInfo.length; i++) {
+      const info = vocabInfo[i];
+      if (!info) continue;
+
+      const [spelling, reading, meaningsChunks] = info;
+
+      const meanings = [];
+      if (meaningsChunks && Array.isArray(meaningsChunks)) {
+        for (const chunk of meaningsChunks) {
+          if (Array.isArray(chunk)) {
+            for (const meaning of chunk) {
+              if (meaning && typeof meaning === 'string') {
+                meanings.push(meaning);
+              }
+            }
+          }
+        }
+      }
+
+      if (meanings.length > 0) {
+        results.push({
+          word: spelling,
+          reading: reading,
+          meanings: meanings,
+          vid: selected[i].vid,
+          sid: selected[i].sid
+        });
+      }
+    }
+
+    console.log(`[JPDB Direct] Returning ${results.length} due words with meanings`);
+    return { words: results, source: 'due' };
+
+  } catch (e) {
+    console.warn('[JPDB Direct] Failed to fetch meanings:', e.message);
+    return { words: [], source: 'error' };
+  }
 }
 
 /**
