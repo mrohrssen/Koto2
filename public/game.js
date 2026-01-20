@@ -81,6 +81,9 @@
 // Observable store for reactive state management
 import { store } from './js/store.js';
 
+// TTS module for VOICEVOX text-to-speech
+import * as tts from './js/tts.js';
+
 // API module - centralized server communication
 import {
   getStoredApiKeys as apiGetStoredApiKeys,
@@ -160,52 +163,6 @@ let isLoading = false;
 let createStats = { str: 5, agi: 5, vit: 5, int: 5, dex: 5, luk: 5 };
 let createStatPoints = 0;
 
-// TTS State
-let ttsEnabled = true; // Enabled by default
-let ttsSpeakerId = 13; // 玄野武宏 (クール) - cool male narrator
-let ttsSpeed = 0.9;
-let ttsVolume = 1.0;
-let currentAudio = null;
-let lastSpokenNarration = null; // For repeating with 'r' key
-let ttsRequestId = 0; // For canceling pending TTS requests
-
-// Personality to VoiceVox speaker mapping
-// Maps enemy personality types to appropriate voice styles
-const PERSONALITY_SPEAKERS = {
-  // Aggressive/Angry - 玄野武宏 (ツンギレ) male angry
-  aggressive: 39, belligerent: 39, furious: 39, hostile: 39, rowdy: 39,
-
-  // Cold/Calculating - 四国めたん (ノーマル) cool female
-  cold: 2, calculating: 2, clinical: 2, detached: 2, precise: 2,
-
-  // Robotic/Mechanical - ナースロボ_タイプT robotic
-  robotic: 47, mechanical: 47, 'machine-like': 47, rigid: 47, repetitive: 47,
-
-  // Nervous/Panicked - 春日部つむぎ higher pitched female
-  frantic: 8, panicked: 8, terrified: 8, anxious: 8, stressed: 8,
-
-  // Exhausted/Slow - 青山龍星 (ノーマル) slow male
-  exhausted: 13, lethargic: 13, apathetic: 13, dazed: 13,
-
-  // Erratic/Chaotic - ずんだもん (あまあま) expressive
-  erratic: 1, hyper: 1, obsessive: 1, intense: 1, eager: 1,
-
-  // Authoritative/Proud - 白上虎太郎 (ノーマル) deep male
-  authoritarian: 12, domineering: 12, authoritative: 12, ruthless: 12,
-
-  // Mysterious/Silent - 雨晴はう (ノーマル) soft whisper
-  silent: 10, elusive: 10, transcendent: 10,
-
-  // Confused/Lost - もち子さん (ノーマル) uncertain
-  confused: 20, lost: 20, paralyzed: 20, frozen: 20,
-
-  // Cheerful/Performative - 小夜/SAYO gentle female
-  charming: 46, performative: 46, gossipy: 46,
-
-  // Default for unmapped - cool narrator
-  default: 13
-};
-
 // Word Review Settings
 let reviewType = 'typing'; // 'typing' or 'self-grade'
 
@@ -278,10 +235,6 @@ let availableWords = [];        // Pool of words not yet shown
 let selectedWordIndex = 0;      // Currently selected word (0-4)
 let jpdbWordsCache = null;      // Cached JPDB due words
 let jpdbWordsFetching = false;  // Prevent duplicate fetches
-
-// Word Audio Cache (for TTS prefetching)
-const wordAudioCache = new Map();  // word -> { blob, url, status: 'pending'|'ready'|'error' }
-let wordAudioEnabled = true;       // Can be disabled if VOICEVOX unavailable
 
 // Fallback test data for word practice (used when JPDB unavailable)
 const FALLBACK_WORD_DATA = [
@@ -732,18 +685,20 @@ function setupEventListeners() {
   // TTS controls
   gameTtsRefresh?.addEventListener('click', checkTtsStatus);
   gameTtsEnabled?.addEventListener('change', (e) => {
-    ttsEnabled = e.target.checked;
+    tts.setEnabled(e.target.checked);
   });
   gameTtsSpeaker?.addEventListener('change', (e) => {
-    ttsSpeakerId = parseInt(e.target.value) || 13;
+    tts.setSpeakerId(parseInt(e.target.value) || 13);
   });
   gameTtsSpeed?.addEventListener('input', (e) => {
-    ttsSpeed = parseFloat(e.target.value);
-    if (gameTtsSpeedValue) gameTtsSpeedValue.textContent = ttsSpeed.toFixed(1);
+    const speed = parseFloat(e.target.value);
+    tts.setSpeed(speed);
+    if (gameTtsSpeedValue) gameTtsSpeedValue.textContent = speed.toFixed(1);
   });
   gameTtsVolume?.addEventListener('input', (e) => {
-    ttsVolume = parseFloat(e.target.value);
-    if (gameTtsVolumeValue) gameTtsVolumeValue.textContent = Math.round(ttsVolume * 100);
+    const volume = parseFloat(e.target.value);
+    tts.setVolume(volume);
+    if (gameTtsVolumeValue) gameTtsVolumeValue.textContent = Math.round(volume * 100);
   });
   gameTtsTest?.addEventListener('click', testTts);
 
@@ -1114,10 +1069,10 @@ function dismissEnemyDialogue() {
  * Hides word cards during playback if combat is active
  */
 async function speakEnemyDialogue(text, dialogueDuration, personality = 'default', speakerId = null) {
-  if (!ttsEnabled || !text || text.trim().length === 0) return;
+  if (!tts.isEnabled() || !text || text.trim().length === 0) return;
 
   // Use direct speakerId if provided, otherwise fall back to personality mapping
-  const enemySpeakerId = speakerId ?? PERSONALITY_SPEAKERS[personality] ?? PERSONALITY_SPEAKERS.default;
+  const enemySpeakerId = speakerId ?? tts.getSpeakerForPersonality(personality);
 
   // Hide word cards while enemy is speaking (if in combat)
   const wasInCombat = realtimeCombatActive;
@@ -1126,57 +1081,23 @@ async function speakEnemyDialogue(text, dialogueDuration, personality = 'default
     enemyDialogueTtsPlaying = true;
   }
 
-  try {
-    const response = await fetch(`${API_BASE}/api/tts/synthesize`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text,
-        speakerId: enemySpeakerId,
-        speed: ttsSpeed,
-        volume: ttsVolume
-      })
-    });
+  const restoreWordCards = () => {
+    if (wasInCombat && realtimeCombatActive) {
+      showWordCards();
+      enemyDialogueTtsPlaying = false;
+    }
+  };
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.warn('Enemy dialogue TTS error:', error.error);
-      // Restore word cards on error
-      if (wasInCombat && realtimeCombatActive) {
-        showWordCards();
-        enemyDialogueTtsPlaying = false;
-      }
+  try {
+    const audio = await tts.speakWithVoice(text, enemySpeakerId);
+    if (!audio) {
+      restoreWordCards();
       return;
     }
 
-    const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
-
-    // Stop any currently playing narration audio
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio = null;
-    }
-
-    const enemyAudio = new Audio(audioUrl);
-    enemyAudio.volume = Math.min(ttsVolume, 1.0);
-    enemyAudio.onended = () => {
-      URL.revokeObjectURL(audioUrl);
-      // Restore word cards after TTS finishes (if still in combat)
-      if (wasInCombat && realtimeCombatActive) {
-        showWordCards();
-        enemyDialogueTtsPlaying = false;
-      }
-    };
-    enemyAudio.onerror = () => {
-      URL.revokeObjectURL(audioUrl);
-      // Restore word cards on error
-      if (wasInCombat && realtimeCombatActive) {
-        showWordCards();
-        enemyDialogueTtsPlaying = false;
-      }
-    };
-    enemyAudio.play();
+    audio.onended = restoreWordCards;
+    audio.onerror = restoreWordCards;
+    audio.play();
 
     // Fallback: restore word cards after dialogue duration if audio hasn't ended
     setTimeout(() => {
@@ -1188,54 +1109,10 @@ async function speakEnemyDialogue(text, dialogueDuration, personality = 'default
 
   } catch (error) {
     console.warn('Enemy dialogue TTS playback error:', error);
-    // Restore word cards on error
-    if (wasInCombat && realtimeCombatActive) {
-      showWordCards();
-      enemyDialogueTtsPlaying = false;
-    }
+    restoreWordCards();
   }
 }
 
-/**
- * Simple TTS for short text (chip names, UI feedback)
- * Doesn't interrupt combat or manage word cards
- */
-let currentUiAudio = null;
-async function speakText(text) {
-  if (!ttsEnabled || !text || text.trim().length === 0) return;
-
-  try {
-    const response = await fetch(`${API_BASE}/api/tts/synthesize`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text,
-        speakerId: ttsSpeakerId,
-        speed: ttsSpeed,
-        volume: ttsVolume
-      })
-    });
-
-    if (!response.ok) return;
-
-    const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
-
-    // Stop previous UI audio if playing
-    if (currentUiAudio) {
-      currentUiAudio.pause();
-      currentUiAudio = null;
-    }
-
-    currentUiAudio = new Audio(audioUrl);
-    currentUiAudio.volume = Math.min(ttsVolume, 1.0);
-    currentUiAudio.onended = () => URL.revokeObjectURL(audioUrl);
-    currentUiAudio.onerror = () => URL.revokeObjectURL(audioUrl);
-    currentUiAudio.play();
-  } catch (error) {
-    console.warn('UI TTS error:', error);
-  }
-}
 
 async function nextFloor() {
   const result = await apiNextFloor();
@@ -2295,75 +2172,18 @@ function hideWordCards() {
 
 // ============ WORD AUDIO TTS FUNCTIONS ============
 
-// Prefetch audio for a single word
-async function prefetchWordAudio(word) {
-  if (!wordAudioEnabled || !word) return;
-
-  // Already cached or pending
-  if (wordAudioCache.has(word)) return;
-
-  // Mark as pending
-  wordAudioCache.set(word, { status: 'pending', blob: null, url: null });
-
-  try {
-    const response = await fetch(`${API_BASE}/api/tts/synthesize`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: word })
-    });
-
-    if (!response.ok) {
-      throw new Error(`TTS failed: ${response.status}`);
-    }
-
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-
-    wordAudioCache.set(word, { status: 'ready', blob, url });
-    console.log(`[WordAudio] Prefetched: ${word}`);
-  } catch (e) {
-    console.warn(`[WordAudio] Failed to prefetch "${word}":`, e.message);
-    wordAudioCache.set(word, { status: 'error', blob: null, url: null });
-
-    // Disable audio if VOICEVOX is unavailable
-    if (e.message.includes('500') || e.message.includes('fetch')) {
-      wordAudioEnabled = false;
-      console.log('[WordAudio] Disabled - VOICEVOX unavailable');
-    }
-  }
-}
-
 // Prefetch audio for all visible combat words
 function prefetchCombatWordAudio() {
-  if (!wordAudioEnabled) return;
+  if (!tts.isWordAudioEnabled()) return;
 
   // Prefetch current 5 visible words
   for (const wordData of combatWords) {
-    prefetchWordAudio(wordData.word);
+    tts.prefetchWord(wordData.word);
   }
 
   // Also prefetch next few from available pool
   for (let i = 0; i < 3 && i < availableWords.length; i++) {
-    prefetchWordAudio(availableWords[i].word);
-  }
-}
-
-// Play cached audio for a word
-function playWordAudio(word) {
-  if (!wordAudioEnabled || !word) return;
-
-  const cached = wordAudioCache.get(word);
-  if (!cached || cached.status !== 'ready' || !cached.url) {
-    console.log(`[WordAudio] No cached audio for: ${word}`);
-    return;
-  }
-
-  try {
-    const audio = new Audio(cached.url);
-    audio.volume = ttsVolume || 1.0;
-    audio.play().catch(e => console.warn('[WordAudio] Playback failed:', e.message));
-  } catch (e) {
-    console.warn('[WordAudio] Error playing audio:', e.message);
+    tts.prefetchWord(availableWords[i].word);
   }
 }
 
@@ -2449,7 +2269,7 @@ function quickFailWord() {
   const meanings = word.meanings || (word.definition ? [word.definition] : []);
 
   // Play audio for the word
-  playWordAudio(word.word);
+  tts.playWord(word.word);
 
   // Send JPDB review (grade 1 = Nothing/Failed)
   if (word.vid && word.sid) {
@@ -2694,7 +2514,7 @@ function checkWordAnswer() {
   const result = checkAnswerMatch(input, meanings);
 
   // Play audio for the word (both correct and incorrect)
-  playWordAudio(word.word);
+  tts.playWord(word.word);
 
   if (result.correct) {
     // Correct!
@@ -2785,7 +2605,7 @@ function submitSelfGradeReview(grade) {
   closeSelfGradeModal();
 
   // Play audio for the word
-  playWordAudio(word.word);
+  tts.playWord(word.word);
 
   // Send JPDB review
   if (word.vid && word.sid) {
@@ -3055,7 +2875,7 @@ async function equipItem(itemId) {
     }
     // Speak "[item name]を装備" via TTS
     if (result.equipped) {
-      speakText(`${result.equipped}を装備`);
+      tts.speakText(`${result.equipped}を装備`);
     }
     updateUI();
   } catch (error) {
@@ -4814,7 +4634,7 @@ async function displayNextNarration() {
   updateActionButtonsState();
 
   // Speak the narration if TTS is enabled
-  speakNarration(text);
+  tts.speakNarration(text);
 
   // Trigger JPDB extension to parse Japanese text
   triggerJpdbParse();
@@ -4836,7 +4656,7 @@ function updateContinueIndicator() {
 // Advance to next narration (Space key or click)
 function advanceNarration() {
   // Stop any currently playing TTS before advancing
-  stopTts();
+  tts.stop();
 
   if (narrationQueue.length > 0) {
     // Show next message
@@ -4936,9 +4756,10 @@ function handleKeypress(e) {
 
   // R key: repeat last narration voice (but not during combat - R refreshes words there)
   if (e.key === 'r' || e.key === 'R') {
-    if (!realtimeCombatActive && lastSpokenNarration && ttsEnabled) {
+    const lastNarration = tts.getLastSpokenNarration();
+    if (!realtimeCombatActive && lastNarration && tts.isEnabled()) {
       e.preventDefault();
-      speakNarration(lastSpokenNarration);
+      tts.speakNarration(lastNarration);
       return;
     }
   }
@@ -5026,7 +4847,7 @@ function navigateShopItems(direction, items) {
   // Get chip name and speak it
   const chipName = selectedItem.querySelector('.shop-item-name')?.childNodes[0]?.textContent?.trim();
   if (chipName) {
-    speakText(chipName);
+    tts.speakText(chipName);
   }
 }
 
@@ -5045,7 +4866,7 @@ function selectShopItem(index) {
   // Speak the chip name
   const chipName = shopItems[index].querySelector('.shop-item-name')?.childNodes[0]?.textContent?.trim();
   if (chipName) {
-    speakText(chipName);
+    tts.speakText(chipName);
   }
 }
 
@@ -5447,7 +5268,7 @@ async function addChipToSlot(chipId) {
 
   // Speak "[chip name]を装備" via TTS
   if (result.chipName) {
-    speakText(`${result.chipName}を装備`);
+    tts.speakText(`${result.chipName}を装備`);
   }
 
   // Refresh loadout and re-render
@@ -6057,11 +5878,11 @@ async function saveSettings() {
     reviewType: reviewTypeSelect.value
   };
 
-  // Update local TTS state
-  ttsEnabled = serverSettings.gameTtsEnabled;
-  ttsSpeakerId = serverSettings.gameTtsSpeakerId;
-  ttsSpeed = serverSettings.gameTtsSpeed;
-  ttsVolume = serverSettings.gameTtsVolume;
+  // Update TTS module state
+  tts.setEnabled(serverSettings.gameTtsEnabled);
+  tts.setSpeakerId(serverSettings.gameTtsSpeakerId);
+  tts.setSpeed(serverSettings.gameTtsSpeed);
+  tts.setVolume(serverSettings.gameTtsVolume);
 
   // Update local review type
   reviewType = serverSettings.reviewType;
@@ -6450,7 +6271,7 @@ async function handleGameReviewClick(e) {
 // ============ TTS (VOICEVOX) FUNCTIONS ============
 
 /**
- * Check VOICEVOX status
+ * Check VOICEVOX status (DOM update wrapper for tts module)
  */
 async function checkTtsStatus() {
   if (!gameTtsStatus) return;
@@ -6458,49 +6279,43 @@ async function checkTtsStatus() {
   gameTtsStatus.textContent = 'Checking...';
   gameTtsStatus.className = '';
 
-  try {
-    const response = await fetch(`${API_BASE}/api/tts/status`);
-    const data = await response.json();
+  const data = await tts.checkStatus();
 
-    if (data.running) {
-      gameTtsStatus.textContent = `VOICEVOX running (v${data.version})`;
-      gameTtsStatus.className = 'status-running';
-      await loadTtsSpeakers();
-    } else {
-      gameTtsStatus.textContent = 'VOICEVOX not running';
-      gameTtsStatus.className = 'status-stopped';
-      if (gameTtsSpeaker) {
-        gameTtsSpeaker.innerHTML = '<option value="">Start VOICEVOX first</option>';
-      }
-    }
-  } catch (error) {
-    gameTtsStatus.textContent = 'Could not connect';
+  if (data.running) {
+    gameTtsStatus.textContent = `VOICEVOX running (v${data.version})`;
+    gameTtsStatus.className = 'status-running';
+    await loadTtsSpeakers();
+  } else {
+    gameTtsStatus.textContent = 'VOICEVOX not running';
     gameTtsStatus.className = 'status-stopped';
+    if (gameTtsSpeaker) {
+      gameTtsSpeaker.innerHTML = '<option value="">Start VOICEVOX first</option>';
+    }
   }
 }
 
 /**
- * Load available TTS speakers/voices
+ * Load available TTS speakers/voices (DOM update wrapper for tts module)
  */
 async function loadTtsSpeakers() {
   if (!gameTtsSpeaker) return;
 
-  try {
-    const response = await fetch(`${API_BASE}/api/tts/speakers`);
-    const data = await response.json();
+  const speakers = await tts.loadSpeakers();
 
-    gameTtsSpeaker.innerHTML = '';
-    for (const speaker of data.speakers) {
-      const option = document.createElement('option');
-      option.value = speaker.id;
-      option.textContent = speaker.displayName;
-      if (speaker.id === ttsSpeakerId) {
-        option.selected = true;
-      }
-      gameTtsSpeaker.appendChild(option);
-    }
-  } catch (error) {
+  if (speakers.length === 0) {
     gameTtsSpeaker.innerHTML = '<option value="">Failed to load voices</option>';
+    return;
+  }
+
+  gameTtsSpeaker.innerHTML = '';
+  for (const speaker of speakers) {
+    const option = document.createElement('option');
+    option.value = speaker.id;
+    option.textContent = speaker.displayName;
+    if (speaker.id === tts.getSpeakerId()) {
+      option.selected = true;
+    }
+    gameTtsSpeaker.appendChild(option);
   }
 }
 
@@ -6509,103 +6324,24 @@ async function loadTtsSpeakers() {
  */
 async function testTts() {
   const testText = 'NEO TOKYOに侵入する。SYSTEMの支配が見える。解放作戦が始まる。';
-  await speakNarration(testText);
-}
-
-/**
- * Speak narration text using VOICEVOX
- */
-async function speakNarration(text) {
-  // Stop any currently playing audio
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio = null;
-  }
-
-  if (!text || text.trim().length === 0) return;
-
-  // Store for repeat with 'r' key
-  lastSpokenNarration = text;
-
-  if (!ttsEnabled) return;
-
-  // Increment request ID to cancel any pending requests
-  const thisRequestId = ++ttsRequestId;
-
-  try {
-    const response = await fetch(`${API_BASE}/api/tts/synthesize`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text,
-        speakerId: ttsSpeakerId,
-        speed: ttsSpeed,
-        volume: ttsVolume
-      })
-    });
-
-    // Check if this request was canceled while waiting
-    if (thisRequestId !== ttsRequestId) {
-      return; // A newer request has started, don't play this one
-    }
-
-    if (!response.ok) {
-      const error = await response.json();
-      console.warn('TTS error:', error.error);
-      return;
-    }
-
-    const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
-
-    // Double-check cancellation after getting the audio blob
-    if (thisRequestId !== ttsRequestId) {
-      URL.revokeObjectURL(audioUrl);
-      return;
-    }
-
-    currentAudio = new Audio(audioUrl);
-    currentAudio.volume = Math.min(ttsVolume, 1.0);
-    currentAudio.onended = () => {
-      URL.revokeObjectURL(audioUrl);
-      currentAudio = null;
-    };
-    currentAudio.play();
-  } catch (error) {
-    console.warn('TTS playback error:', error);
-  }
-}
-
-/**
- * Stop any currently playing TTS audio and cancel pending requests
- */
-function stopTts() {
-  // Increment request ID to cancel any pending TTS fetches
-  ttsRequestId++;
-
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio = null;
-  }
+  await tts.speakNarration(testText);
 }
 
 /**
  * Initialize TTS settings from loaded settings
  */
 function initTtsSettings(settings) {
-  ttsEnabled = settings.gameTtsEnabled ?? true; // Default to true if undefined
-  ttsSpeakerId = settings.gameTtsSpeakerId || 13;
-  ttsSpeed = settings.gameTtsSpeed || 0.9;
-  ttsVolume = settings.gameTtsVolume || 1.0;
+  tts.initSettings(settings);
 
-  if (gameTtsEnabled) gameTtsEnabled.checked = ttsEnabled;
+  // Update DOM elements
+  if (gameTtsEnabled) gameTtsEnabled.checked = tts.isEnabled();
   if (gameTtsSpeed) {
-    gameTtsSpeed.value = ttsSpeed;
-    if (gameTtsSpeedValue) gameTtsSpeedValue.textContent = ttsSpeed.toFixed(1);
+    gameTtsSpeed.value = tts.getSpeed();
+    if (gameTtsSpeedValue) gameTtsSpeedValue.textContent = tts.getSpeed().toFixed(1);
   }
   if (gameTtsVolume) {
-    gameTtsVolume.value = ttsVolume;
-    if (gameTtsVolumeValue) gameTtsVolumeValue.textContent = Math.round(ttsVolume * 100);
+    gameTtsVolume.value = tts.getVolume();
+    if (gameTtsVolumeValue) gameTtsVolumeValue.textContent = Math.round(tts.getVolume() * 100);
   }
 
   // Check VOICEVOX status
