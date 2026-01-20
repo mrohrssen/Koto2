@@ -460,7 +460,6 @@ export function resumeCombatAfterVocab() {
   if (!realtimeCombatActive || !combatPausedForVocab) return;
 
   combatPausedForVocab = false;
-  console.log('[Combat] Resuming after vocab review');
 
   // Trigger player attack, which will chain into enemy attack, then pause again
   executePlayerAttack();

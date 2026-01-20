@@ -361,10 +361,8 @@ export function updateVNStage() {
   // Update enemy visibility and stats
   const enemy = gameState.combat?.enemy;
   if (isInCombat && enemy && enemy.hp > 0) {
-    // Auto-start realtime combat if we're in combat phase but combat hasn't started
-    if (!isRealtimeCombatActive() && !isEnemyDialogueActive()) {
-      startRealtimeCombat();
-    }
+    // NOTE: Combat is started by startEncounter/startBossEncounter, not here
+    // Auto-starting here caused race conditions with dialogue handling
 
     // Remove defeated class and show enemy
     if (enemySprite) enemySprite.classList.remove('hidden', 'defeated');

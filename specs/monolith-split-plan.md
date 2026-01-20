@@ -1722,6 +1722,95 @@ These are lower-priority cleanup tasks to do after all phases are complete:
 - [ ] Move enemy dialogue functions → `narration.js` (~90 lines: showEnemyDialogue, dismissEnemyDialogue, speakEnemyDialogue)
 - [ ] Consider refactoring onclick handlers to addEventListener pattern (reduces window globals)
 
+### Bugs to Fix (Post-Refactor Regressions)
+
+**TASK FOR WORKER CLAUDE**: Fix these bugs one at a time, in order. After each fix:
+1. Run `node --check public/js/<modified-file>.js` to verify syntax
+2. Run `./scripts/e2e-test.sh` to verify no regressions
+3. Commit the fix: `git commit -m "fix: <brief description>"`
+4. Move to the next bug
+
+**Do NOT batch fixes** - fix one bug, test, commit, then move to the next.
+
+#### Bug 1: Enemy sprite not visible during combat
+**Severity**: High (gameplay-breaking visual bug)
+**Symptoms**:
+- During turn-based combat, the enemy sprite does not render on the VN stage
+- Player sprite renders correctly on the left side
+- Combat mechanics still work (can attack, enemy HP changes)
+- Vocab word buttons display correctly
+- "戦闘中..." status shows at bottom
+
+**Likely cause**: Phase 6 UI extraction broke the enemy sprite rendering. Check:
+1. `public/js/ui/character.js` - VN stage rendering, `updateVNStage()` function
+2. `public/js/ui/combat.js` - combat UI initialization
+3. `public/game.js` - enemy sprite element references, `updateEnemyDisplay()` or similar
+4. Check if `gameState.combat.enemy` data is being passed correctly to UI modules
+5. Check CSS - enemy container might have `display: none` or `visibility: hidden`
+
+**How to reproduce**:
+1. Start a new run
+2. Enter first ward, proceed to a room with an enemy
+3. Enter combat - observe enemy sprite is missing
+
+**Files to investigate**:
+- `public/js/ui/character.js` (VN stage updates)
+- `public/js/ui/combat.js` (combat UI)
+- `public/game.js` (coordinator, look for enemy display logic that wasn't extracted)
+- `public/game.css` (check `.enemy-sprite` or similar selectors)
+
+#### Bug 2: First battle room requires page refresh to enter
+**Severity**: High (gameplay-blocking)
+**Symptoms**:
+- On first run after page load, entering a battle room does nothing
+- Pressing "Attack" or "Fight" button has no effect
+- After refreshing the page, the same room works correctly
+- Subsequent battle rooms may work fine (needs verification)
+
+**Likely cause**: Race condition or initialization order issue from Phase 5/6 extraction. Possible causes:
+1. Event handlers not attached on initial load
+2. Store not populated before UI tries to use it
+3. Combat UI module `init()` called before dependencies are ready
+4. API call succeeds but UI callback not wired up yet
+
+**How to reproduce**:
+1. Start fresh (clear save or new browser)
+2. Create character, start run
+3. Enter first ward, proceed to first enemy room
+4. Try to click "Attack" or "Fight" - nothing happens
+5. Refresh page - now it works
+
+**Files to investigate**:
+- `public/game.js` - `init()` function, event handler setup order
+- `public/js/ui/combat.js` - `init()` and button click handlers
+- `public/js/store.js` - check if state is ready before subscribers fire
+- `public/js/api.js` - check if combat API calls are completing
+
+#### Bug 3: Cannot equip chips
+**Severity**: High (core feature broken)
+**Symptoms**:
+- Clicking on chip slots or chips does not allow equipping
+- Chip modal may not open, or equip action has no effect
+- Unequipping may also be broken (needs verification)
+
+**Likely cause**: Phase 6 extraction of economy/modals UI broke chip equip functionality. Possible causes:
+1. `equipChip()` function not exported or wired up correctly
+2. Chip slot modal event handlers not attached
+3. API call to `/api/game/equip-chip` not being made
+4. Window global `equipChip` not defined (onclick handlers in HTML)
+
+**How to reproduce**:
+1. Start a run, acquire some chips
+2. Open chip loadout (equipment panel on right side)
+3. Try to click a chip slot to equip a chip
+4. Nothing happens / chip doesn't equip
+
+**Files to investigate**:
+- `public/js/ui/economy.js` - chip equip functions
+- `public/js/ui/modals.js` - chip slot modal (`openChipSlotModal`, etc.)
+- `public/game.js` - check window global exports for `equipChip`, `unequipChip`
+- `public/js/api.js` - `equipChip()`, `unequipChip()` API calls
+
 ---
 
 ## Architecture Before/After
