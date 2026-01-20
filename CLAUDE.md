@@ -36,22 +36,16 @@ npm test       # Run e2e tests (Playwright)
 
 ### E2E Testing Rules (CRITICAL - READ THIS)
 
-**ALWAYS use these exact flags when running E2E tests:**
+**USE THE WRAPPER SCRIPT - it enforces correct flags:**
 
 ```bash
-# CORRECT - single worker, fail fast
-cd tests/e2e && npx playwright test --workers=1 -x
-
-# WRONG - never do these:
-npx playwright test --workers=2    # NO! Causes flaky failures
-npx playwright test                # NO! Runs all 87 tests even after failure
+./scripts/e2e-test.sh                              # Run all tests
+./scripts/e2e-test.sh specs/character-creation     # Run specific test
 ```
 
-**Required flags:**
-- `--workers=1` - Single worker prevents race conditions. NEVER use more than 1.
-- `-x` or `--max-failures=1` - Stop on first failure. Saves time.
+**NEVER run playwright directly without the required flags.**
 
-**Standard E2E verification flow:**
+If wrapper doesn't work, use EXACTLY this (no variations):
 ```bash
 cd /Users/michia/Documents/jrpg
 pkill -f "node server.js" 2>/dev/null
@@ -59,6 +53,12 @@ npm start &
 sleep 3
 cd tests/e2e && npx playwright test --workers=1 -x
 pkill -f "node server.js"
+```
+
+**FORBIDDEN - will waste hours on timeouts:**
+```bash
+npx playwright test --workers=2    # NO! Causes race conditions
+npx playwright test                # NO! Runs all 87 tests even on failure
 ```
 
 **Test thresholds:**
