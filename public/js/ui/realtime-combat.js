@@ -146,7 +146,8 @@ export function startRealtimeCombat() {
   realtimeCombatActive = true;
   playerAttackPending = false;
   enemyAttackPending = false;
-  combatPausedForVocab = false;
+  // Start paused - require vocab review before first attack
+  combatPausedForVocab = true;
 
   // Fetch chip loadout for combat display (non-blocking)
   if (!getChipLoadoutCache()) {
@@ -165,17 +166,16 @@ export function startRealtimeCombat() {
   // Initialize word practice cards
   wordPractice.initCombatWords();
 
-  console.log('[Combat] Starting realtime combat with vocab pause mode');
-
-  // Execute first player attack, which will chain into enemy attack, then pause
-  executePlayerAttack();
+  console.log('[Combat] Started paused - review a word to begin attacking');
+  // Combat starts paused, player must review a vocab word to earn first attack
+  // resumeCombatAfterVocab() will trigger the first executePlayerAttack()
 }
 
 /**
  * Execute a single player attack and schedule the next one
  */
 export async function executePlayerAttack() {
-  if (!realtimeCombatActive || playerAttackPending || getEnemyDialogueActive()) return;
+  if (!realtimeCombatActive || playerAttackPending || combatPausedForVocab || getEnemyDialogueActive()) return;
 
   playerAttackPending = true;
 

@@ -915,10 +915,11 @@ function dismissEnemyDialogue() {
 
   // Resume combat if we were paused during glitching dialogue
   // Note: realtimeCombatActive was set to false in showEnemyDialogue for glitching
+  // The player attack that triggered glitching already happened, so now enemy should attack
   if (wasGlitching) {
     realtimeCombatUI.setRealtimeCombatActive(true);
-    // Use the new vocab pause flow - player attacks, chains to enemy, then pauses
-    executePlayerAttack();
+    // Continue normal flow: enemy attack → vocab pause → player attack
+    realtimeCombatUI.executeEnemyAttackThenPause();
   }
 
   // Resolve the promise so waiting code can continue
