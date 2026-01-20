@@ -1430,26 +1430,34 @@ Commits:
 - 4.3: b0535e6 - ExplorationService
 - 4.6: 1a7ba5c - GameManager cleanup
 
-### Phase 5: Frontend Secondary Extractions
+### Phase 5: Frontend Secondary Extractions ✅
 - [x] 5.0 Create Observable Store foundation
 - [x] 5.1 Extract TTS module
 - [x] 5.2 Extract settings module
-- [ ] 5.3 Extract background module
-- [ ] 5.4 Extract narration module
-- [ ] 5.5 Extract word practice module
+- [x] 5.3 Extract background module
+- [x] 5.4 Extract narration module
+- [x] 5.5 Extract word practice module
 
-**Phase 5 Progress:**
+**Phase 5 Result:**
 
 | Step | File Created | Lines | Commit |
 |------|--------------|-------|--------|
 | 5.0 | `public/js/store.js` | 75 | de37005 |
 | 5.1 | `public/js/tts.js` | 371 | 83253b0 |
 | 5.2 | `public/js/settings.js` | 143 | f109078 |
+| 5.3 | `public/js/background.js` | 148 | 2cbf1d1 |
+| 5.4 | `public/js/narration.js` | 250 | f45cf28 |
+| 5.5 | `public/js/word-practice.js` | 767 | b6b9963 |
+
+**Total lines extracted in Phase 5: 1,754 lines**
+
+**game.js reduction: 6,480 → 5,525 lines (-955 lines)**
 
 **Notes:**
 - Step 5.2 had a duplicate export bug that broke E2E tests - fixed by removing duplicate `saveStoredApiKeys` export in api.js
 - Added `scripts/e2e-test.sh` wrapper to enforce `--workers=1 -x` flags
 - Updated CLAUDE.md with E2E testing rules
+- All modules use init() pattern with callbacks for cross-module dependencies
 
 ### Phase 6: Frontend UI Module Extraction
 - [ ] 6.0 Extract Combat UI module
@@ -1642,8 +1650,8 @@ async function init() {
 | 2 ✅ | 10 | ~1,100 | server.js: 1,683 → ~580 | Route Modules |
 | 3 ✅ | 10 | ~4,900 | enemies.js: 3,818→1,188, chips.js: 3,894→1,687 | JSON Data Extraction |
 | 4 ✅ | 7 | ~1,879 | loop.js: ~1,850 → 919 | Service Layer + Event Bus |
-| 5 | 6 | ~900 | game.js: 6,480 → ~5,580 | Observable Store |
-| 6 | 7 | ~4,800 | game.js: 5,580 → ~800 | UI Components |
+| 5 ✅ | 6 | ~1,754 | game.js: 6,480 → 5,525 | Observable Store |
+| 6 | 7 | ~4,800 | game.js: 5,525 → ~800 | UI Components |
 
 **Total: 50 steps, each independently committable and testable**
 
