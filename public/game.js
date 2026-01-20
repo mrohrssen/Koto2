@@ -87,6 +87,9 @@ import * as tts from './js/tts.js';
 // Settings module for API keys and preferences
 import * as settings from './js/settings.js';
 
+// Background module for ward/floor background images
+import * as background from './js/background.js';
+
 // API module - centralized server communication
 import {
   getGameState as apiGetGameState,
@@ -312,119 +315,8 @@ const roomDisplay = document.getElementById('room-display');
 const floorIndicator = document.getElementById('floor-indicator');
 
 // ============ BACKGROUND SYSTEM ============
-// Track current background to avoid unnecessary updates
-let currentBackgroundKey = '';
-let lastPrefetchedFloor = 0;
-
-// Simple hash for deterministic variant selection (enables caching)
-function hashCode(str) {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}
-
-// Prefetch backgrounds for a floor (call when entering new floor)
-function prefetchFloorBackgrounds(floor) {
-  if (floor === lastPrefetchedFloor || floor > 7) return;
-  lastPrefetchedFloor = floor;
-
-  // Prefetch all variants for this floor and next floor
-  const floorsToPreload = [floor, Math.min(floor + 1, 7)];
-  for (const f of floorsToPreload) {
-    for (let v = 1; v <= 5; v++) {
-      const img = new Image();
-      img.src = `assets/backgrounds/floor${f}_${v}.png`;
-    }
-  }
-  console.log(`Prefetched backgrounds for floors ${floorsToPreload.join(', ')}`);
-}
-
-// All location types for enemy-specific backgrounds
-const LOCATION_TYPES = ['residential', 'school', 'convenience', 'shopping', 'restaurant', 'station', 'office', 'government', 'hospital'];
-let locationBackgroundsPrefetched = false;
-
-// Prefetch all location backgrounds (call once when starting a run)
-function prefetchLocationBackgrounds() {
-  if (locationBackgroundsPrefetched) return;
-  locationBackgroundsPrefetched = true;
-
-  for (const location of LOCATION_TYPES) {
-    const img = new Image();
-    img.src = `assets/backgrounds/locations/${location}.png`;
-  }
-  console.log('Prefetched all location backgrounds');
-}
-
-// Update background based on current floor with deterministic variant
-function updateBackground() {
-  if (!vnBackground) return;
-
-  // If not in a run, show hub background
-  if (!gameState.run) {
-    if (currentBackgroundKey !== 'hub') {
-      currentBackgroundKey = 'hub';
-      vnBackground.style.backgroundImage = `url('assets/backgrounds/hub.png')`;
-      vnBackground.style.backgroundSize = 'cover';
-      vnBackground.style.backgroundPosition = 'center';
-      console.log('Background set to: hub');
-    }
-    return;
-  }
-
-  // In combat - use enemy's location-specific background
-  if (gameState.combat?.enemy) {
-    const enemy = gameState.combat.enemy;
-    // Use enemy's primary location, default to 'residential' if none specified
-    const location = enemy.locations?.[0] || 'residential';
-    const locationKey = `location-${location}`;
-
-    // Only change if different from current
-    if (locationKey !== currentBackgroundKey) {
-      currentBackgroundKey = locationKey;
-      const bgPath = `assets/backgrounds/locations/${location}.png`;
-      vnBackground.style.backgroundImage = `url('${bgPath}')`;
-      vnBackground.style.backgroundSize = 'cover';
-      vnBackground.style.backgroundPosition = 'center';
-      console.log(`Background set to: ${bgPath} (enemy location: ${location})`);
-    }
-    return;
-  }
-
-  const floor = gameState.run.floor || 1;
-  const currentRoom = gameState.run.currentRoom || 0;
-
-  // Create a unique key for this room position
-  const roomKey = `${floor}-${currentRoom}`;
-
-  // Only change background if we've moved to a new room
-  if (roomKey === currentBackgroundKey) return;
-  currentBackgroundKey = roomKey;
-
-  // Prefetch next floor backgrounds when entering a new floor
-  prefetchFloorBackgrounds(floor);
-
-  // Pick a deterministic variant (1-5) based on floor+room for better caching
-  const variant = (hashCode(roomKey) % 5) + 1;
-
-  // Set the background image path
-  // Backgrounds are named: floor{N}_{variant}.png
-  const bgPath = `assets/backgrounds/floor${floor}_${variant}.png`;
-
-  vnBackground.style.backgroundImage = `url('${bgPath}')`;
-  vnBackground.style.backgroundSize = 'cover';
-  vnBackground.style.backgroundPosition = 'center';
-
-  console.log(`Background set to: ${bgPath}`);
-}
-
-// Reset background tracking (for new runs)
-function resetBackground() {
-  currentBackgroundKey = '';
-  lastPrefetchedFloor = 0;
-}
+// Initialize background module with DOM element and state getter
+background.init(vnBackground, () => gameState);
 
 // ============ NARRATION SYSTEM ============
 // Narration comes from server - can be simple Japanese or AI-generated based on user's vocab
@@ -794,11 +686,11 @@ async function startNewRun() {
   // Clear narration log for new run
   clearNarrationLog();
   // Reset background tracking for new run
-  resetBackground();
+  background.resetBackground();
   // Clear word cache to get fresh due words for this run
   clearWordCache();
   // Prefetch all location backgrounds for combat scenes
-  prefetchLocationBackgrounds();
+  background.prefetchLocationBackgrounds();
   // Fetch JPDB vocabulary and force refresh word states for fresh dueAt values
   fetchJpdbVocabulary();
 
@@ -823,7 +715,7 @@ async function startNewRun() {
     // Try AI narration for immersive experience, fall back to simple
     let narration = result.narration || FALLBACK_NARRATIONS.enterDungeon(gameState.run.floor);
     showNarration(narration);
-    updateBackground();
+    background.updateBackground();
     updateUI();
 
     // Fetch richer AI narration in background
@@ -854,7 +746,7 @@ async function startEncounter() {
     }
 
     updateUI();
-    updateBackground(); // Switch to enemy's location background
+    background.updateBackground(); // Switch to enemy's location background
 
     // Show possessed dialogue if available - wait for Enter to dismiss before combat starts
     if (dialogue) {
@@ -896,7 +788,7 @@ async function startBossEncounter() {
     }
 
     updateUI();
-    updateBackground(); // Switch to enemy's location background
+    background.updateBackground(); // Switch to enemy's location background
 
     // Show possessed dialogue if available - wait for Enter to dismiss before combat starts
     if (dialogue) {
@@ -1076,7 +968,7 @@ async function nextFloor() {
     // Use server narration or fallback
     const narration = result.narration || FALLBACK_NARRATIONS.enterDungeon(gameState.run.floor);
     showNarration(narration);
-    updateBackground();
+    background.updateBackground();
     updateUI();
   }
 }
@@ -1109,7 +1001,7 @@ async function returnToHub() {
   clearWordCache();
   gameState.phase = 'hub';
   showNarration(FALLBACK_NARRATIONS.hub(gameState.player));
-  updateBackground();
+  background.updateBackground();
   updateUI();
 }
 
@@ -3395,7 +3287,7 @@ async function proceedToNextRoom() {
       updateGameState(result.state);
     }
     showNarration(result.narration || '次の部屋に入った。');
-    updateBackground();
+    background.updateBackground();
     updateUI();
     triggerJpdbParse();
   }
