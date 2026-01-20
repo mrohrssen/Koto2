@@ -748,16 +748,20 @@ async function startNewRun() {
 
 async function startEncounter() {
   const result = await apiStartEncounter();
-  // Enemy is in result.result.enemy or gameState.combat.enemy
-  const enemy = result?.result?.enemy || gameState.combat?.enemy;
+  // Update game state first so UI has access to combat data
+  if (result?.state) {
+    updateGameState(result.state);
+  }
+  // Enemy is in result.enemy (top level) or gameState.combat.enemy (after state update)
+  const enemy = result?.enemy || gameState.combat?.enemy;
   if (result && enemy) {
     // Show immediate fallback narration for encounter start
-    let narration = result.narration || FALLBACK_NARRATIONS.combatStart(enemy);
-    narration.showNarration(narration);
+    let narrationText = result.narration || FALLBACK_NARRATIONS.combatStart(enemy);
+    narration.showNarration(narrationText);
 
     // Check for dialogue BEFORE updateUI to prevent auto-start race condition
     // Server returns a single string, but fallback to enemy.dialogue.possessed is an array
-    let dialogue = result?.result?.dialogue;
+    let dialogue = result?.dialogue;
     if (!dialogue && enemy?.dialogue?.possessed) {
       const lines = enemy.dialogue.possessed;
       dialogue = Array.isArray(lines) ? lines[Math.floor(Math.random() * lines.length)] : lines;
@@ -790,16 +794,20 @@ async function startEncounter() {
 
 async function startBossEncounter() {
   const result = await apiStartBoss();
-  // Enemy is in result.result.enemy or gameState.combat.enemy
-  const enemy = result?.result?.enemy || gameState.combat?.enemy;
+  // Update game state first so UI has access to combat data
+  if (result?.state) {
+    updateGameState(result.state);
+  }
+  // Enemy is in result.enemy (top level) or gameState.combat.enemy (after state update)
+  const enemy = result?.enemy || gameState.combat?.enemy;
   if (result && enemy) {
     // Show immediate fallback narration for boss encounter
-    let narration = result.narration || FALLBACK_NARRATIONS.combatStart(enemy);
-    narration.showNarration(narration);
+    let narrationText = result.narration || FALLBACK_NARRATIONS.combatStart(enemy);
+    narration.showNarration(narrationText);
 
     // Check for dialogue BEFORE updateUI to prevent auto-start race condition
     // Server returns a single string, but fallback to enemy.dialogue.possessed is an array
-    let dialogue = result?.result?.dialogue;
+    let dialogue = result?.dialogue;
     if (!dialogue && enemy?.dialogue?.possessed) {
       const lines = enemy.dialogue.possessed;
       dialogue = Array.isArray(lines) ? lines[Math.floor(Math.random() * lines.length)] : lines;
