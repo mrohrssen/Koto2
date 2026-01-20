@@ -11,6 +11,7 @@ import { CHIPS, getChipsByRarity, equipChip } from '../items/chips.js';
 import { allocateStat } from '../state.js';
 import { AIPlayer } from './ai-player.js';
 import { SimulationStats } from './stats.js';
+import { executeEnemyTurn } from '../combat/enemy.js';
 
 /**
  * Configuration options for simulation
@@ -329,7 +330,22 @@ function handleCombat(gm, ai) {
       const action = ai.decideCombatAction(gm);
       executePlayerAction(gm, action);
     } else {
-      gm.enemyTurn();
+      // Execute enemy turn directly using combat mechanics
+      const enemyResult = executeEnemyTurn(gm.combat.enemy, gm.run.player, { id: 'attack', damageMultiplier: 1.0 });
+
+      // Track damage taken
+      if (gm.run.stats) {
+        gm.run.stats.damageTaken = (gm.run.stats.damageTaken || 0) + (enemyResult.damage || 0);
+      }
+
+      // Check if player defeated
+      if (enemyResult.playerDefeated || gm.run.player.hp <= 0) {
+        gm.combat.active = false;
+        gm.run.active = false;
+      } else {
+        // Switch to player turn
+        gm.combat.turn = 'player';
+      }
     }
 
     // Check if player died
