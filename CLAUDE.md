@@ -34,9 +34,48 @@ npm test       # Run e2e tests (Playwright)
 
 **Always run e2e tests after adding a feature.** Tests are in `tests/` using Playwright.
 
+### E2E Testing Rules (CRITICAL - READ THIS)
+
+**ALWAYS use these exact flags when running E2E tests:**
+
 ```bash
-npm test                    # Run all tests
-npx playwright test --ui    # Interactive test UI
+# CORRECT - single worker, fail fast
+cd tests/e2e && npx playwright test --workers=1 -x
+
+# WRONG - never do these:
+npx playwright test --workers=2    # NO! Causes flaky failures
+npx playwright test                # NO! Runs all 87 tests even after failure
+```
+
+**Required flags:**
+- `--workers=1` - Single worker prevents race conditions. NEVER use more than 1.
+- `-x` or `--max-failures=1` - Stop on first failure. Saves time.
+
+**Standard E2E verification flow:**
+```bash
+cd /Users/michia/Documents/jrpg
+pkill -f "node server.js" 2>/dev/null
+npm start &
+sleep 3
+cd tests/e2e && npx playwright test --workers=1 -x
+pkill -f "node server.js"
+```
+
+**Test thresholds:**
+- 87/87 = ideal
+- 80+/87 = acceptable (known flakiness)
+- <80/87 = broken, fix before committing
+
+**Syntax check BEFORE E2E** (saves time):
+```bash
+node --check public/js/yourfile.js && echo "OK"
+```
+
+### Quick Tests (no server needed)
+
+```bash
+npm run test:unit           # Unit tests only (49 tests)
+npm run test:integration    # Integration tests (10-11 tests)
 ```
 
 ## Git Workflow (Multi-Session Safe with Worktrees)
