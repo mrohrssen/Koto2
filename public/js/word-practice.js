@@ -161,6 +161,10 @@ export async function fetchReplacementWord(justReviewedVid = null) {
  * Initialize word cards for combat
  */
 export async function initCombatWords() {
+  // Clear stale cache so we fetch fresh words each combat
+  // This prevents reviewed words from reappearing
+  clearWordCache();
+
   let wordData = await fetchJpdbDueWords();
 
   if (!wordData || wordData.length === 0) {
