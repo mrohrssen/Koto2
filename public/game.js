@@ -99,6 +99,9 @@ import * as wordPractice from './js/word-practice.js';
 // Combat UI module for combat rendering and animations
 import * as combatUI from './js/ui/combat.js';
 
+// Exploration UI module for room navigation and content views
+import * as explorationUI from './js/ui/exploration.js';
+
 // API module - centralized server communication
 import {
   getGameState as apiGetGameState,
@@ -381,6 +384,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     enemySprite: enemySprite,
     getGameState: () => gameState,
     delay: delay
+  });
+
+  // Initialize exploration UI module with DOM elements and callbacks
+  explorationUI.init({
+    gameContent: gameContent,
+    actionPanel: actionPanel,
+    getGameState: () => gameState,
+    updateGameState: updateGameState,
+    updateUI: updateUI,
+    triggerJpdbParse: triggerJpdbParse,
+    handlePlayerDefeat: handlePlayerDefeat,
+    startEncounter: startEncounter,
+    startBossEncounter: startBossEncounter,
+    openShop: openShop,
+    openBlacksmith: openBlacksmith,
+    openChipUpgradeModal: openChipUpgradeModal,
+    openUpgradesModal: openUpgradesModal,
+    FALLBACK_NARRATIONS: FALLBACK_NARRATIONS,
+    // API functions
+    apiGetStartingWards: apiGetStartingWards,
+    apiGetNextWardOptions: apiGetNextWardOptions,
+    apiSelectStartingWard: apiSelectStartingWard,
+    apiSelectNextWard: apiSelectNextWard,
+    apiProceed: apiProceed,
+    apiRoomEncounter: apiRoomEncounter,
+    apiDisarmTrap: apiDisarmTrap,
+    apiTriggerTrap: apiTriggerTrap,
+    apiLootBody: apiLootBody,
+    apiSkipBody: apiSkipBody,
+    apiOpenTreasure: apiOpenTreasure,
+    apiSkipTreasure: apiSkipTreasure,
+    apiUseShrine: apiUseShrine
   });
 
   await loadGameState();
@@ -2053,433 +2088,31 @@ function updateActionButtonsState() {
 }
 
 // ============ CONTENT VIEWS ============
-function showNoSaveContent() {
-  gameContent.innerHTML = `
-    <div class="content-center">
-      <div class="welcome-icon">&#x2694;</div>
-      <h2>NEO TOKYO: System Liberation</h2>
-      <p>Create your hunter to begin the journey into darkness.</p>
-    </div>
-  `;
-  narration.showNarration(FALLBACK_NARRATIONS.welcome);
-}
-
-function showHubContent() {
-  const essence = gameState.meta?.essence || 0;
-
-  gameContent.innerHTML = `
-    <div class="content-center">
-      <div class="hub-icon">&#x1F5FC;</div>
-      <h2>Hacker's Den</h2>
-      <p>東京はSYSTEMに支配されている。解放の準備はできているか？</p>
-      <div class="hub-essence" onclick="openUpgradesModal()">
-        <span class="hub-essence-label">解放データ</span>
-        <div class="hub-essence-value">
-          <span class="essence-icon">01</span>
-          <span>${essence}</span>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-async function showWardSelectionContent() {
-  // Determine if this is starting ward or next ward selection
-  const isNextWard = gameState.run?.currentWard != null;
-  const currentWard = gameState.run?.currentWard;
-  const currentFloor = gameState.run?.floor || 1;
-
-  // Fetch ward options from appropriate API
-  const wardOptions = isNextWard
-    ? await apiGetNextWardOptions()
-    : await apiGetStartingWards();
-
-  if (wardOptions.length === 0) {
-    gameContent.innerHTML = `
-      <div class="content-center">
-        <h2>Error</h2>
-        <p>Failed to load ward options</p>
-      </div>
-    `;
-    return;
-  }
-
-  // Store for keyboard navigation
-  wardSelectionData = wardOptions.map(w => ({ id: w.id, isNextWard }));
-  selectedWardIndex = 0;
-
-  const wardCardsHtml = wardOptions.map((ward, index) => `
-    <div class="ward-card${index === 0 ? ' selected' : ''}" data-ward-index="${index}" onclick="selectWard('${ward.id}', ${isNextWard})">
-      <div class="ward-name">${ward.name}</div>
-      <div class="ward-name-en">${ward.nameEn}</div>
-      <div class="ward-theme">${ward.theme}</div>
-      <div class="ward-tier">Tier ${ward.tier || 1}</div>
-    </div>
-  `).join('');
-
-  const title = isNextWard ? '次の区を選択 (Select Next Ward)' : '区を選択 (Select Ward)';
-  const desc = isNextWard
-    ? `${currentWard}区クリア！次はどこへ向かう？`
-    : 'どこから潜入を開始する？';
-
-  gameContent.innerHTML = `
-    <div class="ward-selection">
-      <h2>${title}</h2>
-      <p class="ward-selection-desc">${desc}</p>
-      <div class="ward-cards">
-        ${wardCardsHtml}
-      </div>
-    </div>
-  `;
-}
-
-async function selectWard(wardId, isNextWard = false) {
-  const result = isNextWard
-    ? await apiSelectNextWard(wardId)
-    : await apiSelectStartingWard(wardId);
-
-  if (result.error) {
-    narration.showNarration(`選択失敗: ${result.error}`);
-    return;
-  }
-
-  if (result.state) {
-    updateGameState(result.state);
-  }
-
-  updateUI();
-}
-
+// Delegated to explorationUI module
+function showNoSaveContent() { explorationUI.showNoSaveContent(); }
+function showHubContent() { explorationUI.showHubContent(); }
+async function showWardSelectionContent() { return explorationUI.showWardSelectionContent(); }
+async function selectWard(wardId, isNextWard = false) { return explorationUI.selectWard(wardId, isNextWard); }
 window.selectWard = selectWard;
-
-// Update ward card selection visuals
-function updateWardSelection(wardCards) {
-  wardCards.forEach((card, i) => {
-    card.classList.toggle('selected', i === selectedWardIndex);
-  });
-}
-
-function showExploringContent() {
-  const run = gameState.run;
-  if (!run) return;
-
-  const progress = [];
-  for (let i = 0; i < run.encountersNeeded; i++) {
-    const completed = i < run.encountersCompleted;
-    progress.push(`<div class="progress-dot ${completed ? 'completed' : ''}"></div>`);
-  }
-  progress.push(`<div class="progress-dot boss-dot"></div>`);
-
-  gameContent.innerHTML = `
-    <div class="floor-display">
-      <div class="floor-header">
-        <span class="floor-number">Ward ${run.floor}</span>
-        <span class="floor-status">Exploring...</span>
-      </div>
-      <div class="progress-bar">
-        ${progress.join('')}
-      </div>
-      <div class="encounters-text">
-        ${run.encountersCompleted}/${run.encountersNeeded} encounters cleared
-      </div>
-    </div>
-  `;
-}
+function updateWardSelection(wardCards) { explorationUI.updateWardSelection(wardCards); }
+function showExploringContent() { explorationUI.showExploringContent(); }
 
 // ============ ROOM EXPLORATION UI ============
-function showRoomContent() {
-  const run = gameState.run;
-  const room = gameState.room;
-  if (!run || !room) return;
-
-  const roomIcon = getRoomIcon(room.type);
-  const roomTypeName = getRoomTypeName(room.type);
-
-  // Progress dots showing rooms
-  const totalRooms = run.totalRooms || room.totalRooms || 15;
-  const currentRoom = run.currentRoom || 0;
-
-  // Create a simplified progress bar for rooms
-  let progressHTML = '<div class="room-progress">';
-  for (let i = 0; i < totalRooms; i++) {
-    let dotClass = 'room-dot';
-    if (i < currentRoom) dotClass += ' explored';
-    else if (i === currentRoom) dotClass += ' current';
-    if (i === totalRooms - 1) dotClass += ' boss-room';
-    progressHTML += `<div class="${dotClass}"></div>`;
-  }
-  progressHTML += '</div>';
-
-  gameContent.innerHTML = `
-    <div class="floor-display room-display">
-      <div class="floor-header">
-        <span class="floor-number">Ward ${run.floor}</span>
-        <span class="room-number">Room ${currentRoom + 1}/${totalRooms}</span>
-      </div>
-      ${progressHTML}
-      <div class="room-info">
-        <div class="room-icon">${roomIcon}</div>
-        <div class="room-type">${roomTypeName}</div>
-      </div>
-    </div>
-  `;
-}
-
-function showRoomActions() {
-  const room = gameState.room;
-  console.log('[showRoomActions] room:', room?.type, 'actions:', room?.actions);
-  if (!room) {
-    actionPanel.innerHTML = '<button class="action-btn primary" onclick="proceedToNextRoom()">進む</button>';
-    return;
-  }
-
-  const actions = room.actions || [];
-  let buttonsHTML = '';
-
-  for (const action of actions) {
-    let btnClass;
-    if (action.id === 'boss_fight') {
-      btnClass = 'boss';
-    } else if (action.id === 'fight') {
-      btnClass = 'danger';
-    } else if (action.id === 'proceed') {
-      btnClass = 'primary';
-    } else if (action.id === 'ignore_body' || action.id === 'ignore_treasure') {
-      btnClass = 'muted';  // Safe but no reward
-    } else if (action.id === 'loot' || action.id === 'open') {
-      btnClass = 'warning';  // Risky but rewarding
-    } else {
-      btnClass = 'secondary';
-    }
-
-    buttonsHTML += `
-      <button class="action-btn ${btnClass}" onclick="handleRoomAction('${action.id}')" title="${action.description || ''}">
-        ${action.name}
-      </button>
-    `;
-  }
-
-  actionPanel.innerHTML = buttonsHTML || '<button class="action-btn primary" onclick="proceedToNextRoom()">進む</button>';
-}
-
-function getRoomIcon(type) {
-  const icons = {
-    empty: '🚪',
-    encounter: '⚔️',
-    trap: '⚠️',
-    body: '💀',
-    treasure: '📦',
-    shrine: '⛩️',
-    merchant: '🛒',
-    blacksmith: '🔨',
-    boss: '👹'
-  };
-  return icons[type] || '❓';
-}
-
-function getRoomTypeName(type) {
-  const names = {
-    empty: '何もない部屋',
-    encounter: '敵がいる！',
-    trap: '罠がある...',
-    body: '冒険者の遺体',
-    treasure: '宝箱！',
-    shrine: '神秘的な祠',
-    merchant: '商人',
-    blacksmith: '鍛冶屋',
-    boss: 'ボスの間'
-  };
-  return names[type] || '不明な部屋';
-}
-
-async function handleRoomAction(actionId) {
-  console.log('handleRoomAction called with:', actionId);
-  switch (actionId) {
-    case 'proceed':
-      console.log('Calling proceedToNextRoom...');
-      await proceedToNextRoom();
-      break;
-    case 'fight':
-      await startEncounter();
-      break;
-    case 'boss_fight':
-      await startBossEncounter();
-      break;
-    case 'disarm':
-      await disarmTrap();
-      break;
-    case 'trigger':
-      await triggerTrap();
-      break;
-    case 'loot':
-      await lootBody();
-      break;
-    case 'ignore_body':
-      await skipBody();
-      break;
-    case 'open':
-      await openTreasure();
-      break;
-    case 'ignore_treasure':
-      await skipTreasure();
-      break;
-    case 'pray':
-      await useShrine();
-      break;
-    case 'shop':
-      await openShop();
-      break;
-    case 'refine':
-      await openBlacksmith();
-      break;
-    case 'upgrade':
-      await openChipUpgradeModal();
-      break;
-    default:
-      console.warn('Unknown room action:', actionId);
-  }
-}
-
-async function proceedToNextRoom() {
-  console.log('proceedToNextRoom called');
-  const result = await apiProceed();
-  console.log('proceedToNextRoom result:', result ? 'success' : 'null');
-  if (result) {
-    // Update local state from server response
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    narration.showNarration(result.narration || '次の部屋に入った。');
-    background.updateBackground();
-    updateUI();
-    triggerJpdbParse();
-  }
-}
-
-async function startRoomEncounter() {
-  const result = await apiRoomEncounter();
-  if (result) {
-    // Update local state from server response
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    const enemy = result.enemy || gameState.combat?.enemy;
-    narration.showNarration(result.narration || FALLBACK_NARRATIONS.combatStart(enemy));
-    updateUI();
-    triggerJpdbParse();
-  }
-}
-
-async function disarmTrap() {
-  const result = await apiDisarmTrap();
-  if (result) {
-    // Update local state from server response
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    narration.showNarration(result.narration);
-    updateUI();
-    triggerJpdbParse();
-
-    // Check for defeat
-    if (result.type === 'defeat') {
-      await handlePlayerDefeat(result);
-    }
-  }
-}
-
-async function triggerTrap() {
-  const result = await apiTriggerTrap();
-  if (result) {
-    // Update local state from server response
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    narration.showNarration(result.narration);
-    updateUI();
-    triggerJpdbParse();
-
-    // Check for defeat
-    if (result.type === 'defeat') {
-      await handlePlayerDefeat(result);
-    }
-  }
-}
-
-async function lootBody() {
-  const result = await apiLootBody();
-  if (result) {
-    // Update local state from server response
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    narration.showNarration(result.narration);
-    updateUI();
-    triggerJpdbParse();
-
-    // Check for defeat from trapped body
-    if (result.type === 'defeat') {
-      await handlePlayerDefeat(result);
-    }
-  }
-}
-
-async function skipBody() {
-  const result = await apiSkipBody();
-  if (result) {
-    // Update local state from server response
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    narration.showNarration(result.narration);
-    updateUI();
-    triggerJpdbParse();
-  }
-}
-
-async function skipTreasure() {
-  const result = await apiSkipTreasure();
-  if (result) {
-    // Update local state from server response
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    narration.showNarration(result.narration);
-    updateUI();
-    triggerJpdbParse();
-  }
-}
-
-async function openTreasure() {
-  const result = await apiOpenTreasure();
-  if (result) {
-    // Update local state from server response
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    narration.showNarration(result.narration);
-    updateUI();
-    triggerJpdbParse();
-
-    // Check for defeat from trapped chest
-    if (result.type === 'defeat') {
-      await handlePlayerDefeat(result);
-    }
-  }
-}
-
-async function useShrine() {
-  const result = await apiUseShrine();
-  if (result) {
-    // Update local state from server response
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    narration.showNarration(result.narration);
-    updateUI();
-    triggerJpdbParse();
-  }
-}
+// Delegated to explorationUI module
+function showRoomContent() { explorationUI.showRoomContent(); }
+function showRoomActions() { explorationUI.showRoomActions(); }
+function getRoomIcon(type) { return explorationUI.getRoomIcon(type); }
+function getRoomTypeName(type) { return explorationUI.getRoomTypeName(type); }
+async function handleRoomAction(actionId) { return explorationUI.handleRoomAction(actionId); }
+async function proceedToNextRoom() { return explorationUI.proceedToNextRoom(); }
+async function startRoomEncounter() { return explorationUI.startRoomEncounter(); }
+async function disarmTrap() { return explorationUI.disarmTrap(); }
+async function triggerTrap() { return explorationUI.triggerTrap(); }
+async function lootBody() { return explorationUI.lootBody(); }
+async function skipBody() { return explorationUI.skipBody(); }
+async function skipTreasure() { return explorationUI.skipTreasure(); }
+async function openTreasure() { return explorationUI.openTreasure(); }
+async function useShrine() { return explorationUI.useShrine(); }
 
 // ============ SHOP FUNCTIONS ============
 
@@ -3449,22 +3082,26 @@ function handleKeypress(e) {
   }
 
   // Ward selection keyboard navigation
-  if (gameState.phase === 'ward_selection' && wardSelectionData.length > 0) {
+  const wardData = explorationUI.getWardSelectionData();
+  if (gameState.phase === 'ward_selection' && wardData.length > 0) {
     const wardCards = document.querySelectorAll('.ward-card');
     if (wardCards.length > 0) {
+      let idx = explorationUI.getSelectedWardIndex();
       if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault();
-        selectedWardIndex = (selectedWardIndex - 1 + wardCards.length) % wardCards.length;
+        idx = (idx - 1 + wardCards.length) % wardCards.length;
+        explorationUI.setSelectedWardIndex(idx);
         updateWardSelection(wardCards);
         return;
       } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault();
-        selectedWardIndex = (selectedWardIndex + 1) % wardCards.length;
+        idx = (idx + 1) % wardCards.length;
+        explorationUI.setSelectedWardIndex(idx);
         updateWardSelection(wardCards);
         return;
       } else if (e.key === 'Enter') {
         e.preventDefault();
-        const ward = wardSelectionData[selectedWardIndex];
+        const ward = wardData[explorationUI.getSelectedWardIndex()];
         if (ward) selectWard(ward.id, ward.isNextWard);
         return;
       }
