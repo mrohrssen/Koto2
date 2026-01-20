@@ -1,60 +1,27 @@
 /**
- * @fileoverview GameManager class - core game orchestration and state machine
+ * @fileoverview GameManager - Game Coordinator
  * @module src/game/loop
  *
  * PURPOSE:
- * Central orchestrator for the entire game. Contains the GameManager class which
- * manages player state, dungeon runs, combat encounters, room exploration, shops,
- * and meta-progression. This is the main interface between the server endpoints
- * and the game logic modules.
+ * Central coordinator for the game. Delegates domain logic to specialized services
+ * while managing cross-cutting concerns like state assembly, run lifecycle, and
+ * meta-progression. This is the main interface between server endpoints and game logic.
+ *
+ * ARCHITECTURE:
+ * GameManager coordinates two services:
+ * - CombatService (~800 lines) - Combat encounters, attacks, victory/defeat
+ * - ExplorationService (~950 lines) - Room navigation, shops, inventory
+ *
+ * GameManager retains:
+ * - State assembly (getState, getPhase)
+ * - Run lifecycle (startRun, forfeitRun)
+ * - Meta-progression (essence, upgrades, achievements) - cross-cutting concern
+ * - Player management (createPlayer, loadPlayer)
+ * - API surface (delegate methods for server compatibility)
  *
  * KEY EXPORTS:
- * - GameManager (class) - Main game orchestration class, singleton instance used by server
- *
- * GAMEMANAGER METHODS:
- * Meta-progression:
- * - initMeta(data) - Initialize or load meta-progression
- * - purchaseUpgrade(id) - Buy permanent upgrades with essence
- * - awardRunEssence(isVictory) - Calculate and award end-of-run essence
- * - checkAchievements() - Check and unlock achievements
- *
- * Player/Run Management:
- * - createPlayer(name, stats, points) - Create new player character
- * - startRun() - Begin new dungeon run
- * - forfeitRun() - Abandon current run
- * - reset() / fullReset() - Reset run or entire game
- *
- * Ward/Floor Navigation:
- * - getStartingWardOptions() / selectStartingWard(id) - Initial ward selection
- * - getNextWardOptions() / selectNextWard(id) - Post-boss ward selection
- * - enterFloor() - Generate rooms for current floor
- * - nextFloor() - Advance to next floor after boss
- *
- * Room Exploration:
- * - getCurrentRoom() / proceedToNextRoom() - Room navigation
- * - disarmTrap() / triggerTrap() - Trap handling
- * - lootBody() / openTreasure() - Loot interactions
- * - useShrine() - Shrine healing/buffs
- *
- * Combat:
- * - startEncounter() / startBossEncounter() - Begin battles
- * - attack(type) - Player attack action
- * - realtimeAttackCycle(type) - Timer-based combat mode
- *
- * Economy:
- * - getShopInventory() / buyFromShop(id) - Town shop
- * - buyFromPostCombatShop(index) - Post-combat drops
- * - refineEquipment(slot) - Blacksmith refinement
- * - getChipUpgradePreview() / performChipUpgrade(chipId) - Blacksmith chip upgrade
- *
- * DEPENDENCIES:
- * - ./state.js - State factories (createNewPlayer, createNewRun, createCombatState)
- * - ./enemies.js - Enemy generation and boss definitions
- * - ./combat.js - Combat mechanics (attack, status effects)
- * - ./rooms.js - Room generation, ward system, traps, loot
- * - ./items.js - Item/equipment data and bonuses
- * - ./stats.js - Stat calculations
- * - ./dm.js - Fallback narration
+ * - GameManager (class) - Main coordinator, singleton instance used by server
+ * - gameManager (instance) - Pre-instantiated singleton
  *
  * STATE STRUCTURE:
  * - this.player - Base player (persists between runs)
@@ -62,39 +29,26 @@
  * - this.combat - Current combat (null when not fighting)
  * - this.meta - Meta-progression (essence, upgrades, achievements)
  *
- * GAME PHASES (returned by getPhase()):
+ * GAME PHASES (via phase-machine.js):
  * - 'no_save' - No player exists
  * - 'hub' - In town between runs
  * - 'ward_selection' - Choosing starting/next ward
- * - 'exploring' - In dungeon, navigating rooms
- * - 'combat' - In battle (also 'victory', 'defeat')
- * - 'shop' / 'blacksmith' - Economic interactions
+ * - 'exploring' / 'room' / 'room_encounter' - Dungeon navigation
+ * - 'combat' / 'victory' / 'defeat' - Battle states
  * - 'post_combat_shop' - Buying drops after combat
- * - 'boss_defeated' - Just beat floor boss
- * - 'run_complete' - Beat final boss
+ * - 'boss_defeated' / 'run_complete' - Victory states
  *
- * ARCHITECTURE NOTES:
- * - GameManager is instantiated once by server.js
- * - State changes emit via onStateChange() callbacks
- * - Narration emits via onNarration() callbacks (server adds AI narration)
- * - Combat can be turn-based or realtime (realtimeAttackCycle)
- * - Meta-progression persists via server file saves
- * - Run state deep-clones player to allow death without losing base progress
- *
- * CLAUDE HINTS:
- * - For combat damage formulas, see combat/mechanics.js
- * - For enemy AI/intents, see enemies.js selectEnemyIntent()
- * - For room types and generation, see rooms.js
- * - Server endpoints mostly call GameManager methods directly
- * - Equipment bonuses recalculated via recalculatePlayerResources() after changes
+ * DEPENDENCIES:
+ * - ./services/combat-service.js - Combat logic
+ * - ./services/exploration-service.js - Exploration logic
+ * - ./phase-machine.js - Phase derivation
+ * - ./state.js - State factories and meta-progression
  */
 
 import {
   createNewPlayer,
   createNewRun,
   createCombatState,
-  generateEncounterCount,
-  checkLevelUp,
   createMetaProgression,
   calculateEssenceReward,
   getMetaUpgradeEffects,
@@ -103,74 +57,10 @@ import {
   ACHIEVEMENTS
 } from './state.js';
 
-import {
-  generateEnemy,
-  getBossForFloor,
-  getBossDrop,
-  FINAL_BOSS,
-  selectEnemyIntent,
-  INTENT_TYPES,
-  pickRandomVoiceLine
-} from './enemies.js';
-
-import {
-  executeAttack,
-  executePlayerAttack,
-  executeEnemyTurn,
-  determineTurnOrder,
-  tickStatusEffects,
-  processVictory,
-  processBossVictory,
-  isEnemyDefending,
-  applyDamageToEnemy,
-  checkEnemyAbility,
-  getPassiveDamageReduction,
-  checkEnemyBarrier,
-  breakEnemyBarrier,
-  isEnemyVanished,
-  tickEnemyVanish,
-  hasStatusEffect,
-  removeStatusEffect,
-  attemptRefinement,
-  getRefinementPreview
-} from './combat.js';
-
-import { getSimpleNarration } from './dm.js';
-
-import {
-  generateFloorRooms,
-  getRoomEntryNarration,
-  getRoomActions,
-  generateBodyLoot,
-  generateChestLoot,
-  attemptDisarm,
-  attemptAvoid,
-  calculateTrapDamage,
-  TRAP_TYPES,
-  generatePostCombatShop,
-  // Ward path system
-  STARTING_WARDS,
-  WARD_INFO,
-  WARD_PATHS,
-  getStartingWardOptions,
-  getNextWardOptions,
-  getWardTier,
-  getWardInfo
-} from './rooms.js';
-
-import { getItem, calculateEquipmentBonuses, processOnRoomEnterChips, getEquippedChips } from './items.js';
-
-import { getEntityAttackInterval } from './stats.js';
-
-import {
-  getNextRarity,
-  getUpgradeCost,
-  getUpgradeFailureChance,
-  createUpgradedChip,
-  attemptChipUpgrade,
-  CHIP_RARITIES
-} from './items/chips.js';
-
+import { generateEnemy, selectEnemyIntent } from './enemies.js';
+import { determineTurnOrder } from './combat.js';
+import { getRoomActions, generatePostCombatShop, getStartingWardOptions } from './rooms.js';
+import { getItem, calculateEquipmentBonuses } from './items.js';
 import { derivePhase } from './phase-machine.js';
 import { CombatService, ExplorationService } from './services/index.js';
 
