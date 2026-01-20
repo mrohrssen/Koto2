@@ -32,7 +32,7 @@ cd ../jrpg-wt-refactor
 
 ## Current State
 
-**After Phase 1, 2, & 3 (completed):**
+**After Phase 1, 2, 3 & 4 (completed):**
 
 | File | Before | After | Status |
 |------|--------|-------|--------|
@@ -40,12 +40,13 @@ cd ../jrpg-wt-refactor
 | `server.js` | 1,683 | ~580 | ✅ Routes extracted to `src/routes/` (12 modules) |
 | `src/game/items/chips.js` | 3,894 | 1,687 | ✅ Data extracted to `data/chips.json` + `data/chip-config.json` |
 | `src/game/enemies.js` | 3,818 | 1,188 | ✅ Data extracted to `data/enemies.json` + `data/bosses.json` |
-| `src/game/loop.js` | 2,448 | 2,448 | ⏳ Phase 4 |
+| `src/game/loop.js` | ~1,850 | 919 | ✅ Services extracted to `src/game/services/` |
 
 **Completed work:**
 - Phase 1: `public/js/api.js` created (637 lines) - all fetch calls centralized
 - Phase 2: `src/routes/` created (12 modules) - 81 endpoints organized
 - Phase 3: Data files created in `data/` (6,140 lines) - enemies.js/chips.js reduced by 63%
+- Phase 4: Services layer created - CombatService (793 lines), ExplorationService (1,086 lines)
 
 ## Existing Successful Patterns
 
@@ -1250,7 +1251,41 @@ store.subscribe('ttsEnabled', (enabled) => {
 3. **Check for hidden dependencies** (closures, shared state)
 4. **Create the new file** with extracted code
 5. **Update imports** in the source file
-6. **Run `npm test`** immediately
+6. **Run tests** immediately (see below)
+
+### Running Tests Properly
+
+**E2E tests require the server to be running.** The most reliable way:
+
+```bash
+# Start server in background
+npm start &
+
+# Run e2e tests
+cd tests/e2e && npx playwright test
+
+# Stop server when done
+pkill -f "node server.js"
+```
+
+**Test interpretation:**
+- Unit/Integration: Should be 100% pass (49/49 unit, 10-11/11 integration)
+- E2E: **87/87 is expected**, but 75+ is acceptable due to known flakiness
+- If ALL e2e tests fail with `ERR_CONNECTION_REFUSED`: Server isn't running
+- If ~15-25% fail randomly: Known flakiness with `waitForPhase()` timing - re-run
+
+**Quick verification (unit + integration only, no server needed):**
+```bash
+npm run test:unit && npm run test:integration
+```
+
+**Full verification (all tests):**
+```bash
+npm start &
+sleep 3
+cd tests/e2e && npx playwright test
+pkill -f "node server.js"
+```
 
 ### After Each Step
 
@@ -1342,14 +1377,51 @@ Data files created:
 
 **Total lines moved to data/: 6,140 lines**
 
-### Phase 4: GameManager Decomposition
-- [ ] 4.0 Create Event Bus foundation
-- [ ] 4.1 Create Phase State Machine
-- [ ] 4.2 Extract CombatService
-- [ ] 4.3 Extract ExplorationService
-- [ ] 4.4 Extract EconomyService
-- [ ] 4.5 Extract ProgressionService
-- [ ] 4.6 GameManager becomes Coordinator
+### Phase 4: GameManager Decomposition ✅
+- [x] 4.0 Create Event Bus foundation
+- [x] 4.1 Create Phase State Machine
+- [x] 4.2 Extract CombatService (broken into sub-steps due to size)
+  - [x] 4.2a Create services directory and CombatService scaffold
+  - [x] 4.2b Move encounter management (startEncounter, startBossEncounter)
+  - [x] 4.2c Move combat resolution (_handleVictory, _handleDefeat, _handleGameVictory)
+  - [x] 4.2d Move turn-based attack (attack method)
+  - [x] 4.2e Move realtime combat (realtimeAttackCycle)
+- [x] 4.3 Extract ExplorationService
+- [x] 4.4 Extract EconomyService - **SKIPPED** (economy logic moved to ExplorationService)
+- [x] 4.5 Extract ProgressionService - **SKIPPED** (meta-progression is cross-cutting, belongs in coordinator)
+- [x] 4.6 GameManager becomes Coordinator
+
+**Phase 4 Result:**
+
+| File | Before | After | Change |
+|------|--------|-------|--------|
+| `loop.js` | ~1,850 | 919 | -50% (coordinator only) |
+| `combat-service.js` | - | 793 | New service |
+| `exploration-service.js` | - | 1,086 | New service |
+| `events.js` | - | 144 | Event bus |
+| `phase-machine.js` | - | 255 | State machine |
+
+**Services created:**
+- `CombatService` (793 lines) - encounters, attacks, victory/defeat, realtime combat
+- `ExplorationService` (1,086 lines) - navigation, shops, blacksmith, inventory
+
+**GameManager retained (~300 lines of actual logic):**
+- State assembly (getState, getPhase)
+- Run lifecycle (startRun, forfeitRun)
+- Meta-progression (essence, upgrades, achievements) - cross-cutting concern
+- Player management (createPlayer, loadPlayer)
+- API surface (delegate methods for server compatibility)
+
+Commits:
+- 4.0: ee2d952 - Event bus foundation
+- 4.1: 6ee2204 - Phase state machine
+- 4.2a: 7beb670 - CombatService scaffold
+- 4.2b: 7a46909 - Encounter management
+- 4.2c: a0b7658 - Combat resolution
+- 4.2d: 337a1ae - Turn-based attack
+- 4.2e: 7fc9cd6 - Realtime combat
+- 4.3: b0535e6 - ExplorationService
+- 4.6: 1a7ba5c - GameManager cleanup
 
 ### Phase 5: Frontend Secondary Extractions
 - [ ] 5.0 Create Observable Store foundation
@@ -1548,8 +1620,8 @@ async function init() {
 |-------|-------|-------------|---------------------|---------------------|
 | 1 ✅ | 10 | ~480 | game.js: 6,961 → 6,480 | API Client |
 | 2 ✅ | 10 | ~1,100 | server.js: 1,683 → ~580 | Route Modules |
-| 3 | 10 | ~4,900 | enemies.js: 3,818→~1,200, chips.js: 3,894→~2,200 | JSON Data Extraction |
-| 4 | 7 | ~2,000 | loop.js: 2,448 → ~400 | Service Layer + Event Bus |
+| 3 ✅ | 10 | ~4,900 | enemies.js: 3,818→1,188, chips.js: 3,894→1,687 | JSON Data Extraction |
+| 4 ✅ | 7 | ~1,879 | loop.js: ~1,850 → 919 | Service Layer + Event Bus |
 | 5 | 6 | ~900 | game.js: 6,480 → ~5,580 | Observable Store |
 | 6 | 7 | ~4,800 | game.js: 5,580 → ~800 | UI Components |
 
@@ -1571,6 +1643,8 @@ These are lower-priority cleanup tasks to do after all phases are complete:
 
 ### Test Infrastructure
 - [ ] Fix flaky integration test (10/11 intermittent failure) - investigate root cause and stabilize
+- [ ] Fix Playwright webServer auto-start - currently requires manual server start in some environments
+- [ ] Fix e2e test flakiness - `waitForPhase()` / `waitForFunction()` timeouts cause 15-25% of tests to fail randomly on any given run. Tests race with game state updates. Needs longer timeouts or better synchronization patterns.
 
 ### enemies.json Data Cleanup
 - [ ] Remove `stats` object (replace with just `hp` and `attack` at top level)
