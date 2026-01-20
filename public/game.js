@@ -30,7 +30,7 @@
  * - openGameStatsModal() - Statistics and word state tracking
  *
  * Word Practice:
- * - showWordCards()/hideWordCards() - Vocabulary review during combat
+ * - wordPractice.showWordCards()/wordPractice.hideWordCards() - Vocabulary review during combat
  * - handleWordSelection() - Process word review answers
  * - fetchJpdbWords() - Load due words from JPDB
  * - speakWord() - TTS pronunciation for vocabulary
@@ -92,6 +92,9 @@ import * as background from './js/background.js';
 
 // Narration module for VN-style text display
 import * as narration from './js/narration.js';
+
+// Word practice module for JPDB vocabulary review
+import * as wordPractice from './js/word-practice.js';
 
 // API module - centralized server communication
 import {
@@ -170,9 +173,6 @@ let isLoading = false;
 let createStats = { str: 5, agi: 5, vit: 5, int: 5, dex: 5, luk: 5 };
 let createStatPoints = 0;
 
-// Word Review Settings
-let reviewType = 'typing'; // 'typing' or 'self-grade'
-
 // Shop Selection State
 let selectedShopIndex = -1;
 let selectedWardIndex = 0;
@@ -190,37 +190,6 @@ let combatPausedForVocab = false;  // Pause combat until user reviews a word
 
 // Debug Mode - disables AI narration only (JPDB vocab calls still work)
 let debugMode = settings.isDebugMode();
-
-// Word Practice State
-let combatWords = [];           // Array of {word, meanings} objects (meanings is array)
-let availableWords = [];        // Pool of words not yet shown
-let selectedWordIndex = 0;      // Currently selected word (0-4)
-let jpdbWordsCache = null;      // Cached JPDB due words
-let jpdbWordsFetching = false;  // Prevent duplicate fetches
-
-// Fallback test data for word practice (used when JPDB unavailable)
-const FALLBACK_WORD_DATA = [
-  { word: '食べる', meanings: ['eat'] },
-  { word: '飲む', meanings: ['drink'] },
-  { word: '見る', meanings: ['see', 'watch', 'look'] },
-  { word: '聞く', meanings: ['hear', 'listen', 'ask'] },
-  { word: '行く', meanings: ['go'] },
-  { word: '来る', meanings: ['come'] },
-  { word: '言う', meanings: ['say', 'tell'] },
-  { word: '思う', meanings: ['think', 'feel'] },
-  { word: '知る', meanings: ['know'] },
-  { word: '分かる', meanings: ['understand'] },
-  { word: '読む', meanings: ['read'] },
-  { word: '書く', meanings: ['write'] },
-  { word: '話す', meanings: ['speak', 'talk'] },
-  { word: '買う', meanings: ['buy'] },
-  { word: '使う', meanings: ['use'] },
-  { word: '作る', meanings: ['make', 'create'] },
-  { word: '待つ', meanings: ['wait'] },
-  { word: '持つ', meanings: ['hold', 'have'] },
-  { word: '歩く', meanings: ['walk'] },
-  { word: '走る', meanings: ['run'] }
-];
 
 // ============ DOM ELEMENTS ============
 const narrationPanel = document.getElementById('narration-panel');
@@ -387,6 +356,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     apiBase: API_BASE
   });
 
+  // Initialize word practice module with callbacks
+  wordPractice.init({
+    apiBase: API_BASE,
+    getGameState: () => gameState,
+    showToast: showToast,
+    escapeHtml: escapeHtml,
+    updatePlayerHPBar: updatePlayerHPBar,
+    showDamageNumber: showDamageNumber,
+    resumeCombatAfterVocab: resumeCombatAfterVocab,
+    isRealtimeCombatActive: () => realtimeCombatActive,
+    isEnemyDialogueActive: () => enemyDialogueActive,
+    shuffleArray: shuffleArray,
+    sendJpdbReview: apiSendJpdbReview
+  });
+
   await loadGameState();
   setupEventListeners();
   updateUI();
@@ -403,8 +387,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadReviewTypeSetting() {
-  const settings = await apiGetSettings();
-  reviewType = settings.reviewType || 'typing';
+  const serverSettings = await apiGetSettings();
+  wordPractice.setReviewType(serverSettings.reviewType || 'typing');
 }
 
 async function warmVocabCacheHandler(force = false) {
@@ -469,13 +453,13 @@ function setupEventListeners() {
   document.getElementById('debug-mode-btn')?.addEventListener('click', toggleDebugMode);
 
   // Word practice keyboard handler (Enter to submit, Esc to cancel)
-  document.addEventListener('keydown', handleWordPracticeKeydown);
+  document.addEventListener('keydown', wordPractice.handleWordPracticeKeydown);
 
   // Self-grade button click handlers
   document.querySelectorAll('.self-grade-buttons .review-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const grade = parseInt(btn.dataset.grade);
-      submitSelfGradeReview(grade);
+      wordPractice.submitSelfGradeReview(grade);
     });
   });
 
@@ -673,7 +657,7 @@ async function startNewRun() {
   // Reset background tracking for new run
   background.resetBackground();
   // Clear word cache to get fresh due words for this run
-  clearWordCache();
+  wordPractice.clearWordCache();
   // Prefetch all location backgrounds for combat scenes
   background.prefetchLocationBackgrounds();
   // Fetch JPDB vocabulary and force refresh word states for fresh dueAt values
@@ -910,13 +894,13 @@ async function speakEnemyDialogue(text, dialogueDuration, personality = 'default
   // Hide word cards while enemy is speaking (if in combat)
   const wasInCombat = realtimeCombatActive;
   if (wasInCombat) {
-    hideWordCards();
+    wordPractice.hideWordCards();
     enemyDialogueTtsPlaying = true;
   }
 
   const restoreWordCards = () => {
     if (wasInCombat && realtimeCombatActive) {
-      showWordCards();
+      wordPractice.showWordCards();
       enemyDialogueTtsPlaying = false;
     }
   };
@@ -935,7 +919,7 @@ async function speakEnemyDialogue(text, dialogueDuration, personality = 'default
     // Fallback: restore word cards after dialogue duration if audio hasn't ended
     setTimeout(() => {
       if (wasInCombat && realtimeCombatActive && enemyDialogueTtsPlaying) {
-        showWordCards();
+        wordPractice.showWordCards();
         enemyDialogueTtsPlaying = false;
       }
     }, dialogueDuration + 500);
@@ -975,15 +959,15 @@ async function returnToHub() {
   }
 
   // Close any open combat-related modals
-  hideWordCards();
-  closeWordInputModal();
-  closeSelfGradeModal();
+  wordPractice.hideWordCards();
+  wordPractice.closeWordInputModal();
+  wordPractice.closeSelfGradeModal();
 
   await apiForfeitRun();
   gameState.run = null;
   gameState.combat = null;
   // Clear word cache so next run gets fresh due words
-  clearWordCache();
+  wordPractice.clearWordCache();
   gameState.phase = 'hub';
   narration.showNarration(FALLBACK_NARRATIONS.hub(gameState.player));
   background.updateBackground();
@@ -1467,7 +1451,7 @@ function startRealtimeCombat() {
   updateActionPanel();
 
   // Initialize word practice cards
-  initCombatWords();
+  wordPractice.initCombatWords();
 
   console.log('[Combat] Starting realtime combat with vocab pause mode');
 
@@ -1779,22 +1763,8 @@ async function stopRealtimeCombat(result) {
   combatPausedForVocab = false;
 
   // Hide word practice cards and close modal
-  hideWordCards();
-  closeWordInputModal();
-
-  // Refresh server cache for all reviewed words (runs in background)
-  if (recentlyReviewedVids.length > 0) {
-    const vidsToRefresh = [...recentlyReviewedVids];
-    recentlyReviewedVids = [];
-    const { jpdbApiKey } = settings.getApiKeys();
-    fetch(`${API_BASE}/api/game/refresh-word-states`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vids: vidsToRefresh, jpdbApiKey })
-    }).then(r => r.json()).then(data => {
-      console.log(`[WordPractice] Refreshed ${data.updated || 0} word states from JPDB`);
-    }).catch(e => console.warn('[WordPractice] Failed to refresh word states:', e));
-  }
+  wordPractice.hideWordCards();
+  wordPractice.closeWordInputModal();
 
   // Brief pause before narration (let final damage numbers display)
   await delay(600);
@@ -1876,717 +1846,6 @@ function shuffleArray(array) {
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
-}
-
-// Fetch due words from JPDB API
-async function fetchJpdbDueWords() {
-  if (jpdbWordsFetching) return jpdbWordsCache;
-  if (jpdbWordsCache && jpdbWordsCache.length > 0) return jpdbWordsCache;
-
-  jpdbWordsFetching = true;
-  try {
-    const { jpdbApiKey } = settings.getApiKeys();
-    const response = await fetch(`${API_BASE}/api/game/due-words`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ limit: 50, jpdbApiKey })
-    });
-    const data = await response.json();
-
-    if (data.words && data.words.length > 0) {
-      jpdbWordsCache = data.words;
-      console.log(`[WordPractice] Loaded ${data.words.length} words from JPDB (source: ${data.source})`);
-      return jpdbWordsCache;
-    }
-  } catch (e) {
-    console.warn('[WordPractice] Failed to fetch JPDB words:', e);
-  } finally {
-    jpdbWordsFetching = false;
-  }
-  return null;
-}
-
-// Track recently reviewed vids to prevent them from being fetched again
-let recentlyReviewedVids = [];
-
-// Fetch a replacement word after successful review (keeps queue at 30)
-async function fetchReplacementWord(justReviewedVid = null) {
-  try {
-    // Get all current vids in the queue
-    const currentVids = [...combatWords, ...availableWords]
-      .filter(w => w.vid)
-      .map(w => w.vid);
-
-    // Also exclude recently reviewed words (server cache may be stale)
-    if (justReviewedVid) {
-      recentlyReviewedVids.push(justReviewedVid);
-    }
-    const allExcludeVids = [...new Set([...currentVids, ...recentlyReviewedVids])];
-
-    if (allExcludeVids.length === 0) return null;
-
-    const { jpdbApiKey } = settings.getApiKeys();
-    const response = await fetch(`${API_BASE}/api/game/due-words`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ limit: 1, exclude: allExcludeVids, jpdbApiKey })
-    });
-    const data = await response.json();
-
-    if (data.words && data.words.length > 0) {
-      console.log(`[WordPractice] Fetched replacement word: ${data.words[0].word}`);
-      return data.words[0];
-    }
-  } catch (e) {
-    console.warn('[WordPractice] Failed to fetch replacement word:', e);
-  }
-  return null;
-}
-
-// Initialize word cards for combat
-async function initCombatWords() {
-  // Try to fetch JPDB due words first
-  let wordData = await fetchJpdbDueWords();
-
-  // Fallback to hardcoded data if JPDB unavailable
-  if (!wordData || wordData.length === 0) {
-    console.log('[WordPractice] Using fallback word data');
-    wordData = FALLBACK_WORD_DATA;
-  }
-
-  const shuffled = shuffleArray([...wordData]);
-  combatWords = shuffled.slice(0, 5);
-  availableWords = shuffled.slice(5);
-  selectedWordIndex = 0;
-  renderWordCards();
-  showWordCards();
-}
-
-// Render word cards to DOM
-function renderWordCards() {
-  const container = document.getElementById('word-cards');
-  if (!container) return;
-
-  if (combatWords.length === 0) {
-    container.innerHTML = '<div class="word-card" style="opacity: 0.5;">All words cleared!</div>';
-    return;
-  }
-
-  container.innerHTML = combatWords.map((w, i) => `
-    <div class="word-card ${i === selectedWordIndex ? 'selected' : ''}" data-index="${i}">
-      ${w.word}
-    </div>
-  `).join('');
-
-  // Add click handlers
-  container.querySelectorAll('.word-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const idx = parseInt(card.dataset.index);
-      if (!isNaN(idx)) {
-        selectedWordIndex = idx;
-        renderWordCards();
-        openWordInputModal();
-      }
-    });
-  });
-
-  // Prefetch TTS audio for visible words
-  prefetchCombatWordAudio();
-}
-
-// Show/hide word cards
-function showWordCards() {
-  document.getElementById('word-cards')?.classList.remove('hidden');
-}
-
-function hideWordCards() {
-  document.getElementById('word-cards')?.classList.add('hidden');
-}
-
-// ============ WORD AUDIO TTS FUNCTIONS ============
-
-// Prefetch audio for all visible combat words
-function prefetchCombatWordAudio() {
-  if (!tts.isWordAudioEnabled()) return;
-
-  // Prefetch current 5 visible words
-  for (const wordData of combatWords) {
-    tts.prefetchWord(wordData.word);
-  }
-
-  // Also prefetch next few from available pool
-  for (let i = 0; i < 3 && i < availableWords.length; i++) {
-    tts.prefetchWord(availableWords[i].word);
-  }
-}
-
-// Keyboard handler for word practice
-function handleWordPracticeKeydown(e) {
-  // Only during combat
-  if (!realtimeCombatActive) return;
-
-  // Don't process if enemy dialogue is active (Enter dismisses dialogue first)
-  if (enemyDialogueActive) return;
-
-  const typingModal = document.getElementById('word-input-modal');
-  const selfGradeModal = document.getElementById('self-grade-modal');
-  const typingOpen = typingModal && !typingModal.classList.contains('hidden');
-  const selfGradeOpen = selfGradeModal && !selfGradeModal.classList.contains('hidden');
-
-  if (selfGradeOpen) {
-    // Self-grade modal open - arrow keys to navigate, Enter to submit, 1-5 direct submit
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      closeSelfGradeModal();
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      selfGradeSelectedIndex = Math.max(0, selfGradeSelectedIndex - 1);
-      updateSelfGradeSelection();
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      selfGradeSelectedIndex = Math.min(4, selfGradeSelectedIndex + 1);
-      updateSelfGradeSelection();
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      submitSelfGradeReview(selfGradeSelectedIndex + 1); // grades are 1-5
-    } else {
-      const gradeKey = parseInt(e.key);
-      if (gradeKey >= 1 && gradeKey <= 5) {
-        e.preventDefault();
-        submitSelfGradeReview(gradeKey);
-      }
-    }
-  } else if (typingOpen) {
-    // Typing modal open - Enter to submit, Escape to close
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      closeWordInputModal();
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      checkWordAnswer();
-    }
-  } else {
-    // Modal closed - handle arrow navigation, Enter to open, R to refresh
-    if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      selectedWordIndex = Math.max(0, selectedWordIndex - 1);
-      renderWordCards();
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      selectedWordIndex = Math.min(combatWords.length - 1, selectedWordIndex + 1);
-      renderWordCards();
-    } else if (e.key === 'Enter' && combatWords.length > 0) {
-      e.preventDefault();
-      openWordInputModal();
-    } else if (e.key === 'r' || e.key === 'R') {
-      // Refresh word cards with new random words from pool (costs 2 HP)
-      e.preventDefault();
-      refreshWordCards();
-      damagePlayerForRefresh(2);
-    } else if (e.key === 'f' || e.key === 'F') {
-      // Quick fail - mark selected word as failed without typing
-      e.preventDefault();
-      quickFailWord();
-    }
-  }
-}
-
-// Quick fail the currently selected word (F key shortcut)
-function quickFailWord() {
-  if (combatWords.length === 0) return;
-
-  const word = combatWords[selectedWordIndex];
-  if (!word) return;
-
-  // Get meanings for the reveal modal
-  const meanings = word.meanings || (word.definition ? [word.definition] : []);
-
-  // Play audio for the word
-  tts.playWord(word.word);
-
-  // Send JPDB review (grade 1 = Nothing/Failed)
-  if (word.vid && word.sid) {
-    sendJpdbReviewHandler(word.vid, word.sid, 1);
-  }
-
-  // Remove the failed word from combatWords
-  combatWords.splice(selectedWordIndex, 1);
-  selectedWordIndex = Math.min(selectedWordIndex, Math.max(0, combatWords.length - 1));
-
-  // Replenish from available pool if possible
-  if (availableWords.length > 0) {
-    combatWords.push(availableWords.shift());
-  }
-
-  // Show definitions reveal and update cards
-  showDefinitionsReveal(word.word, meanings, word.reading);
-  renderWordCards();
-
-  console.log(`[WordPractice] Quick failed: ${word.word}`);
-}
-
-// Refresh word cards with new words from the pool
-function refreshWordCards() {
-  if (availableWords.length === 0) {
-    console.log('[WordPractice] No more words in pool to refresh');
-    return;
-  }
-
-  // Replace all current words with new ones from the pool
-  const newWords = [];
-  for (let i = 0; i < 5 && availableWords.length > 0; i++) {
-    newWords.push(availableWords.shift());
-  }
-
-  // Put old words back in the pool (shuffle them in)
-  availableWords.push(...combatWords);
-  combatWords = newWords;
-  selectedWordIndex = 0;
-
-  renderWordCards();
-  console.log(`[WordPractice] Refreshed cards. ${availableWords.length} words remaining in pool`);
-}
-
-// Open typing modal for selected word
-function openWordInputModal() {
-  const word = combatWords[selectedWordIndex];
-  if (!word) return;
-
-  if (reviewType === 'self-grade') {
-    // Self-grade mode: use definitions-reveal style modal
-    openSelfGradeModal(word);
-  } else {
-    // Typing mode: show input field
-    document.getElementById('word-to-define').textContent = word.word;
-    document.getElementById('word-feedback').classList.add('hidden');
-    document.getElementById('word-input-modal').classList.remove('hidden');
-    document.getElementById('word-definition-input').value = '';
-    document.getElementById('word-definition-input').focus();
-  }
-}
-
-// Self-grade modal state
-let selfGradeSelectedIndex = 3; // Default to "Okay"
-
-function openSelfGradeModal(word) {
-  const modal = document.getElementById('self-grade-modal');
-  const wordEl = document.getElementById('self-grade-word');
-  const meaningsList = document.getElementById('self-grade-meanings');
-
-  // Set word with furigana if reading is available and different from word
-  if (word.reading && word.reading !== word.word) {
-    wordEl.innerHTML = `<ruby>${escapeHtml(word.word)}<rt>${escapeHtml(word.reading)}</rt></ruby>`;
-  } else {
-    wordEl.textContent = word.word;
-  }
-
-  // Populate meanings (top 5)
-  const meanings = word.meanings || [word.definition];
-  meaningsList.innerHTML = meanings.slice(0, 5).map(m => `<li>${escapeHtml(m)}</li>`).join('');
-
-  // Reset selection to Okay (most common choice)
-  selfGradeSelectedIndex = 3;
-  updateSelfGradeSelection();
-
-  // Show modal
-  modal.classList.remove('hidden', 'fading');
-}
-
-function closeSelfGradeModal() {
-  document.getElementById('self-grade-modal').classList.add('hidden');
-}
-
-function updateSelfGradeSelection() {
-  const buttons = document.querySelectorAll('#self-grade-modal .review-btn');
-  buttons.forEach((btn, i) => {
-    btn.classList.toggle('selected', i === selfGradeSelectedIndex);
-  });
-}
-
-// Close modal
-function closeWordInputModal() {
-  document.getElementById('word-input-modal').classList.add('hidden');
-}
-
-// Calculate Levenshtein distance for fuzzy matching
-function levenshteinDistance(a, b) {
-  const matrix = [];
-  for (let i = 0; i <= b.length; i++) {
-    matrix[i] = [i];
-  }
-  for (let j = 0; j <= a.length; j++) {
-    matrix[0][j] = j;
-  }
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      if (b.charAt(i - 1) === a.charAt(j - 1)) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j - 1] + 1,
-          matrix[i][j - 1] + 1,
-          matrix[i - 1][j] + 1
-        );
-      }
-    }
-  }
-  return matrix[b.length][a.length];
-}
-
-// Normalize meaning for comparison (strip common prefixes)
-function normalizeMeaning(meaning) {
-  return meaning
-    .toLowerCase()
-    .replace(/^to\s+/, '')           // Remove "to " prefix
-    .replace(/^(a|an|the)\s+/i, '')  // Remove articles
-    .replace(/\s*\([^)]*\)/g, '')    // Remove parenthetical notes
-    .trim();
-}
-
-// Send JPDB review and remove word from cache
-async function sendJpdbReviewHandler(vid, sid, grade) {
-  const result = await apiSendJpdbReview(vid, sid, grade);
-  if (!result.error) {
-    console.log(`[JPDB] Review sent: vid=${vid}, grade=${grade}`);
-    // Remove reviewed word from cache so it won't show up again
-    removeWordFromCache(vid);
-  } else {
-    console.warn('[JPDB] Review failed:', result.error);
-  }
-}
-
-// Remove a word from all caches by vid
-function removeWordFromCache(vid) {
-  // Remove from jpdbWordsCache
-  if (jpdbWordsCache) {
-    const cacheIndex = jpdbWordsCache.findIndex(w => w.vid === vid);
-    if (cacheIndex !== -1) {
-      jpdbWordsCache.splice(cacheIndex, 1);
-      console.log(`[WordPractice] Removed vid=${vid} from cache. ${jpdbWordsCache.length} words remaining in cache.`);
-    }
-  }
-  // Remove from availableWords pool (in case of duplicates)
-  const availIndex = availableWords.findIndex(w => w.vid === vid);
-  if (availIndex !== -1) {
-    availableWords.splice(availIndex, 1);
-  }
-}
-
-// Clear word cache to force fresh fetch
-function clearWordCache() {
-  jpdbWordsCache = null;
-  jpdbWordsFetching = false;
-  recentlyReviewedVids = [];
-  console.log('[WordPractice] Cache cleared - will fetch fresh words on next combat');
-}
-
-// Multi-tier answer checking
-function checkAnswerMatch(input, meanings) {
-  // Normalize input the same way we normalize meanings
-  const normalized = normalizeMeaning(input.trim().toLowerCase());
-  if (!normalized) return { correct: false };
-
-  // Minimum length to prevent single-letter matches
-  const MIN_LENGTH_FOR_PARTIAL = 3;
-
-  // Normalize all meanings
-  const normalizedMeanings = meanings.map(normalizeMeaning);
-
-  // Tier 1: Exact match (any meaning) - no minimum length
-  if (normalizedMeanings.some(m => m === normalized)) {
-    return { correct: true, confidence: 'exact' };
-  }
-
-  // Tier 2: Contains match (input found in meaning) - requires min length
-  if (normalized.length >= MIN_LENGTH_FOR_PARTIAL &&
-      normalizedMeanings.some(m => m.includes(normalized))) {
-    return { correct: true, confidence: 'partial' };
-  }
-
-  // Tier 3: Word match (input matches any word in any meaning)
-  const meaningWords = normalizedMeanings.flatMap(m =>
-    m.split(/[\s,;]+/).filter(w => w.length > 0)
-  );
-  if (meaningWords.includes(normalized)) {
-    return { correct: true, confidence: 'word' };
-  }
-
-  // Tier 4: Fuzzy match - requires min length, stricter for short words
-  if (normalized.length >= MIN_LENGTH_FOR_PARTIAL) {
-    for (const meaning of normalizedMeanings) {
-      // For short meanings (< 6 chars), only allow 1 typo; longer allow 2
-      const maxDistance = meaning.length < 6 ? 1 : 2;
-      if (levenshteinDistance(normalized, meaning) <= maxDistance) {
-        return { correct: true, confidence: 'fuzzy' };
-      }
-      // Also check each word in the meaning (only allow 1 typo for words)
-      for (const word of meaning.split(/[\s,;]+/)) {
-        if (word.length >= 4 && levenshteinDistance(normalized, word) <= 1) {
-          return { correct: true, confidence: 'fuzzy' };
-        }
-      }
-    }
-  }
-
-  return { correct: false };
-}
-
-// Check answer
-function checkWordAnswer() {
-  const input = document.getElementById('word-definition-input').value.trim().toLowerCase();
-  const word = combatWords[selectedWordIndex];
-
-  if (!word || input.length === 0) {
-    showWordFeedback('Please enter an answer!', 'error');
-    return;
-  }
-
-  // Support both old format (definition string) and new format (meanings array)
-  const meanings = word.meanings || (word.definition ? [word.definition] : []);
-
-  const result = checkAnswerMatch(input, meanings);
-
-  // Play audio for the word (both correct and incorrect)
-  tts.playWord(word.word);
-
-  if (result.correct) {
-    // Correct!
-    showWordFeedback(`Correct!`, 'success');
-
-    // Send JPDB review (grade 4 = Okay)
-    if (word.vid && word.sid) {
-      sendJpdbReviewHandler(word.vid, word.sid, 4);
-
-      // Remove this word from availableWords pool (in case it was loaded at start)
-      availableWords = availableWords.filter(w => w.vid !== word.vid);
-
-      // Fetch a replacement word to keep queue full (runs in background)
-      // Pass the just-reviewed vid to exclude it (server cache may be stale)
-      fetchReplacementWord(word.vid).then(newWord => {
-        if (newWord) {
-          availableWords.push(newWord);
-        }
-      });
-    }
-
-    // Replace word with a new one from the pool, or remove if pool is empty
-    if (availableWords.length > 0) {
-      const newWord = availableWords.shift();
-      combatWords[selectedWordIndex] = newWord;
-    } else {
-      combatWords.splice(selectedWordIndex, 1);
-      selectedWordIndex = Math.min(selectedWordIndex, Math.max(0, combatWords.length - 1));
-    }
-
-    // Close modal, show definitions, and update display after short delay
-    setTimeout(() => {
-      closeWordInputModal();
-      showDefinitionsReveal(word.word, meanings, word.reading);
-      renderWordCards();
-      // Resume combat after vocab review
-      resumeCombatAfterVocab();
-    }, 800);
-  } else {
-    // Wrong - show definitions and close input modal
-    showWordFeedback('Incorrect!', 'error');
-
-    // Send JPDB review (grade 1 = Nothing/Failed)
-    if (word.vid && word.sid) {
-      sendJpdbReviewHandler(word.vid, word.sid, 1);
-      // Remove this word from availableWords pool (in case it was loaded at start)
-      availableWords = availableWords.filter(w => w.vid !== word.vid);
-      // Track this vid to prevent it from being fetched again this session
-      recentlyReviewedVids.push(word.vid);
-
-      // Fetch a replacement word to keep queue full
-      fetchReplacementWord(word.vid).then(newWord => {
-        if (newWord) {
-          availableWords.push(newWord);
-        }
-      });
-    }
-
-    // Remove the failed word from the pool entirely (it will come back naturally if due soon)
-    combatWords.splice(selectedWordIndex, 1);
-    selectedWordIndex = Math.min(selectedWordIndex, Math.max(0, combatWords.length - 1));
-
-    // Replenish from available pool if possible
-    if (availableWords.length > 0) {
-      combatWords.push(availableWords.shift());
-    }
-
-    // Close input modal and show definitions reveal
-    setTimeout(() => {
-      closeWordInputModal();
-      showDefinitionsReveal(word.word, meanings, word.reading);
-      renderWordCards();
-      // Resume combat after vocab review
-      resumeCombatAfterVocab();
-    }, 300);
-  }
-}
-
-// Submit self-grade review (grade 1-5)
-function submitSelfGradeReview(grade) {
-  const word = combatWords[selectedWordIndex];
-  if (!word) return;
-
-  const gradeNames = ['', 'Nothing', 'Something', 'Hard', 'Okay', 'Easy'];
-  const isPass = grade >= 3; // Hard, Okay, Easy count as pass
-
-  // Close modal immediately
-  closeSelfGradeModal();
-
-  // Play audio for the word
-  tts.playWord(word.word);
-
-  // Send JPDB review
-  if (word.vid && word.sid) {
-    sendJpdbReviewHandler(word.vid, word.sid, grade);
-
-    // Remove this word from availableWords pool (in case it was loaded at start)
-    availableWords = availableWords.filter(w => w.vid !== word.vid);
-
-    // Track reviewed words to prevent re-fetching
-    recentlyReviewedVids.push(word.vid);
-
-    // Fetch replacement word to keep queue full
-    fetchReplacementWord(word.vid).then(newWord => {
-      if (newWord) {
-        availableWords.push(newWord);
-      }
-    });
-  }
-
-  if (isPass) {
-    // Pass: replace word
-    showToast(`${gradeNames[grade]}!`, 'success');
-
-    if (availableWords.length > 0) {
-      combatWords[selectedWordIndex] = availableWords.shift();
-    } else {
-      combatWords.splice(selectedWordIndex, 1);
-      selectedWordIndex = Math.min(selectedWordIndex, Math.max(0, combatWords.length - 1));
-    }
-  } else {
-    // Fail: remove word without healing
-    showToast(`${gradeNames[grade]}`, 'error');
-
-    combatWords.splice(selectedWordIndex, 1);
-    selectedWordIndex = Math.min(selectedWordIndex, Math.max(0, combatWords.length - 1));
-
-    if (availableWords.length > 0) {
-      combatWords.push(availableWords.shift());
-    }
-  }
-
-  renderWordCards();
-
-  // Resume combat after vocab review
-  resumeCombatAfterVocab();
-}
-
-// Show feedback in modal
-function showWordFeedback(message, type) {
-  const feedback = document.getElementById('word-feedback');
-  feedback.textContent = message;
-  feedback.className = `word-feedback ${type}`;
-  feedback.classList.remove('hidden');
-}
-
-// Show definitions reveal modal (auto-fades after 3 seconds)
-function showDefinitionsReveal(word, meanings, reading = null) {
-  const modal = document.getElementById('definitions-reveal');
-  const wordEl = document.getElementById('definitions-word');
-  const listEl = document.getElementById('definitions-list');
-
-  if (!modal || !wordEl || !listEl) return;
-
-  // Set the word with furigana if reading is available and different
-  if (reading && reading !== word) {
-    wordEl.innerHTML = `<ruby>${escapeHtml(word)}<rt>${escapeHtml(reading)}</rt></ruby>`;
-  } else {
-    wordEl.textContent = word;
-  }
-
-  // Show top 5 definitions
-  const top5 = meanings.slice(0, 5);
-  listEl.innerHTML = top5.map(m => `<li>${escapeHtml(m)}</li>`).join('');
-
-  // Show modal (reset animation)
-  modal.classList.remove('fading', 'hidden');
-
-  // Auto-fade after 3 seconds
-  setTimeout(() => {
-    modal.classList.add('fading');
-    // Hide completely after fade animation (0.5s)
-    setTimeout(() => {
-      modal.classList.add('hidden');
-      modal.classList.remove('fading');
-    }, 500);
-  }, 3000);
-}
-
-// Heal player from correct word answer
-function healPlayerFromWord(amount) {
-  if (!gameState.player && !gameState.run?.player) return;
-
-  const player = gameState.run?.player || gameState.player;
-  const maxHp = player.maxHp || 100; // Fallback to 100 if maxHp not set
-  const currentHp = player.hp || 0;
-  const newHp = Math.min(currentHp + amount, maxHp);
-
-  // Update player state
-  player.hp = newHp;
-
-  // Also update top-level player if exists
-  if (gameState.player) {
-    gameState.player.hp = newHp;
-  }
-
-  // Update HP bar with validated values
-  updatePlayerHPBar({ current: newHp, max: maxHp });
-
-  // Show heal number
-  showDamageNumber(amount, true, false, true); // isPlayer=true, isHeal=true
-
-  // Sync to server (fire and forget)
-  fetch(`${API_BASE}/api/game/heal`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ amount })
-  }).catch(err => console.warn('Heal sync failed:', err));
-}
-
-// Damage player for refreshing word cards (costs HP)
-function damagePlayerForRefresh(amount) {
-  if (!gameState.player && !gameState.run?.player) return;
-
-  const player = gameState.run?.player || gameState.player;
-  const maxHp = player.maxHp || 100; // Fallback to 100 if maxHp not set
-  const currentHp = player.hp || 0;
-  const newHp = Math.max(1, currentHp - amount); // Don't let refresh kill player
-
-  // Update player state
-  player.hp = newHp;
-
-  // Also update top-level player if exists
-  if (gameState.player) {
-    gameState.player.hp = newHp;
-  }
-
-  // Update HP bar with validated values
-  updatePlayerHPBar({ current: newHp, max: maxHp });
-
-  // Show damage number
-  showDamageNumber(amount, true, false, false); // isPlayer=true, isHeal=false
-
-  // Sync to server (fire and forget)
-  fetch(`${API_BASE}/api/game/damage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ amount })
-  }).catch(err => console.warn('Damage sync failed:', err));
 }
 
 function updateQuickStats() {
@@ -5602,7 +4861,7 @@ async function saveSettings() {
   tts.setVolume(serverSettings.gameTtsVolume);
 
   // Update local review type
-  reviewType = serverSettings.reviewType;
+  wordPractice.setReviewType(serverSettings.reviewType);
 
   try {
     const response = await fetch(`${API_BASE}/api/settings`, {
@@ -6170,7 +5429,7 @@ async function showWordPopup(wordEl) {
   wordEl.classList.remove('loading');
 
   if (data && data.meanings && data.meanings.length > 0) {
-    showDefinitionsReveal(word, data.meanings, reading || data.reading);
+    wordPractice.showDefinitionsReveal(word, data.meanings, reading || data.reading);
   }
 }
 
