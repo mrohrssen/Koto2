@@ -6,34 +6,10 @@
  * handling of API keys, loading states, and error handling.
  */
 
-// ============ API KEY MANAGEMENT ============
+import { getApiKeys, saveApiKeys } from './settings.js';
 
-/**
- * Get stored API keys from localStorage
- * Each user stores their own keys in their browser
- */
-function getStoredApiKeys() {
-  return {
-    jpdbApiKey: localStorage.getItem('jrpg_jpdbApiKey') || '',
-    aiApiKey: localStorage.getItem('jrpg_aiApiKey') || '',
-    aiProvider: localStorage.getItem('jrpg_aiProvider') || 'openai',
-    openaiModel: localStorage.getItem('jrpg_openaiModel') || 'gpt-4o-mini',
-    openrouterModel: localStorage.getItem('jrpg_openrouterModel') || '',
-    jlptLevel: localStorage.getItem('jrpg_jlptLevel') || 'N4'
-  };
-}
-
-/**
- * Save API keys to localStorage
- */
-function saveStoredApiKeys(keys) {
-  if (keys.jpdbApiKey !== undefined) localStorage.setItem('jrpg_jpdbApiKey', keys.jpdbApiKey);
-  if (keys.aiApiKey !== undefined) localStorage.setItem('jrpg_aiApiKey', keys.aiApiKey);
-  if (keys.aiProvider !== undefined) localStorage.setItem('jrpg_aiProvider', keys.aiProvider);
-  if (keys.openaiModel !== undefined) localStorage.setItem('jrpg_openaiModel', keys.openaiModel);
-  if (keys.openrouterModel !== undefined) localStorage.setItem('jrpg_openrouterModel', keys.openrouterModel);
-  if (keys.jlptLevel !== undefined) localStorage.setItem('jrpg_jlptLevel', keys.jlptLevel);
-}
+// Re-export for backward compatibility
+export { getApiKeys as getStoredApiKeys, saveApiKeys as saveStoredApiKeys };
 
 // ============ CORE API WRAPPER ============
 
@@ -60,7 +36,7 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null) {
 
   try {
     // Include per-user API keys from localStorage in every request
-    const apiKeys = getStoredApiKeys();
+    const apiKeys = getApiKeys();
     const payload = body ? { ...body, ...apiKeys } : apiKeys;
 
     const options = {
@@ -488,7 +464,7 @@ async function getChipLoadout() {
  */
 async function warmVocabCache(force = false) {
   try {
-    const apiKeys = getStoredApiKeys();
+    const apiKeys = getApiKeys();
     if (!apiKeys.jpdbApiKey) return { status: 'no_key' };
 
     const response = await fetch('/api/game/vocab-cache/warm', {
@@ -506,7 +482,7 @@ async function warmVocabCache(force = false) {
 /** Fetch vocabulary from JPDB decks */
 async function fetchJpdbVocab() {
   try {
-    const apiKeys = getStoredApiKeys();
+    const apiKeys = getApiKeys();
     if (!apiKeys.jpdbApiKey) return { count: 0 };
 
     const response = await fetch('/api/vocab/fetch', {
@@ -528,7 +504,7 @@ async function fetchJpdbVocab() {
  */
 async function sendJpdbReview(vid, sid, grade) {
   try {
-    const apiKeys = getStoredApiKeys();
+    const apiKeys = getApiKeys();
     const response = await fetch('/api/jpdb/review', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -546,7 +522,7 @@ async function sendJpdbReview(vid, sid, grade) {
  */
 async function parseJpdbText(text) {
   try {
-    const apiKeys = getStoredApiKeys();
+    const apiKeys = getApiKeys();
     const response = await fetch('/api/jpdb/parse', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -565,7 +541,7 @@ async function parseJpdbText(text) {
  */
 async function lookupJpdbWord(vid, sid) {
   try {
-    const apiKeys = getStoredApiKeys();
+    const apiKeys = getApiKeys();
     const response = await fetch('/api/jpdb/lookup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

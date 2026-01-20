@@ -84,10 +84,11 @@ import { store } from './js/store.js';
 // TTS module for VOICEVOX text-to-speech
 import * as tts from './js/tts.js';
 
+// Settings module for API keys and preferences
+import * as settings from './js/settings.js';
+
 // API module - centralized server communication
 import {
-  getStoredApiKeys as apiGetStoredApiKeys,
-  saveStoredApiKeys as apiSaveStoredApiKeys,
   getGameState as apiGetGameState,
   getMetaProgression as apiGetMetaProgression,
   getSettings as apiGetSettings,
@@ -182,52 +183,7 @@ let currentEnemyInterval = 1500;   // Will be updated from server
 let combatPausedForVocab = false;  // Pause combat until user reviews a word
 
 // Debug Mode - disables AI narration only (JPDB vocab calls still work)
-let debugMode = localStorage.getItem('debugMode') === 'true';
-
-// ============ PER-USER API KEY MANAGEMENT (localStorage) ============
-
-/**
- * Get stored API keys from localStorage
- * Each user stores their own keys in their browser
- */
-function getStoredApiKeys() {
-  return {
-    jpdbApiKey: localStorage.getItem('jrpg_jpdbApiKey') || '',
-    aiApiKey: localStorage.getItem('jrpg_aiApiKey') || '',
-    aiProvider: localStorage.getItem('jrpg_aiProvider') || 'openai',
-    openaiModel: localStorage.getItem('jrpg_openaiModel') || 'gpt-4o-mini',
-    openrouterModel: localStorage.getItem('jrpg_openrouterModel') || '',
-    jlptLevel: localStorage.getItem('jrpg_jlptLevel') || 'N4'
-  };
-}
-
-/**
- * Save API keys to localStorage
- */
-function saveStoredApiKeys(keys) {
-  if (keys.jpdbApiKey !== undefined) localStorage.setItem('jrpg_jpdbApiKey', keys.jpdbApiKey);
-  if (keys.aiApiKey !== undefined) localStorage.setItem('jrpg_aiApiKey', keys.aiApiKey);
-  if (keys.aiProvider !== undefined) localStorage.setItem('jrpg_aiProvider', keys.aiProvider);
-  if (keys.openaiModel !== undefined) localStorage.setItem('jrpg_openaiModel', keys.openaiModel);
-  if (keys.openrouterModel !== undefined) localStorage.setItem('jrpg_openrouterModel', keys.openrouterModel);
-  if (keys.jlptLevel !== undefined) localStorage.setItem('jrpg_jlptLevel', keys.jlptLevel);
-}
-
-/**
- * Check if user has configured required API keys
- */
-function hasRequiredApiKeys() {
-  const keys = getStoredApiKeys();
-  return keys.aiApiKey && keys.aiApiKey.length > 0;
-}
-
-/**
- * Check if JPDB key is configured
- */
-function hasJpdbApiKey() {
-  const keys = getStoredApiKeys();
-  return keys.jpdbApiKey && keys.jpdbApiKey.length > 0;
-}
+let debugMode = settings.isDebugMode();
 
 // Word Practice State
 let combatWords = [];           // Array of {word, meanings} objects (meanings is array)
@@ -1649,7 +1605,7 @@ async function executePlayerAttack() {
   playerAttackPending = true;
 
   try {
-    const apiKeys = getStoredApiKeys();
+    const apiKeys = settings.getApiKeys();
     const response = await fetch(`${API_BASE}/api/game/realtime-attack`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1771,7 +1727,7 @@ async function executeEnemyAttack() {
   enemyAttackPending = true;
 
   try {
-    const apiKeys = getStoredApiKeys();
+    const apiKeys = settings.getApiKeys();
     const response = await fetch(`${API_BASE}/api/game/realtime-attack`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1849,7 +1805,7 @@ async function executeEnemyAttackThenPause() {
   enemyAttackPending = true;
 
   try {
-    const apiKeys = getStoredApiKeys();
+    const apiKeys = settings.getApiKeys();
     const response = await fetch(`${API_BASE}/api/game/realtime-attack`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1953,7 +1909,7 @@ async function stopRealtimeCombat(result) {
   if (recentlyReviewedVids.length > 0) {
     const vidsToRefresh = [...recentlyReviewedVids];
     recentlyReviewedVids = [];
-    const { jpdbApiKey } = getStoredApiKeys();
+    const { jpdbApiKey } = settings.getApiKeys();
     fetch(`${API_BASE}/api/game/refresh-word-states`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1978,7 +1934,7 @@ async function stopRealtimeCombat(result) {
 
   // Request narration from server
   try {
-    const apiKeys = getStoredApiKeys();
+    const apiKeys = settings.getApiKeys();
     const response = await fetch(`${API_BASE}/api/game/combat-end-narration`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2052,7 +2008,7 @@ async function fetchJpdbDueWords() {
 
   jpdbWordsFetching = true;
   try {
-    const { jpdbApiKey } = getStoredApiKeys();
+    const { jpdbApiKey } = settings.getApiKeys();
     const response = await fetch(`${API_BASE}/api/game/due-words`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2092,7 +2048,7 @@ async function fetchReplacementWord(justReviewedVid = null) {
 
     if (allExcludeVids.length === 0) return null;
 
-    const { jpdbApiKey } = getStoredApiKeys();
+    const { jpdbApiKey } = settings.getApiKeys();
     const response = await fetch(`${API_BASE}/api/game/due-words`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -5722,11 +5678,11 @@ function confirmNewGame() {
 async function resetGame() {
   try {
     await fetch(`${API_BASE}/api/game/reset`, { method: 'POST' });
-    
-    // Clear local storage game state (keep API keys)
-    localStorage.removeItem('debugMode');
+
+    // Clear debug mode (keep API keys)
+    settings.setDebugMode(false);
     debugMode = false;
-    
+
     await loadGameState();
     showNarration('Welcome to NEO TOKYO! Create a character to begin your adventure.');
     updateUI();
@@ -5747,8 +5703,8 @@ async function toggleDebugMode() {
     const result = await response.json();
     debugMode = result.debugMode;
 
-    // Persist to localStorage
-    localStorage.setItem('debugMode', debugMode);
+    // Persist to localStorage via settings module
+    settings.setDebugMode(debugMode);
 
     // Update button visual
     updateDebugModeButton();
@@ -5797,7 +5753,7 @@ async function initDebugMode() {
 // ============ SETTINGS ============
 async function openSettings() {
   // Load API keys from localStorage (per-user storage)
-  const storedKeys = getStoredApiKeys();
+  const storedKeys = settings.getApiKeys();
   aiProviderSelect.value = storedKeys.aiProvider || 'openai';
   aiKeyInput.value = storedKeys.aiApiKey || '';
   openaiModelSelect.value = storedKeys.openaiModel || 'gpt-4o-mini';
@@ -5849,7 +5805,7 @@ function updateProviderVisibility() {
 
 async function saveSettings() {
   // Save API keys to localStorage (per-user storage)
-  saveStoredApiKeys({
+  settings.saveApiKeys({
     aiApiKey: aiKeyInput.value,
     aiProvider: aiProviderSelect.value,
     openaiModel: openaiModelSelect.value,
@@ -5926,7 +5882,7 @@ async function openGameStatsModal() {
  */
 async function loadCachedWordStates() {
   try {
-    const { jpdbApiKey } = getStoredApiKeys();
+    const { jpdbApiKey } = settings.getApiKeys();
     const response = await fetch(`${API_BASE}/api/game/stats/word-states`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -6081,7 +6037,7 @@ async function refreshGameWordStates() {
   gameStatsWordList?.classList.add('hidden');
 
   try {
-    const { jpdbApiKey } = getStoredApiKeys();
+    const { jpdbApiKey } = settings.getApiKeys();
     const response = await fetch(`${API_BASE}/api/game/stats/word-states`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
