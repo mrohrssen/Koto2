@@ -105,6 +105,9 @@ import * as explorationUI from './js/ui/exploration.js';
 // Economy UI module for shop, blacksmith, and chip upgrade functions
 import * as economyUI from './js/ui/economy.js';
 
+// Character UI module for stat allocation, VN stage, and equipment
+import * as characterUI from './js/ui/character.js';
+
 // API module - centralized server communication
 import {
   getGameState as apiGetGameState,
@@ -178,9 +181,7 @@ function updateGameState(newState) {
 
 let isLoading = false;
 
-// Stat allocation state for character creation (default: evenly distributed)
-let createStats = { str: 5, agi: 5, vit: 5, int: 5, dex: 5, luk: 5 };
-let createStatPoints = 0;
+// Stat allocation state managed by characterUI module
 
 // Shop Selection State (selectedShopIndex managed by economyUI module)
 let selectedWardIndex = 0;
@@ -439,6 +440,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     apiPostCombatShopRefresh: apiPostCombatShopRefresh
   });
 
+  // Initialize character UI module with DOM elements and callbacks
+  characterUI.init({
+    getGameState: () => gameState,
+    updateGameState: updateGameState,
+    updateUI: updateUI,
+    loadGameState: loadGameState,
+    narration: narration,
+    tts: tts,
+    combatUI: combatUI,
+    formatItemStats: economyUI.formatItemStats,
+    // Combat state
+    isRealtimeCombatActive: () => realtimeCombatActive,
+    isEnemyDialogueActive: () => enemyDialogueActive,
+    startRealtimeCombat: startRealtimeCombat,
+    // API functions
+    apiAllocateStat: apiAllocateStat,
+    apiEquipChip: apiEquipChip,
+    apiUnequipChip: apiUnequipChip,
+    apiGetChipLoadout: apiGetChipLoadout,
+    apiUnequipItem: apiUnequipItem
+  });
+
   await loadGameState();
   setupEventListeners();
   updateUI();
@@ -611,7 +634,9 @@ async function loadGameState() {
 async function createCharacter() {
   const name = document.getElementById('char-name').value.trim() || 'Hunter';
 
-  // Include allocated stats in player creation
+  // Include allocated stats in player creation (get from characterUI module)
+  const createStats = characterUI.getCreateStats();
+  const createStatPoints = characterUI.getCreateStatPoints();
   const result = await apiCreatePlayer(name, { ...createStats }, createStatPoints);
   if (result) {
     // Update local state from server response
@@ -620,104 +645,22 @@ async function createCharacter() {
     }
     createCharModal.classList.add('hidden');
     // Reset create stats for next time
-    resetCreateStats();
+    characterUI.resetCreateStats();
     // Use server narration or fallback
-    const narration = result.narration || FALLBACK_NARRATIONS.hub(gameState.player);
-    narration.showNarration(narration);
+    const narrationText = result.narration || FALLBACK_NARRATIONS.hub(gameState.player);
+    narration.showNarration(narrationText);
   }
 }
 
 // ============ STAT ALLOCATION (CHARACTER CREATION) ============
-
-// Calculate cost to raise a stat from X to X+1 (iRO formula)
-function getStatPointCost(currentValue) {
-  return Math.floor((currentValue - 1) / 10) + 2;
-}
-
-// Calculate derived stats for preview - SIMPLIFIED
-// Only returns attack and hp (no complex stat formulas)
-function calculateDerivedPreview(stats, level = 1) {
-  // SIMPLIFIED: Fixed values, no stat-based calculations
-  return {
-    atk: 15,
-    def: 0,
-    matk: 0,
-    mdef: 0,
-    hit: 100,
-    flee: 0,
-    crit: 0,
-    hp: 100,
-    sp: 50
-  };
-}
-
-// Open character creation modal and initialize stats display
-function openCreateCharModal() {
-  createCharModal.classList.remove('hidden');
-  updateCreateStatDisplay();
-}
-
-// Update the create character stat display
-function updateCreateStatDisplay() {
-  // Update stat values
-  Object.keys(createStats).forEach(stat => {
-    const valueEl = document.getElementById(`create-${stat}`);
-    const costEl = document.getElementById(`create-${stat}-cost`);
-    if (valueEl) valueEl.textContent = createStats[stat];
-    if (costEl) costEl.textContent = `${getStatPointCost(createStats[stat])} pts`;
-  });
-
-  // Update stat points remaining
-  const pointsEl = document.getElementById('create-stat-points');
-  if (pointsEl) pointsEl.textContent = createStatPoints;
-
-  // Update derived stats preview
-  const preview = calculateDerivedPreview(createStats);
-  document.getElementById('preview-atk').textContent = preview.atk;
-  document.getElementById('preview-def').textContent = preview.def;
-  document.getElementById('preview-matk').textContent = preview.matk;
-  document.getElementById('preview-mdef').textContent = preview.mdef;
-  document.getElementById('preview-hit').textContent = preview.hit;
-  document.getElementById('preview-flee').textContent = preview.flee;
-  document.getElementById('preview-crit').textContent = `${preview.crit}%`;
-  document.getElementById('preview-hp').textContent = preview.hp;
-  document.getElementById('preview-sp').textContent = preview.sp;
-
-  // Update button states (disable minus at 1, disable plus if not enough points)
-  Object.keys(createStats).forEach(stat => {
-    const minusBtn = document.querySelector(`.stat-minus[data-stat="${stat}"]`);
-    const plusBtn = document.querySelector(`.stat-plus[data-stat="${stat}"]`);
-    if (minusBtn) minusBtn.disabled = createStats[stat] <= 1;
-    if (plusBtn) plusBtn.disabled = createStatPoints < getStatPointCost(createStats[stat]) || createStats[stat] >= 99;
-  });
-}
-
-// Handle stat increase
-function handleStatIncrease(stat) {
-  const cost = getStatPointCost(createStats[stat]);
-  if (createStatPoints >= cost && createStats[stat] < 99) {
-    createStatPoints -= cost;
-    createStats[stat]++;
-    updateCreateStatDisplay();
-  }
-}
-
-// Handle stat decrease
-function handleStatDecrease(stat) {
-  if (createStats[stat] > 1) {
-    createStats[stat]--;
-    const refund = getStatPointCost(createStats[stat]); // Cost to go from new value to previous
-    createStatPoints += refund;
-    updateCreateStatDisplay();
-  }
-}
-
-// Reset stats to initial values
-function resetCreateStats() {
-  createStats = { str: 5, agi: 5, vit: 5, int: 5, dex: 5, luk: 5 };
-  createStatPoints = 0;
-  updateCreateStatDisplay();
-}
+// Delegated to characterUI module
+function getStatPointCost(currentValue) { return characterUI.getStatPointCost(currentValue); }
+function calculateDerivedPreview(stats, level = 1) { return characterUI.calculateDerivedPreview(stats, level); }
+function openCreateCharModal() { characterUI.openCreateCharModal(); }
+function updateCreateStatDisplay() { characterUI.updateCreateStatDisplay(); }
+function handleStatIncrease(stat) { characterUI.handleStatIncrease(stat); }
+function handleStatDecrease(stat) { characterUI.handleStatDecrease(stat); }
+function resetCreateStats() { characterUI.resetCreateStats(); }
 
 async function startNewRun() {
   // Clear narration log for new run
@@ -1140,102 +1083,8 @@ function updateUI() {
 }
 
 // ============ VN STAGE UPDATES ============
-function updateVNStage() {
-  if (!vnStage) return;
-
-  const phase = gameState.phase;
-  const isInDungeon = ['room', 'room_encounter', 'combat', 'trap', 'treasure', 'shrine', 'floor_complete', 'boss', 'post_combat_shop'].includes(phase);
-  const isInCombat = phase === 'combat';
-
-  // Show/hide VN stage based on phase
-  if (isInDungeon) {
-    vnStage.classList.remove('hub-mode');
-    gameContent.classList.remove('hub-mode');
-    gameContent.classList.add('hidden');
-  } else {
-    vnStage.classList.add('hub-mode');
-    gameContent.classList.add('hub-mode');
-    gameContent.classList.remove('hidden');
-  }
-
-  // Update player HP/MP bars
-  const p = gameState.run?.player || gameState.player;
-  if (p) {
-    // Ensure valid values with fallbacks
-    const hp = p.hp || 0;
-    const maxHp = p.maxHp || 100;
-    const mp = p.mp || 0;
-    const maxMp = p.maxMp || 100;
-    const hpPercent = Math.max(0, Math.min(100, (hp / maxHp) * 100));
-    const mpPercent = Math.max(0, Math.min(100, (mp / maxMp) * 100));
-
-    playerNameDisplay.textContent = p.name || 'Hunter';
-    playerHpValues.textContent = `${hp}/${maxHp}`;
-    playerHpFill.style.width = `${hpPercent}%`;
-    playerMpFill.style.width = `${mpPercent}%`;
-
-    // HP color classes
-    playerHpFill.classList.remove('low', 'critical');
-    if (hpPercent <= 25) {
-      playerHpFill.classList.add('critical');
-    } else if (hpPercent <= 50) {
-      playerHpFill.classList.add('low');
-    }
-
-    // Add idle animation to player
-    playerSprite.classList.add('idle');
-  }
-
-  // Update ward/area indicator
-  if (gameState.run) {
-    floorDisplay.textContent = `Ward ${gameState.run.floor || 1}`;
-    roomDisplay.textContent = `Area ${gameState.run.currentRoom || 0}/${gameState.run.totalRooms || '?'}`;
-    floorIndicator.classList.remove('hidden');
-  } else {
-    floorIndicator.classList.add('hidden');
-  }
-
-  // Update enemy visibility and stats
-  const enemy = gameState.combat?.enemy;
-  if (isInCombat && enemy && enemy.hp > 0) {
-    // Auto-start realtime combat if we're in combat phase but combat hasn't started
-    // This handles page reloads during combat or debug API setup
-    // Skip if enemyDialogueActive - encounter setup will start combat after dialogue
-    if (!realtimeCombatActive && !enemyDialogueActive) {
-      startRealtimeCombat();
-    }
-
-    // Remove defeated class from previous combat and show enemy
-    enemySprite.classList.remove('hidden', 'defeated');
-    enemyHpBar.classList.remove('hidden');
-
-    const enemyHpPercent = (enemy.hp / enemy.maxHp) * 100;
-    enemyNameDisplay.textContent = enemy.name || 'Enemy';
-    enemyHpValues.textContent = `${enemy.hp}/${enemy.maxHp}`;
-    enemyHpFill.style.width = `${enemyHpPercent}%`;
-
-    // Set enemy sprite image based on enemy ID
-    const spriteId = enemy.id || 'enemy';
-    const newSpritePath = `assets/sprites/enemies/${spriteId}.png`;
-    // Only update src if it changed (avoid flickering)
-    if (!enemySpriteImg.src.endsWith(newSpritePath)) {
-      enemySpriteImg.onerror = () => {
-        // Fallback to generic enemy sprite if specific one not found
-        if (!enemySpriteImg.src.endsWith('enemy.png')) {
-          enemySpriteImg.src = 'assets/sprites/enemies/enemy.png';
-        }
-      };
-      enemySpriteImg.src = newSpritePath;
-      enemySpriteImg.alt = enemy.name || 'Enemy';
-    }
-
-    // Add idle animation
-    enemySprite.classList.add('idle');
-  } else {
-    enemySprite.classList.add('hidden');
-    enemyHpBar.classList.add('hidden');
-  }
-}
+// Delegated to characterUI module
+function updateVNStage() { characterUI.updateVNStage(); }
 
 // Sprite animation helpers - delegated to combatUI module
 function animatePlayerAttack() { combatUI.animatePlayerAttack(); }
@@ -1253,55 +1102,9 @@ function displayChipEffects(attackData, isPlayerAttack = true) { combatUI.displa
 
 // ============ REALTIME COMBAT FUNCTIONS ============
 
-function updateEnemyHPBar(hp) {
-  const hpFill = document.getElementById('enemy-hp-fill');
-  const hpText = document.getElementById('enemy-hp-values');
-
-  if (hpFill) {
-    const percent = Math.max(0, (hp.current / hp.max) * 100);
-    hpFill.style.width = `${percent}%`;
-  }
-
-  if (hpText) {
-    hpText.textContent = `${hp.current}/${hp.max}`;
-  }
-}
-
-function updatePlayerHPBar(hp) {
-  const hpFill = document.getElementById('player-hp-fill');
-  const hpText = document.getElementById('player-hp-values');
-
-  // Ensure valid values
-  const current = hp.current || 0;
-  const max = hp.max || 100;
-  const percent = Math.max(0, Math.min(100, (current / max) * 100));
-
-  if (hpFill) {
-    hpFill.style.width = `${percent}%`;
-
-    // Update HP color classes based on percentage
-    hpFill.classList.remove('low', 'critical');
-    if (percent <= 25) {
-      hpFill.classList.add('critical');
-    } else if (percent <= 50) {
-      hpFill.classList.add('low');
-    }
-  }
-
-  if (hpText) {
-    hpText.textContent = `${current}/${max}`;
-  }
-
-  // Also update the gameState for consistency
-  if (gameState.run?.player) {
-    gameState.run.player.hp = current;
-    gameState.run.player.maxHp = max;
-  }
-  if (gameState.player) {
-    gameState.player.hp = current;
-    gameState.player.maxHp = max;
-  }
-}
+// HP bar updates - delegated to characterUI module
+function updateEnemyHPBar(hp) { characterUI.updateEnemyHPBar(hp); }
+function updatePlayerHPBar(hp) { characterUI.updatePlayerHPBar(hp); }
 
 function startRealtimeCombat() {
   if (realtimeCombatActive) return;
@@ -1312,11 +1115,11 @@ function startRealtimeCombat() {
   combatPausedForVocab = false;
 
   // Fetch chip loadout for combat display (non-blocking)
-  if (!chipLoadoutCache) {
+  if (!getChipLoadoutCache()) {
     fetch(`${API_BASE}/api/game/chip-loadout`)
       .then(r => r.json())
       .then(data => {
-        chipLoadoutCache = data;
+        characterUI.setChipLoadoutCache(data);
         updateActionPanel(); // Re-render with chips
       })
       .catch(err => console.warn('[Combat] Failed to fetch chip loadout:', err));
@@ -1723,219 +1526,13 @@ function shuffleArray(array) {
   return arr;
 }
 
-function updateQuickStats() {
-  if (!gameState.player) {
-    quickStats.innerHTML = '';
-    return;
-  }
-
-  const p = gameState.run?.player || gameState.player;
-  const floorText = gameState.run ? `Ward ${gameState.run.floor}/7` : '';
-
-  // SIMPLIFIED: Just show floor progress
-  quickStats.innerHTML = `
-    ${floorText ? `<div class="quick-stat"><span class="floor">${floorText}</span></div>` : ''}
-  `;
-}
-
-function updatePlayerStats() {
-  if (!gameState.player) {
-    playerStats.innerHTML = '<p class="no-save-msg">No character yet</p>';
-    return;
-  }
-
-  const p = gameState.run?.player || gameState.player;
-  const hpPercent = (p.hp / p.maxHp) * 100;
-
-  // SIMPLIFIED: Only show Name, HP, Attack, and Credits
-  // No levels, no XP, no 6-stat system, no derived stats
-
-  playerStats.innerHTML = `
-    <div class="stat-row">
-      <span class="label">Name</span>
-      <span class="value">${escapeHtml(p.name)}</span>
-    </div>
-    <div class="hp-mp-bars">
-      <div class="bar-row">
-        <div class="bar-label-row">
-          <span>HP</span>
-          <span class="value hp">${p.hp}/${p.maxHp}</span>
-        </div>
-        <div class="bar-container">
-          <div class="bar-fill hp" style="width: ${hpPercent}%"></div>
-        </div>
-      </div>
-    </div>
-    <div class="stats-grid">
-      <div class="derived-stats">
-        <div class="stat-row mini"><span class="label">ATK</span><span class="value">${p.attack ?? 15}</span></div>
-      </div>
-    </div>
-    <div class="stat-row">
-      <span class="label">Credits</span>
-      <span class="value" style="color: #00ff88">¥${p.gold}</span>
-    </div>
-  `;
-}
-
-function updateEquipment() {
-  if (!gameState.player) {
-    equipmentList.innerHTML = '<p class="empty-msg">None</p>';
-    return;
-  }
-
-  const p = gameState.run?.player || gameState.player;
-  const eq = p.equipment;
-
-  const renderSlot = (slotName, slotKey) => {
-    const item = eq[slotKey];
-    if (item) {
-      const chipsEquipped = item.equippedChips?.length || 0;
-      return `
-        <div class="equipment-slot equipped">
-          <span class="slot-name">${slotName}</span>
-          <span class="item-name">${item.name}</span>
-          <div class="equipment-actions">
-            <button class="modify-btn" onclick="openChipModal('${slotKey}')" title="Modify Chips">
-              <span class="chip-count">${chipsEquipped}/5</span> Modify
-            </button>
-            <button class="unequip-btn" onclick="unequipItem('${slotKey}')" title="Unequip">✕</button>
-          </div>
-        </div>
-      `;
-    }
-    return `
-      <div class="equipment-slot empty">
-        <span class="slot-name">${slotName}</span>
-        <span class="item-name empty-slot">Empty</span>
-      </div>
-    `;
-  };
-
-  equipmentList.innerHTML = `
-    ${renderSlot('Weapon', 'weapon')}
-    ${renderSlot('Body', 'body')}
-    ${renderSlot('Shield', 'shield')}
-    ${renderSlot('Accessory', 'accessory')}
-  `;
-}
-
-async function equipItem(itemId) {
-  try {
-    const response = await fetch('/api/game/equip', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ itemId })
-    });
-
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error || 'Equip failed');
-    }
-
-    const result = await response.json();
-    if (result.state) {
-      updateGameState(result.state); // Keep window reference in sync
-    }
-    if (result.message) {
-      narration.showNarration(result.message);
-    }
-    // Speak "[item name]を装備" via TTS
-    if (result.equipped) {
-      tts.speakText(`${result.equipped}を装備`);
-    }
-    updateUI();
-  } catch (error) {
-    console.error('Equip error:', error);
-    narration.showNarration(`装備に失敗: ${error.message}`);
-  }
-}
-
-async function unequipItemHandler(slot) {
-  const result = await apiUnequipItem(slot);
-  if (result.error) {
-    console.error('Unequip error:', result.error);
-    narration.showNarration(`装備解除に失敗: ${result.error}`);
-    return;
-  }
-  if (result.state) {
-    updateGameState(result.state);
-  }
-  if (result.message) {
-    narration.showNarration(result.message);
-  }
-  updateUI();
-}
-
-window.equipItem = equipItem;
-window.unequipItem = unequipItemHandler;
-
-function updateInventory() {
-  if (!gameState.player) {
-    inventoryList.innerHTML = '<p class="empty-msg">Empty</p>';
-    return;
-  }
-
-  const p = gameState.run?.player || gameState.player;
-  let html = '';
-
-  // Check if in combat (can't equip during combat)
-  const inCombat = gameState.phase === 'combat';
-
-  // Show chips section if player has any
-  if (p.chips && p.chips.length > 0) {
-    const categoryNames = {
-      stat: 'ステータス',
-      onHit: 'オンヒット',
-      onEffect: 'オンエフェクト',
-      counter: 'カウンター'
-    };
-
-    html += '<div class="inventory-section"><h4>チップ (Chips)</h4>';
-    html += p.chips.map(chip => {
-      const rarityClass = chip.rarity ? `rarity-${chip.rarity}` : '';
-      const categoryBadge = categoryNames[chip.category] || '';
-      return `
-        <div class="inventory-item chip-item ${rarityClass}" title="${formatItemStats(chip)}">
-          <span class="chip-category">[${categoryBadge}]</span>
-          <span class="item-name">${chip.name}</span>
-        </div>
-      `;
-    }).join('');
-    html += '</div>';
-  }
-
-  // Show items section
-  if (p.items && p.items.length > 0) {
-    html += '<div class="inventory-section"><h4>アイテム (Items)</h4>';
-    html += p.items.map(item => {
-      const isEquipment = item.slot; // Equipment items have a slot property
-      const equipClass = isEquipment && !inCombat ? 'equippable' : '';
-      const rarityClass = item.rarity ? `rarity-${item.rarity}` : '';
-      return `
-        <div class="inventory-item ${equipClass} ${rarityClass}" ${isEquipment ? `data-item-id="${item.id}"` : ''}>
-          <span class="item-name">${item.name || item.id}</span>
-          <span class="item-qty">x${item.quantity}</span>
-        </div>
-      `;
-    }).join('');
-    html += '</div>';
-  }
-
-  if (!html) {
-    html = '<p class="empty-msg">Empty</p>';
-  }
-
-  inventoryList.innerHTML = html;
-
-  // Add click handlers for equippable items
-  inventoryList.querySelectorAll('.equippable').forEach(el => {
-    el.addEventListener('click', async () => {
-      const itemId = el.dataset.itemId;
-      await equipItem(itemId);
-    });
-  });
-}
+// Player stats and equipment display - delegated to characterUI module
+function updateQuickStats() { characterUI.updateQuickStats(); }
+function updatePlayerStats() { characterUI.updatePlayerStats(); }
+function updateEquipment() { characterUI.updateEquipment(); }
+async function equipItem(itemId) { return characterUI.equipItem(itemId); }
+async function unequipItemHandler(slot) { return characterUI.unequipItemHandler(slot); }
+function updateInventory() { characterUI.updateInventory(); }
 
 function updateGameContent() {
   const phase = gameState.phase;
@@ -2547,274 +2144,23 @@ function closeUpgradesModal() {
   upgradesModal?.classList.add('hidden');
 }
 
-// ============ CHIP SLOT MODAL ============
-
-let currentChipModalSlot = null;
-let chipLoadoutCache = null;
-
-/**
- * Open the chip modification modal for an equipment slot
- */
-async function openChipModal(equipmentSlot) {
-  currentChipModalSlot = equipmentSlot;
-
-  // Fetch current chip loadout
-  try {
-    const response = await fetch('/api/game/chip-loadout');
-    chipLoadoutCache = await response.json();
-  } catch (error) {
-    console.error('Failed to fetch chip loadout:', error);
-    narration.showNarration('チップ情報の取得に失敗しました');
-    return;
-  }
-
-  const modal = document.getElementById('chip-modal');
-  if (!modal) {
-    console.error('Chip modal not found');
-    return;
-  }
-
-  renderChipModal();
-  modal.classList.remove('hidden');
-}
-
-/**
- * Close the chip modal
- */
-function closeChipModal() {
-  const modal = document.getElementById('chip-modal');
-  modal?.classList.add('hidden');
-  currentChipModalSlot = null;
-}
-
-/**
- * Render the chip modal content
- */
-function renderChipModal() {
-  if (!chipLoadoutCache || !currentChipModalSlot) return;
-
-  const slotData = chipLoadoutCache.equipment[currentChipModalSlot] || {
-    equippedChips: [],
-    slotsUsed: 0,
-    maxSlots: 5
-  };
-  const inventory = chipLoadoutCache.inventory || [];
-  const p = gameState.run?.player || gameState.player;
-  const equipmentItem = p?.equipment?.[currentChipModalSlot];
-
-  const slotNames = {
-    weapon: 'Weapon',
-    body: 'Body',
-    shield: 'Shield',
-    accessory: 'Accessory'
-  };
-
-  // Build slot grid (5 slots)
-  let slotsHtml = '';
-  for (let i = 0; i < 5; i++) {
-    const chip = slotData.equippedChips[i];
-    if (chip) {
-      const rarityClass = `rarity-${chip.rarity || 'common'}`;
-      const iconId = chip.baseId || chip.id.replace(/_(common|uncommon|rare|epic|legendary)$/, '');
-      slotsHtml += `
-        <div class="chip-slot filled ${rarityClass}" onclick="removeChipFromSlot('${chip.id}')" title="Click to remove">
-          <img class="chip-slot-icon" src="/assets/icons/chips/${iconId}.png" alt="" onerror="this.style.display='none'">
-          <span class="chip-name">${chip.name}</span>
-          <span class="chip-category">${getCategoryLabel(chip.category)}</span>
-        </div>
-      `;
-    } else {
-      slotsHtml += `
-        <div class="chip-slot empty">
-          <span class="slot-label">Empty</span>
-        </div>
-      `;
-    }
-  }
-
-  // Build inventory chips (equipped chips are filtered out server-side)
-  let inventoryHtml = '';
-  if (inventory.length === 0) {
-    inventoryHtml = '<p class="empty-msg">No chips available. Defeat enemies to collect chips!</p>';
-  } else {
-    for (const chip of inventory) {
-      const rarityClass = `rarity-${chip.rarity || 'common'}`;
-      const slotCost = chip.rarity === 'legendary' ? 3 : chip.rarity === 'epic' ? 2 : 1;
-      const iconId = chip.baseId || chip.id.replace(/_(common|uncommon|rare|epic|legendary)$/, '');
-      inventoryHtml += `
-        <div class="inventory-chip ${rarityClass}" onclick="addChipToSlot('${chip.id}')" title="Click to equip">
-          <img class="inventory-chip-icon" src="/assets/icons/chips/${iconId}.png" alt="" onerror="this.style.display='none'">
-          <div class="inventory-chip-content">
-            <span class="chip-name">${chip.name}</span>
-            <span class="chip-info">
-              <span class="chip-category">${getCategoryLabel(chip.category)}</span>
-              <span class="chip-cost">${slotCost} slot${slotCost > 1 ? 's' : ''}</span>
-            </span>
-            <span class="chip-effect">${getChipEffectText(chip)}</span>
-          </div>
-        </div>
-      `;
-    }
-  }
-
-  const modalBody = document.querySelector('#chip-modal .modal-body');
-  if (modalBody) {
-    modalBody.innerHTML = `
-      <div class="chip-modal-equipment">
-        <h3>${equipmentItem?.name || slotNames[currentChipModalSlot]}</h3>
-        <p class="slots-used">${slotData.slotsUsed}/${slotData.maxSlots} slots used</p>
-      </div>
-      <div class="chip-slots-grid">
-        ${slotsHtml}
-      </div>
-      <div class="chip-inventory-section">
-        <h4>Available Chips</h4>
-        <div class="chip-inventory-list">
-          ${inventoryHtml}
-        </div>
-      </div>
-    `;
-  }
-}
+// ============ CHIP MODAL - delegated to characterUI ============
+async function openChipModal(equipmentSlot) { return characterUI.openChipModal(equipmentSlot); }
+function closeChipModal() { return characterUI.closeChipModal(); }
+function renderChipModal() { return characterUI.renderChipModal(); }
+function getChipEffectText(chip) { return characterUI.getChipEffectText(chip); }
+async function addChipToSlot(chipId) { return characterUI.addChipToSlot(chipId); }
+async function removeChipFromSlot(chipId) { return characterUI.removeChipFromSlot(chipId); }
+async function toggleChipEquip(chipId, fromSlot) { return characterUI.toggleChipEquip(chipId, fromSlot); }
+function getChipLoadoutCache() { return characterUI.getChipLoadoutCache(); }
 
 // Combat chip display - delegated to combatUI module
 function renderCombatChips(pipelineResult = null) {
-  combatUI.setChipLoadoutCache(chipLoadoutCache);
+  combatUI.setChipLoadoutCache(getChipLoadoutCache());
   return combatUI.renderCombatChips(pipelineResult);
 }
 async function animateChipPipeline(pipelineResult) { return combatUI.animateChipPipeline(pipelineResult); }
 function getCategoryLabel(category) { return combatUI.getCategoryLabel(category); }
-
-/**
- * Get chip effect text for display
- */
-function getChipEffectText(chip) {
-  if (!chip.effects) return '';
-
-  if (chip.effects.stats) {
-    const stats = Object.entries(chip.effects.stats)
-      .map(([stat, val]) => `+${val} ${stat.toUpperCase()}`)
-      .join(', ');
-    return stats;
-  }
-
-  if (chip.effects.onHit) {
-    const hit = chip.effects.onHit;
-    return `${Math.round(hit.chance * 100)}% ${hit.status}`;
-  }
-
-  if (chip.effects.counter) {
-    const c = chip.effects.counter;
-    return `+${c.perStack} ${c.stat} per ${c.trigger}`;
-  }
-
-  // Handle onEffect category (onKill, onDamage, etc.)
-  if (chip.effects.onKill) {
-    const e = chip.effects.onKill;
-    const parts = [];
-    if (e.heal) parts.push(`回復${e.heal}HP`);
-    if (e.aspdBoost) parts.push(`ASPD+${Math.round(e.aspdBoost * 100)}%`);
-    if (e.doubleCredits) parts.push('報酬2倍');
-    if (e.aoeExplosion) parts.push(`爆発${e.aoeDamage}dmg`);
-    return `${Math.round((e.chance || 1) * 100)}% ${parts.join(', ') || '撃破時効果'}`;
-  }
-
-  if (chip.effects.onDamage) {
-    const e = chip.effects.onDamage;
-    return `${Math.round((e.chance || 1) * 100)}% ダメージ${Math.round((e.damageReduction || 0) * 100)}%軽減`;
-  }
-
-  if (chip.effects.onDodge) {
-    return '回避時効果';
-  }
-
-  if (chip.effects.onCrit) {
-    return 'クリティカル時効果';
-  }
-
-  if (chip.effects.onLowHp) {
-    return 'HP低下時効果';
-  }
-
-  return '';
-}
-
-/**
- * Add a chip from inventory to the current equipment slot
- */
-async function addChipToSlot(chipId) {
-  if (!currentChipModalSlot) return;
-
-  const result = await apiEquipChip(currentChipModalSlot, chipId);
-
-  if (result.error) {
-    narration.showNarration(`装着失敗: ${result.error}`);
-    return;
-  }
-
-  // Speak "[chip name]を装備" via TTS
-  if (result.chipName) {
-    tts.speakText(`${result.chipName}を装備`);
-  }
-
-  // Refresh loadout and re-render
-  chipLoadoutCache = await apiGetChipLoadout();
-  renderChipModal();
-
-  // Also refresh main game state
-  await loadGameState();
-  updateUI();
-}
-
-/**
- * Remove a chip from the current equipment slot
- */
-async function removeChipFromSlot(chipId) {
-  if (!currentChipModalSlot) return;
-
-  const result = await apiUnequipChip(currentChipModalSlot);
-
-  if (result.error) {
-    narration.showNarration(`取り外し失敗: ${result.error}`);
-    return;
-  }
-
-  // Refresh loadout and re-render
-  chipLoadoutCache = await apiGetChipLoadout();
-  renderChipModal();
-
-  // Also refresh main game state
-  await loadGameState();
-  updateUI();
-}
-
-/**
- * Toggle chip equip - unequip from one slot and optionally equip to current slot
- */
-async function toggleChipEquip(chipId, fromSlot) {
-  // First unequip from the other slot
-  const unequipResult = await apiUnequipChip(fromSlot);
-  if (unequipResult.error) {
-    narration.showNarration(`取り外し失敗: ${unequipResult.error}`);
-    return;
-  }
-
-  // Then equip to current slot
-  if (currentChipModalSlot) {
-    const equipResult = await apiEquipChip(currentChipModalSlot, chipId);
-    if (equipResult.error) {
-      narration.showNarration(`装着失敗: ${equipResult.error}`);
-    }
-  }
-
-  // Refresh loadout and re-render
-  chipLoadoutCache = await apiGetChipLoadout();
-  renderChipModal();
-
-  // Also refresh main game state
-  await loadGameState();
-  updateUI();
-}
 
 // Make chip modal functions globally accessible
 window.openChipModal = openChipModal;
