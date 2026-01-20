@@ -361,16 +361,16 @@ async function postCombatShopRefresh() {
   return apiCall('/post-combat-shop-refresh', 'POST');
 }
 
-/** Equip a chip to a slot
- * @param {number} slot - Slot number (1-3)
+/** Equip a chip to an equipment slot
+ * @param {string} equipmentSlot - Equipment slot name ('weapon', 'body', 'shield', 'accessory')
  * @param {string} chipId - Chip identifier
  */
-async function equipChip(slot, chipId) {
+async function equipChip(equipmentSlot, chipId) {
   try {
     const response = await fetch('/api/game/equip-chip', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slot, chipId })
+      body: JSON.stringify({ equipmentSlot, chipId })
     });
     return await response.json();
   } catch (error) {
@@ -379,15 +379,15 @@ async function equipChip(slot, chipId) {
   }
 }
 
-/** Unequip a chip from a slot
- * @param {number} slot - Slot number (1-3)
+/** Unequip a chip from an equipment slot
+ * @param {string} equipmentSlot - Equipment slot name ('weapon', 'body', 'shield', 'accessory')
  */
-async function unequipChip(slot) {
+async function unequipChip(equipmentSlot) {
   try {
     const response = await fetch('/api/game/unequip-chip', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slot })
+      body: JSON.stringify({ equipmentSlot })
     });
     return await response.json();
   } catch (error) {
