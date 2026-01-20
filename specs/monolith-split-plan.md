@@ -1710,6 +1710,11 @@ These are lower-priority cleanup tasks to do after all phases are complete:
 - [ ] Remove `drops` arrays (drops system not currently used)
 - [ ] Remove `baseLevel` field (no longer used)
 
+### game.js Further Extraction (Optional)
+- [ ] Move settings modal functions → `settings.js` (~120 lines: openSettings, closeSettings, updateProviderVisibility, saveSettings)
+- [ ] Move enemy dialogue functions → `narration.js` (~90 lines: showEnemyDialogue, dismissEnemyDialogue, speakEnemyDialogue)
+- [ ] Consider refactoring onclick handlers to addEventListener pattern (reduces window globals)
+
 ---
 
 ## Architecture Before/After
