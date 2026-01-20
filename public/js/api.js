@@ -556,8 +556,6 @@ async function lookupJpdbWord(vid, sid) {
 
 export {
   apiCall,
-  getStoredApiKeys,
-  saveStoredApiKeys,
   isApiLoading,
   // Game state endpoints
   getGameState,
