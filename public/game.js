@@ -78,6 +78,9 @@
  * - Section headers marked with // ============ SECTION NAME ============
  */
 
+// Observable store for reactive state management
+import { store } from './js/store.js';
+
 // API module - centralized server communication
 import {
   getStoredApiKeys as apiGetStoredApiKeys,
@@ -137,6 +140,19 @@ let gameState = {
   combat: null,
   phase: 'no_save'
 };
+
+// Initialize store with default state
+store.set('gameState', gameState);
+
+/**
+ * Update game state through the store (enables reactive UI updates)
+ * @param {object} newState - New game state from server
+ */
+function updateGameState(newState) {
+  gameState = newState;
+  window.gameState = gameState;
+  store.set('gameState', gameState);
+}
 
 let isLoading = false;
 
@@ -588,6 +604,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadGameState();
   setupEventListeners();
   updateUI();
+  // Subscribe to state changes for reactive updates
+  store.subscribe(() => updateUI());
   // Restore debug mode from localStorage
   initDebugMode();
   // Load review type setting
@@ -743,10 +761,9 @@ function setupEventListeners() {
 async function loadGameState() {
   const data = await apiGetGameState();
   if (data.player) {
-    gameState = data;
-    window.gameState = gameState; // Keep window reference in sync
+    updateGameState(data);
   } else {
-    gameState.phase = 'no_save';
+    updateGameState({ ...gameState, phase: 'no_save' });
   }
 }
 
@@ -759,8 +776,7 @@ async function createCharacter() {
   if (result) {
     // Update local state from server response
     if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState;
+      updateGameState(result.state);
     }
     createCharModal.classList.add('hidden');
     // Reset create stats for next time
@@ -768,7 +784,6 @@ async function createCharacter() {
     // Use server narration or fallback
     const narration = result.narration || FALLBACK_NARRATIONS.hub(gameState.player);
     showNarration(narration);
-    updateUI();
   }
 }
 
@@ -880,8 +895,7 @@ async function startNewRun() {
   if (result) {
     // Update local state from server response
     if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState;
+      updateGameState(result.state);
     }
 
     // Show starting chip selection using the post-combat shop modal
@@ -2111,7 +2125,7 @@ async function stopRealtimeCombat(result) {
 
     // Update game state from server
     if (narrationResult.state) {
-      gameState = { ...gameState, ...narrationResult.state };
+      updateGameState({ ...gameState, ...narrationResult.state });
     }
 
     // Play TTS if available
@@ -3034,8 +3048,7 @@ async function equipItem(itemId) {
 
     const result = await response.json();
     if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState; // Keep window reference in sync
+      updateGameState(result.state); // Keep window reference in sync
     }
     if (result.message) {
       showNarration(result.message);
@@ -3059,8 +3072,7 @@ async function unequipItemHandler(slot) {
     return;
   }
   if (result.state) {
-    gameState = result.state;
-    window.gameState = gameState; // Keep window reference in sync
+    updateGameState(result.state);
   }
   if (result.message) {
     showNarration(result.message);
@@ -3401,8 +3413,7 @@ async function selectWard(wardId, isNextWard = false) {
   }
 
   if (result.state) {
-    gameState = result.state;
-    window.gameState = gameState; // Keep window reference in sync
+    updateGameState(result.state);
   }
 
   updateUI();
@@ -3605,8 +3616,7 @@ async function proceedToNextRoom() {
   if (result) {
     // Update local state from server response
     if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState;
+      updateGameState(result.state);
     }
     showNarration(result.narration || '次の部屋に入った。');
     updateBackground();
@@ -3620,8 +3630,7 @@ async function startRoomEncounter() {
   if (result) {
     // Update local state from server response
     if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState;
+      updateGameState(result.state);
     }
     const enemy = result.enemy || gameState.combat?.enemy;
     showNarration(result.narration || FALLBACK_NARRATIONS.combatStart(enemy));
@@ -3635,8 +3644,7 @@ async function disarmTrap() {
   if (result) {
     // Update local state from server response
     if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState;
+      updateGameState(result.state);
     }
     showNarration(result.narration);
     updateUI();
@@ -3654,8 +3662,7 @@ async function triggerTrap() {
   if (result) {
     // Update local state from server response
     if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState;
+      updateGameState(result.state);
     }
     showNarration(result.narration);
     updateUI();
@@ -3673,8 +3680,7 @@ async function lootBody() {
   if (result) {
     // Update local state from server response
     if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState;
+      updateGameState(result.state);
     }
     showNarration(result.narration);
     updateUI();
@@ -3692,8 +3698,7 @@ async function skipBody() {
   if (result) {
     // Update local state from server response
     if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState;
+      updateGameState(result.state);
     }
     showNarration(result.narration);
     updateUI();
@@ -3706,8 +3711,7 @@ async function skipTreasure() {
   if (result) {
     // Update local state from server response
     if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState;
+      updateGameState(result.state);
     }
     showNarration(result.narration);
     updateUI();
@@ -3720,8 +3724,7 @@ async function openTreasure() {
   if (result) {
     // Update local state from server response
     if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState;
+      updateGameState(result.state);
     }
     showNarration(result.narration);
     updateUI();
@@ -3739,8 +3742,7 @@ async function useShrine() {
   if (result) {
     // Update local state from server response
     if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState;
+      updateGameState(result.state);
     }
     showNarration(result.narration);
     updateUI();
@@ -4029,8 +4031,7 @@ async function buyItem(itemId) {
 
     // Update game state
     if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState; // Keep window reference in sync
+      updateGameState(result.state); // Keep window reference in sync
     }
 
     // Show narration
@@ -4147,8 +4148,7 @@ async function refineItemHandler(slot) {
 
     // Update game state
     if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState; // Keep window reference in sync
+      updateGameState(result.state); // Keep window reference in sync
     }
 
     // Show narration
@@ -4264,8 +4264,7 @@ async function openChipUpgradeModal() {
 
     // Update game state if provided
     if (data.state) {
-      gameState = data.state;
-      window.gameState = gameState;
+      updateGameState(data.state);
     }
   } catch (error) {
     console.error('[openChipUpgradeModal] Error:', error);
@@ -4293,8 +4292,7 @@ async function performChipUpgrade(chipId) {
 
     // Update game state
     if (result.state) {
-      gameState = result.state;
-      window.gameState = gameState;
+      updateGameState(result.state);
     }
 
     // Show result narration
@@ -4459,10 +4457,9 @@ async function claimStartingChipHandler(itemIndex) {
     }
     // Update state from server
     if (result.state) {
-      gameState = { ...gameState, ...result.state };
+      updateGameState({ ...gameState, ...result.state });
     }
     showNarration(result.chip?.name ? result.chip.name + 'を獲得した！' : 'チップを獲得！');
-    updateUI();
   }
 }
 
@@ -4500,10 +4497,9 @@ async function buyFromShop(itemIndex) {
     resetShopModal();
     // Update state from server
     if (result.state) {
-      gameState = { ...gameState, ...result.state };
+      updateGameState({ ...gameState, ...result.state });
     }
     showNarration(result.item?.name ? result.item.name + 'を購入した！' : '購入完了！');
-    updateUI();
   }
 }
 
@@ -4515,9 +4511,8 @@ async function skipShop() {
     resetShopModal();
     // Update state from server
     if (result.state) {
-      gameState = { ...gameState, ...result.state };
+      updateGameState({ ...gameState, ...result.state });
     }
-    updateUI();
   }
 }
 
@@ -4526,7 +4521,7 @@ async function refreshShop() {
   if (result) {
     // Update state from server
     if (result.state) {
-      gameState = { ...gameState, ...result.state };
+      updateGameState({ ...gameState, ...result.state });
     }
     // Re-render the shop with new items
     showPostCombatShopContent();
