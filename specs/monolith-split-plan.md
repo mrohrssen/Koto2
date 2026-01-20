@@ -1255,36 +1255,43 @@ store.subscribe('ttsEnabled', (enabled) => {
 
 ### Running Tests Properly
 
-**E2E tests require the server to be running.** The most reliable way:
+**USE THE WRAPPER SCRIPT** - it enforces correct flags and handles server lifecycle:
 
 ```bash
-# Start server in background
+# Run all E2E tests (recommended)
+./scripts/e2e-test.sh
+
+# Run specific test file
+./scripts/e2e-test.sh specs/character-creation
+```
+
+**CRITICAL FLAGS** (wrapper enforces these):
+- `--workers=1` - Single worker prevents race conditions. NEVER use more than 1.
+- `-x` - Stop on first failure. Don't waste time on 86 more timeouts.
+
+**If wrapper doesn't work, use EXACTLY:**
+```bash
+cd /Users/michia/Documents/jrpg
+pkill -f "node server.js" 2>/dev/null
 npm start &
-
-# Run e2e tests
-cd tests/e2e && npx playwright test
-
-# Stop server when done
+sleep 3
+cd tests/e2e && npx playwright test --workers=1 -x
 pkill -f "node server.js"
 ```
 
 **Test interpretation:**
 - Unit/Integration: Should be 100% pass (49/49 unit, 10-11/11 integration)
-- E2E: **87/87 is expected**, but 75+ is acceptable due to known flakiness
+- E2E: **87/87 is expected**, 80+ is acceptable
 - If ALL e2e tests fail with `ERR_CONNECTION_REFUSED`: Server isn't running
-- If ~15-25% fail randomly: Known flakiness with `waitForPhase()` timing - re-run
 
 **Quick verification (unit + integration only, no server needed):**
 ```bash
 npm run test:unit && npm run test:integration
 ```
 
-**Full verification (all tests):**
+**Syntax check before E2E (saves time):**
 ```bash
-npm start &
-sleep 3
-cd tests/e2e && npx playwright test
-pkill -f "node server.js"
+node --check public/js/yourfile.js && echo "OK"
 ```
 
 ### After Each Step
@@ -1424,12 +1431,25 @@ Commits:
 - 4.6: 1a7ba5c - GameManager cleanup
 
 ### Phase 5: Frontend Secondary Extractions
-- [ ] 5.0 Create Observable Store foundation
-- [ ] 5.1 Extract TTS module
-- [ ] 5.2 Extract settings module
+- [x] 5.0 Create Observable Store foundation
+- [x] 5.1 Extract TTS module
+- [x] 5.2 Extract settings module
 - [ ] 5.3 Extract background module
 - [ ] 5.4 Extract narration module
 - [ ] 5.5 Extract word practice module
+
+**Phase 5 Progress:**
+
+| Step | File Created | Lines | Commit |
+|------|--------------|-------|--------|
+| 5.0 | `public/js/store.js` | 75 | de37005 |
+| 5.1 | `public/js/tts.js` | 371 | 83253b0 |
+| 5.2 | `public/js/settings.js` | 143 | f109078 |
+
+**Notes:**
+- Step 5.2 had a duplicate export bug that broke E2E tests - fixed by removing duplicate `saveStoredApiKeys` export in api.js
+- Added `scripts/e2e-test.sh` wrapper to enforce `--workers=1 -x` flags
+- Updated CLAUDE.md with E2E testing rules
 
 ### Phase 6: Frontend UI Module Extraction
 - [ ] 6.0 Extract Combat UI module
