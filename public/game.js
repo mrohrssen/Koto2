@@ -111,6 +111,9 @@ import * as characterUI from './js/ui/character.js';
 // Modals UI module for all modal dialogs
 import * as modalsUI from './js/ui/modals.js';
 
+// Realtime Combat UI module for real-time combat mechanics
+import * as realtimeCombatUI from './js/ui/realtime-combat.js';
+
 // API module - centralized server communication
 import {
   getGameState as apiGetGameState,
@@ -190,15 +193,7 @@ let isLoading = false;
 let selectedWardIndex = 0;
 let wardSelectionData = []; // Store ward options for keyboard selection
 
-// Realtime Combat State
-let realtimeCombatActive = false;
-let playerAttackTimer = null;
-let enemyAttackTimer = null;
-let playerAttackPending = false;
-let enemyAttackPending = false;
-let currentPlayerInterval = 1500;  // Will be updated from server
-let currentEnemyInterval = 1500;   // Will be updated from server
-let combatPausedForVocab = false;  // Pause combat until user reviews a word
+// Realtime Combat State - now managed by realtimeCombatUI module
 
 // Debug Mode - disables AI narration only (JPDB vocab calls still work)
 let debugMode = settings.isDebugMode();
@@ -377,7 +372,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updatePlayerHPBar: updatePlayerHPBar,
     showDamageNumber: combatUI.showDamageNumber,
     resumeCombatAfterVocab: resumeCombatAfterVocab,
-    isRealtimeCombatActive: () => realtimeCombatActive,
+    isRealtimeCombatActive: () => realtimeCombatUI.isRealtimeCombatActive(),
     isEnemyDialogueActive: () => enemyDialogueActive,
     shuffleArray: shuffleArray,
     sendJpdbReview: apiSendJpdbReview
@@ -454,7 +449,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     combatUI: combatUI,
     formatItemStats: economyUI.formatItemStats,
     // Combat state
-    isRealtimeCombatActive: () => realtimeCombatActive,
+    isRealtimeCombatActive: () => realtimeCombatUI.isRealtimeCombatActive(),
     isEnemyDialogueActive: () => enemyDialogueActive,
     startRealtimeCombat: startRealtimeCombat,
     // API functions
@@ -477,6 +472,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     apiGetMetaProgression: apiGetMetaProgression,
     apiPurchaseUpgrade: apiPurchaseUpgrade,
     apiSendJpdbReview: apiSendJpdbReview
+  });
+
+  // Initialize realtime combat UI module
+  realtimeCombatUI.init({
+    getGameState: () => gameState,
+    updateGameState: updateGameState,
+    updateUI: updateUI,
+    settings: settings,
+    narration: narration,
+    wordPractice: wordPractice,
+    characterUI: characterUI,
+    // Combat UI functions
+    showDamageNumber: showDamageNumber,
+    showDotDamage: showDotDamage,
+    showChipEffect: showChipEffect,
+    animateEnemyHurt: animateEnemyHurt,
+    animatePlayerHurt: animatePlayerHurt,
+    animateEnemyDefeat: animateEnemyDefeat,
+    animateChipPipeline: animateChipPipeline,
+    updateActionPanel: updateActionPanel,
+    playNarrationAudio: playNarrationAudio,
+    showVictoryModal: showVictoryModal,
+    showGameOverModal: showGameOverModal,
+    showEnemyDialogue: showEnemyDialogue,
+    getChipLoadoutCache: getChipLoadoutCache,
+    setChipLoadoutCache: (data) => characterUI.setChipLoadoutCache(data),
+    getEnemyDialogueActive: () => enemyDialogueActive,
+    getDialogueDismissPromise: () => dialogueDismissPromise,
+    delay: delay
   });
 
   await loadGameState();
@@ -844,18 +868,9 @@ function showEnemyDialogue(text, type = 'possessed') {
   enemyDialogueType = type;
 
   // Pause combat while dialogue is active (for glitching dialogue mid-combat)
-  // Setting realtimeCombatActive = false ensures ALL checks work correctly,
-  // including any in-flight fetch requests that complete after this
-  if (type === 'glitching' && realtimeCombatActive) {
-    if (playerAttackTimer) {
-      clearTimeout(playerAttackTimer);
-      playerAttackTimer = null;
-    }
-    if (enemyAttackTimer) {
-      clearTimeout(enemyAttackTimer);
-      enemyAttackTimer = null;
-    }
-    realtimeCombatActive = false;
+  // cleanupCombat clears timers and sets active=false, ensuring ALL checks work correctly
+  if (type === 'glitching' && realtimeCombatUI.isRealtimeCombatActive()) {
+    realtimeCombatUI.cleanupCombat();
   }
 
   // Get enemy personality and speakerId for voice selection
@@ -893,9 +908,7 @@ function dismissEnemyDialogue() {
   // Resume combat if we were paused during glitching dialogue
   // Note: realtimeCombatActive was set to false in showEnemyDialogue for glitching
   if (wasGlitching) {
-    realtimeCombatActive = true;
-    playerAttackPending = false;
-    enemyAttackPending = false;
+    realtimeCombatUI.setRealtimeCombatActive(true);
     // Use the new vocab pause flow - player attacks, chains to enemy, then pauses
     executePlayerAttack();
   }
@@ -920,14 +933,14 @@ async function speakEnemyDialogue(text, dialogueDuration, personality = 'default
   const enemySpeakerId = speakerId ?? tts.getSpeakerForPersonality(personality);
 
   // Hide word cards while enemy is speaking (if in combat)
-  const wasInCombat = realtimeCombatActive;
+  const wasInCombat = realtimeCombatUI.isRealtimeCombatActive();
   if (wasInCombat) {
     wordPractice.hideWordCards();
     enemyDialogueTtsPlaying = true;
   }
 
   const restoreWordCards = () => {
-    if (wasInCombat && realtimeCombatActive) {
+    if (wasInCombat && realtimeCombatUI.isRealtimeCombatActive()) {
       wordPractice.showWordCards();
       enemyDialogueTtsPlaying = false;
     }
@@ -946,7 +959,7 @@ async function speakEnemyDialogue(text, dialogueDuration, personality = 'default
 
     // Fallback: restore word cards after dialogue duration if audio hasn't ended
     setTimeout(() => {
-      if (wasInCombat && realtimeCombatActive && enemyDialogueTtsPlaying) {
+      if (wasInCombat && realtimeCombatUI.isRealtimeCombatActive() && enemyDialogueTtsPlaying) {
         wordPractice.showWordCards();
         enemyDialogueTtsPlaying = false;
       }
@@ -972,18 +985,8 @@ async function nextFloor() {
 
 async function returnToHub() {
   // Stop realtime combat if active
-  if (realtimeCombatActive) {
-    if (playerAttackTimer) {
-      clearTimeout(playerAttackTimer);
-      playerAttackTimer = null;
-    }
-    if (enemyAttackTimer) {
-      clearTimeout(enemyAttackTimer);
-      enemyAttackTimer = null;
-    }
-    realtimeCombatActive = false;
-    playerAttackPending = false;
-    enemyAttackPending = false;
+  if (realtimeCombatUI.isRealtimeCombatActive()) {
+    realtimeCombatUI.cleanupCombat();
   }
 
   // Close any open combat-related modals
@@ -1117,419 +1120,26 @@ function showDamageNumber(damage, isPlayer, isCritical = false, isHeal = false, 
 }
 function displayChipEffects(attackData, isPlayerAttack = true) { combatUI.displayChipEffects(attackData, isPlayerAttack); }
 
-// ============ REALTIME COMBAT FUNCTIONS ============
+// ============ REALTIME COMBAT FUNCTIONS - delegated to realtimeCombatUI ============
+
+// Stub for narration audio playback (server doesn't currently return audio)
+function playNarrationAudio(audioData) {
+  if (!audioData) return;
+  // Future: implement audio playback if server adds narration audio
+  console.log('[Combat] Narration audio received but playback not implemented');
+}
 
 // HP bar updates - delegated to characterUI module
 function updateEnemyHPBar(hp) { characterUI.updateEnemyHPBar(hp); }
 function updatePlayerHPBar(hp) { characterUI.updatePlayerHPBar(hp); }
 
-function startRealtimeCombat() {
-  if (realtimeCombatActive) return;
-
-  realtimeCombatActive = true;
-  playerAttackPending = false;
-  enemyAttackPending = false;
-  combatPausedForVocab = false;
-
-  // Fetch chip loadout for combat display (non-blocking)
-  if (!getChipLoadoutCache()) {
-    fetch(`${API_BASE}/api/game/chip-loadout`)
-      .then(r => r.json())
-      .then(data => {
-        characterUI.setChipLoadoutCache(data);
-        updateActionPanel(); // Re-render with chips
-      })
-      .catch(err => console.warn('[Combat] Failed to fetch chip loadout:', err));
-  }
-
-  // Update action panel to show combat indicator
-  updateActionPanel();
-
-  // Initialize word practice cards
-  wordPractice.initCombatWords();
-
-  console.log('[Combat] Starting realtime combat with vocab pause mode');
-
-  // Execute first player attack, which will chain into enemy attack, then pause
-  executePlayerAttack();
-}
-
-// Execute a single player attack and schedule the next one
-async function executePlayerAttack() {
-  if (!realtimeCombatActive || playerAttackPending || enemyDialogueActive) return;
-
-  playerAttackPending = true;
-
-  try {
-    const apiKeys = settings.getApiKeys();
-    const response = await fetch(`${API_BASE}/api/game/realtime-attack`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ attackerType: 'player', ...apiKeys })
-    });
-    const result = await response.json();
-    console.log('[Combat] Player attack:', result.playerAttack?.damage, 'interval:', result.playerInterval);
-
-    if (result.error) {
-      // "No active combat" means server state is out of sync - don't trigger false game over
-      if (result.error === 'No active combat') {
-        console.warn('[Combat] Stale player attack ignored (combat ended on server)');
-        realtimeCombatActive = false; // Sync client state
-        return;
-      }
-      console.error('Player attack error:', result.error);
-      // Only trigger defeat for real errors, not sync issues
-      if (realtimeCombatActive) {
-        stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
-      }
-      return;
-    }
-
-    // If dialogue appeared during fetch, don't process results
-    if (enemyDialogueActive) {
-      playerAttackPending = false;
-      return;
-    }
-
-    // Update intervals from server
-    if (result.playerInterval) currentPlayerInterval = result.playerInterval;
-    if (result.enemyInterval) currentEnemyInterval = result.enemyInterval;
-
-    // Show player's attack result
-    if (result.playerAttack) {
-      const pa = result.playerAttack;
-      if (pa.perfectDodge) {
-        showDamageNumber(0, false, false, false, false, 'perfect');
-      } else if (pa.dodged) {
-        showDamageNumber(0, false, false, false, false, 'dodge');
-      } else if (pa.miss) {
-        showDamageNumber(0, false, false, false, false, 'miss');
-      } else {
-        showDamageNumber(pa.damage, false, pa.critical);
-        animateEnemyHurt();
-
-        // Animate chip pipeline if present
-        if (pa.pipelineResult) {
-          animateChipPipeline(pa.pipelineResult);
-        }
-
-        // Show chip effects that triggered
-        if (pa.chipEffects && pa.chipEffects.length > 0) {
-          const statusNames = {
-            defrag: 'デフラグ!', lag: 'ラグ!', bufferOverflow: 'バッファオーバーフロー!',
-            corrupted: '破損!', exposed: '露出!', overheated: 'オーバーヒート!'
-          };
-          pa.chipEffects.forEach((effect, i) => {
-            setTimeout(() => {
-              const displayName = statusNames[effect.status] || effect.status;
-              showChipEffect(displayName, false);
-            }, i * 200); // Stagger multiple effects
-          });
-        }
-
-        // Show DoT damage from status effects (defrag, overheated, etc.)
-        if (pa.dotDamage && pa.dotDamage > 0) {
-          setTimeout(() => {
-            showDotDamage(pa.dotDamage, false);
-          }, 300); // Show after chip effect text
-        }
-      }
-    }
-
-    // Update HP bars
-    updateEnemyHPBar(result.enemyHp);
-    updatePlayerHPBar(result.playerHp);
-
-    // Show glitching dialogue when enemy HP drops below 30%
-    // Combat pauses until Enter is pressed - don't schedule next attack
-    if (result.enemyGlitching && result.glitchingDialogue) {
-      showEnemyDialogue(result.glitchingDialogue, 'glitching');
-      return; // Timers cleared in showEnemyDialogue, restarted in dismissEnemyDialogue
-    }
-
-    // Check if combat ended
-    if (result.combatEnded) {
-      // Show liberated dialogue on victory
-      if (result.victory && result.liberatedDialogue) {
-        showEnemyDialogue(result.liberatedDialogue, 'liberated');
-      }
-      stopRealtimeCombat(result);
-      return;
-    }
-
-    playerAttackPending = false;
-
-    // Combat pause mode: trigger enemy attack after player, then pause for vocab review
-    if (realtimeCombatActive && !enemyDialogueActive) {
-      // Small delay before enemy attacks back
-      setTimeout(() => {
-        executeEnemyAttackThenPause();
-      }, 400);
-    }
-
-  } catch (error) {
-    console.error('Player attack error:', error);
-    // Only trigger defeat if combat hasn't already ended (prevents race condition with victory)
-    if (realtimeCombatActive) {
-      stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
-    }
-  }
-}
-
-// Execute a single enemy attack and schedule the next one
-async function executeEnemyAttack() {
-  if (!realtimeCombatActive || enemyAttackPending || enemyDialogueActive) return;
-
-  enemyAttackPending = true;
-
-  try {
-    const apiKeys = settings.getApiKeys();
-    const response = await fetch(`${API_BASE}/api/game/realtime-attack`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ attackerType: 'enemy', ...apiKeys })
-    });
-    const result = await response.json();
-    console.log('[Combat] Enemy attack:', result.enemyAttack?.damage, 'interval:', result.enemyInterval);
-
-    if (result.error) {
-      // "No active combat" means server state is out of sync - don't trigger false game over
-      if (result.error === 'No active combat') {
-        console.warn('[Combat] Stale enemy attack ignored (combat ended on server)');
-        realtimeCombatActive = false; // Sync client state
-        return;
-      }
-      console.error('Enemy attack error:', result.error);
-      // Only trigger defeat for real errors, not sync issues
-      if (realtimeCombatActive) {
-        stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
-      }
-      return;
-    }
-
-    // If dialogue appeared during fetch, don't process results
-    if (enemyDialogueActive) {
-      enemyAttackPending = false;
-      return;
-    }
-
-    // Update intervals from server
-    if (result.playerInterval) currentPlayerInterval = result.playerInterval;
-    if (result.enemyInterval) currentEnemyInterval = result.enemyInterval;
-
-    // Show enemy's attack result
-    if (result.enemyAttack) {
-      const ea = result.enemyAttack;
-      if (ea.perfectDodge) {
-        showDamageNumber(0, true, false, false, false, 'perfect');
-      } else if (ea.dodged) {
-        showDamageNumber(0, true, false, false, false, 'dodge');
-      } else if (ea.miss) {
-        showDamageNumber(0, true, false, false, false, 'miss');
-      } else {
-        showDamageNumber(ea.damage, true, ea.critical);
-        animatePlayerHurt();
-      }
-    }
-
-    // Update HP bars
-    updateEnemyHPBar(result.enemyHp);
-    updatePlayerHPBar(result.playerHp);
-
-    // Check if combat ended
-    if (result.combatEnded) {
-      stopRealtimeCombat(result);
-      return;
-    }
-
-    // Don't reschedule - the vocab pause flow handles attack cycling
-    enemyAttackPending = false;
-
-  } catch (error) {
-    console.error('Enemy attack error:', error);
-    // Only trigger defeat if combat hasn't already ended (prevents race condition with victory)
-    if (realtimeCombatActive) {
-      stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
-    }
-  }
-}
-
-// Execute enemy attack and then pause combat for vocab review
-async function executeEnemyAttackThenPause() {
-  if (!realtimeCombatActive || enemyAttackPending || enemyDialogueActive) return;
-
-  enemyAttackPending = true;
-
-  try {
-    const apiKeys = settings.getApiKeys();
-    const response = await fetch(`${API_BASE}/api/game/realtime-attack`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ attackerType: 'enemy', ...apiKeys })
-    });
-    const result = await response.json();
-    console.log('[Combat] Enemy attack (then pause):', result.enemyAttack?.damage);
-
-    if (result.error) {
-      if (result.error === 'No active combat') {
-        console.warn('[Combat] Stale enemy attack ignored (combat ended on server)');
-        realtimeCombatActive = false;
-        return;
-      }
-      console.error('Enemy attack error:', result.error);
-      if (realtimeCombatActive) {
-        stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
-      }
-      return;
-    }
-
-    if (enemyDialogueActive) {
-      enemyAttackPending = false;
-      return;
-    }
-
-    // Update intervals from server
-    if (result.playerInterval) currentPlayerInterval = result.playerInterval;
-    if (result.enemyInterval) currentEnemyInterval = result.enemyInterval;
-
-    // Show enemy's attack result
-    if (result.enemyAttack) {
-      const ea = result.enemyAttack;
-      if (ea.perfectDodge) {
-        showDamageNumber(0, true, false, false, false, 'perfect');
-      } else if (ea.dodged) {
-        showDamageNumber(0, true, false, false, false, 'dodge');
-      } else if (ea.miss) {
-        showDamageNumber(0, true, false, false, false, 'miss');
-      } else {
-        showDamageNumber(ea.damage, true, ea.critical);
-        animatePlayerHurt();
-      }
-    }
-
-    // Update HP bars
-    updateEnemyHPBar(result.enemyHp);
-    updatePlayerHPBar(result.playerHp);
-
-    // Check if combat ended
-    if (result.combatEnded) {
-      stopRealtimeCombat(result);
-      return;
-    }
-
-    // Pause combat - wait for vocab review before next cycle
-    enemyAttackPending = false;
-    combatPausedForVocab = true;
-    console.log('[Combat] Paused for vocab review. Review a word to continue.');
-
-  } catch (error) {
-    console.error('Enemy attack error:', error);
-    if (realtimeCombatActive) {
-      stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
-    }
-  }
-}
-
-// Resume combat after vocab review - triggers next attack cycle
-function resumeCombatAfterVocab() {
-  if (!realtimeCombatActive || !combatPausedForVocab) return;
-
-  combatPausedForVocab = false;
-  console.log('[Combat] Resuming after vocab review');
-
-  // Trigger player attack, which will chain into enemy attack, then pause again
-  executePlayerAttack();
-}
-
-async function stopRealtimeCombat(result) {
-  // Clear both attack timers
-  if (playerAttackTimer) {
-    clearTimeout(playerAttackTimer);
-    playerAttackTimer = null;
-  }
-  if (enemyAttackTimer) {
-    clearTimeout(enemyAttackTimer);
-    enemyAttackTimer = null;
-  }
-
-  realtimeCombatActive = false;
-  playerAttackPending = false;
-  enemyAttackPending = false;
-  combatPausedForVocab = false;
-
-  // Hide word practice cards and close modal
-  wordPractice.hideWordCards();
-  wordPractice.closeWordInputModal();
-
-  // Brief pause before narration (let final damage numbers display)
-  await delay(600);
-
-  // Wait for enemy dialogue to be dismissed (e.g., liberated dialogue on victory)
-  if (dialogueDismissPromise) {
-    await dialogueDismissPromise;
-  }
-
-  // Animate victory or defeat
-  if (result.victory) {
-    animateEnemyDefeat();
-  }
-
-  // Request narration from server
-  try {
-    const apiKeys = settings.getApiKeys();
-    const response = await fetch(`${API_BASE}/api/game/combat-end-narration`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        victory: result.victory,
-        expGained: result.expGained,
-        goldGained: result.goldGained,
-        loot: result.loot,
-        leveledUp: result.leveledUp,
-        newLevel: result.newLevel,
-        isBoss: result.isBoss,
-        ...apiKeys
-      })
-    });
-    const narrationResult = await response.json();
-
-    // Display narration
-    if (narrationResult.narration) {
-      narration.showNarration(narrationResult.narration);
-    }
-
-    // Update game state from server
-    if (narrationResult.state) {
-      updateGameState({ ...gameState, ...narrationResult.state });
-    }
-
-    // Play TTS if available
-    if (narrationResult.audio) {
-      playNarrationAudio(narrationResult.audio);
-    }
-
-    // Show victory or defeat modal
-    if (result.victory) {
-      showVictoryModal(result);
-    } else {
-      showGameOverModal(result);
-    }
-
-  } catch (error) {
-    console.error('Error getting combat end narration:', error);
-    // Fallback narration
-    if (result.victory) {
-      narration.showNarration('市民解放！');
-      showVictoryModal(result);
-    } else {
-      narration.showNarration('敗北...');
-      showGameOverModal(result);
-    }
-  }
-
-  // Refresh full UI state
-  updateUI();
-}
+// Realtime combat functions - delegated to realtimeCombatUI module
+function startRealtimeCombat() { realtimeCombatUI.startRealtimeCombat(); }
+async function executePlayerAttack() { return realtimeCombatUI.executePlayerAttack(); }
+async function executeEnemyAttack() { return realtimeCombatUI.executeEnemyAttack(); }
+async function executeEnemyAttackThenPause() { return realtimeCombatUI.executeEnemyAttackThenPause(); }
+function resumeCombatAfterVocab() { realtimeCombatUI.resumeCombatAfterVocab(); }
+async function stopRealtimeCombat(result) { return realtimeCombatUI.stopRealtimeCombat(result); }
 
 // ============ WORD PRACTICE FUNCTIONS ============
 
@@ -1591,7 +1201,7 @@ function updateGameContent() {
 
 function updateActionPanel() {
   // During realtime combat, show combat indicator instead of actions
-  if (realtimeCombatActive) {
+  if (realtimeCombatUI.isRealtimeCombatActive()) {
     actionPanel.innerHTML = `
       <div class="combat-status-container">
         <div class="combat-chips-display">
@@ -1887,7 +1497,7 @@ function handleKeypress(e) {
   // R key: repeat last narration voice (but not during combat - R refreshes words there)
   if (e.key === 'r' || e.key === 'R') {
     const lastNarration = tts.getLastSpokenNarration();
-    if (!realtimeCombatActive && lastNarration && tts.isEnabled()) {
+    if (!realtimeCombatUI.isRealtimeCombatActive() && lastNarration && tts.isEnabled()) {
       e.preventDefault();
       tts.speakNarration(lastNarration);
       return;

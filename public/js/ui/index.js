@@ -7,3 +7,4 @@ export * as exploration from './exploration.js';
 export * as economy from './economy.js';
 export * as character from './character.js';
 export * as modals from './modals.js';
+export * as realtimeCombat from './realtime-combat.js';
