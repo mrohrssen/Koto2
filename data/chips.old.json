@@ -1,0 +1,2650 @@
+{
+  "ballpointPen": {
+    "id": "ballpointPen",
+    "name": "ボールペン",
+    "nameEn": "Ballpoint Pen",
+    "description": "普通のボールペン。意外と便利。",
+    "descriptionEn": "A regular ballpoint pen. Surprisingly useful.",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "dex": 3
+      }
+    }
+  },
+  "kitchenKnife": {
+    "id": "kitchenKnife",
+    "name": "包丁",
+    "nameEn": "Kitchen Knife",
+    "description": "料理用の包丁。攻撃力アップ。",
+    "descriptionEn": "A kitchen knife. Increases attack power.",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "str": 5
+      }
+    }
+  },
+  "sneakers": {
+    "id": "sneakers",
+    "name": "スニーカー",
+    "nameEn": "Sneakers",
+    "description": "履き慣れたスニーカー。素早く動ける。",
+    "descriptionEn": "Well-worn sneakers. Move faster.",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "agi": 4
+      }
+    }
+  },
+  "pot": {
+    "id": "pot",
+    "name": "鍋",
+    "nameEn": "Pot",
+    "description": "頑丈な鍋。盾代わりになる。",
+    "descriptionEn": "A sturdy pot. Works as a shield.",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "vit": 4
+      }
+    }
+  },
+  "smartphone": {
+    "id": "smartphone",
+    "name": "スマホ",
+    "nameEn": "Smartphone",
+    "description": "ハッキング用にカスタマイズされたスマホ。",
+    "descriptionEn": "A smartphone customized for hacking.",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "int": 4
+      }
+    }
+  },
+  "wallet": {
+    "id": "wallet",
+    "name": "財布",
+    "nameEn": "Wallet",
+    "description": "幸運のお守りが入った財布。",
+    "descriptionEn": "A wallet with a lucky charm inside.",
+    "category": "stat",
+    "rarity": "uncommon",
+    "effects": {
+      "stats": {
+        "luk": 2,
+        "dex": 2
+      }
+    }
+  },
+  "broom": {
+    "id": "broom",
+    "name": "ほうき",
+    "nameEn": "Broom",
+    "description": "掃除用のほうき。リーチが長い。",
+    "descriptionEn": "A cleaning broom. Good reach.",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "agi": 2,
+        "vit": 1
+      }
+    }
+  },
+  "calculator": {
+    "id": "calculator",
+    "name": "電卓",
+    "nameEn": "Calculator",
+    "description": "高性能電卓。計算が速くなる。",
+    "descriptionEn": "A high-performance calculator. Faster calculations.",
+    "category": "stat",
+    "rarity": "uncommon",
+    "effects": {
+      "stats": {
+        "int": 5
+      }
+    }
+  },
+  "dumbbell": {
+    "id": "dumbbell",
+    "name": "ダンベル",
+    "nameEn": "Dumbbell",
+    "description": "筋トレ用のダンベル。パワーアップ。",
+    "descriptionEn": "A training dumbbell. Power up.",
+    "category": "stat",
+    "rarity": "uncommon",
+    "effects": {
+      "stats": {
+        "str": 3,
+        "vit": 1
+      }
+    }
+  },
+  "earrings": {
+    "id": "earrings",
+    "name": "イヤリング",
+    "nameEn": "Earrings",
+    "description": "幸運を呼ぶイヤリング。",
+    "descriptionEn": "Lucky earrings.",
+    "category": "stat",
+    "rarity": "uncommon",
+    "effects": {
+      "stats": {
+        "luk": 3
+      }
+    }
+  },
+  "thumbtack": {
+    "id": "thumbtack",
+    "name": "画鋲",
+    "nameEn": "Thumbtack",
+    "description": "踏んだら痛い。データ破損を引き起こす。",
+    "descriptionEn": "Painful to step on. Causes data corruption.",
+    "category": "onHit",
+    "rarity": "common",
+    "effects": {
+      "onHit": {
+        "chance": 0.24,
+        "status": "defrag",
+        "duration": 3
+      }
+    }
+  },
+  "icePack": {
+    "id": "icePack",
+    "name": "保冷剤",
+    "nameEn": "Ice Pack",
+    "description": "冷たい保冷剤。敵の動きを遅くする。",
+    "descriptionEn": "A cold ice pack. Slows enemy movement.",
+    "category": "onHit",
+    "rarity": "common",
+    "effects": {
+      "onHit": {
+        "chance": 0.3,
+        "status": "lag",
+        "duration": 2
+      }
+    }
+  },
+  "hammer": {
+    "id": "hammer",
+    "name": "ハンマー",
+    "nameEn": "Hammer",
+    "description": "重いハンマー。衝撃でシステムをフリーズ。",
+    "descriptionEn": "A heavy hammer. Freezes systems on impact.",
+    "category": "onHit",
+    "rarity": "uncommon",
+    "effects": {
+      "onHit": {
+        "chance": 0.3,
+        "status": "bufferOverflow",
+        "duration": 1
+      }
+    }
+  },
+  "sprayPaint": {
+    "id": "sprayPaint",
+    "name": "スプレー塗料",
+    "nameEn": "Spray Paint",
+    "description": "視界を塞ぐスプレー。スキルを封じる。",
+    "descriptionEn": "Blinding spray. Seals skills.",
+    "category": "onHit",
+    "rarity": "uncommon",
+    "effects": {
+      "onHit": {
+        "chance": 0.3,
+        "status": "corrupted",
+        "duration": 3
+      }
+    }
+  },
+  "mirror": {
+    "id": "mirror",
+    "name": "鏡",
+    "nameEn": "Mirror",
+    "description": "割れた鏡。弱点を露出させる。",
+    "descriptionEn": "A broken mirror. Exposes weaknesses.",
+    "category": "onHit",
+    "rarity": "rare",
+    "effects": {
+      "onHit": {
+        "chance": 0.3,
+        "status": "exposed",
+        "duration": 3
+      }
+    }
+  },
+  "lighter": {
+    "id": "lighter",
+    "name": "ライター",
+    "nameEn": "Lighter",
+    "description": "100円ライター。オーバーヒートを誘発。",
+    "descriptionEn": "A cheap lighter. Induces overheating.",
+    "category": "onHit",
+    "rarity": "common",
+    "effects": {
+      "onHit": {
+        "chance": 0.45,
+        "status": "overheated",
+        "duration": 1
+      }
+    }
+  },
+  "sewingNeedle": {
+    "id": "sewingNeedle",
+    "name": "縫い針",
+    "nameEn": "Sewing Needle",
+    "description": "細い針。データを断片化させる。",
+    "descriptionEn": "A thin needle. Fragments data.",
+    "category": "onHit",
+    "rarity": "common",
+    "effects": {
+      "onHit": {
+        "chance": 0.3,
+        "status": "defrag",
+        "duration": 2
+      }
+    }
+  },
+  "frozenGyoza": {
+    "id": "frozenGyoza",
+    "name": "冷凍餃子",
+    "nameEn": "Frozen Gyoza",
+    "description": "凍った餃子。当たると痛い。",
+    "descriptionEn": "Frozen dumplings. Hurts on impact.",
+    "category": "onHit",
+    "rarity": "rare",
+    "effects": {
+      "onHit": {
+        "chance": 0.3,
+        "status": "lag",
+        "duration": 2,
+        "bonusDamage": 3
+      }
+    }
+  },
+  "dictionary": {
+    "id": "dictionary",
+    "name": "辞書",
+    "nameEn": "Dictionary",
+    "description": "分厚い辞書。頭に当たるとスタン。",
+    "descriptionEn": "A thick dictionary. Stuns on head impact.",
+    "category": "onHit",
+    "rarity": "rare",
+    "effects": {
+      "onHit": {
+        "chance": 0.24,
+        "status": "bufferOverflow",
+        "duration": 2
+      }
+    }
+  },
+  "soySauce": {
+    "id": "soySauce",
+    "name": "醤油",
+    "nameEn": "Soy Sauce",
+    "description": "目に入ると痛い。スキルを妨害。",
+    "descriptionEn": "Painful in the eyes. Disrupts skills.",
+    "category": "onHit",
+    "rarity": "uncommon",
+    "effects": {
+      "onHit": {
+        "chance": 0.3,
+        "status": "corrupted",
+        "duration": 2
+      }
+    }
+  },
+  "onigiri": {
+    "id": "onigiri",
+    "name": "おにぎり",
+    "nameEn": "Onigiri",
+    "description": "お母さんのおにぎり。倒すと回復。",
+    "descriptionEn": "Mom's rice ball. Heals on kill.",
+    "category": "onEffect",
+    "rarity": "uncommon",
+    "effects": {
+      "onKill": {
+        "chance": 0.9,
+        "heal": 10
+      }
+    }
+  },
+  "energyDrink": {
+    "id": "energyDrink",
+    "name": "エナジードリンク",
+    "nameEn": "Energy Drink",
+    "description": "カフェイン大量。倒すと加速。",
+    "descriptionEn": "Loaded with caffeine. Speed boost on kill.",
+    "category": "onEffect",
+    "rarity": "rare",
+    "effects": {
+      "onKill": {
+        "chance": 0.6,
+        "aspdBoost": 0.1,
+        "duration": 5000
+      }
+    }
+  },
+  "fourLeafClover": {
+    "id": "fourLeafClover",
+    "name": "四つ葉のクローバー",
+    "nameEn": "Four-Leaf Clover",
+    "description": "幸運の象徴。報酬が倍になることも。",
+    "descriptionEn": "Symbol of luck. May double rewards.",
+    "category": "onEffect",
+    "rarity": "epic",
+    "effects": {
+      "onKill": {
+        "chance": 0.45,
+        "doubleCredits": true
+      }
+    }
+  },
+  "helmet": {
+    "id": "helmet",
+    "name": "ヘルメット",
+    "nameEn": "Helmet",
+    "description": "工事現場のヘルメット。ダメージ軽減。",
+    "descriptionEn": "Construction helmet. Reduces damage.",
+    "category": "onEffect",
+    "rarity": "rare",
+    "effects": {
+      "onDamage": {
+        "chance": 0.6,
+        "damageReduction": 0.5
+      }
+    }
+  },
+  "firecracker": {
+    "id": "firecracker",
+    "name": "爆竹",
+    "nameEn": "Firecracker",
+    "description": "中国の爆竹。倒すと爆発。",
+    "descriptionEn": "Chinese firecracker. Explodes on kill.",
+    "category": "onEffect",
+    "rarity": "epic",
+    "effects": {
+      "onKill": {
+        "chance": 0.9,
+        "aoeExplosion": true,
+        "aoeDamage": 15
+      }
+    }
+  },
+  "businessCard": {
+    "id": "businessCard",
+    "name": "名刺",
+    "nameEn": "Business Card",
+    "description": "集めた名刺。倒すたびに強くなる。",
+    "descriptionEn": "Collected business cards. Stronger with each kill.",
+    "category": "counter",
+    "rarity": "rare",
+    "effects": {
+      "counter": {
+        "trigger": "onKill",
+        "bonus": "damagePercent",
+        "perStack": 0.5,
+        "maxStacks": 50
+      }
+    }
+  },
+  "reportCard": {
+    "id": "reportCard",
+    "name": "通知表",
+    "nameEn": "Report Card",
+    "description": "成績表。状態異常の持続が延びる。",
+    "descriptionEn": "A report card. Status effects last longer.",
+    "category": "counter",
+    "rarity": "epic",
+    "effects": {
+      "counter": {
+        "trigger": "onStatusInflict",
+        "statusType": "defrag",
+        "bonus": "statusDuration",
+        "perStack": 2,
+        "maxStacks": 15
+      }
+    }
+  },
+  "baseball": {
+    "id": "baseball",
+    "name": "野球ボール",
+    "nameEn": "Baseball",
+    "description": "サイン入りボール。クリティカルが強化。",
+    "descriptionEn": "Signed baseball. Critical hits get stronger.",
+    "category": "counter",
+    "rarity": "epic",
+    "effects": {
+      "counter": {
+        "trigger": "onCrit",
+        "bonus": "critDamage",
+        "perStack": 0.3,
+        "maxStacks": 100
+      }
+    }
+  },
+  "trainPass": {
+    "id": "trainPass",
+    "name": "定期券",
+    "nameEn": "Train Pass",
+    "description": "使い古した定期。移動速度アップ。",
+    "descriptionEn": "A worn train pass. Movement speed increases.",
+    "category": "counter",
+    "rarity": "rare",
+    "effects": {
+      "counter": {
+        "trigger": "onRoomEnter",
+        "bonus": "aspd",
+        "perStack": 2,
+        "maxStacks": 10
+      }
+    }
+  },
+  "stampBook": {
+    "id": "stampBook",
+    "name": "スタンプ帳",
+    "nameEn": "Stamp Book",
+    "description": "集めたスタンプ。チップが多いほど強化。",
+    "descriptionEn": "Collected stamps. Stronger with more chips.",
+    "category": "counter",
+    "rarity": "legendary",
+    "effects": {
+      "counter": {
+        "trigger": "onChipCount",
+        "chipCategory": "stat",
+        "bonus": "allStats",
+        "perStack": 3,
+        "maxStacks": 10
+      }
+    }
+  },
+  "mechanicalPencil": {
+    "id": "mechanicalPencil",
+    "name": "シャーペン",
+    "nameEn": "Mechanical Pencil",
+    "description": "精密な0.5mmのシャーペン。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "dex": 2,
+        "int": 1
+      }
+    }
+  },
+  "eraser": {
+    "id": "eraser",
+    "name": "消しゴム",
+    "nameEn": "Eraser",
+    "description": "よく消える消しゴム。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "int": 2
+      }
+    }
+  },
+  "ruler": {
+    "id": "ruler",
+    "name": "定規",
+    "nameEn": "Ruler",
+    "description": "15cmの透明定規。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "dex": 3
+      }
+    }
+  },
+  "stapler": {
+    "id": "stapler",
+    "name": "ホッチキス",
+    "nameEn": "Stapler",
+    "description": "オフィス用ホッチキス。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "str": 2,
+        "dex": 1
+      }
+    }
+  },
+  "paperClips": {
+    "id": "paperClips",
+    "name": "クリップ",
+    "nameEn": "Paper Clips",
+    "description": "カラフルなクリップの束。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "dex": 1,
+        "luk": 1
+      }
+    }
+  },
+  "scissors": {
+    "id": "scissors",
+    "name": "はさみ",
+    "nameEn": "Scissors",
+    "description": "事務用はさみ。切れ味抜群。",
+    "category": "stat",
+    "rarity": "uncommon",
+    "effects": {
+      "stats": {
+        "str": 2,
+        "dex": 2
+      }
+    }
+  },
+  "notebook": {
+    "id": "notebook",
+    "name": "ノート",
+    "nameEn": "Notebook",
+    "description": "罫線入りのノート。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "int": 4
+      }
+    }
+  },
+  "highlighter": {
+    "id": "highlighter",
+    "name": "蛍光ペン",
+    "nameEn": "Highlighter",
+    "description": "黄色い蛍光ペン。重要な部分を強調。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "int": 2,
+        "dex": 1
+      }
+    }
+  },
+  "stickyNotes": {
+    "id": "stickyNotes",
+    "name": "付箋",
+    "nameEn": "Sticky Notes",
+    "description": "カラフルな付箋。忘れない。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "int": 1,
+        "luk": 2
+      }
+    }
+  },
+  "binder": {
+    "id": "binder",
+    "name": "バインダー",
+    "nameEn": "Binder",
+    "description": "整理整頓に便利なバインダー。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "int": 3
+      }
+    }
+  },
+  "fryingPan": {
+    "id": "fryingPan",
+    "name": "フライパン",
+    "nameEn": "Frying Pan",
+    "description": "鉄製の重いフライパン。武器にもなる。",
+    "category": "stat",
+    "rarity": "uncommon",
+    "effects": {
+      "stats": {
+        "str": 4,
+        "vit": 1
+      }
+    }
+  },
+  "ladle": {
+    "id": "ladle",
+    "name": "おたま",
+    "nameEn": "Ladle",
+    "description": "大きなおたま。汁物に便利。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "str": 2,
+        "vit": 2
+      }
+    }
+  },
+  "chopsticks": {
+    "id": "chopsticks",
+    "name": "箸",
+    "nameEn": "Chopsticks",
+    "description": "塗り箸。器用さが上がる。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "dex": 2,
+        "agi": 1
+      }
+    }
+  },
+  "riceCooker": {
+    "id": "riceCooker",
+    "name": "炊飯器",
+    "nameEn": "Rice Cooker",
+    "description": "小型の炊飯器。ご飯で元気。",
+    "category": "stat",
+    "rarity": "uncommon",
+    "effects": {
+      "stats": {
+        "vit": 3,
+        "int": 1
+      }
+    }
+  },
+  "kettle": {
+    "id": "kettle",
+    "name": "やかん",
+    "nameEn": "Kettle",
+    "description": "お湯を沸かすやかん。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "vit": 2,
+        "int": 1
+      }
+    }
+  },
+  "cuttingBoard": {
+    "id": "cuttingBoard",
+    "name": "まな板",
+    "nameEn": "Cutting Board",
+    "description": "木製のまな板。盾としても使える。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "vit": 3
+      }
+    }
+  },
+  "whisk": {
+    "id": "whisk",
+    "name": "泡立て器",
+    "nameEn": "Whisk",
+    "description": "金属製の泡立て器。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "agi": 2,
+        "dex": 1
+      }
+    }
+  },
+  "spatula": {
+    "id": "spatula",
+    "name": "フライ返し",
+    "nameEn": "Spatula",
+    "description": "ステンレスのフライ返し。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "str": 2,
+        "agi": 1
+      }
+    }
+  },
+  "grater": {
+    "id": "grater",
+    "name": "おろし金",
+    "nameEn": "Grater",
+    "description": "大根おろしに使うおろし金。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "str": 3
+      }
+    }
+  },
+  "tongs": {
+    "id": "tongs",
+    "name": "トング",
+    "nameEn": "Tongs",
+    "description": "料理用のトング。挟む力。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "dex": 2,
+        "str": 1
+      }
+    }
+  },
+  "dustpan": {
+    "id": "dustpan",
+    "name": "ちりとり",
+    "nameEn": "Dustpan",
+    "description": "プラスチックのちりとり。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "vit": 2
+      }
+    }
+  },
+  "mop": {
+    "id": "mop",
+    "name": "モップ",
+    "nameEn": "Mop",
+    "description": "柄の長いモップ。リーチがある。",
+    "category": "stat",
+    "rarity": "uncommon",
+    "effects": {
+      "stats": {
+        "vit": 3,
+        "str": 1
+      }
+    }
+  },
+  "bucket": {
+    "id": "bucket",
+    "name": "バケツ",
+    "nameEn": "Bucket",
+    "description": "プラスチックのバケツ。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "vit": 3
+      }
+    }
+  },
+  "sponge": {
+    "id": "sponge",
+    "name": "スポンジ",
+    "nameEn": "Sponge",
+    "description": "黄色いスポンジ。吸収力抜群。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "vit": 2,
+        "luk": 1
+      }
+    }
+  },
+  "sprayBottle": {
+    "id": "sprayBottle",
+    "name": "スプレー",
+    "nameEn": "Spray Bottle",
+    "description": "霧吹きスプレー。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "dex": 2,
+        "agi": 1
+      }
+    }
+  },
+  "lintRoller": {
+    "id": "lintRoller",
+    "name": "コロコロ",
+    "nameEn": "Lint Roller",
+    "description": "粘着ローラー。幸運を引き寄せる。",
+    "category": "stat",
+    "rarity": "uncommon",
+    "effects": {
+      "stats": {
+        "dex": 1,
+        "luk": 3
+      }
+    }
+  },
+  "rubberGloves": {
+    "id": "rubberGloves",
+    "name": "ゴム手袋",
+    "nameEn": "Rubber Gloves",
+    "description": "黄色いゴム手袋。防御力アップ。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "vit": 2,
+        "str": 1
+      }
+    }
+  },
+  "sunglasses": {
+    "id": "sunglasses",
+    "name": "サングラス",
+    "nameEn": "Sunglasses",
+    "description": "クールなサングラス。",
+    "category": "stat",
+    "rarity": "uncommon",
+    "effects": {
+      "stats": {
+        "luk": 2,
+        "dex": 1
+      }
+    }
+  },
+  "watch": {
+    "id": "watch",
+    "name": "腕時計",
+    "nameEn": "Wristwatch",
+    "description": "デジタル腕時計。時間厳守。",
+    "category": "stat",
+    "rarity": "uncommon",
+    "effects": {
+      "stats": {
+        "dex": 2,
+        "int": 2
+      }
+    }
+  },
+  "belt": {
+    "id": "belt",
+    "name": "ベルト",
+    "nameEn": "Belt",
+    "description": "革製のベルト。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "str": 2,
+        "vit": 1
+      }
+    }
+  },
+  "scarf": {
+    "id": "scarf",
+    "name": "マフラー",
+    "nameEn": "Scarf",
+    "description": "暖かいマフラー。冬の必需品。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "vit": 2,
+        "luk": 1
+      }
+    }
+  },
+  "cap": {
+    "id": "cap",
+    "name": "キャップ",
+    "nameEn": "Cap",
+    "description": "野球帽。日差しを避ける。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "agi": 2,
+        "luk": 1
+      }
+    }
+  },
+  "ring": {
+    "id": "ring",
+    "name": "指輪",
+    "nameEn": "Ring",
+    "description": "シンプルな指輪。幸運の象徴。",
+    "category": "stat",
+    "rarity": "uncommon",
+    "effects": {
+      "stats": {
+        "luk": 2,
+        "int": 1
+      }
+    }
+  },
+  "bandana": {
+    "id": "bandana",
+    "name": "バンダナ",
+    "nameEn": "Bandana",
+    "description": "赤いバンダナ。気合が入る。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "agi": 2
+      }
+    }
+  },
+  "gloves": {
+    "id": "gloves",
+    "name": "手袋",
+    "nameEn": "Gloves",
+    "description": "革の手袋。グリップ力アップ。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "dex": 2,
+        "vit": 1
+      }
+    }
+  },
+  "earphones": {
+    "id": "earphones",
+    "name": "イヤホン",
+    "nameEn": "Earphones",
+    "description": "ワイヤレスイヤホン。集中力アップ。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "int": 2,
+        "agi": 1
+      }
+    }
+  },
+  "powerBank": {
+    "id": "powerBank",
+    "name": "モバイルバッテリー",
+    "nameEn": "Power Bank",
+    "description": "大容量バッテリー。持久力アップ。",
+    "category": "stat",
+    "rarity": "uncommon",
+    "effects": {
+      "stats": {
+        "vit": 3,
+        "int": 1
+      }
+    }
+  },
+  "usbCable": {
+    "id": "usbCable",
+    "name": "USBケーブル",
+    "nameEn": "USB Cable",
+    "description": "Type-Cケーブル。接続力。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "int": 2,
+        "dex": 1
+      }
+    }
+  },
+  "mouse": {
+    "id": "mouse",
+    "name": "マウス",
+    "nameEn": "Mouse",
+    "description": "ゲーミングマウス。精度が上がる。",
+    "category": "stat",
+    "rarity": "uncommon",
+    "effects": {
+      "stats": {
+        "dex": 3
+      }
+    }
+  },
+  "keyboard": {
+    "id": "keyboard",
+    "name": "キーボード",
+    "nameEn": "Keyboard",
+    "description": "メカニカルキーボード。入力速度アップ。",
+    "category": "stat",
+    "rarity": "rare",
+    "effects": {
+      "stats": {
+        "int": 3,
+        "dex": 2
+      }
+    }
+  },
+  "flashlight": {
+    "id": "flashlight",
+    "name": "懐中電灯",
+    "nameEn": "Flashlight",
+    "description": "LEDライト。暗闘でも見える。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "dex": 2,
+        "int": 1
+      }
+    }
+  },
+  "remoteControl": {
+    "id": "remoteControl",
+    "name": "リモコン",
+    "nameEn": "Remote Control",
+    "description": "TVリモコン。遠隔操作。",
+    "category": "stat",
+    "rarity": "common",
+    "effects": {
+      "stats": {
+        "int": 2,
+        "luk": 1
+      }
+    }
+  },
+  "sdCard": {
+    "id": "sdCard",
+    "name": "SDカード",
+    "nameEn": "SD Card",
+    "description": "64GBのSDカード。記憶力アップ。",
+    "category": "stat",
+    "rarity": "uncommon",
+    "effects": {
+      "stats": {
+        "int": 3
+      }
+    }
+  },
+  "toothpick": {
+    "id": "toothpick",
+    "name": "爪楊枝",
+    "nameEn": "Toothpick",
+    "description": "先の尖った爪楊枝。",
+    "category": "onHit",
+    "rarity": "common",
+    "effects": {
+      "onHit": {
+        "chance": 0.36,
+        "status": "defrag",
+        "duration": 1
+      }
+    }
+  },
+  "safetyPin": {
+    "id": "safetyPin",
+    "name": "安全ピン",
+    "nameEn": "Safety Pin",
+    "description": "開いた安全ピン。意外と痛い。",
+    "category": "onHit",
+    "rarity": "common",
+    "effects": {
+      "onHit": {
+        "chance": 0.21,
+        "status": "defrag",
+        "duration": 4
+      }
+    }
+  },
+  "compass": {
+    "id": "compass",
+    "name": "コンパス",
+    "nameEn": "Drafting Compass",
+    "description": "製図用コンパス。鋭い先端。",
+    "category": "onHit",
+    "rarity": "uncommon",
+    "effects": {
+      "onHit": {
+        "chance": 0.45,
+        "status": "defrag",
+        "duration": 2
+      }
+    }
+  },
+  "boxCutter": {
+    "id": "boxCutter",
+    "name": "カッター",
+    "nameEn": "Box Cutter",
+    "description": "鋭いカッターナイフ。",
+    "category": "onHit",
+    "rarity": "uncommon",
+    "effects": {
+      "onHit": {
+        "chance": 0.3,
+        "status": "defrag",
+        "duration": 3,
+        "bonusDamage": 5
+      }
+    }
+  },
+  "dart": {
+    "id": "dart",
+    "name": "ダーツ",
+    "nameEn": "Dart",
+    "description": "ダーツの矢。的確に刺さる。",
+    "category": "onHit",
+    "rarity": "uncommon",
+    "effects": {
+      "onHit": {
+        "chance": 0.6,
+        "status": "defrag",
+        "duration": 1
+      }
+    }
+  },
+  "frozenFood": {
+    "id": "frozenFood",
+    "name": "冷凍食品",
+    "nameEn": "Frozen Food",
+    "description": "カチカチに凍った食品。",
+    "category": "onHit",
+    "rarity": "common",
+    "effects": {
+      "onHit": {
+        "chance": 0.24,
+        "status": "lag",
+        "duration": 3
+      }
+    }
+  },
+  "iceCream": {
+    "id": "iceCream",
+    "name": "アイス",
+    "nameEn": "Ice Cream",
+    "description": "溶けかけのアイスクリーム。",
+    "category": "onHit",
+    "rarity": "common",
+    "effects": {
+      "onHit": {
+        "chance": 0.36,
+        "status": "lag",
+        "duration": 2
+      }
+    }
+  },
+  "coldDrink": {
+    "id": "coldDrink",
+    "name": "冷たい飲み物",
+    "nameEn": "Cold Drink",
+    "description": "氷入りの冷たいドリンク。",
+    "category": "onHit",
+    "rarity": "common",
+    "effects": {
+      "onHit": {
+        "chance": 0.21,
+        "status": "lag",
+        "duration": 4
+      }
+    }
+  },
+  "popsicle": {
+    "id": "popsicle",
+    "name": "アイスキャンディー",
+    "nameEn": "Popsicle",
+    "description": "棒付きのアイス。ガリガリ君。",
+    "category": "onHit",
+    "rarity": "uncommon",
+    "effects": {
+      "onHit": {
+        "chance": 0.45,
+        "status": "lag",
+        "duration": 2
+      }
+    }
+  },
+  "paperweight": {
+    "id": "paperweight",
+    "name": "文鎮",
+    "nameEn": "Paperweight",
+    "description": "重い文鎮。頭に当たると痛い。",
+    "category": "onHit",
+    "rarity": "uncommon",
+    "effects": {
+      "onHit": {
+        "chance": 0.15,
+        "status": "bufferOverflow",
+        "duration": 1
+      }
+    }
+  },
+  "brick": {
+    "id": "brick",
+    "name": "レンガ",
+    "nameEn": "Brick",
+    "description": "赤いレンガ。重くて硬い。",
+    "category": "onHit",
+    "rarity": "uncommon",
+    "effects": {
+      "onHit": {
+        "chance": 0.18,
+        "status": "bufferOverflow",
+        "duration": 2
+      }
+    }
+  },
+  "castIronPan": {
+    "id": "castIronPan",
+    "name": "鉄鍋",
+    "nameEn": "Cast Iron Pan",
+    "description": "重い鋳鉄の鍋。一撃必殺。",
+    "category": "onHit",
+    "rarity": "rare",
+    "effects": {
+      "onHit": {
+        "chance": 0.21,
+        "status": "bufferOverflow",
+        "duration": 2
+      }
+    }
+  },
+  "bowlingBall": {
+    "id": "bowlingBall",
+    "name": "ボウリング球",
+    "nameEn": "Bowling Ball",
+    "description": "14ポンドのボウリング球。",
+    "category": "onHit",
+    "rarity": "rare",
+    "effects": {
+      "onHit": {
+        "chance": 0.36,
+        "status": "bufferOverflow",
+        "duration": 1
+      }
+    }
+  },
+  "textbook": {
+    "id": "textbook",
+    "name": "教科書",
+    "nameEn": "Textbook",
+    "description": "分厚い数学の教科書。",
+    "category": "onHit",
+    "rarity": "common",
+    "effects": {
+      "onHit": {
+        "chance": 0.15,
+        "status": "bufferOverflow",
+        "duration": 1
+      }
+    }
+  },
+  "perfume": {
+    "id": "perfume",
+    "name": "香水",
+    "nameEn": "Perfume",
+    "description": "強い香りの香水。感覚を狂わせる。",
+    "category": "onHit",
+    "rarity": "uncommon",
+    "effects": {
+      "onHit": {
+        "chance": 0.24,
+        "status": "corrupted",
+        "duration": 4
+      }
+    }
+  },
+  "bugSpray": {
+    "id": "bugSpray",
+    "name": "殺虫剤",
+    "nameEn": "Bug Spray",
+    "description": "強力な殺虫スプレー。",
+    "category": "onHit",
+    "rarity": "uncommon",
+    "effects": {
+      "onHit": {
+        "chance": 0.36,
+        "status": "corrupted",
+        "duration": 2
+      }
+    }
+  },
+  "deodorant": {
+    "id": "deodorant",
+    "name": "デオドラント",
+    "nameEn": "Deodorant",
+    "description": "制汗スプレー。目にしみる。",
+    "category": "onHit",
+    "rarity": "common",
+    "effects": {
+      "onHit": {
+        "chance": 0.21,
+        "status": "corrupted",
+        "duration": 3
+      }
+    }
+  },
+  "hairSpray": {
+    "id": "hairSpray",
+    "name": "ヘアスプレー",
+    "nameEn": "Hair Spray",
+    "description": "髪型を固めるスプレー。",
+    "category": "onHit",
+    "rarity": "uncommon",
+    "effects": {
+      "onHit": {
+        "chance": 0.3,
+        "status": "corrupted",
+        "duration": 2
+      }
+    }
+  },
+  "sauce": {
+    "id": "sauce",
+    "name": "ソース",
+    "nameEn": "Sauce",
+    "description": "ウスターソース。目に入ると痛い。",
+    "category": "onHit",
+    "rarity": "common",
+    "effects": {
+      "onHit": {
+        "chance": 0.45,
+        "status": "corrupted",
+        "duration": 1
+      }
+    }
+  },
+  "cameraFlash": {
+    "id": "cameraFlash",
+    "name": "カメラフラッシュ",
+    "nameEn": "Camera Flash",
+    "description": "眩しいフラッシュ。目がくらむ。",
+    "category": "onHit",
+    "rarity": "rare",
+    "effects": {
+      "onHit": {
+        "chance": 0.45,
+        "status": "exposed",
+        "duration": 2
+      }
+    }
+  },
+  "discoBall": {
+    "id": "discoBall",
+    "name": "ミラーボール",
+    "nameEn": "Disco Ball",
+    "description": "小型のミラーボール。乱反射。",
+    "category": "onHit",
+    "rarity": "rare",
+    "effects": {
+      "onHit": {
+        "chance": 0.24,
+        "status": "exposed",
+        "duration": 4
+      }
+    }
+  },
+  "aluminumFoil": {
+    "id": "aluminumFoil",
+    "name": "アルミホイル",
+    "nameEn": "Aluminum Foil",
+    "description": "光を反射するアルミホイル。",
+    "category": "onHit",
+    "rarity": "common",
+    "effects": {
+      "onHit": {
+        "chance": 0.36,
+        "status": "exposed",
+        "duration": 2
+      }
+    }
+  },
+  "cd": {
+    "id": "cd",
+    "name": "CD",
+    "nameEn": "CD",
+    "description": "虹色に光るCD。投げると危険。",
+    "category": "onHit",
+    "rarity": "uncommon",
+    "effects": {
+      "onHit": {
+        "chance": 0.3,
+        "status": "exposed",
+        "duration": 2
+      }
+    }
+  },
+  "phoneScreen": {
+    "id": "phoneScreen",
+    "name": "スマホ画面",
+    "nameEn": "Phone Screen",
+    "description": "明るいスマホの画面。",
+    "category": "onHit",
+    "rarity": "common",
+    "effects": {
+      "onHit": {
+        "chance": 0.24,
+        "status": "exposed",
+        "duration": 3
+      }
+    }
+  },
+  "curlingIron": {
+    "id": "curlingIron",
+    "name": "ヘアアイロン",
+    "nameEn": "Curling Iron",
+    "description": "熱いヘアアイロン。火傷注意。",
+    "category": "onHit",
+    "rarity": "uncommon",
+    "effects": {
+      "onHit": {
+        "chance": 0.3,
+        "status": "overheated",
+        "duration": 1
+      }
+    }
+  },
+  "hotCoffee": {
+    "id": "hotCoffee",
+    "name": "熱いコーヒー",
+    "nameEn": "Hot Coffee",
+    "description": "淹れたてのコーヒー。熱々。",
+    "category": "onHit",
+    "rarity": "uncommon",
+    "effects": {
+      "onHit": {
+        "chance": 0.24,
+        "status": "overheated",
+        "duration": 2
+      }
+    }
+  },
+  "handWarmer": {
+    "id": "handWarmer",
+    "name": "カイロ",
+    "nameEn": "Hand Warmer",
+    "description": "使い捨てカイロ。じわじわ熱い。",
+    "category": "onHit",
+    "rarity": "common",
+    "effects": {
+      "onHit": {
+        "chance": 0.3,
+        "status": "overheated",
+        "duration": 1
+      }
+    }
+  },
+  "solderingIron": {
+    "id": "solderingIron",
+    "name": "はんだごて",
+    "nameEn": "Soldering Iron",
+    "description": "高温のはんだごて。触ると火傷。",
+    "category": "onHit",
+    "rarity": "rare",
+    "effects": {
+      "onHit": {
+        "chance": 0.36,
+        "status": "overheated",
+        "duration": 2
+      }
+    }
+  },
+  "hotPot": {
+    "id": "hotPot",
+    "name": "熱い鍋",
+    "nameEn": "Hot Pot",
+    "description": "煮えたぎる鍋。中身をぶちまける。",
+    "category": "onHit",
+    "rarity": "rare",
+    "effects": {
+      "onHit": {
+        "chance": 0.21,
+        "status": "overheated",
+        "duration": 3
+      }
+    }
+  },
+  "bento": {
+    "id": "bento",
+    "name": "弁当",
+    "nameEn": "Bento",
+    "description": "手作り弁当。倒すと大回復。",
+    "category": "onEffect",
+    "rarity": "rare",
+    "effects": {
+      "onKill": {
+        "chance": 0.6,
+        "heal": 25
+      }
+    }
+  },
+  "candy": {
+    "id": "candy",
+    "name": "飴",
+    "nameEn": "Candy",
+    "description": "甘い飴。クリティカルで回復。",
+    "category": "onEffect",
+    "rarity": "common",
+    "effects": {
+      "onCrit": {
+        "chance": 0.45,
+        "heal": 5
+      }
+    }
+  },
+  "bread": {
+    "id": "bread",
+    "name": "パン",
+    "nameEn": "Bread",
+    "description": "食パン。ダメージを受けると回復。",
+    "category": "onEffect",
+    "rarity": "uncommon",
+    "effects": {
+      "onDamage": {
+        "chance": 0.3,
+        "heal": 8
+      }
+    }
+  },
+  "banana": {
+    "id": "banana",
+    "name": "バナナ",
+    "nameEn": "Banana",
+    "description": "栄養満点のバナナ。",
+    "category": "onEffect",
+    "rarity": "uncommon",
+    "effects": {
+      "onStatusInflict": {
+        "chance": 0.75,
+        "heal": 15,
+        "statusType": "defrag"
+      }
+    }
+  },
+  "chocolate": {
+    "id": "chocolate",
+    "name": "チョコレート",
+    "nameEn": "Chocolate",
+    "description": "甘いチョコ。スタンさせると回復。",
+    "category": "onEffect",
+    "rarity": "uncommon",
+    "effects": {
+      "onStatusInflict": {
+        "chance": 0.6,
+        "heal": 10,
+        "statusType": "bufferOverflow"
+      }
+    }
+  },
+  "mochi": {
+    "id": "mochi",
+    "name": "餅",
+    "nameEn": "Mochi",
+    "description": "もちもちの餅。大回復の可能性。",
+    "category": "onEffect",
+    "rarity": "rare",
+    "effects": {
+      "onKill": {
+        "chance": 0.45,
+        "heal": 30
+      }
+    }
+  },
+  "apple": {
+    "id": "apple",
+    "name": "りんご",
+    "nameEn": "Apple",
+    "description": "赤いりんご。部屋に入ると少し回復。",
+    "category": "onEffect",
+    "rarity": "common",
+    "effects": {
+      "onRoomEnter": {
+        "chance": 0.3,
+        "heal": 5
+      }
+    }
+  },
+  "cupRamen": {
+    "id": "cupRamen",
+    "name": "カップ麺",
+    "nameEn": "Cup Ramen",
+    "description": "定番のカップ麺。回復効果アップ。",
+    "category": "onEffect",
+    "rarity": "uncommon",
+    "effects": {
+      "onHeal": {
+        "chance": 0.75,
+        "bonusHeal": 10
+      }
+    }
+  },
+  "coffee": {
+    "id": "coffee",
+    "name": "コーヒー",
+    "nameEn": "Coffee",
+    "description": "濃いコーヒー。ダメージで攻撃力アップ。",
+    "category": "onEffect",
+    "rarity": "uncommon",
+    "effects": {
+      "onDamage": {
+        "chance": 0.45,
+        "buff": "attack",
+        "value": 0.15,
+        "duration": 3000
+      }
+    }
+  },
+  "greenTea": {
+    "id": "greenTea",
+    "name": "緑茶",
+    "nameEn": "Green Tea",
+    "description": "落ち着く緑茶。クリティカル時に強化。",
+    "category": "onEffect",
+    "rarity": "rare",
+    "effects": {
+      "onCrit": {
+        "chance": 0.3,
+        "buff": "critRate",
+        "value": 0.2,
+        "duration": 5000
+      }
+    }
+  },
+  "sportsDrink": {
+    "id": "sportsDrink",
+    "name": "スポーツドリンク",
+    "nameEn": "Sports Drink",
+    "description": "電解質補給。回避時に加速。",
+    "category": "onEffect",
+    "rarity": "uncommon",
+    "effects": {
+      "onDodge": {
+        "chance": 0.75,
+        "buff": "speed",
+        "value": 0.1,
+        "duration": 3000
+      }
+    }
+  },
+  "milk": {
+    "id": "milk",
+    "name": "牛乳",
+    "nameEn": "Milk",
+    "description": "新鮮な牛乳。回復時にVITアップ。",
+    "category": "onEffect",
+    "rarity": "uncommon",
+    "effects": {
+      "onHeal": {
+        "chance": 0.9,
+        "buff": "vit",
+        "value": 10,
+        "duration": 10000
+      }
+    }
+  },
+  "sake": {
+    "id": "sake",
+    "name": "日本酒",
+    "nameEn": "Sake",
+    "description": "辛口の日本酒。攻撃力大幅アップ、命中ダウン。",
+    "category": "onEffect",
+    "rarity": "epic",
+    "effects": {
+      "onKill": {
+        "chance": 0.3,
+        "buff": "damage",
+        "value": 0.25,
+        "duration": 5000
+      }
+    }
+  },
+  "ramune": {
+    "id": "ramune",
+    "name": "ラムネ",
+    "nameEn": "Ramune",
+    "description": "夏の定番ラムネ。部屋全体で強化。",
+    "category": "onEffect",
+    "rarity": "rare",
+    "effects": {
+      "onRoomEnter": {
+        "chance": 0.45,
+        "buff": "allStats",
+        "value": 0.05,
+        "duration": 30000
+      }
+    }
+  },
+  "lotteryTicket": {
+    "id": "lotteryTicket",
+    "name": "宝くじ",
+    "nameEn": "Lottery Ticket",
+    "description": "まだ当選確認してない宝くじ。",
+    "category": "onEffect",
+    "rarity": "epic",
+    "effects": {
+      "onRoomEnter": {
+        "chance": 0.15,
+        "rareSpawn": true
+      }
+    }
+  },
+  "fortuneSlip": {
+    "id": "fortuneSlip",
+    "name": "おみくじ",
+    "nameEn": "Fortune Slip",
+    "description": "大吉のおみくじ。報酬アップ。",
+    "category": "onEffect",
+    "rarity": "uncommon",
+    "effects": {
+      "onKill": {
+        "chance": 0.3,
+        "bonusCurrency": 0.25
+      }
+    }
+  },
+  "daruma": {
+    "id": "daruma",
+    "name": "だるま",
+    "nameEn": "Daruma",
+    "description": "目を入れただるま。ピンチで生き残る。",
+    "category": "onEffect",
+    "rarity": "legendary",
+    "effects": {
+      "onLowHp": {
+        "chance": 0.75,
+        "surviveWithOneHp": true
+      }
+    }
+  },
+  "manekiNeko": {
+    "id": "manekiNeko",
+    "name": "招き猫",
+    "nameEn": "Lucky Cat",
+    "description": "福を呼ぶ招き猫。ドロップ率アップ。",
+    "category": "onEffect",
+    "rarity": "epic",
+    "effects": {
+      "onKill": {
+        "chance": 0.6,
+        "extraChipDrop": true
+      }
+    }
+  },
+  "pachinkoBall": {
+    "id": "pachinkoBall",
+    "name": "パチンコ玉",
+    "nameEn": "Pachinko Ball",
+    "description": "連続ヒットの可能性。",
+    "category": "onEffect",
+    "rarity": "rare",
+    "effects": {
+      "onHit": {
+        "chance": 0.45,
+        "cascade": true
+      }
+    }
+  },
+  "dice": {
+    "id": "dice",
+    "name": "サイコロ",
+    "nameEn": "Dice",
+    "description": "ラッキーダイス。効果が再発動することも。",
+    "category": "onEffect",
+    "rarity": "epic",
+    "effects": {
+      "onEffectTrigger": {
+        "chance": 0.3,
+        "retrigger": true
+      }
+    }
+  },
+  "kneePads": {
+    "id": "kneePads",
+    "name": "膝パッド",
+    "nameEn": "Knee Pads",
+    "description": "膝を守るパッド。回避時に反撃。",
+    "category": "onEffect",
+    "rarity": "rare",
+    "effects": {
+      "onDodge": {
+        "chance": 0.45,
+        "counterAttack": true
+      }
+    }
+  },
+  "bubbleWrap": {
+    "id": "bubbleWrap",
+    "name": "プチプチ",
+    "nameEn": "Bubble Wrap",
+    "description": "衝撃吸収材。ダメージ無効化の可能性。",
+    "category": "onEffect",
+    "rarity": "rare",
+    "effects": {
+      "onDamage": {
+        "chance": 0.3,
+        "negateDamage": true
+      }
+    }
+  },
+  "cardboard": {
+    "id": "cardboard",
+    "name": "ダンボール",
+    "nameEn": "Cardboard Box",
+    "description": "身を隠せるダンボール。ステルス効果。",
+    "category": "onEffect",
+    "rarity": "epic",
+    "effects": {
+      "onRoomEnter": {
+        "chance": 0.75,
+        "stealth": true
+      }
+    }
+  },
+  "pillow": {
+    "id": "pillow",
+    "name": "枕",
+    "nameEn": "Pillow",
+    "description": "ふかふかの枕。ダメージ軽減。",
+    "category": "onEffect",
+    "rarity": "uncommon",
+    "effects": {
+      "onDamage": {
+        "chance": 0.45,
+        "damageReduction": 0.3
+      }
+    }
+  },
+  "cushion": {
+    "id": "cushion",
+    "name": "クッション",
+    "nameEn": "Cushion",
+    "description": "座布団クッション。ピンチでシールド。",
+    "category": "onEffect",
+    "rarity": "rare",
+    "effects": {
+      "onLowHp": {
+        "chance": 0.6,
+        "shield": 20
+      }
+    }
+  },
+  "rubberBand": {
+    "id": "rubberBand",
+    "name": "輪ゴム",
+    "nameEn": "Rubber Band",
+    "description": "伸びる輪ゴム。クリティカルで追撃。",
+    "category": "onEffect",
+    "rarity": "uncommon",
+    "effects": {
+      "onCrit": {
+        "chance": 0.75,
+        "bonusHit": true
+      }
+    }
+  },
+  "pepper": {
+    "id": "pepper",
+    "name": "コショウ",
+    "nameEn": "Pepper",
+    "description": "黒コショウ。敵がくしゃみ。",
+    "category": "onEffect",
+    "rarity": "uncommon",
+    "effects": {
+      "onHit": {
+        "chance": 0.3,
+        "enemyMissNextTurn": true
+      }
+    }
+  },
+  "wasabi": {
+    "id": "wasabi",
+    "name": "わさび",
+    "nameEn": "Wasabi",
+    "description": "鼻にツーンとくるわさび。クリダメ倍。",
+    "category": "onEffect",
+    "rarity": "epic",
+    "effects": {
+      "onCrit": {
+        "chance": 0.45,
+        "doubleCritDamage": true
+      }
+    }
+  },
+  "partyPopper": {
+    "id": "partyPopper",
+    "name": "クラッカー",
+    "nameEn": "Party Popper",
+    "description": "お祝いクラッカー。スタン延長。",
+    "category": "onEffect",
+    "rarity": "rare",
+    "effects": {
+      "onStatusInflict": {
+        "chance": 1,
+        "extendStun": 1000,
+        "statusType": "bufferOverflow"
+      }
+    }
+  },
+  "airHorn": {
+    "id": "airHorn",
+    "name": "エアホーン",
+    "nameEn": "Air Horn",
+    "description": "大音量のエアホーン。全敵スタン。",
+    "category": "onEffect",
+    "rarity": "legendary",
+    "effects": {
+      "onRoomEnter": {
+        "chance": 0.15,
+        "stunAllEnemies": 1000
+      }
+    }
+  },
+  "timecard": {
+    "id": "timecard",
+    "name": "タイムカード",
+    "nameEn": "Time Card",
+    "description": "出勤記録。倒すたびに強くなる。",
+    "category": "counter",
+    "rarity": "rare",
+    "effects": {
+      "counter": {
+        "trigger": "onKill",
+        "bonus": "str",
+        "perStack": 1,
+        "maxStacks": 10
+      }
+    }
+  },
+  "stamp": {
+    "id": "stamp",
+    "name": "印鑑",
+    "nameEn": "Stamp",
+    "description": "認印。クリティカル率アップ。",
+    "category": "counter",
+    "rarity": "rare",
+    "effects": {
+      "counter": {
+        "trigger": "onKill",
+        "bonus": "critChance",
+        "perStack": 0.3,
+        "maxStacks": 50
+      }
+    }
+  },
+  "briefcase": {
+    "id": "briefcase",
+    "name": "ブリーフケース",
+    "nameEn": "Briefcase",
+    "description": "革のブリーフケース。総合力アップ。",
+    "category": "counter",
+    "rarity": "epic",
+    "effects": {
+      "counter": {
+        "trigger": "onKill",
+        "bonus": "allStats",
+        "perStack": 0.2,
+        "maxStacks": 50
+      }
+    }
+  },
+  "necktie": {
+    "id": "necktie",
+    "name": "ネクタイ",
+    "nameEn": "Necktie",
+    "description": "シルクのネクタイ。攻撃速度アップ。",
+    "category": "counter",
+    "rarity": "rare",
+    "effects": {
+      "counter": {
+        "trigger": "onKill",
+        "bonus": "aspd",
+        "perStack": 1,
+        "maxStacks": 15
+      }
+    }
+  },
+  "idBadge": {
+    "id": "idBadge",
+    "name": "社員証",
+    "nameEn": "ID Badge",
+    "description": "会社の社員証。DEXアップ。",
+    "category": "counter",
+    "rarity": "uncommon",
+    "effects": {
+      "counter": {
+        "trigger": "onKill",
+        "bonus": "dex",
+        "perStack": 1,
+        "maxStacks": 12
+      }
+    }
+  },
+  "coffeeMug": {
+    "id": "coffeeMug",
+    "name": "コーヒーマグ",
+    "nameEn": "Coffee Mug",
+    "description": "マイカップ。最大HPアップ。",
+    "category": "counter",
+    "rarity": "rare",
+    "effects": {
+      "counter": {
+        "trigger": "onKill",
+        "bonus": "maxHp",
+        "perStack": 2,
+        "maxStacks": 50
+      }
+    }
+  },
+  "homework": {
+    "id": "homework",
+    "name": "宿題",
+    "nameEn": "Homework",
+    "description": "終わらない宿題。状態異常確率アップ。",
+    "category": "counter",
+    "rarity": "rare",
+    "effects": {
+      "counter": {
+        "trigger": "onStatusInflict",
+        "bonus": "statusChance",
+        "perStack": 1,
+        "maxStacks": 20
+      }
+    }
+  },
+  "schoolBadge": {
+    "id": "schoolBadge",
+    "name": "校章",
+    "nameEn": "School Badge",
+    "description": "学校のバッジ。INTアップ。",
+    "category": "counter",
+    "rarity": "uncommon",
+    "effects": {
+      "counter": {
+        "trigger": "onStatusInflict",
+        "bonus": "int",
+        "perStack": 1,
+        "maxStacks": 15
+      }
+    }
+  },
+  "gymUniform": {
+    "id": "gymUniform",
+    "name": "体操着",
+    "nameEn": "Gym Uniform",
+    "description": "学校指定の体操着。回避率アップ。",
+    "category": "counter",
+    "rarity": "rare",
+    "effects": {
+      "counter": {
+        "trigger": "onStatusInflict",
+        "bonus": "dodge",
+        "perStack": 0.5,
+        "maxStacks": 20
+      }
+    }
+  },
+  "pencilCase": {
+    "id": "pencilCase",
+    "name": "筆箱",
+    "nameEn": "Pencil Case",
+    "description": "文房具が入った筆箱。ダメージアップ。",
+    "category": "counter",
+    "rarity": "rare",
+    "effects": {
+      "counter": {
+        "trigger": "onStatusInflict",
+        "bonus": "damagePercent",
+        "perStack": 1,
+        "maxStacks": 10
+      }
+    }
+  },
+  "tennisBall": {
+    "id": "tennisBall",
+    "name": "テニスボール",
+    "nameEn": "Tennis Ball",
+    "description": "黄色いテニスボール。クリ率アップ。",
+    "category": "counter",
+    "rarity": "rare",
+    "effects": {
+      "counter": {
+        "trigger": "onCrit",
+        "bonus": "critChance",
+        "perStack": 0.2,
+        "maxStacks": 50
+      }
+    }
+  },
+  "soccerBall": {
+    "id": "soccerBall",
+    "name": "サッカーボール",
+    "nameEn": "Soccer Ball",
+    "description": "サッカーボール。STRアップ。",
+    "category": "counter",
+    "rarity": "rare",
+    "effects": {
+      "counter": {
+        "trigger": "onCrit",
+        "bonus": "str",
+        "perStack": 1,
+        "maxStacks": 10
+      }
+    }
+  },
+  "basketball": {
+    "id": "basketball",
+    "name": "バスケットボール",
+    "nameEn": "Basketball",
+    "description": "オレンジのバスケットボール。攻撃速度アップ。",
+    "category": "counter",
+    "rarity": "rare",
+    "effects": {
+      "counter": {
+        "trigger": "onCrit",
+        "bonus": "aspd",
+        "perStack": 0.5,
+        "maxStacks": 30
+      }
+    }
+  },
+  "golfBall": {
+    "id": "golfBall",
+    "name": "ゴルフボール",
+    "nameEn": "Golf Ball",
+    "description": "白いゴルフボール。固定ダメージアップ。",
+    "category": "counter",
+    "rarity": "epic",
+    "effects": {
+      "counter": {
+        "trigger": "onCrit",
+        "bonus": "flatDamage",
+        "perStack": 2,
+        "maxStacks": 10
+      }
+    }
+  },
+  "shuttlecock": {
+    "id": "shuttlecock",
+    "name": "シャトル",
+    "nameEn": "Shuttlecock",
+    "description": "バドミントンのシャトル。回避率アップ。",
+    "category": "counter",
+    "rarity": "uncommon",
+    "effects": {
+      "counter": {
+        "trigger": "onCrit",
+        "bonus": "dodge",
+        "perStack": 0.4,
+        "maxStacks": 20
+      }
+    }
+  },
+  "jumpRope": {
+    "id": "jumpRope",
+    "name": "縄跳び",
+    "nameEn": "Jump Rope",
+    "description": "カラフルな縄跳び。AGIアップ。",
+    "category": "counter",
+    "rarity": "uncommon",
+    "effects": {
+      "counter": {
+        "trigger": "onCrit",
+        "bonus": "agi",
+        "perStack": 1,
+        "maxStacks": 10
+      }
+    }
+  },
+  "map": {
+    "id": "map",
+    "name": "地図",
+    "nameEn": "Map",
+    "description": "東京の地図。アイテム発見率アップ。",
+    "category": "counter",
+    "rarity": "rare",
+    "effects": {
+      "counter": {
+        "trigger": "onRoomEnter",
+        "bonus": "itemFind",
+        "perStack": 1,
+        "maxStacks": 15
+      }
+    }
+  },
+  "compassNav": {
+    "id": "compassNav",
+    "name": "方位磁石",
+    "nameEn": "Compass",
+    "description": "方角を示すコンパス。LUKアップ。",
+    "category": "counter",
+    "rarity": "uncommon",
+    "effects": {
+      "counter": {
+        "trigger": "onRoomEnter",
+        "bonus": "luk",
+        "perStack": 1,
+        "maxStacks": 10
+      }
+    }
+  },
+  "luggage": {
+    "id": "luggage",
+    "name": "スーツケース",
+    "nameEn": "Luggage",
+    "description": "旅行用スーツケース。インベントリ拡大。",
+    "category": "counter",
+    "rarity": "legendary",
+    "effects": {
+      "counter": {
+        "trigger": "onRoomEnter",
+        "bonus": "inventorySlots",
+        "perStack": 1,
+        "maxStacks": 3
+      }
+    }
+  },
+  "passport": {
+    "id": "passport",
+    "name": "パスポート",
+    "nameEn": "Passport",
+    "description": "日本国パスポート。報酬アップ。",
+    "category": "counter",
+    "rarity": "epic",
+    "effects": {
+      "counter": {
+        "trigger": "onRoomEnter",
+        "bonus": "currencyGain",
+        "perStack": 3,
+        "maxStacks": 10
+      }
+    }
+  },
+  "travelPillow": {
+    "id": "travelPillow",
+    "name": "ネックピロー",
+    "nameEn": "Travel Pillow",
+    "description": "首用の枕。部屋ごとに少し回復。",
+    "category": "counter",
+    "rarity": "rare",
+    "effects": {
+      "counter": {
+        "trigger": "onRoomEnter",
+        "bonus": "healAtRoomStart",
+        "perStack": 5,
+        "maxStacks": 1
+      }
+    }
+  },
+  "guidebook": {
+    "id": "guidebook",
+    "name": "ガイドブック",
+    "nameEn": "Guidebook",
+    "description": "東京ガイドブック。ダメージアップ。",
+    "category": "counter",
+    "rarity": "epic",
+    "effects": {
+      "counter": {
+        "trigger": "onRoomEnter",
+        "bonus": "damagePercent",
+        "perStack": 2,
+        "maxStacks": 10
+      }
+    }
+  },
+  "album": {
+    "id": "album",
+    "name": "アルバム",
+    "nameEn": "Album",
+    "description": "写真アルバム。ON_HITチップで発動率アップ。",
+    "category": "counter",
+    "rarity": "legendary",
+    "effects": {
+      "counter": {
+        "trigger": "onChipCount",
+        "chipCategory": "onHit",
+        "bonus": "triggerChance",
+        "perStack": 5,
+        "maxStacks": 10
+      }
+    }
+  },
+  "tradingCards": {
+    "id": "tradingCards",
+    "name": "トレカ",
+    "nameEn": "Trading Cards",
+    "description": "レアカードコレクション。ON_EFFECTが強化。",
+    "category": "counter",
+    "rarity": "legendary",
+    "effects": {
+      "counter": {
+        "trigger": "onChipCount",
+        "chipCategory": "onEffect",
+        "bonus": "effectPotency",
+        "perStack": 4,
+        "maxStacks": 10
+      }
+    }
+  },
+  "gachaFigure": {
+    "id": "gachaFigure",
+    "name": "ガチャフィギュア",
+    "nameEn": "Gacha Figure",
+    "description": "カプセルトイ。チップ種類で総合強化。",
+    "category": "counter",
+    "rarity": "legendary",
+    "effects": {
+      "counter": {
+        "trigger": "onUniqueChipType",
+        "bonus": "allStats",
+        "perStack": 1,
+        "maxStacks": 4
+      }
+    }
+  },
+  "powerCell": {
+    "id": "powerCell",
+    "name": "パワーセル",
+    "nameEn": "Power Cell",
+    "description": "小型エネルギーセル。攻撃に+5ダメージ。",
+    "descriptionEn": "Compact energy cell. Adds +5 damage to attacks.",
+    "category": "pipeline",
+    "rarity": "common",
+    "effects": {
+      "pipeline": {
+        "type": "flatAdd",
+        "value": 5,
+        "triggerChance": 1,
+        "displayText": "+5"
+      }
+    }
+  },
+  "amplifier": {
+    "id": "amplifier",
+    "name": "アンプ",
+    "nameEn": "Amplifier",
+    "description": "信号増幅器。80%でダメージ1.5倍。",
+    "descriptionEn": "Signal amplifier. 80% chance to multiply damage by 1.5.",
+    "category": "pipeline",
+    "rarity": "uncommon",
+    "effects": {
+      "pipeline": {
+        "type": "multiply",
+        "value": 1.5,
+        "triggerChance": 0.8,
+        "displayText": "×1.5"
+      }
+    }
+  },
+  "critBooster": {
+    "id": "critBooster",
+    "name": "クリットブースター",
+    "nameEn": "Crit Booster",
+    "description": "クリティカル強化モジュール。CRIT率+20%。",
+    "descriptionEn": "Critical enhancement module. +20% crit chance.",
+    "category": "pipeline",
+    "rarity": "rare",
+    "effects": {
+      "pipeline": {
+        "type": "critMod",
+        "value": 20,
+        "triggerChance": 1,
+        "displayText": "+20% CRIT"
+      }
+    }
+  },
+  "overloader": {
+    "id": "overloader",
+    "name": "オーバーロード",
+    "nameEn": "Overloader",
+    "description": "過負荷装置。50%でダメージ2倍。",
+    "descriptionEn": "Overload device. 50% chance to double damage.",
+    "category": "pipeline",
+    "rarity": "epic",
+    "effects": {
+      "pipeline": {
+        "type": "multiply",
+        "value": 2,
+        "triggerChance": 0.5,
+        "displayText": "×2"
+      }
+    }
+  },
+  "finisher": {
+    "id": "finisher",
+    "name": "フィニッシャー",
+    "nameEn": "Finisher",
+    "description": "止めの一撃。敵HP30%以下でダメージ+50%。",
+    "descriptionEn": "Finishing blow. +50% damage when enemy below 30% HP.",
+    "category": "pipeline",
+    "rarity": "rare",
+    "effects": {
+      "pipeline": {
+        "type": "conditional",
+        "value": 1.5,
+        "triggerChance": 1,
+        "displayText": "+50%",
+        "condition": {
+          "type": "enemyLowHp",
+          "threshold": 0.3
+        }
+      }
+    }
+  },
+  "recursion": {
+    "id": "recursion",
+    "name": "無限再帰",
+    "nameEn": "Recursion",
+    "description": "10%でパイプライン再起動。何度でも発動可能。",
+    "descriptionEn": "The pipeline that never ends. 10% chance to restart pipeline from chip 1. Can trigger multiple times.",
+    "category": "pipeline",
+    "rarity": "legendary",
+    "effects": {
+      "pipeline": {
+        "type": "recursion",
+        "value": 0,
+        "triggerChance": 0.1,
+        "displayText": "∞ LOOP",
+        "maxRecursions": 10
+      }
+    }
+  },
+  "sacrifice": {
+    "id": "sacrifice",
+    "name": "生贄プロトコル",
+    "nameEn": "Sacrifice",
+    "description": "このチップを永久に破壊。ダメージ10倍。",
+    "descriptionEn": "Destroy this chip permanently. Deal 10× current pipeline damage. Gone forever.",
+    "category": "pipeline",
+    "rarity": "legendary",
+    "effects": {
+      "pipeline": {
+        "type": "sacrifice",
+        "value": 10,
+        "triggerChance": 1,
+        "displayText": "×10 SACRIFICE"
+      }
+    }
+  },
+  "stackOverflow": {
+    "id": "stackOverflow",
+    "name": "スタックオーバーフロー",
+    "nameEn": "Stack Overflow",
+    "description": "25%で+3ダメージ。戦闘中スタック。敵撃破でリセット。",
+    "descriptionEn": "Builds pressure. 25% chance for +3 damage. Stacks during combat, resets when enemy dies.",
+    "category": "pipeline",
+    "rarity": "epic",
+    "effects": {
+      "pipeline": {
+        "type": "stacking",
+        "value": 3,
+        "triggerChance": 0.25,
+        "displayText": "+3 STACK"
+      }
+    }
+  },
+  "minimalist": {
+    "id": "minimalist",
+    "name": "ミニマリスト",
+    "nameEn": "Minimalist",
+    "description": "武器に空きスロット2つ以上で+40ダメージ。",
+    "descriptionEn": "Less is more. If weapon has 2+ empty chip slots, gain +40 damage.",
+    "category": "pipeline",
+    "rarity": "rare",
+    "effects": {
+      "pipeline": {
+        "type": "emptySlots",
+        "value": 40,
+        "requiredEmpty": 2,
+        "triggerChance": 1,
+        "displayText": "+40 MINIMAL"
+      }
+    }
+  },
+  "lifelink": {
+    "id": "lifelink",
+    "name": "ライフリンク",
+    "nameEn": "Lifelink",
+    "description": "+5ダメージ、5HP回復。毎回発動。",
+    "descriptionEn": "Balanced protocol. +5 damage and heal 5 HP. Every time.",
+    "category": "pipeline",
+    "rarity": "uncommon",
+    "effects": {
+      "pipeline": {
+        "type": "damageAndHeal",
+        "value": 5,
+        "healValue": 5,
+        "triggerChance": 1,
+        "displayText": "+5 ❤️5"
+      }
+    }
+  },
+  "bountyHunter": {
+    "id": "bountyHunter",
+    "name": "バウンティハンター",
+    "nameEn": "Bounty Hunter",
+    "description": "敵を倒すたび+1ダメージ。無限スタック。",
+    "descriptionEn": "The more you kill, the stronger you get. +1 damage per enemy killed this run. Stacks infinitely.",
+    "category": "pipeline",
+    "rarity": "epic",
+    "effects": {
+      "pipeline": {
+        "type": "killCounter",
+        "value": 1,
+        "triggerChance": 1,
+        "displayText": "+KILLS"
+      }
+    }
+  },
+  "siphon": {
+    "id": "siphon",
+    "name": "サイフォン",
+    "nameEn": "Siphon",
+    "description": "-2ダメージ、10HP回復。生存優先。",
+    "descriptionEn": "Survival mode. -2 damage but heal 10 HP. Stay alive.",
+    "category": "pipeline",
+    "rarity": "uncommon",
+    "effects": {
+      "pipeline": {
+        "type": "damageAndHeal",
+        "value": -2,
+        "healValue": 10,
+        "triggerChance": 1,
+        "displayText": "-2 ❤️10"
+      }
+    }
+  },
+  "executiveOverride": {
+    "id": "executiveOverride",
+    "name": "エグゼクティブ",
+    "nameEn": "Executive Override",
+    "description": "ボスに10%追加ダメージ。",
+    "descriptionEn": "Target the top. Deal 10% more damage to bosses.",
+    "category": "pipeline",
+    "rarity": "rare",
+    "effects": {
+      "pipeline": {
+        "type": "vsBoss",
+        "value": 1.1,
+        "triggerChance": 1,
+        "displayText": "+10% BOSS"
+      }
+    }
+  },
+  "phoenix": {
+    "id": "phoenix",
+    "name": "フェニックス",
+    "nameEn": "Phoenix Protocol",
+    "description": "x1攻撃。チップ破壊ごとに+1x。永久スタック。",
+    "descriptionEn": "Rise from sacrifice. x1 attack, gains +1x for every chip destroyed this run.",
+    "category": "pipeline",
+    "rarity": "legendary",
+    "effects": {
+      "pipeline": {
+        "type": "destroyedMultiplier",
+        "baseValue": 1,
+        "perDestroyed": 1,
+        "triggerChance": 1,
+        "displayText": "xPHOENIX"
+      }
+    }
+  },
+  "unstable": {
+    "id": "unstable",
+    "name": "不安定コア",
+    "nameEn": "Unstable Core",
+    "description": "+50ダメージ。10%でランダムなチップを破壊。",
+    "descriptionEn": "Volatile power. +50 damage but 10% chance to randomly destroy one of your chips.",
+    "category": "pipeline",
+    "rarity": "epic",
+    "effects": {
+      "pipeline": {
+        "type": "riskyFlat",
+        "value": 50,
+        "destroyChance": 0.1,
+        "triggerChance": 1,
+        "displayText": "+50 ⚠️"
+      }
+    }
+  },
+  "copycat": {
+    "id": "copycat",
+    "name": "コピーキャット",
+    "nameEn": "Copycat",
+    "description": "前のチップの効果をコピー。",
+    "descriptionEn": "Mirror protocol. Copies the previous chip effect.",
+    "category": "pipeline",
+    "rarity": "rare",
+    "effects": {
+      "pipeline": {
+        "type": "copy",
+        "triggerChance": 1,
+        "displayText": "COPY"
+      }
+    }
+  },
+  "lightweight": {
+    "id": "lightweight",
+    "name": "ライトウェイト",
+    "nameEn": "Lightweight",
+    "description": "空きスロットごとに+20ダメージ。",
+    "descriptionEn": "Travel light. +20 damage for each empty chip slot.",
+    "category": "pipeline",
+    "rarity": "uncommon",
+    "effects": {
+      "pipeline": {
+        "type": "perEmptySlot",
+        "value": 20,
+        "triggerChance": 1,
+        "displayText": "+EMPTY"
+      }
+    }
+  },
+  "burstCycle": {
+    "id": "burstCycle",
+    "name": "バーストサイクル",
+    "nameEn": "Burst Cycle",
+    "description": "5回目の攻撃でx3ダメージ。",
+    "descriptionEn": "Building power. Every 5th attack deals x3 damage.",
+    "category": "pipeline",
+    "rarity": "rare",
+    "effects": {
+      "pipeline": {
+        "type": "nthAttack",
+        "interval": 5,
+        "multiplier": 3,
+        "triggerChance": 1,
+        "displayText": "BURST"
+      }
+    }
+  }
+}
