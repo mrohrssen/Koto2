@@ -3,11 +3,9 @@
  * Enemy turn execution, abilities, and related functions
  */
 
-import { calculateEquipmentBonuses, processOnDamageChips, processOnDodgeChips, processOnLowHpChips, getEquippedChips } from '../items.js';
+import { calculateEquipmentBonuses } from '../items.js';
 import { ENEMY_ABILITIES, getEnemyAbility } from '../enemies.js';
 import {
-  hasStatusEffect,
-  getStatusEffectDef,
   breakDamageEffects,
   getDamageTakenMultiplier
 } from './status-effects.js';
@@ -110,20 +108,6 @@ export function executeEnemyTurn(enemy, player, intent = null, processCounterAtt
       result.critChance = attackResult.critChance;
       result.originalDamage = attackResult.damage;
 
-      // Process on-dodge chip effects when player dodges
-      if (attackResult.dodge || attackResult.perfectDodge) {
-        const equippedChips = getEquippedChips(player);
-        if (equippedChips.length > 0) {
-          const dodgeEffects = processOnDodgeChips(equippedChips);
-          if (dodgeEffects.buffs.length > 0) {
-            result.onDodgeBuffs = dodgeEffects.buffs;
-          }
-          if (dodgeEffects.counterAttack) {
-            result.onDodgeCounterAttack = true;
-          }
-        }
-      }
-
       let finalDamage = attackResult.damage;
 
       // Apply defending damage reduction
@@ -131,58 +115,10 @@ export function executeEnemyTurn(enemy, player, intent = null, processCounterAtt
         finalDamage = Math.floor(finalDamage * 0.5);
       }
 
-      // Apply on-damage chip effects (damage reduction, heal, buff, negate)
-      if (finalDamage > 0) {
-        const equippedChipsForDamage = getEquippedChips(player);
-        if (equippedChipsForDamage.length > 0) {
-          const chipDamageResult = processOnDamageChips(equippedChipsForDamage, finalDamage);
-          if (chipDamageResult.triggered.length > 0) {
-            finalDamage = chipDamageResult.finalDamage;
-            result.chipDamageReduction = chipDamageResult.triggered;
-          }
-          // Apply heal from on-damage chips
-          if (chipDamageResult.heal > 0) {
-            const hpBefore = player.hp;
-            player.hp = Math.min(playerStats.maxHp, player.hp + chipDamageResult.heal);
-            result.onDamageHeal = player.hp - hpBefore;
-          }
-          // Track buffs from on-damage chips
-          if (chipDamageResult.buffs.length > 0) {
-            result.onDamageBuffs = chipDamageResult.buffs;
-          }
-          // Track if damage was negated
-          if (chipDamageResult.negated) {
-            result.damageNegated = true;
-          }
-        }
-      }
-
       result.damage = finalDamage;
 
-      // Check for on-low-hp chip effects before applying lethal damage
-      const wouldBeLethal = player.hp - finalDamage <= 0;
-      if (wouldBeLethal && finalDamage > 0) {
-        const equippedChipsForLowHp = getEquippedChips(player);
-        if (equippedChipsForLowHp.length > 0) {
-          const lowHpEffects = processOnLowHpChips(equippedChipsForLowHp);
-          if (lowHpEffects.surviveWithOneHp) {
-            // Survive with 1 HP instead of dying
-            player.hp = 1;
-            result.survivedWithOneHp = true;
-            result.playerDefeated = false;
-            finalDamage = 0; // Damage already "applied" via survival effect
-          } else if (lowHpEffects.shield > 0) {
-            // Shield absorbs some damage
-            finalDamage = Math.max(0, finalDamage - lowHpEffects.shield);
-            result.shieldAbsorbed = lowHpEffects.shield;
-          }
-        }
-      }
-
-      // Apply damage to player (if not already handled by survival effect)
-      if (!result.survivedWithOneHp) {
-        player.hp = Math.max(0, player.hp - finalDamage);
-      }
+      // Apply damage to player
+      player.hp = Math.max(0, player.hp - finalDamage);
       result.playerDefeated = player.hp <= 0;
 
       // Break damage-sensitive status effects on player (like SLEEP)

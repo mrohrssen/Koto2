@@ -42,9 +42,7 @@ import {
 
 import {
   getItem,
-  calculateEquipmentBonuses,
-  processOnRoomEnterChips,
-  getEquippedChips
+  calculateEquipmentBonuses
 } from '../items.js';
 
 import {
@@ -265,32 +263,6 @@ export class ExplorationService {
       this.gm.run.runStats.roomsCleared++;
     }
 
-    // Process on-room-enter chip effects
-    const roomEnterEffects = {};
-    const equippedChips = getEquippedChips(this.gm.run.player);
-    if (equippedChips.length > 0) {
-      const roomEffects = processOnRoomEnterChips(equippedChips);
-      if (roomEffects.heal > 0) {
-        const hpBefore = this.gm.run.player.hp;
-        this.gm.run.player.hp = Math.min(this.gm.run.player.maxHp, this.gm.run.player.hp + roomEffects.heal);
-        roomEnterEffects.heal = this.gm.run.player.hp - hpBefore;
-      }
-      if (roomEffects.buffs.length > 0) {
-        roomEnterEffects.buffs = roomEffects.buffs;
-      }
-      if (roomEffects.rareSpawn) {
-        roomEnterEffects.rareSpawn = true;
-      }
-      if (roomEffects.stealth) {
-        roomEnterEffects.stealth = true;
-        // Mark player as stealthed for potential combat avoidance
-        this.gm.run.player.stealth = true;
-      }
-      if (roomEffects.stunAllEnemies > 0) {
-        roomEnterEffects.stunAllEnemies = roomEffects.stunAllEnemies;
-      }
-    }
-
     // Get narration for new room
     const narration = getRoomEntryNarration(nextRoom);
     this.gm.narrate(narration);
@@ -303,8 +275,7 @@ export class ExplorationService {
       roomNumber: this.gm.run.currentRoom + 1,
       totalRooms: this.gm.run.rooms.length,
       actions: getRoomActions(nextRoom),
-      narration,
-      chipEffects: Object.keys(roomEnterEffects).length > 0 ? roomEnterEffects : null
+      narration
     };
   }
 

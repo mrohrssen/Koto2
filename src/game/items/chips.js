@@ -1,18 +1,19 @@
 /**
- * @fileoverview Chip equipment system - passive augmentations for gear
+ * @fileoverview Chip equipment system - pipeline damage modifiers
  * @module src/game/items/chips
  *
  * PURPOSE:
- * Implements the chip system where players buy and equip passive augmentations
- * to their equipment. Chips provide stat bonuses, on-hit effects, conditional
- * triggers, and scaling bonuses. Each equipment slot has limited chip capacity.
- * Chips have 5 rarities affecting their power and cost.
+ * Implements the chip system where players collect and equip chips to their
+ * weapon. Chips modify damage through a sequential pipeline - each chip fires
+ * in slot order, transforming the damage value before it hits the enemy.
+ * This creates Balatro-style synergies where chip ORDER matters.
  *
  * KEY EXPORTS:
  * Constants:
- * - CHIP_CATEGORIES - Stat, OnHit, OnEffect, Counter categories
- * - CHIP_RARITIES - Common, Uncommon, Rare, Epic, Legendary with multipliers
- * - CHIPS - All chip definitions (100+ chips with effects)
+ * - CHIP_CATEGORIES - Pipeline category definition
+ * - CHIP_RARITIES - Common through Legendary with multipliers
+ * - PIPELINE_EFFECTS - Effect types (flatAdd, multiply, conditional, critMod)
+ * - CHIPS - All chip definitions loaded from data/chips.json
  *
  * Functions:
  * - getChip(chipId) - Get chip definition by ID
@@ -20,54 +21,53 @@
  * - getChipsByRarity(rarity) - Filter chips by rarity
  * - getChipPrice(chipId) - Calculate chip purchase price
  * - generateShopChips(floor, owned, count) - Generate shop inventory
- * - calculateChipStatBonuses(chips) - Sum stat bonuses from equipped chips
- * - processOnHitChips(chips, target) - Execute on-hit effects
- * - processOnKillChips(chips) - Execute on-kill effects
- * - processOnDamageChips(chips, damage) - Execute damage-triggered effects
- * - updateCounterStacks(stacks, chips, trigger, context) - Track counter chips
- * - calculateCounterBonuses(chips, runStats) - Calculate counter-based bonuses
- * - getEquippedChips(player) - Get all chips equipped on player
- * - equipChip(player, slot, chipId, maxSlots) - Equip chip to equipment slot
+ * - executeChipPipeline(chips, context) - Run the damage pipeline
+ * - getWeaponPipelineChips(player) - Get chips equipped to weapon in order
+ * - equipChip(player, slot, chipId) - Equip chip to equipment slot
+ * - unequipChip(player, slot, chipId) - Unequip chip from slot
+ * - getChipDisplayInfo(chip) - Get UI display information
+ * - getChipLoadout(player) - Get full loadout for UI
+ *
+ * Upgrade Functions:
+ * - getNextRarity(rarity) - Get next rarity tier
+ * - getUpgradeCost(chip) - Cost to upgrade
+ * - getUpgradeFailureChance(chip) - Failure chance for upgrade
+ * - attemptChipUpgrade(chip) - Roll for upgrade success
+ * - createUpgradedChip(chip, newRarity) - Create upgraded version
  *
  * DEPENDENCIES:
- * - None (self-contained data module)
+ * - data/chips.json - Chip definitions
+ * - data/chip-config.json - Categories, rarities, upgrade config
  *
- * CHIP CATEGORIES:
- * - STAT: Flat bonuses (+5 ATK, +10 HP, etc.)
- * - ON_HIT: Chance effects when attacking (poison, lifesteal, etc.)
- * - ON_EFFECT: Conditional triggers (on kill, on crit, on low HP)
- * - COUNTER: Scaling bonuses (damage per kill, crit per dodge, etc.)
+ * PIPELINE EFFECT TYPES:
+ * - flatAdd: Add flat damage (+5, +10, etc.)
+ * - multiply: Multiply current damage (x1.5, x2, etc.)
+ * - conditional: Multiply if condition met (enemy low HP, is boss, etc.)
+ * - critMod: Modify crit chance (+20%, etc.)
+ * - recursion: Restart pipeline from beginning (10% chance)
+ * - sacrifice: Destroy chip for massive damage (x10)
+ * - stacking: Build stacks during combat (+3 per stack)
+ * - And more - see processPipelineChip() for full list
  *
  * CHIP RARITIES:
- * - Common (gray): 1.0x stats, 1.0x price
+ * - Common (gray): 1.0x stats, base price
  * - Uncommon (green): 1.5x stats, 2.5x price
  * - Rare (blue): 2.0x stats, 5.0x price
  * - Epic (purple): 2.5x stats, 10.0x price
  * - Legendary (orange): 3.0x stats, 20.0x price
  *
- * DATA STRUCTURES:
- * - Chip: { id, name, category, rarity, basePrice, description,
- *          effects: { stat?, chance?, trigger?, scaling? } }
- * - EquippedChip: { chipId, slotCost } stored in equipment.equippedChips[]
- *
- * SLOT SYSTEM:
- * - Each equipment piece has chip slots (default 5)
- * - Chips cost 1-3 slots based on power
- * - Legendary chips cost more slots than common
- *
  * ARCHITECTURE NOTES:
- * - Chip effects applied via calculateChipStatBonuses() at combat start
- * - On-hit/on-kill effects processed during combat in combat/mechanics.js
- * - Counter stacks tracked in run.runStats and reset each run
- * - Shop chips generated with weighted random by floor and rarity
- * - Rarity generation uses floor-based weighted tables
+ * - Pipeline executes via executeChipPipeline() during player attacks
+ * - Chips process left-to-right in weapon slot order
+ * - Order matters: +5 then x2 = 10, but x2 then +5 = different result
+ * - Shop generates random rarity versions of base chips
+ * - Upgrades increase rarity with failure chance
  *
  * CLAUDE HINTS:
- * - For equipping chips, see equipChip() and game.js openChipModal()
- * - Counter chips reference run.runStats for their scaling
- * - Chip effects defined in effects{} object, vary by category
- * - Price calculation in getChipPrice() includes rarity multiplier
- * - Shop generation excludes already-owned chips
+ * - For pipeline execution, see executeChipPipeline() and processPipelineChip()
+ * - Chip data is in data/chips.json, config in data/chip-config.json
+ * - Player chips stored in player.chips[], equipped via equipment.equippedChips[]
+ * - Rarity scaling happens at shop generation and upgrade time
  */
 
 // Import chip definitions from JSON
@@ -295,64 +295,13 @@ function rollRandomRarity() {
 }
 
 /**
- * Apply rarity multiplier to chip effects
- * Handles all effect types: stats, onHit, onKill, onDamage, onDodge, onCrit,
- * onHeal, onLowHp, onRoomEnter, onStatusInflict, onEffectTrigger, counter
+ * Apply rarity multiplier to pipeline chip effects
  * @param {object} effects - Base chip effects
  * @param {number} multiplier - Rarity stat multiplier
  * @returns {object} Scaled effects
  */
 function applyRarityMultiplier(effects, multiplier) {
   const scaled = {};
-
-  // Helper to scale common numeric fields in an effect object
-  const scaleEffect = (effect) => {
-    const s = { ...effect };
-    // Scale chance (cap at reasonable values)
-    if (s.chance !== undefined) s.chance = Math.min(s.chance * multiplier, 0.8);
-    // Scale numeric values
-    if (s.heal !== undefined) s.heal = Math.floor(s.heal * multiplier);
-    if (s.healPercent !== undefined) s.healPercent = s.healPercent * multiplier;
-    if (s.bonusDamage !== undefined) s.bonusDamage = Math.floor(s.bonusDamage * multiplier);
-    if (s.damage !== undefined) s.damage = Math.floor(s.damage * multiplier);
-    if (s.aoeDamage !== undefined) s.aoeDamage = Math.floor(s.aoeDamage * multiplier);
-    if (s.value !== undefined) s.value = s.value * multiplier;
-    if (s.damageReduction !== undefined) s.damageReduction = Math.min(s.damageReduction * multiplier, 0.5);
-    if (s.damageBonus !== undefined) s.damageBonus = s.damageBonus * multiplier;
-    if (s.critBonus !== undefined) s.critBonus = s.critBonus * multiplier;
-    if (s.defenseBonus !== undefined) s.defenseBonus = s.defenseBonus * multiplier;
-    if (s.goldBonus !== undefined) s.goldBonus = s.goldBonus * multiplier;
-    if (s.xpBonus !== undefined) s.xpBonus = s.xpBonus * multiplier;
-    return s;
-  };
-
-  // Scale stat bonuses
-  if (effects.stats) {
-    scaled.stats = {};
-    for (const [stat, value] of Object.entries(effects.stats)) {
-      scaled.stats[stat] = Math.floor(value * multiplier);
-    }
-  }
-
-  // Scale all trigger-based effects
-  if (effects.onHit) scaled.onHit = scaleEffect(effects.onHit);
-  if (effects.onKill) scaled.onKill = scaleEffect(effects.onKill);
-  if (effects.onDamage) scaled.onDamage = scaleEffect(effects.onDamage);
-  if (effects.onDodge) scaled.onDodge = scaleEffect(effects.onDodge);
-  if (effects.onCrit) scaled.onCrit = scaleEffect(effects.onCrit);
-  if (effects.onHeal) scaled.onHeal = scaleEffect(effects.onHeal);
-  if (effects.onLowHp) scaled.onLowHp = scaleEffect(effects.onLowHp);
-  if (effects.onRoomEnter) scaled.onRoomEnter = scaleEffect(effects.onRoomEnter);
-  if (effects.onStatusInflict) scaled.onStatusInflict = scaleEffect(effects.onStatusInflict);
-  if (effects.onEffectTrigger) scaled.onEffectTrigger = scaleEffect(effects.onEffectTrigger);
-
-  // Scale counter effects
-  if (effects.counter) {
-    scaled.counter = { ...effects.counter };
-    if (scaled.counter.bonusPerStack) scaled.counter.bonusPerStack = effects.counter.bonusPerStack * multiplier;
-    if (scaled.counter.perStack) scaled.counter.perStack = effects.counter.perStack * multiplier;
-    if (scaled.counter.maxBonus) scaled.counter.maxBonus = effects.counter.maxBonus * multiplier;
-  }
 
   // Scale pipeline effects
   if (effects.pipeline) {
@@ -420,395 +369,6 @@ export function generateShopChips(floor, ownedChipIds = [], count = 3, category 
       baseEffects: chip.effects  // Keep original for reference
     };
   });
-}
-
-/**
- * Calculate total stat bonuses from owned chips
- * @param {array} chips - Array of chip objects owned by player
- */
-export function calculateChipStatBonuses(chips) {
-  const bonuses = { str: 0, agi: 0, vit: 0, int: 0, dex: 0, luk: 0 };
-
-  for (const chip of chips) {
-    if (chip.category === 'stat' && chip.effects?.stats) {
-      for (const [stat, value] of Object.entries(chip.effects.stats)) {
-        if (bonuses.hasOwnProperty(stat)) {
-          bonuses[stat] += value;
-        }
-      }
-    }
-  }
-
-  return bonuses;
-}
-
-/**
- * Process on-hit chip effects
- * @param {array} chips - Array of chip objects
- * @param {object} target - The enemy being hit
- * @returns {array} Array of triggered effects
- */
-export function processOnHitChips(chips, target) {
-  const triggered = [];
-
-  for (const chip of chips) {
-    if (chip.category === 'onHit' && chip.effects?.onHit) {
-      const effect = chip.effects.onHit;
-      if (Math.random() < effect.chance) {
-        triggered.push({
-          chipId: chip.id,
-          chipName: chip.name,
-          status: effect.status,
-          duration: effect.duration,
-          bonusDamage: effect.bonusDamage || 0
-        });
-      }
-    }
-  }
-
-  return triggered;
-}
-
-/**
- * Process on-kill chip effects
- * @param {array} chips - Array of chip objects
- * @returns {object} Combined effects from all triggered chips
- */
-export function processOnKillChips(chips) {
-  const effects = {
-    heal: 0,
-    aspdBoost: 0,
-    aspdDuration: 0,
-    doubleCredits: false,
-    aoeExplosion: false,
-    aoeDamage: 0,
-    buffs: [],
-    bonusCurrency: 0,
-    extraChipDrop: false
-  };
-
-  for (const chip of chips) {
-    if (chip.category === 'onEffect' && chip.effects?.onKill) {
-      const effect = chip.effects.onKill;
-      if (Math.random() < effect.chance) {
-        if (effect.heal) effects.heal += effect.heal;
-        if (effect.aspdBoost) {
-          effects.aspdBoost += effect.aspdBoost;
-          effects.aspdDuration = Math.max(effects.aspdDuration, effect.duration || 0);
-        }
-        if (effect.doubleCredits) effects.doubleCredits = true;
-        if (effect.aoeExplosion) {
-          effects.aoeExplosion = true;
-          effects.aoeDamage += effect.aoeDamage || 0;
-        }
-        if (effect.buff) {
-          effects.buffs.push({
-            chipId: chip.id,
-            chipName: chip.name,
-            buff: effect.buff,
-            value: effect.value,
-            duration: effect.duration
-          });
-        }
-        if (effect.bonusCurrency) effects.bonusCurrency += effect.bonusCurrency;
-        if (effect.extraChipDrop) effects.extraChipDrop = true;
-      }
-    }
-  }
-
-  return effects;
-}
-
-/**
- * Process on-damage chip effects
- * @param {array} chips - Array of chip objects
- * @param {number} damage - Incoming damage
- * @returns {object} Modified damage and effects
- */
-export function processOnDamageChips(chips, damage) {
-  let finalDamage = damage;
-  const triggered = [];
-  let heal = 0;
-  const buffs = [];
-  let negated = false;
-
-  for (const chip of chips) {
-    if (chip.category === 'onEffect' && chip.effects?.onDamage) {
-      const effect = chip.effects.onDamage;
-      if (Math.random() < effect.chance) {
-        if (effect.damageReduction) {
-          finalDamage = Math.floor(finalDamage * (1 - effect.damageReduction));
-          triggered.push({
-            chipId: chip.id,
-            chipName: chip.name,
-            reduction: effect.damageReduction
-          });
-        }
-        if (effect.heal) {
-          heal += effect.heal;
-          triggered.push({
-            chipId: chip.id,
-            chipName: chip.name,
-            heal: effect.heal
-          });
-        }
-        if (effect.buff) {
-          buffs.push({
-            chipId: chip.id,
-            chipName: chip.name,
-            buff: effect.buff,
-            value: effect.value,
-            duration: effect.duration
-          });
-        }
-        if (effect.negateDamage) {
-          negated = true;
-          finalDamage = 0;
-          triggered.push({
-            chipId: chip.id,
-            chipName: chip.name,
-            negated: true
-          });
-        }
-      }
-    }
-  }
-
-  return { finalDamage, triggered, heal, buffs, negated };
-}
-
-/**
- * Process on-crit chip effects
- * @param {array} chips - Array of chip objects
- * @returns {object} Combined effects from all triggered chips
- */
-export function processOnCritChips(chips) {
-  const effects = {
-    heal: 0,
-    buffs: [],
-    bonusHit: false,
-    doubleCritDamage: false
-  };
-
-  for (const chip of chips) {
-    if (chip.category === 'onEffect' && chip.effects?.onCrit) {
-      const effect = chip.effects.onCrit;
-      if (Math.random() < effect.chance) {
-        if (effect.heal) effects.heal += effect.heal;
-        if (effect.buff) {
-          effects.buffs.push({
-            chipId: chip.id,
-            chipName: chip.name,
-            buff: effect.buff,
-            value: effect.value,
-            duration: effect.duration
-          });
-        }
-        if (effect.bonusHit) effects.bonusHit = true;
-        if (effect.doubleCritDamage) effects.doubleCritDamage = true;
-      }
-    }
-  }
-
-  return effects;
-}
-
-/**
- * Process on-dodge chip effects
- * @param {array} chips - Array of chip objects
- * @returns {object} Combined effects from all triggered chips
- */
-export function processOnDodgeChips(chips) {
-  const effects = {
-    buffs: [],
-    counterAttack: false
-  };
-
-  for (const chip of chips) {
-    if (chip.category === 'onEffect' && chip.effects?.onDodge) {
-      const effect = chip.effects.onDodge;
-      if (Math.random() < effect.chance) {
-        if (effect.buff) {
-          effects.buffs.push({
-            chipId: chip.id,
-            chipName: chip.name,
-            buff: effect.buff,
-            value: effect.value,
-            duration: effect.duration
-          });
-        }
-        if (effect.counterAttack) effects.counterAttack = true;
-      }
-    }
-  }
-
-  return effects;
-}
-
-/**
- * Process on-low-hp chip effects (when player would die)
- * @param {array} chips - Array of chip objects
- * @returns {object} Combined effects from all triggered chips
- */
-export function processOnLowHpChips(chips) {
-  const effects = {
-    surviveWithOneHp: false,
-    shield: 0
-  };
-
-  for (const chip of chips) {
-    if (chip.category === 'onEffect' && chip.effects?.onLowHp) {
-      const effect = chip.effects.onLowHp;
-      if (Math.random() < effect.chance) {
-        if (effect.surviveWithOneHp) effects.surviveWithOneHp = true;
-        if (effect.shield) effects.shield += effect.shield;
-      }
-    }
-  }
-
-  return effects;
-}
-
-/**
- * Process on-heal chip effects
- * @param {array} chips - Array of chip objects
- * @param {number} healAmount - Base heal amount
- * @returns {object} Modified heal amount and effects
- */
-export function processOnHealChips(chips, healAmount) {
-  let finalHeal = healAmount;
-  const effects = {
-    bonusHeal: 0,
-    buffs: []
-  };
-
-  for (const chip of chips) {
-    if (chip.category === 'onEffect' && chip.effects?.onHeal) {
-      const effect = chip.effects.onHeal;
-      if (Math.random() < effect.chance) {
-        if (effect.bonusHeal) {
-          effects.bonusHeal += effect.bonusHeal;
-          finalHeal += effect.bonusHeal;
-        }
-        if (effect.buff) {
-          effects.buffs.push({
-            chipId: chip.id,
-            chipName: chip.name,
-            buff: effect.buff,
-            value: effect.value,
-            duration: effect.duration
-          });
-        }
-      }
-    }
-  }
-
-  return { finalHeal, ...effects };
-}
-
-/**
- * Process on-room-enter chip effects
- * @param {array} chips - Array of chip objects
- * @returns {object} Combined effects from all triggered chips
- */
-export function processOnRoomEnterChips(chips) {
-  const effects = {
-    heal: 0,
-    buffs: [],
-    rareSpawn: false,
-    stealth: false,
-    stunAllEnemies: 0
-  };
-
-  for (const chip of chips) {
-    if (chip.category === 'onEffect' && chip.effects?.onRoomEnter) {
-      const effect = chip.effects.onRoomEnter;
-      if (Math.random() < effect.chance) {
-        if (effect.heal) effects.heal += effect.heal;
-        if (effect.buff) {
-          effects.buffs.push({
-            chipId: chip.id,
-            chipName: chip.name,
-            buff: effect.buff,
-            value: effect.value,
-            duration: effect.duration
-          });
-        }
-        if (effect.rareSpawn) effects.rareSpawn = true;
-        if (effect.stealth) effects.stealth = true;
-        if (effect.stunAllEnemies) effects.stunAllEnemies = Math.max(effects.stunAllEnemies, effect.stunAllEnemies);
-      }
-    }
-  }
-
-  return effects;
-}
-
-/**
- * Process on-status-inflict chip effects
- * @param {array} chips - Array of chip objects
- * @param {string} statusType - The type of status that was inflicted
- * @returns {object} Combined effects from all triggered chips
- */
-export function processOnStatusInflictChips(chips, statusType) {
-  const effects = {
-    heal: 0,
-    extendDuration: 0
-  };
-
-  for (const chip of chips) {
-    if (chip.category === 'onEffect' && chip.effects?.onStatusInflict) {
-      const effect = chip.effects.onStatusInflict;
-      // Check if this chip triggers for this status type
-      if (effect.statusType && effect.statusType !== statusType) continue;
-
-      if (Math.random() < effect.chance) {
-        if (effect.heal) effects.heal += effect.heal;
-        if (effect.extendStun) effects.extendDuration += effect.extendStun;
-      }
-    }
-  }
-
-  return effects;
-}
-
-/**
- * Process special on-hit chip effects (cascade, enemyMissNextTurn)
- * @param {array} chips - Array of chip objects
- * @returns {object} Special effects to apply
- */
-export function processSpecialOnHitChips(chips) {
-  const effects = {
-    cascade: false,
-    enemyMissNextTurn: false
-  };
-
-  for (const chip of chips) {
-    if (chip.category === 'onEffect' && chip.effects?.onHit) {
-      const effect = chip.effects.onHit;
-      if (Math.random() < effect.chance) {
-        if (effect.cascade) effects.cascade = true;
-        if (effect.enemyMissNextTurn) effects.enemyMissNextTurn = true;
-      }
-    }
-  }
-
-  return effects;
-}
-
-/**
- * Check if dice chip triggers a retrigger of chip effects
- * @param {array} chips - Player's equipped chips
- * @returns {boolean} Whether retrigger should occur
- */
-export function checkDiceRetrigger(chips) {
-  const diceChip = chips.find(c => c.id === 'dice');
-  if (!diceChip) return false;
-
-  const effect = diceChip.effects?.onEffectTrigger;
-  if (!effect || !effect.retrigger) return false;
-
-  return Math.random() < effect.chance;
 }
 
 // ============ PIPELINE CHIP EXECUTION ============
@@ -1262,126 +822,6 @@ export function getWeaponPipelineChips(player) {
 }
 
 /**
- * Update counter chip stacks
- * @param {object} counterStacks - Current stack counts { chipId: count }
- * @param {array} chips - Player's chips
- * @param {string} trigger - The trigger type (onKill, onCrit, onRoomEnter, etc.)
- * @param {object} context - Additional context (statusType for onStatusInflict)
- */
-export function updateCounterStacks(counterStacks, chips, trigger, context = {}) {
-  const updated = { ...counterStacks };
-
-  for (const chip of chips) {
-    if (chip.category === 'counter' && chip.effects?.counter) {
-      const counter = chip.effects.counter;
-      if (counter.trigger === trigger) {
-        // Check additional conditions
-        if (trigger === 'onStatusInflict' && counter.statusType !== context.statusType) {
-          continue;
-        }
-
-        const currentStacks = updated[chip.id] || 0;
-        if (currentStacks < counter.maxStacks) {
-          updated[chip.id] = currentStacks + 1;
-        }
-      }
-    }
-  }
-
-  return updated;
-}
-
-/**
- * Calculate counter chip bonuses based on run stats
- * @param {array} chips - Player's chips
- * @param {object} runStats - Run-wide statistics tracking
- */
-export function calculateCounterBonuses(chips, runStats = {}) {
-  const bonuses = {
-    // Stats
-    str: 0,
-    agi: 0,
-    vit: 0,
-    int: 0,
-    dex: 0,
-    luk: 0,
-    // Combat
-    damagePercent: 0,
-    flatDamage: 0,
-    critChance: 0,
-    critDamage: 0,
-    aspd: 0,
-    dodge: 0,
-    // Status
-    statusDuration: 0,
-    statusChance: 0,
-    triggerChance: 0,
-    effectPotency: 0,
-    // Utility
-    allStats: 0,
-    maxHp: 0,
-    itemFind: 0,
-    currencyGain: 0,
-    inventorySlots: 0,
-    healAtRoomStart: 0
-  };
-
-  for (const chip of chips) {
-    if (chip.category === 'counter' && chip.effects?.counter) {
-      const counter = chip.effects.counter;
-      let stacks = 0;
-
-      // Calculate stacks based on trigger type
-      switch (counter.trigger) {
-        case 'onKill':
-          stacks = runStats.kills || 0;
-          break;
-        case 'onCrit':
-          stacks = runStats.critsLanded || 0;
-          break;
-        case 'onStatusInflict':
-          // Count specific status type or all statuses
-          if (counter.statusType && runStats.statusesApplied) {
-            stacks = runStats.statusesApplied[counter.statusType] || 0;
-          } else if (runStats.statusesApplied) {
-            stacks = Object.values(runStats.statusesApplied).reduce((sum, v) => sum + v, 0);
-          }
-          break;
-        case 'onRoomEnter':
-          stacks = runStats.roomsCleared || 0;
-          break;
-        case 'onChipCount':
-          // Count chips in specific category
-          if (counter.chipCategory) {
-            stacks = chips.filter(c => c.category === counter.chipCategory).length;
-          }
-          break;
-        case 'onUniqueChipType':
-          // Count unique chip categories owned
-          const uniqueCategories = new Set(chips.map(c => c.category));
-          stacks = uniqueCategories.size;
-          break;
-        default:
-          stacks = 0;
-      }
-
-      // Apply max stacks cap
-      stacks = Math.min(stacks, counter.maxStacks);
-
-      // Calculate bonus
-      const bonus = stacks * counter.perStack;
-
-      // Add to appropriate bonus type
-      if (bonuses.hasOwnProperty(counter.bonus)) {
-        bonuses[counter.bonus] += bonus;
-      }
-    }
-  }
-
-  return bonuses;
-}
-
-/**
  * Get chip display info for UI
  */
 export function getChipDisplayInfo(chip) {
@@ -1390,31 +830,9 @@ export function getChipDisplayInfo(chip) {
 
   let effectText = '';
 
-  if (chip.category === 'stat' && chip.effects?.stats) {
-    const stats = Object.entries(chip.effects.stats)
-      .map(([stat, val]) => `${stat.toUpperCase()}+${val}`)
-      .join(', ');
-    effectText = stats;
-  } else if (chip.category === 'onHit' && chip.effects?.onHit) {
-    const e = chip.effects.onHit;
-    effectText = `${Math.round(e.chance * 100)}% ${e.status} (${e.duration}T)`;
-    if (e.bonusDamage) effectText += ` +${e.bonusDamage}dmg`;
-  } else if (chip.category === 'onEffect') {
-    if (chip.effects?.onKill) {
-      const e = chip.effects.onKill;
-      const parts = [];
-      if (e.heal) parts.push(`回復${e.heal}HP`);
-      if (e.aspdBoost) parts.push(`ASPD+${Math.round(e.aspdBoost * 100)}%`);
-      if (e.doubleCredits) parts.push('報酬2倍');
-      if (e.aoeExplosion) parts.push(`爆発${e.aoeDamage}dmg`);
-      effectText = `${Math.round(e.chance * 100)}% ${parts.join(', ')}`;
-    } else if (chip.effects?.onDamage) {
-      const e = chip.effects.onDamage;
-      effectText = `${Math.round(e.chance * 100)}% ダメージ${Math.round(e.damageReduction * 100)}%軽減`;
-    }
-  } else if (chip.category === 'counter' && chip.effects?.counter) {
-    const c = chip.effects.counter;
-    effectText = `+${c.perStack}%/${c.trigger} (最大${c.perStack * c.maxStacks}%)`;
+  // Pipeline chips show their display text
+  if (chip.category === 'pipeline' && chip.effects?.pipeline) {
+    effectText = chip.effects.pipeline.displayText || '';
   }
 
   return {
@@ -1583,52 +1001,6 @@ export function unequipChip(player, equipmentSlot, chipId) {
 }
 
 /**
- * Calculate total bonuses from all equipped chips
- * Combines STAT chip bonuses and COUNTER chip bonuses
- * @param {object} player - Player object
- * @param {object} runStats - Run-wide statistics for counter chips
- * @returns {object} Combined bonus object
- */
-export function calculateEquippedChipBonuses(player, runStats = {}) {
-  const equippedChips = getEquippedChips(player);
-
-  // Get STAT chip bonuses
-  const statBonuses = calculateChipStatBonuses(equippedChips);
-
-  // Get COUNTER chip bonuses
-  const counterBonuses = calculateCounterBonuses(equippedChips, runStats);
-
-  // Combine all bonuses
-  return {
-    // Primary stats from STAT chips
-    str: statBonuses.str,
-    agi: statBonuses.agi,
-    vit: statBonuses.vit,
-    int: statBonuses.int,
-    dex: statBonuses.dex,
-    luk: statBonuses.luk,
-
-    // Counter bonuses
-    damagePercent: counterBonuses.damagePercent,
-    flatDamage: counterBonuses.flatDamage,
-    critChance: counterBonuses.critChance,
-    critDamage: counterBonuses.critDamage,
-    aspd: counterBonuses.aspd,
-    dodge: counterBonuses.dodge,
-    statusDuration: counterBonuses.statusDuration,
-    statusChance: counterBonuses.statusChance,
-    triggerChance: counterBonuses.triggerChance,
-    effectPotency: counterBonuses.effectPotency,
-    allStats: counterBonuses.allStats,
-    maxHp: counterBonuses.maxHp,
-    itemFind: counterBonuses.itemFind,
-    currencyGain: counterBonuses.currencyGain,
-    inventorySlots: counterBonuses.inventorySlots,
-    healAtRoomStart: counterBonuses.healAtRoomStart
-  };
-}
-
-/**
  * Get chip loadout information for UI
  * @param {object} player - Player object
  * @param {object} runStats - Run-wide statistics
@@ -1676,12 +1048,8 @@ export function getChipLoadout(player, runStats = {}) {
       return getChipDisplayInfo(mergedChip);
     });
 
-  // Total bonuses
-  const totalBonuses = calculateEquippedChipBonuses(player, runStats);
-
   return {
     equipment: equipmentLoadout,
-    inventory: inventoryChips,
-    totalBonuses
+    inventory: inventoryChips
   };
 }

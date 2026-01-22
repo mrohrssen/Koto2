@@ -22,20 +22,6 @@ export {
   CHIP_RARITIES,
   getChip,
   getChipPrice,
-  calculateChipStatBonuses,
-  processOnHitChips,
-  processOnKillChips,
-  processOnDamageChips,
-  processOnCritChips,
-  processOnDodgeChips,
-  processOnLowHpChips,
-  processOnHealChips,
-  processOnRoomEnterChips,
-  processOnStatusInflictChips,
-  processSpecialOnHitChips,
-  checkDiceRetrigger,
-  updateCounterStacks,
-  calculateCounterBonuses,
   getChipDisplayInfo,
   generateShopChips,
 
@@ -45,7 +31,6 @@ export {
   getUsedChipSlots,
   equipChip,
   unequipChip,
-  calculateEquippedChipBonuses,
   getChipLoadout,
 
   // Pipeline execution

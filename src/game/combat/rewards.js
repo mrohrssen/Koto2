@@ -3,7 +3,7 @@
  * Victory handling and equipment refinement
  */
 
-import { getItem, calculateEquipmentBonuses, getRefinementCost, getBreakChance, REFINEMENT_CONFIG, processOnKillChips, getEquippedChips } from '../items.js';
+import { getItem, calculateEquipmentBonuses, getRefinementCost, getBreakChance, REFINEMENT_CONFIG } from '../items.js';
 import { getPlayerCombatStats, getEnemyCombatStats } from './mechanics.js';
 import { applyDamageToEnemy } from './enemy.js';
 import { processDeathEffects } from './status-effects.js';
@@ -73,40 +73,6 @@ export function processVictory(player, enemy, run) {
   if (deathEffects.healAmount > 0) {
     rewards.debugHeal = deathEffects.healAmount;
     rewards.deathEffectsTriggered = deathEffects.effectsTriggered;
-  }
-
-  // Apply on-kill effects from equipped chips only
-  const equippedChips = getEquippedChips(player);
-  if (equippedChips.length > 0) {
-    const chipEffects = processOnKillChips(equippedChips);
-    rewards.chipEffects = {};
-
-    // Healing from chips
-    if (chipEffects.heal > 0) {
-      const hpBefore = player.hp;
-      player.hp = Math.min(player.maxHp, player.hp + chipEffects.heal);
-      rewards.chipEffects.heal = player.hp - hpBefore;
-    }
-
-    // ASPD boost from chips (stored for combat system)
-    if (chipEffects.aspdBoost > 0) {
-      rewards.chipEffects.aspdBoost = chipEffects.aspdBoost;
-      rewards.chipEffects.aspdDuration = chipEffects.aspdDuration;
-    }
-
-    // Double credits from chips
-    if (chipEffects.doubleCredits) {
-      const bonusGold = rewards.gold;
-      player.gold += bonusGold;
-      rewards.gold += bonusGold;
-      rewards.chipEffects.doubleCredits = bonusGold;
-    }
-
-    // AOE explosion flag for UI
-    if (chipEffects.aoeExplosion) {
-      rewards.chipEffects.aoeExplosion = true;
-      rewards.chipEffects.aoeDamage = chipEffects.aoeDamage;
-    }
   }
 
   // Update run stats

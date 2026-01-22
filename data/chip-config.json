@@ -1,29 +1,5 @@
 {
   "categories": {
-    "STAT": {
-      "id": "stat",
-      "name": "ステータス",
-      "nameEn": "Stat",
-      "description": "Flat stat bonuses"
-    },
-    "ON_HIT": {
-      "id": "onHit",
-      "name": "オンヒット",
-      "nameEn": "On Hit",
-      "description": "Chance to trigger effect when hitting enemy"
-    },
-    "ON_EFFECT": {
-      "id": "onEffect",
-      "name": "オンエフェクト",
-      "nameEn": "On Effect",
-      "description": "Triggers on specific conditions"
-    },
-    "COUNTER": {
-      "id": "counter",
-      "name": "カウンター",
-      "nameEn": "Counter",
-      "description": "Scales with accumulation during run"
-    },
     "PIPELINE": {
       "id": "pipeline",
       "name": "パイプライン",
