@@ -272,11 +272,23 @@ async function showNextVocabCard() {
 
 async function getNextWord() {
   try {
-    const response = await fetch('/api/vocab/next');
+    const keys = getApiKeys();
+    if (!keys.jpdbApiKey) {
+      return { word: '食べる', meanings: ['eat'], reading: 'たべる' };
+    }
+    const response = await fetch('/api/game/due-words', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jpdbApiKey: keys.jpdbApiKey, limit: 1 }),
+    });
     if (!response.ok) throw new Error('No word available');
-    return await response.json();
+    const data = await response.json();
+    if (data.words && data.words.length > 0) {
+      const w = data.words[0];
+      return { word: w.word || w.spelling, meanings: w.meanings || [], reading: w.reading || '' };
+    }
+    throw new Error('Empty response');
   } catch {
-    // Fallback word
     return { word: '食べる', meanings: ['eat'], reading: 'たべる' };
   }
 }
@@ -312,20 +324,26 @@ function handleContextAction() {
 }
 
 async function handleCardSwipe(direction) {
-  const correct = direction === 'right';
+  // Right = knew it = player attacks; Left = didn't know = enemy attacks
+  const attackerType = direction === 'right' ? 'player' : 'enemy';
   try {
-    await fetch('/api/game/attack', {
+    const resp = await fetch('/api/game/combat-cycle', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ correct }),
+      body: JSON.stringify({ attackerType }),
     });
+    const result = await resp.json();
+    if (result.state) {
+      gameState = result.state;
+    } else {
+      await loadGameState();
+    }
   } catch (err) {
-    console.error('Attack failed:', err);
+    console.error('Combat cycle failed:', err);
+    await loadGameState();
   }
 
-  await loadGameState();
-
-  if (gameState.phase === 'combat') {
+  if (gameState.phase === 'combat' || gameState.run?.inCombat) {
     updateScene();
     renderChips();
     hpBar.updatePlayerHP(gameState.player.hp, gameState.player.maxHp);
@@ -344,10 +362,13 @@ function handleCardFlip() {
 }
 
 function handleUseSkill(chipIndex) {
-  fetch('/api/game/use-skill', {
+  const equipped = gameState.player?.equippedChips || [];
+  const chip = equipped[chipIndex];
+  if (!chip) return;
+  fetch('/api/game/use-chip-skill', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chipIndex }),
+    body: JSON.stringify({ chipId: chip.id }),
   }).then(() => loadGameState()).then(() => {
     renderChips();
     updateScene();
@@ -355,7 +376,7 @@ function handleUseSkill(chipIndex) {
 }
 
 async function handleNewGame() {
-  await fetch('/api/game/new', { method: 'POST' });
+  await fetch('/api/game/create-player', { method: 'POST' });
   await loadGameState();
   updateUI();
 }
@@ -370,7 +391,11 @@ async function confirmWardSelection() {
   const selected = document.querySelector('.ward-option.selected');
   if (!selected) return;
   const index = parseInt(selected.dataset.index);
-  const resp = await fetch('/api/game/select-ward', {
+  // Use select-starting-ward for first floor, select-next-ward for subsequent
+  const endpoint = (gameState.run?.floor || 1) <= 1
+    ? '/api/game/select-starting-ward'
+    : '/api/game/select-next-ward';
+  const resp = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ wardIndex: index }),
@@ -387,19 +412,19 @@ async function proceedToNextRoom() {
 }
 
 async function startCombat() {
-  const resp = await fetch('/api/game/start-combat', { method: 'POST' });
+  const resp = await fetch('/api/game/start-encounter', { method: 'POST' });
   gameState = await resp.json();
   updateUI();
 }
 
 async function advanceFloor() {
-  const resp = await fetch('/api/game/advance-floor', { method: 'POST' });
+  const resp = await fetch('/api/game/next-floor', { method: 'POST' });
   gameState = await resp.json();
   updateUI();
 }
 
 async function handleChipSelection(index) {
-  const resp = await fetch('/api/game/select-chip', {
+  const resp = await fetch('/api/game/post-combat-shop-buy', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chipIndex: index }),
@@ -411,14 +436,14 @@ async function handleChipSelection(index) {
 
 function handleReturnToHub() {
   takeover.close('gameover');
-  fetch('/api/game/return-hub', { method: 'POST' })
+  fetch('/api/game/forfeit', { method: 'POST' })
     .then(() => loadGameState())
     .then(() => updateUI());
 }
 
 async function handleResetRun() {
   if (!confirm('Abandon current run?')) return;
-  await fetch('/api/game/reset-run', { method: 'POST' });
+  await fetch('/api/game/forfeit', { method: 'POST' });
   await loadGameState();
   takeover.closeAll();
   updateUI();
