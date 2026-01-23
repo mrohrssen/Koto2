@@ -917,3 +917,29 @@ export function getChipLoadout(player) {
     inventory: inventoryChips
   };
 }
+
+// ============ CHIP CHARGE HELPERS ============
+
+export function getChipCharge(player, chipId) {
+  return player._chipCharges?.[chipId] || 0;
+}
+
+export function incrementAllEquippedCharges(player) {
+  const equippedChips = player.equipment?.weapon?.equippedChips || [];
+  if (!player._chipCharges) player._chipCharges = {};
+  for (const chipId of equippedChips) {
+    player._chipCharges[chipId] = (player._chipCharges[chipId] || 0) + 1;
+  }
+}
+
+export function resetChipCharge(player, chipId) {
+  if (!player._chipCharges) player._chipCharges = {};
+  player._chipCharges[chipId] = 0;
+}
+
+export function isChipSkillReady(player, chipId) {
+  const chip = getChip(chipId);
+  if (!chip?.skill) return false;
+  const charge = getChipCharge(player, chipId);
+  return charge >= chip.skill.chargesRequired;
+}
