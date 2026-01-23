@@ -14,6 +14,17 @@
         "triggerChance": 1,
         "displayText": "+5"
       }
+    },
+    "skill": {
+      "id": "fullCharge",
+      "name": "満充電",
+      "nameEn": "Full Charge",
+      "description": "次の攻撃に+20ダメージ",
+      "descriptionEn": "Next attack deals +20 damage",
+      "type": "buff",
+      "buffType": "PRE_PIPELINE",
+      "effect": { "flatBonus": 20 },
+      "chargesRequired": 5
     }
   },
   "speaker": {
@@ -31,6 +42,17 @@
         "triggerChance": 0.8,
         "displayText": "×1.5"
       }
+    },
+    "skill": {
+      "id": "maxVolume",
+      "name": "最大音量",
+      "nameEn": "Max Volume",
+      "description": "次の攻撃×1.8倍",
+      "descriptionEn": "Next attack ×1.8 multiplier",
+      "type": "buff",
+      "buffType": "POST_PIPELINE",
+      "effect": { "multiplier": 1.8 },
+      "chargesRequired": 5
     }
   },
   "glasses": {
@@ -48,6 +70,17 @@
         "triggerChance": 1,
         "displayText": "+20% CRIT"
       }
+    },
+    "skill": {
+      "id": "weakSpot",
+      "name": "急所狙い",
+      "nameEn": "Weak Spot",
+      "description": "次の攻撃×1.3倍",
+      "descriptionEn": "Next attack ×1.3 multiplier",
+      "type": "buff",
+      "buffType": "POST_PIPELINE",
+      "effect": { "multiplier": 1.3 },
+      "chargesRequired": 5
     }
   },
   "lightbulb": {
@@ -65,6 +98,16 @@
         "triggerChance": 0.5,
         "displayText": "×2"
       }
+    },
+    "skill": {
+      "id": "flash",
+      "name": "閃光",
+      "nameEn": "Flash",
+      "description": "40ダメージを直接与える",
+      "descriptionEn": "Deal 40 damage directly",
+      "type": "instant",
+      "effect": { "damage": 40 },
+      "chargesRequired": 5
     }
   },
   "scissors": {
@@ -86,6 +129,18 @@
           "threshold": 0.3
         }
       }
+    },
+    "skill": {
+      "id": "finalCut",
+      "name": "とどめ切り",
+      "nameEn": "Final Cut",
+      "description": "敵HP30%以下で×2.0倍",
+      "descriptionEn": "Next attack ×2.0 vs enemies below 30% HP",
+      "type": "buff",
+      "buffType": "POST_PIPELINE",
+      "effect": { "multiplier": 2.0 },
+      "condition": "enemyBelow30",
+      "chargesRequired": 5
     }
   },
   "clock": {
@@ -104,6 +159,17 @@
         "displayText": "∞ LOOP",
         "maxRecursions": 10
       }
+    },
+    "skill": {
+      "id": "rewind",
+      "name": "巻き戻し",
+      "nameEn": "Rewind",
+      "description": "パイプラインを2回実行",
+      "descriptionEn": "Execute pipeline twice (sum results)",
+      "type": "buff",
+      "buffType": "PIPELINE_MODIFIER",
+      "effect": { "runTwice": true },
+      "chargesRequired": 5
     }
   },
   "charcoal": {
@@ -121,6 +187,16 @@
         "triggerChance": 1,
         "displayText": "×10 SACRIFICE"
       }
+    },
+    "skill": {
+      "id": "warmth",
+      "name": "温もり",
+      "nameEn": "Warmth",
+      "description": "HP30回復",
+      "descriptionEn": "Heal 30 HP",
+      "type": "instant",
+      "effect": { "heal": 30 },
+      "chargesRequired": 5
     }
   },
   "book": {
@@ -138,6 +214,16 @@
         "triggerChance": 0.25,
         "displayText": "+3 STACK"
       }
+    },
+    "skill": {
+      "id": "totalRelease",
+      "name": "全放出",
+      "nameEn": "Total Release",
+      "description": "スタック×5のダメージ",
+      "descriptionEn": "Deal 5× current stack count as damage",
+      "type": "instant",
+      "effect": { "damageFromStacks": true, "stackMultiplier": 5 },
+      "chargesRequired": 5
     }
   },
   "eraser": {
@@ -156,6 +242,18 @@
         "triggerChance": 1,
         "displayText": "+40 MINIMAL"
       }
+    },
+    "skill": {
+      "id": "cleanSlate",
+      "name": "白紙",
+      "nameEn": "Clean Slate",
+      "description": "空きスロット2+で+60ダメージ",
+      "descriptionEn": "Next attack +60 if 2+ empty weapon slots",
+      "type": "buff",
+      "buffType": "PRE_PIPELINE",
+      "effect": { "flatBonus": 60 },
+      "condition": "emptySlots>=2",
+      "chargesRequired": 5
     }
   },
   "onigiri": {
@@ -174,6 +272,16 @@
         "triggerChance": 1,
         "displayText": "+5 ❤️5"
       }
+    },
+    "skill": {
+      "id": "extraServing",
+      "name": "大盛り",
+      "nameEn": "Extra Serving",
+      "description": "HP25回復",
+      "descriptionEn": "Heal 25 HP",
+      "type": "instant",
+      "effect": { "heal": 25 },
+      "chargesRequired": 5
     }
   },
   "wallet": {
@@ -191,6 +299,16 @@
         "triggerChance": 1,
         "displayText": "+KILLS"
       }
+    },
+    "skill": {
+      "id": "cashOut",
+      "name": "清算",
+      "nameEn": "Cash Out",
+      "description": "キル数×2のダメージ",
+      "descriptionEn": "Deal (kills this run × 2) damage",
+      "type": "instant",
+      "effect": { "damageFromKills": true, "killMultiplier": 2 },
+      "chargesRequired": 5
     }
   },
   "straw": {
@@ -209,6 +327,16 @@
         "triggerChance": 1,
         "displayText": "-2 ❤️10"
       }
+    },
+    "skill": {
+      "id": "bigSip",
+      "name": "一気飲み",
+      "nameEn": "Big Sip",
+      "description": "HP20回復、10ダメージ",
+      "descriptionEn": "Heal 20 HP, deal 10 damage",
+      "type": "instant",
+      "effect": { "heal": 20, "damage": 10 },
+      "chargesRequired": 5
     }
   },
   "key": {
@@ -226,6 +354,18 @@
         "triggerChance": 1,
         "displayText": "+10% BOSS"
       }
+    },
+    "skill": {
+      "id": "trumpCard",
+      "name": "奥の手",
+      "nameEn": "Trump Card",
+      "description": "ボスに×1.3倍",
+      "descriptionEn": "Next attack ×1.3 vs bosses only",
+      "type": "buff",
+      "buffType": "POST_PIPELINE",
+      "effect": { "multiplier": 1.3 },
+      "condition": "isBoss",
+      "chargesRequired": 5
     }
   },
   "egg": {
@@ -244,6 +384,17 @@
         "triggerChance": 1,
         "displayText": "xPHOENIX"
       }
+    },
+    "skill": {
+      "id": "revival",
+      "name": "復活",
+      "nameEn": "Revival",
+      "description": "致死ダメージ時HP1で生存",
+      "descriptionEn": "Survive lethal hit with 1 HP",
+      "type": "buff",
+      "buffType": "DEFENSIVE",
+      "effect": { "surviveLethal": true },
+      "chargesRequired": 5
     }
   },
   "fireworks": {
@@ -262,6 +413,17 @@
         "triggerChance": 1,
         "displayText": "+50 ⚠️"
       }
+    },
+    "skill": {
+      "id": "grandFinale",
+      "name": "打ち上げ",
+      "nameEn": "Grand Finale",
+      "description": "次の攻撃に+15ダメージ",
+      "descriptionEn": "Next attack +15 flat damage",
+      "type": "buff",
+      "buffType": "PRE_PIPELINE",
+      "effect": { "flatBonus": 15 },
+      "chargesRequired": 5
     }
   },
   "mirror": {
@@ -278,6 +440,17 @@
         "triggerChance": 1,
         "displayText": "COPY"
       }
+    },
+    "skill": {
+      "id": "facingMirrors",
+      "name": "合わせ鏡",
+      "nameEn": "Facing Mirrors",
+      "description": "次のチップが2回発動",
+      "descriptionEn": "Next chip in pipeline fires twice",
+      "type": "buff",
+      "buffType": "PIPELINE_MODIFIER",
+      "effect": { "nextChipDouble": true },
+      "chargesRequired": 5
     }
   },
   "feather": {
@@ -295,6 +468,17 @@
         "triggerChance": 1,
         "displayText": "+EMPTY"
       }
+    },
+    "skill": {
+      "id": "lightStep",
+      "name": "身軽",
+      "nameEn": "Light Step",
+      "description": "空スロット毎に+30ダメージ",
+      "descriptionEn": "Next attack +30 per empty weapon slot",
+      "type": "buff",
+      "buffType": "PRE_PIPELINE",
+      "effect": { "flatBonusPerEmpty": 30 },
+      "chargesRequired": 5
     }
   },
   "drum": {
@@ -313,6 +497,16 @@
         "triggerChance": 1,
         "displayText": "BURST"
       }
+    },
+    "skill": {
+      "id": "powerHit",
+      "name": "強打",
+      "nameEn": "Power Hit",
+      "description": "攻撃力×3のダメージ",
+      "descriptionEn": "Deal 3× player.attack as direct damage",
+      "type": "instant",
+      "effect": { "damageFromAttack": true, "attackMultiplier": 3 },
+      "chargesRequired": 5
     }
   }
 }
