@@ -314,10 +314,6 @@ async function claimStartingChip(itemIndex) {
 /** Buy an item from the regular shop
  * @param {string} itemId - Item identifier
  */
-async function shopBuy(itemId) {
-  return apiCall('/shop-buy', 'POST', { itemId });
-}
-
 /** Buy an item from the post-combat shop
  * @param {number} itemIndex - Index of the item to buy
  */
@@ -561,7 +557,6 @@ export {
   startBoss,
   // Shop/economy endpoints
   claimStartingChip,
-  shopBuy,
   postCombatShopBuy,
   shopSkip,
   postCombatShopRefresh,

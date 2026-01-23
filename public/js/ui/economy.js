@@ -64,7 +64,6 @@ let apiGetRefinePreview = null;
 let apiRefineItem = null;
 let apiClaimStartingChip = null;
 let apiPostCombatShopBuy = null;
-let apiShopBuy = null;
 let apiShopSkip = null;
 let apiPostCombatShopRefresh = null;
 
@@ -105,7 +104,6 @@ export function init(callbacks) {
   apiRefineItem = callbacks.apiRefineItem;
   apiClaimStartingChip = callbacks.apiClaimStartingChip;
   apiPostCombatShopBuy = callbacks.apiPostCombatShopBuy;
-  apiShopBuy = callbacks.apiShopBuy;
   apiShopSkip = callbacks.apiShopSkip;
   apiPostCombatShopRefresh = callbacks.apiPostCombatShopRefresh;
 }
@@ -783,8 +781,8 @@ export function showPostCombatShopContent() {
     if (shopTitle) shopTitle.textContent = 'チップを選択';
     if (shopGreeting) shopGreeting.textContent = '「冒険の始まりに、一つチップをあげよう。選びな」';
   } else {
-    if (shopTitle) shopTitle.textContent = '商人が現れた！';
-    if (shopGreeting) shopGreeting.textContent = '「戦いの後はいい買い物日和だな。一つだけ選びな」';
+    if (shopTitle) shopTitle.textContent = 'チップを獲得！';
+    if (shopGreeting) shopGreeting.textContent = '「戦いの成果だ。一つ選びな」';
   }
 
   // Update gold display
@@ -805,9 +803,7 @@ export function showPostCombatShopContent() {
   const shopItemsContainer = document.getElementById('shop-items');
   if (shopItemsContainer) {
     const itemsHtml = shop.items.map((item, index) => {
-      const canAfford = isStartingChips || gold >= item.price;
       let itemClass = `shop-item rarity-${item.rarity || 'common'}`;
-      if (!canAfford) itemClass += ' cannot-afford';
 
       // Build stats string
       const statsStr = formatItemStats(item);
@@ -821,9 +817,9 @@ export function showPostCombatShopContent() {
       }[item.rarity] || '';
 
       const iconId = item.baseId || item.itemId.replace(/_(common|uncommon|rare|epic|legendary)$/, '');
-      const priceDisplay = isStartingChips ? 'FREE' : `¥${item.price}`;
+      const priceDisplay = 'FREE';
       const buyAction = isStartingChips ? `claimStartingChip(${index})` : `buyFromShop(${index})`;
-      const buyLabel = isStartingChips ? '選択' : 'Buy';
+      const buyLabel = '選択';
 
       return `
         <div class="${itemClass}" data-item-index="${index}" onclick="selectShopItem(${index})">
@@ -837,10 +833,9 @@ export function showPostCombatShopContent() {
             ${statsStr ? `<div class="shop-item-stats">${statsStr}</div>` : ''}
           </div>
           <div class="shop-item-meta">
-            <span class="shop-item-price${isStartingChips ? ' free-chip' : ''}">${priceDisplay}</span>
+            <span class="shop-item-price free-chip">${priceDisplay}</span>
             <button class="shop-item-buy"
-                    onclick="event.stopPropagation(); ${buyAction}"
-                    ${!canAfford ? 'disabled' : ''}>
+                    onclick="event.stopPropagation(); ${buyAction}">
               ${buyLabel}
             </button>
           </div>
@@ -901,16 +896,12 @@ export function resetShopModal() {
 }
 
 /**
- * Buy from post-combat shop
- * @param {number} itemIndex - Index of item to buy
+ * Claim chip from post-combat reward
+ * @param {number} itemIndex - Index of chip to claim
  */
 export async function buyFromShop(itemIndex) {
-  // Check if this is a post-combat shop or regular merchant
   const gameState = getGameState();
-  const isPostCombatShop = gameState.run?.postCombatShop?.active;
-  const result = isPostCombatShop
-    ? await apiPostCombatShopBuy(itemIndex)
-    : await apiShopBuy(itemIndex);
+  const result = await apiPostCombatShopBuy(itemIndex);
 
   if (result) {
     // Hide shop modal and reset state
@@ -920,7 +911,7 @@ export async function buyFromShop(itemIndex) {
     if (result.state) {
       updateGameState({ ...gameState, ...result.state });
     }
-    narration.showNarration(result.item?.name ? result.item.name + 'を購入した！' : '購入完了！');
+    narration.showNarration(result.item?.name ? result.item.name + 'を獲得した！' : '獲得完了！');
   }
 }
 

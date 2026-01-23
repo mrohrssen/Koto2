@@ -347,7 +347,7 @@ export function generatePostCombatShop(floor, ownedChipIds = []) {
   // Only show pipeline chips in post-combat shop
   const chips = generateShopChips(floor, ownedChipIds, 3, 'pipeline');
 
-  // Transform to shop item format
+  // Transform to shop item format (chips are free post-combat rewards)
   return chips.map(chip => {
     const displayInfo = getChipDisplayInfo(chip);
     return {
@@ -356,7 +356,7 @@ export function generatePostCombatShop(floor, ownedChipIds = []) {
       name: chip.name,
       nameEn: chip.nameEn,
       description: chip.description,
-      price: displayInfo.price,
+      price: 0,
       type: 'chip',
       category: chip.category,
       rarity: chip.rarity,

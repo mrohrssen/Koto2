@@ -616,21 +616,6 @@ export class GameManager {
     return this.explorationService.startRoomEncounter();
   }
 
-  /**
-   * Add item to player inventory
-   */
-  _addItemToInventory(itemId, quantity) {
-    return this.explorationService.addItemToInventory(itemId, quantity);
-  }
-
-  /**
-   * Equip an item from inventory
-   * @param {string} itemId - ID of item to equip
-   * @returns {object} Result with equipped item info
-   */
-  equipItem(itemId) {
-    return this.explorationService.equipItem(itemId);
-  }
 
   // ============ ENCOUNTER MANAGEMENT ============
 

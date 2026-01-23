@@ -191,7 +191,7 @@ The unused turn-based `/attack` system (never called by frontend):
 
 ---
 
-## Phase 6: Make Post-Combat Chips FREE
+## Phase 6: Make Post-Combat Chips FREE ✅ DONE
 
 ### `src/game/services/exploration-service.js` - `buyFromPostCombatShop()`
 - Remove gold check and gold deduction
@@ -344,4 +344,15 @@ The "realtime" naming is confusing since it's actually a vocab-pause turn-based 
   - Removed loop.js delegations: disarmTrap, triggerTrap, lootBody, skipBody, skipTreasure, openTreasure, getShopInventory, buyFromShop
   - Kept: /shop-skip (used by frontend for post-combat shop skip)
   - 84/84 E2E pass, 49/49 unit tests pass
-- **Phases 6-10**: Pending
+- **Phase 6**: ✅ Complete (~130 lines removed, 6 files changed)
+  - Set `price: 0` on generated post-combat chips in rooms.js
+  - Removed gold check/deduction from `buyFromPostCombatShop()`
+  - Added auto-equip: chip goes to weapon slot if fewer than 5 equipped
+  - Removed legacy equipment/consumable handling from buy function
+  - Updated frontend: all post-combat chips show "FREE", button label "選択", narration says 獲得 instead of 購入
+  - Removed dead `shopBuy` from api.js (endpoint removed in Phase 5)
+  - Removed dead `apiShopBuy` callback from economy.js and game.js
+  - Removed dead `equipItem()` and `addItemToInventory()` from exploration-service.js and loop.js (endpoints removed in Phase 4)
+  - Removed dead `getItem` import from exploration-service.js
+  - 84/84 E2E pass, 49/49 unit tests pass
+- **Phases 7-10**: Pending

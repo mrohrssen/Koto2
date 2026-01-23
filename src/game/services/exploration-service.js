@@ -30,9 +30,6 @@ import {
   getWardInfo
 } from '../rooms.js';
 
-import {
-  getItem
-} from '../items.js';
 
 
 
@@ -324,63 +321,41 @@ export class ExplorationService {
     const item = shop.items[itemIndex];
     const player = this.gm.run.player;
 
-    // Check if player has enough gold
-    if (player.gold < item.price) {
-      throw new Error('Not enough gold');
+    // Add chip to player's chip inventory (unique only)
+    if (!player.chips) {
+      player.chips = [];
+    }
+    const alreadyOwned = player.chips.some(c => c.id === item.itemId);
+    if (!alreadyOwned) {
+      player.chips.push({
+        id: item.itemId,
+        name: item.name,
+        nameEn: item.nameEn,
+        category: item.category,
+        rarity: item.rarity,
+        effects: item.effects
+      });
     }
 
-    // Deduct gold
-    player.gold -= item.price;
-
-    // Handle item based on type
-    if (item.type === 'chip') {
-      // Add chip to player's chip inventory (unique only)
-      if (!player.chips) {
-        player.chips = [];
+    // Auto-equip if weapon has fewer than 5 chips
+    const equippedChips = player.equipment?.weapon?.equippedChips || [];
+    if (equippedChips.length < 5 && !equippedChips.includes(item.itemId)) {
+      if (!player.equipment.weapon.equippedChips) {
+        player.equipment.weapon.equippedChips = [];
       }
-      // Check if player already owns this chip
-      const alreadyOwned = player.chips.some(c => c.id === item.itemId);
-      if (!alreadyOwned) {
-        player.chips.push({
-          id: item.itemId,
-          name: item.name,
-          nameEn: item.nameEn,
-          category: item.category,
-          rarity: item.rarity,
-          effects: item.effects
-        });
-      }
-    } else {
-      // Legacy handling for equipment/consumables
-      const itemData = getItem(item.itemId);
-      if (itemData) {
-        if (item.type === 'equipment') {
-          if (!player.equipmentInventory) {
-            player.equipmentInventory = [];
-          }
-          player.equipmentInventory.push({ id: item.itemId });
-        } else {
-          const existing = player.items.find(i => i.id === item.itemId);
-          if (existing) {
-            existing.quantity = (existing.quantity || 1) + 1;
-          } else {
-            player.items.push({ id: item.itemId, quantity: 1 });
-          }
-        }
-      }
+      player.equipment.weapon.equippedChips.push(item.itemId);
     }
 
     // Close shop
     this.gm.run.postCombatShop.active = false;
 
-    this.gm.narrate(`${item.name}を購入した！`);
+    this.gm.narrate(`${item.name}を獲得した！`);
     this.gm.emitState();
-
 
     return {
       success: true,
       item: item,
-      goldSpent: item.price,
+      goldSpent: 0,
       goldRemaining: player.gold
     };
   }
@@ -430,88 +405,4 @@ export class ExplorationService {
 
   // ============ INVENTORY HELPERS ============
 
-  /**
-   * Add item to player inventory
-   */
-  addItemToInventory(itemId, quantity) {
-    if (itemId === 'gold') {
-      this.gm.run.player.gold += quantity;
-      this.gm.run.stats.goldEarned += quantity;
-      return;
-    }
-
-    const existing = this.gm.run.player.items.find(i => i.id === itemId);
-    if (existing) {
-      existing.quantity += quantity;
-    } else {
-      this.gm.run.player.items.push({ id: itemId, quantity });
-    }
-  }
-
-  /**
-   * Equip an item from inventory
-   * @param {string} itemId - ID of item to equip
-   * @returns {object} Result with equipped item info
-   */
-  equipItem(itemId) {
-    const player = this.gm.run?.player || this.gm.player;
-    if (!player) {
-      throw new Error('No player found');
-    }
-
-    // Find item in inventory
-    const invItem = player.items.find(i => i.id === itemId);
-    if (!invItem || invItem.quantity <= 0) {
-      throw new Error('Item not in inventory');
-    }
-
-    // Get item definition
-    const itemDef = getItem(itemId);
-    if (!itemDef) {
-      throw new Error('Unknown item');
-    }
-
-    // Check if it's equipment
-    if (!itemDef.slot) {
-      throw new Error('Item cannot be equipped');
-    }
-
-    const slot = itemDef.slot;
-    const currentEquipped = player.equipment[slot];
-
-    // Unequip current item if any (put back in inventory)
-    if (currentEquipped) {
-      const currentId = currentEquipped.id || currentEquipped;
-      const existingInv = player.items.find(i => i.id === currentId);
-      if (existingInv) {
-        existingInv.quantity += 1;
-      } else {
-        player.items.push({ id: currentId, quantity: 1 });
-      }
-    }
-
-    // Equip new item
-    player.equipment[slot] = { id: itemId, refinement: invItem.refinement || 0 };
-
-    // Remove from inventory
-    invItem.quantity -= 1;
-    if (invItem.quantity <= 0) {
-      player.items = player.items.filter(i => i.id !== itemId);
-    }
-
-    // Sync to base player if in run
-    if (this.gm.run?.player && this.gm.player) {
-      this.gm.player.equipment = { ...player.equipment };
-      this.gm.player.items = [...player.items];
-    }
-
-    // Note: saveGame is handled by the server after equipItem returns
-    this.gm.emitState();
-
-    return {
-      equipped: itemDef.name,
-      slot: slot,
-      unequipped: currentEquipped ? getItem(currentEquipped.id || currentEquipped)?.name : null
-    };
-  }
 }

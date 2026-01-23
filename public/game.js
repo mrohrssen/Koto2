@@ -140,7 +140,6 @@ import {
   startEncounter as apiStartEncounter,
   startBoss as apiStartBoss,
   claimStartingChip as apiClaimStartingChip,
-  shopBuy as apiShopBuy,
   postCombatShopBuy as apiPostCombatShopBuy,
   shopSkip as apiShopSkip,
   postCombatShopRefresh as apiPostCombatShopRefresh,
@@ -429,7 +428,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     apiRefineItem: apiRefineItem,
     apiClaimStartingChip: apiClaimStartingChip,
     apiPostCombatShopBuy: apiPostCombatShopBuy,
-    apiShopBuy: apiShopBuy,
     apiShopSkip: apiShopSkip,
     apiPostCombatShopRefresh: apiPostCombatShopRefresh
   });
