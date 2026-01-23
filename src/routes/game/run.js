@@ -112,7 +112,11 @@ export default function createRunRoutes({
       const player = gameManager.run?.player || gameManager.player;
       const runStats = gameManager.run?.runStats || {};
       const loadout = getChipLoadout(player, runStats);
-      res.json(loadout);
+      res.json({
+        ...loadout,
+        chipCharges: player._chipCharges || {},
+        chipLevels: player._chipLevels || {}
+      });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
