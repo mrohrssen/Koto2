@@ -183,6 +183,15 @@ export async function initCombatWords() {
 }
 
 /**
+ * Get the next word from combat queue for flash card display
+ * @returns {Object|null} Word object { word, meanings, reading, vid, sid }
+ */
+export function getNextCombatWord() {
+  if (combatWords.length === 0) return null;
+  return combatWords[selectedWordIndex] || combatWords[0];
+}
+
+/**
  * Render word cards to DOM
  */
 export function renderWordCards() {

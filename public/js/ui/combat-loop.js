@@ -50,6 +50,7 @@ let getChipLoadoutCache = null;
 let setChipLoadoutCache = null;
 let getEnemyDialogueActive = null;
 let getDialogueDismissPromise = null;
+let showFlashCard = null;
 
 // Utility
 let delay = null;
@@ -86,6 +87,7 @@ export function init(callbacks) {
   setChipLoadoutCache = callbacks.setChipLoadoutCache;
   getEnemyDialogueActive = callbacks.getEnemyDialogueActive;
   getDialogueDismissPromise = callbacks.getDialogueDismissPromise;
+  showFlashCard = callbacks.showFlashCard;
 
   // Utility
   delay = callbacks.delay;
@@ -135,6 +137,13 @@ export function cleanupCombat() {
   combatPausedForVocab = false;
 }
 
+function showNextFlashCardFromQueue() {
+  const word = wordPractice.getNextCombatWord?.();
+  if (word && showFlashCard) {
+    showFlashCard(word);
+  }
+}
+
 // ============ COMBAT LOOP FUNCTIONS ============
 
 /**
@@ -163,6 +172,11 @@ export function startCombatLoop() {
 
   // Initialize word practice cards
   wordPractice.initCombatWords();
+
+  // After initCombatWords fetches words, show first flash card
+  setTimeout(() => {
+    showNextFlashCardFromQueue();
+  }, 300);
 
   console.log('[Combat] Started paused - review a word to begin attacking');
   // Combat starts paused, player must review a vocab word to earn first attack
@@ -452,6 +466,8 @@ export async function executeEnemyAttackThenPause() {
     // Pause combat - wait for vocab review before next cycle
     enemyAttackPending = false;
     combatPausedForVocab = true;
+    // Show next flash card for the next review
+    showNextFlashCardFromQueue();
     console.log('[Combat] Paused for vocab review. Review a word to continue.');
 
   } catch (error) {
