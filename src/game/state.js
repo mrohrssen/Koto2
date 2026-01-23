@@ -224,7 +224,7 @@ export function createNewPlayer(name = "Hunter") {
 
 // ============ RUN STATE ============
 export function createNewRun(player) {
-  return {
+  const run = {
     active: true,
     floor: 1,
     maxFloors: 7,
@@ -289,6 +289,13 @@ export function createNewRun(player) {
       }
     }
   };
+
+  // Initialize chip state on run player copy
+  run.player._chipCharges = {};
+  run.player._chipLevels = {};
+  run.player._activeBuffs = [];
+
+  return run;
 }
 
 // ============ COMBAT STATE ============
