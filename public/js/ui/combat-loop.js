@@ -149,16 +149,14 @@ export function startCombatLoop() {
   // Start paused - require vocab review before first attack
   combatPausedForVocab = true;
 
-  // Fetch chip loadout for combat display (non-blocking)
-  if (!getChipLoadoutCache()) {
-    fetch(`${API_BASE}/api/game/chip-loadout`)
-      .then(r => r.json())
-      .then(data => {
-        setChipLoadoutCache(data);
-        updateActionPanel(); // Re-render with chips
-      })
-      .catch(err => console.warn('[Combat] Failed to fetch chip loadout:', err));
-  }
+  // Fetch chip loadout for combat display (always refresh to catch auto-equipped chips)
+  fetch(`${API_BASE}/api/game/chip-loadout`)
+    .then(r => r.json())
+    .then(data => {
+      setChipLoadoutCache(data);
+      updateActionPanel(); // Re-render with chips
+    })
+    .catch(err => console.warn('[Combat] Failed to fetch chip loadout:', err));
 
   // Update action panel to show combat indicator
   updateActionPanel();
@@ -351,6 +349,16 @@ export async function executeEnemyAttack() {
     characterUI.updateEnemyHPBar(result.enemyHp);
     characterUI.updatePlayerHPBar(result.playerHp);
 
+    // Update chip charges after enemy turn (charges incremented on backend)
+    if (result.chipCharges) {
+      const cache = getChipLoadoutCache();
+      if (cache) {
+        cache.chipCharges = result.chipCharges;
+        setChipLoadoutCache(cache);
+        updateActionPanel();
+      }
+    }
+
     // Check if combat ended
     if (result.combatEnded) {
       stopCombatLoop(result);
@@ -424,6 +432,16 @@ export async function executeEnemyAttackThenPause() {
     // Update HP bars
     characterUI.updateEnemyHPBar(result.enemyHp);
     characterUI.updatePlayerHPBar(result.playerHp);
+
+    // Update chip charges after enemy turn (charges incremented on backend)
+    if (result.chipCharges) {
+      const cache = getChipLoadoutCache();
+      if (cache) {
+        cache.chipCharges = result.chipCharges;
+        setChipLoadoutCache(cache);
+        updateActionPanel();
+      }
+    }
 
     // Check if combat ended
     if (result.combatEnded) {

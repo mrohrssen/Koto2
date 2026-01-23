@@ -507,10 +507,19 @@ export class GameManager {
     }
     this.run.player.chips.push({
       id: item.itemId,
-      baseId: item.baseId,
       name: item.name,
       rarity: item.rarity
     });
+
+    // Auto-equip if weapon has fewer than 5 chips
+    const player = this.run.player;
+    const equippedChips = player.equipment?.weapon?.equippedChips || [];
+    if (equippedChips.length < 5 && !equippedChips.includes(item.itemId)) {
+      if (!player.equipment.weapon.equippedChips) {
+        player.equipment.weapon.equippedChips = [];
+      }
+      player.equipment.weapon.equippedChips.push(item.itemId);
+    }
 
     // Clear the starting chip shop
     this.run.startingChipShop.active = false;

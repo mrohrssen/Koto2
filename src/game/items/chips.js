@@ -226,9 +226,8 @@ export function generateShopChips(floor, ownedChipIds = [], count = 3, category 
   // Get all base chips (we'll assign rarity randomly)
   // Filter out chips player already owns (by base ID)
   // Optionally filter by category
-  const ownedBaseIds = ownedChipIds.map(id => id.split('_')[0]);
   const availableChips = Object.values(CHIPS).filter(chip =>
-    !ownedBaseIds.includes(chip.id) &&
+    !ownedChipIds.includes(chip.id) &&
     (category === null || chip.category === category)
   );
 
@@ -246,12 +245,8 @@ export function generateShopChips(floor, ownedChipIds = [], count = 3, category 
     const rarityInfo = CHIP_RARITIES[rolledRarity];
     const scaledEffects = applyRarityMultiplier(chip.effects, rarityInfo.statMultiplier);
 
-    // Generate unique ID for this rarity version
-    const uniqueId = `${chip.id}_${rolledRarity}`;
-
     return {
-      id: uniqueId,
-      baseId: chip.id,
+      id: chip.id,
       name: chip.name,
       nameEn: chip.nameEn,
       description: chip.description,

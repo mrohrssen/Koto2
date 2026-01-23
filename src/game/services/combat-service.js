@@ -383,6 +383,9 @@ export class CombatService {
       }
     }
 
+    // Include chip charges for frontend display update
+    result.chipCharges = this.gm.run.player._chipCharges || {};
+
     // Combat continues
     return result;
   }
