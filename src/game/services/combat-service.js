@@ -10,7 +10,6 @@
  * - CombatService (class) - Combat lifecycle management
  *
  * DEPENDENCIES:
- * - ../events.js - Event bus for combat notifications
  * - ../state.js - Combat state factory, level up checks
  * - ../enemies.js - Enemy generation, boss drops
  * - ../combat/index.js - Combat mechanics, victory processing
@@ -18,7 +17,7 @@
  * - ../dm.js - Narration helpers
  */
 
-import { eventBus, GameEvents } from '../events.js';
+
 import { createCombatState, checkLevelUp } from '../state.js';
 import {
   generateEnemy,
@@ -83,12 +82,6 @@ export class CombatService {
     this.gm.narrate(getSimpleNarration('combatStart', enemy));
     this.gm.emitState();
 
-    // Emit event for other services
-    eventBus.emit(GameEvents.COMBAT_STARTED, {
-      enemy: this.gm.combat.enemy,
-      isBoss: false,
-      isAmbush: false
-    });
 
     return {
       enemy: this.gm.combat.enemy,
@@ -119,12 +112,6 @@ export class CombatService {
     this.gm.narrate(getSimpleNarration(isFinal ? 'finalBossAppear' : 'bossAppear', boss));
     this.gm.emitState();
 
-    // Emit event for other services
-    eventBus.emit(GameEvents.COMBAT_STARTED, {
-      enemy: this.gm.combat.enemy,
-      isBoss: true,
-      isAmbush: false
-    });
 
     return {
       enemy: this.gm.combat.enemy,
@@ -301,13 +288,6 @@ export class CombatService {
 
     this.gm.narrate(getSimpleNarration('playerAttack', result));
 
-    // Emit damage event
-    eventBus.emit(GameEvents.DAMAGE_DEALT, {
-      source: 'player',
-      target: this.gm.combat.enemy.name,
-      damage: result.totalDamage,
-      attackType
-    });
 
     if (result.enemyDefeated) {
       return this.handleVictory();
@@ -543,12 +523,6 @@ export class CombatService {
         // End combat
         this.gm.combat.active = false;
 
-        // Emit combat ended event
-        eventBus.emit(GameEvents.COMBAT_ENDED, {
-          outcome: 'victory',
-          isBoss,
-          rewards: { gold: rewards.gold, xp: rewards.xp }
-        });
 
         // Update player HP in result
         result.playerHp.current = this.gm.run.player.hp;
@@ -592,10 +566,6 @@ export class CombatService {
         this.gm.updateLifetimeStats(false);
         result.essenceEarned = essenceReward.essence;
 
-        // Emit combat ended event
-        eventBus.emit(GameEvents.COMBAT_ENDED, {
-          outcome: 'defeat'
-        });
 
         return result;
       }
@@ -698,12 +668,6 @@ export class CombatService {
 
     this.gm.emitState();
 
-    // Emit event for other services
-    eventBus.emit(GameEvents.COMBAT_ENDED, {
-      outcome: 'victory',
-      isBoss,
-      rewards: { gold: rewards.goldGained, xp: rewards.xpGained, chips: rewards.chipsDropped }
-    });
 
     return {
       type: 'victory',
@@ -735,10 +699,6 @@ export class CombatService {
     this.gm.narrate(getSimpleNarration('defeat', this.gm.combat.enemy));
     this.gm.emitState();
 
-    // Emit event for other services
-    eventBus.emit(GameEvents.COMBAT_ENDED, {
-      outcome: 'defeat'
-    });
 
     return {
       type: 'defeat',
@@ -777,10 +737,7 @@ export class CombatService {
 
     this.gm.emitState();
 
-    // Emit event for other services
-    eventBus.emit(GameEvents.COMBAT_ENDED, {
-      outcome: 'game_victory'
-    });
+
 
     return {
       type: 'game_victory',

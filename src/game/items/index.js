@@ -1,53 +1,8 @@
 /**
  * Items Module - Main Entry Point
- * Re-exports all item definitions and utility functions
- *
- * SIMPLIFIED MODE:
- * Equipment provides no stat bonuses.
- * Items are kept for cosmetic/future use only.
+ * Re-exports the chip system (the only active item system)
+ * and provides stub functions for backwards compatibility.
  */
-
-// Import all item collections
-import { CONSUMABLES } from './consumables.js';
-import { WEAPONS, ARMOR, SHIELDS, ACCESSORIES } from './equipment.js';
-import { HACKER_EQUIPMENT, getClassStartingEquipment, getMaxChipSlots } from './class-equipment.js';
-import { SKILLS } from './skills.js';
-import {
-  CHIPS,
-  CHIP_CATEGORIES,
-  CHIP_RARITIES,
-  CHIP_UPGRADE_CONFIG,
-  PIPELINE_EFFECTS,
-  getChip,
-  getChipFromInventory,
-  getChipsByCategory,
-  getChipsByRarity,
-  getChipPrice,
-  getChipDisplayInfo,
-  generateShopChips,
-  // Chip upgrade functions
-  getNextRarity,
-  getUpgradeCost,
-  getUpgradeFailureChance,
-  createUpgradedChip,
-  attemptChipUpgrade,
-  // Chip slot management
-  getChipSlotCost,
-  getEquippedChips,
-  getUsedChipSlots,
-  equipChip,
-  unequipChip,
-  getChipLoadout,
-  // Pipeline execution
-  executeChipPipeline,
-  getWeaponPipelineChips
-} from './chips.js';
-
-// Re-export item collections
-export { CONSUMABLES } from './consumables.js';
-export { WEAPONS, ARMOR, SHIELDS, ACCESSORIES } from './equipment.js';
-export { HACKER_EQUIPMENT, getClassStartingEquipment, getMaxChipSlots } from './class-equipment.js';
-export { SKILLS } from './skills.js';
 
 // Re-export chip system
 export {
@@ -81,49 +36,48 @@ export {
   getWeaponPipelineChips
 } from './chips.js';
 
-// ============ HELPER FUNCTIONS ============
+import { CHIPS } from './chips.js';
+
+// ============ STUB FUNCTIONS ============
+// Kept for backwards compatibility with consumers that still import them.
+// These return safe defaults since the underlying data (equipment, skills, etc.) has been removed.
 
 export function getItem(itemId) {
-  // Check chips first, then class equipment, consumables, and equipment
-  if (CHIPS[itemId]) return CHIPS[itemId];
-  // Check Hacker class equipment
-  for (const equip of Object.values(HACKER_EQUIPMENT)) {
-    if (equip.id === itemId) return equip;
-  }
-  return CONSUMABLES[itemId] || WEAPONS[itemId] || ARMOR[itemId] || SHIELDS[itemId] || ACCESSORIES[itemId] || null;
+  return CHIPS[itemId] || null;
 }
 
 export function getSkill(skillId) {
-  return SKILLS[skillId] || null;
+  return null;
 }
 
-export function getAllItems() {
+export function getClassStartingEquipment(playerClass) {
+  return { weapon: { id: 'defaultWeapon', equippedChips: [] } };
+}
+
+export function calculateEquipmentBonuses(player) {
   return {
-    ...CONSUMABLES,
-    ...WEAPONS,
-    ...ARMOR,
-    ...SHIELDS,
-    ...ACCESSORIES
+    str: 0, agi: 0, vit: 0, int: 0, dex: 0, luk: 0,
+    atk: 0, def: 0, matk: 0, mdef: 0, hit: 0, flee: 0, crit: 0, perfectDodge: 0,
+    maxHp: 0, maxSp: 0,
+    doubleStrike: 0, armorPen: 0, damageBonus: 0, vsBossDamage: 0, damageReduction: 0,
+    onKillHp: 0, onKillSp: 0,
+    healingBonus: 0,
+    statusInflictBonus: 0, statusImmune: [],
+    goldFind: 0, dropRate: 0, xpGain: 0,
+    grantsTeleport: false,
+    counterAttack: 0
   };
 }
 
-export function getItemsByType(type) {
-  switch (type) {
-    case 'consumable': return CONSUMABLES;
-    case 'weapon': return WEAPONS;
-    case 'armor': return ARMOR;
-    case 'shield': return SHIELDS;
-    case 'accessory': return ACCESSORIES;
-    default: return {};
-  }
+export function hasRangedWeapon(player) {
+  return false;
 }
 
 // ============ REFINEMENT SYSTEM ============
-// Ragnarok Online-style equipment upgrading with break chance
 
 export const REFINEMENT_CONFIG = {
   maxLevel: 10,
-  bonusPerLevel: 0.05,  // 5% per level
+  bonusPerLevel: 0.05,
   rarityMultipliers: {
     common: 1,
     uncommon: 1.2,
@@ -145,92 +99,28 @@ export const REFINEMENT_CONFIG = {
   }
 };
 
-/**
- * Get the stat multiplier for a refined item
- * @param {object} item - Equipment item with optional refinement property
- * @returns {number} Multiplier (1.0 for +0, 1.5 for +10)
- */
 export function getRefinementBonus(item) {
   const level = item?.refinement || 0;
   return 1 + (level * REFINEMENT_CONFIG.bonusPerLevel);
 }
 
-/**
- * Get the gold cost to refine an item to the next level
- * @param {object} itemDef - Item definition from getItem()
- * @param {number} targetLevel - The level we're refining TO (1-10)
- * @returns {number} Gold cost
- */
 export function getRefinementCost(itemDef, targetLevel) {
   if (targetLevel < 1 || targetLevel > 10) return Infinity;
-
   const baseCost = REFINEMENT_CONFIG.levels[targetLevel].cost;
   const rarityMult = REFINEMENT_CONFIG.rarityMultipliers[itemDef?.rarity] || 1;
-
   return Math.floor(baseCost * rarityMult);
 }
 
-/**
- * Get the chance of item breaking during refinement
- * @param {object} itemDef - Item definition from getItem()
- * @param {number} targetLevel - The level we're refining TO (1-10)
- * @returns {number} Break chance (0-1)
- */
 export function getBreakChance(itemDef, targetLevel) {
-  // Indestructible items (legendary) never break
   if (itemDef?.indestructible) return 0;
-
   if (targetLevel < 1 || targetLevel > 10) return 1;
-
   return REFINEMENT_CONFIG.levels[targetLevel].breakChance;
 }
 
-/**
- * Get display name for an item including refinement level
- * @param {object} item - Equipment item { id, refinement? }
- * @returns {string} Display name like "エクスカリバー +5"
- */
 export function getItemDisplayName(item) {
   if (!item) return '';
-
   const itemDef = getItem(item.id || item);
   const baseName = itemDef?.name || item.id || 'Unknown';
   const level = item.refinement || 0;
-
   return level > 0 ? `${baseName} +${level}` : baseName;
-}
-
-// Import and re-export set bonuses
-export { ITEM_SETS, getEquippedSetBonuses } from './sets.js';
-import { getEquippedSetBonuses } from './sets.js';
-
-/**
- * Calculate equipment stat bonuses - SIMPLIFIED
- * Returns empty bonuses (no stat bonuses in simplified mode)
- * Equipment is kept for cosmetic/future use but provides no stats
- */
-export function calculateEquipmentBonuses(player) {
-  // SIMPLIFIED: No equipment stat bonuses
-  return {
-    str: 0, agi: 0, vit: 0, int: 0, dex: 0, luk: 0,
-    atk: 0, def: 0, matk: 0, mdef: 0, hit: 0, flee: 0, crit: 0, perfectDodge: 0,
-    maxHp: 0, maxSp: 0,
-    doubleStrike: 0, armorPen: 0, damageBonus: 0, vsBossDamage: 0, damageReduction: 0,
-    onKillHp: 0, onKillSp: 0,
-    healingBonus: 0,
-    statusInflictBonus: 0, statusImmune: [],
-    goldFind: 0, dropRate: 0, xpGain: 0,
-    grantsTeleport: false,
-    counterAttack: 0
-  };
-}
-
-/**
- * Check if player has a ranged weapon equipped
- */
-export function hasRangedWeapon(player) {
-  const weapon = player.equipment?.weapon;
-  if (!weapon) return false;
-  const weaponDef = getItem(weapon.id || weapon);
-  return weaponDef?.isRanged || false;
 }

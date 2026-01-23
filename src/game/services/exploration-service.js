@@ -16,10 +16,9 @@
  * - items.js for inventory and equipment management
  * - combat.js for refinement mechanics
  * - items/chips.js for chip upgrade mechanics
- * - events.js for event bus notifications
  */
 
-import { eventBus, GameEvents } from '../events.js';
+
 import { getSimpleNarration } from '../dm.js';
 import { generateEncounterCount, recalculatePlayerResources } from '../state.js';
 
@@ -101,7 +100,6 @@ export class ExplorationService {
 
     const wardInfo = getWardInfo(wardId);
 
-    eventBus.emit(GameEvents.WARD_SELECTED, { wardId, wardInfo, floor: 1 });
 
     return {
       success: true,
@@ -146,8 +144,6 @@ export class ExplorationService {
 
     const wardInfo = getWardInfo(wardId);
 
-    eventBus.emit(GameEvents.WARD_SELECTED, { wardId, wardInfo, floor: this.gm.run.floor });
-    eventBus.emit(GameEvents.FLOOR_ENTERED, { floor: this.gm.run.floor, ward: wardId });
 
     return {
       success: true,
@@ -205,7 +201,6 @@ export class ExplorationService {
 
     this.gm.run.floor++;
 
-    eventBus.emit(GameEvents.FLOOR_ENTERED, { floor: this.gm.run.floor });
 
     return this.enterFloor();
   }
@@ -268,7 +263,6 @@ export class ExplorationService {
     this.gm.narrate(narration);
     this.gm.emitState();
 
-    eventBus.emit(GameEvents.ROOM_ENTERED, { room: nextRoom, roomNumber: this.gm.run.currentRoom + 1 });
 
     return {
       room: nextRoom,
@@ -627,7 +621,6 @@ export class ExplorationService {
     this.gm.narrate(`${item.name}を購入した！`);
     this.gm.emitState();
 
-    eventBus.emit(GameEvents.ITEM_PURCHASED, { item, gold: item.price });
 
     return {
       success: true,
@@ -737,7 +730,6 @@ export class ExplorationService {
 
     this.gm.emitState();
 
-    eventBus.emit(GameEvents.ITEM_PURCHASED, { itemId, quantity, gold: totalCost });
 
     return {
       type: 'purchase',

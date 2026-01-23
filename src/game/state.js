@@ -33,7 +33,6 @@ import {
   getStartingPlayerStats
 } from './stats.js';
 import { calculateEquipmentBonuses, getClassStartingEquipment } from './items.js';
-import { CLASS_CONFIG } from './items/class-equipment.js';
 
 // ============ META-PROGRESSION STATE ============
 

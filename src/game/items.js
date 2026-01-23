@@ -4,19 +4,7 @@
  */
 
 export {
-  // Item collections
-  CONSUMABLES,
-  WEAPONS,
-  ARMOR,
-  SHIELDS,
-  ACCESSORIES,
-  SKILLS,
-
-  // Hacker class equipment (NEO TOKYO)
-  HACKER_EQUIPMENT,
-  getClassStartingEquipment,
-
-  // Chip system (NEO TOKYO augmentations)
+  // Chip system
   CHIPS,
   CHIP_CATEGORIES,
   CHIP_RARITIES,
@@ -38,22 +26,17 @@ export {
   executeChipPipeline,
   getWeaponPipelineChips,
 
-  // Helper functions
+  // Stub helpers (backwards compat)
   getItem,
   getSkill,
-  getAllItems,
-  getItemsByType,
+  getClassStartingEquipment,
+  calculateEquipmentBonuses,
+  hasRangedWeapon,
 
   // Refinement system
   REFINEMENT_CONFIG,
   getRefinementBonus,
   getRefinementCost,
   getBreakChance,
-  getItemDisplayName,
-
-  // Set bonuses
-  ITEM_SETS,
-  getEquippedSetBonuses,
-  calculateEquipmentBonuses,
-  hasRangedWeapon
+  getItemDisplayName
 } from './items/index.js';

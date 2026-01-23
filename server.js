@@ -109,7 +109,7 @@ import {
 
 // Game imports
 import { GameManager } from './src/game/loop.js';
-import { getItem, getSkill, CONSUMABLES, SKILLS, calculateEquipmentBonuses } from './src/game/items.js';
+import { getItem, getSkill, calculateEquipmentBonuses } from './src/game/items.js';
 import { getChipLoadout, equipChip, unequipChip } from './src/game/items/chips.js';
 import { generateNarration, getSimpleNarration } from './src/game/dm.js';
 import { ACHIEVEMENTS, allocateStat, getFullPlayerStats } from './src/game/state.js';
