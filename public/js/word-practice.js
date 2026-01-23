@@ -30,7 +30,7 @@ let escapeHtml = null;
 let updatePlayerHPBar = null;
 let showDamageNumber = null;
 let resumeCombatAfterVocab = null;
-let isRealtimeCombatActive = null;
+let isCombatActive = null;
 let isEnemyDialogueActive = null;
 let shuffleArray = null;
 
@@ -73,7 +73,7 @@ export function init(config) {
   updatePlayerHPBar = config.updatePlayerHPBar;
   showDamageNumber = config.showDamageNumber;
   resumeCombatAfterVocab = config.resumeCombatAfterVocab;
-  isRealtimeCombatActive = config.isRealtimeCombatActive;
+  isCombatActive = config.isCombatActive;
   isEnemyDialogueActive = config.isEnemyDialogueActive;
   shuffleArray = config.shuffleArray;
   apiSendJpdbReview = config.sendJpdbReview;
@@ -247,7 +247,7 @@ export function prefetchCombatWordAudio() {
  * Keyboard handler for word practice
  */
 export function handleWordPracticeKeydown(e) {
-  if (!isRealtimeCombatActive || !isRealtimeCombatActive()) return;
+  if (!isCombatActive || !isCombatActive()) return;
   if (isEnemyDialogueActive && isEnemyDialogueActive()) return;
 
   const typingModal = document.getElementById('word-input-modal');

@@ -31,7 +31,7 @@ test.describe('Combat System', () => {
     await expect(enemyHpBar).toBeAttached();
   });
 
-  test('should show word cards during realtime combat', async ({ page, gameHelper }) => {
+  test('should show word cards during combat', async ({ page, gameHelper }) => {
     const inCombat = await setupCombat(gameHelper);
     expect(inCombat).toBe(true);
 
@@ -88,11 +88,11 @@ test.describe('Combat Actions', () => {
     await cleanupAfterTest(page);
   });
 
-  test('should show combat indicator during realtime combat', async ({ page, gameHelper }) => {
+  test('should show combat indicator during combat', async ({ page, gameHelper }) => {
     const inCombat = await setupCombat(gameHelper);
     expect(inCombat).toBe(true);
 
-    // Action panel should show combat indicator during realtime combat
+    // Action panel should show combat indicator during combat
     const actionPanel = page.locator(SELECTORS.actionPanel);
     await expect(actionPanel).toBeVisible({ timeout: 10000 });
 

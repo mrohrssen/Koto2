@@ -633,15 +633,15 @@ export class GameManager {
     return this.combatService.startBossEncounter();
   }
 
-  // ============ REALTIME COMBAT ============
+  // ============ COMBAT CYCLE ============
 
   /**
-   * Execute one realtime combat cycle (timer-based combat mode)
+   * Execute one combat cycle (vocab-pause turn-based combat)
    * @param {string} attackerType - 'player' or 'enemy'
    * @returns {object} Result with attack data, HP values, and combat status
    */
-  realtimeAttackCycle(attackerType = 'player') {
-    return this.combatService.executeRealtimeCycle(attackerType);
+  combatCycle(attackerType = 'player') {
+    return this.combatService.executeCombatCycle(attackerType);
   }
 
   // ============ COMBAT RESOLUTION ============

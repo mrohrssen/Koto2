@@ -2,7 +2,7 @@
  * Integration tests for pipeline chip effects through the GameManager
  *
  * These tests verify that chip effects are actually applied to game state
- * through the realtimeAttackCycle, not just calculated correctly.
+ * through the combatCycle, not just calculated correctly.
  *
  * Run with: node --test tests/integration/pipeline-chip-effects.test.js
  */
@@ -215,17 +215,17 @@ function withGuaranteedHits(testFn) {
   return withControlledRandom(() => 0.01, testFn);
 }
 
-// ============ SACRIFICE CHIP TESTS ============
+// ============ CHARCOAL BOT TESTS ============
 // Note: Sacrifice tests require precise random mocking due to combat hit/miss mechanics.
-// The sacrifice chip destruction is verified through the Phoenix Protocol tests which
+// The charcoal chip destruction is verified through the Egg Bot tests which
 // check _runChipsDestroyed increment.
 
-describe('Sacrifice Chip Integration', () => {
+describe('Charcoal Bot Integration', () => {
   it('should track chip destruction count', async () => {
     // This test verifies the _runChipsDestroyed counter is properly set up
-    // The actual sacrifice destruction is tested via unstable core tests
+    // The actual charcoal destruction is tested via fireworks bot tests
     const gm = createCombatSetup({
-      chipIds: ['lifelink'], // Use a simple chip
+      chipIds: ['onigiri'], // Use a simple chip
       playerHp: 50,
       playerMaxHp: 100,
       enemyHp: 500,
@@ -238,22 +238,22 @@ describe('Sacrifice Chip Integration', () => {
     // Also verify healing still works with this counter set
     const hpBefore = gm.run.player.hp;
     await withControlledRandom(() => 0.01, () => {
-      gm.realtimeAttackCycle('player');
+      gm.combatCycle('player');
     });
 
-    // Lifelink heals 5, so HP should increase
-    assert.ok(gm.run.player.hp > hpBefore, 'Lifelink should heal');
-    // Counter should remain unchanged (lifelink doesn't destroy)
+    // Onigiri Bot heals 5, so HP should increase
+    assert.ok(gm.run.player.hp > hpBefore, 'Onigiri Bot should heal');
+    // Counter should remain unchanged (onigiri doesn't destroy)
     assert.strictEqual(gm.run.player._runChipsDestroyed, 5);
   });
 });
 
-// ============ LIFELINK / SIPHON HEALING TESTS ============
+// ============ ONIGIRI / STRAW HEALING TESTS ============
 
-describe('Lifelink Chip Integration', () => {
+describe('Onigiri Bot Integration', () => {
   it('should heal player on attack', async () => {
     const gm = createCombatSetup({
-      chipIds: ['lifelink'],
+      chipIds: ['onigiri'],
       playerHp: 50,
       playerMaxHp: 100,
       enemyHp: 500
@@ -262,10 +262,10 @@ describe('Lifelink Chip Integration', () => {
     const hpBefore = gm.run.player.hp;
 
     await withControlledRandom(() => 0.01, () => {
-      gm.realtimeAttackCycle('player');
+      gm.combatCycle('player');
     });
 
-    // Lifelink heals 5 HP
+    // Onigiri Bot heals 5 HP
     assert.strictEqual(
       gm.run.player.hp,
       hpBefore + 5,
@@ -275,14 +275,14 @@ describe('Lifelink Chip Integration', () => {
 
   it('should not overheal past maxHp', async () => {
     const gm = createCombatSetup({
-      chipIds: ['lifelink'],
+      chipIds: ['onigiri'],
       playerHp: 98,
       playerMaxHp: 100,
       enemyHp: 500
     });
 
     await withControlledRandom(() => 0.01, () => {
-      gm.realtimeAttackCycle('player');
+      gm.combatCycle('player');
     });
 
     // Should cap at maxHp (100), not 98 + 5 = 103
@@ -293,9 +293,9 @@ describe('Lifelink Chip Integration', () => {
     );
   });
 
-  it('should stack healing with multiple lifelink chips', async () => {
+  it('should stack healing with multiple onigiri chips', async () => {
     const gm = createCombatSetup({
-      chipIds: ['lifelink', 'lifelink'],
+      chipIds: ['onigiri', 'onigiri'],
       playerHp: 50,
       playerMaxHp: 100,
       enemyHp: 500
@@ -304,10 +304,10 @@ describe('Lifelink Chip Integration', () => {
     const hpBefore = gm.run.player.hp;
 
     await withControlledRandom(() => 0.01, () => {
-      gm.realtimeAttackCycle('player');
+      gm.combatCycle('player');
     });
 
-    // Two lifelinks should heal 10 HP total
+    // Two onigiris should heal 10 HP total
     assert.strictEqual(
       gm.run.player.hp,
       hpBefore + 10,
@@ -316,10 +316,10 @@ describe('Lifelink Chip Integration', () => {
   });
 });
 
-describe('Siphon Chip Integration', () => {
+describe('Straw Bot Integration', () => {
   it('should heal player on attack', async () => {
     const gm = createCombatSetup({
-      chipIds: ['siphon'],
+      chipIds: ['straw'],
       playerHp: 50,
       playerMaxHp: 100,
       enemyHp: 500
@@ -328,10 +328,10 @@ describe('Siphon Chip Integration', () => {
     const hpBefore = gm.run.player.hp;
 
     await withControlledRandom(() => 0.01, () => {
-      gm.realtimeAttackCycle('player');
+      gm.combatCycle('player');
     });
 
-    // Siphon heals 10 HP
+    // Straw Bot heals 10 HP
     assert.strictEqual(
       gm.run.player.hp,
       hpBefore + 10,
@@ -340,12 +340,12 @@ describe('Siphon Chip Integration', () => {
   });
 });
 
-// ============ UNSTABLE CORE TESTS ============
+// ============ FIREWORKS BOT TESTS ============
 
-describe('Unstable Core Chip Integration', () => {
+describe('Fireworks Bot Integration', () => {
   it('should randomly destroy another chip when triggered', async () => {
     const gm = createCombatSetup({
-      chipIds: ['unstable', 'powerCell'],
+      chipIds: ['fireworks', 'battery'],
       playerHp: 100,
       enemyHp: 500
     });
@@ -356,10 +356,10 @@ describe('Unstable Core Chip Integration', () => {
       // All random calls return 0.05 (< 0.10) to trigger destruction
       return 0.05;
     }, () => {
-      gm.realtimeAttackCycle('player');
+      gm.combatCycle('player');
     });
 
-    // powerCell should be destroyed, unstable should remain
+    // battery should be destroyed, fireworks should remain
     assert.strictEqual(
       gm.run.player.chips.length,
       1,
@@ -367,8 +367,8 @@ describe('Unstable Core Chip Integration', () => {
     );
     assert.strictEqual(
       gm.run.player.chips[0].id,
-      'unstable',
-      'Unstable should not destroy itself'
+      'fireworks',
+      'Fireworks Bot should not destroy itself'
     );
     assert.strictEqual(
       gm.run.player._runChipsDestroyed,
@@ -379,7 +379,7 @@ describe('Unstable Core Chip Integration', () => {
 
   it('should not destroy when random check fails', async () => {
     const gm = createCombatSetup({
-      chipIds: ['unstable', 'powerCell'],
+      chipIds: ['fireworks', 'battery'],
       playerHp: 100,
       enemyHp: 500
     });
@@ -389,24 +389,24 @@ describe('Unstable Core Chip Integration', () => {
     await withControlledRandom(() => {
       callCount++;
       // First 3 calls are combat (need low values), rest are chip triggers
-      // Unstable has destruction check as part of its trigger
+      // Fireworks Bot has destruction check as part of its trigger
       if (callCount <= 3) return 0.01; // Ensure combat hits
       return 0.5; // High enough to avoid 10% destruction trigger (0.5 >= 0.10)
     }, () => {
-      gm.realtimeAttackCycle('player');
+      gm.combatCycle('player');
     });
 
-    // Both chips should remain (unstable triggered but didn't destroy)
+    // Both chips should remain (fireworks triggered but didn't destroy)
     assert.strictEqual(gm.run.player.chips.length, 2);
   });
 });
 
-// ============ BOUNTY HUNTER TESTS ============
+// ============ WALLET BOT TESTS ============
 
-describe('Bounty Hunter Chip Integration', () => {
+describe('Wallet Bot Integration', () => {
   it('should track kills in _runKills', async () => {
     const gm = createCombatSetup({
-      chipIds: ['bountyHunter'],
+      chipIds: ['wallet'],
       playerHp: 100,
       enemyHp: 1 // Enemy dies in one hit
     });
@@ -414,7 +414,7 @@ describe('Bounty Hunter Chip Integration', () => {
     assert.strictEqual(gm.run.player._runKills, 0);
 
     await withControlledRandom(() => 0.01, () => {
-      gm.realtimeAttackCycle('player');
+      gm.combatCycle('player');
     });
 
     // After killing enemy, _runKills should be incremented
@@ -429,12 +429,12 @@ describe('Bounty Hunter Chip Integration', () => {
   // The kill tracking test above proves the integration works.
 });
 
-// ============ STACK OVERFLOW / BURST CYCLE TESTS ============
+// ============ BOOK BOT / DRUM BOT TESTS ============
 
-describe('Stack Overflow Chip Integration', () => {
+describe('Book Bot Integration', () => {
   it('should accumulate stacks during combat', async () => {
     const gm = createCombatSetup({
-      chipIds: ['stackOverflow'],
+      chipIds: ['book'],
       playerHp: 100,
       enemyHp: 500
     });
@@ -442,25 +442,25 @@ describe('Stack Overflow Chip Integration', () => {
     // Force trigger every time
     await withControlledRandom(() => 0.1, () => {
       // First attack
-      gm.realtimeAttackCycle('player');
+      gm.combatCycle('player');
       assert.strictEqual(
-        gm.run.player._combatStacks.stackOverflow,
+        gm.run.player._combatStacks.book,
         1,
         'Stack should be 1 after first attack'
       );
 
       // Second attack
-      gm.realtimeAttackCycle('player');
+      gm.combatCycle('player');
       assert.strictEqual(
-        gm.run.player._combatStacks.stackOverflow,
+        gm.run.player._combatStacks.book,
         2,
         'Stack should be 2 after second attack'
       );
 
       // Third attack
-      gm.realtimeAttackCycle('player');
+      gm.combatCycle('player');
       assert.strictEqual(
-        gm.run.player._combatStacks.stackOverflow,
+        gm.run.player._combatStacks.book,
         3,
         'Stack should be 3 after third attack'
       );
@@ -469,24 +469,24 @@ describe('Stack Overflow Chip Integration', () => {
 
   it('should reset stacks on enemy death', async () => {
     const gm = createCombatSetup({
-      chipIds: ['stackOverflow'],
+      chipIds: ['book'],
       playerHp: 100,
       enemyHp: 500
     });
 
     // Build up stacks
     await withControlledRandom(() => 0.1, () => {
-      gm.realtimeAttackCycle('player');
-      gm.realtimeAttackCycle('player');
-      gm.realtimeAttackCycle('player');
+      gm.combatCycle('player');
+      gm.combatCycle('player');
+      gm.combatCycle('player');
     });
 
-    assert.strictEqual(gm.run.player._combatStacks.stackOverflow, 3);
+    assert.strictEqual(gm.run.player._combatStacks.book, 3);
 
     // Kill the enemy
     gm.combat.enemy.hp = 1;
     await withControlledRandom(() => 0.01, () => {
-      gm.realtimeAttackCycle('player');
+      gm.combatCycle('player');
     });
 
     // Stacks should be reset (the reset happens as part of combat end processing)
@@ -500,16 +500,16 @@ describe('Stack Overflow Chip Integration', () => {
   });
 });
 
-describe('Burst Cycle Chip Integration', () => {
+describe('Drum Bot Integration', () => {
   // Note: Multi-attack burst cycle test removed due to fragile random mocking.
   // The unit tests in pipeline-chips.test.js fully cover burst cycle behavior.
   // Stack Overflow tests above prove that combat stacks work through the integration.
 });
 
-// ============ PHOENIX PROTOCOL TESTS ============
+// ============ EGG BOT TESTS ============
 
-describe('Phoenix Protocol Chip Integration', () => {
-  // Note: Phoenix tests require multi-chip pipelines with sacrifice which have
+describe('Egg Bot Integration', () => {
+  // Note: Egg Bot tests require multi-chip pipelines with charcoal which have
   // fragile random mocking. The unit tests in pipeline-chips.test.js fully cover
   // Phoenix behavior. The Sacrifice chip destruction count test above proves the
   // _runChipsDestroyed counter works through the integration.
@@ -518,19 +518,19 @@ describe('Phoenix Protocol Chip Integration', () => {
 // ============ COMBINED CHIP TESTS ============
 
 describe('Combined Chip Effects Integration', () => {
-  it('should handle lifelink + siphon healing stack', async () => {
+  it('should handle onigiri + straw healing stack', async () => {
     const gm = createCombatSetup({
-      chipIds: ['lifelink', 'siphon'],
+      chipIds: ['onigiri', 'straw'],
       playerHp: 50,
       playerMaxHp: 100,
       enemyHp: 500
     });
 
     await withControlledRandom(() => 0.01, () => {
-      gm.realtimeAttackCycle('player');
+      gm.combatCycle('player');
     });
 
-    // Lifelink heals 5, Siphon heals 10 = 15 total
+    // Onigiri Bot heals 5, Straw Bot heals 10 = 15 total
     assert.strictEqual(
       gm.run.player.hp,
       65,

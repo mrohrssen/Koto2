@@ -66,9 +66,9 @@ let combatUI = null;
 let formatItemStats = null;
 
 // Combat state getters
-let isRealtimeCombatActive = null;
+let isCombatActive = null;
 let isEnemyDialogueActive = null;
-let startRealtimeCombat = null;
+let startCombatLoop = null;
 
 // API functions
 let apiEquipChip = null;
@@ -118,9 +118,9 @@ export function init(callbacks) {
   formatItemStats = callbacks.formatItemStats;
 
   // Combat state getters
-  isRealtimeCombatActive = callbacks.isRealtimeCombatActive;
+  isCombatActive = callbacks.isCombatActive;
   isEnemyDialogueActive = callbacks.isEnemyDialogueActive;
-  startRealtimeCombat = callbacks.startRealtimeCombat;
+  startCombatLoop = callbacks.startCombatLoop;
 
   // API functions
   apiEquipChip = callbacks.apiEquipChip;

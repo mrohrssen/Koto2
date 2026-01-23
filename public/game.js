@@ -19,7 +19,7 @@
  * - createCharacter() - Character creation
  * - startNewRun() - Begins dungeon run, ward selection
  * - startEncounter()/startBossEncounter() - Initiates combat
- * - startRealtimeCombat() - Vocab-pause combat loop
+ * - startCombatLoop() - Vocab-pause combat loop
  *
  * UI Systems:
  * - narration.showNarration()/narration.appendNarration() - VN-style text display with JPDB parsing
@@ -48,7 +48,7 @@
  * - gameState: { player, run, combat, phase } - Current game state from server
  * - ttsEnabled, ttsSpeakerId, ttsSpeed, ttsVolume - TTS configuration
  * - combatWords[], availableWords[] - Word practice state
- * - realtimeCombatActive - Timer-based combat mode flag
+ * - combatActive - Vocab-pause combat mode flag (managed by combatLoopUI)
  *
  * UI PHASES (gameState.phase):
  * - 'no_save' - No character exists, show create button
@@ -109,8 +109,8 @@ import * as characterUI from './js/ui/character.js';
 // Modals UI module for all modal dialogs
 import * as modalsUI from './js/ui/modals.js';
 
-// Realtime Combat UI module for real-time combat mechanics
-import * as realtimeCombatUI from './js/ui/realtime-combat.js';
+// Combat Loop UI module for vocab-pause turn-based combat
+import * as combatLoopUI from './js/ui/combat-loop.js';
 
 // API module - centralized server communication
 import {
@@ -176,7 +176,7 @@ let isLoading = false;
 let selectedWardIndex = 0;
 let wardSelectionData = []; // Store ward options for keyboard selection
 
-// Realtime Combat State - now managed by realtimeCombatUI module
+// Combat state - managed by combatLoopUI module
 
 // Debug Mode - disables AI narration only (JPDB vocab calls still work)
 let debugMode = settings.isDebugMode();
@@ -355,7 +355,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updatePlayerHPBar: updatePlayerHPBar,
     showDamageNumber: combatUI.showDamageNumber,
     resumeCombatAfterVocab: resumeCombatAfterVocab,
-    isRealtimeCombatActive: () => realtimeCombatUI.isRealtimeCombatActive(),
+    isCombatActive: () => combatLoopUI.isCombatActive(),
     isEnemyDialogueActive: () => enemyDialogueActive,
     shuffleArray: shuffleArray,
     sendJpdbReview: apiSendJpdbReview
@@ -418,9 +418,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     combatUI: combatUI,
     formatItemStats: economyUI.formatItemStats,
     // Combat state
-    isRealtimeCombatActive: () => realtimeCombatUI.isRealtimeCombatActive(),
+    isCombatActive: () => combatLoopUI.isCombatActive(),
     isEnemyDialogueActive: () => enemyDialogueActive,
-    startRealtimeCombat: startRealtimeCombat,
+    startCombatLoop: startCombatLoop,
     // API functions
     apiEquipChip: apiEquipChip,
     apiUnequipChip: apiUnequipChip,
@@ -441,8 +441,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     apiSendJpdbReview: apiSendJpdbReview
   });
 
-  // Initialize realtime combat UI module
-  realtimeCombatUI.init({
+  // Initialize combat loop UI module
+  combatLoopUI.init({
     getGameState: () => gameState,
     updateGameState: updateGameState,
     updateUI: updateUI,
@@ -475,9 +475,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateUI();
   // Subscribe to state changes for reactive updates
   store.subscribe(() => updateUI());
-  // If reloading during active combat, resume realtime combat
+  // If reloading during active combat, resume combat loop
   if (gameState.phase === 'combat' && gameState.combat?.enemy?.hp > 0) {
-    startRealtimeCombat();
+    startCombatLoop();
   }
   // Restore debug mode from localStorage
   initDebugMode();
@@ -746,9 +746,9 @@ async function startEncounter() {
       }
     }
 
-    // Brief pause to show enemy, then start realtime combat
+    // Brief pause to show enemy, then start combat loop
     await delay(300);
-    startRealtimeCombat();
+    startCombatLoop();
   } else if (result) {
     // Just update UI if no enemy data available
     updateUI();
@@ -792,9 +792,9 @@ async function startBossEncounter() {
       }
     }
 
-    // Brief pause to show boss, then start realtime combat
+    // Brief pause to show boss, then start combat loop
     await delay(500);
-    startRealtimeCombat();
+    startCombatLoop();
   } else if (result) {
     updateUI();
   }
@@ -840,8 +840,8 @@ function showEnemyDialogue(text, type = 'possessed') {
 
   // Pause combat while dialogue is active (for glitching dialogue mid-combat)
   // cleanupCombat clears timers and sets active=false, ensuring ALL checks work correctly
-  if (type === 'glitching' && realtimeCombatUI.isRealtimeCombatActive()) {
-    realtimeCombatUI.cleanupCombat();
+  if (type === 'glitching' && combatLoopUI.isCombatActive()) {
+    combatLoopUI.cleanupCombat();
   }
 
   // Get enemy personality and speakerId for voice selection
@@ -877,12 +877,12 @@ function dismissEnemyDialogue() {
   enemyDialogueType = null;
 
   // Resume combat if we were paused during glitching dialogue
-  // Note: realtimeCombatActive was set to false in showEnemyDialogue for glitching
+  // Note: combatActive was set to false in showEnemyDialogue for glitching
   // The player attack that triggered glitching already happened, so now enemy should attack
   if (wasGlitching) {
-    realtimeCombatUI.setRealtimeCombatActive(true);
+    combatLoopUI.setCombatActive(true);
     // Continue normal flow: enemy attack → vocab pause → player attack
-    realtimeCombatUI.executeEnemyAttackThenPause();
+    combatLoopUI.executeEnemyAttackThenPause();
   }
 
   // Resolve the promise so waiting code can continue
@@ -905,14 +905,14 @@ async function speakEnemyDialogue(text, dialogueDuration, personality = 'default
   const enemySpeakerId = speakerId ?? tts.getSpeakerForPersonality(personality);
 
   // Hide word cards while enemy is speaking (if in combat)
-  const wasInCombat = realtimeCombatUI.isRealtimeCombatActive();
+  const wasInCombat = combatLoopUI.isCombatActive();
   if (wasInCombat) {
     wordPractice.hideWordCards();
     enemyDialogueTtsPlaying = true;
   }
 
   const restoreWordCards = () => {
-    if (wasInCombat && realtimeCombatUI.isRealtimeCombatActive()) {
+    if (wasInCombat && combatLoopUI.isCombatActive()) {
       wordPractice.showWordCards();
       enemyDialogueTtsPlaying = false;
     }
@@ -931,7 +931,7 @@ async function speakEnemyDialogue(text, dialogueDuration, personality = 'default
 
     // Fallback: restore word cards after dialogue duration if audio hasn't ended
     setTimeout(() => {
-      if (wasInCombat && realtimeCombatUI.isRealtimeCombatActive() && enemyDialogueTtsPlaying) {
+      if (wasInCombat && combatLoopUI.isCombatActive() && enemyDialogueTtsPlaying) {
         wordPractice.showWordCards();
         enemyDialogueTtsPlaying = false;
       }
@@ -956,9 +956,9 @@ async function nextFloor() {
 }
 
 async function returnToHub() {
-  // Stop realtime combat if active
-  if (realtimeCombatUI.isRealtimeCombatActive()) {
-    realtimeCombatUI.cleanupCombat();
+  // Stop combat loop if active
+  if (combatLoopUI.isCombatActive()) {
+    combatLoopUI.cleanupCombat();
   }
 
   // Close any open combat-related modals
@@ -1015,7 +1015,7 @@ function showDamageNumber(damage, isPlayer, isCritical = false, isHeal = false, 
 }
 function displayChipEffects(attackData, isPlayerAttack = true) { combatUI.displayChipEffects(attackData, isPlayerAttack); }
 
-// ============ REALTIME COMBAT FUNCTIONS - delegated to realtimeCombatUI ============
+// ============ COMBAT LOOP FUNCTIONS - delegated to combatLoopUI ============
 
 // Stub for narration audio playback (server doesn't currently return audio)
 function playNarrationAudio(audioData) {
@@ -1028,13 +1028,13 @@ function playNarrationAudio(audioData) {
 function updateEnemyHPBar(hp) { characterUI.updateEnemyHPBar(hp); }
 function updatePlayerHPBar(hp) { characterUI.updatePlayerHPBar(hp); }
 
-// Realtime combat functions - delegated to realtimeCombatUI module
-function startRealtimeCombat() { realtimeCombatUI.startRealtimeCombat(); }
-async function executePlayerAttack() { return realtimeCombatUI.executePlayerAttack(); }
-async function executeEnemyAttack() { return realtimeCombatUI.executeEnemyAttack(); }
-async function executeEnemyAttackThenPause() { return realtimeCombatUI.executeEnemyAttackThenPause(); }
-function resumeCombatAfterVocab() { realtimeCombatUI.resumeCombatAfterVocab(); }
-async function stopRealtimeCombat(result) { return realtimeCombatUI.stopRealtimeCombat(result); }
+// Combat loop functions - delegated to combatLoopUI module
+function startCombatLoop() { combatLoopUI.startCombatLoop(); }
+async function executePlayerAttack() { return combatLoopUI.executePlayerAttack(); }
+async function executeEnemyAttack() { return combatLoopUI.executeEnemyAttack(); }
+async function executeEnemyAttackThenPause() { return combatLoopUI.executeEnemyAttackThenPause(); }
+function resumeCombatAfterVocab() { combatLoopUI.resumeCombatAfterVocab(); }
+async function stopCombatLoop(result) { return combatLoopUI.stopCombatLoop(result); }
 
 // ============ WORD PRACTICE FUNCTIONS ============
 
@@ -1093,8 +1093,8 @@ function updateGameContent() {
 }
 
 function updateActionPanel() {
-  // During realtime combat, show combat indicator instead of actions
-  if (realtimeCombatUI.isRealtimeCombatActive()) {
+  // During combat, show combat indicator instead of actions
+  if (combatLoopUI.isCombatActive()) {
     actionPanel.innerHTML = `
       <div class="combat-status-container">
         <div class="combat-chips-display">
@@ -1181,7 +1181,7 @@ function updateActionPanel() {
       `;
       break;
     case 'combat':
-      // Don't show old turn-based combat actions - realtime combat will start shortly
+      // Don't show combat actions here - combat loop will start shortly
       // Show a brief "combat starting" indicator instead
       actionPanel.innerHTML = `
         <div class="combat-in-progress">
@@ -1377,7 +1377,7 @@ function handleKeypress(e) {
   // R key: repeat last narration voice (but not during combat - R refreshes words there)
   if (e.key === 'r' || e.key === 'R') {
     const lastNarration = tts.getLastSpokenNarration();
-    if (!realtimeCombatUI.isRealtimeCombatActive() && lastNarration && tts.isEnabled()) {
+    if (!combatLoopUI.isCombatActive() && lastNarration && tts.isEnabled()) {
       e.preventDefault();
       tts.speakNarration(lastNarration);
       return;

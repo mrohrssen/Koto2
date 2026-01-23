@@ -1,21 +1,23 @@
 /**
- * Realtime Combat UI Module - Handles real-time combat mechanics
+ * Combat Loop UI Module - Vocab-pause turn-based combat
  *
  * EXTRACTED FROM: public/game.js (Step 6.5)
  *
+ * Combat flow: word review → player attack → 400ms → enemy attack → pause → repeat
+ *
  * FUNCTIONS:
- * - startRealtimeCombat: Initialize real-time combat mode
+ * - startCombatLoop: Initialize combat loop
  * - executePlayerAttack: Handle player attack in combat
  * - executeEnemyAttack: Handle enemy attack in combat
  * - executeEnemyAttackThenPause: Enemy attack followed by vocab pause
  * - resumeCombatAfterVocab: Continue combat after word review
- * - stopRealtimeCombat: End combat and show results
+ * - stopCombatLoop: End combat and show results
  */
 
 // ============ MODULE STATE ============
 
 // Combat state
-let realtimeCombatActive = false;
+let combatActive = false;
 let playerAttackPending = false;
 let enemyAttackPending = false;
 let combatPausedForVocab = false;
@@ -55,7 +57,7 @@ let delay = null;
 const API_BASE = '';
 
 /**
- * Initialize the realtime combat UI module with callbacks
+ * Initialize the combat loop UI module with callbacks
  * @param {Object} callbacks - Dependency injection callbacks
  */
 export function init(callbacks) {
@@ -92,11 +94,11 @@ export function init(callbacks) {
 // ============ STATE GETTERS/SETTERS ============
 
 /**
- * Check if realtime combat is active
+ * Check if combat loop is active
  * @returns {boolean}
  */
-export function isRealtimeCombatActive() {
-  return realtimeCombatActive;
+export function isCombatActive() {
+  return combatActive;
 }
 
 /**
@@ -108,11 +110,11 @@ export function isCombatPausedForVocab() {
 }
 
 /**
- * Set realtime combat active state (for external sync)
+ * Set combat active state (for external sync)
  * @param {boolean} active
  */
-export function setRealtimeCombatActive(active) {
-  realtimeCombatActive = active;
+export function setCombatActive(active) {
+  combatActive = active;
 }
 
 /**
@@ -127,21 +129,21 @@ export function cleanupCombat() {
     clearTimeout(enemyAttackTimer);
     enemyAttackTimer = null;
   }
-  realtimeCombatActive = false;
+  combatActive = false;
   playerAttackPending = false;
   enemyAttackPending = false;
   combatPausedForVocab = false;
 }
 
-// ============ REALTIME COMBAT FUNCTIONS ============
+// ============ COMBAT LOOP FUNCTIONS ============
 
 /**
- * Start realtime combat mode
+ * Start the combat loop (vocab-pause turn-based combat)
  */
-export function startRealtimeCombat() {
-  if (realtimeCombatActive) return;
+export function startCombatLoop() {
+  if (combatActive) return;
 
-  realtimeCombatActive = true;
+  combatActive = true;
   playerAttackPending = false;
   enemyAttackPending = false;
   // Start paused - require vocab review before first attack
@@ -173,13 +175,13 @@ export function startRealtimeCombat() {
  * Execute a single player attack and schedule the next one
  */
 export async function executePlayerAttack() {
-  if (!realtimeCombatActive || playerAttackPending || combatPausedForVocab || getEnemyDialogueActive()) return;
+  if (!combatActive || playerAttackPending || combatPausedForVocab || getEnemyDialogueActive()) return;
 
   playerAttackPending = true;
 
   try {
     const apiKeys = settings.getApiKeys();
-    const response = await fetch(`${API_BASE}/api/game/realtime-attack`, {
+    const response = await fetch(`${API_BASE}/api/game/combat-cycle`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ attackerType: 'player', ...apiKeys })
@@ -191,13 +193,13 @@ export async function executePlayerAttack() {
       // "No active combat" means server state is out of sync - don't trigger false game over
       if (result.error === 'No active combat') {
         console.warn('[Combat] Stale player attack ignored (combat ended on server)');
-        realtimeCombatActive = false; // Sync client state
+        combatActive = false; // Sync client state
         return;
       }
       console.error('Player attack error:', result.error);
       // Only trigger defeat for real errors, not sync issues
-      if (realtimeCombatActive) {
-        stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
+      if (combatActive) {
+        stopCombatLoop({ combatEnded: true, victory: false, error: true });
       }
       return;
     }
@@ -267,14 +269,14 @@ export async function executePlayerAttack() {
       if (result.victory && result.liberatedDialogue) {
         showEnemyDialogue(result.liberatedDialogue, 'liberated');
       }
-      stopRealtimeCombat(result);
+      stopCombatLoop(result);
       return;
     }
 
     playerAttackPending = false;
 
     // Combat pause mode: trigger enemy attack after player, then pause for vocab review
-    if (realtimeCombatActive && !getEnemyDialogueActive()) {
+    if (combatActive && !getEnemyDialogueActive()) {
       // Small delay before enemy attacks back
       setTimeout(() => {
         executeEnemyAttackThenPause();
@@ -284,8 +286,8 @@ export async function executePlayerAttack() {
   } catch (error) {
     console.error('Player attack error:', error);
     // Only trigger defeat if combat hasn't already ended (prevents race condition with victory)
-    if (realtimeCombatActive) {
-      stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
+    if (combatActive) {
+      stopCombatLoop({ combatEnded: true, victory: false, error: true });
     }
   }
 }
@@ -294,13 +296,13 @@ export async function executePlayerAttack() {
  * Execute a single enemy attack and schedule the next one
  */
 export async function executeEnemyAttack() {
-  if (!realtimeCombatActive || enemyAttackPending || getEnemyDialogueActive()) return;
+  if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
 
   enemyAttackPending = true;
 
   try {
     const apiKeys = settings.getApiKeys();
-    const response = await fetch(`${API_BASE}/api/game/realtime-attack`, {
+    const response = await fetch(`${API_BASE}/api/game/combat-cycle`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ attackerType: 'enemy', ...apiKeys })
@@ -312,13 +314,13 @@ export async function executeEnemyAttack() {
       // "No active combat" means server state is out of sync - don't trigger false game over
       if (result.error === 'No active combat') {
         console.warn('[Combat] Stale enemy attack ignored (combat ended on server)');
-        realtimeCombatActive = false; // Sync client state
+        combatActive = false; // Sync client state
         return;
       }
       console.error('Enemy attack error:', result.error);
       // Only trigger defeat for real errors, not sync issues
-      if (realtimeCombatActive) {
-        stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
+      if (combatActive) {
+        stopCombatLoop({ combatEnded: true, victory: false, error: true });
       }
       return;
     }
@@ -351,7 +353,7 @@ export async function executeEnemyAttack() {
 
     // Check if combat ended
     if (result.combatEnded) {
-      stopRealtimeCombat(result);
+      stopCombatLoop(result);
       return;
     }
 
@@ -361,8 +363,8 @@ export async function executeEnemyAttack() {
   } catch (error) {
     console.error('Enemy attack error:', error);
     // Only trigger defeat if combat hasn't already ended (prevents race condition with victory)
-    if (realtimeCombatActive) {
-      stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
+    if (combatActive) {
+      stopCombatLoop({ combatEnded: true, victory: false, error: true });
     }
   }
 }
@@ -371,13 +373,13 @@ export async function executeEnemyAttack() {
  * Execute enemy attack and then pause combat for vocab review
  */
 export async function executeEnemyAttackThenPause() {
-  if (!realtimeCombatActive || enemyAttackPending || getEnemyDialogueActive()) return;
+  if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
 
   enemyAttackPending = true;
 
   try {
     const apiKeys = settings.getApiKeys();
-    const response = await fetch(`${API_BASE}/api/game/realtime-attack`, {
+    const response = await fetch(`${API_BASE}/api/game/combat-cycle`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ attackerType: 'enemy', ...apiKeys })
@@ -388,12 +390,12 @@ export async function executeEnemyAttackThenPause() {
     if (result.error) {
       if (result.error === 'No active combat') {
         console.warn('[Combat] Stale enemy attack ignored (combat ended on server)');
-        realtimeCombatActive = false;
+        combatActive = false;
         return;
       }
       console.error('Enemy attack error:', result.error);
-      if (realtimeCombatActive) {
-        stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
+      if (combatActive) {
+        stopCombatLoop({ combatEnded: true, victory: false, error: true });
       }
       return;
     }
@@ -425,7 +427,7 @@ export async function executeEnemyAttackThenPause() {
 
     // Check if combat ended
     if (result.combatEnded) {
-      stopRealtimeCombat(result);
+      stopCombatLoop(result);
       return;
     }
 
@@ -436,8 +438,8 @@ export async function executeEnemyAttackThenPause() {
 
   } catch (error) {
     console.error('Enemy attack error:', error);
-    if (realtimeCombatActive) {
-      stopRealtimeCombat({ combatEnded: true, victory: false, error: true });
+    if (combatActive) {
+      stopCombatLoop({ combatEnded: true, victory: false, error: true });
     }
   }
 }
@@ -446,7 +448,7 @@ export async function executeEnemyAttackThenPause() {
  * Resume combat after vocab review - triggers next attack cycle
  */
 export function resumeCombatAfterVocab() {
-  if (!realtimeCombatActive || !combatPausedForVocab) return;
+  if (!combatActive || !combatPausedForVocab) return;
 
   combatPausedForVocab = false;
 
@@ -455,10 +457,10 @@ export function resumeCombatAfterVocab() {
 }
 
 /**
- * Stop realtime combat and show results
+ * Stop combat loop and show results
  * @param {Object} result - Combat result data
  */
-export async function stopRealtimeCombat(result) {
+export async function stopCombatLoop(result) {
   const gameState = getGameState();
 
   // Clear both attack timers
@@ -471,7 +473,7 @@ export async function stopRealtimeCombat(result) {
     enemyAttackTimer = null;
   }
 
-  realtimeCombatActive = false;
+  combatActive = false;
   playerAttackPending = false;
   enemyAttackPending = false;
   combatPausedForVocab = false;

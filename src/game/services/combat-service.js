@@ -116,12 +116,12 @@ export class CombatService {
   }
 
   /**
-   * Execute one realtime combat cycle (timer-based combat mode)
-   * Unlike turn-based combat, this has no narration and runs on attack intervals
+   * Execute one combat cycle (vocab-pause turn-based combat)
+   * Each cycle processes one attack (player or enemy) and returns updated state
    * @param {string} attackerType - 'player' or 'enemy'
    * @returns {object} Result with attack data, HP values, and combat status
    */
-  executeRealtimeCycle(attackerType = 'player') {
+  executeCombatCycle(attackerType = 'player') {
     if (!this.gm.combat?.active) {
       throw new Error('No active combat');
     }
@@ -179,12 +179,12 @@ export class CombatService {
         }
       }
 
-      // Handle UNSTABLE CORE - random chip destruction
+      // Handle FIREWORKS BOT - random chip destruction
       if (playerResult.pipelineResult?.randomDestroyTriggered) {
         const weapon = this.gm.run.player.equipment?.weapon;
         const equippedChips = weapon?.equippedChips || [];
         const destroyableChips = equippedChips.filter(id =>
-          !playerResult.pipelineResult.sacrificedChips?.includes(id) && id !== 'unstable'
+          !playerResult.pipelineResult.sacrificedChips?.includes(id) && id !== 'fireworks'
         );
         if (destroyableChips.length > 0) {
           const randomIndex = Math.floor(Math.random() * destroyableChips.length);

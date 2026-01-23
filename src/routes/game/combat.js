@@ -1,7 +1,7 @@
 /**
  * @fileoverview Combat routes
  *
- * Handles combat actions: realtime-attack, start-encounter, start-boss, combat-end-narration
+ * Handles combat actions: combat-cycle, start-encounter, start-boss, combat-end-narration
  */
 
 import { Router } from 'express';
@@ -31,11 +31,11 @@ export default function createCombatRoutes({
 }) {
   const router = Router();
 
-  // Realtime attack cycle
-  router.post('/realtime-attack', (req, res) => {
+  // Combat cycle (vocab-pause turn-based)
+  router.post('/combat-cycle', (req, res) => {
     const { attackerType } = req.body;
     try {
-      const result = gameManager.realtimeAttackCycle(attackerType || 'player');
+      const result = gameManager.combatCycle(attackerType || 'player');
       saveGameData();
       res.json({ ...result, state: getEnrichedGameState() });
     } catch (error) {
@@ -43,7 +43,7 @@ export default function createCombatRoutes({
     }
   });
 
-  // Combat end narration (for realtime combat)
+  // Combat end narration
   router.post('/combat-end-narration', async (req, res) => {
     const { victory, expGained, goldGained, loot, leveledUp, newLevel, isBoss } = req.body;
     const gameStats = getGameStats();

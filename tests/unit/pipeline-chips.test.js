@@ -33,9 +33,9 @@ function runPipeline(chips, overrides = {}) {
 describe('Pipeline Chip Definitions', () => {
   it('should have all 13 new chips defined', () => {
     const newChips = [
-      'recursion', 'sacrifice', 'stackOverflow', 'minimalist',
-      'lifelink', 'bountyHunter', 'siphon', 'executiveOverride',
-      'phoenix', 'unstable', 'copycat', 'lightweight', 'burstCycle'
+      'clock', 'charcoal', 'book', 'eraser',
+      'onigiri', 'wallet', 'straw', 'key',
+      'egg', 'fireworks', 'mirror', 'feather', 'drum'
     ];
 
     for (const chipId of newChips) {
@@ -47,9 +47,9 @@ describe('Pipeline Chip Definitions', () => {
 
   it('should have Japanese names for all new chips', () => {
     const newChips = [
-      'recursion', 'sacrifice', 'stackOverflow', 'minimalist',
-      'lifelink', 'bountyHunter', 'siphon', 'executiveOverride',
-      'phoenix', 'unstable', 'copycat', 'lightweight', 'burstCycle'
+      'clock', 'charcoal', 'book', 'eraser',
+      'onigiri', 'wallet', 'straw', 'key',
+      'egg', 'fireworks', 'mirror', 'feather', 'drum'
     ];
 
     for (const chipId of newChips) {
@@ -59,16 +59,16 @@ describe('Pipeline Chip Definitions', () => {
   });
 });
 
-describe('Power Cell (baseline)', () => {
+describe('Battery Bot (baseline)', () => {
   it('should add flat damage', () => {
-    const result = runPipeline([getChip('powerCell')]);
+    const result = runPipeline([getChip('battery')]);
     assert.strictEqual(result.finalDamage, 105); // 100 + 5
   });
 });
 
-describe('Recursion Chip', () => {
+describe('Clock Bot', () => {
   it('should have 10% trigger chance', () => {
-    const chip = getChip('recursion');
+    const chip = getChip('clock');
     assert.strictEqual(chip.effects.pipeline.triggerChance, 0.10);
   });
 
@@ -79,18 +79,18 @@ describe('Recursion Chip', () => {
     let callCount = 0;
     Math.random = () => {
       callCount++;
-      // Call 1: powerCell (triggerChance 1.0, any value works)
-      // Call 2: recursion (triggerChance 0.10, need < 0.10 to trigger)
-      // Call 3: powerCell again after restart
-      // Call 4: recursion again (need >= 0.10 to NOT trigger)
-      if (callCount === 2) return 0.05; // Trigger recursion
-      if (callCount === 4) return 0.99; // Don't trigger recursion
+      // Call 1: battery (triggerChance 1.0, any value works)
+      // Call 2: clock (triggerChance 0.10, need < 0.10 to trigger)
+      // Call 3: battery again after restart
+      // Call 4: clock again (need >= 0.10 to NOT trigger)
+      if (callCount === 2) return 0.05; // Trigger clock
+      if (callCount === 4) return 0.99; // Don't trigger clock
       return 0.5; // Default for other chips
     };
 
     try {
-      const result = runPipeline([getChip('powerCell'), getChip('recursion')]);
-      // With recursion: powerCell(105) -> recursion triggers -> powerCell(110) -> recursion fails
+      const result = runPipeline([getChip('battery'), getChip('clock')]);
+      // With clock: battery(105) -> clock triggers -> battery(110) -> clock fails
       assert.strictEqual(result.recursionCount, 1);
       assert.strictEqual(result.finalDamage, 110); // 100 + 5 + 5
     } finally {
@@ -103,9 +103,9 @@ describe('Recursion Chip', () => {
     Math.random = () => 0.01; // Always trigger
 
     try {
-      const result = runPipeline([getChip('powerCell'), getChip('recursion')]);
+      const result = runPipeline([getChip('battery'), getChip('clock')]);
       assert.strictEqual(result.recursionCount, 10);
-      // 11 passes through powerCell: 100 + (5 * 11) = 155
+      // 11 passes through battery: 100 + (5 * 11) = 155
       assert.strictEqual(result.finalDamage, 155);
     } finally {
       Math.random = originalRandom;
@@ -113,22 +113,22 @@ describe('Recursion Chip', () => {
   });
 });
 
-describe('Sacrifice Chip', () => {
+describe('Charcoal Bot', () => {
   it('should multiply damage by 10', () => {
-    const result = runPipeline([getChip('sacrifice')]);
+    const result = runPipeline([getChip('charcoal')]);
     assert.strictEqual(result.finalDamage, 1000); // 100 * 10
   });
 
   it('should mark chip as sacrificed', () => {
-    const result = runPipeline([getChip('sacrifice')]);
-    assert.deepStrictEqual(result.sacrificedChips, ['sacrifice']);
+    const result = runPipeline([getChip('charcoal')]);
+    assert.deepStrictEqual(result.sacrificedChips, ['charcoal']);
   });
 
   it('should work with other chips in pipeline', () => {
-    const result = runPipeline([getChip('powerCell'), getChip('sacrifice')]);
+    const result = runPipeline([getChip('battery'), getChip('charcoal')]);
     // 100 + 5 = 105, then 105 * 10 = 1050
     assert.strictEqual(result.finalDamage, 1050);
-    assert.deepStrictEqual(result.sacrificedChips, ['sacrifice']);
+    assert.deepStrictEqual(result.sacrificedChips, ['charcoal']);
   });
 
   it('should not fire again after being sacrificed in same attack', () => {
@@ -136,17 +136,17 @@ describe('Sacrifice Chip', () => {
     let callCount = 0;
     Math.random = () => {
       callCount++;
-      // Call 1: sacrifice (triggerChance 1.0)
-      // Call 2: recursion (triggerChance 0.10, need < 0.10 to trigger)
-      // Call 3: recursion again after restart (need >= 0.10 to stop)
-      if (callCount === 2) return 0.05; // Trigger recursion
+      // Call 1: charcoal (triggerChance 1.0)
+      // Call 2: clock (triggerChance 0.10, need < 0.10 to trigger)
+      // Call 3: clock again after restart (need >= 0.10 to stop)
+      if (callCount === 2) return 0.05; // Trigger clock
       return 0.99; // Default
     };
 
     try {
-      const result = runPipeline([getChip('sacrifice'), getChip('recursion')]);
-      // First pass: sacrifice(1000) -> recursion triggers
-      // Second pass: sacrifice skipped (already destroyed) -> recursion fails
+      const result = runPipeline([getChip('charcoal'), getChip('clock')]);
+      // First pass: charcoal(1000) -> clock triggers
+      // Second pass: charcoal skipped (already destroyed) -> clock fails
       // Sacrifice should only apply once
       assert.strictEqual(result.finalDamage, 1000);
       assert.strictEqual(result.recursionCount, 1);
@@ -156,9 +156,9 @@ describe('Sacrifice Chip', () => {
   });
 });
 
-describe('Stack Overflow Chip', () => {
+describe('Book Bot', () => {
   it('should have 25% trigger chance', () => {
-    const chip = getChip('stackOverflow');
+    const chip = getChip('book');
     assert.strictEqual(chip.effects.pipeline.triggerChance, 0.25);
   });
 
@@ -170,17 +170,17 @@ describe('Stack Overflow Chip', () => {
       const combatStacks = {};
 
       // First attack
-      const result1 = runPipeline([getChip('stackOverflow')], { combatStacks });
+      const result1 = runPipeline([getChip('book')], { combatStacks });
       assert.strictEqual(result1.finalDamage, 103); // 100 + 3*1
 
       // Second attack (use updated stacks)
-      const result2 = runPipeline([getChip('stackOverflow')], {
+      const result2 = runPipeline([getChip('book')], {
         combatStacks: result1.combatStacks
       });
       assert.strictEqual(result2.finalDamage, 106); // 100 + 3*2
 
       // Third attack
-      const result3 = runPipeline([getChip('stackOverflow')], {
+      const result3 = runPipeline([getChip('book')], {
         combatStacks: result2.combatStacks
       });
       assert.strictEqual(result3.finalDamage, 109); // 100 + 3*3
@@ -194,7 +194,7 @@ describe('Stack Overflow Chip', () => {
     Math.random = () => 0.5; // Doesn't trigger (>= 0.25)
 
     try {
-      const result = runPipeline([getChip('stackOverflow')]);
+      const result = runPipeline([getChip('book')]);
       assert.strictEqual(result.finalDamage, 100); // No change
     } finally {
       Math.random = originalRandom;
@@ -202,9 +202,9 @@ describe('Stack Overflow Chip', () => {
   });
 });
 
-describe('Minimalist Chip', () => {
+describe('Eraser Bot', () => {
   it('should add +40 damage with 2+ empty slots', () => {
-    const result = runPipeline([getChip('minimalist')], {
+    const result = runPipeline([getChip('eraser')], {
       weaponMaxSlots: 5,
       weaponUsedSlots: 1 // 4 empty slots
     });
@@ -212,7 +212,7 @@ describe('Minimalist Chip', () => {
   });
 
   it('should add +40 damage with exactly 2 empty slots', () => {
-    const result = runPipeline([getChip('minimalist')], {
+    const result = runPipeline([getChip('eraser')], {
       weaponMaxSlots: 5,
       weaponUsedSlots: 3 // 2 empty slots
     });
@@ -220,7 +220,7 @@ describe('Minimalist Chip', () => {
   });
 
   it('should NOT trigger with only 1 empty slot', () => {
-    const result = runPipeline([getChip('minimalist')], {
+    const result = runPipeline([getChip('eraser')], {
       weaponMaxSlots: 5,
       weaponUsedSlots: 4 // 1 empty slot
     });
@@ -230,7 +230,7 @@ describe('Minimalist Chip', () => {
   });
 
   it('should NOT trigger with no empty slots', () => {
-    const result = runPipeline([getChip('minimalist')], {
+    const result = runPipeline([getChip('eraser')], {
       weaponMaxSlots: 5,
       weaponUsedSlots: 5 // 0 empty slots
     });
@@ -238,55 +238,55 @@ describe('Minimalist Chip', () => {
   });
 });
 
-describe('Lifelink Chip', () => {
+describe('Onigiri Bot', () => {
   it('should add +5 damage and heal 5 HP', () => {
-    const result = runPipeline([getChip('lifelink')]);
+    const result = runPipeline([getChip('onigiri')]);
     assert.strictEqual(result.finalDamage, 105);
     assert.strictEqual(result.healPlayer, 5);
   });
 
   it('should stack healing with multiple chips', () => {
-    const result = runPipeline([getChip('lifelink'), getChip('lifelink')]);
+    const result = runPipeline([getChip('onigiri'), getChip('onigiri')]);
     assert.strictEqual(result.finalDamage, 110); // 100 + 5 + 5
     assert.strictEqual(result.healPlayer, 10); // 5 + 5
   });
 });
 
-describe('Bounty Hunter Chip', () => {
+describe('Wallet Bot', () => {
   it('should add +1 damage per kill', () => {
-    const result = runPipeline([getChip('bountyHunter')], { runKills: 10 });
+    const result = runPipeline([getChip('wallet')], { runKills: 10 });
     assert.strictEqual(result.finalDamage, 110); // 100 + 10
   });
 
   it('should add 0 damage with no kills', () => {
-    const result = runPipeline([getChip('bountyHunter')], { runKills: 0 });
+    const result = runPipeline([getChip('wallet')], { runKills: 0 });
     assert.strictEqual(result.finalDamage, 100);
   });
 
   it('should scale infinitely with kills', () => {
-    const result = runPipeline([getChip('bountyHunter')], { runKills: 100 });
+    const result = runPipeline([getChip('wallet')], { runKills: 100 });
     assert.strictEqual(result.finalDamage, 200); // 100 + 100
   });
 });
 
-describe('Siphon Chip', () => {
+describe('Straw Bot', () => {
   it('should reduce damage by 2 and heal 10 HP', () => {
-    const result = runPipeline([getChip('siphon')]);
+    const result = runPipeline([getChip('straw')]);
     assert.strictEqual(result.finalDamage, 98); // 100 - 2
     assert.strictEqual(result.healPlayer, 10);
   });
 });
 
-describe('Executive Override Chip', () => {
+describe('Key Bot', () => {
   it('should multiply damage by 1.10 against bosses', () => {
-    const result = runPipeline([getChip('executiveOverride')], {
+    const result = runPipeline([getChip('key')], {
       target: { isBoss: true, hp: 1000, maxHp: 1000 }
     });
     assert.strictEqual(result.finalDamage, 110); // 100 * 1.10
   });
 
   it('should NOT affect damage against non-bosses', () => {
-    const result = runPipeline([getChip('executiveOverride')], {
+    const result = runPipeline([getChip('key')], {
       target: { isBoss: false, hp: 500, maxHp: 500 }
     });
     assert.strictEqual(result.finalDamage, 100); // No change
@@ -295,35 +295,35 @@ describe('Executive Override Chip', () => {
   });
 });
 
-describe('Phoenix Protocol Chip', () => {
+describe('Egg Bot', () => {
   it('should be x1 multiplier with no destroyed chips', () => {
-    const result = runPipeline([getChip('phoenix')], { runChipsDestroyed: 0 });
+    const result = runPipeline([getChip('egg')], { runChipsDestroyed: 0 });
     assert.strictEqual(result.finalDamage, 100); // 100 * 1
   });
 
   it('should gain +1x per destroyed chip', () => {
-    const result = runPipeline([getChip('phoenix')], { runChipsDestroyed: 3 });
+    const result = runPipeline([getChip('egg')], { runChipsDestroyed: 3 });
     assert.strictEqual(result.finalDamage, 400); // 100 * (1 + 3)
   });
 
   it('should synergize with Sacrifice chip', () => {
-    // Simulate: sacrifice destroyed first, then phoenix fires
-    const result = runPipeline([getChip('sacrifice'), getChip('phoenix')], {
+    // Simulate: charcoal destroyed first, then egg fires
+    const result = runPipeline([getChip('charcoal'), getChip('egg')], {
       runChipsDestroyed: 1 // Already have 1 destroyed from earlier
     });
-    // sacrifice: 100 * 10 = 1000
-    // phoenix: 1000 * (1 + 1) = 2000
+    // charcoal: 100 * 10 = 1000
+    // egg: 1000 * (1 + 1) = 2000
     assert.strictEqual(result.finalDamage, 2000);
   });
 });
 
-describe('Unstable Core Chip', () => {
+describe('Fireworks Bot', () => {
   it('should add +50 damage', () => {
     const originalRandom = Math.random;
     Math.random = () => 0.5; // Don't trigger destruction
 
     try {
-      const result = runPipeline([getChip('unstable')]);
+      const result = runPipeline([getChip('fireworks')]);
       assert.strictEqual(result.finalDamage, 150); // 100 + 50
       assert.strictEqual(result.randomDestroyTriggered, false);
     } finally {
@@ -336,7 +336,7 @@ describe('Unstable Core Chip', () => {
     Math.random = () => 0.05; // Trigger destruction (< 0.10)
 
     try {
-      const result = runPipeline([getChip('unstable')]);
+      const result = runPipeline([getChip('fireworks')]);
       assert.strictEqual(result.finalDamage, 150);
       assert.strictEqual(result.randomDestroyTriggered, true);
     } finally {
@@ -345,23 +345,23 @@ describe('Unstable Core Chip', () => {
   });
 });
 
-describe('Copycat Chip', () => {
+describe('Mirror Bot', () => {
   it('should copy previous flat damage chip', () => {
-    const result = runPipeline([getChip('powerCell'), getChip('copycat')]);
-    // powerCell: 100 + 5 = 105
-    // copycat copies +5: 105 + 5 = 110
+    const result = runPipeline([getChip('battery'), getChip('mirror')]);
+    // battery: 100 + 5 = 105
+    // mirror copies +5: 105 + 5 = 110
     assert.strictEqual(result.finalDamage, 110);
     assert.strictEqual(result.firedChips[1].copied, true);
   });
 
   it('should copy previous multiplier chip', () => {
     const originalRandom = Math.random;
-    Math.random = () => 0.1; // Trigger amplifier (80% chance)
+    Math.random = () => 0.1; // Trigger speaker (80% chance)
 
     try {
-      const result = runPipeline([getChip('amplifier'), getChip('copycat')]);
-      // amplifier: 100 * 1.5 = 150
-      // copycat copies x1.5: 150 * 1.5 = 225
+      const result = runPipeline([getChip('speaker'), getChip('mirror')]);
+      // speaker: 100 * 1.5 = 150
+      // mirror copies x1.5: 150 * 1.5 = 225
       assert.strictEqual(result.finalDamage, 225);
     } finally {
       Math.random = originalRandom;
@@ -369,24 +369,24 @@ describe('Copycat Chip', () => {
   });
 
   it('should fail if first in pipeline', () => {
-    const result = runPipeline([getChip('copycat')]);
+    const result = runPipeline([getChip('mirror')]);
     assert.strictEqual(result.finalDamage, 100); // No change
     assert.strictEqual(result.firedChips[0].triggered, false);
     assert.strictEqual(result.firedChips[0].noPreviousChip, true);
   });
 
-  it('should copy lifelink heal effect', () => {
-    const result = runPipeline([getChip('lifelink'), getChip('copycat')]);
-    // lifelink: 100 + 5 = 105, heal 5
-    // copycat copies +5 and heal 5: 105 + 5 = 110, heal 5
+  it('should copy onigiri heal effect', () => {
+    const result = runPipeline([getChip('onigiri'), getChip('mirror')]);
+    // onigiri: 100 + 5 = 105, heal 5
+    // mirror copies +5 and heal 5: 105 + 5 = 110, heal 5
     assert.strictEqual(result.finalDamage, 110);
     assert.strictEqual(result.healPlayer, 10); // 5 + 5
   });
 });
 
-describe('Lightweight Chip', () => {
+describe('Feather Bot', () => {
   it('should add +20 damage per empty slot', () => {
-    const result = runPipeline([getChip('lightweight')], {
+    const result = runPipeline([getChip('feather')], {
       weaponMaxSlots: 5,
       weaponUsedSlots: 1 // 4 empty slots
     });
@@ -394,7 +394,7 @@ describe('Lightweight Chip', () => {
   });
 
   it('should add 0 damage with no empty slots', () => {
-    const result = runPipeline([getChip('lightweight')], {
+    const result = runPipeline([getChip('feather')], {
       weaponMaxSlots: 5,
       weaponUsedSlots: 5 // 0 empty slots
     });
@@ -402,7 +402,7 @@ describe('Lightweight Chip', () => {
   });
 
   it('should scale with more empty slots', () => {
-    const result = runPipeline([getChip('lightweight')], {
+    const result = runPipeline([getChip('feather')], {
       weaponMaxSlots: 5,
       weaponUsedSlots: 2 // 3 empty slots
     });
@@ -410,13 +410,13 @@ describe('Lightweight Chip', () => {
   });
 });
 
-describe('Burst Cycle Chip', () => {
+describe('Drum Bot', () => {
   it('should charge for 4 attacks, then burst on 5th', () => {
     const combatStacks = {};
 
     // Attacks 1-4: charging
     for (let i = 1; i <= 4; i++) {
-      const result = runPipeline([getChip('burstCycle')], { combatStacks });
+      const result = runPipeline([getChip('drum')], { combatStacks });
       assert.strictEqual(result.finalDamage, 100, `Attack ${i} should not burst`);
       assert.strictEqual(result.firedChips[0].charging, true);
       assert.strictEqual(result.firedChips[0].untilBurst, 5 - i);
@@ -424,7 +424,7 @@ describe('Burst Cycle Chip', () => {
     }
 
     // Attack 5: BURST!
-    const result5 = runPipeline([getChip('burstCycle')], { combatStacks });
+    const result5 = runPipeline([getChip('drum')], { combatStacks });
     assert.strictEqual(result5.finalDamage, 300); // 100 * 3
     assert.strictEqual(result5.firedChips[0].burstAttack, true);
   });
@@ -434,7 +434,7 @@ describe('Burst Cycle Chip', () => {
     let lastResult;
 
     for (let i = 1; i <= 10; i++) {
-      lastResult = runPipeline([getChip('burstCycle')], { combatStacks });
+      lastResult = runPipeline([getChip('drum')], { combatStacks });
       Object.assign(combatStacks, lastResult.combatStacks);
     }
 
@@ -444,19 +444,19 @@ describe('Burst Cycle Chip', () => {
 });
 
 describe('Complex Pipeline Combinations', () => {
-  it('should handle powerCell -> amplifier -> sacrifice', () => {
+  it('should handle battery -> speaker -> charcoal', () => {
     const originalRandom = Math.random;
-    Math.random = () => 0.1; // Trigger amplifier
+    Math.random = () => 0.1; // Trigger speaker
 
     try {
       const result = runPipeline([
-        getChip('powerCell'),
-        getChip('amplifier'),
-        getChip('sacrifice')
+        getChip('battery'),
+        getChip('speaker'),
+        getChip('charcoal')
       ]);
-      // powerCell: 100 + 5 = 105 (floor = 105)
-      // amplifier: 105 * 1.5 = 157.5 (floor = 157)
-      // sacrifice: 157 * 10 = 1570 (floor = 1570)
+      // battery: 100 + 5 = 105 (floor = 105)
+      // speaker: 105 * 1.5 = 157.5 (floor = 157)
+      // charcoal: 157 * 10 = 1570 (floor = 1570)
       // Note: intermediate flooring happens in processPipelineChip
       assert.strictEqual(result.finalDamage, 1570);
     } finally {
@@ -464,51 +464,51 @@ describe('Complex Pipeline Combinations', () => {
     }
   });
 
-  it('should handle lifelink -> siphon healing stack', () => {
-    const result = runPipeline([getChip('lifelink'), getChip('siphon')]);
-    // lifelink: 100 + 5 = 105, heal 5
-    // siphon: 105 - 2 = 103, heal 10
+  it('should handle onigiri -> straw healing stack', () => {
+    const result = runPipeline([getChip('onigiri'), getChip('straw')]);
+    // onigiri: 100 + 5 = 105, heal 5
+    // straw: 105 - 2 = 103, heal 10
     assert.strictEqual(result.finalDamage, 103);
     assert.strictEqual(result.healPlayer, 15); // 5 + 10
   });
 
-  it('should handle minimalist + lightweight empty slot synergy', () => {
-    const result = runPipeline([getChip('minimalist'), getChip('lightweight')], {
+  it('should handle eraser + feather empty slot synergy', () => {
+    const result = runPipeline([getChip('eraser'), getChip('feather')], {
       weaponMaxSlots: 5,
-      weaponUsedSlots: 2 // 3 empty slots (minimalist needs 2+)
+      weaponUsedSlots: 2 // 3 empty slots (eraser needs 2+)
     });
-    // minimalist: 100 + 40 = 140
-    // lightweight: 140 + (20 * 3) = 200
+    // eraser: 100 + 40 = 140
+    // feather: 140 + (20 * 3) = 200
     assert.strictEqual(result.finalDamage, 200);
   });
 
-  it('should handle bountyHunter + phoenix scaling', () => {
-    const result = runPipeline([getChip('bountyHunter'), getChip('phoenix')], {
+  it('should handle wallet + egg scaling', () => {
+    const result = runPipeline([getChip('wallet'), getChip('egg')], {
       runKills: 50,
       runChipsDestroyed: 2
     });
-    // bountyHunter: 100 + 50 = 150
-    // phoenix: 150 * (1 + 2) = 450
+    // wallet: 100 + 50 = 150
+    // egg: 150 * (1 + 2) = 450
     assert.strictEqual(result.finalDamage, 450);
   });
 
-  it('should handle copycat after recursion restart', () => {
+  it('should handle mirror after clock restart', () => {
     const originalRandom = Math.random;
     let calls = 0;
     Math.random = () => {
       calls++;
-      // First recursion check triggers, second doesn't
+      // First clock check triggers, second doesn't
       return calls === 2 ? 0.01 : 0.99;
     };
 
     try {
       const result = runPipeline([
-        getChip('powerCell'),    // +5
-        getChip('recursion'),    // restart once
-        getChip('copycat')       // copies powerCell
+        getChip('battery'),    // +5
+        getChip('clock'),    // restart once
+        getChip('mirror')       // copies battery
       ]);
-      // Pass 1: powerCell(105) -> recursion triggers -> restart
-      // Pass 2: powerCell(110) -> recursion fails -> copycat copies powerCell(115)
+      // Pass 1: battery(105) -> clock triggers -> restart
+      // Pass 2: battery(110) -> clock fails -> mirror copies battery(115)
       assert.strictEqual(result.recursionCount, 1);
       assert.strictEqual(result.finalDamage, 115);
     } finally {
@@ -527,14 +527,14 @@ describe('Edge Cases', () => {
   it('should skip non-pipeline chips', () => {
     // Create a fake non-pipeline chip
     const fakeChip = { id: 'fake', category: 'stat', effects: {} };
-    const result = runPipeline([fakeChip, getChip('powerCell')]);
+    const result = runPipeline([fakeChip, getChip('battery')]);
     assert.strictEqual(result.finalDamage, 105);
     assert.strictEqual(result.firedChips[0].skipped, true);
     assert.strictEqual(result.firedChips[0].notPipeline, true);
   });
 
   it('should handle 0 base damage', () => {
-    const result = runPipeline([getChip('powerCell')], { baseDamage: 0 });
+    const result = runPipeline([getChip('battery')], { baseDamage: 0 });
     assert.strictEqual(result.finalDamage, 5);
   });
 
@@ -544,15 +544,15 @@ describe('Edge Cases', () => {
 
     try {
       const result = runPipeline([
-        getChip('powerCell'),
-        getChip('amplifier'),
-        getChip('overloader'),
-        getChip('sacrifice')
+        getChip('battery'),
+        getChip('speaker'),
+        getChip('lightbulb'),
+        getChip('charcoal')
       ], { baseDamage: 1000 });
-      // powerCell: 1000 + 5 = 1005 (floor = 1005)
-      // amplifier: 1005 * 1.5 = 1507.5 (floor = 1507)
-      // overloader: 1507 * 2 = 3014 (floor = 3014)
-      // sacrifice: 3014 * 10 = 30140 (floor = 30140)
+      // battery: 1000 + 5 = 1005 (floor = 1005)
+      // speaker: 1005 * 1.5 = 1507.5 (floor = 1507)
+      // lightbulb: 1507 * 2 = 3014 (floor = 3014)
+      // charcoal: 3014 * 10 = 30140 (floor = 30140)
       // Note: intermediate flooring happens in processPipelineChip
       assert.strictEqual(result.finalDamage, 30140);
     } finally {
@@ -562,19 +562,19 @@ describe('Edge Cases', () => {
 
   it('should track combat stacks correctly across multiple chips', () => {
     const originalRandom = Math.random;
-    Math.random = () => 0.1; // Trigger stackOverflow
+    Math.random = () => 0.1; // Trigger book
 
     try {
       const combatStacks = {};
       const result = runPipeline([
-        getChip('stackOverflow'),
-        getChip('burstCycle')
+        getChip('book'),
+        getChip('drum')
       ], { combatStacks });
 
-      // stackOverflow should have stack 1
-      assert.strictEqual(result.combatStacks.stackOverflow, 1);
-      // burstCycle should have attack count 1
-      assert.strictEqual(result.combatStacks.burstCycle_attacks, 1);
+      // book should have stack 1
+      assert.strictEqual(result.combatStacks.book, 1);
+      // drum should have attack count 1
+      assert.strictEqual(result.combatStacks.drum_attacks, 1);
     } finally {
       Math.random = originalRandom;
     }

@@ -3810,7 +3810,7 @@ body::before {
   }
 }
 
-/* Realtime Combat Indicator */
+/* Combat Indicator */
 .combat-in-progress {
   display: flex;
   justify-content: center;

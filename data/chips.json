@@ -1,10 +1,10 @@
 {
-  "powerCell": {
-    "id": "powerCell",
-    "name": "パワーセル",
-    "nameEn": "Power Cell",
-    "description": "小型エネルギーセル。攻撃に+5ダメージ。",
-    "descriptionEn": "Compact energy cell. Adds +5 damage to attacks.",
+  "battery": {
+    "id": "battery",
+    "name": "電池ボット",
+    "nameEn": "Battery Bot",
+    "description": "小さな電池の相棒。攻撃に+5ダメージ。いつも元気いっぱい！",
+    "descriptionEn": "Zaps enemies for +5 damage. Always fully charged and ready to help!",
     "category": "pipeline",
     "rarity": "common",
     "effects": {
@@ -16,12 +16,12 @@
       }
     }
   },
-  "amplifier": {
-    "id": "amplifier",
-    "name": "アンプ",
-    "nameEn": "Amplifier",
-    "description": "信号増幅器。80%でダメージ1.5倍。",
-    "descriptionEn": "Signal amplifier. 80% chance to multiply damage by 1.5.",
+  "speaker": {
+    "id": "speaker",
+    "name": "スピーカーボット",
+    "nameEn": "Speaker Bot",
+    "description": "音を増幅する仲間。80%でダメージ1.5倍。声が大きい！",
+    "descriptionEn": "80% chance to amplify damage by 1.5×. Loves turning it up to eleven!",
     "category": "pipeline",
     "rarity": "uncommon",
     "effects": {
@@ -33,12 +33,12 @@
       }
     }
   },
-  "critBooster": {
-    "id": "critBooster",
-    "name": "クリットブースター",
-    "nameEn": "Crit Booster",
-    "description": "クリティカル強化モジュール。CRIT率+20%。",
-    "descriptionEn": "Critical enhancement module. +20% crit chance.",
+  "glasses": {
+    "id": "glasses",
+    "name": "眼鏡ボット",
+    "nameEn": "Glasses Bot",
+    "description": "弱点を見つける目利き。CRIT率+20%。読書も得意。",
+    "descriptionEn": "+20% crit chance. Spots every weak point with scholarly precision!",
     "category": "pipeline",
     "rarity": "rare",
     "effects": {
@@ -50,12 +50,12 @@
       }
     }
   },
-  "overloader": {
-    "id": "overloader",
-    "name": "オーバーロード",
-    "nameEn": "Overloader",
-    "description": "過負荷装置。50%でダメージ2倍。",
-    "descriptionEn": "Overload device. 50% chance to double damage.",
+  "lightbulb": {
+    "id": "lightbulb",
+    "name": "電球ボット",
+    "nameEn": "Light Bulb Bot",
+    "description": "時々まぶしく輝く。50%でダメージ2倍。ひらめき次第！",
+    "descriptionEn": "50% chance to double damage. Sometimes brilliantly bright, sometimes dim!",
     "category": "pipeline",
     "rarity": "epic",
     "effects": {
@@ -67,12 +67,12 @@
       }
     }
   },
-  "finisher": {
-    "id": "finisher",
-    "name": "フィニッシャー",
-    "nameEn": "Finisher",
-    "description": "止めの一撃。敵HP30%以下でダメージ+50%。",
-    "descriptionEn": "Finishing blow. +50% damage when enemy below 30% HP.",
+  "scissors": {
+    "id": "scissors",
+    "name": "はさみボット",
+    "nameEn": "Scissors Bot",
+    "description": "弱った敵をチョキン。敵HP30%以下でダメージ+50%。",
+    "descriptionEn": "+50% damage when enemy below 30% HP. Snips them down to size!",
     "category": "pipeline",
     "rarity": "rare",
     "effects": {
@@ -88,12 +88,12 @@
       }
     }
   },
-  "recursion": {
-    "id": "recursion",
-    "name": "無限再帰",
-    "nameEn": "Recursion",
-    "description": "10%でパイプライン再起動。何度でも発動可能。",
-    "descriptionEn": "The pipeline that never ends. 10% chance to restart pipeline from chip 1. Can trigger multiple times.",
+  "clock": {
+    "id": "clock",
+    "name": "時計ボット",
+    "nameEn": "Clock Bot",
+    "description": "10%で時間を巻き戻す。パイプライン再起動。何度でも。",
+    "descriptionEn": "10% chance to restart the pipeline from chip 1. Time is a loop!",
     "category": "pipeline",
     "rarity": "legendary",
     "effects": {
@@ -106,12 +106,12 @@
       }
     }
   },
-  "sacrifice": {
-    "id": "sacrifice",
-    "name": "生贄プロトコル",
-    "nameEn": "Sacrifice",
-    "description": "このチップを永久に破壊。ダメージ10倍。",
-    "descriptionEn": "Destroy this chip permanently. Deal 10× current pipeline damage. Gone forever.",
+  "charcoal": {
+    "id": "charcoal",
+    "name": "炭ボット",
+    "nameEn": "Charcoal Bot",
+    "description": "自分を燃やして大爆発。ダメージ10倍。でも永遠にさよなら。",
+    "descriptionEn": "×10 pipeline damage, but destroyed forever. Burns bright, then gone!",
     "category": "pipeline",
     "rarity": "legendary",
     "effects": {
@@ -123,12 +123,12 @@
       }
     }
   },
-  "stackOverflow": {
-    "id": "stackOverflow",
-    "name": "スタックオーバーフロー",
-    "nameEn": "Stack Overflow",
-    "description": "25%で+3ダメージ。戦闘中スタック。敵撃破でリセット。",
-    "descriptionEn": "Builds pressure. 25% chance for +3 damage. Stacks during combat, resets when enemy dies.",
+  "book": {
+    "id": "book",
+    "name": "本ボット",
+    "nameEn": "Book Bot",
+    "description": "25%で+3ダメージ。戦闘中スタック。知識は力。",
+    "descriptionEn": "25% chance for +3 damage, stacks during combat. Knowledge is power!",
     "category": "pipeline",
     "rarity": "epic",
     "effects": {
@@ -140,12 +140,12 @@
       }
     }
   },
-  "minimalist": {
-    "id": "minimalist",
-    "name": "ミニマリスト",
-    "nameEn": "Minimalist",
-    "description": "武器に空きスロット2つ以上で+40ダメージ。",
-    "descriptionEn": "Less is more. If weapon has 2+ empty chip slots, gain +40 damage.",
+  "eraser": {
+    "id": "eraser",
+    "name": "消しゴムボット",
+    "nameEn": "Eraser Bot",
+    "description": "空きスロット2つ以上で+40ダメージ。余白を愛する。",
+    "descriptionEn": "+40 damage if 2+ chip slots are empty. Loves a clean slate!",
     "category": "pipeline",
     "rarity": "rare",
     "effects": {
@@ -158,12 +158,12 @@
       }
     }
   },
-  "lifelink": {
-    "id": "lifelink",
-    "name": "ライフリンク",
-    "nameEn": "Lifelink",
-    "description": "+5ダメージ、5HP回復。毎回発動。",
-    "descriptionEn": "Balanced protocol. +5 damage and heal 5 HP. Every time.",
+  "onigiri": {
+    "id": "onigiri",
+    "name": "おにぎりボット",
+    "nameEn": "Onigiri Bot",
+    "description": "戦いながら元気をくれる。+5ダメージ、5HP回復。",
+    "descriptionEn": "+5 damage and heal 5 HP every attack. A tasty little battle buddy!",
     "category": "pipeline",
     "rarity": "uncommon",
     "effects": {
@@ -176,12 +176,12 @@
       }
     }
   },
-  "bountyHunter": {
-    "id": "bountyHunter",
-    "name": "バウンティハンター",
-    "nameEn": "Bounty Hunter",
-    "description": "敵を倒すたび+1ダメージ。無限スタック。",
-    "descriptionEn": "The more you kill, the stronger you get. +1 damage per enemy killed this run. Stacks infinitely.",
+  "wallet": {
+    "id": "wallet",
+    "name": "財布ボット",
+    "nameEn": "Wallet Bot",
+    "description": "敵を倒すたび+1ダメージ。無限スタック。お金持ちへの道。",
+    "descriptionEn": "+1 damage per enemy defeated this run. Stacks forever. Cha-ching!",
     "category": "pipeline",
     "rarity": "epic",
     "effects": {
@@ -193,12 +193,12 @@
       }
     }
   },
-  "siphon": {
-    "id": "siphon",
-    "name": "サイフォン",
-    "nameEn": "Siphon",
-    "description": "-2ダメージ、10HP回復。生存優先。",
-    "descriptionEn": "Survival mode. -2 damage but heal 10 HP. Stay alive.",
+  "straw": {
+    "id": "straw",
+    "name": "ストローボット",
+    "nameEn": "Straw Bot",
+    "description": "敵からHPをちゅーっと吸う。-2ダメージ、10HP回復。",
+    "descriptionEn": "-2 damage but heal 10 HP. Sips your enemies' strength away!",
     "category": "pipeline",
     "rarity": "uncommon",
     "effects": {
@@ -211,12 +211,12 @@
       }
     }
   },
-  "executiveOverride": {
-    "id": "executiveOverride",
-    "name": "エグゼクティブ",
-    "nameEn": "Executive Override",
-    "description": "ボスに10%追加ダメージ。",
-    "descriptionEn": "Target the top. Deal 10% more damage to bosses.",
+  "key": {
+    "id": "key",
+    "name": "鍵ボット",
+    "nameEn": "Key Bot",
+    "description": "ボスの弱点を開錠。ボスに10%追加ダメージ。",
+    "descriptionEn": "+10% damage to bosses. Unlocks their weak points!",
     "category": "pipeline",
     "rarity": "rare",
     "effects": {
@@ -228,12 +228,12 @@
       }
     }
   },
-  "phoenix": {
-    "id": "phoenix",
-    "name": "フェニックス",
-    "nameEn": "Phoenix Protocol",
-    "description": "x1攻撃。チップ破壊ごとに+1x。永久スタック。",
-    "descriptionEn": "Rise from sacrifice. x1 attack, gains +1x for every chip destroyed this run.",
+  "egg": {
+    "id": "egg",
+    "name": "卵ボット",
+    "nameEn": "Egg Bot",
+    "description": "破壊されたチップごとに+1倍。壊れるほど強くなる。",
+    "descriptionEn": "×1 base, +1× for each chip destroyed this run. Cracks open stronger!",
     "category": "pipeline",
     "rarity": "legendary",
     "effects": {
@@ -246,12 +246,12 @@
       }
     }
   },
-  "unstable": {
-    "id": "unstable",
-    "name": "不安定コア",
-    "nameEn": "Unstable Core",
-    "description": "+50ダメージ。10%でランダムなチップを破壊。",
-    "descriptionEn": "Volatile power. +50 damage but 10% chance to randomly destroy one of your chips.",
+  "fireworks": {
+    "id": "fireworks",
+    "name": "花火ボット",
+    "nameEn": "Fireworks Bot",
+    "description": "+50ダメージ。でも10%で仲間チップを巻き込む。",
+    "descriptionEn": "+50 damage but 10% chance to destroy a random chip. Spectacular risk!",
     "category": "pipeline",
     "rarity": "epic",
     "effects": {
@@ -264,12 +264,12 @@
       }
     }
   },
-  "copycat": {
-    "id": "copycat",
-    "name": "コピーキャット",
-    "nameEn": "Copycat",
-    "description": "前のチップの効果をコピー。",
-    "descriptionEn": "Mirror protocol. Copies the previous chip effect.",
+  "mirror": {
+    "id": "mirror",
+    "name": "鏡ボット",
+    "nameEn": "Mirror Bot",
+    "description": "前のチップの効果をそのままコピー。真似上手。",
+    "descriptionEn": "Copies the previous chip's effect. The sincerest form of flattery!",
     "category": "pipeline",
     "rarity": "rare",
     "effects": {
@@ -280,12 +280,12 @@
       }
     }
   },
-  "lightweight": {
-    "id": "lightweight",
-    "name": "ライトウェイト",
-    "nameEn": "Lightweight",
-    "description": "空きスロットごとに+20ダメージ。",
-    "descriptionEn": "Travel light. +20 damage for each empty chip slot.",
+  "feather": {
+    "id": "feather",
+    "name": "羽ボット",
+    "nameEn": "Feather Bot",
+    "description": "軽いほど強い。空きスロットごとに+20ダメージ。",
+    "descriptionEn": "+20 damage for each empty chip slot. Travel light, hit hard!",
     "category": "pipeline",
     "rarity": "uncommon",
     "effects": {
@@ -297,12 +297,12 @@
       }
     }
   },
-  "burstCycle": {
-    "id": "burstCycle",
-    "name": "バーストサイクル",
-    "nameEn": "Burst Cycle",
-    "description": "5回目の攻撃でx3ダメージ。",
-    "descriptionEn": "Building power. Every 5th attack deals x3 damage.",
+  "drum": {
+    "id": "drum",
+    "name": "太鼓ボット",
+    "nameEn": "Drum Bot",
+    "description": "リズムを刻む。5回目の攻撃でダメージ3倍。ドドン！",
+    "descriptionEn": "Every 5th attack deals ×3 damage. Building to the big finale!",
     "category": "pipeline",
     "rarity": "rare",
     "effects": {

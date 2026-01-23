@@ -22,7 +22,7 @@
  * Run: /game/start-run, /game/forfeit, /game/enter-floor, /game/next-floor
  * Ward: /game/starting-wards, /game/select-starting-ward, /game/next-ward-options
  * Room: /game/room, /game/proceed, /game/interact-trap, /game/loot-body
- * Combat: /game/start-encounter, /game/attack, /game/realtime-attack
+ * Combat: /game/start-encounter, /game/start-boss, /game/combat-cycle, /game/combat-end-narration
  * Economy: /game/shop, /game/shop/buy, /game/refine, /game/open-treasure
  * Chips: /game/chip-loadout, /game/equip-chip, /game/unequip-chip
  * Meta: /game/upgrades, /game/purchase-upgrade
