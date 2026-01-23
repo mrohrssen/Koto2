@@ -629,6 +629,8 @@ export function executeChipPipeline(weaponChips, context) {
     player: context.player || null
   };
 
+  let nextChipDoubleActive = context.nextChipDouble || false;
+
   const MAX_RECURSIONS = 10; // Safety cap
   let chipIndex = 0;
 
@@ -651,6 +653,18 @@ export function executeChipPipeline(weaponChips, context) {
 
     const result = processPipelineChip(chip, state);
     state.firedChips.push(result);
+
+    // nextChipDouble: the first chip that fires also fires a second time
+    if (nextChipDoubleActive && result.triggered) {
+      const doubleResult = processPipelineChip(chip, state);
+      state.firedChips.push(doubleResult);
+      if (doubleResult.triggered) {
+        state.currentDamage = doubleResult.newDamage;
+        if (doubleResult.critChanceBonus) state.critChance += doubleResult.critChanceBonus;
+        if (doubleResult.healPlayer) state.totalHealPlayer += doubleResult.healPlayer;
+      }
+      nextChipDoubleActive = false;
+    }
 
     if (result.triggered) {
       state.currentDamage = result.newDamage;

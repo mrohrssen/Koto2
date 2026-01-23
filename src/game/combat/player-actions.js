@@ -13,6 +13,7 @@ import {
   resolvePhysicalAttack,
   PLAYER_ATTACK_TYPES
 } from './mechanics.js';
+import { consumeBuffsByType } from './chip-skills.js';
 
 // ============ PLAYER ATTACK EXECUTION ============
 
@@ -49,6 +50,28 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
   if (attackResult.hit) {
     result.anyHit = true;
 
+    // --- PRE_PIPELINE buffs: add flat bonuses to base damage ---
+    let baseDamage = attackResult.damage;
+    const preBuffs = consumeBuffsByType(player, 'PRE_PIPELINE');
+    for (const buff of preBuffs) {
+      if (buff.condition === 'emptySlots>=2') {
+        const weapon = player.equipment?.weapon;
+        const empty = 5 - (weapon?.equippedChips?.length || 0);
+        if (empty >= 2) baseDamage += buff.effect.flatBonus;
+      } else if (buff.effect.flatBonusPerEmpty) {
+        const weapon = player.equipment?.weapon;
+        const empty = 5 - (weapon?.equippedChips?.length || 0);
+        baseDamage += buff.effect.flatBonusPerEmpty * empty;
+      } else if (buff.effect.flatBonus) {
+        baseDamage += buff.effect.flatBonus;
+      }
+    }
+
+    // --- PIPELINE_MODIFIER buffs: alter pipeline execution ---
+    const modBuffs = consumeBuffsByType(player, 'PIPELINE_MODIFIER');
+    const runTwice = modBuffs.some(b => b.effect.runTwice);
+    const nextChipDouble = modBuffs.some(b => b.effect.nextChipDouble);
+
     // Get weapon chips in slot order and execute pipeline
     const weaponChips = getWeaponPipelineChips(player);
     if (weaponChips.length > 0) {
@@ -56,8 +79,8 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
       const weaponMaxSlots = 5;
       const weaponUsedSlots = weapon?.equippedChips?.length || 0;
 
-      const pipelineResult = executeChipPipeline(weaponChips, {
-        baseDamage: attackResult.damage,
+      const pipelineContext = {
+        baseDamage,
         isCrit: attackResult.critical,
         critChance: attackResult.critChance,
         target: enemy,
@@ -66,14 +89,35 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
         weaponUsedSlots,
         runKills: player._runKills || 0,
         runChipsDestroyed: player._runChipsDestroyed || 0,
-        player
-      });
+        player,
+        nextChipDouble
+      };
+
+      const pipelineResult = executeChipPipeline(weaponChips, pipelineContext);
+
+      if (runTwice) {
+        const secondResult = executeChipPipeline(weaponChips, {
+          ...pipelineContext,
+          combatStacks: pipelineResult.combatStacks
+        });
+        pipelineResult.finalDamage += secondResult.finalDamage;
+        pipelineResult.healPlayer = (pipelineResult.healPlayer || 0) + (secondResult.healPlayer || 0);
+        pipelineResult.secondRunFiredChips = secondResult.firedChips;
+      }
 
       player._combatStacks = pipelineResult.combatStacks;
       result.totalDamage = pipelineResult.finalDamage;
       result.pipelineResult = pipelineResult;
     } else {
-      result.totalDamage = attackResult.damage;
+      result.totalDamage = baseDamage;
+    }
+
+    // --- POST_PIPELINE buffs: multiply final damage ---
+    const postBuffs = consumeBuffsByType(player, 'POST_PIPELINE');
+    for (const buff of postBuffs) {
+      if (buff.condition === 'enemyBelow30' && enemy.hp / enemy.maxHp >= 0.3) continue;
+      if (buff.condition === 'isBoss' && !enemy.isBoss) continue;
+      result.totalDamage = Math.floor(result.totalDamage * buff.effect.multiplier);
     }
   }
   if (attackResult.critical) {
