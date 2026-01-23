@@ -384,15 +384,10 @@ describe('Fireworks Bot Integration', () => {
       enemyHp: 500
     });
 
-    // Use low value for combat hits, but high value for chip destruction check
-    let callCount = 0;
-    await withControlledRandom(() => {
-      callCount++;
-      // First 3 calls are combat (need low values), rest are chip triggers
-      // Fireworks Bot has destruction check as part of its trigger
-      if (callCount <= 3) return 0.01; // Ensure combat hits
-      return 0.5; // High enough to avoid 10% destruction trigger (0.5 >= 0.10)
-    }, () => {
+    // Use 0.5 for ALL random calls:
+    // - resolvePhysicalAttack variance: 0.85 + 0.5*0.30 = 1.0 (normal damage)
+    // - Fireworks destroy check: 0.5 >= 0.10, so destruction does NOT trigger
+    await withControlledRandom(() => 0.5, () => {
       gm.combatCycle('player');
     });
 
