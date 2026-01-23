@@ -1,8 +1,8 @@
-# Dead Code Cleanup Plan (Revised)
+# Dead Code Cleanup Plan (Revised v2)
 
 ## Summary
 
-Massive cleanup of experimental/dead features. The game's core loop: turn-based combat, pipeline chips (5 flat slots, all fire), post-combat free chip rewards (1 of 3), shrine rooms, ward exploration, boss progression. Everything else is dead code.
+Massive cleanup of experimental/dead features. The game's core loop: vocab-pause combat (word review triggers each attack cycle), pipeline chips (5 flat slots, all fire), post-combat free chip rewards (1 of 3), shrine rooms, ward exploration, boss progression. Everything else is dead code.
 
 ---
 
@@ -11,12 +11,25 @@ Massive cleanup of experimental/dead features. The game's core loop: turn-based 
 | Original Plan Said | Corrected Action |
 |---|---|
 | Remove status effects from enemy.js | **KEEP all enemy abilities** (freeze, sleep, barrier, vanish, berserk are live) |
-| Rename realtime-combat.js → combat.js | **DELETE realtime-combat.js entirely** (turn-based only) |
-| Rename `/realtime-attack` → `/attack` | **DELETE `/realtime-attack`**, keep existing `/attack` |
+| DELETE realtime-combat.js entirely | **KEEP realtime-combat.js** - it's the ONLY combat loop (vocab-pause system) |
+| DELETE `/realtime-attack`, keep `/attack` | **KEEP `/realtime-attack`**, DELETE `/attack` (unused) |
 | Remove blacksmith room | Correct - remove, chip upgrade will be rebuilt as level system at shrine |
 | Remove equipment from player | Correct - but also **redesign chip slots to flat 5-slot array** |
 | Remove shop endpoints | **Keep post-combat chip selection** (make FREE), remove merchant shop only |
 | Remove gold | **KEEP gold** - reserved for future shrine chip level-up |
+
+### Why "Realtime" Combat is Actually the Turn-Based System
+
+Despite the misleading name, `realtime-combat.js` implements **vocab-pause turn-based combat**:
+
+1. Combat starts paused → word cards shown via `wordPractice.initCombatWords()`
+2. Player reviews a word → `resumeCombatAfterVocab()` fires
+3. Player attack via `/realtime-attack` (attackerType: 'player')
+4. 400ms delay → Enemy attack via `/realtime-attack` (attackerType: 'enemy')
+5. `combatPausedForVocab = true` → waits for next word review
+6. Repeat from step 2
+
+The `/attack` endpoint and `performAttack()` in game.js are **never called** in the live game. They are the actual dead code.
 
 ---
 
@@ -29,9 +42,10 @@ Delete entirely:
 - `src/game/items/skills.js` (165 lines)
 - `src/game/items/consumables.js` (297 lines)
 - `src/game/events.js` (139 lines)
-- `public/js/ui/realtime-combat.js` (realtime UI)
 
-**~2,100 lines deleted**
+**~1,818 lines deleted**
+
+**DO NOT DELETE**: `public/js/ui/realtime-combat.js` (it's the live combat loop)
 
 ---
 
@@ -51,56 +65,93 @@ Delete entirely:
 
 ---
 
-## Phase 3: Chip Slot Redesign (Equipment → Flat Array)
+## Phase 3: Simplify Equipment (Keep Weapon as Chip Holder)
+
+Keep the existing `player.equipment.weapon.equippedChips` structure unchanged. The weapon is just a chip holder with no stats. This means ALL existing chip pipeline code works without modification.
 
 ### `src/game/state.js` - `createNewPlayer()` becomes:
 ```javascript
-{ name, class, hp: 100, maxHp: 100, attack: 15, gold: 250, chips: [], equippedChips: [] }
+{
+  name, class, hp: 100, maxHp: 100, attack: 15, gold: 250,
+  chips: [],
+  equipment: { weapon: { id: 'defaultWeapon', equippedChips: [] } }
+}
 ```
 
-Remove: `equipment`, `stats`, `sp`, `maxSp`, `statPoints`, `level`, `xp`, `rank`, `inventory`, `statuses`
+Remove: `stats`, `sp`, `maxSp`, `statPoints`, `level`, `xp`, `rank`, `inventory`, `statuses`
+Remove: body/shield/accessory equipment slots (only weapon remains)
 Remove functions: `allocateStat()`, `checkLevelUp()`, `recalculatePlayerResources()`, `getRankIndex()`, `getNextRank()`, `RANKS`
 
-### `src/game/items/chips.js` - Rewrite slot functions:
-- `equipChip(player, chipId)` → push to `player.equippedChips[]` (max 5)
-- `unequipChip(player, chipId)` → filter from `player.equippedChips[]`
-- `getWeaponPipelineChips(player)` → map `player.equippedChips` to chip objects
-- `getEquippedChips(player)` → same as above
-- `getUsedChipSlots(player)` → `player.equippedChips.length`
+### `src/game/items/class-equipment.js` → DELETE entirely
+- The default weapon is now just `{ id: 'defaultWeapon', equippedChips: [] }` in `createNewPlayer()`
+- No class-based equipment selection needed
+
+### `src/game/items/chips.js` - Minimal changes:
+- `getWeaponPipelineChips(player)` → **NO CHANGES** (already reads `player.equipment.weapon.equippedChips`)
+- `equipChip(player, equipmentSlot, chipId)` → **NO CHANGES** (already works, frontend always passes 'weapon')
+- `unequipChip(player, equipmentSlot, chipId)` → **NO CHANGES** (already works)
+- `getEquippedChips(player)` → simplify to only check weapon slot (remove body/shield/accessory iteration)
+- `getChipLoadout(player)` → simplify to only return weapon slot data (keep `{ equipment: { weapon: {...} }, inventory: [...] }` shape so frontend doesn't crash)
 - DELETE: `attemptChipUpgrade`, `getNextRarity`, `getUpgradeCost`, `getUpgradeFailureChance`, `createUpgradedChip`, `CHIP_UPGRADE_CONFIG`
 
 ### `src/game/services/combat-service.js`
-- Update SACRIFICE/UNSTABLE_CORE handlers: `player.equippedChips.splice(...)` instead of `player.equipment.weapon.equippedChips`
+- **NO CHANGES** to SACRIFICE/UNSTABLE_CORE handlers (already correctly access `player.equipment.weapon.equippedChips`)
 
 ### `src/game/combat/player-actions.js`
-- Remove equipment bonus checks (armorPen, doubleStrike, vsBossDamage, etc.)
-- Remove weapon reference, use `player.equippedChips` directly
+- Remove equipment bonus checks (armorPen, doubleStrike, vsBossDamage, etc.) - they all return 0 anyway
+- `getWeaponPipelineChips(player)` call remains unchanged
+- Keep `executePlayerAttack()` (used by `executeRealtimeCycle()`)
 
 ### `src/game/loop.js`
 - Remove `calculateEquipmentBonuses` import and calls
-- Remove equipment/inventory delegation methods
+- Remove equipment/inventory delegation methods (for body/shield/accessory)
 - Update `getState()` to not enrich with equipment bonuses
 
 ---
 
-## Phase 4: Delete Realtime Combat
+## Phase 4: Delete Dead Turn-Based Combat Code
+
+The unused turn-based `/attack` system (never called by frontend):
 
 ### `src/game/services/combat-service.js`
-- DELETE `executeRealtimeCycle()` method entirely
+- DELETE `executeAttack()` method (the turn-based version, ~180 lines)
+- KEEP `executeRealtimeCycle()` (the live vocab-pause combat loop)
 
 ### `src/game/loop.js`
-- DELETE `realtimeAttackCycle()` method
+- DELETE `attack()` delegation method
+- KEEP `realtimeAttackCycle()` method
 
 ### `src/routes/game/combat.js`
-- DELETE `/realtime-attack` endpoint
+- DELETE `/attack` endpoint handler
 - DELETE `/equip`, `/unequip` endpoints (equipment gone)
-- KEEP: `/attack`, `/start-encounter`, `/start-boss`
+- KEEP: `/realtime-attack`, `/start-encounter`, `/start-boss`, `/combat-end-narration`
+
+### `src/game/combat/player-actions.js`
+- DELETE `executeAttack()` (legacy function at line 189, never called in live flow)
+- KEEP `executePlayerAttack()` (called by `executeRealtimeCycle()`)
 
 ### `src/game/stats.js`
 - DELETE: `calculateASPD()`, `calculateAttackInterval()`, `getEntityAttackInterval()`
+- These return hardcoded values (1000ms) and the frontend never uses the intervals for timing - combat pacing is entirely controlled by vocab pause + 400ms delay
+
+### `src/game/services/combat-service.js` - ASPD cleanup
+- Remove `import { getEntityAttackInterval } from '../stats.js'`
+- Remove `getEntityAttackInterval()` calls in `executeRealtimeCycle()` (lines 334-335)
+- Remove `playerInterval`/`enemyInterval` from `executeRealtimeCycle()` response object
+
+### `public/js/ui/realtime-combat.js` - ASPD cleanup
+- Remove `currentPlayerInterval`/`currentEnemyInterval` state variables
+- Remove assignments from API response (`result.playerInterval`, `result.enemyInterval`)
+- Combat timing remains unchanged (400ms delay before enemy attack, vocab pause for player)
 
 ### Frontend (`public/game.js`)
-- Remove all realtime combat imports and references
+- DELETE `performAttack()` function (never called by UI)
+- DELETE `window.performAttack` export
+- Remove attack-related imports from api.js if unused
+
+### `public/js/api.js`
+- DELETE `attack()` function (never called)
+- Remove from exports
 
 ---
 
@@ -136,7 +187,7 @@ Remove functions: `allocateStat()`, `checkLevelUp()`, `recalculatePlayerResource
 
 ### `src/game/services/exploration-service.js` - `buyFromPostCombatShop()`
 - Remove gold check and gold deduction
-- Auto-equip chip if `player.equippedChips.length < 5`
+- Auto-equip chip if `player.equipment.weapon.equippedChips.length < 5`
 
 ### `src/game/rooms.js` - `generatePostCombatShop()`
 - Set `price: 0` on generated chips
@@ -160,7 +211,8 @@ Remove functions: `allocateStat()`, `checkLevelUp()`, `recalculatePlayerResource
 
 ### `src/game/stats.js` → keep only:
 - `calculateMaxHp()`, `calculateDerivedStats()` (for ATK), `calculatePhysicalDamage()`, `calculateMagicDamage()`
-- Remove all stub functions, SP, ASPD, hit/flee/crit
+- Remove all stub functions, SP, hit/flee/crit
+- ASPD already deleted in Phase 4
 
 ### `src/game/prefetch.js`
 - Remove dead narration prefetch queue, `eagerPrefetchForRun()`, `predictAndPrefetch()`
@@ -184,34 +236,63 @@ Remove functions: `allocateStat()`, `checkLevelUp()`, `recalculatePlayerResource
 - UPDATE: chip modal for flat 5-slot model
 
 ### `public/game.js`
-- Remove realtime combat, equipment UI, stat allocation, dead room handling
+- Remove equipment UI, stat allocation, dead room handling
+- KEEP: all realtime-combat.js integration (imports, init, startRealtimeCombat calls)
 
 ---
 
-## Phase 10: Verification
+## Phase 10: Save Migration
+
+Old saves contain `player.level`, `player.xp`, `player.stats`, `player.equipment.body/shield/accessory`, etc. After cleanup:
+- `dm.js` references `player.level` for narration context → remove or default to 1
+- `rewards.js` modifies `player.xp` → remove XP tracking entirely
+- `loop.js` reads `player.level` → remove references
+- Old save files will load fine (generic JSON), but code accessing removed fields crashes
+
+**Solution**: Delete `.jrpg-save.json` as part of cleanup (require new game). Add a version field to saves going forward:
+```javascript
+{ version: 2, player: { ... }, completedRuns: [], savedAt: '...' }
+```
+
+---
+
+## Phase 11: Verification
 
 1. `node --check` all modified JS files
 2. `npm run test:unit` - remove/update tests for deleted features
 3. `./scripts/e2e-test.sh` - fix failures
-4. Manual test: create player → explore → encounter → attack → victory → pick free chip → next room → shrine → boss → next floor
+4. Manual test: create player → explore → encounter → word card appears → answer word → attack fires → enemy attacks → word card appears → repeat → victory → pick free chip → next room → shrine → boss → next floor
 5. Verify enemy abilities still work (freeze, barrier, vanish, berserk)
 6. Verify chip pipeline fires all 5 equipped chips
 7. No console errors in browser or server
+8. Verify combat pacing: word review → player attack → 400ms → enemy attack → pause
 
 ---
 
 ## DO NOT REMOVE (critical live systems)
 
+- **Vocab-pause combat loop** (`realtime-combat.js`, `/realtime-attack`, `executeRealtimeCycle()`, `/combat-end-narration`)
 - Enemy status effects and abilities (freeze, sleep, barrier, vanish, berserk, counter, breath, etc.)
 - Post-combat chip selection (1 of 3, now free)
 - Gold tracking and enemy gold drops
 - DM/narration system (`src/game/dm.js`)
-- JPDB vocabulary integration
+- JPDB vocabulary integration and word-practice.js
 - Shrine rooms
 - Ward/floor progression
 - Enemy dialogue and intent system
 - Pipeline chip execution (`executeChipPipeline`)
-- Turn-based `/attack` endpoint and `executeAttack()` in combat-service
+- `startRealtimeCombat()` calls in game.js encounter/boss flow
+
+---
+
+## Optional: Rename for Clarity (Separate PR)
+
+The "realtime" naming is confusing since it's actually a vocab-pause turn-based system. Consider renaming:
+- `realtime-combat.js` → `combat-loop.js`
+- `/realtime-attack` → `/combat-cycle`
+- `executeRealtimeCycle()` → `executeCombatCycle()`
+- `startRealtimeCombat()` → `startCombatLoop()`
+- `realtimeAttackCycle()` → `combatCycle()`
 
 ---
 
@@ -219,6 +300,6 @@ Remove functions: `allocateStat()`, `checkLevelUp()`, `recalculatePlayerResource
 
 - **~3,500-4,500 lines of code deleted** across all files
 - **~15-20 files modified** (stripping dead references)
-- **7 files deleted entirely**
-- **1 architectural change**: equipment-based chip slots → flat 5-slot array
-- Game functionality preserved: turn-based combat, chips, free chip rewards, exploration, vocabulary, narration, enemy abilities
+- **7 files deleted entirely** (6 from Phase 1 + class-equipment.js from Phase 3)
+- **1 simplification**: multi-slot equipment → single weapon chip holder (no stat bonuses)
+- Game functionality preserved: vocab-pause combat, chips, free chip rewards, exploration, vocabulary, narration, enemy abilities
