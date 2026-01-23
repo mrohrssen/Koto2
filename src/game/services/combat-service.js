@@ -35,7 +35,7 @@ import {
   tickStatusEffects
 } from '../combat/index.js';
 import { generatePostCombatShop, getNextWardOptions } from '../rooms.js';
-import { resetChipCharge } from '../items/chips.js';
+import { resetChipCharge, incrementAllEquippedCharges } from '../items/chips.js';
 import { getSimpleNarration } from '../dm.js';
 
 /**
@@ -356,6 +356,9 @@ export class CombatService {
       if (this.gm.run.runStats && (enemyResult.dodge || enemyResult.perfectDodge)) {
         this.gm.run.runStats.dodges++;
       }
+
+      // Increment chip charges after enemy turn (round complete)
+      incrementAllEquippedCharges(this.gm.run.player);
 
       // Check if player defeated
       if (enemyResult.playerDefeated) {
