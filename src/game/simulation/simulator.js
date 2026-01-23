@@ -8,7 +8,6 @@
 
 import { GameManager } from '../loop.js';
 import { CHIPS, getChipsByRarity, equipChip } from '../items/chips.js';
-import { allocateStat } from '../state.js';
 import { AIPlayer } from './ai-player.js';
 import { SimulationStats } from './stats.js';
 import { executeEnemyTurn } from '../combat/enemy.js';
@@ -278,26 +277,10 @@ function handleRoom(gm, ai) {
 }
 
 /**
- * Auto-allocate any unspent stat points
+ * Auto-allocate any unspent stat points (no-op: stat allocation removed)
  */
 function autoAllocateStats(gm) {
-  const player = gm.run?.player;
-  if (!player || !player.statPoints || player.statPoints <= 0) return;
-
-  // Simple allocation: prioritize VIT > STR > AGI > DEX
-  const priority = ['vit', 'str', 'agi', 'dex', 'int', 'luk'];
-
-  while (player.statPoints > 0) {
-    let allocated = false;
-    for (const stat of priority) {
-      const result = allocateStat(player, stat);
-      if (result?.success) {
-        allocated = true;
-        break;
-      }
-    }
-    if (!allocated) break; // Can't allocate anything (all stats too expensive)
-  }
+  // Stats removed in Phase 3 cleanup
 }
 
 /**

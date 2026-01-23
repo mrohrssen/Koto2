@@ -20,7 +20,7 @@
 
 
 import { getSimpleNarration } from '../dm.js';
-import { generateEncounterCount, recalculatePlayerResources } from '../state.js';
+import { generateEncounterCount } from '../state.js';
 
 import {
   generateFloorRooms,
@@ -40,22 +40,10 @@ import {
 } from '../rooms.js';
 
 import {
-  getItem,
-  calculateEquipmentBonuses
+  getItem
 } from '../items.js';
 
-import {
-  attemptRefinement,
-  getRefinementPreview
-} from '../combat.js';
 
-import {
-  getNextRarity,
-  getUpgradeCost,
-  getUpgradeFailureChance,
-  attemptChipUpgrade,
-  CHIP_RARITIES
-} from '../items/chips.js';
 
 /**
  * ExplorationService - Handles dungeon exploration and room interactions
@@ -611,10 +599,6 @@ export class ExplorationService {
       }
     }
 
-    // Recalculate all stats in case item has passive bonuses (chips add stats)
-    const equipBonuses = calculateEquipmentBonuses(player);
-    recalculatePlayerResources(player, equipBonuses, true);
-
     // Close shop
     this.gm.run.postCombatShop.active = false;
 
@@ -738,226 +722,6 @@ export class ExplorationService {
       cost: totalCost,
       remainingGold: this.gm.run.player.gold
     };
-  }
-
-  // ============ BLACKSMITH / REFINEMENT ============
-
-  /**
-   * Get refinement preview for all equipped items
-   */
-  getRefinePreview() {
-    if (!this.gm.run || !this.gm.run.player) {
-      throw new Error('No active run');
-    }
-
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'blacksmith') {
-      throw new Error('No blacksmith here');
-    }
-
-    const previews = {};
-    const slots = ['weapon', 'body', 'shield', 'accessory'];
-
-    for (const slot of slots) {
-      const preview = getRefinementPreview(this.gm.run.player, slot);
-      if (preview) {
-        previews[slot] = preview;
-      }
-    }
-
-    return {
-      previews,
-      playerGold: this.gm.run.player.gold,
-      floorBonus: room.blacksmith?.successBonus || 0
-    };
-  }
-
-  /**
-   * Attempt to refine an equipped item
-   * @param {string} slot - Equipment slot to refine
-   */
-  refineEquipment(slot) {
-    if (!this.gm.run || !this.gm.run.player) {
-      throw new Error('No active run');
-    }
-
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'blacksmith') {
-      throw new Error('No blacksmith here');
-    }
-
-    const floorBonus = room.blacksmith?.successBonus || 0;
-    const result = attemptRefinement(this.gm.run.player, slot, floorBonus);
-
-    if (result.error) {
-      throw new Error(result.error);
-    }
-
-    // Mark blacksmith as interacted
-    if (room.blacksmith) {
-      room.blacksmith.interacted = true;
-    }
-
-    this.gm.emitState();
-    return result;
-  }
-
-  /**
-   * Get chip upgrade preview for blacksmith
-   * Returns 3 random upgradeable chips from player inventory
-   * @returns {object} { chips: Array, playerGold: number }
-   */
-  getChipUpgradePreview() {
-    console.log('[getChipUpgradePreview] Called');
-    if (!this.gm.run || !this.gm.run.player) {
-      throw new Error('No active run');
-    }
-
-    const room = this.getCurrentRoom();
-    console.log('[getChipUpgradePreview] Room type:', room?.type, 'Room:', room);
-    if (!room || room.type !== 'blacksmith') {
-      throw new Error('No blacksmith here');
-    }
-
-    const player = this.gm.run.player;
-    const floorBonus = room.blacksmith?.successBonus || 0;
-
-    // All chips are in player.chips (both equipped and unequipped)
-    // Get upgradeable chips (not legendary)
-    const upgradeableChips = (player.chips || []).filter(chip => {
-      const nextRarity = getNextRarity(chip.rarity);
-      return nextRarity !== null; // Can upgrade if not legendary
-    });
-
-    // Shuffle and pick up to 3
-    const shuffled = [...upgradeableChips].sort(() => Math.random() - 0.5);
-    const selectedChips = shuffled.slice(0, 3);
-
-    // Add upgrade info to each chip
-    const chipsWithInfo = selectedChips.map(chip => ({
-      ...chip,
-      upgradeCost: getUpgradeCost(chip),
-      failureChance: getUpgradeFailureChance(chip, floorBonus),
-      nextRarity: getNextRarity(chip.rarity),
-      nextRarityInfo: CHIP_RARITIES[getNextRarity(chip.rarity)]
-    }));
-
-    // Store selected chips in room for validation
-    room.blacksmith.selectedChipIds = chipsWithInfo.map(c => c.id);
-
-    return {
-      chips: chipsWithInfo,
-      playerGold: player.gold,
-      floorBonus,
-      greeting: '「チップを強化してやろうか？失敗すると...まあ、分かるだろ？」'
-    };
-  }
-
-  /**
-   * Attempt to upgrade a chip at the blacksmith
-   * @param {string} chipId - ID of chip to upgrade
-   * @returns {object} { success: boolean, message: string, chip?: object }
-   */
-  performChipUpgrade(chipId) {
-    if (!this.gm.run || !this.gm.run.player) {
-      throw new Error('No active run');
-    }
-
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'blacksmith') {
-      throw new Error('No blacksmith here');
-    }
-
-    if (room.blacksmith?.interacted) {
-      throw new Error('Blacksmith already used');
-    }
-
-    const player = this.gm.run.player;
-    const floorBonus = room.blacksmith?.successBonus || 0;
-
-    // Validate chip is in the offered selection
-    if (!room.blacksmith?.selectedChipIds?.includes(chipId)) {
-      throw new Error('Invalid chip selection');
-    }
-
-    // Find chip in player inventory
-    const chipIndex = player.chips.findIndex(c => c.id === chipId);
-    if (chipIndex === -1) {
-      throw new Error('Chip not found in inventory');
-    }
-
-    const chip = player.chips[chipIndex];
-    const upgradeCost = getUpgradeCost(chip);
-
-    // Check player has enough gold
-    if (player.gold < upgradeCost) {
-      throw new Error('Not enough credits');
-    }
-
-    // Deduct gold
-    player.gold -= upgradeCost;
-
-    // Attempt upgrade
-    const result = attemptChipUpgrade(chip, floorBonus);
-
-    // Mark blacksmith as interacted
-    room.blacksmith.interacted = true;
-
-    // Find if chip is equipped to any equipment slot
-    const slots = ['weapon', 'body', 'shield', 'accessory'];
-    let equippedSlot = null;
-    for (const slot of slots) {
-      const equipment = player.equipment?.[slot];
-      if (equipment?.equippedChips?.includes(chipId)) {
-        equippedSlot = slot;
-        break;
-      }
-    }
-
-    if (result.success) {
-      // Remove old chip
-      player.chips.splice(chipIndex, 1);
-      // Add upgraded chip
-      player.chips.push(result.upgradedChip);
-
-      // Update equipment reference if chip was equipped
-      if (equippedSlot) {
-        const equipment = player.equipment[equippedSlot];
-        const chipIdx = equipment.equippedChips.indexOf(chipId);
-        if (chipIdx !== -1) {
-          equipment.equippedChips[chipIdx] = result.upgradedChip.id;
-        }
-      }
-
-      this.gm.emitNarration(`「よし、成功だ。」${chip.name || chip.nameEn}が${CHIP_RARITIES[result.newRarity].name}に強化された！`);
-      this.gm.emitState();
-
-      return {
-        success: true,
-        message: `${chip.name || chip.nameEn}が${CHIP_RARITIES[result.newRarity].name}に強化された！`,
-        chip: result.upgradedChip,
-        previousRarity: result.previousRarity,
-        newRarity: result.newRarity
-      };
-    } else {
-      // Remove destroyed chip
-      player.chips.splice(chipIndex, 1);
-
-      // Remove from equipment if chip was equipped
-      if (equippedSlot) {
-        const equipment = player.equipment[equippedSlot];
-        equipment.equippedChips = equipment.equippedChips.filter(id => id !== chipId);
-      }
-
-      this.gm.emitNarration(`「...失敗だ。チップは壊れた。」${chip.name || chip.nameEn}は破壊された...`);
-      this.gm.emitState();
-
-      return {
-        success: false,
-        message: `${chip.name || chip.nameEn}は破壊された...`,
-        destroyedChip: chip
-      };
-    }
   }
 
   // ============ INVENTORY HELPERS ============

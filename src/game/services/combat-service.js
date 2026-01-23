@@ -18,7 +18,7 @@
  */
 
 
-import { createCombatState, checkLevelUp } from '../state.js';
+import { createCombatState } from '../state.js';
 import {
   generateEnemy,
   getBossForFloor,
@@ -513,13 +513,6 @@ export class CombatService {
         result.loot = rewards.drops || [];
         result.isBoss = isBoss;
 
-        // Check level up
-        const levelUps = checkLevelUp(this.gm.run.player);
-        if (levelUps.length > 0) {
-          result.leveledUp = true;
-          result.newLevel = levelUps[levelUps.length - 1].newLevel;
-        }
-
         // End combat
         this.gm.combat.active = false;
 
@@ -625,12 +618,6 @@ export class CombatService {
       };
     }
 
-    // Check level up
-    const levelUps = checkLevelUp(this.gm.run.player);
-    for (const lu of levelUps) {
-      this.gm.narrate(getSimpleNarration('levelUp', { level: lu.newLevel }));
-    }
-
     // Track liberation in meta-progression
     if (this.gm.meta?.lifetimeStats) {
       if (!this.gm.meta.lifetimeStats.liberationTracker) {
@@ -727,13 +714,6 @@ export class CombatService {
 
     // Update persistent player with run rewards
     this.gm.player.gold += this.gm.run.player.gold;
-    this.gm.player.level = this.gm.run.player.level;
-    this.gm.player.xp = this.gm.run.player.xp;
-    // Keep best rank
-    const ranks = ['E', 'D', 'C', 'B', 'A', 'S'];
-    if (ranks.indexOf(this.gm.run.player.rank) > ranks.indexOf(this.gm.player.rank)) {
-      this.gm.player.rank = this.gm.run.player.rank;
-    }
 
     this.gm.emitState();
 

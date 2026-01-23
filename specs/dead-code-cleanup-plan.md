@@ -33,9 +33,9 @@ The `/attack` endpoint and `performAttack()` in game.js are **never called** in 
 
 ---
 
-## Phase 1: Delete Dead Files
+## Phase 1: Delete Dead Files ✅ DONE
 
-Delete entirely:
+Deleted entirely:
 - `src/game/items/equipment.js` (930 lines)
 - `src/game/items/class-equipment.js` (105 lines)
 - `src/game/items/sets.js` (182 lines)
@@ -45,27 +45,36 @@ Delete entirely:
 
 **~1,818 lines deleted**
 
-**DO NOT DELETE**: `public/js/ui/realtime-combat.js` (it's the live combat loop)
+**Did NOT delete**: `public/js/ui/realtime-combat.js` (it's the live combat loop)
 
 ---
 
-## Phase 2: Fix Import Chains
+## Phase 2: Fix Import Chains ✅ DONE
 
 ### `src/game/items/index.js`
-- Remove all imports/re-exports from deleted modules (equipment, consumables, skills, sets, class-equipment)
-- Remove `calculateEquipmentBonuses`, `hasRangedWeapon`, `getItem` (equipment version), `getAllItems`, `getItemsByType`
-- Keep only chip-related re-exports from chips.js
+- Removed all imports/re-exports from deleted modules (equipment, consumables, skills, sets, class-equipment)
+- Removed `getAllItems`, `getItemsByType`, `ITEM_SETS`, `getEquippedSetBonuses`, `HACKER_EQUIPMENT`, `getMaxChipSlots`
+- Kept chip-related re-exports from chips.js
+- Kept `calculateEquipmentBonuses` (returns zeros), `getItem` (checks chips only), `getSkill` (returns null), `getClassStartingEquipment` (returns default weapon), `hasRangedWeapon` (returns false) as stub functions — other files still import these
+- Kept refinement system (self-contained, used by rewards.js)
 
 ### `src/game/items.js` (top-level barrel)
-- Update to match new index.js (chips only)
+- Updated to re-export only what's available from new index.js
 
 ### `src/game/services/combat-service.js` and `exploration-service.js`
-- Remove `import { eventBus, GameEvents } from '../events.js'`
-- Remove all `eventBus.emit(...)` calls (no subscribers exist)
+- Removed `import { eventBus, GameEvents } from '../events.js'`
+- Removed all `eventBus.emit(...)` calls (8 in combat-service, 6 in exploration-service)
+
+### Additional fixes (discovered during implementation)
+- `src/game/state.js`: removed dead `import { CLASS_CONFIG } from './items/class-equipment.js'`
+- `server.js`: removed unused `CONSUMABLES`, `SKILLS` from items.js import
+
+### Branch
+`refactor/dead-code-cleanup-phases-1-2` — server starts and runs cleanly, playtested OK
 
 ---
 
-## Phase 3: Simplify Equipment (Keep Weapon as Chip Holder)
+## Phase 3: Simplify Equipment (Keep Weapon as Chip Holder) ✅ DONE
 
 Keep the existing `player.equipment.weapon.equippedChips` structure unchanged. The weapon is just a chip holder with no stats. This means ALL existing chip pipeline code works without modification.
 
@@ -82,9 +91,8 @@ Remove: `stats`, `sp`, `maxSp`, `statPoints`, `level`, `xp`, `rank`, `inventory`
 Remove: body/shield/accessory equipment slots (only weapon remains)
 Remove functions: `allocateStat()`, `checkLevelUp()`, `recalculatePlayerResources()`, `getRankIndex()`, `getNextRank()`, `RANKS`
 
-### `src/game/items/class-equipment.js` → DELETE entirely
-- The default weapon is now just `{ id: 'defaultWeapon', equippedChips: [] }` in `createNewPlayer()`
-- No class-based equipment selection needed
+### `src/game/items/class-equipment.js` → ✅ Already deleted in Phase 1
+- `getClassStartingEquipment()` is now a stub in `index.js` returning `{ weapon: { id: 'defaultWeapon', equippedChips: [] } }`
 
 ### `src/game/items/chips.js` - Minimal changes:
 - `getWeaponPipelineChips(player)` → **NO CHANGES** (already reads `player.equipment.weapon.equippedChips`)
@@ -300,6 +308,21 @@ The "realtime" naming is confusing since it's actually a vocab-pause turn-based 
 
 - **~3,500-4,500 lines of code deleted** across all files
 - **~15-20 files modified** (stripping dead references)
-- **7 files deleted entirely** (6 from Phase 1 + class-equipment.js from Phase 3)
+- **6 files deleted entirely** (Phase 1, class-equipment.js included)
 - **1 simplification**: multi-slot equipment → single weapon chip holder (no stat bonuses)
 - Game functionality preserved: vocab-pause combat, chips, free chip rewards, exploration, vocabulary, narration, enemy abilities
+
+### Progress So Far
+- **Phases 1-2**: ✅ Complete (2,035 lines removed, 12 files changed, 6 files deleted)
+- **Combat reload fix**: ✅ `game.js` now auto-resumes `startRealtimeCombat()` on page load when in combat phase (fixes stuck UI on refresh)
+- **Flaky test fix**: ✅ `combat.spec.ts` "should show word cards" rewritten to use `setupCombat()` instead of fragile room-navigation loop (87/87 E2E pass)
+- **Phase 3**: ✅ Complete (~836 lines removed, 13 files changed, 1 test file deleted)
+  - Simplified `createNewPlayer()`: removed stats, sp, maxSp, statPoints, level, xp, rank, statuses
+  - Removed: `allocateStat`, `checkLevelUp`, `recalculatePlayerResources`, `getRankIndex`, `getNextRank`, `calculateXpToNext`, `getFullPlayerStats`
+  - Removed: `CHIP_UPGRADE_CONFIG`, `attemptChipUpgrade`, `getNextRarity`, `getUpgradeCost`, `getUpgradeFailureChance`, `createUpgradedChip`
+  - Simplified `getEquippedChips`, `getChipLoadout`, `equipChip` to weapon-only
+  - Removed equipment bonus checks from `executePlayerAttack` (armorPen, doubleStrike, vsBossDamage, damageBonus)
+  - Removed blacksmith/refinement/chip-upgrade endpoints and service methods
+  - Removed dead imports from: server.js, loop.js, state.js, combat-service.js, exploration-service.js, player routes
+  - 84/84 E2E pass (3 blacksmith tests removed)
+- **Phases 4-10**: Pending

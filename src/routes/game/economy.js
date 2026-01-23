@@ -194,50 +194,6 @@ export default function createEconomyRoutes({
     }
   });
 
-  // Refine preview
-  router.get('/refine-preview', (req, res) => {
-    try {
-      const preview = gameManager.getRefinePreview();
-      res.json(preview || { error: 'Cannot preview' });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Refine equipment
-  router.post('/refine', async (req, res) => {
-    const { slot } = req.body;
-    try {
-      const result = gameManager.refineEquipment(slot);
-      saveGameData();
-      res.json({ ...result, state: getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Chip upgrade preview
-  router.get('/chip-upgrade-preview', (req, res) => {
-    try {
-      const preview = gameManager.getChipUpgradePreview();
-      res.json({ ...preview, state: getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Chip upgrade
-  router.post('/chip-upgrade', async (req, res) => {
-    const { chipId } = req.body;
-    try {
-      const result = gameManager.performChipUpgrade(chipId);
-      saveGameData();
-      res.json({ ...result, state: getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
   // Get available upgrades (meta-progression)
   router.get('/upgrades', (req, res) => {
     const upgrades = gameManager.getAvailableUpgrades();

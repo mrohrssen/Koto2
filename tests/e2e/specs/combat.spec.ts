@@ -32,42 +32,17 @@ test.describe('Combat System', () => {
   });
 
   test('should show word cards during realtime combat', async ({ page, gameHelper }) => {
-    // Go through normal gameplay flow to reach combat
-    await setupCharacter(gameHelper);
-    await gameHelper.startRun();
-    await gameHelper.selectWard('nerima');
+    const inCombat = await setupCombat(gameHelper);
+    expect(inCombat).toBe(true);
 
-    // Starting chip selection appears - select the first chip like a real player
-    const selectChipBtn = page.locator('button:has-text("選択")').first();
-    await selectChipBtn.click();
-    await page.waitForTimeout(500);
-
-    // Proceed through rooms until we hit combat
-    // Different room types have different buttons (進む, 解放, 調べる, etc.)
-    for (let i = 0; i < 20; i++) {
-      const phase = await gameHelper.getPhase();
-      if (phase === 'combat') break;
-
-      // Click the first action button to progress (whatever it's called)
-      const actionBtn = page.locator('#action-panel button').first();
-      if (await actionBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await actionBtn.click();
-        await page.waitForTimeout(800);
-      }
-    }
-
-    // Wait for combat phase
-    await gameHelper.waitForPhase(['combat'], 15000);
-
-    // Enemy shows "possessed" dialogue when combat starts - press Enter to dismiss
-    // This is normal gameplay - the enemy speaks before combat begins
+    // Dismiss enemy dialogue if present (Enter key)
     const dialogueBubble = page.locator('.enemy-dialogue');
-    if (await dialogueBubble.isVisible({ timeout: 2000 }).catch(() => false)) {
+    if (await dialogueBubble.isVisible({ timeout: 3000 }).catch(() => false)) {
       await page.keyboard.press('Enter');
       await page.waitForTimeout(1000);
     }
 
-    // Word cards should become visible (may take a moment to load from JPDB)
+    // Word cards should become visible (fallback words used when JPDB unavailable)
     await expect(page.locator(SELECTORS.wordCards)).toBeVisible({ timeout: 15000 });
   });
 

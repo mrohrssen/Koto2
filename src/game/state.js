@@ -2,37 +2,15 @@
  * @fileoverview Player, run, combat, and meta-progression state management
  * @module src/game/state
  *
- * PURPOSE:
- * Central state management for all game entities. Provides factory functions
- * for creating players, runs, and combat instances.
- *
- * SIMPLIFIED SYSTEM:
- * - No levels, no XP
- * - No stat allocation (STR, AGI, etc.)
- * - Players have only: attack, maxHp
- * - See state.full.js for the original complex system
- *
  * KEY EXPORTS:
- * - createNewPlayer(name) - Creates player with attack and maxHp
+ * - createNewPlayer(name) - Creates player with attack, maxHp, chips, weapon
  * - createNewRun(player) - Initializes dungeon run with ward system
  * - createCombatState(enemy) - Creates combat instance
  * - createMetaProgression() - Creates fresh meta-save
  * - saveGame/loadGame/deleteSave - File-based persistence
- *
- * DEPENDENCIES:
- * - ./stats.js - Simplified stats (just attack/maxHp stubs)
- * - ./items.js - Equipment (no stat bonuses in simplified mode)
  */
 
-import {
-  getStatPointCost,
-  getStatPointsForLevel,
-  calculateDerivedStats,
-  calculateMaxHp,
-  calculateMaxSp,
-  getStartingPlayerStats
-} from './stats.js';
-import { calculateEquipmentBonuses, getClassStartingEquipment } from './items.js';
+import { getClassStartingEquipment } from './items.js';
 
 // ============ META-PROGRESSION STATE ============
 
@@ -348,52 +326,19 @@ export function getMetaUpgradeEffects(metaProgression) {
   return effects;
 }
 
-// ============ DEFAULT PLAYER STATE (SIMPLIFIED) ============
-export function createNewPlayer(name = "Hunter", customStats = null, customStatPoints = null, playerClass = 'hacker') {
-  // SIMPLIFIED: Fixed attack and maxHp, no levels
-  const attack = 15;   // Starting attack power
-  const maxHp = 100;   // Starting max HP
-  const maxSp = 50;    // Starting max SP (for skills)
-
+// ============ DEFAULT PLAYER STATE ============
+export function createNewPlayer(name = "Hunter") {
   return {
     name,
-    class: playerClass,
-    rank: "E",  // Kept for display but doesn't change
-
-    // SIMPLIFIED: No levels, no XP
-    level: 1,  // Fixed at 1 (kept for compatibility)
-    xp: 0,
-    xpToNext: 999999,  // Never levels up
-
-    // SIMPLIFIED: No primary stats, just attack
-    attack,
-    stats: {},  // Empty - no stat allocation
-    statPoints: 0,
-
-    // Core resources
-    hp: maxHp,
-    maxHp,
-    sp: maxSp,
-    maxSp,
-
-    // Resources
+    class: 'hacker',
+    hp: 100,
+    maxHp: 100,
+    attack: 15,
     gold: 250,
-
-    // Inventory (max 30 items)
-    items: [
-      { id: "potion", quantity: 3 }
-    ],
-
-    // Equipped gear (4 slots)
-    equipment: getClassStartingEquipment(playerClass),
-
-    // Learned skills
-    skills: [
-      { id: "strike" }
-    ],
-
-    // Status effects
-    statuses: []
+    chips: [],
+    items: [],
+    skills: [],
+    equipment: getClassStartingEquipment('hacker')
   };
 }
 
@@ -483,74 +428,6 @@ export function createCombatState(enemy) {
   };
 }
 
-// ============ RANK SYSTEM ============
-const RANKS = ["E", "D", "C", "B", "A", "S"];
-
-export function getRankIndex(rank) {
-  return RANKS.indexOf(rank);
-}
-
-export function getNextRank(rank) {
-  const idx = RANKS.indexOf(rank);
-  if (idx < RANKS.length - 1) {
-    return RANKS[idx + 1];
-  }
-  return rank;
-}
-
-// ============ LEVEL UP LOGIC (DISABLED IN SIMPLIFIED MODE) ============
-
-export function calculateXpToNext(level) {
-  return 999999;  // Never levels up in simplified mode
-}
-
-/**
- * Check for level up - DISABLED in simplified mode
- */
-export function checkLevelUp(player) {
-  // No leveling in simplified mode
-  return [];
-}
-
-// ============ STAT ALLOCATION (DISABLED IN SIMPLIFIED MODE) ============
-
-/**
- * Allocate stat point - DISABLED in simplified mode
- */
-export function allocateStat(player, statName) {
-  return { success: false, error: 'Stat allocation disabled in simplified mode' };
-}
-
-/**
- * Recalculate player resources - SIMPLIFIED
- * No stat-based calculations, just pass through
- */
-export function recalculatePlayerResources(player, equipmentBonuses = {}, healDifference = true) {
-  // In simplified mode, maxHp/maxSp are fixed
-  // No recalculation needed
-}
-
-/**
- * Get full player stats - SIMPLIFIED
- */
-export function getFullPlayerStats(player, equipmentBonuses = {}) {
-  return {
-    attack: player.attack || 15,
-    hp: player.hp,
-    maxHp: player.maxHp,
-    sp: player.sp,
-    maxSp: player.maxSp,
-    // Stub out old stats for compatibility
-    atk: player.attack || 15,
-    def: 0,
-    matk: 0,
-    mdef: 0,
-    hit: 100,
-    flee: 0,
-    crit: 0,
-    statPoints: 0
-  };
-}
 
 // ============ ENCOUNTER GENERATION ============
 export function generateEncounterCount(floor) {

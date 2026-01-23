@@ -3,7 +3,7 @@
  * All player combat action execution
  */
 
-import { getItem, getSkill, calculateEquipmentBonuses, executeChipPipeline, getWeaponPipelineChips } from '../items.js';
+import { getItem, executeChipPipeline, getWeaponPipelineChips } from '../items.js';
 import { transformEnemy } from '../enemies.js';
 import {
   STATUS_EFFECTS,
@@ -30,7 +30,6 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
   const playerStats = getPlayerCombatStats(player);
   const enemyStats = getEnemyCombatStats(enemy);
   const attackDef = PLAYER_ATTACK_TYPES[attackType] || PLAYER_ATTACK_TYPES.normal;
-  const equipBonuses = calculateEquipmentBonuses(player);
 
   let result = {
     action: 'attack',
@@ -43,12 +42,10 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
     anyPerfectDodge: false,
     hitChance: 0,
     critChance: 0,
-    enemyDefeated: false,
-    doubleStrike: false
+    enemyDefeated: false
   };
 
-  // Resolve the attack (pass armor penetration from equipment)
-  const attackResult = resolvePhysicalAttack(playerStats, enemyStats, attackDef.damageMultiplier, equipBonuses.armorPen);
+  const attackResult = resolvePhysicalAttack(playerStats, enemyStats, attackDef.damageMultiplier);
   result.hits.push(attackResult);
   result.hitChance = attackResult.hitChance;
   result.critChance = attackResult.critChance;
@@ -59,50 +56,27 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
     // Get weapon chips in slot order and execute pipeline
     const weaponChips = getWeaponPipelineChips(player);
     if (weaponChips.length > 0) {
-      // Calculate weapon slot info for minimalist chip
       const weapon = player.equipment?.weapon;
-      const weaponMaxSlots = weapon?.maxChipSlots || 5;
+      const weaponMaxSlots = 5;
       const weaponUsedSlots = weapon?.equippedChips?.length || 0;
-      
+
       const pipelineResult = executeChipPipeline(weaponChips, {
         baseDamage: attackResult.damage,
         isCrit: attackResult.critical,
         critChance: attackResult.critChance,
         target: enemy,
-        combatStacks: player._combatStacks || {},  // Persistent during combat
+        combatStacks: player._combatStacks || {},
         weaponMaxSlots,
         weaponUsedSlots,
-        runKills: player._runKills || 0,  // Total kills this run for Bounty Hunter
-        runChipsDestroyed: player._runChipsDestroyed || 0  // Chips sacrificed for Phoenix
+        runKills: player._runKills || 0,
+        runChipsDestroyed: player._runChipsDestroyed || 0
       });
-      
-      // Update combat stacks for next attack
-      player._combatStacks = pipelineResult.combatStacks;
 
+      player._combatStacks = pipelineResult.combatStacks;
       result.totalDamage = pipelineResult.finalDamage;
-      result.pipelineResult = pipelineResult;  // For UI animation
+      result.pipelineResult = pipelineResult;
     } else {
       result.totalDamage = attackResult.damage;
-    }
-
-    // Double Strike check - chance to deal 2x damage
-    if (equipBonuses.doubleStrike > 0 && Math.random() * 100 < equipBonuses.doubleStrike) {
-      result.doubleStrike = true;
-      result.totalDamage *= 2;
-    }
-
-    // Bonus damage vs bosses
-    if (enemy.isBoss && equipBonuses.vsBossDamage > 0) {
-      const bonusDamage = Math.floor(result.totalDamage * equipBonuses.vsBossDamage);
-      result.totalDamage += bonusDamage;
-      result.vsBossDamage = bonusDamage;
-    }
-
-    // General damage bonus (from sets, etc.)
-    if (equipBonuses.damageBonus > 0) {
-      const bonusDamage = Math.floor(result.totalDamage * equipBonuses.damageBonus);
-      result.totalDamage += bonusDamage;
-      result.damageBonus = bonusDamage;
     }
   }
   if (attackResult.critical) {

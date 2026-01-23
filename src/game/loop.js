@@ -52,7 +52,6 @@ import {
   createMetaProgression,
   calculateEssenceReward,
   getMetaUpgradeEffects,
-  recalculatePlayerResources,
   META_UPGRADES,
   ACHIEVEMENTS
 } from './state.js';
@@ -60,7 +59,7 @@ import {
 import { generateEnemy, selectEnemyIntent } from './enemies.js';
 import { determineTurnOrder } from './combat.js';
 import { getRoomActions, generatePostCombatShop, getStartingWardOptions } from './rooms.js';
-import { getItem, calculateEquipmentBonuses } from './items.js';
+import { getItem } from './items.js';
 import { derivePhase } from './phase-machine.js';
 import { CombatService, ExplorationService } from './services/index.js';
 
@@ -215,9 +214,6 @@ export class GameManager {
     if (this.run.floor > stats.highestFloor) {
       stats.highestFloor = this.run.floor;
     }
-    if (this.run.player?.level > stats.highestLevel) {
-      stats.highestLevel = this.run.player.level;
-    }
 
     // Play time
     if (runStats.startTime && runStats.endTime) {
@@ -274,43 +270,18 @@ export class GameManager {
 
     const effects = getMetaUpgradeEffects(this.meta);
 
-    // HP/MP bonuses (percentage)
+    // HP bonus (percentage)
     if (effects.maxHpPercent > 0) {
       const bonus = Math.floor(player.maxHp * effects.maxHpPercent / 100);
       player.maxHp += bonus;
       player.hp += bonus;
     }
-    if (effects.maxMpPercent > 0) {
-      const bonus = Math.floor(player.maxMp * effects.maxMpPercent / 100);
-      player.maxMp += bonus;
-      player.mp += bonus;
-    }
 
-    // Flat stat bonuses
+    // Attack bonus
     player.attack += effects.attackBonus || 0;
-    player.defense += effects.defenseBonus || 0;
-    player.magic += effects.magicBonus || 0;
-    player.speed += effects.speedBonus || 0;
 
     // Starting gold
     player.gold += effects.startingGold || 0;
-
-    // Starting potions
-    if (effects.startingPotions > 0) {
-      const potionItem = player.items.find(i => i.id === 'potion');
-      if (potionItem) {
-        potionItem.quantity += effects.startingPotions;
-      } else {
-        player.items.push({ id: 'potion', quantity: effects.startingPotions });
-      }
-    }
-
-    // Unlocked skills
-    for (const skillId of effects.unlockedSkills) {
-      if (!player.skills.find(s => s.id === skillId)) {
-        player.skills.push({ id: skillId });
-      }
-    }
 
     return player;
   }
@@ -353,11 +324,9 @@ export class GameManager {
   getState() {
     const currentRoom = this.run?.rooms?.[this.run?.currentRoom] || null;
     const player = this.run?.player || this.player;
-    const equipBonuses = player ? calculateEquipmentBonuses(player) : null;
 
     return {
       player: player,
-      equipmentBonuses: equipBonuses,
       run: this.run ? {
         floor: this.run.floor,
         maxFloors: this.run.maxFloors,
@@ -491,13 +460,8 @@ export class GameManager {
       this.applyMetaBonuses(this.run.player);
     }
 
-    // Recalculate max HP/SP (in case formula changed or equipment bonuses)
-    const equipBonuses = calculateEquipmentBonuses(this.run.player);
-    recalculatePlayerResources(this.run.player, equipBonuses, false);
-
-    // Reset HP/SP to full at start of run
+    // Reset HP to full at start of run
     this.run.player.hp = this.run.player.maxHp;
-    this.run.player.sp = this.run.player.maxSp;
 
     // Ward selection is required at start
     this.run.wardSelectionRequired = true;
@@ -699,41 +663,6 @@ export class GameManager {
    */
   buyFromShop(itemId, quantity = 1) {
     return this.explorationService.buyFromShop(itemId, quantity);
-  }
-
-  // ============ BLACKSMITH / REFINEMENT ============
-
-  /**
-   * Get refinement preview for all equipped items
-   */
-  getRefinePreview() {
-    return this.explorationService.getRefinePreview();
-  }
-
-  /**
-   * Attempt to refine an equipped item
-   * @param {string} slot - Equipment slot to refine
-   */
-  refineEquipment(slot) {
-    return this.explorationService.refineEquipment(slot);
-  }
-
-  /**
-   * Get chip upgrade preview for blacksmith
-   * Returns 3 random upgradeable chips from player inventory
-   * @returns {object} { chips: Array, playerGold: number }
-   */
-  getChipUpgradePreview() {
-    return this.explorationService.getChipUpgradePreview();
-  }
-
-  /**
-   * Attempt to upgrade a chip at the blacksmith
-   * @param {string} chipId - ID of chip to upgrade
-   * @returns {object} { success: boolean, message: string, chip?: object }
-   */
-  performChipUpgrade(chipId) {
-    return this.explorationService.performChipUpgrade(chipId);
   }
 
   /**

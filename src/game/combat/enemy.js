@@ -32,7 +32,7 @@ export function executeEnemyTurn(enemy, player, intent = null, processCounterAtt
   // EXPOSED status is now handled via getDamageTakenMultiplier() in damage calculations
 
   // Check if player is defending
-  const isDefending = player.statuses.some(s => s.id === 'defending');
+  const isDefending = (player.statuses || []).some(s => s.id === 'defending');
 
   // Default to attack intent if none provided (backwards compatibility)
   const currentIntent = intent || { id: 'attack', damageMultiplier: 1.0 };

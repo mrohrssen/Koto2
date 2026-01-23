@@ -9,7 +9,6 @@ export {
   CHIPS,
   CHIP_CATEGORIES,
   CHIP_RARITIES,
-  CHIP_UPGRADE_CONFIG,
   PIPELINE_EFFECTS,
   getChip,
   getChipFromInventory,
@@ -18,12 +17,6 @@ export {
   getChipPrice,
   getChipDisplayInfo,
   generateShopChips,
-  // Chip upgrade functions
-  getNextRarity,
-  getUpgradeCost,
-  getUpgradeFailureChance,
-  createUpgradedChip,
-  attemptChipUpgrade,
   // Chip slot management
   getChipSlotCost,
   getEquippedChips,

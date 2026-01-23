@@ -508,6 +508,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateUI();
   // Subscribe to state changes for reactive updates
   store.subscribe(() => updateUI());
+  // If reloading during active combat, resume realtime combat
+  if (gameState.phase === 'combat' && gameState.combat?.enemy?.hp > 0) {
+    startRealtimeCombat();
+  }
   // Restore debug mode from localStorage
   initDebugMode();
   // Load review type setting

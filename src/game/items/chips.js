@@ -23,17 +23,10 @@
  * - generateShopChips(floor, owned, count) - Generate shop inventory
  * - executeChipPipeline(chips, context) - Run the damage pipeline
  * - getWeaponPipelineChips(player) - Get chips equipped to weapon in order
- * - equipChip(player, slot, chipId) - Equip chip to equipment slot
+ * - equipChip(player, slot, chipId) - Equip chip to weapon slot
  * - unequipChip(player, slot, chipId) - Unequip chip from slot
  * - getChipDisplayInfo(chip) - Get UI display information
  * - getChipLoadout(player) - Get full loadout for UI
- *
- * Upgrade Functions:
- * - getNextRarity(rarity) - Get next rarity tier
- * - getUpgradeCost(chip) - Cost to upgrade
- * - getUpgradeFailureChance(chip) - Failure chance for upgrade
- * - attemptChipUpgrade(chip) - Roll for upgrade success
- * - createUpgradedChip(chip, newRarity) - Create upgraded version
  *
  * DEPENDENCIES:
  * - data/chips.json - Chip definitions
@@ -86,13 +79,6 @@ export const PIPELINE_EFFECTS = chipConfig.pipelineEffects;
 // Loaded from data/chip-config.json
 export const CHIP_RARITIES = chipConfig.rarities;
 
-// ============ CHIP UPGRADE CONFIG ============
-// Loaded from data/chip-config.json with getUpgradeCost function added
-export const CHIP_UPGRADE_CONFIG = {
-  ...chipConfig.upgradeConfig,
-  // Cost to upgrade = purchase price of current rarity
-  getUpgradeCost: (rarity) => Math.floor(chipConfig.upgradeConfig.basePrice * CHIP_RARITIES[rarity].priceMultiplier)
-};
 
 // ============ CHIP DEFINITIONS ============
 // Loaded from data/chips.json
@@ -171,99 +157,6 @@ export function getChipPrice(chipId) {
   return Math.floor(chipConfig.upgradeConfig.basePrice * rarity.priceMultiplier);
 }
 
-// ============ CHIP UPGRADE FUNCTIONS ============
-
-/**
- * Get the next rarity tier
- * @param {string} currentRarity - Current rarity
- * @returns {string|null} Next rarity or null if already legendary
- */
-export function getNextRarity(currentRarity) {
-  const order = CHIP_UPGRADE_CONFIG.rarityOrder;
-  const currentIndex = order.indexOf(currentRarity);
-  if (currentIndex === -1 || currentIndex >= order.length - 1) {
-    return null; // Invalid or already legendary
-  }
-  return order[currentIndex + 1];
-}
-
-/**
- * Get the cost to upgrade a chip
- * @param {object} chip - Chip object with rarity
- * @returns {number} Upgrade cost in credits
- */
-export function getUpgradeCost(chip) {
-  const rarity = chip.rarity || 'common';
-  return CHIP_UPGRADE_CONFIG.getUpgradeCost(rarity);
-}
-
-/**
- * Get the failure chance for upgrading a chip
- * @param {object} chip - Chip object with rarity
- * @param {number} floorBonus - Optional bonus from floor (reduces failure chance)
- * @returns {number} Failure chance (0-1)
- */
-export function getUpgradeFailureChance(chip, floorBonus = 0) {
-  const rarity = chip.rarity || 'common';
-  const baseFailure = CHIP_UPGRADE_CONFIG.failureRates[rarity] || 0;
-  // Floor bonus reduces failure chance
-  return Math.max(0, baseFailure - floorBonus);
-}
-
-/**
- * Create an upgraded version of a chip
- * @param {object} chip - Original chip from player inventory
- * @param {string} newRarity - Target rarity
- * @returns {object} New chip with upgraded rarity and scaled effects
- */
-export function createUpgradedChip(chip, newRarity) {
-  // Get base chip definition
-  const baseId = chip.baseId || chip.id.split('_')[0];
-  const baseChip = CHIPS[baseId];
-  if (!baseChip) {
-    throw new Error(`Base chip not found: ${baseId}`);
-  }
-
-  const rarityInfo = CHIP_RARITIES[newRarity];
-  const scaledEffects = applyRarityMultiplier(baseChip.effects, rarityInfo.statMultiplier);
-
-  return {
-    id: `${baseId}_${newRarity}`,
-    baseId: baseId,
-    name: baseChip.name,
-    nameEn: baseChip.nameEn,
-    category: baseChip.category,
-    rarity: newRarity,
-    description: baseChip.description,
-    effects: scaledEffects,
-    baseEffects: baseChip.effects
-  };
-}
-
-/**
- * Attempt to upgrade a chip (roll for success/failure)
- * @param {object} chip - Chip to upgrade
- * @param {number} floorBonus - Optional floor bonus reducing failure chance
- * @returns {object} { success: boolean, upgradedChip?: object }
- */
-export function attemptChipUpgrade(chip, floorBonus = 0) {
-  const nextRarity = getNextRarity(chip.rarity);
-  if (!nextRarity) {
-    return { success: false, reason: 'already_max' };
-  }
-
-  const failureChance = getUpgradeFailureChance(chip, floorBonus);
-  const roll = Math.random();
-
-  if (roll < failureChance) {
-    // Upgrade failed - chip destroyed
-    return { success: false, reason: 'failed', failureChance };
-  }
-
-  // Success - create upgraded chip
-  const upgradedChip = createUpgradedChip(chip, nextRarity);
-  return { success: true, upgradedChip, previousRarity: chip.rarity, newRarity: nextRarity };
-}
 
 /**
  * Rarity weights for shop generation
@@ -855,30 +748,23 @@ export function getChipSlotCost(chip) {
 }
 
 /**
- * Get all equipped chips from all equipment pieces
- * Returns full chip objects with scaled effects from player inventory
+ * Get all equipped chips (from weapon only)
  * @param {object} player - Player object with equipment
  * @returns {array} Array of equipped chip objects
  */
 export function getEquippedChips(player) {
   const chips = [];
-  const slots = ['weapon', 'body', 'shield', 'accessory'];
+  const weapon = player.equipment?.weapon;
+  if (!weapon?.equippedChips) return chips;
 
-  for (const slot of slots) {
-    const equipment = player.equipment?.[slot];
-    if (equipment?.equippedChips) {
-      for (const chipId of equipment.equippedChips) {
-        // First try to get from player inventory (has scaled effects)
-        const inventoryChip = getChipFromInventory(player, chipId);
-        if (inventoryChip) {
-          chips.push(inventoryChip);
-        } else {
-          // Fallback to base chip definition
-          const chip = getChip(chipId);
-          if (chip) {
-            chips.push(chip);
-          }
-        }
+  for (const chipId of weapon.equippedChips) {
+    const inventoryChip = getChipFromInventory(player, chipId);
+    if (inventoryChip) {
+      chips.push(inventoryChip);
+    } else {
+      const chip = getChip(chipId);
+      if (chip) {
+        chips.push(chip);
       }
     }
   }
@@ -936,13 +822,9 @@ export function equipChip(player, equipmentSlot, chipId, maxSlots = 5) {
     return { success: false, error: 'Chip not in inventory' };
   }
 
-  // Check if chip is already equipped somewhere
-  const slots = ['weapon', 'body', 'shield', 'accessory'];
-  for (const slot of slots) {
-    const eq = player.equipment?.[slot];
-    if (eq?.equippedChips?.includes(chipId)) {
-      return { success: false, error: 'Chip already equipped' };
-    }
+  // Check if chip is already equipped
+  if (equipment.equippedChips.includes(chipId)) {
+    return { success: false, error: 'Chip already equipped' };
   }
 
   // Check if there are enough slots
@@ -1003,53 +885,35 @@ export function unequipChip(player, equipmentSlot, chipId) {
 /**
  * Get chip loadout information for UI
  * @param {object} player - Player object
- * @param {object} runStats - Run-wide statistics
- * @returns {object} Loadout with equipment, inventory, and bonuses
+ * @returns {object} Loadout with equipment (weapon only) and inventory
  */
-export function getChipLoadout(player, runStats = {}) {
-  const slots = ['weapon', 'body', 'shield', 'accessory'];
-  const equipmentLoadout = {};
+export function getChipLoadout(player) {
+  const weapon = player.equipment?.weapon;
+  const equippedChips = (weapon?.equippedChips || []).map(chipId => {
+    const chip = getChip(chipId);
+    return chip ? getChipDisplayInfo(chip) : null;
+  }).filter(Boolean);
 
-  for (const slot of slots) {
-    const equipment = player.equipment?.[slot];
-    if (equipment) {
-      const equippedChips = (equipment.equippedChips || []).map(chipId => {
-        const chip = getChip(chipId);
-        return chip ? getChipDisplayInfo(chip) : null;
-      }).filter(Boolean);
+  const equippedChipIds = new Set(weapon?.equippedChips || []);
 
-      equipmentLoadout[slot] = {
-        equipmentId: equipment.id,
-        equippedChips,
-        slotsUsed: getUsedChipSlots(equipment),
-        maxSlots: 5
-      };
-    }
-  }
-
-  // Collect all equipped chip IDs
-  const equippedChipIds = new Set();
-  for (const slot of slots) {
-    const equipment = player.equipment?.[slot];
-    if (equipment?.equippedChips) {
-      for (const chipId of equipment.equippedChips) {
-        equippedChipIds.add(chipId);
-      }
-    }
-  }
-
-  // Inventory chips - filter out equipped ones, preserve player's chip data
+  // Inventory chips - filter out equipped ones
   const inventoryChips = (player.chips || [])
     .filter(chip => !equippedChipIds.has(chip.id))
     .map(chip => {
       const baseChip = getChip(chip.id);
-      // Merge: base chip info + player's chip data (player's data takes priority for id, rarity, effects)
       const mergedChip = baseChip ? { ...baseChip, ...chip } : chip;
       return getChipDisplayInfo(mergedChip);
     });
 
   return {
-    equipment: equipmentLoadout,
+    equipment: {
+      weapon: {
+        equipmentId: weapon?.id || 'defaultWeapon',
+        equippedChips,
+        slotsUsed: getUsedChipSlots(weapon),
+        maxSlots: 5
+      }
+    },
     inventory: inventoryChips
   };
 }
