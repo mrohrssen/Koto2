@@ -124,11 +124,8 @@ import {
   refreshWordStateCache, getVocabManagerStats, invalidateWordStateCache as invalidateVocabManagerCache
 } from './src/game/vocab-manager.js';
 import {
-  getCachedNarration, getCachedAudio, clearCache as clearPrefetchCache,
-  clearCombatCache, setPrefetchGenerator, setTTSSynthesizer,
-  updateTTSConfig, predictAndPrefetch, cancelPendingPrefetches,
-  getStats as getPrefetchStats, resetStats as resetPrefetchStats,
-  getCacheContents, eagerPrefetchForRun, queuePrefetch
+  getCachedAudio, clearCache as clearPrefetchCache,
+  setTTSSynthesizer, updateTTSConfig, cancelPendingPrefetches
 } from './src/game/prefetch.js';
 import { enforceVocabLimit } from './src/game/vocab-repair.js';
 import createRoutes from './src/routes/index.js';
@@ -378,11 +375,8 @@ app.use('/api', createRoutes({
   getEnrichedGameState,
   saveGameData,
   generateGameNarration,
-  queueRunStartPrefetch,
-  eagerPrefetchForRun,
   cancelPendingPrefetches,
   clearPrefetchCache,
-  clearCombatCache,
   enrichRewardDrops,
   updateGameStatsWithEvent,
   saveGameStats,
@@ -445,14 +439,6 @@ async function generateGameNarration(event, context, userKeys = {}) {
 
   const { jpdbApiKey, aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel } = userKeys;
 
-  const cachedNarration = getCachedNarration(event, context);
-  if (cachedNarration) {
-    console.log(`[Prefetch] Using cached narration for ${event}`);
-    trackNarrationStats(cachedNarration, jpdbApiKey);
-    triggerPrefetch(event, context);
-    return cachedNarration;
-  }
-
   const vocabResult = getVocabulary();
   const vocabulary = vocabResult.words;
   const aiConfig = {
@@ -507,19 +493,8 @@ async function generateGameNarration(event, context, userKeys = {}) {
   narration = await applyVocabRepair(narration, vocabulary, userKeys, gameTerms);
 
   trackNarrationStats(narration, jpdbApiKey);
-  triggerPrefetch(event, context);
 
   return narration;
-}
-
-function triggerPrefetch(event, context) {
-  predictAndPrefetch(event, context, gameManager);
-}
-
-function queueRunStartPrefetch() {
-  queuePrefetch('runStart', {
-    player: gameManager.player
-  });
 }
 
 // Serve game page
@@ -527,15 +502,7 @@ app.get('/', (req, res) => {
   res.sendFile(join(__dirname, 'public', 'game.html'));
 });
 
-// ============ Prefetch Initialization ============
-
-async function prefetchGeneratorFn(event, context) {
-  // Prefetch disabled in per-user API key mode
-  // API keys are stored client-side, not available for server-side prefetch
-  return null;
-}
-
-setPrefetchGenerator(prefetchGeneratorFn);
+// ============ TTS Initialization ============
 
 async function ttsSynthesizerFn(text, config) {
   if (!config?.enabled) return null;
@@ -568,12 +535,7 @@ setTTSSynthesizer(ttsSynthesizerFn, {
 // Start server
 app.listen(PORT, () => {
   console.log(`JRPG server running at http://localhost:${PORT}`);
-  console.log('[Prefetch] System initialized');
-  console.log('[Prefetch] TTS prefetch:', settings.gameTtsEnabled ? 'enabled' : 'disabled');
-
-  if (!gameManager.run?.active) {
-    queueRunStartPrefetch();
-  }
+  console.log('[TTS] Prefetch:', settings.gameTtsEnabled ? 'enabled' : 'disabled');
   console.log('');
   console.log('Open http://localhost:' + PORT + ' in your browser to play');
 });

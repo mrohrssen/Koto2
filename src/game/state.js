@@ -56,7 +56,6 @@ export function createMetaProgression() {
 // ============ UPGRADE DEFINITIONS ============
 
 export const META_UPGRADES = {
-  // Starting Resources
   vitality: {
     id: 'vitality',
     name: '生命力強化',
@@ -65,16 +64,6 @@ export const META_UPGRADES = {
     maxLevel: 5,
     costPerLevel: [50, 100, 200, 400, 800],
     effect: (level) => ({ maxHpPercent: level * 10 })
-  },
-
-  manaPool: {
-    id: 'manaPool',
-    name: '魔力増強',
-    nameEn: 'Mana Pool',
-    description: 'Start with +10% Max MP per level',
-    maxLevel: 5,
-    costPerLevel: [50, 100, 200, 400, 800],
-    effect: (level) => ({ maxMpPercent: level * 10 })
   },
 
   startingGold: {
@@ -87,17 +76,6 @@ export const META_UPGRADES = {
     effect: (level) => ({ startingGold: level * 25 })
   },
 
-  potionStock: {
-    id: 'potionStock',
-    name: 'ポーション備蓄',
-    nameEn: 'Potion Stock',
-    description: 'Start with +1 potion per level',
-    maxLevel: 3,
-    costPerLevel: [40, 80, 160],
-    effect: (level) => ({ startingPotions: level })
-  },
-
-  // Combat Bonuses
   attackPower: {
     id: 'attackPower',
     name: '攻撃力上昇',
@@ -108,47 +86,6 @@ export const META_UPGRADES = {
     effect: (level) => ({ attackBonus: level * 2 })
   },
 
-  defensePower: {
-    id: 'defensePower',
-    name: '防御力上昇',
-    nameEn: 'Defense Power',
-    description: 'Start with +2 DEF per level',
-    maxLevel: 5,
-    costPerLevel: [75, 150, 300, 600, 1200],
-    effect: (level) => ({ defenseBonus: level * 2 })
-  },
-
-  magicPower: {
-    id: 'magicPower',
-    name: '魔力上昇',
-    nameEn: 'Magic Power',
-    description: 'Start with +2 MAG per level',
-    maxLevel: 5,
-    costPerLevel: [75, 150, 300, 600, 1200],
-    effect: (level) => ({ magicBonus: level * 2 })
-  },
-
-  swiftness: {
-    id: 'swiftness',
-    name: '俊敏性強化',
-    nameEn: 'Swiftness',
-    description: 'Start with +1 SPD per level',
-    maxLevel: 5,
-    costPerLevel: [60, 120, 240, 480, 960],
-    effect: (level) => ({ speedBonus: level })
-  },
-
-  // Quality of Life
-  potionEfficiency: {
-    id: 'potionEfficiency',
-    name: 'ポーション効率',
-    nameEn: 'Potion Efficiency',
-    description: 'Potions heal +15% more per level',
-    maxLevel: 3,
-    costPerLevel: [100, 200, 400],
-    effect: (level) => ({ potionEfficiencyPercent: level * 15 })
-  },
-
   goldFind: {
     id: 'goldFind',
     name: 'ゴールド発見率',
@@ -157,47 +94,6 @@ export const META_UPGRADES = {
     maxLevel: 5,
     costPerLevel: [50, 100, 200, 400, 800],
     effect: (level) => ({ goldFindPercent: level * 10 })
-  },
-
-  xpGain: {
-    id: 'xpGain',
-    name: '経験値ボーナス',
-    nameEn: 'XP Gain',
-    description: 'Earn +10% more XP per level',
-    maxLevel: 5,
-    costPerLevel: [60, 120, 240, 480, 960],
-    effect: (level) => ({ xpGainPercent: level * 10 })
-  },
-
-  trapResist: {
-    id: 'trapResist',
-    name: '罠耐性',
-    nameEn: 'Trap Resistance',
-    description: 'Take 10% less trap damage per level',
-    maxLevel: 3,
-    costPerLevel: [80, 160, 320],
-    effect: (level) => ({ trapResistPercent: level * 10 })
-  },
-
-  // Special Skills (unlock at first level)
-  skillFireball: {
-    id: 'skillFireball',
-    name: '火球術',
-    nameEn: 'Fireball',
-    description: 'Start with Fireball skill',
-    maxLevel: 1,
-    costPerLevel: [300],
-    effect: (level) => ({ unlockSkill: 'fireball' })
-  },
-
-  skillHeal: {
-    id: 'skillHeal',
-    name: '回復術',
-    nameEn: 'Heal',
-    description: 'Start with Heal skill',
-    maxLevel: 1,
-    costPerLevel: [300],
-    effect: (level) => ({ unlockSkill: 'heal' })
   }
 };
 
@@ -289,18 +185,9 @@ export function calculateEssenceReward(runStats, floor, isVictory) {
 export function getMetaUpgradeEffects(metaProgression) {
   const effects = {
     maxHpPercent: 0,
-    maxMpPercent: 0,
     startingGold: 0,
-    startingPotions: 0,
     attackBonus: 0,
-    defenseBonus: 0,
-    magicBonus: 0,
-    speedBonus: 0,
-    potionEfficiencyPercent: 0,
-    goldFindPercent: 0,
-    xpGainPercent: 0,
-    trapResistPercent: 0,
-    unlockedSkills: []
+    goldFindPercent: 0
   };
 
   if (!metaProgression?.upgrades) return effects;
@@ -312,12 +199,8 @@ export function getMetaUpgradeEffects(metaProgression) {
     if (!upgrade) continue;
 
     const upgradeEffect = upgrade.effect(level);
-
-    // Merge effects
     for (const [key, value] of Object.entries(upgradeEffect)) {
-      if (key === 'unlockSkill') {
-        effects.unlockedSkills.push(value);
-      } else if (typeof value === 'number') {
+      if (typeof value === 'number') {
         effects[key] = (effects[key] || 0) + value;
       }
     }

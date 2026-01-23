@@ -14,7 +14,6 @@ import { getChipLoadout, equipChip, unequipChip } from '../../game/items/chips.j
  * @param {function} deps.getEnrichedGameState - Get enriched game state
  * @param {function} deps.saveGameData - Save game data to file
  * @param {function} deps.generateGameNarration - Generate AI narration
- * @param {function} deps.eagerPrefetchForRun - Prefetch for run start
  * @param {function} deps.cancelPendingPrefetches - Cancel pending prefetches
  * @param {function} deps.clearPrefetchCache - Clear prefetch cache
  * @returns {Router}
@@ -24,7 +23,6 @@ export default function createRunRoutes({
   getEnrichedGameState,
   saveGameData,
   generateGameNarration,
-  eagerPrefetchForRun,
   cancelPendingPrefetches,
   clearPrefetchCache
 }) {
@@ -34,7 +32,6 @@ export default function createRunRoutes({
   router.post('/start-run', async (req, res) => {
     try {
       gameManager.startRun();
-      eagerPrefetchForRun(gameManager);
 
       const narration = await generateGameNarration('runStart', {
         player: gameManager.run.player

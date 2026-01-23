@@ -215,7 +215,7 @@ The unused turn-based `/attack` system (never called by frontend):
 
 ---
 
-## Phase 8: Clean Stats and Prefetch
+## Phase 8: Clean Stats and Prefetch ✅ DONE
 
 ### `src/game/stats.js` → keep only:
 - `calculateMaxHp()`, `calculateDerivedStats()` (for ATK), `calculatePhysicalDamage()`, `calculateMagicDamage()`
@@ -366,4 +366,13 @@ The "realtime" naming is confusing since it's actually a vocab-pause turn-based 
   - Removed `calculateEquipmentBonuses` and `hasRangedWeapon` stubs (no consumers remain)
   - Cleaned barrel re-exports in combat/index.js, combat.js, items.js
   - 84/84 E2E pass, 49/49 unit tests pass
-- **Phases 8-10**: Pending
+- **Phase 8**: ✅ Complete (~920 lines removed, 9 files changed)
+  - stats.js: removed 13 stub functions (`calculateMaxSp`, `getStatPointCost`, `getTotalCostToReach`, `getStatPointsForLevel`, `getTotalStatPointsToLevel`, `calculateHpRegen`, `calculateSpRegen`, `calculateDefendRecovery`, `calculateHitChance`, `calculateEffectiveCrit`, `calculateFleeChance`, `calculateStatusResistance`, `calculateItemHealing`, `getStartingPlayerStats`, `STAT_NAMES`, `STAT_DESCRIPTIONS`)
+  - mechanics.js: removed unused stats.js imports (5 functions imported but never called)
+  - prefetch.js: gutted dead narration prefetch system (~830 lines removed), kept TTS audio cache
+  - Removed: `getCachedNarration`, `setPrefetchGenerator`, `predictAndPrefetch`, `eagerPrefetchForRun`, `queuePrefetch`, `clearCombatCache`, `generateCacheKey`, `getPredictions`, `estimateDamage`, `estimatePlayerDamage`
+  - state.js: removed 10 dead META_UPGRADES (manaPool, potionStock, defensePower, magicPower, swiftness, potionEfficiency, xpGain, trapResist, skillFireball, skillHeal), simplified `getMetaUpgradeEffects`
+  - server.js: removed dead prefetch imports, `triggerPrefetch()`, `queueRunStartPrefetch()`, `prefetchGeneratorFn`, cached narration check
+  - routes: removed `eagerPrefetchForRun`/`queueRunStartPrefetch`/`clearCombatCache` from deps chain (index.js, game/index.js, player.js, run.js)
+  - 84/84 E2E pass, 49/49 unit tests pass
+- **Phases 9-10**: Pending

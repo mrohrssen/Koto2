@@ -19,11 +19,8 @@ import createMiscRoutes from './misc.js';
  * @param {function} deps.getEnrichedGameState - Get enriched game state
  * @param {function} deps.saveGameData - Save game data to file
  * @param {function} deps.generateGameNarration - Generate AI narration
- * @param {function} deps.queueRunStartPrefetch - Queue run start prefetch
- * @param {function} deps.eagerPrefetchForRun - Prefetch for run start
  * @param {function} deps.cancelPendingPrefetches - Cancel pending prefetches
  * @param {function} deps.clearPrefetchCache - Clear prefetch cache
- * @param {function} deps.clearCombatCache - Clear combat prefetch cache
  * @param {function} deps.enrichRewardDrops - Enrich reward drops with item data
  * @param {function} deps.updateGameStatsWithEvent - Update game stats
  * @param {function} deps.saveGameStats - Save game stats
@@ -44,8 +41,7 @@ export default function createGameRoutes(deps) {
     gameManager: deps.gameManager,
     getEnrichedGameState: deps.getEnrichedGameState,
     saveGameData: deps.saveGameData,
-    generateGameNarration: deps.generateGameNarration,
-    queueRunStartPrefetch: deps.queueRunStartPrefetch
+    generateGameNarration: deps.generateGameNarration
   }));
 
   // Mount run routes
@@ -54,7 +50,6 @@ export default function createGameRoutes(deps) {
     getEnrichedGameState: deps.getEnrichedGameState,
     saveGameData: deps.saveGameData,
     generateGameNarration: deps.generateGameNarration,
-    eagerPrefetchForRun: deps.eagerPrefetchForRun,
     cancelPendingPrefetches: deps.cancelPendingPrefetches,
     clearPrefetchCache: deps.clearPrefetchCache
   }));

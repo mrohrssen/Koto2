@@ -8,8 +8,7 @@ export default function createPlayerRoutes({
   gameManager,
   getEnrichedGameState,
   saveGameData,
-  generateGameNarration,
-  queueRunStartPrefetch
+  generateGameNarration
 }) {
   const router = Router();
 
@@ -21,7 +20,6 @@ export default function createPlayerRoutes({
     saveGameData();
 
     const narration = await generateGameNarration('runStart', gameManager.player, req.body);
-    queueRunStartPrefetch();
 
     res.json({
       state: gameManager.getState(),

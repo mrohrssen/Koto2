@@ -8,13 +8,6 @@
  * See combat/mechanics.full.js for the original iRO-style system (if preserved).
  */
 
-import {
-  calculateDerivedStats,
-  calculateHitChance,
-  calculateEffectiveCrit,
-  calculatePhysicalDamage,
-  calculateMagicDamage
-} from '../stats.js';
 
 // ============ COMBAT STATS HELPERS (SIMPLIFIED) ============
 

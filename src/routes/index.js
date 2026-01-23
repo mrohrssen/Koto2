@@ -23,8 +23,6 @@ import createPrefetchRoutes from './prefetch.js';
  * @param {function} deps.getEnrichedGameState - Get enriched game state
  * @param {function} deps.saveGameData - Save game data to file
  * @param {function} deps.generateGameNarration - Generate AI narration
- * @param {function} deps.queueRunStartPrefetch - Queue run start prefetch
- * @param {function} deps.eagerPrefetchForRun - Prefetch for run start
  * @param {function} deps.cancelPendingPrefetches - Cancel pending prefetches
  * @param {function} deps.clearPrefetchCache - Clear prefetch cache
  * @returns {Router}
@@ -54,11 +52,8 @@ export default function createRoutes(deps) {
     getEnrichedGameState: deps.getEnrichedGameState,
     saveGameData: deps.saveGameData,
     generateGameNarration: deps.generateGameNarration,
-    queueRunStartPrefetch: deps.queueRunStartPrefetch,
-    eagerPrefetchForRun: deps.eagerPrefetchForRun,
     cancelPendingPrefetches: deps.cancelPendingPrefetches,
     clearPrefetchCache: deps.clearPrefetchCache,
-    clearCombatCache: deps.clearCombatCache,
     enrichRewardDrops: deps.enrichRewardDrops,
     updateGameStatsWithEvent: deps.updateGameStatsWithEvent,
     saveGameStats: deps.saveGameStats,
