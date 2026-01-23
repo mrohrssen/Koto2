@@ -50,11 +50,8 @@ export {
   tickEnemyVanish
 } from './enemy.js';
 
-// Rewards and refinement
+// Rewards
 export {
   processVictory,
-  processBossVictory,
-  attemptRefinement,
-  getRefinementPreview,
-  processCounterAttack
+  processBossVictory
 } from './rewards.js';

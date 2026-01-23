@@ -8,7 +8,6 @@
  * See combat/mechanics.full.js for the original iRO-style system (if preserved).
  */
 
-import { calculateEquipmentBonuses } from '../items.js';
 import {
   calculateDerivedStats,
   calculateHitChance,

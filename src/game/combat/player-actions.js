@@ -3,13 +3,9 @@
  * All player combat action execution
  */
 
-import { getItem, executeChipPipeline, getWeaponPipelineChips } from '../items.js';
-import { transformEnemy } from '../enemies.js';
+import { executeChipPipeline, getWeaponPipelineChips } from '../items.js';
 import {
-  STATUS_EFFECTS,
-  applyStatusEffect,
-  breakDamageEffects,
-  processMaxStackExplosion
+  breakDamageEffects
 } from './status-effects.js';
 import {
   getPlayerCombatStats,
@@ -94,64 +90,6 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
     const brokenEffects = breakDamageEffects(enemy);
     if (brokenEffects.length > 0) {
       result.wokenFromSleep = brokenEffects.some(e => e.id === 'sleep');
-    }
-  }
-
-  // Check for status infliction from weapon (only if we hit and dealt damage)
-  if (result.anyHit && result.totalDamage > 0 && !result.enemyDefeated) {
-    const weapon = player.equipment?.weapon;
-    if (weapon) {
-      const weaponDef = getItem(weapon.id || weapon) || (typeof weapon === 'object' ? weapon : null);
-      if (weaponDef?.statusInflict) {
-        const { status, chance, duration } = weaponDef.statusInflict;
-        // Apply statusInflictBonus from equipment (e.g., set bonuses)
-        const effectiveChance = chance * (1 + (equipBonuses.statusInflictBonus || 0));
-        if (Math.random() * 100 < effectiveChance) {
-          const statusDef = STATUS_EFFECTS[status.toUpperCase()];
-          const statusDuration = duration || statusDef?.duration || 2;
-          const applied = applyStatusEffect(enemy, status, statusDuration);
-          if (applied.applied) {
-            result.statusInflicted = { status, duration: statusDuration, stacks: applied.stacks };
-
-            // Check for max stack explosion (OVERHEATED at 5 stacks)
-            if (applied.maxStacksReached && applied.explosionDamage) {
-              const explosion = processMaxStackExplosion(enemy, status);
-              if (explosion.triggered) {
-                result.statusExplosion = {
-                  status: status,
-                  damage: explosion.damage
-                };
-                result.totalDamage += explosion.damage;
-                if (explosion.targetDefeated) {
-                  result.enemyDefeated = true;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // Check for transform effect from weapon (e.g., Azoth)
-  // Only on hit, enemy not defeated, and non-bosses
-  if (result.anyHit && result.totalDamage > 0 && !result.enemyDefeated) {
-    const weapon = player.equipment?.weapon;
-    if (weapon) {
-      const weaponDef = getItem(weapon.id || weapon) || (typeof weapon === 'object' ? weapon : null);
-      if (weaponDef?.transform) {
-        const { chance, targetTier } = weaponDef.transform;
-        if (Math.random() * 100 < chance) {
-          const transformed = transformEnemy(enemy, targetTier || 1);
-          if (transformed) {
-            result.transformed = {
-              from: enemy.name,
-              to: transformed.name,
-              newEnemy: transformed
-            };
-          }
-        }
-      }
     }
   }
 

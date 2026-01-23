@@ -34,10 +34,7 @@ export {
   isEnemyVanished,
   tickEnemyVanish,
 
-  // Rewards and refinement
+  // Rewards
   processVictory,
-  processBossVictory,
-  attemptRefinement,
-  getRefinementPreview,
-  processCounterAttack
+  processBossVictory
 } from './combat/index.js';

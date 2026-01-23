@@ -202,7 +202,7 @@ The unused turn-based `/attack` system (never called by frontend):
 
 ---
 
-## Phase 7: Clean Combat Rewards
+## Phase 7: Clean Combat Rewards ✅ DONE
 
 ### `src/game/combat/rewards.js`
 - DELETE: `attemptRefinement()`, `getRefinementPreview()`, `processCounterAttack()`
@@ -355,4 +355,15 @@ The "realtime" naming is confusing since it's actually a vocab-pause turn-based 
   - Removed dead `equipItem()` and `addItemToInventory()` from exploration-service.js and loop.js (endpoints removed in Phase 4)
   - Removed dead `getItem` import from exploration-service.js
   - 84/84 E2E pass, 49/49 unit tests pass
-- **Phases 7-10**: Pending
+- **Phase 7**: ✅ Complete (~210 lines removed, 8 files changed)
+  - Deleted `attemptRefinement()`, `getRefinementPreview()`, `processCounterAttack()` from rewards.js
+  - Simplified `processVictory()`: removed XP tracking, equipment bonus calculations (goldFind, dropRate, xpGain), drops/inventory logic, onKillHp/onKillSp
+  - Simplified `processBossVictory()`: removed inventory manipulation (keeps bossDrop for display)
+  - Removed weapon status infliction and transform code from player-actions.js
+  - Removed `processCounterAttack` parameter and counter-attack blocks from `executeEnemyTurn()` in enemy.js
+  - Removed dead `calculateEquipmentBonuses` import from enemy.js and mechanics.js
+  - Deleted entire refinement system from items/index.js (REFINEMENT_CONFIG, getRefinementBonus, getRefinementCost, getBreakChance, getItemDisplayName)
+  - Removed `calculateEquipmentBonuses` and `hasRangedWeapon` stubs (no consumers remain)
+  - Cleaned barrel re-exports in combat/index.js, combat.js, items.js
+  - 84/84 E2E pass, 49/49 unit tests pass
+- **Phases 8-10**: Pending

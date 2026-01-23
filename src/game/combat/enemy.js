@@ -3,7 +3,6 @@
  * Enemy turn execution, abilities, and related functions
  */
 
-import { calculateEquipmentBonuses } from '../items.js';
 import { ENEMY_ABILITIES, getEnemyAbility } from '../enemies.js';
 import {
   breakDamageEffects,
@@ -23,9 +22,8 @@ import {
  * @param {object} enemy - The enemy
  * @param {object} player - The player
  * @param {object} intent - The enemy's current intent (from INTENT_TYPES)
- * @param {function} processCounterAttack - Counter-attack processor function
  */
-export function executeEnemyTurn(enemy, player, intent = null, processCounterAttack = null) {
+export function executeEnemyTurn(enemy, player, intent = null) {
   const playerStats = getPlayerCombatStats(player);
   const enemyStats = getEnemyCombatStats(enemy);
 
@@ -81,14 +79,6 @@ export function executeEnemyTurn(enemy, player, intent = null, processCounterAtt
 
       player.hp = Math.max(0, player.hp - result.damage);
       result.playerDefeated = player.hp <= 0;
-
-      // Process counter-attack if player took damage and survived
-      if (result.damage > 0 && !result.playerDefeated && processCounterAttack) {
-        const counterResult = processCounterAttack(player, enemy, result.damage);
-        if (counterResult) {
-          result.counterAttack = counterResult;
-        }
-      }
       break;
 
     case 'attack':
@@ -132,14 +122,6 @@ export function executeEnemyTurn(enemy, player, intent = null, processCounterAtt
       // Track if this was a heavy/rage attack for narration
       result.isHeavy = currentIntent.id === 'heavy';
       result.isRage = currentIntent.id === 'rage';
-
-      // Process counter-attack if player took damage and survived
-      if (finalDamage > 0 && !result.playerDefeated && processCounterAttack) {
-        const counterResult = processCounterAttack(player, enemy, finalDamage);
-        if (counterResult) {
-          result.counterAttack = counterResult;
-        }
-      }
       break;
   }
 

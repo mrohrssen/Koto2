@@ -29,14 +29,5 @@ export {
   // Stub helpers (backwards compat)
   getItem,
   getSkill,
-  getClassStartingEquipment,
-  calculateEquipmentBonuses,
-  hasRangedWeapon,
-
-  // Refinement system
-  REFINEMENT_CONFIG,
-  getRefinementBonus,
-  getRefinementCost,
-  getBreakChance,
-  getItemDisplayName
+  getClassStartingEquipment
 } from './items/index.js';
