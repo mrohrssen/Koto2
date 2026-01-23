@@ -36,6 +36,7 @@ import {
 } from '../combat/index.js';
 import { generatePostCombatShop, getNextWardOptions } from '../rooms.js';
 import { resetChipCharge, incrementAllEquippedCharges } from '../items/chips.js';
+import { clearAllBuffs } from '../combat/chip-skills.js';
 import { getSimpleNarration } from '../dm.js';
 
 /**
@@ -328,6 +329,7 @@ export class CombatService {
 
         // End combat
         this.gm.combat.active = false;
+        clearAllBuffs(this.gm.run.player);
 
 
         // Update player HP in result
@@ -367,6 +369,7 @@ export class CombatService {
 
         // End combat and run
         this.gm.combat.active = false;
+        clearAllBuffs(this.gm.run.player);
         this.gm.run.active = false;
         this.gm.run.stats.endTime = Date.now();
 
