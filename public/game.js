@@ -139,10 +139,6 @@ import {
   useShrine as apiUseShrine,
   startEncounter as apiStartEncounter,
   startBoss as apiStartBoss,
-  attack as apiAttack,
-  useItem as apiUseItem,
-  useSkill as apiUseSkill,
-  enemyTurn as apiEnemyTurn,
   claimStartingChip as apiClaimStartingChip,
   shopBuy as apiShopBuy,
   postCombatShopBuy as apiPostCombatShopBuy,
@@ -1018,84 +1014,7 @@ async function returnToHub() {
   updateUI();
 }
 
-// ============ COMBAT ACTIONS ============
-async function performAttack(attackType = 'normal') {
-  // Check if it's player turn before attacking
-  if (!gameState.combat?.active || gameState.combat.turn !== 'player') {
-    console.log('Cannot attack: not player turn');
-    return;
-  }
 
-  closeCombatSubmenu();
-  disableCombatActions();
-
-  const enemy = gameState.combat?.enemy;
-  const result = await apiAttack(attackType);
-
-  if (result) {
-    // Combat data is in result.result.result (nested)
-    const attackData = result.result?.result || result.result;
-    if (attackData) {
-      // Animate player attack
-      animatePlayerAttack();
-      await delay(300);
-
-      // Show damage number and animate enemy hurt
-      const damage = attackData.totalDamage || attackData.damage || 0;
-      if (damage > 0) {
-        showDamageNumber(damage, false, attackData.critical);
-        animateEnemyHurt();
-      }
-
-      // Display chip effect feedback
-      displayChipEffects(attackData, true);
-
-      // Use server narration or fallback
-      const narrationText = result.narration || FALLBACK_NARRATIONS.playerAttack(attackData);
-      narration.appendNarration(narrationText);
-
-      if (attackData.enemyDefeated || result.type === 'victory' || result.type === 'game_victory') {
-        animateEnemyDefeat();
-        await handleCombatEnd(result);
-      } else {
-        updateUI();
-      }
-    }
-  }
-
-  enableCombatActions();
-}
-
-async function handleCombatEnd(result) {
-  await delay(500);
-
-  const enemy = gameState.combat?.enemy;
-  // Rewards are in result.result.rewards
-  const rewards = result.result?.rewards || result.rewards || { xp: 0, gold: 0, drops: [] };
-  const levelUps = result.result?.levelUps || result.levelUps || [];
-
-  if (result.type === 'victory') {
-    // Use server narration or fallback
-    const narr = enemy?.isBoss
-      ? FALLBACK_NARRATIONS.bossVictory(enemy, rewards)
-      : FALLBACK_NARRATIONS.victory(enemy, rewards);
-    narration.appendNarration(narr);
-
-    if (levelUps.length > 0) {
-      await delay(500);
-      narration.appendNarration(FALLBACK_NARRATIONS.levelUp(gameState.run?.player));
-    }
-
-    await delay(1000);
-    showVictoryModal({ ...result, rewards, levelUps });
-  } else if (result.type === 'game_victory') {
-    narration.appendNarration(FALLBACK_NARRATIONS.gameVictory(gameState.run?.player));
-    await delay(1500);
-    showGameVictoryModal({ ...result, rewards, levelUps });
-  }
-
-  updateUI();
-}
 
 async function handlePlayerDefeat(result) {
   const enemy = gameState.combat?.enemy;
@@ -2187,8 +2106,6 @@ window.startEncounter = startEncounter;
 window.startBossEncounter = startBossEncounter;
 window.nextFloor = nextFloor;
 window.returnToHub = returnToHub;
-window.performAttack = performAttack;
-
 // Room exploration functions
 window.proceedToNextRoom = proceedToNextRoom;
 window.handleRoomAction = handleRoomAction;

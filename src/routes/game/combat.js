@@ -1,7 +1,7 @@
 /**
  * @fileoverview Combat routes
  *
- * Handles combat actions: attack, realtime-attack, start-encounter, start-boss
+ * Handles combat actions: realtime-attack, start-encounter, start-boss, combat-end-narration
  */
 
 import { Router } from 'express';
@@ -13,7 +13,6 @@ import { Router } from 'express';
  * @param {function} deps.getEnrichedGameState - Get enriched game state
  * @param {function} deps.saveGameData - Save game data to file
  * @param {function} deps.generateGameNarration - Generate AI narration
- * @param {function} deps.clearCombatCache - Clear combat prefetch cache
  * @param {function} deps.enrichRewardDrops - Enrich reward drops with item data
  * @param {function} deps.updateGameStatsWithEvent - Update game stats
  * @param {function} deps.saveGameStats - Save game stats
@@ -25,54 +24,12 @@ export default function createCombatRoutes({
   getEnrichedGameState,
   saveGameData,
   generateGameNarration,
-  clearCombatCache,
   enrichRewardDrops,
   updateGameStatsWithEvent,
   saveGameStats,
   getGameStats
 }) {
   const router = Router();
-
-  // Attack (turn-based)
-  router.post('/attack', async (req, res) => {
-    const { attackType } = req.body;
-    const gameStats = getGameStats();
-    try {
-      const result = gameManager.attack(attackType);
-
-      let narration = null;
-      if (result.enemyDefeated) {
-        clearCombatCache();
-
-        if (result.rewards) {
-          const enrichedRewards = enrichRewardDrops(result.rewards);
-          result.rewards = enrichedRewards;
-        }
-
-        updateGameStatsWithEvent(gameStats, 'combat', {
-          victory: true,
-          turns: gameManager.combat?.turn,
-          enemyName: result.enemy?.name
-        });
-        saveGameStats(gameStats);
-
-        narration = await generateGameNarration('victory', {
-          player: gameManager.run.player,
-          enemy: result.enemy,
-          rewards: result.rewards
-        }, req.body);
-      }
-
-      saveGameData();
-      res.json({
-        ...result,
-        state: getEnrichedGameState(),
-        narration
-      });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
 
   // Realtime attack cycle
   router.post('/realtime-attack', (req, res) => {
@@ -118,30 +75,6 @@ export default function createCombatRoutes({
       res.json({ narration, state: getEnrichedGameState() });
     } catch (error) {
       res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Equip item
-  router.post('/equip', (req, res) => {
-    const { itemId } = req.body;
-    try {
-      const result = gameManager.equipItem(itemId);
-      saveGameData();
-      res.json({ ...result, state: getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Unequip item
-  router.post('/unequip', (req, res) => {
-    const { slot } = req.body;
-    try {
-      const result = gameManager.unequipItem(slot);
-      saveGameData();
-      res.json({ ...result, state: getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
     }
   });
 

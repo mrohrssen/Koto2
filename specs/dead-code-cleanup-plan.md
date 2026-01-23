@@ -117,7 +117,7 @@ Remove functions: `allocateStat()`, `checkLevelUp()`, `recalculatePlayerResource
 
 ---
 
-## Phase 4: Delete Dead Turn-Based Combat Code
+## Phase 4: Delete Dead Turn-Based Combat Code ✅ DONE
 
 The unused turn-based `/attack` system (never called by frontend):
 
@@ -325,4 +325,13 @@ The "realtime" naming is confusing since it's actually a vocab-pause turn-based 
   - Removed blacksmith/refinement/chip-upgrade endpoints and service methods
   - Removed dead imports from: server.js, loop.js, state.js, combat-service.js, exploration-service.js, player routes
   - 84/84 E2E pass (3 blacksmith tests removed)
-- **Phases 4-10**: Pending
+- **Phase 4**: ✅ Complete (~330 lines removed, 11 files changed)
+  - Deleted `executeAttack()` from combat-service.js (~170 lines), loop.js delegation, and player-actions.js (~45 lines)
+  - Deleted `/attack`, `/equip`, `/unequip` route endpoints
+  - Deleted ASPD functions from stats.js (`calculateASPD`, `calculateAttackInterval`, `getEntityAttackInterval`)
+  - Removed ASPD interval tracking from `executeRealtimeCycle()` response and realtime-combat.js client state
+  - Deleted `performAttack()`, `handleCombatEnd()`, `window.performAttack` from game.js
+  - Deleted `attack()`, `useItem()`, `useSkill()`, `enemyTurn()` from api.js
+  - Removed unused combat imports from combat-service.js, combat/index.js, combat.js barrel
+  - 84/84 E2E pass, 49/49 unit tests pass
+- **Phases 5-10**: Pending

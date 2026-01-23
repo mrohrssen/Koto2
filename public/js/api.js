@@ -302,32 +302,6 @@ async function startBoss() {
   return apiCall('/start-boss', 'POST');
 }
 
-/** Perform an attack
- * @param {string} attackType - Attack type (normal, light, heavy)
- */
-async function attack(attackType = 'normal') {
-  return apiCall('/attack', 'POST', { attackType });
-}
-
-/** Use an item in combat
- * @param {string} itemId - Item identifier
- */
-async function useItem(itemId) {
-  return apiCall('/use-item', 'POST', { itemId });
-}
-
-/** Use a skill in combat
- * @param {string} skillId - Skill identifier
- */
-async function useSkill(skillId) {
-  return apiCall('/use-skill', 'POST', { skillId });
-}
-
-/** Process enemy turn */
-async function enemyTurn() {
-  return apiCall('/enemy-turn', 'POST');
-}
-
 // ============ SHOP/ECONOMY ENDPOINTS ============
 
 /** Claim a free starting chip
@@ -585,10 +559,6 @@ export {
   // Combat endpoints
   startEncounter,
   startBoss,
-  attack,
-  useItem,
-  useSkill,
-  enemyTurn,
   // Shop/economy endpoints
   claimStartingChip,
   shopBuy,

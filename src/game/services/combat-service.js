@@ -32,16 +32,9 @@ import {
   processBossVictory,
   executePlayerAttack,
   executeEnemyTurn,
-  hasStatusEffect,
-  isEnemyVanished,
-  checkEnemyBarrier,
-  breakEnemyBarrier,
-  getPassiveDamageReduction,
-  checkEnemyAbility,
   tickStatusEffects
 } from '../combat/index.js';
 import { generatePostCombatShop, getNextWardOptions } from '../rooms.js';
-import { getEntityAttackInterval } from '../stats.js';
 import { getSimpleNarration } from '../dm.js';
 
 /**
@@ -123,183 +116,6 @@ export class CombatService {
   }
 
   /**
-   * Execute a player attack action
-   * @param {string} attackType - Type of attack ('normal', 'heavy', 'quick', etc.)
-   * @returns {object} Attack result or victory/defeat result
-   */
-  executeAttack(attackType = 'normal') {
-    if (!this.gm.combat?.active) {
-      throw new Error('No active combat');
-    }
-    if (this.gm.combat.turn !== 'player') {
-      throw new Error('Not player turn');
-    }
-
-    // Check if player is stunned (from exhaustion or other effects - must skip turn)
-    if (hasStatusEffect(this.gm.run.player, 'stun')) {
-      this.gm.narrate('疲労で動けない...！体が重い。次のターンまで休むしかない。');
-      this.gm.combat.turn = 'enemy';
-      this.gm.emitState();
-      return { type: 'exhausted', skipped: true, continue: true };
-    }
-
-    // Check if player is asleep (must skip turn)
-    if (hasStatusEffect(this.gm.run.player, 'sleep')) {
-      this.gm.narrate('眠りに落ちている...動けない！');
-      this.gm.combat.turn = 'enemy';
-      this.gm.emitState();
-      return { type: 'sleeping', skipped: true, continue: true };
-    }
-
-    // Check if enemy is vanished (untargetable)
-    if (isEnemyVanished(this.gm.combat.enemy)) {
-      this.gm.narrate(`${this.gm.combat.enemy.name}の姿が見えない！攻撃が空を切る！`);
-      this.gm.combat.turn = 'enemy';
-      this.gm.emitState();
-      return { type: 'miss', reason: 'vanished', continue: true };
-    }
-
-    // Check if enemy has barrier
-    if (checkEnemyBarrier(this.gm.combat.enemy)) {
-      const absorbed = breakEnemyBarrier(this.gm.combat.enemy);
-      if (absorbed) {
-        this.gm.narrate(`${this.gm.combat.enemy.name}の魔法障壁が攻撃を吸収した！`);
-        this.gm.combat.turn = 'enemy';
-        this.gm.emitState();
-        return { type: 'blocked', reason: 'barrier', continue: true };
-      }
-    }
-
-    // Execute the attack with the specified type
-    const result = executePlayerAttack(this.gm.run.player, this.gm.combat.enemy, attackType);
-    this.gm.combat.lastAction = result;
-
-    // Handle SACRIFICE - permanently destroy sacrificed chips
-    if (result.pipelineResult?.sacrificedChips?.length > 0) {
-      for (const chipId of result.pipelineResult.sacrificedChips) {
-        // Remove from player's chip inventory
-        const chipIndex = this.gm.run.player.chips?.findIndex(c => c.id === chipId);
-        if (chipIndex >= 0) {
-          this.gm.run.player.chips.splice(chipIndex, 1);
-        }
-        // Remove from weapon's equipped chips
-        const weapon = this.gm.run.player.equipment?.weapon;
-        if (weapon?.equippedChips) {
-          const eqIndex = weapon.equippedChips.indexOf(chipId);
-          if (eqIndex >= 0) {
-            weapon.equippedChips.splice(eqIndex, 1);
-          }
-        }
-        // Track total chips destroyed for Phoenix chip
-        this.gm.run.player._runChipsDestroyed = (this.gm.run.player._runChipsDestroyed || 0) + 1;
-      }
-      // Mark in result for UI feedback
-      result.chipsDestroyed = result.pipelineResult.sacrificedChips;
-    }
-
-    // Handle LIFELINK healing from pipeline chips
-    if (result.pipelineResult?.healPlayer > 0) {
-      const healAmount = result.pipelineResult.healPlayer;
-      const oldHp = this.gm.run.player.hp;
-      this.gm.run.player.hp = Math.min(this.gm.run.player.maxHp, this.gm.run.player.hp + healAmount);
-      const actualHeal = this.gm.run.player.hp - oldHp;
-      if (actualHeal > 0) {
-        result.pipelineHeal = actualHeal;
-      }
-    }
-
-    // Handle UNSTABLE CORE - random chip destruction
-    if (result.pipelineResult?.randomDestroyTriggered) {
-      const weapon = this.gm.run.player.equipment?.weapon;
-      const equippedChips = weapon?.equippedChips || [];
-      // Filter out chips that were already sacrificed this attack, and unstable itself
-      const destroyableChips = equippedChips.filter(id =>
-        !result.pipelineResult.sacrificedChips?.includes(id) && id !== 'unstable'
-      );
-      if (destroyableChips.length > 0) {
-        const randomIndex = Math.floor(Math.random() * destroyableChips.length);
-        const victimId = destroyableChips[randomIndex];
-        // Remove from inventory
-        const chipIndex = this.gm.run.player.chips?.findIndex(c => c.id === victimId);
-        if (chipIndex >= 0) this.gm.run.player.chips.splice(chipIndex, 1);
-        // Remove from weapon
-        const eqIndex = weapon.equippedChips.indexOf(victimId);
-        if (eqIndex >= 0) weapon.equippedChips.splice(eqIndex, 1);
-        // Track for Phoenix
-        this.gm.run.player._runChipsDestroyed = (this.gm.run.player._runChipsDestroyed || 0) + 1;
-        result.randomChipDestroyed = victimId;
-      }
-    }
-
-    // Handle cascade effect (pachinkoBall chip) - bonus hit with same damage
-    if (result.cascadeTriggered && result.anyHit && !result.enemyDefeated) {
-      const cascadeDamage = result.totalDamage;
-      this.gm.combat.enemy.hp = Math.max(0, this.gm.combat.enemy.hp - cascadeDamage);
-      result.cascadeDamage = cascadeDamage;
-      result.totalDamage += cascadeDamage;
-      result.enemyDefeated = this.gm.combat.enemy.hp <= 0;
-      if (!result.chipEffects) result.chipEffects = [];
-      result.chipEffects.push({
-        chipName: 'パチンコ玉', // Pachinko Ball
-        special: 'cascade',
-        bonusDamage: cascadeDamage
-      });
-    }
-
-    // Apply passive damage reduction (e.g., golem's stone form)
-    const reduction = getPassiveDamageReduction(this.gm.combat.enemy);
-    if (reduction > 0 && result.totalDamage > 0) {
-      const reducedAmount = Math.floor(result.totalDamage * reduction);
-      result.totalDamage -= reducedAmount;
-      result.damageReduced = reducedAmount;
-      this.gm.combat.enemy.hp = Math.min(this.gm.combat.enemy.maxHp,
-        this.gm.combat.enemy.hp + reducedAmount);
-    }
-
-    this.gm.run.stats.damageDealt += result.totalDamage;
-
-    // Narrate based on attack type
-    if (result.staggered) {
-      this.gm.narrate(`速攻！${this.gm.combat.enemy.name}がよろめいた！次の攻撃が遅れる！`);
-    } else if (result.playerExhausted) {
-      this.gm.narrate(`強撃！しかし、全力を出しすぎた...次のターンは動けない！`);
-    }
-
-    // Check for onDeath ability (skeleton revive)
-    if (result.enemyDefeated) {
-      const deathAbility = checkEnemyAbility(this.gm.combat.enemy, this.gm.run.player, 'onDeath', {});
-      if (deathAbility?.revive) {
-        result.enemyDefeated = false;
-        result.abilityTriggered = deathAbility;
-        this.gm.narrate(deathAbility.effects[0]?.message || `${this.gm.combat.enemy.name}が復活した！`);
-      }
-    }
-
-    // Check for onLowHp ability
-    if (!result.enemyDefeated) {
-      const lowHpAbility = checkEnemyAbility(this.gm.combat.enemy, this.gm.run.player, 'onLowHp', {});
-      if (lowHpAbility) {
-        result.abilityTriggered = lowHpAbility;
-        if (lowHpAbility.effects?.length > 0) {
-          this.gm.narrate(lowHpAbility.effects[0].message);
-        }
-      }
-    }
-
-    this.gm.narrate(getSimpleNarration('playerAttack', result));
-
-
-    if (result.enemyDefeated) {
-      return this.handleVictory();
-    }
-
-    this.gm.combat.turn = 'enemy';
-    this.gm.emitState();
-
-    return { type: 'attack', attackType, result, continue: true };
-  }
-
-  /**
    * Execute one realtime combat cycle (timer-based combat mode)
    * Unlike turn-based combat, this has no narration and runs on attack intervals
    * @param {string} attackerType - 'player' or 'enemy'
@@ -310,17 +126,11 @@ export class CombatService {
       throw new Error('No active combat');
     }
 
-    // Calculate attack intervals based on ASPD
-    const playerInterval = getEntityAttackInterval(this.gm.run.player);
-    const enemyInterval = getEntityAttackInterval(this.gm.combat.enemy);
-
     const result = {
       playerAttack: null,
       enemyAttack: null,
       playerHp: { current: this.gm.run.player.hp, max: this.gm.run.player.maxHp },
       enemyHp: { current: this.gm.combat.enemy.hp, max: this.gm.combat.enemy.maxHp },
-      playerInterval,  // Attack interval for player in ms
-      enemyInterval,   // Attack interval for enemy in ms
       combatEnded: false,
       victory: null,
       // Victory rewards (populated if victory)

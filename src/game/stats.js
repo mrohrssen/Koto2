@@ -82,18 +82,6 @@ export function calculateDefendRecovery(maxHp, maxSp, vit, int) {
   return { hpRecovery: 0, spRecovery: 0 };
 }
 
-export function calculateASPD(agi, dex) {
-  return 150;  // Fixed attack speed
-}
-
-export function calculateAttackInterval(aspd) {
-  return 1000;  // 1 second fixed
-}
-
-export function getEntityAttackInterval(entity) {
-  return 1000;
-}
-
 export function calculateHitChance(attackerHit, defenderFlee) {
   return 100;  // Always hits in simplified mode
 }

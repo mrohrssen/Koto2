@@ -22,7 +22,6 @@ export {
 
   // Player actions
   executePlayerAttack,
-  executeAttack,
 
   // Enemy combat
   executeEnemyTurn,

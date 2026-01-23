@@ -65,7 +65,6 @@ export default function createGameRoutes(deps) {
     getEnrichedGameState: deps.getEnrichedGameState,
     saveGameData: deps.saveGameData,
     generateGameNarration: deps.generateGameNarration,
-    clearCombatCache: deps.clearCombatCache,
     enrichRewardDrops: deps.enrichRewardDrops,
     updateGameStatsWithEvent: deps.updateGameStatsWithEvent,
     saveGameStats: deps.saveGameStats,

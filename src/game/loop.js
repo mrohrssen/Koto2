@@ -715,16 +715,6 @@ export class GameManager {
     return this.combatService.executeRealtimeCycle(attackerType);
   }
 
-  // ============ COMBAT ACTIONS ============
-
-  /**
-   * Player attacks with attack type
-   * @param {string} attackType - 'quick', 'normal', or 'heavy'
-   */
-  attack(attackType = 'normal') {
-    return this.combatService.executeAttack(attackType);
-  }
-
   // ============ COMBAT RESOLUTION ============
 
   _handleVictory() {

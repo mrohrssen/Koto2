@@ -34,8 +34,7 @@ export {
 
 // Player actions
 export {
-  executePlayerAttack,
-  executeAttack
+  executePlayerAttack
 } from './player-actions.js';
 
 // Enemy combat

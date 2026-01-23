@@ -19,8 +19,6 @@ let realtimeCombatActive = false;
 let playerAttackPending = false;
 let enemyAttackPending = false;
 let combatPausedForVocab = false;
-let currentPlayerInterval = 2000;
-let currentEnemyInterval = 2500;
 let playerAttackTimer = null;
 let enemyAttackTimer = null;
 
@@ -187,7 +185,7 @@ export async function executePlayerAttack() {
       body: JSON.stringify({ attackerType: 'player', ...apiKeys })
     });
     const result = await response.json();
-    console.log('[Combat] Player attack:', result.playerAttack?.damage, 'interval:', result.playerInterval);
+    console.log('[Combat] Player attack:', result.playerAttack?.damage);
 
     if (result.error) {
       // "No active combat" means server state is out of sync - don't trigger false game over
@@ -210,9 +208,6 @@ export async function executePlayerAttack() {
       return;
     }
 
-    // Update intervals from server
-    if (result.playerInterval) currentPlayerInterval = result.playerInterval;
-    if (result.enemyInterval) currentEnemyInterval = result.enemyInterval;
 
     // Show player's attack result
     if (result.playerAttack) {
@@ -311,7 +306,7 @@ export async function executeEnemyAttack() {
       body: JSON.stringify({ attackerType: 'enemy', ...apiKeys })
     });
     const result = await response.json();
-    console.log('[Combat] Enemy attack:', result.enemyAttack?.damage, 'interval:', result.enemyInterval);
+    console.log('[Combat] Enemy attack:', result.enemyAttack?.damage);
 
     if (result.error) {
       // "No active combat" means server state is out of sync - don't trigger false game over
@@ -334,9 +329,6 @@ export async function executeEnemyAttack() {
       return;
     }
 
-    // Update intervals from server
-    if (result.playerInterval) currentPlayerInterval = result.playerInterval;
-    if (result.enemyInterval) currentEnemyInterval = result.enemyInterval;
 
     // Show enemy's attack result
     if (result.enemyAttack) {
@@ -411,9 +403,6 @@ export async function executeEnemyAttackThenPause() {
       return;
     }
 
-    // Update intervals from server
-    if (result.playerInterval) currentPlayerInterval = result.playerInterval;
-    if (result.enemyInterval) currentEnemyInterval = result.enemyInterval;
 
     // Show enemy's attack result
     if (result.enemyAttack) {
