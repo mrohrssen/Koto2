@@ -3,6 +3,7 @@
  * Enemy turn execution, abilities, and related functions
  */
 
+import { consumeBuffsByType } from './chip-skills.js';
 import { ENEMY_ABILITIES, getEnemyAbility } from '../enemies.js';
 import {
   breakDamageEffects,
@@ -77,7 +78,18 @@ export function executeEnemyTurn(enemy, player, intent = null) {
         result.damage = Math.floor(result.damage * 0.5);
       }
 
-      player.hp = Math.max(0, player.hp - result.damage);
+      // Apply damage to player (check DEFENSIVE buffs for lethal protection)
+      if (player.hp - result.damage <= 0 && result.damage > 0) {
+        const defBuffs = consumeBuffsByType(player, 'DEFENSIVE');
+        if (defBuffs.some(b => b.effect.surviveLethal)) {
+          player.hp = 1;
+          result.survivedLethal = true;
+        } else {
+          player.hp = 0;
+        }
+      } else {
+        player.hp = Math.max(0, player.hp - result.damage);
+      }
       result.playerDefeated = player.hp <= 0;
       break;
 
@@ -107,8 +119,18 @@ export function executeEnemyTurn(enemy, player, intent = null) {
 
       result.damage = finalDamage;
 
-      // Apply damage to player
-      player.hp = Math.max(0, player.hp - finalDamage);
+      // Apply damage to player (check DEFENSIVE buffs for lethal protection)
+      if (player.hp - finalDamage <= 0 && finalDamage > 0) {
+        const defBuffs = consumeBuffsByType(player, 'DEFENSIVE');
+        if (defBuffs.some(b => b.effect.surviveLethal)) {
+          player.hp = 1;
+          result.survivedLethal = true;
+        } else {
+          player.hp = 0;
+        }
+      } else {
+        player.hp = Math.max(0, player.hp - finalDamage);
+      }
       result.playerDefeated = player.hp <= 0;
 
       // Break damage-sensitive status effects on player (like SLEEP)
