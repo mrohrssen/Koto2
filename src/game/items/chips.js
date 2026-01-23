@@ -153,7 +153,7 @@ export function getChipPrice(chipId) {
   const chip = getChip(chipId);
   if (!chip) return 0;
 
-  const rarity = CHIP_RARITIES[chip.rarity];
+  const rarity = CHIP_RARITIES[chip.rarity || 'common'];
   return Math.floor(chipConfig.upgradeConfig.basePrice * rarity.priceMultiplier);
 }
 
@@ -239,22 +239,18 @@ export function generateShopChips(floor, ownedChipIds = [], count = 3, category 
   const shuffled = [...availableChips].sort(() => Math.random() - 0.5);
   const selected = shuffled.slice(0, Math.min(count, shuffled.length));
 
-  // Assign random rarity to each chip and scale effects
+  // All chips are common rarity — no rarity rolling
+  const commonRarity = CHIP_RARITIES['common'];
   return selected.map(chip => {
-    const rolledRarity = rollRandomRarity();
-    const rarityInfo = CHIP_RARITIES[rolledRarity];
-    const scaledEffects = applyRarityMultiplier(chip.effects, rarityInfo.statMultiplier);
-
     return {
       id: chip.id,
       name: chip.name,
       nameEn: chip.nameEn,
       description: chip.description,
       category: chip.category,
-      rarity: rolledRarity,
-      price: Math.floor(chipConfig.upgradeConfig.basePrice * rarityInfo.priceMultiplier),
-      effects: scaledEffects,
-      baseEffects: chip.effects  // Keep original for reference
+      rarity: 'common',
+      price: Math.floor(chipConfig.upgradeConfig.basePrice * commonRarity.priceMultiplier),
+      effects: chip.effects
     };
   });
 }
@@ -804,7 +800,7 @@ export function getWeaponPipelineChips(player) {
  * Get chip display info for UI
  */
 export function getChipDisplayInfo(chip) {
-  const rarity = CHIP_RARITIES[chip.rarity];
+  const rarity = CHIP_RARITIES[chip.rarity || 'common'];
   const category = Object.values(CHIP_CATEGORIES).find(c => c.id === chip.category);
 
   let effectText = '';
