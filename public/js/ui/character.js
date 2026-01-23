@@ -1,11 +1,10 @@
 /**
- * @fileoverview Character UI Module - Stat allocation, VN stage, and equipment management
+ * @fileoverview Character UI Module - VN stage, stats display, and chip management
  * @module public/js/ui/character.js
  *
  * PURPOSE:
- * Handles character-related UI including stat allocation during character creation,
- * VN stage rendering with player/enemy sprites, HP/MP bars, equipment display,
- * and chip modal management.
+ * Handles VN stage rendering with player/enemy sprites, HP bars, player stats display,
+ * chip modal management, and character creation stat allocation.
  *
  * KEY EXPORTS:
  * - init(callbacks) - Initialize module with dependencies
@@ -13,10 +12,8 @@
  *   updateCreateStatDisplay, handleStatIncrease, handleStatDecrease, resetCreateStats
  * - VN Stage: updateVNStage, updateEnemyHPBar, updatePlayerHPBar
  * - Stats display: updateQuickStats, updatePlayerStats, updateEquipment, updateInventory
- * - Equipment: equipItem, unequipItemHandler
  * - Chip modal: openChipModal, closeChipModal, renderChipModal, addChipToSlot,
  *   removeChipFromSlot, toggleChipEquip, getChipEffectText
- * - Hub leveling: allocateStatPoint
  *
  * DEPENDENCIES:
  * - narration module for showNarration()
@@ -43,7 +40,6 @@ let gameContent = null;
 let playerNameDisplay = null;
 let playerHpValues = null;
 let playerHpFill = null;
-let playerMpFill = null;
 let playerSprite = null;
 let enemySprite = null;
 let enemyHpBar = null;
@@ -75,11 +71,9 @@ let isEnemyDialogueActive = null;
 let startRealtimeCombat = null;
 
 // API functions
-let apiAllocateStat = null;
 let apiEquipChip = null;
 let apiUnequipChip = null;
 let apiGetChipLoadout = null;
-let apiUnequipItem = null;
 
 // API base
 const API_BASE = '';
@@ -96,7 +90,6 @@ export function init(callbacks) {
   playerNameDisplay = document.getElementById('player-name');
   playerHpValues = document.getElementById('player-hp-values');
   playerHpFill = document.getElementById('player-hp-fill');
-  playerMpFill = document.getElementById('player-mp-fill');
   playerSprite = document.getElementById('player-sprite');
   enemySprite = document.getElementById('enemy-sprite');
   enemyHpBar = document.getElementById('enemy-hp-bar');
@@ -130,11 +123,9 @@ export function init(callbacks) {
   startRealtimeCombat = callbacks.startRealtimeCombat;
 
   // API functions
-  apiAllocateStat = callbacks.apiAllocateStat;
   apiEquipChip = callbacks.apiEquipChip;
   apiUnequipChip = callbacks.apiUnequipChip;
   apiGetChipLoadout = callbacks.apiGetChipLoadout;
-  apiUnequipItem = callbacks.apiUnequipItem;
 }
 
 // ============ STATE GETTERS/SETTERS ============
@@ -306,7 +297,7 @@ export function updateVNStage() {
   if (!gameState) return;
 
   const phase = gameState.phase;
-  const isInDungeon = ['room', 'room_encounter', 'combat', 'trap', 'treasure', 'shrine', 'floor_complete', 'boss', 'post_combat_shop'].includes(phase);
+  const isInDungeon = ['room', 'room_encounter', 'combat', 'shrine', 'floor_complete', 'boss', 'post_combat_shop'].includes(phase);
   const isInCombat = phase === 'combat';
 
   // Show/hide VN stage based on phase
@@ -320,20 +311,16 @@ export function updateVNStage() {
     gameContent.classList.remove('hidden');
   }
 
-  // Update player HP/MP bars
+  // Update player HP bar
   const p = gameState.run?.player || gameState.player;
   if (p) {
     const hp = p.hp || 0;
     const maxHp = p.maxHp || 100;
-    const mp = p.mp || 0;
-    const maxMp = p.maxMp || 100;
     const hpPercent = Math.max(0, Math.min(100, (hp / maxHp) * 100));
-    const mpPercent = Math.max(0, Math.min(100, (mp / maxMp) * 100));
 
     if (playerNameDisplay) playerNameDisplay.textContent = p.name || 'Hunter';
     if (playerHpValues) playerHpValues.textContent = `${hp}/${maxHp}`;
     if (playerHpFill) playerHpFill.style.width = `${hpPercent}%`;
-    if (playerMpFill) playerMpFill.style.width = `${mpPercent}%`;
 
     // HP color classes
     if (playerHpFill) {
@@ -516,7 +503,7 @@ export function updatePlayerStats() {
 }
 
 /**
- * Update equipment display
+ * Update equipment display (weapon chip holder only)
  */
 export function updateEquipment() {
   const gameState = getGameState();
@@ -526,95 +513,21 @@ export function updateEquipment() {
   }
 
   const p = gameState.run?.player || gameState.player;
-  const eq = p.equipment;
-
-  const renderSlot = (slotName, slotKey) => {
-    const item = eq[slotKey];
-    if (item) {
-      const chipsEquipped = item.equippedChips?.length || 0;
-      return `
-        <div class="equipment-slot equipped">
-          <span class="slot-name">${slotName}</span>
-          <span class="item-name">${item.name}</span>
-          <div class="equipment-actions">
-            <button class="modify-btn" onclick="openChipModal('${slotKey}')" title="Modify Chips">
-              <span class="chip-count">${chipsEquipped}/5</span> Modify
-            </button>
-            <button class="unequip-btn" onclick="unequipItem('${slotKey}')" title="Unequip">✕</button>
-          </div>
-        </div>
-      `;
-    }
-    return `
-      <div class="equipment-slot empty">
-        <span class="slot-name">${slotName}</span>
-        <span class="item-name empty-slot">Empty</span>
-      </div>
-    `;
-  };
+  const weapon = p.equipment?.weapon;
+  const chipsEquipped = weapon?.equippedChips?.length || 0;
 
   if (equipmentList) {
     equipmentList.innerHTML = `
-      ${renderSlot('Weapon', 'weapon')}
-      ${renderSlot('Body', 'body')}
-      ${renderSlot('Shield', 'shield')}
-      ${renderSlot('Accessory', 'accessory')}
+      <div class="equipment-slot equipped">
+        <span class="slot-name">Weapon</span>
+        <div class="equipment-actions">
+          <button class="modify-btn" onclick="openChipModal('weapon')" title="Modify Chips">
+            <span class="chip-count">${chipsEquipped}/5</span> Modify
+          </button>
+        </div>
+      </div>
     `;
   }
-}
-
-/**
- * Equip an item
- * @param {string} itemId - Item ID to equip
- */
-export async function equipItem(itemId) {
-  try {
-    const response = await fetch('/api/game/equip', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ itemId })
-    });
-
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error || 'Equip failed');
-    }
-
-    const result = await response.json();
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    if (result.message) {
-      narration.showNarration(result.message);
-    }
-    if (result.equipped) {
-      tts.speakText(`${result.equipped}を装備`);
-    }
-    updateUI();
-  } catch (error) {
-    console.error('Equip error:', error);
-    narration.showNarration(`装備に失敗: ${error.message}`);
-  }
-}
-
-/**
- * Unequip an item from a slot
- * @param {string} slot - Equipment slot
- */
-export async function unequipItemHandler(slot) {
-  const result = await apiUnequipItem(slot);
-  if (result.error) {
-    console.error('Unequip error:', result.error);
-    narration.showNarration(`装備解除に失敗: ${result.error}`);
-    return;
-  }
-  if (result.state) {
-    updateGameState(result.state);
-  }
-  if (result.message) {
-    narration.showNarration(result.message);
-  }
-  updateUI();
 }
 
 /**
@@ -629,8 +542,6 @@ export function updateInventory() {
 
   const p = gameState.run?.player || gameState.player;
   let html = '';
-
-  const inCombat = gameState.phase === 'combat';
 
   // Show chips section
   if (p.chips && p.chips.length > 0) {
@@ -655,37 +566,12 @@ export function updateInventory() {
     html += '</div>';
   }
 
-  // Show items section
-  if (p.items && p.items.length > 0) {
-    html += '<div class="inventory-section"><h4>アイテム (Items)</h4>';
-    html += p.items.map(item => {
-      const isEquipment = item.slot;
-      const equipClass = isEquipment && !inCombat ? 'equippable' : '';
-      const rarityClass = item.rarity ? `rarity-${item.rarity}` : '';
-      return `
-        <div class="inventory-item ${equipClass} ${rarityClass}" ${isEquipment ? `data-item-id="${item.id}"` : ''}>
-          <span class="item-name">${item.name || item.id}</span>
-          <span class="item-qty">x${item.quantity}</span>
-        </div>
-      `;
-    }).join('');
-    html += '</div>';
-  }
-
   if (!html) {
     html = '<p class="empty-msg">Empty</p>';
   }
 
   if (inventoryList) {
     inventoryList.innerHTML = html;
-
-    // Add click handlers for equippable items
-    inventoryList.querySelectorAll('.equippable').forEach(el => {
-      el.addEventListener('click', async () => {
-        const itemId = el.dataset.itemId;
-        await equipItem(itemId);
-      });
-    });
   }
 }
 
@@ -951,31 +837,6 @@ export async function toggleChipEquip(chipId, fromSlot) {
   updateUI();
 }
 
-// ============ HUB LEVELING ============
-
-/**
- * Allocate a stat point in the hub
- * @param {string} statKey - Stat to allocate point to
- */
-export async function allocateStatPoint(statKey) {
-  const result = await apiAllocateStat(statKey);
-
-  if (result?.success) {
-    const gameState = getGameState();
-    gameState.player = result.state.player;
-    if (result.state.run) {
-      gameState.run = result.state.run;
-    }
-
-    const statNames = { str: 'STR', agi: 'AGI', vit: 'VIT', int: 'INT', dex: 'DEX', luk: 'LUK' };
-    showToast(`${statNames[statKey] || statKey} +1!`, 'success');
-
-    updateUI();
-  } else if (result?.error) {
-    showToast(result.error, 'error');
-  }
-}
-
 // ============ UTILITY FUNCTIONS ============
 
 /**
@@ -1008,8 +869,6 @@ window.closeChipModal = closeChipModal;
 window.addChipToSlot = addChipToSlot;
 window.removeChipFromSlot = removeChipFromSlot;
 window.toggleChipEquip = toggleChipEquip;
-window.equipItem = equipItem;
-window.unequipItem = unequipItemHandler;
 window.handleStatIncrease = handleStatIncrease;
 window.handleStatDecrease = handleStatDecrease;
 window.resetCreateStats = resetCreateStats;

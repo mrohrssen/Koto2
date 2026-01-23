@@ -16,11 +16,10 @@
  * - updateVNStage() - Updates visual novel character/enemy sprites
  *
  * Game Flow:
- * - createCharacter() - Character creation with stat allocation
+ * - createCharacter() - Character creation
  * - startNewRun() - Begins dungeon run, ward selection
  * - startEncounter()/startBossEncounter() - Initiates combat
- * - performAttack/Defend/Magic/Item/Flee() - Combat actions
- * - handleCombatEnd() - Victory/defeat processing
+ * - startRealtimeCombat() - Vocab-pause combat loop
  *
  * UI Systems:
  * - narration.showNarration()/narration.appendNarration() - VN-style text display with JPDB parsing
@@ -53,13 +52,12 @@
  *
  * UI PHASES (gameState.phase):
  * - 'no_save' - No character exists, show create button
- * - 'hub' - In town, can start run or manage equipment
+ * - 'hub' - In town, can start run
  * - 'ward_selection' - Choosing next ward/area
  * - 'exploring' - Navigating dungeon rooms
- * - 'combat' - In battle
- * - 'victory'/'defeat' - Post-combat state
- * - 'shop' - Buying/selling items
- * - 'blacksmith' - Equipment refinement
+ * - 'combat' - In battle (vocab-pause loop)
+ * - 'post_combat_shop' - Free chip selection after victory
+ * - 'floor_complete' - Floor cleared, advance to next
  *
  * ARCHITECTURE NOTES:
  * - No build step - vanilla JS loaded directly by browser
@@ -102,10 +100,10 @@ import * as combatUI from './js/ui/combat.js';
 // Exploration UI module for room navigation and content views
 import * as explorationUI from './js/ui/exploration.js';
 
-// Economy UI module for shop, blacksmith, and chip upgrade functions
+// Economy UI module for post-combat chip selection and content displays
 import * as economyUI from './js/ui/economy.js';
 
-// Character UI module for stat allocation, VN stage, and equipment
+// Character UI module for VN stage, stats display, and chip management
 import * as characterUI from './js/ui/character.js';
 
 // Modals UI module for all modal dialogs
@@ -120,7 +118,6 @@ import {
   getMetaProgression as apiGetMetaProgression,
   getSettings as apiGetSettings,
   createPlayer as apiCreatePlayer,
-  allocateStat as apiAllocateStat,
   purchaseUpgrade as apiPurchaseUpgrade,
   startRun as apiStartRun,
   forfeitRun as apiForfeitRun,
@@ -130,12 +127,6 @@ import {
   selectNextWard as apiSelectNextWard,
   proceed as apiProceed,
   roomEncounter as apiRoomEncounter,
-  disarmTrap as apiDisarmTrap,
-  triggerTrap as apiTriggerTrap,
-  lootBody as apiLootBody,
-  skipBody as apiSkipBody,
-  openTreasure as apiOpenTreasure,
-  skipTreasure as apiSkipTreasure,
   useShrine as apiUseShrine,
   startEncounter as apiStartEncounter,
   startBoss as apiStartBoss,
@@ -145,9 +136,6 @@ import {
   postCombatShopRefresh as apiPostCombatShopRefresh,
   equipChip as apiEquipChip,
   unequipChip as apiUnequipChip,
-  getRefinePreview as apiGetRefinePreview,
-  refineItem as apiRefineItem,
-  unequipItem as apiUnequipItem,
   nextFloor as apiNextFloor,
   getChipLoadout as apiGetChipLoadout,
   warmVocabCache as apiWarmVocabCache,
@@ -393,9 +381,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     handlePlayerDefeat: handlePlayerDefeat,
     startEncounter: startEncounter,
     startBossEncounter: startBossEncounter,
-    openShop: economyUI.openShop,
-    openBlacksmith: economyUI.openBlacksmith,
-    openChipUpgradeModal: economyUI.openChipUpgradeModal,
     openUpgradesModal: openUpgradesModal,
     FALLBACK_NARRATIONS: FALLBACK_NARRATIONS,
     // API functions
@@ -405,12 +390,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     apiSelectNextWard: apiSelectNextWard,
     apiProceed: apiProceed,
     apiRoomEncounter: apiRoomEncounter,
-    apiDisarmTrap: apiDisarmTrap,
-    apiTriggerTrap: apiTriggerTrap,
-    apiLootBody: apiLootBody,
-    apiSkipBody: apiSkipBody,
-    apiOpenTreasure: apiOpenTreasure,
-    apiSkipTreasure: apiSkipTreasure,
     apiUseShrine: apiUseShrine
   });
 
@@ -419,13 +398,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     getGameState: () => gameState,
     updateGameState: updateGameState,
     updateUI: updateUI,
-    delay: delay,
-    triggerJpdbParse: triggerJpdbParse,
     narration: narration,
     tts: tts,
     // API functions
-    apiGetRefinePreview: apiGetRefinePreview,
-    apiRefineItem: apiRefineItem,
     apiClaimStartingChip: apiClaimStartingChip,
     apiPostCombatShopBuy: apiPostCombatShopBuy,
     apiShopSkip: apiShopSkip,
@@ -447,11 +422,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     isEnemyDialogueActive: () => enemyDialogueActive,
     startRealtimeCombat: startRealtimeCombat,
     // API functions
-    apiAllocateStat: apiAllocateStat,
     apiEquipChip: apiEquipChip,
     apiUnequipChip: apiUnequipChip,
-    apiGetChipLoadout: apiGetChipLoadout,
-    apiUnequipItem: apiUnequipItem
+    apiGetChipLoadout: apiGetChipLoadout
   });
 
   // Initialize modals UI module
@@ -615,14 +588,6 @@ function setupEventListeners() {
   // Shop modal
   document.getElementById('close-shop')?.addEventListener('click', closeShop);
   document.getElementById('shop-close-btn')?.addEventListener('click', closeShop);
-
-  // Blacksmith modal
-  document.getElementById('close-blacksmith')?.addEventListener('click', closeBlacksmith);
-  document.getElementById('blacksmith-close-btn')?.addEventListener('click', closeBlacksmith);
-
-  // Chip upgrade modal (Modder)
-  document.getElementById('close-chip-upgrade')?.addEventListener('click', closeChipUpgradeModal);
-  document.getElementById('chip-upgrade-leave-btn')?.addEventListener('click', closeChipUpgradeModal);
 
   // Filter chips for word states
   document.querySelectorAll('#game-word-state-filters .filter-chip').forEach(chip => {
@@ -1087,8 +1052,6 @@ function shuffleArray(array) {
 function updateQuickStats() { characterUI.updateQuickStats(); }
 function updatePlayerStats() { characterUI.updatePlayerStats(); }
 function updateEquipment() { characterUI.updateEquipment(); }
-async function equipItem(itemId) { return characterUI.equipItem(itemId); }
-async function unequipItemHandler(slot) { return characterUI.unequipItemHandler(slot); }
 function updateInventory() { characterUI.updateInventory(); }
 
 function updateGameContent() {
@@ -1282,26 +1245,12 @@ function getRoomTypeName(type) { return explorationUI.getRoomTypeName(type); }
 async function handleRoomAction(actionId) { return explorationUI.handleRoomAction(actionId); }
 async function proceedToNextRoom() { return explorationUI.proceedToNextRoom(); }
 async function startRoomEncounter() { return explorationUI.startRoomEncounter(); }
-async function disarmTrap() { return explorationUI.disarmTrap(); }
-async function triggerTrap() { return explorationUI.triggerTrap(); }
-async function lootBody() { return explorationUI.lootBody(); }
-async function skipBody() { return explorationUI.skipBody(); }
-async function skipTreasure() { return explorationUI.skipTreasure(); }
-async function openTreasure() { return explorationUI.openTreasure(); }
 async function useShrine() { return explorationUI.useShrine(); }
 
 // ============ ECONOMY UI ============
 // Delegated to economyUI module
 function formatItemStats(item) { return economyUI.formatItemStats(item); }
-async function openShop() { return economyUI.openShop(); }
-async function buyItem(itemId) { return economyUI.buyItem(itemId); }
 function closeShop() { economyUI.closeShop(); }
-async function openBlacksmith() { return economyUI.openBlacksmith(); }
-async function refineItemHandler(slot) { return economyUI.refineItemHandler(slot); }
-function closeBlacksmith() { economyUI.closeBlacksmith(); }
-async function openChipUpgradeModal() { return economyUI.openChipUpgradeModal(); }
-async function performChipUpgrade(chipId) { return economyUI.performChipUpgrade(chipId); }
-function closeChipUpgradeModal() { economyUI.closeChipUpgradeModal(); }
 function showBossReadyContent() { economyUI.showBossReadyContent(); }
 function showFloorCompleteContent() { economyUI.showFloorCompleteContent(); }
 function showPostCombatShopContent() { economyUI.showPostCombatShopContent(); }
@@ -2074,28 +2023,6 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Stat allocation
-async function allocateStatPoint(statKey) {
-  const result = await apiAllocateStat(statKey);
-
-  if (result?.success) {
-    // Update game state
-    gameState.player = result.state.player;
-    if (result.state.run) {
-      gameState.run = result.state.run;
-    }
-
-    // Show feedback
-    const statNames = { str: 'STR', agi: 'AGI', vit: 'VIT', int: 'INT', dex: 'DEX', luk: 'LUK' };
-    showToast(`${statNames[statKey] || statKey} +1!`, 'success');
-
-    // Refresh UI
-    updateUI();
-  } else if (result?.error) {
-    showToast(result.error, 'error');
-  }
-}
-
 // Expose functions to global scope for onclick handlers
 window.createCharacter = createCharacter;
 window.openCreateCharModal = openCreateCharModal;
@@ -2107,10 +2034,6 @@ window.returnToHub = returnToHub;
 // Room exploration functions
 window.proceedToNextRoom = proceedToNextRoom;
 window.handleRoomAction = handleRoomAction;
-window.disarmTrap = disarmTrap;
-window.triggerTrap = triggerTrap;
-window.lootBody = lootBody;
-window.openTreasure = openTreasure;
 window.useShrine = useShrine;
 window.startRoomEncounter = startRoomEncounter;
 
@@ -2124,7 +2047,6 @@ window.openUpgradesModal = openUpgradesModal;
 window.closeUpgradesModal = closeUpgradesModal;
 window.purchaseUpgrade = purchaseUpgrade;
 window.switchUpgradesTab = switchUpgradesTab;
-window.allocateStatPoint = allocateStatPoint;
 
 // Game stats functions
 window.openGameStatsModal = openGameStatsModal;

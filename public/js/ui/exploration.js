@@ -21,9 +21,6 @@ let triggerJpdbParse = null;
 let handlePlayerDefeat = null;
 let startEncounter = null;
 let startBossEncounter = null;
-let openShop = null;
-let openBlacksmith = null;
-let openChipUpgradeModal = null;
 let openUpgradesModal = null;
 
 // API functions
@@ -33,12 +30,6 @@ let apiSelectStartingWard = null;
 let apiSelectNextWard = null;
 let apiProceed = null;
 let apiRoomEncounter = null;
-let apiDisarmTrap = null;
-let apiTriggerTrap = null;
-let apiLootBody = null;
-let apiSkipBody = null;
-let apiOpenTreasure = null;
-let apiSkipTreasure = null;
 let apiUseShrine = null;
 
 // Ward selection state
@@ -62,9 +53,6 @@ export function init(config) {
   handlePlayerDefeat = config.handlePlayerDefeat;
   startEncounter = config.startEncounter;
   startBossEncounter = config.startBossEncounter;
-  openShop = config.openShop;
-  openBlacksmith = config.openBlacksmith;
-  openChipUpgradeModal = config.openChipUpgradeModal;
   openUpgradesModal = config.openUpgradesModal;
   FALLBACK_NARRATIONS = config.FALLBACK_NARRATIONS;
 
@@ -75,12 +63,6 @@ export function init(config) {
   apiSelectNextWard = config.apiSelectNextWard;
   apiProceed = config.apiProceed;
   apiRoomEncounter = config.apiRoomEncounter;
-  apiDisarmTrap = config.apiDisarmTrap;
-  apiTriggerTrap = config.apiTriggerTrap;
-  apiLootBody = config.apiLootBody;
-  apiSkipBody = config.apiSkipBody;
-  apiOpenTreasure = config.apiOpenTreasure;
-  apiSkipTreasure = config.apiSkipTreasure;
   apiUseShrine = config.apiUseShrine;
 }
 
@@ -331,10 +313,6 @@ export function showRoomActions() {
       btnClass = 'danger';
     } else if (action.id === 'proceed') {
       btnClass = 'primary';
-    } else if (action.id === 'ignore_body' || action.id === 'ignore_treasure') {
-      btnClass = 'muted';  // Safe but no reward
-    } else if (action.id === 'loot' || action.id === 'open') {
-      btnClass = 'warning';  // Risky but rewarding
     } else {
       btnClass = 'secondary';
     }
@@ -356,12 +334,7 @@ export function getRoomIcon(type) {
   const icons = {
     empty: '🚪',
     encounter: '⚔️',
-    trap: '⚠️',
-    body: '💀',
-    treasure: '📦',
     shrine: '⛩️',
-    merchant: '🛒',
-    blacksmith: '🔨',
     boss: '👹'
   };
   return icons[type] || '❓';
@@ -374,12 +347,7 @@ export function getRoomTypeName(type) {
   const names = {
     empty: '何もない部屋',
     encounter: '敵がいる！',
-    trap: '罠がある...',
-    body: '冒険者の遺体',
-    treasure: '宝箱！',
     shrine: '神秘的な祠',
-    merchant: '商人',
-    blacksmith: '鍛冶屋',
     boss: 'ボスの間'
   };
   return names[type] || '不明な部屋';
@@ -401,35 +369,8 @@ export async function handleRoomAction(actionId) {
     case 'boss_fight':
       await startBossEncounter();
       break;
-    case 'disarm':
-      await disarmTrap();
-      break;
-    case 'trigger':
-      await triggerTrap();
-      break;
-    case 'loot':
-      await lootBody();
-      break;
-    case 'ignore_body':
-      await skipBody();
-      break;
-    case 'open':
-      await openTreasure();
-      break;
-    case 'ignore_treasure':
-      await skipTreasure();
-      break;
     case 'pray':
       await useShrine();
-      break;
-    case 'shop':
-      await openShop();
-      break;
-    case 'refine':
-      await openBlacksmith();
-      break;
-    case 'upgrade':
-      await openChipUpgradeModal();
       break;
     default:
       console.warn('Unknown room action:', actionId);
@@ -470,122 +411,6 @@ export async function startRoomEncounter() {
     narration.showNarration(result.narration || FALLBACK_NARRATIONS?.combatStart?.(enemy) || '戦闘開始！');
     updateUI();
     triggerJpdbParse();
-  }
-}
-
-/**
- * Disarm trap
- */
-export async function disarmTrap() {
-  const result = await apiDisarmTrap();
-  if (result) {
-    // Update local state from server response
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    narration.showNarration(result.narration);
-    updateUI();
-    triggerJpdbParse();
-
-    // Check for defeat
-    if (result.type === 'defeat') {
-      await handlePlayerDefeat(result);
-    }
-  }
-}
-
-/**
- * Trigger trap
- */
-export async function triggerTrap() {
-  const result = await apiTriggerTrap();
-  if (result) {
-    // Update local state from server response
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    narration.showNarration(result.narration);
-    updateUI();
-    triggerJpdbParse();
-
-    // Check for defeat
-    if (result.type === 'defeat') {
-      await handlePlayerDefeat(result);
-    }
-  }
-}
-
-/**
- * Loot body
- */
-export async function lootBody() {
-  const result = await apiLootBody();
-  if (result) {
-    // Update local state from server response
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    narration.showNarration(result.narration);
-    updateUI();
-    triggerJpdbParse();
-
-    // Check for defeat from trapped body
-    if (result.type === 'defeat') {
-      await handlePlayerDefeat(result);
-    }
-  }
-}
-
-/**
- * Skip body
- */
-export async function skipBody() {
-  const result = await apiSkipBody();
-  if (result) {
-    // Update local state from server response
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    narration.showNarration(result.narration);
-    updateUI();
-    triggerJpdbParse();
-  }
-}
-
-/**
- * Skip treasure
- */
-export async function skipTreasure() {
-  const result = await apiSkipTreasure();
-  if (result) {
-    // Update local state from server response
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    narration.showNarration(result.narration);
-    updateUI();
-    triggerJpdbParse();
-  }
-}
-
-/**
- * Open treasure
- */
-export async function openTreasure() {
-  const result = await apiOpenTreasure();
-  if (result) {
-    // Update local state from server response
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    narration.showNarration(result.narration);
-    updateUI();
-    triggerJpdbParse();
-
-    // Check for defeat from trapped chest
-    if (result.type === 'defeat') {
-      await handlePlayerDefeat(result);
-    }
   }
 }
 

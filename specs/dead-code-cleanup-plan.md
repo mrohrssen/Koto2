@@ -232,7 +232,7 @@ The unused turn-based `/attack` system (never called by frontend):
 
 ---
 
-## Phase 9: Frontend Cleanup
+## Phase 9: Frontend Cleanup ✅ DONE
 
 ### `public/js/ui/economy.js`
 - DELETE: blacksmith functions, merchant shop functions, `formatItemStats()`
@@ -375,4 +375,11 @@ The "realtime" naming is confusing since it's actually a vocab-pause turn-based 
   - server.js: removed dead prefetch imports, `triggerPrefetch()`, `queueRunStartPrefetch()`, `prefetchGeneratorFn`, cached narration check
   - routes: removed `eagerPrefetchForRun`/`queueRunStartPrefetch`/`clearCombatCache` from deps chain (index.js, game/index.js, player.js, run.js)
   - 84/84 E2E pass, 49/49 unit tests pass
-- **Phases 9-10**: Pending
+- **Phase 9**: ✅ Complete (~981 lines removed, 5 files changed)
+  - economy.js: deleted merchant shop (openShop, buyItem), blacksmith (openBlacksmith, refineItemHandler), chip upgrade modal (openChipUpgradeModal, performChipUpgrade), RARITY_NAMES constant, equipment stats section from formatItemStats
+  - character.js: deleted equipItem, unequipItemHandler, allocateStatPoint, playerMpFill/SP bar updates, dead equipment slots (body/shield/accessory) from updateEquipment, items section from updateInventory
+  - exploration.js: deleted dead room functions (disarmTrap, triggerTrap, lootBody, skipBody, openTreasure, skipTreasure), dead room types from getRoomIcon/getRoomTypeName (trap, body, treasure, merchant, blacksmith), dead action handlers from handleRoomAction and showRoomActions
+  - api.js: deleted dead endpoint functions (allocateStat, disarmTrap, triggerTrap, lootBody, skipBody, openTreasure, skipTreasure, getRefinePreview, refineItem, unequipItem)
+  - game.js: removed dead API imports (13 functions), dead init callbacks (openBlacksmith, openChipUpgradeModal, trap/body/treasure APIs, refine APIs, allocateStat, unequipItem), dead delegation functions, dead window exports, dead setupEventListeners (blacksmith/chip-upgrade modals)
+  - 84/84 E2E pass, 49/49 unit tests pass
+- **Phase 10**: Pending

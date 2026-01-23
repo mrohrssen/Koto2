@@ -132,15 +132,6 @@ async function createPlayer(name, stats, statPoints) {
 }
 
 /**
- * Allocate a stat point
- * @param {string} stat - Stat key (str, agi, vit, int, dex, luk)
- * @returns {Promise<object>} Result with success and state
- */
-async function allocateStat(stat) {
-  return apiCall('/allocate-stat', 'POST', { stat });
-}
-
-/**
  * Purchase a meta-progression upgrade
  * @param {string} upgradeId - Upgrade identifier
  * @returns {Promise<object>} Result with success and upgrade info
@@ -255,36 +246,6 @@ async function roomEncounter() {
   return apiCall('/room-encounter', 'POST');
 }
 
-/** Disarm a trap */
-async function disarmTrap() {
-  return apiCall('/disarm', 'POST');
-}
-
-/** Trigger a trap */
-async function triggerTrap() {
-  return apiCall('/trigger-trap', 'POST');
-}
-
-/** Loot a body */
-async function lootBody() {
-  return apiCall('/loot', 'POST');
-}
-
-/** Skip looting a body */
-async function skipBody() {
-  return apiCall('/skip-body', 'POST');
-}
-
-/** Open a treasure chest */
-async function openTreasure() {
-  return apiCall('/open-treasure', 'POST');
-}
-
-/** Skip a treasure chest */
-async function skipTreasure() {
-  return apiCall('/skip-treasure', 'POST');
-}
-
 /** Use a shrine */
 async function useShrine() {
   return apiCall('/use-shrine', 'POST');
@@ -362,51 +323,6 @@ async function unequipChip(equipmentSlot) {
     return await response.json();
   } catch (error) {
     console.error('Failed to unequip chip:', error);
-    return { error: 'Network error' };
-  }
-}
-
-/** Get refine preview for blacksmith */
-async function getRefinePreview() {
-  try {
-    const response = await fetch('/api/game/refine-preview');
-    return await response.json();
-  } catch (error) {
-    console.error('Failed to get refine preview:', error);
-    return { error: 'Network error' };
-  }
-}
-
-/** Refine an item at the blacksmith
- * @param {string} slot - Equipment slot to refine
- */
-async function refineItem(slot) {
-  try {
-    const response = await fetch('/api/game/refine', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slot })
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('Failed to refine item:', error);
-    return { error: 'Network error' };
-  }
-}
-
-/** Unequip an equipment item
- * @param {string} slot - Equipment slot to unequip
- */
-async function unequipItem(slot) {
-  try {
-    const response = await fetch('/api/game/unequip', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slot })
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('Failed to unequip item:', error);
     return { error: 'Network error' };
   }
 }
@@ -533,7 +449,6 @@ export {
   getSettings,
   // Player management endpoints
   createPlayer,
-  allocateStat,
   purchaseUpgrade,
   // Run management endpoints
   startRun,
@@ -545,12 +460,6 @@ export {
   // Room exploration endpoints
   proceed,
   roomEncounter,
-  disarmTrap,
-  triggerTrap,
-  lootBody,
-  skipBody,
-  openTreasure,
-  skipTreasure,
   useShrine,
   // Combat endpoints
   startEncounter,
@@ -562,9 +471,6 @@ export {
   postCombatShopRefresh,
   equipChip,
   unequipChip,
-  getRefinePreview,
-  refineItem,
-  unequipItem,
   nextFloor,
   getChipLoadout,
   // Vocab/JPDB endpoints
