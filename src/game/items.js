@@ -25,6 +25,8 @@ export {
   PIPELINE_EFFECTS,
   executeChipPipeline,
   getWeaponPipelineChips,
+  // Charge management
+  resetChipCharge,
 
   // Stub helpers (backwards compat)
   getItem,

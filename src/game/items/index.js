@@ -26,7 +26,9 @@ export {
   getChipLoadout,
   // Pipeline execution
   executeChipPipeline,
-  getWeaponPipelineChips
+  getWeaponPipelineChips,
+  // Charge management
+  resetChipCharge
 } from './chips.js';
 
 import { CHIPS } from './chips.js';

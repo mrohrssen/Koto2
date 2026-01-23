@@ -35,6 +35,7 @@ import {
   tickStatusEffects
 } from '../combat/index.js';
 import { generatePostCombatShop, getNextWardOptions } from '../rooms.js';
+import { resetChipCharge } from '../items/chips.js';
 import { getSimpleNarration } from '../dm.js';
 
 /**
@@ -162,6 +163,7 @@ export class CombatService {
               weapon.equippedChips.splice(eqIndex, 1);
             }
           }
+          resetChipCharge(this.gm.run.player, chipId);
           // Track total chips destroyed for Phoenix chip
           this.gm.run.player._runChipsDestroyed = (this.gm.run.player._runChipsDestroyed || 0) + 1;
         }
@@ -193,6 +195,7 @@ export class CombatService {
           if (chipIndex >= 0) this.gm.run.player.chips.splice(chipIndex, 1);
           const eqIndex = weapon.equippedChips.indexOf(victimId);
           if (eqIndex >= 0) weapon.equippedChips.splice(eqIndex, 1);
+          resetChipCharge(this.gm.run.player, victimId);
           this.gm.run.player._runChipsDestroyed = (this.gm.run.player._runChipsDestroyed || 0) + 1;
           playerResult.randomChipDestroyed = victimId;
         }

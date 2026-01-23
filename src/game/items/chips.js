@@ -875,6 +875,9 @@ export function unequipChip(player, equipmentSlot, chipId) {
   // Remove from equipment (chip stays in inventory)
   equipment.equippedChips = equipment.equippedChips.filter(id => id !== chipId);
 
+  // Reset charge when unequipped
+  resetChipCharge(player, chipId);
+
   return {
     success: true,
     chipId,
