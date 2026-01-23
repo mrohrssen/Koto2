@@ -3,9 +3,8 @@
  * @module src/game/services/exploration-service
  *
  * PURPOSE:
- * Handles all dungeon exploration logic including ward/floor selection,
- * room navigation, room interactions (traps, bodies, treasures, shrines),
- * shops (post-combat and merchant), and blacksmith services.
+ * Handles dungeon exploration logic including ward/floor selection,
+ * room navigation, shrine interaction, and post-combat chip shop.
  *
  * KEY EXPORTS:
  * - ExplorationService (class) - Exploration and room interaction service
@@ -13,9 +12,7 @@
  * DEPENDENCIES:
  * - GameManager reference (this.gm) for state access and cross-service calls
  * - rooms.js for ward/room generation and utilities
- * - items.js for inventory and equipment management
- * - combat.js for refinement mechanics
- * - items/chips.js for chip upgrade mechanics
+ * - items.js for item lookup
  */
 
 
@@ -26,12 +23,6 @@ import {
   generateFloorRooms,
   getRoomEntryNarration,
   getRoomActions,
-  generateBodyLoot,
-  generateChestLoot,
-  attemptDisarm,
-  attemptAvoid,
-  calculateTrapDamage,
-  TRAP_TYPES,
   generatePostCombatShop,
   STARTING_WARDS,
   getStartingWardOptions,
@@ -264,226 +255,6 @@ export class ExplorationService {
   // ============ ROOM INTERACTIONS ============
 
   /**
-   * Interact with trap - attempt to disarm
-   */
-  disarmTrap() {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'trap') {
-      throw new Error('No trap to disarm');
-    }
-
-    if (room.trap.triggered || room.trap.disarmed) {
-      throw new Error('Trap already handled');
-    }
-
-    const result = attemptDisarm(room.trap, this.gm.run.player);
-
-    if (result.success) {
-      room.trap.disarmed = true;
-      room.interacted = true;
-      this.gm.run.stats.trapsDisarmed++;
-      this.gm.run.player.xp += result.xpReward;
-      this.gm.narrate(`罠を解除した！${result.xpReward} XPを獲得！`);
-    } else {
-      room.trap.triggered = true;
-      room.interacted = true;
-      this.gm.run.player.hp = Math.max(0, this.gm.run.player.hp - result.damage);
-      this.gm.run.stats.damageTaken += result.damage;
-      this.gm.narrate(`罠の解除に失敗！${result.damage}ダメージ！`);
-
-      if (this.gm.run.player.hp <= 0) {
-        return this.gm._handleDefeat();
-      }
-    }
-
-    this.gm.emitState();
-    return { type: result.success ? 'disarm_success' : 'disarm_fail', ...result };
-  }
-
-  /**
-   * Interact with trap - attempt to avoid/trigger
-   */
-  triggerTrap() {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'trap') {
-      throw new Error('No trap to trigger');
-    }
-
-    if (room.trap.triggered || room.trap.disarmed) {
-      throw new Error('Trap already handled');
-    }
-
-    const result = attemptAvoid(room.trap, this.gm.run.player);
-    room.trap.triggered = true;
-    room.interacted = true;
-
-    if (result.avoided) {
-      this.gm.narrate('罠を避けた！素早く通り抜けた。');
-    } else {
-      this.gm.run.player.hp = Math.max(0, this.gm.run.player.hp - result.damage);
-      this.gm.run.stats.damageTaken += result.damage;
-      this.gm.narrate(`罠に引っかかった！${result.damage}ダメージ！`);
-
-      if (this.gm.run.player.hp <= 0) {
-        return this.gm._handleDefeat();
-      }
-    }
-
-    this.gm.emitState();
-    return { type: result.avoided ? 'avoid_success' : 'avoid_fail', ...result };
-  }
-
-  /**
-   * Loot a body
-   */
-  lootBody() {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'body') {
-      throw new Error('No body to loot');
-    }
-
-    if (room.body.looted) {
-      throw new Error('Body already looted');
-    }
-
-    if (room.body.skipped) {
-      throw new Error('Body was ignored');
-    }
-
-    room.body.looted = true;
-    room.interacted = true;
-
-    // Check for trap
-    let trapTriggered = false;
-    let trapDamage = 0;
-    if (room.body.trapped) {
-      const trap = TRAP_TYPES[room.body.trapType];
-      trapDamage = calculateTrapDamage(trap);
-      this.gm.run.player.hp = Math.max(0, this.gm.run.player.hp - trapDamage);
-      this.gm.run.stats.damageTaken += trapDamage;
-      trapTriggered = true;
-      this.gm.narrate(`遺体を調べた...罠だ！${trapDamage}ダメージ！`);
-
-      if (this.gm.run.player.hp <= 0) {
-        return this.gm._handleDefeat();
-      }
-    }
-
-    const loot = generateBodyLoot(room.body.lootTier);
-
-    // Add loot to player inventory
-    for (const item of loot) {
-      this.addItemToInventory(item.itemId, item.quantity);
-    }
-
-    const lootDesc = loot.length > 0
-      ? `見つけた: ${loot.map(l => `${l.itemId}×${l.quantity}`).join(', ')}`
-      : '何も見つからなかった。';
-
-    if (!trapTriggered) {
-      this.gm.narrate(`遺体を調べた。${lootDesc}`);
-    } else {
-      this.gm.narrate(`それでも...${lootDesc}`);
-    }
-
-    this.gm.emitState();
-    return { type: 'loot', loot, trapped: trapTriggered, damage: trapDamage };
-  }
-
-  /**
-   * Skip looting a body (ignore it)
-   */
-  skipBody() {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'body') {
-      throw new Error('No body to skip');
-    }
-
-    if (room.body.looted || room.body.skipped) {
-      throw new Error('Body already interacted with');
-    }
-
-    room.body.skipped = true;
-    room.interacted = true;
-    this.gm.narrate('遺体を無視して進むことにした。');
-
-    this.gm.emitState();
-    return { type: 'skip', skipped: 'body' };
-  }
-
-  /**
-   * Open a treasure chest
-   */
-  openTreasure() {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'treasure') {
-      throw new Error('No treasure to open');
-    }
-
-    if (room.treasure.opened) {
-      throw new Error('Treasure already opened');
-    }
-
-    room.treasure.opened = true;
-    room.interacted = true;
-    this.gm.run.stats.treasuresOpened++;
-
-    // Check for trap
-    if (room.treasure.trapped) {
-      const trap = TRAP_TYPES[room.treasure.trapType];
-      const damage = calculateTrapDamage(trap);
-      this.gm.run.player.hp = Math.max(0, this.gm.run.player.hp - damage);
-      this.gm.run.stats.damageTaken += damage;
-      this.gm.narrate(`宝箱を開けた...罠だ！${damage}ダメージ！`);
-
-      if (this.gm.run.player.hp <= 0) {
-        return this.gm._handleDefeat();
-      }
-    }
-
-    const loot = generateChestLoot(room.treasure.tier);
-
-    // Add loot to player inventory
-    for (const item of loot) {
-      this.addItemToInventory(item.itemId, item.quantity);
-    }
-
-    const lootDesc = loot.length > 0
-      ? `見つけた: ${loot.map(l => `${l.itemId}×${l.quantity}`).join(', ')}`
-      : '空だった...';
-
-    if (!room.treasure.trapped) {
-      this.gm.narrate(`宝箱を開けた！${lootDesc}`);
-    } else {
-      this.gm.narrate(`それでも...${lootDesc}`);
-    }
-
-    this.gm.emitState();
-    return { type: 'treasure', loot, trapped: room.treasure.trapped };
-  }
-
-  /**
-   * Skip opening a treasure chest (ignore it)
-   */
-  skipTreasure() {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'treasure') {
-      throw new Error('No treasure to skip');
-    }
-
-    if (room.treasure.opened || room.treasure.skipped) {
-      throw new Error('Treasure already interacted with');
-    }
-
-    room.treasure.skipped = true;
-    room.interacted = true;
-    this.gm.narrate('宝箱を無視して進むことにした。怪しすぎる。');
-
-    this.gm.emitState();
-    return { type: 'skip', skipped: 'treasure' };
-  }
-
-  /**
    * Use a shrine to heal
    */
   useShrine() {
@@ -654,73 +425,6 @@ export class ExplorationService {
     return {
       success: true,
       items: shopItems
-    };
-  }
-
-  // ============ MERCHANT SHOP ============
-
-  /**
-   * Get merchant inventory for current room
-   */
-  getShopInventory() {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'merchant') {
-      throw new Error('No merchant here');
-    }
-
-    return {
-      inventory: room.merchant.inventory,
-      playerGold: this.gm.run.player.gold
-    };
-  }
-
-  /**
-   * Buy item from merchant
-   */
-  buyFromShop(itemId, quantity = 1) {
-    const room = this.getCurrentRoom();
-    if (!room || room.type !== 'merchant') {
-      throw new Error('No merchant here');
-    }
-
-    // Find item in merchant inventory
-    const shopItem = room.merchant.inventory.find(i => i.itemId === itemId);
-    if (!shopItem) {
-      throw new Error('Item not available');
-    }
-
-    if (shopItem.quantity < quantity) {
-      throw new Error('Not enough stock');
-    }
-
-    const totalCost = shopItem.price * quantity;
-    if (this.gm.run.player.gold < totalCost) {
-      throw new Error('Not enough gold');
-    }
-
-    // Make the purchase
-    this.gm.run.player.gold -= totalCost;
-    shopItem.quantity -= quantity;
-
-    // Remove item from shop if sold out
-    if (shopItem.quantity <= 0) {
-      room.merchant.inventory = room.merchant.inventory.filter(i => i.itemId !== itemId);
-    }
-
-    // Add item to player inventory
-    this.addItemToInventory(itemId, quantity);
-
-    this.gm.narrate(`${quantity}個を${totalCost}Gで買った。`);
-
-    this.gm.emitState();
-
-
-    return {
-      type: 'purchase',
-      itemId,
-      quantity,
-      cost: totalCost,
-      remainingGold: this.gm.run.player.gold
     };
   }
 

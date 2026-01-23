@@ -163,7 +163,7 @@ The unused turn-based `/attack` system (never called by frontend):
 
 ---
 
-## Phase 5: Remove Dead Room Types
+## Phase 5: Remove Dead Room Types ✅ DONE
 
 ### `src/game/rooms.js`
 - Keep only: `encounter`, `shrine`, `boss`
@@ -334,4 +334,14 @@ The "realtime" naming is confusing since it's actually a vocab-pause turn-based 
   - Deleted `attack()`, `useItem()`, `useSkill()`, `enemyTurn()` from api.js
   - Removed unused combat imports from combat-service.js, combat/index.js, combat.js barrel
   - 84/84 E2E pass, 49/49 unit tests pass
-- **Phases 5-10**: Pending
+- **Phase 5**: ✅ Complete (~998 lines removed, 4 files changed)
+  - Simplified ROOM_TYPES to only encounter/shrine/boss
+  - Simplified generateFloorRooms: N encounters + optional shrine (40% chance) + boss
+  - Removed: TRAP_TYPES, BODY_LOOT, CHEST_LOOT, BODY_DESCRIPTIONS, EMPTY_DESCRIPTIONS, ROOM_WEIGHTS
+  - Removed: generateMerchantInventory, generateBodyLoot, generateChestLoot, calculateTrapDamage, attemptDisarm, attemptAvoid, selectLootTier, selectTreasureTier, selectRoomType
+  - Removed exploration-service methods: disarmTrap, triggerTrap, lootBody, skipBody, openTreasure, skipTreasure, getShopInventory, buyFromShop (merchant)
+  - Removed economy routes: /disarm, /trigger-trap, /loot, /skip-body, /skip-treasure, /open-treasure, /shop GET, /shop/buy POST, /shop-buy
+  - Removed loop.js delegations: disarmTrap, triggerTrap, lootBody, skipBody, skipTreasure, openTreasure, getShopInventory, buyFromShop
+  - Kept: /shop-skip (used by frontend for post-combat shop skip)
+  - 84/84 E2E pass, 49/49 unit tests pass
+- **Phases 6-10**: Pending

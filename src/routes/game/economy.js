@@ -1,7 +1,7 @@
 /**
  * @fileoverview Economy routes
  *
- * Handles shop, treasure, traps, shrines, refining, upgrades
+ * Handles post-combat chip shop, shrines, and meta-progression upgrades
  */
 
 import { Router } from 'express';
@@ -22,29 +22,6 @@ export default function createEconomyRoutes({
   generateGameNarration
 }) {
   const router = Router();
-
-  // Shop buy
-  router.post('/shop-buy', async (req, res) => {
-    const { itemId } = req.body;
-    try {
-      const result = gameManager.buyFromShop(itemId);
-      saveGameData();
-      res.json({ ...result, state: getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Shop skip
-  router.post('/shop-skip', async (req, res) => {
-    try {
-      const result = gameManager.skipShop();
-      saveGameData();
-      res.json({ ...result, state: getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
 
   // Post-combat shop buy
   router.post('/post-combat-shop-buy', async (req, res) => {
@@ -69,91 +46,12 @@ export default function createEconomyRoutes({
     }
   });
 
-  // Disarm trap
-  router.post('/disarm', async (req, res) => {
+  // Skip post-combat shop
+  router.post('/shop-skip', async (req, res) => {
     try {
-      const result = gameManager.disarmTrap();
-
-      const narration = await generateGameNarration(result.success ? 'trapDisarm' : 'trapFail', {
-        player: gameManager.run.player,
-        trap: result.trap
-      }, req.body);
-
-      saveGameData();
-      res.json({ ...result, state: getEnrichedGameState(), narration });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Trigger trap
-  router.post('/trigger-trap', async (req, res) => {
-    try {
-      const result = gameManager.triggerTrap();
-
-      const narration = await generateGameNarration('trapTrigger', {
-        player: gameManager.run.player,
-        damage: result.damage
-      }, req.body);
-
-      saveGameData();
-      res.json({ ...result, state: getEnrichedGameState(), narration });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Loot body
-  router.post('/loot', async (req, res) => {
-    try {
-      const result = gameManager.lootBody();
-
-      const narration = await generateGameNarration('loot', {
-        player: gameManager.run.player,
-        loot: result.loot
-      }, req.body);
-
-      saveGameData();
-      res.json({ ...result, state: getEnrichedGameState(), narration });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Skip body
-  router.post('/skip-body', async (req, res) => {
-    try {
-      const result = gameManager.skipBody();
+      const result = gameManager.skipShop();
       saveGameData();
       res.json({ ...result, state: getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Skip treasure
-  router.post('/skip-treasure', async (req, res) => {
-    try {
-      const result = gameManager.skipTreasure();
-      saveGameData();
-      res.json({ ...result, state: getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Open treasure
-  router.post('/open-treasure', async (req, res) => {
-    try {
-      const result = gameManager.openTreasure();
-
-      const narration = await generateGameNarration('treasure', {
-        player: gameManager.run.player,
-        treasure: result.item
-      }, req.body);
-
-      saveGameData();
-      res.json({ ...result, state: getEnrichedGameState(), narration });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -171,24 +69,6 @@ export default function createEconomyRoutes({
 
       saveGameData();
       res.json({ ...result, state: getEnrichedGameState(), narration });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Get shop inventory
-  router.get('/shop', (req, res) => {
-    const shop = gameManager.getShopInventory();
-    res.json(shop || { items: [] });
-  });
-
-  // Shop buy (alternative endpoint)
-  router.post('/shop/buy', (req, res) => {
-    const { itemId } = req.body;
-    try {
-      const result = gameManager.buyFromShop(itemId);
-      saveGameData();
-      res.json({ ...result, state: getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }

@@ -603,66 +603,10 @@ export class GameManager {
   }
 
   /**
-   * Interact with trap - attempt to disarm
-   */
-  disarmTrap() {
-    return this.explorationService.disarmTrap();
-  }
-
-  /**
-   * Interact with trap - attempt to avoid/trigger
-   */
-  triggerTrap() {
-    return this.explorationService.triggerTrap();
-  }
-
-  /**
-   * Loot a body
-   */
-  lootBody() {
-    return this.explorationService.lootBody();
-  }
-
-  /**
-   * Skip looting a body (ignore it)
-   */
-  skipBody() {
-    return this.explorationService.skipBody();
-  }
-
-  /**
-   * Skip opening a treasure chest (ignore it)
-   */
-  skipTreasure() {
-    return this.explorationService.skipTreasure();
-  }
-
-  /**
-   * Open a treasure chest
-   */
-  openTreasure() {
-    return this.explorationService.openTreasure();
-  }
-
-  /**
    * Use a shrine to heal
    */
   useShrine() {
     return this.explorationService.useShrine();
-  }
-
-  /**
-   * Get merchant inventory for current room
-   */
-  getShopInventory() {
-    return this.explorationService.getShopInventory();
-  }
-
-  /**
-   * Buy item from merchant
-   */
-  buyFromShop(itemId, quantity = 1) {
-    return this.explorationService.buyFromShop(itemId, quantity);
   }
 
   /**
