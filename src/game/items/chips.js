@@ -943,3 +943,37 @@ export function isChipSkillReady(player, chipId) {
   const charge = getChipCharge(player, chipId);
   return charge >= chip.skill.chargesRequired;
 }
+
+// ============ CHIP LEVEL HELPERS ============
+
+export function getChipLevel(player, chipId) {
+  return player._chipLevels?.[chipId] || 1;
+}
+
+export function setChipLevel(player, chipId, level) {
+  if (!player._chipLevels) player._chipLevels = {};
+  player._chipLevels[chipId] = Math.max(1, Math.min(7, level));
+}
+
+export function getScaledEffectValue(chip, level) {
+  const effect = chip.effects?.pipeline;
+  if (!effect || level <= 1) return effect?.value;
+
+  const scalingPerLevel = 0.05;
+  const scaleFactor = 1 + (level - 1) * scalingPerLevel;
+  const value = effect.value;
+  const type = effect.type;
+
+  // Multiply types: scale the bonus portion (value - 1), keep base 1.0
+  if (type === 'multiply' || type === 'conditional' || type === 'vsBoss' || type === 'destroyedMultiplier') {
+    return 1 + (value - 1) * scaleFactor;
+  }
+
+  // CritMod: scale without floor (keep decimal precision)
+  if (type === 'critMod') {
+    return value * scaleFactor;
+  }
+
+  // All others (flatAdd, stacking, damageAndHeal, killCounter, riskyFlat, perEmptySlot, emptySlots, nthAttack): floor
+  return Math.floor(value * scaleFactor);
+}
