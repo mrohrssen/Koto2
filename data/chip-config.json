@@ -64,5 +64,13 @@
       "epic": 0.25
     },
     "rarityOrder": ["common", "uncommon", "rare", "epic", "legendary"]
+  },
+  "levelConfig": {
+    "maxLevel": 7,
+    "scalingPerLevel": 0.05
+  },
+  "skillConfig": {
+    "defaultCharges": 5,
+    "chargePerTurn": 1
   }
 }
