@@ -297,6 +297,12 @@ function processPipelineChip(chip, state) {
   const effect = chip.effects?.pipeline;
   if (!effect) return { chipId: chip.id, skipped: true };
 
+  // Apply level scaling to effect value
+  let effectValue = effect.value;
+  if (state.player) {
+    effectValue = getScaledEffectValue(chip, getChipLevel(state.player, chip.id));
+  }
+
   // Roll trigger chance
   const triggered = Math.random() < effect.triggerChance;
   if (!triggered) {
@@ -325,16 +331,16 @@ function processPipelineChip(chip, state) {
 
   switch (effect.type) {
     case 'flatAdd':
-      newDamage = state.currentDamage + effect.value;
+      newDamage = state.currentDamage + effectValue;
       break;
     case 'multiply':
-      newDamage = state.currentDamage * effect.value;
+      newDamage = state.currentDamage * effectValue;
       break;
     case 'conditional':
-      newDamage = state.currentDamage * effect.value;
+      newDamage = state.currentDamage * effectValue;
       break;
     case 'critMod':
-      critChanceBonus = effect.value;
+      critChanceBonus = effectValue;
       break;
     case 'recursion':
       // Signal to restart pipeline - handled in executeChipPipeline
@@ -349,7 +355,7 @@ function processPipelineChip(chip, state) {
       };
     case 'sacrifice':
       // 10× damage, mark chip for permanent destruction
-      newDamage = state.currentDamage * effect.value;
+      newDamage = state.currentDamage * effectValue;
       return {
         chipId: chip.id,
         chipName: chip.nameEn || chip.name,
@@ -366,7 +372,7 @@ function processPipelineChip(chip, state) {
       if (!state.combatStacks[chip.id]) state.combatStacks[chip.id] = 0;
       state.combatStacks[chip.id]++;
       const stackCount = state.combatStacks[chip.id];
-      const stackDamage = effect.value * stackCount;
+      const stackDamage = effectValue * stackCount;
       newDamage = state.currentDamage + stackDamage;
       return {
         chipId: chip.id,
@@ -384,7 +390,7 @@ function processPipelineChip(chip, state) {
       const usedSlots = state.weaponUsedSlots || 0;
       const emptySlots = totalSlots - usedSlots;
       if (emptySlots >= effect.requiredEmpty) {
-        newDamage = state.currentDamage + effect.value;
+        newDamage = state.currentDamage + effectValue;
         return {
           chipId: chip.id,
           chipName: chip.nameEn || chip.name,
@@ -408,7 +414,7 @@ function processPipelineChip(chip, state) {
       }
     case 'damageAndHeal':
       // Add damage and heal the player
-      newDamage = state.currentDamage + effect.value;
+      newDamage = state.currentDamage + effectValue;
       return {
         chipId: chip.id,
         chipName: chip.nameEn || chip.name,
@@ -421,7 +427,7 @@ function processPipelineChip(chip, state) {
     case 'killCounter':
       // Add damage based on total kills this run
       const kills = state.runKills || 0;
-      const killBonus = effect.value * kills;
+      const killBonus = effectValue * kills;
       newDamage = state.currentDamage + killBonus;
       return {
         chipId: chip.id,
@@ -436,7 +442,7 @@ function processPipelineChip(chip, state) {
     case 'vsBoss':
       // Multiply damage only against bosses
       if (state.target?.isBoss) {
-        newDamage = state.currentDamage * effect.value;
+        newDamage = state.currentDamage * effectValue;
         return {
           chipId: chip.id,
           chipName: chip.nameEn || chip.name,
@@ -474,7 +480,7 @@ function processPipelineChip(chip, state) {
       };
     case 'riskyFlat':
       // Add flat damage but risk destroying a random chip
-      newDamage = state.currentDamage + effect.value;
+      newDamage = state.currentDamage + effectValue;
       const riskyResult = {
         chipId: chip.id,
         chipName: chip.nameEn || chip.name,
@@ -541,7 +547,7 @@ function processPipelineChip(chip, state) {
       const totalSlots2 = state.weaponMaxSlots || 5;
       const usedSlots2 = state.weaponUsedSlots || 0;
       const emptySlots2 = totalSlots2 - usedSlots2;
-      const emptyBonus = effect.value * emptySlots2;
+      const emptyBonus = effectValue * emptySlots2;
       newDamage = state.currentDamage + emptyBonus;
       return {
         chipId: chip.id,
@@ -619,7 +625,8 @@ export function executeChipPipeline(weaponChips, context) {
     weaponUsedSlots: context.weaponUsedSlots || 0,
     totalHealPlayer: 0,
     runKills: context.runKills || 0,
-    runChipsDestroyed: context.runChipsDestroyed || 0
+    runChipsDestroyed: context.runChipsDestroyed || 0,
+    player: context.player || null
   };
 
   const MAX_RECURSIONS = 10; // Safety cap
