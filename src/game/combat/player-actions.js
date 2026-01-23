@@ -65,7 +65,8 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
         weaponMaxSlots,
         weaponUsedSlots,
         runKills: player._runKills || 0,
-        runChipsDestroyed: player._runChipsDestroyed || 0
+        runChipsDestroyed: player._runChipsDestroyed || 0,
+        player
       });
 
       player._combatStacks = pipelineResult.combatStacks;
