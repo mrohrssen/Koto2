@@ -1,534 +1,525 @@
-/**
- * Game.js - Main UI Orchestrator (Mobile-First Rewrite)
- *
- * Initializes UI modules, manages game state, routes phases to renderers.
- * Existing server API and game logic remain unchanged.
- */
-
+// ============ IMPORTS ============
+import { store } from './js/store.js';
+import * as tts from './js/tts.js';
+import * as settings from './js/settings.js';
+import * as wordPractice from './js/word-practice.js';
+import * as explorationUI from './js/ui/exploration.js';
+import * as economyUI from './js/ui/economy.js';
+import * as characterUI from './js/ui/character.js';
+import * as modalsUI from './js/ui/modals.js';
+import * as combatLoopUI from './js/ui/combat-loop.js';
 import { dom } from './js/dom.js';
-import * as scene from './js/ui/scene.js';
-import * as chipRow from './js/ui/chip-row.js';
-import * as hpBar from './js/ui/hp-bar.js';
 import * as actions from './js/ui/actions.js';
 import * as takeover from './js/ui/takeover.js';
-import { getApiKeys, saveApiKeys, hasJpdbApiKey } from './js/settings.js';
-import * as tts from './js/tts.js';
+import * as hpBar from './js/ui/hp-bar.js';
+import * as chipRow from './js/ui/chip-row.js';
+import * as scene from './js/ui/scene.js';
 
-// ============ GAME STATE ============
+// API imports - these are the server communication functions
+import {
+  getGameState as apiGetGameState,
+  createPlayer as apiCreatePlayer,
+  startRun as apiStartRun,
+  forfeitRun as apiForfeitRun,
+  getStartingWards as apiGetStartingWards,
+  selectStartingWard as apiSelectStartingWard,
+  getNextWardOptions as apiGetNextWardOptions,
+  selectNextWard as apiSelectNextWard,
+  proceed as apiProceed,
+  roomEncounter as apiRoomEncounter,
+  startEncounter as apiStartEncounter,
+  startBoss as apiStartBoss,
+  claimStartingChip as apiClaimStartingChip,
+  postCombatShopBuy as apiPostCombatShopBuy,
+  shopSkip as apiShopSkip,
+  equipChip as apiEquipChip,
+  unequipChip as apiUnequipChip,
+  nextFloor as apiNextFloor,
+  getChipLoadout as apiGetChipLoadout,
+  sendJpdbReview as apiSendJpdbReview
+} from './js/api.js';
 
-let gameState = null;
-let combatActive = false;
+const API_BASE = '';
 
-// ============ INITIALIZATION ============
+// ============ STATE ============
+let gameState = {
+  player: null,
+  run: null,
+  combat: null,
+  phase: 'no_save'
+};
 
-document.addEventListener('DOMContentLoaded', async () => {
-  // Init UI modules
-  takeover.init();
-  chipRow.init({ useSkillCallback: handleUseSkill });
-  actions.init({
-    equipBots: handleEquipBots,
-    contextAction: handleContextAction,
-    cardSwipe: handleCardSwipe,
-    cardFlip: handleCardFlip,
-  });
+store.set('gameState', gameState);
 
-  // Utility buttons
-  dom.settingsBtn.addEventListener('click', openSettings);
-  dom.resetRunBtn.addEventListener('click', handleResetRun);
-
-  // Load game
-  await loadGameState();
-  updateUI();
-});
-
-// ============ GAME STATE MANAGEMENT ============
-
-async function loadGameState() {
-  try {
-    const response = await fetch('/api/game/state');
-    gameState = await response.json();
-  } catch (err) {
-    console.error('Failed to load game state:', err);
-    gameState = { phase: 'no_save' };
-  }
+function updateGameState(newState) {
+  gameState = newState;
+  window.gameState = gameState;
+  store.set('gameState', gameState);
 }
 
-// ============ MASTER UI ROUTER ============
+// Enemy dialogue state
+let enemyDialogueActive = false;
+let dialogueDismissResolve = null;
+let dialogueDismissPromise = null;
 
+// Flash card state
+let currentFlashCardWord = null;
+
+// Chip loadout cache
+let chipLoadoutCache = null;
+
+// ============ UTILITY ============
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function shuffleArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ============ UI UPDATES ============
 function updateUI() {
-  if (!gameState) return;
-
-  const phase = gameState.phase;
-
-  // Status bar
   updateStatusBar();
-
-  // Scene area
   updateScene();
-
-  // Chip row + HP bar (visible in all non-takeover phases)
-  const showGameUI = !['no_save'].includes(phase);
-  dom.chipRow.classList.toggle('hidden', !showGameUI);
-  dom.playerHpContainer.classList.toggle('hidden', !showGameUI);
-
-  if (showGameUI && gameState.player) {
-    renderChips();
-    hpBar.updatePlayerHP(gameState.player.hp, gameState.player.maxHp);
-  }
-
-  // Route to phase-specific action area
-  switch (phase) {
-    case 'no_save':
-      renderNoSave();
-      break;
-    case 'hub':
-      renderHub();
-      break;
-    case 'ward_selection':
-      renderWardSelection();
-      break;
-    case 'exploring':
-      renderExploring();
-      break;
-    case 'room':
-    case 'room_encounter':
-      renderRoomEncounter();
-      break;
-    case 'combat':
-      renderCombat();
-      break;
-    case 'post_combat_shop':
-      renderPostCombatShop();
-      break;
-    case 'floor_complete':
-      renderFloorComplete();
-      break;
-    case 'run_ended':
-      renderRunEnded();
-      break;
-    default:
-      renderHub();
-  }
+  updateChipRow();
+  updatePlayerHP();
+  updateGameContent();
 }
-
-// ============ STATUS BAR ============
 
 function updateStatusBar() {
-  const run = gameState.run;
-  if (run) {
-    dom.floorIndicator.textContent = `Floor ${run.floor || 1}`;
-  } else {
-    dom.floorIndicator.textContent = 'Hub';
-  }
-  dom.essenceDisplay.textContent = gameState.meta?.essence || 0;
+  const floor = gameState.run?.floor;
+  dom.floorIndicator.textContent = floor ? `F${floor}` : 'Hub';
+  dom.essenceDisplay.textContent = gameState.meta?.essence || gameState.player?.essence || 0;
 }
 
-// ============ SCENE RENDERING ============
-
 function updateScene() {
-  const phase = gameState.phase;
-  const run = gameState.run;
-  const combat = gameState.combat;
-
-  // Background
-  if (run?.background) {
-    scene.setBackground(`/assets/backgrounds/${run.background}`);
-  } else {
-    scene.setBackground('/assets/backgrounds/hub.png');
-  }
-
-  // Enemy
-  if (combat?.enemy && ['combat', 'room_encounter'].includes(phase)) {
-    scene.showEnemy(combat.enemy);
+  if (gameState.phase === 'combat' && gameState.combat?.enemy) {
+    scene.showEnemy(gameState.combat.enemy);
   } else {
     scene.hideEnemy();
   }
+  if (gameState.run?.background) {
+    scene.setBackground(`/assets/backgrounds/${gameState.run.background}`);
+  }
 }
 
-// ============ CHIP ROW ============
-
-function renderChips() {
-  const equipped = gameState.player?.equippedChips || [];
-  const charges = gameState.combat?.chipCharges || new Array(5).fill(0);
-  const levels = equipped.map(c => c?.level || 1);
+function updateChipRow() {
+  const weapon = gameState.player?.equipment?.weapon;
+  const equipped = weapon?.equippedChips || [];
+  const charges = gameState.player?._chipCharges || {};
+  const levels = gameState.player?._chipLevels || {};
 
   chipRow.render(equipped, {
-    charges,
-    levels,
+    charges: equipped.map(c => charges[c?.id] || 0),
+    levels: equipped.map(c => levels[c?.id] || 1),
     maxCharges: 5,
     inCombat: gameState.phase === 'combat',
   });
 }
 
-// ============ PHASE RENDERERS ============
-
-function renderNoSave() {
-  dom.chipRow.classList.add('hidden');
-  dom.playerHpContainer.classList.add('hidden');
-  scene.setBackground('/assets/backgrounds/hub.png');
-  actions.setContent(`
-    <button class="action-btn action-btn-primary" id="new-game-start">New Game</button>
-  `);
-  document.getElementById('new-game-start').addEventListener('click', handleNewGame);
-}
-
-function renderHub() {
-  scene.setBackground('/assets/backgrounds/hub.png');
-  actions.showButtons('Infiltrate');
-}
-
-function renderWardSelection() {
-  // Ward options shown in scene area
-  const wards = gameState.run?.availableWards || [];
-  const wardHtml = wards.map((w, i) => `
-    <div class="ward-option" data-index="${i}">
-      <div class="ward-option-name">${w.nameEn || w.name}</div>
-      <div class="ward-option-desc">${w.description || ''}</div>
-    </div>
-  `).join('');
-
-  // Clear any previous ward options
-  document.getElementById('ward-options')?.remove();
-
-  dom.sceneArea.insertAdjacentHTML('beforeend',
-    `<div class="ward-options" id="ward-options">${wardHtml}</div>`);
-
-  // Ward tap selection
-  document.querySelectorAll('.ward-option').forEach(el => {
-    el.addEventListener('click', () => {
-      document.querySelectorAll('.ward-option').forEach(w => w.classList.remove('selected'));
-      el.classList.add('selected');
-      const ctxBtn = document.getElementById('context-action-btn');
-      if (ctxBtn) ctxBtn.disabled = false;
-    });
-  });
-
-  actions.showButtons('Proceed', { contextDisabled: true });
-}
-
-function renderExploring() {
-  actions.showButtons('Proceed');
-}
-
-function renderRoomEncounter() {
-  actions.showButtons('Fight');
-}
-
-function renderCombat() {
-  combatActive = true;
-  showNextVocabCard();
-}
-
-function renderPostCombatShop() {
-  takeover.open('chipShop');
-  const chips = gameState.combat?.rewards?.chips || [];
-  const content = takeover.getContent('chipShop');
-  content.innerHTML = `
-    <h2 style="text-align:center;margin-bottom:16px;">Choose a Bot</h2>
-    <div class="shop-chips">
-      ${chips.map((c, i) => `
-        <div class="shop-chip-option" data-index="${i}">
-          <strong>${c.nameEn || c.name}</strong>
-          <div style="font-size:12px;color:var(--text-secondary)">${c.description || ''}</div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-
-  content.querySelectorAll('.shop-chip-option').forEach(el => {
-    el.addEventListener('click', () => handleChipSelection(parseInt(el.dataset.index)));
-  });
-}
-
-function renderFloorComplete() {
-  actions.showButtons('Continue');
-}
-
-function renderRunEnded() {
-  takeover.open('gameover');
-  const content = takeover.getContent('gameover');
-  const stats = gameState.run || {};
-  content.innerHTML = `
-    <div class="gameover-content">
-      <div class="gameover-title">${gameState.player?.hp <= 0 ? 'Defeated' : 'Run Complete'}</div>
-      <div class="gameover-stats">
-        <p>Floor reached: ${stats.floor || 1}</p>
-        <p>Words reviewed: ${stats.wordsReviewed || 0}</p>
-      </div>
-      <button class="action-btn action-btn-primary" id="return-hub-btn">Return to Hub</button>
-    </div>
-  `;
-  document.getElementById('return-hub-btn').addEventListener('click', handleReturnToHub);
-}
-
-// ============ COMBAT FLOW ============
-
-async function showNextVocabCard() {
-  const word = await getNextWord();
-  if (word) {
-    actions.showFlashCard(word);
+function updatePlayerHP() {
+  if (gameState.player) {
+    hpBar.updatePlayerHP(gameState.player.hp, gameState.player.maxHp);
+    hpBar.setVisible(true);
+  } else {
+    hpBar.setVisible(false);
   }
 }
 
-async function getNextWord() {
-  try {
-    const keys = getApiKeys();
-    if (!keys.jpdbApiKey) {
-      return { word: '食べる', meanings: ['eat'], reading: 'たべる' };
-    }
-    const response = await fetch('/api/game/due-words', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jpdbApiKey: keys.jpdbApiKey, limit: 1 }),
-    });
-    if (!response.ok) throw new Error('No word available');
-    const data = await response.json();
-    if (data.words && data.words.length > 0) {
-      const w = data.words[0];
-      return { word: w.word || w.spelling, meanings: w.meanings || [], reading: w.reading || '' };
-    }
-    throw new Error('Empty response');
-  } catch {
-    return { word: '食べる', meanings: ['eat'], reading: 'たべる' };
-  }
-}
-
-// ============ EVENT HANDLERS ============
-
-function handleEquipBots() {
-  takeover.open('chipEquip');
-  renderChipEquipView();
-}
-
-function handleContextAction() {
-  const phase = gameState.phase;
-  switch (phase) {
+function updateGameContent() {
+  switch (gameState.phase) {
+    case 'no_save':
+      actions.setContent('<button class="action-btn action-btn-primary" id="new-game-btn">New Game</button>');
+      document.getElementById('new-game-btn')?.addEventListener('click', createCharacter);
+      break;
     case 'hub':
-      startRun();
+      explorationUI.renderHub();
       break;
     case 'ward_selection':
-      confirmWardSelection();
+      explorationUI.renderWardSelection();
       break;
     case 'exploring':
-      proceedToNextRoom();
-      break;
+    case 'room':
     case 'room_encounter':
-      startCombat();
+      explorationUI.renderExploring();
+      break;
+    case 'boss_ready':
+      explorationUI.renderBossReady();
+      break;
+    case 'combat':
+      // Combat rendering handled by combat-loop + actions module
+      break;
+    case 'post_combat_shop':
+      economyUI.renderPostCombatShop();
       break;
     case 'floor_complete':
-      advanceFloor();
+      explorationUI.renderFloorComplete();
       break;
-    default:
+    case 'run_ended':
+      explorationUI.renderRunEnded();
       break;
   }
 }
 
-async function handleCardSwipe(direction) {
-  // Right = knew it = player attacks; Left = didn't know = enemy attacks
-  const attackerType = direction === 'right' ? 'player' : 'enemy';
-  try {
-    const resp = await fetch('/api/game/combat-cycle', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ attackerType }),
-    });
-    const result = await resp.json();
-    if (result.state) {
-      gameState = result.state;
-    } else {
-      await loadGameState();
-    }
-  } catch (err) {
-    console.error('Combat cycle failed:', err);
-    await loadGameState();
-  }
+// ============ ENEMY DIALOGUE ============
+function showEnemyDialogue(text, type = 'possessed') {
+  if (!text) return Promise.resolve();
+  enemyDialogueActive = true;
 
-  if (gameState.phase === 'combat' || gameState.run?.inCombat) {
-    updateScene();
-    renderChips();
-    hpBar.updatePlayerHP(gameState.player.hp, gameState.player.maxHp);
-    showNextVocabCard();
+  scene.showToast(text, type === 'liberated' ? 5000 : 3000);
+
+  dialogueDismissPromise = new Promise(resolve => {
+    dialogueDismissResolve = resolve;
+    setTimeout(() => {
+      enemyDialogueActive = false;
+      resolve();
+      dialogueDismissResolve = null;
+      dialogueDismissPromise = null;
+    }, type === 'liberated' ? 5000 : 3000);
+  });
+  return dialogueDismissPromise;
+}
+
+// ============ API CALLS ============
+async function loadGameState() {
+  const data = await apiGetGameState();
+  if (data.player) {
+    updateGameState(data);
   } else {
-    combatActive = false;
+    updateGameState({ ...gameState, phase: 'no_save' });
+  }
+}
+
+// ============ GAME ACTIONS ============
+async function createCharacter() {
+  const result = await apiCreatePlayer('Hacker', {}, 0);
+  if (result?.state) {
+    updateGameState(result.state);
     updateUI();
   }
 }
 
-function handleCardFlip() {
-  const front = document.querySelector('.flash-card-front');
-  if (front) {
-    tts.playWord(front.textContent);
+async function startNewRun() {
+  wordPractice.clearWordCache();
+  const result = await apiStartRun();
+  if (result?.state) {
+    updateGameState(result.state);
+    updateUI();
+    if (gameState.run?.startingChipShop?.active) {
+      economyUI.renderStartingChipShop(gameState.run.startingChipShop.items);
+    }
   }
 }
 
-function handleUseSkill(chipIndex) {
-  const equipped = gameState.player?.equippedChips || [];
-  const chip = equipped[chipIndex];
-  if (!chip) return;
-  fetch('/api/game/use-chip-skill', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chipId: chip.id }),
-  }).then(() => loadGameState()).then(() => {
-    renderChips();
-    updateScene();
-  });
+async function startEncounter() {
+  const result = await apiStartEncounter();
+  if (result?.state) {
+    updateGameState(result.state);
+    updateUI();
+    const enemy = gameState.combat?.enemy;
+    if (result?.dialogue || enemy?.dialogue?.possessed) {
+      const text = result.dialogue || (Array.isArray(enemy.dialogue.possessed)
+        ? enemy.dialogue.possessed[Math.floor(Math.random() * enemy.dialogue.possessed.length)]
+        : enemy.dialogue.possessed);
+      await showEnemyDialogue(text, 'possessed');
+    }
+    await delay(300);
+    startCombatLoop();
+  }
 }
 
-async function handleNewGame() {
-  await fetch('/api/game/create-player', { method: 'POST' });
+async function startBossEncounter() {
+  const result = await apiStartBoss();
+  if (result?.state) {
+    updateGameState(result.state);
+    updateUI();
+    const enemy = gameState.combat?.enemy;
+    if (result?.dialogue || enemy?.dialogue?.possessed) {
+      const text = result.dialogue || (Array.isArray(enemy.dialogue.possessed)
+        ? enemy.dialogue.possessed[Math.floor(Math.random() * enemy.dialogue.possessed.length)]
+        : enemy.dialogue.possessed);
+      await showEnemyDialogue(text, 'possessed');
+    }
+    await delay(500);
+    startCombatLoop();
+  }
+}
+
+async function nextFloor() {
+  const result = await apiNextFloor();
+  if (result?.state) {
+    updateGameState(result.state);
+    updateUI();
+  }
+}
+
+async function returnToHub() {
+  if (combatLoopUI.isCombatActive()) {
+    combatLoopUI.cleanupCombat();
+  }
+  await apiForfeitRun();
   await loadGameState();
   updateUI();
 }
 
-async function startRun() {
-  const resp = await fetch('/api/game/start-run', { method: 'POST' });
-  gameState = await resp.json();
-  updateUI();
+// ============ COMBAT ============
+function startCombatLoop() { combatLoopUI.startCombatLoop(); }
+function resumeCombatAfterVocab() { combatLoopUI.resumeCombatAfterVocab(); }
+
+function showVictoryModal(result) {
+  scene.showToast('Victory!', 2000);
+  setTimeout(async () => {
+    await loadGameState();
+    updateUI();
+  }, 1500);
 }
 
-async function confirmWardSelection() {
-  const selected = document.querySelector('.ward-option.selected');
-  if (!selected) return;
-  const index = parseInt(selected.dataset.index);
-  // Use select-starting-ward for first floor, select-next-ward for subsequent
-  const endpoint = (gameState.run?.floor || 1) <= 1
-    ? '/api/game/select-starting-ward'
-    : '/api/game/select-next-ward';
-  const resp = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ wardIndex: index }),
+function showGameOverModal(result) {
+  takeover.open('gameover');
+  const content = takeover.getContent('gameover');
+  content.innerHTML = `
+    <h2 style="text-align:center;margin-top:40%">Defeated</h2>
+    <p style="text-align:center">Your run has ended.</p>
+    <button class="action-btn action-btn-primary" id="gameover-hub-btn">Return to Hub</button>
+  `;
+  document.getElementById('gameover-hub-btn')?.addEventListener('click', async () => {
+    takeover.close('gameover');
+    await returnToHub();
   });
-  gameState = await resp.json();
-  document.getElementById('ward-options')?.remove();
-  updateUI();
 }
 
-async function proceedToNextRoom() {
-  const resp = await fetch('/api/game/proceed', { method: 'POST' });
-  gameState = await resp.json();
-  updateUI();
+// ============ FLASH CARD HANDLERS ============
+function handleCardSwipe(direction) {
+  const grade = direction === 'right' ? 5 : 1;
+  const word = currentFlashCardWord;
+  if (!word) return;
+
+  if (word.vid && word.sid) {
+    apiSendJpdbReview(word.vid, word.sid, grade);
+  }
+
+  wordPractice.fetchReplacementWord(word.vid);
+  resumeCombatAfterVocab();
 }
 
-async function startCombat() {
-  const resp = await fetch('/api/game/start-encounter', { method: 'POST' });
-  gameState = await resp.json();
-  updateUI();
+function handleCardFlip() {
+  if (currentFlashCardWord?.word) {
+    tts.speakWord(currentFlashCardWord.word);
+  }
 }
 
-async function advanceFloor() {
-  const resp = await fetch('/api/game/next-floor', { method: 'POST' });
-  gameState = await resp.json();
-  updateUI();
-}
-
-async function handleChipSelection(index) {
-  const resp = await fetch('/api/game/post-combat-shop-buy', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chipIndex: index }),
-  });
-  gameState = await resp.json();
-  takeover.close('chipShop');
-  updateUI();
-}
-
-function handleReturnToHub() {
-  takeover.close('gameover');
-  fetch('/api/game/forfeit', { method: 'POST' })
-    .then(() => loadGameState())
-    .then(() => updateUI());
-}
-
-async function handleResetRun() {
-  if (!confirm('Abandon current run?')) return;
-  await fetch('/api/game/forfeit', { method: 'POST' });
-  await loadGameState();
-  takeover.closeAll();
-  updateUI();
-}
-
-function openSettings() {
-  takeover.open('settings');
-  renderSettingsView();
-}
-
-// ============ CHIP EQUIP VIEW ============
-
-function renderChipEquipView() {
+// ============ CHIP HANDLERS ============
+async function openChipEquipView() {
+  takeover.open('chipEquip');
   const content = takeover.getContent('chipEquip');
-  const equipped = gameState.player?.equippedChips || [];
-  const available = gameState.player?.inventory?.chips || [];
+  content.innerHTML = '<p style="text-align:center;padding:20px">Loading...</p>';
+
+  const data = await apiGetChipLoadout();
+  chipLoadoutCache = data;
+
+  const equipped = data.equipped || [];
+  const inventory = data.inventory || [];
 
   content.innerHTML = `
-    <h2 style="text-align:center;margin-bottom:16px;">Equip Bots</h2>
-    <div class="equip-slots">
-      ${[0,1,2,3,4].map(i => {
-        const chip = equipped[i];
-        return `<div class="equip-slot ${chip ? 'filled' : ''}" data-slot="${i}">
-          ${chip ? getChipInitial(chip) : ''}
-        </div>`;
-      }).join('')}
+    <h3 style="margin:16px">Equipped Chips</h3>
+    <div class="chip-equip-slots">
+      ${equipped.map((chip, i) => chip ? `
+        <div class="chip-equip-slot filled" data-action="unequip" data-index="${i}">
+          <span class="chip-equip-name">${chip.nameEn || chip.name}</span>
+          <span class="chip-equip-rarity ${chip.rarity}">${chip.rarity}</span>
+        </div>
+      ` : `
+        <div class="chip-equip-slot empty" data-index="${i}">Empty</div>
+      `).join('')}
     </div>
-    <h3 style="margin-bottom:8px;">Available</h3>
-    <div class="available-chips">
-      ${available.map((c, i) => `
-        <div class="chip-card" data-chip-index="${i}">
-          <strong>${c.nameEn || c.name}</strong>
-          <div style="font-size:11px;color:var(--text-secondary)">${c.rarity}</div>
+    <h3 style="margin:16px">Inventory</h3>
+    <div class="chip-inventory-list">
+      ${inventory.map((chip, i) => `
+        <div class="chip-inventory-item" data-action="equip" data-chip-id="${chip.id}">
+          <span class="chip-equip-name">${chip.nameEn || chip.name}</span>
+          <span class="chip-equip-rarity ${chip.rarity}">${chip.rarity}</span>
         </div>
       `).join('')}
+      ${inventory.length === 0 ? '<p style="padding:16px;opacity:0.6">No chips in inventory</p>' : ''}
     </div>
   `;
 
-  content.querySelectorAll('.chip-card').forEach(el => {
+  content.querySelectorAll('[data-action="unequip"]').forEach(el => {
     el.addEventListener('click', async () => {
-      const chipIdx = parseInt(el.dataset.chipIndex);
-      await fetch('/api/game/equip-chip', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chipIndex: chipIdx }),
-      });
-      await loadGameState();
-      renderChipEquipView();
-      renderChips();
+      const chip = equipped[parseInt(el.dataset.index)];
+      if (chip) {
+        await apiUnequipChip(chip.id, 'weapon');
+        await openChipEquipView();
+      }
+    });
+  });
+
+  content.querySelectorAll('[data-action="equip"]').forEach(el => {
+    el.addEventListener('click', async () => {
+      await apiEquipChip(el.dataset.chipId, 'weapon');
+      await openChipEquipView();
     });
   });
 }
 
-function getChipInitial(chip) {
-  return (chip.nameEn || chip.name || '?').charAt(0).toUpperCase();
+async function handleUseChipSkill(chipIndex) {
+  const weapon = gameState.player?.equipment?.weapon;
+  const chip = weapon?.equippedChips?.[chipIndex];
+  if (!chip) return;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/game/use-chip-skill`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chipId: chip.id }),
+    });
+    const result = await response.json();
+    if (result.error) {
+      scene.showToast(result.error, 2000);
+      return;
+    }
+    if (result.state) {
+      updateGameState(result.state);
+    }
+    scene.showToast(result.message || `${chip.nameEn} activated!`, 2000);
+    updateUI();
+  } catch (e) {
+    console.error('Chip skill error:', e);
+  }
 }
 
-// ============ SETTINGS VIEW ============
-
-function renderSettingsView() {
-  const content = takeover.getContent('settings');
-  const keys = getApiKeys();
-  content.innerHTML = `
-    <h2 style="margin-bottom:16px;">Settings</h2>
-    <div class="settings-group">
-      <div class="settings-group-title">JPDB API Key</div>
-      <input class="settings-input" type="password" id="jpdb-key-input"
-        value="${keys.jpdbApiKey || ''}" placeholder="Enter JPDB API key">
-    </div>
-    <div class="settings-group">
-      <div class="settings-group-title">TTS</div>
-      <label style="display:flex;align-items:center;gap:8px;">
-        <input type="checkbox" id="tts-enabled" ${tts.isEnabled() ? 'checked' : ''}>
-        Enable Text-to-Speech
-      </label>
-    </div>
-    <button class="action-btn action-btn-primary" id="save-settings-btn">Save</button>
-  `;
-
-  document.getElementById('save-settings-btn').addEventListener('click', () => {
-    const jpdbKey = document.getElementById('jpdb-key-input').value;
-    const ttsChecked = document.getElementById('tts-enabled').checked;
-    saveApiKeys({ jpdbApiKey: jpdbKey });
-    tts.setEnabled(ttsChecked);
-    scene.showToast('Settings saved');
-    takeover.close('settings');
+// ============ EVENT LISTENERS ============
+function setupEventListeners() {
+  dom.settingsBtn.addEventListener('click', () => modalsUI.openSettings());
+  dom.resetRunBtn.addEventListener('click', async () => {
+    if (confirm('Forfeit current run?')) {
+      await returnToHub();
+    }
   });
 }
+
+// ============ INITIALIZATION ============
+document.addEventListener('DOMContentLoaded', async () => {
+  takeover.init();
+
+  actions.init({
+    equipBots: () => openChipEquipView(),
+    contextAction: null,
+    cardSwipe: handleCardSwipe,
+    cardFlip: handleCardFlip,
+  });
+
+  chipRow.init({
+    useSkillCallback: handleUseChipSkill,
+  });
+
+  wordPractice.init({
+    apiBase: API_BASE,
+    getGameState: () => gameState,
+    showToast: (msg) => scene.showToast(msg),
+    escapeHtml: escapeHtml,
+    updatePlayerHPBar: (hp) => {
+      if (gameState.player) {
+        gameState.player.hp = hp;
+        hpBar.updatePlayerHP(hp, gameState.player.maxHp);
+      }
+    },
+    showDamageNumber: (dmg, isPlayer, isCrit) => scene.showDamageNumber(dmg, { isCrit }),
+    resumeCombatAfterVocab: () => resumeCombatAfterVocab(),
+    isCombatActive: () => combatLoopUI.isCombatActive(),
+    isEnemyDialogueActive: () => enemyDialogueActive,
+    shuffleArray: shuffleArray,
+    sendJpdbReview: apiSendJpdbReview,
+  });
+
+  explorationUI.init({
+    getGameState: () => gameState,
+    updateGameState,
+    updateUI,
+    actions,
+    scene,
+    startEncounter,
+    startBossEncounter,
+    nextFloor,
+    startNewRun,
+    apiGetStartingWards,
+    apiSelectStartingWard,
+    apiGetNextWardOptions,
+    apiSelectNextWard,
+    apiProceed,
+    apiRoomEncounter,
+  });
+
+  economyUI.init({
+    getGameState: () => gameState,
+    updateGameState,
+    updateUI,
+    takeover,
+    scene,
+    apiClaimStartingChip,
+    apiPostCombatShopBuy,
+    apiShopSkip,
+  });
+
+  modalsUI.init({
+    takeover,
+    scene,
+    settings,
+  });
+
+  characterUI.init({
+    getGameState: () => gameState,
+    hpBar,
+    scene,
+  });
+
+  combatLoopUI.init({
+    getGameState: () => gameState,
+    updateGameState,
+    updateUI,
+    settings,
+    narration: null,
+    wordPractice,
+    characterUI,
+    showDamageNumber: (dmg, isPlayer, isCrit) => scene.showDamageNumber(dmg, { isCrit }),
+    showDotDamage: (dmg) => scene.showDamageNumber(dmg, { isCrit: false }),
+    showChipEffect: (name) => scene.showToast(name, 1500),
+    animateEnemyHurt: () => {},
+    animatePlayerHurt: () => {},
+    animateEnemyDefeat: () => scene.hideEnemy(),
+    animateChipPipeline: () => Promise.resolve(),
+    updateActionPanel: () => {},
+    playNarrationAudio: () => {},
+    showVictoryModal,
+    showGameOverModal,
+    showEnemyDialogue,
+    getChipLoadoutCache: () => chipLoadoutCache,
+    setChipLoadoutCache: (data) => { chipLoadoutCache = data; updateChipRow(); },
+    getEnemyDialogueActive: () => enemyDialogueActive,
+    getDialogueDismissPromise: () => dialogueDismissPromise,
+    delay,
+    showFlashCard: (word) => {
+      currentFlashCardWord = word;
+      actions.showFlashCard(word);
+    },
+  });
+
+  setupEventListeners();
+  await loadGameState();
+  updateUI();
+
+  if (gameState.phase === 'combat' && gameState.combat?.enemy?.hp > 0) {
+    startCombatLoop();
+  }
+});
