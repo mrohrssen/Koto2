@@ -405,6 +405,8 @@ export function renderCombatChips(pipelineResult = null) {
   if (!chipLoadoutCache?.equipment?.weapon) return '';
 
   const weaponChips = chipLoadoutCache.equipment.weapon.equippedChips || [];
+  const chipCharges = chipLoadoutCache.chipCharges || {};
+  const chipLevels = chipLoadoutCache.chipLevels || {};
   let html = '';
 
   for (let i = 0; i < 5; i++) {
@@ -412,18 +414,38 @@ export function renderCombatChips(pipelineResult = null) {
     if (chip) {
       const rarityClass = `rarity-${chip.rarity || 'common'}`;
       const iconId = chip.baseId || chip.id.replace(/_(common|uncommon|rare|epic|legendary)$/, '');
+      const chipId = chip.baseId || chip.id;
 
-      // Get pipeline fire state for this chip
+      // Pipeline fire state
       const fireState = pipelineResult?.firedChips?.[i];
       let stateClass = '';
       if (fireState && !fireState.skipped && !fireState.notPipeline) {
         stateClass = fireState.triggered ? 'triggered' : 'failed';
       }
 
+      // Charge state
+      const charges = chipCharges[chipId] || 0;
+      const chargesRequired = chip.skill?.chargesRequired || 5;
+      const isCharged = charges >= chargesRequired;
+      const chargedClass = isCharged ? 'chip-charged' : '';
+
+      // Level badge
+      const level = chipLevels[chipId] || 1;
+      const levelBadge = level > 1 ? `<span class="chip-level-badge">L${level}</span>` : '';
+
+      // Charge meter segments
+      let meterHtml = '<div class="chip-charge-meter">';
+      for (let s = 0; s < chargesRequired; s++) {
+        meterHtml += `<div class="chip-charge-segment${s < charges ? ' filled' : ''}"></div>`;
+      }
+      meterHtml += '</div>';
+
       html += `
-        <div class="chip-slot filled ${rarityClass} ${stateClass}" title="${chip.name}" data-index="${i}">
+        <div class="chip-slot filled ${rarityClass} ${stateClass} ${chargedClass}" title="${chip.name}" data-index="${i}" data-chip-id="${chipId}" onclick="window.showChipSkillPopup('${chipId}')">
+          ${levelBadge}
           <img class="chip-slot-icon" src="/assets/icons/chips/${iconId}.png" alt="" onerror="this.style.display='none'">
           ${fireState?.triggered ? `<span class="chip-effect-text">${fireState.displayText}</span>` : ''}
+          ${meterHtml}
         </div>
       `;
     } else {
@@ -526,4 +548,156 @@ export function getCategoryLabel(category) {
     pipeline: 'PIPELINE'
   };
   return labels[category] || category?.toUpperCase() || '???';
+}
+
+// ============ CHIP SKILL POPUP ============
+
+window.showChipSkillPopup = async function(chipId) {
+  // Remove existing popup
+  const existing = document.querySelector('.chip-skill-popup');
+  if (existing) existing.remove();
+
+  try {
+    const response = await fetch(`/api/game/chip-skill-info/${chipId}`);
+    const data = await response.json();
+    if (!data.chip?.skill) return;
+
+    const { chip, charges, chargesRequired, isReady } = data;
+    const skill = chip.skill;
+
+    const chipSlot = document.querySelector(`.chip-slot[data-chip-id="${chipId}"]`);
+    if (!chipSlot) return;
+
+    const rect = chipSlot.getBoundingClientRect();
+
+    const popup = document.createElement('div');
+    popup.className = 'chip-skill-popup';
+    popup.style.left = `${rect.left}px`;
+    popup.style.top = `${rect.top - 160}px`;
+
+    const chargeText = isReady ? 'READY' : `Charging ${charges}/${chargesRequired}`;
+
+    popup.innerHTML = `
+      <div class="skill-popup-header">
+        <span class="skill-name">${skill.name}</span>
+        <span class="skill-name-en">${skill.nameEn}</span>
+      </div>
+      <div class="skill-description">${skill.descriptionEn}</div>
+      <div class="skill-charge-status ${isReady ? 'ready' : 'charging'}">${chargeText}</div>
+      <button class="skill-use-btn" ${isReady ? '' : 'disabled'} onclick="window.useChipSkill('${chipId}')">
+        ${isReady ? 'Use Skill' : `${charges}/${chargesRequired}`}
+      </button>
+    `;
+
+    document.body.appendChild(popup);
+
+    const closeHandler = (e) => {
+      if (!popup.contains(e.target) && !chipSlot.contains(e.target)) {
+        popup.remove();
+        document.removeEventListener('click', closeHandler);
+        document.removeEventListener('keydown', escHandler);
+      }
+    };
+    const escHandler = (e) => {
+      if (e.key === 'Escape') {
+        popup.remove();
+        document.removeEventListener('click', closeHandler);
+        document.removeEventListener('keydown', escHandler);
+      }
+    };
+    setTimeout(() => {
+      document.addEventListener('click', closeHandler);
+      document.addEventListener('keydown', escHandler);
+    }, 10);
+
+  } catch (err) {
+    console.error('Failed to show chip skill popup:', err);
+  }
+};
+
+window.useChipSkill = async function(chipId) {
+  try {
+    const response = await fetch('/api/game/use-chip-skill', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chipId })
+    });
+    const data = await response.json();
+
+    if (!data.success) {
+      console.warn('Skill use failed:', data.error);
+      return;
+    }
+
+    // Close popup
+    const popup = document.querySelector('.chip-skill-popup');
+    if (popup) popup.remove();
+
+    // Animate skill activation
+    const chipSlot = document.querySelector(`.chip-slot[data-chip-id="${chipId}"]`);
+    if (chipSlot) {
+      chipSlot.classList.add('chip-skill-activating');
+      chipSlot.addEventListener('animationend', () => {
+        chipSlot.classList.remove('chip-skill-activating');
+      }, { once: true });
+    }
+
+    // Show damage/heal numbers
+    if (data.damage > 0) {
+      showDamageNumber(data.damage, false, false, false);
+    }
+    if (data.heal > 0) {
+      showDamageNumber(data.heal, true, false, true);
+    }
+
+    // Show buff indicator
+    if (data.skillType === 'buff') {
+      showBuffIndicator(data.skillName);
+    }
+
+    // Update chip charges in cache and re-render
+    if (data.chipCharges) {
+      chipLoadoutCache.chipCharges = data.chipCharges;
+    }
+    rerenderCombatChips();
+
+  } catch (err) {
+    console.error('Failed to use chip skill:', err);
+  }
+};
+
+// ============ CHIP STATE UPDATE HELPERS ============
+
+function showBuffIndicator(buffName) {
+  const indicator = document.createElement('div');
+  indicator.className = 'buff-indicator';
+  indicator.textContent = buffName;
+  const playerArea = document.querySelector('.player-status') || document.querySelector('.player-hp-bar') || document.querySelector('.combat-player');
+  if (playerArea) {
+    playerArea.style.position = 'relative';
+    playerArea.appendChild(indicator);
+  }
+}
+
+export function rerenderCombatChips() {
+  const chipDisplay = document.querySelector('.combat-chips-display');
+  if (chipDisplay) {
+    chipDisplay.innerHTML = renderCombatChips();
+  }
+}
+
+export function clearBuffIndicators() {
+  const indicators = document.querySelectorAll('.buff-indicator');
+  indicators.forEach(el => el.remove());
+}
+
+export async function refreshChipLoadout() {
+  try {
+    const res = await fetch('/api/game/chip-loadout');
+    const data = await res.json();
+    chipLoadoutCache = data;
+    rerenderCombatChips();
+  } catch (err) {
+    console.error('Failed to refresh chip loadout:', err);
+  }
 }

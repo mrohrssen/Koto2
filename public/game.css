@@ -5888,3 +5888,156 @@ body::before {
   color: var(--gi-gold-bright);
 }
 
+/* ============ CHIP CHARGE METER ============ */
+.chip-charge-meter {
+  display: flex;
+  gap: 1px;
+  width: 100%;
+  height: 3px;
+  margin-top: 2px;
+}
+
+.chip-charge-segment {
+  flex: 1;
+  background: var(--bg-darker, #1a1a2e);
+  border-radius: 1px;
+}
+
+.chip-charge-segment.filled {
+  background: var(--accent-cyan, #00ffff);
+}
+
+/* ============ CHIP LEVEL BADGE ============ */
+.chip-level-badge {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  font-size: 9px;
+  font-weight: bold;
+  color: var(--accent-cyan, #00ffff);
+  background: var(--bg-dark, #0f0f23);
+  padding: 0 2px;
+  border-radius: 2px;
+  line-height: 1;
+  z-index: 2;
+}
+
+/* ============ CHARGED GLOW ============ */
+.chip-charged {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 4px var(--accent-cyan, #00ffff); }
+  50% { box-shadow: 0 0 12px var(--accent-cyan, #00ffff), 0 0 20px rgba(0, 255, 255, 0.3); }
+}
+
+/* ============ SKILL POPUP ============ */
+.chip-skill-popup {
+  position: fixed;
+  z-index: 1000;
+  background: var(--bg-dark, #0f0f23);
+  border: 1px solid var(--accent-cyan, #00ffff);
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 180px;
+  max-width: 240px;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+}
+
+.skill-popup-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+}
+
+.skill-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--accent-cyan, #00ffff);
+}
+
+.skill-name-en {
+  font-size: 11px;
+  color: var(--text-dim, #888);
+}
+
+.skill-description {
+  font-size: 12px;
+  color: var(--text-main, #e0e0e0);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.skill-charge-status {
+  font-size: 11px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.skill-charge-status.ready {
+  color: var(--accent-cyan, #00ffff);
+  font-weight: bold;
+}
+
+.skill-charge-status.charging {
+  color: var(--text-dim, #888);
+}
+
+.skill-use-btn {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--accent-cyan, #00ffff);
+  background: transparent;
+  color: var(--accent-cyan, #00ffff);
+  font-size: 13px;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.skill-use-btn:hover:not(:disabled) {
+  background: rgba(0, 255, 255, 0.1);
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+}
+
+.skill-use-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: var(--text-dim, #555);
+  color: var(--text-dim, #888);
+}
+
+/* ============ SKILL ACTIVATION ANIMATION ============ */
+.chip-skill-activating {
+  animation: skill-burst 1s ease-out forwards;
+}
+
+@keyframes skill-burst {
+  0% { transform: scale(1); filter: brightness(1); box-shadow: 0 0 0 transparent; }
+  20% { transform: scale(1.3); filter: brightness(2); box-shadow: 0 0 20px var(--accent-cyan, #00ffff); }
+  50% { transform: scale(1.1); filter: brightness(1.5); box-shadow: 0 0 30px var(--accent-cyan, #00ffff), 0 0 60px rgba(0, 255, 255, 0.3); }
+  100% { transform: scale(1); filter: brightness(1); box-shadow: 0 0 4px var(--accent-cyan, #00ffff); }
+}
+
+/* ============ BUFF INDICATOR ============ */
+.buff-indicator {
+  position: absolute;
+  top: -20px;
+  right: 0;
+  font-size: 10px;
+  color: var(--accent-cyan, #00ffff);
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  animation: buff-appear 0.3s ease-out;
+}
+
+@keyframes buff-appear {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
