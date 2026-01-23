@@ -109,7 +109,7 @@ import {
 
 // Game imports
 import { GameManager } from './src/game/loop.js';
-import { getItem, getSkill } from './src/game/items.js';
+import { getItem } from './src/game/items.js';
 import { getChipLoadout, equipChip, unequipChip } from './src/game/items/chips.js';
 import { generateNarration, getSimpleNarration } from './src/game/dm.js';
 import { ACHIEVEMENTS } from './src/game/state.js';
@@ -232,9 +232,12 @@ function loadGameSave() {
   return null;
 }
 
+const SAVE_VERSION = 2;
+
 function saveGameData() {
   try {
     const data = {
+      version: SAVE_VERSION,
       player: gameManager.player,
       meta: gameManager.meta,
       savedAt: new Date().toISOString()
@@ -245,79 +248,40 @@ function saveGameData() {
   }
 }
 
-// Load game save on startup
+// Load game save on startup (invalidate pre-cleanup saves)
 const gameSave = loadGameSave();
-if (gameSave?.player) {
+if (gameSave && (!gameSave.version || gameSave.version < SAVE_VERSION)) {
+  console.warn(`Discarding old save (version ${gameSave.version || 'none'}, need ${SAVE_VERSION}). Requiring new game.`);
+} else if (gameSave?.player) {
   gameManager.loadPlayer(gameSave.player);
   console.log(`Loaded game save for ${gameSave.player.name}`);
 }
-gameManager.initMeta(gameSave?.meta || null);
-if (gameSave?.meta) {
+gameManager.initMeta(gameSave?.version >= SAVE_VERSION ? gameSave?.meta : null);
+if (gameSave?.meta && gameSave?.version >= SAVE_VERSION) {
   console.log(`Loaded meta-progression: ${gameSave.meta.essence} essence`);
 }
 
-// Helper to enrich player items with full item data
+// Helper to enrich player data for frontend display
 function enrichPlayerItems(player) {
   if (!player) return player;
 
   const enriched = { ...player };
 
-  if (enriched.items) {
-    enriched.items = enriched.items.map(item => {
-      const itemDef = getItem(item.id);
-      return {
-        ...item,
-        name: itemDef?.name || item.id,
-        description: itemDef?.description,
-        slot: itemDef?.slot || null,
-        type: itemDef?.type || 'consumable',
+  if (enriched.equipment?.weapon) {
+    const itemDef = getItem(enriched.equipment.weapon.id);
+    enriched.equipment = {
+      weapon: {
+        ...enriched.equipment.weapon,
+        name: itemDef?.name || enriched.equipment.weapon.id,
+        slot: 'weapon',
         rarity: itemDef?.rarity || 'common'
-      };
-    });
-  }
-
-  if (enriched.equipment) {
-    const slots = ['weapon', 'body', 'shield', 'accessory'];
-    for (const slot of slots) {
-      if (enriched.equipment[slot]) {
-        const itemDef = getItem(enriched.equipment[slot].id);
-        enriched.equipment[slot] = {
-          ...enriched.equipment[slot],
-          name: itemDef?.name || enriched.equipment[slot].id,
-          slot: slot,
-          rarity: itemDef?.rarity || 'common'
-        };
       }
-    }
+    };
   }
 
-  if (enriched.skills) {
-    enriched.skills = enriched.skills.map(skill => {
-      const skillDef = getSkill(skill.id);
-      return {
-        ...skill,
-        name: skillDef?.name || skill.id,
-        spCost: skillDef?.spCost || 0,
-        description: skillDef?.description
-      };
-    });
-  }
-
-  // SIMPLIFIED: No derived stats calculation, just pass through attack
   enriched.derivedStats = {
-    atk: enriched.attack || 15,
-    def: 0,
-    matk: 0,
-    mdef: 0,
-    hit: 100,
-    flee: 0,
-    crit: 0,
-    critShield: 0,
-    perfectDodge: 0
+    atk: enriched.attack || 15
   };
-
-  // SIMPLIFIED: No stat costs (no stat allocation)
-  enriched.statCosts = {};
 
   return enriched;
 }

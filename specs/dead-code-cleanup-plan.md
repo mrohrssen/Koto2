@@ -249,7 +249,7 @@ The unused turn-based `/attack` system (never called by frontend):
 
 ---
 
-## Phase 10: Save Migration
+## Phase 10: Save Migration ✅ DONE
 
 Old saves contain `player.level`, `player.xp`, `player.stats`, `player.equipment.body/shield/accessory`, etc. After cleanup:
 - `dm.js` references `player.level` for narration context → remove or default to 1
@@ -382,4 +382,14 @@ The "realtime" naming is confusing since it's actually a vocab-pause turn-based 
   - api.js: deleted dead endpoint functions (allocateStat, disarmTrap, triggerTrap, lootBody, skipBody, openTreasure, skipTreasure, getRefinePreview, refineItem, unequipItem)
   - game.js: removed dead API imports (13 functions), dead init callbacks (openBlacksmith, openChipUpgradeModal, trap/body/treasure APIs, refine APIs, allocateStat, unequipItem), dead delegation functions, dead window exports, dead setupEventListeners (blacksmith/chip-upgrade modals)
   - 84/84 E2E pass, 49/49 unit tests pass
-- **Phase 10**: Pending
+- **Phase 10**: ✅ Complete (~85 lines removed, 5 files changed)
+  - dm.js: removed dead `levelUp` and `rankUp` narration prompts and fallbacks (player.level/rank no longer exist)
+  - dm.js: updated JSDoc event categories to reflect live events only
+  - state.js: removed dead `items: []`, `skills: []` from createNewPlayer (no items/skills system)
+  - state.js: removed dead `highestLevel` from lifetimeStats (no levels)
+  - server.js: added `SAVE_VERSION = 2` and version field to save format
+  - server.js: added old-save invalidation on startup (version < 2 saves discarded, require new game)
+  - server.js: cleaned `enrichPlayerItems()` - removed dead items/skills enrichment, dead body/shield/accessory equipment slots, dead derivedStats stubs, dead statCosts
+  - items/index.js: removed dead `getSkill()` stub (always returned null, no consumers remain)
+  - items.js: removed `getSkill` from barrel re-exports
+  - 84/84 E2E pass, 49/49 unit tests pass

@@ -39,10 +39,6 @@ export function getItem(itemId) {
   return CHIPS[itemId] || null;
 }
 
-export function getSkill(skillId) {
-  return null;
-}
-
 export function getClassStartingEquipment(playerClass) {
   return { weapon: { id: 'defaultWeapon', equippedChips: [] } };
 }

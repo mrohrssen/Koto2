@@ -28,6 +28,5 @@ export {
 
   // Stub helpers (backwards compat)
   getItem,
-  getSkill,
   getClassStartingEquipment
 } from './items/index.js';

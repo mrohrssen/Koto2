@@ -38,7 +38,6 @@ export function createMetaProgression() {
       totalGoldEarned: 0,
       totalEssenceEarned: 0,
       highestFloor: 0,
-      highestLevel: 0,
       totalPlayTime: 0,      // in milliseconds
       firstPlayDate: null,
       lastPlayDate: null,
@@ -219,8 +218,6 @@ export function createNewPlayer(name = "Hunter") {
     attack: 15,
     gold: 250,
     chips: [],
-    items: [],
-    skills: [],
     equipment: getClassStartingEquipment('hacker')
   };
 }

@@ -361,9 +361,8 @@ ${vocabList || '(基本的な言葉)'}
  *
  * Event categories:
  * - Run lifecycle: runStart, enterFloor, floorClear, gameVictory
- * - Combat: combatStart, playerAttack, playerMagic, enemyAttack, victory, defeat
- * - Items: playerItem, shopPurchase, refineSuccess, refineFail
- * - Exploration: roomEnter, trapDisarm*, treasureOpen, shrineUse
+ * - Combat: combatStart, playerAttack, playerMagic, enemyAttack, victory, bossVictory, defeat
+ * - Exploration: roomEnter, shrineUse, bossAppear, finalBossAppear
  *
  * Usage: DM_PROMPTS.eventName(context) → string prompt
  */
@@ -588,20 +587,6 @@ ${rewards.bossDrop ? `ドロップ：${rewards.bossDrop.name}` : ''}`;
   // Flee fail
   fleeFail: () =>
     `逃げられない！敵が道を塞ぐ。「」と敵が言う。失敗の恐怖を描写。4-5文で。`,
-
-  // Level up
-  levelUp: (ctx) => {
-    const player = ctx?.player || ctx || {};
-    return `レベルアップ！レベル${player.level || '?'}に。
-体に力が満ちる。成長を感じる瞬間を描写。3-4文で。`;
-  },
-
-  // Rank up
-  rankUp: (ctx) => {
-    const player = ctx?.player || ctx || {};
-    return `ランクアップ！${player.rank || '?'}ランクに！
-新しい力を得た。重要な成長を劇的に描写。4-5文で。`;
-  },
 
   // Floor clear
   floorClear: (ctx) => {
@@ -849,8 +834,6 @@ function getFallbackNarration(event, context) {
     defeat: '力が抜ける。「弱かったな...」敵の声が遠くなる。目の前が暗くなる...',
     fleeSuccess: '逃げた！心臓が鳴る。息が荒い。また戦おう。',
     fleeFail: '逃げられない！「逃がさない」敵が道を塞いでいる！',
-    levelUp: 'レベルアップ！体に力が満ちる。強くなった。成長を感じる。',
-    rankUp: 'ランクアップ！新しい力を得た！もっと強くなれる。',
     floorClear: '階をクリアした！次への階段が見える。進もう。',
     bossAppear: `${context?.name || 'ボス'}が現れた！「来たか...」強い敵だ。覚悟しろ！`,
     finalBossAppear: '影の君主が現れた！「終わりだ...」全ての影を支配する存在。これが最後の戦い。',
