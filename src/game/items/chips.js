@@ -586,6 +586,53 @@ function processPipelineChip(chip, state) {
           displayText: `${attackNum % effect.interval}/${effect.interval}`
         };
       }
+    case 'rampingMultiply':
+      // Multiplier that grows with each consecutive hit on same enemy
+      if (!state.combatStacks) state.combatStacks = {};
+      const rampKey = chip.id + '_ramp';
+      state.combatStacks[rampKey] = (state.combatStacks[rampKey] || 0) + 1;
+      const rampCount = state.combatStacks[rampKey];
+      const rampMultiplier = 1 + (effectValue * rampCount);
+      newDamage = state.currentDamage * rampMultiplier;
+      return {
+        chipId: chip.id,
+        chipName: chip.nameEn || chip.name,
+        triggered: true,
+        rampingMultiply: true,
+        hitCount: rampCount,
+        multiplier: rampMultiplier,
+        previousDamage: Math.floor(state.currentDamage),
+        newDamage: Math.floor(newDamage),
+        displayText: `×${rampMultiplier.toFixed(2)} (${rampCount} hits)`
+      };
+    case 'amplifyNext':
+      // Set amplification factor for next chip in pipeline
+      state.nextChipAmplify = effectValue;
+      return {
+        chipId: chip.id,
+        chipName: chip.nameEn || chip.name,
+        triggered: true,
+        amplifyNext: true,
+        amplifyFactor: effectValue,
+        previousDamage: Math.floor(state.currentDamage),
+        newDamage: Math.floor(state.currentDamage),
+        displayText: `×${effectValue} NEXT`
+      };
+    case 'perEquipped':
+      // Add damage per equipped chip
+      const equippedCount = state.weaponUsedSlots || 0;
+      const equippedBonus = effectValue * equippedCount;
+      newDamage = state.currentDamage + equippedBonus;
+      return {
+        chipId: chip.id,
+        chipName: chip.nameEn || chip.name,
+        triggered: true,
+        perEquipped: true,
+        equippedCount,
+        previousDamage: Math.floor(state.currentDamage),
+        newDamage: Math.floor(newDamage),
+        displayText: `+${equippedBonus} (${equippedCount} equipped)`
+      };
   }
 
   return {
@@ -625,6 +672,7 @@ export function executeChipPipeline(weaponChips, context) {
   };
 
   let nextChipDoubleActive = context.nextChipDouble || false;
+  let nextChipAmplifyFactor = context.nextChipAmplify || null;
 
   const MAX_RECURSIONS = 10; // Safety cap
   let chipIndex = 0;
@@ -646,7 +694,24 @@ export function executeChipPipeline(weaponChips, context) {
       continue;
     }
 
-    const result = processPipelineChip(chip, state);
+    // Apply amplify factor from previous chip (Magnifying Glass passive or skill buff)
+    let amplifiedChip = chip;
+    if (nextChipAmplifyFactor && chip.effects?.pipeline) {
+      amplifiedChip = {
+        ...chip,
+        effects: {
+          ...chip.effects,
+          pipeline: { ...chip.effects.pipeline, value: (chip.effects.pipeline.value || 0) * nextChipAmplifyFactor }
+        }
+      };
+      // Also amplify multiplier field for nthAttack type
+      if (chip.effects.pipeline.multiplier) {
+        amplifiedChip.effects.pipeline.multiplier = 1 + (chip.effects.pipeline.multiplier - 1) * nextChipAmplifyFactor;
+      }
+      nextChipAmplifyFactor = null; // Consumed
+    }
+
+    const result = processPipelineChip(amplifiedChip, state);
     state.firedChips.push(result);
 
     // nextChipDouble: the first chip that fires also fires a second time
@@ -687,6 +752,11 @@ export function executeChipPipeline(weaponChips, context) {
       // Handle random destruction from Unstable Core
       if (result.randomDestroy) {
         state.randomDestroyTriggered = true;
+      }
+
+      // Handle amplifyNext - set factor for next chip
+      if (result.amplifyNext) {
+        nextChipAmplifyFactor = result.amplifyFactor;
       }
     }
 
@@ -988,11 +1058,11 @@ export function getScaledEffectValue(chip, level) {
     return 1 + (value - 1) * scaleFactor;
   }
 
-  // CritMod: scale without floor (keep decimal precision)
-  if (type === 'critMod') {
+  // Ramping multiply and amplifyNext: scale as decimal without floor (small values like 0.05)
+  if (type === 'rampingMultiply' || type === 'amplifyNext') {
     return value * scaleFactor;
   }
 
-  // All others (flatAdd, stacking, damageAndHeal, killCounter, riskyFlat, perEmptySlot, emptySlots, nthAttack): floor
+  // All others (flatAdd, stacking, damageAndHeal, killCounter, riskyFlat, perEmptySlot, emptySlots, perEquipped, nthAttack): floor
   return Math.floor(value * scaleFactor);
 }

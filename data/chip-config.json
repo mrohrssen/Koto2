@@ -11,7 +11,9 @@
     "FLAT_ADD": "flatAdd",
     "MULTIPLY": "multiply",
     "CONDITIONAL": "conditional",
-    "CRIT_MOD": "critMod"
+    "RAMPING_MULTIPLY": "rampingMultiply",
+    "AMPLIFY_NEXT": "amplifyNext",
+    "PER_EQUIPPED": "perEquipped"
   },
   "rarities": {
     "common": {

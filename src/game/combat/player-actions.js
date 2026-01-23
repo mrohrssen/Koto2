@@ -62,6 +62,10 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
         const weapon = player.equipment?.weapon;
         const empty = 5 - (weapon?.equippedChips?.length || 0);
         baseDamage += buff.effect.flatBonusPerEmpty * empty;
+      } else if (buff.effect.flatBonusPerEquipped) {
+        const weapon = player.equipment?.weapon;
+        const equipped = weapon?.equippedChips?.length || 0;
+        baseDamage += buff.effect.flatBonusPerEquipped * equipped;
       } else if (buff.effect.flatBonus) {
         baseDamage += buff.effect.flatBonus;
       }
@@ -71,6 +75,8 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
     const modBuffs = consumeBuffsByType(player, 'PIPELINE_MODIFIER');
     const runTwice = modBuffs.some(b => b.effect.runTwice);
     const nextChipDouble = modBuffs.some(b => b.effect.nextChipDouble);
+    const nextChipAmplifyBuff = modBuffs.find(b => b.effect.nextChipAmplify);
+    const nextChipAmplify = nextChipAmplifyBuff ? nextChipAmplifyBuff.effect.nextChipAmplify : null;
 
     // Get weapon chips in slot order and execute pipeline
     const weaponChips = getWeaponPipelineChips(player);
@@ -90,7 +96,8 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
         runKills: player._runKills || 0,
         runChipsDestroyed: player._runChipsDestroyed || 0,
         player,
-        nextChipDouble
+        nextChipDouble,
+        nextChipAmplify
       };
 
       const pipelineResult = executeChipPipeline(weaponChips, pipelineContext);

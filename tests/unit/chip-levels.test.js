@@ -54,27 +54,27 @@ describe('getScaledEffectValue', () => {
   });
 
   it('multiply chip at level 1 returns base value', () => {
-    const chip = CHIPS.speaker; // multiply, value: 1.5
-    assert.strictEqual(getScaledEffectValue(chip, 1), 1.5);
+    const chip = CHIPS.speaker; // multiply, value: 1.3
+    assert.strictEqual(getScaledEffectValue(chip, 1), 1.3);
   });
 
   it('multiply chip at level 7 scales bonus portion', () => {
-    const chip = CHIPS.speaker; // multiply, value: 1.5
-    // 1 + (1.5-1) * (1 + 6*0.05) = 1 + 0.5 * 1.3 = 1.65
+    const chip = CHIPS.speaker; // multiply, value: 1.3
+    // 1 + (1.3-1) * (1 + 6*0.05) = 1 + 0.3 * 1.3 = 1.39
     const result = getScaledEffectValue(chip, 7);
-    assert.ok(Math.abs(result - 1.65) < 0.001, `Expected ~1.65, got ${result}`);
+    assert.ok(Math.abs(result - 1.39) < 0.001, `Expected ~1.39, got ${result}`);
   });
 
-  it('critMod chip scales without floor', () => {
-    const chip = CHIPS.glasses; // critMod, value: 20
-    // 20 * (1 + 6*0.05) = 20 * 1.3 = 26
+  it('rampingMultiply chip scales as decimal', () => {
+    const chip = CHIPS.glasses; // rampingMultiply, value: 0.05
+    // 0.05 * (1 + 6*0.05) = 0.05 * 1.3 = 0.065
     const result = getScaledEffectValue(chip, 7);
-    assert.ok(Math.abs(result - 26) < 0.001, `Expected ~26, got ${result}`);
+    assert.ok(Math.abs(result - 0.065) < 0.001, `Expected ~0.065, got ${result}`);
   });
 
   it('stacking chip uses flatAdd formula', () => {
-    const chip = CHIPS.book; // stacking, value: 3
-    // floor(3 * (1 + 2*0.05)) = floor(3 * 1.1) = floor(3.3) = 3
-    assert.strictEqual(getScaledEffectValue(chip, 3), 3);
+    const chip = CHIPS.book; // stacking, value: 2
+    // floor(2 * (1 + 2*0.05)) = floor(2 * 1.1) = floor(2.2) = 2
+    assert.strictEqual(getScaledEffectValue(chip, 3), 2);
   });
 });

@@ -88,12 +88,12 @@ describe('Buff Management', () => {
 });
 
 describe('executeInstantSkill', () => {
-  it('lightbulb deals 40 damage', () => {
+  it('lightbulb deals 20 damage', () => {
     const player = { hp: 100, maxHp: 100, attack: 15, _combatStacks: {}, _runKills: 0 };
     const enemy = { hp: 200, maxHp: 200 };
     const result = executeInstantSkill(player, enemy, CHIPS.lightbulb);
-    assert.strictEqual(result.damage, 40);
-    assert.strictEqual(enemy.hp, 160);
+    assert.strictEqual(result.damage, 20);
+    assert.strictEqual(enemy.hp, 180);
   });
 
   it('charcoal heals 30 HP', () => {
@@ -111,22 +111,22 @@ describe('executeInstantSkill', () => {
     assert.strictEqual(player.hp, 100);
   });
 
-  it('straw heals 20 and deals 10 damage', () => {
+  it('straw heals 15 and deals 8 damage', () => {
     const player = { hp: 50, maxHp: 100, attack: 15, _combatStacks: {}, _runKills: 0 };
     const enemy = { hp: 200, maxHp: 200 };
     const result = executeInstantSkill(player, enemy, CHIPS.straw);
-    assert.strictEqual(result.heal, 20);
-    assert.strictEqual(result.damage, 10);
-    assert.strictEqual(player.hp, 70);
-    assert.strictEqual(enemy.hp, 190);
+    assert.strictEqual(result.heal, 15);
+    assert.strictEqual(result.damage, 8);
+    assert.strictEqual(player.hp, 65);
+    assert.strictEqual(enemy.hp, 192);
   });
 
-  it('book deals 5x stacks damage', () => {
+  it('book deals 3x stacks damage', () => {
     const player = { hp: 100, maxHp: 100, attack: 15, _combatStacks: { book: 8 }, _runKills: 0 };
     const enemy = { hp: 200, maxHp: 200 };
     const result = executeInstantSkill(player, enemy, CHIPS.book);
-    assert.strictEqual(result.damage, 40);
-    assert.strictEqual(enemy.hp, 160);
+    assert.strictEqual(result.damage, 24);
+    assert.strictEqual(enemy.hp, 176);
   });
 
   it('book deals 0 damage with no stacks', () => {
@@ -136,18 +136,18 @@ describe('executeInstantSkill', () => {
     assert.strictEqual(result.damage, 0);
   });
 
-  it('wallet deals kills*2 damage', () => {
+  it('wallet deals kills*1.5 damage', () => {
     const player = { hp: 100, maxHp: 100, attack: 15, _combatStacks: {}, _runKills: 10 };
     const enemy = { hp: 200, maxHp: 200 };
     const result = executeInstantSkill(player, enemy, CHIPS.wallet);
-    assert.strictEqual(result.damage, 20);
+    assert.strictEqual(result.damage, 15);
   });
 
-  it('drum deals 3x player.attack', () => {
+  it('drum deals 2x player.attack', () => {
     const player = { hp: 100, maxHp: 100, attack: 25, _combatStacks: {}, _runKills: 0 };
     const enemy = { hp: 200, maxHp: 200 };
     const result = executeInstantSkill(player, enemy, CHIPS.drum);
-    assert.strictEqual(result.damage, 75);
+    assert.strictEqual(result.damage, 50);
   });
 
   it('enemy hp does not go below 0', () => {
@@ -166,19 +166,19 @@ describe('executeInstantSkill', () => {
 });
 
 describe('activateBuffSkill', () => {
-  it('battery creates PRE_PIPELINE buff with flatBonus 20', () => {
+  it('battery creates PRE_PIPELINE buff with flatBonus 8', () => {
     const player = { _activeBuffs: [] };
     const buff = activateBuffSkill(player, CHIPS.battery);
     assert.strictEqual(buff.buffType, 'PRE_PIPELINE');
-    assert.strictEqual(buff.effect.flatBonus, 20);
+    assert.strictEqual(buff.effect.flatBonus, 8);
     assert.strictEqual(player._activeBuffs.length, 1);
   });
 
-  it('speaker creates POST_PIPELINE buff with multiplier 1.8', () => {
+  it('speaker creates POST_PIPELINE buff with multiplier 1.4', () => {
     const player = { _activeBuffs: [] };
     const buff = activateBuffSkill(player, CHIPS.speaker);
     assert.strictEqual(buff.buffType, 'POST_PIPELINE');
-    assert.strictEqual(buff.effect.multiplier, 1.8);
+    assert.strictEqual(buff.effect.multiplier, 1.4);
   });
 
   it('clock creates PIPELINE_MODIFIER with runTwice', () => {
@@ -206,7 +206,7 @@ describe('activateBuffSkill', () => {
     const buff = activateBuffSkill(player, CHIPS.battery);
     buff.effect.flatBonus = 999;
     // Original chip data should be unaffected
-    assert.strictEqual(CHIPS.battery.skill.effect.flatBonus, 20);
+    assert.strictEqual(CHIPS.battery.skill.effect.flatBonus, 8);
   });
 });
 
@@ -249,7 +249,7 @@ describe('useChipSkill', () => {
     const result = useChipSkill(player, enemy, 'lightbulb');
     assert.strictEqual(result.success, true);
     assert.strictEqual(result.skillType, 'instant');
-    assert.strictEqual(result.damage, 40);
+    assert.strictEqual(result.damage, 20);
     assert.strictEqual(player._chipCharges.lightbulb, 0);
   });
 
@@ -282,6 +282,6 @@ describe('useChipSkill', () => {
     const player = makePlayer('lightbulb');
     const enemy = { hp: 200, maxHp: 200 };
     useChipSkill(player, enemy, 'lightbulb');
-    assert.strictEqual(enemy.hp, 160);
+    assert.strictEqual(enemy.hp, 180);
   });
 });
