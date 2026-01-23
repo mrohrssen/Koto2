@@ -149,7 +149,7 @@ function showNextFlashCardFromQueue() {
 /**
  * Start the combat loop (vocab-pause turn-based combat)
  */
-export function startCombatLoop() {
+export async function startCombatLoop() {
   if (combatActive) return;
 
   combatActive = true;
@@ -167,16 +167,11 @@ export function startCombatLoop() {
     })
     .catch(err => console.warn('[Combat] Failed to fetch chip loadout:', err));
 
-  // Update action panel to show combat indicator
-  updateActionPanel();
+  // Initialize word practice cards and wait for words to be ready
+  await wordPractice.initCombatWords();
 
-  // Initialize word practice cards
-  wordPractice.initCombatWords();
-
-  // After initCombatWords fetches words, show first flash card
-  setTimeout(() => {
-    showNextFlashCardFromQueue();
-  }, 300);
+  // Show first flash card now that words are loaded
+  showNextFlashCardFromQueue();
 
   console.log('[Combat] Started paused - review a word to begin attacking');
   // Combat starts paused, player must review a vocab word to earn first attack
@@ -269,10 +264,11 @@ export async function executePlayerAttack() {
     characterUI.updatePlayerHPBar(result.playerHp);
 
     // Show glitching dialogue when enemy HP drops below 30%
-    // Combat pauses until Enter is pressed - don't schedule next attack
+    // Combat pauses until dialogue dismisses, then enemy attacks
     if (result.enemyGlitching && result.glitchingDialogue) {
+      playerAttackPending = false;
       showEnemyDialogue(result.glitchingDialogue, 'glitching');
-      return; // Timers cleared in showEnemyDialogue, restarted in dismissEnemyDialogue
+      return;
     }
 
     // Check if combat ended

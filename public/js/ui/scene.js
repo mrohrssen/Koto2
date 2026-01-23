@@ -23,16 +23,42 @@ export function showEnemy(enemy) {
   }
 
   dom.enemyName.textContent = enemy.nameEn || enemy.name || 'Enemy';
-  dom.enemySprite.src = enemy.sprite || '';
-  dom.enemySprite.classList.add('visible');
   dom.enemyInfo.classList.add('visible');
   updateEnemyHP(enemy.hp, enemy.maxHp);
+
+  // Construct sprite path from enemy ID
+  const spritePath = enemy.sprite || `/assets/sprites/enemies/${enemy.id}.png`;
+  dom.enemySprite.src = spritePath;
+  dom.enemySprite.onerror = () => {
+    // Hide broken img, show emoji placeholder instead
+    dom.enemySprite.classList.remove('visible');
+    showPlaceholder(enemy);
+  };
+  dom.enemySprite.onload = () => {
+    removePlaceholder();
+    dom.enemySprite.classList.add('visible');
+  };
+}
+
+function showPlaceholder(enemy) {
+  removePlaceholder();
+  const el = document.createElement('div');
+  el.id = 'enemy-placeholder';
+  el.style.cssText = 'width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:2;position:relative;';
+  const emojiMap = { stressed: '😰', aggressive: '😡', calm: '😐', shy: '😳', cheerful: '😊', mysterious: '🎭', arrogant: '😤', kind: '🥺', rushed: '😤' };
+  el.textContent = emojiMap[enemy.personality] || '👤';
+  dom.enemySpriteContainer.appendChild(el);
+}
+
+function removePlaceholder() {
+  document.getElementById('enemy-placeholder')?.remove();
 }
 
 /** Hide enemy from scene */
 export function hideEnemy() {
   dom.enemySprite.classList.remove('visible');
   dom.enemyInfo.classList.remove('visible');
+  removePlaceholder();
 }
 
 /** Update enemy HP bar */

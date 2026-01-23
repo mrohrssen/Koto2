@@ -17,14 +17,16 @@ export function init(callbacks) {
 
 /** Update enemy HP bar via scene module */
 export function updateEnemyHPBar(hp) {
-  const gameState = getGameState();
-  const maxHp = gameState.combat?.enemy?.maxHp || 100;
-  sceneModule.updateEnemyHP(hp, maxHp);
+  // hp can be a number or { current, max } object from combat-cycle response
+  const current = typeof hp === 'object' ? hp.current : hp;
+  const max = typeof hp === 'object' ? hp.max : (getGameState().combat?.enemy?.maxHp || 100);
+  sceneModule.updateEnemyHP(current, max);
 }
 
 /** Update player HP bar via hp-bar module */
 export function updatePlayerHPBar(hp) {
-  const gameState = getGameState();
-  const maxHp = gameState.player?.maxHp || 100;
-  hpBar.updatePlayerHP(hp, maxHp);
+  // hp can be a number or { current, max } object from combat-cycle response
+  const current = typeof hp === 'object' ? hp.current : hp;
+  const max = typeof hp === 'object' ? hp.max : (getGameState().player?.maxHp || 100);
+  hpBar.updatePlayerHP(current, max);
 }

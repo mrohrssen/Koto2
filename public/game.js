@@ -115,10 +115,12 @@ function updateScene() {
 }
 
 function updateChipRow() {
-  const weapon = gameState.player?.equipment?.weapon;
-  const equipped = weapon?.equippedChips || [];
-  const charges = gameState.player?._chipCharges || {};
-  const levels = gameState.player?._chipLevels || {};
+  // Prefer enriched chip objects from loadout cache (has name, rarity, skill info)
+  // Fall back to raw game state (which only has chip ID strings)
+  const cacheChips = chipLoadoutCache?.equipment?.weapon?.equippedChips;
+  const equipped = cacheChips || [];
+  const charges = chipLoadoutCache?.chipCharges || gameState.player?._chipCharges || {};
+  const levels = chipLoadoutCache?.chipLevels || gameState.player?._chipLevels || {};
 
   chipRow.render(equipped, {
     charges: equipped.map(c => charges[c?.id] || 0),
@@ -158,7 +160,10 @@ function updateGameContent() {
       explorationUI.renderBossReady();
       break;
     case 'combat':
-      // Combat rendering handled by combat-loop + actions module
+      // Clear stale buttons; flash card will be rendered by combat-loop
+      if (!combatLoopUI.isCombatActive()) {
+        actions.clear();
+      }
       break;
     case 'post_combat_shop':
       economyUI.renderPostCombatShop();
@@ -177,7 +182,8 @@ function showEnemyDialogue(text, type = 'possessed') {
   if (!text) return Promise.resolve();
   enemyDialogueActive = true;
 
-  scene.showToast(text, type === 'liberated' ? 5000 : 3000);
+  const duration = type === 'liberated' ? 5000 : 3000;
+  scene.showToast(text, duration);
 
   dialogueDismissPromise = new Promise(resolve => {
     dialogueDismissResolve = resolve;
@@ -186,7 +192,11 @@ function showEnemyDialogue(text, type = 'possessed') {
       resolve();
       dialogueDismissResolve = null;
       dialogueDismissPromise = null;
-    }, type === 'liberated' ? 5000 : 3000);
+      // Resume combat after mid-combat dialogue (e.g., glitching at 30% HP)
+      if (combatLoopUI.isCombatActive() && !combatLoopUI.isCombatPausedForVocab()) {
+        combatLoopUI.executeEnemyAttackThenPause();
+      }
+    }, duration);
   });
   return dialogueDismissPromise;
 }
@@ -223,7 +233,9 @@ async function startNewRun() {
 }
 
 async function startEncounter() {
-  const result = await apiStartEncounter();
+  const result = gameState.phase === 'room_encounter'
+    ? await apiRoomEncounter()
+    : await apiStartEncounter();
   if (result?.state) {
     updateGameState(result.state);
     updateUI();
@@ -301,21 +313,13 @@ function showGameOverModal(result) {
 
 // ============ FLASH CARD HANDLERS ============
 function handleCardSwipe(direction) {
-  const grade = direction === 'right' ? 5 : 1;
-  const word = currentFlashCardWord;
-  if (!word) return;
-
-  if (word.vid && word.sid) {
-    apiSendJpdbReview(word.vid, word.sid, grade);
-  }
-
-  wordPractice.fetchReplacementWord(word.vid);
-  resumeCombatAfterVocab();
+  const grade = direction === 'right' ? 4 : 1;
+  wordPractice.submitSelfGradeReview(grade);
 }
 
 function handleCardFlip() {
   if (currentFlashCardWord?.word) {
-    tts.speakWord(currentFlashCardWord.word);
+    tts.speakText(currentFlashCardWord.word);
   }
 }
 
@@ -453,6 +457,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     startBossEncounter,
     nextFloor,
     startNewRun,
+    returnToHub,
     apiGetStartingWards,
     apiSelectStartingWard,
     apiGetNextWardOptions,
@@ -489,7 +494,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateGameState,
     updateUI,
     settings,
-    narration: null,
+    narration: { showNarration: (text) => scene.showToast(text, 3000) },
     wordPractice,
     characterUI,
     showDamageNumber: (dmg, isPlayer, isCrit) => scene.showDamageNumber(dmg, { isCrit }),
@@ -518,6 +523,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();
   await loadGameState();
   updateUI();
+
+  // Initialize TTS and review type from server settings
+  const serverSettings = await settings.loadServerSettings();
+  tts.initSettings(serverSettings);
+  wordPractice.setReviewType?.(serverSettings.reviewType || 'flash-card');
 
   if (gameState.phase === 'combat' && gameState.combat?.enemy?.hp > 0) {
     startCombatLoop();

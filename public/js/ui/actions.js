@@ -89,6 +89,12 @@ export function showFlashCard(word) {
   card.addEventListener('touchstart', handleTouchStart, { passive: true });
   card.addEventListener('touchmove', handleTouchMove, { passive: false });
   card.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+  // Mouse swipe handling (for desktop)
+  card.addEventListener('mousedown', handleMouseDown);
+  card.addEventListener('mousemove', handleMouseMove);
+  card.addEventListener('mouseup', handleMouseUp);
+  card.addEventListener('mouseleave', handleMouseUp);
 }
 
 /** Show empty action area */
@@ -151,6 +157,65 @@ function handleTouchEnd() {
     }, 200);
   } else {
     // Snap back
+    if (card) {
+      card.style.setProperty('--swipe-x', '0px');
+      card.style.setProperty('--swipe-rotate', '0deg');
+      card.classList.remove('swiping-right', 'swiping-left');
+    }
+  }
+  isSwiping = false;
+}
+
+// --- Mouse handlers (desktop swipe) ---
+
+let mouseIsDown = false;
+
+function handleMouseDown(e) {
+  if (!cardFlipped) return;
+  mouseIsDown = true;
+  touchStartX = e.clientX;
+  touchStartY = e.clientY;
+  currentSwipeX = 0;
+  isSwiping = false;
+  e.preventDefault();
+}
+
+function handleMouseMove(e) {
+  if (!cardFlipped || !mouseIsDown) return;
+  const dx = e.clientX - touchStartX;
+  const dy = e.clientY - touchStartY;
+
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+    isSwiping = true;
+    currentSwipeX = dx;
+
+    const card = document.getElementById('flash-card');
+    if (card) {
+      const rotate = dx * 0.05;
+      card.style.setProperty('--swipe-x', `${dx}px`);
+      card.style.setProperty('--swipe-rotate', `${rotate}deg`);
+      card.classList.toggle('swiping-right', dx > 0);
+      card.classList.toggle('swiping-left', dx < 0);
+    }
+  }
+}
+
+function handleMouseUp() {
+  if (!mouseIsDown) return;
+  mouseIsDown = false;
+  if (!cardFlipped || !isSwiping) return;
+
+  const card = document.getElementById('flash-card');
+  if (Math.abs(currentSwipeX) > SWIPE_THRESHOLD) {
+    const direction = currentSwipeX > 0 ? 'right' : 'left';
+    if (card) {
+      card.style.transition = 'transform 0.3s ease';
+      card.style.transform = `translateX(${currentSwipeX > 0 ? 300 : -300}px) rotate(${currentSwipeX * 0.1}deg)`;
+    }
+    setTimeout(() => {
+      if (onCardSwipe) onCardSwipe(direction);
+    }, 200);
+  } else {
     if (card) {
       card.style.setProperty('--swipe-x', '0px');
       card.style.setProperty('--swipe-rotate', '0deg');

@@ -13,6 +13,7 @@ let startEncounter = null;
 let startBossEncounter = null;
 let nextFloor = null;
 let startNewRun = null;
+let returnToHub = null;
 
 // API functions
 let apiGetStartingWards = null;
@@ -32,6 +33,7 @@ export function init(callbacks) {
   startBossEncounter = callbacks.startBossEncounter;
   nextFloor = callbacks.nextFloor;
   startNewRun = callbacks.startNewRun;
+  returnToHub = callbacks.returnToHub;
   apiGetStartingWards = callbacks.apiGetStartingWards;
   apiSelectStartingWard = callbacks.apiSelectStartingWard;
   apiGetNextWardOptions = callbacks.apiGetNextWardOptions;
@@ -60,14 +62,14 @@ export async function renderWardSelection() {
     wards = await apiGetNextWardOptions();
   }
 
-  if (!wards || !wards.wards) {
+  if (!wards || !wards.length) {
     actions.setContent('<p style="text-align:center">No wards available</p>');
     return;
   }
 
   let selectedWardId = null;
 
-  const wardHtml = wards.wards.map(w => `
+  const wardHtml = wards.map(w => `
     <div class="ward-option" data-ward-id="${w.id}">
       <strong>${w.nameEn || w.name}</strong>
       <small>${w.description || ''}</small>
@@ -154,6 +156,6 @@ export function renderRunEnded() {
     <button class="action-btn action-btn-primary" id="return-hub-btn">Return to Hub</button>
   `);
   document.getElementById('return-hub-btn')?.addEventListener('click', () => {
-    window.location.reload();
+    returnToHub();
   });
 }

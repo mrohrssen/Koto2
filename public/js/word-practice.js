@@ -191,6 +191,7 @@ export function getNextCombatWord() {
   return combatWords[selectedWordIndex] || combatWords[0];
 }
 
+
 /**
  * Render word cards to DOM
  */
@@ -416,7 +417,7 @@ export function openSelfGradeModal(word) {
  * Close self-grade modal
  */
 export function closeSelfGradeModal() {
-  document.getElementById('self-grade-modal').classList.add('hidden');
+  document.getElementById('self-grade-modal')?.classList.add('hidden');
 }
 
 /**
@@ -433,7 +434,7 @@ export function updateSelfGradeSelection() {
  * Close word input modal
  */
 export function closeWordInputModal() {
-  document.getElementById('word-input-modal').classList.add('hidden');
+  document.getElementById('word-input-modal')?.classList.add('hidden');
 }
 
 /**
