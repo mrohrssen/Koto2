@@ -25,7 +25,7 @@ test.describe('Boss Fights', () => {
     await setupCharacter(gameHelper);
     await gameHelper.setupCombat();
     // Weaken enemy for fast kill
-    await gameHelper.setEnemyHp(5);
+    await gameHelper.setEnemyHp(1);
     await gameHelper.winCombat(10);
     await gameHelper.page.waitForTimeout(3000);
     const phase = await gameHelper.getPhase();
