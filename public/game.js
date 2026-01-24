@@ -14,6 +14,7 @@ import * as takeover from './js/ui/takeover.js';
 import * as hpBar from './js/ui/hp-bar.js';
 import * as chipRow from './js/ui/chip-row.js';
 import * as scene from './js/ui/scene.js';
+import * as audio from './js/audio.js';
 
 // API imports - these are the server communication functions
 import {
@@ -528,6 +529,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const serverSettings = await settings.loadServerSettings();
   tts.initSettings(serverSettings);
   wordPractice.setReviewType?.(serverSettings.reviewType || 'flash-card');
+
+  // Initialize audio on first user interaction (browser autoplay policy)
+  async function ensureAudio() {
+    await audio.initAudio();
+    document.removeEventListener('click', ensureAudio);
+    document.removeEventListener('touchstart', ensureAudio);
+  }
+  document.addEventListener('click', ensureAudio, { once: true });
+  document.addEventListener('touchstart', ensureAudio, { once: true });
 
   if (gameState.phase === 'combat' && gameState.combat?.enemy?.hp > 0) {
     startCombatLoop();
