@@ -74,7 +74,9 @@ export function showFlashCard(word) {
       <div class="flash-card" id="flash-card">
         <div class="flash-card-front">${escapeHtml(word.word)}</div>
         <div class="flash-card-back">
-          <div class="flash-card-reading">${escapeHtml(word.reading || '')}</div>
+          <div class="flash-card-word">${word.reading && word.reading !== word.word
+            ? `<ruby>${escapeHtml(word.word)}<rt>${escapeHtml(word.reading)}</rt></ruby>`
+            : escapeHtml(word.word)}</div>
           <div class="flash-card-meaning">${escapeHtml(Array.isArray(word.meanings) ? word.meanings.join(', ') : word.meanings || '')}</div>
           <div class="flash-card-hint">&larr; didn't know &nbsp; | &nbsp; knew it &rarr;</div>
         </div>
@@ -157,13 +159,16 @@ function handleTouchEnd() {
     const direction = currentSwipeX > 0 ? 'right' : 'left';
     // Animate off screen
     if (card) {
-      card.style.transition = 'transform 0.3s ease';
-      card.style.transform = `translateX(${currentSwipeX > 0 ? 300 : -300}px) rotate(${currentSwipeX * 0.1}deg)`;
+      card.style.transition = 'transform 0.3s ease, opacity 0.25s ease';
+      card.style.transform = `translateX(${currentSwipeX > 0 ? 500 : -500}px) rotate(${currentSwipeX * 0.1}deg)`;
+      card.style.opacity = '0';
     }
     playSFX(direction === 'right' ? 'swipe-right' : 'swipe-left');
     setTimeout(() => {
+      const container = document.getElementById('flash-card-container');
+      if (container) container.remove();
       if (onCardSwipe) onCardSwipe(direction);
-    }, 200);
+    }, 300);
   } else {
     // Snap back
     if (card) {
@@ -218,13 +223,16 @@ function handleMouseUp() {
   if (Math.abs(currentSwipeX) > SWIPE_THRESHOLD) {
     const direction = currentSwipeX > 0 ? 'right' : 'left';
     if (card) {
-      card.style.transition = 'transform 0.3s ease';
-      card.style.transform = `translateX(${currentSwipeX > 0 ? 300 : -300}px) rotate(${currentSwipeX * 0.1}deg)`;
+      card.style.transition = 'transform 0.3s ease, opacity 0.25s ease';
+      card.style.transform = `translateX(${currentSwipeX > 0 ? 500 : -500}px) rotate(${currentSwipeX * 0.1}deg)`;
+      card.style.opacity = '0';
     }
     playSFX(direction === 'right' ? 'swipe-right' : 'swipe-left');
     setTimeout(() => {
+      const container = document.getElementById('flash-card-container');
+      if (container) container.remove();
       if (onCardSwipe) onCardSwipe(direction);
-    }, 200);
+    }, 300);
   } else {
     if (card) {
       card.style.setProperty('--swipe-x', '0px');

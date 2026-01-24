@@ -405,9 +405,16 @@ html, body {
   display: flex;
 }
 
-.flash-card-reading {
-  font-size: 20px;
-  color: var(--text-secondary);
+.flash-card-word {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.flash-card-word ruby rt {
+  font-size: 14px;
+  font-weight: 400;
+  color: #666;
 }
 
 .flash-card-meaning {
