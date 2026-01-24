@@ -160,9 +160,9 @@ export default function createMiscRoutes({
     }
 
     const testChips = [
-      { id: 'fryingPan', name: 'フライパン', nameEn: 'Frying Pan', category: 'stat', rarity: 'uncommon', effects: { stats: { str: 4, vit: 1 } } },
-      { id: 'compass', name: 'コンパス', nameEn: 'Drafting Compass', category: 'onHit', rarity: 'rare', effects: { onHit: { chance: 0.15, status: 'defrag', duration: 2 } } },
-      { id: 'businessCard', name: '名刺', nameEn: 'Business Card', category: 'counter', rarity: 'uncommon', effects: { counter: { trigger: 'onKill', stat: 'str', perStack: 1, maxStacks: 10 } } }
+      { id: 'battery', name: '電池ボット', nameEn: 'Battery Bot', category: 'pipeline', rarity: 'common', effects: { pipeline: { type: 'flatAdd', value: 5, triggerChance: 1 } } },
+      { id: 'speaker', name: 'スピーカーボット', nameEn: 'Speaker Bot', category: 'pipeline', rarity: 'uncommon', effects: { pipeline: { type: 'multiply', value: 1.5, triggerChance: 0.8 } } },
+      { id: 'scissors', name: 'ハサミボット', nameEn: 'Scissors Bot', category: 'pipeline', rarity: 'uncommon', effects: { pipeline: { type: 'flatAdd', value: 8, triggerChance: 0.9 } } }
     ];
 
     player.chips = player.chips || [];
@@ -195,6 +195,19 @@ export default function createMiscRoutes({
           gameManager.combat = null;
           gameManager.run.postCombatShop = null;
           gameManager.run.bossDefeated = false;
+          // Set up a boss room so derivePhase returns boss_ready
+          const bossRoom = {
+            id: 'debug_boss',
+            type: 'boss',
+            isBossRoom: true,
+            roomNumber: gameManager.run.encountersNeeded,
+            totalRooms: gameManager.run.encountersNeeded,
+            floor: gameManager.run.floor || 1,
+            explored: true,
+            interacted: false
+          };
+          gameManager.run.rooms = [bossRoom];
+          gameManager.run.currentRoom = 0;
           break;
         }
         case 'floor_complete': {

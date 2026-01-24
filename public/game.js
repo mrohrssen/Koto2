@@ -332,7 +332,11 @@ async function openChipEquipView() {
   const data = await apiGetChipLoadout();
   chipLoadoutCache = data;
 
-  const equipped = data.equipped || [];
+  const weaponData = data.equipment?.weapon || {};
+  const equippedChips = weaponData.equippedChips || [];
+  const maxSlots = weaponData.maxSlots || 5;
+  // Build a fixed-length slots array: equipped chips + empty slots
+  const equipped = Array.from({ length: maxSlots }, (_, i) => equippedChips[i] || null);
   const inventory = data.inventory || [];
 
   content.innerHTML = `

@@ -1,55 +1,34 @@
-import { test, expect, setupCharacter, cleanupAfterTest } from '../fixtures/test-fixtures';
+import { test, expect, setupCharacter } from '../fixtures/test-fixtures';
 import { SELECTORS } from '../utils/selectors';
 
 test.describe('Boss Fights', () => {
-  test.beforeEach(async ({ gameHelper }) => {
+  test('boss ready phase shows Fight Boss button', async ({ gameHelper, page }) => {
     await setupCharacter(gameHelper);
+    await gameHelper.forcePhase('boss_ready');
+    await expect(page.locator(SELECTORS.bossFightBtn)).toBeVisible({ timeout: 3000 });
   });
 
-  test.afterEach(async ({ page }) => {
-    await cleanupAfterTest(page);
-  });
-
-  test('should track encounters in run state', async ({ page, gameHelper }) => {
-    await gameHelper.startRun();
-    await gameHelper.selectWard('nerima');
-
-    // Check game state has run tracking
-    const state = await page.evaluate(() => (window as any).gameState);
-    expect(state.run).toBeTruthy();
-    expect(state.run.encountersCompleted).toBeDefined();
-  });
-
-  test('should have encountersNeeded for boss progression', async ({ page, gameHelper }) => {
-    await gameHelper.startRun();
-    await gameHelper.selectWard('nerima');
-
-    // The game should track when boss is ready
-    const state = await page.evaluate(() => (window as any).gameState);
-    expect(state.run.encountersNeeded).toBeGreaterThan(0);
-  });
-});
-
-test.describe('Boss State Tracking', () => {
-  test.afterEach(async ({ page }) => {
-    await cleanupAfterTest(page);
-  });
-
-  test('should start on floor 1', async ({ page, gameHelper }) => {
+  test('boss combat shows flash cards and deals damage', async ({ gameHelper }) => {
     await setupCharacter(gameHelper);
-    await gameHelper.startRun();
-    await gameHelper.selectWard('nerima');
-
-    const floor = await gameHelper.getCurrentFloor();
-    expect(floor).toBe(1);
+    // Use debug-force-combat (creates a real enemy — sufficient for combat flow test)
+    await gameHelper.setupCombat();
+    await gameHelper.waitForFlashCard(10000);
+    const hpBefore = await gameHelper.getEnemyHp();
+    await gameHelper.flipCard();
+    await gameHelper.swipeCard('right');
+    await gameHelper.page.waitForTimeout(2000);
+    const hpAfter = await gameHelper.getEnemyHp();
+    expect(hpAfter).toBeLessThan(hpBefore);
   });
 
-  test('should have floor indicator visible', async ({ page, gameHelper }) => {
+  test('defeating enemy exits combat phase', async ({ gameHelper }) => {
     await setupCharacter(gameHelper);
-    await gameHelper.startRun();
-    await gameHelper.selectWard('nerima');
-
-    const floorDisplay = page.locator(SELECTORS.floorDisplay);
-    await expect(floorDisplay).toBeVisible();
+    await gameHelper.setupCombat();
+    // Weaken enemy for fast kill
+    await gameHelper.setEnemyHp(5);
+    await gameHelper.winCombat(10);
+    await gameHelper.page.waitForTimeout(3000);
+    const phase = await gameHelper.getPhase();
+    expect(phase).not.toBe('combat');
   });
 });

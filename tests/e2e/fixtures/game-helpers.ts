@@ -59,11 +59,24 @@ export class GameHelper {
     this.log('selectWard', `index=${index}`);
     await this.page.locator(SELECTORS.wardOption).nth(index).waitFor({ state: 'visible', timeout: 5000 });
     await this.page.locator(SELECTORS.wardOption).nth(index).click();
-    await this.page.locator(SELECTORS.wardProceedBtn).waitFor({ state: 'visible', timeout: 3000 });
-    await this.page.locator(SELECTORS.wardProceedBtn).click();
+    // Wait for the Proceed button to become enabled (ward click handler enables it)
     await this.page.waitForFunction(
-      () => (window as any).gameState?.phase !== 'ward_selection',
-      { timeout: 10000 }
+      (sel: string) => {
+        const btn = document.querySelector(sel) as HTMLButtonElement;
+        return btn && !btn.disabled;
+      },
+      SELECTORS.wardProceedBtn,
+      { timeout: 3000 }
+    );
+    await this.page.locator(SELECTORS.wardProceedBtn).click();
+    // Use server-based phase check (window.gameState may lag behind)
+    await this.page.waitForFunction(
+      async () => {
+        const res = await fetch('/api/game/state');
+        const state = await res.json();
+        return state?.phase !== 'ward_selection';
+      },
+      { timeout: 10000, polling: 500 }
     );
     this.log('selectWard', 'phase changed');
   }
@@ -326,10 +339,19 @@ export class GameHelper {
   /** Forfeit run and return to hub */
   async forfeitRun(): Promise<void> {
     await this.page.evaluate(async () => {
-      await fetch('/api/game/forfeit-run', { method: 'POST' });
+      await fetch('/api/game/forfeit', { method: 'POST' });
     });
     await this.page.reload();
     await this.page.waitForLoadState('load');
     await this.waitForPhase(['hub'], 5000);
+  }
+
+  /** Get player gold from server state */
+  async getPlayerGold(): Promise<number> {
+    return await this.page.evaluate(async () => {
+      const res = await fetch('/api/game/state');
+      const state = await res.json();
+      return state?.player?.gold ?? 0;
+    });
   }
 }
