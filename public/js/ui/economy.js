@@ -4,6 +4,8 @@
  * Handles: post-combat chip shop, starting chip selection
  */
 
+import { playSFX } from '../audio.js';
+
 let getGameState = null;
 let updateGameState = null;
 let updateUI = null;
@@ -69,6 +71,7 @@ function renderChipShopContent(items, isStarting) {
         updateGameState(result.state);
       }
       takeover.close('chipShop');
+      playSFX('chip-equip');
       sceneModule.showToast('Chip acquired!', 2000);
       updateUI();
     });

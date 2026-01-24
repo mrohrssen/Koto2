@@ -6,6 +6,7 @@
  */
 
 import { dom } from '../dom.js';
+import { playSFX } from '../audio.js';
 
 let onUseSkill = null; // Callback: (chipIndex) => void
 let currentPopupIndex = -1;
@@ -93,6 +94,7 @@ function showPopup(index, chip, charge, maxCharges) {
   dom.chipPopupCharge.textContent = isCharged ? 'Ready!' : `Charging ${charge}/${maxCharges}`;
   dom.chipPopupUse.disabled = !isCharged;
   dom.chipPopupUse.onclick = () => {
+    playSFX('chip-skill');
     if (onUseSkill) onUseSkill(index);
     hidePopup();
   };
