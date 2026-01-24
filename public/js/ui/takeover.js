@@ -6,6 +6,7 @@
  */
 
 import { dom } from '../dom.js';
+import { playSFX } from '../audio.js';
 
 const views = {};
 
@@ -27,6 +28,7 @@ export function open(viewName) {
   const view = views[viewName];
   if (view) {
     view.classList.add('active');
+    playSFX('takeover-open');
   }
 }
 
@@ -35,6 +37,7 @@ export function close(viewName) {
   const view = views[viewName];
   if (view) {
     view.classList.remove('active');
+    playSFX('takeover-close');
   }
 }
 

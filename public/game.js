@@ -14,6 +14,7 @@ import * as takeover from './js/ui/takeover.js';
 import * as hpBar from './js/ui/hp-bar.js';
 import * as chipRow from './js/ui/chip-row.js';
 import * as scene from './js/ui/scene.js';
+import * as audio from './js/audio.js';
 
 // API imports - these are the server communication functions
 import {
@@ -226,6 +227,7 @@ async function startNewRun() {
   if (result?.state) {
     updateGameState(result.state);
     updateUI();
+    audio.playBGM('main');
     if (gameState.run?.startingChipShop?.active) {
       economyUI.renderStartingChipShop(gameState.run.startingChipShop.items);
     }
@@ -290,6 +292,7 @@ function startCombatLoop() { combatLoopUI.startCombatLoop(); }
 function resumeCombatAfterVocab() { combatLoopUI.resumeCombatAfterVocab(); }
 
 function showVictoryModal(result) {
+  audio.stopBGM();
   scene.showToast('Victory!', 2000);
   setTimeout(async () => {
     await loadGameState();
@@ -298,6 +301,8 @@ function showVictoryModal(result) {
 }
 
 function showGameOverModal(result) {
+  audio.stopBGM();
+  audio.playSFX('defeat');
   takeover.open('gameover');
   const content = takeover.getContent('gameover');
   content.innerHTML = `
@@ -532,6 +537,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   const serverSettings = await settings.loadServerSettings();
   tts.initSettings(serverSettings);
   wordPractice.setReviewType?.(serverSettings.reviewType || 'flash-card');
+
+  // Initialize audio on first user interaction (browser autoplay policy)
+  async function ensureAudio() {
+    await audio.initAudio();
+    document.removeEventListener('click', ensureAudio);
+    document.removeEventListener('touchstart', ensureAudio);
+  }
+  document.addEventListener('click', ensureAudio, { once: true });
+  document.addEventListener('touchstart', ensureAudio, { once: true });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      audio.pauseBGM();
+    } else {
+      audio.resumeBGM();
+    }
+  });
 
   if (gameState.phase === 'combat' && gameState.combat?.enemy?.hp > 0) {
     startCombatLoop();

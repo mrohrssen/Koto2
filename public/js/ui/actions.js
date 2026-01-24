@@ -6,6 +6,7 @@
  */
 
 import { dom } from '../dom.js';
+import { playSFX } from '../audio.js';
 
 let onEquipBots = null;
 let onContextAction = null;
@@ -47,12 +48,14 @@ export function showButtons(contextLabel, { contextDisabled = false } = {}) {
   `;
 
   document.getElementById('equip-bots-btn').addEventListener('click', () => {
+    playSFX('button-tap');
     if (onEquipBots) onEquipBots();
   });
 
   const ctxBtn = document.getElementById('context-action-btn');
   if (!contextDisabled) {
     ctxBtn.addEventListener('click', () => {
+      playSFX('button-tap');
       if (onContextAction) onContextAction();
     });
   }
@@ -157,6 +160,7 @@ function handleTouchEnd() {
       card.style.transition = 'transform 0.3s ease';
       card.style.transform = `translateX(${currentSwipeX > 0 ? 300 : -300}px) rotate(${currentSwipeX * 0.1}deg)`;
     }
+    playSFX(direction === 'right' ? 'swipe-right' : 'swipe-left');
     setTimeout(() => {
       if (onCardSwipe) onCardSwipe(direction);
     }, 200);
@@ -217,6 +221,7 @@ function handleMouseUp() {
       card.style.transition = 'transform 0.3s ease';
       card.style.transform = `translateX(${currentSwipeX > 0 ? 300 : -300}px) rotate(${currentSwipeX * 0.1}deg)`;
     }
+    playSFX(direction === 'right' ? 'swipe-right' : 'swipe-left');
     setTimeout(() => {
       if (onCardSwipe) onCardSwipe(direction);
     }, 200);
