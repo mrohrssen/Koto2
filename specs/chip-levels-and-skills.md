@@ -19,13 +19,13 @@ Add two interconnected features to the chip system:
 
 ### Level Scaling Formulas
 
-**flatAdd chips** (e.g., powerCell base +5):
+**flatAdd chips** (e.g., battery base +5):
 ```
 scaledValue = floor(value * (1 + (level - 1) * 0.05))
 L1: +5, L2: +5, L3: +5, L4: +6, L5: +6, L6: +6, L7: +6
 ```
 
-**multiply chips** (e.g., amplifier base 1.5x):
+**multiply chips** (e.g., speaker base 1.5x):
 Scale the bonus portion (value - 1), keep the base 1.0:
 ```
 scaledValue = 1 + (value - 1) * (1 + (level - 1) * 0.05)
@@ -40,7 +40,7 @@ L1: 1.5x, L2: 1.525x, L3: 1.55x, ... L7: 1.65x
 - Popup appears near the clicked chip (not center modal)
 - Uncharged: popup shows, button disabled (shows "Charging 3/5")
 - Skills do NOT change with chip level
-- Fixed values (no stat scaling), except `burstCycle` which uses `player.attack`
+- Fixed values (no stat scaling), except `drum` which uses `player.attack`
 - Combat only (turn-based)
 - Instant skills (damage/heal) bypass pipeline — applied directly to HP
 - Buff skills modify the next attack (see Buff Types below)
@@ -64,8 +64,8 @@ L1: 1.5x, L2: 1.525x, L3: 1.55x, ... L7: 1.65x
 6. Apply damage to enemy
 
 **Pipeline Modifier details:**
-- `Infinite Loop (runTwice)`: Execute pipeline twice with same baseDamage, **sum** both results as finalDamage. Very powerful — effectively doubles all chip effects.
-- `Perfect Copy (nextChipDouble)`: The next chip in pipeline execution order fires twice. If Copycat is in slot 3, the chip in slot 4 triggers twice.
+- `Rewind (runTwice)`: Execute pipeline twice with same baseDamage, **sum** both results as finalDamage. Very powerful — effectively doubles all chip effects.
+- `Facing Mirrors (nextChipDouble)`: The next chip in pipeline execution order fires twice. If Mirror Bot is in slot 3, the chip in slot 4 triggers twice.
 
 ### Skill Activation Animation
 - Full dramatic animation (~1 second)
@@ -99,31 +99,31 @@ L1: 1.5x, L2: 1.525x, L3: 1.55x, ... L7: 1.65x
 
 | Chip | Skill Name | Buff Type | Effect | Charges |
 |------|------------|-----------|--------|---------|
-| **powerCell** | Power Surge | PRE_PIPELINE | Next attack +20 flat damage | 5 |
-| **amplifier** | Overdrive | POST_PIPELINE | Next attack ×1.8 multiplier | 5 |
-| **critBooster** | Precision Strike | POST_PIPELINE | Next attack ×1.3 multiplier | 5 |
-| **overloader** | System Overload | instant | Deal 40 damage directly | 5 |
-| **finisher** | Execute | POST_PIPELINE | Next attack ×2.0 vs enemies <30% HP | 5 |
-| **recursion** | Infinite Loop | PIPELINE_MODIFIER | Next pipeline runs twice (sum results) | 5 |
-| **sacrifice** | Emergency Shutdown | instant | Heal 30 HP | 5 |
-| **stackOverflow** | Memory Dump | instant | Deal 5× current stack count as damage (0 at combat start) | 5 |
-| **minimalist** | Zen Mode | PRE_PIPELINE | Next attack +60 if 2+ empty weapon slots | 5 |
-| **lifelink** | Life Surge | instant | Heal 25 HP | 5 |
-| **bountyHunter** | Collect Bounty | instant | Deal (kills this run × 2) damage | 5 |
-| **siphon** | Drain Life | instant | Heal 20 HP, deal 10 damage | 5 |
-| **executiveOverride** | Authority | POST_PIPELINE | Next attack ×1.3 vs bosses only | 5 |
-| **phoenix** | Rebirth | DEFENSIVE | Next hit that would kill player → survive with 1 HP | 5 |
-| **unstable** | Controlled Chaos | PRE_PIPELINE | Next attack +15 flat damage | 5 |
-| **copycat** | Perfect Copy | PIPELINE_MODIFIER | Next chip in pipeline fires twice | 5 |
-| **lightweight** | Featherweight | PRE_PIPELINE | Next attack +30 per empty weapon slot | 5 |
-| **burstCycle** | Instant Burst | instant | Deal 3× player.attack as direct damage | 5 |
+| **battery** | Full Charge / 満充電 | PRE_PIPELINE | Next attack +20 flat damage | 5 |
+| **speaker** | Max Volume / 最大音量 | POST_PIPELINE | Next attack ×1.8 multiplier | 5 |
+| **glasses** | Weak Spot / 急所狙い | POST_PIPELINE | Next attack ×1.3 multiplier | 5 |
+| **lightBulb** | Flash / 閃光 | instant | Deal 40 damage directly | 5 |
+| **scissors** | Final Cut / とどめ切り | POST_PIPELINE | Next attack ×2.0 vs enemies <30% HP | 5 |
+| **clock** | Rewind / 巻き戻し | PIPELINE_MODIFIER | Next pipeline runs twice (sum results) | 5 |
+| **charcoal** | Warmth / 温もり | instant | Heal 30 HP | 5 |
+| **book** | Total Release / 全放出 | instant | Deal 5× current stack count as damage (0 at combat start) | 5 |
+| **eraser** | Clean Slate / 白紙 | PRE_PIPELINE | Next attack +60 if 2+ empty weapon slots | 5 |
+| **onigiri** | Extra Serving / 大盛り | instant | Heal 25 HP | 5 |
+| **wallet** | Cash Out / 清算 | instant | Deal (kills this run × 2) damage | 5 |
+| **straw** | Big Sip / 一気飲み | instant | Heal 20 HP, deal 10 damage | 5 |
+| **key** | Trump Card / 奥の手 | POST_PIPELINE | Next attack ×1.3 vs bosses only | 5 |
+| **egg** | Revival / 復活 | DEFENSIVE | Next hit that would kill player → survive with 1 HP | 5 |
+| **fireworks** | Grand Finale / 打ち上げ | PRE_PIPELINE | Next attack +15 flat damage | 5 |
+| **mirror** | Facing Mirrors / 合わせ鏡 | PIPELINE_MODIFIER | Next chip in pipeline fires twice | 5 |
+| **feather** | Light Step / 身軽 | PRE_PIPELINE | Next attack +30 per empty weapon slot | 5 |
+| **drum** | Power Hit / 強打 | instant | Deal 3× player.attack as direct damage | 5 |
 
 ### Skill Notes
-- `stackOverflow`: Stack count (`_combatStacks[chipId]`) resets each combat. Skill is weak at fight start, strong after building stacks. Intentional.
-- `burstCycle`: References `player.attack` — exception to "fixed values" rule.
-- `phoenix` (Rebirth): Intercepts enemy damage, NOT a pipeline buff. Checked in enemy damage application logic.
-- `finisher` (Execute): Condition checked at damage application — if enemy is below 30% HP when the attack lands, multiplier applies.
-- `executiveOverride` (Authority): Only applies if `enemy.isBoss === true`.
+- `book`: Stack count (`_combatStacks[chipId]`) resets each combat. Skill is weak at fight start, strong after building stacks. Intentional.
+- `drum`: References `player.attack` — exception to "fixed values" rule.
+- `egg` (Revival): Intercepts enemy damage, NOT a pipeline buff. Checked in enemy damage application logic.
+- `scissors` (Final Cut): Condition checked at damage application — if enemy is below 30% HP when the attack lands, multiplier applies.
+- `key` (Trump Card): Only applies if `enemy.isBoss === true`.
 
 ---
 
@@ -132,15 +132,15 @@ L1: 1.5x, L2: 1.525x, L3: 1.55x, ... L7: 1.65x
 ### chips.json - Add `skill` to each chip
 ```json
 {
-  "powerCell": {
-    "id": "powerCell",
-    "name": "パワーセル",
-    "nameEn": "Power Cell",
+  "battery": {
+    "id": "battery",
+    "name": "バッテリーボット",
+    "nameEn": "Battery Bot",
     "effects": { "pipeline": { "type": "flatAdd", "value": 5, "triggerChance": 1, "displayText": "+5" } },
     "skill": {
-      "id": "powerSurge",
-      "name": "パワーサージ",
-      "nameEn": "Power Surge",
+      "id": "fullCharge",
+      "name": "満充電",
+      "nameEn": "Full Charge",
       "description": "次の攻撃に+20ダメージ",
       "descriptionEn": "Next attack deals +20 damage",
       "type": "buff",
@@ -169,7 +169,7 @@ L1: 1.5x, L2: 1.525x, L3: 1.55x, ... L7: 1.65x
 ### Player State (state.js) - Add to run player
 ```javascript
 // Added to run.player (underscore prefix matches existing _combatStacks convention)
-_chipCharges: {},    // { [chipId]: number } - e.g., { powerCell: 3 }
+_chipCharges: {},    // { [chipId]: number } - e.g., { battery: 3 }
 _chipLevels: {},     // { [chipId]: 1-7 } - absent means level 1
 _activeBuffs: []     // Array of buff objects for next attack
 ```
@@ -177,11 +177,11 @@ _activeBuffs: []     // Array of buff objects for next attack
 ### Buff Object Shape
 ```javascript
 {
-  id: 'powerSurge',           // Skill ID
-  chipId: 'powerCell',        // Source chip
-  buffType: 'PRE_PIPELINE',   // PRE_PIPELINE | POST_PIPELINE | PIPELINE_MODIFIER | DEFENSIVE
-  effect: { flatBonus: 20 },  // Type-specific effect data
-  condition: null              // Optional: 'enemyBelow30', 'isBoss', 'emptySlots>=2'
+  id: 'fullCharge',              // Skill ID
+  chipId: 'battery',            // Source chip
+  buffType: 'PRE_PIPELINE',    // PRE_PIPELINE | POST_PIPELINE | PIPELINE_MODIFIER | DEFENSIVE
+  effect: { flatBonus: 20 },   // Type-specific effect data
+  condition: null               // Optional: 'enemyBelow30', 'isBoss', 'emptySlots>=2'
 }
 ```
 
@@ -191,20 +191,20 @@ _activeBuffs: []     // Array of buff objects for next attack
 
 | Decision | Answer |
 |----------|--------|
-| Chip ID format | Plain IDs only: `powerCell`, `amplifier` (no rarity suffixes) |
+| Chip ID format | Plain IDs only: `battery`, `speaker` (no rarity suffixes) |
 | Rarity system | Fixed per chip definition, affects drop rate only, no stat scaling |
 | Combat mode | Turn-based only (no realtime) |
 | Where charges live | `run.player._chipCharges = { [chipId]: number }` |
 | Charge increment trigger | After enemy turn resolves (1 full round complete) |
 | Charge on miss/block | Yes — a round passed regardless |
 | Charge on stun/sleep | No — player didn't get a real turn |
-| Infinite Loop result | Sum of both pipeline runs |
+| Rewind result | Sum of both pipeline runs |
 | Multiple post-pipeline buffs | Multiply together (×1.8 × ×1.3 = ×2.34) |
 | Multiple pre-pipeline buffs | Sum flat bonuses (+20 + +15 = +35) |
 | Buff lifetime | Consumed on next attack, cleared on combat end |
 | Level scaling for multiply chips | Scale bonus portion: `1 + (value-1) * (1 + (level-1)*0.05)` |
 | Level scaling for flatAdd chips | `floor(value * (1 + (level-1) * 0.05))` |
-| Phoenix (DEFENSIVE) | Checked in enemy damage application, not in pipeline |
+| Egg Revival (DEFENSIVE) | Checked in enemy damage application, not in pipeline |
 | Existing combat chip UI | Row of 5 icons already rendered in `combat.js renderCombatChips()` |
 
 ---
@@ -220,16 +220,16 @@ Each step is independently testable and should be a single commit.
 - No behavior change
 
 **Step 1.2: Add `skill` to chips.json (chips 1-6)**
-- Add `skill` object to: `powerCell`, `amplifier`, `critBooster`, `overloader`, `finisher`, `recursion`
+- Add `skill` object to: `battery`, `speaker`, `glasses`, `lightBulb`, `scissors`, `clock`
 - Include: id, name, nameEn, description, descriptionEn, type, buffType (if buff), effect, chargesRequired
 - For instant types: `"type": "instant"`, no buffType field
 - For buff types: `"type": "buff"`, include `"buffType": "PRE_PIPELINE"` etc.
 
 **Step 1.3: Add `skill` to chips.json (chips 7-12)**
-- Same for: `sacrifice`, `stackOverflow`, `minimalist`, `lifelink`, `bountyHunter`, `siphon`
+- Same for: `charcoal`, `book`, `eraser`, `onigiri`, `wallet`, `straw`
 
 **Step 1.4: Add `skill` to chips.json (chips 13-18)**
-- Same for: `executiveOverride`, `phoenix`, `unstable`, `copycat`, `lightweight`, `burstCycle`
+- Same for: `key`, `egg`, `fireworks`, `mirror`, `feather`, `drum`
 
 ---
 
@@ -282,13 +282,13 @@ Each step is independently testable and should be a single commit.
 **Step 3.2: Implement `executeInstantSkill(player, enemy, chip)`**
 - File: `src/game/combat/chip-skills.js`
 - Switch on `chip.id`:
-  - `overloader` → `{ damage: 40 }`
-  - `sacrifice` → `{ heal: 30 }`
-  - `lifelink` → `{ heal: 25 }`
-  - `siphon` → `{ heal: 20, damage: 10 }`
-  - `stackOverflow` → `{ damage: 5 * (player._combatStacks?.[chip.id] || 0) }`
-  - `bountyHunter` → `{ damage: (player._runKills || 0) * 2 }`
-  - `burstCycle` → `{ damage: player.attack * 3 }`
+  - `lightBulb` → `{ damage: 40 }`
+  - `charcoal` → `{ heal: 30 }`
+  - `onigiri` → `{ heal: 25 }`
+  - `straw` → `{ heal: 20, damage: 10 }`
+  - `book` → `{ damage: 5 * (player._combatStacks?.[chip.id] || 0) }`
+  - `wallet` → `{ damage: (player._runKills || 0) * 2 }`
+  - `drum` → `{ damage: player.attack * 3 }`
 - Apply damage to `enemy.hp`, apply heal to `player.hp` (capped at maxHp)
 - Return result object for API response
 
@@ -371,7 +371,7 @@ Each step is independently testable and should be a single commit.
     // Merge firedChips, healPlayer, etc.
   }
   ```
-- In `processPipelineChip()`: if `context.nextChipDouble` is true and this is the first chip after the copycat's position, process it twice (then clear the flag)
+- In `processPipelineChip()`: if `context.nextChipDouble` is true and this is the first chip after the mirror's position, process it twice (then clear the flag)
 
 **Step 4.6: Apply DEFENSIVE buffs**
 - File: `src/game/services/combat-service.js`
@@ -476,7 +476,7 @@ Each step is independently testable and should be a single commit.
 
 **Step 7.4: Buff indicator**
 - When buff applied: show small indicator text/icon near player HP bar
-- Text: buff name (e.g., "POWER SURGE")
+- Text: buff name (e.g., "満充電")
 - On next attack that consumes buff: flash and remove indicator
 - Track active buff indicators in module state
 
@@ -511,12 +511,7 @@ Each step is independently testable and should be a single commit.
 
 ### Phase 9: Cleanup & Test
 
-**Step 9.1: Remove rarity suffix logic from combat chip rendering**
-- File: `public/js/ui/combat.js` line 414
-- Remove: `chip.baseId || chip.id.replace(/_(common|uncommon|rare|epic|legendary)$/, '')`
-- Replace with: `chip.id`
-
-**Step 9.2: Syntax check all modified files**
+**Step 9.1: Syntax check all modified files**
 ```bash
 node --check src/game/items/chips.js
 node --check src/game/services/combat-service.js
@@ -525,24 +520,24 @@ node --check src/game/combat/chip-skills.js
 node --check public/js/ui/combat.js
 ```
 
-**Step 9.3: Run e2e tests**
+**Step 9.2: Run e2e tests**
 ```bash
 ./scripts/e2e-test.sh
 ```
 Target: 80+/87 passing (known flakiness acceptable)
 
-**Step 9.4: Manual verification checklist**
+**Step 9.3: Manual verification checklist**
 1. Start a new run → all chips level 1, 0 charges
 2. Complete a turn → equipped chips gain +1 charge
 3. After 5 turns → chips glow when fully charged
 4. Click charged chip → popup shows with enabled "Use Skill"
-5. Use instant skill (overloader) → enemy takes 40 damage, charge resets
-6. Use buff skill (Power Surge) → next attack deals +20 base damage
+5. Use instant skill (lightBulb) → enemy takes 40 damage, charge resets
+6. Use buff skill (Full Charge) → next attack deals +20 base damage
 7. Use two buff skills → they stack correctly
 8. Charges persist between combats (finish fight, start new one)
 9. Unequip chip → its charges reset to 0
-10. Phoenix Rebirth → survive lethal hit at 1 HP
-11. Infinite Loop → pipeline damage roughly doubles
+10. Egg Revival → survive lethal hit at 1 HP
+11. Rewind → pipeline damage roughly doubles
 
 ---
 

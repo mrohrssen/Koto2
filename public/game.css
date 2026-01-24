@@ -711,6 +711,83 @@ html, body {
   transform: scale(0.98);
 }
 
+/* ===== SHRINE CHIP UPGRADE ===== */
+.shrine-title {
+  text-align: center;
+  margin: 8px 0;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.shrine-chip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+.shrine-chip-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.shrine-chip-option:active {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.shrine-chip-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid #95a5a6;
+}
+
+.shrine-chip-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.shrine-chip-name {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.shrine-chip-rarity {
+  font-size: 11px;
+  text-transform: capitalize;
+}
+
+.shrine-chip-rarity.common { color: #95a5a6; }
+.shrine-chip-rarity.uncommon { color: #27ae60; }
+.shrine-chip-rarity.rare { color: #3498db; }
+.shrine-chip-rarity.epic { color: #8e44ad; }
+.shrine-chip-rarity.legendary { color: #f39c12; }
+
+.shrine-chip-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shrine-chip-upgrade {
+  font-size: 12px;
+  color: #f39c12;
+  font-weight: bold;
+  margin-top: 2px;
+}
+
 /* ===== GAME OVER ===== */
 .gameover-content {
   display: flex;

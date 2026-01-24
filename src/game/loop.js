@@ -613,10 +613,14 @@ export class GameManager {
   }
 
   /**
-   * Use a shrine to heal
+   * Use a shrine to upgrade a chip
    */
-  useShrine() {
-    return this.explorationService.useShrine();
+  useShrine(chipId) {
+    return this.explorationService.useShrine(chipId);
+  }
+
+  useQuizReward(rewardType) {
+    return this.explorationService.useQuizReward(rewardType);
   }
 
   /**

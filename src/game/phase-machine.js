@@ -207,6 +207,16 @@ export function derivePhase(state) {
     // At boss room
     if (currentRoom.isBossRoom) return PHASES.BOSS_READY;
 
+    // Shrine room (not yet used)
+    if (currentRoom.type === 'shrine' && !currentRoom.interacted) {
+      return 'shrine';
+    }
+
+    // Quiz room (not yet rewarded)
+    if (currentRoom.type === 'quiz' && !currentRoom.interacted) {
+      return 'quiz';
+    }
+
     // Room has unhandled encounter
     if (currentRoom.type === 'encounter' && !currentRoom.interacted) {
       return PHASES.ROOM_ENCOUNTER;

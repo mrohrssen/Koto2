@@ -87,7 +87,7 @@ export class GameHelper {
     await this.selectStartingChip(0);
     await this.waitForPhase(['ward_selection'], 5000);
     await this.selectWard(0);
-    await this.waitForPhase(['exploring', 'room_encounter', 'boss_ready'], 8000);
+    await this.waitForPhase(['exploring', 'room_encounter', 'boss_ready', 'shrine'], 8000);
   }
 
   // ============ EXPLORATION ============
@@ -102,6 +102,21 @@ export class GameHelper {
     for (let i = 0; i < maxAttempts; i++) {
       const phase = await this.getPhase();
       if (phase === 'room_encounter' || phase === 'combat') return true;
+
+      // Handle shrine rooms by clicking first chip option or skip button
+      if (phase === 'shrine') {
+        const shrineChip = this.page.locator('.shrine-chip-option').first();
+        const shrineSkip = this.page.locator('#shrine-skip-btn');
+        if (await shrineChip.isVisible().catch(() => false)) {
+          await shrineChip.click();
+          await this.page.waitForTimeout(1000);
+          continue;
+        } else if (await shrineSkip.isVisible().catch(() => false)) {
+          await shrineSkip.click();
+          await this.page.waitForTimeout(500);
+          continue;
+        }
+      }
 
       const fightBtn = this.page.locator(SELECTORS.fightBtn);
       if (await fightBtn.isVisible().catch(() => false)) return true;

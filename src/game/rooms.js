@@ -208,7 +208,8 @@ export function getWardInfo(wardId) {
 // Room types (simplified: encounters, shrine, boss)
 export const ROOM_TYPES = {
   encounter: 'encounter',   // Combat encounter (possessed citizen)
-  shrine: 'shrine',         // Charging station (healing)
+  shrine: 'shrine',         // Fox shrine (chip upgrade)
+  quiz: 'quiz',             // Quiz master (reward room)
   boss: 'boss'              // Floor boss
 };
 
@@ -216,29 +217,32 @@ export const ROOM_TYPES = {
 
 /**
  * Generate rooms for a floor
- * Structure: N encounters + optional shrine + boss
+ * Structure: N encounter slots (each 20% chance shrine) + boss
  * @param {number} floor - Current floor (1-7)
- * @param {number} encountersNeeded - Number of encounters before boss
+ * @param {number} encountersNeeded - Number of encounter slots before boss
  * @returns {Array} Array of room objects
  */
 export function generateFloorRooms(floor, encountersNeeded = 3) {
   const rooms = [];
-  const SHRINE_CHANCE = 0.4; // 40% chance for a shrine room
+  const SHRINE_CHANCE = 0.2;
+  const QUIZ_CHANCE = 0.2;
 
-  // Encounter rooms
   for (let i = 0; i < encountersNeeded; i++) {
-    rooms.push(createRoom(ROOM_TYPES.encounter, floor, rooms.length + 1, 0));
-  }
-
-  // Optional shrine room (placed before boss)
-  if (Math.random() < SHRINE_CHANCE) {
-    rooms.push(createRoom(ROOM_TYPES.shrine, floor, rooms.length + 1, 0));
+    const roll = Math.random();
+    let type;
+    if (roll < SHRINE_CHANCE) {
+      type = ROOM_TYPES.shrine;
+    } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE) {
+      type = ROOM_TYPES.quiz;
+    } else {
+      type = ROOM_TYPES.encounter;
+    }
+    rooms.push(createRoom(type, floor, rooms.length + 1, 0));
   }
 
   // Boss room (always last)
   rooms.push(createRoom(ROOM_TYPES.boss, floor, rooms.length + 1, 0));
 
-  // Fix totalRooms now that we know the count
   const totalRooms = rooms.length;
   for (const room of rooms) {
     room.totalRooms = totalRooms;
@@ -263,10 +267,11 @@ function createRoom(type, floor, roomNumber, totalRooms) {
 
   switch (type) {
     case ROOM_TYPES.shrine:
-      room.shrine = {
-        used: false,
-        healPercent: 0.3 + Math.random() * 0.2  // 30-50% heal
-      };
+      room.shrine = { used: false };
+      break;
+
+    case ROOM_TYPES.quiz:
+      room.quiz = { answered: false, rewarded: false };
       break;
 
     case ROOM_TYPES.boss:
@@ -291,7 +296,10 @@ export function getRoomEntryNarration(room) {
       return `${roomNum}に入った。SYSTEM接続された市民がいる！`;
 
     case ROOM_TYPES.shrine:
-      return `${roomNum}に入った。充電ステーションがある。エネルギーが満ちている。`;
+      return `${roomNum}に入った。狐の祠がある。神秘的な力が感じられる...`;
+
+    case ROOM_TYPES.quiz:
+      return `${roomNum}に入った。不思議な老人がいる...「質問に答えよ」`;
 
     case ROOM_TYPES.boss:
       return `${wardInfo.name}の中心部に入った。強力なSYSTEM反応がある...ボスがいる！`;
@@ -316,7 +324,13 @@ export function getRoomActions(room) {
   switch (room.type) {
     case ROOM_TYPES.shrine:
       if (!room.shrine.used) {
-        actions.push({ id: 'pray', name: '充電', description: '充電ステーションを使う' });
+        actions.push({ id: 'shrine_upgrade', name: '祈る', description: '狐の祠に祈る' });
+      }
+      break;
+
+    case ROOM_TYPES.quiz:
+      if (!room.quiz.rewarded) {
+        actions.push({ id: 'quiz_answer', name: '答える', description: 'クイズに答える' });
       }
       break;
 

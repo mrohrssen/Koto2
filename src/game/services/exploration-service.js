@@ -18,6 +18,7 @@
 
 import { getSimpleNarration } from '../dm.js';
 import { generateEncounterCount } from '../state.js';
+import { getChipLevel, setChipLevel } from '../items/chips.js';
 
 import {
   generateFloorRooms,
@@ -259,9 +260,10 @@ export class ExplorationService {
   // ============ ROOM INTERACTIONS ============
 
   /**
-   * Use a shrine to heal
+   * Use a shrine to upgrade a chip
+   * @param {string} chipId - ID of the chip to upgrade
    */
-  useShrine() {
+  useShrine(chipId) {
     const room = this.getCurrentRoom();
     if (!room || room.type !== 'shrine') {
       throw new Error('No shrine here');
@@ -271,22 +273,75 @@ export class ExplorationService {
       throw new Error('Shrine already used');
     }
 
+    const player = this.gm.run.player;
+    const equippedChips = player.equipment?.weapon?.equippedChips || [];
+
+    if (!equippedChips.includes(chipId)) {
+      throw new Error('Chip not equipped');
+    }
+
+    const currentLevel = getChipLevel(player, chipId);
+
+    if (currentLevel >= 7) {
+      throw new Error('Chip already at max level');
+    }
+
+    setChipLevel(player, chipId, currentLevel + 1);
     room.shrine.used = true;
     room.interacted = true;
 
-    const healAmount = Math.floor(this.gm.run.player.maxHp * room.shrine.healPercent);
-    const actualHeal = Math.min(healAmount, this.gm.run.player.maxHp - this.gm.run.player.hp);
-    this.gm.run.player.hp = Math.min(this.gm.run.player.maxHp, this.gm.run.player.hp + healAmount);
+    this.gm.narrate(`狐の祠の力でチップが強化された！ Lv. ${currentLevel + 1}`);
+    this.gm.emitState();
 
-    // Track healing for counter chips
-    if (this.gm.run.runStats && actualHeal > 0) {
-      this.gm.run.runStats.damageHealed += actualHeal;
+    return { type: 'shrine_upgrade', chipId, newLevel: currentLevel + 1 };
+  }
+
+  useQuizReward(rewardType) {
+    const room = this.getCurrentRoom();
+    if (!room || room.type !== 'quiz') {
+      throw new Error('No quiz here');
     }
 
-    this.gm.narrate(`祠に祈りを捧げた。${actualHeal} HPが回復した！`);
+    if (room.quiz.rewarded) {
+      throw new Error('Quiz reward already claimed');
+    }
 
+    const player = this.gm.run.player;
+    let description;
+
+    switch (rewardType) {
+      case 'max_hp':
+        player.maxHp += 25;
+        player.hp += 25;
+        description = 'Max HP +25!';
+        break;
+
+      case 'heal_hp':
+        player.hp = Math.min(player.hp + 75, player.maxHp);
+        description = 'HP restored +75!';
+        break;
+
+      case 'chip_charges': {
+        const equippedChips = player.equipment?.weapon?.equippedChips || [];
+        if (!player._chipCharges) player._chipCharges = {};
+        for (const chipId of equippedChips) {
+          player._chipCharges[chipId] = (player._chipCharges[chipId] || 0) + 3;
+        }
+        description = 'All Chip Skills +3 Charges!';
+        break;
+      }
+
+      default:
+        throw new Error('Invalid reward type');
+    }
+
+    room.quiz.rewarded = true;
+    room.interacted = true;
+
+    this.gm.narrate(`クイズマスター：「正解！」 ${description}`);
     this.gm.emitState();
-    return { type: 'shrine', healed: actualHeal };
+
+    return { type: 'quiz_reward', rewardType, description, player: { hp: player.hp, maxHp: player.maxHp } };
   }
 
   /**

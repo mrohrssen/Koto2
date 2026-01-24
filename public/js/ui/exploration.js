@@ -15,6 +15,9 @@ let nextFloor = null;
 let startNewRun = null;
 let returnToHub = null;
 
+// Module-level guard to prevent multiple shrine clicks across re-renders
+let shrineInProgress = false;
+
 // API functions
 let apiGetStartingWards = null;
 let apiSelectStartingWard = null;
@@ -22,6 +25,10 @@ let apiGetNextWardOptions = null;
 let apiSelectNextWard = null;
 let apiProceed = null;
 let apiRoomEncounter = null;
+let apiShrineUpgrade = null;
+let apiQuizReward = null;
+let apiGetChipLoadout = null;
+let setChipLoadoutCache = null;
 
 export function init(callbacks) {
   getGameState = callbacks.getGameState;
@@ -40,6 +47,10 @@ export function init(callbacks) {
   apiSelectNextWard = callbacks.apiSelectNextWard;
   apiProceed = callbacks.apiProceed;
   apiRoomEncounter = callbacks.apiRoomEncounter;
+  apiShrineUpgrade = callbacks.apiShrineUpgrade;
+  apiQuizReward = callbacks.apiQuizReward;
+  apiGetChipLoadout = callbacks.apiGetChipLoadout;
+  setChipLoadoutCache = callbacks.setChipLoadoutCache;
 }
 
 /** Hub phase — show Equip Bots + Infiltrate buttons */
@@ -158,4 +169,221 @@ export function renderRunEnded() {
   document.getElementById('return-hub-btn')?.addEventListener('click', () => {
     returnToHub();
   });
+}
+
+/** Shrine phase - show equipped chips for upgrade */
+export function renderShrine(chipLoadoutCache) {
+  const gameState = getGameState();
+  const equippedChips = gameState.player?.equipment?.weapon?.equippedChips || [];
+
+  if (equippedChips.length === 0) {
+    actions.setContent(`
+      <p style="text-align:center;color:var(--text-secondary)">No chips equipped to upgrade</p>
+      <button class="action-btn action-btn-primary" id="shrine-skip-btn">Continue</button>
+    `);
+    document.getElementById('shrine-skip-btn')?.addEventListener('click', async () => {
+      const result = await apiProceed();
+      if (result?.state) {
+        updateGameState(result.state);
+        updateUI();
+      }
+    });
+    return;
+  }
+
+  // Pick up to 3 random chips, stable across re-renders
+  if (!gameState._shrineOfferings) {
+    const shuffled = [...equippedChips].sort(() => Math.random() - 0.5);
+    gameState._shrineOfferings = shuffled.slice(0, 3);
+  }
+  const offerings = gameState._shrineOfferings;
+
+  const enrichedChips = chipLoadoutCache?.equipment?.weapon?.equippedChips || [];
+  const chipLevels = gameState.player?._chipLevels || {};
+
+  const chipCards = offerings.map(chipId => {
+    const chipInfo = enrichedChips.find(c => c?.id === chipId) || { id: chipId, nameEn: chipId };
+    const level = chipLevels[chipId] || 1;
+    return `
+      <div class="shrine-chip-option" data-chip-id="${chipId}">
+        <div class="shrine-chip-icon" style="background-image:url('/assets/icons/chips/${chipId}.png'); border-color: ${chipInfo.rarityInfo?.color || '#95a5a6'}"></div>
+        <div class="shrine-chip-info">
+          <div class="shrine-chip-name">${chipInfo.nameEn || chipInfo.name || chipId} Lv. ${level}</div>
+          <div class="shrine-chip-rarity ${chipInfo.rarity || 'common'}">${chipInfo.rarity || 'common'}</div>
+          <div class="shrine-chip-desc">${chipInfo.descriptionEn || chipInfo.description || ''}</div>
+          <div class="shrine-chip-upgrade">\u2192 Lv. ${Math.min(level + 1, 7)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  actions.setContent(`
+    <h3 class="shrine-title">Choose a chip to upgrade</h3>
+    <div class="shrine-chip-list">${chipCards}</div>
+  `);
+
+  // Use event delegation with module-level guard (persists across re-renders)
+  if (shrineInProgress) return;
+  const list = document.querySelector('.shrine-chip-list');
+  if (list) {
+    list.addEventListener('click', async (e) => {
+      const option = e.target.closest('.shrine-chip-option');
+      if (!option || shrineInProgress) return;
+      shrineInProgress = true;
+
+      // Disable all options visually
+      document.querySelectorAll('.shrine-chip-option').forEach(o => {
+        o.style.opacity = '0.5';
+        o.style.pointerEvents = 'none';
+      });
+
+      const chipId = option.dataset.chipId;
+      const result = await apiShrineUpgrade(chipId);
+      if (result?.state) {
+        updateGameState(result.state);
+      }
+      if (apiGetChipLoadout && setChipLoadoutCache) {
+        const newLoadout = await apiGetChipLoadout();
+        setChipLoadoutCache(newLoadout);
+      }
+      sceneModule.showToast(`Chip upgraded to Lv. ${result?.newLevel || '?'}!`, 2000);
+      delete getGameState()._shrineOfferings;
+      const proceedResult = await apiProceed();
+      shrineInProgress = false;
+      if (proceedResult?.state) {
+        updateGameState(proceedResult.state);
+        updateUI();
+      }
+    });
+  }
+}
+
+/** Quiz phase - question then reward selection */
+export function renderQuiz() {
+  const gameState = getGameState();
+
+  // Stage tracking: use gameState._quizStage (undefined = question, 'reward' = pick reward)
+  if (gameState._quizStage === 'reward') {
+    renderQuizRewards();
+    return;
+  }
+
+  actions.setContent(`
+    <h3 class="shrine-title">Quiz Master asks:</h3>
+    <p style="text-align:center; color:var(--text-primary); margin:0.5rem 0 1rem; font-size:1.1rem">"Is the sky blue?"</p>
+    <div class="shrine-chip-list">
+      <div class="shrine-chip-option quiz-answer-option" data-answer="yes">
+        <div class="shrine-chip-info" style="padding:0.75rem">
+          <div class="shrine-chip-name" style="color:var(--accent-primary)">Yes</div>
+        </div>
+      </div>
+      <div class="shrine-chip-option quiz-answer-option" data-answer="no">
+        <div class="shrine-chip-info" style="padding:0.75rem">
+          <div class="shrine-chip-name" style="color:var(--accent-primary)">No</div>
+        </div>
+      </div>
+      <div class="shrine-chip-option quiz-answer-option" data-answer="maybe">
+        <div class="shrine-chip-info" style="padding:0.75rem">
+          <div class="shrine-chip-name" style="color:var(--accent-primary)">Maybe</div>
+        </div>
+      </div>
+    </div>
+  `);
+
+  const list = document.querySelector('.shrine-chip-list');
+  if (list) {
+    list.addEventListener('click', (e) => {
+      const option = e.target.closest('.quiz-answer-option');
+      if (!option || list.dataset.used) return;
+      list.dataset.used = '1';
+
+      const answer = option.dataset.answer;
+
+      // Disable all options
+      document.querySelectorAll('.quiz-answer-option').forEach(o => {
+        o.style.opacity = '0.5';
+        o.style.pointerEvents = 'none';
+      });
+
+      if (answer === 'yes') {
+        // Correct! Show reward selection
+        sceneModule.showToast('Correct!', 1500);
+        setTimeout(() => {
+          gameState._quizStage = 'reward';
+          updateUI();
+        }, 1000);
+      } else {
+        // Wrong answer - still let them try again after a moment
+        sceneModule.showToast('Wrong! Try again...', 1500);
+        setTimeout(() => {
+          list.dataset.used = '';
+          document.querySelectorAll('.quiz-answer-option').forEach(o => {
+            o.style.opacity = '1';
+            o.style.pointerEvents = 'auto';
+          });
+        }, 1500);
+      }
+    });
+  }
+}
+
+function renderQuizRewards() {
+  actions.setContent(`
+    <h3 class="shrine-title">Choose your reward:</h3>
+    <div class="shrine-chip-list">
+      <div class="shrine-chip-option quiz-reward-option" data-reward="max_hp">
+        <div class="shrine-chip-info" style="padding:0.75rem">
+          <div class="shrine-chip-name">Max HP +25</div>
+          <div class="shrine-chip-desc">Permanently increase maximum HP</div>
+        </div>
+      </div>
+      <div class="shrine-chip-option quiz-reward-option" data-reward="heal_hp">
+        <div class="shrine-chip-info" style="padding:0.75rem">
+          <div class="shrine-chip-name">Heal HP +75</div>
+          <div class="shrine-chip-desc">Restore 75 HP immediately</div>
+        </div>
+      </div>
+      <div class="shrine-chip-option quiz-reward-option" data-reward="chip_charges">
+        <div class="shrine-chip-info" style="padding:0.75rem">
+          <div class="shrine-chip-name">All Chips +3 Charges</div>
+          <div class="shrine-chip-desc">Add 3 charges to all equipped chip skills</div>
+        </div>
+      </div>
+    </div>
+  `);
+
+  const list = document.querySelector('.shrine-chip-list');
+  if (list) {
+    list.addEventListener('click', async (e) => {
+      const option = e.target.closest('.quiz-reward-option');
+      if (!option || list.dataset.used) return;
+      list.dataset.used = '1';
+
+      // Disable all options
+      document.querySelectorAll('.quiz-reward-option').forEach(o => {
+        o.style.opacity = '0.5';
+        o.style.pointerEvents = 'none';
+      });
+
+      const rewardType = option.dataset.reward;
+      const result = await apiQuizReward(rewardType);
+      if (result?.state) {
+        updateGameState(result.state);
+      }
+      sceneModule.showToast(result?.description || 'Reward claimed!', 2000);
+
+      // Refresh chip loadout if charges changed
+      if (rewardType === 'chip_charges' && apiGetChipLoadout && setChipLoadoutCache) {
+        const newLoadout = await apiGetChipLoadout();
+        setChipLoadoutCache(newLoadout);
+      }
+
+      delete getGameState()._quizStage;
+      const proceedResult = await apiProceed();
+      if (proceedResult?.state) {
+        updateGameState(proceedResult.state);
+        updateUI();
+      }
+    });
+  }
 }

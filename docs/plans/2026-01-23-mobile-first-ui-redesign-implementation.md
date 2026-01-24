@@ -1,6 +1,9 @@
 # Mobile-First UI Redesign - Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **Status: SUPERSEDED** — This plan was the initial design for the mobile UI (HTML/CSS structure + new game.js from scratch).
+> Phase 1 (HTML + CSS) and Phase 2 (component modules) were implemented successfully.
+> Phase 3 (game.js rewrite from scratch) was abandoned because it didn't integrate with the existing combat-loop and word-practice systems.
+> The actual game.js integration was done via the **Mobile UI Adapter Plan** (`2026-01-23-mobile-ui-adapter-plan.md`), which takes the working game.js and adapts it to the new DOM structure instead of rewriting from scratch.
 
 **Goal:** Replace the desktop-first 2-column layout with a mobile-first single-column interface designed for iPhone touch controls, with a bright/friendly visual theme.
 

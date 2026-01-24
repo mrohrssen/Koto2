@@ -54,10 +54,47 @@ function removePlaceholder() {
   document.getElementById('enemy-placeholder')?.remove();
 }
 
+/** Show shrine fox in scene (no HP bar) */
+export function showShrineFox() {
+  dom.enemyName.textContent = 'Shrine Fox';
+  dom.enemyInfo.classList.add('visible');
+  // Hide HP bar and skill bar
+  dom.enemyHpBar.style.display = 'none';
+  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
+
+  dom.enemySprite.src = '/assets/sprites/shrine_fox.png';
+  dom.enemySprite.onerror = () => {
+    dom.enemySprite.classList.remove('visible');
+  };
+  dom.enemySprite.onload = () => {
+    removePlaceholder();
+    dom.enemySprite.classList.add('visible');
+  };
+}
+
+/** Show quiz master in scene (no HP bar) */
+export function showQuizMaster() {
+  dom.enemyName.textContent = 'Quiz Master';
+  dom.enemyInfo.classList.add('visible');
+  dom.enemyHpBar.style.display = 'none';
+  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
+
+  dom.enemySprite.src = '/assets/sprites/quiz_master.png';
+  dom.enemySprite.onerror = () => {
+    dom.enemySprite.classList.remove('visible');
+  };
+  dom.enemySprite.onload = () => {
+    removePlaceholder();
+    dom.enemySprite.classList.add('visible');
+  };
+}
+
 /** Hide enemy from scene */
 export function hideEnemy() {
   dom.enemySprite.classList.remove('visible');
   dom.enemyInfo.classList.remove('visible');
+  dom.enemyHpBar.style.display = '';
+  if (dom.enemySkillBar) dom.enemySkillBar.style.display = '';
   removePlaceholder();
 }
 

@@ -255,9 +255,14 @@ async function roomEncounter() {
   return apiCall('/room-encounter', 'POST');
 }
 
-/** Use a shrine */
-async function useShrine() {
-  return apiCall('/use-shrine', 'POST');
+/** Upgrade chip at shrine */
+async function shrineUpgrade(chipId) {
+  return apiCall('/shrine-upgrade', 'POST', { chipId });
+}
+
+/** Claim quiz reward */
+async function quizReward(rewardType) {
+  return apiCall('/quiz-reward', 'POST', { rewardType });
 }
 
 // ============ COMBAT ENDPOINTS ============
@@ -462,7 +467,8 @@ export {
   // Room exploration endpoints
   proceed,
   roomEncounter,
-  useShrine,
+  shrineUpgrade,
+  quizReward,
   // Combat endpoints
   startEncounter,
   startBoss,

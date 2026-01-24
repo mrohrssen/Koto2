@@ -207,6 +207,37 @@ export default function createRunRoutes({
     }
   });
 
+  // Upgrade chip at shrine
+  router.post('/shrine-upgrade', (req, res) => {
+    try {
+      const gameManager = req.gameManager;
+      const { chipId } = req.body;
+      if (!chipId) {
+        return res.status(400).json({ error: 'chipId required' });
+      }
+      const result = gameManager.useShrine(chipId);
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  router.post('/quiz-reward', (req, res) => {
+    try {
+      const gameManager = req.gameManager;
+      const { rewardType } = req.body;
+      if (!rewardType) {
+        return res.status(400).json({ error: 'rewardType required' });
+      }
+      const result = gameManager.useQuizReward(rewardType);
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   // Forfeit run
   router.post('/forfeit', (req, res) => {
     const result = req.gameManager.forfeitRun();

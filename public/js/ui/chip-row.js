@@ -77,7 +77,7 @@ export function render(chips, { charges = [], levels = [], maxCharges = 5, inCom
     if (chip) {
       slot.addEventListener('click', (e) => {
         e.stopPropagation();
-        showPopup(i, chip, charge, maxCharges, inCombat);
+        showPopup(i, { ...chip, _level: level }, charge, maxCharges, inCombat);
       });
     }
 
@@ -90,7 +90,8 @@ function showPopup(index, chip, charge, maxCharges, inCombat = false) {
   currentPopupIndex = index;
   const isCharged = charge >= maxCharges;
 
-  dom.chipPopupName.textContent = chip.nameEn || chip.name;
+  const chipLevel = chip._level || 1;
+  dom.chipPopupName.textContent = `${chip.nameEn || chip.name} Lv. ${chipLevel}`;
   dom.chipPopupDesc.innerHTML = `
     <div class="chip-popup-section">
       <div class="chip-popup-section-label">Passive</div>

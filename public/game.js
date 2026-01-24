@@ -39,7 +39,9 @@ import {
   nextFloor as apiNextFloor,
   getChipLoadout as apiGetChipLoadout,
   sendJpdbReview as apiSendJpdbReview,
-  getAuthHeaders
+  getAuthHeaders,
+  shrineUpgrade as apiShrineUpgrade,
+  quizReward as apiQuizReward
 } from './js/api.js';
 
 const API_BASE = '';
@@ -109,10 +111,18 @@ function updateStatusBar() {
 function updateScene() {
   if (gameState.phase === 'combat' && gameState.combat?.enemy) {
     scene.showEnemy(gameState.combat.enemy);
+  } else if (gameState.phase === 'shrine') {
+    scene.showShrineFox();
+  } else if (gameState.phase === 'quiz') {
+    scene.showQuizMaster();
   } else {
     scene.hideEnemy();
   }
-  if (gameState.run?.background) {
+  if (gameState.phase === 'shrine') {
+    scene.setBackground('/assets/backgrounds/shrine_background.png');
+  } else if (gameState.phase === 'quiz') {
+    scene.setBackground('/assets/backgrounds/quiz_master_background.png');
+  } else if (gameState.run?.background) {
     scene.setBackground(`/assets/backgrounds/${gameState.run.background}`);
   }
 }
@@ -161,6 +171,12 @@ function updateGameContent() {
       break;
     case 'boss_ready':
       explorationUI.renderBossReady();
+      break;
+    case 'shrine':
+      explorationUI.renderShrine(chipLoadoutCache);
+      break;
+    case 'quiz':
+      explorationUI.renderQuiz();
       break;
     case 'combat':
       // Clear stale buttons; flash card will be rendered by combat-loop
@@ -518,6 +534,10 @@ async function initGame() {
     apiSelectNextWard,
     apiProceed,
     apiRoomEncounter,
+    apiShrineUpgrade,
+    apiQuizReward,
+    apiGetChipLoadout,
+    setChipLoadoutCache: (cache) => { chipLoadoutCache = cache; },
   });
 
   economyUI.init({
