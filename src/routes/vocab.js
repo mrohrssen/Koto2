@@ -15,6 +15,8 @@ import {
   invalidateWordStateCache,
   lookupVocabularyMeaning
 } from '../jpdb.js';
+import { addReview } from '../auth/users.js';
+import { requireAuth } from '../auth/middleware.js';
 
 /**
  * Create vocab router
@@ -85,7 +87,7 @@ export default function createVocabRoutes({ getSettings }) {
   });
 
   // Review vocabulary in JPDB
-  router.post('/jpdb/review', async (req, res) => {
+  router.post('/jpdb/review', requireAuth, async (req, res) => {
     const { vid, sid, grade, jpdbApiKey } = req.body;
 
     if (!jpdbApiKey) {
@@ -97,6 +99,9 @@ export default function createVocabRoutes({ getSettings }) {
 
       // Invalidate local cache so this word won't reappear as "due" immediately
       invalidateWordStateCache(parseInt(vid, 10));
+
+      // Track review for leaderboard
+      addReview(req.user.id);
 
       res.json(result);
     } catch (error) {
