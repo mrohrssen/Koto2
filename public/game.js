@@ -425,22 +425,13 @@ async function handleUseChipSkill(chipIndex) {
       gameState.player.hp = result.playerHp.current;
     }
 
-    // Show skill effect in action area
+    // Show skill activation as toast (doesn't overwrite flash cards)
     const skillName = result.skillNameEn || result.skillName || chipId;
-    const actionArea = document.getElementById('action-area');
-    if (actionArea) {
-      const lines = [`<span class="math-crit">${skillName}!</span>`];
-      if (result.damage > 0) {
-        lines.push(`<span class="math-chip">\u2192 ${result.damage} damage</span>`);
-      }
-      if (result.heal > 0) {
-        lines.push(`<span class="math-heal">+${result.heal} HP</span>`);
-      }
-      if (result.skillType === 'buff') {
-        lines.push(`<span class="math-chip">Buff active!</span>`);
-      }
-      actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
-    }
+    let toastMsg = `${skillName}!`;
+    if (result.damage > 0) toastMsg += ` ${result.damage} dmg`;
+    if (result.heal > 0) toastMsg += ` +${result.heal} HP`;
+    if (result.skillType === 'buff') toastMsg += ' Buff active!';
+    scene.showToast(toastMsg, 1000);
 
     updateUI();
   } catch (e) {

@@ -656,7 +656,6 @@ export function submitSelfGradeReview(grade) {
   }
 
   if (isPass) {
-    if (showToast) showToast(`${gradeNames[grade]}!`, 'success');
     if (availableWords.length > 0) {
       combatWords[selectedWordIndex] = availableWords.shift();
     } else {
@@ -664,7 +663,6 @@ export function submitSelfGradeReview(grade) {
       selectedWordIndex = Math.min(selectedWordIndex, Math.max(0, combatWords.length - 1));
     }
   } else {
-    if (showToast) showToast(`${gradeNames[grade]}`, 'error');
     combatWords.splice(selectedWordIndex, 1);
     selectedWordIndex = Math.min(selectedWordIndex, Math.max(0, combatWords.length - 1));
     if (availableWords.length > 0) {
