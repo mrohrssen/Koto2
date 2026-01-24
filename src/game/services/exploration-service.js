@@ -146,6 +146,9 @@ export class ExplorationService {
     this.gm.run.currentRoom = 0;
     this.gm.run.roomsExplored = 0;
 
+    // Set floor background image (floor1.png, floor2.png, etc.)
+    this.gm.run.background = `floor${this.gm.run.floor}.png`;
+
     // Mark first room as explored
     if (this.gm.run.rooms.length > 0) {
       this.gm.run.rooms[0].explored = true;
@@ -228,6 +231,10 @@ export class ExplorationService {
     nextRoom.explored = true;
     this.gm.run.roomsExplored++;
     this.gm.run.stats.roomsExplored++;
+
+    // Vary background per room (floor1_1.png through floor1_5.png, cycling)
+    const bgVariant = ((this.gm.run.currentRoom - 1) % 5) + 1;
+    this.gm.run.background = `floor${this.gm.run.floor}_${bgVariant}.png`;
 
     // Track room clears for counter chips
     if (this.gm.run.runStats) {

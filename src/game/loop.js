@@ -330,6 +330,7 @@ export class GameManager {
       run: this.run ? {
         floor: this.run.floor,
         maxFloors: this.run.maxFloors,
+        background: this.run.background || `floor${this.run.floor}.png`,
         currentRoom: this.run.currentRoom,
         totalRooms: this.run.rooms?.length || 0,
         roomsExplored: this.run.roomsExplored,
