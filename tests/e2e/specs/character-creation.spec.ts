@@ -1,4 +1,4 @@
-import { test, expect, resetGameState, cleanupAfterTest } from '../fixtures/test-fixtures';
+import { test, expect, resetGameState } from '../fixtures/test-fixtures';
 import { SELECTORS } from '../utils/selectors';
 
 test.describe('Character Creation', () => {
@@ -8,33 +8,22 @@ test.describe('Character Creation', () => {
     await page.waitForLoadState('load');
   });
 
-  test.afterEach(async ({ page }) => {
-    await cleanupAfterTest(page);
+  test('fresh load shows New Game button', async ({ page }) => {
+    await page.locator(SELECTORS.newGameBtn).waitFor({ state: 'visible', timeout: 5000 });
+    await expect(page.locator(SELECTORS.newGameBtn)).toBeVisible();
   });
 
-  test('should show start game button for new game', async ({ page }) => {
-    const actionPanel = page.locator(SELECTORS.actionPanel);
-    const startBtn = actionPanel.locator('button').first();
-
-    await expect(startBtn).toBeVisible();
-    await expect(startBtn).toContainText('Start Game');
-  });
-
-  test('should create character and go to hub', async ({ gameHelper }) => {
-    await gameHelper.createCharacter('');
+  test('create character transitions to hub', async ({ gameHelper, page }) => {
+    await gameHelper.createCharacter();
     const phase = await gameHelper.getPhase();
     expect(phase).toBe('hub');
+    await expect(page.locator(SELECTORS.contextActionBtn)).toBeVisible();
+    await expect(page.locator(SELECTORS.contextActionBtn)).toHaveText('Infiltrate');
   });
 
-  test('should start with default stats', async ({ page, gameHelper }) => {
-    await gameHelper.createCharacter('');
-
-    // Should be at hub with a player
-    const phase = await gameHelper.getPhase();
-    expect(phase).toBe('hub');
-
-    // Player stats panel should be visible
-    const statsPanel = page.locator(SELECTORS.playerStats);
-    await expect(statsPanel).toBeVisible();
+  test('hub shows correct initial state', async ({ gameHelper, page }) => {
+    await gameHelper.createCharacter();
+    await expect(page.locator(SELECTORS.floorIndicator)).toHaveText('Hub');
+    await expect(page.locator(SELECTORS.essenceDisplay)).toHaveText('0');
   });
 });
