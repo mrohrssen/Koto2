@@ -1,3 +1,8 @@
+// Register service worker for asset caching
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
+
 // ============ IMPORTS ============
 import { store } from './js/store.js';
 import * as tts from './js/tts.js';
