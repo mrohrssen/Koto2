@@ -172,6 +172,72 @@ export default function createMiscRoutes({
     res.json({ success: true, chipsAdded: testChips.length, totalChips: player.chips.length });
   });
 
+  // Debug: Force a specific game phase by manipulating server state
+  router.post('/debug-force-phase', async (req, res) => {
+    if (!getDebugMode()) {
+      return res.status(403).json({ error: 'Debug mode not enabled' });
+    }
+    const { phase } = req.body;
+    try {
+      if (!gameManager.player) {
+        gameManager.createPlayer('TestPlayer');
+      }
+      switch (phase) {
+        case 'boss_ready': {
+          if (!gameManager.run || !gameManager.run.active) {
+            gameManager.startRun();
+            if (gameManager.run.wardSelectionRequired) {
+              gameManager.selectStartingWard('nerima');
+            }
+          }
+          gameManager.run.wardSelectionRequired = false;
+          gameManager.run.encountersCompleted = gameManager.run.encountersNeeded;
+          gameManager.combat = null;
+          gameManager.run.postCombatShop = null;
+          gameManager.run.bossDefeated = false;
+          break;
+        }
+        case 'floor_complete': {
+          if (!gameManager.run || !gameManager.run.active) {
+            gameManager.startRun();
+            if (gameManager.run.wardSelectionRequired) {
+              gameManager.selectStartingWard('nerima');
+            }
+          }
+          gameManager.run.wardSelectionRequired = false;
+          gameManager.run.bossDefeated = true;
+          gameManager.combat = null;
+          gameManager.run.postCombatShop = null;
+          break;
+        }
+        case 'post_combat_shop': {
+          if (!gameManager.run || !gameManager.run.active) {
+            gameManager.startRun();
+            if (gameManager.run.wardSelectionRequired) {
+              gameManager.selectStartingWard('nerima');
+            }
+          }
+          gameManager.run.wardSelectionRequired = false;
+          gameManager.combat = null;
+          gameManager.run.bossDefeated = false;
+          const ownedIds = (gameManager.run.player.chips || []).map(c => c.id);
+          const { generatePostCombatShop } = await import('../../game/rooms.js');
+          gameManager.run.postCombatShop = {
+            active: true,
+            items: generatePostCombatShop(gameManager.run.floor, ownedIds)
+          };
+          break;
+        }
+        default:
+          return res.status(400).json({ error: `Unsupported phase: ${phase}` });
+      }
+      saveGameData();
+      res.json({ success: true, state: getEnrichedGameState() });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
   // Heal
   router.post('/heal', (req, res) => {
     const { amount } = req.body;

@@ -27,6 +27,11 @@ export function init({ equipBots, contextAction, cardSwipe, cardFlip }) {
   onContextAction = contextAction;
   onCardSwipe = cardSwipe;
   onCardFlip = cardFlip;
+
+  // Test hook: allows E2E tests to trigger swipe without mouse/touch gestures
+  document.addEventListener('test-swipe', (e) => {
+    if (onCardSwipe) onCardSwipe(e.detail);
+  });
 }
 
 /**
