@@ -19,9 +19,7 @@ import createPrefetchRoutes from './prefetch.js';
  * @param {object} deps - Dependencies for route modules
  * @param {function} deps.getSettings - Get current settings object
  * @param {function} deps.saveSettings - Save settings to file
- * @param {object} deps.gameManager - GameManager instance
- * @param {function} deps.getEnrichedGameState - Get enriched game state
- * @param {function} deps.saveGameData - Save game data to file
+ * @param {function} deps.enrichGameState - Enrich game state (accepts gameManager)
  * @param {function} deps.generateGameNarration - Generate AI narration
  * @param {function} deps.cancelPendingPrefetches - Cancel pending prefetches
  * @param {function} deps.clearPrefetchCache - Clear prefetch cache
@@ -46,11 +44,9 @@ export default function createRoutes(deps) {
     getSettings: deps.getSettings
   }));
 
-  // Game routes: /api/game/*
+  // Game routes: /api/game/* (auth-protected, per-user managers)
   router.use('/game', createGameRoutes({
-    gameManager: deps.gameManager,
-    getEnrichedGameState: deps.getEnrichedGameState,
-    saveGameData: deps.saveGameData,
+    enrichGameState: deps.enrichGameState,
     generateGameNarration: deps.generateGameNarration,
     cancelPendingPrefetches: deps.cancelPendingPrefetches,
     clearPrefetchCache: deps.clearPrefetchCache,
@@ -61,7 +57,6 @@ export default function createRoutes(deps) {
     setGameStats: deps.setGameStats,
     getDebugMode: deps.getDebugMode,
     setDebugMode: deps.setDebugMode,
-    gameSaveFile: deps.gameSaveFile,
     vocabCacheFile: deps.vocabCacheFile
   }));
 

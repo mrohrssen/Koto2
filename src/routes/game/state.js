@@ -10,24 +10,22 @@ import { getLiberationTrackerData } from '../../game/enemies.js';
 
 /**
  * Create game state router
- * @param {object} deps - Dependencies
- * @param {object} deps.gameManager - GameManager instance
- * @param {function} deps.getEnrichedGameState - Get enriched game state
+ * gameManager, getEnrichedGameState come from req (set by game/index.js middleware)
  * @returns {Router}
  */
-export default function createGameStateRoutes({ gameManager, getEnrichedGameState }) {
+export default function createGameStateRoutes() {
   const router = Router();
 
   // Get current game state
   router.get('/state', (req, res) => {
-    res.json(getEnrichedGameState());
+    res.json(req.getEnrichedGameState());
   });
 
   // Get meta-progression data
   router.get('/meta', (req, res) => {
     res.json({
-      meta: gameManager.meta,
-      state: getEnrichedGameState()
+      meta: req.gameManager.meta,
+      state: req.getEnrichedGameState()
     });
   });
 
@@ -35,21 +33,21 @@ export default function createGameStateRoutes({ gameManager, getEnrichedGameStat
   router.get('/achievements', (req, res) => {
     res.json({
       achievements: ACHIEVEMENTS,
-      unlocked: gameManager.meta?.achievements || [],
-      progress: gameManager.meta?.achievementProgress || {}
+      unlocked: req.gameManager.meta?.achievements || [],
+      progress: req.gameManager.meta?.achievementProgress || {}
     });
   });
 
   // Get lifetime stats
   router.get('/lifetime-stats', (req, res) => {
     res.json({
-      stats: gameManager.meta?.lifetimeStats || {}
+      stats: req.gameManager.meta?.lifetimeStats || {}
     });
   });
 
   // Get liberation tracker
   router.get('/liberation-tracker', (req, res) => {
-    const tracker = gameManager.meta?.lifetimeStats?.liberationTracker || {};
+    const tracker = req.gameManager.meta?.lifetimeStats?.liberationTracker || {};
     res.json(getLiberationTrackerData(tracker));
   });
 

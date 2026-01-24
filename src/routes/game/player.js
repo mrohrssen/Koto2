@@ -4,25 +4,21 @@
 
 import { Router } from 'express';
 
-export default function createPlayerRoutes({
-  gameManager,
-  getEnrichedGameState,
-  saveGameData,
-  generateGameNarration
-}) {
+export default function createPlayerRoutes({ generateGameNarration }) {
   const router = Router();
 
   // Create new player
   router.post('/create-player', async (req, res) => {
     const { name, stats, statPoints } = req.body;
+    const gameManager = req.gameManager;
 
     gameManager.createPlayer(name || 'Hunter', stats || null, statPoints ?? null);
-    saveGameData();
+    req.saveGame();
 
-    const narration = await generateGameNarration('runStart', gameManager.player, req.body);
+    const narration = await generateGameNarration('runStart', gameManager.player, req.userKeys);
 
     res.json({
-      state: gameManager.getState(),
+      state: req.getEnrichedGameState(),
       narration
     });
   });

@@ -8,23 +8,7 @@ import { Router } from 'express';
 import { useChipSkill } from '../../game/combat/chip-skills.js';
 import { getChip, getChipCharge, isChipSkillReady, getChipLevel } from '../../game/items/chips.js';
 
-/**
- * Create combat router
- * @param {object} deps - Dependencies
- * @param {object} deps.gameManager - GameManager instance
- * @param {function} deps.getEnrichedGameState - Get enriched game state
- * @param {function} deps.saveGameData - Save game data to file
- * @param {function} deps.generateGameNarration - Generate AI narration
- * @param {function} deps.enrichRewardDrops - Enrich reward drops with item data
- * @param {function} deps.updateGameStatsWithEvent - Update game stats
- * @param {function} deps.saveGameStats - Save game stats
- * @param {function} deps.getGameStats - Get game stats object
- * @returns {Router}
- */
 export default function createCombatRoutes({
-  gameManager,
-  getEnrichedGameState,
-  saveGameData,
   generateGameNarration,
   enrichRewardDrops,
   updateGameStatsWithEvent,
@@ -35,11 +19,12 @@ export default function createCombatRoutes({
 
   // Combat cycle (vocab-pause turn-based)
   router.post('/combat-cycle', (req, res) => {
+    const gameManager = req.gameManager;
     const { attackerType } = req.body;
     try {
       const result = gameManager.combatCycle(attackerType || 'player');
-      saveGameData();
-      res.json({ ...result, state: getEnrichedGameState() });
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -47,6 +32,7 @@ export default function createCombatRoutes({
 
   // Combat end narration
   router.post('/combat-end-narration', async (req, res) => {
+    const gameManager = req.gameManager;
     const { victory, expGained, goldGained, loot, leveledUp, newLevel, isBoss } = req.body;
     const gameStats = getGameStats();
     try {
@@ -66,15 +52,15 @@ export default function createCombatRoutes({
           player: gameManager.run?.player,
           enemy,
           rewards: enrichedRewards
-        }, req.body);
+        }, req.userKeys);
       } else {
         narration = await generateGameNarration('defeat', {
           player: gameManager.run?.player,
           enemy
-        }, req.body);
+        }, req.userKeys);
       }
 
-      res.json({ narration, state: getEnrichedGameState() });
+      res.json({ narration, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -82,15 +68,16 @@ export default function createCombatRoutes({
 
   // Start encounter
   router.post('/start-encounter', async (req, res) => {
+    const gameManager = req.gameManager;
     try {
       const encounter = gameManager.startEncounter();
       const narration = await generateGameNarration('encounterStart', {
         enemy: encounter.enemy,
         player: gameManager.run.player
-      }, req.body);
+      }, req.userKeys);
 
-      saveGameData();
-      res.json({ ...encounter, state: getEnrichedGameState(), narration });
+      req.saveGame();
+      res.json({ ...encounter, state: req.getEnrichedGameState(), narration });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -98,15 +85,16 @@ export default function createCombatRoutes({
 
   // Start boss encounter
   router.post('/start-boss', async (req, res) => {
+    const gameManager = req.gameManager;
     try {
       const encounter = gameManager.startBossEncounter();
       const narration = await generateGameNarration('bossStart', {
         enemy: encounter.enemy,
         player: gameManager.run.player
-      }, req.body);
+      }, req.userKeys);
 
-      saveGameData();
-      res.json({ ...encounter, state: getEnrichedGameState(), narration });
+      req.saveGame();
+      res.json({ ...encounter, state: req.getEnrichedGameState(), narration });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -114,6 +102,7 @@ export default function createCombatRoutes({
 
   // Use a chip's active skill in combat
   router.post('/use-chip-skill', (req, res) => {
+    const gameManager = req.gameManager;
     const { chipId } = req.body;
     if (!chipId) {
       return res.status(400).json({ error: 'chipId required' });
@@ -132,7 +121,7 @@ export default function createCombatRoutes({
       return res.status(400).json({ error: result.error });
     }
 
-    saveGameData();
+    req.saveGame();
     res.json({
       ...result,
       playerHp: { current: gameManager.run.player.hp, max: gameManager.run.player.maxHp },
@@ -143,6 +132,7 @@ export default function createCombatRoutes({
 
   // Get info about a chip's skill
   router.get('/chip-skill-info/:chipId', (req, res) => {
+    const gameManager = req.gameManager;
     const { chipId } = req.params;
     const chip = getChip(chipId);
     if (!chip) {

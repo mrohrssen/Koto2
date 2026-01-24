@@ -129,6 +129,7 @@ import {
 } from './src/game/prefetch.js';
 import { enforceVocabLimit } from './src/game/vocab-repair.js';
 import createRoutes from './src/routes/index.js';
+import createAuthRoutes from './src/auth/routes.js';
 
 dotenv.config();
 
@@ -286,8 +287,8 @@ function enrichPlayerItems(player) {
   return enriched;
 }
 
-function getEnrichedGameState() {
-  const state = gameManager.getState();
+function enrichGameState(manager) {
+  const state = manager.getState();
   if (state.player) {
     state.player = enrichPlayerItems(state.player);
   }
@@ -331,13 +332,14 @@ function enrichRewardDrops(rewards) {
 
 // ============ API Routes ============
 
+// Mount auth routes (public, no auth required)
+app.use('/api/auth', createAuthRoutes());
+
 // Mount extracted route modules
 app.use('/api', createRoutes({
   getSettings: () => settings,
   saveSettings: saveSettings,
-  gameManager,
-  getEnrichedGameState,
-  saveGameData,
+  enrichGameState,
   generateGameNarration,
   cancelPendingPrefetches,
   clearPrefetchCache,
@@ -348,7 +350,6 @@ app.use('/api', createRoutes({
   setGameStats: (newStats) => { gameStats = newStats; },
   getDebugMode: () => debugMode,
   setDebugMode: (val) => { debugMode = val; },
-  gameSaveFile: GAME_SAVE_FILE,
   vocabCacheFile: VOCAB_CACHE_FILE
 }));
 
@@ -425,13 +426,10 @@ async function generateGameNarration(event, context, userKeys = {}) {
     }
 
     const gameState = {
-      player: gameManager.run?.player || gameManager.player,
-      floor: gameManager.run?.floor || 1,
-      enemy: gameManager.combat?.enemy,
-      combat: gameManager.combat ? {
-        active: gameManager.combat.active,
-        turn: gameManager.combat.turn
-      } : null
+      player: context.player || null,
+      floor: context.floor || 1,
+      enemy: context.enemy || null,
+      combat: context.enemy ? { active: true, turn: context.turn || 0 } : null
     };
 
     narration = await generateNarration(
@@ -451,8 +449,8 @@ async function generateGameNarration(event, context, userKeys = {}) {
   }
 
   const gameTerms = [];
-  if (gameManager.combat?.enemy?.name) {
-    gameTerms.push(gameManager.combat.enemy.name);
+  if (context.enemy?.name) {
+    gameTerms.push(context.enemy.name);
   }
   narration = await applyVocabRepair(narration, vocabulary, userKeys, gameTerms);
 
