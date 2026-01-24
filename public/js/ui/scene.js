@@ -9,7 +9,7 @@ import { dom } from '../dom.js';
 /** Set scene background image */
 export function setBackground(imagePath) {
   if (imagePath) {
-    dom.sceneBackground.style.backgroundImage = `url(${imagePath})`;
+    dom.sceneBackground.style.backgroundImage = `url('${imagePath}')`;
   } else {
     dom.sceneBackground.style.backgroundImage = 'none';
   }

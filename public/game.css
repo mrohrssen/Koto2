@@ -153,10 +153,12 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 .enemy-sprite {
-  max-height: 65%;
+  max-height: 180px;
   max-width: 60%;
   object-fit: contain;
   display: none;
