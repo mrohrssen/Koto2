@@ -227,6 +227,7 @@ async function startNewRun() {
   if (result?.state) {
     updateGameState(result.state);
     updateUI();
+    audio.playBGM('main');
     if (gameState.run?.startingChipShop?.active) {
       economyUI.renderStartingChipShop(gameState.run.startingChipShop.items);
     }
@@ -291,6 +292,7 @@ function startCombatLoop() { combatLoopUI.startCombatLoop(); }
 function resumeCombatAfterVocab() { combatLoopUI.resumeCombatAfterVocab(); }
 
 function showVictoryModal(result) {
+  audio.stopBGM();
   scene.showToast('Victory!', 2000);
   setTimeout(async () => {
     await loadGameState();
@@ -299,6 +301,8 @@ function showVictoryModal(result) {
 }
 
 function showGameOverModal(result) {
+  audio.stopBGM();
+  audio.playSFX('defeat');
   takeover.open('gameover');
   const content = takeover.getContent('gameover');
   content.innerHTML = `
@@ -538,6 +542,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   document.addEventListener('click', ensureAudio, { once: true });
   document.addEventListener('touchstart', ensureAudio, { once: true });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      audio.pauseBGM();
+    } else {
+      audio.resumeBGM();
+    }
+  });
 
   if (gameState.phase === 'combat' && gameState.combat?.enemy?.hp > 0) {
     startCombatLoop();
