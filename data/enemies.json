@@ -1,6 +1,6 @@
 {
-  "slime": {
-    "id": "slime",
+  "sleepyStudent": {
+    "id": "sleepyStudent",
     "name": "眠そうな学生",
     "nameEn": "Sleepy Student",
     "description": "SYSTEMに接続されたまま眠りながら歩く学生。目が虚ろに光っている。",
@@ -42,8 +42,8 @@
       ]
     }
   },
-  "goblin": {
-    "id": "goblin",
+  "noisyNeighbor": {
+    "id": "noisyNeighbor",
     "name": "うるさい隣人",
     "nameEn": "Noisy Neighbor",
     "description": "夜中に騒音を立て続ける住人。SYSTEMに操られて眠れない。",
@@ -88,8 +88,8 @@
       ]
     }
   },
-  "wolf": {
-    "id": "wolf",
+  "possessedDogWalker": {
+    "id": "possessedDogWalker",
     "name": "犬の散歩人",
     "nameEn": "Possessed Dog Walker",
     "description": "犬を連れたまま暴走する住人。犬も困惑している。",
@@ -130,8 +130,8 @@
       ]
     }
   },
-  "skeleton": {
-    "id": "skeleton",
+  "expressionlessClerk": {
+    "id": "expressionlessClerk",
     "name": "無表情な店員",
     "nameEn": "Expressionless Clerk",
     "description": "笑顔を失ったコンビニ店員。機械的に接客を続けている。",
@@ -177,8 +177,8 @@
       ]
     }
   },
-  "orc": {
-    "id": "orc",
+  "drunkSalaryman": {
+    "id": "drunkSalaryman",
     "name": "酔っ払いリーマン",
     "nameEn": "Drunk Salaryman",
     "description": "終電を逃したサラリーマン。アルコールとSYSTEMで二重に酔っている。",
@@ -224,8 +224,8 @@
       ]
     }
   },
-  "mage": {
-    "id": "mage",
+  "strictTeacher": {
+    "id": "strictTeacher",
     "name": "厳しい先生",
     "nameEn": "Strict Teacher",
     "description": "生徒を過剰に管理する教師。SYSTEMの模範的な兵士。",
@@ -270,8 +270,8 @@
       ]
     }
   },
-  "knight": {
-    "id": "knight",
+  "powerHarassingBoss": {
+    "id": "powerHarassingBoss",
     "name": "パワハラ上司",
     "nameEn": "Power-Harassing Boss",
     "description": "部下を追い詰める中間管理職。SYSTEMが彼の支配欲を増幅させている。",
@@ -316,8 +316,8 @@
       ]
     }
   },
-  "demon": {
-    "id": "demon",
+  "foreignCorpExecutive": {
+    "id": "foreignCorpExecutive",
     "name": "外資系幹部",
     "nameEn": "Foreign Corp Executive",
     "description": "効率と利益だけを追求する外資系企業の幹部。人間性を失っている。",
@@ -362,8 +362,8 @@
       ]
     }
   },
-  "golem": {
-    "id": "golem",
+  "strictSecurityGuard": {
+    "id": "strictSecurityGuard",
     "name": "厳格な警備員",
     "nameEn": "Strict Security Guard",
     "description": "規則を絶対視する警備員。SYSTEMの命令を忠実に実行する。",
@@ -410,8 +410,8 @@
       ]
     }
   },
-  "shadow": {
-    "id": "shadow",
+  "topBureaucrat": {
+    "id": "topBureaucrat",
     "name": "官僚のトップ",
     "nameEn": "Top Bureaucrat",
     "description": "SYSTEM統治の要となる高級官僚。書類で現実を書き換えようとする。",
@@ -456,8 +456,8 @@
       ]
     }
   },
-  "dragon": {
-    "id": "dragon",
+  "systemExecutive": {
+    "id": "systemExecutive",
     "name": "SYSTEM幹部",
     "nameEn": "SYSTEM Executive",
     "description": "AIの意思を体現する存在。かつては人間だったが、今はSYSTEMそのもの。",

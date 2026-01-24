@@ -76,7 +76,7 @@ export const INTENT_TYPES = {
 // Define how each enemy chooses their next intent
 export const ENEMY_INTENTS = {
   // Tier 1
-  slime: {
+  sleepyStudent: {
     default: [
       { intent: 'attack', weight: 70 },
       { intent: 'heavy', weight: 20 },
@@ -84,7 +84,7 @@ export const ENEMY_INTENTS = {
     ],
     lowHp: null // No special behavior
   },
-  goblin: {
+  noisyNeighbor: {
     default: [
       { intent: 'attack', weight: 50 },
       { intent: 'heavy', weight: 20 },
@@ -93,7 +93,7 @@ export const ENEMY_INTENTS = {
     ],
     lowHp: null
   },
-  wolf: {
+  possessedDogWalker: {
     default: [
       { intent: 'attack', weight: 60 },
       { intent: 'heavy', weight: 30 },
@@ -107,7 +107,7 @@ export const ENEMY_INTENTS = {
   },
 
   // Tier 2
-  skeleton: {
+  expressionlessClerk: {
     default: [
       { intent: 'attack', weight: 50 },
       { intent: 'heavy', weight: 30 },
@@ -115,7 +115,7 @@ export const ENEMY_INTENTS = {
     ],
     lowHp: null
   },
-  orc: {
+  drunkSalaryman: {
     default: [
       { intent: 'attack', weight: 40 },
       { intent: 'heavy', weight: 40 },
@@ -127,7 +127,7 @@ export const ENEMY_INTENTS = {
     ],
     lowHpThreshold: 0.5
   },
-  mage: {
+  strictTeacher: {
     default: [
       { intent: 'attack', weight: 40 },
       { intent: 'special', weight: 40 }, // Magic attack
@@ -137,7 +137,7 @@ export const ENEMY_INTENTS = {
   },
 
   // Tier 3
-  knight: {
+  powerHarassingBoss: {
     default: [
       { intent: 'attack', weight: 40 },
       { intent: 'heavy', weight: 30 },
@@ -149,7 +149,7 @@ export const ENEMY_INTENTS = {
     ],
     lowHpThreshold: 0.3
   },
-  demon: {
+  foreignCorpExecutive: {
     default: [
       { intent: 'attack', weight: 30 },
       { intent: 'special', weight: 40 }, // Fire magic
@@ -161,7 +161,7 @@ export const ENEMY_INTENTS = {
     ],
     lowHpThreshold: 0.4
   },
-  golem: {
+  strictSecurityGuard: {
     default: [
       { intent: 'heavy', weight: 60 },
       { intent: 'defend', weight: 40 }
@@ -170,7 +170,7 @@ export const ENEMY_INTENTS = {
   },
 
   // Tier 4
-  shadow: {
+  topBureaucrat: {
     default: [
       { intent: 'attack', weight: 50 },
       { intent: 'special', weight: 30 }, // Vanish
@@ -182,7 +182,7 @@ export const ENEMY_INTENTS = {
     ],
     lowHpThreshold: 0.4
   },
-  dragon: {
+  systemExecutive: {
     default: [
       { intent: 'attack', weight: 30 },
       { intent: 'heavy', weight: 30 },
@@ -601,7 +601,7 @@ export const ENEMY_INTENTS = {
 // ============ ENEMY ABILITIES (SYSTEM Glitches) ============
 // Unique abilities that trigger under certain conditions
 export const ENEMY_ABILITIES = {
-  slime: {
+  sleepyStudent: {
     id: 'split',
     name: '意識分裂',
     nameEn: 'Split Consciousness',
@@ -610,7 +610,7 @@ export const ENEMY_ABILITIES = {
     description: 'SYSTEM splits their consciousness into two when damaged',
     effect: 'split'
   },
-  goblin: {
+  noisyNeighbor: {
     id: 'callBackup',
     name: '騒音拡散',
     nameEn: 'Noise Spread',
@@ -618,9 +618,9 @@ export const ENEMY_ABILITIES = {
     turnNumber: 4,
     description: 'Calls another possessed neighbor for backup',
     effect: 'summon',
-    summonId: 'goblin'
+    summonId: 'noisyNeighbor'
   },
-  wolf: {
+  possessedDogWalker: {
     id: 'cornered',
     name: 'パニック',
     nameEn: 'Panic Mode',
@@ -631,7 +631,7 @@ export const ENEMY_ABILITIES = {
     buffType: 'atk',
     buffAmount: 0.5
   },
-  skeleton: {
+  expressionlessClerk: {
     id: 'reassemble',
     name: 'システム再起動',
     nameEn: 'System Reboot',
@@ -641,7 +641,7 @@ export const ENEMY_ABILITIES = {
     effect: 'revive',
     revivePercent: 0.3
   },
-  orc: {
+  drunkSalaryman: {
     id: 'berserk',
     name: '酔狂モード',
     nameEn: 'Drunk Rage',
@@ -652,7 +652,7 @@ export const ENEMY_ABILITIES = {
     atkMultiplier: 2.0,
     defMultiplier: 0.5
   },
-  mage: {
+  strictTeacher: {
     id: 'barrier',
     name: '規則の壁',
     nameEn: 'Rule Barrier',
@@ -661,7 +661,7 @@ export const ENEMY_ABILITIES = {
     description: 'Creates a barrier of regulations that absorbs one hit',
     effect: 'barrier'
   },
-  knight: {
+  powerHarassingBoss: {
     id: 'riposte',
     name: '報復人事',
     nameEn: 'Retaliation',
@@ -670,7 +670,7 @@ export const ENEMY_ABILITIES = {
     effect: 'counter',
     counterDamage: 0.5
   },
-  demon: {
+  foreignCorpExecutive: {
     id: 'hellfire',
     name: 'リストラ宣告',
     nameEn: 'Layoff Declaration',
@@ -679,7 +679,7 @@ export const ENEMY_ABILITIES = {
     effect: 'magic',
     magicMultiplier: 1.5
   },
-  golem: {
+  strictSecurityGuard: {
     id: 'stoneForm',
     name: '鉄壁の警備',
     nameEn: 'Iron Defense',
@@ -688,7 +688,7 @@ export const ENEMY_ABILITIES = {
     effect: 'resistance',
     physicalResist: 0.2
   },
-  shadow: {
+  topBureaucrat: {
     id: 'vanish',
     name: '官僚的回避',
     nameEn: 'Bureaucratic Dodge',
@@ -696,7 +696,7 @@ export const ENEMY_ABILITIES = {
     description: 'Becomes untargetable through paperwork for one turn',
     effect: 'vanish'
   },
-  dragon: {
+  systemExecutive: {
     id: 'dragonBreath',
     name: 'データ放射',
     nameEn: 'Data Broadcast',
@@ -830,7 +830,7 @@ export function selectEnemyIntent(enemy, turnCount = 1) {
     }
   } else {
     pattern = ENEMY_INTENTS[enemyId];
-    if (!pattern) pattern = ENEMY_INTENTS.slime; // fallback
+    if (!pattern) pattern = ENEMY_INTENTS.sleepyStudent; // fallback
 
     // Check for low HP pattern
     if (pattern.lowHp && hpPercent <= (pattern.lowHpThreshold || 0.3)) {
