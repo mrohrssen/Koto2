@@ -146,6 +146,54 @@ function showNextFlashCardFromQueue() {
   }
 }
 
+// ============ COMBAT MATH DISPLAY ============
+
+/**
+ * Show a breakdown of the player's attack damage in the action area
+ * @param {Object} result - The combat-cycle API response
+ */
+function showCombatMath(result) {
+  const actionArea = document.getElementById('action-area');
+  if (!actionArea) return;
+
+  const lines = [];
+  const atk = result.playerAttack;
+  if (atk) {
+    // Show chip effects that contributed
+    if (atk.chipEffects?.length) {
+      for (const effect of atk.chipEffects) {
+        const name = effect.chipName || effect.status || 'Chip';
+        const detail = effect.bonusDamage ? `+${effect.bonusDamage}` : (effect.status || '');
+        lines.push(`<span class="math-chip">${name}: ${detail}</span>`);
+      }
+    }
+    if (atk.cascadeTriggered && atk.cascadeDamage) {
+      lines.push(`<span class="math-chip">Cascade: +${atk.cascadeDamage}</span>`);
+    }
+    if (atk.critical) lines.push('<span class="math-crit">CRITICAL HIT!</span>');
+    lines.push(`<strong>\u2192 ${atk.damage} damage</strong>`);
+  }
+
+  if (lines.length > 0) {
+    actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
+  }
+}
+
+/**
+ * Animate a chip circle when its effect activates
+ * @param {number} chipIndex - Index of the chip slot to animate
+ */
+function animateChipActivation(chipIndex) {
+  const slot = document.querySelector(`.chip-slot[data-index="${chipIndex}"]`);
+  if (slot) {
+    const icon = slot.querySelector('.chip-icon');
+    if (icon) {
+      icon.classList.add('chip-activating');
+      setTimeout(() => icon.classList.remove('chip-activating'), 600);
+    }
+  }
+}
+
 // ============ COMBAT LOOP FUNCTIONS ============
 
 /**
@@ -249,9 +297,18 @@ export async function executePlayerAttack() {
             setTimeout(() => {
               const displayName = statusNames[effect.status] || effect.status;
               showChipEffect(displayName, false);
+              // Animate the chip circle for this effect
+              if (effect.chipIndex != null) {
+                animateChipActivation(effect.chipIndex);
+              } else {
+                animateChipActivation(i);
+              }
             }, i * 200); // Stagger multiple effects
           });
         }
+
+        // Show combat math breakdown in action area
+        showCombatMath(result);
 
         // Show DoT damage from status effects (defrag, overheated, etc.)
         if (pa.dotDamage && pa.dotDamage > 0) {

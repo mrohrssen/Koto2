@@ -186,6 +186,11 @@ function showEnemyDialogue(text, type = 'possessed') {
   const duration = type === 'liberated' ? 5000 : 3000;
   scene.showToast(text, duration);
 
+  // Speak dialogue via TTS if enabled
+  if (settings.isTtsEnabled()) {
+    tts.speakText(text);
+  }
+
   dialogueDismissPromise = new Promise(resolve => {
     dialogueDismissResolve = resolve;
     setTimeout(() => {
