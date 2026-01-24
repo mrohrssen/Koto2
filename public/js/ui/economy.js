@@ -14,6 +14,8 @@ let sceneModule = null;
 let apiClaimStartingChip = null;
 let apiPostCombatShopBuy = null;
 let apiShopSkip = null;
+let apiGetChipLoadout = null;
+let setChipLoadoutCache = null;
 
 export function init(callbacks) {
   getGameState = callbacks.getGameState;
@@ -24,6 +26,8 @@ export function init(callbacks) {
   apiClaimStartingChip = callbacks.apiClaimStartingChip;
   apiPostCombatShopBuy = callbacks.apiPostCombatShopBuy;
   apiShopSkip = callbacks.apiShopSkip;
+  apiGetChipLoadout = callbacks.apiGetChipLoadout;
+  setChipLoadoutCache = callbacks.setChipLoadoutCache;
 }
 
 /** Render post-combat chip shop as takeover */
@@ -74,6 +78,10 @@ function renderChipShopContent(items, isStarting) {
       takeover.close('chipShop');
       playSFX('chip-equip');
       sceneModule.showToast('Chip acquired!', 2000);
+      if (apiGetChipLoadout && setChipLoadoutCache) {
+        const loadout = await apiGetChipLoadout();
+        setChipLoadoutCache(loadout);
+      }
       updateUI();
     });
   });

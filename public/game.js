@@ -303,6 +303,8 @@ function showVictoryModal(result) {
 function showGameOverModal(result) {
   audio.stopBGM();
   audio.playSFX('defeat');
+  chipLoadoutCache = null;
+  updateChipRow();
   takeover.open('gameover');
   const content = takeover.getContent('gameover');
   content.innerHTML = `
@@ -390,14 +392,17 @@ async function openChipEquipView() {
 
 async function handleUseChipSkill(chipIndex) {
   const weapon = gameState.player?.equipment?.weapon;
-  const chip = weapon?.equippedChips?.[chipIndex];
-  if (!chip) return;
+  const chipEntry = weapon?.equippedChips?.[chipIndex];
+  if (!chipEntry) return;
+
+  const chipId = typeof chipEntry === 'string' ? chipEntry : chipEntry.id;
+  if (!chipId) return;
 
   try {
     const response = await fetch(`${API_BASE}/api/game/use-chip-skill`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chipId: chip.id }),
+      body: JSON.stringify({ chipId }),
     });
     const result = await response.json();
     if (result.error) {
@@ -407,7 +412,8 @@ async function handleUseChipSkill(chipIndex) {
     if (result.state) {
       updateGameState(result.state);
     }
-    scene.showToast(result.message || `${chip.nameEn} activated!`, 2000);
+    const chipName = typeof chipEntry === 'string' ? chipId : chipEntry.nameEn;
+    scene.showToast(result.message || `${chipName} activated!`, 2000);
     updateUI();
   } catch (e) {
     console.error('Chip skill error:', e);
@@ -486,6 +492,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     apiClaimStartingChip,
     apiPostCombatShopBuy,
     apiShopSkip,
+    apiGetChipLoadout,
+    setChipLoadoutCache: (data) => { chipLoadoutCache = data; updateChipRow(); },
   });
 
   modalsUI.init({
