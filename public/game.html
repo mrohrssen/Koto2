@@ -94,6 +94,29 @@
     <button class="chip-popup-use" id="chip-popup-use">Use Skill</button>
   </div>
 
+  <!-- Auth Screen (shown before login) -->
+  <div class="auth-screen" id="auth-screen">
+    <div class="auth-container">
+      <h1 class="auth-title">NEO TOKYO</h1>
+      <p class="auth-subtitle">System Liberation</p>
+
+      <div class="auth-form" id="auth-form">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Login</button>
+          <button class="auth-tab" data-tab="register">Register</button>
+        </div>
+
+        <div class="auth-fields" id="auth-fields">
+          <input type="text" id="auth-username" placeholder="Username" autocomplete="username" />
+          <input type="password" id="auth-password" placeholder="Password" autocomplete="current-password" />
+          <input type="text" id="auth-invite" placeholder="Invite Code" class="hidden" />
+          <button class="btn-primary" id="auth-submit">Login</button>
+          <p class="auth-error hidden" id="auth-error"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="game.js"></script>
 </body>
 </html>
