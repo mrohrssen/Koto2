@@ -7,21 +7,7 @@
 import { Router } from 'express';
 import { getChipLoadout, equipChip, unequipChip } from '../../game/items/chips.js';
 
-/**
- * Create run router
- * @param {object} deps - Dependencies
- * @param {object} deps.gameManager - GameManager instance
- * @param {function} deps.getEnrichedGameState - Get enriched game state
- * @param {function} deps.saveGameData - Save game data to file
- * @param {function} deps.generateGameNarration - Generate AI narration
- * @param {function} deps.cancelPendingPrefetches - Cancel pending prefetches
- * @param {function} deps.clearPrefetchCache - Clear prefetch cache
- * @returns {Router}
- */
 export default function createRunRoutes({
-  gameManager,
-  getEnrichedGameState,
-  saveGameData,
   generateGameNarration,
   cancelPendingPrefetches,
   clearPrefetchCache
@@ -30,16 +16,17 @@ export default function createRunRoutes({
 
   // Start a new run
   router.post('/start-run', async (req, res) => {
+    const gameManager = req.gameManager;
     try {
       gameManager.startRun();
 
       const narration = await generateGameNarration('runStart', {
         player: gameManager.run.player
-      }, req.body);
+      }, req.userKeys);
 
-      saveGameData();
+      req.saveGame();
       res.json({
-        state: getEnrichedGameState(),
+        state: req.getEnrichedGameState(),
         narration
       });
     } catch (error) {
@@ -49,11 +36,12 @@ export default function createRunRoutes({
 
   // Claim free starting chip
   router.post('/claim-starting-chip', (req, res) => {
+    const gameManager = req.gameManager;
     try {
       const { itemIndex } = req.body;
       const result = gameManager.claimStartingChip(itemIndex);
-      saveGameData();
-      res.json({ ...result, state: getEnrichedGameState() });
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -62,7 +50,7 @@ export default function createRunRoutes({
   // Ward selection
   router.get('/starting-wards', (req, res) => {
     try {
-      const options = gameManager.getStartingWardOptions();
+      const options = req.gameManager.getStartingWardOptions();
       res.json(options);
     } catch (error) {
       res.status(400).json({ error: error.message });
@@ -70,13 +58,14 @@ export default function createRunRoutes({
   });
 
   router.post('/select-starting-ward', async (req, res) => {
+    const gameManager = req.gameManager;
     try {
       const { wardId } = req.body;
       const result = gameManager.selectStartingWard(wardId);
-      saveGameData();
+      req.saveGame();
       res.json({
         ...result,
-        state: getEnrichedGameState()
+        state: req.getEnrichedGameState()
       });
     } catch (error) {
       res.status(400).json({ error: error.message });
@@ -85,7 +74,7 @@ export default function createRunRoutes({
 
   router.get('/next-ward-options', (req, res) => {
     try {
-      const options = gameManager.getNextWardOptions();
+      const options = req.gameManager.getNextWardOptions();
       res.json(options);
     } catch (error) {
       res.status(400).json({ error: error.message });
@@ -93,13 +82,14 @@ export default function createRunRoutes({
   });
 
   router.post('/select-next-ward', async (req, res) => {
+    const gameManager = req.gameManager;
     try {
       const { wardId } = req.body;
       const result = gameManager.selectNextWard(wardId);
-      saveGameData();
+      req.saveGame();
       res.json({
         ...result,
-        state: getEnrichedGameState()
+        state: req.getEnrichedGameState()
       });
     } catch (error) {
       res.status(400).json({ error: error.message });
@@ -108,6 +98,7 @@ export default function createRunRoutes({
 
   // Chip loadout management
   router.get('/chip-loadout', (req, res) => {
+    const gameManager = req.gameManager;
     try {
       const player = gameManager.run?.player || gameManager.player;
       const runStats = gameManager.run?.runStats || {};
@@ -123,11 +114,12 @@ export default function createRunRoutes({
   });
 
   router.post('/equip-chip', (req, res) => {
+    const gameManager = req.gameManager;
     try {
       const { equipmentSlot, chipId } = req.body;
       const player = gameManager.run?.player || gameManager.player;
       const result = equipChip(player, equipmentSlot, chipId);
-      if (result.success) saveGameData();
+      if (result.success) req.saveGame();
       res.json(result);
     } catch (error) {
       res.status(400).json({ error: error.message });
@@ -135,11 +127,12 @@ export default function createRunRoutes({
   });
 
   router.post('/unequip-chip', (req, res) => {
+    const gameManager = req.gameManager;
     try {
       const { equipmentSlot, chipId } = req.body;
       const player = gameManager.run?.player || gameManager.player;
       const result = unequipChip(player, equipmentSlot, chipId);
-      if (result.success) saveGameData();
+      if (result.success) req.saveGame();
       res.json(result);
     } catch (error) {
       res.status(400).json({ error: error.message });
@@ -148,16 +141,17 @@ export default function createRunRoutes({
 
   // Floor navigation
   router.post('/enter-floor', async (req, res) => {
+    const gameManager = req.gameManager;
     try {
       const floor = gameManager.enterFloor();
       const narration = await generateGameNarration('floorEnter', {
         floor,
         player: gameManager.run.player
-      }, req.body);
+      }, req.userKeys);
 
-      saveGameData();
+      req.saveGame();
       res.json({
-        state: getEnrichedGameState(),
+        state: req.getEnrichedGameState(),
         narration
       });
     } catch (error) {
@@ -166,21 +160,23 @@ export default function createRunRoutes({
   });
 
   router.post('/next-floor', async (req, res) => {
+    const gameManager = req.gameManager;
     try {
       const floor = gameManager.nextFloor();
       const narration = await generateGameNarration('floorEnter', {
         floor: gameManager.run.floor,
         player: gameManager.run.player
-      }, req.body);
+      }, req.userKeys);
 
-      saveGameData();
-      res.json({ state: getEnrichedGameState(), narration });
+      req.saveGame();
+      res.json({ state: req.getEnrichedGameState(), narration });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
   });
 
   router.post('/proceed', async (req, res) => {
+    const gameManager = req.gameManager;
     try {
       const room = gameManager.proceedToNextRoom();
 
@@ -189,11 +185,11 @@ export default function createRunRoutes({
         narration = await generateGameNarration('encounterStart', {
           enemy: room.enemy,
           player: gameManager.run.player
-        }, req.body);
+        }, req.userKeys);
       }
 
-      saveGameData();
-      res.json({ room, state: getEnrichedGameState(), narration });
+      req.saveGame();
+      res.json({ room, state: req.getEnrichedGameState(), narration });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -201,10 +197,11 @@ export default function createRunRoutes({
 
   // Start room encounter (marks room, then starts combat)
   router.post('/room-encounter', async (req, res) => {
+    const gameManager = req.gameManager;
     try {
       const result = gameManager.startRoomEncounter();
-      saveGameData();
-      res.json({ ...result, state: getEnrichedGameState() });
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -212,11 +209,11 @@ export default function createRunRoutes({
 
   // Forfeit run
   router.post('/forfeit', (req, res) => {
-    const result = gameManager.forfeitRun();
+    const result = req.gameManager.forfeitRun();
     cancelPendingPrefetches();
     clearPrefetchCache();
-    saveGameData();
-    res.json({ ...result, state: getEnrichedGameState() });
+    req.saveGame();
+    res.json({ ...result, state: req.getEnrichedGameState() });
   });
 
   return router;

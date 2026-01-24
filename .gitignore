@@ -1,6 +1,8 @@
 node_modules/
 .env
 .jrpg-*.json
+.jrpg-users.json
+.jrpg-save-*.json
 .jchat-*.json
 .DS_Store
 

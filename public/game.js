@@ -15,6 +15,7 @@ import * as hpBar from './js/ui/hp-bar.js';
 import * as chipRow from './js/ui/chip-row.js';
 import * as scene from './js/ui/scene.js';
 import * as audio from './js/audio.js';
+import * as auth from './js/ui/auth.js';
 
 // API imports - these are the server communication functions
 import {
@@ -451,6 +452,22 @@ function setupEventListeners() {
 
 // ============ INITIALIZATION ============
 document.addEventListener('DOMContentLoaded', async () => {
+  // Initialize auth UI
+  auth.init({
+    onAuthenticated: () => initGame()
+  });
+
+  // Check auth status
+  const isAuth = await auth.checkAuth();
+  if (isAuth) {
+    auth.hideAuthScreen();
+    await initGame();
+  } else {
+    auth.showAuthScreen();
+  }
+});
+
+async function initGame() {
   takeover.init();
 
   actions.init({
@@ -557,6 +574,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   setupEventListeners();
+
+  // Wire logout button
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    auth.logout();
+    auth.showAuthScreen();
+  });
+
   await loadGameState();
   updateUI();
 
@@ -594,4 +618,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (gameState.phase === 'combat' && gameState.combat?.enemy?.hp > 0) {
     startCombatLoop();
   }
-});
+}

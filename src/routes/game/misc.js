@@ -21,28 +21,9 @@ import {
   getGameStatsAvailableDates,
   resetGameStats
 } from '../../game-stats.js';
+import { getSaveFilePath } from '../../game/manager-registry.js';
 
-/**
- * Create misc router
- * @param {object} deps - Dependencies
- * @param {object} deps.gameManager - GameManager instance
- * @param {function} deps.getEnrichedGameState - Get enriched game state
- * @param {function} deps.saveGameData - Save game data to file
- * @param {function} deps.generateGameNarration - Generate AI narration
- * @param {function} deps.cancelPendingPrefetches - Cancel pending prefetches
- * @param {function} deps.clearPrefetchCache - Clear prefetch cache
- * @param {function} deps.getGameStats - Get game stats object
- * @param {function} deps.setGameStats - Set game stats object
- * @param {function} deps.getDebugMode - Get debug mode state
- * @param {function} deps.setDebugMode - Set debug mode state
- * @param {string} deps.gameSaveFile - Path to game save file
- * @param {string} deps.vocabCacheFile - Path to vocab cache file
- * @returns {Router}
- */
 export default function createMiscRoutes({
-  gameManager,
-  getEnrichedGameState,
-  saveGameData,
   generateGameNarration,
   cancelPendingPrefetches,
   clearPrefetchCache,
@@ -50,7 +31,6 @@ export default function createMiscRoutes({
   setGameStats,
   getDebugMode,
   setDebugMode,
-  gameSaveFile,
   vocabCacheFile
 }) {
   const router = Router();
@@ -59,7 +39,7 @@ export default function createMiscRoutes({
   router.post('/narrate', async (req, res) => {
     const { event, context } = req.body;
     try {
-      const narration = await generateGameNarration(event, context, req.body);
+      const narration = await generateGameNarration(event, context, req.userKeys);
       res.json({ narration });
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -68,13 +48,15 @@ export default function createMiscRoutes({
 
   // Reset (full game reset)
   router.post('/reset', (req, res) => {
+    const gameManager = req.gameManager;
     gameManager.fullReset();
     cancelPendingPrefetches();
     clearPrefetchCache();
 
     try {
-      if (existsSync(gameSaveFile)) {
-        unlinkSync(gameSaveFile);
+      const saveFile = getSaveFilePath(req.user.id);
+      if (existsSync(saveFile)) {
+        unlinkSync(saveFile);
       }
       if (existsSync(vocabCacheFile)) {
         unlinkSync(vocabCacheFile);
@@ -100,11 +82,12 @@ export default function createMiscRoutes({
       return res.status(403).json({ error: 'Debug mode not enabled' });
     }
 
+    const gameManager = req.gameManager;
     try {
       const { enemyId } = req.body;
       const result = gameManager.debugForceCombat(enemyId);
-      saveGameData();
-      res.json({ ...result, state: getEnrichedGameState() });
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -116,6 +99,7 @@ export default function createMiscRoutes({
       return res.status(403).json({ error: 'Debug mode not enabled' });
     }
 
+    const gameManager = req.gameManager;
     try {
       if (!gameManager.run) {
         return res.status(400).json({ error: 'No active run' });
@@ -145,8 +129,8 @@ export default function createMiscRoutes({
       gameManager.combat = null;
       gameManager.run.postCombatShop = null;
 
-      saveGameData();
-      res.json({ success: true, room, state: getEnrichedGameState() });
+      req.saveGame();
+      res.json({ success: true, room, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -154,6 +138,7 @@ export default function createMiscRoutes({
 
   // Debug: Give player test chips
   router.post('/debug-chips', (req, res) => {
+    const gameManager = req.gameManager;
     const player = gameManager.run?.player || gameManager.player;
     if (!player) {
       return res.status(400).json({ error: 'No player found' });
@@ -167,16 +152,17 @@ export default function createMiscRoutes({
 
     player.chips = player.chips || [];
     player.chips.push(...testChips);
-    saveGameData();
+    req.saveGame();
 
     res.json({ success: true, chipsAdded: testChips.length, totalChips: player.chips.length });
   });
 
-  // Debug: Force a specific game phase by manipulating server state
+  // Debug: Force a specific game phase
   router.post('/debug-force-phase', async (req, res) => {
     if (!getDebugMode()) {
       return res.status(403).json({ error: 'Debug mode not enabled' });
     }
+    const gameManager = req.gameManager;
     const { phase } = req.body;
     try {
       if (!gameManager.player) {
@@ -244,8 +230,8 @@ export default function createMiscRoutes({
         default:
           return res.status(400).json({ error: `Unsupported phase: ${phase}` });
       }
-      saveGameData();
-      res.json({ success: true, state: getEnrichedGameState() });
+      req.saveGame();
+      res.json({ success: true, state: req.getEnrichedGameState() });
     } catch (e) {
       res.status(500).json({ error: e.message });
     }
@@ -267,20 +253,22 @@ export default function createMiscRoutes({
 
   // Heal
   router.post('/heal', (req, res) => {
+    const gameManager = req.gameManager;
     const { amount } = req.body;
     const player = gameManager.run?.player || gameManager.player;
     if (player) {
       const healAmount = amount || 0;
       player.hp = Math.min(player.hp + healAmount, player.maxHp);
-      saveGameData();
-      res.json({ success: true, state: getEnrichedGameState() });
+      req.saveGame();
+      res.json({ success: true, state: req.getEnrichedGameState() });
     } else {
       res.status(400).json({ error: 'No player' });
     }
   });
 
-  // Full reset (alternative)
+  // Full reset (used by tests)
   router.post('/full-reset', (req, res) => {
+    const gameManager = req.gameManager;
     gameManager.player = null;
     gameManager.run = null;
     gameManager.combat = null;
@@ -293,7 +281,7 @@ export default function createMiscRoutes({
     };
     cancelPendingPrefetches();
     clearPrefetchCache();
-    saveGameData();
+    req.saveGame();
     res.json({ success: true, state: gameManager.getState() });
   });
 
@@ -329,7 +317,7 @@ export default function createMiscRoutes({
 
   // Vocab cache warm
   router.post('/vocab-cache/warm', async (req, res) => {
-    const { jpdbApiKey, force } = req.body;
+    const jpdbApiKey = req.userKeys.jpdbApiKey || req.body.jpdbApiKey;
     if (!jpdbApiKey) {
       return res.status(400).json({ error: 'JPDB API key not configured' });
     }
@@ -340,6 +328,7 @@ export default function createMiscRoutes({
         return res.json({ warmed: 0, message: 'No vocabulary to warm' });
       }
 
+      const { force } = req.body;
       await refreshWordStateCache(jpdbApiKey, vocabResult.words, force);
       res.json({
         warmed: vocabResult.words.length,
@@ -352,12 +341,13 @@ export default function createMiscRoutes({
 
   // Due words
   router.post('/due-words', async (req, res) => {
-    const { jpdbApiKey, limit: bodyLimit, exclude, bypassCache } = req.body;
+    const jpdbApiKey = req.userKeys.jpdbApiKey || req.body.jpdbApiKey;
     if (!jpdbApiKey) {
       return res.status(400).json({ error: 'JPDB API key not configured' });
     }
 
     try {
+      const { limit: bodyLimit, exclude, bypassCache } = req.body;
       const limit = parseInt(bodyLimit) || 10;
       const excludeVids = exclude
         ? (Array.isArray(exclude) ? exclude.map(v => parseInt(v, 10)) : exclude.split(',').map(v => parseInt(v, 10)))
@@ -365,10 +355,8 @@ export default function createMiscRoutes({
 
       let result;
       if (bypassCache) {
-        // Fetch fresh due words directly from JPDB
         result = await fetchDueWordsDirectly(jpdbApiKey, limit, excludeVids);
       } else {
-        // Use cached word states
         result = await getDueWordsWithMeanings(jpdbApiKey, limit, excludeVids);
       }
       res.json({ words: result.words, count: result.words.length, source: result.source });
@@ -379,7 +367,7 @@ export default function createMiscRoutes({
 
   // Refresh word states
   router.post('/refresh-word-states', async (req, res) => {
-    const { jpdbApiKey } = req.body;
+    const jpdbApiKey = req.userKeys.jpdbApiKey || req.body.jpdbApiKey;
     if (!jpdbApiKey) {
       return res.status(400).json({ error: 'JPDB API key not configured' });
     }
@@ -404,7 +392,7 @@ export default function createMiscRoutes({
 
   // Word states lookup
   router.post('/stats/word-states', async (req, res) => {
-    const { jpdbApiKey } = req.body;
+    const jpdbApiKey = req.userKeys.jpdbApiKey || req.body.jpdbApiKey;
     const gameStats = getGameStats();
     if (!jpdbApiKey) {
       return res.status(400).json({ error: 'JPDB API key not configured' });

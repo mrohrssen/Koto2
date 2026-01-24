@@ -235,3 +235,47 @@ export function setAudioMuted(muted) {
     localStorage.removeItem('jrpg_audioMuted');
   }
 }
+
+// ============ SERVER-SIDE API KEY MANAGEMENT ============
+
+/**
+ * Save API keys to server (authenticated)
+ * @param {object} keys - API key values to save
+ * @returns {Promise<boolean>} True if save succeeded
+ */
+export async function saveApiKeysToServer(keys) {
+  const token = localStorage.getItem('authToken');
+  if (!token) return false;
+  try {
+    const res = await fetch('/api/auth/api-keys', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(keys)
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Load API key info from server (for settings display)
+ * @returns {Promise<object>} API key info (hasJpdbKey, hasAiKey, aiProvider, etc.)
+ */
+export async function loadApiKeysFromServer() {
+  const token = localStorage.getItem('authToken');
+  if (!token) return {};
+  try {
+    const res = await fetch('/api/auth/me', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) return {};
+    const data = await res.json();
+    return data.apiKeys || {};
+  } catch {
+    return {};
+  }
+}

@@ -3,13 +3,8 @@
  *
  * Centralized server communication for the JRPG frontend.
  * All API calls go through this module to ensure consistent
- * handling of API keys, loading states, and error handling.
+ * handling of auth tokens, loading states, and error handling.
  */
-
-import { getApiKeys, saveApiKeys } from './settings.js';
-
-// Re-export for backward compatibility
-export { getApiKeys as getStoredApiKeys, saveApiKeys as saveStoredApiKeys };
 
 // ============ CORE API WRAPPER ============
 
@@ -17,8 +12,20 @@ export { getApiKeys as getStoredApiKeys, saveApiKeys as saveStoredApiKeys };
 let isLoading = false;
 
 /**
+ * Get auth headers with JWT token
+ * @returns {object} Headers object with Content-Type and Authorization
+ */
+export function getAuthHeaders() {
+  const token = localStorage.getItem('authToken');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
+}
+
+/**
  * Generic API call wrapper
- * Automatically includes API keys from localStorage in every request
+ * Includes JWT Authorization header from localStorage in every request
  *
  * @param {string} endpoint - API endpoint (relative to /api/game)
  * @param {string} method - HTTP method (default: POST)
@@ -32,24 +39,16 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null) {
     return null;
   }
   isLoading = true;
-  console.log('apiCall starting:', endpoint);
 
   try {
-    // Include per-user API keys from localStorage in every request
-    const apiKeys = getApiKeys();
-    const payload = body ? { ...body, ...apiKeys } : apiKeys;
-
     const options = {
       method,
-      headers: { 'Content-Type': 'application/json' }
+      headers: getAuthHeaders()
     };
-    if (method !== 'GET') options.body = JSON.stringify(payload);
+    if (method !== 'GET' && body) options.body = JSON.stringify(body);
 
-    console.log('apiCall fetching:', endpoint);
     const response = await fetch(`/api/game${endpoint}`, options);
-    console.log('apiCall got response:', endpoint, response.status);
     const data = await response.json();
-    console.log('apiCall parsed JSON:', endpoint);
 
     if (!response.ok) {
       throw new Error(data.error || 'API call failed');
@@ -82,7 +81,9 @@ function isApiLoading() {
  */
 async function getGameState() {
   try {
-    const response = await fetch('/api/game/state');
+    const response = await fetch('/api/game/state', {
+      headers: getAuthHeaders()
+    });
     return await response.json();
   } catch (error) {
     console.error('Failed to fetch game state:', error);
@@ -96,7 +97,9 @@ async function getGameState() {
  */
 async function getMetaProgression() {
   try {
-    const response = await fetch('/api/game/upgrades');
+    const response = await fetch('/api/game/upgrades', {
+      headers: getAuthHeaders()
+    });
     return await response.json();
   } catch (error) {
     console.error('Failed to fetch meta-progression:', error);
@@ -110,7 +113,9 @@ async function getMetaProgression() {
  */
 async function getSettings() {
   try {
-    const response = await fetch('/api/settings');
+    const response = await fetch('/api/settings', {
+      headers: getAuthHeaders()
+    });
     return await response.json();
   } catch (error) {
     console.error('Failed to fetch settings:', error);
@@ -140,7 +145,7 @@ async function purchaseUpgrade(upgradeId) {
   try {
     const response = await fetch('/api/game/purchase-upgrade', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ upgradeId })
     });
     return await response.json();
@@ -174,7 +179,9 @@ async function forfeitRun() {
  */
 async function getStartingWards() {
   try {
-    const response = await fetch('/api/game/starting-wards');
+    const response = await fetch('/api/game/starting-wards', {
+      headers: getAuthHeaders()
+    });
     return await response.json();
   } catch (error) {
     console.error('Failed to fetch starting wards:', error);
@@ -191,7 +198,7 @@ async function selectStartingWard(wardId) {
   try {
     const response = await fetch('/api/game/select-starting-ward', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ wardId })
     });
     return await response.json();
@@ -207,7 +214,9 @@ async function selectStartingWard(wardId) {
  */
 async function getNextWardOptions() {
   try {
-    const response = await fetch('/api/game/next-ward-options');
+    const response = await fetch('/api/game/next-ward-options', {
+      headers: getAuthHeaders()
+    });
     return await response.json();
   } catch (error) {
     console.error('Failed to fetch next ward options:', error);
@@ -224,7 +233,7 @@ async function selectNextWard(wardId) {
   try {
     const response = await fetch('/api/game/select-next-ward', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ wardId })
     });
     return await response.json();
@@ -300,7 +309,7 @@ async function equipChip(equipmentSlot, chipId) {
   try {
     const response = await fetch('/api/game/equip-chip', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ equipmentSlot, chipId })
     });
     return await response.json();
@@ -318,7 +327,7 @@ async function unequipChip(chipId, equipmentSlot) {
   try {
     const response = await fetch('/api/game/unequip-chip', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ chipId, equipmentSlot })
     });
     return await response.json();
@@ -336,7 +345,9 @@ async function nextFloor() {
 /** Get chip loadout for all equipment slots */
 async function getChipLoadout() {
   try {
-    const response = await fetch('/api/game/chip-loadout');
+    const response = await fetch('/api/game/chip-loadout', {
+      headers: getAuthHeaders()
+    });
     return await response.json();
   } catch (error) {
     console.error('Failed to get chip loadout:', error);
@@ -351,13 +362,10 @@ async function getChipLoadout() {
  */
 async function warmVocabCache(force = false) {
   try {
-    const apiKeys = getApiKeys();
-    if (!apiKeys.jpdbApiKey) return { status: 'no_key' };
-
     const response = await fetch('/api/game/vocab-cache/warm', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jpdbApiKey: apiKeys.jpdbApiKey, force })
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ force })
     });
     return await response.json();
   } catch (error) {
@@ -369,13 +377,9 @@ async function warmVocabCache(force = false) {
 /** Fetch vocabulary from JPDB decks */
 async function fetchJpdbVocab() {
   try {
-    const apiKeys = getApiKeys();
-    if (!apiKeys.jpdbApiKey) return { count: 0 };
-
     const response = await fetch('/api/vocab/fetch', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jpdbApiKey: apiKeys.jpdbApiKey })
+      headers: getAuthHeaders()
     });
     return await response.json();
   } catch (error) {
@@ -391,11 +395,10 @@ async function fetchJpdbVocab() {
  */
 async function sendJpdbReview(vid, sid, grade) {
   try {
-    const apiKeys = getApiKeys();
     const response = await fetch('/api/jpdb/review', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vid, sid, grade, jpdbApiKey: apiKeys.jpdbApiKey })
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ vid, sid, grade })
     });
     return await response.json();
   } catch (error) {
@@ -409,11 +412,10 @@ async function sendJpdbReview(vid, sid, grade) {
  */
 async function parseJpdbText(text) {
   try {
-    const apiKeys = getApiKeys();
     const response = await fetch('/api/jpdb/parse', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, jpdbApiKey: apiKeys.jpdbApiKey })
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ text })
     });
     return await response.json();
   } catch (error) {
@@ -428,11 +430,10 @@ async function parseJpdbText(text) {
  */
 async function lookupJpdbWord(vid, sid) {
   try {
-    const apiKeys = getApiKeys();
     const response = await fetch('/api/jpdb/lookup', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vid, sid, jpdbApiKey: apiKeys.jpdbApiKey })
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ vid, sid })
     });
     return await response.json();
   } catch (error) {
