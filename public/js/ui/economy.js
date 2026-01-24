@@ -5,6 +5,7 @@
  */
 
 import { playSFX } from '../audio.js';
+import { speakText } from '../tts.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -70,6 +71,7 @@ function renderChipShopContent(items, isStarting) {
   content.querySelectorAll('.shop-chip-option').forEach(el => {
     el.addEventListener('click', async () => {
       const index = parseInt(el.dataset.index);
+      const chip = items[index];
       const result = isStarting
         ? await apiClaimStartingChip(index)
         : await apiPostCombatShopBuy(index);
@@ -79,6 +81,7 @@ function renderChipShopContent(items, isStarting) {
       }
       takeover.close('chipShop');
       playSFX('chip-equip');
+      speakText(chip.name || chip.nameEn);
       sceneModule.showNarration('Chip acquired!', { autoDismiss: 2000 });
       if (apiGetChipLoadout && setChipLoadoutCache) {
         const loadout = await apiGetChipLoadout();
