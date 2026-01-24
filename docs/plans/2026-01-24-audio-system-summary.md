@@ -53,7 +53,7 @@ Each SFX is fire-and-forget (`playSFX(name)` returns immediately, no-ops if audi
 | `enemy-defeat.mp3` | `combat-loop.js` → `stopCombatLoop()` | Victory — enemy defeated |
 | `victory.mp3` | `combat-loop.js` → `stopCombatLoop()` | Victory modal shown |
 | `defeat.mp3` | `game.js` → `showGameOverModal()` | Game over triggered |
-| `heal.mp3` | *(not yet wired — no heal action in current combat loop)* | Reserved for future heal chip/item |
+| `heal.mp3` | **TODO: wire up** — the heal action exists in master's combat loop but was not present in the `feature/mobile-first-ui` branch this was based on. Wire `playSFX('heal')` where HP is restored (chip heal effect, heal item, or defrag-style regen). Look for heal/regen logic in `combat-loop.js` or chip pipeline results. | Player or chip heals HP |
 | `swipe-right.mp3` | `actions.js` → `handleTouchEnd()` / `handleMouseUp()` | Card swiped right past threshold |
 | `swipe-left.mp3` | `actions.js` → `handleTouchEnd()` / `handleMouseUp()` | Card swiped left past threshold |
 | `button-tap.mp3` | `actions.js` → equip-bots-btn click, context-action-btn click | Any action button pressed |
