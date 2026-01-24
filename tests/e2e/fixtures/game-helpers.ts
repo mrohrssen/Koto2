@@ -167,8 +167,11 @@ export class GameHelper {
   // ============ STATE HELPERS ============
 
   async getPhase(): Promise<string> {
-    return await this.page.evaluate(() => {
-      return (window as any).gameState?.phase || 'unknown';
+    // Fetch from server for authoritative phase (frontend may lag behind)
+    return await this.page.evaluate(async () => {
+      const res = await fetch('/api/game/state');
+      const state = await res.json();
+      return state?.phase || 'unknown';
     });
   }
 
@@ -187,14 +190,19 @@ export class GameHelper {
   }
 
   async getEnemyHp(): Promise<number> {
-    return await this.page.evaluate(() => {
-      return (window as any).gameState?.combat?.enemy?.hp ?? 0;
+    // Fetch fresh state from server since combat loop doesn't update window.gameState
+    return await this.page.evaluate(async () => {
+      const res = await fetch('/api/game/state');
+      const state = await res.json();
+      return state?.combat?.enemy?.hp ?? 0;
     });
   }
 
   async getEnemyMaxHp(): Promise<number> {
-    return await this.page.evaluate(() => {
-      return (window as any).gameState?.combat?.enemy?.maxHp ?? 0;
+    return await this.page.evaluate(async () => {
+      const res = await fetch('/api/game/state');
+      const state = await res.json();
+      return state?.combat?.enemy?.maxHp ?? 0;
     });
   }
 
@@ -218,9 +226,13 @@ export class GameHelper {
 
   async waitForPhase(phases: string[], timeout = 15000): Promise<void> {
     await this.page.waitForFunction(
-      (expected: string[]) => expected.includes((window as any).gameState?.phase),
+      async (expected: string[]) => {
+        const res = await fetch('/api/game/state');
+        const state = await res.json();
+        return expected.includes(state?.phase);
+      },
       phases,
-      { timeout }
+      { timeout, polling: 500 }
     );
   }
 
@@ -297,6 +309,18 @@ export class GameHelper {
         body: JSON.stringify({ amount })
       });
     }, healAmount);
+  }
+
+  /** Set enemy HP to a specific value via debug API */
+  async setEnemyHp(hp: number): Promise<void> {
+    await this.enableDebugMode();
+    await this.page.evaluate(async (targetHp: number) => {
+      await fetch('/api/game/debug-set-enemy-hp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hp: targetHp })
+      });
+    }, hp);
   }
 
   /** Forfeit run and return to hub */

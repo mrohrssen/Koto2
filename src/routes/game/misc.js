@@ -238,6 +238,20 @@ export default function createMiscRoutes({
     }
   });
 
+  // Debug: Set enemy HP (for testing combat victory)
+  router.post('/debug-set-enemy-hp', (req, res) => {
+    if (!getDebugMode()) {
+      return res.status(403).json({ error: 'Debug mode not enabled' });
+    }
+    const { hp } = req.body;
+    if (!gameManager.combat || !gameManager.combat.enemy) {
+      return res.status(400).json({ error: 'No active combat' });
+    }
+    gameManager.combat.enemy.hp = hp;
+    saveGameData();
+    res.json({ success: true, enemyHp: gameManager.combat.enemy.hp });
+  });
+
   // Heal
   router.post('/heal', (req, res) => {
     const { amount } = req.body;
