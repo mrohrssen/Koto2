@@ -14,6 +14,8 @@
  * - stopCombatLoop: End combat and show results
  */
 
+import { playSFX } from '../audio.js';
+
 // ============ MODULE STATE ============
 
 // Combat state
@@ -230,6 +232,7 @@ export async function executePlayerAttack() {
       } else {
         showDamageNumber(pa.damage, false, pa.critical);
         animateEnemyHurt();
+        playSFX('attack');
 
         // Animate chip pipeline if present
         if (pa.pipelineResult) {
@@ -352,6 +355,7 @@ export async function executeEnemyAttack() {
       } else {
         showDamageNumber(ea.damage, true, ea.critical);
         animatePlayerHurt();
+        playSFX('player-hit');
       }
     }
 
@@ -436,6 +440,7 @@ export async function executeEnemyAttackThenPause() {
       } else {
         showDamageNumber(ea.damage, true, ea.critical);
         animatePlayerHurt();
+        playSFX('player-hit');
       }
     }
 
@@ -524,6 +529,7 @@ export async function stopCombatLoop(result) {
   // Animate victory or defeat
   if (result.victory) {
     animateEnemyDefeat();
+    playSFX('enemy-defeat');
   }
 
   // Request narration from server
@@ -562,6 +568,7 @@ export async function stopCombatLoop(result) {
 
     // Show victory or defeat modal
     if (result.victory) {
+      playSFX('victory');
       showVictoryModal(result);
     } else {
       showGameOverModal(result);
