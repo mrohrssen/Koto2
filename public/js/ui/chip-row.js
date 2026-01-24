@@ -90,8 +90,30 @@ function showPopup(index, chip, charge, maxCharges) {
   currentPopupIndex = index;
   const isCharged = charge >= maxCharges;
 
-  dom.chipPopupName.textContent = chip.skill?.nameEn || chip.nameEn || chip.name;
-  dom.chipPopupDesc.textContent = chip.skill?.descriptionEn || chip.description || '';
+  // Build base ability text from pipeline effect
+  const baseEffect = chip.effects?.pipeline;
+  let baseText = '';
+  if (baseEffect) {
+    if (baseEffect.type === 'flatAdd') baseText = `+${baseEffect.value} damage`;
+    else if (baseEffect.type === 'multiply') {
+      const chance = baseEffect.triggerChance ? ` (${Math.round(baseEffect.triggerChance * 100)}%)` : '';
+      baseText = `${baseEffect.displayText || baseEffect.value + '\u00d7'} damage${chance}`;
+    } else if (baseEffect.type === 'rampingMultiply') baseText = `Ramping ${baseEffect.displayText || 'multiplier'}`;
+    else if (baseEffect.type === 'conditional') baseText = baseEffect.displayText || 'Conditional effect';
+    else baseText = baseEffect.displayText || 'Passive effect';
+  }
+
+  dom.chipPopupName.textContent = chip.nameEn || chip.name;
+  dom.chipPopupDesc.innerHTML = `
+    <div class="chip-popup-section">
+      <div class="chip-popup-section-label">Passive</div>
+      <div>${baseText || 'No passive effect'}</div>
+    </div>
+    <div class="chip-popup-section">
+      <div class="chip-popup-section-label">Skill: ${chip.skill?.nameEn || chip.skill?.name || 'None'}</div>
+      <div>${chip.skill?.descriptionEn || chip.skill?.description || 'No skill'}</div>
+    </div>
+  `;
   dom.chipPopupCharge.textContent = isCharged ? 'Ready!' : `Charging ${charge}/${maxCharges}`;
   dom.chipPopupUse.disabled = !isCharged;
   dom.chipPopupUse.onclick = () => {
