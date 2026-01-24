@@ -53,6 +53,17 @@ export function getApiKeys() {
 }
 
 /**
+ * Save a single API key to localStorage
+ * @param {string} key - Key name (e.g., 'jpdbApiKey', 'aiApiKey')
+ * @param {string} value - Value to save
+ */
+export function saveApiKey(key, value) {
+  if (STORAGE_KEYS[key]) {
+    localStorage.setItem(STORAGE_KEYS[key], value || '');
+  }
+}
+
+/**
  * Save API keys to localStorage
  * @param {object} keys - Object with API key values to save
  */
@@ -139,5 +150,29 @@ export async function saveServerSettings(settings) {
   } catch (error) {
     console.error('Failed to save server settings:', error);
     return false;
+  }
+}
+
+// ============ TTS SETTINGS ============
+
+const TTS_STORAGE_KEY = 'jrpg_ttsEnabled';
+
+/**
+ * Check if TTS is enabled
+ * @returns {boolean} True if TTS is enabled
+ */
+export function isTtsEnabled() {
+  return localStorage.getItem(TTS_STORAGE_KEY) === 'true';
+}
+
+/**
+ * Set TTS enabled state
+ * @param {boolean} enabled - Whether to enable TTS
+ */
+export function setTtsEnabled(enabled) {
+  if (enabled) {
+    localStorage.setItem(TTS_STORAGE_KEY, 'true');
+  } else {
+    localStorage.removeItem(TTS_STORAGE_KEY);
   }
 }

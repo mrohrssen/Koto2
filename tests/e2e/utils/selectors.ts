@@ -1,210 +1,92 @@
 /**
- * DOM selectors for e2e tests
- * Based on public/game.html structure
+ * Mobile UI DOM selectors for E2E tests
+ * Targets the mobile-first UI structure (takeover views, action-area, flash cards)
  */
 export const SELECTORS = {
-  // Header
-  newGameBtn: '#new-game-btn',
-  settingsBtn: '#settings-btn',
-  debugModeBtn: '#debug-mode-btn',
-  gameStatsBtn: '#game-stats-btn',
-  quickStats: '#quick-stats',
-  logBtn: '#log-btn',
-
-  // VN Stage
-  vnStage: '#vn-stage',
-  vnBackground: '#vn-background',
-  playerSprite: '#player-sprite',
-  playerSpriteImg: '#player-sprite-img',
-  enemySprite: '#enemy-sprite',
-  enemySpriteImg: '#enemy-sprite-img',
-
-  // HP Bars
-  playerHpBar: '#player-hp-bar',
-  playerHpFill: '#player-hp-fill',
-  playerMpFill: '#player-mp-fill',
-  playerHpValues: '#player-hp-values',
-  playerNameDisplay: '#player-name-display',
-  enemyHpBar: '#enemy-hp-bar',
-  enemyHpFill: '#enemy-hp-fill',
-  enemyHpValues: '#enemy-hp-values',
-  enemyNameDisplay: '#enemy-name-display',
-
-  // Floor Indicator
+  // Status bar
   floorIndicator: '#floor-indicator',
-  floorDisplay: '#floor-display',
-  roomDisplay: '#room-display',
+  essenceDisplay: '#essence-display',
 
-  // Word Practice
-  wordCards: '#word-cards',
-  wordCard: '.word-card',
-  wordInputModal: '#word-input-modal',
-  wordToDefine: '#word-to-define',
-  wordDefinitionInput: '#word-definition-input',
-  wordFeedback: '#word-feedback',
-  definitionsReveal: '#definitions-reveal',
-  selfGradeModal: '#self-grade-modal',
-  selfGradeWord: '#self-grade-word',
-  selfGradeMeanings: '#self-grade-meanings',
-  reviewBtn: '.review-btn',
+  // Scene area
+  sceneArea: '#scene-area',
+  enemySprite: '#enemy-sprite',
+  enemySpriteContainer: '#enemy-sprite-container',
+  enemyName: '#enemy-name',
+  enemyHpFill: '#enemy-hp-fill',
+  sceneToast: '#scene-toast',
 
-  // Game Content
-  gameContent: '#game-content',
+  // Chip row
+  chipRow: '#chip-row',
+  chipSlot: '.chip-slot',
+  chipPopup: '#chip-popup',
+  chipPopupName: '#chip-popup-name',
+  chipPopupDesc: '#chip-popup-desc',
+  chipPopupCharge: '#chip-popup-charge',
+  chipPopupUse: '#chip-popup-use',
 
-  // Narration Panel
-  narrationPanel: '#narration-panel',
-  narrationText: '#narration-text',
-  narrationContinue: '#narration-continue',
+  // Player HP
+  playerHpContainer: '#player-hp-container',
+  playerHpFill: '#player-hp-fill',
+  playerHpText: '#player-hp-text',
 
-  // Action Panel
-  actionPanel: '#action-panel',
+  // Action area
+  actionArea: '#action-area',
   actionBtn: '.action-btn',
+  actionBtnPrimary: '.action-btn-primary',
 
-  // Status Panel
-  statusPanel: '#status-panel',
-  playerStats: '#player-stats',
-  equipmentList: '#equipment-list',
-  inventoryList: '#inventory-list',
+  // Flash card
+  flashCardContainer: '#flash-card-container',
+  flashCard: '#flash-card',
+  flashCardFront: '.flash-card-front',
+  flashCardBack: '.flash-card-back',
+  flashCardReading: '.flash-card-reading',
+  flashCardMeaning: '.flash-card-meaning',
 
-  // Character Creation Modal
-  createCharModal: '#create-char-modal',
-  charName: '#char-name',
-  createStatPoints: '#create-stat-points',
-  statMinus: '.stat-minus',
-  statPlus: '.stat-plus',
-  statRow: '.stat-row',
-  resetStatsBtn: '#reset-stats-btn',
-  createCharBtn: '#create-char-btn',
-  // Individual stat values
-  createStr: '#create-str',
-  createAgi: '#create-agi',
-  createVit: '#create-vit',
-  createInt: '#create-int',
-  createDex: '#create-dex',
-  createLuk: '#create-luk',
-  // Derived stats preview
-  previewAtk: '#preview-atk',
-  previewDef: '#preview-def',
-  previewMatk: '#preview-matk',
-  previewMdef: '#preview-mdef',
-  previewHit: '#preview-hit',
-  previewFlee: '#preview-flee',
-  previewCrit: '#preview-crit',
-  previewHp: '#preview-hp',
-  previewSp: '#preview-sp',
+  // Dynamic action buttons (rendered into action-area by phase)
+  newGameBtn: '#new-game-btn',
+  proceedBtn: '#proceed-btn',
+  fightBtn: '#fight-btn',
+  bossFightBtn: '#boss-fight-btn',
+  nextFloorBtn: '#next-floor-btn',
+  returnHubBtn: '#return-hub-btn',
+  equipBotsBtn: '#equip-bots-btn',
+  contextActionBtn: '#context-action-btn',
+  wardProceedBtn: '#ward-proceed-btn',
+  wardOption: '.ward-option',
 
-  // Result Modal (Victory/Defeat)
-  resultModal: '#result-modal',
-  resultTitle: '#result-title',
-  resultMessage: '#result-message',
-  resultRewards: '#result-rewards',
-  resultContinueBtn: '#result-continue-btn',
+  // Takeover views (opened via .active class)
+  chipEquipView: '#chip-equip-view',
+  chipEquipContent: '#chip-equip-content',
+  chipEquipClose: '#chip-equip-close',
+  chipShopView: '#chip-shop-view',
+  chipShopContent: '#chip-shop-content',
+  chipShopClose: '#chip-shop-close',
+  settingsView: '#settings-view',
+  settingsContent: '#settings-content',
+  settingsClose: '#settings-close',
+  gameoverView: '#gameover-view',
+  gameoverContent: '#gameover-content',
+  takeoverClose: '.takeover-close',
 
-  // Game Over Modal
-  gameoverModal: '#gameover-modal',
-  gameoverStats: '#gameover-stats',
-  gameoverRetryBtn: '#gameover-retry-btn',
-  gameoverHubBtn: '#gameover-hub-btn',
-
-  // Settings Modal
-  settingsModal: '#settings-modal',
-  closeSettings: '#close-settings',
-  aiProvider: '#ai-provider',
-  openaiModel: '#openai-model',
-  aiKey: '#ai-key',
-  openrouterModel: '#openrouter-model',
-  jlptLevel: '#jlpt-level',
-  jpdbApiKey: '#jpdb-api-key',
-  reviewType: '#review-type',
-  gameTtsEnabled: '#game-tts-enabled',
-  gameTtsSpeaker: '#game-tts-speaker',
-  gameTtsSpeed: '#game-tts-speed',
-  gameTtsVolume: '#game-tts-volume',
-  gameTtsTest: '#game-tts-test',
-  cancelSettings: '#cancel-settings',
-  saveSettings: '#save-settings',
-
-  // Upgrades Modal
-  upgradesModal: '#upgrades-modal',
-  closeUpgrades: '#close-upgrades',
-  modalEssenceCount: '#modal-essence-count',
-  tabBtns: '.tab-btn',
-  tabUpgrades: '#tab-upgrades',
-  tabAchievements: '#tab-achievements',
-  tabStats: '#tab-stats',
-  upgradesGrid: '#upgrades-grid',
-  achievementsList: '#achievements-list',
-  lifetimeStats: '#lifetime-stats',
-
-  // Chip Modal
-  chipModal: '#chip-modal',
-
-  // Shop Modal
-  shopModal: '#shop-modal',
-  shopTitle: '#shop-title',
-  shopPlayerGold: '#shop-player-gold',
-  closeShop: '#close-shop',
-  shopGreeting: '#shop-greeting',
-  shopItems: '#shop-items',
-  shopCloseBtn: '#shop-close-btn',
+  // Shop elements (rendered into chip-shop takeover)
+  shopChipOption: '.shop-chip-option',
   shopSkipBtn: '#shop-skip-btn',
 
-  // Blacksmith Modal (Equipment Refinement)
-  blacksmithModal: '#blacksmith-modal',
-  blacksmithPlayerGold: '#blacksmith-player-gold',
-  closeBlacksmith: '#close-blacksmith',
-  blacksmithItems: '#blacksmith-items',
-  blacksmithCloseBtn: '#blacksmith-close-btn',
+  // Chip equip elements (rendered into chip-equip takeover)
+  chipEquipSlot: '.chip-equip-slot',
+  chipEquipSlotFilled: '.chip-equip-slot.filled',
+  chipEquipSlotEmpty: '.chip-equip-slot.empty',
+  chipInventoryItem: '.chip-inventory-item',
 
-  // Chip Upgrade Modal (Modder)
-  chipUpgradeModal: '#chip-upgrade-modal',
-  chipUpgradeGold: '#chip-upgrade-gold',
-  closeChipUpgrade: '#close-chip-upgrade',
-  chipUpgradeGreeting: '#chip-upgrade-greeting',
-  chipUpgradeItems: '#chip-upgrade-items',
-  chipUpgradeCloseBtn: '#chip-upgrade-close-btn',
+  // Settings elements (rendered into settings takeover)
+  settingsJpdbKey: '#settings-jpdb-key',
+  settingsTtsEnabled: '#settings-tts-enabled',
+  settingsSaveBtn: '#settings-save-btn',
 
-  // Log Modal
-  logModal: '#log-modal',
-  closeLog: '#close-log',
-  logEntries: '#log-entries',
+  // Utility row
+  settingsBtn: '#settings-btn',
+  resetRunBtn: '#reset-run-btn',
 
-  // Game Stats Modal
-  gameStatsModal: '#game-stats-modal',
-  closeGameStats: '#close-game-stats',
-  statsPeriod: '#stats-period',
-
-  // Generic
-  hidden: '.hidden',
-  modal: '.modal',
-  btnPrimary: '.btn-primary',
-  btnSecondary: '.btn-secondary',
-};
-
-// Action buttons - combat buttons have specific classes, action buttons use onclick
-export const ACTION_BTNS = {
-  // Combat buttons (have specific classes)
-  attack: '.attack-btn',
-  defend: '.defend-btn',
-  magic: '.magic-btn',
-  item: '.item-btn',
-  flee: '.flee-btn',
-  // Action panel buttons (use onclick attribute)
-  proceed: '#action-panel button',  // Fallback - first action button
-  startRun: '#action-panel button',
-  nextFloor: '#action-panel button',
-  returnHub: '#action-panel button',
-  startBoss: '#action-panel button.boss',
-  upgrades: '#action-panel button',
-  chips: '#action-panel button',
-  startEncounter: '#action-panel button',
-};
-
-// Grade buttons for self-grade mode
-export const GRADE_BTNS = {
-  nothing: '[data-grade="1"]',
-  something: '[data-grade="2"]',
-  hard: '[data-grade="3"]',
-  okay: '[data-grade="4"]',
-  easy: '[data-grade="5"]',
+  // Game over
+  gameoverHubBtn: '#gameover-hub-btn',
 };

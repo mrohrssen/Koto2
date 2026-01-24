@@ -199,6 +199,17 @@ export default function createRunRoutes({
     }
   });
 
+  // Start room encounter (marks room, then starts combat)
+  router.post('/room-encounter', async (req, res) => {
+    try {
+      const result = gameManager.startRoomEncounter();
+      saveGameData();
+      res.json({ ...result, state: getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   // Forfeit run
   router.post('/forfeit', (req, res) => {
     const result = gameManager.forfeitRun();

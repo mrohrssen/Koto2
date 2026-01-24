@@ -1,74 +1,27 @@
-import { test, expect, setupCharacter, cleanupAfterTest } from '../fixtures/test-fixtures';
-import { SELECTORS, ACTION_BTNS } from '../utils/selectors';
+import { test, expect, setupCharacter } from '../fixtures/test-fixtures';
+import { SELECTORS } from '../utils/selectors';
 
-test.describe('Meta-Progression', () => {
-  test.beforeEach(async ({ gameHelper }) => {
+test.describe('Meta Progression', () => {
+  test('essence starts at 0 for new character', async ({ gameHelper, page }) => {
     await setupCharacter(gameHelper);
+    await expect(page.locator(SELECTORS.essenceDisplay)).toHaveText('0');
   });
 
-  test.afterEach(async ({ page }) => {
-    await cleanupAfterTest(page);
-  });
-
-  test('should show upgrades button in hub', async ({ page }) => {
-    // The upgrades button has text "Upgrades" and class "secondary"
-    const upgradesBtn = page.locator('#action-panel button.secondary:has-text("Upgrades")');
-    await expect(upgradesBtn).toBeVisible();
-  });
-
-  test('should open upgrades modal', async ({ page, gameHelper }) => {
-    await gameHelper.openUpgrades();
-    await expect(page.locator(SELECTORS.upgradesModal)).toBeVisible();
-  });
-
-  test('should show essence count in upgrades modal', async ({ page, gameHelper }) => {
-    await gameHelper.openUpgrades();
-
-    const essenceCount = page.locator(SELECTORS.modalEssenceCount);
-    await expect(essenceCount).toBeVisible();
-
-    const text = await essenceCount.textContent();
-    expect(text).toMatch(/\d+/);
-  });
-
-  test('should show upgrades grid', async ({ page, gameHelper }) => {
-    await gameHelper.openUpgrades();
-
-    const upgradesGrid = page.locator(SELECTORS.upgradesGrid);
-    await expect(upgradesGrid).toBeVisible();
-  });
-
-  test('should have tab navigation', async ({ page, gameHelper }) => {
-    await gameHelper.openUpgrades();
-
-    const tabs = page.locator(SELECTORS.tabBtns);
-    const count = await tabs.count();
-    expect(count).toBeGreaterThanOrEqual(3);
-  });
-
-  test('should switch to achievements tab', async ({ page, gameHelper }) => {
-    await gameHelper.openUpgrades();
-
-    // Click achievements tab and wait for it to become active
-    const achievementsTab = page.locator(SELECTORS.tabAchievements);
-    await page.click('[data-tab="achievements"]');
-    await expect(achievementsTab).toHaveClass(/active/);
-  });
-
-  test('should switch to stats tab', async ({ page, gameHelper }) => {
-    await gameHelper.openUpgrades();
-
-    // Click stats tab and wait for it to become active
-    const statsTab = page.locator(SELECTORS.tabStats);
-    await page.click('[data-tab="stats"]');
-    await expect(statsTab).toHaveClass(/active/);
-  });
-
-  test('should close upgrades modal', async ({ page, gameHelper }) => {
-    await gameHelper.openUpgrades();
-    await expect(page.locator(SELECTORS.upgradesModal)).toBeVisible();
-
-    await page.click(SELECTORS.closeUpgrades);
-    await expect(page.locator(SELECTORS.upgradesModal)).toBeHidden();
+  test('essence accumulates after completing an encounter', async ({ gameHelper, page }) => {
+    await setupCharacter(gameHelper);
+    await gameHelper.setupRun();
+    // Win a fight to earn essence
+    const found = await gameHelper.proceedToEncounter(20);
+    expect(found).toBe(true);
+    await page.locator(SELECTORS.fightBtn).click();
+    await gameHelper.waitForPhase(['combat'], 5000);
+    // Weaken enemy for fast kill
+    await gameHelper.setEnemyHp(5);
+    await gameHelper.winCombat(10);
+    await gameHelper.page.waitForTimeout(3000);
+    // Forfeit to end run and award essence
+    await gameHelper.forfeitRun();
+    const essence = await gameHelper.getPlayerEssence();
+    expect(essence).toBeGreaterThan(0);
   });
 });

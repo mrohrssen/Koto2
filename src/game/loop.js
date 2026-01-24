@@ -683,15 +683,17 @@ export class GameManager {
    */
   forfeitRun() {
     if (this.run) {
-      this.run.active = false;
-      this.run.stats.endTime = Date.now();
-
-      // Award essence and update meta stats (counts as failed run)
-      this.awardRunEssence(false);
-      this.updateLifetimeStats(false);
-      this.checkAchievements(this.run.stats);
+      // Only award essence/stats if run was still active (not already ended by combat defeat)
+      if (this.run.active) {
+        this.run.active = false;
+        this.run.stats.endTime = Date.now();
+        this.awardRunEssence(false);
+        this.updateLifetimeStats(false);
+        this.checkAchievements(this.run.stats);
+      }
 
       this.combat = null;
+      this.run = null;
     }
     this.emitState();
   }

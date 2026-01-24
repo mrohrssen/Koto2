@@ -311,14 +311,15 @@ async function equipChip(equipmentSlot, chipId) {
 }
 
 /** Unequip a chip from an equipment slot
+ * @param {string} chipId - ID of chip to unequip
  * @param {string} equipmentSlot - Equipment slot name ('weapon', 'body', 'shield', 'accessory')
  */
-async function unequipChip(equipmentSlot) {
+async function unequipChip(chipId, equipmentSlot) {
   try {
     const response = await fetch('/api/game/unequip-chip', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ equipmentSlot })
+      body: JSON.stringify({ chipId, equipmentSlot })
     });
     return await response.json();
   } catch (error) {

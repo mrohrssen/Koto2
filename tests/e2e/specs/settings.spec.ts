@@ -1,75 +1,47 @@
-import { test, expect, resetGameState, cleanupAfterTest } from '../fixtures/test-fixtures';
+import { test, expect, setupCharacter } from '../fixtures/test-fixtures';
 import { SELECTORS } from '../utils/selectors';
 
 test.describe('Settings', () => {
-  test.beforeEach(async ({ page }) => {
-    await resetGameState(page);
-    await page.goto('http://localhost:3000/');
-    await page.waitForLoadState('load');
+  test.beforeEach(async ({ gameHelper }) => {
+    await setupCharacter(gameHelper);
   });
 
-  test.afterEach(async ({ page }) => {
-    await cleanupAfterTest(page);
+  test('settings button opens takeover with inputs', async ({ gameHelper, page }) => {
+    await page.locator(SELECTORS.settingsBtn).click();
+    await page.waitForTimeout(500);
+    const isOpen = await gameHelper.isTakeoverOpen(SELECTORS.settingsView);
+    expect(isOpen).toBe(true);
+    await expect(page.locator(SELECTORS.settingsJpdbKey)).toBeVisible();
+    await expect(page.locator(SELECTORS.settingsTtsEnabled)).toBeVisible();
+    await expect(page.locator(SELECTORS.settingsSaveBtn)).toBeVisible();
   });
 
-  test('should show settings button in header', async ({ page }) => {
-    const settingsBtn = page.locator(SELECTORS.settingsBtn);
-    await expect(settingsBtn).toBeVisible();
+  test('save settings shows toast and closes takeover', async ({ gameHelper, page }) => {
+    await page.locator(SELECTORS.settingsBtn).click();
+    await page.waitForTimeout(500);
+    await page.locator(SELECTORS.settingsJpdbKey).fill('test-key-123');
+    await page.locator(SELECTORS.settingsSaveBtn).click();
+    await page.waitForTimeout(500);
+    // Toast should show
+    const toastText = await page.locator(SELECTORS.sceneToast).textContent();
+    expect(toastText).toContain('Settings saved');
+    // Takeover closes immediately on save
+    const isOpen = await gameHelper.isTakeoverOpen(SELECTORS.settingsView);
+    expect(isOpen).toBe(false);
   });
 
-  test('should open settings modal', async ({ page, gameHelper }) => {
-    await gameHelper.openSettings();
-    await expect(page.locator(SELECTORS.settingsModal)).toBeVisible();
-  });
-
-  test('should have AI provider selector', async ({ page, gameHelper }) => {
-    await gameHelper.openSettings();
-
-    const aiProvider = page.locator(SELECTORS.aiProvider);
-    await expect(aiProvider).toBeVisible();
-  });
-
-  test('should have JLPT level selector', async ({ page, gameHelper }) => {
-    await gameHelper.openSettings();
-
-    const jlptLevel = page.locator(SELECTORS.jlptLevel);
-    await expect(jlptLevel).toBeVisible();
-  });
-
-  test('should have TTS toggle', async ({ page, gameHelper }) => {
-    await gameHelper.openSettings();
-
-    const ttsEnabled = page.locator(SELECTORS.gameTtsEnabled);
-    await expect(ttsEnabled).toBeVisible();
-  });
-
-  test('should have review type selector', async ({ page, gameHelper }) => {
-    await gameHelper.openSettings();
-
-    const reviewType = page.locator(SELECTORS.reviewType);
-    await expect(reviewType).toBeVisible();
-  });
-
-  test('should close settings modal with close button', async ({ page, gameHelper }) => {
-    await gameHelper.openSettings();
-    await expect(page.locator(SELECTORS.settingsModal)).toBeVisible();
-
-    await page.click(SELECTORS.closeSettings);
-    await expect(page.locator(SELECTORS.settingsModal)).toBeHidden();
-  });
-
-  test('should close settings modal with cancel button', async ({ page, gameHelper }) => {
-    await gameHelper.openSettings();
-    await expect(page.locator(SELECTORS.settingsModal)).toBeVisible();
-
-    await page.click(SELECTORS.cancelSettings);
-    await expect(page.locator(SELECTORS.settingsModal)).toBeHidden();
-  });
-
-  test('should have save settings button', async ({ page, gameHelper }) => {
-    await gameHelper.openSettings();
-
-    const saveBtn = page.locator(SELECTORS.saveSettings);
-    await expect(saveBtn).toBeVisible();
+  test('close button dismisses without saving', async ({ gameHelper, page }) => {
+    await page.locator(SELECTORS.settingsBtn).click();
+    await page.waitForTimeout(500);
+    await page.locator(SELECTORS.settingsJpdbKey).fill('should-not-persist');
+    await page.locator(SELECTORS.settingsClose).click();
+    await page.waitForTimeout(500);
+    const isOpen = await gameHelper.isTakeoverOpen(SELECTORS.settingsView);
+    expect(isOpen).toBe(false);
+    // Re-open and verify value was not saved
+    await page.locator(SELECTORS.settingsBtn).click();
+    await page.waitForTimeout(500);
+    const value = await page.locator(SELECTORS.settingsJpdbKey).inputValue();
+    expect(value).not.toBe('should-not-persist');
   });
 });

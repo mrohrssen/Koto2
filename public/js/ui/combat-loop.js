@@ -50,6 +50,7 @@ let getChipLoadoutCache = null;
 let setChipLoadoutCache = null;
 let getEnemyDialogueActive = null;
 let getDialogueDismissPromise = null;
+let showFlashCard = null;
 
 // Utility
 let delay = null;
@@ -86,6 +87,7 @@ export function init(callbacks) {
   setChipLoadoutCache = callbacks.setChipLoadoutCache;
   getEnemyDialogueActive = callbacks.getEnemyDialogueActive;
   getDialogueDismissPromise = callbacks.getDialogueDismissPromise;
+  showFlashCard = callbacks.showFlashCard;
 
   // Utility
   delay = callbacks.delay;
@@ -135,12 +137,19 @@ export function cleanupCombat() {
   combatPausedForVocab = false;
 }
 
+function showNextFlashCardFromQueue() {
+  const word = wordPractice.getNextCombatWord?.();
+  if (word && showFlashCard) {
+    showFlashCard(word);
+  }
+}
+
 // ============ COMBAT LOOP FUNCTIONS ============
 
 /**
  * Start the combat loop (vocab-pause turn-based combat)
  */
-export function startCombatLoop() {
+export async function startCombatLoop() {
   if (combatActive) return;
 
   combatActive = true;
@@ -158,11 +167,11 @@ export function startCombatLoop() {
     })
     .catch(err => console.warn('[Combat] Failed to fetch chip loadout:', err));
 
-  // Update action panel to show combat indicator
-  updateActionPanel();
+  // Initialize word practice cards and wait for words to be ready
+  await wordPractice.initCombatWords();
 
-  // Initialize word practice cards
-  wordPractice.initCombatWords();
+  // Show first flash card now that words are loaded
+  showNextFlashCardFromQueue();
 
   console.log('[Combat] Started paused - review a word to begin attacking');
   // Combat starts paused, player must review a vocab word to earn first attack
@@ -255,10 +264,11 @@ export async function executePlayerAttack() {
     characterUI.updatePlayerHPBar(result.playerHp);
 
     // Show glitching dialogue when enemy HP drops below 30%
-    // Combat pauses until Enter is pressed - don't schedule next attack
+    // Combat pauses until dialogue dismisses, then enemy attacks
     if (result.enemyGlitching && result.glitchingDialogue) {
+      playerAttackPending = false;
       showEnemyDialogue(result.glitchingDialogue, 'glitching');
-      return; // Timers cleared in showEnemyDialogue, restarted in dismissEnemyDialogue
+      return;
     }
 
     // Check if combat ended
@@ -452,6 +462,8 @@ export async function executeEnemyAttackThenPause() {
     // Pause combat - wait for vocab review before next cycle
     enemyAttackPending = false;
     combatPausedForVocab = true;
+    // Show next flash card for the next review
+    showNextFlashCardFromQueue();
     console.log('[Combat] Paused for vocab review. Review a word to continue.');
 
   } catch (error) {
