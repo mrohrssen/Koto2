@@ -34,6 +34,7 @@ let bgmPlaying = false;
 export async function initAudio() {
   if (audioCtx) return; // already initialized
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  await audioCtx.resume(); // Required for mobile autoplay policy
 
   // Load saved preferences
   const savedSfxVol = localStorage.getItem('jrpg_sfxVolume');

@@ -549,13 +549,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   wordPractice.setReviewType?.(serverSettings.reviewType || 'flash-card');
 
   // Initialize audio on first user interaction (browser autoplay policy)
+  let audioInitialized = false;
   async function ensureAudio() {
+    if (audioInitialized) return;
+    audioInitialized = true;
     await audio.initAudio();
     document.removeEventListener('click', ensureAudio);
     document.removeEventListener('touchstart', ensureAudio);
   }
-  document.addEventListener('click', ensureAudio, { once: true });
-  document.addEventListener('touchstart', ensureAudio, { once: true });
+  document.addEventListener('click', ensureAudio);
+  document.addEventListener('touchstart', ensureAudio);
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
