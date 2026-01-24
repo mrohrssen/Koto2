@@ -100,7 +100,14 @@ export default function createAuthRoutes(options = {}) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    let apiKeysInfo = {};
+    let apiKeysInfo = {
+      aiProvider: '',
+      openaiModel: '',
+      openrouterModel: '',
+      jlptLevel: 'N4',
+      hasJpdbKey: false,
+      hasAiKey: false
+    };
     if (user.encryptedApiKeys) {
       try {
         const keys = decryptKeys(user.encryptedApiKeys, encryptionKey);
@@ -113,7 +120,7 @@ export default function createAuthRoutes(options = {}) {
           hasAiKey: !!keys.aiApiKey
         };
       } catch {
-        apiKeysInfo = {};
+        // Keep defaults on decryption failure
       }
     }
 
