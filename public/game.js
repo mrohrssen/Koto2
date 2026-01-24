@@ -125,6 +125,8 @@ function updateScene() {
     scene.setBackground('/assets/backgrounds/quiz_master_background.png');
   } else if (gameState.run?.background) {
     scene.setBackground(`/assets/backgrounds/${gameState.run.background}`);
+  } else if (!gameState.run) {
+    scene.setBackground('/assets/backgrounds/hub.png');
   }
 }
 
