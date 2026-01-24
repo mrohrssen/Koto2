@@ -17,6 +17,7 @@ import * as scene from './js/ui/scene.js';
 import * as audio from './js/audio.js';
 import * as auth from './js/ui/auth.js';
 import * as narrationBox from './js/ui/narration-box.js';
+import * as leaderboard from './js/ui/leaderboard.js';
 
 // API imports - these are the server communication functions
 import {
@@ -485,6 +486,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function initGame() {
   takeover.init();
+  leaderboard.init();
 
   actions.init({
     equipBots: () => openChipEquipView(),
