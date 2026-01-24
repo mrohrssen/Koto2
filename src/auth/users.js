@@ -128,3 +128,72 @@ export function updateUserKeys(userId, keys, encryptionKey, filePath = DEFAULT_F
   user.encryptedApiKeys = encryptKeys(keys, encryptionKey);
   saveUsers(data, filePath);
 }
+
+/**
+ * Record a review timestamp for a user and prune old entries (>7 days)
+ * @param {string} userId
+ * @param {string} filePath
+ */
+export function addReview(userId, filePath = DEFAULT_FILE) {
+  const data = loadUsers(filePath);
+  const user = data.users.find(u => u.id === userId);
+  if (!user) return;
+
+  if (!user.reviews) user.reviews = [];
+  user.reviews.push({ ts: Date.now() });
+
+  // Prune entries older than 7 days
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  user.reviews = user.reviews.filter(r => r.ts > sevenDaysAgo);
+
+  saveUsers(data, filePath);
+}
+
+/**
+ * Get leaderboard data for a given period
+ * @param {'daily'|'weekly'} period
+ * @param {string} currentUserId - The requesting user's ID
+ * @param {string} filePath
+ * @returns {{ period: string, entries: Array, currentUser: object }}
+ */
+export function getLeaderboard(period, currentUserId, filePath = DEFAULT_FILE) {
+  const data = loadUsers(filePath);
+  const now = Date.now();
+
+  // Tokyo time (UTC+9) boundaries
+  const tokyoOffset = 9 * 60 * 60 * 1000;
+  const nowTokyo = new Date(now + tokyoOffset);
+
+  let cutoff;
+  if (period === 'weekly') {
+    // Monday 00:00 JST this week
+    const day = nowTokyo.getUTCDay(); // 0=Sun, 1=Mon, ...
+    const daysSinceMonday = day === 0 ? 6 : day - 1;
+    const mondayTokyo = new Date(nowTokyo);
+    mondayTokyo.setUTCDate(nowTokyo.getUTCDate() - daysSinceMonday);
+    mondayTokyo.setUTCHours(0, 0, 0, 0);
+    cutoff = mondayTokyo.getTime() - tokyoOffset; // Convert back to UTC ms
+  } else {
+    // Today 00:00 JST
+    const todayTokyo = new Date(nowTokyo);
+    todayTokyo.setUTCHours(0, 0, 0, 0);
+    cutoff = todayTokyo.getTime() - tokyoOffset; // Convert back to UTC ms
+  }
+
+  const entries = data.users
+    .map(u => ({
+      username: u.username,
+      userId: u.id,
+      count: (u.reviews || []).filter(r => r.ts >= cutoff).length
+    }))
+    .filter(e => e.count > 0)
+    .sort((a, b) => b.count - a.count)
+    .map((e, i) => ({ rank: i + 1, username: e.username, count: e.count, isCurrentUser: e.userId === currentUserId }));
+
+  const currentUser = entries.find(e => e.isCurrentUser) || { rank: null, count: 0 };
+
+  // Remove isCurrentUser flag from entries
+  entries.forEach(e => delete e.isCurrentUser);
+
+  return { period, entries, currentUser: { rank: currentUser.rank, count: currentUser.count } };
+}
