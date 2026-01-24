@@ -38,7 +38,8 @@ import {
   unequipChip as apiUnequipChip,
   nextFloor as apiNextFloor,
   getChipLoadout as apiGetChipLoadout,
-  sendJpdbReview as apiSendJpdbReview
+  sendJpdbReview as apiSendJpdbReview,
+  getAuthHeaders
 } from './js/api.js';
 
 const API_BASE = '';
@@ -407,7 +408,7 @@ async function handleUseChipSkill(chipIndex) {
   try {
     const response = await fetch(`${API_BASE}/api/game/use-chip-skill`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ chipId }),
     });
     const result = await response.json();
@@ -577,8 +578,10 @@ async function initGame() {
 
   // Wire logout button
   document.getElementById('logout-btn').addEventListener('click', () => {
-    auth.logout();
-    auth.showAuthScreen();
+    if (confirm('Are you sure you want to log out?')) {
+      auth.logout();
+      auth.showAuthScreen();
+    }
   });
 
   await loadGameState();

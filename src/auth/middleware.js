@@ -34,8 +34,16 @@ export function verifyToken(token) {
 /**
  * Express middleware: requires valid JWT in Authorization header
  * Attaches req.user = { id, username } on success
+ *
+ * When NODE_ENV=test or SKIP_AUTH=true, bypasses token verification
+ * and uses a fixed test user so e2e tests work without login.
  */
 export function requireAuth(req, res, next) {
+  if (process.env.NODE_ENV === 'test' || process.env.SKIP_AUTH === 'true') {
+    req.user = { id: 'test-user', username: 'test' };
+    return next();
+  }
+
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'No token provided' });

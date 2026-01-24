@@ -46,14 +46,12 @@ export function init(callbacks) {
  */
 export async function checkAuth() {
   const token = getToken();
-  if (!token) return false;
+  const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
   try {
-    const res = await fetch('/api/auth/me', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    const res = await fetch('/api/auth/me', { headers });
     if (res.ok) return true;
-    removeToken();
+    if (token) removeToken();
     return false;
   } catch {
     return false;

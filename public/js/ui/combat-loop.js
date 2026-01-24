@@ -15,6 +15,7 @@
  */
 
 import { playSFX } from '../audio.js';
+import { getAuthHeaders } from '../api.js';
 
 // ============ MODULE STATE ============
 
@@ -324,7 +325,7 @@ export async function startCombatLoop() {
   combatPausedForVocab = true;
 
   // Fetch chip loadout for combat display (always refresh to catch auto-equipped chips)
-  fetch(`${API_BASE}/api/game/chip-loadout`)
+  fetch(`${API_BASE}/api/game/chip-loadout`, { headers: getAuthHeaders() })
     .then(r => r.json())
     .then(data => {
       setChipLoadoutCache(data);
@@ -355,7 +356,7 @@ export async function executePlayerAttack() {
     const apiKeys = settings.getApiKeys();
     const response = await fetch(`${API_BASE}/api/game/combat-cycle`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ attackerType: 'player', ...apiKeys })
     });
     const result = await response.json();
@@ -455,7 +456,7 @@ export async function executeEnemyAttack() {
     const apiKeys = settings.getApiKeys();
     const response = await fetch(`${API_BASE}/api/game/combat-cycle`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ attackerType: 'enemy', ...apiKeys })
     });
     const result = await response.json();
@@ -543,7 +544,7 @@ export async function executeEnemyAttackThenPause() {
     const apiKeys = settings.getApiKeys();
     const response = await fetch(`${API_BASE}/api/game/combat-cycle`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ attackerType: 'enemy', ...apiKeys })
     });
     const result = await response.json();
@@ -681,7 +682,7 @@ export async function stopCombatLoop(result) {
     const apiKeys = settings.getApiKeys();
     const response = await fetch(`${API_BASE}/api/game/combat-end-narration`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({
         victory: result.victory,
         expGained: result.expGained,

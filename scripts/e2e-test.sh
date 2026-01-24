@@ -2,13 +2,15 @@
 # E2E test wrapper - enforces correct flags
 # Usage: ./scripts/e2e-test.sh [optional test file pattern]
 
-cd /Users/michia/Documents/jrpg
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+cd "$PROJECT_DIR"
 
 # Kill any existing server
 pkill -f "node server.js" 2>/dev/null
 
-# Start server
-npm start &
+# Start server with NODE_ENV=test to bypass auth for e2e tests
+NODE_ENV=test npm start &
 SERVER_PID=$!
 sleep 3
 

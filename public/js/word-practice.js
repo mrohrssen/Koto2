@@ -11,6 +11,7 @@
 
 import * as tts from './tts.js';
 import * as settings from './settings.js';
+import { getAuthHeaders } from './api.js';
 
 // Module state
 let apiSendJpdbReview = null;
@@ -105,7 +106,7 @@ export async function fetchJpdbDueWords() {
     const { jpdbApiKey } = settings.getApiKeys();
     const response = await fetch(`${apiBase}/api/game/due-words`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       // bypassCache: true fetches fresh due words directly from JPDB
       // to avoid stale local cache that may mark "due" words as "known"
       body: JSON.stringify({ limit: 50, jpdbApiKey, bypassCache: true })
@@ -144,7 +145,7 @@ export async function fetchReplacementWord(justReviewedVid = null) {
     const { jpdbApiKey } = settings.getApiKeys();
     const response = await fetch(`${apiBase}/api/game/due-words`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ limit: 1, exclude: allExcludeVids, jpdbApiKey, bypassCache: true })
     });
     const data = await response.json();
@@ -736,7 +737,7 @@ export function healPlayerFromWord(amount) {
 
   fetch(`${apiBase}/api/game/heal`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify({ amount })
   }).catch(err => console.warn('Heal sync failed:', err));
 }
@@ -761,7 +762,7 @@ export function damagePlayerForRefresh(amount) {
 
   fetch(`${apiBase}/api/game/damage`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify({ amount })
   }).catch(err => console.warn('Damage sync failed:', err));
 }
