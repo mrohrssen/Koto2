@@ -417,8 +417,31 @@ async function handleUseChipSkill(chipIndex) {
     if (result.state) {
       updateGameState(result.state);
     }
-    const chipName = typeof chipEntry === 'string' ? chipId : chipEntry.nameEn;
-    scene.showToast(result.message || `${chipName} activated!`, 2000);
+    // Sync local state with backend HP after skill use
+    if (result.enemyHp && gameState.combat?.enemy) {
+      gameState.combat.enemy.hp = result.enemyHp.current;
+    }
+    if (result.playerHp && gameState.player) {
+      gameState.player.hp = result.playerHp.current;
+    }
+
+    // Show skill effect in action area
+    const skillName = result.skillNameEn || result.skillName || chipId;
+    const actionArea = document.getElementById('action-area');
+    if (actionArea) {
+      const lines = [`<span class="math-crit">${skillName}!</span>`];
+      if (result.damage > 0) {
+        lines.push(`<span class="math-chip">\u2192 ${result.damage} damage</span>`);
+      }
+      if (result.heal > 0) {
+        lines.push(`<span class="math-heal">+${result.heal} HP</span>`);
+      }
+      if (result.skillType === 'buff') {
+        lines.push(`<span class="math-chip">Buff active!</span>`);
+      }
+      actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
+    }
+
     updateUI();
   } catch (e) {
     console.error('Chip skill error:', e);
@@ -523,11 +546,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     characterUI,
     showDamageNumber: (dmg, isPlayer, isCrit) => scene.showDamageNumber(dmg, { isCrit }),
     showDotDamage: (dmg) => scene.showDamageNumber(dmg, { isCrit: false }),
-    showChipEffect: (name) => scene.showToast(name, 1500),
     animateEnemyHurt: () => {},
     animatePlayerHurt: () => {},
     animateEnemyDefeat: () => scene.hideEnemy(),
-    animateChipPipeline: () => Promise.resolve(),
     updateActionPanel: () => {},
     playNarrationAudio: () => {},
     showVictoryModal,
@@ -551,6 +572,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize TTS and review type from server settings
   const serverSettings = await settings.loadServerSettings();
   tts.initSettings(serverSettings);
+  const savedTtsVol = localStorage.getItem('jrpg_ttsVolume');
+  if (savedTtsVol !== null) tts.setVolume(parseFloat(savedTtsVol));
   wordPractice.setReviewType?.(serverSettings.reviewType || 'flash-card');
 
   // Initialize audio on first user interaction (browser autoplay policy)
@@ -559,6 +582,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (audioInitialized) return;
     audioInitialized = true;
     await audio.initAudio();
+    // Start BGM if there's an active run
+    if (gameState.phase && gameState.phase !== 'hub') {
+      audio.playBGM('main');
+    }
     document.removeEventListener('click', ensureAudio);
     document.removeEventListener('touchstart', ensureAudio);
   }

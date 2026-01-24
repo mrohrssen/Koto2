@@ -38,11 +38,9 @@ let characterUI = null;
 // Combat UI functions
 let showDamageNumber = null;
 let showDotDamage = null;
-let showChipEffect = null;
 let animateEnemyHurt = null;
 let animatePlayerHurt = null;
 let animateEnemyDefeat = null;
-let animateChipPipeline = null;
 let updateActionPanel = null;
 let playNarrationAudio = null;
 let showVictoryModal = null;
@@ -75,11 +73,9 @@ export function init(callbacks) {
   // Combat UI functions
   showDamageNumber = callbacks.showDamageNumber;
   showDotDamage = callbacks.showDotDamage;
-  showChipEffect = callbacks.showChipEffect;
   animateEnemyHurt = callbacks.animateEnemyHurt;
   animatePlayerHurt = callbacks.animatePlayerHurt;
   animateEnemyDefeat = callbacks.animateEnemyDefeat;
-  animateChipPipeline = callbacks.animateChipPipeline;
   updateActionPanel = callbacks.updateActionPanel;
   playNarrationAudio = callbacks.playNarrationAudio;
   showVictoryModal = callbacks.showVictoryModal;
@@ -149,33 +145,152 @@ function showNextFlashCardFromQueue() {
 // ============ COMBAT MATH DISPLAY ============
 
 /**
- * Show a breakdown of the player's attack damage in the action area
- * @param {Object} result - The combat-cycle API response
+ * Show chip activations sequentially with 500ms delays,
+ * building up combat math progressively in the action area.
+ * Shows a tooltip above each chip as it fires.
+ * @param {Object} pa - playerAttack result object
  */
-function showCombatMath(result) {
+async function showChipActivationSequence(pa) {
   const actionArea = document.getElementById('action-area');
   if (!actionArea) return;
 
   const lines = [];
-  const atk = result.playerAttack;
-  if (atk) {
-    // Show chip effects that contributed
-    if (atk.chipEffects?.length) {
-      for (const effect of atk.chipEffects) {
-        const name = effect.chipName || effect.status || 'Chip';
-        const detail = effect.bonusDamage ? `+${effect.bonusDamage}` : (effect.status || '');
-        lines.push(`<span class="math-chip">${name}: ${detail}</span>`);
-      }
-    }
-    if (atk.cascadeTriggered && atk.cascadeDamage) {
-      lines.push(`<span class="math-chip">Cascade: +${atk.cascadeDamage}</span>`);
-    }
-    if (atk.critical) lines.push('<span class="math-crit">CRITICAL HIT!</span>');
-    lines.push(`<strong>\u2192 ${atk.damage} damage</strong>`);
+
+  // Start with critical hit indicator
+  if (pa.critical) {
+    lines.push('<span class="math-crit">CRITICAL HIT!</span>');
+    actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
+    await delay(300);
   }
 
-  if (lines.length > 0) {
+  // Get fired chips from pipeline result
+  const firedChips = pa.pipelineResult?.firedChips?.filter(c => c.triggered && !c.skipped) || [];
+
+  if (firedChips.length > 0) {
+    // Show base damage first (before chips modify it)
+    const baseDmg = firedChips[0].previousDamage || pa.damage;
+    lines.push(`<strong>\u2192 ${baseDmg} base</strong>`);
     actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
+
+    // Sequentially fire each chip
+    let slotIndex = 0;
+    for (const chip of firedChips) {
+      await delay(500);
+      const name = chip.chipName || chip.chipId || 'Chip';
+      const dmgDelta = chip.newDamage - chip.previousDamage;
+      let detail = '';
+      if (chip.healPlayer) {
+        detail = `+${chip.healPlayer} HP`;
+      } else if (dmgDelta > 0) {
+        detail = `+${dmgDelta}`;
+      } else if (dmgDelta < 0) {
+        detail = `${dmgDelta}`;
+      } else if (chip.displayText) {
+        detail = chip.displayText;
+      }
+
+      // Find chip slot index from loadout
+      const chipSlot = findChipSlotIndex(chip.chipId) ?? slotIndex;
+
+      // Animate the chip circle
+      animateChipActivation(chipSlot);
+      playSFX('chip-equip');
+
+      // Show tooltip above the chip
+      showChipTooltip(chipSlot, `${name}: ${detail}`);
+
+      // Add line to math display (insert before total)
+      const lineClass = chip.healPlayer ? 'math-heal' : 'math-chip';
+      const lineText = chip.healPlayer
+        ? `${name}: +${chip.healPlayer} HP`
+        : `${name}: ${detail}`;
+      lines.push(`<span class="${lineClass}">${lineText}</span>`);
+      actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
+
+      slotIndex++;
+    }
+
+    // Show final total
+    await delay(400);
+    lines.push(`<strong>\u2192 ${pa.damage} total</strong>`);
+    actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
+  } else {
+    // No pipeline chips - just show total damage
+    lines.push(`<strong>\u2192 ${pa.damage} damage</strong>`);
+    actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
+  }
+
+  // Show cascade
+  if (pa.cascadeTriggered && pa.cascadeDamage) {
+    await delay(500);
+    lines.push(`<span class="math-chip">Cascade: +${pa.cascadeDamage}</span>`);
+    actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
+  }
+
+  // Show healing from pipeline total
+  if (pa.pipelineResult?.healPlayer > 0 && !firedChips.some(c => c.healPlayer)) {
+    await delay(500);
+    lines.push(`<span class="math-heal">+${pa.pipelineResult.healPlayer} HP</span>`);
+    actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
+  }
+
+  // Show DoT damage
+  if (pa.dotDamage && pa.dotDamage > 0) {
+    await delay(400);
+    showDotDamage(pa.dotDamage, false);
+  }
+}
+
+/**
+ * Find the chip slot index from the loadout cache by chipId
+ */
+function findChipSlotIndex(chipId) {
+  const cache = getChipLoadoutCache?.();
+  const chips = cache?.equipment?.weapon?.equippedChips;
+  if (!chips) return null;
+  const index = chips.findIndex(c => c && (c.id === chipId || c === chipId));
+  return index >= 0 ? index : null;
+}
+
+/**
+ * Show a small tooltip above a chip slot that auto-dismisses
+ * @param {number} chipIndex - Index of the chip slot
+ * @param {string} text - Tooltip text
+ */
+function showChipTooltip(chipIndex, text) {
+  // Remove any existing tooltip
+  const existing = document.querySelector('.chip-tooltip');
+  if (existing) existing.remove();
+
+  const slot = document.querySelector(`.chip-slot[data-index="${chipIndex}"]`);
+  if (!slot) return;
+
+  const tooltip = document.createElement('div');
+  tooltip.className = 'chip-tooltip';
+  tooltip.textContent = text;
+  slot.appendChild(tooltip);
+
+  // Auto-dismiss after animation
+  setTimeout(() => tooltip.remove(), 1500);
+}
+
+/**
+ * Show enemy damage to player in big red text in the action area
+ * @param {Object} enemyAttack - The enemy attack result
+ */
+function showEnemyDamageDisplay(enemyAttack) {
+  const actionArea = document.getElementById('action-area');
+  if (!actionArea) return;
+
+  if (enemyAttack.perfectDodge) {
+    actionArea.innerHTML = '<div class="combat-enemy-damage dodge">PERFECT DODGE!</div>';
+  } else if (enemyAttack.dodged) {
+    actionArea.innerHTML = '<div class="combat-enemy-damage dodge">DODGED!</div>';
+  } else if (enemyAttack.miss) {
+    actionArea.innerHTML = '<div class="combat-enemy-damage miss">MISS!</div>';
+  } else {
+    const crit = enemyAttack.critical ? '<div class="combat-enemy-crit">CRITICAL!</div>' : '';
+    actionArea.innerHTML = `<div class="combat-enemy-damage">${crit}<span class="enemy-damage-number">-${enemyAttack.damage}</span></div>`;
   }
 }
 
@@ -282,40 +397,8 @@ export async function executePlayerAttack() {
         animateEnemyHurt();
         playSFX('attack');
 
-        // Animate chip pipeline if present
-        if (pa.pipelineResult) {
-          animateChipPipeline(pa.pipelineResult);
-        }
-
-        // Show chip effects that triggered
-        if (pa.chipEffects && pa.chipEffects.length > 0) {
-          const statusNames = {
-            defrag: 'デフラグ!', lag: 'ラグ!', bufferOverflow: 'バッファオーバーフロー!',
-            corrupted: '破損!', exposed: '露出!', overheated: 'オーバーヒート!'
-          };
-          pa.chipEffects.forEach((effect, i) => {
-            setTimeout(() => {
-              const displayName = statusNames[effect.status] || effect.status;
-              showChipEffect(displayName, false);
-              // Animate the chip circle for this effect
-              if (effect.chipIndex != null) {
-                animateChipActivation(effect.chipIndex);
-              } else {
-                animateChipActivation(i);
-              }
-            }, i * 200); // Stagger multiple effects
-          });
-        }
-
-        // Show combat math breakdown in action area
-        showCombatMath(result);
-
-        // Show DoT damage from status effects (defrag, overheated, etc.)
-        if (pa.dotDamage && pa.dotDamage > 0) {
-          setTimeout(() => {
-            showDotDamage(pa.dotDamage, false);
-          }, 300); // Show after chip effect text
-        }
+        // Sequential chip activation with progressive math display
+        await showChipActivationSequence(pa);
       }
     }
 
@@ -499,6 +582,8 @@ export async function executeEnemyAttackThenPause() {
         animatePlayerHurt();
         playSFX('player-hit');
       }
+      // Show enemy damage in action area (big red text)
+      showEnemyDamageDisplay(ea);
     }
 
     // Update HP bars
@@ -524,6 +609,8 @@ export async function executeEnemyAttackThenPause() {
     // Pause combat - wait for vocab review before next cycle
     enemyAttackPending = false;
     combatPausedForVocab = true;
+    // Delay before showing flash card so player can see the damage
+    await delay(1200);
     // Show next flash card for the next review
     showNextFlashCardFromQueue();
     console.log('[Combat] Paused for vocab review. Review a word to continue.');

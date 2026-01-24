@@ -77,7 +77,7 @@ export function showFlashCard(word) {
           <div class="flash-card-word">${word.reading && word.reading !== word.word
             ? `<ruby>${escapeHtml(word.word)}<rt>${escapeHtml(word.reading)}</rt></ruby>`
             : escapeHtml(word.word)}</div>
-          <div class="flash-card-meaning">${escapeHtml(Array.isArray(word.meanings) ? word.meanings.join(', ') : word.meanings || '')}</div>
+          <div class="flash-card-meaning">${formatMeanings(word.meanings)}</div>
           <div class="flash-card-hint">&larr; didn't know &nbsp; | &nbsp; knew it &rarr;</div>
         </div>
       </div>
@@ -247,4 +247,16 @@ function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+/**
+ * Format meanings for flash card display.
+ * Truncates to first 3 meanings if too long, adds "..."
+ */
+function formatMeanings(meanings) {
+  const text = Array.isArray(meanings) ? meanings.join(', ') : (meanings || '');
+  // Split on comma-space and take first 3 meanings
+  const parts = text.split(', ');
+  if (parts.length <= 3) return escapeHtml(text);
+  return escapeHtml(parts.slice(0, 3).join(', ')) + ', ...';
 }

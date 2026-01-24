@@ -92,7 +92,10 @@ export function playSFX(name) {
  * @param {string} [track='main'] - Track name (without extension)
  */
 export function playBGM(track = 'main') {
-  if (!bgmElement) return;
+  if (!bgmElement) {
+    bgmElement = new Audio();
+    bgmElement.loop = true;
+  }
   const src = `${BGM_PATH}${track}.mp3`;
   if (bgmElement.src !== new URL(src, location.href).href) {
     bgmElement.src = src;

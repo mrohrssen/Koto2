@@ -73,11 +73,11 @@ export function render(chips, { charges = [], levels = [], maxCharges = 5, inCom
       slot.appendChild(bar);
     }
 
-    // Tap handler (combat only)
-    if (chip && inCombat) {
+    // Tap handler (always available when chip equipped)
+    if (chip) {
       slot.addEventListener('click', (e) => {
         e.stopPropagation();
-        showPopup(i, chip, charge, maxCharges);
+        showPopup(i, chip, charge, maxCharges, inCombat);
       });
     }
 
@@ -86,51 +86,48 @@ export function render(chips, { charges = [], levels = [], maxCharges = 5, inCom
 }
 
 /** Show chip skill popup */
-function showPopup(index, chip, charge, maxCharges) {
+function showPopup(index, chip, charge, maxCharges, inCombat = false) {
   currentPopupIndex = index;
   const isCharged = charge >= maxCharges;
-
-  // Build base ability text from pipeline effect
-  const baseEffect = chip.effects?.pipeline;
-  let baseText = '';
-  if (baseEffect) {
-    if (baseEffect.type === 'flatAdd') baseText = `+${baseEffect.value} damage`;
-    else if (baseEffect.type === 'multiply') {
-      const chance = baseEffect.triggerChance ? ` (${Math.round(baseEffect.triggerChance * 100)}%)` : '';
-      baseText = `${baseEffect.displayText || baseEffect.value + '\u00d7'} damage${chance}`;
-    } else if (baseEffect.type === 'rampingMultiply') baseText = `Ramping ${baseEffect.displayText || 'multiplier'}`;
-    else if (baseEffect.type === 'conditional') baseText = baseEffect.displayText || 'Conditional effect';
-    else baseText = baseEffect.displayText || 'Passive effect';
-  }
 
   dom.chipPopupName.textContent = chip.nameEn || chip.name;
   dom.chipPopupDesc.innerHTML = `
     <div class="chip-popup-section">
       <div class="chip-popup-section-label">Passive</div>
-      <div>${baseText || 'No passive effect'}</div>
+      <div>${chip.descriptionEn || chip.description || 'No passive effect'}</div>
     </div>
     <div class="chip-popup-section">
       <div class="chip-popup-section-label">Skill: ${chip.skill?.nameEn || chip.skill?.name || 'None'}</div>
       <div>${chip.skill?.descriptionEn || chip.skill?.description || 'No skill'}</div>
     </div>
   `;
-  dom.chipPopupCharge.textContent = isCharged ? 'Ready!' : `Charging ${charge}/${maxCharges}`;
-  dom.chipPopupUse.disabled = !isCharged;
-  dom.chipPopupUse.onclick = () => {
-    playSFX('chip-skill');
-    if (onUseSkill) onUseSkill(index);
-    hidePopup();
-  };
 
-  // Position popup near the chip slot
+  if (inCombat) {
+    dom.chipPopupCharge.textContent = isCharged ? 'Ready!' : `Charging ${charge}/${maxCharges}`;
+    dom.chipPopupCharge.style.display = '';
+    dom.chipPopupUse.style.display = '';
+    dom.chipPopupUse.disabled = !isCharged;
+    dom.chipPopupUse.onclick = () => {
+      playSFX('chip-skill');
+      if (onUseSkill) onUseSkill(index);
+      hidePopup();
+    };
+  } else {
+    dom.chipPopupCharge.style.display = 'none';
+    dom.chipPopupUse.style.display = 'none';
+  }
+
+  // Position popup centered above the chip slot, clamped to viewport
   const slot = dom.chipRow.children[index];
   if (slot) {
     const rect = slot.getBoundingClientRect();
     const popup = dom.chipPopup;
-    popup.style.left = `${rect.left + rect.width / 2}px`;
-    popup.style.bottom = `${window.innerHeight - rect.top + 8}px`;
-    popup.style.transform = 'translateX(-50%)';
     popup.style.position = 'fixed';
+    popup.style.bottom = `${window.innerHeight - rect.top + 8}px`;
+    popup.style.left = '50%';
+    popup.style.transform = 'translateX(-50%)';
+    popup.style.width = '85vw';
+    popup.style.maxWidth = '320px';
     popup.classList.add('visible');
   }
 }

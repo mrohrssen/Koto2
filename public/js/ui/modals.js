@@ -5,6 +5,7 @@
  */
 
 import * as audio from '../audio.js';
+import * as tts from '../tts.js';
 
 let takeover = null;
 let sceneModule = null;
@@ -49,6 +50,11 @@ export function openSettings() {
           value="${Math.round(audio.getVolume('sfx') * 100)}" class="settings-range">
       </label>
       <label class="settings-label">
+        TTS Volume
+        <input type="range" id="settings-tts-volume" min="0" max="100"
+          value="${Math.round(tts.getVolume() * 100)}" class="settings-range">
+      </label>
+      <label class="settings-label">
         <input type="checkbox" id="settings-audio-muted"
           ${audio.isMuted() ? 'checked' : ''}>
         Mute All Audio
@@ -64,6 +70,7 @@ export function openSettings() {
     const ttsEnabled = document.getElementById('settings-tts-enabled')?.checked;
     const bgmVol = parseInt(document.getElementById('settings-bgm-volume')?.value || '70') / 100;
     const sfxVol = parseInt(document.getElementById('settings-sfx-volume')?.value || '80') / 100;
+    const ttsVol = parseInt(document.getElementById('settings-tts-volume')?.value || '100') / 100;
     const audioMuted = document.getElementById('settings-audio-muted')?.checked;
 
     settingsModule.saveApiKey('jpdbApiKey', jpdbKey);
@@ -73,6 +80,8 @@ export function openSettings() {
 
     audio.setVolume('bgm', bgmVol);
     audio.setVolume('sfx', sfxVol);
+    tts.setVolume(ttsVol);
+    localStorage.setItem('jrpg_ttsVolume', String(ttsVol));
     if (audioMuted) { audio.mute(); } else { audio.unmute(); }
 
     sceneModule.showToast('Settings saved', 2000);
