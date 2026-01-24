@@ -16,6 +16,7 @@ import * as chipRow from './js/ui/chip-row.js';
 import * as scene from './js/ui/scene.js';
 import * as audio from './js/audio.js';
 import * as auth from './js/ui/auth.js';
+import * as narrationBox from './js/ui/narration-box.js';
 
 // API imports - these are the server communication functions
 import {
@@ -201,27 +202,23 @@ function showEnemyDialogue(text, type = 'possessed') {
   if (!text) return Promise.resolve();
   enemyDialogueActive = true;
 
-  const duration = type === 'liberated' ? 5000 : 3000;
-  scene.showToast(text, duration);
+  const speaker = gameState.combat?.enemy?.nameEn || gameState.combat?.enemy?.name;
 
   // Speak dialogue via TTS if enabled
   if (settings.isTtsEnabled()) {
     tts.speakText(text);
   }
 
-  dialogueDismissPromise = new Promise(resolve => {
-    dialogueDismissResolve = resolve;
-    setTimeout(() => {
-      enemyDialogueActive = false;
-      resolve();
-      dialogueDismissResolve = null;
-      dialogueDismissPromise = null;
-      // Resume combat after mid-combat dialogue (e.g., glitching at 30% HP)
-      if (combatLoopUI.isCombatActive() && !combatLoopUI.isCombatPausedForVocab()) {
-        combatLoopUI.executeEnemyAttackThenPause();
-      }
-    }, duration);
+  dialogueDismissPromise = narrationBox.show(text, { speaker }).then(() => {
+    enemyDialogueActive = false;
+    dialogueDismissResolve = null;
+    dialogueDismissPromise = null;
+    // Resume combat after mid-combat dialogue (e.g., glitching at 30% HP)
+    if (combatLoopUI.isCombatActive() && !combatLoopUI.isCombatPausedForVocab()) {
+      combatLoopUI.executeEnemyAttackThenPause();
+    }
   });
+  dialogueDismissResolve = () => narrationBox.forceHide();
   return dialogueDismissPromise;
 }
 
@@ -316,7 +313,7 @@ function resumeCombatAfterVocab() { combatLoopUI.resumeCombatAfterVocab(); }
 
 function showVictoryModal(result) {
   audio.stopBGM();
-  scene.showToast('Victory!', 2000);
+  narrationBox.show('Victory!', { autoDismiss: 2000 });
   setTimeout(async () => {
     await loadGameState();
     updateUI();
@@ -449,7 +446,7 @@ async function handleUseChipSkill(chipIndex) {
     if (result.damage > 0) toastMsg += ` ${result.damage} dmg`;
     if (result.heal > 0) toastMsg += ` +${result.heal} HP`;
     if (result.skillType === 'buff') toastMsg += ' Buff active!';
-    scene.showToast(toastMsg, 1000);
+    narrationBox.show(toastMsg, { autoDismiss: 1000 });
 
     updateUI();
   } catch (e) {
@@ -522,7 +519,7 @@ async function initGame() {
     updateGameState,
     updateUI,
     actions,
-    scene,
+    scene: { ...scene, showNarration: (text, opts) => narrationBox.show(text, opts) },
     startEncounter,
     startBossEncounter,
     nextFloor,
@@ -545,7 +542,7 @@ async function initGame() {
     updateGameState,
     updateUI,
     takeover,
-    scene,
+    scene: { ...scene, showNarration: (text, opts) => narrationBox.show(text, opts) },
     apiClaimStartingChip,
     apiPostCombatShopBuy,
     apiShopSkip,
@@ -570,7 +567,7 @@ async function initGame() {
     updateGameState,
     updateUI,
     settings,
-    narration: { showNarration: (text) => scene.showToast(text, 3000) },
+    narration: { showNarration: (text) => narrationBox.show(text) },
     wordPractice,
     characterUI,
     showDamageNumber: (dmg, isPlayer, isCrit) => scene.showDamageNumber(dmg, { isCrit }),

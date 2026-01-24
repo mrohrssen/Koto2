@@ -246,7 +246,7 @@ export function renderShrine(chipLoadoutCache) {
         const newLoadout = await apiGetChipLoadout();
         setChipLoadoutCache(newLoadout);
       }
-      sceneModule.showToast(`Chip upgraded to Lv. ${result?.newLevel || '?'}!`, 2000);
+      sceneModule.showNarration(`Chip upgraded to Lv. ${result?.newLevel || '?'}!`, { autoDismiss: 2000 });
       delete getGameState()._shrineOfferings;
       const proceedResult = await apiProceed();
       shrineInProgress = false;
@@ -307,14 +307,14 @@ export function renderQuiz() {
 
       if (answer === 'yes') {
         // Correct! Show reward selection
-        sceneModule.showToast('Correct!', 1500);
+        sceneModule.showNarration('Correct!', { autoDismiss: 1500 });
         setTimeout(() => {
           gameState._quizStage = 'reward';
           updateUI();
         }, 1000);
       } else {
         // Wrong answer - still let them try again after a moment
-        sceneModule.showToast('Wrong! Try again...', 1500);
+        sceneModule.showNarration('Wrong! Try again...', { autoDismiss: 1500 });
         setTimeout(() => {
           list.dataset.used = '';
           document.querySelectorAll('.quiz-answer-option').forEach(o => {
@@ -370,7 +370,7 @@ function renderQuizRewards() {
       if (result?.state) {
         updateGameState(result.state);
       }
-      sceneModule.showToast(result?.description || 'Reward claimed!', 2000);
+      sceneModule.showNarration(result?.description || 'Reward claimed!', { autoDismiss: 2000 });
 
       // Refresh chip loadout if charges changed
       if (rewardType === 'chip_charges' && apiGetChipLoadout && setChipLoadoutCache) {

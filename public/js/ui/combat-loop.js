@@ -696,9 +696,9 @@ export async function stopCombatLoop(result) {
     });
     const narrationResult = await response.json();
 
-    // Display narration
+    // Display narration (click-to-continue)
     if (narrationResult.narration) {
-      narration.showNarration(narrationResult.narration);
+      await narration.showNarration(narrationResult.narration);
     }
 
     // Update game state from server
@@ -723,10 +723,10 @@ export async function stopCombatLoop(result) {
     console.error('Error getting combat end narration:', error);
     // Fallback narration
     if (result.victory) {
-      narration.showNarration('市民解放！');
+      await narration.showNarration('市民解放！');
       showVictoryModal(result);
     } else {
-      narration.showNarration('敗北...');
+      await narration.showNarration('敗北...');
       showGameOverModal(result);
     }
   }

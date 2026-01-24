@@ -79,7 +79,7 @@ function renderChipShopContent(items, isStarting) {
       }
       takeover.close('chipShop');
       playSFX('chip-equip');
-      sceneModule.showToast('Chip acquired!', 2000);
+      sceneModule.showNarration('Chip acquired!', { autoDismiss: 2000 });
       if (apiGetChipLoadout && setChipLoadoutCache) {
         const loadout = await apiGetChipLoadout();
         setChipLoadoutCache(loadout);
