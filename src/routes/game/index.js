@@ -8,7 +8,7 @@
 import { Router } from 'express';
 import { requireAuth } from '../../auth/middleware.js';
 import { getManager, saveManager } from '../../game/manager-registry.js';
-import { findUserById } from '../../auth/users.js';
+import { findUserById, getLeaderboard } from '../../auth/users.js';
 import { decryptKeys } from '../../auth/crypto.js';
 import createGameStateRoutes from './state.js';
 import createPlayerRoutes from './player.js';
@@ -56,6 +56,13 @@ export default function createGameRoutes(deps) {
     req.userKeys = getUserKeys(req.user.id);
     req.getEnrichedGameState = () => deps.enrichGameState(req.gameManager);
     next();
+  });
+
+  // Leaderboard route
+  router.get('/leaderboard', (req, res) => {
+    const period = req.query.period === 'weekly' ? 'weekly' : 'daily';
+    const result = getLeaderboard(period, req.user.id);
+    res.json(result);
   });
 
   // Mount game state routes
