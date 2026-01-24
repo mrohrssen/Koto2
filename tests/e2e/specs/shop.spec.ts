@@ -1,59 +1,48 @@
-import { test, expect, setupCharacter, cleanupAfterTest } from '../fixtures/test-fixtures';
+import { test, expect, setupCharacter } from '../fixtures/test-fixtures';
 import { SELECTORS } from '../utils/selectors';
 
-test.describe('Shop System', () => {
+test.describe('Shop', () => {
   test.beforeEach(async ({ gameHelper }) => {
     await setupCharacter(gameHelper);
   });
 
-  test.afterEach(async ({ page }) => {
-    await cleanupAfterTest(page);
+  test('starting chip shop shows 3 options', async ({ gameHelper, page }) => {
+    await gameHelper.startRun();
+    const isOpen = await gameHelper.isTakeoverOpen(SELECTORS.chipShopView);
+    expect(isOpen).toBe(true);
+    const chipCount = await page.locator(SELECTORS.shopChipOption).count();
+    expect(chipCount).toBe(3);
   });
 
-  test('should have shop modal structure', async ({ page }) => {
-    const shopModal = page.locator(SELECTORS.shopModal);
-    await expect(shopModal).toBeAttached();
+  test('selecting a chip closes shop and equips it', async ({ gameHelper, page }) => {
+    await gameHelper.startRun();
+    await gameHelper.selectStartingChip(0);
+    const isOpen = await gameHelper.isTakeoverOpen(SELECTORS.chipShopView);
+    expect(isOpen).toBe(false);
+    // Verify chip is equipped via server state (authoritative)
+    const chips = await page.evaluate(async () => {
+      const res = await fetch('/api/game/state');
+      const state = await res.json();
+      return state?.run?.player?.chips || state?.player?.chips || [];
+    });
+    expect(chips.length).toBeGreaterThanOrEqual(1);
   });
 
-  test('should have shop items container', async ({ page }) => {
-    const shopItems = page.locator(SELECTORS.shopItems);
-    await expect(shopItems).toBeAttached();
+  test('post-combat shop opens after victory', async ({ gameHelper, page }) => {
+    // Use debug API to force post_combat_shop phase deterministically
+    await gameHelper.forcePhase('post_combat_shop');
+    const isOpen = await gameHelper.isTakeoverOpen(SELECTORS.chipShopView);
+    expect(isOpen).toBe(true);
+    const chipCount = await page.locator(SELECTORS.shopChipOption).count();
+    expect(chipCount).toBeGreaterThanOrEqual(1);
   });
 
-  test('should have shop close button', async ({ page }) => {
-    const closeBtn = page.locator(SELECTORS.shopCloseBtn);
-    await expect(closeBtn).toBeAttached();
-  });
-
-  test('should have gold display in shop', async ({ page }) => {
-    const goldDisplay = page.locator(SELECTORS.shopPlayerGold);
-    await expect(goldDisplay).toBeAttached();
-  });
-
-  test('should track player gold', async ({ gameHelper }) => {
-    const gold = await gameHelper.getPlayerGold();
-    // Players start with gold, should have positive amount
-    expect(typeof gold).toBe('number');
-    expect(gold).toBeGreaterThan(0);
-  });
-});
-
-test.describe('Blacksmith System', () => {
-  test.afterEach(async ({ page }) => {
-    await cleanupAfterTest(page);
-  });
-
-  test('should have blacksmith modal structure', async ({ page, gameHelper }) => {
-    await setupCharacter(gameHelper);
-
-    const blacksmithModal = page.locator(SELECTORS.blacksmithModal);
-    await expect(blacksmithModal).toBeAttached();
-  });
-
-  test('should have blacksmith items container', async ({ page, gameHelper }) => {
-    await setupCharacter(gameHelper);
-
-    const blacksmithItems = page.locator(SELECTORS.blacksmithItems);
-    await expect(blacksmithItems).toBeAttached();
+  test('skip button closes post-combat shop', async ({ gameHelper, page }) => {
+    await gameHelper.forcePhase('post_combat_shop');
+    await expect(page.locator(SELECTORS.shopSkipBtn)).toBeVisible({ timeout: 3000 });
+    await page.locator(SELECTORS.shopSkipBtn).click();
+    await page.waitForTimeout(1000);
+    const isOpen = await gameHelper.isTakeoverOpen(SELECTORS.chipShopView);
+    expect(isOpen).toBe(false);
   });
 });
