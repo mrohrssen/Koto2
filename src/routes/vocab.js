@@ -15,8 +15,9 @@ import {
   invalidateWordStateCache,
   lookupVocabularyMeaning
 } from '../jpdb.js';
-import { addReview } from '../auth/users.js';
+import { addReview, findUserById } from '../auth/users.js';
 import { requireAuth } from '../auth/middleware.js';
+import { decryptKeys } from '../auth/crypto.js';
 
 /**
  * Create vocab router
@@ -88,7 +89,19 @@ export default function createVocabRoutes({ getSettings }) {
 
   // Review vocabulary in JPDB
   router.post('/jpdb/review', requireAuth, async (req, res) => {
-    const { vid, sid, grade, jpdbApiKey } = req.body;
+    const { vid, sid, grade } = req.body;
+
+    // Get API key from user's encrypted storage, fallback to request body
+    let jpdbApiKey = req.body.jpdbApiKey;
+    if (!jpdbApiKey) {
+      const user = findUserById(req.user.id);
+      if (user?.encryptedApiKeys) {
+        try {
+          const keys = decryptKeys(user.encryptedApiKeys, process.env.ENCRYPTION_KEY || 'a'.repeat(64));
+          jpdbApiKey = keys.jpdbApiKey;
+        } catch {}
+      }
+    }
 
     if (!jpdbApiKey) {
       return res.status(400).json({ error: 'JPDB API key not configured' });
