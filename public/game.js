@@ -349,6 +349,7 @@ async function openChipEquipView() {
     <div class="chip-equip-slots">
       ${equipped.map((chip, i) => chip ? `
         <div class="chip-equip-slot filled" data-action="unequip" data-index="${i}">
+          <div class="chip-equip-icon" style="background-image:url('/assets/icons/chips/${chip.id}.png')"></div>
           <span class="chip-equip-name">${chip.nameEn || chip.name}</span>
           <span class="chip-equip-rarity ${chip.rarity}">${chip.rarity}</span>
         </div>
@@ -360,6 +361,7 @@ async function openChipEquipView() {
     <div class="chip-inventory-list">
       ${inventory.map((chip, i) => `
         <div class="chip-inventory-item" data-action="equip" data-chip-id="${chip.id}">
+          <div class="chip-equip-icon" style="background-image:url('/assets/icons/chips/${chip.id}.png')"></div>
           <span class="chip-equip-name">${chip.nameEn || chip.name}</span>
           <span class="chip-equip-rarity ${chip.rarity}">${chip.rarity}</span>
         </div>

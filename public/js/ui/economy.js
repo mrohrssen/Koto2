@@ -48,6 +48,7 @@ function renderChipShopContent(items, isStarting) {
 
   const chipCards = items.map((chip, i) => `
     <div class="shop-chip-option" data-index="${i}">
+      <div class="shop-chip-icon" style="background-image:url('/assets/icons/chips/${chip.id}.png')"></div>
       <div class="shop-chip-name">${chip.nameEn || chip.name}</div>
       <div class="shop-chip-rarity ${chip.rarity}">${chip.rarity}</div>
       <div class="shop-chip-desc">${chip.description || chip.skill?.descriptionEn || ''}</div>

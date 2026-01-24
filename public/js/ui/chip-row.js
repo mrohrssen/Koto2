@@ -44,10 +44,11 @@ export function render(chips, { charges = [], levels = [], maxCharges = 5, inCom
 
     // Chip icon
     const icon = document.createElement('div');
-    const chipColor = chip ? getChipColor(chip) : 'transparent';
     icon.className = `chip-icon${chip ? '' : ' empty'}${isCharged ? ' charged' : ''}`;
-    icon.style.background = chip ? chipColor : '';
-    icon.textContent = chip ? getChipInitial(chip) : '';
+    if (chip) {
+      icon.style.backgroundImage = `url('/assets/icons/chips/${chip.id}.png')`;
+      icon.style.borderColor = getChipColor(chip);
+    }
 
     // Level badge (only if > 1)
     if (chip && level > 1) {
