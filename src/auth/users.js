@@ -139,11 +139,12 @@ export function addReview(userId, filePath = DEFAULT_FILE) {
   const user = data.users.find(u => u.id === userId);
   if (!user) return;
 
+  const now = Date.now();
   if (!user.reviews) user.reviews = [];
-  user.reviews.push({ ts: Date.now() });
+  user.reviews.push({ ts: now });
 
   // Prune entries older than 7 days
-  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
   user.reviews = user.reviews.filter(r => r.ts > sevenDaysAgo);
 
   saveUsers(data, filePath);
@@ -180,20 +181,21 @@ export function getLeaderboard(period, currentUserId, filePath = DEFAULT_FILE) {
     cutoff = todayTokyo.getTime() - tokyoOffset; // Convert back to UTC ms
   }
 
-  const entries = data.users
+  const ranked = data.users
     .map(u => ({
       username: u.username,
       userId: u.id,
       count: (u.reviews || []).filter(r => r.ts >= cutoff).length
     }))
     .filter(e => e.count > 0)
-    .sort((a, b) => b.count - a.count)
-    .map((e, i) => ({ rank: i + 1, username: e.username, count: e.count, isCurrentUser: e.userId === currentUserId }));
+    .sort((a, b) => b.count - a.count);
 
-  const currentUser = entries.find(e => e.isCurrentUser) || { rank: null, count: 0 };
+  const currentUserEntry = ranked.find(e => e.userId === currentUserId);
+  const currentUser = currentUserEntry
+    ? { rank: ranked.indexOf(currentUserEntry) + 1, count: currentUserEntry.count }
+    : { rank: null, count: 0 };
 
-  // Remove isCurrentUser flag from entries
-  entries.forEach(e => delete e.isCurrentUser);
+  const entries = ranked.map((e, i) => ({ rank: i + 1, username: e.username, count: e.count }));
 
-  return { period, entries, currentUser: { rank: currentUser.rank, count: currentUser.count } };
+  return { period, entries, currentUser };
 }
