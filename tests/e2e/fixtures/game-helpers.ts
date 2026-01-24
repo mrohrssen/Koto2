@@ -28,7 +28,14 @@ export class GameHelper {
     this.log('startRun', 'clicking Infiltrate button');
     await this.page.locator(SELECTORS.contextActionBtn).waitFor({ state: 'visible', timeout: 5000 });
     await this.page.locator(SELECTORS.contextActionBtn).click();
-    this.log('startRun', 'waiting for chip shop or ward_selection...');
+    this.log('startRun', 'waiting for chip shop to open...');
+    // Wait for the chip shop takeover to become active
+    await this.page.waitForFunction(
+      (sel: string) => document.querySelector(sel)?.classList.contains('active'),
+      SELECTORS.chipShopView,
+      { timeout: 8000 }
+    );
+    this.log('startRun', 'chip shop opened');
   }
 
   async selectStartingChip(index = 0): Promise<void> {
@@ -67,7 +74,7 @@ export class GameHelper {
     await this.selectStartingChip(0);
     await this.waitForPhase(['ward_selection'], 5000);
     await this.selectWard(0);
-    await this.waitForPhase(['exploring', 'room'], 8000);
+    await this.waitForPhase(['exploring', 'room_encounter', 'boss_ready'], 8000);
   }
 
   // ============ EXPLORATION ============
