@@ -706,6 +706,13 @@ html, body {
   color: var(--text-primary);
 }
 
+.settings-label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-align: left;
+}
+
 .settings-input {
   width: 100%;
   padding: 12px;
@@ -713,7 +720,9 @@ html, body {
   border-radius: var(--radius-md);
   font-size: 16px;
   margin-bottom: 8px;
+  margin-top: 4px;
   background: var(--bg-card);
+  color: var(--text-primary);
 }
 
 .settings-input:focus {

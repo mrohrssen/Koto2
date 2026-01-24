@@ -15,11 +15,15 @@ export function init(callbacks) {
 }
 
 /** Open settings takeover */
-export function openSettings() {
+export async function openSettings() {
   takeover.open('settings');
   const content = takeover.getContent('settings');
 
-  const apiKeys = settingsModule.getApiKeys();
+  // Show loading state
+  content.innerHTML = '<div style="padding:20px;text-align:center">Loading...</div>';
+
+  // Load current key info from server
+  const keyInfo = await settingsModule.loadApiKeysFromServer();
 
   content.innerHTML = `
     <h3 style="margin:16px">Settings</h3>
@@ -27,9 +31,39 @@ export function openSettings() {
       <label class="settings-label">
         JPDB API Key
         <input type="password" id="settings-jpdb-key" class="settings-input"
-          value="${apiKeys.jpdbApiKey || ''}" placeholder="Enter JPDB API key">
+          placeholder="${keyInfo.hasJpdbKey ? '••••••••' : 'Enter JPDB API key'}">
       </label>
       <label class="settings-label" style="margin-top:12px">
+        AI API Key
+        <input type="password" id="settings-ai-key" class="settings-input"
+          placeholder="${keyInfo.hasAiKey ? '••••••••' : 'Enter AI API key'}">
+      </label>
+      <label class="settings-label" style="margin-top:12px">
+        AI Provider
+        <select id="settings-ai-provider" class="settings-input">
+          <option value="openai" ${keyInfo.aiProvider === 'openai' ? 'selected' : ''}>OpenAI</option>
+          <option value="anthropic" ${keyInfo.aiProvider === 'anthropic' ? 'selected' : ''}>Anthropic</option>
+          <option value="google" ${keyInfo.aiProvider === 'google' ? 'selected' : ''}>Google</option>
+          <option value="openrouter" ${keyInfo.aiProvider === 'openrouter' ? 'selected' : ''}>OpenRouter</option>
+        </select>
+      </label>
+      <label class="settings-label" style="margin-top:12px">
+        Model
+        <input type="text" id="settings-model" class="settings-input"
+          value="${keyInfo.openaiModel || 'gpt-4o-mini'}" placeholder="e.g. gpt-4o-mini">
+      </label>
+      <label class="settings-label" style="margin-top:12px">
+        JLPT Level
+        <select id="settings-jlpt" class="settings-input">
+          <option value="N5" ${keyInfo.jlptLevel === 'N5' ? 'selected' : ''}>N5</option>
+          <option value="N4" ${(keyInfo.jlptLevel || 'N4') === 'N4' ? 'selected' : ''}>N4</option>
+          <option value="N3" ${keyInfo.jlptLevel === 'N3' ? 'selected' : ''}>N3</option>
+          <option value="N2" ${keyInfo.jlptLevel === 'N2' ? 'selected' : ''}>N2</option>
+          <option value="N1" ${keyInfo.jlptLevel === 'N1' ? 'selected' : ''}>N1</option>
+        </select>
+      </label>
+      <hr style="margin:16px 0;border:none;border-top:1px solid #e0e0e0">
+      <label class="settings-label">
         <input type="checkbox" id="settings-tts-enabled"
           ${settingsModule.isTtsEnabled?.() ? 'checked' : ''}>
         Enable TTS
@@ -39,11 +73,31 @@ export function openSettings() {
     </div>
   `;
 
-  document.getElementById('settings-save-btn')?.addEventListener('click', () => {
+  document.getElementById('settings-save-btn')?.addEventListener('click', async () => {
     const jpdbKey = document.getElementById('settings-jpdb-key')?.value?.trim();
+    const aiKey = document.getElementById('settings-ai-key')?.value?.trim();
+    const aiProvider = document.getElementById('settings-ai-provider')?.value;
+    const model = document.getElementById('settings-model')?.value?.trim();
+    const jlptLevel = document.getElementById('settings-jlpt')?.value;
     const ttsEnabled = document.getElementById('settings-tts-enabled')?.checked;
 
-    settingsModule.saveApiKey('jpdbApiKey', jpdbKey);
+    // Save API keys to server (only send non-empty values)
+    const keysToSave = {};
+    if (jpdbKey) keysToSave.jpdbApiKey = jpdbKey;
+    if (aiKey) keysToSave.aiApiKey = aiKey;
+    if (aiProvider) keysToSave.aiProvider = aiProvider;
+    if (model) keysToSave.openaiModel = model;
+    if (jlptLevel) keysToSave.jlptLevel = jlptLevel;
+
+    if (Object.keys(keysToSave).length > 0) {
+      const saved = await settingsModule.saveApiKeysToServer(keysToSave);
+      if (!saved) {
+        sceneModule.showToast('Failed to save API keys', 2000);
+        return;
+      }
+    }
+
+    // Save local-only settings
     if (settingsModule.setTtsEnabled) {
       settingsModule.setTtsEnabled(ttsEnabled);
     }
