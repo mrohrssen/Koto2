@@ -327,23 +327,6 @@ html, body {
   line-height: 1;
 }
 
-/* Chip drag states */
-.chip-dragging {
-  border-radius: var(--radius-circle);
-  background-size: cover;
-  background-position: center;
-}
-
-.chip-slot-source .chip-icon {
-  border-style: dashed;
-  background-color: rgba(255,255,255,0.1);
-}
-
-.chip-slot-source .chip-charge-bar,
-.chip-slot-source .chip-level-badge {
-  opacity: 0.3;
-}
-
 /* ===== PLAYER HP BAR ===== */
 .player-hp-container {
   padding: 4px 16px 8px;

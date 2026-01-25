@@ -7,21 +7,13 @@
 
 import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
-import * as chipDrag from './chip-drag.js';
 
 let onUseSkill = null; // Callback: (chipIndex) => void
 let currentPopupIndex = -1;
 
-/** Initialize chip row with skill callback and drag support */
-export function init({ useSkillCallback, onReorder, isBlocked, getChipIds }) {
+/** Initialize chip row with skill callback */
+export function init({ useSkillCallback }) {
   onUseSkill = useSkillCallback;
-
-  // Initialize drag module
-  chipDrag.init({
-    onReorder,
-    isBlocked,
-    getChipIds
-  });
 
   // Dismiss popup on outside tap
   document.addEventListener('click', (e) => {
@@ -91,9 +83,6 @@ export function render(chips, { charges = [], levels = [], maxCharges = 5, inCom
 
     row.appendChild(slot);
   }
-
-  // Attach drag handlers to the freshly rendered slots
-  chipDrag.attach(row);
 }
 
 /** Show chip skill popup */

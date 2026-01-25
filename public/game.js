@@ -472,8 +472,8 @@ async function handleUseChipSkill(chipIndex) {
   }
 }
 
-// ============ CHIP DRAG HELPERS ============
-function isChipDragBlocked() {
+// ============ CHIP ACTION HELPERS ============
+function isChipActionBlocked() {
   return enemyDialogueActive || combatAnimationActive;
 }
 
@@ -547,9 +547,6 @@ async function initGame() {
 
   chipRow.init({
     useSkillCallback: handleUseChipSkill,
-    onReorder: handleChipReorder,
-    isBlocked: isChipDragBlocked,
-    getChipIds: getChipIds
   });
 
   wordPractice.init({
