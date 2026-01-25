@@ -1,5 +1,5 @@
 /**
- * Economy UI Module (Mobile) - Chip shops via takeover views
+ * Economy UI Module - Chip shops via in-scene UI
  *
  * Handles: post-combat chip shop, starting chip selection
  */
@@ -11,8 +11,6 @@ import * as chipSelect from './chip-select.js';
 let getGameState = null;
 let updateGameState = null;
 let updateUI = null;
-let takeover = null;
-let sceneModule = null;
 let apiClaimStartingChip = null;
 let apiPostCombatShopBuy = null;
 let apiShopSkip = null;
@@ -23,8 +21,6 @@ export function init(callbacks) {
   getGameState = callbacks.getGameState;
   updateGameState = callbacks.updateGameState;
   updateUI = callbacks.updateUI;
-  takeover = callbacks.takeover;
-  sceneModule = callbacks.scene;
   apiClaimStartingChip = callbacks.apiClaimStartingChip;
   apiPostCombatShopBuy = callbacks.apiPostCombatShopBuy;
   apiShopSkip = callbacks.apiShopSkip;
@@ -90,6 +86,5 @@ async function handleSkip() {
   if (result?.state) {
     updateGameState(result.state);
   }
-  takeover.close('chipShop');
   updateUI();
 }

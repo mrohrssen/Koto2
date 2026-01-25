@@ -571,8 +571,6 @@ async function initGame() {
     getGameState: () => gameState,
     updateGameState,
     updateUI,
-    takeover,
-    scene: { ...scene, showNarration: (text, opts) => narrationBox.show(text, opts) },
     apiClaimStartingChip,
     apiPostCombatShopBuy,
     apiShopSkip,
