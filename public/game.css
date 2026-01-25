@@ -53,6 +53,9 @@ html, body {
   max-width: 430px;
   margin: 0 auto;
   position: relative;
+  /* iOS safe areas for notch and home indicator */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* ===== STATUS BAR ===== */
