@@ -8,7 +8,7 @@ import { Router } from 'express';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { getChipLoadout, equipChip, unequipChip } from '../../game/items/chips.js';
+import { getChipLoadout, equipChip, unequipChip, reorderChips } from '../../game/items/chips.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -144,6 +144,19 @@ export default function createRunRoutes({
       const { equipmentSlot, chipId } = req.body;
       const player = gameManager.run?.player || gameManager.player;
       const result = unequipChip(player, equipmentSlot, chipId);
+      if (result.success) req.saveGame();
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  router.post('/reorder-chips', (req, res) => {
+    const gameManager = req.gameManager;
+    try {
+      const { chipIds } = req.body;
+      const player = gameManager.run?.player || gameManager.player;
+      const result = reorderChips(player, chipIds);
       if (result.success) req.saveGame();
       res.json(result);
     } catch (error) {

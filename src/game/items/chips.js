@@ -1062,3 +1062,39 @@ export function getScaledEffectValue(chip, level) {
   // All others (flatAdd, stacking, damageAndHeal, killCounter, riskyFlat, perEmptySlot, emptySlots, perEquipped, nthAttack): floor
   return Math.floor(value * scaleFactor);
 }
+
+/**
+ * Reorder equipped chips in weapon slot
+ * @param {Object} player - Player object
+ * @param {Array<string|null>} chipIds - New order of chip IDs (5 elements, null for empty)
+ * @returns {{success: boolean, error?: string}}
+ */
+export function reorderChips(player, chipIds) {
+  if (!player?.equipment?.weapon) {
+    return { success: false, error: 'No weapon equipped' };
+  }
+
+  if (!Array.isArray(chipIds) || chipIds.length !== 5) {
+    return { success: false, error: 'chipIds must be array of 5 elements' };
+  }
+
+  const weapon = player.equipment.weapon;
+  const currentChips = weapon.equippedChips || [];
+
+  // Validate all provided chipIds exist in current loadout
+  const currentIds = currentChips.map(c => c?.id || c || null);
+  for (const id of chipIds) {
+    if (id !== null && !currentIds.includes(id)) {
+      return { success: false, error: `Chip ${id} not in current loadout` };
+    }
+  }
+
+  // Build new order by finding each chip object
+  const newOrder = chipIds.map(id => {
+    if (id === null) return null;
+    return currentChips.find(c => (c?.id || c) === id) || null;
+  });
+
+  weapon.equippedChips = newOrder;
+  return { success: true };
+}
