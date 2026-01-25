@@ -27,6 +27,8 @@ let apiProceed = null;
 let apiRoomEncounter = null;
 let apiShrineUpgrade = null;
 let apiQuizReward = null;
+let apiGetQuizQuestion = null;
+let apiSubmitQuizAnswer = null;
 let apiGetChipLoadout = null;
 let setChipLoadoutCache = null;
 
@@ -49,6 +51,8 @@ export function init(callbacks) {
   apiRoomEncounter = callbacks.apiRoomEncounter;
   apiShrineUpgrade = callbacks.apiShrineUpgrade;
   apiQuizReward = callbacks.apiQuizReward;
+  apiGetQuizQuestion = callbacks.apiGetQuizQuestion;
+  apiSubmitQuizAnswer = callbacks.apiSubmitQuizAnswer;
   apiGetChipLoadout = callbacks.apiGetChipLoadout;
   setChipLoadoutCache = callbacks.setChipLoadoutCache;
 }
