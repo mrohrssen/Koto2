@@ -72,6 +72,11 @@ export const SELECTORS = {
   shopChipOption: '.shop-chip-option',
   shopSkipBtn: '#shop-skip-btn',
 
+  // In-scene chip selection (rendered into action area)
+  chipSelectCard: '.chip-select-card',
+  chipSelectConfirm: '#chip-select-confirm',
+  chipSelectSkip: '#chip-select-skip',
+
   // Chip equip elements (rendered into chip-equip takeover)
   chipEquipSlot: '.chip-equip-slot',
   chipEquipSlotFilled: '.chip-equip-slot.filled',

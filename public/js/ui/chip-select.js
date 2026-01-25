@@ -112,21 +112,23 @@ function confirmSelection() {
   if (!resolveSelection) return;
 
   const chip = currentChips[selectedIndex];
+  const resolve = resolveSelection; // Save before cleanup nulls it
   playSFX('chip-equip');
 
   // Clean up UI
   cleanup();
 
   // Resolve the promise with selected chip
-  resolveSelection(chip);
+  resolve(chip);
 }
 
 function skipSelection() {
   if (!resolveSelection) return;
 
+  const resolve = resolveSelection; // Save before cleanup nulls it
   playSFX('button-tap');
   cleanup();
-  resolveSelection(null);
+  resolve(null);
 }
 
 /** Clean up chip select UI */

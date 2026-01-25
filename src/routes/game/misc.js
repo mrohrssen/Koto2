@@ -242,12 +242,13 @@ export default function createMiscRoutes({
     if (!getDebugMode()) {
       return res.status(403).json({ error: 'Debug mode not enabled' });
     }
+    const gameManager = req.gameManager;
     const { hp } = req.body;
     if (!gameManager.combat || !gameManager.combat.enemy) {
       return res.status(400).json({ error: 'No active combat' });
     }
     gameManager.combat.enemy.hp = hp;
-    saveGameData();
+    req.saveGame();
     res.json({ success: true, enemyHp: gameManager.combat.enemy.hp });
   });
 

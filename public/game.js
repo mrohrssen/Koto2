@@ -264,7 +264,7 @@ async function startNewRun() {
     wordPractice.prefetchCombatWords(); // Fallback if not prefetched from hub
     audio.playBGM('main');
     if (gameState.run?.startingChipShop?.active) {
-      economyUI.renderStartingChipShop(gameState.run.startingChipShop.items);
+      await economyUI.renderStartingChipShop(gameState.run.startingChipShop.items);
     }
   }
 }

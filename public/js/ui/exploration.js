@@ -70,6 +70,12 @@ export function renderHub() {
 /** Ward selection — show ward cards, proceed button */
 export async function renderWardSelection() {
   const gameState = getGameState();
+
+  // Skip if starting chip shop is active - chip selection will render instead
+  if (gameState.run?.startingChipShop?.active) {
+    return;
+  }
+
   let wards;
   if (!gameState.run?.currentWard) {
     wards = await apiGetStartingWards();
