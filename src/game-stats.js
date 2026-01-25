@@ -3,13 +3,9 @@
 // Separate from chat stats but uses the same structure
 
 import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { dataPath } from './data-dir.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const GAME_STATS_FILE = join(__dirname, '..', '.jchat-game-stats.json');
+const GAME_STATS_FILE = dataPath('.jrpg-game-stats.json');
 
 // Regex to match Japanese characters (hiragana, katakana, kanji)
 const JAPANESE_REGEX = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3400-\u4DBF]/g;
