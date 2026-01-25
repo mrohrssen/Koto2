@@ -48,7 +48,9 @@ import {
   sendJpdbReview as apiSendJpdbReview,
   getAuthHeaders,
   shrineUpgrade as apiShrineUpgrade,
-  quizReward as apiQuizReward
+  quizReward as apiQuizReward,
+  getQuizQuestion as apiGetQuizQuestion,
+  submitQuizAnswer as apiSubmitQuizAnswer
 } from './js/api.js';
 
 const API_BASE = '';
@@ -250,12 +252,12 @@ async function createCharacter() {
 }
 
 async function startNewRun() {
-  wordPractice.clearWordCache();
+  // Note: clearWordCache() moved to returnToHub() for earlier prefetching
   const result = await apiStartRun();
   if (result?.state) {
     updateGameState(result.state);
     updateUI();
-    wordPractice.prefetchCombatWords();
+    wordPractice.prefetchCombatWords(); // Fallback if not prefetched from hub
     audio.playBGM('main');
     if (gameState.run?.startingChipShop?.active) {
       economyUI.renderStartingChipShop(gameState.run.startingChipShop.items);
@@ -314,6 +316,9 @@ async function returnToHub() {
   await apiForfeitRun();
   await loadGameState();
   updateUI();
+  // Prefetch words now so they're ready when user starts next run
+  wordPractice.clearWordCache();
+  wordPractice.prefetchCombatWords();
 }
 
 // ============ COMBAT ============
@@ -543,8 +548,8 @@ async function initGame() {
     apiRoomEncounter,
     apiShrineUpgrade,
     apiQuizReward,
-    apiGetQuizQuestion: api.getQuizQuestion,
-    apiSubmitQuizAnswer: api.submitQuizAnswer,
+    apiGetQuizQuestion,
+    apiSubmitQuizAnswer,
     apiGetChipLoadout,
     setChipLoadoutCache: (cache) => { chipLoadoutCache = cache; },
   });
@@ -615,6 +620,11 @@ async function initGame() {
 
   await loadGameState();
   updateUI();
+
+  // Prefetch words if in hub (ready for when user starts a run)
+  if (gameState.phase === 'hub') {
+    wordPractice.prefetchCombatWords();
+  }
 
   // Initialize TTS and review type from server settings
   const serverSettings = await settings.loadServerSettings();

@@ -263,69 +263,105 @@ export function renderShrine(chipLoadoutCache) {
 }
 
 /** Quiz phase - question then reward selection */
-export function renderQuiz() {
+export async function renderQuiz() {
   const gameState = getGameState();
 
-  // Stage tracking: use gameState._quizStage (undefined = question, 'reward' = pick reward)
+  // Stage tracking: undefined = question, 'reward' = pick reward, 'failed' = wrong answer
   if (gameState._quizStage === 'reward') {
     renderQuizRewards();
     return;
   }
 
-  actions.setContent(`
-    <h3 class="shrine-title">Quiz Master asks:</h3>
-    <p style="text-align:center; color:var(--text-primary); margin:0.5rem 0 1rem; font-size:1.1rem">"Is the sky blue?"</p>
-    <div class="shrine-chip-list">
-      <div class="shrine-chip-option quiz-answer-option" data-answer="yes">
-        <div class="shrine-chip-info" style="padding:0.75rem">
-          <div class="shrine-chip-name" style="color:var(--accent-primary)">Yes</div>
-        </div>
-      </div>
-      <div class="shrine-chip-option quiz-answer-option" data-answer="no">
-        <div class="shrine-chip-info" style="padding:0.75rem">
-          <div class="shrine-chip-name" style="color:var(--accent-primary)">No</div>
-        </div>
-      </div>
-      <div class="shrine-chip-option quiz-answer-option" data-answer="maybe">
-        <div class="shrine-chip-info" style="padding:0.75rem">
-          <div class="shrine-chip-name" style="color:var(--accent-primary)">Maybe</div>
-        </div>
+  if (gameState._quizStage === 'failed') {
+    // Wrong answer - proceed to next room with no reward
+    delete gameState._quizStage;
+    delete gameState._quizQuestion;
+    const proceedResult = await apiProceed();
+    if (proceedResult?.state) {
+      updateGameState(proceedResult.state);
+      updateUI();
+    }
+    return;
+  }
+
+  // Fetch question if not already fetched
+  if (!gameState._quizQuestion) {
+    const question = await apiGetQuizQuestion();
+    if (question.error) {
+      sceneModule.showNarration('クイズの問題を読み込めませんでした...', { autoDismiss: 2000 });
+      return;
+    }
+    gameState._quizQuestion = question;
+  }
+
+  const question = gameState._quizQuestion;
+
+  // Show question in narration box (no click to continue - must select answer)
+  // Build answer buttons
+  const answerButtons = question.options.map((opt, idx) => `
+    <div class="shrine-chip-option quiz-answer-option" data-answer-index="${idx}">
+      <div class="shrine-chip-info" style="padding:0.75rem">
+        <div class="shrine-chip-name" style="color:var(--accent-primary)">${opt}</div>
       </div>
     </div>
+  `).join('');
+
+  actions.setContent(`
+    <h3 class="shrine-title">「${question.question}」</h3>
+    <div class="shrine-chip-list quiz-answer-list">${answerButtons}</div>
   `);
 
-  const list = document.querySelector('.shrine-chip-list');
-  if (list) {
-    list.addEventListener('click', (e) => {
+  const list = document.querySelector('.quiz-answer-list');
+  if (list && !list.dataset.bound) {
+    list.dataset.bound = '1';
+    list.addEventListener('click', async (e) => {
       const option = e.target.closest('.quiz-answer-option');
-      if (!option || list.dataset.used) return;
-      list.dataset.used = '1';
+      if (!option || list.dataset.answered) return;
+      list.dataset.answered = '1';
 
-      const answer = option.dataset.answer;
+      const selectedIndex = parseInt(option.dataset.answerIndex, 10);
 
-      // Disable all options
-      document.querySelectorAll('.quiz-answer-option').forEach(o => {
-        o.style.opacity = '0.5';
+      // Submit answer to server
+      const result = await apiSubmitQuizAnswer(question.id, selectedIndex);
+
+      if (result.error) {
+        sceneModule.showNarration('エラーが発生しました...', { autoDismiss: 2000 });
+        list.dataset.answered = '';
+        // Reset button styling for retry
+        document.querySelectorAll('.quiz-answer-option').forEach((o) => {
+          o.style.pointerEvents = '';
+          o.style.opacity = '';
+          o.style.borderColor = '';
+          o.style.boxShadow = '';
+        });
+        return;
+      }
+
+      // Show visual feedback on buttons
+      document.querySelectorAll('.quiz-answer-option').forEach((o, idx) => {
         o.style.pointerEvents = 'none';
+        if (idx === result.correctIndex) {
+          o.style.borderColor = 'var(--success-color, #4ade80)';
+          o.style.boxShadow = '0 0 10px var(--success-color, #4ade80)';
+        } else if (idx === selectedIndex && !result.correct) {
+          o.style.borderColor = 'var(--danger-color, #ef4444)';
+          o.style.boxShadow = '0 0 10px var(--danger-color, #ef4444)';
+        } else {
+          o.style.opacity = '0.5';
+        }
       });
 
-      if (answer === 'yes') {
-        // Correct! Show reward selection
-        sceneModule.showNarration('Correct!', { autoDismiss: 1500 });
-        setTimeout(() => {
-          gameState._quizStage = 'reward';
-          updateUI();
-        }, 1000);
+      // Show Quiz Master's response with click-to-continue
+      await sceneModule.showNarration(result.response, { speaker: 'Quiz Master' });
+
+      // Proceed based on result
+      if (result.correct) {
+        gameState._quizStage = 'reward';
+        delete gameState._quizQuestion;
+        updateUI();
       } else {
-        // Wrong answer - still let them try again after a moment
-        sceneModule.showNarration('Wrong! Try again...', { autoDismiss: 1500 });
-        setTimeout(() => {
-          list.dataset.used = '';
-          document.querySelectorAll('.quiz-answer-option').forEach(o => {
-            o.style.opacity = '1';
-            o.style.pointerEvents = 'auto';
-          });
-        }, 1500);
+        gameState._quizStage = 'failed';
+        updateUI();
       }
     });
   }
