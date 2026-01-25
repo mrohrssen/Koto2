@@ -6,7 +6,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, '..');
 
 // Railway volume mount point - use if exists, otherwise project root
-const RAILWAY_DATA_DIR = '/app/data';
+const RAILWAY_DATA_DIR = '/app/persist';
 
 export const DATA_DIR = existsSync(RAILWAY_DATA_DIR) ? RAILWAY_DATA_DIR : PROJECT_ROOT;
 
