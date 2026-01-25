@@ -220,12 +220,26 @@ function deactivate() {
 /** Get all elements containing Japanese text to parse */
 function getTextElements() {
   const elements = new Set();
-  const gameApp = document.querySelector('.game-app');
-  if (!gameApp) return [];
 
-  // Walk the DOM tree to find text nodes with Japanese
+  // Search in .game-app
+  const gameApp = document.querySelector('.game-app');
+  if (gameApp) {
+    findJapaneseTextElements(gameApp, elements);
+  }
+
+  // Also search in visible takeovers (chip modals, etc.)
+  const takeovers = document.querySelectorAll('.takeover.visible');
+  for (const takeover of takeovers) {
+    findJapaneseTextElements(takeover, elements);
+  }
+
+  return Array.from(elements);
+}
+
+/** Find Japanese text elements within a root container */
+function findJapaneseTextElements(root, elements) {
   const walker = document.createTreeWalker(
-    gameApp,
+    root,
     NodeFilter.SHOW_TEXT,
     {
       acceptNode: (node) => {
@@ -258,8 +272,6 @@ function getTextElements() {
       }
     }
   }
-
-  return Array.from(elements);
 }
 
 /** Apply parsed tokens to text elements */
