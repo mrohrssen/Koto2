@@ -142,8 +142,8 @@ const PORT = process.env.PORT || 3000;
 const SETTINGS_FILE = dataPath('.jrpg-settings.json');
 const GAME_SAVE_FILE = dataPath('.jrpg-save.json');
 const VOCAB_CACHE_FILE = dataPath('.jrpg-vocab-cache.json');
-// Use JChat's vocab suggestions file for shared word state cache
-const VOCAB_SUGGESTIONS_FILE = join(__dirname, '..', 'JChat', '.jchat-vocab-suggestions.json');
+// Use persistent data directory for vocab suggestions cache
+const VOCAB_SUGGESTIONS_FILE = dataPath('.jrpg-vocab-suggestions.json');
 
 // Configure JPDB with file paths
 configureJpdb({
