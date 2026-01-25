@@ -130,6 +130,7 @@ import {
 import { enforceVocabLimit } from './src/game/vocab-repair.js';
 import createRoutes from './src/routes/index.js';
 import createAuthRoutes from './src/auth/routes.js';
+import { dataPath } from './src/data-dir.js';
 
 dotenv.config();
 
@@ -137,10 +138,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const PORT = process.env.PORT || 3000;
 
-// File paths
-const SETTINGS_FILE = join(__dirname, '.jrpg-settings.json');
-const GAME_SAVE_FILE = join(__dirname, '.jrpg-save.json');
-const VOCAB_CACHE_FILE = join(__dirname, '.jrpg-vocab-cache.json');
+// File paths - use persistent data directory on Railway
+const SETTINGS_FILE = dataPath('.jrpg-settings.json');
+const GAME_SAVE_FILE = dataPath('.jrpg-save.json');
+const VOCAB_CACHE_FILE = dataPath('.jrpg-vocab-cache.json');
 // Use JChat's vocab suggestions file for shared word state cache
 const VOCAB_SUGGESTIONS_FILE = join(__dirname, '..', 'JChat', '.jchat-vocab-suggestions.json');
 

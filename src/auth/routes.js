@@ -5,8 +5,9 @@ import {
   createUser, findUserByUsername, findUserById,
   useInviteCode, createInviteCode, loadUsers, saveUsers
 } from './users.js';
+import { dataPath } from '../data-dir.js';
 
-const DEFAULT_USERS_FILE = '.jrpg-users.json';
+const DEFAULT_USERS_FILE = dataPath('.jrpg-users.json');
 
 // Rate limiting: 5 login attempts per minute per IP
 const loginAttempts = new Map();

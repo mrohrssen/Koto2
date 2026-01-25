@@ -1,10 +1,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { join } from 'path';
 import { GameManager } from './loop.js';
+import { DATA_DIR } from '../data-dir.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASE_DIR = join(__dirname, '../..');
 const SAVE_VERSION = 2;
 
 /** @type {Map<string, GameManager>} */
@@ -20,7 +18,7 @@ export function getManager(userId) {
   if (managers.has(userId)) return managers.get(userId);
 
   const manager = new GameManager();
-  const saveFile = join(BASE_DIR, `.jrpg-save-${userId}.json`);
+  const saveFile = join(DATA_DIR, `.jrpg-save-${userId}.json`);
 
   if (existsSync(saveFile)) {
     try {
@@ -46,7 +44,7 @@ export function saveManager(userId) {
   const manager = managers.get(userId);
   if (!manager) return;
 
-  const saveFile = join(BASE_DIR, `.jrpg-save-${userId}.json`);
+  const saveFile = join(DATA_DIR, `.jrpg-save-${userId}.json`);
   const state = {
     version: SAVE_VERSION,
     player: manager.player,
@@ -70,5 +68,5 @@ export function removeManager(userId) {
  * @returns {string}
  */
 export function getSaveFilePath(userId) {
-  return join(BASE_DIR, `.jrpg-save-${userId}.json`);
+  return join(DATA_DIR, `.jrpg-save-${userId}.json`);
 }

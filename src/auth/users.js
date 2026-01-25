@@ -1,8 +1,9 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { randomBytes } from 'crypto';
 import { hashPassword, encryptKeys } from './crypto.js';
+import { dataPath } from '../data-dir.js';
 
-const DEFAULT_FILE = '.jrpg-users.json';
+const DEFAULT_FILE = dataPath('.jrpg-users.json');
 
 /**
  * Load users data from file
