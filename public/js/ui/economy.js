@@ -6,6 +6,7 @@
 
 import { playSFX } from '../audio.js';
 import { speakText } from '../tts.js';
+import * as chipSelect from './chip-select.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -42,9 +43,23 @@ export function renderPostCombatShop() {
   renderChipShopContent(shop.items, false);
 }
 
-/** Render starting chip selection as takeover */
-export function renderStartingChipShop(items) {
-  renderChipShopContent(items, true);
+/** Render starting chip selection (in-scene, not takeover) */
+export async function renderStartingChipShop(items) {
+  const chip = await chipSelect.showChipSelect(items);
+  const index = items.findIndex(c => (c.itemId || c.id) === (chip.itemId || chip.id));
+
+  const result = await apiClaimStartingChip(index);
+  if (result?.state) {
+    updateGameState(result.state);
+  }
+
+  speakText(chip.name || chip.nameEn);
+
+  if (apiGetChipLoadout && setChipLoadoutCache) {
+    const loadout = await apiGetChipLoadout();
+    setChipLoadoutCache(loadout);
+  }
+  updateUI();
 }
 
 function renderChipShopContent(items, isStarting) {
