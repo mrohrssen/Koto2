@@ -32,15 +32,31 @@ export function init(callbacks) {
   setChipLoadoutCache = callbacks.setChipLoadoutCache;
 }
 
-/** Render post-combat chip shop as takeover */
-export function renderPostCombatShop() {
+/** Render post-combat chip shop (in-scene, not takeover) */
+export async function renderPostCombatShop() {
   const gameState = getGameState();
   const shop = gameState.run?.postCombatShop;
   if (!shop?.active || !shop?.items) {
     handleSkip();
     return;
   }
-  renderChipShopContent(shop.items, false);
+
+  const chip = await chipSelect.showChipSelect(shop.items);
+  const index = shop.items.findIndex(c => (c.itemId || c.id) === (chip.itemId || chip.id));
+
+  const result = await apiPostCombatShopBuy(index);
+  if (result?.state) {
+    updateGameState(result.state);
+  }
+
+  playSFX('chip-equip');
+  speakText(chip.name || chip.nameEn);
+
+  if (apiGetChipLoadout && setChipLoadoutCache) {
+    const loadout = await apiGetChipLoadout();
+    setChipLoadoutCache(loadout);
+  }
+  updateUI();
 }
 
 /** Render starting chip selection (in-scene, not takeover) */
@@ -60,53 +76,6 @@ export async function renderStartingChipShop(items) {
     setChipLoadoutCache(loadout);
   }
   updateUI();
-}
-
-function renderChipShopContent(items, isStarting) {
-  takeover.open('chipShop');
-  const content = takeover.getContent('chipShop');
-
-  const chipCards = items.map((chip, i) => `
-    <div class="shop-chip-option" data-index="${i}">
-      <div class="shop-chip-icon" style="background-image:url('/assets/icons/chips/${chip.itemId || chip.id}.png')"></div>
-      <div class="shop-chip-info">
-        <div class="shop-chip-name">${chip.nameEn || chip.name}</div>
-        <div class="shop-chip-rarity ${chip.rarity}">${chip.rarity}</div>
-        <div class="shop-chip-desc">${chip.descriptionEn || chip.description || ''}</div>
-      </div>
-    </div>
-  `).join('');
-
-  content.innerHTML = `
-    <h3 style="margin:16px;text-align:center">${isStarting ? 'Choose Starting Chip' : 'Choose a Chip'}</h3>
-    <div class="shop-chip-list">${chipCards}</div>
-    ${!isStarting ? '<button class="action-btn" id="shop-skip-btn" style="margin:16px auto;display:block">Skip</button>' : ''}
-  `;
-
-  content.querySelectorAll('.shop-chip-option').forEach(el => {
-    el.addEventListener('click', async () => {
-      const index = parseInt(el.dataset.index);
-      const chip = items[index];
-      const result = isStarting
-        ? await apiClaimStartingChip(index)
-        : await apiPostCombatShopBuy(index);
-
-      if (result?.state) {
-        updateGameState(result.state);
-      }
-      takeover.close('chipShop');
-      playSFX('chip-equip');
-      speakText(chip.name || chip.nameEn);
-      sceneModule.showNarration('Chip acquired!', { autoDismiss: 2000 });
-      if (apiGetChipLoadout && setChipLoadoutCache) {
-        const loadout = await apiGetChipLoadout();
-        setChipLoadoutCache(loadout);
-      }
-      updateUI();
-    });
-  });
-
-  document.getElementById('shop-skip-btn')?.addEventListener('click', () => handleSkip());
 }
 
 async function handleSkip() {
