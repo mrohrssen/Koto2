@@ -13,7 +13,8 @@ import {
   parseText,
   reviewVocabulary,
   invalidateWordStateCache,
-  lookupVocabularyMeaning
+  lookupVocabularyMeaning,
+  lookupVocabularyBatch
 } from '../jpdb.js';
 import { addReview, findUserById } from '../auth/users.js';
 import { requireAuth } from '../auth/middleware.js';
@@ -146,6 +147,26 @@ export default function createVocabRoutes({ getSettings }) {
       }
 
       res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Batch lookup vocabulary meanings (for prefetching)
+  router.post('/jpdb/lookup-batch', async (req, res) => {
+    const { vocabList, jpdbApiKey } = req.body;
+
+    if (!jpdbApiKey) {
+      return res.status(400).json({ error: 'JPDB API key not configured' });
+    }
+
+    if (!vocabList || !Array.isArray(vocabList) || vocabList.length === 0) {
+      return res.status(400).json({ error: 'vocabList array is required' });
+    }
+
+    try {
+      const results = await lookupVocabularyBatch(jpdbApiKey, vocabList);
+      res.json({ definitions: results });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

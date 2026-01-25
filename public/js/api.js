@@ -477,6 +477,26 @@ async function lookupJpdbWord(vid, sid) {
   }
 }
 
+/** Batch lookup word meanings (for prefetching)
+ * @param {Array<[number, number]>} vocabList - Array of [vid, sid] pairs
+ * @returns {Promise<Object>} Map of "vid:sid" -> definition
+ */
+async function lookupJpdbBatch(vocabList) {
+  try {
+    const jpdbApiKey = localStorage.getItem('jrpg_jpdbApiKey');
+    const response = await fetch('/api/jpdb/lookup-batch', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ vocabList, jpdbApiKey })
+    });
+    const data = await response.json();
+    return data.definitions || {};
+  } catch (error) {
+    console.error('Failed to batch lookup JPDB words:', error);
+    return {};
+  }
+}
+
 export {
   apiCall,
   isApiLoading,
@@ -518,5 +538,6 @@ export {
   fetchJpdbVocab,
   sendJpdbReview,
   parseJpdbText,
-  lookupJpdbWord
+  lookupJpdbWord,
+  lookupJpdbBatch
 };

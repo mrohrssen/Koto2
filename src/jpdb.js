@@ -1262,3 +1262,74 @@ export async function lookupVocabularyMeaning(apiKey, vid, sid) {
     cardState: cardState || []
   };
 }
+
+/**
+ * Batch lookup vocabulary meanings for multiple words
+ * @param {string} apiKey - JPDB API key
+ * @param {Array<[number, number]>} vocabList - Array of [vid, sid] pairs
+ * @returns {Promise<Object>} Map of "vid:sid" -> definition object
+ */
+export async function lookupVocabularyBatch(apiKey, vocabList) {
+  if (!apiKey) {
+    throw new Error('JPDB API key required');
+  }
+
+  if (!vocabList || vocabList.length === 0) {
+    return {};
+  }
+
+  const response = await jpdbFetch(`${JPDB_API_BASE}/lookup-vocabulary`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      list: vocabList,
+      fields: ['spelling', 'reading', 'meanings_chunks', 'meanings_part_of_speech', 'card_state']
+    })
+  });
+
+  if (!response.ok) {
+    if (response.status === 429) {
+      throw new Error('Rate limited');
+    }
+    throw new Error(`Failed to batch lookup vocabulary: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const vocabInfo = data.vocabulary_info || [];
+  const results = {};
+
+  for (let i = 0; i < vocabInfo.length; i++) {
+    const info = vocabInfo[i];
+    if (!info) continue;
+
+    const [vid, sid] = vocabList[i];
+    const [spelling, reading, meaningsChunks, partOfSpeech, cardState] = info;
+
+    // Flatten meanings chunks
+    const meanings = [];
+    if (meaningsChunks && Array.isArray(meaningsChunks)) {
+      for (const chunk of meaningsChunks) {
+        if (Array.isArray(chunk)) {
+          for (const meaning of chunk) {
+            if (meaning && typeof meaning === 'string') {
+              meanings.push(meaning);
+            }
+          }
+        }
+      }
+    }
+
+    results[`${vid}:${sid}`] = {
+      spelling,
+      reading,
+      meanings,
+      partOfSpeech: partOfSpeech || [],
+      cardState: cardState || []
+    };
+  }
+
+  return results;
+}

@@ -53,7 +53,8 @@ import {
   getQuizQuestion as apiGetQuizQuestion,
   submitQuizAnswer as apiSubmitQuizAnswer,
   parseJpdbText,
-  lookupJpdbWord
+  lookupJpdbWord,
+  lookupJpdbBatch
 } from './js/api.js';
 
 const API_BASE = '';
@@ -506,6 +507,7 @@ async function initGame() {
   lookup.init({
     parseText: parseJpdbText,
     lookupWord: lookupJpdbWord,
+    lookupBatch: lookupJpdbBatch,
     showToast: (msg) => scene.showToast(msg, 3000),
     hasJpdbKey: () => !!localStorage.getItem('jrpg_jpdbApiKey')
   });

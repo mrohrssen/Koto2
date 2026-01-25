@@ -12,9 +12,11 @@ import { dom } from '../dom.js';
 let isActive = false;
 let isLoading = false;
 let originalTextMap = new WeakMap(); // Store original text per element
+let definitionCache = new Map(); // Cache prefetched definitions: "vid:sid" -> definition
 let api = {
   parseText: null,
   lookupWord: null,
+  lookupBatch: null,
   showToast: null,
   hasJpdbKey: null
 };
@@ -66,6 +68,7 @@ function blockGameClicks(e) {
 export function init(callbacks) {
   api.parseText = callbacks.parseText;
   api.lookupWord = callbacks.lookupWord;
+  api.lookupBatch = callbacks.lookupBatch;
   api.showToast = callbacks.showToast;
   api.hasJpdbKey = callbacks.hasJpdbKey;
 
@@ -118,6 +121,7 @@ async function activate() {
   }
 
   isLoading = true;
+  definitionCache.clear();
   dom.lookupBtn?.classList.add('lookup-loading');
 
   try {
@@ -140,12 +144,25 @@ async function activate() {
       return;
     }
 
+    // Collect all vocab IDs for prefetching
+    const vocabToFetch = new Map(); // "vid:sid" -> [vid, sid]
+
     // Parse each text element SEPARATELY to avoid JPDB confusion with mixed languages
     for (const { el, text } of elementsToProcess) {
       const result = await api.parseText(text);
 
       if (result.error || !result.tokens) {
         continue; // Skip this element but continue with others
+      }
+
+      // Collect vocab IDs from tokens
+      for (const token of result.tokens) {
+        if (token.vid && token.sid !== undefined) {
+          const key = `${token.vid}:${token.sid}`;
+          if (!vocabToFetch.has(key)) {
+            vocabToFetch.set(key, [token.vid, token.sid]);
+          }
+        }
       }
 
       // Apply tokens to this element
@@ -159,6 +176,18 @@ async function activate() {
     isActive = true;
     dom.lookupBtn?.classList.remove('lookup-loading');
     dom.lookupBtn?.classList.add('lookup-active');
+
+    // Prefetch definitions in the background (don't await)
+    if (api.lookupBatch && vocabToFetch.size > 0) {
+      const vocabList = Array.from(vocabToFetch.values());
+      api.lookupBatch(vocabList).then(definitions => {
+        for (const [key, def] of Object.entries(definitions)) {
+          definitionCache.set(key, def);
+        }
+      }).catch(err => {
+        console.warn('Definition prefetch failed:', err);
+      });
+    }
 
   } catch (err) {
     console.error('Lookup activation failed:', err);
@@ -175,6 +204,7 @@ function deactivate() {
   isActive = false;
   dom.lookupBtn?.classList.remove('lookup-active');
   hidePopup();
+  definitionCache.clear();
 
   // Restore original text
   const elements = getTextElements();
@@ -334,7 +364,17 @@ async function handleWordClick(e) {
   const rect = span.getBoundingClientRect();
   positionPopup(rect);
 
-  // Show loading state
+  // Check cache first
+  const cacheKey = `${vid}:${sid}`;
+  const cached = definitionCache.get(cacheKey);
+
+  if (cached) {
+    // Instant display from cache
+    populatePopup(cached, span.textContent);
+    return;
+  }
+
+  // Show loading state while fetching
   dom.lookupPopupWord.textContent = span.textContent;
   dom.lookupPopupReading.textContent = '';
   dom.lookupPopupPos.textContent = 'Loading...';
@@ -350,8 +390,14 @@ async function handleWordClick(e) {
     return;
   }
 
-  // Populate popup
-  dom.lookupPopupWord.textContent = result.spelling || span.textContent;
+  // Cache the result
+  definitionCache.set(cacheKey, result);
+  populatePopup(result, span.textContent);
+}
+
+/** Populate popup with definition data */
+function populatePopup(result, fallbackText) {
+  dom.lookupPopupWord.textContent = result.spelling || fallbackText;
   dom.lookupPopupReading.textContent = result.reading || '';
   dom.lookupPopupPos.textContent = result.partOfSpeech?.join(', ') || '';
 
@@ -376,6 +422,7 @@ async function handleWordClick(e) {
   dom.lookupStateDot.className = `lookup-state-dot ${state}`;
   dom.lookupStateText.textContent = stateLabels[state] || state;
   dom.lookupPopupState.style.display = 'flex';
+  dom.lookupPopup?.classList.add('visible');
 }
 
 /** Position popup near clicked word */
