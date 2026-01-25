@@ -1,9 +1,18 @@
 # Chip Drag-and-Drop Bugs
 
 **Branch:** `feature/chip-drag-reorder`
-**Status:** Not working - needs debugging
+**Status:** RESOLVED - Replaced with click-to-swap system
 
-## Observed Issues
+## Resolution
+
+The drag-and-drop system was replaced with a simpler click-to-swap interaction.
+See `docs/plans/2026-01-25-chip-swap-design.md` for the new design.
+
+---
+
+## Original Issues (Historical)
+
+### Observed Issues
 
 ### Bug 1: Drag behavior is broken
 - Unable to successfully drag chips to reorder them
