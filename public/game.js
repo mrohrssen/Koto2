@@ -662,6 +662,16 @@ async function initGame() {
   });
 
   await loadGameState();
+
+  // Fetch chip loadout on startup so chip row renders with equipped chips
+  if (gameState.player) {
+    try {
+      chipLoadoutCache = await apiGetChipLoadout();
+    } catch (e) {
+      console.warn('Failed to fetch chip loadout:', e);
+    }
+  }
+
   updateUI();
 
   // Prefetch words if in hub (ready for when user starts a run)

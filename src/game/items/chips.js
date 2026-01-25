@@ -90,6 +90,9 @@ export const CHIPS = chipData;
  * Get chip by ID
  */
 export function getChip(chipId) {
+  // Handle null/undefined chip IDs
+  if (!chipId) return null;
+
   // First try direct lookup (for base chips)
   if (CHIPS[chipId]) {
     return CHIPS[chipId];
@@ -974,12 +977,15 @@ export function unequipChip(player, equipmentSlot, chipId) {
  */
 export function getChipLoadout(player) {
   const weapon = player.equipment?.weapon;
-  const equippedChips = (weapon?.equippedChips || []).map(chipId => {
+  const equippedChips = (weapon?.equippedChips || []).map(chipEntry => {
+    // Handle both string IDs and chip objects
+    const chipId = typeof chipEntry === 'string' ? chipEntry : chipEntry?.id;
+    if (!chipId) return null;
     const chip = getChip(chipId);
     return chip ? getChipDisplayInfo(chip) : null;
   }).filter(Boolean);
 
-  const equippedChipIds = new Set(weapon?.equippedChips || []);
+  const equippedChipIds = new Set((weapon?.equippedChips || []).map(c => typeof c === 'string' ? c : c?.id));
 
   // Inventory chips - filter out equipped ones
   const inventoryChips = (player.chips || [])
@@ -1089,12 +1095,8 @@ export function reorderChips(player, chipIds) {
     }
   }
 
-  // Build new order by finding each chip object
-  const newOrder = chipIds.map(id => {
-    if (id === null) return null;
-    return currentChips.find(c => (c?.id || c) === id) || null;
-  });
-
-  weapon.equippedChips = newOrder;
+  // Build new order - store just the IDs (matching the original format)
+  // equippedChips should contain string IDs, not chip objects
+  weapon.equippedChips = chipIds;
   return { success: true };
 }
