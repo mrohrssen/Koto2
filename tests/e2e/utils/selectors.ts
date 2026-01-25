@@ -86,6 +86,11 @@ export const SELECTORS = {
   // Utility row
   settingsBtn: '#settings-btn',
   resetRunBtn: '#reset-run-btn',
+  lookupBtn: '#lookup-btn',
+  lookupPopup: '#lookup-popup',
+  lookupPopupWord: '#lookup-popup-word',
+  lookupPopupClose: '#lookup-popup-close',
+  lookupWord: '.lookup-word',
 
   // Game over
   gameoverHubBtn: '#gameover-hub-btn',
