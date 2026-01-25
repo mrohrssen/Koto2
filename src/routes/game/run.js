@@ -5,7 +5,19 @@
  */
 
 import { Router } from 'express';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import { getChipLoadout, equipChip, unequipChip } from '../../game/items/chips.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const quizQuestionsPath = join(__dirname, '../../data/quiz-questions.json');
+
+function loadQuizQuestions() {
+  const data = JSON.parse(readFileSync(quizQuestionsPath, 'utf-8'));
+  return data.questions;
+}
 
 export default function createRunRoutes({
   generateGameNarration,
@@ -235,6 +247,51 @@ export default function createRunRoutes({
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Get a random quiz question
+  router.get('/quiz-question', (req, res) => {
+    try {
+      const questions = loadQuizQuestions();
+      const randomIndex = Math.floor(Math.random() * questions.length);
+      const question = questions[randomIndex];
+
+      // Don't send correctIndex to frontend (prevent cheating)
+      res.json({
+        id: question.id,
+        type: question.type,
+        question: question.question,
+        options: question.options
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to load quiz questions' });
+    }
+  });
+
+  // Validate quiz answer
+  router.post('/quiz-answer', (req, res) => {
+    try {
+      const { questionId, selectedIndex } = req.body;
+      if (!questionId || selectedIndex === undefined) {
+        return res.status(400).json({ error: 'questionId and selectedIndex required' });
+      }
+
+      const questions = loadQuizQuestions();
+      const question = questions.find(q => q.id === questionId);
+
+      if (!question) {
+        return res.status(404).json({ error: 'Question not found' });
+      }
+
+      const correct = selectedIndex === question.correctIndex;
+      res.json({
+        correct,
+        correctIndex: question.correctIndex,
+        response: correct ? question.correctResponse : question.wrongResponse
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to validate answer' });
     }
   });
 
