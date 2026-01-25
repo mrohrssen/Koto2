@@ -1,0 +1,94 @@
+{
+  "questions": [
+    {
+      "id": "q001",
+      "type": "fill-blank",
+      "question": "わたし＿＿学生です。",
+      "options": ["は", "が", "を"],
+      "correctIndex": 0,
+      "correctResponse": "そうだ、「は」が正解だ。よくできたな。",
+      "wrongResponse": "残念だな。正解は「は」だ。次は頑張れよ。"
+    },
+    {
+      "id": "q002",
+      "type": "fill-blank",
+      "question": "りんご＿＿食べます。",
+      "options": ["が", "を", "に"],
+      "correctIndex": 1,
+      "correctResponse": "その通りだ。「を」は目的語につけるんだ。",
+      "wrongResponse": "違うぞ。「を」が正解だ。食べる物には「を」を使うんだ。"
+    },
+    {
+      "id": "q003",
+      "type": "fill-blank",
+      "question": "七時＿＿起きます。",
+      "options": ["で", "に", "を"],
+      "correctIndex": 1,
+      "correctResponse": "正解だ。時間には「に」を使う。覚えておけ。",
+      "wrongResponse": "惜しいな。正解は「に」だ。時間を言うときは「に」だぞ。"
+    },
+    {
+      "id": "q004",
+      "type": "fill-blank",
+      "question": "図書館＿＿本を読みます。",
+      "options": ["に", "で", "へ"],
+      "correctIndex": 1,
+      "correctResponse": "よし、正解だ。動作の場所には「で」を使う。",
+      "wrongResponse": "違うな。正解は「で」だ。何かをする場所には「で」を使うんだ。"
+    },
+    {
+      "id": "q005",
+      "type": "which-correct",
+      "question": "「昨日、映画を見る」を過去形にすると？",
+      "options": ["見ました", "見ます", "見ません"],
+      "correctIndex": 0,
+      "correctResponse": "そうだ。過去のことは「〜ました」だ。よく分かってるな。",
+      "wrongResponse": "違うぞ。「見ました」が正解だ。昨日のことだから過去形だ。"
+    },
+    {
+      "id": "q006",
+      "type": "fill-blank",
+      "question": "肉を食べ＿＿。",
+      "options": ["ます", "ました", "ません"],
+      "correctIndex": 2,
+      "correctResponse": "正解だ。「〜ません」は否定の形だ。",
+      "wrongResponse": "残念だ。「ません」が正解だ。食べないという意味だぞ。"
+    },
+    {
+      "id": "q007",
+      "type": "which-correct",
+      "question": "「おいしい」の否定形は？",
+      "options": ["おいしいない", "おいしくない", "おいしじゃない"],
+      "correctIndex": 1,
+      "correctResponse": "その通り。い形容詞は「い」を「くない」に変えるんだ。",
+      "wrongResponse": "違うな。「おいしくない」が正解だ。「い」を取って「くない」をつけるんだ。"
+    },
+    {
+      "id": "q008",
+      "type": "fill-blank",
+      "question": "きれい＿＿花ですね。",
+      "options": ["い", "な", "の"],
+      "correctIndex": 1,
+      "correctResponse": "正解だ。な形容詞は名詞の前で「な」をつける。",
+      "wrongResponse": "惜しいな。「な」が正解だ。「きれい」はな形容詞だからな。"
+    },
+    {
+      "id": "q009",
+      "type": "translation",
+      "question": "「Where is the station?」は日本語で？",
+      "options": ["駅はどこですか", "駅は何ですか", "駅はいつですか"],
+      "correctIndex": 0,
+      "correctResponse": "そうだ。場所を聞くときは「どこ」を使う。完璧だ。",
+      "wrongResponse": "違うぞ。「駅はどこですか」が正解だ。「どこ」は場所を聞く言葉だ。"
+    },
+    {
+      "id": "q010",
+      "type": "which-correct",
+      "question": "「これは本です」の否定形は？",
+      "options": ["これは本じゃないです", "これは本くないです", "これは本ませんです"],
+      "correctIndex": 0,
+      "correctResponse": "よくできた。「じゃないです」が否定の形だ。",
+      "wrongResponse": "残念だな。「これは本じゃないです」が正解だ。名詞の否定は「じゃないです」だぞ。"
+    }
+  ]
+}
