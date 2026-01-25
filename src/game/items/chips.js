@@ -1072,7 +1072,7 @@ export function getScaledEffectValue(chip, level) {
 /**
  * Reorder equipped chips in weapon slot
  * @param {Object} player - Player object
- * @param {Array<string|null>} chipIds - New order of chip IDs (5 elements, null for empty)
+ * @param {Array<string|null>} chipIds - New order of chip IDs (5 elements, null for empty slots)
  * @returns {{success: boolean, error?: string}}
  */
 export function reorderChips(player, chipIds) {
@@ -1088,15 +1088,17 @@ export function reorderChips(player, chipIds) {
   const currentChips = weapon.equippedChips || [];
 
   // Validate all provided chipIds exist in current loadout
-  const currentIds = currentChips.map(c => c?.id || c || null);
+  // currentChips can be either strings or objects with .id
+  const currentIds = currentChips.map(c => c?.id || c || null).filter(Boolean);
   for (const id of chipIds) {
     if (id !== null && !currentIds.includes(id)) {
       return { success: false, error: `Chip ${id} not in current loadout` };
     }
   }
 
-  // Build new order - store just the IDs (matching the original format)
-  // equippedChips should contain string IDs, not chip objects
-  weapon.equippedChips = chipIds;
+  // Store only non-null chip IDs in slot order (compact array)
+  // The order in the array represents slot positions: index 0 = slot 0, etc.
+  // Filter nulls to maintain compact format expected by other code
+  weapon.equippedChips = chipIds.filter(id => id !== null);
   return { success: true };
 }

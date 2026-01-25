@@ -483,16 +483,27 @@ function getChipIds() {
 }
 
 async function handleChipReorder(newChipIds) {
-  // Optimistic update
-  const oldChips = chipLoadoutCache?.equipment?.weapon?.equippedChips || [];
-  const reorderedChips = newChipIds.map(id => {
+  // Optimistic update for UI cache (rich chip objects with names, rarities, etc.)
+  // chipLoadoutCache uses full chip objects and can include nulls for empty slots in UI
+  const oldCacheChips = chipLoadoutCache?.equipment?.weapon?.equippedChips || [];
+  const reorderedCacheChips = newChipIds.map(id => {
     if (id === null) return null;
-    return oldChips.find(c => c?.id === id) || null;
-  });
+    return oldCacheChips.find(c => c?.id === id) || null;
+  }).filter(Boolean);  // Filter nulls - UI cache should match backend format
 
   if (chipLoadoutCache?.equipment?.weapon) {
-    chipLoadoutCache.equipment.weapon.equippedChips = reorderedChips;
+    chipLoadoutCache.equipment.weapon.equippedChips = reorderedCacheChips;
   }
+
+  // Also update gameState.player.equipment.weapon.equippedChips (stores chip IDs as strings)
+  // This is critical because combat logic reads from gameState, not chipLoadoutCache
+  // Filter nulls to maintain compact array format expected by game logic
+  const oldStateChips = gameState.player?.equipment?.weapon?.equippedChips || [];
+  const compactChipIds = newChipIds.filter(id => id !== null);
+  if (gameState.player?.equipment?.weapon) {
+    gameState.player.equipment.weapon.equippedChips = compactChipIds;
+  }
+
   updateChipRow();
 
   // Persist to backend
@@ -501,7 +512,10 @@ async function handleChipReorder(newChipIds) {
     // Revert on error
     console.error('Chip reorder failed:', result.error);
     if (chipLoadoutCache?.equipment?.weapon) {
-      chipLoadoutCache.equipment.weapon.equippedChips = oldChips;
+      chipLoadoutCache.equipment.weapon.equippedChips = oldCacheChips;
+    }
+    if (gameState.player?.equipment?.weapon) {
+      gameState.player.equipment.weapon.equippedChips = oldStateChips;
     }
     updateChipRow();
   }

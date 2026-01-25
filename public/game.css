@@ -627,8 +627,31 @@ html, body {
   margin-bottom: 8px;
 }
 
+/* Button row in popup */
+.chip-popup-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.chip-popup-swap {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--accent-cyan);
+  background: rgba(0, 255, 255, 0.15);
+  color: var(--accent-cyan);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.chip-popup-swap:disabled {
+  border-color: var(--text-secondary);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
 .chip-popup-use {
-  width: 100%;
+  flex: 1;
   padding: 8px;
   border: none;
   border-radius: var(--radius-pill);
@@ -641,25 +664,6 @@ html, body {
 
 .chip-popup-use:disabled {
   background: var(--text-secondary);
-  cursor: not-allowed;
-}
-
-/* Swap button in popup */
-.chip-popup-swap {
-  width: 100%;
-  padding: 8px;
-  margin-top: 8px;
-  border: 1px solid var(--accent-cyan);
-  background: transparent;
-  color: var(--accent-cyan);
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.chip-popup-swap:disabled {
-  border-color: var(--text-secondary);
-  color: var(--text-secondary);
   cursor: not-allowed;
 }
 
