@@ -133,16 +133,13 @@ This fix also ensures conjugated forms (e.g., "答えれば") appear correctly i
 15. **Click blocking works** - Game doesn't progress when lookup mode is active
 16. **Full text parsing** - All Japanese text gets parsed correctly
 
+## Known Bugs
+
+1. **Chip modal not detected as visible** - When the starting chip selection modal is open, pressing lookup parses the ward select content behind it instead of the chip descriptions. The chip modal may not have the `.visible` class that `getTextElements()` checks for, or there's a timing/z-index issue.
+
 ## Future Enhancements
 
-1. **Expand TEXT_SELECTORS** - Currently only parses `#narration-text` and `#enemy-name`. Could add:
-   - Chip modal options
-   - Chip skill descriptions
-   - Ward descriptions
-   - Shop item descriptions
-   - Any other UI text with Japanese
-
-   See `TEXT_SELECTORS` in `lookup.js` line 22-27.
+1. ~~**Expand TEXT_SELECTORS**~~ - Now uses blocklist approach, parses any Japanese text in `.game-app` and visible `.takeover` elements.
 
 ---
 
