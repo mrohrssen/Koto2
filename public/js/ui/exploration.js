@@ -59,7 +59,7 @@ export function init(callbacks) {
 
 /** Hub phase — show Equip Bots + Infiltrate buttons */
 export function renderHub() {
-  actions.showButtons('Infiltrate');
+  actions.showButtons('潜入');
   // Override the context action for this phase
   const btn = document.getElementById('context-action-btn');
   if (btn) {
@@ -92,14 +92,14 @@ export async function renderWardSelection() {
 
   const wardHtml = wards.map(w => `
     <div class="ward-option" data-ward-id="${w.id}">
-      <strong>${w.nameEn || w.name}</strong>
+      <strong>${w.name || w.nameEn}</strong>
       <small>${w.description || ''}</small>
     </div>
   `).join('');
 
   actions.setContent(`
     <div class="ward-selection-list">${wardHtml}</div>
-    <button class="action-btn action-btn-primary" id="ward-proceed-btn" disabled>Proceed</button>
+    <button class="action-btn action-btn-primary" id="ward-proceed-btn" disabled>進む</button>
   `);
 
   document.querySelectorAll('.ward-option').forEach(el => {
@@ -131,8 +131,8 @@ export function renderExploring() {
 
   if (room?.encounter || gameState.phase === 'room_encounter') {
     actions.setContent(`
-      <button class="action-btn action-btn-primary" id="equip-bots-btn">Equip Bots</button>
-      <button class="action-btn action-btn-secondary" id="fight-btn">Fight</button>
+      <button class="action-btn action-btn-primary" id="equip-bots-btn">ボット装備</button>
+      <button class="action-btn action-btn-secondary" id="fight-btn">戦う</button>
     `);
     document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
       actions.triggerEquipBots();
@@ -144,8 +144,8 @@ export function renderExploring() {
   }
 
   actions.setContent(`
-    <button class="action-btn action-btn-primary" id="equip-bots-btn">Equip Bots</button>
-    <button class="action-btn action-btn-secondary" id="proceed-btn">Proceed</button>
+    <button class="action-btn action-btn-primary" id="equip-bots-btn">ボット装備</button>
+    <button class="action-btn action-btn-secondary" id="proceed-btn">進む</button>
   `);
   document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
     actions.triggerEquipBots();
@@ -162,8 +162,8 @@ export function renderExploring() {
 /** Boss ready phase */
 export function renderBossReady() {
   actions.setContent(`
-    <button class="action-btn action-btn-primary" id="equip-bots-btn">Equip Bots</button>
-    <button class="action-btn action-btn-secondary" id="boss-fight-btn">Fight Boss</button>
+    <button class="action-btn action-btn-primary" id="equip-bots-btn">ボット装備</button>
+    <button class="action-btn action-btn-secondary" id="boss-fight-btn">ボス戦</button>
   `);
   document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
     actions.triggerEquipBots();
@@ -176,7 +176,7 @@ export function renderBossReady() {
 /** Floor complete — show Continue button */
 export function renderFloorComplete() {
   actions.setContent(`
-    <button class="action-btn action-btn-primary" id="next-floor-btn">Continue</button>
+    <button class="action-btn action-btn-primary" id="next-floor-btn">続ける</button>
   `);
   document.getElementById('next-floor-btn')?.addEventListener('click', () => {
     nextFloor();
@@ -186,7 +186,7 @@ export function renderFloorComplete() {
 /** Run ended — show Return to Hub */
 export function renderRunEnded() {
   actions.setContent(`
-    <button class="action-btn action-btn-primary" id="return-hub-btn">Return to Hub</button>
+    <button class="action-btn action-btn-primary" id="return-hub-btn">ハブに戻る</button>
   `);
   document.getElementById('return-hub-btn')?.addEventListener('click', () => {
     returnToHub();
@@ -201,7 +201,7 @@ export function renderShrine(chipLoadoutCache) {
   if (equippedChips.length === 0) {
     actions.setContent(`
       <p style="text-align:center;color:var(--text-secondary)">No chips equipped to upgrade</p>
-      <button class="action-btn action-btn-primary" id="shrine-skip-btn">Continue</button>
+      <button class="action-btn action-btn-primary" id="shrine-skip-btn">続ける</button>
     `);
     document.getElementById('shrine-skip-btn')?.addEventListener('click', async () => {
       const result = await apiProceed();
@@ -230,9 +230,9 @@ export function renderShrine(chipLoadoutCache) {
       <div class="shrine-chip-option" data-chip-id="${chipId}">
         <div class="shrine-chip-icon" style="background-image:url('/assets/icons/chips/${chipId}.png'); border-color: ${chipInfo.rarityInfo?.color || '#95a5a6'}"></div>
         <div class="shrine-chip-info">
-          <div class="shrine-chip-name">${chipInfo.nameEn || chipInfo.name || chipId} Lv. ${level} <span class="shrine-chip-upgrade">\u2192 Lv. ${Math.min(level + 1, 7)}</span></div>
+          <div class="shrine-chip-name">${chipInfo.name || chipInfo.nameEn || chipId} Lv. ${level} <span class="shrine-chip-upgrade">\u2192 Lv. ${Math.min(level + 1, 7)}</span></div>
           <div class="shrine-chip-rarity ${chipInfo.rarity || 'common'}">${chipInfo.rarity || 'common'}</div>
-          <div class="shrine-chip-desc">${chipInfo.descriptionEn || chipInfo.description || ''}</div>
+          <div class="shrine-chip-desc">${chipInfo.description || chipInfo.descriptionEn || ''}</div>
         </div>
       </div>
     `;

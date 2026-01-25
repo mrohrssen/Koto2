@@ -22,7 +22,7 @@ export function showEnemy(enemy) {
     return;
   }
 
-  dom.enemyName.textContent = enemy.nameEn || enemy.name || 'Enemy';
+  dom.enemyName.textContent = enemy.name || enemy.nameEn || 'Enemy';
   dom.enemyInfo.classList.add('visible');
   updateEnemyHP(enemy.hp, enemy.maxHp);
 

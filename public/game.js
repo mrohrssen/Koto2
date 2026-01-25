@@ -174,7 +174,7 @@ function updatePlayerHP() {
 function updateGameContent() {
   switch (gameState.phase) {
     case 'no_save':
-      actions.setContent('<button class="action-btn action-btn-primary" id="new-game-btn">New Game</button>');
+      actions.setContent('<button class="action-btn action-btn-primary" id="new-game-btn">ニューゲーム</button>');
       document.getElementById('new-game-btn')?.addEventListener('click', createCharacter);
       break;
     case 'hub':
@@ -220,7 +220,7 @@ function showEnemyDialogue(text, type = 'possessed') {
   if (!text) return Promise.resolve();
   enemyDialogueActive = true;
 
-  const speaker = gameState.combat?.enemy?.nameEn || gameState.combat?.enemy?.name;
+  const speaker = gameState.combat?.enemy?.name || gameState.combat?.enemy?.nameEn;
 
   // Speak dialogue via TTS if enabled
   if (settings.isTtsEnabled()) {
@@ -352,7 +352,7 @@ function showGameOverModal(result) {
   content.innerHTML = `
     <h2 style="text-align:center;margin-top:40%">Defeated</h2>
     <p style="text-align:center">Your run has ended.</p>
-    <button class="action-btn action-btn-primary" id="gameover-hub-btn">Return to Hub</button>
+    <button class="action-btn action-btn-primary" id="gameover-hub-btn">ハブに戻る</button>
   `;
   document.getElementById('gameover-hub-btn')?.addEventListener('click', async () => {
     takeover.close('gameover');
@@ -394,7 +394,7 @@ async function openChipEquipView() {
       ${equipped.map((chip, i) => chip ? `
         <div class="chip-equip-slot filled" data-action="unequip" data-index="${i}">
           <div class="chip-equip-icon" style="background-image:url('/assets/icons/chips/${chip.id}.png')"></div>
-          <span class="chip-equip-name">${chip.nameEn || chip.name}</span>
+          <span class="chip-equip-name">${chip.name || chip.nameEn}</span>
           <span class="chip-equip-rarity ${chip.rarity}">${chip.rarity}</span>
         </div>
       ` : `
@@ -406,7 +406,7 @@ async function openChipEquipView() {
       ${inventory.map((chip, i) => `
         <div class="chip-inventory-item" data-action="equip" data-chip-id="${chip.id}">
           <div class="chip-equip-icon" style="background-image:url('/assets/icons/chips/${chip.id}.png')"></div>
-          <span class="chip-equip-name">${chip.nameEn || chip.name}</span>
+          <span class="chip-equip-name">${chip.name || chip.nameEn}</span>
           <span class="chip-equip-rarity ${chip.rarity}">${chip.rarity}</span>
         </div>
       `).join('')}

@@ -42,7 +42,7 @@ export function init({ equipBots, contextAction, cardSwipe, cardFlip }) {
  */
 export function showButtons(contextLabel, { contextDisabled = false } = {}) {
   dom.actionArea.innerHTML = `
-    <button class="action-btn action-btn-primary" id="equip-bots-btn">Equip Bots</button>
+    <button class="action-btn action-btn-primary" id="equip-bots-btn">ボット装備</button>
     <button class="action-btn action-btn-secondary" id="context-action-btn"
       ${contextDisabled ? 'disabled' : ''}>${contextLabel}</button>
   `;
