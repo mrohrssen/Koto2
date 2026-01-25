@@ -43,6 +43,7 @@ function handleClick() {
  * @param {Object} [options]
  * @param {string} [options.speaker] - Name label shown above text
  * @param {number} [options.autoDismiss] - Ms to auto-dismiss (no click needed)
+ * @param {boolean} [options.persistent] - If true, stays visible until forceHide() is called
  * @returns {Promise<void>} Resolves when dismissed
  */
 export function show(text, options = {}) {
@@ -52,15 +53,20 @@ export function show(text, options = {}) {
     hide();
   }
 
-  const { speaker, autoDismiss } = options;
+  const { speaker, autoDismiss, persistent } = options;
 
   if (speakerEl) {
     speakerEl.textContent = speaker || '';
     speakerEl.style.display = speaker ? '' : 'none';
   }
   if (textEl) textEl.textContent = text;
-  if (indicatorEl) indicatorEl.style.display = autoDismiss ? 'none' : '';
+  if (indicatorEl) indicatorEl.style.display = (autoDismiss || persistent) ? 'none' : '';
   if (box) box.classList.add('visible');
+
+  // Persistent mode: show but don't register click handler, resolve immediately
+  if (persistent) {
+    return Promise.resolve();
+  }
 
   return new Promise(resolve => {
     dismissResolve = resolve;

@@ -86,12 +86,31 @@ export function showFlashCard(word) {
 
   const card = document.getElementById('flash-card');
 
-  // Tap to flip
-  card.addEventListener('click', () => {
-    if (!isSwiping && !cardFlipped) {
+  // Tap to flip, or tap sides to grade after flip
+  card.addEventListener('click', (e) => {
+    if (isSwiping) return;
+
+    if (!cardFlipped) {
+      // First tap: flip the card
       cardFlipped = true;
       card.classList.add('flipped');
       if (onCardFlip) onCardFlip();
+    } else {
+      // Card is flipped: check click position for grading
+      const rect = card.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const cardWidth = rect.width;
+      const relativeX = clickX / cardWidth;
+
+      // Dead zone: middle 20% (40% to 60%)
+      if (relativeX < 0.4) {
+        // Left side: grade as failed
+        triggerSwipeAnimation(card, 'left');
+      } else if (relativeX > 0.6) {
+        // Right side: grade as good
+        triggerSwipeAnimation(card, 'right');
+      }
+      // Middle 20%: do nothing (dead zone)
     }
   });
 
@@ -105,6 +124,12 @@ export function showFlashCard(word) {
   card.addEventListener('mousemove', handleMouseMove);
   card.addEventListener('mouseup', handleMouseUp);
   card.addEventListener('mouseleave', handleMouseUp);
+}
+
+/** Trigger the equip bots callback (for use by other modules) */
+export function triggerEquipBots() {
+  playSFX('button-tap');
+  if (onEquipBots) onEquipBots();
 }
 
 /** Show empty action area */
@@ -241,6 +266,22 @@ function handleMouseUp() {
     }
   }
   isSwiping = false;
+}
+
+/**
+ * Trigger swipe animation and callback (used for click-to-grade)
+ */
+function triggerSwipeAnimation(card, direction) {
+  const offset = direction === 'right' ? 500 : -500;
+  card.style.transition = 'transform 0.3s ease, opacity 0.25s ease';
+  card.style.transform = `translateX(${offset}px) rotate(${offset * 0.02}deg)`;
+  card.style.opacity = '0';
+  playSFX(direction === 'right' ? 'swipe-right' : 'swipe-left');
+  setTimeout(() => {
+    const container = document.getElementById('flash-card-container');
+    if (container) container.remove();
+    if (onCardSwipe) onCardSwipe(direction);
+  }, 300);
 }
 
 function escapeHtml(str) {

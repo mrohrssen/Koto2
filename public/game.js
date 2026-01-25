@@ -534,7 +534,7 @@ async function initGame() {
     updateGameState,
     updateUI,
     actions,
-    scene: { ...scene, showNarration: (text, opts) => narrationBox.show(text, opts) },
+    scene: { ...scene, showNarration: (text, opts) => narrationBox.show(text, opts), forceHideNarration: () => narrationBox.forceHide() },
     startEncounter,
     startBossEncounter,
     nextFloor,

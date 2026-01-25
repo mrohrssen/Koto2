@@ -1044,7 +1044,7 @@ export function getScaledEffectValue(chip, level) {
   const effect = chip.effects?.pipeline;
   if (!effect || level <= 1) return effect?.value;
 
-  const scalingPerLevel = 0.05;
+  const scalingPerLevel = 0.10;
   const scaleFactor = 1 + (level - 1) * scalingPerLevel;
   const value = effect.value;
   const type = effect.type;

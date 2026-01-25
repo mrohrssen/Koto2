@@ -125,8 +125,12 @@ export function renderExploring() {
 
   if (room?.encounter || gameState.phase === 'room_encounter') {
     actions.setContent(`
-      <button class="action-btn action-btn-primary" id="fight-btn">Fight</button>
+      <button class="action-btn action-btn-primary" id="equip-bots-btn">Equip Bots</button>
+      <button class="action-btn action-btn-secondary" id="fight-btn">Fight</button>
     `);
+    document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
+      actions.triggerEquipBots();
+    });
     document.getElementById('fight-btn')?.addEventListener('click', () => {
       startEncounter();
     });
@@ -134,8 +138,12 @@ export function renderExploring() {
   }
 
   actions.setContent(`
-    <button class="action-btn action-btn-primary" id="proceed-btn">Proceed</button>
+    <button class="action-btn action-btn-primary" id="equip-bots-btn">Equip Bots</button>
+    <button class="action-btn action-btn-secondary" id="proceed-btn">Proceed</button>
   `);
+  document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
+    actions.triggerEquipBots();
+  });
   document.getElementById('proceed-btn')?.addEventListener('click', async () => {
     const result = await apiProceed();
     if (result?.state) {
@@ -148,8 +156,12 @@ export function renderExploring() {
 /** Boss ready phase */
 export function renderBossReady() {
   actions.setContent(`
-    <button class="action-btn action-btn-primary" id="boss-fight-btn">Fight Boss</button>
+    <button class="action-btn action-btn-primary" id="equip-bots-btn">Equip Bots</button>
+    <button class="action-btn action-btn-secondary" id="boss-fight-btn">Fight Boss</button>
   `);
+  document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
+    actions.triggerEquipBots();
+  });
   document.getElementById('boss-fight-btn')?.addEventListener('click', () => {
     startBossEncounter();
   });
@@ -212,10 +224,9 @@ export function renderShrine(chipLoadoutCache) {
       <div class="shrine-chip-option" data-chip-id="${chipId}">
         <div class="shrine-chip-icon" style="background-image:url('/assets/icons/chips/${chipId}.png'); border-color: ${chipInfo.rarityInfo?.color || '#95a5a6'}"></div>
         <div class="shrine-chip-info">
-          <div class="shrine-chip-name">${chipInfo.nameEn || chipInfo.name || chipId} Lv. ${level}</div>
+          <div class="shrine-chip-name">${chipInfo.nameEn || chipInfo.name || chipId} Lv. ${level} <span class="shrine-chip-upgrade">\u2192 Lv. ${Math.min(level + 1, 7)}</span></div>
           <div class="shrine-chip-rarity ${chipInfo.rarity || 'common'}">${chipInfo.rarity || 'common'}</div>
           <div class="shrine-chip-desc">${chipInfo.descriptionEn || chipInfo.description || ''}</div>
-          <div class="shrine-chip-upgrade">\u2192 Lv. ${Math.min(level + 1, 7)}</div>
         </div>
       </div>
     `;
@@ -268,7 +279,7 @@ export async function renderQuiz() {
 
   // Stage tracking: undefined = intro, 'question' = show question, 'reward' = pick reward, 'failed' = wrong answer
   if (gameState._quizStage === 'reward') {
-    renderQuizRewards();
+    await renderQuizRewards();
     return;
   }
 
@@ -305,6 +316,9 @@ export async function renderQuiz() {
     return;
   }
 
+  // Show question in narration box (persistent - stays until we hide it)
+  sceneModule.showNarration(question.question, { speaker: 'Quiz Master', persistent: true });
+
   // Build answer buttons - full width with padding
   const answerButtons = question.options.map((opt, idx) => `
     <div class="shrine-chip-option quiz-answer-option" data-answer-index="${idx}" style="width:100%">
@@ -314,9 +328,8 @@ export async function renderQuiz() {
     </div>
   `).join('');
 
-  // Show question and answer buttons in actions area
+  // Show answer buttons in actions area
   actions.setContent(`
-    <h3 class="shrine-title" style="margin-bottom:1rem">「${question.question}」</h3>
     <div class="shrine-chip-list quiz-answer-list" style="padding:0 1rem">${answerButtons}</div>
   `);
 
@@ -360,7 +373,8 @@ export async function renderQuiz() {
         }
       });
 
-      // Show Quiz Master's response with click-to-continue
+      // Hide the persistent question narration, then show Quiz Master's response
+      if (sceneModule.forceHideNarration) sceneModule.forceHideNarration();
       await sceneModule.showNarration(result.response, { speaker: 'Quiz Master' });
 
       // Proceed based on result
@@ -376,26 +390,30 @@ export async function renderQuiz() {
   }
 }
 
-function renderQuizRewards() {
+async function renderQuizRewards() {
+  const gameState = getGameState();
+
+  // Show reward intro dialogue (persistent - stays while selecting)
+  sceneModule.showNarration('ご褒美を選べ。', { speaker: 'Quiz Master', persistent: true });
+
   actions.setContent(`
-    <h3 class="shrine-title">Choose your reward:</h3>
-    <div class="shrine-chip-list">
-      <div class="shrine-chip-option quiz-reward-option" data-reward="max_hp">
-        <div class="shrine-chip-info" style="padding:0.75rem">
-          <div class="shrine-chip-name">Max HP +25</div>
-          <div class="shrine-chip-desc">Permanently increase maximum HP</div>
+    <div class="shrine-chip-list" style="padding:0 1rem">
+      <div class="shrine-chip-option quiz-reward-option" data-reward="max_hp" style="width:100%">
+        <div class="shrine-chip-info" style="padding:1rem; width:100%">
+          <div class="shrine-chip-name">最大HP +25</div>
+          <div class="shrine-chip-desc">最大HPが25増える</div>
         </div>
       </div>
-      <div class="shrine-chip-option quiz-reward-option" data-reward="heal_hp">
-        <div class="shrine-chip-info" style="padding:0.75rem">
-          <div class="shrine-chip-name">Heal HP +75</div>
-          <div class="shrine-chip-desc">Restore 75 HP immediately</div>
+      <div class="shrine-chip-option quiz-reward-option" data-reward="heal_hp" style="width:100%">
+        <div class="shrine-chip-info" style="padding:1rem; width:100%">
+          <div class="shrine-chip-name">HP回復 +75</div>
+          <div class="shrine-chip-desc">HPを75回復する</div>
         </div>
       </div>
-      <div class="shrine-chip-option quiz-reward-option" data-reward="chip_charges">
-        <div class="shrine-chip-info" style="padding:0.75rem">
-          <div class="shrine-chip-name">All Chips +3 Charges</div>
-          <div class="shrine-chip-desc">Add 3 charges to all equipped chip skills</div>
+      <div class="shrine-chip-option quiz-reward-option" data-reward="chip_charges" style="width:100%">
+        <div class="shrine-chip-info" style="padding:1rem; width:100%">
+          <div class="shrine-chip-name">全チップ +3チャージ</div>
+          <div class="shrine-chip-desc">全てのチップに3チャージ追加</div>
         </div>
       </div>
     </div>
@@ -419,6 +437,9 @@ function renderQuizRewards() {
       if (result?.state) {
         updateGameState(result.state);
       }
+
+      // Hide persistent narration, then show reward confirmation
+      if (sceneModule.forceHideNarration) sceneModule.forceHideNarration();
       sceneModule.showNarration(result?.description || 'Reward claimed!', { autoDismiss: 2000 });
 
       // Refresh chip loadout if charges changed

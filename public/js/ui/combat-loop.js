@@ -161,7 +161,7 @@ async function showChipActivationSequence(pa) {
   if (pa.critical) {
     lines.push('<span class="math-crit">CRITICAL HIT!</span>');
     actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
-    await delay(300);
+    await delay(360);
   }
 
   // Get fired chips from pipeline result
@@ -170,13 +170,13 @@ async function showChipActivationSequence(pa) {
   if (firedChips.length > 0) {
     // Show base damage first (before chips modify it)
     const baseDmg = firedChips[0].previousDamage || pa.damage;
-    lines.push(`<strong>\u2192 ${baseDmg} base</strong>`);
+    lines.push(`<strong>\u2192 Attacked for ${baseDmg}</strong>`);
     actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
 
     // Sequentially fire each chip
     let slotIndex = 0;
     for (const chip of firedChips) {
-      await delay(500);
+      await delay(600);
       const name = chip.chipName || chip.chipId || 'Chip';
       const dmgDelta = chip.newDamage - chip.previousDamage;
       let detail = '';
@@ -212,32 +212,32 @@ async function showChipActivationSequence(pa) {
     }
 
     // Show final total
-    await delay(400);
-    lines.push(`<strong>\u2192 ${pa.damage} total</strong>`);
+    await delay(480);
+    lines.push(`<strong>\u2192 Final Damage ${pa.damage}</strong>`);
     actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
   } else {
-    // No pipeline chips - just show total damage
-    lines.push(`<strong>\u2192 ${pa.damage} damage</strong>`);
+    // No pipeline chips - just show attack damage
+    lines.push(`<strong>\u2192 Attacked for ${pa.damage}</strong>`);
     actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
   }
 
   // Show cascade
   if (pa.cascadeTriggered && pa.cascadeDamage) {
-    await delay(500);
+    await delay(600);
     lines.push(`<span class="math-chip">Cascade: +${pa.cascadeDamage}</span>`);
     actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
   }
 
   // Show healing from pipeline total
   if (pa.pipelineResult?.healPlayer > 0 && !firedChips.some(c => c.healPlayer)) {
-    await delay(500);
+    await delay(600);
     lines.push(`<span class="math-heal">+${pa.pipelineResult.healPlayer} HP</span>`);
     actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
   }
 
   // Show DoT damage
   if (pa.dotDamage && pa.dotDamage > 0) {
-    await delay(400);
+    await delay(480);
     showDotDamage(pa.dotDamage, false);
   }
 }
@@ -611,7 +611,7 @@ export async function executeEnemyAttackThenPause() {
     enemyAttackPending = false;
     combatPausedForVocab = true;
     // Delay before showing flash card so player can see the damage
-    await delay(1200);
+    await delay(1440);
     // Show next flash card for the next review
     showNextFlashCardFromQueue();
     console.log('[Combat] Paused for vocab review. Review a word to continue.');
@@ -663,7 +663,7 @@ export async function stopCombatLoop(result) {
   wordPractice.closeWordInputModal();
 
   // Brief pause before narration (let final damage numbers display)
-  await delay(600);
+  await delay(720);
 
   // Wait for enemy dialogue to be dismissed (e.g., liberated dialogue on victory)
   const dialogueDismissPromise = getDialogueDismissPromise();
