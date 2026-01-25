@@ -119,8 +119,7 @@ The fundamental issue appears to be that the narration click handler is register
 ## Features NOT Working
 
 1. **Click blocking** - Clicks still progress game when lookup mode is active
-2. **Toolbar positioning on mobile** - Sometimes floats 70-90px above bottom (unresolved)
-3. **Limited text parsing** - Only parses `#narration-text` and `#enemy-name`. Does NOT parse:
+2. **Limited text parsing** - Only parses `#narration-text` and `#enemy-name`. Does NOT parse:
    - Chip modal options
    - Chip skill descriptions
    - Ward descriptions
