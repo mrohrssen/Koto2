@@ -90,6 +90,9 @@ export const CHIPS = chipData;
  * Get chip by ID
  */
 export function getChip(chipId) {
+  // Handle null/undefined chip IDs
+  if (!chipId) return null;
+
   // First try direct lookup (for base chips)
   if (CHIPS[chipId]) {
     return CHIPS[chipId];
@@ -976,12 +979,15 @@ export function unequipChip(player, equipmentSlot, chipId) {
  */
 export function getChipLoadout(player) {
   const weapon = player.equipment?.weapon;
-  const equippedChips = (weapon?.equippedChips || []).map(chipId => {
+  const equippedChips = (weapon?.equippedChips || []).map(chipEntry => {
+    // Handle both string IDs and chip objects
+    const chipId = typeof chipEntry === 'string' ? chipEntry : chipEntry?.id;
+    if (!chipId) return null;
     const chip = getChip(chipId);
     return chip ? getChipDisplayInfo(chip) : null;
   }).filter(Boolean);
 
-  const equippedChipIds = new Set(weapon?.equippedChips || []);
+  const equippedChipIds = new Set((weapon?.equippedChips || []).map(c => typeof c === 'string' ? c : c?.id));
 
   // Inventory chips - filter out equipped ones
   const inventoryChips = (player.chips || [])
@@ -1063,4 +1069,38 @@ export function getScaledEffectValue(chip, level) {
 
   // All others (flatAdd, stacking, damageAndHeal, killCounter, riskyFlat, perEmptySlot, emptySlots, perEquipped, nthAttack): floor
   return Math.floor(value * scaleFactor);
+}
+
+/**
+ * Reorder equipped chips in weapon slot
+ * @param {Object} player - Player object
+ * @param {Array<string|null>} chipIds - New order of chip IDs (5 elements, null for empty slots)
+ * @returns {{success: boolean, error?: string}}
+ */
+export function reorderChips(player, chipIds) {
+  if (!player?.equipment?.weapon) {
+    return { success: false, error: 'No weapon equipped' };
+  }
+
+  if (!Array.isArray(chipIds) || chipIds.length !== 5) {
+    return { success: false, error: 'chipIds must be array of 5 elements' };
+  }
+
+  const weapon = player.equipment.weapon;
+  const currentChips = weapon.equippedChips || [];
+
+  // Validate all provided chipIds exist in current loadout
+  // currentChips can be either strings or objects with .id
+  const currentIds = currentChips.map(c => c?.id || c || null).filter(Boolean);
+  for (const id of chipIds) {
+    if (id !== null && !currentIds.includes(id)) {
+      return { success: false, error: `Chip ${id} not in current loadout` };
+    }
+  }
+
+  // Store only non-null chip IDs in slot order (compact array)
+  // The order in the array represents slot positions: index 0 = slot 0, etc.
+  // Filter nulls to maintain compact format expected by other code
+  weapon.equippedChips = chipIds.filter(id => id !== null);
+  return { success: true };
 }

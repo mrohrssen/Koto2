@@ -52,9 +52,10 @@ import {
   quizReward as apiQuizReward,
   getQuizQuestion as apiGetQuizQuestion,
   submitQuizAnswer as apiSubmitQuizAnswer,
-  parseJpdbText,
+parseJpdbText,
   lookupJpdbWord,
-  lookupJpdbBatch
+  lookupJpdbBatch,
+  reorderChips
 } from './js/api.js';
 
 const API_BASE = '';
@@ -79,6 +80,9 @@ function updateGameState(newState) {
 let enemyDialogueActive = false;
 let dialogueDismissResolve = null;
 let dialogueDismissPromise = null;
+
+// Combat animation state (blocks chip dragging during attacks)
+let combatAnimationActive = false;
 
 // Flash card state
 let currentFlashCardWord = null;
@@ -472,6 +476,55 @@ async function handleUseChipSkill(chipIndex) {
   }
 }
 
+// ============ CHIP ACTION HELPERS ============
+function isChipActionBlocked() {
+  return enemyDialogueActive || combatAnimationActive;
+}
+
+function getChipIds() {
+  const chips = chipLoadoutCache?.equipment?.weapon?.equippedChips || [];
+  return chips.map(c => c?.id || null);
+}
+
+async function handleChipReorder(newChipIds) {
+  // Optimistic update for UI cache (rich chip objects with names, rarities, etc.)
+  // chipLoadoutCache uses full chip objects and can include nulls for empty slots in UI
+  const oldCacheChips = chipLoadoutCache?.equipment?.weapon?.equippedChips || [];
+  const reorderedCacheChips = newChipIds.map(id => {
+    if (id === null) return null;
+    return oldCacheChips.find(c => c?.id === id) || null;
+  }).filter(Boolean);  // Filter nulls - UI cache should match backend format
+
+  if (chipLoadoutCache?.equipment?.weapon) {
+    chipLoadoutCache.equipment.weapon.equippedChips = reorderedCacheChips;
+  }
+
+  // Also update gameState.player.equipment.weapon.equippedChips (stores chip IDs as strings)
+  // This is critical because combat logic reads from gameState, not chipLoadoutCache
+  // Filter nulls to maintain compact array format expected by game logic
+  const oldStateChips = gameState.player?.equipment?.weapon?.equippedChips || [];
+  const compactChipIds = newChipIds.filter(id => id !== null);
+  if (gameState.player?.equipment?.weapon) {
+    gameState.player.equipment.weapon.equippedChips = compactChipIds;
+  }
+
+  updateChipRow();
+
+  // Persist to backend
+  const result = await reorderChips(newChipIds);
+  if (result.error) {
+    // Revert on error
+    console.error('Chip reorder failed:', result.error);
+    if (chipLoadoutCache?.equipment?.weapon) {
+      chipLoadoutCache.equipment.weapon.equippedChips = oldCacheChips;
+    }
+    if (gameState.player?.equipment?.weapon) {
+      gameState.player.equipment.weapon.equippedChips = oldStateChips;
+    }
+    updateChipRow();
+  }
+}
+
 // ============ EVENT LISTENERS ============
 function setupEventListeners() {
   dom.settingsBtn.addEventListener('click', () => modalsUI.openSettings());
@@ -521,6 +574,9 @@ async function initGame() {
 
   chipRow.init({
     useSkillCallback: handleUseChipSkill,
+    onReorder: handleChipReorder,
+    isBlocked: isChipActionBlocked,
+    getChipIds: getChipIds
   });
 
   wordPractice.init({
@@ -617,6 +673,7 @@ async function initGame() {
       currentFlashCardWord = word;
       actions.showFlashCard(word);
     },
+    setCombatAnimationActive: (active) => { combatAnimationActive = active; },
   });
 
   setupEventListeners();
@@ -630,6 +687,16 @@ async function initGame() {
   });
 
   await loadGameState();
+
+  // Fetch chip loadout on startup so chip row renders with equipped chips
+  if (gameState.player) {
+    try {
+      chipLoadoutCache = await apiGetChipLoadout();
+    } catch (e) {
+      console.warn('Failed to fetch chip loadout:', e);
+    }
+  }
+
   updateUI();
 
   // Prefetch words if in hub (ready for when user starts a run)
