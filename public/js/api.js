@@ -265,6 +265,34 @@ async function quizReward(rewardType) {
   return apiCall('/quiz-reward', 'POST', { rewardType });
 }
 
+/** Get a random quiz question */
+async function getQuizQuestion() {
+  try {
+    const response = await fetch('/api/game/quiz-question', {
+      headers: getAuthHeaders()
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to get quiz question:', error);
+    return { error: 'Network error' };
+  }
+}
+
+/** Submit quiz answer for validation */
+async function submitQuizAnswer(questionId, selectedIndex) {
+  try {
+    const response = await fetch('/api/game/quiz-answer', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ questionId, selectedIndex })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to submit quiz answer:', error);
+    return { error: 'Network error' };
+  }
+}
+
 // ============ COMBAT ENDPOINTS ============
 
 /** Start a regular enemy encounter */
@@ -469,6 +497,8 @@ export {
   roomEncounter,
   shrineUpgrade,
   quizReward,
+  getQuizQuestion,
+  submitQuizAnswer,
   // Combat endpoints
   startEncounter,
   startBoss,
