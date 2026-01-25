@@ -32,7 +32,44 @@ export function showChipSelect(chips) {
 }
 
 function renderChipCards(chips) {
-  // TODO: Implement in Task 2
+  const cardsHtml = chips.map((chip, i) => `
+    <div class="chip-select-card${i === 0 ? ' selected' : ''}" data-index="${i}">
+      <div class="chip-select-name">${chip.name || chip.nameEn}</div>
+      <div class="chip-select-rarity ${chip.rarity}">${chip.rarity}</div>
+      <div class="chip-select-desc">${chip.description || chip.descriptionEn || ''}</div>
+    </div>
+  `).join('');
+
+  dom.actionArea.innerHTML = `
+    <div class="chip-select-container">
+      <div class="chip-select-cards">${cardsHtml}</div>
+      <button class="chip-select-btn" id="chip-select-confirm">チップを選ぶ</button>
+    </div>
+  `;
+
+  // Card click handlers
+  dom.actionArea.querySelectorAll('.chip-select-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const index = parseInt(card.dataset.index);
+      selectChip(index);
+    });
+  });
+
+  // Confirm button handler
+  document.getElementById('chip-select-confirm').addEventListener('click', confirmSelection);
+}
+
+function selectChip(index) {
+  if (index === selectedIndex) return;
+
+  // Update visual selection
+  dom.actionArea.querySelectorAll('.chip-select-card').forEach((card, i) => {
+    card.classList.toggle('selected', i === index);
+  });
+
+  selectedIndex = index;
+  playSFX('button-tap');
+  showSelectedChip(currentChips[index]);
 }
 
 function showSelectedChip(chip) {

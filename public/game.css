@@ -884,6 +884,80 @@ html, body {
   transform: scale(0.98);
 }
 
+/* ===== CHIP SELECT (In-Scene) ===== */
+.chip-select-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px;
+  width: 100%;
+}
+
+.chip-select-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chip-select-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  border: 2px solid transparent;
+}
+
+.chip-select-card.selected {
+  border-color: var(--accent-orange);
+  box-shadow: 0 0 12px rgba(255, 153, 0, 0.4);
+}
+
+.chip-select-card:active {
+  transform: scale(0.98);
+}
+
+.chip-select-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.chip-select-rarity {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+}
+
+.chip-select-desc {
+  font-size: 12px;
+  line-height: 1.4;
+  opacity: 0.85;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.chip-select-btn {
+  margin-top: 8px;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--btn-primary);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.chip-select-btn:active {
+  transform: scale(0.98);
+}
+
 /* ===== SHRINE CHIP UPGRADE ===== */
 .shrine-title {
   text-align: center;
