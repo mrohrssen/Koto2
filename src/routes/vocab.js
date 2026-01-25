@@ -21,6 +21,33 @@ import { requireAuth } from '../auth/middleware.js';
 import { decryptKeys } from '../auth/crypto.js';
 
 /**
+ * Get JPDB API key from request body or user's encrypted storage
+ * @param {object} req - Express request object
+ * @returns {string|null} JPDB API key or null
+ */
+function getJpdbApiKey(req) {
+  // First try request body
+  if (req.body.jpdbApiKey) {
+    return req.body.jpdbApiKey;
+  }
+
+  // Then try user's encrypted storage if authenticated
+  if (req.user?.id) {
+    const user = findUserById(req.user.id);
+    if (user?.encryptedApiKeys) {
+      try {
+        const keys = decryptKeys(user.encryptedApiKeys, process.env.ENCRYPTION_KEY || 'a'.repeat(64));
+        if (keys.jpdbApiKey) {
+          return keys.jpdbApiKey;
+        }
+      } catch {}
+    }
+  }
+
+  return null;
+}
+
+/**
  * Create vocab router
  * @param {object} deps - Dependencies
  * @param {function} deps.getSettings - Get current settings object
@@ -74,7 +101,8 @@ export default function createVocabRoutes({ getSettings }) {
 
   // Parse text with JPDB
   router.post('/jpdb/parse', async (req, res) => {
-    const { text, jpdbApiKey } = req.body;
+    const { text } = req.body;
+    const jpdbApiKey = getJpdbApiKey(req);
 
     if (!jpdbApiKey) {
       return res.status(400).json({ error: 'JPDB API key not configured' });
@@ -91,18 +119,7 @@ export default function createVocabRoutes({ getSettings }) {
   // Review vocabulary in JPDB
   router.post('/jpdb/review', requireAuth, async (req, res) => {
     const { vid, sid, grade } = req.body;
-
-    // Get API key from user's encrypted storage, fallback to request body
-    let jpdbApiKey = req.body.jpdbApiKey;
-    if (!jpdbApiKey) {
-      const user = findUserById(req.user.id);
-      if (user?.encryptedApiKeys) {
-        try {
-          const keys = decryptKeys(user.encryptedApiKeys, process.env.ENCRYPTION_KEY || 'a'.repeat(64));
-          jpdbApiKey = keys.jpdbApiKey;
-        } catch {}
-      }
-    }
+    const jpdbApiKey = getJpdbApiKey(req);
 
     if (!jpdbApiKey) {
       return res.status(400).json({ error: 'JPDB API key not configured' });
@@ -125,7 +142,8 @@ export default function createVocabRoutes({ getSettings }) {
 
   // Lookup vocabulary meaning
   router.post('/jpdb/lookup', async (req, res) => {
-    const { vid, sid, jpdbApiKey } = req.body;
+    const { vid, sid } = req.body;
+    const jpdbApiKey = getJpdbApiKey(req);
 
     if (!jpdbApiKey) {
       return res.status(400).json({ error: 'JPDB API key not configured' });
@@ -154,7 +172,8 @@ export default function createVocabRoutes({ getSettings }) {
 
   // Batch lookup vocabulary meanings (for prefetching)
   router.post('/jpdb/lookup-batch', async (req, res) => {
-    const { vocabList, jpdbApiKey } = req.body;
+    const { vocabList } = req.body;
+    const jpdbApiKey = getJpdbApiKey(req);
 
     if (!jpdbApiKey) {
       return res.status(400).json({ error: 'JPDB API key not configured' });
