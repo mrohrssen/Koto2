@@ -21,8 +21,9 @@ let api = {
 
 const TEXT_SELECTORS = [
   '#narration-text',
-  '#enemy-name',
-  '.action-btn'
+  '#enemy-name'
+  // NOTE: Explicitly NOT including flashcards (.flash-card-front, .flash-card-word)
+  // because looking up words during vocabulary practice is cheating!
 ];
 
 /** Initialize lookup module with callbacks */
@@ -32,8 +33,11 @@ export function init(callbacks) {
   api.showToast = callbacks.showToast;
   api.hasJpdbKey = callbacks.hasJpdbKey;
 
-  // Button click toggles mode
-  dom.lookupBtn?.addEventListener('click', toggle);
+  // Button click toggles mode (stopPropagation prevents dismissing narration)
+  dom.lookupBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggle();
+  });
 
   // Popup close button
   dom.lookupPopupClose?.addEventListener('click', hidePopup);

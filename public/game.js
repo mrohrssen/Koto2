@@ -507,7 +507,7 @@ async function initGame() {
     parseText: parseJpdbText,
     lookupWord: lookupJpdbWord,
     showToast: (msg) => scene.showToast(msg, 3000),
-    hasJpdbKey: () => !!localStorage.getItem('jpdbApiKey')
+    hasJpdbKey: () => !!localStorage.getItem('jrpg_jpdbApiKey')
   });
 
   actions.init({
