@@ -247,10 +247,12 @@ export function generateShopChips(floor, ownedChipIds = [], count = 3, category 
       name: chip.name,
       nameEn: chip.nameEn,
       description: chip.description,
+      descriptionEn: chip.descriptionEn,
       category: chip.category,
       rarity: 'common',
       price: Math.floor(chipConfig.upgradeConfig.basePrice * commonRarity.priceMultiplier),
-      effects: chip.effects
+      effects: chip.effects,
+      skill: chip.skill
     };
   });
 }
@@ -1044,7 +1046,7 @@ export function getScaledEffectValue(chip, level) {
   const effect = chip.effects?.pipeline;
   if (!effect || level <= 1) return effect?.value;
 
-  const scalingPerLevel = 0.10;
+  const scalingPerLevel = 0.20;
   const scaleFactor = 1 + (level - 1) * scalingPerLevel;
   const value = effect.value;
   const type = effect.type;

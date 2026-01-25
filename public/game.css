@@ -888,41 +888,54 @@ html, body {
 .chip-select-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   padding: 8px;
   width: 100%;
-}
-
-.chip-select-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 .chip-select-card {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
   background: var(--bg-card);
   border-radius: var(--radius-md);
-  padding: 12px;
-  cursor: pointer;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  border: 2px solid transparent;
-}
-
-.chip-select-card.selected {
-  border-color: var(--accent-orange);
-  box-shadow: 0 0 12px rgba(255, 153, 0, 0.4);
+  padding: 16px;
+  min-height: 180px;
+  border: 2px solid var(--accent-orange);
+  box-shadow: 0 0 12px rgba(255, 153, 0, 0.3);
+  cursor: grab;
+  transition: transform 0.1s ease, opacity 0.1s ease;
+  user-select: none;
 }
 
 .chip-select-card:active {
-  transform: scale(0.98);
+  cursor: grabbing;
+}
+
+.chip-select-top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.chip-select-icon {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid var(--accent-orange);
+}
+
+.chip-select-info {
+  flex: 1;
 }
 
 .chip-select-name {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
+  margin-bottom: 2px;
 }
 
 .chip-select-rarity {
@@ -932,18 +945,59 @@ html, body {
   opacity: 0.7;
 }
 
-.chip-select-desc {
+.chip-select-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent-orange);
+  margin-bottom: 2px;
+}
+
+.chip-select-passive {
   font-size: 12px;
   line-height: 1.4;
-  opacity: 0.85;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+}
+
+.chip-select-active {
+  font-size: 12px;
+  line-height: 1.4;
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.chip-select-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.chip-select-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transition: background 0.2s;
+}
+
+.chip-select-dot.active {
+  background: var(--accent-orange);
+}
+
+.chip-select-hint {
+  text-align: center;
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+.chip-select-buttons {
+  display: flex;
+  gap: 8px;
 }
 
 .chip-select-btn {
-  margin-top: 8px;
+  flex: 1;
   padding: 12px;
   border: none;
   border-radius: var(--radius-pill);

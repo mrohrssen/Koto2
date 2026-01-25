@@ -898,11 +898,11 @@ function buildEnemy(template, levelBonus = 0) {
   if (isBoss) {
     // Bosses are stronger
     baseAttack = 20 + (tier * 5);
-    baseHp = 450 + (tier * 120);
+    baseHp = 225 + (tier * 60);
   } else {
     // Regular enemies scale by tier
     baseAttack = 5 + (tier * 4);
-    baseHp = 90 + (tier * 60);
+    baseHp = 45 + (tier * 30);
   }
 
   // Add some variance (±20%)
