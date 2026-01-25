@@ -266,7 +266,7 @@ export function renderShrine(chipLoadoutCache) {
 export async function renderQuiz() {
   const gameState = getGameState();
 
-  // Stage tracking: undefined = question, 'reward' = pick reward, 'failed' = wrong answer
+  // Stage tracking: undefined = intro, 'question' = show question, 'reward' = pick reward, 'failed' = wrong answer
   if (gameState._quizStage === 'reward') {
     renderQuizRewards();
     return;
@@ -296,19 +296,28 @@ export async function renderQuiz() {
 
   const question = gameState._quizQuestion;
 
-  // Show question in narration box (no click to continue - must select answer)
-  // Build answer buttons
+  // Show intro dialogue first (click to continue)
+  if (gameState._quizStage !== 'question') {
+    actions.setContent(''); // Clear actions while showing intro
+    await sceneModule.showNarration('この問題に答えれば、ご褒美をあげよう。', { speaker: 'Quiz Master' });
+    gameState._quizStage = 'question';
+    updateUI();
+    return;
+  }
+
+  // Build answer buttons - full width with padding
   const answerButtons = question.options.map((opt, idx) => `
-    <div class="shrine-chip-option quiz-answer-option" data-answer-index="${idx}">
-      <div class="shrine-chip-info" style="padding:0.75rem">
+    <div class="shrine-chip-option quiz-answer-option" data-answer-index="${idx}" style="width:100%">
+      <div class="shrine-chip-info" style="padding:1rem; width:100%; text-align:center">
         <div class="shrine-chip-name" style="color:var(--accent-primary)">${opt}</div>
       </div>
     </div>
   `).join('');
 
+  // Show question and answer buttons in actions area
   actions.setContent(`
-    <h3 class="shrine-title">「${question.question}」</h3>
-    <div class="shrine-chip-list quiz-answer-list">${answerButtons}</div>
+    <h3 class="shrine-title" style="margin-bottom:1rem">「${question.question}」</h3>
+    <div class="shrine-chip-list quiz-answer-list" style="padding:0 1rem">${answerButtons}</div>
   `);
 
   const list = document.querySelector('.quiz-answer-list');
