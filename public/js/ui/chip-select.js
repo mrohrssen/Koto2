@@ -73,7 +73,29 @@ function selectChip(index) {
 }
 
 function showSelectedChip(chip) {
-  // TODO: Implement in Task 3
+  // Show chip name (Japanese preferred)
+  dom.enemyName.textContent = chip.name || chip.nameEn;
+  dom.enemyInfo.classList.add('visible');
+
+  // Hide HP bar (chips don't have HP)
+  dom.enemyHpBar.style.display = 'none';
+  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
+
+  // Show chip icon as sprite
+  const iconPath = `/assets/icons/chips/${chip.itemId || chip.id}.png`;
+  dom.enemySprite.src = iconPath;
+  dom.enemySprite.onerror = () => {
+    dom.enemySprite.classList.remove('visible');
+  };
+  dom.enemySprite.onload = () => {
+    dom.enemySprite.classList.add('visible');
+  };
+
+  // Show greeting narration (persistent - no click to dismiss)
+  narrationBox.show(CHIP_GREETING, {
+    speaker: chip.name || chip.nameEn,
+    persistent: true
+  });
 }
 
 function confirmSelection() {
