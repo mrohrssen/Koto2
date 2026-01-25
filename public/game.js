@@ -23,6 +23,7 @@ import * as audio from './js/audio.js';
 import * as auth from './js/ui/auth.js';
 import * as narrationBox from './js/ui/narration-box.js';
 import * as leaderboard from './js/ui/leaderboard.js';
+import * as lookup from './js/ui/lookup.js';
 
 // API imports - these are the server communication functions
 import {
@@ -50,7 +51,9 @@ import {
   shrineUpgrade as apiShrineUpgrade,
   quizReward as apiQuizReward,
   getQuizQuestion as apiGetQuizQuestion,
-  submitQuizAnswer as apiSubmitQuizAnswer
+  submitQuizAnswer as apiSubmitQuizAnswer,
+  parseJpdbText,
+  lookupJpdbWord
 } from './js/api.js';
 
 const API_BASE = '';
@@ -498,6 +501,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function initGame() {
   takeover.init();
   leaderboard.init();
+
+  // Initialize lookup mode
+  lookup.init({
+    parseText: parseJpdbText,
+    lookupWord: lookupJpdbWord,
+    showToast: (msg) => scene.showToast(msg, 3000),
+    hasJpdbKey: () => !!localStorage.getItem('jpdbApiKey')
+  });
 
   actions.init({
     equipBots: () => openChipEquipView(),
