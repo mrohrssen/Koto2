@@ -958,6 +958,12 @@ html, body {
   transform: scale(0.98);
 }
 
+.chip-select-skip {
+  background: transparent;
+  border: 1px solid var(--text-secondary);
+  color: var(--text-secondary);
+}
+
 /* ===== SHRINE CHIP UPGRADE ===== */
 .shrine-title {
   text-align: center;

@@ -18,20 +18,22 @@ let currentChips = [];
 /**
  * Show chip selection UI in the scene
  * @param {Object[]} chips - Array of chip objects to choose from
- * @returns {Promise<Object>} Resolves to the selected chip
+ * @param {Object} [options]
+ * @param {boolean} [options.allowSkip] - Show skip button (for post-combat, not starting chip)
+ * @returns {Promise<Object|null>} Resolves to selected chip, or null if skipped
  */
-export function showChipSelect(chips) {
+export function showChipSelect(chips, options = {}) {
   return new Promise((resolve) => {
     resolveSelection = resolve;
     currentChips = chips;
     selectedIndex = 0;
 
-    renderChipCards(chips);
+    renderChipCards(chips, options);
     showSelectedChip(chips[0]);
   });
 }
 
-function renderChipCards(chips) {
+function renderChipCards(chips, options = {}) {
   const cardsHtml = chips.map((chip, i) => `
     <div class="chip-select-card${i === 0 ? ' selected' : ''}" data-index="${i}">
       <div class="chip-select-name">${chip.name || chip.nameEn}</div>
@@ -40,10 +42,15 @@ function renderChipCards(chips) {
     </div>
   `).join('');
 
+  const skipBtn = options.allowSkip
+    ? '<button class="chip-select-btn chip-select-skip" id="chip-select-skip">スキップ</button>'
+    : '';
+
   dom.actionArea.innerHTML = `
     <div class="chip-select-container">
       <div class="chip-select-cards">${cardsHtml}</div>
       <button class="chip-select-btn" id="chip-select-confirm">チップを選ぶ</button>
+      ${skipBtn}
     </div>
   `;
 
@@ -57,6 +64,9 @@ function renderChipCards(chips) {
 
   // Confirm button handler
   document.getElementById('chip-select-confirm').addEventListener('click', confirmSelection);
+
+  // Skip button handler
+  document.getElementById('chip-select-skip')?.addEventListener('click', skipSelection);
 }
 
 function selectChip(index) {
@@ -109,6 +119,14 @@ function confirmSelection() {
 
   // Resolve the promise with selected chip
   resolveSelection(chip);
+}
+
+function skipSelection() {
+  if (!resolveSelection) return;
+
+  playSFX('button-tap');
+  cleanup();
+  resolveSelection(null);
 }
 
 /** Clean up chip select UI */

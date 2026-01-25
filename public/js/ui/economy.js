@@ -37,11 +37,18 @@ export async function renderPostCombatShop() {
   const gameState = getGameState();
   const shop = gameState.run?.postCombatShop;
   if (!shop?.active || !shop?.items) {
-    handleSkip();
+    await handleSkip();
     return;
   }
 
-  const chip = await chipSelect.showChipSelect(shop.items);
+  const chip = await chipSelect.showChipSelect(shop.items, { allowSkip: true });
+
+  // Handle skip
+  if (!chip) {
+    await handleSkip();
+    return;
+  }
+
   const index = shop.items.findIndex(c => (c.itemId || c.id) === (chip.itemId || chip.id));
 
   const result = await apiPostCombatShopBuy(index);
