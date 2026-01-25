@@ -543,6 +543,8 @@ async function initGame() {
     apiRoomEncounter,
     apiShrineUpgrade,
     apiQuizReward,
+    apiGetQuizQuestion: api.getQuizQuestion,
+    apiSubmitQuizAnswer: api.submitQuizAnswer,
     apiGetChipLoadout,
     setChipLoadoutCache: (cache) => { chipLoadoutCache = cache; },
   });
