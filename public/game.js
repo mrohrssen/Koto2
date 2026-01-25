@@ -23,6 +23,7 @@ import * as audio from './js/audio.js';
 import * as auth from './js/ui/auth.js';
 import * as narrationBox from './js/ui/narration-box.js';
 import * as leaderboard from './js/ui/leaderboard.js';
+import * as lookup from './js/ui/lookup.js';
 
 // API imports - these are the server communication functions
 import {
@@ -50,7 +51,10 @@ import {
   shrineUpgrade as apiShrineUpgrade,
   quizReward as apiQuizReward,
   getQuizQuestion as apiGetQuizQuestion,
-  submitQuizAnswer as apiSubmitQuizAnswer
+  submitQuizAnswer as apiSubmitQuizAnswer,
+  parseJpdbText,
+  lookupJpdbWord,
+  lookupJpdbBatch
 } from './js/api.js';
 
 const API_BASE = '';
@@ -260,7 +264,7 @@ async function startNewRun() {
     wordPractice.prefetchCombatWords(); // Fallback if not prefetched from hub
     audio.playBGM('main');
     if (gameState.run?.startingChipShop?.active) {
-      economyUI.renderStartingChipShop(gameState.run.startingChipShop.items);
+      await economyUI.renderStartingChipShop(gameState.run.startingChipShop.items);
     }
   }
 }
@@ -499,6 +503,15 @@ async function initGame() {
   takeover.init();
   leaderboard.init();
 
+  // Initialize lookup mode
+  lookup.init({
+    parseText: parseJpdbText,
+    lookupWord: lookupJpdbWord,
+    lookupBatch: lookupJpdbBatch,
+    showToast: (msg) => scene.showToast(msg, 3000),
+    hasJpdbKey: () => !!localStorage.getItem('jrpg_jpdbApiKey')
+  });
+
   actions.init({
     equipBots: () => openChipEquipView(),
     contextAction: null,
@@ -558,8 +571,6 @@ async function initGame() {
     getGameState: () => gameState,
     updateGameState,
     updateUI,
-    takeover,
-    scene: { ...scene, showNarration: (text, opts) => narrationBox.show(text, opts) },
     apiClaimStartingChip,
     apiPostCombatShopBuy,
     apiShopSkip,

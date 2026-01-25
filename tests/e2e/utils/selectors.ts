@@ -72,6 +72,11 @@ export const SELECTORS = {
   shopChipOption: '.shop-chip-option',
   shopSkipBtn: '#shop-skip-btn',
 
+  // In-scene chip selection (rendered into action area)
+  chipSelectCard: '.chip-select-card',
+  chipSelectConfirm: '#chip-select-confirm',
+  chipSelectSkip: '#chip-select-skip',
+
   // Chip equip elements (rendered into chip-equip takeover)
   chipEquipSlot: '.chip-equip-slot',
   chipEquipSlotFilled: '.chip-equip-slot.filled',
@@ -86,6 +91,11 @@ export const SELECTORS = {
   // Utility row
   settingsBtn: '#settings-btn',
   resetRunBtn: '#reset-run-btn',
+  lookupBtn: '#lookup-btn',
+  lookupPopup: '#lookup-popup',
+  lookupPopupWord: '#lookup-popup-word',
+  lookupPopupClose: '#lookup-popup-close',
+  lookupWord: '.lookup-word',
 
   // Game over
   gameoverHubBtn: '#gameover-hub-btn',

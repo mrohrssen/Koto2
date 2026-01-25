@@ -369,6 +369,7 @@ export function generatePostCombatShop(floor, ownedChipIds = []) {
       name: chip.name,
       nameEn: chip.nameEn,
       description: chip.description,
+      descriptionEn: chip.descriptionEn,
       price: 0,
       type: 'chip',
       category: chip.category,
@@ -377,6 +378,7 @@ export function generatePostCombatShop(floor, ownedChipIds = []) {
       rarityName: displayInfo.rarityInfo.name,
       effectText: displayInfo.effectText,
       effects: chip.effects,
+      skill: chip.skill,
       quantity: 1
     };
   });

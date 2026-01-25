@@ -11,6 +11,8 @@
  *   await narrationBox.show('Chip acquired!', { autoDismiss: 2000 });
  */
 
+import * as lookup from './lookup.js';
+
 const box = document.getElementById('narration-box');
 const textEl = document.getElementById('narration-text');
 const speakerEl = document.getElementById('narration-speaker');
@@ -32,7 +34,10 @@ function hide() {
   }
 }
 
-function handleClick() {
+function handleClick(e) {
+  // Don't dismiss if lookup mode is active (let user look up words)
+  if (lookup.getActive()) return;
+
   document.removeEventListener('click', handleClick, true);
   hide();
 }

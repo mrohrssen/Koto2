@@ -6,11 +6,10 @@ test.describe('Run and Exploration', () => {
     await setupCharacter(gameHelper);
   });
 
-  test('Infiltrate opens starting chip shop', async ({ gameHelper, page }) => {
+  test('Infiltrate opens starting chip selection', async ({ gameHelper, page }) => {
     await gameHelper.startRun();
-    const isOpen = await gameHelper.isTakeoverOpen(SELECTORS.chipShopView);
-    expect(isOpen).toBe(true);
-    const chipCount = await page.locator(SELECTORS.shopChipOption).count();
+    // Chip selection now uses in-scene cards in the action area
+    const chipCount = await page.locator(SELECTORS.chipSelectCard).count();
     expect(chipCount).toBe(3);
   });
 

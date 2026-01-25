@@ -47,6 +47,7 @@ export const dom = {
   // Utility
   get settingsBtn() { return el('settings-btn'); },
   get resetRunBtn() { return el('reset-run-btn'); },
+  get lookupBtn() { return el('lookup-btn'); },
 
   // Takeover views
   get chipEquipView() { return el('chip-equip-view'); },
@@ -67,6 +68,17 @@ export const dom = {
   get chipPopupDesc() { return el('chip-popup-desc'); },
   get chipPopupCharge() { return el('chip-popup-charge'); },
   get chipPopupUse() { return el('chip-popup-use'); },
+
+  // Lookup mode
+  get lookupPopup() { return el('lookup-popup'); },
+  get lookupPopupWord() { return el('lookup-popup-word'); },
+  get lookupPopupReading() { return el('lookup-popup-reading'); },
+  get lookupPopupClose() { return el('lookup-popup-close'); },
+  get lookupPopupPos() { return el('lookup-popup-pos'); },
+  get lookupPopupMeanings() { return el('lookup-popup-meanings'); },
+  get lookupPopupState() { return el('lookup-popup-state'); },
+  get lookupStateDot() { return el('lookup-state-dot'); },
+  get lookupStateText() { return el('lookup-state-text'); },
 };
 
 /** Clear cache (for testing or hot reload) */

@@ -55,7 +55,7 @@ html, body {
   position: relative;
   /* iOS safe areas for notch and home indicator */
   padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: calc(68px + env(safe-area-inset-bottom)); /* Space for fixed utility row */
 }
 
 /* ===== STATUS BAR ===== */
@@ -497,10 +497,15 @@ html, body {
 
 /* ===== UTILITY ROW ===== */
 .utility-row {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   justify-content: space-between;
   padding: 8px 24px 12px;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.95);
+  z-index: 150; /* Above takeovers (100) so lookup button is always accessible */
 }
 
 .util-btn {
@@ -521,6 +526,120 @@ html, body {
   background: rgba(0,0,0,0.05);
 }
 
+/* ===== LOOKUP MODE ===== */
+.util-btn.lookup-active {
+  color: var(--accent-green);
+  background: rgba(39, 174, 96, 0.15);
+}
+
+.util-btn.lookup-loading {
+  animation: pulse-glow 1s infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.lookup-word {
+  border-bottom: 1px solid var(--text-secondary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.lookup-word:hover {
+  border-color: var(--accent-orange);
+}
+
+/* Lookup popup */
+.lookup-popup {
+  position: fixed;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 0;
+  box-shadow: var(--shadow-card);
+  border: 2px solid var(--accent-orange);
+  min-width: 240px;
+  max-width: 280px;
+  z-index: 200;
+  display: none;
+}
+
+.lookup-popup.visible {
+  display: block;
+}
+
+.lookup-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px 12px 8px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.lookup-popup-word {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.lookup-popup-reading {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-left: 8px;
+}
+
+.lookup-popup-close {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  font-size: 20px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  margin-left: 8px;
+}
+
+.lookup-popup-pos {
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: rgba(0,0,0,0.03);
+}
+
+.lookup-popup-meanings {
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.lookup-popup-meanings li {
+  margin-left: 16px;
+  margin-bottom: 4px;
+}
+
+.lookup-popup-state {
+  padding: 8px 12px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+.lookup-state-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.lookup-state-dot.new { background: var(--accent-red); }
+.lookup-state-dot.learning { background: var(--accent-orange); }
+.lookup-state-dot.known { background: var(--accent-green); }
+.lookup-state-dot.never-looked-up { background: var(--text-secondary); }
+
 /* ===== TAKEOVER VIEWS ===== */
 .takeover {
   position: fixed;
@@ -531,6 +650,7 @@ html, body {
   transition: transform var(--transition-med);
   overflow-y: auto;
   padding: 20px;
+  padding-bottom: 88px; /* Space for fixed utility row */
 }
 
 .takeover.active {
@@ -762,6 +882,140 @@ html, body {
 
 .shop-chip-option:active {
   transform: scale(0.98);
+}
+
+/* ===== CHIP SELECT (In-Scene) ===== */
+.chip-select-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  width: 100%;
+}
+
+.chip-select-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  min-height: 180px;
+  border: 2px solid var(--accent-orange);
+  box-shadow: 0 0 12px rgba(255, 153, 0, 0.3);
+  cursor: grab;
+  transition: transform 0.1s ease, opacity 0.1s ease;
+  user-select: none;
+}
+
+.chip-select-card:active {
+  cursor: grabbing;
+}
+
+.chip-select-top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.chip-select-icon {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid var(--accent-orange);
+}
+
+.chip-select-info {
+  flex: 1;
+}
+
+.chip-select-name {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 2px;
+}
+
+.chip-select-rarity {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+}
+
+.chip-select-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent-orange);
+  margin-bottom: 2px;
+}
+
+.chip-select-passive {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.chip-select-active {
+  font-size: 12px;
+  line-height: 1.4;
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.chip-select-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.chip-select-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transition: background 0.2s;
+}
+
+.chip-select-dot.active {
+  background: var(--accent-orange);
+}
+
+.chip-select-hint {
+  text-align: center;
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+.chip-select-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.chip-select-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--btn-primary);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.chip-select-btn:active {
+  transform: scale(0.98);
+}
+
+.chip-select-skip {
+  background: transparent;
+  border: 1px solid var(--text-secondary);
+  color: var(--text-secondary);
 }
 
 /* ===== SHRINE CHIP UPGRADE ===== */

@@ -28,30 +28,24 @@ export class GameHelper {
     this.log('startRun', 'clicking Infiltrate button');
     await this.page.locator(SELECTORS.contextActionBtn).waitFor({ state: 'visible', timeout: 5000 });
     await this.page.locator(SELECTORS.contextActionBtn).click();
-    this.log('startRun', 'waiting for chip shop to open...');
-    // Wait for the chip shop takeover to become active
-    await this.page.waitForFunction(
-      (sel: string) => document.querySelector(sel)?.classList.contains('active'),
-      SELECTORS.chipShopView,
-      { timeout: 8000 }
-    );
-    this.log('startRun', 'chip shop opened');
+    this.log('startRun', 'waiting for chip selection to appear...');
+    // Wait for in-scene chip selection cards to appear in action area
+    await this.page.locator(SELECTORS.chipSelectCard).first().waitFor({ state: 'visible', timeout: 8000 });
+    this.log('startRun', 'chip selection shown');
   }
 
   async selectStartingChip(index = 0): Promise<void> {
     this.log('selectStartingChip', `index=${index}`);
-    await this.page.waitForFunction(
-      (sel: string) => document.querySelector(sel)?.classList.contains('active'),
-      SELECTORS.chipShopView,
-      { timeout: 5000 }
-    );
-    await this.page.locator(SELECTORS.shopChipOption).nth(index).waitFor({ state: 'visible', timeout: 3000 });
-    await this.page.locator(SELECTORS.shopChipOption).nth(index).click();
-    await this.page.waitForFunction(
-      (sel: string) => !document.querySelector(sel)?.classList.contains('active'),
-      SELECTORS.chipShopView,
-      { timeout: 5000 }
-    );
+    // Wait for chip selection cards to be visible
+    await this.page.locator(SELECTORS.chipSelectCard).first().waitFor({ state: 'visible', timeout: 5000 });
+    // Click the desired chip card
+    await this.page.locator(SELECTORS.chipSelectCard).nth(index).click();
+    await this.page.waitForTimeout(200);
+    // Click confirm button
+    await this.page.locator(SELECTORS.chipSelectConfirm).click();
+    // Wait for chip selection UI to disappear AND ward selection to appear
+    // (the game makes API calls after chip selection, then renders wards)
+    await this.page.locator(SELECTORS.wardOption).first().waitFor({ state: 'visible', timeout: 8000 });
     this.log('selectStartingChip', 'done');
   }
 

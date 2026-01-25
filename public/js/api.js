@@ -445,10 +445,11 @@ async function sendJpdbReview(vid, sid, grade) {
  */
 async function parseJpdbText(text) {
   try {
+    const jpdbApiKey = localStorage.getItem('jrpg_jpdbApiKey');
     const response = await fetch('/api/jpdb/parse', {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ text })
+      body: JSON.stringify({ text, jpdbApiKey })
     });
     return await response.json();
   } catch (error) {
@@ -463,15 +464,36 @@ async function parseJpdbText(text) {
  */
 async function lookupJpdbWord(vid, sid) {
   try {
+    const jpdbApiKey = localStorage.getItem('jrpg_jpdbApiKey');
     const response = await fetch('/api/jpdb/lookup', {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ vid, sid })
+      body: JSON.stringify({ vid, sid, jpdbApiKey })
     });
     return await response.json();
   } catch (error) {
     console.error('Failed to lookup JPDB word:', error);
     return { error: 'Network error' };
+  }
+}
+
+/** Batch lookup word meanings (for prefetching)
+ * @param {Array<[number, number]>} vocabList - Array of [vid, sid] pairs
+ * @returns {Promise<Object>} Map of "vid:sid" -> definition
+ */
+async function lookupJpdbBatch(vocabList) {
+  try {
+    const jpdbApiKey = localStorage.getItem('jrpg_jpdbApiKey');
+    const response = await fetch('/api/jpdb/lookup-batch', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ vocabList, jpdbApiKey })
+    });
+    const data = await response.json();
+    return data.definitions || {};
+  } catch (error) {
+    console.error('Failed to batch lookup JPDB words:', error);
+    return {};
   }
 }
 
@@ -516,5 +538,6 @@ export {
   fetchJpdbVocab,
   sendJpdbReview,
   parseJpdbText,
-  lookupJpdbWord
+  lookupJpdbWord,
+  lookupJpdbBatch
 };

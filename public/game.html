@@ -83,6 +83,12 @@
           <line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
+      <button class="util-btn" id="lookup-btn" aria-label="Lookup Mode">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.3-4.3"/>
+        </svg>
+      </button>
       <button class="util-btn" id="logout-btn" aria-label="Logout">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
@@ -90,6 +96,23 @@
           <line x1="21" y1="12" x2="9" y2="12"/>
         </svg>
       </button>
+    </div>
+
+    <!-- Lookup Popup -->
+    <div class="lookup-popup" id="lookup-popup">
+      <div class="lookup-popup-header">
+        <div>
+          <span class="lookup-popup-word" id="lookup-popup-word"></span>
+          <span class="lookup-popup-reading" id="lookup-popup-reading"></span>
+        </div>
+        <button class="lookup-popup-close" id="lookup-popup-close">&times;</button>
+      </div>
+      <div class="lookup-popup-pos" id="lookup-popup-pos"></div>
+      <ul class="lookup-popup-meanings" id="lookup-popup-meanings"></ul>
+      <div class="lookup-popup-state" id="lookup-popup-state">
+        <span class="lookup-state-dot" id="lookup-state-dot"></span>
+        <span id="lookup-state-text"></span>
+      </div>
     </div>
   </div>
 
