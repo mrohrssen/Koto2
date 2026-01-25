@@ -426,7 +426,7 @@ async function openChipEquipView() {
 
   content.querySelectorAll('[data-action="equip"]').forEach(el => {
     el.addEventListener('click', async () => {
-      await apiEquipChip(el.dataset.chipId, 'weapon');
+      await apiEquipChip('weapon', el.dataset.chipId);
       await openChipEquipView();
     });
   });
