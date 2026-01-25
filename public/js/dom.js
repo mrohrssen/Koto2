@@ -67,6 +67,7 @@ export const dom = {
   get chipPopupDesc() { return el('chip-popup-desc'); },
   get chipPopupCharge() { return el('chip-popup-charge'); },
   get chipPopupUse() { return el('chip-popup-use'); },
+  get chipPopupSwap() { return el('chip-popup-swap'); },
 };
 
 /** Clear cache (for testing or hot reload) */
