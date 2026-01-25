@@ -52,6 +52,7 @@ let setChipLoadoutCache = null;
 let getEnemyDialogueActive = null;
 let getDialogueDismissPromise = null;
 let showFlashCard = null;
+let setCombatAnimationActive = null;
 
 // Utility
 let delay = null;
@@ -90,6 +91,7 @@ export function init(callbacks) {
 
   // Utility
   delay = callbacks.delay;
+  setCombatAnimationActive = callbacks.setCombatAnimationActive;
 }
 
 // ============ STATE GETTERS/SETTERS ============
@@ -351,6 +353,7 @@ export async function executePlayerAttack() {
   if (!combatActive || playerAttackPending || combatPausedForVocab || getEnemyDialogueActive()) return;
 
   playerAttackPending = true;
+  if (setCombatAnimationActive) setCombatAnimationActive(true);
 
   try {
     const apiKeys = settings.getApiKeys();
@@ -367,6 +370,7 @@ export async function executePlayerAttack() {
       if (result.error === 'No active combat') {
         console.warn('[Combat] Stale player attack ignored (combat ended on server)');
         combatActive = false; // Sync client state
+        if (setCombatAnimationActive) setCombatAnimationActive(false);
         return;
       }
       console.error('Player attack error:', result.error);
@@ -380,6 +384,7 @@ export async function executePlayerAttack() {
     // If dialogue appeared during fetch, don't process results
     if (getEnemyDialogueActive()) {
       playerAttackPending = false;
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
       return;
     }
 
@@ -411,6 +416,7 @@ export async function executePlayerAttack() {
     // Combat pauses until dialogue dismisses, then enemy attacks
     if (result.enemyGlitching && result.glitchingDialogue) {
       playerAttackPending = false;
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
       showEnemyDialogue(result.glitchingDialogue, 'glitching');
       return;
     }
@@ -421,11 +427,13 @@ export async function executePlayerAttack() {
       if (result.victory && result.liberatedDialogue) {
         showEnemyDialogue(result.liberatedDialogue, 'liberated');
       }
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
       stopCombatLoop(result);
       return;
     }
 
     playerAttackPending = false;
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
 
     // Combat pause mode: trigger enemy attack after player, then pause for vocab review
     if (combatActive && !getEnemyDialogueActive()) {
@@ -437,6 +445,7 @@ export async function executePlayerAttack() {
 
   } catch (error) {
     console.error('Player attack error:', error);
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
     // Only trigger defeat if combat hasn't already ended (prevents race condition with victory)
     if (combatActive) {
       stopCombatLoop({ combatEnded: true, victory: false, error: true });
@@ -451,6 +460,7 @@ export async function executeEnemyAttack() {
   if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
 
   enemyAttackPending = true;
+  if (setCombatAnimationActive) setCombatAnimationActive(true);
 
   try {
     const apiKeys = settings.getApiKeys();
@@ -467,6 +477,7 @@ export async function executeEnemyAttack() {
       if (result.error === 'No active combat') {
         console.warn('[Combat] Stale enemy attack ignored (combat ended on server)');
         combatActive = false; // Sync client state
+        if (setCombatAnimationActive) setCombatAnimationActive(false);
         return;
       }
       console.error('Enemy attack error:', result.error);
@@ -474,12 +485,14 @@ export async function executeEnemyAttack() {
       if (combatActive) {
         stopCombatLoop({ combatEnded: true, victory: false, error: true });
       }
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
       return;
     }
 
     // If dialogue appeared during fetch, don't process results
     if (getEnemyDialogueActive()) {
       enemyAttackPending = false;
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
       return;
     }
 
@@ -516,15 +529,18 @@ export async function executeEnemyAttack() {
 
     // Check if combat ended
     if (result.combatEnded) {
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
       stopCombatLoop(result);
       return;
     }
 
     // Don't reschedule - the vocab pause flow handles attack cycling
     enemyAttackPending = false;
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
 
   } catch (error) {
     console.error('Enemy attack error:', error);
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
     // Only trigger defeat if combat hasn't already ended (prevents race condition with victory)
     if (combatActive) {
       stopCombatLoop({ combatEnded: true, victory: false, error: true });
@@ -539,6 +555,7 @@ export async function executeEnemyAttackThenPause() {
   if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
 
   enemyAttackPending = true;
+  if (setCombatAnimationActive) setCombatAnimationActive(true);
 
   try {
     const apiKeys = settings.getApiKeys();
@@ -554,17 +571,20 @@ export async function executeEnemyAttackThenPause() {
       if (result.error === 'No active combat') {
         console.warn('[Combat] Stale enemy attack ignored (combat ended on server)');
         combatActive = false;
+        if (setCombatAnimationActive) setCombatAnimationActive(false);
         return;
       }
       console.error('Enemy attack error:', result.error);
       if (combatActive) {
         stopCombatLoop({ combatEnded: true, victory: false, error: true });
       }
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
       return;
     }
 
     if (getEnemyDialogueActive()) {
       enemyAttackPending = false;
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
       return;
     }
 
@@ -603,12 +623,14 @@ export async function executeEnemyAttackThenPause() {
 
     // Check if combat ended
     if (result.combatEnded) {
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
       stopCombatLoop(result);
       return;
     }
 
     // Pause combat - wait for vocab review before next cycle
     enemyAttackPending = false;
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
     combatPausedForVocab = true;
     // Delay before showing flash card so player can see the damage
     await delay(1440);
@@ -618,6 +640,7 @@ export async function executeEnemyAttackThenPause() {
 
   } catch (error) {
     console.error('Enemy attack error:', error);
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
     if (combatActive) {
       stopCombatLoop({ combatEnded: true, victory: false, error: true });
     }

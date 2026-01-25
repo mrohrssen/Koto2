@@ -648,6 +648,7 @@ async function initGame() {
       currentFlashCardWord = word;
       actions.showFlashCard(word);
     },
+    setCombatAnimationActive: (active) => { combatAnimationActive = active; },
   });
 
   setupEventListeners();
