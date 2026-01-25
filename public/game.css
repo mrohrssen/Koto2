@@ -542,7 +542,7 @@ html, body {
 }
 
 .lookup-word {
-  border-bottom: 1px dotted var(--text-secondary);
+  border-bottom: 1px solid var(--text-secondary);
   cursor: pointer;
   transition: border-color var(--transition-fast);
 }

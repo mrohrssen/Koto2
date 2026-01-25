@@ -1,45 +1,56 @@
 # Lookup Mode - Bug Report & Implementation Status
 
-## Critical Unresolved Bug
+## Bugs Fixed (2026-01-25)
 
-### Issue: Clicks still dismiss narration when lookup mode is active
+### Bug #1: Clicks dismissed narration when lookup mode was active
 
-**Expected behavior:** When lookup mode is active, clicking anywhere should NOT dismiss narration or trigger game actions. User should only be able to:
-- Click lookup words to see definitions
-- Click the lookup button to deactivate
-- Click popup close button
+**Problem:** When lookup mode was active, clicking anywhere dismissed narration and progressed the game.
 
-**Actual behavior:** Clicking dismisses narration and progresses the game even when lookup mode is active.
+**Root cause:** Event capture phase order. The document-level click handler for blocking game clicks ran before the lookup button click handler, so `isActive` was still `false` when the user clicked to activate lookup mode. The narration dismiss handler fired before lookup mode became active.
 
-### Root Cause (Unresolved)
+**Solution:** Handle lookup button activation directly in the document-level `blockGameClicks` capture handler. This ensures we:
+1. Intercept the click before narration dismiss fires
+2. Call `stopImmediatePropagation()` to block all other handlers
+3. Then trigger `toggle()` to activate lookup mode
 
-The narration-box.js click handler runs before the lookup mode can block it. Multiple attempted fixes have failed:
+Key code in `lookup.js`:
+```javascript
+function blockGameClicks(e) {
+  // Handle activation in document capture phase
+  if (!isActive && !isLoading && dom.lookupBtn?.contains(e.target)) {
+    e.stopImmediatePropagation();
+    e.preventDefault();
+    toggle();
+    return;
+  }
+  // ... rest of blocking logic
+}
+```
 
-1. **Attempted:** Add capture-phase click blocker with `stopPropagation()` - Failed
-2. **Attempted:** Use `stopImmediatePropagation()` - Failed
-3. **Attempted:** Import lookup.js in narration-box.js and check `lookup.getActive()` - Failed
+### Bug #2: Text not fully parsing (only first few words got underlines)
 
-The fundamental issue appears to be that the narration click handler is registered and executes before any lookup blocking code can intercept it. The exact reason why the `lookup.getActive()` check in narration-box.js doesn't work has not been determined.
+**Problem:** Japanese text was only partially parsed - only the first few characters would get underlines.
 
-### Files Involved
+**Root cause:** JPDB returns token positions in **bytes**, not characters. Japanese characters are 3 bytes each in UTF-8. JavaScript's `String.slice()` uses character positions, causing complete misalignment:
+- Position 0, length 6 → JPDB means bytes 0-6 (2 Japanese chars)
+- JavaScript's `slice(0, 6)` gives characters 0-6 (6 Japanese chars)
 
-- `public/js/ui/lookup.js` - Lookup mode state management
-- `public/js/ui/narration-box.js` - Narration dismiss handler
-- `public/game.js` - Module initialization order
+**Solution:** Build a byte-to-character index map in `parseText()` (server-side `src/jpdb.js`):
+```javascript
+const textBytes = Buffer.from(text, 'utf-8');
+const byteToChar = [];
+let charIndex = 0;
+for (let byteIndex = 0; byteIndex < textBytes.length; charIndex++) {
+  const char = text[charIndex];
+  const charBytes = Buffer.byteLength(char, 'utf-8');
+  for (let i = 0; i < charBytes; i++) {
+    byteToChar[byteIndex + i] = charIndex;
+  }
+  byteIndex += charBytes;
+}
+```
 
-### Suggested Investigation
-
-1. Add console.log debugging to verify:
-   - Is `lookup.getActive()` returning true when expected?
-   - Is the import of lookup.js in narration-box.js working correctly?
-   - What is the actual execution order of click handlers?
-
-2. Check for circular import issues between modules
-
-3. Consider alternative approaches:
-   - Global event blocking at a higher level
-   - Disable narration click handler entirely when lookup mode activates
-   - Use a shared state module that both can import without circular deps
+This fix also ensures conjugated forms (e.g., "答えれば") appear correctly instead of dictionary forms ("答える").
 
 ---
 
@@ -63,7 +74,7 @@ The fundamental issue appears to be that the narration click handler is register
 2. **`public/game.css`**
    - Added `.util-btn.lookup-active` - Green active state
    - Added `.util-btn.lookup-loading` - Pulse animation
-   - Added `.lookup-word` - Dotted underline for clickable words
+   - Added `.lookup-word` - Solid underline for clickable words
    - Added `.lookup-popup` and children - Popup styling
    - Added `.lookup-state-dot` variants - Card state colors
    - Made `.utility-row` position fixed with z-index 150 (above takeovers)
@@ -82,12 +93,16 @@ The fundamental issue appears to be that the narration click handler is register
 
 6. **`public/js/ui/narration-box.js`**
    - Added import of lookup.js
-   - Added check for `lookup.getActive()` in handleClick (NOT WORKING)
+   - Added check for `lookup.getActive()` in handleClick
 
 7. **`public/game.js`**
    - Added import of lookup module
    - Added import of parseJpdbText, lookupJpdbWord from api.js
    - Added lookup.init() call in initGame()
+
+8. **`src/jpdb.js`**
+   - Fixed `parseText()` to convert JPDB byte positions to character positions
+   - Now returns actual conjugated forms from text instead of dictionary spellings
 
 ### Test Files Created
 
@@ -105,7 +120,7 @@ The fundamental issue appears to be that the narration click handler is register
 2. Button shows loading state while parsing
 3. Button turns green when active
 4. Text gets parsed via JPDB API
-5. Words get dotted underlines
+5. Words get solid underlines
 6. Clicking words shows popup with definition
 7. Popup displays: word, reading, part of speech, meanings, card state
 8. Popup positioning (above/below word, viewport-aware)
@@ -115,18 +130,19 @@ The fundamental issue appears to be that the narration click handler is register
 12. Quiz answers excluded from parsing (anti-cheat)
 13. Flashcards excluded from parsing (anti-cheat)
 14. Toolbar visible above takeover modals
+15. **Click blocking works** - Game doesn't progress when lookup mode is active
+16. **Full text parsing** - All Japanese text gets parsed correctly
 
-## Features NOT Working
+## Future Enhancements
 
-1. **Click blocking** - Clicks still progress game when lookup mode is active
-2. **Limited text parsing** - Only parses `#narration-text` and `#enemy-name`. Does NOT parse:
+1. **Expand TEXT_SELECTORS** - Currently only parses `#narration-text` and `#enemy-name`. Could add:
    - Chip modal options
    - Chip skill descriptions
    - Ward descriptions
    - Shop item descriptions
-   - Any other UI text outside the hardcoded selectors
+   - Any other UI text with Japanese
 
-   See `TEXT_SELECTORS` in `lookup.js` line 22-27 - needs expansion to cover more UI elements.
+   See `TEXT_SELECTORS` in `lookup.js` line 22-27.
 
 ---
 

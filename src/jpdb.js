@@ -427,16 +427,38 @@ export async function parseText(apiKey, text) {
       sid: v[3]
     }));
 
+    // JPDB returns positions in BYTES, not characters.
+    // We need to convert byte positions to character positions.
+    const textBytes = Buffer.from(text, 'utf-8');
+
+    // Build a byte-to-char index map
+    const byteToChar = [];
+    let charIndex = 0;
+    for (let byteIndex = 0; byteIndex < textBytes.length; charIndex++) {
+      const char = text[charIndex];
+      const charBytes = Buffer.byteLength(char, 'utf-8');
+      for (let i = 0; i < charBytes; i++) {
+        byteToChar[byteIndex + i] = charIndex;
+      }
+      byteIndex += charBytes;
+    }
+    // Add end position
+    byteToChar[textBytes.length] = text.length;
+
     // Build result array preserving text order using tokens
     const result = [];
-    let lastEnd = 0;
+    let lastCharEnd = 0;
 
     for (const token of tokens) {
-      const [vocabIndex, position, length] = token;
+      const [vocabIndex, bytePos, byteLen] = token;
+
+      // Convert byte positions to character positions
+      const charPos = byteToChar[bytePos] ?? 0;
+      const charEnd = byteToChar[bytePos + byteLen] ?? text.length;
 
       // Add any text between tokens (punctuation, spaces, etc.)
-      if (position > lastEnd) {
-        const betweenText = text.slice(lastEnd, position);
+      if (charPos > lastCharEnd) {
+        const betweenText = text.slice(lastCharEnd, charPos);
         result.push({
           spelling: betweenText,
           reading: null,
@@ -446,16 +468,19 @@ export async function parseText(apiKey, text) {
         });
       }
 
-      // Add the token
+      // Add the token - use actual text from source, but vid/sid from vocabulary
+      const actualSpelling = text.slice(charPos, charEnd);
       if (vocabIndex !== null && vocabLookup[vocabIndex]) {
         result.push({
-          ...vocabLookup[vocabIndex],
+          spelling: actualSpelling,  // Use actual conjugated form from text
+          reading: vocabLookup[vocabIndex].reading,
+          vid: vocabLookup[vocabIndex].vid,
+          sid: vocabLookup[vocabIndex].sid,
           isWord: true
         });
       } else {
-        // Token without vocabulary entry
         result.push({
-          spelling: text.slice(position, position + length),
+          spelling: actualSpelling,
           reading: null,
           vid: null,
           sid: null,
@@ -463,13 +488,13 @@ export async function parseText(apiKey, text) {
         });
       }
 
-      lastEnd = position + length;
+      lastCharEnd = charEnd;
     }
 
     // Add any remaining text after the last token
-    if (lastEnd < text.length) {
+    if (lastCharEnd < text.length) {
       result.push({
-        spelling: text.slice(lastEnd),
+        spelling: text.slice(lastCharEnd),
         reading: null,
         vid: null,
         sid: null,

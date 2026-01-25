@@ -26,11 +26,27 @@ const TEXT_SELECTORS = [
   // because looking up words during vocabulary practice is cheating!
 ];
 
+/** Check if text contains Japanese characters */
+function hasJapanese(text) {
+  // Match hiragana, katakana, or kanji
+  return /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(text);
+}
+
 /** Block game clicks when lookup mode is active */
 function blockGameClicks(e) {
+  // Special case: clicking lookup button to ACTIVATE
+  // We must handle this here (document capture) to block narration dismiss
+  // before it fires, then trigger activation ourselves
+  if (!isActive && !isLoading && dom.lookupBtn?.contains(e.target)) {
+    e.stopImmediatePropagation(); // Block narration dismiss handler
+    e.preventDefault();
+    toggle(); // Activate lookup mode
+    return;
+  }
+
   if (!isActive) return;
 
-  // Allow clicks on: lookup button, popup, popup close
+  // Allow clicks on: lookup button (to deactivate), popup, popup close
   if (dom.lookupBtn?.contains(e.target)) return;
   if (dom.lookupPopup?.contains(e.target)) return;
 
@@ -50,12 +66,15 @@ export function init(callbacks) {
   api.hasJpdbKey = callbacks.hasJpdbKey;
 
   // Block game clicks when lookup mode is active (capture phase runs first)
+  // Also handles activation clicks on the lookup button (see blockGameClicks)
   document.addEventListener('click', blockGameClicks, true);
 
-  // Button click toggles mode (stopPropagation prevents dismissing narration)
+  // Button click to DEACTIVATE (activation is handled in blockGameClicks)
   dom.lookupBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
-    toggle();
+    if (isActive) {
+      toggle(); // Deactivate
+    }
   });
 
   // Popup close button
@@ -98,41 +117,40 @@ async function activate() {
   dom.lookupBtn?.classList.add('lookup-loading');
 
   try {
-    // Gather all text to parse
+    // Gather all text elements to parse
     const elements = getTextElements();
-    const textToElements = new Map();
+    const elementsToProcess = [];
 
     for (const el of elements) {
       const text = el.textContent?.trim();
-      if (text && text.length > 0) {
-        if (!textToElements.has(text)) {
-          textToElements.set(text, []);
-        }
-        textToElements.get(text).push(el);
+      if (text && text.length > 0 && hasJapanese(text)) {
         originalTextMap.set(el, el.innerHTML);
+        elementsToProcess.push({ el, text });
       }
     }
 
-    // Parse all unique texts
-    const allText = Array.from(textToElements.keys()).join('\n');
-    if (!allText) {
-      api.showToast?.('No text to parse');
+    if (elementsToProcess.length === 0) {
+      api.showToast?.('No Japanese text to parse');
       isLoading = false;
       dom.lookupBtn?.classList.remove('lookup-loading');
       return;
     }
 
-    const result = await api.parseText(allText);
+    // Parse each text element SEPARATELY to avoid JPDB confusion with mixed languages
+    for (const { el, text } of elementsToProcess) {
+      const result = await api.parseText(text);
 
-    if (result.error) {
-      api.showToast?.('Couldn\'t parse text. Try again.');
-      isLoading = false;
-      dom.lookupBtn?.classList.remove('lookup-loading');
-      return;
+      if (result.error || !result.tokens) {
+        continue; // Skip this element but continue with others
+      }
+
+      // Apply tokens to this element
+      const html = buildHtmlFromTokens(result.tokens, text);
+      el.innerHTML = html;
+      el.querySelectorAll('.lookup-word').forEach(span => {
+        span.addEventListener('click', handleWordClick);
+      });
     }
-
-    // Apply parsed tokens to elements
-    applyTokensToElements(result.tokens, textToElements);
 
     isActive = true;
     dom.lookupBtn?.classList.remove('lookup-loading');
@@ -194,6 +212,31 @@ function applyTokensToElements(tokens, textToElements) {
   }
 }
 
+/** Try to find token in text, handling punctuation variations */
+function findTokenInText(spelling, text, startIndex) {
+  // Try exact match first
+  let idx = text.indexOf(spelling, startIndex);
+  if (idx !== -1) return { idx, length: spelling.length };
+
+  // Try with punctuation variations
+  const variations = [
+    [/\.\.\./g, '…'],  // three dots → ellipsis
+    [/…/g, '...'],     // ellipsis → three dots
+    [/　/g, ' '],      // full-width space → space
+    [/ /g, '　'],      // space → full-width space
+  ];
+
+  for (const [pattern, replacement] of variations) {
+    const altSpelling = spelling.replace(pattern, replacement);
+    if (altSpelling !== spelling) {
+      idx = text.indexOf(altSpelling, startIndex);
+      if (idx !== -1) return { idx, length: altSpelling.length };
+    }
+  }
+
+  return null;
+}
+
 /** Build HTML string from tokens matching a specific text */
 function buildHtmlFromTokens(tokens, targetText) {
   let html = '';
@@ -202,25 +245,30 @@ function buildHtmlFromTokens(tokens, targetText) {
   for (const token of tokens) {
     const spelling = token.spelling || token.text || '';
 
-    // Skip if this token isn't part of our target text
-    const idx = targetText.indexOf(spelling, textIndex);
-    if (idx === -1) continue;
+    // Find token in text (with fallback for punctuation variations)
+    const match = findTokenInText(spelling, targetText, textIndex);
+    if (!match) continue;
+
+    const { idx, length } = match;
 
     // Add any skipped characters as plain text
     if (idx > textIndex) {
       html += escapeHtml(targetText.substring(textIndex, idx));
     }
 
+    // Get the actual text from the original (preserves original punctuation)
+    const originalSpelling = targetText.substring(idx, idx + length);
+
     // Add the token
     if (token.vid && token.sid !== undefined) {
       // Lookupable word
-      html += `<span class="lookup-word" data-vid="${token.vid}" data-sid="${token.sid}">${escapeHtml(spelling)}</span>`;
+      html += `<span class="lookup-word" data-vid="${token.vid}" data-sid="${token.sid}">${escapeHtml(originalSpelling)}</span>`;
     } else {
       // Not lookupable (punctuation, particles without vid)
-      html += escapeHtml(spelling);
+      html += escapeHtml(originalSpelling);
     }
 
-    textIndex = idx + spelling.length;
+    textIndex = idx + length;
   }
 
   // Add any remaining text
