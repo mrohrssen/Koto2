@@ -55,7 +55,7 @@ html, body {
   position: relative;
   /* iOS safe areas for notch and home indicator */
   padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: calc(68px + env(safe-area-inset-bottom)); /* Space for fixed utility row */
 }
 
 /* ===== STATUS BAR ===== */
@@ -497,10 +497,15 @@ html, body {
 
 /* ===== UTILITY ROW ===== */
 .utility-row {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   justify-content: space-between;
   padding: 8px 24px 12px;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.95);
+  z-index: 150; /* Above takeovers (100) so lookup button is always accessible */
 }
 
 .util-btn {
@@ -645,6 +650,7 @@ html, body {
   transition: transform var(--transition-med);
   overflow-y: auto;
   padding: 20px;
+  padding-bottom: 88px; /* Space for fixed utility row */
 }
 
 .takeover.active {
