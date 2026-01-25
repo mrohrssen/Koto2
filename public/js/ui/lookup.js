@@ -152,7 +152,11 @@ function getTextElements() {
   for (const selector of TEXT_SELECTORS) {
     elements.push(...document.querySelectorAll(selector));
   }
-  return elements;
+  // Filter out elements inside quiz answers or flashcards (looking those up is cheating!)
+  return elements.filter(el =>
+    !el.closest('.quiz-answer-option') &&
+    !el.closest('.flash-card')
+  );
 }
 
 /** Apply parsed tokens to text elements */
