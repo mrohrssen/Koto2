@@ -50,7 +50,8 @@ import {
   shrineUpgrade as apiShrineUpgrade,
   quizReward as apiQuizReward,
   getQuizQuestion as apiGetQuizQuestion,
-  submitQuizAnswer as apiSubmitQuizAnswer
+  submitQuizAnswer as apiSubmitQuizAnswer,
+  reorderChips
 } from './js/api.js';
 
 const API_BASE = '';
@@ -75,6 +76,9 @@ function updateGameState(newState) {
 let enemyDialogueActive = false;
 let dialogueDismissResolve = null;
 let dialogueDismissPromise = null;
+
+// Combat animation state (blocks chip dragging during attacks)
+let combatAnimationActive = false;
 
 // Flash card state
 let currentFlashCardWord = null;
@@ -468,6 +472,41 @@ async function handleUseChipSkill(chipIndex) {
   }
 }
 
+// ============ CHIP DRAG HELPERS ============
+function isChipDragBlocked() {
+  return enemyDialogueActive || combatAnimationActive;
+}
+
+function getChipIds() {
+  const chips = chipLoadoutCache?.equipment?.weapon?.equippedChips || [];
+  return chips.map(c => c?.id || null);
+}
+
+async function handleChipReorder(newChipIds) {
+  // Optimistic update
+  const oldChips = chipLoadoutCache?.equipment?.weapon?.equippedChips || [];
+  const reorderedChips = newChipIds.map(id => {
+    if (id === null) return null;
+    return oldChips.find(c => c?.id === id) || null;
+  });
+
+  if (chipLoadoutCache?.equipment?.weapon) {
+    chipLoadoutCache.equipment.weapon.equippedChips = reorderedChips;
+  }
+  updateChipRow();
+
+  // Persist to backend
+  const result = await reorderChips(newChipIds);
+  if (result.error) {
+    // Revert on error
+    console.error('Chip reorder failed:', result.error);
+    if (chipLoadoutCache?.equipment?.weapon) {
+      chipLoadoutCache.equipment.weapon.equippedChips = oldChips;
+    }
+    updateChipRow();
+  }
+}
+
 // ============ EVENT LISTENERS ============
 function setupEventListeners() {
   dom.settingsBtn.addEventListener('click', () => modalsUI.openSettings());
@@ -508,6 +547,9 @@ async function initGame() {
 
   chipRow.init({
     useSkillCallback: handleUseChipSkill,
+    onReorder: handleChipReorder,
+    isBlocked: isChipDragBlocked,
+    getChipIds: getChipIds
   });
 
   wordPractice.init({
