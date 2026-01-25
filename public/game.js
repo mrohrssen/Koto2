@@ -547,6 +547,9 @@ async function initGame() {
 
   chipRow.init({
     useSkillCallback: handleUseChipSkill,
+    onReorder: handleChipReorder,
+    isBlocked: isChipActionBlocked,
+    getChipIds: getChipIds
   });
 
   wordPractice.init({

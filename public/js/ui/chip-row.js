@@ -10,15 +10,22 @@ import { playSFX } from '../audio.js';
 
 let onUseSkill = null; // Callback: (chipIndex) => void
 let currentPopupIndex = -1;
+let swapModeSourceIndex = -1;
+let swapBlockCheckInterval = null;
+let onReorder = null;
+let isBlocked = null;
 
-/** Initialize chip row with skill callback */
-export function init({ useSkillCallback }) {
+/** Initialize chip row with skill callback and swap support */
+export function init({ useSkillCallback, onReorder: reorderCallback, isBlocked: blockedCallback, getChipIds }) {
   onUseSkill = useSkillCallback;
+  onReorder = reorderCallback;
+  isBlocked = blockedCallback;
 
-  // Dismiss popup on outside tap
+  // Dismiss popup and cancel swap on outside tap
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.chip-slot') && !e.target.closest('.chip-popup')) {
       hidePopup();
+      exitSwapMode();
     }
   });
 }
@@ -41,6 +48,9 @@ export function render(chips, { charges = [], levels = [], maxCharges = 5, inCom
     const slot = document.createElement('div');
     slot.className = 'chip-slot';
     slot.dataset.index = i;
+    if (chip) {
+      slot.dataset.chipId = chip.id;
+    }
 
     // Chip icon
     const icon = document.createElement('div');
@@ -73,11 +83,33 @@ export function render(chips, { charges = [], levels = [], maxCharges = 5, inCom
       slot.appendChild(bar);
     }
 
-    // Tap handler (always available when chip equipped)
+    // Tap handler
     if (chip) {
       slot.addEventListener('click', (e) => {
         e.stopPropagation();
+
+        // If in swap mode, handle swap logic
+        if (swapModeSourceIndex !== -1) {
+          if (i === swapModeSourceIndex) {
+            // Clicking source chip cancels swap
+            exitSwapMode();
+          } else {
+            // Clicking another chip completes swap
+            completeSwap(i);
+          }
+          return;
+        }
+
+        // Normal click - show popup
         showPopup(i, { ...chip, _level: level }, charge, maxCharges, inCombat);
+      });
+    } else {
+      // Empty slot - if in swap mode, clicking cancels
+      slot.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (swapModeSourceIndex !== -1) {
+          exitSwapMode();
+        }
       });
     }
 
@@ -118,6 +150,14 @@ function showPopup(index, chip, charge, maxCharges, inCombat = false) {
     dom.chipPopupUse.style.display = 'none';
   }
 
+  // Swap button - always visible when chip exists
+  dom.chipPopupSwap.style.display = '';
+  dom.chipPopupSwap.disabled = isBlocked && isBlocked();
+  dom.chipPopupSwap.onclick = () => {
+    hidePopup();
+    enterSwapMode(index);
+  };
+
   // Position popup centered above the chip slot, clamped to viewport
   const slot = dom.chipRow.children[index];
   if (slot) {
@@ -137,6 +177,76 @@ function showPopup(index, chip, charge, maxCharges, inCombat = false) {
 function hidePopup() {
   dom.chipPopup.classList.remove('visible');
   currentPopupIndex = -1;
+}
+
+/** Enter swap mode for the given chip index */
+function enterSwapMode(sourceIndex) {
+  swapModeSourceIndex = sourceIndex;
+
+  // Add glow to all other chip slots
+  const slots = dom.chipRow.querySelectorAll('.chip-slot');
+  slots.forEach((slot, i) => {
+    if (i !== sourceIndex && !slot.querySelector('.chip-icon.empty')) {
+      slot.classList.add('swap-target');
+    }
+  });
+
+  // Check for blocking during swap mode
+  swapBlockCheckInterval = setInterval(() => {
+    if (isBlocked && isBlocked()) {
+      exitSwapMode();
+    }
+  }, 100);
+}
+
+/** Exit swap mode without making changes */
+function exitSwapMode() {
+  if (swapModeSourceIndex === -1) return;
+
+  swapModeSourceIndex = -1;
+
+  if (swapBlockCheckInterval) {
+    clearInterval(swapBlockCheckInterval);
+    swapBlockCheckInterval = null;
+  }
+
+  // Remove glow from all slots
+  const slots = dom.chipRow.querySelectorAll('.chip-slot');
+  slots.forEach(slot => slot.classList.remove('swap-target'));
+}
+
+/** Complete swap between source and target */
+function completeSwap(targetIndex) {
+  if (swapModeSourceIndex === -1 || swapModeSourceIndex === targetIndex) {
+    exitSwapMode();
+    return;
+  }
+
+  const sourceIndex = swapModeSourceIndex;
+  exitSwapMode();
+
+  // Get current chip IDs and swap them
+  const slots = dom.chipRow.querySelectorAll('.chip-slot');
+  const chipIds = Array.from(slots).map(slot => {
+    const icon = slot.querySelector('.chip-icon:not(.empty)');
+    return icon ? slot.dataset.chipId : null;
+  });
+
+  // Swap the two positions
+  const temp = chipIds[sourceIndex];
+  chipIds[sourceIndex] = chipIds[targetIndex];
+  chipIds[targetIndex] = temp;
+
+  playSFX('chip-lift');
+
+  if (onReorder) {
+    onReorder(chipIds);
+  }
+}
+
+/** Check if currently in swap mode */
+export function isInSwapMode() {
+  return swapModeSourceIndex !== -1;
 }
 
 /** Get color for chip based on rarity */
