@@ -26,12 +26,31 @@ const TEXT_SELECTORS = [
   // because looking up words during vocabulary practice is cheating!
 ];
 
+/** Block game clicks when lookup mode is active */
+function blockGameClicks(e) {
+  if (!isActive) return;
+
+  // Allow clicks on: lookup button, popup, popup close
+  if (dom.lookupBtn?.contains(e.target)) return;
+  if (dom.lookupPopup?.contains(e.target)) return;
+
+  // Allow clicks on lookup words (they have their own handler)
+  if (e.target.classList.contains('lookup-word')) return;
+
+  // Block everything else from reaching game handlers
+  e.stopPropagation();
+  e.preventDefault();
+}
+
 /** Initialize lookup module with callbacks */
 export function init(callbacks) {
   api.parseText = callbacks.parseText;
   api.lookupWord = callbacks.lookupWord;
   api.showToast = callbacks.showToast;
   api.hasJpdbKey = callbacks.hasJpdbKey;
+
+  // Block game clicks when lookup mode is active (capture phase runs first)
+  document.addEventListener('click', blockGameClicks, true);
 
   // Button click toggles mode (stopPropagation prevents dismissing narration)
   dom.lookupBtn?.addEventListener('click', (e) => {
