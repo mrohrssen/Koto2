@@ -47,6 +47,7 @@ export const dom = {
   // Utility
   get settingsBtn() { return el('settings-btn'); },
   get resetRunBtn() { return el('reset-run-btn'); },
+  get lookupBtn() { return el('lookup-btn'); },
 
   // Takeover views
   get chipEquipView() { return el('chip-equip-view'); },
