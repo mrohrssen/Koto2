@@ -370,6 +370,23 @@ async function unequipChip(chipId, equipmentSlot) {
   }
 }
 
+/** Reorder equipped chips
+ * @param {Array<string|null>} chipIds - New order of chip IDs (5 elements)
+ */
+async function reorderChips(chipIds) {
+  try {
+    const response = await fetch('/api/game/reorder-chips', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ chipIds })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to reorder chips:', error);
+    return { error: 'Network error' };
+  }
+}
+
 /** Advance to the next floor */
 async function nextFloor() {
   return apiCall('/next-floor', 'POST');
@@ -509,6 +526,7 @@ export {
   postCombatShopRefresh,
   equipChip,
   unequipChip,
+  reorderChips,
   nextFloor,
   getChipLoadout,
   // Vocab/JPDB endpoints
