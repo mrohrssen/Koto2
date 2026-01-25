@@ -19,11 +19,15 @@ let api = {
   hasJpdbKey: null
 };
 
-const TEXT_SELECTORS = [
-  '#narration-text',
-  '#enemy-name'
-  // NOTE: Explicitly NOT including flashcards (.flash-card-front, .flash-card-word)
-  // because looking up words during vocabulary practice is cheating!
+// Selectors to EXCLUDE from parsing (cheating prevention + UI elements)
+const BLOCKED_SELECTORS = [
+  '.quiz-answer-option',  // Quiz answers - no cheating!
+  '.flash-card',          // Flashcards - no cheating!
+  '.utility-row',         // Toolbar buttons
+  '.lookup-popup',        // The lookup popup itself
+  'button',               // All buttons
+  'script',               // Script tags
+  'style',                // Style tags
 ];
 
 /** Check if text contains Japanese characters */
@@ -183,17 +187,49 @@ function deactivate() {
   originalTextMap = new WeakMap();
 }
 
-/** Get all text elements to parse */
+/** Get all elements containing Japanese text to parse */
 function getTextElements() {
-  const elements = [];
-  for (const selector of TEXT_SELECTORS) {
-    elements.push(...document.querySelectorAll(selector));
-  }
-  // Filter out elements inside quiz answers or flashcards (looking those up is cheating!)
-  return elements.filter(el =>
-    !el.closest('.quiz-answer-option') &&
-    !el.closest('.flash-card')
+  const elements = new Set();
+  const gameApp = document.querySelector('.game-app');
+  if (!gameApp) return [];
+
+  // Walk the DOM tree to find text nodes with Japanese
+  const walker = document.createTreeWalker(
+    gameApp,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode: (node) => {
+        const text = node.textContent?.trim();
+        if (!text || !hasJapanese(text)) return NodeFilter.FILTER_REJECT;
+
+        // Skip if inside blocked element
+        for (const selector of BLOCKED_SELECTORS) {
+          if (node.parentElement?.closest(selector)) {
+            return NodeFilter.FILTER_REJECT;
+          }
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    }
   );
+
+  // Collect the immediate parent elements of Japanese text nodes
+  while (walker.nextNode()) {
+    const parent = walker.currentNode.parentElement;
+    if (parent && !elements.has(parent)) {
+      // Only add leaf elements (elements whose only content is this text)
+      // This prevents parsing container divs that would duplicate text
+      const hasOnlyTextContent = Array.from(parent.childNodes).every(
+        child => child.nodeType === Node.TEXT_NODE ||
+                 (child.nodeType === Node.ELEMENT_NODE && child.classList?.contains('lookup-word'))
+      );
+      if (hasOnlyTextContent) {
+        elements.add(parent);
+      }
+    }
+  }
+
+  return Array.from(elements);
 }
 
 /** Apply parsed tokens to text elements */
