@@ -99,7 +99,16 @@ function showSelectedChip(chip) {
 }
 
 function confirmSelection() {
-  // TODO: Implement in Task 4
+  if (!resolveSelection) return;
+
+  const chip = currentChips[selectedIndex];
+  playSFX('chip-equip');
+
+  // Clean up UI
+  cleanup();
+
+  // Resolve the promise with selected chip
+  resolveSelection(chip);
 }
 
 /** Clean up chip select UI */
