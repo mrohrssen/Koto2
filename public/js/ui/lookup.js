@@ -37,8 +37,8 @@ function blockGameClicks(e) {
   // Allow clicks on lookup words (they have their own handler)
   if (e.target.classList.contains('lookup-word')) return;
 
-  // Block everything else from reaching game handlers
-  e.stopPropagation();
+  // Block everything else - stopImmediatePropagation stops other document handlers too
+  e.stopImmediatePropagation();
   e.preventDefault();
 }
 
