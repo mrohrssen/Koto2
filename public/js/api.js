@@ -445,10 +445,11 @@ async function sendJpdbReview(vid, sid, grade) {
  */
 async function parseJpdbText(text) {
   try {
+    const jpdbApiKey = localStorage.getItem('jrpg_jpdbApiKey');
     const response = await fetch('/api/jpdb/parse', {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ text })
+      body: JSON.stringify({ text, jpdbApiKey })
     });
     return await response.json();
   } catch (error) {
@@ -463,10 +464,11 @@ async function parseJpdbText(text) {
  */
 async function lookupJpdbWord(vid, sid) {
   try {
+    const jpdbApiKey = localStorage.getItem('jrpg_jpdbApiKey');
     const response = await fetch('/api/jpdb/lookup', {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ vid, sid })
+      body: JSON.stringify({ vid, sid, jpdbApiKey })
     });
     return await response.json();
   } catch (error) {
