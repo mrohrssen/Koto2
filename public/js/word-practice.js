@@ -164,9 +164,11 @@ export async function fetchReplacementWord(justReviewedVid = null) {
  * Initialize word cards for combat
  */
 export async function initCombatWords() {
-  // Clear stale cache so we fetch fresh words each combat
-  // This prevents reviewed words from reappearing
-  clearWordCache();
+  // Only clear if no prefetched words available
+  // Prefetch already excludes recently reviewed words via server-side logic
+  if (!jpdbWordsCache || jpdbWordsCache.length === 0) {
+    clearWordCache();
+  }
 
   let wordData = await fetchJpdbDueWords();
 
@@ -515,6 +517,23 @@ export function clearWordCache() {
   jpdbWordsFetching = false;
   recentlyReviewedVids = [];
   console.log('[WordPractice] Cache cleared - will fetch fresh words on next combat');
+}
+
+/**
+ * Prefetch words for upcoming combat (fire-and-forget)
+ * Call at run start and after combat ends
+ */
+export function prefetchCombatWords() {
+  // Only prefetch if cache is empty and not already fetching
+  if (jpdbWordsCache && jpdbWordsCache.length > 0) return;
+  if (jpdbWordsFetching) return;
+
+  // Fire-and-forget - don't await
+  fetchJpdbDueWords().then(words => {
+    console.log(`[WordPractice] Prefetched ${words?.length || 0} words`);
+  }).catch(err => {
+    console.warn('[WordPractice] Prefetch failed:', err);
+  });
 }
 
 /**

@@ -715,6 +715,7 @@ export async function stopCombatLoop(result) {
     if (result.victory) {
       playSFX('victory');
       showVictoryModal(result);
+      wordPractice.prefetchCombatWords();
     } else {
       showGameOverModal(result);
     }
@@ -725,6 +726,7 @@ export async function stopCombatLoop(result) {
     if (result.victory) {
       await narration.showNarration('市民解放！');
       showVictoryModal(result);
+      wordPractice.prefetchCombatWords();
     } else {
       await narration.showNarration('敗北...');
       showGameOverModal(result);

@@ -255,6 +255,7 @@ async function startNewRun() {
   if (result?.state) {
     updateGameState(result.state);
     updateUI();
+    wordPractice.prefetchCombatWords();
     audio.playBGM('main');
     if (gameState.run?.startingChipShop?.active) {
       economyUI.renderStartingChipShop(gameState.run.startingChipShop.items);
