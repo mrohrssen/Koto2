@@ -120,7 +120,7 @@ import {
   getGameStatsForPeriod, getGameStatsAvailableDates, resetGameStats
 } from './src/game-stats.js';
 import {
-  initVocabManager, getSuggestionsForNarration, addUsedWords,
+  configureVocabManager, initVocabManager, getSuggestionsForNarration, addUsedWords,
   refreshWordStateCache, getVocabManagerStats, invalidateWordStateCache as invalidateVocabManagerCache
 } from './src/game/vocab-manager.js';
 import {
@@ -151,6 +151,9 @@ configureJpdb({
   vocabSuggestionsFile: VOCAB_SUGGESTIONS_FILE
 });
 initializeJpdb();
+
+// Configure vocab manager with same file path
+configureVocabManager({ cacheFile: VOCAB_SUGGESTIONS_FILE });
 
 const app = express();
 const gameManager = new GameManager();

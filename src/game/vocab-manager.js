@@ -6,15 +6,10 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
 import { lookupWordStates } from '../jpdb.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Cache file path
-const CACHE_FILE = join(__dirname, '..', '..', '.jchat-vocab-suggestions.json');
+// Cache file path - configured via configureVocabManager()
+let cacheFile = null;
 
 // Configuration
 const CONFIG = {
@@ -39,14 +34,29 @@ let state = {
 let refreshPromise = null;
 
 /**
+ * Configure the vocab manager with file path
+ * @param {object} options - Configuration options
+ * @param {string} options.cacheFile - Path to the cache file
+ */
+export function configureVocabManager({ cacheFile: file }) {
+  cacheFile = file;
+}
+
+/**
  * Initialize the vocabulary manager - load cache from file
  */
 export function initVocabManager() {
   if (state.initialized) return;
 
+  if (!cacheFile) {
+    console.warn('Vocab manager not configured - call configureVocabManager first');
+    state.initialized = true;
+    return;
+  }
+
   try {
-    if (existsSync(CACHE_FILE)) {
-      const data = JSON.parse(readFileSync(CACHE_FILE, 'utf-8'));
+    if (existsSync(cacheFile)) {
+      const data = JSON.parse(readFileSync(cacheFile, 'utf-8'));
       state.recentlyUsedWords = data.recentlyUsedWords || [];
       state.wordStateCache = data.wordStateCache || {};
       state.lastRefresh = data.lastRefresh || null;
@@ -63,8 +73,10 @@ export function initVocabManager() {
  * Save cache to file
  */
 function saveCache() {
+  if (!cacheFile) return;
+
   try {
-    writeFileSync(CACHE_FILE, JSON.stringify({
+    writeFileSync(cacheFile, JSON.stringify({
       recentlyUsedWords: state.recentlyUsedWords,
       wordStateCache: state.wordStateCache,
       lastRefresh: state.lastRefresh
