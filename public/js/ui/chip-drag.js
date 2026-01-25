@@ -153,6 +153,13 @@ function startDrag() {
   dragState.isDragging = true;
   dragState.pressTimer = null;
 
+  // Check for blocking during drag
+  dragState.blockCheckInterval = setInterval(() => {
+    if (isBlocked && isBlocked()) {
+      cancelDrag();
+    }
+  }, 100);
+
   playSFX('chip-lift');
 
   const slot = slotEls[dragState.slotIndex];
@@ -314,6 +321,10 @@ function cancelDrag() {
 function cleanup() {
   if (dragState?.draggedEl) {
     dragState.draggedEl.remove();
+  }
+
+  if (dragState?.blockCheckInterval) {
+    clearInterval(dragState.blockCheckInterval);
   }
 
   slotEls.forEach((slot, i) => {
