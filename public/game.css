@@ -521,6 +521,120 @@ html, body {
   background: rgba(0,0,0,0.05);
 }
 
+/* ===== LOOKUP MODE ===== */
+.util-btn.lookup-active {
+  color: var(--accent-green);
+  background: rgba(39, 174, 96, 0.15);
+}
+
+.util-btn.lookup-loading {
+  animation: pulse-glow 1s infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.lookup-word {
+  border-bottom: 1px dotted var(--text-secondary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.lookup-word:hover {
+  border-color: var(--accent-orange);
+}
+
+/* Lookup popup */
+.lookup-popup {
+  position: fixed;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 0;
+  box-shadow: var(--shadow-card);
+  border: 2px solid var(--accent-orange);
+  min-width: 240px;
+  max-width: 280px;
+  z-index: 200;
+  display: none;
+}
+
+.lookup-popup.visible {
+  display: block;
+}
+
+.lookup-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px 12px 8px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.lookup-popup-word {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.lookup-popup-reading {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-left: 8px;
+}
+
+.lookup-popup-close {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  font-size: 20px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  margin-left: 8px;
+}
+
+.lookup-popup-pos {
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: rgba(0,0,0,0.03);
+}
+
+.lookup-popup-meanings {
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.lookup-popup-meanings li {
+  margin-left: 16px;
+  margin-bottom: 4px;
+}
+
+.lookup-popup-state {
+  padding: 8px 12px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+.lookup-state-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.lookup-state-dot.new { background: var(--accent-red); }
+.lookup-state-dot.learning { background: var(--accent-orange); }
+.lookup-state-dot.known { background: var(--accent-green); }
+.lookup-state-dot.never-looked-up { background: var(--text-secondary); }
+
 /* ===== TAKEOVER VIEWS ===== */
 .takeover {
   position: fixed;
