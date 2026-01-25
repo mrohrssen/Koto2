@@ -12,7 +12,7 @@ const SFX_FILES = [
   'attack', 'player-hit', 'enemy-defeat', 'heal',
   'swipe-right', 'swipe-left', 'chip-equip', 'chip-skill',
   'button-tap', 'takeover-open', 'takeover-close',
-  'victory', 'defeat'
+  'victory', 'defeat', 'chip-lift'
 ];
 
 let audioCtx = null;
