@@ -64,12 +64,16 @@ Capture layout issues the moment you see them. Tap a button, add a note, submit.
 │                                │
 │  Name: [bottom-cutoff_______]  │
 │                                │
+│  Tester: [michia____________]  │
+│                                │
 │  Note: [Buttons get cut off    │
 │         when I scroll down___] │
 │                                │
 │  [Cancel]         [Submit 📸]  │
 └────────────────────────────────┘
 ```
+
+The tester name persists in localStorage so you only enter it once.
 
 ### What Gets Captured
 
@@ -81,6 +85,7 @@ Each report saves to `bug-reports/[name]/`:
 ```json
 {
   "name": "bottom-cutoff",
+  "tester": "michia",
   "note": "Buttons get cut off when I scroll down",
   "timestamp": "2026-01-26T14:32:01Z",
   "screen": "combat",
@@ -100,7 +105,29 @@ Each report saves to `bug-reports/[name]/`:
 
 **Submission:** POST to `/api/bug-report` endpoint, which saves files to `bug-reports/` directory.
 
-**UI:** Small 🐛 button in corner (maybe in settings or debug mode). Tapping opens the report modal.
+**UI:** Small 🐛 button always visible in corner. Tapping opens the report modal.
+
+### Railway Deployment Support
+
+Bug reports work on both local dev and production (Railway). Reports accumulate on the server and can be pulled down for review.
+
+**API Endpoints:**
+- `POST /api/bug-report` - Submit a report (screenshot + metadata)
+- `GET /api/bug-reports` - List all reports (for Claude to review)
+- `GET /api/bug-reports/:name` - Get specific report details
+- `GET /api/bug-reports/:name/screenshot` - Get screenshot image
+- `DELETE /api/bug-reports/:name` - Delete a report (manual cleanup)
+
+**Pulling from Railway:**
+```bash
+# List reports on production
+curl https://jrpg-production.up.railway.app/api/bug-reports
+
+# Download a specific screenshot
+curl -o screenshot.png https://jrpg-production.up.railway.app/api/bug-reports/bottom-cutoff/screenshot
+```
+
+Or Claude can fetch directly via the API during review sessions.
 
 ---
 
@@ -137,7 +164,12 @@ Unlike pixel-diff tools, Claude identifies semantic issues:
 - Document the workflow in README or CLAUDE.md
 
 ### Phase 2: Bug Reporter Backend
-- Add `/api/bug-report` endpoint to server.js
+- Add bug report API endpoints to server.js:
+  - `POST /api/bug-report` - Submit report
+  - `GET /api/bug-reports` - List all reports
+  - `GET /api/bug-reports/:name` - Get report metadata
+  - `GET /api/bug-reports/:name/screenshot` - Get screenshot
+  - `DELETE /api/bug-reports/:name` - Delete report
 - Create `bug-reports/` directory structure
 - Handle screenshot upload and metadata storage
 
@@ -153,8 +185,9 @@ Unlike pixel-diff tools, Claude identifies semantic issues:
 
 ---
 
-## Open Questions
+## Design Decisions
 
-1. **Bug button visibility:** Always visible, or hidden behind settings/debug mode?
-2. **Report cleanup:** Auto-delete reports after N days, or manual cleanup?
-3. **Multiple testers:** If friends test, should reports include a tester name field?
+1. **Bug button visibility:** Always visible
+2. **Report cleanup:** Manual (via DELETE endpoint or direct file cleanup)
+3. **Tester identification:** Yes, includes tester name field (persisted in localStorage)
+4. **Production support:** Works on Railway deployment with API endpoints to list/fetch/delete reports
