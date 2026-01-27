@@ -84,8 +84,6 @@ get chipPopupSwap() { return el('chip-popup-swap'); },
   // Bug report
   get bugReportBtn() { return el('bug-report-btn'); },
   get bugReportModal() { return el('bug-report-modal'); },
-  get bugReportName() { return el('bug-report-name'); },
-  get bugReportTester() { return el('bug-report-tester'); },
   get bugReportNote() { return el('bug-report-note'); },
   get bugReportSubmit() { return el('bug-report-submit'); },
   get bugReportCancel() { return el('bug-report-cancel'); },

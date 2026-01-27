@@ -7,11 +7,7 @@
 import { dom } from '../dom.js';
 import { store } from '../store.js';
 
-const TESTER_KEY = 'bugReportTester';
-
 let modal = null;
-let nameInput = null;
-let testerInput = null;
 let noteInput = null;
 let submitBtn = null;
 let cancelBtn = null;
@@ -20,8 +16,6 @@ let reportBtn = null;
 /** Initialize bug report UI */
 export function init() {
   modal = document.getElementById('bug-report-modal');
-  nameInput = document.getElementById('bug-report-name');
-  testerInput = document.getElementById('bug-report-tester');
   noteInput = document.getElementById('bug-report-note');
   submitBtn = document.getElementById('bug-report-submit');
   cancelBtn = document.getElementById('bug-report-cancel');
@@ -30,12 +24,6 @@ export function init() {
   if (!modal || !reportBtn) {
     console.warn('Bug report elements not found');
     return;
-  }
-
-  // Load saved tester name
-  const savedTester = localStorage.getItem(TESTER_KEY);
-  if (savedTester && testerInput) {
-    testerInput.value = savedTester;
   }
 
   // Event listeners
@@ -53,7 +41,7 @@ export function init() {
 function openModal() {
   if (modal) {
     modal.classList.add('active');
-    nameInput?.focus();
+    noteInput?.focus();
   }
 }
 
@@ -61,8 +49,6 @@ function openModal() {
 function closeModal() {
   if (modal) {
     modal.classList.remove('active');
-    // Clear form but keep tester name
-    if (nameInput) nameInput.value = '';
     if (noteInput) noteInput.value = '';
   }
 }
@@ -82,6 +68,25 @@ async function captureScreenshot() {
     backgroundColor: null
   });
   return canvas.toDataURL('image/png');
+}
+
+/** Get current username */
+function getUsername() {
+  // Try to get from game state first
+  const gameState = store.get('gameState') || {};
+  if (gameState.player?.name) return gameState.player.name;
+
+  // Fall back to stored user info
+  const userStr = localStorage.getItem('user');
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      return user.username || 'anonymous';
+    } catch {
+      return 'anonymous';
+    }
+  }
+  return 'anonymous';
 }
 
 /** Gather game context */
@@ -110,19 +115,12 @@ function gatherContext() {
 
 /** Submit the bug report */
 async function submitReport() {
-  const name = nameInput?.value.trim();
-  const tester = testerInput?.value.trim();
-  const note = noteInput?.value.trim();
+  const note = noteInput?.value.trim() || '';
+  const tester = getUsername();
 
-  if (!name) {
-    nameInput?.focus();
-    return;
-  }
-
-  // Save tester name for next time
-  if (tester) {
-    localStorage.setItem(TESTER_KEY, tester);
-  }
+  // Generate timestamp-based name
+  const now = new Date();
+  const name = `report-${now.toISOString().slice(0, 19).replace(/[T:]/g, '-')}`;
 
   // Disable button during submission
   if (submitBtn) {
