@@ -110,7 +110,12 @@
       <div class="bug-report-content">
         <h3 class="bug-report-title">Report Issue</h3>
         <label class="bug-report-label">
-          What's wrong?
+          Screenshot
+          <input type="file" id="bug-report-file" accept="image/*" class="bug-report-file">
+        </label>
+        <img id="bug-report-preview" class="bug-report-preview" style="display: none;" alt="Preview">
+        <label class="bug-report-label">
+          Notes (optional)
           <textarea id="bug-report-note" class="bug-report-input bug-report-textarea"
             placeholder="Describe the issue..." maxlength="500"></textarea>
         </label>
@@ -197,9 +202,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Bug Reporter Screenshot Library -->
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
   <script type="module" src="game.js"></script>
 </body>

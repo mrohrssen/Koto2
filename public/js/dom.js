@@ -87,6 +87,8 @@ get chipPopupSwap() { return el('chip-popup-swap'); },
   get bugReportNote() { return el('bug-report-note'); },
   get bugReportSubmit() { return el('bug-report-submit'); },
   get bugReportCancel() { return el('bug-report-cancel'); },
+  get bugReportFile() { return el('bug-report-file'); },
+  get bugReportPreview() { return el('bug-report-preview'); },
 };
 
 /** Clear cache (for testing or hot reload) */

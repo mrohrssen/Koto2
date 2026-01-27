@@ -1,7 +1,7 @@
 /**
  * Bug Report UI Module
  *
- * Captures screenshots and submits bug reports to the server.
+ * Allows users to attach screenshots and submit bug reports.
  */
 
 import { dom } from '../dom.js';
@@ -12,6 +12,9 @@ let noteInput = null;
 let submitBtn = null;
 let cancelBtn = null;
 let reportBtn = null;
+let fileInput = null;
+let preview = null;
+let selectedFile = null;
 
 /** Initialize bug report UI */
 export function init() {
@@ -20,6 +23,8 @@ export function init() {
   submitBtn = document.getElementById('bug-report-submit');
   cancelBtn = document.getElementById('bug-report-cancel');
   reportBtn = document.getElementById('bug-report-btn');
+  fileInput = document.getElementById('bug-report-file');
+  preview = document.getElementById('bug-report-preview');
 
   if (!modal || !reportBtn) {
     console.warn('Bug report elements not found');
@@ -30,6 +35,7 @@ export function init() {
   reportBtn.addEventListener('click', openModal);
   cancelBtn.addEventListener('click', closeModal);
   submitBtn.addEventListener('click', submitReport);
+  fileInput?.addEventListener('change', handleFileSelect);
 
   // Close on backdrop click
   modal.addEventListener('click', (e) => {
@@ -37,11 +43,34 @@ export function init() {
   });
 }
 
+/** Handle file selection */
+function handleFileSelect(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  // Validate it's an image
+  if (!file.type.startsWith('image/')) {
+    showToast('Please select an image');
+    return;
+  }
+
+  selectedFile = file;
+
+  // Show preview
+  if (preview) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      preview.src = ev.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
 /** Open the bug report modal */
 function openModal() {
   if (modal) {
     modal.classList.add('active');
-    noteInput?.focus();
   }
 }
 
@@ -50,24 +79,28 @@ function closeModal() {
   if (modal) {
     modal.classList.remove('active');
     if (noteInput) noteInput.value = '';
+    if (fileInput) fileInput.value = '';
+    if (preview) {
+      preview.src = '';
+      preview.style.display = 'none';
+    }
+    selectedFile = null;
   }
 }
 
-/** Capture screenshot using html2canvas */
-async function captureScreenshot() {
-  // Hide modal during capture (button stays visible as part of utility row)
-  modal?.classList.remove('active');
+/** Read selected file as base64 */
+function getScreenshotData() {
+  return new Promise((resolve, reject) => {
+    if (!selectedFile) {
+      resolve(null);
+      return;
+    }
 
-  // Small delay for DOM update
-  await new Promise(r => setTimeout(r, 50));
-
-  const canvas = await html2canvas(document.querySelector('.game-app'), {
-    scale: window.devicePixelRatio || 2,
-    useCORS: true,
-    allowTaint: true,
-    backgroundColor: null
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(selectedFile);
   });
-  return canvas.toDataURL('image/png');
 }
 
 /** Get current username */
@@ -118,6 +151,12 @@ async function submitReport() {
   const note = noteInput?.value.trim() || '';
   const tester = getUsername();
 
+  // Require either a note or a screenshot
+  if (!note && !selectedFile) {
+    showToast('Add a note or screenshot');
+    return;
+  }
+
   // Generate timestamp-based name
   const now = new Date();
   const name = `report-${now.toISOString().slice(0, 19).replace(/[T:]/g, '-')}`;
@@ -125,11 +164,11 @@ async function submitReport() {
   // Disable button during submission
   if (submitBtn) {
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Capturing...';
+    submitBtn.textContent = 'Submitting...';
   }
 
   try {
-    const screenshot = await captureScreenshot();
+    const screenshot = await getScreenshotData();
     const context = gatherContext();
 
     const response = await fetch('/api/bug-report', {

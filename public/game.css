@@ -1560,3 +1560,34 @@ html, body {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.bug-report-file {
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px;
+  border: 2px dashed #ccc;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.05);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.bug-report-file::file-selector-button {
+  padding: 8px 16px;
+  margin-right: 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent-blue);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bug-report-preview {
+  width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  border: 1px solid #e0e0e0;
+}
