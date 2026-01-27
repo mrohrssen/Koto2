@@ -1,0 +1,138 @@
+/**
+ * Bug Report Routes
+ *
+ * Handles screenshot + metadata capture for mobile testing.
+ * Reports stored in bug-reports/<name>/
+ */
+
+import { Router } from 'express';
+import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync } from 'fs';
+import { join } from 'path';
+import { dataPath } from '../data-dir.js';
+
+const BUG_REPORTS_DIR = dataPath('bug-reports');
+
+// Ensure directory exists
+if (!existsSync(BUG_REPORTS_DIR)) {
+  mkdirSync(BUG_REPORTS_DIR, { recursive: true });
+}
+
+export default function createBugReportRoutes() {
+  const router = Router();
+
+  // POST /api/bug-report - Submit a new bug report
+  router.post('/bug-report', (req, res) => {
+    try {
+      const { name, tester, note, screenshot, context } = req.body;
+
+      if (!name || !screenshot) {
+        return res.status(400).json({ error: 'Name and screenshot are required' });
+      }
+
+      // Sanitize name for filesystem
+      const safeName = name.replace(/[^a-zA-Z0-9-_]/g, '-').substring(0, 50);
+      const timestamp = new Date().toISOString();
+      const reportDir = join(BUG_REPORTS_DIR, `${safeName}-${Date.now()}`);
+
+      mkdirSync(reportDir, { recursive: true });
+
+      // Save screenshot (base64 PNG)
+      const base64Data = screenshot.replace(/^data:image\/png;base64,/, '');
+      writeFileSync(join(reportDir, 'screenshot.png'), base64Data, 'base64');
+
+      // Save metadata
+      const report = {
+        name: safeName,
+        tester: tester || 'anonymous',
+        note: note || '',
+        timestamp,
+        ...context
+      };
+      writeFileSync(join(reportDir, 'report.json'), JSON.stringify(report, null, 2));
+
+      res.json({ success: true, reportId: `${safeName}-${Date.now()}` });
+    } catch (error) {
+      console.error('Bug report error:', error);
+      res.status(500).json({ error: 'Failed to save bug report' });
+    }
+  });
+
+  // GET /api/bug-reports - List all bug reports
+  router.get('/bug-reports', (req, res) => {
+    try {
+      if (!existsSync(BUG_REPORTS_DIR)) {
+        return res.json({ reports: [] });
+      }
+
+      const reports = readdirSync(BUG_REPORTS_DIR, { withFileTypes: true })
+        .filter(d => d.isDirectory())
+        .map(d => {
+          const reportPath = join(BUG_REPORTS_DIR, d.name, 'report.json');
+          if (existsSync(reportPath)) {
+            const data = JSON.parse(readFileSync(reportPath, 'utf-8'));
+            return { id: d.name, ...data };
+          }
+          return { id: d.name, name: d.name };
+        })
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      res.json({ reports });
+    } catch (error) {
+      console.error('List bug reports error:', error);
+      res.status(500).json({ error: 'Failed to list bug reports' });
+    }
+  });
+
+  // GET /api/bug-reports/:id - Get specific report metadata
+  router.get('/bug-reports/:id', (req, res) => {
+    try {
+      const reportDir = join(BUG_REPORTS_DIR, req.params.id);
+      const reportPath = join(reportDir, 'report.json');
+
+      if (!existsSync(reportPath)) {
+        return res.status(404).json({ error: 'Report not found' });
+      }
+
+      const report = JSON.parse(readFileSync(reportPath, 'utf-8'));
+      res.json({ id: req.params.id, ...report });
+    } catch (error) {
+      console.error('Get bug report error:', error);
+      res.status(500).json({ error: 'Failed to get bug report' });
+    }
+  });
+
+  // GET /api/bug-reports/:id/screenshot - Get screenshot image
+  router.get('/bug-reports/:id/screenshot', (req, res) => {
+    try {
+      const screenshotPath = join(BUG_REPORTS_DIR, req.params.id, 'screenshot.png');
+
+      if (!existsSync(screenshotPath)) {
+        return res.status(404).json({ error: 'Screenshot not found' });
+      }
+
+      res.sendFile(screenshotPath);
+    } catch (error) {
+      console.error('Get screenshot error:', error);
+      res.status(500).json({ error: 'Failed to get screenshot' });
+    }
+  });
+
+  // DELETE /api/bug-reports/:id - Delete a report
+  router.delete('/bug-reports/:id', (req, res) => {
+    try {
+      const reportDir = join(BUG_REPORTS_DIR, req.params.id);
+
+      if (!existsSync(reportDir)) {
+        return res.status(404).json({ error: 'Report not found' });
+      }
+
+      rmSync(reportDir, { recursive: true });
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Delete bug report error:', error);
+      res.status(500).json({ error: 'Failed to delete bug report' });
+    }
+  });
+
+  return router;
+}
