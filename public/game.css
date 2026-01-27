@@ -1495,3 +1495,93 @@ html, body {
   transform: scale(0.95);
   background: #c0392b;
 }
+
+/* ===== BUG REPORT MODAL ===== */
+.bug-report-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+}
+
+.bug-report-modal.active {
+  display: flex;
+}
+
+.bug-report-content {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: var(--shadow-card);
+}
+
+.bug-report-title {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.bug-report-label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.bug-report-input {
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-family: inherit;
+}
+
+.bug-report-input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+.bug-report-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.bug-report-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.bug-report-cancel,
+.bug-report-submit {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bug-report-cancel {
+  background: #e0e0e0;
+  color: var(--text-primary);
+}
+
+.bug-report-submit {
+  background: var(--accent-red);
+  color: white;
+}
+
+.bug-report-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
