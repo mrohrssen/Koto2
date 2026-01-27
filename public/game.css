@@ -1471,31 +1471,6 @@ html, body {
   display: none;
 }
 
-/* ===== BUG REPORT BUTTON ===== */
-.bug-report-btn {
-  position: fixed;
-  bottom: calc(76px + env(safe-area-inset-bottom));
-  right: 12px;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--accent-red);
-  color: white;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-card);
-  z-index: 100;
-  cursor: pointer;
-  transition: transform var(--transition-fast), background var(--transition-fast);
-}
-
-.bug-report-btn:active {
-  transform: scale(0.95);
-  background: #c0392b;
-}
-
 /* ===== BUG REPORT MODAL ===== */
 .bug-report-modal {
   position: fixed;

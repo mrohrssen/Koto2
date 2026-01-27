@@ -69,27 +69,19 @@ function closeModal() {
 
 /** Capture screenshot using html2canvas */
 async function captureScreenshot() {
-  // Hide modal and bug button during capture
-  const wasActive = modal?.classList.contains('active');
+  // Hide modal during capture (button stays visible as part of utility row)
   modal?.classList.remove('active');
-  reportBtn.style.display = 'none';
 
   // Small delay for DOM update
   await new Promise(r => setTimeout(r, 50));
 
-  try {
-    const canvas = await html2canvas(document.querySelector('.game-app'), {
-      scale: window.devicePixelRatio || 2,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: null
-    });
-    return canvas.toDataURL('image/png');
-  } finally {
-    // Restore UI
-    reportBtn.style.display = '';
-    if (wasActive) modal?.classList.add('active');
-  }
+  const canvas = await html2canvas(document.querySelector('.game-app'), {
+    scale: window.devicePixelRatio || 2,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: null
+  });
+  return canvas.toDataURL('image/png');
 }
 
 /** Gather game context */
