@@ -1,7 +1,27 @@
 /**
- * Scene UI Module - Manages scene area rendering
+ * @file scene.js - Scene Area Rendering
  *
- * Handles: backgrounds, enemy sprite/info, toast messages
+ * PURPOSE:
+ * Manages the main scene area including background images, enemy/NPC sprites,
+ * HP bars, toast notifications, and floating damage numbers. Provides the
+ * visual context for combat and exploration phases.
+ *
+ * KEY EXPORTS:
+ * - setBackground(imagePath): Set scene background image
+ * - showEnemy(enemy): Display enemy sprite and HP bar
+ * - hideEnemy(): Remove enemy from scene
+ * - showShrineFox(): Display shrine fox NPC (no HP bar)
+ * - showQuizMaster(): Display quiz master NPC (no HP bar)
+ * - updateEnemyHP(current, max): Update enemy HP bar fill
+ * - showToast(message, durationMs): Show auto-dismissing notification
+ * - showDamageNumber(amount, { isCrit, isHeal }): Floating damage text
+ *
+ * DEPENDENCIES:
+ * - ../dom.js: DOM element references (sceneBackground, enemySprite, etc.)
+ *
+ * SPRITE LOADING:
+ * - Sprites load from /assets/sprites/enemies/{id}.png
+ * - Falls back to emoji placeholder based on enemy personality if load fails
  */
 
 import { dom } from '../dom.js';

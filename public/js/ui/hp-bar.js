@@ -1,8 +1,21 @@
 /**
- * Player HP Bar Module
+ * @file hp-bar.js - Player HP Bar Display
  *
- * Full-width bar: green → yellow → red as HP decreases.
- * Shows current/max as text overlay.
+ * PURPOSE:
+ * Renders the player's HP bar at the top of the screen. Changes color based
+ * on HP percentage: green (>50%), yellow (25-50%), red (<25%).
+ *
+ * KEY EXPORTS:
+ * - updatePlayerHP(current, max): Update bar fill and text
+ * - setVisible(visible): Show or hide the HP container
+ *
+ * DEPENDENCIES:
+ * - ../dom.js: DOM element references (playerHpFill, playerHpText, playerHpContainer)
+ *
+ * COLOR THRESHOLDS:
+ * - >50% HP: --hp-green
+ * - 25-50% HP: --hp-yellow
+ * - <25% HP: --hp-red
  */
 
 import { dom } from '../dom.js';

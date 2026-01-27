@@ -1,6 +1,28 @@
 /**
- * Auth UI Module
- * Handles login/register forms and token management
+ * @file auth.js - Authentication UI
+ *
+ * PURPOSE:
+ * Manages user authentication interface including login/register forms,
+ * JWT token storage, and auth state checking. Shows auth screen on app
+ * load if user is not authenticated.
+ *
+ * KEY EXPORTS:
+ * - init({ onAuthenticated }): Setup form handlers and callbacks
+ * - checkAuth(): Verify token validity with server, returns boolean
+ * - showAuthScreen(): Display the auth overlay
+ * - hideAuthScreen(): Hide the auth overlay
+ * - getToken(): Retrieve stored JWT from localStorage
+ * - logout(): Clear stored token
+ *
+ * DEPENDENCIES:
+ * - None (standalone module)
+ *
+ * FLOW:
+ * 1. On app load, checkAuth() validates existing token
+ * 2. If invalid/missing, showAuthScreen() displays login form
+ * 3. User submits credentials, server returns JWT
+ * 4. Token stored in localStorage, onAuthenticated callback fires
+ * 5. Registration requires invite code
  */
 
 let currentTab = 'login';

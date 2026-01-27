@@ -1,5 +1,27 @@
 /**
- * UI Module Index - Re-exports all mobile UI modules
+ * @file index.js - UI Module Barrel Export
+ *
+ * PURPOSE:
+ * Re-exports all UI modules for convenient importing. Allows other parts
+ * of the codebase to import multiple UI modules from a single path.
+ *
+ * USAGE:
+ *   import { actions, scene, combatLoop } from './ui/index.js';
+ *   // Or import all:
+ *   import * as ui from './ui/index.js';
+ *
+ * EXPORTED MODULES:
+ * - actions: Bottom action area and flash cards
+ * - takeover: Full-screen slide-in panels
+ * - hpBar: Player HP display
+ * - chipRow: Equipped chip slots
+ * - scene: Background and enemy sprites
+ * - character: HP bar coordinator
+ * - exploration: Non-combat navigation
+ * - economy: Chip shops
+ * - modals: Settings panel
+ * - combatLoop: Turn-based combat
+ * - lookup: Japanese word lookup mode
  */
 
 export * as actions from './actions.js';

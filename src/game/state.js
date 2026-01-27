@@ -2,12 +2,39 @@
  * @fileoverview Player, run, combat, and meta-progression state management
  * @module src/game/state
  *
+ * PURPOSE:
+ * State factory functions for all game objects. Defines player stats (simplified
+ * to attack/maxHp), run state with ward progression, combat state, and meta-
+ * progression system for cross-run upgrades.
+ *
  * KEY EXPORTS:
- * - createNewPlayer(name) - Creates player with attack, maxHp, chips, weapon
- * - createNewRun(player) - Initializes dungeon run with ward system
- * - createCombatState(enemy) - Creates combat instance
- * - createMetaProgression() - Creates fresh meta-save
- * - saveGame/loadGame/deleteSave - File-based persistence
+ * State Factories:
+ * - createNewPlayer(name) - Player with attack, maxHp, gold, chips, equipment
+ * - createNewRun(player) - Run state: floor, ward path, rooms, encounters
+ * - createCombatState(enemy) - Combat instance for battle
+ * - createMetaProgression() - Meta-save: essence, upgrades, achievements
+ *
+ * Meta-Progression:
+ * - META_UPGRADES - Upgrade definitions (vitality, startingGold, attackPower, goldFind)
+ * - ACHIEVEMENTS - Achievement definitions and unlock conditions
+ * - calculateEssenceReward(runStats, floor, isVictory) - Compute essence earned
+ * - getMetaUpgradeEffects(meta) - Aggregate effects from purchased upgrades
+ *
+ * Persistence:
+ * - saveGame(fs, player, completedRuns) - Save to .jrpg-save.json
+ * - loadGame(fs) - Load from .jrpg-save.json
+ * - deleteSave(fs) - Delete save file
+ *
+ * Utilities:
+ * - generateEncounterCount(floor) - Random encounters per floor
+ *
+ * DEPENDENCIES:
+ * - ./items.js - getClassStartingEquipment for new players
+ *
+ * ARCHITECTURE NOTES:
+ * - Player stats: attack and maxHp (no STR/AGI/VIT/INT/DEX/LUK)
+ * - Only chips for equipment (no armor/weapons)
+ * - Meta-progression persists across runs via separate save
  */
 
 import { getClassStartingEquipment } from './items.js';

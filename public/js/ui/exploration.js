@@ -1,7 +1,27 @@
 /**
- * Exploration UI Module (Mobile) - Navigation through hub, wards, rooms
+ * @file exploration.js - Non-Combat Navigation UI
  *
- * Renders action buttons and scene overlays for non-combat phases.
+ * PURPOSE:
+ * Handles all non-combat game phases: hub, ward selection, room exploration,
+ * shrine upgrades, and quiz encounters. Renders appropriate buttons and
+ * manages phase-specific interactions.
+ *
+ * KEY EXPORTS:
+ * - init(callbacks): Initialize with game state and API callbacks
+ * - renderHub(): Show hub phase (Equip Bots + Infiltrate buttons)
+ * - renderWardSelection(): Show ward picker cards
+ * - renderExploring(): Show Proceed/Fight buttons for room navigation
+ * - renderBossReady(): Show Boss Fight button
+ * - renderFloorComplete(): Show Continue button after floor cleared
+ * - renderRunEnded(): Show Return to Hub button
+ * - renderShrine(chipLoadoutCache): Show chip upgrade selection
+ * - renderQuiz(): Show quiz question and reward selection
+ *
+ * DEPENDENCIES:
+ * - Callbacks injected via init(): getGameState, updateGameState, updateUI
+ * - API functions: apiGetStartingWards, apiSelectStartingWard, apiProceed, etc.
+ * - actions module: For button rendering
+ * - scene module: For narration display
  */
 
 let getGameState = null;

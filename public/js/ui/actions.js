@@ -1,8 +1,28 @@
 /**
- * Action Area Module - Bottom section buttons and flash cards
+ * @file actions.js - Bottom Action Area Module
  *
- * Non-combat: Shows [Equip Bots] + [Contextual Action] buttons
- * Combat: Shows swipeable flash card stack
+ * PURPOSE:
+ * Renders the bottom action area of the game screen. In non-combat phases,
+ * displays action buttons (Equip Bots, contextual actions like Infiltrate/Fight).
+ * In combat, displays swipeable flash cards for vocabulary review.
+ *
+ * KEY EXPORTS:
+ * - init({ equipBots, contextAction, cardSwipe, cardFlip }): Set up callbacks
+ * - showButtons(contextLabel, options): Display action buttons
+ * - showFlashCard(word): Display swipeable vocabulary card
+ * - triggerEquipBots(): Programmatically trigger equip callback
+ * - clear(): Empty the action area
+ * - setContent(html): Set custom HTML content
+ *
+ * DEPENDENCIES:
+ * - ../dom.js: DOM element references
+ * - ../audio.js: Sound effects (button-tap, swipe-left, swipe-right)
+ *
+ * FLASH CARD BEHAVIOR:
+ * - Tap to flip card (shows reading + meaning)
+ * - After flip: swipe right = "knew it", swipe left = "didn't know"
+ * - Supports both touch and mouse input
+ * - SWIPE_THRESHOLD = 80px to register a swipe
  */
 
 import { dom } from '../dom.js';

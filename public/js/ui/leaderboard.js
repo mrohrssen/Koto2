@@ -1,8 +1,26 @@
 /**
- * Leaderboard UI Module
+ * @file leaderboard.js - Vocabulary Review Leaderboard
  *
- * Displays daily/weekly review leaderboard in a takeover panel.
- * Uses existing takeover view pattern and styling.
+ * PURPOSE:
+ * Displays a competitive leaderboard showing vocabulary review counts.
+ * Users can view daily or weekly rankings. Highlights current user's position.
+ *
+ * KEY EXPORTS:
+ * - init(): Setup button handler and DOM references
+ * - open(): Open leaderboard panel and fetch data
+ * - close(): Close leaderboard panel
+ *
+ * DEPENDENCIES:
+ * - ../api.js: getAuthHeaders for authenticated requests
+ * - ../audio.js: Sound effects (takeover-open, takeover-close)
+ *
+ * DATA STRUCTURE:
+ * API returns { entries: [{ rank, username, count }], currentUser: { rank } }
+ *
+ * FEATURES:
+ * - Daily/Weekly tab toggle
+ * - Top 3 ranks highlighted in accent color
+ * - Current user's row highlighted with border
  */
 
 import { getAuthHeaders } from '../api.js';

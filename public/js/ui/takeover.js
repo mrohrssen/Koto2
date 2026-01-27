@@ -1,8 +1,28 @@
 /**
- * Takeover View Module - Full-screen slide-in panels
+ * @file takeover.js - Full-Screen Panel Manager
  *
- * Manages: chip equip, chip shop, settings, game over
- * Slides in from right, close button in top corner.
+ * PURPOSE:
+ * Manages full-screen overlay panels that slide in from the right. Used for
+ * chip equipment, shop, settings, and game over screens. Only one takeover
+ * can be active at a time.
+ *
+ * KEY EXPORTS:
+ * - init(): Initialize all takeover views and close button handlers
+ * - open(viewName): Slide in a takeover panel
+ * - close(viewName): Slide out a takeover panel
+ * - closeAll(): Close all open takeovers
+ * - isAnyActive(): Check if any takeover is currently open
+ * - getContent(viewName): Get the content container for a view
+ *
+ * DEPENDENCIES:
+ * - ../dom.js: DOM element references (chipEquipView, settingsView, etc.)
+ * - ../audio.js: Sound effects (takeover-open, takeover-close)
+ *
+ * AVAILABLE VIEWS:
+ * - chipEquip: Chip management and reordering
+ * - chipShop: Chip purchase interface
+ * - settings: API keys, audio, preferences
+ * - gameover: Run end results
  */
 
 import { dom } from '../dom.js';

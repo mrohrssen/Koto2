@@ -1,3 +1,31 @@
+/**
+ * @file game.js - Main Frontend Coordinator
+ *
+ * PURPOSE:
+ * Central orchestrator for the game's frontend. Initializes all UI modules,
+ * manages global game state, and coordinates interactions between subsystems.
+ * This is the entry point loaded by game.html.
+ *
+ * KEY EXPORTS: None (entry point module)
+ *
+ * KEY FUNCTIONS:
+ * - updateUI(): Refreshes all UI components based on current game state
+ * - updateGameState(newState): Updates local state and syncs to store
+ * - showVictoryModal/showGameOverModal: Display combat results
+ * - showEnemyDialogue: Display AI-generated enemy dialogue
+ *
+ * DEPENDENCIES:
+ * - js/store.js: Global state store
+ * - js/api.js: Server API communication
+ * - js/ui/*: UI modules (actions, scene, combat-loop, etc.)
+ * - js/settings.js, js/tts.js, js/audio.js: Configuration and audio
+ *
+ * ARCHITECTURE:
+ * On load, checks authentication, fetches game state from server, then
+ * initializes all UI modules with dependency injection callbacks. The main
+ * loop responds to user actions via UI callbacks and API responses.
+ */
+
 // Register service worker for asset caching
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js');

@@ -4,20 +4,40 @@
  *
  * PURPOSE:
  * Defines all enemies and bosses for NEO TOKYO. Each enemy is a citizen possessed
- * by the SYSTEM AI.
+ * by the SYSTEM AI. Enemies are organized by tier and ward location.
  *
- * SIMPLIFIED SYSTEM:
- * - Enemies have only: attack and maxHp
- * - No levels, no derived stats
- * - Attack/HP based on tier (1-4)
- * - See enemies.full.js for original iRO-style system (if preserved)
+ * KEY EXPORTS:
+ * Constants:
+ * - INTENT_TYPES - Attack, heavy, defend, special, rage intents
+ * - ENEMY_INTENTS - Per-enemy intent patterns (default + lowHp behavior)
+ * - ENEMY_ABILITIES - Special abilities indexed by enemy ID
+ * - BOSS_INTENTS - Boss-specific intent patterns
+ * - ENEMY_TEMPLATES - Enemy definitions from data/enemies.json
+ * - FLOOR_BOSSES, FINAL_BOSS, BOSS_DROPS - Boss data from data/bosses.json
+ * - WARD_LOCATIONS, FLOOR_TO_WARD - Ward mappings from data/enemy-mappings.json
  *
- * ENEMY TIERS:
- * - Tier 1: attack ~10, HP ~120
- * - Tier 2: attack ~15, HP ~210
- * - Tier 3: attack ~20, HP ~300
- * - Tier 4: attack ~30, HP ~450
- * - Bosses: attack ~30-40, HP ~600-900
+ * Functions:
+ * - generateEnemy(floor) - Create random enemy instance for floor
+ * - getBossForFloor(floor) - Get boss definition for floor
+ * - getBossDrop(floor) - Get boss reward for floor
+ * - selectEnemyIntent(enemy, turnCount) - AI intent selection
+ * - getEnemyAbility(enemyId) - Get special ability if any
+ * - getEnemiesForFloor(floor, useLocations) - Get valid enemies for floor
+ * - getEnemyDisplayStats(enemy) - Get UI-friendly stats
+ * - transformEnemy(enemy, targetTier) - Scale enemy to different tier
+ * - getAllEnemyIds() / getEnemyById(id) - Enemy lookup
+ * - getLiberationTrackerData(tracker) - Liberation progress data
+ *
+ * ENEMY STATS:
+ * - Enemies have: attack, maxHp (simplified system)
+ * - Attack/HP scales by tier (1-4)
+ * - Tier 1: ~10 attack, ~120 HP; Tier 4: ~30 attack, ~450 HP
+ * - Bosses: ~30-40 attack, ~600-900 HP
+ *
+ * DEPENDENCIES:
+ * - data/enemies.json - Enemy template definitions
+ * - data/bosses.json - Boss data and drops
+ * - data/enemy-mappings.json - Ward/floor location mappings
  */
 
 // Enemy template data extracted to JSON for maintainability

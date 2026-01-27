@@ -12,14 +12,7 @@
 > # Now work here - this directory is isolated from other sessions
 > ```
 
-Japanese vocabulary learning RPG. Cyberpunk Tokyo where citizens are possessed by the SYSTEM AI and need liberation. Turn-based dungeon crawling with JPDB vocabulary integration and AI-generated narration.
-
-## Tech Stack
-
-- **Backend**: Express.js (Node.js ES modules)
-- **Frontend**: Vanilla HTML/CSS/JS (no framework)
-- **Data**: Local JSON files (.jrpg-save.json, .jrpg-settings.json, .jrpg-vocab-cache.json)
-- **APIs**: JPDB (vocabulary), OpenAI/Anthropic/Google (narration), VOICEVOX (TTS)
+Japanese vocabulary learning RPG. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the game works.
 
 ## Commands
 
@@ -117,93 +110,56 @@ Branch prefixes: `feature/`, `fix/`, `refactor/`
 ```
 server.js              # Main Express server (50+ API endpoints)
 public/
-  game.js              # Frontend game logic
+  js/game.js           # Frontend coordinator
+  js/ui/               # UI modules (combat-loop, chip-select, lookup, etc.)
   game.css             # Cyberpunk UI styling
   game.html            # Main game template
   assets/              # Sprites, backgrounds
 src/
-  jpdb.js              # JPDB API integration with rate limiting
+  jpdb.js              # JPDB API integration
   ai-providers.js      # Multi-provider AI abstraction
   game/
-    loop.js            # GameManager class (main game orchestration)
-    state.js           # Player/run/combat state, meta-progression
-    stats.js           # iRO-based stats formulas (STR/AGI/VIT/INT/DEX/LUK)
-    enemies.js         # Enemy definitions, intent patterns, bosses
+    loop.js            # GameManager class (central coordinator)
+    state.js           # State factories, meta-progression
+    enemies.js         # Enemy definitions, intent patterns
     rooms.js           # Ward system, room generation
-    dm.js              # Dungeon Master narration system
-    combat.js          # Combat mechanics
-    items/
-      chips.js         # Chip system (core equipment, rarities, effects)
-      equipment.js     # Weapons, armor, shields, accessories
-      consumables.js   # Potions, healing items
-      skills.js        # Character abilities
+    dm.js              # Dungeon Master narration
+    combat/            # Combat mechanics (mechanics.js, player-actions.js, enemy.js)
+    items/chips.js     # Chip pipeline system (core mechanic)
+data/
+  chips.json           # Chip definitions
+  enemies.json         # Enemy definitions
+  bosses.json          # Boss definitions
 ```
 
-## File Summaries
-
-Major files have comprehensive JSDoc headers (first 50-80 lines) with:
-- **PURPOSE**: What the file does and why it exists
-- **KEY EXPORTS**: Functions, classes, and constants
-- **DEPENDENCIES**: What it imports and why
-- **DATA STRUCTURES**: Key object shapes and their fields
-- **ARCHITECTURE NOTES**: How it fits in the system
-- **CLAUDE HINTS**: Specific guidance for working with the file
-
-**Read summaries first** before diving into full file contents to quickly understand if a file is relevant to your task. Files with summaries: `game.js`, `loop.js`, `state.js`, `enemies.js`, `chips.js`, `equipment.js`, `rooms.js`, `prefetch.js`, `server.js`.
-
-## Key Game Systems
-
-- **Chips**: Passive augmentations with rarities (Common 1.0x → Legendary 3.0x stat multipliers)
-- **Stats**: iRO-based primary stats with derived stats (ATK, DEF, HIT, FLEE, CRIT, etc.)
-- **JPDB Integration**: Vocabulary lookup, learning states, constrains AI narration to user's level
-- **Enemy Dialogue**: 3 states (Possessed/Liberation/Boss) with AI-generated contextual dialogue
-- **Ward System**: 7 Tokyo wards as dungeon floors (Nerima → Imperial Palace)
+For detailed architecture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Coding Conventions
 
 - ES6 modules with imports/exports
 - Japanese names with English fallbacks: `name` (Japanese), `nameEn` (English)
-- Constants in ALL_CAPS: `CHIPS`, `WEAPONS`, `STAT_NAMES`
+- Constants in ALL_CAPS: `CHIPS`, `ENEMIES`, `WARD_INFO`
 - camelCase for variables/functions
 - Factory functions: `createNewPlayer()`, `generateEnemy()`, `createCombatState()`
 
-## Item Schema
-
-```javascript
-{
-  id: 'item_id',
-  name: '日本語名',      // Japanese name
-  nameEn: 'English Name', // English fallback
-  description: '説明',
-  rarity: 'common|uncommon|rare|epic|legendary',
-  // ... type-specific fields
-}
-```
-
 ## API Endpoint Namespaces
 
-- `/api/game/` - Game management (create-player, start-run, attack, etc.)
+- `/api/auth/` - Authentication (login, register, API keys)
+- `/api/game/` - Game state, combat, exploration, meta-progression
 - `/api/jpdb/` - JPDB vocabulary integration
 - `/api/vocab/` - Word suggestion system
 - `/api/tts/` - VOICEVOX text-to-speech
+- `/api/settings` - User preferences
+
+## Common Mistakes to Avoid
+
+- **Don't reference iRO stats** - The game uses only `attack` and `maxHp`. No STR/AGI/VIT/INT/DEX/LUK.
+- **Don't add armor/weapons** - Only chips exist. No equipment slots.
+- **Don't run `npx playwright test` directly** - Use the wrapper script or exact command above.
+- **Don't use Homebrew git** - Use `/usr/bin/git` to avoid library conflicts.
+- **Don't skip worktrees** - Multiple Claude sessions will conflict without them.
 
 ## Deployment
 
 - **Production URL**: https://jrpg-production.up.railway.app
-- **VOICEVOX URL**: https://voicevox-production.up.railway.app
 - **Railway Dashboard**: https://railway.com/project/3bf46306-66b8-4d9c-9afa-93156f95bbc3
-
-## Environment Variables
-
-- `JPDB_API_KEY` - Required for vocabulary integration
-- `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GOOGLE_API_KEY` - At least one required for AI narration
-- `PORT` - Server port (default: 3000)
-
-## Important Notes
-
-- **Always run `npm test` after adding features** - e2e tests catch UI regressions
-- Rate limit external APIs (500ms intervals for JPDB)
-- File-based caching for JPDB responses and TTS audio
-- Frontend uses localStorage for user API keys and preferences
-- Deployment requires persistent storage (Railway recommended, not Vercel)
-- **Always use system git/curl** (`/usr/bin/git`, `/usr/bin/curl`) - Homebrew versions have library conflicts

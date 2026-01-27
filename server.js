@@ -18,7 +18,7 @@
  *
  * GAME ENDPOINTS:
  * State: /game/state, /game/meta, /game/achievements, /game/lifetime-stats
- * Player: /game/create-player, /game/allocate-stat
+ * Player: /game/create-player
  * Run: /game/start-run, /game/forfeit, /game/enter-floor, /game/next-floor
  * Ward: /game/starting-wards, /game/select-starting-ward, /game/next-ward-options
  * Room: /game/room, /game/proceed, /game/interact-trap, /game/loot-body

@@ -1,8 +1,22 @@
 /**
- * Character UI Module (Mobile) - Minimal HP management
+ * @file character.js - HP Bar Coordinator
  *
- * Delegates all rendering to scene.js and hp-bar.js modules.
- * Keeps the same export signatures so combat-loop can call updateEnemyHPBar/updatePlayerHPBar.
+ * PURPOSE:
+ * Thin wrapper that delegates HP bar updates to scene.js (enemy) and hp-bar.js
+ * (player). Provides a unified interface for combat-loop.js to update both
+ * HP bars without importing multiple modules.
+ *
+ * KEY EXPORTS:
+ * - init(callbacks): Setup with scene and hp-bar module references
+ * - updateEnemyHPBar(hp): Update enemy HP via scene module
+ * - updatePlayerHPBar(hp): Update player HP via hp-bar module
+ *
+ * DEPENDENCIES:
+ * - Callbacks injected via init(): getGameState, hpBar, scene
+ *
+ * HP FORMAT:
+ * Both update functions accept either a number (current HP, max from state)
+ * or an object { current, max } from combat-cycle API responses.
  */
 
 let getGameState = null;

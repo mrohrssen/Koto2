@@ -1,7 +1,25 @@
 /**
- * Economy UI Module - Chip shops via in-scene UI
+ * @file economy.js - Chip Shop UI
  *
- * Handles: post-combat chip shop, starting chip selection
+ * PURPOSE:
+ * Manages chip acquisition interfaces: post-combat chip rewards and starting
+ * chip selection at run begin. Uses chip-select.js for the actual card UI.
+ *
+ * KEY EXPORTS:
+ * - init(callbacks): Setup with game state and API callbacks
+ * - renderPostCombatShop(): Show chip reward after combat victory
+ * - renderStartingChipShop(items): Show starting chip selection
+ *
+ * DEPENDENCIES:
+ * - ../audio.js: Sound effects (chip-equip)
+ * - ../tts.js: Text-to-speech for chip names
+ * - ./chip-select.js: Swipeable chip card UI
+ * - API callbacks: apiClaimStartingChip, apiPostCombatShopBuy, apiShopSkip
+ *
+ * FLOW:
+ * - Post-combat: Shows chip selection with skip option, updates loadout on pick
+ * - Starting chip: Mandatory selection, no skip allowed
+ * - Both refresh chip loadout cache after selection
  */
 
 import { playSFX } from '../audio.js';

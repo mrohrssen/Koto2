@@ -1,7 +1,28 @@
 /**
- * Modals UI Module (Mobile) - Settings takeover only
+ * @file modals.js - Settings Panel UI
  *
- * Strips upgrades, stats, and liberation tracker (future work).
+ * PURPOSE:
+ * Renders the settings takeover panel with API key configuration, audio
+ * controls, and user preferences. Handles saving settings to server and
+ * local storage.
+ *
+ * KEY EXPORTS:
+ * - init(callbacks): Setup with takeover, scene, and settings module refs
+ * - openSettings(): Open settings takeover and render content
+ * - closeSettings(): Close settings takeover
+ *
+ * DEPENDENCIES:
+ * - ../audio.js: BGM/SFX volume control, mute toggle
+ * - ../tts.js: TTS volume control
+ * - Callbacks: takeover (panel management), scene (toast), settings (API keys)
+ *
+ * SETTINGS AVAILABLE:
+ * - JPDB API Key (server-stored)
+ * - AI API Key + Provider + Model (server-stored)
+ * - JLPT Level (server-stored)
+ * - TTS enabled toggle (local)
+ * - BGM/SFX/TTS volume sliders (local)
+ * - Mute all audio toggle (local)
  */
 
 import * as audio from '../audio.js';

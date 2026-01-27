@@ -1,17 +1,30 @@
 /**
- * Combat Loop UI Module - Vocab-pause turn-based combat
+ * @file combat-loop.js - Turn-Based Combat Orchestration
  *
- * EXTRACTED FROM: public/game.js (Step 6.5)
+ * PURPOSE:
+ * Manages the vocab-pause turn-based combat system. Each turn requires the
+ * player to review a vocabulary word before attacking. Combat flow:
+ * word review -> player attack -> 400ms delay -> enemy attack -> pause -> repeat
  *
- * Combat flow: word review → player attack → 400ms → enemy attack → pause → repeat
+ * KEY EXPORTS:
+ * - init(callbacks): Setup with game state, UI, and API callbacks
+ * - startCombatLoop(): Begin combat, fetch chips, show first flash card
+ * - executePlayerAttack(): Process player attack with chip pipeline
+ * - executeEnemyAttack(): Process enemy attack and update HP
+ * - executeEnemyAttackThenPause(): Enemy attacks then pauses for vocab
+ * - resumeCombatAfterVocab(): Continue combat after word review
+ * - stopCombatLoop(result): End combat, show narration and victory/defeat
+ * - isCombatActive(), isCombatPausedForVocab(): State getters
+ * - cleanupCombat(): Reset state without showing results
  *
- * FUNCTIONS:
- * - startCombatLoop: Initialize combat loop
- * - executePlayerAttack: Handle player attack in combat
- * - executeEnemyAttack: Handle enemy attack in combat
- * - executeEnemyAttackThenPause: Enemy attack followed by vocab pause
- * - resumeCombatAfterVocab: Continue combat after word review
- * - stopCombatLoop: End combat and show results
+ * DEPENDENCIES:
+ * - ../audio.js: Sound effects (attack, player-hit, chip-equip, victory)
+ * - ../api.js: getAuthHeaders for authenticated requests
+ * - Callbacks: wordPractice, characterUI, settings, narration modules
+ *
+ * COMBAT MATH DISPLAY:
+ * Shows sequential chip activation with tooltips above firing chips,
+ * progressive damage math in action area, and big red enemy damage text.
  */
 
 import { playSFX } from '../audio.js';

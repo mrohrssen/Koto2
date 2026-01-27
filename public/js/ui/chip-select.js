@@ -1,8 +1,27 @@
 /**
- * chip-select.js - In-scene chip selection UI
+ * @file chip-select.js - Swipeable Chip Selection UI
  *
- * Shows one chip at a time as a swipeable card with icon, name, rarity,
- * and skill descriptions. Swipe left/right to cycle through options.
+ * PURPOSE:
+ * Displays chip selection cards for post-combat rewards and starting chip
+ * selection. Shows one chip at a time as a swipeable card with full details
+ * (icon, name, rarity, passive effect, skill description).
+ *
+ * KEY EXPORTS:
+ * - showChipSelect(chips, options): Promise-based chip selection
+ *   Returns selected chip object, or null if skipped
+ * - cleanup(): Remove chip select UI and restore scene state
+ *
+ * DEPENDENCIES:
+ * - ../dom.js: DOM element references
+ * - ../audio.js: Sound effects (button-tap, chip-equip)
+ * - ./narration-box.js: Display chip greeting dialogue
+ * - ./lookup.js: Re-parse text when lookup mode is active
+ *
+ * BEHAVIOR:
+ * - Swipe left/right to cycle through chip options (loops infinitely)
+ * - Dot indicators show current position
+ * - "Skip" button available for post-combat (not starting chip)
+ * - Chip sprite shown in scene area with greeting narration
  */
 
 import { dom } from '../dom.js';

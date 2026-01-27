@@ -1,8 +1,26 @@
 /**
- * Chip Row UI Module - Renders 5 chip slots with charges and skill popup
+ * @file chip-row.js - Chip Slots Display
  *
- * Per spec: circular icons, 5-segment charge bars, golden pulse when charged,
- * tap to show skill popup with "Use Skill" button
+ * PURPOSE:
+ * Renders the 5 equipped chip slots at the bottom of the screen. Each slot
+ * shows a circular icon with rarity-colored border, level badge, and a
+ * 5-segment charge bar. Tapping a chip opens a popup with skill details.
+ *
+ * KEY EXPORTS:
+ * - init({ useSkillCallback, onReorder, isBlocked, getChipIds }): Setup
+ * - render(chips, { charges, levels, maxCharges, inCombat }): Draw all slots
+ * - isInSwapMode(): Check if user is reordering chips
+ *
+ * DEPENDENCIES:
+ * - ../dom.js: DOM element references (chipRow, chipPopup elements)
+ * - ../audio.js: Sound effects (chip-skill, chip-lift)
+ *
+ * VISUAL STATES:
+ * - Empty slot: Gray circle with no charge bar
+ * - Equipped: Chip icon with rarity border color
+ * - Charging: Partial charge segments filled
+ * - Charged: Golden pulse animation, "Use Skill" button enabled
+ * - Swap mode: Target chips glow for reordering
  */
 
 import { dom } from '../dom.js';
