@@ -186,12 +186,46 @@ export default function createAuthRoutes(options = {}) {
     res.json({ code });
   }
 
+  // GET /api/auth/admin/users - list all users (admin only)
+  const adminUser = process.env.ADMIN_USER || '';
+  const adminPassHash = process.env.ADMIN_PASS_HASH || '';
+
+  async function adminUsers(req, res) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Basic ')) {
+      res.set('WWW-Authenticate', 'Basic realm="Admin"');
+      return res.status(401).json({ error: 'Admin credentials required' });
+    }
+
+    if (!adminUser || !adminPassHash) {
+      return res.status(503).json({ error: 'Admin credentials not configured' });
+    }
+
+    const decoded = Buffer.from(authHeader.slice(6), 'base64').toString();
+    const [user, pass] = decoded.split(':');
+
+    if (user !== adminUser || !(await verifyPassword(pass, adminPassHash))) {
+      res.set('WWW-Authenticate', 'Basic realm="Admin"');
+      return res.status(401).json({ error: 'Invalid admin credentials' });
+    }
+
+    const data = loadUsers(usersFile);
+    const users = data.users.map(u => ({
+      id: u.id,
+      username: u.username,
+      createdAt: u.createdAt,
+      hasApiKeys: !!u.encryptedApiKeys
+    }));
+    res.json({ count: users.length, users });
+  }
+
   // Mount routes
   router.post('/register', register);
   router.post('/login', login);
   router.get('/me', requireAuth, me);
   router.put('/api-keys', requireAuth, updateKeys);
   router.post('/generate-invite', generateInvite);
+  router.get('/admin/users', adminUsers);
 
   // Expose handlers for testing
   router._testHandlers = { register, login, me, updateKeys, generateInvite };
