@@ -80,6 +80,15 @@ get chipPopupSwap() { return el('chip-popup-swap'); },
   get lookupPopupState() { return el('lookup-popup-state'); },
   get lookupStateDot() { return el('lookup-state-dot'); },
   get lookupStateText() { return el('lookup-state-text'); },
+
+  // Bug report
+  get bugReportBtn() { return el('bug-report-btn'); },
+  get bugReportModal() { return el('bug-report-modal'); },
+  get bugReportNote() { return el('bug-report-note'); },
+  get bugReportSubmit() { return el('bug-report-submit'); },
+  get bugReportCancel() { return el('bug-report-cancel'); },
+  get bugReportFile() { return el('bug-report-file'); },
+  get bugReportPreview() { return el('bug-report-preview'); },
 };
 
 /** Clear cache (for testing or hot reload) */

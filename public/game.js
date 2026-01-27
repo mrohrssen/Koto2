@@ -52,6 +52,7 @@ import * as auth from './js/ui/auth.js';
 import * as narrationBox from './js/ui/narration-box.js';
 import * as leaderboard from './js/ui/leaderboard.js';
 import * as lookup from './js/ui/lookup.js';
+import * as bugReport from './js/ui/bug-report.js';
 
 // API imports - these are the server communication functions
 import {
@@ -583,6 +584,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function initGame() {
   takeover.init();
   leaderboard.init();
+  bugReport.init();
 
   // Initialize lookup mode
   lookup.init({

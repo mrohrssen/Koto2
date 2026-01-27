@@ -9,6 +9,9 @@ import { dataPath } from '../data-dir.js';
 
 const DEFAULT_USERS_FILE = dataPath('.jrpg-users.json');
 
+// Permanent invite code - unlimited uses, works locally and on Railway
+const PERMANENT_INVITE_CODE = 'neo-tokyo-friends';
+
 // Rate limiting: 5 login attempts per minute per IP
 const loginAttempts = new Map();
 
@@ -50,16 +53,24 @@ export default function createAuthRoutes(options = {}) {
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
-    // Validate invite code first
-    const data = loadUsers(usersFile);
-    const invite = data.inviteCodes.find(i => i.code === inviteCode && !i.usedBy);
-    if (!invite) {
-      return res.status(400).json({ error: 'Invalid or used invite code' });
+    // Check for permanent invite code (unlimited uses)
+    const isPermanentCode = inviteCode === PERMANENT_INVITE_CODE;
+
+    if (!isPermanentCode) {
+      // Validate one-time invite code
+      const data = loadUsers(usersFile);
+      const invite = data.inviteCodes.find(i => i.code === inviteCode && !i.usedBy);
+      if (!invite) {
+        return res.status(400).json({ error: 'Invalid or used invite code' });
+      }
     }
 
     try {
       const user = await createUser(username, password, usersFile);
-      useInviteCode(inviteCode, user.id, usersFile);
+      // Only mark one-time codes as used
+      if (!isPermanentCode) {
+        useInviteCode(inviteCode, user.id, usersFile);
+      }
       const token = signToken(user);
       res.json({ token, user: { id: user.id, username: user.username } });
     } catch (err) {

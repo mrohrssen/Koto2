@@ -13,6 +13,7 @@ import createTTSRoutes from './tts.js';
 import createVocabRoutes from './vocab.js';
 import createGameRoutes from './game/index.js';
 import createPrefetchRoutes from './prefetch.js';
+import createBugReportRoutes from './bug-reports.js';
 
 /**
  * Create main API router with all route modules
@@ -62,6 +63,9 @@ export default function createRoutes(deps) {
 
   // Prefetch routes: /api/prefetch/*
   router.use('/prefetch', createPrefetchRoutes());
+
+  // Bug report routes: /api/bug-report, /api/bug-reports/*
+  router.use(createBugReportRoutes());
 
   return router;
 }
