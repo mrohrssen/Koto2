@@ -13,11 +13,11 @@
 ## Task 1: Add html2canvas to Frontend
 
 **Files:**
-- Modify: `/Users/michia/Documents/jrpg-wt-bug-reporter/public/game.html`
+- Modify: `public/game.html`
 
 **Step 1: Add html2canvas script tag**
 
-Add before the game.js script:
+Add before the closing `</body>` tag (before the game.js script around line 165):
 
 ```html
   <!-- Bug Reporter Screenshot Library -->
@@ -44,12 +44,12 @@ git commit -m "feat(bug-report): add html2canvas for screenshot capture"
 ## Task 2: Add Bug Button to UI
 
 **Files:**
-- Modify: `/Users/michia/Documents/jrpg-wt-bug-reporter/public/game.html`
-- Modify: `/Users/michia/Documents/jrpg-wt-bug-reporter/public/game.css`
+- Modify: `public/game.html`
+- Modify: `public/game.css`
 
 **Step 1: Add bug button HTML**
 
-Add after the utility-row div (around line 117):
+Add after the utility-row closing div (after line 99, before the Lookup Popup):
 
 ```html
     <!-- Bug Report Button -->
@@ -110,12 +110,12 @@ git commit -m "feat(bug-report): add floating bug report button"
 ## Task 3: Add Bug Report Modal HTML/CSS
 
 **Files:**
-- Modify: `/Users/michia/Documents/jrpg-wt-bug-reporter/public/game.html`
-- Modify: `/Users/michia/Documents/jrpg-wt-bug-reporter/public/game.css`
+- Modify: `public/game.html`
+- Modify: `public/game.css`
 
 **Step 1: Add modal HTML**
 
-Add after the bug-report-btn:
+Add immediately after the bug-report-btn:
 
 ```html
     <!-- Bug Report Modal -->
@@ -147,7 +147,7 @@ Add after the bug-report-btn:
 
 **Step 2: Add modal CSS**
 
-Add to end of game.css:
+Add to end of game.css (after the bug button CSS):
 
 ```css
 /* ===== BUG REPORT MODAL ===== */
@@ -257,10 +257,12 @@ git commit -m "feat(bug-report): add report modal UI"
 ## Task 4: Create Bug Report API Endpoints
 
 **Files:**
-- Create: `/Users/michia/Documents/jrpg-wt-bug-reporter/src/routes/bug-reports.js`
-- Modify: `/Users/michia/Documents/jrpg-wt-bug-reporter/src/routes/index.js`
+- Create: `src/routes/bug-reports.js`
+- Modify: `src/routes/index.js`
 
 **Step 1: Create bug-reports route module**
+
+Create `src/routes/bug-reports.js`:
 
 ```javascript
 /**
@@ -405,13 +407,13 @@ export default function createBugReportRoutes() {
 
 **Step 2: Register routes in index.js**
 
-Add import at top of `/Users/michia/Documents/jrpg-wt-bug-reporter/src/routes/index.js`:
+In `src/routes/index.js`, add import at top (after line 5):
 
 ```javascript
 import createBugReportRoutes from './bug-reports.js';
 ```
 
-Add route before the return statement:
+Add route registration before the `return router;` statement (around line 64):
 
 ```javascript
   // Bug report routes: /api/bug-report, /api/bug-reports/*
@@ -440,9 +442,11 @@ git commit -m "feat(bug-report): add API endpoints for submit/list/get/delete"
 ## Task 5: Create Bug Report Frontend Module
 
 **Files:**
-- Create: `/Users/michia/Documents/jrpg-wt-bug-reporter/public/js/ui/bug-report.js`
+- Create: `public/js/ui/bug-report.js`
 
 **Step 1: Create the module**
+
+Create `public/js/ui/bug-report.js`:
 
 ```javascript
 /**
@@ -637,11 +641,11 @@ git commit -m "feat(bug-report): add frontend capture and submission module"
 ## Task 6: Wire Up Bug Report Module in game.js
 
 **Files:**
-- Modify: `/Users/michia/Documents/jrpg-wt-bug-reporter/public/game.js`
+- Modify: `public/game.js`
 
 **Step 1: Add import**
 
-Add near the top with other UI imports (around line 24):
+Add after the lookup import (after line 54):
 
 ```javascript
 import * as bugReport from './js/ui/bug-report.js';
@@ -649,7 +653,7 @@ import * as bugReport from './js/ui/bug-report.js';
 
 **Step 2: Initialize module**
 
-Find where other UI modules are initialized (search for `takeover.init()`) and add after it:
+Find the `initGame()` function (around line 583) and add after `leaderboard.init();` (line 585):
 
 ```javascript
 bugReport.init();
@@ -673,16 +677,19 @@ git commit -m "feat(bug-report): wire up bug report module to game"
 
 ---
 
-## Task 7: Add DOM References
+## Task 7: Add DOM References (Optional)
 
 **Files:**
-- Modify: `/Users/michia/Documents/jrpg-wt-bug-reporter/public/js/dom.js`
+- Modify: `public/js/dom.js`
+
+**Note:** The bug-report.js module uses `document.getElementById()` directly, but for consistency with other modules, add references to dom.js.
 
 **Step 1: Add bug report getters**
 
-Add after the lookup mode getters (around line 80):
+Add after the lookup mode getters (after line 82, before the closing `};`):
 
 ```javascript
+
   // Bug report
   get bugReportBtn() { return el('bug-report-btn'); },
   get bugReportModal() { return el('bug-report-modal'); },
@@ -704,7 +711,14 @@ git commit -m "feat(bug-report): add DOM references for bug report elements"
 
 ## Task 8: Test Full Integration
 
-**Step 1: Run e2e tests to ensure nothing broke**
+**Step 1: Syntax check**
+
+```bash
+node --check public/game.js && echo "OK"
+node --check public/js/ui/bug-report.js && echo "OK"
+```
+
+**Step 2: Run e2e tests to ensure nothing broke**
 
 ```bash
 ./scripts/e2e-test.sh
@@ -712,7 +726,7 @@ git commit -m "feat(bug-report): add DOM references for bug report elements"
 
 Expected: 80+ tests passing (same as baseline)
 
-**Step 2: Manual test on local**
+**Step 3: Manual test on local**
 
 1. `npm run dev`
 2. Open http://localhost:3000
@@ -724,7 +738,7 @@ Expected: 80+ tests passing (same as baseline)
    cat bug-reports/*/report.json
    ```
 
-**Step 3: Test API endpoints**
+**Step 4: Test API endpoints**
 
 ```bash
 # List reports
@@ -737,7 +751,7 @@ curl http://localhost:3000/api/bug-reports/<id>
 open http://localhost:3000/api/bug-reports/<id>/screenshot
 ```
 
-**Step 4: Commit final changes**
+**Step 5: Commit final changes**
 
 ```bash
 git add -A
@@ -749,9 +763,11 @@ git commit -m "feat(bug-report): complete bug reporter integration"
 ## Task 9: Create Local Testing Helper Script
 
 **Files:**
-- Create: `/Users/michia/Documents/jrpg-wt-bug-reporter/scripts/mobile-test.sh`
+- Create: `scripts/mobile-test.sh`
 
 **Step 1: Create the helper script**
+
+Create `scripts/mobile-test.sh`:
 
 ```bash
 #!/bin/bash
