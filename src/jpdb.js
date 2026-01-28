@@ -39,6 +39,38 @@ export function configure(options) {
 let lastJpdbCall = 0;
 const MIN_CALL_INTERVAL_MS = 500;
 
+// Circuit breaker state - stops all calls after rate limit errors
+let circuitBreaker = {
+  isOpen: false,
+  cooldownUntil: 0,
+  consecutiveFailures: 0
+};
+
+const CIRCUIT_BREAKER_COOLDOWN_MS = 5 * 60 * 1000;  // 5 minutes
+const CIRCUIT_BREAKER_EXTENDED_COOLDOWN_MS = 15 * 60 * 1000;  // 15 minutes
+
+/**
+ * Get circuit breaker state for monitoring
+ */
+export function getCircuitBreakerState() {
+  return {
+    isOpen: circuitBreaker.isOpen,
+    cooldownUntil: circuitBreaker.cooldownUntil,
+    consecutiveFailures: circuitBreaker.consecutiveFailures
+  };
+}
+
+/**
+ * Reset circuit breaker (for testing)
+ */
+export function resetCircuitBreaker() {
+  circuitBreaker = {
+    isOpen: false,
+    cooldownUntil: 0,
+    consecutiveFailures: 0
+  };
+}
+
 /**
  * Rate-limited fetch for JPDB API calls
  */
