@@ -114,6 +114,16 @@ export class GameHelper {
 
       // Handle word discovery rooms by swiping through the cards
       if (phase === 'wordDiscovery') {
+        // First check for and dismiss intro/completion narration
+        const wdNarrationBox = this.page.locator(SELECTORS.narrationBox);
+        const wdNarrationIndicator = this.page.locator('.narration-indicator');
+        if (await wdNarrationBox.isVisible().catch(() => false) &&
+            await wdNarrationIndicator.isVisible().catch(() => false)) {
+          await wdNarrationBox.click();
+          await this.page.waitForTimeout(500);
+          continue;
+        }
+
         const flashCard = this.page.locator(SELECTORS.flashCard);
         if (await flashCard.isVisible().catch(() => false)) {
           await flashCard.click();
