@@ -9,6 +9,7 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { getChipLoadout, equipChip, unequipChip, reorderChips } from '../../game/items/chips.js';
+import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -315,6 +316,17 @@ export default function createRunRoutes({
     clearPrefetchCache();
     req.saveGame();
     res.json({ ...result, state: req.getEnrichedGameState() });
+  });
+
+  // Get words for discovery room
+  router.get('/discovery-words', (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit) || 2;
+      const result = getNewWordsForDiscovery(limit);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   });
 
   return router;
