@@ -24,8 +24,9 @@ const CONFIG = {
 // In-memory state
 let state = {
   recentlyUsedWords: [],          // Ring buffer of last N words
-  wordStateCache: {},             // { word: { states: [], vid, sid } }
-  lastRefresh: null,              // Timestamp of last JPDB refresh
+  wordStateCache: {},             // { word: { states: [], vid, sid, dueAt, rank } }
+  lastRefresh: null,              // Timestamp of last incremental refresh
+  lastFullParse: null,            // Timestamp of last full batch parse
   initialized: false,
   checkedThisSession: false       // Only check/refresh once per session
 };
@@ -60,6 +61,7 @@ export function initVocabManager() {
       state.recentlyUsedWords = data.recentlyUsedWords || [];
       state.wordStateCache = data.wordStateCache || {};
       state.lastRefresh = data.lastRefresh || null;
+      state.lastFullParse = data.lastFullParse || null;
       console.log(`Loaded vocab suggestion cache: ${Object.keys(state.wordStateCache).length} word states, ${state.recentlyUsedWords.length} recent words`);
     }
   } catch (e) {
@@ -79,7 +81,8 @@ function saveCache() {
     writeFileSync(cacheFile, JSON.stringify({
       recentlyUsedWords: state.recentlyUsedWords,
       wordStateCache: state.wordStateCache,
-      lastRefresh: state.lastRefresh
+      lastRefresh: state.lastRefresh,
+      lastFullParse: state.lastFullParse
     }, null, 2));
   } catch (e) {
     console.warn('Failed to save vocab suggestion cache:', e.message);
@@ -359,6 +362,7 @@ export function clearVocabManagerCache() {
     recentlyUsedWords: [],
     wordStateCache: {},
     lastRefresh: null,
+    lastFullParse: null,
     initialized: true,
     checkedThisSession: false
   };
@@ -381,6 +385,7 @@ export function getVocabManagerStats() {
     recentWordsCount: state.recentlyUsedWords.length,
     cachedWordStates: Object.keys(state.wordStateCache).length,
     lastRefresh: state.lastRefresh,
+    lastFullParse: state.lastFullParse,
     cacheExpiryMs: CONFIG.cacheExpiryMs
   };
 }
