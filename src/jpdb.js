@@ -116,9 +116,15 @@ function onSuccessfulRequest() {
 }
 
 /**
- * Rate-limited fetch for JPDB API calls
+ * Rate-limited fetch for JPDB API calls with circuit breaker
  */
 async function jpdbFetch(url, options) {
+  // Check circuit breaker first
+  if (!isCircuitBreakerClosed()) {
+    const waitMs = circuitBreaker.cooldownUntil - Date.now();
+    throw new Error(`JPDB circuit breaker open, ${Math.ceil(waitMs / 1000)}s remaining`);
+  }
+
   const now = Date.now();
   const timeSinceLastCall = now - lastJpdbCall;
 
@@ -127,7 +133,17 @@ async function jpdbFetch(url, options) {
   }
 
   lastJpdbCall = Date.now();
-  return fetch(url, options);
+
+  const response = await fetch(url, options);
+
+  // Trip circuit breaker on rate limit or server errors
+  if (response.status === 429 || response.status >= 500) {
+    tripCircuitBreaker(response.status);
+  } else if (response.ok) {
+    onSuccessfulRequest();
+  }
+
+  return response;
 }
 
 // Cache for vocabulary
