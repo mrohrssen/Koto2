@@ -146,6 +146,129 @@ async function jpdbFetch(url, options) {
   return response;
 }
 
+/**
+ * Parse a batch of words to get their vid/sid and card states
+ * Uses /parse endpoint which is more efficient than lookup for bulk operations
+ *
+ * @param {string} apiKey - JPDB API key
+ * @param {string[]} words - Array of word spellings to parse
+ * @returns {Promise<Object>} Map of spelling -> { vid, sid, states, dueAt }
+ */
+export async function parseWordBatch(apiKey, words) {
+  if (!apiKey || !words || words.length === 0) {
+    return {};
+  }
+
+  // Join words with spaces for parsing
+  const text = words.join(' ');
+
+  try {
+    const parseResponse = await jpdbFetch(`${JPDB_API_BASE}/parse`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        text,
+        token_fields: ['vocabulary_index'],
+        vocabulary_fields: ['spelling', 'reading', 'vid', 'sid']
+      })
+    });
+
+    if (!parseResponse.ok) {
+      if (parseResponse.status === 429) {
+        console.warn('[JPDB Batch Parse] Rate limited');
+      }
+      return {};
+    }
+
+    const parseData = await parseResponse.json();
+    const vocabulary = parseData.vocabulary || [];
+
+    if (vocabulary.length === 0) return {};
+
+    // Build vocab ID list for state lookup
+    const vocabIds = vocabulary.map(v => [v[2], v[3]]); // [vid, sid]
+    const spellingMap = {};
+    vocabulary.forEach(v => {
+      spellingMap[v[0]] = { vid: v[2], sid: v[3], reading: v[1] };
+    });
+
+    // Lookup card states for all parsed words
+    const lookupResponse = await jpdbFetch(`${JPDB_API_BASE}/lookup-vocabulary`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        list: vocabIds,
+        fields: ['spelling', 'card_state', 'due_at']
+      })
+    });
+
+    if (!lookupResponse.ok) {
+      // Return just vid/sid without states
+      return spellingMap;
+    }
+
+    const lookupData = await lookupResponse.json();
+    const vocabInfo = lookupData.vocabulary_info || [];
+
+    // Merge states into spelling map
+    for (let i = 0; i < vocabInfo.length; i++) {
+      const info = vocabInfo[i];
+      if (!info) continue;
+      const [spelling, cardStates, dueAt] = info;
+      if (spellingMap[spelling]) {
+        spellingMap[spelling].states = cardStates || [];
+        spellingMap[spelling].dueAt = dueAt ?? null;
+      }
+    }
+
+    return spellingMap;
+
+  } catch (error) {
+    console.warn('[JPDB Batch Parse] Error:', error.message);
+    return {};
+  }
+}
+
+/**
+ * Parse multiple batches of words with delay between batches
+ *
+ * @param {string} apiKey - JPDB API key
+ * @param {string[]} words - All words to parse
+ * @param {number} batchSize - Words per batch (default 2000)
+ * @param {number} delayMs - Delay between batches in ms (default 3000)
+ * @returns {Promise<Object>} Combined map of spelling -> { vid, sid, states, dueAt }
+ */
+export async function parseWordBatches(apiKey, words, batchSize = 2000, delayMs = 3000) {
+  const results = {};
+  const totalBatches = Math.ceil(words.length / batchSize);
+
+  console.log(`[JPDB Batch Parse] Starting ${totalBatches} batches of ${batchSize} words`);
+
+  for (let i = 0; i < words.length; i += batchSize) {
+    const batchNum = Math.floor(i / batchSize) + 1;
+    const batch = words.slice(i, i + batchSize);
+
+    console.log(`[JPDB Batch Parse] Batch ${batchNum}/${totalBatches} (${batch.length} words)`);
+
+    const batchResults = await parseWordBatch(apiKey, batch);
+    Object.assign(results, batchResults);
+
+    // Delay between batches (except after last batch)
+    if (i + batchSize < words.length) {
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+  }
+
+  console.log(`[JPDB Batch Parse] Complete: ${Object.keys(results).length} words parsed`);
+  return results;
+}
+
 // Cache for vocabulary
 let vocabCache = null;
 
