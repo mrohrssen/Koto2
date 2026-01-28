@@ -9,7 +9,7 @@
  * KEY EXPORTS:
  * - init({ equipBots, contextAction, cardSwipe, cardFlip }): Set up callbacks
  * - showButtons(contextLabel, options): Display action buttons
- * - showFlashCard(word): Display swipeable vocabulary card
+ * - showFlashCard(word, options): Display swipeable vocabulary card (combat or discovery mode)
  * - triggerEquipBots(): Programmatically trigger equip callback
  * - clear(): Empty the action area
  * - setContent(html): Set custom HTML content
@@ -82,12 +82,17 @@ export function showButtons(contextLabel, { contextDisabled = false } = {}) {
 }
 
 /**
- * Show flash card (combat mode)
+ * Show flash card (combat mode or discovery mode)
  * @param {Object} word - { word, meanings, reading }
+ * @param {Object} options - { discoveryMode: boolean }
  */
-export function showFlashCard(word) {
+export function showFlashCard(word, { discoveryMode = false } = {}) {
   cardFlipped = false;
   isSwiping = false;
+
+  const hintText = discoveryMode
+    ? '&larr; learn &nbsp; | &nbsp; learn &rarr;'
+    : '&larr; didn\'t know &nbsp; | &nbsp; knew it &rarr;';
 
   dom.actionArea.innerHTML = `
     <div class="flash-card-container" id="flash-card-container">
@@ -98,7 +103,7 @@ export function showFlashCard(word) {
             ? `<ruby>${escapeHtml(word.word)}<rt>${escapeHtml(word.reading)}</rt></ruby>`
             : escapeHtml(word.word)}</div>
           <div class="flash-card-meaning">${formatMeanings(word.meanings)}</div>
-          <div class="flash-card-hint">&larr; didn't know &nbsp; | &nbsp; knew it &rarr;</div>
+          <div class="flash-card-hint">${hintText}</div>
         </div>
       </div>
     </div>
