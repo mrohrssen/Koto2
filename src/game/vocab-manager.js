@@ -402,9 +402,10 @@ export async function performFullParse(apiKey, wordList) {
   const now = Date.now();
   const cacheAge = state.lastFullParse ? now - state.lastFullParse : Infinity;
 
-  // Skip if cache is fresh (less than 1 hour old)
-  if (cacheAge < FULL_PARSE_CONFIG.cacheExpiryMs) {
-    console.log(`[VocabManager] Cache is fresh (${Math.round(cacheAge / 60000)} min old), skipping full parse`);
+  // Skip if cache is fresh (less than 1 hour old) AND has content
+  const cacheHasContent = Object.keys(state.wordStateCache).length > 0;
+  if (cacheAge < FULL_PARSE_CONFIG.cacheExpiryMs && cacheHasContent) {
+    console.log(`[VocabManager] Cache is fresh (${Math.round(cacheAge / 60000)} min old, ${Object.keys(state.wordStateCache).length} words), skipping full parse`);
     return state.wordStateCache;
   }
 
@@ -497,4 +498,47 @@ export function getVocabManagerStats() {
     lastFullParse: state.lastFullParse,
     cacheExpiryMs: CONFIG.cacheExpiryMs
   };
+}
+
+/**
+ * Get new words for discovery room, sorted by frequency rank
+ * @param {number} limit - Maximum words to return
+ * @returns {Object} { words: Array<{word, reading, meanings, vid, sid, rank}>, available: boolean }
+ */
+export function getNewWordsForDiscovery(limit = 2) {
+  initVocabManager();
+
+  const newWords = [];
+
+  for (const [word, info] of Object.entries(state.wordStateCache)) {
+    if (info.states && info.states.includes('new')) {
+      newWords.push({
+        word,
+        reading: info.reading || word,
+        meanings: info.meanings || [],
+        vid: info.vid,
+        sid: info.sid,
+        rank: info.rank || Infinity
+      });
+    }
+  }
+
+  // Sort by rank (lower = higher frequency = prioritized)
+  newWords.sort((a, b) => a.rank - b.rank);
+
+  const words = newWords.slice(0, limit);
+
+  return {
+    words,
+    available: words.length > 0
+  };
+}
+
+/**
+ * Set test cache (for unit testing only)
+ * @param {Object} cache - Word state cache to inject
+ */
+export function setTestCache(cache) {
+  state.wordStateCache = cache;
+  state.initialized = true;
 }
