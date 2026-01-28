@@ -279,6 +279,24 @@ async function loadGameState() {
   }
 }
 
+// Warm JPDB cache on session start
+async function warmJpdbCache() {
+  const apiKeys = settings.getApiKeys();
+  if (!apiKeys.jpdbApiKey) return;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/game/session-start`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ jpdbApiKey: apiKeys.jpdbApiKey })
+    });
+    const data = await response.json();
+    console.log(`[Game] Session cache: ${data.warmed ? data.cachedWords + ' words' : data.reason}`);
+  } catch (e) {
+    console.warn('[Game] Failed to warm session cache:', e);
+  }
+}
+
 // ============ GAME ACTIONS ============
 async function createCharacter() {
   const result = await apiCreatePlayer('Hacker', {}, 0);
@@ -717,6 +735,9 @@ async function initGame() {
   });
 
   await loadGameState();
+
+  // Warm JPDB cache on session start
+  warmJpdbCache();
 
   // Fetch chip loadout on startup so chip row renders with equipped chips
   if (gameState.player) {
