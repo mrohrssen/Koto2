@@ -317,6 +317,9 @@ export function getRoomEntryNarration(room) {
     case ROOM_TYPES.quiz:
       return `${roomNum}に入った。不思議な老人がいる...「質問に答えよ」`;
 
+    case ROOM_TYPES.wordDiscovery:
+      return `${roomNum}に入った。知識の泉がある...新しい言葉を発見できそうだ。`;
+
     case ROOM_TYPES.boss:
       return `${wardInfo.name}の中心部に入った。強力なSYSTEM反応がある...ボスがいる！`;
 
@@ -331,9 +334,10 @@ export function getRoomEntryNarration(room) {
 export function getRoomActions(room) {
   const actions = [];
 
-  // All rooms have "proceed" except boss room and unfinished encounter rooms
+  // All rooms have "proceed" except boss room, unfinished encounter rooms, and unfinished wordDiscovery rooms
   const isUnfinishedEncounter = room.type === 'encounter' && !room.interacted;
-  if (!room.isBossRoom && !isUnfinishedEncounter) {
+  const isUnfinishedWordDiscovery = room.type === 'wordDiscovery' && !room.interacted;
+  if (!room.isBossRoom && !isUnfinishedEncounter && !isUnfinishedWordDiscovery) {
     actions.push({ id: 'proceed', name: '進む', description: '次のエリアへ進む' });
   }
 
@@ -354,6 +358,10 @@ export function getRoomActions(room) {
       if (!room.interacted) {
         actions.push({ id: 'fight', name: '解放', description: '市民を解放する' });
       }
+      break;
+
+    case ROOM_TYPES.wordDiscovery:
+      // No action buttons - flash cards appear automatically
       break;
 
     case ROOM_TYPES.boss:
