@@ -698,6 +698,25 @@ export async function stopCombatLoop(result) {
   wordPractice.hideWordCards();
   wordPractice.closeWordInputModal();
 
+  // Post-combat refresh: update cache with fresh states for reviewed words
+  const reviewedWords = wordPractice.getReviewedWordsThisCombat();
+  if (reviewedWords.length > 0) {
+    const apiKeys = settings.getApiKeys();
+    fetch(`${API_BASE}/api/game/post-combat-refresh`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        words: reviewedWords,
+        jpdbApiKey: apiKeys.jpdbApiKey
+      })
+    }).then(r => r.json()).then(data => {
+      console.log(`[Combat] Post-combat refresh: ${data.refreshed} words updated`);
+    }).catch(err => {
+      console.warn('[Combat] Post-combat refresh failed:', err);
+    });
+    wordPractice.clearReviewedWordsThisCombat();
+  }
+
   // Brief pause before narration (let final damage numbers display)
   await delay(720);
 
