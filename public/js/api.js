@@ -511,6 +511,22 @@ async function lookupJpdbBatch(vocabList) {
   }
 }
 
+/** Get discovery words for the word discovery room
+ * @param {number} limit - Number of words to fetch (default: 2)
+ * @returns {Promise<Object>} Discovery words data
+ */
+async function getDiscoveryWords(limit = 2) {
+  try {
+    const response = await fetch(`/api/game/discovery-words?limit=${limit}`, {
+      headers: getAuthHeaders()
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to get discovery words:', error);
+    return { words: [] };
+  }
+}
+
 export {
   apiCall,
   isApiLoading,
@@ -554,5 +570,6 @@ export {
   sendJpdbReview,
   parseJpdbText,
   lookupJpdbWord,
-  lookupJpdbBatch
+  lookupJpdbBatch,
+  getDiscoveryWords
 };
