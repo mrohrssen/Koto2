@@ -456,7 +456,8 @@ async function generateGameNarration(event, context, userKeys = {}) {
   if (context.enemy?.name) {
     gameTerms.push(context.enemy.name);
   }
-  narration = await applyVocabRepair(narration, vocabulary, userKeys, gameTerms);
+  // DISABLED: vocab repair not used with hardcoded narrations, wastes jpdb API calls
+  // narration = await applyVocabRepair(narration, vocabulary, userKeys, gameTerms);
 
   trackNarrationStats(narration, jpdbApiKey);
 
