@@ -23,6 +23,7 @@ let jpdbWordsFetching = false;  // Prevent duplicate fetches
 let recentlyReviewedVids = [];  // Track recently reviewed vids to prevent re-fetching
 let selfGradeSelectedIndex = 3; // Default to "Okay"
 let reviewType = 'typing';      // 'typing' or 'self-grade'
+let reviewedWordsThisCombat = []; // Track words reviewed for post-combat refresh
 
 // Callbacks (set via init)
 let getGameState = null;
@@ -162,6 +163,9 @@ export async function fetchReplacementWord(justReviewedVid = null) {
  * Initialize word cards for combat
  */
 export async function initCombatWords() {
+  // Reset tracking for new combat
+  reviewedWordsThisCombat = [];
+
   // Only clear if no prefetched words available
   // Prefetch already excludes recently reviewed words via server-side logic
   if (!jpdbWordsCache || jpdbWordsCache.length === 0) {
@@ -485,6 +489,12 @@ async function sendJpdbReviewHandler(vid, sid, grade) {
   if (!result.error) {
     console.log(`[JPDB] Review sent: vid=${vid}, grade=${grade}`);
     removeWordFromCache(vid);
+
+    // Track for post-combat refresh
+    const word = combatWords.find(w => w.vid === vid) || availableWords.find(w => w.vid === vid);
+    if (word && word.word) {
+      reviewedWordsThisCombat.push(word.word);
+    }
   } else {
     console.warn('[JPDB] Review failed:', result.error);
   }
@@ -796,4 +806,18 @@ export function getCombatWordsCount() {
  */
 export function getSelectedWordIndex() {
   return selectedWordIndex;
+}
+
+/**
+ * Get words reviewed this combat (for post-combat refresh)
+ */
+export function getReviewedWordsThisCombat() {
+  return [...reviewedWordsThisCombat];
+}
+
+/**
+ * Clear reviewed words tracking (called at combat end)
+ */
+export function clearReviewedWordsThisCombat() {
+  reviewedWordsThisCombat = [];
 }
