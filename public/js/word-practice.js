@@ -107,9 +107,7 @@ export async function fetchJpdbDueWords() {
     const response = await fetch(`${apiBase}/api/game/due-words`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      // bypassCache: true fetches fresh due words directly from JPDB
-      // to avoid stale local cache that may mark "due" words as "known"
-      body: JSON.stringify({ limit: 50, jpdbApiKey, bypassCache: true })
+      body: JSON.stringify({ limit: 50, jpdbApiKey })
     });
     const data = await response.json();
 
@@ -146,7 +144,7 @@ export async function fetchReplacementWord(justReviewedVid = null) {
     const response = await fetch(`${apiBase}/api/game/due-words`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ limit: 1, exclude: allExcludeVids, jpdbApiKey, bypassCache: true })
+      body: JSON.stringify({ limit: 1, exclude: allExcludeVids, jpdbApiKey })
     });
     const data = await response.json();
 
