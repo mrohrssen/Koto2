@@ -72,6 +72,50 @@ export function resetCircuitBreaker() {
 }
 
 /**
+ * Trip the circuit breaker after a rate limit or server error
+ * @param {number} statusCode - HTTP status code that caused the trip
+ */
+export function tripCircuitBreaker(statusCode) {
+  circuitBreaker.consecutiveFailures++;
+  circuitBreaker.isOpen = true;
+
+  // Extended cooldown after multiple failures
+  const cooldownMs = circuitBreaker.consecutiveFailures > 1
+    ? CIRCUIT_BREAKER_EXTENDED_COOLDOWN_MS
+    : CIRCUIT_BREAKER_COOLDOWN_MS;
+
+  circuitBreaker.cooldownUntil = Date.now() + cooldownMs;
+
+  console.warn(`[JPDB Circuit Breaker] Tripped! Status ${statusCode}, cooldown ${cooldownMs / 1000}s, failures: ${circuitBreaker.consecutiveFailures}`);
+}
+
+/**
+ * Check if circuit breaker allows requests
+ */
+function isCircuitBreakerClosed() {
+  if (!circuitBreaker.isOpen) return true;
+
+  if (Date.now() >= circuitBreaker.cooldownUntil) {
+    console.log('[JPDB Circuit Breaker] Cooldown expired, allowing test request');
+    return true;  // Allow one test request
+  }
+
+  return false;
+}
+
+/**
+ * Reset circuit breaker on successful request
+ */
+function onSuccessfulRequest() {
+  if (circuitBreaker.isOpen) {
+    console.log('[JPDB Circuit Breaker] Request succeeded, closing breaker');
+    circuitBreaker.isOpen = false;
+    circuitBreaker.consecutiveFailures = 0;
+    circuitBreaker.cooldownUntil = 0;
+  }
+}
+
+/**
  * Rate-limited fetch for JPDB API calls
  */
 async function jpdbFetch(url, options) {
