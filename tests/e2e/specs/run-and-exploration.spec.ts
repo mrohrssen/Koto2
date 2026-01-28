@@ -48,7 +48,7 @@ test.describe('Run and Exploration', () => {
 
   test('room encounter shows Fight button', async ({ gameHelper, page }) => {
     await gameHelper.setupRun();
-    const found = await gameHelper.proceedToEncounter(20);
+    const found = await gameHelper.proceedToEncounter(50);
     expect(found).toBe(true);
     await expect(page.locator(SELECTORS.fightBtn)).toBeVisible({ timeout: 3000 });
   });

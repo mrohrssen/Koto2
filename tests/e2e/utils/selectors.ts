@@ -100,4 +100,7 @@ export const SELECTORS = {
 
   // Game over
   gameoverHubBtn: '#gameover-hub-btn',
+
+  // Narration box
+  narrationBox: '#narration-box',
 };

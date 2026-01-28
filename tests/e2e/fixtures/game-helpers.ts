@@ -81,7 +81,7 @@ export class GameHelper {
     await this.selectStartingChip(0);
     await this.waitForPhase(['ward_selection'], 5000);
     await this.selectWard(0);
-    await this.waitForPhase(['exploring', 'room_encounter', 'boss_ready', 'shrine'], 8000);
+    await this.waitForPhase(['exploring', 'room_encounter', 'boss_ready', 'shrine', 'wordDiscovery'], 8000);
   }
 
   // ============ EXPLORATION ============
@@ -110,6 +110,87 @@ export class GameHelper {
           await this.page.waitForTimeout(500);
           continue;
         }
+      }
+
+      // Handle word discovery rooms by swiping through the cards
+      if (phase === 'wordDiscovery') {
+        const flashCard = this.page.locator(SELECTORS.flashCard);
+        if (await flashCard.isVisible().catch(() => false)) {
+          await flashCard.click();
+          await this.page.waitForTimeout(300);
+          await this.page.evaluate(() => {
+            document.dispatchEvent(new CustomEvent('test-swipe', { detail: 'right' }));
+          });
+          await this.page.waitForTimeout(500);
+          continue;
+        }
+        // If no flash card visible, check for proceed button (discovery complete)
+        const proceedBtn = this.page.locator(SELECTORS.proceedBtn);
+        if (await proceedBtn.isVisible().catch(() => false)) {
+          await proceedBtn.click();
+          await this.page.waitForTimeout(500);
+          continue;
+        }
+        await this.page.waitForTimeout(300);
+        continue;
+      }
+
+      // FIRST: Check for narration box with click-to-continue indicator (not persistent mode)
+      // because quiz result feedback appears as narration and blocks answer clicks
+      // Only click if the indicator (▼) is visible, meaning it's dismissible
+      const narrationBox = this.page.locator(SELECTORS.narrationBox);
+      const narrationIndicator = this.page.locator('.narration-indicator');
+      const indicatorVisible = await narrationIndicator.isVisible().catch(() => false);
+      if (await narrationBox.isVisible().catch(() => false) && indicatorVisible) {
+        await narrationBox.click();
+        await this.page.waitForTimeout(500);
+        continue;
+      }
+
+      // Handle quiz rooms - click through answer questions (UI-based detection)
+      // Check that the quiz hasn't already been answered (data-answered attribute on parent)
+      const quizAnswerList = this.page.locator('.quiz-answer-list');
+      const alreadyAnswered = await quizAnswerList.getAttribute('data-answered').catch(() => null);
+      if (!alreadyAnswered) {
+        const quizAnswer = this.page.locator('.quiz-answer-option').first();
+        if (await quizAnswer.isVisible().catch(() => false)) {
+          await quizAnswer.click({ force: true });
+          await this.page.waitForTimeout(1000);
+          continue;
+        }
+      }
+      // Check for quiz reward options (use force click to bypass any overlay issues)
+      const quizReward = this.page.locator('.quiz-reward-option').first();
+      if (await quizReward.isVisible().catch(() => false)) {
+        await quizReward.click({ force: true });
+        await this.page.waitForTimeout(1000);
+        continue;
+      }
+
+      // Handle ward selection (UI-based detection - more reliable than phase check)
+      // First check if ward proceed button is visible (this indicates ward selection phase)
+      const wardProceedBtn = this.page.locator(SELECTORS.wardProceedBtn);
+      if (await wardProceedBtn.isVisible().catch(() => false)) {
+        // Click first ward option if needed (to enable proceed button)
+        const wardOption = this.page.locator(SELECTORS.wardOption).first();
+        if (await wardOption.isVisible().catch(() => false)) {
+          await wardOption.click();
+          await this.page.waitForTimeout(300);
+        }
+        // Click proceed button
+        await wardProceedBtn.click();
+        // Wait for phase to change from ward_selection
+        try {
+          await this.page.waitForFunction(
+            async () => {
+              const res = await fetch('/api/game/state');
+              const state = await res.json();
+              return state?.phase !== 'ward_selection';
+            },
+            { timeout: 3000, polling: 300 }
+          );
+        } catch { /* timeout is OK, continue loop */ }
+        continue;
       }
 
       const fightBtn = this.page.locator(SELECTORS.fightBtn);

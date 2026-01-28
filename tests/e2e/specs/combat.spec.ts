@@ -51,7 +51,7 @@ test.describe('Combat', () => {
   test('Fight button disappears when combat starts', async ({ gameHelper, page }) => {
     await setupCharacter(gameHelper);
     await gameHelper.setupRun();
-    const found = await gameHelper.proceedToEncounter(20);
+    const found = await gameHelper.proceedToEncounter(50);
     expect(found).toBe(true);
     await expect(page.locator(SELECTORS.fightBtn)).toBeVisible({ timeout: 3000 });
     await page.locator(SELECTORS.fightBtn).click();

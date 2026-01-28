@@ -18,7 +18,7 @@ test.describe('Character Creation', () => {
     const phase = await gameHelper.getPhase();
     expect(phase).toBe('hub');
     await expect(page.locator(SELECTORS.contextActionBtn)).toBeVisible();
-    await expect(page.locator(SELECTORS.contextActionBtn)).toHaveText('Infiltrate');
+    await expect(page.locator(SELECTORS.contextActionBtn)).toHaveText('潜入');
   });
 
   test('hub shows correct initial state', async ({ gameHelper, page }) => {

@@ -11,7 +11,7 @@ test.describe('Meta Progression', () => {
     await setupCharacter(gameHelper);
     await gameHelper.setupRun();
     // Win a fight to earn essence
-    const found = await gameHelper.proceedToEncounter(20);
+    const found = await gameHelper.proceedToEncounter(50);
     expect(found).toBe(true);
     await page.locator(SELECTORS.fightBtn).click();
     await gameHelper.waitForPhase(['combat'], 5000);

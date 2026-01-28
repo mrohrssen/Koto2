@@ -12,6 +12,12 @@ test.describe('Game Over', () => {
     await gameHelper.swipeCard('left');
     // Wait for combat to process — enemy should kill player
     await page.waitForTimeout(3000);
+    // Click narration box to dismiss it (defeat narration requires click-to-continue)
+    const narrationBox = page.locator(SELECTORS.narrationBox);
+    if (await narrationBox.isVisible().catch(() => false)) {
+      await narrationBox.click();
+      await page.waitForTimeout(500);
+    }
     // Gameover takeover should open
     const isOpen = await gameHelper.isTakeoverOpen(SELECTORS.gameoverView);
     expect(isOpen).toBe(true);
@@ -24,6 +30,12 @@ test.describe('Game Over', () => {
     await gameHelper.flipCard();
     await gameHelper.swipeCard('left');
     await page.waitForTimeout(3000);
+    // Click narration box to dismiss it (defeat narration requires click-to-continue)
+    const narrationBox = page.locator(SELECTORS.narrationBox);
+    if (await narrationBox.isVisible().catch(() => false)) {
+      await narrationBox.click();
+      await page.waitForTimeout(500);
+    }
     // Click Return to Hub
     await page.locator(SELECTORS.gameoverHubBtn).waitFor({ state: 'visible', timeout: 5000 });
     await page.locator(SELECTORS.gameoverHubBtn).click();
