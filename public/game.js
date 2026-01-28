@@ -592,7 +592,7 @@ async function initGame() {
     lookupWord: lookupJpdbWord,
     lookupBatch: lookupJpdbBatch,
     showToast: (msg) => scene.showToast(msg, 3000),
-    hasJpdbKey: () => !!localStorage.getItem('jrpg_jpdbApiKey') || !!localStorage.getItem('authToken')
+    hasJpdbKey: () => !!localStorage.getItem('authToken')
   });
 
   actions.init({

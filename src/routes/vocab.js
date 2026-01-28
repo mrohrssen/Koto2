@@ -17,7 +17,7 @@ import {
   lookupVocabularyBatch
 } from '../jpdb.js';
 import { addReview, findUserById } from '../auth/users.js';
-import { requireAuth } from '../auth/middleware.js';
+import { requireAuth, optionalAuth } from '../auth/middleware.js';
 import { decryptKeys } from '../auth/crypto.js';
 
 /**
@@ -100,7 +100,7 @@ export default function createVocabRoutes({ getSettings }) {
   });
 
   // Parse text with JPDB
-  router.post('/jpdb/parse', async (req, res) => {
+  router.post('/jpdb/parse', optionalAuth, async (req, res) => {
     const { text } = req.body;
     const jpdbApiKey = getJpdbApiKey(req);
 
@@ -141,7 +141,7 @@ export default function createVocabRoutes({ getSettings }) {
   });
 
   // Lookup vocabulary meaning
-  router.post('/jpdb/lookup', async (req, res) => {
+  router.post('/jpdb/lookup', optionalAuth, async (req, res) => {
     const { vid, sid } = req.body;
     const jpdbApiKey = getJpdbApiKey(req);
 
@@ -171,7 +171,7 @@ export default function createVocabRoutes({ getSettings }) {
   });
 
   // Batch lookup vocabulary meanings (for prefetching)
-  router.post('/jpdb/lookup-batch', async (req, res) => {
+  router.post('/jpdb/lookup-batch', optionalAuth, async (req, res) => {
     const { vocabList } = req.body;
     const jpdbApiKey = getJpdbApiKey(req);
 

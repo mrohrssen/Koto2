@@ -58,3 +58,25 @@ export function requireAuth(req, res, next) {
   req.user = { id: payload.id, username: payload.username };
   next();
 }
+
+/**
+ * Express middleware: populates req.user if a valid JWT is present,
+ * but does NOT reject the request if missing or invalid.
+ */
+export function optionalAuth(req, res, next) {
+  if (process.env.NODE_ENV === 'test' || process.env.SKIP_AUTH === 'true') {
+    req.user = { id: 'test-user', username: 'test' };
+    return next();
+  }
+
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.slice(7);
+    const payload = verifyToken(token);
+    if (payload) {
+      req.user = { id: payload.id, username: payload.username };
+    }
+  }
+
+  next();
+}
