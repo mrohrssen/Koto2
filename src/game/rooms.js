@@ -36,6 +36,9 @@
 
 import { generateShopChips, getChipDisplayInfo } from './items/chips.js';
 
+// Word discovery configuration
+export const WORDS_PER_DISCOVERY = 2;
+
 // Tokyo Ward names (floor -> ward mapping)
 export const FLOOR_NAMES = {
   1: { name: '練馬区', nameEn: 'Nerima Ward', theme: 'residential' },
@@ -207,10 +210,11 @@ export function getWardInfo(wardId) {
 
 // Room types (simplified: encounters, shrine, boss)
 export const ROOM_TYPES = {
-  encounter: 'encounter',   // Combat encounter (possessed citizen)
-  shrine: 'shrine',         // Fox shrine (chip upgrade)
-  quiz: 'quiz',             // Quiz master (reward room)
-  boss: 'boss'              // Floor boss
+  encounter: 'encounter',       // Combat encounter (possessed citizen)
+  shrine: 'shrine',             // Fox shrine (chip upgrade)
+  quiz: 'quiz',                 // Quiz master (reward room)
+  wordDiscovery: 'wordDiscovery', // Learn new vocabulary
+  boss: 'boss'                  // Floor boss
 };
 
 // ============ ROOM GENERATION ============
@@ -226,6 +230,7 @@ export function generateFloorRooms(floor, encountersNeeded = 3) {
   const rooms = [];
   const SHRINE_CHANCE = 0.2;
   const QUIZ_CHANCE = 0.2;
+  const WORD_DISCOVERY_CHANCE = 0.2;
 
   for (let i = 0; i < encountersNeeded; i++) {
     const roll = Math.random();
@@ -234,6 +239,8 @@ export function generateFloorRooms(floor, encountersNeeded = 3) {
       type = ROOM_TYPES.shrine;
     } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE) {
       type = ROOM_TYPES.quiz;
+    } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE + WORD_DISCOVERY_CHANCE) {
+      type = ROOM_TYPES.wordDiscovery;
     } else {
       type = ROOM_TYPES.encounter;
     }
@@ -272,6 +279,15 @@ function createRoom(type, floor, roomNumber, totalRooms) {
 
     case ROOM_TYPES.quiz:
       room.quiz = { answered: false, rewarded: false };
+      break;
+
+    case ROOM_TYPES.wordDiscovery:
+      room.wordDiscovery = {
+        wordsToLearn: WORDS_PER_DISCOVERY,
+        wordsLearned: 0,
+        wordIds: [],
+        completed: false
+      };
       break;
 
     case ROOM_TYPES.boss:
