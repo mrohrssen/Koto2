@@ -14,7 +14,8 @@ import {
 } from '../../jpdb.js';
 import {
   refreshWordStateCache,
-  invalidateWordStateCache as invalidateVocabManagerCache
+  invalidateWordStateCache as invalidateVocabManagerCache,
+  performFullParse
 } from '../../game/vocab-manager.js';
 import {
   getGameStatsForPeriod,
@@ -31,7 +32,8 @@ export default function createMiscRoutes({
   setGameStats,
   getDebugMode,
   setDebugMode,
-  vocabCacheFile
+  vocabCacheFile,
+  staticWordList
 }) {
   const router = Router();
 
@@ -334,6 +336,35 @@ export default function createMiscRoutes({
       res.json({
         warmed: vocabResult.words.length,
         message: 'Cache warmed successfully'
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Session start - warm cache with full parse if needed
+  router.post('/session-start', async (req, res) => {
+    const jpdbApiKey = req.userKeys.jpdbApiKey || req.body.jpdbApiKey;
+    if (!jpdbApiKey) {
+      return res.json({
+        warmed: false,
+        reason: 'No JPDB API key configured'
+      });
+    }
+
+    if (!staticWordList || staticWordList.length === 0) {
+      return res.json({
+        warmed: false,
+        reason: 'Static word list not loaded'
+      });
+    }
+
+    try {
+      const cache = await performFullParse(jpdbApiKey, staticWordList);
+      res.json({
+        warmed: true,
+        cachedWords: Object.keys(cache).length,
+        message: 'Session cache ready'
       });
     } catch (error) {
       res.status(500).json({ error: error.message });

@@ -155,6 +155,18 @@ initializeJpdb();
 // Configure vocab manager with same file path
 configureVocabManager({ cacheFile: VOCAB_SUGGESTIONS_FILE });
 
+// Load static word list for JPDB batch parsing
+let staticWordList = [];
+const wordListPath = join(__dirname, 'data/jpdb-wordlist.json');
+if (existsSync(wordListPath)) {
+  try {
+    staticWordList = JSON.parse(readFileSync(wordListPath, 'utf-8'));
+    console.log(`Loaded ${staticWordList.length} words from static word list`);
+  } catch (e) {
+    console.warn('Failed to load static word list:', e.message);
+  }
+}
+
 const app = express();
 const gameManager = new GameManager();
 
@@ -354,7 +366,8 @@ app.use('/api', createRoutes({
   setGameStats: (newStats) => { gameStats = newStats; },
   getDebugMode: () => debugMode,
   setDebugMode: (val) => { debugMode = val; },
-  vocabCacheFile: VOCAB_CACHE_FILE
+  vocabCacheFile: VOCAB_CACHE_FILE,
+  staticWordList
 }));
 
 // Narration helpers

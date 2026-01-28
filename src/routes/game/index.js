@@ -103,7 +103,8 @@ export default function createGameRoutes(deps) {
     setGameStats: deps.setGameStats,
     getDebugMode: deps.getDebugMode,
     setDebugMode: deps.setDebugMode,
-    vocabCacheFile: deps.vocabCacheFile
+    vocabCacheFile: deps.vocabCacheFile,
+    staticWordList: deps.staticWordList
   }));
 
   return router;
