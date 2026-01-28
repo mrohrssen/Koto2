@@ -228,9 +228,9 @@ export const ROOM_TYPES = {
  */
 export function generateFloorRooms(floor, encountersNeeded = 3) {
   const rooms = [];
-  const SHRINE_CHANCE = 0.2;
-  const QUIZ_CHANCE = 0.2;
-  const WORD_DISCOVERY_CHANCE = 0.2;
+  const SHRINE_CHANCE = 0.15;
+  const QUIZ_CHANCE = 0.15;
+  const WORD_DISCOVERY_CHANCE = 0.10;
 
   for (let i = 0; i < encountersNeeded; i++) {
     const roll = Math.random();

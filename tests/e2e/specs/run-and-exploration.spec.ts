@@ -9,8 +9,8 @@ test.describe('Run and Exploration', () => {
   test('Infiltrate opens starting chip selection', async ({ gameHelper, page }) => {
     await gameHelper.startRun();
     // Chip selection now uses in-scene cards in the action area
-    const chipCount = await page.locator(SELECTORS.chipSelectCard).count();
-    expect(chipCount).toBe(3);
+    // Chip selection uses a single-card carousel; wait for the card to be visible
+    await expect(page.locator(SELECTORS.chipSelectCard)).toBeVisible({ timeout: 5000 });
   });
 
   test('select starting chip transitions to ward selection', async ({ gameHelper, page }) => {
