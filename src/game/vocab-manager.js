@@ -6,7 +6,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { lookupWordStates } from '../jpdb.js';
+import { lookupWordStates, parseWordBatches } from '../jpdb.js';
 
 // Cache file path - configured via configureVocabManager()
 let cacheFile = null;
@@ -19,6 +19,14 @@ const CONFIG = {
   dueWordRatio: 0.6,              // 60% of suggestions should be due words
   learningWordRatio: 0.25,        // 25% should be learning words
   knownWordRatio: 0.15            // 15% can be known words for variety
+};
+
+// Full parse configuration
+export const FULL_PARSE_CONFIG = {
+  batchSize: 2000,
+  maxWords: 10000,
+  batchDelayMs: 3000,
+  cacheExpiryMs: 60 * 60 * 1000  // 1 hour
 };
 
 // In-memory state
@@ -374,6 +382,75 @@ export function clearVocabManagerCache() {
  */
 export function invalidateWordStateCache() {
   state.checkedThisSession = false;
+}
+
+/**
+ * Perform a full parse of the static word list
+ * Called on session start when cache is missing or older than 1 hour
+ *
+ * @param {string} apiKey - JPDB API key
+ * @param {Object[]} wordList - Static word list [{word, rank}, ...]
+ * @returns {Promise<Object>} Word state cache
+ */
+export async function performFullParse(apiKey, wordList) {
+  initVocabManager();
+
+  if (!apiKey || !wordList || wordList.length === 0) {
+    return state.wordStateCache;
+  }
+
+  const now = Date.now();
+  const cacheAge = state.lastFullParse ? now - state.lastFullParse : Infinity;
+
+  // Skip if cache is fresh (less than 1 hour old)
+  if (cacheAge < FULL_PARSE_CONFIG.cacheExpiryMs) {
+    console.log(`[VocabManager] Cache is fresh (${Math.round(cacheAge / 60000)} min old), skipping full parse`);
+    return state.wordStateCache;
+  }
+
+  console.log(`[VocabManager] Starting full parse of ${Math.min(wordList.length, FULL_PARSE_CONFIG.maxWords)} words...`);
+
+  // Only parse top N most frequent words
+  const wordsToparse = wordList.slice(0, FULL_PARSE_CONFIG.maxWords);
+
+  // Build a map of word -> rank for merging
+  const rankMap = {};
+  for (const item of wordsToparse) {
+    rankMap[item.word] = item.rank;
+  }
+
+  // Extract word strings for parsing
+  const wordStrings = wordsToparse.map(w => w.word);
+
+  try {
+    const results = await parseWordBatches(
+      apiKey,
+      wordStrings,
+      FULL_PARSE_CONFIG.batchSize,
+      FULL_PARSE_CONFIG.batchDelayMs
+    );
+
+    // Merge results into cache, adding rank
+    for (const [word, info] of Object.entries(results)) {
+      state.wordStateCache[word] = {
+        ...info,
+        rank: rankMap[word] || null
+      };
+    }
+
+    state.lastFullParse = now;
+    state.lastRefresh = now;
+
+    saveCache();
+
+    console.log(`[VocabManager] Full parse complete: ${Object.keys(state.wordStateCache).length} words cached`);
+
+    return state.wordStateCache;
+
+  } catch (error) {
+    console.error('[VocabManager] Full parse failed:', error.message);
+    return state.wordStateCache;
+  }
 }
 
 /**

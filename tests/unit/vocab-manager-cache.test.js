@@ -21,3 +21,17 @@ describe('Vocab Manager New Cache Format', () => {
     assert.ok('lastFullParse' in stats, 'stats should include lastFullParse');
   });
 });
+
+describe('Full Parse Function', () => {
+  it('should export performFullParse function', async () => {
+    const vm = await import('../../src/game/vocab-manager.js');
+    assert.strictEqual(typeof vm.performFullParse, 'function');
+  });
+
+  it('should export FULL_PARSE_CONFIG for testing', async () => {
+    const vm = await import('../../src/game/vocab-manager.js');
+    assert.ok(vm.FULL_PARSE_CONFIG, 'should export config');
+    assert.strictEqual(vm.FULL_PARSE_CONFIG.batchSize, 2000);
+    assert.strictEqual(vm.FULL_PARSE_CONFIG.maxWords, 10000);
+  });
+});
