@@ -454,6 +454,38 @@ export async function performFullParse(apiKey, wordList) {
 }
 
 /**
+ * Update specific word states in the cache
+ * Called after combat to refresh reviewed word states
+ *
+ * @param {Object} wordStates - Map of word -> { vid, sid, states, dueAt, reading }
+ * @returns {number} Number of words updated
+ */
+export function updateWordStates(wordStates) {
+  initVocabManager();
+
+  if (!wordStates || Object.keys(wordStates).length === 0) {
+    return 0;
+  }
+
+  let updated = 0;
+  for (const [word, info] of Object.entries(wordStates)) {
+    // Preserve existing rank if present
+    const existingRank = state.wordStateCache[word]?.rank;
+    state.wordStateCache[word] = {
+      ...info,
+      rank: existingRank || info.rank || null
+    };
+    updated++;
+  }
+
+  state.lastRefresh = Date.now();
+  saveCache();
+
+  console.log(`[VocabManager] Updated ${updated} word states`);
+  return updated;
+}
+
+/**
  * Get cache stats (for debugging)
  */
 export function getVocabManagerStats() {

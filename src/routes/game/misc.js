@@ -5,17 +5,20 @@
  */
 
 import { Router } from 'express';
-import { existsSync, unlinkSync } from 'fs';
+import { existsSync, unlinkSync, readFileSync, writeFileSync } from 'fs';
 import {
   getVocabulary,
   lookupWordStates,
   getDueWordsWithMeanings,
-  fetchDueWordsDirectly
+  fetchDueWordsDirectly,
+  parseWordBatch,
+  configure as configureJpdb
 } from '../../jpdb.js';
 import {
   refreshWordStateCache,
   invalidateWordStateCache as invalidateVocabManagerCache,
-  performFullParse
+  performFullParse,
+  updateWordStates
 } from '../../game/vocab-manager.js';
 import {
   getGameStatsForPeriod,
@@ -368,6 +371,36 @@ export default function createMiscRoutes({
       });
     } catch (error) {
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Post-combat refresh - update cache for reviewed words
+  router.post('/post-combat-refresh', async (req, res) => {
+    const jpdbApiKey = req.userKeys.jpdbApiKey || req.body.jpdbApiKey;
+    const { words } = req.body;
+
+    if (!jpdbApiKey) {
+      return res.json({ refreshed: 0, reason: 'No API key' });
+    }
+
+    if (!words || words.length === 0) {
+      return res.json({ refreshed: 0, reason: 'No words to refresh' });
+    }
+
+    try {
+      // Parse the reviewed words to get fresh states
+      const results = await parseWordBatch(jpdbApiKey, words);
+
+      // Update local cache with new states
+      const refreshed = updateWordStates(results);
+
+      res.json({
+        refreshed,
+        message: 'Cache updated with fresh word states'
+      });
+    } catch (error) {
+      console.error('[Post-Combat Refresh] Error:', error.message);
+      res.json({ refreshed: 0, error: error.message });
     }
   });
 
