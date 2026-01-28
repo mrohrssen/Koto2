@@ -40,6 +40,7 @@ export const PHASES = {
   ROOM: 'room',                      // In a room (general)
   ROOM_ENCOUNTER: 'room_encounter',  // Room has unhandled encounter
   BOSS_READY: 'boss_ready',          // At boss room, ready to fight
+  WORD_DISCOVERY: 'wordDiscovery',   // In word discovery room
 
   // Combat states
   COMBAT: 'combat',             // In active battle
@@ -215,6 +216,11 @@ export function derivePhase(state) {
     // Quiz room (not yet rewarded)
     if (currentRoom.type === 'quiz' && !currentRoom.interacted) {
       return 'quiz';
+    }
+
+    // Word discovery room (not yet completed)
+    if (currentRoom.type === 'wordDiscovery' && !currentRoom.interacted) {
+      return PHASES.WORD_DISCOVERY;
     }
 
     // Room has unhandled encounter
