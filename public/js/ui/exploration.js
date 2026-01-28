@@ -52,6 +52,11 @@ let apiSubmitQuizAnswer = null;
 let apiGetChipLoadout = null;
 let setChipLoadoutCache = null;
 
+// Word discovery API functions
+let apiGetDiscoveryWords = null;
+let apiSwipeWord = null;
+let apiPostCombatRefresh = null;
+
 export function init(callbacks) {
   getGameState = callbacks.getGameState;
   updateGameState = callbacks.updateGameState;
@@ -75,6 +80,9 @@ export function init(callbacks) {
   apiSubmitQuizAnswer = callbacks.apiSubmitQuizAnswer;
   apiGetChipLoadout = callbacks.apiGetChipLoadout;
   setChipLoadoutCache = callbacks.setChipLoadoutCache;
+  apiGetDiscoveryWords = callbacks.apiGetDiscoveryWords;
+  apiSwipeWord = callbacks.apiSwipeWord;
+  apiPostCombatRefresh = callbacks.apiPostCombatRefresh;
 }
 
 /** Hub phase — show Equip Bots + Infiltrate buttons */
@@ -482,4 +490,125 @@ async function renderQuizRewards() {
       }
     });
   }
+}
+
+/** Word Discovery phase - show flash cards for new words */
+export async function renderWordDiscovery() {
+  const gameState = getGameState();
+  const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
+
+  if (!room) return;
+
+  // Stage tracking on room state
+  const discovery = room.wordDiscovery || {
+    wordsToLearn: 2,
+    wordsLearned: 0,
+    wordIds: [],
+    completed: false
+  };
+
+  // If completed, show proceed
+  if (discovery.completed) {
+    actions.setContent(`
+      <button class="action-btn action-btn-primary" id="proceed-btn">続ける</button>
+    `);
+    document.getElementById('proceed-btn')?.addEventListener('click', async () => {
+      const result = await apiProceed();
+      if (result?.state) {
+        updateGameState(result.state);
+        updateUI();
+      }
+    });
+    return;
+  }
+
+  // Fetch words if not already fetched
+  if (discovery.wordIds.length === 0 && !room._discoveryFetched) {
+    room._discoveryFetched = true;
+
+    // Show intro narration
+    await sceneModule.showNarration('新しい言葉を発見しよう！', { speaker: 'Quiz Master' });
+
+    const result = await apiGetDiscoveryWords(discovery.wordsToLearn);
+
+    if (!result.available || result.words.length === 0) {
+      // No new words available
+      await sceneModule.showNarration('今は新しい言葉がないようだ。また来よう！', { speaker: 'Quiz Master' });
+      discovery.completed = true;
+      room.interacted = true;
+      const proceedResult = await apiProceed();
+      if (proceedResult?.state) {
+        updateGameState(proceedResult.state);
+        updateUI();
+      }
+      return;
+    }
+
+    // Store words in room state
+    discovery.wordIds = result.words.map(w => [w.vid, w.sid]);
+    room._discoveryWords = result.words;
+  }
+
+  const words = room._discoveryWords || [];
+  const currentIndex = discovery.wordsLearned;
+
+  if (currentIndex >= words.length) {
+    // All words learned - complete
+    discovery.completed = true;
+    room.interacted = true;
+
+    // Fire and forget: refresh cache for learned words
+    const learnedWords = words.map(w => w.word);
+    apiPostCombatRefresh?.(learnedWords).catch(() => {});
+
+    await sceneModule.showNarration('素晴らしい！新しい言葉を覚えた！', { speaker: 'Quiz Master' });
+
+    const proceedResult = await apiProceed();
+    if (proceedResult?.state) {
+      updateGameState(proceedResult.state);
+      updateUI();
+    }
+    return;
+  }
+
+  // Show current word's flash card
+  const currentWord = words[currentIndex];
+
+  // Show helper text in narration
+  sceneModule.showNarration(`${currentIndex + 1}/${words.length}: スワイプして覚えよう`, {
+    speaker: 'Quiz Master',
+    persistent: true
+  });
+
+  actions.showFlashCard(currentWord, { discoveryMode: true });
+
+  // Set up swipe handler - we need to use the actions module's init callback mechanism
+  // The actions module was initialized with cardSwipe callback, but we need discovery-specific behavior
+  // Store original and override temporarily
+  const handleDiscoverySwipe = async (direction) => {
+    // Both directions = grade 1 (learning)
+    try {
+      await apiSwipeWord(currentWord.vid, currentWord.sid, 1);
+    } catch (e) {
+      console.warn('Failed to submit discovery review:', e);
+    }
+
+    discovery.wordsLearned++;
+
+    // Render next card or completion
+    renderWordDiscovery();
+  };
+
+  // The actions module has a test-swipe event listener, but we need to hook into the actual swipe
+  // We'll use a custom event approach - dispatch from here when flash card completes
+  document.addEventListener('discovery-card-swiped', async function handler(e) {
+    document.removeEventListener('discovery-card-swiped', handler);
+    await handleDiscoverySwipe(e.detail);
+  }, { once: true });
+
+  // Monkey-patch the test-swipe for discovery mode
+  const testSwipeHandler = async (e) => {
+    document.dispatchEvent(new CustomEvent('discovery-card-swiped', { detail: e.detail }));
+  };
+  document.addEventListener('test-swipe', testSwipeHandler, { once: true });
 }
