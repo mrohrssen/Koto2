@@ -232,6 +232,38 @@ export default function createMiscRoutes({
           };
           break;
         }
+        case 'wordDiscovery': {
+          if (!gameManager.run || !gameManager.run.active) {
+            gameManager.startRun();
+            if (gameManager.run.wardSelectionRequired) {
+              gameManager.selectStartingWard('nerima');
+            }
+          }
+          gameManager.run.wardSelectionRequired = false;
+          gameManager.combat = null;
+          gameManager.run.postCombatShop = null;
+          gameManager.run.bossDefeated = false;
+          const { WORDS_PER_DISCOVERY } = await import('../../game/rooms.js');
+          // Set up a word discovery room
+          const wordRoom = {
+            id: 'debug_word_discovery',
+            type: 'wordDiscovery',
+            roomNumber: 1,
+            totalRooms: 3,
+            floor: gameManager.run.floor || 1,
+            explored: true,
+            interacted: false,
+            wordDiscovery: {
+              wordsToLearn: WORDS_PER_DISCOVERY,
+              wordsLearned: 0,
+              wordIds: [],
+              completed: false
+            }
+          };
+          gameManager.run.rooms = [wordRoom];
+          gameManager.run.currentRoom = 0;
+          break;
+        }
         default:
           return res.status(400).json({ error: `Unsupported phase: ${phase}` });
       }

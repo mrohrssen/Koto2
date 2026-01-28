@@ -41,6 +41,7 @@ export const SELECTORS = {
   flashCardBack: '.flash-card-back',
   flashCardReading: '.flash-card-reading',
   flashCardMeaning: '.flash-card-meaning',
+  flashCardHint: '.flash-card-hint',
 
   // Dynamic action buttons (rendered into action-area by phase)
   newGameBtn: '#new-game-btn',

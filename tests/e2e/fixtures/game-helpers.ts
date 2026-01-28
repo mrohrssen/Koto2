@@ -363,4 +363,25 @@ export class GameHelper {
       return state?.player?.gold ?? 0;
     });
   }
+
+  /** Handle word discovery room: flip card and swipe right to learn */
+  async handleWordDiscoveryRoom(): Promise<boolean> {
+    const phase = await this.getPhase();
+    if (phase !== 'wordDiscovery') return false;
+
+    // Wait for flash card to appear
+    await this.page.locator(SELECTORS.flashCard).waitFor({ state: 'visible', timeout: 5000 });
+
+    // Click to flip, then swipe right to learn
+    await this.page.locator(SELECTORS.flashCard).click();
+    await this.page.waitForTimeout(300);
+
+    // Trigger test swipe event
+    await this.page.evaluate(() => {
+      document.dispatchEvent(new CustomEvent('test-swipe', { detail: 'right' }));
+    });
+
+    await this.page.waitForTimeout(500);
+    return true;
+  }
 }
