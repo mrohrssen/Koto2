@@ -60,16 +60,7 @@ html, body {
 
 /* ===== STATUS BAR ===== */
 .status-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 16px;
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(8px);
-  font-size: 14px;
-  font-weight: 600;
-  z-index: 10;
-  min-height: 32px;
+  display: none;
 }
 
 .status-floor {
