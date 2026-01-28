@@ -1146,11 +1146,87 @@ export async function getWordState(apiKey, vid, sid) {
 }
 
 /**
- * Fetch due words directly from JPDB, bypassing local cache.
- * This ensures we get accurate due word states fresh from the API.
- *
- * Uses cached vocab IDs from the suggestions file for speed,
- * falling back to full deck scanning only if no cache exists.
+ * Get due words from local cache without API call
+ * @param {number} limit - Max words to return
+ * @param {number[]} excludeVids - Vocabulary IDs to exclude
+ * @returns {{words: Array, source: string, needsMeanings?: boolean}}
+ */
+function getDueWordsFromCache(limit, excludeVids) {
+  if (!config.vocabSuggestionsFile) {
+    return { words: [], source: 'none' };
+  }
+
+  try {
+    if (!existsSync(config.vocabSuggestionsFile)) {
+      return { words: [], source: 'none' };
+    }
+
+    const data = JSON.parse(readFileSync(config.vocabSuggestionsFile, 'utf-8'));
+    const wordStateCache = data.wordStateCache || {};
+
+    const excludeSet = new Set(excludeVids.map(v => parseInt(v, 10)));
+    const priorityOrder = ['due', 'failed', 'learning'];
+    const candidates = [];
+
+    for (const [word, stateInfo] of Object.entries(wordStateCache)) {
+      if (!word || !stateInfo.vid || !stateInfo.sid) continue;
+      if (excludeSet.has(stateInfo.vid)) continue;
+
+      const states = stateInfo.states || [];
+      if (states.some(s => ['blacklisted', 'suspended', 'new', 'redundant'].includes(s))) continue;
+
+      // Check if word is reviewable
+      for (const priority of priorityOrder) {
+        if (states.includes(priority)) {
+          candidates.push({
+            word,
+            reading: stateInfo.reading || null,
+            vid: stateInfo.vid,
+            sid: stateInfo.sid,
+            dueAt: stateInfo.dueAt ?? null,
+            priority: priorityOrder.indexOf(priority)
+          });
+          break;
+        }
+      }
+    }
+
+    if (candidates.length === 0) {
+      return { words: [], source: 'none' };
+    }
+
+    // Sort by priority, then by dueAt
+    candidates.sort((a, b) => {
+      if (a.priority !== b.priority) return a.priority - b.priority;
+      if (a.dueAt && b.dueAt) return a.dueAt - b.dueAt;
+      if (a.dueAt) return -1;
+      if (b.dueAt) return 1;
+      return 0;
+    });
+
+    const selected = candidates.slice(0, limit);
+
+    // Format for word practice (needs meanings, which we'll fetch)
+    return {
+      words: selected.map(w => ({
+        word: w.word,
+        reading: w.reading,
+        meanings: [],  // Will be populated by lookup
+        vid: w.vid,
+        sid: w.sid
+      })),
+      source: 'cache',
+      needsMeanings: true
+    };
+
+  } catch (e) {
+    console.warn('[JPDB] Failed to read cache:', e.message);
+    return { words: [], source: 'none' };
+  }
+}
+
+/**
+ * Fetch due/failed words - uses local cache first, falls back to API only if needed
  *
  * @param {string} apiKey - JPDB API key
  * @param {number} limit - Max words to return (default 50)
@@ -1162,6 +1238,29 @@ export async function fetchDueWordsDirectly(apiKey, limit = 50, excludeVids = []
     return { words: [], source: 'none' };
   }
 
+  // First try to serve from local cache (fast path)
+  const cacheResult = getDueWordsFromCache(limit, excludeVids);
+  if (cacheResult.words.length > 0) {
+    console.log(`[JPDB] Served ${cacheResult.words.length} due words from cache`);
+    return cacheResult;
+  }
+
+  console.log('[JPDB] Cache empty, fetching from API...');
+  return fetchDueWordsFromApi(apiKey, limit, excludeVids);
+}
+
+/**
+ * Fetch due/failed words directly from JPDB API (fallback when cache is empty)
+ *
+ * Uses cached vocab IDs from the suggestions file for speed,
+ * falling back to full deck scanning only if no cache exists.
+ *
+ * @param {string} apiKey - JPDB API key
+ * @param {number} limit - Max words to return (default 50)
+ * @param {number[]} excludeVids - Vocabulary IDs to exclude
+ * @returns {Promise<{words: Array, source: string}>}
+ */
+async function fetchDueWordsFromApi(apiKey, limit = 50, excludeVids = []) {
   console.log('[JPDB Direct] Fetching due words directly from JPDB...');
 
   // Step 1: Try to get vocab IDs from local cache first (much faster)
