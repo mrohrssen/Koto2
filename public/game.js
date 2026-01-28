@@ -81,7 +81,8 @@ import {
   quizReward as apiQuizReward,
   getQuizQuestion as apiGetQuizQuestion,
   submitQuizAnswer as apiSubmitQuizAnswer,
-parseJpdbText,
+  getDiscoveryWords as apiGetDiscoveryWords,
+  parseJpdbText,
   lookupJpdbWord,
   lookupJpdbBatch,
   reorderChips
@@ -161,12 +162,16 @@ function updateScene() {
     scene.showShrineFox();
   } else if (gameState.phase === 'quiz') {
     scene.showQuizMaster();
+  } else if (gameState.phase === 'wordDiscovery') {
+    scene.showQuizMaster();
   } else {
     scene.hideEnemy();
   }
   if (gameState.phase === 'shrine') {
     scene.setBackground('/assets/backgrounds/shrine_background.png');
   } else if (gameState.phase === 'quiz') {
+    scene.setBackground('/assets/backgrounds/quiz_master_background.png');
+  } else if (gameState.phase === 'wordDiscovery') {
     scene.setBackground('/assets/backgrounds/quiz_master_background.png');
   } else if (gameState.run?.background) {
     scene.setBackground(`/assets/backgrounds/${gameState.run.background}`);
@@ -225,6 +230,9 @@ function updateGameContent() {
       break;
     case 'quiz':
       explorationUI.renderQuiz();
+      break;
+    case 'wordDiscovery':
+      explorationUI.renderWordDiscovery();
       break;
     case 'combat':
       // Clear stale buttons; flash card will be rendered by combat-loop
@@ -669,6 +677,13 @@ async function initGame() {
     apiSubmitQuizAnswer,
     apiGetChipLoadout,
     setChipLoadoutCache: (cache) => { chipLoadoutCache = cache; },
+    apiGetDiscoveryWords,
+    apiSwipeWord: (vid, sid, grade) => apiSendJpdbReview(vid, sid, grade),
+    apiPostCombatRefresh: (words) => fetch('/api/game/post-combat-refresh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ words })
+    }),
   });
 
   economyUI.init({
