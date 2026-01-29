@@ -1,5 +1,5 @@
-import { test, expect, resetGameState } from '../fixtures/test-fixtures';
-import { SELECTORS } from '../utils/selectors';
+import { test, expect, resetGameState } from '../../fixtures/test-fixtures';
+import { SELECTORS } from '../../utils/selectors';
 
 test.describe('Character Creation', () => {
   test.beforeEach(async ({ page }) => {

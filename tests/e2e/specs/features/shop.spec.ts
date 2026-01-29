@@ -1,5 +1,5 @@
-import { test, expect, setupCharacter } from '../fixtures/test-fixtures';
-import { SELECTORS } from '../utils/selectors';
+import { test, expect, setupCharacter } from '../../fixtures/test-fixtures';
+import { SELECTORS } from '../../utils/selectors';
 
 test.describe('Shop', () => {
   test.beforeEach(async ({ gameHelper }) => {

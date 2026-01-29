@@ -1,5 +1,5 @@
-import { test, expect, setupCombat, setupCharacter } from '../fixtures/test-fixtures';
-import { SELECTORS } from '../utils/selectors';
+import { test, expect, setupCombat, setupCharacter } from '../../fixtures/test-fixtures';
+import { SELECTORS } from '../../utils/selectors';
 
 test.describe('Game Over', () => {
   test('player death opens gameover takeover', async ({ gameHelper, page }) => {
