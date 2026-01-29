@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { randomBytes } from 'crypto';
-import { hashPassword, encryptKeys } from './crypto.js';
+import { hashPassword, encryptKeys, decryptKeys } from './crypto.js';
 import { dataPath } from '../data-dir.js';
 
 const DEFAULT_FILE = dataPath('.jrpg-users.json');
@@ -199,4 +199,19 @@ export function getLeaderboard(period, currentUserId, filePath = DEFAULT_FILE) {
   const entries = ranked.map((e, i) => ({ rank: i + 1, username: e.username, count: e.count }));
 
   return { period, entries, currentUser };
+}
+
+/**
+ * Get decrypted API keys for a user
+ * @param {string} userId
+ * @returns {object} Decrypted keys or empty object
+ */
+export function getUserKeys(userId) {
+  const user = findUserById(userId);
+  if (!user?.encryptedApiKeys) return {};
+  try {
+    return decryptKeys(user.encryptedApiKeys, process.env.ENCRYPTION_KEY || 'a'.repeat(64));
+  } catch {
+    return {};
+  }
 }
