@@ -21,6 +21,49 @@ test.describe('Run and Exploration', () => {
     expect(wardCount).toBeGreaterThanOrEqual(1);
   });
 
+  test('chip selection updates backend state', async ({ gameHelper, page }) => {
+    // Start run to get to chip selection
+    await gameHelper.startRun();
+
+    // Check backend state before selection - player should have no chips yet
+    const stateBefore = await page.evaluate(async () => {
+      const res = await fetch('/api/game/state');
+      return res.json();
+    });
+    const chipsBefore = stateBefore?.run?.player?.chips || stateBefore?.player?.chips || [];
+    const chipCountBefore = chipsBefore.length;
+
+    // Click the chip card and confirm button directly (don't wait for ward selection)
+    await page.locator(SELECTORS.chipSelectCard).first().click();
+    await page.waitForTimeout(200);
+    await page.locator(SELECTORS.chipSelectConfirm).click();
+
+    // Wait for backend state to update (poll for chip count increase)
+    await page.waitForFunction(
+      async (prevCount: number) => {
+        const res = await fetch('/api/game/state');
+        const state = await res.json();
+        const chips = state?.run?.player?.chips || state?.player?.chips || [];
+        return chips.length > prevCount;
+      },
+      chipCountBefore,
+      { timeout: 5000, polling: 300 }
+    );
+
+    // Verify backend state updated with a new chip
+    const stateAfter = await page.evaluate(async () => {
+      const res = await fetch('/api/game/state');
+      return res.json();
+    });
+    const chipsAfter = stateAfter?.run?.player?.chips || stateAfter?.player?.chips || [];
+    expect(chipsAfter.length).toBeGreaterThan(chipCountBefore);
+
+    // Verify the chip has required properties
+    const newChip = chipsAfter[chipsAfter.length - 1];
+    expect(newChip).toHaveProperty('id');
+    expect(newChip.id).toBeTruthy();
+  });
+
   test('select ward transitions to exploring', async ({ gameHelper, page }) => {
     await gameHelper.setupRun();
     // Either Proceed or Fight button should be visible depending on room type
@@ -30,20 +73,24 @@ test.describe('Run and Exploration', () => {
     expect(floorText).toMatch(/F\d+/);
   });
 
-  test('proceed advances room counter', async ({ gameHelper, page }) => {
+  test('completing room advances room counter', async ({ gameHelper, page }) => {
+    await gameHelper.enableDebugMode();
+    // Queue shrine - completing it auto-advances to next room
+    await gameHelper.queueRooms(['shrine', 'encounter', 'boss']);
     await gameHelper.setupRun();
-    // Wait for proceed button (skip if first room is encounter)
-    const proceedBtn = page.locator(SELECTORS.proceedBtn);
-    if (await proceedBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      const roomBefore = await gameHelper.getCurrentRoom();
-      await gameHelper.proceedToNextRoom();
-      const roomAfter = await gameHelper.getCurrentRoom();
-      expect(roomAfter).toBeGreaterThan(roomBefore);
-    } else {
-      // First room is encounter - just verify room tracking works
-      const room = await gameHelper.getCurrentRoom();
-      expect(room).toBeGreaterThanOrEqual(0);
-    }
+
+    // Wait for shrine phase
+    await gameHelper.waitForPhase(['shrine'], 8000);
+
+    const roomBefore = await gameHelper.getCurrentRoom();
+
+    // Complete shrine (select a chip reward) - this auto-advances
+    await gameHelper.completeShrineRoom();
+    await page.waitForTimeout(1000);
+
+    // Room counter should have advanced automatically
+    const roomAfter = await gameHelper.getCurrentRoom();
+    expect(roomAfter).toBeGreaterThan(roomBefore);
   });
 
   test('room encounter shows Fight button', async ({ gameHelper, page }) => {
