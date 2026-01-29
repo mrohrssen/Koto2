@@ -665,13 +665,14 @@ export class GameHelper {
       const narrationIndicator = this.page.locator(SELECTORS.narrationIndicator);
       if (await narrationBox.isVisible().catch(() => false) &&
           await narrationIndicator.isVisible().catch(() => false)) {
-        await narrationBox.click();
+        // Use force to bypass sprite overlay that may intercept clicks
+        await narrationBox.click({ force: true });
         await this.page.waitForTimeout(500);
       }
 
       const flashCard = this.page.locator(SELECTORS.flashCard);
       if (await flashCard.isVisible().catch(() => false)) {
-        await flashCard.click();
+        await flashCard.click({ force: true });
         await this.page.waitForTimeout(300);
         await this.swipeCard('right');
         await this.page.waitForTimeout(500);
