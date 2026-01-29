@@ -287,21 +287,14 @@ async function loadGameState() {
   }
 }
 
-// Warm JPDB cache on session start
+// Warm JPDB cache on session start (uses server-side key like /api/jpdb/parse)
 async function warmJpdbCache() {
-  const apiKeys = settings.getApiKeys();
-  console.log('[Game] warmJpdbCache called, jpdbApiKey:', apiKeys.jpdbApiKey ? 'present' : 'missing');
-  if (!apiKeys.jpdbApiKey) return;
-
   try {
-    console.log('[Game] Calling /api/game/session-start...');
     const response = await fetch(`${API_BASE}/api/game/session-start`, {
       method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ jpdbApiKey: apiKeys.jpdbApiKey })
+      headers: getAuthHeaders()
     });
     const data = await response.json();
-    console.log('[Game] session-start response:', JSON.stringify(data));
     console.log(`[Game] Session cache: ${data.warmed ? data.cachedWords + ' words' : data.reason || data.error}`);
   } catch (e) {
     console.warn('[Game] Failed to warm session cache:', e);

@@ -384,12 +384,10 @@ export default function createMiscRoutes({
 
   // Session start - warm cache with full parse if needed
   router.post('/session-start', async (req, res) => {
-    // Check body first (frontend sends it), then userKeys (from encrypted storage)
-    const jpdbApiKey = req.body?.jpdbApiKey || req.userKeys?.jpdbApiKey;
+    // Use userKeys from middleware (same as /api/jpdb/parse)
+    const jpdbApiKey = req.userKeys?.jpdbApiKey;
 
-    console.log('[Session Start] req.body.jpdbApiKey:', req.body?.jpdbApiKey ? 'present' : 'missing');
-    console.log('[Session Start] req.userKeys.jpdbApiKey:', req.userKeys?.jpdbApiKey ? 'present' : 'missing');
-    console.log('[Session Start] Using key from:', req.body?.jpdbApiKey ? 'body' : (req.userKeys?.jpdbApiKey ? 'userKeys' : 'none'));
+    console.log('[Session Start] req.userKeys?.jpdbApiKey:', jpdbApiKey ? 'present' : 'missing');
 
     if (!jpdbApiKey) {
       console.log('[Session Start] No JPDB API key found');
