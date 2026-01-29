@@ -8,7 +8,12 @@ test.describe('Shop', () => {
 
   test('starting chip selection shows 3 options', async ({ gameHelper, page }) => {
     await gameHelper.startRun();
-    // Chip selection now uses in-scene cards in the action area
+    // Wait for all chip selection cards to render (startRun only waits for first)
+    await page.waitForFunction(
+      (sel: string) => document.querySelectorAll(sel).length >= 3,
+      SELECTORS.chipSelectCard,
+      { timeout: 5000 }
+    );
     const chipCount = await page.locator(SELECTORS.chipSelectCard).count();
     expect(chipCount).toBe(3);
   });
@@ -26,6 +31,35 @@ test.describe('Shop', () => {
       return state?.run?.player?.chips || state?.player?.chips || [];
     });
     expect(chips.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test('selecting a chip equips it with correct ID', async ({ gameHelper, page }) => {
+    await gameHelper.startRun();
+
+    // Get the chip options from backend state before selection
+    const offeredChips = await page.evaluate(async () => {
+      const res = await fetch('/api/game/state');
+      const state = await res.json();
+      return state?.run?.startingChipShop?.items || [];
+    });
+    expect(offeredChips.length).toBe(3);
+    const offeredIds = offeredChips.map((c: any) => c.itemId || c.id);
+
+    // Select the first chip
+    await gameHelper.selectStartingChip(0);
+
+    // Verify the selected chip is now equipped on backend
+    const state = await page.evaluate(async () => {
+      const res = await fetch('/api/game/state');
+      return res.json();
+    });
+    const equipped = state?.run?.player?.chips || state?.player?.chips || [];
+    expect(equipped.length).toBeGreaterThanOrEqual(1);
+
+    // The equipped chip should be one of the offered chips
+    const equippedIds = equipped.map((c: any) => c.itemId || c.id);
+    const hasOfferedChip = equippedIds.some((id: string) => offeredIds.includes(id));
+    expect(hasOfferedChip).toBe(true);
   });
 
   test('post-combat shop opens after victory', async ({ gameHelper, page }) => {
