@@ -129,6 +129,7 @@ import { enforceVocabLimit } from './src/game/vocab-repair.js';
 import createRoutes from './src/routes/index.js';
 import createAuthRoutes from './src/auth/routes.js';
 import { dataPath } from './src/data-dir.js';
+import { logger } from './src/logger.js';
 
 dotenv.config();
 
@@ -512,6 +513,8 @@ setTTSSynthesizer(ttsSynthesizerFn, {
 
 // Start server
 app.listen(PORT, () => {
+  logger.info('[Server] Started:', { port: PORT, env: process.env.NODE_ENV || 'development' });
+  logger.info('[Server] Log level:', logger.getLevel());
   console.log(`JRPG server running at http://localhost:${PORT}`);
   console.log('[TTS] Prefetch:', settings.gameTtsEnabled ? 'enabled' : 'disabled');
   console.log('');
