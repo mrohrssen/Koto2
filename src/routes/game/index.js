@@ -8,29 +8,13 @@
 import { Router } from 'express';
 import { requireAuth } from '../../auth/middleware.js';
 import { getManager, saveManager } from '../../game/manager-registry.js';
-import { findUserById, getLeaderboard } from '../../auth/users.js';
-import { decryptKeys } from '../../auth/crypto.js';
+import { findUserById, getLeaderboard, getUserKeys } from '../../auth/users.js';
 import createGameStateRoutes from './state.js';
 import createPlayerRoutes from './player.js';
 import createRunRoutes from './run.js';
 import createCombatRoutes from './combat.js';
 import createEconomyRoutes from './economy.js';
 import createMiscRoutes from './misc.js';
-
-/**
- * Get decrypted API keys for a user
- * @param {string} userId
- * @returns {object} Decrypted keys or empty object
- */
-function getUserKeys(userId) {
-  const user = findUserById(userId);
-  if (!user?.encryptedApiKeys) return {};
-  try {
-    return decryptKeys(user.encryptedApiKeys, process.env.ENCRYPTION_KEY || 'a'.repeat(64));
-  } catch {
-    return {};
-  }
-}
 
 /**
  * Create game router
