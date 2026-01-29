@@ -8,14 +8,21 @@ test.describe('Shop', () => {
 
   test('starting chip selection shows 3 options', async ({ gameHelper, page }) => {
     await gameHelper.startRun();
-    // Wait for all chip selection cards to render (startRun only waits for first)
-    await page.waitForFunction(
-      (sel: string) => document.querySelectorAll(sel).length >= 3,
-      SELECTORS.chipSelectCard,
-      { timeout: 5000 }
-    );
-    const chipCount = await page.locator(SELECTORS.chipSelectCard).count();
-    expect(chipCount).toBe(3);
+    // Chip selection shows 1 card at a time (swipeable carousel)
+    // Verify the card is visible
+    await page.locator(SELECTORS.chipSelectCard).waitFor({ state: 'visible', timeout: 5000 });
+
+    // Verify backend has 3 chip options
+    const offeredChips = await page.evaluate(async () => {
+      const res = await fetch('/api/game/state');
+      const state = await res.json();
+      return state?.run?.startingChipShop?.items || [];
+    });
+    expect(offeredChips.length).toBe(3);
+
+    // Verify dot indicators show 3 options
+    const dotCount = await page.locator('.chip-select-dot').count();
+    expect(dotCount).toBe(3);
   });
 
   test('selecting a chip confirms selection and equips it', async ({ gameHelper, page }) => {

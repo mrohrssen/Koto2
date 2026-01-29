@@ -66,9 +66,14 @@ test.describe('Run and Exploration', () => {
 
   test('select ward transitions to exploring', async ({ gameHelper, page }) => {
     await gameHelper.setupRun();
-    // Either Proceed or Fight button should be visible depending on room type
-    const proceedOrFight = page.locator(`${SELECTORS.proceedBtn}, ${SELECTORS.fightBtn}`);
-    await expect(proceedOrFight.first()).toBeVisible({ timeout: 3000 });
+
+    // After setupRun, we could be in various room phases depending on what was queued
+    // Verify we're in a valid in-run phase (not hub, ward_selection, or chip selection)
+    const phase = await gameHelper.getPhase();
+    const validRunPhases = ['exploring', 'room_encounter', 'combat', 'boss_ready', 'shrine', 'quiz', 'wordDiscovery'];
+    expect(validRunPhases).toContain(phase);
+
+    // Verify floor indicator shows we're on a floor
     const floorText = await page.locator(SELECTORS.floorIndicator).textContent();
     expect(floorText).toMatch(/F\d+/);
   });
