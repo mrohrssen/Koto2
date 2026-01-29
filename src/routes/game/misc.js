@@ -289,6 +289,35 @@ export default function createMiscRoutes({
     res.json({ success: true, enemyHp: gameManager.combat.enemy.hp });
   });
 
+  // Debug: Queue room types for testing
+  router.post('/debug-queue-rooms', async (req, res) => {
+    if (process.env.NODE_ENV !== 'test' && !getDebugMode()) {
+      return res.status(403).json({ error: 'Only available in test mode or debug mode' });
+    }
+
+    const { rooms } = req.body;
+    if (!Array.isArray(rooms)) {
+      return res.status(400).json({ error: 'rooms must be an array' });
+    }
+
+    const { queueTestRooms } = await import('../../game/rooms.js');
+    queueTestRooms(rooms);
+
+    res.json({ success: true, queued: rooms.length, rooms });
+  });
+
+  // Debug: Clear room queue
+  router.post('/debug-clear-room-queue', async (req, res) => {
+    if (process.env.NODE_ENV !== 'test' && !getDebugMode()) {
+      return res.status(403).json({ error: 'Only available in test mode or debug mode' });
+    }
+
+    const { clearTestRoomQueue } = await import('../../game/rooms.js');
+    clearTestRoomQueue();
+
+    res.json({ success: true });
+  });
+
   // Heal
   router.post('/heal', (req, res) => {
     const gameManager = req.gameManager;

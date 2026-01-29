@@ -36,6 +36,35 @@
 
 import { generateShopChips, getChipDisplayInfo } from './items/chips.js';
 
+// ============ TEST ROOM QUEUE ============
+// Only used when NODE_ENV=test for deterministic E2E tests
+
+let testRoomQueue = [];
+
+/**
+ * Queue specific room types for testing
+ * @param {string[]} rooms - Array of room type strings
+ */
+export function queueTestRooms(rooms) {
+  testRoomQueue = [...rooms];
+}
+
+/**
+ * Clear the test room queue
+ */
+export function clearTestRoomQueue() {
+  testRoomQueue = [];
+}
+
+/**
+ * Get next room type from queue, or null if empty
+ * @returns {string|null}
+ */
+export function popTestRoomType() {
+  if (testRoomQueue.length === 0) return null;
+  return testRoomQueue.shift();
+}
+
 // Word discovery configuration
 export const WORDS_PER_DISCOVERY = 2;
 
@@ -233,16 +262,24 @@ export function generateFloorRooms(floor, encountersNeeded = 3) {
   const WORD_DISCOVERY_CHANCE = 0.10;
 
   for (let i = 0; i < encountersNeeded; i++) {
-    const roll = Math.random();
+    // Check test queue first (for deterministic E2E tests)
+    const queuedType = popTestRoomType();
     let type;
-    if (roll < SHRINE_CHANCE) {
-      type = ROOM_TYPES.shrine;
-    } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE) {
-      type = ROOM_TYPES.quiz;
-    } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE + WORD_DISCOVERY_CHANCE) {
-      type = ROOM_TYPES.wordDiscovery;
+
+    if (queuedType && ROOM_TYPES[queuedType]) {
+      type = ROOM_TYPES[queuedType];
     } else {
-      type = ROOM_TYPES.encounter;
+      // Normal random generation
+      const roll = Math.random();
+      if (roll < SHRINE_CHANCE) {
+        type = ROOM_TYPES.shrine;
+      } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE) {
+        type = ROOM_TYPES.quiz;
+      } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE + WORD_DISCOVERY_CHANCE) {
+        type = ROOM_TYPES.wordDiscovery;
+      } else {
+        type = ROOM_TYPES.encounter;
+      }
     }
     rooms.push(createRoom(type, floor, rooms.length + 1, 0));
   }
