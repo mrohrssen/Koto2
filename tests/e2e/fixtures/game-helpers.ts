@@ -1,6 +1,8 @@
 import { Page } from '@playwright/test';
 import { SELECTORS } from '../utils/selectors';
 
+export type RoomType = 'encounter' | 'shrine' | 'quiz' | 'wordDiscovery' | 'boss' | 'hub' | 'gameOver' | 'unknown';
+
 /**
  * Helper class for common game actions in e2e tests (mobile UI)
  */
@@ -73,6 +75,8 @@ export class GameHelper {
       { timeout: 10000, polling: 500 }
     );
     this.log('selectWard', 'phase changed');
+    // Wait a moment for UI to update (async rendering)
+    await this.page.waitForTimeout(1000);
   }
 
   /** Full run setup: hub → chip shop → ward → exploring */
@@ -95,12 +99,32 @@ export class GameHelper {
   async proceedToEncounter(maxAttempts = 20): Promise<boolean> {
     for (let i = 0; i < maxAttempts; i++) {
       const phase = await this.getPhase();
+      this.log('proceedToEncounter', `attempt ${i + 1}/${maxAttempts}, phase=${phase}`);
       if (phase === 'room_encounter' || phase === 'combat') return true;
+
+      // Handle post-combat shop by skipping it
+      if (phase === 'post_combat_shop') {
+        const skipBtn = this.page.locator(SELECTORS.chipSelectSkip);
+        if (await skipBtn.isVisible().catch(() => false)) {
+          await skipBtn.click();
+          await this.page.waitForTimeout(500);
+          continue;
+        }
+        // Wait for UI to render
+        await this.page.waitForTimeout(500);
+        continue;
+      }
+
+      // Handle victory phase by waiting for it to transition
+      if (phase === 'victory') {
+        await this.page.waitForTimeout(1000);
+        continue;
+      }
 
       // Handle shrine rooms by clicking first chip option or skip button
       if (phase === 'shrine') {
-        const shrineChip = this.page.locator('.shrine-chip-option').first();
-        const shrineSkip = this.page.locator('#shrine-skip-btn');
+        const shrineChip = this.page.locator(SELECTORS.shrineChipOption).first();
+        const shrineSkip = this.page.locator(SELECTORS.shrineSkipBtn);
         if (await shrineChip.isVisible().catch(() => false)) {
           await shrineChip.click();
           await this.page.waitForTimeout(1000);
@@ -114,11 +138,26 @@ export class GameHelper {
 
       // Handle word discovery rooms by swiping through the cards
       if (phase === 'wordDiscovery') {
-        // First check for and dismiss intro/completion narration
+        // Wait for ward selection UI to disappear
+        const wdWardOption = this.page.locator(SELECTORS.wardOption).first();
+        if (await wdWardOption.isVisible().catch(() => false)) {
+          await this.page.waitForTimeout(500);
+          continue;
+        }
+
+        // Check for proceed button first
+        const wdProceedBtn = this.page.locator(SELECTORS.proceedBtn);
+        if (await wdProceedBtn.isVisible().catch(() => false)) {
+          await wdProceedBtn.click();
+          await this.page.waitForTimeout(500);
+          continue;
+        }
+
+        // Check for narration with visible indicator
         const wdNarrationBox = this.page.locator(SELECTORS.narrationBox);
-        const wdNarrationIndicator = this.page.locator('.narration-indicator');
+        const wdNarrationIndicator = this.page.locator(SELECTORS.narrationIndicator);
         if (await wdNarrationBox.isVisible().catch(() => false) &&
-            await wdNarrationIndicator.isVisible().catch(() => false)) {
+            await wdNarrationIndicator.evaluate(el => window.getComputedStyle(el).display !== "none").catch(() => false)) {
           await wdNarrationBox.click();
           await this.page.waitForTimeout(500);
           continue;
@@ -149,7 +188,7 @@ export class GameHelper {
       // because quiz result feedback appears as narration and blocks answer clicks
       // Only click if the indicator (▼) is visible, meaning it's dismissible
       const narrationBox = this.page.locator(SELECTORS.narrationBox);
-      const narrationIndicator = this.page.locator('.narration-indicator');
+      const narrationIndicator = this.page.locator(SELECTORS.narrationIndicator);
       const indicatorVisible = await narrationIndicator.isVisible().catch(() => false);
       if (await narrationBox.isVisible().catch(() => false) && indicatorVisible) {
         await narrationBox.click();
@@ -159,10 +198,10 @@ export class GameHelper {
 
       // Handle quiz rooms - click through answer questions (UI-based detection)
       // Check that the quiz hasn't already been answered (data-answered attribute on parent)
-      const quizAnswerList = this.page.locator('.quiz-answer-list');
+      const quizAnswerList = this.page.locator(SELECTORS.quizAnswerList);
       const alreadyAnswered = await quizAnswerList.getAttribute('data-answered').catch(() => null);
       if (!alreadyAnswered) {
-        const quizAnswer = this.page.locator('.quiz-answer-option').first();
+        const quizAnswer = this.page.locator(SELECTORS.quizAnswerOption).first();
         if (await quizAnswer.isVisible().catch(() => false)) {
           await quizAnswer.click({ force: true });
           await this.page.waitForTimeout(1000);
@@ -170,7 +209,7 @@ export class GameHelper {
         }
       }
       // Check for quiz reward options (use force click to bypass any overlay issues)
-      const quizReward = this.page.locator('.quiz-reward-option').first();
+      const quizReward = this.page.locator(SELECTORS.quizRewardOption).first();
       if (await quizReward.isVisible().catch(() => false)) {
         await quizReward.click({ force: true });
         await this.page.waitForTimeout(1000);
@@ -474,5 +513,229 @@ export class GameHelper {
 
     await this.page.waitForTimeout(500);
     return true;
+  }
+
+  // ============ ROOM QUEUE (DETERMINISTIC TESTING) ============
+
+  async queueRooms(rooms: RoomType[]): Promise<void> {
+    this.log('queueRooms', `queuing ${rooms.length} rooms: ${rooms.join(', ')}`);
+    await this.page.request.post('http://localhost:3000/api/game/debug-queue-rooms', {
+      data: { rooms }
+    });
+  }
+
+  async clearRoomQueue(): Promise<void> {
+    this.log('clearRoomQueue', 'clearing queue');
+    await this.page.request.post('http://localhost:3000/api/game/debug-clear-room-queue');
+  }
+
+  // ============ ROOM DETECTION (ADAPTIVE TESTING) ============
+
+  async detectRoomType(): Promise<RoomType> {
+    const phase = await this.getPhase();
+    this.log('detectRoomType', `phase=${phase}`);
+
+    switch (phase) {
+      case 'combat':
+      case 'room_encounter':
+        return 'encounter';
+      case 'boss_ready':
+      case 'boss_combat':
+        return 'boss';
+      case 'shrine':
+        return 'shrine';
+      case 'quiz':
+        return 'quiz';
+      case 'wordDiscovery':
+        return 'wordDiscovery';
+      case 'hub':
+      case 'floor_complete':
+        return 'hub';
+      case 'game_over':
+        return 'gameOver';
+      default:
+        if (await this.page.locator(SELECTORS.flashCard).isVisible().catch(() => false)) {
+          return 'encounter';
+        }
+        if (await this.page.locator(SELECTORS.shrineChipOption).isVisible().catch(() => false)) {
+          return 'shrine';
+        }
+        if (await this.page.locator(SELECTORS.quizAnswerOption).isVisible().catch(() => false)) {
+          return 'quiz';
+        }
+        return 'unknown';
+    }
+  }
+
+  // ============ ROOM COMPLETION (ADAPTIVE TESTING) ============
+
+  async completeCurrentRoom(): Promise<void> {
+    const roomType = await this.detectRoomType();
+    this.log('completeCurrentRoom', `completing ${roomType} room`);
+
+    switch (roomType) {
+      case 'encounter':
+        await this.completeEncounterRoom();
+        break;
+      case 'boss':
+        await this.completeBossRoom();
+        break;
+      case 'shrine':
+        await this.completeShrineRoom();
+        break;
+      case 'quiz':
+        await this.completeQuizRoom();
+        break;
+      case 'wordDiscovery':
+        await this.completeWordDiscoveryRoom();
+        break;
+      default:
+        this.log('completeCurrentRoom', `unknown room type: ${roomType}, waiting`);
+        await this.page.waitForTimeout(500);
+    }
+  }
+
+  async completeEncounterRoom(): Promise<void> {
+    const fightBtn = this.page.locator(SELECTORS.fightBtn);
+    if (await fightBtn.isVisible().catch(() => false)) {
+      await fightBtn.click();
+      await this.waitForPhase(['combat'], 5000);
+    }
+    await this.winCombat(30);
+    await this.page.waitForTimeout(500);
+
+    const phase = await this.getPhase();
+    if (phase === 'post_combat_shop') {
+      const skipBtn = this.page.locator(SELECTORS.chipSelectSkip);
+      if (await skipBtn.isVisible().catch(() => false)) {
+        await skipBtn.click();
+        await this.page.waitForTimeout(500);
+      }
+    }
+  }
+
+  async completeBossRoom(): Promise<void> {
+    const bossFightBtn = this.page.locator(SELECTORS.bossFightBtn);
+    if (await bossFightBtn.isVisible().catch(() => false)) {
+      await bossFightBtn.click();
+      await this.page.waitForTimeout(500);
+    }
+    await this.winCombat(50);
+    await this.page.waitForTimeout(1000);
+  }
+
+  async completeShrineRoom(): Promise<void> {
+    const shrineOption = this.page.locator(SELECTORS.shrineChipOption).first();
+    if (await shrineOption.isVisible().catch(() => false)) {
+      await shrineOption.click();
+      await this.page.waitForTimeout(500);
+    } else {
+      const skipBtn = this.page.locator(SELECTORS.shrineSkipBtn);
+      if (await skipBtn.isVisible().catch(() => false)) {
+        await skipBtn.click();
+        await this.page.waitForTimeout(500);
+      }
+    }
+  }
+
+  async completeQuizRoom(): Promise<void> {
+    const answerOption = this.page.locator(SELECTORS.quizAnswerOption).first();
+    if (await answerOption.isVisible().catch(() => false)) {
+      await answerOption.click();
+      await this.page.waitForTimeout(1000);
+    }
+
+    const narrationBox = this.page.locator(SELECTORS.narrationBox);
+    if (await narrationBox.isVisible().catch(() => false)) {
+      await narrationBox.click();
+      await this.page.waitForTimeout(500);
+    }
+
+    const rewardOption = this.page.locator(SELECTORS.quizRewardOption).first();
+    if (await rewardOption.isVisible().catch(() => false)) {
+      await rewardOption.click();
+      await this.page.waitForTimeout(500);
+    }
+  }
+
+  async completeWordDiscoveryRoom(): Promise<void> {
+    const maxCards = 10;
+    for (let i = 0; i < maxCards; i++) {
+      const narrationBox = this.page.locator(SELECTORS.narrationBox);
+      const narrationIndicator = this.page.locator(SELECTORS.narrationIndicator);
+      if (await narrationBox.isVisible().catch(() => false) &&
+          await narrationIndicator.isVisible().catch(() => false)) {
+        await narrationBox.click();
+        await this.page.waitForTimeout(500);
+      }
+
+      const flashCard = this.page.locator(SELECTORS.flashCard);
+      if (await flashCard.isVisible().catch(() => false)) {
+        await flashCard.click();
+        await this.page.waitForTimeout(300);
+        await this.swipeCard('right');
+        await this.page.waitForTimeout(500);
+      } else {
+        const proceedBtn = this.page.locator(SELECTORS.proceedBtn);
+        if (await proceedBtn.isVisible().catch(() => false)) {
+          break;
+        }
+        await this.page.waitForTimeout(300);
+      }
+
+      const phase = await this.getPhase();
+      if (phase !== 'wordDiscovery') break;
+    }
+  }
+
+  // ============ FULL RUN PLAYTHROUGH (INTEGRATION TESTING) ============
+
+  async playUntilRunEnds(maxRooms = 50): Promise<'victory' | 'death' | 'hub'> {
+    this.log('playUntilRunEnds', 'starting playthrough');
+
+    for (let i = 0; i < maxRooms; i++) {
+      const roomType = await this.detectRoomType();
+      this.log('playUntilRunEnds', `room ${i + 1}: ${roomType}`);
+
+      if (roomType === 'hub') {
+        this.log('playUntilRunEnds', 'reached hub');
+        return 'hub';
+      }
+      if (roomType === 'gameOver') {
+        this.log('playUntilRunEnds', 'game over');
+        return 'death';
+      }
+
+      await this.completeCurrentRoom();
+
+      if (roomType === 'boss') {
+        await this.page.waitForTimeout(1000);
+        const newRoomType = await this.detectRoomType();
+        if (newRoomType === 'hub') {
+          this.log('playUntilRunEnds', 'boss defeated, returned to hub');
+          return 'victory';
+        }
+        if (newRoomType === 'gameOver') {
+          this.log('playUntilRunEnds', 'died to boss');
+          return 'death';
+        }
+      }
+
+      const proceedBtn = this.page.locator(SELECTORS.proceedBtn);
+      if (await proceedBtn.isVisible().catch(() => false)) {
+        await proceedBtn.click();
+        await this.page.waitForTimeout(500);
+      }
+    }
+
+    throw new Error(`Run did not end within ${maxRooms} rooms`);
+  }
+
+  async returnToHub(): Promise<void> {
+    const hubBtn = this.page.locator(SELECTORS.gameoverHubBtn);
+    if (await hubBtn.isVisible().catch(() => false)) {
+      await hubBtn.click();
+      await this.waitForPhase(['hub'], 5000);
+    }
   }
 }

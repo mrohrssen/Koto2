@@ -103,4 +103,17 @@ export const SELECTORS = {
 
   // Narration box
   narrationBox: '#narration-box',
+  narrationIndicator: '.narration-indicator',
+
+  // Room type detection (data attributes)
+  roomTypeIndicator: '[data-room-type]',
+
+  // Shrine elements
+  shrineChipOption: '.shrine-chip-option',
+  shrineSkipBtn: '#shrine-skip-btn',
+
+  // Quiz elements
+  quizAnswerOption: '.quiz-answer-option',
+  quizRewardOption: '.quiz-reward-option',
+  quizAnswerList: '.quiz-answer-list',
 };
