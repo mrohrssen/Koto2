@@ -514,6 +514,12 @@ export function getVocabManagerStats() {
 export function getNewWordsForDiscovery(limit = 2) {
   initVocabManager();
 
+  const cacheSize = Object.keys(state.wordStateCache).length;
+  if (cacheSize === 0) {
+    console.log('[Discovery] Word state cache is empty - no words available');
+    return { words: [], available: false };
+  }
+
   const newWords = [];
 
   for (const [word, info] of Object.entries(state.wordStateCache)) {
@@ -533,6 +539,8 @@ export function getNewWordsForDiscovery(limit = 2) {
   newWords.sort((a, b) => a.rank - b.rank);
 
   const words = newWords.slice(0, limit);
+
+  console.log(`[Discovery] Cache has ${cacheSize} words, found ${newWords.length} with 'new' state, returning ${words.length}`);
 
   return {
     words,

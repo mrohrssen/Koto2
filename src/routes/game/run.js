@@ -323,8 +323,10 @@ export default function createRunRoutes({
     try {
       const limit = parseInt(req.query.limit) || 2;
       const result = getNewWordsForDiscovery(limit);
+      console.log(`[Discovery] Fetched ${result.words.length} new words (available: ${result.available})`);
       res.json(result);
     } catch (error) {
+      console.error('[Discovery] Error fetching words:', error.message);
       res.status(500).json({ error: error.message });
     }
   });
