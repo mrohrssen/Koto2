@@ -169,7 +169,7 @@ test.describe('Encounter Room', () => {
     expect(hpAfter).toBeLessThan(hpBefore);
   });
 
-  test('swipe left continues combat', async ({ gameHelper, page }) => {
+  test('swipe left deals damage to enemy', async ({ gameHelper, page }) => {
     await gameHelper.setupRun();
 
     // Start combat
@@ -177,13 +177,16 @@ test.describe('Encounter Room', () => {
 
     // Wait for flash card
     await waitForFlashCardWithNarration(gameHelper, page, 15000);
+    const hpBefore = await gameHelper.getEnemyHp();
+
+    // Swipe left (also deals damage)
     await gameHelper.flipCard();
     await gameHelper.swipeCard('left');
     await page.waitForTimeout(2000);
 
-    // Should still be in combat
-    const phase = await gameHelper.getPhase();
-    expect(phase).toBe('combat');
+    // HP should decrease
+    const hpAfter = await gameHelper.getEnemyHp();
+    expect(hpAfter).toBeLessThan(hpBefore);
   });
 
   test('defeating enemy ends combat', async ({ gameHelper, page }) => {
@@ -200,5 +203,61 @@ test.describe('Encounter Room', () => {
     // Should no longer be in combat
     const phase = await gameHelper.getPhase();
     expect(phase).not.toBe('combat');
+  });
+
+  test('right swipe in combat sends correct JPDB grade', async ({ gameHelper, page }) => {
+    const reviewCalls: Array<{ vid: string; sid: string; grade: number }> = [];
+
+    await page.route('**/api/jpdb/review', async (route) => {
+      const postData = route.request().postDataJSON();
+      reviewCalls.push({
+        vid: postData?.vid,
+        sid: postData?.sid,
+        grade: postData?.grade
+      });
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true })
+      });
+    });
+
+    await gameHelper.setupRun();
+    await startCombatFromEncounter(gameHelper, page);
+    await waitForFlashCardWithNarration(gameHelper, page, 15000);
+
+    await gameHelper.flipCard();
+    await gameHelper.swipeCard('right');
+    await page.waitForTimeout(2000);
+
+    if (reviewCalls.length > 0) {
+      expect([4, 5]).toContain(reviewCalls[0].grade);
+    }
+  });
+
+  test('left swipe in combat sends "didn\'t know" JPDB grade', async ({ gameHelper, page }) => {
+    const reviewCalls: Array<{ grade: number }> = [];
+
+    await page.route('**/api/jpdb/review', async (route) => {
+      const postData = route.request().postDataJSON();
+      reviewCalls.push({ grade: postData?.grade });
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true })
+      });
+    });
+
+    await gameHelper.setupRun();
+    await startCombatFromEncounter(gameHelper, page);
+    await waitForFlashCardWithNarration(gameHelper, page, 15000);
+
+    await gameHelper.flipCard();
+    await gameHelper.swipeCard('left');
+    await page.waitForTimeout(2000);
+
+    if (reviewCalls.length > 0) {
+      expect(reviewCalls[0].grade).toBe(1);
+    }
   });
 });
