@@ -62,6 +62,7 @@ import { getRoomActions, generatePostCombatShop, getStartingWardOptions } from '
 import { getItem } from './items.js';
 import { derivePhase } from './phase-machine.js';
 import { CombatService, ExplorationService } from './services/index.js';
+import { logger } from '../logger.js';
 
 // ============ GAME MANAGER ============
 
@@ -431,6 +432,7 @@ export class GameManager {
    */
   createPlayer(name = 'Hunter', stats = null, statPoints = null) {
     this.player = createNewPlayer(name, stats, statPoints);
+    logger.info('[GameManager] Player created:', { name, hp: this.player.hp });
     this.emitState();
     return this.player;
   }
@@ -440,6 +442,7 @@ export class GameManager {
    */
   loadPlayer(playerData) {
     this.player = playerData;
+    logger.debug('[GameManager] Player loaded:', { name: this.player.name, gold: this.player.gold });
     this.emitState();
     return this.player;
   }
@@ -455,6 +458,7 @@ export class GameManager {
     }
 
     this.run = createNewRun(this.player);
+    logger.info('[GameManager] Run started:', { floor: this.run.floor, playerHp: this.run.player.hp });
 
     // Apply meta-progression bonuses to the run player
     if (this.meta) {
@@ -688,6 +692,7 @@ export class GameManager {
    */
   forfeitRun() {
     if (this.run) {
+      logger.info('[GameManager] Run forfeited:', { floor: this.run.floor, roomsExplored: this.run.roomsExplored });
       // Only award essence/stats if run was still active (not already ended by combat defeat)
       if (this.run.active) {
         this.run.active = false;
