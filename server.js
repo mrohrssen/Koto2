@@ -76,8 +76,6 @@ import dotenv from 'dotenv';
 import {
   configure as configureJpdb,
   initialize as initializeJpdb,
-  fetchDeckVocabulary,
-  fetchAllDecksVocabulary,
   getVocabulary,
   clearVocabCache,
   testConnection,

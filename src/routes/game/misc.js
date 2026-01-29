@@ -382,30 +382,6 @@ export default function createMiscRoutes({
     }
   });
 
-  // Vocab cache warm
-  router.post('/vocab-cache/warm', async (req, res) => {
-    const jpdbApiKey = req.userKeys?.jpdbApiKey;
-    if (!jpdbApiKey) {
-      return res.status(400).json({ error: 'JPDB API key not configured' });
-    }
-
-    try {
-      const vocabResult = getVocabulary();
-      if (vocabResult.words.length === 0) {
-        return res.json({ warmed: 0, message: 'No vocabulary to warm' });
-      }
-
-      const { force } = req.body;
-      await refreshWordStateCache(jpdbApiKey, vocabResult.words, force);
-      res.json({
-        warmed: vocabResult.words.length,
-        message: 'Cache warmed successfully'
-      });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
   // Session start - warm cache with full parse if needed
   router.post('/session-start', async (req, res) => {
     // Check body first (frontend sends it), then userKeys (from encrypted storage)

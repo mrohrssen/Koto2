@@ -407,37 +407,6 @@ async function getChipLoadout() {
 
 // ============ VOCAB/JPDB ENDPOINTS ============
 
-/** Warm the vocabulary cache
- * @param {boolean} force - Force refresh even if cached
- */
-async function warmVocabCache(force = false) {
-  try {
-    const response = await fetch('/api/game/vocab-cache/warm', {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ force })
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('Failed to warm vocab cache:', error);
-    return { error: 'Network error' };
-  }
-}
-
-/** Fetch vocabulary from JPDB decks */
-async function fetchJpdbVocab() {
-  try {
-    const response = await fetch('/api/vocab/fetch', {
-      method: 'POST',
-      headers: getAuthHeaders()
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('Failed to fetch JPDB vocab:', error);
-    return { error: 'Network error' };
-  }
-}
-
 /** Send JPDB review
  * @param {number} vid - Vocabulary ID
  * @param {number} sid - Sense ID
@@ -565,8 +534,6 @@ export {
   nextFloor,
   getChipLoadout,
   // Vocab/JPDB endpoints
-  warmVocabCache,
-  fetchJpdbVocab,
   sendJpdbReview,
   parseJpdbText,
   lookupJpdbWord,

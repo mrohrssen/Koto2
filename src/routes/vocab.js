@@ -8,8 +8,6 @@ import { Router } from 'express';
 import {
   testConnection,
   getVocabulary,
-  fetchDeckVocabulary,
-  fetchAllDecksVocabulary,
   parseText,
   reviewVocabulary,
   invalidateWordStateCache,
@@ -47,28 +45,6 @@ export default function createVocabRoutes({ getSettings }) {
       count: vocabResult.words.length,
       source: vocabResult.source
     });
-  });
-
-  // Fetch vocabulary from JPDB deck
-  router.post('/vocab/fetch', async (req, res) => {
-    const { jpdbApiKey } = req.body;
-    const settings = getSettings();
-
-    if (!jpdbApiKey) {
-      return res.status(400).json({ error: 'JPDB API key not configured' });
-    }
-
-    try {
-      let result;
-      if (settings.jpdbDeckId === 'all') {
-        result = await fetchAllDecksVocabulary(jpdbApiKey);
-      } else {
-        result = await fetchDeckVocabulary(jpdbApiKey, settings.jpdbDeckId);
-      }
-      res.json(result);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
   });
 
   // Parse text with JPDB
