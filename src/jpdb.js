@@ -155,7 +155,11 @@ async function jpdbFetch(url, options) {
  * @returns {Promise<Object>} Map of spelling -> { vid, sid, states, dueAt }
  */
 export async function parseWordBatch(apiKey, words) {
-  if (!apiKey || !words || words.length === 0) {
+  if (!apiKey) {
+    console.warn('[JPDB Batch Parse] No API key provided');
+    return {};
+  }
+  if (!words || words.length === 0) {
     return {};
   }
 
@@ -177,9 +181,8 @@ export async function parseWordBatch(apiKey, words) {
     });
 
     if (!parseResponse.ok) {
-      if (parseResponse.status === 429) {
-        console.warn('[JPDB Batch Parse] Rate limited');
-      }
+      const errorText = await parseResponse.text().catch(() => 'unknown');
+      console.warn(`[JPDB Batch Parse] Parse failed: ${parseResponse.status} - ${errorText}`);
       return {};
     }
 
