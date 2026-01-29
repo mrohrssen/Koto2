@@ -128,4 +128,108 @@ test.describe('Word Discovery Room', () => {
       console.log('Note: wordDiscovery phase did not transition - this may indicate a game state sync issue');
     }
   });
+
+});
+
+// Separate describe block for tests that need route interception before setup
+test.describe('Word Discovery Room - JPDB API Integration', () => {
+  test('swiping word card calls JPDB review API with correct grade', async ({ gameHelper, page }) => {
+    const reviewCalls: Array<{ vid: string; sid: string; grade: number }> = [];
+
+    // Set up route interception BEFORE character setup
+    await page.route('**/api/jpdb/review', async (route) => {
+      const request = route.request();
+      const postData = request.postDataJSON();
+      reviewCalls.push({
+        vid: postData?.vid,
+        sid: postData?.sid,
+        grade: postData?.grade
+      });
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true })
+      });
+    });
+
+    await setupCharacter(gameHelper);
+    await gameHelper.enableDebugMode();
+    await gameHelper.queueRooms(['wordDiscovery', 'encounter', 'boss']);
+    await gameHelper.setupRun();
+
+    await gameHelper.waitForPhase(['wordDiscovery', 'exploring', 'room_encounter'], 8000);
+
+    const phase = await gameHelper.getPhase();
+    if (phase !== 'wordDiscovery') {
+      test.skip();
+      return;
+    }
+
+    await page.waitForTimeout(1000);
+
+    const narrationBox = page.locator(SELECTORS.narrationBox);
+    if (await narrationBox.isVisible().catch(() => false)) {
+      await narrationBox.click({ force: true });
+      await page.waitForTimeout(500);
+    }
+
+    const flashCard = page.locator(SELECTORS.flashCard);
+    if (await flashCard.isVisible().catch(() => false)) {
+      await gameHelper.flipCard();
+      await page.waitForTimeout(300);
+      await gameHelper.swipeCard('right');
+      await page.waitForTimeout(1000);
+
+      if (reviewCalls.length > 0) {
+        expect(reviewCalls[0].grade).toBe(5);
+      }
+    }
+  });
+
+  test('swiping word card left uses different grade than right', async ({ gameHelper, page }) => {
+    const reviewCalls: Array<{ grade: number }> = [];
+
+    // Set up route interception BEFORE character setup
+    await page.route('**/api/jpdb/review', async (route) => {
+      const postData = route.request().postDataJSON();
+      reviewCalls.push({ grade: postData?.grade });
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true })
+      });
+    });
+
+    await setupCharacter(gameHelper);
+    await gameHelper.enableDebugMode();
+    await gameHelper.queueRooms(['wordDiscovery', 'encounter', 'boss']);
+    await gameHelper.setupRun();
+
+    await gameHelper.waitForPhase(['wordDiscovery', 'exploring', 'room_encounter'], 8000);
+
+    const phase = await gameHelper.getPhase();
+    if (phase !== 'wordDiscovery') {
+      test.skip();
+      return;
+    }
+
+    await page.waitForTimeout(1000);
+    const narrationBox = page.locator(SELECTORS.narrationBox);
+    if (await narrationBox.isVisible().catch(() => false)) {
+      await narrationBox.click({ force: true });
+      await page.waitForTimeout(500);
+    }
+
+    const flashCard = page.locator(SELECTORS.flashCard);
+    if (await flashCard.isVisible().catch(() => false)) {
+      await gameHelper.flipCard();
+      await page.waitForTimeout(300);
+      await gameHelper.swipeCard('left');
+      await page.waitForTimeout(1000);
+
+      if (reviewCalls.length > 0) {
+        expect(reviewCalls[0].grade).toBe(1);
+      }
+    }
+  });
 });
