@@ -42,4 +42,49 @@ test.describe('Equipment', () => {
     const filledAfter = await page.locator(SELECTORS.chipEquipSlotFilled).count();
     expect(filledAfter).toBeLessThan(filledBefore);
   });
+
+  test('can re-equip a chip after unequipping', async ({ gameHelper, page }) => {
+    // Open equip view
+    await page.locator(SELECTORS.equipBotsBtn).click();
+    await page.waitForTimeout(1000);
+
+    // Get initial equipped chips from server
+    const stateBefore = await page.evaluate(async () => {
+      const res = await fetch('/api/game/state');
+      return res.json();
+    });
+    const equippedBefore = stateBefore?.player?.equipment?.weapon?.equippedChips || [];
+    expect(equippedBefore.length).toBeGreaterThanOrEqual(1);
+    const firstChipId = equippedBefore[0]?.id;
+
+    // Unequip the first chip
+    await page.locator(SELECTORS.chipEquipSlotFilled).first().click();
+    await page.waitForTimeout(1000);
+
+    // Verify chip is unequipped on backend
+    const stateAfterUnequip = await page.evaluate(async () => {
+      const res = await fetch('/api/game/state');
+      return res.json();
+    });
+    const equippedAfterUnequip = stateAfterUnequip?.player?.equipment?.weapon?.equippedChips || [];
+    expect(equippedAfterUnequip.length).toBeLessThan(equippedBefore.length);
+
+    // Find the unequipped chip in inventory and re-equip it
+    const inventoryChip = page.locator(`[data-chip-id="${firstChipId}"]`).first();
+    if (await inventoryChip.isVisible().catch(() => false)) {
+      await inventoryChip.click();
+      await page.waitForTimeout(1000);
+
+      // Verify chip is re-equipped on backend
+      const stateAfterReequip = await page.evaluate(async () => {
+        const res = await fetch('/api/game/state');
+        return res.json();
+      });
+      const equippedAfterReequip = stateAfterReequip?.player?.equipment?.weapon?.equippedChips || [];
+      expect(equippedAfterReequip.length).toBe(equippedBefore.length);
+
+      const reequippedChip = equippedAfterReequip.find((c: any) => c.id === firstChipId);
+      expect(reequippedChip).toBeDefined();
+    }
+  });
 });
