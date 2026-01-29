@@ -456,6 +456,7 @@ export default function createMiscRoutes({
   // Due words
   router.post('/due-words', async (req, res) => {
     const jpdbApiKey = req.userKeys?.jpdbApiKey;
+    console.log('[Due Words] Request received, apiKey:', jpdbApiKey ? 'present' : 'missing');
     if (!jpdbApiKey) {
       return res.status(400).json({ error: 'JPDB API key not configured' });
     }
@@ -467,14 +468,18 @@ export default function createMiscRoutes({
         ? (Array.isArray(exclude) ? exclude.map(v => parseInt(v, 10)) : exclude.split(',').map(v => parseInt(v, 10)))
         : [];
 
+      console.log(`[Due Words] limit=${limit}, excludeVids=${excludeVids.length}, bypassCache=${bypassCache}`);
+
       let result;
       if (bypassCache) {
         result = await fetchDueWordsDirectly(jpdbApiKey, limit, excludeVids);
       } else {
         result = await getDueWordsWithMeanings(jpdbApiKey, limit, excludeVids);
       }
+      console.log(`[Due Words] Returning ${result.words.length} words, source: ${result.source}`);
       res.json({ words: result.words, count: result.words.length, source: result.source });
     } catch (error) {
+      console.error('[Due Words] Error:', error.message);
       res.status(500).json({ error: error.message });
     }
   });

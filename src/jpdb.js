@@ -641,18 +641,24 @@ export const REVIEW_GRADES = {
  * Get due words with their English meanings for word practice
  */
 export async function getDueWordsWithMeanings(apiKey, limit = 50, excludeVids = []) {
+  console.log('[getDueWordsWithMeanings] Called with limit:', limit);
   if (!apiKey) {
+    console.log('[getDueWordsWithMeanings] No API key');
     return { words: [], source: 'none' };
   }
 
   let wordStateCache = {};
 
   // Read from configured vocab suggestions file
+  console.log('[getDueWordsWithMeanings] vocabSuggestionsFile:', config.vocabSuggestionsFile || 'NOT SET');
   if (config.vocabSuggestionsFile) {
     try {
-      if (existsSync(config.vocabSuggestionsFile)) {
+      const fileExists = existsSync(config.vocabSuggestionsFile);
+      console.log('[getDueWordsWithMeanings] File exists:', fileExists);
+      if (fileExists) {
         const data = JSON.parse(readFileSync(config.vocabSuggestionsFile, 'utf-8'));
         wordStateCache = data.wordStateCache || {};
+        console.log('[getDueWordsWithMeanings] Loaded cache with', Object.keys(wordStateCache).length, 'words');
       }
     } catch (e) {
       console.warn('Failed to load vocab suggestions cache:', e.message);
@@ -660,6 +666,7 @@ export async function getDueWordsWithMeanings(apiKey, limit = 50, excludeVids = 
   }
 
   if (Object.keys(wordStateCache).length === 0) {
+    console.log('[getDueWordsWithMeanings] Cache is empty, returning no words');
     return { words: [], source: 'none' };
   }
 

@@ -83,17 +83,23 @@ export function initVocabManager() {
  * Save cache to file
  */
 function saveCache() {
-  if (!cacheFile) return;
+  if (!cacheFile) {
+    console.log('[VocabManager] saveCache: No cacheFile configured');
+    return;
+  }
 
   try {
+    const cacheSize = Object.keys(state.wordStateCache).length;
+    console.log(`[VocabManager] saveCache: Writing ${cacheSize} words to ${cacheFile}`);
     writeFileSync(cacheFile, JSON.stringify({
       recentlyUsedWords: state.recentlyUsedWords,
       wordStateCache: state.wordStateCache,
       lastRefresh: state.lastRefresh,
       lastFullParse: state.lastFullParse
     }, null, 2));
+    console.log('[VocabManager] saveCache: Write successful');
   } catch (e) {
-    console.warn('Failed to save vocab suggestion cache:', e.message);
+    console.warn('[VocabManager] saveCache: Failed -', e.message);
   }
 }
 
