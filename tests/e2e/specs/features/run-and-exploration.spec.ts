@@ -99,9 +99,13 @@ test.describe('Run and Exploration', () => {
   });
 
   test('room encounter shows Fight button', async ({ gameHelper, page }) => {
+    await gameHelper.enableDebugMode();
+    // Queue encounter as first room for deterministic testing
+    await gameHelper.queueRooms(['encounter', 'encounter', 'boss']);
     await gameHelper.setupRun();
-    const found = await gameHelper.proceedToEncounter(50);
-    expect(found).toBe(true);
+
+    // Should be in room_encounter phase
+    await gameHelper.waitForPhase(['room_encounter'], 8000);
     await expect(page.locator(SELECTORS.fightBtn)).toBeVisible({ timeout: 3000 });
   });
 
