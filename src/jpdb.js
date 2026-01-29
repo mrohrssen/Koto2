@@ -11,6 +11,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { logger } from './logger.js';
 
 const JPDB_API_BASE = 'https://jpdb.io/api/v1';
 
@@ -86,7 +87,7 @@ export function tripCircuitBreaker(statusCode) {
 
   circuitBreaker.cooldownUntil = Date.now() + cooldownMs;
 
-  console.warn(`[JPDB Circuit Breaker] Tripped! Status ${statusCode}, cooldown ${cooldownMs / 1000}s, failures: ${circuitBreaker.consecutiveFailures}`);
+  logger.warn('[JPDB] Circuit breaker tripped:', { statusCode, cooldownMs: cooldownMs / 1000, failures: circuitBreaker.consecutiveFailures });
 }
 
 /**
@@ -96,7 +97,7 @@ function isCircuitBreakerClosed() {
   if (!circuitBreaker.isOpen) return true;
 
   if (Date.now() >= circuitBreaker.cooldownUntil) {
-    console.log('[JPDB Circuit Breaker] Cooldown expired, allowing test request');
+    logger.debug('[JPDB] Circuit breaker cooldown expired, testing');
     return true;  // Allow one test request
   }
 
@@ -108,7 +109,7 @@ function isCircuitBreakerClosed() {
  */
 function onSuccessfulRequest() {
   if (circuitBreaker.isOpen) {
-    console.log('[JPDB Circuit Breaker] Request succeeded, closing breaker');
+    logger.debug('[JPDB] Circuit breaker reset on success');
     circuitBreaker.isOpen = false;
     circuitBreaker.consecutiveFailures = 0;
     circuitBreaker.cooldownUntil = 0;
@@ -268,7 +269,7 @@ export async function parseWordBatches(apiKey, words, batchSize = 2000, delayMs 
     }
   }
 
-  console.log(`[JPDB Batch Parse] Complete: ${Object.keys(results).length} words parsed`);
+  logger.info('[JPDB] Batch parse completed:', { wordCount: Object.keys(results).length });
   return results;
 }
 
