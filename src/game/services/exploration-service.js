@@ -31,6 +31,8 @@ import {
   getWardInfo
 } from '../rooms.js';
 
+import { logger } from '../../logger.js';
+
 
 
 
@@ -64,6 +66,7 @@ export class ExplorationService {
     }
 
     if (!STARTING_WARDS.includes(wardId)) {
+      logger.warn('[Exploration] Invalid starting ward attempted:', { wardId });
       throw new Error(`Invalid starting ward: ${wardId}`);
     }
 
@@ -77,6 +80,7 @@ export class ExplorationService {
 
     const wardInfo = getWardInfo(wardId);
 
+    logger.info('[Exploration] Starting ward selected:', { ward: wardId, floor: this.gm.run.floor });
 
     return {
       success: true,
@@ -157,6 +161,10 @@ export class ExplorationService {
     }
 
     this.gm.narrate(getSimpleNarration('enterFloor', this.gm.run.floor));
+
+    logger.info('[Exploration] Entered floor:', { floor: this.gm.run.floor, ward: this.gm.run.currentWard });
+    logger.debug('[Exploration] Floor rooms:', { roomCount: this.gm.run.rooms?.length });
+
     this.gm.emitState();
 
     return {
@@ -222,6 +230,8 @@ export class ExplorationService {
 
     // Move to next room
     this.gm.run.currentRoom++;
+    const room = this.getCurrentRoom();
+    logger.info('[Exploration] Proceeded to room:', { type: room?.type, index: this.gm.run.currentRoom });
     const nextRoom = this.gm.run.rooms[this.gm.run.currentRoom];
 
     if (!nextRoom) {
@@ -286,14 +296,17 @@ export class ExplorationService {
       throw new Error('Chip already at max level');
     }
 
-    setChipLevel(player, chipId, currentLevel + 1);
+    const newLevel = currentLevel + 1;
+    setChipLevel(player, chipId, newLevel);
     room.shrine.used = true;
     room.interacted = true;
 
-    this.gm.narrate(`狐の祠の力でチップが強化された！ Lv. ${currentLevel + 1}`);
+    logger.info('[Shrine] Chip upgraded:', { chip: chipId, newLevel: newLevel });
+
+    this.gm.narrate(`狐の祠の力でチップが強化された！ Lv. ${newLevel}`);
     this.gm.emitState();
 
-    return { type: 'shrine_upgrade', chipId, newLevel: currentLevel + 1 };
+    return { type: 'shrine_upgrade', chipId, newLevel };
   }
 
   useQuizReward(rewardType) {
@@ -410,6 +423,8 @@ export class ExplorationService {
 
     // Close shop
     this.gm.run.postCombatShop.active = false;
+
+    logger.info('[Shop] Chip acquired:', { chip: item.name, chipId: item.itemId });
 
     this.gm.narrate(`${item.name}を獲得した！`);
     this.gm.emitState();
