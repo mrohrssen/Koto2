@@ -181,7 +181,8 @@ test.describe('Word Discovery Room - JPDB API Integration', () => {
       await page.waitForTimeout(1000);
 
       if (reviewCalls.length > 0) {
-        expect(reviewCalls[0].grade).toBe(5);
+        // Word discovery uses grade 1 (learning) for both directions, unlike combat which uses 5/1
+        expect(reviewCalls[0].grade).toBe(1);
       }
     }
   });

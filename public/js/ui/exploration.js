@@ -497,7 +497,7 @@ async function renderQuizRewards() {
 /** Word Discovery phase - show flash cards for new words */
 export async function renderWordDiscovery() {
   const gameState = getGameState();
-  const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
+  const room = gameState.room;
 
   // Clear stale content immediately before any async operations
   actions.setContent('');
