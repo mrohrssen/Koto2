@@ -85,7 +85,7 @@ export class GameHelper {
     await this.selectStartingChip(0);
     await this.waitForPhase(['ward_selection'], 5000);
     await this.selectWard(0);
-    await this.waitForPhase(['exploring', 'room_encounter', 'boss_ready', 'shrine', 'wordDiscovery'], 8000);
+    await this.waitForPhase(['exploring', 'room_encounter', 'boss_ready', 'shrine', 'quiz', 'wordDiscovery'], 8000);
   }
 
   // ============ EXPLORATION ============
