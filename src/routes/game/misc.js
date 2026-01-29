@@ -384,7 +384,7 @@ export default function createMiscRoutes({
 
   // Vocab cache warm
   router.post('/vocab-cache/warm', async (req, res) => {
-    const jpdbApiKey = req.userKeys.jpdbApiKey || req.body.jpdbApiKey;
+    const jpdbApiKey = req.userKeys?.jpdbApiKey;
     if (!jpdbApiKey) {
       return res.status(400).json({ error: 'JPDB API key not configured' });
     }
@@ -408,7 +408,8 @@ export default function createMiscRoutes({
 
   // Session start - warm cache with full parse if needed
   router.post('/session-start', async (req, res) => {
-    const jpdbApiKey = req.userKeys.jpdbApiKey || req.body.jpdbApiKey;
+    // Check body first (frontend sends it), then userKeys (from encrypted storage)
+    const jpdbApiKey = req.userKeys?.jpdbApiKey;
     if (!jpdbApiKey) {
       return res.json({
         warmed: false,
@@ -437,7 +438,7 @@ export default function createMiscRoutes({
 
   // Post-combat refresh - update cache for reviewed words
   router.post('/post-combat-refresh', async (req, res) => {
-    const jpdbApiKey = req.userKeys.jpdbApiKey || req.body.jpdbApiKey;
+    const jpdbApiKey = req.userKeys?.jpdbApiKey;
     const { words } = req.body;
 
     if (!jpdbApiKey) {
@@ -467,7 +468,7 @@ export default function createMiscRoutes({
 
   // Due words
   router.post('/due-words', async (req, res) => {
-    const jpdbApiKey = req.userKeys.jpdbApiKey || req.body.jpdbApiKey;
+    const jpdbApiKey = req.userKeys?.jpdbApiKey;
     if (!jpdbApiKey) {
       return res.status(400).json({ error: 'JPDB API key not configured' });
     }
@@ -493,7 +494,7 @@ export default function createMiscRoutes({
 
   // Refresh word states
   router.post('/refresh-word-states', async (req, res) => {
-    const jpdbApiKey = req.userKeys.jpdbApiKey || req.body.jpdbApiKey;
+    const jpdbApiKey = req.userKeys?.jpdbApiKey;
     if (!jpdbApiKey) {
       return res.status(400).json({ error: 'JPDB API key not configured' });
     }
@@ -518,7 +519,7 @@ export default function createMiscRoutes({
 
   // Word states lookup
   router.post('/stats/word-states', async (req, res) => {
-    const jpdbApiKey = req.userKeys.jpdbApiKey || req.body.jpdbApiKey;
+    const jpdbApiKey = req.userKeys?.jpdbApiKey;
     const gameStats = getGameStats();
     if (!jpdbApiKey) {
       return res.status(400).json({ error: 'JPDB API key not configured' });
