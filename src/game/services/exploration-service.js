@@ -358,6 +358,29 @@ export class ExplorationService {
   }
 
   /**
+   * Mark word discovery room as complete
+   */
+  completeWordDiscovery() {
+    const room = this.getCurrentRoom();
+    if (!room || room.type !== 'wordDiscovery') {
+      throw new Error('No word discovery room here');
+    }
+
+    if (room.interacted) {
+      // Already completed, just return success
+      return { type: 'word_discovery_complete', alreadyComplete: true };
+    }
+
+    room.wordDiscovery.completed = true;
+    room.interacted = true;
+
+    logger.info('[WordDiscovery] Room completed');
+    this.gm.emitState();
+
+    return { type: 'word_discovery_complete' };
+  }
+
+  /**
    * Start room encounter - triggers combat
    */
   startRoomEncounter() {

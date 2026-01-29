@@ -499,6 +499,13 @@ async function getDiscoveryWords(limit = 2) {
   }
 }
 
+/** Mark word discovery room as complete
+ * @returns {Promise<Object>} Result with updated state
+ */
+async function completeDiscovery() {
+  return apiCall('/complete-discovery', 'POST');
+}
+
 export {
   apiCall,
   isApiLoading,
@@ -541,5 +548,6 @@ export {
   parseJpdbText,
   lookupJpdbWord,
   lookupJpdbBatch,
-  getDiscoveryWords
+  getDiscoveryWords,
+  completeDiscovery
 };

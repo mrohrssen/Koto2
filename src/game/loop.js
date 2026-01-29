@@ -628,6 +628,13 @@ export class GameManager {
   }
 
   /**
+   * Mark word discovery room as complete
+   */
+  completeWordDiscovery() {
+    return this.explorationService.completeWordDiscovery();
+  }
+
+  /**
    * Start room encounter
    */
   startRoomEncounter() {

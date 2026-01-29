@@ -54,6 +54,7 @@ let setChipLoadoutCache = null;
 
 // Word discovery API functions
 let apiGetDiscoveryWords = null;
+let apiCompleteDiscovery = null;
 let apiSwipeWord = null;
 let apiPostCombatRefresh = null;
 
@@ -81,6 +82,7 @@ export function init(callbacks) {
   apiGetChipLoadout = callbacks.apiGetChipLoadout;
   setChipLoadoutCache = callbacks.setChipLoadoutCache;
   apiGetDiscoveryWords = callbacks.apiGetDiscoveryWords;
+  apiCompleteDiscovery = callbacks.apiCompleteDiscovery;
   apiSwipeWord = callbacks.apiSwipeWord;
   apiPostCombatRefresh = callbacks.apiPostCombatRefresh;
 }
@@ -535,10 +537,12 @@ export async function renderWordDiscovery() {
     const result = await apiGetDiscoveryWords(discovery.wordsToLearn);
 
     if (!result.available || result.words.length === 0) {
-      // No new words available
+      // No new words available - mark complete on server first
       await sceneModule.showNarration('今は新しい言葉がないようだ。また来よう！', { speaker: 'Quiz Master' });
-      discovery.completed = true;
-      room.interacted = true;
+      const completeResult = await apiCompleteDiscovery();
+      if (completeResult?.state) {
+        updateGameState(completeResult.state);
+      }
       const proceedResult = await apiProceed();
       if (proceedResult?.state) {
         updateGameState(proceedResult.state);
@@ -556,9 +560,11 @@ export async function renderWordDiscovery() {
   const currentIndex = discovery.wordsLearned;
 
   if (currentIndex >= words.length) {
-    // All words learned - complete
-    discovery.completed = true;
-    room.interacted = true;
+    // All words learned - mark complete on server first
+    const completeResult = await apiCompleteDiscovery();
+    if (completeResult?.state) {
+      updateGameState(completeResult.state);
+    }
 
     // Fire and forget: refresh cache for learned words
     const learnedWords = words.map(w => w.word);
