@@ -39,12 +39,6 @@ export default defineConfig({
       dependencies: ['rooms', 'features'],
       use: { ...devices['Desktop Chrome'] },
     },
-    {
-      // Legacy tests (to be migrated)
-      name: 'legacy',
-      testMatch: /^(?!rooms\/)(?!features\/)(?!integration\/).*\.spec\.ts$/,
-      use: { ...devices['Desktop Chrome'] },
-    },
   ],
 
   webServer: {

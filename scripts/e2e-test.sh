@@ -1,20 +1,19 @@
 #!/bin/bash
 # E2E test wrapper - enforces correct flags
 # Usage: ./scripts/e2e-test.sh [optional test file pattern]
+#
+# Playwright manages the server lifecycle via webServer config.
+# This script just ensures correct flags and clean state.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_DIR"
 
-# Kill any existing server
+# Kill any existing server to ensure clean state
 pkill -f "node server.js" 2>/dev/null
+sleep 1
 
-# Start server with NODE_ENV=test to bypass auth for e2e tests
-NODE_ENV=test npm start &
-SERVER_PID=$!
-sleep 3
-
-# Run tests with enforced flags
+# Run tests - Playwright starts/stops the server automatically
 cd tests/e2e
 if [ -n "$1" ]; then
     npx playwright test "$1" --workers=1 -x
@@ -23,8 +22,7 @@ else
 fi
 TEST_EXIT=$?
 
-# Cleanup
-kill $SERVER_PID 2>/dev/null
+# Cleanup any orphaned processes
 pkill -f "node server.js" 2>/dev/null
 
 exit $TEST_EXIT

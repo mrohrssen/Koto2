@@ -9,10 +9,11 @@ test.describe('Meta Progression', () => {
 
   test('essence accumulates after completing an encounter', async ({ gameHelper, page }) => {
     await setupCharacter(gameHelper);
+    // Queue encounter rooms to ensure we get an encounter
+    await gameHelper.queueRooms(['encounter', 'encounter', 'encounter', 'boss']);
     await gameHelper.setupRun();
-    // Win a fight to earn essence
-    const found = await gameHelper.proceedToEncounter(50);
-    expect(found).toBe(true);
+    // Wait for encounter room
+    await gameHelper.waitForPhase(['room_encounter'], 5000);
     await page.locator(SELECTORS.fightBtn).click();
     await gameHelper.waitForPhase(['combat'], 5000);
     // Weaken enemy for fast kill

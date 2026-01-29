@@ -28,7 +28,10 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Only cache assets (images, sprites, backgrounds, audio, icons)
+  // Only cache http/https requests for /assets/
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    return;
+  }
   if (!url.pathname.startsWith('/assets/')) {
     return;
   }
@@ -40,7 +43,8 @@ self.addEventListener('fetch', (event) => {
           return cachedResponse;
         }
         return fetch(event.request).then((networkResponse) => {
-          if (networkResponse.ok) {
+          // Only cache complete (200) responses, not partial (206) or errors
+          if (networkResponse.ok && networkResponse.status === 200) {
             cache.put(event.request, networkResponse.clone());
           }
           return networkResponse;
