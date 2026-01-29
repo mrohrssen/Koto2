@@ -38,6 +38,7 @@ import { generatePostCombatShop, getNextWardOptions } from '../rooms.js';
 import { resetChipCharge, incrementAllEquippedCharges } from '../items/chips.js';
 import { clearAllBuffs } from '../combat/chip-skills.js';
 import { getSimpleNarration } from '../dm.js';
+import { logger } from '../../logger.js';
 
 /**
  * Service for managing combat encounters
@@ -67,6 +68,7 @@ export class CombatService {
 
     const enemy = generateEnemy(this.gm.run.floor);
     this.gm.combat = createCombatState(enemy);
+    logger.info('[Combat] Started encounter:', { enemy: enemy.nameEn, hp: enemy.hp, floor: this.gm.run.floor });
     this.gm.run.player._combatStacks = {};  // Reset stacking chip counters
     if (this.gm.run.player._runKills === undefined) this.gm.run.player._runKills = 0;  // Init kill counter
     this.gm.combat.turn = determineTurnOrder(this.gm.run.player, enemy);
@@ -97,6 +99,7 @@ export class CombatService {
 
     const boss = getBossForFloor(this.gm.run.floor);
     this.gm.combat = createCombatState(boss);
+    logger.info('[Combat] Boss encounter started:', { boss: boss.nameEn, hp: boss.hp, floor: this.gm.run.floor });
     this.gm.run.player._combatStacks = {};  // Reset stacking chip counters
     this.gm.combat.turn = determineTurnOrder(this.gm.run.player, boss);
 
@@ -125,6 +128,7 @@ export class CombatService {
    */
   executeCombatCycle(attackerType = 'player') {
     if (!this.gm.combat?.active) {
+      logger.warn('[Combat] Attempted action on inactive combat');
       throw new Error('No active combat');
     }
 
@@ -147,6 +151,8 @@ export class CombatService {
     if (attackerType === 'player') {
       // Player attack
       const playerResult = executePlayerAttack(this.gm.run.player, this.gm.combat.enemy, 'normal');
+      logger.info('[Combat] Player attacked:', { damage: playerResult.totalDamage, critical: playerResult.anyCritical });
+      logger.debug('[Combat] Attack details:', { pipelineResult: playerResult.pipelineResult });
 
       // Handle SACRIFICE - permanently destroy sacrificed chips
       if (playerResult.pipelineResult?.sacrificedChips?.length > 0) {
@@ -340,6 +346,7 @@ export class CombatService {
     } else if (attackerType === 'enemy') {
       // Enemy attack
       const enemyResult = executeEnemyTurn(this.gm.combat.enemy, this.gm.run.player, { id: 'attack', damageMultiplier: 1.0 });
+      logger.info('[Combat] Enemy attacked:', { damage: enemyResult.damage, playerHp: this.gm.run.player.hp });
       result.enemyAttack = {
         damage: enemyResult.damage,
         critical: enemyResult.critical,
@@ -403,6 +410,7 @@ export class CombatService {
 
     const enemy = this.gm.combat.enemy;
     const isBoss = enemy.isBoss;
+    logger.info('[Combat] Victory:', { enemy: enemy.nameEn, isBoss, floor: this.gm.run.floor });
 
     let rewards;
     let shopItems = null;
@@ -498,6 +506,7 @@ export class CombatService {
   handleDefeat() {
     this.gm.combat.active = false;
     this.gm.run.active = false;
+    logger.info('[Combat] Defeat:', { floor: this.gm.run.floor, stats: this.gm.run.stats });
     this.gm.run.stats.endTime = Date.now();
 
     // Award essence and update meta stats (delegated to GameManager)
