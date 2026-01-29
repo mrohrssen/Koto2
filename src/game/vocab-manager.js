@@ -23,9 +23,9 @@ const CONFIG = {
 
 // Full parse configuration
 export const FULL_PARSE_CONFIG = {
-  batchSize: 2000,
+  batchSize: 1000,
   maxWords: 10000,
-  batchDelayMs: 3000,
+  batchDelayMs: 1000,
   cacheExpiryMs: 60 * 60 * 1000  // 1 hour
 };
 

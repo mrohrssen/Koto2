@@ -409,8 +409,14 @@ export default function createMiscRoutes({
   // Session start - warm cache with full parse if needed
   router.post('/session-start', async (req, res) => {
     // Check body first (frontend sends it), then userKeys (from encrypted storage)
-    const jpdbApiKey = req.userKeys?.jpdbApiKey;
+    const jpdbApiKey = req.body?.jpdbApiKey || req.userKeys?.jpdbApiKey;
+
+    console.log('[Session Start] req.body.jpdbApiKey:', req.body?.jpdbApiKey ? 'present' : 'missing');
+    console.log('[Session Start] req.userKeys.jpdbApiKey:', req.userKeys?.jpdbApiKey ? 'present' : 'missing');
+    console.log('[Session Start] Using key from:', req.body?.jpdbApiKey ? 'body' : (req.userKeys?.jpdbApiKey ? 'userKeys' : 'none'));
+
     if (!jpdbApiKey) {
+      console.log('[Session Start] No JPDB API key found');
       return res.json({
         warmed: false,
         reason: 'No JPDB API key configured'
@@ -418,20 +424,25 @@ export default function createMiscRoutes({
     }
 
     if (!staticWordList || staticWordList.length === 0) {
+      console.log('[Session Start] Static word list empty or not loaded');
       return res.json({
         warmed: false,
         reason: 'Static word list not loaded'
       });
     }
 
+    console.log(`[Session Start] Static word list has ${staticWordList.length} words, starting parse...`);
+
     try {
       const cache = await performFullParse(jpdbApiKey, staticWordList);
+      console.log(`[Session Start] Parse complete, cached ${Object.keys(cache).length} words`);
       res.json({
         warmed: true,
         cachedWords: Object.keys(cache).length,
         message: 'Session cache ready'
       });
     } catch (error) {
+      console.error('[Session Start] Error:', error.message);
       res.status(500).json({ error: error.message });
     }
   });
