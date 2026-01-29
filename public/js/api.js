@@ -6,6 +6,8 @@
  * handling of auth tokens, loading states, and error handling.
  */
 
+import { logger } from './logger.js';
+
 // ============ CORE API WRAPPER ============
 
 // Module-level loading state
@@ -34,8 +36,9 @@ export function getAuthHeaders() {
  * @returns {Promise<object|null>} Response data or null on error
  */
 async function apiCall(endpoint, method = 'POST', body = null, onError = null) {
+  logger.debug('[API] Request:', { endpoint, method });
   if (isLoading) {
-    console.warn('apiCall blocked - isLoading is true for:', endpoint);
+    logger.warn('[API] Request blocked - loading:', { endpoint });
     return null;
   }
   isLoading = true;
@@ -56,7 +59,7 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null) {
 
     return data;
   } catch (error) {
-    console.error('API Error:', error);
+    logger.error('[API] Request failed:', { endpoint, error: error.message });
     if (onError) {
       onError(error.message);
     }
@@ -86,7 +89,7 @@ async function getGameState() {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to fetch game state:', error);
+    logger.error('[API] Failed to fetch game state:', error.message);
     return { phase: 'no_save' };
   }
 }
@@ -102,7 +105,7 @@ async function getMetaProgression() {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to fetch meta-progression:', error);
+    logger.error('[API] Failed to fetch meta-progression:', error.message);
     return { essence: 0, upgrades: [] };
   }
 }
@@ -118,7 +121,7 @@ async function getSettings() {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to fetch settings:', error);
+    logger.error('[API] Failed to fetch settings:', error.message);
     return {};
   }
 }
@@ -150,7 +153,7 @@ async function purchaseUpgrade(upgradeId) {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to purchase upgrade:', error);
+    logger.error('[API] Failed to purchase upgrade:', error.message);
     return { success: false, error: 'Network error' };
   }
 }
@@ -184,7 +187,7 @@ async function getStartingWards() {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to fetch starting wards:', error);
+    logger.error('[API] Failed to fetch starting wards:', error.message);
     return [];
   }
 }
@@ -203,7 +206,7 @@ async function selectStartingWard(wardId) {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to select starting ward:', error);
+    logger.error('[API] Failed to select starting ward:', error.message);
     return { error: 'Network error' };
   }
 }
@@ -219,7 +222,7 @@ async function getNextWardOptions() {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to fetch next ward options:', error);
+    logger.error('[API] Failed to fetch next ward options:', error.message);
     return [];
   }
 }
@@ -238,7 +241,7 @@ async function selectNextWard(wardId) {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to select next ward:', error);
+    logger.error('[API] Failed to select next ward:', error.message);
     return { error: 'Network error' };
   }
 }
@@ -273,7 +276,7 @@ async function getQuizQuestion() {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to get quiz question:', error);
+    logger.error('[API] Failed to get quiz question:', error.message);
     return { error: 'Network error' };
   }
 }
@@ -288,7 +291,7 @@ async function submitQuizAnswer(questionId, selectedIndex) {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to submit quiz answer:', error);
+    logger.error('[API] Failed to submit quiz answer:', error.message);
     return { error: 'Network error' };
   }
 }
@@ -347,7 +350,7 @@ async function equipChip(equipmentSlot, chipId) {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to equip chip:', error);
+    logger.error('[API] Failed to equip chip:', error.message);
     return { error: 'Network error' };
   }
 }
@@ -365,7 +368,7 @@ async function unequipChip(chipId, equipmentSlot) {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to unequip chip:', error);
+    logger.error('[API] Failed to unequip chip:', error.message);
     return { error: 'Network error' };
   }
 }
@@ -382,7 +385,7 @@ async function reorderChips(chipIds) {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to reorder chips:', error);
+    logger.error('[API] Failed to reorder chips:', error.message);
     return { error: 'Network error' };
   }
 }
@@ -400,7 +403,7 @@ async function getChipLoadout() {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to get chip loadout:', error);
+    logger.error('[API] Failed to get chip loadout:', error.message);
     return { error: 'Network error' };
   }
 }
@@ -421,7 +424,7 @@ async function sendJpdbReview(vid, sid, grade) {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to send JPDB review:', error);
+    logger.error('[API] Failed to send JPDB review:', error.message);
     return { error: 'Network error' };
   }
 }
@@ -438,7 +441,7 @@ async function parseJpdbText(text) {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to parse JPDB text:', error);
+    logger.error('[API] Failed to parse JPDB text:', error.message);
     return { error: 'Network error' };
   }
 }
@@ -456,7 +459,7 @@ async function lookupJpdbWord(vid, sid) {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to lookup JPDB word:', error);
+    logger.error('[API] Failed to lookup JPDB word:', error.message);
     return { error: 'Network error' };
   }
 }
@@ -475,7 +478,7 @@ async function lookupJpdbBatch(vocabList) {
     const data = await response.json();
     return data.definitions || {};
   } catch (error) {
-    console.error('Failed to batch lookup JPDB words:', error);
+    logger.error('[API] Failed to batch lookup JPDB words:', error.message);
     return {};
   }
 }
@@ -491,7 +494,7 @@ async function getDiscoveryWords(limit = 2) {
     });
     return await response.json();
   } catch (error) {
-    console.error('Failed to get discovery words:', error);
+    logger.error('[API] Failed to get discovery words:', error.message);
     return { words: [] };
   }
 }
