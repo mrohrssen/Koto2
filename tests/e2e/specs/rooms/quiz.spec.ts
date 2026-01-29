@@ -93,4 +93,82 @@ test.describe('Quiz Room', () => {
     const phase = await gameHelper.getPhase();
     expect(phase).not.toBe('quiz');
   });
+
+  test('correct quiz answer shows reward options', async ({ gameHelper, page }) => {
+    await gameHelper.setupRun();
+    await gameHelper.waitForPhase(['quiz'], 8000);
+    await dismissNarration(page);
+
+    // Intercept quiz answer submission to get the response
+    let answerResponse: any = null;
+    await page.route('**/api/game/quiz-answer', async (route) => {
+      const response = await route.fetch();
+      answerResponse = await response.json();
+      await route.fulfill({ response });
+    });
+
+    // Click first answer option
+    const answerOption = page.locator(SELECTORS.quizAnswerOption).first();
+    await expect(answerOption).toBeVisible({ timeout: 5000 });
+    await answerOption.click();
+    await page.waitForTimeout(1500);
+
+    // Dismiss result narration if shown (correct answers show narration before rewards)
+    await dismissNarration(page);
+
+    // Check response - if correct, rewards should appear
+    if (answerResponse?.correct) {
+      const rewardOption = page.locator(SELECTORS.quizRewardOption).first();
+      await expect(rewardOption).toBeVisible({ timeout: 3000 });
+    } else {
+      const rewardCount = await page.locator(SELECTORS.quizRewardOption).count();
+      expect(rewardCount).toBe(0);
+    }
+  });
+
+  test('selecting reward applies it to player state', async ({ gameHelper, page }) => {
+    await gameHelper.setupRun();
+    await gameHelper.waitForPhase(['quiz'], 8000);
+    await dismissNarration(page);
+
+    const hpBefore = await gameHelper.getPlayerHp();
+    const maxHpBefore = await gameHelper.getPlayerMaxHp();
+
+    if (hpBefore === maxHpBefore) {
+      await gameHelper.setPlayerHp(maxHpBefore - 10);
+      await page.waitForTimeout(300);
+    }
+    const hpBeforeQuiz = await gameHelper.getPlayerHp();
+
+    let wasCorrect = false;
+    await page.route('**/api/game/quiz-answer', async (route) => {
+      const response = await route.fetch();
+      const data = await response.json();
+      wasCorrect = data?.correct ?? false;
+      await route.fulfill({ response });
+    });
+
+    await page.locator(SELECTORS.quizAnswerOption).first().click();
+    await page.waitForTimeout(1500);
+    await dismissNarration(page);
+
+    if (wasCorrect) {
+      const healReward = page.locator('[data-reward="heal"]');
+      if (await healReward.isVisible().catch(() => false)) {
+        await healReward.click();
+        await page.waitForTimeout(1000);
+        const hpAfter = await gameHelper.getPlayerHp();
+        expect(hpAfter).toBeGreaterThan(hpBeforeQuiz);
+      } else {
+        const anyReward = page.locator(SELECTORS.quizRewardOption).first();
+        if (await anyReward.isVisible().catch(() => false)) {
+          await anyReward.click();
+          await page.waitForTimeout(500);
+        }
+      }
+    }
+
+    const phase = await gameHelper.getPhase();
+    expect(phase).not.toBe('quiz');
+  });
 });
