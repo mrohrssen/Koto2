@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { getUserKeys } from './users.js';
 
 function getSecret() {
   return process.env.JWT_SECRET || 'dev-secret-change-in-production';
@@ -78,5 +79,18 @@ export function optionalAuth(req, res, next) {
     }
   }
 
+  next();
+}
+
+/**
+ * Middleware to attach decrypted user API keys to request
+ * Must be used after requireAuth or optionalAuth
+ */
+export function attachUserKeys(req, res, next) {
+  if (req.user?.id) {
+    req.userKeys = getUserKeys(req.user.id);
+  } else {
+    req.userKeys = {};
+  }
   next();
 }
