@@ -29,6 +29,7 @@
 
 import { playSFX } from '../audio.js';
 import { getAuthHeaders } from '../api.js';
+import { logger } from '../logger.js';
 
 // ============ MODULE STATE ============
 
@@ -333,6 +334,7 @@ function animateChipActivation(chipIndex) {
 export async function startCombatLoop() {
   if (combatActive) return;
 
+  logger.info('[CombatLoop] Combat started');
   combatActive = true;
   playerAttackPending = false;
   enemyAttackPending = false;
@@ -376,12 +378,12 @@ export async function executePlayerAttack() {
       body: JSON.stringify({ attackerType: 'player', ...apiKeys })
     });
     const result = await response.json();
-    console.log('[Combat] Player attack:', result.playerAttack?.damage);
+    logger.info('[CombatLoop] Player attack:', { damage: result.playerAttack?.damage, critical: result.playerAttack?.critical });
 
     if (result.error) {
       // "No active combat" means server state is out of sync - don't trigger false game over
       if (result.error === 'No active combat') {
-        console.warn('[Combat] Stale player attack ignored (combat ended on server)');
+        logger.warn('[CombatLoop] Stale attack detected');
         combatActive = false; // Sync client state
         if (setCombatAnimationActive) setCombatAnimationActive(false);
         return;
@@ -488,7 +490,7 @@ export async function executeEnemyAttack() {
     if (result.error) {
       // "No active combat" means server state is out of sync - don't trigger false game over
       if (result.error === 'No active combat') {
-        console.warn('[Combat] Stale enemy attack ignored (combat ended on server)');
+        logger.warn('[CombatLoop] Stale attack detected');
         combatActive = false; // Sync client state
         if (setCombatAnimationActive) setCombatAnimationActive(false);
         return;
@@ -582,7 +584,7 @@ export async function executeEnemyAttackThenPause() {
 
     if (result.error) {
       if (result.error === 'No active combat') {
-        console.warn('[Combat] Stale enemy attack ignored (combat ended on server)');
+        logger.warn('[CombatLoop] Stale attack detected');
         combatActive = false;
         if (setCombatAnimationActive) setCombatAnimationActive(false);
         return;
@@ -663,9 +665,10 @@ export async function executeEnemyAttackThenPause() {
 /**
  * Resume combat after vocab review - triggers next attack cycle
  */
-export function resumeCombatAfterVocab() {
+export function resumeCombatAfterVocab(grade) {
   if (!combatActive || !combatPausedForVocab) return;
 
+  logger.info('[CombatLoop] Word reviewed, continuing:', { grade });
   combatPausedForVocab = false;
 
   // Trigger player attack, which will chain into enemy attack, then pause again
@@ -677,6 +680,7 @@ export function resumeCombatAfterVocab() {
  * @param {Object} result - Combat result data
  */
 export async function stopCombatLoop(result) {
+  logger.info('[CombatLoop] Combat ended:', { victory: result?.victory });
   const gameState = getGameState();
 
   // Clear both attack timers
