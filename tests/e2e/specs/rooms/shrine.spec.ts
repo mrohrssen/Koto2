@@ -40,4 +40,38 @@ test.describe('Shrine Room', () => {
     const phase = await gameHelper.getPhase();
     expect(phase).not.toBe('shrine');
   });
+
+  test('selecting shrine chip increases its level', async ({ gameHelper, page }) => {
+    await gameHelper.setupRun();
+    await gameHelper.waitForPhase(['shrine'], 8000);
+
+    // Get current chip levels from server state before shrine selection
+    // Chip levels are stored in run.player._chipLevels as a map { chipId: level }
+    const stateBefore = await page.evaluate(async () => {
+      const res = await fetch('/api/game/state');
+      return res.json();
+    });
+    const chipLevelsBefore = stateBefore?.run?.player?._chipLevels || {};
+
+    // Shrine options show the chipId in data-chip-id attribute
+    const shrineOption = page.locator(SELECTORS.shrineChipOption).first();
+    await expect(shrineOption).toBeVisible({ timeout: 5000 });
+    const chipId = await shrineOption.getAttribute('data-chip-id');
+
+    // Find this chip's level before upgrade (default is 1 if not in map)
+    const levelBefore = chipLevelsBefore[chipId as string] ?? 1;
+
+    // Click to upgrade and capture the API response directly
+    const [shrineResponse] = await Promise.all([
+      page.waitForResponse(res => res.url().includes('/api/game/shrine-upgrade') && res.status() === 200),
+      shrineOption.click()
+    ]);
+    const shrineResult = await shrineResponse.json();
+
+    // The shrine-upgrade response includes newLevel and state
+    const levelAfter = shrineResult?.newLevel ?? 1;
+
+    // Verify level increased
+    expect(levelAfter).toBe(levelBefore + 1);
+  });
 });
