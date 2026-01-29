@@ -497,6 +497,9 @@ export async function renderWordDiscovery() {
   const gameState = getGameState();
   const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
 
+  // Clear stale content immediately before any async operations
+  actions.setContent('');
+
   if (!room) return;
 
   // Stage tracking on room state
