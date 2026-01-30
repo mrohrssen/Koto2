@@ -59,7 +59,8 @@ export default function createRoutes(deps) {
     getDebugMode: deps.getDebugMode,
     setDebugMode: deps.setDebugMode,
     vocabCacheFile: deps.vocabCacheFile,
-    staticWordList: deps.staticWordList
+    staticWordList: deps.staticWordList,
+    getSettings: deps.getSettings
   }));
 
   // Prefetch routes: /api/prefetch/*

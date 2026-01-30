@@ -27,6 +27,7 @@ import createMiscRoutes from './misc.js';
  * @param {function} deps.updateGameStatsWithEvent - Update game stats
  * @param {function} deps.saveGameStats - Save game stats
  * @param {function} deps.getGameStats - Get game stats object
+ * @param {function} deps.getSettings - Get current settings object
  * @returns {Router}
  */
 export default function createGameRoutes(deps) {
@@ -39,6 +40,7 @@ export default function createGameRoutes(deps) {
     req.saveGame = () => saveManager(req.user.id);
     req.userKeys = getUserKeys(req.user.id);
     req.getEnrichedGameState = () => deps.enrichGameState(req.gameManager);
+    req.getSettings = deps.getSettings;
     next();
   });
 
