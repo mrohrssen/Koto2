@@ -587,7 +587,7 @@ function processPipelineChip(chip, state) {
  * Execute the weapon chip pipeline sequentially with dual-pool system
  * @param {Array} weaponChips - Chips in weapon slots (in order)
  * @param {Object} context - { baseDamage, isCrit, critChance, critMultiplier, target }
- * @returns {Object} { finalDamage, powerPool, bandwidthPool, firedChips[], critChance, damageMultiplier }
+ * @returns {Object} { finalDamage, powerPool, bandwidthPool, firedChips[], critChance }
  */
 export function executeChipPipeline(weaponChips, context) {
   const state = {
@@ -753,7 +753,6 @@ export function executeChipPipeline(weaponChips, context) {
     finalDamage,
     firedChips: state.firedChips,
     critChance: state.critChance,
-    damageMultiplier: context.baseDamage > 0 ? state.currentDamage / context.baseDamage : 1,
     recursionCount: state.recursionCount,
     sacrificedChips: state.sacrificedChips,
     combatStacks: state.combatStacks,
