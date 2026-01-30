@@ -252,6 +252,34 @@ Player always acts first.
 - `src/game/combat/status-effects.js` - Status effect definitions
 - `src/game/enemies.js` - Enemy definitions
 
+### Combat Visual Effects
+
+Anime-style visual feedback during combat, implemented in `public/js/ui/combat-effects.js`.
+
+**Animation Library:** anime.js (~14KB)
+
+**Primitives:**
+| Effect | Function | Description |
+|--------|----------|-------------|
+| Screen Shake | `screenShake(intensity)` | Camera jolt (light/medium/heavy) |
+| Hit Stop | `hitStop(ms)` | Freeze frame on impact |
+| Flash | `flashElement(target)` / `flashScreen()` | Brightness pulse |
+| Particles | `spawnParticles(el, count, color)` | Burst outward from element |
+| Speed Lines | `spawnSpeedLines(from, to)` | Lines traveling between elements |
+| Recoil | `recoil(target, distance)` | Knockback spring animation |
+
+**Combat Moments:**
+| Moment | Effects | Trigger |
+|--------|---------|---------|
+| Chip Fire | Pop, particles, speed lines to pools, screen pulse | Each chip in sequence |
+| Enemy Damage | Hit stop, shake, flash, particles, recoil | Player attack lands |
+| Player Damage | Hit stop, heavy shake, red vignette, chip shudder | Enemy attack lands |
+| Big Damage (150+) | All above amplified: longer stop, double flash | High damage threshold |
+
+**Files:**
+- `public/js/ui/combat-effects.js` - Effect primitives and moment functions
+- `public/game.css` - Overlay and particle styles
+
 ---
 
 ## Ward System (Dungeons)
