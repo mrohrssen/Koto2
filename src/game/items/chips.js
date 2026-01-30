@@ -284,14 +284,26 @@ function checkPipelineCondition(condition, state) {
 }
 
 /**
- * Process a single pipeline chip
+ * Process a single pipeline chip for dual-pool system
+ * Returns pool modifiers instead of directly modifying damage
  * @param {object} chip - The chip to process
  * @param {object} state - Current pipeline state
- * @returns {object} Result of processing this chip
+ * @returns {object} Result with pool modifiers: { powerAdd, powerMult, bandwidthAdd, bandwidthMult, ... }
  */
 function processPipelineChip(chip, state) {
   const effect = chip.effects?.pipeline;
   if (!effect) return { chipId: chip.id, skipped: true };
+
+  // Type "none" means pure stat stick - no effect to process
+  if (effect.type === 'none') {
+    return {
+      chipId: chip.id,
+      chipName: chip.nameEn || chip.name,
+      triggered: false,
+      statStick: true,
+      displayText: effect.displayText || ''
+    };
+  }
 
   // Apply level scaling to effect value
   let effectValue = effect.value;
@@ -321,133 +333,117 @@ function processPipelineChip(chip, state) {
     };
   }
 
-  // Apply effect based on type
-  let newDamage = state.currentDamage;
-  let critChanceBonus = 0;
+  // Default pool modifiers
+  let powerAdd = 0, powerMult = 1, bandwidthAdd = 0, bandwidthMult = 1;
+  const target = effect.target || 'power'; // Default to power for backward compatibility
+
+  // Helper to apply value to correct pool based on target
+  const applyAdd = (value) => {
+    if (target === 'power') powerAdd += value;
+    else if (target === 'bandwidth') bandwidthAdd += value;
+    else if (target === 'both') { powerAdd += value; bandwidthAdd += value; }
+  };
+
+  const applyMult = (value) => {
+    if (target === 'power') powerMult *= value;
+    else if (target === 'bandwidth') bandwidthMult *= value;
+    else if (target === 'both') { powerMult *= value; bandwidthMult *= value; }
+  };
+
+  // Build base result
+  const baseResult = {
+    chipId: chip.id,
+    chipName: chip.nameEn || chip.name,
+    triggered: true,
+    displayText: effect.displayText
+  };
 
   switch (effect.type) {
     case 'flatAdd':
-      newDamage = state.currentDamage + effectValue;
-      break;
+      applyAdd(effectValue);
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
     case 'multiply':
-      newDamage = state.currentDamage * effectValue;
-      break;
+      applyMult(effectValue);
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
     case 'conditional':
-      newDamage = state.currentDamage * effectValue;
-      break;
+      // Conditional now adds flat to targeted pool (not multiply)
+      applyAdd(effectValue);
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
     case 'critMod':
-      critChanceBonus = effectValue;
-      break;
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult, critChanceBonus: effectValue };
+
     case 'recursion':
-      // Signal to restart pipeline - handled in executeChipPipeline
-      return {
-        chipId: chip.id,
-        chipName: chip.nameEn || chip.name,
-        triggered: true,
-        recursion: true,
-        displayText: effect.displayText,
-        previousDamage: Math.floor(state.currentDamage),
-        newDamage: Math.floor(state.currentDamage)
-      };
+      return { ...baseResult, recursion: true, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
     case 'sacrifice':
-      // 10× damage, mark chip for permanent destruction
-      newDamage = state.currentDamage * effectValue;
-      return {
-        chipId: chip.id,
-        chipName: chip.nameEn || chip.name,
-        triggered: true,
-        sacrifice: true,
-        destroyed: true,
-        previousDamage: Math.floor(state.currentDamage),
-        newDamage: Math.floor(newDamage),
-        displayText: effect.displayText
-      };
+      // Sacrifice multiplies both pools with specific multipliers
+      powerMult = effect.powerMultiplier || effectValue;
+      bandwidthMult = effect.bandwidthMultiplier || effectValue;
+      return { ...baseResult, sacrifice: true, destroyed: true, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
     case 'stacking':
-      // Increment stack count and add (value * stacks) damage
+      // Increment stack count and add (value * stacks) to targeted pool
       if (!state.combatStacks) state.combatStacks = {};
       if (!state.combatStacks[chip.id]) state.combatStacks[chip.id] = 0;
       state.combatStacks[chip.id]++;
       const stackCount = state.combatStacks[chip.id];
-      const stackDamage = effectValue * stackCount;
-      newDamage = state.currentDamage + stackDamage;
+      const stackBonus = effectValue * stackCount;
+      applyAdd(stackBonus);
       return {
-        chipId: chip.id,
-        chipName: chip.nameEn || chip.name,
-        triggered: true,
+        ...baseResult,
         stacking: true,
-        stackCount: stackCount,
-        previousDamage: Math.floor(state.currentDamage),
-        newDamage: Math.floor(newDamage),
-        displayText: `+${stackDamage} (×${stackCount})`
+        stackCount,
+        powerAdd, powerMult, bandwidthAdd, bandwidthMult,
+        displayText: `+${stackBonus} (x${stackCount})`
       };
+
     case 'emptySlots':
-      // Check if weapon has enough empty slots
+      // Check if weapon has enough empty slots, add to both pools
       const totalSlots = state.weaponMaxSlots || 5;
       const usedSlots = state.weaponUsedSlots || 0;
       const emptySlots = totalSlots - usedSlots;
       if (emptySlots >= effect.requiredEmpty) {
-        newDamage = state.currentDamage + effectValue;
-        return {
-          chipId: chip.id,
-          chipName: chip.nameEn || chip.name,
-          triggered: true,
-          emptySlotBonus: true,
-          emptySlots: emptySlots,
-          previousDamage: Math.floor(state.currentDamage),
-          newDamage: Math.floor(newDamage),
-          displayText: effect.displayText
-        };
+        powerAdd = effect.powerValue || 0;
+        bandwidthAdd = effect.bandwidthValue || 0;
+        return { ...baseResult, emptySlotBonus: true, emptySlots, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
       } else {
         return {
           chipId: chip.id,
           chipName: chip.nameEn || chip.name,
           triggered: false,
           conditionFailed: true,
-          emptySlots: emptySlots,
+          emptySlots,
           required: effect.requiredEmpty,
           displayText: effect.displayText
         };
       }
+
     case 'damageAndHeal':
-      // Add damage and heal the player
-      newDamage = state.currentDamage + effectValue;
-      return {
-        chipId: chip.id,
-        chipName: chip.nameEn || chip.name,
-        triggered: true,
-        healPlayer: effect.healValue,
-        previousDamage: Math.floor(state.currentDamage),
-        newDamage: Math.floor(newDamage),
-        displayText: effect.displayText
-      };
+      // Heal player, optionally add to targeted pool
+      applyAdd(effectValue);
+      return { ...baseResult, healPlayer: effect.healValue, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
     case 'killCounter':
-      // Add damage based on total kills this run
+      // Add (value * kills) to targeted pool
       const kills = state.runKills || 0;
       const killBonus = effectValue * kills;
-      newDamage = state.currentDamage + killBonus;
+      applyAdd(killBonus);
       return {
-        chipId: chip.id,
-        chipName: chip.nameEn || chip.name,
-        triggered: true,
+        ...baseResult,
         killBonus: true,
-        kills: kills,
-        previousDamage: Math.floor(state.currentDamage),
-        newDamage: Math.floor(newDamage),
+        kills,
+        powerAdd, powerMult, bandwidthAdd, bandwidthMult,
         displayText: `+${killBonus} (${kills} kills)`
       };
+
     case 'vsBoss':
-      // Multiply damage only against bosses
+      // Multiply targeted pool only vs bosses
       if (state.target?.isBoss) {
-        newDamage = state.currentDamage * effectValue;
-        return {
-          chipId: chip.id,
-          chipName: chip.nameEn || chip.name,
-          triggered: true,
-          vsBoss: true,
-          previousDamage: Math.floor(state.currentDamage),
-          newDamage: Math.floor(newDamage),
-          displayText: effect.displayText
-        };
+        applyMult(effectValue);
+        return { ...baseResult, vsBoss: true, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
       } else {
         return {
           chipId: chip.id,
@@ -458,41 +454,31 @@ function processPipelineChip(chip, state) {
           displayText: effect.displayText
         };
       }
+
     case 'destroyedMultiplier':
-      // Multiply based on chips destroyed this run
+      // Add bandwidth based on chips destroyed this run
       const destroyed = state.runChipsDestroyed || 0;
-      const phoenixMultiplier = effect.baseValue + (effect.perDestroyed * destroyed);
-      newDamage = state.currentDamage * phoenixMultiplier;
+      const phoenixBonus = effect.baseValue + (effect.perDestroyed * destroyed);
+      applyAdd(phoenixBonus);
       return {
-        chipId: chip.id,
-        chipName: chip.nameEn || chip.name,
-        triggered: true,
+        ...baseResult,
         phoenixBonus: true,
         chipsDestroyed: destroyed,
-        multiplier: phoenixMultiplier,
-        previousDamage: Math.floor(state.currentDamage),
-        newDamage: Math.floor(newDamage),
-        displayText: `×${phoenixMultiplier} (${destroyed} sacrificed)`
+        powerAdd, powerMult, bandwidthAdd, bandwidthMult,
+        displayText: `+${phoenixBonus} (${destroyed} sacrificed)`
       };
+
     case 'riskyFlat':
-      // Add flat damage but risk destroying a random chip
-      newDamage = state.currentDamage + effectValue;
-      const riskyResult = {
-        chipId: chip.id,
-        chipName: chip.nameEn || chip.name,
-        triggered: true,
-        previousDamage: Math.floor(state.currentDamage),
-        newDamage: Math.floor(newDamage),
-        displayText: effect.displayText
-      };
-      // Roll for random destruction
+      // Pure stat stick with risk (stats already summed, just check for destruction)
+      const riskyResult = { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
       if (Math.random() < effect.destroyChance) {
-        riskyResult.randomDestroy = true;  // Signal to destroy a random chip
-        riskyResult.displayText = '+50 💀UNSTABLE!';
+        riskyResult.randomDestroy = true;
+        riskyResult.displayText = 'UNSTABLE!';
       }
       return riskyResult;
+
     case 'copy':
-      // Copy the previous chip's effect
+      // Copy the previous chip's pool modifiers
       if (!state.lastChipEffect) {
         return {
           chipId: chip.id,
@@ -502,160 +488,110 @@ function processPipelineChip(chip, state) {
           displayText: 'NO TARGET'
         };
       }
-      // Re-apply the last chip's effect
       const copied = state.lastChipEffect;
-      switch (copied.type) {
-        case 'flatAdd':
-          newDamage = state.currentDamage + copied.value;
-          break;
-        case 'multiply':
-        case 'conditional':
-          newDamage = state.currentDamage * copied.value;
-          break;
-        case 'damageAndHeal':
-          newDamage = state.currentDamage + copied.value;
-          return {
-            chipId: chip.id,
-            chipName: chip.nameEn || chip.name,
-            triggered: true,
-            copied: true,
-            copiedFrom: copied.chipName,
-            healPlayer: copied.healValue,
-            previousDamage: Math.floor(state.currentDamage),
-            newDamage: Math.floor(newDamage),
-            displayText: `COPY: ${copied.displayText}`
-          };
-        default:
-          newDamage = state.currentDamage;
-      }
       return {
-        chipId: chip.id,
-        chipName: chip.nameEn || chip.name,
-        triggered: true,
+        ...baseResult,
         copied: true,
         copiedFrom: copied.chipName,
-        previousDamage: Math.floor(state.currentDamage),
-        newDamage: Math.floor(newDamage),
+        powerAdd: copied.powerAdd || 0,
+        powerMult: copied.powerMult || 1,
+        bandwidthAdd: copied.bandwidthAdd || 0,
+        bandwidthMult: copied.bandwidthMult || 1,
+        healPlayer: copied.healPlayer,
         displayText: `COPY: ${copied.displayText}`
       };
+
     case 'perEmptySlot':
-      // Add damage per empty slot
+      // Add per empty slot to both pools
       const totalSlots2 = state.weaponMaxSlots || 5;
       const usedSlots2 = state.weaponUsedSlots || 0;
       const emptySlots2 = totalSlots2 - usedSlots2;
-      const emptyBonus = effectValue * emptySlots2;
-      newDamage = state.currentDamage + emptyBonus;
+      powerAdd = (effect.powerValue || 0) * emptySlots2;
+      bandwidthAdd = (effect.bandwidthValue || 0) * emptySlots2;
       return {
-        chipId: chip.id,
-        chipName: chip.nameEn || chip.name,
-        triggered: true,
+        ...baseResult,
         emptySlotScaling: true,
         emptySlots: emptySlots2,
-        previousDamage: Math.floor(state.currentDamage),
-        newDamage: Math.floor(newDamage),
-        displayText: `+${emptyBonus} (${emptySlots2} empty)`
+        powerAdd, powerMult, bandwidthAdd, bandwidthMult,
+        displayText: `+${powerAdd} PWR +${bandwidthAdd} BW (${emptySlots2} empty)`
       };
+
     case 'nthAttack':
-      // Multiply damage every Nth attack
+      // Multiply targeted pool every Nth attack
       if (!state.combatStacks) state.combatStacks = {};
       const attackKey = chip.id + '_attacks';
       state.combatStacks[attackKey] = (state.combatStacks[attackKey] || 0) + 1;
       const attackNum = state.combatStacks[attackKey];
       const isBurstAttack = attackNum % effect.interval === 0;
       if (isBurstAttack) {
-        newDamage = state.currentDamage * effect.multiplier;
+        applyMult(effect.multiplier);
         return {
-          chipId: chip.id,
-          chipName: chip.nameEn || chip.name,
-          triggered: true,
+          ...baseResult,
           burstAttack: true,
           attackNumber: attackNum,
-          previousDamage: Math.floor(state.currentDamage),
-          newDamage: Math.floor(newDamage),
-          displayText: `×${effect.multiplier} BURST!`
+          powerAdd, powerMult, bandwidthAdd, bandwidthMult,
+          displayText: `x${effect.multiplier} BURST!`
         };
       } else {
         return {
-          chipId: chip.id,
-          chipName: chip.nameEn || chip.name,
-          triggered: true,
+          ...baseResult,
           charging: true,
           attackNumber: attackNum,
           untilBurst: effect.interval - (attackNum % effect.interval),
-          previousDamage: Math.floor(state.currentDamage),
-          newDamage: Math.floor(state.currentDamage),
+          powerAdd, powerMult, bandwidthAdd, bandwidthMult,
           displayText: `${attackNum % effect.interval}/${effect.interval}`
         };
       }
+
     case 'rampingMultiply':
-      // Multiplier that grows with each consecutive hit on same enemy
+      // Add to targeted pool based on consecutive hits (now additive, not multiplicative)
       if (!state.combatStacks) state.combatStacks = {};
       const rampKey = chip.id + '_ramp';
       state.combatStacks[rampKey] = (state.combatStacks[rampKey] || 0) + 1;
       const rampCount = state.combatStacks[rampKey];
-      const rampMultiplier = 1 + (effectValue * rampCount);
-      newDamage = state.currentDamage * rampMultiplier;
+      const rampBonus = effectValue * rampCount;
+      applyAdd(rampBonus);
       return {
-        chipId: chip.id,
-        chipName: chip.nameEn || chip.name,
-        triggered: true,
+        ...baseResult,
         rampingMultiply: true,
         hitCount: rampCount,
-        multiplier: rampMultiplier,
-        previousDamage: Math.floor(state.currentDamage),
-        newDamage: Math.floor(newDamage),
-        displayText: `×${rampMultiplier.toFixed(2)} (${rampCount} hits)`
+        powerAdd, powerMult, bandwidthAdd, bandwidthMult,
+        displayText: `+${rampBonus.toFixed(2)} (${rampCount} hits)`
       };
+
     case 'amplifyNext':
-      // Set amplification factor for next chip in pipeline
+      // Set amplification factor for next chip's stats
       state.nextChipAmplify = effectValue;
-      return {
-        chipId: chip.id,
-        chipName: chip.nameEn || chip.name,
-        triggered: true,
-        amplifyNext: true,
-        amplifyFactor: effectValue,
-        previousDamage: Math.floor(state.currentDamage),
-        newDamage: Math.floor(state.currentDamage),
-        displayText: `×${effectValue} NEXT`
-      };
+      return { ...baseResult, amplifyNext: true, amplifyFactor: effectValue, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
     case 'perEquipped':
-      // Add damage per equipped chip
+      // Add per equipped chip to both pools
       const equippedCount = state.weaponUsedSlots || 0;
-      const equippedBonus = effectValue * equippedCount;
-      newDamage = state.currentDamage + equippedBonus;
+      powerAdd = (effect.powerValue || 0) * equippedCount;
+      bandwidthAdd = (effect.bandwidthValue || 0) * equippedCount;
       return {
-        chipId: chip.id,
-        chipName: chip.nameEn || chip.name,
-        triggered: true,
+        ...baseResult,
         perEquipped: true,
         equippedCount,
-        previousDamage: Math.floor(state.currentDamage),
-        newDamage: Math.floor(newDamage),
-        displayText: `+${equippedBonus} (${equippedCount} equipped)`
+        powerAdd, powerMult, bandwidthAdd, bandwidthMult,
+        displayText: `+${powerAdd} PWR +${bandwidthAdd} BW (${equippedCount} equipped)`
       };
-  }
 
-  return {
-    chipId: chip.id,
-    chipName: chip.nameEn || chip.name,
-    triggered: true,
-    previousDamage: Math.floor(state.currentDamage),
-    newDamage: Math.floor(newDamage),
-    displayText: effect.displayText,
-    critChanceBonus
-  };
+    default:
+      // Unknown effect type - return no modifications
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+  }
 }
 
 /**
- * Execute the weapon chip pipeline sequentially
+ * Execute the weapon chip pipeline sequentially with dual-pool system
  * @param {Array} weaponChips - Chips in weapon slots (in order)
  * @param {Object} context - { baseDamage, isCrit, critChance, critMultiplier, target }
- * @returns {Object} { finalDamage, firedChips[], critChance, damageMultiplier }
+ * @returns {Object} { finalDamage, powerPool, bandwidthPool, firedChips[], critChance, damageMultiplier }
  */
 export function executeChipPipeline(weaponChips, context) {
   const state = {
-    currentDamage: context.baseDamage,
+    currentDamage: context.baseDamage, // Legacy support
     isCrit: context.isCrit,
     critChance: context.critChance || 0,
     critMultiplier: context.critMultiplier || 1.4,
@@ -669,8 +605,19 @@ export function executeChipPipeline(weaponChips, context) {
     totalHealPlayer: 0,
     runKills: context.runKills || 0,
     runChipsDestroyed: context.runChipsDestroyed || 0,
-    player: context.player || null
+    player: context.player || null,
+    // Dual-pool system: chips contribute stats to pools
+    powerPool: 0,
+    bandwidthPool: 0
   };
+
+  // First pass: sum all chip stats into pools
+  for (const chip of weaponChips) {
+    if (chip.category === 'pipeline' && chip.stats) {
+      state.powerPool += chip.stats.power || 0;
+      state.bandwidthPool += chip.stats.bandwidth || 0;
+    }
+  }
 
   let nextChipDoubleActive = context.nextChipDouble || false;
   let nextChipAmplifyFactor = context.nextChipAmplify || null;
@@ -715,27 +662,30 @@ export function executeChipPipeline(weaponChips, context) {
     const result = processPipelineChip(amplifiedChip, state);
     state.firedChips.push(result);
 
-    // nextChipDouble: the first chip that fires also fires a second time
-    if (nextChipDoubleActive && result.triggered) {
-      const doubleResult = processPipelineChip(chip, state);
-      state.firedChips.push(doubleResult);
-      if (doubleResult.triggered) {
-        state.currentDamage = doubleResult.newDamage;
-        if (doubleResult.critChanceBonus) state.critChance += doubleResult.critChanceBonus;
-        if (doubleResult.healPlayer) state.totalHealPlayer += doubleResult.healPlayer;
-      }
-      nextChipDoubleActive = false;
-    }
-
+    // Apply pool modifiers from effect
     if (result.triggered) {
-      state.currentDamage = result.newDamage;
+      // Apply additive modifiers first
+      state.powerPool += result.powerAdd || 0;
+      state.bandwidthPool += result.bandwidthAdd || 0;
+      // Apply multiplicative modifiers
+      state.powerPool *= result.powerMult || 1;
+      state.bandwidthPool *= result.bandwidthMult || 1;
+
       if (result.critChanceBonus) state.critChance += result.critChanceBonus;
       if (result.healPlayer) state.totalHealPlayer += result.healPlayer;
 
       // Track last chip effect for Copycat (don't track copy itself)
       const effect = chip.effects?.pipeline;
       if (effect && effect.type !== 'copy') {
-        state.lastChipEffect = { ...effect, chipName: chip.nameEn || chip.name };
+        state.lastChipEffect = {
+          ...effect,
+          chipName: chip.nameEn || chip.name,
+          powerAdd: result.powerAdd,
+          powerMult: result.powerMult,
+          bandwidthAdd: result.bandwidthAdd,
+          bandwidthMult: result.bandwidthMult,
+          healPlayer: result.healPlayer
+        };
       }
 
       // Handle recursion - restart pipeline from beginning
@@ -761,11 +711,34 @@ export function executeChipPipeline(weaponChips, context) {
       }
     }
 
+    // nextChipDouble: the first chip that fires also fires a second time
+    if (nextChipDoubleActive && result.triggered) {
+      const doubleResult = processPipelineChip(chip, state);
+      state.firedChips.push(doubleResult);
+      if (doubleResult.triggered) {
+        state.powerPool += doubleResult.powerAdd || 0;
+        state.bandwidthPool += doubleResult.bandwidthAdd || 0;
+        state.powerPool *= doubleResult.powerMult || 1;
+        state.bandwidthPool *= doubleResult.bandwidthMult || 1;
+        if (doubleResult.critChanceBonus) state.critChance += doubleResult.critChanceBonus;
+        if (doubleResult.healPlayer) state.totalHealPlayer += doubleResult.healPlayer;
+      }
+      nextChipDoubleActive = false;
+    }
+
     chipIndex++;
   }
 
+  // Calculate final damage using dual-pool formula: POWER × (1 + BANDWIDTH)
+  // If baseDamage was provided (legacy mode), use currentDamage for backward compatibility
+  const dualPoolDamage = Math.floor(state.powerPool * (1 + state.bandwidthPool));
+  const legacyDamage = Math.floor(state.currentDamage);
+
+  // Use dual-pool damage when baseDamage is 0 (new system), otherwise use legacy for compatibility
+  const finalDamage = context.baseDamage === 0 ? dualPoolDamage : legacyDamage;
+
   return {
-    finalDamage: Math.floor(state.currentDamage),
+    finalDamage,
     firedChips: state.firedChips,
     critChance: state.critChance,
     damageMultiplier: context.baseDamage > 0 ? state.currentDamage / context.baseDamage : 1,
@@ -773,7 +746,10 @@ export function executeChipPipeline(weaponChips, context) {
     sacrificedChips: state.sacrificedChips,
     combatStacks: state.combatStacks,
     healPlayer: state.totalHealPlayer,
-    randomDestroyTriggered: state.randomDestroyTriggered || false
+    randomDestroyTriggered: state.randomDestroyTriggered || false,
+    // Dual-pool system outputs
+    powerPool: state.powerPool,
+    bandwidthPool: state.bandwidthPool
   };
 }
 
