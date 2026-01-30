@@ -236,3 +236,128 @@ export function pop(targets, scale = 1.3) {
     easing: 'easeOutBack'
   });
 }
+
+// ============ COMBAT MOMENTS ============
+
+/**
+ * Moment 1: Chip firing with effects
+ * Called for each chip in the activation sequence
+ * @param {Element} chipEl - The chip slot element
+ * @param {Object} chipData - Chip data with stats.power and stats.bandwidth
+ * @param {Object} poolEls - { power: Element, bandwidth: Element } pool display elements
+ */
+export async function fireChipEffect(chipEl, chipData, poolEls = {}) {
+  if (!chipEl) return;
+
+  // 1. Chip pops
+  pop(chipEl.querySelector('.chip-icon') || chipEl, 1.4);
+
+  // 2. Enhanced glow
+  const icon = chipEl.querySelector('.chip-icon');
+  if (icon) {
+    icon.classList.add('chip-firing-enhanced');
+    setTimeout(() => icon.classList.remove('chip-firing-enhanced'), 300);
+  }
+
+  // 3. Speed lines to pools (if pool elements exist)
+  const stats = chipData?.stats || {};
+  if (stats.power > 0 && poolEls.power) {
+    spawnSpeedLines(chipEl, poolEls.power, 3, 'rgba(231, 76, 60, 0.9)');
+    setTimeout(() => flashElement(poolEls.power), 150);
+  }
+  if (stats.bandwidth > 0 && poolEls.bandwidth) {
+    spawnSpeedLines(chipEl, poolEls.bandwidth, 3, 'rgba(52, 152, 219, 0.9)');
+    setTimeout(() => flashElement(poolEls.bandwidth), 150);
+  }
+
+  // 4. Particles from chip
+  spawnParticles(chipEl, 5, '#3498db');
+
+  // 5. Subtle screen pulse
+  flashScreen();
+}
+
+/**
+ * Moment 2: Enemy takes damage
+ * @param {number} damage - Damage dealt
+ * @param {Element} enemyEl - Enemy sprite element
+ */
+export async function impactEnemyEffect(damage, enemyEl) {
+  const big = isBigDamage(damage);
+
+  // 1. Hit stop
+  await hitStop(big ? CONFIG.hitStop.big : CONFIG.hitStop.normal);
+
+  // 2. Flash enemy
+  if (enemyEl) {
+    flashElement(enemyEl);
+  }
+
+  // 3. Screen shake
+  screenShake(big ? 'heavy' : 'medium');
+
+  // 4. Particles burst from enemy
+  if (enemyEl) {
+    spawnParticles(enemyEl, big ? CONFIG.particles.big : CONFIG.particles.normal, '#e74c3c');
+  }
+
+  // 5. Enemy recoils
+  if (enemyEl) {
+    recoil(enemyEl, big ? 10 : 5, 'right');
+  }
+
+  // 6. Big damage: double flash
+  if (big) {
+    await delay(50);
+    flashScreen(2);
+  }
+}
+
+/**
+ * Moment 3: Player takes damage
+ * @param {number} damage - Damage taken
+ * @param {Element} hpBarEl - Player HP bar element
+ * @param {Element} chipRowEl - Chip row element
+ */
+export async function playerHitEffect(damage, hpBarEl, chipRowEl) {
+  // 1. Hit stop (shorter than enemy)
+  await hitStop(50);
+
+  // 2. Heavy screen shake
+  screenShake('heavy');
+
+  // 3. Red vignette
+  showVignette(300);
+
+  // 4. Chip row shudders
+  if (chipRowEl) {
+    anime({
+      targets: chipRowEl.querySelectorAll('.chip-slot'),
+      translateX: [-2, 2, -1, 0],
+      duration: 150,
+      easing: 'easeOutQuad'
+    });
+  }
+
+  // 5. HP bar flash before drain
+  if (hpBarEl) {
+    flashElement(hpBarEl);
+  }
+}
+
+/**
+ * Check if HP is critical and add pulse effect
+ * @param {Element} hpBarEl - HP bar fill element
+ * @param {number} currentHp
+ * @param {number} maxHp
+ */
+export function updateHpCriticalState(hpBarEl, currentHp, maxHp) {
+  if (!hpBarEl) return;
+
+  const percent = currentHp / maxHp;
+  if (percent < 0.25) {
+    hpBarEl.classList.add('hp-critical-pulse');
+  } else {
+    hpBarEl.classList.remove('hp-critical-pulse');
+  }
+}
