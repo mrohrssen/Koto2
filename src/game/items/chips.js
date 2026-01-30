@@ -591,7 +591,6 @@ function processPipelineChip(chip, state) {
  */
 export function executeChipPipeline(weaponChips, context) {
   const state = {
-    currentDamage: context.baseDamage, // Legacy support
     isCrit: context.isCrit,
     critChance: context.critChance || 0,
     critMultiplier: context.critMultiplier || 1.4,
@@ -612,6 +611,7 @@ export function executeChipPipeline(weaponChips, context) {
   };
 
   // First pass: sum all chip stats into pools (with level scaling)
+  console.log('[Pipeline] Starting pipeline with', weaponChips.length, 'chips');
   for (const chip of weaponChips) {
     if (chip.category === 'pipeline' && chip.stats) {
       let statPower = chip.stats.power || 0;
@@ -626,10 +626,12 @@ export function executeChipPipeline(weaponChips, context) {
         statBandwidth = Math.round(statBandwidth * scaleFactor);
       }
 
+      console.log(`[Pipeline] ${chip.nameEn || chip.id}: +${statPower} PWR, +${statBandwidth} BW`);
       state.powerPool += statPower;
       state.bandwidthPool += statBandwidth;
     }
   }
+  console.log('[Pipeline] After stats: PWR', state.powerPool, 'BW', state.bandwidthPool);
 
   let nextChipDoubleActive = context.nextChipDouble || false;
   let nextChipAmplifyFactor = context.nextChipAmplify || null;
@@ -676,12 +678,18 @@ export function executeChipPipeline(weaponChips, context) {
 
     // Apply pool modifiers from effect
     if (result.triggered) {
+      const prevPwr = state.powerPool;
+      const prevBw = state.bandwidthPool;
       // Apply additive modifiers first
       state.powerPool += result.powerAdd || 0;
       state.bandwidthPool += result.bandwidthAdd || 0;
       // Apply multiplicative modifiers
       state.powerPool *= result.powerMult || 1;
       state.bandwidthPool *= result.bandwidthMult || 1;
+
+      if (result.powerAdd || result.bandwidthAdd || (result.powerMult && result.powerMult !== 1) || (result.bandwidthMult && result.bandwidthMult !== 1)) {
+        console.log(`[Pipeline] ${chip.nameEn || chip.id} effect: PWR ${prevPwr} → ${state.powerPool}, BW ${prevBw} → ${state.bandwidthPool}`);
+      }
 
       if (result.critChanceBonus) state.critChance += result.critChanceBonus;
       if (result.healPlayer) state.totalHealPlayer += result.healPlayer;
@@ -742,12 +750,9 @@ export function executeChipPipeline(weaponChips, context) {
   }
 
   // Calculate final damage using dual-pool formula: POWER × (1 + BANDWIDTH)
-  // If baseDamage was provided (legacy mode), use currentDamage for backward compatibility
-  const dualPoolDamage = Math.floor(state.powerPool * (1 + state.bandwidthPool));
-  const legacyDamage = Math.floor(state.currentDamage);
+  const finalDamage = Math.floor(state.powerPool * (1 + state.bandwidthPool));
 
-  // Use dual-pool damage when baseDamage is 0 (new system), otherwise use legacy for compatibility
-  const finalDamage = context.baseDamage === 0 ? dualPoolDamage : legacyDamage;
+  console.log('[Pipeline] Final: PWR', state.powerPool, '× (1 + BW', state.bandwidthPool, ') =', finalDamage);
 
   return {
     finalDamage,
@@ -914,7 +919,7 @@ export function equipChip(player, equipmentSlot, chipId, maxSlots = 5) {
   return {
     success: true,
     chipId,
-    chipName: chip.name,
+    chipName: chip.nameEn || chip.name,
     slot: equipmentSlot,
     slotsUsed: slotsUsed + slotsNeeded,
     maxSlots
@@ -955,7 +960,7 @@ export function unequipChip(player, equipmentSlot, chipId) {
   return {
     success: true,
     chipId,
-    chipName: chip.name
+    chipName: chip.nameEn || chip.name
   };
 }
 

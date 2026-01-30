@@ -64,8 +64,8 @@ export function showChipSelect(chips, options = {}) {
 
 function renderChipCard() {
   const chip = currentChips[selectedIndex];
-  const skillName = chip.skill?.name || chip.skill?.nameEn || '';
-  const skillDesc = chip.skill?.description || chip.skill?.descriptionEn || '';
+  const skillName = chip.skill?.nameEn || chip.skill?.name || '';
+  const skillDesc = chip.skill?.descriptionEn || chip.skill?.description || '';
   const iconPath = `/assets/icons/chips/${chip.itemId || chip.id}.png`;
 
   // Dots indicator
@@ -83,17 +83,17 @@ function renderChipCard() {
         <div class="chip-select-top">
           <div class="chip-select-icon" style="background-image:url('${iconPath}')"></div>
           <div class="chip-select-info">
-            <div class="chip-select-name">${chip.name || chip.nameEn}</div>
+            <div class="chip-select-name">${chip.nameEn || chip.name}</div>
             <div class="chip-select-rarity ${chip.rarity}">${chip.rarity}</div>
           </div>
         </div>
         <div class="chip-select-passive">
-          <div class="chip-select-label">パッシブ</div>
-          <div class="chip-select-desc">${chip.description || chip.descriptionEn || ''}</div>
+          <div class="chip-select-label">Passive</div>
+          <div class="chip-select-desc">${chip.descriptionEn || chip.description || ''}</div>
         </div>
         ${skillName ? `
         <div class="chip-select-active">
-          <div class="chip-select-label">スキル: ${skillName}</div>
+          <div class="chip-select-label">Skill: ${skillName}</div>
           <div class="chip-select-desc">${skillDesc}</div>
         </div>
         ` : ''}
@@ -229,7 +229,7 @@ function navigateChip(direction) {
 
 function showSelectedChip(chip) {
   // Show chip name (Japanese preferred)
-  dom.enemyName.textContent = chip.name || chip.nameEn;
+  dom.enemyName.textContent = chip.nameEn || chip.name;
   dom.enemyInfo.classList.add('visible');
 
   // Hide HP bar (chips don't have HP)
@@ -248,7 +248,7 @@ function showSelectedChip(chip) {
 
   // Show greeting narration (persistent - no click to dismiss)
   narrationBox.show(CHIP_GREETING, {
-    speaker: chip.name || chip.nameEn,
+    speaker: chip.nameEn || chip.name,
     persistent: true
   });
 }

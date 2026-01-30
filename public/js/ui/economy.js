@@ -71,7 +71,7 @@ export async function renderPostCombatShop() {
   }
 
   playSFX('chip-equip');
-  speakText(chip.name || chip.nameEn);
+  speakText(chip.nameEn || chip.name);
 
   if (apiGetChipLoadout && setChipLoadoutCache) {
     const loadout = await apiGetChipLoadout();
@@ -90,7 +90,7 @@ export async function renderStartingChipShop(items) {
     updateGameState(result.state);
   }
 
-  speakText(chip.name || chip.nameEn);
+  speakText(chip.nameEn || chip.name);
 
   if (apiGetChipLoadout && setChipLoadoutCache) {
     const loadout = await apiGetChipLoadout();

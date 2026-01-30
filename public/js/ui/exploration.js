@@ -137,7 +137,7 @@ export async function renderWardSelection() {
 
   const wardHtml = wards.map(w => `
     <div class="ward-option" data-ward-id="${w.id}">
-      <strong>${w.name || w.nameEn}</strong>
+      <strong>${w.nameEn || w.name}</strong>
       <small>${w.description || ''}</small>
     </div>
   `).join('');
@@ -275,9 +275,9 @@ export function renderShrine(chipLoadoutCache) {
       <div class="shrine-chip-option" data-chip-id="${chipId}">
         <div class="shrine-chip-icon" style="background-image:url('/assets/icons/chips/${chipId}.png'); border-color: ${chipInfo.rarityInfo?.color || '#95a5a6'}"></div>
         <div class="shrine-chip-info">
-          <div class="shrine-chip-name">${chipInfo.name || chipInfo.nameEn || chipId} Lv. ${level} <span class="shrine-chip-upgrade">\u2192 Lv. ${Math.min(level + 1, 7)}</span></div>
+          <div class="shrine-chip-name">${chipInfo.nameEn || chipInfo.name || chipId} Lv. ${level} <span class="shrine-chip-upgrade">\u2192 Lv. ${Math.min(level + 1, 7)}</span></div>
           <div class="shrine-chip-rarity ${chipInfo.rarity || 'common'}">${chipInfo.rarity || 'common'}</div>
-          <div class="shrine-chip-desc">${chipInfo.description || chipInfo.descriptionEn || ''}</div>
+          <div class="shrine-chip-desc">${chipInfo.descriptionEn || chipInfo.description || ''}</div>
         </div>
       </div>
     `;
