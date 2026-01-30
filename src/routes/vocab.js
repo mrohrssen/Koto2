@@ -16,6 +16,7 @@ import {
 } from '../jpdb.js';
 import { addReview } from '../auth/users.js';
 import { requireAuth, optionalAuth, attachUserKeys } from '../auth/middleware.js';
+import { incrementDiscoveryCount, getDiscoveryStatus } from '../word-tracking.js';
 
 /**
  * Create vocab router
@@ -66,11 +67,27 @@ export default function createVocabRoutes({ getSettings }) {
 
   // Review vocabulary in JPDB
   router.post('/jpdb/review', requireAuth, attachUserKeys, async (req, res) => {
-    const { vid, sid, grade } = req.body;
+    const { vid, sid, grade, isDiscovery } = req.body;
     const jpdbApiKey = req.userKeys?.jpdbApiKey;
 
     if (!jpdbApiKey) {
       return res.status(400).json({ error: 'JPDB API key not configured' });
+    }
+
+    const userId = req.user?.id || 'default';
+    const settings = req.getSettings?.() || {};
+    const dailyLimit = settings.dailyWordLimit ?? 10;
+
+    // If discovery mode, check limit before processing
+    if (isDiscovery) {
+      const status = getDiscoveryStatus(userId, dailyLimit);
+      if (status.atLimit) {
+        return res.json({
+          success: false,
+          atLimit: true,
+          todayCount: status.todayCount
+        });
+      }
     }
 
     try {
@@ -81,6 +98,17 @@ export default function createVocabRoutes({ getSettings }) {
 
       // Track review for leaderboard
       addReview(req.user.id);
+
+      // If discovery mode, increment counter
+      if (isDiscovery) {
+        const counts = incrementDiscoveryCount(userId, dailyLimit);
+        return res.json({
+          ...result,
+          success: true,
+          todayCount: counts.todayCount,
+          atLimit: counts.atLimit
+        });
+      }
 
       res.json(result);
     } catch (error) {
