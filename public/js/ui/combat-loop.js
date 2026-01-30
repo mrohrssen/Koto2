@@ -23,8 +23,9 @@
  * - Callbacks: wordPractice, characterUI, settings, narration modules
  *
  * COMBAT MATH DISPLAY:
- * Shows sequential chip activation with tooltips above firing chips,
- * progressive damage math in action area, and big red enemy damage text.
+ * Shows dual-pool damage formula: PWR × (1 + BW) = DAMAGE
+ * Chip contributions show pool additions/multiplications.
+ * Progressive display with tooltips above firing chips.
  */
 
 import { playSFX } from '../audio.js';
@@ -162,9 +163,9 @@ function showNextFlashCardFromQueue() {
 // ============ COMBAT MATH DISPLAY ============
 
 /**
- * Show chip activations sequentially with 500ms delays,
+ * Show chip activations sequentially with delays,
  * building up combat math progressively in the action area.
- * Shows a tooltip above each chip as it fires.
+ * Shows the dual-pool formula: PWR × (1 + BW) = DAMAGE
  * @param {Object} pa - playerAttack result object
  */
 async function showChipActivationSequence(pa) {
@@ -172,6 +173,7 @@ async function showChipActivationSequence(pa) {
   if (!actionArea) return;
 
   const lines = [];
+  const pipelineResult = pa.pipelineResult;
 
   // Start with critical hit indicator
   if (pa.critical) {
@@ -180,60 +182,66 @@ async function showChipActivationSequence(pa) {
     await delay(360);
   }
 
-  // Get fired chips from pipeline result
-  const firedChips = pa.pipelineResult?.firedChips?.filter(c => c.triggered && !c.skipped) || [];
+  // Show dual-pool formula breakdown (requires valid numeric pool values)
+  if (pipelineResult &&
+      typeof pipelineResult.powerPool === 'number' &&
+      typeof pipelineResult.bandwidthPool === 'number') {
+    const pwr = pipelineResult.powerPool;
+    const bw = pipelineResult.bandwidthPool;
+    const damage = pa.damage;
 
-  if (firedChips.length > 0) {
-    // Show base damage first (before chips modify it)
-    const baseDmg = firedChips[0].previousDamage || pa.damage;
-    lines.push(`<strong>\u2192 Attacked for ${baseDmg}</strong>`);
+    // Format bandwidth nicely (show 1 decimal place if not whole number)
+    const bwStr = Number.isInteger(bw) ? bw.toString() : bw.toFixed(1);
+
+    // Show the formula: PWR × (1 + BW) = DAMAGE
+    lines.push(`<strong>PWR ${pwr} × (1 + BW ${bwStr}) = ${damage}</strong>`);
     actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
+    await delay(600);
 
-    // Sequentially fire each chip
-    let slotIndex = 0;
-    for (const chip of firedChips) {
-      await delay(600);
-      const name = chip.chipName || chip.chipId || 'Chip';
-      const dmgDelta = chip.newDamage - chip.previousDamage;
-      let detail = '';
-      if (chip.healPlayer) {
-        detail = `+${chip.healPlayer} HP`;
-      } else if (dmgDelta > 0) {
-        detail = `+${dmgDelta}`;
-      } else if (dmgDelta < 0) {
-        detail = `${dmgDelta}`;
-      } else if (chip.displayText) {
-        detail = chip.displayText;
+    // Get fired chips
+    const firedChips = pipelineResult.firedChips?.filter(c => c.triggered && !c.skipped) || [];
+
+    if (firedChips.length > 0) {
+      // Show chip contributions
+      for (const chip of firedChips) {
+        await delay(400);
+        const name = chip.chipName || chip.chipId || 'Chip';
+
+        // Build contribution string
+        let contribution = '';
+        if (chip.pureStatStick || chip.statStick) {
+          // Pure stat stick (like Battery) - no effect, just stats
+          contribution = '(stat stick)';
+        } else if (chip.powerAdd || chip.bandwidthAdd || (chip.powerMult && chip.powerMult !== 1) || (chip.bandwidthMult && chip.bandwidthMult !== 1)) {
+          const parts = [];
+          if (chip.powerAdd) parts.push(`+${chip.powerAdd} PWR`);
+          if (chip.bandwidthAdd) parts.push(`+${chip.bandwidthAdd} BW`);
+          if (chip.powerMult && chip.powerMult !== 1) parts.push(`×${chip.powerMult} PWR`);
+          if (chip.bandwidthMult && chip.bandwidthMult !== 1) parts.push(`×${chip.bandwidthMult} BW`);
+          contribution = parts.join(', ') || chip.displayText || '';
+        } else if (chip.healPlayer) {
+          contribution = `+${chip.healPlayer} HP`;
+        } else {
+          contribution = chip.displayText || '';
+        }
+
+        // Find chip slot and animate
+        const chipSlot = findChipSlotIndex(chip.chipId);
+        if (chipSlot !== null) {
+          animateChipActivation(chipSlot);
+          playSFX('chip-equip');
+          showChipTooltip(chipSlot, `${name}: ${contribution}`);
+        }
+
+        // Add to math display
+        const lineClass = chip.healPlayer ? 'math-heal' : 'math-chip';
+        lines.push(`<span class="${lineClass}">• ${name}: ${contribution}</span>`);
+        actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
       }
-
-      // Find chip slot index from loadout
-      const chipSlot = findChipSlotIndex(chip.chipId) ?? slotIndex;
-
-      // Animate the chip circle
-      animateChipActivation(chipSlot);
-      playSFX('chip-equip');
-
-      // Show tooltip above the chip
-      showChipTooltip(chipSlot, `${name}: ${detail}`);
-
-      // Add line to math display (insert before total)
-      const lineClass = chip.healPlayer ? 'math-heal' : 'math-chip';
-      const lineText = chip.healPlayer
-        ? `${name}: +${chip.healPlayer} HP`
-        : `${name}: ${detail}`;
-      lines.push(`<span class="${lineClass}">${lineText}</span>`);
-      actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
-
-      slotIndex++;
     }
-
-    // Show final total
-    await delay(480);
-    lines.push(`<strong>\u2192 Final Damage ${pa.damage}</strong>`);
-    actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
   } else {
-    // No pipeline chips - just show attack damage
-    lines.push(`<strong>\u2192 Attacked for ${pa.damage}</strong>`);
+    // Fallback for legacy mode (baseDamage > 0)
+    lines.push(`<strong>→ Attacked for ${pa.damage}</strong>`);
     actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
   }
 
@@ -244,10 +252,11 @@ async function showChipActivationSequence(pa) {
     actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
   }
 
-  // Show healing from pipeline total
-  if (pa.pipelineResult?.healPlayer > 0 && !firedChips.some(c => c.healPlayer)) {
+  // Show healing from pipeline (only if not already shown by individual chip)
+  const firedChips = pipelineResult?.firedChips?.filter(c => c.triggered && !c.skipped) || [];
+  if (pipelineResult?.healPlayer > 0 && !firedChips.some(c => c.healPlayer)) {
     await delay(600);
-    lines.push(`<span class="math-heal">+${pa.pipelineResult.healPlayer} HP</span>`);
+    lines.push(`<span class="math-heal">+${pipelineResult.healPlayer} HP</span>`);
     actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
   }
 
