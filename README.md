@@ -32,6 +32,7 @@ npm run dev    # Development with watch
 | `ANTHROPIC_API_KEY` | One required | AI narration provider |
 | `GOOGLE_API_KEY` | One required | AI narration provider |
 | `PORT` | No | Server port (default: 3000) |
+| `LOG_LEVEL` | No | Server log level: debug, info, warn, error (default: info) |
 
 ## Testing
 
