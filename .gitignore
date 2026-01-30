@@ -22,4 +22,5 @@ test-results/
 tests/e2e/playwright-report/
 .github/workflows/
 ASSET-GENERATION-PLAN.md
-public/assets/sprites/player/hacker.png
+# Original PNGs (keep locally for regeneration, commit only WebP)
+public/assets/**/*.png

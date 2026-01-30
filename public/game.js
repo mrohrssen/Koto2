@@ -170,15 +170,15 @@ function updateScene() {
     scene.hideEnemy();
   }
   if (gameState.phase === 'shrine') {
-    scene.setBackground('/assets/backgrounds/shrine_background.png');
+    scene.setBackground('/assets/backgrounds/shrine_background.webp');
   } else if (gameState.phase === 'quiz') {
-    scene.setBackground('/assets/backgrounds/quiz_master_background.png');
+    scene.setBackground('/assets/backgrounds/quiz_master_background.webp');
   } else if (gameState.phase === 'wordDiscovery') {
-    scene.setBackground('/assets/backgrounds/quiz_master_background.png');
+    scene.setBackground('/assets/backgrounds/quiz_master_background.webp');
   } else if (gameState.run?.background) {
     scene.setBackground(`/assets/backgrounds/${gameState.run.background}`);
   } else if (!gameState.run) {
-    scene.setBackground('/assets/backgrounds/hub.png');
+    scene.setBackground('/assets/backgrounds/hub.webp');
   }
 }
 
@@ -452,7 +452,7 @@ async function openChipEquipView() {
     <div class="chip-equip-slots">
       ${equipped.map((chip, i) => chip ? `
         <div class="chip-equip-slot filled" data-action="unequip" data-index="${i}">
-          <div class="chip-equip-icon" style="background-image:url('/assets/icons/chips/${chip.id}.png')"></div>
+          <div class="chip-equip-icon" style="background-image:url('/assets/icons/chips/${chip.id}.webp')"></div>
           <span class="chip-equip-name">${chip.name || chip.nameEn}</span>
           <span class="chip-equip-rarity ${chip.rarity}">${chip.rarity}</span>
         </div>
@@ -464,7 +464,7 @@ async function openChipEquipView() {
     <div class="chip-inventory-list">
       ${inventory.map((chip, i) => `
         <div class="chip-inventory-item" data-action="equip" data-chip-id="${chip.id}">
-          <div class="chip-equip-icon" style="background-image:url('/assets/icons/chips/${chip.id}.png')"></div>
+          <div class="chip-equip-icon" style="background-image:url('/assets/icons/chips/${chip.id}.webp')"></div>
           <span class="chip-equip-name">${chip.name || chip.nameEn}</span>
           <span class="chip-equip-rarity ${chip.rarity}">${chip.rarity}</span>
         </div>

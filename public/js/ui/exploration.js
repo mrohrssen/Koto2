@@ -273,7 +273,7 @@ export function renderShrine(chipLoadoutCache) {
     const level = chipLevels[chipId] || 1;
     return `
       <div class="shrine-chip-option" data-chip-id="${chipId}">
-        <div class="shrine-chip-icon" style="background-image:url('/assets/icons/chips/${chipId}.png'); border-color: ${chipInfo.rarityInfo?.color || '#95a5a6'}"></div>
+        <div class="shrine-chip-icon" style="background-image:url('/assets/icons/chips/${chipId}.webp'); border-color: ${chipInfo.rarityInfo?.color || '#95a5a6'}"></div>
         <div class="shrine-chip-info">
           <div class="shrine-chip-name">${chipInfo.nameEn || chipInfo.name || chipId} Lv. ${level} <span class="shrine-chip-upgrade">\u2192 Lv. ${Math.min(level + 1, 7)}</span></div>
           <div class="shrine-chip-rarity ${chipInfo.rarity || 'common'}">${chipInfo.rarity || 'common'}</div>
