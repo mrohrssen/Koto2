@@ -12,10 +12,11 @@ This document describes the technical architecture of the JRPG codebase. It cove
 6. [Vocabulary Integration (JPDB)](#vocabulary-integration-jpdb)
 7. [AI Narration and TTS](#ai-narration-and-tts)
 8. [Meta-Progression](#meta-progression)
-9. [Frontend Architecture](#frontend-architecture)
-10. [Backend Architecture](#backend-architecture)
-11. [Data Schemas](#data-schemas)
-12. [File Reference](#file-reference)
+9. [Logging System](#logging-system)
+10. [Frontend Architecture](#frontend-architecture)
+11. [Backend Architecture](#backend-architecture)
+12. [Data Schemas](#data-schemas)
+13. [File Reference](#file-reference)
 
 ---
 
@@ -290,9 +291,10 @@ The game takes place across 7 Tokyo wards, each representing a dungeon floor.
 
 | Type | Probability | Description |
 |------|-------------|-------------|
-| Encounter | 60% | Combat with SYSTEM-possessed citizen |
+| Encounter | 45% | Combat with SYSTEM-possessed citizen |
 | Shrine | 20% | Chip upgrade opportunity |
 | Quiz | 20% | Knowledge test for rewards |
+| Word Discovery | 15% | Learn new vocabulary via flash cards |
 | Boss | 100% (last room) | Floor boss |
 
 ### Difficulty Scaling
@@ -444,6 +446,57 @@ Earned from runs:
 
 **Files:**
 - `src/game/state.js` - State management and persistence
+
+---
+
+## Logging System
+
+Both server and client have structured logging with configurable levels.
+
+### Log Levels
+
+| Level | Priority | Use Case |
+|-------|----------|----------|
+| `debug` | 0 (lowest) | Detailed diagnostic info |
+| `info` | 1 | Normal operational messages |
+| `warn` | 2 | Warning conditions |
+| `error` | 3 (highest) | Error conditions |
+
+### Server Logger
+
+Configure via `LOG_LEVEL` environment variable:
+
+```bash
+LOG_LEVEL=debug npm start  # Show all logs
+LOG_LEVEL=warn npm start   # Only warnings and errors
+```
+
+```javascript
+// src/logger.js
+import { logger } from './logger.js';
+logger.info('[Combat] Enemy defeated', { enemy: 'Glitch Sprite' });
+logger.debug('[JPDB] Cache refresh', { wordCount: 150 });
+```
+
+### Client Logger
+
+Configure via browser console or localStorage:
+
+```javascript
+// Browser console
+logger.setLevel('debug');  // Persists across reloads
+logger.getLevel();         // Check current level
+```
+
+```javascript
+// public/js/logger.js
+import { logger } from './logger.js';
+logger.info('[Combat] Word reviewed', { word: '食べる' });
+```
+
+**Files:**
+- `src/logger.js` - Server-side logger module
+- `public/js/logger.js` - Client-side logger with localStorage persistence
 
 ---
 
@@ -715,6 +768,13 @@ store.set('combat', newCombatState);
 | `src/voicevox.js` | VOICEVOX TTS client |
 | `src/vocab-manager.js` | Word suggestion logic |
 | `src/game/vocab-repair.js` | Post-generation vocabulary repair |
+
+### Infrastructure
+
+| File | Purpose |
+|------|---------|
+| `src/logger.js` | Server-side structured logging |
+| `public/js/logger.js` | Client-side logging with localStorage |
 
 ### Frontend
 
