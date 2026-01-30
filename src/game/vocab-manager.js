@@ -522,8 +522,15 @@ export function getNewWordsForDiscovery(limit = 2) {
 
   const newWords = [];
 
+  // States that disqualify a word from discovery (even if also 'new')
+  const EXCLUDED_STATES = ['locked', 'blacklisted', 'suspended', 'redundant'];
+
   for (const [word, info] of Object.entries(state.wordStateCache)) {
-    if (info.states && info.states.includes('new')) {
+    const states = info.states || [];
+    const isNew = states.includes('new');
+    const hasExcludedState = states.some(s => EXCLUDED_STATES.includes(s));
+
+    if (isNew && !hasExcludedState) {
       newWords.push({
         word,
         reading: info.reading || word,
@@ -540,7 +547,10 @@ export function getNewWordsForDiscovery(limit = 2) {
 
   const words = newWords.slice(0, limit);
 
-  console.log(`[Discovery] Cache has ${cacheSize} words, found ${newWords.length} with 'new' state, returning ${words.length}`);
+  console.log(`[Discovery] Cache has ${cacheSize} words, found ${newWords.length} with 'new' state (no excluded states), returning ${words.length}`);
+  if (words.length > 0) {
+    console.log(`[Discovery] Selected words: ${words.map(w => `${w.word} (states: ${state.wordStateCache[w.word]?.states?.join(',') || 'none'})`).join(', ')}`);
+  }
 
   return {
     words,
