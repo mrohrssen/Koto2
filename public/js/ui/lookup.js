@@ -251,6 +251,12 @@ function getTextElements() {
     findJapaneseTextElements(takeover, elements);
   }
 
+  // Also search in chip popup when visible
+  const chipPopup = document.querySelector('.chip-popup.visible');
+  if (chipPopup) {
+    findJapaneseTextElements(chipPopup, elements);
+  }
+
   return Array.from(elements);
 }
 

@@ -389,10 +389,9 @@ export async function executePlayerAttack() {
         return;
       }
       console.error('Player attack error:', result.error);
-      // Only trigger defeat for real errors, not sync issues
-      if (combatActive) {
-        stopCombatLoop({ combatEnded: true, victory: false, error: true });
-      }
+      // Don't trigger defeat for errors - let player retry
+      playerAttackPending = false;
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
       return;
     }
 
@@ -460,11 +459,9 @@ export async function executePlayerAttack() {
 
   } catch (error) {
     console.error('Player attack error:', error);
+    // Don't trigger defeat for errors - let player retry
+    playerAttackPending = false;
     if (setCombatAnimationActive) setCombatAnimationActive(false);
-    // Only trigger defeat if combat hasn't already ended (prevents race condition with victory)
-    if (combatActive) {
-      stopCombatLoop({ combatEnded: true, victory: false, error: true });
-    }
   }
 }
 
@@ -555,11 +552,9 @@ export async function executeEnemyAttack() {
 
   } catch (error) {
     console.error('Enemy attack error:', error);
+    // Don't trigger defeat for errors - let combat continue
+    enemyAttackPending = false;
     if (setCombatAnimationActive) setCombatAnimationActive(false);
-    // Only trigger defeat if combat hasn't already ended (prevents race condition with victory)
-    if (combatActive) {
-      stopCombatLoop({ combatEnded: true, victory: false, error: true });
-    }
   }
 }
 
@@ -655,10 +650,9 @@ export async function executeEnemyAttackThenPause() {
 
   } catch (error) {
     console.error('Enemy attack error:', error);
+    // Don't trigger defeat for errors - let combat continue
+    enemyAttackPending = false;
     if (setCombatAnimationActive) setCombatAnimationActive(false);
-    if (combatActive) {
-      stopCombatLoop({ combatEnded: true, victory: false, error: true });
-    }
   }
 }
 
