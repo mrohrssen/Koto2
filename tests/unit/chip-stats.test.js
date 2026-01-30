@@ -41,3 +41,34 @@ describe('Chip Stats Structure', () => {
     assert.strictEqual(CHIPS.fireworks.stats.bandwidth, 1);
   });
 });
+
+describe('Chip Effect Targets', () => {
+  it('all pipeline effects should have target field', () => {
+    for (const [id, chip] of Object.entries(CHIPS)) {
+      if (chip.effects?.pipeline) {
+        assert.ok(
+          ['power', 'bandwidth', 'both', 'meta'].includes(chip.effects.pipeline.target),
+          `Chip ${id} missing valid target field`
+        );
+      }
+    }
+  });
+
+  it('Speaker Bot effect should target bandwidth', () => {
+    assert.strictEqual(CHIPS.speaker.effects.pipeline.target, 'bandwidth');
+  });
+
+  it('Battery Bot should have no effect (stat stick)', () => {
+    // Battery is a pure stat stick - no pipeline effect
+    // Its flatAdd effect is removed in the new system
+    assert.ok(
+      !CHIPS.battery.effects?.pipeline ||
+      CHIPS.battery.effects.pipeline.type === 'none',
+      'Battery should be a pure stat stick'
+    );
+  });
+
+  it('Scissors Bot effect should target power', () => {
+    assert.strictEqual(CHIPS.scissors.effects.pipeline.target, 'power');
+  });
+});
