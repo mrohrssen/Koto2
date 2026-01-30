@@ -611,11 +611,23 @@ export function executeChipPipeline(weaponChips, context) {
     bandwidthPool: 0
   };
 
-  // First pass: sum all chip stats into pools
+  // First pass: sum all chip stats into pools (with level scaling)
   for (const chip of weaponChips) {
     if (chip.category === 'pipeline' && chip.stats) {
-      state.powerPool += chip.stats.power || 0;
-      state.bandwidthPool += chip.stats.bandwidth || 0;
+      let statPower = chip.stats.power || 0;
+      let statBandwidth = chip.stats.bandwidth || 0;
+
+      // Apply level scaling to stats
+      if (state.player) {
+        const level = getChipLevel(state.player, chip.id);
+        const scalingPerLevel = 0.20;
+        const scaleFactor = 1 + (level - 1) * scalingPerLevel;
+        statPower = Math.round(statPower * scaleFactor);
+        statBandwidth = Math.round(statBandwidth * scaleFactor);
+      }
+
+      state.powerPool += statPower;
+      state.bandwidthPool += statBandwidth;
     }
   }
 
@@ -1034,7 +1046,7 @@ export function getScaledEffectValue(chip, level) {
   const type = effect.type;
 
   // Multiply types: scale the bonus portion (value - 1), keep base 1.0
-  if (type === 'multiply' || type === 'conditional' || type === 'vsBoss' || type === 'destroyedMultiplier') {
+  if (type === 'multiply' || type === 'vsBoss' || type === 'destroyedMultiplier') {
     return 1 + (value - 1) * scaleFactor;
   }
 

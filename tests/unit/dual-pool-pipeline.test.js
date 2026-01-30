@@ -262,3 +262,43 @@ describe('Migrated Chip Values', () => {
     }
   });
 });
+
+describe('Chip Level Scaling', () => {
+  it('should scale chip stats by level', () => {
+    // Battery level 5: PWR 8 × 1.8 = 14.4 → 14
+    const result = runPipeline([getChip('battery')], {
+      player: { _chipLevels: { battery: 5 } }
+    });
+    assert.strictEqual(result.powerPool, 14);
+  });
+
+  it('should not scale bandwidth if base is 0', () => {
+    // Battery has BW 0, so 0 × 1.8 = 0
+    const result = runPipeline([getChip('battery')], {
+      player: { _chipLevels: { battery: 5 } }
+    });
+    assert.strictEqual(result.bandwidthPool, 0);
+  });
+
+  it('should scale both stats for balanced chips', () => {
+    // Lightbulb level 5: PWR 2 × 1.8 = 3.6 → 4, BW 1 × 1.8 = 1.8 → 2
+    const originalRandom = Math.random;
+    Math.random = () => 0.9; // Don't trigger lightbulb's 50% effect
+
+    try {
+      const result = runPipeline([getChip('lightbulb')], {
+        player: { _chipLevels: { lightbulb: 5 } }
+      });
+      assert.strictEqual(result.powerPool, 4);
+      assert.strictEqual(result.bandwidthPool, 2);
+    } finally {
+      Math.random = originalRandom;
+    }
+  });
+
+  it('should use level 1 (no scaling) when no player provided', () => {
+    const result = runPipeline([getChip('battery')]);
+    // Level 1: PWR 8 × 1.0 = 8
+    assert.strictEqual(result.powerPool, 8);
+  });
+});
