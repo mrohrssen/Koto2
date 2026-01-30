@@ -114,15 +114,55 @@ function derivePhase({ player, run, combat }) {
 
 Chips are passive augmentations that form the game's primary build customization. They execute as a damage pipeline during combat.
 
+### Chip Data Structure
+
+Each chip has stats and effects:
+
+```javascript
+{
+  "id": "chip_battery",
+  "name": "バッテリー",
+  "nameEn": "Battery",
+  "stats": {
+    "power": 8,      // Contributes to power pool
+    "bandwidth": 0   // Contributes to bandwidth pool
+  },
+  "effects": {
+    "pipeline": [{
+      "type": "flatAdd",
+      "value": 5,
+      "target": "power"  // Which pool this effect modifies
+    }]
+  }
+}
+```
+
+**Effect Targets:**
+| Target | Description |
+|--------|-------------|
+| `power` | Modifies power pool only |
+| `bandwidth` | Modifies bandwidth pool only |
+| `both` | Modifies both pools |
+| `meta` | Special effects (recursion, sacrifice, etc.) |
+
 ### Pipeline Execution
 
-Each weapon has **5 chip slots** that execute in sequential order:
+Each weapon has **5 chip slots** that execute to build two damage pools:
 
 ```
-Base Damage ──► [Chip 1] ──► [Chip 2] ──► [Chip 3] ──► [Chip 4] ──► [Chip 5] ──► Final Damage
+[Chip 1] ──► [Chip 2] ──► [Chip 3] ──► [Chip 4] ──► [Chip 5]
+    │            │            │            │            │
+    ▼            ▼            ▼            ▼            ▼
+  ┌────────────────────────────────────────────────────────┐
+  │  POWER POOL      │  BANDWIDTH POOL                     │
+  │  (raw damage)    │  (multiplier)                       │
+  └────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+              DAMAGE = POWER × (1 + BANDWIDTH)
 ```
 
-**Order matters:**
+**Order matters for effects targeting the same pool:**
 - `+5` then `x2` = `(base + 5) * 2`
 - `x2` then `+5` = `(base * 2) + 5`
 
@@ -198,23 +238,52 @@ Only two stats matter:
 
 **No hit/miss, no crits, no defense stat.**
 
-### Damage Formula
+### Damage Formula (Dual-Pool System)
 
+Combat uses a dual-pool system where chips contribute to **power** and **bandwidth** pools:
+
+```
+DAMAGE = POWER × (1 + BANDWIDTH)
+```
+
+**Power Pool:**
+- Accumulated from chip stats (`chip.stats.power`)
+- Modified by effects with `target: "power"` or `target: "both"`
+- Represents raw damage potential
+
+**Bandwidth Pool:**
+- Accumulated from chip stats (`chip.stats.bandwidth`)
+- Modified by effects with `target: "bandwidth"` or `target: "both"`
+- Acts as a damage multiplier (1.0 bandwidth = 2× damage)
+
+**Example Calculation:**
+```
+Chips: Battery (PWR 8, BW 0), Speaker (PWR 0, BW 2), Scissors (PWR 3, BW 0)
+
+Power     = 8 + 0 + 3 = 11
+Bandwidth = 0 + 2 + 0 = 2
+Damage    = 11 × (1 + 2) = 33
+```
+
+**Pipeline Execution:**
 ```javascript
-// 1. Base damage with variance
-baseDamage = attack * random(0.85, 1.15)
+// 1. Initialize pools from chip base stats
+power = sum(chip.stats.power for each chip)
+bandwidth = sum(chip.stats.bandwidth for each chip)
 
-// 2. PRE_PIPELINE buffs add flat bonuses
-damage = baseDamage + prePipelineBonus
+// 2. Execute chip pipeline effects in order
+for each chip:
+  for each effect in chip.effects.pipeline:
+    if effect.target === 'power':
+      power = applyEffect(power, effect)
+    else if effect.target === 'bandwidth':
+      bandwidth = applyEffect(bandwidth, effect)
+    else if effect.target === 'both':
+      power = applyEffect(power, effect)
+      bandwidth = applyEffect(bandwidth, effect)
 
-// 3. Chip pipeline executes (each chip modifies damage)
-damage = executeChipPipeline(damage, chips)
-
-// 4. POST_PIPELINE buffs multiply final damage
-finalDamage = damage * postPipelineMultiplier
-
-// 5. Enemy takes damage
-enemy.hp -= finalDamage
+// 3. Calculate final damage
+finalDamage = power * (1 + bandwidth)
 ```
 
 ### Enemy Intents
@@ -628,9 +697,16 @@ store.set('combat', newCombatState);
   "nameEn": "Amplifier",
   "description": "次のチップの効果を強化する",
   "rarity": "rare",
-  "effect": {
-    "type": "amplifyNext",
-    "value": 1.3
+  "stats": {
+    "power": 3,       // Base power contribution
+    "bandwidth": 1    // Base bandwidth contribution
+  },
+  "effects": {
+    "pipeline": [{
+      "type": "multiply",
+      "value": 1.3,
+      "target": "both"  // "power", "bandwidth", "both", or "meta"
+    }]
   },
   "skill": {
     "name": "ブースト",
