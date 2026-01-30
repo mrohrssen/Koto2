@@ -31,6 +31,13 @@
 import { playSFX } from '../audio.js';
 import { getAuthHeaders } from '../api.js';
 import { logger } from '../logger.js';
+import {
+  fireChipEffect,
+  impactEnemyEffect,
+  playerHitEffect,
+  updateHpCriticalState,
+  delay as effectDelay
+} from './combat-effects.js';
 
 // ============ MODULE STATE ============
 
@@ -323,8 +330,9 @@ function showEnemyDamageDisplay(enemyAttack) {
 /**
  * Animate a chip circle when its effect activates
  * @param {number} chipIndex - Index of the chip slot to animate
+ * @param {Object} chipData - Chip data with stats (optional)
  */
-function animateChipActivation(chipIndex) {
+function animateChipActivation(chipIndex, chipData = null) {
   const slot = document.querySelector(`.chip-slot[data-index="${chipIndex}"]`);
   if (slot) {
     const icon = slot.querySelector('.chip-icon');
@@ -332,6 +340,13 @@ function animateChipActivation(chipIndex) {
       icon.classList.add('chip-activating');
       setTimeout(() => icon.classList.remove('chip-activating'), 600);
     }
+
+    // Fire visual effects
+    const poolEls = {
+      power: document.querySelector('[data-pool="power"]'),
+      bandwidth: document.querySelector('[data-pool="bandwidth"]')
+    };
+    fireChipEffect(slot, chipData, poolEls);
   }
 }
 
@@ -425,6 +440,10 @@ export async function executePlayerAttack() {
         showDamageNumber(pa.damage, false, pa.critical);
         animateEnemyHurt();
         playSFX('attack');
+
+        // Visual effects for enemy damage
+        const enemySprite = document.getElementById('enemy-sprite');
+        await impactEnemyEffect(pa.damage, enemySprite);
 
         // Sequential chip activation with progressive math display
         await showChipActivationSequence(pa);
@@ -624,6 +643,17 @@ export async function executeEnemyAttackThenPause() {
       }
       // Show enemy damage in action area (big red text)
       showEnemyDamageDisplay(ea);
+
+      // Visual effects for player damage
+      const playerHpBar = document.getElementById('player-hp-fill');
+      const chipRow = document.getElementById('chip-row');
+      await playerHitEffect(result.enemyAttack.damage, playerHpBar, chipRow);
+
+      // Check for critical HP state
+      const gameState = getGameState();
+      if (gameState?.player) {
+        updateHpCriticalState(playerHpBar, gameState.player.hp, gameState.player.maxHp);
+      }
     }
 
     // Update HP bars

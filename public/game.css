@@ -1582,3 +1582,77 @@ html, body {
   margin-bottom: 12px;
   border: 1px solid #e0e0e0;
 }
+
+/* ============ COMBAT EFFECTS ============ */
+
+/* Screen flash overlay */
+.screen-flash-overlay {
+  position: absolute;
+  inset: 0;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* Red vignette for player damage */
+.vignette-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(255, 50, 50, 0.7) 100%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* Particles */
+.combat-particle {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1000;
+  will-change: transform, opacity;
+}
+
+/* Speed lines */
+.speed-line {
+  position: fixed;
+  width: 30px;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.9), transparent);
+  pointer-events: none;
+  z-index: 1000;
+  border-radius: 2px;
+  will-change: transform, opacity;
+}
+
+/* Hit stop - freezes all animations */
+.hit-stop,
+.hit-stop * {
+  animation-play-state: paused !important;
+}
+
+/* Big damage number modifier */
+.damage-number.big-hit {
+  font-size: 32px;
+  color: #f1c40f;
+  text-shadow: 0 0 10px rgba(241, 196, 15, 0.8), 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+/* Critical pulse on HP bar when low */
+.hp-critical-pulse {
+  animation: hp-critical 0.5s ease-in-out infinite;
+}
+
+@keyframes hp-critical {
+  0%, 100% { box-shadow: 0 0 5px rgba(255, 50, 50, 0.5); }
+  50% { box-shadow: 0 0 15px rgba(255, 50, 50, 0.9); }
+}
+
+/* Chip firing glow enhancement */
+.chip-icon.chip-firing-enhanced {
+  filter: brightness(1.5);
+  box-shadow: 0 0 20px rgba(52, 152, 219, 0.9);
+}
