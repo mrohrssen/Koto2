@@ -1,32 +1,40 @@
-# Testing Progress for Pipeline Chips
+# Testing Progress
 
-## Current State (2026-01-17)
+## Current State (2026-01-30)
 
-### What's Done
+### Test Counts
 
-**Unit Tests** (`tests/unit/pipeline-chips.test.js`)
-- 49 tests covering all 13 new pipeline chips
-- Tests verify `executeChipPipeline()` returns correct values
+| Type | Count | Location |
+|------|-------|----------|
+| Unit tests | 154 | `tests/unit/` (17 files) |
+| Integration tests | 14 | `tests/integration/` (3 files) |
+| E2E tests | 66 | `tests/e2e/specs/` (16 files) |
+
+### What's Covered
+
+**Unit Tests** (`tests/unit/`)
+- Pipeline chips (49 tests) - all 13 pipeline chip calculations
+- Chip skills (34 tests) - skill execution and effects
+- Chip levels and charges (18 tests) - upgrade mechanics
+- Authentication (22 tests) - users, crypto, routes, middleware
+- JPDB integration (9 tests) - circuit breaker, batch parse, cache
+- Vocab manager (7 tests) - new words, cache
+- Word discovery (10 tests) - phase machine, room generation
+- Logger (2 tests) - logging functionality
+- Manager registry (4 tests) - per-user instances
 - Run with: `npm run test:unit`
 
-**Integration Tests** (`tests/integration/pipeline-chip-effects.test.js`)
-- 11 tests verifying chip effects are applied through the game loop
-- Tests cover:
-  - Lifelink healing (player HP increases after attack)
-  - Siphon healing (player HP increases after attack)
-  - Lifelink + Siphon stacking (combined healing)
-  - Lifelink overheal capping (doesn't exceed maxHp)
-  - Unstable Core destruction (removes chips from inventory)
-  - Unstable Core trigger check (high random skips destruction)
-  - Bounty Hunter kill tracking (`_runKills` increments)
-  - Stack Overflow stack accumulation (`_combatStacks` increments)
-  - Stack Overflow reset on death (`_combatStacks` cleared)
-  - Chip destruction counter tracking (`_runChipsDestroyed`)
+**Integration Tests** (`tests/integration/`)
+- Pipeline chip effects (11 tests) - healing, destruction, stacks
+- Discovery words (2 tests) - word discovery room flow
+- Auth flow (1 test) - end-to-end authentication
 - Run with: `npm run test:integration`
 
-**E2E Tests** (`tests/e2e/`)
-- 88 existing tests, all passing
-- Cover general gameplay flow
+**E2E Tests** (`tests/e2e/specs/`)
+- 66 tests covering gameplay flow across 16 spec files
+- Rooms: encounter, shrine, quiz, boss, word-discovery
+- Features: character creation, chip reorder, equipment, game-over, lookup mode, meta-progression, progression, run-and-exploration, settings, shop
+- Integration: full-playthrough
 
 **Bug Fixes Applied**
 - Fixed missing handlers in `realtimeAttackCycle()` for:
@@ -40,15 +48,15 @@
 
 ```
          ┌─────────────────────┐
-         │    E2E Tests        │  ✅ 88 tests (UI/flow)
+         │    E2E Tests        │  ✅ 66 tests (UI/flow)
          └──────────┬──────────┘
                     │
          ┌──────────▼──────────┐
-         │  Integration Tests  │  ✅ 11 tests (game loop)
+         │  Integration Tests  │  ✅ 14 tests (game loop)
          └──────────┬──────────┘
                     │
          ┌──────────▼──────────┐
-         │    Unit Tests       │  ✅ 49 tests (pipeline math)
+         │    Unit Tests       │  ✅ 154 tests (logic/math)
          └─────────────────────┘
 ```
 

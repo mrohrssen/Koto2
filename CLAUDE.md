@@ -51,13 +51,13 @@ pkill -f "node server.js"
 **FORBIDDEN - will waste hours on timeouts:**
 ```bash
 npx playwright test --workers=2    # NO! Causes race conditions
-npx playwright test                # NO! Runs all 87 tests even on failure
+npx playwright test                # NO! Runs all 66 tests even on failure
 ```
 
 **Test thresholds:**
-- 87/87 = ideal
-- 80+/87 = acceptable (known flakiness)
-- <80/87 = broken, fix before committing
+- 66/66 = ideal
+- 60+/66 = acceptable (known flakiness)
+- <60/66 = broken, fix before committing
 
 **Syntax check BEFORE E2E** (saves time):
 ```bash
@@ -67,8 +67,8 @@ node --check public/js/yourfile.js && echo "OK"
 ### Quick Tests (no server needed)
 
 ```bash
-npm run test:unit           # Unit tests only (49 tests)
-npm run test:integration    # Integration tests (10-11 tests)
+npm run test:unit           # Unit tests only (154 tests)
+npm run test:integration    # Integration tests (14 tests)
 ```
 
 ## Git Workflow (Multi-Session Safe with Worktrees)
