@@ -414,13 +414,14 @@ async function getChipLoadout() {
  * @param {number} vid - Vocabulary ID
  * @param {number} sid - Sense ID
  * @param {number} grade - Review grade (1-5)
+ * @param {boolean} isDiscovery - Whether this is a discovery room review
  */
-async function sendJpdbReview(vid, sid, grade) {
+async function sendJpdbReview(vid, sid, grade, isDiscovery = false) {
   try {
     const response = await fetch('/api/jpdb/review', {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ vid, sid, grade })
+      body: JSON.stringify({ vid, sid, grade, isDiscovery })
     });
     return await response.json();
   } catch (error) {
@@ -499,6 +500,21 @@ async function getDiscoveryWords(limit = 2) {
   }
 }
 
+/** Get discovery status (daily limit tracking)
+ * @returns {Promise<Object>} { todayCount, dailyLimit, atLimit }
+ */
+async function getDiscoveryStatus() {
+  try {
+    const response = await fetch('/api/game/discovery-status', {
+      headers: getAuthHeaders()
+    });
+    return await response.json();
+  } catch (error) {
+    logger.error('[API] Failed to get discovery status:', error.message);
+    return { todayCount: 0, dailyLimit: 10, atLimit: false };
+  }
+}
+
 /** Mark word discovery room as complete
  * @returns {Promise<Object>} Result with updated state
  */
@@ -549,5 +565,6 @@ export {
   lookupJpdbWord,
   lookupJpdbBatch,
   getDiscoveryWords,
+  getDiscoveryStatus,
   completeDiscovery
 };
