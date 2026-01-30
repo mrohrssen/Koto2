@@ -86,6 +86,12 @@ export async function openSettings() {
           <option value="N1" ${keyInfo.jlptLevel === 'N1' ? 'selected' : ''}>N1</option>
         </select>
       </label>
+      <label class="settings-label" style="margin-top:12px">
+        Daily Word Limit
+        <input type="number" id="settings-daily-limit" class="settings-input"
+          min="0" max="50" value="${keyInfo.dailyWordLimit ?? 10}">
+        <small style="color:#888;font-size:0.85em">0 = skip discovery rooms, max 50</small>
+      </label>
       <hr style="margin:16px 0;border:none;border-top:1px solid #e0e0e0">
       <label class="settings-label">
         <input type="checkbox" id="settings-tts-enabled"
@@ -126,6 +132,7 @@ export async function openSettings() {
     const aiProvider = document.getElementById('settings-ai-provider')?.value;
     const model = document.getElementById('settings-model')?.value?.trim();
     const jlptLevel = document.getElementById('settings-jlpt')?.value;
+    const dailyWordLimit = parseInt(document.getElementById('settings-daily-limit')?.value || '10');
     const ttsEnabled = document.getElementById('settings-tts-enabled')?.checked;
     const bgmVol = parseInt(document.getElementById('settings-bgm-volume')?.value || '70') / 100;
     const sfxVol = parseInt(document.getElementById('settings-sfx-volume')?.value || '80') / 100;
@@ -139,6 +146,9 @@ export async function openSettings() {
     if (aiProvider) keysToSave.aiProvider = aiProvider;
     if (model) keysToSave.openaiModel = model;
     if (jlptLevel) keysToSave.jlptLevel = jlptLevel;
+    if (!isNaN(dailyWordLimit)) {
+      keysToSave.dailyWordLimit = dailyWordLimit;
+    }
 
     if (Object.keys(keysToSave).length > 0) {
       const saved = await settingsModule.saveApiKeysToServer(keysToSave);
