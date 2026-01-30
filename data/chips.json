@@ -3,16 +3,16 @@
     "id": "battery",
     "name": "電池ボット",
     "nameEn": "Battery Bot",
-    "description": "小さな電池の相棒。攻撃に+5ダメージ。いつも元気いっぱい！",
-    "descriptionEn": "Zaps enemies for +5 damage. Always fully charged and ready to help!",
+    "description": "+8パワー。いつも充電満タン！",
+    "descriptionEn": "+8 PWR. A reliable power source, always fully charged!",
     "category": "pipeline",
     "stats": { "power": 8, "bandwidth": 0 },
     "effects": {
       "pipeline": {
         "type": "none",
-        "target": "power",
+        "target": "meta",
         "triggerChance": 1,
-        "displayText": "+8 PWR"
+        "displayText": ""
       }
     },
     "skill": {
@@ -31,15 +31,15 @@
     "id": "speaker",
     "name": "スピーカーボット",
     "nameEn": "Speaker Bot",
-    "description": "音を増幅する仲間。80%でダメージ1.3倍。声が大きい！",
-    "descriptionEn": "80% chance to amplify damage by 1.3×. Loves turning it up to eleven!",
+    "description": "+2帯域。80%で帯域×1.2倍。ダメージを増幅！",
+    "descriptionEn": "+2 BW. 80% chance to x1.2 BW. Amplifies your damage!",
     "category": "pipeline",
     "stats": { "power": 0, "bandwidth": 2 },
     "effects": {
       "pipeline": {
         "type": "multiply",
-        "value": 1.2,
         "target": "bandwidth",
+        "value": 1.2,
         "triggerChance": 0.8,
         "displayText": "×1.2 BW"
       }
@@ -60,15 +60,15 @@
     "id": "glasses",
     "name": "眼鏡ボット",
     "nameEn": "Glasses Bot",
-    "description": "じっくり観察。連続攻撃でダメージ倍率が上がる。",
-    "descriptionEn": "Studies enemies carefully. Damage multiplier grows with each consecutive hit!",
+    "description": "+1帯域。攻撃ごとに+0.3帯域。観察眼！",
+    "descriptionEn": "+1 BW. +0.3 BW per hit. Studies enemies carefully!",
     "category": "pipeline",
     "stats": { "power": 0, "bandwidth": 1 },
     "effects": {
       "pipeline": {
         "type": "rampingMultiply",
-        "value": 0.3,
         "target": "bandwidth",
+        "value": 0.3,
         "triggerChance": 1,
         "displayText": "+0.3 BW/hit"
       }
@@ -89,15 +89,15 @@
     "id": "lightbulb",
     "name": "電球ボット",
     "nameEn": "Light Bulb Bot",
-    "description": "時々まぶしく輝く。50%でダメージ1.6倍。ひらめき次第！",
-    "descriptionEn": "50% chance to multiply damage by 1.6×. Sometimes brilliantly bright, sometimes dim!",
+    "description": "+2パワー、+1帯域。50%で帯域×1.5倍。ひらめき次第！",
+    "descriptionEn": "+2 PWR, +1 BW. 50% chance to x1.5 BW. Sometimes brilliant!",
     "category": "pipeline",
     "stats": { "power": 2, "bandwidth": 1 },
     "effects": {
       "pipeline": {
         "type": "multiply",
-        "value": 1.5,
         "target": "bandwidth",
+        "value": 1.5,
         "triggerChance": 0.5,
         "displayText": "×1.5 BW"
       }
@@ -117,15 +117,15 @@
     "id": "scissors",
     "name": "はさみボット",
     "nameEn": "Scissors Bot",
-    "description": "弱った敵をチョキン。敵HP30%以下でダメージ+50%。",
-    "descriptionEn": "+50% damage when enemy below 30% HP. Snips them down to size!",
+    "description": "+3パワー。敵HP30%以下で+10パワー。チョキン！",
+    "descriptionEn": "+3 PWR. +10 PWR if enemy below 30% HP. Snip snip!",
     "category": "pipeline",
     "stats": { "power": 3, "bandwidth": 0 },
     "effects": {
       "pipeline": {
         "type": "conditional",
-        "value": 10,
         "target": "power",
+        "value": 10,
         "triggerChance": 1,
         "displayText": "+10 PWR",
         "condition": {
@@ -151,17 +151,17 @@
     "id": "clock",
     "name": "時計ボット",
     "nameEn": "Clock Bot",
-    "description": "7%で時間を巻き戻す。パイプライン再起動。何度でも。",
-    "descriptionEn": "7% chance to restart the pipeline from chip 1. Time is a loop!",
+    "description": "7%でパイプライン再起動。時は繰り返す！",
+    "descriptionEn": "7% chance to restart pipeline. Time is a loop!",
     "category": "pipeline",
     "stats": { "power": 0, "bandwidth": 0 },
     "effects": {
       "pipeline": {
         "type": "recursion",
-        "value": 0,
         "target": "meta",
+        "value": 0,
         "triggerChance": 0.07,
-        "displayText": "∞ LOOP",
+        "displayText": "LOOP",
         "maxRecursions": 10
       }
     },
@@ -181,18 +181,18 @@
     "id": "charcoal",
     "name": "炭ボット",
     "nameEn": "Charcoal Bot",
-    "description": "自分を燃やして大爆発。ダメージ5倍。でも永遠にさよなら。",
-    "descriptionEn": "×5 pipeline damage, but destroyed forever. Burns bright, then gone!",
+    "description": "+5パワー、+2帯域。犠牲：パワー×3、帯域×2。燃え尽きる。",
+    "descriptionEn": "+5 PWR, +2 BW. Sacrifice: x3 PWR, x2 BW. Burns bright, then gone!",
     "category": "pipeline",
     "stats": { "power": 5, "bandwidth": 2 },
     "effects": {
       "pipeline": {
         "type": "sacrifice",
-        "value": 3,
-        "valueBW": 2,
         "target": "both",
+        "powerMultiplier": 3,
+        "bandwidthMultiplier": 2,
         "triggerChance": 1,
-        "displayText": "×3 PWR, ×2 BW"
+        "displayText": "×3 PWR ×2 BW SACRIFICE"
       }
     },
     "skill": {
@@ -210,15 +210,15 @@
     "id": "book",
     "name": "本ボット",
     "nameEn": "Book Bot",
-    "description": "25%で+2ダメージ。戦闘中スタック。知識は力。",
-    "descriptionEn": "25% chance for +2 damage, stacks during combat. Knowledge is power!",
+    "description": "+1帯域。25%で+1帯域スタック。知識は力！",
+    "descriptionEn": "+1 BW. 25% chance to stack +1 BW. Knowledge is power!",
     "category": "pipeline",
     "stats": { "power": 0, "bandwidth": 1 },
     "effects": {
       "pipeline": {
         "type": "stacking",
-        "value": 1,
         "target": "bandwidth",
+        "value": 1,
         "triggerChance": 0.25,
         "displayText": "+1 BW STACK"
       }
@@ -238,19 +238,19 @@
     "id": "eraser",
     "name": "消しゴムボット",
     "nameEn": "Eraser Bot",
-    "description": "空きスロット2つ以上で+10ダメージ。余白を愛する。",
-    "descriptionEn": "+10 damage if 2+ chip slots are empty. Loves a clean slate!",
+    "description": "空きスロット2+で+12パワー、+2帯域。余白を愛する！",
+    "descriptionEn": "+12 PWR, +2 BW if 2+ slots empty. Loves a clean slate!",
     "category": "pipeline",
     "stats": { "power": 0, "bandwidth": 0 },
     "effects": {
       "pipeline": {
         "type": "emptySlots",
-        "value": 12,
-        "valueBW": 2,
         "target": "both",
+        "powerValue": 12,
+        "bandwidthValue": 2,
         "requiredEmpty": 2,
         "triggerChance": 1,
-        "displayText": "+12 PWR, +2 BW"
+        "displayText": "+12 PWR +2 BW (2 empty)"
       }
     },
     "skill": {
@@ -270,18 +270,18 @@
     "id": "onigiri",
     "name": "おにぎりボット",
     "nameEn": "Onigiri Bot",
-    "description": "戦いながら元気をくれる。+5ダメージ、5HP回復。",
-    "descriptionEn": "+5 damage and heal 5 HP every attack. A tasty little battle buddy!",
+    "description": "+6パワー。攻撃ごとに5HP回復。もぐもぐ！",
+    "descriptionEn": "+6 PWR. Heal 5 HP per attack. A tasty battle buddy!",
     "category": "pipeline",
     "stats": { "power": 6, "bandwidth": 0 },
     "effects": {
       "pipeline": {
         "type": "damageAndHeal",
+        "target": "meta",
         "value": 0,
-        "target": "power",
         "healValue": 5,
         "triggerChance": 1,
-        "displayText": "+heal 5"
+        "displayText": "heal 5"
       }
     },
     "skill": {
@@ -299,15 +299,15 @@
     "id": "wallet",
     "name": "財布ボット",
     "nameEn": "Wallet Bot",
-    "description": "敵を倒すたび+1ダメージ。無限スタック。お金持ちへの道。",
-    "descriptionEn": "+1 damage per enemy defeated this run. Stacks forever. Cha-ching!",
+    "description": "+2パワー。キルごとに+0.5パワー。チャリン！",
+    "descriptionEn": "+2 PWR. +0.5 PWR per kill. Cha-ching!",
     "category": "pipeline",
     "stats": { "power": 2, "bandwidth": 0 },
     "effects": {
       "pipeline": {
         "type": "killCounter",
-        "value": 0.5,
         "target": "power",
+        "value": 0.5,
         "triggerChance": 1,
         "displayText": "+0.5 PWR/kill"
       }
@@ -327,18 +327,18 @@
     "id": "straw",
     "name": "ストローボット",
     "nameEn": "Straw Bot",
-    "description": "敵からHPをちゅーっと吸う。-2ダメージ、10HP回復。",
-    "descriptionEn": "-2 damage but heal 10 HP. Sips your enemies' strength away!",
+    "description": "-3パワー。+0.2帯域、12HP回復。ちゅーっ！",
+    "descriptionEn": "-3 PWR. +0.2 BW, heal 12 HP. Sips strength away!",
     "category": "pipeline",
     "stats": { "power": -3, "bandwidth": 0 },
     "effects": {
       "pipeline": {
         "type": "damageAndHeal",
-        "value": 0.2,
         "target": "bandwidth",
-        "healValue": 10,
+        "value": 0.2,
+        "healValue": 12,
         "triggerChance": 1,
-        "displayText": "+0.2 BW, heal"
+        "displayText": "+0.2 BW heal 12"
       }
     },
     "skill": {
@@ -356,17 +356,17 @@
     "id": "key",
     "name": "鍵ボット",
     "nameEn": "Key Bot",
-    "description": "ボスの弱点を開錠。ボスに25%追加ダメージ。",
-    "descriptionEn": "+25% damage to bosses. Unlocks their weak points!",
+    "description": "+2パワー、+1帯域。ボス戦で帯域×1.5倍！",
+    "descriptionEn": "+2 PWR, +1 BW. x1.5 BW vs bosses!",
     "category": "pipeline",
     "stats": { "power": 2, "bandwidth": 1 },
     "effects": {
       "pipeline": {
         "type": "vsBoss",
-        "value": 1.5,
         "target": "bandwidth",
+        "value": 1.5,
         "triggerChance": 1,
-        "displayText": "×1.5 BW vs boss"
+        "displayText": "×1.5 BW vs BOSS"
       }
     },
     "skill": {
@@ -386,16 +386,16 @@
     "id": "egg",
     "name": "卵ボット",
     "nameEn": "Egg Bot",
-    "description": "破壊されたチップごとに+0.5倍。壊れるほど強くなる。",
-    "descriptionEn": "×1 base, +0.5× for each chip destroyed this run. Cracks open stronger!",
+    "description": "+1帯域。破壊チップ1つにつき+1帯域。壊れるほど強く！",
+    "descriptionEn": "+1 BW. +1 BW per destroyed chip. Cracks open stronger!",
     "category": "pipeline",
     "stats": { "power": 0, "bandwidth": 1 },
     "effects": {
       "pipeline": {
         "type": "destroyedMultiplier",
-        "baseValue": 1,
-        "perDestroyed": 1,
         "target": "bandwidth",
+        "baseValue": 0,
+        "perDestroyed": 1.0,
         "triggerChance": 1,
         "displayText": "+1 BW/destroyed"
       }
@@ -416,18 +416,18 @@
     "id": "fireworks",
     "name": "花火ボット",
     "nameEn": "Fireworks Bot",
-    "description": "+15ダメージ。でも10%で仲間チップを巻き込む。",
-    "descriptionEn": "+15 damage but 10% chance to destroy a random chip. Spectacular risk!",
+    "description": "+15パワー、+1帯域。10%でチップ破壊。派手にいこう！",
+    "descriptionEn": "+15 PWR, +1 BW. 10% chance to destroy a chip. Go big!",
     "category": "pipeline",
     "stats": { "power": 15, "bandwidth": 1 },
     "effects": {
       "pipeline": {
         "type": "riskyFlat",
+        "target": "meta",
         "value": 0,
-        "target": "power",
         "destroyChance": 0.1,
         "triggerChance": 1,
-        "displayText": "risk effect"
+        "displayText": "10% destroy chip"
       }
     },
     "skill": {
@@ -446,8 +446,8 @@
     "id": "mirror",
     "name": "鏡ボット",
     "nameEn": "Mirror Bot",
-    "description": "前のチップの効果をそのままコピー。真似上手。",
-    "descriptionEn": "Copies the previous chip's effect. The sincerest form of flattery!",
+    "description": "前のチップの効果をコピー。真似上手！",
+    "descriptionEn": "Copies previous chip's effect. Imitation is flattery!",
     "category": "pipeline",
     "stats": { "power": 0, "bandwidth": 0 },
     "effects": {
@@ -474,18 +474,18 @@
     "id": "feather",
     "name": "羽ボット",
     "nameEn": "Feather Bot",
-    "description": "軽いほど強い。空きスロットごとに+4ダメージ。",
-    "descriptionEn": "+4 damage for each empty chip slot. Travel light, hit hard!",
+    "description": "空スロット毎に+3パワー、+0.5帯域。軽いほど強い！",
+    "descriptionEn": "+3 PWR, +0.5 BW per empty slot. Travel light, hit hard!",
     "category": "pipeline",
     "stats": { "power": 0, "bandwidth": 0 },
     "effects": {
       "pipeline": {
         "type": "perEmptySlot",
-        "value": 3,
-        "valueBW": 0.5,
         "target": "both",
+        "powerValue": 3,
+        "bandwidthValue": 0.5,
         "triggerChance": 1,
-        "displayText": "+3 PWR, +0.5 BW/empty"
+        "displayText": "+3 PWR +0.5 BW/empty"
       }
     },
     "skill": {
@@ -504,18 +504,18 @@
     "id": "drum",
     "name": "太鼓ボット",
     "nameEn": "Drum Bot",
-    "description": "リズムを刻む。5回目の攻撃でダメージ2.5倍。ドドン！",
-    "descriptionEn": "Every 5th attack deals ×2.5 damage. Building to the big finale!",
+    "description": "+4パワー。5回目の攻撃で帯域×2倍。ドドン！",
+    "descriptionEn": "+4 PWR. x2 BW every 5th attack. Building to the finale!",
     "category": "pipeline",
     "stats": { "power": 4, "bandwidth": 0 },
     "effects": {
       "pipeline": {
         "type": "nthAttack",
-        "interval": 5,
-        "multiplier": 2,
         "target": "bandwidth",
+        "interval": 5,
+        "multiplier": 2.0,
         "triggerChance": 1,
-        "displayText": "×2 BW on burst"
+        "displayText": "×2 BW every 5th"
       }
     },
     "skill": {
@@ -533,17 +533,17 @@
     "id": "magnifyingGlass",
     "name": "虫眼鏡ボット",
     "nameEn": "Magnifying Glass Bot",
-    "description": "次のチップの効果を1.3倍に拡大する。位置が大事！",
-    "descriptionEn": "Amplifies the next chip in pipeline by 1.3×. Placement matters!",
+    "description": "+1帯域。次チップの効果×1.3倍。位置が大事！",
+    "descriptionEn": "+1 BW. x1.3 next chip's effect. Placement matters!",
     "category": "pipeline",
     "stats": { "power": 0, "bandwidth": 1 },
     "effects": {
       "pipeline": {
         "type": "amplifyNext",
-        "value": 1.3,
         "target": "meta",
+        "value": 1.3,
         "triggerChance": 1,
-        "displayText": "×1.3 NEXT"
+        "displayText": "×1.3 next stats"
       }
     },
     "skill": {
@@ -562,18 +562,18 @@
     "id": "toolbox",
     "name": "工具箱ボット",
     "nameEn": "Toolbox Bot",
-    "description": "装備チップ1つにつき+3ダメージ。仲間が多いほど強い！",
-    "descriptionEn": "+3 damage per equipped chip. More tools, more power!",
+    "description": "+2パワー。装備毎に+2パワー、+0.3帯域。仲間が多いほど強い！",
+    "descriptionEn": "+2 PWR. +2 PWR, +0.3 BW per equipped chip. Teamwork!",
     "category": "pipeline",
     "stats": { "power": 2, "bandwidth": 0 },
     "effects": {
       "pipeline": {
         "type": "perEquipped",
-        "value": 2,
-        "valueBW": 0.3,
         "target": "both",
+        "powerValue": 2,
+        "bandwidthValue": 0.3,
         "triggerChance": 1,
-        "displayText": "+2 PWR, +0.3 BW/equipped"
+        "displayText": "+2 PWR +0.3 BW/equipped"
       }
     },
     "skill": {

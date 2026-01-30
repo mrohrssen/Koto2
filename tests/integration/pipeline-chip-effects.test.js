@@ -331,11 +331,11 @@ describe('Straw Bot Integration', () => {
       gm.combatCycle('player');
     });
 
-    // Straw Bot heals 10 HP
+    // Straw Bot heals 12 HP
     assert.strictEqual(
       gm.run.player.hp,
-      hpBefore + 10,
-      'Player should be healed by 10 HP'
+      hpBefore + 12,
+      'Player should be healed by 12 HP'
     );
   });
 });
@@ -525,11 +525,11 @@ describe('Combined Chip Effects Integration', () => {
       gm.combatCycle('player');
     });
 
-    // Onigiri Bot heals 5, Straw Bot heals 10 = 15 total
+    // Onigiri Bot heals 5, Straw Bot heals 12 = 17 total
     assert.strictEqual(
       gm.run.player.hp,
-      65,
-      'Player should be healed by 15 HP (5 + 10)'
+      67,
+      'Player should be healed by 17 HP (5 + 12)'
     );
   });
 

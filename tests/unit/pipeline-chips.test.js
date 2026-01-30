@@ -1,6 +1,11 @@
 /**
- * Unit tests for the new crazy pipeline chips
+ * Unit tests for the dual-pool pipeline chip system
  * Run with: node --test tests/unit/pipeline-chips.test.js
+ *
+ * DAMAGE FORMULA: POWER × (1 + BANDWIDTH)
+ *
+ * Stats are summed in FIRST PASS only (recursion doesn't re-add base stats).
+ * Effects can add/multiply the pools.
  */
 
 import { describe, it, mock, beforeEach } from 'node:test';
@@ -14,10 +19,10 @@ function getChip(id) {
   return { ...chip };
 }
 
-// Helper to run pipeline with default context
+// Helper to run pipeline with default context (dual-pool mode)
 function runPipeline(chips, overrides = {}) {
   return executeChipPipeline(chips, {
-    baseDamage: 100,
+    baseDamage: 0, // Use dual-pool system (POWER × (1 + BANDWIDTH))
     isCrit: false,
     critChance: 0.05,
     target: { isBoss: false, hp: 500, maxHp: 500 },
@@ -62,9 +67,12 @@ describe('Pipeline Chip Definitions', () => {
 });
 
 describe('Battery Bot (baseline)', () => {
-  it('should add flat damage', () => {
+  it('should provide base power as stat stick', () => {
     const result = runPipeline([getChip('battery')]);
-    assert.strictEqual(result.finalDamage, 105); // 100 + 5
+    // PWR 8, BW 0 → Damage = 8 × (1 + 0) = 8
+    assert.strictEqual(result.powerPool, 8);
+    assert.strictEqual(result.bandwidthPool, 0);
+    assert.strictEqual(result.finalDamage, 8);
   });
 });
 
@@ -76,25 +84,27 @@ describe('Clock Bot', () => {
 
   it('should restart pipeline when triggered', () => {
     // Mock Math.random for trigger chance checks
-    // Each chip calls Math.random() once for trigger check
     const originalRandom = Math.random;
     let callCount = 0;
     Math.random = () => {
       callCount++;
-      // Call 1: battery (triggerChance 1.0, any value works)
-      // Call 2: clock (triggerChance 0.07, need < 0.07 to trigger)
-      // Call 3: battery again after restart
-      // Call 4: clock again (need >= 0.07 to NOT trigger)
-      if (callCount === 2) return 0.05; // Trigger clock
-      if (callCount === 4) return 0.99; // Don't trigger clock
-      return 0.5; // Default for other chips
+      // Battery type=none returns early without calling Math.random
+      // Call 1: clock (triggerChance 0.07, need < 0.07 to trigger)
+      // After restart: battery skips random, clock gets call 2
+      // Call 2: clock again (need >= 0.07 to NOT trigger)
+      if (callCount === 1) return 0.05; // Trigger clock first time
+      return 0.99; // Don't trigger clock second time
     };
 
     try {
       const result = runPipeline([getChip('battery'), getChip('clock')]);
-      // With clock: battery(105) -> clock triggers -> battery(110) -> clock fails
+      // Battery PWR 8, BW 0 + Clock PWR 0, BW 0 = PWR 8, BW 0
+      // Stats are summed only in first pass, so recursion doesn't add more stats
+      // Damage = 8 × (1 + 0) = 8
       assert.strictEqual(result.recursionCount, 1);
-      assert.strictEqual(result.finalDamage, 110); // 100 + 5 + 5
+      assert.strictEqual(result.powerPool, 8);
+      assert.strictEqual(result.bandwidthPool, 0);
+      assert.strictEqual(result.finalDamage, 8);
     } finally {
       Math.random = originalRandom;
     }
@@ -107,8 +117,11 @@ describe('Clock Bot', () => {
     try {
       const result = runPipeline([getChip('battery'), getChip('clock')]);
       assert.strictEqual(result.recursionCount, 10);
-      // 11 passes through battery: 100 + (5 * 11) = 155
-      assert.strictEqual(result.finalDamage, 155);
+      // Battery PWR 8, BW 0 + Clock PWR 0, BW 0 = PWR 8, BW 0
+      // Stats only summed once, recursion restarts effects only
+      // Damage = 8 × 1 = 8
+      assert.strictEqual(result.powerPool, 8);
+      assert.strictEqual(result.finalDamage, 8);
     } finally {
       Math.random = originalRandom;
     }
@@ -116,9 +129,15 @@ describe('Clock Bot', () => {
 });
 
 describe('Charcoal Bot', () => {
-  it('should multiply damage by 5', () => {
+  it('should multiply both pools (×3 PWR, ×2 BW)', () => {
     const result = runPipeline([getChip('charcoal')]);
-    assert.strictEqual(result.finalDamage, 500); // 100 * 5
+    // PWR 5, BW 2 (base stats)
+    // Effect: ×3 PWR, ×2 BW
+    // PWR = 5 × 3 = 15, BW = 2 × 2 = 4
+    // Damage = 15 × (1 + 4) = 75
+    assert.strictEqual(result.powerPool, 15);
+    assert.strictEqual(result.bandwidthPool, 4);
+    assert.strictEqual(result.finalDamage, 75);
   });
 
   it('should mark chip as sacrificed', () => {
@@ -128,8 +147,15 @@ describe('Charcoal Bot', () => {
 
   it('should work with other chips in pipeline', () => {
     const result = runPipeline([getChip('battery'), getChip('charcoal')]);
-    // 100 + 5 = 105, then 105 * 5 = 525
-    assert.strictEqual(result.finalDamage, 525);
+    // Battery: PWR 8, BW 0
+    // Charcoal: PWR 5, BW 2
+    // Total base: PWR 13, BW 2
+    // Charcoal effect: ×3 PWR, ×2 BW
+    // PWR = 13 × 3 = 39, BW = 2 × 2 = 4
+    // Damage = 39 × (1 + 4) = 195
+    assert.strictEqual(result.powerPool, 39);
+    assert.strictEqual(result.bandwidthPool, 4);
+    assert.strictEqual(result.finalDamage, 195);
     assert.deepStrictEqual(result.sacrificedChips, ['charcoal']);
   });
 
@@ -140,17 +166,22 @@ describe('Charcoal Bot', () => {
       callCount++;
       // Call 1: charcoal (triggerChance 1.0)
       // Call 2: clock (triggerChance 0.07, need < 0.07 to trigger)
-      // Call 3: clock again after restart (need >= 0.07 to stop)
+      // Call 3: charcoal after restart - skipped because sacrificed
+      // Call 4: clock again (need >= 0.07 to stop)
       if (callCount === 2) return 0.05; // Trigger clock
       return 0.99; // Default
     };
 
     try {
       const result = runPipeline([getChip('charcoal'), getChip('clock')]);
-      // First pass: charcoal(500) -> clock triggers
-      // Second pass: charcoal skipped (already destroyed) -> clock fails
-      // Sacrifice should only apply once
-      assert.strictEqual(result.finalDamage, 500);
+      // Charcoal: PWR 5, BW 2
+      // Clock: PWR 0, BW 0
+      // Total: PWR 5, BW 2
+      // Charcoal fires: ×3 PWR, ×2 BW → PWR 15, BW 4
+      // Clock triggers recursion
+      // Charcoal skipped (already sacrificed), clock doesn't trigger again
+      // Damage = 15 × 5 = 75
+      assert.strictEqual(result.finalDamage, 75);
       assert.strictEqual(result.recursionCount, 1);
     } finally {
       Math.random = originalRandom;
@@ -164,40 +195,56 @@ describe('Book Bot', () => {
     assert.strictEqual(chip.effects.pipeline.triggerChance, 0.25);
   });
 
-  it('should stack damage across attacks in same combat', () => {
+  it('should stack bandwidth across attacks in same combat', () => {
     const originalRandom = Math.random;
     Math.random = () => 0.1; // Always trigger (< 0.25)
 
     try {
       const combatStacks = {};
 
-      // First attack
+      // First attack - Book: PWR 0, BW 1 base, +1 BW from effect (stack 1)
       const result1 = runPipeline([getChip('book')], { combatStacks });
-      assert.strictEqual(result1.finalDamage, 102); // 100 + 2*1
+      // PWR 0, BW 1 (base) + 1 (effect) = BW 2
+      // Damage = 0 × (1 + 2) = 0
+      assert.strictEqual(result1.powerPool, 0);
+      assert.strictEqual(result1.bandwidthPool, 2);
+      assert.strictEqual(result1.finalDamage, 0);
 
       // Second attack (use updated stacks)
       const result2 = runPipeline([getChip('book')], {
         combatStacks: result1.combatStacks
       });
-      assert.strictEqual(result2.finalDamage, 104); // 100 + 2*2
+      // PWR 0, BW 1 (base) + 2 (effect, stack=2) = BW 3
+      // Damage = 0 × (1 + 3) = 0
+      assert.strictEqual(result2.powerPool, 0);
+      assert.strictEqual(result2.bandwidthPool, 3);
+      assert.strictEqual(result2.finalDamage, 0);
 
       // Third attack
       const result3 = runPipeline([getChip('book')], {
         combatStacks: result2.combatStacks
       });
-      assert.strictEqual(result3.finalDamage, 106); // 100 + 2*3
+      // PWR 0, BW 1 (base) + 3 (effect, stack=3) = BW 4
+      // Damage = 0 × (1 + 4) = 0
+      assert.strictEqual(result3.powerPool, 0);
+      assert.strictEqual(result3.bandwidthPool, 4);
+      assert.strictEqual(result3.finalDamage, 0);
     } finally {
       Math.random = originalRandom;
     }
   });
 
-  it('should not add damage when trigger fails', () => {
+  it('should not add bandwidth when trigger fails', () => {
     const originalRandom = Math.random;
     Math.random = () => 0.5; // Doesn't trigger (>= 0.25)
 
     try {
       const result = runPipeline([getChip('book')]);
-      assert.strictEqual(result.finalDamage, 100); // No change
+      // PWR 0, BW 1 (base only, effect didn't trigger)
+      // Damage = 0 × (1 + 1) = 0
+      assert.strictEqual(result.powerPool, 0);
+      assert.strictEqual(result.bandwidthPool, 1);
+      assert.strictEqual(result.finalDamage, 0);
     } finally {
       Math.random = originalRandom;
     }
@@ -205,20 +252,28 @@ describe('Book Bot', () => {
 });
 
 describe('Eraser Bot', () => {
-  it('should add +10 damage with 2+ empty slots', () => {
+  it('should add +12 PWR +2 BW with 2+ empty slots', () => {
     const result = runPipeline([getChip('eraser')], {
       weaponMaxSlots: 5,
       weaponUsedSlots: 1 // 4 empty slots
     });
-    assert.strictEqual(result.finalDamage, 110); // 100 + 10
+    // PWR 0, BW 0 (base) + 12 PWR, +2 BW (effect)
+    // Damage = 12 × (1 + 2) = 36
+    assert.strictEqual(result.powerPool, 12);
+    assert.strictEqual(result.bandwidthPool, 2);
+    assert.strictEqual(result.finalDamage, 36);
   });
 
-  it('should add +10 damage with exactly 2 empty slots', () => {
+  it('should add +12 PWR +2 BW with exactly 2 empty slots', () => {
     const result = runPipeline([getChip('eraser')], {
       weaponMaxSlots: 5,
       weaponUsedSlots: 3 // 2 empty slots
     });
-    assert.strictEqual(result.finalDamage, 110);
+    // PWR 0, BW 0 (base) + 12 PWR, +2 BW (effect)
+    // Damage = 12 × (1 + 2) = 36
+    assert.strictEqual(result.powerPool, 12);
+    assert.strictEqual(result.bandwidthPool, 2);
+    assert.strictEqual(result.finalDamage, 36);
   });
 
   it('should NOT trigger with only 1 empty slot', () => {
@@ -226,7 +281,11 @@ describe('Eraser Bot', () => {
       weaponMaxSlots: 5,
       weaponUsedSlots: 4 // 1 empty slot
     });
-    assert.strictEqual(result.finalDamage, 100); // No bonus
+    // PWR 0, BW 0 (base only, effect didn't trigger)
+    // Damage = 0 × 1 = 0
+    assert.strictEqual(result.powerPool, 0);
+    assert.strictEqual(result.bandwidthPool, 0);
+    assert.strictEqual(result.finalDamage, 0);
     assert.strictEqual(result.firedChips[0].triggered, false);
     assert.strictEqual(result.firedChips[0].conditionFailed, true);
   });
@@ -236,97 +295,152 @@ describe('Eraser Bot', () => {
       weaponMaxSlots: 5,
       weaponUsedSlots: 5 // 0 empty slots
     });
-    assert.strictEqual(result.finalDamage, 100);
+    // PWR 0, BW 0
+    // Damage = 0 × 1 = 0
+    assert.strictEqual(result.powerPool, 0);
+    assert.strictEqual(result.bandwidthPool, 0);
+    assert.strictEqual(result.finalDamage, 0);
   });
 });
 
 describe('Onigiri Bot', () => {
-  it('should add +5 damage and heal 5 HP', () => {
+  it('should provide power and heal 5 HP', () => {
     const result = runPipeline([getChip('onigiri')]);
-    assert.strictEqual(result.finalDamage, 105);
+    // PWR 6, BW 0 (stats) + heal 5 (effect)
+    // Damage = 6 × 1 = 6
+    assert.strictEqual(result.powerPool, 6);
+    assert.strictEqual(result.bandwidthPool, 0);
+    assert.strictEqual(result.finalDamage, 6);
     assert.strictEqual(result.healPlayer, 5);
   });
 
   it('should stack healing with multiple chips', () => {
     const result = runPipeline([getChip('onigiri'), getChip('onigiri')]);
-    assert.strictEqual(result.finalDamage, 110); // 100 + 5 + 5
-    assert.strictEqual(result.healPlayer, 10); // 5 + 5
-  });
-});
-
-describe('Wallet Bot', () => {
-  it('should add +1 damage per kill', () => {
-    const result = runPipeline([getChip('wallet')], { runKills: 10 });
-    assert.strictEqual(result.finalDamage, 110); // 100 + 10
-  });
-
-  it('should add 0 damage with no kills', () => {
-    const result = runPipeline([getChip('wallet')], { runKills: 0 });
-    assert.strictEqual(result.finalDamage, 100);
-  });
-
-  it('should scale infinitely with kills', () => {
-    const result = runPipeline([getChip('wallet')], { runKills: 100 });
-    assert.strictEqual(result.finalDamage, 200); // 100 + 100
-  });
-});
-
-describe('Straw Bot', () => {
-  it('should reduce damage by 2 and heal 10 HP', () => {
-    const result = runPipeline([getChip('straw')]);
-    assert.strictEqual(result.finalDamage, 98); // 100 - 2
+    // PWR 6 + 6 = 12, BW 0 + heal 5 + 5 = 10
+    // Damage = 12 × 1 = 12
+    assert.strictEqual(result.powerPool, 12);
+    assert.strictEqual(result.bandwidthPool, 0);
+    assert.strictEqual(result.finalDamage, 12);
     assert.strictEqual(result.healPlayer, 10);
   });
 });
 
+describe('Wallet Bot', () => {
+  it('should add +0.5 PWR per kill', () => {
+    const result = runPipeline([getChip('wallet')], { runKills: 10 });
+    // PWR 2 (base) + 0.5 × 10 = 7, BW 0
+    // Damage = 7 × 1 = 7
+    assert.strictEqual(result.powerPool, 7);
+    assert.strictEqual(result.bandwidthPool, 0);
+    assert.strictEqual(result.finalDamage, 7);
+  });
+
+  it('should add base power with no kills', () => {
+    const result = runPipeline([getChip('wallet')], { runKills: 0 });
+    // PWR 2 (base) + 0.5 × 0 = 2, BW 0
+    // Damage = 2 × 1 = 2
+    assert.strictEqual(result.powerPool, 2);
+    assert.strictEqual(result.bandwidthPool, 0);
+    assert.strictEqual(result.finalDamage, 2);
+  });
+
+  it('should scale infinitely with kills', () => {
+    const result = runPipeline([getChip('wallet')], { runKills: 100 });
+    // PWR 2 (base) + 0.5 × 100 = 52, BW 0
+    // Damage = 52 × 1 = 52
+    assert.strictEqual(result.powerPool, 52);
+    assert.strictEqual(result.bandwidthPool, 0);
+    assert.strictEqual(result.finalDamage, 52);
+  });
+});
+
+describe('Straw Bot', () => {
+  it('should have negative power but add bandwidth and heal', () => {
+    const result = runPipeline([getChip('straw')]);
+    // PWR -3 (base), BW 0 (base) + 0.2 (effect) = BW 0.2
+    // Damage = -3 × (1 + 0.2) = -3.6 → floor = -4
+    assert.strictEqual(result.powerPool, -3);
+    assert.strictEqual(result.bandwidthPool, 0.2);
+    assert.strictEqual(result.finalDamage, -4);
+    assert.strictEqual(result.healPlayer, 12);
+  });
+});
+
 describe('Key Bot', () => {
-  it('should multiply damage by 1.25 against bosses', () => {
+  it('should multiply bandwidth by 1.5 against bosses', () => {
     const result = runPipeline([getChip('key')], {
       target: { isBoss: true, hp: 1000, maxHp: 1000 }
     });
-    assert.strictEqual(result.finalDamage, 125); // 100 * 1.25
+    // PWR 2, BW 1 (base)
+    // Effect: ×1.5 BW vs boss → BW 1 × 1.5 = 1.5
+    // Damage = 2 × (1 + 1.5) = 5
+    assert.strictEqual(result.powerPool, 2);
+    assert.strictEqual(result.bandwidthPool, 1.5);
+    assert.strictEqual(result.finalDamage, 5);
   });
 
-  it('should NOT affect damage against non-bosses', () => {
+  it('should NOT affect bandwidth against non-bosses', () => {
     const result = runPipeline([getChip('key')], {
       target: { isBoss: false, hp: 500, maxHp: 500 }
     });
-    assert.strictEqual(result.finalDamage, 100); // No change
+    // PWR 2, BW 1 (base only, effect didn't trigger)
+    // Damage = 2 × (1 + 1) = 4
+    assert.strictEqual(result.powerPool, 2);
+    assert.strictEqual(result.bandwidthPool, 1);
+    assert.strictEqual(result.finalDamage, 4);
     assert.strictEqual(result.firedChips[0].triggered, false);
     assert.strictEqual(result.firedChips[0].conditionFailed, true);
   });
 });
 
 describe('Egg Bot', () => {
-  it('should be x1 multiplier with no destroyed chips', () => {
+  it('should provide base bandwidth with no destroyed chips', () => {
     const result = runPipeline([getChip('egg')], { runChipsDestroyed: 0 });
-    assert.strictEqual(result.finalDamage, 100); // 100 * 1
+    // PWR 0, BW 1 (base) + 0 (0 destroyed) = BW 1
+    // Damage = 0 × (1 + 1) = 0
+    assert.strictEqual(result.powerPool, 0);
+    assert.strictEqual(result.bandwidthPool, 1);
+    assert.strictEqual(result.finalDamage, 0);
   });
 
-  it('should gain +0.5x per destroyed chip', () => {
+  it('should gain +1 BW per destroyed chip', () => {
     const result = runPipeline([getChip('egg')], { runChipsDestroyed: 3 });
-    assert.strictEqual(result.finalDamage, 250); // 100 * (1 + 0.5*3) = 100 * 2.5
+    // PWR 0, BW 1 (base) + 0 + 1×3 = BW 4
+    // Damage = 0 × (1 + 4) = 0
+    assert.strictEqual(result.powerPool, 0);
+    assert.strictEqual(result.bandwidthPool, 4);
+    assert.strictEqual(result.finalDamage, 0);
   });
 
   it('should synergize with Sacrifice chip', () => {
-    // Simulate: charcoal destroyed first, then egg fires
+    // Charcoal + Egg combo
     const result = runPipeline([getChip('charcoal'), getChip('egg')], {
       runChipsDestroyed: 1 // Already have 1 destroyed from earlier
     });
-    // charcoal: 100 * 5 = 500
-    // egg: 500 * (1 + 0.5*1) = 500 * 1.5 = 750
-    assert.strictEqual(result.finalDamage, 750);
+    // Charcoal: PWR 5, BW 2
+    // Egg: PWR 0, BW 1
+    // Total base: PWR 5, BW 3
+    // Charcoal effect: ×3 PWR, ×2 BW → PWR 15, BW 6
+    // Egg effect: +0 + 1×1 = +1 BW → BW 7
+    // Damage = 15 × (1 + 7) = 120
+    assert.strictEqual(result.powerPool, 15);
+    assert.strictEqual(result.bandwidthPool, 7);
+    assert.strictEqual(result.finalDamage, 120);
   });
 });
 
 describe('Fireworks Bot', () => {
-  it('should add +15 damage', () => {
+  it('should provide power and bandwidth', () => {
     const originalRandom = Math.random;
     Math.random = () => 0.5; // Don't trigger destruction
 
     try {
       const result = runPipeline([getChip('fireworks')]);
-      assert.strictEqual(result.finalDamage, 115); // 100 + 15
+      // PWR 15, BW 1 (stats only, effect is meta)
+      // Damage = 15 × (1 + 1) = 30
+      assert.strictEqual(result.powerPool, 15);
+      assert.strictEqual(result.bandwidthPool, 1);
+      assert.strictEqual(result.finalDamage, 30);
       assert.strictEqual(result.randomDestroyTriggered, false);
     } finally {
       Math.random = originalRandom;
@@ -335,11 +449,20 @@ describe('Fireworks Bot', () => {
 
   it('should trigger random destruction 10% of the time', () => {
     const originalRandom = Math.random;
-    Math.random = () => 0.05; // Trigger destruction (< 0.10)
+    let callCount = 0;
+    Math.random = () => {
+      callCount++;
+      // First call is trigger check (1.0 chance, always passes)
+      // Second call is destroy chance check (need < 0.1)
+      if (callCount === 2) return 0.05;
+      return 0.99;
+    };
 
     try {
       const result = runPipeline([getChip('fireworks')]);
-      assert.strictEqual(result.finalDamage, 115);
+      // PWR 15, BW 1
+      // Damage = 15 × 2 = 30
+      assert.strictEqual(result.finalDamage, 30);
       assert.strictEqual(result.randomDestroyTriggered, true);
     } finally {
       Math.random = originalRandom;
@@ -348,12 +471,18 @@ describe('Fireworks Bot', () => {
 });
 
 describe('Mirror Bot', () => {
-  it('should copy previous flat damage chip', () => {
+  it('should copy previous chip pool modifiers', () => {
     const result = runPipeline([getChip('battery'), getChip('mirror')]);
-    // battery: 100 + 5 = 105
-    // mirror copies +5: 105 + 5 = 110
-    assert.strictEqual(result.finalDamage, 110);
-    assert.strictEqual(result.firedChips[1].copied, true);
+    // Battery: PWR 8, BW 0 (stat stick, no pool mods)
+    // Mirror: PWR 0, BW 0
+    // Total base: PWR 8, BW 0
+    // Battery effect: type=none (doesn't set lastChipEffect)
+    // Mirror effect: copy - but battery has no lastChipEffect to copy
+    // So mirror fails (noPreviousChip)
+    // Damage = 8 × 1 = 8
+    assert.strictEqual(result.powerPool, 8);
+    assert.strictEqual(result.bandwidthPool, 0);
+    assert.strictEqual(result.finalDamage, 8);
   });
 
   it('should copy previous multiplier chip', () => {
@@ -362,9 +491,15 @@ describe('Mirror Bot', () => {
 
     try {
       const result = runPipeline([getChip('speaker'), getChip('mirror')]);
-      // speaker: 100 * 1.3 = 130
-      // mirror copies x1.3: 130 * 1.3 = 169
-      assert.strictEqual(result.finalDamage, 169);
+      // Speaker: PWR 0, BW 2
+      // Mirror: PWR 0, BW 0
+      // Total base: PWR 0, BW 2
+      // Speaker effect: ×1.2 BW → BW 2 × 1.2 = 2.4
+      // Mirror copies ×1.2 BW → BW 2.4 × 1.2 = 2.88
+      // Damage = 0 × (1 + 2.88) = 0
+      assert.strictEqual(result.powerPool, 0);
+      assert.ok(Math.abs(result.bandwidthPool - 2.88) < 0.01);
+      assert.strictEqual(result.finalDamage, 0);
     } finally {
       Math.random = originalRandom;
     }
@@ -372,27 +507,41 @@ describe('Mirror Bot', () => {
 
   it('should fail if first in pipeline', () => {
     const result = runPipeline([getChip('mirror')]);
-    assert.strictEqual(result.finalDamage, 100); // No change
+    // PWR 0, BW 0 (no effect fires)
+    // Damage = 0 × 1 = 0
+    assert.strictEqual(result.powerPool, 0);
+    assert.strictEqual(result.bandwidthPool, 0);
+    assert.strictEqual(result.finalDamage, 0);
     assert.strictEqual(result.firedChips[0].triggered, false);
     assert.strictEqual(result.firedChips[0].noPreviousChip, true);
   });
 
   it('should copy onigiri heal effect', () => {
     const result = runPipeline([getChip('onigiri'), getChip('mirror')]);
-    // onigiri: 100 + 5 = 105, heal 5
-    // mirror copies +5 and heal 5: 105 + 5 = 110, heal 5
-    assert.strictEqual(result.finalDamage, 110);
+    // Onigiri: PWR 6, BW 0, heal 5
+    // Mirror: PWR 0, BW 0
+    // Total base: PWR 6, BW 0
+    // Onigiri effect: heal 5 (sets lastChipEffect with healPlayer)
+    // Mirror copies heal 5 → total heal 10
+    // Damage = 6 × 1 = 6
+    assert.strictEqual(result.powerPool, 6);
+    assert.strictEqual(result.bandwidthPool, 0);
+    assert.strictEqual(result.finalDamage, 6);
     assert.strictEqual(result.healPlayer, 10); // 5 + 5
   });
 });
 
 describe('Feather Bot', () => {
-  it('should add +4 damage per empty slot', () => {
+  it('should add +3 PWR +0.5 BW per empty slot', () => {
     const result = runPipeline([getChip('feather')], {
       weaponMaxSlots: 5,
       weaponUsedSlots: 1 // 4 empty slots
     });
-    assert.strictEqual(result.finalDamage, 116); // 100 + (4 * 4)
+    // PWR 0, BW 0 (base) + 3×4=12 PWR, 0.5×4=2 BW
+    // Damage = 12 × (1 + 2) = 36
+    assert.strictEqual(result.powerPool, 12);
+    assert.strictEqual(result.bandwidthPool, 2);
+    assert.strictEqual(result.finalDamage, 36);
   });
 
   it('should add 0 damage with no empty slots', () => {
@@ -400,7 +549,11 @@ describe('Feather Bot', () => {
       weaponMaxSlots: 5,
       weaponUsedSlots: 5 // 0 empty slots
     });
-    assert.strictEqual(result.finalDamage, 100);
+    // PWR 0, BW 0 (base) + 3×0=0 PWR, 0.5×0=0 BW
+    // Damage = 0 × 1 = 0
+    assert.strictEqual(result.powerPool, 0);
+    assert.strictEqual(result.bandwidthPool, 0);
+    assert.strictEqual(result.finalDamage, 0);
   });
 
   it('should scale with more empty slots', () => {
@@ -408,7 +561,11 @@ describe('Feather Bot', () => {
       weaponMaxSlots: 5,
       weaponUsedSlots: 2 // 3 empty slots
     });
-    assert.strictEqual(result.finalDamage, 112); // 100 + (4 * 3)
+    // PWR 0, BW 0 (base) + 3×3=9 PWR, 0.5×3=1.5 BW
+    // Damage = 9 × (1 + 1.5) = 22.5 → floor = 22
+    assert.strictEqual(result.powerPool, 9);
+    assert.strictEqual(result.bandwidthPool, 1.5);
+    assert.strictEqual(result.finalDamage, 22);
   });
 });
 
@@ -419,7 +576,12 @@ describe('Drum Bot', () => {
     // Attacks 1-4: charging
     for (let i = 1; i <= 4; i++) {
       const result = runPipeline([getChip('drum')], { combatStacks });
-      assert.strictEqual(result.finalDamage, 100, `Attack ${i} should not burst`);
+      // PWR 4, BW 0 (base)
+      // Effect: charging (no mult until 5th)
+      // Damage = 4 × 1 = 4
+      assert.strictEqual(result.powerPool, 4);
+      assert.strictEqual(result.bandwidthPool, 0);
+      assert.strictEqual(result.finalDamage, 4, `Attack ${i} should not burst`);
       assert.strictEqual(result.firedChips[0].charging, true);
       assert.strictEqual(result.firedChips[0].untilBurst, 5 - i);
       Object.assign(combatStacks, result.combatStacks);
@@ -427,7 +589,13 @@ describe('Drum Bot', () => {
 
     // Attack 5: BURST!
     const result5 = runPipeline([getChip('drum')], { combatStacks });
-    assert.strictEqual(result5.finalDamage, 250); // 100 * 2.5
+    // PWR 4, BW 0 (base)
+    // Effect: ×2 BW → BW 0 × 2 = 0
+    // Damage = 4 × (1 + 0) = 4 (BW was 0, mult doesn't help)
+    // Note: Drum's burst multiplies BW, but with 0 BW it stays 0
+    assert.strictEqual(result5.powerPool, 4);
+    assert.strictEqual(result5.bandwidthPool, 0);
+    assert.strictEqual(result5.finalDamage, 4);
     assert.strictEqual(result5.firedChips[0].burstAttack, true);
   });
 
@@ -440,7 +608,11 @@ describe('Drum Bot', () => {
       Object.assign(combatStacks, lastResult.combatStacks);
     }
 
-    assert.strictEqual(lastResult.finalDamage, 250); // 100 * 2.5
+    // PWR 4, BW 0 (base), ×2 BW = 0
+    // Damage = 4 × 1 = 4
+    assert.strictEqual(lastResult.powerPool, 4);
+    assert.strictEqual(lastResult.bandwidthPool, 0);
+    assert.strictEqual(lastResult.finalDamage, 4);
     assert.strictEqual(lastResult.firedChips[0].burstAttack, true);
   });
 });
@@ -456,10 +628,16 @@ describe('Complex Pipeline Combinations', () => {
         getChip('speaker'),
         getChip('charcoal')
       ]);
-      // battery: 100 + 5 = 105 (floor = 105)
-      // speaker: 105 * 1.3 = 136.5 (floor = 136)
-      // charcoal: 136 * 5 = 680 (floor = 680)
-      assert.strictEqual(result.finalDamage, 680);
+      // Battery: PWR 8, BW 0
+      // Speaker: PWR 0, BW 2
+      // Charcoal: PWR 5, BW 2
+      // Total base: PWR 13, BW 4
+      // Speaker effect: ×1.2 BW → BW 4 × 1.2 = 4.8
+      // Charcoal effect: ×3 PWR, ×2 BW → PWR 13 × 3 = 39, BW 4.8 × 2 = 9.6
+      // Damage = 39 × (1 + 9.6) = 413.4 → floor = 413
+      assert.strictEqual(result.powerPool, 39);
+      assert.ok(Math.abs(result.bandwidthPool - 9.6) < 0.01);
+      assert.strictEqual(result.finalDamage, 413);
     } finally {
       Math.random = originalRandom;
     }
@@ -467,10 +645,16 @@ describe('Complex Pipeline Combinations', () => {
 
   it('should handle onigiri -> straw healing stack', () => {
     const result = runPipeline([getChip('onigiri'), getChip('straw')]);
-    // onigiri: 100 + 5 = 105, heal 5
-    // straw: 105 - 2 = 103, heal 10
-    assert.strictEqual(result.finalDamage, 103);
-    assert.strictEqual(result.healPlayer, 15); // 5 + 10
+    // Onigiri: PWR 6, BW 0, heal 5
+    // Straw: PWR -3, BW 0
+    // Total base: PWR 3, BW 0
+    // Straw effect: +0.2 BW, heal 12
+    // BW = 0 + 0.2 = 0.2
+    // Damage = 3 × (1 + 0.2) = 3.6 → floor = 3
+    assert.strictEqual(result.powerPool, 3);
+    assert.strictEqual(result.bandwidthPool, 0.2);
+    assert.strictEqual(result.finalDamage, 3);
+    assert.strictEqual(result.healPlayer, 17); // 5 + 12
   });
 
   it('should handle eraser + feather empty slot synergy', () => {
@@ -478,9 +662,15 @@ describe('Complex Pipeline Combinations', () => {
       weaponMaxSlots: 5,
       weaponUsedSlots: 2 // 3 empty slots (eraser needs 2+)
     });
-    // eraser: 100 + 10 = 110
-    // feather: 110 + (4 * 3) = 122
-    assert.strictEqual(result.finalDamage, 122);
+    // Eraser: PWR 0, BW 0
+    // Feather: PWR 0, BW 0
+    // Total base: PWR 0, BW 0
+    // Eraser effect: +12 PWR, +2 BW → PWR 12, BW 2
+    // Feather effect: +3×3=9 PWR, +0.5×3=1.5 BW → PWR 21, BW 3.5
+    // Damage = 21 × (1 + 3.5) = 94.5 → floor = 94
+    assert.strictEqual(result.powerPool, 21);
+    assert.strictEqual(result.bandwidthPool, 3.5);
+    assert.strictEqual(result.finalDamage, 94);
   });
 
   it('should handle wallet + egg scaling', () => {
@@ -488,9 +678,15 @@ describe('Complex Pipeline Combinations', () => {
       runKills: 50,
       runChipsDestroyed: 2
     });
-    // wallet: 100 + 50 = 150
-    // egg: 150 * (1 + 0.5*2) = 150 * 2 = 300
-    assert.strictEqual(result.finalDamage, 300);
+    // Wallet: PWR 2, BW 0
+    // Egg: PWR 0, BW 1
+    // Total base: PWR 2, BW 1
+    // Wallet effect: +0.5×50=25 PWR → PWR 27
+    // Egg effect: +0+1×2=2 BW → BW 3
+    // Damage = 27 × (1 + 3) = 108
+    assert.strictEqual(result.powerPool, 27);
+    assert.strictEqual(result.bandwidthPool, 3);
+    assert.strictEqual(result.finalDamage, 108);
   });
 
   it('should handle mirror after clock restart', () => {
@@ -498,20 +694,33 @@ describe('Complex Pipeline Combinations', () => {
     let calls = 0;
     Math.random = () => {
       calls++;
-      // First clock check triggers, second doesn't
-      return calls === 2 ? 0.01 : 0.99;
+      // Battery type=none skips Math.random
+      // Call 1: clock (need < 0.07 to trigger)
+      // Call 2: mirror (triggerChance 1.0, always triggers)
+      // After restart:
+      // Battery skips, Call 3: clock (need >= 0.07 to not trigger)
+      // Call 4: mirror again
+      if (calls === 1) return 0.01; // Trigger clock first time
+      return 0.99; // Don't trigger clock second time, mirror always triggers
     };
 
     try {
       const result = runPipeline([
-        getChip('battery'),    // +5
-        getChip('clock'),    // restart once
-        getChip('mirror')       // copies battery
+        getChip('battery'),    // stat stick
+        getChip('clock'),      // restart once
+        getChip('mirror')      // copies nothing (battery is stat stick)
       ]);
-      // Pass 1: battery(105) -> clock triggers -> restart
-      // Pass 2: battery(110) -> clock fails -> mirror copies battery(115)
+      // Battery: PWR 8, BW 0
+      // Clock: PWR 0, BW 0
+      // Mirror: PWR 0, BW 0
+      // Total base: PWR 8, BW 0
+      // Pass 1: battery (no lastChipEffect) -> clock triggers -> restart
+      // Pass 2: battery (no lastChipEffect) -> clock fails -> mirror has nothing to copy
+      // Damage = 8 × 1 = 8
       assert.strictEqual(result.recursionCount, 1);
-      assert.strictEqual(result.finalDamage, 115);
+      assert.strictEqual(result.powerPool, 8);
+      assert.strictEqual(result.bandwidthPool, 0);
+      assert.strictEqual(result.finalDamage, 8);
     } finally {
       Math.random = originalRandom;
     }
@@ -521,7 +730,11 @@ describe('Complex Pipeline Combinations', () => {
 describe('Edge Cases', () => {
   it('should handle empty pipeline', () => {
     const result = runPipeline([]);
-    assert.strictEqual(result.finalDamage, 100);
+    // No chips, no stats
+    // Damage = 0 × 1 = 0
+    assert.strictEqual(result.powerPool, 0);
+    assert.strictEqual(result.bandwidthPool, 0);
+    assert.strictEqual(result.finalDamage, 0);
     assert.deepStrictEqual(result.firedChips, []);
   });
 
@@ -529,14 +742,22 @@ describe('Edge Cases', () => {
     // Create a fake non-pipeline chip
     const fakeChip = { id: 'fake', category: 'stat', effects: {} };
     const result = runPipeline([fakeChip, getChip('battery')]);
-    assert.strictEqual(result.finalDamage, 105);
+    // Only battery stats counted (fake chip is not pipeline)
+    // PWR 8, BW 0
+    // Damage = 8 × 1 = 8
+    assert.strictEqual(result.powerPool, 8);
+    assert.strictEqual(result.bandwidthPool, 0);
+    assert.strictEqual(result.finalDamage, 8);
     assert.strictEqual(result.firedChips[0].skipped, true);
     assert.strictEqual(result.firedChips[0].notPipeline, true);
   });
 
-  it('should handle 0 base damage', () => {
+  it('should handle baseDamage: 0 correctly (dual-pool mode)', () => {
     const result = runPipeline([getChip('battery')], { baseDamage: 0 });
-    assert.strictEqual(result.finalDamage, 5);
+    // PWR 8, BW 0
+    // Damage = 8 × 1 = 8
+    assert.strictEqual(result.powerPool, 8);
+    assert.strictEqual(result.finalDamage, 8);
   });
 
   it('should handle very high damage scaling', () => {
@@ -545,16 +766,19 @@ describe('Edge Cases', () => {
 
     try {
       const result = runPipeline([
-        getChip('battery'),
-        getChip('speaker'),
-        getChip('lightbulb'),
-        getChip('charcoal')
-      ], { baseDamage: 1000 });
-      // battery: 1000 + 5 = 1005 (floor = 1005)
-      // speaker: 1005 * 1.3 = 1306.5 (floor = 1306)
-      // lightbulb: 1306 * 1.6 = 2089.6 (floor = 2089)
-      // charcoal: 2089 * 5 = 10445 (floor = 10445)
-      assert.strictEqual(result.finalDamage, 10445);
+        getChip('battery'),    // PWR 8, BW 0
+        getChip('speaker'),    // PWR 0, BW 2
+        getChip('lightbulb'),  // PWR 2, BW 1
+        getChip('charcoal')    // PWR 5, BW 2
+      ]);
+      // Total base: PWR 8+0+2+5=15, BW 0+2+1+2=5
+      // Speaker: ×1.2 BW → BW 5 × 1.2 = 6
+      // Lightbulb: ×1.5 BW → BW 6 × 1.5 = 9
+      // Charcoal: ×3 PWR, ×2 BW → PWR 15 × 3 = 45, BW 9 × 2 = 18
+      // Damage = 45 × (1 + 18) = 855
+      assert.strictEqual(result.powerPool, 45);
+      assert.strictEqual(result.bandwidthPool, 18);
+      assert.strictEqual(result.finalDamage, 855);
     } finally {
       Math.random = originalRandom;
     }

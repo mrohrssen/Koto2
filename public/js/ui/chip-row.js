@@ -141,15 +141,15 @@ function showPopup(index, chip, charge, maxCharges, inCombat = false) {
   const isCharged = charge >= maxCharges;
 
   const chipLevel = chip._level || 1;
-  dom.chipPopupName.textContent = `${chip.name || chip.nameEn} Lv. ${chipLevel}`;
+  dom.chipPopupName.textContent = `${chip.nameEn || chip.name} Lv. ${chipLevel}`;
   dom.chipPopupDesc.innerHTML = `
     <div class="chip-popup-section">
       <div class="chip-popup-section-label">Passive</div>
-      <div>${chip.description || chip.descriptionEn || 'No passive effect'}</div>
+      <div>${chip.descriptionEn || chip.description || 'No passive effect'}</div>
     </div>
     <div class="chip-popup-section">
-      <div class="chip-popup-section-label">Skill: ${chip.skill?.name || chip.skill?.nameEn || 'None'}</div>
-      <div>${chip.skill?.description || chip.skill?.descriptionEn || 'No skill'}</div>
+      <div class="chip-popup-section-label">Skill: ${chip.skill?.nameEn || chip.skill?.name || 'None'}</div>
+      <div>${chip.skill?.descriptionEn || chip.skill?.description || 'No skill'}</div>
     </div>
   `;
 
@@ -281,6 +281,6 @@ function getChipColor(chip) {
 
 /** Get display initial for chip icon (placeholder until art) */
 function getChipInitial(chip) {
-  const name = chip.name || chip.nameEn || '?';
+  const name = chip.nameEn || chip.name || '?';
   return name.charAt(0).toUpperCase();
 }
