@@ -11,6 +11,7 @@ import { dirname, join } from 'path';
 import { getChipLoadout, equipChip, unequipChip, reorderChips } from '../../game/items/chips.js';
 import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
 import { lookupVocabularyBatch } from '../../jpdb.js';
+import { getDiscoveryStatus } from '../../word-tracking.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -353,6 +354,21 @@ export default function createRunRoutes({
       res.json(result);
     } catch (error) {
       console.error('[Discovery] Error fetching words:', error.message);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get discovery status (daily limit tracking)
+  router.get('/discovery-status', (req, res) => {
+    try {
+      const userId = req.user?.id || 'default';
+      const settings = req.getSettings?.() || {};
+      const dailyLimit = settings.dailyWordLimit ?? 10;
+
+      const status = getDiscoveryStatus(userId, dailyLimit);
+      res.json(status);
+    } catch (error) {
+      console.error('[Discovery] Error getting status:', error.message);
       res.status(500).json({ error: error.message });
     }
   });
