@@ -74,7 +74,7 @@ export function render(chips, { charges = [], levels = [], maxCharges = 5, inCom
     const icon = document.createElement('div');
     icon.className = `chip-icon${chip ? '' : ' empty'}${isCharged ? ' charged' : ''}`;
     if (chip) {
-      icon.style.backgroundImage = `url('/assets/icons/chips/${chip.id}.png')`;
+      icon.style.backgroundImage = `url('/assets/icons/chips/${chip.id}.webp')`;
       icon.style.borderColor = getChipColor(chip);
     }
 

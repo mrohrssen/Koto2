@@ -66,7 +66,7 @@ function renderChipCard() {
   const chip = currentChips[selectedIndex];
   const skillName = chip.skill?.name || chip.skill?.nameEn || '';
   const skillDesc = chip.skill?.description || chip.skill?.descriptionEn || '';
-  const iconPath = `/assets/icons/chips/${chip.itemId || chip.id}.png`;
+  const iconPath = `/assets/icons/chips/${chip.itemId || chip.id}.webp`;
 
   // Dots indicator
   const dots = currentChips.map((_, i) =>
@@ -237,7 +237,7 @@ function showSelectedChip(chip) {
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
 
   // Show chip icon as sprite
-  const iconPath = `/assets/icons/chips/${chip.itemId || chip.id}.png`;
+  const iconPath = `/assets/icons/chips/${chip.itemId || chip.id}.webp`;
   dom.enemySprite.src = iconPath;
   dom.enemySprite.onerror = () => {
     dom.enemySprite.classList.remove('visible');

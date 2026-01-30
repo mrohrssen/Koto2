@@ -151,8 +151,8 @@ export class ExplorationService {
     this.gm.run.currentRoom = 0;
     this.gm.run.roomsExplored = 0;
 
-    // Set floor background image (floor1.png, floor2.png, etc.)
-    this.gm.run.background = `floor${this.gm.run.floor}.png`;
+    // Set floor background image (floor1.webp, floor2.webp, etc.)
+    this.gm.run.background = `floor${this.gm.run.floor}.webp`;
 
     // Mark first room as explored
     if (this.gm.run.rooms.length > 0) {
@@ -243,9 +243,9 @@ export class ExplorationService {
     this.gm.run.roomsExplored++;
     this.gm.run.stats.roomsExplored++;
 
-    // Vary background per room (floor1_1.png through floor1_5.png, cycling)
+    // Vary background per room (floor1_1.webp through floor1_5.webp, cycling)
     const bgVariant = ((this.gm.run.currentRoom - 1) % 5) + 1;
-    this.gm.run.background = `floor${this.gm.run.floor}_${bgVariant}.png`;
+    this.gm.run.background = `floor${this.gm.run.floor}_${bgVariant}.webp`;
 
     // Track room clears for counter chips
     if (this.gm.run.runStats) {

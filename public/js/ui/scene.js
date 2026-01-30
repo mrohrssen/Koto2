@@ -20,7 +20,7 @@
  * - ../dom.js: DOM element references (sceneBackground, enemySprite, etc.)
  *
  * SPRITE LOADING:
- * - Sprites load from /assets/sprites/enemies/{id}.png
+ * - Sprites load from /assets/sprites/enemies/{id}.webp
  * - Falls back to emoji placeholder based on enemy personality if load fails
  */
 
@@ -47,7 +47,7 @@ export function showEnemy(enemy) {
   updateEnemyHP(enemy.hp, enemy.maxHp);
 
   // Construct sprite path from enemy ID
-  const spritePath = enemy.sprite || `/assets/sprites/enemies/${enemy.id}.png`;
+  const spritePath = enemy.sprite || `/assets/sprites/enemies/${enemy.id}.webp`;
   dom.enemySprite.src = spritePath;
   dom.enemySprite.onerror = () => {
     // Hide broken img, show emoji placeholder instead
@@ -82,7 +82,7 @@ export function showShrineFox() {
   dom.enemyHpBar.style.display = 'none';
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
 
-  dom.enemySprite.src = '/assets/sprites/shrine_fox.png';
+  dom.enemySprite.src = '/assets/sprites/shrine_fox.webp';
   dom.enemySprite.onerror = () => {
     dom.enemySprite.classList.remove('visible');
   };
@@ -99,7 +99,7 @@ export function showQuizMaster() {
   dom.enemyHpBar.style.display = 'none';
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
 
-  dom.enemySprite.src = '/assets/sprites/quiz_master.png';
+  dom.enemySprite.src = '/assets/sprites/quiz_master.webp';
   dom.enemySprite.onerror = () => {
     dom.enemySprite.classList.remove('visible');
   };
