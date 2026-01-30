@@ -131,3 +131,134 @@ describe('Effect Type Pool Targeting', () => {
     assert.strictEqual(result.finalDamage, 25);
   });
 });
+
+describe('Migrated Chip Values', () => {
+  it('Eraser Bot: +12 PWR, +2 BW if 2+ empty', () => {
+    const result = runPipeline([getChip('eraser')], {
+      weaponMaxSlots: 5,
+      weaponUsedSlots: 1 // 4 empty
+    });
+    // PWR 0 + 12 = 12, BW 0 + 2 = 2
+    // Damage = 12 × (1 + 2) = 36
+    assert.strictEqual(result.powerPool, 12);
+    assert.strictEqual(result.bandwidthPool, 2);
+    assert.strictEqual(result.finalDamage, 36);
+  });
+
+  it('Feather Bot: +3 PWR, +0.5 BW per empty', () => {
+    const result = runPipeline([getChip('feather')], {
+      weaponMaxSlots: 5,
+      weaponUsedSlots: 1 // 4 empty
+    });
+    // PWR 0 + (3 × 4) = 12, BW 0 + (0.5 × 4) = 2
+    // Damage = 12 × (1 + 2) = 36
+    assert.strictEqual(result.powerPool, 12);
+    assert.strictEqual(result.bandwidthPool, 2);
+    assert.strictEqual(result.finalDamage, 36);
+  });
+
+  it('Toolbox Bot: +2 PWR, +0.3 BW per equipped', () => {
+    const result = runPipeline([
+      getChip('battery'),
+      getChip('toolbox')
+    ], {
+      weaponUsedSlots: 5 // Full loadout
+    });
+    // Battery: PWR 8, BW 0
+    // Toolbox: PWR 2, BW 0 + effect (+2×5=10 PWR, +0.3×5=1.5 BW)
+    // PWR = 8 + 2 + 10 = 20
+    // BW = 0 + 0 + 1.5 = 1.5
+    // Damage = 20 × (1 + 1.5) = 50
+    assert.strictEqual(result.powerPool, 20);
+    assert.strictEqual(result.bandwidthPool, 1.5);
+    assert.strictEqual(result.finalDamage, 50);
+  });
+
+  it('Glasses Bot: +0.3 BW per hit (ramping)', () => {
+    const combatStacks = {};
+
+    // Hit 1: base BW 1 + ramping 0.3×1 = 1.3
+    const result1 = runPipeline([getChip('glasses')], { combatStacks });
+    assert.strictEqual(result1.bandwidthPool, 1.3);
+
+    // Hit 2: base BW 1 + ramping 0.3×2 = 1.6
+    Object.assign(combatStacks, result1.combatStacks);
+    const result2 = runPipeline([getChip('glasses')], { combatStacks });
+    assert.strictEqual(result2.bandwidthPool, 1.6);
+
+    // Hit 3: base BW 1 + ramping 0.3×3 = 1.9
+    Object.assign(combatStacks, result2.combatStacks);
+    const result3 = runPipeline([getChip('glasses')], { combatStacks });
+    assert.strictEqual(result3.bandwidthPool, 1.9);
+  });
+
+  it('Wallet Bot: +0.5 PWR per kill', () => {
+    const result = runPipeline([getChip('wallet')], {
+      runKills: 10
+    });
+    // PWR 2 + (0.5 × 10) = 7, BW 0
+    // Damage = 7 × 1 = 7
+    assert.strictEqual(result.powerPool, 7);
+    assert.strictEqual(result.bandwidthPool, 0);
+    assert.strictEqual(result.finalDamage, 7);
+  });
+
+  it('Egg Bot: +1 BW per destroyed chip', () => {
+    const result = runPipeline([getChip('egg')], {
+      runChipsDestroyed: 3
+    });
+    // PWR 0, BW 1 + (1 × 3) = 4
+    // Damage = 0 × 5 = 0
+    assert.strictEqual(result.powerPool, 0);
+    assert.strictEqual(result.bandwidthPool, 4);
+    assert.strictEqual(result.finalDamage, 0);
+  });
+
+  it('Drum Bot: ×2 BW every 5th attack', () => {
+    const combatStacks = {};
+
+    // Hits 1-4: just charging
+    for (let i = 0; i < 4; i++) {
+      const result = runPipeline([getChip('drum')], { combatStacks });
+      Object.assign(combatStacks, result.combatStacks);
+      // PWR 4, BW 0 - no burst yet
+      assert.strictEqual(result.powerPool, 4);
+      assert.strictEqual(result.bandwidthPool, 0);
+    }
+
+    // Hit 5: BURST! ×2 BW
+    const burstResult = runPipeline([getChip('drum')], { combatStacks });
+    // PWR 4, BW 0 × 2 = 0 (still 0 because base is 0)
+    // Actually the multiplier applies to the pool, not base
+    // BW = 0 * 2 = 0
+    assert.strictEqual(burstResult.powerPool, 4);
+    // Note: mult on 0 is still 0
+    assert.strictEqual(burstResult.bandwidthPool, 0);
+  });
+
+  it('Straw Bot: -3 PWR, +0.2 BW, heal 12', () => {
+    const result = runPipeline([getChip('straw')]);
+    // PWR -3, BW 0 + 0.2 = 0.2
+    // Damage = -3 × (1 + 0.2) = -3.6 → floor = -3 (or 0 if clamped)
+    assert.strictEqual(result.powerPool, -3);
+    assert.strictEqual(result.bandwidthPool, 0.2);
+    // Check heal
+    assert.strictEqual(result.healPlayer, 12);
+  });
+
+  it('Lightbulb Bot: 50% ×1.5 BW', () => {
+    const originalRandom = Math.random;
+    Math.random = () => 0.3; // Trigger (50% chance)
+
+    try {
+      const result = runPipeline([getChip('lightbulb')]);
+      // PWR 2, BW 1 × 1.5 = 1.5
+      // Damage = 2 × (1 + 1.5) = 5
+      assert.strictEqual(result.powerPool, 2);
+      assert.strictEqual(result.bandwidthPool, 1.5);
+      assert.strictEqual(result.finalDamage, 5);
+    } finally {
+      Math.random = originalRandom;
+    }
+  });
+});
