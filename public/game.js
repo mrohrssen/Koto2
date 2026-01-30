@@ -414,6 +414,12 @@ function showGameOverModal(result) {
 
 // ============ FLASH CARD HANDLERS ============
 function handleCardSwipe(direction) {
+  // Word discovery mode uses its own handler via custom event
+  if (gameState.phase === 'wordDiscovery') {
+    document.dispatchEvent(new CustomEvent('discovery-card-swiped', { detail: direction }));
+    return;
+  }
+  // Combat mode: grade based on swipe direction
   const grade = direction === 'right' ? 4 : 1;
   wordPractice.submitSelfGradeReview(grade);
 }

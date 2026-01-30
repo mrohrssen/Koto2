@@ -38,6 +38,15 @@ let returnToHub = null;
 // Module-level guard to prevent multiple shrine clicks across re-renders
 let shrineInProgress = false;
 
+// Module-level state for word discovery (persists across gameState updates)
+// This prevents infinite narration loops when updateGameState() replaces room object
+let discoveryState = {
+  fetched: false,
+  words: [],
+  wordsLearned: 0,
+  roomId: null  // Reset when room changes
+};
+
 // API functions
 let apiGetStartingWards = null;
 let apiSelectStartingWard = null;
@@ -504,7 +513,18 @@ export async function renderWordDiscovery() {
 
   if (!room) return;
 
-  // Stage tracking on room state
+  // Reset module-level discovery state when entering a new room
+  const roomId = room.id || room.type || 'unknown';
+  if (discoveryState.roomId !== roomId) {
+    discoveryState = {
+      fetched: false,
+      words: [],
+      wordsLearned: 0,
+      roomId: roomId
+    };
+  }
+
+  // Stage tracking from server state
   const discovery = room.wordDiscovery || {
     wordsToLearn: 2,
     wordsLearned: 0,
@@ -512,7 +532,7 @@ export async function renderWordDiscovery() {
     completed: false
   };
 
-  // If completed, show proceed
+  // If completed on server, show proceed
   if (discovery.completed) {
     actions.setContent(`
       <button class="action-btn action-btn-primary" id="proceed-btn">続ける</button>
@@ -527,9 +547,9 @@ export async function renderWordDiscovery() {
     return;
   }
 
-  // Fetch words if not already fetched
-  if (discovery.wordIds.length === 0 && !room._discoveryFetched) {
-    room._discoveryFetched = true;
+  // Fetch words if not already fetched (use module-level state, not room object)
+  if (!discoveryState.fetched) {
+    discoveryState.fetched = true;
 
     // Show intro narration
     await sceneModule.showNarration('新しい言葉を発見しよう！', { speaker: 'Quiz Master' });
@@ -551,13 +571,12 @@ export async function renderWordDiscovery() {
       return;
     }
 
-    // Store words in room state
-    discovery.wordIds = result.words.map(w => [w.vid, w.sid]);
-    room._discoveryWords = result.words;
+    // Store words in module-level state (survives gameState updates)
+    discoveryState.words = result.words;
   }
 
-  const words = room._discoveryWords || [];
-  const currentIndex = discovery.wordsLearned;
+  const words = discoveryState.words;
+  const currentIndex = discoveryState.wordsLearned;
 
   if (currentIndex >= words.length) {
     // All words learned - mark complete on server first
@@ -596,13 +615,17 @@ export async function renderWordDiscovery() {
   // Store original and override temporarily
   const handleDiscoverySwipe = async (direction) => {
     // Both directions = grade 1 (learning)
+    console.log(`[Discovery] Swiped ${direction} on "${currentWord.word}" (vid=${currentWord.vid}, sid=${currentWord.sid})`);
     try {
       await apiSwipeWord(currentWord.vid, currentWord.sid, 1);
+      console.log(`[Discovery] Review sent: vid=${currentWord.vid}, grade=1 (learning)`);
     } catch (e) {
-      console.warn('Failed to submit discovery review:', e);
+      console.warn('[Discovery] Failed to submit review:', e);
     }
 
-    discovery.wordsLearned++;
+    // Use module-level state (survives gameState updates)
+    discoveryState.wordsLearned++;
+    console.log(`[Discovery] Progress: ${discoveryState.wordsLearned}/${discoveryState.words.length} words learned`);
 
     // Render next card or completion
     renderWordDiscovery();

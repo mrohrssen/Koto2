@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { getChipLoadout, equipChip, unequipChip, reorderChips } from '../../game/items/chips.js';
 import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
+import { lookupVocabularyBatch } from '../../jpdb.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -319,11 +320,36 @@ export default function createRunRoutes({
   });
 
   // Get words for discovery room
-  router.get('/discovery-words', (req, res) => {
+  router.get('/discovery-words', async (req, res) => {
     try {
       const limit = parseInt(req.query.limit) || 2;
       const result = getNewWordsForDiscovery(limit);
       console.log(`[Discovery] Fetched ${result.words.length} new words (available: ${result.available})`);
+
+      // Enrich words with meanings from JPDB
+      if (result.words.length > 0) {
+        const jpdbApiKey = req.userKeys?.jpdbApiKey;
+        if (jpdbApiKey) {
+          const vocabList = result.words.map(w => [w.vid, w.sid]);
+          try {
+            const definitions = await lookupVocabularyBatch(jpdbApiKey, vocabList);
+            // Merge meanings into words
+            for (const word of result.words) {
+              const key = `${word.vid}:${word.sid}`;
+              const def = definitions[key];
+              if (def && def.meanings) {
+                word.meanings = def.meanings;
+                word.reading = def.reading || word.reading;
+              }
+            }
+            console.log(`[Discovery] Enriched ${result.words.length} words with meanings`);
+          } catch (lookupError) {
+            console.warn('[Discovery] Failed to fetch meanings:', lookupError.message);
+            // Continue with words without meanings
+          }
+        }
+      }
+
       res.json(result);
     } catch (error) {
       console.error('[Discovery] Error fetching words:', error.message);
