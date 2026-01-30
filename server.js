@@ -187,7 +187,9 @@ function loadSettings() {
     gameTtsSpeed: 0.9,
     gameTtsVolume: 1.0,
     // Word Review Settings
-    reviewType: 'typing'
+    reviewType: 'typing',
+    // Word Discovery Settings
+    dailyWordLimit: 10  // 0-50, 0 = skip discovery rooms
   };
 
   if (existsSync(SETTINGS_FILE)) {

@@ -44,7 +44,8 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
       gameTtsSpeakerId: settings.gameTtsSpeakerId || 13,
       gameTtsSpeed: settings.gameTtsSpeed || 0.9,
       gameTtsVolume: settings.gameTtsVolume || 1.0,
-      reviewType: settings.reviewType || 'dialog'
+      reviewType: settings.reviewType || 'dialog',
+      dailyWordLimit: settings.dailyWordLimit ?? 10
     });
   });
 
@@ -53,7 +54,7 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
     const settings = getSettings();
     const { jpdbDeckId, jlptLevel,
             gameTtsEnabled, gameTtsSpeakerId, gameTtsSpeed, gameTtsVolume,
-            reviewType } = req.body;
+            reviewType, dailyWordLimit } = req.body;
 
     if (jpdbDeckId !== undefined) {
       settings.jpdbDeckId = jpdbDeckId;
@@ -67,6 +68,13 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
     if (gameTtsVolume !== undefined) settings.gameTtsVolume = gameTtsVolume;
 
     if (reviewType !== undefined) settings.reviewType = reviewType;
+
+    if (dailyWordLimit !== undefined) {
+      const limit = parseInt(dailyWordLimit, 10);
+      if (!isNaN(limit) && limit >= 0 && limit <= 50) {
+        settings.dailyWordLimit = limit;
+      }
+    }
 
     if (gameTtsEnabled !== undefined || gameTtsSpeakerId !== undefined ||
         gameTtsSpeed !== undefined || gameTtsVolume !== undefined) {
