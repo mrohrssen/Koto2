@@ -669,8 +669,19 @@ export function executeChipPipeline(weaponChips, context) {
     totalHealPlayer: 0,
     runKills: context.runKills || 0,
     runChipsDestroyed: context.runChipsDestroyed || 0,
-    player: context.player || null
+    player: context.player || null,
+    // Dual-pool system: chips contribute stats to pools, damage = power * (1 + bandwidth)
+    powerPool: 0,
+    bandwidthPool: 0
   };
+
+  // First pass: sum all chip stats into pools
+  for (const chip of weaponChips) {
+    if (chip.category === 'pipeline' && chip.stats) {
+      state.powerPool += chip.stats.power || 0;
+      state.bandwidthPool += chip.stats.bandwidth || 0;
+    }
+  }
 
   let nextChipDoubleActive = context.nextChipDouble || false;
   let nextChipAmplifyFactor = context.nextChipAmplify || null;
@@ -764,8 +775,16 @@ export function executeChipPipeline(weaponChips, context) {
     chipIndex++;
   }
 
+  // Calculate final damage using dual-pool formula: POWER × (1 + BANDWIDTH)
+  // If baseDamage was provided (legacy mode), use currentDamage for backward compatibility
+  const dualPoolDamage = Math.floor(state.powerPool * (1 + state.bandwidthPool));
+  const legacyDamage = Math.floor(state.currentDamage);
+
+  // Use dual-pool damage when baseDamage is 0 (new system), otherwise use legacy for compatibility
+  const finalDamage = context.baseDamage === 0 ? dualPoolDamage : legacyDamage;
+
   return {
-    finalDamage: Math.floor(state.currentDamage),
+    finalDamage,
     firedChips: state.firedChips,
     critChance: state.critChance,
     damageMultiplier: context.baseDamage > 0 ? state.currentDamage / context.baseDamage : 1,
@@ -773,7 +792,10 @@ export function executeChipPipeline(weaponChips, context) {
     sacrificedChips: state.sacrificedChips,
     combatStacks: state.combatStacks,
     healPlayer: state.totalHealPlayer,
-    randomDestroyTriggered: state.randomDestroyTriggered || false
+    randomDestroyTriggered: state.randomDestroyTriggered || false,
+    // Dual-pool system outputs
+    powerPool: state.powerPool,
+    bandwidthPool: state.bandwidthPool
   };
 }
 
