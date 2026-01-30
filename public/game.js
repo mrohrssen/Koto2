@@ -82,6 +82,7 @@ import {
   getQuizQuestion as apiGetQuizQuestion,
   submitQuizAnswer as apiSubmitQuizAnswer,
   getDiscoveryWords as apiGetDiscoveryWords,
+  getDiscoveryStatus as apiGetDiscoveryStatus,
   completeDiscovery as apiCompleteDiscovery,
   parseJpdbText,
   lookupJpdbWord,
@@ -681,8 +682,9 @@ async function initGame() {
     apiGetChipLoadout,
     setChipLoadoutCache: (cache) => { chipLoadoutCache = cache; },
     apiGetDiscoveryWords,
+    apiGetDiscoveryStatus,
     apiCompleteDiscovery,
-    apiSwipeWord: (vid, sid, grade) => apiSendJpdbReview(vid, sid, grade),
+    apiSwipeWord: (vid, sid, grade, isDiscovery) => apiSendJpdbReview(vid, sid, grade, isDiscovery),
     apiPostCombatRefresh: (words) => fetch('/api/game/post-combat-refresh', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },

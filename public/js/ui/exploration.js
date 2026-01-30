@@ -44,7 +44,11 @@ let discoveryState = {
   fetched: false,
   words: [],
   wordsLearned: 0,
-  roomId: null  // Reset when room changes
+  roomId: null,  // Reset when room changes
+  statusChecked: false,
+  atLimit: false,
+  todayCount: 0,
+  dailyLimit: 10
 };
 
 // API functions
@@ -63,6 +67,7 @@ let setChipLoadoutCache = null;
 
 // Word discovery API functions
 let apiGetDiscoveryWords = null;
+let apiGetDiscoveryStatus = null;
 let apiCompleteDiscovery = null;
 let apiSwipeWord = null;
 let apiPostCombatRefresh = null;
@@ -91,6 +96,7 @@ export function init(callbacks) {
   apiGetChipLoadout = callbacks.apiGetChipLoadout;
   setChipLoadoutCache = callbacks.setChipLoadoutCache;
   apiGetDiscoveryWords = callbacks.apiGetDiscoveryWords;
+  apiGetDiscoveryStatus = callbacks.apiGetDiscoveryStatus;
   apiCompleteDiscovery = callbacks.apiCompleteDiscovery;
   apiSwipeWord = callbacks.apiSwipeWord;
   apiPostCombatRefresh = callbacks.apiPostCombatRefresh;
@@ -520,7 +526,11 @@ export async function renderWordDiscovery() {
       fetched: false,
       words: [],
       wordsLearned: 0,
-      roomId: roomId
+      roomId: roomId,
+      statusChecked: false,
+      atLimit: false,
+      todayCount: 0,
+      dailyLimit: 10
     };
   }
 
@@ -544,6 +554,59 @@ export async function renderWordDiscovery() {
         updateUI();
       }
     });
+    return;
+  }
+
+  // Check discovery status first (only once per room)
+  if (!discoveryState.statusChecked) {
+    discoveryState.statusChecked = true;
+    const status = await apiGetDiscoveryStatus();
+    discoveryState.todayCount = status.todayCount;
+    discoveryState.dailyLimit = status.dailyLimit;
+    discoveryState.atLimit = status.atLimit;
+
+    // Show today's count
+    await sceneModule.showNarration(
+      `今日は ${status.todayCount} 個の新しい言葉を学びました！`,
+      { speaker: 'Quiz Master' }
+    );
+
+    // If at limit, show "come back tomorrow" and skip room
+    if (status.atLimit) {
+      await sceneModule.showNarration(
+        'また明日来てね！',
+        { speaker: 'Quiz Master' }
+      );
+
+      const completeResult = await apiCompleteDiscovery();
+      if (completeResult?.state) {
+        updateGameState(completeResult.state);
+      }
+      const proceedResult = await apiProceed();
+      if (proceedResult?.state) {
+        updateGameState(proceedResult.state);
+        updateUI();
+      }
+      return;
+    }
+  }
+
+  // If we hit the limit mid-room, stop
+  if (discoveryState.atLimit) {
+    await sceneModule.showNarration(
+      'また明日来てね！',
+      { speaker: 'Quiz Master' }
+    );
+
+    const completeResult = await apiCompleteDiscovery();
+    if (completeResult?.state) {
+      updateGameState(completeResult.state);
+    }
+    const proceedResult = await apiProceed();
+    if (proceedResult?.state) {
+      updateGameState(proceedResult.state);
+      updateUI();
+    }
     return;
   }
 
@@ -614,20 +677,24 @@ export async function renderWordDiscovery() {
   // The actions module was initialized with cardSwipe callback, but we need discovery-specific behavior
   // Store original and override temporarily
   const handleDiscoverySwipe = async (direction) => {
-    // Both directions = grade 1 (learning)
     console.log(`[Discovery] Swiped ${direction} on "${currentWord.word}" (vid=${currentWord.vid}, sid=${currentWord.sid})`);
     try {
-      await apiSwipeWord(currentWord.vid, currentWord.sid, 1);
+      // Pass isDiscovery: true to track the discovery
+      const reviewResult = await apiSwipeWord(currentWord.vid, currentWord.sid, 1, true);
       console.log(`[Discovery] Review sent: vid=${currentWord.vid}, grade=1 (learning)`);
+
+      // Check if we hit the limit
+      if (reviewResult.atLimit) {
+        discoveryState.atLimit = true;
+        discoveryState.todayCount = reviewResult.todayCount;
+      }
     } catch (e) {
       console.warn('[Discovery] Failed to submit review:', e);
     }
 
-    // Use module-level state (survives gameState updates)
     discoveryState.wordsLearned++;
     console.log(`[Discovery] Progress: ${discoveryState.wordsLearned}/${discoveryState.words.length} words learned`);
 
-    // Render next card or completion
     renderWordDiscovery();
   };
 
