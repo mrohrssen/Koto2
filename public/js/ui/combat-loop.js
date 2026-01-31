@@ -181,6 +181,31 @@ async function showChipActivationSequence(pa) {
   const pipelineResult = pa.pipelineResult;
   const sequence = pipelineResult?.sequence || [];
 
+  // Edge case: no chips or no sequence
+  if (!pipelineResult || !sequence.length) {
+    actionArea.innerHTML = `
+      <div class="combat-math">
+        <div class="pipeline-stats">
+          <div class="stat-box">
+            <span class="stat-box-label">PWR</span>
+            <span class="stat-box-value">0</span>
+          </div>
+          <span class="stat-box-operator">×</span>
+          <div class="stat-box">
+            <span class="stat-box-label">BW</span>
+            <span class="stat-box-value">×1</span>
+          </div>
+          <span class="stat-box-operator">=</span>
+          <div class="stat-box damage">
+            <span class="stat-box-label">DMG</span>
+            <span class="stat-box-value">${pa.damage || 0}</span>
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
   // Track current values for animation
   let currentPwr = 0;
   let currentBw = 1; // Effective multiplier (internal 0 + 1)
