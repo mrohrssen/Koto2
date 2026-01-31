@@ -170,101 +170,145 @@ function showNextFlashCardFromQueue() {
 // ============ COMBAT MATH DISPLAY ============
 
 /**
- * Show chip activations sequentially with delays,
- * building up combat math progressively in the action area.
- * Shows the dual-pool formula: PWR × (1 + BW) = DAMAGE
+ * Show chip activations with animated stat boxes.
+ * PWR and BW build up in real-time as each chip fires.
  * @param {Object} pa - playerAttack result object
  */
 async function showChipActivationSequence(pa) {
   const actionArea = document.getElementById('action-area');
   if (!actionArea) return;
 
-  const lines = [];
   const pipelineResult = pa.pipelineResult;
+  const sequence = pipelineResult?.sequence || [];
 
-  // Start with critical hit indicator
+  // Track current values for animation
+  let currentPwr = 0;
+  let currentBw = 1; // Effective multiplier (internal 0 + 1)
+
+  // Show critical hit first
   if (pa.critical) {
-    lines.push('<span class="math-crit">CRITICAL HIT!</span>');
-    actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
+    actionArea.innerHTML = `<div class="combat-math"><span class="math-crit">CRITICAL HIT!</span></div>`;
     await delay(360);
   }
 
-  // Show dual-pool formula breakdown (requires valid numeric pool values)
-  if (pipelineResult &&
-      typeof pipelineResult.powerPool === 'number' &&
-      typeof pipelineResult.bandwidthPool === 'number') {
-    const pwr = pipelineResult.powerPool;
-    const bw = pipelineResult.bandwidthPool;
-    const damage = pa.damage;
+  // Build initial HTML with stat boxes
+  const buildDisplay = (showDamage = false) => {
+    const bwDisplay = currentBw === 1 ? '×1' : `×${currentBw.toFixed(1).replace(/\.0$/, '')}`;
+    const damageBox = showDamage
+      ? `<span class="stat-box-operator">=</span>
+         <div class="stat-box damage">
+           <span class="stat-box-label">DMG</span>
+           <span class="stat-box-value">${pa.damage}</span>
+         </div>`
+      : '';
 
-    // Format bandwidth nicely (show 1 decimal place if not whole number)
-    const bwStr = Number.isInteger(bw) ? bw.toString() : bw.toFixed(1);
+    return `
+      <div class="combat-math">
+        ${pa.critical ? '<span class="math-crit">CRITICAL HIT!</span><br>' : ''}
+        <div class="pipeline-stats">
+          <div class="stat-box" id="pwr-box">
+            <span class="stat-box-label">PWR</span>
+            <span class="stat-box-value" id="pwr-value">${currentPwr}</span>
+          </div>
+          <span class="stat-box-operator">×</span>
+          <div class="stat-box" id="bw-box">
+            <span class="stat-box-label">BW</span>
+            <span class="stat-box-value" id="bw-value">${bwDisplay}</span>
+          </div>
+          ${damageBox}
+        </div>
+        <div class="pipeline-log" id="pipeline-log"></div>
+      </div>
+    `;
+  };
 
-    // Show the formula: PWR × (1 + BW) = DAMAGE
-    lines.push(`<strong>PWR ${pwr} × (1 + BW ${bwStr}) = ${damage}</strong>`);
-    actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
-    await delay(600);
+  // Render initial state
+  actionArea.innerHTML = buildDisplay(false);
+  await delay(300);
 
-    // Get fired chips
-    const firedChips = pipelineResult.firedChips?.filter(c => c.triggered && !c.skipped) || [];
+  // Process sequence events
+  for (const event of sequence) {
+    const chipSlot = findChipSlotIndex(event.chipId);
 
-    if (firedChips.length > 0) {
-      // Show chip contributions
-      for (const chip of firedChips) {
-        await delay(400);
-        const name = chip.chipName || chip.chipId || 'Chip';
-
-        // Build contribution string
-        let contribution = '';
-        if (chip.pureStatStick || chip.statStick) {
-          // Pure stat stick (like Battery) - no effect, just stats
-          contribution = '(stat stick)';
-        } else if (chip.powerAdd || chip.bandwidthAdd || (chip.powerMult && chip.powerMult !== 1) || (chip.bandwidthMult && chip.bandwidthMult !== 1)) {
-          const parts = [];
-          if (chip.powerAdd) parts.push(`+${chip.powerAdd} PWR`);
-          if (chip.bandwidthAdd) parts.push(`+${chip.bandwidthAdd} BW`);
-          if (chip.powerMult && chip.powerMult !== 1) parts.push(`×${chip.powerMult} PWR`);
-          if (chip.bandwidthMult && chip.bandwidthMult !== 1) parts.push(`×${chip.bandwidthMult} BW`);
-          contribution = parts.join(', ') || chip.displayText || '';
-        } else if (chip.healPlayer) {
-          contribution = `+${chip.healPlayer} HP`;
-        } else {
-          contribution = chip.displayText || '';
-        }
-
-        // Find chip slot and animate
-        const chipSlot = findChipSlotIndex(chip.chipId);
+    switch (event.type) {
+      case 'activate':
+        // Chip slot glows, SFX plays
         if (chipSlot !== null) {
           animateChipActivation(chipSlot);
           playSFX('chip-equip');
-          showChipTooltip(chipSlot, `${name}: ${contribution}`);
         }
+        await delay(200);
+        break;
 
-        // Add to math display
-        const lineClass = chip.healPlayer ? 'math-heal' : 'math-chip';
-        lines.push(`<span class="${lineClass}">• ${name}: ${contribution}</span>`);
-        actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
-      }
+      case 'base':
+        // Base stats added
+        if (event.power) {
+          currentPwr += event.power;
+          updateStatValue('pwr-value', currentPwr);
+          addLogLine(`• ${event.chipName}: +${event.power} PWR`);
+          await delay(200);
+        }
+        if (event.bandwidth) {
+          currentBw += event.bandwidth;
+          updateStatValue('bw-value', formatBw(currentBw));
+          addLogLine(`• ${event.chipName}: +${event.bandwidth} BW`);
+          await delay(200);
+        }
+        break;
+
+      case 'effect':
+        // Passive effect modifies pools
+        if (event.powerAdd) {
+          currentPwr += event.powerAdd;
+          updateStatValue('pwr-value', currentPwr);
+          addLogLine(`• ${event.chipName}: +${event.powerAdd} PWR`);
+          await delay(200);
+        }
+        if (event.bandwidthAdd) {
+          currentBw += event.bandwidthAdd;
+          updateStatValue('bw-value', formatBw(currentBw));
+          addLogLine(`• ${event.chipName}: +${event.bandwidthAdd} BW`);
+          await delay(200);
+        }
+        if (event.powerMult) {
+          currentPwr = Math.floor(currentPwr * event.powerMult);
+          updateStatValue('pwr-value', currentPwr);
+          addLogLine(`• ${event.chipName}: ×${event.powerMult} PWR`);
+          await delay(200);
+        }
+        if (event.bandwidthMult) {
+          currentBw *= event.bandwidthMult;
+          updateStatValue('bw-value', formatBw(currentBw));
+          addLogLine(`• ${event.chipName}: ×${event.bandwidthMult} BW`);
+          await delay(200);
+        }
+        break;
+
+      case 'heal':
+        addLogLine(`• ${event.chipName}: +${event.hp} HP`, 'heal');
+        await delay(200);
+        break;
+
+      case 'sacrifice':
+        addLogLine(`• ${event.chipName}: SACRIFICED`, 'sacrifice');
+        await delay(200);
+        break;
+
+      case 'noTrigger':
+        addLogLine(`• ${event.chipName}: (no trigger)`, 'no-trigger');
+        await delay(200);
+        break;
     }
-  } else {
-    // Fallback for legacy mode (baseDamage > 0)
-    lines.push(`<strong>→ Attacked for ${pa.damage}</strong>`);
-    actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
   }
 
-  // Show cascade
+  // Final reveal: show damage box
+  await delay(300);
+  actionArea.innerHTML = buildDisplay(true);
+
+  // Show cascade if triggered
   if (pa.cascadeTriggered && pa.cascadeDamage) {
     await delay(600);
-    lines.push(`<span class="math-chip">Cascade: +${pa.cascadeDamage}</span>`);
-    actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
-  }
-
-  // Show healing from pipeline (only if not already shown by individual chip)
-  const firedChips = pipelineResult?.firedChips?.filter(c => c.triggered && !c.skipped) || [];
-  if (pipelineResult?.healPlayer > 0 && !firedChips.some(c => c.healPlayer)) {
-    await delay(600);
-    lines.push(`<span class="math-heal">+${pipelineResult.healPlayer} HP</span>`);
-    actionArea.innerHTML = `<div class="combat-math">${lines.join('<br>')}</div>`;
+    addLogLine(`Cascade: +${pa.cascadeDamage}`);
   }
 
   // Show DoT damage
@@ -272,6 +316,40 @@ async function showChipActivationSequence(pa) {
     await delay(480);
     showDotDamage(pa.dotDamage, false);
   }
+}
+
+/**
+ * Update a stat box value with pulse animation
+ */
+function updateStatValue(elementId, value) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  el.textContent = value;
+  el.classList.remove('pulse');
+  void el.offsetWidth; // Force reflow
+  el.classList.add('pulse');
+}
+
+/**
+ * Format bandwidth as effective multiplier
+ */
+function formatBw(bw) {
+  if (bw === 1) return '×1';
+  const formatted = bw.toFixed(1).replace(/\.0$/, '');
+  return `×${formatted}`;
+}
+
+/**
+ * Add a line to the pipeline log
+ */
+function addLogLine(text, className = '') {
+  const log = document.getElementById('pipeline-log');
+  if (!log) return;
+  const line = document.createElement('div');
+  line.className = `pipeline-log-line ${className}`;
+  line.textContent = text;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
 }
 
 /**
