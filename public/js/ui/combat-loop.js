@@ -301,9 +301,20 @@ async function showChipActivationSequence(pa) {
     }
   }
 
-  // Final reveal: show damage box
+  // Final reveal: add damage box without destroying log
   await delay(300);
-  actionArea.innerHTML = buildDisplay(true);
+  const statsContainer = document.querySelector('.pipeline-stats');
+  if (statsContainer) {
+    const bwDisplay = currentBw === 1 ? '×1' : `×${currentBw.toFixed(1).replace(/\.0$/, '')}`;
+    const damageHTML = `
+      <span class="stat-box-operator">=</span>
+      <div class="stat-box damage">
+        <span class="stat-box-label">DMG</span>
+        <span class="stat-box-value">${pa.damage}</span>
+      </div>
+    `;
+    statsContainer.insertAdjacentHTML('beforeend', damageHTML);
+  }
 
   // Show cascade if triggered
   if (pa.cascadeTriggered && pa.cascadeDamage) {
