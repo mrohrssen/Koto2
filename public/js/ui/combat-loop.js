@@ -555,16 +555,19 @@ export async function executePlayerAttack() {
       } else if (pa.miss) {
         showDamageNumber(0, false, false, false, false, 'miss');
       } else {
+        // Play attack sound immediately
+        playSFX('attack');
+
+        // Sequential chip activation with progressive math display
+        await showChipActivationSequence(pa);
+
+        // Show damage at same time as final damage reveal
         showDamageNumber(pa.damage, false, pa.critical);
         animateEnemyHurt();
-        playSFX('attack');
 
         // Visual effects for enemy damage
         const enemySprite = document.getElementById('enemy-sprite');
         await impactEnemyEffect(pa.damage, enemySprite);
-
-        // Sequential chip activation with progressive math display
-        await showChipActivationSequence(pa);
       }
     }
 
