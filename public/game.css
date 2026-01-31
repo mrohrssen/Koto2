@@ -1280,6 +1280,99 @@ html, body {
   font-weight: 700;
 }
 
+/* ===== PIPELINE STAT BOXES ===== */
+.pipeline-stats {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--bg-card);
+  border: 2px solid var(--accent-blue);
+  border-radius: var(--radius-md);
+  min-width: 70px;
+  box-shadow: var(--shadow-soft);
+}
+
+.stat-box.damage {
+  border-color: var(--accent-orange);
+  background: linear-gradient(135deg, #fff9e0, #fff5cc);
+}
+
+.stat-box-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-box-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-box.damage .stat-box-value {
+  color: var(--accent-orange);
+}
+
+.stat-box-operator {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+/* Pulse animation when value changes */
+.stat-box-value.pulse {
+  animation: stat-pulse 0.3s ease-out;
+}
+
+@keyframes stat-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); color: var(--accent-orange); }
+  100% { transform: scale(1); }
+}
+
+/* Pipeline log styles */
+.pipeline-log {
+  text-align: left;
+  padding: 0 16px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.pipeline-log-line {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  opacity: 0;
+  animation: fade-in 0.2s ease forwards;
+}
+
+.pipeline-log-line.heal {
+  color: #2ecc71;
+  font-weight: 600;
+}
+
+.pipeline-log-line.sacrifice {
+  color: var(--accent-red);
+  font-weight: 600;
+}
+
+.pipeline-log-line.no-trigger {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
 .combat-enemy-damage {
   padding: 24px 16px;
   text-align: center;
