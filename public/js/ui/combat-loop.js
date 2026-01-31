@@ -487,9 +487,16 @@ export async function executePlayerAttack() {
 
   } catch (error) {
     console.error('Player attack error:', error);
-    // Don't trigger defeat for errors - let player retry
+    // Don't trigger defeat for errors - recover by showing next flashcard
     playerAttackPending = false;
     if (setCombatAnimationActive) setCombatAnimationActive(false);
+
+    // Recovery: pause for vocab and show flashcard so player can continue
+    if (combatActive) {
+      combatPausedForVocab = true;
+      showNextFlashCardFromQueue();
+      logger.warn('[CombatLoop] Recovered from player attack error, showing flashcard');
+    }
   }
 }
 
@@ -580,9 +587,16 @@ export async function executeEnemyAttack() {
 
   } catch (error) {
     console.error('Enemy attack error:', error);
-    // Don't trigger defeat for errors - let combat continue
+    // Don't trigger defeat for errors - recover by showing next flashcard
     enemyAttackPending = false;
     if (setCombatAnimationActive) setCombatAnimationActive(false);
+
+    // Recovery: pause for vocab and show flashcard so player can continue
+    if (combatActive) {
+      combatPausedForVocab = true;
+      showNextFlashCardFromQueue();
+      logger.warn('[CombatLoop] Recovered from enemy attack error, showing flashcard');
+    }
   }
 }
 
@@ -689,9 +703,16 @@ export async function executeEnemyAttackThenPause() {
 
   } catch (error) {
     console.error('Enemy attack error:', error);
-    // Don't trigger defeat for errors - let combat continue
+    // Don't trigger defeat for errors - recover by showing next flashcard
     enemyAttackPending = false;
     if (setCombatAnimationActive) setCombatAnimationActive(false);
+
+    // Recovery: pause for vocab and show flashcard so player can continue
+    if (combatActive) {
+      combatPausedForVocab = true;
+      showNextFlashCardFromQueue();
+      logger.warn('[CombatLoop] Recovered from enemy attack error, showing flashcard');
+    }
   }
 }
 
