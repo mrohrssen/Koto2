@@ -650,7 +650,7 @@ html, body {
 
 .takeover-close {
   position: fixed;
-  top: 12px;
+  top: calc(12px + env(safe-area-inset-top));
   right: 16px;
   width: 36px;
   height: 36px;

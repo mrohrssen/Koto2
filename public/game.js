@@ -454,7 +454,7 @@ async function openChipEquipView() {
         <div class="chip-equip-slot filled" data-action="unequip" data-index="${i}">
           <div class="chip-equip-icon" style="background-image:url('/assets/icons/chips/${chip.id}.webp')"></div>
           <span class="chip-equip-name">${chip.name || chip.nameEn}</span>
-          <span class="chip-equip-rarity ${chip.rarity}">${chip.rarity}</span>
+          <span class="chip-equip-rarity ${chip.rarity || 'common'}">${chip.rarity || 'common'}</span>
         </div>
       ` : `
         <div class="chip-equip-slot empty" data-index="${i}">Empty</div>
@@ -466,7 +466,7 @@ async function openChipEquipView() {
         <div class="chip-inventory-item" data-action="equip" data-chip-id="${chip.id}">
           <div class="chip-equip-icon" style="background-image:url('/assets/icons/chips/${chip.id}.webp')"></div>
           <span class="chip-equip-name">${chip.name || chip.nameEn}</span>
-          <span class="chip-equip-rarity ${chip.rarity}">${chip.rarity}</span>
+          <span class="chip-equip-rarity ${chip.rarity || 'common'}">${chip.rarity || 'common'}</span>
         </div>
       `).join('')}
       ${inventory.length === 0 ? '<p style="padding:16px;opacity:0.6">No chips in inventory</p>' : ''}
