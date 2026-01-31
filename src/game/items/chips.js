@@ -596,6 +596,7 @@ export function executeChipPipeline(weaponChips, context) {
     critMultiplier: context.critMultiplier || 1.4,
     target: context.target,
     firedChips: [],
+    sequence: [],  // Step-by-step animation sequence
     recursionCount: 0,
     sacrificedChips: [],
     combatStacks: context.combatStacks || {},  // Persistent stacks for this combat
@@ -627,6 +628,25 @@ export function executeChipPipeline(weaponChips, context) {
       }
 
       console.log(`[Pipeline] ${chip.nameEn || chip.id}: +${statPower} PWR, +${statBandwidth} BW`);
+
+      // Record activate event
+      state.sequence.push({
+        type: 'activate',
+        chipId: chip.id,
+        chipName: chip.nameEn || chip.name
+      });
+
+      // Record base stat contribution (only if non-zero)
+      if (statPower > 0 || statBandwidth > 0) {
+        state.sequence.push({
+          type: 'base',
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name,
+          power: statPower || undefined,
+          bandwidth: statBandwidth || undefined
+        });
+      }
+
       state.powerPool += statPower;
       state.bandwidthPool += statBandwidth;
     }
@@ -675,6 +695,50 @@ export function executeChipPipeline(weaponChips, context) {
 
     const result = processPipelineChip(amplifiedChip, state);
     state.firedChips.push(result);
+
+    // Record sequence events for animation
+    if (result.triggered) {
+      // Effect event (if chip modified pools)
+      if (result.powerAdd || result.bandwidthAdd ||
+          (result.powerMult && result.powerMult !== 1) ||
+          (result.bandwidthMult && result.bandwidthMult !== 1)) {
+        state.sequence.push({
+          type: 'effect',
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name,
+          powerAdd: result.powerAdd || undefined,
+          powerMult: (result.powerMult && result.powerMult !== 1) ? result.powerMult : undefined,
+          bandwidthAdd: result.bandwidthAdd || undefined,
+          bandwidthMult: (result.bandwidthMult && result.bandwidthMult !== 1) ? result.bandwidthMult : undefined
+        });
+      }
+
+      // Heal event
+      if (result.healPlayer) {
+        state.sequence.push({
+          type: 'heal',
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name,
+          hp: result.healPlayer
+        });
+      }
+
+      // Sacrifice event
+      if (result.sacrifice) {
+        state.sequence.push({
+          type: 'sacrifice',
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name
+        });
+      }
+    } else if (result.conditionFailed || result.notBoss || result.noPreviousChip) {
+      // Conditional didn't trigger
+      state.sequence.push({
+        type: 'noTrigger',
+        chipId: chip.id,
+        chipName: chip.nameEn || chip.name
+      });
+    }
 
     // Apply pool modifiers from effect
     if (result.triggered) {
@@ -757,6 +821,7 @@ export function executeChipPipeline(weaponChips, context) {
   return {
     finalDamage,
     firedChips: state.firedChips,
+    sequence: state.sequence,
     critChance: state.critChance,
     recursionCount: state.recursionCount,
     sacrificedChips: state.sacrificedChips,

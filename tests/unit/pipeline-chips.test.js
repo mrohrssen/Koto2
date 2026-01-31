@@ -805,5 +805,57 @@ describe('Edge Cases', () => {
   });
 });
 
+describe('Pipeline Sequence Tracking', () => {
+  it('should return sequence array with activate and base events', () => {
+    const result = runPipeline([getChip('battery')]);
+
+    assert.ok(Array.isArray(result.sequence), 'sequence should be an array');
+    assert.ok(result.sequence.length >= 2, 'sequence should have at least 2 events');
+
+    // First event: activate
+    const activate = result.sequence.find(e => e.type === 'activate' && e.chipId === 'battery');
+    assert.ok(activate, 'should have activate event for battery');
+    assert.strictEqual(activate.chipName, 'Battery Bot');
+
+    // Second event: base stats
+    const base = result.sequence.find(e => e.type === 'base' && e.chipId === 'battery');
+    assert.ok(base, 'should have base event for battery');
+    assert.strictEqual(base.power, 8);
+  });
+
+  it('should include effect events for chips with passives', () => {
+    const result = runPipeline([getChip('battery'), getChip('charcoal')]);
+
+    // Charcoal has ×3 power, ×2 bandwidth effect
+    const effect = result.sequence.find(e => e.type === 'effect' && e.chipId === 'charcoal');
+    assert.ok(effect, 'should have effect event for charcoal');
+    assert.strictEqual(effect.powerMult, 3);
+  });
+
+  it('should include heal events', () => {
+    const result = runPipeline([getChip('onigiri')]);
+
+    const heal = result.sequence.find(e => e.type === 'heal');
+    assert.ok(heal, 'should have heal event');
+    assert.strictEqual(heal.hp, 5);
+  });
+
+  it('should include noTrigger events for failed conditionals', () => {
+    // Key chip only triggers vs bosses, running against non-boss
+    const result = runPipeline([getChip('key')], { target: { isBoss: false, hp: 100, maxHp: 100 } });
+
+    const noTrigger = result.sequence.find(e => e.type === 'noTrigger' && e.chipId === 'key');
+    assert.ok(noTrigger, 'should have noTrigger event for key vs non-boss');
+  });
+
+  it('should include sacrifice events', () => {
+    const result = runPipeline([getChip('charcoal')]);
+
+    const sacrifice = result.sequence.find(e => e.type === 'sacrifice');
+    assert.ok(sacrifice, 'should have sacrifice event');
+    assert.strictEqual(sacrifice.chipId, 'charcoal');
+  });
+});
+
 // Run the tests
 console.log('Running pipeline chips tests...\n');
