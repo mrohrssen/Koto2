@@ -193,7 +193,7 @@ async function showChipActivationSequence(pa) {
           <span class="stat-box-operator">×</span>
           <div class="stat-box">
             <span class="stat-box-label">BW</span>
-            <span class="stat-box-value">×1</span>
+            <span class="stat-box-value">1</span>
           </div>
           <span class="stat-box-operator">=</span>
           <div class="stat-box damage">
@@ -218,7 +218,7 @@ async function showChipActivationSequence(pa) {
 
   // Build initial HTML with stat boxes
   const buildDisplay = (showDamage = false) => {
-    const bwDisplay = currentBw === 1 ? '×1' : `×${currentBw.toFixed(1).replace(/\.0$/, '')}`;
+    const bwDisplay = currentBw === 1 ? '1' : currentBw.toFixed(1).replace(/\.0$/, '');
     const damageBox = showDamage
       ? `<span class="stat-box-operator">=</span>
          <div class="stat-box damage">
@@ -330,7 +330,7 @@ async function showChipActivationSequence(pa) {
   await delay(300);
   const statsContainer = document.querySelector('.pipeline-stats');
   if (statsContainer) {
-    const bwDisplay = currentBw === 1 ? '×1' : `×${currentBw.toFixed(1).replace(/\.0$/, '')}`;
+    const bwDisplay = currentBw === 1 ? '1' : currentBw.toFixed(1).replace(/\.0$/, '');
     const damageHTML = `
       <span class="stat-box-operator">=</span>
       <div class="stat-box damage">
@@ -370,9 +370,9 @@ function updateStatValue(elementId, value) {
  * Format bandwidth as effective multiplier
  */
 function formatBw(bw) {
-  if (bw === 1) return '×1';
+  if (bw === 1) return '1';
   const formatted = bw.toFixed(1).replace(/\.0$/, '');
-  return `×${formatted}`;
+  return formatted;
 }
 
 /**
