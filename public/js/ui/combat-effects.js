@@ -10,7 +10,7 @@
  * Effects are designed to layer - call multiple for combined impact.
  */
 
-import anime from '../lib/anime.esm.min.js';
+import { animate as anime } from '../lib/anime.esm.min.js';
 
 // ============ CONFIGURATION ============
 
