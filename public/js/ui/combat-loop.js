@@ -341,12 +341,16 @@ function animateChipActivation(chipIndex, chipData = null) {
       setTimeout(() => icon.classList.remove('chip-activating'), 600);
     }
 
-    // Fire visual effects
-    const poolEls = {
-      power: document.querySelector('[data-pool="power"]'),
-      bandwidth: document.querySelector('[data-pool="bandwidth"]')
-    };
-    fireChipEffect(slot, chipData, poolEls);
+    // Fire visual effects (non-blocking, wrapped in try-catch for resilience)
+    try {
+      const poolEls = {
+        power: document.querySelector('[data-pool="power"]'),
+        bandwidth: document.querySelector('[data-pool="bandwidth"]')
+      };
+      fireChipEffect(slot, chipData, poolEls);
+    } catch (e) {
+      console.warn('[Combat] Chip effect failed:', e.message);
+    }
   }
 }
 

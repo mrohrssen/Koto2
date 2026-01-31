@@ -58,12 +58,12 @@ export function screenShake(intensity = 'medium') {
 
   const { intensity: px, duration } = CONFIG.shake[intensity] || CONFIG.shake.medium;
 
-  anime({
-    targets: container,
+  anime(container, {
     translateX: [0, -px, px, -px/2, px/2, 0],
     translateY: [0, px/2, -px/2, 0],
+  }, {
     duration,
-    easing: 'easeOutQuad'
+    ease: 'outQuad'
   });
 }
 
@@ -83,12 +83,12 @@ export async function hitStop(ms = CONFIG.hitStop.normal) {
  * @param {number} count - Number of flashes
  */
 export function flashElement(targets, count = 1) {
-  anime({
-    targets,
+  anime(targets, {
     filter: ['brightness(1)', 'brightness(2.5)', 'brightness(1)'],
+  }, {
     duration: 100,
     loop: count,
-    easing: 'easeOutQuad'
+    ease: 'outQuad'
   });
 }
 
@@ -100,12 +100,12 @@ export function flashScreen(count = 1) {
   const overlay = document.getElementById('screen-flash-overlay');
   if (!overlay) return;
 
-  anime({
-    targets: overlay,
+  anime(overlay, {
     opacity: [0, 0.3, 0],
+  }, {
     duration: 100,
     loop: count,
-    easing: 'easeOutQuad'
+    ease: 'outQuad'
   });
 }
 
@@ -117,11 +117,11 @@ export function showVignette(duration = 300) {
   const overlay = document.getElementById('vignette-overlay');
   if (!overlay) return;
 
-  anime({
-    targets: overlay,
+  anime(overlay, {
     opacity: [0.6, 0],
+  }, {
     duration,
-    easing: 'easeOutQuad'
+    ease: 'outQuad'
   });
 }
 
@@ -149,15 +149,15 @@ export function spawnParticles(sourceEl, count = 10, color = '#fff') {
     const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
     const distance = 40 + Math.random() * 40;
 
-    anime({
-      targets: particle,
+    anime(particle, {
       translateX: Math.cos(angle) * distance,
       translateY: Math.sin(angle) * distance,
       scale: [1, 0],
       opacity: [1, 0],
+    }, {
       duration: 350 + Math.random() * 150,
-      easing: 'easeOutQuad',
-      complete: () => particle.remove()
+      ease: 'outQuad',
+      onComplete: () => particle.remove()
     });
   }
 }
@@ -193,15 +193,15 @@ export function spawnSpeedLines(fromEl, toEl, count = 4, color = 'rgba(255,255,2
     line.style.background = `linear-gradient(90deg, ${color}, transparent)`;
     document.body.appendChild(line);
 
-    anime({
-      targets: line,
+    anime(line, {
       translateX: dx,
       translateY: dy,
       opacity: [1, 0],
+    }, {
       duration: 200,
       delay: i * 25,
-      easing: 'easeOutQuad',
-      complete: () => line.remove()
+      ease: 'outQuad',
+      onComplete: () => line.remove()
     });
   }
 }
@@ -215,11 +215,11 @@ export function spawnSpeedLines(fromEl, toEl, count = 4, color = 'rgba(255,255,2
 export function recoil(targets, distance = 5, direction = 'right') {
   const sign = direction === 'right' ? 1 : -1;
 
-  anime({
-    targets,
+  anime(targets, {
     translateX: [0, sign * distance, 0],
+  }, {
     duration: 200,
-    easing: 'easeOutElastic(1, 0.5)'
+    ease: 'outElastic(1, 0.5)'
   });
 }
 
@@ -229,11 +229,11 @@ export function recoil(targets, distance = 5, direction = 'right') {
  * @param {number} scale - Max scale
  */
 export function pop(targets, scale = 1.3) {
-  anime({
-    targets,
+  anime(targets, {
     scale: [1, scale, 1],
+  }, {
     duration: 300,
-    easing: 'easeOutBack'
+    ease: 'outBack'
   });
 }
 
@@ -331,11 +331,11 @@ export async function playerHitEffect(damage, hpBarEl, chipRowEl) {
 
   // 4. Chip row shudders
   if (chipRowEl) {
-    anime({
-      targets: chipRowEl.querySelectorAll('.chip-slot'),
+    anime(chipRowEl.querySelectorAll('.chip-slot'), {
       translateX: [-2, 2, -1, 0],
+    }, {
       duration: 150,
-      easing: 'easeOutQuad'
+      ease: 'outQuad'
     });
   }
 
