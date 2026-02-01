@@ -283,6 +283,10 @@ export class CombatService {
         this.gm.combat.glitchingShown = true;  // Only show once per combat
       }
 
+      // Increment chip charges after player attack (not after full round)
+      // This ensures skills charge even when enemies die quickly
+      incrementAllEquippedCharges(this.gm.run.player);
+
       // Check if enemy defeated
       if (playerResult.enemyDefeated) {
         result.combatEnded = true;
@@ -337,9 +341,11 @@ export class CombatService {
         this.gm.combat.active = false;
         clearAllBuffs(this.gm.run.player);
 
-
         // Update player HP in result
         result.playerHp.current = this.gm.run.player.hp;
+
+        // Include chip charges for frontend display update
+        result.chipCharges = this.gm.run.player._chipCharges || {};
 
         return result;
       }
@@ -365,9 +371,6 @@ export class CombatService {
       if (this.gm.run.runStats && (enemyResult.dodge || enemyResult.perfectDodge)) {
         this.gm.run.runStats.dodges++;
       }
-
-      // Increment chip charges after enemy turn (round complete)
-      incrementAllEquippedCharges(this.gm.run.player);
 
       // Check if player defeated
       if (enemyResult.playerDefeated) {
