@@ -258,6 +258,13 @@ async function roomEncounter() {
   return apiCall('/room-encounter', 'POST');
 }
 
+/** Select a branch door at a branching room
+ * @param {string} door - Door identifier ('left' or 'right')
+ */
+async function selectBranch(door) {
+  return apiCall('/select-branch', 'POST', { door });
+}
+
 /** Upgrade chip at shrine */
 async function shrineUpgrade(chipId) {
   return apiCall('/shrine-upgrade', 'POST', { chipId });
@@ -542,6 +549,7 @@ export {
   // Room exploration endpoints
   proceed,
   roomEncounter,
+  selectBranch,
   shrineUpgrade,
   quizReward,
   getQuizQuestion,
