@@ -72,6 +72,9 @@ let apiCompleteDiscovery = null;
 let apiSwipeWord = null;
 let apiPostCombatRefresh = null;
 
+// Branch selection API
+let apiSelectBranch = null;
+
 export function init(callbacks) {
   getGameState = callbacks.getGameState;
   updateGameState = callbacks.updateGameState;
@@ -100,6 +103,7 @@ export function init(callbacks) {
   apiCompleteDiscovery = callbacks.apiCompleteDiscovery;
   apiSwipeWord = callbacks.apiSwipeWord;
   apiPostCombatRefresh = callbacks.apiPostCombatRefresh;
+  apiSelectBranch = callbacks.apiSelectBranch;
 }
 
 /** Hub phase — show Equip Bots + Infiltrate buttons */
@@ -197,6 +201,72 @@ export function renderExploring() {
   });
   document.getElementById('proceed-btn')?.addEventListener('click', async () => {
     const result = await apiProceed();
+    if (result?.state) {
+      updateGameState(result.state);
+      updateUI();
+    }
+  });
+}
+
+/** Branch selection phase - show Door 1 / Door 2 choice */
+export async function renderBranchSelection() {
+  const gameState = getGameState();
+  const currentRoomIndex = gameState.run?.currentRoom;
+  const pair = gameState.run?.rooms?.[currentRoomIndex];
+
+  if (!Array.isArray(pair) || pair.length !== 2) {
+    console.error('[BranchSelection] Invalid room pair');
+    return;
+  }
+
+  const room1 = pair[0];
+  const room2 = pair[1];
+
+  // Get display names for room types
+  const typeNames = {
+    encounter: '遭遇',
+    shrine: '祠',
+    quiz: 'クイズ',
+    wordDiscovery: '言葉発見'
+  };
+
+  const type1 = typeNames[room1.type] || room1.type;
+  const type2 = typeNames[room2.type] || room2.type;
+
+  // Show persistent narration with door contents
+  sceneModule.showNarration(`扉1: ${type1}。扉2: ${type2}。`, { persistent: true });
+
+  let selectedDoor = null;
+
+  actions.setContent(`
+    <div class="ward-selection-list">
+      <div class="ward-option branch-option" data-door="0">
+        <strong>扉1</strong>
+      </div>
+      <div class="ward-option branch-option" data-door="1">
+        <strong>扉2</strong>
+      </div>
+    </div>
+    <button class="action-btn action-btn-primary" id="branch-proceed-btn" disabled>進む</button>
+  `);
+
+  document.querySelectorAll('.branch-option').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.branch-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedDoor = parseInt(el.dataset.door, 10);
+      const btn = document.getElementById('branch-proceed-btn');
+      if (btn) btn.disabled = false;
+    });
+  });
+
+  document.getElementById('branch-proceed-btn')?.addEventListener('click', async () => {
+    if (selectedDoor === null) return;
+
+    // Hide persistent narration
+    if (sceneModule.forceHideNarration) sceneModule.forceHideNarration();
+
+    const result = await apiSelectBranch(selectedDoor);
     if (result?.state) {
       updateGameState(result.state);
       updateUI();
