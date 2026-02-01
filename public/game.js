@@ -84,6 +84,7 @@ import {
   getDiscoveryWords as apiGetDiscoveryWords,
   getDiscoveryStatus as apiGetDiscoveryStatus,
   completeDiscovery as apiCompleteDiscovery,
+  selectBranch as apiSelectBranch,
   parseJpdbText,
   lookupJpdbWord,
   lookupJpdbBatch,
@@ -236,6 +237,9 @@ function updateGameContent() {
     case 'wordDiscovery':
       explorationUI.renderWordDiscovery();
       break;
+    case 'branch_selection':
+      explorationUI.renderBranchSelection();
+      break;
     case 'combat':
       // Clear stale buttons; flash card will be rendered by combat-loop
       if (!combatLoopUI.isCombatActive()) {
@@ -284,8 +288,15 @@ async function loadGameState() {
   const data = await apiGetGameState();
   if (data.player) {
     updateGameState(data);
+    // Refresh chip loadout cache so chip row stays in sync
+    try {
+      chipLoadoutCache = await apiGetChipLoadout();
+    } catch (e) {
+      console.warn('Failed to refresh chip loadout:', e);
+    }
   } else {
     updateGameState({ ...gameState, phase: 'no_save' });
+    chipLoadoutCache = null;
   }
 }
 
@@ -479,6 +490,7 @@ async function openChipEquipView() {
       if (chip) {
         await apiUnequipChip(chip.id, 'weapon');
         await openChipEquipView();
+        updateChipRow();
       }
     });
   });
@@ -487,6 +499,7 @@ async function openChipEquipView() {
     el.addEventListener('click', async () => {
       await apiEquipChip('weapon', el.dataset.chipId);
       await openChipEquipView();
+      updateChipRow();
     });
   });
 }
@@ -684,6 +697,7 @@ async function initGame() {
     apiGetDiscoveryWords,
     apiGetDiscoveryStatus,
     apiCompleteDiscovery,
+    apiSelectBranch,
     apiSwipeWord: (vid, sid, grade, isDiscovery) => apiSendJpdbReview(vid, sid, grade, isDiscovery),
     apiPostCombatRefresh: (words) => fetch('/api/game/post-combat-refresh', {
       method: 'POST',
@@ -759,15 +773,6 @@ async function initGame() {
 
   // Warm JPDB cache on session start
   warmJpdbCache();
-
-  // Fetch chip loadout on startup so chip row renders with equipped chips
-  if (gameState.player) {
-    try {
-      chipLoadoutCache = await apiGetChipLoadout();
-    } catch (e) {
-      console.warn('Failed to fetch chip loadout:', e);
-    }
-  }
 
   updateUI();
 
