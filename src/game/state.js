@@ -266,6 +266,10 @@ export function createNewRun(player) {
     currentRoom: 0,         // Index of current room (0-based)
     roomsExplored: 0,       // Total rooms explored this floor
 
+    // Branching room selection
+    pendingBranch: false,     // True when showing branch choice
+    selectedRooms: [],        // Track door choices: [0, 1, 0, ...]
+
     // Current floor progress
     encountersCompleted: 0,
     encountersNeeded: 0,    // Set when generating floor rooms
