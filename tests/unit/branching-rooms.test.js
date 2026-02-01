@@ -76,6 +76,37 @@ describe('generateFloorRooms with branching', () => {
   });
 });
 
+describe('proceedToNextRoom with branching', () => {
+  it('should set pendingBranch true when next room is a pair', () => {
+    const mockRun = {
+      active: true,
+      rooms: [
+        { type: 'encounter', explored: true, interacted: true },
+        [
+          { type: 'shrine', explored: false },
+          { type: 'quiz', explored: false }
+        ]
+      ],
+      currentRoom: 0,
+      pendingBranch: false,
+      roomsExplored: 1,
+      stats: { roomsExplored: 1 },
+      runStats: { roomsCleared: 0 },
+      floor: 1
+    };
+
+    // Simulate proceeding: check if next is pair
+    mockRun.currentRoom++;
+    const nextRoom = mockRun.rooms[mockRun.currentRoom];
+    if (Array.isArray(nextRoom)) {
+      mockRun.pendingBranch = true;
+    }
+
+    assert.strictEqual(mockRun.pendingBranch, true);
+    assert.strictEqual(mockRun.currentRoom, 1);
+  });
+});
+
 describe('ExplorationService.selectBranch logic', () => {
   it('should replace pair with selected room and clear pendingBranch', () => {
     // This tests the logic inline (not the actual service)

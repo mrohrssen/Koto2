@@ -230,15 +230,29 @@ export class ExplorationService {
 
     // Move to next room
     this.gm.run.currentRoom++;
-    const room = this.getCurrentRoom();
-    logger.info('[Exploration] Proceeded to room:', { type: room?.type, index: this.gm.run.currentRoom });
     const nextRoom = this.gm.run.rooms[this.gm.run.currentRoom];
 
     if (!nextRoom) {
       throw new Error('No more rooms');
     }
 
-    // Mark as explored
+    // Check if next room is a branch pair
+    if (Array.isArray(nextRoom)) {
+      this.gm.run.pendingBranch = true;
+      this.gm.emitState();
+
+      logger.info('[Exploration] Branch point reached:', { roomIndex: this.gm.run.currentRoom });
+
+      return {
+        isBranch: true,
+        options: [
+          { door: 0, type: nextRoom[0].type, room: nextRoom[0] },
+          { door: 1, type: nextRoom[1].type, room: nextRoom[1] }
+        ]
+      };
+    }
+
+    // Single room - mark as explored (existing logic)
     nextRoom.explored = true;
     this.gm.run.roomsExplored++;
     this.gm.run.stats.roomsExplored++;
@@ -257,6 +271,7 @@ export class ExplorationService {
     this.gm.narrate(narration);
     this.gm.emitState();
 
+    logger.info('[Exploration] Proceeded to room:', { type: nextRoom.type, index: this.gm.run.currentRoom });
 
     return {
       room: nextRoom,
