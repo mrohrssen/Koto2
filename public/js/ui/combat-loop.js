@@ -218,12 +218,12 @@ async function showChipActivationSequence(pa) {
 
   // Build initial HTML with stat boxes
   const buildDisplay = (showDamage = false) => {
-    const bwDisplay = currentBw === 1 ? '1' : currentBw.toFixed(1).replace(/\.0$/, '');
+    const bwDisplay = formatBw(currentBw);
     const damageBox = showDamage
       ? `<span class="stat-box-operator">=</span>
          <div class="stat-box damage">
            <span class="stat-box-label">DMG</span>
-           <span class="stat-box-value">${pa.damage}</span>
+           <span class="stat-box-value">${formatNum(pa.damage)}</span>
          </div>`
       : '';
 
@@ -233,7 +233,7 @@ async function showChipActivationSequence(pa) {
         <div class="pipeline-stats">
           <div class="stat-box" id="pwr-box">
             <span class="stat-box-label">PWR</span>
-            <span class="stat-box-value" id="pwr-value">${currentPwr}</span>
+            <span class="stat-box-value" id="pwr-value">${formatNum(currentPwr)}</span>
           </div>
           <span class="stat-box-operator">×</span>
           <div class="stat-box" id="bw-box">
@@ -269,14 +269,14 @@ async function showChipActivationSequence(pa) {
         // Base stats added
         if (event.power) {
           currentPwr += event.power;
-          updateStatValue('pwr-value', currentPwr);
-          addLogLine(`• ${event.chipName}: +${event.power} PWR`);
+          updateStatValue('pwr-value', formatNum(currentPwr));
+          addLogLine(`• ${event.chipName}: +${formatNum(event.power)} PWR`);
           await delay(200);
         }
         if (event.bandwidth) {
           currentBw += event.bandwidth;
           updateStatValue('bw-value', formatBw(currentBw));
-          addLogLine(`• ${event.chipName}: +${event.bandwidth} BW`);
+          addLogLine(`• ${event.chipName}: +${formatNum(event.bandwidth)} BW`);
           await delay(200);
         }
         break;
@@ -285,32 +285,32 @@ async function showChipActivationSequence(pa) {
         // Passive effect modifies pools
         if (event.powerAdd) {
           currentPwr += event.powerAdd;
-          updateStatValue('pwr-value', currentPwr);
-          addLogLine(`• ${event.chipName}: +${event.powerAdd} PWR`);
+          updateStatValue('pwr-value', formatNum(currentPwr));
+          addLogLine(`• ${event.chipName}: +${formatNum(event.powerAdd)} PWR`);
           await delay(200);
         }
         if (event.bandwidthAdd) {
           currentBw += event.bandwidthAdd;
           updateStatValue('bw-value', formatBw(currentBw));
-          addLogLine(`• ${event.chipName}: +${event.bandwidthAdd} BW`);
+          addLogLine(`• ${event.chipName}: +${formatNum(event.bandwidthAdd)} BW`);
           await delay(200);
         }
         if (event.powerMult) {
           currentPwr = Math.floor(currentPwr * event.powerMult);
-          updateStatValue('pwr-value', currentPwr);
-          addLogLine(`• ${event.chipName}: ×${event.powerMult} PWR`);
+          updateStatValue('pwr-value', formatNum(currentPwr));
+          addLogLine(`• ${event.chipName}: ×${formatNum(event.powerMult)} PWR`);
           await delay(200);
         }
         if (event.bandwidthMult) {
           currentBw *= event.bandwidthMult;
           updateStatValue('bw-value', formatBw(currentBw));
-          addLogLine(`• ${event.chipName}: ×${event.bandwidthMult} BW`);
+          addLogLine(`• ${event.chipName}: ×${formatNum(event.bandwidthMult)} BW`);
           await delay(200);
         }
         break;
 
       case 'heal':
-        addLogLine(`• ${event.chipName}: +${event.hp} HP`, 'heal');
+        addLogLine(`• ${event.chipName}: +${formatNum(event.hp)} HP`, 'heal');
         await delay(200);
         break;
 
@@ -330,12 +330,11 @@ async function showChipActivationSequence(pa) {
   await delay(300);
   const statsContainer = document.querySelector('.pipeline-stats');
   if (statsContainer) {
-    const bwDisplay = currentBw === 1 ? '1' : currentBw.toFixed(1).replace(/\.0$/, '');
     const damageHTML = `
       <span class="stat-box-operator">=</span>
       <div class="stat-box damage">
         <span class="stat-box-label">DMG</span>
-        <span class="stat-box-value">${pa.damage}</span>
+        <span class="stat-box-value">${formatNum(pa.damage)}</span>
       </div>
     `;
     statsContainer.insertAdjacentHTML('beforeend', damageHTML);
@@ -344,7 +343,7 @@ async function showChipActivationSequence(pa) {
   // Show cascade if triggered
   if (pa.cascadeTriggered && pa.cascadeDamage) {
     await delay(600);
-    addLogLine(`Cascade: +${pa.cascadeDamage}`);
+    addLogLine(`Cascade: +${formatNum(pa.cascadeDamage)}`);
   }
 
   // Show DoT damage
@@ -367,12 +366,20 @@ function updateStatValue(elementId, value) {
 }
 
 /**
+ * Format a number for display in combat log (max 2 decimal places, no trailing zeros)
+ */
+function formatNum(n) {
+  if (Number.isInteger(n)) return String(n);
+  // Round to 2 decimal places, then remove trailing zeros
+  return Number(n.toFixed(2)).toString();
+}
+
+/**
  * Format bandwidth as effective multiplier
  */
 function formatBw(bw) {
   if (bw === 1) return '1';
-  const formatted = bw.toFixed(1).replace(/\.0$/, '');
-  return formatted;
+  return formatNum(bw);
 }
 
 /**
