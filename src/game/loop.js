@@ -344,6 +344,10 @@ export class GameManager {
         currentWard: this.run.currentWard,
         wardPath: this.run.wardPath,
         wardSelectionRequired: this.run.wardSelectionRequired,
+        // Branch selection system
+        pendingBranch: this.run.pendingBranch,
+        selectedRooms: this.run.selectedRooms,
+        rooms: this.run.rooms,
         // Counter chip tracking (Phase 10)
         runStats: this.run.runStats,
         postCombatShop: this.run.postCombatShop ? {
