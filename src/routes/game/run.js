@@ -223,6 +223,22 @@ export default function createRunRoutes({
     }
   });
 
+  // Select branch door
+  router.post('/select-branch', async (req, res) => {
+    const gameManager = req.gameManager;
+    try {
+      const { door } = req.body;
+      if (door !== 0 && door !== 1) {
+        return res.status(400).json({ error: 'door must be 0 or 1' });
+      }
+      const result = gameManager.selectBranch(door);
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   // Start room encounter (marks room, then starts combat)
   router.post('/room-encounter', async (req, res) => {
     const gameManager = req.gameManager;
