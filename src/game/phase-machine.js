@@ -41,6 +41,7 @@ export const PHASES = {
   ROOM_ENCOUNTER: 'room_encounter',  // Room has unhandled encounter
   BOSS_READY: 'boss_ready',          // At boss room, ready to fight
   WORD_DISCOVERY: 'wordDiscovery',   // In word discovery room
+  BRANCH_SELECTION: 'branch_selection',  // Choosing between two doors
 
   // Combat states
   COMBAT: 'combat',             // In active battle
@@ -192,6 +193,9 @@ export function derivePhase(state) {
 
   // Ward selection required at start or between floors
   if (run.wardSelectionRequired) return PHASES.WARD_SELECTION;
+
+  // Branch selection pending
+  if (run.pendingBranch) return PHASES.BRANCH_SELECTION;
 
   // In active combat
   if (combat?.active) return PHASES.COMBAT;
