@@ -592,6 +592,14 @@ export class GameManager {
     return this.explorationService.proceedToNextRoom();
   }
 
+  /**
+   * Select a branch door in a branching room
+   * @param {number} doorIndex - Index of door to select (0 or 1)
+   */
+  selectBranch(doorIndex) {
+    return this.explorationService.selectBranch(doorIndex);
+  }
+
   // ============ POST-COMBAT SHOP ============
 
   /**
