@@ -249,27 +249,39 @@ export const ROOM_TYPES = {
 // ============ ROOM GENERATION ============
 
 /**
- * Generate rooms for a floor
- * Structure: N encounter slots (each 20% chance shrine) + boss
- * @param {number} floor - Current floor (1-7)
- * @param {number} encountersNeeded - Number of encounter slots before boss
- * @returns {Array} Array of room objects
+ * Check if a room type is a special type (subject to constraints)
+ * @param {string} type - Room type
+ * @returns {boolean}
  */
-export function generateFloorRooms(floor, encountersNeeded = 3) {
-  const rooms = [];
+function isSpecialType(type) {
+  return type === ROOM_TYPES.shrine ||
+         type === ROOM_TYPES.quiz ||
+         type === ROOM_TYPES.wordDiscovery;
+}
+
+/**
+ * Generate a single room with type constraints
+ * @param {number} floor - Current floor (1-7)
+ * @param {number} roomNumber - Room number in sequence
+ * @param {number} totalRooms - Total rooms in floor
+ * @param {string|null} excludeSpecialType - Special type to exclude (for back-to-back constraint)
+ * @returns {object} Room object
+ */
+function generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType = null) {
   const SHRINE_CHANCE = 0.20;          // 20% chance for shrine
   const QUIZ_CHANCE = 0.20;            // 20% chance for quiz
   const WORD_DISCOVERY_CHANCE = 0.15;  // 15% chance for word discovery
 
-  for (let i = 0; i < encountersNeeded; i++) {
-    // Check test queue first (for deterministic E2E tests)
-    const queuedType = popTestRoomType();
-    let type;
+  // Check test queue first (for deterministic E2E tests)
+  const queuedType = popTestRoomType();
+  let type;
 
-    if (queuedType && ROOM_TYPES[queuedType]) {
-      type = ROOM_TYPES[queuedType];
-    } else {
-      // Normal random generation
+  if (queuedType && ROOM_TYPES[queuedType]) {
+    type = ROOM_TYPES[queuedType];
+  } else {
+    // Generate with constraints
+    let attempts = 0;
+    do {
       const roll = Math.random();
       if (roll < SHRINE_CHANCE) {
         type = ROOM_TYPES.shrine;
@@ -280,17 +292,74 @@ export function generateFloorRooms(floor, encountersNeeded = 3) {
       } else {
         type = ROOM_TYPES.encounter;
       }
+      attempts++;
+    } while (
+      excludeSpecialType &&
+      isSpecialType(type) &&
+      type === excludeSpecialType &&
+      attempts < 10
+    );
+  }
+
+  return createRoom(type, floor, roomNumber, totalRooms);
+}
+
+/**
+ * Generate a pair of rooms for a branch choice
+ * Constraints: no duplicate special types in pair, no back-to-back same special
+ * @param {number} floor - Current floor (1-7)
+ * @param {number} roomNumber - Room number in sequence
+ * @param {number} totalRooms - Total rooms in floor
+ * @param {string|null} excludeSpecialType - Special type to exclude (for back-to-back constraint)
+ * @returns {Array} Array of 2 room objects
+ */
+function generateBranchPair(floor, roomNumber, totalRooms, excludeSpecialType = null) {
+  const room1 = generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType);
+
+  // For room2, also exclude room1's type if it's special
+  let room2ExcludeType = excludeSpecialType;
+  if (isSpecialType(room1.type)) {
+    room2ExcludeType = room1.type;
+  }
+
+  const room2 = generateSingleRoom(floor, roomNumber, totalRooms, room2ExcludeType);
+
+  return [room1, room2];
+}
+
+/**
+ * Generate rooms for a floor with branching
+ * Structure: single first room + branch pairs + single boss
+ * @param {number} floor - Current floor (1-7)
+ * @param {number} encountersNeeded - Number of room slots before boss
+ * @param {string|null} lastSpecialType - Last special room type completed (for back-to-back constraint)
+ * @returns {Array} Array of room objects (singles) or pairs (arrays of 2)
+ */
+export function generateFloorRooms(floor, encountersNeeded = 3, lastSpecialType = null) {
+  const rooms = [];
+  const totalSlots = encountersNeeded + 1; // +1 for boss
+  let prevSpecialType = lastSpecialType;
+
+  for (let i = 0; i < encountersNeeded; i++) {
+    const roomNumber = i + 1;
+
+    if (i === 0) {
+      // First room: single (auto-entered)
+      const room = generateSingleRoom(floor, roomNumber, totalSlots, prevSpecialType);
+      if (isSpecialType(room.type)) {
+        prevSpecialType = room.type;
+      }
+      rooms.push(room);
+    } else {
+      // Middle rooms: branch pairs
+      const pair = generateBranchPair(floor, roomNumber, totalSlots, prevSpecialType);
+      rooms.push(pair);
+      // Note: prevSpecialType updates when player makes selection (in selectBranch)
     }
-    rooms.push(createRoom(type, floor, rooms.length + 1, 0));
   }
 
-  // Boss room (always last)
-  rooms.push(createRoom(ROOM_TYPES.boss, floor, rooms.length + 1, 0));
-
-  const totalRooms = rooms.length;
-  for (const room of rooms) {
-    room.totalRooms = totalRooms;
-  }
+  // Boss room (always last, single)
+  rooms.push(createRoom(ROOM_TYPES.boss, floor, totalSlots, totalSlots));
 
   return rooms;
 }
