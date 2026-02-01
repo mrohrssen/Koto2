@@ -26,19 +26,22 @@ describe('Chip Stats Structure', () => {
     }
   });
 
-  it('Battery Bot should have PWR 8, BW 0', () => {
-    assert.strictEqual(CHIPS.battery.stats.power, 8);
+  it('Battery Bot should have PWR 10, BW 0 (common)', () => {
+    assert.strictEqual(CHIPS.battery.stats.power, 10);
     assert.strictEqual(CHIPS.battery.stats.bandwidth, 0);
+    assert.strictEqual(CHIPS.battery.rarity, 'common');
   });
 
-  it('Speaker Bot should have PWR 0, BW 2', () => {
-    assert.strictEqual(CHIPS.speaker.stats.power, 0);
-    assert.strictEqual(CHIPS.speaker.stats.bandwidth, 2);
+  it('Speaker Bot should have PWR 10, BW 3 (rare)', () => {
+    assert.strictEqual(CHIPS.speaker.stats.power, 10);
+    assert.strictEqual(CHIPS.speaker.stats.bandwidth, 3);
+    assert.strictEqual(CHIPS.speaker.rarity, 'rare');
   });
 
-  it('Fireworks Bot should have PWR 15, BW 1', () => {
-    assert.strictEqual(CHIPS.fireworks.stats.power, 15);
-    assert.strictEqual(CHIPS.fireworks.stats.bandwidth, 1);
+  it('Fireworks Bot should have PWR 17, BW 2 (epic)', () => {
+    assert.strictEqual(CHIPS.fireworks.stats.power, 17);
+    assert.strictEqual(CHIPS.fireworks.stats.bandwidth, 2);
+    assert.strictEqual(CHIPS.fireworks.rarity, 'epic');
   });
 });
 

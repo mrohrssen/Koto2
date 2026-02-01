@@ -218,16 +218,14 @@ function applyRarityMultiplier(effects, multiplier) {
 
 /**
  * Generate random chips for post-combat shop
- * All rarities available from any floor, weighted toward common
- * Each chip gets a randomly assigned rarity with scaled stats
+ * Each chip has a fixed rarity defined in chips.json
  * @param {number} floor - Current floor (unused now, kept for API compatibility)
  * @param {array} ownedChipIds - IDs of chips player already owns
  * @param {number} count - Number of chips to generate (default 3)
  * @param {string} category - Optional category filter (e.g., 'pipeline')
  */
 export function generateShopChips(floor, ownedChipIds = [], count = 3, category = null) {
-  // Get all base chips (we'll assign rarity randomly)
-  // Filter out chips player already owns (by base ID)
+  // Get all chips, filter out ones player already owns
   // Optionally filter by category
   const availableChips = Object.values(CHIPS).filter(chip =>
     !ownedChipIds.includes(chip.id) &&
@@ -238,27 +236,17 @@ export function generateShopChips(floor, ownedChipIds = [], count = 3, category 
     return []; // No chips available
   }
 
-  // Shuffle and pick base chips
+  // Shuffle and pick chips
   const shuffled = [...availableChips].sort(() => Math.random() - 0.5);
   const selected = shuffled.slice(0, Math.min(count, shuffled.length));
 
-  // Roll random rarity for each chip and apply scaling
+  // Use fixed rarity from chip definition
   return selected.map(chip => {
-    const rarity = rollRandomRarity();
+    const rarity = chip.rarity || 'common';
     const rarityInfo = CHIP_RARITIES[rarity];
-    const scaledEffects = applyRarityMultiplier(chip.effects, rarityInfo.statMultiplier);
-
-    // Merge base effects with scaled effects
-    const finalEffects = {
-      ...chip.effects,
-      ...scaledEffects
-    };
-
-    // Create unique ID with rarity suffix for rarity variants
-    const chipId = rarity === 'common' ? chip.id : `${chip.id}_${rarity}`;
 
     return {
-      id: chipId,
+      id: chip.id,
       baseId: chip.id,
       name: chip.name,
       nameEn: chip.nameEn,
@@ -267,12 +255,9 @@ export function generateShopChips(floor, ownedChipIds = [], count = 3, category 
       category: chip.category,
       rarity: rarity,
       price: Math.floor(chipConfig.upgradeConfig.basePrice * rarityInfo.priceMultiplier),
-      effects: finalEffects,
+      effects: chip.effects,
       skill: chip.skill,
-      stats: chip.stats ? {
-        power: Math.round((chip.stats.power || 0) * rarityInfo.statMultiplier),
-        bandwidth: Math.round((chip.stats.bandwidth || 0) * rarityInfo.statMultiplier)
-      } : undefined
+      stats: chip.stats
     };
   });
 }
