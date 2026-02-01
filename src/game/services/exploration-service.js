@@ -267,6 +267,69 @@ export class ExplorationService {
     };
   }
 
+  /**
+   * Select a door at a branch point
+   * @param {number} doorIndex - 0 for door 1, 1 for door 2
+   */
+  selectBranch(doorIndex) {
+    if (!this.gm.run || !this.gm.run.active) {
+      throw new Error('No active run');
+    }
+
+    if (!this.gm.run.pendingBranch) {
+      throw new Error('No branch selection pending');
+    }
+
+    const pair = this.gm.run.rooms[this.gm.run.currentRoom];
+    if (!Array.isArray(pair) || pair.length !== 2) {
+      throw new Error('Current room is not a branch pair');
+    }
+
+    if (doorIndex !== 0 && doorIndex !== 1) {
+      throw new Error('Invalid door index');
+    }
+
+    const selectedRoom = pair[doorIndex];
+
+    // Replace pair with selected room
+    this.gm.run.rooms[this.gm.run.currentRoom] = selectedRoom;
+
+    // Track the choice
+    this.gm.run.selectedRooms.push(doorIndex);
+
+    // Mark as explored
+    selectedRoom.explored = true;
+    this.gm.run.roomsExplored++;
+    this.gm.run.stats.roomsExplored++;
+
+    // Track room clears for counter chips
+    if (this.gm.run.runStats) {
+      this.gm.run.runStats.roomsCleared++;
+    }
+
+    // Vary background per room
+    const bgVariant = ((this.gm.run.currentRoom - 1) % 5) + 1;
+    this.gm.run.background = `floor${this.gm.run.floor}_${bgVariant}.webp`;
+
+    // Clear pending branch
+    this.gm.run.pendingBranch = false;
+
+    // Get narration for new room
+    const narration = getRoomEntryNarration(selectedRoom);
+    this.gm.narrate(narration);
+    this.gm.emitState();
+
+    logger.info('[Exploration] Branch selected:', { door: doorIndex, roomType: selectedRoom.type });
+
+    return {
+      room: selectedRoom,
+      roomNumber: this.gm.run.currentRoom + 1,
+      totalRooms: this.gm.run.rooms.length,
+      actions: getRoomActions(selectedRoom),
+      narration
+    };
+  }
+
   // ============ ROOM INTERACTIONS ============
 
   /**
