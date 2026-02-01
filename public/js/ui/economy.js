@@ -32,6 +32,7 @@ let updateUI = null;
 let apiClaimStartingChip = null;
 let apiPostCombatShopBuy = null;
 let apiShopSkip = null;
+let apiShopRefresh = null;
 let apiGetChipLoadout = null;
 let setChipLoadoutCache = null;
 
@@ -42,6 +43,7 @@ export function init(callbacks) {
   apiClaimStartingChip = callbacks.apiClaimStartingChip;
   apiPostCombatShopBuy = callbacks.apiPostCombatShopBuy;
   apiShopSkip = callbacks.apiShopSkip;
+  apiShopRefresh = callbacks.apiShopRefresh;
   apiGetChipLoadout = callbacks.apiGetChipLoadout;
   setChipLoadoutCache = callbacks.setChipLoadoutCache;
 }
@@ -55,7 +57,36 @@ export async function renderPostCombatShop() {
     return;
   }
 
-  const chip = await chipSelect.showChipSelect(shop.items, { allowSkip: true });
+  const playerCredits = gameState.run?.player?.credits ?? 0;
+
+  // Handle refresh callback
+  const handleRefresh = async () => {
+    try {
+      const result = await apiShopRefresh();
+      if (result?.state) {
+        updateGameState(result.state);
+      }
+      // Update chip select with new items
+      const newGameState = getGameState();
+      const newShop = newGameState.run?.postCombatShop;
+      const newCredits = newGameState.run?.player?.credits ?? 0;
+      if (newShop?.items) {
+        chipSelect.updateChips(newShop.items, {
+          playerCredits: newCredits,
+          freeRefreshUsed: newShop.freeRefreshUsed
+        });
+      }
+    } catch (error) {
+      console.error('Shop refresh failed:', error);
+    }
+  };
+
+  const chip = await chipSelect.showChipSelect(shop.items, {
+    allowSkip: true,
+    playerCredits,
+    freeRefreshUsed: shop.freeRefreshUsed || false,
+    onRefresh: apiShopRefresh ? handleRefresh : null
+  });
 
   // Handle skip
   if (!chip) {
@@ -65,18 +96,26 @@ export async function renderPostCombatShop() {
 
   const index = shop.items.findIndex(c => (c.itemId || c.id) === (chip.itemId || chip.id));
 
-  const result = await apiPostCombatShopBuy(index);
-  if (result?.state) {
-    updateGameState(result.state);
+  try {
+    const result = await apiPostCombatShopBuy(index);
+    if (result?.state) {
+      updateGameState(result.state);
+    }
+
+    playSFX('chip-equip');
+    speakText(chip.nameEn || chip.name);
+
+    if (apiGetChipLoadout && setChipLoadoutCache) {
+      const loadout = await apiGetChipLoadout();
+      setChipLoadoutCache(loadout);
+    }
+  } catch (error) {
+    console.error('Shop purchase failed:', error);
+    // If purchase failed (not enough credits, etc), re-show the shop
+    await renderPostCombatShop();
+    return;
   }
 
-  playSFX('chip-equip');
-  speakText(chip.nameEn || chip.name);
-
-  if (apiGetChipLoadout && setChipLoadoutCache) {
-    const loadout = await apiGetChipLoadout();
-    setChipLoadoutCache(loadout);
-  }
   updateUI();
 }
 

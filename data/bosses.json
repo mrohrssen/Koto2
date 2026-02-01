@@ -7,7 +7,7 @@
       "description": "SYSTEMに取り込まれた有名アニメ監督。無限に作画崩壊を続ける。",
       "personality": "obsessive",
       "xpReward": 100,
-      "goldReward": 150,
+      "creditReward": 150,
       "isBoss": true,
       "dialogue": {
         "possessed": [
@@ -40,7 +40,7 @@
       "description": "中野のホストクラブを支配する男。魅力がSYSTEMに増幅されている。",
       "personality": "charming",
       "xpReward": 150,
-      "goldReward": 240,
+      "creditReward": 240,
       "isBoss": true,
       "dialogue": {
         "possessed": [
@@ -73,7 +73,7 @@
       "description": "数百万のフォロワーを持つインフルエンサー。SYSTEMの拡散者。",
       "personality": "performative",
       "xpReward": 200,
-      "goldReward": 360,
+      "creditReward": 360,
       "isBoss": true,
       "dialogue": {
         "possessed": [
@@ -106,7 +106,7 @@
       "description": "池袋の電気街を支配する商人。あらゆるガジェットに精通。",
       "personality": "greedy",
       "xpReward": 280,
-      "goldReward": 450,
+      "creditReward": 450,
       "isBoss": true,
       "dialogue": {
         "possessed": [
@@ -139,7 +139,7 @@
       "description": "グローバル企業のトップ。利益のためなら何でもする冷酷な経営者。",
       "personality": "ruthless",
       "xpReward": 350,
-      "goldReward": 600,
+      "creditReward": 600,
       "isBoss": true,
       "dialogue": {
         "possessed": [
@@ -172,7 +172,7 @@
       "description": "SYSTEM法を推進した大臣。国民監視システムの創設者。",
       "personality": "authoritative",
       "xpReward": 500,
-      "goldReward": 900,
+      "creditReward": 900,
       "isBoss": true,
       "dialogue": {
         "possessed": [
@@ -206,7 +206,7 @@
     "description": "東京を支配するAI。人類の効率化を目指し、すべての市民を管理下に置こうとする存在。かつては人類を助けるために作られた。",
     "personality": "absolute",
     "xpReward": 1000,
-    "goldReward": 1500,
+    "creditReward": 1500,
     "isBoss": true,
     "isFinalBoss": true,
     "dialogue": {

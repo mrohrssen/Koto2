@@ -242,20 +242,37 @@ export function generateShopChips(floor, ownedChipIds = [], count = 3, category 
   const shuffled = [...availableChips].sort(() => Math.random() - 0.5);
   const selected = shuffled.slice(0, Math.min(count, shuffled.length));
 
-  // All chips are common rarity — no rarity rolling
-  const commonRarity = CHIP_RARITIES['common'];
+  // Roll random rarity for each chip and apply scaling
   return selected.map(chip => {
+    const rarity = rollRandomRarity();
+    const rarityInfo = CHIP_RARITIES[rarity];
+    const scaledEffects = applyRarityMultiplier(chip.effects, rarityInfo.statMultiplier);
+
+    // Merge base effects with scaled effects
+    const finalEffects = {
+      ...chip.effects,
+      ...scaledEffects
+    };
+
+    // Create unique ID with rarity suffix for rarity variants
+    const chipId = rarity === 'common' ? chip.id : `${chip.id}_${rarity}`;
+
     return {
-      id: chip.id,
+      id: chipId,
+      baseId: chip.id,
       name: chip.name,
       nameEn: chip.nameEn,
       description: chip.description,
       descriptionEn: chip.descriptionEn,
       category: chip.category,
-      rarity: 'common',
-      price: Math.floor(chipConfig.upgradeConfig.basePrice * commonRarity.priceMultiplier),
-      effects: chip.effects,
-      skill: chip.skill
+      rarity: rarity,
+      price: Math.floor(chipConfig.upgradeConfig.basePrice * rarityInfo.priceMultiplier),
+      effects: finalEffects,
+      skill: chip.skill,
+      stats: chip.stats ? {
+        power: Math.round((chip.stats.power || 0) * rarityInfo.statMultiplier),
+        bandwidth: Math.round((chip.stats.bandwidth || 0) * rarityInfo.statMultiplier)
+      } : undefined
     };
   });
 }

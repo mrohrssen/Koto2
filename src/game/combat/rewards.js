@@ -11,14 +11,14 @@ import { processDeathEffects } from './status-effects.js';
  * Process combat victory rewards
  */
 export function processVictory(player, enemy, run) {
-  const gold = enemy.goldReward || 0;
+  const credits = enemy.creditReward || 0;
 
   const rewards = {
-    gold,
+    credits,
   };
 
-  // Add gold
-  player.gold += gold;
+  // Add credits
+  player.credits += credits;
 
   // Process death effects (enemy abilities like heal-on-death)
   const deathEffects = processDeathEffects(enemy, player);
@@ -30,7 +30,7 @@ export function processVictory(player, enemy, run) {
   // Update run stats
   if (run) {
     run.stats.enemiesDefeated++;
-    run.stats.goldEarned += gold;
+    run.stats.creditsEarned += credits;
     if (enemy.isBoss) {
       run.stats.bossesDefeated++;
     }

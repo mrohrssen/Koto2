@@ -98,7 +98,7 @@ function createCombatSetup(options = {}) {
       damageDealt: 0,
       damageTaken: 0,
       itemsUsed: 0,
-      goldEarned: 0,
+      creditsEarned: 0,
       floorsCleared: 0,
       roomsExplored: 0,
       trapsDisarmed: 0,

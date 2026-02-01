@@ -228,7 +228,8 @@ export default function createMiscRoutes({
           const { generatePostCombatShop } = await import('../../game/rooms.js');
           gameManager.run.postCombatShop = {
             active: true,
-            items: generatePostCombatShop(gameManager.run.floor, ownedIds)
+            items: generatePostCombatShop(gameManager.run.floor, ownedIds),
+            freeRefreshUsed: false
           };
           break;
         }
@@ -344,7 +345,7 @@ export default function createMiscRoutes({
       upgrades: [],
       achievements: [],
       achievementProgress: {},
-      lifetimeStats: { runs: 0, deaths: 0, kills: 0, goldEarned: 0, bossesKilled: 0 }
+      lifetimeStats: { runs: 0, deaths: 0, kills: 0, creditsEarned: 0, bossesKilled: 0 }
     };
     cancelPendingPrefetches();
     clearPrefetchCache();

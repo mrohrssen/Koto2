@@ -927,7 +927,7 @@ export async function stopCombatLoop(result) {
       body: JSON.stringify({
         victory: result.victory,
         expGained: result.expGained,
-        goldGained: result.goldGained,
+        creditsGained: result.creditsGained,
         loot: result.loot,
         leveledUp: result.leveledUp,
         newLevel: result.newLevel,

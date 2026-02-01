@@ -210,7 +210,7 @@ export class GameManager {
     stats.totalBossesDefeated += runStats.bossesDefeated || 0;
     stats.totalDamageDealt += runStats.damageDealt || 0;
     stats.totalDamageTaken += runStats.damageTaken || 0;
-    stats.totalGoldEarned += runStats.goldEarned || 0;
+    stats.totalCreditsEarned += runStats.creditsEarned || 0;
 
     if (this.run.floor > stats.highestFloor) {
       stats.highestFloor = this.run.floor;
@@ -281,8 +281,8 @@ export class GameManager {
     // Attack bonus
     player.attack += effects.attackBonus || 0;
 
-    // Starting gold
-    player.gold += effects.startingGold || 0;
+    // Starting credits
+    player.credits += effects.startingCredits || 0;
 
     return player;
   }
@@ -378,7 +378,7 @@ export class GameManager {
               onKillHp: itemData?.onKillHp || 0,
               onKillSp: itemData?.onKillSp || 0,
               healingBonus: itemData?.healingBonus || 0,
-              goldFind: itemData?.goldFind || 0,
+              creditFind: itemData?.creditFind || 0,
               statusInflict: itemData?.statusInflict || null,
               setId: itemData?.setId || null
             };
@@ -442,7 +442,7 @@ export class GameManager {
    */
   loadPlayer(playerData) {
     this.player = playerData;
-    logger.debug('[GameManager] Player loaded:', { name: this.player.name, gold: this.player.gold });
+    logger.debug('[GameManager] Player loaded:', { name: this.player.name, credits: this.player.credits });
     this.emitState();
     return this.player;
   }
@@ -614,6 +614,20 @@ export class GameManager {
    */
   refreshPostCombatShop() {
     return this.explorationService.refreshPostCombatShop();
+  }
+
+  /**
+   * Sell a chip from inventory
+   */
+  sellChip(chipId) {
+    return this.explorationService.sellChip(chipId);
+  }
+
+  /**
+   * Get inventory status
+   */
+  getInventoryStatus() {
+    return this.explorationService.getInventoryStatus();
   }
 
   /**

@@ -1042,6 +1042,47 @@ html, body {
   color: var(--text-secondary);
 }
 
+.chip-select-refresh {
+  background: var(--surface-raised);
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.chip-select-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.chip-select-credits {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-yellow);
+  margin-bottom: 8px;
+}
+
+.chip-select-price {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.chip-select-price.affordable {
+  color: var(--accent-green);
+}
+
+.chip-select-price.expensive {
+  color: var(--accent-red);
+}
+
+/* Rarity colors for chip cards */
+.chip-select-rarity.common { color: #9d9d9d; }
+.chip-select-rarity.uncommon { color: #1eff00; }
+.chip-select-rarity.rare { color: #0070dd; }
+.chip-select-rarity.epic { color: #a335ee; }
+.chip-select-rarity.legendary { color: #ff8000; }
+
 /* ===== SHRINE CHIP UPGRADE ===== */
 .shrine-title {
   text-align: center;

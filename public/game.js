@@ -71,6 +71,7 @@ import {
   claimStartingChip as apiClaimStartingChip,
   postCombatShopBuy as apiPostCombatShopBuy,
   shopSkip as apiShopSkip,
+  postCombatShopRefresh as apiShopRefresh,
   equipChip as apiEquipChip,
   unequipChip as apiUnequipChip,
   nextFloor as apiNextFloor,
@@ -699,6 +700,7 @@ async function initGame() {
     apiClaimStartingChip,
     apiPostCombatShopBuy,
     apiShopSkip,
+    apiShopRefresh,
     apiGetChipLoadout,
     setChipLoadoutCache: (data) => { chipLoadoutCache = data; updateChipRow(); },
   });

@@ -1016,9 +1016,9 @@ export function generateEnemy(floor) {
   // SIMPLIFIED: no level bonus
   const enemy = buildEnemy(template, 0);
 
-  // SIMPLIFIED: no XP (no leveling), but keep gold rewards
+  // SIMPLIFIED: no XP (no leveling), but keep credit rewards
   enemy.xpReward = 0;  // No XP in simplified mode
-  enemy.goldReward = template.goldReward || 20;
+  enemy.creditReward = template.creditReward || 20;
 
   return enemy;
 }
