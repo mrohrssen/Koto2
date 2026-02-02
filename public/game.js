@@ -53,6 +53,8 @@ import * as narrationBox from './js/ui/narration-box.js';
 import * as leaderboard from './js/ui/leaderboard.js';
 import * as lookup from './js/ui/lookup.js';
 import * as bugReport from './js/ui/bug-report.js';
+import * as phaser from './js/phaser/index.js';
+import { gameEvents } from './js/phaser/phaser-bridge.js';
 
 // API imports - these are the server communication functions
 import {
@@ -447,6 +449,96 @@ function handleCardFlip() {
   }
 }
 
+// ============ PHASER EXPLORATION HANDLERS ============
+
+function setupPhaserEventListeners() {
+  // Room transition via door
+  gameEvents.on('roomTransition', async (data) => {
+    phaser.stopExploration();
+    // Use existing room advance API
+    const result = await apiProceed();
+    if (result?.state) {
+      updateGameState(result.state);
+      // If still in exploration phase, restart Phaser with new room
+      if (gameState.phase === 'exploring' || gameState.phase === 'room') {
+        const roomData = getRoomDataForPhaser();
+        phaser.startExploration(roomData);
+      } else {
+        updateUI();
+      }
+    }
+  });
+
+  // Credits collected
+  gameEvents.on('creditsCollected', async (data) => {
+    try {
+      const response = await fetch('/api/game/collect-credits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        body: JSON.stringify({ amount: data.amount })
+      });
+      const result = await response.json();
+      if (result.success) {
+        scene.showToast(`+${data.amount} credits`, 1500);
+        // Update local state
+        if (gameState.player) {
+          gameState.player.gold = result.newTotal;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to collect credits:', e);
+    }
+  });
+
+  // Start interaction (NPC talk, combat, etc.)
+  gameEvents.on('startInteraction', async (data) => {
+    phaser.stopExploration();
+
+    switch (data.type) {
+      case 'encounter':
+      case 'boss':
+        await startEncounter();
+        break;
+      case 'shrine':
+        // Load shrine state and render
+        await loadGameState();
+        updateUI();
+        break;
+      case 'quiz':
+        await loadGameState();
+        updateUI();
+        break;
+      case 'wordDiscovery':
+        await loadGameState();
+        updateUI();
+        break;
+      default:
+        updateUI();
+    }
+  });
+}
+
+/**
+ * Get room data formatted for Phaser scene.
+ */
+function getRoomDataForPhaser() {
+  const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
+  return {
+    type: room?.type || 'encounter',
+    floor: gameState.run?.floor || 1,
+    doorDestinations: [0, 1] // Fixed 2 doors for prototype
+  };
+}
+
+/**
+ * Check if current phase should use Phaser exploration.
+ */
+function shouldUsePhaser() {
+  // For now, disabled - enable when ready to test
+  return false;
+  // Future: return ['exploring', 'room'].includes(gameState.phase);
+}
+
 // ============ CHIP HANDLERS ============
 async function openChipEquipView() {
   takeover.open('chipEquip');
@@ -767,6 +859,7 @@ async function initGame() {
   });
 
   setupEventListeners();
+  setupPhaserEventListeners();
 
   // Wire logout button
   document.getElementById('logout-btn').addEventListener('click', () => {
