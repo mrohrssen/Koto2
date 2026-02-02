@@ -63,18 +63,62 @@ export class ExplorationScene extends Phaser.Scene {
   }
 
   preload() {
-    // Load placeholder assets (will be replaced with real assets)
-    // For now, create simple colored rectangles as placeholders
-    this.createPlaceholderTextures();
+    // Load player walk spritesheet (48x64 per frame, 8 cols x 6 rows)
+    this.load.spritesheet('player-walk', 'assets/exploration/player/walk.png', {
+      frameWidth: 48,
+      frameHeight: 64
+    });
+
+    // Load room background
+    this.load.image('room-background', 'assets/exploration/background.png');
+    // Note: placeholder textures created in create() - graphics can't be made during preload
+  }
+
+  createAnimations() {
+    // 6 directions, 8 frames each
+    // Row 0: down (frames 0-7)
+    // Row 1: left-down (frames 8-15)
+    // Row 2: left-up (frames 16-23)
+    // Row 3: right-down (frames 24-31)
+    // Row 4: up (frames 32-39) - swapped with row 5
+    // Row 5: right-up (frames 40-47) - swapped with row 4
+
+    const directions = [
+      { key: 'walk-down', start: 0 },
+      { key: 'walk-left-down', start: 8 },
+      { key: 'walk-left-up', start: 16 },
+      { key: 'walk-right-down', start: 24 },
+      { key: 'walk-up', start: 32 },
+      { key: 'walk-right-up', start: 40 }
+    ];
+
+    directions.forEach(dir => {
+      if (!this.anims.exists(dir.key)) {
+        this.anims.create({
+          key: dir.key,
+          frames: this.anims.generateFrameNumbers('player-walk', {
+            start: dir.start,
+            end: dir.start + 7
+          }),
+          frameRate: 10,
+          repeat: -1
+        });
+      }
+
+      // Also create idle (single frame) for each direction
+      const idleKey = dir.key.replace('walk-', 'idle-');
+      if (!this.anims.exists(idleKey)) {
+        this.anims.create({
+          key: idleKey,
+          frames: [{ key: 'player-walk', frame: dir.start }],
+          frameRate: 1,
+          repeat: 0
+        });
+      }
+    });
   }
 
   createPlaceholderTextures() {
-    // Player placeholder (32x32 cyan square)
-    const playerGraphics = this.make.graphics({ x: 0, y: 0, add: false });
-    playerGraphics.fillStyle(0x00ffff);
-    playerGraphics.fillRect(0, 0, 32, 32);
-    playerGraphics.generateTexture('player-placeholder', 32, 32);
-
     // NPC placeholder (48x48 magenta square)
     const npcGraphics = this.make.graphics({ x: 0, y: 0, add: false });
     npcGraphics.fillStyle(0xff00ff);
@@ -95,12 +139,21 @@ export class ExplorationScene extends Phaser.Scene {
   }
 
   create() {
-    console.log('[ExplorationScene] create() called, roomData:', this.roomData);
     const { width, height } = this.scale;
-    console.log('[ExplorationScene] canvas size:', width, height);
 
-    // Background (simple gradient for now)
-    this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e);
+    // Create placeholder textures (must be in create, not preload)
+    this.createPlaceholderTextures();
+
+    // Create player animations
+    this.createAnimations();
+
+    // Background image (scaled to fit canvas)
+    const bg = this.add.image(width / 2, height / 2, 'room-background');
+    // Scale to cover the canvas (background is 1504x2848, canvas is 400x760)
+    const scaleX = width / bg.width;
+    const scaleY = height / bg.height;
+    const scale = Math.max(scaleX, scaleY); // Cover entire canvas
+    bg.setScale(scale);
 
     // Add floor indicator
     const floorText = this.add.text(width / 2, 30, `Floor ${this.roomData.floor}`, {
@@ -131,9 +184,6 @@ export class ExplorationScene extends Phaser.Scene {
 
     // Set up collisions
     this.setupCollisions();
-
-    // Enable lighting (for HD2D effect)
-    this.setupLighting();
   }
 
   createPlayer() {
@@ -143,9 +193,18 @@ export class ExplorationScene extends Phaser.Scene {
     const spawnX = this.roomData.playerPosition?.x ?? width / 2;
     const spawnY = this.roomData.playerPosition?.y ?? height * 0.75;
 
-    this.player = this.physics.add.sprite(spawnX, spawnY, 'player-placeholder');
+    this.player = this.physics.add.sprite(spawnX, spawnY, 'player-walk');
+    this.player.setScale(2); // 2x size for visibility
     this.player.setCollideWorldBounds(true);
-    this.player.body.setSize(24, 24);
+    // Collision box smaller than sprite (feet area)
+    this.player.body.setSize(24, 16);
+    this.player.body.setOffset(12, 48); // Offset to bottom of sprite
+
+    // Start facing down
+    this.player.play('idle-down');
+
+    // Store last direction for idle
+    this.player.setData('lastDirection', 'down');
   }
 
   createDoors() {
@@ -241,6 +300,12 @@ export class ExplorationScene extends Phaser.Scene {
   }
 
   setupEventListeners() {
+    // Remove any existing listeners first (scene may restart)
+    gameEvents.off('doorEnter');
+    gameEvents.off('creditGrab');
+    gameEvents.off('npcTalk');
+    gameEvents.off('interactionComplete');
+
     // Door entered
     gameEvents.on('doorEnter', (data) => {
       this.handleDoorEnter(data.door);
@@ -268,7 +333,14 @@ export class ExplorationScene extends Phaser.Scene {
   }
 
   handleCreditGrab(credit) {
+    // Guard against destroyed or invalid credit objects
+    if (!credit || !credit.active) {
+      return;
+    }
     const amount = credit.getData('amount');
+    if (typeof amount !== 'number') {
+      return;
+    }
     credit.destroy();
     this.credits = this.credits.filter(c => c !== credit);
     gameEvents.emit('creditsCollected', { amount });
@@ -286,15 +358,6 @@ export class ExplorationScene extends Phaser.Scene {
     if (data.canProceed) {
       // Doors are already active
     }
-  }
-
-  setupLighting() {
-    // Enable light pipeline
-    this.lights.enable();
-    this.lights.setAmbientColor(0x555555);
-
-    // Add point light at center
-    this.lights.addLight(this.scale.width / 2, this.scale.height / 2, 200, 0xffffff, 0.5);
   }
 
   update() {

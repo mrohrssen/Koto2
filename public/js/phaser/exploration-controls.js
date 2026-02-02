@@ -84,6 +84,32 @@ export class ExplorationControls {
   }
 
   /**
+   * Determine animation direction from velocity.
+   * Sprite has 6 directions: down, up, left-down, left-up, right-down, right-up
+   */
+  getDirectionFromVelocity(vx, vy) {
+    const threshold = 0.3; // Threshold to consider movement in a direction
+
+    const movingLeft = vx < -threshold;
+    const movingRight = vx > threshold;
+    const movingUp = vy < -threshold;
+    const movingDown = vy > threshold;
+
+    // Determine direction (6-way)
+    if (movingDown && movingLeft) return 'left-down';
+    if (movingDown && movingRight) return 'right-down';
+    if (movingUp && movingLeft) return 'left-up';
+    if (movingUp && movingRight) return 'right-up';
+    if (movingDown) return 'down';
+    if (movingUp) return 'up';
+    // Pure left/right - use diagonal variants
+    if (movingLeft) return 'left-down';
+    if (movingRight) return 'right-down';
+
+    return null; // Not moving
+  }
+
+  /**
    * Update player movement. Call in scene update().
    */
   update() {
@@ -107,6 +133,25 @@ export class ExplorationControls {
 
     // Apply velocity
     this.player.setVelocity(vx * this.moveSpeed, vy * this.moveSpeed);
+
+    // Handle animation
+    const direction = this.getDirectionFromVelocity(vx, vy);
+    const lastDirection = this.player.getData('lastDirection') || 'down';
+
+    if (direction) {
+      // Moving - play walk animation
+      const animKey = `walk-${direction}`;
+      if (this.player.anims.currentAnim?.key !== animKey) {
+        this.player.play(animKey);
+      }
+      this.player.setData('lastDirection', direction);
+    } else {
+      // Stopped - play idle animation facing last direction
+      const idleKey = `idle-${lastDirection}`;
+      if (this.player.anims.currentAnim?.key !== idleKey) {
+        this.player.play(idleKey);
+      }
+    }
   }
 
   /**
