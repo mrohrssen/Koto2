@@ -1860,3 +1860,50 @@ html, body {
   filter: brightness(1.5);
   box-shadow: 0 0 20px rgba(52, 152, 219, 0.9);
 }
+
+/* ============ PHASER EXPLORATION ============ */
+
+.phaser-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  background: #000;
+}
+
+.phaser-container canvas {
+  display: block;
+  margin: 0 auto;
+}
+
+/* Context button at bottom of Phaser view */
+.exploration-context-btn {
+  position: absolute;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 16px 48px;
+  font-size: 18px;
+  font-weight: bold;
+  text-transform: uppercase;
+  background: var(--accent-orange, #f39c12);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.exploration-context-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.exploration-context-btn:active {
+  transform: translateX(-50%) scale(0.95);
+}
