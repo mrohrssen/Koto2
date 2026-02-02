@@ -95,7 +95,9 @@ export class ExplorationScene extends Phaser.Scene {
   }
 
   create() {
+    console.log('[ExplorationScene] create() called, roomData:', this.roomData);
     const { width, height } = this.scale;
+    console.log('[ExplorationScene] canvas size:', width, height);
 
     // Background (simple gradient for now)
     this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e);
@@ -136,7 +138,12 @@ export class ExplorationScene extends Phaser.Scene {
 
   createPlayer() {
     const { width, height } = this.scale;
-    this.player = this.physics.add.sprite(width / 2, height * 0.75, 'player-placeholder');
+
+    // Use saved position if available, otherwise default spawn point
+    const spawnX = this.roomData.playerPosition?.x ?? width / 2;
+    const spawnY = this.roomData.playerPosition?.y ?? height * 0.75;
+
+    this.player = this.physics.add.sprite(spawnX, spawnY, 'player-placeholder');
     this.player.setCollideWorldBounds(true);
     this.player.body.setSize(24, 24);
   }
@@ -162,7 +169,7 @@ export class ExplorationScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const template = ROOM_TEMPLATES[this.roomData.type] || ROOM_TEMPLATES.encounter;
 
-    // Create NPC/Enemy
+    // Create NPC/Enemy (show even if interacted, but visually different)
     if (template.npc) {
       this.npc = this.physics.add.sprite(
         width * template.npc.x,
@@ -172,20 +179,29 @@ export class ExplorationScene extends Phaser.Scene {
       this.npc.body.setImmovable(true);
       this.npc.setData('npcType', template.npc.type);
       this.npc.setData('roomType', this.roomData.type);
+      this.npc.setData('interacted', this.roomData.interacted);
+
+      // If already interacted, show as defeated (grayed out, no collision for interaction)
+      if (this.roomData.interacted) {
+        this.npc.setAlpha(0.4);
+        this.npc.setTint(0x666666);
+      }
     }
 
-    // Create credits
+    // Create credits only if room not yet interacted
     this.credits = [];
-    template.credits.forEach((pos, index) => {
-      const credit = this.physics.add.sprite(
-        width * pos.x,
-        height * pos.y,
-        'credit-placeholder'
-      );
-      credit.setData('creditIndex', index);
-      credit.setData('amount', 10);
-      this.credits.push(credit);
-    });
+    if (!this.roomData.interacted) {
+      template.credits.forEach((pos, index) => {
+        const credit = this.physics.add.sprite(
+          width * pos.x,
+          height * pos.y,
+          'credit-placeholder'
+        );
+        credit.setData('creditIndex', index);
+        credit.setData('amount', 10);
+        this.credits.push(credit);
+      });
+    }
   }
 
   setupCollisions() {
@@ -196,8 +212,8 @@ export class ExplorationScene extends Phaser.Scene {
       });
     });
 
-    // Player near NPC
-    if (this.npc) {
+    // Player near NPC (only if not already interacted/defeated)
+    if (this.npc && !this.npc.getData('interacted')) {
       this.physics.add.overlap(this.player, this.npc, () => {
         this.setInteractionTarget(this.npc, 'TALK');
       });

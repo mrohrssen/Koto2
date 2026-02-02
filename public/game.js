@@ -105,9 +105,11 @@ let gameState = {
   phase: 'no_save'
 };
 
+window.gameState = gameState;  // Expose immediately for debugging
 store.set('gameState', gameState);
 
 function updateGameState(newState) {
+  console.log('[DEBUG] updateGameState called. phase:', newState.phase, 'pendingBranch:', newState.run?.pendingBranch, 'currentRoom:', newState.run?.currentRoom);
   gameState = newState;
   window.gameState = gameState;
   store.set('gameState', gameState);
@@ -126,6 +128,9 @@ let currentFlashCardWord = null;
 
 // Chip loadout cache
 let chipLoadoutCache = null;
+
+// Saved player position for returning to room after combat
+let savedPlayerPosition = null;
 
 // ============ UTILITY ============
 function escapeHtml(str) {
@@ -150,10 +155,27 @@ function delay(ms) {
 // ============ UI UPDATES ============
 function updateUI() {
   updateStatusBar();
-  updateScene();
-  updateChipRow();
-  updatePlayerHP();
-  updateGameContent();
+
+  // Handle Phaser exploration mode
+  console.log('[DEBUG] updateUI. phase:', gameState.phase, 'shouldUsePhaser:', shouldUsePhaser());
+  if (shouldUsePhaser()) {
+    console.log('[DEBUG] Phaser SHOULD activate. isActive:', phaser.isExplorationActive());
+    if (!phaser.isExplorationActive()) {
+      const roomData = getRoomDataForPhaser();
+      console.log('[DEBUG] Starting Phaser with roomData:', roomData);
+      phaser.startExploration(roomData);
+    }
+    // Don't update HTML scene/content when Phaser is active
+  } else {
+    // Make sure Phaser is hidden when not in exploration
+    if (phaser.isExplorationActive()) {
+      phaser.stopExploration();
+    }
+    updateScene();
+    updateChipRow();
+    updatePlayerHP();
+    updateGameContent();
+  }
 
   // Update BGM based on current phase
   const isBossRoom = gameState.run?.rooms?.[gameState.run?.currentRoom]?.isBossRoom;
@@ -246,6 +268,7 @@ function updateGameContent() {
       explorationUI.renderWordDiscovery();
       break;
     case 'branch_selection':
+      console.log('[DEBUG] branch_selection phase. pendingBranch:', gameState.run?.pendingBranch, 'currentRoom:', gameState.run?.currentRoom, 'rooms:', gameState.run?.rooms);
       explorationUI.renderBranchSelection();
       break;
     case 'combat':
@@ -455,6 +478,8 @@ function setupPhaserEventListeners() {
   // Room transition via door
   gameEvents.on('roomTransition', async (data) => {
     phaser.stopExploration();
+    // Clear saved position when entering new room
+    savedPlayerPosition = null;
     // Use existing room advance API
     const result = await apiProceed();
     if (result?.state) {
@@ -492,6 +517,8 @@ function setupPhaserEventListeners() {
 
   // Start interaction (NPC talk, combat, etc.)
   gameEvents.on('startInteraction', async (data) => {
+    // Save player position before stopping Phaser
+    savedPlayerPosition = phaser.getPlayerPosition();
     phaser.stopExploration();
 
     switch (data.type) {
@@ -523,20 +550,27 @@ function setupPhaserEventListeners() {
  */
 function getRoomDataForPhaser() {
   const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
-  return {
+  const roomData = {
     type: room?.type || 'encounter',
     floor: gameState.run?.floor || 1,
-    doorDestinations: [0, 1] // Fixed 2 doors for prototype
+    doorDestinations: [0, 1], // Fixed 2 doors for prototype
+    interacted: room?.interacted || false,
+    roomIndex: gameState.run?.currentRoom
   };
+
+  // Include saved player position if returning to same room
+  if (savedPlayerPosition && room?.interacted) {
+    roomData.playerPosition = savedPlayerPosition;
+  }
+
+  return roomData;
 }
 
 /**
  * Check if current phase should use Phaser exploration.
  */
 function shouldUsePhaser() {
-  // For now, disabled - enable when ready to test
-  return false;
-  // Future: return ['exploring', 'room'].includes(gameState.phase);
+  return ['exploring', 'room', 'room_encounter'].includes(gameState.phase);
 }
 
 // ============ CHIP HANDLERS ============

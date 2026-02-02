@@ -93,7 +93,7 @@ export function hidePhaser() {
  * Check if Phaser view is currently visible.
  */
 export function isPhaserVisible() {
-  return phaserContainer?.style.display !== 'none';
+  return phaserContainer && phaserContainer.style.display !== 'none';
 }
 
 /**

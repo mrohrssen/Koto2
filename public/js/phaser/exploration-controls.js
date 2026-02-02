@@ -107,19 +107,6 @@ export class ExplorationControls {
 
     // Apply velocity
     this.player.setVelocity(vx * this.moveSpeed, vy * this.moveSpeed);
-
-    // Update player animation direction
-    if (vx !== 0 || vy !== 0) {
-      // Determine facing direction (prioritize horizontal)
-      if (Math.abs(vx) > Math.abs(vy)) {
-        this.player.anims.play(vx > 0 ? 'walk-right' : 'walk-left', true);
-      } else {
-        this.player.anims.play(vy > 0 ? 'walk-down' : 'walk-up', true);
-      }
-    } else {
-      // Stop animation, show idle frame
-      this.player.anims.stop();
-    }
   }
 
   /**
