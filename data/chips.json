@@ -3,10 +3,11 @@
     "id": "battery",
     "name": "電池ボット",
     "nameEn": "Battery Bot",
-    "description": "+8パワー。いつも充電満タン！",
-    "descriptionEn": "+8 PWR. A reliable power source, always fully charged!",
+    "description": "いつも充電満タン！",
+    "descriptionEn": "A reliable power source, always fully charged!",
     "category": "pipeline",
-    "stats": { "power": 8, "bandwidth": 0 },
+    "rarity": "common",
+    "stats": { "power": 10, "bandwidth": 0 },
     "effects": {
       "pipeline": {
         "type": "none",
@@ -31,10 +32,11 @@
     "id": "speaker",
     "name": "スピーカーボット",
     "nameEn": "Speaker Bot",
-    "description": "+2帯域。80%で帯域×1.2倍。ダメージを増幅！",
-    "descriptionEn": "+2 BW. 80% chance to x1.2 BW. Amplifies your damage!",
+    "description": "80%で帯域×1.2倍。ダメージを増幅！",
+    "descriptionEn": "80% chance to x1.2 BW. Amplifies your damage!",
     "category": "pipeline",
-    "stats": { "power": 0, "bandwidth": 2 },
+    "rarity": "rare",
+    "stats": { "power": 10, "bandwidth": 3 },
     "effects": {
       "pipeline": {
         "type": "multiply",
@@ -60,10 +62,11 @@
     "id": "glasses",
     "name": "眼鏡ボット",
     "nameEn": "Glasses Bot",
-    "description": "+1帯域。攻撃ごとに+0.3帯域。観察眼！",
-    "descriptionEn": "+1 BW. +0.3 BW per hit. Studies enemies carefully!",
+    "description": "攻撃ごとに+0.3帯域。観察眼！",
+    "descriptionEn": "+0.3 BW per hit. Studies enemies carefully!",
     "category": "pipeline",
-    "stats": { "power": 0, "bandwidth": 1 },
+    "rarity": "uncommon",
+    "stats": { "power": 8, "bandwidth": 3 },
     "effects": {
       "pipeline": {
         "type": "rampingMultiply",
@@ -89,10 +92,11 @@
     "id": "lightbulb",
     "name": "電球ボット",
     "nameEn": "Light Bulb Bot",
-    "description": "+2パワー、+1帯域。50%で帯域×1.5倍。ひらめき次第！",
-    "descriptionEn": "+2 PWR, +1 BW. 50% chance to x1.5 BW. Sometimes brilliant!",
+    "description": "50%で帯域×1.5倍。ひらめき次第！",
+    "descriptionEn": "50% chance to x1.5 BW. Sometimes brilliant!",
     "category": "pipeline",
-    "stats": { "power": 2, "bandwidth": 1 },
+    "rarity": "uncommon",
+    "stats": { "power": 10, "bandwidth": 2 },
     "effects": {
       "pipeline": {
         "type": "multiply",
@@ -117,10 +121,11 @@
     "id": "scissors",
     "name": "はさみボット",
     "nameEn": "Scissors Bot",
-    "description": "+3パワー。敵HP30%以下で+10パワー。チョキン！",
-    "descriptionEn": "+3 PWR. +10 PWR if enemy below 30% HP. Snip snip!",
+    "description": "敵HP30%以下で+10パワー。チョキン！",
+    "descriptionEn": "+10 PWR if enemy below 30% HP. Snip snip!",
     "category": "pipeline",
-    "stats": { "power": 3, "bandwidth": 0 },
+    "rarity": "rare",
+    "stats": { "power": 14, "bandwidth": 1 },
     "effects": {
       "pipeline": {
         "type": "conditional",
@@ -154,7 +159,8 @@
     "description": "7%でパイプライン再起動。時は繰り返す！",
     "descriptionEn": "7% chance to restart pipeline. Time is a loop!",
     "category": "pipeline",
-    "stats": { "power": 0, "bandwidth": 0 },
+    "rarity": "legendary",
+    "stats": { "power": 18, "bandwidth": 2 },
     "effects": {
       "pipeline": {
         "type": "recursion",
@@ -181,10 +187,11 @@
     "id": "charcoal",
     "name": "炭ボット",
     "nameEn": "Charcoal Bot",
-    "description": "+5パワー、+2帯域。犠牲：パワー×3、帯域×2。燃え尽きる。",
-    "descriptionEn": "+5 PWR, +2 BW. Sacrifice: x3 PWR, x2 BW. Burns bright, then gone!",
+    "description": "犠牲：パワー×3、帯域×2。燃え尽きる。",
+    "descriptionEn": "Sacrifice: x3 PWR, x2 BW. Burns bright, then gone!",
     "category": "pipeline",
-    "stats": { "power": 5, "bandwidth": 2 },
+    "rarity": "legendary",
+    "stats": { "power": 20, "bandwidth": 3 },
     "effects": {
       "pipeline": {
         "type": "sacrifice",
@@ -210,10 +217,11 @@
     "id": "book",
     "name": "本ボット",
     "nameEn": "Book Bot",
-    "description": "+1帯域。25%で+1帯域スタック。知識は力！",
-    "descriptionEn": "+1 BW. 25% chance to stack +1 BW. Knowledge is power!",
+    "description": "25%で+1帯域スタック。知識は力！",
+    "descriptionEn": "25% chance to stack +1 BW. Knowledge is power!",
     "category": "pipeline",
-    "stats": { "power": 0, "bandwidth": 1 },
+    "rarity": "uncommon",
+    "stats": { "power": 9, "bandwidth": 2 },
     "effects": {
       "pipeline": {
         "type": "stacking",
@@ -241,7 +249,8 @@
     "description": "空きスロット2+で+12パワー、+2帯域。余白を愛する！",
     "descriptionEn": "+12 PWR, +2 BW if 2+ slots empty. Loves a clean slate!",
     "category": "pipeline",
-    "stats": { "power": 0, "bandwidth": 0 },
+    "rarity": "rare",
+    "stats": { "power": 12, "bandwidth": 2 },
     "effects": {
       "pipeline": {
         "type": "emptySlots",
@@ -270,10 +279,11 @@
     "id": "onigiri",
     "name": "おにぎりボット",
     "nameEn": "Onigiri Bot",
-    "description": "+6パワー。攻撃ごとに5HP回復。もぐもぐ！",
-    "descriptionEn": "+6 PWR. Heal 5 HP per attack. A tasty battle buddy!",
+    "description": "攻撃ごとに5HP回復。もぐもぐ！",
+    "descriptionEn": "Heal 5 HP per attack. A tasty battle buddy!",
     "category": "pipeline",
-    "stats": { "power": 6, "bandwidth": 0 },
+    "rarity": "common",
+    "stats": { "power": 9, "bandwidth": 0 },
     "effects": {
       "pipeline": {
         "type": "damageAndHeal",
@@ -299,10 +309,11 @@
     "id": "wallet",
     "name": "財布ボット",
     "nameEn": "Wallet Bot",
-    "description": "+2パワー。キルごとに+0.5パワー。チャリン！",
-    "descriptionEn": "+2 PWR. +0.5 PWR per kill. Cha-ching!",
+    "description": "キルごとに+0.5パワー。チャリン！",
+    "descriptionEn": "+0.5 PWR per kill. Cha-ching!",
     "category": "pipeline",
-    "stats": { "power": 2, "bandwidth": 0 },
+    "rarity": "uncommon",
+    "stats": { "power": 11, "bandwidth": 1 },
     "effects": {
       "pipeline": {
         "type": "killCounter",
@@ -327,10 +338,11 @@
     "id": "straw",
     "name": "ストローボット",
     "nameEn": "Straw Bot",
-    "description": "-3パワー。+0.2帯域、12HP回復。ちゅーっ！",
-    "descriptionEn": "-3 PWR. +0.2 BW, heal 12 HP. Sips strength away!",
+    "description": "+0.2帯域、12HP回復。ちゅーっ！",
+    "descriptionEn": "+0.2 BW, heal 12 HP. Sips strength away!",
     "category": "pipeline",
-    "stats": { "power": -3, "bandwidth": 0 },
+    "rarity": "common",
+    "stats": { "power": 6, "bandwidth": 2 },
     "effects": {
       "pipeline": {
         "type": "damageAndHeal",
@@ -356,10 +368,11 @@
     "id": "key",
     "name": "鍵ボット",
     "nameEn": "Key Bot",
-    "description": "+2パワー、+1帯域。ボス戦で帯域×1.5倍！",
-    "descriptionEn": "+2 PWR, +1 BW. x1.5 BW vs bosses!",
+    "description": "ボス戦で帯域×1.5倍！",
+    "descriptionEn": "x1.5 BW vs bosses!",
     "category": "pipeline",
-    "stats": { "power": 2, "bandwidth": 1 },
+    "rarity": "rare",
+    "stats": { "power": 13, "bandwidth": 2 },
     "effects": {
       "pipeline": {
         "type": "vsBoss",
@@ -386,10 +399,11 @@
     "id": "egg",
     "name": "卵ボット",
     "nameEn": "Egg Bot",
-    "description": "+1帯域。破壊チップ1つにつき+1帯域。壊れるほど強く！",
-    "descriptionEn": "+1 BW. +1 BW per destroyed chip. Cracks open stronger!",
+    "description": "破壊チップ1つにつき+1帯域。壊れるほど強く！",
+    "descriptionEn": "+1 BW per destroyed chip. Cracks open stronger!",
     "category": "pipeline",
-    "stats": { "power": 0, "bandwidth": 1 },
+    "rarity": "epic",
+    "stats": { "power": 15, "bandwidth": 2 },
     "effects": {
       "pipeline": {
         "type": "destroyedMultiplier",
@@ -416,10 +430,11 @@
     "id": "fireworks",
     "name": "花火ボット",
     "nameEn": "Fireworks Bot",
-    "description": "+15パワー、+1帯域。10%でチップ破壊。派手にいこう！",
-    "descriptionEn": "+15 PWR, +1 BW. 10% chance to destroy a chip. Go big!",
+    "description": "10%でチップ破壊。派手にいこう！",
+    "descriptionEn": "10% chance to destroy a chip. Go big!",
     "category": "pipeline",
-    "stats": { "power": 15, "bandwidth": 1 },
+    "rarity": "epic",
+    "stats": { "power": 17, "bandwidth": 2 },
     "effects": {
       "pipeline": {
         "type": "riskyFlat",
@@ -449,7 +464,8 @@
     "description": "前のチップの効果をコピー。真似上手！",
     "descriptionEn": "Copies previous chip's effect. Imitation is flattery!",
     "category": "pipeline",
-    "stats": { "power": 0, "bandwidth": 0 },
+    "rarity": "legendary",
+    "stats": { "power": 18, "bandwidth": 3 },
     "effects": {
       "pipeline": {
         "type": "copy",
@@ -477,7 +493,8 @@
     "description": "空スロット毎に+3パワー、+0.5帯域。軽いほど強い！",
     "descriptionEn": "+3 PWR, +0.5 BW per empty slot. Travel light, hit hard!",
     "category": "pipeline",
-    "stats": { "power": 0, "bandwidth": 0 },
+    "rarity": "rare",
+    "stats": { "power": 11, "bandwidth": 2 },
     "effects": {
       "pipeline": {
         "type": "perEmptySlot",
@@ -504,10 +521,11 @@
     "id": "drum",
     "name": "太鼓ボット",
     "nameEn": "Drum Bot",
-    "description": "+4パワー。5回目の攻撃で帯域×2倍。ドドン！",
-    "descriptionEn": "+4 PWR. x2 BW every 5th attack. Building to the finale!",
+    "description": "5回目の攻撃で帯域×2倍。ドドン！",
+    "descriptionEn": "x2 BW every 5th attack. Building to the finale!",
     "category": "pipeline",
-    "stats": { "power": 4, "bandwidth": 0 },
+    "rarity": "epic",
+    "stats": { "power": 15, "bandwidth": 3 },
     "effects": {
       "pipeline": {
         "type": "nthAttack",
@@ -533,10 +551,11 @@
     "id": "magnifyingGlass",
     "name": "虫眼鏡ボット",
     "nameEn": "Magnifying Glass Bot",
-    "description": "+1帯域。次チップの効果×1.3倍。位置が大事！",
-    "descriptionEn": "+1 BW. x1.3 next chip's effect. Placement matters!",
+    "description": "次チップの効果×1.3倍。位置が大事！",
+    "descriptionEn": "x1.3 next chip's effect. Placement matters!",
     "category": "pipeline",
-    "stats": { "power": 0, "bandwidth": 1 },
+    "rarity": "epic",
+    "stats": { "power": 14, "bandwidth": 3 },
     "effects": {
       "pipeline": {
         "type": "amplifyNext",
@@ -562,10 +581,11 @@
     "id": "toolbox",
     "name": "工具箱ボット",
     "nameEn": "Toolbox Bot",
-    "description": "+2パワー。装備毎に+2パワー、+0.3帯域。仲間が多いほど強い！",
-    "descriptionEn": "+2 PWR. +2 PWR, +0.3 BW per equipped chip. Teamwork!",
+    "description": "装備毎に+2パワー、+0.3帯域。仲間が多いほど強い！",
+    "descriptionEn": "+2 PWR, +0.3 BW per equipped chip. Teamwork!",
     "category": "pipeline",
-    "stats": { "power": 2, "bandwidth": 0 },
+    "rarity": "uncommon",
+    "stats": { "power": 10, "bandwidth": 1 },
     "effects": {
       "pipeline": {
         "type": "perEquipped",

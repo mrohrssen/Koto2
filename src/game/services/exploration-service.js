@@ -17,8 +17,8 @@
 
 
 import { getSimpleNarration } from '../dm.js';
-import { generateEncounterCount } from '../state.js';
-import { getChipLevel, setChipLevel } from '../items/chips.js';
+import { generateEncounterCount, MAX_INVENTORY_SIZE } from '../state.js';
+import { getChipLevel, setChipLevel, getChipPrice, CHIP_RARITIES } from '../items/chips.js';
 
 import {
   generateFloorRooms,
@@ -496,6 +496,22 @@ export class ExplorationService {
 
     const item = shop.items[itemIndex];
     const player = this.gm.run.player;
+    const price = item.price || 0;
+
+    // Check if player can afford the chip
+    if (player.credits < price) {
+      throw new Error('Not enough credits');
+    }
+
+    // Check inventory cap (unequipped chips only)
+    const equippedChipIds = new Set(player.equipment?.weapon?.equippedChips || []);
+    const unequippedCount = (player.chips || []).filter(c => !equippedChipIds.has(c.id)).length;
+    if (unequippedCount >= MAX_INVENTORY_SIZE) {
+      throw new Error('Inventory full - sell chips to make room');
+    }
+
+    // Deduct credits
+    player.credits -= price;
 
     // Add chip to player's chip inventory (unique only)
     if (!player.chips) {
@@ -505,11 +521,13 @@ export class ExplorationService {
     if (!alreadyOwned) {
       player.chips.push({
         id: item.itemId,
+        baseId: item.baseId || item.itemId,
         name: item.name,
         nameEn: item.nameEn,
         category: item.category,
         rarity: item.rarity,
-        effects: item.effects
+        effects: item.effects,
+        stats: item.stats
       });
     }
 
@@ -525,16 +543,16 @@ export class ExplorationService {
     // Close shop
     this.gm.run.postCombatShop.active = false;
 
-    logger.info('[Shop] Chip acquired:', { chip: item.name, chipId: item.itemId });
+    logger.info('[Shop] Chip acquired:', { chip: item.name, chipId: item.itemId, price });
 
-    this.gm.narrate(`${item.name}を獲得した！`);
+    this.gm.narrate(`${item.name}を${price}クレジットで購入した！`);
     this.gm.emitState();
 
     return {
       success: true,
       item: item,
-      goldSpent: 0,
-      goldRemaining: player.gold
+      creditsSpent: price,
+      creditsRemaining: player.credits
     };
   }
 
@@ -560,27 +578,119 @@ export class ExplorationService {
 
   /**
    * Refresh the post-combat shop with 3 new random chips
+   * First refresh is free, subsequent refreshes cost 25 credits
    */
   refreshPostCombatShop() {
     if (!this.gm.run?.postCombatShop?.active) {
       throw new Error('No active shop');
     }
 
+    const shop = this.gm.run.postCombatShop;
+    const player = this.gm.run.player;
+    const REFRESH_COST = 25;
+
+    // Check if free refresh has been used
+    let creditsSpent = 0;
+    if (shop.freeRefreshUsed) {
+      // Charge for refresh
+      if (player.credits < REFRESH_COST) {
+        throw new Error('Not enough credits for refresh');
+      }
+      player.credits -= REFRESH_COST;
+      creditsSpent = REFRESH_COST;
+    } else {
+      // Mark free refresh as used
+      shop.freeRefreshUsed = true;
+    }
+
     // Generate new shop items (excluding already owned chips)
     const ownedChipIds = (this.gm.run.player.chips || []).map(c => c.id);
     const shopItems = generatePostCombatShop(this.gm.run.floor, ownedChipIds);
 
-    this.gm.run.postCombatShop.items = shopItems;
+    shop.items = shopItems;
 
-    this.gm.narrate('商人が新しい品を出してきた。');
+    if (creditsSpent > 0) {
+      this.gm.narrate(`${REFRESH_COST}クレジットで商人が新しい品を出してきた。`);
+    } else {
+      this.gm.narrate('商人が新しい品を出してきた。');
+    }
     this.gm.emitState();
 
     return {
       success: true,
-      items: shopItems
+      items: shopItems,
+      creditsSpent,
+      creditsRemaining: player.credits,
+      freeRefreshUsed: shop.freeRefreshUsed
     };
   }
 
   // ============ INVENTORY HELPERS ============
 
+  /**
+   * Sell a chip from inventory for 50% of its buy price
+   * @param {string} chipId - ID of chip to sell
+   */
+  sellChip(chipId) {
+    const player = this.gm.run?.player;
+    if (!player) {
+      throw new Error('No active run');
+    }
+
+    // Find chip in inventory
+    const chipIndex = player.chips?.findIndex(c => c.id === chipId);
+    if (chipIndex === -1 || chipIndex === undefined) {
+      throw new Error('Chip not in inventory');
+    }
+
+    const chip = player.chips[chipIndex];
+
+    // Cannot sell equipped chips
+    const equippedChipIds = player.equipment?.weapon?.equippedChips || [];
+    if (equippedChipIds.includes(chipId)) {
+      throw new Error('Cannot sell equipped chip - unequip first');
+    }
+
+    // Calculate sell price (50% of buy price)
+    const buyPrice = chip.price || getChipPrice(chipId);
+    const sellPrice = Math.floor(buyPrice * 0.5);
+
+    // Remove from inventory
+    player.chips.splice(chipIndex, 1);
+
+    // Add credits
+    player.credits += sellPrice;
+
+    logger.info('[Shop] Chip sold:', { chip: chip.name, chipId, sellPrice });
+
+    this.gm.narrate(`${chip.name || chip.nameEn}を${sellPrice}クレジットで売却した。`);
+    this.gm.emitState();
+
+    return {
+      success: true,
+      chipId,
+      chipName: chip.name || chip.nameEn,
+      creditsGained: sellPrice,
+      creditsRemaining: player.credits
+    };
+  }
+
+  /**
+   * Get current inventory status
+   */
+  getInventoryStatus() {
+    const player = this.gm.run?.player;
+    if (!player) {
+      return { unequippedCount: 0, maxInventory: MAX_INVENTORY_SIZE, isFull: false };
+    }
+
+    const equippedChipIds = new Set(player.equipment?.weapon?.equippedChips || []);
+    const unequippedCount = (player.chips || []).filter(c => !equippedChipIds.has(c.id)).length;
+
+    return {
+      unequippedCount,
+      maxInventory: MAX_INVENTORY_SIZE,
+      isFull: unequippedCount >= MAX_INVENTORY_SIZE
+    };
+  }
 }

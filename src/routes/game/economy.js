@@ -46,6 +46,30 @@ export default function createEconomyRoutes({ generateGameNarration }) {
     }
   });
 
+  // Sell chip from inventory
+  router.post('/sell-chip', async (req, res) => {
+    const gameManager = req.gameManager;
+    const { chipId } = req.body;
+    try {
+      const result = gameManager.sellChip(chipId);
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Get inventory status
+  router.get('/inventory-status', (req, res) => {
+    const gameManager = req.gameManager;
+    try {
+      const status = gameManager.getInventoryStatus();
+      res.json(status);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   // Use shrine
   router.post('/use-shrine', async (req, res) => {
     const gameManager = req.gameManager;

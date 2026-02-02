@@ -397,11 +397,11 @@ function handlePostCombatShop(gm, config) {
     // Find the original index in shop.items
     const originalIndex = shop.items.findIndex(si => si.itemId === item.itemId);
 
-    if (player.gold >= item.price && originalIndex !== -1) {
+    if (player.credits >= item.price && originalIndex !== -1) {
       try {
         const result = gm.buyFromPostCombatShop(originalIndex);
         if (result.success && config.verbose) {
-          console.log(`  Bought chip: ${item.nameEn || item.name} (${item.rarity}) for ${item.price}g`);
+          console.log(`  Bought chip: ${item.nameEn || item.name} (${item.rarity}) for ${item.price}cr`);
         }
         // After buying, try to equip the chip
         if (result.success) {
@@ -484,7 +484,7 @@ function extractRunResult(gm) {
     bossesDefeated: run?.stats?.bossesDefeated || 0,
     damageDealt: run?.stats?.damageDealt || 0,
     damageTaken: run?.stats?.damageTaken || 0,
-    goldEarned: run?.stats?.goldEarned || 0,
+    creditsEarned: run?.stats?.creditsEarned || 0,
     playerLevel: player?.level || 1,
     playerHp: player?.hp || 0,
     playerMaxHp: player?.maxHp || 0,

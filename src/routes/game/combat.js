@@ -33,14 +33,14 @@ export default function createCombatRoutes({
   // Combat end narration
   router.post('/combat-end-narration', async (req, res) => {
     const gameManager = req.gameManager;
-    const { victory, expGained, goldGained, loot, leveledUp, newLevel, isBoss } = req.body;
+    const { victory, expGained, creditsGained, loot, leveledUp, newLevel, isBoss } = req.body;
     const gameStats = getGameStats();
     try {
       let narration;
       const enemy = gameManager.combat?.enemy;
 
       if (victory) {
-        const rewards = { xp: expGained, gold: goldGained, drops: loot };
+        const rewards = { xp: expGained, credits: creditsGained, drops: loot };
         const enrichedRewards = enrichRewardDrops(rewards);
         updateGameStatsWithEvent(gameStats, 'combat', {
           victory: true,

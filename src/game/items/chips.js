@@ -218,16 +218,14 @@ function applyRarityMultiplier(effects, multiplier) {
 
 /**
  * Generate random chips for post-combat shop
- * All rarities available from any floor, weighted toward common
- * Each chip gets a randomly assigned rarity with scaled stats
+ * Each chip has a fixed rarity defined in chips.json
  * @param {number} floor - Current floor (unused now, kept for API compatibility)
  * @param {array} ownedChipIds - IDs of chips player already owns
  * @param {number} count - Number of chips to generate (default 3)
  * @param {string} category - Optional category filter (e.g., 'pipeline')
  */
 export function generateShopChips(floor, ownedChipIds = [], count = 3, category = null) {
-  // Get all base chips (we'll assign rarity randomly)
-  // Filter out chips player already owns (by base ID)
+  // Get all chips, filter out ones player already owns
   // Optionally filter by category
   const availableChips = Object.values(CHIPS).filter(chip =>
     !ownedChipIds.includes(chip.id) &&
@@ -238,24 +236,28 @@ export function generateShopChips(floor, ownedChipIds = [], count = 3, category 
     return []; // No chips available
   }
 
-  // Shuffle and pick base chips
+  // Shuffle and pick chips
   const shuffled = [...availableChips].sort(() => Math.random() - 0.5);
   const selected = shuffled.slice(0, Math.min(count, shuffled.length));
 
-  // All chips are common rarity — no rarity rolling
-  const commonRarity = CHIP_RARITIES['common'];
+  // Use fixed rarity from chip definition
   return selected.map(chip => {
+    const rarity = chip.rarity || 'common';
+    const rarityInfo = CHIP_RARITIES[rarity];
+
     return {
       id: chip.id,
+      baseId: chip.id,
       name: chip.name,
       nameEn: chip.nameEn,
       description: chip.description,
       descriptionEn: chip.descriptionEn,
       category: chip.category,
-      rarity: 'common',
-      price: Math.floor(chipConfig.upgradeConfig.basePrice * commonRarity.priceMultiplier),
+      rarity: rarity,
+      price: Math.floor(chipConfig.upgradeConfig.basePrice * rarityInfo.priceMultiplier),
       effects: chip.effects,
-      skill: chip.skill
+      skill: chip.skill,
+      stats: chip.stats
     };
   });
 }

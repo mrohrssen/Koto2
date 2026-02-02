@@ -141,7 +141,7 @@ export class CombatService {
       victory: null,
       // Victory rewards (populated if victory)
       expGained: 0,
-      goldGained: 0,
+      creditsGained: 0,
       loot: [],
       leveledUp: false,
       newLevel: null
@@ -328,12 +328,13 @@ export class CombatService {
           const shopItems = generatePostCombatShop(this.gm.run.floor, ownedChipIds);
           this.gm.run.postCombatShop = {
             active: true,
-            items: shopItems
+            items: shopItems,
+            freeRefreshUsed: false
           };
         }
 
         result.expGained = rewards.xp;
-        result.goldGained = rewards.gold;
+        result.creditsGained = rewards.credits;
         result.loot = rewards.drops || [];
         result.isBoss = isBoss;
 
@@ -447,7 +448,8 @@ export class CombatService {
       shopItems = generatePostCombatShop(this.gm.run.floor, ownedChipIds);
       this.gm.run.postCombatShop = {
         active: true,
-        items: shopItems
+        items: shopItems,
+        freeRefreshUsed: false
       };
     }
 
@@ -547,7 +549,7 @@ export class CombatService {
     this.gm.narrate(getSimpleNarration('gameVictory', this.gm.run.player));
 
     // Update persistent player with run rewards
-    this.gm.player.gold += this.gm.run.player.gold;
+    this.gm.player.credits += this.gm.run.player.credits;
 
     this.gm.emitState();
 

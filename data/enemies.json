@@ -11,7 +11,7 @@
       "school"
     ],
     "xpReward": 15,
-    "goldReward": 15,
+    "creditReward": 15,
     "drops": [
       {
         "itemId": "potion",
@@ -53,7 +53,7 @@
       "residential"
     ],
     "xpReward": 20,
-    "goldReward": 30,
+    "creditReward": 30,
     "drops": [
       {
         "itemId": "potion",
@@ -99,7 +99,7 @@
       "residential"
     ],
     "xpReward": 18,
-    "goldReward": 24,
+    "creditReward": 24,
     "drops": [
       {
         "itemId": "antidote",
@@ -142,7 +142,7 @@
       "shopping"
     ],
     "xpReward": 35,
-    "goldReward": 60,
+    "creditReward": 60,
     "drops": [
       {
         "itemId": "sword",
@@ -189,7 +189,7 @@
       "restaurant"
     ],
     "xpReward": 40,
-    "goldReward": 75,
+    "creditReward": 75,
     "drops": [
       {
         "itemId": "axe",
@@ -235,7 +235,7 @@
       "school"
     ],
     "xpReward": 45,
-    "goldReward": 90,
+    "creditReward": 90,
     "drops": [
       {
         "itemId": "earring",
@@ -281,7 +281,7 @@
       "office"
     ],
     "xpReward": 70,
-    "goldReward": 150,
+    "creditReward": 150,
     "drops": [
       {
         "itemId": "cutlass",
@@ -327,7 +327,7 @@
       "office"
     ],
     "xpReward": 80,
-    "goldReward": 180,
+    "creditReward": 180,
     "drops": [
       {
         "itemId": "fireBrand",
@@ -375,7 +375,7 @@
       "shopping"
     ],
     "xpReward": 75,
-    "goldReward": 120,
+    "creditReward": 120,
     "drops": [
       {
         "itemId": "stoneShield",
@@ -421,7 +421,7 @@
       "government"
     ],
     "xpReward": 100,
-    "goldReward": 240,
+    "creditReward": 240,
     "drops": [
       {
         "itemId": "stiletto",
@@ -468,7 +468,7 @@
       "office"
     ],
     "xpReward": 120,
-    "goldReward": 300,
+    "creditReward": 300,
     "drops": [
       {
         "itemId": "fullPlate",
@@ -515,7 +515,7 @@
       "residential"
     ],
     "xpReward": 15,
-    "goldReward": 12,
+    "creditReward": 12,
     "drops": [
       {
         "itemId": "potion",
@@ -559,7 +559,7 @@
       "shopping"
     ],
     "xpReward": 16,
-    "goldReward": 18,
+    "creditReward": 18,
     "drops": [
       {
         "itemId": "potion",
@@ -603,7 +603,7 @@
       "convenience"
     ],
     "xpReward": 18,
-    "goldReward": 20,
+    "creditReward": 20,
     "drops": [
       {
         "itemId": "antidote",
@@ -647,7 +647,7 @@
       "school"
     ],
     "xpReward": 12,
-    "goldReward": 8,
+    "creditReward": 8,
     "drops": [
       {
         "itemId": "potion",
@@ -691,7 +691,7 @@
       "shopping"
     ],
     "xpReward": 18,
-    "goldReward": 25,
+    "creditReward": 25,
     "drops": [
       {
         "itemId": "potion",
@@ -734,7 +734,7 @@
       "convenience"
     ],
     "xpReward": 14,
-    "goldReward": 16,
+    "creditReward": 16,
     "drops": [
       {
         "itemId": "ether",
@@ -778,7 +778,7 @@
       "shopping"
     ],
     "xpReward": 13,
-    "goldReward": 14,
+    "creditReward": 14,
     "drops": [
       {
         "itemId": "potion",
@@ -822,7 +822,7 @@
       "station"
     ],
     "xpReward": 32,
-    "goldReward": 55,
+    "creditReward": 55,
     "drops": [
       {
         "itemId": "ether",
@@ -865,7 +865,7 @@
       "school"
     ],
     "xpReward": 38,
-    "goldReward": 65,
+    "creditReward": 65,
     "drops": [
       {
         "itemId": "ether",
@@ -908,7 +908,7 @@
       "school"
     ],
     "xpReward": 35,
-    "goldReward": 60,
+    "creditReward": 60,
     "drops": [
       {
         "itemId": "potion",
@@ -951,7 +951,7 @@
       "school"
     ],
     "xpReward": 42,
-    "goldReward": 70,
+    "creditReward": 70,
     "drops": [
       {
         "itemId": "antidote",
@@ -994,7 +994,7 @@
       "school"
     ],
     "xpReward": 18,
-    "goldReward": 22,
+    "creditReward": 22,
     "drops": [
       {
         "itemId": "ether",
@@ -1038,7 +1038,7 @@
       "station"
     ],
     "xpReward": 36,
-    "goldReward": 50,
+    "creditReward": 50,
     "drops": [
       {
         "itemId": "knife",
@@ -1082,7 +1082,7 @@
       "station"
     ],
     "xpReward": 35,
-    "goldReward": 65,
+    "creditReward": 65,
     "drops": [
       {
         "itemId": "ether",
@@ -1125,7 +1125,7 @@
       "office"
     ],
     "xpReward": 32,
-    "goldReward": 55,
+    "creditReward": 55,
     "drops": [
       {
         "itemId": "potion",
@@ -1168,7 +1168,7 @@
       "office"
     ],
     "xpReward": 34,
-    "goldReward": 60,
+    "creditReward": 60,
     "drops": [
       {
         "itemId": "ether",
@@ -1212,7 +1212,7 @@
       "hospital"
     ],
     "xpReward": 30,
-    "goldReward": 50,
+    "creditReward": 50,
     "drops": [
       {
         "itemId": "potion",
@@ -1255,7 +1255,7 @@
       "office"
     ],
     "xpReward": 65,
-    "goldReward": 120,
+    "creditReward": 120,
     "drops": [
       {
         "itemId": "chainMail",
@@ -1298,7 +1298,7 @@
       "office"
     ],
     "xpReward": 70,
-    "goldReward": 140,
+    "creditReward": 140,
     "drops": [
       {
         "itemId": "ether",
@@ -1341,7 +1341,7 @@
       "station"
     ],
     "xpReward": 40,
-    "goldReward": 70,
+    "creditReward": 70,
     "drops": [
       {
         "itemId": "sword",
@@ -1384,7 +1384,7 @@
       "station"
     ],
     "xpReward": 30,
-    "goldReward": 55,
+    "creditReward": 55,
     "drops": [
       {
         "itemId": "potion",
@@ -1427,7 +1427,7 @@
       "station"
     ],
     "xpReward": 38,
-    "goldReward": 65,
+    "creditReward": 65,
     "drops": [
       {
         "itemId": "antidote",
@@ -1471,7 +1471,7 @@
       "school"
     ],
     "xpReward": 32,
-    "goldReward": 50,
+    "creditReward": 50,
     "drops": [
       {
         "itemId": "potion",
@@ -1514,7 +1514,7 @@
       "station"
     ],
     "xpReward": 36,
-    "goldReward": 60,
+    "creditReward": 60,
     "drops": [
       {
         "itemId": "ether",
@@ -1557,7 +1557,7 @@
       "restaurant"
     ],
     "xpReward": 42,
-    "goldReward": 75,
+    "creditReward": 75,
     "drops": [
       {
         "itemId": "potion",
@@ -1600,7 +1600,7 @@
       "restaurant"
     ],
     "xpReward": 40,
-    "goldReward": 70,
+    "creditReward": 70,
     "drops": [
       {
         "itemId": "knife",
@@ -1643,7 +1643,7 @@
       "restaurant"
     ],
     "xpReward": 36,
-    "goldReward": 65,
+    "creditReward": 65,
     "drops": [
       {
         "itemId": "potion",
@@ -1687,7 +1687,7 @@
       "convenience"
     ],
     "xpReward": 32,
-    "goldReward": 55,
+    "creditReward": 55,
     "drops": [
       {
         "itemId": "potion",
@@ -1730,7 +1730,7 @@
       "restaurant"
     ],
     "xpReward": 45,
-    "goldReward": 80,
+    "creditReward": 80,
     "drops": [
       {
         "itemId": "antidote",
@@ -1774,7 +1774,7 @@
       "convenience"
     ],
     "xpReward": 20,
-    "goldReward": 30,
+    "creditReward": 30,
     "drops": [
       {
         "itemId": "ether",
@@ -1817,7 +1817,7 @@
       "government"
     ],
     "xpReward": 65,
-    "goldReward": 130,
+    "creditReward": 130,
     "drops": [
       {
         "itemId": "ether",
@@ -1860,7 +1860,7 @@
       "government"
     ],
     "xpReward": 58,
-    "goldReward": 110,
+    "creditReward": 110,
     "drops": [
       {
         "itemId": "potion",
@@ -1903,7 +1903,7 @@
       "government"
     ],
     "xpReward": 72,
-    "goldReward": 150,
+    "creditReward": 150,
     "drops": [
       {
         "itemId": "cutlass",
@@ -1946,7 +1946,7 @@
       "government"
     ],
     "xpReward": 60,
-    "goldReward": 115,
+    "creditReward": 115,
     "drops": [
       {
         "itemId": "potion",
@@ -1989,7 +1989,7 @@
       "government"
     ],
     "xpReward": 68,
-    "goldReward": 135,
+    "creditReward": 135,
     "drops": [
       {
         "itemId": "sword",
@@ -2032,7 +2032,7 @@
       "hospital"
     ],
     "xpReward": 62,
-    "goldReward": 125,
+    "creditReward": 125,
     "drops": [
       {
         "itemId": "potion",
@@ -2075,7 +2075,7 @@
       "hospital"
     ],
     "xpReward": 75,
-    "goldReward": 160,
+    "creditReward": 160,
     "drops": [
       {
         "itemId": "ether",
@@ -2118,7 +2118,7 @@
       "hospital"
     ],
     "xpReward": 55,
-    "goldReward": 100,
+    "creditReward": 100,
     "drops": [
       {
         "itemId": "potion",
@@ -2161,7 +2161,7 @@
       "hospital"
     ],
     "xpReward": 60,
-    "goldReward": 120,
+    "creditReward": 120,
     "drops": [
       {
         "itemId": "antidote",
@@ -2204,7 +2204,7 @@
       "hospital"
     ],
     "xpReward": 25,
-    "goldReward": 20,
+    "creditReward": 20,
     "drops": [
       {
         "itemId": "potion",
@@ -2247,7 +2247,7 @@
       "shopping"
     ],
     "xpReward": 64,
-    "goldReward": 130,
+    "creditReward": 130,
     "drops": [
       {
         "itemId": "earring",
@@ -2290,7 +2290,7 @@
       "shopping"
     ],
     "xpReward": 35,
-    "goldReward": 60,
+    "creditReward": 60,
     "drops": [
       {
         "itemId": "potion",
@@ -2334,7 +2334,7 @@
       "convenience"
     ],
     "xpReward": 40,
-    "goldReward": 70,
+    "creditReward": 70,
     "drops": [
       {
         "itemId": "potion",
@@ -2378,7 +2378,7 @@
       "convenience"
     ],
     "xpReward": 32,
-    "goldReward": 55,
+    "creditReward": 55,
     "drops": [
       {
         "itemId": "antidote",
@@ -2422,7 +2422,7 @@
       "restaurant"
     ],
     "xpReward": 60,
-    "goldReward": 100,
+    "creditReward": 100,
     "drops": [
       {
         "itemId": "sword",

@@ -724,6 +724,54 @@ html, body {
   margin-bottom: 2px;
 }
 
+/* Chip stat boxes */
+.chip-stat-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chip-stat-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+}
+
+.chip-stat-box.pwr {
+  border-color: #e74c3c;
+  background: rgba(231, 76, 60, 0.15);
+}
+
+.chip-stat-box.bw {
+  border-color: #3498db;
+  background: rgba(52, 152, 219, 0.15);
+}
+
+.chip-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.chip-stat-value {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.chip-stat-box.pwr .chip-stat-value {
+  color: #e74c3c;
+}
+
+.chip-stat-box.bw .chip-stat-value {
+  color: #3498db;
+}
+
 .shop-chip-desc {
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -918,6 +966,7 @@ html, body {
 }
 
 .chip-select-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1041,6 +1090,68 @@ html, body {
   border: 1px solid var(--text-secondary);
   color: var(--text-secondary);
 }
+
+.chip-select-refresh {
+  background: var(--surface-raised);
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.chip-select-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.chip-select-credits {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-yellow);
+  margin-bottom: 8px;
+}
+
+.chip-select-price {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.chip-select-price.affordable {
+  color: var(--accent-green);
+}
+
+.chip-select-price.expensive {
+  color: var(--accent-red);
+}
+
+.chip-select-price-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.chip-select-price-badge.affordable {
+  color: var(--accent-green);
+  border: 1px solid var(--accent-green);
+}
+
+.chip-select-price-badge.expensive {
+  color: var(--accent-red);
+  border: 1px solid var(--accent-red);
+}
+
+/* Rarity colors for chip cards */
+.chip-select-rarity.common { color: #9d9d9d; }
+.chip-select-rarity.uncommon { color: #1eff00; }
+.chip-select-rarity.rare { color: #0070dd; }
+.chip-select-rarity.epic { color: #a335ee; }
+.chip-select-rarity.legendary { color: #ff8000; }
 
 /* ===== SHRINE CHIP UPGRADE ===== */
 .shrine-title {

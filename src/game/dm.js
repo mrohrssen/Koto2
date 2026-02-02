@@ -559,7 +559,7 @@ ${intentHint}
     return `${enemy.name || '敵'}を倒した！
 【必須】敵の最後の言葉「」。悔しさ、驚き、または認める。
 勝利の瞬間、敵が消える、報酬。4-6文で。
-獲得：${rewards.xp || 0}XP、${rewards.gold || 0}ゴールド`;
+獲得：${rewards.xp || 0}XP、${rewards.credits || 0}クレジット`;
   },
 
   // Boss victory - dramatic final words

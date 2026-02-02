@@ -48,6 +48,9 @@ const SWIPE_THRESHOLD = 60;
  * @param {Object[]} chips - Array of chip objects to choose from
  * @param {Object} [options]
  * @param {boolean} [options.allowSkip] - Show skip button (for post-combat, not starting chip)
+ * @param {number} [options.playerCredits] - Player's current credits
+ * @param {boolean} [options.freeRefreshUsed] - Whether free refresh has been used
+ * @param {function} [options.onRefresh] - Callback when refresh is clicked
  * @returns {Promise<Object|null>} Resolves to selected chip, or null if skipped
  */
 export function showChipSelect(chips, options = {}) {
@@ -68,6 +71,17 @@ function renderChipCard() {
   const skillDesc = chip.skill?.descriptionEn || chip.skill?.description || '';
   const iconPath = `/assets/icons/chips/${chip.itemId || chip.id}.webp`;
 
+  // Price info
+  const price = chip.price || 0;
+  const playerCredits = currentOptions.playerCredits ?? 0;
+  const canAfford = playerCredits >= price;
+  const priceClass = canAfford ? 'affordable' : 'expensive';
+
+  // Refresh cost (25 credits if free refresh used)
+  const refreshCost = currentOptions.freeRefreshUsed ? 25 : 0;
+  const canRefresh = playerCredits >= refreshCost;
+  const refreshLabel = refreshCost > 0 ? `リフレッシュ (${refreshCost}cr)` : 'リフレッシュ (無料)';
+
   // Dots indicator
   const dots = currentChips.map((_, i) =>
     `<div class="chip-select-dot${i === selectedIndex ? ' active' : ''}"></div>`
@@ -77,14 +91,34 @@ function renderChipCard() {
     ? '<button class="chip-select-btn chip-select-skip" id="chip-select-skip">スキップ</button>'
     : '';
 
+  const refreshBtn = currentOptions.onRefresh
+    ? `<button class="chip-select-btn chip-select-refresh ${canRefresh ? '' : 'disabled'}" id="chip-select-refresh">${refreshLabel}</button>`
+    : '';
+
+  // Buy button shows price
+  const buyLabel = price > 0 ? `購入 (${price}cr)` : 'チップを選ぶ';
+  const buyBtnClass = canAfford ? '' : 'disabled';
+
   dom.actionArea.innerHTML = `
     <div class="chip-select-container">
+      ${playerCredits !== undefined ? `<div class="chip-select-credits">クレジット: ${playerCredits}cr</div>` : ''}
       <div class="chip-select-card" id="chip-select-card">
+        ${price > 0 ? `<div class="chip-select-price-badge ${priceClass}">${price}cr</div>` : ''}
         <div class="chip-select-top">
           <div class="chip-select-icon" style="background-image:url('${iconPath}')"></div>
           <div class="chip-select-info">
             <div class="chip-select-name">${chip.nameEn || chip.name}</div>
             <div class="chip-select-rarity ${chip.rarity}">${chip.rarity}</div>
+          </div>
+        </div>
+        <div class="chip-stat-row">
+          <div class="chip-stat-box pwr">
+            <span class="chip-stat-label">PWR</span>
+            <span class="chip-stat-value">${chip.stats?.power || 0}</span>
+          </div>
+          <div class="chip-stat-box bw">
+            <span class="chip-stat-label">BW</span>
+            <span class="chip-stat-value">${chip.stats?.bandwidth || 0}</span>
           </div>
         </div>
         <div class="chip-select-passive">
@@ -101,8 +135,9 @@ function renderChipCard() {
       <div class="chip-select-dots">${dots}</div>
       <div class="chip-select-hint">← スワイプで切り替え →</div>
       <div class="chip-select-buttons">
+        ${refreshBtn}
         ${skipBtn}
-        <button class="chip-select-btn" id="chip-select-confirm">チップを選ぶ</button>
+        <button class="chip-select-btn ${buyBtnClass}" id="chip-select-confirm">${buyLabel}</button>
       </div>
     </div>
   `;
@@ -120,6 +155,7 @@ function renderChipCard() {
   // Button handlers
   document.getElementById('chip-select-confirm').addEventListener('click', confirmSelection);
   document.getElementById('chip-select-skip')?.addEventListener('click', skipSelection);
+  document.getElementById('chip-select-refresh')?.addEventListener('click', handleRefresh);
 
   // Re-parse for lookup mode if active
   if (lookup.getActive()) {
@@ -257,6 +293,15 @@ function confirmSelection() {
   if (!resolveSelection) return;
 
   const chip = currentChips[selectedIndex];
+  const price = chip.price || 0;
+  const playerCredits = currentOptions.playerCredits ?? Infinity;
+
+  // Check if player can afford
+  if (playerCredits < price) {
+    playSFX('button-tap');
+    return;
+  }
+
   const resolve = resolveSelection;
   playSFX('chip-equip');
 
@@ -271,6 +316,35 @@ function skipSelection() {
   playSFX('button-tap');
   cleanup();
   resolve(null);
+}
+
+function handleRefresh() {
+  if (!currentOptions.onRefresh) return;
+
+  const refreshCost = currentOptions.freeRefreshUsed ? 25 : 0;
+  const playerCredits = currentOptions.playerCredits ?? 0;
+
+  if (playerCredits < refreshCost) {
+    playSFX('button-tap');
+    return;
+  }
+
+  playSFX('button-tap');
+  currentOptions.onRefresh();
+}
+
+/**
+ * Update the chip selection with new chips and options (used after refresh)
+ * @param {Object[]} chips - New array of chip objects
+ * @param {Object} newOptions - Updated options
+ */
+export function updateChips(chips, newOptions = {}) {
+  currentChips = chips;
+  currentOptions = { ...currentOptions, ...newOptions };
+  selectedIndex = 0;
+
+  renderChipCard();
+  showSelectedChip(chips[0]);
 }
 
 /** Clean up chip select UI */

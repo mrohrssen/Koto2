@@ -9,13 +9,13 @@
  *
  * KEY EXPORTS:
  * State Factories:
- * - createNewPlayer(name) - Player with attack, maxHp, gold, chips, equipment
+ * - createNewPlayer(name) - Player with attack, maxHp, credits, chips, equipment
  * - createNewRun(player) - Run state: floor, ward path, rooms, encounters
  * - createCombatState(enemy) - Combat instance for battle
  * - createMetaProgression() - Meta-save: essence, upgrades, achievements
  *
  * Meta-Progression:
- * - META_UPGRADES - Upgrade definitions (vitality, startingGold, attackPower, goldFind)
+ * - META_UPGRADES - Upgrade definitions (vitality, startingCredits, attackPower, creditFind)
  * - ACHIEVEMENTS - Achievement definitions and unlock conditions
  * - calculateEssenceReward(runStats, floor, isVictory) - Compute essence earned
  * - getMetaUpgradeEffects(meta) - Aggregate effects from purchased upgrades
@@ -38,6 +38,9 @@
  */
 
 import { getClassStartingEquipment } from './items.js';
+
+// ============ INVENTORY CONSTANTS ============
+export const MAX_INVENTORY_SIZE = 12;  // Maximum unequipped chips in inventory
 
 // ============ META-PROGRESSION STATE ============
 
@@ -62,7 +65,7 @@ export function createMetaProgression() {
       totalBossesDefeated: 0,
       totalDamageDealt: 0,
       totalDamageTaken: 0,
-      totalGoldEarned: 0,
+      totalCreditsEarned: 0,
       totalEssenceEarned: 0,
       highestFloor: 0,
       totalPlayTime: 0,      // in milliseconds
@@ -92,14 +95,14 @@ export const META_UPGRADES = {
     effect: (level) => ({ maxHpPercent: level * 10 })
   },
 
-  startingGold: {
-    id: 'startingGold',
+  startingCredits: {
+    id: 'startingCredits',
     name: '財宝嗅覚',
     nameEn: 'Treasure Sense',
-    description: 'Start each run with +25 gold per level',
+    description: 'Start each run with +25 credits per level',
     maxLevel: 4,
     costPerLevel: [30, 60, 120, 240],
-    effect: (level) => ({ startingGold: level * 25 })
+    effect: (level) => ({ startingCredits: level * 25 })
   },
 
   attackPower: {
@@ -112,14 +115,14 @@ export const META_UPGRADES = {
     effect: (level) => ({ attackBonus: level * 2 })
   },
 
-  goldFind: {
-    id: 'goldFind',
-    name: 'ゴールド発見率',
-    nameEn: 'Gold Find',
-    description: 'Earn +10% more gold per level',
+  creditFind: {
+    id: 'creditFind',
+    name: 'クレジット発見率',
+    nameEn: 'Credit Find',
+    description: 'Earn +10% more credits per level',
     maxLevel: 5,
     costPerLevel: [50, 100, 200, 400, 800],
-    effect: (level) => ({ goldFindPercent: level * 10 })
+    effect: (level) => ({ creditFindPercent: level * 10 })
   }
 };
 
@@ -211,9 +214,9 @@ export function calculateEssenceReward(runStats, floor, isVictory) {
 export function getMetaUpgradeEffects(metaProgression) {
   const effects = {
     maxHpPercent: 0,
-    startingGold: 0,
+    startingCredits: 0,
     attackBonus: 0,
-    goldFindPercent: 0
+    creditFindPercent: 0
   };
 
   if (!metaProgression?.upgrades) return effects;
@@ -243,7 +246,7 @@ export function createNewPlayer(name = "Hunter") {
     hp: 100,
     maxHp: 100,
     attack: 15,
-    gold: 250,
+    credits: 250,
     chips: [],
     equipment: getClassStartingEquipment('hacker')
   };
@@ -291,7 +294,7 @@ export function createNewRun(player) {
       damageDealt: 0,
       damageTaken: 0,
       itemsUsed: 0,
-      goldEarned: 0,
+      creditsEarned: 0,
       floorsCleared: 0,
       roomsExplored: 0,
       trapsDisarmed: 0,
