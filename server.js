@@ -217,19 +217,20 @@ app.use(cors());
 app.use(compression()); // Gzip/Brotli compression for all responses
 app.use(express.json({ limit: '10mb' })); // Increased for bug report screenshots
 
-// Static files with aggressive caching
+// Static files - only cache webp images, load everything else fresh
 app.use(express.static(join(__dirname, 'public'), {
-  maxAge: '1d',           // Cache for 1 day by default
-  etag: true,             // Enable ETags for cache validation
-  lastModified: true,     // Enable Last-Modified headers
+  maxAge: 0,              // No caching by default
+  etag: false,            // Disable ETags for fresh loads
+  lastModified: false,    // Disable Last-Modified for fresh loads
   setHeaders: (res, path) => {
-    // Long cache for assets (images, icons, sprites)
-    if (path.includes('/assets/')) {
+    // Only cache webp images (sprites, backgrounds)
+    if (path.endsWith('.webp')) {
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 year
-    }
-    // Short cache for HTML
-    if (path.endsWith('.html')) {
-      res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour
+    } else {
+      // Everything else loads fresh (JS, CSS, HTML, other assets)
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
     }
   }
 }));

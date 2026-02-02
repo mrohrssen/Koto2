@@ -28,11 +28,13 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Only cache http/https requests for /assets/
+  // Only cache http/https requests
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     return;
   }
-  if (!url.pathname.startsWith('/assets/')) {
+
+  // Only cache .webp files - let everything else load fresh
+  if (!url.pathname.endsWith('.webp')) {
     return;
   }
 
