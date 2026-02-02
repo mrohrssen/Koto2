@@ -475,11 +475,9 @@ export class GameManager {
     // Ward selection is required at start
     this.run.wardSelectionRequired = true;
 
-    // Generate starting chip choices (3 free chips to choose from)
+    // Generate starting chip choices (priced by rarity)
     const ownedChipIds = (this.run.player.chips || []).map(c => c.id);
     const startingChips = generatePostCombatShop(1, ownedChipIds);
-    // Make them free
-    startingChips.forEach(chip => chip.price = 0);
     this.run.startingChipShop = {
       active: true,
       items: startingChips
