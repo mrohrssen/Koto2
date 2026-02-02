@@ -152,6 +152,10 @@ function updateUI() {
   updateChipRow();
   updatePlayerHP();
   updateGameContent();
+
+  // Update BGM based on current phase
+  const isBossRoom = gameState.run?.rooms?.[gameState.run?.currentRoom]?.isBossRoom;
+  audio.updateBGMForPhase(gameState.phase, isBossRoom);
 }
 
 function updateStatusBar() {
