@@ -336,7 +336,6 @@ async function startNewRun() {
     updateGameState(result.state);
     updateUI();
     wordPractice.prefetchCombatWords(); // Fallback if not prefetched from hub
-    audio.playBGM('main');
     if (gameState.run?.startingChipShop?.active) {
       await economyUI.renderStartingChipShop(gameState.run.startingChipShop.items);
     }
@@ -802,10 +801,6 @@ async function initGame() {
     if (audioInitialized) return;
     audioInitialized = true;
     await audio.initAudio();
-    // Start BGM if there's an active run
-    if (gameState.phase && gameState.phase !== 'hub') {
-      audio.playBGM('main');
-    }
     document.removeEventListener('click', ensureAudio);
     document.removeEventListener('touchstart', ensureAudio);
   }
