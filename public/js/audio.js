@@ -39,6 +39,35 @@ const PHASE_TRACKS = {
   runComplete: 'main',
 };
 
+/**
+ * Get the BGM track name for a game phase.
+ * @param {string} phase - Current game phase
+ * @param {boolean} isBossRoom - Whether currently in boss room
+ * @returns {string} Track filename (without extension)
+ */
+export function getTrackForPhase(phase, isBossRoom = false) {
+  if (phase === 'combat' && isBossRoom) return PHASE_TRACKS.boss;
+
+  const mapping = {
+    hub: 'hub',
+    exploring: 'exploration',
+    room: 'exploration',
+    shrine: 'exploration',
+    quiz: 'exploration',
+    wordDiscovery: 'exploration',
+    ward_selection: 'exploration',
+    combat: 'combat',
+    victory: 'victory',
+    post_combat_shop: 'victory',
+    defeat: 'defeat',
+    run_ended: 'defeat',
+    floor_complete: 'floorComplete',
+    run_complete: 'runComplete',
+  };
+
+  return PHASE_TRACKS[mapping[phase]] || PHASE_TRACKS.hub;
+}
+
 // ============ INITIALIZATION ============
 
 /**
