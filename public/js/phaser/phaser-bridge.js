@@ -22,7 +22,12 @@ class GameEventEmitter {
 
   off(event, callback) {
     if (!this.listeners[event]) return;
-    this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+    if (callback) {
+      this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+    } else {
+      // No callback provided - remove all listeners for this event
+      this.listeners[event] = [];
+    }
   }
 
   emit(event, data) {

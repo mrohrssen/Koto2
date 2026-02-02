@@ -123,15 +123,14 @@ export default function createEconomyRoutes({ generateGameNarration }) {
       return res.status(400).json({ error: 'No active player' });
     }
 
-    // Add credits to player gold
-    state.player.gold = (state.player.gold || 0) + amount;
-    gameManager.updatePlayer({ gold: state.player.gold });
+    // Add credits to player
+    state.player.credits = (state.player.credits || 0) + amount;
 
     req.saveGame();
     res.json({
       success: true,
       amount,
-      newTotal: state.player.gold
+      newTotal: state.player.credits
     });
   });
 

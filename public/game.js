@@ -504,6 +504,7 @@ function setupPhaserEventListeners() {
       });
       const result = await response.json();
       if (result.success) {
+        console.log('[collect-credits] credits:', result.newTotal);
         scene.showToast(`+${data.amount} credits`, 1500);
         // Update local state
         if (gameState.player) {

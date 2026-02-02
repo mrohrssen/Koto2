@@ -37,9 +37,11 @@ export function initPhaser() {
         debug: false
       }
     },
-    scene: [ExplorationScene],
+    scene: [],  // No scenes - we add manually to avoid auto-start
     callbacks: {
-      postBoot: () => {
+      postBoot: (bootedGame) => {
+        // Add scene manually (not in config array to avoid auto-start)
+        bootedGame.scene.add('ExplorationScene', ExplorationScene, false);
         gameReady = true;
         // If we had pending room data, start the scene now
         if (pendingRoomData) {
