@@ -63,6 +63,7 @@ export class ExplorationScene extends Phaser.Scene {
   }
 
   preload() {
+    console.log('[DEBUG] ExplorationScene preload() called');
     // Load player walk spritesheet (48x64 per frame, 8 cols x 6 rows)
     this.load.spritesheet('player-walk', 'assets/exploration/player/walk.png', {
       frameWidth: 48,
@@ -72,6 +73,14 @@ export class ExplorationScene extends Phaser.Scene {
     // Load room background
     this.load.image('room-background', 'assets/exploration/background.png');
     // Note: placeholder textures created in create() - graphics can't be made during preload
+
+    // Log load completion
+    this.load.on('complete', () => {
+      console.log('[DEBUG] ExplorationScene assets loaded');
+    });
+    this.load.on('loaderror', (file) => {
+      console.error('[DEBUG] ExplorationScene load error:', file.key, file.src);
+    });
   }
 
   createAnimations() {
@@ -139,7 +148,9 @@ export class ExplorationScene extends Phaser.Scene {
   }
 
   create() {
+    console.log('[DEBUG] ExplorationScene create() called');
     const { width, height } = this.scale;
+    console.log('[DEBUG] Canvas size:', width, 'x', height);
 
     // Create placeholder textures (must be in create, not preload)
     this.createPlaceholderTextures();
