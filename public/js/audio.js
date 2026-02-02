@@ -68,6 +68,19 @@ export function getTrackForPhase(phase, isBossRoom = false) {
   return PHASE_TRACKS[mapping[phase]] || PHASE_TRACKS.hub;
 }
 
+/**
+ * Update BGM based on game phase. Only changes track if different.
+ * @param {string} phase - Current game phase
+ * @param {boolean} isBossRoom - Whether currently in boss room
+ */
+export function updateBGMForPhase(phase, isBossRoom = false) {
+  const track = getTrackForPhase(phase, isBossRoom);
+  if (track !== currentTrack) {
+    currentTrack = track;
+    playBGM(track);
+  }
+}
+
 // ============ INITIALIZATION ============
 
 /**
