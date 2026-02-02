@@ -53,7 +53,8 @@ import {
   calculateEssenceReward,
   getMetaUpgradeEffects,
   META_UPGRADES,
-  ACHIEVEMENTS
+  ACHIEVEMENTS,
+  BASE_STARTING_CREDITS
 } from './state.js';
 
 import { generateEnemy, selectEnemyIntent } from './enemies.js';
@@ -477,6 +478,9 @@ export class GameManager {
 
     this.run = createNewRun(this.player);
     logger.info('[GameManager] Run started:', { floor: this.run.floor, playerHp: this.run.player.hp });
+
+    // Reset credits to base starting value (before meta bonuses)
+    this.run.player.credits = BASE_STARTING_CREDITS;
 
     // Apply meta-progression bonuses to the run player
     if (this.meta) {

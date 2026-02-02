@@ -82,6 +82,11 @@ export function createMetaProgression() {
   };
 }
 
+// ============ CONSTANTS ============
+
+/** Base starting credits for each run (before meta-progression bonuses) */
+export const BASE_STARTING_CREDITS = 250;
+
 // ============ UPGRADE DEFINITIONS ============
 
 export const META_UPGRADES = {
@@ -246,7 +251,7 @@ export function createNewPlayer(name = "Hunter") {
     hp: 100,
     maxHp: 100,
     attack: 15,
-    credits: 250,
+    credits: BASE_STARTING_CREDITS,
     chips: [],
     equipment: getClassStartingEquipment('hacker')
   };
