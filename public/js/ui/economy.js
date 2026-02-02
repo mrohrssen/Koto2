@@ -57,7 +57,7 @@ export async function renderPostCombatShop() {
     return;
   }
 
-  const playerCredits = gameState.run?.player?.credits ?? 0;
+  const playerCredits = gameState.player?.credits ?? 0;
 
   // Handle refresh callback
   const handleRefresh = async () => {
@@ -69,7 +69,7 @@ export async function renderPostCombatShop() {
       // Update chip select with new items
       const newGameState = getGameState();
       const newShop = newGameState.run?.postCombatShop;
-      const newCredits = newGameState.run?.player?.credits ?? 0;
+      const newCredits = newGameState.player?.credits ?? 0;
       if (newShop?.items) {
         chipSelect.updateChips(newShop.items, {
           playerCredits: newCredits,
