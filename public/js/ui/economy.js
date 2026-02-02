@@ -121,7 +121,10 @@ export async function renderPostCombatShop() {
 
 /** Render starting chip selection (in-scene, not takeover) */
 export async function renderStartingChipShop(items) {
-  const chip = await chipSelect.showChipSelect(items);
+  const gameState = getGameState();
+  const playerCredits = gameState.player?.credits ?? 0;
+
+  const chip = await chipSelect.showChipSelect(items, { playerCredits });
   const index = items.findIndex(c => (c.itemId || c.id) === (chip.itemId || chip.id));
 
   const result = await apiClaimStartingChip(index);
