@@ -337,7 +337,7 @@ async function startNewRun() {
     updateUI();
     wordPractice.prefetchCombatWords(); // Fallback if not prefetched from hub
     if (gameState.run?.startingChipShop?.active) {
-      await economyUI.renderStartingChipShop(gameState.run.startingChipShop.items);
+      await economyUI.renderStartingChipShop();
     }
   }
 }

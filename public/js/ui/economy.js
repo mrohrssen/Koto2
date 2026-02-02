@@ -122,10 +122,15 @@ export async function renderPostCombatShop() {
 }
 
 /** Render starting chip selection (in-scene, not takeover) */
-export async function renderStartingChipShop(items) {
+export async function renderStartingChipShop() {
   const gameState = getGameState();
-  const playerCredits = gameState.player?.credits ?? 0;
   const shop = gameState.run?.startingChipShop;
+  if (!shop?.active || !shop?.items) {
+    console.error('No starting chip shop available');
+    return;
+  }
+
+  const playerCredits = gameState.player?.credits ?? 0;
 
   // Handle refresh callback
   const handleRefresh = async () => {
@@ -149,24 +154,34 @@ export async function renderStartingChipShop(items) {
     }
   };
 
-  const chip = await chipSelect.showChipSelect(items, {
+  const chip = await chipSelect.showChipSelect(shop.items, {
     playerCredits,
-    freeRefreshUsed: shop?.freeRefreshUsed || false,
+    freeRefreshUsed: shop.freeRefreshUsed || false,
     onRefresh: apiStartingChipRefresh ? handleRefresh : null
   });
-  const index = items.findIndex(c => (c.itemId || c.id) === (chip.itemId || chip.id));
 
-  const result = await apiClaimStartingChip(index);
-  if (result?.state) {
-    updateGameState(result.state);
+  const index = shop.items.findIndex(c => (c.itemId || c.id) === (chip.itemId || chip.id));
+
+  try {
+    const result = await apiClaimStartingChip(index);
+    if (result?.state) {
+      updateGameState(result.state);
+    }
+
+    playSFX('chip-equip');
+    speakText(chip.nameEn || chip.name);
+
+    if (apiGetChipLoadout && setChipLoadoutCache) {
+      const loadout = await apiGetChipLoadout();
+      setChipLoadoutCache(loadout);
+    }
+  } catch (error) {
+    console.error('Starting chip purchase failed:', error);
+    // If purchase failed, re-show the shop
+    await renderStartingChipShop();
+    return;
   }
 
-  speakText(chip.nameEn || chip.name);
-
-  if (apiGetChipLoadout && setChipLoadoutCache) {
-    const loadout = await apiGetChipLoadout();
-    setChipLoadoutCache(loadout);
-  }
   updateUI();
 }
 
