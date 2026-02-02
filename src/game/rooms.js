@@ -34,7 +34,7 @@
  * Post-combat shop appears after enemy defeats.
  */
 
-import { generateShopChips, getChipDisplayInfo } from './items/chips.js';
+import { generateShopChips, getChipDisplayInfo, getChipPrice } from './items/chips.js';
 
 // ============ TEST ROOM QUEUE ============
 // Only used when NODE_ENV=test for deterministic E2E tests
@@ -431,7 +431,7 @@ export function generatePostCombatShop(floor, ownedChipIds = []) {
       nameEn: chip.nameEn,
       description: chip.description,
       descriptionEn: chip.descriptionEn,
-      price: 0,
+      price: getChipPrice(chip.id),
       type: 'chip',
       category: chip.category,
       rarity: chip.rarity,
@@ -440,6 +440,7 @@ export function generatePostCombatShop(floor, ownedChipIds = []) {
       effectText: displayInfo.effectText,
       effects: chip.effects,
       skill: chip.skill,
+      stats: chip.stats,
       quantity: 1
     };
   });
