@@ -25,6 +25,20 @@ let muted = false;
 let bgmElement = null;
 let bgmPlaying = false;
 
+// Phase-based BGM tracking
+let currentTrack = null;
+
+const PHASE_TRACKS = {
+  hub: 'main',
+  exploration: 'main',
+  combat: 'main',
+  boss: 'main',
+  victory: 'main',
+  defeat: 'main',
+  floorComplete: 'main',
+  runComplete: 'main',
+};
+
 // ============ INITIALIZATION ============
 
 /**
