@@ -111,6 +111,16 @@ function renderChipCard() {
             ${price > 0 ? `<div class="chip-select-price ${priceClass}">${price}cr</div>` : ''}
           </div>
         </div>
+        <div class="chip-stat-row">
+          <div class="chip-stat-box pwr">
+            <span class="chip-stat-label">PWR</span>
+            <span class="chip-stat-value">${chip.stats?.power || 0}</span>
+          </div>
+          <div class="chip-stat-box bw">
+            <span class="chip-stat-label">BW</span>
+            <span class="chip-stat-value">${chip.stats?.bandwidth || 0}</span>
+          </div>
+        </div>
         <div class="chip-select-passive">
           <div class="chip-select-label">Passive</div>
           <div class="chip-select-desc">${chip.descriptionEn || chip.description || ''}</div>

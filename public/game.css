@@ -724,6 +724,56 @@ html, body {
   margin-bottom: 2px;
 }
 
+/* Chip stat boxes */
+.chip-stat-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.chip-stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: 2px solid;
+  min-width: 60px;
+}
+
+.chip-stat-box.pwr {
+  border-color: #e74c3c;
+  background: rgba(231, 76, 60, 0.15);
+}
+
+.chip-stat-box.bw {
+  border-color: #3498db;
+  background: rgba(52, 152, 219, 0.15);
+}
+
+.chip-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+}
+
+.chip-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.chip-stat-box.pwr .chip-stat-value {
+  color: #e74c3c;
+}
+
+.chip-stat-box.bw .chip-stat-value {
+  color: #3498db;
+}
+
 .shop-chip-desc {
   display: -webkit-box;
   -webkit-line-clamp: 3;
