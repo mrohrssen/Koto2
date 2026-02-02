@@ -324,6 +324,11 @@ async function claimStartingChip(itemIndex) {
   return apiCall('/claim-starting-chip', 'POST', { itemIndex });
 }
 
+/** Refresh the starting chip shop */
+async function startingChipRefresh() {
+  return apiCall('/starting-chip-refresh', 'POST');
+}
+
 /** Buy an item from the regular shop
  * @param {string} itemId - Item identifier
  */
@@ -559,6 +564,7 @@ export {
   startBoss,
   // Shop/economy endpoints
   claimStartingChip,
+  startingChipRefresh,
   postCombatShopBuy,
   shopSkip,
   postCombatShopRefresh,

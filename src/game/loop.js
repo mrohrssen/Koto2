@@ -390,7 +390,8 @@ export class GameManager {
         } : null,
         startingChipShop: this.run.startingChipShop ? {
           active: this.run.startingChipShop.active,
-          items: this.run.startingChipShop.items
+          items: this.run.startingChipShop.items,
+          freeRefreshUsed: this.run.startingChipShop.freeRefreshUsed || false
         } : null
       } : null,
       room: currentRoom ? {
@@ -480,7 +481,8 @@ export class GameManager {
     const startingChips = generatePostCombatShop(1, ownedChipIds);
     this.run.startingChipShop = {
       active: true,
-      items: startingChips
+      items: startingChips,
+      freeRefreshUsed: false
     };
 
     this.emitState();
@@ -536,6 +538,43 @@ export class GameManager {
     return {
       success: true,
       chip: item
+    };
+  }
+
+  /**
+   * Refresh the starting chip shop with new chips
+   * First refresh is free, subsequent refreshes cost 25 credits
+   */
+  refreshStartingChipShop() {
+    if (!this.run?.startingChipShop?.active) {
+      throw new Error('No starting chip selection active');
+    }
+
+    const shop = this.run.startingChipShop;
+    const player = this.run.player;
+    const REFRESH_COST = 25;
+
+    let creditsSpent = 0;
+    if (shop.freeRefreshUsed) {
+      if (player.credits < REFRESH_COST) {
+        throw new Error('Not enough credits for refresh');
+      }
+      player.credits -= REFRESH_COST;
+      creditsSpent = REFRESH_COST;
+    } else {
+      shop.freeRefreshUsed = true;
+    }
+
+    // Generate new chips
+    const ownedChipIds = (player.chips || []).map(c => c.id);
+    shop.items = generatePostCombatShop(1, ownedChipIds);
+
+    this.emitState();
+
+    return {
+      success: true,
+      creditsSpent,
+      items: shop.items
     };
   }
 

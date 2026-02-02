@@ -30,6 +30,7 @@ let getGameState = null;
 let updateGameState = null;
 let updateUI = null;
 let apiClaimStartingChip = null;
+let apiStartingChipRefresh = null;
 let apiPostCombatShopBuy = null;
 let apiShopSkip = null;
 let apiShopRefresh = null;
@@ -41,6 +42,7 @@ export function init(callbacks) {
   updateGameState = callbacks.updateGameState;
   updateUI = callbacks.updateUI;
   apiClaimStartingChip = callbacks.apiClaimStartingChip;
+  apiStartingChipRefresh = callbacks.apiStartingChipRefresh;
   apiPostCombatShopBuy = callbacks.apiPostCombatShopBuy;
   apiShopSkip = callbacks.apiShopSkip;
   apiShopRefresh = callbacks.apiShopRefresh;
@@ -123,8 +125,35 @@ export async function renderPostCombatShop() {
 export async function renderStartingChipShop(items) {
   const gameState = getGameState();
   const playerCredits = gameState.player?.credits ?? 0;
+  const shop = gameState.run?.startingChipShop;
 
-  const chip = await chipSelect.showChipSelect(items, { playerCredits });
+  // Handle refresh callback
+  const handleRefresh = async () => {
+    try {
+      const result = await apiStartingChipRefresh();
+      if (result?.state) {
+        updateGameState(result.state);
+      }
+      // Update chip select with new items
+      const newGameState = getGameState();
+      const newShop = newGameState.run?.startingChipShop;
+      const newCredits = newGameState.player?.credits ?? 0;
+      if (newShop?.items) {
+        chipSelect.updateChips(newShop.items, {
+          playerCredits: newCredits,
+          freeRefreshUsed: newShop.freeRefreshUsed
+        });
+      }
+    } catch (error) {
+      console.error('Starting chip refresh failed:', error);
+    }
+  };
+
+  const chip = await chipSelect.showChipSelect(items, {
+    playerCredits,
+    freeRefreshUsed: shop?.freeRefreshUsed || false,
+    onRefresh: apiStartingChipRefresh ? handleRefresh : null
+  });
   const index = items.findIndex(c => (c.itemId || c.id) === (chip.itemId || chip.id));
 
   const result = await apiClaimStartingChip(index);

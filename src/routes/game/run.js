@@ -62,6 +62,18 @@ export default function createRunRoutes({
     }
   });
 
+  // Refresh starting chip shop
+  router.post('/starting-chip-refresh', (req, res) => {
+    const gameManager = req.gameManager;
+    try {
+      const result = gameManager.refreshStartingChipShop();
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   // Ward selection
   router.get('/starting-wards', (req, res) => {
     try {
