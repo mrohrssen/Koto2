@@ -33,8 +33,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Only cache .webp files - let everything else load fresh
-  if (!url.pathname.endsWith('.webp')) {
+  // Only cache .webp and .mp3 files - let everything else load fresh
+  if (!url.pathname.endsWith('.webp') && !url.pathname.endsWith('.mp3')) {
     return;
   }
 

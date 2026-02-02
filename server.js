@@ -223,8 +223,8 @@ app.use(express.static(join(__dirname, 'public'), {
   etag: false,            // Disable ETags for fresh loads
   lastModified: false,    // Disable Last-Modified for fresh loads
   setHeaders: (res, path) => {
-    // Only cache webp images (sprites, backgrounds)
-    if (path.endsWith('.webp')) {
+    // Only cache webp images and mp3 audio (sprites, backgrounds, music)
+    if (path.endsWith('.webp') || path.endsWith('.mp3')) {
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 year
     } else {
       // Everything else loads fresh (JS, CSS, HTML, other assets)
