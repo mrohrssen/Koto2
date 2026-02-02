@@ -390,7 +390,20 @@ export class GameManager {
         } : null,
         startingChipShop: this.run.startingChipShop ? {
           active: this.run.startingChipShop.active,
-          items: this.run.startingChipShop.items,
+          items: this.run.startingChipShop.items.map(item => {
+            const itemData = getItem(item.itemId);
+            return {
+              ...item,
+              name: itemData?.name || item.name,
+              nameEn: itemData?.nameEn || item.nameEn || item.itemId,
+              description: itemData?.description || item.description || '',
+              descriptionEn: itemData?.descriptionEn || item.descriptionEn || '',
+              rarity: itemData?.rarity || item.rarity || 'common',
+              price: item.price || 0,
+              stats: item.stats || itemData?.stats || { power: 0, bandwidth: 0 },
+              skill: item.skill || itemData?.skill || null
+            };
+          }),
           freeRefreshUsed: this.run.startingChipShop.freeRefreshUsed || false
         } : null
       } : null,
