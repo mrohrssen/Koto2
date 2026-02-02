@@ -103,12 +103,12 @@ function renderChipCard() {
     <div class="chip-select-container">
       ${playerCredits !== undefined ? `<div class="chip-select-credits">クレジット: ${playerCredits}cr</div>` : ''}
       <div class="chip-select-card" id="chip-select-card">
+        ${price > 0 ? `<div class="chip-select-price-badge ${priceClass}">${price}cr</div>` : ''}
         <div class="chip-select-top">
           <div class="chip-select-icon" style="background-image:url('${iconPath}')"></div>
           <div class="chip-select-info">
             <div class="chip-select-name">${chip.nameEn || chip.name}</div>
             <div class="chip-select-rarity ${chip.rarity}">${chip.rarity}</div>
-            ${price > 0 ? `<div class="chip-select-price ${priceClass}">${price}cr</div>` : ''}
           </div>
         </div>
         <div class="chip-stat-row">

@@ -966,6 +966,7 @@ html, body {
 }
 
 .chip-select-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1122,6 +1123,27 @@ html, body {
 
 .chip-select-price.expensive {
   color: var(--accent-red);
+}
+
+.chip-select-price-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.chip-select-price-badge.affordable {
+  color: var(--accent-green);
+  border: 1px solid var(--accent-green);
+}
+
+.chip-select-price-badge.expensive {
+  color: var(--accent-red);
+  border: 1px solid var(--accent-red);
 }
 
 /* Rarity colors for chip cards */
