@@ -205,114 +205,67 @@ Each specialist has: prefix, role name, search queries, relevant files, value fu
 | mobile | Mobile Expert | "mobile session design", "daily login hooks" | Meta-progression, run length | Short satisfying sessions | Psychology (engagement vs manipulation) |
 | roguelike | Roguelike Specialist | "roguelike design pillars", "{comparison} analysis" | src/game/rooms.js | Genre purity, meaningful variance | Competitive (purity vs trends) |
 
-## Step 5: Phase 2 - Parallel Research
+## Step 5: Phase 2 - Parallel Research Chains
 
-Launch ALL 10 research agents simultaneously using the Task tool. Each agent should:
-1. Research their domain via web search
-2. Read relevant codebase sections
-3. Produce a position paper (max 500 words)
+For EACH specialist, spawn a 3-step chain. Chains run in parallel across specialists, but steps within a chain are sequential.
 
-**Launch these agents in parallel (single message with multiple Task calls):**
+### Chain Execution Pattern
 
-```
-Agent: Combat Designer
-Focus: Turn-based combat feel, tactical depth, moment-to-moment satisfaction
-Research: "turn-based combat design GDC", "[comparison games] combat analysis"
-Codebase: src/game/combat/, data/enemies.json
-Value function: Optimize for tactical depth and satisfying combat moments
-Must cite: Specific games + specific codebase lines
-```
+For each specialist (combat, systems, economy, ux, competitive, psychology, playtester, mobile, roguelike):
 
-```
-Agent: Systems Designer
-Focus: Chip synergies, build variety, emergent interactions
-Research: "deck builder synergy design", "roguelike build variety"
-Codebase: src/game/items/chips.js, data/chips.json
-Value function: Protect what works, enable emergent complexity
-Must cite: Specific games + specific codebase lines
-```
+**Step A: Spawn Researcher**
+Use Task tool with:
+- `subagent_type`: "general-purpose"
+- `description`: "{Role} Researcher"
+- `prompt`: Fill in Researcher Template with specialist values
 
-```
-Agent: Economy/Progression Designer
-Focus: Reward pacing, power curves, meta-progression hooks
-Research: "roguelike progression design", "mobile game economy"
-Codebase: src/game/state.js (meta-progression section)
-Value function: "One more run" addiction, satisfying power growth
-Must cite: Specific games + specific codebase lines
-```
+Wait for return message: "{Role}-Researcher: done, N sources"
 
-```
-Agent: UX/Game Feel Specialist
-Focus: Juice, feedback, animations, micro-interactions
-Research: "game feel juice design", "satisfying UI feedback"
-Codebase: public/js/ui/combat-effects.js, public/game.css
-Value function: Every action should feel crunchy and satisfying
-Must cite: Specific games + specific codebase lines
-```
+**Step B: Spawn Analyzer (after Researcher completes)**
+Use Task tool with:
+- `subagent_type`: "general-purpose"
+- `description`: "{Role} Analyzer"
+- `prompt`: Fill in Analyzer Template with specialist values
 
-```
-Agent: Competitive Analyst
-Focus: Market trends, what's working in similar games
-Research: "roguelike deck builder 2024", "[comparison games] postmortem"
-Codebase: General overview
-Value function: What's proven to work in the market
-Must cite: Specific successful games + market data
-```
+Wait for return message: "{Role}-Analyzer: done, N files analyzed"
+
+**Step C: Spawn Writer (after Analyzer completes)**
+Use Task tool with:
+- `subagent_type`: "general-purpose"
+- `description`: "{Role} Writer"
+- `prompt`: Fill in Writer Template with specialist values
+
+Wait for return message: "{Role}-Writer: done, position paper complete"
+
+### Parallel Execution Strategy
+
+Launch ALL 9 Researcher agents in a single message (9 Task tool calls).
+
+When a Researcher completes, immediately launch its Analyzer.
+
+When an Analyzer completes, immediately launch its Writer.
+
+**Do NOT wait for all Researchers before starting Analyzers.**
+
+### Progress Display During Phase 2
 
 ```
-Agent: Player Psychologist
-Focus: Flow states, intrinsic motivation, why players quit
-Research: "flow state game design", "player retention psychology"
-Codebase: Game loop flow in docs/ARCHITECTURE.md
-Value function: Sustainable engagement over manipulation
-Must cite: Psychology research + game examples
-```
+[████░░░░░░░░░░░░░░░░] 25% | Phase 2: Research Chains
 
-```
-Agent: Playtester Advocate
-Focus: First 10 minutes experience, friction points, confusion
-Research: "new player onboarding games", "roguelike tutorial design"
-Codebase: Early game flow
-Value function: CONTRARIAN - find problems others miss
-Must cite: Specific friction points in current game
-```
-
-```
-Agent: Mobile/Retention Expert
-Focus: Session length, daily hooks, pick-up-and-play
-Research: "mobile game session design", "daily login hooks"
-Codebase: Meta-progression, run length
-Value function: Optimize for short satisfying sessions
-Must cite: Successful mobile games + specific mechanics
-```
-
-```
-Agent: Roguelike Specialist
-Focus: Run variety, meaningful choices, genre conventions
-Research: "roguelike design pillars", "[comparison games] design analysis"
-Codebase: src/game/rooms.js, run structure
-Value function: Genre purity, meaningful variance
-Must cite: Classic roguelikes + modern innovations
-```
-
-```
-Agent: Creative Director
-DO NOT LAUNCH YET - waits for synthesis phase
-```
-
-**Progress display while research runs:**
-```
-[██████░░░░░░░░░░░░░░] 35% | ~X min remaining
-
-PHASE 2: PARALLEL RESEARCH (all agents running simultaneously)
-
-  ● Combat Designer        researching "turn-based combat feel"
-  ● Systems Designer       reading src/game/items/chips.js
-  ● Roguelike Specialist   researching "[comparison game] design"
+  ✓ Combat Designer     [████] Position complete
+  ● Systems Designer    [██░░] Analyzer running...
+  ● Economy Designer    [███░] Writer running...
+  ○ UX Specialist       [█░░░] Researcher running...
+  ○ Competitive Analyst [░░░░] Queued...
+  ✗ Mobile Expert       [██░░] SKIPPED (timeout)
   ...
+
+──────────────────────────────────────────────────────────────────
+  6/9 specialists active | 1 skipped | Debate begins when complete
+──────────────────────────────────────────────────────────────────
 ```
 
-**Wait for all agents to complete before proceeding.**
+Status key: ✓ Complete | ● In progress | ○ Queued | ✗ Failed/Skipped
 
 ## Step 6: Phase 3 - Clustered Debate
 
