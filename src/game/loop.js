@@ -63,6 +63,7 @@ import { getRoomActions, generatePostCombatShop, getStartingWardOptions } from '
 import { getItem } from './items.js';
 import { derivePhase } from './phase-machine.js';
 import { CombatService, ExplorationService } from './services/index.js';
+import { calculateChipBonusHP } from './items/chips.js';
 import { logger } from '../logger.js';
 
 // ============ GAME MANAGER ============
@@ -272,11 +273,18 @@ export class GameManager {
 
     const effects = getMetaUpgradeEffects(this.meta);
 
-    // HP bonus (percentage)
+    // HP bonus (percentage from vitality upgrade)
     if (effects.maxHpPercent > 0) {
       const bonus = Math.floor(player.maxHp * effects.maxHpPercent / 100);
       player.maxHp += bonus;
       player.hp += bonus;
+    }
+
+    // HP bonus from equipped chips
+    const chipHPBonus = calculateChipBonusHP(player);
+    if (chipHPBonus > 0) {
+      player.maxHp += chipHPBonus;
+      player.hp += chipHPBonus;
     }
 
     // Attack bonus
