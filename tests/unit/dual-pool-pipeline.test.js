@@ -19,6 +19,7 @@ function runPipeline(chips, overrides = {}) {
     isCrit: false,
     critChance: 0.05,
     target: { isBoss: false, hp: 500, maxHp: 500 },
+    player: { hp: 100, maxHp: 100 }, // For healPercent calculations
     combatStacks: {},
     weaponMaxSlots: 5,
     weaponUsedSlots: chips.length,
@@ -239,14 +240,14 @@ describe('Migrated Chip Values', () => {
     assert.strictEqual(burstResult.finalDamage, 105);
   });
 
-  it('Straw Bot: +6 PWR, +2 BW, +0.2 BW effect, heal 12', () => {
+  it('Straw Bot: +6 PWR, +2 BW, +0.2 BW effect, heal 4% of maxHp', () => {
     const result = runPipeline([getChip('straw')]);
     // PWR 6, BW 2 + 0.2 = 2.2
     // Damage = 6 × (1 + 2.2) = 19.2 → floor = 19
     assert.strictEqual(result.powerPool, 6);
     assert.strictEqual(result.bandwidthPool, 2.2);
-    // Check heal
-    assert.strictEqual(result.healPlayer, 12);
+    // Check heal: 4% of player.maxHp (100) = 4
+    assert.strictEqual(result.healPlayer, 4);
   });
 
   it('Lightbulb Bot: 50% ×1.5 BW', () => {

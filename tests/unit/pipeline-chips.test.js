@@ -26,6 +26,7 @@ function runPipeline(chips, overrides = {}) {
     isCrit: false,
     critChance: 0.05,
     target: { isBoss: false, hp: 500, maxHp: 500 },
+    player: { hp: 100, maxHp: 100 }, // For healPercent calculations
     combatStacks: {},
     weaponMaxSlots: 5,
     weaponUsedSlots: chips.length,
@@ -318,24 +319,24 @@ describe('Eraser Bot', () => {
 });
 
 describe('Onigiri Bot', () => {
-  it('should provide power and heal 5 HP', () => {
+  it('should provide power and heal 2% of maxHp', () => {
     const result = runPipeline([getChip('onigiri')]);
-    // PWR 9, BW 0 (stats) + heal 5 (effect)
+    // PWR 9, BW 0 (stats) + heal 2% of 100 player maxHp = 2 (effect)
     // Damage = 9 × 1 = 9
     assert.strictEqual(result.powerPool, 9);
     assert.strictEqual(result.bandwidthPool, 0);
     assert.strictEqual(result.finalDamage, 9);
-    assert.strictEqual(result.healPlayer, 5);
+    assert.strictEqual(result.healPlayer, 2); // 2% of player.maxHp (100)
   });
 
   it('should stack healing with multiple chips', () => {
     const result = runPipeline([getChip('onigiri'), getChip('onigiri')]);
-    // PWR 9 + 9 = 18, BW 0 + heal 5 + 5 = 10
+    // PWR 9 + 9 = 18, BW 0 + heal 2% + 2% of 100 = 4
     // Damage = 18 × 1 = 18
     assert.strictEqual(result.powerPool, 18);
     assert.strictEqual(result.bandwidthPool, 0);
     assert.strictEqual(result.finalDamage, 18);
-    assert.strictEqual(result.healPlayer, 10);
+    assert.strictEqual(result.healPlayer, 4); // 2% + 2% of 100
   });
 });
 
@@ -369,14 +370,14 @@ describe('Wallet Bot', () => {
 });
 
 describe('Straw Bot', () => {
-  it('should add bandwidth and heal', () => {
+  it('should add bandwidth and heal 4% of maxHp', () => {
     const result = runPipeline([getChip('straw')]);
     // PWR 6 (base), BW 2 (base) + 0.2 (effect) = BW 2.2
     // Damage = 6 × (1 + 2.2) = 19.2 → floor = 19
     assert.strictEqual(result.powerPool, 6);
     assert.strictEqual(result.bandwidthPool, 2.2);
     assert.strictEqual(result.finalDamage, 19);
-    assert.strictEqual(result.healPlayer, 12);
+    assert.strictEqual(result.healPlayer, 4); // 4% of player.maxHp (100)
   });
 });
 
@@ -532,16 +533,16 @@ describe('Mirror Bot', () => {
 
   it('should copy onigiri heal effect', () => {
     const result = runPipeline([getChip('onigiri'), getChip('mirror')]);
-    // Onigiri: PWR 9, BW 0, heal 5
+    // Onigiri: PWR 9, BW 0, heal 2% of 100 = 2
     // Mirror: PWR 18, BW 3
     // Total base: PWR 27, BW 3
-    // Onigiri effect: heal 5 (sets lastChipEffect with healPlayer)
-    // Mirror copies heal 5 → total heal 10
+    // Onigiri effect: heal 2 (sets lastChipEffect with healPlayer)
+    // Mirror copies heal 2 → total heal 4
     // Damage = 27 × (1 + 3) = 108
     assert.strictEqual(result.powerPool, 27);
     assert.strictEqual(result.bandwidthPool, 3);
     assert.strictEqual(result.finalDamage, 108);
-    assert.strictEqual(result.healPlayer, 10); // 5 + 5
+    assert.strictEqual(result.healPlayer, 4); // 2 + 2 (2% + 2% of 100)
   });
 });
 
@@ -658,16 +659,16 @@ describe('Complex Pipeline Combinations', () => {
 
   it('should handle onigiri -> straw healing stack', () => {
     const result = runPipeline([getChip('onigiri'), getChip('straw')]);
-    // Onigiri: PWR 9, BW 0, heal 5
+    // Onigiri: PWR 9, BW 0, heal 2% of 100 = 2
     // Straw: PWR 6, BW 2
     // Total base: PWR 15, BW 2
-    // Straw effect: +0.2 BW, heal 12
+    // Straw effect: +0.2 BW, heal 4% of 100 = 4
     // BW = 2 + 0.2 = 2.2
     // Damage = 15 × (1 + 2.2) = 48
     assert.strictEqual(result.powerPool, 15);
     assert.strictEqual(result.bandwidthPool, 2.2);
     assert.strictEqual(result.finalDamage, 48);
-    assert.strictEqual(result.healPlayer, 17); // 5 + 12
+    assert.strictEqual(result.healPlayer, 6); // 2 + 4 (2% + 4% of 100)
   });
 
   it('should handle eraser + feather empty slot synergy', () => {
@@ -1017,7 +1018,7 @@ describe('Pipeline Sequence Tracking', () => {
 
     const heal = result.sequence.find(e => e.type === 'heal');
     assert.ok(heal, 'should have heal event');
-    assert.strictEqual(heal.hp, 5);
+    assert.strictEqual(heal.hp, 2); // 2% of player.maxHp (100)
   });
 
   it('should include noTrigger events for failed conditionals', () => {
@@ -1080,16 +1081,16 @@ describe('Spark Plug Bot (positionBonus - first)', () => {
 
 describe('Leech Bot (healingToDamage)', () => {
   it('should convert healing to bonus damage', () => {
-    // Leech + Onigiri (heals 5 per attack)
+    // Leech + Onigiri (heals 2% of 100 = 2 per attack)
     const chips = [getChip('leech'), getChip('onigiri')];
     const result = runPipeline(chips);
     // Leech: PWR 8, BW 2 + Onigiri: PWR 9, BW 0
     // Total base: PWR 17, BW 2
-    // Onigiri heals 5 → Leech converts to +5 damage
-    // Damage = 17 × (1 + 2) + 5 = 56
-    assert.strictEqual(result.healPlayer, 5);
-    assert.strictEqual(result.healingToDamage, 5);
-    assert.strictEqual(result.finalDamage, 56);
+    // Onigiri heals 2 → Leech converts to +2 damage
+    // Damage = 17 × (1 + 2) + 2 = 53
+    assert.strictEqual(result.healPlayer, 2);
+    assert.strictEqual(result.healingToDamage, 2);
+    assert.strictEqual(result.finalDamage, 53);
   });
 
   it('should work without other healing chips', () => {
@@ -1108,11 +1109,11 @@ describe('Leech Bot (healingToDamage)', () => {
     // Leech: PWR 8, BW 2 + Onigiri: PWR 9, BW 0 + Straw: PWR 6, BW 2
     // Total base: PWR 23, BW 4
     // Straw effect: +0.2 BW → BW 4.2
-    // Total heal = 5 + 12 = 17
-    // Damage = 23 × (1 + 4.2) + 17 = 119.6 → floor = 119 + 17 = 136
-    assert.strictEqual(result.healPlayer, 17);
-    assert.strictEqual(result.healingToDamage, 17);
-    assert.strictEqual(result.finalDamage, 136);
+    // Total heal = 2 + 4 = 6 (2% + 4% of 100)
+    // Damage = 23 × (1 + 4.2) + 6 = 119.6 → floor = 119 + 6 = 125
+    assert.strictEqual(result.healPlayer, 6);
+    assert.strictEqual(result.healingToDamage, 6);
+    assert.strictEqual(result.finalDamage, 125);
   });
 });
 

@@ -241,7 +241,7 @@ describe('Charcoal Bot Integration', () => {
       gm.combatCycle('player');
     });
 
-    // Onigiri Bot heals 5, so HP should increase
+    // Onigiri Bot heals 2% of maxHp (2 HP), so HP should increase
     assert.ok(gm.run.player.hp > hpBefore, 'Onigiri Bot should heal');
     // Counter should remain unchanged (onigiri doesn't destroy)
     assert.strictEqual(gm.run.player._runChipsDestroyed, 5);
@@ -265,11 +265,11 @@ describe('Onigiri Bot Integration', () => {
       gm.combatCycle('player');
     });
 
-    // Onigiri Bot heals 5 HP
+    // Onigiri Bot heals 2% of maxHp (2 HP)
     assert.strictEqual(
       gm.run.player.hp,
-      hpBefore + 5,
-      'Player should be healed by 5 HP'
+      hpBefore + 2,
+      'Player should be healed by 2 HP (2% of 100 maxHp)'
     );
   });
 
@@ -307,11 +307,11 @@ describe('Onigiri Bot Integration', () => {
       gm.combatCycle('player');
     });
 
-    // Two onigiris should heal 10 HP total
+    // Two onigiris should heal 4 HP total (2% + 2% of 100 maxHp)
     assert.strictEqual(
       gm.run.player.hp,
-      hpBefore + 10,
-      'Player should be healed by 10 HP (5 + 5)'
+      hpBefore + 4,
+      'Player should be healed by 4 HP (2% + 2% of 100 maxHp)'
     );
   });
 });
@@ -331,11 +331,11 @@ describe('Straw Bot Integration', () => {
       gm.combatCycle('player');
     });
 
-    // Straw Bot heals 12 HP
+    // Straw Bot heals 4% of maxHp (4 HP)
     assert.strictEqual(
       gm.run.player.hp,
-      hpBefore + 12,
-      'Player should be healed by 12 HP'
+      hpBefore + 4,
+      'Player should be healed by 4 HP (4% of 100 maxHp)'
     );
   });
 });
@@ -525,11 +525,11 @@ describe('Combined Chip Effects Integration', () => {
       gm.combatCycle('player');
     });
 
-    // Onigiri Bot heals 5, Straw Bot heals 12 = 17 total
+    // Onigiri Bot heals 2% of maxHp (2 HP), Straw Bot heals 4% of maxHp (4 HP) = 6 total
     assert.strictEqual(
       gm.run.player.hp,
-      67,
-      'Player should be healed by 17 HP (5 + 12)'
+      56,
+      'Player should be healed by 6 HP (2% + 4% of 100 maxHp)'
     );
   });
 
