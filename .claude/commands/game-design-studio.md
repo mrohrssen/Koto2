@@ -37,7 +37,7 @@ Extract from the user's natural language:
 Announce what you parsed:
 ```
 ══════════════════════════════════════════════════════════════════
-  GAME DESIGN STUDIO
+  GAME DESIGN STUDIO v2
 ══════════════════════════════════════════════════════════════════
   Time budget:      [X minutes]
   Focus area:       [area or "Comprehensive Review"]
@@ -55,7 +55,19 @@ Distribute time as: 10% analysis, 60% research, 20% debate, 10% synthesis.
 | 1 hour | 6 min | 36 min | 12 min | 6 min |
 | 2 hours | 12 min | 72 min | 24 min | 12 min |
 
-## Step 3: Phase 1 - Codebase Analysis
+## Step 3: Create Tmp Directory
+
+Before spawning any agents:
+```bash
+mkdir -p docs/design-studio/tmp
+```
+
+Announce:
+```
+[░░░░░░░░░░░░░░░░░░░░] 5% | Creating workspace...
+```
+
+## Step 4: Phase 1 - Codebase Analysis
 
 Read the spec first:
 ```
@@ -74,7 +86,7 @@ Announce:
 [░░░░░░░░░░░░░░░░░░░░] 10% | Phase 1: Codebase Analysis complete
 ```
 
-## Step 4: Phase 2 - Parallel Research
+## Step 5: Phase 2 - Parallel Research
 
 Launch ALL 10 research agents simultaneously using the Task tool. Each agent should:
 1. Research their domain via web search
@@ -183,7 +195,7 @@ PHASE 2: PARALLEL RESEARCH (all agents running simultaneously)
 
 **Wait for all agents to complete before proceeding.**
 
-## Step 5: Phase 3 - Clustered Debate
+## Step 6: Phase 3 - Clustered Debate
 
 Collect all position papers. Summarize each to ~100 words max.
 
@@ -217,7 +229,7 @@ PHASE 3: CLUSTERED DEBATE (all clusters running simultaneously)
 
 **Wait for all clusters to complete before proceeding.**
 
-## Step 6: Phase 4 - Synthesis
+## Step 7: Phase 4 - Synthesis
 
 Launch Creative Director agent with:
 - All cluster outputs (summarized)
@@ -239,7 +251,7 @@ PHASE 4: SYNTHESIS
   ● Creative Director      compiling final report...
 ```
 
-## Step 7: Output
+## Step 8: Output
 
 Write the final report to:
 ```
