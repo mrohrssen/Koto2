@@ -426,7 +426,12 @@ function processPipelineChip(chip, state) {
     case 'damageAndHeal':
       // Heal player, optionally add to targeted pool
       applyAdd(effectValue);
-      return { ...baseResult, healPlayer: effect.healValue, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+      // Support both flat heal and percentage heal
+      let healAmount = effect.healValue || 0;
+      if (effect.healPercent && state.player?.maxHp) {
+        healAmount = Math.floor(state.player.maxHp * effect.healPercent);
+      }
+      return { ...baseResult, healPlayer: healAmount, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
 
     case 'killCounter':
       // Add (value * kills) to targeted pool

@@ -288,8 +288,8 @@
     "id": "onigiri",
     "name": "おにぎりボット",
     "nameEn": "Onigiri Bot",
-    "description": "攻撃ごとに5HP回復。もぐもぐ！",
-    "descriptionEn": "Heal 5 HP per attack. A tasty battle buddy!",
+    "description": "攻撃ごとに2%HP回復。もぐもぐ！",
+    "descriptionEn": "Heal 2% HP per attack. A tasty battle buddy!",
     "category": "pipeline",
     "rarity": "common",
     "archetype": "healer",
@@ -299,9 +299,9 @@
         "type": "damageAndHeal",
         "target": "meta",
         "value": 0,
-        "healValue": 5,
+        "healPercent": 0.02,
         "triggerChance": 1,
-        "displayText": "heal 5"
+        "displayText": "heal 2%"
       }
     },
     "skill": {
@@ -349,8 +349,8 @@
     "id": "straw",
     "name": "ストローボット",
     "nameEn": "Straw Bot",
-    "description": "+0.2帯域、12HP回復。ちゅーっ！",
-    "descriptionEn": "+0.2 BW, heal 12 HP. Sips strength away!",
+    "description": "+0.2帯域、4%HP回復。ちゅーっ！",
+    "descriptionEn": "+0.2 BW, heal 4% HP. Sips strength away!",
     "category": "pipeline",
     "rarity": "common",
     "archetype": "healer",
@@ -360,9 +360,9 @@
         "type": "damageAndHeal",
         "target": "bandwidth",
         "value": 0.2,
-        "healValue": 12,
+        "healPercent": 0.04,
         "triggerChance": 1,
-        "displayText": "+0.2 BW heal 12"
+        "displayText": "+0.2 BW heal 4%"
       }
     },
     "skill": {
