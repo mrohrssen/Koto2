@@ -607,5 +607,35 @@
       "effect": { "flatBonusPerEquipped": 5 },
       "chargesRequired": 5
     }
+  },
+  "needle": {
+    "id": "needle",
+    "name": "針ボット",
+    "nameEn": "Needle Bot",
+    "description": "攻撃ごとにHP5消費。高火力！",
+    "descriptionEn": "Costs 5 HP per attack. High power!",
+    "category": "pipeline",
+    "rarity": "rare",
+    "stats": { "power": 22, "bandwidth": 4 },
+    "effects": {
+      "pipeline": {
+        "type": "hpCost",
+        "target": "meta",
+        "hpCost": 5,
+        "triggerChance": 1,
+        "displayText": "-5 HP"
+      }
+    },
+    "skill": {
+      "id": "bloodPrice",
+      "name": "血の代償",
+      "nameEn": "Blood Price",
+      "description": "次の攻撃×2.5倍、HP15消費",
+      "descriptionEn": "Next attack x2.5, costs 15 HP",
+      "type": "buff",
+      "buffType": "POST_PIPELINE",
+      "effect": { "multiplier": 2.5, "hpCost": 15 },
+      "chargesRequired": 5
+    }
   }
 }

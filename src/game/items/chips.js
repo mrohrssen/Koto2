@@ -579,6 +579,14 @@ function processPipelineChip(chip, state) {
         displayText: `+${powerAdd} PWR +${bandwidthAdd} BW (${equippedCount} equipped)`
       };
 
+    case 'hpCost':
+      // Pure stat stick with HP cost - stats already summed, just track cost
+      return {
+        ...baseResult,
+        powerAdd, powerMult, bandwidthAdd, bandwidthMult,
+        hpCost: effect.hpCost || 0
+      };
+
     default:
       // Unknown effect type - return no modifications
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
@@ -605,6 +613,7 @@ export function executeChipPipeline(weaponChips, context) {
     weaponMaxSlots: context.weaponMaxSlots || 5,
     weaponUsedSlots: context.weaponUsedSlots || 0,
     totalHealPlayer: 0,
+    totalHpCost: 0,
     runKills: context.runKills || 0,
     runChipsDestroyed: context.runChipsDestroyed || 0,
     player: context.player || null,
@@ -759,6 +768,7 @@ export function executeChipPipeline(weaponChips, context) {
 
       if (result.critChanceBonus) state.critChance += result.critChanceBonus;
       if (result.healPlayer) state.totalHealPlayer += result.healPlayer;
+      if (result.hpCost) state.totalHpCost += result.hpCost;
 
       // Track last chip effect for Copycat (don't track copy itself)
       const effect = chip.effects?.pipeline;
@@ -829,6 +839,7 @@ export function executeChipPipeline(weaponChips, context) {
     sacrificedChips: state.sacrificedChips,
     combatStacks: state.combatStacks,
     healPlayer: state.totalHealPlayer,
+    hpCost: state.totalHpCost,
     randomDestroyTriggered: state.randomDestroyTriggered || false,
     // Dual-pool system outputs
     powerPool: state.powerPool,

@@ -726,6 +726,18 @@ describe('Complex Pipeline Combinations', () => {
   });
 });
 
+describe('Needle Bot (hpCost)', () => {
+  it('should deal damage to player when triggered', () => {
+    const player = { hp: 100, maxHp: 100 };
+    const result = runPipeline([getChip('needle')], { player });
+    // PWR 22, BW 4 -> Damage = 22 * (1 + 4) = 110
+    assert.strictEqual(result.powerPool, 22);
+    assert.strictEqual(result.bandwidthPool, 4);
+    assert.strictEqual(result.finalDamage, 110);
+    assert.strictEqual(result.hpCost, 5);
+  });
+});
+
 describe('Edge Cases', () => {
   it('should handle empty pipeline', () => {
     const result = runPipeline([]);
