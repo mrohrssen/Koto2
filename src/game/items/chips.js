@@ -614,6 +614,16 @@ function processPipelineChip(chip, state) {
       // Condition met - pure stat stick (stats already added in first pass)
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
 
+    case 'degradePerAttack':
+      // Track degradation for next attack
+      const degradeKey2 = chip.id + '_degraded';
+      if (!state.combatStacks) state.combatStacks = {};
+      state.combatStacks[degradeKey2] = (state.combatStacks[degradeKey2] || 0) + effect.degradeAmount;
+      // Track in result for return value
+      if (!state.degradation) state.degradation = {};
+      state.degradation[chip.id] = effect.degradeAmount;
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
     default:
       // Unknown effect type - return no modifications
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
@@ -646,7 +656,9 @@ export function executeChipPipeline(weaponChips, context) {
     player: context.player || null,
     // Dual-pool system: chips contribute stats to pools
     powerPool: 0,
-    bandwidthPool: 0
+    bandwidthPool: 0,
+    // Degradation tracking for degradePerAttack chips
+    degradation: {}
   };
 
   // First pass: sum all chip stats into pools (with level scaling)
@@ -672,6 +684,18 @@ export function executeChipPipeline(weaponChips, context) {
         const scaleFactor = 1 + (level - 1) * scalingPerLevel;
         statPower = Math.round(statPower * scaleFactor);
         statBandwidth = Math.round(statBandwidth * scaleFactor);
+      }
+
+      // Apply degradation from previous attacks (degradePerAttack type)
+      const degradeKey = chip.id + '_degraded';
+      const totalDegraded = state.combatStacks[degradeKey] || 0;
+      if (chip.effects?.pipeline?.type === 'degradePerAttack' && totalDegraded > 0) {
+        const degradeTarget = chip.effects.pipeline.target;
+        if (degradeTarget === 'bandwidth') {
+          statBandwidth = Math.max(0, statBandwidth - totalDegraded);
+        } else if (degradeTarget === 'power') {
+          statPower = Math.max(0, statPower - totalDegraded);
+        }
       }
 
       console.log(`[Pipeline] ${chip.nameEn || chip.id}: +${statPower} PWR, +${statBandwidth} BW`);
@@ -879,7 +903,9 @@ export function executeChipPipeline(weaponChips, context) {
     randomDestroyTriggered: state.randomDestroyTriggered || false,
     // Dual-pool system outputs
     powerPool: state.powerPool,
-    bandwidthPool: state.bandwidthPool
+    bandwidthPool: state.bandwidthPool,
+    // Degradation tracking for degradePerAttack chips
+    degradation: state.degradation
   };
 }
 

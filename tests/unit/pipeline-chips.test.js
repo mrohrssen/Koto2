@@ -870,6 +870,25 @@ describe('Edge Cases', () => {
   });
 });
 
+describe('Ice Cream Bot (degradePerAttack)', () => {
+  it('should track degradation amount', () => {
+    const result = runPipeline([getChip('iceCream')]);
+    // PWR 14, BW 6 → Damage = 14 × (1 + 6) = 98
+    assert.strictEqual(result.powerPool, 14);
+    assert.strictEqual(result.bandwidthPool, 6);
+    assert.strictEqual(result.finalDamage, 98);
+    assert.strictEqual(result.degradation?.iceCream, 0.5);
+  });
+
+  it('should use reduced BW from combatStacks', () => {
+    const combatStacks = { iceCream_degraded: 1 }; // Already degraded 1 BW (2 prior attacks × 0.5)
+    const result = runPipeline([getChip('iceCream')], { combatStacks });
+    // PWR 14, BW 6 - 1 = 5 → Damage = 14 × (1 + 5) = 84
+    assert.strictEqual(result.bandwidthPool, 5);
+    assert.strictEqual(result.finalDamage, 84);
+  });
+});
+
 describe('Pipeline Sequence Tracking', () => {
   it('should return sequence array with activate and base events', () => {
     const result = runPipeline([getChip('battery')]);

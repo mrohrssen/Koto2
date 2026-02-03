@@ -699,5 +699,35 @@
       "condition": "exactlyTwoChips",
       "chargesRequired": 5
     }
+  },
+  "iceCream": {
+    "id": "iceCream",
+    "name": "アイスボット",
+    "nameEn": "Ice Cream Bot",
+    "description": "攻撃ごとに帯域-0.5。溶けていく！",
+    "descriptionEn": "Loses 0.5 BW per attack. Melting fast!",
+    "category": "pipeline",
+    "rarity": "uncommon",
+    "stats": { "power": 14, "bandwidth": 6 },
+    "effects": {
+      "pipeline": {
+        "type": "degradePerAttack",
+        "target": "bandwidth",
+        "degradeAmount": 0.5,
+        "triggerChance": 1,
+        "displayText": "-0.5 BW/attack"
+      }
+    },
+    "skill": {
+      "id": "brainFreeze",
+      "name": "頭キーン",
+      "nameEn": "Brain Freeze",
+      "description": "この戦闘中、劣化を停止",
+      "descriptionEn": "Freeze degradation for this combat",
+      "type": "buff",
+      "buffType": "COMBAT_MODIFIER",
+      "effect": { "freezeDegradation": true },
+      "chargesRequired": 5
+    }
   }
 }
