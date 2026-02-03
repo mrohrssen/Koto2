@@ -14,7 +14,7 @@
  * - showQuizMaster(): Display quiz master NPC (no HP bar)
  * - updateEnemyHP(current, max): Update enemy HP bar fill
  * - showToast(message, durationMs): Show auto-dismissing notification
- * - showDamageNumber(amount, { isCrit, isHeal }): Floating damage text
+ * - showDamageNumber(amount, { isCrit, isHeal, tierClass }): Floating damage text
  *
  * DEPENDENCIES:
  * - ../dom.js: DOM element references (sceneBackground, enemySprite, etc.)
@@ -133,10 +133,23 @@ export function showToast(message, durationMs = 3000) {
   }, durationMs);
 }
 
-/** Show damage number floating up from enemy */
-export function showDamageNumber(amount, { isCrit = false, isHeal = false } = {}) {
+/** Show damage number floating up from enemy
+ * @param {number} amount - Damage amount
+ * @param {Object} options - Display options
+ * @param {boolean} options.isCrit - Is critical hit
+ * @param {boolean} options.isHeal - Is healing
+ * @param {string} options.tierClass - Tier CSS class (dmg-chip, dmg-normal, dmg-solid, dmg-big, dmg-massive)
+ */
+export function showDamageNumber(amount, { isCrit = false, isHeal = false, tierClass = '' } = {}) {
   const el = document.createElement('div');
-  el.className = `damage-number${isCrit ? ' crit' : ''}${isHeal ? ' heal' : ''}`;
+
+  // Build class list: base + tier + modifiers
+  let classes = 'damage-number';
+  if (tierClass) classes += ` ${tierClass}`;
+  if (isCrit) classes += ' crit';
+  if (isHeal) classes += ' heal';
+  el.className = classes;
+
   el.textContent = isHeal ? `+${amount}` : amount;
 
   // Position near enemy sprite
@@ -146,5 +159,7 @@ export function showDamageNumber(amount, { isCrit = false, isHeal = false } = {}
   el.style.top = `${rect.height * 0.3}px`;
   container.appendChild(el);
 
-  setTimeout(() => el.remove(), 1000);
+  // Tier 4 (massive) stays longer
+  const duration = tierClass === 'dmg-massive' ? 1500 : 1000;
+  setTimeout(() => el.remove(), duration);
 }
