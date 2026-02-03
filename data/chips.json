@@ -7,7 +7,8 @@
     "descriptionEn": "A reliable power source, always fully charged!",
     "category": "pipeline",
     "rarity": "common",
-    "stats": { "power": 10, "bandwidth": 0 },
+    "archetype": "striker",
+    "stats": { "power": 10, "bandwidth": 0, "hp": 45 },
     "effects": {
       "pipeline": {
         "type": "none",
@@ -36,7 +37,8 @@
     "descriptionEn": "80% chance to x1.2 BW. Amplifies your damage!",
     "category": "pipeline",
     "rarity": "rare",
-    "stats": { "power": 10, "bandwidth": 3 },
+    "archetype": "amplifier",
+    "stats": { "power": 10, "bandwidth": 3, "hp": 25 },
     "effects": {
       "pipeline": {
         "type": "multiply",
@@ -66,7 +68,8 @@
     "descriptionEn": "+0.3 BW per hit. Studies enemies carefully!",
     "category": "pipeline",
     "rarity": "uncommon",
-    "stats": { "power": 8, "bandwidth": 3 },
+    "archetype": "amplifier",
+    "stats": { "power": 8, "bandwidth": 3, "hp": 25 },
     "effects": {
       "pipeline": {
         "type": "rampingMultiply",
@@ -96,7 +99,8 @@
     "descriptionEn": "50% chance to x1.5 BW. Sometimes brilliant!",
     "category": "pipeline",
     "rarity": "uncommon",
-    "stats": { "power": 10, "bandwidth": 2 },
+    "archetype": "amplifier",
+    "stats": { "power": 10, "bandwidth": 2, "hp": 30 },
     "effects": {
       "pipeline": {
         "type": "multiply",
@@ -125,7 +129,8 @@
     "descriptionEn": "+10 PWR if enemy below 30% HP. Snip snip!",
     "category": "pipeline",
     "rarity": "rare",
-    "stats": { "power": 14, "bandwidth": 1 },
+    "archetype": "striker",
+    "stats": { "power": 14, "bandwidth": 1, "hp": 40 },
     "effects": {
       "pipeline": {
         "type": "conditional",
@@ -160,7 +165,8 @@
     "descriptionEn": "7% chance to restart pipeline. Time is a loop!",
     "category": "pipeline",
     "rarity": "legendary",
-    "stats": { "power": 18, "bandwidth": 2 },
+    "archetype": "trickster",
+    "stats": { "power": 18, "bandwidth": 2, "hp": 35 },
     "effects": {
       "pipeline": {
         "type": "recursion",
@@ -191,7 +197,8 @@
     "descriptionEn": "Sacrifice: x3 PWR, x2 BW. Burns bright, then gone!",
     "category": "pipeline",
     "rarity": "legendary",
-    "stats": { "power": 20, "bandwidth": 3 },
+    "archetype": "healer",
+    "stats": { "power": 20, "bandwidth": 3, "hp": 50 },
     "effects": {
       "pipeline": {
         "type": "sacrifice",
@@ -221,7 +228,8 @@
     "descriptionEn": "25% chance to stack +1 BW. Knowledge is power!",
     "category": "pipeline",
     "rarity": "uncommon",
-    "stats": { "power": 9, "bandwidth": 2 },
+    "archetype": "trickster",
+    "stats": { "power": 9, "bandwidth": 2, "hp": 45 },
     "effects": {
       "pipeline": {
         "type": "stacking",
@@ -250,7 +258,8 @@
     "descriptionEn": "+12 PWR, +2 BW if 2+ slots empty. Loves a clean slate!",
     "category": "pipeline",
     "rarity": "rare",
-    "stats": { "power": 12, "bandwidth": 2 },
+    "archetype": "tank",
+    "stats": { "power": 12, "bandwidth": 2, "hp": 75 },
     "effects": {
       "pipeline": {
         "type": "emptySlots",
@@ -283,7 +292,8 @@
     "descriptionEn": "Heal 5 HP per attack. A tasty battle buddy!",
     "category": "pipeline",
     "rarity": "common",
-    "stats": { "power": 9, "bandwidth": 0 },
+    "archetype": "healer",
+    "stats": { "power": 9, "bandwidth": 0, "hp": 60 },
     "effects": {
       "pipeline": {
         "type": "damageAndHeal",
@@ -313,7 +323,8 @@
     "descriptionEn": "+0.5 PWR per kill. Cha-ching!",
     "category": "pipeline",
     "rarity": "uncommon",
-    "stats": { "power": 11, "bandwidth": 1 },
+    "archetype": "striker",
+    "stats": { "power": 11, "bandwidth": 1, "hp": 45 },
     "effects": {
       "pipeline": {
         "type": "killCounter",
@@ -342,7 +353,8 @@
     "descriptionEn": "+0.2 BW, heal 12 HP. Sips strength away!",
     "category": "pipeline",
     "rarity": "common",
-    "stats": { "power": 6, "bandwidth": 2 },
+    "archetype": "healer",
+    "stats": { "power": 6, "bandwidth": 2, "hp": 65 },
     "effects": {
       "pipeline": {
         "type": "damageAndHeal",
@@ -372,7 +384,8 @@
     "descriptionEn": "x1.5 BW vs bosses!",
     "category": "pipeline",
     "rarity": "rare",
-    "stats": { "power": 13, "bandwidth": 2 },
+    "archetype": "amplifier",
+    "stats": { "power": 13, "bandwidth": 2, "hp": 25 },
     "effects": {
       "pipeline": {
         "type": "vsBoss",
@@ -403,7 +416,8 @@
     "descriptionEn": "+1 BW per destroyed chip. Cracks open stronger!",
     "category": "pipeline",
     "rarity": "epic",
-    "stats": { "power": 15, "bandwidth": 2 },
+    "archetype": "tank",
+    "stats": { "power": 15, "bandwidth": 2, "hp": 85 },
     "effects": {
       "pipeline": {
         "type": "destroyedMultiplier",
@@ -434,7 +448,8 @@
     "descriptionEn": "10% chance to destroy a chip. Go big!",
     "category": "pipeline",
     "rarity": "epic",
-    "stats": { "power": 17, "bandwidth": 2 },
+    "archetype": "trickster",
+    "stats": { "power": 17, "bandwidth": 2, "hp": 40 },
     "effects": {
       "pipeline": {
         "type": "riskyFlat",
@@ -465,7 +480,8 @@
     "descriptionEn": "Copies previous chip's effect. Imitation is flattery!",
     "category": "pipeline",
     "rarity": "legendary",
-    "stats": { "power": 18, "bandwidth": 3 },
+    "archetype": "trickster",
+    "stats": { "power": 18, "bandwidth": 3, "hp": 30 },
     "effects": {
       "pipeline": {
         "type": "copy",
@@ -494,7 +510,8 @@
     "descriptionEn": "+3 PWR, +0.5 BW per empty slot. Travel light, hit hard!",
     "category": "pipeline",
     "rarity": "rare",
-    "stats": { "power": 11, "bandwidth": 2 },
+    "archetype": "trickster",
+    "stats": { "power": 11, "bandwidth": 2, "hp": 40 },
     "effects": {
       "pipeline": {
         "type": "perEmptySlot",
@@ -525,7 +542,8 @@
     "descriptionEn": "x2 BW every 5th attack. Building to the finale!",
     "category": "pipeline",
     "rarity": "epic",
-    "stats": { "power": 15, "bandwidth": 3 },
+    "archetype": "amplifier",
+    "stats": { "power": 15, "bandwidth": 3, "hp": 20 },
     "effects": {
       "pipeline": {
         "type": "nthAttack",
@@ -555,7 +573,8 @@
     "descriptionEn": "x1.3 next chip's effect. Placement matters!",
     "category": "pipeline",
     "rarity": "epic",
-    "stats": { "power": 14, "bandwidth": 3 },
+    "archetype": "amplifier",
+    "stats": { "power": 14, "bandwidth": 3, "hp": 20 },
     "effects": {
       "pipeline": {
         "type": "amplifyNext",
@@ -585,7 +604,8 @@
     "descriptionEn": "+2 PWR, +0.3 BW per equipped chip. Teamwork!",
     "category": "pipeline",
     "rarity": "uncommon",
-    "stats": { "power": 10, "bandwidth": 1 },
+    "archetype": "striker",
+    "stats": { "power": 10, "bandwidth": 1, "hp": 50 },
     "effects": {
       "pipeline": {
         "type": "perEquipped",
@@ -616,7 +636,8 @@
     "descriptionEn": "Costs 5 HP per attack. High power!",
     "category": "pipeline",
     "rarity": "rare",
-    "stats": { "power": 22, "bandwidth": 4 },
+    "archetype": "striker",
+    "stats": { "power": 22, "bandwidth": 4, "hp": 30 },
     "effects": {
       "pipeline": {
         "type": "hpCost",
@@ -646,7 +667,8 @@
     "descriptionEn": "+1 BW per 10 HP missing. Stronger when hurt!",
     "category": "pipeline",
     "rarity": "epic",
-    "stats": { "power": 12, "bandwidth": 2 },
+    "archetype": "amplifier",
+    "stats": { "power": 12, "bandwidth": 2, "hp": 20 },
     "effects": {
       "pipeline": {
         "type": "missingHpBonus",
@@ -677,7 +699,8 @@
     "descriptionEn": "Only works with exactly 2 chips equipped. Perfect pair!",
     "category": "pipeline",
     "rarity": "rare",
-    "stats": { "power": 18, "bandwidth": 4 },
+    "archetype": "tank",
+    "stats": { "power": 18, "bandwidth": 4, "hp": 70 },
     "effects": {
       "pipeline": {
         "type": "slotCount",
@@ -708,7 +731,8 @@
     "descriptionEn": "Loses 0.5 BW per attack. Melting fast!",
     "category": "pipeline",
     "rarity": "uncommon",
-    "stats": { "power": 14, "bandwidth": 6 },
+    "archetype": "amplifier",
+    "stats": { "power": 14, "bandwidth": 6, "hp": 15 },
     "effects": {
       "pipeline": {
         "type": "degradePerAttack",
@@ -738,7 +762,8 @@
     "descriptionEn": "Loses 1 BW after each combat. Destroyed at 0.",
     "category": "pipeline",
     "rarity": "rare",
-    "stats": { "power": 16, "bandwidth": 5 },
+    "archetype": "amplifier",
+    "stats": { "power": 16, "bandwidth": 5, "hp": 15 },
     "effects": {
       "pipeline": {
         "type": "degradePerCombat",
@@ -768,7 +793,8 @@
     "descriptionEn": "+2 BW per common chip equipped. People power!",
     "category": "pipeline",
     "rarity": "common",
-    "stats": { "power": 8, "bandwidth": 1 },
+    "archetype": "trickster",
+    "stats": { "power": 8, "bandwidth": 1, "hp": 50 },
     "effects": {
       "pipeline": {
         "type": "rarityBonus",
@@ -799,7 +825,8 @@
     "descriptionEn": "x1.5 BW if no epic/legendary chips equipped",
     "category": "pipeline",
     "rarity": "uncommon",
-    "stats": { "power": 10, "bandwidth": 2 },
+    "archetype": "trickster",
+    "stats": { "power": 10, "bandwidth": 2, "hp": 45 },
     "effects": {
       "pipeline": {
         "type": "rarityRestriction",
@@ -831,7 +858,8 @@
     "descriptionEn": "+8 PWR, x1.5 BW when in last slot!",
     "category": "pipeline",
     "rarity": "rare",
-    "stats": { "power": 12, "bandwidth": 2 },
+    "archetype": "striker",
+    "stats": { "power": 12, "bandwidth": 2, "hp": 45 },
     "effects": {
       "pipeline": {
         "type": "positionBonus",
@@ -863,7 +891,8 @@
     "descriptionEn": "x1.8 BW when in first slot!",
     "category": "pipeline",
     "rarity": "rare",
-    "stats": { "power": 10, "bandwidth": 3 },
+    "archetype": "amplifier",
+    "stats": { "power": 10, "bandwidth": 3, "hp": 25 },
     "effects": {
       "pipeline": {
         "type": "positionBonus",
@@ -894,7 +923,8 @@
     "descriptionEn": "Healing you receive also deals equal damage to enemy",
     "category": "pipeline",
     "rarity": "epic",
-    "stats": { "power": 8, "bandwidth": 2 },
+    "archetype": "healer",
+    "stats": { "power": 8, "bandwidth": 2, "hp": 55 },
     "effects": {
       "pipeline": {
         "type": "healingToDamage",
@@ -922,7 +952,8 @@
     "descriptionEn": "5% of damage dealt heals you. Disables other healing.",
     "category": "pipeline",
     "rarity": "rare",
-    "stats": { "power": 14, "bandwidth": 3 },
+    "archetype": "healer",
+    "stats": { "power": 14, "bandwidth": 3, "hp": 50 },
     "effects": {
       "pipeline": {
         "type": "lifesteal",
@@ -953,7 +984,8 @@
     "descriptionEn": "Take 3 damage every time ANY chip triggers",
     "category": "pipeline",
     "rarity": "epic",
-    "stats": { "power": 25, "bandwidth": 5 },
+    "archetype": "striker",
+    "stats": { "power": 25, "bandwidth": 5, "hp": 30 },
     "effects": {
       "pipeline": {
         "type": "selfDamagePerTrigger",
