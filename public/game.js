@@ -871,7 +871,7 @@ async function initGame() {
     narration: { showNarration: (text) => narrationBox.show(text) },
     wordPractice,
     characterUI,
-    showDamageNumber: (dmg, isPlayer, isCrit) => scene.showDamageNumber(dmg, { isCrit }),
+    showDamageNumber: (dmg, isPlayer, isCrit, isDot, isHeal, specialType, tierClass) => scene.showDamageNumber(dmg, { isCrit, isHeal, tierClass }),
     showDotDamage: (dmg) => scene.showDamageNumber(dmg, { isCrit: false }),
     animateEnemyHurt: () => {},
     animatePlayerHurt: () => {},
