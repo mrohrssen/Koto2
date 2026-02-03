@@ -36,30 +36,44 @@ function runPipeline(chips, overrides = {}) {
 }
 
 describe('Pipeline Chip Definitions', () => {
-  it('should have all 15 pipeline chips defined', () => {
-    const newChips = [
+  it('should have all 33 pipeline chips defined', () => {
+    const allPipelineChips = [
+      // Original 6 chips
+      'battery', 'speaker', 'glasses', 'lightbulb', 'scissors',
+      // 15 more chips
       'clock', 'charcoal', 'book', 'eraser',
       'onigiri', 'wallet', 'straw', 'key',
       'egg', 'fireworks', 'mirror', 'feather', 'drum',
-      'magnifyingGlass', 'toolbox'
+      'magnifyingGlass', 'toolbox',
+      // 12 new build-variety chips
+      'needle', 'adrenaline', 'duo', 'iceCream', 'candle',
+      'commoner', 'underdog', 'anchor', 'sparkPlug', 'leech',
+      'vampire', 'overclocked'
     ];
 
-    for (const chipId of newChips) {
+    for (const chipId of allPipelineChips) {
       assert.ok(CHIPS[chipId], `Chip ${chipId} should be defined`);
       assert.strictEqual(CHIPS[chipId].category, 'pipeline', `${chipId} should be pipeline category`);
       assert.ok(CHIPS[chipId].effects?.pipeline, `${chipId} should have pipeline effects`);
     }
   });
 
-  it('should have Japanese names for all new chips', () => {
-    const newChips = [
+  it('should have Japanese names for all pipeline chips', () => {
+    const allPipelineChips = [
+      // Original 6 chips
+      'battery', 'speaker', 'glasses', 'lightbulb', 'scissors',
+      // 15 more chips
       'clock', 'charcoal', 'book', 'eraser',
       'onigiri', 'wallet', 'straw', 'key',
       'egg', 'fireworks', 'mirror', 'feather', 'drum',
-      'magnifyingGlass', 'toolbox'
+      'magnifyingGlass', 'toolbox',
+      // 12 new build-variety chips
+      'needle', 'adrenaline', 'duo', 'iceCream', 'candle',
+      'commoner', 'underdog', 'anchor', 'sparkPlug', 'leech',
+      'vampire', 'overclocked'
     ];
 
-    for (const chipId of newChips) {
+    for (const chipId of allPipelineChips) {
       assert.ok(CHIPS[chipId].name, `${chipId} should have Japanese name`);
       assert.ok(CHIPS[chipId].nameEn, `${chipId} should have English name`);
     }
