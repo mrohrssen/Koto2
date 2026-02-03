@@ -116,16 +116,18 @@ Chips are passive augmentations that form the game's primary build customization
 
 ### Chip Data Structure
 
-Each chip has stats and effects:
+Each chip has stats, effects, and archetype:
 
 ```javascript
 {
-  "id": "chip_battery",
-  "name": "バッテリー",
-  "nameEn": "Battery",
+  "id": "battery",
+  "name": "電池ボット",
+  "nameEn": "Battery Bot",
+  "archetype": "striker",
   "stats": {
-    "power": 8,      // Contributes to power pool
-    "bandwidth": 0   // Contributes to bandwidth pool
+    "power": 10,      // Contributes to power pool
+    "bandwidth": 0,   // Contributes to bandwidth pool
+    "hp": 45          // Contributes to player maxHP
   },
   "effects": {
     "pipeline": [{
@@ -136,6 +138,24 @@ Each chip has stats and effects:
   }
 }
 ```
+
+### Archetypes
+
+| Archetype | HP Range | PWR Range | BW Range | Playstyle |
+|-----------|----------|-----------|----------|-----------|
+| Tank | 70-100 | 5-10 | 0-1 | High survivability |
+| Healer | 50-70 | 5-10 | 0-2 | Sustain builds |
+| Striker | 30-50 | 12-25 | 0-2 | Raw damage |
+| Amplifier | 10-30 | 5-10 | 2-6 | Glass cannon |
+| Trickster | 20-50 | 8-18 | 1-3 | High variance |
+
+### Player MaxHP
+
+```
+maxHP = baseHP (100) + vitalityBonus + sum(equippedChipHP)
+```
+
+Chip HP scales +20% per chip level.
 
 **Effect Targets:**
 | Target | Description |
