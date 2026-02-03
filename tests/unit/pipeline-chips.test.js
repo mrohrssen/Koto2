@@ -945,6 +945,32 @@ describe('Candle Bot (degradePerCombat)', () => {
   });
 });
 
+describe('Underdog Bot (rarityRestriction)', () => {
+  it('should multiply BW with no epic/legendary chips', () => {
+    const chips = [getChip('underdog'), getChip('battery')];
+    const result = runPipeline(chips, {
+      equippedChipRarities: ['uncommon', 'common']
+    });
+    // Underdog: PWR 10, BW 2 + Battery: PWR 10, BW 0
+    // Total base: PWR 20, BW 2
+    // Underdog effect: ×1.5 BW → BW 3
+    // Damage = 20 × (1 + 3) = 80
+    assert.strictEqual(result.bandwidthPool, 3);
+    assert.strictEqual(result.finalDamage, 80);
+  });
+
+  it('should not trigger with epic chip equipped', () => {
+    const chips = [getChip('underdog'), getChip('adrenaline')]; // adrenaline is epic
+    const result = runPipeline(chips, {
+      equippedChipRarities: ['uncommon', 'epic']
+    });
+    // No multiplier applied
+    // Underdog: PWR 10, BW 2 + Adrenaline: PWR 12, BW 2
+    // Total: PWR 22, BW 4
+    assert.strictEqual(result.bandwidthPool, 4);
+  });
+});
+
 describe('Pipeline Sequence Tracking', () => {
   it('should return sequence array with activate and base events', () => {
     const result = runPipeline([getChip('battery')]);

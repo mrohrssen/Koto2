@@ -645,6 +645,22 @@ function processPipelineChip(chip, state) {
         displayText: `+${rarityBonusValue} (${matchCount} ${effect.targetRarity})`
       };
 
+    case 'rarityRestriction':
+      // Multiply if no forbidden rarities present
+      const equippedRarities = state.equippedChipRarities || [];
+      const hasForbidden = equippedRarities.some(r => effect.forbiddenRarities.includes(r));
+      if (hasForbidden) {
+        return {
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name,
+          triggered: false,
+          conditionFailed: true,
+          displayText: 'Forbidden rarity equipped'
+        };
+      }
+      applyMult(effect.multiplier);
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
     default:
       // Unknown effect type - return no modifications
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };

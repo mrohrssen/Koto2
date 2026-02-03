@@ -790,5 +790,37 @@
       "effect": { "flatBonusPerRarity": 5, "targetRarity": "common" },
       "chargesRequired": 5
     }
+  },
+  "underdog": {
+    "id": "underdog",
+    "name": "弱者ボット",
+    "nameEn": "Underdog Bot",
+    "description": "エピック/レジェンダリーなしで帯域×1.5倍",
+    "descriptionEn": "x1.5 BW if no epic/legendary chips equipped",
+    "category": "pipeline",
+    "rarity": "uncommon",
+    "stats": { "power": 10, "bandwidth": 2 },
+    "effects": {
+      "pipeline": {
+        "type": "rarityRestriction",
+        "target": "bandwidth",
+        "forbiddenRarities": ["epic", "legendary"],
+        "multiplier": 1.5,
+        "triggerChance": 1,
+        "displayText": "x1.5 BW (no epic/legend)"
+      }
+    },
+    "skill": {
+      "id": "proveThemWrong",
+      "name": "見返してやる",
+      "nameEn": "Prove Them Wrong",
+      "description": "エピック/レジェンダリーなしで次の攻撃×2倍",
+      "descriptionEn": "Next attack x2 (only if no epic/legendary)",
+      "type": "buff",
+      "buffType": "POST_PIPELINE",
+      "effect": { "multiplier": 2.0 },
+      "condition": "noEpicOrLegendary",
+      "chargesRequired": 5
+    }
   }
 }
