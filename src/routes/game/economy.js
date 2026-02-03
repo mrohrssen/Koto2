@@ -108,5 +108,31 @@ export default function createEconomyRoutes({ generateGameNarration }) {
     }
   });
 
+  // Collect credits during exploration
+  router.post('/collect-credits', (req, res) => {
+    const gameManager = req.gameManager;
+    const { amount } = req.body;
+
+    if (typeof amount !== 'number' || amount <= 0) {
+      return res.status(400).json({ error: 'Invalid amount' });
+    }
+
+    const state = gameManager.getState();
+
+    if (!state.player) {
+      return res.status(400).json({ error: 'No active player' });
+    }
+
+    // Add credits to player
+    state.player.credits = (state.player.credits || 0) + amount;
+
+    req.saveGame();
+    res.json({
+      success: true,
+      amount,
+      newTotal: state.player.credits
+    });
+  });
+
   return router;
 }
