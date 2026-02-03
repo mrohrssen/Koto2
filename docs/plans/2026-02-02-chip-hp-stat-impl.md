@@ -8,15 +8,14 @@
 
 **Tech Stack:** Node.js ES modules, Playwright for E2E tests, vanilla JS frontend
 
-**Dependency:** This plan should execute AFTER the new-chips worktree is merged. Task 1 includes a verification step to confirm chip count.
+**Status:** All 32 chips are in master (12 new chips from feature/new-chips already merged).
 
 ---
 
-## Task 1: Add Archetype Config and Verify Chip Count
+## Task 1: Add Archetype Config
 
 **Files:**
 - Modify: `data/chip-config.json`
-- Verify: `data/chips.json`
 
 **Step 1: Add archetype definitions to chip-config.json**
 
@@ -72,15 +71,7 @@ Add after the `"rarities"` section in `data/chip-config.json`:
   },
 ```
 
-**Step 2: Verify chip count**
-
-Run: `node -e "const c = require('./data/chips.json'); console.log('Chip count:', Object.keys(c).length)"`
-
-Expected: `Chip count: 32` (if new-chips merged) or `Chip count: 20` (if not yet merged)
-
-If count is 20, STOP and wait for new-chips worktree to merge before continuing.
-
-**Step 3: Commit**
+**Step 2: Commit**
 
 ```bash
 git add data/chip-config.json
@@ -89,14 +80,16 @@ git commit -m "feat(chips): add archetype definitions to config"
 
 ---
 
-## Task 2: Add HP and Archetype to Existing 20 Chips
+## Task 2: Add HP and Archetype to All 32 Chips
 
 **Files:**
 - Modify: `data/chips.json`
 
 **Step 1: Update chips.json with HP stats and archetypes**
 
-For each chip, add `hp` to the `stats` object and add `archetype` field. Update all 20 existing chips:
+For each chip, add `hp` to the `stats` object and add `archetype` field. Update all 32 chips:
+
+### Original 20 Chips
 
 **Tank chips:**
 ```json
@@ -253,31 +246,9 @@ For each chip, add `hp` to the `stats` object and add `archetype` field. Update 
 }
 ```
 
-**Step 2: Verify all chips have HP stat**
+### New 12 Chips
 
-Run: `node -e "const c = require('./data/chips.json'); const missing = Object.entries(c).filter(([id, chip]) => !chip.stats?.hp).map(([id]) => id); console.log(missing.length ? 'Missing HP: ' + missing.join(', ') : 'All chips have HP stat')"`
-
-Expected: `All chips have HP stat`
-
-**Step 3: Commit**
-
-```bash
-git add data/chips.json
-git commit -m "feat(chips): add HP stat and archetype to existing 20 chips"
-```
-
----
-
-## Task 3: Add HP and Archetype to New 12 Chips (if merged)
-
-**Files:**
-- Modify: `data/chips.json`
-
-**Prerequisites:** New-chips worktree must be merged first. Skip this task if chip count is still 20.
-
-**Step 1: Add HP and archetype to new chips**
-
-**Striker chips (new):**
+**Striker chips:**
 ```json
 "needle": {
   ...
@@ -386,12 +357,12 @@ Expected: `All 32 chips have HP stat`
 
 ```bash
 git add data/chips.json
-git commit -m "feat(chips): add HP stat and archetype to new 12 chips"
+git commit -m "feat(chips): add HP stat and archetype to all 32 chips"
 ```
 
 ---
 
-## Task 4: Write Unit Test for Chip HP Calculation
+## Task 3: Write Unit Test for Chip HP Calculation
 
 **Files:**
 - Create: `tests/unit/chip-hp.test.js`
@@ -477,7 +448,7 @@ git commit -m "test(chips): add failing tests for chip HP calculation"
 
 ---
 
-## Task 5: Implement calculateChipBonusHP Function
+## Task 4: Implement calculateChipBonusHP Function
 
 **Files:**
 - Modify: `src/game/items/chips.js`
@@ -523,7 +494,7 @@ git commit -m "feat(chips): implement calculateChipBonusHP function"
 
 ---
 
-## Task 6: Integrate Chip HP into MaxHP Calculation
+## Task 5: Integrate Chip HP into MaxHP Calculation
 
 **Files:**
 - Modify: `src/game/loop.js`
@@ -585,7 +556,7 @@ git commit -m "feat(chips): integrate chip HP bonus into maxHP calculation"
 
 ---
 
-## Task 7: Update Chip Popup UI to Show HP
+## Task 6: Update Chip Popup UI to Show HP
 
 **Files:**
 - Modify: `public/js/ui/chip-row.js`
@@ -648,7 +619,7 @@ git commit -m "feat(ui): display HP stat in chip popup"
 
 ---
 
-## Task 8: Update Chip Select UI to Show HP
+## Task 7: Update Chip Select UI to Show HP
 
 **Files:**
 - Modify: `public/js/ui/chip-select.js`
@@ -704,7 +675,7 @@ git commit -m "feat(ui): display HP stat in chip select card"
 
 ---
 
-## Task 9: Add CSS for HP Stat Box
+## Task 8: Add CSS for HP Stat Box
 
 **Files:**
 - Modify: `public/game.css`
@@ -737,7 +708,7 @@ git commit -m "feat(ui): add HP stat box styling (red theme)"
 
 ---
 
-## Task 10: Convert Healing Effects to Percentage-Based
+## Task 9: Convert Healing Effects to Percentage-Based
 
 **Files:**
 - Modify: `data/chips.json`
@@ -814,7 +785,7 @@ git commit -m "feat(chips): convert healing effects to percentage-based"
 
 ---
 
-## Task 11: Run Unit Tests
+## Task 10: Run Unit Tests
 
 **Files:**
 - None (verification only)
@@ -835,7 +806,7 @@ Expected: All tests pass (14 tests)
 
 ---
 
-## Task 12: Run E2E Tests
+## Task 11: Run E2E Tests
 
 **Files:**
 - None (verification only)
@@ -862,7 +833,7 @@ git commit -m "fix: address E2E test regressions from chip HP changes"
 
 ---
 
-## Task 13: Three-Agent Balance Review (Manual)
+## Task 12: Three-Agent Balance Review (Manual)
 
 **Files:**
 - Modify: `data/chips.json` (if adjustments needed)
@@ -894,7 +865,7 @@ git commit -m "balance(chips): final HP stat adjustments after 3-agent review"
 
 ---
 
-## Task 14: Update Architecture Documentation
+## Task 13: Update Architecture Documentation
 
 **Files:**
 - Modify: `docs/ARCHITECTURE.md`
@@ -960,15 +931,14 @@ git commit -m "docs: update architecture with chip HP stat and archetypes"
 | Task | Description | Files |
 |------|-------------|-------|
 | 1 | Add archetype config | chip-config.json |
-| 2 | Add HP/archetype to 20 chips | chips.json |
-| 3 | Add HP/archetype to 12 new chips | chips.json |
-| 4 | Write unit test | chip-hp.test.js |
-| 5 | Implement calculateChipBonusHP | chips.js |
-| 6 | Integrate into maxHP calc | loop.js |
-| 7 | Update chip popup UI | chip-row.js |
-| 8 | Update chip select UI | chip-select.js |
-| 9 | Add HP stat CSS | game.css |
-| 10 | Convert healing to % | chips.json, chips.js |
-| 11-12 | Run tests | Verification |
-| 13 | 3-agent balance review | Manual |
-| 14 | Update docs | ARCHITECTURE.md |
+| 2 | Add HP/archetype to all 32 chips | chips.json |
+| 3 | Write unit test | chip-hp.test.js |
+| 4 | Implement calculateChipBonusHP | chips.js |
+| 5 | Integrate into maxHP calc | loop.js |
+| 6 | Update chip popup UI | chip-row.js |
+| 7 | Update chip select UI | chip-select.js |
+| 8 | Add HP stat CSS | game.css |
+| 9 | Convert healing to % | chips.json, chips.js |
+| 10-11 | Run tests | Verification |
+| 12 | 3-agent balance review | Manual |
+| 13 | Update docs | ARCHITECTURE.md |
