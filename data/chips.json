@@ -637,5 +637,36 @@
       "effect": { "multiplier": 2.5, "hpCost": 15 },
       "chargesRequired": 5
     }
+  },
+  "adrenaline": {
+    "id": "adrenaline",
+    "name": "アドレナリンボット",
+    "nameEn": "Adrenaline Bot",
+    "description": "HP10減少ごとに+1帯域。ピンチで強い！",
+    "descriptionEn": "+1 BW per 10 HP missing. Stronger when hurt!",
+    "category": "pipeline",
+    "rarity": "epic",
+    "stats": { "power": 12, "bandwidth": 2 },
+    "effects": {
+      "pipeline": {
+        "type": "missingHpBonus",
+        "target": "bandwidth",
+        "valuePer10Hp": 1,
+        "triggerChance": 1,
+        "displayText": "+1 BW/10 HP missing"
+      }
+    },
+    "skill": {
+      "id": "nearDeath",
+      "name": "瀕死",
+      "nameEn": "Near Death",
+      "description": "HP20%以下で次の攻撃×3倍",
+      "descriptionEn": "If below 20% HP, next attack ×3",
+      "type": "buff",
+      "buffType": "POST_PIPELINE",
+      "effect": { "multiplier": 3.0 },
+      "condition": "playerBelow20",
+      "chargesRequired": 5
+    }
   }
 }

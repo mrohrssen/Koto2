@@ -738,6 +738,28 @@ describe('Needle Bot (hpCost)', () => {
   });
 });
 
+describe('Adrenaline Bot (missingHpBonus)', () => {
+  it('should add BW based on missing HP', () => {
+    const player = { hp: 50, maxHp: 100 }; // 50 HP missing
+    const result = runPipeline([getChip('adrenaline')], { player });
+    // PWR 12, BW 2 base
+    // 50 HP missing = +5 BW (1 per 10 missing)
+    // Total BW = 2 + 5 = 7
+    // Damage = 12 × (1 + 7) = 96
+    assert.strictEqual(result.powerPool, 12);
+    assert.strictEqual(result.bandwidthPool, 7);
+    assert.strictEqual(result.finalDamage, 96);
+  });
+
+  it('should give no bonus at full HP', () => {
+    const player = { hp: 100, maxHp: 100 };
+    const result = runPipeline([getChip('adrenaline')], { player });
+    // PWR 12, BW 2 base, no bonus
+    assert.strictEqual(result.bandwidthPool, 2);
+    assert.strictEqual(result.finalDamage, 36); // 12 × (1 + 2)
+  });
+});
+
 describe('Edge Cases', () => {
   it('should handle empty pipeline', () => {
     const result = runPipeline([]);

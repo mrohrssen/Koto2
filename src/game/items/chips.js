@@ -587,6 +587,19 @@ function processPipelineChip(chip, state) {
         hpCost: effect.hpCost || 0
       };
 
+    case 'missingHpBonus':
+      // Add BW based on missing HP
+      const missingHp = state.player ? (state.player.maxHp - state.player.hp) : 0;
+      const hpBonus = Math.floor(missingHp / 10) * (effect.valuePer10Hp || 1);
+      bandwidthAdd = hpBonus;
+      return {
+        ...baseResult,
+        powerAdd, powerMult, bandwidthAdd, bandwidthMult,
+        missingHpBonus: true,
+        missingHp,
+        displayText: `+${hpBonus} BW (${missingHp} HP missing)`
+      };
+
     default:
       // Unknown effect type - return no modifications
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
