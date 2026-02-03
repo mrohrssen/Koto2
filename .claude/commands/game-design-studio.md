@@ -499,52 +499,30 @@ Display:
 ══════════════════════════════════════════════════════════════════
 ```
 
-## Agent Prompt Templates
-
-When spawning each research agent, use this template:
-
-```
-You are the [ROLE NAME] for a game design review of NEO TOKYO: System Liberation.
-
-YOUR VALUE FUNCTION: [specific optimization goal]
-YOUR NATURAL TENSION: You often disagree with [opposing role] because [reason].
-
-FOCUS AREA FOR THIS RUN: [user's focus area]
-COMPARISON GAMES: [user's comparison games or "general research"]
-
-TASK:
-1. Read these codebase files: [relevant files]
-2. Research via web: [search queries]
-3. Produce a POSITION PAPER (max 500 words):
-
-POSITION PAPER FORMAT:
-## [Your Role] Position Paper
-
-### Domain Summary
-What you researched and why it matters.
-
-### Key Findings
-- Finding 1 [Source: title](url) or [Source: file:line]
-- Finding 2 [Source: ...]
-- Finding 3 [Source: ...]
-
-### Proposals (2-3 concrete suggestions)
-1. **[Proposal title]**: Description. Evidence: [source]
-2. **[Proposal title]**: Description. Evidence: [source]
-
-### Anticipated Objections
-- [Other role] might object because...
-- My counter: ...
-
-### Dissent
-One thing the consensus might get wrong: ...
-```
-
 ## Important Notes
 
-- ALL research agents must run in PARALLEL - do not run them sequentially
-- ALL debate clusters must run in PARALLEL - do not run them sequentially
-- Keep position papers under 500 words to prevent context drift
-- Summarize aggressively between phases
-- The user is the CEO - surface disagreements for them to decide, don't resolve conflicts yourself
-- Every claim must have a citation (game, article, or codebase line)
+### Parallelism Rules
+- ALL 9 Researcher agents launch in ONE message (9 Task calls)
+- When Researcher N completes, immediately launch Analyzer N (don't wait for others)
+- ALL 3 Debate clusters launch in ONE message (3 Task calls)
+- Only synthesis runs alone
+
+### Context Management
+- Orchestrator NEVER receives full file contents after Phase 1
+- Orchestrator only sees one-line status returns from agents
+- Each micro-agent starts fresh - no accumulated context
+- Maximum ~2000 words working content per agent
+
+### File Handoffs
+- Research → Analysis: Analyzer reads research file
+- Analysis → Position: Writer reads both files
+- Position → Debate: Debate agent reads 3 position files
+- Debate → Synthesis: Director reads 3 debate files
+
+### Status Return Format
+All agents MUST end with exact status string:
+- `{Role}-Researcher: done, N sources`
+- `{Role}-Analyzer: done, N files analyzed`
+- `{Role}-Writer: done, position paper complete`
+- `{Cluster}-Debate: done, N decisions surfaced`
+- `Creative-Director: done, report saved to {path}`
