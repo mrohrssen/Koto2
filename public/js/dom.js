@@ -27,6 +27,7 @@ export const dom = {
   get enemyName() { return el('enemy-name'); },
   get enemyHpBar() { return el('enemy-hp-bar'); },
   get enemyHpFill() { return el('enemy-hp-fill'); },
+  get enemyHpText() { return el('enemy-hp-text'); },
   get enemySkillBar() { return el('enemy-skill-bar'); },
   get enemySpriteContainer() { return el('enemy-sprite-container'); },
   get enemySprite() { return el('enemy-sprite'); },

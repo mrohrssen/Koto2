@@ -118,10 +118,11 @@ export function hideEnemy() {
   removePlaceholder();
 }
 
-/** Update enemy HP bar */
+/** Update enemy HP bar and text */
 export function updateEnemyHP(current, max) {
   const pct = Math.max(0, Math.min(100, (current / max) * 100));
   dom.enemyHpFill.style.width = `${pct}%`;
+  dom.enemyHpText.textContent = `${current} / ${max}`;
 }
 
 /** Show floating toast message in scene (auto-dismisses) */

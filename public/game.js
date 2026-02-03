@@ -571,7 +571,7 @@ function getRoomDataForPhaser() {
  * Check if current phase should use Phaser exploration.
  */
 function shouldUsePhaser() {
-  return ['exploring', 'room', 'room_encounter'].includes(gameState.phase);
+  return false; // Phaser disabled - using VN-style backgrounds instead
 }
 
 // ============ CHIP HANDLERS ============
