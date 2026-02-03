@@ -1292,9 +1292,67 @@ html, body {
   color: var(--accent-green);
 }
 
+/* Tier 0: Chip damage - subdued */
+.damage-number.dmg-chip {
+  font-size: 20px;
+  color: #888;
+  text-shadow: none;
+}
+
+/* Tier 1: Normal damage - default styling */
+.damage-number.dmg-normal {
+  color: #fff;
+}
+
+/* Tier 2: Solid damage - cyan glow */
+.damage-number.dmg-solid {
+  font-size: 28px;
+  color: #0ff;
+  text-shadow: 0 0 8px #0ff;
+  animation: damage-float-solid 1s ease-out forwards;
+}
+
+/* Tier 3: Big damage - strong cyan glow, pop animation */
+.damage-number.dmg-big {
+  font-size: 32px;
+  color: #0ff;
+  text-shadow: 0 0 12px #0ff, 0 0 24px #0ff;
+  animation: damage-float-big 1s ease-out forwards;
+}
+
+/* Tier 4: Massive damage - gold glow, dramatic animation */
+.damage-number.dmg-massive {
+  font-size: 38px;
+  color: #ffd700;
+  text-shadow: 0 0 16px #ffd700, 0 0 32px #ff8c00;
+  animation: damage-float-massive 1.5s ease-out forwards;
+}
+
 @keyframes damage-float {
   0% { opacity: 1; transform: translateY(0); }
   100% { opacity: 0; transform: translateY(-40px); }
+}
+
+@keyframes damage-float-solid {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  15% { transform: translateY(-5px) scale(1.1); }
+  100% { opacity: 0; transform: translateY(-40px) scale(1); }
+}
+
+@keyframes damage-float-big {
+  0% { opacity: 1; transform: translateY(0) scale(0); }
+  20% { transform: translateY(-8px) scale(1.2); }
+  35% { transform: translateY(-12px) scale(1); }
+  100% { opacity: 0; transform: translateY(-50px) scale(1); }
+}
+
+@keyframes damage-float-massive {
+  0% { opacity: 1; transform: translateY(0) scale(0); }
+  15% { transform: translateY(-10px) scale(1.4); }
+  30% { transform: translateY(-15px) scale(1); }
+  45% { transform: translateY(-20px) scale(1.1); }
+  60% { transform: translateY(-25px) scale(1); }
+  100% { opacity: 0; transform: translateY(-60px) scale(1); }
 }
 
 /* ===== SETTINGS VIEW ===== */
@@ -1833,6 +1891,28 @@ html, body {
   will-change: transform, opacity;
 }
 
+/* Energy orb (lead particle in energy stream) */
+.energy-orb {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1002;
+  will-change: transform;
+}
+
+/* Energy trail (follows the orb) */
+.energy-trail {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1001;
+  will-change: transform, opacity;
+}
+
 /* Speed lines */
 .speed-line {
   position: fixed;
@@ -1849,13 +1929,6 @@ html, body {
 .hit-stop,
 .hit-stop * {
   animation-play-state: paused !important;
-}
-
-/* Big damage number modifier */
-.damage-number.big-hit {
-  font-size: 32px;
-  color: #f1c40f;
-  text-shadow: 0 0 10px rgba(241, 196, 15, 0.8), 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 /* Critical pulse on HP bar when low */
