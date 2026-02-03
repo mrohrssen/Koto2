@@ -1064,5 +1064,43 @@ describe('Spark Plug Bot (positionBonus - first)', () => {
   });
 });
 
+describe('Leech Bot (healingToDamage)', () => {
+  it('should convert healing to bonus damage', () => {
+    // Leech + Onigiri (heals 5 per attack)
+    const chips = [getChip('leech'), getChip('onigiri')];
+    const result = runPipeline(chips);
+    // Leech: PWR 8, BW 2 + Onigiri: PWR 9, BW 0
+    // Total base: PWR 17, BW 2
+    // Onigiri heals 5 → Leech converts to +5 damage
+    // Damage = 17 × (1 + 2) + 5 = 56
+    assert.strictEqual(result.healPlayer, 5);
+    assert.strictEqual(result.healingToDamage, 5);
+    assert.strictEqual(result.finalDamage, 56);
+  });
+
+  it('should work without other healing chips', () => {
+    const result = runPipeline([getChip('leech')]);
+    // No healing, no bonus damage
+    // Leech: PWR 8, BW 2
+    // Damage = 8 × (1 + 2) + 0 = 24
+    assert.strictEqual(result.healingToDamage, 0);
+    assert.strictEqual(result.finalDamage, 24);
+  });
+
+  it('should stack healing from multiple heal chips', () => {
+    // Leech + Onigiri + Straw
+    const chips = [getChip('leech'), getChip('onigiri'), getChip('straw')];
+    const result = runPipeline(chips);
+    // Leech: PWR 8, BW 2 + Onigiri: PWR 9, BW 0 + Straw: PWR 6, BW 2
+    // Total base: PWR 23, BW 4
+    // Straw effect: +0.2 BW → BW 4.2
+    // Total heal = 5 + 12 = 17
+    // Damage = 23 × (1 + 4.2) + 17 = 119.6 → floor = 119 + 17 = 136
+    assert.strictEqual(result.healPlayer, 17);
+    assert.strictEqual(result.healingToDamage, 17);
+    assert.strictEqual(result.finalDamage, 136);
+  });
+});
+
 // Run the tests
 console.log('Running pipeline chips tests...\n');

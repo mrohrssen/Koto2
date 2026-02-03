@@ -689,6 +689,12 @@ function processPipelineChip(chip, state) {
         powerAdd, powerMult, bandwidthAdd, bandwidthMult
       };
 
+    case 'healingToDamage':
+      // Converts healing received into bonus damage
+      // The actual conversion happens in executeChipPipeline after total heal is known
+      state.healingToDamageActive = true;
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
     default:
       // Unknown effect type - return no modifications
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
@@ -968,10 +974,16 @@ export function executeChipPipeline(weaponChips, context) {
     chipIndex++;
   }
 
-  // Calculate final damage using dual-pool formula: POWER × (1 + BANDWIDTH)
-  const finalDamage = Math.floor(state.powerPool * (1 + state.bandwidthPool));
+  // Convert healing to bonus damage if healingToDamage is active
+  let healingToDamage = 0;
+  if (state.healingToDamageActive && state.totalHealPlayer > 0) {
+    healingToDamage = state.totalHealPlayer;
+  }
 
-  console.log('[Pipeline] Final: PWR', state.powerPool, '× (1 + BW', state.bandwidthPool, ') =', finalDamage);
+  // Calculate final damage using dual-pool formula: POWER × (1 + BANDWIDTH) + healingToDamage
+  const finalDamage = Math.floor(state.powerPool * (1 + state.bandwidthPool)) + healingToDamage;
+
+  console.log('[Pipeline] Final: PWR', state.powerPool, '× (1 + BW', state.bandwidthPool, ') + heal2dmg', healingToDamage, '=', finalDamage);
 
   return {
     finalDamage,
@@ -987,6 +999,8 @@ export function executeChipPipeline(weaponChips, context) {
     // Dual-pool system outputs
     powerPool: state.powerPool,
     bandwidthPool: state.bandwidthPool,
+    // Healing converted to damage (healingToDamage effect)
+    healingToDamage,
     // Degradation tracking for degradePerAttack chips
     degradation: state.degradation,
     // Degradation tracking for degradePerCombat chips (applied after combat ends)

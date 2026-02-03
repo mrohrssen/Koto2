@@ -883,5 +883,33 @@
       "effect": { "multiplier": 1.5 },
       "chargesRequired": 5
     }
+  },
+  "leech": {
+    "id": "leech",
+    "name": "ヒルボット",
+    "nameEn": "Leech Bot",
+    "description": "回復量と同じダメージを敵に与える",
+    "descriptionEn": "Healing you receive also deals equal damage to enemy",
+    "category": "pipeline",
+    "rarity": "epic",
+    "stats": { "power": 8, "bandwidth": 2 },
+    "effects": {
+      "pipeline": {
+        "type": "healingToDamage",
+        "target": "meta",
+        "triggerChance": 1,
+        "displayText": "heal → damage"
+      }
+    },
+    "skill": {
+      "id": "drainLife",
+      "name": "生命吸収",
+      "nameEn": "Drain Life",
+      "description": "HP10回復、10ダメージ",
+      "descriptionEn": "Heal 10 HP and deal 10 damage",
+      "type": "instant",
+      "effect": { "heal": 10, "damage": 10 },
+      "chargesRequired": 5
+    }
   }
 }
