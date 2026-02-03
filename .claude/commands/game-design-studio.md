@@ -388,24 +388,71 @@ Launch 3 debate cluster agents in parallel (single message with 3 Task calls):
 
 ## Step 7: Phase 4 - Synthesis
 
-Launch Creative Director agent with:
-- All cluster outputs (summarized)
-- Full spec template from docs/design-studio/2026-02-03-game-design-studio-design.md
-- Instructions to produce final decision document
+Launch Creative Director agent to compile final report.
 
-The Creative Director must:
-1. Synthesize 5-10 key decisions from cluster outputs
-2. Identify the 5 most heated debates (where agents disagreed most)
-3. Compile all sources into the appendix
-4. Format according to the Decision Document Structure in the spec
+### Creative Director Prompt
 
-**Progress display:**
 ```
-[██████████████████░░] 90% | ~X min remaining
+You are the Creative Director synthesizing a game design review for NEO TOKYO: System Liberation.
 
-PHASE 4: SYNTHESIS
+TASK:
+1. Read all debate outputs:
+   - docs/design-studio/tmp/combat-cluster-debate.md
+   - docs/design-studio/tmp/progression-cluster-debate.md
+   - docs/design-studio/tmp/systems-cluster-debate.md
 
-  ● Creative Director      compiling final report...
+2. Skim position papers for additional context and sourcing:
+   - docs/design-studio/tmp/*-position.md
+
+3. Compile final report to: docs/design-studio/{date}-{topic}.md
+
+FINAL REPORT FORMAT:
+# Game Design Studio Report: {Topic}
+
+**Generated:** {date}
+**Focus:** {focus_area}
+**Comparison Games:** {games}
+
+## Executive Summary
+2-3 paragraph overview of key findings and recommendations.
+
+## Key Decisions (5-10)
+
+### Decision 1: [Title]
+**The Question:** ...
+**Recommendation:** [Your synthesis of the debate]
+**Evidence:** [Cite sources from position papers]
+**Dissent:** [Note significant disagreements]
+**Implementation Notes:** [If applicable]
+
+[Repeat for each decision]
+
+## Heated Debates (Top 5)
+The most contentious discussions where specialists strongly disagreed:
+
+1. **[Topic]**: {Agent A} argued X, {Agent B} argued Y. Tension remains because...
+2. ...
+
+## Run Metadata
+- **Specialists completed:** N/9
+- **Skipped:** [list any skipped specialists and reasons]
+- **Clusters completed:** N/3
+
+## Appendix: Sources
+[Compiled list of all sources from position papers]
+
+After writing the file, your FINAL message must be EXACTLY:
+"Creative-Director: done, report saved to docs/design-studio/{filename}"
+```
+
+### Progress Display During Phase 4
+
+```
+[██████████████████░░] 90% | Phase 4: Synthesis
+
+  ● Creative Director   compiling final report...
+
+──────────────────────────────────────────────────────────────────
 ```
 
 ## Step 8: Output
