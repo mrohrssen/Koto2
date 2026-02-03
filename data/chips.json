@@ -942,5 +942,35 @@
       "effect": { "lifestealOverride": 0.20 },
       "chargesRequired": 5
     }
+  },
+  "overclocked": {
+    "id": "overclocked",
+    "name": "過負荷ボット",
+    "nameEn": "Overclocked Bot",
+    "description": "チップ発動ごとに3ダメージを受ける",
+    "descriptionEn": "Take 3 damage every time ANY chip triggers",
+    "category": "pipeline",
+    "rarity": "epic",
+    "stats": { "power": 25, "bandwidth": 5 },
+    "effects": {
+      "pipeline": {
+        "type": "selfDamagePerTrigger",
+        "target": "meta",
+        "damagePerTrigger": 3,
+        "triggerChance": 1,
+        "displayText": "-3 HP/trigger"
+      }
+    },
+    "skill": {
+      "id": "overclock",
+      "name": "限界突破",
+      "nameEn": "Overclock",
+      "description": "全チップ効果2倍、自傷も2倍",
+      "descriptionEn": "Double all chip effects, take double self-damage",
+      "type": "buff",
+      "buffType": "PIPELINE_MODIFIER",
+      "effect": { "doubleEffects": true, "doubleSelfDamage": true },
+      "chargesRequired": 5
+    }
   }
 }

@@ -702,6 +702,10 @@ function processPipelineChip(chip, state) {
       }
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
 
+    case 'selfDamagePerTrigger':
+      state.selfDamagePerTrigger = effect.damagePerTrigger || 0;
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
     default:
       // Unknown effect type - return no modifications
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
@@ -742,7 +746,10 @@ export function executeChipPipeline(weaponChips, context) {
     combatDegradation: {},
     // Lifesteal tracking
     lifestealPercent: 0,
-    disableOtherHealing: false
+    disableOtherHealing: false,
+    // Self damage per trigger tracking
+    selfDamagePerTrigger: 0,
+    triggerCount: 0
   };
 
   // First pass: sum all chip stats into pools (with level scaling)
@@ -865,6 +872,11 @@ export function executeChipPipeline(weaponChips, context) {
 
     const result = processPipelineChip(amplifiedChip, state);
     state.firedChips.push(result);
+
+    // Count triggers for selfDamagePerTrigger effect
+    if (result.triggered) {
+      state.triggerCount++;
+    }
 
     // Record sequence events for animation
     if (result.triggered) {
@@ -995,6 +1007,9 @@ export function executeChipPipeline(weaponChips, context) {
   // Calculate final damage using dual-pool formula: POWER × (1 + BANDWIDTH) + healingToDamage
   const finalDamage = Math.floor(state.powerPool * (1 + state.bandwidthPool)) + healingToDamage;
 
+  // Calculate self damage from selfDamagePerTrigger effect
+  const selfDamage = state.selfDamagePerTrigger * state.triggerCount;
+
   console.log('[Pipeline] Final: PWR', state.powerPool, '× (1 + BW', state.bandwidthPool, ') + heal2dmg', healingToDamage, '=', finalDamage);
 
   return {
@@ -1018,7 +1033,9 @@ export function executeChipPipeline(weaponChips, context) {
     // Degradation tracking for degradePerCombat chips (applied after combat ends)
     combatDegradation: state.combatDegradation,
     // Lifesteal percentage (vampire effect)
-    lifestealPercent: state.lifestealPercent
+    lifestealPercent: state.lifestealPercent,
+    // Self damage from selfDamagePerTrigger effect
+    selfDamage
   };
 }
 

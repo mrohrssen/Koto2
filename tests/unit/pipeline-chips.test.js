@@ -1124,5 +1124,33 @@ describe('Vampire Bot (lifesteal)', () => {
   });
 });
 
+describe('Overclocked Bot (selfDamagePerTrigger)', () => {
+  it('should track total self damage from all triggers', () => {
+    const originalRandom = Math.random;
+    Math.random = () => 0.5; // Speaker triggers (< 0.8)
+
+    try {
+      const chips = [getChip('overclocked'), getChip('battery'), getChip('speaker')];
+      const result = runPipeline(chips);
+      // Overclocked triggers (triggerChance 1.0)
+      // Battery has type="none" so doesn't trigger (triggered: false)
+      // Speaker triggers (< 0.8)
+      // Self damage = 3 × 2 triggers = 6
+      assert.strictEqual(result.selfDamage, 6);
+    } finally {
+      Math.random = originalRandom;
+    }
+  });
+
+  it('should have high stats to offset self-damage', () => {
+    const result = runPipeline([getChip('overclocked')]);
+    // PWR 25, BW 5 → Damage = 25 × (1 + 5) = 150
+    assert.strictEqual(result.powerPool, 25);
+    assert.strictEqual(result.bandwidthPool, 5);
+    assert.strictEqual(result.finalDamage, 150);
+    assert.strictEqual(result.selfDamage, 3); // Only itself triggers
+  });
+});
+
 // Run the tests
 console.log('Running pipeline chips tests...\n');
