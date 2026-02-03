@@ -18,7 +18,7 @@
 
 import { getSimpleNarration } from '../dm.js';
 import { generateEncounterCount, MAX_INVENTORY_SIZE } from '../state.js';
-import { getChipLevel, setChipLevel, getChipPrice, CHIP_RARITIES } from '../items/chips.js';
+import { getChipLevel, setChipLevel, getChipPrice, CHIP_RARITIES, equipChip } from '../items/chips.js';
 
 import {
   generateFloorRooms,
@@ -531,13 +531,10 @@ export class ExplorationService {
       });
     }
 
-    // Auto-equip if weapon has fewer than 5 chips
+    // Auto-equip if weapon has fewer than 5 chips (use equipChip to apply HP bonus)
     const equippedChips = player.equipment?.weapon?.equippedChips || [];
     if (equippedChips.length < 5 && !equippedChips.includes(item.itemId)) {
-      if (!player.equipment.weapon.equippedChips) {
-        player.equipment.weapon.equippedChips = [];
-      }
-      player.equipment.weapon.equippedChips.push(item.itemId);
+      equipChip(player, 'weapon', item.itemId);
     }
 
     // Close shop

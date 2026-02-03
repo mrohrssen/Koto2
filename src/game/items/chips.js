@@ -1191,6 +1191,17 @@ export function equipChip(player, equipmentSlot, chipId, maxSlots = 5) {
   // Equip the chip (keep in inventory - just reference by ID)
   equipment.equippedChips.push(chipId);
 
+  // Add chip's HP bonus to player
+  const chipHP = ownedChip.stats?.hp || 0;
+  if (chipHP > 0 && player.maxHp !== undefined) {
+    const level = getChipLevel(player, chipId);
+    const scalingPerLevel = 0.20;
+    const scaleFactor = 1 + (level - 1) * scalingPerLevel;
+    const hpBonus = Math.floor(chipHP * scaleFactor);
+    player.maxHp += hpBonus;
+    player.hp += hpBonus;
+  }
+
   return {
     success: true,
     chipId,
@@ -1224,6 +1235,18 @@ export function unequipChip(player, equipmentSlot, chipId) {
   const chip = getChip(chipId);
   if (!chip) {
     return { success: false, error: 'Unknown chip' };
+  }
+
+  // Remove chip's HP bonus from player before unequipping
+  const ownedChip = player.chips?.find(c => c.id === chipId);
+  const chipHP = ownedChip?.stats?.hp || 0;
+  if (chipHP > 0 && player.maxHp !== undefined) {
+    const level = getChipLevel(player, chipId);
+    const scalingPerLevel = 0.20;
+    const scaleFactor = 1 + (level - 1) * scalingPerLevel;
+    const hpBonus = Math.floor(chipHP * scaleFactor);
+    player.maxHp = Math.max(1, player.maxHp - hpBonus);
+    player.hp = Math.min(player.hp, player.maxHp);
   }
 
   // Remove from equipment (chip stays in inventory)

@@ -63,7 +63,7 @@ import { getRoomActions, generatePostCombatShop, getStartingWardOptions } from '
 import { getItem } from './items.js';
 import { derivePhase } from './phase-machine.js';
 import { CombatService, ExplorationService } from './services/index.js';
-import { calculateChipBonusHP } from './items/chips.js';
+import { calculateChipBonusHP, equipChip } from './items/chips.js';
 import { logger } from '../logger.js';
 
 // ============ GAME MANAGER ============
@@ -535,24 +535,25 @@ export class GameManager {
 
     const item = shop.items[itemIndex];
 
-    // Add chip to player inventory
+    // Add chip to player inventory (include all properties for HP calculation)
     if (!this.run.player.chips) {
       this.run.player.chips = [];
     }
     this.run.player.chips.push({
       id: item.itemId,
       name: item.name,
-      rarity: item.rarity
+      nameEn: item.nameEn,
+      rarity: item.rarity,
+      category: item.category,
+      effects: item.effects,
+      stats: item.stats
     });
 
-    // Auto-equip if weapon has fewer than 5 chips
+    // Auto-equip if weapon has fewer than 5 chips (use equipChip to apply HP bonus)
     const player = this.run.player;
     const equippedChips = player.equipment?.weapon?.equippedChips || [];
     if (equippedChips.length < 5 && !equippedChips.includes(item.itemId)) {
-      if (!player.equipment.weapon.equippedChips) {
-        player.equipment.weapon.equippedChips = [];
-      }
-      player.equipment.weapon.equippedChips.push(item.itemId);
+      equipChip(player, 'weapon', item.itemId);
     }
 
     // Clear the starting chip shop
