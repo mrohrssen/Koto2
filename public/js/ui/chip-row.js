@@ -142,7 +142,27 @@ function showPopup(index, chip, charge, maxCharges, inCombat = false) {
 
   const chipLevel = chip._level || 1;
   dom.chipPopupName.textContent = `${chip.nameEn || chip.name} Lv. ${chipLevel}`;
+
+  // Get chip's base stats
+  const power = chip.stats?.power || 0;
+  const bandwidth = chip.stats?.bandwidth || 0;
+  const hp = chip.stats?.hp || 0;
+
   dom.chipPopupDesc.innerHTML = `
+    <div class="chip-stat-row">
+      <div class="chip-stat-box pwr">
+        <span class="chip-stat-label">PWR</span>
+        <span class="chip-stat-value">${power}</span>
+      </div>
+      <div class="chip-stat-box bw">
+        <span class="chip-stat-label">BW</span>
+        <span class="chip-stat-value">${bandwidth}</span>
+      </div>
+      <div class="chip-stat-box hp">
+        <span class="chip-stat-label">HP</span>
+        <span class="chip-stat-value">${hp}</span>
+      </div>
+    </div>
     <div class="chip-popup-section">
       <div class="chip-popup-section-label">Passive</div>
       <div>${chip.descriptionEn || chip.description || 'No passive effect'}</div>
