@@ -86,7 +86,7 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
       const weaponUsedSlots = weapon?.equippedChips?.length || 0;
 
       const pipelineContext = {
-        baseDamage: 0, // Dual-pool system: damage comes from chip stats, not player attack
+        baseDamage, // PRE_PIPELINE buffs add flat bonuses here
         isCrit: attackResult.critical,
         critChance: attackResult.critChance,
         target: enemy,

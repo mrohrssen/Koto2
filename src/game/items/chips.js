@@ -745,7 +745,8 @@ export function executeChipPipeline(weaponChips, context) {
     player: context.player || null,
     equippedChipRarities: context.equippedChipRarities || weaponChips.map(c => c.rarity || 'common'),
     // Dual-pool system: chips contribute stats to pools
-    powerPool: 0,
+    // powerPool starts with baseDamage from PRE_PIPELINE buffs (e.g., Battery Bot's Full Charge +8)
+    powerPool: context.baseDamage || 0,
     bandwidthPool: 0,
     // Degradation tracking for degradePerAttack chips
     degradation: {},
