@@ -120,6 +120,10 @@ function renderChipCard() {
             <span class="chip-stat-label">BW</span>
             <span class="chip-stat-value">${chip.stats?.bandwidth || 0}</span>
           </div>
+          <div class="chip-stat-box hp">
+            <span class="chip-stat-label">HP</span>
+            <span class="chip-stat-value">${chip.stats?.hp || 0}</span>
+          </div>
         </div>
         <div class="chip-select-passive">
           <div class="chip-select-label">Passive</div>
