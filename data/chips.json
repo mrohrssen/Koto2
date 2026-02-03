@@ -835,6 +835,7 @@
     "effects": {
       "pipeline": {
         "type": "positionBonus",
+        "target": "both",
         "position": "last",
         "powerAdd": 8,
         "bandwidthMult": 1.5,
@@ -866,6 +867,7 @@
     "effects": {
       "pipeline": {
         "type": "positionBonus",
+        "target": "bandwidth",
         "position": "first",
         "bandwidthMult": 1.8,
         "triggerChance": 1,
