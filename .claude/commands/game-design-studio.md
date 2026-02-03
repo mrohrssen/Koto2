@@ -314,39 +314,77 @@ Then continue with remaining specialists.
 ══════════════════════════════════════════════════════════════════
 ```
 
+## Debate Cluster Template
+
+```
+You are facilitating the {CLUSTER} Cluster Debate for a game design review.
+
+TASK:
+1. Read these position papers:
+   - docs/design-studio/tmp/{paper1}-position.md
+   - docs/design-studio/tmp/{paper2}-position.md
+   - docs/design-studio/tmp/{paper3}-position.md
+2. Identify 2-3 key decisions this cluster should address
+3. Surface genuine disagreements - don't paper over conflicts
+4. Write to: docs/design-studio/tmp/{cluster}-cluster-debate.md
+
+OUTPUT FORMAT:
+## {Cluster} Cluster Debate
+
+### Decision 1: [Title]
+**The Question:** ...
+**Options:**
+- Option A: ... (Advocates: {Agent1}) (Evidence: ...)
+- Option B: ... (Advocates: {Agent2}, {Agent3}) (Evidence: ...)
+**Dissent:** Who disagreed and why
+
+### Decision 2: [Title]
+[Same format]
+
+### Unresolved Tensions
+- Tension that couldn't be resolved
+
+After writing the file, your FINAL message must be EXACTLY:
+"{Cluster}-Debate: done, N decisions surfaced"
+```
+
 ## Step 6: Phase 3 - Clustered Debate
 
-Collect all position papers. Summarize each to ~100 words max.
+Launch 3 debate cluster agents in parallel (single message with 3 Task calls):
 
-Launch 3 debate clusters in parallel:
+**Combat Cluster**
+- Reads: `combat-position.md`, `ux-position.md`, `playtester-position.md`
+- Writes: `combat-cluster-debate.md`
+- Focus: Combat feel, feedback, new player experience
 
-**Combat Cluster:** Combat Designer, UX Specialist, Playtester Advocate
-- Input: Summarized position papers from these 3 agents
-- Task: Debate combat-related proposals, surface disagreements
-- Output: 2-3 decisions with options + dissent
+**Progression Cluster**
+- Reads: `economy-position.md`, `psychology-position.md`, `mobile-position.md`
+- Writes: `progression-cluster-debate.md`
+- Focus: Retention, progression hooks, session design
 
-**Progression Cluster:** Economy Designer, Player Psychologist, Mobile Expert
-- Input: Summarized position papers from these 3 agents
-- Task: Debate progression/retention proposals, surface disagreements
-- Output: 2-3 decisions with options + dissent
+**Systems Cluster**
+- Reads: `systems-position.md`, `roguelike-position.md`, `competitive-position.md`
+- Writes: `systems-cluster-debate.md`
+- Focus: Build variety, genre conventions, market fit
 
-**Systems Cluster:** Systems Designer, Roguelike Specialist, Competitive Analyst
-- Input: Summarized position papers from these 3 agents
-- Task: Debate systems/variety proposals, surface disagreements
-- Output: 2-3 decisions with options + dissent
+### Handling Missing Position Papers
 
-**Progress display:**
+- If 1 paper missing → Debate proceeds with 2 papers, note gap
+- If 2+ papers missing → Skip cluster, note in final report
+
+### Progress Display During Phase 3
+
 ```
-[████████████░░░░░░░░] 60% | ~X min remaining
+[████████████░░░░░░░░] 60% | Phase 3: Clustered Debate
 
-PHASE 3: CLUSTERED DEBATE (all clusters running simultaneously)
+  ● Combat Cluster      debating combat feel...
+  ● Progression Cluster debating retention hooks...
+  ● Systems Cluster     debating build variety...
 
-  ● Combat Cluster         debating chip skill timing...
-  ● Progression Cluster    debating meta-progression hooks...
-  ● Systems Cluster        debating build variety...
+──────────────────────────────────────────────────────────────────
+  All 3 clusters running | Synthesis begins when complete
+──────────────────────────────────────────────────────────────────
 ```
-
-**Wait for all clusters to complete before proceeding.**
 
 ## Step 7: Phase 4 - Synthesis
 
@@ -458,36 +496,6 @@ What you researched and why it matters.
 
 ### Dissent
 One thing the consensus might get wrong: ...
-```
-
-## Debate Cluster Prompt Template
-
-```
-You are facilitating a debate between: [Agent 1], [Agent 2], [Agent 3]
-
-Their summarized positions:
-[100-word summary of each agent's position paper]
-
-TASK:
-1. Identify 2-3 decisions this cluster should address
-2. For each decision, surface the options and who advocates what
-3. Note genuine disagreements - don't paper over conflicts
-4. Output structured decisions ready for the final report
-
-OUTPUT FORMAT:
-## [Cluster Name] Debate Output
-
-### Decision: [Title]
-**The Question:** ...
-**Options:**
-- Option A: ... (Advocates: Agent1) (Evidence: ...)
-- Option B: ... (Advocates: Agent2, Agent3) (Evidence: ...)
-**Dissent:** [who disagreed and why]
-
-[Repeat for each decision]
-
-### Unresolved Tensions
-- [Tension that couldn't be resolved]
 ```
 
 ## Important Notes
