@@ -143,24 +143,33 @@ function showPopup(index, chip, charge, maxCharges, inCombat = false) {
   const chipLevel = chip._level || 1;
   dom.chipPopupName.textContent = `${chip.nameEn || chip.name} Lv. ${chipLevel}`;
 
-  // Get chip's base stats
+  // Get chip's base stats and calculate level bonus
   const power = chip.stats?.power || 0;
   const bandwidth = chip.stats?.bandwidth || 0;
   const hp = chip.stats?.hp || 0;
+
+  // Calculate level bonus (20% per level above 1)
+  const scaleFactor = chipLevel > 1 ? (chipLevel - 1) * 0.20 : 0;
+  const powerBonus = chipLevel > 1 ? Math.round(power * scaleFactor) : 0;
+  const bwBonus = chipLevel > 1 ? Math.round(bandwidth * scaleFactor) : 0;
+  const hpBonus = chipLevel > 1 ? Math.round(hp * scaleFactor) : 0;
+
+  // Format bonus display (only show if > 0)
+  const formatBonus = (bonus) => bonus > 0 ? `<span class="chip-stat-bonus">+${bonus}</span>` : '';
 
   dom.chipPopupDesc.innerHTML = `
     <div class="chip-stat-row">
       <div class="chip-stat-box pwr">
         <span class="chip-stat-label">PWR</span>
-        <span class="chip-stat-value">${power}</span>
+        <span class="chip-stat-value">${power}${formatBonus(powerBonus)}</span>
       </div>
       <div class="chip-stat-box bw">
         <span class="chip-stat-label">BW</span>
-        <span class="chip-stat-value">${bandwidth}</span>
+        <span class="chip-stat-value">${bandwidth}${formatBonus(bwBonus)}</span>
       </div>
       <div class="chip-stat-box hp">
         <span class="chip-stat-label">HP</span>
-        <span class="chip-stat-value">${hp}</span>
+        <span class="chip-stat-value">${hp}${formatBonus(hpBonus)}</span>
       </div>
     </div>
     <div class="chip-popup-section">

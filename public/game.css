@@ -793,6 +793,12 @@ html, body {
   color: #27ae60;
 }
 
+.chip-stat-bonus {
+  color: #7eff7e;
+  font-size: 12px;
+  margin-left: 2px;
+}
+
 .shop-chip-desc {
   display: -webkit-box;
   -webkit-line-clamp: 3;
