@@ -267,6 +267,53 @@ When an Analyzer completes, immediately launch its Writer.
 
 Status key: ✓ Complete | ● In progress | ○ Queued | ✗ Failed/Skipped
 
+## Error Handling
+
+### Micro-Agent Failure Protocol
+
+When a micro-agent fails (timeout, error, bad output):
+
+1. **Retry Attempt 1**: Re-spawn same micro-agent with same prompt
+2. **Retry Attempt 2**: If still failing, re-spawn with simplified prompt
+3. **Skip**: If 2 retries fail, mark specialist as SKIPPED
+
+### Partial Work Preservation
+
+- If Researcher succeeds but Analyzer fails → Research file preserved, retry only Analyzer
+- If Analyzer succeeds but Writer fails → Both files preserved, retry only Writer
+- Never throw away partial work
+
+### When Skipping a Specialist
+
+Write to `{prefix}-position.md`:
+```markdown
+## {Role} - UNAVAILABLE
+
+This specialist could not complete research.
+Error: {brief description}
+Partial work: {list any completed steps}
+```
+
+Then continue with remaining specialists.
+
+### Failure Display
+
+```
+══════════════════════════════════════════════════════════════════
+  ⚠ AGENT FAILURE: Mobile Expert Analyzer
+══════════════════════════════════════════════════════════════════
+  Error: Context limit exceeded
+
+  Retry 1/2... attempting
+  Retry 1/2... failed (same error)
+  Retry 2/2... attempting with simplified prompt
+  Retry 2/2... failed
+
+  → Marking Mobile Expert as SKIPPED
+  → Continuing with 8/9 specialists
+══════════════════════════════════════════════════════════════════
+```
+
 ## Step 6: Phase 3 - Clustered Debate
 
 Collect all position papers. Summarize each to ~100 words max.
