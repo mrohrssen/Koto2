@@ -600,6 +600,20 @@ function processPipelineChip(chip, state) {
         displayText: `+${hpBonus} BW (${missingHp} HP missing)`
       };
 
+    case 'slotCount':
+      // Check if exact chip count requirement is met
+      if (state.weaponUsedSlots !== effect.requiredCount) {
+        return {
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name,
+          triggered: false,
+          conditionFailed: true,
+          displayText: `Need ${effect.requiredCount} chips`
+        };
+      }
+      // Condition met - pure stat stick (stats already added in first pass)
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
     default:
       // Unknown effect type - return no modifications
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
@@ -639,6 +653,15 @@ export function executeChipPipeline(weaponChips, context) {
   console.log('[Pipeline] Starting pipeline with', weaponChips.length, 'chips');
   for (const chip of weaponChips) {
     if (chip.category === 'pipeline' && chip.stats) {
+      // Check slotCount restriction before adding stats
+      const effect = chip.effects?.pipeline;
+      if (effect?.type === 'slotCount') {
+        if (state.weaponUsedSlots !== effect.requiredCount) {
+          console.log(`[Pipeline] ${chip.nameEn || chip.id}: DISABLED (need ${effect.requiredCount} chips, have ${state.weaponUsedSlots})`);
+          continue; // Skip this chip's stats entirely
+        }
+      }
+
       let statPower = chip.stats.power || 0;
       let statBandwidth = chip.stats.bandwidth || 0;
 

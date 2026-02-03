@@ -760,6 +760,38 @@ describe('Adrenaline Bot (missingHpBonus)', () => {
   });
 });
 
+describe('Duo Bot (slotCount)', () => {
+  it('should work with exactly 2 chips equipped', () => {
+    const result = runPipeline([getChip('duo'), getChip('battery')], {
+      weaponUsedSlots: 2
+    });
+    // Duo: PWR 18, BW 4 + Battery: PWR 10, BW 0
+    // Total: PWR 28, BW 4
+    // Damage = 28 × (1 + 4) = 140
+    assert.strictEqual(result.powerPool, 28);
+    assert.strictEqual(result.bandwidthPool, 4);
+    assert.strictEqual(result.finalDamage, 140);
+  });
+
+  it('should contribute nothing with wrong chip count', () => {
+    const originalRandom = Math.random;
+    Math.random = () => 0.99; // Prevent speaker's 80% effect from triggering
+
+    try {
+      const result = runPipeline([getChip('duo'), getChip('battery'), getChip('speaker')], {
+        weaponUsedSlots: 3
+      });
+      // Duo contributes 0 (wrong count), Battery: PWR 10, Speaker: PWR 10, BW 3
+      // Total: PWR 20, BW 3
+      // Damage = 20 × (1 + 3) = 80
+      assert.strictEqual(result.powerPool, 20);
+      assert.strictEqual(result.bandwidthPool, 3);
+    } finally {
+      Math.random = originalRandom;
+    }
+  });
+});
+
 describe('Edge Cases', () => {
   it('should handle empty pipeline', () => {
     const result = runPipeline([]);

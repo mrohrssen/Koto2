@@ -668,5 +668,36 @@
       "condition": "playerBelow20",
       "chargesRequired": 5
     }
+  },
+  "duo": {
+    "id": "duo",
+    "name": "二人組ボット",
+    "nameEn": "Duo Bot",
+    "description": "チップ2つ装備時のみ有効。二人三脚！",
+    "descriptionEn": "Only works with exactly 2 chips equipped. Perfect pair!",
+    "category": "pipeline",
+    "rarity": "rare",
+    "stats": { "power": 18, "bandwidth": 4 },
+    "effects": {
+      "pipeline": {
+        "type": "slotCount",
+        "target": "meta",
+        "requiredCount": 2,
+        "triggerChance": 1,
+        "displayText": "2 chips only"
+      }
+    },
+    "skill": {
+      "id": "perfectPair",
+      "name": "完璧な二人",
+      "nameEn": "Perfect Pair",
+      "description": "チップ2つ装備時、次の攻撃×2倍",
+      "descriptionEn": "Next attack ×2 (only if 2 chips)",
+      "type": "buff",
+      "buffType": "POST_PIPELINE",
+      "effect": { "multiplier": 2.0 },
+      "condition": "exactlyTwoChips",
+      "chargesRequired": 5
+    }
   }
 }
