@@ -870,6 +870,43 @@ describe('Edge Cases', () => {
   });
 });
 
+describe('Commoner Bot (rarityBonus)', () => {
+  it('should add BW per common chip', () => {
+    // Commoner is common, battery is common, onigiri is common
+    const chips = [getChip('commoner'), getChip('battery'), getChip('onigiri')];
+    const result = runPipeline(chips, {
+      equippedChipRarities: ['common', 'common', 'common']
+    });
+    // Commoner: PWR 8, BW 1 + Battery: PWR 10, BW 0 + Onigiri: PWR 9, BW 0
+    // Total base: PWR 27, BW 1
+    // Commoner effect: +2 BW × 3 common = +6 BW
+    // Total: PWR 27, BW 7
+    // Damage = 27 × (1 + 7) = 216
+    assert.strictEqual(result.bandwidthPool, 7);
+    assert.strictEqual(result.finalDamage, 216);
+  });
+
+  it('should not count non-common chips', () => {
+    const originalRandom = Math.random;
+    Math.random = () => 0.99; // Prevent speaker's 80% effect from triggering
+
+    try {
+      const chips = [getChip('commoner'), getChip('speaker')]; // speaker is rare
+      const result = runPipeline(chips, {
+        equippedChipRarities: ['common', 'rare']
+      });
+      // Only 1 common chip (commoner itself)
+      // Commoner: PWR 8, BW 1 + Speaker: PWR 10, BW 3
+      // Total base: PWR 18, BW 4
+      // Commoner effect: +2 BW × 1 common = +2 BW
+      // Total: PWR 18, BW 6
+      assert.strictEqual(result.bandwidthPool, 6);
+    } finally {
+      Math.random = originalRandom;
+    }
+  });
+});
+
 describe('Ice Cream Bot (degradePerAttack)', () => {
   it('should track degradation amount', () => {
     const result = runPipeline([getChip('iceCream')]);

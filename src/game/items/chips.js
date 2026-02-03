@@ -630,6 +630,21 @@ function processPipelineChip(chip, state) {
       state.combatDegradation[chip.id] = effect.degradeAmount;
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
 
+    case 'rarityBonus':
+      // Add value per chip of target rarity
+      const rarities = state.equippedChipRarities || [];
+      const matchCount = rarities.filter(r => r === effect.targetRarity).length;
+      const rarityBonusValue = matchCount * (effect.valuePerChip || 0);
+      if (target === 'bandwidth') bandwidthAdd = rarityBonusValue;
+      else if (target === 'power') powerAdd = rarityBonusValue;
+      return {
+        ...baseResult,
+        powerAdd, powerMult, bandwidthAdd, bandwidthMult,
+        rarityBonus: true,
+        matchCount,
+        displayText: `+${rarityBonusValue} (${matchCount} ${effect.targetRarity})`
+      };
+
     default:
       // Unknown effect type - return no modifications
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
@@ -660,6 +675,7 @@ export function executeChipPipeline(weaponChips, context) {
     runKills: context.runKills || 0,
     runChipsDestroyed: context.runChipsDestroyed || 0,
     player: context.player || null,
+    equippedChipRarities: context.equippedChipRarities || weaponChips.map(c => c.rarity || 'common'),
     // Dual-pool system: chips contribute stats to pools
     powerPool: 0,
     bandwidthPool: 0,

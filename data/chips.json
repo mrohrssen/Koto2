@@ -759,5 +759,36 @@
       "effect": { "damageFromBandwidth": true, "bwMultiplier": 8 },
       "chargesRequired": 5
     }
+  },
+  "commoner": {
+    "id": "commoner",
+    "name": "庶民ボット",
+    "nameEn": "Commoner Bot",
+    "description": "コモンチップ1つにつき+2帯域。庶民の力！",
+    "descriptionEn": "+2 BW per common chip equipped. People power!",
+    "category": "pipeline",
+    "rarity": "common",
+    "stats": { "power": 8, "bandwidth": 1 },
+    "effects": {
+      "pipeline": {
+        "type": "rarityBonus",
+        "target": "bandwidth",
+        "targetRarity": "common",
+        "valuePerChip": 2,
+        "triggerChance": 1,
+        "displayText": "+2 BW/common"
+      }
+    },
+    "skill": {
+      "id": "strengthInNumbers",
+      "name": "数の力",
+      "nameEn": "Strength in Numbers",
+      "description": "コモンチップ1つにつき+5ダメージ",
+      "descriptionEn": "+5 damage per common chip",
+      "type": "buff",
+      "buffType": "PRE_PIPELINE",
+      "effect": { "flatBonusPerRarity": 5, "targetRarity": "common" },
+      "chargesRequired": 5
+    }
   }
 }
