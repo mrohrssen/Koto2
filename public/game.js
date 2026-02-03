@@ -26,10 +26,35 @@
  * loop responds to user actions via UI callbacks and API responses.
  */
 
-// Register service worker for asset caching
+// Register service worker for asset caching with update checking
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js');
+  navigator.serviceWorker.register('/sw.js').then((registration) => {
+    // Check for updates on page load
+    registration.update();
+  });
+
+  // Listen for cache cleared message
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data === 'CACHES_CLEARED') {
+      console.log('[SW] Caches cleared, reloading...');
+      window.location.reload(true);
+    }
+  });
 }
+
+// Global function to force refresh (can be called from console: forceRefresh())
+window.forceRefresh = async function() {
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage('CLEAR_ALL_CACHES');
+  } else {
+    // No service worker, just clear caches directly and reload
+    if ('caches' in window) {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map((name) => caches.delete(name)));
+    }
+    window.location.reload(true);
+  }
+};
 
 // ============ IMPORTS ============
 import { store } from './js/store.js';

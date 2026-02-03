@@ -1,4 +1,5 @@
-const CACHE_NAME = 'neo-tokyo-assets-v1';
+const CACHE_VERSION = 2;
+const CACHE_NAME = `neo-tokyo-assets-v${CACHE_VERSION}`;
 
 // Future: Add URLs here for eager pre-caching on install
 const PRECACHE_URLS = [];
@@ -23,6 +24,24 @@ self.addEventListener('activate', (event) => {
     })
   );
   self.clients.claim();
+});
+
+// Listen for messages from the app to force cache clear
+self.addEventListener('message', (event) => {
+  if (event.data === 'CLEAR_ALL_CACHES') {
+    event.waitUntil(
+      caches.keys().then((cacheNames) => {
+        return Promise.all(cacheNames.map((name) => caches.delete(name)));
+      }).then(() => {
+        self.clients.matchAll().then((clients) => {
+          clients.forEach((client) => client.postMessage('CACHES_CLEARED'));
+        });
+      })
+    );
+  }
+  if (event.data === 'GET_VERSION') {
+    event.source.postMessage({ type: 'VERSION', version: CACHE_VERSION });
+  }
 });
 
 self.addEventListener('fetch', (event) => {
