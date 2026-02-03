@@ -455,53 +455,48 @@ After writing the file, your FINAL message must be EXACTLY:
 ──────────────────────────────────────────────────────────────────
 ```
 
-## Step 8: Output
+## Step 8: Cleanup and Completion
 
-Write the final report to:
-```
-docs/design-studio/YYYY-MM-DD-<topic>.md
-```
+### On Successful Completion
 
-Where `<topic>` is derived from the focus area (e.g., "chip-system", "combat-feel", "comprehensive").
-
-Announce completion:
-```
-══════════════════════════════════════════════════════════════════
-  ✓ GAME DESIGN STUDIO COMPLETE
-══════════════════════════════════════════════════════════════════
-  Report saved: docs/design-studio/YYYY-MM-DD-<topic>.md
-
-  Decisions: [N]
-  Heated debates: 5
-  Sources cited: [N]
-══════════════════════════════════════════════════════════════════
+1. Delete tmp directory:
+```bash
+rm -rf docs/design-studio/tmp
 ```
 
-## Error Handling
-
-If any agent fails:
-1. Auto-retry 3 times with backoff
-2. If still failing, pause and ask user:
+2. Display completion message:
 ```
 ══════════════════════════════════════════════════════════════════
-  ⚠ ERROR: [Agent Name] - [error description]
+  ✓ GAME DESIGN STUDIO v2 COMPLETE
+══════════════════════════════════════════════════════════════════
+  Report saved: docs/design-studio/{date}-{topic}.md
 
-  Retry 1/3... failed
-  Retry 2/3... failed
-  Retry 3/3... failed
+  Specialists: {N}/9 completed
+  Decisions:   {N}
+  Sources:     {N} cited
 
-  Options:
-  [1] Skip this agent - continue without their input
-  [2] Retry with different approach
-  [3] Abort run
-
-  Your choice: _
+  Skipped agents: {list or "None"}
 ══════════════════════════════════════════════════════════════════
 ```
 
-If skipped, note in final report:
+### On Failure
+
+Leave `docs/design-studio/tmp/` intact for debugging.
+
+Display:
 ```
-**Note:** [Agent] was unavailable. [Domain] analysis may be incomplete.
+══════════════════════════════════════════════════════════════════
+  ✗ GAME DESIGN STUDIO v2 FAILED
+══════════════════════════════════════════════════════════════════
+  Error: {description}
+
+  Partial work preserved in: docs/design-studio/tmp/
+
+  Completed files:
+  - {list files that exist}
+
+  To resume: Re-run /game-design-studio with same parameters
+══════════════════════════════════════════════════════════════════
 ```
 
 ## Agent Prompt Templates
