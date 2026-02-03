@@ -237,20 +237,23 @@ export function spawnSpeedLines(fromEl, toEl, count = 3, color = 'rgba(255,255,2
     orb.style.boxShadow = `0 0 8px ${solidColor}, 0 0 16px ${solidColor}`;
     document.body.appendChild(orb);
 
+    const orbDelay = i * 60;
     anime(orb, {
       translateX: dx,
       translateY: dy,
-      scale: [1, 0.5],
+      scale: [1, 0],
+      opacity: [1, 0],
     }, {
       duration,
-      delay: i * 60,
+      delay: orbDelay,
       ease: 'inQuad',
-      onComplete: () => {
-        orb.remove();
-        // Flash target on arrival
-        flashElement(toEl);
-      }
     });
+
+    // Flash target and cleanup with timeout (more reliable than onComplete)
+    setTimeout(() => {
+      flashElement(toEl);
+      orb.remove();
+    }, duration + orbDelay);
 
     // Trail particles - spawn along the path with delays
     const trailCount = 5;
@@ -263,6 +266,7 @@ export function spawnSpeedLines(fromEl, toEl, count = 3, color = 'rgba(255,255,2
       trail.style.boxShadow = `0 0 4px ${solidColor}`;
       document.body.appendChild(trail);
 
+      const trailDelay = i * 60 + t * 20;
       anime(trail, {
         translateX: dx,
         translateY: dy,
@@ -270,10 +274,12 @@ export function spawnSpeedLines(fromEl, toEl, count = 3, color = 'rgba(255,255,2
         opacity: [0.8, 0],
       }, {
         duration: duration - 50,
-        delay: i * 60 + t * 20,
+        delay: trailDelay,
         ease: 'inQuad',
-        onComplete: () => trail.remove()
       });
+
+      // Cleanup with timeout
+      setTimeout(() => trail.remove(), duration - 50 + trailDelay + 50);
     }
   }
 }
