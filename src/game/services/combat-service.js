@@ -67,8 +67,15 @@ export class CombatService {
     player.hp = Math.min(player.maxHp, player.hp + restHeal);
 
     const enemy = generateEnemy(this.gm.run.floor);
+
+    // Apply compounding HP scaling (10% per enemy defeated in this run)
+    const runKills = this.gm.run.player._runKills || 0;
+    const hpMultiplier = Math.pow(1.1, runKills);
+    enemy.maxHp = Math.floor(enemy.maxHp * hpMultiplier);
+    enemy.hp = enemy.maxHp;
+
     this.gm.combat = createCombatState(enemy);
-    logger.info('[Combat] Started encounter:', { enemy: enemy.nameEn, hp: enemy.hp, floor: this.gm.run.floor });
+    logger.info('[Combat] Started encounter:', { enemy: enemy.nameEn, hp: enemy.hp, hpMultiplier: hpMultiplier.toFixed(2), floor: this.gm.run.floor });
     this.gm.run.player._combatStacks = {};  // Reset stacking chip counters
     if (this.gm.run.player._runKills === undefined) this.gm.run.player._runKills = 0;  // Init kill counter
     this.gm.combat.turn = determineTurnOrder(this.gm.run.player, enemy);
@@ -98,8 +105,15 @@ export class CombatService {
     }
 
     const boss = getBossForFloor(this.gm.run.floor);
+
+    // Apply compounding HP scaling (10% per enemy defeated in this run)
+    const runKills = this.gm.run.player._runKills || 0;
+    const hpMultiplier = Math.pow(1.1, runKills);
+    boss.maxHp = Math.floor(boss.maxHp * hpMultiplier);
+    boss.hp = boss.maxHp;
+
     this.gm.combat = createCombatState(boss);
-    logger.info('[Combat] Boss encounter started:', { boss: boss.nameEn, hp: boss.hp, floor: this.gm.run.floor });
+    logger.info('[Combat] Boss encounter started:', { boss: boss.nameEn, hp: boss.hp, hpMultiplier: hpMultiplier.toFixed(2), floor: this.gm.run.floor });
     this.gm.run.player._combatStacks = {};  // Reset stacking chip counters
     this.gm.combat.turn = determineTurnOrder(this.gm.run.player, boss);
 

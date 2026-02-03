@@ -71,7 +71,7 @@ export class ExplorationScene extends Phaser.Scene {
     });
 
     // Load room background
-    this.load.image('room-background', 'assets/exploration/background.png');
+    this.load.image('room-background', 'assets/exploration/background.webp');
     // Note: placeholder textures created in create() - graphics can't be made during preload
 
     // Log load completion
