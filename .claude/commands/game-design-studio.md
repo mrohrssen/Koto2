@@ -189,6 +189,22 @@ After writing the file, your FINAL message must be EXACTLY:
 "{Role}-Writer: done, position paper complete"
 ```
 
+## Specialist Definitions
+
+Each specialist has: prefix, role name, search queries, relevant files, value function, opposing role.
+
+| Prefix | Role | Search Queries | Codebase Files | Value Function | Opposes |
+|--------|------|----------------|----------------|----------------|---------|
+| combat | Combat Designer | "turn-based combat design GDC", "{comparison} combat" | src/game/combat/, data/enemies.json | Tactical depth, satisfying moments | UX (depth vs accessibility) |
+| systems | Systems Designer | "deck builder synergy", "roguelike build variety" | src/game/items/chips.js, data/chips.json | Emergent complexity, protect what works | Economy (complexity vs clarity) |
+| economy | Economy Designer | "roguelike progression", "mobile game economy" | src/game/state.js | "One more run" addiction | Systems (pacing vs freedom) |
+| ux | UX Specialist | "game feel juice", "satisfying UI feedback" | public/js/ui/combat-effects.js, public/game.css | Every action feels crunchy | Combat (feel vs depth) |
+| competitive | Competitive Analyst | "roguelike deck builder 2024", "{comparison} postmortem" | General overview | What's proven to work | Roguelike (trends vs purity) |
+| psychology | Player Psychologist | "flow state game design", "player retention" | docs/ARCHITECTURE.md loop section | Sustainable engagement | Mobile (ethics vs retention) |
+| playtester | Playtester Advocate | "new player onboarding", "roguelike tutorial" | Early game flow | CONTRARIAN - find problems | Everyone (advocate for newbies) |
+| mobile | Mobile Expert | "mobile session design", "daily login hooks" | Meta-progression, run length | Short satisfying sessions | Psychology (engagement vs manipulation) |
+| roguelike | Roguelike Specialist | "roguelike design pillars", "{comparison} analysis" | src/game/rooms.js | Genre purity, meaningful variance | Competitive (purity vs trends) |
+
 ## Step 5: Phase 2 - Parallel Research
 
 Launch ALL 10 research agents simultaneously using the Task tool. Each agent should:
