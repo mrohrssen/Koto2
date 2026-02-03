@@ -67,23 +67,26 @@ Announce:
 [░░░░░░░░░░░░░░░░░░░░] 5% | Creating workspace...
 ```
 
-## Step 4: Phase 1 - Codebase Analysis
+## Step 4: Phase 1 - Codebase Analysis (Orchestrator Only)
 
-Read the spec first:
-```
-Read: docs/design-studio/2026-02-03-game-design-studio-design.md
-```
+The orchestrator reads key files directly - no agents needed. This grounds you before spawning specialists.
 
-Then read key codebase files to ground yourself:
+**Read these files:**
 - `docs/ARCHITECTURE.md` - Full game architecture
 - `data/chips.json` - Chip definitions
 - `data/enemies.json` - Enemy definitions
 - `src/game/items/chips.js` - Chip pipeline system
 - `src/game/combat/mechanics.js` - Combat formulas
 
+**Summarize internally (do not output):**
+- Core gameplay loop structure
+- Number of chips and their types
+- Enemy variety and difficulty scaling
+- Key technical constraints
+
 Announce:
 ```
-[░░░░░░░░░░░░░░░░░░░░] 10% | Phase 1: Codebase Analysis complete
+[██░░░░░░░░░░░░░░░░░░] 10% | Phase 1: Codebase Analysis complete
 ```
 
 ## Step 5: Phase 2 - Parallel Research
