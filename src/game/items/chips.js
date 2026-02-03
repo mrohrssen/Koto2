@@ -579,6 +579,133 @@ function processPipelineChip(chip, state) {
         displayText: `+${powerAdd} PWR +${bandwidthAdd} BW (${equippedCount} equipped)`
       };
 
+    case 'hpCost':
+      // Pure stat stick with HP cost - stats already summed, just track cost
+      return {
+        ...baseResult,
+        powerAdd, powerMult, bandwidthAdd, bandwidthMult,
+        hpCost: effect.hpCost || 0
+      };
+
+    case 'missingHpBonus':
+      // Add BW based on missing HP
+      const missingHp = state.player ? (state.player.maxHp - state.player.hp) : 0;
+      const hpBonus = Math.floor(missingHp / 10) * (effect.valuePer10Hp || 1);
+      bandwidthAdd = hpBonus;
+      return {
+        ...baseResult,
+        powerAdd, powerMult, bandwidthAdd, bandwidthMult,
+        missingHpBonus: true,
+        missingHp,
+        displayText: `+${hpBonus} BW (${missingHp} HP missing)`
+      };
+
+    case 'slotCount':
+      // Check if exact chip count requirement is met
+      if (state.weaponUsedSlots !== effect.requiredCount) {
+        return {
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name,
+          triggered: false,
+          conditionFailed: true,
+          displayText: `Need ${effect.requiredCount} chips`
+        };
+      }
+      // Condition met - pure stat stick (stats already added in first pass)
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
+    case 'degradePerAttack':
+      // Track degradation for next attack
+      const degradeKey2 = chip.id + '_degraded';
+      if (!state.combatStacks) state.combatStacks = {};
+      state.combatStacks[degradeKey2] = (state.combatStacks[degradeKey2] || 0) + effect.degradeAmount;
+      // Track in result for return value
+      if (!state.degradation) state.degradation = {};
+      state.degradation[chip.id] = effect.degradeAmount;
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
+    case 'degradePerCombat':
+      // Track degradation to apply after combat ends
+      if (!state.combatDegradation) state.combatDegradation = {};
+      state.combatDegradation[chip.id] = effect.degradeAmount;
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
+    case 'rarityBonus':
+      // Add value per chip of target rarity
+      const rarities = state.equippedChipRarities || [];
+      const matchCount = rarities.filter(r => r === effect.targetRarity).length;
+      const rarityBonusValue = matchCount * (effect.valuePerChip || 0);
+      if (target === 'bandwidth') bandwidthAdd = rarityBonusValue;
+      else if (target === 'power') powerAdd = rarityBonusValue;
+      return {
+        ...baseResult,
+        powerAdd, powerMult, bandwidthAdd, bandwidthMult,
+        rarityBonus: true,
+        matchCount,
+        displayText: `+${rarityBonusValue} (${matchCount} ${effect.targetRarity})`
+      };
+
+    case 'rarityRestriction':
+      // Multiply if no forbidden rarities present
+      const equippedRarities = state.equippedChipRarities || [];
+      const hasForbidden = equippedRarities.some(r => effect.forbiddenRarities.includes(r));
+      if (hasForbidden) {
+        return {
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name,
+          triggered: false,
+          conditionFailed: true,
+          displayText: 'Forbidden rarity equipped'
+        };
+      }
+      applyMult(effect.multiplier);
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
+    case 'positionBonus':
+      // Check if chip is in the required position (first or last)
+      const isFirst = state.currentChipIndex === 0;
+      const isLast = state.currentChipIndex === state.totalChipCount - 1;
+      const positionRequired = effect.position;
+      const positionMet = (positionRequired === 'first' && isFirst) ||
+                          (positionRequired === 'last' && isLast);
+      if (!positionMet) {
+        return {
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name,
+          triggered: false,
+          conditionFailed: true,
+          displayText: `Not in ${positionRequired} position`
+        };
+      }
+      // Apply position bonuses
+      powerAdd = effect.powerAdd || 0;
+      bandwidthAdd = effect.bandwidthAdd || 0;
+      powerMult = effect.powerMult || 1;
+      bandwidthMult = effect.bandwidthMult || 1;
+      return {
+        ...baseResult,
+        positionBonus: true,
+        position: positionRequired,
+        powerAdd, powerMult, bandwidthAdd, bandwidthMult
+      };
+
+    case 'healingToDamage':
+      // Converts healing received into bonus damage
+      // The actual conversion happens in executeChipPipeline after total heal is known
+      state.healingToDamageActive = true;
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
+    case 'lifesteal':
+      state.lifestealPercent = effect.lifestealPercent || 0;
+      if (effect.disableOtherHealing) {
+        state.disableOtherHealing = true;
+      }
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
+    case 'selfDamagePerTrigger':
+      state.selfDamagePerTrigger = effect.damagePerTrigger || 0;
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
     default:
       // Unknown effect type - return no modifications
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
@@ -605,18 +732,39 @@ export function executeChipPipeline(weaponChips, context) {
     weaponMaxSlots: context.weaponMaxSlots || 5,
     weaponUsedSlots: context.weaponUsedSlots || 0,
     totalHealPlayer: 0,
+    totalHpCost: 0,
     runKills: context.runKills || 0,
     runChipsDestroyed: context.runChipsDestroyed || 0,
     player: context.player || null,
+    equippedChipRarities: context.equippedChipRarities || weaponChips.map(c => c.rarity || 'common'),
     // Dual-pool system: chips contribute stats to pools
     powerPool: 0,
-    bandwidthPool: 0
+    bandwidthPool: 0,
+    // Degradation tracking for degradePerAttack chips
+    degradation: {},
+    // Degradation tracking for degradePerCombat chips (applied after combat ends)
+    combatDegradation: {},
+    // Lifesteal tracking
+    lifestealPercent: 0,
+    disableOtherHealing: false,
+    // Self damage per trigger tracking
+    selfDamagePerTrigger: 0,
+    triggerCount: 0
   };
 
   // First pass: sum all chip stats into pools (with level scaling)
   console.log('[Pipeline] Starting pipeline with', weaponChips.length, 'chips');
   for (const chip of weaponChips) {
     if (chip.category === 'pipeline' && chip.stats) {
+      // Check slotCount restriction before adding stats
+      const effect = chip.effects?.pipeline;
+      if (effect?.type === 'slotCount') {
+        if (state.weaponUsedSlots !== effect.requiredCount) {
+          console.log(`[Pipeline] ${chip.nameEn || chip.id}: DISABLED (need ${effect.requiredCount} chips, have ${state.weaponUsedSlots})`);
+          continue; // Skip this chip's stats entirely
+        }
+      }
+
       let statPower = chip.stats.power || 0;
       let statBandwidth = chip.stats.bandwidth || 0;
 
@@ -627,6 +775,29 @@ export function executeChipPipeline(weaponChips, context) {
         const scaleFactor = 1 + (level - 1) * scalingPerLevel;
         statPower = Math.round(statPower * scaleFactor);
         statBandwidth = Math.round(statBandwidth * scaleFactor);
+      }
+
+      // Apply degradation from previous attacks (degradePerAttack type)
+      const degradeKey = chip.id + '_degraded';
+      const totalDegraded = state.combatStacks[degradeKey] || 0;
+      if (chip.effects?.pipeline?.type === 'degradePerAttack' && totalDegraded > 0) {
+        const degradeTarget = chip.effects.pipeline.target;
+        if (degradeTarget === 'bandwidth') {
+          statBandwidth = Math.max(0, statBandwidth - totalDegraded);
+        } else if (degradeTarget === 'power') {
+          statPower = Math.max(0, statPower - totalDegraded);
+        }
+      }
+
+      // Apply persistent degradation (per-combat type) from player state
+      if (chip.effects?.pipeline?.type === 'degradePerCombat' && state.player?._chipDegradation) {
+        const persistentDegraded = state.player._chipDegradation[chip.id] || 0;
+        const degradeTarget = chip.effects.pipeline.target;
+        if (degradeTarget === 'bandwidth') {
+          statBandwidth = Math.max(0, statBandwidth - persistentDegraded);
+        } else if (degradeTarget === 'power') {
+          statPower = Math.max(0, statPower - persistentDegraded);
+        }
       }
 
       console.log(`[Pipeline] ${chip.nameEn || chip.id}: +${statPower} PWR, +${statBandwidth} BW`);
@@ -664,6 +835,10 @@ export function executeChipPipeline(weaponChips, context) {
   while (chipIndex < weaponChips.length) {
     const chip = weaponChips[chipIndex];
 
+    // Track position for positionBonus effect type
+    state.currentChipIndex = chipIndex;
+    state.totalChipCount = weaponChips.length;
+
     // Only process pipeline category chips
     if (chip.category !== 'pipeline') {
       state.firedChips.push({ chipId: chip.id, skipped: true, notPipeline: true });
@@ -697,6 +872,11 @@ export function executeChipPipeline(weaponChips, context) {
 
     const result = processPipelineChip(amplifiedChip, state);
     state.firedChips.push(result);
+
+    // Count triggers for selfDamagePerTrigger effect
+    if (result.triggered) {
+      state.triggerCount++;
+    }
 
     // Record sequence events for animation
     if (result.triggered) {
@@ -758,7 +938,10 @@ export function executeChipPipeline(weaponChips, context) {
       }
 
       if (result.critChanceBonus) state.critChance += result.critChanceBonus;
-      if (result.healPlayer) state.totalHealPlayer += result.healPlayer;
+      if (result.healPlayer && !state.disableOtherHealing) {
+        state.totalHealPlayer += result.healPlayer;
+      }
+      if (result.hpCost) state.totalHpCost += result.hpCost;
 
       // Track last chip effect for Copycat (don't track copy itself)
       const effect = chip.effects?.pipeline;
@@ -815,10 +998,19 @@ export function executeChipPipeline(weaponChips, context) {
     chipIndex++;
   }
 
-  // Calculate final damage using dual-pool formula: POWER × (1 + BANDWIDTH)
-  const finalDamage = Math.floor(state.powerPool * (1 + state.bandwidthPool));
+  // Convert healing to bonus damage if healingToDamage is active
+  let healingToDamage = 0;
+  if (state.healingToDamageActive && state.totalHealPlayer > 0) {
+    healingToDamage = state.totalHealPlayer;
+  }
 
-  console.log('[Pipeline] Final: PWR', state.powerPool, '× (1 + BW', state.bandwidthPool, ') =', finalDamage);
+  // Calculate final damage using dual-pool formula: POWER × (1 + BANDWIDTH) + healingToDamage
+  const finalDamage = Math.floor(state.powerPool * (1 + state.bandwidthPool)) + healingToDamage;
+
+  // Calculate self damage from selfDamagePerTrigger effect
+  const selfDamage = state.selfDamagePerTrigger * state.triggerCount;
+
+  console.log('[Pipeline] Final: PWR', state.powerPool, '× (1 + BW', state.bandwidthPool, ') + heal2dmg', healingToDamage, '=', finalDamage);
 
   return {
     finalDamage,
@@ -829,10 +1021,21 @@ export function executeChipPipeline(weaponChips, context) {
     sacrificedChips: state.sacrificedChips,
     combatStacks: state.combatStacks,
     healPlayer: state.totalHealPlayer,
+    hpCost: state.totalHpCost,
     randomDestroyTriggered: state.randomDestroyTriggered || false,
     // Dual-pool system outputs
     powerPool: state.powerPool,
-    bandwidthPool: state.bandwidthPool
+    bandwidthPool: state.bandwidthPool,
+    // Healing converted to damage (healingToDamage effect)
+    healingToDamage,
+    // Degradation tracking for degradePerAttack chips
+    degradation: state.degradation,
+    // Degradation tracking for degradePerCombat chips (applied after combat ends)
+    combatDegradation: state.combatDegradation,
+    // Lifesteal percentage (vampire effect)
+    lifestealPercent: state.lifestealPercent,
+    // Self damage from selfDamagePerTrigger effect
+    selfDamage
   };
 }
 

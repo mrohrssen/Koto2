@@ -607,5 +607,372 @@
       "effect": { "flatBonusPerEquipped": 5 },
       "chargesRequired": 5
     }
+  },
+  "needle": {
+    "id": "needle",
+    "name": "針ボット",
+    "nameEn": "Needle Bot",
+    "description": "攻撃ごとにHP5消費。高火力！",
+    "descriptionEn": "Costs 5 HP per attack. High power!",
+    "category": "pipeline",
+    "rarity": "rare",
+    "stats": { "power": 22, "bandwidth": 4 },
+    "effects": {
+      "pipeline": {
+        "type": "hpCost",
+        "target": "meta",
+        "hpCost": 5,
+        "triggerChance": 1,
+        "displayText": "-5 HP"
+      }
+    },
+    "skill": {
+      "id": "bloodPrice",
+      "name": "血の代償",
+      "nameEn": "Blood Price",
+      "description": "次の攻撃×2.5倍、HP15消費",
+      "descriptionEn": "Next attack x2.5, costs 15 HP",
+      "type": "buff",
+      "buffType": "POST_PIPELINE",
+      "effect": { "multiplier": 2.5, "hpCost": 15 },
+      "chargesRequired": 5
+    }
+  },
+  "adrenaline": {
+    "id": "adrenaline",
+    "name": "アドレナリンボット",
+    "nameEn": "Adrenaline Bot",
+    "description": "HP10減少ごとに+1帯域。ピンチで強い！",
+    "descriptionEn": "+1 BW per 10 HP missing. Stronger when hurt!",
+    "category": "pipeline",
+    "rarity": "epic",
+    "stats": { "power": 12, "bandwidth": 2 },
+    "effects": {
+      "pipeline": {
+        "type": "missingHpBonus",
+        "target": "bandwidth",
+        "valuePer10Hp": 1,
+        "triggerChance": 1,
+        "displayText": "+1 BW/10 HP missing"
+      }
+    },
+    "skill": {
+      "id": "nearDeath",
+      "name": "瀕死",
+      "nameEn": "Near Death",
+      "description": "HP20%以下で次の攻撃×3倍",
+      "descriptionEn": "If below 20% HP, next attack ×3",
+      "type": "buff",
+      "buffType": "POST_PIPELINE",
+      "effect": { "multiplier": 3.0 },
+      "condition": "playerBelow20",
+      "chargesRequired": 5
+    }
+  },
+  "duo": {
+    "id": "duo",
+    "name": "二人組ボット",
+    "nameEn": "Duo Bot",
+    "description": "チップ2つ装備時のみ有効。二人三脚！",
+    "descriptionEn": "Only works with exactly 2 chips equipped. Perfect pair!",
+    "category": "pipeline",
+    "rarity": "rare",
+    "stats": { "power": 18, "bandwidth": 4 },
+    "effects": {
+      "pipeline": {
+        "type": "slotCount",
+        "target": "meta",
+        "requiredCount": 2,
+        "triggerChance": 1,
+        "displayText": "2 chips only"
+      }
+    },
+    "skill": {
+      "id": "perfectPair",
+      "name": "完璧な二人",
+      "nameEn": "Perfect Pair",
+      "description": "チップ2つ装備時、次の攻撃×2倍",
+      "descriptionEn": "Next attack ×2 (only if 2 chips)",
+      "type": "buff",
+      "buffType": "POST_PIPELINE",
+      "effect": { "multiplier": 2.0 },
+      "condition": "exactlyTwoChips",
+      "chargesRequired": 5
+    }
+  },
+  "iceCream": {
+    "id": "iceCream",
+    "name": "アイスボット",
+    "nameEn": "Ice Cream Bot",
+    "description": "攻撃ごとに帯域-0.5。溶けていく！",
+    "descriptionEn": "Loses 0.5 BW per attack. Melting fast!",
+    "category": "pipeline",
+    "rarity": "uncommon",
+    "stats": { "power": 14, "bandwidth": 6 },
+    "effects": {
+      "pipeline": {
+        "type": "degradePerAttack",
+        "target": "bandwidth",
+        "degradeAmount": 0.5,
+        "triggerChance": 1,
+        "displayText": "-0.5 BW/attack"
+      }
+    },
+    "skill": {
+      "id": "brainFreeze",
+      "name": "頭キーン",
+      "nameEn": "Brain Freeze",
+      "description": "この戦闘中、劣化を停止",
+      "descriptionEn": "Freeze degradation for this combat",
+      "type": "buff",
+      "buffType": "COMBAT_MODIFIER",
+      "effect": { "freezeDegradation": true },
+      "chargesRequired": 5
+    }
+  },
+  "candle": {
+    "id": "candle",
+    "name": "蝋燭ボット",
+    "nameEn": "Candle Bot",
+    "description": "戦闘ごとに帯域-1。0で破壊。",
+    "descriptionEn": "Loses 1 BW after each combat. Destroyed at 0.",
+    "category": "pipeline",
+    "rarity": "rare",
+    "stats": { "power": 16, "bandwidth": 5 },
+    "effects": {
+      "pipeline": {
+        "type": "degradePerCombat",
+        "target": "bandwidth",
+        "degradeAmount": 1,
+        "destroyAtZero": true,
+        "triggerChance": 1,
+        "displayText": "-1 BW/combat"
+      }
+    },
+    "skill": {
+      "id": "lastLight",
+      "name": "最後の灯",
+      "nameEn": "Last Light",
+      "description": "残り帯域×8のダメージ",
+      "descriptionEn": "Deal remaining BW ×8 as direct damage",
+      "type": "instant",
+      "effect": { "damageFromBandwidth": true, "bwMultiplier": 8 },
+      "chargesRequired": 5
+    }
+  },
+  "commoner": {
+    "id": "commoner",
+    "name": "庶民ボット",
+    "nameEn": "Commoner Bot",
+    "description": "コモンチップ1つにつき+2帯域。庶民の力！",
+    "descriptionEn": "+2 BW per common chip equipped. People power!",
+    "category": "pipeline",
+    "rarity": "common",
+    "stats": { "power": 8, "bandwidth": 1 },
+    "effects": {
+      "pipeline": {
+        "type": "rarityBonus",
+        "target": "bandwidth",
+        "targetRarity": "common",
+        "valuePerChip": 2,
+        "triggerChance": 1,
+        "displayText": "+2 BW/common"
+      }
+    },
+    "skill": {
+      "id": "strengthInNumbers",
+      "name": "数の力",
+      "nameEn": "Strength in Numbers",
+      "description": "コモンチップ1つにつき+5ダメージ",
+      "descriptionEn": "+5 damage per common chip",
+      "type": "buff",
+      "buffType": "PRE_PIPELINE",
+      "effect": { "flatBonusPerRarity": 5, "targetRarity": "common" },
+      "chargesRequired": 5
+    }
+  },
+  "underdog": {
+    "id": "underdog",
+    "name": "弱者ボット",
+    "nameEn": "Underdog Bot",
+    "description": "エピック/レジェンダリーなしで帯域×1.5倍",
+    "descriptionEn": "x1.5 BW if no epic/legendary chips equipped",
+    "category": "pipeline",
+    "rarity": "uncommon",
+    "stats": { "power": 10, "bandwidth": 2 },
+    "effects": {
+      "pipeline": {
+        "type": "rarityRestriction",
+        "target": "bandwidth",
+        "forbiddenRarities": ["epic", "legendary"],
+        "multiplier": 1.5,
+        "triggerChance": 1,
+        "displayText": "x1.5 BW (no epic/legend)"
+      }
+    },
+    "skill": {
+      "id": "proveThemWrong",
+      "name": "見返してやる",
+      "nameEn": "Prove Them Wrong",
+      "description": "エピック/レジェンダリーなしで次の攻撃×2倍",
+      "descriptionEn": "Next attack x2 (only if no epic/legendary)",
+      "type": "buff",
+      "buffType": "POST_PIPELINE",
+      "effect": { "multiplier": 2.0 },
+      "condition": "noEpicOrLegendary",
+      "chargesRequired": 5
+    }
+  },
+  "anchor": {
+    "id": "anchor",
+    "name": "錨ボット",
+    "nameEn": "Anchor Bot",
+    "description": "最後のスロットで+8パワー、帯域×1.5倍！",
+    "descriptionEn": "+8 PWR, x1.5 BW when in last slot!",
+    "category": "pipeline",
+    "rarity": "rare",
+    "stats": { "power": 12, "bandwidth": 2 },
+    "effects": {
+      "pipeline": {
+        "type": "positionBonus",
+        "target": "both",
+        "position": "last",
+        "powerAdd": 8,
+        "bandwidthMult": 1.5,
+        "triggerChance": 1,
+        "displayText": "+8 PWR ×1.5 BW (last)"
+      }
+    },
+    "skill": {
+      "id": "dropAnchor",
+      "name": "投錨",
+      "nameEn": "Drop Anchor",
+      "description": "次の攻撃で+15パワー",
+      "descriptionEn": "Next attack +15 PWR",
+      "type": "buff",
+      "buffType": "PRE_PIPELINE",
+      "effect": { "flatBonus": 15 },
+      "chargesRequired": 5
+    }
+  },
+  "sparkPlug": {
+    "id": "sparkPlug",
+    "name": "点火ボット",
+    "nameEn": "Spark Plug Bot",
+    "description": "最初のスロットで帯域×1.8倍！",
+    "descriptionEn": "x1.8 BW when in first slot!",
+    "category": "pipeline",
+    "rarity": "rare",
+    "stats": { "power": 10, "bandwidth": 3 },
+    "effects": {
+      "pipeline": {
+        "type": "positionBonus",
+        "target": "bandwidth",
+        "position": "first",
+        "bandwidthMult": 1.8,
+        "triggerChance": 1,
+        "displayText": "×1.8 BW (first)"
+      }
+    },
+    "skill": {
+      "id": "ignition",
+      "name": "点火",
+      "nameEn": "Ignition",
+      "description": "次の攻撃で帯域×1.5倍",
+      "descriptionEn": "Next attack x1.5 BW",
+      "type": "buff",
+      "buffType": "POST_PIPELINE",
+      "effect": { "multiplier": 1.5 },
+      "chargesRequired": 5
+    }
+  },
+  "leech": {
+    "id": "leech",
+    "name": "ヒルボット",
+    "nameEn": "Leech Bot",
+    "description": "回復量と同じダメージを敵に与える",
+    "descriptionEn": "Healing you receive also deals equal damage to enemy",
+    "category": "pipeline",
+    "rarity": "epic",
+    "stats": { "power": 8, "bandwidth": 2 },
+    "effects": {
+      "pipeline": {
+        "type": "healingToDamage",
+        "target": "meta",
+        "triggerChance": 1,
+        "displayText": "heal → damage"
+      }
+    },
+    "skill": {
+      "id": "drainLife",
+      "name": "生命吸収",
+      "nameEn": "Drain Life",
+      "description": "HP10回復、10ダメージ",
+      "descriptionEn": "Heal 10 HP and deal 10 damage",
+      "type": "instant",
+      "effect": { "heal": 10, "damage": 10 },
+      "chargesRequired": 5
+    }
+  },
+  "vampire": {
+    "id": "vampire",
+    "name": "吸血ボット",
+    "nameEn": "Vampire Bot",
+    "description": "ダメージの5%をHP回復。他の回復無効。",
+    "descriptionEn": "5% of damage dealt heals you. Disables other healing.",
+    "category": "pipeline",
+    "rarity": "rare",
+    "stats": { "power": 14, "bandwidth": 3 },
+    "effects": {
+      "pipeline": {
+        "type": "lifesteal",
+        "target": "meta",
+        "lifestealPercent": 0.05,
+        "disableOtherHealing": true,
+        "triggerChance": 1,
+        "displayText": "5% lifesteal"
+      }
+    },
+    "skill": {
+      "id": "bloodPact",
+      "name": "血の契約",
+      "nameEn": "Blood Pact",
+      "description": "次の攻撃のライフスティール20%",
+      "descriptionEn": "Next attack heals 20% of damage dealt",
+      "type": "buff",
+      "buffType": "POST_PIPELINE",
+      "effect": { "lifestealOverride": 0.20 },
+      "chargesRequired": 5
+    }
+  },
+  "overclocked": {
+    "id": "overclocked",
+    "name": "過負荷ボット",
+    "nameEn": "Overclocked Bot",
+    "description": "チップ発動ごとに3ダメージを受ける",
+    "descriptionEn": "Take 3 damage every time ANY chip triggers",
+    "category": "pipeline",
+    "rarity": "epic",
+    "stats": { "power": 25, "bandwidth": 5 },
+    "effects": {
+      "pipeline": {
+        "type": "selfDamagePerTrigger",
+        "target": "meta",
+        "damagePerTrigger": 3,
+        "triggerChance": 1,
+        "displayText": "-3 HP/trigger"
+      }
+    },
+    "skill": {
+      "id": "overclock",
+      "name": "限界突破",
+      "nameEn": "Overclock",
+      "description": "全チップ効果2倍、自傷も2倍",
+      "descriptionEn": "Double all chip effects, take double self-damage",
+      "type": "buff",
+      "buffType": "PIPELINE_MODIFIER",
+      "effect": { "doubleEffects": true, "doubleSelfDamage": true },
+      "chargesRequired": 5
+    }
   }
 }

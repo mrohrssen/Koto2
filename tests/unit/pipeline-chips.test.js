@@ -36,30 +36,44 @@ function runPipeline(chips, overrides = {}) {
 }
 
 describe('Pipeline Chip Definitions', () => {
-  it('should have all 15 pipeline chips defined', () => {
-    const newChips = [
+  it('should have all 33 pipeline chips defined', () => {
+    const allPipelineChips = [
+      // Original 6 chips
+      'battery', 'speaker', 'glasses', 'lightbulb', 'scissors',
+      // 15 more chips
       'clock', 'charcoal', 'book', 'eraser',
       'onigiri', 'wallet', 'straw', 'key',
       'egg', 'fireworks', 'mirror', 'feather', 'drum',
-      'magnifyingGlass', 'toolbox'
+      'magnifyingGlass', 'toolbox',
+      // 12 new build-variety chips
+      'needle', 'adrenaline', 'duo', 'iceCream', 'candle',
+      'commoner', 'underdog', 'anchor', 'sparkPlug', 'leech',
+      'vampire', 'overclocked'
     ];
 
-    for (const chipId of newChips) {
+    for (const chipId of allPipelineChips) {
       assert.ok(CHIPS[chipId], `Chip ${chipId} should be defined`);
       assert.strictEqual(CHIPS[chipId].category, 'pipeline', `${chipId} should be pipeline category`);
       assert.ok(CHIPS[chipId].effects?.pipeline, `${chipId} should have pipeline effects`);
     }
   });
 
-  it('should have Japanese names for all new chips', () => {
-    const newChips = [
+  it('should have Japanese names for all pipeline chips', () => {
+    const allPipelineChips = [
+      // Original 6 chips
+      'battery', 'speaker', 'glasses', 'lightbulb', 'scissors',
+      // 15 more chips
       'clock', 'charcoal', 'book', 'eraser',
       'onigiri', 'wallet', 'straw', 'key',
       'egg', 'fireworks', 'mirror', 'feather', 'drum',
-      'magnifyingGlass', 'toolbox'
+      'magnifyingGlass', 'toolbox',
+      // 12 new build-variety chips
+      'needle', 'adrenaline', 'duo', 'iceCream', 'candle',
+      'commoner', 'underdog', 'anchor', 'sparkPlug', 'leech',
+      'vampire', 'overclocked'
     ];
 
-    for (const chipId of newChips) {
+    for (const chipId of allPipelineChips) {
       assert.ok(CHIPS[chipId].name, `${chipId} should have Japanese name`);
       assert.ok(CHIPS[chipId].nameEn, `${chipId} should have English name`);
     }
@@ -726,6 +740,72 @@ describe('Complex Pipeline Combinations', () => {
   });
 });
 
+describe('Needle Bot (hpCost)', () => {
+  it('should deal damage to player when triggered', () => {
+    const player = { hp: 100, maxHp: 100 };
+    const result = runPipeline([getChip('needle')], { player });
+    // PWR 22, BW 4 -> Damage = 22 * (1 + 4) = 110
+    assert.strictEqual(result.powerPool, 22);
+    assert.strictEqual(result.bandwidthPool, 4);
+    assert.strictEqual(result.finalDamage, 110);
+    assert.strictEqual(result.hpCost, 5);
+  });
+});
+
+describe('Adrenaline Bot (missingHpBonus)', () => {
+  it('should add BW based on missing HP', () => {
+    const player = { hp: 50, maxHp: 100 }; // 50 HP missing
+    const result = runPipeline([getChip('adrenaline')], { player });
+    // PWR 12, BW 2 base
+    // 50 HP missing = +5 BW (1 per 10 missing)
+    // Total BW = 2 + 5 = 7
+    // Damage = 12 × (1 + 7) = 96
+    assert.strictEqual(result.powerPool, 12);
+    assert.strictEqual(result.bandwidthPool, 7);
+    assert.strictEqual(result.finalDamage, 96);
+  });
+
+  it('should give no bonus at full HP', () => {
+    const player = { hp: 100, maxHp: 100 };
+    const result = runPipeline([getChip('adrenaline')], { player });
+    // PWR 12, BW 2 base, no bonus
+    assert.strictEqual(result.bandwidthPool, 2);
+    assert.strictEqual(result.finalDamage, 36); // 12 × (1 + 2)
+  });
+});
+
+describe('Duo Bot (slotCount)', () => {
+  it('should work with exactly 2 chips equipped', () => {
+    const result = runPipeline([getChip('duo'), getChip('battery')], {
+      weaponUsedSlots: 2
+    });
+    // Duo: PWR 18, BW 4 + Battery: PWR 10, BW 0
+    // Total: PWR 28, BW 4
+    // Damage = 28 × (1 + 4) = 140
+    assert.strictEqual(result.powerPool, 28);
+    assert.strictEqual(result.bandwidthPool, 4);
+    assert.strictEqual(result.finalDamage, 140);
+  });
+
+  it('should contribute nothing with wrong chip count', () => {
+    const originalRandom = Math.random;
+    Math.random = () => 0.99; // Prevent speaker's 80% effect from triggering
+
+    try {
+      const result = runPipeline([getChip('duo'), getChip('battery'), getChip('speaker')], {
+        weaponUsedSlots: 3
+      });
+      // Duo contributes 0 (wrong count), Battery: PWR 10, Speaker: PWR 10, BW 3
+      // Total: PWR 20, BW 3
+      // Damage = 20 × (1 + 3) = 80
+      assert.strictEqual(result.powerPool, 20);
+      assert.strictEqual(result.bandwidthPool, 3);
+    } finally {
+      Math.random = originalRandom;
+    }
+  });
+});
+
 describe('Edge Cases', () => {
   it('should handle empty pipeline', () => {
     const result = runPipeline([]);
@@ -804,6 +884,107 @@ describe('Edge Cases', () => {
   });
 });
 
+describe('Commoner Bot (rarityBonus)', () => {
+  it('should add BW per common chip', () => {
+    // Commoner is common, battery is common, onigiri is common
+    const chips = [getChip('commoner'), getChip('battery'), getChip('onigiri')];
+    const result = runPipeline(chips, {
+      equippedChipRarities: ['common', 'common', 'common']
+    });
+    // Commoner: PWR 8, BW 1 + Battery: PWR 10, BW 0 + Onigiri: PWR 9, BW 0
+    // Total base: PWR 27, BW 1
+    // Commoner effect: +2 BW × 3 common = +6 BW
+    // Total: PWR 27, BW 7
+    // Damage = 27 × (1 + 7) = 216
+    assert.strictEqual(result.bandwidthPool, 7);
+    assert.strictEqual(result.finalDamage, 216);
+  });
+
+  it('should not count non-common chips', () => {
+    const originalRandom = Math.random;
+    Math.random = () => 0.99; // Prevent speaker's 80% effect from triggering
+
+    try {
+      const chips = [getChip('commoner'), getChip('speaker')]; // speaker is rare
+      const result = runPipeline(chips, {
+        equippedChipRarities: ['common', 'rare']
+      });
+      // Only 1 common chip (commoner itself)
+      // Commoner: PWR 8, BW 1 + Speaker: PWR 10, BW 3
+      // Total base: PWR 18, BW 4
+      // Commoner effect: +2 BW × 1 common = +2 BW
+      // Total: PWR 18, BW 6
+      assert.strictEqual(result.bandwidthPool, 6);
+    } finally {
+      Math.random = originalRandom;
+    }
+  });
+});
+
+describe('Ice Cream Bot (degradePerAttack)', () => {
+  it('should track degradation amount', () => {
+    const result = runPipeline([getChip('iceCream')]);
+    // PWR 14, BW 6 → Damage = 14 × (1 + 6) = 98
+    assert.strictEqual(result.powerPool, 14);
+    assert.strictEqual(result.bandwidthPool, 6);
+    assert.strictEqual(result.finalDamage, 98);
+    assert.strictEqual(result.degradation?.iceCream, 0.5);
+  });
+
+  it('should use reduced BW from combatStacks', () => {
+    const combatStacks = { iceCream_degraded: 1 }; // Already degraded 1 BW (2 prior attacks × 0.5)
+    const result = runPipeline([getChip('iceCream')], { combatStacks });
+    // PWR 14, BW 6 - 1 = 5 → Damage = 14 × (1 + 5) = 84
+    assert.strictEqual(result.bandwidthPool, 5);
+    assert.strictEqual(result.finalDamage, 84);
+  });
+});
+
+describe('Candle Bot (degradePerCombat)', () => {
+  it('should return combat degradation info', () => {
+    const result = runPipeline([getChip('candle')]);
+    // PWR 16, BW 5 → Damage = 16 × (1 + 5) = 96
+    assert.strictEqual(result.powerPool, 16);
+    assert.strictEqual(result.bandwidthPool, 5);
+    assert.strictEqual(result.combatDegradation?.candle, 1);
+  });
+
+  it('should use reduced BW from player chip state', () => {
+    const player = {
+      _chipDegradation: { candle: 2 } // Already lost 2 BW
+    };
+    const result = runPipeline([getChip('candle')], { player });
+    // PWR 16, BW 5 - 2 = 3 → Damage = 16 × (1 + 3) = 64
+    assert.strictEqual(result.bandwidthPool, 3);
+  });
+});
+
+describe('Underdog Bot (rarityRestriction)', () => {
+  it('should multiply BW with no epic/legendary chips', () => {
+    const chips = [getChip('underdog'), getChip('battery')];
+    const result = runPipeline(chips, {
+      equippedChipRarities: ['uncommon', 'common']
+    });
+    // Underdog: PWR 10, BW 2 + Battery: PWR 10, BW 0
+    // Total base: PWR 20, BW 2
+    // Underdog effect: ×1.5 BW → BW 3
+    // Damage = 20 × (1 + 3) = 80
+    assert.strictEqual(result.bandwidthPool, 3);
+    assert.strictEqual(result.finalDamage, 80);
+  });
+
+  it('should not trigger with epic chip equipped', () => {
+    const chips = [getChip('underdog'), getChip('adrenaline')]; // adrenaline is epic
+    const result = runPipeline(chips, {
+      equippedChipRarities: ['uncommon', 'epic']
+    });
+    // No multiplier applied
+    // Underdog: PWR 10, BW 2 + Adrenaline: PWR 12, BW 2
+    // Total: PWR 22, BW 4
+    assert.strictEqual(result.bandwidthPool, 4);
+  });
+});
+
 describe('Pipeline Sequence Tracking', () => {
   it('should return sequence array with activate and base events', () => {
     const result = runPipeline([getChip('battery')]);
@@ -853,6 +1034,135 @@ describe('Pipeline Sequence Tracking', () => {
     const sacrifice = result.sequence.find(e => e.type === 'sacrifice');
     assert.ok(sacrifice, 'should have sacrifice event');
     assert.strictEqual(sacrifice.chipId, 'charcoal');
+  });
+});
+
+describe('Anchor Bot (positionBonus - last)', () => {
+  it('should give bonus when in last slot', () => {
+    const chips = [getChip('battery'), getChip('anchor')];
+    const result = runPipeline(chips, { weaponUsedSlots: 2 });
+    // Battery: PWR 10, BW 0 + Anchor: PWR 12, BW 2 = PWR 22, BW 2
+    // Anchor in last position: +8 PWR, ×1.5 BW
+    // PWR = 22 + 8 = 30, BW = 2 × 1.5 = 3
+    assert.strictEqual(result.powerPool, 30);
+    assert.strictEqual(result.bandwidthPool, 3);
+  });
+
+  it('should not give bonus when not in last slot', () => {
+    const chips = [getChip('anchor'), getChip('battery')];
+    const result = runPipeline(chips, { weaponUsedSlots: 2 });
+    assert.strictEqual(result.powerPool, 22);
+    assert.strictEqual(result.bandwidthPool, 2);
+  });
+});
+
+describe('Spark Plug Bot (positionBonus - first)', () => {
+  it('should give bonus when in first slot', () => {
+    const chips = [getChip('sparkPlug'), getChip('battery')];
+    const result = runPipeline(chips, { weaponUsedSlots: 2 });
+    // Spark Plug: PWR 10, BW 3 + Battery: PWR 10, BW 0 = PWR 20, BW 3
+    // Spark Plug in first: ×1.8 BW = 5.4
+    assert.strictEqual(result.powerPool, 20);
+    assert.strictEqual(result.bandwidthPool, 5.4);
+    assert.strictEqual(result.finalDamage, 128);
+  });
+
+  it('should not give bonus when not in first slot', () => {
+    const chips = [getChip('battery'), getChip('sparkPlug')];
+    const result = runPipeline(chips, { weaponUsedSlots: 2 });
+    // No position bonus - just base stats
+    // Battery: PWR 10, BW 0 + Spark Plug: PWR 10, BW 3 = PWR 20, BW 3
+    assert.strictEqual(result.powerPool, 20);
+    assert.strictEqual(result.bandwidthPool, 3);
+    assert.strictEqual(result.finalDamage, 80); // 20 × (1 + 3)
+  });
+});
+
+describe('Leech Bot (healingToDamage)', () => {
+  it('should convert healing to bonus damage', () => {
+    // Leech + Onigiri (heals 5 per attack)
+    const chips = [getChip('leech'), getChip('onigiri')];
+    const result = runPipeline(chips);
+    // Leech: PWR 8, BW 2 + Onigiri: PWR 9, BW 0
+    // Total base: PWR 17, BW 2
+    // Onigiri heals 5 → Leech converts to +5 damage
+    // Damage = 17 × (1 + 2) + 5 = 56
+    assert.strictEqual(result.healPlayer, 5);
+    assert.strictEqual(result.healingToDamage, 5);
+    assert.strictEqual(result.finalDamage, 56);
+  });
+
+  it('should work without other healing chips', () => {
+    const result = runPipeline([getChip('leech')]);
+    // No healing, no bonus damage
+    // Leech: PWR 8, BW 2
+    // Damage = 8 × (1 + 2) + 0 = 24
+    assert.strictEqual(result.healingToDamage, 0);
+    assert.strictEqual(result.finalDamage, 24);
+  });
+
+  it('should stack healing from multiple heal chips', () => {
+    // Leech + Onigiri + Straw
+    const chips = [getChip('leech'), getChip('onigiri'), getChip('straw')];
+    const result = runPipeline(chips);
+    // Leech: PWR 8, BW 2 + Onigiri: PWR 9, BW 0 + Straw: PWR 6, BW 2
+    // Total base: PWR 23, BW 4
+    // Straw effect: +0.2 BW → BW 4.2
+    // Total heal = 5 + 12 = 17
+    // Damage = 23 × (1 + 4.2) + 17 = 119.6 → floor = 119 + 17 = 136
+    assert.strictEqual(result.healPlayer, 17);
+    assert.strictEqual(result.healingToDamage, 17);
+    assert.strictEqual(result.finalDamage, 136);
+  });
+});
+
+describe('Vampire Bot (lifesteal)', () => {
+  it('should return lifesteal percentage and disable other healing', () => {
+    const chips = [getChip('vampire'), getChip('onigiri')];
+    const result = runPipeline(chips);
+    // Vampire: PWR 14, BW 3 + Onigiri: PWR 9, BW 0
+    // Total base: PWR 23, BW 3
+    // Damage = 23 × (1 + 3) = 92
+    // Lifesteal: 5% of 92 = 4.6 → 4 HP
+    // Onigiri healing DISABLED
+    assert.strictEqual(result.finalDamage, 92);
+    assert.strictEqual(result.lifestealPercent, 0.05);
+    assert.strictEqual(result.healPlayer, 0); // Disabled by vampire
+  });
+
+  it('should work alone without disabling anything', () => {
+    const result = runPipeline([getChip('vampire')]);
+    // PWR 14, BW 3 → Damage = 14 × (1 + 3) = 56
+    assert.strictEqual(result.lifestealPercent, 0.05);
+    assert.strictEqual(result.finalDamage, 56);
+  });
+});
+
+describe('Overclocked Bot (selfDamagePerTrigger)', () => {
+  it('should track total self damage from all triggers', () => {
+    const originalRandom = Math.random;
+    Math.random = () => 0.5; // Speaker triggers (< 0.8)
+
+    try {
+      const chips = [getChip('overclocked'), getChip('battery'), getChip('speaker')];
+      const result = runPipeline(chips);
+      // Overclocked triggers (triggerChance 1.0)
+      // Battery has type="none" so doesn't trigger (triggered: false)
+      // Speaker triggers (< 0.8)
+      // Self damage = 3 × 2 triggers = 6
+      assert.strictEqual(result.selfDamage, 6);
+    } finally {
+      Math.random = originalRandom;
+    }
+  });
+
+  it('should have high stats to offset self-damage', () => {
+    const result = runPipeline([getChip('overclocked')]);
+    // PWR 25, BW 5 → Damage = 25 × (1 + 5) = 150
+    assert.strictEqual(result.powerPool, 25);
+    assert.strictEqual(result.bandwidthPool, 5);
+    assert.strictEqual(result.finalDamage, 150);
+    assert.strictEqual(result.selfDamage, 3); // Only itself triggers
   });
 });
 
