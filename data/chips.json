@@ -911,5 +911,36 @@
       "effect": { "heal": 10, "damage": 10 },
       "chargesRequired": 5
     }
+  },
+  "vampire": {
+    "id": "vampire",
+    "name": "吸血ボット",
+    "nameEn": "Vampire Bot",
+    "description": "ダメージの5%をHP回復。他の回復無効。",
+    "descriptionEn": "5% of damage dealt heals you. Disables other healing.",
+    "category": "pipeline",
+    "rarity": "rare",
+    "stats": { "power": 14, "bandwidth": 3 },
+    "effects": {
+      "pipeline": {
+        "type": "lifesteal",
+        "target": "meta",
+        "lifestealPercent": 0.05,
+        "disableOtherHealing": true,
+        "triggerChance": 1,
+        "displayText": "5% lifesteal"
+      }
+    },
+    "skill": {
+      "id": "bloodPact",
+      "name": "血の契約",
+      "nameEn": "Blood Pact",
+      "description": "次の攻撃のライフスティール20%",
+      "descriptionEn": "Next attack heals 20% of damage dealt",
+      "type": "buff",
+      "buffType": "POST_PIPELINE",
+      "effect": { "lifestealOverride": 0.20 },
+      "chargesRequired": 5
+    }
   }
 }

@@ -695,6 +695,13 @@ function processPipelineChip(chip, state) {
       state.healingToDamageActive = true;
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
 
+    case 'lifesteal':
+      state.lifestealPercent = effect.lifestealPercent || 0;
+      if (effect.disableOtherHealing) {
+        state.disableOtherHealing = true;
+      }
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
     default:
       // Unknown effect type - return no modifications
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
@@ -732,7 +739,10 @@ export function executeChipPipeline(weaponChips, context) {
     // Degradation tracking for degradePerAttack chips
     degradation: {},
     // Degradation tracking for degradePerCombat chips (applied after combat ends)
-    combatDegradation: {}
+    combatDegradation: {},
+    // Lifesteal tracking
+    lifestealPercent: 0,
+    disableOtherHealing: false
   };
 
   // First pass: sum all chip stats into pools (with level scaling)
@@ -916,7 +926,9 @@ export function executeChipPipeline(weaponChips, context) {
       }
 
       if (result.critChanceBonus) state.critChance += result.critChanceBonus;
-      if (result.healPlayer) state.totalHealPlayer += result.healPlayer;
+      if (result.healPlayer && !state.disableOtherHealing) {
+        state.totalHealPlayer += result.healPlayer;
+      }
       if (result.hpCost) state.totalHpCost += result.hpCost;
 
       // Track last chip effect for Copycat (don't track copy itself)
@@ -1004,7 +1016,9 @@ export function executeChipPipeline(weaponChips, context) {
     // Degradation tracking for degradePerAttack chips
     degradation: state.degradation,
     // Degradation tracking for degradePerCombat chips (applied after combat ends)
-    combatDegradation: state.combatDegradation
+    combatDegradation: state.combatDegradation,
+    // Lifesteal percentage (vampire effect)
+    lifestealPercent: state.lifestealPercent
   };
 }
 

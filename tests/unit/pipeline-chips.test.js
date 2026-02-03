@@ -1102,5 +1102,27 @@ describe('Leech Bot (healingToDamage)', () => {
   });
 });
 
+describe('Vampire Bot (lifesteal)', () => {
+  it('should return lifesteal percentage and disable other healing', () => {
+    const chips = [getChip('vampire'), getChip('onigiri')];
+    const result = runPipeline(chips);
+    // Vampire: PWR 14, BW 3 + Onigiri: PWR 9, BW 0
+    // Total base: PWR 23, BW 3
+    // Damage = 23 × (1 + 3) = 92
+    // Lifesteal: 5% of 92 = 4.6 → 4 HP
+    // Onigiri healing DISABLED
+    assert.strictEqual(result.finalDamage, 92);
+    assert.strictEqual(result.lifestealPercent, 0.05);
+    assert.strictEqual(result.healPlayer, 0); // Disabled by vampire
+  });
+
+  it('should work alone without disabling anything', () => {
+    const result = runPipeline([getChip('vampire')]);
+    // PWR 14, BW 3 → Damage = 14 × (1 + 3) = 56
+    assert.strictEqual(result.lifestealPercent, 0.05);
+    assert.strictEqual(result.finalDamage, 56);
+  });
+});
+
 // Run the tests
 console.log('Running pipeline chips tests...\n');
