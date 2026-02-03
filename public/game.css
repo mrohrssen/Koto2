@@ -773,12 +773,16 @@ html, body {
 }
 
 .chip-stat-box.hp {
-  border-color: #e74c3c;
-  background: rgba(231, 76, 60, 0.15);
+  border-color: #27ae60;
+  background: rgba(39, 174, 96, 0.15);
 }
 
 .chip-stat-box.hp .chip-stat-label {
-  color: #e74c3c;
+  color: #27ae60;
+}
+
+.chip-stat-box.hp .chip-stat-value {
+  color: #27ae60;
 }
 
 .shop-chip-desc {
