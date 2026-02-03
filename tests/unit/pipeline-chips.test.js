@@ -1023,5 +1023,46 @@ describe('Pipeline Sequence Tracking', () => {
   });
 });
 
+describe('Anchor Bot (positionBonus - last)', () => {
+  it('should give bonus when in last slot', () => {
+    const chips = [getChip('battery'), getChip('anchor')];
+    const result = runPipeline(chips, { weaponUsedSlots: 2 });
+    // Battery: PWR 10, BW 0 + Anchor: PWR 12, BW 2 = PWR 22, BW 2
+    // Anchor in last position: +8 PWR, ×1.5 BW
+    // PWR = 22 + 8 = 30, BW = 2 × 1.5 = 3
+    assert.strictEqual(result.powerPool, 30);
+    assert.strictEqual(result.bandwidthPool, 3);
+  });
+
+  it('should not give bonus when not in last slot', () => {
+    const chips = [getChip('anchor'), getChip('battery')];
+    const result = runPipeline(chips, { weaponUsedSlots: 2 });
+    assert.strictEqual(result.powerPool, 22);
+    assert.strictEqual(result.bandwidthPool, 2);
+  });
+});
+
+describe('Spark Plug Bot (positionBonus - first)', () => {
+  it('should give bonus when in first slot', () => {
+    const chips = [getChip('sparkPlug'), getChip('battery')];
+    const result = runPipeline(chips, { weaponUsedSlots: 2 });
+    // Spark Plug: PWR 10, BW 3 + Battery: PWR 10, BW 0 = PWR 20, BW 3
+    // Spark Plug in first: ×1.8 BW = 5.4
+    assert.strictEqual(result.powerPool, 20);
+    assert.strictEqual(result.bandwidthPool, 5.4);
+    assert.strictEqual(result.finalDamage, 128);
+  });
+
+  it('should not give bonus when not in first slot', () => {
+    const chips = [getChip('battery'), getChip('sparkPlug')];
+    const result = runPipeline(chips, { weaponUsedSlots: 2 });
+    // No position bonus - just base stats
+    // Battery: PWR 10, BW 0 + Spark Plug: PWR 10, BW 3 = PWR 20, BW 3
+    assert.strictEqual(result.powerPool, 20);
+    assert.strictEqual(result.bandwidthPool, 3);
+    assert.strictEqual(result.finalDamage, 80); // 20 × (1 + 3)
+  });
+});
+
 // Run the tests
 console.log('Running pipeline chips tests...\n');

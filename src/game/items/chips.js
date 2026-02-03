@@ -661,6 +661,34 @@ function processPipelineChip(chip, state) {
       applyMult(effect.multiplier);
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
 
+    case 'positionBonus':
+      // Check if chip is in the required position (first or last)
+      const isFirst = state.currentChipIndex === 0;
+      const isLast = state.currentChipIndex === state.totalChipCount - 1;
+      const positionRequired = effect.position;
+      const positionMet = (positionRequired === 'first' && isFirst) ||
+                          (positionRequired === 'last' && isLast);
+      if (!positionMet) {
+        return {
+          chipId: chip.id,
+          chipName: chip.nameEn || chip.name,
+          triggered: false,
+          conditionFailed: true,
+          displayText: `Not in ${positionRequired} position`
+        };
+      }
+      // Apply position bonuses
+      powerAdd = effect.powerAdd || 0;
+      bandwidthAdd = effect.bandwidthAdd || 0;
+      powerMult = effect.powerMult || 1;
+      bandwidthMult = effect.bandwidthMult || 1;
+      return {
+        ...baseResult,
+        positionBonus: true,
+        position: positionRequired,
+        powerAdd, powerMult, bandwidthAdd, bandwidthMult
+      };
+
     default:
       // Unknown effect type - return no modifications
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
@@ -783,6 +811,10 @@ export function executeChipPipeline(weaponChips, context) {
 
   while (chipIndex < weaponChips.length) {
     const chip = weaponChips[chipIndex];
+
+    // Track position for positionBonus effect type
+    state.currentChipIndex = chipIndex;
+    state.totalChipCount = weaponChips.length;
 
     // Only process pipeline category chips
     if (chip.category !== 'pipeline') {
