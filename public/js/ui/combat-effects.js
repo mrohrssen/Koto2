@@ -16,19 +16,28 @@ import { animate as anime } from '../lib/anime.esm.min.js';
 
 const CONFIG = {
   shake: {
+    none: null,
     light: { intensity: 2, duration: 100 },
     medium: { intensity: 4, duration: 150 },
     heavy: { intensity: 6, duration: 200 }
   },
-  hitStop: {
-    normal: 60,
-    big: 100
-  },
-  particles: {
-    normal: 10,
-    big: 18
-  },
-  bigDamageThreshold: 150
+  // Tier-based effect configuration
+  // Tiers: 0=Chip (<10%), 1=Normal (10-20%), 2=Solid (20-35%), 3=Big (35-50%), 4=Massive (50%+)
+  tiers: {
+    thresholds: [10, 20, 35, 50], // % of enemy HP for tiers 1, 2, 3, 4
+    effects: [
+      // Tier 0: Chip
+      { shake: 'none', hitStop: 0, particles: 4, flash: 'none' },
+      // Tier 1: Normal
+      { shake: 'light', hitStop: 30, particles: 8, flash: 'none' },
+      // Tier 2: Solid
+      { shake: 'medium', hitStop: 60, particles: 12, flash: 'element' },
+      // Tier 3: Big
+      { shake: 'heavy', hitStop: 100, particles: 18, flash: 'both' },
+      // Tier 4: Massive
+      { shake: 'heavy', hitStop: 150, particles: 25, flash: 'screen2x' }
+    ]
+  }
 };
 
 // ============ UTILITY ============
@@ -40,11 +49,39 @@ const CONFIG = {
 export const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
- * Check if damage qualifies as "big hit"
- * @param {number} damage
+ * Calculate damage tier based on % of enemy max HP
+ * @param {number} damage - Damage dealt
+ * @param {number} enemyMaxHp - Enemy's maximum HP
+ * @returns {number} Tier 0-4 (Chip, Normal, Solid, Big, Massive)
+ */
+export function getDamageTier(damage, enemyMaxHp) {
+  if (!enemyMaxHp || enemyMaxHp <= 0) return 1; // Fallback to Normal
+  const percent = (damage / enemyMaxHp) * 100;
+  const thresholds = CONFIG.tiers.thresholds;
+  if (percent >= thresholds[3]) return 4; // Massive (50%+)
+  if (percent >= thresholds[2]) return 3; // Big (35-50%)
+  if (percent >= thresholds[1]) return 2; // Solid (20-35%)
+  if (percent >= thresholds[0]) return 1; // Normal (10-20%)
+  return 0; // Chip (<10%)
+}
+
+/**
+ * Check if damage qualifies as "big hit" (tier 3+)
+ * @param {number} damage - Damage dealt
+ * @param {number} enemyMaxHp - Enemy's maximum HP
  * @returns {boolean}
  */
-export const isBigDamage = (damage) => damage >= CONFIG.bigDamageThreshold;
+export const isBigDamage = (damage, enemyMaxHp) => getDamageTier(damage, enemyMaxHp) >= 3;
+
+/**
+ * Get tier name for CSS class
+ * @param {number} tier - Tier 0-4
+ * @returns {string} CSS class suffix
+ */
+export function getTierClassName(tier) {
+  const names = ['chip', 'normal', 'solid', 'big', 'massive'];
+  return names[tier] || 'normal';
+}
 
 // ============ PRIMITIVES ============
 
@@ -163,7 +200,7 @@ export function spawnParticles(sourceEl, count = 10, color = '#fff') {
 }
 
 /**
- * Spawn speed lines from source toward target
+ * Spawn speed lines from source toward target with trailing particles
  * @param {Element} fromEl - Source element
  * @param {Element} toEl - Target element
  * @param {number} count - Number of lines
@@ -184,11 +221,19 @@ export function spawnSpeedLines(fromEl, toEl, count = 4, color = 'rgba(255,255,2
   const dy = endY - startY;
   const angle = Math.atan2(dy, dx) * (180 / Math.PI);
 
+  // Extract base color for particles (strip rgba wrapper if present)
+  const particleColor = color.includes('rgba')
+    ? color.replace(/[\d.]+\)$/, '1)')
+    : color;
+
   for (let i = 0; i < count; i++) {
+    const lineY = startY + (i - count/2) * 4;
+
+    // Speed line
     const line = document.createElement('div');
     line.className = 'speed-line';
     line.style.left = `${startX}px`;
-    line.style.top = `${startY + (i - count/2) * 4}px`;
+    line.style.top = `${lineY}px`;
     line.style.transform = `rotate(${angle}deg)`;
     line.style.background = `linear-gradient(90deg, ${color}, transparent)`;
     document.body.appendChild(line);
@@ -203,6 +248,30 @@ export function spawnSpeedLines(fromEl, toEl, count = 4, color = 'rgba(255,255,2
       ease: 'outQuad',
       onComplete: () => line.remove()
     });
+
+    // Trailing particles along the path
+    const particleCount = 3;
+    for (let p = 0; p < particleCount; p++) {
+      const particle = document.createElement('div');
+      particle.className = 'energy-particle';
+      particle.style.left = `${startX}px`;
+      particle.style.top = `${lineY + (Math.random() - 0.5) * 6}px`;
+      particle.style.backgroundColor = particleColor;
+      particle.style.boxShadow = `0 0 6px ${particleColor}`;
+      document.body.appendChild(particle);
+
+      anime(particle, {
+        translateX: dx + (Math.random() - 0.5) * 10,
+        translateY: dy + (Math.random() - 0.5) * 10,
+        scale: [1, 0.3],
+        opacity: [1, 0],
+      }, {
+        duration: 250 + Math.random() * 100,
+        delay: i * 25 + p * 30,
+        ease: 'outQuad',
+        onComplete: () => particle.remove()
+      });
+    }
   }
 }
 
