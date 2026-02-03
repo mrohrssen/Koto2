@@ -889,6 +889,25 @@ describe('Ice Cream Bot (degradePerAttack)', () => {
   });
 });
 
+describe('Candle Bot (degradePerCombat)', () => {
+  it('should return combat degradation info', () => {
+    const result = runPipeline([getChip('candle')]);
+    // PWR 16, BW 5 → Damage = 16 × (1 + 5) = 96
+    assert.strictEqual(result.powerPool, 16);
+    assert.strictEqual(result.bandwidthPool, 5);
+    assert.strictEqual(result.combatDegradation?.candle, 1);
+  });
+
+  it('should use reduced BW from player chip state', () => {
+    const player = {
+      _chipDegradation: { candle: 2 } // Already lost 2 BW
+    };
+    const result = runPipeline([getChip('candle')], { player });
+    // PWR 16, BW 5 - 2 = 3 → Damage = 16 × (1 + 3) = 64
+    assert.strictEqual(result.bandwidthPool, 3);
+  });
+});
+
 describe('Pipeline Sequence Tracking', () => {
   it('should return sequence array with activate and base events', () => {
     const result = runPipeline([getChip('battery')]);

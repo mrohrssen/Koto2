@@ -624,6 +624,12 @@ function processPipelineChip(chip, state) {
       state.degradation[chip.id] = effect.degradeAmount;
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
 
+    case 'degradePerCombat':
+      // Track degradation to apply after combat ends
+      if (!state.combatDegradation) state.combatDegradation = {};
+      state.combatDegradation[chip.id] = effect.degradeAmount;
+      return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
+
     default:
       // Unknown effect type - return no modifications
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
@@ -658,7 +664,9 @@ export function executeChipPipeline(weaponChips, context) {
     powerPool: 0,
     bandwidthPool: 0,
     // Degradation tracking for degradePerAttack chips
-    degradation: {}
+    degradation: {},
+    // Degradation tracking for degradePerCombat chips (applied after combat ends)
+    combatDegradation: {}
   };
 
   // First pass: sum all chip stats into pools (with level scaling)
@@ -695,6 +703,17 @@ export function executeChipPipeline(weaponChips, context) {
           statBandwidth = Math.max(0, statBandwidth - totalDegraded);
         } else if (degradeTarget === 'power') {
           statPower = Math.max(0, statPower - totalDegraded);
+        }
+      }
+
+      // Apply persistent degradation (per-combat type) from player state
+      if (chip.effects?.pipeline?.type === 'degradePerCombat' && state.player?._chipDegradation) {
+        const persistentDegraded = state.player._chipDegradation[chip.id] || 0;
+        const degradeTarget = chip.effects.pipeline.target;
+        if (degradeTarget === 'bandwidth') {
+          statBandwidth = Math.max(0, statBandwidth - persistentDegraded);
+        } else if (degradeTarget === 'power') {
+          statPower = Math.max(0, statPower - persistentDegraded);
         }
       }
 
@@ -905,7 +924,9 @@ export function executeChipPipeline(weaponChips, context) {
     powerPool: state.powerPool,
     bandwidthPool: state.bandwidthPool,
     // Degradation tracking for degradePerAttack chips
-    degradation: state.degradation
+    degradation: state.degradation,
+    // Degradation tracking for degradePerCombat chips (applied after combat ends)
+    combatDegradation: state.combatDegradation
   };
 }
 

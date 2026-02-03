@@ -729,5 +729,35 @@
       "effect": { "freezeDegradation": true },
       "chargesRequired": 5
     }
+  },
+  "candle": {
+    "id": "candle",
+    "name": "蝋燭ボット",
+    "nameEn": "Candle Bot",
+    "description": "戦闘ごとに帯域-1。0で破壊。",
+    "descriptionEn": "Loses 1 BW after each combat. Destroyed at 0.",
+    "category": "pipeline",
+    "rarity": "rare",
+    "stats": { "power": 16, "bandwidth": 5 },
+    "effects": {
+      "pipeline": {
+        "type": "degradePerCombat",
+        "target": "bandwidth",
+        "degradeAmount": 1,
+        "destroyAtZero": true,
+        "triggerChance": 1,
+        "displayText": "-1 BW/combat"
+      }
+    },
+    "skill": {
+      "id": "lastLight",
+      "name": "最後の灯",
+      "nameEn": "Last Light",
+      "description": "残り帯域×8のダメージ",
+      "descriptionEn": "Deal remaining BW ×8 as direct damage",
+      "type": "instant",
+      "effect": { "damageFromBandwidth": true, "bwMultiplier": 8 },
+      "chargesRequired": 5
+    }
   }
 }
