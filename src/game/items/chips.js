@@ -1310,6 +1310,26 @@ export function setChipLevel(player, chipId, level) {
   player._chipLevels[chipId] = Math.max(1, Math.min(7, level));
 }
 
+/**
+ * Calculate total bonus HP from equipped chips
+ * @param {object} player - Player object with equipment and chip levels
+ * @returns {number} Total HP bonus from equipped chips
+ */
+export function calculateChipBonusHP(player) {
+  const equippedChips = getEquippedChips(player);
+  let totalHP = 0;
+
+  for (const chip of equippedChips) {
+    const baseHP = chip.stats?.hp || 0;
+    const level = getChipLevel(player, chip.id);
+    const scalingPerLevel = 0.20;
+    const scaleFactor = 1 + (level - 1) * scalingPerLevel;
+    totalHP += Math.floor(baseHP * scaleFactor);
+  }
+
+  return totalHP;
+}
+
 export function getScaledEffectValue(chip, level) {
   const effect = chip.effects?.pipeline;
   if (!effect || level <= 1) return effect?.value;

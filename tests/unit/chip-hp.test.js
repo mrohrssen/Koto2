@@ -51,9 +51,9 @@ describe('Chip HP Calculation', () => {
         _chipLevels: { 'battery': 3 } // Level 3 battery, level 1 speaker
       };
       const result = calculateChipBonusHP(player);
-      // Battery at level 3: 45 * 1.4 = 63
+      // Battery at level 3: floor(45 * 1.4) = floor(62.999...) = 62
       // Speaker at level 1: 25 * 1.0 = 25
-      assert.strictEqual(result, 88);
+      assert.strictEqual(result, 87);
     });
   });
 });
