@@ -26,19 +26,36 @@
  * loop responds to user actions via UI callbacks and API responses.
  */
 
-// Register service worker for asset caching with update checking
+// Register service worker for asset caching with forced update checking
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').then((registration) => {
-    // Check for updates on page load
+  navigator.serviceWorker.register('/sw.js', {
+    updateViaCache: 'none'  // Always fetch sw.js from network, never cache
+  }).then((registration) => {
+    // Check for updates immediately
     registration.update();
+
+    // Auto-reload when new SW takes over
+    registration.addEventListener('updatefound', () => {
+      const newWorker = registration.installing;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+          // New SW activated, reload to get fresh code
+          window.location.reload();
+        }
+      });
+    });
   });
 
   // Listen for cache cleared message
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.data === 'CACHES_CLEARED') {
-      console.log('[SW] Caches cleared, reloading...');
-      window.location.reload(true);
+      window.location.reload();
     }
+  });
+
+  // Reload when controller changes (new SW took over)
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
   });
 }
 
