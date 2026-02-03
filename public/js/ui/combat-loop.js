@@ -36,7 +36,9 @@ import {
   impactEnemyEffect,
   playerHitEffect,
   updateHpCriticalState,
-  delay as effectDelay
+  delay as effectDelay,
+  getDamageTier,
+  getTierClassName
 } from './combat-effects.js';
 
 // ============ MODULE STATE ============
@@ -231,12 +233,12 @@ async function showChipActivationSequence(pa) {
       <div class="combat-math">
         ${pa.critical ? '<span class="math-crit">CRITICAL HIT!</span><br>' : ''}
         <div class="pipeline-stats">
-          <div class="stat-box" id="pwr-box">
+          <div class="stat-box" id="pwr-box" data-pool="power">
             <span class="stat-box-label">PWR</span>
             <span class="stat-box-value" id="pwr-value">${formatNum(currentPwr)}</span>
           </div>
           <span class="stat-box-operator">×</span>
-          <div class="stat-box" id="bw-box">
+          <div class="stat-box" id="bw-box" data-pool="bandwidth">
             <span class="stat-box-label">BW</span>
             <span class="stat-box-value" id="bw-value">${bwDisplay}</span>
           </div>
@@ -266,17 +268,33 @@ async function showChipActivationSequence(pa) {
         break;
 
       case 'base':
-        // Base stats added
+        // Base stats added - fire speed lines to pools
         if (event.power) {
           currentPwr += event.power;
           updateStatValue('pwr-value', formatNum(currentPwr));
           addLogLine(`• ${event.chipName}: +${formatNum(event.power)} PWR`);
+          // Fire energy to PWR pool
+          if (chipSlot !== null) {
+            const slot = document.querySelector(`.chip-slot[data-index="${chipSlot}"]`);
+            const pwrPool = document.querySelector('[data-pool="power"]');
+            if (slot && pwrPool) {
+              fireChipEffect(slot, { stats: { power: event.power } }, { power: pwrPool });
+            }
+          }
           await delay(200);
         }
         if (event.bandwidth) {
           currentBw += event.bandwidth;
           updateStatValue('bw-value', formatBw(currentBw));
           addLogLine(`• ${event.chipName}: +${formatNum(event.bandwidth)} BW`);
+          // Fire energy to BW pool
+          if (chipSlot !== null) {
+            const slot = document.querySelector(`.chip-slot[data-index="${chipSlot}"]`);
+            const bwPool = document.querySelector('[data-pool="bandwidth"]');
+            if (slot && bwPool) {
+              fireChipEffect(slot, { stats: { bandwidth: event.bandwidth } }, { bandwidth: bwPool });
+            }
+          }
           await delay(200);
         }
         break;
@@ -568,13 +586,19 @@ export async function executePlayerAttack() {
         // Sequential chip activation with progressive math display
         await showChipActivationSequence(pa);
 
+        // Calculate damage tier for visual feedback
+        const state = getGameState();
+        const enemyMaxHp = state.combat?.enemy?.maxHp || 100;
+        const tier = getDamageTier(pa.damage, enemyMaxHp);
+        const tierClass = `dmg-${getTierClassName(tier)}`;
+
         // Show damage at same time as final damage reveal
-        showDamageNumber(pa.damage, false, pa.critical);
+        showDamageNumber(pa.damage, false, pa.critical, false, false, null, tierClass);
         animateEnemyHurt();
 
-        // Visual effects for enemy damage
+        // Visual effects for enemy damage (pass enemyMaxHp for tier-based effects)
         const enemySprite = document.getElementById('enemy-sprite');
-        await impactEnemyEffect(pa.damage, enemySprite);
+        await impactEnemyEffect(pa.damage, enemySprite, enemyMaxHp);
       }
     }
 
