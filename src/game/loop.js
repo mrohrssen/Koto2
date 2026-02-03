@@ -501,9 +501,9 @@ export class GameManager {
     // Ward selection is required at start
     this.run.wardSelectionRequired = true;
 
-    // Generate starting chip choices (priced by rarity)
+    // Generate starting chip choices (common only for starting shop)
     const ownedChipIds = (this.run.player.chips || []).map(c => c.id);
-    const startingChips = generatePostCombatShop(1, ownedChipIds);
+    const startingChips = generatePostCombatShop(1, ownedChipIds, 'common');
     this.run.startingChipShop = {
       active: true,
       items: startingChips,
@@ -591,9 +591,9 @@ export class GameManager {
       shop.freeRefreshUsed = true;
     }
 
-    // Generate new chips
+    // Generate new chips (common only for starting shop)
     const ownedChipIds = (player.chips || []).map(c => c.id);
-    shop.items = generatePostCombatShop(1, ownedChipIds);
+    shop.items = generatePostCombatShop(1, ownedChipIds, 'common');
 
     this.emitState();
 

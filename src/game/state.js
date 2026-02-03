@@ -85,7 +85,7 @@ export function createMetaProgression() {
 // ============ CONSTANTS ============
 
 /** Base starting credits for each run (before meta-progression bonuses) */
-export const BASE_STARTING_CREDITS = 250;
+export const BASE_STARTING_CREDITS = 55;
 
 // ============ UPGRADE DEFINITIONS ============
 

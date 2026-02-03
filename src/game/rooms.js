@@ -485,11 +485,12 @@ export function getRoomActions(room) {
  * Pipeline chips provide sequential damage modification during attacks
  * @param {number} floor - Current floor (1-7)
  * @param {array} ownedChipIds - IDs of chips player already owns (unique only)
+ * @param {string} rarity - Optional rarity filter (e.g., 'common')
  * @returns {Array} Array of 3 chip items with id, name, price, type, effects
  */
-export function generatePostCombatShop(floor, ownedChipIds = []) {
+export function generatePostCombatShop(floor, ownedChipIds = [], rarity = null) {
   // Only show pipeline chips in post-combat shop
-  const chips = generateShopChips(floor, ownedChipIds, 3, 'pipeline');
+  const chips = generateShopChips(floor, ownedChipIds, 3, 'pipeline', rarity);
 
   // Transform to shop item format (chips are free post-combat rewards)
   return chips.map(chip => {
