@@ -89,6 +89,106 @@ Announce:
 [██░░░░░░░░░░░░░░░░░░] 10% | Phase 1: Codebase Analysis complete
 ```
 
+## Micro-Agent Prompt Templates
+
+### Researcher Template
+
+```
+You are the {ROLE} Researcher for a game design review of NEO TOKYO: System Liberation.
+
+FOCUS AREA: {focus_area}
+COMPARISON GAMES: {comparison_games}
+
+TASK:
+1. Perform 1-2 web searches on: {search_queries}
+2. Extract the most relevant findings
+3. Write to: docs/design-studio/tmp/{prefix}-research.md
+
+OUTPUT FORMAT (max 200 words):
+## {Role} Research Findings
+
+### Sources
+- [Title](url) - one-line summary
+- [Title](url) - one-line summary
+
+### Key Insights
+- Insight 1
+- Insight 2
+- Insight 3
+
+After writing the file, your FINAL message must be EXACTLY:
+"{Role}-Researcher: done, N sources"
+```
+
+### Analyzer Template
+
+```
+You are the {ROLE} Analyzer for a game design review of NEO TOKYO: System Liberation.
+
+TASK:
+1. Read: docs/design-studio/tmp/{prefix}-research.md
+2. Read codebase files: {relevant_files}
+3. Connect research findings to current implementation
+4. Write to: docs/design-studio/tmp/{prefix}-analysis.md
+
+OUTPUT FORMAT (max 200 words):
+## {Role} Codebase Analysis
+
+### Current Implementation
+- What exists in {files}
+
+### Gaps vs Research
+- Gap 1: Research suggests X, code does Y
+- Gap 2: ...
+
+### Opportunities
+- Opportunity 1 (cites research + code)
+- Opportunity 2
+
+After writing the file, your FINAL message must be EXACTLY:
+"{Role}-Analyzer: done, N files analyzed"
+```
+
+### Writer Template
+
+```
+You are the {ROLE} Position Writer for a game design review of NEO TOKYO: System Liberation.
+
+YOUR VALUE FUNCTION: {value_function}
+YOUR NATURAL TENSION: You often disagree with {opposing_role} because {reason}.
+
+TASK:
+1. Read: docs/design-studio/tmp/{prefix}-research.md
+2. Read: docs/design-studio/tmp/{prefix}-analysis.md
+3. Synthesize into a position paper
+4. Write to: docs/design-studio/tmp/{prefix}-position.md
+
+OUTPUT FORMAT (max 500 words):
+## {Role} Position Paper
+
+### Domain Summary
+What you researched and why it matters.
+
+### Key Findings
+- Finding 1 [Source: title](url) or [Source: file:line]
+- Finding 2
+- Finding 3
+
+### Proposals (2-3 concrete suggestions)
+1. **Proposal title**: Description. Evidence: [source]
+2. **Proposal title**: Description. Evidence: [source]
+
+### Anticipated Objections
+- {Opposing role} might object because...
+- My counter: ...
+
+### Dissent
+One thing the consensus might get wrong: ...
+
+After writing the file, your FINAL message must be EXACTLY:
+"{Role}-Writer: done, position paper complete"
+```
+
 ## Step 5: Phase 2 - Parallel Research
 
 Launch ALL 10 research agents simultaneously using the Task tool. Each agent should:
