@@ -200,13 +200,13 @@ export function spawnParticles(sourceEl, count = 10, color = '#fff') {
 }
 
 /**
- * Spawn speed lines from source toward target with trailing particles
+ * Spawn an energy stream from source to target - a bright orb with a trail
  * @param {Element} fromEl - Source element
  * @param {Element} toEl - Target element
- * @param {number} count - Number of lines
- * @param {string} color - Line color (CSS)
+ * @param {number} count - Number of energy orbs to send
+ * @param {string} color - Energy color (CSS)
  */
-export function spawnSpeedLines(fromEl, toEl, count = 4, color = 'rgba(255,255,255,0.9)') {
+export function spawnSpeedLines(fromEl, toEl, count = 3, color = 'rgba(255,255,255,0.9)') {
   if (!fromEl || !toEl) return;
 
   const fromRect = fromEl.getBoundingClientRect();
@@ -219,57 +219,60 @@ export function spawnSpeedLines(fromEl, toEl, count = 4, color = 'rgba(255,255,2
 
   const dx = endX - startX;
   const dy = endY - startY;
-  const angle = Math.atan2(dy, dx) * (180 / Math.PI);
 
-  // Extract base color for particles (strip rgba wrapper if present)
-  const particleColor = color.includes('rgba')
+  // Extract solid color for particles
+  const solidColor = color.includes('rgba')
     ? color.replace(/[\d.]+\)$/, '1)')
     : color;
 
+  const duration = 300;
+
   for (let i = 0; i < count; i++) {
-    const lineY = startY + (i - count/2) * 4;
+    // Lead orb - bright and larger
+    const orb = document.createElement('div');
+    orb.className = 'energy-orb';
+    orb.style.left = `${startX}px`;
+    orb.style.top = `${startY}px`;
+    orb.style.backgroundColor = solidColor;
+    orb.style.boxShadow = `0 0 8px ${solidColor}, 0 0 16px ${solidColor}`;
+    document.body.appendChild(orb);
 
-    // Speed line
-    const line = document.createElement('div');
-    line.className = 'speed-line';
-    line.style.left = `${startX}px`;
-    line.style.top = `${lineY}px`;
-    line.style.transform = `rotate(${angle}deg)`;
-    line.style.background = `linear-gradient(90deg, ${color}, transparent)`;
-    document.body.appendChild(line);
-
-    anime(line, {
+    anime(orb, {
       translateX: dx,
       translateY: dy,
-      opacity: [1, 0],
+      scale: [1, 0.5],
     }, {
-      duration: 200,
-      delay: i * 25,
-      ease: 'outQuad',
-      onComplete: () => line.remove()
+      duration,
+      delay: i * 60,
+      ease: 'inQuad',
+      onComplete: () => {
+        orb.remove();
+        // Flash target on arrival
+        flashElement(toEl);
+      }
     });
 
-    // Trailing particles along the path
-    const particleCount = 3;
-    for (let p = 0; p < particleCount; p++) {
-      const particle = document.createElement('div');
-      particle.className = 'energy-particle';
-      particle.style.left = `${startX}px`;
-      particle.style.top = `${lineY + (Math.random() - 0.5) * 6}px`;
-      particle.style.backgroundColor = particleColor;
-      particle.style.boxShadow = `0 0 6px ${particleColor}`;
-      document.body.appendChild(particle);
+    // Trail particles - spawn along the path with delays
+    const trailCount = 5;
+    for (let t = 0; t < trailCount; t++) {
+      const trail = document.createElement('div');
+      trail.className = 'energy-trail';
+      trail.style.left = `${startX}px`;
+      trail.style.top = `${startY}px`;
+      trail.style.backgroundColor = solidColor;
+      trail.style.boxShadow = `0 0 4px ${solidColor}`;
+      document.body.appendChild(trail);
 
-      anime(particle, {
-        translateX: dx + (Math.random() - 0.5) * 10,
-        translateY: dy + (Math.random() - 0.5) * 10,
-        scale: [1, 0.3],
-        opacity: [1, 0],
+      anime(trail, {
+        translateX: dx,
+        translateY: dy,
+        scale: [0.8, 0],
+        opacity: [0.8, 0],
       }, {
-        duration: 250 + Math.random() * 100,
-        delay: i * 25 + p * 30,
-        ease: 'outQuad',
-        onComplete: () => particle.remove()
+        duration: duration - 50,
+        delay: i * 60 + t * 20,
+        ease: 'inQuad',
+        onComplete: () => trail.remove()
       });
     }
   }
@@ -347,36 +350,53 @@ export async function fireChipEffect(chipEl, chipData, poolEls = {}) {
 }
 
 /**
- * Moment 2: Enemy takes damage
+ * Moment 2: Enemy takes damage with tiered feedback
  * @param {number} damage - Damage dealt
  * @param {Element} enemyEl - Enemy sprite element
+ * @param {number} enemyMaxHp - Enemy's maximum HP (for tier calculation)
  */
-export async function impactEnemyEffect(damage, enemyEl) {
-  const big = isBigDamage(damage);
+export async function impactEnemyEffect(damage, enemyEl, enemyMaxHp = 0) {
+  const tier = getDamageTier(damage, enemyMaxHp);
+  const effects = CONFIG.tiers.effects[tier];
 
-  // 1. Hit stop
-  await hitStop(big ? CONFIG.hitStop.big : CONFIG.hitStop.normal);
+  // 1. Hit stop (scaled by tier)
+  if (effects.hitStop > 0) {
+    await hitStop(effects.hitStop);
+  }
 
-  // 2. Flash enemy
-  if (enemyEl) {
+  // 2. Flash enemy (tier 2+)
+  if (enemyEl && effects.flash !== 'none') {
     flashElement(enemyEl);
   }
 
-  // 3. Screen shake
-  screenShake(big ? 'heavy' : 'medium');
+  // 3. Screen shake (tier 1+)
+  if (effects.shake !== 'none') {
+    screenShake(effects.shake);
+    // Tier 4: Extra shake after brief delay
+    if (tier === 4) {
+      await delay(100);
+      screenShake('medium');
+    }
+  }
 
   // 4. Particles burst from enemy
   if (enemyEl) {
-    spawnParticles(enemyEl, big ? CONFIG.particles.big : CONFIG.particles.normal, '#e74c3c');
+    // Higher tier = brighter particle color
+    const colors = ['#999', '#e74c3c', '#0ff', '#0ff', '#ffd700'];
+    spawnParticles(enemyEl, effects.particles, colors[tier]);
   }
 
-  // 5. Enemy recoils
+  // 5. Enemy recoils (scaled by tier)
   if (enemyEl) {
-    recoil(enemyEl, big ? 10 : 5, 'right');
+    const recoilDistance = [2, 4, 6, 8, 12][tier];
+    recoil(enemyEl, recoilDistance, 'right');
   }
 
-  // 6. Big damage: double flash
-  if (big) {
+  // 6. Screen flash based on tier
+  if (effects.flash === 'both') {
+    await delay(50);
+    flashScreen(1);
+  } else if (effects.flash === 'screen2x') {
     await delay(50);
     flashScreen(2);
   }
