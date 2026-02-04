@@ -64,8 +64,8 @@
     "id": "glasses",
     "name": "眼鏡ボット",
     "nameEn": "Glasses Bot",
-    "description": "攻撃ごとに+0.3帯域。観察眼！",
-    "descriptionEn": "+0.3 BW per hit. Studies enemies carefully!",
+    "description": "攻撃ごとに+3パワー。観察眼！",
+    "descriptionEn": "+3 PWR per hit. Studies enemies carefully!",
     "category": "pipeline",
     "rarity": "uncommon",
     "archetype": "amplifier",
@@ -73,10 +73,10 @@
     "effects": {
       "pipeline": {
         "type": "rampingMultiply",
-        "target": "bandwidth",
-        "value": 0.3,
+        "target": "power",
+        "value": 3,
         "triggerChance": 1,
-        "displayText": "+0.3 BW/hit"
+        "displayText": "+3 PWR/hit"
       }
     },
     "skill": {
