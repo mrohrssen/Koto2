@@ -60,7 +60,7 @@ export async function openSettings() {
       <label class="settings-label" style="margin-top:12px">
         Bunpro Token
         <input type="password" id="settings-bunpro-token" class="settings-input"
-          placeholder="${settingsModule.hasBunproToken?.() ? '••••••••' : 'Enter Bunpro token'}">
+          placeholder="${keyInfo.hasBunproToken ? '••••••••' : 'Enter Bunpro token'}">
         <small style="color:#888;font-size:0.85em">For grammar reviews. Find at bunpro.jp → Settings → API</small>
       </label>
       <label class="settings-label" style="margin-top:12px">
@@ -149,6 +149,7 @@ export async function openSettings() {
     // Save API keys to server (only send non-empty values)
     const keysToSave = {};
     if (jpdbKey) keysToSave.jpdbApiKey = jpdbKey;
+    if (bunproToken) keysToSave.bunproToken = bunproToken;
     if (aiKey) keysToSave.aiApiKey = aiKey;
     if (aiProvider) keysToSave.aiProvider = aiProvider;
     if (model) keysToSave.openaiModel = model;
@@ -166,9 +167,6 @@ export async function openSettings() {
     }
 
     // Save local-only settings
-    if (bunproToken && settingsModule.setBunproToken) {
-      settingsModule.setBunproToken(bunproToken);
-    }
     if (settingsModule.setTtsEnabled) {
       settingsModule.setTtsEnabled(ttsEnabled);
     }

@@ -217,20 +217,6 @@ app.use(cors());
 app.use(compression()); // Gzip/Brotli compression for all responses
 app.use(express.json({ limit: '10mb' })); // Increased for bug report screenshots
 
-// Extract Bunpro token from header or body
-app.use((req, res, next) => {
-  // Check header first (preferred - used by frontend)
-  const headerToken = req.headers['x-bunpro-token'];
-  if (headerToken) {
-    req.bunproToken = headerToken;
-  }
-  // Also check body (fallback)
-  else if (req.body && req.body.bunproToken) {
-    req.bunproToken = req.body.bunproToken;
-  }
-  next();
-});
-
 // Static files - only cache webp images, load everything else fresh
 app.use(express.static(join(__dirname, 'public'), {
   maxAge: 0,              // No caching by default

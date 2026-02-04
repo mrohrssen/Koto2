@@ -7,7 +7,6 @@
  */
 
 import { logger } from './logger.js';
-import { getBunproToken } from './settings.js';
 
 // ============ CORE API WRAPPER ============
 
@@ -279,13 +278,9 @@ async function quizReward(rewardType) {
 /** Get a quiz question (may be from Bunpro or static) */
 async function getQuizQuestion() {
   try {
-    const bunproToken = getBunproToken();
     const response = await fetch('/api/game/quiz-question', {
       method: 'GET',
-      headers: {
-        ...getAuthHeaders(),
-        ...(bunproToken ? { 'X-Bunpro-Token': bunproToken } : {})
-      }
+      headers: getAuthHeaders()
     });
     const data = await response.json();
 
@@ -306,13 +301,9 @@ async function getQuizQuestion() {
 /** Submit quiz answer for validation */
 async function submitQuizAnswer(questionId, selectedIndex, bunproMeta = null) {
   try {
-    const bunproToken = getBunproToken();
     const response = await fetch('/api/game/quiz-answer', {
       method: 'POST',
-      headers: {
-        ...getAuthHeaders(),
-        ...(bunproToken ? { 'X-Bunpro-Token': bunproToken } : {})
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify({
         questionId,
         selectedIndex,

@@ -122,7 +122,8 @@ export default function createAuthRoutes(options = {}) {
       openrouterModel: '',
       jlptLevel: 'N4',
       hasJpdbKey: false,
-      hasAiKey: false
+      hasAiKey: false,
+      hasBunproToken: false
     };
     if (user.encryptedApiKeys) {
       try {
@@ -133,7 +134,8 @@ export default function createAuthRoutes(options = {}) {
           openrouterModel: keys.openrouterModel || '',
           jlptLevel: keys.jlptLevel || 'N4',
           hasJpdbKey: !!keys.jpdbApiKey,
-          hasAiKey: !!keys.aiApiKey
+          hasAiKey: !!keys.aiApiKey,
+          hasBunproToken: !!keys.bunproToken
         };
       } catch {
         // Keep defaults on decryption failure
@@ -145,7 +147,7 @@ export default function createAuthRoutes(options = {}) {
 
   // PUT /api/auth/api-keys
   function updateKeys(req, res) {
-    const { jpdbApiKey, aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel } = req.body;
+    const { jpdbApiKey, aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel, bunproToken } = req.body;
     const keys = {};
     if (jpdbApiKey !== undefined) keys.jpdbApiKey = jpdbApiKey;
     if (aiApiKey !== undefined) keys.aiApiKey = aiApiKey;
@@ -153,6 +155,7 @@ export default function createAuthRoutes(options = {}) {
     if (openaiModel !== undefined) keys.openaiModel = openaiModel;
     if (openrouterModel !== undefined) keys.openrouterModel = openrouterModel;
     if (jlptLevel !== undefined) keys.jlptLevel = jlptLevel;
+    if (bunproToken !== undefined) keys.bunproToken = bunproToken;
 
     // Merge with existing keys (partial update)
     const user = findUserById(req.user.id, usersFile);
