@@ -250,7 +250,7 @@ export function createNewPlayer(name = "Hunter") {
     class: 'hacker',
     hp: 100,
     maxHp: 100,
-    attack: 15,
+    attack: 0,
     credits: BASE_STARTING_CREDITS,
     chips: [],
     equipment: getClassStartingEquipment('hacker')

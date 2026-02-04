@@ -21,10 +21,10 @@ export function getPlayerCombatStats(player) {
     maxHp: player.maxHp,
     sp: player.sp || 0,
     maxSp: player.maxSp || 0,
-    atk: player.attack || 10,  // Use simplified attack stat
+    atk: player.attack || 0,  // Damage comes from chips only
     // Stub out old stats for compatibility
     def: 0,
-    matk: player.attack || 10,
+    matk: player.attack || 0,
     mdef: 0,
     hit: 100,
     flee: 0,
@@ -64,9 +64,9 @@ export function getEnemyCombatStats(enemy) {
  * No hit/miss, no crits, no defense
  */
 export function resolvePhysicalAttack(attacker, defender, skillMultiplier = 1.0, armorPen = 0) {
-  // Simplified: always hits, damage = atk * variance
+  // Simplified: always hits, damage = atk * variance (base attack is 0, chips provide all damage)
   const variance = 0.85 + Math.random() * 0.30;  // 0.85 to 1.15
-  const damage = Math.max(1, Math.floor(attacker.atk * skillMultiplier * variance));
+  const damage = Math.floor(attacker.atk * skillMultiplier * variance);
 
   return {
     hit: true,
@@ -86,9 +86,9 @@ export function resolvePhysicalAttack(attacker, defender, skillMultiplier = 1.0,
  */
 export function resolveMagicAttack(attacker, defender, skillMultiplier = 1.0) {
   // Simplified: use atk (or matk if available) with variance
-  const baseAtk = attacker.matk || attacker.atk || 10;
+  const baseAtk = attacker.matk || attacker.atk || 0;
   const variance = 0.85 + Math.random() * 0.30;
-  const damage = Math.max(1, Math.floor(baseAtk * skillMultiplier * variance));
+  const damage = Math.floor(baseAtk * skillMultiplier * variance);
 
   return {
     hit: true,
