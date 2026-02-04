@@ -497,17 +497,6 @@ function showGameOverModal(result) {
 }
 
 // ============ FLASH CARD HANDLERS ============
-function handleCardSwipe(direction) {
-  // Word discovery mode uses its own handler via custom event
-  if (gameState.phase === 'wordDiscovery') {
-    document.dispatchEvent(new CustomEvent('discovery-card-swiped', { detail: direction }));
-    return;
-  }
-  // Combat mode: grade based on swipe direction
-  const grade = direction === 'right' ? 4 : 1;
-  wordPractice.submitSelfGradeReview(grade);
-}
-
 function handleCardFlip() {
   if (currentFlashCardWord?.word) {
     tts.speakText(currentFlashCardWord.word);
@@ -815,8 +804,38 @@ async function initGame() {
   actions.init({
     equipBots: () => openChipEquipView(),
     contextAction: null,
-    cardSwipe: handleCardSwipe,
+    cardSwipe: (direction) => {
+      // Word discovery mode uses its own handler via custom event
+      if (gameState.phase === 'wordDiscovery') {
+        document.dispatchEvent(new CustomEvent('discovery-card-swiped', { detail: direction }));
+        return;
+      }
+      // Combat mode: grade based on swipe direction and pass action type
+      const grade = direction === 'right' ? 4 : 1;
+      const actionType = window._pendingCombatAction || 'attack';
+      window._pendingCombatAction = null; // Clear after use
+      combatLoopUI.resumeCombatAfterVocab(grade, actionType);
+    },
     cardFlip: handleCardFlip,
+    dualCardSelect: (actionType, selectedWord) => {
+      // Store the action type for when review completes
+      window._pendingCombatAction = actionType;
+
+      // Get both words to return the unchosen one
+      const words = wordPractice.getTwoCombatWords();
+      const unchosenWord = actionType === 'attack' ? words.defendWord : words.attackWord;
+
+      // Return unchosen word to pool
+      if (unchosenWord) {
+        wordPractice.returnWordToPool(unchosenWord);
+      }
+
+      // Remove selected word from queue
+      wordPractice.removeWordFromCombatQueue(selectedWord);
+
+      // Show selected word as regular flash card for review
+      actions.showFlashCard(selectedWord);
+    },
   });
 
   chipRow.init({
@@ -932,6 +951,7 @@ async function initGame() {
       currentFlashCardWord = word;
       actions.showFlashCard(word);
     },
+    showDualFlashCards: actions.showDualFlashCards,
     setCombatAnimationActive: (active) => { combatAnimationActive = active; },
   });
 
