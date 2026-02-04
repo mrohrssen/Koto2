@@ -48,6 +48,27 @@ export default function createVocabRoutes({ getSettings }) {
     });
   });
 
+  /**
+   * GET /api/vocab/due-words
+   * Fetch due/failed words for speed review
+   */
+  router.get('/vocab/due-words', requireAuth, attachUserKeys, async (req, res) => {
+    const jpdbApiKey = req.userKeys?.jpdbApiKey;
+
+    if (!jpdbApiKey) {
+      return res.json({ words: [], error: 'JPDB API key not configured' });
+    }
+
+    try {
+      const { getDueWordsWithMeanings } = await import('../jpdb.js');
+      const result = await getDueWordsWithMeanings(jpdbApiKey);
+      res.json(result);
+    } catch (error) {
+      console.error('[vocab/due-words] Error:', error);
+      res.json({ words: [], error: error.message });
+    }
+  });
+
   // Parse text with JPDB
   router.post('/jpdb/parse', optionalAuth, attachUserKeys, async (req, res) => {
     const { text } = req.body;
