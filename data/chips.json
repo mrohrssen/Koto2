@@ -785,12 +785,12 @@
       "chargesRequired": 5
     }
   },
-  "commoner": {
-    "id": "commoner",
-    "name": "庶民ボット",
-    "nameEn": "Commoner Bot",
-    "description": "コモンチップ1つにつき+2帯域。庶民の力！",
-    "descriptionEn": "+2 BW per common chip equipped. People power!",
+  "goldStar": {
+    "id": "goldStar",
+    "name": "金星ボット",
+    "nameEn": "Gold Star Bot",
+    "description": "レジェンダリーチップ1つにつき+1帯域。一流を集めろ！",
+    "descriptionEn": "+1 BW per legendary chip equipped. Collect the best!",
     "category": "pipeline",
     "rarity": "common",
     "archetype": "trickster",
@@ -799,21 +799,21 @@
       "pipeline": {
         "type": "rarityBonus",
         "target": "bandwidth",
-        "targetRarity": "common",
-        "valuePerChip": 2,
+        "targetRarity": "legendary",
+        "valuePerChip": 1,
         "triggerChance": 1,
-        "displayText": "+2 BW/common"
+        "displayText": "+1 BW/legendary"
       }
     },
     "skill": {
       "id": "strengthInNumbers",
       "name": "数の力",
       "nameEn": "Strength in Numbers",
-      "description": "コモンチップ1つにつき+5ダメージ",
-      "descriptionEn": "+5 damage per common chip",
+      "description": "レジェンダリーチップ1つにつき+5ダメージ",
+      "descriptionEn": "+5 damage per legendary chip",
       "type": "buff",
       "buffType": "PRE_PIPELINE",
-      "effect": { "flatBonusPerRarity": 5, "targetRarity": "common" },
+      "effect": { "flatBonusPerRarity": 5, "targetRarity": "legendary" },
       "chargesRequired": 5
     }
   },

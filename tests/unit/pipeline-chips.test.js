@@ -48,7 +48,7 @@ describe('Pipeline Chip Definitions', () => {
       'magnifyingGlass', 'toolbox',
       // 12 new build-variety chips
       'needle', 'adrenaline', 'duo', 'iceCream', 'candle',
-      'commoner', 'underdog', 'anchor', 'sparkPlug', 'leech',
+      'goldStar', 'underdog', 'anchor', 'sparkPlug', 'leech',
       'vampire', 'overclocked'
     ];
 
@@ -70,7 +70,7 @@ describe('Pipeline Chip Definitions', () => {
       'magnifyingGlass', 'toolbox',
       // 12 new build-variety chips
       'needle', 'adrenaline', 'duo', 'iceCream', 'candle',
-      'commoner', 'underdog', 'anchor', 'sparkPlug', 'leech',
+      'goldStar', 'underdog', 'anchor', 'sparkPlug', 'leech',
       'vampire', 'overclocked'
     ];
 
@@ -885,37 +885,44 @@ describe('Edge Cases', () => {
   });
 });
 
-describe('Commoner Bot (rarityBonus)', () => {
-  it('should add BW per common chip', () => {
-    // Commoner is common, battery is common, onigiri is common
-    const chips = [getChip('commoner'), getChip('battery'), getChip('onigiri')];
-    const result = runPipeline(chips, {
-      equippedChipRarities: ['common', 'common', 'common']
-    });
-    // Commoner: PWR 8, BW 1 + Battery: PWR 10, BW 0 + Onigiri: PWR 9, BW 0
-    // Total base: PWR 27, BW 1
-    // Commoner effect: +2 BW × 3 common = +6 BW
-    // Total: PWR 27, BW 7
-    // Damage = 27 × (1 + 7) = 216
-    assert.strictEqual(result.bandwidthPool, 7);
-    assert.strictEqual(result.finalDamage, 216);
+describe('Gold Star Bot (rarityBonus)', () => {
+  it('should add BW per legendary chip', () => {
+    // Gold Star is common, clock and mirror are legendary
+    const chips = [getChip('goldStar'), getChip('clock'), getChip('mirror')];
+    const originalRandom = Math.random;
+    Math.random = () => 0.99; // Prevent clock recursion and mirror copy
+
+    try {
+      const result = runPipeline(chips, {
+        equippedChipRarities: ['common', 'legendary', 'legendary']
+      });
+      // Gold Star: PWR 8, BW 0 + Clock: PWR 18, BW 0 + Mirror: PWR 18, BW 0
+      // Total base: PWR 44, BW 0
+      // Gold Star effect: +1 BW × 2 legendary = +2 BW
+      // Total: PWR 44, BW 2
+      // Damage = 44 × (1 + 2) = 132
+      assert.strictEqual(result.bandwidthPool, 2);
+      assert.strictEqual(result.finalDamage, 132);
+    } finally {
+      Math.random = originalRandom;
+    }
   });
 
-  it('should not count non-common chips', () => {
+  it('should not count non-legendary chips', () => {
     const originalRandom = Math.random;
     Math.random = () => 0.99; // Prevent speaker's 80% effect from triggering
 
     try {
-      const chips = [getChip('commoner'), getChip('speaker')]; // speaker is rare
+      const chips = [getChip('goldStar'), getChip('speaker')]; // speaker is rare
       const result = runPipeline(chips, {
         equippedChipRarities: ['common', 'rare']
       });
-      // Only 1 common chip (commoner itself)
-      // Commoner: PWR 8, BW 1 + Speaker: PWR 10, BW 3
-      // Total base: PWR 18, BW 4
-      // Commoner effect: +2 BW × 1 common = +2 BW
-      // Total: PWR 18, BW 6
-      assert.strictEqual(result.bandwidthPool, 6);
+      // No legendary chips, no bonus
+      // Gold Star: PWR 8, BW 0 + Speaker: PWR 10, BW 0
+      // Total base: PWR 18, BW 0
+      // Gold Star effect: +1 BW × 0 legendary = +0 BW
+      // Total: PWR 18, BW 0
+      assert.strictEqual(result.bandwidthPool, 0);
     } finally {
       Math.random = originalRandom;
     }
