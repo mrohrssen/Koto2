@@ -24,6 +24,9 @@
  * - scene module: For narration display
  */
 
+import * as speedReview from './speed-review.js';
+import { playSFX } from '../audio.js';
+
 let getGameState = null;
 let updateGameState = null;
 let updateUI = null;
@@ -75,6 +78,9 @@ let apiPostCombatRefresh = null;
 // Branch selection API
 let apiSelectBranch = null;
 
+// Speed review API
+let apiGetDueWords = null;
+
 export function init(callbacks) {
   getGameState = callbacks.getGameState;
   updateGameState = callbacks.updateGameState;
@@ -104,16 +110,37 @@ export function init(callbacks) {
   apiSwipeWord = callbacks.apiSwipeWord;
   apiPostCombatRefresh = callbacks.apiPostCombatRefresh;
   apiSelectBranch = callbacks.apiSelectBranch;
+  apiGetDueWords = callbacks.apiGetDueWords;
 }
 
-/** Hub phase — show Equip Bots + Infiltrate buttons */
+/** Hub phase — show Speed Review + Equip Bots + Infiltrate buttons */
 export function renderHub() {
-  actions.showButtons('潜入');
-  // Override the context action for this phase
-  const btn = document.getElementById('context-action-btn');
-  if (btn) {
-    btn.onclick = () => startNewRun();
-  }
+  actions.setContent(`
+    <button class="action-btn action-btn-tertiary" id="speed-review-btn">速習</button>
+    <button class="action-btn action-btn-primary" id="equip-bots-btn">ボット装備</button>
+    <button class="action-btn action-btn-secondary" id="context-action-btn">潜入</button>
+  `);
+
+  document.getElementById('speed-review-btn')?.addEventListener('click', async () => {
+    playSFX('button-tap');
+    // Fetch due words and start speed review
+    const result = await apiGetDueWords();
+    if (result?.words?.length > 0) {
+      speedReview.start(result.words);
+    } else {
+      sceneModule.showNarration('復習する言葉がありません', { autoDismiss: 2000 });
+    }
+  });
+
+  document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
+    playSFX('button-tap');
+    if (actions.triggerEquipBots) actions.triggerEquipBots();
+  });
+
+  document.getElementById('context-action-btn')?.addEventListener('click', () => {
+    playSFX('button-tap');
+    startNewRun();
+  });
 }
 
 /** Ward selection — show ward cards, proceed button */
