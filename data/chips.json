@@ -33,8 +33,8 @@
     "id": "speaker",
     "name": "スピーカーボット",
     "nameEn": "Speaker Bot",
-    "description": "80%で帯域×1.2倍。ダメージを増幅！",
-    "descriptionEn": "80% chance to x1.2 BW. Amplifies your damage!",
+    "description": "80%でパワー×1.2倍。ダメージを増幅！",
+    "descriptionEn": "80% chance to x1.2 PWR. Amplifies your damage!",
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "amplifier",
@@ -42,10 +42,10 @@
     "effects": {
       "pipeline": {
         "type": "multiply",
-        "target": "bandwidth",
+        "target": "power",
         "value": 1.2,
         "triggerChance": 0.8,
-        "displayText": "×1.2 BW"
+        "displayText": "×1.2 PWR"
       }
     },
     "skill": {
