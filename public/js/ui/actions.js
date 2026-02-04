@@ -7,12 +7,15 @@
  * In combat, displays swipeable flash cards for vocabulary review.
  *
  * KEY EXPORTS:
- * - init({ equipBots, contextAction, cardSwipe, cardFlip }): Set up callbacks
+ * - init({ equipBots, contextAction, cardSwipe, cardFlip, dualCardSelect }): Set up callbacks
  * - showButtons(contextLabel, options): Display action buttons
  * - showFlashCard(word, options): Display swipeable vocabulary card (combat or discovery mode)
+ * - showDualFlashCards(attackWord, defendWord): Display dual cards for attack/defend selection
  * - triggerEquipBots(): Programmatically trigger equip callback
  * - clear(): Empty the action area
  * - setContent(html): Set custom HTML content
+ * - getSelectedActionType(): Get the action type selected from dual cards
+ * - clearSelectedActionType(): Clear the selected action type
  *
  * DEPENDENCIES:
  * - ../dom.js: DOM element references
@@ -32,6 +35,8 @@ let onEquipBots = null;
 let onContextAction = null;
 let onCardSwipe = null; // (direction: 'left'|'right') => void
 let onCardFlip = null;  // () => void
+let onDualCardSelect = null; // (actionType: 'attack'|'defend', word: object) => void
+let selectedActionType = null; // Track which card was selected
 
 // Swipe state
 let touchStartX = 0;
@@ -43,11 +48,12 @@ let cardFlipped = false;
 const SWIPE_THRESHOLD = 80;
 
 /** Initialize action area callbacks */
-export function init({ equipBots, contextAction, cardSwipe, cardFlip }) {
+export function init({ equipBots, contextAction, cardSwipe, cardFlip, dualCardSelect }) {
   onEquipBots = equipBots;
   onContextAction = contextAction;
   onCardSwipe = cardSwipe;
   onCardFlip = cardFlip;
+  onDualCardSelect = dualCardSelect;
 
   // Test hook: allows E2E tests to trigger swipe without mouse/touch gestures
   document.addEventListener('test-swipe', (e) => {
@@ -165,6 +171,66 @@ export function clear() {
 /** Show custom content in action area */
 export function setContent(html) {
   dom.actionArea.innerHTML = html;
+}
+
+/**
+ * Get the action type selected from dual cards
+ * @returns {'attack'|'defend'|null}
+ */
+export function getSelectedActionType() {
+  return selectedActionType;
+}
+
+/**
+ * Clear the selected action type
+ */
+export function clearSelectedActionType() {
+  selectedActionType = null;
+}
+
+/**
+ * Show dual flash cards (combat mode - Attack/Defend selection)
+ * @param {Object} attackWord - Word for attack card { word, meanings, reading }
+ * @param {Object} defendWord - Word for defend card { word, meanings, reading }
+ */
+export function showDualFlashCards(attackWord, defendWord) {
+  selectedActionType = null;
+
+  dom.actionArea.innerHTML = `
+    <div class="dual-flash-card-container" id="dual-flash-card-container">
+      <div class="dual-card-wrapper">
+        <div class="dual-card-label attack">Attack</div>
+        <div class="dual-flash-card attack" id="attack-card" data-action="attack">
+          ${escapeHtml(attackWord.word)}
+        </div>
+      </div>
+      <div class="dual-card-wrapper">
+        <div class="dual-card-label defend">Defend</div>
+        <div class="dual-flash-card defend" id="defend-card" data-action="defend">
+          ${escapeHtml(defendWord.word)}
+        </div>
+      </div>
+    </div>
+  `;
+
+  const attackCard = document.getElementById('attack-card');
+  const defendCard = document.getElementById('defend-card');
+
+  attackCard.addEventListener('click', () => {
+    selectedActionType = 'attack';
+    playSFX('button-tap');
+    const container = document.getElementById('dual-flash-card-container');
+    if (container) container.remove();
+    if (onDualCardSelect) onDualCardSelect('attack', attackWord);
+  });
+
+  defendCard.addEventListener('click', () => {
+    selectedActionType = 'defend';
+    playSFX('button-tap');
+    const container = document.getElementById('dual-flash-card-container');
+    if (container) container.remove();
+    if (onDualCardSelect) onDualCardSelect('defend', defendWord);
+  });
 }
 
 // --- Touch handlers ---
