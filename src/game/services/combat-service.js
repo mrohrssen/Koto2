@@ -138,9 +138,10 @@ export class CombatService {
    * Execute one combat cycle (vocab-pause turn-based combat)
    * Each cycle processes one attack (player or enemy) and returns updated state
    * @param {string} attackerType - 'player' or 'enemy'
+   * @param {string} actionType - 'attack' or 'defend'
    * @returns {object} Result with attack data, HP values, and combat status
    */
-  executeCombatCycle(attackerType = 'player') {
+  executeCombatCycle(attackerType = 'player', actionType = 'attack') {
     if (!this.gm.combat?.active) {
       logger.warn('[Combat] Attempted action on inactive combat');
       throw new Error('No active combat');
@@ -365,9 +366,10 @@ export class CombatService {
         return result;
       }
     } else if (attackerType === 'enemy') {
-      // Enemy attack
-      const enemyResult = executeEnemyTurn(this.gm.combat.enemy, this.gm.run.player, { id: 'attack', damageMultiplier: 1.0 });
-      logger.info('[Combat] Enemy attacked:', { damage: enemyResult.damage, playerHp: this.gm.run.player.hp });
+      // Enemy attack - apply defend reduction via damage multiplier
+      const damageMultiplier = actionType === 'defend' ? 0.5 : 1.0;
+      const enemyResult = executeEnemyTurn(this.gm.combat.enemy, this.gm.run.player, { id: 'attack', damageMultiplier });
+      logger.info('[Combat] Enemy attacked:', { damage: enemyResult.damage, playerHp: this.gm.run.player.hp, defending: actionType === 'defend' });
       result.enemyAttack = {
         damage: enemyResult.damage,
         critical: enemyResult.critical,
@@ -385,6 +387,11 @@ export class CombatService {
       // Track dodges for counter chips
       if (this.gm.run.runStats && (enemyResult.dodge || enemyResult.perfectDodge)) {
         this.gm.run.runStats.dodges++;
+      }
+
+      // On defend, still increment chip charges (skill charging is core mechanic)
+      if (actionType === 'defend') {
+        incrementAllEquippedCharges(this.gm.run.player);
       }
 
       // Check if player defeated

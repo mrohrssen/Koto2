@@ -20,9 +20,9 @@ export default function createCombatRoutes({
   // Combat cycle (vocab-pause turn-based)
   router.post('/combat-cycle', (req, res) => {
     const gameManager = req.gameManager;
-    const { attackerType } = req.body;
+    const { attackerType, actionType } = req.body;
     try {
-      const result = gameManager.combatCycle(attackerType || 'player');
+      const result = gameManager.combatCycle(attackerType || 'player', actionType);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {

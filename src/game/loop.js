@@ -752,10 +752,11 @@ export class GameManager {
   /**
    * Execute one combat cycle (vocab-pause turn-based combat)
    * @param {string} attackerType - 'player' or 'enemy'
+   * @param {string} actionType - 'attack' or 'defend'
    * @returns {object} Result with attack data, HP values, and combat status
    */
-  combatCycle(attackerType = 'player') {
-    return this.combatService.executeCombatCycle(attackerType);
+  combatCycle(attackerType = 'player', actionType = 'attack') {
+    return this.combatService.executeCombatCycle(attackerType, actionType);
   }
 
   // ============ COMBAT RESOLUTION ============
