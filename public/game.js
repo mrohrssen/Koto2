@@ -176,6 +176,9 @@ let chipLoadoutCache = null;
 // Saved player position for returning to room after combat
 let savedPlayerPosition = null;
 
+// Combat batch tracking for JPDB refresh
+let combatReviewedBatch = [];
+
 // ============ UTILITY ============
 function escapeHtml(str) {
   const div = document.createElement('div');
@@ -474,6 +477,12 @@ function resumeCombatAfterVocab() { combatLoopUI.resumeCombatAfterVocab(); }
 function showVictoryModal(result) {
   audio.stopBGM();
   narrationBox.show('Victory!', { autoDismiss: 2000 });
+
+  // Trigger batch refresh on combat end if any pending reviews
+  if (combatReviewedBatch.length > 0) {
+    apiGetDueWords().catch(e => console.warn('[Combat] End batch refresh failed:', e));
+    combatReviewedBatch = [];
+  }
   setTimeout(async () => {
     await loadGameState();
     updateUI();
@@ -483,6 +492,13 @@ function showVictoryModal(result) {
 function showGameOverModal(result) {
   audio.stopBGM();
   audio.playSFX('defeat');
+
+  // Trigger batch refresh on combat end if any pending reviews
+  if (combatReviewedBatch.length > 0) {
+    apiGetDueWords().catch(e => console.warn('[Combat] End batch refresh failed:', e));
+    combatReviewedBatch = [];
+  }
+
   chipLoadoutCache = null;
   updateChipRow();
   takeover.open('gameover');
@@ -832,6 +848,20 @@ async function initGame() {
       if (reviewWord?.vid !== undefined && reviewWord?.sid !== undefined) {
         console.log('[JPDB Review] Sending review:', { vid: reviewWord.vid, sid: reviewWord.sid, grade });
         apiSendJpdbReview(reviewWord.vid, reviewWord.sid, grade);
+
+        // Track reviews for batch refresh
+        combatReviewedBatch.push(reviewWord);
+
+        // Check for batch refresh (every 50 reviews)
+        if (combatReviewedBatch.length >= 50) {
+          // Fire and forget - refresh queue in background
+          apiGetDueWords().then(result => {
+            if (result?.words) {
+              console.log('[Combat] Batch refresh: got', result.words.length, 'fresh words');
+            }
+          }).catch(e => console.warn('[Combat] Batch refresh failed:', e));
+          combatReviewedBatch = [];
+        }
       } else {
         console.warn('[JPDB Review] Missing vid/sid, cannot send review:', reviewWord);
       }
