@@ -217,6 +217,14 @@ app.use(cors());
 app.use(compression()); // Gzip/Brotli compression for all responses
 app.use(express.json({ limit: '10mb' })); // Increased for bug report screenshots
 
+// Extract API tokens from request body to req object for easy access
+app.use((req, res, next) => {
+  if (req.body && req.body.bunproToken) {
+    req.bunproToken = req.body.bunproToken;
+  }
+  next();
+});
+
 // Static files - only cache webp images, load everything else fresh
 app.use(express.static(join(__dirname, 'public'), {
   maxAge: 0,              // No caching by default
