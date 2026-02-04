@@ -196,6 +196,63 @@ export function getNextCombatWord() {
   return combatWords[selectedWordIndex] || combatWords[0];
 }
 
+/**
+ * Get two different words from combat queue for dual flash cards
+ * @returns {Object} { attackWord, defendWord } or { attackWord: null, defendWord: null }
+ */
+export function getTwoCombatWords() {
+  // Need at least 2 words in combatWords or available pool
+  const allWords = [...combatWords, ...availableWords];
+
+  if (allWords.length < 2) {
+    // Not enough words - return what we have or null
+    return {
+      attackWord: allWords[0] || null,
+      defendWord: allWords[1] || null
+    };
+  }
+
+  // Pick two different words
+  const attackWord = combatWords[0] || availableWords[0];
+  const defendWord = combatWords[1] || availableWords[0] || combatWords[0];
+
+  return { attackWord, defendWord };
+}
+
+/**
+ * Return an unchosen word back to the available pool
+ * @param {Object} word - Word object to return to pool
+ */
+export function returnWordToPool(word) {
+  if (!word) return;
+
+  // Don't add duplicates
+  const existsInCombat = combatWords.some(w => w.word === word.word);
+  const existsInAvailable = availableWords.some(w => w.word === word.word);
+
+  if (!existsInCombat && !existsInAvailable) {
+    availableWords.push(word);
+    console.log(`[WordPractice] Returned word to pool: ${word.word}`);
+  }
+}
+
+/**
+ * Remove a specific word from the combat queue (after selection)
+ * @param {Object} word - Word object to remove
+ */
+export function removeWordFromCombatQueue(word) {
+  if (!word) return;
+
+  const combatIndex = combatWords.findIndex(w => w.word === word.word);
+  if (combatIndex !== -1) {
+    combatWords.splice(combatIndex, 1);
+  }
+
+  const availIndex = availableWords.findIndex(w => w.word === word.word);
+  if (availIndex !== -1) {
+    availableWords.splice(availIndex, 1);
+  }
+}
 
 /**
  * Render word cards to DOM
