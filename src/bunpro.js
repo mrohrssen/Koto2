@@ -5,6 +5,8 @@
  * Uses same rate limiting pattern as jpdb.js.
  */
 
+import { logger } from './logger.js';
+
 const BUNPRO_API_BASE = 'https://api.bunpro.jp';
 
 // Rate limiting
@@ -19,6 +21,7 @@ let circuitBreaker = {
 };
 
 const CIRCUIT_BREAKER_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+const CIRCUIT_BREAKER_EXTENDED_COOLDOWN_MS = 15 * 60 * 1000; // 15 minutes
 
 /**
  * Get circuit breaker state for monitoring
@@ -41,7 +44,7 @@ export function resetCircuitBreaker() {
 function isCircuitBreakerClosed() {
   if (!circuitBreaker.isOpen) return true;
   if (Date.now() >= circuitBreaker.cooldownUntil) {
-    console.log('[Bunpro] Circuit breaker cooldown expired, testing...');
+    logger.info('[Bunpro] Circuit breaker cooldown expired, testing...');
     return true;
   }
   return false;
@@ -50,13 +53,19 @@ function isCircuitBreakerClosed() {
 function tripCircuitBreaker(statusCode) {
   circuitBreaker.consecutiveFailures++;
   circuitBreaker.isOpen = true;
-  circuitBreaker.cooldownUntil = Date.now() + CIRCUIT_BREAKER_COOLDOWN_MS;
-  console.log(`[Bunpro] Circuit breaker tripped: status=${statusCode}, failures=${circuitBreaker.consecutiveFailures}`);
+
+  // Extended cooldown after multiple failures
+  const cooldownMs = circuitBreaker.consecutiveFailures > 1
+    ? CIRCUIT_BREAKER_EXTENDED_COOLDOWN_MS
+    : CIRCUIT_BREAKER_COOLDOWN_MS;
+
+  circuitBreaker.cooldownUntil = Date.now() + cooldownMs;
+  logger.info(`[Bunpro] Circuit breaker tripped: status=${statusCode}, cooldown=${cooldownMs / 1000}s, failures=${circuitBreaker.consecutiveFailures}`);
 }
 
 function onSuccessfulRequest() {
   if (circuitBreaker.isOpen) {
-    console.log('[Bunpro] Circuit breaker reset on success');
+    logger.info('[Bunpro] Circuit breaker reset on success');
     circuitBreaker.isOpen = false;
     circuitBreaker.consecutiveFailures = 0;
     circuitBreaker.cooldownUntil = 0;
@@ -118,11 +127,11 @@ function shuffleArray(array) {
  */
 export async function getQuizQuestion(apiToken) {
   if (!apiToken) {
-    console.log('[Bunpro] No API token provided');
+    logger.debug('[Bunpro] No API token provided');
     return null;
   }
 
-  console.log('[Bunpro] Fetching quiz question...');
+  logger.info('[Bunpro] Fetching quiz question...');
 
   try {
     const response = await bunproFetch(`${BUNPRO_API_BASE}/api/frontend/reviews/quiz_index`, {
@@ -134,12 +143,12 @@ export async function getQuizQuestion(apiToken) {
     });
 
     if (!response.ok) {
-      console.log(`[Bunpro] quiz_index failed: ${response.status}`);
+      logger.info(`[Bunpro] quiz_index failed: ${response.status}`);
       return null;
     }
 
     const data = await response.json();
-    console.log('[Bunpro] Got quiz_index response:', {
+    logger.debug('[Bunpro] Got quiz_index response:', {
       sessionId: data.review_session_id,
       pendingCount: data.pending_attempt?.length || 0
     });
@@ -147,7 +156,7 @@ export async function getQuizQuestion(apiToken) {
     // Extract first pending review
     const pending = data.pending_attempt?.[0];
     if (!pending) {
-      console.log('[Bunpro] No pending reviews');
+      logger.debug('[Bunpro] No pending reviews');
       return null;
     }
 
@@ -161,17 +170,18 @@ export async function getQuizQuestion(apiToken) {
     );
 
     if (!studyQuestion) {
-      console.log('[Bunpro] Study question not found in included');
+      logger.info('[Bunpro] Study question not found in included');
       return null;
     }
 
     const attrs = studyQuestion.attributes;
     const correctAnswer = attrs.answer;
+    // Take up to 3 wrong answers for 4-choice quiz
     const wrongAnswers = Object.keys(attrs.wrong_answers || {}).slice(0, 3);
 
     // Need at least 1 wrong answer for multiple choice
     if (wrongAnswers.length === 0) {
-      console.log('[Bunpro] No wrong answers available');
+      logger.info('[Bunpro] No wrong answers available');
       return null;
     }
 
@@ -192,7 +202,7 @@ export async function getQuizQuestion(apiToken) {
       audioUrl: attrs.female_audio_url || attrs.male_audio_url || null
     };
 
-    console.log('[Bunpro] Transformed question:', {
+    logger.debug('[Bunpro] Transformed question:', {
       question: question.question.substring(0, 50) + '...',
       options: question.options,
       correctIndex: question.correctIndex
@@ -201,7 +211,7 @@ export async function getQuizQuestion(apiToken) {
     return question;
 
   } catch (error) {
-    console.log('[Bunpro] Error fetching question:', error.message);
+    logger.info('[Bunpro] Error fetching question:', error.message);
     return null;
   }
 }
@@ -215,11 +225,11 @@ export async function getQuizQuestion(apiToken) {
  */
 export async function submitAnswer(apiToken, reviewId, sessionId, correct) {
   if (!apiToken || !reviewId || !sessionId) {
-    console.log('[Bunpro] Missing params for submitAnswer:', { apiToken: !!apiToken, reviewId, sessionId });
+    logger.debug('[Bunpro] Missing params for submitAnswer:', { apiToken: !!apiToken, reviewId, sessionId });
     return false;
   }
 
-  console.log('[Bunpro] Submitting answer:', { reviewId, sessionId, correct });
+  logger.info('[Bunpro] Submitting answer:', { reviewId, sessionId, correct });
 
   try {
     const response = await bunproFetch(
@@ -245,15 +255,15 @@ export async function submitAnswer(apiToken, reviewId, sessionId, correct) {
     );
 
     if (!response.ok) {
-      console.log(`[Bunpro] Submit failed: ${response.status}`);
+      logger.info(`[Bunpro] Submit failed: ${response.status}`);
       return false;
     }
 
-    console.log('[Bunpro] Answer submitted successfully');
+    logger.info('[Bunpro] Answer submitted successfully');
     return true;
 
   } catch (error) {
-    console.log('[Bunpro] Error submitting answer:', error.message);
+    logger.info('[Bunpro] Error submitting answer:', error.message);
     return false;
   }
 }
