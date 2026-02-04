@@ -445,13 +445,16 @@ async function getChipLoadout() {
  * @param {boolean} isDiscovery - Whether this is a discovery room review
  */
 async function sendJpdbReview(vid, sid, grade, isDiscovery = false) {
+  console.log('[JPDB Review API] sendJpdbReview called:', { vid, sid, grade, isDiscovery });
   try {
     const response = await fetch('/api/jpdb/review', {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ vid, sid, grade, isDiscovery })
     });
-    return await response.json();
+    const result = await response.json();
+    console.log('[JPDB Review API] Response:', result);
+    return result;
   } catch (error) {
     logger.error('[API] Failed to send JPDB review:', error.message);
     return { error: 'Network error' };

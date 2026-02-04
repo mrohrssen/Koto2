@@ -115,6 +115,9 @@ export async function fetchJpdbDueWords() {
     if (data.words && data.words.length > 0) {
       jpdbWordsCache = data.words;
       console.log(`[WordPractice] Loaded ${data.words.length} words from JPDB (source: ${data.source})`);
+      // Check if words have vid/sid
+      const sampleWord = data.words[0];
+      console.log('[JPDB Review] Sample word from fetch:', { word: sampleWord?.word, vid: sampleWord?.vid, sid: sampleWord?.sid, hasVid: sampleWord?.vid !== undefined, hasSid: sampleWord?.sid !== undefined });
       return jpdbWordsCache;
     }
   } catch (e) {
@@ -204,16 +207,26 @@ export function getTwoCombatWords() {
   const allWords = [...combatWords, ...availableWords];
 
   if (allWords.length < 2) {
-    return {
+    const result = {
       attackWord: allWords[0] || null,
       defendWord: allWords[1] || null
     };
+    console.log('[JPDB Review] getTwoCombatWords (< 2 words):', { attackWord: result.attackWord, defendWord: result.defendWord });
+    return result;
   }
 
   // Ensure different words - attackWord is first, defendWord is second different word
   const attackWord = allWords[0];
   const defendWord = allWords.find((w, i) => i > 0 && w.word !== attackWord.word) || allWords[1];
 
+  console.log('[JPDB Review] getTwoCombatWords:', {
+    attackWord: attackWord?.word,
+    attackVid: attackWord?.vid,
+    attackSid: attackWord?.sid,
+    defendWord: defendWord?.word,
+    defendVid: defendWord?.vid,
+    defendSid: defendWord?.sid
+  });
   return { attackWord, defendWord };
 }
 

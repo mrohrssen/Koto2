@@ -818,8 +818,12 @@ async function initGame() {
       window._pendingCombatWord = null;
 
       // Send JPDB review for the word that was just graded
-      if (reviewWord?.vid && reviewWord?.sid) {
+      console.log('[JPDB Review] cardSwipe called:', { direction, grade, actionType, reviewWord });
+      if (reviewWord?.vid !== undefined && reviewWord?.sid !== undefined) {
+        console.log('[JPDB Review] Sending review:', { vid: reviewWord.vid, sid: reviewWord.sid, grade });
         apiSendJpdbReview(reviewWord.vid, reviewWord.sid, grade);
+      } else {
+        console.warn('[JPDB Review] Missing vid/sid, cannot send review:', reviewWord);
       }
 
       combatLoopUI.resumeCombatAfterVocab(grade, actionType);
@@ -829,6 +833,7 @@ async function initGame() {
       // Store the action type and word for when review completes
       window._pendingCombatAction = actionType;
       window._pendingCombatWord = selectedWord;
+      console.log('[JPDB Review] dualCardSelect - stored word:', { actionType, selectedWord, hasVid: selectedWord?.vid !== undefined, hasSid: selectedWord?.sid !== undefined });
 
       // Get both words to return the unchosen one
       const words = wordPractice.getTwoCombatWords();
