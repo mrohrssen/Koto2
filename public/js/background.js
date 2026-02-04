@@ -80,7 +80,7 @@ export function prefetchFloor(floor) {
   for (const f of floorsToPreload) {
     for (let v = 1; v <= 5; v++) {
       const img = new Image();
-      img.src = `assets/backgrounds/floor${f}_${v}.png`;
+      img.src = `assets/backgrounds/floor${f}_${v}.webp`;
     }
   }
   console.log(`Prefetched backgrounds for floors ${floorsToPreload.join(', ')}`);
@@ -95,7 +95,7 @@ export function prefetchLocations() {
 
   for (const location of LOCATION_TYPES) {
     const img = new Image();
-    img.src = `assets/backgrounds/locations/${location}.png`;
+    img.src = `assets/backgrounds/locations/${location}.webp`;
   }
   console.log('Prefetched all location backgrounds');
 }
@@ -113,7 +113,7 @@ export function update(gameState) {
   // If not in a run, show hub background
   if (!gameState.run) {
     if (currentBackgroundKey !== 'hub') {
-      applyBackground('assets/backgrounds/hub.png', 'hub');
+      applyBackground('assets/backgrounds/hub.webp', 'hub');
     }
     return;
   }
@@ -127,7 +127,7 @@ export function update(gameState) {
 
     // Only change if different from current
     if (locationKey !== currentBackgroundKey) {
-      applyBackground(`assets/backgrounds/locations/${location}.png`, locationKey);
+      applyBackground(`assets/backgrounds/locations/${location}.webp`, locationKey);
     }
     return;
   }
@@ -148,8 +148,8 @@ export function update(gameState) {
   const variant = (hashCode(roomKey) % 5) + 1;
 
   // Set the background image path
-  // Backgrounds are named: floor{N}_{variant}.png
-  applyBackground(`assets/backgrounds/floor${floor}_${variant}.png`, roomKey);
+  // Backgrounds are named: floor{N}_{variant}.webp
+  applyBackground(`assets/backgrounds/floor${floor}_${variant}.webp`, roomKey);
 }
 
 /**
