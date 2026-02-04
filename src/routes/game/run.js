@@ -13,7 +13,6 @@ import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
 import { lookupVocabularyBatch } from '../../jpdb.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
 import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswer } from '../../bunpro.js';
-import { getUserKeys } from '../../auth/users.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -299,9 +298,8 @@ export default function createRunRoutes({
   // Get a quiz question (Bunpro first, fallback to static)
   router.get('/quiz-question', async (req, res) => {
     try {
-      // Try Bunpro first if token available (from user's stored keys)
-      const userKeys = req.user?.id ? getUserKeys(req.user.id) : {};
-      const bunproToken = userKeys.bunproToken;
+      // Try Bunpro first if token available (use req.userKeys set by middleware)
+      const bunproToken = req.userKeys?.bunproToken;
       if (bunproToken) {
         console.log('[Quiz] Attempting Bunpro question...');
         const bunproQuestion = await getBunproQuestion(bunproToken);
@@ -356,8 +354,7 @@ export default function createRunRoutes({
         console.log('[Quiz] Bunpro answer:', { questionId, selectedIndex, correctIndex: _bunpro.correctIndex, correct });
 
         // Submit to Bunpro (fire and forget - don't block response)
-        const answerUserKeys = req.user?.id ? getUserKeys(req.user.id) : {};
-        const bunproToken = answerUserKeys.bunproToken;
+        const bunproToken = req.userKeys?.bunproToken;
         if (bunproToken) {
           submitBunproAnswer(bunproToken, _bunpro.reviewId, _bunpro.sessionId, correct)
             .then(success => console.log('[Quiz] Bunpro submission:', success ? 'success' : 'failed'))
