@@ -33,8 +33,8 @@
     "id": "speaker",
     "name": "スピーカーボット",
     "nameEn": "Speaker Bot",
-    "description": "80%で帯域×1.2倍。ダメージを増幅！",
-    "descriptionEn": "80% chance to x1.2 BW. Amplifies your damage!",
+    "description": "80%でパワー×1.2倍。ダメージを増幅！",
+    "descriptionEn": "80% chance to x1.2 PWR. Amplifies your damage!",
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "amplifier",
@@ -42,10 +42,10 @@
     "effects": {
       "pipeline": {
         "type": "multiply",
-        "target": "bandwidth",
+        "target": "power",
         "value": 1.2,
         "triggerChance": 0.8,
-        "displayText": "×1.2 BW"
+        "displayText": "×1.2 PWR"
       }
     },
     "skill": {
@@ -64,8 +64,8 @@
     "id": "glasses",
     "name": "眼鏡ボット",
     "nameEn": "Glasses Bot",
-    "description": "攻撃ごとに+0.3帯域。観察眼！",
-    "descriptionEn": "+0.3 BW per hit. Studies enemies carefully!",
+    "description": "攻撃ごとに+3パワー。観察眼！",
+    "descriptionEn": "+3 PWR per hit. Studies enemies carefully!",
     "category": "pipeline",
     "rarity": "uncommon",
     "archetype": "amplifier",
@@ -73,10 +73,10 @@
     "effects": {
       "pipeline": {
         "type": "rampingMultiply",
-        "target": "bandwidth",
-        "value": 0.3,
+        "target": "power",
+        "value": 3,
         "triggerChance": 1,
-        "displayText": "+0.3 BW/hit"
+        "displayText": "+3 PWR/hit"
       }
     },
     "skill": {
@@ -95,19 +95,20 @@
     "id": "lightbulb",
     "name": "電球ボット",
     "nameEn": "Light Bulb Bot",
-    "description": "50%で帯域×1.5倍。ひらめき次第！",
-    "descriptionEn": "50% chance to x1.5 BW. Sometimes brilliant!",
+    "description": "4回目の攻撃で+1帯域。ひらめき！",
+    "descriptionEn": "+1 BW every 4th attack. Eureka moments!",
     "category": "pipeline",
     "rarity": "uncommon",
     "archetype": "amplifier",
     "stats": { "power": 10, "bandwidth": 0, "hp": 30 },
     "effects": {
       "pipeline": {
-        "type": "multiply",
+        "type": "nthAttack",
         "target": "bandwidth",
-        "value": 1.5,
-        "triggerChance": 0.5,
-        "displayText": "×1.5 BW"
+        "interval": 4,
+        "flatBonus": 1,
+        "triggerChance": 1,
+        "displayText": "+1 BW every 4th"
       }
     },
     "skill": {
@@ -257,7 +258,7 @@
     "description": "空きスロット2+で+12パワー、+2帯域。余白を愛する！",
     "descriptionEn": "+12 PWR, +2 BW if 2+ slots empty. Loves a clean slate!",
     "category": "pipeline",
-    "rarity": "rare",
+    "rarity": "epic",
     "archetype": "tank",
     "stats": { "power": 12, "bandwidth": 0, "hp": 75 },
     "effects": {
@@ -349,8 +350,8 @@
     "id": "straw",
     "name": "ストローボット",
     "nameEn": "Straw Bot",
-    "description": "+0.2帯域、4%HP回復。ちゅーっ！",
-    "descriptionEn": "+0.2 BW, heal 4% HP. Sips strength away!",
+    "description": "5%HP回復。ちゅーっ！",
+    "descriptionEn": "Heal 5% HP. Sips health back!",
     "category": "pipeline",
     "rarity": "common",
     "archetype": "healer",
@@ -358,11 +359,11 @@
     "effects": {
       "pipeline": {
         "type": "damageAndHeal",
-        "target": "bandwidth",
-        "value": 0.2,
-        "healPercent": 0.04,
+        "target": "meta",
+        "value": 0,
+        "healPercent": 0.05,
         "triggerChance": 1,
-        "displayText": "+0.2 BW heal 4%"
+        "displayText": "heal 5%"
       }
     },
     "skill": {
@@ -600,8 +601,8 @@
     "id": "toolbox",
     "name": "工具箱ボット",
     "nameEn": "Toolbox Bot",
-    "description": "装備毎に+2パワー、+0.3帯域。仲間が多いほど強い！",
-    "descriptionEn": "+2 PWR, +0.3 BW per equipped chip. Teamwork!",
+    "description": "装備毎に+5パワー。仲間が多いほど強い！",
+    "descriptionEn": "+5 PWR per equipped chip. Teamwork!",
     "category": "pipeline",
     "rarity": "uncommon",
     "archetype": "striker",
@@ -609,11 +610,10 @@
     "effects": {
       "pipeline": {
         "type": "perEquipped",
-        "target": "both",
-        "powerValue": 2,
-        "bandwidthValue": 0.3,
+        "target": "power",
+        "powerValue": 5,
         "triggerChance": 1,
-        "displayText": "+2 PWR +0.3 BW/equipped"
+        "displayText": "+5 PWR/equipped"
       }
     },
     "skill": {
@@ -663,8 +663,8 @@
     "id": "adrenaline",
     "name": "アドレナリンボット",
     "nameEn": "Adrenaline Bot",
-    "description": "HP10減少ごとに+1帯域。ピンチで強い！",
-    "descriptionEn": "+1 BW per 10 HP missing. Stronger when hurt!",
+    "description": "HP20減少ごとに+5パワー。ピンチで強い！",
+    "descriptionEn": "+5 PWR per 20 HP missing. Stronger when hurt!",
     "category": "pipeline",
     "rarity": "epic",
     "archetype": "amplifier",
@@ -672,10 +672,10 @@
     "effects": {
       "pipeline": {
         "type": "missingHpBonus",
-        "target": "bandwidth",
-        "valuePer10Hp": 1,
+        "target": "power",
+        "valuePer20Hp": 5,
         "triggerChance": 1,
-        "displayText": "+1 BW/10 HP missing"
+        "displayText": "+5 PWR/20 HP missing"
       }
     },
     "skill": {
@@ -785,12 +785,12 @@
       "chargesRequired": 5
     }
   },
-  "commoner": {
-    "id": "commoner",
-    "name": "庶民ボット",
-    "nameEn": "Commoner Bot",
-    "description": "コモンチップ1つにつき+2帯域。庶民の力！",
-    "descriptionEn": "+2 BW per common chip equipped. People power!",
+  "goldStar": {
+    "id": "goldStar",
+    "name": "金星ボット",
+    "nameEn": "Gold Star Bot",
+    "description": "レジェンダリーチップ1つにつき+1帯域。一流を集めろ！",
+    "descriptionEn": "+1 BW per legendary chip equipped. Collect the best!",
     "category": "pipeline",
     "rarity": "common",
     "archetype": "trickster",
@@ -799,21 +799,21 @@
       "pipeline": {
         "type": "rarityBonus",
         "target": "bandwidth",
-        "targetRarity": "common",
-        "valuePerChip": 2,
+        "targetRarity": "legendary",
+        "valuePerChip": 1,
         "triggerChance": 1,
-        "displayText": "+2 BW/common"
+        "displayText": "+1 BW/legendary"
       }
     },
     "skill": {
       "id": "strengthInNumbers",
       "name": "数の力",
       "nameEn": "Strength in Numbers",
-      "description": "コモンチップ1つにつき+5ダメージ",
-      "descriptionEn": "+5 damage per common chip",
+      "description": "レジェンダリーチップ1つにつき+5ダメージ",
+      "descriptionEn": "+5 damage per legendary chip",
       "type": "buff",
       "buffType": "PRE_PIPELINE",
-      "effect": { "flatBonusPerRarity": 5, "targetRarity": "common" },
+      "effect": { "flatBonusPerRarity": 5, "targetRarity": "legendary" },
       "chargesRequired": 5
     }
   },
@@ -821,8 +821,8 @@
     "id": "underdog",
     "name": "弱者ボット",
     "nameEn": "Underdog Bot",
-    "description": "エピック/レジェンダリーなしで帯域×1.5倍",
-    "descriptionEn": "x1.5 BW if no epic/legendary chips equipped",
+    "description": "エピック/レジェンダリーなしで+1帯域",
+    "descriptionEn": "+1 BW if no epic/legendary chips equipped",
     "category": "pipeline",
     "rarity": "uncommon",
     "archetype": "trickster",
@@ -832,20 +832,20 @@
         "type": "rarityRestriction",
         "target": "bandwidth",
         "forbiddenRarities": ["epic", "legendary"],
-        "multiplier": 1.5,
+        "flatBonus": 1,
         "triggerChance": 1,
-        "displayText": "x1.5 BW (no epic/legend)"
+        "displayText": "+1 BW (no epic/legend)"
       }
     },
     "skill": {
       "id": "proveThemWrong",
       "name": "見返してやる",
       "nameEn": "Prove Them Wrong",
-      "description": "エピック/レジェンダリーなしで次の攻撃×2倍",
-      "descriptionEn": "Next attack x2 (only if no epic/legendary)",
+      "description": "エピック/レジェンダリーなしで次の攻撃+10ダメージ",
+      "descriptionEn": "Next attack +10 (only if no epic/legendary)",
       "type": "buff",
-      "buffType": "POST_PIPELINE",
-      "effect": { "multiplier": 2.0 },
+      "buffType": "PRE_PIPELINE",
+      "effect": { "flatBonus": 10 },
       "condition": "noEpicOrLegendary",
       "chargesRequired": 5
     }
@@ -854,8 +854,8 @@
     "id": "anchor",
     "name": "錨ボット",
     "nameEn": "Anchor Bot",
-    "description": "最後のスロットで+8パワー、帯域×1.5倍！",
-    "descriptionEn": "+8 PWR, x1.5 BW when in last slot!",
+    "description": "最後のスロットで+12パワー！",
+    "descriptionEn": "+12 PWR when in last slot!",
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "striker",
@@ -863,12 +863,11 @@
     "effects": {
       "pipeline": {
         "type": "positionBonus",
-        "target": "both",
+        "target": "power",
         "position": "last",
-        "powerAdd": 8,
-        "bandwidthMult": 1.5,
+        "powerAdd": 12,
         "triggerChance": 1,
-        "displayText": "+8 PWR ×1.5 BW (last)"
+        "displayText": "+12 PWR (last)"
       }
     },
     "skill": {
@@ -887,20 +886,19 @@
     "id": "sparkPlug",
     "name": "点火ボット",
     "nameEn": "Spark Plug Bot",
-    "description": "最初のスロットで帯域×1.8倍！",
-    "descriptionEn": "x1.8 BW when in first slot!",
+    "description": "次のチップのパワーを2倍に！",
+    "descriptionEn": "Doubles next chip's power!",
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "amplifier",
     "stats": { "power": 10, "bandwidth": 0, "hp": 25 },
     "effects": {
       "pipeline": {
-        "type": "positionBonus",
-        "target": "bandwidth",
-        "position": "first",
-        "bandwidthMult": 1.8,
+        "type": "amplifyNext",
+        "target": "power",
+        "value": 2.0,
         "triggerChance": 1,
-        "displayText": "×1.8 BW (first)"
+        "displayText": "×2 next PWR"
       }
     },
     "skill": {
