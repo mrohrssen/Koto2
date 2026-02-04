@@ -400,6 +400,20 @@ html, body {
   color: var(--text-primary);
 }
 
+.action-btn-tertiary {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 2px solid var(--accent-primary);
+}
+
+.action-btn-tertiary:hover {
+  background: var(--bg-secondary);
+}
+
+.action-btn-tertiary:active {
+  transform: scale(0.97);
+}
+
 .action-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
