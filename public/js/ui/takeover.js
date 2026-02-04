@@ -36,11 +36,13 @@ export function init() {
   views.chipShop = dom.chipShopView;
   views.settings = dom.settingsView;
   views.gameover = dom.gameoverView;
+  views.speedReview = dom.speedReviewView;
 
   // Close buttons
   dom.chipEquipClose.addEventListener('click', () => close('chipEquip'));
   dom.chipShopClose.addEventListener('click', () => close('chipShop'));
   dom.settingsClose.addEventListener('click', () => close('settings'));
+  dom.speedReviewClose.addEventListener('click', () => close('speedReview'));
 }
 
 /** Open a takeover view */
