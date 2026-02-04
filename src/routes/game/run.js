@@ -12,7 +12,7 @@ import { getChipLoadout, equipChip, unequipChip, reorderChips } from '../../game
 import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
 import { lookupVocabularyBatch } from '../../jpdb.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
-import { getQuizQuestion as getBunproQuestion } from '../../bunpro.js';
+import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswer } from '../../bunpro.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -341,13 +341,36 @@ export default function createRunRoutes({
   });
 
   // Validate quiz answer
-  router.post('/quiz-answer', (req, res) => {
+  router.post('/quiz-answer', async (req, res) => {
     try {
-      const { questionId, selectedIndex } = req.body;
-      if (!questionId || selectedIndex === undefined) {
+      const { questionId, selectedIndex, _bunpro } = req.body;
+      if (questionId === undefined || selectedIndex === undefined) {
         return res.status(400).json({ error: 'questionId and selectedIndex required' });
       }
 
+      // Handle Bunpro question
+      if (questionId.startsWith('bunpro-') && _bunpro) {
+        const correct = selectedIndex === _bunpro.correctIndex;
+        console.log('[Quiz] Bunpro answer:', { questionId, selectedIndex, correctIndex: _bunpro.correctIndex, correct });
+
+        // Submit to Bunpro (fire and forget - don't block response)
+        const bunproToken = req.bunproToken;
+        if (bunproToken) {
+          submitBunproAnswer(bunproToken, _bunpro.reviewId, _bunpro.sessionId, correct)
+            .then(success => console.log('[Quiz] Bunpro submission:', success ? 'success' : 'failed'))
+            .catch(err => console.log('[Quiz] Bunpro submission error:', err.message));
+        }
+
+        return res.json({
+          correct,
+          correctIndex: _bunpro.correctIndex,
+          response: correct
+            ? 'その通りだ。文法をよく理解しているな。'
+            : '残念だ。もう一度復習しよう。'
+        });
+      }
+
+      // Handle static question
       const questions = loadQuizQuestions();
       const question = questions.find(q => q.id === questionId);
 
@@ -362,6 +385,7 @@ export default function createRunRoutes({
         response: correct ? question.correctResponse : question.wrongResponse
       });
     } catch (error) {
+      console.error('[Quiz] Answer error:', error.message);
       res.status(500).json({ error: 'Failed to validate answer' });
     }
   });
