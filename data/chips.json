@@ -258,7 +258,7 @@
     "description": "空きスロット2+で+12パワー、+2帯域。余白を愛する！",
     "descriptionEn": "+12 PWR, +2 BW if 2+ slots empty. Loves a clean slate!",
     "category": "pipeline",
-    "rarity": "rare",
+    "rarity": "epic",
     "archetype": "tank",
     "stats": { "power": 12, "bandwidth": 0, "hp": 75 },
     "effects": {
