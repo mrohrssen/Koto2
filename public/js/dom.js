@@ -90,6 +90,20 @@ get chipPopupSwap() { return el('chip-popup-swap'); },
   get bugReportCancel() { return el('bug-report-cancel'); },
   get bugReportFile() { return el('bug-report-file'); },
   get bugReportPreview() { return el('bug-report-preview'); },
+
+  // Speed Review
+  get speedReviewView() { return el('speed-review-view'); },
+  get speedReviewClose() { return el('speed-review-close'); },
+  get speedReviewContent() { return el('speed-review-content'); },
+  get speedReviewCounter() { return el('speed-review-counter'); },
+  get speedReviewEmpty() { return el('speed-review-empty'); },
+  get speedReviewSlots() {
+    return [
+      el('speed-review-slot-0'),
+      el('speed-review-slot-1'),
+      el('speed-review-slot-2')
+    ];
+  },
 };
 
 /** Clear cache (for testing or hot reload) */
