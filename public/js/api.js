@@ -546,6 +546,23 @@ async function getDiscoveryStatus() {
   }
 }
 
+/**
+ * Get due words for speed review
+ * @returns {Promise<Object>} { words: Array, error?: string }
+ */
+export async function getDueWords() {
+  try {
+    const response = await fetch('/api/vocab/due-words', {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('[API] Failed to get due words:', error);
+    return { words: [], error: error.message };
+  }
+}
+
 /** Mark word discovery room as complete
  * @returns {Promise<Object>} Result with updated state
  */
@@ -600,4 +617,5 @@ export {
   getDiscoveryWords,
   getDiscoveryStatus,
   completeDiscovery
+  // Note: getDueWords is exported inline
 };
