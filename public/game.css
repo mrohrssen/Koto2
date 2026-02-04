@@ -421,7 +421,7 @@ html, body {
 .flash-card {
   width: 100%;
   aspect-ratio: 3/4;
-  max-height: 280px;
+  max-height: 360px;
   position: relative;
   border-radius: var(--radius-lg);
   background: var(--bg-card);
@@ -473,8 +473,7 @@ html, body {
 .flash-card-meaning {
   font-size: 18px;
   font-weight: 600;
-  max-height: 120px;
-  overflow-y: auto;
+  overflow: hidden;
   word-break: break-word;
 }
 
@@ -589,7 +588,7 @@ html, body {
 .dual-flash-card.selected {
   max-height: none;
   aspect-ratio: auto;
-  min-height: 180px;
+  min-height: 260px;
   transition: all 0.3s ease;
 }
 

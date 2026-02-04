@@ -444,12 +444,11 @@ function escapeHtml(str) {
 
 /**
  * Format meanings for flash card display.
- * Truncates to first 3 meanings if too long, adds "..."
+ * Truncates to first 6 meanings if too long, adds "..."
  */
 function formatMeanings(meanings) {
   const text = Array.isArray(meanings) ? meanings.join(', ') : (meanings || '');
-  // Split on comma-space and take first 3 meanings
   const parts = text.split(', ');
-  if (parts.length <= 3) return escapeHtml(text);
-  return escapeHtml(parts.slice(0, 3).join(', ')) + ', ...';
+  if (parts.length <= 6) return escapeHtml(text);
+  return escapeHtml(parts.slice(0, 6).join(', ')) + ', ...';
 }
