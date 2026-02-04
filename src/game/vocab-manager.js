@@ -391,6 +391,35 @@ export function invalidateWordStateCache() {
 }
 
 /**
+ * Invalidate a specific word's cache entry by vid
+ * Removes 'due' state and sets dueAt far in future to prevent re-selection
+ *
+ * @param {number} vid - Vocabulary ID to invalidate
+ * @returns {boolean} True if word was found and invalidated
+ */
+export function invalidateWordByVid(vid) {
+  initVocabManager();
+
+  for (const [word, stateInfo] of Object.entries(state.wordStateCache)) {
+    if (stateInfo.vid === vid) {
+      const states = stateInfo.states || [];
+      const dueIndex = states.indexOf('due');
+      if (dueIndex !== -1) {
+        states.splice(dueIndex, 1);
+        stateInfo.states = states;
+        // Set dueAt far in the future so it won't be prioritized
+        stateInfo.dueAt = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days from now
+        console.log(`[VocabManager] Invalidated word "${word}" (vid=${vid}) - removed 'due' state from in-memory cache`);
+        // Note: Don't call saveCache() here - let the caller decide
+        return true;
+      }
+      return false; // Word found but didn't have 'due' state
+    }
+  }
+  return false; // Word not found
+}
+
+/**
  * Perform a full parse of the static word list
  * Called on session start when cache is missing or older than 1 hour
  *

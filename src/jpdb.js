@@ -12,6 +12,7 @@
 
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { logger } from './logger.js';
+import { invalidateWordByVid } from './game/vocab-manager.js';
 
 const JPDB_API_BASE = 'https://jpdb.io/api/v1';
 
@@ -840,6 +841,16 @@ export async function reviewVocabulary(apiKey, vid, sid, grade) {
  * @param {number} vid - Vocabulary ID
  */
 export function invalidateWordStateCache(vid) {
+  // CRITICAL: Update the in-memory cache in vocab-manager FIRST
+  // This prevents stale data from being written back to disk when
+  // other operations (like addUsedWords) trigger a saveCache()
+  try {
+    invalidateWordByVid(vid);
+  } catch (e) {
+    // vocab-manager might not be initialized yet, that's OK
+    console.log(`[JPDB Cache] Could not update in-memory cache: ${e.message}`);
+  }
+
   if (!config.vocabSuggestionsFile) {
     return false;
   }
@@ -862,7 +873,7 @@ export function invalidateWordStateCache(vid) {
           stateInfo.states = states;
           // Set dueAt far in the future so it won't be prioritized
           stateInfo.dueAt = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days from now
-          console.log(`[JPDB Cache] Invalidated word "${word}" (vid=${vid}) - removed 'due' state`);
+          console.log(`[JPDB Cache] Invalidated word "${word}" (vid=${vid}) - removed 'due' state from disk cache`);
         }
         break;
       }
