@@ -275,13 +275,27 @@ async function quizReward(rewardType) {
   return apiCall('/quiz-reward', 'POST', { rewardType });
 }
 
-/** Get a random quiz question */
+/** Get a quiz question (may be from Bunpro or static) */
 async function getQuizQuestion() {
   try {
+    const bunproToken = localStorage.getItem('bunproToken');
     const response = await fetch('/api/game/quiz-question', {
-      headers: getAuthHeaders()
+      method: 'GET',
+      headers: {
+        ...getAuthHeaders(),
+        ...(bunproToken ? { 'X-Bunpro-Token': bunproToken } : {})
+      }
     });
-    return await response.json();
+    const data = await response.json();
+
+    // Store Bunpro metadata for answer submission
+    if (data._bunpro) {
+      data._bunproMeta = data._bunpro;
+      delete data._bunpro; // Don't expose to UI
+    }
+
+    console.log('[API] Quiz question:', { id: data.id, type: data.type, hasBunpro: !!data._bunproMeta });
+    return data;
   } catch (error) {
     logger.error('[API] Failed to get quiz question:', error.message);
     return { error: 'Network error' };
@@ -289,14 +303,24 @@ async function getQuizQuestion() {
 }
 
 /** Submit quiz answer for validation */
-async function submitQuizAnswer(questionId, selectedIndex) {
+async function submitQuizAnswer(questionId, selectedIndex, bunproMeta = null) {
   try {
+    const bunproToken = localStorage.getItem('bunproToken');
     const response = await fetch('/api/game/quiz-answer', {
       method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ questionId, selectedIndex })
+      headers: {
+        ...getAuthHeaders(),
+        ...(bunproToken ? { 'X-Bunpro-Token': bunproToken } : {})
+      },
+      body: JSON.stringify({
+        questionId,
+        selectedIndex,
+        ...(bunproMeta ? { _bunpro: bunproMeta } : {})
+      })
     });
-    return await response.json();
+    const data = await response.json();
+    console.log('[API] Quiz answer result:', { correct: data.correct });
+    return data;
   } catch (error) {
     logger.error('[API] Failed to submit quiz answer:', error.message);
     return { error: 'Network error' };
