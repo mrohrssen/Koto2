@@ -95,6 +95,7 @@ import * as narrationBox from './js/ui/narration-box.js';
 import * as leaderboard from './js/ui/leaderboard.js';
 import * as lookup from './js/ui/lookup.js';
 import * as bugReport from './js/ui/bug-report.js';
+import * as speedReview from './js/ui/speed-review.js';
 import * as phaser from './js/phaser/index.js';
 import { gameEvents } from './js/phaser/phaser-bridge.js';
 
@@ -122,6 +123,7 @@ import {
   nextFloor as apiNextFloor,
   getChipLoadout as apiGetChipLoadout,
   sendJpdbReview as apiSendJpdbReview,
+  getDueWords as apiGetDueWords,
   getAuthHeaders,
   shrineUpgrade as apiShrineUpgrade,
   quizReward as apiQuizReward,
@@ -791,6 +793,14 @@ async function initGame() {
   takeover.init();
   leaderboard.init();
   bugReport.init();
+  speedReview.init({
+    sendReview: (vid, sid, grade) => apiSendJpdbReview(vid, sid, grade),
+    playTTS: (word) => tts.playWord(word),
+    refreshQueue: async () => {
+      const result = await apiGetDueWords();
+      return result?.words || [];
+    }
+  });
 
   // Initialize lookup mode
   lookup.init({
@@ -915,6 +925,7 @@ async function initGame() {
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ words })
     }),
+    apiGetDueWords,
   });
 
   economyUI.init({
