@@ -833,8 +833,7 @@ async function initGame() {
       // Remove selected word from queue
       wordPractice.removeWordFromCombatQueue(selectedWord);
 
-      // Show selected word as regular flash card for review
-      actions.showFlashCard(selectedWord);
+      // Dual card flips in place - no separate flash card needed
     },
   });
 

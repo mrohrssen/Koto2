@@ -565,6 +565,62 @@ html, body {
   border-color: #1e88e5;
 }
 
+/* Dual card front/back for flip animation */
+.dual-card-front {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.dual-card-back {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  gap: 8px;
+  padding: 12px;
+}
+
+/* Selected state: flip and expand */
+.dual-flash-card.selected {
+  max-height: none;
+  aspect-ratio: auto;
+  min-height: 180px;
+  transition: all 0.3s ease;
+}
+
+.dual-flash-card.selected .dual-card-front {
+  display: none;
+}
+
+.dual-flash-card.selected .dual-card-back {
+  display: flex;
+}
+
+.dual-flash-card.selected:hover {
+  transform: none;
+}
+
+/* Hide the other wrapper when a card is selected */
+.dual-card-wrapper.hidden {
+  display: none;
+}
+
+/* Swipe feedback on selected dual cards */
+.dual-flash-card.swiping-right {
+  transform: translateX(var(--swipe-x, 0)) rotate(var(--swipe-rotate, 0deg));
+  background: #e8f5e9;
+}
+
+.dual-flash-card.swiping-left {
+  transform: translateX(var(--swipe-x, 0)) rotate(var(--swipe-rotate, 0deg));
+  background: #ffebee;
+}
+
 .combat-defend-indicator {
   font-size: 18px;
   font-weight: 700;

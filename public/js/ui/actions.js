@@ -44,6 +44,7 @@ let touchStartY = 0;
 let currentSwipeX = 0;
 let isSwiping = false;
 let cardFlipped = false;
+let activeCard = null; // Reference to the card currently being interacted with
 
 const SWIPE_THRESHOLD = 80;
 
@@ -116,6 +117,7 @@ export function showFlashCard(word, { discoveryMode = false } = {}) {
   `;
 
   const card = document.getElementById('flash-card');
+  activeCard = card;
 
   // Tap to flip, or tap sides to grade after flip
   card.addEventListener('click', (e) => {
@@ -195,19 +197,37 @@ export function clearSelectedActionType() {
  */
 export function showDualFlashCards(attackWord, defendWord) {
   selectedActionType = null;
+  cardFlipped = false;
+  isSwiping = false;
+
+  const hintText = '&larr; didn\'t know &nbsp; | &nbsp; knew it &rarr;';
 
   dom.actionArea.innerHTML = `
     <div class="dual-flash-card-container" id="dual-flash-card-container">
-      <div class="dual-card-wrapper">
+      <div class="dual-card-wrapper" id="attack-wrapper">
         <div class="dual-card-label attack">Attack</div>
         <div class="dual-flash-card attack" id="attack-card" data-action="attack">
-          ${escapeHtml(attackWord.word)}
+          <div class="dual-card-front">${escapeHtml(attackWord.word)}</div>
+          <div class="dual-card-back">
+            <div class="flash-card-word">${attackWord.reading && attackWord.reading !== attackWord.word
+              ? `<ruby>${escapeHtml(attackWord.word)}<rt>${escapeHtml(attackWord.reading)}</rt></ruby>`
+              : escapeHtml(attackWord.word)}</div>
+            <div class="flash-card-meaning">${formatMeanings(attackWord.meanings)}</div>
+            <div class="flash-card-hint">${hintText}</div>
+          </div>
         </div>
       </div>
-      <div class="dual-card-wrapper">
+      <div class="dual-card-wrapper" id="defend-wrapper">
         <div class="dual-card-label defend">Defend</div>
         <div class="dual-flash-card defend" id="defend-card" data-action="defend">
-          ${escapeHtml(defendWord.word)}
+          <div class="dual-card-front">${escapeHtml(defendWord.word)}</div>
+          <div class="dual-card-back">
+            <div class="flash-card-word">${defendWord.reading && defendWord.reading !== defendWord.word
+              ? `<ruby>${escapeHtml(defendWord.word)}<rt>${escapeHtml(defendWord.reading)}</rt></ruby>`
+              : escapeHtml(defendWord.word)}</div>
+            <div class="flash-card-meaning">${formatMeanings(defendWord.meanings)}</div>
+            <div class="flash-card-hint">${hintText}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -215,21 +235,62 @@ export function showDualFlashCards(attackWord, defendWord) {
 
   const attackCard = document.getElementById('attack-card');
   const defendCard = document.getElementById('defend-card');
+  const attackWrapper = document.getElementById('attack-wrapper');
+  const defendWrapper = document.getElementById('defend-wrapper');
 
-  attackCard.addEventListener('click', () => {
-    selectedActionType = 'attack';
+  function selectCard(actionType, word, selectedCard, selectedWrapper, otherWrapper) {
+    if (cardFlipped) return; // Already selected
+
+    selectedActionType = actionType;
     playSFX('button-tap');
-    const container = document.getElementById('dual-flash-card-container');
-    if (container) container.remove();
-    if (onDualCardSelect) onDualCardSelect('attack', attackWord);
+
+    // Hide the other card
+    otherWrapper.classList.add('hidden');
+
+    // Flip and expand the selected card
+    selectedCard.classList.add('selected');
+    cardFlipped = true;
+    activeCard = selectedCard;
+
+    if (onCardFlip) onCardFlip();
+    if (onDualCardSelect) onDualCardSelect(actionType, word);
+
+    // Add swipe handlers to the selected card
+    selectedCard.addEventListener('touchstart', handleTouchStart, { passive: true });
+    selectedCard.addEventListener('touchmove', handleTouchMove, { passive: false });
+    selectedCard.addEventListener('touchend', handleTouchEnd, { passive: true });
+    selectedCard.addEventListener('mousedown', handleMouseDown);
+    selectedCard.addEventListener('mousemove', handleMouseMove);
+    selectedCard.addEventListener('mouseup', handleMouseUp);
+    selectedCard.addEventListener('mouseleave', handleMouseUp);
+
+    // Click sides to grade (reuse flash card logic)
+    selectedCard.addEventListener('click', (e) => {
+      if (isSwiping) return;
+      const rect = selectedCard.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const relativeX = clickX / rect.width;
+
+      if (relativeX < 0.4) {
+        triggerSwipeAnimation(selectedCard, 'left');
+      } else if (relativeX > 0.6) {
+        triggerSwipeAnimation(selectedCard, 'right');
+      }
+    });
+  }
+
+  attackCard.addEventListener('click', (e) => {
+    if (!cardFlipped) {
+      e.stopPropagation();
+      selectCard('attack', attackWord, attackCard, attackWrapper, defendWrapper);
+    }
   });
 
-  defendCard.addEventListener('click', () => {
-    selectedActionType = 'defend';
-    playSFX('button-tap');
-    const container = document.getElementById('dual-flash-card-container');
-    if (container) container.remove();
-    if (onDualCardSelect) onDualCardSelect('defend', defendWord);
+  defendCard.addEventListener('click', (e) => {
+    if (!cardFlipped) {
+      e.stopPropagation();
+      selectCard('defend', defendWord, defendCard, defendWrapper, attackWrapper);
+    }
   });
 }
 
@@ -256,13 +317,12 @@ function handleTouchMove(e) {
     currentSwipeX = dx;
     e.preventDefault();
 
-    const card = document.getElementById('flash-card');
-    if (card) {
+    if (activeCard) {
       const rotate = dx * 0.05;
-      card.style.setProperty('--swipe-x', `${dx}px`);
-      card.style.setProperty('--swipe-rotate', `${rotate}deg`);
-      card.classList.toggle('swiping-right', dx > 0);
-      card.classList.toggle('swiping-left', dx < 0);
+      activeCard.style.setProperty('--swipe-x', `${dx}px`);
+      activeCard.style.setProperty('--swipe-rotate', `${rotate}deg`);
+      activeCard.classList.toggle('swiping-right', dx > 0);
+      activeCard.classList.toggle('swiping-left', dx < 0);
     }
   }
 }
@@ -270,27 +330,27 @@ function handleTouchMove(e) {
 function handleTouchEnd() {
   if (!cardFlipped || !isSwiping) return;
 
-  const card = document.getElementById('flash-card');
   if (Math.abs(currentSwipeX) > SWIPE_THRESHOLD) {
     const direction = currentSwipeX > 0 ? 'right' : 'left';
     // Animate off screen
-    if (card) {
-      card.style.transition = 'transform 0.3s ease, opacity 0.25s ease';
-      card.style.transform = `translateX(${currentSwipeX > 0 ? 500 : -500}px) rotate(${currentSwipeX * 0.1}deg)`;
-      card.style.opacity = '0';
+    if (activeCard) {
+      activeCard.style.transition = 'transform 0.3s ease, opacity 0.25s ease';
+      activeCard.style.transform = `translateX(${currentSwipeX > 0 ? 500 : -500}px) rotate(${currentSwipeX * 0.1}deg)`;
+      activeCard.style.opacity = '0';
     }
     playSFX(direction === 'right' ? 'swipe-right' : 'swipe-left');
     setTimeout(() => {
-      const container = document.getElementById('flash-card-container');
+      const container = document.getElementById('flash-card-container')
+        || document.getElementById('dual-flash-card-container');
       if (container) container.remove();
       if (onCardSwipe) onCardSwipe(direction);
     }, 300);
   } else {
     // Snap back
-    if (card) {
-      card.style.setProperty('--swipe-x', '0px');
-      card.style.setProperty('--swipe-rotate', '0deg');
-      card.classList.remove('swiping-right', 'swiping-left');
+    if (activeCard) {
+      activeCard.style.setProperty('--swipe-x', '0px');
+      activeCard.style.setProperty('--swipe-rotate', '0deg');
+      activeCard.classList.remove('swiping-right', 'swiping-left');
     }
   }
   isSwiping = false;
@@ -319,13 +379,12 @@ function handleMouseMove(e) {
     isSwiping = true;
     currentSwipeX = dx;
 
-    const card = document.getElementById('flash-card');
-    if (card) {
+    if (activeCard) {
       const rotate = dx * 0.05;
-      card.style.setProperty('--swipe-x', `${dx}px`);
-      card.style.setProperty('--swipe-rotate', `${rotate}deg`);
-      card.classList.toggle('swiping-right', dx > 0);
-      card.classList.toggle('swiping-left', dx < 0);
+      activeCard.style.setProperty('--swipe-x', `${dx}px`);
+      activeCard.style.setProperty('--swipe-rotate', `${rotate}deg`);
+      activeCard.classList.toggle('swiping-right', dx > 0);
+      activeCard.classList.toggle('swiping-left', dx < 0);
     }
   }
 }
@@ -335,25 +394,25 @@ function handleMouseUp() {
   mouseIsDown = false;
   if (!cardFlipped || !isSwiping) return;
 
-  const card = document.getElementById('flash-card');
   if (Math.abs(currentSwipeX) > SWIPE_THRESHOLD) {
     const direction = currentSwipeX > 0 ? 'right' : 'left';
-    if (card) {
-      card.style.transition = 'transform 0.3s ease, opacity 0.25s ease';
-      card.style.transform = `translateX(${currentSwipeX > 0 ? 500 : -500}px) rotate(${currentSwipeX * 0.1}deg)`;
-      card.style.opacity = '0';
+    if (activeCard) {
+      activeCard.style.transition = 'transform 0.3s ease, opacity 0.25s ease';
+      activeCard.style.transform = `translateX(${currentSwipeX > 0 ? 500 : -500}px) rotate(${currentSwipeX * 0.1}deg)`;
+      activeCard.style.opacity = '0';
     }
     playSFX(direction === 'right' ? 'swipe-right' : 'swipe-left');
     setTimeout(() => {
-      const container = document.getElementById('flash-card-container');
+      const container = document.getElementById('flash-card-container')
+        || document.getElementById('dual-flash-card-container');
       if (container) container.remove();
       if (onCardSwipe) onCardSwipe(direction);
     }, 300);
   } else {
-    if (card) {
-      card.style.setProperty('--swipe-x', '0px');
-      card.style.setProperty('--swipe-rotate', '0deg');
-      card.classList.remove('swiping-right', 'swiping-left');
+    if (activeCard) {
+      activeCard.style.setProperty('--swipe-x', '0px');
+      activeCard.style.setProperty('--swipe-rotate', '0deg');
+      activeCard.classList.remove('swiping-right', 'swiping-left');
     }
   }
   isSwiping = false;
@@ -369,7 +428,9 @@ function triggerSwipeAnimation(card, direction) {
   card.style.opacity = '0';
   playSFX(direction === 'right' ? 'swipe-right' : 'swipe-left');
   setTimeout(() => {
-    const container = document.getElementById('flash-card-container');
+    // Remove either flash card or dual flash card container
+    const container = document.getElementById('flash-card-container')
+      || document.getElementById('dual-flash-card-container');
     if (container) container.remove();
     if (onCardSwipe) onCardSwipe(direction);
   }, 300);
