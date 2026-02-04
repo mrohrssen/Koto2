@@ -595,16 +595,23 @@ function processPipelineChip(chip, state) {
       };
 
     case 'missingHpBonus':
-      // Add BW based on missing HP
+      // Add PWR or BW based on missing HP
       const missingHp = state.player ? (state.player.maxHp - state.player.hp) : 0;
-      const hpBonus = Math.floor(missingHp / 10) * (effect.valuePer10Hp || 1);
-      bandwidthAdd = hpBonus;
+      // Support both valuePer10Hp (old) and valuePer20Hp (new)
+      const hpDivisor = effect.valuePer20Hp !== undefined ? 20 : 10;
+      const hpValuePer = effect.valuePer20Hp !== undefined ? effect.valuePer20Hp : (effect.valuePer10Hp || 1);
+      const hpBonus = Math.floor(missingHp / hpDivisor) * hpValuePer;
+      if (effect.target === 'power') {
+        powerAdd = hpBonus;
+      } else {
+        bandwidthAdd = hpBonus;
+      }
       return {
         ...baseResult,
         powerAdd, powerMult, bandwidthAdd, bandwidthMult,
         missingHpBonus: true,
         missingHp,
-        displayText: `+${hpBonus} BW (${missingHp} HP missing)`
+        displayText: `+${hpBonus} ${effect.target === 'power' ? 'PWR' : 'BW'} (${missingHp} HP missing)`
       };
 
     case 'slotCount':
@@ -653,7 +660,7 @@ function processPipelineChip(chip, state) {
       };
 
     case 'rarityRestriction':
-      // Multiply if no forbidden rarities present
+      // Bonus if no forbidden rarities present
       const equippedRarities = state.equippedChipRarities || [];
       const hasForbidden = equippedRarities.some(r => effect.forbiddenRarities.includes(r));
       if (hasForbidden) {
@@ -665,7 +672,16 @@ function processPipelineChip(chip, state) {
           displayText: 'Forbidden rarity equipped'
         };
       }
-      applyMult(effect.multiplier);
+      // Support both flat bonus and multiplier
+      if (effect.flatBonus !== undefined) {
+        if (effect.target === 'bandwidth') {
+          bandwidthAdd = effect.flatBonus;
+        } else {
+          powerAdd = effect.flatBonus;
+        }
+      } else if (effect.multiplier !== undefined) {
+        applyMult(effect.multiplier);
+      }
       return { ...baseResult, powerAdd, powerMult, bandwidthAdd, bandwidthMult };
 
     case 'positionBonus':
