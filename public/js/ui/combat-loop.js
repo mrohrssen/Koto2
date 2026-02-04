@@ -48,6 +48,7 @@ let combatActive = false;
 let playerAttackPending = false;
 let enemyAttackPending = false;
 let combatPausedForVocab = false;
+let pendingActionType = null; // 'attack' or 'defend' - set when card selected
 let playerAttackTimer = null;
 let enemyAttackTimer = null;
 
@@ -76,6 +77,7 @@ let setChipLoadoutCache = null;
 let getEnemyDialogueActive = null;
 let getDialogueDismissPromise = null;
 let showFlashCard = null;
+let showDualFlashCards = null;
 let setCombatAnimationActive = null;
 
 // Utility
@@ -112,6 +114,7 @@ export function init(callbacks) {
   getEnemyDialogueActive = callbacks.getEnemyDialogueActive;
   getDialogueDismissPromise = callbacks.getDialogueDismissPromise;
   showFlashCard = callbacks.showFlashCard;
+  showDualFlashCards = callbacks.showDualFlashCards;
 
   // Utility
   delay = callbacks.delay;
@@ -162,6 +165,24 @@ export function cleanupCombat() {
   combatPausedForVocab = false;
 }
 
+function showNextDualCardsFromQueue() {
+  const words = wordPractice.getTwoCombatWords?.();
+  if (!words || !words.attackWord) {
+    // Fallback: not enough words, use single card flow
+    const word = wordPractice.getNextCombatWord?.();
+    if (word && showFlashCard) {
+      pendingActionType = 'attack'; // Default to attack if single card
+      showFlashCard(word);
+    }
+    return;
+  }
+
+  if (showDualFlashCards) {
+    showDualFlashCards(words.attackWord, words.defendWord);
+  }
+}
+
+// Keep old function for backwards compatibility / fallback
 function showNextFlashCardFromQueue() {
   const word = wordPractice.getNextCombatWord?.();
   if (word && showFlashCard) {
@@ -265,6 +286,16 @@ async function showChipActivationSequence(pa) {
           playSFX('chip-equip');
         }
         await delay(200);
+        break;
+
+      case 'buff':
+        // PRE_PIPELINE buff adds to power (e.g., Battery Bot's Full Charge +8)
+        if (event.powerAdd) {
+          currentPwr += event.powerAdd;
+          updateStatValue('pwr-value', formatNum(currentPwr));
+          addLogLine(`• Skill Buff: +${formatNum(event.powerAdd)} PWR`);
+          await delay(200);
+        }
         break;
 
       case 'base':
@@ -520,8 +551,8 @@ export async function startCombatLoop() {
   // Initialize word practice cards and wait for words to be ready
   await wordPractice.initCombatWords();
 
-  // Show first flash card now that words are loaded
-  showNextFlashCardFromQueue();
+  // Show first dual flash cards now that words are loaded
+  showNextDualCardsFromQueue();
 
   console.log('[Combat] Started paused - review a word to begin attacking');
   // Combat starts paused, player must review a vocab word to earn first attack
@@ -643,11 +674,11 @@ export async function executePlayerAttack() {
     playerAttackPending = false;
     if (setCombatAnimationActive) setCombatAnimationActive(false);
 
-    // Recovery: pause for vocab and show flashcard so player can continue
+    // Recovery: pause for vocab and show dual cards so player can continue
     if (combatActive) {
       combatPausedForVocab = true;
-      showNextFlashCardFromQueue();
-      logger.warn('[CombatLoop] Recovered from player attack error, showing flashcard');
+      showNextDualCardsFromQueue();
+      logger.warn('[CombatLoop] Recovered from player attack error, showing dual cards');
     }
   }
 }
@@ -743,11 +774,11 @@ export async function executeEnemyAttack() {
     enemyAttackPending = false;
     if (setCombatAnimationActive) setCombatAnimationActive(false);
 
-    // Recovery: pause for vocab and show flashcard so player can continue
+    // Recovery: pause for vocab and show dual cards so player can continue
     if (combatActive) {
       combatPausedForVocab = true;
-      showNextFlashCardFromQueue();
-      logger.warn('[CombatLoop] Recovered from enemy attack error, showing flashcard');
+      showNextDualCardsFromQueue();
+      logger.warn('[CombatLoop] Recovered from enemy attack error, showing dual cards');
     }
   }
 }
@@ -847,38 +878,160 @@ export async function executeEnemyAttackThenPause() {
     enemyAttackPending = false;
     if (setCombatAnimationActive) setCombatAnimationActive(false);
     combatPausedForVocab = true;
-    // Delay before showing flash card so player can see the damage
+    // Delay before showing dual cards so player can see the damage
     await delay(1440);
-    // Show next flash card for the next review
-    showNextFlashCardFromQueue();
+    // Show next dual cards for the next review
+    showNextDualCardsFromQueue();
     console.log('[Combat] Paused for vocab review. Review a word to continue.');
 
   } catch (error) {
     console.error('Enemy attack error:', error);
-    // Don't trigger defeat for errors - recover by showing next flashcard
+    // Don't trigger defeat for errors - recover by showing dual cards
     enemyAttackPending = false;
     if (setCombatAnimationActive) setCombatAnimationActive(false);
 
-    // Recovery: pause for vocab and show flashcard so player can continue
+    // Recovery: pause for vocab and show dual cards so player can continue
     if (combatActive) {
       combatPausedForVocab = true;
-      showNextFlashCardFromQueue();
-      logger.warn('[CombatLoop] Recovered from enemy attack error, showing flashcard');
+      showNextDualCardsFromQueue();
+      logger.warn('[CombatLoop] Recovered from enemy attack error, showing dual cards');
     }
   }
 }
 
 /**
  * Resume combat after vocab review - triggers next attack cycle
+ * @param {number} grade - Review grade (1-5)
+ * @param {string} actionType - 'attack' or 'defend'
  */
-export function resumeCombatAfterVocab(grade) {
+export function resumeCombatAfterVocab(grade, actionType = 'attack') {
   if (!combatActive || !combatPausedForVocab) return;
 
-  logger.info('[CombatLoop] Word reviewed, continuing:', { grade });
+  logger.info('[CombatLoop] Word reviewed, continuing:', { grade, actionType });
   combatPausedForVocab = false;
+  pendingActionType = actionType;
 
-  // Trigger player attack, which will chain into enemy attack, then pause again
-  executePlayerAttack();
+  if (actionType === 'defend') {
+    // Defend: skip player attack, go straight to enemy attack with damage reduction
+    executeDefendThenPause();
+  } else {
+    // Attack: normal flow - player attacks, then enemy attacks
+    executePlayerAttack();
+  }
+}
+
+/**
+ * Execute defend action: skip player attack, enemy attacks with reduced damage
+ */
+async function executeDefendThenPause() {
+  if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
+
+  enemyAttackPending = true;
+  if (setCombatAnimationActive) setCombatAnimationActive(true);
+
+  try {
+    const apiKeys = settings.getApiKeys();
+    const response = await fetch(`${API_BASE}/api/game/combat-cycle`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ attackerType: 'enemy', actionType: 'defend', ...apiKeys })
+    });
+    const result = await response.json();
+    console.log('[Combat] Defend - Enemy attack (50% damage):', result.enemyAttack?.damage);
+
+    if (result.error) {
+      if (result.error === 'No active combat') {
+        logger.warn('[CombatLoop] Stale attack detected');
+        combatActive = false;
+        if (setCombatAnimationActive) setCombatAnimationActive(false);
+        return;
+      }
+      console.error('Enemy attack error:', result.error);
+      if (combatActive) {
+        stopCombatLoop({ combatEnded: true, victory: false, error: true });
+      }
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
+      return;
+    }
+
+    if (getEnemyDialogueActive()) {
+      enemyAttackPending = false;
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
+      return;
+    }
+
+    // Show defend indicator
+    const actionArea = document.getElementById('action-area');
+    if (actionArea) {
+      actionArea.innerHTML = '<div class="combat-defend-indicator">DEFENDING - 50% damage</div>';
+    }
+    await delay(600);
+
+    // Show enemy's attack result (damage already halved by backend)
+    if (result.enemyAttack) {
+      const ea = result.enemyAttack;
+      if (ea.perfectDodge) {
+        showDamageNumber(0, true, false, false, false, 'perfect');
+      } else if (ea.dodged) {
+        showDamageNumber(0, true, false, false, false, 'dodge');
+      } else if (ea.miss) {
+        showDamageNumber(0, true, false, false, false, 'miss');
+      } else {
+        showDamageNumber(ea.damage, true, ea.critical);
+        animatePlayerHurt();
+        playSFX('player-hit');
+      }
+      showEnemyDamageDisplay(ea);
+
+      const playerHpBar = document.getElementById('player-hp-fill');
+      const chipRow = document.getElementById('chip-row');
+      await playerHitEffect(result.enemyAttack.damage, playerHpBar, chipRow);
+
+      const gameState = getGameState();
+      if (gameState?.player) {
+        updateHpCriticalState(playerHpBar, gameState.player.hp, gameState.player.maxHp);
+      }
+    }
+
+    // Update HP bars
+    characterUI.updateEnemyHPBar(result.enemyHp);
+    characterUI.updatePlayerHPBar(result.playerHp);
+
+    // Update chip charges (still increment on defend)
+    if (result.chipCharges) {
+      const cache = getChipLoadoutCache();
+      if (cache) {
+        cache.chipCharges = result.chipCharges;
+        setChipLoadoutCache(cache);
+        updateActionPanel();
+      }
+    }
+
+    // Check if combat ended
+    if (result.combatEnded) {
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
+      stopCombatLoop(result);
+      return;
+    }
+
+    enemyAttackPending = false;
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
+    combatPausedForVocab = true;
+    await delay(1440);
+    showNextDualCardsFromQueue();
+    console.log('[Combat] Defend complete. Paused for vocab review.');
+
+  } catch (error) {
+    console.error('Defend action error:', error);
+    enemyAttackPending = false;
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
+
+    if (combatActive) {
+      combatPausedForVocab = true;
+      showNextDualCardsFromQueue();
+      logger.warn('[CombatLoop] Recovered from defend error, showing dual cards');
+    }
+  }
 }
 
 /**
