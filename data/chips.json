@@ -887,20 +887,19 @@
     "id": "sparkPlug",
     "name": "点火ボット",
     "nameEn": "Spark Plug Bot",
-    "description": "最初のスロットで帯域×1.8倍！",
-    "descriptionEn": "x1.8 BW when in first slot!",
+    "description": "次のチップのパワーを2倍に！",
+    "descriptionEn": "Doubles next chip's power!",
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "amplifier",
     "stats": { "power": 10, "bandwidth": 0, "hp": 25 },
     "effects": {
       "pipeline": {
-        "type": "positionBonus",
-        "target": "bandwidth",
-        "position": "first",
-        "bandwidthMult": 1.8,
+        "type": "amplifyNext",
+        "target": "power",
+        "value": 2.0,
         "triggerChance": 1,
-        "displayText": "×1.8 BW (first)"
+        "displayText": "×2 next PWR"
       }
     },
     "skill": {
