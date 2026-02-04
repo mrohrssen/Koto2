@@ -1065,25 +1065,37 @@ describe('Anchor Bot (positionBonus - last)', () => {
   });
 });
 
-describe('Spark Plug Bot (positionBonus - first)', () => {
-  it('should give bonus when in first slot', () => {
-    const chips = [getChip('sparkPlug'), getChip('battery')];
-    const result = runPipeline(chips, { weaponUsedSlots: 2 });
-    // Spark Plug: PWR 10, BW 3 + Battery: PWR 10, BW 0 = PWR 20, BW 3
-    // Spark Plug in first: ×1.8 BW = 5.4
-    assert.strictEqual(result.powerPool, 20);
-    assert.strictEqual(result.bandwidthPool, 5.4);
-    assert.strictEqual(result.finalDamage, 128);
+describe('Spark Plug Bot (amplifyNext)', () => {
+  it('should amplify next chip effect by 2x', () => {
+    // sparkPlug amplifies next chip's effect value by 2x
+    // Use speaker which has multiply effect with value 1.2
+    const chips = [getChip('sparkPlug'), getChip('speaker')];
+    const originalRandom = Math.random;
+    Math.random = () => 0.5; // Trigger speaker's 80% effect
+
+    try {
+      const result = runPipeline(chips, { weaponUsedSlots: 2 });
+      // Spark Plug: PWR 10, BW 0 (sets amplifyNext = 2.0)
+      // Speaker: PWR 10, BW 0, effect = multiply power by 1.2
+      // Amplified: 1.2 * 2.0 = 2.4 power multiplier
+      // Total base: PWR 20, BW 0
+      // After Speaker effect: PWR 20 * 2.4 = 48
+      assert.strictEqual(result.powerPool, 48);
+      assert.strictEqual(result.finalDamage, 48);
+    } finally {
+      Math.random = originalRandom;
+    }
   });
 
-  it('should not give bonus when not in first slot', () => {
-    const chips = [getChip('battery'), getChip('sparkPlug')];
+  it('should not affect chips with no effect', () => {
+    const chips = [getChip('sparkPlug'), getChip('battery')];
     const result = runPipeline(chips, { weaponUsedSlots: 2 });
-    // No position bonus - just base stats
-    // Battery: PWR 10, BW 0 + Spark Plug: PWR 10, BW 3 = PWR 20, BW 3
+    // Spark Plug: PWR 10, BW 0
+    // Battery: PWR 10, BW 0, type=none (no effect to amplify)
+    // Total: PWR 20, BW 0
     assert.strictEqual(result.powerPool, 20);
-    assert.strictEqual(result.bandwidthPool, 3);
-    assert.strictEqual(result.finalDamage, 80); // 20 × (1 + 3)
+    assert.strictEqual(result.bandwidthPool, 0);
+    assert.strictEqual(result.finalDamage, 20);
   });
 });
 
