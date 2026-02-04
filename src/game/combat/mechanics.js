@@ -21,10 +21,10 @@ export function getPlayerCombatStats(player) {
     maxHp: player.maxHp,
     sp: player.sp || 0,
     maxSp: player.maxSp || 0,
-    atk: player.attack || 0,  // Damage comes from chips only
+    atk: 0,  // Damage comes from chips only (ignore legacy player.attack)
     // Stub out old stats for compatibility
     def: 0,
-    matk: player.attack || 0,
+    matk: 0,
     mdef: 0,
     hit: 100,
     flee: 0,
