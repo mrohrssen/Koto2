@@ -854,8 +854,8 @@
     "id": "anchor",
     "name": "錨ボット",
     "nameEn": "Anchor Bot",
-    "description": "最後のスロットで+8パワー、帯域×1.5倍！",
-    "descriptionEn": "+8 PWR, x1.5 BW when in last slot!",
+    "description": "最後のスロットで+12パワー！",
+    "descriptionEn": "+12 PWR when in last slot!",
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "striker",
@@ -863,12 +863,11 @@
     "effects": {
       "pipeline": {
         "type": "positionBonus",
-        "target": "both",
+        "target": "power",
         "position": "last",
-        "powerAdd": 8,
-        "bandwidthMult": 1.5,
+        "powerAdd": 12,
         "triggerChance": 1,
-        "displayText": "+8 PWR ×1.5 BW (last)"
+        "displayText": "+12 PWR (last)"
       }
     },
     "skill": {
