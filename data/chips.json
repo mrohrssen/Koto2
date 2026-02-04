@@ -600,8 +600,8 @@
     "id": "toolbox",
     "name": "工具箱ボット",
     "nameEn": "Toolbox Bot",
-    "description": "装備毎に+2パワー、+0.3帯域。仲間が多いほど強い！",
-    "descriptionEn": "+2 PWR, +0.3 BW per equipped chip. Teamwork!",
+    "description": "装備毎に+5パワー。仲間が多いほど強い！",
+    "descriptionEn": "+5 PWR per equipped chip. Teamwork!",
     "category": "pipeline",
     "rarity": "uncommon",
     "archetype": "striker",
@@ -609,11 +609,10 @@
     "effects": {
       "pipeline": {
         "type": "perEquipped",
-        "target": "both",
-        "powerValue": 2,
-        "bandwidthValue": 0.3,
+        "target": "power",
+        "powerValue": 5,
         "triggerChance": 1,
-        "displayText": "+2 PWR +0.3 BW/equipped"
+        "displayText": "+5 PWR/equipped"
       }
     },
     "skill": {
