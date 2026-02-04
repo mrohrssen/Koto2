@@ -349,8 +349,8 @@
     "id": "straw",
     "name": "ストローボット",
     "nameEn": "Straw Bot",
-    "description": "+0.2帯域、4%HP回復。ちゅーっ！",
-    "descriptionEn": "+0.2 BW, heal 4% HP. Sips strength away!",
+    "description": "5%HP回復。ちゅーっ！",
+    "descriptionEn": "Heal 5% HP. Sips health back!",
     "category": "pipeline",
     "rarity": "common",
     "archetype": "healer",
@@ -358,11 +358,11 @@
     "effects": {
       "pipeline": {
         "type": "damageAndHeal",
-        "target": "bandwidth",
-        "value": 0.2,
-        "healPercent": 0.04,
+        "target": "meta",
+        "value": 0,
+        "healPercent": 0.05,
         "triggerChance": 1,
-        "displayText": "+0.2 BW heal 4%"
+        "displayText": "heal 5%"
       }
     },
     "skill": {
