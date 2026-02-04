@@ -155,7 +155,7 @@ function showPopup(index, chip, charge, maxCharges, inCombat = false) {
   const hpBonus = chipLevel > 1 ? Math.round(hp * scaleFactor) : 0;
 
   // Format bonus display (only show if > 0)
-  const formatBonus = (bonus) => bonus > 0 ? `<span class="chip-stat-bonus">+${bonus}</span>` : '';
+  const formatBonus = (bonus) => bonus > 0 ? `<span class="chip-stat-bonus">(+${bonus})</span>` : '';
 
   dom.chipPopupDesc.innerHTML = `
     <div class="chip-stat-row">
