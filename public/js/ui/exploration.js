@@ -438,7 +438,11 @@ export async function renderQuiz() {
   }
 
   // Show question in narration box (persistent - stays until we hide it)
-  sceneModule.showNarration(question.question, { speaker: 'Quiz Master', persistent: true });
+  let questionText = question.question;
+  if (question.translation) {
+    questionText += `\n\n(${question.translation})`;
+  }
+  sceneModule.showNarration(questionText, { speaker: 'Quiz Master', persistent: true });
 
   // Build answer buttons - full width with padding
   const answerButtons = question.options.map((opt, idx) => `
@@ -464,8 +468,8 @@ export async function renderQuiz() {
 
       const selectedIndex = parseInt(option.dataset.answerIndex, 10);
 
-      // Submit answer to server
-      const result = await apiSubmitQuizAnswer(question.id, selectedIndex);
+      // Submit answer to server (pass bunproMeta if available)
+      const result = await apiSubmitQuizAnswer(question.id, selectedIndex, question._bunproMeta);
 
       if (result.error) {
         sceneModule.showNarration('エラーが発生しました...', { autoDismiss: 2000 });
