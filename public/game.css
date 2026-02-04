@@ -535,9 +535,9 @@ html, body {
   width: 100%;
   aspect-ratio: 4/3;
   max-height: 120px;
-  background: var(--card-bg);
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
+  background: var(--bg-card);
+  border: 2px solid #ddd;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
