@@ -494,6 +494,88 @@ html, body {
   background: #ffebee;
 }
 
+/* ===== DUAL FLASH CARDS (Attack/Defend) ===== */
+.dual-flash-card-container {
+  width: 100%;
+  max-width: 320px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px;
+}
+
+.dual-card-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dual-card-label {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+}
+
+.dual-card-label.attack {
+  color: #e53935;
+}
+
+.dual-card-label.defend {
+  color: #1e88e5;
+}
+
+.dual-flash-card {
+  width: 100%;
+  aspect-ratio: 4/3;
+  max-height: 120px;
+  background: var(--card-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+}
+
+.dual-flash-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.dual-flash-card:active {
+  transform: scale(0.98);
+}
+
+.dual-flash-card.attack:hover {
+  border-color: #e53935;
+}
+
+.dual-flash-card.defend:hover {
+  border-color: #1e88e5;
+}
+
+.combat-defend-indicator {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e88e5;
+  text-align: center;
+  padding: 12px;
+  background: rgba(30, 136, 229, 0.1);
+  border-radius: 8px;
+  border: 2px solid #1e88e5;
+}
+
 /* ===== UTILITY ROW ===== */
 .utility-row {
   position: fixed;
