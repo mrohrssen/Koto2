@@ -150,40 +150,48 @@ export async function getQuizQuestion(apiToken) {
     const data = await response.json();
     logger.debug('[Bunpro] Got quiz_index response:', {
       sessionId: data.review_session_id,
-      pendingCount: data.pending_attempt?.length || 0
+      pendingAttemptCount: data.pending_attempt?.length || 0,
+      pendingWrapupCount: data.pending_wrapup?.length || 0
     });
 
-    // Extract first pending review
-    const pending = data.pending_attempt?.[0];
-    if (!pending) {
-      logger.debug('[Bunpro] No pending reviews');
+    // Find a question with wrong_answers (suitable for multiple choice)
+    // Check pending_attempt first, then pending_wrapup
+    const allPending = [...(data.pending_attempt || []), ...(data.pending_wrapup || [])];
+
+    let selectedPending = null;
+    let studyQuestion = null;
+
+    for (const pending of allPending) {
+      const studyQuestionId = pending.data?.relationships?.study_question?.data?.id;
+      // Note: included is INSIDE each pending item, not at top level
+      const sq = pending.included?.find(
+        item => item.type === 'study_question' && item.id === studyQuestionId
+      );
+
+      if (sq && Object.keys(sq.attributes?.wrong_answers || {}).length > 0) {
+        selectedPending = pending;
+        studyQuestion = sq;
+        break;
+      }
+    }
+
+    if (!selectedPending || !studyQuestion) {
+      logger.info('[Bunpro] No question with wrong_answers found');
       return null;
     }
 
-    const reviewId = pending.data?.id;
+    const reviewId = selectedPending.data?.id;
     const sessionId = data.review_session_id;
-    const studyQuestionId = pending.data?.relationships?.study_question?.data?.id;
-
-    // Find the study question in included
-    const studyQuestion = data.included?.find(
-      item => item.type === 'study_question' && item.id === studyQuestionId
-    );
-
-    if (!studyQuestion) {
-      logger.info('[Bunpro] Study question not found in included');
-      return null;
-    }
-
     const attrs = studyQuestion.attributes;
     const correctAnswer = attrs.answer;
     // Take up to 3 wrong answers for 4-choice quiz
     const wrongAnswers = Object.keys(attrs.wrong_answers || {}).slice(0, 3);
 
-    // Need at least 1 wrong answer for multiple choice
-    if (wrongAnswers.length === 0) {
-      logger.info('[Bunpro] No wrong answers available');
-      return null;
-    }
+    logger.debug('[Bunpro] Found suitable question:', {
+      reviewId,
+      answer: correctAnswer,
+      wrongAnswersCount: wrongAnswers.length
+    });
 
     // Build options: correct + wrong answers, then shuffle
     const options = [correctAnswer, ...wrongAnswers];
@@ -194,7 +202,7 @@ export async function getQuizQuestion(apiToken) {
       id: `bunpro-${reviewId}`,
       type: 'bunpro-grammar',
       question: stripHtml(attrs.content || ''),
-      translation: attrs.translation || '',
+      translation: stripHtml(attrs.translation || ''),
       options,
       correctIndex,
       reviewId,
