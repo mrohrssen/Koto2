@@ -58,6 +58,12 @@ export async function openSettings() {
           placeholder="${keyInfo.hasJpdbKey ? '••••••••' : 'Enter JPDB API key'}">
       </label>
       <label class="settings-label" style="margin-top:12px">
+        Bunpro Token
+        <input type="password" id="settings-bunpro-token" class="settings-input"
+          placeholder="${settingsModule.hasBunproToken?.() ? '••••••••' : 'Enter Bunpro token'}">
+        <small style="color:#888;font-size:0.85em">For grammar reviews. Find at bunpro.jp → Settings → API</small>
+      </label>
+      <label class="settings-label" style="margin-top:12px">
         AI API Key
         <input type="password" id="settings-ai-key" class="settings-input"
           placeholder="${keyInfo.hasAiKey ? '••••••••' : 'Enter AI API key'}">
@@ -128,6 +134,7 @@ export async function openSettings() {
 
   document.getElementById('settings-save-btn')?.addEventListener('click', async () => {
     const jpdbKey = document.getElementById('settings-jpdb-key')?.value?.trim();
+    const bunproToken = document.getElementById('settings-bunpro-token')?.value?.trim();
     const aiKey = document.getElementById('settings-ai-key')?.value?.trim();
     const aiProvider = document.getElementById('settings-ai-provider')?.value;
     const model = document.getElementById('settings-model')?.value?.trim();
@@ -159,6 +166,9 @@ export async function openSettings() {
     }
 
     // Save local-only settings
+    if (bunproToken && settingsModule.setBunproToken) {
+      settingsModule.setBunproToken(bunproToken);
+    }
     if (settingsModule.setTtsEnabled) {
       settingsModule.setTtsEnabled(ttsEnabled);
     }

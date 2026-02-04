@@ -21,6 +21,7 @@ const STORAGE_KEYS = {
   openaiModel: 'jrpg_openaiModel',
   openrouterModel: 'jrpg_openrouterModel',
   jlptLevel: 'jrpg_jlptLevel',
+  bunproToken: 'bunproToken',
   debugMode: 'debugMode',
   bgmVolume: 'jrpg_bgmVolume',
   sfxVolume: 'jrpg_sfxVolume',
@@ -95,6 +96,37 @@ export function hasRequiredApiKeys() {
 export function hasJpdbApiKey() {
   const keys = getApiKeys();
   return keys.jpdbApiKey && keys.jpdbApiKey.length > 0;
+}
+
+// ============ BUNPRO TOKEN ============
+
+/**
+ * Get Bunpro API token
+ * @returns {string} Bunpro token or empty string
+ */
+export function getBunproToken() {
+  return localStorage.getItem(STORAGE_KEYS.bunproToken) || '';
+}
+
+/**
+ * Set Bunpro API token
+ * @param {string} token - Bunpro token
+ */
+export function setBunproToken(token) {
+  if (token) {
+    localStorage.setItem(STORAGE_KEYS.bunproToken, token);
+  } else {
+    localStorage.removeItem(STORAGE_KEYS.bunproToken);
+  }
+}
+
+/**
+ * Check if Bunpro token is configured
+ * @returns {boolean} True if Bunpro token is set
+ */
+export function hasBunproToken() {
+  const token = getBunproToken();
+  return token && token.length > 0;
 }
 
 // ============ DEBUG MODE ============

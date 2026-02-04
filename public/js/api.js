@@ -7,6 +7,7 @@
  */
 
 import { logger } from './logger.js';
+import { getBunproToken } from './settings.js';
 
 // ============ CORE API WRAPPER ============
 
@@ -278,7 +279,7 @@ async function quizReward(rewardType) {
 /** Get a quiz question (may be from Bunpro or static) */
 async function getQuizQuestion() {
   try {
-    const bunproToken = localStorage.getItem('bunproToken');
+    const bunproToken = getBunproToken();
     const response = await fetch('/api/game/quiz-question', {
       method: 'GET',
       headers: {
@@ -305,7 +306,7 @@ async function getQuizQuestion() {
 /** Submit quiz answer for validation */
 async function submitQuizAnswer(questionId, selectedIndex, bunproMeta = null) {
   try {
-    const bunproToken = localStorage.getItem('bunproToken');
+    const bunproToken = getBunproToken();
     const response = await fetch('/api/game/quiz-answer', {
       method: 'POST',
       headers: {
