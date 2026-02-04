@@ -12,6 +12,7 @@ import { getChipLoadout, equipChip, unequipChip, reorderChips } from '../../game
 import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
 import { lookupVocabularyBatch } from '../../jpdb.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
+import { getQuizQuestion as getBunproQuestion } from '../../bunpro.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -294,14 +295,39 @@ export default function createRunRoutes({
     }
   });
 
-  // Get a random quiz question
-  router.get('/quiz-question', (req, res) => {
+  // Get a quiz question (Bunpro first, fallback to static)
+  router.get('/quiz-question', async (req, res) => {
     try {
+      // Try Bunpro first if token available
+      const bunproToken = req.bunproToken;
+      if (bunproToken) {
+        console.log('[Quiz] Attempting Bunpro question...');
+        const bunproQuestion = await getBunproQuestion(bunproToken);
+        if (bunproQuestion) {
+          console.log('[Quiz] Serving Bunpro question');
+          // Don't send correctIndex to frontend
+          return res.json({
+            id: bunproQuestion.id,
+            type: bunproQuestion.type,
+            question: bunproQuestion.question,
+            translation: bunproQuestion.translation,
+            options: bunproQuestion.options,
+            // Store these server-side for answer validation
+            _bunpro: {
+              reviewId: bunproQuestion.reviewId,
+              sessionId: bunproQuestion.sessionId,
+              correctIndex: bunproQuestion.correctIndex
+            }
+          });
+        }
+        console.log('[Quiz] Bunpro unavailable, falling back to static');
+      }
+
+      // Fallback to static questions
       const questions = loadQuizQuestions();
       const randomIndex = Math.floor(Math.random() * questions.length);
       const question = questions[randomIndex];
 
-      // Don't send correctIndex to frontend (prevent cheating)
       res.json({
         id: question.id,
         type: question.type,
@@ -309,7 +335,8 @@ export default function createRunRoutes({
         options: question.options
       });
     } catch (error) {
-      res.status(500).json({ error: 'Failed to load quiz questions' });
+      console.error('[Quiz] Error:', error.message);
+      res.status(500).json({ error: 'Failed to load quiz question' });
     }
   });
 
