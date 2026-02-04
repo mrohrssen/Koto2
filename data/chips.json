@@ -95,19 +95,20 @@
     "id": "lightbulb",
     "name": "電球ボット",
     "nameEn": "Light Bulb Bot",
-    "description": "50%で帯域×1.5倍。ひらめき次第！",
-    "descriptionEn": "50% chance to x1.5 BW. Sometimes brilliant!",
+    "description": "4回目の攻撃で+1帯域。ひらめき！",
+    "descriptionEn": "+1 BW every 4th attack. Eureka moments!",
     "category": "pipeline",
     "rarity": "uncommon",
     "archetype": "amplifier",
     "stats": { "power": 10, "bandwidth": 0, "hp": 30 },
     "effects": {
       "pipeline": {
-        "type": "multiply",
+        "type": "nthAttack",
         "target": "bandwidth",
-        "value": 1.5,
-        "triggerChance": 0.5,
-        "displayText": "×1.5 BW"
+        "interval": 4,
+        "flatBonus": 1,
+        "triggerChance": 1,
+        "displayText": "+1 BW every 4th"
       }
     },
     "skill": {
