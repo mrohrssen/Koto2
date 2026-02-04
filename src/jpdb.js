@@ -642,7 +642,7 @@ export const REVIEW_GRADES = {
 /**
  * Get due words with their English meanings for word practice
  */
-export async function getDueWordsWithMeanings(apiKey, limit = 50, excludeVids = []) {
+export async function getDueWordsWithMeanings(apiKey, limit = 1000, excludeVids = []) {
   console.log('[getDueWordsWithMeanings] Called with limit:', limit);
   if (!apiKey) {
     console.log('[getDueWordsWithMeanings] No API key');
@@ -1017,7 +1017,7 @@ function getDueWordsFromCache(limit, excludeVids) {
  * @param {number[]} excludeVids - Vocabulary IDs to exclude
  * @returns {Promise<{words: Array, source: string}>}
  */
-export async function fetchDueWordsDirectly(apiKey, limit = 50, excludeVids = []) {
+export async function fetchDueWordsDirectly(apiKey, limit = 1000, excludeVids = []) {
   if (!apiKey) {
     return { words: [], source: 'none' };
   }
@@ -1044,7 +1044,7 @@ export async function fetchDueWordsDirectly(apiKey, limit = 50, excludeVids = []
  * @param {number[]} excludeVids - Vocabulary IDs to exclude
  * @returns {Promise<{words: Array, source: string}>}
  */
-async function fetchDueWordsFromApi(apiKey, limit = 50, excludeVids = []) {
+async function fetchDueWordsFromApi(apiKey, limit = 1000, excludeVids = []) {
   console.log('[JPDB Direct] Fetching due words directly from JPDB...');
 
   // Step 1: Try to get vocab IDs from local cache first (much faster)
