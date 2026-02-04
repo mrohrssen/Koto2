@@ -826,6 +826,11 @@ async function initGame() {
         console.warn('[JPDB Review] Missing vid/sid, cannot send review:', reviewWord);
       }
 
+      // Play TTS for the reviewed word
+      if (reviewWord?.word) {
+        tts.playWord(reviewWord.word);
+      }
+
       combatLoopUI.resumeCombatAfterVocab(grade, actionType);
     },
     cardFlip: handleCardFlip,
