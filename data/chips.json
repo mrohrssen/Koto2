@@ -663,8 +663,8 @@
     "id": "adrenaline",
     "name": "アドレナリンボット",
     "nameEn": "Adrenaline Bot",
-    "description": "HP10減少ごとに+1帯域。ピンチで強い！",
-    "descriptionEn": "+1 BW per 10 HP missing. Stronger when hurt!",
+    "description": "HP20減少ごとに+5パワー。ピンチで強い！",
+    "descriptionEn": "+5 PWR per 20 HP missing. Stronger when hurt!",
     "category": "pipeline",
     "rarity": "epic",
     "archetype": "amplifier",
@@ -672,10 +672,10 @@
     "effects": {
       "pipeline": {
         "type": "missingHpBonus",
-        "target": "bandwidth",
-        "valuePer10Hp": 1,
+        "target": "power",
+        "valuePer20Hp": 5,
         "triggerChance": 1,
-        "displayText": "+1 BW/10 HP missing"
+        "displayText": "+5 PWR/20 HP missing"
       }
     },
     "skill": {
