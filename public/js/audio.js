@@ -106,9 +106,11 @@ export async function initAudio() {
   // Preload all SFX
   await Promise.allSettled(SFX_FILES.map(loadSfx));
 
-  // Set up BGM element
-  bgmElement = new Audio();
-  bgmElement.loop = true;
+  // Set up BGM element (only if not already created by playBGM)
+  if (!bgmElement) {
+    bgmElement = new Audio();
+    bgmElement.loop = true;
+  }
   bgmElement.volume = muted ? 0 : bgmVolume;
 }
 
