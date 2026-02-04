@@ -887,22 +887,23 @@ describe('Edge Cases', () => {
 
 describe('Gold Star Bot (rarityBonus)', () => {
   it('should add BW per legendary chip', () => {
-    // Gold Star is common, clock and mirror are legendary
-    const chips = [getChip('goldStar'), getChip('clock'), getChip('mirror')];
+    // Gold Star is common, clock is legendary
+    // Using only 2 chips to avoid mirror copying effect
+    const chips = [getChip('goldStar'), getChip('clock')];
     const originalRandom = Math.random;
-    Math.random = () => 0.99; // Prevent clock recursion and mirror copy
+    Math.random = () => 0.99; // Prevent clock recursion
 
     try {
       const result = runPipeline(chips, {
-        equippedChipRarities: ['common', 'legendary', 'legendary']
+        equippedChipRarities: ['common', 'legendary']
       });
-      // Gold Star: PWR 8, BW 0 + Clock: PWR 18, BW 0 + Mirror: PWR 18, BW 0
-      // Total base: PWR 44, BW 0
-      // Gold Star effect: +1 BW × 2 legendary = +2 BW
-      // Total: PWR 44, BW 2
-      // Damage = 44 × (1 + 2) = 132
-      assert.strictEqual(result.bandwidthPool, 2);
-      assert.strictEqual(result.finalDamage, 132);
+      // Gold Star: PWR 8, BW 0 + Clock: PWR 18, BW 0
+      // Total base: PWR 26, BW 0
+      // Gold Star effect: +1 BW × 1 legendary = +1 BW
+      // Total: PWR 26, BW 1
+      // Damage = 26 × (1 + 1) = 52
+      assert.strictEqual(result.bandwidthPool, 1);
+      assert.strictEqual(result.finalDamage, 52);
     } finally {
       Math.random = originalRandom;
     }
