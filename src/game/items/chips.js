@@ -227,20 +227,74 @@ function applyRarityMultiplier(effects, multiplier) {
  */
 export function generateShopChips(floor, ownedChipIds = [], count = 3, category = null, rarity = null) {
   // Get all chips, filter out ones player already owns
-  // Optionally filter by category and rarity
+  // Optionally filter by category
   const availableChips = Object.values(CHIPS).filter(chip =>
     !ownedChipIds.includes(chip.id) &&
-    (category === null || chip.category === category) &&
-    (rarity === null || chip.rarity === rarity)
+    (category === null || chip.category === category)
   );
 
   if (availableChips.length === 0) {
     return []; // No chips available
   }
 
-  // Shuffle and pick chips
-  const shuffled = [...availableChips].sort(() => Math.random() - 0.5);
-  const selected = shuffled.slice(0, Math.min(count, shuffled.length));
+  let selected;
+
+  if (rarity !== null) {
+    // Specific rarity requested (e.g., 'common' for starting shop)
+    const rarityFiltered = availableChips.filter(chip => chip.rarity === rarity);
+    const shuffled = [...rarityFiltered].sort(() => Math.random() - 0.5);
+    selected = shuffled.slice(0, Math.min(count, shuffled.length));
+  } else {
+    // Use weighted rarity selection for post-combat shops
+    // Group available chips by rarity
+    const byRarity = {};
+    for (const chip of availableChips) {
+      const r = chip.rarity || 'common';
+      if (!byRarity[r]) byRarity[r] = [];
+      byRarity[r].push(chip);
+    }
+
+    // Shuffle each rarity pool
+    for (const r in byRarity) {
+      byRarity[r].sort(() => Math.random() - 0.5);
+    }
+
+    selected = [];
+    const usedIds = new Set();
+    const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+
+    for (let i = 0; i < count; i++) {
+      // Roll for rarity
+      let rolledRarity = rollRandomRarity();
+
+      // Find a chip of this rarity (or fall back to lower rarities)
+      let chip = null;
+      const startIdx = rarityOrder.indexOf(rolledRarity);
+
+      // Try rolled rarity first, then fall back to lower rarities
+      for (let j = startIdx; j >= 0 && !chip; j--) {
+        const r = rarityOrder[j];
+        if (byRarity[r]) {
+          chip = byRarity[r].find(c => !usedIds.has(c.id));
+        }
+      }
+
+      // If still no chip, try higher rarities
+      if (!chip) {
+        for (let j = startIdx + 1; j < rarityOrder.length && !chip; j++) {
+          const r = rarityOrder[j];
+          if (byRarity[r]) {
+            chip = byRarity[r].find(c => !usedIds.has(c.id));
+          }
+        }
+      }
+
+      if (chip) {
+        selected.push(chip);
+        usedIds.add(chip.id);
+      }
+    }
+  }
 
   // Use fixed rarity from chip definition
   return selected.map(chip => {
@@ -775,6 +829,15 @@ export function executeChipPipeline(weaponChips, context) {
     selfDamagePerTrigger: 0,
     triggerCount: 0
   };
+
+  // Record PRE_PIPELINE buff contribution if any (e.g., Battery Bot's Full Charge +8)
+  if (context.baseDamage > 0) {
+    state.sequence.push({
+      type: 'buff',
+      source: 'PRE_PIPELINE',
+      powerAdd: context.baseDamage
+    });
+  }
 
   // First pass: sum all chip stats into pools (with level scaling)
   console.log('[Pipeline] Starting pipeline with', weaponChips.length, 'chips');
