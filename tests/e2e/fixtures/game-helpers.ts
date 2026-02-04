@@ -259,11 +259,23 @@ export class GameHelper {
   // ============ COMBAT (FLASH CARDS) ============
 
   async waitForFlashCard(timeout = 8000): Promise<void> {
-    await this.page.locator(SELECTORS.flashCard).waitFor({ state: 'visible', timeout });
+    // Wait for either single flash card or dual flash cards (attack/defend)
+    await Promise.race([
+      this.page.locator(SELECTORS.flashCard).waitFor({ state: 'visible', timeout }),
+      this.page.locator(SELECTORS.attackCard).waitFor({ state: 'visible', timeout })
+    ]);
   }
 
-  /** Flip the flash card (tap/click) */
+  /** Flip the flash card (tap/click) - handles both single and dual card modes */
   async flipCard(): Promise<void> {
+    // Check for dual-card mode first (attack card)
+    const attackCard = this.page.locator(SELECTORS.attackCard);
+    if (await attackCard.isVisible().catch(() => false)) {
+      await attackCard.click();
+      await this.page.waitForTimeout(200);
+      return;
+    }
+    // Fall back to single flash card
     await this.page.locator(SELECTORS.flashCard).click();
     await this.page.waitForTimeout(200);
   }

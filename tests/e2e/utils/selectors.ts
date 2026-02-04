@@ -34,7 +34,7 @@ export const SELECTORS = {
   actionBtn: '.action-btn',
   actionBtnPrimary: '.action-btn-primary',
 
-  // Flash card
+  // Flash card (single card mode)
   flashCardContainer: '#flash-card-container',
   flashCard: '#flash-card',
   flashCardFront: '.flash-card-front',
@@ -42,6 +42,14 @@ export const SELECTORS = {
   flashCardReading: '.flash-card-reading',
   flashCardMeaning: '.flash-card-meaning',
   flashCardHint: '.flash-card-hint',
+
+  // Dual flash cards (attack/defend mode)
+  dualFlashCardContainer: '#dual-flash-card-container',
+  attackCard: '#attack-card',
+  defendCard: '#defend-card',
+  dualFlashCard: '.dual-flash-card',
+  dualCardFront: '.dual-card-front',
+  dualCardBack: '.dual-card-back',
 
   // Dynamic action buttons (rendered into action-area by phase)
   newGameBtn: '#new-game-btn',

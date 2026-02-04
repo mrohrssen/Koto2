@@ -48,10 +48,11 @@ test.describe('Boss Room', () => {
     const narrationBox = page.locator(SELECTORS.narrationBox);
     const narrationIndicator = page.locator(SELECTORS.narrationIndicator);
 
-    // Wait for either narration or flash card
+    // Wait for either narration or flash card (single or dual mode)
     await Promise.race([
       narrationBox.waitFor({ state: 'visible', timeout: 5000 }).catch(() => null),
-      page.locator(SELECTORS.flashCard).waitFor({ state: 'visible', timeout: 5000 }).catch(() => null)
+      page.locator(SELECTORS.flashCard).waitFor({ state: 'visible', timeout: 5000 }).catch(() => null),
+      page.locator(SELECTORS.attackCard).waitFor({ state: 'visible', timeout: 5000 }).catch(() => null)
     ]);
 
     // Dismiss narration if visible (boss dialogue) - use force to bypass sprite overlay
@@ -65,8 +66,8 @@ test.describe('Boss Room', () => {
       }
     }
 
-    // Wait for flash card UI to appear (combat loop takes time to start)
-    await page.locator(SELECTORS.flashCard).waitFor({ state: 'visible', timeout: 10000 });
+    // Wait for flash card UI to appear (single or dual mode)
+    await gameHelper.waitForFlashCard(10000);
 
     // Weaken boss and win - set HP very low so one attack kills it
     await gameHelper.setEnemyHp(1);

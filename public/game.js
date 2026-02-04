@@ -813,13 +813,22 @@ async function initGame() {
       // Combat mode: grade based on swipe direction and pass action type
       const grade = direction === 'right' ? 4 : 1;
       const actionType = window._pendingCombatAction || 'attack';
-      window._pendingCombatAction = null; // Clear after use
+      const reviewWord = window._pendingCombatWord;
+      window._pendingCombatAction = null;
+      window._pendingCombatWord = null;
+
+      // Send JPDB review for the word that was just graded
+      if (reviewWord?.vid && reviewWord?.sid) {
+        apiSendJpdbReview(reviewWord.vid, reviewWord.sid, grade);
+      }
+
       combatLoopUI.resumeCombatAfterVocab(grade, actionType);
     },
     cardFlip: handleCardFlip,
     dualCardSelect: (actionType, selectedWord) => {
-      // Store the action type for when review completes
+      // Store the action type and word for when review completes
       window._pendingCombatAction = actionType;
+      window._pendingCombatWord = selectedWord;
 
       // Get both words to return the unchosen one
       const words = wordPractice.getTwoCombatWords();

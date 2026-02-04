@@ -41,6 +41,7 @@ async function dismissNarration(page: any, maxAttempts = 10): Promise<boolean> {
 
 /**
  * Helper to wait for flash card to appear, dismissing any narration first
+ * Handles both single flash card and dual-card (attack/defend) modes
  */
 async function waitForFlashCardWithNarration(gameHelper: any, page: any, timeout = 15000): Promise<void> {
   const startTime = Date.now();
@@ -51,10 +52,11 @@ async function waitForFlashCardWithNarration(gameHelper: any, page: any, timeout
       console.log('[Test] Dismissed narration while waiting for flash card');
     }
 
-    // Check if flash card is visible
+    // Check if flash card is visible (single or dual mode)
     const flashCardVisible = await page.locator(SELECTORS.flashCard).isVisible().catch(() => false);
-    if (flashCardVisible) {
-      console.log('[Test] Flash card is now visible');
+    const attackCardVisible = await page.locator(SELECTORS.attackCard).isVisible().catch(() => false);
+    if (flashCardVisible || attackCardVisible) {
+      console.log('[Test] Flash card is now visible (dual=' + attackCardVisible + ')');
       return;
     }
 
@@ -145,7 +147,15 @@ test.describe('Encounter Room', () => {
 
     // Wait for flash card with additional narration handling
     await waitForFlashCardWithNarration(gameHelper, page, 15000);
-    const frontText = await page.locator(SELECTORS.flashCardFront).textContent();
+
+    // Check for card front text (handles both single and dual card modes)
+    let frontText: string | null = null;
+    const dualCardFront = page.locator(SELECTORS.dualCardFront).first();
+    if (await dualCardFront.isVisible().catch(() => false)) {
+      frontText = await dualCardFront.textContent();
+    } else {
+      frontText = await page.locator(SELECTORS.flashCardFront).textContent();
+    }
     expect(frontText?.trim().length).toBeGreaterThan(0);
   });
 
