@@ -937,7 +937,7 @@ async function executeDefendThenPause() {
       body: JSON.stringify({ attackerType: 'enemy', actionType: 'defend', ...apiKeys })
     });
     const result = await response.json();
-    console.log('[Combat] Defend - Enemy attack (50% damage):', result.enemyAttack?.damage);
+    logger.info('[Combat] Defend - Enemy attack (50% damage):', result.enemyAttack?.damage);
 
     if (result.error) {
       if (result.error === 'No active combat') {
@@ -1019,7 +1019,7 @@ async function executeDefendThenPause() {
     combatPausedForVocab = true;
     await delay(1440);
     showNextDualCardsFromQueue();
-    console.log('[Combat] Defend complete. Paused for vocab review.');
+    logger.info('[Combat] Defend complete. Paused for vocab review.');
 
   } catch (error) {
     console.error('Defend action error:', error);
