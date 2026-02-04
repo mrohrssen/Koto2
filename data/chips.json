@@ -38,7 +38,7 @@
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "amplifier",
-    "stats": { "power": 10, "bandwidth": 3, "hp": 25 },
+    "stats": { "power": 10, "bandwidth": 0, "hp": 25 },
     "effects": {
       "pipeline": {
         "type": "multiply",
@@ -69,7 +69,7 @@
     "category": "pipeline",
     "rarity": "uncommon",
     "archetype": "amplifier",
-    "stats": { "power": 8, "bandwidth": 3, "hp": 25 },
+    "stats": { "power": 8, "bandwidth": 0, "hp": 25 },
     "effects": {
       "pipeline": {
         "type": "rampingMultiply",
@@ -100,7 +100,7 @@
     "category": "pipeline",
     "rarity": "uncommon",
     "archetype": "amplifier",
-    "stats": { "power": 10, "bandwidth": 2, "hp": 30 },
+    "stats": { "power": 10, "bandwidth": 0, "hp": 30 },
     "effects": {
       "pipeline": {
         "type": "multiply",
@@ -130,7 +130,7 @@
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "striker",
-    "stats": { "power": 14, "bandwidth": 1, "hp": 40 },
+    "stats": { "power": 14, "bandwidth": 0, "hp": 40 },
     "effects": {
       "pipeline": {
         "type": "conditional",
@@ -166,7 +166,7 @@
     "category": "pipeline",
     "rarity": "legendary",
     "archetype": "trickster",
-    "stats": { "power": 18, "bandwidth": 2, "hp": 35 },
+    "stats": { "power": 18, "bandwidth": 0, "hp": 35 },
     "effects": {
       "pipeline": {
         "type": "recursion",
@@ -198,7 +198,7 @@
     "category": "pipeline",
     "rarity": "legendary",
     "archetype": "healer",
-    "stats": { "power": 20, "bandwidth": 3, "hp": 50 },
+    "stats": { "power": 20, "bandwidth": 0, "hp": 50 },
     "effects": {
       "pipeline": {
         "type": "sacrifice",
@@ -229,7 +229,7 @@
     "category": "pipeline",
     "rarity": "uncommon",
     "archetype": "trickster",
-    "stats": { "power": 9, "bandwidth": 2, "hp": 45 },
+    "stats": { "power": 9, "bandwidth": 0, "hp": 45 },
     "effects": {
       "pipeline": {
         "type": "stacking",
@@ -259,7 +259,7 @@
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "tank",
-    "stats": { "power": 12, "bandwidth": 2, "hp": 75 },
+    "stats": { "power": 12, "bandwidth": 0, "hp": 75 },
     "effects": {
       "pipeline": {
         "type": "emptySlots",
@@ -324,7 +324,7 @@
     "category": "pipeline",
     "rarity": "uncommon",
     "archetype": "striker",
-    "stats": { "power": 11, "bandwidth": 1, "hp": 45 },
+    "stats": { "power": 11, "bandwidth": 0, "hp": 45 },
     "effects": {
       "pipeline": {
         "type": "killCounter",
@@ -354,7 +354,7 @@
     "category": "pipeline",
     "rarity": "common",
     "archetype": "healer",
-    "stats": { "power": 6, "bandwidth": 2, "hp": 65 },
+    "stats": { "power": 6, "bandwidth": 0, "hp": 65 },
     "effects": {
       "pipeline": {
         "type": "damageAndHeal",
@@ -385,7 +385,7 @@
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "amplifier",
-    "stats": { "power": 13, "bandwidth": 2, "hp": 25 },
+    "stats": { "power": 13, "bandwidth": 0, "hp": 25 },
     "effects": {
       "pipeline": {
         "type": "vsBoss",
@@ -417,7 +417,7 @@
     "category": "pipeline",
     "rarity": "epic",
     "archetype": "tank",
-    "stats": { "power": 15, "bandwidth": 2, "hp": 85 },
+    "stats": { "power": 15, "bandwidth": 0, "hp": 85 },
     "effects": {
       "pipeline": {
         "type": "destroyedMultiplier",
@@ -449,7 +449,7 @@
     "category": "pipeline",
     "rarity": "epic",
     "archetype": "trickster",
-    "stats": { "power": 17, "bandwidth": 2, "hp": 40 },
+    "stats": { "power": 17, "bandwidth": 0, "hp": 40 },
     "effects": {
       "pipeline": {
         "type": "riskyFlat",
@@ -481,7 +481,7 @@
     "category": "pipeline",
     "rarity": "legendary",
     "archetype": "trickster",
-    "stats": { "power": 18, "bandwidth": 3, "hp": 30 },
+    "stats": { "power": 18, "bandwidth": 0, "hp": 30 },
     "effects": {
       "pipeline": {
         "type": "copy",
@@ -511,7 +511,7 @@
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "trickster",
-    "stats": { "power": 11, "bandwidth": 2, "hp": 40 },
+    "stats": { "power": 11, "bandwidth": 0, "hp": 40 },
     "effects": {
       "pipeline": {
         "type": "perEmptySlot",
@@ -543,7 +543,7 @@
     "category": "pipeline",
     "rarity": "epic",
     "archetype": "amplifier",
-    "stats": { "power": 15, "bandwidth": 3, "hp": 20 },
+    "stats": { "power": 15, "bandwidth": 0, "hp": 20 },
     "effects": {
       "pipeline": {
         "type": "nthAttack",
@@ -574,7 +574,7 @@
     "category": "pipeline",
     "rarity": "epic",
     "archetype": "amplifier",
-    "stats": { "power": 14, "bandwidth": 3, "hp": 20 },
+    "stats": { "power": 14, "bandwidth": 0, "hp": 20 },
     "effects": {
       "pipeline": {
         "type": "amplifyNext",
@@ -605,7 +605,7 @@
     "category": "pipeline",
     "rarity": "uncommon",
     "archetype": "striker",
-    "stats": { "power": 10, "bandwidth": 1, "hp": 50 },
+    "stats": { "power": 10, "bandwidth": 0, "hp": 50 },
     "effects": {
       "pipeline": {
         "type": "perEquipped",
@@ -637,7 +637,7 @@
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "striker",
-    "stats": { "power": 22, "bandwidth": 4, "hp": 30 },
+    "stats": { "power": 22, "bandwidth": 0, "hp": 30 },
     "effects": {
       "pipeline": {
         "type": "hpCost",
@@ -668,7 +668,7 @@
     "category": "pipeline",
     "rarity": "epic",
     "archetype": "amplifier",
-    "stats": { "power": 12, "bandwidth": 2, "hp": 20 },
+    "stats": { "power": 12, "bandwidth": 0, "hp": 20 },
     "effects": {
       "pipeline": {
         "type": "missingHpBonus",
@@ -700,7 +700,7 @@
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "tank",
-    "stats": { "power": 18, "bandwidth": 4, "hp": 70 },
+    "stats": { "power": 18, "bandwidth": 0, "hp": 70 },
     "effects": {
       "pipeline": {
         "type": "slotCount",
@@ -732,7 +732,7 @@
     "category": "pipeline",
     "rarity": "uncommon",
     "archetype": "amplifier",
-    "stats": { "power": 14, "bandwidth": 6, "hp": 15 },
+    "stats": { "power": 14, "bandwidth": 0, "hp": 15 },
     "effects": {
       "pipeline": {
         "type": "degradePerAttack",
@@ -763,7 +763,7 @@
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "amplifier",
-    "stats": { "power": 16, "bandwidth": 5, "hp": 15 },
+    "stats": { "power": 16, "bandwidth": 0, "hp": 15 },
     "effects": {
       "pipeline": {
         "type": "degradePerCombat",
@@ -794,7 +794,7 @@
     "category": "pipeline",
     "rarity": "common",
     "archetype": "trickster",
-    "stats": { "power": 8, "bandwidth": 1, "hp": 50 },
+    "stats": { "power": 8, "bandwidth": 0, "hp": 50 },
     "effects": {
       "pipeline": {
         "type": "rarityBonus",
@@ -826,7 +826,7 @@
     "category": "pipeline",
     "rarity": "uncommon",
     "archetype": "trickster",
-    "stats": { "power": 10, "bandwidth": 2, "hp": 45 },
+    "stats": { "power": 10, "bandwidth": 0, "hp": 45 },
     "effects": {
       "pipeline": {
         "type": "rarityRestriction",
@@ -859,7 +859,7 @@
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "striker",
-    "stats": { "power": 12, "bandwidth": 2, "hp": 45 },
+    "stats": { "power": 12, "bandwidth": 0, "hp": 45 },
     "effects": {
       "pipeline": {
         "type": "positionBonus",
@@ -892,7 +892,7 @@
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "amplifier",
-    "stats": { "power": 10, "bandwidth": 3, "hp": 25 },
+    "stats": { "power": 10, "bandwidth": 0, "hp": 25 },
     "effects": {
       "pipeline": {
         "type": "positionBonus",
@@ -924,7 +924,7 @@
     "category": "pipeline",
     "rarity": "epic",
     "archetype": "healer",
-    "stats": { "power": 8, "bandwidth": 2, "hp": 55 },
+    "stats": { "power": 8, "bandwidth": 0, "hp": 55 },
     "effects": {
       "pipeline": {
         "type": "healingToDamage",
@@ -953,7 +953,7 @@
     "category": "pipeline",
     "rarity": "rare",
     "archetype": "healer",
-    "stats": { "power": 14, "bandwidth": 3, "hp": 50 },
+    "stats": { "power": 14, "bandwidth": 0, "hp": 50 },
     "effects": {
       "pipeline": {
         "type": "lifesteal",
@@ -985,7 +985,7 @@
     "category": "pipeline",
     "rarity": "epic",
     "archetype": "striker",
-    "stats": { "power": 25, "bandwidth": 5, "hp": 30 },
+    "stats": { "power": 25, "bandwidth": 0, "hp": 30 },
     "effects": {
       "pipeline": {
         "type": "selfDamagePerTrigger",
