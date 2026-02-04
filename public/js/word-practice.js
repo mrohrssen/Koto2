@@ -201,20 +201,18 @@ export function getNextCombatWord() {
  * @returns {Object} { attackWord, defendWord } or { attackWord: null, defendWord: null }
  */
 export function getTwoCombatWords() {
-  // Need at least 2 words in combatWords or available pool
   const allWords = [...combatWords, ...availableWords];
 
   if (allWords.length < 2) {
-    // Not enough words - return what we have or null
     return {
       attackWord: allWords[0] || null,
       defendWord: allWords[1] || null
     };
   }
 
-  // Pick two different words
-  const attackWord = combatWords[0] || availableWords[0];
-  const defendWord = combatWords[1] || availableWords[0] || combatWords[0];
+  // Ensure different words - attackWord is first, defendWord is second different word
+  const attackWord = allWords[0];
+  const defendWord = allWords.find((w, i) => i > 0 && w.word !== attackWord.word) || allWords[1];
 
   return { attackWord, defendWord };
 }
