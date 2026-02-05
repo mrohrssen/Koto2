@@ -423,6 +423,16 @@ async function nextFloor() {
   return apiCall('/next-floor', 'POST');
 }
 
+/** Continue to next endless floor */
+async function continueEndless() {
+  return apiCall('/continue-endless', 'POST');
+}
+
+/** Return to hub after game victory (declining endless) */
+async function returnToHubFromVictory() {
+  return apiCall('/return-to-hub-from-victory', 'POST');
+}
+
 /** Get chip loadout for all equipment slots */
 async function getChipLoadout() {
   try {
@@ -610,6 +620,8 @@ export {
   unequipChip,
   reorderChips,
   nextFloor,
+  continueEndless,
+  returnToHubFromVictory,
   getChipLoadout,
   // Vocab/JPDB endpoints
   sendJpdbReview,
