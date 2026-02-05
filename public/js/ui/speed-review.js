@@ -6,8 +6,9 @@
  */
 
 import { dom } from '../dom.js';
-import { playSFX } from '../audio.js';
+import { playSFX, playBGMRandomStart, playBGM } from '../audio.js';
 import * as takeover from './takeover.js';
+import { animate as anime } from '../lib/anime.esm.min.js';
 
 // Module state
 let state = {
@@ -23,6 +24,7 @@ let state = {
 const slotState = [{}, {}, {}];
 
 const SWIPE_THRESHOLD = 80;
+const PREFETCH_AHEAD = 5; // How many words to prefetch beyond visible cards
 
 /**
  * Initialize Speed Review with callbacks
@@ -33,6 +35,21 @@ export function init(callbacks) {
   // Close button handler is set up in takeover.js init
   // But we need to handle exit logic
   dom.speedReviewClose.addEventListener('click', handleExit);
+}
+
+/**
+ * Prefetch TTS audio for words in the queue
+ * @param {number} count - How many words to prefetch from queue start
+ */
+function prefetchQueueAudio(count) {
+  if (!state.callbacks?.prefetchTTS) return;
+
+  const toPrefetch = state.queue.slice(0, count);
+  for (const word of toPrefetch) {
+    if (word.word) {
+      state.callbacks.prefetchTTS(word.word);
+    }
+  }
 }
 
 /**
@@ -52,11 +69,17 @@ export function start(words) {
   state.reviewedBatch = [];
   state.activeCards = [null, null, null];
 
+  // Prefetch TTS for initial cards (3) plus look-ahead
+  prefetchQueueAudio(3 + PREFETCH_AHEAD);
+
   // Update counter
   updateCounter();
 
   // Show takeover
   takeover.open('speedReview');
+
+  // Start speed review music from random position
+  playBGMRandomStart('speed_review');
 
   // Fill initial cards
   for (let i = 0; i < 3; i++) {
@@ -90,6 +113,9 @@ function fillSlot(slotIndex) {
 
   const word = state.queue.shift();
   state.activeCards[slotIndex] = word;
+
+  // Prefetch TTS for upcoming words (look-ahead)
+  prefetchQueueAudio(PREFETCH_AHEAD);
 
   // Render flash card (reusing existing structure)
   const hintText = '&larr; didn\'t know &nbsp; | &nbsp; knew it &rarr;';
@@ -255,6 +281,10 @@ async function gradeCard(slotIndex, word, direction) {
 
   playSFX(direction === 'right' ? 'swipe-right' : 'swipe-left');
 
+  // Spawn sparks effect
+  const sparkColor = direction === 'right' ? '#0f0' : '#f44';
+  spawnSparks(card, sparkColor, direction === 'right' ? 8 : 5);
+
   // Send review to JPDB
   if (word.vid !== undefined && word.sid !== undefined) {
     state.callbacks?.sendReview(word.vid, word.sid, grade);
@@ -269,6 +299,7 @@ async function gradeCard(slotIndex, word, direction) {
   state.reviewedCount++;
   state.reviewedBatch.push(word);
   updateCounter();
+  popCounter();
 
   // Check for batch refresh
   if (state.reviewedBatch.length >= 50) {
@@ -302,6 +333,9 @@ async function triggerBatchRefresh() {
       // Replace queue with fresh words (respects JPDB priority)
       state.queue = newWords;
       console.log(`[SpeedReview] Refreshed queue: ${newWords.length} words`);
+
+      // Prefetch TTS for the new words
+      prefetchQueueAudio(PREFETCH_AHEAD);
     }
   } catch (e) {
     console.warn('[SpeedReview] Batch refresh failed:', e);
@@ -317,6 +351,8 @@ function checkEmpty() {
   if (allEmpty && state.queue.length === 0) {
     dom.speedReviewContent.style.display = 'none';
     dom.speedReviewEmpty.style.display = 'flex';
+    // Celebrate!
+    setTimeout(celebrateCompletion, 100);
   }
 }
 
@@ -328,6 +364,9 @@ async function handleExit() {
   if (state.reviewedBatch.length > 0) {
     await triggerBatchRefresh();
   }
+
+  // Restore hub music
+  playBGM('main');
 
   // Reset UI
   dom.speedReviewContent.style.display = 'flex';
@@ -359,4 +398,97 @@ function formatMeanings(meanings) {
   const parts = text.split(', ');
   if (parts.length <= 4) return escapeHtml(text);
   return escapeHtml(parts.slice(0, 4).join(', ')) + ', ...';
+}
+
+// ============ FUN EFFECTS ============
+
+/**
+ * Spawn sparks bursting from an element
+ * @param {Element} sourceEl - Element to burst from
+ * @param {string} color - Spark color
+ * @param {number} count - Number of sparks
+ */
+function spawnSparks(sourceEl, color, count = 6) {
+  if (!sourceEl) return;
+
+  const rect = sourceEl.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+
+  for (let i = 0; i < count; i++) {
+    const spark = document.createElement('div');
+    spark.className = 'speed-review-spark';
+    spark.style.left = `${centerX}px`;
+    spark.style.top = `${centerY}px`;
+    spark.style.backgroundColor = color;
+    spark.style.boxShadow = `0 0 4px ${color}`;
+    document.body.appendChild(spark);
+
+    const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.3;
+    const distance = 30 + Math.random() * 40;
+
+    anime(spark, {
+      translateX: Math.cos(angle) * distance,
+      translateY: Math.sin(angle) * distance,
+      scale: [1.2, 0],
+      opacity: [1, 0],
+    }, {
+      duration: 250 + Math.random() * 100,
+      ease: 'outQuad',
+      onComplete: () => spark.remove()
+    });
+  }
+}
+
+/**
+ * Pop animation on the counter
+ */
+function popCounter() {
+  anime(dom.speedReviewCounter, {
+    scale: [1, 1.15, 1],
+  }, {
+    duration: 200,
+    ease: 'outBack'
+  });
+}
+
+/**
+ * Celebrate completion with confetti burst
+ */
+function celebrateCompletion() {
+  const container = dom.speedReviewEmpty;
+  if (!container) return;
+
+  const rect = container.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+
+  const colors = ['#0ff', '#f0f', '#ff0', '#0f0', '#f60', '#6cf'];
+  const count = 30;
+
+  for (let i = 0; i < count; i++) {
+    const confetti = document.createElement('div');
+    confetti.className = 'speed-review-confetti';
+    confetti.style.left = `${centerX}px`;
+    confetti.style.top = `${centerY}px`;
+    confetti.style.backgroundColor = colors[i % colors.length];
+    document.body.appendChild(confetti);
+
+    const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+    const distance = 80 + Math.random() * 120;
+    const rotation = Math.random() * 720 - 360;
+
+    anime(confetti, {
+      translateX: Math.cos(angle) * distance,
+      translateY: Math.sin(angle) * distance - 50 + Math.random() * 100,
+      rotate: rotation,
+      scale: [1, 0],
+      opacity: [1, 0],
+    }, {
+      duration: 600 + Math.random() * 400,
+      ease: 'outQuad',
+      delay: Math.random() * 100,
+      onComplete: () => confetti.remove()
+    });
+  }
 }
