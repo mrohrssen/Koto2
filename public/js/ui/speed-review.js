@@ -17,7 +17,8 @@ let state = {
   reviewedCount: 0,    // X value for counter
   reviewedBatch: [],   // Batch for refresh trigger
   activeCards: [null, null, null], // Current card in each slot
-  callbacks: null      // API callbacks
+  callbacks: null,     // API callbacks
+  pendingReview: null  // { word, slotIndex, grade, direction, timerId }
 };
 
 // Swipe handling per slot
