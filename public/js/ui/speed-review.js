@@ -18,7 +18,9 @@ let state = {
   reviewedBatch: [],   // Batch for refresh trigger
   activeCards: [null, null, null], // Current card in each slot
   callbacks: null,     // API callbacks
-  pendingReview: null  // { word, slotIndex, grade, direction, timerId }
+  pendingReview: null, // { word, slotIndex, grade, direction, timerId }
+  reviewPromises: [],  // Track in-flight review HTTP requests
+  inactivityTimer: null // 30-second inactivity timer
 };
 
 // Swipe handling per slot
@@ -28,6 +30,8 @@ const SWIPE_THRESHOLD = 80;
 const PREFETCH_AHEAD = 5; // How many words to prefetch beyond visible cards
 const UNDO_WINDOW_MS = 5000; // 5 seconds to undo
 const RING_CIRCUMFERENCE = 100.53; // 2 * PI * 16 (radius)
+const BATCH_REFRESH_SIZE = 10; // Refresh queue after this many reviews
+const INACTIVITY_TIMEOUT_MS = 30000; // 30 seconds of no activity triggers sync
 
 /**
  * Flush any pending review (send to JPDB immediately)
@@ -40,14 +44,68 @@ function flushPendingReview() {
   // Clear the timer
   if (timerId) clearTimeout(timerId);
 
-  // Send the review
+  // Send the review and track the promise
   if (word.vid !== undefined && word.sid !== undefined) {
-    state.callbacks?.sendReview(word.vid, word.sid, grade);
+    const reviewPromise = state.callbacks?.sendReview(word.vid, word.sid, grade);
+    if (reviewPromise && reviewPromise.then) {
+      state.reviewPromises.push(reviewPromise);
+      // Clean up completed promises
+      reviewPromise.finally(() => {
+        const idx = state.reviewPromises.indexOf(reviewPromise);
+        if (idx !== -1) state.reviewPromises.splice(idx, 1);
+      });
+    }
   }
 
   // Clear pending state
   state.pendingReview = null;
   updateUndoButton(false);
+}
+
+/**
+ * Reset the inactivity timer
+ */
+function resetInactivityTimer() {
+  if (state.inactivityTimer) {
+    clearTimeout(state.inactivityTimer);
+  }
+  state.inactivityTimer = setTimeout(handleInactivityTimeout, INACTIVITY_TIMEOUT_MS);
+}
+
+/**
+ * Clear the inactivity timer
+ */
+function clearInactivityTimer() {
+  if (state.inactivityTimer) {
+    clearTimeout(state.inactivityTimer);
+    state.inactivityTimer = null;
+  }
+}
+
+/**
+ * Handle 30 seconds of inactivity - sync reviews and refresh queue
+ */
+async function handleInactivityTimeout() {
+  console.log('[SpeedReview] Inactivity timeout - syncing reviews...');
+
+  // Flush any pending undo review
+  flushPendingReview();
+
+  // Wait for all in-flight reviews to complete
+  if (state.reviewPromises.length > 0) {
+    console.log(`[SpeedReview] Waiting for ${state.reviewPromises.length} pending reviews...`);
+    await Promise.all(state.reviewPromises);
+  }
+
+  // Refresh the queue if there are pending batch reviews
+  if (state.reviewedBatch.length > 0) {
+    await triggerBatchRefresh();
+  }
+
+  // Restart the timer if still active
+  if (isActive()) {
+    resetInactivityTimer();
+  }
 }
 
 /**
@@ -216,7 +274,11 @@ export function start(words) {
   state.reviewedBatch = [];
   state.activeCards = [null, null, null];
   state.pendingReview = null;
+  state.reviewPromises = [];
   updateUndoButton(false);
+
+  // Start inactivity timer
+  resetInactivityTimer();
 
   // Prefetch TTS for initial cards (3) plus look-ahead
   prefetchQueueAudio(3 + PREFETCH_AHEAD);
@@ -437,6 +499,9 @@ async function gradeCard(slotIndex, word, direction) {
   // Queue review (will send after 5s unless undone or new review)
   queueReview(slotIndex, word, grade, direction);
 
+  // Reset inactivity timer on any card activity
+  resetInactivityTimer();
+
   // Play TTS
   if (word.word) {
     state.callbacks?.playTTS(word.word);
@@ -448,8 +513,8 @@ async function gradeCard(slotIndex, word, direction) {
   updateCounter();
   popCounter();
 
-  // Check for batch refresh
-  if (state.reviewedBatch.length >= 50) {
+  // Check for batch refresh (every 10 cards instead of 50)
+  if (state.reviewedBatch.length >= BATCH_REFRESH_SIZE) {
     await triggerBatchRefresh();
   }
 
@@ -507,8 +572,17 @@ function checkEmpty() {
  * Handle exit from Speed Review
  */
 async function handleExit() {
+  // Clear inactivity timer
+  clearInactivityTimer();
+
   // Send any pending review before closing
   flushPendingReview();
+
+  // Wait for all in-flight reviews to complete before refreshing queue
+  if (state.reviewPromises.length > 0) {
+    console.log(`[SpeedReview] Exit: waiting for ${state.reviewPromises.length} pending reviews...`);
+    await Promise.all(state.reviewPromises);
+  }
 
   // Trigger final batch refresh if any pending
   if (state.reviewedBatch.length > 0) {
