@@ -26,6 +26,74 @@ const slotState = [{}, {}, {}];
 
 const SWIPE_THRESHOLD = 80;
 const PREFETCH_AHEAD = 5; // How many words to prefetch beyond visible cards
+const UNDO_WINDOW_MS = 5000; // 5 seconds to undo
+const RING_CIRCUMFERENCE = 100.53; // 2 * PI * 16 (radius)
+
+/**
+ * Flush any pending review (send to JPDB immediately)
+ */
+function flushPendingReview() {
+  if (!state.pendingReview) return;
+
+  const { word, grade, timerId } = state.pendingReview;
+
+  // Clear the timer
+  if (timerId) clearTimeout(timerId);
+
+  // Send the review
+  if (word.vid !== undefined && word.sid !== undefined) {
+    state.callbacks?.sendReview(word.vid, word.sid, grade);
+  }
+
+  // Clear pending state
+  state.pendingReview = null;
+  updateUndoButton(false);
+}
+
+/**
+ * Queue a review with undo window
+ */
+function queueReview(slotIndex, word, grade, direction) {
+  // Flush any existing pending review first
+  flushPendingReview();
+
+  // Start the undo timer
+  const timerId = setTimeout(() => {
+    // Time's up - send the review
+    if (state.pendingReview?.word === word) {
+      flushPendingReview();
+    }
+  }, UNDO_WINDOW_MS);
+
+  // Store pending review
+  state.pendingReview = { word, slotIndex, grade, direction, timerId };
+
+  // Activate undo button with animation
+  updateUndoButton(true);
+}
+
+/**
+ * Update undo button state
+ */
+function updateUndoButton(active) {
+  const btn = dom.speedReviewUndo;
+  if (!btn) return;
+
+  if (active) {
+    btn.classList.remove('inactive');
+    btn.classList.add('active');
+    // Reset and restart animation
+    const ring = btn.querySelector('.ring-progress');
+    if (ring) {
+      ring.style.animation = 'none';
+      ring.offsetHeight; // Trigger reflow
+      ring.style.animation = 'ring-deplete 5s linear forwards';
+    }
+  } else {
+    btn.classList.add('inactive');
+    btn.classList.remove('active');
+  }
+}
 
 /**
  * Initialize Speed Review with callbacks
