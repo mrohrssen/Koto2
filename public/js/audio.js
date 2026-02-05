@@ -166,6 +166,45 @@ export function playBGM(track = 'main') {
   bgmPlaying = true;
 }
 
+/**
+ * Play BGM starting from a random position in the track.
+ * Useful for variety when entering the same mode multiple times.
+ * @param {string} track - Track name (without extension)
+ */
+export function playBGMRandomStart(track) {
+  if (!bgmElement) {
+    bgmElement = new Audio();
+    bgmElement.loop = true;
+  }
+  const src = `${BGM_PATH}${track}.mp3`;
+  const fullSrc = new URL(src, location.href).href;
+
+  // If same track, just seek to random position
+  if (bgmElement.src === fullSrc && bgmElement.duration) {
+    bgmElement.currentTime = Math.random() * bgmElement.duration;
+    bgmElement.volume = muted ? 0 : bgmVolume;
+    bgmElement.play().catch(() => {});
+    bgmPlaying = true;
+    currentTrack = track;
+    return;
+  }
+
+  // Different track - load and seek once ready
+  bgmElement.src = src;
+  bgmElement.volume = muted ? 0 : bgmVolume;
+
+  const seekOnLoad = () => {
+    if (bgmElement.duration) {
+      bgmElement.currentTime = Math.random() * bgmElement.duration;
+    }
+    bgmElement.removeEventListener('loadedmetadata', seekOnLoad);
+  };
+  bgmElement.addEventListener('loadedmetadata', seekOnLoad);
+  bgmElement.play().catch(() => {});
+  bgmPlaying = true;
+  currentTrack = track;
+}
+
 /** Stop BGM with a short fade out */
 export function stopBGM() {
   if (!bgmElement || !bgmPlaying) return;
