@@ -531,10 +531,13 @@ async function triggerBatchRefresh() {
   if (!state.callbacks?.refreshQueue) return;
 
   console.log('[SpeedReview] Triggering batch refresh...');
+
+  // Capture reviewed words BEFORE clearing
+  const reviewedWords = state.reviewedBatch.map(w => ({ vid: w.vid, sid: w.sid }));
   state.reviewedBatch = [];
 
   try {
-    const freshWords = await state.callbacks.refreshQueue();
+    const freshWords = await state.callbacks.refreshQueue(reviewedWords);
     if (freshWords && freshWords.length > 0) {
       // Filter out words currently displayed
       const displayedVids = new Set(
