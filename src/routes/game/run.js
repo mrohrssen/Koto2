@@ -403,7 +403,7 @@ export default function createRunRoutes({
   router.get('/discovery-words', async (req, res) => {
     try {
       const limit = parseInt(req.query.limit) || 2;
-      const result = getNewWordsForDiscovery(limit);
+      const result = getNewWordsForDiscovery(limit, req.user.id);
       console.log(`[Discovery] Fetched ${result.words.length} new words (available: ${result.available})`);
 
       // Enrich words with meanings from JPDB

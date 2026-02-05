@@ -61,7 +61,7 @@ export default function createVocabRoutes({ getSettings }) {
 
     try {
       const { getDueWordsWithMeanings } = await import('../jpdb.js');
-      const result = await getDueWordsWithMeanings(jpdbApiKey);
+      const result = await getDueWordsWithMeanings(jpdbApiKey, 1000, [], req.user.id);
       res.json(result);
     } catch (error) {
       console.error('[vocab/due-words] Error:', error);
@@ -115,7 +115,7 @@ export default function createVocabRoutes({ getSettings }) {
       const result = await reviewVocabulary(jpdbApiKey, vid, sid, grade);
 
       // Invalidate local cache so this word won't reappear as "due" immediately
-      invalidateWordStateCache(parseInt(vid, 10));
+      invalidateWordStateCache(parseInt(vid, 10), req.user.id);
 
       // Track review for leaderboard
       addReview(req.user.id);

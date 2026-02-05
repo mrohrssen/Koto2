@@ -63,8 +63,10 @@ export default function createMiscRoutes({
       if (existsSync(saveFile)) {
         unlinkSync(saveFile);
       }
-      if (existsSync(vocabCacheFile)) {
-        unlinkSync(vocabCacheFile);
+      // Delete user-specific vocab cache file
+      const userVocabCacheFile = vocabCacheFile.replace(/[^/]+$/, `vocab-cache-${req.user.id}.json`);
+      if (existsSync(userVocabCacheFile)) {
+        unlinkSync(userVocabCacheFile);
       }
     } catch (err) {
       console.error('Error deleting save files:', err);
@@ -409,7 +411,7 @@ export default function createMiscRoutes({
     console.log(`[Session Start] Static word list has ${staticWordList.length} words, starting parse...`);
 
     try {
-      const cache = await performFullParse(jpdbApiKey, staticWordList);
+      const cache = await performFullParse(jpdbApiKey, staticWordList, req.user.id);
       console.log(`[Session Start] Parse complete, cached ${Object.keys(cache).length} words`);
       res.json({
         warmed: true,
@@ -440,7 +442,7 @@ export default function createMiscRoutes({
       const results = await parseWordBatch(jpdbApiKey, words);
 
       // Update local cache with new states
-      const refreshed = updateWordStates(results);
+      const refreshed = updateWordStates(results, req.user.id);
 
       res.json({
         refreshed,
@@ -471,9 +473,9 @@ export default function createMiscRoutes({
 
       let result;
       if (bypassCache) {
-        result = await fetchDueWordsDirectly(jpdbApiKey, limit, excludeVids);
+        result = await fetchDueWordsDirectly(jpdbApiKey, limit, excludeVids, req.user.id);
       } else {
-        result = await getDueWordsWithMeanings(jpdbApiKey, limit, excludeVids);
+        result = await getDueWordsWithMeanings(jpdbApiKey, limit, excludeVids, req.user.id);
       }
       console.log(`[Due Words] Returning ${result.words.length} words, source: ${result.source}`);
       res.json({ words: result.words, count: result.words.length, source: result.source });
@@ -496,8 +498,8 @@ export default function createMiscRoutes({
         return res.json({ refreshed: 0 });
       }
 
-      const states = await refreshWordStateCache(jpdbApiKey, vocabResult.words);
-      invalidateVocabManagerCache();
+      const states = await refreshWordStateCache(jpdbApiKey, vocabResult.words, false, req.user.id);
+      invalidateVocabManagerCache(req.user.id);
 
       res.json({
         refreshed: Object.keys(states).length,
