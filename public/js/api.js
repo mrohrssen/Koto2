@@ -548,13 +548,15 @@ async function getDiscoveryStatus() {
 
 /**
  * Get due words for speed review
+ * @param {Array} reviewedWords - Array of { vid, sid } objects for words just reviewed
  * @returns {Promise<Object>} { words: Array, error?: string }
  */
-export async function getDueWords() {
+export async function getDueWords(reviewedWords = []) {
   try {
     const response = await fetch('/api/vocab/due-words', {
-      method: 'GET',
-      headers: getAuthHeaders()
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ reviewedWords })
     });
     return await response.json();
   } catch (error) {
