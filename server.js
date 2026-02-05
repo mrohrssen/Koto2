@@ -118,7 +118,7 @@ import {
   getGameStatsForPeriod, getGameStatsAvailableDates, resetGameStats
 } from './src/game-stats.js';
 import {
-  configureVocabManager, initVocabManager, getSuggestionsForNarration, addUsedWords,
+  configureVocabManager, getSuggestionsForNarration, addUsedWords,
   refreshWordStateCache, getVocabManagerStats, invalidateWordStateCache as invalidateVocabManagerCache
 } from './src/game/vocab-manager.js';
 import {
@@ -172,8 +172,7 @@ const gameManager = new GameManager();
 // Debug mode - disables AI narration only (JPDB vocab calls still work)
 let debugMode = false;
 
-// Initialize vocab manager for word suggestions
-initVocabManager();
+// Vocab manager is now initialized per-user when they first access vocab features
 
 // Load settings from file or use defaults
 function loadSettings() {
