@@ -498,15 +498,20 @@ export class CombatService {
     let nextWardOptions = null;
     if (isBoss) {
       if (this.gm.run.floor === 7) {
-        // Game complete!
-        return this.handleGameVictory();
+        // Game complete — offer endless mode choice
+        this.gm.run.gameVictoryPending = true;
+        this.gm.run.bossDefeated = true;
+        this.gm.narrate(getSimpleNarration('gameVictory', this.gm.run.player));
+      } else if (this.gm.run.floor > 7) {
+        // Endless mode floor cleared — auto-continue to next floor
+        this.gm.run.wardSelectionRequired = false;
+        this.gm.narrate(getSimpleNarration('floorClear', this.gm.run.floor));
+      } else {
+        // Normal floor cleared
+        this.gm.run.wardSelectionRequired = true;
+        nextWardOptions = getNextWardOptions(this.gm.run.currentWard);
+        this.gm.narrate(getSimpleNarration('floorClear', this.gm.run.floor));
       }
-
-      // Ward selection required for next floor
-      this.gm.run.wardSelectionRequired = true;
-      nextWardOptions = getNextWardOptions(this.gm.run.currentWard);
-
-      this.gm.narrate(getSimpleNarration('floorClear', this.gm.run.floor));
     }
 
     this.gm.emitState();
