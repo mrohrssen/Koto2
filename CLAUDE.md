@@ -163,3 +163,39 @@ For detailed architecture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 - **Production URL**: https://jrpg-production.up.railway.app
 - **Railway Dashboard**: https://railway.com/project/3bf46306-66b8-4d9c-9afa-93156f95bbc3
+
+## Bug Reports
+
+Users can submit bug reports with screenshots from mobile devices. Use these commands to fetch and view them:
+
+```bash
+# List recent bug reports (production)
+curl -s "https://jrpg-production.up.railway.app/api/bug-reports" | jq '.reports[:5]'
+
+# List recent bug reports (dev)
+curl -s "https://jrpg-dev.up.railway.app/api/bug-reports" | jq '.reports[:5]'
+
+# Get specific report metadata
+curl -s "https://jrpg-production.up.railway.app/api/bug-reports/<report-id>" | jq
+
+# Download screenshot
+curl -L "https://jrpg-production.up.railway.app/api/bug-reports/<report-id>/screenshot" -o screenshot.png
+```
+
+Each bug report includes:
+- `id` - Unique report identifier
+- `note` - User's description of the issue
+- `timestamp` - When the report was submitted
+- `viewport` - Screen dimensions (width/height)
+- `devicePixelRatio` - Screen density (3 for Retina)
+- `userAgent` - Browser/device info
+- `gameState` - Current game phase, floor, combat status
+
+## Migration Notes
+
+### 2026-02-05: Per-User Vocab Cache
+- Old shared cache `data/.jrpg-vocab-suggestions.json` is deprecated
+- New per-user caches: `data/vocab-cache-{userId}.json`
+- Delete old cache on deploy: `rm -f data/.jrpg-vocab-suggestions.json`
+- Each user's JPDB word states are now isolated
+- First speed review after deploy will rebuild the cache for each user
