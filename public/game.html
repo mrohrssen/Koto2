@@ -182,6 +182,14 @@
   <div class="takeover" id="speed-review-view">
     <div class="speed-review-header">
       <span class="speed-review-counter" id="speed-review-counter">Cards Reviewed: 0 / 0</span>
+      <button class="speed-review-undo inactive" id="speed-review-undo" title="Undo (5s)">
+        <svg class="speed-review-undo-ring" viewBox="0 0 36 36">
+          <circle class="ring-bg" cx="18" cy="18" r="16" fill="none" stroke="#333" stroke-width="2"/>
+          <circle class="ring-progress" cx="18" cy="18" r="16" fill="none" stroke="#0ff" stroke-width="2"
+            stroke-dasharray="100.53" stroke-dashoffset="0" transform="rotate(-90 18 18)"/>
+        </svg>
+        <span class="undo-icon">&#9194;</span>
+      </button>
       <button class="takeover-close" id="speed-review-close">&times;</button>
     </div>
     <div class="speed-review-content" id="speed-review-content">
