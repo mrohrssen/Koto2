@@ -62,10 +62,11 @@ describe('GET /api/game/discovery-words', () => {
     // Mock request with limit query param
     const { req, res, getStatus, getBody } = mockReqRes({ limit: '2' });
 
-    // Call handler
-    handler(req, res);
+    // Call handler (async)
+    await handler(req, res);
 
     assert.equal(getStatus(), 200);
+    assert.ok(getBody(), 'Response body should exist');
     assert.equal(getBody().words.length, 2);
     assert.equal(getBody().words[0].word, '飲む'); // rank 50 first
     assert.equal(getBody().available, true);
@@ -104,10 +105,11 @@ describe('GET /api/game/discovery-words', () => {
     // Mock request without limit (use default)
     const { req, res, getStatus, getBody } = mockReqRes({});
 
-    // Call handler
-    handler(req, res);
+    // Call handler (async)
+    await handler(req, res);
 
     assert.equal(getStatus(), 200);
+    assert.ok(getBody(), 'Response body should exist');
     assert.equal(getBody().words.length, 0);
     assert.equal(getBody().available, false);
   });
