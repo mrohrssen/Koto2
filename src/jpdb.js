@@ -666,9 +666,10 @@ export const REVIEW_GRADES = {
  * @param {number} limit - Max words to return
  * @param {number[]} excludeVids - Vocabulary IDs to exclude
  * @param {string} userId - User ID for per-user cache
+ * @param {Array} reviewedWords - Array of { vid, sid } for words just reviewed (to refresh from JPDB)
  */
-export async function getDueWordsWithMeanings(apiKey, limit = 1000, excludeVids = [], userId) {
-  console.log('[getDueWordsWithMeanings] Called with limit:', limit, 'userId:', userId);
+export async function getDueWordsWithMeanings(apiKey, limit = 1000, excludeVids = [], userId, reviewedWords = []) {
+  console.log('[getDueWordsWithMeanings] Called with limit:', limit, 'userId:', userId, 'reviewedWords:', reviewedWords.length);
   if (!apiKey) {
     console.log('[getDueWordsWithMeanings] No API key');
     return { words: [], source: 'none' };
@@ -680,6 +681,9 @@ export async function getDueWordsWithMeanings(apiKey, limit = 1000, excludeVids 
   }
 
   let wordStateCache = {};
+  let recentlyUsedWords = [];
+  let lastRefresh = null;
+  let lastFullParse = null;
 
   // Read from per-user cache file
   const userCacheFile = getUserCacheFile(userId);
@@ -691,10 +695,68 @@ export async function getDueWordsWithMeanings(apiKey, limit = 1000, excludeVids 
       if (fileExists) {
         const data = JSON.parse(readFileSync(userCacheFile, 'utf-8'));
         wordStateCache = data.wordStateCache || {};
+        recentlyUsedWords = data.recentlyUsedWords || [];
+        lastRefresh = data.lastRefresh || null;
+        lastFullParse = data.lastFullParse || null;
         console.log('[getDueWordsWithMeanings] Loaded cache with', Object.keys(wordStateCache).length, 'words');
       }
     } catch (e) {
       console.warn('Failed to load vocab suggestions cache:', e.message);
+    }
+  }
+
+  // FRESH STATE FETCH: If we have reviewed words, fetch their current states from JPDB
+  if (reviewedWords.length > 0 && userCacheFile) {
+    console.log('[getDueWordsWithMeanings] Fetching fresh states for', reviewedWords.length, 'reviewed words');
+    try {
+      const lookupResponse = await jpdbFetch(`${JPDB_API_BASE}/lookup-vocabulary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          list: reviewedWords.map(w => [w.vid, w.sid]),
+          fields: ['spelling', 'card_state', 'due_at']
+        })
+      });
+
+      if (lookupResponse.ok) {
+        const lookupData = await lookupResponse.json();
+        const vocabInfo = lookupData.vocabulary_info || [];
+
+        let updatedCount = 0;
+        for (let i = 0; i < vocabInfo.length; i++) {
+          const info = vocabInfo[i];
+          if (!info) continue;
+
+          const [spelling, cardState, dueAt] = info;
+
+          // Find and update the cached entry
+          if (wordStateCache[spelling]) {
+            const oldStates = wordStateCache[spelling].states;
+            wordStateCache[spelling].states = cardState || [];
+            wordStateCache[spelling].dueAt = dueAt ?? null;
+            updatedCount++;
+            console.log(`[getDueWordsWithMeanings] Updated "${spelling}": ${JSON.stringify(oldStates)} -> ${JSON.stringify(cardState)}`);
+          }
+        }
+
+        // Save updated cache to disk
+        if (updatedCount > 0) {
+          writeFileSync(userCacheFile, JSON.stringify({
+            recentlyUsedWords,
+            wordStateCache,
+            lastRefresh,
+            lastFullParse
+          }, null, 2));
+          console.log('[getDueWordsWithMeanings] Saved updated cache with', updatedCount, 'refreshed states');
+        }
+      } else if (lookupResponse.status === 429) {
+        console.warn('[getDueWordsWithMeanings] Rate limited fetching fresh states');
+      }
+    } catch (e) {
+      console.warn('[getDueWordsWithMeanings] Failed to fetch fresh states:', e.message);
     }
   }
 
