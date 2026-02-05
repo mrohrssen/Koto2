@@ -2181,6 +2181,65 @@ html, body {
   z-index: 10;
 }
 
+/* Undo button */
+.speed-review-undo {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+}
+
+.speed-review-undo.inactive {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.speed-review-undo-ring {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  top: 0;
+  left: 0;
+}
+
+.speed-review-undo-ring .ring-bg {
+  stroke: #333;
+}
+
+.speed-review-undo-ring .ring-progress {
+  stroke: #0ff;
+  filter: drop-shadow(0 0 4px #0ff);
+  transition: stroke-dashoffset 0.1s linear;
+}
+
+.speed-review-undo .undo-icon {
+  font-size: 16px;
+  color: #0ff;
+  z-index: 1;
+  filter: drop-shadow(0 0 2px #0ff);
+}
+
+.speed-review-undo.inactive .undo-icon {
+  color: #666;
+  filter: none;
+}
+
+/* Ring depletion animation */
+@keyframes ring-deplete {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: 100.53; }
+}
+
+.speed-review-undo.active .ring-progress {
+  animation: ring-deplete 5s linear forwards;
+}
+
 .speed-review-counter {
   font-size: 14px;
   color: var(--text-secondary);
