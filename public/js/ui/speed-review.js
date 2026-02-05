@@ -96,6 +96,75 @@ function updateUndoButton(active) {
 }
 
 /**
+ * Handle undo button click - cancel pending review and restore card
+ */
+function handleUndo() {
+  if (!state.pendingReview) return;
+
+  const { word, slotIndex, direction, timerId } = state.pendingReview;
+
+  // Clear the timer
+  if (timerId) clearTimeout(timerId);
+
+  // Clear pending state BEFORE restoring (so card doesn't re-queue)
+  state.pendingReview = null;
+  updateUndoButton(false);
+
+  // Restore the card
+  restoreCard(slotIndex, word, direction);
+
+  // Decrement counter
+  state.reviewedCount--;
+  state.reviewedBatch.pop();
+  updateCounter();
+
+  playSFX('button-tap');
+}
+
+/**
+ * Restore a card to its slot after undo
+ */
+function restoreCard(slotIndex, word, direction) {
+  const slot = dom.speedReviewSlots[slotIndex];
+  state.activeCards[slotIndex] = word;
+
+  // Render the card (same as fillSlot but already flipped)
+  const hintText = '&larr; didn\'t know &nbsp; | &nbsp; knew it &rarr;';
+
+  slot.innerHTML = `
+    <div class="flash-card flipped" data-slot="${slotIndex}">
+      <div class="flash-card-front">${escapeHtml(word.word)}</div>
+      <div class="flash-card-back">
+        <div class="flash-card-word">${word.reading && word.reading !== word.word
+          ? `<ruby>${escapeHtml(word.word)}<rt>${escapeHtml(word.reading)}</rt></ruby>`
+          : escapeHtml(word.word)}</div>
+        <div class="flash-card-meaning">${formatMeanings(word.meanings)}</div>
+        <div class="flash-card-hint">${hintText}</div>
+      </div>
+    </div>
+  `;
+
+  const card = slot.querySelector('.flash-card');
+
+  // Animate card sliding back in from where it left
+  const startX = direction === 'right' ? 300 : -300;
+  card.style.transform = `translateX(${startX}px)`;
+  card.style.opacity = '0';
+
+  anime(card, {
+    translateX: 0,
+    opacity: 1,
+  }, {
+    duration: 200,
+    ease: 'outBack'
+  });
+
+  // Re-setup interaction (card is already flipped)
+  setupCardInteraction(card, slotIndex, word);
+  slotState[slotIndex].flipped = true;
+}
+
+/**
  * Initialize Speed Review with callbacks
  */
 export function init(callbacks) {
