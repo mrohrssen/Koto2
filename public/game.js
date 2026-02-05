@@ -812,6 +812,7 @@ async function initGame() {
   speedReview.init({
     sendReview: (vid, sid, grade) => apiSendJpdbReview(vid, sid, grade),
     playTTS: (word) => tts.playWord(word),
+    prefetchTTS: (word) => tts.prefetchWord(word),
     refreshQueue: async () => {
       const result = await apiGetDueWords();
       return result?.words || [];
