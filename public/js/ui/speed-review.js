@@ -92,6 +92,12 @@ function updateUndoButton(active) {
   } else {
     btn.classList.add('inactive');
     btn.classList.remove('active');
+    // Reset ring to start position for next use
+    const ring = btn.querySelector('.ring-progress');
+    if (ring) {
+      ring.style.animation = 'none';
+      ring.style.strokeDashoffset = '0';
+    }
   }
 }
 

@@ -2213,20 +2213,19 @@ html, body {
 }
 
 .speed-review-undo-ring .ring-progress {
-  stroke: #0ff;
-  filter: drop-shadow(0 0 4px #0ff);
+  stroke: var(--accent-green);
+  filter: drop-shadow(0 0 4px var(--accent-green));
   transition: stroke-dashoffset 0.1s linear;
 }
 
 .speed-review-undo .undo-icon {
-  font-size: 16px;
-  color: #0ff;
   z-index: 1;
-  filter: drop-shadow(0 0 2px #0ff);
+  color: var(--accent-green);
+  filter: drop-shadow(0 0 2px var(--accent-green));
 }
 
 .speed-review-undo.inactive .undo-icon {
-  color: #666;
+  color: var(--text-secondary);
   filter: none;
 }
 
