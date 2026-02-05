@@ -94,6 +94,7 @@ get chipPopupSwap() { return el('chip-popup-swap'); },
   // Speed Review
   get speedReviewView() { return el('speed-review-view'); },
   get speedReviewClose() { return el('speed-review-close'); },
+  get speedReviewUndo() { return el('speed-review-undo'); },
   get speedReviewContent() { return el('speed-review-content'); },
   get speedReviewCounter() { return el('speed-review-counter'); },
   get speedReviewEmpty() { return el('speed-review-empty'); },
