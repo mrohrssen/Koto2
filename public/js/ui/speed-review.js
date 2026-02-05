@@ -173,6 +173,9 @@ export function init(callbacks) {
   // Close button handler is set up in takeover.js init
   // But we need to handle exit logic
   dom.speedReviewClose.addEventListener('click', handleExit);
+
+  // Undo button handler
+  dom.speedReviewUndo.addEventListener('click', handleUndo);
 }
 
 /**
@@ -206,6 +209,8 @@ export function start(words) {
   state.reviewedCount = 0;
   state.reviewedBatch = [];
   state.activeCards = [null, null, null];
+  state.pendingReview = null;
+  updateUndoButton(false);
 
   // Prefetch TTS for initial cards (3) plus look-ahead
   prefetchQueueAudio(3 + PREFETCH_AHEAD);
@@ -423,10 +428,8 @@ async function gradeCard(slotIndex, word, direction) {
   const sparkColor = direction === 'right' ? '#0f0' : '#f44';
   spawnSparks(card, sparkColor, direction === 'right' ? 8 : 5);
 
-  // Send review to JPDB
-  if (word.vid !== undefined && word.sid !== undefined) {
-    state.callbacks?.sendReview(word.vid, word.sid, grade);
-  }
+  // Queue review (will send after 5s unless undone or new review)
+  queueReview(slotIndex, word, grade, direction);
 
   // Play TTS
   if (word.word) {
@@ -498,6 +501,9 @@ function checkEmpty() {
  * Handle exit from Speed Review
  */
 async function handleExit() {
+  // Send any pending review before closing
+  flushPendingReview();
+
   // Trigger final batch refresh if any pending
   if (state.reviewedBatch.length > 0) {
     await triggerBatchRefresh();
