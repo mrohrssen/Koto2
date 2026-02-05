@@ -480,8 +480,9 @@ function showVictoryModal(result) {
 
   // Trigger batch refresh on combat end if any pending reviews
   if (combatReviewedBatch.length > 0) {
-    apiGetDueWords().catch(e => console.warn('[Combat] End batch refresh failed:', e));
+    const reviewedWords = combatReviewedBatch.map(w => ({ vid: w.vid, sid: w.sid }));
     combatReviewedBatch = [];
+    apiGetDueWords(reviewedWords).catch(e => console.warn('[Combat] End batch refresh failed:', e));
   }
   setTimeout(async () => {
     await loadGameState();
@@ -495,8 +496,9 @@ function showGameOverModal(result) {
 
   // Trigger batch refresh on combat end if any pending reviews
   if (combatReviewedBatch.length > 0) {
-    apiGetDueWords().catch(e => console.warn('[Combat] End batch refresh failed:', e));
+    const reviewedWords = combatReviewedBatch.map(w => ({ vid: w.vid, sid: w.sid }));
     combatReviewedBatch = [];
+    apiGetDueWords(reviewedWords).catch(e => console.warn('[Combat] End batch refresh failed:', e));
   }
 
   chipLoadoutCache = null;
@@ -813,8 +815,8 @@ async function initGame() {
     sendReview: (vid, sid, grade) => apiSendJpdbReview(vid, sid, grade),
     playTTS: (word) => tts.playWord(word),
     prefetchTTS: (word) => tts.prefetchWord(word),
-    refreshQueue: async () => {
-      const result = await apiGetDueWords();
+    refreshQueue: async (reviewedWords = []) => {
+      const result = await apiGetDueWords(reviewedWords);
       return result?.words || [];
     }
   });
@@ -856,12 +858,13 @@ async function initGame() {
         // Check for batch refresh (every 50 reviews)
         if (combatReviewedBatch.length >= 50) {
           // Fire and forget - refresh queue in background
-          apiGetDueWords().then(result => {
+          const reviewedWords = combatReviewedBatch.map(w => ({ vid: w.vid, sid: w.sid }));
+          combatReviewedBatch = [];
+          apiGetDueWords(reviewedWords).then(result => {
             if (result?.words) {
               console.log('[Combat] Batch refresh: got', result.words.length, 'fresh words');
             }
           }).catch(e => console.warn('[Combat] Batch refresh failed:', e));
-          combatReviewedBatch = [];
         }
       } else {
         console.warn('[JPDB Review] Missing vid/sid, cannot send review:', reviewWord);
