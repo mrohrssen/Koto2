@@ -19,22 +19,43 @@ const JPDB_API_BASE = 'https://jpdb.io/api/v1';
 // Configuration - set by the consuming app
 let config = {
   vocabCacheFile: null,
-  vocabSuggestionsFile: null
+  vocabCacheDir: null
 };
 
 /**
  * Configure the JPDB module with file paths
  * @param {object} options
  * @param {string} options.vocabCacheFile - Path to vocab cache JSON file
- * @param {string} options.vocabSuggestionsFile - Path to vocab suggestions JSON file
+ * @param {string} options.vocabCacheDir - Path to the cache directory for per-user cache files
+ * @param {string} options.vocabSuggestionsFile - Legacy: Path to vocab suggestions JSON file (deprecated)
  */
 export function configure(options) {
   if (options.vocabCacheFile) {
     config.vocabCacheFile = options.vocabCacheFile;
   }
-  if (options.vocabSuggestionsFile) {
-    config.vocabSuggestionsFile = options.vocabSuggestionsFile;
+  if (options.vocabCacheDir) {
+    config.vocabCacheDir = options.vocabCacheDir.endsWith('/')
+      ? options.vocabCacheDir
+      : options.vocabCacheDir + '/';
   }
+  // Legacy support: extract dir from vocabSuggestionsFile
+  if (options.vocabSuggestionsFile && !options.vocabCacheDir) {
+    const lastSlash = options.vocabSuggestionsFile.lastIndexOf('/');
+    config.vocabCacheDir = lastSlash > 0
+      ? options.vocabSuggestionsFile.substring(0, lastSlash + 1)
+      : './';
+  }
+}
+
+/**
+ * Get cache file path for a specific user
+ * @param {string} userId - User ID
+ * @returns {string|null} Cache file path or null if not configured
+ */
+function getUserCacheFile(userId) {
+  if (!config.vocabCacheDir) return null;
+  if (!userId) throw new Error('userId is required for cache operations');
+  return `${config.vocabCacheDir}vocab-cache-${userId}.json`;
 }
 
 // Rate limiting - prevent getting IP blocked
@@ -641,24 +662,34 @@ export const REVIEW_GRADES = {
 
 /**
  * Get due words with their English meanings for word practice
+ * @param {string} apiKey - JPDB API key
+ * @param {number} limit - Max words to return
+ * @param {number[]} excludeVids - Vocabulary IDs to exclude
+ * @param {string} userId - User ID for per-user cache
  */
-export async function getDueWordsWithMeanings(apiKey, limit = 1000, excludeVids = []) {
-  console.log('[getDueWordsWithMeanings] Called with limit:', limit);
+export async function getDueWordsWithMeanings(apiKey, limit = 1000, excludeVids = [], userId) {
+  console.log('[getDueWordsWithMeanings] Called with limit:', limit, 'userId:', userId);
   if (!apiKey) {
     console.log('[getDueWordsWithMeanings] No API key');
     return { words: [], source: 'none' };
   }
 
+  if (!userId) {
+    console.log('[getDueWordsWithMeanings] No userId provided');
+    return { words: [], source: 'none' };
+  }
+
   let wordStateCache = {};
 
-  // Read from configured vocab suggestions file
-  console.log('[getDueWordsWithMeanings] vocabSuggestionsFile:', config.vocabSuggestionsFile || 'NOT SET');
-  if (config.vocabSuggestionsFile) {
+  // Read from per-user cache file
+  const userCacheFile = getUserCacheFile(userId);
+  console.log('[getDueWordsWithMeanings] userCacheFile:', userCacheFile || 'NOT SET');
+  if (userCacheFile) {
     try {
-      const fileExists = existsSync(config.vocabSuggestionsFile);
+      const fileExists = existsSync(userCacheFile);
       console.log('[getDueWordsWithMeanings] File exists:', fileExists);
       if (fileExists) {
-        const data = JSON.parse(readFileSync(config.vocabSuggestionsFile, 'utf-8'));
+        const data = JSON.parse(readFileSync(userCacheFile, 'utf-8'));
         wordStateCache = data.wordStateCache || {};
         console.log('[getDueWordsWithMeanings] Loaded cache with', Object.keys(wordStateCache).length, 'words');
       }
@@ -839,28 +870,34 @@ export async function reviewVocabulary(apiKey, vid, sid, grade) {
  * This removes the 'due' state so the word won't appear in due words list
  * until the cache is refreshed from JPDB.
  * @param {number} vid - Vocabulary ID
+ * @param {string} userId - User ID for per-user cache
  */
-export function invalidateWordStateCache(vid) {
+export function invalidateWordStateCache(vid, userId) {
+  if (!userId) {
+    throw new Error('userId is required for cache operations');
+  }
+
   // CRITICAL: Update the in-memory cache in vocab-manager FIRST
   // This prevents stale data from being written back to disk when
   // other operations (like addUsedWords) trigger a saveCache()
   try {
-    invalidateWordByVid(vid);
+    invalidateWordByVid(vid, userId);
   } catch (e) {
     // vocab-manager might not be initialized yet, that's OK
     console.log(`[JPDB Cache] Could not update in-memory cache: ${e.message}`);
   }
 
-  if (!config.vocabSuggestionsFile) {
+  const userCacheFile = getUserCacheFile(userId);
+  if (!userCacheFile) {
     return false;
   }
 
   try {
-    if (!existsSync(config.vocabSuggestionsFile)) {
+    if (!existsSync(userCacheFile)) {
       return false;
     }
 
-    const data = JSON.parse(readFileSync(config.vocabSuggestionsFile, 'utf-8'));
+    const data = JSON.parse(readFileSync(userCacheFile, 'utf-8'));
     const wordStateCache = data.wordStateCache || {};
 
     // Find the entry with matching vid and remove 'due' from states
@@ -873,14 +910,14 @@ export function invalidateWordStateCache(vid) {
           stateInfo.states = states;
           // Set dueAt far in the future so it won't be prioritized
           stateInfo.dueAt = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days from now
-          console.log(`[JPDB Cache] Invalidated word "${word}" (vid=${vid}) - removed 'due' state from disk cache`);
+          console.log(`[JPDB Cache] Invalidated word "${word}" (vid=${vid}) for user ${userId} - removed 'due' state from disk cache`);
         }
         break;
       }
     }
 
     // Write back the updated cache
-    writeFileSync(config.vocabSuggestionsFile, JSON.stringify(data, null, 2));
+    writeFileSync(userCacheFile, JSON.stringify(data, null, 2));
     return true;
   } catch (e) {
     console.warn('[JPDB Cache] Failed to invalidate word state:', e.message);
@@ -933,19 +970,25 @@ export async function getWordState(apiKey, vid, sid) {
  * Get due words from local cache without API call
  * @param {number} limit - Max words to return
  * @param {number[]} excludeVids - Vocabulary IDs to exclude
+ * @param {string} userId - User ID for per-user cache
  * @returns {{words: Array, source: string, needsMeanings?: boolean}}
  */
-function getDueWordsFromCache(limit, excludeVids) {
-  if (!config.vocabSuggestionsFile) {
+function getDueWordsFromCache(limit, excludeVids, userId) {
+  if (!userId) {
+    return { words: [], source: 'none' };
+  }
+
+  const userCacheFile = getUserCacheFile(userId);
+  if (!userCacheFile) {
     return { words: [], source: 'none' };
   }
 
   try {
-    if (!existsSync(config.vocabSuggestionsFile)) {
+    if (!existsSync(userCacheFile)) {
       return { words: [], source: 'none' };
     }
 
-    const data = JSON.parse(readFileSync(config.vocabSuggestionsFile, 'utf-8'));
+    const data = JSON.parse(readFileSync(userCacheFile, 'utf-8'));
     const wordStateCache = data.wordStateCache || {};
 
     const excludeSet = new Set(excludeVids.map(v => parseInt(v, 10)));
@@ -1015,46 +1058,53 @@ function getDueWordsFromCache(limit, excludeVids) {
  * @param {string} apiKey - JPDB API key
  * @param {number} limit - Max words to return (default 50)
  * @param {number[]} excludeVids - Vocabulary IDs to exclude
+ * @param {string} userId - User ID for per-user cache
  * @returns {Promise<{words: Array, source: string}>}
  */
-export async function fetchDueWordsDirectly(apiKey, limit = 1000, excludeVids = []) {
+export async function fetchDueWordsDirectly(apiKey, limit = 1000, excludeVids = [], userId) {
   if (!apiKey) {
     return { words: [], source: 'none' };
   }
 
+  if (!userId) {
+    return { words: [], source: 'none' };
+  }
+
   // First try to serve from local cache (fast path)
-  const cacheResult = getDueWordsFromCache(limit, excludeVids);
+  const cacheResult = getDueWordsFromCache(limit, excludeVids, userId);
   if (cacheResult.words.length > 0) {
-    console.log(`[JPDB] Served ${cacheResult.words.length} due words from cache`);
+    console.log(`[JPDB] Served ${cacheResult.words.length} due words from cache for user ${userId}`);
     return cacheResult;
   }
 
-  console.log('[JPDB] Cache empty, fetching from API...');
-  return fetchDueWordsFromApi(apiKey, limit, excludeVids);
+  console.log(`[JPDB] Cache empty for user ${userId}, fetching from API...`);
+  return fetchDueWordsFromApi(apiKey, limit, excludeVids, userId);
 }
 
 /**
  * Fetch due/failed words directly from JPDB API (fallback when cache is empty)
  *
- * Uses cached vocab IDs from the suggestions file for speed,
+ * Uses cached vocab IDs from the per-user cache file for speed,
  * falling back to full deck scanning only if no cache exists.
  *
  * @param {string} apiKey - JPDB API key
  * @param {number} limit - Max words to return (default 50)
  * @param {number[]} excludeVids - Vocabulary IDs to exclude
+ * @param {string} userId - User ID for per-user cache
  * @returns {Promise<{words: Array, source: string}>}
  */
-async function fetchDueWordsFromApi(apiKey, limit = 1000, excludeVids = []) {
-  console.log('[JPDB Direct] Fetching due words directly from JPDB...');
+async function fetchDueWordsFromApi(apiKey, limit = 1000, excludeVids = [], userId) {
+  console.log(`[JPDB Direct] Fetching due words directly from JPDB for user ${userId}...`);
 
   // Step 1: Try to get vocab IDs from local cache first (much faster)
   let uniqueVocabIds = [];
 
   // Read vocab IDs from cached word states if available
-  if (config.vocabSuggestionsFile) {
+  const userCacheFile = getUserCacheFile(userId);
+  if (userCacheFile) {
     try {
-      if (existsSync(config.vocabSuggestionsFile)) {
-        const data = JSON.parse(readFileSync(config.vocabSuggestionsFile, 'utf-8'));
+      if (existsSync(userCacheFile)) {
+        const data = JSON.parse(readFileSync(userCacheFile, 'utf-8'));
         const wordStateCache = data.wordStateCache || {};
 
         // Extract all [vid, sid] pairs from the cache
@@ -1068,7 +1118,7 @@ async function fetchDueWordsFromApi(apiKey, limit = 1000, excludeVids = []) {
             }
           }
         }
-        console.log(`[JPDB Direct] Using ${uniqueVocabIds.length} vocab IDs from local cache`);
+        console.log(`[JPDB Direct] Using ${uniqueVocabIds.length} vocab IDs from local cache for user ${userId}`);
       }
     } catch (e) {
       console.warn('[JPDB Direct] Failed to read vocab cache:', e.message);

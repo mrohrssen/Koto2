@@ -4,6 +4,7 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, unlinkSync, mkdirSync, readFileSync } from 'fs';
+import * as jpdb from '../../src/jpdb.js';
 
 const TEST_CACHE_DIR = '/tmp/test-vocab-cache/';
 
@@ -122,5 +123,61 @@ describe('Per-user vocab cache', () => {
     // User2 should only see their new word (見る)
     assert.strictEqual(result2.words.length, 1);
     assert.strictEqual(result2.words[0].word, '見る');
+  });
+});
+
+describe('JPDB per-user cache', () => {
+  let vm;
+
+  before(async () => {
+    try { mkdirSync(TEST_CACHE_DIR, { recursive: true }); } catch {}
+    vm = await import('../../src/game/vocab-manager.js');
+  });
+
+  after(() => {
+    ['user1', 'user2'].forEach(userId => {
+      const file = `${TEST_CACHE_DIR}vocab-cache-${userId}.json`;
+      if (existsSync(file)) unlinkSync(file);
+    });
+  });
+
+  it('should invalidate only the specified user cache', () => {
+    jpdb.configure({ vocabCacheDir: TEST_CACHE_DIR });
+    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+
+    vm.clearVocabManagerCache('user1');
+    vm.clearVocabManagerCache('user2');
+
+    vm.setTestCache({
+      'テスト': { vid: 123, sid: 1, states: ['due'], dueAt: Date.now() }
+    }, 'user1');
+    vm.setTestCache({
+      'テスト': { vid: 123, sid: 1, states: ['due'], dueAt: Date.now() }
+    }, 'user2');
+
+    // Need to save caches to disk for jpdb to read them
+    vm.addUsedWords(['dummy'], 'user1');
+    vm.addUsedWords(['dummy'], 'user2');
+
+    // Invalidate for user1 only
+    jpdb.invalidateWordStateCache(123, 'user1');
+
+    // Check user2's cache is untouched - word still has 'due'
+    const user2File = `${TEST_CACHE_DIR}vocab-cache-user2.json`;
+    const user2Data = JSON.parse(readFileSync(user2File, 'utf-8'));
+    assert.ok(user2Data.wordStateCache['テスト'].states.includes('due'), 'User2 cache should still have due state');
+
+    // Check user1's cache has 'due' removed
+    const user1File = `${TEST_CACHE_DIR}vocab-cache-user1.json`;
+    const user1Data = JSON.parse(readFileSync(user1File, 'utf-8'));
+    assert.ok(!user1Data.wordStateCache['テスト'].states.includes('due'), 'User1 cache should not have due state');
+  });
+
+  it('should throw error when userId is missing for invalidateWordStateCache', () => {
+    jpdb.configure({ vocabCacheDir: TEST_CACHE_DIR });
+
+    assert.throws(() => {
+      jpdb.invalidateWordStateCache(123, undefined);
+    }, /userId is required/);
   });
 });
