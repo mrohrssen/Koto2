@@ -142,7 +142,7 @@ const SETTINGS_FILE = dataPath('.jrpg-settings.json');
 const GAME_SAVE_FILE = dataPath('.jrpg-save.json');
 const VOCAB_CACHE_FILE = dataPath('.jrpg-vocab-cache.json');
 // Use persistent data directory for per-user vocab suggestion caches
-const VOCAB_CACHE_DIR = dataPath('');
+const VOCAB_CACHE_DIR = dataPath('data/');
 
 // Configure JPDB with file paths
 configureJpdb({
