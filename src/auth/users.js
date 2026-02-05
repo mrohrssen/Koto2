@@ -204,14 +204,15 @@ export function getLeaderboard(period, currentUserId, filePath = DEFAULT_FILE) {
 /**
  * Get decrypted API keys for a user
  * @param {string} userId
- * @returns {object} Decrypted keys or empty object
+ * @returns {object} Decrypted keys with userId included, or object with just userId
  */
 export function getUserKeys(userId) {
   const user = findUserById(userId);
-  if (!user?.encryptedApiKeys) return {};
+  if (!user?.encryptedApiKeys) return { userId };
   try {
-    return decryptKeys(user.encryptedApiKeys, process.env.ENCRYPTION_KEY || 'a'.repeat(64));
+    const keys = decryptKeys(user.encryptedApiKeys, process.env.ENCRYPTION_KEY || 'a'.repeat(64));
+    return { ...keys, userId };
   } catch {
-    return {};
+    return { userId };
   }
 }

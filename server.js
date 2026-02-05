@@ -373,15 +373,15 @@ app.use('/api', createRoutes({
 }));
 
 // Narration helpers
-function trackNarrationStats(narration, jpdbApiKey = null) {
+function trackNarrationStats(narration, jpdbApiKey = null, userId = null) {
   if (!narration) return;
 
   updateGameStatsWithNarration(gameStats, narration);
   saveGameStats(gameStats);
 
-  if (jpdbApiKey) {
+  if (jpdbApiKey && userId) {
     try {
-      addUsedWords(narration, jpdbApiKey);
+      addUsedWords(narration, userId);
     } catch (e) {}
   }
 }
@@ -421,7 +421,7 @@ async function generateGameNarration(event, context, userKeys = {}) {
     return getSimpleNarration(event, context);
   }
 
-  const { jpdbApiKey, aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel } = userKeys;
+  const { jpdbApiKey, aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel, userId } = userKeys;
 
   const vocabResult = getVocabulary();
   const vocabulary = vocabResult.words;
@@ -440,7 +440,7 @@ async function generateGameNarration(event, context, userKeys = {}) {
   } else {
     if (jpdbApiKey && vocabulary.length > 0) {
       try {
-        suggestedWords = await getSuggestionsForNarration(jpdbApiKey, vocabulary);
+        suggestedWords = await getSuggestionsForNarration(jpdbApiKey, vocabulary, userId);
       } catch (e) {}
     }
 
@@ -474,7 +474,7 @@ async function generateGameNarration(event, context, userKeys = {}) {
   // DISABLED: vocab repair not used with hardcoded narrations, wastes jpdb API calls
   // narration = await applyVocabRepair(narration, vocabulary, userKeys, gameTerms);
 
-  trackNarrationStats(narration, jpdbApiKey);
+  trackNarrationStats(narration, jpdbApiKey, userId);
 
   return narration;
 }
