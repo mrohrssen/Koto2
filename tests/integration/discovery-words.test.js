@@ -2,9 +2,13 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
+import { mkdirSync } from 'fs';
 
 // We need to test the route handler directly since we don't have supertest
 // Import the module and mock the dependency
+
+const TEST_CACHE_DIR = '/tmp/test-discovery-words-integration/';
+const TEST_USER_ID = 'test-user';
 
 describe('GET /api/game/discovery-words', () => {
   // Mock request/response helpers
@@ -12,7 +16,8 @@ describe('GET /api/game/discovery-words', () => {
     const req = {
       query,
       gameManager: { run: { active: true } },
-      userKeys: { jpdbApiKey: 'test-key' }
+      userKeys: { jpdbApiKey: 'test-key' },
+      user: { id: TEST_USER_ID }
     };
     let statusCode = 200;
     let responseBody = null;
@@ -24,20 +29,22 @@ describe('GET /api/game/discovery-words', () => {
   }
 
   it('should return discovery words sorted by rank', async () => {
+    try { mkdirSync(TEST_CACHE_DIR, { recursive: true }); } catch {}
+
     // Import route factory
     const { default: createRunRoutes } = await import('../../src/routes/game/run.js');
 
     // Import vocab-manager to set up test data
     const vm = await import('../../src/game/vocab-manager.js');
-    vm.configureVocabManager({ cacheFile: '/tmp/test-discovery-words-integration.json' });
-    vm.clearVocabManagerCache();
+    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.clearVocabManagerCache(TEST_USER_ID);
 
     // Set up test cache with "new" words
     const testCache = {
       '飲む': { states: ['new'], reading: 'のむ', meanings: ['to drink'], vid: 2, sid: 0, rank: 50 },
       '食べる': { states: ['new'], reading: 'たべる', meanings: ['to eat'], vid: 1, sid: 0, rank: 100 }
     };
-    vm.setTestCache(testCache);
+    vm.setTestCache(testCache, TEST_USER_ID);
 
     // Create routes
     const router = createRunRoutes({
@@ -65,19 +72,21 @@ describe('GET /api/game/discovery-words', () => {
   });
 
   it('should return available: false when no new words', async () => {
+    try { mkdirSync(TEST_CACHE_DIR, { recursive: true }); } catch {}
+
     // Import route factory
     const { default: createRunRoutes } = await import('../../src/routes/game/run.js');
 
     // Import vocab-manager to set up test data
     const vm = await import('../../src/game/vocab-manager.js');
-    vm.configureVocabManager({ cacheFile: '/tmp/test-discovery-words-integration.json' });
-    vm.clearVocabManagerCache();
+    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.clearVocabManagerCache(TEST_USER_ID);
 
     // Set up test cache with NO "new" words
     const testCache = {
       '見る': { states: ['learning'], vid: 3, sid: 0, rank: 30 }
     };
-    vm.setTestCache(testCache);
+    vm.setTestCache(testCache, TEST_USER_ID);
 
     // Create routes
     const router = createRunRoutes({

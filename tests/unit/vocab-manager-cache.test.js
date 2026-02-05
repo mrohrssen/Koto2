@@ -1,23 +1,26 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert';
-import { existsSync, unlinkSync } from 'fs';
+import { existsSync, unlinkSync, mkdirSync } from 'fs';
 
-const TEST_CACHE_FILE = '/tmp/test-vocab-cache.json';
+const TEST_CACHE_DIR = '/tmp/test-vocab-cache/';
+const TEST_USER_ID = 'test-user';
 
 describe('Vocab Manager New Cache Format', () => {
   beforeEach(() => {
-    if (existsSync(TEST_CACHE_FILE)) {
-      unlinkSync(TEST_CACHE_FILE);
+    try { mkdirSync(TEST_CACHE_DIR, { recursive: true }); } catch {}
+    const cacheFile = `${TEST_CACHE_DIR}vocab-cache-${TEST_USER_ID}.json`;
+    if (existsSync(cacheFile)) {
+      unlinkSync(cacheFile);
     }
   });
 
   it('should support lastFullParse timestamp in cache', async () => {
     const { configureVocabManager, getVocabManagerStats, clearVocabManagerCache } = await import('../../src/game/vocab-manager.js');
 
-    configureVocabManager({ cacheFile: TEST_CACHE_FILE });
-    clearVocabManagerCache();
+    configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    clearVocabManagerCache(TEST_USER_ID);
 
-    const stats = getVocabManagerStats();
+    const stats = getVocabManagerStats(TEST_USER_ID);
     assert.ok('lastFullParse' in stats, 'stats should include lastFullParse');
   });
 });
@@ -31,7 +34,7 @@ describe('Full Parse Function', () => {
   it('should export FULL_PARSE_CONFIG for testing', async () => {
     const vm = await import('../../src/game/vocab-manager.js');
     assert.ok(vm.FULL_PARSE_CONFIG, 'should export config');
-    assert.strictEqual(vm.FULL_PARSE_CONFIG.batchSize, 2000);
+    assert.strictEqual(vm.FULL_PARSE_CONFIG.batchSize, 1000);
     assert.strictEqual(vm.FULL_PARSE_CONFIG.maxWords, 10000);
   });
 });

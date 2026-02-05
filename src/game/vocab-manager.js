@@ -8,8 +8,8 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { lookupWordStates, parseWordBatches } from '../jpdb.js';
 
-// Cache file path - configured via configureVocabManager()
-let cacheFile = null;
+// Cache directory path - configured via configureVocabManager()
+let cacheDir = null;
 
 // Configuration
 const CONFIG = {
@@ -29,69 +29,108 @@ export const FULL_PARSE_CONFIG = {
   cacheExpiryMs: 60 * 60 * 1000  // 1 hour
 };
 
-// In-memory state
-let state = {
-  recentlyUsedWords: [],          // Ring buffer of last N words
-  wordStateCache: {},             // { word: { states: [], vid, sid, dueAt, rank } }
-  lastRefresh: null,              // Timestamp of last incremental refresh
-  lastFullParse: null,            // Timestamp of last full batch parse
-  initialized: false,
-  checkedThisSession: false       // Only check/refresh once per session
-};
+// Per-user in-memory state
+const userStates = new Map();
 
-// Lock to prevent simultaneous JPDB fetches
-let refreshPromise = null;
+// Lock to prevent simultaneous JPDB fetches (per user)
+const refreshPromises = new Map();
 
 /**
- * Configure the vocab manager with file path
- * @param {object} options - Configuration options
- * @param {string} options.cacheFile - Path to the cache file
+ * Get cache file path for a specific user
+ * @param {string} userId - User ID
+ * @returns {string|null} Cache file path or null if not configured
  */
-export function configureVocabManager({ cacheFile: file }) {
-  cacheFile = file;
+function getUserCacheFile(userId) {
+  if (!cacheDir) return null;
+  if (!userId) throw new Error('userId is required for cache operations');
+  return `${cacheDir}vocab-cache-${userId}.json`;
 }
 
 /**
- * Initialize the vocabulary manager - load cache from file
+ * Get or create user state
+ * @param {string} userId - User ID
+ * @returns {Object} User's state object
  */
-export function initVocabManager() {
+function getOrCreateUserState(userId) {
+  if (!userId) throw new Error('userId is required for cache operations');
+  if (!userStates.has(userId)) {
+    userStates.set(userId, {
+      recentlyUsedWords: [],          // Ring buffer of last N words
+      wordStateCache: {},             // { word: { states: [], vid, sid, dueAt, rank } }
+      lastRefresh: null,              // Timestamp of last incremental refresh
+      lastFullParse: null,            // Timestamp of last full batch parse
+      initialized: false,
+      checkedThisSession: false       // Only check/refresh once per session
+    });
+  }
+  return userStates.get(userId);
+}
+
+/**
+ * Configure the vocab manager with directory path
+ * @param {object} options - Configuration options
+ * @param {string} options.cacheDir - Path to the cache directory
+ * @param {string} options.cacheFile - Legacy: Path to the cache file (deprecated)
+ */
+export function configureVocabManager({ cacheDir: dir, cacheFile: file }) {
+  if (dir) {
+    cacheDir = dir.endsWith('/') ? dir : dir + '/';
+  } else if (file) {
+    // Legacy support: extract directory from file path
+    const lastSlash = file.lastIndexOf('/');
+    cacheDir = lastSlash > 0 ? file.substring(0, lastSlash + 1) : './';
+    console.warn('[VocabManager] Using legacy cacheFile config - migrate to cacheDir');
+  }
+}
+
+/**
+ * Initialize the vocabulary manager for a user - load cache from file
+ * @param {string} userId - User ID
+ */
+export function initVocabManager(userId) {
+  const state = getOrCreateUserState(userId);
   if (state.initialized) return;
 
-  if (!cacheFile) {
-    console.warn('Vocab manager not configured - call configureVocabManager first');
+  const userCacheFile = getUserCacheFile(userId);
+  if (!userCacheFile) {
+    console.warn(`[VocabManager] Not configured for user ${userId} - call configureVocabManager first`);
     state.initialized = true;
     return;
   }
 
   try {
-    if (existsSync(cacheFile)) {
-      const data = JSON.parse(readFileSync(cacheFile, 'utf-8'));
+    if (existsSync(userCacheFile)) {
+      const data = JSON.parse(readFileSync(userCacheFile, 'utf-8'));
       state.recentlyUsedWords = data.recentlyUsedWords || [];
       state.wordStateCache = data.wordStateCache || {};
       state.lastRefresh = data.lastRefresh || null;
       state.lastFullParse = data.lastFullParse || null;
-      console.log(`Loaded vocab suggestion cache: ${Object.keys(state.wordStateCache).length} word states, ${state.recentlyUsedWords.length} recent words`);
+      console.log(`[VocabManager] Loaded cache for user ${userId}: ${Object.keys(state.wordStateCache).length} word states, ${state.recentlyUsedWords.length} recent words`);
     }
   } catch (e) {
-    console.warn('Failed to load vocab suggestion cache:', e.message);
+    console.warn(`[VocabManager] Failed to load cache for user ${userId}:`, e.message);
   }
 
   state.initialized = true;
 }
 
 /**
- * Save cache to file
+ * Save cache to file for a specific user
+ * @param {string} userId - User ID
  */
-function saveCache() {
-  if (!cacheFile) {
-    console.log('[VocabManager] saveCache: No cacheFile configured');
+function saveCache(userId) {
+  const userCacheFile = getUserCacheFile(userId);
+  if (!userCacheFile) {
+    console.log(`[VocabManager] saveCache: No cacheDir configured for user ${userId}`);
     return;
   }
 
+  const state = getOrCreateUserState(userId);
+
   try {
     const cacheSize = Object.keys(state.wordStateCache).length;
-    console.log(`[VocabManager] saveCache: Writing ${cacheSize} words to ${cacheFile}`);
-    writeFileSync(cacheFile, JSON.stringify({
+    console.log(`[VocabManager] saveCache: Writing ${cacheSize} words to ${userCacheFile}`);
+    writeFileSync(userCacheFile, JSON.stringify({
       recentlyUsedWords: state.recentlyUsedWords,
       wordStateCache: state.wordStateCache,
       lastRefresh: state.lastRefresh,
@@ -106,11 +145,13 @@ function saveCache() {
 /**
  * Add words to the recently-used ring buffer
  * @param {string[]} words - Words used in narration
+ * @param {string} userId - User ID
  */
-export function addUsedWords(words) {
+export function addUsedWords(words, userId) {
   if (!words || words.length === 0) return;
 
-  initVocabManager();
+  initVocabManager(userId);
+  const state = getOrCreateUserState(userId);
 
   // Add new words to the buffer
   for (const word of words) {
@@ -129,15 +170,17 @@ export function addUsedWords(words) {
     state.recentlyUsedWords = state.recentlyUsedWords.slice(-CONFIG.recentWordsLimit);
   }
 
-  saveCache();
+  saveCache(userId);
 }
 
 /**
  * Get recently used words
+ * @param {string} userId - User ID
  * @returns {string[]} Last N words used
  */
-export function getRecentlyUsedWords() {
-  initVocabManager();
+export function getRecentlyUsedWords(userId) {
+  initVocabManager(userId);
+  const state = getOrCreateUserState(userId);
   return [...state.recentlyUsedWords];
 }
 
@@ -149,14 +192,17 @@ export function getRecentlyUsedWords() {
  *
  * @param {string} apiKey - JPDB API key
  * @param {string[]} vocabulary - Full vocabulary list
+ * @param {boolean} force - Force refresh even if cache is fresh
+ * @param {string} userId - User ID
  * @returns {Object} Word state mapping
  */
-export async function refreshWordStateCache(apiKey, vocabulary, force = false) {
-  initVocabManager();
+export async function refreshWordStateCache(apiKey, vocabulary, force = false, userId) {
+  initVocabManager(userId);
+  const state = getOrCreateUserState(userId);
 
-  // If already refreshing, wait for that to complete (prevents race condition)
-  if (refreshPromise) {
-    await refreshPromise;
+  // If already refreshing for this user, wait for that to complete (prevents race condition)
+  if (refreshPromises.has(userId)) {
+    await refreshPromises.get(userId);
     return state.wordStateCache;
   }
 
@@ -181,12 +227,12 @@ export async function refreshWordStateCache(apiKey, vocabulary, force = false) {
 
   // Only fetch if cache is stale OR incomplete (force makes cache "stale")
   if (!cacheIsStale && cacheIsComplete) {
-    console.log(`Using cached word states (${Object.keys(state.wordStateCache).length} words, ${Math.round((now - state.lastRefresh) / 60000)} min old)`);
+    console.log(`[VocabManager] Using cached word states for user ${userId} (${Object.keys(state.wordStateCache).length} words, ${Math.round((now - state.lastRefresh) / 60000)} min old)`);
     return state.wordStateCache;
   }
 
-  // Use a promise lock to prevent simultaneous fetches
-  refreshPromise = (async () => {
+  // Use a promise lock to prevent simultaneous fetches for this user
+  const refreshPromise = (async () => {
     try {
       // Determine what to fetch:
       // - If force or cache stale: refresh ALL words (due status may have changed)
@@ -194,21 +240,22 @@ export async function refreshWordStateCache(apiKey, vocabulary, force = false) {
       const wordsToFetch = cacheIsStale ? vocabulary : uncachedWords;
       const reason = force ? 'forced refresh' : (cacheIsStale ? 'cache stale' : 'incomplete cache');
 
-      console.log(`[VocabManager] Fetching word states for ${wordsToFetch.length} words (${reason})...`);
+      console.log(`[VocabManager] Fetching word states for user ${userId}: ${wordsToFetch.length} words (${reason})...`);
       const newStates = await lookupWordStates(apiKey, wordsToFetch);
       Object.assign(state.wordStateCache, newStates);
-      console.log(`[VocabManager] Cached ${Object.keys(state.wordStateCache).length} word states total`);
+      console.log(`[VocabManager] Cached ${Object.keys(state.wordStateCache).length} word states total for user ${userId}`);
 
       state.lastRefresh = now;
-      saveCache();
+      saveCache(userId);
 
     } catch (e) {
-      console.warn('[VocabManager] Failed to refresh word state cache:', e.message);
+      console.warn(`[VocabManager] Failed to refresh word state cache for user ${userId}:`, e.message);
     }
   })();
 
+  refreshPromises.set(userId, refreshPromise);
   await refreshPromise;
-  refreshPromise = null;
+  refreshPromises.delete(userId);
 
   return state.wordStateCache;
 }
@@ -347,20 +394,21 @@ function shuffleArray(array) {
  * Main entry point: Get word suggestions for narration
  * @param {string} apiKey - JPDB API key
  * @param {string[]} vocabulary - Full vocabulary list
+ * @param {string} userId - User ID
  * @returns {Object[]} Array of { word, state, priority }
  */
-export async function getSuggestionsForNarration(apiKey, vocabulary) {
-  initVocabManager();
+export async function getSuggestionsForNarration(apiKey, vocabulary, userId) {
+  initVocabManager(userId);
 
   if (!vocabulary || vocabulary.length === 0) {
     return [];
   }
 
   // Refresh word states (throttled)
-  const wordStates = await refreshWordStateCache(apiKey, vocabulary);
+  const wordStates = await refreshWordStateCache(apiKey, vocabulary, false, userId);
 
   // Get recently used words
-  const recentWords = getRecentlyUsedWords();
+  const recentWords = getRecentlyUsedWords(userId);
 
   // Select suggestions
   const suggestions = selectSuggestedWords(vocabulary, wordStates, recentWords);
@@ -369,24 +417,27 @@ export async function getSuggestionsForNarration(apiKey, vocabulary) {
 }
 
 /**
- * Clear the cache (for testing or reset)
+ * Clear the cache for a user (for testing or reset)
+ * @param {string} userId - User ID
  */
-export function clearVocabManagerCache() {
-  state = {
+export function clearVocabManagerCache(userId) {
+  userStates.set(userId, {
     recentlyUsedWords: [],
     wordStateCache: {},
     lastRefresh: null,
     lastFullParse: null,
     initialized: true,
     checkedThisSession: false
-  };
-  saveCache();
+  });
+  saveCache(userId);
 }
 
 /**
  * Force a refresh on next narration (e.g., after user reviews words in JPDB)
+ * @param {string} userId - User ID
  */
-export function invalidateWordStateCache() {
+export function invalidateWordStateCache(userId) {
+  const state = getOrCreateUserState(userId);
   state.checkedThisSession = false;
 }
 
@@ -395,10 +446,12 @@ export function invalidateWordStateCache() {
  * Removes 'due' state and sets dueAt far in future to prevent re-selection
  *
  * @param {number} vid - Vocabulary ID to invalidate
+ * @param {string} userId - User ID
  * @returns {boolean} True if word was found and invalidated
  */
-export function invalidateWordByVid(vid) {
-  initVocabManager();
+export function invalidateWordByVid(vid, userId) {
+  initVocabManager(userId);
+  const state = getOrCreateUserState(userId);
 
   for (const [word, stateInfo] of Object.entries(state.wordStateCache)) {
     if (stateInfo.vid === vid) {
@@ -409,7 +462,7 @@ export function invalidateWordByVid(vid) {
         stateInfo.states = states;
         // Set dueAt far in the future so it won't be prioritized
         stateInfo.dueAt = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days from now
-        console.log(`[VocabManager] Invalidated word "${word}" (vid=${vid}) - removed 'due' state from in-memory cache`);
+        console.log(`[VocabManager] Invalidated word "${word}" (vid=${vid}) for user ${userId} - removed 'due' state from in-memory cache`);
         // Note: Don't call saveCache() here - let the caller decide
         return true;
       }
@@ -425,10 +478,12 @@ export function invalidateWordByVid(vid) {
  *
  * @param {string} apiKey - JPDB API key
  * @param {Object[]} wordList - Static word list [{word, rank}, ...]
+ * @param {string} userId - User ID
  * @returns {Promise<Object>} Word state cache
  */
-export async function performFullParse(apiKey, wordList) {
-  initVocabManager();
+export async function performFullParse(apiKey, wordList, userId) {
+  initVocabManager(userId);
+  const state = getOrCreateUserState(userId);
 
   if (!apiKey || !wordList || wordList.length === 0) {
     return state.wordStateCache;
@@ -440,11 +495,11 @@ export async function performFullParse(apiKey, wordList) {
   // Skip if cache is fresh (less than 1 hour old) AND has content
   const cacheHasContent = Object.keys(state.wordStateCache).length > 0;
   if (cacheAge < FULL_PARSE_CONFIG.cacheExpiryMs && cacheHasContent) {
-    console.log(`[VocabManager] Cache is fresh (${Math.round(cacheAge / 60000)} min old, ${Object.keys(state.wordStateCache).length} words), skipping full parse`);
+    console.log(`[VocabManager] Cache for user ${userId} is fresh (${Math.round(cacheAge / 60000)} min old, ${Object.keys(state.wordStateCache).length} words), skipping full parse`);
     return state.wordStateCache;
   }
 
-  console.log(`[VocabManager] Starting full parse of ${Math.min(wordList.length, FULL_PARSE_CONFIG.maxWords)} words...`);
+  console.log(`[VocabManager] Starting full parse for user ${userId}: ${Math.min(wordList.length, FULL_PARSE_CONFIG.maxWords)} words...`);
 
   // Only parse top N most frequent words
   const wordsToparse = wordList.slice(0, FULL_PARSE_CONFIG.maxWords);
@@ -477,14 +532,14 @@ export async function performFullParse(apiKey, wordList) {
     state.lastFullParse = now;
     state.lastRefresh = now;
 
-    saveCache();
+    saveCache(userId);
 
-    console.log(`[VocabManager] Full parse complete: ${Object.keys(state.wordStateCache).length} words cached`);
+    console.log(`[VocabManager] Full parse complete for user ${userId}: ${Object.keys(state.wordStateCache).length} words cached`);
 
     return state.wordStateCache;
 
   } catch (error) {
-    console.error('[VocabManager] Full parse failed:', error.message);
+    console.error(`[VocabManager] Full parse failed for user ${userId}:`, error.message);
     return state.wordStateCache;
   }
 }
@@ -494,10 +549,12 @@ export async function performFullParse(apiKey, wordList) {
  * Called after combat to refresh reviewed word states
  *
  * @param {Object} wordStates - Map of word -> { vid, sid, states, dueAt, reading }
+ * @param {string} userId - User ID
  * @returns {number} Number of words updated
  */
-export function updateWordStates(wordStates) {
-  initVocabManager();
+export function updateWordStates(wordStates, userId) {
+  initVocabManager(userId);
+  const state = getOrCreateUserState(userId);
 
   if (!wordStates || Object.keys(wordStates).length === 0) {
     return 0;
@@ -515,17 +572,19 @@ export function updateWordStates(wordStates) {
   }
 
   state.lastRefresh = Date.now();
-  saveCache();
+  saveCache(userId);
 
-  console.log(`[VocabManager] Updated ${updated} word states`);
+  console.log(`[VocabManager] Updated ${updated} word states for user ${userId}`);
   return updated;
 }
 
 /**
  * Get cache stats (for debugging)
+ * @param {string} userId - User ID
  */
-export function getVocabManagerStats() {
-  initVocabManager();
+export function getVocabManagerStats(userId) {
+  initVocabManager(userId);
+  const state = getOrCreateUserState(userId);
   return {
     recentWordsCount: state.recentlyUsedWords.length,
     cachedWordStates: Object.keys(state.wordStateCache).length,
@@ -538,14 +597,16 @@ export function getVocabManagerStats() {
 /**
  * Get new words for discovery room, sorted by frequency rank
  * @param {number} limit - Maximum words to return
+ * @param {string} userId - User ID
  * @returns {Object} { words: Array<{word, reading, meanings, vid, sid, rank}>, available: boolean }
  */
-export function getNewWordsForDiscovery(limit = 2) {
-  initVocabManager();
+export function getNewWordsForDiscovery(limit = 2, userId) {
+  initVocabManager(userId);
+  const state = getOrCreateUserState(userId);
 
   const cacheSize = Object.keys(state.wordStateCache).length;
   if (cacheSize === 0) {
-    console.log('[Discovery] Word state cache is empty - no words available');
+    console.log(`[Discovery] Word state cache is empty for user ${userId} - no words available`);
     return { words: [], available: false };
   }
 
@@ -576,9 +637,9 @@ export function getNewWordsForDiscovery(limit = 2) {
 
   const words = newWords.slice(0, limit);
 
-  console.log(`[Discovery] Cache has ${cacheSize} words, found ${newWords.length} with 'new' state (no excluded states), returning ${words.length}`);
+  console.log(`[Discovery] Cache for user ${userId} has ${cacheSize} words, found ${newWords.length} with 'new' state (no excluded states), returning ${words.length}`);
   if (words.length > 0) {
-    console.log(`[Discovery] Selected words: ${words.map(w => `${w.word} (states: ${state.wordStateCache[w.word]?.states?.join(',') || 'none'})`).join(', ')}`);
+    console.log(`[Discovery] Selected words for user ${userId}: ${words.map(w => `${w.word} (states: ${state.wordStateCache[w.word]?.states?.join(',') || 'none'})`).join(', ')}`);
   }
 
   return {
@@ -590,8 +651,10 @@ export function getNewWordsForDiscovery(limit = 2) {
 /**
  * Set test cache (for unit testing only)
  * @param {Object} cache - Word state cache to inject
+ * @param {string} userId - User ID
  */
-export function setTestCache(cache) {
+export function setTestCache(cache, userId) {
+  const state = getOrCreateUserState(userId);
   state.wordStateCache = cache;
   state.initialized = true;
 }
