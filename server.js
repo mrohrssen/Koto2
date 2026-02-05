@@ -141,18 +141,18 @@ const PORT = process.env.PORT || 3000;
 const SETTINGS_FILE = dataPath('.jrpg-settings.json');
 const GAME_SAVE_FILE = dataPath('.jrpg-save.json');
 const VOCAB_CACHE_FILE = dataPath('.jrpg-vocab-cache.json');
-// Use persistent data directory for vocab suggestions cache
-const VOCAB_SUGGESTIONS_FILE = dataPath('.jrpg-vocab-suggestions.json');
+// Use persistent data directory for per-user vocab suggestion caches
+const VOCAB_CACHE_DIR = dataPath('');
 
 // Configure JPDB with file paths
 configureJpdb({
   vocabCacheFile: VOCAB_CACHE_FILE,
-  vocabSuggestionsFile: VOCAB_SUGGESTIONS_FILE
+  vocabCacheDir: VOCAB_CACHE_DIR
 });
 initializeJpdb();
 
-// Configure vocab manager with same file path
-configureVocabManager({ cacheFile: VOCAB_SUGGESTIONS_FILE });
+// Configure vocab manager with cache directory for per-user files
+configureVocabManager({ cacheDir: VOCAB_CACHE_DIR });
 
 // Load static word list for JPDB batch parsing
 let staticWordList = [];
