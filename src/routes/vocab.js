@@ -49,11 +49,13 @@ export default function createVocabRoutes({ getSettings }) {
   });
 
   /**
-   * GET /api/vocab/due-words
+   * POST /api/vocab/due-words
    * Fetch due/failed words for speed review
+   * Body: { reviewedWords: [{ vid, sid }, ...] }
    */
-  router.get('/vocab/due-words', requireAuth, attachUserKeys, async (req, res) => {
+  router.post('/vocab/due-words', requireAuth, attachUserKeys, async (req, res) => {
     const jpdbApiKey = req.userKeys?.jpdbApiKey;
+    const { reviewedWords = [] } = req.body || {};
 
     if (!jpdbApiKey) {
       return res.json({ words: [], error: 'JPDB API key not configured' });
@@ -61,7 +63,7 @@ export default function createVocabRoutes({ getSettings }) {
 
     try {
       const { getDueWordsWithMeanings } = await import('../jpdb.js');
-      const result = await getDueWordsWithMeanings(jpdbApiKey, 1000, [], req.user.id);
+      const result = await getDueWordsWithMeanings(jpdbApiKey, 1000, [], req.user.id, reviewedWords);
       res.json(result);
     } catch (error) {
       console.error('[vocab/due-words] Error:', error);
