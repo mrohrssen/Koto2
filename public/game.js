@@ -134,6 +134,8 @@ import {
   getDiscoveryWords as apiGetDiscoveryWords,
   getDiscoveryStatus as apiGetDiscoveryStatus,
   completeDiscovery as apiCompleteDiscovery,
+  getLevels as apiGetLevels,
+  selectLevel as apiSelectLevel,
   selectBranch as apiSelectBranch,
   doorHints as apiDoorHints,
   parseJpdbText,
@@ -1000,6 +1002,8 @@ async function initGame() {
       body: JSON.stringify({ words })
     }),
     apiGetDueWords,
+    apiGetLevels,
+    apiSelectLevel,
   });
 
   economyUI.init({
