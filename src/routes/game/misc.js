@@ -347,7 +347,8 @@ export default function createMiscRoutes({
       upgrades: [],
       achievements: [],
       achievementProgress: {},
-      lifetimeStats: { runs: 0, deaths: 0, kills: 0, creditsEarned: 0, bossesKilled: 0 }
+      lifetimeStats: { runs: 0, deaths: 0, kills: 0, creditsEarned: 0, bossesKilled: 0 },
+      levels: { highestUnlocked: 1, completed: [], current: null }
     };
     cancelPendingPrefetches();
     clearPrefetchCache();

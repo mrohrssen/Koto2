@@ -17,7 +17,7 @@ import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswe
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const quizQuestionsPath = join(__dirname, '../../data/quiz-questions.json');
-const levelsPath = join(__dirname, '../../data/levels.json');
+const levelsPath = join(__dirname, '../../../data/levels.json');
 
 function loadQuizQuestions() {
   const data = JSON.parse(readFileSync(quizQuestionsPath, 'utf-8'));
