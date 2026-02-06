@@ -43,7 +43,7 @@ let api = {
 const BLOCKED_SELECTORS = [
   '.quiz-answer-option',  // Quiz answers - no cheating!
   '.flash-card',          // Flashcards - no cheating!
-  '.utility-row',         // Toolbar buttons
+  '.mini-toolbar',        // Toolbar buttons
   '.lookup-popup',        // The lookup popup itself
   'button',               // All buttons
   'script',               // Script tags

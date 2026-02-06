@@ -821,6 +821,14 @@ async function handleChipReorder(newChipIds) {
 
 // ============ EVENT LISTENERS ============
 function setupEventListeners() {
+  // Menu sheet toggle
+  modalsUI.initMenu();
+  dom.menuBtn?.addEventListener('click', () => modalsUI.toggleMenu());
+
+  // Bots button opens chip equip
+  dom.botsBtn?.addEventListener('click', () => openChipEquipView());
+
+  // Menu items (menu auto-closes via delegation in modals.initMenu)
   dom.settingsBtn.addEventListener('click', () => modalsUI.openSettings());
   dom.resetRunBtn.addEventListener('click', async () => {
     if (confirm('Forfeit current run?')) {
@@ -1069,8 +1077,8 @@ async function initGame() {
   setupEventListeners();
   setupPhaserEventListeners();
 
-  // Wire logout button
-  document.getElementById('logout-btn').addEventListener('click', () => {
+  // Wire logout button (in menu sheet — menu auto-closes via delegation)
+  document.getElementById('logout-btn')?.addEventListener('click', () => {
     if (confirm('Are you sure you want to log out?')) {
       auth.logout();
       auth.showAuthScreen();

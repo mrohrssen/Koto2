@@ -188,3 +188,36 @@ export async function openSettings() {
 export function closeSettings() {
   takeover.close('settings');
 }
+
+// ============ MENU SHEET ============
+
+let menuSheet = null;
+let menuBackdrop = null;
+
+export function initMenu() {
+  menuSheet = document.getElementById('menu-sheet');
+  menuBackdrop = document.getElementById('menu-backdrop');
+  menuBackdrop?.addEventListener('click', closeMenu);
+  // Close menu when any menu item is clicked
+  menuSheet?.addEventListener('click', (e) => {
+    if (e.target.closest('.menu-item')) closeMenu();
+  });
+}
+
+export function toggleMenu() {
+  if (menuSheet?.classList.contains('visible')) {
+    closeMenu();
+  } else {
+    openMenu();
+  }
+}
+
+export function openMenu() {
+  menuSheet?.classList.add('visible');
+  menuBackdrop?.classList.add('visible');
+}
+
+export function closeMenu() {
+  menuSheet?.classList.remove('visible');
+  menuBackdrop?.classList.remove('visible');
+}
