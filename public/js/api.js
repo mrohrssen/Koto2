@@ -365,6 +365,26 @@ async function postCombatShopRefresh() {
   return apiCall('/post-combat-shop-refresh', 'POST');
 }
 
+/** Get dealer room state (inventory with sell prices, offered chip) */
+async function getDealerState() {
+  return apiCall('/dealer-state', 'GET');
+}
+
+/** Sell a chip to the dealer */
+async function dealerSell(chipId) {
+  return apiCall('/dealer-sell', 'POST', { chipId });
+}
+
+/** Buy the dealer's offered chip */
+async function dealerBuy() {
+  return apiCall('/dealer-buy', 'POST');
+}
+
+/** Leave the dealer room */
+async function dealerLeave() {
+  return apiCall('/dealer-leave', 'POST');
+}
+
 /** Equip a chip to an equipment slot
  * @param {string} equipmentSlot - Equipment slot name ('weapon', 'body', 'shield', 'accessory')
  * @param {string} chipId - Chip identifier
@@ -606,6 +626,10 @@ export {
   postCombatShopBuy,
   shopSkip,
   postCombatShopRefresh,
+  getDealerState,
+  dealerSell,
+  dealerBuy,
+  dealerLeave,
   equipChip,
   unequipChip,
   reorderChips,
