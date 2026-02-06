@@ -18,7 +18,7 @@
 
 import { getSimpleNarration } from '../dm.js';
 import { generateEncounterCount, MAX_INVENTORY_SIZE } from '../state.js';
-import { getChipLevel, setChipLevel, getChipPrice, CHIP_RARITIES, equipChip } from '../items/chips.js';
+import { getChipLevel, setChipLevel, getChipPrice, CHIP_RARITIES, equipChip, unequipChip, getDealerSellPrice } from '../items/chips.js';
 
 import {
   generateFloorRooms,
@@ -456,6 +456,183 @@ export class ExplorationService {
     this.gm.emitState();
 
     return { type: 'word_discovery_complete' };
+  }
+
+  // ============ DEALER ROOM ============
+
+  /**
+   * Get dealer room state with inventory sell prices
+   */
+  getDealerState() {
+    const room = this.getCurrentRoom();
+    if (!room || room.type !== 'dealer') {
+      throw new Error('No dealer here');
+    }
+
+    const player = this.gm.run.player;
+    const equippedChipIds = new Set(player.equipment?.weapon?.equippedChips || []);
+
+    // Build inventory with sell prices
+    const inventory = (player.chips || []).map(chip => {
+      const level = getChipLevel(player, chip.id);
+      const sellPrice = getDealerSellPrice(chip.id, level);
+      return {
+        id: chip.id,
+        name: chip.name,
+        nameEn: chip.nameEn,
+        rarity: chip.rarity,
+        level,
+        sellPrice,
+        isEquipped: equippedChipIds.has(chip.id),
+        stats: chip.stats
+      };
+    });
+
+    return {
+      dealer: room.dealer,
+      inventory,
+      credits: player.credits || 0
+    };
+  }
+
+  /**
+   * Sell a chip to the dealer
+   * @param {string} chipId - ID of chip to sell
+   */
+  dealerSell(chipId) {
+    const room = this.getCurrentRoom();
+    if (!room || room.type !== 'dealer') {
+      throw new Error('No dealer here');
+    }
+
+    const player = this.gm.run.player;
+
+    // Find chip in inventory
+    const chipIndex = player.chips?.findIndex(c => c.id === chipId);
+    if (chipIndex === -1 || chipIndex === undefined) {
+      throw new Error('Chip not in inventory');
+    }
+
+    const chip = player.chips[chipIndex];
+    const equippedChipIds = player.equipment?.weapon?.equippedChips || [];
+    const isEquipped = equippedChipIds.includes(chipId);
+
+    // If equipped, unequip first (removes HP bonus and clears slot)
+    if (isEquipped) {
+      unequipChip(player, 'weapon', chipId);
+    }
+
+    // Calculate level-scaled sell price
+    const level = getChipLevel(player, chipId);
+    const sellPrice = getDealerSellPrice(chipId, level);
+
+    // Remove from inventory
+    player.chips.splice(chipIndex, 1);
+
+    // Add credits
+    player.credits = (player.credits || 0) + sellPrice;
+
+    // Track sold chip
+    room.dealer.soldChips.push({ chipId, sellPrice });
+
+    logger.info('[Dealer] Chip sold:', { chip: chip.name, chipId, level, sellPrice, wasEquipped: isEquipped });
+
+    this.gm.narrate(`${chip.name || chip.nameEn}を${sellPrice}クレジットで売却した。`);
+    this.gm.emitState();
+
+    return {
+      success: true,
+      chipId,
+      chipName: chip.name || chip.nameEn,
+      creditsGained: sellPrice,
+      creditsRemaining: player.credits,
+      wasEquipped: isEquipped
+    };
+  }
+
+  /**
+   * Buy the dealer's offered chip
+   */
+  dealerBuy() {
+    const room = this.getCurrentRoom();
+    if (!room || room.type !== 'dealer') {
+      throw new Error('No dealer here');
+    }
+
+    if (room.dealer.visited) {
+      throw new Error('Already purchased from this dealer');
+    }
+
+    const player = this.gm.run.player;
+    const offeredChip = room.dealer.offeredChip;
+    const price = room.dealer.chipPrice;
+
+    // Check credits
+    if ((player.credits || 0) < price) {
+      throw new Error('Not enough credits');
+    }
+
+    // Check inventory cap
+    const equippedChipIds = new Set(player.equipment?.weapon?.equippedChips || []);
+    const unequippedCount = (player.chips || []).filter(c => !equippedChipIds.has(c.id)).length;
+    if (unequippedCount >= MAX_INVENTORY_SIZE) {
+      throw new Error('Inventory full - sell chips to make room');
+    }
+
+    // Deduct credits
+    player.credits -= price;
+
+    // Add chip to inventory
+    if (!player.chips) player.chips = [];
+    player.chips.push({
+      id: offeredChip.id,
+      baseId: offeredChip.baseId || offeredChip.id,
+      name: offeredChip.name,
+      nameEn: offeredChip.nameEn,
+      category: offeredChip.category,
+      rarity: offeredChip.rarity,
+      effects: offeredChip.effects,
+      stats: offeredChip.stats
+    });
+
+    // Auto-equip if fewer than 5 equipped
+    const equippedChips = player.equipment?.weapon?.equippedChips || [];
+    if (equippedChips.length < 5 && !equippedChips.includes(offeredChip.id)) {
+      equipChip(player, 'weapon', offeredChip.id);
+    }
+
+    // Mark dealer as visited (one purchase per room)
+    room.dealer.visited = true;
+
+    logger.info('[Dealer] Chip purchased:', { chip: offeredChip.name, chipId: offeredChip.id, price });
+
+    this.gm.narrate(`${offeredChip.name || offeredChip.nameEn}を${price}クレジットで購入した！`);
+    this.gm.emitState();
+
+    return {
+      success: true,
+      chip: offeredChip,
+      creditsSpent: price,
+      creditsRemaining: player.credits
+    };
+  }
+
+  /**
+   * Leave the dealer room without further interaction
+   */
+  leaveDealer() {
+    const room = this.getCurrentRoom();
+    if (!room || room.type !== 'dealer') {
+      throw new Error('No dealer here');
+    }
+
+    room.dealer.visited = true;
+    room.interacted = true;
+
+    this.gm.narrate('ロボット商人に別れを告げた。');
+    this.gm.emitState();
+
+    return { success: true };
   }
 
   /**
