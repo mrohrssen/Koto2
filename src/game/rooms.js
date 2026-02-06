@@ -243,6 +243,7 @@ export const ROOM_TYPES = {
   shrine: 'shrine',             // Fox shrine (chip upgrade)
   quiz: 'quiz',                 // Quiz master (reward room)
   wordDiscovery: 'wordDiscovery', // Learn new vocabulary
+  shop: 'shop',                 // Robot dealer (chip shop)
   boss: 'boss'                  // Floor boss
 };
 
@@ -256,7 +257,8 @@ export const ROOM_TYPES = {
 function isSpecialType(type) {
   return type === ROOM_TYPES.shrine ||
          type === ROOM_TYPES.quiz ||
-         type === ROOM_TYPES.wordDiscovery;
+         type === ROOM_TYPES.wordDiscovery ||
+         type === ROOM_TYPES.shop;
 }
 
 /**
@@ -271,6 +273,7 @@ function generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType = 
   const SHRINE_CHANCE = 0.20;          // 20% chance for shrine
   const QUIZ_CHANCE = 0.20;            // 20% chance for quiz
   const WORD_DISCOVERY_CHANCE = 0.15;  // 15% chance for word discovery
+  const SHOP_CHANCE = 0.10;            // 10% chance for shop
 
   // Check test queue first (for deterministic E2E tests)
   const queuedType = popTestRoomType();
@@ -289,6 +292,8 @@ function generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType = 
         type = ROOM_TYPES.quiz;
       } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE + WORD_DISCOVERY_CHANCE) {
         type = ROOM_TYPES.wordDiscovery;
+      } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE + WORD_DISCOVERY_CHANCE + SHOP_CHANCE) {
+        type = ROOM_TYPES.shop;
       } else {
         type = ROOM_TYPES.encounter;
       }
@@ -396,6 +401,10 @@ function createRoom(type, floor, roomNumber, totalRooms) {
       };
       break;
 
+    case ROOM_TYPES.shop:
+      room.shop = { visited: false };
+      break;
+
     case ROOM_TYPES.boss:
       room.isBossRoom = true;
       break;
@@ -425,6 +434,9 @@ export function getRoomEntryNarration(room) {
 
     case ROOM_TYPES.wordDiscovery:
       return `${roomNum}に入った。知識の泉がある...新しい言葉を発見できそうだ。`;
+
+    case ROOM_TYPES.shop:
+      return `${roomNum}に入った。ロボットの商人がいる...「いらっしゃい」`;
 
     case ROOM_TYPES.boss:
       return `${wardInfo.name}の中心部に入った。強力なSYSTEM反応がある...ボスがいる！`;
@@ -468,6 +480,12 @@ export function getRoomActions(room) {
 
     case ROOM_TYPES.wordDiscovery:
       // No action buttons - flash cards appear automatically
+      break;
+
+    case ROOM_TYPES.shop:
+      if (!room.shop.visited) {
+        actions.push({ id: 'shop_browse', name: '商品を見る', description: 'ロボット商人の商品を見る' });
+      }
       break;
 
     case ROOM_TYPES.boss:
