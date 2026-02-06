@@ -388,7 +388,7 @@ export async function impactEnemyEffect(damage, enemyEl, enemyMaxHp = 0) {
   // 4. Particles burst from enemy
   if (enemyEl) {
     // Higher tier = brighter particle color
-    const colors = ['#999', '#e74c3c', '#0ff', '#0ff', '#ffd700'];
+    const colors = ['#b0bec5', '#ef5350', '#4fc3f7', '#4fc3f7', '#ffb74d'];
     spawnParticles(enemyEl, effects.particles, colors[tier]);
   }
 

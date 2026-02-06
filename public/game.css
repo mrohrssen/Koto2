@@ -1780,57 +1780,54 @@ html, body {
 /* ===== DAMAGE NUMBERS ===== */
 .damage-number {
   position: absolute;
-  font-weight: 700;
-  font-size: 24px;
-  color: var(--accent-red);
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  animation: damage-float 1s ease-out forwards;
+  font-weight: var(--font-weight-bold);
   pointer-events: none;
-  z-index: 30;
+  z-index: 50;
+  animation: damage-float 1s ease-out forwards;
 }
 
 .damage-number.crit {
   font-size: 32px;
-  color: var(--accent-orange);
+  color: var(--accent-amber);
 }
 
 .damage-number.heal {
   color: var(--accent-green);
 }
 
-/* Tier 0: Chip damage - subdued */
+/* Tier 0: Chip damage */
 .damage-number.dmg-chip {
-  font-size: 20px;
-  color: #888;
-  text-shadow: none;
+  font-size: 18px;
+  color: var(--text-secondary);
 }
 
-/* Tier 1: Normal damage - default styling */
+/* Tier 1: Normal */
 .damage-number.dmg-normal {
-  color: #fff;
+  font-size: 24px;
+  color: var(--hp-red);
 }
 
-/* Tier 2: Solid damage - cyan glow */
+/* Tier 2: Solid */
 .damage-number.dmg-solid {
   font-size: 28px;
-  color: #0ff;
-  text-shadow: 0 0 8px #0ff;
+  color: var(--accent-cyan);
+  text-shadow: 0 0 8px rgba(79, 195, 247, 0.5);
   animation: damage-float-solid 1s ease-out forwards;
 }
 
-/* Tier 3: Big damage - strong cyan glow, pop animation */
+/* Tier 3: Big */
 .damage-number.dmg-big {
   font-size: 32px;
-  color: #0ff;
-  text-shadow: 0 0 12px #0ff, 0 0 24px #0ff;
+  color: var(--accent-cyan);
+  text-shadow: 0 0 12px rgba(79, 195, 247, 0.7);
   animation: damage-float-big 1s ease-out forwards;
 }
 
-/* Tier 4: Massive damage - gold glow, dramatic animation */
+/* Tier 4: Massive */
 .damage-number.dmg-massive {
   font-size: 38px;
-  color: #ffd700;
-  text-shadow: 0 0 16px #ffd700, 0 0 32px #ff8c00;
+  color: var(--accent-amber);
+  text-shadow: 0 0 16px rgba(255, 183, 77, 0.8), 0 0 32px rgba(255, 183, 77, 0.4);
   animation: damage-float-massive 1.5s ease-out forwards;
 }
 
@@ -1964,59 +1961,58 @@ html, body {
 }
 
 .math-heal {
-  color: #2ecc71;
+  color: var(--accent-green);
   font-weight: 700;
 }
 
 /* ===== PIPELINE STAT BOXES ===== */
 .pipeline-stats {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  margin-bottom: 12px;
+  padding: 12px 0;
 }
 
 .stat-box {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px 16px;
-  background: var(--bg-card);
-  border: 2px solid var(--accent-blue);
-  border-radius: var(--radius-md);
   min-width: 70px;
+  padding: 8px 12px;
+  border-radius: var(--card-radius-sm);
+  background: var(--bg-elevated);
+  border: 2px solid var(--accent-cyan);
   box-shadow: var(--shadow-soft);
 }
 
 .stat-box.damage {
-  border-color: var(--accent-orange);
-  background: linear-gradient(135deg, #fff9e0, #fff5cc);
+  border-color: var(--accent-amber);
 }
 
 .stat-box-label {
   font-size: 10px;
-  font-weight: 600;
-  color: var(--text-secondary);
+  font-weight: var(--font-weight-semi);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
 }
 
 .stat-box-value {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
 
 .stat-box.damage .stat-box-value {
-  color: var(--accent-orange);
+  color: var(--accent-amber);
 }
 
 .stat-box-operator {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 16px;
   color: var(--text-secondary);
+  font-weight: var(--font-weight-semi);
 }
 
 /* Pulse animation when value changes */
@@ -2047,7 +2043,7 @@ html, body {
 }
 
 .pipeline-log-line.heal {
-  color: #2ecc71;
+  color: var(--accent-green);
   font-weight: 600;
 }
 
