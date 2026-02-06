@@ -109,6 +109,34 @@ export function showQuizMaster() {
   };
 }
 
+/** Show Chippy companion sprite (no HP bar) */
+export function showChippy() {
+  dom.enemyName.textContent = 'Chippy';
+  dom.enemyInfo.classList.add('visible');
+  dom.enemyHpBar.style.display = 'none';
+  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
+
+  dom.enemySprite.src = '/assets/sprites/chippy.webp';
+  dom.enemySprite.onerror = () => {
+    dom.enemySprite.classList.remove('visible');
+    removePlaceholder();
+    const el = document.createElement('div');
+    el.id = 'enemy-placeholder';
+    el.style.cssText = 'width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:2;position:relative;';
+    el.textContent = '\u2728';
+    dom.enemySpriteContainer.appendChild(el);
+  };
+  dom.enemySprite.onload = () => {
+    removePlaceholder();
+    dom.enemySprite.classList.add('visible');
+  };
+}
+
+/** Hide Chippy (alias for hideEnemy) */
+export function hideChippy() {
+  hideEnemy();
+}
+
 /** Hide enemy from scene */
 export function hideEnemy() {
   dom.enemySprite.classList.remove('visible');
