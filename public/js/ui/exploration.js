@@ -44,6 +44,30 @@ let returnToHub = null;
 // Module-level guard to prevent multiple shrine clicks across re-renders
 let shrineInProgress = false;
 
+// Chippy's natural transition phrases for left/right door hints (20 pairs)
+const DOOR_INTROS = [
+  { left: '左のドアだけど…', right: 'で、右のドアは…' },
+  { left: '左の方はね…', right: '右の方はね…' },
+  { left: 'まず左のドアから。', right: 'それから右のドア。' },
+  { left: '左のドアからいくよ。', right: '次、右のドア。' },
+  { left: '左側のドア…', right: 'そして右側は…' },
+  { left: 'えっとね、左のドアは…', right: 'んで、右のドアは…' },
+  { left: '左のドアの奥から…', right: '右のドアの奥からは…' },
+  { left: '左から感じるのは…', right: '右から感じるのは…' },
+  { left: '左のドア、ちょっと気になる。', right: '右のドアも見てみると…' },
+  { left: 'こっちの左のドアはね…', right: 'あっちの右のドアは…' },
+  { left: '左の扉に近づくと…', right: '右の扉に近づくと…' },
+  { left: 'まずは左！', right: 'そして右！' },
+  { left: '左のドア、嗅いでみると…', right: '右のドア、嗅いでみると…' },
+  { left: '左の方に耳を当てると…', right: '右の方に耳を当てると…' },
+  { left: '左のドアに触れてみた。', right: '右のドアにも触れてみた。' },
+  { left: 'ねえ、左のドアなんだけど…', right: 'で、右のドアはっていうと…' },
+  { left: '左の気配は…', right: '右の気配は…' },
+  { left: '左のドア、覗いてみたよ。', right: '右のドアも覗いてみた。' },
+  { left: 'うーん、左はね…', right: 'うーん、右はね…' },
+  { left: '左のドアの向こうは…', right: '右のドアの向こうは…' },
+];
+
 // Module-level state for word discovery (persists across gameState updates)
 // This prevents infinite narration loops when updateGameState() replaces room object
 let discoveryState = {
@@ -261,10 +285,10 @@ export async function renderBranchSelection() {
   actions.setContent(`
     <div class="ward-selection-list">
       <div class="ward-option branch-option disabled" data-door="0">
-        <strong>扉1</strong>
+        <strong>左のドア</strong>
       </div>
       <div class="ward-option branch-option disabled" data-door="1">
-        <strong>扉2</strong>
+        <strong>右のドア</strong>
       </div>
     </div>
     <button class="action-btn action-btn-primary" id="branch-proceed-btn" disabled>進む</button>
@@ -284,6 +308,11 @@ export async function renderBranchSelection() {
     console.warn('[BranchSelection] Failed to fetch door hints:', e);
   }
 
+  // Prepend natural left/right transition phrase so player knows which door Chippy means
+  const intro = DOOR_INTROS[Math.floor(Math.random() * DOOR_INTROS.length)];
+  door1Hint = intro.left + door1Hint;
+  door2Hint = intro.right + door2Hint;
+
   // Show door 1 hint with Chippy as speaker, auto-play TTS
   speakNarration(door1Hint);
   await sceneModule.showNarration(door1Hint, { speaker: 'チッピー' });
@@ -298,10 +327,10 @@ export async function renderBranchSelection() {
   actions.setContent(`
     <div class="ward-selection-list">
       <div class="ward-option branch-option" data-door="0">
-        <strong>扉1</strong>
+        <strong>左のドア</strong>
       </div>
       <div class="ward-option branch-option" data-door="1">
-        <strong>扉2</strong>
+        <strong>右のドア</strong>
       </div>
     </div>
     <button class="action-btn action-btn-primary" id="branch-proceed-btn" disabled>進む</button>
