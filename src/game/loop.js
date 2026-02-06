@@ -723,6 +723,23 @@ export class GameManager {
     return this.explorationService.completeWordDiscovery();
   }
 
+  // Dealer room delegates
+  getDealerState() {
+    return this.explorationService.getDealerState();
+  }
+
+  dealerSell(chipId) {
+    return this.explorationService.dealerSell(chipId);
+  }
+
+  dealerBuy() {
+    return this.explorationService.dealerBuy();
+  }
+
+  leaveDealer() {
+    return this.explorationService.leaveDealer();
+  }
+
   /**
    * Start room encounter
    */
