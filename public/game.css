@@ -6,40 +6,98 @@
 }
 
 :root {
-  /* Theme colors - bright & friendly */
-  --bg-primary: #f0f7f0;
-  --bg-card: #fffef5;
-  --bg-card-hover: #fff9e0;
-  --text-primary: #2d3436;
-  --text-secondary: #636e72;
-  --accent-orange: #f39c12;
-  --accent-green: #27ae60;
-  --accent-purple: #8e44ad;
-  --accent-blue: #3498db;
-  --accent-red: #e74c3c;
-  --btn-primary: #27ae60;
-  --btn-secondary: #3498db;
-  --shadow-soft: 0 2px 8px rgba(0,0,0,0.1);
-  --shadow-card: 0 4px 12px rgba(0,0,0,0.08);
+  /* === Premium Gacha Aesthetic === */
+
+  /* Base surfaces — barely-there blue-grey, white panels */
+  --bg-primary: #e8edf3;
+  --bg-secondary: #f5f7fa;
+  --bg-elevated: #ffffff;
+  --bg-panel: #f5f7fa;
+  /* Legacy aliases */
+  --bg-card: var(--bg-elevated);
+  --bg-card-hover: #edf0f5;
+
+  /* Text hierarchy */
+  --text-primary: #2a2e35;
+  --text-secondary: #8b92a0;
+  --text-muted: #b0b8c4;
+
+  /* Accent colors — from Nikke reference */
+  --accent: #4fc3f7;
+  --accent-cyan: #4fc3f7;
+  --accent-lavender: #b39ddb;
+  --accent-amber: #ffb74d;
+  --accent-green: #66bb6a;
+  /* Legacy aliases */
+  --accent-orange: var(--accent-amber);
+  --accent-purple: #ab47bc;
+  --accent-blue: #42a5f5;
+  --accent-red: #ef5350;
+  --btn-primary: var(--accent-cyan);
+  --btn-secondary: var(--accent-blue);
+
+  /* Borders and shadows */
+  --border-subtle: rgba(0,0,0,0.06);
+  --border-medium: rgba(0,0,0,0.10);
+  --shadow-soft: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-elevated: 0 4px 16px rgba(0,0,0,0.10);
+  --shadow-card: var(--shadow-elevated);
+
+  /* Radii */
+  --card-radius: 12px;
+  --card-radius-sm: 8px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 20px;
   --radius-pill: 50px;
   --radius-circle: 50%;
-  --chip-glow: 0 0 12px 4px rgba(243, 156, 18, 0.6);
-  --hp-green: #27ae60;
-  --hp-yellow: #f1c40f;
-  --hp-red: #e74c3c;
+
+  /* Component tokens */
+  --chip-size: 52px;
+  --toolbar-height: 52px;
+  --chip-glow: 0 0 12px 4px rgba(255, 183, 77, 0.6);
+
+  /* HP bar */
+  --hp-green: #66bb6a;
+  --hp-yellow: #ffd54f;
+  --hp-red: #ef5350;
+
+  /* Rarity system */
+  --rarity-common: #b0bec5;
+  --rarity-uncommon: #66bb6a;
+  --rarity-rare: #42a5f5;
+  --rarity-epic: #ab47bc;
+  --rarity-legendary: #ffd54f;
+
+  /* Attack/Defend tags */
+  --attack-color: #ef5350;
+  --defend-color: #42a5f5;
+
+  /* Frosted glass (ONLY for overlays on scene art) */
+  --glass-bg: rgba(255, 255, 255, 0.82);
+  --glass-blur: blur(12px);
+
+  /* Transitions */
   --transition-fast: 0.15s ease;
-  --transition-med: 0.3s ease;
+  --transition-med: 0.25s ease;
+  --transition-slow: 0.3s ease;
+
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-weight-bold: 700;
+  --font-weight-semi: 600;
+  --font-weight-regular: 400;
 }
 
 html, body {
   height: 100%;
   overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: var(--font-weight-regular);
   background: var(--bg-primary);
   color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -52,10 +110,11 @@ html, body {
   height: 100dvh;
   max-width: 430px;
   margin: 0 auto;
+  background: var(--bg-primary);
   position: relative;
+  overflow: hidden;
   /* iOS safe areas for notch and home indicator */
   padding-top: env(safe-area-inset-top);
-  padding-bottom: calc(68px + env(safe-area-inset-bottom)); /* Space for fixed utility row */
 }
 
 /* ===== STATUS BAR ===== */
