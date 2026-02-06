@@ -258,7 +258,8 @@ export async function renderBranchSelection() {
     encounter: '遭遇',
     shrine: '祠',
     quiz: 'クイズ',
-    wordDiscovery: '言葉発見'
+    wordDiscovery: '言葉発見',
+    dealer: '商人'
   };
 
   const type1 = typeNames[room1.type] || room1.type;

@@ -41,6 +41,7 @@ export const PHASES = {
   ROOM_ENCOUNTER: 'room_encounter',  // Room has unhandled encounter
   BOSS_READY: 'boss_ready',          // At boss room, ready to fight
   WORD_DISCOVERY: 'wordDiscovery',   // In word discovery room
+  DEALER: 'dealer',                  // In dealer room (sell/buy chips)
   BRANCH_SELECTION: 'branch_selection',  // Choosing between two doors
 
   // Combat states
@@ -229,6 +230,11 @@ export function derivePhase(state) {
     // Word discovery room (not yet completed)
     if (currentRoom.type === 'wordDiscovery' && !currentRoom.interacted) {
       return PHASES.WORD_DISCOVERY;
+    }
+
+    // Dealer room (not yet visited)
+    if (currentRoom.type === 'dealer' && !currentRoom.interacted) {
+      return 'dealer';
     }
 
     // Room has unhandled encounter
