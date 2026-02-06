@@ -50,7 +50,7 @@ export default function createTTSRoutes({ getSettings }) {
 
   // Synthesize speech
   router.post('/synthesize', async (req, res) => {
-    const { text, speakerId, speedScale, volumeScale } = req.body;
+    const { text, speakerId, speed, speedScale, volumeScale } = req.body;
     const settings = getSettings();
 
     if (!text) {
@@ -59,8 +59,8 @@ export default function createTTSRoutes({ getSettings }) {
 
     try {
       const audioBuffer = await synthesize(text, speakerId || 13, {
-        speedScale: speedScale || settings.gameTtsSpeed || 0.9,
-        volumeScale: volumeScale || settings.gameTtsVolume || 1.0
+        speedScale: speed ?? speedScale ?? settings.gameTtsSpeed ?? 0.9,
+        volumeScale: volumeScale ?? settings.gameTtsVolume ?? 1.0
       });
 
       res.set('Content-Type', 'audio/wav');

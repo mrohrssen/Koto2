@@ -170,10 +170,12 @@ export async function openSettings() {
     if (settingsModule.setTtsEnabled) {
       settingsModule.setTtsEnabled(ttsEnabled);
     }
+    tts.setEnabled(ttsEnabled);
 
     audio.setVolume('bgm', bgmVol);
     audio.setVolume('sfx', sfxVol);
     tts.setVolume(ttsVol);
+    tts.setMuted(audioMuted);
     localStorage.setItem('jrpg_ttsVolume', String(ttsVol));
     if (audioMuted) { audio.mute(); } else { audio.unmute(); }
 

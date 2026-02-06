@@ -23,6 +23,7 @@ let ttsEnabled = true;
 let ttsSpeakerId = 13; // 玄野武宏 (クール) - default narrator
 let ttsSpeed = 0.9;
 let ttsVolume = 1.0;
+let muted = localStorage.getItem('jrpg_audioMuted') === 'true';
 let currentAudio = null;
 let lastSpokenNarration = null;
 let ttsRequestId = 0;
@@ -109,6 +110,10 @@ export function setVolume(volume) {
   ttsVolume = volume;
 }
 
+export function setMuted(val) {
+  muted = val;
+}
+
 export function getLastSpokenNarration() {
   return lastSpokenNarration;
 }
@@ -135,8 +140,7 @@ async function synthesize(text, options = {}) {
       body: JSON.stringify({
         text,
         speakerId: options.speakerId ?? ttsSpeakerId,
-        speed: options.speed ?? ttsSpeed,
-        volume: options.volume ?? ttsVolume
+        speed: options.speed ?? ttsSpeed
       })
     });
 
@@ -171,7 +175,7 @@ export async function speakNarration(text) {
   // Store for repeat with 'r' key
   lastSpokenNarration = text;
 
-  if (!ttsEnabled) return;
+  if (!ttsEnabled || muted) return;
 
   // Increment request ID to cancel any pending requests
   const thisRequestId = ++ttsRequestId;
@@ -199,7 +203,7 @@ export async function speakNarration(text) {
  * Doesn't interrupt narration or manage request cancellation
  */
 export async function speakText(text) {
-  if (!ttsEnabled || !text || text.trim().length === 0) return;
+  if (!ttsEnabled || muted || !text || text.trim().length === 0) return;
 
   const result = await synthesize(text);
   if (!result) return;
@@ -224,7 +228,7 @@ export async function speakText(text) {
  * @returns {Promise<Audio|null>} Audio element for playback control, or null on error
  */
 export async function speakWithVoice(text, speakerId) {
-  if (!ttsEnabled || !text || text.trim().length === 0) return null;
+  if (!ttsEnabled || muted || !text || text.trim().length === 0) return null;
 
   // Stop any currently playing narration audio
   if (currentAudio) {
@@ -305,7 +309,7 @@ export async function prefetchWord(word) {
  * Play cached audio for a word
  */
 export function playWord(word) {
-  if (!wordAudioEnabled || !word) return;
+  if (!wordAudioEnabled || muted || !word) return;
 
   const cached = wordAudioCache.get(word);
   if (!cached || cached.status !== 'ready' || !cached.url) {
