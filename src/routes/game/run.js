@@ -17,10 +17,15 @@ import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswe
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const quizQuestionsPath = join(__dirname, '../../data/quiz-questions.json');
+const levelsPath = join(__dirname, '../../data/levels.json');
 
 function loadQuizQuestions() {
   const data = JSON.parse(readFileSync(quizQuestionsPath, 'utf-8'));
   return data.questions;
+}
+
+function loadLevels() {
+  return JSON.parse(readFileSync(levelsPath, 'utf-8'));
 }
 
 export default function createRunRoutes({
@@ -36,6 +41,56 @@ export default function createRunRoutes({
     const gameManager = req.gameManager;
     try {
       gameManager.startRun();
+
+      const narration = await generateGameNarration('runStart', {
+        player: gameManager.run.player
+      }, req.userKeys);
+
+      req.saveGame();
+      res.json({
+        state: req.getEnrichedGameState(),
+        narration
+      });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Get level definitions and player progress
+  router.get('/levels', (req, res) => {
+    try {
+      const levels = loadLevels();
+      const meta = req.gameManager.getMeta();
+      res.json({
+        levels,
+        progress: meta.levels || { highestUnlocked: 1, completed: [], current: null }
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Select a level and start a run
+  router.post('/levels/select', async (req, res) => {
+    const gameManager = req.gameManager;
+    try {
+      const { levelId } = req.body;
+      if (!levelId || typeof levelId !== 'number') {
+        return res.status(400).json({ error: 'levelId (number) required' });
+      }
+
+      const meta = gameManager.getMeta();
+      const levels = meta.levels || { highestUnlocked: 1, completed: [], current: null };
+
+      if (levelId > levels.highestUnlocked) {
+        return res.status(400).json({ error: 'Level not yet unlocked' });
+      }
+
+      if (gameManager.run?.active) {
+        return res.status(400).json({ error: 'A run is already active' });
+      }
+
+      gameManager.startRun(levelId);
 
       const narration = await generateGameNarration('runStart', {
         player: gameManager.run.player
