@@ -34,7 +34,7 @@
  * Post-combat shop appears after enemy defeats.
  */
 
-import { generateShopChips, getChipDisplayInfo, getChipPrice } from './items/chips.js';
+import { generateShopChips, getChipDisplayInfo, getChipPrice, generateDealerChip } from './items/chips.js';
 
 // ============ TEST ROOM QUEUE ============
 // Only used when NODE_ENV=test for deterministic E2E tests
@@ -243,6 +243,7 @@ export const ROOM_TYPES = {
   shrine: 'shrine',             // Fox shrine (chip upgrade)
   quiz: 'quiz',                 // Quiz master (reward room)
   wordDiscovery: 'wordDiscovery', // Learn new vocabulary
+  dealer: 'dealer',              // Robot dealer (sell chips, buy uncommon+)
   boss: 'boss'                  // Floor boss
 };
 
@@ -256,7 +257,8 @@ export const ROOM_TYPES = {
 function isSpecialType(type) {
   return type === ROOM_TYPES.shrine ||
          type === ROOM_TYPES.quiz ||
-         type === ROOM_TYPES.wordDiscovery;
+         type === ROOM_TYPES.wordDiscovery ||
+         type === ROOM_TYPES.dealer;
 }
 
 /**
@@ -268,9 +270,10 @@ function isSpecialType(type) {
  * @returns {object} Room object
  */
 function generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType = null) {
-  const SHRINE_CHANCE = 0.20;          // 20% chance for shrine
+  const SHRINE_CHANCE = 0.15;          // 15% chance for shrine
   const QUIZ_CHANCE = 0.20;            // 20% chance for quiz
   const WORD_DISCOVERY_CHANCE = 0.15;  // 15% chance for word discovery
+  const DEALER_CHANCE = 0.10;          // 10% chance for dealer
 
   // Check test queue first (for deterministic E2E tests)
   const queuedType = popTestRoomType();
@@ -289,6 +292,8 @@ function generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType = 
         type = ROOM_TYPES.quiz;
       } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE + WORD_DISCOVERY_CHANCE) {
         type = ROOM_TYPES.wordDiscovery;
+      } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE) {
+        type = ROOM_TYPES.dealer;
       } else {
         type = ROOM_TYPES.encounter;
       }
@@ -396,6 +401,17 @@ function createRoom(type, floor, roomNumber, totalRooms) {
       };
       break;
 
+    case ROOM_TYPES.dealer: {
+      const offeredChip = generateDealerChip();
+      room.dealer = {
+        visited: false,
+        offeredChip: offeredChip,
+        chipPrice: getChipPrice(offeredChip.id),
+        soldChips: []
+      };
+      break;
+    }
+
     case ROOM_TYPES.boss:
       room.isBossRoom = true;
       break;
@@ -426,6 +442,9 @@ export function getRoomEntryNarration(room) {
     case ROOM_TYPES.wordDiscovery:
       return `${roomNum}に入った。知識の泉がある...新しい言葉を発見できそうだ。`;
 
+    case ROOM_TYPES.dealer:
+      return `${roomNum}に入った。怪しいロボット商人がいる...「良いボットがあるよ」`;
+
     case ROOM_TYPES.boss:
       return `${wardInfo.name}の中心部に入った。強力なSYSTEM反応がある...ボスがいる！`;
 
@@ -443,7 +462,8 @@ export function getRoomActions(room) {
   // All rooms have "proceed" except boss room, unfinished encounter rooms, and unfinished wordDiscovery rooms
   const isUnfinishedEncounter = room.type === 'encounter' && !room.interacted;
   const isUnfinishedWordDiscovery = room.type === 'wordDiscovery' && !room.interacted;
-  if (!room.isBossRoom && !isUnfinishedEncounter && !isUnfinishedWordDiscovery) {
+  const isUnfinishedDealer = room.type === 'dealer' && !room.interacted;
+  if (!room.isBossRoom && !isUnfinishedEncounter && !isUnfinishedWordDiscovery && !isUnfinishedDealer) {
     actions.push({ id: 'proceed', name: '進む', description: '次のエリアへ進む' });
   }
 
@@ -468,6 +488,12 @@ export function getRoomActions(room) {
 
     case ROOM_TYPES.wordDiscovery:
       // No action buttons - flash cards appear automatically
+      break;
+
+    case ROOM_TYPES.dealer:
+      if (!room.dealer?.visited) {
+        actions.push({ id: 'dealer_trade', name: '取引', description: 'ロボット商人と取引する' });
+      }
       break;
 
     case ROOM_TYPES.boss:
