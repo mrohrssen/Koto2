@@ -257,9 +257,17 @@ export async function renderBranchSelection() {
   sceneModule.showChippy();
   sceneModule.setBackground('/assets/backgrounds/branch_doors.webp');
 
-  // Show loading state while fetching hints
+  // Show greyed-out door buttons while Chippy narrates
   actions.setContent(`
-    <div class="branch-loading">チッピーが扉を調べている...</div>
+    <div class="ward-selection-list">
+      <div class="ward-option branch-option disabled" data-door="0">
+        <strong>扉1</strong>
+      </div>
+      <div class="ward-option branch-option disabled" data-door="1">
+        <strong>扉2</strong>
+      </div>
+    </div>
+    <button class="action-btn action-btn-primary" id="branch-proceed-btn" disabled>進む</button>
   `);
 
   // Fetch AI-remixed door hints from backend

@@ -1044,6 +1044,11 @@ html, body {
   transform: scale(1.02);
 }
 
+.ward-option.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 .ward-option-name {
   font-weight: 700;
   font-size: 16px;
