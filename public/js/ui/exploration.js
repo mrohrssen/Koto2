@@ -153,9 +153,10 @@ export function init(callbacks) {
 /** Hub phase — show Speed Review + Equip Bots + Infiltrate buttons */
 export function renderHub() {
   actions.setContent(`
-    <button class="action-btn action-btn-tertiary" id="speed-review-btn">速習</button>
-    <button class="action-btn action-btn-primary" id="equip-bots-btn">ボット装備</button>
-    <button class="action-btn action-btn-secondary" id="context-action-btn">潜入</button>
+    <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px;">
+      <button class="action-btn" id="speed-review-btn">速習</button>
+      <button class="action-btn action-btn-primary" id="context-action-btn">潜入</button>
+    </div>
   `);
 
   document.getElementById('speed-review-btn')?.addEventListener('click', async () => {
@@ -167,11 +168,6 @@ export function renderHub() {
     } else {
       sceneModule.showNarration('復習する言葉がありません', { autoDismiss: 2000 });
     }
-  });
-
-  document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
-    playSFX('button-tap');
-    if (actions.triggerEquipBots) actions.triggerEquipBots();
   });
 
   document.getElementById('context-action-btn')?.addEventListener('click', () => {

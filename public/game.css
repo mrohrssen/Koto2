@@ -438,57 +438,65 @@ html, body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 12px;
-  padding: 16px 24px;
-  min-height: 0;
+  padding: 12px 16px;
+  background: var(--bg-primary);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .action-btn {
   width: 100%;
-  max-width: 320px;
-  padding: 18px 24px;
+  max-width: 340px;
+  padding: 14px 0;
   border: none;
-  border-radius: var(--radius-lg);
-  font-size: 18px;
-  font-weight: 700;
+  border-radius: var(--card-radius);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: var(--font-weight-semi);
+  font-family: var(--font-family);
+  box-shadow: var(--shadow-soft);
   cursor: pointer;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  box-shadow: var(--shadow-card);
-  min-height: 60px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .action-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 
+/* Primary variant for key CTAs */
 .action-btn-primary {
-  background: var(--bg-card);
-  color: var(--text-primary);
+  background: var(--accent-cyan);
+  color: white;
+}
+
+.action-btn-primary:active {
+  background: #39b0e4;
 }
 
 .action-btn-secondary {
-  background: var(--bg-card);
+  background: var(--bg-elevated);
   color: var(--text-primary);
 }
 
 .action-btn-tertiary {
-  background: var(--bg-card);
+  background: var(--bg-elevated);
   color: var(--text-primary);
-  border: 2px solid var(--accent-primary);
 }
 
-.action-btn-tertiary:hover {
-  background: var(--bg-secondary);
+/* Danger variant */
+.action-btn-danger {
+  background: var(--bg-elevated);
+  color: var(--hp-red);
 }
 
-.action-btn-tertiary:active {
-  transform: scale(0.97);
-}
-
-.action-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+/* Disabled state */
+.action-btn:disabled,
+.action-btn.disabled {
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 /* ===== FLASH CARD ===== */
