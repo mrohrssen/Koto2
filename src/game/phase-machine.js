@@ -30,6 +30,7 @@ export const PHASES = {
   // Meta states
   NO_SAVE: 'no_save',           // No player exists
   HUB: 'hub',                   // In town between runs
+  LEVEL_SELECT: 'level_select', // Choosing a level to play
   RUN_ENDED: 'run_ended',       // Run finished (victory or defeat)
 
   // Run progression
@@ -68,9 +69,15 @@ export const VALID_TRANSITIONS = {
   [PHASES.NO_SAVE]: [PHASES.HUB],
 
   [PHASES.HUB]: [
+    PHASES.LEVEL_SELECT,    // Choose a level
     PHASES.WARD_SELECTION,  // Start new run
     PHASES.SHOP,            // Visit town shop
     PHASES.BLACKSMITH       // Visit town blacksmith
+  ],
+
+  [PHASES.LEVEL_SELECT]: [
+    PHASES.HUB,             // Back to hub
+    PHASES.WARD_SELECTION   // Start selected level
   ],
 
   [PHASES.WARD_SELECTION]: [
@@ -153,11 +160,13 @@ export const VALID_TRANSITIONS = {
 
   [PHASES.RUN_COMPLETE]: [
     PHASES.HUB,             // Return to hub
+    PHASES.LEVEL_SELECT,    // Choose next level
     PHASES.EXPLORING        // Continue to endless mode
   ],
 
   [PHASES.RUN_ENDED]: [
-    PHASES.HUB              // Return to hub
+    PHASES.HUB,             // Return to hub
+    PHASES.LEVEL_SELECT     // Choose a level
   ]
 };
 
@@ -278,6 +287,7 @@ export function getPhaseName(phase) {
     [PHASES.POST_COMBAT_SHOP]: 'Post-Combat Shop',
     [PHASES.FLOOR_COMPLETE]: 'Floor Complete',
     [PHASES.BOSS_DEFEATED]: 'Boss Defeated',
+    [PHASES.LEVEL_SELECT]: 'Level Select',
     [PHASES.RUN_COMPLETE]: 'Run Complete'
   };
   return names[phase] || phase;
