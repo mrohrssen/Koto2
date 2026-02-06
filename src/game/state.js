@@ -78,7 +78,14 @@ export function createMetaProgression() {
     unlocks: [],
 
     // Achievements earned
-    achievements: []
+    achievements: [],
+
+    // Level progression
+    levels: {
+      highestUnlocked: 1,
+      completed: [],
+      current: null
+    }
   };
 }
 
@@ -261,6 +268,7 @@ export function createNewPlayer(name = "Hunter") {
 export function createNewRun(player) {
   const run = {
     active: true,
+    levelId: null,
     floor: 1,
     maxFloors: 7,
 

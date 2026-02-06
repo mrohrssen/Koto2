@@ -572,6 +572,19 @@ export class CombatService {
     this.gm.updateLifetimeStats(true);
     const newAchievements = this.gm.checkAchievements(this.gm.run.stats);
 
+    // Level progression: mark level as completed and unlock next
+    const levelId = this.gm.run.levelId;
+    if (levelId !== null && this.gm.meta?.levels) {
+      const levels = this.gm.meta.levels;
+      if (!levels.completed.includes(levelId)) {
+        levels.completed.push(levelId);
+      }
+      if (levelId >= levels.highestUnlocked) {
+        levels.highestUnlocked = levelId + 1;
+      }
+      levels.current = null;
+    }
+
     this.gm.narrate(getSimpleNarration('gameVictory', this.gm.run.player));
 
     // Update persistent player with run rewards

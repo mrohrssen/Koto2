@@ -30,6 +30,11 @@ export class GameHelper {
     this.log('startRun', 'clicking Infiltrate button');
     await this.page.locator(SELECTORS.contextActionBtn).waitFor({ state: 'visible', timeout: 5000 });
     await this.page.locator(SELECTORS.contextActionBtn).click();
+    this.log('startRun', 'waiting for level select to appear...');
+    // Level select screen appears — click first unlocked level
+    await this.page.locator('.level-card:not(.level-locked)').first().waitFor({ state: 'visible', timeout: 8000 });
+    this.log('startRun', 'clicking first unlocked level');
+    await this.page.locator('.level-card:not(.level-locked)').first().click();
     this.log('startRun', 'waiting for chip selection to appear...');
     // Wait for in-scene chip selection cards to appear in action area
     await this.page.locator(SELECTORS.chipSelectCard).first().waitFor({ state: 'visible', timeout: 8000 });

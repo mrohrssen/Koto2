@@ -111,6 +111,31 @@ async function getMetaProgression() {
 }
 
 /**
+ * Get level definitions and player progress
+ * @returns {Promise<object>} { levels, progress }
+ */
+async function getLevels() {
+  try {
+    const response = await fetch('/api/game/levels', {
+      headers: getAuthHeaders()
+    });
+    return await response.json();
+  } catch (error) {
+    logger.error('[API] Failed to fetch levels:', error.message);
+    return { levels: [], progress: { highestUnlocked: 1, completed: [], current: null } };
+  }
+}
+
+/**
+ * Select a level and start a run
+ * @param {number} levelId - Level to start
+ * @returns {Promise<object>} Result with state and narration
+ */
+async function selectLevel(levelId) {
+  return apiCall('/levels/select', 'POST', { levelId });
+}
+
+/**
  * Get server settings
  * @returns {Promise<object>} Settings object
  */
@@ -613,6 +638,8 @@ export {
   // Game state endpoints
   getGameState,
   getMetaProgression,
+  getLevels,
+  selectLevel,
   getSettings,
   // Player management endpoints
   createPlayer,
