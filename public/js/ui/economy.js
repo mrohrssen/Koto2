@@ -219,19 +219,19 @@ export async function renderDealerRoom(actionsModule) {
   let offeredChipHtml = '';
   if (!dealer.visited) {
     const buyDisabled = (!canAfford || inventoryFull) ? 'disabled' : '';
-    const buyLabel = inventoryFull ? 'インベントリ満杯' : `${chipPrice}Crで購入`;
+    const buyLabel = inventoryFull ? 'インベントリ満杯' : `${chipPrice}cr で購入`;
     offeredChipHtml = `
       <div class="dealer-offered-chip">
         <div class="dealer-section-title">商人のおすすめ</div>
-        <div class="shrine-chip-option dealer-chip-card" style="width:100%">
+        <div class="dealer-offer-card">
           <div class="shrine-chip-icon" style="background-image:url('/assets/icons/chips/${offeredChip.id}.webp'); border-color: var(--rarity-${offeredChip.rarity || 'common'})"></div>
-          <div class="shrine-chip-info">
-            <div class="shrine-chip-name">${offeredChip.nameEn || offeredChip.name}</div>
+          <div class="dealer-offer-info">
+            <div class="dealer-item-name">${offeredChip.nameEn || offeredChip.name}</div>
             <div class="shrine-chip-rarity ${offeredChip.rarity || 'common'}">${offeredChip.rarity || 'common'}</div>
-            <div class="shrine-chip-desc">${offeredChip.descriptionEn || offeredChip.description || ''}</div>
+            <div class="dealer-offer-desc">${offeredChip.descriptionEn || offeredChip.description || ''}</div>
           </div>
         </div>
-        <button class="action-btn action-btn-primary dealer-buy-btn" ${buyDisabled}>${buyLabel}</button>
+        <button class="dealer-buy-btn" ${buyDisabled}>${buyLabel}</button>
       </div>
     `;
   }
@@ -240,30 +240,33 @@ export async function renderDealerRoom(actionsModule) {
     const equippedBadge = chip.isEquipped ? '<span class="dealer-equipped-badge">装備中</span>' : '';
     const levelText = chip.level > 1 ? ` Lv.${chip.level}` : '';
     return `
-      <div class="shrine-chip-option dealer-inventory-item" data-chip-id="${chip.id}" data-equipped="${chip.isEquipped}" style="width:100%">
+      <div class="dealer-inventory-item" data-chip-id="${chip.id}" data-equipped="${chip.isEquipped}">
         <div class="shrine-chip-icon" style="background-image:url('/assets/icons/chips/${chip.id}.webp'); border-color: var(--rarity-${chip.rarity || 'common'})"></div>
-        <div class="shrine-chip-info" style="flex:1">
-          <div class="shrine-chip-name">${chip.nameEn || chip.name}${levelText} ${equippedBadge}</div>
-          <div class="shrine-chip-rarity ${chip.rarity || 'common'}">${chip.rarity || 'common'}</div>
+        <div class="dealer-item-info">
+          <div class="dealer-item-name">${chip.nameEn || chip.name}${levelText}</div>
+          <div class="dealer-item-meta">
+            <span class="shrine-chip-rarity ${chip.rarity || 'common'}">${chip.rarity || 'common'}</span>
+            ${equippedBadge}
+          </div>
         </div>
-        <button class="action-btn action-btn-tertiary dealer-sell-btn" data-chip-id="${chip.id}" data-sell-price="${chip.sellPrice}" data-equipped="${chip.isEquipped}">
-          ${chip.sellPrice}Cr
+        <button class="dealer-sell-btn" data-chip-id="${chip.id}" data-sell-price="${chip.sellPrice}" data-equipped="${chip.isEquipped}">
+          売 ${chip.sellPrice}cr
         </button>
       </div>
     `;
   }).join('') : '<p style="text-align:center;color:var(--text-secondary)">売るチップがない</p>';
 
   actionsModule.setContent(`
-    <div class="dealer-room" style="padding:0 1rem">
-      <div class="dealer-credits" style="text-align:center;margin-bottom:0.5rem;font-size:1.1rem;color:var(--accent-primary)">
-        💰 <span id="dealer-credits">${credits}</span> クレジット
+    <div class="dealer-room">
+      <div class="dealer-credits">
+        <span id="dealer-credits">${credits}</span> cr
       </div>
       ${offeredChipHtml}
-      <div class="dealer-section-title" style="margin-top:0.75rem">インベントリ</div>
-      <div class="shrine-chip-list dealer-inventory-list" style="max-height:40vh;overflow-y:auto">
+      <div class="dealer-section-title">インベントリ</div>
+      <div class="dealer-inventory-list">
         ${inventoryHtml}
       </div>
-      <button class="action-btn action-btn-secondary dealer-leave-btn" style="margin-top:0.75rem">立ち去る</button>
+      <button class="dealer-leave-btn">立ち去る</button>
     </div>
   `);
 
