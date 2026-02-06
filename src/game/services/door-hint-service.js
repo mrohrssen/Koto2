@@ -92,80 +92,12 @@ function parseRemixResponse(response) {
  * Generate door hints for a branch point
  * @param {string} roomType1 - Type of room behind door 1
  * @param {string} roomType2 - Type of room behind door 2
- * @param {object} context - { floor, playerHp, playerMaxHp, wardName }
- * @param {Function|null} chatFn - AI chat function (null = fallback to raw seeds)
- * @param {string[]} vocabulary - Player's known words
- * @param {string} jlptLevel - N5-N1
- * @param {object} aiConfig - { provider, apiKey, openaiModel, openrouterModel }
- * @returns {Promise<{ door1: string, door2: string, seeds: { seed1: object, seed2: object } }>}
+ * @returns {{ door1: string, door2: string, seeds: { seed1: object, seed2: object } }}
  */
-export async function generateDoorHints(roomType1, roomType2, context, chatFn, vocabulary, jlptLevel, aiConfig) {
+export function generateDoorHints(roomType1, roomType2) {
   const seed1 = pickSeed(roomType1);
   const seed2 = pickSeed(roomType2);
 
-  // Fallback: no AI available, return raw seeds
-  if (!chatFn || !aiConfig?.apiKey || !vocabulary || vocabulary.length === 0) {
-    return {
-      door1: seed1.text,
-      door2: seed2.text,
-      seeds: { seed1, seed2 }
-    };
-  }
-
-  // Build the remix prompt
-  const userPrompt = buildRemixPrompt(seed1, seed2, context);
-
-  const vocabList = vocabulary.slice(0, 8000).join(', ');
-
-  const systemPrompt = `=== チッピー（CHIPPY）===
-あなたはチッピー、冒険者の仲間のデジタル精霊。
-扉の先にあるものを感じ取る能力がある。
-
-【性格】
-・忠実で勇敢だけど、時々怖がり
-・カジュアルに話す（「僕」「〜だよ」「〜かも」）
-・プレイヤーのことを本当に心配している
-・感情豊か：怖い時は怖い、嬉しい時は嬉しい
-
-=== 使える言葉（重要）===
-この言葉リストからだけ使う：
-${vocabList || '(基本的な言葉)'}
-
-【ルール】
-1. リストにない言葉は使わない
-2. 助詞OK：は、が、を、に、で、へ、と、も、の、か、よ、ね
-3. 擬音OK：ゾクゾク、ビリビリ、フワフワ、ガタガタ
-4. 数字は漢字：一、二、三、十
-
-文法：JLPT ${jlptLevel || 'N4'}
-日本語だけ出力。英語禁止。`;
-
-  try {
-    const response = await chatFn({
-      provider: aiConfig.provider,
-      apiKey: aiConfig.apiKey,
-      messages: [{ role: 'user', content: userPrompt }],
-      vocabulary,
-      jlptLevel: jlptLevel || 'N4',
-      customSystemPrompt: systemPrompt,
-      openaiModel: aiConfig.openaiModel,
-      openrouterModel: aiConfig.openrouterModel,
-      purpose: 'narration'
-    });
-
-    if (response) {
-      const parsed = parseRemixResponse(response);
-      return {
-        door1: parsed.door1 || seed1.text,
-        door2: parsed.door2 || seed2.text,
-        seeds: { seed1, seed2 }
-      };
-    }
-  } catch (error) {
-    console.error('[DoorHints] AI remix failed, using raw seeds:', error.message);
-  }
-
-  // Fallback to raw seeds
   return {
     door1: seed1.text,
     door2: seed2.text,

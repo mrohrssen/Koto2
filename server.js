@@ -480,18 +480,8 @@ async function generateGameNarration(event, context, userKeys = {}) {
   return narration;
 }
 
-async function generateDoorHintsForRoute(roomType1, roomType2, context, userKeys = {}) {
-  const { aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel } = userKeys;
-  const vocabResult = getVocabulary();
-  const vocabulary = vocabResult.words;
-  const aiConfig = {
-    provider: aiProvider || 'openai',
-    apiKey: aiApiKey,
-    openaiModel: openaiModel || 'gpt-4o-mini',
-    openrouterModel: openrouterModel || ''
-  };
-
-  return _generateDoorHints(roomType1, roomType2, context, chat, vocabulary, jlptLevel || 'N4', aiConfig);
+function generateDoorHintsForRoute(roomType1, roomType2) {
+  return _generateDoorHints(roomType1, roomType2);
 }
 
 // Serve game page
