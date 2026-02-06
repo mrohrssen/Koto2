@@ -348,6 +348,7 @@ export class GameManager {
         encountersNeeded: this.run.encountersNeeded,
         bossDefeated: this.run.bossDefeated,
         active: this.run.active,
+        levelId: this.run.levelId,
         stats: this.run.stats,
         // Ward path system (Phase 12)
         currentWard: this.run.currentWard,
@@ -431,7 +432,8 @@ export class GameManager {
       meta: this.meta ? {
         essence: this.meta.essence,
         lifetimeStats: this.meta.lifetimeStats,
-        achievements: this.meta.achievements
+        achievements: this.meta.achievements,
+        levels: this.meta.levels || { highestUnlocked: 1, completed: [], current: null }
       } : null,
       phase: this.getPhase()
     };
