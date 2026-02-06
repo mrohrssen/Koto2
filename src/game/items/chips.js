@@ -160,6 +160,19 @@ export function getChipPrice(chipId) {
   return Math.floor(chipConfig.upgradeConfig.basePrice * rarity.priceMultiplier);
 }
 
+/**
+ * Get sell price for a chip at the dealer, accounting for level
+ * Formula: floor(basePrice × (1 + 0.20 × (level - 1)) × 0.50)
+ * @param {string} chipId - Chip ID
+ * @param {number} level - Chip level (1-7)
+ * @returns {number} Sell price in credits
+ */
+export function getDealerSellPrice(chipId, level = 1) {
+  const basePrice = getChipPrice(chipId);
+  const scaleFactor = 1 + (level - 1) * 0.20;
+  return Math.floor(basePrice * scaleFactor * 0.50);
+}
+
 
 /**
  * Rarity weights for shop generation
@@ -316,6 +329,63 @@ export function generateShopChips(floor, ownedChipIds = [], count = 3, category 
       stats: chip.stats
     };
   });
+}
+
+/**
+ * Generate a single uncommon+ chip for the dealer's offer
+ * Filters out common rarity, picks random from remaining using rarity weights
+ * @returns {object} Chip object with id, name, rarity, stats, effects, price
+ */
+export function generateDealerChip() {
+  const nonCommonChips = Object.values(CHIPS).filter(chip => chip.rarity !== 'common');
+
+  if (nonCommonChips.length === 0) {
+    const allChips = Object.values(CHIPS);
+    const chip = allChips[Math.floor(Math.random() * allChips.length)];
+    return formatDealerChip(chip);
+  }
+
+  const byRarity = {};
+  for (const chip of nonCommonChips) {
+    const r = chip.rarity || 'uncommon';
+    if (!byRarity[r]) byRarity[r] = [];
+    byRarity[r].push(chip);
+  }
+
+  const weights = { uncommon: 30, rare: 12, epic: 6, legendary: 2 };
+  const total = Object.values(weights).reduce((a, b) => a + b, 0);
+  let roll = Math.random() * total;
+  let selectedRarity = 'uncommon';
+
+  for (const [rarity, weight] of Object.entries(weights)) {
+    roll -= weight;
+    if (roll <= 0) {
+      selectedRarity = rarity;
+      break;
+    }
+  }
+
+  const pool = byRarity[selectedRarity] || nonCommonChips;
+  const chip = pool[Math.floor(Math.random() * pool.length)];
+  return formatDealerChip(chip);
+}
+
+function formatDealerChip(chip) {
+  const rarityInfo = CHIP_RARITIES[chip.rarity || 'common'];
+  return {
+    id: chip.id,
+    baseId: chip.id,
+    name: chip.name,
+    nameEn: chip.nameEn,
+    description: chip.description,
+    descriptionEn: chip.descriptionEn,
+    category: chip.category,
+    rarity: chip.rarity,
+    price: Math.floor(chipConfig.upgradeConfig.basePrice * rarityInfo.priceMultiplier),
+    effects: chip.effects,
+    skill: chip.skill,
+    stats: chip.stats
+  };
 }
 
 // ============ PIPELINE CHIP EXECUTION ============
