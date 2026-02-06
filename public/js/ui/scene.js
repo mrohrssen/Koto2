@@ -12,6 +12,8 @@
  * - hideEnemy(): Remove enemy from scene
  * - showShrineFox(): Display shrine fox NPC (no HP bar)
  * - showQuizMaster(): Display quiz master NPC (no HP bar)
+ * - showWordDiscoveryNpc(): Display knowledge spirit NPC (no HP bar)
+ * - showDealer(): Display robot dealer NPC (no HP bar)
  * - updateEnemyHP(current, max): Update enemy HP bar fill
  * - showToast(message, durationMs): Show auto-dismissing notification
  * - showDamageNumber(amount, { isCrit, isHeal, tierClass }): Floating damage text
@@ -100,6 +102,40 @@ export function showQuizMaster() {
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
 
   dom.enemySprite.src = '/assets/sprites/quiz_master.webp';
+  dom.enemySprite.onerror = () => {
+    dom.enemySprite.classList.remove('visible');
+  };
+  dom.enemySprite.onload = () => {
+    removePlaceholder();
+    dom.enemySprite.classList.add('visible');
+  };
+}
+
+/** Show word discovery NPC (knowledge scholar spirit, no HP bar) */
+export function showWordDiscoveryNpc() {
+  dom.enemyName.textContent = 'Knowledge Spirit';
+  dom.enemyInfo.classList.add('visible');
+  dom.enemyHpBar.style.display = 'none';
+  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
+
+  dom.enemySprite.src = '/assets/sprites/word_discovery_npc.webp';
+  dom.enemySprite.onerror = () => {
+    dom.enemySprite.classList.remove('visible');
+  };
+  dom.enemySprite.onload = () => {
+    removePlaceholder();
+    dom.enemySprite.classList.add('visible');
+  };
+}
+
+/** Show robot dealer NPC (shop merchant, no HP bar) */
+export function showDealer() {
+  dom.enemyName.textContent = 'Robot Dealer';
+  dom.enemyInfo.classList.add('visible');
+  dom.enemyHpBar.style.display = 'none';
+  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
+
+  dom.enemySprite.src = '/assets/sprites/robot_dealer.webp';
   dom.enemySprite.onerror = () => {
     dom.enemySprite.classList.remove('visible');
   };

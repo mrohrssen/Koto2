@@ -250,9 +250,9 @@ function updateScene() {
   } else if (gameState.phase === 'quiz') {
     scene.showQuizMaster();
   } else if (gameState.phase === 'wordDiscovery') {
-    scene.showQuizMaster();
+    scene.showWordDiscoveryNpc();
   } else if (gameState.phase === 'dealer') {
-    scene.hideEnemy();
+    scene.showDealer();
   } else {
     scene.hideEnemy();
   }
@@ -261,11 +261,9 @@ function updateScene() {
   } else if (gameState.phase === 'quiz') {
     scene.setBackground('/assets/backgrounds/quiz_master_background.webp');
   } else if (gameState.phase === 'wordDiscovery') {
-    scene.setBackground('/assets/backgrounds/quiz_master_background.webp');
+    scene.setBackground('/assets/backgrounds/word_discovery_background.webp');
   } else if (gameState.phase === 'dealer') {
-    if (gameState.run?.background) {
-      scene.setBackground(`/assets/backgrounds/${gameState.run.background}`);
-    }
+    scene.setBackground('/assets/backgrounds/dealer_background.webp');
   } else if (gameState.run?.background) {
     scene.setBackground(`/assets/backgrounds/${gameState.run.background}`);
   } else if (!gameState.run) {
