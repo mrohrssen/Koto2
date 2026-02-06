@@ -136,7 +136,11 @@ import {
   parseJpdbText,
   lookupJpdbWord,
   lookupJpdbBatch,
-  reorderChips
+  reorderChips,
+  getDealerState as apiGetDealerState,
+  dealerSell as apiDealerSell,
+  dealerBuy as apiDealerBuy,
+  dealerLeave as apiDealerLeave
 } from './js/api.js';
 
 const API_BASE = '';
@@ -244,6 +248,8 @@ function updateScene() {
     scene.showQuizMaster();
   } else if (gameState.phase === 'wordDiscovery') {
     scene.showQuizMaster();
+  } else if (gameState.phase === 'dealer') {
+    scene.hideEnemy();
   } else {
     scene.hideEnemy();
   }
@@ -253,6 +259,10 @@ function updateScene() {
     scene.setBackground('/assets/backgrounds/quiz_master_background.webp');
   } else if (gameState.phase === 'wordDiscovery') {
     scene.setBackground('/assets/backgrounds/quiz_master_background.webp');
+  } else if (gameState.phase === 'dealer') {
+    if (gameState.run?.background) {
+      scene.setBackground(`/assets/backgrounds/${gameState.run.background}`);
+    }
   } else if (gameState.run?.background) {
     scene.setBackground(`/assets/backgrounds/${gameState.run.background}`);
   } else if (!gameState.run) {
@@ -313,6 +323,9 @@ function updateGameContent() {
       break;
     case 'wordDiscovery':
       explorationUI.renderWordDiscovery();
+      break;
+    case 'dealer':
+      economyUI.renderDealerRoom(actions);
       break;
     case 'branch_selection':
       console.log('[DEBUG] branch_selection phase. pendingBranch:', gameState.run?.pendingBranch, 'currentRoom:', gameState.run?.currentRoom, 'rooms:', gameState.run?.rooms);
@@ -588,6 +601,10 @@ function setupPhaserEventListeners() {
         updateUI();
         break;
       case 'wordDiscovery':
+        await loadGameState();
+        updateUI();
+        break;
+      case 'dealer':
         await loadGameState();
         updateUI();
         break;
@@ -973,6 +990,10 @@ async function initGame() {
     apiShopRefresh,
     apiGetChipLoadout,
     setChipLoadoutCache: (data) => { chipLoadoutCache = data; updateChipRow(); },
+    apiDealerSell,
+    apiDealerBuy,
+    apiDealerLeave,
+    apiGetDealerState,
   });
 
   modalsUI.init({
