@@ -26,6 +26,7 @@
 
 import * as speedReview from './speed-review.js';
 import { playSFX } from '../audio.js';
+import { speakNarration } from '../tts.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -79,6 +80,7 @@ let apiPostCombatRefresh = null;
 
 // Branch selection API
 let apiSelectBranch = null;
+let apiDoorHints = null;
 
 // Speed review API
 let apiGetDueWords = null;
@@ -114,6 +116,7 @@ export function init(callbacks) {
   apiSwipeWord = callbacks.apiSwipeWord;
   apiPostCombatRefresh = callbacks.apiPostCombatRefresh;
   apiSelectBranch = callbacks.apiSelectBranch;
+  apiDoorHints = callbacks.apiDoorHints;
   apiGetDueWords = callbacks.apiGetDueWords;
 }
 
@@ -239,7 +242,7 @@ export function renderExploring() {
   });
 }
 
-/** Branch selection phase - show Door 1 / Door 2 choice */
+/** Branch selection phase - Chippy senses what's behind each door */
 export async function renderBranchSelection() {
   const gameState = getGameState();
   const currentRoomIndex = gameState.run?.currentRoom;
@@ -250,24 +253,38 @@ export async function renderBranchSelection() {
     return;
   }
 
-  const room1 = pair[0];
-  const room2 = pair[1];
+  // Show Chippy sprite and two-door background
+  sceneModule.showChippy();
+  sceneModule.setBackground('/assets/backgrounds/branch_doors.webp');
 
-  // Get display names for room types
-  const typeNames = {
-    encounter: '遭遇',
-    shrine: '祠',
-    quiz: 'クイズ',
-    wordDiscovery: '言葉発見',
-    dealer: '商人'
-  };
+  // Show loading state while fetching hints
+  actions.setContent(`
+    <div class="branch-loading">チッピーが扉を調べている...</div>
+  `);
 
-  const type1 = typeNames[room1.type] || room1.type;
-  const type2 = typeNames[room2.type] || room2.type;
+  // Fetch AI-remixed door hints from backend
+  let door1Hint = '何かを感じる...';
+  let door2Hint = '何かを感じる...';
 
-  // Show persistent narration with door contents
-  sceneModule.showNarration(`扉1: ${type1}。扉2: ${type2}。`, { persistent: true });
+  try {
+    const result = await apiDoorHints();
+    if (result?.hints) {
+      door1Hint = result.hints.door1;
+      door2Hint = result.hints.door2;
+    }
+  } catch (e) {
+    console.warn('[BranchSelection] Failed to fetch door hints:', e);
+  }
 
+  // Show door 1 hint with Chippy as speaker, auto-play TTS
+  speakNarration(door1Hint);
+  await sceneModule.showNarration(door1Hint, { speaker: 'チッピー' });
+
+  // Show door 2 hint with Chippy as speaker, auto-play TTS
+  speakNarration(door2Hint);
+  await sceneModule.showNarration(door2Hint, { speaker: 'チッピー' });
+
+  // Now show the door selection UI
   let selectedDoor = null;
 
   actions.setContent(`
@@ -282,6 +299,7 @@ export async function renderBranchSelection() {
     <button class="action-btn action-btn-primary" id="branch-proceed-btn" disabled>進む</button>
   `);
 
+  // Allow re-reading hints by clicking doors before confirming
   document.querySelectorAll('.branch-option').forEach(el => {
     el.addEventListener('click', () => {
       document.querySelectorAll('.branch-option').forEach(o => o.classList.remove('selected'));
@@ -289,14 +307,20 @@ export async function renderBranchSelection() {
       selectedDoor = parseInt(el.dataset.door, 10);
       const btn = document.getElementById('branch-proceed-btn');
       if (btn) btn.disabled = false;
+
+      // Re-show the hint for the clicked door
+      const hint = selectedDoor === 0 ? door1Hint : door2Hint;
+      speakNarration(hint);
+      sceneModule.showNarration(hint, { speaker: 'チッピー', persistent: true });
     });
   });
 
   document.getElementById('branch-proceed-btn')?.addEventListener('click', async () => {
     if (selectedDoor === null) return;
 
-    // Hide persistent narration
+    // Hide persistent narration and Chippy
     if (sceneModule.forceHideNarration) sceneModule.forceHideNarration();
+    sceneModule.hideChippy();
 
     const result = await apiSelectBranch(selectedDoor);
     if (result?.state) {

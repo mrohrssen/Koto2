@@ -265,6 +265,11 @@ async function selectBranch(door) {
   return apiCall('/select-branch', 'POST', { door });
 }
 
+/** Fetch Chippy's door hints for current branch point */
+async function doorHints() {
+  return apiCall('/door-hints', 'POST');
+}
+
 /** Upgrade chip at shrine */
 async function shrineUpgrade(chipId) {
   return apiCall('/shrine-upgrade', 'POST', { chipId });
@@ -623,6 +628,7 @@ export {
   proceed,
   roomEncounter,
   selectBranch,
+  doorHints,
   shrineUpgrade,
   quizReward,
   getQuizQuestion,

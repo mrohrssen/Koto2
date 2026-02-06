@@ -135,6 +135,7 @@ import {
   getDiscoveryStatus as apiGetDiscoveryStatus,
   completeDiscovery as apiCompleteDiscovery,
   selectBranch as apiSelectBranch,
+  doorHints as apiDoorHints,
   parseJpdbText,
   lookupJpdbWord,
   lookupJpdbBatch,
@@ -993,6 +994,7 @@ async function initGame() {
     apiGetDiscoveryStatus,
     apiCompleteDiscovery,
     apiSelectBranch,
+    apiDoorHints,
     apiSwipeWord: (vid, sid, grade, isDiscovery) => apiSendJpdbReview(vid, sid, grade, isDiscovery),
     apiPostCombatRefresh: (words) => fetch('/api/game/post-combat-refresh', {
       method: 'POST',

@@ -126,6 +126,7 @@ import {
   setTTSSynthesizer, updateTTSConfig, cancelPendingPrefetches
 } from './src/game/prefetch.js';
 import { enforceVocabLimit } from './src/game/vocab-repair.js';
+import { generateDoorHints as _generateDoorHints } from './src/game/services/door-hint-service.js';
 import createRoutes from './src/routes/index.js';
 import createAuthRoutes from './src/auth/routes.js';
 import { dataPath } from './src/data-dir.js';
@@ -358,6 +359,7 @@ app.use('/api', createRoutes({
   saveSettings: saveSettings,
   enrichGameState,
   generateGameNarration,
+  generateDoorHints: generateDoorHintsForRoute,
   cancelPendingPrefetches,
   clearPrefetchCache,
   enrichRewardDrops,
@@ -476,6 +478,10 @@ async function generateGameNarration(event, context, userKeys = {}) {
   trackNarrationStats(narration, jpdbApiKey, userId);
 
   return narration;
+}
+
+function generateDoorHintsForRoute(roomType1, roomType2) {
+  return _generateDoorHints(roomType1, roomType2);
 }
 
 // Serve game page
