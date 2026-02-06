@@ -25,6 +25,7 @@ function loadQuizQuestions() {
 
 export default function createRunRoutes({
   generateGameNarration,
+  generateDoorHints,
   cancelPendingPrefetches,
   clearPrefetchCache
 }) {
@@ -247,6 +248,33 @@ export default function createRunRoutes({
       const result = gameManager.selectBranch(door);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Get Chippy's door hints for branch selection
+  router.post('/door-hints', async (req, res) => {
+    const gameManager = req.gameManager;
+    try {
+      if (!gameManager.run?.pendingBranch) {
+        return res.status(400).json({ error: 'No branch selection pending' });
+      }
+
+      const pair = gameManager.run.rooms[gameManager.run.currentRoom];
+      if (!Array.isArray(pair) || pair.length !== 2) {
+        return res.status(400).json({ error: 'Current room is not a branch pair' });
+      }
+
+      const context = {
+        floor: gameManager.run.floor,
+        playerHp: gameManager.run.player?.hp,
+        playerMaxHp: gameManager.run.player?.maxHp,
+        wardName: gameManager.run.ward?.name || ''
+      };
+
+      const hints = await generateDoorHints(pair[0].type, pair[1].type, context, req.userKeys);
+      res.json({ hints });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
