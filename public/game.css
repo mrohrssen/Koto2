@@ -502,7 +502,7 @@ html, body {
 /* ===== FLASH CARD ===== */
 .flash-card-container {
   width: 100%;
-  max-width: 320px;
+  max-width: 340px;
   flex: 1;
   display: flex;
   align-items: center;
@@ -514,33 +514,40 @@ html, body {
 
 .flash-card {
   width: 100%;
-  aspect-ratio: 3/4;
-  max-height: 360px;
   position: relative;
-  border-radius: var(--radius-lg);
-  background: var(--bg-card);
-  box-shadow: var(--shadow-card);
+  border-radius: var(--card-radius);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-soft);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  min-height: 90px;
+  padding: 12px 16px;
+}
+
+.flash-card:active {
+  transform: scale(0.98);
 }
 
 .flash-card-front {
-  font-size: 36px;
-  font-weight: 700;
+  font-size: 30px;
+  font-weight: var(--font-weight-bold);
   text-align: center;
-  padding: 20px;
+  color: var(--text-primary);
+  padding: 16px;
 }
 
 .flash-card-back {
   display: none;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 20px;
+  gap: 4px;
+  padding: 16px;
   text-align: center;
 }
 
@@ -553,50 +560,51 @@ html, body {
 }
 
 .flash-card-word {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 12px;
+  font-size: 28px;
+  font-weight: var(--font-weight-bold);
+  margin-bottom: 8px;
 }
 
 .flash-card-word ruby rt {
   font-size: 14px;
   font-weight: 400;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .flash-card-meaning {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: var(--font-weight-semi);
+  color: var(--text-primary);
   overflow: hidden;
   word-break: break-word;
 }
 
 .flash-card-hint {
   font-size: 12px;
-  color: var(--text-secondary);
-  margin-top: 8px;
+  color: var(--text-muted);
+  margin-top: 4px;
 }
 
 .flash-card.swiping-right {
   transform: translateX(var(--swipe-x, 0)) rotate(var(--swipe-rotate, 0deg));
-  background: #e8f5e9;
+  background: rgba(102, 187, 106, 0.08);
 }
 
 .flash-card.swiping-left {
   transform: translateX(var(--swipe-x, 0)) rotate(var(--swipe-rotate, 0deg));
-  background: #ffebee;
+  background: rgba(239, 83, 80, 0.08);
 }
 
 /* ===== DUAL FLASH CARDS (Attack/Defend) ===== */
 .dual-flash-card-container {
   width: 100%;
-  max-width: 320px;
+  max-width: 340px;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   padding: 8px;
 }
 
@@ -608,54 +616,49 @@ html, body {
 }
 
 .dual-card-label {
-  font-size: 14px;
-  font-weight: 700;
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  font-size: 11px;
+  font-weight: var(--font-weight-semi);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 4px;
-  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  z-index: 1;
 }
 
 .dual-card-label.attack {
-  color: #e53935;
+  background: var(--attack-color);
 }
 
 .dual-card-label.defend {
-  color: #1e88e5;
+  background: var(--defend-color);
 }
 
 .dual-flash-card {
   width: 100%;
-  aspect-ratio: 4/3;
-  max-height: 120px;
-  background: var(--bg-card);
-  border: 2px solid #ddd;
-  border-radius: var(--radius-md);
+  position: relative;
+  min-height: 90px;
+  background: var(--bg-elevated);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-soft);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 28px;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   user-select: none;
-}
-
-.dual-flash-card:hover {
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  padding: 12px 16px;
 }
 
 .dual-flash-card:active {
   transform: scale(0.98);
-}
-
-.dual-flash-card.attack:hover {
-  border-color: #e53935;
-}
-
-.dual-flash-card.defend:hover {
-  border-color: #1e88e5;
 }
 
 /* Dual card front/back for flip animation */
@@ -680,9 +683,9 @@ html, body {
 
 /* Selected state: flip and expand */
 .dual-flash-card.selected {
-  max-height: none;
-  aspect-ratio: auto;
   min-height: 260px;
+  box-shadow: var(--shadow-elevated);
+  border: 2px solid var(--accent-cyan);
   transition: all 0.3s ease;
 }
 
@@ -694,10 +697,6 @@ html, body {
   display: flex;
 }
 
-.dual-flash-card.selected:hover {
-  transform: none;
-}
-
 /* Hide the other wrapper when a card is selected */
 .dual-card-wrapper.hidden {
   display: none;
@@ -706,23 +705,23 @@ html, body {
 /* Swipe feedback on selected dual cards */
 .dual-flash-card.swiping-right {
   transform: translateX(var(--swipe-x, 0)) rotate(var(--swipe-rotate, 0deg));
-  background: #e8f5e9;
+  background: rgba(102, 187, 106, 0.08);
 }
 
 .dual-flash-card.swiping-left {
   transform: translateX(var(--swipe-x, 0)) rotate(var(--swipe-rotate, 0deg));
-  background: #ffebee;
+  background: rgba(239, 83, 80, 0.08);
 }
 
 .combat-defend-indicator {
   font-size: 18px;
-  font-weight: 700;
-  color: #1e88e5;
+  font-weight: var(--font-weight-bold);
+  color: var(--defend-color);
   text-align: center;
   padding: 12px;
-  background: rgba(30, 136, 229, 0.1);
-  border-radius: 8px;
-  border: 2px solid #1e88e5;
+  background: rgba(66, 165, 245, 0.1);
+  border-radius: var(--card-radius-sm);
+  border: 2px solid var(--defend-color);
 }
 
 /* ===== UTILITY ROW ===== */
