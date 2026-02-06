@@ -479,12 +479,21 @@ export class GameManager {
   /**
    * Start a new dungeon run
    */
-  startRun() {
+  startRun(levelId = null) {
     if (!this.player) {
       throw new Error('No player exists');
     }
 
     this.run = createNewRun(this.player);
+
+    // Track which level this run belongs to
+    if (levelId !== null) {
+      this.run.levelId = levelId;
+      if (this.meta?.levels) {
+        this.meta.levels.current = levelId;
+      }
+    }
+
     logger.info('[GameManager] Run started:', { floor: this.run.floor, playerHp: this.run.player.hp });
 
     // Reset credits to base starting value (before meta bonuses)
@@ -827,6 +836,10 @@ export class GameManager {
       // Only award essence/stats if run was still active (not already ended by combat defeat)
       if (this.run.active) {
         this.run.active = false;
+        // Clear current level tracking
+        if (this.meta?.levels) {
+          this.meta.levels.current = null;
+        }
         this.run.stats.endTime = Date.now();
         this.awardRunEssence(false);
         this.updateLifetimeStats(false);
