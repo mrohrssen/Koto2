@@ -163,6 +163,15 @@ export const WARD_INFO = {
     themeEn: 'System Core',
     tier: 5,
     description: 'SYSTEMのコアが眠る場所。ここで全てが決まる。'
+  },
+  outskirts: {
+    id: 'outskirts',
+    name: '外縁部',
+    nameEn: 'The Outskirts',
+    theme: '荒廃',
+    themeEn: 'Wasteland',
+    tier: 5,
+    description: 'SYSTEMの向こう側。制御を離れた荒野が広がる。'
   }
 };
 
@@ -185,7 +194,10 @@ export const WARD_PATHS = {
   chiyoda: { next: ['palace'], tier: 4 },
 
   // Final
-  palace: { next: [], tier: 5, isFinal: true }
+  palace: { next: ['outskirts'], tier: 5, isFinal: true },
+
+  // Endless
+  outskirts: { next: ['outskirts'], tier: 5 }
 };
 
 // Starting ward options

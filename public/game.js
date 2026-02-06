@@ -121,6 +121,8 @@ import {
   equipChip as apiEquipChip,
   unequipChip as apiUnequipChip,
   nextFloor as apiNextFloor,
+  continueEndless as apiContinueEndless,
+  returnToHubFromVictory as apiReturnToHubFromVictory,
   getChipLoadout as apiGetChipLoadout,
   sendJpdbReview as apiSendJpdbReview,
   getDueWords as apiGetDueWords,
@@ -330,6 +332,9 @@ function updateGameContent() {
     case 'floor_complete':
       explorationUI.renderFloorComplete();
       break;
+    case 'run_complete':
+      explorationUI.renderRunComplete();
+      break;
     case 'run_ended':
       explorationUI.renderRunEnded();
       break;
@@ -452,6 +457,22 @@ async function startBossEncounter() {
 
 async function nextFloor() {
   const result = await apiNextFloor();
+  if (result?.state) {
+    updateGameState(result.state);
+    updateUI();
+  }
+}
+
+async function continueEndless() {
+  const result = await apiContinueEndless();
+  if (result?.state) {
+    updateGameState(result.state);
+    updateUI();
+  }
+}
+
+async function returnToHubFromVictory() {
+  const result = await apiReturnToHubFromVictory();
   if (result?.state) {
     updateGameState(result.state);
     updateUI();
@@ -935,6 +956,8 @@ async function initGame() {
     startEncounter,
     startBossEncounter,
     nextFloor,
+    continueEndless,
+    returnToHubFromVictory,
     startNewRun,
     returnToHub,
     apiGetStartingWards,

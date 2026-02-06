@@ -151,8 +151,12 @@ export class ExplorationService {
     this.gm.run.currentRoom = 0;
     this.gm.run.roomsExplored = 0;
 
-    // Set floor background image (floor1.webp, floor2.webp, etc.)
-    this.gm.run.background = `floor${this.gm.run.floor}.webp`;
+    // Set floor background image
+    if (this.gm.run.floor > 7) {
+      this.gm.run.background = 'outskirts.webp';
+    } else {
+      this.gm.run.background = `floor${this.gm.run.floor}.webp`;
+    }
 
     // Mark first room as explored
     if (this.gm.run.rooms.length > 0) {
@@ -189,6 +193,27 @@ export class ExplorationService {
 
     this.gm.run.floor++;
 
+
+    return this.enterFloor();
+  }
+
+  /**
+   * Continue to next endless floor after boss defeat
+   */
+  continueEndless() {
+    if (!this.gm.run?.bossDefeated && !this.gm.run?.gameVictoryPending) {
+      throw new Error('Boss not defeated');
+    }
+
+    // Clear the victory pending flag if coming from Floor 7
+    this.gm.run.gameVictoryPending = false;
+
+    this.gm.run.floor++;
+    this.gm.run.currentWard = 'outskirts';
+    if (!this.gm.run.wardPath.includes('outskirts')) {
+      this.gm.run.wardPath.push('outskirts');
+    }
+    this.gm.run.wardSelectionRequired = false;
 
     return this.enterFloor();
   }

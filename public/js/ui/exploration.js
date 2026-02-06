@@ -35,6 +35,8 @@ let sceneModule = null;
 let startEncounter = null;
 let startBossEncounter = null;
 let nextFloor = null;
+let continueEndless = null;
+let returnToHubFromVictory = null;
 let startNewRun = null;
 let returnToHub = null;
 
@@ -90,6 +92,8 @@ export function init(callbacks) {
   startEncounter = callbacks.startEncounter;
   startBossEncounter = callbacks.startBossEncounter;
   nextFloor = callbacks.nextFloor;
+  continueEndless = callbacks.continueEndless;
+  returnToHubFromVictory = callbacks.returnToHubFromVictory;
   startNewRun = callbacks.startNewRun;
   returnToHub = callbacks.returnToHub;
   apiGetStartingWards = callbacks.apiGetStartingWards;
@@ -317,11 +321,36 @@ export function renderBossReady() {
 
 /** Floor complete — show Continue button */
 export function renderFloorComplete() {
+  const gameState = getGameState();
+  if (gameState.run?.floor > 7) {
+    // Endless mode — continue to next endless floor
+    actions.setContent(`
+      <button class="action-btn action-btn-primary" id="endless-continue-btn">続ける</button>
+    `);
+    document.getElementById('endless-continue-btn')?.addEventListener('click', () => {
+      continueEndless();
+    });
+  } else {
+    actions.setContent(`
+      <button class="action-btn action-btn-primary" id="next-floor-btn">続ける</button>
+    `);
+    document.getElementById('next-floor-btn')?.addEventListener('click', () => {
+      nextFloor();
+    });
+  }
+}
+
+/** Run complete (game victory) — show Keep Going / Return to Hub */
+export function renderRunComplete() {
   actions.setContent(`
-    <button class="action-btn action-btn-primary" id="next-floor-btn">続ける</button>
+    <button class="action-btn action-btn-primary" id="endless-btn">まだまだ</button>
+    <button class="action-btn action-btn-secondary" id="victory-hub-btn">ハブに戻る</button>
   `);
-  document.getElementById('next-floor-btn')?.addEventListener('click', () => {
-    nextFloor();
+  document.getElementById('endless-btn')?.addEventListener('click', () => {
+    continueEndless();
+  });
+  document.getElementById('victory-hub-btn')?.addEventListener('click', () => {
+    returnToHubFromVictory();
   });
 }
 

@@ -151,7 +151,8 @@ export const VALID_TRANSITIONS = {
   ],
 
   [PHASES.RUN_COMPLETE]: [
-    PHASES.HUB              // Return to hub
+    PHASES.HUB,             // Return to hub
+    PHASES.EXPLORING        // Continue to endless mode
   ],
 
   [PHASES.RUN_ENDED]: [
@@ -202,6 +203,9 @@ export function derivePhase(state) {
 
   // Post-combat shop active
   if (run.postCombatShop?.active) return PHASES.POST_COMBAT_SHOP;
+
+  // Game victory pending — player choosing between hub and endless
+  if (run.gameVictoryPending) return PHASES.RUN_COMPLETE;
 
   // Boss was just defeated
   if (run.bossDefeated) return PHASES.FLOOR_COMPLETE;

@@ -782,6 +782,23 @@ export class GameManager {
     return this.explorationService.nextFloor();
   }
 
+  /**
+   * Continue to next endless floor
+   */
+  continueEndless() {
+    return this.explorationService.continueEndless();
+  }
+
+  /**
+   * Return to hub after game victory (declining endless mode)
+   */
+  returnToHubFromVictory() {
+    if (!this.run?.gameVictoryPending) {
+      throw new Error('No pending game victory');
+    }
+    return this.combatService.handleGameVictory();
+  }
+
   // ============ UTILITY ============
 
   /**

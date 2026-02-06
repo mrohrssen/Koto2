@@ -980,6 +980,11 @@ export function getEnemiesForFloor(floor, useLocations = true) {
   else if (floor <= 6) tier = 3;
   else tier = 4;
 
+  // Endless mode (floor > 7): return all enemies from pool
+  if (floor > 7) {
+    return Object.values(ENEMY_TEMPLATES);
+  }
+
   // If location filtering is disabled, use tier-only
   if (!useLocations) {
     return getEnemiesByTier(tier);
@@ -1013,11 +1018,14 @@ export function generateEnemy(floor) {
   const enemies = getEnemiesForFloor(floor);
   const template = enemies[Math.floor(Math.random() * enemies.length)];
 
-  // SIMPLIFIED: no level bonus
-  const enemy = buildEnemy(template, 0);
+  // For endless floors, override template tier with floor-derived tier
+  const effectiveTemplate = floor > 7
+    ? { ...template, tier: Math.ceil(floor / 2) }
+    : template;
 
-  // SIMPLIFIED: no XP (no leveling), but keep credit rewards
-  enemy.xpReward = 0;  // No XP in simplified mode
+  const enemy = buildEnemy(effectiveTemplate, 0);
+
+  enemy.xpReward = 0;
   enemy.creditReward = template.creditReward || 20;
 
   return enemy;
@@ -1027,7 +1035,12 @@ export function generateEnemy(floor) {
 export function getBossForFloor(floor) {
   let template;
 
-  if (floor === 7) {
+  if (floor > 7) {
+    // Endless mode: pick a random boss, scale to current tier
+    const allBosses = Object.values(FLOOR_BOSSES);
+    const base = allBosses[Math.floor(Math.random() * allBosses.length)];
+    template = { ...base, tier: Math.ceil(floor / 2) };
+  } else if (floor === 7) {
     template = FINAL_BOSS;
   } else {
     template = FLOOR_BOSSES[floor];

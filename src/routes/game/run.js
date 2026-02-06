@@ -216,6 +216,35 @@ export default function createRunRoutes({
     }
   });
 
+  // Continue to next endless floor
+  router.post('/continue-endless', async (req, res) => {
+    const gameManager = req.gameManager;
+    try {
+      const floor = gameManager.continueEndless();
+      const narration = await generateGameNarration('floorEnter', {
+        floor: gameManager.run.floor,
+        player: gameManager.run.player
+      }, req.userKeys);
+
+      req.saveGame();
+      res.json({ state: req.getEnrichedGameState(), narration });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Return to hub after game victory (choosing not to continue)
+  router.post('/return-to-hub-from-victory', async (req, res) => {
+    const gameManager = req.gameManager;
+    try {
+      const result = gameManager.returnToHubFromVictory();
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   router.post('/proceed', async (req, res) => {
     const gameManager = req.gameManager;
     try {
