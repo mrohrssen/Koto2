@@ -25,7 +25,17 @@ export function getManager(userId) {
       const data = JSON.parse(readFileSync(saveFile, 'utf-8'));
       if (data.version && data.version >= SAVE_VERSION) {
         if (data.player) manager.loadPlayer(data.player);
-        if (data.meta) manager.initMeta(data.meta);
+        if (data.meta) {
+          // Migrate: add levels if missing from old saves
+          if (!data.meta.levels) {
+            data.meta.levels = {
+              highestUnlocked: 1,
+              completed: [],
+              current: null
+            };
+          }
+          manager.initMeta(data.meta);
+        }
       }
     } catch (e) {
       console.warn(`Failed to load save for ${userId}:`, e.message);
