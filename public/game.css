@@ -2230,8 +2230,8 @@ html, body {
 .combat-enemy-damage .enemy-damage-number {
   font-size: 48px;
   font-weight: 900;
-  color: #e74c3c;
-  text-shadow: 0 2px 8px rgba(231, 76, 60, 0.5);
+  color: var(--hp-red);
+  text-shadow: 0 2px 8px rgba(239, 83, 80, 0.5);
 }
 
 .combat-enemy-damage .combat-enemy-crit {
@@ -2648,8 +2648,8 @@ html, body {
   font-size: 18px;
   font-weight: bold;
   text-transform: uppercase;
-  background: var(--accent-orange, #f39c12);
-  color: #000;
+  background: var(--accent-amber);
+  color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
