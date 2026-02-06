@@ -284,7 +284,11 @@ export class ExplorationService {
 
     // Vary background per room (floor1_1.webp through floor1_5.webp, cycling)
     const bgVariant = ((this.gm.run.currentRoom - 1) % 5) + 1;
-    this.gm.run.background = `floor${this.gm.run.floor}_${bgVariant}.webp`;
+    if (this.gm.run.floor > 7) {
+      this.gm.run.background = `outskirts_${bgVariant}.webp`;
+    } else {
+      this.gm.run.background = `floor${this.gm.run.floor}_${bgVariant}.webp`;
+    }
 
     // Track room clears for counter chips
     if (this.gm.run.runStats) {
@@ -349,7 +353,11 @@ export class ExplorationService {
 
     // Vary background per room
     const bgVariant = ((this.gm.run.currentRoom - 1) % 5) + 1;
-    this.gm.run.background = `floor${this.gm.run.floor}_${bgVariant}.webp`;
+    if (this.gm.run.floor > 7) {
+      this.gm.run.background = `outskirts_${bgVariant}.webp`;
+    } else {
+      this.gm.run.background = `floor${this.gm.run.floor}_${bgVariant}.webp`;
+    }
 
     // Clear pending branch
     this.gm.run.pendingBranch = false;

@@ -30,6 +30,10 @@ const ROOM_TEMPLATES = {
     npc: { x: 0.5, y: 0.25, type: 'terminal' },
     credits: []
   },
+  dealer: {
+    npc: { x: 0.5, y: 0.25, type: 'dealer' },
+    credits: []
+  },
   boss: {
     npc: { x: 0.5, y: 0.25, type: 'boss' },
     credits: []
