@@ -85,6 +85,10 @@ let apiDoorHints = null;
 // Speed review API
 let apiGetDueWords = null;
 
+// Level select API functions
+let apiGetLevels = null;
+let apiSelectLevel = null;
+
 export function init(callbacks) {
   getGameState = callbacks.getGameState;
   updateGameState = callbacks.updateGameState;
@@ -118,6 +122,8 @@ export function init(callbacks) {
   apiSelectBranch = callbacks.apiSelectBranch;
   apiDoorHints = callbacks.apiDoorHints;
   apiGetDueWords = callbacks.apiGetDueWords;
+  apiGetLevels = callbacks.apiGetLevels;
+  apiSelectLevel = callbacks.apiSelectLevel;
 }
 
 /** Hub phase — show Speed Review + Equip Bots + Infiltrate buttons */
@@ -146,7 +152,77 @@ export function renderHub() {
 
   document.getElementById('context-action-btn')?.addEventListener('click', () => {
     playSFX('button-tap');
-    startNewRun();
+    renderLevelSelect();
+  });
+}
+
+/** Level select — show scrollable list of level cards */
+export async function renderLevelSelect() {
+  const result = await apiGetLevels();
+  if (!result?.levels) {
+    actions.setContent('<p style="text-align:center">Failed to load levels</p>');
+    return;
+  }
+
+  const { levels, progress } = result;
+  const { highestUnlocked, completed } = progress;
+
+  const cardsHtml = levels.map(level => {
+    const isCompleted = completed.includes(level.id);
+    const isUnlocked = level.id <= highestUnlocked;
+
+    let statusIcon = '';
+    let stateClass = '';
+    if (isCompleted) {
+      statusIcon = '<span class="level-status level-complete">\u2713</span>';
+      stateClass = 'level-completed';
+    } else if (isUnlocked) {
+      statusIcon = '<span class="level-status level-new">NEW</span>';
+      stateClass = 'level-unlocked';
+    } else {
+      statusIcon = '<span class="level-status level-locked">\uD83D\uDD12</span>';
+      stateClass = 'level-locked';
+    }
+
+    return `
+      <div class="level-card ${stateClass}" data-level-id="${level.id}" ${!isUnlocked ? 'aria-disabled="true"' : ''}>
+        <div class="level-number">${level.id}</div>
+        <div class="level-info">
+          <div class="level-name">${level.nameJa}</div>
+          <div class="level-name-en">${level.name}</div>
+        </div>
+        ${statusIcon}
+      </div>
+    `;
+  }).join('');
+
+  actions.setContent(`
+    <div class="level-select-header">\u30EC\u30D9\u30EB\u9078\u629E</div>
+    <div class="level-select-list">${cardsHtml}</div>
+    <button class="action-btn action-btn-tertiary" id="level-back-btn">\u623B\u308B</button>
+  `);
+
+  // Click handlers for unlocked levels
+  document.querySelectorAll('.level-card:not(.level-locked)').forEach(card => {
+    card.addEventListener('click', async () => {
+      const levelId = parseInt(card.dataset.levelId);
+      playSFX('button-tap');
+      const runResult = await apiSelectLevel(levelId);
+      if (runResult?.state) {
+        updateGameState(runResult.state);
+        updateUI();
+        if (runResult.state.run?.startingChipShop?.active) {
+          const economyMod = await import('./economy.js');
+          await economyMod.renderStartingChipShop();
+        }
+      }
+    });
+  });
+
+  // Back button
+  document.getElementById('level-back-btn')?.addEventListener('click', () => {
+    playSFX('button-tap');
+    updateUI();
   });
 }
 
