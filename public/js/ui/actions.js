@@ -202,12 +202,14 @@ export function showDualFlashCards(attackWord, defendWord) {
 
   const hintText = '&larr; didn\'t know &nbsp; | &nbsp; knew it &rarr;';
 
+  const swordIcon = `<svg class="dual-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg>`;
+  const shieldIcon = `<svg class="dual-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
+
   dom.actionArea.innerHTML = `
     <div class="dual-flash-card-container" id="dual-flash-card-container">
       <div class="dual-card-wrapper" id="attack-wrapper">
-        <div class="dual-card-label attack">Attack</div>
         <div class="dual-flash-card attack" id="attack-card" data-action="attack">
-          <div class="dual-card-front">${escapeHtml(attackWord.word)}</div>
+          <div class="dual-card-front">${swordIcon}<span>${escapeHtml(attackWord.word)}</span></div>
           <div class="dual-card-back">
             <div class="flash-card-word">${attackWord.reading && attackWord.reading !== attackWord.word
               ? `<ruby>${escapeHtml(attackWord.word)}<rt>${escapeHtml(attackWord.reading)}</rt></ruby>`
@@ -218,9 +220,8 @@ export function showDualFlashCards(attackWord, defendWord) {
         </div>
       </div>
       <div class="dual-card-wrapper" id="defend-wrapper">
-        <div class="dual-card-label defend">Defend</div>
         <div class="dual-flash-card defend" id="defend-card" data-action="defend">
-          <div class="dual-card-front">${escapeHtml(defendWord.word)}</div>
+          <div class="dual-card-front">${shieldIcon}<span>${escapeHtml(defendWord.word)}</span></div>
           <div class="dual-card-back">
             <div class="flash-card-word">${defendWord.reading && defendWord.reading !== defendWord.word
               ? `<ruby>${escapeHtml(defendWord.word)}<rt>${escapeHtml(defendWord.reading)}</rt></ruby>`

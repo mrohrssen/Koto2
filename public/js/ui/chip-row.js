@@ -78,16 +78,15 @@ export function render(chips, { charges = [], levels = [], maxCharges = 5, inCom
       icon.style.borderColor = getChipColor(chip);
     }
 
-    // Level badge (only if > 1)
+    slot.appendChild(icon);
+
+    // Level badge (only if > 1) — appended to slot so it's not clipped by icon
     if (chip && level > 1) {
-      icon.style.position = 'relative';
       const badge = document.createElement('span');
       badge.className = 'chip-level-badge';
-      badge.textContent = `${level}`;
-      icon.appendChild(badge);
+      badge.textContent = `Lv.${level}`;
+      slot.appendChild(badge);
     }
-
-    slot.appendChild(icon);
 
     // Charge bar (5 segments)
     if (chip) {
