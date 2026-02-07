@@ -260,7 +260,7 @@ function splitIntoSentences(text) {
  * // If user doesn't know 洞窟 or 現れた:
  * // { sentence: '...', unknownWords: ['洞窟', '現れた'], count: 2 }
  */
-async function checkSentenceViolations(sentence, vocabSet, jpdbApiKey, gameTerms = null) {
+async function checkSentenceViolations(sentence, vocabSet, jpdbApiKey, gameTerms = null, vidSet = null) {
   // Can't check without API key or if sentence is empty
   if (!jpdbApiKey || !sentence.trim()) {
     return { sentence, unknownWords: [], count: 0 };
@@ -286,26 +286,33 @@ async function checkSentenceViolations(sentence, vocabSet, jpdbApiKey, gameTerms
 
   // Check each word in the parsed sentence
   for (const word of parsedWords) {
+    // Step 1: Skip non-words (punctuation, spaces, etc.)
+    if (word.isWord === false) continue;
+
     const spelling = word.spelling;
 
-    // Skip already-checked words (e.g., same word appears twice)
-    if (seen.has(spelling)) continue;
-    seen.add(spelling);
+    // Step 2: Vid-based matching (primary strategy)
+    if (vidSet && word.vid != null && vidSet.has(word.vid)) continue;
 
-    // Skip allowed grammar words and particles
+    // Deduplication: use vid when available, fall back to spelling
+    const dedupeKey = word.vid != null ? `vid:${word.vid}` : spelling;
+    if (seen.has(dedupeKey)) continue;
+    seen.add(dedupeKey);
+
+    // Step 3: Allowed grammar words / particles
     if (ALLOWED_WORDS.has(spelling)) continue;
 
-    // Skip game-specific terms (enemy names, item names, etc.)
+    // Step 4: Game-specific terms
     if (gameTermWords.has(spelling)) continue;
 
-    // Skip single hiragana characters (usually particles or verb endings
-    // that JPDB might parse separately)
+    // Step 5: Single hiragana character
     if (spelling.length === 1 && /[\u3040-\u309F]/.test(spelling)) continue;
 
-    // If word is not in user's vocabulary, it's unknown
-    if (!vocabSet.has(spelling)) {
-      unknownWords.push(spelling);
-    }
+    // Step 6: Fallback string match (handles vidSet=null / legacy path)
+    if (vocabSet.has(spelling)) continue;
+
+    // Unknown word
+    unknownWords.push(spelling);
   }
 
   return {
@@ -609,7 +616,8 @@ export async function enforceVocabLimit(
   jpdbApiKey,
   chatFn,
   maxUnknownsPerSentence = CONFIG.maxUnknownsPerSentence,
-  gameTerms = []
+  gameTerms = [],
+  vidSet = null
 ) {
   // Early return if we can't process
   if (!narration || !jpdbApiKey) {
@@ -630,7 +638,7 @@ export async function enforceVocabLimit(
     const sentenceIndex = index + 1;
 
     // Check current violation count
-    const check = await checkSentenceViolations(sentence, vocabSet, jpdbApiKey, gameTermsSet);
+    const check = await checkSentenceViolations(sentence, vocabSet, jpdbApiKey, gameTermsSet, vidSet);
 
     if (check.count <= maxUnknownsPerSentence) {
       // ===== Sentence is OK - no repair needed =====
@@ -660,7 +668,7 @@ export async function enforceVocabLimit(
       );
 
       // Verify the repair actually fixed the violations
-      const recheck = await checkSentenceViolations(repaired, vocabSet, jpdbApiKey, gameTermsSet);
+      const recheck = await checkSentenceViolations(repaired, vocabSet, jpdbApiKey, gameTermsSet, vidSet);
 
       if (recheck.count <= maxUnknownsPerSentence) {
         // ===== First repair succeeded =====
@@ -687,7 +695,7 @@ export async function enforceVocabLimit(
           chatFn,
           { sentenceIndex, attempt: 2 }
         );
-        const finalCheck = await checkSentenceViolations(repaired, vocabSet, jpdbApiKey, gameTermsSet);
+        const finalCheck = await checkSentenceViolations(repaired, vocabSet, jpdbApiKey, gameTermsSet, vidSet);
 
         if (finalCheck.count <= maxUnknownsPerSentence) {
           // Second repair succeeded
