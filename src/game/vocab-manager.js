@@ -428,11 +428,12 @@ export async function getSuggestionsForNarration(apiKey, vocabulary, userId) {
  *
  * @param {string} userId - User ID
  * @param {string[]} fallbackVocabulary - Fallback list when user cache is empty
- * @returns {string[]} Vocabulary suitable for narration generation/repair
+ * @returns {{ words: string[], vidSet: Set<number> }} Vocabulary words and their JPDB vid set
  */
 export function getNarrationVocabularyForUser(userId, fallbackVocabulary = []) {
   if (!userId) {
-    return [...new Set((fallbackVocabulary || []).filter(w => typeof w === 'string' && w.length > 0))];
+    const words = [...new Set((fallbackVocabulary || []).filter(w => typeof w === 'string' && w.length > 0))];
+    return { words, vidSet: new Set() };
   }
 
   initVocabManager(userId);
@@ -440,6 +441,7 @@ export function getNarrationVocabularyForUser(userId, fallbackVocabulary = []) {
   const allowedStates = new Set(['due', 'failed', 'learning', 'known', 'never-forget']);
 
   const rankedWords = [];
+  const vids = [];
   for (const [word, info] of Object.entries(state.wordStateCache || {})) {
     if (!word || typeof word !== 'string') continue;
     const states = Array.isArray(info?.states) ? info.states : [];
@@ -449,6 +451,9 @@ export function getNarrationVocabularyForUser(userId, fallbackVocabulary = []) {
       word,
       rank: Number.isFinite(info?.rank) ? info.rank : Number.MAX_SAFE_INTEGER
     });
+    if (Number.isFinite(info?.vid)) {
+      vids.push(info.vid);
+    }
   }
 
   rankedWords.sort((a, b) => {
@@ -457,10 +462,11 @@ export function getNarrationVocabularyForUser(userId, fallbackVocabulary = []) {
   });
 
   if (rankedWords.length > 0) {
-    return rankedWords.map(entry => entry.word);
+    return { words: rankedWords.map(entry => entry.word), vidSet: new Set(vids) };
   }
 
-  return [...new Set((fallbackVocabulary || []).filter(w => typeof w === 'string' && w.length > 0))];
+  const words = [...new Set((fallbackVocabulary || []).filter(w => typeof w === 'string' && w.length > 0))];
+  return { words, vidSet: new Set() };
 }
 
 /**

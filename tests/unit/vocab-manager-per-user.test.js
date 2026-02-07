@@ -137,8 +137,8 @@ describe('Per-user vocab cache', () => {
       '除外': { states: ['blacklisted'], vid: 5, sid: 0, rank: 2 }
     }, 'user1');
 
-    const vocab = vm.getNarrationVocabularyForUser('user1', ['fallback']);
-    assert.deepStrictEqual(vocab, ['学ぶ', '食べる', '見る']);
+    const result = vm.getNarrationVocabularyForUser('user1', ['fallback']);
+    assert.deepStrictEqual(result.words, ['学ぶ', '食べる', '見る']);
   });
 
   it('should fall back to provided vocabulary when user cache has no allowed states', () => {
@@ -150,9 +150,49 @@ describe('Per-user vocab cache', () => {
       '除外': { states: ['suspended'], vid: 12, sid: 0, rank: 2 }
     }, 'user1');
 
-    const vocab = vm.getNarrationVocabularyForUser('user1', ['fallback', 'fallback', 'known']);
-    assert.deepStrictEqual(vocab, ['fallback', 'known']);
+    const result = vm.getNarrationVocabularyForUser('user1', ['fallback', 'fallback', 'known']);
+    assert.deepStrictEqual(result.words, ['fallback', 'known']);
   });
+
+  it('should return vidSet alongside words from getNarrationVocabularyForUser', () => {
+    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.clearVocabManagerCache('user1');
+
+    vm.setTestCache({
+      '学ぶ': { states: ['due'], vid: 1001, sid: 0, rank: 10 },
+      '食べる': { states: ['learning'], vid: 1002, sid: 0, rank: 20 },
+      '見る': { states: ['known'], vid: 1003, sid: 0, rank: 30 },
+      '新語': { states: ['new'], vid: 1004, sid: 0, rank: 1 },
+      '除外': { states: ['blacklisted'], vid: 1005, sid: 0, rank: 2 }
+    }, 'user1');
+
+    const result = vm.getNarrationVocabularyForUser('user1', ['fallback']);
+    assert.ok(result.words, 'result should have words property');
+    assert.ok(result.vidSet instanceof Set, 'result should have vidSet as a Set');
+    assert.deepStrictEqual(result.words, ['学ぶ', '食べる', '見る']);
+    assert.strictEqual(result.vidSet.size, 3);
+    assert.ok(result.vidSet.has(1001));
+    assert.ok(result.vidSet.has(1002));
+    assert.ok(result.vidSet.has(1003));
+    assert.ok(!result.vidSet.has(1004));
+    assert.ok(!result.vidSet.has(1005));
+  });
+
+  it('should return empty vidSet when falling back to provided vocabulary', () => {
+    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.clearVocabManagerCache('user1');
+
+    vm.setTestCache({
+      '新語': { states: ['new'], vid: 11, sid: 0, rank: 1 }
+    }, 'user1');
+
+    const result = vm.getNarrationVocabularyForUser('user1', ['fallback', 'known']);
+    assert.ok(result.words, 'result should have words property');
+    assert.ok(result.vidSet instanceof Set, 'result should have vidSet as a Set');
+    assert.deepStrictEqual(result.words, ['fallback', 'known']);
+    assert.strictEqual(result.vidSet.size, 0);
+  });
+
 });
 
 describe('JPDB per-user cache', () => {
