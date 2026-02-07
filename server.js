@@ -441,7 +441,7 @@ function getUserNarrationVocabulary(userId) {
   return getNarrationVocabularyForUser(userId, fallbackVocabulary);
 }
 
-async function applyVocabRepair(narration, vocabulary, userKeys, gameTerms = []) {
+async function applyVocabRepair(narration, vocabulary, userKeys, gameTerms = [], vidSet = null) {
   const { jpdbApiKey, aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel } = userKeys || {};
   if (!jpdbApiKey || !aiApiKey || !vocabulary?.length) return narration;
 
@@ -473,7 +473,8 @@ async function applyVocabRepair(narration, vocabulary, userKeys, gameTerms = [])
       jpdbApiKey,
       repairChat,
       1,
-      gameTerms
+      gameTerms,
+      vidSet
     );
 
     return repaired?.narration || narration;
@@ -497,7 +498,7 @@ async function generateGameNarration(event, context, userKeys = {}) {
   const enemyForState = sourceContext?.enemy
     || ((normalizedEvent === 'bossAppear' || normalizedEvent === 'finalBossAppear') ? normalizedContext : null);
 
-  const vocabulary = getUserNarrationVocabulary(userId);
+  const { words: vocabulary, vidSet } = getUserNarrationVocabulary(userId);
   const aiConfig = {
     provider: aiProvider || 'openai',
     apiKey: aiApiKey,
@@ -544,7 +545,7 @@ async function generateGameNarration(event, context, userKeys = {}) {
   if (enemyForState?.name) {
     gameTerms.push(enemyForState.name);
   }
-  narration = await applyVocabRepair(narration, vocabulary, userKeys, gameTerms);
+  narration = await applyVocabRepair(narration, vocabulary, userKeys, gameTerms, vidSet);
 
   trackNarrationStats(narration, jpdbApiKey, userId);
 
@@ -556,8 +557,8 @@ async function adaptExistingNarrationText(text, userKeys = {}) {
     return typeof text === 'string' ? text : '';
   }
 
-  const vocabulary = getUserNarrationVocabulary(userKeys?.userId);
-  const repaired = await applyVocabRepair(text, vocabulary, userKeys, []);
+  const { words: vocabulary, vidSet } = getUserNarrationVocabulary(userKeys?.userId);
+  const repaired = await applyVocabRepair(text, vocabulary, userKeys, [], vidSet);
   return typeof repaired === 'string' ? repaired : text;
 }
 
