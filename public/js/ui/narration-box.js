@@ -34,9 +34,111 @@ const indicatorEl = box?.querySelector('.narration-indicator');
 
 let dismissResolve = null;
 let dismissTimer = null;
+let pagedText = [];
+let currentPage = 0;
+
+const MAX_VISIBLE_LINES = 2;
+const BREAK_CHARS = /[。！？!?、，,.\s\n]/u;
+
+function clearPagination() {
+  pagedText = [];
+  currentPage = 0;
+}
+
+function getLineHeightPx() {
+  if (!textEl) return 0;
+  const computed = window.getComputedStyle(textEl);
+  let lineHeight = Number.parseFloat(computed.lineHeight);
+  if (!Number.isFinite(lineHeight)) {
+    const fontSize = Number.parseFloat(computed.fontSize) || 16;
+    lineHeight = fontSize * 1.45;
+  }
+  return lineHeight;
+}
+
+function fitsWithinTwoLines(candidate) {
+  if (!textEl) return true;
+  const previous = textEl.textContent;
+  textEl.textContent = candidate;
+
+  const lineHeight = getLineHeightPx();
+  const maxHeight = (lineHeight * MAX_VISIBLE_LINES) + 1;
+  const fits = textEl.scrollHeight <= maxHeight;
+
+  textEl.textContent = previous;
+  return fits;
+}
+
+function chooseNaturalBreak(chars, start, end) {
+  for (let i = end; i > start; i -= 1) {
+    if (BREAK_CHARS.test(chars[i - 1])) return i;
+  }
+  return end;
+}
+
+function paginateForTwoLines(text) {
+  const source = String(text ?? '');
+  if (!source) return [''];
+  if (!textEl || fitsWithinTwoLines(source)) return [source];
+
+  const chars = Array.from(source);
+  const pages = [];
+  let start = 0;
+
+  while (start < chars.length) {
+    while (start < chars.length && /\s/u.test(chars[start])) start += 1;
+    if (start >= chars.length) break;
+
+    let low = 1;
+    let high = chars.length - start;
+    let best = 1;
+
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const end = start + mid;
+      const hasMore = end < chars.length;
+      const raw = chars.slice(start, end).join('');
+      const candidate = hasMore ? `${raw.trimEnd()}…` : raw;
+
+      if (fitsWithinTwoLines(candidate)) {
+        best = mid;
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+
+    let end = start + best;
+    const natural = chooseNaturalBreak(chars, start, end);
+    if (natural > start && natural < end) {
+      end = natural;
+    }
+    if (end <= start) end = start + 1;
+
+    let chunk = chars.slice(start, end).join('');
+    if (pages.length > 0) chunk = chunk.replace(/^\s+/u, '');
+    chunk = chunk.replace(/\s+$/u, '');
+
+    const hasMore = end < chars.length;
+    let pageText = hasMore ? `${chunk}…` : chunk;
+
+    // Safety fallback if natural breakpoint unexpectedly overflows.
+    if (!fitsWithinTwoLines(pageText)) {
+      end = start + best;
+      chunk = chars.slice(start, end).join('').replace(/^\s+/u, '').replace(/\s+$/u, '');
+      pageText = end < chars.length ? `${chunk}…` : chunk;
+    }
+
+    pages.push(pageText);
+    start = end;
+  }
+
+  return pages.length > 0 ? pages : [source];
+}
 
 function hide() {
   if (box) box.classList.remove('visible');
+  clearPagination();
   if (dismissTimer) {
     clearTimeout(dismissTimer);
     dismissTimer = null;
@@ -51,6 +153,12 @@ function hide() {
 function handleClick(e) {
   // Don't dismiss if lookup mode is active (let user look up words)
   if (lookup.getActive()) return;
+
+  if (pagedText.length > 0 && currentPage < pagedText.length - 1) {
+    currentPage += 1;
+    if (textEl) textEl.textContent = pagedText[currentPage];
+    return;
+  }
 
   document.removeEventListener('click', handleClick, true);
   hide();
@@ -78,7 +186,14 @@ export function show(text, options = {}) {
     speakerEl.textContent = speaker || '';
     speakerEl.style.display = speaker ? '' : 'none';
   }
-  if (textEl) textEl.textContent = text;
+  clearPagination();
+  if (autoDismiss || persistent) {
+    if (textEl) textEl.textContent = text;
+  } else {
+    pagedText = paginateForTwoLines(text);
+    currentPage = 0;
+    if (textEl) textEl.textContent = pagedText[0] || '';
+  }
   if (indicatorEl) indicatorEl.style.display = (autoDismiss || persistent) ? 'none' : '';
   if (box) box.classList.add('visible');
 
@@ -111,6 +226,7 @@ export function show(text, options = {}) {
 export function forceHide() {
   document.removeEventListener('click', handleClick, true);
   if (box) box.classList.remove('visible');
+  clearPagination();
   if (dismissTimer) {
     clearTimeout(dismissTimer);
     dismissTimer = null;
