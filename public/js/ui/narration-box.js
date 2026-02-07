@@ -26,6 +26,7 @@
  */
 
 import * as lookup from './lookup.js';
+import { rewriteNarration } from '../api.js';
 
 const box = document.getElementById('narration-box');
 const textEl = document.getElementById('narration-text');
@@ -36,6 +37,7 @@ let dismissResolve = null;
 let dismissTimer = null;
 let pagedText = [];
 let currentPage = 0;
+let showRequestCounter = 0;
 
 const MAX_VISIBLE_LINES = 2;
 const BREAK_CHARS = /[。！？!?、，,.\s\n]/u;
@@ -171,16 +173,39 @@ function handleClick(e) {
  * @param {string} [options.speaker] - Name label shown above text
  * @param {number} [options.autoDismiss] - Ms to auto-dismiss (no click needed)
  * @param {boolean} [options.persistent] - If true, stays visible until forceHide() is called
+ * @param {boolean} [options.skipRewrite] - If true, bypass vocab rewrite for this text
  * @returns {Promise<void>} Resolves when dismissed
  */
-export function show(text, options = {}) {
+export async function show(text, options = {}) {
+  const requestId = ++showRequestCounter;
+  const sourceText = typeof text === 'string' ? text : String(text ?? '');
+  const {
+    speaker,
+    autoDismiss,
+    persistent,
+    skipRewrite = false
+  } = options;
+
+  let displayText = sourceText;
+  if (!skipRewrite && sourceText.trim()) {
+    console.log(`[NarrationBox] Original before rewrite: ${sourceText}`);
+    try {
+      const rewritten = await rewriteNarration(sourceText);
+      if (requestId !== showRequestCounter) return;
+      if (typeof rewritten?.narration === 'string' && rewritten.narration.length > 0) {
+        displayText = rewritten.narration;
+      }
+      console.log(`[NarrationBox] Rewrite result: ${displayText}`);
+    } catch {}
+  }
+
+  if (requestId !== showRequestCounter) return;
+
   // Dismiss any currently visible narration
   if (dismissResolve) {
     document.removeEventListener('click', handleClick, true);
     hide();
   }
-
-  const { speaker, autoDismiss, persistent } = options;
 
   if (speakerEl) {
     speakerEl.textContent = speaker || '';
@@ -188,14 +213,15 @@ export function show(text, options = {}) {
   }
   clearPagination();
   if (autoDismiss || persistent) {
-    if (textEl) textEl.textContent = text;
+    if (textEl) textEl.textContent = displayText;
   } else {
-    pagedText = paginateForTwoLines(text);
+    pagedText = paginateForTwoLines(displayText);
     currentPage = 0;
     if (textEl) textEl.textContent = pagedText[0] || '';
   }
   if (indicatorEl) indicatorEl.style.display = (autoDismiss || persistent) ? 'none' : '';
   if (box) box.classList.add('visible');
+  console.log(`[NarrationBox] Final displayed text: ${displayText}`);
 
   // Persistent mode: show but don't register click handler, resolve immediately
   if (persistent) {

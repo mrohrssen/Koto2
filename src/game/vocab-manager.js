@@ -417,6 +417,53 @@ export async function getSuggestionsForNarration(apiKey, vocabulary, userId) {
 }
 
 /**
+ * Get a narration-safe vocabulary list for a specific user.
+ * Prefers per-user JPDB state cache and falls back to provided vocabulary.
+ *
+ * Included states:
+ * - due / failed / learning / known / never-forget
+ *
+ * Excluded states:
+ * - new / blacklisted / suspended / not-in-deck / locked / redundant
+ *
+ * @param {string} userId - User ID
+ * @param {string[]} fallbackVocabulary - Fallback list when user cache is empty
+ * @returns {string[]} Vocabulary suitable for narration generation/repair
+ */
+export function getNarrationVocabularyForUser(userId, fallbackVocabulary = []) {
+  if (!userId) {
+    return [...new Set((fallbackVocabulary || []).filter(w => typeof w === 'string' && w.length > 0))];
+  }
+
+  initVocabManager(userId);
+  const state = getOrCreateUserState(userId);
+  const allowedStates = new Set(['due', 'failed', 'learning', 'known', 'never-forget']);
+
+  const rankedWords = [];
+  for (const [word, info] of Object.entries(state.wordStateCache || {})) {
+    if (!word || typeof word !== 'string') continue;
+    const states = Array.isArray(info?.states) ? info.states : [];
+    if (!states.some(s => allowedStates.has(s))) continue;
+
+    rankedWords.push({
+      word,
+      rank: Number.isFinite(info?.rank) ? info.rank : Number.MAX_SAFE_INTEGER
+    });
+  }
+
+  rankedWords.sort((a, b) => {
+    if (a.rank !== b.rank) return a.rank - b.rank;
+    return a.word.localeCompare(b.word, 'ja');
+  });
+
+  if (rankedWords.length > 0) {
+    return rankedWords.map(entry => entry.word);
+  }
+
+  return [...new Set((fallbackVocabulary || []).filter(w => typeof w === 'string' && w.length > 0))];
+}
+
+/**
  * Clear the cache for a user (for testing or reset)
  * @param {string} userId - User ID
  */

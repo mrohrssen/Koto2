@@ -119,7 +119,8 @@ import {
 } from './src/game-stats.js';
 import {
   configureVocabManager, getSuggestionsForNarration, addUsedWords,
-  refreshWordStateCache, getVocabManagerStats, invalidateWordStateCache as invalidateVocabManagerCache
+  refreshWordStateCache, getVocabManagerStats, invalidateWordStateCache as invalidateVocabManagerCache,
+  getNarrationVocabularyForUser
 } from './src/game/vocab-manager.js';
 import {
   getCachedAudio, clearCache as clearPrefetchCache,
@@ -359,6 +360,7 @@ app.use('/api', createRoutes({
   saveSettings: saveSettings,
   enrichGameState,
   generateGameNarration,
+  adaptExistingNarrationText,
   generateDoorHints: generateDoorHintsForRoute,
   cancelPendingPrefetches,
   clearPrefetchCache,
@@ -387,9 +389,61 @@ function trackNarrationStats(narration, jpdbApiKey = null, userId = null) {
   }
 }
 
+const DM_EVENT_ALIASES = Object.freeze({
+  floorEnter: 'enterFloor',
+  encounterStart: 'combatStart',
+  shrine: 'shrineUse'
+});
+
+function normalizeNarrationRequest(event, context = {}) {
+  if (event === 'bossStart') {
+    const isFinalBoss = Boolean(context?.isFinalBoss) || Number(context?.floor) === 7;
+    const bossContext = context?.enemy || context?.boss || context || {};
+    return {
+      event: isFinalBoss ? 'finalBossAppear' : 'bossAppear',
+      context: bossContext
+    };
+  }
+
+  if (event === 'floorEnter') {
+    const floorValue = Number(context?.floor);
+    return {
+      event: 'enterFloor',
+      context: Number.isFinite(floorValue) ? floorValue : (context?.floor || context || 1)
+    };
+  }
+
+  if (event === 'shrine') {
+    if (typeof context === 'number') {
+      return { event: 'shrineUse', context: { healed: context } };
+    }
+
+    const healed = Number(context?.healed);
+    const effectHealed = Number(context?.effect?.healed);
+    return {
+      event: 'shrineUse',
+      context: {
+        ...(context || {}),
+        healed: Number.isFinite(healed) ? healed : (Number.isFinite(effectHealed) ? effectHealed : 0)
+      }
+    };
+  }
+
+  return {
+    event: DM_EVENT_ALIASES[event] || event,
+    context
+  };
+}
+
+function getUserNarrationVocabulary(userId) {
+  const vocabResult = getVocabulary();
+  const fallbackVocabulary = Array.isArray(vocabResult?.words) ? vocabResult.words : [];
+  return getNarrationVocabularyForUser(userId, fallbackVocabulary);
+}
+
 async function applyVocabRepair(narration, vocabulary, userKeys, gameTerms = []) {
   const { jpdbApiKey, aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel } = userKeys || {};
-  if (!jpdbApiKey || !vocabulary?.length) return narration;
+  if (!jpdbApiKey || !aiApiKey || !vocabulary?.length) return narration;
 
   try {
     const aiConfig = {
@@ -399,17 +453,30 @@ async function applyVocabRepair(narration, vocabulary, userKeys, gameTerms = [])
       openrouterModel: openrouterModel || ''
     };
 
+    const repairChat = async (repairPrompt) => {
+      return chat({
+        provider: aiConfig.provider,
+        apiKey: aiConfig.apiKey,
+        messages: [{ role: 'user', content: repairPrompt }],
+        vocabulary,
+        jlptLevel: jlptLevel || 'N4',
+        openaiModel: aiConfig.openaiModel,
+        openrouterModel: aiConfig.openrouterModel,
+        customSystemPrompt: 'You rewrite Japanese text while preserving meaning. Return only the rewritten Japanese sentence.',
+        purpose: 'narration_repair'
+      });
+    };
+
     const repaired = await enforceVocabLimit(
       narration,
       vocabulary,
       jpdbApiKey,
-      gameTerms,
-      chat,
-      aiConfig,
-      jlptLevel || 'N4'
+      repairChat,
+      1,
+      gameTerms
     );
 
-    return repaired || narration;
+    return repaired?.narration || narration;
   } catch (error) {
     console.error('[Vocab Repair] Error:', error.message);
     return narration;
@@ -417,15 +484,20 @@ async function applyVocabRepair(narration, vocabulary, userKeys, gameTerms = [])
 }
 
 async function generateGameNarration(event, context, userKeys = {}) {
+  const sourceContext = context || {};
+
   if (debugMode) {
-    console.log(`[Debug] Returning fallback narration for ${event}`);
-    return getSimpleNarration(event, context);
+    const { event: debugEvent, context: debugContext } = normalizeNarrationRequest(event, sourceContext);
+    console.log(`[Debug] Returning fallback narration for ${debugEvent}`);
+    return getSimpleNarration(debugEvent, debugContext);
   }
 
   const { jpdbApiKey, aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel, userId } = userKeys;
+  const { event: normalizedEvent, context: normalizedContext } = normalizeNarrationRequest(event, sourceContext);
+  const enemyForState = sourceContext?.enemy
+    || ((normalizedEvent === 'bossAppear' || normalizedEvent === 'finalBossAppear') ? normalizedContext : null);
 
-  const vocabResult = getVocabulary();
-  const vocabulary = vocabResult.words;
+  const vocabulary = getUserNarrationVocabulary(userId);
   const aiConfig = {
     provider: aiProvider || 'openai',
     apiKey: aiApiKey,
@@ -437,7 +509,7 @@ async function generateGameNarration(event, context, userKeys = {}) {
   let suggestedWords = null;
 
   if (!aiConfig.apiKey || vocabulary.length === 0) {
-    narration = getSimpleNarration(event, context);
+    narration = getSimpleNarration(normalizedEvent, normalizedContext);
   } else {
     if (jpdbApiKey && vocabulary.length > 0) {
       try {
@@ -446,17 +518,17 @@ async function generateGameNarration(event, context, userKeys = {}) {
     }
 
     const gameState = {
-      player: context.player || null,
-      floor: context.floor || 1,
-      enemy: context.enemy || null,
-      combat: context.enemy ? { active: true, turn: context.turn || 0 } : null
+      player: sourceContext.player || null,
+      floor: sourceContext.floor || 1,
+      enemy: enemyForState || null,
+      combat: enemyForState ? { active: true, turn: sourceContext.turn || 0 } : null
     };
 
     narration = await generateNarration(
       chat,
       gameState,
-      event,
-      context,
+      normalizedEvent,
+      normalizedContext,
       vocabulary,
       jlptLevel || 'N4',
       aiConfig,
@@ -464,20 +536,29 @@ async function generateGameNarration(event, context, userKeys = {}) {
     );
 
     if (!narration) {
-      narration = getSimpleNarration(event, context);
+      narration = getSimpleNarration(normalizedEvent, normalizedContext);
     }
   }
 
   const gameTerms = [];
-  if (context.enemy?.name) {
-    gameTerms.push(context.enemy.name);
+  if (enemyForState?.name) {
+    gameTerms.push(enemyForState.name);
   }
-  // DISABLED: vocab repair not used with hardcoded narrations, wastes jpdb API calls
-  // narration = await applyVocabRepair(narration, vocabulary, userKeys, gameTerms);
+  narration = await applyVocabRepair(narration, vocabulary, userKeys, gameTerms);
 
   trackNarrationStats(narration, jpdbApiKey, userId);
 
   return narration;
+}
+
+async function adaptExistingNarrationText(text, userKeys = {}) {
+  if (typeof text !== 'string' || text.length === 0) {
+    return typeof text === 'string' ? text : '';
+  }
+
+  const vocabulary = getUserNarrationVocabulary(userKeys?.userId);
+  const repaired = await applyVocabRepair(text, vocabulary, userKeys, []);
+  return typeof repaired === 'string' ? repaired : text;
 }
 
 function generateDoorHintsForRoute(roomType1, roomType2) {

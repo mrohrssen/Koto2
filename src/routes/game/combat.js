@@ -90,7 +90,8 @@ export default function createCombatRoutes({
       const encounter = gameManager.startBossEncounter();
       const narration = await generateGameNarration('bossStart', {
         enemy: encounter.enemy,
-        player: gameManager.run.player
+        player: gameManager.run.player,
+        isFinalBoss: encounter.isFinalBoss
       }, req.userKeys);
 
       req.saveGame();

@@ -632,7 +632,7 @@ export async function renderQuiz() {
   if (question.translation) {
     questionText += `\n\n(${question.translation})`;
   }
-  sceneModule.showNarration(questionText, { speaker: 'Quiz Master', persistent: true });
+  sceneModule.showNarration(questionText, { speaker: 'Quiz Master', persistent: true, skipRewrite: true });
 
   // Build answer buttons - full width with padding
   const answerButtons = question.options.map((opt, idx) => `

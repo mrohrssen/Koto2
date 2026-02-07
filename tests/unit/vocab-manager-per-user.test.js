@@ -124,6 +124,35 @@ describe('Per-user vocab cache', () => {
     assert.strictEqual(result2.words.length, 1);
     assert.strictEqual(result2.words[0].word, '見る');
   });
+
+  it('should build narration vocabulary from allowed states only', () => {
+    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.clearVocabManagerCache('user1');
+
+    vm.setTestCache({
+      '学ぶ': { states: ['due'], vid: 1, sid: 0, rank: 10 },
+      '食べる': { states: ['learning'], vid: 2, sid: 0, rank: 20 },
+      '見る': { states: ['known'], vid: 3, sid: 0, rank: 30 },
+      '新語': { states: ['new'], vid: 4, sid: 0, rank: 1 },
+      '除外': { states: ['blacklisted'], vid: 5, sid: 0, rank: 2 }
+    }, 'user1');
+
+    const vocab = vm.getNarrationVocabularyForUser('user1', ['fallback']);
+    assert.deepStrictEqual(vocab, ['学ぶ', '食べる', '見る']);
+  });
+
+  it('should fall back to provided vocabulary when user cache has no allowed states', () => {
+    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.clearVocabManagerCache('user1');
+
+    vm.setTestCache({
+      '新語': { states: ['new'], vid: 11, sid: 0, rank: 1 },
+      '除外': { states: ['suspended'], vid: 12, sid: 0, rank: 2 }
+    }, 'user1');
+
+    const vocab = vm.getNarrationVocabularyForUser('user1', ['fallback', 'fallback', 'known']);
+    assert.deepStrictEqual(vocab, ['fallback', 'known']);
+  });
 });
 
 describe('JPDB per-user cache', () => {

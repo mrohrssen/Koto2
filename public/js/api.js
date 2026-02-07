@@ -42,6 +42,7 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null) {
     return null;
   }
   isLoading = true;
+  const startedAt = performance.now();
 
   try {
     const options = {
@@ -57,8 +58,13 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null) {
       throw new Error(data.error || 'API call failed');
     }
 
+    const elapsedMs = Math.round(performance.now() - startedAt);
+    console.log(`[API Timing] ${method} /api/game${endpoint} -> ${response.status} in ${elapsedMs}ms`);
+
     return data;
   } catch (error) {
+    const elapsedMs = Math.round(performance.now() - startedAt);
+    console.log(`[API Timing] ${method} /api/game${endpoint} -> error in ${elapsedMs}ms`);
     logger.error('[API] Request failed:', { endpoint, error: error.message });
     if (onError) {
       onError(error.message);
@@ -346,6 +352,46 @@ async function submitQuizAnswer(questionId, selectedIndex, bunproMeta = null) {
   } catch (error) {
     logger.error('[API] Failed to submit quiz answer:', error.message);
     return { error: 'Network error' };
+  }
+}
+
+/** Adapt existing narration text without generating new narration */
+async function rewriteNarration(text) {
+  const sourceText = typeof text === 'string' ? text : '';
+  if (!sourceText) {
+    return { narration: sourceText };
+  }
+
+  const startedAt = performance.now();
+  console.log(`[Narration Rewrite] SOURCE: ${sourceText}`);
+
+  try {
+    const response = await fetch('/api/game/rewrite-narration', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ text: sourceText })
+    });
+    const data = await response.json();
+    const elapsedMs = Math.round(performance.now() - startedAt);
+    console.log(`[API Timing] POST /api/game/rewrite-narration -> ${response.status} in ${elapsedMs}ms`);
+
+    if (!response.ok) {
+      console.log('[Narration Rewrite] FALLBACK (non-200): using source text');
+      return { narration: sourceText };
+    }
+
+    const narration = typeof data?.narration === 'string' ? data.narration : sourceText;
+    console.log(`[Narration Rewrite] REWRITTEN: ${narration}`);
+
+    return {
+      narration
+    };
+  } catch (error) {
+    const elapsedMs = Math.round(performance.now() - startedAt);
+    console.log(`[API Timing] POST /api/game/rewrite-narration -> error in ${elapsedMs}ms`);
+    console.log('[Narration Rewrite] FALLBACK (network/error): using source text');
+    logger.debug('[API] rewriteNarration fallback:', error.message);
+    return { narration: sourceText };
   }
 }
 
@@ -660,6 +706,7 @@ export {
   quizReward,
   getQuizQuestion,
   submitQuizAnswer,
+  rewriteNarration,
   // Combat endpoints
   startEncounter,
   startBoss,

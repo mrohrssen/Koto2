@@ -486,7 +486,10 @@ function getRelevantVocabulary(sentence, unknownWords, vocabulary, maxWords = 40
  * );
  * // Might return: '暗い場所で何かが動く。'
  */
-async function repairSentence(sentence, unknownWords, vocabulary, chatFn) {
+async function repairSentence(sentence, unknownWords, vocabulary, chatFn, debugMeta = {}) {
+  const sentenceIndex = debugMeta.sentenceIndex || '?';
+  const attempt = debugMeta.attempt || 1;
+
   // Get contextually relevant vocabulary (not random words)
   const relevantVocab = getRelevantVocabulary(sentence, unknownWords, vocabulary, 400);
 
@@ -517,19 +520,29 @@ ${relevantVocab.join('、')}
 書き直した文だけを出力してください：`;
 
   try {
+    if (CONFIG.logRepairs) {
+      console.log(`[VocabRepair] [S${sentenceIndex} A${attempt}] INPUT: ${sentence}`);
+    }
+
+    const startedAt = Date.now();
     // Call AI to generate repair
     let repaired = await chatFn(repairPrompt);
+    const elapsedMs = Date.now() - startedAt;
     repaired = repaired.trim();
 
     // Remove any quotes the AI might have added around the output
     repaired = repaired.replace(/^["「『]|["」』]$/g, '');
+
+    if (CONFIG.logRepairs) {
+      console.log(`[VocabRepair] [S${sentenceIndex} A${attempt}] OUTPUT (${elapsedMs}ms): ${repaired}`);
+    }
 
     // ===== Sanity checks to reject bad repairs =====
 
     // Length check: repair shouldn't be drastically different in length
     // Too short = probably lost meaning, too long = added unnecessary content
     if (repaired.length < sentence.length * 0.3 || repaired.length > sentence.length * 3) {
-      console.log('[VocabRepair] Repair rejected: length mismatch');
+      console.log(`[VocabRepair] [S${sentenceIndex} A${attempt}] Repair rejected: length mismatch`);
       return sentence;
     }
 
@@ -542,7 +555,7 @@ ${relevantVocab.join('、')}
 
     return repaired;
   } catch (error) {
-    console.error('[VocabRepair] Repair failed:', error.message);
+    console.error(`[VocabRepair] [S${sentenceIndex} A${attempt}] Repair failed:`, error.message);
     return sentence; // Return original on any failure
   }
 }
@@ -612,7 +625,10 @@ export async function enforceVocabLimit(
   const results = [];
 
   // Process each sentence
-  for (const sentence of sentences) {
+  for (let index = 0; index < sentences.length; index += 1) {
+    const sentence = sentences[index];
+    const sentenceIndex = index + 1;
+
     // Check current violation count
     const check = await checkSentenceViolations(sentence, vocabSet, jpdbApiKey, gameTermsSet);
 
@@ -624,6 +640,9 @@ export async function enforceVocabLimit(
         repaired: false,
         unknownCount: check.count
       });
+      if (CONFIG.logRepairs) {
+        console.log(`[VocabRepair] [S${sentenceIndex}] FINAL (no change): ${sentence}`);
+      }
     } else {
       // ===== Sentence needs repair =====
       if (CONFIG.logRepairs) {
@@ -632,7 +651,13 @@ export async function enforceVocabLimit(
       }
 
       // First repair attempt
-      let repaired = await repairSentence(sentence, check.unknownWords, vocabulary, chatFn);
+      let repaired = await repairSentence(
+        sentence,
+        check.unknownWords,
+        vocabulary,
+        chatFn,
+        { sentenceIndex, attempt: 1 }
+      );
 
       // Verify the repair actually fixed the violations
       const recheck = await checkSentenceViolations(repaired, vocabSet, jpdbApiKey, gameTermsSet);
@@ -655,7 +680,13 @@ export async function enforceVocabLimit(
         }
 
         // Second attempt with the partially-repaired sentence
-        repaired = await repairSentence(repaired, recheck.unknownWords, vocabulary, chatFn);
+        repaired = await repairSentence(
+          repaired,
+          recheck.unknownWords,
+          vocabulary,
+          chatFn,
+          { sentenceIndex, attempt: 2 }
+        );
         const finalCheck = await checkSentenceViolations(repaired, vocabSet, jpdbApiKey, gameTermsSet);
 
         if (finalCheck.count <= maxUnknownsPerSentence) {
@@ -666,6 +697,9 @@ export async function enforceVocabLimit(
             repaired: true,
             unknownCount: finalCheck.count
           });
+          if (CONFIG.logRepairs) {
+            console.log(`[VocabRepair] [S${sentenceIndex}] FINAL (after retry): ${repaired}`);
+          }
         } else {
           // ===== All repairs failed - keep original =====
           if (CONFIG.logRepairs) {
@@ -678,6 +712,9 @@ export async function enforceVocabLimit(
             failed: true,
             unknownCount: check.count
           });
+          if (CONFIG.logRepairs) {
+            console.log(`[VocabRepair] [S${sentenceIndex}] FINAL (fallback original): ${sentence}`);
+          }
         }
       } else {
         // No retry configured - keep original
@@ -688,13 +725,20 @@ export async function enforceVocabLimit(
           failed: true,
           unknownCount: check.count
         });
+        if (CONFIG.logRepairs) {
+          console.log(`[VocabRepair] [S${sentenceIndex}] FINAL (fallback original): ${sentence}`);
+        }
       }
     }
   }
 
   // Combine all processed sentences back into narration
+  const finalNarration = results.map(r => r.final).join('');
+  if (CONFIG.logRepairs) {
+    console.log(`[VocabRepair] FINAL NARRATION: ${finalNarration}`);
+  }
   return {
-    narration: results.map(r => r.final).join(''),
+    narration: finalNarration,
     repairs: results.filter(r => r.repaired),
     failures: results.filter(r => r.failed)
   };
