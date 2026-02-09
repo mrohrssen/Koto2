@@ -27,6 +27,7 @@
 
 import * as lookup from './lookup.js';
 import { rewriteNarration } from '../api.js';
+import { isAiNarrationEnabled } from '../settings.js';
 
 const box = document.getElementById('narration-box');
 const textEl = document.getElementById('narration-text');
@@ -187,7 +188,7 @@ export async function show(text, options = {}) {
   } = options;
 
   let displayText = sourceText;
-  if (!skipRewrite && sourceText.trim()) {
+  if (!skipRewrite && isAiNarrationEnabled() && sourceText.trim()) {
     console.log(`[NarrationBox] Original before rewrite: ${sourceText}`);
     try {
       const rewritten = await rewriteNarration(sourceText);

@@ -188,6 +188,30 @@ export async function saveServerSettings(settings) {
   }
 }
 
+// ============ AI NARRATION SETTINGS ============
+
+const AI_NARRATION_STORAGE_KEY = 'jrpg_aiNarrationEnabled';
+
+/**
+ * Check if AI narration rewrite is enabled
+ * @returns {boolean} True if AI narration is enabled (default: true)
+ */
+export function isAiNarrationEnabled() {
+  return localStorage.getItem(AI_NARRATION_STORAGE_KEY) !== 'false';
+}
+
+/**
+ * Set AI narration rewrite enabled state
+ * @param {boolean} enabled - Whether to enable AI narration
+ */
+export function setAiNarrationEnabled(enabled) {
+  if (enabled) {
+    localStorage.removeItem(AI_NARRATION_STORAGE_KEY);
+  } else {
+    localStorage.setItem(AI_NARRATION_STORAGE_KEY, 'false');
+  }
+}
+
 // ============ TTS SETTINGS ============
 
 const TTS_STORAGE_KEY = 'jrpg_ttsEnabled';

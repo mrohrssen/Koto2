@@ -104,6 +104,11 @@ export async function openSettings() {
           ${settingsModule.isTtsEnabled?.() ? 'checked' : ''}>
         Enable TTS
       </label>
+      <label class="settings-label" style="margin-top:8px">
+        <input type="checkbox" id="settings-ai-narration"
+          ${settingsModule.isAiNarrationEnabled?.() !== false ? 'checked' : ''}>
+        Enable AI Narration
+      </label>
 
       <h4 style="margin:20px 0 8px;color:var(--accent)">Audio</h4>
       <label class="settings-label">
@@ -167,6 +172,10 @@ export async function openSettings() {
     }
 
     // Save local-only settings
+    const aiNarration = document.getElementById('settings-ai-narration')?.checked;
+    if (settingsModule.setAiNarrationEnabled) {
+      settingsModule.setAiNarrationEnabled(aiNarration);
+    }
     if (settingsModule.setTtsEnabled) {
       settingsModule.setTtsEnabled(ttsEnabled);
     }
