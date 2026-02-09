@@ -403,6 +403,14 @@ html, body {
   z-index: 1;
 }
 
+.chip-row-secondary {
+  padding: 2px 10px;
+  transform: scale(0.75);
+  transform-origin: center top;
+  margin-top: -4px;
+  opacity: 0.85;
+}
+
 .chip-slot {
   position: relative;
   flex: 1;

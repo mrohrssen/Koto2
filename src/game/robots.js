@@ -23,11 +23,11 @@ export const RARITY_MULTIPLIERS = {
 };
 
 const RARITY_WEIGHTS = {
-  common: 50,
-  uncommon: 30,
-  rare: 12,
-  epic: 6,
-  legendary: 2
+  common: 60,
+  uncommon: 25,
+  rare: 10,
+  epic: 4,
+  legendary: 1
 };
 
 const XP_PER_LEVEL = 100;
@@ -83,7 +83,7 @@ export function addXpToRobot(robot, xp) {
     robot.level++;
     const rarityMult = RARITY_MULTIPLIERS[robot.rarity] || 1.0;
     const baseHp = Math.floor(100 * rarityMult);
-    const baseAtk = Math.floor(20 * rarityMult);
+    const baseAtk = Math.floor(10 * rarityMult);
     const stats = getStatsForLevel(baseHp, baseAtk, robot.level);
     const hpDiff = stats.maxHp - robot.maxHp;
     robot.maxHp = stats.maxHp;
@@ -93,7 +93,7 @@ export function addXpToRobot(robot, xp) {
 }
 
 export function calculateRobotDamage(attack, abilityPower, elementMultiplier, variance) {
-  return Math.floor(attack * (abilityPower / 100) * elementMultiplier * variance);
+  return Math.max(1, Math.floor((attack / 10) * abilityPower * elementMultiplier * variance));
 }
 
 export function rollVariance() {

@@ -250,8 +250,10 @@ function updateStatusBar() {
 }
 
 function updateScene() {
-  if (gameState.phase === 'combat' && gameState.combat?.enemy) {
-    scene.showEnemy(gameState.combat.enemy);
+  if (gameState.phase === 'combat') {
+    // Robot combat uses enemies[] array; legacy uses single enemy
+    const enemy = gameState.combat?.enemies?.[0] || gameState.combat?.enemy;
+    if (enemy) scene.showEnemy(enemy);
   } else if (gameState.phase === 'shrine') {
     scene.showShrineFox();
   } else if (gameState.phase === 'quiz') {
@@ -279,11 +281,27 @@ function updateScene() {
 }
 
 function updateChipRow() {
-  // If robot party exists and has active robots, render robot slots instead
+  const secondaryRow = document.getElementById('chip-row-secondary');
+
   if (gameState.run?.robotParty?.active?.length > 0) {
+    // Robot combat: render robot slots in primary row
     robotRow.render(gameState.run.robotParty.active);
+
+    // Also render chip slots in secondary row so players can view/use chip skills
+    const cacheChips = chipLoadoutCache?.equipment?.weapon?.equippedChips;
+    const equipped = cacheChips || [];
+    const charges = chipLoadoutCache?.chipCharges || gameState.player?._chipCharges || {};
+    const levels = chipLoadoutCache?.chipLevels || gameState.player?._chipLevels || {};
+
+    if (secondaryRow && equipped.length > 0) {
+      secondaryRow.style.display = '';
+      renderChipsToSecondaryRow(secondaryRow, equipped, charges, levels);
+    }
     return;
   }
+
+  // Hide secondary row when not in robot combat
+  if (secondaryRow) secondaryRow.style.display = 'none';
 
   // Prefer enriched chip objects from loadout cache (has name, rarity, skill info)
   // Fall back to raw game state (which only has chip ID strings)
@@ -293,6 +311,18 @@ function updateChipRow() {
   const levels = chipLoadoutCache?.chipLevels || gameState.player?._chipLevels || {};
 
   chipRow.render(equipped, {
+    charges: equipped.map(c => charges[c?.id] || 0),
+    levels: equipped.map(c => levels[c?.id] || 1),
+    maxCharges: 5,
+    inCombat: gameState.phase === 'combat',
+  });
+}
+
+/**
+ * Render chip slots into the secondary row during robot combat.
+ */
+function renderChipsToSecondaryRow(container, equipped, charges, levels) {
+  chipRow.renderTo(container, equipped, {
     charges: equipped.map(c => charges[c?.id] || 0),
     levels: equipped.map(c => levels[c?.id] || 1),
     maxCharges: 5,

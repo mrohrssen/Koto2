@@ -502,6 +502,34 @@ function showChipTooltip(chipIndex, text) {
 }
 
 /**
+ * Directly update robot HP bar widths in the DOM without triggering full updateUI.
+ * This avoids resetting enemy HP bars from stale game state during animations.
+ * @param {Array} robots - The robot party active array (with final HP from server)
+ * @param {Object} allyHpMap - Map of robotId -> { hp, maxHp } with running HP values
+ */
+function updateRobotHpBars(robots, allyHpMap) {
+  if (!robots) return;
+  const slots = document.querySelectorAll('#chip-row .robot-slot');
+  robots.forEach((robot, i) => {
+    const slot = slots[i];
+    if (!slot || !robot) return;
+    const currentHp = allyHpMap?.[robot.id] ? allyHpMap[robot.id].hp : robot.hp;
+    const hpPct = Math.max(0, (currentHp / robot.maxHp) * 100);
+    const fill = slot.querySelector('.robot-hp-fill');
+    if (fill) fill.style.width = `${hpPct}%`;
+    // Update KO state
+    const icon = slot.querySelector('.robot-icon');
+    if (icon) {
+      if (currentHp <= 0) {
+        icon.classList.add('ko');
+      } else {
+        icon.classList.remove('ko');
+      }
+    }
+  });
+}
+
+/**
  * Show enemy damage to player in big red text in the action area
  * @param {Object} enemyAttack - The enemy attack result
  */
@@ -738,7 +766,13 @@ async function executeRobotPlayerAttack() {
       return;
     }
 
-    // Show each allied robot's attack result sequentially
+    // Track enemy HP for progressive updates
+    const gs = getGameState();
+    const enemyStart = result.enemies?.[0];
+    let enemyRunningHp = enemyStart ? (enemyStart.hp + (result.playerAttacks || []).reduce((sum, a) => sum + a.damage, 0)) : 0;
+    const enemyMaxHp = enemyStart?.maxHp || 1;
+
+    // Show each allied robot's attack result sequentially with real-time HP
     if (result.playerAttacks?.length > 0) {
       playSFX('attack');
       for (const atk of result.playerAttacks) {
@@ -750,17 +784,26 @@ async function executeRobotPlayerAttack() {
         }
         showDamageNumber(atk.damage, false, false);
         animateEnemyHurt();
+        // Update enemy HP bar after each hit
+        enemyRunningHp = Math.max(0, enemyRunningHp - atk.damage);
+        characterUI.updateEnemyHPBar({ current: enemyRunningHp, max: enemyMaxHp });
         await delay(600);
       }
     }
 
-    // Update enemy HP bar
-    if (result.enemies?.[0]) {
-      const enemy = result.enemies[0];
-      characterUI.updateEnemyHPBar({ current: enemy.hp, max: enemy.maxHp });
+    // Build a map of ally HP before enemy attacks for progressive updates
+    const allyHpMap = {};
+    if (result.allies) {
+      for (const ally of result.allies) {
+        // Reconstruct pre-enemy-attack HP by adding back enemy damage dealt to this ally
+        const dmgToThisAlly = (result.enemyAttacks || [])
+          .filter(a => a.targetId === ally.id)
+          .reduce((sum, a) => sum + a.damage, 0);
+        allyHpMap[ally.id] = { hp: ally.hp + dmgToThisAlly, maxHp: ally.maxHp };
+      }
     }
 
-    // Show enemy robot attacks (processed server-side in the same cycle)
+    // Show enemy robot attacks with real-time ally HP updates
     if (result.enemyAttacks?.length > 0) {
       await delay(400);
       for (const atk of result.enemyAttacks) {
@@ -773,15 +816,40 @@ async function executeRobotPlayerAttack() {
         showDamageNumber(atk.damage, true, false);
         animatePlayerHurt();
         playSFX('player-hit');
+        // Update targeted ally's running HP in the DOM directly (avoid full updateUI)
+        if (allyHpMap[atk.targetId]) {
+          allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
+        }
+        updateRobotHpBars(result.robotParty?.active, allyHpMap);
         await delay(600);
       }
     }
 
-    // Update robot party state (HP changes, KO swaps)
-    if (result.robotParty) {
-      const gs = getGameState();
-      updateGameState({ ...gs, run: { ...gs.run, robotParty: result.robotParty } });
-      updateUI();
+    // Final state update with server-authoritative values (no updateUI to avoid DOM rebuild flicker)
+    if (result.robotParty || result.enemies) {
+      const updates = { ...gs };
+      if (result.robotParty) {
+        updates.run = { ...gs.run, robotParty: result.robotParty };
+      }
+      if (result.enemies && gs.combat) {
+        updates.combat = { ...gs.combat, enemies: result.enemies, allies: result.allies || gs.combat.allies };
+      }
+      updateGameState(updates);
+      // Set final HP bars without full DOM rebuild
+      if (result.enemies?.[0]) {
+        characterUI.updateEnemyHPBar({ current: result.enemies[0].hp, max: result.enemies[0].maxHp });
+      }
+      updateRobotHpBars(result.robotParty?.active, null);
+    }
+
+    // Update chip charges (increment each cycle in robot combat too)
+    if (result.chipCharges) {
+      const cache = getChipLoadoutCache();
+      if (cache) {
+        cache.chipCharges = result.chipCharges;
+        setChipLoadoutCache(cache);
+        updateActionPanel();
+      }
     }
 
     // Check combat end
@@ -850,7 +918,19 @@ async function executeRobotDefendThenPause() {
     }
     await delay(600);
 
-    // Show enemy attacks (50% damage already applied server-side)
+    // Build ally HP map for progressive updates during enemy attacks
+    const gs = getGameState();
+    const allyHpMap = {};
+    if (result.allies) {
+      for (const ally of result.allies) {
+        const dmgToThisAlly = (result.enemyAttacks || [])
+          .filter(a => a.targetId === ally.id)
+          .reduce((sum, a) => sum + a.damage, 0);
+        allyHpMap[ally.id] = { hp: ally.hp + dmgToThisAlly, maxHp: ally.maxHp };
+      }
+    }
+
+    // Show enemy attacks (50% damage already applied server-side) with real-time HP
     if (result.enemyAttacks?.length > 0) {
       for (const atk of result.enemyAttacks) {
         const actionArea2 = document.getElementById('action-area');
@@ -860,6 +940,11 @@ async function executeRobotDefendThenPause() {
         showDamageNumber(atk.damage, true, false);
         animatePlayerHurt();
         playSFX('player-hit');
+        // Update targeted ally's running HP in the DOM directly (avoid full updateUI)
+        if (allyHpMap[atk.targetId]) {
+          allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
+        }
+        updateRobotHpBars(result.robotParty?.active, allyHpMap);
         await delay(600);
       }
     }
@@ -870,11 +955,28 @@ async function executeRobotDefendThenPause() {
       characterUI.updateEnemyHPBar({ current: enemy.hp, max: enemy.maxHp });
     }
 
-    // Update robot slots (charges changed, HP changed from enemy attacks)
-    if (result.robotParty) {
-      const gs = getGameState();
-      updateGameState({ ...gs, run: { ...gs.run, robotParty: result.robotParty } });
-      updateUI();
+    // Final state update with server-authoritative values (no updateUI to avoid DOM rebuild flicker)
+    if (result.robotParty || result.enemies) {
+      const updates = { ...gs };
+      if (result.robotParty) {
+        updates.run = { ...gs.run, robotParty: result.robotParty };
+      }
+      if (result.enemies && gs.combat) {
+        updates.combat = { ...gs.combat, enemies: result.enemies, allies: result.allies || gs.combat.allies };
+      }
+      updateGameState(updates);
+      // Set final robot HP bars without full DOM rebuild
+      updateRobotHpBars(result.robotParty?.active, null);
+    }
+
+    // Update chip charges
+    if (result.chipCharges) {
+      const cache = getChipLoadoutCache();
+      if (cache) {
+        cache.chipCharges = result.chipCharges;
+        setChipLoadoutCache(cache);
+        updateActionPanel();
+      }
     }
 
     // Check combat end

@@ -6,7 +6,7 @@
     "element": "wood",
     "rarity": "common",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "リーフ",
       "nameEn": "Leaf",
@@ -28,7 +28,7 @@
     "element": "wood",
     "rarity": "uncommon",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "つるウィップ",
       "nameEn": "Vine Whip",
@@ -50,7 +50,7 @@
     "element": "wood",
     "rarity": "rare",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "ソーンランス",
       "nameEn": "Thorn Lance",
@@ -72,7 +72,7 @@
     "element": "wood",
     "rarity": "epic",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "根の拘束",
       "nameEn": "Root Bind",
@@ -94,7 +94,7 @@
     "element": "wood",
     "rarity": "legendary",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "命の奔流",
       "nameEn": "Life Torrent",
@@ -116,7 +116,7 @@
     "element": "fire",
     "rarity": "common",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "バーン",
       "nameEn": "Burn",
@@ -138,7 +138,7 @@
     "element": "fire",
     "rarity": "uncommon",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "ファイアボール",
       "nameEn": "Fireball",
@@ -160,7 +160,7 @@
     "element": "fire",
     "rarity": "rare",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "火炎弾",
       "nameEn": "Flame Shot",
@@ -182,7 +182,7 @@
     "element": "fire",
     "rarity": "epic",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "溶岩弾",
       "nameEn": "Lava Blast",
@@ -204,7 +204,7 @@
     "element": "fire",
     "rarity": "legendary",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "不死の炎",
       "nameEn": "Undying Flame",
@@ -226,7 +226,7 @@
     "element": "earth",
     "rarity": "common",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "ロックスロー",
       "nameEn": "Rock Throw",
@@ -248,7 +248,7 @@
     "element": "earth",
     "rarity": "uncommon",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "砂嵐",
       "nameEn": "Sandstorm",
@@ -270,7 +270,7 @@
     "element": "earth",
     "rarity": "rare",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "地響き",
       "nameEn": "Tremor",
@@ -292,7 +292,7 @@
     "element": "earth",
     "rarity": "epic",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "重力撃",
       "nameEn": "Gravity Strike",
@@ -314,7 +314,7 @@
     "element": "earth",
     "rarity": "legendary",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "大陸砕き",
       "nameEn": "Continental Crush",
@@ -336,7 +336,7 @@
     "element": "metal",
     "rarity": "common",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "メタルクロー",
       "nameEn": "Metal Claw",
@@ -358,7 +358,7 @@
     "element": "metal",
     "rarity": "uncommon",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "アイアンバレット",
       "nameEn": "Iron Bullet",
@@ -380,7 +380,7 @@
     "element": "metal",
     "rarity": "rare",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "刃旋風",
       "nameEn": "Blade Whirlwind",
@@ -402,7 +402,7 @@
     "element": "metal",
     "rarity": "epic",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "磁力砲",
       "nameEn": "Magnet Cannon",
@@ -424,7 +424,7 @@
     "element": "metal",
     "rarity": "legendary",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "光刃",
       "nameEn": "Light Blade",
@@ -446,7 +446,7 @@
     "element": "water",
     "rarity": "common",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "アクアジェット",
       "nameEn": "Aqua Jet",
@@ -468,7 +468,7 @@
     "element": "water",
     "rarity": "uncommon",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "バブルショット",
       "nameEn": "Bubble Shot",
@@ -490,7 +490,7 @@
     "element": "water",
     "rarity": "rare",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "激流",
       "nameEn": "Torrent",
@@ -512,7 +512,7 @@
     "element": "water",
     "rarity": "epic",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "氷結弾",
       "nameEn": "Freeze Shot",
@@ -534,7 +534,7 @@
     "element": "water",
     "rarity": "legendary",
     "baseHp": 100,
-    "baseAttack": 20,
+    "baseAttack": 10,
     "autoSkill": {
       "name": "深海の牙",
       "nameEn": "Deep Sea Fang",

@@ -63,7 +63,7 @@ import { getRoomActions, generatePostCombatShop, getStartingWardOptions } from '
 import { getItem } from './items.js';
 import { derivePhase } from './phase-machine.js';
 import { CombatService, ExplorationService } from './services/index.js';
-import { calculateChipBonusHP, equipChip } from './items/chips.js';
+import { calculateChipBonusHP, equipChip, incrementAllEquippedCharges } from './items/chips.js';
 import { logger } from '../logger.js';
 import { instantiateRobot, getStarterRobots, generateEnemyRobot } from './robots.js';
 import { processAttackTurn, processDefendTurn, processEnemyTurn, processBefriend, processUltimate, awardBattleXp, handleRobotKO } from './services/robot-combat-service.js';
@@ -915,12 +915,21 @@ export class GameManager {
       awardBattleXp(this.run.robotParty, 100);
       this.combat.active = false;
       this.run.encountersCompleted++;
+      // Mark room as interacted and handle boss defeat
+      const currentRoom = this.run.rooms?.[this.run.currentRoom];
+      if (currentRoom) {
+        currentRoom.interacted = true;
+        if (currentRoom.isBossRoom) {
+          this.run.bossDefeated = true;
+        }
+      }
       this.emitState();
       return {
         actionType,
         playerAttacks: playerResult.attacks || [],
         combatEnded: true,
         victory: true,
+        isBoss: currentRoom?.isBossRoom || false,
         robotParty: this.run.robotParty
       };
     }
@@ -953,6 +962,11 @@ export class GameManager {
       };
     }
 
+    // Increment chip skill charges each combat cycle
+    if (this.run.player) {
+      incrementAllEquippedCharges(this.run.player);
+    }
+
     this.combat.turnCount++;
     this.emitState();
 
@@ -964,7 +978,8 @@ export class GameManager {
       combatEnded: false,
       allies: this.combat.allies,
       enemies: this.combat.enemies,
-      robotParty: this.run.robotParty
+      robotParty: this.run.robotParty,
+      chipCharges: this.run.player?._chipCharges || {}
     };
   }
 

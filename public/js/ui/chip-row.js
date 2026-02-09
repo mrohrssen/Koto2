@@ -49,12 +49,25 @@ export function init({ useSkillCallback, onReorder: reorderCallback, isBlocked: 
 }
 
 /**
+ * Render all 5 chip slots into a specific container
+ * @param {HTMLElement} container - Target container element
+ * @param {Array} chips - Array of 5 chip objects (or null for empty slots)
+ * @param {Object} options - { charges, levels, maxCharges, inCombat }
+ */
+export function renderTo(container, chips, options = {}) {
+  renderInto(container, chips, options);
+}
+
+/**
  * Render all 5 chip slots
  * @param {Array} chips - Array of 5 chip objects (or null for empty slots)
  * @param {Object} options - { charges: [n,n,n,n,n], levels: [n,n,n,n,n], maxCharges: 5 }
  */
 export function render(chips, { charges = [], levels = [], maxCharges = 5, inCombat = false } = {}) {
-  const row = dom.chipRow;
+  renderInto(dom.chipRow, chips, { charges, levels, maxCharges, inCombat });
+}
+
+function renderInto(row, chips, { charges = [], levels = [], maxCharges = 5, inCombat = false } = {}) {
   row.innerHTML = '';
 
   for (let i = 0; i < 5; i++) {
