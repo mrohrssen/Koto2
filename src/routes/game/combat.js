@@ -159,5 +159,56 @@ export default function createCombatRoutes({
     });
   });
 
+  // ============ ROBOT COMBAT ============
+
+  // Start robot encounter
+  router.post('/start-robot-encounter', async (req, res) => {
+    const gameManager = req.gameManager;
+    try {
+      const encounter = gameManager.startRobotEncounter();
+      req.saveGame();
+      res.json({ ...encounter, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Robot combat cycle
+  router.post('/robot-combat-cycle', (req, res) => {
+    const gameManager = req.gameManager;
+    const { actionType } = req.body;
+    try {
+      const result = gameManager.robotCombatCycle(actionType || 'attack');
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Use robot ultimate
+  router.post('/use-robot-ultimate', (req, res) => {
+    const gameManager = req.gameManager;
+    const { robotIndex } = req.body;
+    try {
+      const result = gameManager.useRobotUltimate(robotIndex);
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Get starter robots
+  router.get('/starters', (req, res) => {
+    const gameManager = req.gameManager;
+    try {
+      const starters = gameManager.getStarters();
+      res.json({ starters });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return router;
 }

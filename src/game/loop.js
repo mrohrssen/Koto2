@@ -65,6 +65,8 @@ import { derivePhase } from './phase-machine.js';
 import { CombatService, ExplorationService } from './services/index.js';
 import { calculateChipBonusHP, equipChip } from './items/chips.js';
 import { logger } from '../logger.js';
+import { instantiateRobot, getStarterRobots, generateEnemyRobot } from './robots.js';
+import { processAttackTurn, processDefendTurn, processEnemyTurn, processBefriend, processUltimate, awardBattleXp, handleRobotKO } from './services/robot-combat-service.js';
 
 // ============ GAME MANAGER ============
 
@@ -360,6 +362,7 @@ export class GameManager {
         rooms: this.run.rooms,
         // Counter chip tracking (Phase 10)
         runStats: this.run.runStats,
+        robotParty: this.run.robotParty,
         postCombatShop: this.run.postCombatShop ? {
           active: this.run.postCombatShop.active,
           items: this.run.postCombatShop.items.map(item => {
@@ -426,6 +429,9 @@ export class GameManager {
         turn: this.combat.turn,
         turnCount: this.combat.turnCount,
         enemy: this.combat.enemy,
+        allies: this.combat.allies || [],
+        enemies: this.combat.enemies || [],
+        isRobotCombat: this.combat.isRobotCombat || false,
         intent: this.combat.intent,
         lastAction: this.combat.lastAction
       } : null,
@@ -825,6 +831,174 @@ export class GameManager {
       throw new Error('No pending game victory');
     }
     return this.combatService.handleGameVictory();
+  }
+
+  // ============ ROBOT COMBAT ============
+
+  /**
+   * Start a robot encounter
+   * Generates an enemy robot and sets up combat state
+   */
+  startRobotEncounter() {
+    if (!this.run || !this.run.active) {
+      throw new Error('No active run');
+    }
+    if (this.combat?.active) {
+      throw new Error('Combat already active');
+    }
+
+    const highestLevel = Math.max(...this.run.robotParty.active.map(r => r.level), 1);
+    const enemyRobot = generateEnemyRobot(highestLevel);
+
+    this.combat = createCombatState(enemyRobot);
+    this.combat.allies = this.run.robotParty.active;
+    this.combat.enemies = [enemyRobot];
+    this.combat.isRobotCombat = true;
+
+    this.emitState();
+
+    return {
+      enemy: enemyRobot,
+      allies: this.run.robotParty.active,
+      playerGoesFirst: true
+    };
+  }
+
+  /**
+   * Execute one robot combat cycle
+   * @param {string} actionType - 'attack' | 'defend' | 'befriend'
+   */
+  robotCombatCycle(actionType = 'attack') {
+    if (!this.combat?.active) {
+      throw new Error('No active combat');
+    }
+
+    let playerResult = {};
+    let enemyResult = {};
+    let befriendResult = null;
+    const defendActive = actionType === 'defend';
+
+    // Player phase
+    if (actionType === 'attack') {
+      playerResult = processAttackTurn(this.combat.allies, this.combat.enemies);
+    } else if (actionType === 'defend') {
+      processDefendTurn(this.combat.allies);
+    } else if (actionType === 'befriend') {
+      befriendResult = processBefriend(this.combat.enemies, this.run.robotParty);
+      if (befriendResult.success && befriendResult.allEnemiesDefeated) {
+        // Captured last enemy — victory
+        awardBattleXp(this.run.robotParty, 100);
+        this.combat.active = false;
+        this.run.encountersCompleted++;
+        this.emitState();
+        return {
+          actionType: 'befriend',
+          befriend: befriendResult,
+          combatEnded: true,
+          victory: true,
+          robotParty: this.run.robotParty
+        };
+      }
+    }
+
+    // Check if all enemies defeated after player attack
+    if (playerResult.allEnemiesDefeated) {
+      awardBattleXp(this.run.robotParty, 100);
+      this.combat.active = false;
+      this.run.encountersCompleted++;
+      this.emitState();
+      return {
+        actionType,
+        playerAttacks: playerResult.attacks || [],
+        combatEnded: true,
+        victory: true,
+        robotParty: this.run.robotParty
+      };
+    }
+
+    // Enemy phase
+    enemyResult = processEnemyTurn(this.combat.enemies, this.combat.allies, defendActive);
+
+    // Handle KO'd allies — swap reserves in
+    for (let i = 0; i < this.combat.allies.length; i++) {
+      if (this.combat.allies[i].hp <= 0) {
+        handleRobotKO(this.run.robotParty, i);
+      }
+    }
+    // Refresh allies reference after swaps
+    this.combat.allies = this.run.robotParty.active;
+
+    // Check defeat
+    const allAlliesKO = this.combat.allies.every(a => a.hp <= 0);
+    if (allAlliesKO) {
+      this.combat.active = false;
+      this.run.active = false;
+      this.emitState();
+      return {
+        actionType,
+        playerAttacks: playerResult.attacks || [],
+        enemyAttacks: enemyResult.attacks || [],
+        combatEnded: true,
+        victory: false,
+        robotParty: this.run.robotParty
+      };
+    }
+
+    this.combat.turnCount++;
+    this.emitState();
+
+    return {
+      actionType,
+      playerAttacks: playerResult.attacks || [],
+      enemyAttacks: enemyResult.attacks || [],
+      befriend: befriendResult,
+      combatEnded: false,
+      allies: this.combat.allies,
+      enemies: this.combat.enemies,
+      robotParty: this.run.robotParty
+    };
+  }
+
+  /**
+   * Use a robot's ultimate ability
+   * @param {number} robotIndex - Index in allies array
+   */
+  useRobotUltimate(robotIndex) {
+    if (!this.combat?.active) {
+      throw new Error('No active combat');
+    }
+    const robot = this.combat.allies[robotIndex];
+    if (!robot) {
+      throw new Error('Invalid robot index');
+    }
+
+    const result = processUltimate(robot, this.combat.enemies);
+    if (!result.success) {
+      return result;
+    }
+
+    // Check if all enemies defeated
+    if (result.allEnemiesDefeated) {
+      awardBattleXp(this.run.robotParty, 100);
+      this.combat.active = false;
+      this.run.encountersCompleted++;
+    }
+
+    this.emitState();
+    return {
+      ...result,
+      combatEnded: result.allEnemiesDefeated,
+      victory: result.allEnemiesDefeated ? true : undefined,
+      robotParty: this.run.robotParty,
+      enemies: this.combat.enemies
+    };
+  }
+
+  /**
+   * Get available starter robots
+   */
+  getStarters() {
+    return getStarterRobots();
   }
 
   // ============ UTILITY ============
