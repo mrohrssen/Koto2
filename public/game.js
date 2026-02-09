@@ -252,8 +252,13 @@ function updateStatusBar() {
 function updateScene() {
   if (gameState.phase === 'combat') {
     // Robot combat uses enemies[] array; legacy uses single enemy
-    const enemy = gameState.combat?.enemies?.[0] || gameState.combat?.enemy;
-    if (enemy) scene.showEnemy(enemy);
+    const enemies = gameState.combat?.enemies;
+    if (enemies?.length > 1) {
+      scene.showEnemies(enemies);
+    } else {
+      const enemy = enemies?.[0] || gameState.combat?.enemy;
+      if (enemy) scene.showEnemy(enemy);
+    }
   } else if (gameState.phase === 'shrine') {
     scene.showShrineFox();
   } else if (gameState.phase === 'quiz') {
@@ -263,7 +268,7 @@ function updateScene() {
   } else if (gameState.phase === 'dealer') {
     scene.showDealer();
   } else {
-    scene.hideEnemy();
+    scene.hideEnemies();
   }
   if (gameState.phase === 'shrine') {
     scene.setBackground('/assets/backgrounds/shrine_background.webp');
@@ -1192,7 +1197,7 @@ async function initGame() {
     showDotDamage: (dmg) => scene.showDamageNumber(dmg, { isCrit: false }),
     animateEnemyHurt: () => {},
     animatePlayerHurt: () => {},
-    animateEnemyDefeat: () => scene.hideEnemy(),
+    animateEnemyDefeat: () => scene.hideEnemies(),
     updateActionPanel: () => {},
     playNarrationAudio: () => {},
     showVictoryModal,
