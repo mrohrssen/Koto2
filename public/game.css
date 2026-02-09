@@ -270,9 +270,99 @@ html, body {
 }
 
 .robot-enemy {
-  border: 2px solid;
-  border-radius: 12px;
-  padding: 4px;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  width: 90px;
+  height: 90px;
+  padding-top: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  align-items: center;
+  justify-content: center;
+}
+
+.robot-enemy .enemy-sprite {
+  max-height: 80px;
+  max-width: 80px;
+  border-radius: 50%;
+}
+
+/* Multi-Enemy Row */
+.multi-enemy-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 0;
+}
+
+.enemy-robot-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition: opacity 0.3s;
+}
+
+.enemy-robot-slot.defeated {
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+
+.enemy-robot-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 3px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: var(--bg-dark, #1a1a2e);
+  font-size: 24px;
+}
+
+.enemy-robot-element {
+  font-size: 24px;
+}
+
+.enemy-robot-level {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  font-size: 8px;
+  background: var(--bg-dark, #1a1a2e);
+  color: #ccc;
+  padding: 1px 3px;
+  border-radius: 3px;
+  line-height: 1;
+}
+
+.enemy-robot-name {
+  font-size: 9px;
+  color: #aaa;
+  max-width: 64px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.enemy-robot-hp-bar {
+  width: 50px;
+  height: 4px;
+  background: #333;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.enemy-robot-hp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #F44336, #4CAF50);
+  transition: width 0.3s;
 }
 
 .scene-toast {
@@ -2977,30 +3067,34 @@ html, body {
 }
 
 /* ===== ROBOT SLOTS ===== */
+.chip-row:has(.robot-slot) {
+  gap: 16px;
+  padding: 8px 10px;
+}
+
 .robot-slot {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   cursor: pointer;
 }
 
 .robot-icon {
-  width: 48px;
-  height: 48px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
-  border: 3px solid;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  background: var(--bg-dark, #1a1a2e);
-  font-size: 20px;
+  background: transparent;
+  font-size: 40px;
 }
 
 .robot-icon.empty {
-  border-color: #333;
-  background: transparent;
+  display: none;
 }
 
 .robot-icon.ko {
@@ -3030,12 +3124,12 @@ html, body {
 }
 
 .robot-element-icon {
-  font-size: 20px;
+  font-size: 48px;
 }
 
 .robot-hp-bar {
-  width: 44px;
-  height: 4px;
+  width: 64px;
+  height: 5px;
   background: #333;
   border-radius: 2px;
   overflow: hidden;
@@ -3053,8 +3147,8 @@ html, body {
 }
 
 .charge-segment {
-  width: 7px;
-  height: 3px;
+  width: 9px;
+  height: 4px;
   background: #333;
   border-radius: 1px;
 }

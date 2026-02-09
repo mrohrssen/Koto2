@@ -86,6 +86,80 @@ export function showEnemy(enemy) {
   };
 }
 
+/** Show multiple enemy robots in horizontal row */
+export function showEnemies(enemies) {
+  if (!enemies || enemies.length === 0) {
+    hideEnemy();
+    return;
+  }
+  if (enemies.length === 1) {
+    showEnemy(enemies[0]);
+    return;
+  }
+
+  // Clear existing single-enemy display
+  dom.enemySprite.classList.remove('visible');
+  removePlaceholder();
+  dom.enemyInfo.classList.add('visible');
+  dom.enemyHpBar.style.display = 'none';
+  dom.enemyName.textContent = '';
+
+  // Remove any previous multi-enemy container
+  dom.enemySpriteContainer.querySelector('.multi-enemy-row')?.remove();
+
+  const row = document.createElement('div');
+  row.className = 'multi-enemy-row';
+
+  for (let i = 0; i < enemies.length; i++) {
+    const enemy = enemies[i];
+    const icon = ELEMENT_ICONS[enemy.element] || '';
+    const color = ELEMENT_COLORS[enemy.element] || '#666';
+    const hpPct = Math.max(0, (enemy.hp / enemy.maxHp) * 100);
+
+    const slot = document.createElement('div');
+    slot.className = 'enemy-robot-slot';
+    slot.dataset.enemyIndex = i;
+    slot.innerHTML = `
+      <div class="enemy-robot-icon" style="border-color: ${color}">
+        <span class="enemy-robot-element">${icon}</span>
+        <span class="enemy-robot-level">Lv${enemy.level || 1}</span>
+      </div>
+      <div class="enemy-robot-name">${enemy.nameEn || enemy.name}</div>
+      <div class="enemy-robot-hp-bar">
+        <div class="enemy-robot-hp-fill" style="width: ${hpPct}%"></div>
+      </div>
+    `;
+    row.appendChild(slot);
+  }
+
+  dom.enemySpriteContainer.appendChild(row);
+}
+
+/** Update HP bar for a specific enemy by index (multi-enemy) */
+export function updateEnemyHPAtIndex(index, current, max) {
+  const slot = dom.enemySpriteContainer.querySelector(`.enemy-robot-slot[data-enemy-index="${index}"]`);
+  if (!slot) {
+    // Fallback to single-enemy update
+    updateEnemyHP(current, max);
+    return;
+  }
+  const fill = slot.querySelector('.enemy-robot-hp-fill');
+  if (fill) {
+    const pct = Math.max(0, Math.min(100, (current / max) * 100));
+    fill.style.width = `${pct}%`;
+  }
+  // Mark defeated
+  if (current <= 0) {
+    slot.classList.add('defeated');
+  }
+}
+
+/** Hide all enemies (single and multi) */
+export function hideEnemies() {
+  hideEnemy();
+  dom.enemySpriteContainer.querySelector('.multi-enemy-row')?.remove();
+}
+
 function showPlaceholder(enemy) {
   removePlaceholder();
   const el = document.createElement('div');
@@ -101,7 +175,7 @@ function showRobotPlaceholder(enemy) {
   const el = document.createElement('div');
   el.id = 'enemy-placeholder';
   const color = ELEMENT_COLORS[enemy.element] || '#666';
-  el.style.cssText = `width:120px;height:120px;border-radius:50%;background:${color}22;border:3px solid ${color};display:flex;align-items:center;justify-content:center;font-size:48px;z-index:2;position:relative;`;
+  el.style.cssText = `width:90px;height:90px;border-radius:50%;background:transparent;border:none;display:flex;align-items:center;justify-content:center;font-size:48px;z-index:2;position:relative;`;
   el.textContent = ELEMENT_ICONS[enemy.element] || '\u{1F916}';
   dom.enemySpriteContainer.appendChild(el);
 }
