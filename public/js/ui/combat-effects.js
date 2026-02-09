@@ -440,6 +440,78 @@ export async function playerHitEffect(damage, hpBarEl, chipRowEl) {
   }
 }
 
+// ============ ROBOT COMBAT EFFECTS ============
+
+/** Element color mapping for robot attack orbs */
+const ELEMENT_COLORS = {
+  wood: '#4CAF50',
+  fire: '#F44336',
+  earth: '#8D6E63',
+  metal: '#9E9E9E',
+  water: '#2196F3'
+};
+
+/**
+ * Fire element-colored energy orbs from an allied robot to the enemy.
+ * Reuses spawnSpeedLines for the projectile, plus pop and particle burst.
+ * @param {Element} robotSlotEl - The .robot-slot element that is attacking
+ * @param {Element} enemyEl - The enemy sprite element
+ * @param {string} element - Robot element ('fire', 'water', 'wood', 'earth', 'metal')
+ * @param {number} damage - Damage dealt (for tier-based impact)
+ * @param {number} enemyMaxHp - Enemy max HP (for tier calculation)
+ */
+export async function fireRobotAttackEffect(robotSlotEl, enemyEl, element, damage = 0, enemyMaxHp = 0) {
+  if (!robotSlotEl || !enemyEl) return;
+
+  const color = ELEMENT_COLORS[element] || '#fff';
+
+  // 1. Robot icon pops
+  const icon = robotSlotEl.querySelector('.robot-icon');
+  if (icon) pop(icon, 1.4);
+
+  // 2. Fire element-colored orbs from robot to enemy
+  spawnSpeedLines(robotSlotEl, enemyEl, 3, color);
+
+  // 3. Particles burst from robot in element color
+  spawnParticles(robotSlotEl, 4, color);
+
+  // 4. Wait for orbs to arrive, then impact
+  await delay(350);
+
+  // 5. Enemy impact effects (tiered by damage)
+  await impactEnemyEffect(damage, enemyEl, enemyMaxHp);
+}
+
+/**
+ * Fire element-colored energy orbs from the enemy to a targeted allied robot.
+ * @param {Element} enemyEl - The enemy sprite element
+ * @param {Element} robotSlotEl - The targeted .robot-slot element
+ * @param {string} element - Enemy robot element
+ * @param {number} damage - Damage dealt
+ */
+export async function enemyRobotAttackEffect(enemyEl, robotSlotEl, element, damage = 0) {
+  if (!enemyEl || !robotSlotEl) return;
+
+  const color = ELEMENT_COLORS[element] || '#fff';
+
+  // 1. Fire element-colored orbs from enemy to robot
+  spawnSpeedLines(enemyEl, robotSlotEl, 2, color);
+
+  // 2. Particles burst from enemy in element color
+  spawnParticles(enemyEl, 3, color);
+
+  // 3. Wait for orbs to arrive
+  await delay(300);
+
+  // 4. Flash the targeted robot
+  const icon = robotSlotEl.querySelector('.robot-icon');
+  if (icon) flashElement(icon);
+
+  // 5. Screen shake + vignette
+  screenShake('medium');
+  showVignette(200);
+}
+
 /**
  * Check if HP is critical and add pulse effect
  * @param {Element} hpBarEl - HP bar fill element

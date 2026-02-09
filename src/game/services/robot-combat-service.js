@@ -23,6 +23,7 @@ export function processAttackTurn(allies, enemies) {
     attacks.push({
       attackerId: robot.id,
       attackerName: robot.nameEn,
+      attackerElement: robot.element,
       targetId: target.id,
       targetName: target.nameEn,
       damage,
@@ -74,6 +75,7 @@ export function processEnemyTurn(enemies, allies, defendActive = false) {
     attacks.push({
       attackerId: enemy.id,
       attackerName: enemy.nameEn,
+      attackerElement: enemy.element,
       targetId: target.id,
       targetName: target.nameEn,
       damage,

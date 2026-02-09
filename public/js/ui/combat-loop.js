@@ -38,7 +38,9 @@ import {
   updateHpCriticalState,
   delay as effectDelay,
   getDamageTier,
-  getTierClassName
+  getTierClassName,
+  fireRobotAttackEffect,
+  enemyRobotAttackEffect
 } from './combat-effects.js';
 
 // ============ MODULE STATE ============
@@ -502,6 +504,24 @@ function showChipTooltip(chipIndex, text) {
 }
 
 /**
+ * Find a robot slot element by robot ID (matches against game state).
+ * Works for both allied robot slots (attacker) and targeted robot slots.
+ * @param {string} robotId - The robot's ID
+ * @returns {Element|null} The .robot-slot DOM element, or null
+ */
+function findRobotSlotByAttackerId(robotId) {
+  const state = getGameState();
+  const activeRobots = state.run?.robotParty?.active;
+  if (!activeRobots) return null;
+
+  const index = activeRobots.findIndex(r => r && r.id === robotId);
+  if (index < 0) return null;
+
+  const slots = document.querySelectorAll('#chip-row .robot-slot');
+  return slots[index] || null;
+}
+
+/**
  * Directly update robot HP bar widths in the DOM without triggering full updateUI.
  * This avoids resetting enemy HP bars from stale game state during animations.
  * @param {Array} robots - The robot party active array (with final HP from server)
@@ -792,20 +812,32 @@ async function executeRobotPlayerAttack() {
 
     // Show each allied robot's attack result sequentially with real-time HP
     if (result.playerAttacks?.length > 0) {
-      playSFX('attack');
-      for (const atk of result.playerAttacks) {
+      for (let atkIdx = 0; atkIdx < result.playerAttacks.length; atkIdx++) {
+        const atk = result.playerAttacks[atkIdx];
         const effectiveness = atk.elementMultiplier > 1 ? ' (super effective!)' :
                               atk.elementMultiplier < 1 ? ' (not very effective...)' : '';
         const actionArea = document.getElementById('action-area');
         if (actionArea) {
           actionArea.innerHTML = `<div class="combat-robot-attack">${atk.attackerName} deals <strong>${atk.damage}</strong> damage${effectiveness}</div>`;
         }
+        playSFX('attack');
+
+        // Find the robot slot element for this attacker
+        const robotSlotEl = findRobotSlotByAttackerId(atk.attackerId);
+        const enemyEl = document.getElementById('enemy-sprite-container');
+
+        // Fire element-colored orb from robot to enemy with impact effects
+        if (robotSlotEl && enemyEl && atk.attackerElement) {
+          await fireRobotAttackEffect(robotSlotEl, enemyEl, atk.attackerElement, atk.damage, enemyMaxHp);
+        } else {
+          animateEnemyHurt();
+        }
+
         showDamageNumber(atk.damage, false, false);
-        animateEnemyHurt();
         // Update enemy HP bar after each hit
         enemyRunningHp = Math.max(0, enemyRunningHp - atk.damage);
         characterUI.updateEnemyHPBar({ current: enemyRunningHp, max: enemyMaxHp });
-        await delay(600);
+        await delay(400);
       }
     }
 
@@ -832,14 +864,23 @@ async function executeRobotPlayerAttack() {
           actionArea.innerHTML = `<div class="combat-robot-attack enemy">${atk.attackerName} deals <strong>${atk.damage}</strong>${effectiveness}</div>`;
         }
         showDamageNumber(atk.damage, true, false);
-        animatePlayerHurt();
         playSFX('player-hit');
+
+        // Fire element-colored orb from enemy to targeted robot
+        const enemyEl = document.getElementById('enemy-sprite-container');
+        const targetSlotEl = findRobotSlotByAttackerId(atk.targetId);
+        if (enemyEl && targetSlotEl && atk.attackerElement) {
+          await enemyRobotAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
+        } else {
+          animatePlayerHurt();
+        }
+
         // Update targeted ally's running HP in the DOM directly (avoid full updateUI)
         if (allyHpMap[atk.targetId]) {
           allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
         }
         updateRobotHpBars(result.robotParty?.active, allyHpMap);
-        await delay(600);
+        await delay(400);
       }
     }
 
@@ -956,14 +997,23 @@ async function executeRobotDefendThenPause() {
           actionArea2.innerHTML = `<div class="combat-robot-attack enemy">${atk.attackerName} deals <strong>${atk.damage}</strong> (halved)</div>`;
         }
         showDamageNumber(atk.damage, true, false);
-        animatePlayerHurt();
         playSFX('player-hit');
+
+        // Fire element-colored orb from enemy to targeted robot
+        const enemyEl = document.getElementById('enemy-sprite-container');
+        const targetSlotEl = findRobotSlotByAttackerId(atk.targetId);
+        if (enemyEl && targetSlotEl && atk.attackerElement) {
+          await enemyRobotAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
+        } else {
+          animatePlayerHurt();
+        }
+
         // Update targeted ally's running HP in the DOM directly (avoid full updateUI)
         if (allyHpMap[atk.targetId]) {
           allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
         }
         updateRobotHpBars(result.robotParty?.active, allyHpMap);
-        await delay(600);
+        await delay(400);
       }
     }
 
