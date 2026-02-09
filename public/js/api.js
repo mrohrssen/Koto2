@@ -698,6 +698,14 @@ async function getStarters() {
   return apiCall('/starters', 'GET');
 }
 
+async function rollPostCombatShop() {
+  return apiCall('/robot-shop-roll', 'POST');
+}
+
+async function selectShopItem(itemIndex) {
+  return apiCall('/robot-shop-select', 'POST', { itemIndex });
+}
+
 export {
   apiCall,
   isApiLoading,
@@ -734,6 +742,8 @@ export {
   robotCombatCycle,
   useRobotUltimate,
   getStarters,
+  rollPostCombatShop,
+  selectShopItem,
   // Shop/economy endpoints
   claimStartingChip,
   startingChipRefresh,

@@ -3251,3 +3251,67 @@ html, body {
   color: var(--accent-gold, #FFD700);
   margin-top: 2px;
 }
+
+/* Post-Combat Shop */
+.post-combat-shop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+}
+
+.shop-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--accent-gold, #FFD700);
+}
+
+.shop-items {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.shop-item-card {
+  flex: 1;
+  max-width: 120px;
+  background: var(--bg-dark, #1a1a2e);
+  border: 2px solid #333;
+  border-radius: 8px;
+  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.1s;
+}
+
+.shop-item-card:active {
+  transform: scale(0.97);
+}
+
+.shop-item-card.selected {
+  border-color: var(--accent-gold, #FFD700);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+}
+
+.shop-item-icon {
+  font-size: 28px;
+}
+
+.shop-item-name {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--text-primary, #eee);
+  text-align: center;
+}
+
+.shop-item-desc {
+  font-size: 9px;
+  color: #aaa;
+  text-align: center;
+  line-height: 1.3;
+}
