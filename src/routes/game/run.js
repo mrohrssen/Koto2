@@ -39,8 +39,9 @@ export default function createRunRoutes({
   // Start a new run
   router.post('/start-run', async (req, res) => {
     const gameManager = req.gameManager;
+    const { starterId } = req.body;
     try {
-      gameManager.startRun();
+      gameManager.startRun(null, starterId);
 
       const narration = await generateGameNarration('runStart', {
         player: gameManager.run.player
@@ -74,7 +75,7 @@ export default function createRunRoutes({
   router.post('/levels/select', async (req, res) => {
     const gameManager = req.gameManager;
     try {
-      const { levelId } = req.body;
+      const { levelId, starterId } = req.body;
       if (!levelId || typeof levelId !== 'number') {
         return res.status(400).json({ error: 'levelId (number) required' });
       }
@@ -90,7 +91,7 @@ export default function createRunRoutes({
         return res.status(400).json({ error: 'A run is already active' });
       }
 
-      gameManager.startRun(levelId);
+      gameManager.startRun(levelId, starterId);
 
       const narration = await generateGameNarration('runStart', {
         player: gameManager.run.player

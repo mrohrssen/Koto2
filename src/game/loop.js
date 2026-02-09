@@ -487,7 +487,7 @@ export class GameManager {
   /**
    * Start a new dungeon run
    */
-  startRun(levelId = null) {
+  startRun(levelId = null, starterId = null) {
     if (!this.player) {
       throw new Error('No player exists');
     }
@@ -517,6 +517,12 @@ export class GameManager {
 
     // Ward selection is required at start
     this.run.wardSelectionRequired = true;
+
+    // Initialize robot starter if provided
+    if (starterId) {
+      const starter = instantiateRobot(starterId);
+      this.run.robotParty.active = [starter];
+    }
 
     // Generate starting chip choices (common only for starting shop)
     const ownedChipIds = (this.run.player.chips || []).map(c => c.id);
