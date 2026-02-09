@@ -8,7 +8,8 @@ import {
   calculateRobotDamage,
   addXpToRobot,
   getStatsForLevel,
-  selectTarget
+  selectTarget,
+  generateEnemyRobots
 } from '../../src/game/robots.js';
 
 describe('Element Cycle', () => {
@@ -128,5 +129,28 @@ describe('Targeting AI', () => {
     ];
     const target = selectTarget(attacker, targets);
     assert.strictEqual(target.hp, 20);
+  });
+});
+
+describe('Multi-Enemy Generation', () => {
+  it('generates 1-3 enemy robots', () => {
+    const enemies = generateEnemyRobots(1);
+    assert.ok(enemies.length >= 1 && enemies.length <= 3);
+    for (const e of enemies) {
+      assert.ok(e.element);
+      assert.ok(e.hp > 0);
+      assert.ok(e.maxHp > 0);
+    }
+  });
+
+  it('each enemy is independently generated', () => {
+    // Run multiple times to check variety
+    const results = [];
+    for (let i = 0; i < 20; i++) {
+      results.push(generateEnemyRobots(1));
+    }
+    // At least one result should have >1 enemy
+    const hasMultiple = results.some(r => r.length > 1);
+    assert.ok(hasMultiple, 'Expected at least one multi-enemy encounter in 20 rolls');
   });
 });

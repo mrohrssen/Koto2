@@ -142,6 +142,29 @@ export function generateEnemyRobot(highestAllyLevel = 1) {
   return robot;
 }
 
+const ENEMY_COUNT_WEIGHTS = [
+  { count: 1, weight: 60 },
+  { count: 2, weight: 30 },
+  { count: 3, weight: 10 }
+];
+
+export function generateEnemyRobots(highestAllyLevel = 1) {
+  // Roll enemy count
+  const totalWeight = ENEMY_COUNT_WEIGHTS.reduce((s, w) => s + w.weight, 0);
+  let roll = Math.random() * totalWeight;
+  let enemyCount = 1;
+  for (const { count, weight } of ENEMY_COUNT_WEIGHTS) {
+    roll -= weight;
+    if (roll <= 0) { enemyCount = count; break; }
+  }
+
+  const enemies = [];
+  for (let i = 0; i < enemyCount; i++) {
+    enemies.push(generateEnemyRobot(highestAllyLevel));
+  }
+  return enemies;
+}
+
 export function getAllRobots() {
   return ROBOT_DATA;
 }
