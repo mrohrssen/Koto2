@@ -678,6 +678,24 @@ async function completeDiscovery() {
   return apiCall('/complete-discovery', 'POST');
 }
 
+// ============ ROBOT COMBAT ============
+
+async function startRobotEncounter() {
+  return apiCall('/start-robot-encounter', 'POST');
+}
+
+async function robotCombatCycle(actionType) {
+  return apiCall('/robot-combat-cycle', 'POST', { actionType });
+}
+
+async function useRobotUltimate(robotIndex) {
+  return apiCall('/use-robot-ultimate', 'POST', { robotIndex });
+}
+
+async function getStarters() {
+  return apiCall('/starters', 'GET');
+}
+
 export {
   apiCall,
   isApiLoading,
@@ -710,6 +728,10 @@ export {
   // Combat endpoints
   startEncounter,
   startBoss,
+  startRobotEncounter,
+  robotCombatCycle,
+  useRobotUltimate,
+  getStarters,
   // Shop/economy endpoints
   claimStartingChip,
   startingChipRefresh,

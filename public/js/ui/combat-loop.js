@@ -78,6 +78,7 @@ let getEnemyDialogueActive = null;
 let getDialogueDismissPromise = null;
 let showFlashCard = null;
 let showDualFlashCards = null;
+let showTripleFlashCards = null;
 let setCombatAnimationActive = null;
 
 // Utility
@@ -115,6 +116,7 @@ export function init(callbacks) {
   getDialogueDismissPromise = callbacks.getDialogueDismissPromise;
   showFlashCard = callbacks.showFlashCard;
   showDualFlashCards = callbacks.showDualFlashCards;
+  showTripleFlashCards = callbacks.showTripleFlashCards;
 
   // Utility
   delay = callbacks.delay;
@@ -177,7 +179,27 @@ function showNextDualCardsFromQueue() {
     return;
   }
 
-  if (showDualFlashCards) {
+  // Check if befriend is available (enemy robot <=30% HP and party not full)
+  const state = getGameState();
+  const isRobotCombat = state.combat?.isRobotCombat;
+  const enemy = state.combat?.enemies?.[0];
+  const party = state.run?.robotParty;
+  const befriendAvailable = isRobotCombat && enemy &&
+    enemy.hp > 0 &&
+    (enemy.hp / enemy.maxHp) <= 0.3 &&
+    party &&
+    (party.active.length + party.reserves.length) < party.maxTotal;
+
+  if (befriendAvailable && showTripleFlashCards) {
+    // Get a third word for the befriend card
+    const thirdWord = wordPractice.getNextCombatWord?.();
+    if (thirdWord) {
+      showTripleFlashCards(words.attackWord, words.defendWord, thirdWord);
+    } else {
+      // Not enough words for triple, fall back to dual
+      showDualFlashCards(words.attackWord, words.defendWord);
+    }
+  } else if (showDualFlashCards) {
     showDualFlashCards(words.attackWord, words.defendWord);
   }
 }

@@ -88,6 +88,7 @@ import * as actions from './js/ui/actions.js';
 import * as takeover from './js/ui/takeover.js';
 import * as hpBar from './js/ui/hp-bar.js';
 import * as chipRow from './js/ui/chip-row.js';
+import * as robotRow from './js/ui/robot-row.js';
 import * as scene from './js/ui/scene.js';
 import * as audio from './js/audio.js';
 import * as auth from './js/ui/auth.js';
@@ -145,7 +146,11 @@ import {
   getDealerState as apiGetDealerState,
   dealerSell as apiDealerSell,
   dealerBuy as apiDealerBuy,
-  dealerLeave as apiDealerLeave
+  dealerLeave as apiDealerLeave,
+  startRobotEncounter as apiStartRobotEncounter,
+  robotCombatCycle as apiRobotCombatCycle,
+  useRobotUltimate as apiUseRobotUltimate,
+  getStarters as apiGetStarters,
 } from './js/api.js';
 
 const API_BASE = '';
@@ -274,6 +279,12 @@ function updateScene() {
 }
 
 function updateChipRow() {
+  // If robot party exists and has active robots, render robot slots instead
+  if (gameState.run?.robotParty?.active?.length > 0) {
+    robotRow.render(gameState.run.robotParty.active);
+    return;
+  }
+
   // Prefer enriched chip objects from loadout cache (has name, rarity, skill info)
   // Fall back to raw game state (which only has chip ID strings)
   const cacheChips = chipLoadoutCache?.equipment?.weapon?.equippedChips;
@@ -664,6 +675,18 @@ function shouldUsePhaser() {
   return false; // Phaser disabled - using VN-style backgrounds instead
 }
 
+// ============ ROBOT COMBAT HANDLERS ============
+async function handleUseRobotUltimate(robotIndex) {
+  const result = await apiUseRobotUltimate(robotIndex);
+  if (result?.state) {
+    updateGameState(result.state);
+    updateUI();
+  }
+  if (result?.combatEnded && result?.victory) {
+    combatLoopUI.stopCombatLoop({ combatEnded: true, victory: true });
+  }
+}
+
 // ============ CHIP HANDLERS ============
 async function openChipEquipView() {
   takeover.open('chipEquip');
@@ -931,14 +954,10 @@ async function initGame() {
       window._pendingCombatWord = selectedWord;
       console.log('[JPDB Review] dualCardSelect - stored word:', { actionType, selectedWord, hasVid: selectedWord?.vid !== undefined, hasSid: selectedWord?.sid !== undefined });
 
-      // Get both words to return the unchosen one
+      // Return unchosen words to pool
       const words = wordPractice.getTwoCombatWords();
-      const unchosenWord = actionType === 'attack' ? words.defendWord : words.attackWord;
-
-      // Return unchosen word to pool
-      if (unchosenWord) {
-        wordPractice.returnWordToPool(unchosenWord);
-      }
+      if (actionType !== 'attack' && words?.attackWord) wordPractice.returnWordToPool(words.attackWord);
+      if (actionType !== 'defend' && words?.defendWord) wordPractice.returnWordToPool(words.defendWord);
 
       // Remove selected word from queue
       wordPractice.removeWordFromCombatQueue(selectedWord);
@@ -952,6 +971,10 @@ async function initGame() {
     onReorder: handleChipReorder,
     isBlocked: isChipActionBlocked,
     getChipIds: getChipIds
+  });
+
+  robotRow.init({
+    useUltimateCallback: handleUseRobotUltimate,
   });
 
   wordPractice.init({
@@ -1071,6 +1094,7 @@ async function initGame() {
       actions.showFlashCard(word);
     },
     showDualFlashCards: actions.showDualFlashCards,
+    showTripleFlashCards: actions.showTripleFlashCards,
     setCombatAnimationActive: (active) => { combatAnimationActive = active; },
   });
 
