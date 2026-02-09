@@ -304,6 +304,16 @@ export function createNewRun(player) {
       maxTotal: 6
     },
 
+    // Item buff stacking (run-scoped)
+    itemBuffs: {
+      attackMult: 1.0,
+      hpMult: 1.0,
+      autoPowerMult: 1.0,
+      ultimatePowerMult: 1.0,
+      elementEdge: 0,
+      flatDamageReduction: 0
+    },
+
     // Run history for DM context
     eventLog: [],
 

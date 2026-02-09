@@ -6,8 +6,15 @@ import {
   addXpToRobot,
   generateEnemyRobot
 } from '../robots.js';
+import {
+  getBuffedAttack,
+  getBuffedAutoPower,
+  getBuffedUltimatePower,
+  getBuffedElementMultiplier,
+  applyDamageReduction
+} from './item-service.js';
 
-export function processAttackTurn(allies, enemies) {
+export function processAttackTurn(allies, enemies, itemBuffs = null) {
   const attacks = [];
   for (const robot of allies) {
     if (robot.hp <= 0) continue;
@@ -17,7 +24,10 @@ export function processAttackTurn(allies, enemies) {
     const target = selectTarget(robot, aliveEnemies);
     const elemMult = getElementMultiplier(robot.autoSkill.element, target.element);
     const variance = rollVariance();
-    const damage = calculateRobotDamage(robot.attack, robot.autoSkill.power, elemMult, variance);
+    const buffedAttack = itemBuffs ? getBuffedAttack(robot.attack, itemBuffs) : robot.attack;
+    const buffedPower = itemBuffs ? getBuffedAutoPower(robot.autoSkill.power, itemBuffs) : robot.autoSkill.power;
+    const buffedElemMult = itemBuffs ? getBuffedElementMultiplier(elemMult, itemBuffs) : elemMult;
+    const damage = calculateRobotDamage(buffedAttack, buffedPower, buffedElemMult, variance);
     target.hp = Math.max(0, target.hp - damage);
 
     attacks.push({
@@ -54,7 +64,7 @@ export function processDefendTurn(allies) {
   }
 }
 
-export function processEnemyTurn(enemies, allies, defendActive = false) {
+export function processEnemyTurn(enemies, allies, defendActive = false, itemBuffs = null) {
   const attacks = [];
   for (const enemy of enemies) {
     if (enemy.hp <= 0) continue;
@@ -68,6 +78,9 @@ export function processEnemyTurn(enemies, allies, defendActive = false) {
 
     if (defendActive) {
       damage = Math.floor(damage * 0.5);
+    }
+    if (itemBuffs) {
+      damage = applyDamageReduction(damage, itemBuffs);
     }
 
     target.hp = Math.max(0, target.hp - damage);
@@ -120,7 +133,7 @@ export function processBefriend(enemies, robotParty) {
   };
 }
 
-export function processUltimate(robot, enemies) {
+export function processUltimate(robot, enemies, itemBuffs = null) {
   if (robot.ultimate.charges < robot.ultimate.chargesRequired) {
     return { success: false, reason: 'Not enough charges' };
   }
@@ -130,7 +143,10 @@ export function processUltimate(robot, enemies) {
     if (enemy.hp <= 0) continue;
     const elemMult = getElementMultiplier(robot.ultimate.element, enemy.element);
     const variance = rollVariance();
-    const damage = calculateRobotDamage(robot.attack, robot.ultimate.power, elemMult, variance);
+    const buffedAttack = itemBuffs ? getBuffedAttack(robot.attack, itemBuffs) : robot.attack;
+    const buffedPower = itemBuffs ? getBuffedUltimatePower(robot.ultimate.power, itemBuffs) : robot.ultimate.power;
+    const buffedElemMult = itemBuffs ? getBuffedElementMultiplier(elemMult, itemBuffs) : elemMult;
+    const damage = calculateRobotDamage(buffedAttack, buffedPower, buffedElemMult, variance);
     enemy.hp = Math.max(0, enemy.hp - damage);
     hits.push({
       targetId: enemy.id,

@@ -890,7 +890,7 @@ export class GameManager {
 
     // Player phase
     if (actionType === 'attack') {
-      playerResult = processAttackTurn(this.combat.allies, this.combat.enemies);
+      playerResult = processAttackTurn(this.combat.allies, this.combat.enemies, this.run.itemBuffs);
     } else if (actionType === 'defend') {
       processDefendTurn(this.combat.allies);
     } else if (actionType === 'befriend') {
@@ -936,7 +936,7 @@ export class GameManager {
     }
 
     // Enemy phase
-    enemyResult = processEnemyTurn(this.combat.enemies, this.combat.allies, defendActive);
+    enemyResult = processEnemyTurn(this.combat.enemies, this.combat.allies, defendActive, this.run.itemBuffs);
 
     // Handle KO'd allies — swap reserves in
     for (let i = 0; i < this.combat.allies.length; i++) {
@@ -997,7 +997,7 @@ export class GameManager {
       throw new Error('Invalid robot index');
     }
 
-    const result = processUltimate(robot, this.combat.enemies);
+    const result = processUltimate(robot, this.combat.enemies, this.run.itemBuffs);
     if (!result.success) {
       return result;
     }
