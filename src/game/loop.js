@@ -522,6 +522,7 @@ export class GameManager {
     if (starterId) {
       const starter = instantiateRobot(starterId);
       this.run.robotParty.active = [starter];
+      this.run.encountersOnly = true;
     }
 
     // Generate starting chip choices (common only for starting shop)

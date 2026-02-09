@@ -301,6 +301,11 @@ function updateChipRow() {
 }
 
 function updatePlayerHP() {
+  // In robot combat, individual robot HP bars handle health display
+  if (gameState.run?.robotParty?.active?.length > 0) {
+    hpBar.setVisible(false);
+    return;
+  }
   if (gameState.player) {
     hpBar.updatePlayerHP(gameState.player.hp, gameState.player.maxHp);
     hpBar.setVisible(true);
