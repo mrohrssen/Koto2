@@ -257,6 +257,24 @@ html, body {
   display: block;
 }
 
+/* Enemy Robot Display */
+.enemy-element-icon {
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.enemy-level-badge {
+  font-size: 10px;
+  color: #aaa;
+  font-weight: normal;
+}
+
+.robot-enemy {
+  border: 2px solid;
+  border-radius: 12px;
+  padding: 4px;
+}
+
 .scene-toast {
   position: absolute;
   top: 20%;

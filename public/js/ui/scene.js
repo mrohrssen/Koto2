@@ -28,6 +28,14 @@
 
 import { dom } from '../dom.js';
 
+const ELEMENT_ICONS = {
+  wood: '\u{1F33F}', fire: '\u{1F525}', earth: '\u26F0\uFE0F', metal: '\u2699\uFE0F', water: '\u{1F4A7}'
+};
+
+const ELEMENT_COLORS = {
+  wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63', metal: '#9E9E9E', water: '#2196F3'
+};
+
 /** Set scene background image */
 export function setBackground(imagePath) {
   if (imagePath) {
@@ -44,7 +52,20 @@ export function showEnemy(enemy) {
     return;
   }
 
-  dom.enemyName.textContent = enemy.nameEn || enemy.name || 'Enemy';
+  // Check if this is a robot (has element property)
+  const isRobot = !!enemy.element;
+
+  if (isRobot) {
+    const icon = ELEMENT_ICONS[enemy.element] || '';
+    dom.enemyName.innerHTML = `<span class="enemy-element-icon">${icon}</span> ${enemy.nameEn || enemy.name || 'Enemy'} <span class="enemy-level-badge">Lv${enemy.level || 1}</span>`;
+    dom.enemySpriteContainer.style.borderColor = ELEMENT_COLORS[enemy.element] || '';
+    dom.enemySpriteContainer.classList.add('robot-enemy');
+  } else {
+    dom.enemyName.textContent = enemy.nameEn || enemy.name || 'Enemy';
+    dom.enemySpriteContainer.style.borderColor = '';
+    dom.enemySpriteContainer.classList.remove('robot-enemy');
+  }
+
   dom.enemyInfo.classList.add('visible');
   updateEnemyHP(enemy.hp, enemy.maxHp);
 
@@ -52,9 +73,12 @@ export function showEnemy(enemy) {
   const spritePath = enemy.sprite || `/assets/sprites/enemies/${enemy.id}.webp`;
   dom.enemySprite.src = spritePath;
   dom.enemySprite.onerror = () => {
-    // Hide broken img, show emoji placeholder instead
     dom.enemySprite.classList.remove('visible');
-    showPlaceholder(enemy);
+    if (isRobot) {
+      showRobotPlaceholder(enemy);
+    } else {
+      showPlaceholder(enemy);
+    }
   };
   dom.enemySprite.onload = () => {
     removePlaceholder();
@@ -69,6 +93,16 @@ function showPlaceholder(enemy) {
   el.style.cssText = 'width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:2;position:relative;';
   const emojiMap = { stressed: '😰', aggressive: '😡', calm: '😐', shy: '😳', cheerful: '😊', mysterious: '🎭', arrogant: '😤', kind: '🥺', rushed: '😤' };
   el.textContent = emojiMap[enemy.personality] || '👤';
+  dom.enemySpriteContainer.appendChild(el);
+}
+
+function showRobotPlaceholder(enemy) {
+  removePlaceholder();
+  const el = document.createElement('div');
+  el.id = 'enemy-placeholder';
+  const color = ELEMENT_COLORS[enemy.element] || '#666';
+  el.style.cssText = `width:120px;height:120px;border-radius:50%;background:${color}22;border:3px solid ${color};display:flex;align-items:center;justify-content:center;font-size:48px;z-index:2;position:relative;`;
+  el.textContent = ELEMENT_ICONS[enemy.element] || '\u{1F916}';
   dom.enemySpriteContainer.appendChild(el);
 }
 
@@ -179,6 +213,8 @@ export function hideEnemy() {
   dom.enemyInfo.classList.remove('visible');
   dom.enemyHpBar.style.display = '';
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = '';
+  dom.enemySpriteContainer.style.borderColor = '';
+  dom.enemySpriteContainer.classList.remove('robot-enemy');
   removePlaceholder();
 }
 
