@@ -80,6 +80,7 @@ let showFlashCard = null;
 let showDualFlashCards = null;
 let showTripleFlashCards = null;
 let setCombatAnimationActive = null;
+let apiRobotCombatCycle = null;
 
 // Utility
 let delay = null;
@@ -121,6 +122,7 @@ export function init(callbacks) {
   // Utility
   delay = callbacks.delay;
   setCombatAnimationActive = callbacks.setCombatAnimationActive;
+  apiRobotCombatCycle = callbacks.apiRobotCombatCycle;
 }
 
 // ============ STATE GETTERS/SETTERS ============
@@ -706,6 +708,200 @@ export async function executePlayerAttack() {
 }
 
 /**
+ * Execute robot player attack — calls /robot-combat-cycle with 'attack'
+ * The backend processes both player and enemy phases in one call.
+ */
+async function executeRobotPlayerAttack() {
+  if (!combatActive || playerAttackPending || combatPausedForVocab || getEnemyDialogueActive()) return;
+
+  playerAttackPending = true;
+  if (setCombatAnimationActive) setCombatAnimationActive(true);
+
+  try {
+    const response = await fetch(`${API_BASE}/api/game/robot-combat-cycle`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ actionType: 'attack' })
+    });
+    const result = await response.json();
+    logger.info('[CombatLoop] Robot attack result:', { attacks: result.playerAttacks?.length });
+
+    if (result.error) {
+      if (result.error === 'No active combat') {
+        combatActive = false;
+        if (setCombatAnimationActive) setCombatAnimationActive(false);
+        return;
+      }
+      console.error('Robot attack error:', result.error);
+      playerAttackPending = false;
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
+      return;
+    }
+
+    // Show each allied robot's attack result sequentially
+    if (result.playerAttacks?.length > 0) {
+      playSFX('attack');
+      for (const atk of result.playerAttacks) {
+        const effectiveness = atk.elementMultiplier > 1 ? ' (super effective!)' :
+                              atk.elementMultiplier < 1 ? ' (not very effective...)' : '';
+        const actionArea = document.getElementById('action-area');
+        if (actionArea) {
+          actionArea.innerHTML = `<div class="combat-robot-attack">${atk.attackerName} deals <strong>${atk.damage}</strong> damage${effectiveness}</div>`;
+        }
+        showDamageNumber(atk.damage, false, false);
+        animateEnemyHurt();
+        await delay(600);
+      }
+    }
+
+    // Update enemy HP bar
+    if (result.enemies?.[0]) {
+      const enemy = result.enemies[0];
+      characterUI.updateEnemyHPBar({ current: enemy.hp, max: enemy.maxHp });
+    }
+
+    // Show enemy robot attacks (processed server-side in the same cycle)
+    if (result.enemyAttacks?.length > 0) {
+      await delay(400);
+      for (const atk of result.enemyAttacks) {
+        const effectiveness = atk.elementMultiplier > 1 ? ' (super effective!)' :
+                              atk.elementMultiplier < 1 ? ' (not very effective...)' : '';
+        const actionArea = document.getElementById('action-area');
+        if (actionArea) {
+          actionArea.innerHTML = `<div class="combat-robot-attack enemy">${atk.attackerName} deals <strong>${atk.damage}</strong>${effectiveness}</div>`;
+        }
+        showDamageNumber(atk.damage, true, false);
+        animatePlayerHurt();
+        playSFX('player-hit');
+        await delay(600);
+      }
+    }
+
+    // Update robot party state (HP changes, KO swaps)
+    if (result.robotParty) {
+      const gs = getGameState();
+      updateGameState({ ...gs, run: { ...gs.run, robotParty: result.robotParty } });
+      updateUI();
+    }
+
+    // Check combat end
+    if (result.combatEnded) {
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
+      stopCombatLoop(result);
+      return;
+    }
+
+    playerAttackPending = false;
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
+
+    // Pause for next vocab review
+    combatPausedForVocab = true;
+    await delay(1440);
+    showNextDualCardsFromQueue();
+
+  } catch (error) {
+    console.error('Robot attack error:', error);
+    playerAttackPending = false;
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
+    if (combatActive) {
+      combatPausedForVocab = true;
+      showNextDualCardsFromQueue();
+    }
+  }
+}
+
+/**
+ * Execute robot defend — calls /robot-combat-cycle with 'defend'
+ * Defend: all robots gain +1 ultimate charge, enemies attack with 50% damage
+ */
+async function executeRobotDefendThenPause() {
+  if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
+
+  enemyAttackPending = true;
+  if (setCombatAnimationActive) setCombatAnimationActive(true);
+
+  try {
+    const response = await fetch(`${API_BASE}/api/game/robot-combat-cycle`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ actionType: 'defend' })
+    });
+    const result = await response.json();
+    logger.info('[CombatLoop] Robot defend result:', { enemyAttacks: result.enemyAttacks?.length });
+
+    if (result.error) {
+      if (result.error === 'No active combat') {
+        combatActive = false;
+        if (setCombatAnimationActive) setCombatAnimationActive(false);
+        return;
+      }
+      console.error('Robot defend error:', result.error);
+      if (combatActive) {
+        stopCombatLoop({ combatEnded: true, victory: false, error: true });
+      }
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
+      return;
+    }
+
+    // Show defend indicator
+    const actionArea = document.getElementById('action-area');
+    if (actionArea) {
+      actionArea.innerHTML = '<div class="combat-defend-indicator">DEFENDING \u2014 50% damage, +1 charge</div>';
+    }
+    await delay(600);
+
+    // Show enemy attacks (50% damage already applied server-side)
+    if (result.enemyAttacks?.length > 0) {
+      for (const atk of result.enemyAttacks) {
+        const actionArea2 = document.getElementById('action-area');
+        if (actionArea2) {
+          actionArea2.innerHTML = `<div class="combat-robot-attack enemy">${atk.attackerName} deals <strong>${atk.damage}</strong> (halved)</div>`;
+        }
+        showDamageNumber(atk.damage, true, false);
+        animatePlayerHurt();
+        playSFX('player-hit');
+        await delay(600);
+      }
+    }
+
+    // Update enemy HP
+    if (result.enemies?.[0]) {
+      const enemy = result.enemies[0];
+      characterUI.updateEnemyHPBar({ current: enemy.hp, max: enemy.maxHp });
+    }
+
+    // Update robot slots (charges changed, HP changed from enemy attacks)
+    if (result.robotParty) {
+      const gs = getGameState();
+      updateGameState({ ...gs, run: { ...gs.run, robotParty: result.robotParty } });
+      updateUI();
+    }
+
+    // Check combat end
+    if (result.combatEnded) {
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
+      stopCombatLoop(result);
+      return;
+    }
+
+    enemyAttackPending = false;
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
+    combatPausedForVocab = true;
+    await delay(1440);
+    showNextDualCardsFromQueue();
+
+  } catch (error) {
+    console.error('Robot defend error:', error);
+    enemyAttackPending = false;
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
+    if (combatActive) {
+      combatPausedForVocab = true;
+      showNextDualCardsFromQueue();
+    }
+  }
+}
+
+/**
  * Execute a single enemy attack and schedule the next one
  */
 export async function executeEnemyAttack() {
@@ -933,14 +1129,25 @@ export function resumeCombatAfterVocab(grade, actionType = 'attack') {
   combatPausedForVocab = false;
   pendingActionType = actionType;
 
+  const state = getGameState();
+  const isRobotCombat = state.combat?.isRobotCombat;
+
   if (actionType === 'befriend') {
     executeBefriendAction();
-  } else if (actionType === 'defend') {
-    // Defend: skip player attack, go straight to enemy attack with damage reduction
-    executeDefendThenPause();
+  } else if (isRobotCombat) {
+    // Robot combat: use robot-specific functions
+    if (actionType === 'defend') {
+      executeRobotDefendThenPause();
+    } else {
+      executeRobotPlayerAttack();
+    }
   } else {
-    // Attack: normal flow - player attacks, then enemy attacks
-    executePlayerAttack();
+    // Chip combat: use original functions
+    if (actionType === 'defend') {
+      executeDefendThenPause();
+    } else {
+      executePlayerAttack();
+    }
   }
 }
 

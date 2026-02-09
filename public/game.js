@@ -1175,6 +1175,7 @@ async function initGame() {
     showDualFlashCards: actions.showDualFlashCards,
     showTripleFlashCards: actions.showTripleFlashCards,
     setCombatAnimationActive: (active) => { combatAnimationActive = active; },
+    apiRobotCombatCycle,
   });
 
   setupEventListeners();
