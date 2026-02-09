@@ -2921,3 +2921,111 @@ html, body {
   pointer-events: none;
   z-index: 10001;
 }
+
+/* ===== ROBOT SLOTS ===== */
+.robot-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+}
+
+.robot-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: var(--bg-dark, #1a1a2e);
+  font-size: 20px;
+}
+
+.robot-icon.empty {
+  border-color: #333;
+  background: transparent;
+}
+
+.robot-icon.ko {
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+
+.robot-icon.charged {
+  animation: robot-charged-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes robot-charged-pulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(255, 215, 0, 0.4); }
+  50% { box-shadow: 0 0 12px rgba(255, 215, 0, 0.8); }
+}
+
+.robot-level-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  font-size: 9px;
+  background: var(--bg-dark, #1a1a2e);
+  color: #ccc;
+  padding: 1px 3px;
+  border-radius: 3px;
+  line-height: 1;
+}
+
+.robot-element-icon {
+  font-size: 20px;
+}
+
+.robot-hp-bar {
+  width: 44px;
+  height: 4px;
+  background: #333;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.robot-hp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #F44336, #4CAF50);
+  transition: width 0.3s;
+}
+
+.robot-charge-bar {
+  display: flex;
+  gap: 1px;
+}
+
+.charge-segment {
+  width: 7px;
+  height: 3px;
+  background: #333;
+  border-radius: 1px;
+}
+
+.charge-segment.filled {
+  background: var(--accent-gold, #FFD700);
+}
+
+.robot-popup-name { font-weight: bold; font-size: 14px; color: var(--text-primary); }
+.robot-popup-element { font-size: 12px; color: #aaa; margin: 4px 0; }
+.robot-popup-stats { font-size: 11px; color: #ccc; }
+.robot-popup-ultimate { font-size: 11px; color: #aaa; margin: 8px 0; }
+.robot-popup-ultimate-btn {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  background: var(--accent-gold, #FFD700);
+  color: #000;
+}
+.robot-popup-ultimate-btn:disabled {
+  background: #333;
+  color: #666;
+  cursor: not-allowed;
+}
