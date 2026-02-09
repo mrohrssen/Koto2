@@ -525,14 +525,16 @@ export class GameManager {
       this.run.encountersOnly = true;
     }
 
-    // Generate starting chip choices (common only for starting shop)
-    const ownedChipIds = (this.run.player.chips || []).map(c => c.id);
-    const startingChips = generatePostCombatShop(1, ownedChipIds, 'common');
-    this.run.startingChipShop = {
-      active: true,
-      items: startingChips,
-      freeRefreshUsed: false
-    };
+    // Generate starting chip choices (skip for robot combat - robots don't use chips)
+    if (!starterId) {
+      const ownedChipIds = (this.run.player.chips || []).map(c => c.id);
+      const startingChips = generatePostCombatShop(1, ownedChipIds, 'common');
+      this.run.startingChipShop = {
+        active: true,
+        items: startingChips,
+        freeRefreshUsed: false
+      };
+    }
 
     this.emitState();
 
