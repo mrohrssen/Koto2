@@ -911,7 +911,9 @@ export function resumeCombatAfterVocab(grade, actionType = 'attack') {
   combatPausedForVocab = false;
   pendingActionType = actionType;
 
-  if (actionType === 'defend') {
+  if (actionType === 'befriend') {
+    executeBefriendAction();
+  } else if (actionType === 'defend') {
     // Defend: skip player attack, go straight to enemy attack with damage reduction
     executeDefendThenPause();
   } else {
@@ -1031,6 +1033,68 @@ async function executeDefendThenPause() {
       showNextDualCardsFromQueue();
       logger.warn('[CombatLoop] Recovered from defend error, showing dual cards');
     }
+  }
+}
+
+/**
+ * Execute befriend action: attempt to capture low-HP enemy robot
+ */
+async function executeBefriendAction() {
+  if (!combatActive) return;
+
+  if (setCombatAnimationActive) setCombatAnimationActive(true);
+
+  try {
+    const response = await fetch(`${API_BASE}/api/game/robot-combat-cycle`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ actionType: 'befriend' })
+    });
+    const result = await response.json();
+
+    if (result.error) {
+      console.error('Befriend error:', result.error);
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
+      // Fall back to showing next cards
+      showNextDualCardsFromQueue();
+      return;
+    }
+
+    if (result.befriend?.success) {
+      // Show capture success message
+      const actionArea = document.getElementById('action-area');
+      if (actionArea) {
+        const captured = result.befriend.captured;
+        actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">BEFRIENDED ${captured.nameEn}!</div>`;
+      }
+      playSFX('chip-skill');
+      await delay(1200);
+    } else {
+      // Befriend failed
+      const actionArea = document.getElementById('action-area');
+      if (actionArea) {
+        actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #F44336;">Befriend failed: ${result.befriend?.reason || 'Unknown'}</div>`;
+      }
+      await delay(800);
+    }
+
+    // Handle combat end or continue
+    if (result.combatEnded) {
+      if (result.victory) {
+        stopCombatLoop({ combatEnded: true, victory: true });
+      } else {
+        stopCombatLoop({ combatEnded: true, victory: false });
+      }
+    } else {
+      // Continue combat - show next cards
+      combatPausedForVocab = true;
+      showNextDualCardsFromQueue();
+    }
+
+  } catch (error) {
+    console.error('Befriend fetch error:', error);
+  } finally {
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
   }
 }
 

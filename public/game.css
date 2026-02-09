@@ -742,6 +742,34 @@ html, body {
 
 .dual-flash-card.attack .dual-card-icon { color: var(--attack-color); }
 .dual-flash-card.defend .dual-card-icon { color: var(--defend-color); }
+.dual-flash-card.befriend .dual-card-icon { color: #4CAF50; }
+
+/* Triple flash cards (befriend available) */
+.dual-flash-card-container.triple {
+  gap: 6px;
+}
+
+.dual-flash-card-container.triple .dual-card-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.dual-flash-card-container.triple .dual-flash-card {
+  font-size: 0.85em;
+}
+
+.dual-flash-card.befriend {
+  border-color: #4CAF50;
+}
+
+.dual-flash-card.befriend .dual-card-front {
+  color: #4CAF50;
+}
+
+.dual-flash-card.befriend.selected {
+  border-color: #4CAF50;
+  box-shadow: 0 0 12px rgba(76, 175, 80, 0.3);
+}
 
 .dual-card-back {
   display: none;
