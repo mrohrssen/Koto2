@@ -511,18 +511,29 @@ function showStarterSelection(starters) {
 }
 
 async function startEncounter() {
-  const result = gameState.phase === 'room_encounter'
-    ? await apiRoomEncounter()
-    : await apiStartEncounter();
+  const hasRobots = gameState.run?.robotParty?.active?.length > 0;
+
+  let result;
+  if (hasRobots) {
+    result = await apiStartRobotEncounter();
+  } else if (gameState.phase === 'room_encounter') {
+    result = await apiRoomEncounter();
+  } else {
+    result = await apiStartEncounter();
+  }
+
   if (result?.state) {
     updateGameState(result.state);
     updateUI();
-    const enemy = gameState.combat?.enemy;
-    if (result?.dialogue || enemy?.dialogue?.possessed) {
-      const text = result.dialogue || (Array.isArray(enemy.dialogue.possessed)
-        ? enemy.dialogue.possessed[Math.floor(Math.random() * enemy.dialogue.possessed.length)]
-        : enemy.dialogue.possessed);
-      await showEnemyDialogue(text, 'possessed');
+    // Robot encounters don't have possessed dialogue
+    if (!hasRobots) {
+      const enemy = gameState.combat?.enemy;
+      if (result?.dialogue || enemy?.dialogue?.possessed) {
+        const text = result.dialogue || (Array.isArray(enemy.dialogue.possessed)
+          ? enemy.dialogue.possessed[Math.floor(Math.random() * enemy.dialogue.possessed.length)]
+          : enemy.dialogue.possessed);
+        await showEnemyDialogue(text, 'possessed');
+      }
     }
     await delay(300);
     startCombatLoop();
