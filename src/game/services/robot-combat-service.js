@@ -81,11 +81,11 @@ export function processBefriend(enemies, robotParty) {
   }
 
   const eligible = enemies
-    .filter(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.3)
+    .filter(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.5)
     .sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
 
   if (eligible.length === 0) {
-    return { success: false, reason: 'No enemy at <=30% HP' };
+    return { success: false, reason: 'No enemy at <=50% HP' };
   }
 
   const captured = eligible[0];

@@ -188,7 +188,7 @@ function showNextDualCardsFromQueue() {
   const party = state.run?.robotParty;
   const befriendAvailable = isRobotCombat && enemy &&
     enemy.hp > 0 &&
-    (enemy.hp / enemy.maxHp) <= 0.3 &&
+    (enemy.hp / enemy.maxHp) <= 0.5 &&
     party &&
     (party.active.length + party.reserves.length) < party.maxTotal;
 
