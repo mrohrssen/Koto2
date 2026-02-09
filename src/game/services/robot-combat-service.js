@@ -142,11 +142,17 @@ export function processUltimate(robot, enemies) {
 }
 
 export function awardBattleXp(robotParty, baseXp) {
+  const activeCount = robotParty.active.filter(r => r).length;
+  const reserveCount = robotParty.reserves.length;
+  const totalShares = activeCount * 2 + reserveCount * 1;
+  if (totalShares === 0) return;
+
+  const perShare = baseXp / totalShares;
   for (const robot of robotParty.active) {
-    addXpToRobot(robot, baseXp);
+    if (robot) addXpToRobot(robot, Math.floor(perShare * 2));
   }
   for (const robot of robotParty.reserves) {
-    addXpToRobot(robot, Math.floor(baseXp * 0.5));
+    addXpToRobot(robot, Math.floor(perShare));
   }
 }
 
