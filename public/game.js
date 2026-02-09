@@ -433,15 +433,81 @@ async function createCharacter() {
 
 async function startNewRun() {
   // Note: clearWordCache() moved to returnToHub() for earlier prefetching
-  const result = await apiStartRun();
-  if (result?.state) {
-    updateGameState(result.state);
-    updateUI();
-    wordPractice.prefetchCombatWords(); // Fallback if not prefetched from hub
-    if (gameState.run?.startingChipShop?.active) {
-      await economyUI.renderStartingChipShop();
+
+  // Fetch available starter robots
+  const starterResult = await apiGetStarters();
+  const starters = starterResult?.starters;
+
+  if (starters && starters.length > 0) {
+    // Show starter selection screen and wait for choice
+    const starterId = await showStarterSelection(starters);
+    if (!starterId) return; // User cancelled somehow
+
+    // Start run with selected starter
+    const result = await apiStartRun({ starterId });
+    if (result?.state) {
+      updateGameState(result.state);
+      updateUI();
+      wordPractice.prefetchCombatWords();
+    }
+  } else {
+    // Fallback: start run without starter (old behavior)
+    const result = await apiStartRun();
+    if (result?.state) {
+      updateGameState(result.state);
+      updateUI();
+      wordPractice.prefetchCombatWords();
+      if (gameState.run?.startingChipShop?.active) {
+        await economyUI.renderStartingChipShop();
+      }
     }
   }
+}
+
+function showStarterSelection(starters) {
+  return new Promise((resolve) => {
+    const ELEMENT_ICONS = {
+      wood: '\u{1F33F}', fire: '\u{1F525}', earth: '\u26F0\uFE0F', metal: '\u2699\uFE0F', water: '\u{1F4A7}'
+    };
+    const ELEMENT_COLORS = {
+      wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63', metal: '#9E9E9E', water: '#2196F3'
+    };
+
+    const cardsHtml = starters.map(s => `
+      <div class="starter-card" data-id="${s.id}" style="border-color: ${ELEMENT_COLORS[s.element]}">
+        <div class="starter-icon">${ELEMENT_ICONS[s.element]}</div>
+        <div class="starter-name">${s.name}</div>
+        <div class="starter-name-en">${s.nameEn}</div>
+        <div class="starter-stats">
+          HP: ${s.maxHp} | ATK: ${s.attack}
+        </div>
+        <div class="starter-skill">${s.autoSkill.name} (${s.autoSkill.nameEn})</div>
+        <div class="starter-ultimate">${s.ultimate.name} (${s.ultimate.nameEn})</div>
+      </div>
+    `).join('');
+
+    const actionArea = document.getElementById('action-area');
+    actionArea.innerHTML = `
+      <div class="starter-selection">
+        <div class="starter-title">Choose Your Starter</div>
+        <div class="starter-cards">${cardsHtml}</div>
+      </div>
+    `;
+
+    // Set scene background
+    scene.setBackground('/assets/backgrounds/hub.webp');
+
+    document.querySelectorAll('.starter-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const id = card.dataset.id;
+        // Highlight selection
+        document.querySelectorAll('.starter-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        // Small delay for visual feedback
+        setTimeout(() => resolve(id), 300);
+      });
+    });
+  });
 }
 
 async function startEncounter() {

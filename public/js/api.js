@@ -195,8 +195,8 @@ async function purchaseUpgrade(upgradeId) {
  * Start a new dungeon run
  * @returns {Promise<object>} Result with state and narration
  */
-async function startRun() {
-  return apiCall('/start-run', 'POST');
+async function startRun(body = null) {
+  return apiCall('/start-run', 'POST', body);
 }
 
 /**
