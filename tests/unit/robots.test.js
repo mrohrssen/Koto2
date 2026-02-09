@@ -44,21 +44,21 @@ describe('Robot Instantiation', () => {
     assert.strictEqual(robot.xp, 0);
     assert.strictEqual(robot.maxHp, 100);
     assert.strictEqual(robot.hp, 100);
-    assert.strictEqual(robot.attack, 20);
+    assert.strictEqual(robot.attack, 10);
     assert.strictEqual(robot.ultimate.charges, 0);
     assert.strictEqual(robot.ultimate.chargesRequired, 5);
   });
 
   it('applies rarity multiplier for uncommon', () => {
     const robot = instantiateRobot('fire-uncommon');
-    assert.strictEqual(robot.maxHp, 125); // 100 * 1.25
-    assert.strictEqual(robot.attack, 25); // 20 * 1.25
+    assert.strictEqual(robot.maxHp, 110); // 100 * 1.1
+    assert.strictEqual(robot.attack, 11); // 10 * 1.1
   });
 
   it('applies rarity multiplier for legendary', () => {
     const robot = instantiateRobot('water-legendary');
-    assert.strictEqual(robot.maxHp, 250); // 100 * 2.5
-    assert.strictEqual(robot.attack, 50); // 20 * 2.5
+    assert.strictEqual(robot.maxHp, 140); // 100 * 1.4
+    assert.strictEqual(robot.attack, 14); // 10 * 1.4
   });
 });
 

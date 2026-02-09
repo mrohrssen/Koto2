@@ -16,10 +16,10 @@ export const ELEMENT_CYCLE = ['wood', 'earth', 'water', 'fire', 'metal'];
 
 export const RARITY_MULTIPLIERS = {
   common: 1.0,
-  uncommon: 1.25,
-  rare: 1.5,
-  epic: 2.0,
-  legendary: 2.5
+  uncommon: 1.1,
+  rare: 1.2,
+  epic: 1.3,
+  legendary: 1.4
 };
 
 const RARITY_WEIGHTS = {
