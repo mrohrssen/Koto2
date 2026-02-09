@@ -121,6 +121,17 @@ function showPopup(index, robot) {
     </button>
   `;
 
+  // Position popup centered above the robot slot, clamped to viewport
+  const slot = dom.chipRow.children[index];
+  if (slot) {
+    const rect = slot.getBoundingClientRect();
+    dom.chipPopup.style.bottom = `${window.innerHeight - rect.top + 8}px`;
+    dom.chipPopup.style.left = '50%';
+    dom.chipPopup.style.transform = 'translateX(-50%)';
+    dom.chipPopup.style.width = '85vw';
+    dom.chipPopup.style.maxWidth = '320px';
+  }
+
   dom.chipPopup.classList.add('visible');
 
   const btn = dom.chipPopup.querySelector('.robot-popup-ultimate-btn');

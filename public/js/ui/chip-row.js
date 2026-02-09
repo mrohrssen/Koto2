@@ -41,7 +41,7 @@ export function init({ useSkillCallback, onReorder: reorderCallback, isBlocked: 
 
   // Dismiss popup and cancel swap on outside tap
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.chip-slot') && !e.target.closest('.chip-popup')) {
+    if (!e.target.closest('.chip-slot') && !e.target.closest('.chip-popup') && !e.target.closest('.robot-slot')) {
       hidePopup();
       exitSwapMode();
     }

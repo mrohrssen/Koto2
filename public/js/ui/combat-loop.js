@@ -517,7 +517,7 @@ function updateRobotHpBars(robots, allyHpMap) {
     const hpPct = Math.max(0, (currentHp / robot.maxHp) * 100);
     const fill = slot.querySelector('.robot-hp-fill');
     if (fill) fill.style.width = `${hpPct}%`;
-    // Update KO state
+    // Update KO state and charged glow
     const icon = slot.querySelector('.robot-icon');
     if (icon) {
       if (currentHp <= 0) {
@@ -525,6 +525,24 @@ function updateRobotHpBars(robots, allyHpMap) {
       } else {
         icon.classList.remove('ko');
       }
+      const isCharged = robot.ultimate.charges >= robot.ultimate.chargesRequired;
+      if (isCharged) {
+        icon.classList.add('charged');
+      } else {
+        icon.classList.remove('charged');
+      }
+    }
+    // Update charge bar segments
+    const chargeBar = slot.querySelector('.robot-charge-bar');
+    if (chargeBar) {
+      const segments = chargeBar.querySelectorAll('.charge-segment');
+      segments.forEach((seg, s) => {
+        if (s < robot.ultimate.charges) {
+          seg.classList.add('filled');
+        } else {
+          seg.classList.remove('filled');
+        }
+      });
     }
   });
 }

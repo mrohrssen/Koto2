@@ -30,6 +30,16 @@ export function processAttackTurn(allies, enemies) {
       targetDefeated: target.hp <= 0
     });
   }
+
+  // +1 ultimate charge for all alive robots
+  for (const robot of allies) {
+    if (robot.hp <= 0) continue;
+    robot.ultimate.charges = Math.min(
+      robot.ultimate.charges + 1,
+      robot.ultimate.chargesRequired
+    );
+  }
+
   return { attacks, allEnemiesDefeated: enemies.every(e => e.hp <= 0) };
 }
 
