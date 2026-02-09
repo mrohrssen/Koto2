@@ -297,6 +297,13 @@ export function createNewRun(player) {
     // Current encounter
     encounter: null,
 
+    // Robot party (run-scoped)
+    robotParty: {
+      active: [],    // 0-3 deployed robots
+      reserves: [],  // 0-3 bench robots
+      maxTotal: 6
+    },
+
     // Run history for DM context
     eventLog: [],
 
@@ -353,6 +360,9 @@ export function createCombatState(enemy) {
     turnCount: 1,
 
     enemy: { ...enemy },
+
+    allies: [],    // references to run.robotParty.active
+    enemies: [],   // MVP: single enemy robot
 
     // Last action for DM narration
     lastAction: null,
