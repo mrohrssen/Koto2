@@ -137,8 +137,10 @@ async function getLevels() {
  * @param {number} levelId - Level to start
  * @returns {Promise<object>} Result with state and narration
  */
-async function selectLevel(levelId) {
-  return apiCall('/levels/select', 'POST', { levelId });
+async function selectLevel(levelId, starterId = null) {
+  const body = { levelId };
+  if (starterId) body.starterId = starterId;
+  return apiCall('/levels/select', 'POST', body);
 }
 
 /**

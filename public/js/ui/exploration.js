@@ -112,6 +112,8 @@ let apiGetDueWords = null;
 // Level select API functions
 let apiGetLevels = null;
 let apiSelectLevel = null;
+let apiGetStarters = null;
+let showStarterSelection = null;
 
 export function init(callbacks) {
   getGameState = callbacks.getGameState;
@@ -148,6 +150,8 @@ export function init(callbacks) {
   apiGetDueWords = callbacks.apiGetDueWords;
   apiGetLevels = callbacks.apiGetLevels;
   apiSelectLevel = callbacks.apiSelectLevel;
+  apiGetStarters = callbacks.apiGetStarters;
+  showStarterSelection = callbacks.showStarterSelection;
 }
 
 /** Hub phase — show Speed Review + Equip Bots + Infiltrate buttons */
@@ -227,11 +231,24 @@ export async function renderLevelSelect() {
     card.addEventListener('click', async () => {
       const levelId = parseInt(card.dataset.levelId);
       playSFX('button-tap');
-      const runResult = await apiSelectLevel(levelId);
+
+      // Show starter robot selection before starting the run
+      let starterId = null;
+      if (apiGetStarters && showStarterSelection) {
+        const starterResult = await apiGetStarters();
+        const starters = starterResult?.starters;
+        if (starters && starters.length > 0) {
+          starterId = await showStarterSelection(starters);
+          if (!starterId) return; // User somehow cancelled
+        }
+      }
+
+      const runResult = await apiSelectLevel(levelId, starterId);
       if (runResult?.state) {
         updateGameState(runResult.state);
         updateUI();
-        if (runResult.state.run?.startingChipShop?.active) {
+        // Skip starting chip shop when robot combat is active
+        if (!starterId && runResult.state.run?.startingChipShop?.active) {
           const economyMod = await import('./economy.js');
           await economyMod.renderStartingChipShop();
         }

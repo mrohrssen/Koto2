@@ -1101,6 +1101,8 @@ async function initGame() {
     apiGetDueWords,
     apiGetLevels,
     apiSelectLevel,
+    apiGetStarters,
+    showStarterSelection,
   });
 
   economyUI.init({
