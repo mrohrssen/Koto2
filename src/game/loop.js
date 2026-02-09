@@ -65,7 +65,7 @@ import { derivePhase } from './phase-machine.js';
 import { CombatService, ExplorationService } from './services/index.js';
 import { calculateChipBonusHP, equipChip, incrementAllEquippedCharges } from './items/chips.js';
 import { logger } from '../logger.js';
-import { instantiateRobot, getStarterRobots, generateEnemyRobot } from './robots.js';
+import { instantiateRobot, getStarterRobots, generateEnemyRobot, generateEnemyRobots } from './robots.js';
 import { processAttackTurn, processDefendTurn, processEnemyTurn, processBefriend, processUltimate, awardBattleXp, handleRobotKO } from './services/robot-combat-service.js';
 
 // ============ GAME MANAGER ============
@@ -857,17 +857,18 @@ export class GameManager {
     }
 
     const highestLevel = Math.max(...this.run.robotParty.active.map(r => r.level), 1);
-    const enemyRobot = generateEnemyRobot(highestLevel);
+    const enemyRobots = generateEnemyRobots(highestLevel);
 
-    this.combat = createCombatState(enemyRobot);
+    this.combat = createCombatState(enemyRobots[0]);
     this.combat.allies = this.run.robotParty.active;
-    this.combat.enemies = [enemyRobot];
+    this.combat.enemies = enemyRobots;
     this.combat.isRobotCombat = true;
 
     this.emitState();
 
     return {
-      enemy: enemyRobot,
+      enemy: enemyRobots[0],
+      enemies: enemyRobots,
       allies: this.run.robotParty.active,
       playerGoesFirst: true
     };
