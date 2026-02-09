@@ -186,11 +186,10 @@ function showNextDualCardsFromQueue() {
   // Check if befriend is available (enemy robot <=30% HP and party not full)
   const state = getGameState();
   const isRobotCombat = state.combat?.isRobotCombat;
-  const enemy = state.combat?.enemies?.[0];
+  const enemies = state.combat?.enemies || [];
   const party = state.run?.robotParty;
-  const befriendAvailable = isRobotCombat && enemy &&
-    enemy.hp > 0 &&
-    (enemy.hp / enemy.maxHp) <= 0.5 &&
+  const anyEnemyBefriendable = enemies.some(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.5);
+  const befriendAvailable = isRobotCombat && anyEnemyBefriendable &&
     party &&
     (party.active.length + party.reserves.length) < party.maxTotal;
 
@@ -804,11 +803,17 @@ async function executeRobotPlayerAttack() {
       return;
     }
 
-    // Track enemy HP for progressive updates
+    // Track each enemy's HP for progressive updates
     const gs = getGameState();
-    const enemyStart = result.enemies?.[0];
-    let enemyRunningHp = enemyStart ? (enemyStart.hp + (result.playerAttacks || []).reduce((sum, a) => sum + a.damage, 0)) : 0;
-    const enemyMaxHp = enemyStart?.maxHp || 1;
+    const enemyHpMap = {};
+    if (result.enemies) {
+      for (const enemy of result.enemies) {
+        const dmgToThisEnemy = (result.playerAttacks || [])
+          .filter(a => a.targetId === enemy.id)
+          .reduce((sum, a) => sum + a.damage, 0);
+        enemyHpMap[enemy.id] = { hp: enemy.hp + dmgToThisEnemy, maxHp: enemy.maxHp, index: result.enemies.indexOf(enemy) };
+      }
+    }
 
     // Show each allied robot's attack result sequentially with real-time HP
     if (result.playerAttacks?.length > 0) {
@@ -835,8 +840,15 @@ async function executeRobotPlayerAttack() {
 
         showDamageNumber(atk.damage, false, false);
         // Update enemy HP bar after each hit
-        enemyRunningHp = Math.max(0, enemyRunningHp - atk.damage);
-        characterUI.updateEnemyHPBar({ current: enemyRunningHp, max: enemyMaxHp });
+        if (enemyHpMap[atk.targetId]) {
+          enemyHpMap[atk.targetId].hp = Math.max(0, enemyHpMap[atk.targetId].hp - atk.damage);
+          const entry = enemyHpMap[atk.targetId];
+          if (result.enemies.length > 1) {
+            characterUI.updateEnemyHPAtIndex(entry.index, entry.hp, entry.maxHp);
+          } else {
+            characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
+          }
+        }
         await delay(400);
       }
     }
@@ -895,7 +907,9 @@ async function executeRobotPlayerAttack() {
       }
       updateGameState(updates);
       // Set final HP bars without full DOM rebuild
-      if (result.enemies?.[0]) {
+      if (result.enemies?.length > 1) {
+        result.enemies.forEach((e, i) => characterUI.updateEnemyHPAtIndex(i, e.hp, e.maxHp));
+      } else if (result.enemies?.[0]) {
         characterUI.updateEnemyHPBar({ current: result.enemies[0].hp, max: result.enemies[0].maxHp });
       }
       updateRobotHpBars(result.robotParty?.active, null);
