@@ -37,7 +37,7 @@ export default function createCombatRoutes({
     const gameStats = getGameStats();
     try {
       let narration;
-      const enemy = gameManager.combat?.enemy;
+      const enemy = gameManager.combat?.enemy || gameManager.combat?.enemies?.[0];
 
       if (victory) {
         const rewards = { xp: expGained, credits: creditsGained, drops: loot };

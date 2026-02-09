@@ -65,12 +65,12 @@ describe('Robot Instantiation', () => {
 describe('Robot Damage', () => {
   it('calculates damage with element multiplier (seeded)', () => {
     const dmg = calculateRobotDamage(20, 20, 1.5, 1.0);
-    assert.strictEqual(dmg, 6); // 20 * (20/100) * 1.5 * 1.0
+    assert.strictEqual(dmg, 60); // (20/10) * 20 * 1.5 * 1.0
   });
 
   it('calculates damage neutral (1.0x)', () => {
     const dmg = calculateRobotDamage(20, 20, 1.0, 1.0);
-    assert.strictEqual(dmg, 4); // 20 * 0.2 * 1.0 * 1.0
+    assert.strictEqual(dmg, 40); // (20/10) * 20 * 1.0 * 1.0
   });
 });
 

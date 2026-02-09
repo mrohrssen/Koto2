@@ -35,10 +35,31 @@ export class GameHelper {
     await this.page.locator('.level-card:not(.level-locked)').first().waitFor({ state: 'visible', timeout: 8000 });
     this.log('startRun', 'clicking first unlocked level');
     await this.page.locator('.level-card:not(.level-locked)').first().click();
-    this.log('startRun', 'waiting for chip selection to appear...');
-    // Wait for in-scene chip selection cards to appear in action area
-    await this.page.locator(SELECTORS.chipSelectCard).first().waitFor({ state: 'visible', timeout: 8000 });
-    this.log('startRun', 'chip selection shown');
+    this.log('startRun', 'waiting for starter or chip selection...');
+    // Wait for either starter selection (robot combat) or chip selection (old flow)
+    await Promise.race([
+      this.page.locator(SELECTORS.starterCard).first().waitFor({ state: 'visible', timeout: 8000 }),
+      this.page.locator(SELECTORS.chipSelectCard).first().waitFor({ state: 'visible', timeout: 8000 }),
+    ]);
+    // If starter selection appeared, pick first starter
+    if (await this.page.locator(SELECTORS.starterCard).first().isVisible().catch(() => false)) {
+      this.log('startRun', 'starter selection shown — picking first starter');
+      await this.page.locator(SELECTORS.starterCard).first().click();
+      // Wait for ward selection to appear (robot combat skips chip shop)
+      await this.page.locator(SELECTORS.wardOption).first().waitFor({ state: 'visible', timeout: 8000 });
+      this.log('startRun', 'ward selection shown after starter pick');
+      this._isRobotCombat = true;
+    } else {
+      this.log('startRun', 'chip selection shown');
+      this._isRobotCombat = false;
+    }
+  }
+
+  /** Whether the current run is using robot combat */
+  _isRobotCombat = false;
+
+  get isRobotCombat(): boolean {
+    return this._isRobotCombat;
   }
 
   async selectStartingChip(index = 0): Promise<void> {
@@ -87,9 +108,15 @@ export class GameHelper {
   /** Full run setup: hub → chip shop → ward → exploring */
   async setupRun(): Promise<void> {
     await this.startRun();
-    await this.selectStartingChip(0);
-    await this.waitForPhase(['ward_selection'], 5000);
-    await this.selectWard(0);
+    if (this._isRobotCombat) {
+      // Robot combat: starter already selected, ward selection already visible
+      await this.selectWard(0);
+    } else {
+      // Old chip combat: select starting chip, then ward
+      await this.selectStartingChip(0);
+      await this.waitForPhase(['ward_selection'], 5000);
+      await this.selectWard(0);
+    }
     await this.waitForPhase(['exploring', 'room_encounter', 'boss_ready', 'shrine', 'quiz', 'wordDiscovery'], 8000);
   }
 
@@ -360,10 +387,11 @@ export class GameHelper {
 
   async getEnemyHp(): Promise<number> {
     // Fetch fresh state from server since combat loop doesn't update window.gameState
+    // Prefer robot combat enemies array (canonical in robot mode), fall back to old combat.enemy
     return await this.page.evaluate(async () => {
       const res = await fetch('/api/game/state');
       const state = await res.json();
-      return state?.combat?.enemy?.hp ?? 0;
+      return state?.combat?.enemies?.[0]?.hp ?? state?.combat?.enemy?.hp ?? 0;
     });
   }
 
@@ -371,7 +399,7 @@ export class GameHelper {
     return await this.page.evaluate(async () => {
       const res = await fetch('/api/game/state');
       const state = await res.json();
-      return state?.combat?.enemy?.maxHp ?? 0;
+      return state?.combat?.enemies?.[0]?.maxHp ?? state?.combat?.enemy?.maxHp ?? 0;
     });
   }
 
