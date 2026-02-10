@@ -8,6 +8,7 @@ import { Router } from 'express';
 import { useChipSkill } from '../../game/combat/chip-skills.js';
 import { getChip, getChipCharge, isChipSkillReady, getChipLevel } from '../../game/items/chips.js';
 import { processEnemyTurn, handleRobotKO } from '../../game/services/robot-combat-service.js';
+import { getCollectionCatalog } from '../../game/services/robot-collection-service.js';
 
 export default function createCombatRoutes({
   generateGameNarration,
@@ -202,12 +203,13 @@ export default function createCombatRoutes({
     }
   });
 
-  // Get starter robots
-  router.get('/starters', (req, res) => {
+  // Get robot collection + catalog for team select
+  router.get('/robot-collection', (req, res) => {
     const gameManager = req.gameManager;
     try {
-      const starters = gameManager.getStarters();
-      res.json({ starters });
+      const meta = gameManager.getMeta();
+      const collection = meta.robotCollection || ['fire-common', 'water-common', 'wood-common'];
+      res.json({ collection, catalog: getCollectionCatalog(collection) });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

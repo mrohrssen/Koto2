@@ -13,6 +13,7 @@ import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
 import { lookupVocabularyBatch } from '../../jpdb.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
 import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswer } from '../../bunpro.js';
+import { validateTeamSelection } from '../../game/services/robot-collection-service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -41,6 +42,17 @@ export default function createRunRoutes({
     const gameManager = req.gameManager;
     const { starterId, starterIds } = req.body;
     try {
+      // Validate robot selection against collection
+      const ids = starterIds || (starterId ? [starterId] : null);
+      if (ids) {
+        const meta = gameManager.getMeta();
+        const collection = meta.robotCollection || [];
+        const validation = validateTeamSelection(collection, ids);
+        if (!validation.valid) {
+          return res.status(400).json({ error: validation.reason });
+        }
+      }
+
       gameManager.startRun(null, starterId, starterIds);
 
       const narration = await generateGameNarration('runStart', {
@@ -89,6 +101,17 @@ export default function createRunRoutes({
 
       if (gameManager.run?.active) {
         return res.status(400).json({ error: 'A run is already active' });
+      }
+
+      // Validate robot selection against collection
+      const ids = starterIds || (starterId ? [starterId] : null);
+      if (ids) {
+        const meta = gameManager.getMeta();
+        const collection = meta.robotCollection || [];
+        const validation = validateTeamSelection(collection, ids);
+        if (!validation.valid) {
+          return res.status(400).json({ error: validation.reason });
+        }
       }
 
       gameManager.startRun(levelId, starterId, starterIds);
