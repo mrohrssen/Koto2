@@ -100,8 +100,18 @@ export function screenShake(intensity = 'medium') {
     translateY: [0, px/2, -px/2, 0],
   }, {
     duration,
-    ease: 'outQuad'
+    ease: 'outQuad',
+    onComplete: () => {
+      // Remove transform so position:fixed children (e.g. lookup popup)
+      // are not trapped in a new containing block created by transform
+      container.style.transform = '';
+    }
   });
+
+  // Fallback cleanup in case onComplete doesn't fire reliably
+  setTimeout(() => {
+    container.style.transform = '';
+  }, duration + 50);
 }
 
 /**
