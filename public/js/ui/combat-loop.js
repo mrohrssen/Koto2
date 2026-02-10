@@ -835,7 +835,8 @@ async function executeRobotPlayerAttack() {
 
         // Fire element-colored orb from robot to enemy with impact effects
         if (robotSlotEl && enemyEl && atk.attackerElement) {
-          await fireRobotAttackEffect(robotSlotEl, enemyEl, atk.attackerElement, atk.damage, enemyMaxHp);
+          const targetMaxHp = enemyHpMap[atk.targetId]?.maxHp || 100;
+          await fireRobotAttackEffect(robotSlotEl, enemyEl, atk.attackerElement, atk.damage, targetMaxHp);
         } else {
           animateEnemyHurt();
         }
