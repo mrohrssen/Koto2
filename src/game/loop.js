@@ -92,6 +92,10 @@ export class GameManager {
    */
   initMeta(metaData = null) {
     this.meta = metaData || createMetaProgression();
+    // Ensure robotCollection exists for saves created before this feature
+    if (!this.meta.robotCollection) {
+      this.meta.robotCollection = ['fire-common', 'water-common', 'wood-common'];
+    }
     return this.meta;
   }
 
