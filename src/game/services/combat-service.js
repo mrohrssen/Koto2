@@ -115,7 +115,23 @@ export class CombatService {
     this.gm.combat = createCombatState(boss);
     logger.info('[Combat] Boss encounter started:', { boss: boss.nameEn, hp: boss.hp, hpMultiplier: hpMultiplier.toFixed(2), floor: this.gm.run.floor });
     this.gm.run.player._combatStacks = {};  // Reset stacking chip counters
-    this.gm.combat.turn = determineTurnOrder(this.gm.run.player, boss);
+
+    // If player has robot party, set up robot combat for boss
+    if (this.gm.run.robotParty?.active?.length > 0) {
+      // Adapt boss to robot combat format
+      const robotBoss = {
+        ...boss,
+        id: boss.id || `boss-${this.gm.run.floor}`,
+        element: boss.element || 'metal',
+        autoSkill: boss.autoSkill || { name: boss.name, nameEn: boss.nameEn, element: boss.element || 'metal', power: 100 },
+        ultimate: boss.ultimate || { name: boss.name, nameEn: boss.nameEn, charges: 0, chargesRequired: 99 },
+      };
+      this.gm.combat.allies = this.gm.run.robotParty.active;
+      this.gm.combat.enemies = [robotBoss];
+      this.gm.combat.isRobotCombat = true;
+    } else {
+      this.gm.combat.turn = determineTurnOrder(this.gm.run.player, boss);
+    }
 
     // Select initial boss intent
     this.gm.combat.intent = selectEnemyIntent(boss, 1);

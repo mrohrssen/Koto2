@@ -734,7 +734,36 @@ ${found ? '中身があった！' : '空だった...'}
   },
 
   roomProceed: () =>
-    `次の部屋へ進む。足音が響く。緊張感を描写。2-3文で。`
+    `次の部屋へ進む。足音が響く。緊張感を描写。2-3文で。`,
+
+  // ============ BEFRIEND EVENTS ============
+
+  // Befriend conversation - 3-round dialogue for robot capture
+  befriendConversation: (ctx) => {
+    const robot = ctx?.robot || {};
+    const name = robot.name || robot.nameEn || 'ロボット';
+    const element = robot.element || 'unknown';
+
+    return `あなたは${name}（${element}属性のロボット）です。
+プレイヤーが友達になりたいと言っています。
+3ラウンドの会話を作ってください。
+
+ルール：
+- 各ラウンド：ロボットの台詞1文 + 選択肢3つ（正解1つ、不正解2つ）
+- 不正解は文法的に正しいが、話題が全く違う（釣りの質問に対してズボンの答えなど）
+- 正解は会話の流れに自然に合う
+- 全ての台詞は短く（1文ずつ）
+- ロボットの性格：${element}属性らしい話し方
+
+JSON形式で返してください（他のテキストなし）：
+[
+  {"speaker":"ロボットの台詞","options":["選択肢A","選択肢B","選択肢C"],"correctIndex":0},
+  {"speaker":"ロボットの台詞","options":["選択肢A","選択肢B","選択肢C"],"correctIndex":1},
+  {"speaker":"ロボットの台詞","options":["選択肢A","選択肢B","選択肢C"],"correctIndex":2}
+]
+
+correctIndexの位置をラウンドごとに変えてください（0,1,2をシャッフル）。`;
+  },
 };
 
 // ============================================================================

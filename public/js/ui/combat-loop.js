@@ -38,8 +38,14 @@ import {
   updateHpCriticalState,
   delay as effectDelay,
   getDamageTier,
-  getTierClassName
+  getTierClassName,
+  fireRobotAttackEffect,
+  enemyRobotAttackEffect,
+  showXpPopup,
+  showLevelUpPopup,
+  playUltimateAnimation
 } from './combat-effects.js';
+import { playAttackSound, playUltimateSound } from './combat-audio.js';
 
 // ============ MODULE STATE ============
 
@@ -78,7 +84,13 @@ let getEnemyDialogueActive = null;
 let getDialogueDismissPromise = null;
 let showFlashCard = null;
 let showDualFlashCards = null;
+let showTripleFlashCards = null;
 let setCombatAnimationActive = null;
+let apiRobotCombatCycle = null;
+let showPostCombatShop = null;
+let apiBefriendReplace = null;
+let apiGetBefriendConversation = null;
+let apiSubmitBefriendAnswer = null;
 
 // Utility
 let delay = null;
@@ -115,10 +127,16 @@ export function init(callbacks) {
   getDialogueDismissPromise = callbacks.getDialogueDismissPromise;
   showFlashCard = callbacks.showFlashCard;
   showDualFlashCards = callbacks.showDualFlashCards;
+  showTripleFlashCards = callbacks.showTripleFlashCards;
 
   // Utility
   delay = callbacks.delay;
   setCombatAnimationActive = callbacks.setCombatAnimationActive;
+  apiRobotCombatCycle = callbacks.apiRobotCombatCycle;
+  showPostCombatShop = callbacks.showPostCombatShop;
+  apiBefriendReplace = callbacks.apiBefriendReplace;
+  apiGetBefriendConversation = callbacks.apiGetBefriendConversation;
+  apiSubmitBefriendAnswer = callbacks.apiSubmitBefriendAnswer;
 }
 
 // ============ STATE GETTERS/SETTERS ============
@@ -177,7 +195,24 @@ function showNextDualCardsFromQueue() {
     return;
   }
 
-  if (showDualFlashCards) {
+  // Check if befriend is available (enemy robot <=50% HP; allow even if party full - will prompt release)
+  const state = getGameState();
+  const isRobotCombat = state.combat?.isRobotCombat;
+  const enemies = state.combat?.enemies || [];
+  const party = state.run?.robotParty;
+  const anyEnemyBefriendable = enemies.some(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.5);
+  const befriendAvailable = isRobotCombat && anyEnemyBefriendable && party;
+
+  if (befriendAvailable && showTripleFlashCards) {
+    // Get a third word for the befriend card
+    const thirdWord = wordPractice.getNextCombatWord?.();
+    if (thirdWord) {
+      showTripleFlashCards(words.attackWord, words.defendWord, thirdWord);
+    } else {
+      // Not enough words for triple, fall back to dual
+      showDualFlashCards(words.attackWord, words.defendWord);
+    }
+  } else if (showDualFlashCards) {
     showDualFlashCards(words.attackWord, words.defendWord);
   }
 }
@@ -478,6 +513,97 @@ function showChipTooltip(chipIndex, text) {
 }
 
 /**
+ * Find a robot slot element by robot ID (matches against game state).
+ * Works for both allied robot slots (attacker) and targeted robot slots.
+ * @param {string} robotId - The robot's ID
+ * @returns {Element|null} The .robot-slot DOM element, or null
+ */
+function findRobotSlotByAttackerId(robotId) {
+  const state = getGameState();
+  const activeRobots = state.run?.robotParty?.active;
+  if (!activeRobots) return null;
+
+  const index = activeRobots.findIndex(r => r && r.id === robotId);
+  if (index < 0) return null;
+
+  const slots = document.querySelectorAll('#chip-row .robot-slot');
+  return slots[index] || null;
+}
+
+/**
+ * Find the enemy slot element for a specific target in multi-enemy combat.
+ * Falls back to the whole enemy-sprite-container for single-enemy fights.
+ * @param {string} targetId - The enemy robot's ID
+ * @param {Array} enemies - The enemies array from the result
+ * @returns {Element} The specific enemy slot element or the container
+ */
+function findEnemyTargetElement(targetId, enemies) {
+  if (enemies && enemies.length > 1) {
+    const idx = enemies.findIndex(e => e.id === targetId);
+    if (idx >= 0) {
+      const slot = document.querySelector(`.enemy-robot-slot[data-enemy-index="${idx}"]`);
+      if (slot) return slot;
+    }
+  }
+  return document.getElementById('enemy-sprite-container');
+}
+
+/**
+ * Directly update robot HP bar widths in the DOM without triggering full updateUI.
+ * This avoids resetting enemy HP bars from stale game state during animations.
+ * @param {Array} robots - The robot party active array (with final HP from server)
+ * @param {Object} allyHpMap - Map of robotId -> { hp, maxHp } with running HP values
+ */
+function getHpColor(pct) {
+  if (pct > 60) return 'var(--hp-green)';
+  if (pct > 30) return 'var(--hp-yellow)';
+  return 'var(--hp-red)';
+}
+
+function updateRobotHpBars(robots, allyHpMap) {
+  if (!robots) return;
+  const slots = document.querySelectorAll('#chip-row .robot-slot');
+  robots.forEach((robot, i) => {
+    const slot = slots[i];
+    if (!slot || !robot) return;
+    const currentHp = allyHpMap?.[robot.id] ? allyHpMap[robot.id].hp : robot.hp;
+    const hpPct = Math.max(0, (currentHp / robot.maxHp) * 100);
+    const fill = slot.querySelector('.robot-hp-fill');
+    if (fill) {
+      fill.style.width = `${hpPct}%`;
+      fill.style.backgroundColor = getHpColor(hpPct);
+    }
+    // Update KO state and charged glow
+    const icon = slot.querySelector('.robot-icon');
+    if (icon) {
+      if (currentHp <= 0) {
+        icon.classList.add('ko');
+      } else {
+        icon.classList.remove('ko');
+      }
+      const isCharged = robot.ultimate.charges >= robot.ultimate.chargesRequired;
+      if (isCharged) {
+        icon.classList.add('charged');
+      } else {
+        icon.classList.remove('charged');
+      }
+    }
+    // Update charge bar segments
+    const chargeBar = slot.querySelector('.robot-charge-bar');
+    if (chargeBar) {
+      const segments = chargeBar.querySelectorAll('.charge-segment');
+      segments.forEach((seg, s) => {
+        if (s < robot.ultimate.charges) {
+          seg.classList.add('filled');
+        } else {
+          seg.classList.remove('filled');
+        }
+      });
+    }
+  });
+}
+
+/**
  * Show enemy damage to player in big red text in the action area
  * @param {Object} enemyAttack - The enemy attack result
  */
@@ -520,6 +646,46 @@ function animateChipActivation(chipIndex, chipData = null) {
       fireChipEffect(slot, chipData, poolEls);
     } catch (e) {
       console.warn('[Combat] Chip effect failed:', e.message);
+    }
+  }
+}
+
+// ============ XP EVENT HANDLING ============
+
+/**
+ * Process xpEvents from the backend and show animated XP popups over robot slots.
+ * Also handles level-up popups and updates the level badge in the DOM.
+ * @param {Array} xpEvents - Array of { xpGrants: [...], levelUps: [...] }
+ */
+function showXpEvents(xpEvents) {
+  if (!xpEvents || xpEvents.length === 0) return;
+
+  const state = getGameState();
+  const activeRobots = state.run?.robotParty?.active;
+  if (!activeRobots) return;
+
+  const slots = document.querySelectorAll('#chip-row .robot-slot');
+
+  for (const event of xpEvents) {
+    // Show XP popups for each robot that gained XP
+    if (event.xpGrants) {
+      for (const grant of event.xpGrants) {
+        const index = activeRobots.findIndex(r => r && r.id === grant.robotId);
+        if (index >= 0 && slots[index]) {
+          showXpPopup(slots[index], grant.xp);
+        }
+      }
+    }
+
+    // Show level-up popups
+    if (event.levelUps) {
+      for (const lu of event.levelUps) {
+        const index = activeRobots.findIndex(r => r && r.id === lu.robotId);
+        if (index >= 0 && slots[index]) {
+          // Slight delay so it appears after XP popup
+          setTimeout(() => showLevelUpPopup(slots[index], lu.newLevel), 400);
+        }
+      }
     }
   }
 }
@@ -679,6 +845,476 @@ export async function executePlayerAttack() {
       combatPausedForVocab = true;
       showNextDualCardsFromQueue();
       logger.warn('[CombatLoop] Recovered from player attack error, showing dual cards');
+    }
+  }
+}
+
+/**
+ * Execute robot player attack — calls /robot-combat-cycle with 'attack'
+ * The backend processes both player and enemy phases in one call.
+ */
+async function executeRobotPlayerAttack() {
+  if (!combatActive || playerAttackPending || combatPausedForVocab || getEnemyDialogueActive()) return;
+
+  playerAttackPending = true;
+  if (setCombatAnimationActive) setCombatAnimationActive(true);
+
+  try {
+    const response = await fetch(`${API_BASE}/api/game/robot-combat-cycle`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ actionType: 'attack' })
+    });
+    const result = await response.json();
+    logger.info('[CombatLoop] Robot attack result:', { attacks: result.playerAttacks?.length });
+
+    if (result.error) {
+      if (result.error === 'No active combat') {
+        combatActive = false;
+        if (setCombatAnimationActive) setCombatAnimationActive(false);
+        return;
+      }
+      console.error('Robot attack error:', result.error);
+      playerAttackPending = false;
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
+      return;
+    }
+
+    // Track each enemy's HP for progressive updates
+    const gs = getGameState();
+    const enemyHpMap = {};
+    if (result.enemies) {
+      for (const enemy of result.enemies) {
+        const dmgToThisEnemy = (result.playerAttacks || [])
+          .filter(a => a.targetId === enemy.id)
+          .reduce((sum, a) => sum + a.damage, 0);
+        enemyHpMap[enemy.id] = { hp: enemy.hp + dmgToThisEnemy, maxHp: enemy.maxHp, index: result.enemies.indexOf(enemy) };
+      }
+    }
+
+    // Show each allied robot's attack result sequentially with real-time HP
+    if (result.playerAttacks?.length > 0) {
+      // Track which enemies have been defeated for XP popups
+      const killedEnemies = new Set();
+
+      for (let atkIdx = 0; atkIdx < result.playerAttacks.length; atkIdx++) {
+        const atk = result.playerAttacks[atkIdx];
+        const effectiveness = atk.elementMultiplier > 1 ? ' (super effective!)' :
+                              atk.elementMultiplier < 1 ? ' (not very effective...)' : '';
+        const actionArea = document.getElementById('action-area');
+        if (actionArea) {
+          actionArea.innerHTML = `<div class="combat-robot-attack">${atk.attackerName} deals <strong>${atk.damage}</strong> damage${effectiveness}</div>`;
+        }
+        playSFX('attack');
+
+        // Find the robot slot element for this attacker and specific enemy target
+        const robotSlotEl = findRobotSlotByAttackerId(atk.attackerId);
+        const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies);
+
+        // Update charge bar for this attacker immediately after its attack
+        // Find slot by matching attackerId against result.robotParty (not stale gameState)
+        const attackerSlotIdx = (result.robotParty?.active || []).findIndex(r => r && r.id === atk.attackerId);
+        const attackerSlot = attackerSlotIdx >= 0 ? document.querySelectorAll('#chip-row .robot-slot')[attackerSlotIdx] : null;
+        if (attackerSlot && atk.attackerCharges != null) {
+          const chargeBar = attackerSlot.querySelector('.robot-charge-bar');
+          if (chargeBar) {
+            const segments = chargeBar.querySelectorAll('.charge-segment');
+            segments.forEach((seg, s) => {
+              if (s < atk.attackerCharges) {
+                seg.classList.add('filled');
+              } else {
+                seg.classList.remove('filled');
+              }
+            });
+          }
+          const icon = attackerSlot.querySelector('.robot-icon');
+          if (icon) {
+            if (atk.attackerCharges >= atk.attackerChargesRequired) {
+              icon.classList.add('charged');
+            } else {
+              icon.classList.remove('charged');
+            }
+          }
+        }
+
+        // Fire element-colored orb from robot to enemy with impact effects
+        if (robotSlotEl && enemyEl && atk.attackerElement) {
+          playAttackSound(atk.attackerElement);
+          const targetMaxHp = enemyHpMap[atk.targetId]?.maxHp || 100;
+          await fireRobotAttackEffect(robotSlotEl, enemyEl, atk.attackerElement, atk.damage, targetMaxHp);
+        } else {
+          animateEnemyHurt();
+        }
+
+        showDamageNumber(atk.damage, false, false);
+        // Update enemy HP bar after each hit
+        if (enemyHpMap[atk.targetId]) {
+          enemyHpMap[atk.targetId].hp = Math.max(0, enemyHpMap[atk.targetId].hp - atk.damage);
+          const entry = enemyHpMap[atk.targetId];
+          if (result.enemies.length > 1) {
+            characterUI.updateEnemyHPAtIndex(entry.index, entry.hp, entry.maxHp);
+          } else {
+            characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
+          }
+        }
+
+        // Show XP popups when an enemy is killed (BUG B + C)
+        if (atk.targetDefeated && !killedEnemies.has(atk.targetId) && result.xpEvents) {
+          killedEnemies.add(atk.targetId);
+          const xpEvent = result.xpEvents.find(ev => ev.enemyId === atk.targetId);
+          if (xpEvent) {
+            showXpEvents([xpEvent]);
+          }
+        }
+
+        await delay(400);
+      }
+    }
+
+    // Build a map of ally HP before enemy attacks for progressive updates
+    const allyHpMap = {};
+    if (result.allies) {
+      for (const ally of result.allies) {
+        // Reconstruct pre-enemy-attack HP by adding back enemy damage dealt to this ally
+        const dmgToThisAlly = (result.enemyAttacks || [])
+          .filter(a => a.targetId === ally.id)
+          .reduce((sum, a) => sum + a.damage, 0);
+        allyHpMap[ally.id] = { hp: ally.hp + dmgToThisAlly, maxHp: ally.maxHp };
+      }
+    }
+
+    // Show enemy robot attacks with real-time ally HP updates
+    if (result.enemyAttacks?.length > 0) {
+      await delay(400);
+      for (const atk of result.enemyAttacks) {
+        const effectiveness = atk.elementMultiplier > 1 ? ' (super effective!)' :
+                              atk.elementMultiplier < 1 ? ' (not very effective...)' : '';
+        const actionArea = document.getElementById('action-area');
+        if (actionArea) {
+          actionArea.innerHTML = `<div class="combat-robot-attack enemy">${atk.attackerName} deals <strong>${atk.damage}</strong>${effectiveness}</div>`;
+        }
+        showDamageNumber(atk.damage, true, false);
+        playSFX('player-hit');
+
+        // Fire element-colored orb from specific attacking enemy to targeted robot
+        const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies);
+        const targetSlotEl = findRobotSlotByAttackerId(atk.targetId);
+        if (enemyEl && targetSlotEl && atk.attackerElement) {
+          playAttackSound(atk.attackerElement);
+          await enemyRobotAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
+        } else {
+          animatePlayerHurt();
+        }
+
+        // Update targeted ally's running HP in the DOM directly (avoid full updateUI)
+        if (allyHpMap[atk.targetId]) {
+          allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
+        }
+        updateRobotHpBars(result.robotParty?.active, allyHpMap);
+        await delay(400);
+      }
+    }
+
+    // Show KO swap messages with death/swap-in animations (Bug F)
+    if (result.koSwaps?.length > 0) {
+      for (const swap of result.koSwaps) {
+        // Animate the KO'd robot dying
+        const koIndex = swap.slot ?? -1;
+        if (koIndex >= 0) {
+          const slots = document.querySelectorAll('#chip-row .robot-slot');
+          const dyingSlot = slots[koIndex];
+          if (dyingSlot) {
+            dyingSlot.classList.add('robot-dying');
+            await delay(600);
+          }
+        }
+
+        const actionArea = document.getElementById('action-area');
+        if (actionArea) {
+          actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${swap.replacement} swaps in!</div>`;
+        }
+
+        // Re-render the robot row with updated party, then animate new robot in
+        if (result.robotParty?.active) {
+          const robotRow = document.getElementById('chip-row');
+          if (robotRow) {
+            // Temporarily update the display inline
+            const slots = robotRow.querySelectorAll('.robot-slot');
+            const swapSlot = slots[koIndex];
+            if (swapSlot) {
+              swapSlot.classList.remove('robot-dying');
+              swapSlot.classList.add('robot-swapping-in');
+              // Update sprite and HP for the new robot
+              const newRobot = result.robotParty.active[koIndex];
+              if (newRobot) {
+                const icon = swapSlot.querySelector('.robot-sprite-icon');
+                if (icon) icon.src = `/assets/sprites/robots/${newRobot.id}.webp`;
+                const hpFill = swapSlot.querySelector('.robot-hp-fill');
+                if (hpFill) {
+                  const pct = Math.max(0, (newRobot.hp / newRobot.maxHp) * 100);
+                  hpFill.style.width = `${pct}%`;
+                  hpFill.style.backgroundColor = pct > 60 ? 'var(--hp-green)' : pct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+                }
+                const koIcon = swapSlot.querySelector('.robot-icon');
+                if (koIcon) koIcon.classList.remove('ko');
+              }
+              setTimeout(() => swapSlot.classList.remove('robot-swapping-in'), 500);
+            }
+          }
+        }
+        await delay(800);
+      }
+    }
+
+    // Final state update with server-authoritative values (no updateUI to avoid DOM rebuild flicker)
+    if (result.robotParty || result.enemies) {
+      const updates = { ...gs };
+      if (result.robotParty) {
+        updates.run = { ...gs.run, robotParty: result.robotParty };
+      }
+      if (result.enemies && gs.combat) {
+        updates.combat = {
+          ...gs.combat,
+          enemies: result.enemies,
+          allies: result.allies || gs.combat.allies,
+          turnCount: result.turnCount ?? gs.combat.turnCount
+        };
+      }
+      updateGameState(updates);
+      // Set final HP bars without full DOM rebuild
+      if (result.enemies?.length > 1) {
+        result.enemies.forEach((e, i) => characterUI.updateEnemyHPAtIndex(i, e.hp, e.maxHp));
+      } else if (result.enemies?.[0]) {
+        characterUI.updateEnemyHPBar({ current: result.enemies[0].hp, max: result.enemies[0].maxHp });
+      }
+      updateRobotHpBars(result.robotParty?.active, null);
+    }
+
+    // Update chip charges (increment each cycle in robot combat too)
+    if (result.chipCharges) {
+      const cache = getChipLoadoutCache();
+      if (cache) {
+        cache.chipCharges = result.chipCharges;
+        setChipLoadoutCache(cache);
+        updateActionPanel();
+      }
+    }
+
+    // Check combat end
+    if (result.combatEnded) {
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
+      stopCombatLoop(result);
+      return;
+    }
+
+    playerAttackPending = false;
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
+
+    // Pause for next vocab review
+    combatPausedForVocab = true;
+    await delay(1440);
+    showNextDualCardsFromQueue();
+
+  } catch (error) {
+    console.error('Robot attack error:', error);
+    playerAttackPending = false;
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
+    if (combatActive) {
+      combatPausedForVocab = true;
+      showNextDualCardsFromQueue();
+    }
+  }
+}
+
+/**
+ * Execute robot defend — calls /robot-combat-cycle with 'defend'
+ * Defend: all robots gain +1 ultimate charge, enemies attack with 50% damage
+ */
+async function executeRobotDefendThenPause() {
+  if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
+
+  enemyAttackPending = true;
+  if (setCombatAnimationActive) setCombatAnimationActive(true);
+
+  try {
+    const response = await fetch(`${API_BASE}/api/game/robot-combat-cycle`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ actionType: 'defend' })
+    });
+    const result = await response.json();
+    logger.info('[CombatLoop] Robot defend result:', { enemyAttacks: result.enemyAttacks?.length });
+
+    if (result.error) {
+      if (result.error === 'No active combat') {
+        combatActive = false;
+        if (setCombatAnimationActive) setCombatAnimationActive(false);
+        return;
+      }
+      console.error('Robot defend error:', result.error);
+      if (combatActive) {
+        stopCombatLoop({ combatEnded: true, victory: false, error: true });
+      }
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
+      return;
+    }
+
+    // Show defend indicator
+    const actionArea = document.getElementById('action-area');
+    if (actionArea) {
+      actionArea.innerHTML = '<div class="combat-defend-indicator">DEFENDING \u2014 50% damage, +1 charge</div>';
+    }
+
+    // Update charge bars immediately for defend (BUG A fix)
+    if (result.robotParty?.active) {
+      updateRobotHpBars(result.robotParty.active, null);
+    }
+    await delay(600);
+
+    // Build ally HP map for progressive updates during enemy attacks
+    const gs = getGameState();
+    const allyHpMap = {};
+    if (result.allies) {
+      for (const ally of result.allies) {
+        const dmgToThisAlly = (result.enemyAttacks || [])
+          .filter(a => a.targetId === ally.id)
+          .reduce((sum, a) => sum + a.damage, 0);
+        allyHpMap[ally.id] = { hp: ally.hp + dmgToThisAlly, maxHp: ally.maxHp };
+      }
+    }
+
+    // Show enemy attacks (50% damage already applied server-side) with real-time HP
+    if (result.enemyAttacks?.length > 0) {
+      for (const atk of result.enemyAttacks) {
+        const actionArea2 = document.getElementById('action-area');
+        if (actionArea2) {
+          actionArea2.innerHTML = `<div class="combat-robot-attack enemy">${atk.attackerName} deals <strong>${atk.damage}</strong> (halved)</div>`;
+        }
+        showDamageNumber(atk.damage, true, false);
+        playSFX('player-hit');
+
+        // Fire element-colored orb from specific attacking enemy to targeted robot
+        const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies);
+        const targetSlotEl = findRobotSlotByAttackerId(atk.targetId);
+        if (enemyEl && targetSlotEl && atk.attackerElement) {
+          playAttackSound(atk.attackerElement);
+          await enemyRobotAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
+        } else {
+          animatePlayerHurt();
+        }
+
+        // Update targeted ally's running HP in the DOM directly (avoid full updateUI)
+        if (allyHpMap[atk.targetId]) {
+          allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
+        }
+        updateRobotHpBars(result.robotParty?.active, allyHpMap);
+        await delay(400);
+      }
+    }
+
+    // Update enemy HP (all enemies in multi-enemy combat)
+    if (result.enemies?.length > 1) {
+      result.enemies.forEach((e, i) => characterUI.updateEnemyHPAtIndex(i, e.hp, e.maxHp));
+    } else if (result.enemies?.[0]) {
+      const enemy = result.enemies[0];
+      characterUI.updateEnemyHPBar({ current: enemy.hp, max: enemy.maxHp });
+    }
+
+    // Show KO swap messages with death/swap-in animations (Bug F)
+    if (result.koSwaps?.length > 0) {
+      for (const swap of result.koSwaps) {
+        // Animate the KO'd robot dying
+        const koIndex = swap.slot ?? -1;
+        if (koIndex >= 0) {
+          const slots = document.querySelectorAll('#chip-row .robot-slot');
+          const dyingSlot = slots[koIndex];
+          if (dyingSlot) {
+            dyingSlot.classList.add('robot-dying');
+            await delay(600);
+          }
+        }
+
+        const actionArea2 = document.getElementById('action-area');
+        if (actionArea2) {
+          actionArea2.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${swap.replacement} swaps in!</div>`;
+        }
+
+        // Update sprite and HP for the new robot with swap-in animation
+        if (result.robotParty?.active && koIndex >= 0) {
+          const slots = document.querySelectorAll('#chip-row .robot-slot');
+          const swapSlot = slots[koIndex];
+          if (swapSlot) {
+            swapSlot.classList.remove('robot-dying');
+            swapSlot.classList.add('robot-swapping-in');
+            const newRobot = result.robotParty.active[koIndex];
+            if (newRobot) {
+              const icon = swapSlot.querySelector('.robot-sprite-icon');
+              if (icon) icon.src = `/assets/sprites/robots/${newRobot.id}.webp`;
+              const hpFill = swapSlot.querySelector('.robot-hp-fill');
+              if (hpFill) {
+                const pct = Math.max(0, (newRobot.hp / newRobot.maxHp) * 100);
+                hpFill.style.width = `${pct}%`;
+                hpFill.style.backgroundColor = pct > 60 ? 'var(--hp-green)' : pct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+              }
+              const koIcon = swapSlot.querySelector('.robot-icon');
+              if (koIcon) koIcon.classList.remove('ko');
+            }
+            setTimeout(() => swapSlot.classList.remove('robot-swapping-in'), 500);
+          }
+        }
+        await delay(800);
+      }
+    }
+
+    // Final state update with server-authoritative values (no updateUI to avoid DOM rebuild flicker)
+    if (result.robotParty || result.enemies) {
+      const updates = { ...gs };
+      if (result.robotParty) {
+        updates.run = { ...gs.run, robotParty: result.robotParty };
+      }
+      if (result.enemies && gs.combat) {
+        updates.combat = {
+          ...gs.combat,
+          enemies: result.enemies,
+          allies: result.allies || gs.combat.allies,
+          turnCount: result.turnCount ?? gs.combat.turnCount
+        };
+      }
+      updateGameState(updates);
+      // Set final robot HP bars without full DOM rebuild
+      updateRobotHpBars(result.robotParty?.active, null);
+    }
+
+    // Update chip charges
+    if (result.chipCharges) {
+      const cache = getChipLoadoutCache();
+      if (cache) {
+        cache.chipCharges = result.chipCharges;
+        setChipLoadoutCache(cache);
+        updateActionPanel();
+      }
+    }
+
+    // Check combat end
+    if (result.combatEnded) {
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
+      stopCombatLoop(result);
+      return;
+    }
+
+    enemyAttackPending = false;
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
+    combatPausedForVocab = true;
+    await delay(1440);
+    showNextDualCardsFromQueue();
+
+  } catch (error) {
+    console.error('Robot defend error:', error);
+    enemyAttackPending = false;
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
+    if (combatActive) {
+      combatPausedForVocab = true;
+      showNextDualCardsFromQueue();
     }
   }
 }
@@ -911,12 +1547,25 @@ export function resumeCombatAfterVocab(grade, actionType = 'attack') {
   combatPausedForVocab = false;
   pendingActionType = actionType;
 
-  if (actionType === 'defend') {
-    // Defend: skip player attack, go straight to enemy attack with damage reduction
-    executeDefendThenPause();
+  const state = getGameState();
+  const isRobotCombat = state.combat?.isRobotCombat;
+
+  if (actionType === 'befriend') {
+    executeBefriendAction();
+  } else if (isRobotCombat) {
+    // Robot combat: use robot-specific functions
+    if (actionType === 'defend') {
+      executeRobotDefendThenPause();
+    } else {
+      executeRobotPlayerAttack();
+    }
   } else {
-    // Attack: normal flow - player attacks, then enemy attacks
-    executePlayerAttack();
+    // Chip combat: use original functions
+    if (actionType === 'defend') {
+      executeDefendThenPause();
+    } else {
+      executePlayerAttack();
+    }
   }
 }
 
@@ -1035,6 +1684,361 @@ async function executeDefendThenPause() {
 }
 
 /**
+ * Show a prompt for the player to choose which robot to release (or skip).
+ * Returns the robot ID to release, or null if the player chose to let the befriended one go.
+ */
+function showBefriendReleasePrompt() {
+  return new Promise((resolve) => {
+    const state = getGameState();
+    const party = state.run?.robotParty;
+    if (!party) { resolve(null); return; }
+
+    const allRobots = [
+      ...party.active.map((r, i) => ({ ...r, slot: 'active', index: i })),
+      ...party.reserves.map((r, i) => ({ ...r, slot: 'reserve', index: i }))
+    ].filter(r => r && r.id);
+
+    const ELEM_ICONS = { wood: '🌿', fire: '🔥', earth: '⛰️', metal: '⚙️', water: '💧' };
+
+    const overlay = document.createElement('div');
+    overlay.className = 'befriend-release-overlay';
+    overlay.innerHTML = `
+      <div class="befriend-release-panel">
+        <div class="befriend-release-title">Party Full! Choose a robot to release:</div>
+        <div class="befriend-release-list">
+          ${allRobots.map(r => `
+            <button class="befriend-release-btn" data-robot-id="${r.id}">
+              ${ELEM_ICONS[r.element] || ''} ${r.nameEn} (Lv${r.level}) - ${r.slot === 'active' ? 'Equipped' : 'Reserve'}
+            </button>
+          `).join('')}
+        </div>
+        <button class="befriend-release-skip-btn">Let it go (skip)</button>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelectorAll('.befriend-release-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        overlay.remove();
+        resolve(btn.dataset.robotId);
+      });
+    });
+
+    overlay.querySelector('.befriend-release-skip-btn').addEventListener('click', () => {
+      overlay.remove();
+      resolve(null);
+    });
+  });
+}
+
+/**
+ * Show target selection UI when multiple enemies are befriendable.
+ */
+function showBefriendTargetSelect(enemies) {
+  return new Promise((resolve) => {
+    const eligible = enemies
+      .map((e, i) => ({ ...e, index: i }))
+      .filter(e => e.hp > 0 && !e.befriended && (e.hp / e.maxHp) <= 0.5);
+
+    if (eligible.length <= 1) {
+      resolve(eligible.length === 1 ? eligible[0].index : -1);
+      return;
+    }
+
+    const actionArea = document.getElementById('action-area');
+    if (!actionArea) { resolve(-1); return; }
+
+    const buttons = eligible.map(e => `
+      <div class="shrine-chip-option befriend-target-option" data-enemy-index="${e.index}" style="width:100%">
+        <div class="shrine-chip-info" style="padding:1rem; width:100%; text-align:center">
+          <div class="shrine-chip-name" style="color:#4CAF50">${e.nameEn || e.name} (HP: ${Math.round(e.hp / e.maxHp * 100)}%)</div>
+        </div>
+      </div>
+    `).join('');
+
+    actionArea.innerHTML = `
+      <div class="shrine-chip-list" style="padding:0 1rem">
+        <div style="text-align:center; color:var(--text-secondary); margin-bottom:0.5rem">Who do you want to talk to?</div>
+        ${buttons}
+      </div>
+    `;
+
+    actionArea.addEventListener('click', (e) => {
+      const opt = e.target.closest('.befriend-target-option');
+      if (!opt) return;
+      resolve(parseInt(opt.dataset.enemyIndex, 10));
+    });
+  });
+}
+
+/**
+ * Show one round of befriend conversation.
+ * Returns the selected option index.
+ */
+function showConversationRound(round, roundNumber, robotName) {
+  return new Promise((resolve) => {
+    // Show robot's line in narration box
+    narration.showNarration(round.speaker, {
+      speaker: robotName,
+      persistent: true,
+      skipRewrite: true
+    });
+
+    const actionArea = document.getElementById('action-area');
+    if (!actionArea) { resolve(0); return; }
+
+    const roundLabel = `Round ${roundNumber + 1}/3`;
+    const buttons = round.options.map((opt, idx) => `
+      <div class="shrine-chip-option befriend-answer-option" data-answer-index="${idx}" style="width:100%">
+        <div class="shrine-chip-info" style="padding:1rem; width:100%; text-align:center">
+          <div class="shrine-chip-name" style="color:var(--accent-primary)">${opt}</div>
+        </div>
+      </div>
+    `).join('');
+
+    actionArea.innerHTML = `
+      <div class="shrine-chip-list befriend-answer-list" style="padding:0 1rem">
+        <div style="text-align:center; color:var(--text-secondary); margin-bottom:0.5rem; font-size:12px">${roundLabel}</div>
+        ${buttons}
+      </div>
+    `;
+
+    const list = actionArea.querySelector('.befriend-answer-list');
+    list.addEventListener('click', (e) => {
+      const opt = e.target.closest('.befriend-answer-option');
+      if (!opt || list.dataset.answered) return;
+      list.dataset.answered = '1';
+      resolve(parseInt(opt.dataset.answerIndex, 10));
+    });
+  });
+}
+
+/**
+ * Show green/red feedback on answer options.
+ */
+function showAnswerFeedback(selectedIndex, correctIndex, correct) {
+  document.querySelectorAll('.befriend-answer-option').forEach((o, idx) => {
+    o.style.pointerEvents = 'none';
+    if (idx === correctIndex) {
+      o.style.borderColor = 'var(--success-color, #4ade80)';
+      o.style.boxShadow = '0 0 10px var(--success-color, #4ade80)';
+    } else if (idx === selectedIndex && !correct) {
+      o.style.borderColor = 'var(--danger-color, #ef4444)';
+      o.style.boxShadow = '0 0 10px var(--danger-color, #ef4444)';
+    } else {
+      o.style.opacity = '0.5';
+    }
+  });
+}
+
+/**
+ * Execute befriend action: 3-round conversation to capture low-HP enemy robot
+ */
+async function executeBefriendAction() {
+  if (!combatActive) return;
+  if (setCombatAnimationActive) setCombatAnimationActive(true);
+
+  try {
+    const state = getGameState();
+    const enemies = state.combat?.enemies || [];
+
+    // Target selection (auto if only one eligible)
+    const eligible = enemies.filter(e => e.hp > 0 && !e.befriended && (e.hp / e.maxHp) <= 0.5);
+    let enemyIndex;
+    if (eligible.length > 1) {
+      enemyIndex = await showBefriendTargetSelect(enemies);
+      if (enemyIndex < 0) {
+        if (setCombatAnimationActive) setCombatAnimationActive(false);
+        combatPausedForVocab = true;
+        showNextDualCardsFromQueue();
+        return;
+      }
+    }
+
+    // Fetch conversation from server
+    const convoResult = await apiGetBefriendConversation(enemyIndex);
+    if (convoResult.error) {
+      console.error('Befriend conversation error:', convoResult.error);
+      if (setCombatAnimationActive) setCombatAnimationActive(false);
+      showNextDualCardsFromQueue();
+      return;
+    }
+
+    const { rounds, targetEnemy, targetEnemyIndex } = convoResult;
+    const robotName = targetEnemy?.nameEn || targetEnemy?.name || 'Robot';
+
+    // 3-round conversation loop
+    for (let i = 0; i < rounds.length; i++) {
+      const selectedIndex = await showConversationRound(rounds[i], i, robotName);
+      const answerResult = await apiSubmitBefriendAnswer(i, selectedIndex);
+
+      showAnswerFeedback(selectedIndex, answerResult.correctIndex, answerResult.correct);
+      await delay(800);
+      if (narration.forceHideNarration) narration.forceHideNarration();
+
+      if (!answerResult.correct) {
+        // --- FAILURE ---
+        narration.showNarration('？？？', {
+          speaker: robotName, autoDismiss: 1000, skipRewrite: true
+        });
+
+        // Shake target enemy
+        const slots = document.querySelectorAll('.enemy-robot-slot');
+        const targetSlot = slots[targetEnemyIndex];
+        if (targetSlot) {
+          targetSlot.classList.add('shake-animation');
+          setTimeout(() => targetSlot.classList.remove('shake-animation'), 500);
+        }
+
+        // Show enemy attack damage
+        if (answerResult.enemyAttacks?.length > 0) {
+          for (const atk of answerResult.enemyAttacks) {
+            if (atk.damage > 0) {
+              showDamageNumber(atk.damage, true, false);
+              animatePlayerHurt();
+              playSFX('player-hit');
+              await delay(400);
+            }
+          }
+        }
+
+        // Update game state with post-attack HP
+        if (answerResult.allies || answerResult.enemies) {
+          const gs = getGameState();
+          if (gs.combat) {
+            updateGameState({
+              ...gs,
+              combat: {
+                ...gs.combat,
+                ...(answerResult.allies && { allies: answerResult.allies }),
+                ...(answerResult.enemies && { enemies: answerResult.enemies })
+              }
+            });
+            updateUI();
+          }
+        }
+
+        if (answerResult.combatEnded) {
+          stopCombatLoop({ combatEnded: true, victory: false });
+          return;
+        }
+
+        // Resume normal combat
+        if (setCombatAnimationActive) setCombatAnimationActive(false);
+        combatPausedForVocab = true;
+        showNextDualCardsFromQueue();
+        return;
+      }
+
+      // --- CORRECT ---
+      if (answerResult.conversationComplete) {
+        // All 3 rounds correct!
+        narration.showNarration('\u3058\u3083\u3042\u3001\u53cb\u9054\u306b\u306a\u308d\u3046\uff01', {
+          speaker: robotName, autoDismiss: 1500, skipRewrite: true
+        });
+        playSFX('chip-skill');
+
+        // Mark enemy as befriended visually
+        const captured = answerResult.befriend?.captured;
+        if (captured?.id) {
+          const slot = document.querySelector(`.enemy-robot-slot[data-enemy-id="${captured.id}"]`);
+          if (slot) slot.classList.add('befriended');
+        }
+
+        if (answerResult.befriend?.reason === 'Party full') {
+          // Party full — prompt release
+          const releaseChoice = await showBefriendReleasePrompt();
+          if (releaseChoice && apiBefriendReplace) {
+            const replaceResult = await apiBefriendReplace(releaseChoice);
+            if (replaceResult?.success) {
+              const actionArea = document.getElementById('action-area');
+              if (actionArea) {
+                actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">BEFRIENDED ${replaceResult.captured.nameEn}!</div>`;
+              }
+              playSFX('chip-skill');
+
+              const capturedId = replaceResult.captured?.id;
+              if (capturedId) {
+                const slot = document.querySelector(`.enemy-robot-slot[data-enemy-id="${capturedId}"]`);
+                if (slot) slot.classList.add('befriended');
+              }
+              await delay(1200);
+
+              if (replaceResult.combatEnded) {
+                stopCombatLoop({ combatEnded: true, victory: replaceResult.victory });
+                return;
+              }
+
+              // Update state from replace result
+              const gs = getGameState();
+              if (replaceResult.state) {
+                updateGameState(replaceResult.state);
+              } else if (gs.combat && replaceResult.enemies) {
+                updateGameState({
+                  ...gs,
+                  combat: { ...gs.combat, enemies: replaceResult.enemies },
+                  run: { ...gs.run, robotParty: replaceResult.robotParty }
+                });
+              }
+            }
+          } else {
+            // Let it go
+            const actionArea = document.getElementById('action-area');
+            if (actionArea) {
+              actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #9E9E9E;">Let it go...</div>`;
+            }
+            await delay(800);
+          }
+        } else {
+          // Normal success
+          const actionArea = document.getElementById('action-area');
+          if (actionArea && captured) {
+            actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">BEFRIENDED ${captured.nameEn}!</div>`;
+          }
+          await delay(1200);
+
+          // Update state
+          if (answerResult.state) {
+            updateGameState(answerResult.state);
+          } else {
+            const gs = getGameState();
+            if (gs.combat && answerResult.enemies) {
+              updateGameState({
+                ...gs,
+                combat: { ...gs.combat, enemies: answerResult.enemies },
+                ...(answerResult.robotParty && {
+                  run: { ...gs.run, robotParty: answerResult.robotParty }
+                })
+              });
+            }
+          }
+        }
+
+        if (answerResult.combatEnded) {
+          stopCombatLoop({ combatEnded: true, victory: answerResult.victory || false });
+          return;
+        }
+
+        // Continue combat
+        if (setCombatAnimationActive) setCombatAnimationActive(false);
+        combatPausedForVocab = true;
+        showNextDualCardsFromQueue();
+        return;
+      }
+
+      // Correct but not complete — brief pause then show next round
+      await delay(300);
+    }
+
+  } catch (error) {
+    console.error('Befriend conversation error:', error);
+  } finally {
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
+  }
+}
+
+/**
  * Stop combat loop and show results
  * @param {Object} result - Combat result data
  */
@@ -1132,6 +2136,11 @@ export async function stopCombatLoop(result) {
     // Show victory or defeat modal
     if (result.victory) {
       playSFX('victory');
+      const gs = getGameState();
+      const isRobotCombat = gs?.combat?.isRobotCombat;
+      if (isRobotCombat && showPostCombatShop) {
+        await showPostCombatShop();
+      }
       showVictoryModal(result);
       wordPractice.prefetchCombatWords();
     } else {
@@ -1143,6 +2152,11 @@ export async function stopCombatLoop(result) {
     // Fallback narration
     if (result.victory) {
       await narration.showNarration('市民解放！');
+      const gs = getGameState();
+      const isRobotCombat = gs?.combat?.isRobotCombat;
+      if (isRobotCombat && showPostCombatShop) {
+        await showPostCombatShop();
+      }
       showVictoryModal(result);
       wordPractice.prefetchCombatWords();
     } else {

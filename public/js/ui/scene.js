@@ -22,11 +22,25 @@
  * - ../dom.js: DOM element references (sceneBackground, enemySprite, etc.)
  *
  * SPRITE LOADING:
- * - Sprites load from /assets/sprites/enemies/{id}.webp
+ * - Enemy sprites load from /assets/sprites/enemies/{id}.webp
+ * - Robot sprites load from /assets/sprites/robots/{id}.webp
  * - Falls back to emoji placeholder based on enemy personality if load fails
  */
 
 import { dom } from '../dom.js';
+
+const ELEMENT_ICONS = {
+  wood: '\u{1F33F}', fire: '\u{1F525}', earth: '\u26F0\uFE0F', metal: '\u2699\uFE0F', water: '\u{1F4A7}'
+};
+
+const ELEMENT_COLORS = {
+  wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63', metal: '#9E9E9E', water: '#2196F3'
+};
+
+function rarityStars(rarity) {
+  const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity];
+  return n ? `<span style="color:#FFD700">${n}★</span>` : '';
+}
 
 /** Set scene background image */
 export function setBackground(imagePath) {
@@ -44,22 +58,134 @@ export function showEnemy(enemy) {
     return;
   }
 
-  dom.enemyName.textContent = enemy.nameEn || enemy.name || 'Enemy';
+  // Check if this is a robot (has element property)
+  const isRobot = !!enemy.element;
+
+  if (isRobot) {
+    const icon = ELEMENT_ICONS[enemy.element] || '';
+    dom.enemyName.innerHTML = `<span class="enemy-element-icon">${icon}</span> ${enemy.nameEn || enemy.name || 'Enemy'} ${rarityStars(enemy.rarity)} <span class="enemy-level-badge">Lv${enemy.level || 1}</span>`;
+    dom.enemySpriteContainer.style.borderColor = ELEMENT_COLORS[enemy.element] || '';
+    dom.enemySpriteContainer.classList.add('robot-enemy');
+  } else {
+    dom.enemyName.textContent = enemy.nameEn || enemy.name || 'Enemy';
+    dom.enemySpriteContainer.style.borderColor = '';
+    dom.enemySpriteContainer.classList.remove('robot-enemy');
+  }
+
   dom.enemyInfo.classList.add('visible');
   updateEnemyHP(enemy.hp, enemy.maxHp);
 
   // Construct sprite path from enemy ID
-  const spritePath = enemy.sprite || `/assets/sprites/enemies/${enemy.id}.webp`;
+  const spritePath = enemy.sprite || (isRobot
+    ? `/assets/sprites/robots/${enemy.id}.webp`
+    : `/assets/sprites/enemies/${enemy.id}.webp`);
   dom.enemySprite.src = spritePath;
   dom.enemySprite.onerror = () => {
-    // Hide broken img, show emoji placeholder instead
     dom.enemySprite.classList.remove('visible');
-    showPlaceholder(enemy);
+    if (isRobot) {
+      showRobotPlaceholder(enemy);
+    } else {
+      showPlaceholder(enemy);
+    }
   };
   dom.enemySprite.onload = () => {
     removePlaceholder();
     dom.enemySprite.classList.add('visible');
   };
+}
+
+/** Show multiple enemy robots in horizontal row */
+export function showEnemies(enemies) {
+  if (!enemies || enemies.length === 0) {
+    hideEnemy();
+    return;
+  }
+  if (enemies.length === 1) {
+    showEnemy(enemies[0]);
+    return;
+  }
+
+  // Clear existing single-enemy display
+  dom.enemySprite.classList.remove('visible');
+  removePlaceholder();
+  dom.enemyInfo.classList.add('visible');
+  dom.enemyHpBar.style.display = 'none';
+  dom.enemyName.textContent = '';
+
+  // Remove any previous multi-enemy container
+  dom.enemySpriteContainer.querySelector('.multi-enemy-row')?.remove();
+
+  const row = document.createElement('div');
+  row.className = 'multi-enemy-row';
+
+  for (let i = 0; i < enemies.length; i++) {
+    const enemy = enemies[i];
+    const icon = ELEMENT_ICONS[enemy.element] || '';
+    const color = ELEMENT_COLORS[enemy.element] || '#666';
+    const hpPct = Math.max(0, (enemy.hp / enemy.maxHp) * 100);
+
+    const slot = document.createElement('div');
+    slot.className = 'enemy-robot-slot';
+    slot.dataset.enemyIndex = i;
+    slot.dataset.enemyId = enemy.id;
+    slot.innerHTML = `
+      <div class="enemy-robot-icon">
+        <img class="enemy-robot-sprite" src="/assets/sprites/robots/${enemy.id}.webp"
+             onerror="this.style.display='none';this.nextElementSibling.style.display=''" alt="">
+        <span class="enemy-robot-element" style="display:none">${icon}</span>
+        <span class="enemy-robot-level" style="background-color: ${color}">Lv${enemy.level || 1}</span>
+      </div>
+      <div class="enemy-robot-name">${enemy.nameEn || enemy.name} ${rarityStars(enemy.rarity)}</div>
+      <div class="enemy-robot-hp-bar">
+        <div class="enemy-robot-hp-fill" style="width: ${hpPct}%"></div>
+      </div>
+    `;
+    row.appendChild(slot);
+  }
+
+  dom.enemySpriteContainer.appendChild(row);
+}
+
+/** Update HP bar for a specific enemy by index (multi-enemy) */
+export function updateEnemyHPAtIndex(index, current, max) {
+  const slot = dom.enemySpriteContainer.querySelector(`.enemy-robot-slot[data-enemy-index="${index}"]`);
+  if (!slot) {
+    // Fallback to single-enemy update
+    updateEnemyHP(current, max);
+    return;
+  }
+  const fill = slot.querySelector('.enemy-robot-hp-fill');
+  if (fill) {
+    const pct = Math.max(0, Math.min(100, (current / max) * 100));
+    fill.style.width = `${pct}%`;
+  }
+  // Mark defeated with transition (CSS handles fade out)
+  if (current <= 0 && !slot.classList.contains('defeated')) {
+    slot.classList.add('defeated');
+  }
+}
+
+/** Mark a specific enemy slot as befriended (disappears with upward animation) */
+export function markEnemyBefriended(enemyId) {
+  // Try by enemy ID first, then fall back to first non-defeated slot
+  let slot = dom.enemySpriteContainer.querySelector(`.enemy-robot-slot[data-enemy-id="${enemyId}"]`);
+  if (!slot) {
+    slot = dom.enemySpriteContainer.querySelector('.enemy-robot-slot:not(.defeated):not(.befriended)');
+  }
+  if (slot) {
+    slot.classList.add('befriended');
+  }
+}
+
+/** Get the DOM element for a specific enemy slot by index */
+export function getEnemySlotElement(index) {
+  return dom.enemySpriteContainer.querySelector(`.enemy-robot-slot[data-enemy-index="${index}"]`);
+}
+
+/** Hide all enemies (single and multi) */
+export function hideEnemies() {
+  hideEnemy();
+  dom.enemySpriteContainer.querySelector('.multi-enemy-row')?.remove();
 }
 
 function showPlaceholder(enemy) {
@@ -69,6 +195,16 @@ function showPlaceholder(enemy) {
   el.style.cssText = 'width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:2;position:relative;';
   const emojiMap = { stressed: '😰', aggressive: '😡', calm: '😐', shy: '😳', cheerful: '😊', mysterious: '🎭', arrogant: '😤', kind: '🥺', rushed: '😤' };
   el.textContent = emojiMap[enemy.personality] || '👤';
+  dom.enemySpriteContainer.appendChild(el);
+}
+
+function showRobotPlaceholder(enemy) {
+  removePlaceholder();
+  const el = document.createElement('div');
+  el.id = 'enemy-placeholder';
+  const color = ELEMENT_COLORS[enemy.element] || '#666';
+  el.style.cssText = `width:90px;height:90px;border-radius:50%;background:transparent;border:none;display:flex;align-items:center;justify-content:center;font-size:48px;z-index:2;position:relative;`;
+  el.textContent = ELEMENT_ICONS[enemy.element] || '\u{1F916}';
   dom.enemySpriteContainer.appendChild(el);
 }
 
@@ -179,6 +315,8 @@ export function hideEnemy() {
   dom.enemyInfo.classList.remove('visible');
   dom.enemyHpBar.style.display = '';
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = '';
+  dom.enemySpriteContainer.style.borderColor = '';
+  dom.enemySpriteContainer.classList.remove('robot-enemy');
   removePlaceholder();
 }
 

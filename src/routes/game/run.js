@@ -13,6 +13,7 @@ import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
 import { lookupVocabularyBatch } from '../../jpdb.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
 import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswer } from '../../bunpro.js';
+import { validateTeamSelection } from '../../game/services/robot-collection-service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -32,21 +33,53 @@ export default function createRunRoutes({
   generateGameNarration,
   generateDoorHints,
   cancelPendingPrefetches,
-  clearPrefetchCache
+  clearPrefetchCache,
+  generateMissingDialoguesFn,
+  getUserVocabulary
 }) {
   const router = Router();
 
   // Start a new run
   router.post('/start-run', async (req, res) => {
     const gameManager = req.gameManager;
+    const { starterId, starterIds } = req.body;
     try {
-      gameManager.startRun();
+      // Validate robot selection against collection
+      const ids = starterIds || (starterId ? [starterId] : null);
+      if (ids) {
+        const meta = gameManager.getMeta();
+        const collection = meta.robotCollection || [];
+        const validation = validateTeamSelection(collection, ids);
+        if (!validation.valid) {
+          return res.status(400).json({ error: validation.reason });
+        }
+      }
+
+      gameManager.startRun(null, starterId, starterIds);
 
       const narration = await generateGameNarration('runStart', {
         player: gameManager.run.player
       }, req.userKeys);
 
       req.saveGame();
+
+      // Fire-and-forget: generate any missing befriend dialogues
+      if (generateMissingDialoguesFn && getUserVocabulary) {
+        const userKeys = req.userKeys || {};
+        if (userKeys.aiApiKey) {
+          const { words: vocabulary } = getUserVocabulary(req.user.id);
+          generateMissingDialoguesFn(req.user.id, {
+            provider: userKeys.aiProvider || 'openai',
+            apiKey: userKeys.aiApiKey,
+            openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+            openrouterModel: userKeys.openrouterModel,
+            jlptLevel: userKeys.jlptLevel || 'N4'
+          }, vocabulary).catch(e => {
+            console.error('[BefriendDialogue] Background bulk generation failed:', e.message);
+          });
+        }
+      }
+
       res.json({
         state: req.getEnrichedGameState(),
         narration
@@ -74,7 +107,7 @@ export default function createRunRoutes({
   router.post('/levels/select', async (req, res) => {
     const gameManager = req.gameManager;
     try {
-      const { levelId } = req.body;
+      const { levelId, starterId, starterIds } = req.body;
       if (!levelId || typeof levelId !== 'number') {
         return res.status(400).json({ error: 'levelId (number) required' });
       }
@@ -90,13 +123,42 @@ export default function createRunRoutes({
         return res.status(400).json({ error: 'A run is already active' });
       }
 
-      gameManager.startRun(levelId);
+      // Validate robot selection against collection
+      const ids = starterIds || (starterId ? [starterId] : null);
+      if (ids) {
+        const meta = gameManager.getMeta();
+        const collection = meta.robotCollection || [];
+        const validation = validateTeamSelection(collection, ids);
+        if (!validation.valid) {
+          return res.status(400).json({ error: validation.reason });
+        }
+      }
+
+      gameManager.startRun(levelId, starterId, starterIds);
 
       const narration = await generateGameNarration('runStart', {
         player: gameManager.run.player
       }, req.userKeys);
 
       req.saveGame();
+
+      // Fire-and-forget: generate any missing befriend dialogues
+      if (generateMissingDialoguesFn && getUserVocabulary) {
+        const userKeys = req.userKeys || {};
+        if (userKeys.aiApiKey) {
+          const { words: vocabulary } = getUserVocabulary(req.user.id);
+          generateMissingDialoguesFn(req.user.id, {
+            provider: userKeys.aiProvider || 'openai',
+            apiKey: userKeys.aiApiKey,
+            openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+            openrouterModel: userKeys.openrouterModel,
+            jlptLevel: userKeys.jlptLevel || 'N4'
+          }, vocabulary).catch(e => {
+            console.error('[BefriendDialogue] Background bulk generation failed:', e.message);
+          });
+        }
+      }
+
       res.json({
         state: req.getEnrichedGameState(),
         narration

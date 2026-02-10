@@ -281,7 +281,7 @@ function isSpecialType(type) {
  * @param {string|null} excludeSpecialType - Special type to exclude (for back-to-back constraint)
  * @returns {object} Room object
  */
-function generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType = null) {
+function generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType = null, encountersOnly = false) {
   const SHRINE_CHANCE = 0.15;          // 15% chance for shrine
   const QUIZ_CHANCE = 0.20;            // 20% chance for quiz
   const WORD_DISCOVERY_CHANCE = 0.15;  // 15% chance for word discovery
@@ -293,6 +293,8 @@ function generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType = 
 
   if (queuedType && ROOM_TYPES[queuedType]) {
     type = ROOM_TYPES[queuedType];
+  } else if (encountersOnly) {
+    type = ROOM_TYPES.encounter;
   } else {
     // Generate with constraints
     let attempts = 0;
@@ -330,8 +332,8 @@ function generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType = 
  * @param {string|null} excludeSpecialType - Special type to exclude (for back-to-back constraint)
  * @returns {Array} Array of 2 room objects
  */
-function generateBranchPair(floor, roomNumber, totalRooms, excludeSpecialType = null) {
-  const room1 = generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType);
+function generateBranchPair(floor, roomNumber, totalRooms, excludeSpecialType = null, encountersOnly = false) {
+  const room1 = generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType, encountersOnly);
 
   // For room2, also exclude room1's type if it's special
   let room2ExcludeType = excludeSpecialType;
@@ -339,7 +341,7 @@ function generateBranchPair(floor, roomNumber, totalRooms, excludeSpecialType = 
     room2ExcludeType = room1.type;
   }
 
-  const room2 = generateSingleRoom(floor, roomNumber, totalRooms, room2ExcludeType);
+  const room2 = generateSingleRoom(floor, roomNumber, totalRooms, room2ExcludeType, encountersOnly);
 
   return [room1, room2];
 }
@@ -350,9 +352,10 @@ function generateBranchPair(floor, roomNumber, totalRooms, excludeSpecialType = 
  * @param {number} floor - Current floor (1-7)
  * @param {number} encountersNeeded - Number of room slots before boss
  * @param {string|null} lastSpecialType - Last special room type completed (for back-to-back constraint)
+ * @param {boolean} encountersOnly - If true, all rooms are encounters (robot combat MVP)
  * @returns {Array} Array of room objects (singles) or pairs (arrays of 2)
  */
-export function generateFloorRooms(floor, encountersNeeded = 3, lastSpecialType = null) {
+export function generateFloorRooms(floor, encountersNeeded = 3, lastSpecialType = null, encountersOnly = false) {
   const rooms = [];
   const totalSlots = encountersNeeded + 1; // +1 for boss
   let prevSpecialType = lastSpecialType;
@@ -362,14 +365,14 @@ export function generateFloorRooms(floor, encountersNeeded = 3, lastSpecialType 
 
     if (i === 0) {
       // First room: single (auto-entered)
-      const room = generateSingleRoom(floor, roomNumber, totalSlots, prevSpecialType);
+      const room = generateSingleRoom(floor, roomNumber, totalSlots, prevSpecialType, encountersOnly);
       if (isSpecialType(room.type)) {
         prevSpecialType = room.type;
       }
       rooms.push(room);
     } else {
       // Middle rooms: branch pairs
-      const pair = generateBranchPair(floor, roomNumber, totalSlots, prevSpecialType);
+      const pair = generateBranchPair(floor, roomNumber, totalSlots, prevSpecialType, encountersOnly);
       rooms.push(pair);
       // Note: prevSpecialType updates when player makes selection (in selectBranch)
     }

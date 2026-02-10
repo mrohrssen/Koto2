@@ -1,0 +1,552 @@
+[
+  {
+    "id": "wood-common",
+    "name": "モクボット",
+    "nameEn": "Moku Bot",
+    "element": "wood",
+    "rarity": "common",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "リーフ",
+      "nameEn": "Leaf",
+      "power": 20,
+      "element": "wood"
+    },
+    "ultimate": {
+      "name": "大嵐",
+      "nameEn": "Great Storm",
+      "power": 50,
+      "element": "wood",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "wood-uncommon",
+    "name": "キノボット",
+    "nameEn": "Kino Bot",
+    "element": "wood",
+    "rarity": "uncommon",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "つるウィップ",
+      "nameEn": "Vine Whip",
+      "power": 25,
+      "element": "wood"
+    },
+    "ultimate": {
+      "name": "森の怒り",
+      "nameEn": "Forest Wrath",
+      "power": 60,
+      "element": "wood",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "wood-rare",
+    "name": "ツルボット",
+    "nameEn": "Tsuru Bot",
+    "element": "wood",
+    "rarity": "rare",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "ソーンランス",
+      "nameEn": "Thorn Lance",
+      "power": 30,
+      "element": "wood"
+    },
+    "ultimate": {
+      "name": "百花繚乱",
+      "nameEn": "Hundred Flowers",
+      "power": 70,
+      "element": "wood",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "wood-epic",
+    "name": "モリボット",
+    "nameEn": "Mori Bot",
+    "element": "wood",
+    "rarity": "epic",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "根の拘束",
+      "nameEn": "Root Bind",
+      "power": 35,
+      "element": "wood"
+    },
+    "ultimate": {
+      "name": "世界樹の息吹",
+      "nameEn": "World Tree Breath",
+      "power": 80,
+      "element": "wood",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "wood-legendary",
+    "name": "ジュカイ",
+    "nameEn": "Jukai",
+    "element": "wood",
+    "rarity": "legendary",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "命の奔流",
+      "nameEn": "Life Torrent",
+      "power": 40,
+      "element": "wood"
+    },
+    "ultimate": {
+      "name": "原始の森",
+      "nameEn": "Primeval Forest",
+      "power": 100,
+      "element": "wood",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "fire-common",
+    "name": "ヒノボット",
+    "nameEn": "Hino Bot",
+    "element": "fire",
+    "rarity": "common",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "バーン",
+      "nameEn": "Burn",
+      "power": 20,
+      "element": "fire"
+    },
+    "ultimate": {
+      "name": "煉獄",
+      "nameEn": "Inferno",
+      "power": 50,
+      "element": "fire",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "fire-uncommon",
+    "name": "カジボット",
+    "nameEn": "Kaji Bot",
+    "element": "fire",
+    "rarity": "uncommon",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "ファイアボール",
+      "nameEn": "Fireball",
+      "power": 25,
+      "element": "fire"
+    },
+    "ultimate": {
+      "name": "業火",
+      "nameEn": "Hellfire",
+      "power": 60,
+      "element": "fire",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "fire-rare",
+    "name": "エンボット",
+    "nameEn": "En Bot",
+    "element": "fire",
+    "rarity": "rare",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "火炎弾",
+      "nameEn": "Flame Shot",
+      "power": 30,
+      "element": "fire"
+    },
+    "ultimate": {
+      "name": "爆炎",
+      "nameEn": "Explosion",
+      "power": 70,
+      "element": "fire",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "fire-epic",
+    "name": "マグマロボ",
+    "nameEn": "Magma Robo",
+    "element": "fire",
+    "rarity": "epic",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "溶岩弾",
+      "nameEn": "Lava Blast",
+      "power": 35,
+      "element": "fire"
+    },
+    "ultimate": {
+      "name": "超新星",
+      "nameEn": "Supernova",
+      "power": 80,
+      "element": "fire",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "fire-legendary",
+    "name": "フェニクス",
+    "nameEn": "Phoenix",
+    "element": "fire",
+    "rarity": "legendary",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "不死の炎",
+      "nameEn": "Undying Flame",
+      "power": 40,
+      "element": "fire"
+    },
+    "ultimate": {
+      "name": "転生炎舞",
+      "nameEn": "Rebirth Blaze",
+      "power": 100,
+      "element": "fire",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "earth-common",
+    "name": "ツチボット",
+    "nameEn": "Tsuchi Bot",
+    "element": "earth",
+    "rarity": "common",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "ロックスロー",
+      "nameEn": "Rock Throw",
+      "power": 20,
+      "element": "earth"
+    },
+    "ultimate": {
+      "name": "地割れ",
+      "nameEn": "Fissure",
+      "power": 50,
+      "element": "earth",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "earth-uncommon",
+    "name": "イワボット",
+    "nameEn": "Iwa Bot",
+    "element": "earth",
+    "rarity": "uncommon",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "砂嵐",
+      "nameEn": "Sandstorm",
+      "power": 25,
+      "element": "earth"
+    },
+    "ultimate": {
+      "name": "岩石崩壊",
+      "nameEn": "Rock Collapse",
+      "power": 60,
+      "element": "earth",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "earth-rare",
+    "name": "ガンボット",
+    "nameEn": "Gan Bot",
+    "element": "earth",
+    "rarity": "rare",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "地響き",
+      "nameEn": "Tremor",
+      "power": 30,
+      "element": "earth"
+    },
+    "ultimate": {
+      "name": "大地震",
+      "nameEn": "Great Quake",
+      "power": 70,
+      "element": "earth",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "earth-epic",
+    "name": "ダイチロボ",
+    "nameEn": "Daichi Robo",
+    "element": "earth",
+    "rarity": "epic",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "重力撃",
+      "nameEn": "Gravity Strike",
+      "power": 35,
+      "element": "earth"
+    },
+    "ultimate": {
+      "name": "天変地異",
+      "nameEn": "Cataclysm",
+      "power": 80,
+      "element": "earth",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "earth-legendary",
+    "name": "テイタン",
+    "nameEn": "Titan",
+    "element": "earth",
+    "rarity": "legendary",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "大陸砕き",
+      "nameEn": "Continental Crush",
+      "power": 40,
+      "element": "earth"
+    },
+    "ultimate": {
+      "name": "創世の一撃",
+      "nameEn": "Genesis Impact",
+      "power": 100,
+      "element": "earth",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "metal-common",
+    "name": "テツボット",
+    "nameEn": "Tetsu Bot",
+    "element": "metal",
+    "rarity": "common",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "メタルクロー",
+      "nameEn": "Metal Claw",
+      "power": 20,
+      "element": "metal"
+    },
+    "ultimate": {
+      "name": "鋼鉄嵐",
+      "nameEn": "Steel Storm",
+      "power": 50,
+      "element": "metal",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "metal-uncommon",
+    "name": "カネボット",
+    "nameEn": "Kane Bot",
+    "element": "metal",
+    "rarity": "uncommon",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "アイアンバレット",
+      "nameEn": "Iron Bullet",
+      "power": 25,
+      "element": "metal"
+    },
+    "ultimate": {
+      "name": "金属崩壊",
+      "nameEn": "Metal Meltdown",
+      "power": 60,
+      "element": "metal",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "metal-rare",
+    "name": "コウボット",
+    "nameEn": "Kou Bot",
+    "element": "metal",
+    "rarity": "rare",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "刃旋風",
+      "nameEn": "Blade Whirlwind",
+      "power": 30,
+      "element": "metal"
+    },
+    "ultimate": {
+      "name": "千刃乱舞",
+      "nameEn": "Thousand Blades",
+      "power": 70,
+      "element": "metal",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "metal-epic",
+    "name": "ギンロボ",
+    "nameEn": "Gin Robo",
+    "element": "metal",
+    "rarity": "epic",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "磁力砲",
+      "nameEn": "Magnet Cannon",
+      "power": 35,
+      "element": "metal"
+    },
+    "ultimate": {
+      "name": "超電磁砲",
+      "nameEn": "Railgun",
+      "power": 80,
+      "element": "metal",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "metal-legendary",
+    "name": "プラチナ",
+    "nameEn": "Platinum",
+    "element": "metal",
+    "rarity": "legendary",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "光刃",
+      "nameEn": "Light Blade",
+      "power": 40,
+      "element": "metal"
+    },
+    "ultimate": {
+      "name": "絶対零刀",
+      "nameEn": "Absolute Zero Blade",
+      "power": 100,
+      "element": "metal",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "water-common",
+    "name": "ミズボット",
+    "nameEn": "Mizu Bot",
+    "element": "water",
+    "rarity": "common",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "アクアジェット",
+      "nameEn": "Aqua Jet",
+      "power": 20,
+      "element": "water"
+    },
+    "ultimate": {
+      "name": "大海嘯",
+      "nameEn": "Great Tsunami",
+      "power": 50,
+      "element": "water",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "water-uncommon",
+    "name": "ナミボット",
+    "nameEn": "Nami Bot",
+    "element": "water",
+    "rarity": "uncommon",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "バブルショット",
+      "nameEn": "Bubble Shot",
+      "power": 25,
+      "element": "water"
+    },
+    "ultimate": {
+      "name": "渦潮",
+      "nameEn": "Whirlpool",
+      "power": 60,
+      "element": "water",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "water-rare",
+    "name": "カワボット",
+    "nameEn": "Kawa Bot",
+    "element": "water",
+    "rarity": "rare",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "激流",
+      "nameEn": "Torrent",
+      "power": 30,
+      "element": "water"
+    },
+    "ultimate": {
+      "name": "深淵の波動",
+      "nameEn": "Abyssal Wave",
+      "power": 70,
+      "element": "water",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "water-epic",
+    "name": "ウミロボ",
+    "nameEn": "Umi Robo",
+    "element": "water",
+    "rarity": "epic",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "氷結弾",
+      "nameEn": "Freeze Shot",
+      "power": 35,
+      "element": "water"
+    },
+    "ultimate": {
+      "name": "絶対零度",
+      "nameEn": "Absolute Zero",
+      "power": 80,
+      "element": "water",
+      "chargesRequired": 5
+    }
+  },
+  {
+    "id": "water-legendary",
+    "name": "リヴァイア",
+    "nameEn": "Leviathan",
+    "element": "water",
+    "rarity": "legendary",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "autoSkill": {
+      "name": "深海の牙",
+      "nameEn": "Deep Sea Fang",
+      "power": 40,
+      "element": "water"
+    },
+    "ultimate": {
+      "name": "終末の洪水",
+      "nameEn": "Doomsday Flood",
+      "power": 100,
+      "element": "water",
+      "chargesRequired": 5
+    }
+  }
+]

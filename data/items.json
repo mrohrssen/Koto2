@@ -1,0 +1,82 @@
+[
+  {
+    "id": "atk-boost",
+    "name": "攻撃強化",
+    "nameEn": "ATK Boost",
+    "description": "All robots +2% attack",
+    "type": "stat",
+    "effect": { "field": "attackMult", "value": 0.02 }
+  },
+  {
+    "id": "hp-boost",
+    "name": "体力強化",
+    "nameEn": "HP Boost",
+    "description": "All robots +2% max HP (heals that amount)",
+    "type": "stat",
+    "effect": { "field": "hpMult", "value": 0.02 }
+  },
+  {
+    "id": "auto-power",
+    "name": "自動攻撃強化",
+    "nameEn": "Auto Power",
+    "description": "All robots +3% auto-skill power",
+    "type": "stat",
+    "effect": { "field": "autoPowerMult", "value": 0.03 }
+  },
+  {
+    "id": "ultimate-power",
+    "name": "必殺技強化",
+    "nameEn": "Ultimate Power",
+    "description": "All robots +5% ultimate power",
+    "type": "stat",
+    "effect": { "field": "ultimatePowerMult", "value": 0.05 }
+  },
+  {
+    "id": "element-edge",
+    "name": "属性強化",
+    "nameEn": "Element Edge",
+    "description": "Super-effective damage +0.05",
+    "type": "stat",
+    "effect": { "field": "elementEdge", "value": 0.05 }
+  },
+  {
+    "id": "thick-armor",
+    "name": "装甲強化",
+    "nameEn": "Thick Armor",
+    "description": "All incoming damage reduced by 1",
+    "type": "stat",
+    "effect": { "field": "flatDamageReduction", "value": 1 }
+  },
+  {
+    "id": "team-heal",
+    "name": "チーム回復",
+    "nameEn": "Team Heal",
+    "description": "Heal the lowest HP robot for 25% of max HP",
+    "type": "heal",
+    "effect": { "healPercent": 0.25 }
+  },
+  {
+    "id": "patch-up",
+    "name": "応急処置",
+    "nameEn": "Patch Up",
+    "description": "Heal the most damaged robot to full",
+    "type": "heal",
+    "effect": { "healMostDamaged": true }
+  },
+  {
+    "id": "revive",
+    "name": "蘇生",
+    "nameEn": "Revive",
+    "description": "Revive one random KO'd robot at 30% HP",
+    "type": "heal",
+    "effect": { "revivePercent": 0.3 }
+  },
+  {
+    "id": "quick-charge",
+    "name": "急速充電",
+    "nameEn": "Quick Charge",
+    "description": "All robots gain +2 ultimate charges",
+    "type": "utility",
+    "effect": { "chargeBoost": 2 }
+  }
+]

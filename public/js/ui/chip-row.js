@@ -41,11 +41,21 @@ export function init({ useSkillCallback, onReorder: reorderCallback, isBlocked: 
 
   // Dismiss popup and cancel swap on outside tap
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.chip-slot') && !e.target.closest('.chip-popup')) {
+    if (!e.target.closest('.chip-slot') && !e.target.closest('.chip-popup') && !e.target.closest('.robot-slot')) {
       hidePopup();
       exitSwapMode();
     }
   });
+}
+
+/**
+ * Render all 5 chip slots into a specific container
+ * @param {HTMLElement} container - Target container element
+ * @param {Array} chips - Array of 5 chip objects (or null for empty slots)
+ * @param {Object} options - { charges, levels, maxCharges, inCombat }
+ */
+export function renderTo(container, chips, options = {}) {
+  renderInto(container, chips, options);
 }
 
 /**
@@ -54,7 +64,10 @@ export function init({ useSkillCallback, onReorder: reorderCallback, isBlocked: 
  * @param {Object} options - { charges: [n,n,n,n,n], levels: [n,n,n,n,n], maxCharges: 5 }
  */
 export function render(chips, { charges = [], levels = [], maxCharges = 5, inCombat = false } = {}) {
-  const row = dom.chipRow;
+  renderInto(dom.chipRow, chips, { charges, levels, maxCharges, inCombat });
+}
+
+function renderInto(row, chips, { charges = [], levels = [], maxCharges = 5, inCombat = false } = {}) {
   row.innerHTML = '';
 
   for (let i = 0; i < 5; i++) {

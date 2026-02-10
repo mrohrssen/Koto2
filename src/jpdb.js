@@ -10,7 +10,7 @@
  * @module @jchat/shared/jpdb
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { logger } from './logger.js';
 import { invalidateWordByVid } from './game/vocab-manager.js';
 
@@ -44,6 +44,16 @@ export function configure(options) {
     config.vocabCacheDir = lastSlash > 0
       ? options.vocabSuggestionsFile.substring(0, lastSlash + 1)
       : './';
+  }
+
+  // Ensure cache directory exists (critical for Railway where /app/persist/data/ isn't pre-created)
+  if (config.vocabCacheDir && !existsSync(config.vocabCacheDir)) {
+    try {
+      mkdirSync(config.vocabCacheDir, { recursive: true });
+      console.log(`[JPDB] Created cache directory: ${config.vocabCacheDir}`);
+    } catch (e) {
+      console.error(`[JPDB] Failed to create cache directory ${config.vocabCacheDir}:`, e.message);
+    }
   }
 }
 

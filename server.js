@@ -128,6 +128,12 @@ import {
 } from './src/game/prefetch.js';
 import { enforceVocabLimit } from './src/game/vocab-repair.js';
 import { generateDoorHints as _generateDoorHints } from './src/game/services/door-hint-service.js';
+import { generateBefriendConversation } from './src/game/services/robot-combat-service.js';
+import {
+  getDialogueForRobot,
+  generateMissingDialogues,
+  regenerateRobotDialogue
+} from './src/game/services/befriend-dialogue-service.js';
 import createRoutes from './src/routes/index.js';
 import createAuthRoutes from './src/auth/routes.js';
 import { dataPath } from './src/data-dir.js';
@@ -372,7 +378,18 @@ app.use('/api', createRoutes({
   getDebugMode: () => debugMode,
   setDebugMode: (val) => { debugMode = val; },
   vocabCacheFile: VOCAB_CACHE_FILE,
-  staticWordList
+  staticWordList,
+  generateBefriendConversationFn: async (robot, vocabulary, aiConfig) => {
+    return generateBefriendConversation(robot, vocabulary, { ...aiConfig, chat });
+  },
+  getUserVocabulary: getUserNarrationVocabulary,
+  getDialogueForRobot,
+  generateMissingDialoguesFn: async (userId, aiConfig, vocabulary) => {
+    return generateMissingDialogues(userId, { ...aiConfig, chat }, vocabulary);
+  },
+  regenerateRobotDialogueFn: async (userId, robot, aiConfig, vocabulary) => {
+    return regenerateRobotDialogue(userId, robot, { ...aiConfig, chat }, vocabulary);
+  }
 }));
 
 // Narration helpers

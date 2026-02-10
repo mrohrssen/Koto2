@@ -35,6 +35,7 @@ export const dom = {
 
   // Chip row
   get chipRow() { return el('chip-row'); },
+  get chipRowSecondary() { return el('chip-row-secondary'); },
 
   // Player HP
   get playerHpContainer() { return el('player-hp-container'); },

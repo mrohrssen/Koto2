@@ -301,12 +301,21 @@ export default function createMiscRoutes({
     }
     const gameManager = req.gameManager;
     const { hp } = req.body;
-    if (!gameManager.combat || !gameManager.combat.enemy) {
+    // Handle both old combat (combat.enemy) and robot combat (combat.enemies[])
+    if (!gameManager.combat) {
       return res.status(400).json({ error: 'No active combat' });
     }
-    gameManager.combat.enemy.hp = hp;
+    if (gameManager.combat.enemy) {
+      gameManager.combat.enemy.hp = hp;
+    }
+    if (gameManager.combat.enemies?.length > 0) {
+      gameManager.combat.enemies.forEach(e => { e.hp = hp; });
+    }
+    if (!gameManager.combat.enemy && !gameManager.combat.enemies?.length) {
+      return res.status(400).json({ error: 'No active combat enemy' });
+    }
     req.saveGame();
-    res.json({ success: true, enemyHp: gameManager.combat.enemy.hp });
+    res.json({ success: true, enemyHp: hp });
   });
 
   // Debug: Queue room types for testing

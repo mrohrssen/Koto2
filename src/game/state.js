@@ -80,6 +80,9 @@ export function createMetaProgression() {
     // Achievements earned
     achievements: [],
 
+    // Permanent robot collection (persists across runs)
+    robotCollection: ['fire-common', 'water-common', 'wood-common'],
+
     // Level progression
     levels: {
       highestUnlocked: 1,
@@ -297,6 +300,23 @@ export function createNewRun(player) {
     // Current encounter
     encounter: null,
 
+    // Robot party (run-scoped)
+    robotParty: {
+      active: [],    // 0-3 deployed robots
+      reserves: [],  // 0-3 bench robots
+      maxTotal: 6
+    },
+
+    // Item buff stacking (run-scoped)
+    itemBuffs: {
+      attackMult: 1.0,
+      hpMult: 1.0,
+      autoPowerMult: 1.0,
+      ultimatePowerMult: 1.0,
+      elementEdge: 0,
+      flatDamageReduction: 0
+    },
+
     // Run history for DM context
     eventLog: [],
 
@@ -354,11 +374,17 @@ export function createCombatState(enemy) {
 
     enemy: { ...enemy },
 
+    allies: [],    // references to run.robotParty.active
+    enemies: [],   // MVP: single enemy robot
+
     // Last action for DM narration
     lastAction: null,
 
     // Combat log
-    log: []
+    log: [],
+
+    // Robot swap state
+    swapPhase: true  // true = free swaps allowed, false = swap costs action
   };
 }
 

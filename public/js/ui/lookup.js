@@ -138,6 +138,11 @@ async function activate() {
     return;
   }
 
+  // Clear any residual transform on .game-app (e.g. from screen shake)
+  // so that position:fixed popup is positioned relative to viewport, not the container
+  const gameApp = document.querySelector('.game-app');
+  if (gameApp) gameApp.style.transform = '';
+
   isLoading = true;
   definitionCache.clear();
   dom.lookupBtn?.classList.add('lookup-loading');

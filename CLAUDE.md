@@ -151,6 +151,18 @@ For detailed architecture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 - `/api/tts/` - VOICEVOX text-to-speech
 - `/api/settings` - User preferences
 
+## Playtesting with Playwright MCP
+
+**Before playtesting, READ [`docs/playtest-guide.md`](docs/playtest-guide.md).** It contains phase-by-phase instructions for what to expect at every screen, how to interact (swipe not click for cards), and what bugs to look for. Do not improvise.
+
+Key rules:
+- Fresh browser session per phase (close between phases)
+- Always `browser_snapshot` before interacting
+- Screenshot at every checkpoint
+- Know what "correct" looks like before you start
+
+Update the guide when adding new features or discovering new interaction patterns.
+
 ## Common Mistakes to Avoid
 
 - **Don't reference iRO stats** - The game uses only `attack` and `maxHp`. No STR/AGI/VIT/INT/DEX/LUK.

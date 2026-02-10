@@ -37,6 +37,11 @@ export function updateEnemyHPBar(hp) {
   sceneModule.updateEnemyHP(current, max);
 }
 
+/** Update HP bar for a specific enemy in multi-enemy combat */
+export function updateEnemyHPAtIndex(index, current, max) {
+  sceneModule.updateEnemyHPAtIndex(index, current, max);
+}
+
 /** Update player HP bar via hp-bar module */
 export function updatePlayerHPBar(hp) {
   // hp can be a number or { current, max } object from combat-cycle response

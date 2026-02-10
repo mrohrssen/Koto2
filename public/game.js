@@ -83,11 +83,15 @@ import * as economyUI from './js/ui/economy.js';
 import * as characterUI from './js/ui/character.js';
 import * as modalsUI from './js/ui/modals.js';
 import * as combatLoopUI from './js/ui/combat-loop.js';
+import { playAttackSound, playUltimateSound } from './js/ui/combat-audio.js';
+import { playUltimateAnimation, screenShake, showXpPopup, showLevelUpPopup } from './js/ui/combat-effects.js';
 import { dom } from './js/dom.js';
 import * as actions from './js/ui/actions.js';
 import * as takeover from './js/ui/takeover.js';
 import * as hpBar from './js/ui/hp-bar.js';
 import * as chipRow from './js/ui/chip-row.js';
+import * as robotRow from './js/ui/robot-row.js';
+import * as postCombatShop from './js/ui/post-combat-shop.js';
 import * as scene from './js/ui/scene.js';
 import * as audio from './js/audio.js';
 import * as auth from './js/ui/auth.js';
@@ -145,7 +149,19 @@ import {
   getDealerState as apiGetDealerState,
   dealerSell as apiDealerSell,
   dealerBuy as apiDealerBuy,
-  dealerLeave as apiDealerLeave
+  dealerLeave as apiDealerLeave,
+  startRobotEncounter as apiStartRobotEncounter,
+  robotCombatCycle as apiRobotCombatCycle,
+  useRobotUltimate as apiUseRobotUltimate,
+  getRobotCollection as apiGetRobotCollection,
+  rollPostCombatShop as apiRollPostCombatShop,
+  selectShopItem as apiSelectShopItem,
+  swapRobot as apiSwapRobot,
+  rearrangeRobots as apiRearrangeRobots,
+  swapRobotEquip as apiSwapRobotEquip,
+  befriendReplace as apiBefriendReplace,
+  getBefriendConversation as apiGetBefriendConversation,
+  submitBefriendAnswer as apiSubmitBefriendAnswer,
 } from './js/api.js';
 
 const API_BASE = '';
@@ -245,8 +261,15 @@ function updateStatusBar() {
 }
 
 function updateScene() {
-  if (gameState.phase === 'combat' && gameState.combat?.enemy) {
-    scene.showEnemy(gameState.combat.enemy);
+  if (gameState.phase === 'combat') {
+    // Robot combat uses enemies[] array; legacy uses single enemy
+    const enemies = gameState.combat?.enemies;
+    if (enemies?.length > 1) {
+      scene.showEnemies(enemies);
+    } else {
+      const enemy = enemies?.[0] || gameState.combat?.enemy;
+      if (enemy) scene.showEnemy(enemy);
+    }
   } else if (gameState.phase === 'shrine') {
     scene.showShrineFox();
   } else if (gameState.phase === 'quiz') {
@@ -256,7 +279,7 @@ function updateScene() {
   } else if (gameState.phase === 'dealer') {
     scene.showDealer();
   } else {
-    scene.hideEnemy();
+    scene.hideEnemies();
   }
   if (gameState.phase === 'shrine') {
     scene.setBackground('/assets/backgrounds/shrine_background.webp');
@@ -274,6 +297,29 @@ function updateScene() {
 }
 
 function updateChipRow() {
+  const secondaryRow = document.getElementById('chip-row-secondary');
+
+  if (gameState.run?.robotParty?.active?.length > 0) {
+    // Robot combat: render robot slots in primary row
+    robotRow.setReserves(gameState.run.robotParty.reserves || []);
+    robotRow.render(gameState.run.robotParty.active);
+
+    // Also render chip slots in secondary row so players can view/use chip skills
+    const cacheChips = chipLoadoutCache?.equipment?.weapon?.equippedChips;
+    const equipped = cacheChips || [];
+    const charges = chipLoadoutCache?.chipCharges || gameState.player?._chipCharges || {};
+    const levels = chipLoadoutCache?.chipLevels || gameState.player?._chipLevels || {};
+
+    if (secondaryRow && equipped.length > 0) {
+      secondaryRow.style.display = '';
+      renderChipsToSecondaryRow(secondaryRow, equipped, charges, levels);
+    }
+    return;
+  }
+
+  // Hide secondary row when not in robot combat
+  if (secondaryRow) secondaryRow.style.display = 'none';
+
   // Prefer enriched chip objects from loadout cache (has name, rarity, skill info)
   // Fall back to raw game state (which only has chip ID strings)
   const cacheChips = chipLoadoutCache?.equipment?.weapon?.equippedChips;
@@ -289,7 +335,24 @@ function updateChipRow() {
   });
 }
 
+/**
+ * Render chip slots into the secondary row during robot combat.
+ */
+function renderChipsToSecondaryRow(container, equipped, charges, levels) {
+  chipRow.renderTo(container, equipped, {
+    charges: equipped.map(c => charges[c?.id] || 0),
+    levels: equipped.map(c => levels[c?.id] || 1),
+    maxCharges: 5,
+    inCombat: gameState.phase === 'combat',
+  });
+}
+
 function updatePlayerHP() {
+  // In robot combat, individual robot HP bars handle health display
+  if (gameState.run?.robotParty?.active?.length > 0) {
+    hpBar.setVisible(false);
+    return;
+  }
   if (gameState.player) {
     hpBar.updatePlayerHP(gameState.player.hp, gameState.player.maxHp);
     hpBar.setVisible(true);
@@ -422,30 +485,158 @@ async function createCharacter() {
 
 async function startNewRun() {
   // Note: clearWordCache() moved to returnToHub() for earlier prefetching
-  const result = await apiStartRun();
-  if (result?.state) {
-    updateGameState(result.state);
-    updateUI();
-    wordPractice.prefetchCombatWords(); // Fallback if not prefetched from hub
-    if (gameState.run?.startingChipShop?.active) {
-      await economyUI.renderStartingChipShop();
+
+  // Fetch robot collection for team select
+  const collectionResult = await apiGetRobotCollection();
+  const catalog = collectionResult?.catalog;
+  const collection = collectionResult?.collection;
+
+  if (catalog && catalog.length > 0) {
+    const starterIds = await showCollectionSelect(catalog, collection);
+    if (!starterIds || starterIds.length === 0) return;
+
+    const result = await apiStartRun({ starterIds });
+    if (result?.state) {
+      updateGameState(result.state);
+      updateUI();
     }
   }
 }
 
+function showCollectionSelect(catalog, collection) {
+  const RARITY_ORDER = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+  const MAX_POINTS = 10;
+
+  return new Promise((resolve) => {
+    const selected = new Set();
+    let usedPoints = 0;
+
+    // Sort: common first, then by element within rarity
+    const sorted = [...catalog].sort((a, b) => {
+      const ri = RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity);
+      if (ri !== 0) return ri;
+      return a.element.localeCompare(b.element);
+    });
+
+    function render() {
+      const remaining = MAX_POINTS - usedPoints;
+      const budgetClass = remaining <= 0 ? 'budget-full' : remaining <= 3 ? 'budget-tight' : 'budget-ok';
+
+      const cellsHtml = sorted.map(r => {
+        const owned = collection.includes(r.id);
+        const isSelected = selected.has(r.id);
+        const tooExpensive = owned && !isSelected && r.pointCost > remaining;
+        const classes = [
+          'collection-cell',
+          !owned && 'unowned',
+          isSelected && 'selected',
+          tooExpensive && 'too-expensive'
+        ].filter(Boolean).join(' ');
+
+        return `
+          <div class="${classes}" data-id="${r.id}" data-rarity="${r.rarity}" data-element="${r.element}">
+            <img src="/assets/sprites/robots/${r.id}.webp" alt="${r.nameEn}" />
+            ${owned ? `<span class="point-badge">${r.pointCost}</span>` : ''}
+            <span class="robot-name">${owned ? r.nameEn : '???'}</span>
+          </div>
+        `;
+      }).join('');
+
+      // Render into .game-app (not #action-area) so the overlay fills the full mobile container
+      const gameApp = document.querySelector('.game-app');
+      let overlay = gameApp.querySelector('.collection-select');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'collection-select';
+        gameApp.appendChild(overlay);
+      }
+      overlay.innerHTML = `
+        <div class="collection-header">
+          <span class="collection-title">Select Your Team</span>
+          <span class="collection-points ${budgetClass}">${usedPoints} / ${MAX_POINTS} pts</span>
+        </div>
+        <div class="collection-grid">${cellsHtml}</div>
+        <button class="action-btn action-btn-primary" id="collection-confirm-btn" ${selected.size === 0 ? 'disabled' : ''}>
+          Start Run (${selected.size} robot${selected.size !== 1 ? 's' : ''})
+        </button>
+      `;
+
+      // Set background
+      scene.setBackground('/assets/backgrounds/hub.webp');
+
+      // Bind click handlers
+      document.querySelectorAll('.collection-cell:not(.unowned)').forEach(cell => {
+        cell.addEventListener('click', () => {
+          const id = cell.dataset.id;
+          const robot = sorted.find(r => r.id === id);
+          if (!robot) return;
+
+          if (selected.has(id)) {
+            selected.delete(id);
+            usedPoints -= robot.pointCost;
+          } else {
+            if (robot.pointCost > MAX_POINTS - usedPoints) return;
+            selected.add(id);
+            usedPoints += robot.pointCost;
+          }
+          render();
+        });
+      });
+
+      document.getElementById('collection-confirm-btn')?.addEventListener('click', () => {
+        if (selected.size > 0) {
+          // Remove overlay before resolving
+          const gameApp = document.querySelector('.game-app');
+          gameApp.querySelector('.collection-select')?.remove();
+          resolve([...selected]);
+        }
+      });
+    }
+
+    render();
+  });
+}
+
+function showCollectionToast(additions) {
+  for (const robot of additions) {
+    const toast = document.createElement('div');
+    toast.className = 'collection-toast';
+    toast.innerHTML = `
+      <img src="/assets/sprites/robots/${robot.id}.webp" />
+      <span class="toast-text">New: ${robot.nameEn}!</span>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.animation = 'toastSlideOut 0.3s ease-in forwards';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+}
+
 async function startEncounter() {
-  const result = gameState.phase === 'room_encounter'
-    ? await apiRoomEncounter()
-    : await apiStartEncounter();
+  const hasRobots = gameState.run?.robotParty?.active?.length > 0;
+
+  let result;
+  if (hasRobots) {
+    result = await apiStartRobotEncounter();
+  } else if (gameState.phase === 'room_encounter') {
+    result = await apiRoomEncounter();
+  } else {
+    result = await apiStartEncounter();
+  }
+
   if (result?.state) {
     updateGameState(result.state);
     updateUI();
-    const enemy = gameState.combat?.enemy;
-    if (result?.dialogue || enemy?.dialogue?.possessed) {
-      const text = result.dialogue || (Array.isArray(enemy.dialogue.possessed)
-        ? enemy.dialogue.possessed[Math.floor(Math.random() * enemy.dialogue.possessed.length)]
-        : enemy.dialogue.possessed);
-      await showEnemyDialogue(text, 'possessed');
+    // Robot encounters don't have possessed dialogue
+    if (!hasRobots) {
+      const enemy = gameState.combat?.enemy;
+      if (result?.dialogue || enemy?.dialogue?.possessed) {
+        const text = result.dialogue || (Array.isArray(enemy.dialogue.possessed)
+          ? enemy.dialogue.possessed[Math.floor(Math.random() * enemy.dialogue.possessed.length)]
+          : enemy.dialogue.possessed);
+        await showEnemyDialogue(text, 'possessed');
+      }
     }
     await delay(300);
     startCombatLoop();
@@ -512,6 +703,11 @@ function resumeCombatAfterVocab() { combatLoopUI.resumeCombatAfterVocab(); }
 function showVictoryModal(result) {
   audio.stopBGM();
   narrationBox.show('Victory!', { autoDismiss: 2000 });
+
+  // Show collection toast for newly befriended robots
+  if (result.newCollectionAdditions?.length > 0) {
+    showCollectionToast(result.newCollectionAdditions);
+  }
 
   // Trigger batch refresh on combat end if any pending reviews
   if (combatReviewedBatch.length > 0) {
@@ -664,6 +860,115 @@ function shouldUsePhaser() {
   return false; // Phaser disabled - using VN-style backgrounds instead
 }
 
+// ============ ROBOT COMBAT HANDLERS ============
+async function showPostCombatShopFlow() {
+  try {
+    const shopResult = await apiRollPostCombatShop();
+    if (!shopResult?.items?.length) return;
+
+    return new Promise((resolve) => {
+      postCombatShop.init({
+        itemSelectedCallback: async (index) => {
+          const selectResult = await apiSelectShopItem(index);
+          if (selectResult?.state) updateGameState(selectResult.state);
+          postCombatShop.hide();
+          resolve();
+        }
+      });
+      postCombatShop.show(shopResult.items);
+    });
+  } catch (e) {
+    console.error('Post-combat shop error:', e);
+  }
+}
+
+async function handleUseRobotUltimate(robotIndex) {
+  const result = await apiUseRobotUltimate(robotIndex);
+  if (!result?.success) {
+    console.warn('[Ultimate] Failed:', result?.reason);
+    return;
+  }
+
+  // Find the robot that used the ultimate for animation source
+  const state = gameState;
+  const robot = state.run?.robotParty?.active?.[robotIndex];
+  const robotElement = robot?.element || 'fire';
+  const robotSlotEl = document.querySelectorAll('#chip-row .robot-slot')[robotIndex] || null;
+
+  // Gather all enemy target elements
+  const enemies = result.enemies || state.combat?.enemies || [];
+  const targetEls = [];
+  if (enemies.length > 1) {
+    enemies.forEach((e, i) => {
+      const el = document.querySelector(`.enemy-robot-slot[data-enemy-index="${i}"]`);
+      if (el) targetEls.push(el);
+    });
+  } else {
+    const el = document.getElementById('enemy-sprite-container');
+    if (el) targetEls.push(el);
+  }
+
+  // Play ultimate sound and animation simultaneously
+  playUltimateSound(robotElement);
+  await playUltimateAnimation(robotElement, robotSlotEl, targetEls);
+
+  // Show ultimate name in action area
+  const actionArea = document.getElementById('action-area');
+  if (actionArea && result.ultimateName) {
+    const totalDmg = (result.hits || []).reduce((sum, h) => sum + h.damage, 0);
+    actionArea.innerHTML = `<div class="combat-robot-attack" style="color: #FFD700; font-size: 16px;">${result.robotName} uses ${result.ultimateName}! <strong>${totalDmg}</strong> total damage</div>`;
+  }
+
+  // Update enemy HP bars with damage from hits
+  if (result.hits?.length > 0) {
+    if (enemies.length > 1) {
+      enemies.forEach((enemy, idx) => {
+        characterUI.updateEnemyHPAtIndex(idx, enemy.hp, enemy.maxHp);
+      });
+    } else if (enemies[0]) {
+      characterUI.updateEnemyHPBar({ current: enemies[0].hp, max: enemies[0].maxHp });
+    }
+  }
+
+  // Show XP popups for enemies killed by ultimate
+  if (result.xpEvents?.length > 0) {
+    const activeRobots = state.run?.robotParty?.active || [];
+    const slots = document.querySelectorAll('#chip-row .robot-slot');
+    for (const event of result.xpEvents) {
+      if (event.xpGrants) {
+        for (const grant of event.xpGrants) {
+          const index = activeRobots.findIndex(r => r && r.id === grant.robotId);
+          if (index >= 0 && slots[index]) {
+            showXpPopup(slots[index], grant.xp);
+          }
+        }
+      }
+      if (event.levelUps) {
+        for (const lu of event.levelUps) {
+          const index = activeRobots.findIndex(r => r && r.id === lu.robotId);
+          if (index >= 0 && slots[index]) {
+            setTimeout(() => showLevelUpPopup(slots[index], lu.newLevel), 400);
+          }
+        }
+      }
+    }
+  }
+
+  // Update game state
+  if (result.state) {
+    updateGameState(result.state);
+    updateUI();
+  }
+
+  if (result.combatEnded && result.victory) {
+    combatLoopUI.stopCombatLoop({
+      combatEnded: true,
+      victory: true,
+      newCollectionAdditions: result.newCollectionAdditions,
+    });
+  }
+}
+
 // ============ CHIP HANDLERS ============
 async function openChipEquipView() {
   takeover.open('chipEquip');
@@ -724,6 +1029,133 @@ async function openChipEquipView() {
       updateChipRow();
     });
   });
+}
+
+// ============ ROBOT EQUIP UI (BUG B) ============
+async function openRobotEquipView() {
+  const party = gameState.run?.robotParty;
+  if (!party) return;
+
+  takeover.open('chipEquip');
+  const content = takeover.getContent('chipEquip');
+
+  function renderRobotEquipContent() {
+    const active = party.active || [];
+    const reserves = party.reserves || [];
+
+    const ELEMENT_ICONS = robotRow.ELEMENT_ICONS || { wood: '🌿', fire: '🔥', earth: '⛰️', metal: '⚙️', water: '💧' };
+    const ELEMENT_COLORS = robotRow.ELEMENT_COLORS || { wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63', metal: '#9E9E9E', water: '#2196F3' };
+    const rarityStars = (rarity) => { const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity]; return n ? `<span style="color:#FFD700">${n}★</span>` : ''; };
+
+    const activeHtml = active.map((robot, i) => {
+      if (!robot) return `<div class="robot-equip-slot empty" data-type="active" data-index="${i}"><span style="opacity:0.4">Empty</span></div>`;
+      const hpPct = Math.max(0, (robot.hp / robot.maxHp) * 100);
+      return `
+        <div class="robot-equip-slot" data-type="active" data-index="${i}" data-robot-id="${robot.id}"
+             style="border-left: 3px solid ${ELEMENT_COLORS[robot.element] || '#666'}">
+          <img class="robot-equip-sprite" src="/assets/sprites/robots/${robot.id}.webp"
+               onerror="this.style.display='none'" alt="">
+          <div class="robot-equip-info">
+            <div class="robot-equip-name">${ELEMENT_ICONS[robot.element] || ''} ${robot.nameEn} ${rarityStars(robot.rarity)} <span style="opacity:0.6">Lv${robot.level}</span></div>
+            <div class="robot-equip-stats">HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}</div>
+            <div class="robot-hp-bar" style="width:100%;height:4px;margin-top:2px">
+              <div class="robot-hp-fill" style="width:${hpPct}%;background-color:${hpPct > 60 ? 'var(--hp-green)' : hpPct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)'}"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const reservesHtml = reserves.length > 0 ? reserves.map((robot, i) => {
+      if (!robot) return '';
+      const hpPct = Math.max(0, (robot.hp / robot.maxHp) * 100);
+      return `
+        <div class="robot-equip-slot" data-type="reserve" data-index="${i}" data-robot-id="${robot.id}"
+             style="border-left: 3px solid ${ELEMENT_COLORS[robot.element] || '#666'}">
+          <img class="robot-equip-sprite" src="/assets/sprites/robots/${robot.id}.webp"
+               onerror="this.style.display='none'" alt="">
+          <div class="robot-equip-info">
+            <div class="robot-equip-name">${ELEMENT_ICONS[robot.element] || ''} ${robot.nameEn} ${rarityStars(robot.rarity)} <span style="opacity:0.6">Lv${robot.level}</span></div>
+            <div class="robot-equip-stats">HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}</div>
+            <div class="robot-hp-bar" style="width:100%;height:4px;margin-top:2px">
+              <div class="robot-hp-fill" style="width:${hpPct}%;background-color:${hpPct > 60 ? 'var(--hp-green)' : hpPct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)'}"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('') : '<p style="padding:16px;opacity:0.6;text-align:center">No reserve robots</p>';
+
+    content.innerHTML = `
+      <h3 style="margin:16px">Equipped Robots (Front Line)</h3>
+      <div class="robot-equip-list">${activeHtml}</div>
+      <h3 style="margin:16px">Reserve Robots</h3>
+      <div class="robot-equip-list">${reservesHtml}</div>
+      <p style="padding:8px 16px;opacity:0.5;font-size:0.8em;text-align:center">Tap an equipped robot, then a reserve to swap them.</p>
+    `;
+
+    // Selection logic: tap active then reserve to swap
+    let selectedActive = null;
+    let selectedReserve = null;
+
+    content.querySelectorAll('.robot-equip-slot[data-type="active"]').forEach(el => {
+      el.addEventListener('click', async () => {
+        // Clear previous selections
+        content.querySelectorAll('.robot-equip-slot').forEach(s => s.classList.remove('selected'));
+        selectedActive = parseInt(el.dataset.index, 10);
+        el.classList.add('selected');
+
+        if (selectedReserve !== null) {
+          // Both selected: perform swap
+          const result = await apiSwapRobotEquip(selectedActive, selectedReserve);
+          if (result?.robotParty) {
+            // Update party data in gameState immediately (BUG C fix)
+            party.active = result.robotParty.active;
+            party.reserves = result.robotParty.reserves;
+            if (result.state) updateGameState(result.state);
+          }
+          selectedActive = null;
+          selectedReserve = null;
+          renderRobotEquipContent(); // Re-render with updated data
+          updateChipRow(); // Update main UI robot row
+        }
+      });
+    });
+
+    content.querySelectorAll('.robot-equip-slot[data-type="reserve"]').forEach(el => {
+      el.addEventListener('click', async () => {
+        content.querySelectorAll('.robot-equip-slot[data-type="reserve"]').forEach(s => s.classList.remove('selected'));
+        selectedReserve = parseInt(el.dataset.index, 10);
+        el.classList.add('selected');
+
+        if (selectedActive !== null) {
+          // Both selected: perform swap
+          const result = await apiSwapRobotEquip(selectedActive, selectedReserve);
+          if (result?.robotParty) {
+            // Update party data in gameState immediately (BUG C fix)
+            party.active = result.robotParty.active;
+            party.reserves = result.robotParty.reserves;
+            if (result.state) updateGameState(result.state);
+          }
+          selectedActive = null;
+          selectedReserve = null;
+          renderRobotEquipContent(); // Re-render with updated data
+          updateChipRow(); // Update main UI robot row
+        }
+      });
+    });
+
+    // Also support rearranging: tap two active slots to swap positions
+    let firstActiveClick = null;
+    content.querySelectorAll('.robot-equip-slot[data-type="active"]').forEach(el => {
+      el.addEventListener('dblclick', async () => {
+        // Double-click to initiate rearrange mode (deselect reserve selection)
+        selectedReserve = null;
+        content.querySelectorAll('.robot-equip-slot').forEach(s => s.classList.remove('selected'));
+      });
+    });
+  }
+
+  renderRobotEquipContent();
 }
 
 async function handleUseChipSkill(chipIndex) {
@@ -825,8 +1257,14 @@ function setupEventListeners() {
   modalsUI.initMenu();
   dom.menuBtn?.addEventListener('click', () => modalsUI.toggleMenu());
 
-  // Bots button opens chip equip
-  dom.botsBtn?.addEventListener('click', () => openChipEquipView());
+  // Bots button opens chip equip or robot equip depending on mode
+  dom.botsBtn?.addEventListener('click', () => {
+    if (gameState.run?.robotParty?.active?.length > 0) {
+      openRobotEquipView();
+    } else {
+      openChipEquipView();
+    }
+  });
 
   // Menu items (menu auto-closes via delegation in modals.initMenu)
   dom.settingsBtn.addEventListener('click', () => modalsUI.openSettings());
@@ -878,7 +1316,14 @@ async function initGame() {
   });
 
   actions.init({
-    equipBots: () => openChipEquipView(),
+    equipBots: () => {
+      // If the run has a robot party, show robot equip UI; otherwise show chip equip
+      if (gameState.run?.robotParty?.active?.length > 0) {
+        openRobotEquipView();
+      } else {
+        openChipEquipView();
+      }
+    },
     contextAction: null,
     cardSwipe: (direction) => {
       // Word discovery mode uses its own handler via custom event
@@ -931,14 +1376,10 @@ async function initGame() {
       window._pendingCombatWord = selectedWord;
       console.log('[JPDB Review] dualCardSelect - stored word:', { actionType, selectedWord, hasVid: selectedWord?.vid !== undefined, hasSid: selectedWord?.sid !== undefined });
 
-      // Get both words to return the unchosen one
+      // Return unchosen words to pool
       const words = wordPractice.getTwoCombatWords();
-      const unchosenWord = actionType === 'attack' ? words.defendWord : words.attackWord;
-
-      // Return unchosen word to pool
-      if (unchosenWord) {
-        wordPractice.returnWordToPool(unchosenWord);
-      }
+      if (actionType !== 'attack' && words?.attackWord) wordPractice.returnWordToPool(words.attackWord);
+      if (actionType !== 'defend' && words?.defendWord) wordPractice.returnWordToPool(words.defendWord);
 
       // Remove selected word from queue
       wordPractice.removeWordFromCombatQueue(selectedWord);
@@ -952,6 +1393,49 @@ async function initGame() {
     onReorder: handleChipReorder,
     isBlocked: isChipActionBlocked,
     getChipIds: getChipIds
+  });
+
+  robotRow.init({
+    useUltimateCallback: handleUseRobotUltimate,
+    swapRobotCallback: async (activeIndex, reserveIndex) => {
+      const result = await apiSwapRobot(activeIndex, reserveIndex);
+      if (result.error) {
+        console.error('Swap failed:', result.error);
+        return;
+      }
+      // Update game state with new party
+      if (result.state) {
+        updateGameState(result.state);
+      }
+      // Re-render robot row with updated active roster
+      robotRow.setReserves(result.robotParty?.reserves || []);
+      robotRow.render(result.robotParty?.active || []);
+      // If paid swap triggered enemy attacks, show them
+      if (result.enemyAttacks?.length > 0) {
+        for (const atk of result.enemyAttacks) {
+          const actionArea = document.getElementById('action-area');
+          if (actionArea) {
+            actionArea.innerHTML = `<div class="combat-robot-attack enemy">${atk.attackerName} deals <strong>${atk.damage}</strong></div>`;
+          }
+        }
+      }
+      if (result.combatEnded) {
+        combatLoopUI.stopCombatLoop(result);
+      }
+      updateUI();
+    },
+    rearrangeRobotCallback: async (indexA, indexB) => {
+      const result = await apiRearrangeRobots(indexA, indexB);
+      if (result?.error) {
+        console.error('Rearrange failed:', result.error);
+        return;
+      }
+      if (result?.state) {
+        updateGameState(result.state);
+      }
+      robotRow.setReserves(result?.robotParty?.reserves || []);
+      robotRow.render(result?.robotParty?.active || []);
+    },
   });
 
   wordPractice.init({
@@ -1012,6 +1496,8 @@ async function initGame() {
     apiGetDueWords,
     apiGetLevels,
     apiSelectLevel,
+    apiGetRobotCollection,
+    showCollectionSelect,
   });
 
   economyUI.init({
@@ -1048,14 +1534,14 @@ async function initGame() {
     updateGameState,
     updateUI,
     settings,
-    narration: { showNarration: (text) => narrationBox.show(text) },
+    narration: { showNarration: (text, opts) => narrationBox.show(text, opts), forceHideNarration: () => narrationBox.forceHide() },
     wordPractice,
     characterUI,
     showDamageNumber: (dmg, isPlayer, isCrit, isDot, isHeal, specialType, tierClass) => scene.showDamageNumber(dmg, { isCrit, isHeal, tierClass }),
     showDotDamage: (dmg) => scene.showDamageNumber(dmg, { isCrit: false }),
     animateEnemyHurt: () => {},
     animatePlayerHurt: () => {},
-    animateEnemyDefeat: () => scene.hideEnemy(),
+    animateEnemyDefeat: () => scene.hideEnemies(),
     updateActionPanel: () => {},
     playNarrationAudio: () => {},
     showVictoryModal,
@@ -1071,7 +1557,13 @@ async function initGame() {
       actions.showFlashCard(word);
     },
     showDualFlashCards: actions.showDualFlashCards,
+    showTripleFlashCards: actions.showTripleFlashCards,
     setCombatAnimationActive: (active) => { combatAnimationActive = active; },
+    apiRobotCombatCycle,
+    showPostCombatShop: showPostCombatShopFlow,
+    apiBefriendReplace: (releaseRobotId) => apiBefriendReplace(releaseRobotId),
+    apiGetBefriendConversation,
+    apiSubmitBefriendAnswer,
   });
 
   setupEventListeners();

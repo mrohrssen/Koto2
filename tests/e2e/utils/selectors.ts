@@ -86,6 +86,10 @@ export const SELECTORS = {
   chipSelectConfirm: '#chip-select-confirm',
   chipSelectSkip: '#chip-select-skip',
 
+  // Starter robot selection
+  starterCard: '.starter-card',
+  starterSelection: '.starter-selection',
+
   // Chip equip elements (rendered into chip-equip takeover)
   chipEquipSlot: '.chip-equip-slot',
   chipEquipSlotFilled: '.chip-equip-slot.filled',

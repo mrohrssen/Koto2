@@ -63,8 +63,12 @@ import { getRoomActions, generatePostCombatShop, getStartingWardOptions } from '
 import { getItem } from './items.js';
 import { derivePhase } from './phase-machine.js';
 import { CombatService, ExplorationService } from './services/index.js';
-import { calculateChipBonusHP, equipChip } from './items/chips.js';
+import { calculateChipBonusHP, equipChip, incrementAllEquippedCharges } from './items/chips.js';
 import { logger } from '../logger.js';
+import { instantiateRobot, generateEnemyRobot, generateEnemyRobots } from './robots.js';
+import { processAttackTurn, processDefendTurn, processEnemyTurn, processBefriend, processUltimate, awardBattleXp, handleRobotKO } from './services/robot-combat-service.js';
+import { rollShopItems, applyItem } from './services/item-service.js';
+import { addToCollection } from './services/robot-collection-service.js';
 
 // ============ GAME MANAGER ============
 
@@ -89,6 +93,10 @@ export class GameManager {
    */
   initMeta(metaData = null) {
     this.meta = metaData || createMetaProgression();
+    // Ensure robotCollection exists for saves created before this feature
+    if (!this.meta.robotCollection) {
+      this.meta.robotCollection = ['fire-common', 'water-common', 'wood-common'];
+    }
     return this.meta;
   }
 
@@ -360,6 +368,8 @@ export class GameManager {
         rooms: this.run.rooms,
         // Counter chip tracking (Phase 10)
         runStats: this.run.runStats,
+        robotParty: this.run.robotParty,
+        itemBuffs: this.run.itemBuffs || null,
         postCombatShop: this.run.postCombatShop ? {
           active: this.run.postCombatShop.active,
           items: this.run.postCombatShop.items.map(item => {
@@ -426,6 +436,9 @@ export class GameManager {
         turn: this.combat.turn,
         turnCount: this.combat.turnCount,
         enemy: this.combat.enemy,
+        allies: this.combat.allies || [],
+        enemies: this.combat.enemies || [],
+        isRobotCombat: this.combat.isRobotCombat || false,
         intent: this.combat.intent,
         lastAction: this.combat.lastAction
       } : null,
@@ -481,7 +494,7 @@ export class GameManager {
   /**
    * Start a new dungeon run
    */
-  startRun(levelId = null) {
+  startRun(levelId = null, starterId = null, starterIds = null) {
     if (!this.player) {
       throw new Error('No player exists');
     }
@@ -512,14 +525,23 @@ export class GameManager {
     // Ward selection is required at start
     this.run.wardSelectionRequired = true;
 
-    // Generate starting chip choices (common only for starting shop)
-    const ownedChipIds = (this.run.player.chips || []).map(c => c.id);
-    const startingChips = generatePostCombatShop(1, ownedChipIds, 'common');
-    this.run.startingChipShop = {
-      active: true,
-      items: startingChips,
-      freeRefreshUsed: false
-    };
+    // Initialize robot starter(s) if provided
+    const ids = starterIds || (starterId ? [starterId] : null);
+    if (ids && ids.length > 0) {
+      this.run.robotParty.active = ids.map(id => instantiateRobot(id));
+      this.run.encountersOnly = true;
+    }
+
+    // Generate starting chip choices (skip for robot combat - robots don't use chips)
+    if (!ids) {
+      const ownedChipIds = (this.run.player.chips || []).map(c => c.id);
+      const startingChips = generatePostCombatShop(1, ownedChipIds, 'common');
+      this.run.startingChipShop = {
+        active: true,
+        items: startingChips,
+        freeRefreshUsed: false
+      };
+    }
 
     this.emitState();
 
@@ -825,6 +847,508 @@ export class GameManager {
       throw new Error('No pending game victory');
     }
     return this.combatService.handleGameVictory();
+  }
+
+  // ============ ROBOT COMBAT ============
+
+  /**
+   * Start a robot encounter
+   * Generates an enemy robot and sets up combat state
+   */
+  startRobotEncounter() {
+    if (!this.run || !this.run.active) {
+      throw new Error('No active run');
+    }
+    if (this.combat?.active) {
+      throw new Error('Combat already active');
+    }
+
+    const highestLevel = Math.max(...this.run.robotParty.active.map(r => r.level), 1);
+    const enemyRobots = generateEnemyRobots(highestLevel);
+
+    this.combat = createCombatState(enemyRobots[0]);
+    this.combat.allies = this.run.robotParty.active;
+    this.combat.enemies = enemyRobots;
+    this.combat.isRobotCombat = true;
+    this.combat.swapPhase = true; // Free swap available before first action
+
+    this.emitState();
+
+    return {
+      enemy: enemyRobots[0],
+      enemies: enemyRobots,
+      allies: this.run.robotParty.active,
+      playerGoesFirst: true
+    };
+  }
+
+  /**
+   * Execute one robot combat cycle
+   * @param {string} actionType - 'attack' | 'defend' | 'befriend'
+   */
+  robotCombatCycle(actionType = 'attack') {
+    if (!this.combat?.active) {
+      throw new Error('No active combat');
+    }
+
+    // Once an action is committed, free swap window closes
+    this.combat.swapPhase = false;
+
+    let playerResult = {};
+    let enemyResult = {};
+    let befriendResult = null;
+    const defendActive = actionType === 'defend';
+
+    // Helper: move pending captures into party (called on victory)
+    const flushPendingCaptures = () => {
+      const pending = this.run.robotParty.pendingCaptures || [];
+      const newAdditions = [];
+      for (const robot of pending) {
+        const total = this.run.robotParty.active.length + this.run.robotParty.reserves.length;
+        if (total >= this.run.robotParty.maxTotal) break;
+        if (this.run.robotParty.active.length < 3) {
+          this.run.robotParty.active.push(robot);
+        } else {
+          this.run.robotParty.reserves.push(robot);
+        }
+        // Add to permanent collection
+        if (this.meta) {
+          const result = addToCollection(this.meta.robotCollection || [], robot.id);
+          if (result.added) {
+            this.meta.robotCollection = result.collection;
+            newAdditions.push({ id: robot.id, name: robot.name, nameEn: robot.nameEn, element: robot.element, rarity: robot.rarity });
+          }
+        }
+      }
+      this.run.robotParty.pendingCaptures = [];
+      return newAdditions;
+    };
+
+    // Player phase
+    if (actionType === 'attack') {
+      playerResult = processAttackTurn(this.combat.allies, this.combat.enemies, this.run.itemBuffs, this.run.robotParty);
+    } else if (actionType === 'defend') {
+      processDefendTurn(this.combat.allies);
+    } else if (actionType === 'befriend') {
+      befriendResult = processBefriend(this.combat.enemies, this.run.robotParty);
+      if (befriendResult.success && befriendResult.allEnemiesDefeated) {
+        // Captured last enemy — victory
+        awardBattleXp(this.run.robotParty, 100);
+        const newCollectionAdditions = flushPendingCaptures();
+        this.combat.active = false;
+        this.run.encountersCompleted++;
+        this.emitState();
+        return {
+          actionType: 'befriend',
+          befriend: befriendResult,
+          combatEnded: true,
+          victory: true,
+          robotParty: this.run.robotParty,
+          newCollectionAdditions
+        };
+      }
+    }
+
+    // Check if all enemies defeated after player attack
+    if (playerResult.allEnemiesDefeated) {
+      // XP already awarded per-kill in processAttackTurn (BUG C fix)
+      const newCollectionAdditions = flushPendingCaptures();
+      this.combat.active = false;
+      this.run.encountersCompleted++;
+      // Mark room as interacted and handle boss defeat
+      const currentRoom = this.run.rooms?.[this.run.currentRoom];
+      if (currentRoom) {
+        currentRoom.interacted = true;
+        if (currentRoom.isBossRoom) {
+          this.run.bossDefeated = true;
+        }
+      }
+      this.emitState();
+      return {
+        actionType,
+        playerAttacks: playerResult.attacks || [],
+        xpEvents: playerResult.xpEvents || [],
+        combatEnded: true,
+        victory: true,
+        isBoss: currentRoom?.isBossRoom || false,
+        robotParty: this.run.robotParty,
+        newCollectionAdditions
+      };
+    }
+
+    // Enemy phase
+    enemyResult = processEnemyTurn(this.combat.enemies, this.combat.allies, defendActive, this.run.itemBuffs);
+
+    // Handle KO'd allies — swap reserves in
+    const koSwaps = [];
+    for (let i = 0; i < this.combat.allies.length; i++) {
+      if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
+        const replacement = handleRobotKO(this.run.robotParty, i);
+        if (replacement) {
+          koSwaps.push({ slot: i, replacement: replacement.nameEn });
+          logger.info('[RobotCombat] KO swap: slot', i, '→', replacement.nameEn);
+        }
+      }
+    }
+    // Refresh allies reference after swaps
+    this.combat.allies = this.run.robotParty.active;
+
+    // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
+    const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
+    if (allAlliesKO) {
+      this.combat.active = false;
+      this.run.active = false;
+      this.emitState();
+      return {
+        actionType,
+        playerAttacks: playerResult.attacks || [],
+        enemyAttacks: enemyResult.attacks || [],
+        xpEvents: playerResult.xpEvents || [],
+        koSwaps,
+        combatEnded: true,
+        victory: false,
+        turnCount: this.combat.turnCount,
+        robotParty: this.run.robotParty
+      };
+    }
+
+    // Increment chip skill charges each combat cycle
+    if (this.run.player) {
+      incrementAllEquippedCharges(this.run.player);
+    }
+
+    this.combat.turnCount++;
+
+    // Reset swap phase for next turn (free swaps available again)
+    this.combat.swapPhase = true;
+
+    this.emitState();
+
+    return {
+      actionType,
+      playerAttacks: playerResult.attacks || [],
+      enemyAttacks: enemyResult.attacks || [],
+      xpEvents: playerResult.xpEvents || [],
+      befriend: befriendResult,
+      koSwaps,
+      combatEnded: false,
+      turnCount: this.combat.turnCount,
+      allies: this.combat.allies,
+      enemies: this.combat.enemies,
+      robotParty: this.run.robotParty,
+      chipCharges: this.run.player?._chipCharges || {}
+    };
+  }
+
+  /**
+   * Use a robot's ultimate ability
+   * @param {number} robotIndex - Index in allies array
+   */
+  useRobotUltimate(robotIndex) {
+    if (!this.combat?.active) {
+      throw new Error('No active combat');
+    }
+    const robot = this.combat.allies[robotIndex];
+    if (!robot) {
+      throw new Error('Invalid robot index');
+    }
+
+    const result = processUltimate(robot, this.combat.enemies, this.run.itemBuffs, this.run.robotParty);
+    if (!result.success) {
+      return result;
+    }
+
+    // Check if all enemies defeated
+    let newCollectionAdditions = [];
+    if (result.allEnemiesDefeated) {
+      // XP already awarded per-kill in processUltimate (BUG C fix)
+      // Flush pending captures into party on victory
+      const pending = this.run.robotParty.pendingCaptures || [];
+      for (const robot of pending) {
+        const total = this.run.robotParty.active.length + this.run.robotParty.reserves.length;
+        if (total >= this.run.robotParty.maxTotal) break;
+        if (this.run.robotParty.active.length < 3) {
+          this.run.robotParty.active.push(robot);
+        } else {
+          this.run.robotParty.reserves.push(robot);
+        }
+        // Add to permanent collection
+        if (this.meta) {
+          const result2 = addToCollection(this.meta.robotCollection || [], robot.id);
+          if (result2.added) {
+            this.meta.robotCollection = result2.collection;
+            newCollectionAdditions.push({ id: robot.id, name: robot.name, nameEn: robot.nameEn, element: robot.element, rarity: robot.rarity });
+          }
+        }
+      }
+      this.run.robotParty.pendingCaptures = [];
+      this.combat.active = false;
+      this.run.encountersCompleted++;
+    }
+
+    this.emitState();
+    return {
+      ...result,
+      combatEnded: result.allEnemiesDefeated,
+      victory: result.allEnemiesDefeated ? true : undefined,
+      robotParty: this.run.robotParty,
+      enemies: this.combat.enemies,
+      newCollectionAdditions
+    };
+  }
+
+  /**
+   * Roll 3 random items for the post-combat shop
+   */
+  rollPostCombatShop() {
+    if (!this.run) throw new Error('No run');
+    const items = rollShopItems();
+    this.run._pendingShopItems = items;
+    return { items };
+  }
+
+  /**
+   * Player selects one item from the post-combat shop
+   * @param {number} itemIndex - 0, 1, or 2
+   */
+  selectShopItem(itemIndex) {
+    if (!this.run) throw new Error('No run');
+    const items = this.run._pendingShopItems;
+    if (!items || !items[itemIndex]) throw new Error('Invalid shop item');
+
+    const selectedItem = items[itemIndex];
+    applyItem(selectedItem, this.run.robotParty, this.run.itemBuffs);
+    this.run._pendingShopItems = null;
+
+    this.emitState();
+    return {
+      selected: selectedItem,
+      robotParty: this.run.robotParty,
+      itemBuffs: this.run.itemBuffs
+    };
+  }
+
+  /**
+   * Swap an active robot with a reserve
+   * @param {number} activeIndex - Index in robotParty.active (0-2)
+   * @param {number} reserveIndex - Index in robotParty.reserves (0-2)
+   * @returns {Object} Result with updated party and whether enemy attacks
+   */
+  swapRobot(activeIndex, reserveIndex) {
+    if (!this.combat?.active) throw new Error('No active combat');
+    if (!this.run?.robotParty) throw new Error('No robot party');
+
+    const party = this.run.robotParty;
+    if (!party.active[activeIndex]) throw new Error('Invalid active robot index');
+    if (!party.reserves[reserveIndex]) throw new Error('Invalid reserve robot index');
+
+    // Perform the swap
+    const temp = party.active[activeIndex];
+    party.active[activeIndex] = party.reserves[reserveIndex];
+    party.reserves[reserveIndex] = temp;
+
+    // Refresh combat allies reference
+    this.combat.allies = party.active;
+
+    const isFreeSwap = this.combat.swapPhase;
+
+    if (!isFreeSwap) {
+      // Paid swap: enemy attacks, no player action
+      const enemyResult = processEnemyTurn(
+        this.combat.enemies,
+        this.combat.allies,
+        false,
+        this.run.itemBuffs
+      );
+
+      // Handle KO'd allies after enemy attack
+      for (let i = 0; i < this.combat.allies.length; i++) {
+        if (this.combat.allies[i].hp <= 0) {
+          handleRobotKO(this.run.robotParty, i);
+        }
+      }
+      this.combat.allies = this.run.robotParty.active;
+
+      // Check defeat
+      const allAlliesKO = this.combat.allies.every(a => a.hp <= 0);
+      if (allAlliesKO) {
+        this.combat.active = false;
+        this.run.active = false;
+      }
+
+      this.combat.turnCount++;
+      this.emitState();
+
+      return {
+        swapped: true,
+        freeSwap: false,
+        enemyAttacks: enemyResult.attacks,
+        combatEnded: allAlliesKO,
+        victory: false,
+        robotParty: party,
+        allies: this.combat.allies,
+        enemies: this.combat.enemies
+      };
+    }
+
+    this.emitState();
+    return {
+      swapped: true,
+      freeSwap: true,
+      robotParty: party,
+      allies: this.combat.allies,
+      enemies: this.combat.enemies
+    };
+  }
+
+  /**
+   * Rearrange two active robots by swapping their positions (no reserves needed).
+   * Works both in and out of combat.
+   * @param {number} indexA - First active slot index (0-2)
+   * @param {number} indexB - Second active slot index (0-2)
+   * @returns {Object} Result with updated party
+   */
+  rearrangeRobots(indexA, indexB) {
+    if (!this.run?.robotParty) throw new Error('No robot party');
+    const party = this.run.robotParty;
+    if (!party.active[indexA]) throw new Error('Invalid robot index A');
+    if (!party.active[indexB]) throw new Error('Invalid robot index B');
+
+    // Swap positions
+    const temp = party.active[indexA];
+    party.active[indexA] = party.active[indexB];
+    party.active[indexB] = temp;
+
+    // Refresh combat allies reference if in combat
+    if (this.combat?.active) {
+      this.combat.allies = party.active;
+    }
+
+    this.emitState();
+    return {
+      rearranged: true,
+      robotParty: party
+    };
+  }
+
+  /**
+   * Swap an active robot with a reserve OUTSIDE of combat (equip screen).
+   * @param {number} activeIndex - Index in robotParty.active (0-2)
+   * @param {number} reserveIndex - Index in robotParty.reserves (0-2)
+   * @returns {Object} Result with updated party
+   */
+  swapRobotOutOfCombat(activeIndex, reserveIndex) {
+    if (!this.run?.robotParty) throw new Error('No robot party');
+    const party = this.run.robotParty;
+    if (!party.active[activeIndex]) throw new Error('Invalid active robot index');
+    if (!party.reserves[reserveIndex]) throw new Error('Invalid reserve robot index');
+
+    // Perform the swap
+    const temp = party.active[activeIndex];
+    party.active[activeIndex] = party.reserves[reserveIndex];
+    party.reserves[reserveIndex] = temp;
+
+    this.emitState();
+    return {
+      swapped: true,
+      robotParty: party
+    };
+  }
+
+  /**
+   * Replace an existing robot with a befriended robot when roster is full.
+   * @param {string} releaseRobotId - ID of robot to release (must be in party)
+   * @param {Object} capturedRobot - The befriended enemy robot to add
+   * @returns {Object} Result with updated party
+   */
+  befriendReplace(releaseRobotId) {
+    if (!this.combat?.active) throw new Error('No active combat');
+    if (!this.run?.robotParty) throw new Error('No robot party');
+
+    const party = this.run.robotParty;
+    const enemies = this.combat.enemies;
+
+    // Find the befriendable enemy (same logic as processBefriend)
+    const eligible = enemies
+      .filter(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.5)
+      .sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
+    if (eligible.length === 0) {
+      return { success: false, reason: 'No enemy at <=50% HP' };
+    }
+
+    // Find the robot to release
+    let releaseIndex = party.active.findIndex(r => r && r.id === releaseRobotId);
+    let releaseFrom = 'active';
+    if (releaseIndex === -1) {
+      releaseIndex = party.reserves.findIndex(r => r && r.id === releaseRobotId);
+      releaseFrom = 'reserves';
+    }
+    if (releaseIndex === -1) {
+      return { success: false, reason: 'Robot to release not found in party' };
+    }
+
+    // Mark enemy as befriended (don't splice — preserve indices for frontend)
+    const captured = eligible[0];
+    captured.hp = 0;
+    captured.befriended = true;
+
+    // Create a clean copy for when it joins the party after combat
+    const capturedCopy = { ...captured, hp: captured.maxHp, befriended: false };
+    capturedCopy.ultimate = { ...captured.ultimate, charges: 0 };
+
+    // Release the old robot and queue the captured one for post-combat
+    if (releaseFrom === 'active') {
+      party.active.splice(releaseIndex, 1);
+    } else {
+      party.reserves.splice(releaseIndex, 1);
+    }
+    if (!party.pendingCaptures) party.pendingCaptures = [];
+    party.pendingCaptures.push(capturedCopy);
+
+    // Refresh combat allies reference
+    this.combat.allies = party.active;
+
+    const allEnemiesDefeated = enemies.filter(e => e.hp > 0 && !e.befriended).length === 0;
+
+    let newCollectionAdditions = [];
+    if (allEnemiesDefeated) {
+      awardBattleXp(party, 100);
+      // Flush pending captures into party on victory
+      const pending = party.pendingCaptures || [];
+      for (const robot of pending) {
+        const total = party.active.length + party.reserves.length;
+        if (total >= party.maxTotal) break;
+        if (party.active.length < 3) {
+          party.active.push(robot);
+        } else {
+          party.reserves.push(robot);
+        }
+        // Add to permanent collection
+        if (this.meta) {
+          const result = addToCollection(this.meta.robotCollection || [], robot.id);
+          if (result.added) {
+            this.meta.robotCollection = result.collection;
+            newCollectionAdditions.push({ id: robot.id, name: robot.name, nameEn: robot.nameEn, element: robot.element, rarity: robot.rarity });
+          }
+        }
+      }
+      party.pendingCaptures = [];
+      this.combat.active = false;
+      this.run.encountersCompleted++;
+    }
+
+    this.emitState();
+    return {
+      success: true,
+      captured: capturedCopy,
+      released: releaseRobotId,
+      allEnemiesDefeated,
+      combatEnded: allEnemiesDefeated,
+      victory: allEnemiesDefeated,
+      robotParty: party,
+      enemies,
+      newCollectionAdditions
+    };
   }
 
   // ============ UTILITY ============

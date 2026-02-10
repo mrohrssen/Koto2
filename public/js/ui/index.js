@@ -35,3 +35,6 @@ export * as economy from './economy.js';
 export * as modals from './modals.js';
 export * as combatLoop from './combat-loop.js';
 export * as lookup from './lookup.js';
+export * as robotRow from './robot-row.js';
+export * as postCombatShop from './post-combat-shop.js';
+export * as combatAudio from './combat-audio.js';

@@ -5,7 +5,7 @@
  * and prioritize "due" words for spaced repetition learning.
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { lookupWordStates, parseWordBatches } from '../jpdb.js';
 
 // Cache directory path - configured via configureVocabManager()
@@ -80,6 +80,16 @@ export function configureVocabManager({ cacheDir: dir, cacheFile: file }) {
     const lastSlash = file.lastIndexOf('/');
     cacheDir = lastSlash > 0 ? file.substring(0, lastSlash + 1) : './';
     console.warn('[VocabManager] Using legacy cacheFile config - migrate to cacheDir');
+  }
+
+  // Ensure cache directory exists (critical for Railway where /app/persist/data/ isn't pre-created)
+  if (cacheDir && !existsSync(cacheDir)) {
+    try {
+      mkdirSync(cacheDir, { recursive: true });
+      console.log(`[VocabManager] Created cache directory: ${cacheDir}`);
+    } catch (e) {
+      console.error(`[VocabManager] Failed to create cache directory ${cacheDir}:`, e.message);
+    }
   }
 }
 

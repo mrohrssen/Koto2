@@ -137,8 +137,10 @@ async function getLevels() {
  * @param {number} levelId - Level to start
  * @returns {Promise<object>} Result with state and narration
  */
-async function selectLevel(levelId) {
-  return apiCall('/levels/select', 'POST', { levelId });
+async function selectLevel(levelId, starterIds = null) {
+  const body = { levelId };
+  if (starterIds) body.starterIds = Array.isArray(starterIds) ? starterIds : [starterIds];
+  return apiCall('/levels/select', 'POST', body);
 }
 
 /**
@@ -195,8 +197,8 @@ async function purchaseUpgrade(upgradeId) {
  * Start a new dungeon run
  * @returns {Promise<object>} Result with state and narration
  */
-async function startRun() {
-  return apiCall('/start-run', 'POST');
+async function startRun(body = null) {
+  return apiCall('/start-run', 'POST', body);
 }
 
 /**
@@ -678,6 +680,57 @@ async function completeDiscovery() {
   return apiCall('/complete-discovery', 'POST');
 }
 
+// ============ ROBOT COMBAT ============
+
+async function startRobotEncounter() {
+  return apiCall('/start-robot-encounter', 'POST');
+}
+
+async function robotCombatCycle(actionType) {
+  return apiCall('/robot-combat-cycle', 'POST', { actionType });
+}
+
+async function useRobotUltimate(robotIndex) {
+  return apiCall('/use-robot-ultimate', 'POST', { robotIndex });
+}
+
+async function getRobotCollection() {
+  return apiCall('/robot-collection', 'GET');
+}
+
+async function rollPostCombatShop() {
+  return apiCall('/robot-shop-roll', 'POST');
+}
+
+async function selectShopItem(itemIndex) {
+  return apiCall('/robot-shop-select', 'POST', { itemIndex });
+}
+
+async function swapRobot(activeIndex, reserveIndex) {
+  return apiCall('/swap-robot', 'POST', { activeIndex, reserveIndex });
+}
+
+async function rearrangeRobots(indexA, indexB) {
+  return apiCall('/rearrange-robots', 'POST', { indexA, indexB });
+}
+
+async function swapRobotEquip(activeIndex, reserveIndex) {
+  return apiCall('/swap-robot-equip', 'POST', { activeIndex, reserveIndex });
+}
+
+async function befriendReplace(releaseRobotId) {
+  return apiCall('/befriend-replace', 'POST', { releaseRobotId });
+}
+
+async function getBefriendConversation(enemyIndex) {
+  return apiCall('/befriend-conversation', 'POST',
+    typeof enemyIndex === 'number' ? { enemyIndex } : {});
+}
+
+async function submitBefriendAnswer(roundIndex, selectedIndex) {
+  return apiCall('/befriend-answer', 'POST', { roundIndex, selectedIndex });
+}
+
 export {
   apiCall,
   isApiLoading,
@@ -710,6 +763,18 @@ export {
   // Combat endpoints
   startEncounter,
   startBoss,
+  startRobotEncounter,
+  robotCombatCycle,
+  useRobotUltimate,
+  getRobotCollection,
+  rollPostCombatShop,
+  selectShopItem,
+  swapRobot,
+  rearrangeRobots,
+  swapRobotEquip,
+  befriendReplace,
+  getBefriendConversation,
+  submitBefriendAnswer,
   // Shop/economy endpoints
   claimStartingChip,
   startingChipRefresh,
