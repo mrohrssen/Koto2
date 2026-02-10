@@ -1146,6 +1146,130 @@ export class GameManager {
   }
 
   /**
+   * Rearrange two active robots by swapping their positions (no reserves needed).
+   * Works both in and out of combat.
+   * @param {number} indexA - First active slot index (0-2)
+   * @param {number} indexB - Second active slot index (0-2)
+   * @returns {Object} Result with updated party
+   */
+  rearrangeRobots(indexA, indexB) {
+    if (!this.run?.robotParty) throw new Error('No robot party');
+    const party = this.run.robotParty;
+    if (!party.active[indexA]) throw new Error('Invalid robot index A');
+    if (!party.active[indexB]) throw new Error('Invalid robot index B');
+
+    // Swap positions
+    const temp = party.active[indexA];
+    party.active[indexA] = party.active[indexB];
+    party.active[indexB] = temp;
+
+    // Refresh combat allies reference if in combat
+    if (this.combat?.active) {
+      this.combat.allies = party.active;
+    }
+
+    this.emitState();
+    return {
+      rearranged: true,
+      robotParty: party
+    };
+  }
+
+  /**
+   * Swap an active robot with a reserve OUTSIDE of combat (equip screen).
+   * @param {number} activeIndex - Index in robotParty.active (0-2)
+   * @param {number} reserveIndex - Index in robotParty.reserves (0-2)
+   * @returns {Object} Result with updated party
+   */
+  swapRobotOutOfCombat(activeIndex, reserveIndex) {
+    if (!this.run?.robotParty) throw new Error('No robot party');
+    const party = this.run.robotParty;
+    if (!party.active[activeIndex]) throw new Error('Invalid active robot index');
+    if (!party.reserves[reserveIndex]) throw new Error('Invalid reserve robot index');
+
+    // Perform the swap
+    const temp = party.active[activeIndex];
+    party.active[activeIndex] = party.reserves[reserveIndex];
+    party.reserves[reserveIndex] = temp;
+
+    this.emitState();
+    return {
+      swapped: true,
+      robotParty: party
+    };
+  }
+
+  /**
+   * Replace an existing robot with a befriended robot when roster is full.
+   * @param {string} releaseRobotId - ID of robot to release (must be in party)
+   * @param {Object} capturedRobot - The befriended enemy robot to add
+   * @returns {Object} Result with updated party
+   */
+  befriendReplace(releaseRobotId) {
+    if (!this.combat?.active) throw new Error('No active combat');
+    if (!this.run?.robotParty) throw new Error('No robot party');
+
+    const party = this.run.robotParty;
+    const enemies = this.combat.enemies;
+
+    // Find the befriendable enemy (same logic as processBefriend)
+    const eligible = enemies
+      .filter(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.5)
+      .sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
+    if (eligible.length === 0) {
+      return { success: false, reason: 'No enemy at <=50% HP' };
+    }
+
+    // Find the robot to release
+    let releaseIndex = party.active.findIndex(r => r && r.id === releaseRobotId);
+    let releaseFrom = 'active';
+    if (releaseIndex === -1) {
+      releaseIndex = party.reserves.findIndex(r => r && r.id === releaseRobotId);
+      releaseFrom = 'reserves';
+    }
+    if (releaseIndex === -1) {
+      return { success: false, reason: 'Robot to release not found in party' };
+    }
+
+    // Capture the enemy
+    const captured = eligible[0];
+    const idx = enemies.indexOf(captured);
+    enemies.splice(idx, 1);
+    captured.hp = captured.maxHp;
+    captured.ultimate.charges = 0;
+
+    // Replace the released robot with the captured one
+    if (releaseFrom === 'active') {
+      party.active[releaseIndex] = captured;
+    } else {
+      party.reserves[releaseIndex] = captured;
+    }
+
+    // Refresh combat allies reference
+    this.combat.allies = party.active;
+
+    const allEnemiesDefeated = enemies.filter(e => e.hp > 0).length === 0;
+
+    if (allEnemiesDefeated) {
+      awardBattleXp(party, 100);
+      this.combat.active = false;
+      this.run.encountersCompleted++;
+    }
+
+    this.emitState();
+    return {
+      success: true,
+      captured,
+      released: releaseRobotId,
+      allEnemiesDefeated,
+      combatEnded: allEnemiesDefeated,
+      victory: allEnemiesDefeated,
+      robotParty: party,
+      enemies
+    };
+  }
+
+  /**
    * Get available starter robots
    */
   getStarters() {

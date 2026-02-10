@@ -86,6 +86,7 @@ let showTripleFlashCards = null;
 let setCombatAnimationActive = null;
 let apiRobotCombatCycle = null;
 let showPostCombatShop = null;
+let apiBefriendReplace = null;
 
 // Utility
 let delay = null;
@@ -129,6 +130,7 @@ export function init(callbacks) {
   setCombatAnimationActive = callbacks.setCombatAnimationActive;
   apiRobotCombatCycle = callbacks.apiRobotCombatCycle;
   showPostCombatShop = callbacks.showPostCombatShop;
+  apiBefriendReplace = callbacks.apiBefriendReplace;
 }
 
 // ============ STATE GETTERS/SETTERS ============
@@ -187,15 +189,13 @@ function showNextDualCardsFromQueue() {
     return;
   }
 
-  // Check if befriend is available (enemy robot <=30% HP and party not full)
+  // Check if befriend is available (enemy robot <=50% HP; allow even if party full - will prompt release)
   const state = getGameState();
   const isRobotCombat = state.combat?.isRobotCombat;
   const enemies = state.combat?.enemies || [];
   const party = state.run?.robotParty;
   const anyEnemyBefriendable = enemies.some(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.5);
-  const befriendAvailable = isRobotCombat && anyEnemyBefriendable &&
-    party &&
-    (party.active.length + party.reserves.length) < party.maxTotal;
+  const befriendAvailable = isRobotCombat && anyEnemyBefriendable && party;
 
   if (befriendAvailable && showTripleFlashCards) {
     // Get a third word for the befriend card
@@ -1673,6 +1673,55 @@ async function executeDefendThenPause() {
 }
 
 /**
+ * Show a prompt for the player to choose which robot to release (or skip).
+ * Returns the robot ID to release, or null if the player chose to let the befriended one go.
+ */
+function showBefriendReleasePrompt() {
+  return new Promise((resolve) => {
+    const state = getGameState();
+    const party = state.run?.robotParty;
+    if (!party) { resolve(null); return; }
+
+    const allRobots = [
+      ...party.active.map((r, i) => ({ ...r, slot: 'active', index: i })),
+      ...party.reserves.map((r, i) => ({ ...r, slot: 'reserve', index: i }))
+    ].filter(r => r && r.id);
+
+    const ELEM_ICONS = { wood: '🌿', fire: '🔥', earth: '⛰️', metal: '⚙️', water: '💧' };
+
+    const overlay = document.createElement('div');
+    overlay.className = 'befriend-release-overlay';
+    overlay.innerHTML = `
+      <div class="befriend-release-panel">
+        <div class="befriend-release-title">Party Full! Choose a robot to release:</div>
+        <div class="befriend-release-list">
+          ${allRobots.map(r => `
+            <button class="befriend-release-btn" data-robot-id="${r.id}">
+              ${ELEM_ICONS[r.element] || ''} ${r.nameEn} (Lv${r.level}) - ${r.slot === 'active' ? 'Equipped' : 'Reserve'}
+            </button>
+          `).join('')}
+        </div>
+        <button class="befriend-release-skip-btn">Let it go (skip)</button>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelectorAll('.befriend-release-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        overlay.remove();
+        resolve(btn.dataset.robotId);
+      });
+    });
+
+    overlay.querySelector('.befriend-release-skip-btn').addEventListener('click', () => {
+      overlay.remove();
+      resolve(null);
+    });
+  });
+}
+
+/**
  * Execute befriend action: attempt to capture low-HP enemy robot
  */
 async function executeBefriendAction() {
@@ -1726,8 +1775,64 @@ async function executeBefriendAction() {
           });
         }
       }
+    } else if (result.befriend?.reason === 'Party full') {
+      // BUG D: Party full — prompt player to release a robot or let the befriended one go
+      const releaseChoice = await showBefriendReleasePrompt();
+      if (releaseChoice && apiBefriendReplace) {
+        const replaceResult = await apiBefriendReplace(releaseChoice);
+        if (replaceResult?.success) {
+          const actionArea = document.getElementById('action-area');
+          if (actionArea) {
+            actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">BEFRIENDED ${replaceResult.captured.nameEn}!</div>`;
+          }
+          playSFX('chip-skill');
+
+          // Remove enemy from battlefield
+          const capturedId = replaceResult.captured?.id;
+          if (capturedId) {
+            const slot = document.querySelector(`.enemy-robot-slot[data-enemy-id="${capturedId}"]`);
+            if (slot) slot.classList.add('befriended');
+          }
+          await delay(1200);
+
+          // Update game state
+          const gs = getGameState();
+          if (replaceResult.state) {
+            updateGameState(replaceResult.state);
+          } else if (gs.combat && replaceResult.enemies) {
+            updateGameState({
+              ...gs,
+              combat: { ...gs.combat, enemies: replaceResult.enemies },
+              run: { ...gs.run, robotParty: replaceResult.robotParty }
+            });
+          }
+
+          // Handle combat end from replace
+          if (replaceResult.combatEnded) {
+            if (replaceResult.victory) {
+              stopCombatLoop({ combatEnded: true, victory: true });
+            } else {
+              stopCombatLoop({ combatEnded: true, victory: false });
+            }
+            return;
+          }
+        } else {
+          const actionArea = document.getElementById('action-area');
+          if (actionArea) {
+            actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #F44336;">Failed: ${replaceResult?.reason || 'Unknown'}</div>`;
+          }
+          await delay(800);
+        }
+      } else {
+        // Player chose to let the befriended robot go
+        const actionArea = document.getElementById('action-area');
+        if (actionArea) {
+          actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #9E9E9E;">Let it go...</div>`;
+        }
+        await delay(800);
+      }
     } else {
-      // Befriend failed
+      // Befriend failed for other reason
       const actionArea = document.getElementById('action-area');
       if (actionArea) {
         actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #F44336;">Befriend failed: ${result.befriend?.reason || 'Unknown'}</div>`;

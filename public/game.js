@@ -155,6 +155,9 @@ import {
   rollPostCombatShop as apiRollPostCombatShop,
   selectShopItem as apiSelectShopItem,
   swapRobot as apiSwapRobot,
+  rearrangeRobots as apiRearrangeRobots,
+  swapRobotEquip as apiSwapRobotEquip,
+  befriendReplace as apiBefriendReplace,
 } from './js/api.js';
 
 const API_BASE = '';
@@ -540,11 +543,14 @@ function showStarterSelection(starters) {
         <div class="starter-title">Choose ${MAX_PICKS} Starters</div>
         <div class="starter-subtitle" id="starter-subtitle">Pick your active robot, then a reserve</div>
         <div class="starter-cards">${cardsHtml}</div>
+        <button class="action-btn action-btn-primary" id="starter-confirm-btn" disabled>Confirm</button>
       </div>
     `;
 
     // Set scene background
     scene.setBackground('/assets/backgrounds/hub.webp');
+
+    const confirmBtn = document.getElementById('starter-confirm-btn');
 
     document.querySelectorAll('.starter-card').forEach(card => {
       card.addEventListener('click', () => {
@@ -559,17 +565,25 @@ function showStarterSelection(starters) {
           selected.push(id);
         }
 
-        // Update subtitle
+        // Update subtitle and confirm button
         const sub = document.getElementById('starter-subtitle');
-        if (selected.length === 0) sub.textContent = 'Pick your active robot, then a reserve';
-        else if (selected.length === 1) sub.textContent = 'Now pick a reserve robot';
-        else sub.textContent = 'Ready!';
-
-        // Auto-resolve when we have enough picks
-        if (selected.length === MAX_PICKS) {
-          setTimeout(() => resolve([...selected]), 400);
+        if (selected.length === 0) {
+          sub.textContent = 'Pick your active robot, then a reserve';
+          confirmBtn.disabled = true;
+        } else if (selected.length === 1) {
+          sub.textContent = 'Now pick a reserve robot';
+          confirmBtn.disabled = true;
+        } else {
+          sub.textContent = 'Ready!';
+          confirmBtn.disabled = false;
         }
       });
+    });
+
+    confirmBtn.addEventListener('click', () => {
+      if (selected.length === MAX_PICKS) {
+        resolve([...selected]);
+      }
     });
   });
 }
@@ -910,6 +924,132 @@ async function openChipEquipView() {
   });
 }
 
+// ============ ROBOT EQUIP UI (BUG B) ============
+async function openRobotEquipView() {
+  const party = gameState.run?.robotParty;
+  if (!party) return;
+
+  takeover.open('chipEquip');
+  const content = takeover.getContent('chipEquip');
+
+  function renderRobotEquipContent() {
+    const active = party.active || [];
+    const reserves = party.reserves || [];
+
+    const ELEMENT_ICONS = robotRow.ELEMENT_ICONS || { wood: '🌿', fire: '🔥', earth: '⛰️', metal: '⚙️', water: '💧' };
+    const ELEMENT_COLORS = robotRow.ELEMENT_COLORS || { wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63', metal: '#9E9E9E', water: '#2196F3' };
+
+    const activeHtml = active.map((robot, i) => {
+      if (!robot) return `<div class="robot-equip-slot empty" data-type="active" data-index="${i}"><span style="opacity:0.4">Empty</span></div>`;
+      const hpPct = Math.max(0, (robot.hp / robot.maxHp) * 100);
+      return `
+        <div class="robot-equip-slot" data-type="active" data-index="${i}" data-robot-id="${robot.id}"
+             style="border-left: 3px solid ${ELEMENT_COLORS[robot.element] || '#666'}">
+          <img class="robot-equip-sprite" src="/assets/sprites/robots/${robot.id}.webp"
+               onerror="this.style.display='none'" alt="">
+          <div class="robot-equip-info">
+            <div class="robot-equip-name">${ELEMENT_ICONS[robot.element] || ''} ${robot.nameEn} <span style="opacity:0.6">Lv${robot.level}</span></div>
+            <div class="robot-equip-stats">HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}</div>
+            <div class="robot-hp-bar" style="width:100%;height:4px;margin-top:2px">
+              <div class="robot-hp-fill" style="width:${hpPct}%;background-color:${hpPct > 60 ? 'var(--hp-green)' : hpPct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)'}"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const reservesHtml = reserves.length > 0 ? reserves.map((robot, i) => {
+      if (!robot) return '';
+      const hpPct = Math.max(0, (robot.hp / robot.maxHp) * 100);
+      return `
+        <div class="robot-equip-slot" data-type="reserve" data-index="${i}" data-robot-id="${robot.id}"
+             style="border-left: 3px solid ${ELEMENT_COLORS[robot.element] || '#666'}">
+          <img class="robot-equip-sprite" src="/assets/sprites/robots/${robot.id}.webp"
+               onerror="this.style.display='none'" alt="">
+          <div class="robot-equip-info">
+            <div class="robot-equip-name">${ELEMENT_ICONS[robot.element] || ''} ${robot.nameEn} <span style="opacity:0.6">Lv${robot.level}</span></div>
+            <div class="robot-equip-stats">HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}</div>
+            <div class="robot-hp-bar" style="width:100%;height:4px;margin-top:2px">
+              <div class="robot-hp-fill" style="width:${hpPct}%;background-color:${hpPct > 60 ? 'var(--hp-green)' : hpPct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)'}"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('') : '<p style="padding:16px;opacity:0.6;text-align:center">No reserve robots</p>';
+
+    content.innerHTML = `
+      <h3 style="margin:16px">Equipped Robots (Front Line)</h3>
+      <div class="robot-equip-list">${activeHtml}</div>
+      <h3 style="margin:16px">Reserve Robots</h3>
+      <div class="robot-equip-list">${reservesHtml}</div>
+      <p style="padding:8px 16px;opacity:0.5;font-size:0.8em;text-align:center">Tap an equipped robot, then a reserve to swap them.</p>
+    `;
+
+    // Selection logic: tap active then reserve to swap
+    let selectedActive = null;
+    let selectedReserve = null;
+
+    content.querySelectorAll('.robot-equip-slot[data-type="active"]').forEach(el => {
+      el.addEventListener('click', async () => {
+        // Clear previous selections
+        content.querySelectorAll('.robot-equip-slot').forEach(s => s.classList.remove('selected'));
+        selectedActive = parseInt(el.dataset.index, 10);
+        el.classList.add('selected');
+
+        if (selectedReserve !== null) {
+          // Both selected: perform swap
+          const result = await apiSwapRobotEquip(selectedActive, selectedReserve);
+          if (result?.robotParty) {
+            // Update party data in gameState immediately (BUG C fix)
+            party.active = result.robotParty.active;
+            party.reserves = result.robotParty.reserves;
+            if (result.state) updateGameState(result.state);
+          }
+          selectedActive = null;
+          selectedReserve = null;
+          renderRobotEquipContent(); // Re-render with updated data
+          updateChipRow(); // Update main UI robot row
+        }
+      });
+    });
+
+    content.querySelectorAll('.robot-equip-slot[data-type="reserve"]').forEach(el => {
+      el.addEventListener('click', async () => {
+        content.querySelectorAll('.robot-equip-slot[data-type="reserve"]').forEach(s => s.classList.remove('selected'));
+        selectedReserve = parseInt(el.dataset.index, 10);
+        el.classList.add('selected');
+
+        if (selectedActive !== null) {
+          // Both selected: perform swap
+          const result = await apiSwapRobotEquip(selectedActive, selectedReserve);
+          if (result?.robotParty) {
+            // Update party data in gameState immediately (BUG C fix)
+            party.active = result.robotParty.active;
+            party.reserves = result.robotParty.reserves;
+            if (result.state) updateGameState(result.state);
+          }
+          selectedActive = null;
+          selectedReserve = null;
+          renderRobotEquipContent(); // Re-render with updated data
+          updateChipRow(); // Update main UI robot row
+        }
+      });
+    });
+
+    // Also support rearranging: tap two active slots to swap positions
+    let firstActiveClick = null;
+    content.querySelectorAll('.robot-equip-slot[data-type="active"]').forEach(el => {
+      el.addEventListener('dblclick', async () => {
+        // Double-click to initiate rearrange mode (deselect reserve selection)
+        selectedReserve = null;
+        content.querySelectorAll('.robot-equip-slot').forEach(s => s.classList.remove('selected'));
+      });
+    });
+  }
+
+  renderRobotEquipContent();
+}
+
 async function handleUseChipSkill(chipIndex) {
   const weapon = gameState.player?.equipment?.weapon;
   const chipEntry = weapon?.equippedChips?.[chipIndex];
@@ -1009,8 +1149,14 @@ function setupEventListeners() {
   modalsUI.initMenu();
   dom.menuBtn?.addEventListener('click', () => modalsUI.toggleMenu());
 
-  // Bots button opens chip equip
-  dom.botsBtn?.addEventListener('click', () => openChipEquipView());
+  // Bots button opens chip equip or robot equip depending on mode
+  dom.botsBtn?.addEventListener('click', () => {
+    if (gameState.run?.robotParty?.active?.length > 0) {
+      openRobotEquipView();
+    } else {
+      openChipEquipView();
+    }
+  });
 
   // Menu items (menu auto-closes via delegation in modals.initMenu)
   dom.settingsBtn.addEventListener('click', () => modalsUI.openSettings());
@@ -1062,7 +1208,14 @@ async function initGame() {
   });
 
   actions.init({
-    equipBots: () => openChipEquipView(),
+    equipBots: () => {
+      // If the run has a robot party, show robot equip UI; otherwise show chip equip
+      if (gameState.run?.robotParty?.active?.length > 0) {
+        openRobotEquipView();
+      } else {
+        openChipEquipView();
+      }
+    },
     contextAction: null,
     cardSwipe: (direction) => {
       // Word discovery mode uses its own handler via custom event
@@ -1162,6 +1315,18 @@ async function initGame() {
         combatLoopUI.stopCombatLoop(result);
       }
       updateUI();
+    },
+    rearrangeRobotCallback: async (indexA, indexB) => {
+      const result = await apiRearrangeRobots(indexA, indexB);
+      if (result?.error) {
+        console.error('Rearrange failed:', result.error);
+        return;
+      }
+      if (result?.state) {
+        updateGameState(result.state);
+      }
+      robotRow.setReserves(result?.robotParty?.reserves || []);
+      robotRow.render(result?.robotParty?.active || []);
     },
   });
 
@@ -1288,6 +1453,7 @@ async function initGame() {
     setCombatAnimationActive: (active) => { combatAnimationActive = active; },
     apiRobotCombatCycle,
     showPostCombatShop: showPostCombatShopFlow,
+    apiBefriendReplace: (releaseRobotId) => apiBefriendReplace(releaseRobotId),
   });
 
   setupEventListeners();

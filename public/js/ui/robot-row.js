@@ -22,9 +22,11 @@ import { playSFX } from '../audio.js';
 let onUseUltimate = null;
 let currentPopupIndex = -1;
 let onSwapRobot = null;
+let onRearrangeRobot = null;
 let currentReserves = [];
+let currentActiveRobots = [];
 
-const ELEMENT_COLORS = {
+export const ELEMENT_COLORS = {
   wood: '#4CAF50',
   fire: '#F44336',
   earth: '#8D6E63',
@@ -32,7 +34,7 @@ const ELEMENT_COLORS = {
   water: '#2196F3'
 };
 
-const ELEMENT_ICONS = {
+export const ELEMENT_ICONS = {
   wood: '🌿',
   fire: '🔥',
   earth: '⛰️',
@@ -40,9 +42,10 @@ const ELEMENT_ICONS = {
   water: '💧'
 };
 
-export function init({ useUltimateCallback, swapRobotCallback }) {
+export function init({ useUltimateCallback, swapRobotCallback, rearrangeRobotCallback }) {
   onUseUltimate = useUltimateCallback;
   onSwapRobot = swapRobotCallback;
+  onRearrangeRobot = rearrangeRobotCallback || null;
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.robot-slot') && !e.target.closest('.robot-popup')) {
       hidePopup();
@@ -57,6 +60,7 @@ export function setReserves(reserves) {
 export function render(robots) {
   const row = dom.chipRow;
   row.innerHTML = '';
+  currentActiveRobots = robots || [];
 
   for (let i = 0; i < 3; i++) {
     const robot = robots[i] || null;
@@ -64,21 +68,22 @@ export function render(robots) {
     slot.className = 'robot-slot' + (robot ? '' : ' empty');
     slot.dataset.index = i;
 
-    if (!robot) {
-      continue;
-    } else {
+    if (robot) {
       const hpPct = Math.max(0, (robot.hp / robot.maxHp) * 100);
       const isCharged = robot.ultimate.charges >= robot.ultimate.chargesRequired;
       const isKO = robot.hp <= 0;
+      const hpColor = hpPct > 60 ? 'var(--hp-green)' : hpPct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
 
       slot.innerHTML = `
         <div class="robot-icon${isKO ? ' ko' : ''}${isCharged ? ' charged' : ''}"
              style="border-color: ${ELEMENT_COLORS[robot.element]}">
-          <span class="robot-element-icon">${ELEMENT_ICONS[robot.element]}</span>
+          <img class="robot-sprite-icon" src="/assets/sprites/robots/${robot.id}.webp"
+               onerror="this.style.display='none';this.nextElementSibling.style.display=''" alt="">
+          <span class="robot-element-icon" style="display:none">${ELEMENT_ICONS[robot.element]}</span>
           <span class="robot-level-badge">Lv${robot.level}</span>
         </div>
         <div class="robot-hp-bar">
-          <div class="robot-hp-fill" style="width: ${hpPct}%"></div>
+          <div class="robot-hp-fill" style="width: ${hpPct}%; background-color: ${hpColor}"></div>
         </div>
         <div class="robot-charge-bar">
           ${buildChargeSegments(robot.ultimate.charges, robot.ultimate.chargesRequired)}
@@ -113,6 +118,12 @@ function showPopup(index, robot) {
   const hasReserves = currentReserves.length > 0;
   const isKO = robot.hp <= 0;
 
+  // BUG A fix: Build rearrange buttons for other active robots when no reserves
+  const otherActives = currentActiveRobots
+    .map((r, i) => ({ robot: r, index: i }))
+    .filter(entry => entry.robot && entry.index !== index && entry.robot.hp > 0);
+  const canRearrange = !hasReserves && otherActives.length > 0 && onRearrangeRobot;
+
   dom.chipPopup.innerHTML = `
     <div class="robot-popup-name">${robot.name} (${robot.nameEn})</div>
     <div class="robot-popup-element">${ELEMENT_ICONS[robot.element]} ${robot.element}</div>
@@ -135,6 +146,18 @@ function showPopup(index, robot) {
           ${currentReserves.map((r, ri) => `
             <button class="robot-popup-swap-btn" data-reserve-index="${ri}">
               ${ELEMENT_ICONS[r.element]} ${r.nameEn} (Lv${r.level}) ${r.hp}/${r.maxHp}HP
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    ` : ''}
+    ${canRearrange ? `
+      <div class="robot-popup-swap-section">
+        <div class="robot-popup-swap-label">Swap position with:</div>
+        <div class="robot-popup-swap-list">
+          ${otherActives.map(entry => `
+            <button class="robot-popup-rearrange-btn" data-target-index="${entry.index}">
+              ${ELEMENT_ICONS[entry.robot.element]} ${entry.robot.nameEn} (Lv${entry.robot.level})
             </button>
           `).join('')}
         </div>
@@ -164,13 +187,23 @@ function showPopup(index, robot) {
     });
   }
 
-  // Swap button handlers
+  // Swap button handlers (swap with reserves)
   const swapBtns = dom.chipPopup.querySelectorAll('.robot-popup-swap-btn');
   swapBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const reserveIndex = parseInt(btn.dataset.reserveIndex, 10);
       hidePopup();
       if (onSwapRobot) onSwapRobot(index, reserveIndex);
+    });
+  });
+
+  // Rearrange button handlers (swap positions between active robots)
+  const rearrangeBtns = dom.chipPopup.querySelectorAll('.robot-popup-rearrange-btn');
+  rearrangeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetIndex = parseInt(btn.dataset.targetIndex, 10);
+      hidePopup();
+      if (onRearrangeRobot) onRearrangeRobot(index, targetIndex);
     });
   });
 }

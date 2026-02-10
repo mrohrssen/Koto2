@@ -710,6 +710,18 @@ async function swapRobot(activeIndex, reserveIndex) {
   return apiCall('/swap-robot', 'POST', { activeIndex, reserveIndex });
 }
 
+async function rearrangeRobots(indexA, indexB) {
+  return apiCall('/rearrange-robots', 'POST', { indexA, indexB });
+}
+
+async function swapRobotEquip(activeIndex, reserveIndex) {
+  return apiCall('/swap-robot-equip', 'POST', { activeIndex, reserveIndex });
+}
+
+async function befriendReplace(releaseRobotId) {
+  return apiCall('/befriend-replace', 'POST', { releaseRobotId });
+}
+
 export {
   apiCall,
   isApiLoading,
@@ -749,6 +761,9 @@ export {
   rollPostCombatShop,
   selectShopItem,
   swapRobot,
+  rearrangeRobots,
+  swapRobotEquip,
+  befriendReplace,
   // Shop/economy endpoints
   claimStartingChip,
   startingChipRefresh,

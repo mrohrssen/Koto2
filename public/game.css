@@ -3309,6 +3309,152 @@ html, body {
   background: #333;
 }
 
+.robot-popup-rearrange-btn {
+  display: block;
+  width: 100%;
+  padding: 6px 10px;
+  margin-bottom: 4px;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background: #1a1a2e;
+  color: #4fc3f7;
+  font-size: 0.85em;
+  cursor: pointer;
+}
+.robot-popup-rearrange-btn:active {
+  background: #333;
+}
+
+/* Robot Equip View (BUG B) */
+.robot-equip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.robot-equip-slot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #1a1a2e;
+  border: 1px solid #333;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.robot-equip-slot.empty {
+  justify-content: center;
+  min-height: 50px;
+  border: 1px dashed #444;
+}
+.robot-equip-slot.selected {
+  border-color: var(--accent-primary, #4fc3f7);
+  box-shadow: 0 0 8px rgba(79, 195, 247, 0.4);
+}
+.robot-equip-slot:active {
+  background: #252540;
+}
+
+.robot-equip-sprite {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.robot-equip-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.robot-equip-name {
+  font-size: 0.95em;
+  font-weight: 600;
+  color: #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.robot-equip-stats {
+  font-size: 0.8em;
+  color: #aaa;
+  margin-top: 2px;
+}
+
+/* Befriend Release Prompt (BUG D) */
+.befriend-release-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.befriend-release-panel {
+  background: #1a1a2e;
+  border: 1px solid #444;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 340px;
+  width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.befriend-release-title {
+  font-size: 1em;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.befriend-release-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.befriend-release-btn {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #555;
+  border-radius: 8px;
+  background: #252540;
+  color: #e0e0e0;
+  font-size: 0.9em;
+  cursor: pointer;
+  text-align: left;
+}
+.befriend-release-btn:active {
+  background: #333;
+  border-color: #F44336;
+}
+
+.befriend-release-skip-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #666;
+  border-radius: 8px;
+  background: transparent;
+  color: #9E9E9E;
+  font-size: 0.85em;
+  cursor: pointer;
+  text-align: center;
+}
+.befriend-release-skip-btn:active {
+  background: #1a1a2e;
+}
+
 /* Starter Selection */
 .starter-selection {
   padding: 12px;

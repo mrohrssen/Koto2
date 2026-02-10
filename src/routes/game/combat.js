@@ -234,12 +234,51 @@ export default function createCombatRoutes({
     }
   });
 
-  // Robot swap
+  // Robot swap (in combat)
   router.post('/swap-robot', (req, res) => {
     const gameManager = req.gameManager;
     const { activeIndex, reserveIndex } = req.body;
     try {
       const result = gameManager.swapRobot(activeIndex, reserveIndex);
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Rearrange active robots (swap positions, works in and out of combat)
+  router.post('/rearrange-robots', (req, res) => {
+    const gameManager = req.gameManager;
+    const { indexA, indexB } = req.body;
+    try {
+      const result = gameManager.rearrangeRobots(indexA, indexB);
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Robot swap (out of combat, equip screen)
+  router.post('/swap-robot-equip', (req, res) => {
+    const gameManager = req.gameManager;
+    const { activeIndex, reserveIndex } = req.body;
+    try {
+      const result = gameManager.swapRobotOutOfCombat(activeIndex, reserveIndex);
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Befriend and replace (full roster)
+  router.post('/befriend-replace', (req, res) => {
+    const gameManager = req.gameManager;
+    const { releaseRobotId } = req.body;
+    try {
+      const result = gameManager.befriendReplace(releaseRobotId);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
