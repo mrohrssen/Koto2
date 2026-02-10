@@ -112,8 +112,8 @@ let apiGetDueWords = null;
 // Level select API functions
 let apiGetLevels = null;
 let apiSelectLevel = null;
-let apiGetStarters = null;
-let showStarterSelection = null;
+let apiGetRobotCollection = null;
+let showCollectionSelect = null;
 
 export function init(callbacks) {
   getGameState = callbacks.getGameState;
@@ -150,8 +150,8 @@ export function init(callbacks) {
   apiGetDueWords = callbacks.apiGetDueWords;
   apiGetLevels = callbacks.apiGetLevels;
   apiSelectLevel = callbacks.apiSelectLevel;
-  apiGetStarters = callbacks.apiGetStarters;
-  showStarterSelection = callbacks.showStarterSelection;
+  apiGetRobotCollection = callbacks.apiGetRobotCollection;
+  showCollectionSelect = callbacks.showCollectionSelect;
 }
 
 // ============ INVENTORY OVERLAY ============
@@ -314,11 +314,12 @@ export async function renderLevelSelect() {
 
       // Show starter robot selection before starting the run
       let starterIds = null;
-      if (apiGetStarters && showStarterSelection) {
-        const starterResult = await apiGetStarters();
-        const starters = starterResult?.starters;
-        if (starters && starters.length > 0) {
-          starterIds = await showStarterSelection(starters);
+      if (apiGetRobotCollection && showCollectionSelect) {
+        const collectionResult = await apiGetRobotCollection();
+        const catalog = collectionResult?.catalog;
+        const collection = collectionResult?.collection;
+        if (catalog && catalog.length > 0) {
+          starterIds = await showCollectionSelect(catalog, collection);
           if (!starterIds || starterIds.length === 0) return;
         }
       }

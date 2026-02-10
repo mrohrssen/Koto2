@@ -694,8 +694,8 @@ async function useRobotUltimate(robotIndex) {
   return apiCall('/use-robot-ultimate', 'POST', { robotIndex });
 }
 
-async function getStarters() {
-  return apiCall('/starters', 'GET');
+async function getRobotCollection() {
+  return apiCall('/robot-collection', 'GET');
 }
 
 async function rollPostCombatShop() {
@@ -766,7 +766,7 @@ export {
   startRobotEncounter,
   robotCombatCycle,
   useRobotUltimate,
-  getStarters,
+  getRobotCollection,
   rollPostCombatShop,
   selectShopItem,
   swapRobot,

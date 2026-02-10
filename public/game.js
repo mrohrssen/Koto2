@@ -153,7 +153,7 @@ import {
   startRobotEncounter as apiStartRobotEncounter,
   robotCombatCycle as apiRobotCombatCycle,
   useRobotUltimate as apiUseRobotUltimate,
-  getStarters as apiGetStarters,
+  getRobotCollection as apiGetRobotCollection,
   rollPostCombatShop as apiRollPostCombatShop,
   selectShopItem as apiSelectShopItem,
   swapRobot as apiSwapRobot,
@@ -486,110 +486,123 @@ async function createCharacter() {
 async function startNewRun() {
   // Note: clearWordCache() moved to returnToHub() for earlier prefetching
 
-  // Fetch available starter robots
-  const starterResult = await apiGetStarters();
-  const starters = starterResult?.starters;
+  // Fetch robot collection for team select
+  const collectionResult = await apiGetRobotCollection();
+  const catalog = collectionResult?.catalog;
+  const collection = collectionResult?.collection;
 
-  if (starters && starters.length > 0) {
-    // Show starter selection screen and wait for 2 choices
-    const starterIds = await showStarterSelection(starters);
+  if (catalog && catalog.length > 0) {
+    const starterIds = await showCollectionSelect(catalog, collection);
     if (!starterIds || starterIds.length === 0) return;
 
-    // Start run with selected starters
     const result = await apiStartRun({ starterIds });
     if (result?.state) {
       updateGameState(result.state);
       updateUI();
-      wordPractice.prefetchCombatWords();
-    }
-  } else {
-    // Fallback: start run without starter (old behavior)
-    const result = await apiStartRun();
-    if (result?.state) {
-      updateGameState(result.state);
-      updateUI();
-      wordPractice.prefetchCombatWords();
-      if (gameState.run?.startingChipShop?.active) {
-        await economyUI.renderStartingChipShop();
-      }
     }
   }
 }
 
-function showStarterSelection(starters) {
+function showCollectionSelect(catalog, collection) {
+  const RARITY_ORDER = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+  const MAX_POINTS = 10;
+
   return new Promise((resolve) => {
-    const ELEMENT_ICONS = {
-      wood: '\u{1F33F}', fire: '\u{1F525}', earth: '\u26F0\uFE0F', metal: '\u2699\uFE0F', water: '\u{1F4A7}'
-    };
-    const ELEMENT_COLORS = {
-      wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63', metal: '#9E9E9E', water: '#2196F3'
-    };
+    const selected = new Set();
+    let usedPoints = 0;
 
-    const MAX_PICKS = 2;
-    const selected = [];
+    // Sort: common first, then by element within rarity
+    const sorted = [...catalog].sort((a, b) => {
+      const ri = RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity);
+      if (ri !== 0) return ri;
+      return a.element.localeCompare(b.element);
+    });
 
-    const cardsHtml = starters.map(s => `
-      <div class="starter-card" data-id="${s.id}" style="border-color: ${ELEMENT_COLORS[s.element]}">
-        <div class="starter-icon">${ELEMENT_ICONS[s.element]}</div>
-        <div class="starter-name">${s.name}</div>
-        <div class="starter-name-en">${s.nameEn}</div>
-        <div class="starter-stats">
-          HP: ${s.maxHp} | ATK: ${s.attack}
+    function render() {
+      const remaining = MAX_POINTS - usedPoints;
+      const budgetClass = remaining <= 0 ? 'budget-full' : remaining <= 3 ? 'budget-tight' : 'budget-ok';
+
+      const cellsHtml = sorted.map(r => {
+        const owned = collection.includes(r.id);
+        const isSelected = selected.has(r.id);
+        const tooExpensive = owned && !isSelected && r.pointCost > remaining;
+        const classes = [
+          'collection-cell',
+          !owned && 'unowned',
+          isSelected && 'selected',
+          tooExpensive && 'too-expensive'
+        ].filter(Boolean).join(' ');
+
+        return `
+          <div class="${classes}" data-id="${r.id}" data-rarity="${r.rarity}" data-element="${r.element}">
+            <img src="/assets/sprites/robots/${r.id}.webp" alt="${r.nameEn}" />
+            ${owned ? `<span class="point-badge">${r.pointCost}</span>` : ''}
+            <span class="robot-name">${owned ? r.nameEn : '???'}</span>
+          </div>
+        `;
+      }).join('');
+
+      const actionArea = document.getElementById('action-area');
+      actionArea.innerHTML = `
+        <div class="collection-select">
+          <div class="collection-header">
+            <span class="collection-title">Select Your Team</span>
+            <span class="collection-points ${budgetClass}">${usedPoints} / ${MAX_POINTS} pts</span>
+          </div>
+          <div class="collection-grid">${cellsHtml}</div>
+          <button class="action-btn action-btn-primary" id="collection-confirm-btn" ${selected.size === 0 ? 'disabled' : ''}>
+            Start Run (${selected.size} robot${selected.size !== 1 ? 's' : ''})
+          </button>
         </div>
-        <div class="starter-skill">${s.autoSkill.name} (${s.autoSkill.nameEn})</div>
-        <div class="starter-ultimate">${s.ultimate.name} (${s.ultimate.nameEn})</div>
-      </div>
-    `).join('');
+      `;
 
-    const actionArea = document.getElementById('action-area');
-    actionArea.innerHTML = `
-      <div class="starter-selection">
-        <div class="starter-title">Choose ${MAX_PICKS} Starters</div>
-        <div class="starter-subtitle" id="starter-subtitle">Pick your active robot, then a reserve</div>
-        <div class="starter-cards">${cardsHtml}</div>
-        <button class="action-btn action-btn-primary" id="starter-confirm-btn" disabled>Confirm</button>
-      </div>
-    `;
+      // Set background
+      scene.setBackground('/assets/backgrounds/hub.webp');
 
-    // Set scene background
-    scene.setBackground('/assets/backgrounds/hub.webp');
+      // Bind click handlers
+      document.querySelectorAll('.collection-cell:not(.unowned)').forEach(cell => {
+        cell.addEventListener('click', () => {
+          const id = cell.dataset.id;
+          const robot = sorted.find(r => r.id === id);
+          if (!robot) return;
 
-    const confirmBtn = document.getElementById('starter-confirm-btn');
+          if (selected.has(id)) {
+            selected.delete(id);
+            usedPoints -= robot.pointCost;
+          } else {
+            if (robot.pointCost > MAX_POINTS - usedPoints) return;
+            selected.add(id);
+            usedPoints += robot.pointCost;
+          }
+          render();
+        });
+      });
 
-    document.querySelectorAll('.starter-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const id = card.dataset.id;
-        if (card.classList.contains('selected')) {
-          // Deselect
-          card.classList.remove('selected');
-          const idx = selected.indexOf(id);
-          if (idx !== -1) selected.splice(idx, 1);
-        } else if (selected.length < MAX_PICKS) {
-          card.classList.add('selected');
-          selected.push(id);
-        }
-
-        // Update subtitle and confirm button
-        const sub = document.getElementById('starter-subtitle');
-        if (selected.length === 0) {
-          sub.textContent = 'Pick your active robot, then a reserve';
-          confirmBtn.disabled = true;
-        } else if (selected.length === 1) {
-          sub.textContent = 'Now pick a reserve robot';
-          confirmBtn.disabled = true;
-        } else {
-          sub.textContent = 'Ready!';
-          confirmBtn.disabled = false;
+      document.getElementById('collection-confirm-btn')?.addEventListener('click', () => {
+        if (selected.size > 0) {
+          resolve([...selected]);
         }
       });
-    });
+    }
 
-    confirmBtn.addEventListener('click', () => {
-      if (selected.length === MAX_PICKS) {
-        resolve([...selected]);
-      }
-    });
+    render();
   });
+}
+
+function showCollectionToast(additions) {
+  for (const robot of additions) {
+    const toast = document.createElement('div');
+    toast.className = 'collection-toast';
+    toast.innerHTML = `
+      <img src="/assets/sprites/robots/${robot.id}.webp" />
+      <span class="toast-text">New: ${robot.nameEn}!</span>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.animation = 'toastSlideOut 0.3s ease-in forwards';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
 }
 
 async function startEncounter() {
@@ -682,6 +695,11 @@ function resumeCombatAfterVocab() { combatLoopUI.resumeCombatAfterVocab(); }
 function showVictoryModal(result) {
   audio.stopBGM();
   narrationBox.show('Victory!', { autoDismiss: 2000 });
+
+  // Show collection toast for newly befriended robots
+  if (result.newCollectionAdditions?.length > 0) {
+    showCollectionToast(result.newCollectionAdditions);
+  }
 
   // Trigger batch refresh on combat end if any pending reviews
   if (combatReviewedBatch.length > 0) {
@@ -935,7 +953,11 @@ async function handleUseRobotUltimate(robotIndex) {
   }
 
   if (result.combatEnded && result.victory) {
-    combatLoopUI.stopCombatLoop({ combatEnded: true, victory: true });
+    combatLoopUI.stopCombatLoop({
+      combatEnded: true,
+      victory: true,
+      newCollectionAdditions: result.newCollectionAdditions,
+    });
   }
 }
 
@@ -1466,8 +1488,8 @@ async function initGame() {
     apiGetDueWords,
     apiGetLevels,
     apiSelectLevel,
-    apiGetStarters,
-    showStarterSelection,
+    apiGetRobotCollection,
+    showCollectionSelect,
   });
 
   economyUI.init({
