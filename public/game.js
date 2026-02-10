@@ -89,6 +89,7 @@ import * as takeover from './js/ui/takeover.js';
 import * as hpBar from './js/ui/hp-bar.js';
 import * as chipRow from './js/ui/chip-row.js';
 import * as robotRow from './js/ui/robot-row.js';
+import * as postCombatShop from './js/ui/post-combat-shop.js';
 import * as scene from './js/ui/scene.js';
 import * as audio from './js/audio.js';
 import * as auth from './js/ui/auth.js';
@@ -151,6 +152,9 @@ import {
   robotCombatCycle as apiRobotCombatCycle,
   useRobotUltimate as apiUseRobotUltimate,
   getStarters as apiGetStarters,
+  rollPostCombatShop as apiRollPostCombatShop,
+  selectShopItem as apiSelectShopItem,
+  swapRobot as apiSwapRobot,
 } from './js/api.js';
 
 const API_BASE = '';
@@ -290,6 +294,7 @@ function updateChipRow() {
 
   if (gameState.run?.robotParty?.active?.length > 0) {
     // Robot combat: render robot slots in primary row
+    robotRow.setReserves(gameState.run.robotParty.reserves || []);
     robotRow.render(gameState.run.robotParty.active);
 
     // Also render chip slots in secondary row so players can view/use chip skills
@@ -793,6 +798,26 @@ function shouldUsePhaser() {
 }
 
 // ============ ROBOT COMBAT HANDLERS ============
+async function showPostCombatShopFlow() {
+  try {
+    const shopResult = await apiRollPostCombatShop();
+    if (!shopResult?.items?.length) return;
+
+    return new Promise((resolve) => {
+      postCombatShop.init({
+        itemSelectedCallback: async (index) => {
+          await apiSelectShopItem(index);
+          postCombatShop.hide();
+          resolve();
+        }
+      });
+      postCombatShop.show(shopResult.items);
+    });
+  } catch (e) {
+    console.error('Post-combat shop error:', e);
+  }
+}
+
 async function handleUseRobotUltimate(robotIndex) {
   const result = await apiUseRobotUltimate(robotIndex);
   if (result?.state) {
@@ -1092,6 +1117,33 @@ async function initGame() {
 
   robotRow.init({
     useUltimateCallback: handleUseRobotUltimate,
+    swapRobotCallback: async (activeIndex, reserveIndex) => {
+      const result = await apiSwapRobot(activeIndex, reserveIndex);
+      if (result.error) {
+        console.error('Swap failed:', result.error);
+        return;
+      }
+      // Update game state with new party
+      if (result.state) {
+        updateGameState(result.state);
+      }
+      // Re-render robot row with updated active roster
+      robotRow.setReserves(result.robotParty?.reserves || []);
+      robotRow.render(result.robotParty?.active || []);
+      // If paid swap triggered enemy attacks, show them
+      if (result.enemyAttacks?.length > 0) {
+        for (const atk of result.enemyAttacks) {
+          const actionArea = document.getElementById('action-area');
+          if (actionArea) {
+            actionArea.innerHTML = `<div class="combat-robot-attack enemy">${atk.attackerName} deals <strong>${atk.damage}</strong></div>`;
+          }
+        }
+      }
+      if (result.combatEnded) {
+        combatLoopUI.stopCombatLoop(result);
+      }
+      updateUI();
+    },
   });
 
   wordPractice.init({
@@ -1216,6 +1268,7 @@ async function initGame() {
     showTripleFlashCards: actions.showTripleFlashCards,
     setCombatAnimationActive: (active) => { combatAnimationActive = active; },
     apiRobotCombatCycle,
+    showPostCombatShop: showPostCombatShopFlow,
   });
 
   setupEventListeners();

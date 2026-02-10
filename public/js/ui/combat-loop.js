@@ -83,6 +83,7 @@ let showDualFlashCards = null;
 let showTripleFlashCards = null;
 let setCombatAnimationActive = null;
 let apiRobotCombatCycle = null;
+let showPostCombatShop = null;
 
 // Utility
 let delay = null;
@@ -125,6 +126,7 @@ export function init(callbacks) {
   delay = callbacks.delay;
   setCombatAnimationActive = callbacks.setCombatAnimationActive;
   apiRobotCombatCycle = callbacks.apiRobotCombatCycle;
+  showPostCombatShop = callbacks.showPostCombatShop;
 }
 
 // ============ STATE GETTERS/SETTERS ============
@@ -1609,6 +1611,11 @@ export async function stopCombatLoop(result) {
     // Show victory or defeat modal
     if (result.victory) {
       playSFX('victory');
+      const gs = getGameState();
+      const isRobotCombat = gs?.combat?.isRobotCombat;
+      if (isRobotCombat && showPostCombatShop) {
+        await showPostCombatShop();
+      }
       showVictoryModal(result);
       wordPractice.prefetchCombatWords();
     } else {
@@ -1620,6 +1627,11 @@ export async function stopCombatLoop(result) {
     // Fallback narration
     if (result.victory) {
       await narration.showNarration('市民解放！');
+      const gs = getGameState();
+      const isRobotCombat = gs?.combat?.isRobotCombat;
+      if (isRobotCombat && showPostCombatShop) {
+        await showPostCombatShop();
+      }
       showVictoryModal(result);
       wordPractice.prefetchCombatWords();
     } else {

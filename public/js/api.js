@@ -706,6 +706,10 @@ async function selectShopItem(itemIndex) {
   return apiCall('/robot-shop-select', 'POST', { itemIndex });
 }
 
+async function swapRobot(activeIndex, reserveIndex) {
+  return apiCall('/swap-robot', 'POST', { activeIndex, reserveIndex });
+}
+
 export {
   apiCall,
   isApiLoading,
@@ -744,6 +748,7 @@ export {
   getStarters,
   rollPostCombatShop,
   selectShopItem,
+  swapRobot,
   // Shop/economy endpoints
   claimStartingChip,
   startingChipRefresh,

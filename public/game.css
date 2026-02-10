@@ -3178,6 +3178,41 @@ html, body {
   cursor: not-allowed;
 }
 
+/* Robot Swap in Popup */
+.robot-popup-swap-section {
+  margin-top: 8px;
+  border-top: 1px solid #333;
+  padding-top: 8px;
+}
+
+.robot-popup-swap-label {
+  font-size: 10px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.robot-popup-swap-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.robot-popup-swap-btn {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: var(--bg-dark, #1a1a2e);
+  color: #ccc;
+  font-size: 11px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.robot-popup-swap-btn:active {
+  background: #333;
+}
+
 /* Starter Selection */
 .starter-selection {
   padding: 12px;

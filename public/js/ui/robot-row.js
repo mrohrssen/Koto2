@@ -21,6 +21,8 @@ import { playSFX } from '../audio.js';
 
 let onUseUltimate = null;
 let currentPopupIndex = -1;
+let onSwapRobot = null;
+let currentReserves = [];
 
 const ELEMENT_COLORS = {
   wood: '#4CAF50',
@@ -38,13 +40,18 @@ const ELEMENT_ICONS = {
   water: '💧'
 };
 
-export function init({ useUltimateCallback }) {
+export function init({ useUltimateCallback, swapRobotCallback }) {
   onUseUltimate = useUltimateCallback;
+  onSwapRobot = swapRobotCallback;
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.robot-slot') && !e.target.closest('.robot-popup')) {
       hidePopup();
     }
   });
+}
+
+export function setReserves(reserves) {
+  currentReserves = reserves || [];
 }
 
 export function render(robots) {
@@ -58,7 +65,7 @@ export function render(robots) {
     slot.dataset.index = i;
 
     if (!robot) {
-      slot.innerHTML = '<div class="robot-icon empty"></div>';
+      continue;
     } else {
       const hpPct = Math.max(0, (robot.hp / robot.maxHp) * 100);
       const isCharged = robot.ultimate.charges >= robot.ultimate.chargesRequired;
@@ -78,9 +85,7 @@ export function render(robots) {
         </div>
       `;
 
-      if (!isKO) {
-        slot.addEventListener('click', () => togglePopup(i, robot));
-      }
+      slot.addEventListener('click', () => togglePopup(i, robot));
     }
     row.appendChild(slot);
   }
@@ -105,6 +110,8 @@ function togglePopup(index, robot) {
 function showPopup(index, robot) {
   currentPopupIndex = index;
   const isReady = robot.ultimate.charges >= robot.ultimate.chargesRequired;
+  const hasReserves = currentReserves.length > 0;
+  const isKO = robot.hp <= 0;
 
   dom.chipPopup.innerHTML = `
     <div class="robot-popup-name">${robot.name} (${robot.nameEn})</div>
@@ -112,13 +119,27 @@ function showPopup(index, robot) {
     <div class="robot-popup-stats">
       HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}
     </div>
-    <div class="robot-popup-ultimate">
-      Ultimate: ${robot.ultimate.name} (${robot.ultimate.nameEn})
-      <br>Power: ${robot.ultimate.power} | Charges: ${robot.ultimate.charges}/${robot.ultimate.chargesRequired}
-    </div>
-    <button class="robot-popup-ultimate-btn" ${isReady ? '' : 'disabled'}>
-      ${isReady ? 'Use Ultimate' : `${robot.ultimate.charges}/${robot.ultimate.chargesRequired} Charges`}
-    </button>
+    ${!isKO ? `
+      <div class="robot-popup-ultimate">
+        Ultimate: ${robot.ultimate.name} (${robot.ultimate.nameEn})
+        <br>Power: ${robot.ultimate.power} | Charges: ${robot.ultimate.charges}/${robot.ultimate.chargesRequired}
+      </div>
+      <button class="robot-popup-ultimate-btn" ${isReady ? '' : 'disabled'}>
+        ${isReady ? 'Use Ultimate' : `${robot.ultimate.charges}/${robot.ultimate.chargesRequired} Charges`}
+      </button>
+    ` : ''}
+    ${hasReserves ? `
+      <div class="robot-popup-swap-section">
+        <div class="robot-popup-swap-label">Swap with:</div>
+        <div class="robot-popup-swap-list">
+          ${currentReserves.map((r, ri) => `
+            <button class="robot-popup-swap-btn" data-reserve-index="${ri}">
+              ${ELEMENT_ICONS[r.element]} ${r.nameEn} (Lv${r.level}) ${r.hp}/${r.maxHp}HP
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    ` : ''}
   `;
 
   // Position popup centered above the robot slot, clamped to viewport
@@ -142,6 +163,16 @@ function showPopup(index, robot) {
       if (onUseUltimate) onUseUltimate(index);
     });
   }
+
+  // Swap button handlers
+  const swapBtns = dom.chipPopup.querySelectorAll('.robot-popup-swap-btn');
+  swapBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const reserveIndex = parseInt(btn.dataset.reserveIndex, 10);
+      hidePopup();
+      if (onSwapRobot) onSwapRobot(index, reserveIndex);
+    });
+  });
 }
 
 function hidePopup() {
