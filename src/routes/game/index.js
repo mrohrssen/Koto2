@@ -74,7 +74,9 @@ export default function createGameRoutes(deps) {
     enrichRewardDrops: deps.enrichRewardDrops,
     updateGameStatsWithEvent: deps.updateGameStatsWithEvent,
     saveGameStats: deps.saveGameStats,
-    getGameStats: deps.getGameStats
+    getGameStats: deps.getGameStats,
+    generateBefriendConversationFn: deps.generateBefriendConversationFn,
+    getUserVocabulary: deps.getUserVocabulary
   }));
 
   // Mount economy routes

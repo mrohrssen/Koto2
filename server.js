@@ -128,6 +128,7 @@ import {
 } from './src/game/prefetch.js';
 import { enforceVocabLimit } from './src/game/vocab-repair.js';
 import { generateDoorHints as _generateDoorHints } from './src/game/services/door-hint-service.js';
+import { generateBefriendConversation } from './src/game/services/robot-combat-service.js';
 import createRoutes from './src/routes/index.js';
 import createAuthRoutes from './src/auth/routes.js';
 import { dataPath } from './src/data-dir.js';
@@ -372,7 +373,11 @@ app.use('/api', createRoutes({
   getDebugMode: () => debugMode,
   setDebugMode: (val) => { debugMode = val; },
   vocabCacheFile: VOCAB_CACHE_FILE,
-  staticWordList
+  staticWordList,
+  generateBefriendConversationFn: async (robot, vocabulary, aiConfig) => {
+    return generateBefriendConversation(robot, vocabulary, { ...aiConfig, chat });
+  },
+  getUserVocabulary: getUserNarrationVocabulary
 }));
 
 // Narration helpers

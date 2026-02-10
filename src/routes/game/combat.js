@@ -7,13 +7,16 @@
 import { Router } from 'express';
 import { useChipSkill } from '../../game/combat/chip-skills.js';
 import { getChip, getChipCharge, isChipSkillReady, getChipLevel } from '../../game/items/chips.js';
+import { processEnemyTurn, handleRobotKO } from '../../game/services/robot-combat-service.js';
 
 export default function createCombatRoutes({
   generateGameNarration,
   enrichRewardDrops,
   updateGameStatsWithEvent,
   saveGameStats,
-  getGameStats
+  getGameStats,
+  generateBefriendConversationFn,
+  getUserVocabulary
 }) {
   const router = Router();
 
@@ -284,6 +287,160 @@ export default function createCombatRoutes({
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
+  });
+
+  // Generate befriend conversation
+  router.post('/befriend-conversation', async (req, res) => {
+    const gameManager = req.gameManager;
+    const { enemyIndex } = req.body;
+    const combat = gameManager.combat;
+
+    if (!combat?.active || !combat.isRobotCombat) {
+      return res.status(400).json({ error: 'No active robot combat' });
+    }
+
+    const enemies = combat.enemies || [];
+    let targetIdx = typeof enemyIndex === 'number' ? enemyIndex : -1;
+    if (targetIdx < 0) {
+      targetIdx = enemies.findIndex(e => e.hp > 0 && !e.befriended && (e.hp / e.maxHp) <= 0.5);
+    }
+
+    const target = enemies[targetIdx];
+    if (!target || target.hp <= 0 || target.befriended || (target.hp / target.maxHp) > 0.5) {
+      return res.status(400).json({ error: 'No eligible enemy for befriend conversation' });
+    }
+
+    try {
+      const { words: vocabulary } = getUserVocabulary(req.user.id);
+      const userKeys = req.userKeys || {};
+
+      const rounds = await generateBefriendConversationFn(target, vocabulary, {
+        provider: userKeys.aiProvider || 'openai',
+        apiKey: userKeys.aiApiKey,
+        openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+        openrouterModel: userKeys.openrouterModel,
+        jlptLevel: userKeys.jlptLevel || 'N4'
+      });
+
+      combat.befriendConversation = {
+        targetEnemyIndex: targetIdx,
+        rounds,
+        currentRound: 0,
+        active: true
+      };
+
+      req.saveGame();
+
+      // Return rounds WITHOUT correctIndex
+      const clientRounds = rounds.map(r => ({
+        speaker: r.speaker,
+        options: r.options
+      }));
+
+      res.json({
+        targetEnemy: { name: target.name, nameEn: target.nameEn, element: target.element, id: target.id },
+        rounds: clientRounds,
+        targetEnemyIndex: targetIdx
+      });
+    } catch (error) {
+      console.error('[Befriend Conversation] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Validate befriend conversation answer
+  router.post('/befriend-answer', (req, res) => {
+    const gameManager = req.gameManager;
+    const { roundIndex, selectedIndex } = req.body;
+    const combat = gameManager.combat;
+
+    if (!combat?.active || !combat.befriendConversation?.active) {
+      return res.status(400).json({ error: 'No active befriend conversation' });
+    }
+
+    const convo = combat.befriendConversation;
+
+    if (roundIndex !== convo.currentRound) {
+      return res.status(400).json({ error: 'Wrong round index' });
+    }
+
+    const round = convo.rounds[roundIndex];
+    if (!round) {
+      return res.status(400).json({ error: 'Invalid round' });
+    }
+
+    const correct = selectedIndex === round.correctIndex;
+
+    if (!correct) {
+      // Failure: clear conversation, enemies attack
+      combat.befriendConversation = null;
+
+      const enemyResult = processEnemyTurn(
+        combat.enemies, combat.allies, false, gameManager.run?.itemBuffs
+      );
+
+      // Handle KO'd allies
+      const koSwaps = [];
+      for (let i = 0; i < combat.allies.length; i++) {
+        if (combat.allies[i] && combat.allies[i].hp <= 0) {
+          const replacement = handleRobotKO(gameManager.run.robotParty, i);
+          if (replacement) {
+            koSwaps.push({ slot: i, replacement: replacement.nameEn });
+          }
+        }
+      }
+      combat.allies = gameManager.run.robotParty.active;
+
+      const allAlliesKO = combat.allies.every(a => !a || a.hp <= 0);
+      if (allAlliesKO) {
+        combat.active = false;
+        gameManager.run.active = false;
+      }
+
+      req.saveGame();
+      return res.json({
+        correct: false,
+        correctIndex: round.correctIndex,
+        enemyAttacks: enemyResult.attacks || [],
+        koSwaps,
+        combatEnded: allAlliesKO,
+        victory: false,
+        allies: combat.allies,
+        enemies: combat.enemies
+      });
+    }
+
+    // Correct answer
+    convo.currentRound++;
+
+    if (convo.currentRound >= 3) {
+      // All 3 rounds correct — use existing befriend cycle
+      combat.befriendConversation = null;
+
+      const result = gameManager.robotCombatCycle('befriend');
+
+      req.saveGame();
+      return res.json({
+        correct: true,
+        correctIndex: round.correctIndex,
+        conversationComplete: true,
+        befriend: result.befriend,
+        combatEnded: result.combatEnded || false,
+        victory: result.victory || false,
+        robotParty: result.robotParty,
+        enemies: combat.enemies,
+        state: req.getEnrichedGameState()
+      });
+    }
+
+    // Correct but more rounds to go
+    req.saveGame();
+    res.json({
+      correct: true,
+      correctIndex: round.correctIndex,
+      conversationComplete: false,
+      currentRound: convo.currentRound
+    });
   });
 
   return router;
