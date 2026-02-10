@@ -57,9 +57,9 @@ describe('Robot Combat - Befriend', () => {
     assert.strictEqual(enemies.length, 0);
   });
 
-  it('rejects befriend if no enemy <=30%', () => {
+  it('rejects befriend if no enemy <=50% HP', () => {
     const enemies = [instantiateRobot('earth-common')];
-    enemies[0].hp = 50;
+    enemies[0].hp = Math.floor(enemies[0].maxHp * 0.6); // 60% HP — above threshold
     const party = { active: [instantiateRobot('fire-common')], reserves: [], maxTotal: 6 };
     const result = processBefriend(enemies, party);
     assert.ok(!result.success);
@@ -79,15 +79,29 @@ describe('Robot Combat - Befriend', () => {
 });
 
 describe('Robot Combat - XP', () => {
-  it('active robots get 100% XP, reserves get 50%', () => {
+  it('active robots get 2x shares, reserves get 1x share', () => {
     const party = {
       active: [instantiateRobot('fire-common')],
       reserves: [instantiateRobot('water-common')]
     };
+    // 1 active (2 shares) + 1 reserve (1 share) = 3 total shares
+    // perShare = 100/3 = 33.3 → active gets floor(66.6)=66, reserve gets floor(33.3)=33
     awardBattleXp(party, 100);
-    assert.strictEqual(party.active[0].xp, 0);
-    assert.strictEqual(party.active[0].level, 2);
-    assert.strictEqual(party.reserves[0].xp, 50);
+    assert.strictEqual(party.active[0].xp, 66);
+    assert.strictEqual(party.active[0].level, 1);
+    assert.strictEqual(party.reserves[0].xp, 33);
     assert.strictEqual(party.reserves[0].level, 1);
+  });
+
+  it('levels up when XP exceeds threshold', () => {
+    const party = {
+      active: [instantiateRobot('fire-common')],
+      reserves: []
+    };
+    // 1 active (2 shares), 0 reserves = 2 total shares
+    // perShare = 150/2 = 75 → active gets floor(75*2)=150 → level up (100 XP), 50 remaining
+    awardBattleXp(party, 150);
+    assert.strictEqual(party.active[0].xp, 50);
+    assert.strictEqual(party.active[0].level, 2);
   });
 });

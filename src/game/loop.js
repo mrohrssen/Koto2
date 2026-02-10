@@ -894,6 +894,21 @@ export class GameManager {
     let befriendResult = null;
     const defendActive = actionType === 'defend';
 
+    // Helper: move pending captures into party (called on victory)
+    const flushPendingCaptures = () => {
+      const pending = this.run.robotParty.pendingCaptures || [];
+      for (const robot of pending) {
+        const total = this.run.robotParty.active.length + this.run.robotParty.reserves.length;
+        if (total >= this.run.robotParty.maxTotal) break;
+        if (this.run.robotParty.active.length < 3) {
+          this.run.robotParty.active.push(robot);
+        } else {
+          this.run.robotParty.reserves.push(robot);
+        }
+      }
+      this.run.robotParty.pendingCaptures = [];
+    };
+
     // Player phase
     if (actionType === 'attack') {
       playerResult = processAttackTurn(this.combat.allies, this.combat.enemies, this.run.itemBuffs, this.run.robotParty);
@@ -904,6 +919,7 @@ export class GameManager {
       if (befriendResult.success && befriendResult.allEnemiesDefeated) {
         // Captured last enemy — victory
         awardBattleXp(this.run.robotParty, 100);
+        flushPendingCaptures();
         this.combat.active = false;
         this.run.encountersCompleted++;
         this.emitState();
@@ -920,6 +936,7 @@ export class GameManager {
     // Check if all enemies defeated after player attack
     if (playerResult.allEnemiesDefeated) {
       // XP already awarded per-kill in processAttackTurn (BUG C fix)
+      flushPendingCaptures();
       this.combat.active = false;
       this.run.encountersCompleted++;
       // Mark room as interacted and handle boss defeat
@@ -1231,27 +1248,43 @@ export class GameManager {
       return { success: false, reason: 'Robot to release not found in party' };
     }
 
-    // Capture the enemy
+    // Mark enemy as befriended (don't splice — preserve indices for frontend)
     const captured = eligible[0];
-    const idx = enemies.indexOf(captured);
-    enemies.splice(idx, 1);
-    captured.hp = captured.maxHp;
-    captured.ultimate.charges = 0;
+    captured.hp = 0;
+    captured.befriended = true;
 
-    // Replace the released robot with the captured one
+    // Create a clean copy for when it joins the party after combat
+    const capturedCopy = { ...captured, hp: captured.maxHp, befriended: false };
+    capturedCopy.ultimate = { ...captured.ultimate, charges: 0 };
+
+    // Release the old robot and queue the captured one for post-combat
     if (releaseFrom === 'active') {
-      party.active[releaseIndex] = captured;
+      party.active.splice(releaseIndex, 1);
     } else {
-      party.reserves[releaseIndex] = captured;
+      party.reserves.splice(releaseIndex, 1);
     }
+    if (!party.pendingCaptures) party.pendingCaptures = [];
+    party.pendingCaptures.push(capturedCopy);
 
     // Refresh combat allies reference
     this.combat.allies = party.active;
 
-    const allEnemiesDefeated = enemies.filter(e => e.hp > 0).length === 0;
+    const allEnemiesDefeated = enemies.filter(e => e.hp > 0 && !e.befriended).length === 0;
 
     if (allEnemiesDefeated) {
       awardBattleXp(party, 100);
+      // Flush pending captures into party on victory
+      const pending = party.pendingCaptures || [];
+      for (const robot of pending) {
+        const total = party.active.length + party.reserves.length;
+        if (total >= party.maxTotal) break;
+        if (party.active.length < 3) {
+          party.active.push(robot);
+        } else {
+          party.reserves.push(robot);
+        }
+      }
+      party.pendingCaptures = [];
       this.combat.active = false;
       this.run.encountersCompleted++;
     }
@@ -1259,7 +1292,7 @@ export class GameManager {
     this.emitState();
     return {
       success: true,
-      captured,
+      captured: capturedCopy,
       released: releaseRobotId,
       allEnemiesDefeated,
       combatEnded: allEnemiesDefeated,

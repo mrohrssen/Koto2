@@ -138,22 +138,23 @@ export function processBefriend(enemies, robotParty) {
   }
 
   const captured = eligible[0];
-  const idx = enemies.indexOf(captured);
-  enemies.splice(idx, 1);
+  // Mark as captured but don't remove from array (preserve indices for frontend targeting)
+  captured.hp = 0;
+  captured.befriended = true;
 
-  captured.hp = captured.maxHp;
-  captured.ultimate.charges = 0;
+  // Reset for when it joins the party after combat
+  const capturedCopy = { ...captured, hp: captured.maxHp, befriended: false };
+  capturedCopy.ultimate = { ...captured.ultimate, charges: 0 };
 
-  if (robotParty.active.length < 3) {
-    robotParty.active.push(captured);
-  } else {
-    robotParty.reserves.push(captured);
-  }
+  // Store in pending list — added to party AFTER combat ends
+  if (!robotParty.pendingCaptures) robotParty.pendingCaptures = [];
+  robotParty.pendingCaptures.push(capturedCopy);
 
   return {
     success: true,
     captured,
-    allEnemiesDefeated: enemies.filter(e => e.hp > 0).length === 0
+    capturedId: captured.id,
+    allEnemiesDefeated: enemies.filter(e => e.hp > 0 && !e.befriended).length === 0
   };
 }
 

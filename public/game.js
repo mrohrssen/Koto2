@@ -841,7 +841,8 @@ async function showPostCombatShopFlow() {
     return new Promise((resolve) => {
       postCombatShop.init({
         itemSelectedCallback: async (index) => {
-          await apiSelectShopItem(index);
+          const selectResult = await apiSelectShopItem(index);
+          if (selectResult?.state) updateGameState(selectResult.state);
           postCombatShop.hide();
           resolve();
         }

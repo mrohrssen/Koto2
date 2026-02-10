@@ -171,8 +171,6 @@ export function getAllRobots() {
 
 export function getStarterRobots() {
   return ['fire-common', 'water-common', 'wood-common'].map(id => {
-    const r = instantiateRobot(id);
-    r.hp *= 5; r.maxHp *= 5; r.attack *= 3; // TEMP playtest buff
-    return r;
+    return instantiateRobot(id);
   });
 }

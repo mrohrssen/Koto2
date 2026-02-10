@@ -907,9 +907,12 @@ async function executeRobotPlayerAttack() {
         const robotSlotEl = findRobotSlotByAttackerId(atk.attackerId);
         const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies);
 
-        // Update charge bar immediately after this robot attacks (BUG A fix)
-        if (robotSlotEl && atk.attackerCharges != null) {
-          const chargeBar = robotSlotEl.querySelector('.robot-charge-bar');
+        // Update charge bar for this attacker immediately after its attack
+        // Find slot by matching attackerId against result.robotParty (not stale gameState)
+        const attackerSlotIdx = (result.robotParty?.active || []).findIndex(r => r && r.id === atk.attackerId);
+        const attackerSlot = attackerSlotIdx >= 0 ? document.querySelectorAll('#chip-row .robot-slot')[attackerSlotIdx] : null;
+        if (attackerSlot && atk.attackerCharges != null) {
+          const chargeBar = attackerSlot.querySelector('.robot-charge-bar');
           if (chargeBar) {
             const segments = chargeBar.querySelectorAll('.charge-segment');
             segments.forEach((seg, s) => {
@@ -920,8 +923,7 @@ async function executeRobotPlayerAttack() {
               }
             });
           }
-          // Update charged glow on icon
-          const icon = robotSlotEl.querySelector('.robot-icon');
+          const icon = attackerSlot.querySelector('.robot-icon');
           if (icon) {
             if (atk.attackerCharges >= atk.attackerChargesRequired) {
               icon.classList.add('charged');
