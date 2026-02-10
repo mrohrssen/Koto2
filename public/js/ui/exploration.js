@@ -154,6 +154,86 @@ export function init(callbacks) {
   showStarterSelection = callbacks.showStarterSelection;
 }
 
+// ============ INVENTORY OVERLAY ============
+
+/** Buff metadata: maps itemBuffs fields to display info */
+const BUFF_DISPLAY = {
+  attackMult:        { name: '攻撃強化',     nameEn: 'ATK Boost',       icon: '⚔️', default: 1.0, format: v => `+${Math.round((v - 1.0) * 100)}%` },
+  hpMult:            { name: '体力強化',     nameEn: 'HP Boost',        icon: '❤️', default: 1.0, format: v => `+${Math.round((v - 1.0) * 100)}%` },
+  autoPowerMult:     { name: '自動攻撃強化', nameEn: 'Auto Power',      icon: '🔄', default: 1.0, format: v => `+${Math.round((v - 1.0) * 100)}%` },
+  ultimatePowerMult: { name: '必殺技強化',   nameEn: 'Ultimate Power',  icon: '💥', default: 1.0, format: v => `+${Math.round((v - 1.0) * 100)}%` },
+  elementEdge:       { name: '属性強化',     nameEn: 'Element Edge',    icon: '🔷', default: 0,   format: v => `+${v.toFixed(2)}` },
+  flatDamageReduction: { name: '装甲強化',   nameEn: 'Thick Armor',     icon: '🛡️', default: 0,   format: v => `-${v} dmg` }
+};
+
+/** Show inventory overlay listing all active persistent item buffs */
+function showInventory() {
+  // Remove existing overlay if any
+  document.getElementById('inventory-overlay')?.remove();
+
+  const gameState = getGameState();
+  const itemBuffs = gameState.run?.itemBuffs;
+
+  // Build list of active buffs (only those that differ from defaults)
+  const activeBuffs = [];
+  if (itemBuffs) {
+    for (const [field, info] of Object.entries(BUFF_DISPLAY)) {
+      const value = itemBuffs[field];
+      if (value !== undefined && value !== info.default) {
+        activeBuffs.push({
+          icon: info.icon,
+          name: info.name,
+          nameEn: info.nameEn,
+          value: info.format(value)
+        });
+      }
+    }
+  }
+
+  const buffsHtml = activeBuffs.length > 0
+    ? activeBuffs.map(b => `
+        <div class="inventory-item">
+          <span class="inventory-item-icon">${b.icon}</span>
+          <div class="inventory-item-info">
+            <span class="inventory-item-name">${b.nameEn}</span>
+            <span class="inventory-item-name-ja">${b.name}</span>
+          </div>
+          <span class="inventory-item-value">${b.value}</span>
+        </div>
+      `).join('')
+    : '<div class="inventory-empty">アイテムなし<br><small>No active buffs</small></div>';
+
+  const overlay = document.createElement('div');
+  overlay.id = 'inventory-overlay';
+  overlay.className = 'inventory-overlay';
+  overlay.innerHTML = `
+    <div class="inventory-backdrop"></div>
+    <div class="inventory-panel">
+      <div class="inventory-header">
+        <span class="inventory-title">インベントリ</span>
+        <button class="inventory-close" id="inventory-close-btn">&times;</button>
+      </div>
+      <div class="inventory-list">${buffsHtml}</div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  // Close handlers
+  overlay.querySelector('.inventory-backdrop').addEventListener('click', closeInventory);
+  document.getElementById('inventory-close-btn').addEventListener('click', closeInventory);
+  playSFX('button-tap');
+}
+
+/** Close the inventory overlay */
+function closeInventory() {
+  const overlay = document.getElementById('inventory-overlay');
+  if (overlay) {
+    overlay.classList.add('closing');
+    setTimeout(() => overlay.remove(), 200);
+  }
+}
+
 /** Hub phase — show Speed Review + Equip Bots + Infiltrate buttons */
 export function renderHub() {
   actions.setContent(`
@@ -327,9 +407,11 @@ export function renderExploring() {
 
   if (room?.encounter || gameState.phase === 'room_encounter') {
     actions.setContent(`
+      <button class="action-btn action-btn-tertiary" id="inventory-btn">インベントリ</button>
       <button class="action-btn action-btn-primary" id="equip-bots-btn">ボット装備</button>
       <button class="action-btn action-btn-secondary" id="fight-btn">戦う</button>
     `);
+    document.getElementById('inventory-btn')?.addEventListener('click', showInventory);
     document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
       actions.triggerEquipBots();
     });
@@ -340,9 +422,11 @@ export function renderExploring() {
   }
 
   actions.setContent(`
+    <button class="action-btn action-btn-tertiary" id="inventory-btn">インベントリ</button>
     <button class="action-btn action-btn-primary" id="equip-bots-btn">ボット装備</button>
     <button class="action-btn action-btn-secondary" id="proceed-btn">進む</button>
   `);
+  document.getElementById('inventory-btn')?.addEventListener('click', showInventory);
   document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
     actions.triggerEquipBots();
   });
@@ -459,9 +543,11 @@ export async function renderBranchSelection() {
 /** Boss ready phase */
 export function renderBossReady() {
   actions.setContent(`
+    <button class="action-btn action-btn-tertiary" id="inventory-btn">インベントリ</button>
     <button class="action-btn action-btn-primary" id="equip-bots-btn">ボット装備</button>
     <button class="action-btn action-btn-secondary" id="boss-fight-btn">ボス戦</button>
   `);
+  document.getElementById('inventory-btn')?.addEventListener('click', showInventory);
   document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
     actions.triggerEquipBots();
   });

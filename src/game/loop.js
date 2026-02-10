@@ -364,6 +364,7 @@ export class GameManager {
         // Counter chip tracking (Phase 10)
         runStats: this.run.runStats,
         robotParty: this.run.robotParty,
+        itemBuffs: this.run.itemBuffs || null,
         postCombatShop: this.run.postCombatShop ? {
           active: this.run.postCombatShop.active,
           items: this.run.postCombatShop.items.map(item => {
@@ -522,11 +523,7 @@ export class GameManager {
     // Initialize robot starter(s) if provided
     const ids = starterIds || (starterId ? [starterId] : null);
     if (ids && ids.length > 0) {
-      const first = instantiateRobot(ids[0]);
-      this.run.robotParty.active = [first];
-      for (let i = 1; i < ids.length; i++) {
-        this.run.robotParty.reserves.push(instantiateRobot(ids[i]));
-      }
+      this.run.robotParty.active = ids.map(id => instantiateRobot(id));
       this.run.encountersOnly = true;
     }
 
@@ -868,6 +865,7 @@ export class GameManager {
     this.combat.allies = this.run.robotParty.active;
     this.combat.enemies = enemyRobots;
     this.combat.isRobotCombat = true;
+    this.combat.swapPhase = true; // Free swap available before first action
 
     this.emitState();
 
@@ -947,16 +945,21 @@ export class GameManager {
     enemyResult = processEnemyTurn(this.combat.enemies, this.combat.allies, defendActive, this.run.itemBuffs);
 
     // Handle KO'd allies — swap reserves in
+    const koSwaps = [];
     for (let i = 0; i < this.combat.allies.length; i++) {
-      if (this.combat.allies[i].hp <= 0) {
-        handleRobotKO(this.run.robotParty, i);
+      if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
+        const replacement = handleRobotKO(this.run.robotParty, i);
+        if (replacement) {
+          koSwaps.push({ slot: i, replacement: replacement.nameEn });
+          logger.info('[RobotCombat] KO swap: slot', i, '→', replacement.nameEn);
+        }
       }
     }
     // Refresh allies reference after swaps
     this.combat.allies = this.run.robotParty.active;
 
-    // Check defeat
-    const allAlliesKO = this.combat.allies.every(a => a.hp <= 0);
+    // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
+    const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
     if (allAlliesKO) {
       this.combat.active = false;
       this.run.active = false;
@@ -965,8 +968,10 @@ export class GameManager {
         actionType,
         playerAttacks: playerResult.attacks || [],
         enemyAttacks: enemyResult.attacks || [],
+        koSwaps,
         combatEnded: true,
         victory: false,
+        turnCount: this.combat.turnCount,
         robotParty: this.run.robotParty
       };
     }
@@ -988,7 +993,9 @@ export class GameManager {
       playerAttacks: playerResult.attacks || [],
       enemyAttacks: enemyResult.attacks || [],
       befriend: befriendResult,
+      koSwaps,
       combatEnded: false,
+      turnCount: this.combat.turnCount,
       allies: this.combat.allies,
       enemies: this.combat.enemies,
       robotParty: this.run.robotParty,
@@ -1035,7 +1042,7 @@ export class GameManager {
    * Roll 3 random items for the post-combat shop
    */
   rollPostCombatShop() {
-    if (!this.run?.active) throw new Error('No active run');
+    if (!this.run) throw new Error('No run');
     const items = rollShopItems();
     this.run._pendingShopItems = items;
     return { items };
@@ -1046,7 +1053,7 @@ export class GameManager {
    * @param {number} itemIndex - 0, 1, or 2
    */
   selectShopItem(itemIndex) {
-    if (!this.run?.active) throw new Error('No active run');
+    if (!this.run) throw new Error('No run');
     const items = this.run._pendingShopItems;
     if (!items || !items[itemIndex]) throw new Error('Invalid shop item');
 
