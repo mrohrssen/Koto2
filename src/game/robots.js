@@ -169,8 +169,3 @@ export function getAllRobots() {
   return ROBOT_DATA;
 }
 
-export function getStarterRobots() {
-  return ['fire-common', 'water-common', 'wood-common'].map(id => {
-    return instantiateRobot(id);
-  });
-}

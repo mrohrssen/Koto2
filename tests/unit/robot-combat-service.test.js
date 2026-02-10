@@ -48,13 +48,16 @@ describe('Robot Combat - Enemy Turn', () => {
 });
 
 describe('Robot Combat - Befriend', () => {
-  it('captures enemy at <=30% HP', () => {
+  it('captures enemy at <=50% HP (marks befriended, hp=0)', () => {
     const enemies = [instantiateRobot('earth-common')];
     enemies[0].hp = 20;
     const party = { active: [instantiateRobot('fire-common')], reserves: [], maxTotal: 6 };
     const result = processBefriend(enemies, party);
     assert.ok(result.success);
-    assert.strictEqual(enemies.length, 0);
+    // Enemy stays in array but is marked as befriended with 0 HP
+    assert.strictEqual(enemies[0].hp, 0);
+    assert.strictEqual(enemies[0].befriended, true);
+    assert.strictEqual(party.pendingCaptures.length, 1);
   });
 
   it('rejects befriend if no enemy <=50% HP', () => {

@@ -65,7 +65,7 @@ import { derivePhase } from './phase-machine.js';
 import { CombatService, ExplorationService } from './services/index.js';
 import { calculateChipBonusHP, equipChip, incrementAllEquippedCharges } from './items/chips.js';
 import { logger } from '../logger.js';
-import { instantiateRobot, getStarterRobots, generateEnemyRobot, generateEnemyRobots } from './robots.js';
+import { instantiateRobot, generateEnemyRobot, generateEnemyRobots } from './robots.js';
 import { processAttackTurn, processDefendTurn, processEnemyTurn, processBefriend, processUltimate, awardBattleXp, handleRobotKO } from './services/robot-combat-service.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/robot-collection-service.js';
@@ -1349,13 +1349,6 @@ export class GameManager {
       enemies,
       newCollectionAdditions
     };
-  }
-
-  /**
-   * Get available starter robots
-   */
-  getStarters() {
-    return getStarterRobots();
   }
 
   // ============ UTILITY ============
