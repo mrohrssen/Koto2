@@ -296,10 +296,15 @@ describe('Befriend Dialogue Service - Bulk Generation (Task 3)', () => {
     assert.strictEqual(result.generated, 1);
     assert.strictEqual(result.aborted, false);
 
-    // Verify water-common was saved
+    // Verify water-common was saved with rounds and generatedAt
     const rounds = getDialogueForRobot('user1', 'water-common');
     assert.ok(rounds);
     assert.strictEqual(rounds.length, 3);
+
+    const data = loadUserDialogues('user1');
+    assert.ok(data.robots['water-common'].generatedAt, 'should have generatedAt timestamp');
+    // Verify it's a valid ISO string
+    assert.ok(!isNaN(Date.parse(data.robots['water-common'].generatedAt)));
   });
 
   it('per-user lock prevents duplicate concurrent runs', async () => {

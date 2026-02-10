@@ -243,7 +243,8 @@ export async function generateMissingDialogues(userId, aiConfig, vocabulary, rob
       robots = JSON.parse(readFileSync('data/robots.json', 'utf-8'));
     }
 
-    for (const robot of robots) {
+    for (let i = 0; i < robots.length; i++) {
+      const robot = robots[i];
       const existing = data.robots[robot.id];
       if (existing && existing.status === 'ready') {
         skipped++;
@@ -251,6 +252,9 @@ export async function generateMissingDialogues(userId, aiConfig, vocabulary, rob
       }
 
       console.log(`${LOG_PREFIX} Generating dialogue for robot ${robot.id} (user: ${userId})`);
+
+      // Save previous entry for rollback on abort
+      const previousEntry = data.robots[robot.id] || null;
 
       // Mark as pending
       data.robots[robot.id] = { status: 'pending', rounds: null };
@@ -260,18 +264,24 @@ export async function generateMissingDialogues(userId, aiConfig, vocabulary, rob
 
       if (!rounds) {
         console.error(`${LOG_PREFIX} ABORTING batch: robot ${robot.id} failed all retries`);
-        // Leave as pending on abort
+        // Revert failed robot before aborting
+        if (previousEntry) {
+          data.robots[robot.id] = previousEntry;
+        } else {
+          delete data.robots[robot.id];
+        }
+        saveUserDialogues(userId, data);
         return { generated, skipped, aborted: true };
       }
 
       // Save immediately on success
-      data.robots[robot.id] = { status: 'ready', rounds };
+      data.robots[robot.id] = { status: 'ready', rounds, generatedAt: new Date().toISOString() };
       saveUserDialogues(userId, data);
       generated++;
       console.log(`${LOG_PREFIX} Saved dialogue for robot ${robot.id}`);
 
-      // Cooldown between robots
-      if (cooldownMs > 0) {
+      // Cooldown between robots (skip after last)
+      if (cooldownMs > 0 && i < robots.length - 1) {
         await new Promise(resolve => setTimeout(resolve, cooldownMs));
       }
     }
