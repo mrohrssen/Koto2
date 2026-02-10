@@ -602,3 +602,390 @@ export function updateHpCriticalState(hpBarEl, currentHp, maxHp) {
     hpBarEl.classList.remove('hp-critical-pulse');
   }
 }
+
+// ============ ULTIMATE ANIMATIONS ============
+
+/** Element color configurations for ultimate effects */
+const ULTIMATE_ELEMENT_CONFIG = {
+  fire: {
+    colors: ['#F44336', '#FF9800', '#FFEB3B', '#FF5722'],
+    tintColor: 'rgba(255, 87, 34, 0.25)',
+    shakeIntensity: 'heavy',
+    particleCount: 35
+  },
+  water: {
+    colors: ['#2196F3', '#03A9F4', '#00BCD4', '#B3E5FC'],
+    tintColor: 'rgba(33, 150, 243, 0.2)',
+    shakeIntensity: 'medium',
+    particleCount: 30
+  },
+  earth: {
+    colors: ['#8D6E63', '#795548', '#A1887F', '#D7CCC8'],
+    tintColor: 'rgba(121, 85, 72, 0.2)',
+    shakeIntensity: 'heavy',
+    particleCount: 30
+  },
+  metal: {
+    colors: ['#9E9E9E', '#E0E0E0', '#BDBDBD', '#F5F5F5'],
+    tintColor: 'rgba(224, 224, 224, 0.3)',
+    shakeIntensity: 'heavy',
+    particleCount: 28
+  },
+  wood: {
+    colors: ['#4CAF50', '#8BC34A', '#CDDC39', '#2E7D32'],
+    tintColor: 'rgba(76, 175, 80, 0.2)',
+    shakeIntensity: 'medium',
+    particleCount: 30
+  }
+};
+
+/**
+ * Play the full ultimate visual effect for a given element.
+ * Creates overlay particles, screen tint, and heavy shake.
+ * @param {string} element - 'fire', 'water', 'earth', 'metal', 'wood'
+ * @param {Element} sourceEl - Robot slot element (source of effect)
+ * @param {Element[]} targetEls - Array of enemy elements to hit
+ * @returns {Promise<void>} Resolves when animation is mostly complete
+ */
+export async function playUltimateAnimation(element, sourceEl, targetEls = []) {
+  const config = ULTIMATE_ELEMENT_CONFIG[element] || ULTIMATE_ELEMENT_CONFIG.fire;
+
+  // 1. Screen tint overlay
+  const tint = document.createElement('div');
+  tint.className = 'ultimate-tint-overlay';
+  tint.style.backgroundColor = config.tintColor;
+  document.body.appendChild(tint);
+  anime(tint, {
+    opacity: [0, 1, 1, 0],
+  }, {
+    duration: 1200,
+    ease: 'linear',
+    onComplete: () => tint.remove()
+  });
+
+  // 2. Screen flash (bright)
+  flashScreen(2);
+
+  // 3. Heavy screen shake (repeated)
+  screenShake(config.shakeIntensity);
+  setTimeout(() => screenShake('medium'), 300);
+  setTimeout(() => screenShake(config.shakeIntensity), 600);
+
+  // 4. Element-specific particle burst from source
+  if (sourceEl) {
+    _spawnUltimateParticles(sourceEl, config, element);
+  }
+
+  // 5. Delay, then fire energy streams to all targets
+  await delay(200);
+
+  for (const targetEl of targetEls) {
+    if (sourceEl && targetEl) {
+      spawnSpeedLines(sourceEl, targetEl, 5, config.colors[0]);
+    }
+  }
+
+  // 6. Element-specific screen effect
+  _spawnElementOverlayEffect(element, config);
+
+  // 7. Wait for orbs to arrive, then impact targets
+  await delay(400);
+
+  for (const targetEl of targetEls) {
+    if (targetEl) {
+      spawnParticles(targetEl, 15, config.colors[0]);
+      flashElement(targetEl, 2);
+    }
+  }
+
+  // 8. Final flash
+  await delay(200);
+  flashScreen(1);
+
+  // Total duration ~1200ms for overlays to finish
+  await delay(400);
+}
+
+/**
+ * Spawn a large burst of element-themed particles radiating from the source.
+ * Particles are bigger and more numerous than normal attack particles.
+ */
+function _spawnUltimateParticles(sourceEl, config, element) {
+  if (!sourceEl) return;
+
+  const rect = sourceEl.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+
+  for (let i = 0; i < config.particleCount; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'ultimate-particle';
+    particle.style.left = `${centerX}px`;
+    particle.style.top = `${centerY}px`;
+    const color = config.colors[Math.floor(Math.random() * config.colors.length)];
+    particle.style.backgroundColor = color;
+    particle.style.boxShadow = `0 0 6px ${color}, 0 0 12px ${color}`;
+
+    // Vary size for visual interest
+    const size = 4 + Math.random() * 6;
+    particle.style.width = `${size}px`;
+    particle.style.height = `${size}px`;
+
+    document.body.appendChild(particle);
+
+    const angle = (Math.PI * 2 * i) / config.particleCount + (Math.random() - 0.5) * 0.6;
+    const distance = 80 + Math.random() * 120;
+
+    anime(particle, {
+      translateX: Math.cos(angle) * distance,
+      translateY: Math.sin(angle) * distance,
+      scale: [1.5, 0],
+      opacity: [1, 0],
+    }, {
+      duration: 600 + Math.random() * 400,
+      ease: 'outQuad',
+      onComplete: () => particle.remove()
+    });
+  }
+}
+
+/**
+ * Spawn an element-specific full-screen overlay effect.
+ * Each element has a unique visual treatment.
+ */
+function _spawnElementOverlayEffect(element, config) {
+  switch (element) {
+    case 'fire':
+      _fireOverlayEffect(config);
+      break;
+    case 'water':
+      _waterOverlayEffect(config);
+      break;
+    case 'earth':
+      _earthOverlayEffect(config);
+      break;
+    case 'metal':
+      _metalOverlayEffect(config);
+      break;
+    case 'wood':
+      _woodOverlayEffect(config);
+      break;
+  }
+}
+
+/** Fire: flame columns rising from bottom */
+function _fireOverlayEffect(config) {
+  const count = 8;
+  for (let i = 0; i < count; i++) {
+    const flame = document.createElement('div');
+    flame.className = 'ultimate-flame';
+    flame.style.left = `${(i / count) * 100 + Math.random() * 10}%`;
+    flame.style.bottom = '0';
+    const color = config.colors[Math.floor(Math.random() * config.colors.length)];
+    flame.style.background = `linear-gradient(to top, ${color}, transparent)`;
+    document.body.appendChild(flame);
+
+    anime(flame, {
+      translateY: [0, -(150 + Math.random() * 200)],
+      opacity: [0.8, 0],
+      scaleX: [0.8 + Math.random() * 0.4, 0.2],
+      scaleY: [1, 2],
+    }, {
+      duration: 800 + Math.random() * 400,
+      delay: Math.random() * 200,
+      ease: 'outQuad',
+      onComplete: () => flame.remove()
+    });
+  }
+}
+
+/** Water: wave sweep from left to right */
+function _waterOverlayEffect(config) {
+  const wave = document.createElement('div');
+  wave.className = 'ultimate-wave';
+  wave.style.background = `linear-gradient(to right, transparent, ${config.colors[0]}80, ${config.colors[2]}60, transparent)`;
+  document.body.appendChild(wave);
+
+  anime(wave, {
+    translateX: ['-100%', '100%'],
+    opacity: [0, 0.7, 0],
+  }, {
+    duration: 900,
+    ease: 'inOutQuad',
+    onComplete: () => wave.remove()
+  });
+
+  // Droplet particles falling
+  for (let i = 0; i < 12; i++) {
+    const drop = document.createElement('div');
+    drop.className = 'ultimate-droplet';
+    drop.style.left = `${Math.random() * 100}%`;
+    drop.style.top = `${Math.random() * 60}%`;
+    const color = config.colors[Math.floor(Math.random() * config.colors.length)];
+    drop.style.backgroundColor = color;
+    document.body.appendChild(drop);
+
+    anime(drop, {
+      translateY: [0, 80 + Math.random() * 60],
+      opacity: [0.8, 0],
+      scale: [1, 0.3],
+    }, {
+      duration: 500 + Math.random() * 400,
+      delay: Math.random() * 300,
+      ease: 'inQuad',
+      onComplete: () => drop.remove()
+    });
+  }
+}
+
+/** Earth: ground crack lines + rising debris */
+function _earthOverlayEffect(config) {
+  // Crack lines from center bottom
+  for (let i = 0; i < 5; i++) {
+    const crack = document.createElement('div');
+    crack.className = 'ultimate-crack';
+    const startX = 30 + Math.random() * 40;
+    crack.style.left = `${startX}%`;
+    crack.style.bottom = '0';
+    crack.style.backgroundColor = config.colors[Math.floor(Math.random() * 2)];
+    document.body.appendChild(crack);
+
+    anime(crack, {
+      scaleY: [0, 1],
+      opacity: [1, 0.6, 0],
+    }, {
+      duration: 600 + Math.random() * 300,
+      delay: i * 80,
+      ease: 'outQuad',
+      onComplete: () => crack.remove()
+    });
+  }
+
+  // Rising debris particles
+  for (let i = 0; i < 15; i++) {
+    const debris = document.createElement('div');
+    debris.className = 'ultimate-debris';
+    debris.style.left = `${10 + Math.random() * 80}%`;
+    debris.style.bottom = '0';
+    const color = config.colors[Math.floor(Math.random() * config.colors.length)];
+    debris.style.backgroundColor = color;
+    const size = 3 + Math.random() * 5;
+    debris.style.width = `${size}px`;
+    debris.style.height = `${size}px`;
+    document.body.appendChild(debris);
+
+    anime(debris, {
+      translateY: [0, -(100 + Math.random() * 150)],
+      translateX: (Math.random() - 0.5) * 60,
+      rotate: Math.random() * 360,
+      opacity: [1, 0],
+      scale: [1, 0.3],
+    }, {
+      duration: 700 + Math.random() * 400,
+      delay: Math.random() * 200,
+      ease: 'outQuad',
+      onComplete: () => debris.remove()
+    });
+  }
+}
+
+/** Metal: shards flying outward with flash */
+function _metalOverlayEffect(config) {
+  // Central flash
+  const flash = document.createElement('div');
+  flash.className = 'ultimate-metal-flash';
+  document.body.appendChild(flash);
+
+  anime(flash, {
+    opacity: [0, 0.8, 0],
+    scale: [0.5, 1.5],
+  }, {
+    duration: 400,
+    ease: 'outQuad',
+    onComplete: () => flash.remove()
+  });
+
+  // Metal shards radiating from center
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / 2;
+  for (let i = 0; i < 16; i++) {
+    const shard = document.createElement('div');
+    shard.className = 'ultimate-shard';
+    shard.style.left = `${cx}px`;
+    shard.style.top = `${cy}px`;
+    const color = config.colors[Math.floor(Math.random() * config.colors.length)];
+    shard.style.backgroundColor = color;
+    document.body.appendChild(shard);
+
+    const angle = (Math.PI * 2 * i) / 16 + (Math.random() - 0.5) * 0.3;
+    const distance = 100 + Math.random() * 150;
+
+    anime(shard, {
+      translateX: Math.cos(angle) * distance,
+      translateY: Math.sin(angle) * distance,
+      rotate: Math.random() * 720,
+      opacity: [1, 0],
+      scale: [1, 0.2],
+    }, {
+      duration: 500 + Math.random() * 300,
+      delay: Math.random() * 100,
+      ease: 'outQuad',
+      onComplete: () => shard.remove()
+    });
+  }
+}
+
+/** Wood: vine/leaf burst expanding outward */
+function _woodOverlayEffect(config) {
+  // Vine tendrils expanding from center
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / 2;
+
+  for (let i = 0; i < 6; i++) {
+    const vine = document.createElement('div');
+    vine.className = 'ultimate-vine';
+    vine.style.left = `${cx}px`;
+    vine.style.top = `${cy}px`;
+    vine.style.backgroundColor = config.colors[3]; // Dark green
+    const angle = (Math.PI * 2 * i) / 6;
+    vine.style.transform = `rotate(${angle * (180 / Math.PI)}deg)`;
+    document.body.appendChild(vine);
+
+    anime(vine, {
+      scaleX: [0, 1],
+      opacity: [0.8, 0],
+    }, {
+      duration: 800,
+      delay: i * 60,
+      ease: 'outQuad',
+      onComplete: () => vine.remove()
+    });
+  }
+
+  // Leaf particles
+  for (let i = 0; i < 20; i++) {
+    const leaf = document.createElement('div');
+    leaf.className = 'ultimate-leaf';
+    leaf.style.left = `${cx + (Math.random() - 0.5) * 100}px`;
+    leaf.style.top = `${cy + (Math.random() - 0.5) * 100}px`;
+    const color = config.colors[Math.floor(Math.random() * config.colors.length)];
+    leaf.style.backgroundColor = color;
+    document.body.appendChild(leaf);
+
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 60 + Math.random() * 140;
+
+    anime(leaf, {
+      translateX: Math.cos(angle) * distance,
+      translateY: Math.sin(angle) * distance,
+      rotate: Math.random() * 540,
+      opacity: [0.9, 0],
+      scale: [1, 0.3],
+    }, {
+      duration: 700 + Math.random() * 400,
+      delay: Math.random() * 200,
+      ease: 'outQuad',
+      onComplete: () => leaf.remove()
+    });
+  }
+}

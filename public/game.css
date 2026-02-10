@@ -3455,6 +3455,131 @@ html, body {
   background: #1a1a2e;
 }
 
+/* ===== ULTIMATE ANIMATION OVERLAYS ===== */
+
+/* Screen tint overlay */
+.ultimate-tint-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 9999;
+  will-change: opacity;
+}
+
+/* Large particles from ultimate source */
+.ultimate-particle {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10000;
+  will-change: transform, opacity;
+}
+
+/* Fire: flame columns */
+.ultimate-flame {
+  position: fixed;
+  width: 30px;
+  height: 120px;
+  border-radius: 50% 50% 0 0;
+  pointer-events: none;
+  z-index: 10000;
+  will-change: transform, opacity;
+  filter: blur(4px);
+}
+
+/* Water: wave sweep */
+.ultimate-wave {
+  position: fixed;
+  top: 30%;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  pointer-events: none;
+  z-index: 10000;
+  will-change: transform, opacity;
+  filter: blur(6px);
+}
+
+/* Water: droplets */
+.ultimate-droplet {
+  position: fixed;
+  width: 6px;
+  height: 10px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  pointer-events: none;
+  z-index: 10000;
+  will-change: transform, opacity;
+}
+
+/* Earth: crack lines */
+.ultimate-crack {
+  position: fixed;
+  width: 3px;
+  height: 80px;
+  pointer-events: none;
+  z-index: 10000;
+  will-change: transform, opacity;
+  transform-origin: bottom center;
+}
+
+/* Earth: debris */
+.ultimate-debris {
+  position: fixed;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 10000;
+  will-change: transform, opacity;
+}
+
+/* Metal: central flash */
+.ultimate-metal-flash {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  margin: -100px 0 0 -100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.9), rgba(200,200,200,0.3), transparent);
+  pointer-events: none;
+  z-index: 10000;
+  will-change: transform, opacity;
+}
+
+/* Metal: shards */
+.ultimate-shard {
+  position: fixed;
+  width: 8px;
+  height: 3px;
+  border-radius: 1px;
+  pointer-events: none;
+  z-index: 10000;
+  will-change: transform, opacity;
+}
+
+/* Wood: vine tendrils */
+.ultimate-vine {
+  position: fixed;
+  width: 150px;
+  height: 4px;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 10000;
+  will-change: transform, opacity;
+  transform-origin: left center;
+}
+
+/* Wood: leaf particles */
+.ultimate-leaf {
+  position: fixed;
+  width: 8px;
+  height: 6px;
+  border-radius: 0 50% 50% 50%;
+  pointer-events: none;
+  z-index: 10000;
+  will-change: transform, opacity;
+}
+
 /* Starter Selection */
 .starter-selection {
   padding: 12px;

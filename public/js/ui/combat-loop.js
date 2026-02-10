@@ -42,8 +42,10 @@ import {
   fireRobotAttackEffect,
   enemyRobotAttackEffect,
   showXpPopup,
-  showLevelUpPopup
+  showLevelUpPopup,
+  playUltimateAnimation
 } from './combat-effects.js';
+import { playAttackSound, playUltimateSound } from './combat-audio.js';
 
 // ============ MODULE STATE ============
 
@@ -931,6 +933,7 @@ async function executeRobotPlayerAttack() {
 
         // Fire element-colored orb from robot to enemy with impact effects
         if (robotSlotEl && enemyEl && atk.attackerElement) {
+          playAttackSound(atk.attackerElement);
           const targetMaxHp = enemyHpMap[atk.targetId]?.maxHp || 100;
           await fireRobotAttackEffect(robotSlotEl, enemyEl, atk.attackerElement, atk.damage, targetMaxHp);
         } else {
@@ -991,6 +994,7 @@ async function executeRobotPlayerAttack() {
         const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies);
         const targetSlotEl = findRobotSlotByAttackerId(atk.targetId);
         if (enemyEl && targetSlotEl && atk.attackerElement) {
+          playAttackSound(atk.attackerElement);
           await enemyRobotAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
         } else {
           animatePlayerHurt();
@@ -1187,6 +1191,7 @@ async function executeRobotDefendThenPause() {
         const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies);
         const targetSlotEl = findRobotSlotByAttackerId(atk.targetId);
         if (enemyEl && targetSlotEl && atk.attackerElement) {
+          playAttackSound(atk.attackerElement);
           await enemyRobotAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
         } else {
           animatePlayerHurt();
