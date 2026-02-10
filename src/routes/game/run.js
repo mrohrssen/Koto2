@@ -33,7 +33,9 @@ export default function createRunRoutes({
   generateGameNarration,
   generateDoorHints,
   cancelPendingPrefetches,
-  clearPrefetchCache
+  clearPrefetchCache,
+  generateMissingDialoguesFn,
+  getUserVocabulary
 }) {
   const router = Router();
 
@@ -60,6 +62,24 @@ export default function createRunRoutes({
       }, req.userKeys);
 
       req.saveGame();
+
+      // Fire-and-forget: generate any missing befriend dialogues
+      if (generateMissingDialoguesFn && getUserVocabulary) {
+        const userKeys = req.userKeys || {};
+        if (userKeys.aiApiKey) {
+          const { words: vocabulary } = getUserVocabulary(req.user.id);
+          generateMissingDialoguesFn(req.user.id, {
+            provider: userKeys.aiProvider || 'openai',
+            apiKey: userKeys.aiApiKey,
+            openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+            openrouterModel: userKeys.openrouterModel,
+            jlptLevel: userKeys.jlptLevel || 'N4'
+          }, vocabulary).catch(e => {
+            console.error('[BefriendDialogue] Background bulk generation failed:', e.message);
+          });
+        }
+      }
+
       res.json({
         state: req.getEnrichedGameState(),
         narration
@@ -121,6 +141,24 @@ export default function createRunRoutes({
       }, req.userKeys);
 
       req.saveGame();
+
+      // Fire-and-forget: generate any missing befriend dialogues
+      if (generateMissingDialoguesFn && getUserVocabulary) {
+        const userKeys = req.userKeys || {};
+        if (userKeys.aiApiKey) {
+          const { words: vocabulary } = getUserVocabulary(req.user.id);
+          generateMissingDialoguesFn(req.user.id, {
+            provider: userKeys.aiProvider || 'openai',
+            apiKey: userKeys.aiApiKey,
+            openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+            openrouterModel: userKeys.openrouterModel,
+            jlptLevel: userKeys.jlptLevel || 'N4'
+          }, vocabulary).catch(e => {
+            console.error('[BefriendDialogue] Background bulk generation failed:', e.message);
+          });
+        }
+      }
+
       res.json({
         state: req.getEnrichedGameState(),
         narration

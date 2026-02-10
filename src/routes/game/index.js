@@ -65,7 +65,9 @@ export default function createGameRoutes(deps) {
     generateGameNarration: deps.generateGameNarration,
     generateDoorHints: deps.generateDoorHints,
     cancelPendingPrefetches: deps.cancelPendingPrefetches,
-    clearPrefetchCache: deps.clearPrefetchCache
+    clearPrefetchCache: deps.clearPrefetchCache,
+    generateMissingDialoguesFn: deps.generateMissingDialoguesFn,
+    getUserVocabulary: deps.getUserVocabulary
   }));
 
   // Mount combat routes
@@ -76,7 +78,9 @@ export default function createGameRoutes(deps) {
     saveGameStats: deps.saveGameStats,
     getGameStats: deps.getGameStats,
     generateBefriendConversationFn: deps.generateBefriendConversationFn,
-    getUserVocabulary: deps.getUserVocabulary
+    getUserVocabulary: deps.getUserVocabulary,
+    getDialogueForRobot: deps.getDialogueForRobot,
+    regenerateRobotDialogueFn: deps.regenerateRobotDialogueFn
   }));
 
   // Mount economy routes

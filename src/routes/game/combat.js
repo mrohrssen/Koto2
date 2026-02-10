@@ -10,6 +10,20 @@ import { getChip, getChipCharge, isChipSkillReady, getChipLevel } from '../../ga
 import { processEnemyTurn, handleRobotKO } from '../../game/services/robot-combat-service.js';
 import { getCollectionCatalog } from '../../game/services/robot-collection-service.js';
 
+function triggerDialogueRegen(userId, targetEnemy, userKeys, getUserVocabularyFn, regenFn) {
+  if (!regenFn || !targetEnemy || !userKeys?.aiApiKey) return;
+  const { words: vocabulary } = getUserVocabularyFn(userId);
+  regenFn(userId, targetEnemy, {
+    provider: userKeys.aiProvider || 'openai',
+    apiKey: userKeys.aiApiKey,
+    openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+    openrouterModel: userKeys.openrouterModel,
+    jlptLevel: userKeys.jlptLevel || 'N4'
+  }, vocabulary).catch(e => {
+    console.error('[BefriendDialogue] Background regen failed:', e.message);
+  });
+}
+
 export default function createCombatRoutes({
   generateGameNarration,
   enrichRewardDrops,
@@ -17,7 +31,9 @@ export default function createCombatRoutes({
   saveGameStats,
   getGameStats,
   generateBefriendConversationFn,
-  getUserVocabulary
+  getUserVocabulary,
+  getDialogueForRobot,
+  regenerateRobotDialogueFn
 }) {
   const router = Router();
 
@@ -316,13 +332,27 @@ export default function createCombatRoutes({
       const { words: vocabulary } = getUserVocabulary(req.user.id);
       const userKeys = req.userKeys || {};
 
-      const rounds = await generateBefriendConversationFn(target, vocabulary, {
-        provider: userKeys.aiProvider || 'openai',
-        apiKey: userKeys.aiApiKey,
-        openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
-        openrouterModel: userKeys.openrouterModel,
-        jlptLevel: userKeys.jlptLevel || 'N4'
-      });
+      // Try pre-generated dialogue first
+      let rounds = null;
+      if (getDialogueForRobot) {
+        const preGenerated = getDialogueForRobot(req.user.id, target.id);
+        if (preGenerated) {
+          rounds = preGenerated;
+          console.log(`[BefriendDialogue] Using pre-generated dialogue for ${target.id}`);
+        }
+      }
+
+      // Fall back to on-the-fly generation
+      if (!rounds) {
+        console.log(`[BefriendDialogue] No pre-generated dialogue for ${target.id}, generating on-the-fly`);
+        rounds = await generateBefriendConversationFn(target, vocabulary, {
+          provider: userKeys.aiProvider || 'openai',
+          apiKey: userKeys.aiApiKey,
+          openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+          openrouterModel: userKeys.openrouterModel,
+          jlptLevel: userKeys.jlptLevel || 'N4'
+        });
+      }
 
       combat.befriendConversation = {
         targetEnemyIndex: targetIdx,
@@ -361,6 +391,7 @@ export default function createCombatRoutes({
     }
 
     const convo = combat.befriendConversation;
+    const targetEnemy = combat.enemies[convo.targetEnemyIndex];
 
     if (roundIndex !== convo.currentRound) {
       return res.status(400).json({ error: 'Wrong round index' });
@@ -400,6 +431,7 @@ export default function createCombatRoutes({
       }
 
       req.saveGame();
+      triggerDialogueRegen(req.user.id, targetEnemy, req.userKeys, getUserVocabulary, regenerateRobotDialogueFn);
       return res.json({
         correct: false,
         correctIndex: round.correctIndex,
@@ -422,6 +454,7 @@ export default function createCombatRoutes({
       const result = gameManager.robotCombatCycle('befriend');
 
       req.saveGame();
+      triggerDialogueRegen(req.user.id, targetEnemy, req.userKeys, getUserVocabulary, regenerateRobotDialogueFn);
       return res.json({
         correct: true,
         correctIndex: round.correctIndex,
