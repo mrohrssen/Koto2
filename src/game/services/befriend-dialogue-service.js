@@ -7,7 +7,7 @@
  * Each robot's dialogue has 3 rounds with speaker text, 3 options, and a correctIndex.
  */
 
-import { readFileSync, writeFileSync, renameSync } from 'fs';
+import { readFileSync, writeFileSync, renameSync, existsSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { DM_PROMPTS } from '../dm.js';
 
@@ -72,8 +72,17 @@ export function loadUserDialogues(userId) {
 export function saveUserDialogues(userId, data) {
   const filePath = getUserFilePath(userId);
   const tmpPath = filePath + '.tmp';
-  writeFileSync(tmpPath, JSON.stringify(data, null, 2), 'utf-8');
-  renameSync(tmpPath, filePath);
+  try {
+    writeFileSync(tmpPath, JSON.stringify(data, null, 2), 'utf-8');
+    renameSync(tmpPath, filePath);
+  } catch (e) {
+    // Clean up tmp file if it exists
+    try {
+      if (existsSync(tmpPath)) unlinkSync(tmpPath);
+    } catch {}
+    console.error(`${LOG_PREFIX} Error saving ${filePath}:`, e.message);
+    throw e;
+  }
 }
 
 /**
@@ -86,6 +95,7 @@ export function getDialogueForRobot(userId, robotId) {
   const data = loadUserDialogues(userId);
   const entry = data.robots[robotId];
   if (!entry || entry.status !== 'ready') return null;
+  if (!Array.isArray(entry.rounds) || entry.rounds.length !== 3) return null;
   return entry.rounds;
 }
 
@@ -126,6 +136,11 @@ function validateRounds(parsed) {
  * @returns {object[]|null} Array of 3 validated rounds, or null on failure
  */
 export async function generateOneRobotDialogue(robot, vocabulary, aiConfig) {
+  if (!aiConfig.chat || !aiConfig.apiKey) {
+    console.error(`${LOG_PREFIX} Missing chat function or apiKey for robot ${robot.id}`);
+    return null;
+  }
+
   try {
     const prompt = DM_PROMPTS.befriendConversation({ robot });
     const response = await aiConfig.chat({
@@ -166,12 +181,12 @@ export async function generateOneRobotDialogue(robot, vocabulary, aiConfig) {
  * @param {object} robot - Robot object
  * @param {string[]} vocabulary - Player's vocabulary
  * @param {object} aiConfig - AI configuration
- * @param {object} opts - { maxRetries: 3, baseDelayMs: 1000 }
+ * @param {object} opts - { maxRetries: 3, baseDelayMs: 2000 }
  * @returns {object[]|null} Validated rounds or null after all retries
  */
 export async function generateWithRetry(robot, vocabulary, aiConfig, opts = {}) {
   const maxRetries = opts.maxRetries ?? 3;
-  const baseDelayMs = opts.baseDelayMs ?? 1000;
+  const baseDelayMs = opts.baseDelayMs ?? 2000;
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     console.log(`${LOG_PREFIX} Attempt ${attempt + 1}/${maxRetries} for robot ${robot.id}`);
@@ -225,8 +240,7 @@ export async function generateMissingDialogues(userId, aiConfig, vocabulary, rob
     // Load robot list from file if not provided
     let robots = robotList;
     if (!robots) {
-      const robotsPath = join(dataDir, 'robots.json');
-      robots = JSON.parse(readFileSync(robotsPath, 'utf-8'));
+      robots = JSON.parse(readFileSync('data/robots.json', 'utf-8'));
     }
 
     for (const robot of robots) {
@@ -281,7 +295,7 @@ export async function generateMissingDialogues(userId, aiConfig, vocabulary, rob
  * @param {object} robot - Robot object with id, name, element, etc.
  * @param {object} aiConfig - AI configuration
  * @param {string[]} vocabulary - Player's vocabulary
- * @param {object} opts - { maxRetries, baseDelayMs } passed to generateWithRetry
+ * @param {object} opts - { retryOpts: { maxRetries, baseDelayMs } }
  * @returns {object} { success: boolean, rounds: object[]|null }
  */
 export async function regenerateRobotDialogue(userId, robot, aiConfig, vocabulary, opts = {}) {
@@ -293,6 +307,7 @@ export async function regenerateRobotDialogue(userId, robot, aiConfig, vocabular
   }
 
   regeneratingRobots.add(lockKey);
+  const retryOpts = opts.retryOpts || {};
 
   try {
     const data = loadUserDialogues(userId);
@@ -304,20 +319,36 @@ export async function regenerateRobotDialogue(userId, robot, aiConfig, vocabular
     saveUserDialogues(userId, data);
 
     console.log(`${LOG_PREFIX} Regenerating dialogue for robot ${robot.id} (user: ${userId})`);
-    const rounds = await generateWithRetry(robot, vocabulary, aiConfig, opts);
+    const rounds = await generateWithRetry(robot, vocabulary, aiConfig, retryOpts);
 
     if (rounds) {
-      data.robots[robot.id] = { status: 'ready', rounds };
-      saveUserDialogues(userId, data);
+      // Reload from disk before writing to avoid overwriting concurrent changes
+      const freshData = loadUserDialogues(userId);
+      freshData.robots[robot.id] = { status: 'ready', rounds };
+      saveUserDialogues(userId, freshData);
       console.log(`${LOG_PREFIX} Regeneration successful for robot ${robot.id}`);
       return { success: true, rounds };
     }
 
-    // Revert to old dialogue on failure
+    // Revert to old dialogue on failure — reload from disk first
     console.error(`${LOG_PREFIX} Regeneration failed for robot ${robot.id}, reverting to old dialogue`);
-    data.robots[robot.id] = { status: 'ready', rounds: oldRounds };
-    saveUserDialogues(userId, data);
+    const freshData = loadUserDialogues(userId);
+    freshData.robots[robot.id] = { status: 'ready', rounds: oldRounds };
+    saveUserDialogues(userId, freshData);
     return { success: false, rounds: oldRounds };
+  } catch (e) {
+    // Crash recovery: try to revert robot status back to ready
+    console.error(`${LOG_PREFIX} Unexpected error during regeneration for robot ${robot.id}:`, e.message);
+    try {
+      const recoveryData = loadUserDialogues(userId);
+      if (recoveryData.robots[robot.id]) {
+        recoveryData.robots[robot.id].status = 'ready';
+        saveUserDialogues(userId, recoveryData);
+      }
+    } catch (recoveryErr) {
+      console.error(`${LOG_PREFIX} Recovery save failed:`, recoveryErr.message);
+    }
+    return { success: false, rounds: null };
   } finally {
     regeneratingRobots.delete(lockKey);
   }

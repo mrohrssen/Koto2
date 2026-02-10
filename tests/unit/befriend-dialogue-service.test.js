@@ -107,6 +107,26 @@ describe('Befriend Dialogue Service - File I/O (Task 1)', () => {
     assert.strictEqual(rounds, null);
   });
 
+  it('getDialogueForRobot returns null when rounds are not an array of 3', () => {
+    saveUserDialogues('user1', {
+      robots: {
+        'fire-common': { status: 'ready', rounds: VALID_ROUNDS.slice(0, 2) }
+      }
+    });
+    const rounds = getDialogueForRobot('user1', 'fire-common');
+    assert.strictEqual(rounds, null);
+  });
+
+  it('getDialogueForRobot returns null when rounds is null', () => {
+    saveUserDialogues('user1', {
+      robots: {
+        'fire-common': { status: 'ready', rounds: null }
+      }
+    });
+    const rounds = getDialogueForRobot('user1', 'fire-common');
+    assert.strictEqual(rounds, null);
+  });
+
   it('saveUserDialogues writes atomically (tmp file does not persist)', () => {
     saveUserDialogues('user1', { robots: {} });
     const tmpPath = `${TEST_DATA_DIR}/befriend-user1.json.tmp`;
@@ -182,6 +202,19 @@ describe('Befriend Dialogue Service - AI Generation (Task 2)', () => {
   it('chat function throwing returns null', async () => {
     const mockChat = async () => { throw new Error('API timeout'); };
     const aiConfig = makeMockAiConfig(mockChat);
+    const result = await generateOneRobotDialogue(MOCK_ROBOT, ['食べる'], aiConfig);
+    assert.strictEqual(result, null);
+  });
+
+  it('missing chat function returns null without calling AI', async () => {
+    const aiConfig = { provider: 'openai', apiKey: 'test-key' };
+    const result = await generateOneRobotDialogue(MOCK_ROBOT, ['食べる'], aiConfig);
+    assert.strictEqual(result, null);
+  });
+
+  it('missing apiKey returns null without calling AI', async () => {
+    const mockChat = async () => makeValidResponse();
+    const aiConfig = { chat: mockChat, provider: 'openai' };
     const result = await generateOneRobotDialogue(MOCK_ROBOT, ['食べる'], aiConfig);
     assert.strictEqual(result, null);
   });
@@ -341,7 +374,7 @@ describe('Befriend Dialogue Service - Regeneration (Task 3)', () => {
 
     const result = await regenerateRobotDialogue(
       'user1', MOCK_ROBOT, aiConfig, ['食べる'],
-      { maxRetries: 1, baseDelayMs: 10 }
+      { retryOpts: { maxRetries: 1, baseDelayMs: 10 } }
     );
 
     assert.ok(result.success);
@@ -363,7 +396,7 @@ describe('Befriend Dialogue Service - Regeneration (Task 3)', () => {
 
     const result = await regenerateRobotDialogue(
       'user1', MOCK_ROBOT, aiConfig, ['食べる'],
-      { maxRetries: 2, baseDelayMs: 10 }
+      { retryOpts: { maxRetries: 2, baseDelayMs: 10 } }
     );
 
     assert.ok(!result.success);
@@ -390,13 +423,13 @@ describe('Befriend Dialogue Service - Regeneration (Task 3)', () => {
     // Start first regen
     const regen1Promise = regenerateRobotDialogue(
       'user1', MOCK_ROBOT, aiConfig, ['食べる'],
-      { maxRetries: 1, baseDelayMs: 10 }
+      { retryOpts: { maxRetries: 1, baseDelayMs: 10 } }
     );
 
     // Start second regen immediately (should be locked)
     const regen2 = await regenerateRobotDialogue(
       'user1', MOCK_ROBOT, aiConfig, ['食べる'],
-      { maxRetries: 1, baseDelayMs: 10 }
+      { retryOpts: { maxRetries: 1, baseDelayMs: 10 } }
     );
 
     assert.ok(regen2.locked, 'second regen should be locked');
