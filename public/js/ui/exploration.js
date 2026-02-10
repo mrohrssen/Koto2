@@ -233,22 +233,22 @@ export async function renderLevelSelect() {
       playSFX('button-tap');
 
       // Show starter robot selection before starting the run
-      let starterId = null;
+      let starterIds = null;
       if (apiGetStarters && showStarterSelection) {
         const starterResult = await apiGetStarters();
         const starters = starterResult?.starters;
         if (starters && starters.length > 0) {
-          starterId = await showStarterSelection(starters);
-          if (!starterId) return; // User somehow cancelled
+          starterIds = await showStarterSelection(starters);
+          if (!starterIds || starterIds.length === 0) return;
         }
       }
 
-      const runResult = await apiSelectLevel(levelId, starterId);
+      const runResult = await apiSelectLevel(levelId, starterIds);
       if (runResult?.state) {
         updateGameState(runResult.state);
         updateUI();
         // Skip starting chip shop when robot combat is active
-        if (!starterId && runResult.state.run?.startingChipShop?.active) {
+        if (!starterIds && runResult.state.run?.startingChipShop?.active) {
           const economyMod = await import('./economy.js');
           await economyMod.renderStartingChipShop();
         }

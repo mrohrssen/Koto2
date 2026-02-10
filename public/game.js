@@ -484,12 +484,12 @@ async function startNewRun() {
   const starters = starterResult?.starters;
 
   if (starters && starters.length > 0) {
-    // Show starter selection screen and wait for choice
-    const starterId = await showStarterSelection(starters);
-    if (!starterId) return; // User cancelled somehow
+    // Show starter selection screen and wait for 2 choices
+    const starterIds = await showStarterSelection(starters);
+    if (!starterIds || starterIds.length === 0) return;
 
-    // Start run with selected starter
-    const result = await apiStartRun({ starterId });
+    // Start run with selected starters
+    const result = await apiStartRun({ starterIds });
     if (result?.state) {
       updateGameState(result.state);
       updateUI();
@@ -518,6 +518,9 @@ function showStarterSelection(starters) {
       wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63', metal: '#9E9E9E', water: '#2196F3'
     };
 
+    const MAX_PICKS = 2;
+    const selected = [];
+
     const cardsHtml = starters.map(s => `
       <div class="starter-card" data-id="${s.id}" style="border-color: ${ELEMENT_COLORS[s.element]}">
         <div class="starter-icon">${ELEMENT_ICONS[s.element]}</div>
@@ -534,7 +537,8 @@ function showStarterSelection(starters) {
     const actionArea = document.getElementById('action-area');
     actionArea.innerHTML = `
       <div class="starter-selection">
-        <div class="starter-title">Choose Your Starter</div>
+        <div class="starter-title">Choose ${MAX_PICKS} Starters</div>
+        <div class="starter-subtitle" id="starter-subtitle">Pick your active robot, then a reserve</div>
         <div class="starter-cards">${cardsHtml}</div>
       </div>
     `;
@@ -545,11 +549,26 @@ function showStarterSelection(starters) {
     document.querySelectorAll('.starter-card').forEach(card => {
       card.addEventListener('click', () => {
         const id = card.dataset.id;
-        // Highlight selection
-        document.querySelectorAll('.starter-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        // Small delay for visual feedback
-        setTimeout(() => resolve(id), 300);
+        if (card.classList.contains('selected')) {
+          // Deselect
+          card.classList.remove('selected');
+          const idx = selected.indexOf(id);
+          if (idx !== -1) selected.splice(idx, 1);
+        } else if (selected.length < MAX_PICKS) {
+          card.classList.add('selected');
+          selected.push(id);
+        }
+
+        // Update subtitle
+        const sub = document.getElementById('starter-subtitle');
+        if (selected.length === 0) sub.textContent = 'Pick your active robot, then a reserve';
+        else if (selected.length === 1) sub.textContent = 'Now pick a reserve robot';
+        else sub.textContent = 'Ready!';
+
+        // Auto-resolve when we have enough picks
+        if (selected.length === MAX_PICKS) {
+          setTimeout(() => resolve([...selected]), 400);
+        }
       });
     });
   });

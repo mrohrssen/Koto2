@@ -488,7 +488,7 @@ export class GameManager {
   /**
    * Start a new dungeon run
    */
-  startRun(levelId = null, starterId = null) {
+  startRun(levelId = null, starterId = null, starterIds = null) {
     if (!this.player) {
       throw new Error('No player exists');
     }
@@ -519,15 +519,19 @@ export class GameManager {
     // Ward selection is required at start
     this.run.wardSelectionRequired = true;
 
-    // Initialize robot starter if provided
-    if (starterId) {
-      const starter = instantiateRobot(starterId);
-      this.run.robotParty.active = [starter];
+    // Initialize robot starter(s) if provided
+    const ids = starterIds || (starterId ? [starterId] : null);
+    if (ids && ids.length > 0) {
+      const first = instantiateRobot(ids[0]);
+      this.run.robotParty.active = [first];
+      for (let i = 1; i < ids.length; i++) {
+        this.run.robotParty.reserves.push(instantiateRobot(ids[i]));
+      }
       this.run.encountersOnly = true;
     }
 
     // Generate starting chip choices (skip for robot combat - robots don't use chips)
-    if (!starterId) {
+    if (!ids) {
       const ownedChipIds = (this.run.player.chips || []).map(c => c.id);
       const startingChips = generatePostCombatShop(1, ownedChipIds, 'common');
       this.run.startingChipShop = {
