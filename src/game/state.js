@@ -378,7 +378,10 @@ export function createCombatState(enemy) {
     lastAction: null,
 
     // Combat log
-    log: []
+    log: [],
+
+    // Robot swap state
+    swapPhase: true  // true = free swaps allowed, false = swap costs action
   };
 }
 

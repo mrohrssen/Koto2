@@ -67,6 +67,7 @@ import { calculateChipBonusHP, equipChip, incrementAllEquippedCharges } from './
 import { logger } from '../logger.js';
 import { instantiateRobot, getStarterRobots, generateEnemyRobot, generateEnemyRobots } from './robots.js';
 import { processAttackTurn, processDefendTurn, processEnemyTurn, processBefriend, processUltimate, awardBattleXp, handleRobotKO } from './services/robot-combat-service.js';
+import { rollShopItems, applyItem } from './services/item-service.js';
 
 // ============ GAME MANAGER ============
 
@@ -883,6 +884,9 @@ export class GameManager {
       throw new Error('No active combat');
     }
 
+    // Once an action is committed, free swap window closes
+    this.combat.swapPhase = false;
+
     let playerResult = {};
     let enemyResult = {};
     let befriendResult = null;
@@ -969,6 +973,10 @@ export class GameManager {
     }
 
     this.combat.turnCount++;
+
+    // Reset swap phase for next turn (free swaps available again)
+    this.combat.swapPhase = true;
+
     this.emitState();
 
     return {
@@ -1015,6 +1023,110 @@ export class GameManager {
       combatEnded: result.allEnemiesDefeated,
       victory: result.allEnemiesDefeated ? true : undefined,
       robotParty: this.run.robotParty,
+      enemies: this.combat.enemies
+    };
+  }
+
+  /**
+   * Roll 3 random items for the post-combat shop
+   */
+  rollPostCombatShop() {
+    if (!this.run?.active) throw new Error('No active run');
+    const items = rollShopItems();
+    this.run._pendingShopItems = items;
+    return { items };
+  }
+
+  /**
+   * Player selects one item from the post-combat shop
+   * @param {number} itemIndex - 0, 1, or 2
+   */
+  selectShopItem(itemIndex) {
+    if (!this.run?.active) throw new Error('No active run');
+    const items = this.run._pendingShopItems;
+    if (!items || !items[itemIndex]) throw new Error('Invalid shop item');
+
+    const selectedItem = items[itemIndex];
+    applyItem(selectedItem, this.run.robotParty, this.run.itemBuffs);
+    this.run._pendingShopItems = null;
+
+    this.emitState();
+    return {
+      selected: selectedItem,
+      robotParty: this.run.robotParty,
+      itemBuffs: this.run.itemBuffs
+    };
+  }
+
+  /**
+   * Swap an active robot with a reserve
+   * @param {number} activeIndex - Index in robotParty.active (0-2)
+   * @param {number} reserveIndex - Index in robotParty.reserves (0-2)
+   * @returns {Object} Result with updated party and whether enemy attacks
+   */
+  swapRobot(activeIndex, reserveIndex) {
+    if (!this.combat?.active) throw new Error('No active combat');
+    if (!this.run?.robotParty) throw new Error('No robot party');
+
+    const party = this.run.robotParty;
+    if (!party.active[activeIndex]) throw new Error('Invalid active robot index');
+    if (!party.reserves[reserveIndex]) throw new Error('Invalid reserve robot index');
+
+    // Perform the swap
+    const temp = party.active[activeIndex];
+    party.active[activeIndex] = party.reserves[reserveIndex];
+    party.reserves[reserveIndex] = temp;
+
+    // Refresh combat allies reference
+    this.combat.allies = party.active;
+
+    const isFreeSwap = this.combat.swapPhase;
+
+    if (!isFreeSwap) {
+      // Paid swap: enemy attacks, no player action
+      const enemyResult = processEnemyTurn(
+        this.combat.enemies,
+        this.combat.allies,
+        false,
+        this.run.itemBuffs
+      );
+
+      // Handle KO'd allies after enemy attack
+      for (let i = 0; i < this.combat.allies.length; i++) {
+        if (this.combat.allies[i].hp <= 0) {
+          handleRobotKO(this.run.robotParty, i);
+        }
+      }
+      this.combat.allies = this.run.robotParty.active;
+
+      // Check defeat
+      const allAlliesKO = this.combat.allies.every(a => a.hp <= 0);
+      if (allAlliesKO) {
+        this.combat.active = false;
+        this.run.active = false;
+      }
+
+      this.combat.turnCount++;
+      this.emitState();
+
+      return {
+        swapped: true,
+        freeSwap: false,
+        enemyAttacks: enemyResult.attacks,
+        combatEnded: allAlliesKO,
+        victory: false,
+        robotParty: party,
+        allies: this.combat.allies,
+        enemies: this.combat.enemies
+      };
+    }
+
+    this.emitState();
+    return {
+      swapped: true,
+      freeSwap: true,
+      robotParty: party,
+      allies: this.combat.allies,
       enemies: this.combat.enemies
     };
   }

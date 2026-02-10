@@ -210,5 +210,42 @@ export default function createCombatRoutes({
     }
   });
 
+  // Post-combat item shop
+  router.post('/robot-shop-roll', (req, res) => {
+    const gameManager = req.gameManager;
+    try {
+      const result = gameManager.rollPostCombatShop();
+      req.saveGame();
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  router.post('/robot-shop-select', (req, res) => {
+    const gameManager = req.gameManager;
+    const { itemIndex } = req.body;
+    try {
+      const result = gameManager.selectShopItem(itemIndex);
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Robot swap
+  router.post('/swap-robot', (req, res) => {
+    const gameManager = req.gameManager;
+    const { activeIndex, reserveIndex } = req.body;
+    try {
+      const result = gameManager.swapRobot(activeIndex, reserveIndex);
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   return router;
 }
