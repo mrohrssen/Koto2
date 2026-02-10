@@ -542,18 +542,23 @@ function showCollectionSelect(catalog, collection) {
         `;
       }).join('');
 
-      const actionArea = document.getElementById('action-area');
-      actionArea.innerHTML = `
-        <div class="collection-select">
-          <div class="collection-header">
-            <span class="collection-title">Select Your Team</span>
-            <span class="collection-points ${budgetClass}">${usedPoints} / ${MAX_POINTS} pts</span>
-          </div>
-          <div class="collection-grid">${cellsHtml}</div>
-          <button class="action-btn action-btn-primary" id="collection-confirm-btn" ${selected.size === 0 ? 'disabled' : ''}>
-            Start Run (${selected.size} robot${selected.size !== 1 ? 's' : ''})
-          </button>
+      // Render into .game-app (not #action-area) so the overlay fills the full mobile container
+      const gameApp = document.querySelector('.game-app');
+      let overlay = gameApp.querySelector('.collection-select');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'collection-select';
+        gameApp.appendChild(overlay);
+      }
+      overlay.innerHTML = `
+        <div class="collection-header">
+          <span class="collection-title">Select Your Team</span>
+          <span class="collection-points ${budgetClass}">${usedPoints} / ${MAX_POINTS} pts</span>
         </div>
+        <div class="collection-grid">${cellsHtml}</div>
+        <button class="action-btn action-btn-primary" id="collection-confirm-btn" ${selected.size === 0 ? 'disabled' : ''}>
+          Start Run (${selected.size} robot${selected.size !== 1 ? 's' : ''})
+        </button>
       `;
 
       // Set background
@@ -580,6 +585,9 @@ function showCollectionSelect(catalog, collection) {
 
       document.getElementById('collection-confirm-btn')?.addEventListener('click', () => {
         if (selected.size > 0) {
+          // Remove overlay before resolving
+          const gameApp = document.querySelector('.game-app');
+          gameApp.querySelector('.collection-select')?.remove();
           resolve([...selected]);
         }
       });
