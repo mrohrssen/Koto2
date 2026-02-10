@@ -68,6 +68,7 @@ import { logger } from '../logger.js';
 import { instantiateRobot, getStarterRobots, generateEnemyRobot, generateEnemyRobots } from './robots.js';
 import { processAttackTurn, processDefendTurn, processEnemyTurn, processBefriend, processUltimate, awardBattleXp, handleRobotKO } from './services/robot-combat-service.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
+import { addToCollection } from './services/robot-collection-service.js';
 
 // ============ GAME MANAGER ============
 
@@ -901,6 +902,7 @@ export class GameManager {
     // Helper: move pending captures into party (called on victory)
     const flushPendingCaptures = () => {
       const pending = this.run.robotParty.pendingCaptures || [];
+      const newAdditions = [];
       for (const robot of pending) {
         const total = this.run.robotParty.active.length + this.run.robotParty.reserves.length;
         if (total >= this.run.robotParty.maxTotal) break;
@@ -909,8 +911,17 @@ export class GameManager {
         } else {
           this.run.robotParty.reserves.push(robot);
         }
+        // Add to permanent collection
+        if (this.meta) {
+          const result = addToCollection(this.meta.robotCollection || [], robot.id);
+          if (result.added) {
+            this.meta.robotCollection = result.collection;
+            newAdditions.push({ id: robot.id, name: robot.name, nameEn: robot.nameEn, element: robot.element, rarity: robot.rarity });
+          }
+        }
       }
       this.run.robotParty.pendingCaptures = [];
+      return newAdditions;
     };
 
     // Player phase
@@ -923,7 +934,7 @@ export class GameManager {
       if (befriendResult.success && befriendResult.allEnemiesDefeated) {
         // Captured last enemy — victory
         awardBattleXp(this.run.robotParty, 100);
-        flushPendingCaptures();
+        const newCollectionAdditions = flushPendingCaptures();
         this.combat.active = false;
         this.run.encountersCompleted++;
         this.emitState();
@@ -932,7 +943,8 @@ export class GameManager {
           befriend: befriendResult,
           combatEnded: true,
           victory: true,
-          robotParty: this.run.robotParty
+          robotParty: this.run.robotParty,
+          newCollectionAdditions
         };
       }
     }
@@ -940,7 +952,7 @@ export class GameManager {
     // Check if all enemies defeated after player attack
     if (playerResult.allEnemiesDefeated) {
       // XP already awarded per-kill in processAttackTurn (BUG C fix)
-      flushPendingCaptures();
+      const newCollectionAdditions = flushPendingCaptures();
       this.combat.active = false;
       this.run.encountersCompleted++;
       // Mark room as interacted and handle boss defeat
@@ -959,7 +971,8 @@ export class GameManager {
         combatEnded: true,
         victory: true,
         isBoss: currentRoom?.isBossRoom || false,
-        robotParty: this.run.robotParty
+        robotParty: this.run.robotParty,
+        newCollectionAdditions
       };
     }
 
@@ -1046,8 +1059,29 @@ export class GameManager {
     }
 
     // Check if all enemies defeated
+    let newCollectionAdditions = [];
     if (result.allEnemiesDefeated) {
       // XP already awarded per-kill in processUltimate (BUG C fix)
+      // Flush pending captures into party on victory
+      const pending = this.run.robotParty.pendingCaptures || [];
+      for (const robot of pending) {
+        const total = this.run.robotParty.active.length + this.run.robotParty.reserves.length;
+        if (total >= this.run.robotParty.maxTotal) break;
+        if (this.run.robotParty.active.length < 3) {
+          this.run.robotParty.active.push(robot);
+        } else {
+          this.run.robotParty.reserves.push(robot);
+        }
+        // Add to permanent collection
+        if (this.meta) {
+          const result2 = addToCollection(this.meta.robotCollection || [], robot.id);
+          if (result2.added) {
+            this.meta.robotCollection = result2.collection;
+            newCollectionAdditions.push({ id: robot.id, name: robot.name, nameEn: robot.nameEn, element: robot.element, rarity: robot.rarity });
+          }
+        }
+      }
+      this.run.robotParty.pendingCaptures = [];
       this.combat.active = false;
       this.run.encountersCompleted++;
     }
@@ -1058,7 +1092,8 @@ export class GameManager {
       combatEnded: result.allEnemiesDefeated,
       victory: result.allEnemiesDefeated ? true : undefined,
       robotParty: this.run.robotParty,
-      enemies: this.combat.enemies
+      enemies: this.combat.enemies,
+      newCollectionAdditions
     };
   }
 
@@ -1275,6 +1310,7 @@ export class GameManager {
 
     const allEnemiesDefeated = enemies.filter(e => e.hp > 0 && !e.befriended).length === 0;
 
+    let newCollectionAdditions = [];
     if (allEnemiesDefeated) {
       awardBattleXp(party, 100);
       // Flush pending captures into party on victory
@@ -1286,6 +1322,14 @@ export class GameManager {
           party.active.push(robot);
         } else {
           party.reserves.push(robot);
+        }
+        // Add to permanent collection
+        if (this.meta) {
+          const result = addToCollection(this.meta.robotCollection || [], robot.id);
+          if (result.added) {
+            this.meta.robotCollection = result.collection;
+            newCollectionAdditions.push({ id: robot.id, name: robot.name, nameEn: robot.nameEn, element: robot.element, rarity: robot.rarity });
+          }
         }
       }
       party.pendingCaptures = [];
@@ -1302,7 +1346,8 @@ export class GameManager {
       combatEnded: allEnemiesDefeated,
       victory: allEnemiesDefeated,
       robotParty: party,
-      enemies
+      enemies,
+      newCollectionAdditions
     };
   }
 
