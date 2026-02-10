@@ -22,7 +22,8 @@
  * - ../dom.js: DOM element references (sceneBackground, enemySprite, etc.)
  *
  * SPRITE LOADING:
- * - Sprites load from /assets/sprites/enemies/{id}.webp
+ * - Enemy sprites load from /assets/sprites/enemies/{id}.webp
+ * - Robot sprites load from /assets/sprites/robots/{id}.webp
  * - Falls back to emoji placeholder based on enemy personality if load fails
  */
 
@@ -70,7 +71,9 @@ export function showEnemy(enemy) {
   updateEnemyHP(enemy.hp, enemy.maxHp);
 
   // Construct sprite path from enemy ID
-  const spritePath = enemy.sprite || `/assets/sprites/enemies/${enemy.id}.webp`;
+  const spritePath = enemy.sprite || (isRobot
+    ? `/assets/sprites/robots/${enemy.id}.webp`
+    : `/assets/sprites/enemies/${enemy.id}.webp`);
   dom.enemySprite.src = spritePath;
   dom.enemySprite.onerror = () => {
     dom.enemySprite.classList.remove('visible');
@@ -119,10 +122,13 @@ export function showEnemies(enemies) {
     const slot = document.createElement('div');
     slot.className = 'enemy-robot-slot';
     slot.dataset.enemyIndex = i;
+    slot.dataset.enemyId = enemy.id;
     slot.innerHTML = `
-      <div class="enemy-robot-icon" style="border-color: ${color}">
-        <span class="enemy-robot-element">${icon}</span>
-        <span class="enemy-robot-level">Lv${enemy.level || 1}</span>
+      <div class="enemy-robot-icon">
+        <img class="enemy-robot-sprite" src="/assets/sprites/robots/${enemy.id}.webp"
+             onerror="this.style.display='none';this.nextElementSibling.style.display=''" alt="">
+        <span class="enemy-robot-element" style="display:none">${icon}</span>
+        <span class="enemy-robot-level" style="background-color: ${color}">Lv${enemy.level || 1}</span>
       </div>
       <div class="enemy-robot-name">${enemy.nameEn || enemy.name}</div>
       <div class="enemy-robot-hp-bar">
@@ -148,10 +154,27 @@ export function updateEnemyHPAtIndex(index, current, max) {
     const pct = Math.max(0, Math.min(100, (current / max) * 100));
     fill.style.width = `${pct}%`;
   }
-  // Mark defeated
-  if (current <= 0) {
+  // Mark defeated with transition (CSS handles fade out)
+  if (current <= 0 && !slot.classList.contains('defeated')) {
     slot.classList.add('defeated');
   }
+}
+
+/** Mark a specific enemy slot as befriended (disappears with upward animation) */
+export function markEnemyBefriended(enemyId) {
+  // Try by enemy ID first, then fall back to first non-defeated slot
+  let slot = dom.enemySpriteContainer.querySelector(`.enemy-robot-slot[data-enemy-id="${enemyId}"]`);
+  if (!slot) {
+    slot = dom.enemySpriteContainer.querySelector('.enemy-robot-slot:not(.defeated):not(.befriended)');
+  }
+  if (slot) {
+    slot.classList.add('befriended');
+  }
+}
+
+/** Get the DOM element for a specific enemy slot by index */
+export function getEnemySlotElement(index) {
+  return dom.enemySpriteContainer.querySelector(`.enemy-robot-slot[data-enemy-index="${index}"]`);
 }
 
 /** Hide all enemies (single and multi) */

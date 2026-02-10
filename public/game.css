@@ -277,9 +277,11 @@ html, body {
   height: 90px;
   padding-top: 0;
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
   align-items: center;
   justify-content: center;
 }
@@ -294,9 +296,11 @@ html, body {
 .multi-enemy-row {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  align-items: flex-end;
+  gap: 12px;
   width: 100%;
-  padding: 4px 0;
+  height: 100%;
+  padding: 0 8px;
 }
 
 .enemy-robot-slot {
@@ -304,36 +308,47 @@ html, body {
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  transition: opacity 0.3s;
+  transition: opacity 0.5s, transform 0.5s;
+  flex: 1;
+  max-width: 140px;
 }
 
 .enemy-robot-slot.defeated {
-  opacity: 0.25;
-  filter: grayscale(1);
+  opacity: 0;
+  transform: scale(0.5) translateY(20px);
+  pointer-events: none;
+}
+
+.enemy-robot-slot.befriended {
+  opacity: 0;
+  transform: translateY(-40px) scale(0.8);
+  pointer-events: none;
 }
 
 .enemy-robot-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 3px solid;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  background: var(--bg-dark, #1a1a2e);
+  background: transparent;
   font-size: 24px;
 }
 
 .enemy-robot-sprite {
-  width: 48px;
-  height: 48px;
+  max-height: 100px;
+  max-width: 100px;
+  width: auto;
+  height: auto;
   object-fit: contain;
-  border-radius: 50%;
+  border-radius: 0;
 }
 
 .enemy-robot-element {
-  font-size: 24px;
+  font-size: 36px;
 }
 
 .enemy-robot-level {
@@ -349,18 +364,19 @@ html, body {
 }
 
 .enemy-robot-name {
-  font-size: 9px;
-  color: #aaa;
-  max-width: 64px;
+  font-size: 10px;
+  color: #ccc;
+  max-width: 100px;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 
 .enemy-robot-hp-bar {
-  width: 50px;
-  height: 4px;
+  width: 70px;
+  height: 5px;
   background: #333;
   border-radius: 2px;
   overflow: hidden;
@@ -2775,24 +2791,24 @@ html, body {
 
 /* ============ COMBAT EFFECTS ============ */
 
-/* Screen flash overlay */
+/* Screen flash overlay - full viewport for maximum impact */
 .screen-flash-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: white;
   opacity: 0;
   pointer-events: none;
-  z-index: 100;
+  z-index: 9999;
 }
 
-/* Red vignette for player damage */
+/* Red vignette for player damage - full viewport */
 .vignette-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: radial-gradient(ellipse at center, transparent 40%, rgba(255, 50, 50, 0.7) 100%);
   opacity: 0;
   pointer-events: none;
-  z-index: 100;
+  z-index: 9998;
 }
 
 /* Particles */
@@ -3124,6 +3140,26 @@ html, body {
 .robot-icon.ko {
   opacity: 0.3;
   filter: grayscale(1);
+}
+
+.robot-slot.robot-dying {
+  animation: robot-death 0.6s ease-out forwards;
+}
+
+@keyframes robot-death {
+  0% { opacity: 1; transform: scale(1); }
+  30% { opacity: 0.8; transform: scale(1.05); filter: brightness(2); }
+  100% { opacity: 0; transform: scale(0.5) translateY(10px); }
+}
+
+.robot-slot.robot-swapping-in {
+  animation: robot-swap-in 0.5s ease-out forwards;
+}
+
+@keyframes robot-swap-in {
+  0% { opacity: 0; transform: scale(0.5) translateY(20px); }
+  60% { opacity: 1; transform: scale(1.1) translateY(-5px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .robot-icon.charged {

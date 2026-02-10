@@ -523,11 +523,35 @@ function findRobotSlotByAttackerId(robotId) {
 }
 
 /**
+ * Find the enemy slot element for a specific target in multi-enemy combat.
+ * Falls back to the whole enemy-sprite-container for single-enemy fights.
+ * @param {string} targetId - The enemy robot's ID
+ * @param {Array} enemies - The enemies array from the result
+ * @returns {Element} The specific enemy slot element or the container
+ */
+function findEnemyTargetElement(targetId, enemies) {
+  if (enemies && enemies.length > 1) {
+    const idx = enemies.findIndex(e => e.id === targetId);
+    if (idx >= 0) {
+      const slot = document.querySelector(`.enemy-robot-slot[data-enemy-index="${idx}"]`);
+      if (slot) return slot;
+    }
+  }
+  return document.getElementById('enemy-sprite-container');
+}
+
+/**
  * Directly update robot HP bar widths in the DOM without triggering full updateUI.
  * This avoids resetting enemy HP bars from stale game state during animations.
  * @param {Array} robots - The robot party active array (with final HP from server)
  * @param {Object} allyHpMap - Map of robotId -> { hp, maxHp } with running HP values
  */
+function getHpColor(pct) {
+  if (pct > 60) return 'var(--hp-green)';
+  if (pct > 30) return 'var(--hp-yellow)';
+  return 'var(--hp-red)';
+}
+
 function updateRobotHpBars(robots, allyHpMap) {
   if (!robots) return;
   const slots = document.querySelectorAll('#chip-row .robot-slot');
@@ -537,7 +561,10 @@ function updateRobotHpBars(robots, allyHpMap) {
     const currentHp = allyHpMap?.[robot.id] ? allyHpMap[robot.id].hp : robot.hp;
     const hpPct = Math.max(0, (currentHp / robot.maxHp) * 100);
     const fill = slot.querySelector('.robot-hp-fill');
-    if (fill) fill.style.width = `${hpPct}%`;
+    if (fill) {
+      fill.style.width = `${hpPct}%`;
+      fill.style.backgroundColor = getHpColor(hpPct);
+    }
     // Update KO state and charged glow
     const icon = slot.querySelector('.robot-icon');
     if (icon) {
@@ -829,9 +856,9 @@ async function executeRobotPlayerAttack() {
         }
         playSFX('attack');
 
-        // Find the robot slot element for this attacker
+        // Find the robot slot element for this attacker and specific enemy target
         const robotSlotEl = findRobotSlotByAttackerId(atk.attackerId);
-        const enemyEl = document.getElementById('enemy-sprite-container');
+        const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies);
 
         // Fire element-colored orb from robot to enemy with impact effects
         if (robotSlotEl && enemyEl && atk.attackerElement) {
@@ -881,8 +908,8 @@ async function executeRobotPlayerAttack() {
         showDamageNumber(atk.damage, true, false);
         playSFX('player-hit');
 
-        // Fire element-colored orb from enemy to targeted robot
-        const enemyEl = document.getElementById('enemy-sprite-container');
+        // Fire element-colored orb from specific attacking enemy to targeted robot
+        const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies);
         const targetSlotEl = findRobotSlotByAttackerId(atk.targetId);
         if (enemyEl && targetSlotEl && atk.attackerElement) {
           await enemyRobotAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
@@ -899,6 +926,57 @@ async function executeRobotPlayerAttack() {
       }
     }
 
+    // Show KO swap messages with death/swap-in animations (Bug F)
+    if (result.koSwaps?.length > 0) {
+      for (const swap of result.koSwaps) {
+        // Animate the KO'd robot dying
+        const koIndex = swap.slot ?? -1;
+        if (koIndex >= 0) {
+          const slots = document.querySelectorAll('#chip-row .robot-slot');
+          const dyingSlot = slots[koIndex];
+          if (dyingSlot) {
+            dyingSlot.classList.add('robot-dying');
+            await delay(600);
+          }
+        }
+
+        const actionArea = document.getElementById('action-area');
+        if (actionArea) {
+          actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${swap.replacement} swaps in!</div>`;
+        }
+
+        // Re-render the robot row with updated party, then animate new robot in
+        if (result.robotParty?.active) {
+          const robotRow = document.getElementById('chip-row');
+          if (robotRow) {
+            // Temporarily update the display inline
+            const slots = robotRow.querySelectorAll('.robot-slot');
+            const swapSlot = slots[koIndex];
+            if (swapSlot) {
+              swapSlot.classList.remove('robot-dying');
+              swapSlot.classList.add('robot-swapping-in');
+              // Update sprite and HP for the new robot
+              const newRobot = result.robotParty.active[koIndex];
+              if (newRobot) {
+                const icon = swapSlot.querySelector('.robot-sprite-icon');
+                if (icon) icon.src = `/assets/sprites/robots/${newRobot.id}.webp`;
+                const hpFill = swapSlot.querySelector('.robot-hp-fill');
+                if (hpFill) {
+                  const pct = Math.max(0, (newRobot.hp / newRobot.maxHp) * 100);
+                  hpFill.style.width = `${pct}%`;
+                  hpFill.style.backgroundColor = pct > 60 ? 'var(--hp-green)' : pct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+                }
+                const koIcon = swapSlot.querySelector('.robot-icon');
+                if (koIcon) koIcon.classList.remove('ko');
+              }
+              setTimeout(() => swapSlot.classList.remove('robot-swapping-in'), 500);
+            }
+          }
+        }
+        await delay(800);
+      }
+    }
+
     // Final state update with server-authoritative values (no updateUI to avoid DOM rebuild flicker)
     if (result.robotParty || result.enemies) {
       const updates = { ...gs };
@@ -906,7 +984,12 @@ async function executeRobotPlayerAttack() {
         updates.run = { ...gs.run, robotParty: result.robotParty };
       }
       if (result.enemies && gs.combat) {
-        updates.combat = { ...gs.combat, enemies: result.enemies, allies: result.allies || gs.combat.allies };
+        updates.combat = {
+          ...gs.combat,
+          enemies: result.enemies,
+          allies: result.allies || gs.combat.allies,
+          turnCount: result.turnCount ?? gs.combat.turnCount
+        };
       }
       updateGameState(updates);
       // Set final HP bars without full DOM rebuild
@@ -1016,8 +1099,8 @@ async function executeRobotDefendThenPause() {
         showDamageNumber(atk.damage, true, false);
         playSFX('player-hit');
 
-        // Fire element-colored orb from enemy to targeted robot
-        const enemyEl = document.getElementById('enemy-sprite-container');
+        // Fire element-colored orb from specific attacking enemy to targeted robot
+        const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies);
         const targetSlotEl = findRobotSlotByAttackerId(atk.targetId);
         if (enemyEl && targetSlotEl && atk.attackerElement) {
           await enemyRobotAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
@@ -1034,10 +1117,58 @@ async function executeRobotDefendThenPause() {
       }
     }
 
-    // Update enemy HP
-    if (result.enemies?.[0]) {
+    // Update enemy HP (all enemies in multi-enemy combat)
+    if (result.enemies?.length > 1) {
+      result.enemies.forEach((e, i) => characterUI.updateEnemyHPAtIndex(i, e.hp, e.maxHp));
+    } else if (result.enemies?.[0]) {
       const enemy = result.enemies[0];
       characterUI.updateEnemyHPBar({ current: enemy.hp, max: enemy.maxHp });
+    }
+
+    // Show KO swap messages with death/swap-in animations (Bug F)
+    if (result.koSwaps?.length > 0) {
+      for (const swap of result.koSwaps) {
+        // Animate the KO'd robot dying
+        const koIndex = swap.slot ?? -1;
+        if (koIndex >= 0) {
+          const slots = document.querySelectorAll('#chip-row .robot-slot');
+          const dyingSlot = slots[koIndex];
+          if (dyingSlot) {
+            dyingSlot.classList.add('robot-dying');
+            await delay(600);
+          }
+        }
+
+        const actionArea2 = document.getElementById('action-area');
+        if (actionArea2) {
+          actionArea2.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${swap.replacement} swaps in!</div>`;
+        }
+
+        // Update sprite and HP for the new robot with swap-in animation
+        if (result.robotParty?.active && koIndex >= 0) {
+          const slots = document.querySelectorAll('#chip-row .robot-slot');
+          const swapSlot = slots[koIndex];
+          if (swapSlot) {
+            swapSlot.classList.remove('robot-dying');
+            swapSlot.classList.add('robot-swapping-in');
+            const newRobot = result.robotParty.active[koIndex];
+            if (newRobot) {
+              const icon = swapSlot.querySelector('.robot-sprite-icon');
+              if (icon) icon.src = `/assets/sprites/robots/${newRobot.id}.webp`;
+              const hpFill = swapSlot.querySelector('.robot-hp-fill');
+              if (hpFill) {
+                const pct = Math.max(0, (newRobot.hp / newRobot.maxHp) * 100);
+                hpFill.style.width = `${pct}%`;
+                hpFill.style.backgroundColor = pct > 60 ? 'var(--hp-green)' : pct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+              }
+              const koIcon = swapSlot.querySelector('.robot-icon');
+              if (koIcon) koIcon.classList.remove('ko');
+            }
+            setTimeout(() => swapSlot.classList.remove('robot-swapping-in'), 500);
+          }
+        }
+        await delay(800);
+      }
     }
 
     // Final state update with server-authoritative values (no updateUI to avoid DOM rebuild flicker)
@@ -1047,7 +1178,12 @@ async function executeRobotDefendThenPause() {
         updates.run = { ...gs.run, robotParty: result.robotParty };
       }
       if (result.enemies && gs.combat) {
-        updates.combat = { ...gs.combat, enemies: result.enemies, allies: result.allies || gs.combat.allies };
+        updates.combat = {
+          ...gs.combat,
+          enemies: result.enemies,
+          allies: result.allies || gs.combat.allies,
+          turnCount: result.turnCount ?? gs.combat.turnCount
+        };
       }
       updateGameState(updates);
       // Set final robot HP bars without full DOM rebuild
@@ -1484,7 +1620,28 @@ async function executeBefriendAction() {
         actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">BEFRIENDED ${captured.nameEn}!</div>`;
       }
       playSFX('chip-skill');
+
+      // Remove the befriended enemy from the battlefield
+      const capturedId = result.befriend.captured?.id;
+      if (capturedId) {
+        // Find the enemy slot by ID or by matching enemies list
+        const slot = document.querySelector(`.enemy-robot-slot[data-enemy-id="${capturedId}"]`);
+        if (slot) {
+          slot.classList.add('befriended');
+        }
+      }
       await delay(1200);
+
+      // Update game state with remaining enemies
+      if (result.enemies) {
+        const gs = getGameState();
+        if (gs.combat) {
+          updateGameState({
+            ...gs,
+            combat: { ...gs.combat, enemies: result.enemies }
+          });
+        }
+      }
     } else {
       // Befriend failed
       const actionArea = document.getElementById('action-area');
