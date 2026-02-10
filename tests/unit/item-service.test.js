@@ -62,18 +62,21 @@ describe('Item Buffs - Stat Boosts', () => {
 });
 
 describe('Item Buffs - Heals', () => {
-  it('Team Heal heals all robots for 25% max HP', () => {
+  it('Team Heal heals only the lowest HP robot for 25% max HP', () => {
     const party = {
-      active: [instantiateRobot('fire-common'), instantiateRobot('water-common')],
+      active: [instantiateRobot('fire-common'), instantiateRobot('water-common'), instantiateRobot('earth-common')],
       reserves: []
     };
     party.active[0].hp = 50;
     party.active[1].hp = 30;
+    party.active[2].hp = 70;
     const healItem = { type: 'heal', effect: { healPercent: 0.25 } };
     const buffs = createItemBuffs();
     applyItem(healItem, party, buffs);
-    assert.strictEqual(party.active[0].hp, 75);
-    assert.strictEqual(party.active[1].hp, 55);
+    // Only the lowest HP robot (active[1] at 30 HP) should be healed
+    assert.strictEqual(party.active[0].hp, 50);  // unchanged
+    assert.strictEqual(party.active[1].hp, 55);  // 30 + 25 = 55
+    assert.strictEqual(party.active[2].hp, 70);  // unchanged
   });
 
   it('Patch Up heals most damaged robot to full', () => {

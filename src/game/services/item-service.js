@@ -49,10 +49,11 @@ export function applyItem(item, robotParty, itemBuffs) {
 
   if (item.type === 'heal') {
     if (item.effect.healPercent) {
-      for (const robot of allRobots) {
-        if (robot.hp <= 0) continue;
-        const heal = Math.floor(robot.maxHp * item.effect.healPercent);
-        robot.hp = Math.min(robot.maxHp, robot.hp + heal);
+      const alive = allRobots.filter(r => r.hp > 0);
+      if (alive.length > 0) {
+        const lowest = alive.reduce((min, r) => r.hp < min.hp ? r : min, alive[0]);
+        const heal = Math.floor(lowest.maxHp * item.effect.healPercent);
+        lowest.hp = Math.min(lowest.maxHp, lowest.hp + heal);
       }
       return { applied: true };
     }

@@ -51,7 +51,7 @@
     "id": "team-heal",
     "name": "チーム回復",
     "nameEn": "Team Heal",
-    "description": "Heal all robots for 25% of max HP",
+    "description": "Heal the lowest HP robot for 25% of max HP",
     "type": "heal",
     "effect": { "healPercent": 0.25 }
   },
