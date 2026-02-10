@@ -19,6 +19,11 @@
 import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
 
+function rarityStars(rarity) {
+  const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity];
+  return n ? `<span style="color:#FFD700">${n}★</span>` : '';
+}
+
 let onUseUltimate = null;
 let currentPopupIndex = -1;
 let onSwapRobot = null;
@@ -82,6 +87,7 @@ export function render(robots) {
           <span class="robot-element-icon" style="display:none">${ELEMENT_ICONS[robot.element]}</span>
           <span class="robot-level-badge">Lv${robot.level}</span>
         </div>
+        <div class="robot-slot-name">${robot.nameEn}</div>
         <div class="robot-hp-bar">
           <div class="robot-hp-fill" style="width: ${hpPct}%; background-color: ${hpColor}"></div>
         </div>
@@ -125,7 +131,7 @@ function showPopup(index, robot) {
   const canRearrange = !hasReserves && otherActives.length > 0 && onRearrangeRobot;
 
   dom.chipPopup.innerHTML = `
-    <div class="robot-popup-name">${robot.name} (${robot.nameEn})</div>
+    <div class="robot-popup-name">${robot.name} (${robot.nameEn}) ${rarityStars(robot.rarity)}</div>
     <div class="robot-popup-element">${ELEMENT_ICONS[robot.element]} ${robot.element}</div>
     <div class="robot-popup-stats">
       HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}

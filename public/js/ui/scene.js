@@ -37,6 +37,11 @@ const ELEMENT_COLORS = {
   wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63', metal: '#9E9E9E', water: '#2196F3'
 };
 
+function rarityStars(rarity) {
+  const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity];
+  return n ? `<span style="color:#FFD700">${n}★</span>` : '';
+}
+
 /** Set scene background image */
 export function setBackground(imagePath) {
   if (imagePath) {
@@ -58,7 +63,7 @@ export function showEnemy(enemy) {
 
   if (isRobot) {
     const icon = ELEMENT_ICONS[enemy.element] || '';
-    dom.enemyName.innerHTML = `<span class="enemy-element-icon">${icon}</span> ${enemy.nameEn || enemy.name || 'Enemy'} <span class="enemy-level-badge">Lv${enemy.level || 1}</span>`;
+    dom.enemyName.innerHTML = `<span class="enemy-element-icon">${icon}</span> ${enemy.nameEn || enemy.name || 'Enemy'} ${rarityStars(enemy.rarity)} <span class="enemy-level-badge">Lv${enemy.level || 1}</span>`;
     dom.enemySpriteContainer.style.borderColor = ELEMENT_COLORS[enemy.element] || '';
     dom.enemySpriteContainer.classList.add('robot-enemy');
   } else {
@@ -130,7 +135,7 @@ export function showEnemies(enemies) {
         <span class="enemy-robot-element" style="display:none">${icon}</span>
         <span class="enemy-robot-level" style="background-color: ${color}">Lv${enemy.level || 1}</span>
       </div>
-      <div class="enemy-robot-name">${enemy.nameEn || enemy.name}</div>
+      <div class="enemy-robot-name">${enemy.nameEn || enemy.name} ${rarityStars(enemy.rarity)}</div>
       <div class="enemy-robot-hp-bar">
         <div class="enemy-robot-hp-fill" style="width: ${hpPct}%"></div>
       </div>

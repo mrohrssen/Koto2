@@ -1013,6 +1013,7 @@ async function openRobotEquipView() {
 
     const ELEMENT_ICONS = robotRow.ELEMENT_ICONS || { wood: '🌿', fire: '🔥', earth: '⛰️', metal: '⚙️', water: '💧' };
     const ELEMENT_COLORS = robotRow.ELEMENT_COLORS || { wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63', metal: '#9E9E9E', water: '#2196F3' };
+    const rarityStars = (rarity) => { const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity]; return n ? `<span style="color:#FFD700">${n}★</span>` : ''; };
 
     const activeHtml = active.map((robot, i) => {
       if (!robot) return `<div class="robot-equip-slot empty" data-type="active" data-index="${i}"><span style="opacity:0.4">Empty</span></div>`;
@@ -1023,7 +1024,7 @@ async function openRobotEquipView() {
           <img class="robot-equip-sprite" src="/assets/sprites/robots/${robot.id}.webp"
                onerror="this.style.display='none'" alt="">
           <div class="robot-equip-info">
-            <div class="robot-equip-name">${ELEMENT_ICONS[robot.element] || ''} ${robot.nameEn} <span style="opacity:0.6">Lv${robot.level}</span></div>
+            <div class="robot-equip-name">${ELEMENT_ICONS[robot.element] || ''} ${robot.nameEn} ${rarityStars(robot.rarity)} <span style="opacity:0.6">Lv${robot.level}</span></div>
             <div class="robot-equip-stats">HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}</div>
             <div class="robot-hp-bar" style="width:100%;height:4px;margin-top:2px">
               <div class="robot-hp-fill" style="width:${hpPct}%;background-color:${hpPct > 60 ? 'var(--hp-green)' : hpPct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)'}"></div>
@@ -1042,7 +1043,7 @@ async function openRobotEquipView() {
           <img class="robot-equip-sprite" src="/assets/sprites/robots/${robot.id}.webp"
                onerror="this.style.display='none'" alt="">
           <div class="robot-equip-info">
-            <div class="robot-equip-name">${ELEMENT_ICONS[robot.element] || ''} ${robot.nameEn} <span style="opacity:0.6">Lv${robot.level}</span></div>
+            <div class="robot-equip-name">${ELEMENT_ICONS[robot.element] || ''} ${robot.nameEn} ${rarityStars(robot.rarity)} <span style="opacity:0.6">Lv${robot.level}</span></div>
             <div class="robot-equip-stats">HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}</div>
             <div class="robot-hp-bar" style="width:100%;height:4px;margin-top:2px">
               <div class="robot-hp-fill" style="width:${hpPct}%;background-color:${hpPct > 60 ? 'var(--hp-green)' : hpPct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)'}"></div>
