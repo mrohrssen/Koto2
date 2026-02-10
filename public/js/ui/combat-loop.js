@@ -40,7 +40,9 @@ import {
   getDamageTier,
   getTierClassName,
   fireRobotAttackEffect,
-  enemyRobotAttackEffect
+  enemyRobotAttackEffect,
+  showXpPopup,
+  showLevelUpPopup
 } from './combat-effects.js';
 
 // ============ MODULE STATE ============
@@ -642,6 +644,46 @@ function animateChipActivation(chipIndex, chipData = null) {
   }
 }
 
+// ============ XP EVENT HANDLING ============
+
+/**
+ * Process xpEvents from the backend and show animated XP popups over robot slots.
+ * Also handles level-up popups and updates the level badge in the DOM.
+ * @param {Array} xpEvents - Array of { xpGrants: [...], levelUps: [...] }
+ */
+function showXpEvents(xpEvents) {
+  if (!xpEvents || xpEvents.length === 0) return;
+
+  const state = getGameState();
+  const activeRobots = state.run?.robotParty?.active;
+  if (!activeRobots) return;
+
+  const slots = document.querySelectorAll('#chip-row .robot-slot');
+
+  for (const event of xpEvents) {
+    // Show XP popups for each robot that gained XP
+    if (event.xpGrants) {
+      for (const grant of event.xpGrants) {
+        const index = activeRobots.findIndex(r => r && r.id === grant.robotId);
+        if (index >= 0 && slots[index]) {
+          showXpPopup(slots[index], grant.xp);
+        }
+      }
+    }
+
+    // Show level-up popups
+    if (event.levelUps) {
+      for (const lu of event.levelUps) {
+        const index = activeRobots.findIndex(r => r && r.id === lu.robotId);
+        if (index >= 0 && slots[index]) {
+          // Slight delay so it appears after XP popup
+          setTimeout(() => showLevelUpPopup(slots[index], lu.newLevel), 400);
+        }
+      }
+    }
+  }
+}
+
 // ============ COMBAT LOOP FUNCTIONS ============
 
 /**
@@ -846,6 +888,9 @@ async function executeRobotPlayerAttack() {
 
     // Show each allied robot's attack result sequentially with real-time HP
     if (result.playerAttacks?.length > 0) {
+      // Track which enemies have been defeated for XP popups
+      const killedEnemies = new Set();
+
       for (let atkIdx = 0; atkIdx < result.playerAttacks.length; atkIdx++) {
         const atk = result.playerAttacks[atkIdx];
         const effectiveness = atk.elementMultiplier > 1 ? ' (super effective!)' :
@@ -859,6 +904,30 @@ async function executeRobotPlayerAttack() {
         // Find the robot slot element for this attacker and specific enemy target
         const robotSlotEl = findRobotSlotByAttackerId(atk.attackerId);
         const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies);
+
+        // Update charge bar immediately after this robot attacks (BUG A fix)
+        if (robotSlotEl && atk.attackerCharges != null) {
+          const chargeBar = robotSlotEl.querySelector('.robot-charge-bar');
+          if (chargeBar) {
+            const segments = chargeBar.querySelectorAll('.charge-segment');
+            segments.forEach((seg, s) => {
+              if (s < atk.attackerCharges) {
+                seg.classList.add('filled');
+              } else {
+                seg.classList.remove('filled');
+              }
+            });
+          }
+          // Update charged glow on icon
+          const icon = robotSlotEl.querySelector('.robot-icon');
+          if (icon) {
+            if (atk.attackerCharges >= atk.attackerChargesRequired) {
+              icon.classList.add('charged');
+            } else {
+              icon.classList.remove('charged');
+            }
+          }
+        }
 
         // Fire element-colored orb from robot to enemy with impact effects
         if (robotSlotEl && enemyEl && atk.attackerElement) {
@@ -879,6 +948,16 @@ async function executeRobotPlayerAttack() {
             characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
           }
         }
+
+        // Show XP popups when an enemy is killed (BUG B + C)
+        if (atk.targetDefeated && !killedEnemies.has(atk.targetId) && result.xpEvents) {
+          killedEnemies.add(atk.targetId);
+          const xpEvent = result.xpEvents.find(ev => ev.enemyId === atk.targetId);
+          if (xpEvent) {
+            showXpEvents([xpEvent]);
+          }
+        }
+
         await delay(400);
       }
     }
@@ -1074,6 +1153,11 @@ async function executeRobotDefendThenPause() {
     const actionArea = document.getElementById('action-area');
     if (actionArea) {
       actionArea.innerHTML = '<div class="combat-defend-indicator">DEFENDING \u2014 50% damage, +1 charge</div>';
+    }
+
+    // Update charge bars immediately for defend (BUG A fix)
+    if (result.robotParty?.active) {
+      updateRobotHpBars(result.robotParty.active, null);
     }
     await delay(600);
 

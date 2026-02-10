@@ -522,6 +522,70 @@ export async function enemyRobotAttackEffect(enemyEl, robotSlotEl, element, dama
   showVignette(200);
 }
 
+// ============ XP POPUP EFFECTS ============
+
+/**
+ * Show animated "+XP" text floating up from a robot slot element.
+ * @param {Element} robotSlotEl - The .robot-slot element to show the popup over
+ * @param {number} xpAmount - Amount of XP gained
+ */
+export function showXpPopup(robotSlotEl, xpAmount) {
+  if (!robotSlotEl || !xpAmount) return;
+
+  const popup = document.createElement('div');
+  popup.className = 'robot-xp-popup';
+  popup.textContent = `+${xpAmount} XP`;
+  robotSlotEl.style.position = 'relative';
+  robotSlotEl.appendChild(popup);
+
+  anime(popup, {
+    translateY: [0, -40],
+    opacity: [1, 0],
+    scale: [1, 1.2],
+  }, {
+    duration: 1200,
+    ease: 'outQuad',
+    onComplete: () => popup.remove()
+  });
+}
+
+/**
+ * Show animated "Level Up!" text floating up from a robot slot element.
+ * @param {Element} robotSlotEl - The .robot-slot element
+ * @param {number} newLevel - The new level reached
+ */
+export function showLevelUpPopup(robotSlotEl, newLevel) {
+  if (!robotSlotEl) return;
+
+  const popup = document.createElement('div');
+  popup.className = 'robot-levelup-popup';
+  popup.textContent = `Level Up! Lv${newLevel}`;
+  robotSlotEl.style.position = 'relative';
+  robotSlotEl.appendChild(popup);
+
+  // Flash the robot icon gold
+  const icon = robotSlotEl.querySelector('.robot-icon');
+  if (icon) {
+    flashElement(icon, 2);
+  }
+
+  anime(popup, {
+    translateY: [0, -50],
+    opacity: [1, 0],
+    scale: [1.2, 1.5],
+  }, {
+    duration: 1800,
+    ease: 'outQuad',
+    onComplete: () => popup.remove()
+  });
+
+  // Update the level badge immediately
+  const badge = robotSlotEl.querySelector('.robot-level-badge');
+  if (badge) {
+    badge.textContent = `Lv${newLevel}`;
+  }
+}
+
 /**
  * Check if HP is critical and add pulse effect
  * @param {Element} hpBarEl - HP bar fill element

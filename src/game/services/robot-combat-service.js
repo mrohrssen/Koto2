@@ -14,8 +14,11 @@ import {
   applyDamageReduction
 } from './item-service.js';
 
-export function processAttackTurn(allies, enemies, itemBuffs = null) {
+export function processAttackTurn(allies, enemies, itemBuffs = null, robotParty = null) {
   const attacks = [];
+  const xpEvents = [];
+  const defeatedEnemyIds = new Set();
+
   for (const robot of allies) {
     if (robot.hp <= 0) continue;
     const aliveEnemies = enemies.filter(e => e.hp > 0);
@@ -30,6 +33,14 @@ export function processAttackTurn(allies, enemies, itemBuffs = null) {
     const damage = calculateRobotDamage(buffedAttack, buffedPower, buffedElemMult, variance);
     target.hp = Math.max(0, target.hp - damage);
 
+    // +1 ultimate charge immediately when this robot attacks
+    robot.ultimate.charges = Math.min(
+      robot.ultimate.charges + 1,
+      robot.ultimate.chargesRequired
+    );
+
+    const targetDefeated = target.hp <= 0;
+
     attacks.push({
       attackerId: robot.id,
       attackerName: robot.nameEn,
@@ -38,30 +49,37 @@ export function processAttackTurn(allies, enemies, itemBuffs = null) {
       targetName: target.nameEn,
       damage,
       elementMultiplier: elemMult,
-      targetDefeated: target.hp <= 0
+      targetDefeated,
+      attackerCharges: robot.ultimate.charges,
+      attackerChargesRequired: robot.ultimate.chargesRequired
     });
+
+    // Award XP immediately when an enemy is killed (BUG C)
+    if (targetDefeated && !defeatedEnemyIds.has(target.id) && robotParty) {
+      defeatedEnemyIds.add(target.id);
+      const xpEvent = awardKillXp(robotParty, 50);
+      xpEvents.push({ enemyId: target.id, enemyName: target.nameEn, ...xpEvent });
+    }
   }
 
-  // +1 ultimate charge for all alive robots
-  for (const robot of allies) {
-    if (robot.hp <= 0) continue;
-    robot.ultimate.charges = Math.min(
-      robot.ultimate.charges + 1,
-      robot.ultimate.chargesRequired
-    );
-  }
-
-  return { attacks, allEnemiesDefeated: enemies.every(e => e.hp <= 0) };
+  return { attacks, allEnemiesDefeated: enemies.every(e => e.hp <= 0), xpEvents };
 }
 
 export function processDefendTurn(allies) {
+  const chargeUpdates = [];
   for (const robot of allies) {
     if (robot.hp <= 0) continue;
     robot.ultimate.charges = Math.min(
       robot.ultimate.charges + 1,
       robot.ultimate.chargesRequired
     );
+    chargeUpdates.push({
+      robotId: robot.id,
+      charges: robot.ultimate.charges,
+      chargesRequired: robot.ultimate.chargesRequired
+    });
   }
+  return { chargeUpdates };
 }
 
 export function processEnemyTurn(enemies, allies, defendActive = false, itemBuffs = null) {
@@ -84,6 +102,12 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
     }
 
     target.hp = Math.max(0, target.hp - damage);
+
+    // +1 ultimate charge immediately when this enemy attacks
+    enemy.ultimate.charges = Math.min(
+      enemy.ultimate.charges + 1,
+      enemy.ultimate.chargesRequired
+    );
 
     attacks.push({
       attackerId: enemy.id,
@@ -133,12 +157,15 @@ export function processBefriend(enemies, robotParty) {
   };
 }
 
-export function processUltimate(robot, enemies, itemBuffs = null) {
+export function processUltimate(robot, enemies, itemBuffs = null, robotParty = null) {
   if (robot.ultimate.charges < robot.ultimate.chargesRequired) {
     return { success: false, reason: 'Not enough charges' };
   }
 
   const hits = [];
+  const xpEvents = [];
+  const defeatedEnemyIds = new Set();
+
   for (const enemy of enemies) {
     if (enemy.hp <= 0) continue;
     const elemMult = getElementMultiplier(robot.ultimate.element, enemy.element);
@@ -148,13 +175,21 @@ export function processUltimate(robot, enemies, itemBuffs = null) {
     const buffedElemMult = itemBuffs ? getBuffedElementMultiplier(elemMult, itemBuffs) : elemMult;
     const damage = calculateRobotDamage(buffedAttack, buffedPower, buffedElemMult, variance);
     enemy.hp = Math.max(0, enemy.hp - damage);
+    const targetDefeated = enemy.hp <= 0;
     hits.push({
       targetId: enemy.id,
       targetName: enemy.nameEn,
       damage,
       elementMultiplier: elemMult,
-      targetDefeated: enemy.hp <= 0
+      targetDefeated
     });
+
+    // Award XP immediately when an enemy is killed by ultimate
+    if (targetDefeated && !defeatedEnemyIds.has(enemy.id) && robotParty) {
+      defeatedEnemyIds.add(enemy.id);
+      const xpEvent = awardKillXp(robotParty, 50);
+      xpEvents.push({ enemyId: enemy.id, enemyName: enemy.nameEn, ...xpEvent });
+    }
   }
 
   robot.ultimate.charges = 0;
@@ -165,8 +200,62 @@ export function processUltimate(robot, enemies, itemBuffs = null) {
     robotName: robot.nameEn,
     ultimateName: robot.ultimate.nameEn,
     hits,
+    xpEvents,
     allEnemiesDefeated: enemies.every(e => e.hp <= 0)
   };
+}
+
+/**
+ * Award XP to all alive equipped robots when an enemy is killed during combat.
+ * Returns per-robot XP amounts and any level-ups that occurred.
+ */
+export function awardKillXp(robotParty, baseXp) {
+  const activeCount = robotParty.active.filter(r => r && r.hp > 0).length;
+  const reserveCount = robotParty.reserves.length;
+  const totalShares = activeCount * 2 + reserveCount * 1;
+  if (totalShares === 0) return { xpGrants: [], levelUps: [] };
+
+  const perShare = baseXp / totalShares;
+  const xpGrants = [];
+  const levelUps = [];
+
+  for (const robot of robotParty.active) {
+    if (!robot || robot.hp <= 0) continue;
+    const xpAmount = Math.floor(perShare * 2);
+    const prevLevel = robot.level;
+    addXpToRobot(robot, xpAmount);
+    xpGrants.push({ robotId: robot.id, robotName: robot.nameEn, xp: xpAmount });
+    if (robot.level > prevLevel) {
+      levelUps.push({
+        robotId: robot.id,
+        robotName: robot.nameEn,
+        oldLevel: prevLevel,
+        newLevel: robot.level,
+        maxHp: robot.maxHp,
+        attack: robot.attack
+      });
+    }
+  }
+
+  for (const robot of robotParty.reserves) {
+    if (!robot) continue;
+    const xpAmount = Math.floor(perShare);
+    const prevLevel = robot.level;
+    addXpToRobot(robot, xpAmount);
+    xpGrants.push({ robotId: robot.id, robotName: robot.nameEn, xp: xpAmount });
+    if (robot.level > prevLevel) {
+      levelUps.push({
+        robotId: robot.id,
+        robotName: robot.nameEn,
+        oldLevel: prevLevel,
+        newLevel: robot.level,
+        maxHp: robot.maxHp,
+        attack: robot.attack
+      });
+    }
+  }
+
+  return { xpGrants, levelUps };
 }
 
 export function awardBattleXp(robotParty, baseXp) {

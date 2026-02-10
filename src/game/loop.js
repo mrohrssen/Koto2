@@ -896,7 +896,7 @@ export class GameManager {
 
     // Player phase
     if (actionType === 'attack') {
-      playerResult = processAttackTurn(this.combat.allies, this.combat.enemies, this.run.itemBuffs);
+      playerResult = processAttackTurn(this.combat.allies, this.combat.enemies, this.run.itemBuffs, this.run.robotParty);
     } else if (actionType === 'defend') {
       processDefendTurn(this.combat.allies);
     } else if (actionType === 'befriend') {
@@ -919,7 +919,7 @@ export class GameManager {
 
     // Check if all enemies defeated after player attack
     if (playerResult.allEnemiesDefeated) {
-      awardBattleXp(this.run.robotParty, 100);
+      // XP already awarded per-kill in processAttackTurn (BUG C fix)
       this.combat.active = false;
       this.run.encountersCompleted++;
       // Mark room as interacted and handle boss defeat
@@ -934,6 +934,7 @@ export class GameManager {
       return {
         actionType,
         playerAttacks: playerResult.attacks || [],
+        xpEvents: playerResult.xpEvents || [],
         combatEnded: true,
         victory: true,
         isBoss: currentRoom?.isBossRoom || false,
@@ -968,6 +969,7 @@ export class GameManager {
         actionType,
         playerAttacks: playerResult.attacks || [],
         enemyAttacks: enemyResult.attacks || [],
+        xpEvents: playerResult.xpEvents || [],
         koSwaps,
         combatEnded: true,
         victory: false,
@@ -992,6 +994,7 @@ export class GameManager {
       actionType,
       playerAttacks: playerResult.attacks || [],
       enemyAttacks: enemyResult.attacks || [],
+      xpEvents: playerResult.xpEvents || [],
       befriend: befriendResult,
       koSwaps,
       combatEnded: false,
@@ -1016,14 +1019,14 @@ export class GameManager {
       throw new Error('Invalid robot index');
     }
 
-    const result = processUltimate(robot, this.combat.enemies, this.run.itemBuffs);
+    const result = processUltimate(robot, this.combat.enemies, this.run.itemBuffs, this.run.robotParty);
     if (!result.success) {
       return result;
     }
 
     // Check if all enemies defeated
     if (result.allEnemiesDefeated) {
-      awardBattleXp(this.run.robotParty, 100);
+      // XP already awarded per-kill in processUltimate (BUG C fix)
       this.combat.active = false;
       this.run.encountersCompleted++;
     }
