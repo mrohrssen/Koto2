@@ -160,6 +160,8 @@ import {
   rearrangeRobots as apiRearrangeRobots,
   swapRobotEquip as apiSwapRobotEquip,
   befriendReplace as apiBefriendReplace,
+  getBefriendConversation as apiGetBefriendConversation,
+  submitBefriendAnswer as apiSubmitBefriendAnswer,
 } from './js/api.js';
 
 const API_BASE = '';
@@ -1502,7 +1504,7 @@ async function initGame() {
     updateGameState,
     updateUI,
     settings,
-    narration: { showNarration: (text) => narrationBox.show(text) },
+    narration: { showNarration: (text, opts) => narrationBox.show(text, opts), forceHideNarration: () => narrationBox.forceHide() },
     wordPractice,
     characterUI,
     showDamageNumber: (dmg, isPlayer, isCrit, isDot, isHeal, specialType, tierClass) => scene.showDamageNumber(dmg, { isCrit, isHeal, tierClass }),
@@ -1530,6 +1532,8 @@ async function initGame() {
     apiRobotCombatCycle,
     showPostCombatShop: showPostCombatShopFlow,
     apiBefriendReplace: (releaseRobotId) => apiBefriendReplace(releaseRobotId),
+    apiGetBefriendConversation,
+    apiSubmitBefriendAnswer,
   });
 
   setupEventListeners();

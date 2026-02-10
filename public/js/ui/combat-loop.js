@@ -89,6 +89,8 @@ let setCombatAnimationActive = null;
 let apiRobotCombatCycle = null;
 let showPostCombatShop = null;
 let apiBefriendReplace = null;
+let apiGetBefriendConversation = null;
+let apiSubmitBefriendAnswer = null;
 
 // Utility
 let delay = null;
@@ -133,6 +135,8 @@ export function init(callbacks) {
   apiRobotCombatCycle = callbacks.apiRobotCombatCycle;
   showPostCombatShop = callbacks.showPostCombatShop;
   apiBefriendReplace = callbacks.apiBefriendReplace;
+  apiGetBefriendConversation = callbacks.apiGetBefriendConversation;
+  apiSubmitBefriendAnswer = callbacks.apiSubmitBefriendAnswer;
 }
 
 // ============ STATE GETTERS/SETTERS ============
@@ -1729,139 +1733,306 @@ function showBefriendReleasePrompt() {
 }
 
 /**
- * Execute befriend action: attempt to capture low-HP enemy robot
+ * Show target selection UI when multiple enemies are befriendable.
+ */
+function showBefriendTargetSelect(enemies) {
+  return new Promise((resolve) => {
+    const eligible = enemies
+      .map((e, i) => ({ ...e, index: i }))
+      .filter(e => e.hp > 0 && !e.befriended && (e.hp / e.maxHp) <= 0.5);
+
+    if (eligible.length <= 1) {
+      resolve(eligible.length === 1 ? eligible[0].index : -1);
+      return;
+    }
+
+    const actionArea = document.getElementById('action-area');
+    if (!actionArea) { resolve(-1); return; }
+
+    const buttons = eligible.map(e => `
+      <div class="shrine-chip-option befriend-target-option" data-enemy-index="${e.index}" style="width:100%">
+        <div class="shrine-chip-info" style="padding:1rem; width:100%; text-align:center">
+          <div class="shrine-chip-name" style="color:#4CAF50">${e.nameEn || e.name} (HP: ${Math.round(e.hp / e.maxHp * 100)}%)</div>
+        </div>
+      </div>
+    `).join('');
+
+    actionArea.innerHTML = `
+      <div class="shrine-chip-list" style="padding:0 1rem">
+        <div style="text-align:center; color:var(--text-secondary); margin-bottom:0.5rem">Who do you want to talk to?</div>
+        ${buttons}
+      </div>
+    `;
+
+    actionArea.addEventListener('click', (e) => {
+      const opt = e.target.closest('.befriend-target-option');
+      if (!opt) return;
+      resolve(parseInt(opt.dataset.enemyIndex, 10));
+    });
+  });
+}
+
+/**
+ * Show one round of befriend conversation.
+ * Returns the selected option index.
+ */
+function showConversationRound(round, roundNumber, robotName) {
+  return new Promise((resolve) => {
+    // Show robot's line in narration box
+    narration.showNarration(round.speaker, {
+      speaker: robotName,
+      persistent: true,
+      skipRewrite: true
+    });
+
+    const actionArea = document.getElementById('action-area');
+    if (!actionArea) { resolve(0); return; }
+
+    const roundLabel = `Round ${roundNumber + 1}/3`;
+    const buttons = round.options.map((opt, idx) => `
+      <div class="shrine-chip-option befriend-answer-option" data-answer-index="${idx}" style="width:100%">
+        <div class="shrine-chip-info" style="padding:1rem; width:100%; text-align:center">
+          <div class="shrine-chip-name" style="color:var(--accent-primary)">${opt}</div>
+        </div>
+      </div>
+    `).join('');
+
+    actionArea.innerHTML = `
+      <div class="shrine-chip-list befriend-answer-list" style="padding:0 1rem">
+        <div style="text-align:center; color:var(--text-secondary); margin-bottom:0.5rem; font-size:12px">${roundLabel}</div>
+        ${buttons}
+      </div>
+    `;
+
+    const list = actionArea.querySelector('.befriend-answer-list');
+    list.addEventListener('click', (e) => {
+      const opt = e.target.closest('.befriend-answer-option');
+      if (!opt || list.dataset.answered) return;
+      list.dataset.answered = '1';
+      resolve(parseInt(opt.dataset.answerIndex, 10));
+    });
+  });
+}
+
+/**
+ * Show green/red feedback on answer options.
+ */
+function showAnswerFeedback(selectedIndex, correctIndex, correct) {
+  document.querySelectorAll('.befriend-answer-option').forEach((o, idx) => {
+    o.style.pointerEvents = 'none';
+    if (idx === correctIndex) {
+      o.style.borderColor = 'var(--success-color, #4ade80)';
+      o.style.boxShadow = '0 0 10px var(--success-color, #4ade80)';
+    } else if (idx === selectedIndex && !correct) {
+      o.style.borderColor = 'var(--danger-color, #ef4444)';
+      o.style.boxShadow = '0 0 10px var(--danger-color, #ef4444)';
+    } else {
+      o.style.opacity = '0.5';
+    }
+  });
+}
+
+/**
+ * Execute befriend action: 3-round conversation to capture low-HP enemy robot
  */
 async function executeBefriendAction() {
   if (!combatActive) return;
-
   if (setCombatAnimationActive) setCombatAnimationActive(true);
 
   try {
-    const response = await fetch(`${API_BASE}/api/game/robot-combat-cycle`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ actionType: 'befriend' })
-    });
-    const result = await response.json();
+    const state = getGameState();
+    const enemies = state.combat?.enemies || [];
 
-    if (result.error) {
-      console.error('Befriend error:', result.error);
+    // Target selection (auto if only one eligible)
+    const eligible = enemies.filter(e => e.hp > 0 && !e.befriended && (e.hp / e.maxHp) <= 0.5);
+    let enemyIndex;
+    if (eligible.length > 1) {
+      enemyIndex = await showBefriendTargetSelect(enemies);
+      if (enemyIndex < 0) {
+        if (setCombatAnimationActive) setCombatAnimationActive(false);
+        combatPausedForVocab = true;
+        showNextDualCardsFromQueue();
+        return;
+      }
+    }
+
+    // Fetch conversation from server
+    const convoResult = await apiGetBefriendConversation(enemyIndex);
+    if (convoResult.error) {
+      console.error('Befriend conversation error:', convoResult.error);
       if (setCombatAnimationActive) setCombatAnimationActive(false);
-      // Fall back to showing next cards
       showNextDualCardsFromQueue();
       return;
     }
 
-    if (result.befriend?.success) {
-      // Show capture success message
-      const actionArea = document.getElementById('action-area');
-      if (actionArea) {
-        const captured = result.befriend.captured;
-        actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">BEFRIENDED ${captured.nameEn}!</div>`;
-      }
-      playSFX('chip-skill');
+    const { rounds, targetEnemy, targetEnemyIndex } = convoResult;
+    const robotName = targetEnemy?.nameEn || targetEnemy?.name || 'Robot';
 
-      // Remove the befriended enemy from the battlefield
-      const capturedId = result.befriend.captured?.id;
-      if (capturedId) {
-        // Find the enemy slot by ID or by matching enemies list
-        const slot = document.querySelector(`.enemy-robot-slot[data-enemy-id="${capturedId}"]`);
-        if (slot) {
-          slot.classList.add('befriended');
-        }
-      }
-      await delay(1200);
+    // 3-round conversation loop
+    for (let i = 0; i < rounds.length; i++) {
+      const selectedIndex = await showConversationRound(rounds[i], i, robotName);
+      const answerResult = await apiSubmitBefriendAnswer(i, selectedIndex);
 
-      // Update game state with remaining enemies
-      if (result.enemies) {
-        const gs = getGameState();
-        if (gs.combat) {
-          updateGameState({
-            ...gs,
-            combat: { ...gs.combat, enemies: result.enemies }
-          });
+      showAnswerFeedback(selectedIndex, answerResult.correctIndex, answerResult.correct);
+      await delay(800);
+      if (narration.forceHideNarration) narration.forceHideNarration();
+
+      if (!answerResult.correct) {
+        // --- FAILURE ---
+        narration.showNarration('？？？', {
+          speaker: robotName, autoDismiss: 1000, skipRewrite: true
+        });
+
+        // Shake target enemy
+        const slots = document.querySelectorAll('.enemy-robot-slot');
+        const targetSlot = slots[targetEnemyIndex];
+        if (targetSlot) {
+          targetSlot.classList.add('shake-animation');
+          setTimeout(() => targetSlot.classList.remove('shake-animation'), 500);
         }
-      }
-    } else if (result.befriend?.reason === 'Party full') {
-      // BUG D: Party full — prompt player to release a robot or let the befriended one go
-      const releaseChoice = await showBefriendReleasePrompt();
-      if (releaseChoice && apiBefriendReplace) {
-        const replaceResult = await apiBefriendReplace(releaseChoice);
-        if (replaceResult?.success) {
-          const actionArea = document.getElementById('action-area');
-          if (actionArea) {
-            actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">BEFRIENDED ${replaceResult.captured.nameEn}!</div>`;
+
+        // Show enemy attack damage
+        if (answerResult.enemyAttacks?.length > 0) {
+          for (const atk of answerResult.enemyAttacks) {
+            if (atk.damage > 0) {
+              showDamageNumber(atk.damage, true, false);
+              animatePlayerHurt();
+              playSFX('player-hit');
+              await delay(400);
+            }
           }
-          playSFX('chip-skill');
+        }
 
-          // Remove enemy from battlefield
-          const capturedId = replaceResult.captured?.id;
-          if (capturedId) {
-            const slot = document.querySelector(`.enemy-robot-slot[data-enemy-id="${capturedId}"]`);
-            if (slot) slot.classList.add('befriended');
+        // Update game state with post-attack HP
+        if (answerResult.allies || answerResult.enemies) {
+          const gs = getGameState();
+          if (gs.combat) {
+            updateGameState({
+              ...gs,
+              combat: {
+                ...gs.combat,
+                ...(answerResult.allies && { allies: answerResult.allies }),
+                ...(answerResult.enemies && { enemies: answerResult.enemies })
+              }
+            });
+            updateUI();
+          }
+        }
+
+        if (answerResult.combatEnded) {
+          stopCombatLoop({ combatEnded: true, victory: false });
+          return;
+        }
+
+        // Resume normal combat
+        if (setCombatAnimationActive) setCombatAnimationActive(false);
+        combatPausedForVocab = true;
+        showNextDualCardsFromQueue();
+        return;
+      }
+
+      // --- CORRECT ---
+      if (answerResult.conversationComplete) {
+        // All 3 rounds correct!
+        narration.showNarration('\u3058\u3083\u3042\u3001\u53cb\u9054\u306b\u306a\u308d\u3046\uff01', {
+          speaker: robotName, autoDismiss: 1500, skipRewrite: true
+        });
+        playSFX('chip-skill');
+
+        // Mark enemy as befriended visually
+        const captured = answerResult.befriend?.captured;
+        if (captured?.id) {
+          const slot = document.querySelector(`.enemy-robot-slot[data-enemy-id="${captured.id}"]`);
+          if (slot) slot.classList.add('befriended');
+        }
+
+        if (answerResult.befriend?.reason === 'Party full') {
+          // Party full — prompt release
+          const releaseChoice = await showBefriendReleasePrompt();
+          if (releaseChoice && apiBefriendReplace) {
+            const replaceResult = await apiBefriendReplace(releaseChoice);
+            if (replaceResult?.success) {
+              const actionArea = document.getElementById('action-area');
+              if (actionArea) {
+                actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">BEFRIENDED ${replaceResult.captured.nameEn}!</div>`;
+              }
+              playSFX('chip-skill');
+
+              const capturedId = replaceResult.captured?.id;
+              if (capturedId) {
+                const slot = document.querySelector(`.enemy-robot-slot[data-enemy-id="${capturedId}"]`);
+                if (slot) slot.classList.add('befriended');
+              }
+              await delay(1200);
+
+              if (replaceResult.combatEnded) {
+                stopCombatLoop({ combatEnded: true, victory: replaceResult.victory });
+                return;
+              }
+
+              // Update state from replace result
+              const gs = getGameState();
+              if (replaceResult.state) {
+                updateGameState(replaceResult.state);
+              } else if (gs.combat && replaceResult.enemies) {
+                updateGameState({
+                  ...gs,
+                  combat: { ...gs.combat, enemies: replaceResult.enemies },
+                  run: { ...gs.run, robotParty: replaceResult.robotParty }
+                });
+              }
+            }
+          } else {
+            // Let it go
+            const actionArea = document.getElementById('action-area');
+            if (actionArea) {
+              actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #9E9E9E;">Let it go...</div>`;
+            }
+            await delay(800);
+          }
+        } else {
+          // Normal success
+          const actionArea = document.getElementById('action-area');
+          if (actionArea && captured) {
+            actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">BEFRIENDED ${captured.nameEn}!</div>`;
           }
           await delay(1200);
 
-          // Update game state
-          const gs = getGameState();
-          if (replaceResult.state) {
-            updateGameState(replaceResult.state);
-          } else if (gs.combat && replaceResult.enemies) {
-            updateGameState({
-              ...gs,
-              combat: { ...gs.combat, enemies: replaceResult.enemies },
-              run: { ...gs.run, robotParty: replaceResult.robotParty }
-            });
-          }
-
-          // Handle combat end from replace
-          if (replaceResult.combatEnded) {
-            if (replaceResult.victory) {
-              stopCombatLoop({ combatEnded: true, victory: true });
-            } else {
-              stopCombatLoop({ combatEnded: true, victory: false });
+          // Update state
+          if (answerResult.state) {
+            updateGameState(answerResult.state);
+          } else {
+            const gs = getGameState();
+            if (gs.combat && answerResult.enemies) {
+              updateGameState({
+                ...gs,
+                combat: { ...gs.combat, enemies: answerResult.enemies },
+                ...(answerResult.robotParty && {
+                  run: { ...gs.run, robotParty: answerResult.robotParty }
+                })
+              });
             }
-            return;
           }
-        } else {
-          const actionArea = document.getElementById('action-area');
-          if (actionArea) {
-            actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #F44336;">Failed: ${replaceResult?.reason || 'Unknown'}</div>`;
-          }
-          await delay(800);
         }
-      } else {
-        // Player chose to let the befriended robot go
-        const actionArea = document.getElementById('action-area');
-        if (actionArea) {
-          actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #9E9E9E;">Let it go...</div>`;
-        }
-        await delay(800);
-      }
-    } else {
-      // Befriend failed for other reason
-      const actionArea = document.getElementById('action-area');
-      if (actionArea) {
-        actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #F44336;">Befriend failed: ${result.befriend?.reason || 'Unknown'}</div>`;
-      }
-      await delay(800);
-    }
 
-    // Handle combat end or continue
-    if (result.combatEnded) {
-      if (result.victory) {
-        stopCombatLoop({ combatEnded: true, victory: true });
-      } else {
-        stopCombatLoop({ combatEnded: true, victory: false });
+        if (answerResult.combatEnded) {
+          stopCombatLoop({ combatEnded: true, victory: answerResult.victory || false });
+          return;
+        }
+
+        // Continue combat
+        if (setCombatAnimationActive) setCombatAnimationActive(false);
+        combatPausedForVocab = true;
+        showNextDualCardsFromQueue();
+        return;
       }
-    } else {
-      // Continue combat - show next cards
-      combatPausedForVocab = true;
-      showNextDualCardsFromQueue();
+
+      // Correct but not complete — brief pause then show next round
+      await delay(300);
     }
 
   } catch (error) {
-    console.error('Befriend fetch error:', error);
+    console.error('Befriend conversation error:', error);
   } finally {
     if (setCombatAnimationActive) setCombatAnimationActive(false);
   }

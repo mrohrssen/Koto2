@@ -722,6 +722,15 @@ async function befriendReplace(releaseRobotId) {
   return apiCall('/befriend-replace', 'POST', { releaseRobotId });
 }
 
+async function getBefriendConversation(enemyIndex) {
+  return apiCall('/befriend-conversation', 'POST',
+    typeof enemyIndex === 'number' ? { enemyIndex } : {});
+}
+
+async function submitBefriendAnswer(roundIndex, selectedIndex) {
+  return apiCall('/befriend-answer', 'POST', { roundIndex, selectedIndex });
+}
+
 export {
   apiCall,
   isApiLoading,
@@ -764,6 +773,8 @@ export {
   rearrangeRobots,
   swapRobotEquip,
   befriendReplace,
+  getBefriendConversation,
+  submitBefriendAnswer,
   // Shop/economy endpoints
   claimStartingChip,
   startingChipRefresh,
