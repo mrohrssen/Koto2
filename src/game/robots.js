@@ -34,7 +34,7 @@ const RARITY_WEIGHTS = {
   legendary: 1
 };
 
-const XP_PER_LEVEL = 100;
+export const XP_PER_LEVEL = 100;
 
 export function getElementMultiplier(attackerElement, defenderElement) {
   const ai = ELEMENT_CYCLE.indexOf(attackerElement);
@@ -181,5 +181,38 @@ export function generateEnemyRobots(highestAllyLevel = 1) {
 
 export function getAllRobots() {
   return ROBOT_DATA;
+}
+
+const ROBOT_PRICES = {
+  common: 20,
+  uncommon: 40,
+  rare: 70,
+  epic: 120,
+  legendary: 200
+};
+
+export function getRobotBuyPrice(rarity) {
+  return ROBOT_PRICES[rarity] || 20;
+}
+
+export function getRobotSellPrice(rarity, level) {
+  const base = Math.floor((ROBOT_PRICES[rarity] || 20) * 0.6);
+  return base + (level - 1) * 5;
+}
+
+export function generateDealerRobots(collectionIds = []) {
+  const collectionSet = new Set(collectionIds);
+  const allTemplates = Object.values(ROBOTS_BY_ID);
+  const uncaptured = allTemplates.filter(t => !collectionSet.has(t.id));
+
+  // If all captured, offer random ones anyway
+  const pool = uncaptured.length >= 3 ? uncaptured : allTemplates;
+
+  // Pick 3 random
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, 3).map(template => ({
+    ...instantiateRobot(template.id),
+    buyPrice: getRobotBuyPrice(template.rarity)
+  }));
 }
 

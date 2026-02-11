@@ -14,7 +14,7 @@
  * - renderBossReady(): Show Boss Fight button
  * - renderFloorComplete(): Show Continue button after floor cleared
  * - renderRunEnded(): Show Return to Hub button
- * - renderShrine(chipLoadoutCache): Show chip upgrade selection
+ * - renderShrine(): Show robot level-up selection
  * - renderQuiz(): Show quiz question and reward selection
  *
  * DEPENDENCIES:
@@ -602,57 +602,47 @@ export function renderRunEnded() {
   });
 }
 
-/** Shrine phase - show equipped chips for upgrade */
-export function renderShrine(chipLoadoutCache) {
+/** Shrine phase - show robot roster for level-up */
+export function renderShrine() {
   const gameState = getGameState();
-  const equippedChips = gameState.player?.equipment?.weapon?.equippedChips || [];
+  const robotParty = gameState.run?.robotParty;
 
-  if (equippedChips.length === 0) {
+  if (!robotParty) {
     actions.setContent(`
-      <p style="text-align:center;color:var(--text-secondary)">No chips equipped to upgrade</p>
+      <p style="text-align:center;color:var(--text-secondary)">No robots in party</p>
       <button class="action-btn action-btn-primary" id="shrine-skip-btn">続ける</button>
     `);
     document.getElementById('shrine-skip-btn')?.addEventListener('click', async () => {
       const result = await apiProceed();
-      if (result?.state) {
-        updateGameState(result.state);
-        updateUI();
-      }
+      if (result?.state) { updateGameState(result.state); updateUI(); }
     });
     return;
   }
 
-  // Pick up to 3 random chips, stable across re-renders
-  if (!gameState._shrineOfferings) {
-    const shuffled = [...equippedChips].sort(() => Math.random() - 0.5);
-    gameState._shrineOfferings = shuffled.slice(0, 3);
-  }
-  const offerings = gameState._shrineOfferings;
+  const allRobots = [
+    ...(robotParty.active || []),
+    ...(robotParty.reserves || [])
+  ].filter(Boolean);
 
-  const enrichedChips = chipLoadoutCache?.equipment?.weapon?.equippedChips || [];
-  const chipLevels = gameState.player?._chipLevels || {};
-
-  const chipCards = offerings.map(chipId => {
-    const chipInfo = enrichedChips.find(c => c?.id === chipId) || { id: chipId, nameEn: chipId };
-    const level = chipLevels[chipId] || 1;
+  const robotCards = allRobots.map(robot => {
+    const hpPercent = Math.floor((robot.hp / robot.maxHp) * 100);
     return `
-      <div class="shrine-chip-option" data-chip-id="${chipId}">
-        <div class="shrine-chip-icon" style="background-image:url('/assets/icons/chips/${chipId}.webp'); border-color: ${chipInfo.rarityInfo?.color || '#95a5a6'}"></div>
+      <div class="shrine-chip-option" data-robot-id="${robot.id}">
+        <div class="shrine-chip-icon" style="background-image:url('/assets/sprites/${robot.id}.webp'); border-color: var(--rarity-${robot.rarity || 'common'})"></div>
         <div class="shrine-chip-info">
-          <div class="shrine-chip-name">${chipInfo.nameEn || chipInfo.name || chipId} Lv. ${level} <span class="shrine-chip-upgrade">\u2192 Lv. ${Math.min(level + 1, 7)}</span></div>
-          <div class="shrine-chip-rarity ${chipInfo.rarity || 'common'}">${chipInfo.rarity || 'common'}</div>
-          <div class="shrine-chip-desc">${chipInfo.descriptionEn || chipInfo.description || ''}</div>
+          <div class="shrine-chip-name">${robot.nameEn} Lv.${robot.level} <span class="shrine-chip-upgrade">\u2192 Lv.${robot.level + 1}</span></div>
+          <div class="shrine-chip-rarity ${robot.rarity || 'common'}">${robot.rarity} \u00B7 ${robot.element}</div>
+          <div class="shrine-chip-desc">HP: ${robot.hp}/${robot.maxHp} (${hpPercent}%) \u00B7 ATK: ${robot.attack}</div>
         </div>
       </div>
     `;
   }).join('');
 
   actions.setContent(`
-    <h3 class="shrine-title">Choose a chip to upgrade</h3>
-    <div class="shrine-chip-list">${chipCards}</div>
+    <h3 class="shrine-title">Choose a robot to train</h3>
+    <div class="shrine-chip-list">${robotCards}</div>
   `);
 
-  // Use event delegation with module-level guard (persists across re-renders)
   if (shrineInProgress) return;
   const list = document.querySelector('.shrine-chip-list');
   if (list) {
@@ -661,29 +651,19 @@ export function renderShrine(chipLoadoutCache) {
       if (!option || shrineInProgress) return;
       shrineInProgress = true;
 
-      // Disable all options visually
       document.querySelectorAll('.shrine-chip-option').forEach(o => {
         o.style.opacity = '0.5';
         o.style.pointerEvents = 'none';
       });
 
-      const chipId = option.dataset.chipId;
-      const result = await apiShrineUpgrade(chipId);
-      if (result?.state) {
-        updateGameState(result.state);
-      }
-      if (apiGetChipLoadout && setChipLoadoutCache) {
-        const newLoadout = await apiGetChipLoadout();
-        setChipLoadoutCache(newLoadout);
-      }
-      sceneModule.showNarration(`Chip upgraded to Lv. ${result?.newLevel || '?'}!`, { autoDismiss: 2000 });
-      delete getGameState()._shrineOfferings;
+      const robotId = option.dataset.robotId;
+      const result = await apiShrineUpgrade(robotId);
+      if (result?.state) { updateGameState(result.state); }
+      sceneModule.showNarration(`${result?.robotName || 'Robot'} leveled up to Lv. ${result?.newLevel || '?'}!`, { autoDismiss: 2000 });
+
       const proceedResult = await apiProceed();
       shrineInProgress = false;
-      if (proceedResult?.state) {
-        updateGameState(proceedResult.state);
-        updateUI();
-      }
+      if (proceedResult?.state) { updateGameState(proceedResult.state); updateUI(); }
     });
   }
 }
@@ -811,28 +791,85 @@ export async function renderQuiz() {
 
 async function renderQuizRewards() {
   const gameState = getGameState();
+  const robotParty = gameState.run?.robotParty;
 
-  // Show reward intro dialogue (persistent - stays while selecting)
-  sceneModule.showNarration('ご褒美を選べ。', { speaker: 'Quiz Master', persistent: true });
+  // If a reward type was chosen that needs a robot, show robot picker
+  if (gameState._quizSelectedReward && gameState._quizSelectedReward !== 'credits') {
+    const allRobots = [
+      ...(robotParty?.active || []),
+      ...(robotParty?.reserves || [])
+    ].filter(Boolean);
+
+    const rewardType = gameState._quizSelectedReward;
+    const label = rewardType === 'heal' ? 'Choose a robot to heal' : 'Choose a robot to level up';
+
+    const robotCards = allRobots.map(robot => {
+      const hpText = rewardType === 'heal'
+        ? `HP: ${robot.hp}/${robot.maxHp}`
+        : `Lv.${robot.level} \u2192 Lv.${robot.level + 1}`;
+      return `
+        <div class="shrine-chip-option quiz-reward-robot" data-robot-id="${robot.id}" style="width:100%">
+          <div class="shrine-chip-icon" style="background-image:url('/assets/sprites/${robot.id}.webp'); border-color: var(--rarity-${robot.rarity || 'common'})"></div>
+          <div class="shrine-chip-info" style="padding:0.75rem">
+            <div class="shrine-chip-name">${robot.nameEn}</div>
+            <div class="shrine-chip-desc">${hpText} \u00B7 ATK: ${robot.attack}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    sceneModule.showNarration(label, { speaker: 'Quiz Master', persistent: true });
+    actions.setContent(`<div class="shrine-chip-list" style="padding:0 1rem">${robotCards}</div>`);
+
+    const list = document.querySelector('.shrine-chip-list');
+    if (list && !list.dataset.bound) {
+      list.dataset.bound = '1';
+      list.addEventListener('click', async (e) => {
+        const option = e.target.closest('.quiz-reward-robot');
+        if (!option || list.dataset.used) return;
+        list.dataset.used = '1';
+
+        document.querySelectorAll('.quiz-reward-robot').forEach(o => {
+          o.style.opacity = '0.5'; o.style.pointerEvents = 'none';
+        });
+
+        const robotId = option.dataset.robotId;
+        const result = await apiQuizReward(rewardType, robotId);
+        if (result?.state) { updateGameState(result.state); }
+
+        if (sceneModule.forceHideNarration) sceneModule.forceHideNarration();
+        sceneModule.showNarration(result?.description || 'Reward claimed!', { autoDismiss: 2000 });
+
+        delete getGameState()._quizStage;
+        delete getGameState()._quizSelectedReward;
+        const proceedResult = await apiProceed();
+        if (proceedResult?.state) { updateGameState(proceedResult.state); updateUI(); }
+      });
+    }
+    return;
+  }
+
+  // Show reward choices
+  sceneModule.showNarration('\u3054\u8912\u7F8E\u3092\u9078\u3079\u3002', { speaker: 'Quiz Master', persistent: true });
 
   actions.setContent(`
     <div class="shrine-chip-list" style="padding:0 1rem">
-      <div class="shrine-chip-option quiz-reward-option" data-reward="max_hp" style="width:100%">
+      <div class="shrine-chip-option quiz-reward-option" data-reward="heal" style="width:100%">
         <div class="shrine-chip-info" style="padding:1rem; width:100%">
-          <div class="shrine-chip-name">最大HP +25</div>
-          <div class="shrine-chip-desc">最大HPが25増える</div>
+          <div class="shrine-chip-name">\u30ED\u30DC\u30C3\u30C8\u56DE\u5FA9</div>
+          <div class="shrine-chip-desc">1\u4F53\u306E\u30ED\u30DC\u30C3\u30C8\u3092\u5168\u56DE\u5FA9\u3059\u308B</div>
         </div>
       </div>
-      <div class="shrine-chip-option quiz-reward-option" data-reward="heal_hp" style="width:100%">
+      <div class="shrine-chip-option quiz-reward-option" data-reward="levelup" style="width:100%">
         <div class="shrine-chip-info" style="padding:1rem; width:100%">
-          <div class="shrine-chip-name">HP回復 +75</div>
-          <div class="shrine-chip-desc">HPを75回復する</div>
+          <div class="shrine-chip-name">\u30ED\u30DC\u30C3\u30C8\u4FEE\u7DF4</div>
+          <div class="shrine-chip-desc">1\u4F53\u306E\u30ED\u30DC\u30C3\u30C8\u3092\u30EC\u30D9\u30EB\u30A2\u30C3\u30D7</div>
         </div>
       </div>
-      <div class="shrine-chip-option quiz-reward-option" data-reward="chip_charges" style="width:100%">
+      <div class="shrine-chip-option quiz-reward-option" data-reward="credits" style="width:100%">
         <div class="shrine-chip-info" style="padding:1rem; width:100%">
-          <div class="shrine-chip-name">全チップ +3チャージ</div>
-          <div class="shrine-chip-desc">全てのチップに3チャージ追加</div>
+          <div class="shrine-chip-name">\u30AF\u30EC\u30B8\u30C3\u30C8</div>
+          <div class="shrine-chip-desc">\u30AF\u30EC\u30B8\u30C3\u30C8\u3092\u7372\u5F97\u3059\u308B</div>
         </div>
       </div>
     </div>
@@ -845,32 +882,24 @@ async function renderQuizRewards() {
       if (!option || list.dataset.used) return;
       list.dataset.used = '1';
 
-      // Disable all options
-      document.querySelectorAll('.quiz-reward-option').forEach(o => {
-        o.style.opacity = '0.5';
-        o.style.pointerEvents = 'none';
-      });
-
       const rewardType = option.dataset.reward;
-      const result = await apiQuizReward(rewardType);
-      if (result?.state) {
-        updateGameState(result.state);
-      }
 
-      // Hide persistent narration, then show reward confirmation
-      if (sceneModule.forceHideNarration) sceneModule.forceHideNarration();
-      sceneModule.showNarration(result?.description || 'Reward claimed!', { autoDismiss: 2000 });
+      if (rewardType === 'credits') {
+        document.querySelectorAll('.quiz-reward-option').forEach(o => {
+          o.style.opacity = '0.5'; o.style.pointerEvents = 'none';
+        });
 
-      // Refresh chip loadout if charges changed
-      if (rewardType === 'chip_charges' && apiGetChipLoadout && setChipLoadoutCache) {
-        const newLoadout = await apiGetChipLoadout();
-        setChipLoadoutCache(newLoadout);
-      }
+        const result = await apiQuizReward(rewardType);
+        if (result?.state) { updateGameState(result.state); }
+        if (sceneModule.forceHideNarration) sceneModule.forceHideNarration();
+        sceneModule.showNarration(result?.description || 'Credits earned!', { autoDismiss: 2000 });
 
-      delete getGameState()._quizStage;
-      const proceedResult = await apiProceed();
-      if (proceedResult?.state) {
-        updateGameState(proceedResult.state);
+        delete getGameState()._quizStage;
+        const proceedResult = await apiProceed();
+        if (proceedResult?.state) { updateGameState(proceedResult.state); updateUI(); }
+      } else {
+        // Heal or levelup — need robot picker
+        gameState._quizSelectedReward = rewardType;
         updateUI();
       }
     });

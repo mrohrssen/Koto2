@@ -282,9 +282,9 @@ function isSpecialType(type) {
  * @returns {object} Room object
  */
 function generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType = null, encountersOnly = false) {
-  const SHRINE_CHANCE = 0.15;          // 15% chance for shrine
-  const QUIZ_CHANCE = 0.20;            // 20% chance for quiz
-  const WORD_DISCOVERY_CHANCE = 0.15;  // 15% chance for word discovery
+  const SHRINE_CHANCE = 0.10;          // 10% chance for shrine
+  const QUIZ_CHANCE = 0.10;            // 10% chance for quiz
+  const WORD_DISCOVERY_CHANCE = 0.10;  // 10% chance for word discovery
   const DEALER_CHANCE = 0.10;          // 10% chance for dealer
 
   // Check test queue first (for deterministic E2E tests)
@@ -417,12 +417,11 @@ function createRoom(type, floor, roomNumber, totalRooms) {
       break;
 
     case ROOM_TYPES.dealer: {
-      const offeredChip = generateDealerChip();
       room.dealer = {
         visited: false,
-        offeredChip: offeredChip,
-        chipPrice: getChipPrice(offeredChip.id),
-        soldChips: []
+        offeredRobots: [],  // populated lazily when player enters room
+        soldRobots: [],
+        purchasedRobot: null
       };
       break;
     }

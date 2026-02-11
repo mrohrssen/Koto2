@@ -382,7 +382,7 @@ function updateGameContent() {
       explorationUI.renderBossReady();
       break;
     case 'shrine':
-      explorationUI.renderShrine(chipLoadoutCache);
+      explorationUI.renderShrine();
       break;
     case 'quiz':
       explorationUI.renderQuiz();

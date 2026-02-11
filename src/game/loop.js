@@ -66,7 +66,7 @@ import { CombatService, ExplorationService } from './services/index.js';
 import { calculateChipBonusHP, equipChip, incrementAllEquippedCharges } from './items/chips.js';
 import { logger } from '../logger.js';
 import { instantiateRobot, generateEnemyRobot, generateEnemyRobots } from './robots.js';
-import { processAttackTurn, processDefendTurn, processEnemyTurn, processBefriend, processUltimate, awardBattleXp, handleRobotKO } from './services/robot-combat-service.js';
+import { processAttackTurn, processDefendTurn, processEnemyTurn, processBefriend, processUltimate, awardBattleXp, handleRobotKO, CREDITS_PER_KILL } from './services/robot-combat-service.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/robot-collection-service.js';
 
@@ -529,7 +529,6 @@ export class GameManager {
     const ids = starterIds || (starterId ? [starterId] : null);
     if (ids && ids.length > 0) {
       this.run.robotParty.active = ids.map(id => instantiateRobot(id));
-      this.run.encountersOnly = true;
     }
 
     // Generate starting chip choices (skip for robot combat - robots don't use chips)
@@ -739,14 +738,14 @@ export class GameManager {
   }
 
   /**
-   * Use a shrine to upgrade a chip
+   * Use a shrine to level up a robot
    */
-  useShrine(chipId) {
-    return this.explorationService.useShrine(chipId);
+  useShrine(robotId) {
+    return this.explorationService.useShrine(robotId);
   }
 
-  useQuizReward(rewardType) {
-    return this.explorationService.useQuizReward(rewardType);
+  useQuizReward(rewardType, robotId) {
+    return this.explorationService.useQuizReward(rewardType, robotId);
   }
 
   /**
@@ -761,12 +760,12 @@ export class GameManager {
     return this.explorationService.getDealerState();
   }
 
-  dealerSell(chipId) {
-    return this.explorationService.dealerSell(chipId);
+  dealerSell(robotId) {
+    return this.explorationService.dealerSell(robotId);
   }
 
-  dealerBuy() {
-    return this.explorationService.dealerBuy();
+  dealerBuy(robotId) {
+    return this.explorationService.dealerBuy(robotId);
   }
 
   leaveDealer() {
@@ -911,8 +910,8 @@ export class GameManager {
         } else {
           this.run.robotParty.reserves.push(robot);
         }
-        // Add to permanent collection
-        if (this.meta) {
+        // Add to permanent collection (skip temporary dealer robots)
+        if (this.meta && !robot.temporary) {
           const result = addToCollection(this.meta.robotCollection || [], robot.id);
           if (result.added) {
             this.meta.robotCollection = result.collection;
@@ -947,6 +946,12 @@ export class GameManager {
           newCollectionAdditions
         };
       }
+    }
+
+    // Award credits for kills
+    if (playerResult.xpEvents?.length > 0) {
+      const killCredits = playerResult.xpEvents.length * CREDITS_PER_KILL;
+      this.run.player.credits = (this.run.player.credits || 0) + killCredits;
     }
 
     // Check if all enemies defeated after player attack
@@ -1058,6 +1063,12 @@ export class GameManager {
       return result;
     }
 
+    // Award credits for kills from ultimate
+    if (result.xpEvents?.length > 0) {
+      const killCredits = result.xpEvents.length * CREDITS_PER_KILL;
+      this.run.player.credits = (this.run.player.credits || 0) + killCredits;
+    }
+
     // Check if all enemies defeated
     let newCollectionAdditions = [];
     if (result.allEnemiesDefeated) {
@@ -1072,8 +1083,8 @@ export class GameManager {
         } else {
           this.run.robotParty.reserves.push(robot);
         }
-        // Add to permanent collection
-        if (this.meta) {
+        // Add to permanent collection (skip temporary dealer robots)
+        if (this.meta && !robot.temporary) {
           const result2 = addToCollection(this.meta.robotCollection || [], robot.id);
           if (result2.added) {
             this.meta.robotCollection = result2.collection;
@@ -1323,8 +1334,8 @@ export class GameManager {
         } else {
           party.reserves.push(robot);
         }
-        // Add to permanent collection
-        if (this.meta) {
+        // Add to permanent collection (skip temporary dealer robots)
+        if (this.meta && !robot.temporary) {
           const result = addToCollection(this.meta.robotCollection || [], robot.id);
           if (result.added) {
             this.meta.robotCollection = result.collection;
