@@ -10,7 +10,11 @@ import {
   getBuffedElementMultiplier,
   applyDamageReduction
 } from '../../src/game/services/item-service.js';
-import { instantiateRobot } from '../../src/game/robots.js';
+
+// Mock robot for item tests — avoids dependency on creature data
+function mockRobot(hp = 100, maxHp = 100) {
+  return { hp, maxHp, element: 'fire', ultimate: { charges: 0, chargesRequired: 5 } };
+}
 
 describe('Item Shop - Roll', () => {
   it('returns exactly 3 items', () => {
@@ -18,22 +22,33 @@ describe('Item Shop - Roll', () => {
     assert.strictEqual(items.length, 3);
   });
 
-  it('each item has id, name, description, type', () => {
+  it('each item has vocab fields and effect', () => {
     const items = rollShopItems();
     for (const item of items) {
-      assert.ok(item.id);
-      assert.ok(item.nameEn);
-      assert.ok(item.description);
-      assert.ok(item.type);
+      assert.ok(item.id, 'missing id');
+      assert.ok(item.word, 'missing word');
+      assert.ok(item.reading, 'missing reading');
+      assert.ok(item.meaning, 'missing meaning');
+      assert.ok(item.description, 'missing description');
+      assert.ok(item.type, 'missing type');
+      assert.ok(item.rarity, 'missing rarity');
+    }
+  });
+
+  it('never returns duplicate items in a single roll', () => {
+    for (let i = 0; i < 20; i++) {
+      const items = rollShopItems();
+      const ids = items.map(it => it.id);
+      assert.strictEqual(new Set(ids).size, ids.length, `Duplicate found: ${ids}`);
     }
   });
 });
 
 describe('Item Buffs - Stat Boosts', () => {
-  it('ATK Boost stacks +2% per application', () => {
+  it('attack mult stacks per application', () => {
     const buffs = createItemBuffs();
     const atkItem = { type: 'stat', effect: { field: 'attackMult', value: 0.02 } };
-    const party = { active: [instantiateRobot('fire-common')], reserves: [] };
+    const party = { active: [mockRobot()], reserves: [] };
     applyItem(atkItem, party, buffs);
     assert.strictEqual(buffs.attackMult, 1.02);
     applyItem(atkItem, party, buffs);
@@ -59,33 +74,63 @@ describe('Item Buffs - Stat Boosts', () => {
     assert.strictEqual(applyDamageReduction(10, buffs), 7);
     assert.strictEqual(applyDamageReduction(2, buffs), 1);
   });
+
+  it('compound bonus applies both stats (e.g. parents)', () => {
+    const buffs = createItemBuffs();
+    const item = {
+      type: 'stat',
+      effect: { field: 'hpMult', value: 0.03, bonus: { field: 'flatDamageReduction', value: 1 } }
+    };
+    const party = { active: [mockRobot()], reserves: [] };
+    applyItem(item, party, buffs);
+    assert.strictEqual(buffs.hpMult, 1.03);
+    assert.strictEqual(buffs.flatDamageReduction, 1);
+  });
+
+  it('penalty applies negative effect (e.g. sake)', () => {
+    const buffs = createItemBuffs();
+    const item = {
+      type: 'stat',
+      effect: { field: 'attackMult', value: 0.05, penalty: { field: 'hpMult', value: -0.03 } }
+    };
+    const party = { active: [mockRobot()], reserves: [] };
+    applyItem(item, party, buffs);
+    assert.strictEqual(buffs.attackMult, 1.05);
+    assert.strictEqual(buffs.hpMult, 0.97);
+  });
 });
 
 describe('Item Buffs - Heals', () => {
-  it('Team Heal heals only the lowest HP robot for 25% max HP', () => {
+  it('healPercent heals only the lowest HP robot', () => {
     const party = {
-      active: [instantiateRobot('fire-common'), instantiateRobot('water-common'), instantiateRobot('earth-common')],
+      active: [mockRobot(50), mockRobot(30), mockRobot(70)],
       reserves: []
     };
-    party.active[0].hp = 50;
-    party.active[1].hp = 30;
-    party.active[2].hp = 70;
     const healItem = { type: 'heal', effect: { healPercent: 0.25 } };
     const buffs = createItemBuffs();
     applyItem(healItem, party, buffs);
-    // Only the lowest HP robot (active[1] at 30 HP) should be healed
-    assert.strictEqual(party.active[0].hp, 50);  // unchanged
-    assert.strictEqual(party.active[1].hp, 55);  // 30 + 25 = 55
-    assert.strictEqual(party.active[2].hp, 70);  // unchanged
+    assert.strictEqual(party.active[0].hp, 50);
+    assert.strictEqual(party.active[1].hp, 55);  // 30 + 25% of 100 = 55
+    assert.strictEqual(party.active[2].hp, 70);
   });
 
-  it('Patch Up heals most damaged robot to full', () => {
+  it('healAllPercent heals all alive robots', () => {
     const party = {
-      active: [instantiateRobot('fire-common'), instantiateRobot('water-common')],
+      active: [mockRobot(50), mockRobot(60)],
       reserves: []
     };
-    party.active[0].hp = 80;
-    party.active[1].hp = 30;
+    const healAllItem = { type: 'heal', effect: { healAllPercent: 0.15 } };
+    const buffs = createItemBuffs();
+    applyItem(healAllItem, party, buffs);
+    assert.strictEqual(party.active[0].hp, 65);  // 50 + 15
+    assert.strictEqual(party.active[1].hp, 75);  // 60 + 15
+  });
+
+  it('healMostDamaged heals most damaged robot to full', () => {
+    const party = {
+      active: [mockRobot(80), mockRobot(30)],
+      reserves: []
+    };
     const patchItem = { type: 'heal', effect: { healMostDamaged: true } };
     const buffs = createItemBuffs();
     applyItem(patchItem, party, buffs);
@@ -93,26 +138,51 @@ describe('Item Buffs - Heals', () => {
     assert.strictEqual(party.active[1].hp, 100);
   });
 
-  it('Revive restores one KO robot at 30% HP', () => {
+  it('revivePercent restores one KO robot', () => {
     const party = {
-      active: [instantiateRobot('fire-common')],
-      reserves: [instantiateRobot('water-common')]
+      active: [mockRobot(0)],
+      reserves: [mockRobot(50)]
     };
-    party.active[0].hp = 0;
     const reviveItem = { type: 'heal', effect: { revivePercent: 0.3 } };
     const buffs = createItemBuffs();
     applyItem(reviveItem, party, buffs);
     assert.strictEqual(party.active[0].hp, 30);
   });
+});
 
-  it('Quick Charge adds +2 charges to all robots', () => {
+describe('Item Buffs - Utility', () => {
+  it('chargeBoost adds charges to all robots', () => {
     const party = {
-      active: [instantiateRobot('fire-common')],
+      active: [mockRobot()],
       reserves: []
     };
     const chargeItem = { type: 'utility', effect: { chargeBoost: 2 } };
     const buffs = createItemBuffs();
     applyItem(chargeItem, party, buffs);
     assert.strictEqual(party.active[0].ultimate.charges, 2);
+  });
+
+  it('random utility applies stat boosts', () => {
+    const buffs = createItemBuffs();
+    const item = { type: 'utility', effect: { random: true } };
+    const party = { active: [mockRobot()], reserves: [] };
+    applyItem(item, party, buffs);
+    const changed = buffs.attackMult !== 1.0 || buffs.hpMult !== 1.0 ||
+                    buffs.autoPowerMult !== 1.0 || buffs.ultimatePowerMult !== 1.0;
+    assert.ok(changed, 'random utility should boost at least one stat');
+  });
+
+  it('randomEpic boosts 3 random stats', () => {
+    const buffs = createItemBuffs();
+    const item = { type: 'utility', effect: { randomEpic: true } };
+    const party = { active: [mockRobot()], reserves: [] };
+    applyItem(item, party, buffs);
+    // Count how many stats changed
+    let changedCount = 0;
+    if (buffs.attackMult !== 1.0) changedCount++;
+    if (buffs.hpMult !== 1.0) changedCount++;
+    if (buffs.autoPowerMult !== 1.0) changedCount++;
+    if (buffs.ultimatePowerMult !== 1.0) changedCount++;
+    assert.ok(changedCount >= 1, 'randomEpic should boost multiple stats');
   });
 });

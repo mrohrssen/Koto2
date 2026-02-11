@@ -2,7 +2,8 @@
  * @file post-combat-shop.js - Post-Combat Item Shop
  *
  * PURPOSE:
- * Shows 3 random items after each combat victory. Player picks one.
+ * Shows 3 random items after each robot combat victory. Player picks one.
+ * Each item teaches a Japanese vocabulary word.
  * Stat boosts stack permanently for the run. Heals apply immediately.
  *
  * KEY EXPORTS:
@@ -16,17 +17,18 @@ import { playSFX } from '../audio.js';
 
 let onItemSelected = null;
 
-const ITEM_ICONS = {
-  'atk-boost': '⚔️',
-  'hp-boost': '❤️',
-  'auto-power': '🔄',
-  'ultimate-power': '💥',
-  'element-edge': '🔷',
-  'thick-armor': '🛡️',
-  'team-heal': '💚',
-  'patch-up': '🩹',
-  'revive': '✨',
-  'quick-charge': '⚡'
+const RARITY_COLORS = {
+  common: '#aaa',
+  uncommon: '#4fc3f7',
+  rare: '#ab47bc',
+  epic: '#ff7043',
+  legendary: '#ffd740'
+};
+
+const TYPE_ICONS = {
+  stat: '⬆️',
+  heal: '💚',
+  utility: '⚡'
 };
 
 export function init({ itemSelectedCallback }) {
@@ -41,13 +43,19 @@ export function show(items) {
     <div class="post-combat-shop">
       <div class="shop-title">Choose a Reward</div>
       <div class="shop-items">
-        ${items.map((item, i) => `
-          <div class="shop-item-card" data-index="${i}">
-            <div class="shop-item-icon">${ITEM_ICONS[item.id] || '📦'}</div>
-            <div class="shop-item-name">${item.nameEn}</div>
-            <div class="shop-item-desc">${item.description}</div>
+        ${items.map((item, i) => {
+          const rarityColor = RARITY_COLORS[item.rarity] || RARITY_COLORS.common;
+          const icon = TYPE_ICONS[item.type] || '📦';
+          return `
+          <div class="shop-item-card" data-index="${i}" style="border-color: ${rarityColor}40">
+            <div class="shop-item-rarity" style="color: ${rarityColor}">${item.rarity || 'common'}</div>
+            <div class="shop-item-word">${item.word}</div>
+            <div class="shop-item-reading">${item.reading}</div>
+            <div class="shop-item-meaning">${item.meaning}</div>
+            <div class="shop-item-divider"></div>
+            <div class="shop-item-effect">${icon} ${item.description}</div>
           </div>
-        `).join('')}
+        `}).join('')}
       </div>
     </div>
   `;

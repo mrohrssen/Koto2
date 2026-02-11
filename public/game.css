@@ -3788,7 +3788,7 @@ html, body {
 
 .shop-item-card {
   flex: 1;
-  max-width: 120px;
+  max-width: 130px;
   background: var(--bg-dark, #1a1a2e);
   border: 2px solid #333;
   border-radius: 8px;
@@ -3796,7 +3796,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   cursor: pointer;
   transition: border-color 0.2s, transform 0.1s;
 }
@@ -3810,18 +3810,39 @@ html, body {
   box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
 }
 
-.shop-item-icon {
-  font-size: 28px;
+.shop-item-rarity {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.shop-item-name {
-  font-size: 11px;
+.shop-item-word {
+  font-size: 24px;
   font-weight: bold;
   color: var(--text-primary, #eee);
+  line-height: 1.2;
+}
+
+.shop-item-reading {
+  font-size: 11px;
+  color: #ccc;
+}
+
+.shop-item-meaning {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--accent-gold, #FFD700);
   text-align: center;
 }
 
-.shop-item-desc {
+.shop-item-divider {
+  width: 60%;
+  height: 1px;
+  background: #333;
+  margin: 3px 0;
+}
+
+.shop-item-effect {
   font-size: 9px;
   color: #aaa;
   text-align: center;
