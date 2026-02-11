@@ -16,6 +16,8 @@ import {
 } from './item-service.js';
 import { DM_PROMPTS } from '../dm.js';
 
+export const CREDITS_PER_KILL = 15;
+
 export function processAttackTurn(allies, enemies, itemBuffs = null, robotParty = null) {
   const attacks = [];
   const xpEvents = [];
