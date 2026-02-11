@@ -30,7 +30,7 @@ const RARITY_WEIGHTS = {
   legendary: 1
 };
 
-const XP_PER_LEVEL = 100;
+export const XP_PER_LEVEL = 100;
 
 export function getElementMultiplier(attackerElement, defenderElement) {
   const ai = ELEMENT_CYCLE.indexOf(attackerElement);

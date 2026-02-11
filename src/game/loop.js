@@ -738,10 +738,10 @@ export class GameManager {
   }
 
   /**
-   * Use a shrine to upgrade a chip
+   * Use a shrine to level up a robot
    */
-  useShrine(chipId) {
-    return this.explorationService.useShrine(chipId);
+  useShrine(robotId) {
+    return this.explorationService.useShrine(robotId);
   }
 
   useQuizReward(rewardType) {

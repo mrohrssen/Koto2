@@ -31,6 +31,7 @@ import {
   getWardInfo
 } from '../rooms.js';
 
+import { addXpToRobot, XP_PER_LEVEL } from '../robots.js';
 import { logger } from '../../logger.js';
 
 
@@ -380,11 +381,7 @@ export class ExplorationService {
 
   // ============ ROOM INTERACTIONS ============
 
-  /**
-   * Use a shrine to upgrade a chip
-   * @param {string} chipId - ID of the chip to upgrade
-   */
-  useShrine(chipId) {
+  useShrine(robotId) {
     const room = this.getCurrentRoom();
     if (!room || room.type !== 'shrine') {
       throw new Error('No shrine here');
@@ -394,30 +391,45 @@ export class ExplorationService {
       throw new Error('Shrine already used');
     }
 
-    const player = this.gm.run.player;
-    const equippedChips = player.equipment?.weapon?.equippedChips || [];
+    // Find robot in party (active or reserves)
+    const allRobots = [
+      ...this.gm.run.robotParty.active,
+      ...this.gm.run.robotParty.reserves
+    ].filter(Boolean);
 
-    if (!equippedChips.includes(chipId)) {
-      throw new Error('Chip not equipped');
+    const robot = allRobots.find(r => r.id === robotId);
+    if (!robot) {
+      throw new Error('Robot not in party');
     }
 
-    const currentLevel = getChipLevel(player, chipId);
+    const prevLevel = robot.level;
+    const prevMaxHp = robot.maxHp;
+    const prevAttack = robot.attack;
 
-    if (currentLevel >= 7) {
-      throw new Error('Chip already at max level');
-    }
+    // Grant one full level-up worth of XP
+    addXpToRobot(robot, XP_PER_LEVEL);
 
-    const newLevel = currentLevel + 1;
-    setChipLevel(player, chipId, newLevel);
     room.shrine.used = true;
     room.interacted = true;
 
-    logger.info('[Shrine] Chip upgraded:', { chip: chipId, newLevel: newLevel });
+    logger.info('[Shrine] Robot leveled up:', {
+      robot: robot.nameEn, robotId, newLevel: robot.level
+    });
 
-    this.gm.narrate(`狐の祠の力でチップが強化された！ Lv. ${newLevel}`);
+    this.gm.narrate(`修練場の力でロボットが強化された！ Lv. ${robot.level}`);
     this.gm.emitState();
 
-    return { type: 'shrine_upgrade', chipId, newLevel };
+    return {
+      type: 'shrine_upgrade',
+      robotId,
+      robotName: robot.nameEn,
+      oldLevel: prevLevel,
+      newLevel: robot.level,
+      maxHp: robot.maxHp,
+      attack: robot.attack,
+      hpGain: robot.maxHp - prevMaxHp,
+      attackGain: robot.attack - prevAttack
+    };
   }
 
   useQuizReward(rewardType) {

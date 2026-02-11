@@ -431,15 +431,15 @@ export default function createRunRoutes({
     }
   });
 
-  // Upgrade chip at shrine
+  // Level up robot at shrine
   router.post('/shrine-upgrade', (req, res) => {
     try {
       const gameManager = req.gameManager;
-      const { chipId } = req.body;
-      if (!chipId) {
-        return res.status(400).json({ error: 'chipId required' });
+      const { robotId } = req.body;
+      if (!robotId) {
+        return res.status(400).json({ error: 'robotId required' });
       }
-      const result = gameManager.useShrine(chipId);
+      const result = gameManager.useShrine(robotId);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
