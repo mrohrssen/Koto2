@@ -13,11 +13,15 @@ Replace static robot combat sprites with HD animated sprite sheets. Each of the 
 
 ## Animation States (MVP)
 
+All animations run at a uniform **24 fps** for consistent visual quality and simpler rendering.
+
 | State | Frames | Duration | Loop | Trigger |
 |-------|--------|----------|------|---------|
-| Idle | 6-8 | ~1000ms | Yes | Default standing state |
-| Attack | 8-10 | ~600ms | No | Player selects Attack |
-| Hit | 4-6 | ~300ms | No | Robot receives damage |
+| Idle | 24 | 1000ms | Yes | Default standing state |
+| Attack | 14 | 583ms | No | Player selects Attack |
+| Hit | 8 | 333ms | No | Robot receives damage |
+
+46 frames per robot, 1,150 total across all 25 robots. Wan 2.2 outputs up to 81 frames per clip, so these counts use a fraction of available output — pick the best frames and discard the rest.
 
 Each robot's animations reflect its element and personality. A fire robot's idle has flickering flames; its attack shoots a fireball. A water robot ripples at rest and blasts a jet when attacking.
 
@@ -34,7 +38,7 @@ Each robot's animations reflect its element and personality. A fire robot's idle
 For each robot, run 3 Wan 2.2 Image-to-Video generations in ComfyUI:
 
 - **Input**: Static robot sprite (identity reference) + text prompt describing the motion
-- **Output**: Short video clip (16-30 frames)
+- **Output**: Short video clip (30-81 frames, curate down to target count)
 
 Example prompts for `fire-rare`:
 - Idle: *"chibi fire robot standing, subtle flickering flames, gentle breathing motion, idle animation loop"*
@@ -60,9 +64,9 @@ For idle animations, use the [Wan 2.2 looping animation workflow](https://www.ne
 
 ```
 public/assets/sprites/robots/{robotId}/
-  idle.webp           # 8-frame horizontal strip (1536x192)
-  attack.webp         # 10-frame horizontal strip (1920x192)
-  hit.webp            # 6-frame horizontal strip (1152x192)
+  idle.webp           # 24-frame horizontal strip (4608x192)
+  attack.webp         # 14-frame horizontal strip (2688x192)
+  hit.webp            # 8-frame horizontal strip (1536x192)
 
 data/robots-manifest.json   # Frame counts and timing for all robots
 ```
@@ -74,9 +78,9 @@ data/robots-manifest.json   # Frame counts and timing for all robots
   "fire-rare": {
     "frameSize": 192,
     "animations": {
-      "idle":   { "frames": 8,  "duration": 1000, "loop": true },
-      "attack": { "frames": 10, "duration": 600,  "loop": false },
-      "hit":    { "frames": 6,  "duration": 300,  "loop": false }
+      "idle":   { "frames": 24, "duration": 1000, "loop": true },
+      "attack": { "frames": 14, "duration": 583,  "loop": false },
+      "hit":    { "frames": 8,  "duration": 333,  "loop": false }
     }
   }
 }
@@ -144,7 +148,7 @@ setTimeout(() => enemyAnimator.play('hit'), 300);
 
 ### Preloading
 
-When a combat encounter starts, preload sprite sheets for all robots in the fight (player active + 1-3 enemies). At ~50-150KB per sheet, a typical encounter loads 600KB-1.8MB during the intro screen.
+When a combat encounter starts, preload sprite sheets for all robots in the fight (player active + 1-3 enemies). At ~100-300KB per sheet, a typical encounter loads 1-3MB during the intro screen.
 
 ## Future Extensions
 
@@ -165,5 +169,7 @@ These are out of scope for MVP but designed to slot in easily:
 | Format | WebP horizontal sprite sheets |
 | MVP states | Idle (loop), Attack (one-shot), Hit (one-shot) |
 | Rendering | CSS `steps()` animation + thin JS controller |
+| FPS | 24 (uniform across all states) |
 | Total assets | 75 sprite sheets (25 robots x 3 states) |
-| Est. total size | ~2-4MB for all robots |
+| Total frames | 1,150 (46 per robot) |
+| Est. total size | ~5-8MB for all robots |

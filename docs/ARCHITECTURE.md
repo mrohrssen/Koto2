@@ -5,8 +5,9 @@ This document describes the technical architecture of the JRPG codebase. It cove
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Game Flow and Phases](#game-flow-and-phases)
-3. [Chip System (Core Mechanic)](#chip-system-core-mechanic)
+2. [Frequency-Ordered Vocabulary Naming](#frequency-ordered-vocabulary-naming)
+3. [Game Flow and Phases](#game-flow-and-phases)
+4. [Chip System (Core Mechanic)](#chip-system-core-mechanic)
 4. [Combat System](#combat-system)
 5. [Ward System (Dungeons)](#ward-system-dungeons)
 6. [Vocabulary Integration (JPDB)](#vocabulary-integration-jpdb)
@@ -32,6 +33,57 @@ NEO TOKYO: System Liberation is a Japanese vocabulary learning RPG set in cyberp
 
 **Design Philosophy:**
 The game intentionally simplifies traditional RPG mechanics to keep focus on Japanese language learning. Combat uses only attack and HP stats, removing the cognitive overhead of complex builds.
+
+---
+
+## Frequency-Ordered Vocabulary Naming
+
+Everything the player encounters is named using real Japanese words from the **top 10,000 most frequent words**, sourced from JPDB deck 81. Words appear in rough frequency order: early floors use the most common words, later floors use less common ones. A player who quits at floor 3 still learned the most useful words first.
+
+### Naming by Entity Type
+
+| Entity | Word Class | Example |
+|--------|-----------|---------|
+| **Robots (Chips)** | Object nouns + adjective | 赤いハンマーロボ (Red Hammer Bot) |
+| **Enemies** | People nouns + adjective | 怒った先生 (Angry Teacher) |
+| **Locations** | Place nouns | 学校 (School), 病院 (Hospital) |
+| **Attacks/Skills** | Verbs | 教える (To Teach), 焼く (To Grill) |
+
+### How It Teaches
+
+A single encounter can expose the player to **three word classes at once**:
+
+```
+Fight: 怒った先生 (Angry Teacher)
+  - 怒った (angry)      → adjective
+  - 先生 (teacher)      → person noun
+  - 教える (to teach)   → verb (attack name)
+```
+
+**Robots/Chips** are named after everyday objects — things you'd point at in a room (hammer, scissors, battery, broom). Adjective modifiers create variety and teach a second word per entity.
+
+**Enemies** are named after real people and occupations — people you'd actually meet in Japan (student, teacher, doctor, shopkeeper, neighbor). Their attacks use **verbs that fit their identity**: the teacher 教える (teaches), the cook 焼く (grills), the doctor 治す (cures).
+
+**Locations** are named after real places from the frequency list, reinforcing place vocabulary alongside the ward system.
+
+### Adjective Types
+
+Japanese has two adjective types, both used as modifiers:
+
+| Type | Grammar | Example |
+|------|---------|---------|
+| い-adjective | Attaches directly | 赤い (red) → 赤いロボ |
+| な-adjective | Uses な connector | 静かな (quiet) → 静かな先生 |
+
+Players learn both adjective grammar patterns naturally by reading entity names.
+
+### Writing System Exposure
+
+Object nouns for robots tend to include **katakana loanwords** (ハンマー, ナイフ, テーブル), while people and occupation nouns tend to use **kanji** (学生, 医者, 先生). This naturally exposes players to both writing systems.
+
+### Data Source
+
+The word list lives in `data/jpdb-wordlist.json`, sourced from JPDB deck 81 (~9,500 words). At session start, the server parses this list against each user's JPDB account to determine word states (due, learning, known, new) and caches the result per-user.
 
 ---
 

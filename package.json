@@ -7,7 +7,6 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "mine-top10k": "node scripts/mine-top10k.js",
     "test": "npm run test:unit && npm run test:integration && npm run test:e2e",
     "test:unit": "node --experimental-test-module-mocks --test tests/unit/*.test.js",
     "test:integration": "node --test tests/integration/*.test.js",

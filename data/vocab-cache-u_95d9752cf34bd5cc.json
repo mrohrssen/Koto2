@@ -4,7 +4,6 @@
     "ジ",
     "ョ",
     "ン",
-    "の",
     "入",
     "り",
     "口",
@@ -23,10 +22,28 @@
     "鳴",
     "冒",
     "険",
-    "が",
     "始",
+    "敵",
+    "倒",
+    "れ",
+    "「",
     "ま",
+    "さ",
+    "か",
+    ".",
+    "」",
+    "最",
+    "後",
+    "の",
+    "言",
+    "葉",
+    "が",
+    "消",
+    "え",
     "る",
+    "勝",
+    "利",
+    "だ",
     "。"
   ],
   "wordStateCache": {
@@ -68,7 +85,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770543313,
+      "dueAt": 1777484023,
       "rank": 4
     },
     "それ": {
@@ -97,7 +114,7 @@
       "sid": 3737793312,
       "reading": "おもう",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770745326,
       "rank": 7
@@ -129,7 +146,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770628626,
+      "dueAt": 1779142101,
       "rank": 10
     },
     "ない": {
@@ -383,7 +400,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770693801,
+      "dueAt": 1771991628,
       "rank": 35
     },
     "自分": {
@@ -512,9 +529,9 @@
       "sid": 2644243025,
       "reading": "かお",
       "states": [
-        "learning"
+        "known"
       ],
-      "dueAt": 1770535618,
+      "dueAt": 1771381849,
       "rank": 48
     },
     "また": {
@@ -532,9 +549,10 @@
       "sid": 345772560,
       "reading": "かんがえる",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770736236,
+      "dueAt": null,
       "rank": 50
     },
     "どう": {
@@ -624,7 +642,7 @@
       "sid": 3896857205,
       "reading": "そこ",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770734459,
       "rank": 59
@@ -870,7 +888,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770653813,
+      "dueAt": 1787552825,
       "rank": 85
     },
     "違う": {
@@ -1050,7 +1068,7 @@
       "reading": "おく",
       "states": [
         "redundant",
-        "known"
+        "locked"
       ],
       "dueAt": null,
       "rank": 104
@@ -1080,9 +1098,9 @@
       "sid": 3991669848,
       "reading": "つくる",
       "states": [
-        "learning"
+        "known"
       ],
-      "dueAt": 1770569646,
+      "dueAt": 1773024314,
       "rank": 107
     },
     "まま": {
@@ -1434,9 +1452,10 @@
       "sid": 3956185817,
       "reading": "ひつよう",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770713075,
+      "dueAt": null,
       "rank": 142
     },
     "続ける": {
@@ -1515,7 +1534,7 @@
       "sid": 3683820677,
       "reading": "みせる",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770682372,
       "rank": 150
@@ -1665,7 +1684,7 @@
       "sid": 3208553127,
       "reading": "ことになる",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770750492,
       "rank": 165
@@ -1687,7 +1706,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770350843,
+      "dueAt": 1791913804,
       "rank": 167
     },
     "受ける": {
@@ -1919,7 +1938,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770708511,
+      "dueAt": 1772242875,
       "rank": 190
     },
     "問題": {
@@ -1999,7 +2018,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770359760,
+      "dueAt": 1777241504,
       "rank": 6490
     },
     "多い": {
@@ -2131,7 +2150,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770292751,
+      "dueAt": 1785923609,
       "rank": 211
     },
     "かも": {
@@ -2149,7 +2168,7 @@
       "sid": 2002715133,
       "reading": "いれる",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770707630,
       "rank": 213
@@ -2161,7 +2180,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770520572,
+      "dueAt": 1775987212,
       "rank": 214
     },
     "答える": {
@@ -2209,9 +2228,10 @@
       "sid": 4185559434,
       "reading": "おく",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770689306,
+      "dueAt": null,
       "rank": 219
     },
     "覚える": {
@@ -2310,7 +2330,7 @@
       "sid": 4283757120,
       "reading": "とても",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770797110,
       "rank": 229
@@ -2370,9 +2390,10 @@
       "sid": 2331949400,
       "reading": "おどろく",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770749320,
+      "dueAt": null,
       "rank": 236
     },
     "もし": {
@@ -2453,7 +2474,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770378896,
+      "dueAt": 1771857055,
       "rank": 244
     },
     "困る": {
@@ -2864,7 +2885,7 @@
       "reading": "ほしい",
       "states": [
         "redundant",
-        "known"
+        "locked"
       ],
       "dueAt": null,
       "rank": 287
@@ -3290,7 +3311,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770613479,
+      "dueAt": 1774395762,
       "rank": 329
     },
     "安心": {
@@ -3358,7 +3379,7 @@
       "sid": 1396133709,
       "reading": "ようい",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770531438,
       "rank": 336
@@ -3380,7 +3401,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770604119,
+      "dueAt": 1803296874,
       "rank": 338
     },
     "始まる": {
@@ -3428,7 +3449,7 @@
       "sid": 3786414207,
       "reading": "げんき",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770737677,
       "rank": 343
@@ -3480,7 +3501,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770321526,
+      "dueAt": 1778852126,
       "rank": 348
     },
     "方法": {
@@ -3488,9 +3509,10 @@
       "sid": 1634225094,
       "reading": "ほうほう",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770626756,
+      "dueAt": null,
       "rank": 349
     },
     "合う": {
@@ -3570,7 +3592,7 @@
       "sid": 3360099503,
       "reading": "としては",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770494790,
       "rank": 358
@@ -3905,7 +3927,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770400224,
+      "dueAt": 1776090512,
       "rank": 392
     },
     "大丈夫": {
@@ -4506,9 +4528,10 @@
       "sid": 564929540,
       "reading": "ほしい",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770493132,
+      "dueAt": null,
       "rank": 454
     },
     "何度": {
@@ -5020,9 +5043,9 @@
       "sid": 146362824,
       "reading": "めのまえ",
       "states": [
-        "known"
+        "failed"
       ],
-      "dueAt": 1770640117,
+      "dueAt": 1770708799,
       "rank": 505
     },
     "開ける": {
@@ -5051,7 +5074,7 @@
       "reading": "まったく",
       "states": [
         "redundant",
-        "learning"
+        "known"
       ],
       "dueAt": null,
       "rank": 508
@@ -5113,7 +5136,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770695766,
+      "dueAt": 1779615046,
       "rank": 514
     },
     "とにかく": {
@@ -5203,7 +5226,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770613787,
+      "dueAt": 1772042069,
       "rank": 523
     },
     "髪": {
@@ -5455,9 +5478,10 @@
       "sid": 3999015736,
       "reading": "かつ",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770551252,
+      "dueAt": null,
       "rank": 549
     },
     "上がる": {
@@ -5750,7 +5774,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770443289,
+      "dueAt": 1774171412,
       "rank": 578
     },
     "すむ": {
@@ -6326,9 +6350,9 @@
       "sid": 3451253049,
       "reading": "じけん",
       "states": [
-        "learning"
+        "known"
       ],
-      "dueAt": 1770386275,
+      "dueAt": 1772562519,
       "rank": 636
     },
     "起こす": {
@@ -6399,7 +6423,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770518464,
+      "dueAt": 1772104217,
       "rank": 643
     },
     "返事": {
@@ -6417,7 +6441,7 @@
       "sid": 2650116830,
       "reading": "ぎゃく",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770628244,
       "rank": 645
@@ -6437,9 +6461,9 @@
       "sid": 1830631716,
       "reading": "すてる",
       "states": [
-        "learning"
+        "known"
       ],
-      "dueAt": 1770321424,
+      "dueAt": 1771449639,
       "rank": 647
     },
     "甘い": {
@@ -6459,7 +6483,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770377502,
+      "dueAt": 1776011598,
       "rank": 649
     },
     "結婚": {
@@ -6701,7 +6725,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770404928,
+      "dueAt": 1777413409,
       "rank": 673
     },
     "一人で": {
@@ -7289,7 +7313,7 @@
       "reading": "いろいろ",
       "states": [
         "redundant",
-        "known"
+        "due"
       ],
       "dueAt": null,
       "rank": 733
@@ -7301,7 +7325,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770319734,
+      "dueAt": 1780069103,
       "rank": 734
     },
     "救う": {
@@ -7442,7 +7466,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770509902,
+      "dueAt": 1771776144,
       "rank": 748
     },
     "と言われる": {
@@ -7460,7 +7484,7 @@
       "sid": 277275651,
       "reading": "いらっしゃる",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770725315,
       "rank": 750
@@ -7591,9 +7615,9 @@
       "sid": 324626786,
       "reading": "まったく",
       "states": [
-        "learning"
+        "known"
       ],
-      "dueAt": 1770495856,
+      "dueAt": 1773035695,
       "rank": 763
     },
     "あんまり": {
@@ -7765,7 +7789,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770521539,
+      "dueAt": 1772145224,
       "rank": 780
     },
     "嫌い": {
@@ -8138,9 +8162,10 @@
       "sid": 757914897,
       "reading": "よわい",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770462885,
+      "dueAt": null,
       "rank": 819
     },
     "回る": {
@@ -8232,7 +8257,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770419536,
+      "dueAt": 1774771184,
       "rank": 828
     },
     "親": {
@@ -8301,9 +8326,10 @@
       "sid": 3489917636,
       "reading": "ちょくせつ",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770787248,
+      "dueAt": null,
       "rank": 835
     },
     "振る": {
@@ -8311,9 +8337,10 @@
       "sid": 3351300862,
       "reading": "ふる",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770563894,
+      "dueAt": null,
       "rank": 836
     },
     "この人": {
@@ -8383,7 +8410,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770577361,
+      "dueAt": 1772093345,
       "rank": 843
     },
     "抱える": {
@@ -8453,7 +8480,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770415654,
+      "dueAt": 1776473196,
       "rank": 850
     },
     "母親": {
@@ -8483,7 +8510,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770624350,
+      "dueAt": 1776864453,
       "rank": 4430
     },
     "いたす": {
@@ -8715,9 +8742,10 @@
       "sid": 1588401807,
       "reading": "せいこう",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770636008,
+      "dueAt": null,
       "rank": 878
     },
     "無視": {
@@ -8735,9 +8763,10 @@
       "sid": 754647305,
       "reading": "くるしい",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770551301,
+      "dueAt": null,
       "rank": 880
     },
     "最高": {
@@ -8888,7 +8917,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770410373,
+      "dueAt": 1780501764,
       "rank": 896
     },
     "面倒": {
@@ -8947,7 +8976,7 @@
       "sid": 2202198623,
       "reading": "しゃしん",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770625029,
       "rank": 902
@@ -9013,7 +9042,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770680746,
+      "dueAt": 1772372722,
       "rank": 908
     },
     "危ない": {
@@ -9194,7 +9223,7 @@
       "sid": 327559794,
       "reading": "いずれ",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770670787,
       "rank": 929
@@ -9287,7 +9316,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770325969,
+      "dueAt": 1774170396,
       "rank": 938
     },
     "部": {
@@ -9637,7 +9666,7 @@
       "sid": 3312713254,
       "reading": "ゆうじん",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770773972,
       "rank": 973
@@ -9647,9 +9676,10 @@
       "sid": 1159680767,
       "reading": "うたがう",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770767464,
+      "dueAt": null,
       "rank": 974
     },
     "目指す": {
@@ -9657,9 +9687,10 @@
       "sid": 2606511213,
       "reading": "めざす",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770661161,
+      "dueAt": null,
       "rank": 975
     },
     "かつて": {
@@ -9800,7 +9831,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770629952,
+      "dueAt": 1780288306,
       "rank": 990
     },
     "効果": {
@@ -9819,7 +9850,7 @@
       "sid": 3193679330,
       "reading": "ついに",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770339632,
       "rank": 992
@@ -10022,7 +10053,7 @@
       "sid": 1953582650,
       "reading": "ひま",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770762309,
       "rank": 1012
@@ -10134,9 +10165,10 @@
       "sid": 3478799505,
       "reading": "しょうかい",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770550635,
+      "dueAt": null,
       "rank": 1023
     },
     "予想": {
@@ -10446,7 +10478,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770645174,
+      "dueAt": 1771986647,
       "rank": 1054
     },
     "本来": {
@@ -10777,7 +10809,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770609369,
+      "dueAt": 1780491095,
       "rank": 1088
     },
     "量": {
@@ -10857,7 +10889,7 @@
       "sid": 2113571121,
       "reading": "というより",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770620101,
       "rank": 1096
@@ -10919,9 +10951,9 @@
       "sid": 3198459191,
       "reading": "といい",
       "states": [
-        "learning"
+        "known"
       ],
-      "dueAt": 1770319606,
+      "dueAt": 1772939639,
       "rank": 1102
     },
     "間違い": {
@@ -10959,7 +10991,7 @@
       "sid": 3040410833,
       "reading": "ひび",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770437739,
       "rank": 1106
@@ -11299,9 +11331,10 @@
       "sid": 2610597629,
       "reading": "いらい",
       "states": [
+        "locked",
         "failed"
       ],
-      "dueAt": 1769929691,
+      "dueAt": null,
       "rank": 1143
     },
     "完成": {
@@ -11373,7 +11406,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1772836862,
+      "dueAt": 1772842154,
       "rank": 1150
     },
     "新": {
@@ -11462,9 +11495,10 @@
       "sid": 4170668427,
       "reading": "ぜんたい",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770404922,
+      "dueAt": null,
       "rank": 1159
     },
     "といえば": {
@@ -11996,7 +12030,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1774801838,
+      "dueAt": 1774800228,
       "rank": 1214
     },
     "ありがとうございます": {
@@ -12084,9 +12118,10 @@
       "sid": 1021474125,
       "reading": "こうげき",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770746769,
+      "dueAt": null,
       "rank": 1224
     },
     "なんだか": {
@@ -12207,9 +12242,10 @@
       "sid": 3681236780,
       "reading": "からだ",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770621206,
+      "dueAt": null,
       "rank": 1529
     },
     "眺める": {
@@ -12320,7 +12356,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770663784,
+      "dueAt": 1787835314,
       "rank": 1248
     },
     "倒す": {
@@ -12389,9 +12425,10 @@
       "sid": 2566460006,
       "reading": "ふりかえる",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770386700,
+      "dueAt": null,
       "rank": 1255
     },
     "謝る": {
@@ -12411,7 +12448,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770454150,
+      "dueAt": 1772362622,
       "rank": 1257
     },
     "仕方ない": {
@@ -12827,7 +12864,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770426888,
+      "dueAt": 1777631295,
       "rank": 1300
     },
     "手紙": {
@@ -12835,9 +12872,10 @@
       "sid": 2434806129,
       "reading": "てがみ",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770495633,
+      "dueAt": null,
       "rank": 1301
     },
     "じっと": {
@@ -12845,7 +12883,7 @@
       "sid": 936814896,
       "reading": "じっと",
       "states": [
-        "learning"
+        "due"
       ],
       "dueAt": 1770796403,
       "rank": 1302
@@ -13020,7 +13058,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770548837,
+      "dueAt": 1776330288,
       "rank": 1319
     },
     "駄目": {
@@ -13061,7 +13099,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770366586,
+      "dueAt": 1772205699,
       "rank": 1323
     },
     "多分": {
@@ -13462,9 +13500,10 @@
       "sid": 1330636084,
       "reading": "するどい",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770640972,
+      "dueAt": null,
       "rank": 1363
     },
     "まずい": {
@@ -13503,9 +13542,9 @@
       "sid": 838293871,
       "reading": "あたり",
       "states": [
-        "new"
+        "failed"
       ],
-      "dueAt": null,
+      "dueAt": 1770342941,
       "rank": 1367
     },
     "姉": {
@@ -13545,9 +13584,9 @@
       "sid": 526712200,
       "reading": "あるいは",
       "states": [
-        "new"
+        "failed"
       ],
-      "dueAt": null,
+      "dueAt": 1770342944,
       "rank": 1372
     },
     "がいい": {
@@ -13950,9 +13989,10 @@
       "sid": 2815705130,
       "reading": "にもつ",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770682559,
+      "dueAt": null,
       "rank": 1412
     },
     "薬": {
@@ -14254,9 +14294,10 @@
       "sid": 2259480895,
       "reading": "とじる",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770427251,
+      "dueAt": null,
       "rank": 1442
     },
     "勘違い": {
@@ -14317,7 +14358,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770539489,
+      "dueAt": 1811895626,
       "rank": 1448
     },
     "同士": {
@@ -14539,9 +14580,10 @@
       "sid": 2545365601,
       "reading": "かいふく",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770742365,
+      "dueAt": null,
       "rank": 1470
     },
     "って言う": {
@@ -14611,7 +14653,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1778200963,
+      "dueAt": 1778192692,
       "rank": 1479
     },
     "ってのは": {
@@ -14679,7 +14721,7 @@
       "sid": 1442558716,
       "reading": "どうでもいい",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770782002,
       "rank": 1486
@@ -15074,9 +15116,10 @@
       "sid": 1439572086,
       "reading": "たいりょう",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770716803,
+      "dueAt": null,
       "rank": 1526
     },
     "仲良い": {
@@ -15315,7 +15358,7 @@
       "sid": 1720339565,
       "reading": "しま",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770455554,
       "rank": 5234
@@ -15358,7 +15401,7 @@
       "reading": "ふる",
       "states": [
         "redundant",
-        "known"
+        "locked"
       ],
       "dueAt": null,
       "rank": null
@@ -15390,7 +15433,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770613657,
+      "dueAt": 1772204196,
       "rank": 1558
     },
     "会社": {
@@ -15521,7 +15564,7 @@
       "sid": 3856630602,
       "reading": "あっさり",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770699859,
       "rank": 1572
@@ -15863,7 +15906,7 @@
       "sid": 3501448304,
       "reading": "やってみる",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770629519,
       "rank": 1605
@@ -15885,7 +15928,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1775982183,
+      "dueAt": 1775981662,
       "rank": 1607
     },
     "制服": {
@@ -15895,7 +15938,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770312857,
+      "dueAt": 1775609390,
       "rank": 1608
     },
     "二十": {
@@ -15964,7 +16007,7 @@
       "sid": 1002943189,
       "reading": "あっち",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770738139,
       "rank": 1615
@@ -16006,6 +16049,7 @@
       "sid": 169731961,
       "reading": "さいあく",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -16026,6 +16070,7 @@
       "sid": 3952007683,
       "reading": "よびだす",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -16562,7 +16607,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770615368,
+      "dueAt": 1783140856,
       "rank": 1673
     },
     "全": {
@@ -16590,7 +16635,7 @@
       "sid": 2496867179,
       "reading": "さっきから",
       "states": [
-        "learning"
+        "due"
       ],
       "dueAt": 1770512395,
       "rank": 1676
@@ -16790,7 +16835,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770601528,
+      "dueAt": 1772138551,
       "rank": 1697
     },
     "少々": {
@@ -16914,7 +16959,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770660029,
+      "dueAt": 1772295596,
       "rank": 1709
     },
     "調査": {
@@ -16944,6 +16989,7 @@
       "sid": 3890659974,
       "reading": "とびこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -16995,6 +17041,7 @@
       "sid": 290212204,
       "reading": "にげだす",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -17117,9 +17164,10 @@
       "sid": 1519041789,
       "reading": "さっそく",
       "states": [
-        "learning"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770698121,
+      "dueAt": null,
       "rank": 1729
     },
     "にしては": {
@@ -17244,7 +17292,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770649618,
+      "dueAt": 1772022897,
       "rank": 1741
     },
     "意思": {
@@ -17394,9 +17442,10 @@
       "sid": 3920063758,
       "reading": "もえる",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770745474,
+      "dueAt": null,
       "rank": 1756
     },
     "名乗る": {
@@ -17476,7 +17525,7 @@
       "sid": 3704222458,
       "reading": "うたう",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770662037,
       "rank": 1764
@@ -17530,7 +17579,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770661181,
+      "dueAt": 1776514167,
       "rank": 1769
     },
     "味わう": {
@@ -17802,6 +17851,7 @@
       "sid": 1223539361,
       "reading": "かんしん",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -17833,9 +17883,10 @@
       "sid": 2146069329,
       "reading": "ちか",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770429753,
+      "dueAt": null,
       "rank": 1798
     },
     "様々": {
@@ -17904,6 +17955,7 @@
       "sid": 447769773,
       "reading": "せんじつ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -17967,10 +18019,9 @@
       "sid": 561707312,
       "reading": "とち",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1775431730,
       "rank": 1811
     },
     "に置いて": {
@@ -18156,10 +18207,9 @@
       "sid": 3666315744,
       "reading": "じこ",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1773756104,
       "rank": 1829
     },
     "整う": {
@@ -18381,7 +18431,7 @@
       "reading": "まっすぐ",
       "states": [
         "redundant",
-        "known"
+        "locked"
       ],
       "dueAt": null,
       "rank": 1851
@@ -18421,9 +18471,9 @@
       "sid": 1711931450,
       "reading": "ふゆ",
       "states": [
-        "learning"
+        "known"
       ],
-      "dueAt": 1770644793,
+      "dueAt": 1772073763,
       "rank": 1855
     },
     "体力": {
@@ -18463,7 +18513,7 @@
       "sid": 1801213464,
       "reading": "まくる",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770790230,
       "rank": 1860
@@ -18628,10 +18678,9 @@
       "sid": 2289978934,
       "reading": "いわかん",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1779187766,
       "rank": 1877
     },
     "よろしくお願いします": {
@@ -18797,9 +18846,10 @@
       "sid": 367272206,
       "reading": "よせる",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770508526,
+      "dueAt": null,
       "rank": 1894
     },
     "下手": {
@@ -18828,6 +18878,7 @@
       "sid": 1715987825,
       "reading": "ど",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -19047,6 +19098,7 @@
       "sid": 3039411998,
       "reading": "このさき",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -19131,7 +19183,7 @@
       "sid": 980901632,
       "reading": "いかが",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770729921,
       "rank": 1927
@@ -19143,7 +19195,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770344525,
+      "dueAt": 1785245773,
       "rank": 1928
     },
     "見かける": {
@@ -19346,10 +19398,9 @@
       "sid": 2161402165,
       "reading": "およぐ",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1784770899,
       "rank": 1950
     },
     "野郎": {
@@ -19410,10 +19461,9 @@
       "sid": 3578258446,
       "reading": "やくめ",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1771737995,
       "rank": 1956
     },
     "雲": {
@@ -19747,9 +19797,10 @@
       "sid": 3084733105,
       "reading": "せいかい",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770522650,
+      "dueAt": null,
       "rank": 1989
     },
     "満たす": {
@@ -19768,10 +19819,9 @@
       "sid": 1108041621,
       "reading": "おおぜい",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1772888820,
       "rank": 1991
     },
     "どっか": {
@@ -19789,10 +19839,9 @@
       "sid": 1890876179,
       "reading": "えいが",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1772552979,
       "rank": 1993
     },
     "そしたら": {
@@ -19802,7 +19851,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770402513,
+      "dueAt": 1777346549,
       "rank": 1994
     },
     "高校": {
@@ -20021,7 +20070,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770549271,
+      "dueAt": 1773471380,
       "rank": 2015
     },
     "南": {
@@ -20214,10 +20263,9 @@
       "sid": 1954348685,
       "reading": "まい",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1775968174,
       "rank": 2034
     },
     "糸": {
@@ -20505,7 +20553,7 @@
       "sid": 1055333930,
       "reading": "かえる",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770760403,
       "rank": 2062
@@ -20682,7 +20730,7 @@
       "sid": 3657177295,
       "reading": "かく",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770682812,
       "rank": 2079
@@ -20713,9 +20761,10 @@
       "sid": 1960840625,
       "reading": "ほう",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770619982,
+      "dueAt": null,
       "rank": 2082
     },
     "浮く": {
@@ -20874,7 +20923,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770685413,
+      "dueAt": 1772277440,
       "rank": 2097
     },
     "内部": {
@@ -21041,6 +21090,7 @@
       "sid": 4211017498,
       "reading": "にがす",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -21270,10 +21320,9 @@
       "sid": 2730539599,
       "reading": "ともに",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1777631538,
       "rank": 2137
     },
     "放っておく": {
@@ -21783,6 +21832,7 @@
       "sid": 2353475794,
       "reading": "のがれる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -21825,7 +21875,7 @@
       "reading": "しりょう",
       "states": [
         "locked",
-        "due"
+        "failed"
       ],
       "dueAt": null,
       "rank": 2190
@@ -21889,7 +21939,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770362798,
+      "dueAt": 1783597885,
       "rank": 2196
     },
     "おいで": {
@@ -21983,7 +22033,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770303995,
+      "dueAt": 1786197825,
       "rank": 2206
     },
     "発": {
@@ -22319,9 +22369,10 @@
       "sid": 3753585549,
       "reading": "やめる",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770623884,
+      "dueAt": null,
       "rank": 2239
     },
     "計算": {
@@ -22808,10 +22859,9 @@
       "sid": 1737092720,
       "reading": "りょう",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1779006336,
       "rank": 2286
     },
     "誰でも": {
@@ -22942,6 +22992,7 @@
       "sid": 2826027464,
       "reading": "いか",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -22972,10 +23023,9 @@
       "sid": 3101991638,
       "reading": "れんぞく",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1771700161,
       "rank": 2303
     },
     "放す": {
@@ -23286,9 +23336,10 @@
       "sid": 4252604492,
       "reading": "やさい",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770798742,
+      "dueAt": null,
       "rank": 2333
     },
     "尽くす": {
@@ -23411,10 +23462,9 @@
       "sid": 1206344076,
       "reading": "とまる",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1793377203,
       "rank": 2346
     },
     "汚れる": {
@@ -23444,7 +23494,7 @@
       "reading": "すぎ",
       "states": [
         "locked",
-        "due"
+        "failed"
       ],
       "dueAt": null,
       "rank": 2349
@@ -23505,6 +23555,7 @@
       "sid": 649264740,
       "reading": "よびかける",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -23579,7 +23630,7 @@
       "reading": "おとなしい",
       "states": [
         "redundant",
-        "learning"
+        "known"
       ],
       "dueAt": null,
       "rank": 2362
@@ -23610,9 +23661,9 @@
       "sid": 1924467192,
       "reading": "づらい",
       "states": [
-        "learning"
+        "known"
       ],
-      "dueAt": 1770413641,
+      "dueAt": 1772538995,
       "rank": 2365
     },
     "だもの": {
@@ -23686,7 +23737,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770292653,
+      "dueAt": 1804458318,
       "rank": 2373
     },
     "嫉妬": {
@@ -23746,6 +23797,7 @@
       "sid": 2803785964,
       "reading": "そのさき",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -24167,10 +24219,9 @@
       "sid": 494794191,
       "reading": "さんぽ",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1773788342,
       "rank": 2421
     },
     "前後": {
@@ -24559,7 +24610,7 @@
       "sid": 2684081906,
       "reading": "りょこう",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770724088,
       "rank": 2458
@@ -24951,10 +25002,9 @@
       "sid": 2314820826,
       "reading": "きたない",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1776059960,
       "rank": 2496
     },
     "いっそ": {
@@ -25071,7 +25121,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770362212,
+      "dueAt": 1772171883,
       "rank": 2507
     },
     "順調": {
@@ -25228,6 +25278,7 @@
       "sid": 3237560433,
       "reading": "かとおもうと",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -25322,6 +25373,7 @@
       "sid": 2870817531,
       "reading": "かんじがする",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -25467,6 +25519,7 @@
       "sid": 733223632,
       "reading": "あたまから",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -25988,6 +26041,7 @@
       "sid": 2114421198,
       "reading": "はいりこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -26147,10 +26201,9 @@
       "sid": 2906660162,
       "reading": "かてい",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1775269977,
       "rank": 2612
     },
     "セット": {
@@ -26349,6 +26402,7 @@
       "sid": 1787355153,
       "reading": "はじまり",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -26880,7 +26934,7 @@
       "reading": "あん",
       "states": [
         "locked",
-        "due"
+        "failed"
       ],
       "dueAt": null,
       "rank": 2687
@@ -26996,6 +27050,7 @@
       "sid": 2996316200,
       "reading": "のがす",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -27006,6 +27061,7 @@
       "sid": 2558735967,
       "reading": "すがたをみせる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -27440,7 +27496,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770333613,
+      "dueAt": 1777863196,
       "rank": 2743
     },
     "利益": {
@@ -27574,6 +27630,7 @@
       "sid": 668054102,
       "reading": "わるくなる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -28191,6 +28248,7 @@
       "sid": 1241414132,
       "reading": "おもうように",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -28296,10 +28354,9 @@
       "sid": 1712409080,
       "reading": "けん",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1781424694,
       "rank": 2827
     },
     "呟く": {
@@ -28307,10 +28364,9 @@
       "sid": 1700518761,
       "reading": "つぶやく",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1772670766,
       "rank": 2828
     },
     "微笑む": {
@@ -28350,9 +28406,10 @@
       "sid": 2033524042,
       "reading": "きさま",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770307726,
+      "dueAt": null,
       "rank": 2832
     },
     "っす": {
@@ -28524,10 +28581,9 @@
       "sid": 3218045790,
       "reading": "だきしめる",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1783559666,
       "rank": 2849
     },
     "魔力": {
@@ -28763,6 +28819,7 @@
       "sid": 3298470273,
       "reading": "みひらく",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -29329,10 +29386,9 @@
       "sid": 1519500671,
       "reading": "いまさら",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1773622499,
       "rank": 2927
     },
     "ちょっ": {
@@ -29737,9 +29793,10 @@
       "sid": 3109812050,
       "reading": "きく",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770542104,
+      "dueAt": null,
       "rank": 2966
     },
     "ため息をつく": {
@@ -30006,9 +30063,9 @@
       "sid": 183010828,
       "reading": "おとなしい",
       "states": [
-        "learning"
+        "known"
       ],
-      "dueAt": 1770485414,
+      "dueAt": 1772931838,
       "rank": 2995
     },
     "竜": {
@@ -30256,7 +30313,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770400431,
+      "dueAt": 1779161349,
       "rank": 3022
     },
     "らしき": {
@@ -30410,6 +30467,7 @@
       "sid": 199048071,
       "reading": "ずじょう",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -30462,10 +30520,9 @@
       "sid": 3837560102,
       "reading": "したぎ",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1773607389,
       "rank": 3042
     },
     "大地": {
@@ -30579,9 +30636,10 @@
       "sid": 2070196974,
       "reading": "きたえる",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770281951,
+      "dueAt": null,
       "rank": 3054
     },
     "攻める": {
@@ -30622,10 +30680,9 @@
       "sid": 1248436554,
       "reading": "しけん",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1777045203,
       "rank": 3058
     },
     "食堂": {
@@ -30633,10 +30690,9 @@
       "sid": 1197399027,
       "reading": "しょくどう",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1772116769,
       "rank": 3059
     },
     "かもしれん": {
@@ -30654,9 +30710,10 @@
       "sid": 494483455,
       "reading": "ちょうしょく",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770551961,
+      "dueAt": null,
       "rank": 3061
     },
     "防御": {
@@ -30802,10 +30859,9 @@
       "sid": 2388460464,
       "reading": "ちきゅう",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1778998347,
       "rank": 3075
     },
     "生き残る": {
@@ -31236,6 +31292,7 @@
       "sid": 1919878524,
       "reading": "にかい",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -31372,6 +31429,7 @@
       "sid": 2878300076,
       "reading": "おびる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -31446,7 +31504,7 @@
       "reading": "たんじょうび",
       "states": [
         "locked",
-        "due"
+        "failed"
       ],
       "dueAt": null,
       "rank": 3137
@@ -31520,10 +31578,9 @@
       "sid": 68759827,
       "reading": "たいせい",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1779612559,
       "rank": 3145
     },
     "お風呂": {
@@ -31953,6 +32010,7 @@
       "sid": 1628707037,
       "reading": "たちさる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -32917,7 +32975,7 @@
       "reading": "せんしゅ",
       "states": [
         "locked",
-        "due"
+        "failed"
       ],
       "dueAt": null,
       "rank": 3281
@@ -33331,7 +33389,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770376931,
+      "dueAt": 1793547068,
       "rank": 3321
     },
     "何人か": {
@@ -33656,9 +33714,10 @@
       "sid": 2522380442,
       "reading": "まっすぐ",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770329102,
+      "dueAt": null,
       "rank": 3352
     },
     "見据える": {
@@ -33755,7 +33814,7 @@
       "states": [
         "failed"
       ],
-      "dueAt": 1767220500,
+      "dueAt": 1770286468,
       "rank": 3362
     },
     "狼": {
@@ -33848,6 +33907,7 @@
       "sid": 1926103829,
       "reading": "いちぞく",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -34430,7 +34490,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770565003,
+      "dueAt": 1774736756,
       "rank": 3431
     },
     "制御": {
@@ -34543,6 +34603,7 @@
       "sid": 3385604578,
       "reading": "しまい",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -34658,10 +34719,9 @@
       "sid": 2773342652,
       "reading": "まんが",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1779016982,
       "rank": 3454
     },
     "使い": {
@@ -35010,6 +35070,7 @@
       "sid": 2655034940,
       "reading": "かい",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -35935,9 +35996,10 @@
       "sid": 2975265611,
       "reading": "やわらか",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770437464,
+      "dueAt": null,
       "rank": 3578
     },
     "幸運": {
@@ -36530,6 +36592,7 @@
       "sid": 2705513248,
       "reading": "かんじとる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -36790,6 +36853,7 @@
       "sid": 1958112305,
       "reading": "あく",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -36950,6 +37014,7 @@
       "sid": 536225826,
       "reading": "つうしん",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -37351,6 +37416,7 @@
       "sid": 2302670404,
       "reading": "あくい",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -38134,6 +38200,7 @@
       "sid": 4112843589,
       "reading": "つつみこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -38528,6 +38595,7 @@
       "sid": 367933440,
       "reading": "われにかえる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -38716,7 +38784,7 @@
       "sid": 3598246015,
       "reading": "そうじゃなくて",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770740986,
       "rank": 3843
@@ -38929,6 +38997,7 @@
       "sid": 2969190131,
       "reading": "おもいこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -39460,6 +39529,7 @@
       "sid": 2514878855,
       "reading": "まっさきに",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -39601,7 +39671,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770648580,
+      "dueAt": 1774405343,
       "rank": 3929
     },
     "到底": {
@@ -39620,6 +39690,7 @@
       "sid": 1239129603,
       "reading": "せんとう",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -39912,9 +39983,10 @@
       "sid": 1717066190,
       "reading": "しお",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770628091,
+      "dueAt": null,
       "rank": 3959
     },
     "というところ": {
@@ -40217,6 +40289,7 @@
       "sid": 1761526337,
       "reading": "でばん",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -40345,9 +40418,9 @@
       "sid": 2098752676,
       "reading": "ライン",
       "states": [
-        "learning"
+        "known"
       ],
-      "dueAt": 1770705926,
+      "dueAt": 1773387110,
       "rank": 4003
     },
     "言動": {
@@ -40514,6 +40587,7 @@
       "sid": 3084319154,
       "reading": "わかれ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -41063,6 +41137,7 @@
       "sid": 2955056729,
       "reading": "べつじん",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -41339,6 +41414,7 @@
       "sid": 3744029324,
       "reading": "ちからをこめる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -41446,9 +41522,10 @@
       "sid": 2329860366,
       "reading": "きをつかう",
       "states": [
-        "learning"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770352547,
+      "dueAt": null,
       "rank": 4108
     },
     "ステージ": {
@@ -41857,9 +41934,10 @@
       "sid": 2118985516,
       "reading": "つる",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770392639,
+      "dueAt": null,
       "rank": 4149
     },
     "シーン": {
@@ -42576,6 +42654,7 @@
       "sid": 939099823,
       "reading": "とりこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -42671,9 +42750,10 @@
       "sid": 3404208786,
       "reading": "せわになる",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770394613,
+      "dueAt": null,
       "rank": 4228
     },
     "化粧": {
@@ -42752,6 +42832,7 @@
       "sid": 2049687454,
       "reading": "あくむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -43203,6 +43284,7 @@
       "sid": 21868478,
       "reading": "ちからをいれる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -43607,6 +43689,7 @@
       "sid": 1076186686,
       "reading": "おわかれ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -43940,6 +44023,7 @@
       "sid": 2385649574,
       "reading": "いっかい",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -44382,9 +44466,10 @@
       "sid": 3839451208,
       "reading": "じんじゃ",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770563283,
+      "dueAt": null,
       "rank": 4394
     },
     "目当て": {
@@ -45023,6 +45108,7 @@
       "sid": 820500020,
       "reading": "いいかんじ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -45582,6 +45668,7 @@
       "sid": 3312453029,
       "reading": "きょうだい",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -45669,7 +45756,7 @@
       "reading": "へん",
       "states": [
         "redundant",
-        "known"
+        "due"
       ],
       "dueAt": null,
       "rank": 4523
@@ -45774,9 +45861,9 @@
       "sid": 838530661,
       "reading": "ふらふら",
       "states": [
-        "failed"
+        "due"
       ],
-      "dueAt": 1767220442,
+      "dueAt": 1770551369,
       "rank": 4533
     },
     "一通り": {
@@ -46296,6 +46383,7 @@
       "sid": 282540197,
       "reading": "うちこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -46907,6 +46995,7 @@
       "sid": 418332362,
       "reading": "および",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -47223,6 +47312,7 @@
       "sid": 4265660973,
       "reading": "よびとめる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -47437,6 +47527,7 @@
       "sid": 3454150350,
       "reading": "とめる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -47625,7 +47716,7 @@
       "sid": 2784155555,
       "reading": "へん",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770315128,
       "rank": 4711
@@ -48041,6 +48132,7 @@
       "sid": 2054209714,
       "reading": "あっか",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -48051,9 +48143,9 @@
       "sid": 2787959195,
       "reading": "ご",
       "states": [
-        "learning"
+        "known"
       ],
-      "dueAt": 1770474023,
+      "dueAt": 1772604545,
       "rank": 4753
     },
     "割に": {
@@ -49049,9 +49141,10 @@
       "sid": 2668796076,
       "reading": "さとう",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770451984,
+      "dueAt": null,
       "rank": 4849
     },
     "我ながら": {
@@ -49408,6 +49501,7 @@
       "sid": 4076577025,
       "reading": "おくりこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -49885,10 +49979,9 @@
       "sid": 1959275060,
       "reading": "みなと",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1775344751,
       "rank": 4930
     },
     "濡らす": {
@@ -50461,6 +50554,7 @@
       "sid": 2739659084,
       "reading": "いご",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -50483,7 +50577,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770528524,
+      "dueAt": 1798138627,
       "rank": 4987
     },
     "消え去る": {
@@ -50491,6 +50585,7 @@
       "sid": 2018057063,
       "reading": "きえさる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -51970,9 +52065,10 @@
       "sid": 3383055667,
       "reading": "ふうとう",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770788860,
+      "dueAt": null,
       "rank": 5133
     },
     "充実": {
@@ -52088,6 +52184,7 @@
       "sid": 500398496,
       "reading": "あたためる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -52980,9 +53077,10 @@
       "sid": 1065792111,
       "reading": "そらをとぶ",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770422599,
+      "dueAt": null,
       "rank": 5232
     },
     "ざわめき": {
@@ -53280,10 +53378,9 @@
       "sid": 4225483496,
       "reading": "じゅうりょく",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1781382057,
       "rank": 5261
     },
     "十六": {
@@ -53389,6 +53486,7 @@
       "sid": 3144742832,
       "reading": "どうかとおもう",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -54559,9 +54657,10 @@
       "sid": 3942374969,
       "reading": "こいをする",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770306438,
+      "dueAt": null,
       "rank": 5387
     },
     "からすると": {
@@ -54696,10 +54795,9 @@
       "sid": 2440597130,
       "reading": "くだもの",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1775829765,
       "rank": 5401
     },
     "愕然": {
@@ -54888,6 +54986,7 @@
       "sid": 2263458650,
       "reading": "とうそう",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -55002,6 +55101,7 @@
       "sid": 4080470602,
       "reading": "ひそか",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -55926,6 +56026,7 @@
       "sid": 2940315745,
       "reading": "いきかえる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -56353,6 +56454,7 @@
       "sid": 2791145361,
       "reading": "ひっこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -56416,6 +56518,7 @@
       "sid": 3083829779,
       "reading": "べつべつ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -56641,7 +56744,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770692623,
+      "dueAt": 1806368453,
       "rank": 5586
     },
     "お楽しみ": {
@@ -57552,6 +57655,7 @@
       "sid": 2065760579,
       "reading": "いったい",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -57638,6 +57742,7 @@
       "sid": 935958465,
       "reading": "いきさき",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -58069,6 +58174,7 @@
       "sid": 1721387045,
       "reading": "たい",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -58279,6 +58385,7 @@
       "sid": 3847011745,
       "reading": "はなさき",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -58733,6 +58840,7 @@
       "sid": 1898936767,
       "reading": "くいこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -58909,6 +59017,7 @@
       "sid": 2041112239,
       "reading": "ふきこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -59078,6 +59187,7 @@
       "sid": 664414481,
       "reading": "はしりさる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -59451,6 +59561,7 @@
       "sid": 1308617800,
       "reading": "とまる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -60664,7 +60775,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770520382,
+      "dueAt": 1779059963,
       "rank": 5983
     },
     "切り離す": {
@@ -61498,6 +61609,7 @@
       "sid": 3347782036,
       "reading": "にげこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -63036,6 +63148,7 @@
       "sid": 356696737,
       "reading": "はなしはじめる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -63089,6 +63202,7 @@
       "sid": 2990852140,
       "reading": "しんごう",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -63185,7 +63299,7 @@
       "reading": "ぬるい",
       "states": [
         "redundant",
-        "due"
+        "locked"
       ],
       "dueAt": null,
       "rank": 6229
@@ -63195,6 +63309,7 @@
       "sid": 803959156,
       "reading": "じかんたい",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -63415,6 +63530,7 @@
       "sid": 1485272907,
       "reading": "けんお",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -64243,6 +64359,7 @@
       "sid": 406709714,
       "reading": "つれさる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -65000,10 +65117,9 @@
       "sid": 3383668475,
       "reading": "おととい",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1776216649,
       "rank": 6406
     },
     "しゃがむ": {
@@ -65242,10 +65358,9 @@
       "sid": 1190007052,
       "reading": "どようび",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1771630383,
       "rank": 6433
     },
     "質問に答える": {
@@ -65349,6 +65464,7 @@
       "sid": 2597954073,
       "reading": "みこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -65614,6 +65730,7 @@
       "sid": 2085424879,
       "reading": "あくにん",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -66596,6 +66713,7 @@
       "sid": 1272919098,
       "reading": "せんこう",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -66937,6 +67055,7 @@
       "sid": 3852375878,
       "reading": "よびかけ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -67919,9 +68038,10 @@
       "sid": 1820657917,
       "reading": "としつき",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770518890,
+      "dueAt": null,
       "rank": 6694
     },
     "検証": {
@@ -68394,6 +68514,7 @@
       "sid": 1480103859,
       "reading": "ひっくりかえる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -68639,6 +68760,7 @@
       "sid": 1659391935,
       "reading": "おもいえがく",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -68725,6 +68847,7 @@
       "sid": 2044612668,
       "reading": "よばわり",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -68810,6 +68933,7 @@
       "sid": 2064171047,
       "reading": "ひきこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -69193,6 +69317,7 @@
       "sid": 3997091496,
       "reading": "てをいれる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -71102,6 +71227,7 @@
       "sid": 2705788508,
       "reading": "あせをかく",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -71818,6 +71944,7 @@
       "sid": 1864190221,
       "reading": "つれこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -71882,6 +72009,7 @@
       "sid": 2217497529,
       "reading": "てさき",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -72246,6 +72374,7 @@
       "sid": 242631813,
       "reading": "きぶんがわるい",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -72383,6 +72512,7 @@
       "sid": 3952013773,
       "reading": "よびだし",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -73108,6 +73238,7 @@
       "sid": 2332731328,
       "reading": "とりいれる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -73719,6 +73850,7 @@
       "sid": 1193999943,
       "reading": "ばんめ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -74077,6 +74209,7 @@
       "sid": 3922590573,
       "reading": "しはじめる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -74163,6 +74296,7 @@
       "sid": 2669663589,
       "reading": "しょうげきてき",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -74543,6 +74677,7 @@
       "sid": 2871321586,
       "reading": "よびな",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -74628,6 +74763,7 @@
       "sid": 4100376377,
       "reading": "あんしんかん",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -75062,6 +75198,7 @@
       "sid": 2419608844,
       "reading": "わるもの",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -76208,6 +76345,7 @@
       "sid": 1407032007,
       "reading": "かくべつ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -77113,6 +77251,7 @@
       "sid": 3045839608,
       "reading": "さきだつ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -77457,6 +77596,7 @@
       "sid": 1955659775,
       "reading": "ぞく",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -78027,7 +78167,7 @@
       "sid": 2589103066,
       "reading": "ギルド",
       "states": [
-        "learning"
+        "due"
       ],
       "dueAt": 1770689463,
       "rank": 7691
@@ -78942,6 +79082,7 @@
       "sid": 12203667,
       "reading": "ほうたい",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -79200,6 +79341,7 @@
       "sid": 1343602841,
       "reading": "かんち",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -80222,6 +80364,7 @@
       "sid": 3814181635,
       "reading": "ひっとう",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -80503,6 +80646,7 @@
       "sid": 1167337457,
       "reading": "あるきはじめる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -80896,6 +81040,7 @@
       "sid": 1950073379,
       "reading": "まわりこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -82498,7 +82643,7 @@
       "states": [
         "known"
       ],
-      "dueAt": 1770487655,
+      "dueAt": 1772080508,
       "rank": 8123
     },
     "侍": {
@@ -82623,6 +82768,7 @@
       "sid": 594200118,
       "reading": "いもうとさん",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -83116,10 +83262,9 @@
       "sid": 1310478869,
       "reading": "じょしせいと",
       "states": [
-        "locked",
-        "due"
+        "known"
       ],
-      "dueAt": null,
+      "dueAt": 1790038884,
       "rank": 8181
     },
     "眼光": {
@@ -83292,7 +83437,7 @@
       "reading": "しんかん",
       "states": [
         "locked",
-        "due"
+        "failed"
       ],
       "dueAt": null,
       "rank": 8197
@@ -83475,6 +83620,7 @@
       "sid": 1616191616,
       "reading": "おくば",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -83819,6 +83965,7 @@
       "sid": 1341494180,
       "reading": "きっさき",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -84900,6 +85047,7 @@
       "sid": 3698503076,
       "reading": "しゃがみこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -85231,6 +85379,7 @@
       "sid": 2746475230,
       "reading": "しんじゃ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -85422,6 +85571,7 @@
       "sid": 568463727,
       "reading": "ひきとめる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -85486,6 +85636,7 @@
       "sid": 1445415438,
       "reading": "けしさる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -86306,9 +86457,9 @@
       "sid": 3284543598,
       "reading": "ラジオ",
       "states": [
-        "known"
+        "failed"
       ],
-      "dueAt": 1770328320,
+      "dueAt": 1770697088,
       "rank": 8487
     },
     "大人びる": {
@@ -86610,6 +86761,7 @@
       "sid": 2437978568,
       "reading": "こみあげる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -87274,6 +87426,7 @@
       "sid": 3928155836,
       "reading": "もんばん",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -87683,6 +87836,7 @@
       "sid": 2308073825,
       "reading": "かいか",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -87854,6 +88008,7 @@
       "sid": 2739394734,
       "reading": "さきほどから",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -88047,6 +88202,7 @@
       "sid": 478669220,
       "reading": "へんしん",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -88788,6 +88944,7 @@
       "sid": 1925928605,
       "reading": "にげきる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -88989,7 +89146,7 @@
       "sid": 1714106015,
       "reading": "せき",
       "states": [
-        "known"
+        "due"
       ],
       "dueAt": 1770748208,
       "rank": 8746
@@ -89094,6 +89251,7 @@
       "sid": 2858583299,
       "reading": "もって",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -89412,9 +89570,10 @@
       "sid": 2266879328,
       "reading": "りゅうがく",
       "states": [
-        "known"
+        "locked",
+        "due"
       ],
-      "dueAt": 1770571852,
+      "dueAt": null,
       "rank": 8787
     },
     "だからと言って": {
@@ -90650,6 +90809,7 @@
       "sid": 174805530,
       "reading": "はなしはべつ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -91763,6 +91923,7 @@
       "sid": 3996448251,
       "reading": "こおう",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -92908,6 +93069,7 @@
       "sid": 3473561593,
       "reading": "そうしん",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -93676,6 +93838,7 @@
       "sid": 4144920340,
       "reading": "まぎゃく",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -93974,6 +94137,7 @@
       "sid": 198485193,
       "reading": "せんこく",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -94948,6 +95112,7 @@
       "sid": 2997845968,
       "reading": "ふようい",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -95339,6 +95504,7 @@
       "sid": 457483310,
       "reading": "まよいこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -95349,6 +95515,7 @@
       "sid": 3800718573,
       "reading": "にげまわる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -95542,6 +95709,7 @@
       "sid": 4054984464,
       "reading": "さいじょうかい",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -95753,6 +95921,7 @@
       "sid": 3658342208,
       "reading": "おがわ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -95889,6 +96058,7 @@
       "sid": 1272899304,
       "reading": "わるくいう",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -96314,6 +96484,7 @@
       "sid": 1814242643,
       "reading": "せきこむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -98178,6 +98349,7 @@
       "sid": 2938491336,
       "reading": "さきばしる",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -98513,6 +98685,7 @@
       "sid": 4212273542,
       "reading": "さいおう",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -99115,6 +99288,7 @@
       "sid": 783371030,
       "reading": "みんぞく",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -100151,6 +100325,7 @@
       "sid": 2010106212,
       "reading": "しんじがたい",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -101377,6 +101552,7 @@
       "sid": 689006674,
       "reading": "あせばむ",
       "states": [
+        "locked",
         "new"
       ],
       "dueAt": null,
@@ -101973,6 +102149,6 @@
       "rank": 10000
     }
   },
-  "lastRefresh": 1770279373121,
-  "lastFullParse": 1770279373121
+  "lastRefresh": 1770799127562,
+  "lastFullParse": 1770799127562
 }
