@@ -209,87 +209,87 @@ export async function renderDealerRoom(actionsModule) {
     return;
   }
 
-  const { dealer, inventory, credits } = dealerData;
+  const { offeredRobots, partyRobots, credits, canBuy, sellCount, maxSells } = dealerData;
+  const canSellMore = sellCount < maxSells;
 
-  const offeredChip = dealer.offeredChip;
-  const chipPrice = dealer.chipPrice;
-  const canAfford = credits >= chipPrice;
-  const inventoryFull = inventory.filter(c => !c.isEquipped).length >= 12;
-
-  let offeredChipHtml = '';
-  if (!dealer.visited) {
-    const buyDisabled = (!canAfford || inventoryFull) ? 'disabled' : '';
-    const buyLabel = inventoryFull ? 'インベントリ満杯' : `${chipPrice}cr で購入`;
-    offeredChipHtml = `
-      <div class="dealer-offered-chip">
-        <div class="dealer-section-title">商人のおすすめ</div>
-        <div class="dealer-offer-card">
-          <div class="shrine-chip-icon" style="background-image:url('/assets/icons/chips/${offeredChip.id}.webp'); border-color: var(--rarity-${offeredChip.rarity || 'common'})"></div>
+  // Buy section
+  let buyHtml = '';
+  if (canBuy && offeredRobots.length > 0) {
+    const robotCards = offeredRobots.map(robot => {
+      const affordable = credits >= robot.buyPrice;
+      const btnDisabled = !affordable ? 'disabled' : '';
+      return `
+        <div class="dealer-offer-card" style="margin-bottom:0.5rem">
+          <div class="shrine-chip-icon" style="background-image:url('/assets/sprites/${robot.id}.webp'); border-color: var(--rarity-${robot.rarity || 'common'})"></div>
           <div class="dealer-offer-info">
-            <div class="dealer-item-name">${offeredChip.nameEn || offeredChip.name}</div>
-            <div class="shrine-chip-rarity ${offeredChip.rarity || 'common'}">${offeredChip.rarity || 'common'}</div>
-            <div class="dealer-offer-desc">${offeredChip.descriptionEn || offeredChip.description || ''}</div>
+            <div class="dealer-item-name">${robot.nameEn}</div>
+            <div class="shrine-chip-rarity ${robot.rarity || 'common'}">${robot.rarity} \u00B7 ${robot.element} \u00B7 Lv.${robot.level}</div>
+            <div class="dealer-offer-desc">HP: ${robot.maxHp} \u00B7 ATK: ${robot.attack}</div>
           </div>
+          <button class="dealer-buy-btn" data-robot-id="${robot.id}" ${btnDisabled}>${robot.buyPrice}cr \u3067\u96C7\u3046</button>
         </div>
-        <button class="dealer-buy-btn" ${buyDisabled}>${buyLabel}</button>
-      </div>
+      `;
+    }).join('');
+
+    buyHtml = `
+      <div class="dealer-section-title">\u50AD\u5175\u30ED\u30DC\u30C3\u30C8</div>
+      ${robotCards}
     `;
+  } else if (!canBuy) {
+    buyHtml = '<div class="dealer-section-title" style="opacity:0.5">\u8CFC\u5165\u6E08\u307F</div>';
   }
 
-  const inventoryHtml = inventory.length > 0 ? inventory.map(chip => {
-    const equippedBadge = chip.isEquipped ? '<span class="dealer-equipped-badge">装備中</span>' : '';
-    const levelText = chip.level > 1 ? ` Lv.${chip.level}` : '';
+  // Sell section
+  const sellLabel = canSellMore ? `\u58F2\u5374 (${sellCount}/${maxSells})` : `\u58F2\u5374\u4E0A\u9650 (${maxSells}/${maxSells})`;
+  const partyHtml = partyRobots.length > 0 ? partyRobots.map(robot => {
+    const hpPercent = Math.floor((robot.hp / robot.maxHp) * 100);
+    const slotBadge = robot.slot === 'active' ? '\u30A2\u30AF\u30C6\u30A3\u30D6' : '\u30EA\u30B6\u30FC\u30D6';
     return `
-      <div class="dealer-inventory-item" data-chip-id="${chip.id}" data-equipped="${chip.isEquipped}">
-        <div class="shrine-chip-icon" style="background-image:url('/assets/icons/chips/${chip.id}.webp'); border-color: var(--rarity-${chip.rarity || 'common'})"></div>
+      <div class="dealer-inventory-item" data-robot-id="${robot.id}">
+        <div class="shrine-chip-icon" style="background-image:url('/assets/sprites/${robot.id}.webp'); border-color: var(--rarity-${robot.rarity || 'common'})"></div>
         <div class="dealer-item-info">
-          <div class="dealer-item-name">${chip.nameEn || chip.name}${levelText}</div>
+          <div class="dealer-item-name">${robot.nameEn} Lv.${robot.level}</div>
           <div class="dealer-item-meta">
-            <span class="shrine-chip-rarity ${chip.rarity || 'common'}">${chip.rarity || 'common'}</span>
-            ${equippedBadge}
+            <span class="shrine-chip-rarity ${robot.rarity || 'common'}">${robot.rarity}</span>
+            <span style="font-size:0.75rem;opacity:0.7">${slotBadge}</span>
           </div>
         </div>
-        <button class="dealer-sell-btn" data-chip-id="${chip.id}" data-sell-price="${chip.sellPrice}" data-equipped="${chip.isEquipped}">
-          売 ${chip.sellPrice}cr
+        <button class="dealer-sell-btn" data-robot-id="${robot.id}" data-sell-price="${robot.sellPrice}" ${!canSellMore ? 'disabled' : ''}>
+          \u58F2 ${robot.sellPrice}cr
         </button>
       </div>
     `;
-  }).join('') : '<p style="text-align:center;color:var(--text-secondary)">売るチップがない</p>';
+  }).join('') : '<p style="text-align:center;color:var(--text-secondary)">\u30ED\u30DC\u30C3\u30C8\u304C\u3044\u306A\u3044</p>';
 
   actionsModule.setContent(`
     <div class="dealer-room">
       <div class="dealer-credits">
         <span id="dealer-credits">${credits}</span> cr
       </div>
-      ${offeredChipHtml}
-      <div class="dealer-section-title">インベントリ</div>
+      ${buyHtml}
+      <div class="dealer-section-title">${sellLabel}</div>
       <div class="dealer-inventory-list">
-        ${inventoryHtml}
+        ${partyHtml}
       </div>
-      <button class="dealer-leave-btn">立ち去る</button>
+      <button class="dealer-leave-btn">\u7ACB\u3061\u53BB\u308B</button>
     </div>
   `);
 
-  // Wire buy button
-  document.querySelector('.dealer-buy-btn')?.addEventListener('click', async (e) => {
-    e.target.disabled = true;
-    try {
-      const result = await apiDealerBuy();
-      if (result?.state) {
-        updateGameState(result.state);
+  // Wire buy buttons
+  document.querySelectorAll('.dealer-buy-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.target.disabled = true;
+      try {
+        const robotId = e.target.dataset.robotId;
+        const result = await apiDealerBuy(robotId);
+        if (result?.state) { updateGameState(result.state); }
+        updateUI();
+        renderDealerRoom(actionsModule);
+      } catch (error) {
+        console.error('Dealer buy failed:', error);
+        e.target.disabled = false;
       }
-      playSFX('chip-equip');
-      speakText(offeredChip.nameEn || offeredChip.name);
-      if (apiGetChipLoadout && setChipLoadoutCache) {
-        const loadout = await apiGetChipLoadout();
-        setChipLoadoutCache(loadout);
-      }
-      updateUI();
-      renderDealerRoom(actionsModule);
-    } catch (error) {
-      console.error('Dealer buy failed:', error);
-      e.target.disabled = false;
-    }
+    });
   });
 
   // Wire sell buttons (event delegation)
@@ -297,26 +297,11 @@ export async function renderDealerRoom(actionsModule) {
     const sellBtn = e.target.closest('.dealer-sell-btn');
     if (!sellBtn || sellBtn.disabled) return;
 
-    const chipId = sellBtn.dataset.chipId;
-    const sellPrice = sellBtn.dataset.sellPrice;
-    const isEquipped = sellBtn.dataset.equipped === 'true';
-
-    if (isEquipped) {
-      const confirmed = confirm(`このチップは装備中です。${sellPrice}クレジットで売却しますか？`);
-      if (!confirmed) return;
-    }
-
+    const robotId = sellBtn.dataset.robotId;
     sellBtn.disabled = true;
     try {
-      const result = await apiDealerSell(chipId);
-      if (result?.state) {
-        updateGameState(result.state);
-      }
-      playSFX('chip-equip');
-      if (apiGetChipLoadout && setChipLoadoutCache) {
-        const loadout = await apiGetChipLoadout();
-        setChipLoadoutCache(loadout);
-      }
+      const result = await apiDealerSell(robotId);
+      if (result?.state) { updateGameState(result.state); }
       updateUI();
       renderDealerRoom(actionsModule);
     } catch (error) {
@@ -328,13 +313,7 @@ export async function renderDealerRoom(actionsModule) {
   // Wire leave button
   document.querySelector('.dealer-leave-btn')?.addEventListener('click', async () => {
     const result = await apiDealerLeave();
-    if (result?.state) {
-      updateGameState(result.state);
-    }
-    if (apiGetChipLoadout && setChipLoadoutCache) {
-      const loadout = await apiGetChipLoadout();
-      setChipLoadoutCache(loadout);
-    }
+    if (result?.state) { updateGameState(result.state); }
     updateUI();
   });
 }

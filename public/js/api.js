@@ -303,14 +303,14 @@ async function doorHints() {
   return apiCall('/door-hints', 'POST');
 }
 
-/** Upgrade chip at shrine */
-async function shrineUpgrade(chipId) {
-  return apiCall('/shrine-upgrade', 'POST', { chipId });
+/** Upgrade robot at shrine */
+async function shrineUpgrade(robotId) {
+  return apiCall('/shrine-upgrade', 'POST', { robotId });
 }
 
 /** Claim quiz reward */
-async function quizReward(rewardType) {
-  return apiCall('/quiz-reward', 'POST', { rewardType });
+async function quizReward(rewardType, robotId = null) {
+  return apiCall('/quiz-reward', 'POST', { rewardType, robotId });
 }
 
 /** Get a quiz question (may be from Bunpro or static) */
@@ -448,14 +448,14 @@ async function getDealerState() {
   return apiCall('/dealer-state', 'GET');
 }
 
-/** Sell a chip to the dealer */
-async function dealerSell(chipId) {
-  return apiCall('/dealer-sell', 'POST', { chipId });
+/** Sell a robot to the dealer */
+async function dealerSell(robotId) {
+  return apiCall('/dealer-sell', 'POST', { robotId });
 }
 
-/** Buy the dealer's offered chip */
-async function dealerBuy() {
-  return apiCall('/dealer-buy', 'POST');
+/** Buy a robot from the dealer */
+async function dealerBuy(robotId) {
+  return apiCall('/dealer-buy', 'POST', { robotId });
 }
 
 /** Leave the dealer room */
