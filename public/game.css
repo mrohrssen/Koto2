@@ -180,9 +180,9 @@ html, body {
   top: 12px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-radius: 20px;
   padding: 6px 16px;
   box-shadow: var(--shadow-soft);
@@ -366,16 +366,17 @@ html, body {
 
 .enemy-robot-name {
   font-size: 12px;
+  font-weight: 600;
   color: #fff;
   max-width: 100px;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.5);
-  background: rgba(0,0,0,0.35);
-  padding: 1px 6px;
-  border-radius: 4px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.6);
+  padding: 2px 8px;
+  border-radius: 6px;
 }
 
 .enemy-robot-hp-bar {
@@ -993,7 +994,7 @@ html, body {
   min-height: var(--toolbar-height);
   background: var(--bg-elevated);
   border-top: 1px solid var(--border-subtle);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding: 4px 0 env(safe-area-inset-bottom, 0px);
   flex-shrink: 0;
 }
 
@@ -3639,12 +3640,12 @@ html, body {
 
 .collection-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 4px;
   flex: 1;
   overflow-y: auto;
   padding: 4px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   align-items: start;
 }
 

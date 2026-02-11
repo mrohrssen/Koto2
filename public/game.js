@@ -227,6 +227,9 @@ function delay(ms) {
 
 // ============ UI UPDATES ============
 function updateUI() {
+  // Clear any persistent narration on phase transitions
+  narrationBox.forceHide();
+
   updateStatusBar();
 
   // Handle Phaser exploration mode

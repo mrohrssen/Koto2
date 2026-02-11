@@ -206,11 +206,11 @@ export function generateDealerRobots(collectionIds = []) {
   const uncaptured = allTemplates.filter(t => !collectionSet.has(t.id));
 
   // If all captured, offer random ones anyway
-  const pool = uncaptured.length >= 3 ? uncaptured : allTemplates;
+  const pool = uncaptured.length >= 1 ? uncaptured : allTemplates;
 
-  // Pick 3 random
+  // Pick 1 random robot for sale
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, 3).map(template => ({
+  return shuffled.slice(0, 1).map(template => ({
     ...instantiateRobot(template.id),
     buyPrice: getRobotBuyPrice(template.rarity)
   }));

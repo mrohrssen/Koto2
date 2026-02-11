@@ -49,7 +49,7 @@ export function show(items) {
           return `
           <div class="shop-item-card" data-index="${i}" style="border-color: ${rarityColor}40">
             <div class="shop-item-rarity" style="color: ${rarityColor}">${item.rarity || 'common'}</div>
-            <img class="shop-item-sprite" src="/assets/sprites/items/${item.id}.png" alt="${item.meaning}" />
+            <img class="shop-item-sprite" src="/assets/sprites/items/${item.id}.webp" alt="${item.meaning}" />
             <div class="shop-item-word">${item.word}</div>
             <div class="shop-item-reading">${item.reading}</div>
             <div class="shop-item-meaning">${item.meaning}</div>
