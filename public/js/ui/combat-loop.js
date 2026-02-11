@@ -46,6 +46,7 @@ import {
   playUltimateAnimation
 } from './combat-effects.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
+import { configureRobotImg } from './sprite-utils.js';
 
 // ============ MODULE STATE ============
 
@@ -1056,7 +1057,11 @@ async function executeRobotPlayerAttack() {
               const newRobot = result.robotParty.active[koIndex];
               if (newRobot) {
                 const icon = swapSlot.querySelector('.robot-sprite-icon');
-                if (icon) icon.src = `/assets/sprites/robots/${newRobot.id}.webp`;
+                if (icon) configureRobotImg(icon, newRobot.id, el => {
+                  el.style.display = 'none';
+                  const fallback = el.nextElementSibling;
+                  if (fallback) fallback.style.display = '';
+                });
                 const hpFill = swapSlot.querySelector('.robot-hp-fill');
                 if (hpFill) {
                   const pct = Math.max(0, (newRobot.hp / newRobot.maxHp) * 100);

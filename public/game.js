@@ -100,6 +100,7 @@ import * as leaderboard from './js/ui/leaderboard.js';
 import * as lookup from './js/ui/lookup.js';
 import * as bugReport from './js/ui/bug-report.js';
 import * as speedReview from './js/ui/speed-review.js';
+import { configureRobotImg, robotSpritePath, probeIdleSprites } from './js/ui/sprite-utils.js';
 import * as phaser from './js/phaser/index.js';
 import { gameEvents } from './js/phaser/phaser-bridge.js';
 
@@ -448,6 +449,12 @@ async function loadGameState() {
   const data = await apiGetGameState();
   if (data.player) {
     updateGameState(data);
+    // Probe which robots have animated idle sprites (for background-image contexts)
+    const allRobotIds = [
+      ...(data.robotParty?.active || []),
+      ...(data.robotParty?.reserves || []),
+    ].filter(Boolean).map(r => r.id);
+    probeIdleSprites(allRobotIds);
     // Refresh chip loadout cache so chip row stays in sync
     try {
       chipLoadoutCache = await apiGetChipLoadout();
@@ -535,7 +542,7 @@ function showCollectionSelect(catalog, collection) {
 
         return `
           <div class="${classes}" data-id="${r.id}" data-rarity="${r.rarity}" data-element="${r.element}">
-            <img src="/assets/sprites/robots/${r.id}.webp" alt="${r.nameEn}" />
+            <img data-robot-id="${r.id}" alt="${r.nameEn}" />
             ${owned ? `<span class="point-badge">${r.pointCost}</span>` : ''}
             <span class="robot-name">${owned ? r.nameEn : '???'}</span>
           </div>
@@ -560,6 +567,11 @@ function showCollectionSelect(catalog, collection) {
           Start Run (${selected.size} robot${selected.size !== 1 ? 's' : ''})
         </button>
       `;
+
+      // Configure animated idle sprites with static fallback
+      overlay.querySelectorAll('img[data-robot-id]').forEach(img => {
+        configureRobotImg(img, img.dataset.robotId, el => { el.style.display = 'none'; });
+      });
 
       // Set background
       scene.setBackground('/assets/backgrounds/hub.webp');
@@ -602,9 +614,10 @@ function showCollectionToast(additions) {
     const toast = document.createElement('div');
     toast.className = 'collection-toast';
     toast.innerHTML = `
-      <img src="/assets/sprites/robots/${robot.id}.webp" />
+      <img />
       <span class="toast-text">New: ${robot.nameEn}!</span>
     `;
+    configureRobotImg(toast.querySelector('img'), robot.id);
     document.body.appendChild(toast);
     setTimeout(() => {
       toast.style.animation = 'toastSlideOut 0.3s ease-in forwards';
@@ -1056,8 +1069,7 @@ async function openRobotEquipView() {
       return `
         <div class="robot-equip-slot" data-type="active" data-index="${i}" data-robot-id="${robot.id}"
              style="border-left: 3px solid ${ELEMENT_COLORS[robot.element] || '#666'}">
-          <img class="robot-equip-sprite" src="/assets/sprites/robots/${robot.id}.webp"
-               onerror="this.style.display='none'" alt="">
+          <img class="robot-equip-sprite" data-robot-id="${robot.id}" alt="">
           <div class="robot-equip-info">
             <div class="robot-equip-name">${ELEMENT_ICONS[robot.element] || ''} ${robot.nameEn} ${rarityStars(robot.rarity)} <span style="opacity:0.6">Lv${robot.level}</span></div>
             <div class="robot-equip-stats">HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}</div>
@@ -1075,8 +1087,7 @@ async function openRobotEquipView() {
       return `
         <div class="robot-equip-slot" data-type="reserve" data-index="${i}" data-robot-id="${robot.id}"
              style="border-left: 3px solid ${ELEMENT_COLORS[robot.element] || '#666'}">
-          <img class="robot-equip-sprite" src="/assets/sprites/robots/${robot.id}.webp"
-               onerror="this.style.display='none'" alt="">
+          <img class="robot-equip-sprite" data-robot-id="${robot.id}" alt="">
           <div class="robot-equip-info">
             <div class="robot-equip-name">${ELEMENT_ICONS[robot.element] || ''} ${robot.nameEn} ${rarityStars(robot.rarity)} <span style="opacity:0.6">Lv${robot.level}</span></div>
             <div class="robot-equip-stats">HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}</div>
@@ -1095,6 +1106,11 @@ async function openRobotEquipView() {
       <div class="robot-equip-list">${reservesHtml}</div>
       <p style="padding:8px 16px;opacity:0.5;font-size:0.8em;text-align:center">Tap an equipped robot, then a reserve to swap them.</p>
     `;
+
+    // Configure animated idle sprites with static fallback
+    content.querySelectorAll('.robot-equip-sprite[data-robot-id]').forEach(img => {
+      configureRobotImg(img, img.dataset.robotId, el => { el.style.display = 'none'; });
+    });
 
     // Selection logic: tap active then reserve to swap
     let selectedActive = null;

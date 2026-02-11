@@ -18,6 +18,7 @@
 
 import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
+import { configureRobotImg } from './sprite-utils.js';
 
 function rarityStars(rarity) {
   const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity];
@@ -82,8 +83,7 @@ export function render(robots) {
       slot.innerHTML = `
         <div class="robot-icon${isKO ? ' ko' : ''}${isCharged ? ' charged' : ''}"
              style="border-color: ${ELEMENT_COLORS[robot.element]}">
-          <img class="robot-sprite-icon" src="/assets/sprites/robots/${robot.id}.webp"
-               onerror="this.style.display='none';this.nextElementSibling.style.display=''" alt="">
+          <img class="robot-sprite-icon" alt="">
           <span class="robot-element-icon" style="display:none">${ELEMENT_ICONS[robot.element]}</span>
           <span class="robot-level-badge">Lv${robot.level}</span>
         </div>
@@ -95,6 +95,12 @@ export function render(robots) {
           ${buildChargeSegments(robot.ultimate.charges, robot.ultimate.chargesRequired)}
         </div>
       `;
+
+      const spriteImg = slot.querySelector('.robot-sprite-icon');
+      configureRobotImg(spriteImg, robot.id, el => {
+        el.style.display = 'none';
+        el.nextElementSibling.style.display = '';
+      });
 
       slot.addEventListener('click', () => togglePopup(i, robot));
     }
