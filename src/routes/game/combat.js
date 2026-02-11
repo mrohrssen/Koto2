@@ -387,6 +387,13 @@ export default function createCombatRoutes({
     const combat = gameManager.combat;
 
     if (!combat?.active || !combat.befriendConversation?.active) {
+      console.error('[BefriendAnswer] Rejected:', {
+        hasCombat: !!combat,
+        combatActive: combat?.active,
+        hasBefriendConvo: !!combat?.befriendConversation,
+        convoActive: combat?.befriendConversation?.active,
+        roundIndex, selectedIndex
+      });
       return res.status(400).json({ error: 'No active befriend conversation' });
     }
 

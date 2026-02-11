@@ -966,6 +966,9 @@ async function handleUseRobotUltimate(robotIndex) {
       victory: true,
       newCollectionAdditions: result.newCollectionAdditions,
     });
+  } else if (!result.combatEnded) {
+    // Resume combat loop so next vocab cards appear
+    combatLoopUI.pauseForNextVocab();
   }
 }
 

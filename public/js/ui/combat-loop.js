@@ -183,6 +183,14 @@ export function cleanupCombat() {
   combatPausedForVocab = false;
 }
 
+/**
+ * Pause combat and show next vocab cards (for use after ultimates/external actions)
+ */
+export function pauseForNextVocab() {
+  combatPausedForVocab = true;
+  showNextDualCardsFromQueue();
+}
+
 function showNextDualCardsFromQueue() {
   const words = wordPractice.getTwoCombatWords?.();
   if (!words || !words.attackWord) {
@@ -1872,6 +1880,15 @@ async function executeBefriendAction() {
     for (let i = 0; i < rounds.length; i++) {
       const selectedIndex = await showConversationRound(rounds[i], i, robotName);
       const answerResult = await apiSubmitBefriendAnswer(i, selectedIndex);
+
+      if (!answerResult) {
+        // API error - recover gracefully by resuming normal combat
+        logger.error("[CombatLoop] Befriend answer API returned null, resuming combat");
+        if (setCombatAnimationActive) setCombatAnimationActive(false);
+        combatPausedForVocab = true;
+        showNextDualCardsFromQueue();
+        return;
+      }
 
       showAnswerFeedback(selectedIndex, answerResult.correctIndex, answerResult.correct);
       await delay(800);
