@@ -973,7 +973,11 @@ async function handleUseRobotUltimate(robotIndex) {
   // Update game state
   if (result.state) {
     updateGameState(result.state);
-    updateUI();
+    // Don't updateUI() when combat ended - stopCombatLoop handles victory flow
+    // (calling updateUI here would render room phase while shop/narration still pending)
+    if (!result.combatEnded) {
+      updateUI();
+    }
   }
 
   if (result.combatEnded && result.victory) {

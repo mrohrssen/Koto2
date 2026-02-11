@@ -936,6 +936,14 @@ export class GameManager {
         const newCollectionAdditions = flushPendingCaptures();
         this.combat.active = false;
         this.run.encountersCompleted++;
+        // Mark room as interacted and handle boss defeat
+        const currentRoom = this.run.rooms?.[this.run.currentRoom];
+        if (currentRoom) {
+          currentRoom.interacted = true;
+          if (currentRoom.isBossRoom) {
+            this.run.bossDefeated = true;
+          }
+        }
         this.emitState();
         return {
           actionType: 'befriend',
@@ -1095,6 +1103,14 @@ export class GameManager {
       this.run.robotParty.pendingCaptures = [];
       this.combat.active = false;
       this.run.encountersCompleted++;
+      // Mark room as interacted and handle boss defeat (same as robotCombatCycle)
+      const currentRoom = this.run.rooms?.[this.run.currentRoom];
+      if (currentRoom) {
+        currentRoom.interacted = true;
+        if (currentRoom.isBossRoom) {
+          this.run.bossDefeated = true;
+        }
+      }
     }
 
     this.emitState();
@@ -1346,6 +1362,14 @@ export class GameManager {
       party.pendingCaptures = [];
       this.combat.active = false;
       this.run.encountersCompleted++;
+      // Mark room as interacted and handle boss defeat
+      const currentRoom = this.run.rooms?.[this.run.currentRoom];
+      if (currentRoom) {
+        currentRoom.interacted = true;
+        if (currentRoom.isBossRoom) {
+          this.run.bossDefeated = true;
+        }
+      }
     }
 
     this.emitState();
