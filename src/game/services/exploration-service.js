@@ -148,7 +148,7 @@ export class ExplorationService {
     this.gm.run.bossDefeated = false;
 
     // Generate rooms for this floor
-    this.gm.run.rooms = generateFloorRooms(this.gm.run.floor, this.gm.run.encountersNeeded, null, this.gm.run.encountersOnly || false);
+    this.gm.run.rooms = generateFloorRooms(this.gm.run.floor, this.gm.run.encountersNeeded, null, false);
     this.gm.run.currentRoom = 0;
     this.gm.run.roomsExplored = 0;
 
