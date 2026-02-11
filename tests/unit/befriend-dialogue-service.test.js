@@ -20,14 +20,14 @@ import {
 const TEST_DATA_DIR = '/tmp/test-befriend-dialogue';
 
 const MOCK_ROBOT = {
-  id: 'fire-common',
+  id: 'sizzlit',
   name: 'カエンボット',
   nameEn: 'Kaen Bot',
   element: 'fire'
 };
 
 const MOCK_ROBOT_2 = {
-  id: 'water-common',
+  id: 'drizzlet',
   name: 'アクアボット',
   nameEn: 'Aqua Bot',
   element: 'water'
@@ -71,7 +71,7 @@ describe('Befriend Dialogue Service - File I/O (Task 1)', () => {
   it('save and load roundtrip preserves data', () => {
     const original = {
       robots: {
-        'fire-common': { status: 'ready', rounds: VALID_ROUNDS }
+        'sizzlit': { status: 'ready', rounds: VALID_ROUNDS }
       }
     };
     saveUserDialogues('user1', original);
@@ -82,22 +82,22 @@ describe('Befriend Dialogue Service - File I/O (Task 1)', () => {
   it('getDialogueForRobot returns rounds when status is ready', () => {
     const data = {
       robots: {
-        'fire-common': { status: 'ready', rounds: VALID_ROUNDS }
+        'sizzlit': { status: 'ready', rounds: VALID_ROUNDS }
       }
     };
     saveUserDialogues('user1', data);
-    const rounds = getDialogueForRobot('user1', 'fire-common');
+    const rounds = getDialogueForRobot('user1', 'sizzlit');
     assert.deepStrictEqual(rounds, VALID_ROUNDS);
   });
 
   it('getDialogueForRobot returns null when status is pending', () => {
     const data = {
       robots: {
-        'fire-common': { status: 'pending', rounds: null }
+        'sizzlit': { status: 'pending', rounds: null }
       }
     };
     saveUserDialogues('user1', data);
-    const rounds = getDialogueForRobot('user1', 'fire-common');
+    const rounds = getDialogueForRobot('user1', 'sizzlit');
     assert.strictEqual(rounds, null);
   });
 
@@ -110,20 +110,20 @@ describe('Befriend Dialogue Service - File I/O (Task 1)', () => {
   it('getDialogueForRobot returns null when rounds are not an array of 3', () => {
     saveUserDialogues('user1', {
       robots: {
-        'fire-common': { status: 'ready', rounds: VALID_ROUNDS.slice(0, 2) }
+        'sizzlit': { status: 'ready', rounds: VALID_ROUNDS.slice(0, 2) }
       }
     });
-    const rounds = getDialogueForRobot('user1', 'fire-common');
+    const rounds = getDialogueForRobot('user1', 'sizzlit');
     assert.strictEqual(rounds, null);
   });
 
   it('getDialogueForRobot returns null when rounds is null', () => {
     saveUserDialogues('user1', {
       robots: {
-        'fire-common': { status: 'ready', rounds: null }
+        'sizzlit': { status: 'ready', rounds: null }
       }
     });
-    const rounds = getDialogueForRobot('user1', 'fire-common');
+    const rounds = getDialogueForRobot('user1', 'sizzlit');
     assert.strictEqual(rounds, null);
   });
 
@@ -279,7 +279,7 @@ describe('Befriend Dialogue Service - Bulk Generation (Task 3)', () => {
     // Pre-save one robot as ready
     saveUserDialogues('user1', {
       robots: {
-        'fire-common': { status: 'ready', rounds: VALID_ROUNDS }
+        'sizzlit': { status: 'ready', rounds: VALID_ROUNDS }
       }
     });
 
@@ -296,15 +296,15 @@ describe('Befriend Dialogue Service - Bulk Generation (Task 3)', () => {
     assert.strictEqual(result.generated, 1);
     assert.strictEqual(result.aborted, false);
 
-    // Verify water-common was saved with rounds and generatedAt
-    const rounds = getDialogueForRobot('user1', 'water-common');
+    // Verify drizzlet was saved with rounds and generatedAt
+    const rounds = getDialogueForRobot('user1', 'drizzlet');
     assert.ok(rounds);
     assert.strictEqual(rounds.length, 3);
 
     const data = loadUserDialogues('user1');
-    assert.ok(data.robots['water-common'].generatedAt, 'should have generatedAt timestamp');
+    assert.ok(data.robots['drizzlet'].generatedAt, 'should have generatedAt timestamp');
     // Verify it's a valid ISO string
-    assert.ok(!isNaN(Date.parse(data.robots['water-common'].generatedAt)));
+    assert.ok(!isNaN(Date.parse(data.robots['drizzlet'].generatedAt)));
   });
 
   it('per-user lock prevents duplicate concurrent runs', async () => {
@@ -371,7 +371,7 @@ describe('Befriend Dialogue Service - Regeneration (Task 3)', () => {
   it('overwrites old dialogue with new on success', async () => {
     const oldRounds = VALID_ROUNDS.map(r => ({ ...r, speaker: 'OLD: ' + r.speaker }));
     saveUserDialogues('user1', {
-      robots: { 'fire-common': { status: 'ready', rounds: oldRounds } }
+      robots: { 'sizzlit': { status: 'ready', rounds: oldRounds } }
     });
 
     const mockChat = async () => makeValidResponse();
@@ -386,14 +386,14 @@ describe('Befriend Dialogue Service - Regeneration (Task 3)', () => {
     assert.strictEqual(result.rounds[0].speaker, 'やあ、君は誰？');
 
     // Verify on disk
-    const saved = getDialogueForRobot('user1', 'fire-common');
+    const saved = getDialogueForRobot('user1', 'sizzlit');
     assert.strictEqual(saved[0].speaker, 'やあ、君は誰？');
   });
 
   it('reverts to old data on failure', async () => {
     const oldRounds = VALID_ROUNDS.map(r => ({ ...r, speaker: 'OLD: ' + r.speaker }));
     saveUserDialogues('user1', {
-      robots: { 'fire-common': { status: 'ready', rounds: oldRounds } }
+      robots: { 'sizzlit': { status: 'ready', rounds: oldRounds } }
     });
 
     const mockChat = async () => 'invalid json';
@@ -410,13 +410,13 @@ describe('Befriend Dialogue Service - Regeneration (Task 3)', () => {
 
     // Verify on disk - should be reverted and status=ready
     const saved = loadUserDialogues('user1');
-    assert.strictEqual(saved.robots['fire-common'].status, 'ready');
-    assert.strictEqual(saved.robots['fire-common'].rounds[0].speaker, 'OLD: やあ、君は誰？');
+    assert.strictEqual(saved.robots['sizzlit'].status, 'ready');
+    assert.strictEqual(saved.robots['sizzlit'].rounds[0].speaker, 'OLD: やあ、君は誰？');
   });
 
   it('per-robot lock prevents concurrent regeneration', async () => {
     saveUserDialogues('user1', {
-      robots: { 'fire-common': { status: 'ready', rounds: VALID_ROUNDS } }
+      robots: { 'sizzlit': { status: 'ready', rounds: VALID_ROUNDS } }
     });
 
     const mockChat = async () => {

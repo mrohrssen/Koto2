@@ -1,5 +1,5 @@
 {
-  "wood-common": {
+  "petalia": {
     "rounds": [
       {
         "speaker": "木が好きだよ。きみは？",
@@ -18,7 +18,7 @@
       }
     ]
   },
-  "wood-uncommon": {
+  "whiskit": {
     "rounds": [
       {
         "speaker": "花がきれいだね。",
@@ -37,7 +37,7 @@
       }
     ]
   },
-  "wood-rare": {
+  "chirplet": {
     "rounds": [
       {
         "speaker": "つるで遊ぶのが好き。",
@@ -56,7 +56,7 @@
       }
     ]
   },
-  "wood-epic": {
+  "shelvyn": {
     "rounds": [
       {
         "speaker": "森の声が聞こえる？",
@@ -75,26 +75,7 @@
       }
     ]
   },
-  "wood-legendary": {
-    "rounds": [
-      {
-        "speaker": "千年の森を知ってる？",
-        "options": ["聞いたことがある！", "えんぴつが折れた。", "まどを閉めて。"],
-        "correctIndex": 0
-      },
-      {
-        "speaker": "すべての命はつながる。",
-        "options": ["ごはんを食べた。", "その通りだと思う。", "でんしゃに乗った。"],
-        "correctIndex": 1
-      },
-      {
-        "speaker": "きみとなら世界を守れる。",
-        "options": ["おさらを洗った。", "さいふを見つけた。", "一緒にがんばろう！"],
-        "correctIndex": 2
-      }
-    ]
-  },
-  "fire-common": {
+  "sizzlit": {
     "rounds": [
       {
         "speaker": "あつい！元気だよ！",
@@ -113,7 +94,7 @@
       }
     ]
   },
-  "fire-uncommon": {
+  "glitchi": {
     "rounds": [
       {
         "speaker": "火はあったかいでしょ？",
@@ -132,7 +113,7 @@
       }
     ]
   },
-  "fire-rare": {
+  "reelyx": {
     "rounds": [
       {
         "speaker": "この炎、きれいでしょ？",
@@ -151,7 +132,7 @@
       }
     ]
   },
-  "fire-epic": {
+  "kaleidon": {
     "rounds": [
       {
         "speaker": "マグマの力を感じる？",
@@ -170,7 +151,7 @@
       }
     ]
   },
-  "fire-legendary": {
+  "solarie": {
     "rounds": [
       {
         "speaker": "何度でも立ち上がる。",
@@ -189,7 +170,7 @@
       }
     ]
   },
-  "earth-common": {
+  "shimra": {
     "rounds": [
       {
         "speaker": "石をあつめてるよ。",
@@ -208,7 +189,7 @@
       }
     ]
   },
-  "earth-uncommon": {
+  "barkley": {
     "rounds": [
       {
         "speaker": "地面はあったかいよ。",
@@ -227,26 +208,7 @@
       }
     ]
   },
-  "earth-rare": {
-    "rounds": [
-      {
-        "speaker": "地震を感じた？",
-        "options": ["うん、少し揺れた！", "ジュースを飲んだ。", "めがねをかけた。"],
-        "correctIndex": 0
-      },
-      {
-        "speaker": "大地は何でも知ってる。",
-        "options": ["かぜが強い。", "それはすごいね。", "かばんを置いた。"],
-        "correctIndex": 1
-      },
-      {
-        "speaker": "きみは大地みたいだ。",
-        "options": ["りんごを食べた。", "コップを割った。", "うれしい、ありがとう！"],
-        "correctIndex": 2
-      }
-    ]
-  },
-  "earth-epic": {
+  "rooten": {
     "rounds": [
       {
         "speaker": "重力の力は美しい。",
@@ -265,26 +227,7 @@
       }
     ]
   },
-  "earth-legendary": {
-    "rounds": [
-      {
-        "speaker": "世界を支えている。",
-        "options": ["大きな力だね。", "ズボンが長い。", "えんぴつを削った。"],
-        "correctIndex": 0
-      },
-      {
-        "speaker": "すべてはこの大地から。",
-        "options": ["くつ下が白い。", "深い言葉だね。", "バスが来ない。"],
-        "correctIndex": 1
-      },
-      {
-        "speaker": "きみと大地を守りたい。",
-        "options": ["かさを忘れた。", "しおが足りない。", "一緒に守ろう！"],
-        "correctIndex": 2
-      }
-    ]
-  },
-  "metal-common": {
+  "tablette": {
     "rounds": [
       {
         "speaker": "ピカピカが好きだよ。",
@@ -303,7 +246,7 @@
       }
     ]
   },
-  "metal-uncommon": {
+  "swivyl": {
     "rounds": [
       {
         "speaker": "鉄はかたくて強い。",
@@ -322,7 +265,7 @@
       }
     ]
   },
-  "metal-rare": {
+  "scribbit": {
     "rounds": [
       {
         "speaker": "この刃は鋭いだろ？",
@@ -341,26 +284,7 @@
       }
     ]
   },
-  "metal-epic": {
-    "rounds": [
-      {
-        "speaker": "磁力の音が聞こえる？",
-        "options": ["少し聞こえるよ。", "つくえを動かした。", "ケーキを作った。"],
-        "correctIndex": 0
-      },
-      {
-        "speaker": "技術には心が必要だ。",
-        "options": ["いすが壊れた。", "いい考えだね。", "みかんが甘い。"],
-        "correctIndex": 1
-      },
-      {
-        "speaker": "きみの心は鋼のようだ。",
-        "options": ["にくを焼いた。", "タオルが濡れた。", "一緒に頑張ろう！"],
-        "correctIndex": 2
-      }
-    ]
-  },
-  "metal-legendary": {
+  "gilden": {
     "rounds": [
       {
         "speaker": "光の刃で道を開く。",
@@ -379,7 +303,7 @@
       }
     ]
   },
-  "water-common": {
+  "drizzlet": {
     "rounds": [
       {
         "speaker": "水は気持ちいいよ。",
@@ -398,7 +322,7 @@
       }
     ]
   },
-  "water-uncommon": {
+  "frostelle": {
     "rounds": [
       {
         "speaker": "波の音が好きだよ。",
@@ -417,7 +341,7 @@
       }
     ]
   },
-  "water-rare": {
+  "cumulon": {
     "rounds": [
       {
         "speaker": "川の流れは強いよ。",
@@ -436,7 +360,7 @@
       }
     ]
   },
-  "water-epic": {
+  "tidalin": {
     "rounds": [
       {
         "speaker": "氷の中に美しさがある。",
@@ -455,21 +379,496 @@
       }
     ]
   },
-  "water-legendary": {
+  "timbark": {
     "rounds": [
       {
-        "speaker": "深い海を知っている？",
-        "options": ["とても深いよね。", "りんごが落ちた。", "ぼうしが飛んだ。"],
+        "speaker": "ぼくの体は木でできてるよ。",
+        "options": ["すごい、かたそう！", "スプーンを洗った。", "バスが来ない。"],
         "correctIndex": 0
       },
       {
-        "speaker": "海はすべてを受け入れる。",
-        "options": ["にくが固い。", "やさしい心だね。", "つくえを拭いた。"],
+        "speaker": "枝が伸びると気持ちいい。",
+        "options": ["くつ下がない。", "のびのびしてるね！", "たまごを割った。"],
         "correctIndex": 1
       },
       {
-        "speaker": "きみと海の底まで行こう。",
-        "options": ["でんきが消えた。", "さとうを買った。", "どこまでも一緒に！"],
+        "speaker": "きみの近くに根をはりたい。",
+        "options": ["かさを忘れた。", "テレビが壊れた。", "うん、ここにいよう！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "ripplash": {
+    "rounds": [
+      {
+        "speaker": "川みたいに流れるのが好き。",
+        "options": ["自由でいいね！", "えんぴつが折れた。", "ぼうしが大きい。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "水の中はしずかだよ。",
+        "options": ["かぎを忘れた。", "そうだね、落ち着くね。", "にくを焼いた。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "いっしょに川を泳ごう！",
+        "options": ["ノートを開いた。", "いすが壊れた。", "うん、行こう！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "groval": {
+    "rounds": [
+      {
+        "speaker": "森のにおいがするでしょ？",
+        "options": ["うん、いいにおい！", "くるまが速い。", "さとうを買った。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "きのこが背中に生えてるの。",
+        "options": ["でんしゃに乗った。", "おもしろいね！見せて！", "まくらが小さい。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみも森の仲間になる？",
+        "options": ["しおが足りない。", "コップを割った。", "なりたい、仲間だね！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "sproutling": {
+    "rounds": [
+      {
+        "speaker": "小さいけど元気だよ！",
+        "options": ["かわいいね！", "おさらを洗った。", "ドアを閉めた。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "草の中であそぶのが好き。",
+        "options": ["くもが白い。", "たのしそうだね！", "石けんを買った。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "大きくなったらきみを守るよ。",
+        "options": ["さいふをなくした。", "はこを開けた。", "楽しみにしてるよ！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "trottar": {
+    "rounds": [
+      {
+        "speaker": "走るのが大好きなんだ！",
+        "options": ["速そうだね！", "かばんが重い。", "テレビを見た。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "いっしょに走ってみない？",
+        "options": ["りんごが赤い。", "いいね、走ろう！", "まどを閉めた。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみとならどこまでも行ける。",
+        "options": ["ふくが汚れた。", "ペンを買った。", "どこまでも一緒だよ！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "buzzle": {
+    "rounds": [
+      {
+        "speaker": "ぼくの羽、きれいでしょ？",
+        "options": ["きらきらしてる！", "たまごを買った。", "でんしゃが遅い。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "花のみつが大好きなんだ。",
+        "options": ["スプーンがない。", "おいしそうだね！", "くつを脱いだ。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみの花園にいてもいい？",
+        "options": ["ぼうしが飛んだ。", "かぜをひいた。", "もちろん、いいよ！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "sachel": {
+    "rounds": [
+      {
+        "speaker": "べんきょうが好きなんだ！",
+        "options": ["えらいね！", "にくを焼いた。", "タオルが濡れた。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "ノートに何を書く？",
+        "options": ["バスに乗った。", "日記を書くよ！", "くだものが甘い。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "いっしょにべんきょうしよう！",
+        "options": ["かみを切った。", "さかなが泳いだ。", "うん、がんばろう！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "dialyn": {
+    "rounds": [
+      {
+        "speaker": "リンリン！電話だよ！",
+        "options": ["もしもし！", "いすを買った。", "くもが多い。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "だれと話したい？",
+        "options": ["ごはんを作った。", "きみと話したいよ！", "ズボンが長い。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "ぼくがきみの電話になるよ。",
+        "options": ["石けんを使った。", "まどが汚い。", "ありがとう、うれしい！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "deskid": {
+    "rounds": [
+      {
+        "speaker": "ぼくの中にたからものがあるよ。",
+        "options": ["見せて！", "かぜが強い。", "しんぶんを読む。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "ひみつを守るのが得意なんだ。",
+        "options": ["はなが赤い。", "かっこいいね！", "ジュースを飲んだ。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみのたからものも守ってあげる。",
+        "options": ["えんぴつを削った。", "パンが焼けた。", "たのもしいね、ありがとう！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "statik": {
+    "rounds": [
+      {
+        "speaker": "ぼくはテレビなんだ。何を見たい？",
+        "options": ["おもしろい番組！", "ぼうしを買った。", "さとうが多い。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "いろんなものを映せるよ。",
+        "options": ["りんごが落ちた。", "すごい能力だね！", "かぎを忘れた。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみの冒険を映したいな。",
+        "options": ["くつ下が白い。", "タオルを使った。", "いっしょに冒険しよう！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "gulpy": {
+    "rounds": [
+      {
+        "speaker": "ぷくぷく！ほっぺが大きいでしょ？",
+        "options": ["かわいいね！", "ベッドで寝た。", "はこを開けた。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "水の中でおどるのが好き。",
+        "options": ["かばんを置いた。", "楽しそうだね！", "テストがあるよ。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみといっしょに泳ぎたいな。",
+        "options": ["でんきを消した。", "みかんが甘い。", "うん、泳ごう！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "loafie": {
+    "rounds": [
+      {
+        "speaker": "ぼく、パンだよ。おいしそう？",
+        "options": ["いいにおいがする！", "めがねが壊れた。", "くるまを止めた。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "転がるのが好きなんだ。",
+        "options": ["かさが壊れた。", "まるくてかわいいね！", "ペンを忘れた。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみといっしょにころがりたい！",
+        "options": ["しおを入れた。", "いぬが吠えた。", "うん、いっしょに行こう！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "croppy": {
+    "rounds": [
+      {
+        "speaker": "やさいはおいしいよ！",
+        "options": ["うん、体にいいよね！", "ドアを開けた。", "でんしゃが速い。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "にんじんの足で走れるよ。",
+        "options": ["さくらが咲いた。", "すごい、速そう！", "コップを洗った。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみの食べ物をぼくが作るよ。",
+        "options": ["ノートを開いた。", "じてんしゃに乗る。", "うれしい、ありがとう！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "sweetle": {
+    "rounds": [
+      {
+        "speaker": "おかしの世界へようこそ！",
+        "options": ["あまくていいにおい！", "まどを開けて。", "ズボンをはいた。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "きらきらしてるでしょ？",
+        "options": ["かみを洗った。", "うん、宝石みたい！", "バスが来ない。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみにあまいものをあげたいな。",
+        "options": ["さかなを焼いた。", "くつが小さい。", "わあ、食べたい！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "formling": {
+    "rounds": [
+      {
+        "speaker": "いろんな形になれるよ！",
+        "options": ["すごいね！", "たまごが割れた。", "テレビをつけた。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "何の形がいい？",
+        "options": ["ふくが汚れた。", "星の形がいいな！", "コップを落とした。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみのために何にでもなるよ。",
+        "options": ["はさみを使った。", "スカートが長い。", "やさしいね、ありがとう！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "moodlet": {
+    "rounds": [
+      {
+        "speaker": "今日はうれしい顔だよ！",
+        "options": ["いい顔だね！", "牛乳を飲んだ。", "かぎをなくした。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "きみはどんな気持ち？",
+        "options": ["ボタンを押した。", "きみに会えてうれしいよ！", "まくらが大きい。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "いっしょにいると笑顔になる。",
+        "options": ["しんぶんを読む。", "えんぴつが折れた。", "わたしもうれしいよ！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "grinnix": {
+    "rounds": [
+      {
+        "speaker": "笑顔は最高のちからだよ！",
+        "options": ["その通りだね！", "いすが壊れた。", "さとうを買った。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "きみの笑顔もすてきだよ。",
+        "options": ["ベッドで寝たい。", "ありがとう、うれしい！", "くつを脱いだ。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "みんなを笑顔にしたいな。",
+        "options": ["パンを買った。", "とりが飛んだ。", "いっしょにがんばろう！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "giggli": {
+    "rounds": [
+      {
+        "speaker": "あはは！おもしろいでしょ？",
+        "options": ["うん、楽しい！", "さいふを見つけた。", "かぜをひいた。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "笑うと花がさくんだよ。",
+        "options": ["おさらを洗った。", "ふしぎだね、きれい！", "でんきが消えた。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみといると楽しくなる！",
+        "options": ["かばんが古い。", "くもが出た。", "わたしもだよ！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "sketchi": {
+    "rounds": [
+      {
+        "speaker": "ぼくの体は絵でできてるよ。",
+        "options": ["きれいな色だね！", "ジュースを飲んだ。", "はこを閉めた。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "何を描いてほしい？",
+        "options": ["ねこが寝てる。", "虹を描いて！", "ぼうしが大きい。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみの絵を描きたいな。",
+        "options": ["たまごを買った。", "くるまを止めた。", "うん、描いて！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "puppette": {
+    "rounds": [
+      {
+        "speaker": "糸がないのに動けるよ！",
+        "options": ["すごい、ふしぎ！", "スプーンを落とした。", "まどを閉めた。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "おどりを見せてあげる。",
+        "options": ["りんごが赤い。", "見たい、おどって！", "かみを切った。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみといっしょにおどろう！",
+        "options": ["かぜが強い。", "しおが足りない。", "うん、おどろう！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "melodia": {
+    "rounds": [
+      {
+        "speaker": "この歌、聞こえる？",
+        "options": ["うん、きれいな歌！", "ふでばこを開けた。", "つくえが大きい。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "音楽は心をつなげるよ。",
+        "options": ["さかなが大きい。", "そうだね、すてき。", "バスに乗った。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみに歌を聞かせたいな。",
+        "options": ["ケーキが甘い。", "石けんを買った。", "ぜひ聞きたい！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "orblix": {
+    "rounds": [
+      {
+        "speaker": "まるい体にエネルギーがあるよ。",
+        "options": ["光ってるね！", "ズボンが長い。", "はなを買った。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "ぼくの模様、きれいでしょ？",
+        "options": ["テストが難しい。", "うん、ふしぎな模様！", "ペンを買った。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみのちからとぼくのちから、合わせよう。",
+        "options": ["本を読んだ。", "かばんが重い。", "いっしょにがんばろう！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "breezle": {
+    "rounds": [
+      {
+        "speaker": "かぜを感じる？ぼくだよ！",
+        "options": ["さわやかだね！", "おちゃを飲んだ。", "にわで遊んだ。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "どこにでもとんでいけるよ。",
+        "options": ["いすに座った。", "自由ですてきだね！", "ふくを洗った。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみといっしょにかぜになりたい。",
+        "options": ["ごはんを食べた。", "とけいが壊れた。", "うん、いっしょに飛ぼう！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "peekyx": {
+    "rounds": [
+      {
+        "speaker": "ぼくの目はなんでも見えるよ。",
+        "options": ["すごい目だね！", "パンが焼けた。", "くつ下がない。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "きみの気持ちも見えるかも。",
+        "options": ["さとうを入れた。", "おもしろい、何が見える？", "めがねをかけた。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみのことをもっと知りたいな。",
+        "options": ["本だなを見た。", "タオルが濡れた。", "わたしも！友だちだね！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "spindel": {
+    "rounds": [
+      {
+        "speaker": "きれいな糸が作れるよ。",
+        "options": ["うわあ、きれい！", "かさを忘れた。", "にくが固い。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "糸でなんでも作れるんだ。",
+        "options": ["ボールを投げた。", "すごいね、何を作る？", "おなかがすいた。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみとの絆を糸で結びたい。",
+        "options": ["ドアを閉めた。", "えんぴつを削った。", "うん、ずっとつながろう！"],
+        "correctIndex": 2
+      }
+    ]
+  },
+  "gloopy": {
+    "rounds": [
+      {
+        "speaker": "ぷよぷよ！ぼくはかたまりだよ。",
+        "options": ["やわらかそう！", "ベッドが大きい。", "さくらが咲いた。"],
+        "correctIndex": 0
+      },
+      {
+        "speaker": "いろんな形に変われるよ。",
+        "options": ["はさみを使った。", "へんしんできるの、すごい！", "でんしゃに乗った。"],
+        "correctIndex": 1
+      },
+      {
+        "speaker": "きみのそばにいたいな。",
+        "options": ["いぬが走った。", "牛乳を飲んだ。", "わたしもそばにいたい！"],
         "correctIndex": 2
       }
     ]

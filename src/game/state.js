@@ -81,7 +81,7 @@ export function createMetaProgression() {
     achievements: [],
 
     // Permanent robot collection (persists across runs)
-    robotCollection: ['fire-common', 'water-common', 'wood-common'],
+    robotCollection: ['sizzlit', 'drizzlet', 'petalia'],
 
     // Level progression
     levels: {

@@ -38,7 +38,7 @@ describe('Element Cycle', () => {
 
 describe('Robot Instantiation', () => {
   it('creates a level-1 common robot with base stats', () => {
-    const robot = instantiateRobot('fire-common');
+    const robot = instantiateRobot('sizzlit');
     assert.strictEqual(robot.element, 'fire');
     assert.strictEqual(robot.rarity, 'common');
     assert.strictEqual(robot.level, 1);
@@ -51,13 +51,13 @@ describe('Robot Instantiation', () => {
   });
 
   it('applies rarity multiplier for uncommon', () => {
-    const robot = instantiateRobot('fire-uncommon');
+    const robot = instantiateRobot('glitchi');
     assert.strictEqual(robot.maxHp, 110); // 100 * 1.1
     assert.strictEqual(robot.attack, 11); // 10 * 1.1
   });
 
   it('applies rarity multiplier for legendary', () => {
-    const robot = instantiateRobot('water-legendary');
+    const robot = instantiateRobot('gilden');
     assert.strictEqual(robot.maxHp, 140); // 100 * 1.4
     assert.strictEqual(robot.attack, 14); // 10 * 1.4
   });
@@ -83,7 +83,7 @@ describe('Robot Leveling', () => {
   });
 
   it('awards XP and levels up', () => {
-    const robot = instantiateRobot('fire-common');
+    const robot = instantiateRobot('sizzlit');
     addXpToRobot(robot, 100);
     assert.strictEqual(robot.level, 2);
     assert.strictEqual(robot.xp, 0);

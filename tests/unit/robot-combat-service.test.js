@@ -12,8 +12,8 @@ import { instantiateRobot } from '../../src/game/robots.js';
 
 describe('Robot Combat - Attack Turn', () => {
   it('each allied robot attacks the enemy sequentially', () => {
-    const allies = [instantiateRobot('fire-common'), instantiateRobot('water-common')];
-    const enemies = [instantiateRobot('earth-common')];
+    const allies = [instantiateRobot('sizzlit'), instantiateRobot('drizzlet')];
+    const enemies = [instantiateRobot('shimra')];
     const result = processAttackTurn(allies, enemies);
     assert.ok(result.attacks.length >= 1);
     assert.ok(result.attacks.length <= allies.length);
@@ -21,9 +21,9 @@ describe('Robot Combat - Attack Turn', () => {
   });
 
   it('skips KOd allies', () => {
-    const allies = [instantiateRobot('fire-common'), instantiateRobot('water-common')];
+    const allies = [instantiateRobot('sizzlit'), instantiateRobot('drizzlet')];
     allies[0].hp = 0;
-    const enemies = [instantiateRobot('earth-common')];
+    const enemies = [instantiateRobot('shimra')];
     const result = processAttackTurn(allies, enemies);
     assert.strictEqual(result.attacks.length, 1);
   });
@@ -31,7 +31,7 @@ describe('Robot Combat - Attack Turn', () => {
 
 describe('Robot Combat - Defend Turn', () => {
   it('all robots gain +1 ultimate charge', () => {
-    const allies = [instantiateRobot('fire-common')];
+    const allies = [instantiateRobot('sizzlit')];
     processDefendTurn(allies);
     assert.strictEqual(allies[0].ultimate.charges, 1);
   });
@@ -39,8 +39,8 @@ describe('Robot Combat - Defend Turn', () => {
 
 describe('Robot Combat - Enemy Turn', () => {
   it('enemy attacks allied robots using targeting AI', () => {
-    const allies = [instantiateRobot('fire-common')];
-    const enemies = [instantiateRobot('water-common')];
+    const allies = [instantiateRobot('sizzlit')];
+    const enemies = [instantiateRobot('drizzlet')];
     const result = processEnemyTurn(enemies, allies);
     assert.ok(result.attacks.length >= 1);
     assert.ok(allies[0].hp < allies[0].maxHp);
@@ -49,9 +49,9 @@ describe('Robot Combat - Enemy Turn', () => {
 
 describe('Robot Combat - Befriend', () => {
   it('captures enemy at <=50% HP (marks befriended, hp=0)', () => {
-    const enemies = [instantiateRobot('earth-common')];
+    const enemies = [instantiateRobot('shimra')];
     enemies[0].hp = 20;
-    const party = { active: [instantiateRobot('fire-common')], reserves: [], maxTotal: 6 };
+    const party = { active: [instantiateRobot('sizzlit')], reserves: [], maxTotal: 6 };
     const result = processBefriend(enemies, party);
     assert.ok(result.success);
     // Enemy stays in array but is marked as befriended with 0 HP
@@ -61,19 +61,19 @@ describe('Robot Combat - Befriend', () => {
   });
 
   it('rejects befriend if no enemy <=50% HP', () => {
-    const enemies = [instantiateRobot('earth-common')];
+    const enemies = [instantiateRobot('shimra')];
     enemies[0].hp = Math.floor(enemies[0].maxHp * 0.6); // 60% HP — above threshold
-    const party = { active: [instantiateRobot('fire-common')], reserves: [], maxTotal: 6 };
+    const party = { active: [instantiateRobot('sizzlit')], reserves: [], maxTotal: 6 };
     const result = processBefriend(enemies, party);
     assert.ok(!result.success);
   });
 
   it('rejects befriend if party full (6)', () => {
-    const enemies = [instantiateRobot('earth-common')];
+    const enemies = [instantiateRobot('shimra')];
     enemies[0].hp = 20;
     const party = {
-      active: [instantiateRobot('fire-common'), instantiateRobot('water-common'), instantiateRobot('wood-common')],
-      reserves: [instantiateRobot('metal-common'), instantiateRobot('earth-common'), instantiateRobot('fire-uncommon')],
+      active: [instantiateRobot('sizzlit'), instantiateRobot('drizzlet'), instantiateRobot('petalia')],
+      reserves: [instantiateRobot('tablette'), instantiateRobot('shimra'), instantiateRobot('glitchi')],
       maxTotal: 6
     };
     const result = processBefriend(enemies, party);
@@ -84,8 +84,8 @@ describe('Robot Combat - Befriend', () => {
 describe('Robot Combat - XP', () => {
   it('active robots get 2x shares, reserves get 1x share', () => {
     const party = {
-      active: [instantiateRobot('fire-common')],
-      reserves: [instantiateRobot('water-common')]
+      active: [instantiateRobot('sizzlit')],
+      reserves: [instantiateRobot('drizzlet')]
     };
     // 1 active (2 shares) + 1 reserve (1 share) = 3 total shares
     // perShare = 100/3 = 33.3 → active gets floor(66.6)=66, reserve gets floor(33.3)=33
@@ -98,7 +98,7 @@ describe('Robot Combat - XP', () => {
 
   it('levels up when XP exceeds threshold', () => {
     const party = {
-      active: [instantiateRobot('fire-common')],
+      active: [instantiateRobot('sizzlit')],
       reserves: []
     };
     // 1 active (2 shares), 0 reserves = 2 total shares

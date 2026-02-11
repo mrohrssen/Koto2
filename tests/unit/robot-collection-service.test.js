@@ -20,16 +20,16 @@ describe('robot-collection-service', () => {
   });
 
   describe('validateTeamSelection', () => {
-    const collection = ['fire-common', 'water-common', 'wood-common'];
+    const collection = ['sizzlit', 'drizzlet', 'petalia'];
 
     it('accepts valid selection within budget', () => {
-      const result = validateTeamSelection(collection, ['fire-common', 'water-common']);
+      const result = validateTeamSelection(collection, ['sizzlit', 'drizzlet']);
       assert.strictEqual(result.valid, true);
       assert.strictEqual(result.totalCost, 6);
     });
 
     it('accepts single robot', () => {
-      const result = validateTeamSelection(collection, ['fire-common']);
+      const result = validateTeamSelection(collection, ['sizzlit']);
       assert.strictEqual(result.valid, true);
       assert.strictEqual(result.totalCost, 3);
     });
@@ -41,21 +41,21 @@ describe('robot-collection-service', () => {
     });
 
     it('rejects robot not in collection', () => {
-      const result = validateTeamSelection(collection, ['metal-legendary']);
+      const result = validateTeamSelection(collection, ['gilden']);
       assert.strictEqual(result.valid, false);
       assert.match(result.reason, /not in collection/i);
     });
 
     it('rejects selection over budget', () => {
-      const bigCollection = ['fire-common', 'water-common', 'wood-common', 'earth-common', 'metal-uncommon'];
-      const result = validateTeamSelection(bigCollection, ['fire-common', 'water-common', 'wood-common', 'metal-uncommon']);
+      const bigCollection = ['sizzlit', 'drizzlet', 'petalia', 'shimra', 'swivyl'];
+      const result = validateTeamSelection(bigCollection, ['sizzlit', 'drizzlet', 'petalia', 'swivyl']);
       assert.strictEqual(result.valid, false);
       assert.match(result.reason, /exceeds.*budget/i);
     });
 
     it('accepts exactly 10 points', () => {
-      const coll = ['fire-common', 'water-common', 'earth-uncommon'];
-      const result = validateTeamSelection(coll, ['fire-common', 'water-common', 'earth-uncommon']);
+      const coll = ['sizzlit', 'drizzlet', 'barkley'];
+      const result = validateTeamSelection(coll, ['sizzlit', 'drizzlet', 'barkley']);
       assert.strictEqual(result.valid, true);
       assert.strictEqual(result.totalCost, 10);
     });
@@ -63,17 +63,17 @@ describe('robot-collection-service', () => {
 
   describe('addToCollection', () => {
     it('adds new robot ID', () => {
-      const collection = ['fire-common'];
-      const result = addToCollection(collection, 'water-rare');
+      const collection = ['sizzlit'];
+      const result = addToCollection(collection, 'cumulon');
       assert.strictEqual(result.added, true);
-      assert.ok(result.collection.includes('water-rare'));
+      assert.ok(result.collection.includes('cumulon'));
     });
 
     it('does not duplicate existing robot', () => {
-      const collection = ['fire-common'];
-      const result = addToCollection(collection, 'fire-common');
+      const collection = ['sizzlit'];
+      const result = addToCollection(collection, 'sizzlit');
       assert.strictEqual(result.added, false);
-      assert.strictEqual(result.collection.filter(id => id === 'fire-common').length, 1);
+      assert.strictEqual(result.collection.filter(id => id === 'sizzlit').length, 1);
     });
   });
 });

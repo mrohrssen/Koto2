@@ -16,7 +16,7 @@ export const RARITY_POINT_COST = {
 
 export const MAX_TEAM_POINTS = 10;
 
-export const DEFAULT_COLLECTION = ['fire-common', 'water-common', 'wood-common'];
+export const DEFAULT_COLLECTION = ['sizzlit', 'drizzlet', 'petalia'];
 
 export function validateTeamSelection(collection, selectedIds) {
   if (!selectedIds || selectedIds.length === 0) {
@@ -62,6 +62,10 @@ export function getCollectionCatalog(collection) {
     rarity: r.rarity,
     baseHp: r.baseHp,
     baseAttack: r.baseAttack,
+    area: r.area,
+    description: r.description,
+    baseWord: r.baseWord,
+    baseMeaning: r.baseMeaning,
     autoSkill: r.autoSkill,
     ultimate: { name: r.ultimate.name, nameEn: r.ultimate.nameEn },
     pointCost: RARITY_POINT_COST[r.rarity] || 3,

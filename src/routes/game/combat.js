@@ -224,7 +224,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     try {
       const meta = gameManager.getMeta();
-      const collection = meta.robotCollection || ['fire-common', 'water-common', 'wood-common'];
+      const collection = meta.robotCollection || ['sizzlit', 'drizzlet', 'petalia'];
       res.json({ collection, catalog: getCollectionCatalog(collection) });
     } catch (error) {
       res.status(500).json({ error: error.message });

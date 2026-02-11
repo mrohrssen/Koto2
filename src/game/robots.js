@@ -6,8 +6,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROBOT_DATA = JSON.parse(readFileSync(join(__dirname, '../../data/robots.json'), 'utf8'));
 
 const ROBOTS_BY_ID = {};
+const ROBOTS_BY_ELEMENT_RARITY = {};
 for (const r of ROBOT_DATA) {
   ROBOTS_BY_ID[r.id] = r;
+  const key = `${r.element}-${r.rarity}`;
+  if (!ROBOTS_BY_ELEMENT_RARITY[key]) ROBOTS_BY_ELEMENT_RARITY[key] = [];
+  ROBOTS_BY_ELEMENT_RARITY[key].push(r);
 }
 
 // Element cycle: each element beats the next in the array
@@ -127,11 +131,21 @@ export function rollRarity() {
 }
 
 export function generateEnemyRobot(highestAllyLevel = 1) {
-  const rarity = rollRarity();
   const elements = ['wood', 'fire', 'earth', 'metal', 'water'];
-  const element = elements[Math.floor(Math.random() * elements.length)];
-  const templateId = `${element}-${rarity}`;
-  const robot = instantiateRobot(templateId);
+  let group;
+  // Re-roll if the element+rarity combo has no creatures
+  for (let attempts = 0; attempts < 20; attempts++) {
+    const rarity = rollRarity();
+    const element = elements[Math.floor(Math.random() * elements.length)];
+    group = ROBOTS_BY_ELEMENT_RARITY[`${element}-${rarity}`];
+    if (group && group.length > 0) break;
+  }
+  if (!group || group.length === 0) {
+    // Ultimate fallback: pick any creature
+    group = ROBOT_DATA;
+  }
+  const template = group[Math.floor(Math.random() * group.length)];
+  const robot = instantiateRobot(template.id);
 
   const levelVariance = Math.floor(Math.random() * 3) - 1;
   const targetLevel = Math.max(1, highestAllyLevel + levelVariance);

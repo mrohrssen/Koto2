@@ -1,5 +1,5 @@
 {
-  "fire-common": {
+  "sizzlit": {
     "frameSize": 192,
     "animations": {
       "idle": {
@@ -19,7 +19,7 @@
       }
     }
   },
-  "water-common": {
+  "drizzlet": {
     "frameSize": 192,
     "animations": {
       "idle": {
@@ -39,7 +39,7 @@
       }
     }
   },
-  "wood-common": {
+  "petalia": {
     "frameSize": 192,
     "animations": {
       "idle": {

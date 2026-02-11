@@ -336,12 +336,6 @@ function getStaticConversation(robotId) {
     if (data[robotId]?.rounds) {
       return data[robotId].rounds;
     }
-    // Fall back to element-common if specific rarity not found
-    const element = robotId.split('-')[0];
-    const fallbackId = `${element}-common`;
-    if (data[fallbackId]?.rounds) {
-      return data[fallbackId].rounds;
-    }
   } catch (e) {
     console.warn('[Befriend] Failed to load static conversations:', e.message);
   }
