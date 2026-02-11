@@ -502,17 +502,43 @@ export class ExplorationService {
     }
 
     if (room.interacted) {
-      // Already completed, just return success
       return { type: 'word_discovery_complete', alreadyComplete: true };
     }
 
     room.wordDiscovery.completed = true;
     room.interacted = true;
 
+    // Award small XP + credits for robot runs
+    const xpGrants = [];
+    const levelUps = [];
+    if (this.gm.run.robotParty?.active?.length > 0) {
+      const baseEnemyXp = 50;  // same as robot-combat-service kill XP
+      const discoveryXp = Math.floor(baseEnemyXp * 0.2);  // 20% = 10 XP
+
+      for (const robot of this.gm.run.robotParty.active) {
+        if (!robot || robot.hp <= 0) continue;
+        const prevLevel = robot.level;
+        addXpToRobot(robot, discoveryXp);
+        xpGrants.push({ robotId: robot.id, robotName: robot.nameEn, xp: discoveryXp });
+        if (robot.level > prevLevel) {
+          levelUps.push({
+            robotId: robot.id, robotName: robot.nameEn,
+            oldLevel: prevLevel, newLevel: robot.level
+          });
+        }
+      }
+
+      // Credits: 20% of a floor-scaled amount (base 15 per enemy)
+      const creditReward = Math.floor(15 * 0.2) + this.gm.run.floor;
+      this.gm.run.player.credits = (this.gm.run.player.credits || 0) + creditReward;
+
+      logger.info('[WordDiscovery] Robot rewards:', { discoveryXp, creditReward, xpGrants: xpGrants.length });
+    }
+
     logger.info('[WordDiscovery] Room completed');
     this.gm.emitState();
 
-    return { type: 'word_discovery_complete' };
+    return { type: 'word_discovery_complete', xpGrants, levelUps };
   }
 
   // ============ DEALER ROOM ============
