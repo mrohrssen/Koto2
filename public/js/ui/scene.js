@@ -28,6 +28,7 @@
  */
 
 import { dom } from '../dom.js';
+import { configureRobotImg } from './sprite-utils.js';
 
 const ELEMENT_ICONS = {
   wood: '\u{1F33F}', fire: '\u{1F525}', earth: '\u26F0\uFE0F', metal: '\u2699\uFE0F', water: '\u{1F4A7}'
@@ -76,22 +77,26 @@ export function showEnemy(enemy) {
   updateEnemyHP(enemy.hp, enemy.maxHp);
 
   // Construct sprite path from enemy ID
-  const spritePath = enemy.sprite || (isRobot
-    ? `/assets/sprites/robots/${enemy.id}.webp`
-    : `/assets/sprites/enemies/${enemy.id}.webp`);
-  dom.enemySprite.src = spritePath;
-  dom.enemySprite.onerror = () => {
-    dom.enemySprite.classList.remove('visible');
-    if (isRobot) {
-      showRobotPlaceholder(enemy);
-    } else {
-      showPlaceholder(enemy);
-    }
-  };
-  dom.enemySprite.onload = () => {
+  const onLoad = () => {
     removePlaceholder();
     dom.enemySprite.classList.add('visible');
   };
+
+  if (isRobot && !enemy.sprite) {
+    dom.enemySprite.addEventListener('load', onLoad, { once: true });
+    configureRobotImg(dom.enemySprite, enemy.id, () => {
+      dom.enemySprite.classList.remove('visible');
+      showRobotPlaceholder(enemy);
+    });
+  } else {
+    const spritePath = enemy.sprite || `/assets/sprites/enemies/${enemy.id}.webp`;
+    dom.enemySprite.src = spritePath;
+    dom.enemySprite.onerror = () => {
+      dom.enemySprite.classList.remove('visible');
+      showPlaceholder(enemy);
+    };
+    dom.enemySprite.onload = onLoad;
+  }
 }
 
 /** Show multiple enemy robots in horizontal row */
@@ -130,8 +135,7 @@ export function showEnemies(enemies) {
     slot.dataset.enemyId = enemy.id;
     slot.innerHTML = `
       <div class="enemy-robot-icon">
-        <img class="enemy-robot-sprite" src="/assets/sprites/robots/${enemy.id}.webp"
-             onerror="this.style.display='none';this.nextElementSibling.style.display=''" alt="">
+        <img class="enemy-robot-sprite" alt="">
         <span class="enemy-robot-element" style="display:none">${icon}</span>
         <span class="enemy-robot-level" style="background-color: ${color}">Lv${enemy.level || 1}</span>
       </div>
@@ -140,6 +144,11 @@ export function showEnemies(enemies) {
         <div class="enemy-robot-hp-fill" style="width: ${hpPct}%"></div>
       </div>
     `;
+    const spriteImg = slot.querySelector('.enemy-robot-sprite');
+    configureRobotImg(spriteImg, enemy.id, el => {
+      el.style.display = 'none';
+      el.nextElementSibling.style.display = '';
+    });
     row.appendChild(slot);
   }
 

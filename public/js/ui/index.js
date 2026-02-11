@@ -38,3 +38,4 @@ export * as lookup from './lookup.js';
 export * as robotRow from './robot-row.js';
 export * as postCombatShop from './post-combat-shop.js';
 export * as combatAudio from './combat-audio.js';
+export * as spriteUtils from './sprite-utils.js';

@@ -25,6 +25,7 @@
 import { playSFX } from '../audio.js';
 import { speakText } from '../tts.js';
 import * as chipSelect from './chip-select.js';
+import { robotBgUrl } from './sprite-utils.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -220,7 +221,7 @@ export async function renderDealerRoom(actionsModule) {
       const btnDisabled = !affordable ? 'disabled' : '';
       return `
         <div class="dealer-offer-card" style="margin-bottom:0.5rem">
-          <div class="shrine-chip-icon" style="background-image:url('/assets/sprites/${robot.id}.webp'); border-color: var(--rarity-${robot.rarity || 'common'})"></div>
+          <div class="shrine-chip-icon" style="background-image:${robotBgUrl(robot.id)}; border-color: var(--rarity-${robot.rarity || 'common'})"></div>
           <div class="dealer-offer-info">
             <div class="dealer-item-name">${robot.nameEn}</div>
             <div class="shrine-chip-rarity ${robot.rarity || 'common'}">${robot.rarity} \u00B7 ${robot.element} \u00B7 Lv.${robot.level}</div>
@@ -246,7 +247,7 @@ export async function renderDealerRoom(actionsModule) {
     const slotBadge = robot.slot === 'active' ? '\u30A2\u30AF\u30C6\u30A3\u30D6' : '\u30EA\u30B6\u30FC\u30D6';
     return `
       <div class="dealer-inventory-item" data-robot-id="${robot.id}">
-        <div class="shrine-chip-icon" style="background-image:url('/assets/sprites/${robot.id}.webp'); border-color: var(--rarity-${robot.rarity || 'common'})"></div>
+        <div class="shrine-chip-icon" style="background-image:${robotBgUrl(robot.id)}; border-color: var(--rarity-${robot.rarity || 'common'})"></div>
         <div class="dealer-item-info">
           <div class="dealer-item-name">${robot.nameEn} Lv.${robot.level}</div>
           <div class="dealer-item-meta">
