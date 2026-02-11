@@ -69,28 +69,43 @@ Attack and hit prompts followed the element-specific patterns from the working w
 4. **Monitor** — Polled `/history/{prompt_id}` and `/queue` every 30s
 5. **Download results** — Fetched animated WebPs via `/view?filename=...&subfolder=robot_sprites&type=output`
 
-## Background Removal — Unsolved
+## Background Removal
 
-The Wan model outputs video on a white background. We need transparent animated WebPs for the game. We tried three approaches; none fully solved it.
+The Wan model outputs video on a white background. We need transparent animated WebPs for the game. We tried three approaches before finding one that works.
 
-### Approach 1: White threshold
+### Approach 1: White threshold (failed)
 
-Replace all pixels with RGB channels above 250 with transparent. **Problem:** destroys white pixels inside sprites (eyes, highlights, teeth).
+Replace all pixels with RGB channels above 250 with transparent. Destroys white pixels inside sprites (eyes, highlights, teeth).
 
-### Approach 2: Flood fill from edges
+### Approach 2: Flood fill from edges (failed)
 
-BFS flood fill starting from border pixels, only removing white connected to the edges. Preserves interior whites. **Problems:**
+BFS flood fill starting from border pixels, only removing white connected to the edges. Preserves interior whites but had two problems:
 
-- Drizzlet frames 0–3 have black borders (WebP decode artifact), so the flood fill finds no white to seed from. We added black-border detection and a fallback to the nearest good frame's mask, but results still showed flashing.
-- Edge quality: tried Gaussian blur on the binary mask (sigma 3.0, then 1.5) but edges were either too blurry or still harsh.
+- Drizzlet frames 0–3 have black borders (WebP decode artifact), so the flood fill finds no white to seed from. Added black-border detection and nearest-good-frame fallback, but flashing persisted.
+- Edge quality: Gaussian blur on the binary mask (sigma 3.0, then 1.5) produced edges either too blurry or too harsh.
 
-### Approach 3 (not attempted): rembg
+### Approach 3: rembg / U2-Net (winner)
 
-AI-based background removal using U2-Net. Requires installing the `rembg` Python package. Likely the best approach — understands object boundaries rather than relying on color matching.
+AI background removal using the U2-Net neural network via the `rembg` Python package. Ran on the RTX 3090 PC (where `rembg` was already installed) rather than locally.
+
+**How it works:** Upload the script via SCP, run via SSH. The script processes each frame individually through U2-Net, then reassembles the animated WebP.
+
+```bash
+# Upload script
+scp -i ~/.ssh/id_ed25519_remote_pc /tmp/rembg-sprites.py michia@192.168.1.222:'C:\Users\michi\rembg-sprites.py'
+
+# Run on PC
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 'python C:\Users\michi\rembg-sprites.py'
+
+# Download results
+scp -i ~/.ssh/id_ed25519_remote_pc 'michia@192.168.1.222:/Users/michi/ComfyUI/output/robot_sprites_transparent/*' test-animations/
+```
+
+The script lives at `C:\Users\michi\rembg-sprites.py` on the PC. Transparent outputs go to `C:\Users\michi\ComfyUI\output\robot_sprites_transparent\`.
 
 ### Current state
 
-The files in `test-animations/` have flood-fill transparency applied (approach 2 with sigma 1.5), but the results are not production-ready. The drizzlet flashing issue and edge quality need more work.
+The files in `test-animations/` use rembg (approach 3). Edge quality and drizzlet flashing are both resolved.
 
 ## Petalia Quirk
 
@@ -112,10 +127,10 @@ The raw (white background) outputs are still available on the ComfyUI server at 
 
 ## Next Steps
 
-- Solve the transparency problem (try `rembg`, or generate on green/blue screen and chroma-key)
 - Generate petalia attack and hit
-- Once transparency is solid, move final animations from `test-animations/` into `public/assets/sprites/robots/{robotId}/`
+- Move final animations from `test-animations/` into `public/assets/sprites/robots/{robotId}/`
 - Generate animations for remaining 43 robots
+- Automate the full pipeline: generate → rembg → download
 
 ## Timing
 
