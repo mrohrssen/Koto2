@@ -374,9 +374,9 @@
     }
   },
   {
-    "id": "cumulon",
-    "name": "キュムロン",
-    "nameEn": "Cumulon",
+    "id": "nimbulon",
+    "name": "ニンブロン",
+    "nameEn": "Nimbulon",
     "element": "water",
     "rarity": "rare",
     "baseHp": 100,

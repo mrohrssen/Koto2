@@ -43,14 +43,14 @@ All 46 creature sprites have been regenerated to acceptable quality across 4 rou
 
 **R2 new passes (10):** gilden, tidalin, shelvyn, gloopy, spindel, melodia, deskid, glitchi, gulpy, peekyx
 
-**R3 new passes (16):** solarie, chirplet, cumulon, buzzle, scribbit, reelyx, drizzlet, ripplash, sproutling, whiskit, trottar, frostelle, sizzlit, moodlet, sketchi, breezle
+**R3 new passes (16):** solarie, chirplet, nimbulon, buzzle, scribbit, reelyx, drizzlet, ripplash, sproutling, whiskit, trottar, frostelle, sizzlit, moodlet, sketchi, breezle
 
 **R4 new passes (3):** rooten, orblix, dialyn
 
 ### Borderline Re-rolls (Round 5) — All Upgraded
 All 5 borderline sprites were re-rolled with improved prompts:
 - **sproutling**: Re-rolled with extreme close-up — much bigger, more expressive face
-- **cumulon**: Re-rolled as storm dragon — grumpy storm creature with lightning horns
+- **nimbulon**: Re-rolled as storm dragon — grumpy storm creature with lightning horns
 - **scribbit**: Re-rolled as ink blob — ink bunny with swirl body, much better
 - **dialyn**: Re-rolled as hamster — clock face embedded in cute hamster body
 - **rooten**: Re-rolled as chestnut creature — brown body (was purple\!), golden crown, green leaves. Key learning: "chestnut" and "potato" force brown coloring; "root"/"bark"/"tree stump" kept triggering purple

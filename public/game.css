@@ -287,8 +287,8 @@ html, body {
 }
 
 .robot-enemy .enemy-sprite {
-  max-height: 80px;
-  max-width: 80px;
+  max-height: 90px;
+  max-width: 90px;
   border-radius: 50%;
 }
 
@@ -340,8 +340,8 @@ html, body {
 }
 
 .enemy-robot-sprite {
-  max-height: 100px;
-  max-width: 100px;
+  max-height: 90px;
+  max-width: 90px;
   width: auto;
   height: auto;
   object-fit: contain;
@@ -3203,8 +3203,8 @@ html, body {
 }
 
 .robot-sprite-icon {
-  width: 80px;
-  height: 80px;
+  width: 90px;
+  height: 90px;
   object-fit: contain;
   border-radius: 50%;
 }

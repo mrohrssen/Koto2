@@ -134,7 +134,7 @@ When evaluating a candidate creature from a word list, cut it if:
 | 9 | 馬 (うま) horse | 1455 | Trottar | Earth | Uncommon | 踏む (ふむ) "Stomp" r1661 | 揺れる (ゆれる) "Shake" r1370 | A spirited little horse with a bouncy fluffy mane. Always prancing, always ready to race across the open wilderness. |
 | 10 | 雪 (ゆき) snow | 1587 | Frostelle | Water | Uncommon | 回る (まわる) "Spin" r820 | 氷 (こおり) "Ice" r1884 | A fluffy living snowball with sparkling crystal eyes. Tiny ice-crystal antennae twinkle on its head, and it leaves a trail of fresh snowflakes wherever it hops. |
 | 11 | 鳥 (とり) bird | 1581 | Chirplet | Wood | Rare | 吹く (ふく) "Blow" r1871 | 光る (ひかる) "Shine" r1433 | A small round bird with oversized colorful wings and a tiny beak. Puffs up to twice its size when startled. |
-| 12 | 雲 (くも) cloud | 1957 | Cumulon | Water | Rare | 影 (かげ) "Shadow" r1280 | 風 (かぜ) "Wind" r663 | A pillowy creature of soft cloud fluff that constantly shifts shape. Sleepy content expression, floats lazily above the ground. Tiny raindrops sometimes fall from its underside. |
+| 12 | 雲 (くも) cloud | 1957 | Nimbulon | Water | Rare | 影 (かげ) "Shadow" r1280 | 風 (かぜ) "Wind" r663 | A pillowy creature of soft cloud fluff that constantly shifts shape. Sleepy content expression, floats lazily above the ground. Tiny raindrops sometimes fall from its underside. |
 | 13 | 虫 (むし) insect | 2061 | Buzzle | Wood | Rare | 毒 (どく) "Poison" r1688 | 掴む (つかむ) "Grab" r2842 | A colorful bug with iridescent wings that shimmer in sunlight. Oversized round eyes and stubby little legs that wiggle adorably when it flies. |
 | 14 | 波 (なみ) wave | 2122 | Tidalin | Water | Epic | 投げる (なげる) "Throw" r1574 | 潰す (つぶす) "Crush" r1797 | A graceful creature riding on a cresting wave. Translucent blue-green body with flowing fins that trail behind like ribbons of sea foam. |
 | 15 | 根 (ね) root | 2469 | Rooten | Earth | Epic | 握る (にぎる) "Grip" r653 | 引く (ひく) "Pull" r641 | A round earthy creature that burrows underground with gnarled root-tentacles. Cheerful face peeking from a tangle of roots, with small gems embedded in its body. |
@@ -287,7 +287,7 @@ These words are taken. Do not reuse them for new creatures.
 | 607 | 飛ぶ | とぶ | Jump | Whiskit |
 | 641 | 引く | ひく | Pull | Rooten |
 | 653 | 握る | にぎる | Grip | Rooten |
-| 663 | 風 | かぜ | Wind | Cumulon |
+| 663 | 風 | かぜ | Wind | Nimbulon |
 | 665 | 流れる | ながれる | Flow | Drizzlet |
 | 716 | 並ぶ | ならぶ | Line Up | Shelvyn |
 | 790 | 暗い | くらい | Dark | Reelyx |
@@ -311,7 +311,7 @@ These words are taken. Do not reuse them for new creatures.
 | 1178 | 学ぶ | まなぶ | Learn | Sachel |
 | 1208 | 見つめる | みつめる | Stare | Peekyx |
 | 1264 | 叩く | たたく | Strike | Timbark |
-| 1280 | 影 | かげ | Shadow | Cumulon |
+| 1280 | 影 | かげ | Shadow | Nimbulon |
 | 1286 | 浮かぶ | うかぶ | Float | Sketchi |
 | 1316 | 石 | いし | Stone | Orblix |
 | 1363 | 鋭い | するどい | Sharp | Peekyx |

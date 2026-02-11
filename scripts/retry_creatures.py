@@ -130,9 +130,9 @@ CUSTOM_PROMPTS = {
         "edge to edge composition, bird body touches all sides of canvas"
     ),
 
-    # --- cumulon (water/rare): 2 duplicate smaller copies ---
+    # --- nimbulon (water/rare): 2 duplicate smaller copies ---
     # Strategy: describe as ONE specific cloud slime, avoid "storm" which triggers multiples
-    "cumulon": (
+    "nimbulon": (
         "a chibi storm cloud dragon creature filling the frame, "
         "massive puffy round body of dark grey and white cloud with glowing electric blue lightning cracks, "
         "two curved ice crystal horns on top of head, two stubby cloud puff arms, "

@@ -64,9 +64,9 @@ describe('robot-collection-service', () => {
   describe('addToCollection', () => {
     it('adds new robot ID', () => {
       const collection = ['sizzlit'];
-      const result = addToCollection(collection, 'cumulon');
+      const result = addToCollection(collection, 'nimbulon');
       assert.strictEqual(result.added, true);
-      assert.ok(result.collection.includes('cumulon'));
+      assert.ok(result.collection.includes('nimbulon'));
     });
 
     it('does not duplicate existing robot', () => {
