@@ -760,12 +760,12 @@ export class GameManager {
     return this.explorationService.getDealerState();
   }
 
-  dealerSell(chipId) {
-    return this.explorationService.dealerSell(chipId);
+  dealerSell(robotId) {
+    return this.explorationService.dealerSell(robotId);
   }
 
-  dealerBuy() {
-    return this.explorationService.dealerBuy();
+  dealerBuy(robotId) {
+    return this.explorationService.dealerBuy(robotId);
   }
 
   leaveDealer() {

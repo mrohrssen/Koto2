@@ -31,7 +31,7 @@ import {
   getWardInfo
 } from '../rooms.js';
 
-import { addXpToRobot, XP_PER_LEVEL } from '../robots.js';
+import { addXpToRobot, XP_PER_LEVEL, instantiateRobot, getRobotBuyPrice, getRobotSellPrice, generateDealerRobots } from '../robots.js';
 import { logger } from '../../logger.js';
 
 
@@ -552,29 +552,29 @@ export class ExplorationService {
       throw new Error('No dealer here');
     }
 
-    const player = this.gm.run.player;
-    const equippedChipIds = new Set(player.equipment?.weapon?.equippedChips || []);
+    // Lazily generate offered robots on first visit
+    if (!room.dealer.offeredRobots || room.dealer.offeredRobots.length === 0) {
+      const collectionIds = this.gm.player?.robotCollection?.map(r => r.id) || [];
+      room.dealer.offeredRobots = generateDealerRobots(collectionIds);
+    }
 
-    // Build inventory with sell prices
-    const inventory = (player.chips || []).map(chip => {
-      const level = getChipLevel(player, chip.id);
-      const sellPrice = getDealerSellPrice(chip.id, level);
-      return {
-        id: chip.id,
-        name: chip.name,
-        nameEn: chip.nameEn,
-        rarity: chip.rarity,
-        level,
-        sellPrice,
-        isEquipped: equippedChipIds.has(chip.id),
-        stats: chip.stats
-      };
-    });
+    // Build party inventory with sell prices
+    const allRobots = [
+      ...this.gm.run.robotParty.active.map((r, i) => r ? { ...r, slot: 'active', slotIndex: i } : null),
+      ...this.gm.run.robotParty.reserves.map((r, i) => r ? { ...r, slot: 'reserves', slotIndex: i } : null)
+    ].filter(Boolean).map(r => ({
+      ...r,
+      sellPrice: getRobotSellPrice(r.rarity, r.level)
+    }));
 
     return {
       dealer: room.dealer,
-      inventory,
-      credits: player.credits || 0
+      offeredRobots: room.dealer.purchasedRobot ? [] : room.dealer.offeredRobots,
+      partyRobots: allRobots,
+      credits: this.gm.run.player.credits || 0,
+      canBuy: !room.dealer.purchasedRobot,
+      sellCount: room.dealer.soldRobots?.length || 0,
+      maxSells: 2
     };
   }
 
@@ -582,121 +582,134 @@ export class ExplorationService {
    * Sell a chip to the dealer
    * @param {string} chipId - ID of chip to sell
    */
-  dealerSell(chipId) {
+  dealerSell(robotId) {
     const room = this.getCurrentRoom();
     if (!room || room.type !== 'dealer') {
       throw new Error('No dealer here');
     }
 
-    const player = this.gm.run.player;
-
-    // Find chip in inventory
-    const chipIndex = player.chips?.findIndex(c => c.id === chipId);
-    if (chipIndex === -1 || chipIndex === undefined) {
-      throw new Error('Chip not in inventory');
+    if ((room.dealer.soldRobots?.length || 0) >= 2) {
+      throw new Error('Already sold maximum robots (2)');
     }
 
-    const chip = player.chips[chipIndex];
-    const equippedChipIds = player.equipment?.weapon?.equippedChips || [];
-    const isEquipped = equippedChipIds.includes(chipId);
+    // Find robot in party
+    const activeIdx = this.gm.run.robotParty.active.findIndex(r => r?.id === robotId);
+    const reserveIdx = this.gm.run.robotParty.reserves.findIndex(r => r?.id === robotId);
 
-    // If equipped, unequip first (removes HP bonus and clears slot)
-    if (isEquipped) {
-      unequipChip(player, 'weapon', chipId);
+    if (activeIdx === -1 && reserveIdx === -1) {
+      throw new Error('Robot not in party');
     }
 
-    // Calculate level-scaled sell price
-    const level = getChipLevel(player, chipId);
-    const sellPrice = getDealerSellPrice(chipId, level);
+    // Can't sell last robot
+    const totalRobots = [
+      ...this.gm.run.robotParty.active,
+      ...this.gm.run.robotParty.reserves
+    ].filter(Boolean).length;
 
-    // Remove from inventory
-    player.chips.splice(chipIndex, 1);
+    if (totalRobots <= 1) {
+      throw new Error('Cannot sell your last robot');
+    }
+
+    const robot = activeIdx !== -1
+      ? this.gm.run.robotParty.active[activeIdx]
+      : this.gm.run.robotParty.reserves[reserveIdx];
+
+    const sellPrice = getRobotSellPrice(robot.rarity, robot.level);
+
+    // Remove from party
+    if (activeIdx !== -1) {
+      this.gm.run.robotParty.active[activeIdx] = null;
+      // Auto-fill from reserves if available
+      const reserveRobot = this.gm.run.robotParty.reserves.shift();
+      if (reserveRobot) {
+        this.gm.run.robotParty.active[activeIdx] = reserveRobot;
+      }
+    } else {
+      this.gm.run.robotParty.reserves.splice(reserveIdx, 1);
+    }
 
     // Add credits
-    player.credits = (player.credits || 0) + sellPrice;
+    this.gm.run.player.credits = (this.gm.run.player.credits || 0) + sellPrice;
 
-    // Track sold chip
-    room.dealer.soldChips.push({ chipId, sellPrice });
+    // Track sold robot
+    if (!room.dealer.soldRobots) room.dealer.soldRobots = [];
+    room.dealer.soldRobots.push({ robotId, sellPrice });
 
-    logger.info('[Dealer] Chip sold:', { chip: chip.name, chipId, level, sellPrice, wasEquipped: isEquipped });
-
-    this.gm.narrate(`${chip.name || chip.nameEn}を${sellPrice}クレジットで売却した。`);
+    logger.info('[Dealer] Robot sold:', { robot: robot.nameEn, robotId, sellPrice });
+    this.gm.narrate(`${robot.nameEn}を${sellPrice}クレジットで売却した。`);
     this.gm.emitState();
 
     return {
       success: true,
-      chipId,
-      chipName: chip.name || chip.nameEn,
+      robotId,
+      robotName: robot.nameEn,
       creditsGained: sellPrice,
-      creditsRemaining: player.credits,
-      wasEquipped: isEquipped
+      creditsRemaining: this.gm.run.player.credits
     };
   }
 
   /**
    * Buy the dealer's offered chip
    */
-  dealerBuy() {
+  dealerBuy(robotId) {
     const room = this.getCurrentRoom();
     if (!room || room.type !== 'dealer') {
       throw new Error('No dealer here');
     }
 
-    if (room.dealer.visited) {
+    if (room.dealer.purchasedRobot) {
       throw new Error('Already purchased from this dealer');
     }
 
-    const player = this.gm.run.player;
-    const offeredChip = room.dealer.offeredChip;
-    const price = room.dealer.chipPrice;
+    // Find the offered robot
+    const offered = room.dealer.offeredRobots.find(r => r.id === robotId);
+    if (!offered) {
+      throw new Error('Robot not available at dealer');
+    }
+
+    const price = offered.buyPrice;
 
     // Check credits
-    if ((player.credits || 0) < price) {
+    if ((this.gm.run.player.credits || 0) < price) {
       throw new Error('Not enough credits');
     }
 
-    // Check inventory cap
-    const equippedChipIds = new Set(player.equipment?.weapon?.equippedChips || []);
-    const unequippedCount = (player.chips || []).filter(c => !equippedChipIds.has(c.id)).length;
-    if (unequippedCount >= MAX_INVENTORY_SIZE) {
-      throw new Error('Inventory full - sell chips to make room');
+    // Check party size (max 6: 3 active + 3 reserves)
+    const totalRobots = [
+      ...this.gm.run.robotParty.active,
+      ...this.gm.run.robotParty.reserves
+    ].filter(Boolean).length;
+
+    if (totalRobots >= 6) {
+      throw new Error('Party is full (max 6 robots)');
     }
 
     // Deduct credits
-    player.credits -= price;
+    this.gm.run.player.credits -= price;
 
-    // Add chip to inventory
-    if (!player.chips) player.chips = [];
-    player.chips.push({
-      id: offeredChip.id,
-      baseId: offeredChip.baseId || offeredChip.id,
-      name: offeredChip.name,
-      nameEn: offeredChip.nameEn,
-      category: offeredChip.category,
-      rarity: offeredChip.rarity,
-      effects: offeredChip.effects,
-      stats: offeredChip.stats
-    });
+    // Add robot to party (mark as temporary -- won't enter collection)
+    const newRobot = { ...offered, temporary: true };
+    delete newRobot.buyPrice;
 
-    // Auto-equip if fewer than 5 equipped
-    const equippedChips = player.equipment?.weapon?.equippedChips || [];
-    if (equippedChips.length < 5 && !equippedChips.includes(offeredChip.id)) {
-      equipChip(player, 'weapon', offeredChip.id);
+    // Add to active if space, otherwise reserves
+    const emptyActiveSlot = this.gm.run.robotParty.active.findIndex(r => r === null);
+    if (emptyActiveSlot !== -1) {
+      this.gm.run.robotParty.active[emptyActiveSlot] = newRobot;
+    } else {
+      this.gm.run.robotParty.reserves.push(newRobot);
     }
 
-    // Mark dealer as visited (one purchase per room)
-    room.dealer.visited = true;
+    room.dealer.purchasedRobot = robotId;
 
-    logger.info('[Dealer] Chip purchased:', { chip: offeredChip.name, chipId: offeredChip.id, price });
-
-    this.gm.narrate(`${offeredChip.name || offeredChip.nameEn}を${price}クレジットで購入した！`);
+    logger.info('[Dealer] Robot purchased:', { robot: offered.nameEn, robotId, price });
+    this.gm.narrate(`${offered.nameEn}を${price}クレジットで雇った！`);
     this.gm.emitState();
 
     return {
       success: true,
-      chip: offeredChip,
+      robot: newRobot,
       creditsSpent: price,
-      creditsRemaining: player.credits
+      creditsRemaining: this.gm.run.player.credits
     };
   }
 
