@@ -529,7 +529,6 @@ export class GameManager {
     const ids = starterIds || (starterId ? [starterId] : null);
     if (ids && ids.length > 0) {
       this.run.robotParty.active = ids.map(id => instantiateRobot(id));
-      this.run.encountersOnly = true;
     }
 
     // Generate starting chip choices (skip for robot combat - robots don't use chips)
