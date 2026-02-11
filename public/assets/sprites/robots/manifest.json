@@ -1,0 +1,62 @@
+{
+  "fire-common": {
+    "frameSize": 192,
+    "animations": {
+      "idle": {
+        "frames": 48,
+        "duration": 2000,
+        "loop": true
+      },
+      "attack": {
+        "frames": 15,
+        "duration": 625,
+        "loop": false
+      },
+      "hit": {
+        "frames": 9,
+        "duration": 375,
+        "loop": false
+      }
+    }
+  },
+  "water-common": {
+    "frameSize": 192,
+    "animations": {
+      "idle": {
+        "frames": 48,
+        "duration": 2000,
+        "loop": true
+      },
+      "attack": {
+        "frames": 15,
+        "duration": 625,
+        "loop": false
+      },
+      "hit": {
+        "frames": 9,
+        "duration": 375,
+        "loop": false
+      }
+    }
+  },
+  "wood-common": {
+    "frameSize": 192,
+    "animations": {
+      "idle": {
+        "frames": 48,
+        "duration": 2000,
+        "loop": true
+      },
+      "attack": {
+        "frames": 15,
+        "duration": 625,
+        "loop": false
+      },
+      "hit": {
+        "frames": 9,
+        "duration": 375,
+        "loop": false
+      }
+    }
+  }
+}
