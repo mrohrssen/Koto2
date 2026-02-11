@@ -10,7 +10,7 @@
     "element": "wood",
     "rarity": "common",
     "area": "Enchanted Wilderness",
-    "description": "A tiny round creature with colorful petals fanning out from its head like a crown. Big cheerful eyes and leaf-arms that wave when excited.",
+    "description": "a chibi flower sprite creature, body made of soft layered cherry blossom petals in pastel pink and white, delicate translucent petal wings with visible vein patterns, tiny leaf-shaped feet with dewdrop anklets, small golden pollen particles floating around it, bright curious eyes peeking from between petals, gentle green bioluminescent glow from its core",
     "autoSkill": {
       "word": "刺す",
       "reading": "さす",
@@ -35,7 +35,7 @@
     "element": "wood",
     "rarity": "common",
     "area": "Enchanted Wilderness",
-    "description": "A stout little creature with bark-patterned skin and small branches sprouting from its head. Stands on stubby root-feet with a gentle smile.",
+    "description": "a chibi treant creature, stout body of rich dark oak bark with moss patches and lichen spots, two small branch antlers sprouting tiny green leaves, sturdy root-like feet with visible wood grain texture, a cluster of glowing amber sap droplets on its chest, warm friendly eyes set in knotholes, faint green nature energy wisps rising from its leaves",
     "autoSkill": {
       "word": "伸びる",
       "reading": "のびる",
@@ -60,7 +60,7 @@
     "element": "water",
     "rarity": "common",
     "area": "Enchanted Wilderness",
-    "description": "A teardrop-shaped creature made of shimmering water with a tiny cloud hat on its head. Leaves sparkly droplets wherever it bounces.",
+    "description": "a chibi raindrop spirit creature, teardrop-shaped body of translucent shimmering blue water with visible ripple patterns inside, a tiny fluffy cloud sitting on its head like a beret, crystal-clear droplet earrings dangling from the sides, small splashy water feet that leave sparkly puddles, cheerful bright eyes with raindrop-shaped pupils, soft blue glow emanating from within",
     "autoSkill": {
       "word": "落ちる",
       "reading": "おちる",
@@ -85,7 +85,7 @@
     "element": "water",
     "rarity": "common",
     "area": "Enchanted Wilderness",
-    "description": "A sleek serpentine creature that flows like a living river. Playful fish-like face with fins of rushing water and a spiraling tail.",
+    "description": "a chibi river eel dragon creature, sleek serpentine body of flowing turquoise water with white rapids texture along the spine, translucent blue fins shaped like river currents trailing from its head and tail, smooth pebble-like scales with an iridescent sheen, playful fish-like face with whisker barbels made of water streams, gentle aqua glow around its flowing tail tip",
     "autoSkill": {
       "word": "泳ぐ",
       "reading": "およぐ",
@@ -110,7 +110,7 @@
     "element": "wood",
     "rarity": "common",
     "area": "Enchanted Wilderness",
-    "description": "A small mossy creature with tiny trees and mushrooms growing on its back. Woodland flowers peek out from its leafy body as it waddles along.",
+    "description": "a chibi forest guardian tortoise creature, round mossy body with tiny bonsai trees and colorful mushrooms growing from its shell, thick legs covered in soft green moss with clover patches, a canopy of miniature leaves forming a natural crown on its head, small fireflies hovering near its shell, warm earthy eyes with leaf-shaped markings, faint golden spore particles drifting upward",
     "autoSkill": {
       "word": "絡む",
       "reading": "からむ",
@@ -135,7 +135,7 @@
     "element": "wood",
     "rarity": "common",
     "area": "Enchanted Wilderness",
-    "description": "A tiny green creature no bigger than a blade of grass with a single bouncing sprout on its head. Always found in groups, peeking out from meadows.",
+    "description": "a chibi grass seedling creature, small bright green body with a fresh leafy texture like new spring growth, a bouncy curled sprout on its head that bobs with movement, tiny root-like toes gripping the ground, delicate blade-of-grass arms with serrated edges catching light, a dewdrop gem nestled at the base of its sprout, bright eager eyes with a yellow-green shimmer, faint sparkle of morning dew around it",
     "autoSkill": {
       "word": "育つ",
       "reading": "そだつ",
@@ -160,7 +160,7 @@
     "element": "earth",
     "rarity": "uncommon",
     "area": "Enchanted Wilderness",
-    "description": "A loyal round-bodied pup with oversized floppy ears and a fluffy tail that never stops wagging. Bright curious eyes, patches of earthy brown.",
+    "description": "a chibi earth hound creature, sturdy round body of warm terracotta clay with natural stone armor plates on its back, oversized floppy ears with sandy brown and copper patches, a fluffy tail with a glowing amber crystal tip that wags constantly, paws of polished river stone with tiny quartz claws, bright loyal eyes with golden flecks, small dust motes and pebbles orbiting playfully around it, alert adventurous stance",
     "autoSkill": {
       "word": "走る",
       "reading": "はしる",
@@ -185,7 +185,7 @@
     "element": "wood",
     "rarity": "uncommon",
     "area": "Enchanted Wilderness",
-    "description": "A sleek feline with long whiskers that glow softly. Curled tail with a leaf-shaped tip, moves through the canopy with effortless grace.",
+    "description": "a chibi forest cat spirit creature, sleek body of deep emerald fur with vine-like stripe markings that faintly glow, long whiskers made of thin luminous green energy threads, a curled tail ending in a large leaf-shaped fan with visible veins, pointed ears tipped with tiny blooming flowers, agile paws with retractable thorn claws, bright mischievous slit-pupil eyes with an amber gleam, small floating leaf particles trailing behind it",
     "autoSkill": {
       "word": "切る",
       "reading": "きる",
@@ -210,7 +210,7 @@
     "element": "earth",
     "rarity": "uncommon",
     "area": "Enchanted Wilderness",
-    "description": "A spirited little horse with a bouncy fluffy mane. Always prancing, always ready to race across the open wilderness.",
+    "description": "a chibi stone stallion creature, compact muscular body of polished sandstone with crystalline quartz veins running through it, a wild flowing mane made of tumbling pebbles and sand particles that shimmer in light, hooves of gleaming obsidian with tiny impact sparks, a braided tail of woven copper and stone beads, proud bright eyes with gemstone irises, small floating sand particles swirling at its feet, spirited prancing pose",
     "autoSkill": {
       "word": "踏む",
       "reading": "ふむ",
@@ -235,7 +235,7 @@
     "element": "water",
     "rarity": "uncommon",
     "area": "Enchanted Wilderness",
-    "description": "A fluffy living snowball with sparkling crystal eyes. Tiny ice-crystal antennae twinkle on its head, and it leaves a trail of fresh snowflakes wherever it hops.",
+    "description": "a chibi snow fox creature, fluffy round body of pristine white fur with an icy blue shimmer like fresh powder snow, delicate ice crystal antennae on its head that refract light into tiny rainbows, a bushy tail made of layered snowflake patterns with a frosted tip, paws wrapped in natural ice crystal boots, sparkling diamond-dust eyes with a cool blue glow, small snowflakes gently falling around it, gentle winter aura",
     "autoSkill": {
       "word": "回る",
       "reading": "まわる",
@@ -260,7 +260,7 @@
     "element": "wood",
     "rarity": "rare",
     "area": "Enchanted Wilderness",
-    "description": "A small round bird with oversized colorful wings and a tiny beak. Puffs up to twice its size when startled.",
+    "description": "a chibi paradise bird creature, plump round body covered in iridescent feathers that shift between emerald green and sapphire blue, magnificent oversized wings with layered plumage in sunset colors of gold orange and magenta, a crest of three tall decorative feathers with glowing tips like fiber optic lights, sharp little beak of polished jade, tail feathers that trail luminous green energy ribbons, bright confident eyes with a golden ring, visible wind currents swirling beneath its wings, proud hovering pose",
     "autoSkill": {
       "word": "吹く",
       "reading": "ふく",
@@ -285,7 +285,7 @@
     "element": "water",
     "rarity": "rare",
     "area": "Enchanted Wilderness",
-    "description": "A pillowy creature of soft cloud fluff that constantly shifts shape. Sleepy content expression, floats lazily above the ground. Tiny raindrops sometimes fall from its underside.",
+    "description": "a chibi thunderhead cloud dragon creature, billowy body of dense cumulus cloud fluff with a glowing electric blue core visible deep inside, small curved dragon horns made of crystallized ice, wispy cloud-tentacle arms that crackle with tiny lightning sparks, a swirling vortex pattern on its belly like a miniature storm system, sleepy half-lidded eyes that flash with internal lightning, floating ice crystal shards orbiting its body, small raindrops trailing beneath it, serene floating pose",
     "autoSkill": {
       "word": "影",
       "reading": "かげ",
@@ -310,7 +310,7 @@
     "element": "wood",
     "rarity": "rare",
     "area": "Enchanted Wilderness",
-    "description": "A colorful bug with iridescent wings that shimmer in sunlight. Oversized round eyes and stubby little legs that wiggle adorably when it flies.",
+    "description": "a chibi jewel beetle knight creature, armored body of iridescent emerald and gold chitin plates with engraved vine patterns, four magnificent stained-glass wings that shimmer with rainbow prismatic light, a small leaf-blade horn on its forehead, segmented limbs with tiny thorn spikes and pollen dust joints, compound eyes that glow like clusters of tiny green gems, luminous pollen trail floating behind its wings, golden bioluminescent markings along its abdomen, alert battle-ready stance",
     "autoSkill": {
       "word": "毒",
       "reading": "どく",
@@ -335,7 +335,7 @@
     "element": "water",
     "rarity": "epic",
     "area": "Enchanted Wilderness",
-    "description": "A graceful creature riding on a cresting wave. Translucent blue-green body with flowing fins that trail behind like ribbons of sea foam.",
+    "description": "a chibi ocean leviathan creature, a majestic fusion of sea serpent and living tidal wave, body of deep translucent blue-green water with white seafoam armor plates and coral growths, magnificent flowing fins made of cascading water ribbons that trail bioluminescent particles, a crown of spiraling wave crests with pearl ornaments, glowing abyssal patterns across its scales like deep ocean trenches, piercing aquamarine eyes with a tidal surge aura, floating water orbs and tiny fish spirits orbiting around it, dramatic ocean energy aura, imposing regal presence",
     "autoSkill": {
       "word": "投げる",
       "reading": "なげる",
@@ -360,7 +360,7 @@
     "element": "earth",
     "rarity": "epic",
     "area": "Enchanted Wilderness",
-    "description": "A round earthy creature that burrows underground with gnarled root-tentacles. Cheerful face peeking from a tangle of roots, with small gems embedded in its body.",
+    "description": "a chibi ancient root golem creature, a powerful fusion of earth elemental and primordial tree spirit, massive body of twisted gnarled roots woven together with veins of glowing amber sap visible between the gaps, heavy bark armor plates embedded with raw gemstones of emerald and topaz, thick root-tentacle arms with crystal-tipped ends, a crown of ancient petrified wood branches with tiny glowing fungi, deep wise eyes like pools of liquid amber set in weathered bark, floating soil particles and gem shards orbiting its body, dramatic earthen energy aura, imposing guardian stance",
     "autoSkill": {
       "word": "握る",
       "reading": "にぎる",
@@ -385,7 +385,7 @@
     "element": "fire",
     "rarity": "legendary",
     "area": "Enchanted Wilderness",
-    "description": "A radiant creature wreathed in warm golden light. Its mane flows like dancing sunbeams, and small solar flares orbit around it like playful companions.",
+    "description": "a chibi mythical solar phoenix creature, a divine fusion of sun god and celestial fire lion, body of brilliant molten gold and white-hot plasma with swirling solar flare patterns across its surface, magnificent energy wings made of cascading sunbeam feathers that radiate prismatic light, a divine halo crown of spinning golden rings with diamond-bright solar sparks, flowing mane of dancing flame ribbons in gold and white, sacred sun-symbol engravings across its chest plate, celestial eyes of pure burning starlight, multiple floating miniature suns and golden orbs orbiting its body, godlike solar radiance, mythical aura, maximum ornate detail, divine imposing stance",
     "autoSkill": {
       "word": "燃える",
       "reading": "もえる",
@@ -410,7 +410,7 @@
     "element": "wood",
     "rarity": "common",
     "area": "School District",
-    "description": "A small eager creature always carrying a backpack twice its size. Round glasses perched on its nose, pencil behind one ear, constantly scribbling notes.",
+    "description": "a chibi scholar owl creature, round fluffy body of soft brown and cream feathers with a bookish pattern like pages, oversized round glasses perched on a small beak, a tiny graduation cap sitting on its head, one wing clutching a miniature glowing book, a leather satchel strap across its chest with pencils poking out, wide curious eyes magnified behind the glasses with a warm amber glow, faint sparkle of knowledge particles drifting upward",
     "autoSkill": {
       "word": "学ぶ",
       "reading": "まなぶ",
@@ -435,7 +435,7 @@
     "element": "metal",
     "rarity": "common",
     "area": "School District",
-    "description": "A sturdy four-legged creature with a perfectly flat back. Things placed on it bounce off with surprising force. Its polished surface reflects light cheerfully.",
+    "description": "a chibi armadillo robot creature, compact body of polished silver and bronze metal plates arranged like overlapping shields, a perfectly flat reinforced back plate of gleaming chrome that reflects light, four sturdy mechanical legs with spring-loaded joints and copper rivets, a retractable visor face with bright LED dot eyes behind it, small antenna nub on its head, faint metallic sheen and tiny gear decorations along its sides, confident sturdy stance",
     "autoSkill": {
       "word": "支える",
       "reading": "ささえる",
@@ -460,7 +460,7 @@
     "element": "metal",
     "rarity": "common",
     "area": "School District",
-    "description": "A round creature shaped like a rotary phone with a curly cord for a tail. Big dial eyes spin when excited, and it makes cheerful ringing sounds to greet friends.",
+    "description": "a chibi signal bell creature, round compact body of retro teal and cream enamel metal with chrome trim details, two bell-shaped ears that ring with visible sound wave ripples, a curly antenna tail made of coiled copper wire with a glowing tip, a circular dial pattern on its belly with luminous number dots, bright cheerful eyes with rotating iris rings, tiny speaker grilles on its cheeks, faint electric pulse glow around its antenna",
     "autoSkill": {
       "word": "鳴る",
       "reading": "なる",
@@ -485,7 +485,7 @@
     "element": "metal",
     "rarity": "uncommon",
     "area": "School District",
-    "description": "A bouncy chair creature that hops around on four springy legs. Cushioned arms wave hello and its seat back puffs up proudly.",
+    "description": "a chibi spring knight robot creature, boxy body of royal blue and chrome metal with cushioned bumper armor plates, four bouncy piston legs with visible coil springs and shock absorbers, padded shield arms with brass rivets and soft foam edges, a helmet-like head with a plush crest and spinning gyroscope antenna, bright determined eyes behind a visor slit, small energy sparks at each spring joint, floating bolt and nut particles orbiting it, playful bouncing pose",
     "autoSkill": {
       "word": "動く",
       "reading": "うごく",
@@ -510,7 +510,7 @@
     "element": "metal",
     "rarity": "uncommon",
     "area": "School District",
-    "description": "A boxy creature with a hinged lid that opens and closes like a mouth. Stores treasures inside its drawer-belly and gets grumpy if you try to peek.",
+    "description": "a chibi treasure chest mimic creature, boxy body of dark wood and iron with brass lock fittings and ornamental corner brackets, a hinged jaw-lid lined with tiny metallic teeth that opens like a mouth, a drawer-belly compartment with a glowing treasure hoard visible inside, iron-banded stubby legs with claw feet, mischievous glowing eyes peeking from under the half-open lid, a small keyhole pendant on its chest, floating metallic sparkle particles around it, sneaky crouching pose",
     "autoSkill": {
       "word": "開く",
       "reading": "ひらく",
@@ -535,7 +535,7 @@
     "element": "fire",
     "rarity": "uncommon",
     "area": "School District",
-    "description": "A pixelated creature that flickers between different shapes. Has a screen-like face with ever-changing expressions and leaves a trail of colorful pixels.",
+    "description": "a chibi pixel ghost creature, body made of blocky colorful pixels in retro 8-bit game style that shimmer between red orange and yellow, a screen-like face displaying animated pixel art expressions, pixel-flame hair that flickers upward in chunky blocks, blocky gauntlet hands crackling with tiny digital sparks, a pixelated scarf trailing behind it dissolving into data particles, bright glitchy eyes that flash between colors, floating pixel fragments and tiny power-up icons orbiting around it, energetic floating pose",
     "autoSkill": {
       "word": "変える",
       "reading": "かえる",
@@ -560,7 +560,7 @@
     "element": "metal",
     "rarity": "rare",
     "area": "School District",
-    "description": "A floating ink creature that reshapes itself into different kanji. Has brushstroke arms and leaves beautiful calligraphy trails in the air.",
+    "description": "a chibi ink phantom creature, sleek body of glossy liquid black chrome that flows like living mercury, a smooth featureless face with bright glowing white eyes and a luminous smile that appears like fresh brushstrokes, long flowing ribbon arms of metallic dark blue liquid that leave shimmering trails, a quill-shaped tail fin of polished steel with an ink-drop tip, floating orbs of silver and indigo liquid metal orbiting its body, chrome circuit-line patterns visible beneath its glossy surface, elegant mysterious floating pose",
     "autoSkill": {
       "word": "書く",
       "reading": "かく",
@@ -585,7 +585,7 @@
     "element": "metal",
     "rarity": "rare",
     "area": "School District",
-    "description": "A boxy creature with antenna ears and an animated face on its screen. Broadcasts different channels through its belly and crackles with static when startled.",
+    "description": "a chibi signal phantom robot creature, sleek chrome and teal body with angular armor plating and circuit-trace engravings, a CRT monitor head displaying a glowing pixel-art face with scan-line effects, dual antenna ears crackling with visible electric arc effects, floating static orbs and data fragments orbiting its body, electromagnetic aura with tiny lightning tendrils branching outward, a satellite dish backpack with a pulsing signal light, sharp confident eyes on the screen display, tech-knight battle stance",
     "autoSkill": {
       "word": "送る",
       "reading": "おくる",
@@ -610,7 +610,7 @@
     "element": "wood",
     "rarity": "epic",
     "area": "School District",
-    "description": "A tall rectangular creature lined with tiny shelves full of books. Wobbles when it walks and occasionally drops a book on someone's head.",
+    "description": "a chibi ancient library golem creature, a powerful fusion of enchanted bookcase and forest guardian, towering body of dark mahogany wood with shelves carved into its torso holding rows of tiny glowing magical tomes, thick bark armor with golden library filigree engravings, massive branch arms holding an open spellbook radiating green light, a crown of twisted wood branches with floating bookmark ribbons and candlelight orbs, wise ancient eyes glowing with accumulated knowledge, pages and leaf particles swirling in a dramatic vortex around it, ornate magical aura, imposing scholarly presence",
     "autoSkill": {
       "word": "並ぶ",
       "reading": "ならぶ",
@@ -635,7 +635,7 @@
     "element": "fire",
     "rarity": "common",
     "area": "Market District",
-    "description": "A chunk of grilled meat with stubby legs and a sizzling surface that pops and crackles. Has a juicy friendly face and leaves a delicious aroma trail wherever it waddles.",
+    "description": "a chibi fire salamander creature, compact body of warm amber and red-orange with a sizzling texture like grilled caramel, glossy surface with visible heat shimmer lines rising from its back, a small flame tuft on its tail tip that crackles with embers, stubby legs with charcoal-dark feet and tiny ember claws, a juicy glowing core visible in its round belly, cheerful bright eyes with flame-shaped pupils, faint wisps of delicious-smelling steam and tiny spark particles around it",
     "autoSkill": {
       "word": "当たる",
       "reading": "あたる",
@@ -660,7 +660,7 @@
     "element": "water",
     "rarity": "uncommon",
     "area": "Market District",
-    "description": "A round bubbly fish with oversized cheeks puffed full of water. Tiny fins flutter like wings and big glistening eyes always look surprised.",
+    "description": "a chibi deep sea anglerfish creature, round puffy body of iridescent teal and pearl scales with bioluminescent spot patterns, oversized cheeks puffed out like water balloons with a translucent shimmer, a dangling antenna lure on its forehead glowing bright cyan, delicate fan-shaped fins with flowing ribbon edges that flutter like silk, small bubble stream trailing from its gills, big expressive eyes with ring-shaped luminous pupils, floating soap-bubble orbs around it, surprised curious expression",
     "autoSkill": {
       "word": "外す",
       "reading": "はずす",
@@ -685,7 +685,7 @@
     "element": "earth",
     "rarity": "uncommon",
     "area": "Market District",
-    "description": "A golden-brown bread loaf with a warm crusty exterior and a soft doughy smile. Rolls around instead of walking and gets puffier when happy.",
+    "description": "a chibi bakery golem creature, round plump body of golden-brown baked bread with a beautifully scored crust pattern and flour dusting, a warm glowing core visible through cracks in the crust like fresh-from-the-oven light, small doughy arms with oven mitt-shaped hands, a tiny chef hat of risen dough on its head, stubby feet of darker toasted bread, rosy warm cheeks with a steam blush, bright happy eyes with a buttery golden gleam, floating wheat grain particles and warm steam wisps around it, content wobbling pose",
     "autoSkill": {
       "word": "転がる",
       "reading": "ころがる",
@@ -710,7 +710,7 @@
     "element": "wood",
     "rarity": "rare",
     "area": "Market District",
-    "description": "A bundle of colorful vegetables stacked into a cheerful creature. Carrot legs, lettuce wings, and a tomato nose. Different veggies peek out from all directions.",
+    "description": "a chibi harvest guardian creature, a vibrant fusion of garden knight and living produce, body armor made of layered cabbage leaves with red pepper pauldrons, sturdy carrot legs with root-fiber boots, lettuce wing cape flowing behind it with visible water droplet gems, a pumpkin helmet with a carved visor revealing bright green eyes, a tomato shield held in one hand and a corn-cob staff in the other, glowing seed-energy core in its chest, floating vegetable leaf confetti and golden harvest sparkles orbiting around it, heroic battle stance",
     "autoSkill": {
       "word": "立つ",
       "reading": "たつ",
@@ -735,7 +735,7 @@
     "element": "earth",
     "rarity": "epic",
     "area": "Market District",
-    "description": "A sparkling candy creature wrapped in shiny foil with a bow on top. Gummy bear paws, lollipop antennae, and a trail of sugar sparkles.",
+    "description": "a chibi confection dragon creature, a dazzling fusion of crystal candy and treasure beast, body of translucent hard candy in layered rainbow colors with a prismatic sugar-glass shell, magnificent wings made of spun sugar and cotton candy clouds that shimmer with edible glitter, a crown of towering rock candy spires and lollipop scepter horns, gummy bear claw gauntlets with fondant armor plates, a swirling caramel core radiating warm golden light, jewel-bright eyes of polished candy gems, floating candy shards and sugar crystal particles orbiting dramatically, ornate sparkling aura, imposing confection royalty presence",
     "autoSkill": {
       "word": "隠す",
       "reading": "かくす",
@@ -760,7 +760,7 @@
     "element": "earth",
     "rarity": "common",
     "area": "Family Village",
-    "description": "A graceful translucent creature that shifts between different silhouettes. Its body shimmers like a mirage, mimicking the outline of whatever stands near it.",
+    "description": "a chibi clay mimic creature, smooth round body of pearlescent clay that shifts between warm beige and cool grey, a reflective mirror-like patch on its chest showing a faint silhouette, soft malleable limbs with fingerprint-swirl texture patterns, small crystalline eyes that change color like mood rings, tiny clay horn nubs on its head, surface ripple effect across its body like disturbed water, faint iridescent shimmer around its edges",
     "autoSkill": {
       "word": "覚える",
       "reading": "おぼえる",
@@ -785,7 +785,7 @@
     "element": "earth",
     "rarity": "common",
     "area": "Family Village",
-    "description": "A squishy clay-like creature that molds itself into new shapes. Curious face with stretchy limbs that can flatten, stretch, or ball up at will.",
+    "description": "a chibi geometric slime creature, squishy body of translucent amber clay with visible geometric shapes floating inside like a snow globe, stretchy arms that morph between different polygon shapes, a cube-shaped head with softened rounded edges, bright curious dot eyes on each face of the cube, tiny crystal formations growing along its back, surface covered in faint hexagonal tile patterns, warm golden glow from the geometric shapes within",
     "autoSkill": {
       "word": "受ける",
       "reading": "うける",
@@ -810,7 +810,7 @@
     "element": "wood",
     "rarity": "common",
     "area": "Family Village",
-    "description": "A round-faced creature whose features cycle through emotions — happy, surprised, thoughtful, excited. A ring of tiny emotive symbols orbits its head.",
+    "description": "a chibi theater mask spirit creature, round soft body of warm ivory with a smooth porcelain-like finish, a large expressive comedy mask face with rosy painted cheeks and a beaming smile, small leaf-like hands holding tiny drama masks on sticks, a leafy ruff collar of green and gold around its neck, delicate crack-line patterns across its surface filled with golden light, bright warm eyes with a theatrical sparkle, tiny floating heart and star symbols orbiting its head, gentle warm glow",
     "autoSkill": {
       "word": "声",
       "reading": "こえ",
@@ -835,7 +835,7 @@
     "element": "wood",
     "rarity": "uncommon",
     "area": "Family Village",
-    "description": "An irresistibly cheerful creature with an enormous warm smile. Rosy cheeks glow softly, and its happiness is so contagious that even grumpy creatures smile back.",
+    "description": "a chibi sunshine fairy creature, round plush body of warm buttercup yellow with soft fur texture, an enormous cheerful crescent-moon smile that radiates visible warmth lines, rosy cheek patches that glow with a soft pink bioluminescence, small petal wings in pastel rainbow colors, tiny flower crown with daisies and sunflowers, stubby arms ending in star-shaped hands, bright joyful eyes that sparkle like morning sunlight, floating tiny smiley face particles and golden light motes around it, happy floating pose",
     "autoSkill": {
       "word": "軽い",
       "reading": "かるい",
@@ -860,7 +860,7 @@
     "element": "wood",
     "rarity": "uncommon",
     "area": "Family Village",
-    "description": "A round jiggly creature that bounces around in fits of giggles. Its belly ripples with laughter, and its infectious chuckles make flowers bloom.",
+    "description": "a chibi bubble sprite creature, round jiggly body of translucent pink jelly with visible fizzy bubbles rising inside, a wide open laughing mouth showing tiny candy-colored teeth, bouncy spring-coil feet that compress and expand, small leaf-fan ears that flap when giggling, a cluster of soap bubble orbs floating above its head like a thought cloud, belly that visibly ripples with wave patterns, bright squinting happy eyes with tear-drop sparkles, floating flower petals popping out of bursting bubbles around it, mid-bounce pose",
     "autoSkill": {
       "word": "弾く",
       "reading": "はじく",
@@ -885,7 +885,7 @@
     "element": "wood",
     "rarity": "uncommon",
     "area": "Family Village",
-    "description": "A flat papery creature that looks like a living watercolor painting. New drawings appear on its body as it moves, and it can peel sketches off to bring them to life.",
+    "description": "a chibi paint spirit creature, flat papery body that looks like a living watercolor canvas with beautiful painted landscape patterns flowing across its surface, arms made of paintbrush bristles dripping with colorful paint droplets, a beret of swirled oil paint in rainbow colors, legs like colored pencils with eraser-tip feet, bright creative eyes that leave paint-stroke trails when it blinks, a palette-shaped tail with dots of every color, floating paint splatter particles and tiny crayon fragments orbiting around it, artistic floating pose",
     "autoSkill": {
       "word": "浮かぶ",
       "reading": "うかぶ",
@@ -910,7 +910,7 @@
     "element": "metal",
     "rarity": "rare",
     "area": "Family Village",
-    "description": "A charming wooden doll with jointed limbs and painted rosy cheeks. Moves with a springy marionette bounce, though no strings are visible.",
+    "description": "a chibi clockwork marionette creature, elegant body of polished dark wood and brass with ornamental joint mechanisms visible at every connection, painted porcelain face with rosy cheeks and detailed eyelashes, a tiny top hat with a spinning gear decoration and ribbon, articulated fingers of delicate brass wire, a wind-up key embedded in its back with a faint golden glow, puppet-cross hovering above its head connected by shimmering silver energy threads, floating tiny gear cogs and musical note particles orbiting it, graceful dancing mid-step pose",
     "autoSkill": {
       "word": "抜く",
       "reading": "ぬく",
@@ -935,7 +935,7 @@
     "element": "wood",
     "rarity": "rare",
     "area": "Family Village",
-    "description": "A graceful creature shaped like a musical note. Hums constantly, and tiny floating music notes trail behind wherever it goes.",
+    "description": "a chibi songbird siren creature, graceful body of polished pearl white with flowing lines like sheet music staves engraved across its surface, a magnificent crest of crystallized sound waves in rainbow gradient colors, wings shaped like golden harps with glowing string feathers, a long ribbon tail that curls into a treble clef shape, a tiny microphone-crystal pendant around its neck, eyes like shining amethyst gems with musical note pupils, visible sound wave ripples emanating from its open beak, floating golden music notes and sparkling sound particles trailing behind it, elegant singing pose",
     "autoSkill": {
       "word": "光",
       "reading": "ひかり",
@@ -960,7 +960,7 @@
     "element": "earth",
     "rarity": "epic",
     "area": "Family Village",
-    "description": "A perfectly spherical creature with swirling mystical patterns across its surface. Hovers slightly off the ground and pulses with stored energy.",
+    "description": "a chibi ancient orb guardian creature, a powerful fusion of crystal golem and celestial sphere, massive spherical body of polished obsidian and jade with deep swirling galaxy patterns visible within like a cosmic marble, thick crystalline armor segments with gold filigree borders, heavy stone gauntlet arms with embedded glowing rune circles, a crown of floating geometric stone fragments arranged in a planetary ring, deep ancient eyes of molten gold set in carved stone sockets, multiple orbiting crystal shards and energy runes floating around it, pulsing earthen energy aura with visible gravitational distortion, imposing hovering stance",
     "autoSkill": {
       "word": "石",
       "reading": "いし",
@@ -985,7 +985,7 @@
     "element": "fire",
     "rarity": "epic",
     "area": "Family Village",
-    "description": "A dazzling creature covered in ever-shifting geometric patterns. Its body is a living kaleidoscope, with colors and shapes flowing across its surface in mesmerizing waves.",
+    "description": "a chibi prism dragon creature, a dazzling fusion of fire elemental and living kaleidoscope, body of crystalline glass refracting light into shifting geometric rainbow patterns across its entire surface, translucent prismatic wings that scatter light into visible spectrum beams, a fractal-pattern crown of interlocking crystal triangles with fire burning inside each, claws of polished ruby and sapphire crystal, a blazing geometric core radiating heat and prismatic light, eyes like spinning color wheels with hypnotic spiral pupils, floating prismatic shards and flame-colored geometric particles orbiting dramatically, ornate crystalline fire aura, imposing display pose",
     "autoSkill": {
       "word": "炎",
       "reading": "ほのお",
@@ -1010,7 +1010,7 @@
     "element": "wood",
     "rarity": "common",
     "area": "Crossroads Inn",
-    "description": "A nearly invisible wispy creature made of swirling air currents. Its cheerful face is outlined by tiny sparkles of dust caught in its breeze. Loves to playfully ruffle hair.",
+    "description": "a chibi wind sprite creature, wispy translucent body of pale mint green with visible swirling air current patterns inside like a tiny tornado, soft feathery wings made of layered breeze wisps, a dandelion-puff hairstyle that constantly sways, small cloud-like hands and feet with a cottony texture, bright playful eyes with spiral wind-pattern irises, a leaf-shaped scarf that trails and flutters behind it, tiny sparkling dust motes and dandelion seeds floating in its wake",
     "autoSkill": {
       "word": "通る",
       "reading": "とおる",
@@ -1035,7 +1035,7 @@
     "element": "fire",
     "rarity": "uncommon",
     "area": "Crossroads Inn",
-    "description": "A floating eye-shaped creature surrounded by a ring of smaller orbiting eyes. Each eye blinks independently, and its main iris shifts colors with its mood.",
+    "description": "a chibi flame eye sentinel creature, a floating orb body with one massive central eye of deep amber and crimson with a slit pupil that burns like a candle flame, a ring of six smaller glowing eye-orbs orbiting around it connected by thin fire-energy threads, smooth dark obsidian shell with crack-lines of molten orange light, small flame-wisp tentacles trailing below, each orbiting eye a different warm color from gold to deep red, visible heat shimmer distortion around its body, intense focused gaze with flickering fire reflections, mysterious hovering pose",
     "autoSkill": {
       "word": "見つめる",
       "reading": "みつめる",
@@ -1060,7 +1060,7 @@
     "element": "fire",
     "rarity": "rare",
     "area": "Crossroads Inn",
-    "description": "A boxy projector-shaped creature with film reels for ears that spin constantly. Projects colorful scenes from its lens-eye and makes classic movie sound effects.",
+    "description": "a chibi cinema phantom creature, sleek art-deco body of black and gold with film strip patterns wrapping around it like decorative bands, a projector lens for one eye that emits a bright cone of colorful light, film reel ears that spin with visible frames of tiny animated scenes, a director's clapper-board crest on its head, elegant cape made of flowing film strips with golden sprocket holes, the other eye a bright star-shaped spotlight, floating popcorn-kernel sparks and film frame fragments orbiting around it, dramatic spotlight-lit pose",
     "autoSkill": {
       "word": "暗い",
       "reading": "くらい",
@@ -1085,7 +1085,7 @@
     "element": "metal",
     "rarity": "rare",
     "area": "Crossroads Inn",
-    "description": "A graceful silk creature with delicate thread limbs and a spindle-shaped body. Weaves intricate patterns in the air and leaves behind beautiful web trails.",
+    "description": "a chibi silk weaver spider mech creature, elegant spindle-shaped body of polished silver and white chrome with delicate filigree engravings, eight graceful articulated legs of thin brushed steel with golden joint rings, a bobbin-shaped abdomen trailing luminous silver silk threads, a tiny crown of interlocking needle-like spires on its head, multiple small gem-like eyes arranged in a crescent pattern glowing soft blue, visible web patterns of metallic thread connecting its legs like a harp, floating silver thread wisps and tiny crystal dewdrop particles around it, graceful weaving pose",
     "autoSkill": {
       "word": "結ぶ",
       "reading": "むすぶ",
@@ -1110,7 +1110,7 @@
     "element": "earth",
     "rarity": "epic",
     "area": "Crossroads Inn",
-    "description": "An amorphous blob that constantly shifts shape, with a happy face that stays put no matter how much it morphs. Translucent and loves to absorb small objects.",
+    "description": "a chibi primordial ooze titan creature, a powerful fusion of crystal slime king and ancient earth elemental, massive amorphous body of translucent amber and emerald gel with swirling mineral deposits and fossil fragments visible deep inside, heavy crystal formations growing from its surface like geode armor, pseudopod arms tipped with polished gemstone fists, a crown of jagged amethyst crystals emerging from its head, a glowing molten core pulsing with rhythmic energy deep within, ancient knowing eyes of liquid gold floating on its surface, floating absorbed treasures and crystal shards orbiting dramatically, dramatic viscous energy aura, imposing shifting presence",
     "autoSkill": {
       "word": "合う",
       "reading": "あう",
@@ -1135,7 +1135,7 @@
     "element": "metal",
     "rarity": "legendary",
     "area": "Crossroads Inn",
-    "description": "A magnificent creature with a gleaming golden body that reflects light in every direction. Regal but friendly, with nugget-shaped paws and a crown of natural gold crystals.",
+    "description": "a chibi mythical golden idol dragon creature, a divine fusion of treasure emperor and living gold deity, body of pure gleaming 24-karat gold with intricate sacred filigree engravings and diamond-studded circuit patterns, magnificent golden energy wings made of hundreds of floating coin-like scales that shimmer independently, a divine halo crown of spinning golden rings with cascading diamond sparks, heavy ornamental chest plate with a radiant sunburst core of white-hot light, claws of polished platinum with ruby-tipped fingers, celestial eyes of molten gold with prismatic diamond pupils, multiple floating golden orbs treasure coins and light motes orbiting in a majestic constellation, godlike golden radiance, mythical prismatic aura, maximum ornate detail, divine emperor stance",
     "autoSkill": {
       "word": "輝く",
       "reading": "かがやく",

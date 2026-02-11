@@ -43,31 +43,28 @@ def set_comfyui_url(url):
 
 
 STYLE = (
-    "solo, chibi character, cute monster creature, gacha game art style, "
+    "solo, ONE single chibi character only, cute monster creature, gacha game art style, "
     "mobile game character icon, white background, bright vivid colors, "
-    "high quality, clean, centered composition, single subject only, "
-    "full body, standing pose, collectible creature design"
+    "high quality, clean lineart, centered composition, single subject only, "
+    "full body, standing pose, collectible creature design, "
+    "large character filling the frame, close-up view"
 )
 
 NEGATIVE = (
-    "dark, gritty, realistic, horror, text, title, logo, watermark, username, "
-    "signature, writing, letters, words, japanese text, kanji, hiragana, katakana, "
+    "text, title, logo, watermark, username, signature, writing, letters, words, "
+    "japanese text, kanji, hiragana, katakana, alphabet, numbers, font, caption, "
+    "speech bubble, dialogue box, name plate, label, subtitle, credit, "
     "game UI, icon, badge, HUD, frame, border, card frame, ornamental frame, "
-    "decorative border, thumbnail, small version, duplicate, multiple views, "
-    "reference sheet, character sheet, turnaround, blurry, low quality, "
-    "multiple characters, complex background, human, humanoid, pokeball, "
-    "monochrome, silhouette, picture frame, vignette, circular frame, porthole, "
-    "ground, grass, floor, scenery, landscape, environment, scene"
+    "decorative border, thumbnail, small version, "
+    "duplicate, multiple copies, two characters, multiple characters, "
+    "reference sheet, character sheet, turnaround, model sheet, "
+    "size comparison, evolution chart, "
+    "blurry, low quality, complex background, human, humanoid, pokeball, "
+    "monochrome, silhouette, picture frame, vignette, circular frame, "
+    "ground, grass, floor, scenery, landscape, environment, scene, "
+    "pedestal, stand, platform, base, disc, coin, stage, podium, "
+    "dark, gritty, realistic, horror"
 )
-
-# Rarity-specific style boosts
-RARITY_BOOST = {
-    "common": "simple design, small, round, cute, friendly",
-    "uncommon": "slightly detailed, small accent features, charming",
-    "rare": "noticeable glow effects, more complex design, elegant",
-    "epic": "dramatic aura, ornate details, imposing presence, glowing energy",
-    "legendary": "mythical aura, godlike radiance, maximum ornate detail, prismatic glow, majestic",
-}
 
 
 def load_creatures():
@@ -76,11 +73,13 @@ def load_creatures():
 
 
 def build_prompt(creature):
-    """Build the full positive prompt from creature data."""
+    """Build the full positive prompt from creature data.
+
+    Rarity-specific detail is baked into each creature's description field
+    in creatures.json, so no separate rarity boost is needed here.
+    """
     desc = creature["description"]
-    rarity = creature.get("rarity", "common")
-    boost = RARITY_BOOST.get(rarity, "")
-    return f"{STYLE}, {boost}, {desc}"
+    return f"{STYLE}, {desc}"
 
 
 def create_workflow(creature_id, prompt):

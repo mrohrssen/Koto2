@@ -144,10 +144,33 @@ large character filling the frame, close-up view
 
 ## Steps
 
-1. Rewrite all 46 `description` fields in `data/creatures.json` using the template and rarity escalation above
+1. ~~Rewrite all 46 `description` fields in `data/creatures.json` using the template and rarity escalation above~~ **DONE** (2026-02-11)
 2. Run `python scripts/generate_creatures.py --force` to regenerate all 46
 3. Visual QA each sprite — retry failures with `scripts/retry_creatures.py`
 4. Iterate until all 46 look as good as the old robots
+
+## Changes Made (2026-02-11)
+
+### creatures.json — All 46 descriptions rewritten
+Every description now follows the layered prompt structure with 6-8 visual detail layers, scaled by rarity. Problem creatures reimagined:
+- **tablette** (table) → armadillo robot with flat chrome back plate
+- **swivyl** (chair) → spring knight robot with piston legs
+- **deskid** (desk) → treasure chest mimic with hinged jaw-lid
+- **shelvyn** (shelf) → ancient library golem with book-shelves carved into torso
+- **scribbit** (letter) → ink phantom of liquid black chrome (avoids text artifacts)
+- **moodlet** (expression) → theater mask spirit with ONE face (avoids multi-character)
+- **sizzlit** (meat) → fire salamander with sizzling caramel texture
+
+### generate_creatures.py
+- Removed `RARITY_BOOST` dictionary — rarity detail is now baked into each description
+- Updated STYLE prefix to match retry script's stronger version (adds "ONE single", "large character filling the frame", "close-up view", "clean lineart")
+- Updated NEGATIVE prompt to match retry script's stronger version (adds anti-pedestal, anti-platform terms)
+- `build_prompt()` now simply concatenates `STYLE + description`
+
+### retry_creatures.py
+- Cleared all 25 old custom prompts (no longer needed with rich descriptions)
+- Added `build_prompt_from_json()` fallback — retry now uses creatures.json description by default
+- Custom prompts dict kept for future per-creature overrides if any fail during generation
 
 ## Gallery
 
