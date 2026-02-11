@@ -744,8 +744,8 @@ export class GameManager {
     return this.explorationService.useShrine(robotId);
   }
 
-  useQuizReward(rewardType) {
-    return this.explorationService.useQuizReward(rewardType);
+  useQuizReward(rewardType, robotId) {
+    return this.explorationService.useQuizReward(rewardType, robotId);
   }
 
   /**

@@ -432,7 +432,7 @@ export class ExplorationService {
     };
   }
 
-  useQuizReward(rewardType) {
+  useQuizReward(rewardType, robotId = null) {
     const room = this.getCurrentRoom();
     if (!room || room.type !== 'quiz') {
       throw new Error('No quiz here');
@@ -442,28 +442,40 @@ export class ExplorationService {
       throw new Error('Quiz reward already claimed');
     }
 
-    const player = this.gm.run.player;
     let description;
 
     switch (rewardType) {
-      case 'max_hp':
-        player.maxHp += 25;
-        player.hp += 25;
-        description = 'Max HP +25!';
+      case 'heal': {
+        if (!robotId) throw new Error('robotId required for heal reward');
+        const allRobots = [
+          ...this.gm.run.robotParty.active,
+          ...this.gm.run.robotParty.reserves
+        ].filter(Boolean);
+        const robot = allRobots.find(r => r.id === robotId);
+        if (!robot) throw new Error('Robot not in party');
+        robot.hp = robot.maxHp;
+        description = `${robot.nameEn} fully healed!`;
         break;
+      }
 
-      case 'heal_hp':
-        player.hp = Math.min(player.hp + 75, player.maxHp);
-        description = 'HP restored +75!';
+      case 'levelup': {
+        if (!robotId) throw new Error('robotId required for levelup reward');
+        const allRobots = [
+          ...this.gm.run.robotParty.active,
+          ...this.gm.run.robotParty.reserves
+        ].filter(Boolean);
+        const robot = allRobots.find(r => r.id === robotId);
+        if (!robot) throw new Error('Robot not in party');
+        addXpToRobot(robot, XP_PER_LEVEL);
+        description = `${robot.nameEn} leveled up to Lv. ${robot.level}!`;
         break;
+      }
 
-      case 'chip_charges': {
-        const equippedChips = player.equipment?.weapon?.equippedChips || [];
-        if (!player._chipCharges) player._chipCharges = {};
-        for (const chipId of equippedChips) {
-          player._chipCharges[chipId] = (player._chipCharges[chipId] || 0) + 3;
-        }
-        description = 'All Chip Skills +3 Charges!';
+      case 'credits': {
+        const floor = this.gm.run.floor || 1;
+        const creditReward = 20 + (floor * 10);
+        this.gm.run.player.credits = (this.gm.run.player.credits || 0) + creditReward;
+        description = `${creditReward} credits earned!`;
         break;
       }
 
@@ -477,7 +489,7 @@ export class ExplorationService {
     this.gm.narrate(`クイズマスター：「正解！」 ${description}`);
     this.gm.emitState();
 
-    return { type: 'quiz_reward', rewardType, description, player: { hp: player.hp, maxHp: player.maxHp } };
+    return { type: 'quiz_reward', rewardType, description };
   }
 
   /**

@@ -450,11 +450,11 @@ export default function createRunRoutes({
   router.post('/quiz-reward', (req, res) => {
     try {
       const gameManager = req.gameManager;
-      const { rewardType } = req.body;
+      const { rewardType, robotId } = req.body;
       if (!rewardType) {
         return res.status(400).json({ error: 'rewardType required' });
       }
-      const result = gameManager.useQuizReward(rewardType);
+      const result = gameManager.useQuizReward(rewardType, robotId);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
