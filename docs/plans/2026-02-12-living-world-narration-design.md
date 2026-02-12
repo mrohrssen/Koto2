@@ -26,6 +26,69 @@ The befriend dialogue service provides the caching pattern. The door hint servic
 
 ---
 
+## Separation Strategy: Module Now, Service Later
+
+The narration engine serves multiple future games and a potential Unity rebuild. But with 2 players today, a separate repo and deployment adds pain without benefit. We follow the standard practice: **build a well-isolated module inside the monolith, extract when a second client needs it.**
+
+### Module Structure
+
+```
+src/
+  narration-engine/              ← the future service, isolated NOW
+    index.js                     ← clean public interface
+    prompt-assembler.js          ← layered context + token budgets
+    text-cache.js                ← per-user caching (befriend pattern)
+    npc-memory.js                ← typed memories, gates (Tier 3)
+    character-cards.js           ← card loader
+    vocab-constraints.js         ← i+1 prompt building
+    generation.js                ← LLM calls via injected provider
+  game/                          ← game logic, unchanged
+    ...
+```
+
+### The One Rule
+
+**The narration engine never imports from `game/`.** Game-specific code (event hooks, route handlers) imports from the engine, never the reverse. Dependencies flow one direction:
+
+```
+game/ ──imports──► narration-engine/
+                   (never the reverse)
+```
+
+### Public Interface
+
+```javascript
+// src/narration-engine/index.js
+export function generateDialogue({ characterCard, memory, worldContext, vocab, task }) { ... }
+export function logInteraction(userId, npcId, event) { ... }
+export function getTextFromCache(userId, entryKey) { ... }
+export function refreshStaleEntries(userId, vocab) { ... }
+```
+
+### Future Extraction Path
+
+When a second game client (Unity, another web game) needs the engine:
+
+1. Move `src/narration-engine/` to its own repo
+2. Put Express/Fastify routes in front of the exported functions
+3. Point the game at `http://narration-service/` instead of importing directly
+4. Add auth between services, rate limiting, and a real database (replace JSON files)
+
+This is a weekend of work, not a rewrite. The clean boundary makes extraction mechanical.
+
+### Scaling Lessons from Industry
+
+Research into [Death by AI](https://inworld.ai/blog/how-inworld-helped-the-ai-game-death-by-ai-with-20-million-players-reach-profitability) (20M players), [Roblox](https://about.roblox.com/engineering/infrastructure) (70M DAU, 2,000+ services), and [general game AI infrastructure](https://series.inc/scalable-ai-infrastructure-for-live-games/) surfaced patterns relevant to our eventual scale-out:
+
+- **Model cascading**: Use cheap, fast models (Haiku) for 90% of dialogue; reserve expensive models (Sonnet/Opus) for boss encounters or narratively complex moments. Build this into the prompt assembler from day one.
+- **Cost as a design constraint**: Death by AI's costs went from $5K to $250K/day in two weeks. Our pre-generation + caching architecture avoids this — we generate offline, not in the hot path.
+- **Stateless services scale horizontally**: When we extract, the service should be stateless. State (caches, memories) lives in a database, not in-process. Our current JSON files migrate to Redis/Postgres at that point.
+- **Pre-generation beats real-time**: "You can't pre-cache what doesn't exist until the instant it's needed" — but we *can*, because our text is tied to vocab state, not real-time conversation. This is our architectural advantage over every platform we evaluated.
+
+None of these require action today. They inform the module's interface design so extraction stays clean.
+
+---
+
 ## Stolen Patterns
 
 ### From Convai: Hierarchical Memory (Mimir)
@@ -178,9 +241,11 @@ User:   Rewrite this line for a player who knows 142 words:
 
 ### What to Build
 
-- `src/game/services/text-cache-service.js` — cache CRUD, atomic saves (copy befriend pattern)
-- Generation prompts for each category
-- Backend enrichment: inject cached text into API responses before sending to frontend
+- `src/narration-engine/text-cache.js` — cache CRUD, atomic saves (copy befriend pattern)
+- `src/narration-engine/generation.js` — generation prompts per category
+- `src/narration-engine/vocab-constraints.js` — extract vocab prompt building from ai-providers
+- `src/narration-engine/index.js` — public interface (`getTextFromCache`, `refreshStaleEntries`)
+- Backend enrichment in `server.js`: inject cached text into API responses before sending to frontend
 - Background refresh trigger on run start
 - Remove wasted narration calls (`runStart`, `floorEnter`, `encounterStart` per the original overhaul doc)
 
@@ -252,7 +317,9 @@ Same call count as Tier 1. Personality profiles are prompt context, not extra ca
 
 ### What to Build
 
-- Character card schema and data for all enemies/robots
+- `src/narration-engine/character-cards.js` — card loader and schema validation
+- Character card data in `data/character-cards/` (one JSON per NPC or bundled)
+- `src/narration-engine/prompt-assembler.js` — layered prompt assembly with token budgets
 - Updated generation prompts that take personality + state + goals + previous lines
 - "Previously seen" tracking to prevent repetition across regenerations
 
@@ -376,7 +443,7 @@ Same call count as Tier 2. Memory is prompt context (~100-200 extra tokens). One
 
 ### What to Build
 
-- `src/game/services/npc-memory-service.js` — typed memory CRUD, interaction logging
+- `src/narration-engine/npc-memory.js` — typed memory CRUD, interaction logging
 - Narrative summary generation after each encounter
 - Memory gates for dialogue mode selection
 - Extended generation prompts with memory context
@@ -589,45 +656,48 @@ When context budget is tight (small models), the assembler trims from the bottom
 
 | Tier | Depends on | Key deliverable | Estimated calls/user |
 |------|-----------|-----------------|---------------------|
-| **1** | Nothing | `text-cache-service.js` + background refresh | ~1,250 initial |
-| **2** | Tier 1 | Character card schema + authoring prompts | ~same |
-| **3** | Tier 2 | `npc-memory-service.js` + interaction logger + gates | ~same + 1 summary/encounter |
+| **1** | Nothing | `narration-engine/text-cache.js` + background refresh | ~1,250 initial |
+| **2** | Tier 1 | Character card schema + `prompt-assembler.js` | ~same |
+| **3** | Tier 2 | `narration-engine/npc-memory.js` + interaction logger + gates | ~same + 1 summary/encounter |
 | **4** | Tier 3 | Reputation service + cross-NPC references | ~same |
 
 Each tier is independently shippable. Tier 1 alone improves the game. Each subsequent tier enriches the experience without changing the tiers below.
 
 ### Tier 1 Implementation Order
 
-1. Remove wasted narration calls (`runStart`, `floorEnter`, `encounterStart`)
-2. Build `text-cache-service.js` (copy befriend pattern: atomic saves, locks, retry)
-3. Build generation prompts per category
-4. Wire backend to enrich API responses from cache
-5. Add background refresh on run start
-6. Benchmark across Haiku / Sonnet / user-configured provider
+1. Create `src/narration-engine/` directory structure with `index.js` public interface
+2. Remove wasted narration calls (`runStart`, `floorEnter`, `encounterStart`)
+3. Build `narration-engine/text-cache.js` (copy befriend pattern: atomic saves, locks, retry)
+4. Build `narration-engine/vocab-constraints.js` (extract from ai-providers)
+5. Build `narration-engine/generation.js` with prompts per category
+6. Wire `server.js` to enrich API responses from cache (game imports from engine)
+7. Add background refresh on run start
+8. Benchmark across Haiku / Sonnet / user-configured provider
 
 ### Tier 2 Implementation Order
 
-1. Design character card schema
-2. Populate character cards for all enemies and robots
-3. Update generation prompts to use personality + goals
-4. Add anti-repetition tracking (previously seen lines)
-5. Test personality consistency across regenerations
+1. Design character card schema in `narration-engine/character-cards.js`
+2. Populate character cards for all enemies and robots in `data/character-cards/`
+3. Build `narration-engine/prompt-assembler.js` with layered context + token budgets
+4. Update generation prompts to use personality + goals
+5. Add anti-repetition tracking (previously seen lines)
+6. Test personality consistency across regenerations
 
 ### Tier 3 Implementation Order
 
-1. Build `npc-memory-service.js` with typed memory (counters, flags, decisions, narrative)
-2. Add interaction logger hooks to combat, befriend, and shop systems
+1. Build `narration-engine/npc-memory.js` with typed memory (counters, flags, decisions, narrative)
+2. Add interaction logger hooks in `game/` that call `narration-engine/` (one-directional)
 3. Build narrative summary generation (post-encounter)
 4. Implement memory gates for dialogue mode selection
-5. Extend generation prompts with memory context
+5. Extend prompt assembler with memory context layer
 
 ### Tier 4 Implementation Order
 
-1. Build reputation aggregation service
+1. Add reputation aggregation to `narration-engine/npc-memory.js`
 2. Implement world mood derivation
 3. Add recent events feed with importance filtering
-4. Build cross-NPC reference gathering
-5. Add knowledge separation (personal vs hearsay) to prompts
+4. Build cross-NPC reference gathering (keyword-triggered lore)
+5. Add knowledge separation (personal vs hearsay) to prompt assembler
 6. Test interconnected world feel across multi-run playthroughs
 
 ---
