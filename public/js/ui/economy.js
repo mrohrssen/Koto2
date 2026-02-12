@@ -221,11 +221,13 @@ export async function renderDealerRoom(actionsModule) {
       const btnDisabled = !affordable ? 'disabled' : '';
       return `
         <div class="dealer-offer-card" style="margin-bottom:0.5rem">
-          <div class="shrine-chip-icon" style="border-color: var(--rarity-${robot.rarity || 'common'})"><img src="${robotSpritePath(robot.id)}" alt="${robot.nameEn}" style="width:100%;height:100%;object-fit:contain" /></div>
-          <div class="dealer-offer-info">
-            <div class="dealer-item-name">${robot.nameEn}</div>
-            <div class="shrine-chip-rarity ${robot.rarity || 'common'}">${robot.rarity} \u00B7 ${robot.element} \u00B7 Lv.${robot.level}</div>
-            <div class="dealer-offer-desc">HP: ${robot.maxHp} \u00B7 ATK: ${robot.attack}</div>
+          <div class="dealer-offer-top">
+            <div class="shrine-chip-icon" style="border-color: var(--rarity-${robot.rarity || 'common'})"><img src="${robotSpritePath(robot.id)}" alt="${robot.nameEn}" style="width:100%;height:100%;object-fit:contain" /></div>
+            <div class="dealer-offer-info">
+              <div class="dealer-item-name">${robot.nameEn}</div>
+              <div class="shrine-chip-rarity ${robot.rarity || 'common'}">${robot.rarity} \u00B7 ${robot.element} \u00B7 Lv.${robot.level}</div>
+              <div class="dealer-offer-desc">HP: ${robot.maxHp} \u00B7 ATK: ${robot.attack}</div>
+            </div>
           </div>
           <button class="dealer-buy-btn" data-robot-id="${robot.id}" ${btnDisabled}>${robot.buyPrice}cr \u3067\u96C7\u3046</button>
         </div>
@@ -264,6 +266,7 @@ export async function renderDealerRoom(actionsModule) {
 
   actionsModule.setContent(`
     <div class="dealer-room">
+      <div class="dealer-welcome">\u3044\u3089\u3063\u3057\u3083\u3044\uFF01\u73CD\u3057\u3044\u30ED\u30DC\u30C3\u30C8\u304C\u5165\u8377\u3057\u305F\u3088\uFF01</div>
       <div class="dealer-credits">
         <span id="dealer-credits">${credits}</span> cr
       </div>

@@ -2030,6 +2030,15 @@ html, body {
   padding: 0 12px;
 }
 
+.dealer-welcome {
+  text-align: center;
+  font-size: 13px;
+  color: var(--accent-cyan, #4dd0e1);
+  margin-bottom: 6px;
+  font-style: italic;
+  opacity: 0.9;
+}
+
 .dealer-credits {
   text-align: center;
   font-size: 1.2rem;
@@ -2054,12 +2063,18 @@ html, body {
 
 .dealer-offer-card {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
   background: var(--bg-card);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
+}
+
+.dealer-offer-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .dealer-offer-info {
@@ -2084,7 +2099,7 @@ html, body {
 }
 
 .dealer-buy-btn {
-  flex-shrink: 0;
+  width: 100%;
   padding: 8px 14px;
   border: none;
   border-radius: var(--radius-md);
@@ -2177,10 +2192,10 @@ html, body {
   width: 100%;
   margin-top: 12px;
   padding: 12px;
-  border: 1.5px solid var(--text-secondary);
+  border: 1.5px solid var(--accent-cyan, #4dd0e1);
   border-radius: var(--radius-md);
   background: transparent;
-  color: var(--text-primary);
+  color: var(--accent-cyan, #4dd0e1);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -2188,7 +2203,7 @@ html, body {
 }
 
 .dealer-leave-btn:active {
-  background: rgba(0,0,0,0.05);
+  background: rgba(77, 208, 225, 0.1);
 }
 
 /* ===== GAME OVER ===== */
