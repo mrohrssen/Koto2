@@ -321,11 +321,21 @@ export async function renderLevelSelect() {
         const collection = collectionResult?.collection;
         if (catalog && catalog.length > 0) {
           starterIds = await showCollectionSelect(catalog, collection);
-          if (!starterIds || starterIds.length === 0) return;
+          if (!starterIds || starterIds.length === 0) {
+            document.querySelector('.game-app')?.querySelector('.collection-select')?.remove();
+            return;
+          }
         }
       }
 
-      const runResult = await apiSelectLevel(levelId, starterIds);
+      // Retry up to 3 times if isLoading blocks the call
+      let runResult = null;
+      for (let attempt = 0; attempt < 3 && !runResult?.state; attempt++) {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 300));
+        runResult = await apiSelectLevel(levelId, starterIds);
+      }
+
+      document.querySelector('.game-app')?.querySelector('.collection-select')?.remove();
       if (runResult?.state) {
         updateGameState(runResult.state);
         updateUI();

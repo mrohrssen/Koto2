@@ -505,6 +505,11 @@ async function createCharacter() {
   }
 }
 
+function removeCollectionOverlay() {
+  const gameApp = document.querySelector('.game-app');
+  gameApp?.querySelector('.collection-select')?.remove();
+}
+
 async function startNewRun() {
   // Note: clearWordCache() moved to returnToHub() for earlier prefetching
 
@@ -515,9 +520,19 @@ async function startNewRun() {
 
   if (catalog && catalog.length > 0) {
     const starterIds = await showCollectionSelect(catalog, collection);
-    if (!starterIds || starterIds.length === 0) return;
+    if (!starterIds || starterIds.length === 0) {
+      removeCollectionOverlay();
+      return;
+    }
 
-    const result = await apiStartRun({ starterIds });
+    // Retry up to 3 times if isLoading blocks the call
+    let result = null;
+    for (let attempt = 0; attempt < 3 && !result?.state; attempt++) {
+      if (attempt > 0) await new Promise(r => setTimeout(r, 300));
+      result = await apiStartRun({ starterIds });
+    }
+
+    removeCollectionOverlay();
     if (result?.state) {
       updateGameState(result.state);
       updateUI();
@@ -612,9 +627,6 @@ function showCollectionSelect(catalog, collection) {
 
       document.getElementById('collection-confirm-btn')?.addEventListener('click', () => {
         if (selected.size > 0) {
-          // Remove overlay before resolving
-          const gameApp = document.querySelector('.game-app');
-          gameApp.querySelector('.collection-select')?.remove();
           resolve([...selected]);
         }
       });
