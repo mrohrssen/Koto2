@@ -1,36 +1,40 @@
 #!/usr/bin/env python3
 """
-Generate idle animations for all 46 creatures using Wan 2.2 via ComfyUI API.
+Generate idle animations for creatures using Wan 2.2 via ComfyUI API.
 
-Uses the proven two-pass MoE workflow from:
-  docs/plans/2026-02-11-wan-comfyui-working-workflow.md
-
-Pipeline per creature:
+End-to-end pipeline per creature:
 1. Convert RGBA sprite to RGB with white background
-2. Upload to ComfyUI
-3. Queue two-pass idle animation job (49 frames, FLF2V loop)
-4. Poll for completion
-5. Download result to output/animated-sprites/{creatureId}/idle.webp
+2. Upload to ComfyUI and queue Wan 2.2 two-pass idle animation
+3. Poll for completion and download animated webp
+4. Extract frames, run per-frame RMBG background removal on ComfyUI GPU
+5. Reassemble transparent frames into animated webp
+6. Deploy to public/assets/sprites/robots/{id}-idle.webp
+
+The game auto-detects idle sprites via sprite-utils.js configureRobotImg().
 
 Requirements:
   - ComfyUI running at COMFYUI_URL (default: http://192.168.1.222:8188)
-  - Wan 2.2 models installed (high-noise + low-noise 14B Q4)
-  - PIL/Pillow: pip install Pillow
+  - Wan 2.2 models (high-noise + low-noise 14B Q4)
+  - RMBG-2.0 node installed in ComfyUI
+  - Pillow: pip install Pillow
 
 Usage:
-  python scripts/generate_idle_animations.py                    # All 46 creatures
-  python scripts/generate_idle_animations.py --ids petalia,barkley  # Specific creatures
-  python scripts/generate_idle_animations.py --element fire     # All fire creatures
-  python scripts/generate_idle_animations.py --skip-existing    # Skip already-generated
-  python scripts/generate_idle_animations.py --dry-run          # Show what would be queued
-  python scripts/generate_idle_animations.py --batch-size 5     # Queue 5 at a time
+  python scripts/generate_idle_animations.py                          # All creatures, full pipeline
+  python scripts/generate_idle_animations.py --ids petalia,timbark    # Specific creatures
+  python scripts/generate_idle_animations.py --skip-existing          # Skip already-generated
+  python scripts/generate_idle_animations.py --no-rembg               # Generate only, skip RMBG
+  python scripts/generate_idle_animations.py --rembg-only             # RMBG existing animations only
+  python scripts/generate_idle_animations.py --rembg-only --ids petalia  # RMBG one creature
 """
 
 import argparse
 import json
 import os
+import shutil
 import sys
+import tempfile
 import time
+import urllib.parse
 import urllib.request
 import urllib.error
 
@@ -42,6 +46,10 @@ OUTPUT_DIR = os.path.join(PROJECT_ROOT, "output", "animated-sprites")
 TMP_DIR = os.path.join(PROJECT_ROOT, "tmp", "idle-gen")
 
 COMFYUI_URL = os.environ.get("COMFYUI_URL", "http://192.168.1.222:8188")
+
+# --- RMBG post-processing settings ---
+GAME_SPRITE_DIR = os.path.join(PROJECT_ROOT, "public", "assets", "sprites", "robots")
+RMBG_TMP_DIR = os.path.join(PROJECT_ROOT, "tmp", "rembg-frames")
 
 # --- Proven idle animation settings (from wan-comfyui-working-workflow.md) ---
 IDLE_FRAMES = 49       # 2.0s at 24fps
@@ -115,6 +123,22 @@ def convert_rgba_to_rgb(input_path, output_path):
     else:
         img.convert("RGB").save(output_path, "PNG")
     return output_path
+
+
+def extract_frames(webp_path):
+    """Extract all frames from an animated webp. Returns (list[PIL.Image], list[int])."""
+    from PIL import Image
+    img = Image.open(webp_path)
+    frames = []
+    durations = []
+    try:
+        while True:
+            frames.append(img.copy().convert("RGBA"))
+            durations.append(img.info.get("duration", 42))
+            img.seek(img.tell() + 1)
+    except EOFError:
+        pass
+    return frames, durations
 
 
 def upload_image(png_path):
@@ -356,6 +380,117 @@ def download_output(prompt_id, creature_id):
     return out_path
 
 
+def build_rmbg_workflow(server_filename, creature_id, frame_idx):
+    """RMBG workflow for a single frame — runs on ComfyUI GPU."""
+    return {
+        "prompt": {
+            "1": {
+                "class_type": "LoadImage",
+                "inputs": {"image": server_filename},
+            },
+            "2": {
+                "class_type": "RMBG",
+                "inputs": {
+                    "image": ["1", 0],
+                    "model": "RMBG-2.0",
+                    "sensitivity": 1.0,
+                    "process_res": 1024,
+                    "mask_blur": 0,
+                    "mask_offset": 0,
+                    "invert_output": False,
+                    "background": "Alpha",
+                },
+            },
+            "3": {
+                "class_type": "SaveImage",
+                "inputs": {
+                    "images": ["2", 0],
+                    "filename_prefix": f"rembg_frames/{creature_id}_frame_{frame_idx:04d}",
+                },
+            },
+        }
+    }
+
+
+def download_rmbg_frame(outputs):
+    """Download a single RMBG-processed frame PNG from ComfyUI."""
+    images = outputs.get("3", {}).get("images", [])
+    if not images:
+        return None
+    filename = images[0].get("filename")
+    subfolder = images[0].get("subfolder", "")
+    if not filename:
+        return None
+    params = urllib.parse.urlencode({
+        "filename": filename, "subfolder": subfolder, "type": "output"
+    })
+    tmp = tempfile.NamedTemporaryFile(suffix=".png", delete=False, dir=RMBG_TMP_DIR)
+    tmp.close()
+    urllib.request.urlretrieve(f"{COMFYUI_URL}/view?{params}", tmp.name)
+    return tmp.name
+
+
+def rembg_animated_webp(input_webp, output_webp, creature_id):
+    """Extract frames from animated webp, RMBG each on ComfyUI, reassemble transparent."""
+    from PIL import Image
+    os.makedirs(RMBG_TMP_DIR, exist_ok=True)
+
+    frames, durations = extract_frames(input_webp)
+    print(f"    RMBG: {len(frames)} frames to process")
+
+    # Upload + queue all frames
+    jobs = []
+    for i, frame in enumerate(frames):
+        frame_path = os.path.join(RMBG_TMP_DIR, f"{creature_id}_frame_{i:04d}.png")
+        rgb = Image.new("RGB", frame.size, (255, 255, 255))
+        if frame.mode == "RGBA":
+            rgb.paste(frame, mask=frame.split()[3])
+        else:
+            rgb.paste(frame)
+        rgb.save(frame_path, "PNG")
+
+        server_name = upload_image(frame_path)
+        workflow = build_rmbg_workflow(server_name, creature_id, i)
+        prompt_id = queue_prompt(workflow)
+        jobs.append((i, prompt_id))
+        os.unlink(frame_path)
+
+    # Wait + download
+    transparent = [None] * len(frames)
+    for i, (idx, pid) in enumerate(jobs):
+        start = time.time()
+        while time.time() - start < 120:
+            status, outputs = check_job_status(pid)
+            if status == "success":
+                path = download_rmbg_frame(outputs)
+                if path:
+                    transparent[idx] = Image.open(path).convert("RGBA")
+                    os.unlink(path)
+                break
+            elif status == "error":
+                break
+            time.sleep(1)
+
+        if transparent[idx] is None:
+            print(f"    RMBG frame {idx} failed")
+            return False
+
+        if (i + 1) % 10 == 0:
+            print(f"    RMBG: {i + 1}/{len(frames)} done")
+
+    # Reassemble
+    os.makedirs(os.path.dirname(output_webp), exist_ok=True)
+    transparent[0].save(
+        output_webp, "WEBP", save_all=True,
+        append_images=transparent[1:],
+        duration=durations[0] if durations else 42,
+        loop=0, quality=90, allow_mixed=True,
+    )
+    size_kb = os.path.getsize(output_webp) / 1024
+    print(f"    RMBG: saved {os.path.relpath(output_webp, PROJECT_ROOT)} ({size_kb:.0f} KB)")
+    return True
+
+
 def verify_comfyui():
     """Check that ComfyUI is reachable."""
     try:
@@ -384,6 +519,12 @@ def main():
     parser.add_argument("--seed", type=int, default=88, help="Base seed for generation (default: 88)")
     parser.add_argument("--poll-interval", type=int, default=30,
                         help="Seconds between status checks (default: 30)")
+    parser.add_argument("--no-rembg", action="store_true",
+                        help="Skip RMBG background removal (keep white background)")
+    parser.add_argument("--no-deploy", action="store_true",
+                        help="Skip copying to game sprite directory")
+    parser.add_argument("--rembg-only", action="store_true",
+                        help="Skip generation, just run RMBG on existing output/animated-sprites/*/idle.webp")
     args = parser.parse_args()
 
     creatures = load_creatures()
@@ -427,6 +568,28 @@ def main():
         if not verify_comfyui():
             print("\nStart ComfyUI first. See docs/plans/2026-02-11-wan-comfyui-working-workflow.md")
             sys.exit(1)
+
+    # --rembg-only: skip generation, just process existing raw animations
+    if args.rembg_only:
+        print("\nRMBG-ONLY MODE: Processing existing animations...\n")
+        success = 0
+        rembg_failed = []
+        for creature in creatures:
+            cid = creature["id"]
+            raw_path = os.path.join(OUTPUT_DIR, cid, "idle.webp")
+            if not os.path.exists(raw_path):
+                print(f"  {cid}: no raw animation, skipping")
+                continue
+            game_path = os.path.join(GAME_SPRITE_DIR, f"{cid}-idle.webp")
+            print(f"  {cid}: RMBG processing...")
+            if rembg_animated_webp(raw_path, game_path, cid):
+                success += 1
+            else:
+                rembg_failed.append(cid)
+        print(f"\nRMBG complete: {success}/{success + len(rembg_failed)} deployed")
+        if rembg_failed:
+            print(f"Failed: {', '.join(rembg_failed)}")
+        return
 
     os.makedirs(TMP_DIR, exist_ok=True)
 
@@ -518,6 +681,20 @@ def main():
                     if out_path:
                         size_kb = os.path.getsize(out_path) / 1024
                         print(f"    DONE: {cid} -> {os.path.relpath(out_path, PROJECT_ROOT)} ({size_kb:.0f} KB)")
+
+                        # RMBG background removal + deploy
+                        if not args.no_rembg:
+                            game_path = os.path.join(GAME_SPRITE_DIR, f"{cid}-idle.webp")
+                            ok = rembg_animated_webp(out_path, game_path, cid)
+                            if ok:
+                                print(f"    DEPLOYED: {os.path.relpath(game_path, PROJECT_ROOT)}")
+                            else:
+                                print(f"    RMBG FAILED for {cid}")
+                                failed.append((cid, "rembg failed"))
+                        elif not args.no_deploy:
+                            game_path = os.path.join(GAME_SPRITE_DIR, f"{cid}-idle.webp")
+                            shutil.copy2(out_path, game_path)
+                            print(f"    DEPLOYED (no rembg): {os.path.relpath(game_path, PROJECT_ROOT)}")
                     else:
                         print(f"    DONE: {cid} (but download failed)")
                         failed.append((cid, "download failed"))
@@ -544,8 +721,9 @@ def main():
         print(f"\nFailed ({len(failed)}):")
         for cid, reason in failed:
             print(f"  - {cid}: {reason}")
-    print(f"\nOutputs: {os.path.relpath(OUTPUT_DIR, PROJECT_ROOT)}/*/idle.webp")
-    print(f"Next: python scripts/extract_sprite_sheets.py --batch all --no-rembg --idle-mode loop")
+    print(f"\nRaw outputs: {os.path.relpath(OUTPUT_DIR, PROJECT_ROOT)}/*/idle.webp")
+    if not args.no_rembg:
+        print(f"Game sprites: public/assets/sprites/robots/*-idle.webp (transparent)")
     print("=" * 64)
 
 
