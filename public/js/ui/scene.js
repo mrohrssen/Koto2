@@ -113,7 +113,8 @@ export function showEnemies(enemies) {
   // Clear existing single-enemy display
   dom.enemySprite.classList.remove('visible');
   removePlaceholder();
-  dom.enemyInfo.classList.add('visible');
+  // Hide the single-enemy info bar entirely for multi-enemy
+  dom.enemyInfo.classList.remove('visible');
   dom.enemyHpBar.style.display = 'none';
   dom.enemyName.textContent = '';
 

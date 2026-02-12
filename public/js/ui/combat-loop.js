@@ -551,7 +551,11 @@ function findEnemyTargetElement(targetId, enemies) {
     const idx = enemies.findIndex(e => e.id === targetId);
     if (idx >= 0) {
       const slot = document.querySelector(`.enemy-robot-slot[data-enemy-index="${idx}"]`);
-      if (slot) return slot;
+      // Skip defeated/invisible slots - fall back to first alive enemy slot
+      if (slot && !slot.classList.contains('defeated')) return slot;
+      // If target is defeated, find first alive enemy slot for animation
+      const aliveSlot = document.querySelector('.enemy-robot-slot:not(.defeated):not(.befriended)');
+      if (aliveSlot) return aliveSlot;
     }
   }
   return document.getElementById('enemy-sprite-container');
