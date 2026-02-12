@@ -6,19 +6,20 @@
  */
 
 const BASE = '/assets/sprites/robots';
+const SPRITE_VERSION = '20250212';
 
 const _noIdle = new Set();
 const _hasIdle = new Set();
 
 /** Idle path (or static if known to 404). */
 export function robotSpritePath(id) {
-  if (_noIdle.has(id)) return `${BASE}/${id}.webp`;
-  return `${BASE}/${id}-idle.webp`;
+  if (_noIdle.has(id)) return `${BASE}/${id}.webp?v=${SPRITE_VERSION}`;
+  return `${BASE}/${id}-idle.webp?v=${SPRITE_VERSION}`;
 }
 
 /** Always-static path. */
 export function robotSpritePathStatic(id) {
-  return `${BASE}/${id}.webp`;
+  return `${BASE}/${id}.webp?v=${SPRITE_VERSION}`;
 }
 
 /**
@@ -26,7 +27,7 @@ export function robotSpritePathStatic(id) {
  * src → idle.webp → onerror → static.webp → onerror → finalFallback()
  */
 export function configureRobotImg(img, id, finalFallback) {
-  const staticPath = `${BASE}/${id}.webp`;
+  const staticPath = `${BASE}/${id}.webp?v=${SPRITE_VERSION}`;
 
   if (_noIdle.has(id)) {
     img.src = staticPath;
@@ -36,7 +37,7 @@ export function configureRobotImg(img, id, finalFallback) {
     return;
   }
 
-  img.src = `${BASE}/${id}-idle.webp`;
+  img.src = `${BASE}/${id}-idle.webp?v=${SPRITE_VERSION}`;
   img.onerror = () => {
     _noIdle.add(id);
     img.onerror = finalFallback
@@ -52,8 +53,8 @@ export function configureRobotImg(img, id, finalFallback) {
  * Uses cache — returns idle if known, static otherwise.
  */
 export function robotBgUrl(id) {
-  if (_hasIdle.has(id)) return `url('${BASE}/${id}-idle.webp')`;
-  return `url('${BASE}/${id}.webp')`;
+  if (_hasIdle.has(id)) return `url('${BASE}/${id}-idle.webp?v=${SPRITE_VERSION}')`;
+  return `url('${BASE}/${id}.webp?v=${SPRITE_VERSION}')`;
 }
 
 /**
@@ -67,7 +68,7 @@ export function probeIdleSprites(robotIds) {
       const img = new Image();
       img.onload = () => { _hasIdle.add(id); resolve(); };
       img.onerror = () => { _noIdle.add(id); resolve(); };
-      img.src = `${BASE}/${id}-idle.webp`;
+      img.src = `${BASE}/${id}-idle.webp?v=${SPRITE_VERSION}`;
     });
   }));
 }
