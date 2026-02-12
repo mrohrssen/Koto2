@@ -163,6 +163,10 @@ Key rules:
 
 Update the guide when adding new features or discovering new interaction patterns.
 
+## Sprite Cache Busting
+
+Sprites are served with 1-year immutable cache headers. When regenerating sprites, **bump `SPRITE_VERSION`** in `public/js/ui/sprite-utils.js` so users' browsers fetch the new files. Use the date of generation (e.g. `'20250212'`).
+
 ## Common Mistakes to Avoid
 
 - **Don't reference iRO stats** - The game uses only `attack` and `maxHp`. No STR/AGI/VIT/INT/DEX/LUK.
@@ -170,6 +174,7 @@ Update the guide when adding new features or discovering new interaction pattern
 - **Don't run `npx playwright test` directly** - Use the wrapper script or exact command above.
 - **Don't use Homebrew git** - Use `/usr/bin/git` to avoid library conflicts.
 - **Don't skip worktrees** - Multiple Claude sessions will conflict without them.
+- **Don't forget to bump `SPRITE_VERSION`** - After regenerating sprites, update it in `public/js/ui/sprite-utils.js` or users will see cached old sprites.
 
 ## Deployment
 
