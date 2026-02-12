@@ -236,6 +236,30 @@ export function setTtsEnabled(enabled) {
   }
 }
 
+// ============ JAPANIFY UI ============
+
+const JAPANIFY_STORAGE_KEY = 'jrpg_japanifyUI';
+
+/**
+ * Check if Japanify UI is enabled
+ * @returns {boolean} True if Japanese UI mode is enabled (default: false)
+ */
+export function isJapanifyUIEnabled() {
+  return localStorage.getItem(JAPANIFY_STORAGE_KEY) === 'true';
+}
+
+/**
+ * Set Japanify UI enabled state
+ * @param {boolean} enabled - Whether to enable Japanese UI
+ */
+export function setJapanifyUIEnabled(enabled) {
+  if (enabled) {
+    localStorage.setItem(JAPANIFY_STORAGE_KEY, 'true');
+  } else {
+    localStorage.removeItem(JAPANIFY_STORAGE_KEY);
+  }
+}
+
 // ============ AUDIO SETTINGS ============
 
 /**

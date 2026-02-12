@@ -27,6 +27,7 @@
 
 import * as audio from '../audio.js';
 import * as tts from '../tts.js';
+import { setLang } from './i18n.js';
 
 let takeover = null;
 let sceneModule = null;
@@ -109,6 +110,11 @@ export async function openSettings() {
           ${settingsModule.isAiNarrationEnabled?.() !== false ? 'checked' : ''}>
         Enable AI Narration
       </label>
+      <label class="settings-label" style="margin-top:8px">
+        <input type="checkbox" id="settings-japanify-ui"
+          ${settingsModule.isJapanifyUIEnabled?.() ? 'checked' : ''}>
+        日本語 UI
+      </label>
 
       <h4 style="margin:20px 0 8px;color:var(--accent)">Audio</h4>
       <label class="settings-label">
@@ -180,6 +186,12 @@ export async function openSettings() {
       settingsModule.setTtsEnabled(ttsEnabled);
     }
     tts.setEnabled(ttsEnabled);
+
+    const japanifyUI = document.getElementById('settings-japanify-ui')?.checked;
+    if (settingsModule.setJapanifyUIEnabled) {
+      settingsModule.setJapanifyUIEnabled(japanifyUI);
+    }
+    setLang(japanifyUI ? 'ja' : 'en');
 
     audio.setVolume('bgm', bgmVol);
     audio.setVolume('sfx', sfxVol);

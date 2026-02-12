@@ -47,6 +47,7 @@ import {
 } from './combat-effects.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
 import { configureRobotImg } from './sprite-utils.js';
+import { t } from './i18n.js';
 
 // ============ MODULE STATE ============
 
@@ -279,7 +280,7 @@ async function showChipActivationSequence(pa) {
 
   // Show critical hit first
   if (pa.critical) {
-    actionArea.innerHTML = `<div class="combat-math"><span class="math-crit">CRITICAL HIT!</span></div>`;
+    actionArea.innerHTML = `<div class="combat-math"><span class="math-crit">${t('criticalHit')}</span></div>`;
     await delay(360);
   }
 
@@ -296,7 +297,7 @@ async function showChipActivationSequence(pa) {
 
     return `
       <div class="combat-math">
-        ${pa.critical ? '<span class="math-crit">CRITICAL HIT!</span><br>' : ''}
+        ${pa.critical ? `<span class="math-crit">${t('criticalHit')}</span><br>` : ''}
         <div class="pipeline-stats">
           <div class="stat-box" id="pwr-box" data-pool="power">
             <span class="stat-box-label">PWR</span>
@@ -436,7 +437,7 @@ async function showChipActivationSequence(pa) {
   // Show cascade if triggered
   if (pa.cascadeTriggered && pa.cascadeDamage) {
     await delay(600);
-    addLogLine(`Cascade: +${formatNum(pa.cascadeDamage)}`);
+    addLogLine(t('cascade', formatNum(pa.cascadeDamage)));
   }
 
   // Show DoT damage
@@ -625,13 +626,13 @@ function showEnemyDamageDisplay(enemyAttack) {
   if (!actionArea) return;
 
   if (enemyAttack.perfectDodge) {
-    actionArea.innerHTML = '<div class="combat-enemy-damage dodge">PERFECT DODGE!</div>';
+    actionArea.innerHTML = `<div class="combat-enemy-damage dodge">${t('perfectDodge')}</div>`;
   } else if (enemyAttack.dodged) {
-    actionArea.innerHTML = '<div class="combat-enemy-damage dodge">DODGED!</div>';
+    actionArea.innerHTML = `<div class="combat-enemy-damage dodge">${t('dodged')}</div>`;
   } else if (enemyAttack.miss) {
-    actionArea.innerHTML = '<div class="combat-enemy-damage miss">MISS!</div>';
+    actionArea.innerHTML = `<div class="combat-enemy-damage miss">${t('miss')}</div>`;
   } else {
-    const crit = enemyAttack.critical ? '<div class="combat-enemy-crit">CRITICAL!</div>' : '';
+    const crit = enemyAttack.critical ? `<div class="combat-enemy-crit">${t('critical')}</div>` : '';
     actionArea.innerHTML = `<div class="combat-enemy-damage">${crit}<span class="enemy-damage-number">-${enemyAttack.damage}</span></div>`;
   }
 }
@@ -912,11 +913,11 @@ async function executeRobotPlayerAttack() {
 
       for (let atkIdx = 0; atkIdx < result.playerAttacks.length; atkIdx++) {
         const atk = result.playerAttacks[atkIdx];
-        const effectiveness = atk.elementMultiplier > 1 ? ' (super effective!)' :
-                              atk.elementMultiplier < 1 ? ' (not very effective...)' : '';
+        const effectKey = atk.elementMultiplier > 1 ? 'dealsStrong' :
+                          atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
         const actionArea = document.getElementById('action-area');
         if (actionArea) {
-          actionArea.innerHTML = `<div class="combat-robot-attack">${atk.attackerName} deals <strong>${atk.damage}</strong> damage${effectiveness}</div>`;
+          actionArea.innerHTML = `<div class="combat-robot-attack">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
         }
         playSFX('attack');
 
@@ -1000,11 +1001,11 @@ async function executeRobotPlayerAttack() {
     if (result.enemyAttacks?.length > 0) {
       await delay(400);
       for (const atk of result.enemyAttacks) {
-        const effectiveness = atk.elementMultiplier > 1 ? ' (super effective!)' :
-                              atk.elementMultiplier < 1 ? ' (not very effective...)' : '';
+        const effectKey2 = atk.elementMultiplier > 1 ? 'dealsStrong' :
+                           atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
         const actionArea = document.getElementById('action-area');
         if (actionArea) {
-          actionArea.innerHTML = `<div class="combat-robot-attack enemy">${atk.attackerName} deals <strong>${atk.damage}</strong>${effectiveness}</div>`;
+          actionArea.innerHTML = `<div class="combat-robot-attack enemy">${t(effectKey2, atk.attackerName, atk.damage)}</div>`;
         }
         showDamageNumber(atk.damage, true, false);
         playSFX('player-hit');
@@ -1044,7 +1045,7 @@ async function executeRobotPlayerAttack() {
 
         const actionArea = document.getElementById('action-area');
         if (actionArea) {
-          actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${swap.replacement} swaps in!</div>`;
+          actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${t('swapsIn', swap.replacement)}</div>`;
         }
 
         // Re-render the robot row with updated party, then animate new robot in
@@ -1179,7 +1180,7 @@ async function executeRobotDefendThenPause() {
     // Show defend indicator
     const actionArea = document.getElementById('action-area');
     if (actionArea) {
-      actionArea.innerHTML = '<div class="combat-defend-indicator">DEFENDING \u2014 50% damage, +1 charge</div>';
+      actionArea.innerHTML = `<div class="combat-defend-indicator">${t('defending')}</div>`;
     }
 
     // Update charge bars immediately for defend (BUG A fix)
@@ -1205,7 +1206,7 @@ async function executeRobotDefendThenPause() {
       for (const atk of result.enemyAttacks) {
         const actionArea2 = document.getElementById('action-area');
         if (actionArea2) {
-          actionArea2.innerHTML = `<div class="combat-robot-attack enemy">${atk.attackerName} deals <strong>${atk.damage}</strong> (halved)</div>`;
+          actionArea2.innerHTML = `<div class="combat-robot-attack enemy">${t('dealsHalved', atk.attackerName, atk.damage)}</div>`;
         }
         showDamageNumber(atk.damage, true, false);
         playSFX('player-hit');
@@ -1253,7 +1254,7 @@ async function executeRobotDefendThenPause() {
 
         const actionArea2 = document.getElementById('action-area');
         if (actionArea2) {
-          actionArea2.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${swap.replacement} swaps in!</div>`;
+          actionArea2.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${t('swapsIn', swap.replacement)}</div>`;
         }
 
         // Update sprite and HP for the new robot with swap-in animation
@@ -1629,7 +1630,7 @@ async function executeDefendThenPause() {
     // Show defend indicator
     const actionArea = document.getElementById('action-area');
     if (actionArea) {
-      actionArea.innerHTML = '<div class="combat-defend-indicator">DEFENDING - 50% damage</div>';
+      actionArea.innerHTML = `<div class="combat-defend-indicator">${t('defendingChip')}</div>`;
     }
     await delay(600);
 
@@ -1721,15 +1722,15 @@ function showBefriendReleasePrompt() {
     overlay.className = 'befriend-release-overlay';
     overlay.innerHTML = `
       <div class="befriend-release-panel">
-        <div class="befriend-release-title">Party Full! Choose a robot to release:</div>
+        <div class="befriend-release-title">${t('partyFullTitle')}</div>
         <div class="befriend-release-list">
           ${allRobots.map(r => `
             <button class="befriend-release-btn" data-robot-id="${r.id}">
-              ${ELEM_ICONS[r.element] || ''} ${r.nameEn} (Lv${r.level}) - ${r.slot === 'active' ? 'Equipped' : 'Reserve'}
+              ${ELEM_ICONS[r.element] || ''} ${r.nameEn} (Lv${r.level}) - ${r.slot === 'active' ? t('equipped') : t('reserve')}
             </button>
           `).join('')}
         </div>
-        <button class="befriend-release-skip-btn">Let it go (skip)</button>
+        <button class="befriend-release-skip-btn">${t('letItGoBtn')}</button>
       </div>
     `;
 
@@ -1805,7 +1806,7 @@ function showConversationRound(round, roundNumber, robotName) {
     const actionArea = document.getElementById('action-area');
     if (!actionArea) { resolve(0); return; }
 
-    const roundLabel = `Round ${roundNumber + 1}/3`;
+    const roundLabel = t('roundLabel', roundNumber + 1);
     const buttons = round.options.map((opt, idx) => `
       <div class="shrine-chip-option befriend-answer-option" data-answer-index="${idx}" style="width:100%">
         <div class="shrine-chip-info" style="padding:1rem; width:100%; text-align:center">
@@ -1980,7 +1981,7 @@ async function executeBefriendAction() {
             if (replaceResult?.success) {
               const actionArea = document.getElementById('action-area');
               if (actionArea) {
-                actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">BEFRIENDED ${replaceResult.captured.nameEn}!</div>`;
+                actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">${t('befriended', replaceResult.captured.nameEn)}</div>`;
               }
               playSFX('chip-skill');
 
@@ -2012,7 +2013,7 @@ async function executeBefriendAction() {
             // Let it go
             const actionArea = document.getElementById('action-area');
             if (actionArea) {
-              actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #9E9E9E;">Let it go...</div>`;
+              actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #9E9E9E;">${t('letItGo')}</div>`;
             }
             await delay(800);
           }
@@ -2020,7 +2021,7 @@ async function executeBefriendAction() {
           // Normal success
           const actionArea = document.getElementById('action-area');
           if (actionArea && captured) {
-            actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">BEFRIENDED ${captured.nameEn}!</div>`;
+            actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">${t('befriended', captured.nameEn)}</div>`;
           }
           await delay(1200);
 

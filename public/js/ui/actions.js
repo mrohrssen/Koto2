@@ -30,6 +30,7 @@
 
 import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
+import { t } from './i18n.js';
 
 let onEquipBots = null;
 let onContextAction = null;
@@ -97,9 +98,7 @@ export function showFlashCard(word, { discoveryMode = false } = {}) {
   cardFlipped = false;
   isSwiping = false;
 
-  const hintText = discoveryMode
-    ? '&larr; learn &nbsp; | &nbsp; learn &rarr;'
-    : '&larr; didn\'t know &nbsp; | &nbsp; knew it &rarr;';
+  const hintText = discoveryMode ? t('hintDiscovery') : t('hintCombat');
 
   dom.actionArea.innerHTML = `
     <div class="flash-card-container" id="flash-card-container">
@@ -200,7 +199,7 @@ export function showDualFlashCards(attackWord, defendWord) {
   cardFlipped = false;
   isSwiping = false;
 
-  const hintText = '&larr; didn\'t know &nbsp; | &nbsp; knew it &rarr;';
+  const hintText = t('hintCombat');
 
   const swordIcon = `<svg class="dual-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg>`;
   const shieldIcon = `<svg class="dual-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
@@ -304,7 +303,7 @@ export function showTripleFlashCards(attackWord, defendWord, befriendWord) {
   cardFlipped = false;
   isSwiping = false;
 
-  const hintText = '&larr; didn\'t know &nbsp; | &nbsp; knew it &rarr;';
+  const hintText = t('hintCombat');
 
   const swordIcon = `<svg class="dual-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg>`;
   const shieldIcon = `<svg class="dual-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;

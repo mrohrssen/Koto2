@@ -28,6 +28,7 @@ import * as speedReview from './speed-review.js';
 import { playSFX } from '../audio.js';
 import { speakNarration, prefetchNarration } from '../tts.js';
 import { robotBgUrl, configureRobotImg } from './sprite-utils.js';
+import { t, isJapanified } from './i18n.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -196,7 +197,7 @@ function showInventory() {
         <div class="inventory-item">
           <span class="inventory-item-icon">${b.icon}</span>
           <div class="inventory-item-info">
-            <span class="inventory-item-name">${b.nameEn}</span>
+            <span class="inventory-item-name">${isJapanified() ? b.name : b.nameEn}</span>
             <span class="inventory-item-name-ja">${b.name}</span>
           </div>
           <span class="inventory-item-value">${b.value}</span>
@@ -282,7 +283,7 @@ export async function renderLevelSelect() {
       statusIcon = '<span class="level-status level-complete">\u2713</span>';
       stateClass = 'level-completed';
     } else if (isUnlocked) {
-      statusIcon = '<span class="level-status level-new">NEW</span>';
+      statusIcon = `<span class="level-status level-new">${t('new')}</span>`;
       stateClass = 'level-unlocked';
     } else {
       statusIcon = '<span class="level-status level-locked">\uD83D\uDD12</span>';
@@ -642,7 +643,7 @@ export function renderShrine() {
   }).join('');
 
   actions.setContent(`
-    <h3 class="shrine-title">Choose a robot to train</h3>
+    <h3 class="shrine-title">${t('chooseToTrain')}</h3>
     <div class="shrine-chip-list">${robotCards}</div>
   `);
 
@@ -667,7 +668,7 @@ export function renderShrine() {
       const robotId = option.dataset.robotId;
       const result = await apiShrineUpgrade(robotId);
       if (result?.state) { updateGameState(result.state); }
-      sceneModule.showNarration(`${result?.robotName || 'Robot'} leveled up to Lv. ${result?.newLevel || '?'}!`, { autoDismiss: 2000 });
+      sceneModule.showNarration(t('leveledUp', result?.robotName || 'Robot', result?.newLevel || '?'), { autoDismiss: 2000 });
 
       const proceedResult = await apiProceed();
       shrineInProgress = false;
@@ -813,7 +814,7 @@ async function renderQuizRewards() {
     ].filter(Boolean);
 
     const rewardType = gameState._quizSelectedReward;
-    const label = rewardType === 'heal' ? 'Choose a robot to heal' : 'Choose a robot to level up';
+    const label = rewardType === 'heal' ? t('chooseToHeal') : t('chooseToLevelUp');
 
     const robotCards = allRobots.map(robot => {
       const hpText = rewardType === 'heal'

@@ -25,6 +25,7 @@
 
 import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
+import { t } from './i18n.js';
 
 let onUseSkill = null; // Callback: (chipIndex) => void
 let currentPopupIndex = -1;
@@ -185,17 +186,17 @@ function showPopup(index, chip, charge, maxCharges, inCombat = false) {
       </div>
     </div>
     <div class="chip-popup-section">
-      <div class="chip-popup-section-label">Passive</div>
-      <div>${chip.descriptionEn || chip.description || 'No passive effect'}</div>
+      <div class="chip-popup-section-label">${t('passive')}</div>
+      <div>${chip.descriptionEn || chip.description || t('noPassive')}</div>
     </div>
     <div class="chip-popup-section">
-      <div class="chip-popup-section-label">Skill: ${chip.skill?.nameEn || chip.skill?.name || 'None'}</div>
-      <div>${chip.skill?.descriptionEn || chip.skill?.description || 'No skill'}</div>
+      <div class="chip-popup-section-label">${t('skillColon', chip.skill?.nameEn || chip.skill?.name || 'None')}</div>
+      <div>${chip.skill?.descriptionEn || chip.skill?.description || t('noSkill')}</div>
     </div>
   `;
 
   if (inCombat) {
-    dom.chipPopupCharge.textContent = isCharged ? 'Ready!' : `Charging ${charge}/${maxCharges}`;
+    dom.chipPopupCharge.textContent = isCharged ? t('ready') : t('charging', charge, maxCharges);
     dom.chipPopupCharge.style.display = '';
     dom.chipPopupUse.style.display = '';
     dom.chipPopupUse.disabled = !isCharged;

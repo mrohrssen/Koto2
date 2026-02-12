@@ -101,6 +101,7 @@ import * as lookup from './js/ui/lookup.js';
 import * as bugReport from './js/ui/bug-report.js';
 import * as speedReview from './js/ui/speed-review.js';
 import { configureRobotImg, robotSpritePath, probeIdleSprites } from './js/ui/sprite-utils.js';
+import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import * as phaser from './js/phaser/index.js';
 import { gameEvents } from './js/phaser/phaser-bridge.js';
 
@@ -589,12 +590,12 @@ function showCollectionSelect(catalog, collection) {
       }
       overlay.innerHTML = `
         <div class="collection-header">
-          <span class="collection-title">Select Your Team</span>
+          <span class="collection-title">${t('selectTeam')}</span>
           <span class="collection-points ${budgetClass}">${usedPoints} / ${MAX_POINTS} pts</span>
         </div>
         <div class="collection-grid">${cellsHtml}</div>
         <button class="action-btn action-btn-primary" id="collection-confirm-btn" ${selected.size === 0 ? 'disabled' : ''}>
-          Start Run (${selected.size} robot${selected.size !== 1 ? 's' : ''})
+          ${t('startRun', selected.size, selected.size !== 1 ? 's' : '')}
         </button>
       `;
 
@@ -642,7 +643,7 @@ function showCollectionToast(additions) {
     toast.className = 'collection-toast';
     toast.innerHTML = `
       <img />
-      <span class="toast-text">New: ${robot.nameEn}!</span>
+      <span class="toast-text">${t('newRobot', robot.nameEn)}</span>
     `;
     configureRobotImg(toast.querySelector('img'), robot.id);
     document.body.appendChild(toast);
@@ -781,10 +782,10 @@ function showGameOverModal(result) {
   content.innerHTML = `
     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:0 24px;">
       <div style="font-size:48px;margin-bottom:8px;">💀</div>
-      <h2 style="text-align:center;font-size:24px;font-weight:700;">Defeated</h2>
-      <p style="text-align:center;color:var(--text-secondary);font-size:14px;">Your run has ended.</p>
+      <h2 style="text-align:center;font-size:24px;font-weight:700;">${t('defeated')}</h2>
+      <p style="text-align:center;color:var(--text-secondary);font-size:14px;">${t('runEnded')}</p>
       <div style="text-align:center;color:var(--text-muted);font-size:13px;">
-        Floor ${floor} · ${roomsCleared} rooms cleared
+        ${t('floorRooms', floor, roomsCleared)}
       </div>
       <button class="action-btn action-btn-primary" id="gameover-hub-btn" style="margin-top:24px;">ハブに戻る</button>
     </div>
@@ -1041,7 +1042,7 @@ async function openChipEquipView() {
   const inventory = data.inventory || [];
 
   content.innerHTML = `
-    <h3 style="margin:16px">Equipped Chips</h3>
+    <h3 style="margin:16px">${t('equippedChips')}</h3>
     <div class="chip-equip-slots">
       ${equipped.map((chip, i) => chip ? `
         <div class="chip-equip-slot filled" data-action="unequip" data-index="${i}">
@@ -1050,10 +1051,10 @@ async function openChipEquipView() {
           <span class="chip-equip-rarity ${chip.rarity || 'common'}">${chip.rarity || 'common'}</span>
         </div>
       ` : `
-        <div class="chip-equip-slot empty" data-index="${i}">Empty</div>
+        <div class="chip-equip-slot empty" data-index="${i}">${t('emptySlot')}</div>
       `).join('')}
     </div>
-    <h3 style="margin:16px">Inventory</h3>
+    <h3 style="margin:16px">${t('inventory')}</h3>
     <div class="chip-inventory-list">
       ${inventory.map((chip, i) => `
         <div class="chip-inventory-item" data-action="equip" data-chip-id="${chip.id}">
@@ -1062,7 +1063,7 @@ async function openChipEquipView() {
           <span class="chip-equip-rarity ${chip.rarity || 'common'}">${chip.rarity || 'common'}</span>
         </div>
       `).join('')}
-      ${inventory.length === 0 ? '<p style="padding:16px;opacity:0.6">No chips in inventory</p>' : ''}
+      ${inventory.length === 0 ? `<p style="padding:16px;opacity:0.6">${t('noChips')}</p>` : ''}
     </div>
   `;
 
@@ -1103,7 +1104,7 @@ async function openRobotEquipView() {
     const rarityStars = (rarity) => { const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity]; return n ? `<span style="color:#FFD700">${n}★</span>` : ''; };
 
     const activeHtml = active.map((robot, i) => {
-      if (!robot) return `<div class="robot-equip-slot empty" data-type="active" data-index="${i}"><span style="opacity:0.4">Empty</span></div>`;
+      if (!robot) return `<div class="robot-equip-slot empty" data-type="active" data-index="${i}"><span style="opacity:0.4">${t('emptySlot')}</span></div>`;
       const hpPct = Math.max(0, (robot.hp / robot.maxHp) * 100);
       return `
         <div class="robot-equip-slot" data-type="active" data-index="${i}" data-robot-id="${robot.id}"
@@ -1136,14 +1137,14 @@ async function openRobotEquipView() {
           </div>
         </div>
       `;
-    }).join('') : '<p style="padding:16px;opacity:0.6;text-align:center">No reserve robots</p>';
+    }).join('') : `<p style="padding:16px;opacity:0.6;text-align:center">${t('noReserves')}</p>`;
 
     content.innerHTML = `
-      <h3 style="margin:16px">Equipped Robots (Front Line)</h3>
+      <h3 style="margin:16px">${t('equippedRobots')}</h3>
       <div class="robot-equip-list">${activeHtml}</div>
-      <h3 style="margin:16px">Reserve Robots</h3>
+      <h3 style="margin:16px">${t('reserveRobots')}</h3>
       <div class="robot-equip-list">${reservesHtml}</div>
-      <p style="padding:8px 16px;opacity:0.5;font-size:0.8em;text-align:center">Tap an equipped robot, then a reserve to swap them.</p>
+      <p style="padding:8px 16px;opacity:0.5;font-size:0.8em;text-align:center">${t('swapInstruction')}</p>
     `;
 
     // Configure animated idle sprites with static fallback
@@ -1351,6 +1352,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function initGame() {
+  // Initialize i18n language from settings
+  setLang(settings.isJapanifyUIEnabled() ? 'ja' : 'en');
+
   takeover.init();
   leaderboard.init();
   bugReport.init();

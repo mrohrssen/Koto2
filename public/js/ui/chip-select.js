@@ -28,6 +28,7 @@ import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
 import * as narrationBox from './narration-box.js';
 import * as lookup from './lookup.js';
+import { t } from './i18n.js';
 
 const CHIP_GREETING = 'こんにちは！私を選んでくれる？';
 
@@ -126,12 +127,12 @@ function renderChipCard() {
           </div>
         </div>
         <div class="chip-select-passive">
-          <div class="chip-select-label">Passive</div>
+          <div class="chip-select-label">${t('passive')}</div>
           <div class="chip-select-desc">${chip.descriptionEn || chip.description || ''}</div>
         </div>
         ${skillName ? `
         <div class="chip-select-active">
-          <div class="chip-select-label">Skill: ${skillName}</div>
+          <div class="chip-select-label">${t('skillColon', skillName)}</div>
           <div class="chip-select-desc">${skillDesc}</div>
         </div>
         ` : ''}
