@@ -40,7 +40,7 @@ let pagedText = [];
 let currentPage = 0;
 let showRequestCounter = 0;
 
-const MAX_VISIBLE_LINES = 2;
+const MAX_VISIBLE_LINES = 3;
 const BREAK_CHARS = /[。！？!?、，,.\s\n]/u;
 
 function clearPagination() {

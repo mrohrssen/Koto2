@@ -14,6 +14,7 @@ import { lookupVocabularyBatch } from '../../jpdb.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
 import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswer } from '../../bunpro.js';
 import { validateTeamSelection } from '../../game/services/robot-collection-service.js';
+import { queueTTSPrefetch } from '../../game/prefetch.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -413,6 +414,11 @@ export default function createRunRoutes({
       }
 
       const hints = generateDoorHints(pair[0].type, pair[1].type);
+
+      // Prefetch TTS audio for each door hint
+      if (hints.door1) queueTTSPrefetch(hints.door1);
+      if (hints.door2) queueTTSPrefetch(hints.door2);
+
       res.json({ hints });
     } catch (error) {
       res.status(400).json({ error: error.message });

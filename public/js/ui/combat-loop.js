@@ -832,6 +832,10 @@ export async function executePlayerAttack() {
       if (result.victory && result.liberatedDialogue) {
         showEnemyDialogue(result.liberatedDialogue, 'liberated');
       }
+      // Let HP bar drain animation (300ms CSS transition) be visible before stopping
+      if (result.victory) {
+        await delay(500);
+      }
       if (setCombatAnimationActive) setCombatAnimationActive(false);
       stopCombatLoop(result);
       return;
@@ -1120,6 +1124,10 @@ async function executeRobotPlayerAttack() {
 
     // Check combat end
     if (result.combatEnded) {
+      // Let HP bar drain animation (300ms CSS transition) be visible before stopping
+      if (result.victory) {
+        await delay(500);
+      }
       if (setCombatAnimationActive) setCombatAnimationActive(false);
       stopCombatLoop(result);
       return;

@@ -46,6 +46,9 @@ let returnToHub = null;
 // Module-level guard to prevent multiple shrine clicks across re-renders
 let shrineInProgress = false;
 
+// Request counter to invalidate stale renderBranchSelection invocations
+let branchSelectionRequestId = 0;
+
 // Chippy's natural transition phrases for left/right door hints (20 pairs)
 const DOOR_INTROS = [
   { left: '左のドアだけど…', right: 'で、右のドアは…' },
@@ -454,9 +457,15 @@ export function renderExploring() {
 
 /** Branch selection phase - Chippy senses what's behind each door */
 export async function renderBranchSelection() {
+  const myRequestId = ++branchSelectionRequestId;
   const gameState = getGameState();
   const currentRoomIndex = gameState.run?.currentRoom;
   const pair = gameState.run?.rooms?.[currentRoomIndex];
+
+  // Helper: returns true if this invocation has been superseded
+  const isStale = () =>
+    myRequestId !== branchSelectionRequestId ||
+    getGameState().phase !== 'branch_selection';
 
   if (!Array.isArray(pair) || pair.length !== 2) {
     console.error('[BranchSelection] Invalid room pair');
@@ -480,6 +489,7 @@ export async function renderBranchSelection() {
 
   try {
     const result = await apiDoorHints();
+    if (isStale()) return;
     if (result?.hints) {
       door1Hint = result.hints.door1;
       door2Hint = result.hints.door2;
@@ -487,6 +497,8 @@ export async function renderBranchSelection() {
   } catch (e) {
     console.warn('[BranchSelection] Failed to fetch door hints:', e);
   }
+
+  if (isStale()) return;
 
   // Prepend natural left/right transition phrase so player knows which door Chippy means
   const intro = DOOR_INTROS[Math.floor(Math.random() * DOOR_INTROS.length)];
@@ -498,10 +510,12 @@ export async function renderBranchSelection() {
   prefetchNarration(door2Hint);
   speakNarration(door1Hint);
   await sceneModule.showNarration(door1Hint, { speaker: 'チッピー' });
+  if (isStale()) return;
 
   // Show door 2 hint with Chippy as speaker, auto-play TTS (already prefetched)
   speakNarration(door2Hint);
   await sceneModule.showNarration(door2Hint, { speaker: 'チッピー' });
+  if (isStale()) return;
 
   // Now show the door selection UI
   let selectedDoor = null;
@@ -515,6 +529,7 @@ export async function renderBranchSelection() {
   // Allow re-reading hints by clicking doors before confirming
   document.querySelectorAll('.branch-option').forEach(el => {
     el.addEventListener('click', () => {
+      if (isStale()) return;
       document.querySelectorAll('.branch-option').forEach(o => o.classList.remove('selected'));
       el.classList.add('selected');
       selectedDoor = parseInt(el.dataset.door, 10);
@@ -530,6 +545,9 @@ export async function renderBranchSelection() {
 
   document.getElementById('branch-proceed-btn')?.addEventListener('click', async () => {
     if (selectedDoor === null) return;
+
+    // Invalidate stale branch selection callbacks
+    branchSelectionRequestId++;
 
     // Hide persistent narration and Chippy
     if (sceneModule.forceHideNarration) sceneModule.forceHideNarration();

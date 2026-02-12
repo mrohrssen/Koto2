@@ -1605,7 +1605,19 @@ async function initGame() {
     animatePlayerHurt: () => {},
     animateEnemyDefeat: () => scene.hideEnemies(),
     updateActionPanel: () => {},
-    playNarrationAudio: () => {},
+    playNarrationAudio: (audioData) => {
+      if (!audioData) return;
+      try {
+        const blob = new Blob([audioData], { type: 'audio/wav' });
+        const url = URL.createObjectURL(blob);
+        const audioEl = new Audio(url);
+        audioEl.onended = () => URL.revokeObjectURL(url);
+        audioEl.onerror = () => URL.revokeObjectURL(url);
+        audioEl.play().catch(e => console.warn('[TTS] Narration audio playback failed:', e.message));
+      } catch (e) {
+        console.warn('[TTS] Failed to play narration audio:', e.message);
+      }
+    },
     showVictoryModal,
     showGameOverModal,
     showEnemyDialogue,

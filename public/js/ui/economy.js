@@ -26,6 +26,7 @@ import { playSFX } from '../audio.js';
 import { speakText } from '../tts.js';
 import * as chipSelect from './chip-select.js';
 import { robotBgUrl, robotSpritePath } from './sprite-utils.js';
+import * as narrationBox from './narration-box.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -229,7 +230,7 @@ export async function renderDealerRoom(actionsModule) {
               <div class="dealer-offer-desc">HP: ${robot.maxHp} \u00B7 ATK: ${robot.attack}</div>
             </div>
           </div>
-          <button class="dealer-buy-btn" data-robot-id="${robot.id}" ${btnDisabled}>${robot.buyPrice}cr \u3067\u96C7\u3046</button>
+          <button class="dealer-buy-btn action-btn action-btn-primary" data-robot-id="${robot.id}" ${btnDisabled}>${robot.buyPrice}cr \u3067\u96C7\u3046</button>
         </div>
       `;
     }).join('');
@@ -266,7 +267,6 @@ export async function renderDealerRoom(actionsModule) {
 
   actionsModule.setContent(`
     <div class="dealer-room">
-      <div class="dealer-welcome">\u3044\u3089\u3063\u3057\u3083\u3044\uFF01\u73CD\u3057\u3044\u30ED\u30DC\u30C3\u30C8\u304C\u5165\u8377\u3057\u305F\u3088\uFF01</div>
       <div class="dealer-credits">
         <span id="dealer-credits">${credits}</span> cr
       </div>
@@ -275,9 +275,12 @@ export async function renderDealerRoom(actionsModule) {
       <div class="dealer-inventory-list">
         ${partyHtml}
       </div>
-      <button class="dealer-leave-btn">\u7ACB\u3061\u53BB\u308B</button>
+      <button class="dealer-leave-btn action-btn action-btn-secondary">\u7ACB\u3061\u53BB\u308B</button>
     </div>
   `);
+
+  // Show dealer greeting via standard narration system
+  narrationBox.show('いらっしゃい！珍しいロボットが入荷したよ！', { speaker: 'ディーラー', autoDismiss: 3000 });
 
   // Wire buy buttons
   document.querySelectorAll('.dealer-buy-btn').forEach(btn => {
