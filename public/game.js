@@ -303,6 +303,13 @@ function updateScene() {
 function updateChipRow() {
   const secondaryRow = document.getElementById('chip-row-secondary');
 
+  // Hide chip/robot row on hub and non-run phases
+  if (!gameState.run && (gameState.phase === 'hub' || gameState.phase === 'no_save' || gameState.phase === 'ward_selection')) {
+    dom.chipRow.innerHTML = '';
+    if (secondaryRow) secondaryRow.style.display = 'none';
+    return;
+  }
+
   if (gameState.run?.robotParty?.active?.length > 0) {
     // Robot combat: render robot slots in primary row
     robotRow.setReserves(gameState.run.robotParty.reserves || []);
@@ -354,6 +361,11 @@ function renderChipsToSecondaryRow(container, equipped, charges, levels) {
 function updatePlayerHP() {
   // In robot combat, individual robot HP bars handle health display
   if (gameState.run?.robotParty?.active?.length > 0) {
+    hpBar.setVisible(false);
+    return;
+  }
+  // Hide HP bar on hub and non-combat phases
+  if (!gameState.phase || gameState.phase === 'hub' || gameState.phase === 'no_save' || gameState.phase === 'ward_selection') {
     hpBar.setVisible(false);
     return;
   }
@@ -752,10 +764,18 @@ function showGameOverModal(result) {
   updateChipRow();
   takeover.open('gameover');
   const content = takeover.getContent('gameover');
+  const floor = gameState.run?.currentFloor || 1;
+  const roomsCleared = gameState.run?.currentRoom || 0;
   content.innerHTML = `
-    <h2 style="text-align:center;margin-top:40%">Defeated</h2>
-    <p style="text-align:center">Your run has ended.</p>
-    <button class="action-btn action-btn-primary" id="gameover-hub-btn">ハブに戻る</button>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:0 24px;">
+      <div style="font-size:48px;margin-bottom:8px;">💀</div>
+      <h2 style="text-align:center;font-size:24px;font-weight:700;">Defeated</h2>
+      <p style="text-align:center;color:var(--text-secondary);font-size:14px;">Your run has ended.</p>
+      <div style="text-align:center;color:var(--text-muted);font-size:13px;">
+        Floor ${floor} · ${roomsCleared} rooms cleared
+      </div>
+      <button class="action-btn action-btn-primary" id="gameover-hub-btn" style="margin-top:24px;">ハブに戻る</button>
+    </div>
   `;
   document.getElementById('gameover-hub-btn')?.addEventListener('click', async () => {
     takeover.close('gameover');
