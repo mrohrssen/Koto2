@@ -124,7 +124,8 @@ import {
 } from './src/game/vocab-manager.js';
 import {
   getCachedAudio, clearCache as clearPrefetchCache,
-  setTTSSynthesizer, updateTTSConfig, cancelPendingPrefetches
+  setTTSSynthesizer, updateTTSConfig, cancelPendingPrefetches,
+  queueTTSPrefetch
 } from './src/game/prefetch.js';
 import { enforceVocabLimit } from './src/game/vocab-repair.js';
 import { generateDoorHints as _generateDoorHints } from './src/game/services/door-hint-service.js';
@@ -566,6 +567,11 @@ async function generateGameNarration(event, context, userKeys = {}) {
     gameTerms.push(enemyForState.name);
   }
   narration = await applyVocabRepair(narration, vocabulary, userKeys, gameTerms, vidSet);
+
+  // Prefetch TTS audio so it's ready when the client requests it
+  if (narration) {
+    queueTTSPrefetch(narration);
+  }
 
   trackNarrationStats(narration, jpdbApiKey, userId);
 
