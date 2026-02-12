@@ -213,8 +213,12 @@ export async function show(text, options = {}) {
     speakerEl.style.display = speaker ? '' : 'none';
   }
   clearPagination();
-  if (autoDismiss || persistent) {
+  if (autoDismiss) {
     if (textEl) textEl.textContent = displayText;
+  } else if (persistent) {
+    // Persistent: truncate to 2 lines (no click-to-advance available)
+    const pages = paginateForTwoLines(displayText);
+    if (textEl) textEl.textContent = pages[0] || '';
   } else {
     pagedText = paginateForTwoLines(displayText);
     currentPage = 0;

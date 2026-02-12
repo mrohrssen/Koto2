@@ -519,6 +519,7 @@ html, body {
   background: transparent;
   position: relative;
   z-index: 1;
+  border-top: 1px solid rgba(77, 208, 225, 0.2);
 }
 
 .chip-row-secondary {
