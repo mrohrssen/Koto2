@@ -27,7 +27,7 @@
 import * as speedReview from './speed-review.js';
 import { playSFX } from '../audio.js';
 import { speakNarration } from '../tts.js';
-import { robotBgUrl } from './sprite-utils.js';
+import { robotBgUrl, configureRobotImg } from './sprite-utils.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -629,7 +629,9 @@ export function renderShrine() {
     const hpPercent = Math.floor((robot.hp / robot.maxHp) * 100);
     return `
       <div class="shrine-chip-option" data-robot-id="${robot.id}">
-        <div class="shrine-chip-icon" style="background-image:${robotBgUrl(robot.id)}; border-color: var(--rarity-${robot.rarity || 'common'})"></div>
+        <div class="shrine-chip-icon" style="border-color: var(--rarity-${robot.rarity || 'common'})">
+          <img class="shrine-chip-img" data-robot-id="${robot.id}" alt="">
+        </div>
         <div class="shrine-chip-info">
           <div class="shrine-chip-name">${robot.nameEn} Lv.${robot.level} <span class="shrine-chip-upgrade">\u2192 Lv.${robot.level + 1}</span></div>
           <div class="shrine-chip-rarity ${robot.rarity || 'common'}">${robot.rarity} \u00B7 ${robot.element}</div>
@@ -643,6 +645,11 @@ export function renderShrine() {
     <h3 class="shrine-title">Choose a robot to train</h3>
     <div class="shrine-chip-list">${robotCards}</div>
   `);
+
+  // Wire up sprite images with proper idle->static fallback
+  document.querySelectorAll('.shrine-chip-img').forEach(img => {
+    configureRobotImg(img, img.dataset.robotId, el => { el.style.display = 'none'; });
+  });
 
   if (shrineInProgress) return;
   const list = document.querySelector('.shrine-chip-list');
@@ -810,7 +817,9 @@ async function renderQuizRewards() {
         : `Lv.${robot.level} \u2192 Lv.${robot.level + 1}`;
       return `
         <div class="shrine-chip-option quiz-reward-robot" data-robot-id="${robot.id}" style="width:100%">
-          <div class="shrine-chip-icon" style="background-image:${robotBgUrl(robot.id)}; border-color: var(--rarity-${robot.rarity || 'common'})"></div>
+          <div class="shrine-chip-icon" style="border-color: var(--rarity-${robot.rarity || 'common'})">
+            <img class="shrine-chip-img" data-robot-id="${robot.id}" alt="">
+          </div>
           <div class="shrine-chip-info" style="padding:0.75rem">
             <div class="shrine-chip-name">${robot.nameEn}</div>
             <div class="shrine-chip-desc">${hpText} \u00B7 ATK: ${robot.attack}</div>
@@ -821,6 +830,11 @@ async function renderQuizRewards() {
 
     sceneModule.showNarration(label, { speaker: 'Quiz Master', persistent: true });
     actions.setContent(`<div class="shrine-chip-list" style="padding:0 1rem">${robotCards}</div>`);
+
+    // Wire up sprite images with proper idle->static fallback
+    document.querySelectorAll('.shrine-chip-img').forEach(img => {
+      configureRobotImg(img, img.dataset.robotId, el => { el.style.display = 'none'; });
+    });
 
     const list = document.querySelector('.shrine-chip-list');
     if (list && !list.dataset.bound) {
