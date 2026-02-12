@@ -14,6 +14,7 @@
 
 import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
+import { t, isJapanified } from './i18n.js';
 
 let onItemSelected = null;
 
@@ -41,7 +42,7 @@ export function show(items) {
 
   actionArea.innerHTML = `
     <div class="post-combat-shop">
-      <div class="shop-title">Choose a Reward</div>
+      <div class="shop-title">${t('chooseReward')}</div>
       <div class="shop-items">
         ${items.map((item, i) => {
           const rarityColor = RARITY_COLORS[item.rarity] || RARITY_COLORS.common;
@@ -54,7 +55,7 @@ export function show(items) {
             <div class="shop-item-reading">${item.reading}</div>
             <div class="shop-item-meaning">${item.meaning}</div>
             <div class="shop-item-divider"></div>
-            <div class="shop-item-effect">${icon} ${item.description}</div>
+            <div class="shop-item-effect">${icon} ${isJapanified() && item.descriptionJa ? item.descriptionJa : item.description}</div>
           </div>
         `}).join('')}
       </div>

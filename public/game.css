@@ -3870,8 +3870,9 @@ html, body {
 .shop-item-word {
   font-size: 24px;
   font-weight: bold;
-  color: var(--text-primary, #eee);
+  color: #fff;
   line-height: 1.2;
+  text-shadow: 0 0 6px rgba(255,255,255,0.3);
 }
 
 .shop-item-reading {

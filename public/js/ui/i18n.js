@@ -87,6 +87,9 @@ const strings = {
   ready:            { en: 'Ready!',       ja: '発動可能！' },
   charging:         { en: 'Charging {0}/{1}', ja: 'チャージ中 {0}/{1}' },
 
+  // ── Post-combat shop ──
+  chooseReward:     { en: 'Choose a Reward', ja: '報酬を選べ' },
+
   // ── Flash card hints ──
   hintCombat:       { en: '\u2190 didn\'t know \u00A0|\u00A0 knew it \u2192',
                       ja: '\u2190 知らない \u00A0|\u00A0 知ってた \u2192' },

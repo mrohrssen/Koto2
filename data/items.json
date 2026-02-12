@@ -9,7 +9,8 @@
     "rarity": "common",
     "type": "heal",
     "effect": { "healPercent": 0.20 },
-    "description": "Heal the lowest HP robot for 20% of max HP"
+    "description": "Heal the lowest HP robot for 20% of max HP",
+    "descriptionJa": "最もHPの低いロボットをHP上限の20%回復"
   },
   {
     "id": "mountain",
@@ -21,7 +22,8 @@
     "rarity": "common",
     "type": "stat",
     "effect": { "field": "flatDamageReduction", "value": 1 },
-    "description": "All incoming damage reduced by 1"
+    "description": "All incoming damage reduced by 1",
+    "descriptionJa": "被ダメージ−1"
   },
   {
     "id": "sky",
@@ -33,7 +35,8 @@
     "rarity": "uncommon",
     "type": "utility",
     "effect": { "chargeBoost": 2 },
-    "description": "All robots gain +2 ultimate charges"
+    "description": "All robots gain +2 ultimate charges",
+    "descriptionJa": "全ロボットの必殺チャージ+2"
   },
   {
     "id": "nature",
@@ -45,7 +48,8 @@
     "rarity": "rare",
     "type": "heal",
     "effect": { "healAllPercent": 0.15 },
-    "description": "Heal all robots for 15% of max HP"
+    "description": "Heal all robots for 15% of max HP",
+    "descriptionJa": "全ロボットをHP上限の15%回復"
   },
   {
     "id": "sea",
@@ -57,7 +61,8 @@
     "rarity": "common",
     "type": "stat",
     "effect": { "field": "hpMult", "value": 0.02 },
-    "description": "All robots +2% max HP (heals that amount)"
+    "description": "All robots +2% max HP (heals that amount)",
+    "descriptionJa": "全ロボットのHP上限+2%（その分回復）"
   },
   {
     "id": "summer",
@@ -69,7 +74,8 @@
     "rarity": "uncommon",
     "type": "stat",
     "effect": { "field": "attackMult", "value": 0.03 },
-    "description": "All robots +3% attack"
+    "description": "All robots +3% attack",
+    "descriptionJa": "全ロボットの攻撃力+3%"
   },
   {
     "id": "smell",
@@ -81,7 +87,8 @@
     "rarity": "uncommon",
     "type": "stat",
     "effect": { "field": "autoPowerMult", "value": 0.03 },
-    "description": "All robots +3% auto-skill power"
+    "description": "All robots +3% auto-skill power",
+    "descriptionJa": "全ロボットのオートスキル威力+3%"
   },
   {
     "id": "spring",
@@ -93,7 +100,8 @@
     "rarity": "common",
     "type": "stat",
     "effect": { "field": "elementEdge", "value": 0.05 },
-    "description": "Super-effective damage +0.05"
+    "description": "Super-effective damage +0.05",
+    "descriptionJa": "効果抜群ダメージ+0.05"
   },
   {
     "id": "winter",
@@ -105,7 +113,8 @@
     "rarity": "uncommon",
     "type": "stat",
     "effect": { "field": "flatDamageReduction", "value": 1 },
-    "description": "All incoming damage reduced by 1"
+    "description": "All incoming damage reduced by 1",
+    "descriptionJa": "被ダメージ−1"
   },
   {
     "id": "autumn",
@@ -117,7 +126,8 @@
     "rarity": "rare",
     "type": "heal",
     "effect": { "healMostDamaged": true },
-    "description": "Heal the most damaged robot to full"
+    "description": "Heal the most damaged robot to full",
+    "descriptionJa": "最もダメージを受けたロボットを全回復"
   },
   {
     "id": "time",
@@ -129,7 +139,8 @@
     "rarity": "legendary",
     "type": "utility",
     "effect": { "chargeBoost": 3, "allStats": 0.01 },
-    "description": "All robots gain +3 ultimate charges and +1% all stats"
+    "description": "All robots gain +3 ultimate charges and +1% all stats",
+    "descriptionJa": "全ロボットの必殺チャージ+3、全ステ+1%"
   },
   {
     "id": "words",
@@ -141,7 +152,8 @@
     "rarity": "common",
     "type": "stat",
     "effect": { "field": "autoPowerMult", "value": 0.03 },
-    "description": "All robots +3% auto-skill power"
+    "description": "All robots +3% auto-skill power",
+    "descriptionJa": "全ロボットのオートスキル威力+3%"
   },
   {
     "id": "photograph",
@@ -153,7 +165,8 @@
     "rarity": "common",
     "type": "stat",
     "effect": { "field": "attackMult", "value": 0.02 },
-    "description": "All robots +2% attack"
+    "description": "All robots +2% attack",
+    "descriptionJa": "全ロボットの攻撃力+2%"
   },
   {
     "id": "senior",
@@ -165,7 +178,8 @@
     "rarity": "uncommon",
     "type": "stat",
     "effect": { "field": "ultimatePowerMult", "value": 0.05 },
-    "description": "All robots +5% ultimate power"
+    "description": "All robots +5% ultimate power",
+    "descriptionJa": "全ロボットの必殺技威力+5%"
   },
   {
     "id": "paper",
@@ -177,7 +191,8 @@
     "rarity": "common",
     "type": "stat",
     "effect": { "field": "autoPowerMult", "value": 0.03 },
-    "description": "All robots +3% auto-skill power"
+    "description": "All robots +3% auto-skill power",
+    "descriptionJa": "全ロボットのオートスキル威力+3%"
   },
   {
     "id": "clock",
@@ -189,7 +204,8 @@
     "rarity": "uncommon",
     "type": "utility",
     "effect": { "chargeBoost": 2 },
-    "description": "All robots gain +2 ultimate charges"
+    "description": "All robots gain +2 ultimate charges",
+    "descriptionJa": "全ロボットの必殺チャージ+2"
   },
   {
     "id": "letter",
@@ -201,7 +217,8 @@
     "rarity": "common",
     "type": "heal",
     "effect": { "healAllPercent": 0.10 },
-    "description": "Heal all robots for 10% of max HP"
+    "description": "Heal all robots for 10% of max HP",
+    "descriptionJa": "全ロボットをHP上限の10%回復"
   },
   {
     "id": "story",
@@ -213,7 +230,8 @@
     "rarity": "rare",
     "type": "stat",
     "effect": { "field": "ultimatePowerMult", "value": 0.05 },
-    "description": "All robots +5% ultimate power"
+    "description": "All robots +5% ultimate power",
+    "descriptionJa": "全ロボットの必殺技威力+5%"
   },
   {
     "id": "music",
@@ -225,7 +243,8 @@
     "rarity": "rare",
     "type": "heal",
     "effect": { "healAllPercent": 0.15 },
-    "description": "Heal all robots for 15% of max HP"
+    "description": "Heal all robots for 15% of max HP",
+    "descriptionJa": "全ロボットをHP上限の15%回復"
   },
   {
     "id": "money",
@@ -237,7 +256,8 @@
     "rarity": "uncommon",
     "type": "stat",
     "effect": { "field": "random", "value": 0.02 },
-    "description": "Random stat +2%"
+    "description": "Random stat +2%",
+    "descriptionJa": "ランダムなステータス+2%"
   },
   {
     "id": "cooking",
@@ -249,7 +269,8 @@
     "rarity": "common",
     "type": "heal",
     "effect": { "healPercent": 0.25 },
-    "description": "Heal the lowest HP robot for 25% of max HP"
+    "description": "Heal the lowest HP robot for 25% of max HP",
+    "descriptionJa": "最もHPの低いロボットをHP上限の25%回復"
   },
   {
     "id": "meal",
@@ -261,7 +282,8 @@
     "rarity": "uncommon",
     "type": "heal",
     "effect": { "healAllPercent": 0.15 },
-    "description": "Heal all robots for 15% of max HP"
+    "description": "Heal all robots for 15% of max HP",
+    "descriptionJa": "全ロボットをHP上限の15%回復"
   },
   {
     "id": "flavor",
@@ -273,7 +295,8 @@
     "rarity": "common",
     "type": "stat",
     "effect": { "field": "attackMult", "value": 0.02 },
-    "description": "All robots +2% attack"
+    "description": "All robots +2% attack",
+    "descriptionJa": "全ロボットの攻撃力+2%"
   },
   {
     "id": "medicine",
@@ -285,7 +308,8 @@
     "rarity": "rare",
     "type": "heal",
     "effect": { "healMostDamaged": true },
-    "description": "Heal the most damaged robot to full"
+    "description": "Heal the most damaged robot to full",
+    "descriptionJa": "最もダメージを受けたロボットを全回復"
   },
   {
     "id": "sake",
@@ -297,7 +321,8 @@
     "rarity": "epic",
     "type": "stat",
     "effect": { "field": "attackMult", "value": 0.05, "penalty": { "field": "hpMult", "value": -0.03 } },
-    "description": "All robots +5% attack, but −3% max HP"
+    "description": "All robots +5% attack, but −3% max HP",
+    "descriptionJa": "全ロボットの攻撃力+5%、ただしHP上限−3%"
   },
   {
     "id": "tea",
@@ -309,7 +334,8 @@
     "rarity": "common",
     "type": "heal",
     "effect": { "healAllPercent": 0.15 },
-    "description": "Heal all robots for 15% of max HP"
+    "description": "Heal all robots for 15% of max HP",
+    "descriptionJa": "全ロボットをHP上限の15%回復"
   },
   {
     "id": "rice",
@@ -321,7 +347,8 @@
     "rarity": "common",
     "type": "heal",
     "effect": { "healPercent": 0.20 },
-    "description": "Heal the lowest HP robot for 20% of max HP"
+    "description": "Heal the lowest HP robot for 20% of max HP",
+    "descriptionJa": "最もHPの低いロボットをHP上限の20%回復"
   },
   {
     "id": "feeling",
@@ -333,7 +360,8 @@
     "rarity": "epic",
     "type": "stat",
     "effect": { "field": "autoPowerMult", "value": 0.05 },
-    "description": "All robots +5% auto-skill power"
+    "description": "All robots +5% auto-skill power",
+    "descriptionJa": "全ロボットのオートスキル威力+5%"
   },
   {
     "id": "heart",
@@ -345,7 +373,8 @@
     "rarity": "epic",
     "type": "stat",
     "effect": { "field": "hpMult", "value": 0.05 },
-    "description": "All robots +5% max HP (heals that amount)"
+    "description": "All robots +5% max HP (heals that amount)",
+    "descriptionJa": "全ロボットのHP上限+5%（その分回復）"
   },
   {
     "id": "family",
@@ -357,7 +386,8 @@
     "rarity": "uncommon",
     "type": "stat",
     "effect": { "field": "hpMult", "value": 0.03 },
-    "description": "All robots +3% max HP (heals that amount)"
+    "description": "All robots +3% max HP (heals that amount)",
+    "descriptionJa": "全ロボットのHP上限+3%（その分回復）"
   },
   {
     "id": "friend",
@@ -369,7 +399,8 @@
     "rarity": "common",
     "type": "stat",
     "effect": { "field": "attackMult", "value": 0.02 },
-    "description": "All robots +2% attack"
+    "description": "All robots +2% attack",
+    "descriptionJa": "全ロボットの攻撃力+2%"
   },
   {
     "id": "ally",
@@ -381,7 +412,8 @@
     "rarity": "uncommon",
     "type": "stat",
     "effect": { "field": "flatDamageReduction", "value": 1 },
-    "description": "All incoming damage reduced by 1"
+    "description": "All incoming damage reduced by 1",
+    "descriptionJa": "被ダメージ−1"
   },
   {
     "id": "parents",
@@ -393,7 +425,8 @@
     "rarity": "epic",
     "type": "stat",
     "effect": { "field": "hpMult", "value": 0.03, "bonus": { "field": "flatDamageReduction", "value": 1 } },
-    "description": "All robots +3% max HP and incoming damage reduced by 1"
+    "description": "All robots +3% max HP and incoming damage reduced by 1",
+    "descriptionJa": "全ロボットのHP上限+3%、被ダメージ−1"
   },
   {
     "id": "lover",
@@ -405,7 +438,8 @@
     "rarity": "legendary",
     "type": "heal",
     "effect": { "revivePercent": 0.50 },
-    "description": "Revive one random KO'd robot at 50% HP"
+    "description": "Revive one random KO'd robot at 50% HP",
+    "descriptionJa": "KOされたロボット1体をHP50%で復活"
   },
   {
     "id": "siblings",
@@ -417,7 +451,8 @@
     "rarity": "rare",
     "type": "stat",
     "effect": { "field": "attackMult", "value": 0.03 },
-    "description": "All robots +3% attack"
+    "description": "All robots +3% attack",
+    "descriptionJa": "全ロボットの攻撃力+3%"
   },
   {
     "id": "name",
@@ -429,7 +464,8 @@
     "rarity": "common",
     "type": "stat",
     "effect": { "field": "autoPowerMult", "value": 0.03 },
-    "description": "All robots +3% auto-skill power"
+    "description": "All robots +3% auto-skill power",
+    "descriptionJa": "全ロボットのオートスキル威力+3%"
   },
   {
     "id": "book",
@@ -441,7 +477,8 @@
     "rarity": "common",
     "type": "stat",
     "effect": { "field": "ultimatePowerMult", "value": 0.03 },
-    "description": "All robots +3% ultimate power"
+    "description": "All robots +3% ultimate power",
+    "descriptionJa": "全ロボットの必殺技威力+3%"
   },
   {
     "id": "thing",
@@ -453,7 +490,8 @@
     "rarity": "common",
     "type": "utility",
     "effect": { "random": true },
-    "description": "Mystery item — random beneficial effect"
+    "description": "Mystery item — random beneficial effect",
+    "descriptionJa": "謎のアイテム — ランダムな効果"
   },
   {
     "id": "promise",
@@ -465,7 +503,8 @@
     "rarity": "uncommon",
     "type": "utility",
     "effect": { "chargeBoost": 2 },
-    "description": "All robots gain +2 ultimate charges"
+    "description": "All robots gain +2 ultimate charges",
+    "descriptionJa": "全ロボットの必殺チャージ+2"
   },
   {
     "id": "clothes",
@@ -477,7 +516,8 @@
     "rarity": "uncommon",
     "type": "stat",
     "effect": { "field": "flatDamageReduction", "value": 1 },
-    "description": "All incoming damage reduced by 1"
+    "description": "All incoming damage reduced by 1",
+    "descriptionJa": "被ダメージ−1"
   },
   {
     "id": "key",
@@ -489,7 +529,8 @@
     "rarity": "rare",
     "type": "utility",
     "effect": { "chargeBoost": 3 },
-    "description": "All robots gain +3 ultimate charges"
+    "description": "All robots gain +3 ultimate charges",
+    "descriptionJa": "全ロボットの必殺チャージ+3"
   },
   {
     "id": "riddle",
@@ -501,7 +542,8 @@
     "rarity": "rare",
     "type": "utility",
     "effect": { "randomLarge": true },
-    "description": "Solving the riddle grants a large random buff"
+    "description": "Solving the riddle grants a large random buff",
+    "descriptionJa": "謎を解くと大きなランダムバフ"
   },
   {
     "id": "travel",
@@ -513,7 +555,8 @@
     "rarity": "uncommon",
     "type": "stat",
     "effect": { "field": "elementEdge", "value": 0.05 },
-    "description": "Super-effective damage +0.05"
+    "description": "Super-effective damage +0.05",
+    "descriptionJa": "効果抜群ダメージ+0.05"
   },
   {
     "id": "map",
@@ -525,7 +568,8 @@
     "rarity": "rare",
     "type": "stat",
     "effect": { "field": "elementEdge", "value": 0.10 },
-    "description": "Super-effective damage +0.10"
+    "description": "Super-effective damage +0.10",
+    "descriptionJa": "効果抜群ダメージ+0.10"
   },
   {
     "id": "tool",
@@ -537,7 +581,8 @@
     "rarity": "epic",
     "type": "stat",
     "effect": { "field": "attackMult", "value": 0.03, "bonus": { "field": "autoPowerMult", "value": 0.03 } },
-    "description": "All robots +3% attack and +3% auto-skill power"
+    "description": "All robots +3% attack and +3% auto-skill power",
+    "descriptionJa": "全ロボットの攻撃力+3%、オートスキル威力+3%"
   },
   {
     "id": "present",
@@ -549,6 +594,7 @@
     "rarity": "epic",
     "type": "utility",
     "effect": { "randomEpic": true },
-    "description": "A generous gift — random epic-tier buff"
+    "description": "A generous gift — random epic-tier buff",
+    "descriptionJa": "豪華な贈り物 — エピック級のランダムバフ"
   }
 ]
