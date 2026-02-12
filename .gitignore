@@ -25,3 +25,7 @@ ASSET-GENERATION-PLAN.md
 # Original PNGs (keep locally for regeneration, commit only WebP)
 public/assets/**/*.png
 .worktrees/
+tmp/
+output/
+.playwright-mcp/
+__pycache__/
