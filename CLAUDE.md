@@ -20,46 +20,13 @@ Japanese vocabulary learning RPG. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.m
 npm install    # Install dependencies
 npm run dev    # Development with watch
 npm start      # Production
-npm test       # Run e2e tests (Playwright)
 ```
 
 ## Testing
 
-**Always run e2e tests after adding a feature.** Tests are in `tests/` using Playwright.
+**We do NOT use e2e test suites.** The `tests/e2e/` directory is legacy and unmaintained. Instead, playtest manually using the Playwright MCP browser (headless) — see the Playtesting section below.
 
-### E2E Testing Rules (CRITICAL - READ THIS)
-
-**USE THE WRAPPER SCRIPT - it enforces correct flags:**
-
-```bash
-./scripts/e2e-test.sh                              # Run all tests
-./scripts/e2e-test.sh specs/character-creation     # Run specific test
-```
-
-**NEVER run playwright directly without the required flags.**
-
-If wrapper doesn't work, use EXACTLY this (no variations):
-```bash
-cd /Users/michia/Documents/jrpg
-pkill -f "node server.js" 2>/dev/null
-npm start &
-sleep 3
-cd tests/e2e && npx playwright test --workers=1 -x
-pkill -f "node server.js"
-```
-
-**FORBIDDEN - will waste hours on timeouts:**
-```bash
-npx playwright test --workers=2    # NO! Causes race conditions
-npx playwright test                # NO! Runs all 66 tests even on failure
-```
-
-**Test thresholds:**
-- 66/66 = ideal
-- 60+/66 = acceptable (known flakiness)
-- <60/66 = broken, fix before committing
-
-**Syntax check BEFORE E2E** (saves time):
+**Syntax check after editing JS** (catches errors fast):
 ```bash
 node --check public/js/yourfile.js && echo "OK"
 ```

@@ -162,7 +162,7 @@ const ENEMY_COUNT_WEIGHTS = [
   { count: 3, weight: 10 }
 ];
 
-export function generateEnemyRobots(highestAllyLevel = 1) {
+export function generateEnemyRobots(highestAllyLevel = 1, { maxEnemies } = {}) {
   // Roll enemy count
   const totalWeight = ENEMY_COUNT_WEIGHTS.reduce((s, w) => s + w.weight, 0);
   let roll = Math.random() * totalWeight;
@@ -171,6 +171,7 @@ export function generateEnemyRobots(highestAllyLevel = 1) {
     roll -= weight;
     if (roll <= 0) { enemyCount = count; break; }
   }
+  if (maxEnemies) enemyCount = Math.min(enemyCount, maxEnemies);
 
   const enemies = [];
   for (let i = 0; i < enemyCount; i++) {

@@ -863,7 +863,8 @@ export class GameManager {
     }
 
     const highestLevel = Math.max(...this.run.robotParty.active.map(r => r.level), 1);
-    const enemyRobots = generateEnemyRobots(highestLevel);
+    const isFirstBattle = (this.run.encountersCompleted || 0) === 0;
+    const enemyRobots = generateEnemyRobots(highestLevel, isFirstBattle ? { maxEnemies: 2 } : {});
 
     this.combat = createCombatState(enemyRobots[0]);
     this.combat.allies = this.run.robotParty.active;
@@ -1009,6 +1010,18 @@ export class GameManager {
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
     const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
     if (allAlliesKO) {
+      // Save any befriended robots to permanent collection before defeat
+      const pending = this.run.robotParty.pendingCaptures || [];
+      for (const robot of pending) {
+        if (this.meta && !robot.temporary) {
+          const result = addToCollection(this.meta.robotCollection || [], robot.id);
+          if (result.added) {
+            this.meta.robotCollection = result.collection;
+          }
+        }
+      }
+      this.run.robotParty.pendingCaptures = [];
+
       this.combat.active = false;
       this.run.active = false;
       this.emitState();
