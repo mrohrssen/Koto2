@@ -26,7 +26,7 @@
 
 import * as speedReview from './speed-review.js';
 import { playSFX } from '../audio.js';
-import { speakNarration } from '../tts.js';
+import { speakNarration, prefetchNarration } from '../tts.js';
 import { robotBgUrl, configureRobotImg } from './sprite-utils.js';
 
 let getGameState = null;
@@ -483,10 +483,12 @@ export async function renderBranchSelection() {
   door2Hint = intro.right + door2Hint;
 
   // Show door 1 hint with Chippy as speaker, auto-play TTS
+  // Prefetch door 2 audio while user reads door 1
+  prefetchNarration(door2Hint);
   speakNarration(door1Hint);
   await sceneModule.showNarration(door1Hint, { speaker: 'チッピー' });
 
-  // Show door 2 hint with Chippy as speaker, auto-play TTS
+  // Show door 2 hint with Chippy as speaker, auto-play TTS (already prefetched)
   speakNarration(door2Hint);
   await sceneModule.showNarration(door2Hint, { speaker: 'チッピー' });
 
@@ -701,6 +703,9 @@ export async function renderQuiz() {
   // Show intro dialogue first (click to continue)
   if (gameState._quizStage !== 'question') {
     actions.setContent(''); // Clear actions while showing intro
+    // Prefetch question audio while user reads intro
+    prefetchNarration(question.question);
+    speakNarration('この問題に答えれば、ご褒美をあげよう。');
     await sceneModule.showNarration('この問題に答えれば、ご褒美をあげよう。', { speaker: 'Quiz Master' });
     gameState._quizStage = 'question';
     updateUI();
@@ -712,6 +717,7 @@ export async function renderQuiz() {
   if (question.translation) {
     questionText += `\n\n(${question.translation})`;
   }
+  speakNarration(question.question);
   sceneModule.showNarration(questionText, { speaker: 'Quiz Master', persistent: true, skipRewrite: true });
 
   // Build answer buttons - full width with padding

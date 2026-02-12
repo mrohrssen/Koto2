@@ -28,6 +28,10 @@ let currentAudio = null;
 let lastSpokenNarration = null;
 let ttsRequestId = 0;
 
+// Narration audio prefetch cache
+const narrationCache = new Map();
+const MAX_NARRATION_CACHE = 10;
+
 // Word audio cache
 const wordAudioCache = new Map();
 let wordAudioEnabled = true;
@@ -160,8 +164,39 @@ async function synthesize(text, options = {}) {
 }
 
 /**
+ * Prefetch narration audio in the background.
+ * Call this as early as possible (e.g. when narration text arrives).
+ * speakNarration() will use the cached result if available.
+ * @param {string} text - Text to prefetch audio for
+ * @param {object} [options] - Optional overrides (speakerId, speed)
+ */
+export function prefetchNarration(text, options = {}) {
+  if (!ttsEnabled || muted || !text || text.trim().length === 0) return;
+  if (narrationCache.has(text)) return;
+
+  // Evict oldest if full
+  if (narrationCache.size >= MAX_NARRATION_CACHE) {
+    const oldest = narrationCache.keys().next().value;
+    const entry = narrationCache.get(oldest);
+    if (entry?.url) URL.revokeObjectURL(entry.url);
+    narrationCache.delete(oldest);
+  }
+
+  // Store the promise so speakNarration can await it
+  const promise = synthesize(text, options);
+  narrationCache.set(text, { promise, url: null });
+  promise.then(result => {
+    const entry = narrationCache.get(text);
+    if (entry) {
+      entry.url = result?.url || null;
+      entry.blob = result?.blob || null;
+    }
+  });
+}
+
+/**
  * Speak narration text using VOICEVOX
- * Cancels any currently playing narration
+ * Cancels any currently playing narration. Uses prefetch cache if available.
  */
 export async function speakNarration(text) {
   // Stop any currently playing audio
@@ -180,7 +215,17 @@ export async function speakNarration(text) {
   // Increment request ID to cancel any pending requests
   const thisRequestId = ++ttsRequestId;
 
-  const result = await synthesize(text);
+  // Check prefetch cache first
+  let result = null;
+  const cached = narrationCache.get(text);
+  if (cached) {
+    narrationCache.delete(text);
+    result = await cached.promise;
+  }
+
+  if (!result) {
+    result = await synthesize(text);
+  }
   if (!result) return;
 
   // Check if this request was canceled while waiting
