@@ -2066,17 +2066,16 @@ html, body {
 }
 
 .dealer-buy-btn {
-  display: block;
-  width: 100%;
-  margin-top: 8px;
-  padding: 10px;
+  flex-shrink: 0;
+  padding: 8px 14px;
   border: none;
   border-radius: var(--radius-md);
   background: var(--btn-primary);
   color: #fff;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
   transition: opacity var(--transition-fast);
 }
 
@@ -3605,7 +3604,7 @@ html, body {
   inset: 0;
   z-index: 500;
   background: var(--bg-dark, #1a1a2e);
-  padding: 12px;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 12px calc(12px + env(safe-area-inset-bottom, 0px));
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -3718,6 +3717,10 @@ html, body {
 .collection-cell.selected[data-element="earth"] { box-shadow: 0 0 12px rgba(141, 110, 99, 0.7); }
 .collection-cell.selected[data-element="metal"] { box-shadow: 0 0 12px rgba(158, 158, 158, 0.7); }
 .collection-cell.selected[data-element="water"] { box-shadow: 0 0 12px rgba(33, 150, 243, 0.7); }
+
+.collection-select > .action-btn {
+  align-self: center;
+}
 
 .collection-cell .robot-name {
   position: absolute;
