@@ -416,6 +416,8 @@ function normalizeNarrationRequest(event, context = {}) {
   if (event === 'bossStart') {
     const isFinalBoss = Boolean(context?.isFinalBoss) || Number(context?.floor) === 7;
     const bossContext = context?.enemy || context?.boss || context || {};
+    // Preserve allies if present for robot-specific narration
+    if (context?.allies) bossContext.allies = context.allies;
     return {
       event: isFinalBoss ? 'finalBossAppear' : 'bossAppear',
       context: bossContext
@@ -539,7 +541,8 @@ async function generateGameNarration(event, context, userKeys = {}) {
       player: sourceContext.player || null,
       floor: sourceContext.floor || 1,
       enemy: enemyForState || null,
-      combat: enemyForState ? { active: true, turn: sourceContext.turn || 0 } : null
+      combat: enemyForState ? { active: true, turn: sourceContext.turn || 0 } : null,
+      allies: sourceContext.allies || null
     };
 
     narration = await generateNarration(

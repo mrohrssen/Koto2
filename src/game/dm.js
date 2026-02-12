@@ -245,7 +245,7 @@ function getSampleNarrations(eventType) {
  * @returns {string} Complete system prompt in Japanese
  */
 export function buildDmSystemPrompt(gameState, vocabulary, jlptLevel, suggestedWords = null) {
-  const { player, floor, enemy, combat } = gameState;
+  const { player, floor, enemy, combat, allies } = gameState;
 
   // Limit vocabulary for context window
   const MAX_VOCAB = 8000;
@@ -314,8 +314,10 @@ ${memoryContext ? `=== 物語の記憶 ===\n${memoryContext}\n` : ''}
 === 今の場面 ===
 階：${floor}/7 | ${player?.name || 'Hunter'}（${player?.rank || 'E'}ランク、Lv.${player?.level || 1}）
 HP：${player?.hp || 0}/${player?.maxHp || 100} | SP：${player?.sp ?? player?.mp ?? 0}/${player?.maxSp ?? player?.maxMp ?? 50}
+${allies?.length ? `味方ロボット：${allies.filter(a => a && a.hp > 0).map(a => `${a.nameEn || a.name}(Lv.${a.level})`).join('、')}` : ''}
 ${enemy ? `敵：${enemy.name}（HP：${enemy.hp}/${enemy.maxHp}）` : ''}
 緊張度：${tension}
+${allies?.length ? '【重要】味方ロボットの名前を使って描写する。「攻撃した」ではなく「Scribbitが攻撃した」のように。' : ''}
 
 === 創作のコツ ===
 ・感覚を回す：今回は「${['見る', '聞く', '触る', '匂う'][Math.floor(Math.random() * 4)]}」を中心に
@@ -380,10 +382,12 @@ export const DM_PROMPTS = {
     const enemy = ctx?.enemy || ctx || {};
     const intent = ctx?.intent;
     const voice = getEnemyVoice(enemy.personality);
+    const allyNames = ctx?.allies?.filter(a => a && a.hp > 0).map(a => a.nameEn || a.name) || [];
+    const allyHint = allyNames.length > 0 ? `\n味方ロボット${allyNames.join('、')}が構える。` : '';
 
     const intentHint = intent ? getIntentNarrationHint(intent) : '';
 
-    return `${enemy.name}が現れた！
+    return `${enemy.name}が現れた！${allyHint}
 見た目：${enemy.description || ''}
 【必須】敵が「」で最初の言葉を言う。${voice.description}
 ${intentHint}
@@ -556,7 +560,9 @@ ${intentHint}
   victory: (ctx) => {
     const enemy = ctx?.enemy || ctx || {};
     const rewards = ctx?.rewards || {};
-    return `${enemy.name || '敵'}を倒した！
+    const allyNames = ctx?.allies?.filter(a => a && a.hp > 0).map(a => a.nameEn || a.name) || [];
+    const allyHint = allyNames.length > 0 ? `\n味方ロボット${allyNames.join('、')}が戦った。名前を使って描写。` : '';
+    return `${enemy.name || '敵'}を倒した！${allyHint}
 【必須】敵の最後の言葉「」。悔しさ、驚き、または認める。
 勝利の瞬間、敵が消える、報酬。4-6文で。
 獲得：${rewards.xp || 0}XP、${rewards.credits || 0}クレジット`;
@@ -575,7 +581,9 @@ ${rewards.bossDrop ? `ドロップ：${rewards.bossDrop.name}` : ''}`;
   // Player defeat - enemy mocks
   defeat: (ctx) => {
     const enemy = ctx?.enemy || ctx || {};
-    return `${enemy.name || '敵'}に倒された...
+    const allyNames = ctx?.allies?.filter(a => a).map(a => a.nameEn || a.name) || [];
+    const allyHint = allyNames.length > 0 ? `\n倒れた味方：${allyNames.join('、')}。彼らの名前を使って描写。` : '';
+    return `${enemy.name || '敵'}に倒された...${allyHint}
 【必須】敵の勝利宣言「」。
 意識が遠のく。絶望の瞬間。4-6文で。`;
   },

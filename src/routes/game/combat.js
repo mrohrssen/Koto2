@@ -58,6 +58,7 @@ export default function createCombatRoutes({
     try {
       let narration;
       const enemy = gameManager.combat?.enemy || gameManager.combat?.enemies?.[0];
+      const allies = gameManager.combat?.allies || [];
 
       if (victory) {
         const rewards = { xp: expGained, credits: creditsGained, drops: loot };
@@ -71,12 +72,14 @@ export default function createCombatRoutes({
         narration = await generateGameNarration('victory', {
           player: gameManager.run?.player,
           enemy,
+          allies,
           rewards: enrichedRewards
         }, req.userKeys);
       } else {
         narration = await generateGameNarration('defeat', {
           player: gameManager.run?.player,
-          enemy
+          enemy,
+          allies
         }, req.userKeys);
       }
 
@@ -93,7 +96,8 @@ export default function createCombatRoutes({
       const encounter = gameManager.startEncounter();
       const narration = await generateGameNarration('encounterStart', {
         enemy: encounter.enemy,
-        player: gameManager.run.player
+        player: gameManager.run.player,
+        allies: gameManager.combat?.allies || []
       }, req.userKeys);
 
       req.saveGame();
@@ -111,6 +115,7 @@ export default function createCombatRoutes({
       const narration = await generateGameNarration('bossStart', {
         enemy: encounter.enemy,
         player: gameManager.run.player,
+        allies: gameManager.combat?.allies || [],
         isFinalBoss: encounter.isFinalBoss
       }, req.userKeys);
 
