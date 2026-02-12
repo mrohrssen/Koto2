@@ -46,7 +46,7 @@ import {
   playUltimateAnimation
 } from './combat-effects.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
-import { configureRobotImg, robotSpritePathStatic } from './sprite-utils.js';
+import { configureRobotImg } from './sprite-utils.js';
 
 // ============ MODULE STATE ============
 
@@ -1262,7 +1262,7 @@ async function executeRobotDefendThenPause() {
             const newRobot = result.robotParty.active[koIndex];
             if (newRobot) {
               const icon = swapSlot.querySelector('.robot-sprite-icon');
-              if (icon) icon.src = robotSpritePathStatic(newRobot.id);
+              if (icon) configureRobotImg(icon, newRobot.id, el => { el.style.display = 'none'; });
               const hpFill = swapSlot.querySelector('.robot-hp-fill');
               if (hpFill) {
                 const pct = Math.max(0, (newRobot.hp / newRobot.maxHp) * 100);
