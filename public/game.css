@@ -3658,10 +3658,10 @@ html, body {
 .collection-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
-  gap: 4px;
+  gap: 6px;
   flex: 1;
   overflow-y: auto;
-  padding: 4px;
+  padding: 6px;
   margin-bottom: 8px;
   align-items: start;
 }
@@ -3707,8 +3707,8 @@ html, body {
 
 /* States */
 .collection-cell.selected {
-  transform: scale(1.08);
   box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+  border-color: #FFD700;
 }
 
 .collection-cell.unowned img {
