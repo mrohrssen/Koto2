@@ -7,6 +7,7 @@
 
 const SFX_PATH = '/assets/audio/sfx/';
 const BGM_PATH = '/assets/audio/bgm/';
+const AUDIO_VERSION = '20260212';
 
 const SFX_FILES = [
   'attack', 'player-hit', 'enemy-defeat', 'heal',
@@ -116,7 +117,7 @@ export async function initAudio() {
 
 async function loadSfx(name) {
   try {
-    const response = await fetch(`${SFX_PATH}${name}.mp3`);
+    const response = await fetch(`${SFX_PATH}${name}.mp3?v=${AUDIO_VERSION}`);
     if (!response.ok) return;
     const arrayBuffer = await response.arrayBuffer();
     sfxBuffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
@@ -157,7 +158,7 @@ export function playBGM(track = 'main') {
     bgmElement = new Audio();
     bgmElement.loop = true;
   }
-  const src = `${BGM_PATH}${track}.mp3`;
+  const src = `${BGM_PATH}${track}.mp3?v=${AUDIO_VERSION}`;
   if (bgmElement.src !== new URL(src, location.href).href) {
     bgmElement.src = src;
   }
@@ -176,7 +177,7 @@ export function playBGMRandomStart(track) {
     bgmElement = new Audio();
     bgmElement.loop = true;
   }
-  const src = `${BGM_PATH}${track}.mp3`;
+  const src = `${BGM_PATH}${track}.mp3?v=${AUDIO_VERSION}`;
   const fullSrc = new URL(src, location.href).href;
 
   // If same track, just seek to random position
