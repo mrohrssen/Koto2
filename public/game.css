@@ -727,6 +727,14 @@ html, body {
   pointer-events: none;
 }
 
+/* Door selection buttons */
+.action-btn.branch-option.selected {
+  background: var(--accent-cyan);
+  color: white;
+  border: 2px solid var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(79, 195, 247, 0.3);
+}
+
 /* ===== FLASH CARD ===== */
 .flash-card-container {
   width: 100%;

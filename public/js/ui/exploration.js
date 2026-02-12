@@ -239,8 +239,8 @@ function closeInventory() {
 export function renderHub() {
   actions.setContent(`
     <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px;">
-      <button class="action-btn" id="speed-review-btn">速習</button>
-      <button class="action-btn action-btn-primary" id="context-action-btn">潜入</button>
+      <button class="action-btn action-btn-secondary" id="speed-review-btn">\uD83D\uDCDA 速習</button>
+      <button class="action-btn action-btn-primary" id="context-action-btn">\u26A1 潜入</button>
     </div>
   `);
 
@@ -409,9 +409,9 @@ export function renderExploring() {
 
   if (room?.encounter || gameState.phase === 'room_encounter') {
     actions.setContent(`
-      <button class="action-btn action-btn-tertiary" id="inventory-btn">インベントリ</button>
-      <button class="action-btn action-btn-primary" id="equip-bots-btn">ボット装備</button>
-      <button class="action-btn action-btn-secondary" id="fight-btn">戦う</button>
+      <button class="action-btn action-btn-tertiary" id="inventory-btn">\uD83D\uDCE6 インベントリ</button>
+      <button class="action-btn action-btn-primary" id="equip-bots-btn">\uD83E\uDD16 ボット装備</button>
+      <button class="action-btn action-btn-secondary" id="fight-btn">\u2694\uFE0F 戦う</button>
     `);
     document.getElementById('inventory-btn')?.addEventListener('click', showInventory);
     document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
@@ -424,9 +424,9 @@ export function renderExploring() {
   }
 
   actions.setContent(`
-    <button class="action-btn action-btn-tertiary" id="inventory-btn">インベントリ</button>
-    <button class="action-btn action-btn-primary" id="equip-bots-btn">ボット装備</button>
-    <button class="action-btn action-btn-secondary" id="proceed-btn">進む</button>
+    <button class="action-btn action-btn-tertiary" id="inventory-btn">\uD83D\uDCE6 インベントリ</button>
+    <button class="action-btn action-btn-primary" id="equip-bots-btn">\uD83E\uDD16 ボット装備</button>
+    <button class="action-btn action-btn-secondary" id="proceed-btn">\u27A1\uFE0F 進む</button>
   `);
   document.getElementById('inventory-btn')?.addEventListener('click', showInventory);
   document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
@@ -458,14 +458,8 @@ export async function renderBranchSelection() {
 
   // Show greyed-out door buttons while Chippy narrates
   actions.setContent(`
-    <div class="ward-selection-list">
-      <div class="ward-option branch-option disabled" data-door="0">
-        <strong>左のドア</strong>
-      </div>
-      <div class="ward-option branch-option disabled" data-door="1">
-        <strong>右のドア</strong>
-      </div>
-    </div>
+    <button class="action-btn action-btn-secondary branch-option disabled" data-door="0" disabled>\uD83D\uDEAA 左のドア</button>
+    <button class="action-btn action-btn-secondary branch-option disabled" data-door="1" disabled>\uD83D\uDEAA 右のドア</button>
     <button class="action-btn action-btn-primary" id="branch-proceed-btn" disabled>進む</button>
   `);
 
@@ -500,14 +494,8 @@ export async function renderBranchSelection() {
   let selectedDoor = null;
 
   actions.setContent(`
-    <div class="ward-selection-list">
-      <div class="ward-option branch-option" data-door="0">
-        <strong>左のドア</strong>
-      </div>
-      <div class="ward-option branch-option" data-door="1">
-        <strong>右のドア</strong>
-      </div>
-    </div>
+    <button class="action-btn action-btn-secondary branch-option" data-door="0">\uD83D\uDEAA 左のドア</button>
+    <button class="action-btn action-btn-secondary branch-option" data-door="1">\uD83D\uDEAA 右のドア</button>
     <button class="action-btn action-btn-primary" id="branch-proceed-btn" disabled>進む</button>
   `);
 
@@ -545,9 +533,9 @@ export async function renderBranchSelection() {
 /** Boss ready phase */
 export function renderBossReady() {
   actions.setContent(`
-    <button class="action-btn action-btn-tertiary" id="inventory-btn">インベントリ</button>
-    <button class="action-btn action-btn-primary" id="equip-bots-btn">ボット装備</button>
-    <button class="action-btn action-btn-secondary" id="boss-fight-btn">ボス戦</button>
+    <button class="action-btn action-btn-tertiary" id="inventory-btn">\uD83D\uDCE6 インベントリ</button>
+    <button class="action-btn action-btn-primary" id="equip-bots-btn">\uD83E\uDD16 ボット装備</button>
+    <button class="action-btn action-btn-secondary" id="boss-fight-btn">\uD83D\uDC32 ボス戦</button>
   `);
   document.getElementById('inventory-btn')?.addEventListener('click', showInventory);
   document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
