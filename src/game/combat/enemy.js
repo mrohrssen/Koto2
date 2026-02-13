@@ -5,10 +5,6 @@
 
 import { ENEMY_ABILITIES, getEnemyAbility } from '../enemies.js';
 import {
-  breakDamageEffects,
-  getDamageTakenMultiplier
-} from './status-effects.js';
-import {
   getPlayerCombatStats,
   getEnemyCombatStats,
   resolvePhysicalAttack,
@@ -26,8 +22,6 @@ import {
 export function executeEnemyTurn(enemy, player, intent = null) {
   const playerStats = getPlayerCombatStats(player);
   const enemyStats = getEnemyCombatStats(enemy);
-
-  // EXPOSED status is now handled via getDamageTakenMultiplier() in damage calculations
 
   // Check if player is defending
   const isDefending = (player.statuses || []).some(s => s.id === 'defending');
@@ -112,14 +106,6 @@ export function executeEnemyTurn(enemy, player, intent = null) {
       player.hp = Math.max(0, player.hp - finalDamage);
       result.playerDefeated = player.hp <= 0;
 
-      // Break damage-sensitive status effects on player (like SLEEP)
-      if (finalDamage > 0) {
-        const brokenEffects = breakDamageEffects(player);
-        if (brokenEffects.length > 0) {
-          result.playerWoken = brokenEffects.some(e => e.id === 'sleep');
-        }
-      }
-
       // Track if this was a heavy/rage attack for narration
       result.isHeavy = currentIntent.id === 'heavy';
       result.isRage = currentIntent.id === 'rage';
@@ -138,16 +124,10 @@ export function isEnemyDefending(enemy) {
 }
 
 /**
- * Apply damage to enemy, accounting for their defense status and EXPOSED multiplier
+ * Apply damage to enemy, accounting for their defense status
  */
 export function applyDamageToEnemy(enemy, damage) {
   let finalDamage = damage;
-
-  // Apply EXPOSED status damage multiplier (takes more damage when exposed)
-  const damageMultiplier = getDamageTakenMultiplier(enemy);
-  if (damageMultiplier > 1.0) {
-    finalDamage = Math.floor(finalDamage * damageMultiplier);
-  }
 
   // Check for defending status (reduces damage by 50%)
   if (isEnemyDefending(enemy)) {
@@ -160,7 +140,6 @@ export function applyDamageToEnemy(enemy, damage) {
     originalDamage: damage,
     finalDamage,
     wasDefending: isEnemyDefending(enemy),
-    wasExposed: damageMultiplier > 1.0,
     enemyDefeated: enemy.hp <= 0
   };
 }

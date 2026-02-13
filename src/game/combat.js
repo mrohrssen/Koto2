@@ -4,16 +4,6 @@
  */
 
 export {
-  // Status effects
-  STATUS_EFFECTS,
-  applyStatusEffect,
-  hasStatusEffect,
-  removeStatusEffect,
-  getActiveStatusEffects,
-  breakDamageEffects,
-  tickStatusEffects,
-  tickEnemyStatusEffects,
-
   // Combat mechanics
   PLAYER_ATTACK_TYPES,
   determineTurnOrder,

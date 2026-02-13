@@ -4,9 +4,6 @@
  */
 
 import {
-  breakDamageEffects
-} from './status-effects.js';
-import {
   getPlayerCombatStats,
   getEnemyCombatStats,
   resolvePhysicalAttack,
@@ -58,14 +55,6 @@ export function executePlayerAttack(player, enemy, attackType = 'normal') {
   // Apply damage to enemy
   enemy.hp = Math.max(0, enemy.hp - result.totalDamage);
   result.enemyDefeated = enemy.hp <= 0;
-
-  // Break damage-sensitive status effects (like SLEEP)
-  if (result.totalDamage > 0) {
-    const brokenEffects = breakDamageEffects(enemy);
-    if (brokenEffects.length > 0) {
-      result.wokenFromSleep = brokenEffects.some(e => e.id === 'sleep');
-    }
-  }
 
   return result;
 }

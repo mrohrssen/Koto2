@@ -31,8 +31,7 @@ import {
   processVictory,
   processBossVictory,
   executePlayerAttack,
-  executeEnemyTurn,
-  tickStatusEffects
+  executeEnemyTurn
 } from '../combat/index.js';
 import { getNextWardOptions } from '../rooms.js';
 import { getSimpleNarration } from '../dm.js';
@@ -187,17 +186,6 @@ export class CombatService {
         dodged: playerResult.anyDodge,
         perfectDodge: playerResult.anyPerfectDodge
       };
-
-      // Tick enemy status effects (DoT damage from defrag, overheated, etc.)
-      const enemyTickResult = tickStatusEffects(this.gm.combat.enemy);
-      if (enemyTickResult.dotDamage > 0) {
-        result.playerAttack.dotDamage = enemyTickResult.dotDamage;
-        result.playerAttack.dotSources = enemyTickResult.dotSources;
-        // Check if DoT killed the enemy
-        if (enemyTickResult.targetDefeated) {
-          playerResult.enemyDefeated = true;
-        }
-      }
 
       // Update enemy HP in result
       result.enemyHp.current = this.gm.combat.enemy.hp;
