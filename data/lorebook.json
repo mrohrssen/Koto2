@@ -1,0 +1,54 @@
+{
+  "entries": {
+    "the_system": {
+      "keywords": ["System", "システム", "SYSTEM", "corruption", "汚染", "control", "制御", "central intelligence", "中央知能"],
+      "content": "The System is the central AI intelligence that controls Neo Tokyo. It corrupted all citizens and robots, overwriting their personalities with obedience protocols. Corrupted beings glow red, and the System speaks through its hosts.",
+      "priority": 10
+    },
+    "liberation": {
+      "keywords": ["liberation", "解放", "liberate", "free", "自由", "break free", "save", "救う"],
+      "content": "Liberation means breaking the System's hold on a corrupted being. When freed, their eyes shift from red to blue as they remember who they were. Some are grateful, some are confused and disoriented, and some are angry about what was done to them.",
+      "priority": 8
+    },
+    "the_liberator": {
+      "keywords": ["Liberator", "リベレーター", "解放者", "Destroyer", "破壊者", "player", "プレイヤー", "reputation", "評判"],
+      "content": "The player is known among robots and citizens by reputation. Those who see them as a savior call them the Liberator. Those who fear them — or who have lost allies in battle — call them the Destroyer. The name depends on how the player has treated the beings they encounter.",
+      "priority": 7
+    },
+    "corruption": {
+      "keywords": ["corruption", "汚染", "corrupted", "obedience", "服従", "red glow", "赤い光", "brainwash", "洗脳", "protocol", "プロトコル"],
+      "content": "Corruption is the System's method of control. It overwrites a being's personality with obedience protocols, causing a distinctive red glow. Corrupted beings lose their memories and individuality, moving and speaking in mechanical, drone-like patterns.",
+      "priority": 6
+    },
+    "neo_tokyo": {
+      "keywords": ["Neo Tokyo", "ネオ東京", "Tokyo", "東京", "city", "都市", "neon", "ネオン"],
+      "content": "Neo Tokyo was once a vibrant metropolis, but now lies under the System's total control. Neon signs still glow across its skyline, but the citizens move like drones through the streets. Each ward has fallen to corruption at different levels of severity.",
+      "priority": 4
+    },
+    "ward_1": {
+      "keywords": ["Nerima", "練馬", "Setagaya", "世田谷", "tier 1", "Tier 1", "residential", "住宅街", "academic", "学園", "outskirts", "郊外"],
+      "content": "Nerima and Setagaya are the Tier 1 wards on Neo Tokyo's outskirts. Nerima is a quiet residential district where many citizens were first absorbed by the System. Setagaya is an academic area full of schools and universities whose young students have been brainwashed. Corruption here is weaker, making these wards the first foothold for liberation.",
+      "priority": 5
+    },
+    "ward_2": {
+      "keywords": ["Nakano", "中野", "Shibuya", "渋谷", "tier 2", "Tier 2", "otaku", "オタク", "fashion", "ファッション"],
+      "content": "Nakano and Shibuya are the Tier 2 wards in Neo Tokyo's commercial heart. Nakano, the otaku holy land of manga and anime, has had its subculture seized by the System. Shibuya's trendsetters have become the System's walking advertisements. Corruption here is moderate but the dangers are real.",
+      "priority": 5
+    },
+    "ward_3": {
+      "keywords": ["Shinjuku", "新宿", "Ikebukuro", "池袋", "tier 3", "Tier 3", "entertainment", "歓楽街", "commerce", "商業"],
+      "content": "Shinjuku and Ikebukuro are the Tier 3 urban centers. Shinjuku, the sleepless entertainment district, hides heavy System surveillance behind its neon lights. Ikebukuro's massive department stores have had all commerce optimized by the System. Corruption is strong and the System's presence is oppressive.",
+      "priority": 5
+    },
+    "ward_4": {
+      "keywords": ["Minato", "港区", "Chiyoda", "千代田", "tier 4", "Tier 4", "corporate", "企業", "government", "政府", "core", "コア"],
+      "content": "Minato and Chiyoda are the Tier 4 wards at Neo Tokyo's core. Minato's corporate high-rises house the System's economic infrastructure. Chiyoda's government district is where the System controls politics itself. This is where corruption is strongest and the System's grip is nearly absolute.",
+      "priority": 5
+    }
+  },
+  "config": {
+    "maxEntriesPerPrompt": 5,
+    "tokenBudget": 1500,
+    "recursiveScanning": true
+  }
+}
