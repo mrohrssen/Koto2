@@ -65,7 +65,14 @@ export default function createRoutes(deps) {
     staticWordList: deps.staticWordList,
     getSettings: deps.getSettings,
     generateBefriendConversationFn: deps.generateBefriendConversationFn,
-    getUserVocabulary: deps.getUserVocabulary
+    getUserVocabulary: deps.getUserVocabulary,
+    // NPC narration engine deps
+    getNpcDialogueFromCache: deps.getNpcDialogueFromCache,
+    queueMissingNpcDialoguesFn: deps.queueMissingNpcDialoguesFn,
+    logNpcEncounterFn: deps.logNpcEncounterFn,
+    regenNpcDialogueFn: deps.regenNpcDialogueFn,
+    setNpcMemoryFlagFn: deps.setNpcMemoryFlagFn,
+    updateNpcMemoryBondFn: deps.updateNpcMemoryBondFn
   }));
 
   // Prefetch routes: /api/prefetch/*

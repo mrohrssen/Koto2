@@ -35,7 +35,8 @@ export default function createRunRoutes({
   cancelPendingPrefetches,
   clearPrefetchCache,
   generateMissingDialoguesFn,
-  getUserVocabulary
+  getUserVocabulary,
+  queueMissingNpcDialoguesFn
 }) {
   const router = Router();
 
@@ -76,6 +77,23 @@ export default function createRunRoutes({
             jlptLevel: userKeys.jlptLevel || 'N4'
           }, vocabulary).catch(e => {
             console.error('[BefriendDialogue] Background bulk generation failed:', e.message);
+          });
+        }
+      }
+
+      // Fire-and-forget: generate missing NPC dialogues
+      if (queueMissingNpcDialoguesFn && getUserVocabulary) {
+        const userKeys = req.userKeys || {};
+        if (userKeys.aiApiKey) {
+          const { words: vocabulary } = getUserVocabulary(req.user.id);
+          queueMissingNpcDialoguesFn(req.user.id, {
+            provider: userKeys.aiProvider || 'openai',
+            apiKey: userKeys.aiApiKey,
+            openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+            openrouterModel: userKeys.openrouterModel,
+            jlptLevel: userKeys.jlptLevel || 'N4'
+          }, vocabulary).catch(e => {
+            console.error('[NpcDialogue] Background generation failed:', e.message);
           });
         }
       }
@@ -155,6 +173,23 @@ export default function createRunRoutes({
             jlptLevel: userKeys.jlptLevel || 'N4'
           }, vocabulary).catch(e => {
             console.error('[BefriendDialogue] Background bulk generation failed:', e.message);
+          });
+        }
+      }
+
+      // Fire-and-forget: generate missing NPC dialogues
+      if (queueMissingNpcDialoguesFn && getUserVocabulary) {
+        const userKeys = req.userKeys || {};
+        if (userKeys.aiApiKey) {
+          const { words: vocabulary } = getUserVocabulary(req.user.id);
+          queueMissingNpcDialoguesFn(req.user.id, {
+            provider: userKeys.aiProvider || 'openai',
+            apiKey: userKeys.aiApiKey,
+            openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+            openrouterModel: userKeys.openrouterModel,
+            jlptLevel: userKeys.jlptLevel || 'N4'
+          }, vocabulary).catch(e => {
+            console.error('[NpcDialogue] Background generation failed:', e.message);
           });
         }
       }

@@ -133,6 +133,14 @@ import {
   generateMissingDialogues,
   regenerateRobotDialogue
 } from './src/game/services/befriend-dialogue-service.js';
+import {
+  getDialogueFromCache as getNpcDialogueFromCache,
+  queueMissingDialogues as queueNpcDialogues,
+  logEncounter as logNpcEncounter,
+  regenerateDialogue as regenNpcDialogue,
+  setMemoryFlag as setNpcMemoryFlag,
+  updateMemoryBond as updateNpcMemoryBond
+} from './src/narration-engine/index.js';
 import createRoutes from './src/routes/index.js';
 import createAuthRoutes from './src/auth/routes.js';
 import { dataPath } from './src/data-dir.js';
@@ -372,7 +380,18 @@ app.use('/api', createRoutes({
   },
   regenerateRobotDialogueFn: async (userId, robot, aiConfig, vocabulary) => {
     return regenerateRobotDialogue(userId, robot, { ...aiConfig, chat }, vocabulary);
-  }
+  },
+  // NPC narration engine deps
+  getNpcDialogueFromCache,
+  queueMissingNpcDialoguesFn: async (userId, aiConfig, vocabulary) => {
+    return queueNpcDialogues(userId, chat, aiConfig, vocabulary);
+  },
+  logNpcEncounterFn: logNpcEncounter,
+  regenNpcDialogueFn: async (userId, npcId, aiConfig, vocabulary) => {
+    return regenNpcDialogue(userId, npcId, chat, aiConfig, vocabulary);
+  },
+  setNpcMemoryFlagFn: setNpcMemoryFlag,
+  updateNpcMemoryBondFn: updateNpcMemoryBond
 }));
 
 // Narration helpers

@@ -32,7 +32,12 @@ export default function createCombatRoutes({
   generateBefriendConversationFn,
   getUserVocabulary,
   getDialogueForRobot,
-  regenerateRobotDialogueFn
+  regenerateRobotDialogueFn,
+  getNpcDialogueFromCache,
+  logNpcEncounterFn,
+  regenNpcDialogueFn,
+  setNpcMemoryFlagFn,
+  updateNpcMemoryBondFn
 }) {
   const router = Router();
 
@@ -450,7 +455,15 @@ export default function createCombatRoutes({
       return res.status(400).json({ error: 'NPC not found' });
     }
 
-    const preparedRounds = npc.postCombat.rounds.map(round => {
+    // Try AI-generated dialogue from cache first
+    const cached = getNpcDialogueFromCache?.(req.user.id, combat.npcId);
+
+    // Use cached data if available, otherwise fall back to static npcs.json
+    const greeting = cached?.greeting || npc.greeting;
+    const freed = cached?.freedLine || npc.postCombat.freed;
+    const sourceRounds = cached?.rounds || npc.postCombat.rounds;
+
+    const preparedRounds = sourceRounds.map(round => {
       const { shuffled, toneMap } = shuffleOptions(round.options);
       return {
         npcLine: round.npcLine,
@@ -477,7 +490,8 @@ export default function createCombatRoutes({
 
     res.json({
       npc: { id: npc.id, name: npc.name, nameEn: npc.nameEn },
-      freed: npc.postCombat.freed,
+      greeting,
+      freed,
       rounds: clientRounds
     });
   });
@@ -517,9 +531,39 @@ export default function createCombatRoutes({
       const totalDelta = dialogue.totalDelta;
       const npcName = dialogue.npcData.name;
       const npcNameEn = dialogue.npcData.nameEn;
+      const npcId = dialogue.npcId;
 
       gameManager.run.npcDialogue = null;
       req.saveGame();
+
+      // Log to narration engine memory
+      if (logNpcEncounterFn) {
+        const outcome = totalDelta > 0 ? 'positive' : totalDelta < 0 ? 'negative' : 'neutral';
+        logNpcEncounterFn(req.user.id, npcId, outcome, `Bond change: ${totalDelta}`);
+      }
+      if (updateNpcMemoryBondFn) {
+        updateNpcMemoryBondFn(req.user.id, npcId, totalDelta);
+      }
+      if (setNpcMemoryFlagFn) {
+        setNpcMemoryFlagFn(req.user.id, npcId, 'liberated', true);
+      }
+
+      // Trigger background regeneration for next encounter
+      if (regenNpcDialogueFn && getUserVocabulary) {
+        const userKeys = req.userKeys || {};
+        if (userKeys.aiApiKey) {
+          const { words: vocabulary } = getUserVocabulary(req.user.id);
+          regenNpcDialogueFn(req.user.id, npcId, {
+            provider: userKeys.aiProvider || 'openai',
+            apiKey: userKeys.aiApiKey,
+            openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+            openrouterModel: userKeys.openrouterModel,
+            jlptLevel: userKeys.jlptLevel || 'N4'
+          }, vocabulary).catch(e => {
+            console.error('[NpcDialogue] Background regen failed:', e.message);
+          });
+        }
+      }
 
       return res.json({
         tone,
