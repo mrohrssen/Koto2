@@ -1,0 +1,153 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { generateDialogue, parseDialogueJson, validateDialogueShape } from '../../../src/narration-engine/generation.js';
+
+describe('generation', () => {
+  const validDialogue = {
+    greeting: 'やあ！',
+    defeatLine: 'うう…',
+    freedLine: 'ありがとう！',
+    rounds: [
+      { npcLine: 'こんにちは', options: [
+        { text: 'はい', tone: 'positive' },
+        { text: 'まあ', tone: 'neutral' },
+        { text: 'いいえ', tone: 'negative' }
+      ]},
+      { npcLine: '元気？', options: [
+        { text: 'うん', tone: 'positive' },
+        { text: 'まあまあ', tone: 'neutral' },
+        { text: '別に', tone: 'negative' }
+      ]},
+      { npcLine: 'また会おう', options: [
+        { text: 'もちろん', tone: 'positive' },
+        { text: 'いつか', tone: 'neutral' },
+        { text: 'いらない', tone: 'negative' }
+      ]}
+    ]
+  };
+
+  describe('parseDialogueJson', () => {
+    it('parses valid JSON string', () => {
+      const result = parseDialogueJson(JSON.stringify(validDialogue));
+      assert.ok(result);
+      assert.strictEqual(result.greeting, 'やあ！');
+    });
+
+    it('strips markdown fences', () => {
+      const wrapped = '```json\n' + JSON.stringify(validDialogue) + '\n```';
+      const result = parseDialogueJson(wrapped);
+      assert.ok(result);
+      assert.strictEqual(result.greeting, 'やあ！');
+    });
+
+    it('returns null for invalid JSON', () => {
+      assert.strictEqual(parseDialogueJson('not json'), null);
+    });
+
+    it('returns null for null input', () => {
+      assert.strictEqual(parseDialogueJson(null), null);
+    });
+  });
+
+  describe('validateDialogueShape', () => {
+    it('accepts valid dialogue', () => {
+      const result = validateDialogueShape(validDialogue);
+      assert.strictEqual(result.valid, true);
+    });
+
+    it('rejects missing greeting', () => {
+      const { greeting, ...rest } = validDialogue;
+      const result = validateDialogueShape(rest);
+      assert.strictEqual(result.valid, false);
+    });
+
+    it('rejects wrong number of rounds', () => {
+      const bad = { ...validDialogue, rounds: [validDialogue.rounds[0]] };
+      const result = validateDialogueShape(bad);
+      assert.strictEqual(result.valid, false);
+    });
+
+    it('rejects round missing options', () => {
+      const bad = {
+        ...validDialogue,
+        rounds: validDialogue.rounds.map((r, i) =>
+          i === 0 ? { npcLine: r.npcLine } : r
+        )
+      };
+      const result = validateDialogueShape(bad);
+      assert.strictEqual(result.valid, false);
+    });
+
+    it('rejects option missing tone', () => {
+      const bad = {
+        ...validDialogue,
+        rounds: validDialogue.rounds.map((r, i) =>
+          i === 0 ? { ...r, options: r.options.map((o, j) => j === 0 ? { text: o.text } : o) } : r
+        )
+      };
+      const result = validateDialogueShape(bad);
+      assert.strictEqual(result.valid, false);
+    });
+
+    it('rejects null input', () => {
+      const result = validateDialogueShape(null);
+      assert.strictEqual(result.valid, false);
+    });
+  });
+
+  describe('generateDialogue', () => {
+    it('returns dialogue from mock AI', async () => {
+      const mockChat = async () => JSON.stringify(validDialogue);
+      const result = await generateDialogue({
+        chatFn: mockChat,
+        systemPrompt: 'test',
+        userPrompt: 'test',
+        aiConfig: { provider: 'openai', apiKey: 'test' }
+      });
+      assert.ok(result);
+      assert.strictEqual(result.greeting, 'やあ！');
+      assert.strictEqual(result.rounds.length, 3);
+    });
+
+    it('returns null when AI returns invalid JSON after retries', async () => {
+      const mockChat = async () => 'not json at all';
+      const result = await generateDialogue({
+        chatFn: mockChat,
+        systemPrompt: 'test',
+        userPrompt: 'test',
+        aiConfig: { provider: 'openai', apiKey: 'test' },
+        maxRetries: 1
+      });
+      assert.strictEqual(result, null);
+    });
+
+    it('returns null when AI returns wrong shape', async () => {
+      const mockChat = async () => JSON.stringify({ foo: 'bar' });
+      const result = await generateDialogue({
+        chatFn: mockChat,
+        systemPrompt: 'test',
+        userPrompt: 'test',
+        aiConfig: { provider: 'openai', apiKey: 'test' },
+        maxRetries: 1
+      });
+      assert.strictEqual(result, null);
+    });
+
+    it('retries on first failure then succeeds', async () => {
+      let callCount = 0;
+      const mockChat = async () => {
+        callCount++;
+        if (callCount === 1) return 'bad json';
+        return JSON.stringify(validDialogue);
+      };
+      const result = await generateDialogue({
+        chatFn: mockChat,
+        systemPrompt: 'test',
+        userPrompt: 'test',
+        aiConfig: { provider: 'openai', apiKey: 'test' }
+      });
+      assert.ok(result);
+      assert.strictEqual(result.greeting, 'やあ！');
+    });
+  });
+});
