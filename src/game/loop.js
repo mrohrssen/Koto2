@@ -67,6 +67,7 @@ import { instantiateRobot, generateEnemyRobot, generateEnemyRobots } from './rob
 import { processAttackTurn, processDefendTurn, processEnemyTurn, processBefriend, processUltimate, awardBattleXp, handleRobotKO, CREDITS_PER_KILL } from './services/robot-combat-service.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/robot-collection-service.js';
+import { selectNpcForEncounter, updateBond, recordEncounter } from './services/npc-service.js';
 
 // ============ GAME MANAGER ============
 
@@ -360,6 +361,7 @@ export class GameManager {
         runStats: this.run.runStats,
         robotParty: this.run.robotParty,
         itemBuffs: this.run.itemBuffs || null,
+        npcDialogue: this.run?.npcDialogue || null,
         postCombatShop: null,
         startingChipShop: null
       } : null,
@@ -376,7 +378,9 @@ export class GameManager {
         enemies: this.combat.enemies || [],
         isRobotCombat: this.combat.isRobotCombat || false,
         intent: this.combat.intent,
-        lastAction: this.combat.lastAction
+        lastAction: this.combat.lastAction,
+        npcId: this.combat.npcId || null,
+        npcData: this.combat.npcData || null
       } : null,
       meta: this.meta ? {
         essence: this.meta.essence,
@@ -698,14 +702,41 @@ export class GameManager {
     this.combat.isRobotCombat = true;
     this.combat.swapPhase = true; // Free swap available before first action
 
+    // Assign NPC to this encounter
+    const usedNpcIds = this.run.usedNpcIds || [];
+    const npc = selectNpcForEncounter(this.run.floor, usedNpcIds);
+    this.combat.npcId = npc.id;
+    this.combat.npcData = {
+      id: npc.id,
+      name: npc.name,
+      nameEn: npc.nameEn,
+      greeting: npc.greeting,
+      defeatLine: npc.defeatLine
+    };
+    if (!this.run.usedNpcIds) this.run.usedNpcIds = [];
+    this.run.usedNpcIds.push(npc.id);
+
     this.emitState();
 
     return {
       enemy: enemyRobots[0],
       enemies: enemyRobots,
       allies: this.run.robotParty.active,
-      playerGoesFirst: true
+      playerGoesFirst: true,
+      npc: this.combat.npcData
     };
+  }
+
+  /**
+   * Complete NPC dialogue and update bond
+   */
+  completeNpcDialogue() {
+    if (!this.run?.npcDialogue) return;
+    const { npcId, totalDelta } = this.run.npcDialogue;
+    updateBond(this.meta, npcId, totalDelta);
+    recordEncounter(this.meta, npcId);
+    this.run.npcDialogue = null;
+    this.emitState();
   }
 
   /**
