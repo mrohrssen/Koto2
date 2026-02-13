@@ -7,6 +7,7 @@
 import { Router } from 'express';
 import { processEnemyTurn, handleRobotKO } from '../../game/services/robot-combat-service.js';
 import { getCollectionCatalog } from '../../game/services/robot-collection-service.js';
+import { loadNpcs, shuffleOptions, updateBond, recordEncounter } from '../../game/services/npc-service.js';
 
 function triggerDialogueRegen(userId, targetEnemy, userKeys, getUserVocabularyFn, regenFn) {
   if (!regenFn || !targetEnemy || !userKeys?.aiApiKey) return;
@@ -262,6 +263,10 @@ export default function createCombatRoutes({
       return res.status(400).json({ error: 'No active robot combat' });
     }
 
+    if (combat.npcId) {
+      return res.status(400).json({ error: 'Cannot befriend NPC trainer robots' });
+    }
+
     const enemies = combat.enemies || [];
     let targetIdx = typeof enemyIndex === 'number' ? enemyIndex : -1;
     if (targetIdx < 0) {
@@ -427,6 +432,113 @@ export default function createCombatRoutes({
       correctIndex: round.correctIndex,
       conversationComplete: false,
       currentRound: convo.currentRound
+    });
+  });
+
+  // Start NPC post-combat dialogue
+  router.post('/npc-dialogue-start', (req, res) => {
+    const gameManager = req.gameManager;
+    const combat = gameManager.combat;
+
+    if (!combat?.npcId) {
+      return res.status(400).json({ error: 'No NPC in this combat' });
+    }
+
+    const npcs = loadNpcs();
+    const npc = npcs[combat.npcId];
+    if (!npc) {
+      return res.status(400).json({ error: 'NPC not found' });
+    }
+
+    const preparedRounds = npc.postCombat.rounds.map(round => {
+      const { shuffled, toneMap } = shuffleOptions(round.options);
+      return {
+        npcLine: round.npcLine,
+        options: shuffled,
+        _toneMap: toneMap
+      };
+    });
+
+    gameManager.run.npcDialogue = {
+      active: true,
+      npcId: npc.id,
+      npcData: { id: npc.id, name: npc.name, nameEn: npc.nameEn },
+      currentRound: 0,
+      totalDelta: 0,
+      rounds: preparedRounds
+    };
+
+    req.saveGame();
+
+    const clientRounds = preparedRounds.map(r => ({
+      npcLine: r.npcLine,
+      options: r.options
+    }));
+
+    res.json({
+      npc: { id: npc.id, name: npc.name, nameEn: npc.nameEn },
+      freed: npc.postCombat.freed,
+      rounds: clientRounds
+    });
+  });
+
+  // Respond to NPC dialogue round
+  router.post('/npc-dialogue-respond', (req, res) => {
+    const gameManager = req.gameManager;
+    const { roundIndex, selectedIndex } = req.body;
+    const dialogue = gameManager.run?.npcDialogue;
+
+    if (!dialogue?.active) {
+      return res.status(400).json({ error: 'No active NPC dialogue' });
+    }
+
+    if (roundIndex !== dialogue.currentRound) {
+      return res.status(400).json({ error: 'Wrong round index' });
+    }
+
+    if (selectedIndex < 0 || selectedIndex > 2) {
+      return res.status(400).json({ error: 'Invalid selection' });
+    }
+
+    const round = dialogue.rounds[roundIndex];
+    const tone = round._toneMap[selectedIndex];
+    const delta = tone === 'positive' ? 1 : tone === 'negative' ? -1 : 0;
+    dialogue.totalDelta += delta;
+    dialogue.currentRound++;
+
+    const dialogueComplete = dialogue.currentRound >= 3;
+
+    if (dialogueComplete) {
+      const meta = gameManager.getMeta();
+      updateBond(meta, dialogue.npcId, dialogue.totalDelta);
+      recordEncounter(meta, dialogue.npcId);
+      const bond = meta.npcBonds[dialogue.npcId];
+
+      const totalDelta = dialogue.totalDelta;
+      const npcName = dialogue.npcData.name;
+      const npcNameEn = dialogue.npcData.nameEn;
+
+      gameManager.run.npcDialogue = null;
+      req.saveGame();
+
+      return res.json({
+        tone,
+        delta,
+        dialogueComplete: true,
+        totalDelta,
+        bond: bond.bond,
+        npcName,
+        npcNameEn,
+        state: req.getEnrichedGameState()
+      });
+    }
+
+    req.saveGame();
+    res.json({
+      tone,
+      delta,
+      dialogueComplete: false,
+      currentRound: dialogue.currentRound
     });
   });
 
