@@ -638,6 +638,16 @@ async function submitBefriendAnswer(roundIndex, selectedIndex) {
   return apiCall('/befriend-answer', 'POST', { roundIndex, selectedIndex });
 }
 
+// ============ NPC DIALOGUE ENDPOINTS ============
+
+async function startNpcDialogue() {
+  return apiCall('/npc-dialogue-start', 'POST');
+}
+
+async function respondNpcDialogue(roundIndex, selectedIndex) {
+  return apiCall('/npc-dialogue-respond', 'POST', { roundIndex, selectedIndex });
+}
+
 export {
   apiCall,
   isApiLoading,
@@ -682,6 +692,9 @@ export {
   befriendReplace,
   getBefriendConversation,
   submitBefriendAnswer,
+  // NPC dialogue endpoints
+  startNpcDialogue,
+  respondNpcDialogue,
   // Shop/economy endpoints
   shopSkip,
   getDealerState,
