@@ -7,8 +7,8 @@ This document describes the technical architecture of the JRPG codebase. It cove
 1. [Overview](#overview)
 2. [Frequency-Ordered Vocabulary Naming](#frequency-ordered-vocabulary-naming)
 3. [Game Flow and Phases](#game-flow-and-phases)
-4. [Chip System (Core Mechanic)](#chip-system-core-mechanic)
-4. [Combat System](#combat-system)
+4. [Robot Combat (Core Mechanic)](#robot-combat-core-mechanic)
+5. [Combat System](#combat-system)
 5. [Ward System (Dungeons)](#ward-system-dungeons)
 6. [Vocabulary Integration (JPDB)](#vocabulary-integration-jpdb)
 7. [AI Narration and TTS](#ai-narration-and-tts)
@@ -44,7 +44,7 @@ Everything the player encounters is named using real Japanese words from the **t
 
 | Entity | Word Class | Example |
 |--------|-----------|---------|
-| **Robots (Chips)** | Object nouns + adjective | 赤いハンマーロボ (Red Hammer Bot) |
+| **Robots** | Object nouns + adjective | 赤いハンマーロボ (Red Hammer Bot) |
 | **Enemies** | People nouns + adjective | 怒った先生 (Angry Teacher) |
 | **Locations** | Place nouns | 学校 (School), 病院 (Hospital) |
 | **Attacks/Skills** | Verbs | 教える (To Teach), 焼く (To Grill) |
@@ -60,7 +60,7 @@ Fight: 怒った先生 (Angry Teacher)
   - 教える (to teach)   → verb (attack name)
 ```
 
-**Robots/Chips** are named after everyday objects — things you'd point at in a room (hammer, scissors, battery, broom). Adjective modifiers create variety and teach a second word per entity.
+**Robots** are named after everyday objects — things you'd point at in a room (hammer, scissors, battery, broom). Adjective modifiers create variety and teach a second word per entity.
 
 **Enemies** are named after real people and occupations — people you'd actually meet in Japan (student, teacher, doctor, shopkeeper, neighbor). Their attacks use **verbs that fit their identity**: the teacher 教える (teaches), the cook 焼く (grills), the doctor 治す (cures).
 
@@ -162,136 +162,39 @@ function derivePhase({ player, run, combat }) {
 
 ---
 
-## Chip System (Core Mechanic)
+## Robot Combat (Core Mechanic)
 
-Chips are passive augmentations that form the game's primary build customization. They execute as a damage pipeline during combat.
+Robots are the core combat unit. Players build a party of 3 active robots plus reserves.
 
-### Chip Data Structure
+### Robot Data
 
-Each chip has stats, effects, and archetype:
+Robots are defined in `data/robots.json` (starter robots) and `data/creatures.json` (wild creatures that can be befriended). Each robot has:
 
-```javascript
-{
-  "id": "battery",
-  "name": "電池ボット",
-  "nameEn": "Battery Bot",
-  "archetype": "striker",
-  "stats": {
-    "power": 10,      // Contributes to power pool
-    "bandwidth": 0,   // Contributes to bandwidth pool
-    "hp": 45          // Contributes to player maxHP
-  },
-  "effects": {
-    "pipeline": [{
-      "type": "flatAdd",
-      "value": 5,
-      "target": "power"  // Which pool this effect modifies
-    }]
-  }
-}
-```
+- **Element:** wood, fire, earth, metal, or water (five-element cycle)
+- **Stats:** attack, maxHp
+- **Auto-skill:** Passive ability that triggers automatically
+- **Ultimate:** Powerful ability that charges over multiple turns
 
-### Archetypes
-
-| Archetype | HP Range | PWR Range | BW Range | Playstyle |
-|-----------|----------|-----------|----------|-----------|
-| Tank | 70-100 | 5-10 | 0-1 | High survivability |
-| Healer | 50-70 | 5-10 | 0-2 | Sustain builds |
-| Striker | 30-50 | 12-25 | 0-2 | Raw damage |
-| Amplifier | 10-30 | 5-10 | 2-6 | Glass cannon |
-| Trickster | 20-50 | 8-18 | 1-3 | High variance |
-
-### Player MaxHP
+### Damage Formula
 
 ```
-maxHP = baseHP (100) + vitalityBonus + sum(equippedChipHP)
+damage = calculateRobotDamage(attack, power, elementMultiplier, variance)
 ```
 
-Chip HP scales +20% per chip level.
+Element matchups follow the Wu Xing cycle (wood > earth > water > fire > metal > wood), providing a 1.5x damage bonus on advantageous matchups.
 
-**Effect Targets:**
-| Target | Description |
-|--------|-------------|
-| `power` | Modifies power pool only |
-| `bandwidth` | Modifies bandwidth pool only |
-| `both` | Modifies both pools |
-| `meta` | Special effects (recursion, sacrifice, etc.) |
+### Items
 
-### Pipeline Execution
-
-Each weapon has **5 chip slots** that execute to build two damage pools:
-
-```
-[Chip 1] ──► [Chip 2] ──► [Chip 3] ──► [Chip 4] ──► [Chip 5]
-    │            │            │            │            │
-    ▼            ▼            ▼            ▼            ▼
-  ┌────────────────────────────────────────────────────────┐
-  │  POWER POOL      │  BANDWIDTH POOL                     │
-  │  (raw damage)    │  (multiplier)                       │
-  └────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-              DAMAGE = POWER × (1 + BANDWIDTH)
-```
-
-**Order matters for effects targeting the same pool:**
-- `+5` then `x2` = `(base + 5) * 2`
-- `x2` then `+5` = `(base * 2) + 5`
-
-### Effect Types
-
-| Type | Description | Example |
-|------|-------------|---------|
-| `flatAdd` | Add flat damage | +5 damage |
-| `multiply` | Multiply damage | x1.3 |
-| `conditional` | Multiply if condition met | x1.5 if enemy <30% HP |
-| `stacking` | Builds stacks during combat | +2 per stack |
-| `recursion` | Chance to restart pipeline | 7% restart |
-| `sacrifice` | Big boost but chip destroyed | x5, single use |
-| `amplifyNext` | Boost next chip's effect | Next chip x1.3 |
-| `copy` | Repeat previous chip's effect | Clone effect |
-| `critMod` | Modify critical chance | +15% crit |
-| `damageAndHeal` | Damage and heal player | Lifesteal |
-| `killCounter` | Scales with kills this run | +1 per kill |
-| `vsBoss` | Extra damage to bosses | x1.5 vs boss |
-| `rampingMultiply` | Grows each attack | +5% per attack |
-| `nthAttack` | Triggers every N attacks | Every 3rd attack |
-| `perEquipped` | Scales with equipped items | +2 per chip |
-| `emptySlots` | Scales with empty slots | +10 per empty |
-
-### Chip Skills
-
-Chips have secondary abilities that charge over **5 turns**:
-
-```javascript
-// Skill timing types
-PRE_PIPELINE    // Executes before damage calculation
-POST_PIPELINE   // Executes after damage dealt
-PIPELINE_MODIFIER  // Modifies the pipeline itself
-DEFENSIVE       // Defensive buff or heal
-```
-
-**Skill Categories:**
-- Instant: Direct damage or heal
-- Buff: Modify next attack
-
-### Rarities
-
-| Rarity | Stat Multiplier | Color |
-|--------|-----------------|-------|
-| Common | 1.0x | Gray |
-| Uncommon | 1.5x | Green |
-| Rare | 2.0x | Blue |
-| Epic | 2.5x | Purple |
-| Legendary | 3.0x | Gold |
+Consumable items (`data/items.json`) provide buffs during combat (healing, stat boosts, element shields). Items are purchased from shops between encounters.
 
 **Files:**
-- `src/game/items/chips.js` - Chip generation and pipeline execution
-- `data/chips.json` - Chip definitions (20+ chips)
-- `data/chip-config.json` - Rarity multipliers and upgrade costs
-- `src/game/combat/player-actions.js` - Pipeline execution during combat
-- `public/js/ui/chip-row.js` - Frontend chip slot UI
-- `public/js/ui/chip-select.js` - Swipeable card UI for shopping
+- `data/robots.json` - Starter robot definitions
+- `data/creatures.json` - Wild creature definitions
+- `data/items.json` - Consumable item definitions
+- `src/game/services/robot-combat-service.js` - Robot combat logic
+- `src/game/services/robot-collection-service.js` - Robot party management
+- `src/game/services/item-service.js` - Item usage and inventory
+- `public/js/ui/robot-row.js` - Frontend robot party UI
 
 ---
 
@@ -310,53 +213,13 @@ Only two stats matter:
 
 **No hit/miss, no crits, no defense stat.**
 
-### Damage Formula (Dual-Pool System)
-
-Combat uses a dual-pool system where chips contribute to **power** and **bandwidth** pools:
+### Damage Formula
 
 ```
-DAMAGE = POWER × (1 + BANDWIDTH)
+damage = calculateRobotDamage(attack, power, elementMultiplier, variance)
 ```
 
-**Power Pool:**
-- Accumulated from chip stats (`chip.stats.power`)
-- Modified by effects with `target: "power"` or `target: "both"`
-- Represents raw damage potential
-
-**Bandwidth Pool:**
-- Accumulated from chip stats (`chip.stats.bandwidth`)
-- Modified by effects with `target: "bandwidth"` or `target: "both"`
-- Acts as a damage multiplier (1.0 bandwidth = 2× damage)
-
-**Example Calculation:**
-```
-Chips: Battery (PWR 8, BW 0), Speaker (PWR 0, BW 2), Scissors (PWR 3, BW 0)
-
-Power     = 8 + 0 + 3 = 11
-Bandwidth = 0 + 2 + 0 = 2
-Damage    = 11 × (1 + 2) = 33
-```
-
-**Pipeline Execution:**
-```javascript
-// 1. Initialize pools from chip base stats
-power = sum(chip.stats.power for each chip)
-bandwidth = sum(chip.stats.bandwidth for each chip)
-
-// 2. Execute chip pipeline effects in order
-for each chip:
-  for each effect in chip.effects.pipeline:
-    if effect.target === 'power':
-      power = applyEffect(power, effect)
-    else if effect.target === 'bandwidth':
-      bandwidth = applyEffect(bandwidth, effect)
-    else if effect.target === 'both':
-      power = applyEffect(power, effect)
-      bandwidth = applyEffect(bandwidth, effect)
-
-// 3. Calculate final damage
-finalDamage = power * (1 + bandwidth)
-```
+Element matchups provide bonus damage (1.5x for advantageous elements). Variance adds slight randomness to keep combat unpredictable.
 
 ### Enemy Intents
 
@@ -370,17 +233,6 @@ Enemies announce their intent before acting:
 | `special` | Varies by enemy |
 | `rage` | Enraged attack (1.5x) |
 
-### Status Effects
-
-Cyberpunk-themed status conditions:
-
-| Japanese | English | Effect |
-|----------|---------|--------|
-| デフラグ | Defrag | DoT: 5 damage/turn |
-| バッファオーバーフロー | Buffer Overflow | Skip turn |
-| 露出 | Exposed | Take 1.5x damage |
-| オーバーヒート | Overheated | Stackable DoT, explodes at max stacks |
-
 ### Turn Order
 
 Player always acts first.
@@ -390,8 +242,8 @@ Player always acts first.
 - `src/game/combat/mechanics.js` - Damage formulas
 - `src/game/combat/player-actions.js` - Player attack execution
 - `src/game/combat/enemy.js` - Enemy AI and intents
-- `src/game/combat/status-effects.js` - Status effect definitions
 - `src/game/enemies.js` - Enemy definitions
+- `src/game/services/robot-combat-service.js` - Robot combat orchestration
 
 ### Combat Visual Effects
 
@@ -412,9 +264,9 @@ Anime-style visual feedback during combat, implemented in `public/js/ui/combat-e
 **Combat Moments:**
 | Moment | Effects | Trigger |
 |--------|---------|---------|
-| Chip Fire | Pop, particles, speed lines to pools, screen pulse | Each chip in sequence |
+| Robot Attack | Pop, particles, speed lines, screen pulse | Robot attacks |
 | Enemy Damage | Hit stop, shake, flash, particles, recoil | Player attack lands |
-| Player Damage | Hit stop, heavy shake, red vignette, chip shudder | Enemy attack lands |
+| Player Damage | Hit stop, heavy shake, red vignette | Enemy attack lands |
 | Big Damage (150+) | All above amplified: longer stop, double flash | High damage threshold |
 
 **Files:**
@@ -461,7 +313,7 @@ The game takes place across 7 Tokyo wards, each representing a dungeon floor.
 | Type | Probability | Description |
 |------|-------------|-------------|
 | Encounter | 45% | Combat with SYSTEM-possessed citizen |
-| Shrine | 20% | Chip upgrade opportunity |
+| Shop | 20% | Buy items and recruit robots |
 | Quiz | 20% | Knowledge test for rewards |
 | Word Discovery | 15% | Learn new vocabulary via flash cards |
 | Boss | 100% (last room) | Floor boss |
@@ -611,7 +463,7 @@ Earned from runs:
 | Meta-progression (essence, upgrades) | Yes | Yes |
 | Achievements | Yes | Yes |
 | Run state (HP, gold, floor) | No | No |
-| Equipped chips | No | No |
+| Robot party | No | No |
 
 **Files:**
 - `src/game/state.js` - State management and persistence
@@ -689,8 +541,7 @@ Located in `public/js/ui/`:
 | `actions.js` | Bottom action area, flash cards |
 | `exploration.js` | Hub, ward selection, room navigation |
 | `combat-loop.js` | Turn-based combat orchestration |
-| `chip-row.js` | 5 chip slots with drag-to-reorder |
-| `chip-select.js` | Swipeable card UI for chip shopping |
+| `robot-row.js` | Robot party display |
 | `scene.js` | Background, enemy sprite, enemy HP |
 | `narration-box.js` | Dialogue display |
 | `lookup.js` | Japanese word lookup mode |
@@ -768,6 +619,9 @@ store.set('combat', newCombatState);
 | Service | Purpose | File |
 |---------|---------|------|
 | CombatService | Combat mechanics | `src/game/services/combat-service.js` |
+| RobotCombatService | Robot combat logic | `src/game/services/robot-combat-service.js` |
+| RobotCollectionService | Robot party management | `src/game/services/robot-collection-service.js` |
+| ItemService | Item usage and inventory | `src/game/services/item-service.js` |
 | ExplorationService | Room navigation | `src/game/services/exploration-service.js` |
 
 ### Persistence
@@ -787,36 +641,6 @@ store.set('combat', newCombatState);
 ---
 
 ## Data Schemas
-
-### Chip Definition (data/chips.json)
-
-```javascript
-{
-  "id": "chip_amplifier",
-  "name": "増幅器",
-  "nameEn": "Amplifier",
-  "description": "次のチップの効果を強化する",
-  "rarity": "rare",
-  "stats": {
-    "power": 3,       // Base power contribution
-    "bandwidth": 1    // Base bandwidth contribution
-  },
-  "effects": {
-    "pipeline": [{
-      "type": "multiply",
-      "value": 1.3,
-      "target": "both"  // "power", "bandwidth", "both", or "meta"
-    }]
-  },
-  "skill": {
-    "name": "ブースト",
-    "nameEn": "Boost",
-    "description": "次の攻撃のダメージ+50%",
-    "timing": "PRE_PIPELINE",
-    "effect": { "type": "flatAdd", "value": 50 }
-  }
-}
-```
 
 ### Enemy Definition (data/enemies.json)
 
@@ -850,8 +674,8 @@ store.set('combat', newCombatState);
     "maxHp": 100,
     "attack": 15,
     "gold": 250,
-    "chips": [/* equipped chip objects */],
-    "equipment": {}
+    "robots": [/* active robot party */],
+    "items": [/* consumable items */]
   },
   "meta": {
     "essence": 1500,
@@ -869,27 +693,6 @@ store.set('combat', newCombatState);
     "achievements": ["first_victory", "boss_slayer"]
   },
   "savedAt": "2024-01-15T10:30:00.000Z"
-}
-```
-
-### Chip Config (data/chip-config.json)
-
-```javascript
-{
-  "rarityMultipliers": {
-    "common": 1.0,
-    "uncommon": 1.5,
-    "rare": 2.0,
-    "epic": 2.5,
-    "legendary": 3.0
-  },
-  "upgradeCosts": {
-    "common": 50,
-    "uncommon": 100,
-    "rare": 200,
-    "epic": 400,
-    "legendary": 800
-  }
 }
 ```
 
@@ -916,16 +719,7 @@ store.set('combat', newCombatState);
 | `src/game/combat/mechanics.js` | Damage formulas |
 | `src/game/combat/player-actions.js` | Player attack execution |
 | `src/game/combat/enemy.js` | Enemy AI |
-| `src/game/combat/chip-skills.js` | Chip skill execution |
-| `src/game/combat/status-effects.js` | Status effect definitions |
 | `src/game/combat/rewards.js` | Combat reward generation |
-
-### Items
-
-| File | Purpose |
-|------|---------|
-| `src/game/items/chips.js` | Chip system |
-| `src/game/items/index.js` | Item exports |
 
 ### Services
 
@@ -967,10 +761,11 @@ store.set('combat', newCombatState);
 
 | File | Purpose |
 |------|---------|
-| `data/chips.json` | Chip definitions |
+| `data/robots.json` | Starter robot definitions |
+| `data/creatures.json` | Wild creature definitions |
+| `data/items.json` | Consumable item definitions |
 | `data/enemies.json` | Enemy definitions |
 | `data/bosses.json` | Boss definitions |
-| `data/chip-config.json` | Rarity and upgrade config |
 
 ---
 
@@ -979,7 +774,7 @@ store.set('combat', newCombatState);
 Despite what older documentation may suggest, the following features are **not implemented**:
 
 - No STR/AGI/VIT/INT/DEX/LUK stats (simplified to attack + maxHp)
-- No armor, weapons, or equipment slots (only chip pipeline)
+- No armor, weapons, or equipment slots (players use robots and consumable items only)
 - No class selection or skill trees
 - No hit/miss or critical hit system
 

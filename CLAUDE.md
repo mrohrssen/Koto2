@@ -78,7 +78,7 @@ Branch prefixes: `feature/`, `fix/`, `refactor/`
 server.js              # Main Express server (50+ API endpoints)
 public/
   js/game.js           # Frontend coordinator
-  js/ui/               # UI modules (combat-loop, chip-select, lookup, etc.)
+  js/ui/               # UI modules (combat-loop, robot-row, lookup, etc.)
   game.css             # Cyberpunk UI styling
   game.html            # Main game template
   assets/              # Sprites, backgrounds
@@ -92,9 +92,11 @@ src/
     rooms.js           # Ward system, room generation
     dm.js              # Dungeon Master narration
     combat/            # Combat mechanics (mechanics.js, player-actions.js, enemy.js)
-    items/chips.js     # Chip pipeline system (core mechanic)
+    services/          # Robot combat, collection, items, exploration
 data/
-  chips.json           # Chip definitions
+  robots.json          # Starter robot definitions
+  creatures.json       # Wild creature definitions
+  items.json           # Consumable item definitions
   enemies.json         # Enemy definitions
   bosses.json          # Boss definitions
 ```
@@ -105,7 +107,7 @@ For detailed architecture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 - ES6 modules with imports/exports
 - Japanese names with English fallbacks: `name` (Japanese), `nameEn` (English)
-- Constants in ALL_CAPS: `CHIPS`, `ENEMIES`, `WARD_INFO`
+- Constants in ALL_CAPS: `ENEMIES`, `WARD_INFO`, `ROBOTS`
 - camelCase for variables/functions
 - Factory functions: `createNewPlayer()`, `generateEnemy()`, `createCombatState()`
 
@@ -137,7 +139,7 @@ Sprites are served with 1-year immutable cache headers. When regenerating sprite
 ## Common Mistakes to Avoid
 
 - **Don't reference iRO stats** - The game uses only `attack` and `maxHp`. No STR/AGI/VIT/INT/DEX/LUK.
-- **Don't add armor/weapons** - Only chips exist. No equipment slots.
+- **Don't add equipment systems** - Players use robots and consumable items only.
 - **Don't run `npx playwright test` directly** - Use the wrapper script or exact command above.
 - **Don't use Homebrew git** - Use `/usr/bin/git` to avoid library conflicts.
 - **Don't skip worktrees** - Multiple Claude sessions will conflict without them.
