@@ -14,11 +14,10 @@
  * - actions: Bottom action area and flash cards
  * - takeover: Full-screen slide-in panels
  * - hpBar: Player HP display
- * - chipRow: Equipped chip slots
  * - scene: Background and enemy sprites
  * - character: HP bar coordinator
  * - exploration: Non-combat navigation
- * - economy: Chip shops
+ * - economy: Dealer room
  * - modals: Settings panel
  * - combatLoop: Turn-based combat
  * - lookup: Japanese word lookup mode
@@ -27,7 +26,6 @@
 export * as actions from './actions.js';
 export * as takeover from './takeover.js';
 export * as hpBar from './hp-bar.js';
-export * as chipRow from './chip-row.js';
 export * as scene from './scene.js';
 export * as character from './character.js';
 export * as exploration from './exploration.js';

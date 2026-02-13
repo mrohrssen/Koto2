@@ -2,9 +2,9 @@
  * @file robot-row.js - Robot Slots Display
  *
  * PURPOSE:
- * Renders 3 robot slots at the bottom of the combat screen. Reuses the same
- * DOM container as chip-row.js (dom.chipRow / dom.chipPopup) but renders
- * robot-specific content: element icons, HP bars, charge bars, and ultimate popups.
+ * Renders 3 robot slots at the bottom of the combat screen using
+ * dom.chipRow and dom.chipPopup containers. Shows robot-specific content:
+ * element icons, HP bars, charge bars, and ultimate popups.
  *
  * KEY EXPORTS:
  * - init({ useUltimateCallback }): Setup with ultimate skill callback

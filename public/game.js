@@ -89,7 +89,6 @@ import { dom } from './js/dom.js';
 import * as actions from './js/ui/actions.js';
 import * as takeover from './js/ui/takeover.js';
 import * as hpBar from './js/ui/hp-bar.js';
-import * as chipRow from './js/ui/chip-row.js';
 import * as robotRow from './js/ui/robot-row.js';
 import * as postCombatShop from './js/ui/post-combat-shop.js';
 import * as scene from './js/ui/scene.js';
@@ -119,17 +118,10 @@ import {
   roomEncounter as apiRoomEncounter,
   startEncounter as apiStartEncounter,
   startBoss as apiStartBoss,
-  claimStartingChip as apiClaimStartingChip,
-  startingChipRefresh as apiStartingChipRefresh,
-  postCombatShopBuy as apiPostCombatShopBuy,
   shopSkip as apiShopSkip,
-  postCombatShopRefresh as apiShopRefresh,
-  equipChip as apiEquipChip,
-  unequipChip as apiUnequipChip,
   nextFloor as apiNextFloor,
   continueEndless as apiContinueEndless,
   returnToHubFromVictory as apiReturnToHubFromVictory,
-  getChipLoadout as apiGetChipLoadout,
   sendJpdbReview as apiSendJpdbReview,
   getDueWords as apiGetDueWords,
   getAuthHeaders,
@@ -147,7 +139,6 @@ import {
   parseJpdbText,
   lookupJpdbWord,
   lookupJpdbBatch,
-  reorderChips,
   getDealerState as apiGetDealerState,
   dealerSell as apiDealerSell,
   dealerBuy as apiDealerBuy,
@@ -191,14 +182,11 @@ let enemyDialogueActive = false;
 let dialogueDismissResolve = null;
 let dialogueDismissPromise = null;
 
-// Combat animation state (blocks chip dragging during attacks)
+// Combat animation state
 let combatAnimationActive = false;
 
 // Flash card state
 let currentFlashCardWord = null;
-
-// Chip loadout cache
-let chipLoadoutCache = null;
 
 // Saved player position for returning to room after combat
 let savedPlayerPosition = null;
@@ -302,61 +290,21 @@ function updateScene() {
 }
 
 function updateChipRow() {
-  const secondaryRow = document.getElementById('chip-row-secondary');
-
-  // Hide chip/robot row on hub and non-run phases
+  // Hide row on hub and non-run phases
   if (!gameState.run && (gameState.phase === 'hub' || gameState.phase === 'no_save' || gameState.phase === 'ward_selection')) {
     dom.chipRow.innerHTML = '';
-    if (secondaryRow) secondaryRow.style.display = 'none';
     return;
   }
 
   if (gameState.run?.robotParty?.active?.length > 0) {
-    // Robot combat: render robot slots in primary row
+    // Robot party active: render robot slots
     robotRow.setReserves(gameState.run.robotParty.reserves || []);
     robotRow.render(gameState.run.robotParty.active);
-
-    // Also render chip slots in secondary row so players can view/use chip skills
-    const cacheChips = chipLoadoutCache?.equipment?.weapon?.equippedChips;
-    const equipped = cacheChips || [];
-    const charges = chipLoadoutCache?.chipCharges || gameState.player?._chipCharges || {};
-    const levels = chipLoadoutCache?.chipLevels || gameState.player?._chipLevels || {};
-
-    if (secondaryRow && equipped.length > 0) {
-      secondaryRow.style.display = '';
-      renderChipsToSecondaryRow(secondaryRow, equipped, charges, levels);
-    }
     return;
   }
 
-  // Hide secondary row when not in robot combat
-  if (secondaryRow) secondaryRow.style.display = 'none';
-
-  // Prefer enriched chip objects from loadout cache (has name, rarity, skill info)
-  // Fall back to raw game state (which only has chip ID strings)
-  const cacheChips = chipLoadoutCache?.equipment?.weapon?.equippedChips;
-  const equipped = cacheChips || [];
-  const charges = chipLoadoutCache?.chipCharges || gameState.player?._chipCharges || {};
-  const levels = chipLoadoutCache?.chipLevels || gameState.player?._chipLevels || {};
-
-  chipRow.render(equipped, {
-    charges: equipped.map(c => charges[c?.id] || 0),
-    levels: equipped.map(c => levels[c?.id] || 1),
-    maxCharges: 5,
-    inCombat: gameState.phase === 'combat',
-  });
-}
-
-/**
- * Render chip slots into the secondary row during robot combat.
- */
-function renderChipsToSecondaryRow(container, equipped, charges, levels) {
-  chipRow.renderTo(container, equipped, {
-    charges: equipped.map(c => charges[c?.id] || 0),
-    levels: equipped.map(c => levels[c?.id] || 1),
-    maxCharges: 5,
-    inCombat: gameState.phase === 'combat',
-  });
+  // No robots, no chips - clear the row
+  dom.chipRow.innerHTML = '';
 }
 
 function updatePlayerHP() {
@@ -420,9 +368,6 @@ function updateGameContent() {
         actions.clear();
       }
       break;
-    case 'post_combat_shop':
-      economyUI.renderPostCombatShop();
-      break;
     case 'floor_complete':
       explorationUI.renderFloorComplete();
       break;
@@ -471,15 +416,8 @@ async function loadGameState() {
       ...(data.robotParty?.reserves || []),
     ].filter(Boolean).map(r => r.id);
     probeIdleSprites(allRobotIds);
-    // Refresh chip loadout cache so chip row stays in sync
-    try {
-      chipLoadoutCache = await apiGetChipLoadout();
-    } catch (e) {
-      console.warn('Failed to refresh chip loadout:', e);
-    }
   } else {
     updateGameState({ ...gameState, phase: 'no_save' });
-    chipLoadoutCache = null;
   }
 }
 
@@ -773,7 +711,6 @@ function showGameOverModal(result) {
     apiGetDueWords(reviewedWords).catch(e => console.warn('[Combat] End batch refresh failed:', e));
   }
 
-  chipLoadoutCache = null;
   updateChipRow();
   takeover.open('gameover');
   const content = takeover.getContent('gameover');
@@ -1025,75 +962,13 @@ async function handleUseRobotUltimate(robotIndex) {
   }
 }
 
-// ============ CHIP HANDLERS ============
-async function openChipEquipView() {
-  takeover.open('chipEquip');
-  const content = takeover.getContent('chipEquip');
-  content.innerHTML = '<p style="text-align:center;padding:20px">Loading...</p>';
-
-  const data = await apiGetChipLoadout();
-  chipLoadoutCache = data;
-
-  const weaponData = data.equipment?.weapon || {};
-  const equippedChips = weaponData.equippedChips || [];
-  const maxSlots = weaponData.maxSlots || 5;
-  // Build a fixed-length slots array: equipped chips + empty slots
-  const equipped = Array.from({ length: maxSlots }, (_, i) => equippedChips[i] || null);
-  const inventory = data.inventory || [];
-
-  content.innerHTML = `
-    <h3 style="margin:16px">${t('equippedChips')}</h3>
-    <div class="chip-equip-slots">
-      ${equipped.map((chip, i) => chip ? `
-        <div class="chip-equip-slot filled" data-action="unequip" data-index="${i}">
-          <div class="chip-equip-icon" style="background-image:url('/assets/icons/chips/${chip.id}.webp')"></div>
-          <span class="chip-equip-name">${chip.name || chip.nameEn}</span>
-          <span class="chip-equip-rarity ${chip.rarity || 'common'}">${chip.rarity || 'common'}</span>
-        </div>
-      ` : `
-        <div class="chip-equip-slot empty" data-index="${i}">${t('emptySlot')}</div>
-      `).join('')}
-    </div>
-    <h3 style="margin:16px">${t('inventory')}</h3>
-    <div class="chip-inventory-list">
-      ${inventory.map((chip, i) => `
-        <div class="chip-inventory-item" data-action="equip" data-chip-id="${chip.id}">
-          <div class="chip-equip-icon" style="background-image:url('/assets/icons/chips/${chip.id}.webp')"></div>
-          <span class="chip-equip-name">${chip.name || chip.nameEn}</span>
-          <span class="chip-equip-rarity ${chip.rarity || 'common'}">${chip.rarity || 'common'}</span>
-        </div>
-      `).join('')}
-      ${inventory.length === 0 ? `<p style="padding:16px;opacity:0.6">${t('noChips')}</p>` : ''}
-    </div>
-  `;
-
-  content.querySelectorAll('[data-action="unequip"]').forEach(el => {
-    el.addEventListener('click', async () => {
-      const chip = equipped[parseInt(el.dataset.index)];
-      if (chip) {
-        await apiUnequipChip(chip.id, 'weapon');
-        await openChipEquipView();
-        updateChipRow();
-      }
-    });
-  });
-
-  content.querySelectorAll('[data-action="equip"]').forEach(el => {
-    el.addEventListener('click', async () => {
-      await apiEquipChip('weapon', el.dataset.chipId);
-      await openChipEquipView();
-      updateChipRow();
-    });
-  });
-}
-
-// ============ ROBOT EQUIP UI (BUG B) ============
+// ============ ROBOT EQUIP UI ============
 async function openRobotEquipView() {
   const party = gameState.run?.robotParty;
   if (!party) return;
 
-  takeover.open('chipEquip');
-  const content = takeover.getContent('chipEquip');
+  takeover.open('robotEquip');
+  const content = takeover.getContent('robotEquip');
 
   function renderRobotEquipContent() {
     const active = party.active || [];
@@ -1217,111 +1092,16 @@ async function openRobotEquipView() {
   renderRobotEquipContent();
 }
 
-async function handleUseChipSkill(chipIndex) {
-  const weapon = gameState.player?.equipment?.weapon;
-  const chipEntry = weapon?.equippedChips?.[chipIndex];
-  if (!chipEntry) return;
-
-  const chipId = typeof chipEntry === 'string' ? chipEntry : chipEntry.id;
-  if (!chipId) return;
-
-  try {
-    const response = await fetch(`${API_BASE}/api/game/use-chip-skill`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ chipId }),
-    });
-    const result = await response.json();
-    if (result.error) {
-      scene.showToast(result.error, 2000);
-      return;
-    }
-    if (result.state) {
-      updateGameState(result.state);
-    }
-    // Sync local state with backend HP after skill use
-    if (result.enemyHp && gameState.combat?.enemy) {
-      gameState.combat.enemy.hp = result.enemyHp.current;
-    }
-    if (result.playerHp && gameState.player) {
-      gameState.player.hp = result.playerHp.current;
-    }
-
-    // Show skill activation as toast (doesn't overwrite flash cards)
-    const skillName = result.skillNameEn || result.skillName || chipId;
-    let toastMsg = `${skillName}!`;
-    if (result.damage > 0) toastMsg += ` ${result.damage} dmg`;
-    if (result.heal > 0) toastMsg += ` +${result.heal} HP`;
-    if (result.skillType === 'buff') toastMsg += ' Buff active!';
-    narrationBox.show(toastMsg, { autoDismiss: 1000 });
-
-    updateUI();
-  } catch (e) {
-    console.error('Chip skill error:', e);
-  }
-}
-
-// ============ CHIP ACTION HELPERS ============
-function isChipActionBlocked() {
-  return enemyDialogueActive || combatAnimationActive;
-}
-
-function getChipIds() {
-  const chips = chipLoadoutCache?.equipment?.weapon?.equippedChips || [];
-  return chips.map(c => c?.id || null);
-}
-
-async function handleChipReorder(newChipIds) {
-  // Optimistic update for UI cache (rich chip objects with names, rarities, etc.)
-  // chipLoadoutCache uses full chip objects and can include nulls for empty slots in UI
-  const oldCacheChips = chipLoadoutCache?.equipment?.weapon?.equippedChips || [];
-  const reorderedCacheChips = newChipIds.map(id => {
-    if (id === null) return null;
-    return oldCacheChips.find(c => c?.id === id) || null;
-  }).filter(Boolean);  // Filter nulls - UI cache should match backend format
-
-  if (chipLoadoutCache?.equipment?.weapon) {
-    chipLoadoutCache.equipment.weapon.equippedChips = reorderedCacheChips;
-  }
-
-  // Also update gameState.player.equipment.weapon.equippedChips (stores chip IDs as strings)
-  // This is critical because combat logic reads from gameState, not chipLoadoutCache
-  // Filter nulls to maintain compact array format expected by game logic
-  const oldStateChips = gameState.player?.equipment?.weapon?.equippedChips || [];
-  const compactChipIds = newChipIds.filter(id => id !== null);
-  if (gameState.player?.equipment?.weapon) {
-    gameState.player.equipment.weapon.equippedChips = compactChipIds;
-  }
-
-  updateChipRow();
-
-  // Persist to backend
-  const result = await reorderChips(newChipIds);
-  if (result.error) {
-    // Revert on error
-    console.error('Chip reorder failed:', result.error);
-    if (chipLoadoutCache?.equipment?.weapon) {
-      chipLoadoutCache.equipment.weapon.equippedChips = oldCacheChips;
-    }
-    if (gameState.player?.equipment?.weapon) {
-      gameState.player.equipment.weapon.equippedChips = oldStateChips;
-    }
-    updateChipRow();
-  }
-}
-
 // ============ EVENT LISTENERS ============
 function setupEventListeners() {
   // Menu sheet toggle
   modalsUI.initMenu();
   dom.menuBtn?.addEventListener('click', () => modalsUI.toggleMenu());
 
-  // Bots button opens chip equip or robot equip depending on mode
+  // Bots button opens robot equip view
   dom.botsBtn?.addEventListener('click', () => {
     if (gameState.run?.robotParty?.active?.length > 0) {
       openRobotEquipView();
-    } else {
-      openChipEquipView();
     }
   });
 
@@ -1379,11 +1159,8 @@ async function initGame() {
 
   actions.init({
     equipBots: () => {
-      // If the run has a robot party, show robot equip UI; otherwise show chip equip
       if (gameState.run?.robotParty?.active?.length > 0) {
         openRobotEquipView();
-      } else {
-        openChipEquipView();
       }
     },
     contextAction: null,
@@ -1448,13 +1225,6 @@ async function initGame() {
 
       // Dual card flips in place - no separate flash card needed
     },
-  });
-
-  chipRow.init({
-    useSkillCallback: handleUseChipSkill,
-    onReorder: handleChipReorder,
-    isBlocked: isChipActionBlocked,
-    getChipIds: getChipIds
   });
 
   robotRow.init({
@@ -1542,8 +1312,6 @@ async function initGame() {
     apiQuizReward,
     apiGetQuizQuestion,
     apiSubmitQuizAnswer,
-    apiGetChipLoadout,
-    setChipLoadoutCache: (cache) => { chipLoadoutCache = cache; },
     apiGetDiscoveryWords,
     apiGetDiscoveryStatus,
     apiCompleteDiscovery,
@@ -1566,13 +1334,7 @@ async function initGame() {
     getGameState: () => gameState,
     updateGameState,
     updateUI,
-    apiClaimStartingChip,
-    apiStartingChipRefresh,
-    apiPostCombatShopBuy,
     apiShopSkip,
-    apiShopRefresh,
-    apiGetChipLoadout,
-    setChipLoadoutCache: (data) => { chipLoadoutCache = data; updateChipRow(); },
     apiDealerSell,
     apiDealerBuy,
     apiDealerLeave,
@@ -1621,8 +1383,6 @@ async function initGame() {
     showVictoryModal,
     showGameOverModal,
     showEnemyDialogue,
-    getChipLoadoutCache: () => chipLoadoutCache,
-    setChipLoadoutCache: (data) => { chipLoadoutCache = data; updateChipRow(); },
     getEnemyDialogueActive: () => enemyDialogueActive,
     getDialogueDismissPromise: () => dialogueDismissPromise,
     delay,

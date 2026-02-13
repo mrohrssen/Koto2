@@ -56,11 +56,6 @@
       <!-- 5 chip slots or 3 robot slots rendered by JS -->
     </div>
 
-    <!-- Secondary Chip Row (shown below robots during robot combat) -->
-    <div class="chip-row chip-row-secondary" id="chip-row-secondary" style="display: none;">
-      <!-- 5 chip slots rendered by JS during robot combat -->
-    </div>
-
     <!-- Player HP Bar -->
     <div class="player-hp-container" id="player-hp-container">
       <div class="player-hp-bar" id="player-hp-bar">
@@ -144,14 +139,9 @@
   </div>
 
   <!-- Full-Screen Takeover Views (hidden by default) -->
-  <div class="takeover" id="chip-equip-view">
-    <button class="takeover-close" id="chip-equip-close">&times;</button>
-    <div class="takeover-content" id="chip-equip-content"></div>
-  </div>
-
-  <div class="takeover" id="chip-shop-view">
-    <button class="takeover-close" id="chip-shop-close">&times;</button>
-    <div class="takeover-content" id="chip-shop-content"></div>
+  <div class="takeover" id="robot-equip-view">
+    <button class="takeover-close" id="robot-equip-close">&times;</button>
+    <div class="takeover-content" id="robot-equip-content"></div>
   </div>
 
   <div class="takeover" id="settings-view">
@@ -194,16 +184,8 @@
     </div>
   </div>
 
-  <!-- Chip Skill Popup -->
-  <div class="chip-popup" id="chip-popup">
-    <div class="chip-popup-name" id="chip-popup-name"></div>
-    <div class="chip-popup-desc" id="chip-popup-desc"></div>
-    <div class="chip-popup-charge" id="chip-popup-charge"></div>
-    <div class="chip-popup-buttons">
-      <button class="chip-popup-swap" id="chip-popup-swap">Swap</button>
-      <button class="chip-popup-use" id="chip-popup-use">Use Skill</button>
-    </div>
-  </div>
+  <!-- Popup (used by robot-row.js) -->
+  <div class="chip-popup" id="chip-popup"></div>
 
   <!-- Auth Screen (shown before login) -->
   <div class="auth-screen" id="auth-screen">
