@@ -411,36 +411,9 @@ async function startBoss() {
 
 // ============ SHOP/ECONOMY ENDPOINTS ============
 
-/** Claim a free starting chip
- * @param {number} itemIndex - Index of the chip to claim
- */
-async function claimStartingChip(itemIndex) {
-  return apiCall('/claim-starting-chip', 'POST', { itemIndex });
-}
-
-/** Refresh the starting chip shop */
-async function startingChipRefresh() {
-  return apiCall('/starting-chip-refresh', 'POST');
-}
-
-/** Buy an item from the regular shop
- * @param {string} itemId - Item identifier
- */
-/** Buy an item from the post-combat shop
- * @param {number} itemIndex - Index of the item to buy
- */
-async function postCombatShopBuy(itemIndex) {
-  return apiCall('/post-combat-shop-buy', 'POST', { itemIndex });
-}
-
 /** Skip the current shop */
 async function shopSkip() {
   return apiCall('/shop-skip', 'POST');
-}
-
-/** Refresh the post-combat shop */
-async function postCombatShopRefresh() {
-  return apiCall('/post-combat-shop-refresh', 'POST');
 }
 
 /** Get dealer room state (inventory with sell prices, offered chip) */
@@ -463,59 +436,6 @@ async function dealerLeave() {
   return apiCall('/dealer-leave', 'POST');
 }
 
-/** Equip a chip to an equipment slot
- * @param {string} equipmentSlot - Equipment slot name ('weapon', 'body', 'shield', 'accessory')
- * @param {string} chipId - Chip identifier
- */
-async function equipChip(equipmentSlot, chipId) {
-  try {
-    const response = await fetch('/api/game/equip-chip', {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ equipmentSlot, chipId })
-    });
-    return await response.json();
-  } catch (error) {
-    logger.error('[API] Failed to equip chip:', error.message);
-    return { error: 'Network error' };
-  }
-}
-
-/** Unequip a chip from an equipment slot
- * @param {string} chipId - ID of chip to unequip
- * @param {string} equipmentSlot - Equipment slot name ('weapon', 'body', 'shield', 'accessory')
- */
-async function unequipChip(chipId, equipmentSlot) {
-  try {
-    const response = await fetch('/api/game/unequip-chip', {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ chipId, equipmentSlot })
-    });
-    return await response.json();
-  } catch (error) {
-    logger.error('[API] Failed to unequip chip:', error.message);
-    return { error: 'Network error' };
-  }
-}
-
-/** Reorder equipped chips
- * @param {Array<string|null>} chipIds - New order of chip IDs (5 elements)
- */
-async function reorderChips(chipIds) {
-  try {
-    const response = await fetch('/api/game/reorder-chips', {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ chipIds })
-    });
-    return await response.json();
-  } catch (error) {
-    logger.error('[API] Failed to reorder chips:', error.message);
-    return { error: 'Network error' };
-  }
-}
-
 /** Advance to the next floor */
 async function nextFloor() {
   return apiCall('/next-floor', 'POST');
@@ -529,19 +449,6 @@ async function continueEndless() {
 /** Return to hub after game victory (declining endless) */
 async function returnToHubFromVictory() {
   return apiCall('/return-to-hub-from-victory', 'POST');
-}
-
-/** Get chip loadout for all equipment slots */
-async function getChipLoadout() {
-  try {
-    const response = await fetch('/api/game/chip-loadout', {
-      headers: getAuthHeaders()
-    });
-    return await response.json();
-  } catch (error) {
-    logger.error('[API] Failed to get chip loadout:', error.message);
-    return { error: 'Network error' };
-  }
 }
 
 // ============ VOCAB/JPDB ENDPOINTS ============
@@ -776,22 +683,14 @@ export {
   getBefriendConversation,
   submitBefriendAnswer,
   // Shop/economy endpoints
-  claimStartingChip,
-  startingChipRefresh,
-  postCombatShopBuy,
   shopSkip,
-  postCombatShopRefresh,
   getDealerState,
   dealerSell,
   dealerBuy,
   dealerLeave,
-  equipChip,
-  unequipChip,
-  reorderChips,
   nextFloor,
   continueEndless,
   returnToHubFromVictory,
-  getChipLoadout,
   // Vocab/JPDB endpoints
   sendJpdbReview,
   parseJpdbText,

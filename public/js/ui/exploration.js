@@ -97,9 +97,6 @@ let apiShrineUpgrade = null;
 let apiQuizReward = null;
 let apiGetQuizQuestion = null;
 let apiSubmitQuizAnswer = null;
-let apiGetChipLoadout = null;
-let setChipLoadoutCache = null;
-
 // Word discovery API functions
 let apiGetDiscoveryWords = null;
 let apiGetDiscoveryStatus = null;
@@ -143,8 +140,6 @@ export function init(callbacks) {
   apiQuizReward = callbacks.apiQuizReward;
   apiGetQuizQuestion = callbacks.apiGetQuizQuestion;
   apiSubmitQuizAnswer = callbacks.apiSubmitQuizAnswer;
-  apiGetChipLoadout = callbacks.apiGetChipLoadout;
-  setChipLoadoutCache = callbacks.setChipLoadoutCache;
   apiGetDiscoveryWords = callbacks.apiGetDiscoveryWords;
   apiGetDiscoveryStatus = callbacks.apiGetDiscoveryStatus;
   apiCompleteDiscovery = callbacks.apiCompleteDiscovery;
@@ -343,11 +338,6 @@ export async function renderLevelSelect() {
       if (runResult?.state) {
         updateGameState(runResult.state);
         updateUI();
-        // Skip starting chip shop when robot combat is active
-        if (!starterIds && runResult.state.run?.startingChipShop?.active) {
-          const economyMod = await import('./economy.js');
-          await economyMod.renderStartingChipShop();
-        }
       }
     });
   });

@@ -3,7 +3,7 @@
  *
  * PURPOSE:
  * Manages full-screen overlay panels that slide in from the right. Used for
- * chip equipment, shop, settings, and game over screens. Only one takeover
+ * robot equipment, settings, and game over screens. Only one takeover
  * can be active at a time.
  *
  * KEY EXPORTS:
@@ -15,12 +15,11 @@
  * - getContent(viewName): Get the content container for a view
  *
  * DEPENDENCIES:
- * - ../dom.js: DOM element references (chipEquipView, settingsView, etc.)
+ * - ../dom.js: DOM element references (robotEquipView, settingsView, etc.)
  * - ../audio.js: Sound effects (takeover-open, takeover-close)
  *
  * AVAILABLE VIEWS:
- * - chipEquip: Chip management and reordering
- * - chipShop: Chip purchase interface
+ * - robotEquip: Robot team management
  * - settings: API keys, audio, preferences
  * - gameover: Run end results
  */
@@ -32,15 +31,13 @@ const views = {};
 
 /** Initialize all takeover views and close buttons */
 export function init() {
-  views.chipEquip = dom.chipEquipView;
-  views.chipShop = dom.chipShopView;
+  views.robotEquip = dom.robotEquipView;
   views.settings = dom.settingsView;
   views.gameover = dom.gameoverView;
   views.speedReview = dom.speedReviewView;
 
   // Close buttons
-  dom.chipEquipClose.addEventListener('click', () => close('chipEquip'));
-  dom.chipShopClose.addEventListener('click', () => close('chipShop'));
+  dom.robotEquipClose.addEventListener('click', () => close('robotEquip'));
   dom.settingsClose.addEventListener('click', () => close('settings'));
   dom.speedReviewClose.addEventListener('click', () => close('speedReview'));
 }
@@ -76,8 +73,7 @@ export function isAnyActive() {
 /** Get content container for a view */
 export function getContent(viewName) {
   switch (viewName) {
-    case 'chipEquip': return dom.chipEquipContent;
-    case 'chipShop': return dom.chipShopContent;
+    case 'robotEquip': return dom.robotEquipContent;
     case 'settings': return dom.settingsContent;
     case 'gameover': return dom.gameoverContent;
     default: return null;

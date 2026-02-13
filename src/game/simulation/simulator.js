@@ -7,7 +7,6 @@
  */
 
 import { GameManager } from '../loop.js';
-import { CHIPS, getChipsByRarity, equipChip } from '../items/chips.js';
 import { AIPlayer } from './ai-player.js';
 import { SimulationStats } from './stats.js';
 import { executeEnemyTurn } from '../combat/enemy.js';
@@ -22,9 +21,6 @@ export const DEFAULT_OPTIONS = {
   enemyDamageModifier: 1.0,
   playerHpModifier: 1.0,
   playerDamageModifier: 1.0,
-  // Chip configuration
-  randomChips: true,
-  chipCount: 4,
   // Player starting stats (realistic - similar to character creation)
   playerStats: { str: 8, agi: 7, vit: 8, int: 5, dex: 7, luk: 5 },
   // Logging
@@ -78,11 +74,6 @@ function simulateSingleRun(config) {
   if (config.playerHpModifier && config.playerHpModifier !== 1.0) {
     gm.run.player.maxHp = Math.floor(gm.run.player.maxHp * config.playerHpModifier);
     gm.run.player.hp = gm.run.player.maxHp;
-  }
-
-  // Equip random chips AFTER run starts (so gm.run.player exists)
-  if (config.randomChips) {
-    equipRandomChips(gm, config.chipCount);
   }
 
   // Select starting ward (always nerima for consistency)
@@ -179,43 +170,6 @@ function createHeadlessGameManager(config) {
   gm._simConfig = config;
 
   return gm;
-}
-
-/**
- * Equip random chips to player equipment slots
- */
-function equipRandomChips(gm, count) {
-  const rarities = ['common', 'uncommon', 'rare'];
-  const slots = ['weapon', 'body', 'shield', 'accessory'];
-  const player = gm.run?.player;
-
-  if (!player) return;
-
-  for (let i = 0; i < count && i < 4; i++) {
-    const rarity = rarities[Math.floor(Math.random() * rarities.length)];
-    const chipsOfRarity = getChipsByRarity(rarity);
-
-    if (chipsOfRarity.length > 0) {
-      const chip = chipsOfRarity[Math.floor(Math.random() * chipsOfRarity.length)];
-      const slot = slots[i % slots.length];
-
-      // Add chip to inventory first
-      player.chips = player.chips || [];
-      const chipInstance = {
-        id: `${chip.id}_${rarity}`,
-        baseId: chip.id,
-        rarity: rarity,
-        category: chip.category,
-        effects: chip.effects,
-        name: chip.name,
-        nameEn: chip.nameEn
-      };
-      player.chips.push(chipInstance);
-
-      // Equip chip to slot
-      equipChip(player, slot, chipInstance.id);
-    }
-  }
 }
 
 /**
@@ -376,66 +330,12 @@ function executePlayerAction(gm, action) {
 }
 
 /**
- * Handle post-combat shop - buy affordable chips
+ * Handle post-combat shop - skip (chips removed)
  */
 function handlePostCombatShop(gm, config) {
-  const shop = gm.run?.postCombatShop;
-  if (!shop?.active || !shop.items) {
-    gm.run.postCombatShop.active = false;
-    return;
-  }
-
-  const player = gm.run.player;
-
-  // Sort items by price (cheapest first) to maximize chip count
-  const sortedItems = [...shop.items].sort((a, b) => a.price - b.price);
-
-  // Try to buy chips we can afford
-  for (let i = 0; i < sortedItems.length; i++) {
-    const item = sortedItems[i];
-
-    // Find the original index in shop.items
-    const originalIndex = shop.items.findIndex(si => si.itemId === item.itemId);
-
-    if (player.credits >= item.price && originalIndex !== -1) {
-      try {
-        const result = gm.buyFromPostCombatShop(originalIndex);
-        if (result.success && config.verbose) {
-          console.log(`  Bought chip: ${item.nameEn || item.name} (${item.rarity}) for ${item.price}cr`);
-        }
-        // After buying, try to equip the chip
-        if (result.success) {
-          tryEquipNewChip(gm, item.itemId);
-        }
-      } catch (e) {
-        // Skip if purchase fails
-      }
-    }
-  }
-
-  // Close shop when done
-  if (gm.run.postCombatShop?.active) {
+  if (gm.run?.postCombatShop?.active) {
     gm.run.postCombatShop.active = false;
   }
-}
-
-/**
- * Try to equip a newly purchased chip to an available slot
- */
-function tryEquipNewChip(gm, chipId) {
-  const player = gm.run?.player;
-  if (!player) return;
-
-  const slots = ['weapon', 'body', 'shield', 'accessory'];
-
-  // Find a slot with room for the chip
-  for (const slot of slots) {
-    const result = equipChip(player, slot, chipId);
-    if (result.success) {
-      return; // Successfully equipped
-    }
-  }
-  // If no slot has room, chip stays in inventory (still useful for some effects)
 }
 
 /**
@@ -466,16 +366,6 @@ function extractRunResult(gm) {
   const floorsCleared = run?.stats?.floorsCleared || run?.floor || 1;
   const victory = floorsCleared >= 5 && run?.stats?.bossesDefeated >= 5;
 
-  // Extract equipped chips from all equipment slots
-  const equippedChips = [];
-  const slots = ['weapon', 'body', 'shield', 'accessory'];
-  for (const slot of slots) {
-    const eq = player?.equipment?.[slot];
-    if (eq?.equippedChips) {
-      equippedChips.push(...eq.equippedChips);
-    }
-  }
-
   return {
     victory,
     floor: run?.floor || 1,
@@ -487,8 +377,7 @@ function extractRunResult(gm) {
     creditsEarned: run?.stats?.creditsEarned || 0,
     playerLevel: player?.level || 1,
     playerHp: player?.hp || 0,
-    playerMaxHp: player?.maxHp || 0,
-    chips: equippedChips
+    playerMaxHp: player?.maxHp || 0
   };
 }
 

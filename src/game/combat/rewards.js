@@ -3,8 +3,6 @@
  * Victory handling
  */
 
-import { processDeathEffects } from './status-effects.js';
-
 // ============ VICTORY HANDLING ============
 
 /**
@@ -19,13 +17,6 @@ export function processVictory(player, enemy, run) {
 
   // Add credits
   player.credits += credits;
-
-  // Process death effects (enemy abilities like heal-on-death)
-  const deathEffects = processDeathEffects(enemy, player);
-  if (deathEffects.healAmount > 0) {
-    rewards.debugHeal = deathEffects.healAmount;
-    rewards.deathEffectsTriggered = deathEffects.effectsTriggered;
-  }
 
   // Update run stats
   if (run) {

@@ -5,8 +5,6 @@
  */
 
 import { Router } from 'express';
-import { useChipSkill } from '../../game/combat/chip-skills.js';
-import { getChip, getChipCharge, isChipSkillReady, getChipLevel } from '../../game/items/chips.js';
 import { processEnemyTurn, handleRobotKO } from '../../game/services/robot-combat-service.js';
 import { getCollectionCatalog } from '../../game/services/robot-collection-service.js';
 
@@ -124,64 +122,6 @@ export default function createCombatRoutes({
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
-  });
-
-  // Use a chip's active skill in combat
-  router.post('/use-chip-skill', (req, res) => {
-    const gameManager = req.gameManager;
-    const { chipId } = req.body;
-    if (!chipId) {
-      return res.status(400).json({ error: 'chipId required' });
-    }
-    if (!gameManager.combat?.active) {
-      return res.status(400).json({ error: 'No active combat' });
-    }
-
-    const result = useChipSkill(
-      gameManager.run.player,
-      gameManager.combat.enemy,
-      chipId
-    );
-
-    if (!result.success) {
-      return res.status(400).json({ error: result.error });
-    }
-
-    req.saveGame();
-    res.json({
-      ...result,
-      playerHp: { current: gameManager.run.player.hp, max: gameManager.run.player.maxHp },
-      enemyHp: { current: gameManager.combat.enemy.hp, max: gameManager.combat.enemy.maxHp },
-      chipCharges: gameManager.run.player._chipCharges
-    });
-  });
-
-  // Get info about a chip's skill
-  router.get('/chip-skill-info/:chipId', (req, res) => {
-    const gameManager = req.gameManager;
-    const { chipId } = req.params;
-    const chip = getChip(chipId);
-    if (!chip) {
-      return res.status(404).json({ error: 'Chip not found' });
-    }
-
-    const player = gameManager.run?.player;
-    if (!player) {
-      return res.status(400).json({ error: 'No active run' });
-    }
-
-    res.json({
-      chip: {
-        id: chip.id,
-        name: chip.name,
-        nameEn: chip.nameEn,
-        skill: chip.skill
-      },
-      charges: getChipCharge(player, chipId),
-      chargesRequired: chip.skill?.chargesRequired || 5,
-      level: getChipLevel(player, chipId),
-      isReady: isChipSkillReady(player, chipId)
-    });
   });
 
   // ============ ROBOT COMBAT ============

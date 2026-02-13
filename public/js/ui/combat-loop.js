@@ -32,7 +32,6 @@ import { playSFX } from '../audio.js';
 import { getAuthHeaders } from '../api.js';
 import { logger } from '../logger.js';
 import {
-  fireChipEffect,
   impactEnemyEffect,
   playerHitEffect,
   updateHpCriticalState,
@@ -80,8 +79,6 @@ let playNarrationAudio = null;
 let showVictoryModal = null;
 let showGameOverModal = null;
 let showEnemyDialogue = null;
-let getChipLoadoutCache = null;
-let setChipLoadoutCache = null;
 let getEnemyDialogueActive = null;
 let getDialogueDismissPromise = null;
 let showFlashCard = null;
@@ -123,8 +120,6 @@ export function init(callbacks) {
   showVictoryModal = callbacks.showVictoryModal;
   showGameOverModal = callbacks.showGameOverModal;
   showEnemyDialogue = callbacks.showEnemyDialogue;
-  getChipLoadoutCache = callbacks.getChipLoadoutCache;
-  setChipLoadoutCache = callbacks.setChipLoadoutCache;
   getEnemyDialogueActive = callbacks.getEnemyDialogueActive;
   getDialogueDismissPromise = callbacks.getDialogueDismissPromise;
   showFlashCard = callbacks.showFlashCard;
@@ -235,292 +230,6 @@ function showNextFlashCardFromQueue() {
   }
 }
 
-// ============ COMBAT MATH DISPLAY ============
-
-/**
- * Show chip activations with animated stat boxes.
- * PWR and BW build up in real-time as each chip fires.
- * @param {Object} pa - playerAttack result object
- */
-async function showChipActivationSequence(pa) {
-  const actionArea = document.getElementById('action-area');
-  if (!actionArea) return;
-
-  const pipelineResult = pa.pipelineResult;
-  const sequence = pipelineResult?.sequence || [];
-
-  // Edge case: no chips or no sequence
-  if (!pipelineResult || !sequence.length) {
-    actionArea.innerHTML = `
-      <div class="combat-math">
-        <div class="pipeline-stats">
-          <div class="stat-box">
-            <span class="stat-box-label">PWR</span>
-            <span class="stat-box-value">0</span>
-          </div>
-          <span class="stat-box-operator">×</span>
-          <div class="stat-box">
-            <span class="stat-box-label">BW</span>
-            <span class="stat-box-value">1</span>
-          </div>
-          <span class="stat-box-operator">=</span>
-          <div class="stat-box damage">
-            <span class="stat-box-label">DMG</span>
-            <span class="stat-box-value">${pa.damage || 0}</span>
-          </div>
-        </div>
-      </div>
-    `;
-    return;
-  }
-
-  // Track current values for animation
-  let currentPwr = 0;
-  let currentBw = 1; // Effective multiplier (internal 0 + 1)
-
-  // Show critical hit first
-  if (pa.critical) {
-    actionArea.innerHTML = `<div class="combat-math"><span class="math-crit">${t('criticalHit')}</span></div>`;
-    await delay(360);
-  }
-
-  // Build initial HTML with stat boxes
-  const buildDisplay = (showDamage = false) => {
-    const bwDisplay = formatBw(currentBw);
-    const damageBox = showDamage
-      ? `<span class="stat-box-operator">=</span>
-         <div class="stat-box damage">
-           <span class="stat-box-label">DMG</span>
-           <span class="stat-box-value">${formatNum(pa.damage)}</span>
-         </div>`
-      : '';
-
-    return `
-      <div class="combat-math">
-        ${pa.critical ? `<span class="math-crit">${t('criticalHit')}</span><br>` : ''}
-        <div class="pipeline-stats">
-          <div class="stat-box" id="pwr-box" data-pool="power">
-            <span class="stat-box-label">PWR</span>
-            <span class="stat-box-value" id="pwr-value">${formatNum(currentPwr)}</span>
-          </div>
-          <span class="stat-box-operator">×</span>
-          <div class="stat-box" id="bw-box" data-pool="bandwidth">
-            <span class="stat-box-label">BW</span>
-            <span class="stat-box-value" id="bw-value">${bwDisplay}</span>
-          </div>
-          ${damageBox}
-        </div>
-        <div class="pipeline-log" id="pipeline-log"></div>
-      </div>
-    `;
-  };
-
-  // Render initial state
-  actionArea.innerHTML = buildDisplay(false);
-  await delay(300);
-
-  // Process sequence events
-  for (const event of sequence) {
-    const chipSlot = findChipSlotIndex(event.chipId);
-
-    switch (event.type) {
-      case 'activate':
-        // Chip slot glows, SFX plays
-        if (chipSlot !== null) {
-          animateChipActivation(chipSlot);
-          playSFX('chip-equip');
-        }
-        await delay(200);
-        break;
-
-      case 'buff':
-        // PRE_PIPELINE buff adds to power (e.g., Battery Bot's Full Charge +8)
-        if (event.powerAdd) {
-          currentPwr += event.powerAdd;
-          updateStatValue('pwr-value', formatNum(currentPwr));
-          addLogLine(`• Skill Buff: +${formatNum(event.powerAdd)} PWR`);
-          await delay(200);
-        }
-        break;
-
-      case 'base':
-        // Base stats added - fire speed lines to pools
-        if (event.power) {
-          currentPwr += event.power;
-          updateStatValue('pwr-value', formatNum(currentPwr));
-          addLogLine(`• ${event.chipName}: +${formatNum(event.power)} PWR`);
-          // Fire energy to PWR pool
-          if (chipSlot !== null) {
-            const slot = document.querySelector(`.chip-slot[data-index="${chipSlot}"]`);
-            const pwrPool = document.querySelector('[data-pool="power"]');
-            if (slot && pwrPool) {
-              fireChipEffect(slot, { stats: { power: event.power } }, { power: pwrPool });
-            }
-          }
-          await delay(200);
-        }
-        if (event.bandwidth) {
-          currentBw += event.bandwidth;
-          updateStatValue('bw-value', formatBw(currentBw));
-          addLogLine(`• ${event.chipName}: +${formatNum(event.bandwidth)} BW`);
-          // Fire energy to BW pool
-          if (chipSlot !== null) {
-            const slot = document.querySelector(`.chip-slot[data-index="${chipSlot}"]`);
-            const bwPool = document.querySelector('[data-pool="bandwidth"]');
-            if (slot && bwPool) {
-              fireChipEffect(slot, { stats: { bandwidth: event.bandwidth } }, { bandwidth: bwPool });
-            }
-          }
-          await delay(200);
-        }
-        break;
-
-      case 'effect':
-        // Passive effect modifies pools
-        if (event.powerAdd) {
-          currentPwr += event.powerAdd;
-          updateStatValue('pwr-value', formatNum(currentPwr));
-          addLogLine(`• ${event.chipName}: +${formatNum(event.powerAdd)} PWR`);
-          await delay(200);
-        }
-        if (event.bandwidthAdd) {
-          currentBw += event.bandwidthAdd;
-          updateStatValue('bw-value', formatBw(currentBw));
-          addLogLine(`• ${event.chipName}: +${formatNum(event.bandwidthAdd)} BW`);
-          await delay(200);
-        }
-        if (event.powerMult) {
-          currentPwr = Math.floor(currentPwr * event.powerMult);
-          updateStatValue('pwr-value', formatNum(currentPwr));
-          addLogLine(`• ${event.chipName}: ×${formatNum(event.powerMult)} PWR`);
-          await delay(200);
-        }
-        if (event.bandwidthMult) {
-          currentBw *= event.bandwidthMult;
-          updateStatValue('bw-value', formatBw(currentBw));
-          addLogLine(`• ${event.chipName}: ×${formatNum(event.bandwidthMult)} BW`);
-          await delay(200);
-        }
-        break;
-
-      case 'heal':
-        addLogLine(`• ${event.chipName}: +${formatNum(event.hp)} HP`, 'heal');
-        await delay(200);
-        break;
-
-      case 'sacrifice':
-        addLogLine(`• ${event.chipName}: SACRIFICED`, 'sacrifice');
-        await delay(200);
-        break;
-
-      case 'noTrigger':
-        addLogLine(`• ${event.chipName}: (no trigger)`, 'no-trigger');
-        await delay(200);
-        break;
-    }
-  }
-
-  // Final reveal: add damage box without destroying log
-  await delay(300);
-  const statsContainer = document.querySelector('.pipeline-stats');
-  if (statsContainer) {
-    const damageHTML = `
-      <span class="stat-box-operator">=</span>
-      <div class="stat-box damage">
-        <span class="stat-box-label">DMG</span>
-        <span class="stat-box-value">${formatNum(pa.damage)}</span>
-      </div>
-    `;
-    statsContainer.insertAdjacentHTML('beforeend', damageHTML);
-  }
-
-  // Show cascade if triggered
-  if (pa.cascadeTriggered && pa.cascadeDamage) {
-    await delay(600);
-    addLogLine(t('cascade', formatNum(pa.cascadeDamage)));
-  }
-
-  // Show DoT damage
-  if (pa.dotDamage && pa.dotDamage > 0) {
-    await delay(480);
-    showDotDamage(pa.dotDamage, false);
-  }
-}
-
-/**
- * Update a stat box value with pulse animation
- */
-function updateStatValue(elementId, value) {
-  const el = document.getElementById(elementId);
-  if (!el) return;
-  el.textContent = value;
-  el.classList.remove('pulse');
-  void el.offsetWidth; // Force reflow
-  el.classList.add('pulse');
-}
-
-/**
- * Format a number for display in combat log (max 2 decimal places, no trailing zeros)
- */
-function formatNum(n) {
-  if (Number.isInteger(n)) return String(n);
-  // Round to 2 decimal places, then remove trailing zeros
-  return Number(n.toFixed(2)).toString();
-}
-
-/**
- * Format bandwidth as effective multiplier
- */
-function formatBw(bw) {
-  if (bw === 1) return '1';
-  return formatNum(bw);
-}
-
-/**
- * Add a line to the pipeline log
- */
-function addLogLine(text, className = '') {
-  const log = document.getElementById('pipeline-log');
-  if (!log) return;
-  const line = document.createElement('div');
-  line.className = `pipeline-log-line ${className}`;
-  line.textContent = text;
-  log.appendChild(line);
-  log.scrollTop = log.scrollHeight;
-}
-
-/**
- * Find the chip slot index from the loadout cache by chipId
- */
-function findChipSlotIndex(chipId) {
-  const cache = getChipLoadoutCache?.();
-  const chips = cache?.equipment?.weapon?.equippedChips;
-  if (!chips) return null;
-  const index = chips.findIndex(c => c && (c.id === chipId || c === chipId));
-  return index >= 0 ? index : null;
-}
-
-/**
- * Show a small tooltip above a chip slot that auto-dismisses
- * @param {number} chipIndex - Index of the chip slot
- * @param {string} text - Tooltip text
- */
-function showChipTooltip(chipIndex, text) {
-  // Remove any existing tooltip
-  const existing = document.querySelector('.chip-tooltip');
-  if (existing) existing.remove();
-
-  const slot = document.querySelector(`.chip-slot[data-index="${chipIndex}"]`);
-  if (!slot) return;
-
-  const tooltip = document.createElement('div');
-  tooltip.className = 'chip-tooltip';
-  tooltip.textContent = text;
-  slot.appendChild(tooltip);
-
-  // Auto-dismiss after animation
-  setTimeout(() => tooltip.remove(), 1500);
-}
 
 /**
  * Find a robot slot element by robot ID (matches against game state).
@@ -637,33 +346,6 @@ function showEnemyDamageDisplay(enemyAttack) {
   }
 }
 
-/**
- * Animate a chip circle when its effect activates
- * @param {number} chipIndex - Index of the chip slot to animate
- * @param {Object} chipData - Chip data with stats (optional)
- */
-function animateChipActivation(chipIndex, chipData = null) {
-  const slot = document.querySelector(`.chip-slot[data-index="${chipIndex}"]`);
-  if (slot) {
-    const icon = slot.querySelector('.chip-icon');
-    if (icon) {
-      icon.classList.add('chip-activating');
-      setTimeout(() => icon.classList.remove('chip-activating'), 600);
-    }
-
-    // Fire visual effects (non-blocking, wrapped in try-catch for resilience)
-    try {
-      const poolEls = {
-        power: document.querySelector('[data-pool="power"]'),
-        bandwidth: document.querySelector('[data-pool="bandwidth"]')
-      };
-      fireChipEffect(slot, chipData, poolEls);
-    } catch (e) {
-      console.warn('[Combat] Chip effect failed:', e.message);
-    }
-  }
-}
-
 // ============ XP EVENT HANDLING ============
 
 /**
@@ -718,15 +400,6 @@ export async function startCombatLoop() {
   enemyAttackPending = false;
   // Start paused - require vocab review before first attack
   combatPausedForVocab = true;
-
-  // Fetch chip loadout for combat display (always refresh to catch auto-equipped chips)
-  fetch(`${API_BASE}/api/game/chip-loadout`, { headers: getAuthHeaders() })
-    .then(r => r.json())
-    .then(data => {
-      setChipLoadoutCache(data);
-      updateActionPanel(); // Re-render with chips
-    })
-    .catch(err => console.warn('[Combat] Failed to fetch chip loadout:', err));
 
   // Initialize word practice cards and wait for words to be ready
   await wordPractice.initCombatWords();
@@ -793,9 +466,6 @@ export async function executePlayerAttack() {
       } else {
         // Play attack sound immediately
         playSFX('attack');
-
-        // Sequential chip activation with progressive math display
-        await showChipActivationSequence(pa);
 
         // Calculate damage tier for visual feedback
         const state = getGameState();
@@ -1112,15 +782,6 @@ async function executeRobotPlayerAttack() {
       updateRobotHpBars(result.robotParty?.active, null);
     }
 
-    // Update chip charges (increment each cycle in robot combat too)
-    if (result.chipCharges) {
-      const cache = getChipLoadoutCache();
-      if (cache) {
-        cache.chipCharges = result.chipCharges;
-        setChipLoadoutCache(cache);
-        updateActionPanel();
-      }
-    }
 
     // Check combat end
     if (result.combatEnded) {
@@ -1311,15 +972,6 @@ async function executeRobotDefendThenPause() {
       updateRobotHpBars(result.robotParty?.active, null);
     }
 
-    // Update chip charges
-    if (result.chipCharges) {
-      const cache = getChipLoadoutCache();
-      if (cache) {
-        cache.chipCharges = result.chipCharges;
-        setChipLoadoutCache(cache);
-        updateActionPanel();
-      }
-    }
 
     // Check combat end
     if (result.combatEnded) {
@@ -1409,15 +1061,6 @@ export async function executeEnemyAttack() {
     characterUI.updateEnemyHPBar(result.enemyHp);
     characterUI.updatePlayerHPBar(result.playerHp);
 
-    // Update chip charges after enemy turn (charges incremented on backend)
-    if (result.chipCharges) {
-      const cache = getChipLoadoutCache();
-      if (cache) {
-        cache.chipCharges = result.chipCharges;
-        setChipLoadoutCache(cache);
-        updateActionPanel();
-      }
-    }
 
     // Check if combat ended
     if (result.combatEnded) {
@@ -1519,15 +1162,6 @@ export async function executeEnemyAttackThenPause() {
     characterUI.updateEnemyHPBar(result.enemyHp);
     characterUI.updatePlayerHPBar(result.playerHp);
 
-    // Update chip charges after enemy turn (charges incremented on backend)
-    if (result.chipCharges) {
-      const cache = getChipLoadoutCache();
-      if (cache) {
-        cache.chipCharges = result.chipCharges;
-        setChipLoadoutCache(cache);
-        updateActionPanel();
-      }
-    }
 
     // Check if combat ended
     if (result.combatEnded) {
@@ -1672,15 +1306,6 @@ async function executeDefendThenPause() {
     characterUI.updateEnemyHPBar(result.enemyHp);
     characterUI.updatePlayerHPBar(result.playerHp);
 
-    // Update chip charges (still increment on defend)
-    if (result.chipCharges) {
-      const cache = getChipLoadoutCache();
-      if (cache) {
-        cache.chipCharges = result.chipCharges;
-        setChipLoadoutCache(cache);
-        updateActionPanel();
-      }
-    }
 
     // Check if combat ended
     if (result.combatEnded) {

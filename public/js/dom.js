@@ -33,9 +33,8 @@ export const dom = {
   get enemySprite() { return el('enemy-sprite'); },
   get sceneToast() { return el('scene-toast'); },
 
-  // Chip row
+  // Chip row (also used for robot slots)
   get chipRow() { return el('chip-row'); },
-  get chipRowSecondary() { return el('chip-row-secondary'); },
 
   // Player HP
   get playerHpContainer() { return el('player-hp-container'); },
@@ -54,25 +53,17 @@ export const dom = {
   get botsBtn() { return el('bots-btn'); },
 
   // Takeover views
-  get chipEquipView() { return el('chip-equip-view'); },
-  get chipEquipClose() { return el('chip-equip-close'); },
-  get chipEquipContent() { return el('chip-equip-content'); },
-  get chipShopView() { return el('chip-shop-view'); },
-  get chipShopClose() { return el('chip-shop-close'); },
-  get chipShopContent() { return el('chip-shop-content'); },
+  get robotEquipView() { return el('robot-equip-view'); },
+  get robotEquipClose() { return el('robot-equip-close'); },
+  get robotEquipContent() { return el('robot-equip-content'); },
   get settingsView() { return el('settings-view'); },
   get settingsClose() { return el('settings-close'); },
   get settingsContent() { return el('settings-content'); },
   get gameoverView() { return el('gameover-view'); },
   get gameoverContent() { return el('gameover-content'); },
 
-  // Chip popup
+  // Chip popup (robot-row.js writes its own innerHTML)
   get chipPopup() { return el('chip-popup'); },
-  get chipPopupName() { return el('chip-popup-name'); },
-  get chipPopupDesc() { return el('chip-popup-desc'); },
-  get chipPopupCharge() { return el('chip-popup-charge'); },
-  get chipPopupUse() { return el('chip-popup-use'); },
-get chipPopupSwap() { return el('chip-popup-swap'); },
 
   // Lookup mode
   get lookupPopup() { return el('lookup-popup'); },

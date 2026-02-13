@@ -1,14 +1,13 @@
 /**
  * @fileoverview Run routes
  *
- * Handles run lifecycle: start-run, forfeit, floor navigation, ward selection, chip management
+ * Handles run lifecycle: start-run, forfeit, floor navigation, ward selection
  */
 
 import { Router } from 'express';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { getChipLoadout, equipChip, unequipChip, reorderChips } from '../../game/items/chips.js';
 import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
 import { lookupVocabularyBatch } from '../../jpdb.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
@@ -169,31 +168,6 @@ export default function createRunRoutes({
     }
   });
 
-  // Claim free starting chip
-  router.post('/claim-starting-chip', (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      const { itemIndex } = req.body;
-      const result = gameManager.claimStartingChip(itemIndex);
-      req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Refresh starting chip shop
-  router.post('/starting-chip-refresh', (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      const result = gameManager.refreshStartingChipShop();
-      req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
   // Ward selection
   router.get('/starting-wards', (req, res) => {
     try {
@@ -238,62 +212,6 @@ export default function createRunRoutes({
         ...result,
         state: req.getEnrichedGameState()
       });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Chip loadout management
-  router.get('/chip-loadout', (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      const player = gameManager.run?.player || gameManager.player;
-      const runStats = gameManager.run?.runStats || {};
-      const loadout = getChipLoadout(player, runStats);
-      res.json({
-        ...loadout,
-        chipCharges: player._chipCharges || {},
-        chipLevels: player._chipLevels || {}
-      });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  router.post('/equip-chip', (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      const { equipmentSlot, chipId } = req.body;
-      const player = gameManager.run?.player || gameManager.player;
-      const result = equipChip(player, equipmentSlot, chipId);
-      if (result.success) req.saveGame();
-      res.json(result);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  router.post('/unequip-chip', (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      const { equipmentSlot, chipId } = req.body;
-      const player = gameManager.run?.player || gameManager.player;
-      const result = unequipChip(player, equipmentSlot, chipId);
-      if (result.success) req.saveGame();
-      res.json(result);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  router.post('/reorder-chips', (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      const { chipIds } = req.body;
-      const player = gameManager.run?.player || gameManager.player;
-      const result = reorderChips(player, chipIds);
-      if (result.success) req.saveGame();
-      res.json(result);
     } catch (error) {
       res.status(400).json({ error: error.message });
     }

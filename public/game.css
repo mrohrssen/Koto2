@@ -53,9 +53,7 @@
   --radius-circle: 50%;
 
   /* Component tokens */
-  --chip-size: 52px;
   --toolbar-height: 52px;
-  --chip-glow: 0 0 12px 4px rgba(255, 183, 77, 0.6);
 
   /* HP bar */
   --hp-green: #66bb6a;
@@ -509,7 +507,7 @@ html, body {
   }
 }
 
-/* ===== CHIP ROW ===== */
+/* ===== CHIP ROW (shared container for robot-row) ===== */
 .chip-row {
   display: flex;
   justify-content: center;
@@ -520,95 +518,6 @@ html, body {
   position: relative;
   z-index: 1;
   border-top: 1px solid rgba(77, 208, 225, 0.2);
-}
-
-.chip-row-secondary {
-  padding: 2px 10px;
-  transform: scale(0.75);
-  transform-origin: center top;
-  margin-top: -4px;
-  opacity: 0.85;
-}
-
-.chip-slot {
-  position: relative;
-  flex: 1;
-  max-width: 72px;
-  flex-shrink: 0;
-  cursor: pointer;
-}
-
-.chip-icon {
-  width: 100%;
-  aspect-ratio: 1;
-  position: relative;
-  border-radius: var(--radius-circle);
-  border: 1.5px solid rgba(255,255,255,0.7);
-  background-color: #ffffff;
-  background-size: cover;
-  background-position: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15), inset 0 1px 3px rgba(0,0,0,0.2);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.chip-icon.empty {
-  background: transparent;
-  border: 1.5px dashed rgba(180,180,190,0.25);
-  box-shadow: none;
-}
-
-/* Rarity borders on chip icons */
-.chip-icon.rarity-common { border-color: var(--rarity-common); }
-.chip-icon.rarity-uncommon { border-color: var(--rarity-uncommon); }
-.chip-icon.rarity-rare { border-color: var(--rarity-rare); }
-.chip-icon.rarity-epic { border-color: var(--rarity-epic); }
-.chip-icon.rarity-legendary { border-color: var(--rarity-legendary); }
-
-/* Fully charged glow */
-.chip-icon.charged {
-  animation: chip-glow-pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes chip-glow-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 transparent; }
-  50% { box-shadow: 0 0 8px 2px var(--rarity-legendary); }
-}
-
-.chip-charge-bar {
-  display: flex;
-  justify-content: center;
-  gap: 3px;
-  margin-top: 3px;
-}
-
-.chip-charge-segment {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--border-subtle);
-  transition: background var(--transition-fast);
-}
-
-.chip-charge-segment.filled {
-  background: var(--accent-amber);
-}
-
-.chip-level-badge {
-  position: absolute;
-  bottom: -4px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 9px;
-  font-weight: 700;
-  background: rgba(50,60,80,0.8);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  color: white;
-  border-radius: 6px;
-  padding: 1px 6px;
-  line-height: 1.3;
-  white-space: nowrap;
-  z-index: 1;
 }
 
 /* ===== PLAYER HP BAR ===== */
@@ -1276,7 +1185,7 @@ html, body {
   padding: 16px;
 }
 
-/* ===== CHIP POPUP ===== */
+/* ===== CHIP POPUP (shared container for robot-row) ===== */
 .chip-popup {
   position: fixed;
   background: var(--bg-elevated);
@@ -1291,166 +1200,6 @@ html, body {
 
 .chip-popup.visible {
   display: block;
-}
-
-.chip-popup-name {
-  font-size: 16px;
-  font-weight: var(--font-weight-semi);
-  color: var(--text-primary);
-}
-
-.chip-popup-level {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.chip-popup-stats {
-  display: flex;
-  gap: 8px;
-  margin: 8px 0;
-}
-
-.chip-popup-section-label {
-  font-size: 11px;
-  font-weight: var(--font-weight-semi);
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 8px;
-}
-
-.chip-popup-desc {
-  font-size: 13px;
-  color: var(--text-primary);
-  line-height: 1.4;
-}
-
-.chip-popup-section {
-  margin-bottom: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-subtle);
-  text-align: left;
-}
-
-.chip-popup-section:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
-}
-
-.chip-popup-charge {
-  font-size: 12px;
-  color: var(--accent-amber);
-  font-weight: var(--font-weight-semi);
-  margin-top: 4px;
-}
-
-.chip-popup-buttons {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.chip-popup-swap {
-  flex: 1;
-  padding: 8px 0;
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-panel);
-  color: var(--text-primary);
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: var(--font-weight-semi);
-  font-family: var(--font-family);
-  cursor: pointer;
-  transition: transform var(--transition-fast);
-}
-
-.chip-popup-swap:active { transform: scale(0.96); }
-
-.chip-popup-swap:disabled {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.chip-popup-use {
-  flex: 1;
-  padding: 8px 0;
-  border: none;
-  border-radius: 20px;
-  background: var(--accent-cyan);
-  color: white;
-  font-size: 13px;
-  font-weight: var(--font-weight-semi);
-  font-family: var(--font-family);
-  cursor: pointer;
-  transition: transform var(--transition-fast);
-}
-
-.chip-popup-use:active { transform: scale(0.96); }
-
-.chip-popup-use:disabled {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-/* Chip stat boxes */
-.chip-stat-row {
-  display: flex;
-  gap: 8px;
-}
-
-.chip-stat-box {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid;
-  font-size: 13px;
-  font-weight: var(--font-weight-semi);
-}
-
-.chip-stat-box.pwr { border-color: var(--hp-red); color: var(--hp-red); }
-.chip-stat-box.bw { border-color: var(--accent-cyan); color: var(--accent-cyan); }
-.chip-stat-box.hp { border-color: var(--accent-green); color: var(--accent-green); }
-
-.chip-stat-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  opacity: 0.7;
-}
-
-.chip-stat-value {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.chip-stat-bonus {
-  font-size: 11px;
-  font-weight: 400;
-  margin-left: 4px;
-  color: var(--text-secondary);
-  background: var(--bg-panel);
-  padding: 1px 4px;
-  border-radius: 4px;
-}
-
-.shop-chip-desc {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  line-height: 1.4;
-}
-
-/* Swap mode - highlight selectable chips */
-.chip-slot.swap-target .chip-icon {
-  animation: swap-glow 1s ease-in-out infinite;
-}
-
-@keyframes swap-glow {
-  0%, 100% { box-shadow: 0 0 8px 2px var(--accent-cyan); }
-  50% { box-shadow: 0 0 16px 4px var(--accent-cyan); }
 }
 
 /* ===== WARD SELECTION (Scene Area content) ===== */
@@ -1598,337 +1347,7 @@ html, body {
   50% { opacity: 0.5; }
 }
 
-/* ===== CHIP EQUIP VIEW ===== */
-.chip-equip-slots {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  padding: 16px;
-}
-
-.chip-equip-slot {
-  width: 72px;
-  height: 72px;
-  border-radius: var(--card-radius);
-  border: 2px solid var(--border-subtle);
-  background: var(--bg-panel);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  cursor: pointer;
-  transition: border-color var(--transition-fast);
-}
-
-.chip-equip-slot img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: calc(var(--card-radius) - 2px);
-}
-
-.chip-equip-slot.empty {
-  border-style: dashed;
-  color: var(--text-muted);
-  font-size: 24px;
-}
-
-/* Legacy aliases */
-.equip-slots { display: flex; justify-content: center; gap: 10px; padding: 16px; flex-wrap: wrap; }
-.equip-slot { width: 72px; height: 72px; border-radius: var(--card-radius); border: 2px dashed var(--border-subtle); background: var(--bg-panel); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.equip-slot.filled { border-style: solid; border-color: var(--accent-green); }
-
-.chip-inventory-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
-  gap: 8px;
-  padding: 16px;
-}
-
-.chip-inventory-item {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--card-radius-sm);
-  border: 2px solid var(--border-subtle);
-  background: var(--bg-elevated);
-  cursor: pointer;
-  overflow: hidden;
-  transition: border-color var(--transition-fast), transform var(--transition-fast);
-}
-
-.chip-inventory-item:active {
-  transform: scale(0.95);
-}
-
-.chip-inventory-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.available-chips {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 12px;
-}
-
-.chip-card {
-  background: var(--bg-elevated);
-  border-radius: var(--card-radius);
-  padding: 12px;
-  text-align: center;
-  box-shadow: var(--shadow-soft);
-  cursor: pointer;
-  transition: transform var(--transition-fast);
-}
-
-.chip-card:active {
-  transform: scale(0.97);
-}
-
-/* ===== POST-COMBAT SHOP ===== */
-.shop-chips {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-}
-
-.shop-chip-option {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: var(--bg-card);
-  border-radius: var(--radius-md);
-  padding: 14px 16px;
-  box-shadow: var(--shadow-soft);
-  cursor: pointer;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.shop-chip-icon {
-  width: 56px;
-  height: 56px;
-  min-width: 56px;
-  border-radius: 50%;
-  background-size: cover;
-  background-position: center;
-  border: 2px solid #ddd;
-}
-
-.shop-chip-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.shop-chip-option:active {
-  transform: scale(0.98);
-}
-
-/* ===== CHIP SELECT (In-Scene) ===== */
-.chip-select-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  max-width: 340px;
-}
-
-.chip-select-credits {
-  font-size: 13px;
-  font-weight: var(--font-weight-semi);
-  color: var(--accent-amber);
-}
-
-.chip-select-card {
-  position: relative;
-  width: 100%;
-  background: var(--bg-elevated);
-  border-radius: var(--card-radius);
-  box-shadow: var(--shadow-soft);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-height: 180px;
-  border: 2px solid var(--border-subtle);
-  transition: transform 0.2s ease, opacity 0.2s ease;
-  user-select: none;
-}
-
-.chip-select-card:active {
-  cursor: grabbing;
-}
-
-.chip-select-price-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 12px;
-  font-weight: var(--font-weight-semi);
-  padding: 2px 8px;
-  border-radius: 8px;
-  border: 1px solid;
-}
-
-.chip-select-price-badge.affordable {
-  color: var(--accent-green);
-  border-color: var(--accent-green);
-  background: rgba(102, 187, 106, 0.08);
-}
-
-.chip-select-price-badge.expensive {
-  color: var(--hp-red);
-  border-color: var(--hp-red);
-  background: rgba(239, 83, 80, 0.08);
-}
-
-.chip-select-top {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.chip-select-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--card-radius-sm);
-  background-size: cover;
-  background-position: center;
-  border: 2px solid var(--border-subtle);
-}
-
-.chip-select-info {
-  flex: 1;
-}
-
-.chip-select-name {
-  font-size: 16px;
-  font-weight: var(--font-weight-semi);
-  color: var(--text-primary);
-}
-
-.chip-select-rarity {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.chip-select-rarity.common { color: var(--rarity-common); }
-.chip-select-rarity.uncommon { color: var(--rarity-uncommon); }
-.chip-select-rarity.rare { color: var(--rarity-rare); }
-.chip-select-rarity.epic { color: var(--rarity-epic); }
-.chip-select-rarity.legendary { color: var(--rarity-legendary); }
-
-.chip-select-label {
-  font-size: 11px;
-  font-weight: var(--font-weight-semi);
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.chip-select-desc {
-  font-size: 13px;
-  color: var(--text-primary);
-  line-height: 1.4;
-}
-
-.chip-select-passive {
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--text-primary);
-}
-
-.chip-select-active {
-  font-size: 13px;
-  line-height: 1.4;
-  padding-top: 8px;
-  margin-top: 4px;
-  border-top: 1px solid var(--border-subtle);
-  color: var(--text-primary);
-}
-
-.chip-select-dots {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-}
-
-.chip-select-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--border-subtle);
-}
-
-.chip-select-dot.active {
-  background: var(--accent-cyan);
-}
-
-.chip-select-hint {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.chip-select-buttons {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.chip-select-btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: var(--font-weight-semi);
-  font-family: var(--font-family);
-  cursor: pointer;
-  transition: transform var(--transition-fast), opacity var(--transition-fast);
-  -webkit-tap-highlight-color: transparent;
-  background: var(--accent-cyan);
-  color: white;
-}
-
-.chip-select-btn:active {
-  transform: scale(0.96);
-}
-
-.chip-select-btn.chip-select-refresh {
-  background: var(--bg-panel);
-  color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
-}
-
-.chip-select-btn.chip-select-skip {
-  background: var(--bg-panel);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-subtle);
-}
-
-.chip-select-btn.disabled {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.chip-select-price {
-  font-size: 12px;
-  font-weight: var(--font-weight-semi);
-  margin-top: 4px;
-}
-
-.chip-select-price.affordable {
-  color: var(--accent-green);
-}
-
-.chip-select-price.expensive {
-  color: var(--hp-red);
-}
-
-/* ===== SHRINE CHIP UPGRADE ===== */
+/* ===== SHRINE / QUIZ / BEFRIEND LIST ===== */
 .shrine-title {
   text-align: center;
   margin: 8px 0;
@@ -2056,11 +1475,6 @@ html, body {
   letter-spacing: 1px;
   color: var(--text-secondary);
   margin: 12px 0 6px;
-}
-
-/* Offered chip card */
-.dealer-offered-chip {
-  margin-bottom: 4px;
 }
 
 .dealer-offer-card {
@@ -2263,12 +1677,6 @@ html, body {
   color: var(--accent-green);
 }
 
-/* Tier 0: Chip damage */
-.damage-number.dmg-chip {
-  font-size: 18px;
-  color: var(--text-secondary);
-}
-
 /* Tier 1: Normal */
 .damage-number.dmg-normal {
   font-size: 24px;
@@ -2386,18 +1794,6 @@ html, body {
   white-space: nowrap;
 }
 
-/* ===== CHIP EQUIP MODAL ===== */
-.chip-equip-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--card-radius-sm);
-  background-size: cover;
-  background-position: center;
-  margin-right: 8px;
-  border: 2px solid var(--border-subtle);
-  flex-shrink: 0;
-}
-
 /* ===== COMBAT MATH DISPLAY ===== */
 .combat-math {
   padding: 16px;
@@ -2407,11 +1803,6 @@ html, body {
   color: var(--text-primary);
   opacity: 0;
   animation: fade-in 0.3s ease forwards;
-}
-
-.math-chip {
-  color: var(--accent-blue);
-  font-weight: 600;
 }
 
 .math-crit {
@@ -2548,44 +1939,6 @@ html, body {
   0% { transform: scale(0.5); opacity: 0; }
   60% { transform: scale(1.15); }
   100% { transform: scale(1); opacity: 1; }
-}
-
-.chip-tooltip {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.85);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 6px;
-  white-space: nowrap;
-  pointer-events: none;
-  animation: chip-tooltip-pop 0.3s ease-out, chip-tooltip-fade 1.5s ease-in forwards;
-  z-index: 10;
-  margin-bottom: 4px;
-}
-
-@keyframes chip-tooltip-pop {
-  0% { transform: translateX(-50%) scale(0.7) translateY(4px); opacity: 0; }
-  100% { transform: translateX(-50%) scale(1) translateY(0); opacity: 1; }
-}
-
-@keyframes chip-tooltip-fade {
-  0%, 70% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-@keyframes chip-activate {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.3); box-shadow: 0 0 12px rgba(52, 152, 219, 0.8); }
-  100% { transform: scale(1); }
-}
-
-.chip-activating {
-  animation: chip-activate 0.6s ease;
 }
 
 @keyframes fade-in {
@@ -2909,12 +2262,6 @@ html, body {
 @keyframes hp-critical {
   0%, 100% { box-shadow: 0 0 5px rgba(255, 50, 50, 0.5); }
   50% { box-shadow: 0 0 15px rgba(255, 50, 50, 0.9); }
-}
-
-/* Chip firing glow enhancement */
-.chip-icon.chip-firing-enhanced {
-  filter: brightness(1.5);
-  box-shadow: 0 0 20px rgba(52, 152, 219, 0.9);
 }
 
 /* ============ PHASER EXPLORATION ============ */

@@ -3,23 +3,6 @@
  * Re-exports all combat functions from submodules
  */
 
-// Status effects
-export {
-  STATUS_EFFECTS,
-  getStatusEffectDef,
-  applyStatusEffect,
-  hasStatusEffect,
-  removeStatusEffect,
-  getActiveStatusEffects,
-  breakDamageEffects,
-  tickStatusEffects,
-  tickEnemyStatusEffects,
-  getStatusDisplayName,
-  processDeathEffects,
-  processMaxStackExplosion,
-  getStatusStacks
-} from './status-effects.js';
-
 // Combat mechanics
 export {
   getPlayerCombatStats,

@@ -243,13 +243,8 @@ export default function createMiscRoutes({
           gameManager.run.wardSelectionRequired = false;
           gameManager.combat = null;
           gameManager.run.bossDefeated = false;
-          const ownedIds = (gameManager.run.player.chips || []).map(c => c.id);
-          const { generatePostCombatShop } = await import('../../game/rooms.js');
-          gameManager.run.postCombatShop = {
-            active: true,
-            items: generatePostCombatShop(gameManager.run.floor, ownedIds),
-            freeRefreshUsed: false
-          };
+          // Chip shop removed - post_combat_shop phase no longer generated
+          gameManager.run.postCombatShop = null;
           break;
         }
         case 'wordDiscovery': {
