@@ -49,6 +49,7 @@ export const PHASES = {
   COMBAT: 'combat',             // In active battle
   VICTORY: 'victory',           // Just won combat (before rewards)
   DEFEAT: 'defeat',             // Just lost combat
+  NPC_DIALOGUE: 'npc_dialogue', // NPC bond dialogue after victory
 
   // Economy states
   SHOP: 'shop',                 // In merchant shop
@@ -119,11 +120,20 @@ export const VALID_TRANSITIONS = {
   ],
 
   [PHASES.VICTORY]: [
+    PHASES.NPC_DIALOGUE,        // NPC bond dialogue
     PHASES.POST_COMBAT_SHOP,  // Loot drops
     PHASES.ROOM,              // Continue exploring
     PHASES.EXPLORING,         // Continue exploring
     PHASES.FLOOR_COMPLETE,    // Boss defeated
     PHASES.RUN_COMPLETE       // Final boss defeated
+  ],
+
+  [PHASES.NPC_DIALOGUE]: [
+    PHASES.POST_COMBAT_SHOP,
+    PHASES.ROOM,
+    PHASES.EXPLORING,
+    PHASES.FLOOR_COMPLETE,
+    PHASES.RUN_COMPLETE
   ],
 
   [PHASES.DEFEAT]: [
@@ -211,6 +221,9 @@ export function derivePhase(state) {
   // In active combat
   if (combat?.active) return PHASES.COMBAT;
 
+  // NPC dialogue pending after victory
+  if (run.npcDialogue?.active) return PHASES.NPC_DIALOGUE;
+
   // Post-combat shop active
   if (run.postCombatShop?.active) return PHASES.POST_COMBAT_SHOP;
 
@@ -282,6 +295,7 @@ export function getPhaseName(phase) {
     [PHASES.COMBAT]: 'Combat',
     [PHASES.VICTORY]: 'Victory',
     [PHASES.DEFEAT]: 'Defeat',
+    [PHASES.NPC_DIALOGUE]: 'NPC Dialogue',
     [PHASES.SHOP]: 'Shop',
     [PHASES.BLACKSMITH]: 'Blacksmith',
     [PHASES.POST_COMBAT_SHOP]: 'Post-Combat Shop',

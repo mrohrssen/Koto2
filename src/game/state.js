@@ -74,6 +74,9 @@ export function createMetaProgression() {
     // Permanent robot collection (persists across runs)
     robotCollection: ['sizzlit', 'drizzlet', 'petalia'],
 
+    // NPC bonds (persists across runs)
+    npcBonds: {},
+
     // Level progression
     levels: {
       highestUnlocked: 1,
