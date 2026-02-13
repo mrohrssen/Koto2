@@ -125,7 +125,7 @@ import {
   setTTSSynthesizer, updateTTSConfig, cancelPendingPrefetches,
   queueTTSPrefetch
 } from './src/game/prefetch.js';
-import { enforceVocabLimit } from './src/game/vocab-repair.js';
+import { enforceVocabLimit, checkSentenceViolations } from './src/game/vocab-repair.js';
 import { generateDoorHints as _generateDoorHints } from './src/game/services/door-hint-service.js';
 import { generateBefriendConversation } from './src/game/services/robot-combat-service.js';
 import {
@@ -383,15 +383,16 @@ app.use('/api', createRoutes({
   },
   // NPC narration engine deps
   getNpcDialogueFromCache,
-  queueMissingNpcDialoguesFn: async (userId, aiConfig, vocabulary) => {
-    return queueNpcDialogues(userId, chat, aiConfig, vocabulary);
+  queueMissingNpcDialoguesFn: async (userId, aiConfig, vocabContext) => {
+    return queueNpcDialogues(userId, chat, aiConfig, vocabContext);
   },
   logNpcEncounterFn: logNpcEncounter,
-  regenNpcDialogueFn: async (userId, npcId, aiConfig, vocabulary) => {
-    return regenNpcDialogue(userId, npcId, chat, aiConfig, vocabulary);
+  regenNpcDialogueFn: async (userId, npcId, aiConfig, vocabContext) => {
+    return regenNpcDialogue(userId, npcId, chat, aiConfig, vocabContext);
   },
   setNpcMemoryFlagFn: setNpcMemoryFlag,
-  updateNpcMemoryBondFn: updateNpcMemoryBond
+  updateNpcMemoryBondFn: updateNpcMemoryBond,
+  checkSentenceViolations
 }));
 
 // Narration helpers

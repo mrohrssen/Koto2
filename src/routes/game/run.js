@@ -36,7 +36,8 @@ export default function createRunRoutes({
   clearPrefetchCache,
   generateMissingDialoguesFn,
   getUserVocabulary,
-  queueMissingNpcDialoguesFn
+  queueMissingNpcDialoguesFn,
+  checkSentenceViolations
 }) {
   const router = Router();
 
@@ -85,14 +86,18 @@ export default function createRunRoutes({
       if (queueMissingNpcDialoguesFn && getUserVocabulary) {
         const userKeys = req.userKeys || {};
         if (userKeys.aiApiKey) {
-          const { words: vocabulary } = getUserVocabulary(req.user.id);
+          const { words: vocabulary, vidSet } = getUserVocabulary(req.user.id);
+          const vocabSet = new Set(vocabulary);
+          const checkViolationsFn = userKeys.jpdbApiKey && checkSentenceViolations
+            ? async (text) => checkSentenceViolations(text, vocabSet, userKeys.jpdbApiKey, new Set(), vidSet)
+            : null;
           queueMissingNpcDialoguesFn(req.user.id, {
             provider: userKeys.aiProvider || 'openai',
             apiKey: userKeys.aiApiKey,
             openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
             openrouterModel: userKeys.openrouterModel,
             jlptLevel: userKeys.jlptLevel || 'N4'
-          }, vocabulary).catch(e => {
+          }, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {
             console.error('[NpcDialogue] Background generation failed:', e.message);
           });
         }
@@ -181,14 +186,18 @@ export default function createRunRoutes({
       if (queueMissingNpcDialoguesFn && getUserVocabulary) {
         const userKeys = req.userKeys || {};
         if (userKeys.aiApiKey) {
-          const { words: vocabulary } = getUserVocabulary(req.user.id);
+          const { words: vocabulary, vidSet } = getUserVocabulary(req.user.id);
+          const vocabSet = new Set(vocabulary);
+          const checkViolationsFn = userKeys.jpdbApiKey && checkSentenceViolations
+            ? async (text) => checkSentenceViolations(text, vocabSet, userKeys.jpdbApiKey, new Set(), vidSet)
+            : null;
           queueMissingNpcDialoguesFn(req.user.id, {
             provider: userKeys.aiProvider || 'openai',
             apiKey: userKeys.aiApiKey,
             openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
             openrouterModel: userKeys.openrouterModel,
             jlptLevel: userKeys.jlptLevel || 'N4'
-          }, vocabulary).catch(e => {
+          }, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {
             console.error('[NpcDialogue] Background generation failed:', e.message);
           });
         }

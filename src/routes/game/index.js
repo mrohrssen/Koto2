@@ -68,7 +68,8 @@ export default function createGameRoutes(deps) {
     clearPrefetchCache: deps.clearPrefetchCache,
     generateMissingDialoguesFn: deps.generateMissingDialoguesFn,
     getUserVocabulary: deps.getUserVocabulary,
-    queueMissingNpcDialoguesFn: deps.queueMissingNpcDialoguesFn
+    queueMissingNpcDialoguesFn: deps.queueMissingNpcDialoguesFn,
+    checkSentenceViolations: deps.checkSentenceViolations
   }));
 
   // Mount combat routes
@@ -86,7 +87,8 @@ export default function createGameRoutes(deps) {
     logNpcEncounterFn: deps.logNpcEncounterFn,
     regenNpcDialogueFn: deps.regenNpcDialogueFn,
     setNpcMemoryFlagFn: deps.setNpcMemoryFlagFn,
-    updateNpcMemoryBondFn: deps.updateNpcMemoryBondFn
+    updateNpcMemoryBondFn: deps.updateNpcMemoryBondFn,
+    checkSentenceViolations: deps.checkSentenceViolations
   }));
 
   // Mount economy routes

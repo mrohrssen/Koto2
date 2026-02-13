@@ -72,7 +72,8 @@ export default function createRoutes(deps) {
     logNpcEncounterFn: deps.logNpcEncounterFn,
     regenNpcDialogueFn: deps.regenNpcDialogueFn,
     setNpcMemoryFlagFn: deps.setNpcMemoryFlagFn,
-    updateNpcMemoryBondFn: deps.updateNpcMemoryBondFn
+    updateNpcMemoryBondFn: deps.updateNpcMemoryBondFn,
+    checkSentenceViolations: deps.checkSentenceViolations
   }));
 
   // Prefetch routes: /api/prefetch/*
