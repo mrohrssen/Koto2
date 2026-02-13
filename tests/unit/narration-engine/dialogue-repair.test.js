@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { extractDialogueStrings, validateDialogueVocab } from '../../../src/narration-engine/dialogue-repair.js';
+import { extractDialogueStrings, validateDialogueVocab, buildRepairInstruction, enforceDialogueVocab } from '../../../src/narration-engine/dialogue-repair.js';
 
 const validDialogue = {
   greeting: 'やあ！',
@@ -99,6 +99,176 @@ describe('dialogue-repair', () => {
     it('returns empty array when checkFn is null (skip validation)', async () => {
       const violations = await validateDialogueVocab(validDialogue, null);
       assert.strictEqual(violations.length, 0);
+    });
+  });
+
+  describe('buildRepairInstruction', () => {
+    it('lists violation fields and unknown words', () => {
+      const violations = [
+        { path: 'greeting', text: 'X', unknowns: ['困難', '挑戦'] },
+        { path: 'rounds[0].npcLine', text: 'Y', unknowns: ['冒険'] }
+      ];
+      const instruction = buildRepairInstruction(violations);
+      assert.ok(instruction.includes('greeting'));
+      assert.ok(instruction.includes('困難'));
+      assert.ok(instruction.includes('rounds[0].npcLine'));
+    });
+
+    it('includes rewrite directive', () => {
+      const violations = [{ path: 'greeting', text: 'X', unknowns: ['word'] }];
+      const instruction = buildRepairInstruction(violations);
+      assert.ok(instruction.includes('JSON'));
+    });
+  });
+
+  describe('enforceDialogueVocab', () => {
+    const cleanDialogue = {
+      greeting: 'やあ！',
+      defeatLine: 'うう…',
+      freedLine: 'ありがとう！',
+      rounds: [
+        { npcLine: 'こんにちは', options: [
+          { text: 'はい', tone: 'positive' },
+          { text: 'まあ', tone: 'neutral' },
+          { text: 'いいえ', tone: 'negative' }
+        ]},
+        { npcLine: '元気？', options: [
+          { text: 'うん', tone: 'positive' },
+          { text: 'まあまあ', tone: 'neutral' },
+          { text: '別に', tone: 'negative' }
+        ]},
+        { npcLine: 'また会おう', options: [
+          { text: 'もちろん', tone: 'positive' },
+          { text: 'いつか', tone: 'neutral' },
+          { text: 'いらない', tone: 'negative' }
+        ]}
+      ]
+    };
+
+    it('returns dialogue as-is when no violations', async () => {
+      const cleanCheck = async () => ({ unknownWords: [], count: 0 });
+      const result = await enforceDialogueVocab({
+        dialogue: cleanDialogue,
+        checkViolationsFn: cleanCheck,
+        chatFn: async () => { throw new Error('should not be called'); },
+        systemPrompt: 'sys',
+        userPrompt: 'usr',
+        aiConfig: {}
+      });
+      assert.deepStrictEqual(result.dialogue, cleanDialogue);
+      assert.strictEqual(result.repaired, false);
+      assert.strictEqual(result.attempts, 0);
+    });
+
+    it('skips validation when checkViolationsFn is null', async () => {
+      const result = await enforceDialogueVocab({
+        dialogue: cleanDialogue,
+        checkViolationsFn: null,
+        chatFn: async () => { throw new Error('should not be called'); },
+        systemPrompt: 'sys',
+        userPrompt: 'usr',
+        aiConfig: {}
+      });
+      assert.deepStrictEqual(result.dialogue, cleanDialogue);
+      assert.strictEqual(result.repaired, false);
+    });
+
+    it('repairs dialogue when violations found and AI succeeds', async () => {
+      let validateCallCount = 0;
+      const checkFn = async (text) => {
+        validateCallCount++;
+        // First 15 calls (first validate pass): flag greeting as bad
+        if (validateCallCount <= 15 && text === 'BAD greeting') {
+          return { unknownWords: ['未知1', '未知2'], count: 2 };
+        }
+        // All subsequent calls (after repair): everything clean
+        return { unknownWords: [], count: 0 };
+      };
+
+      const repairedDialogue = { ...cleanDialogue, greeting: 'いい挨拶' };
+      const mockChat = async () => JSON.stringify(repairedDialogue);
+
+      const dirtyDialogue = { ...cleanDialogue, greeting: 'BAD greeting' };
+      const result = await enforceDialogueVocab({
+        dialogue: dirtyDialogue,
+        checkViolationsFn: checkFn,
+        chatFn: mockChat,
+        systemPrompt: 'sys',
+        userPrompt: 'usr',
+        aiConfig: {}
+      });
+      assert.strictEqual(result.repaired, true);
+      assert.strictEqual(result.attempts, 1);
+      assert.strictEqual(result.dialogue.greeting, 'いい挨拶');
+    });
+
+    it('returns null dialogue after max failed repair attempts', async () => {
+      const alwaysBad = async () => ({ unknownWords: ['a', 'b'], count: 2 });
+      const mockChat = async () => JSON.stringify(cleanDialogue);
+
+      const result = await enforceDialogueVocab({
+        dialogue: cleanDialogue,
+        checkViolationsFn: alwaysBad,
+        chatFn: mockChat,
+        systemPrompt: 'sys',
+        userPrompt: 'usr',
+        aiConfig: {},
+        maxAttempts: 2
+      });
+      assert.strictEqual(result.dialogue, null);
+      assert.strictEqual(result.attempts, 2);
+      assert.ok(result.violations.length > 0);
+    });
+
+    it('returns null dialogue when AI returns invalid JSON during repair', async () => {
+      let callCount = 0;
+      const trackingCheck = async (text) => {
+        callCount++;
+        if (callCount <= 15) return { unknownWords: ['a', 'b'], count: 2 };
+        return { unknownWords: [], count: 0 };
+      };
+
+      const mockChat = async () => 'not valid json at all';
+      const result = await enforceDialogueVocab({
+        dialogue: cleanDialogue,
+        checkViolationsFn: trackingCheck,
+        chatFn: mockChat,
+        systemPrompt: 'sys',
+        userPrompt: 'usr',
+        aiConfig: {},
+        maxAttempts: 1
+      });
+      assert.strictEqual(result.dialogue, null);
+    });
+
+    it('sends multi-turn repair conversation to AI', async () => {
+      let capturedMessages = null;
+      const checkFn = async (text) => {
+        if (text === 'BAD') return { unknownWords: ['x', 'y'], count: 2 };
+        return { unknownWords: [], count: 0 };
+      };
+      const mockChat = async (opts) => {
+        capturedMessages = opts.messages;
+        return JSON.stringify(cleanDialogue);
+      };
+
+      const dirty = { ...cleanDialogue, greeting: 'BAD' };
+      await enforceDialogueVocab({
+        dialogue: dirty,
+        checkViolationsFn: checkFn,
+        chatFn: mockChat,
+        systemPrompt: 'test-system',
+        userPrompt: 'test-user',
+        aiConfig: { provider: 'openai', apiKey: 'k' }
+      });
+
+      // Should be 3 messages: original user, flawed assistant, repair user
+      assert.strictEqual(capturedMessages.length, 3);
+      assert.strictEqual(capturedMessages[0].role, 'user');
+      assert.strictEqual(capturedMessages[0].content, 'test-user');
+      assert.strictEqual(capturedMessages[1].role, 'assistant');
+      assert.strictEqual(capturedMessages[2].role, 'user');
+      assert.ok(capturedMessages[2].content.includes('greeting'));
     });
   });
 });
