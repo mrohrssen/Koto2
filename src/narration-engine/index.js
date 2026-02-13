@@ -11,6 +11,7 @@
 import { getCharacterCard, loadCharacterCards } from './character-cards.js';
 import { assemblePrompt } from './prompt-assembler.js';
 import { generateDialogue } from './generation.js';
+import { enforceDialogueVocab } from './dialogue-repair.js';
 import { NpcMemory } from './npc-memory.js';
 import { TextCache } from './text-cache.js';
 import { logger } from '../logger.js';
@@ -44,12 +45,13 @@ export function getDialogueFromCache(userId, entityId) {
  * Queue generation for all entities that are missing or stale in cache.
  * Fire-and-forget — runs in background with concurrency limit.
  */
-export async function queueMissingDialogues(userId, chatFn, aiConfig, vocab) {
+export async function queueMissingDialogues(userId, chatFn, aiConfig, vocabContext) {
+  const vocab = vocabContext?.words || vocabContext || [];
+  const vocabCount = Array.isArray(vocab) ? vocab.length : 0;
   const cards = loadCharacterCards();
   const entityIds = Object.keys(cards);
   const cache = getCache(userId);
   const memory = getMemory(userId);
-  const vocabCount = vocab.length;
 
   const toGenerate = [];
   for (const id of entityIds) {
@@ -76,7 +78,7 @@ export async function queueMissingDialogues(userId, chatFn, aiConfig, vocab) {
   for (let i = 0; i < toGenerate.length; i += CONCURRENCY) {
     const batch = toGenerate.slice(i, i + CONCURRENCY);
     await Promise.allSettled(
-      batch.map(id => generateAndCache(userId, id, chatFn, aiConfig, vocab))
+      batch.map(id => generateAndCache(userId, id, chatFn, aiConfig, vocabContext))
     );
   }
 }
@@ -92,8 +94,8 @@ export function logEncounter(userId, entityId, outcome, summary) {
  * Regenerate dialogue for a single entity after an encounter.
  * Runs in background — returns a promise.
  */
-export async function regenerateDialogue(userId, entityId, chatFn, aiConfig, vocab) {
-  return generateAndCache(userId, entityId, chatFn, aiConfig, vocab);
+export async function regenerateDialogue(userId, entityId, chatFn, aiConfig, vocabContext) {
+  return generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext);
 }
 
 /**
@@ -126,12 +128,16 @@ export function setNarrative(userId, entityId, narrative) {
 
 // --- Internal ---
 
-async function generateAndCache(userId, entityId, chatFn, aiConfig, vocab) {
+async function generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext) {
   const card = getCharacterCard(entityId);
   if (!card) {
     logger.warn(`[NpcDialogue] No character card for ${entityId}`);
     return;
   }
+
+  // Unpack vocabContext (backward compatible with plain array)
+  const vocab = vocabContext?.words || vocabContext || [];
+  const checkViolationsFn = vocabContext?.checkViolationsFn || null;
 
   const memory = getMemory(userId);
   const cache = getCache(userId);
@@ -158,20 +164,41 @@ async function generateAndCache(userId, entityId, chatFn, aiConfig, vocab) {
     aiConfig
   });
 
-  if (dialogue) {
-    cache.set(entityId, {
-      ...dialogue,
-      npcId: entityId,
-      generatedAt: new Date().toISOString(),
-      vocabSnapshot: vocab.length,
-      memorySnapshot: {
-        encounters: mem.counters.encounters,
-        bond: mem.bond,
-        liberated: mem.flags.liberated
-      }
-    });
-    logger.info(`[NpcDialogue] Cached dialogue for ${entityId}`);
-  } else {
+  if (!dialogue) {
     logger.warn(`[NpcDialogue] Failed to generate dialogue for ${entityId}`);
+    return;
   }
+
+  // Vocab repair: validate and fix i+1 violations
+  const { dialogue: repairedDialogue, repaired, attempts, violations } =
+    await enforceDialogueVocab({
+      dialogue,
+      checkViolationsFn,
+      chatFn,
+      systemPrompt,
+      userPrompt,
+      aiConfig
+    });
+
+  if (!repairedDialogue) {
+    logger.error(`[NpcDialogue] CRITICAL: Dialogue for ${entityId} failed vocab repair after ${attempts} attempts. ${violations.length} fields still violate i+1. Not caching — static fallback will be used.`);
+    return;
+  }
+
+  if (repaired) {
+    logger.info(`[NpcDialogue] Dialogue for ${entityId} repaired in ${attempts} attempt(s)`);
+  }
+
+  cache.set(entityId, {
+    ...repairedDialogue,
+    npcId: entityId,
+    generatedAt: new Date().toISOString(),
+    vocabSnapshot: vocab.length,
+    memorySnapshot: {
+      encounters: mem.counters.encounters,
+      bond: mem.bond,
+      liberated: mem.flags.liberated
+    }
+  });
+  logger.info(`[NpcDialogue] Cached dialogue for ${entityId}`);
 }
