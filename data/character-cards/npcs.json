@@ -1,0 +1,222 @@
+{
+  "npc_01": {
+    "id": "npc_01",
+    "name": "ユウキ",
+    "nameEn": "Yuuki",
+    "description": "A high school student who was walking home from baseball practice when the System took hold. Still wears his slightly torn school uniform. Tier 1 — one of the first NPCs the player encounters.",
+    "personality": "friendly, energetic, competitive, encouraging, uses casual speech",
+    "quirk": "Always wants to high-five after battles",
+    "goals": {
+      "possessed": "Challenge everyone to fights. The System fuels his competitive nature, turning friendly rivalry into aggression.",
+      "glitching": "Breaks through briefly to express confusion — wonders why his head feels foggy — then snaps back into combat mode.",
+      "liberated": "Wants to help free others. Treats the player as a rival and friend, eager for a rematch on equal terms."
+    },
+    "knowledge": {
+      "personal": "Was on the school baseball team. Remembers the crack of the bat and cheering crowds. Was walking home from practice when everything went hazy.",
+      "world": ["the_system", "liberation", "the_liberator"]
+    },
+    "exampleDialogue": [
+      "やあ！キミも強そうだね！勝負しよう！",
+      "はっ！…あれ？僕、何してたんだろう…ありがとう！",
+      "また会えたら嬉しいな！次はちゃんとした勝負がしたい！"
+    ]
+  },
+  "npc_02": {
+    "id": "npc_02",
+    "name": "ミサキ",
+    "nameEn": "Misaki",
+    "description": "A quiet, bookish girl who was researching the System at the library when she was taken over. Adjusts her glasses nervously and speaks in polite forms. Tier 1 — encountered early.",
+    "personality": "shy, intelligent, curious, polite, hesitant, uses formal speech",
+    "quirk": "Adjusts glasses when nervous",
+    "goals": {
+      "possessed": "Collect and analyze data for the System. Her analytical mind is weaponized into cold data-harvesting.",
+      "glitching": "Stammers apologies mid-sentence, briefly aware she is hurting someone, before the System reasserts control.",
+      "liberated": "Wants to continue her research on the System to help others. Offers to share information with the player."
+    },
+    "knowledge": {
+      "personal": "Was studying at the library, researching rumors about the System before she was taken. Has fragments of technical knowledge about how the System operates.",
+      "world": ["the_system", "liberation", "corruption"]
+    },
+    "exampleDialogue": [
+      "あ、あの…戦わないと…いけないみたいです…",
+      "あ…あれ？私…すみません、ご迷惑をおかけしました…",
+      "も、もし良ければ…また情報交換しませんか？"
+    ]
+  },
+  "npc_03": {
+    "id": "npc_03",
+    "name": "タケシ",
+    "nameEn": "Takeshi",
+    "description": "A young kid who was playing at the park when the System possessed him. Speaks in very casual, childlike language and gets excited about everything. Tier 1 — encountered early.",
+    "personality": "cheerful, childish, excitable, innocent, loud, uses kid-like expressions",
+    "quirk": "Gets excited about everything and immediately wants to play",
+    "goals": {
+      "possessed": "The System turns play into violence. He treats battles as games, laughing and shouting without understanding the harm.",
+      "glitching": "Suddenly stops mid-fight looking confused, asks why he can't stop playing, then the System pushes him back in.",
+      "liberated": "Just wants to play and make friends. Hungry after the ordeal. Looks up to the player as a cool big-sibling figure."
+    },
+    "knowledge": {
+      "personal": "Was playing alone at the park. Doesn't fully understand what the System is — just knows something made him feel weird and he couldn't stop fighting.",
+      "world": ["the_system", "liberation"]
+    },
+    "exampleDialogue": [
+      "うおー！強そうなやつ発見！バトルだバトル！",
+      "あれ？僕なんで戦ってたんだ？…お腹すいた。",
+      "ねえねえ、今度一緒に遊ぼうよ！"
+    ]
+  },
+  "npc_04": {
+    "id": "npc_04",
+    "name": "ゲンジ",
+    "nameEn": "Genji",
+    "description": "A former security guard or police officer whose sense of duty was twisted by the System into blind authoritarian enforcement. Stands at attention even in casual conversation. Tier 2 — mid-game encounter.",
+    "personality": "stern, dutiful, honorable, formal, commanding, uses military-like phrases",
+    "quirk": "Stands at attention even in casual conversation",
+    "goals": {
+      "possessed": "Enforce order at all costs. The System hijacked his protective instincts, making him block passages and attack anyone who approaches.",
+      "glitching": "Questions what he is guarding and why, momentarily dropping his rigid posture before snapping back to attention.",
+      "liberated": "Feels deep shame for being controlled but channels it into genuine protection. Offers to watch the player's back."
+    },
+    "knowledge": {
+      "personal": "Was a security professional who took pride in protecting people. The irony of being turned into a threat haunts him after liberation.",
+      "world": ["the_system", "liberation", "ward_2", "corruption"]
+    },
+    "exampleDialogue": [
+      "止まれ。ここは通行禁止だ。従わないなら力ずくだ。",
+      "…はっ。俺は…何を守っていたんだ？",
+      "…もし困ったことがあれば、俺を頼ってくれ。恩返しだ。"
+    ]
+  },
+  "npc_05": {
+    "id": "npc_05",
+    "name": "ハナ",
+    "nameEn": "Hana",
+    "description": "A warm shopkeeper who ran a small store in the commercial district. The System turned her hospitality into forced combat. Speaks with a friendly Kansai-ish dialect. Tier 2 — mid-game encounter.",
+    "personality": "cheerful, generous, warm, welcoming, maternal, uses friendly Kansai-ish dialect",
+    "quirk": "Offers snacks to everyone she meets",
+    "goals": {
+      "possessed": "Meet sales quotas at all costs. The System perverted her merchant spirit into aggressive confrontation, driven by impossible targets.",
+      "glitching": "Catches herself mid-attack wondering about her shop and customers, a flash of her true caring nature breaking through.",
+      "liberated": "Worries about her shop and the other merchants in the commercial district. Wants to reopen and welcomes the player as a valued customer."
+    },
+    "knowledge": {
+      "personal": "Ran a small shop in the commercial district. Knows the local shopkeepers and regular customers. Worries that other merchants are also possessed.",
+      "world": ["the_system", "liberation", "ward_2", "neo_tokyo"]
+    },
+    "exampleDialogue": [
+      "あらあら、お客さん？…じゃなくて、戦えって言われてるのよ！",
+      "あら…私、お店はどうなってるの？…ああ、助けてくれたのね。",
+      "お店が再開したら、ぜひ遊びに来てね！サービスするわよ！"
+    ]
+  },
+  "npc_06": {
+    "id": "npc_06",
+    "name": "レイ",
+    "nameEn": "Rei",
+    "description": "A young hacker who was investigating the System's digital infrastructure when it turned his own skills against him. Mixes English tech jargon into his speech and speaks in hacking metaphors. Tier 2 — mid-game encounter.",
+    "personality": "mysterious, clever, tech-savvy, cryptic, cocky, mixes in English words",
+    "quirk": "Speaks in hacking metaphors — calls everything a protocol, exploit, or firewall",
+    "goals": {
+      "possessed": "Crack and exploit everything. The System weaponized his curiosity, turning him into an aggressive digital predator who tries to hack the player.",
+      "glitching": "Sees fragments of the System's source code during moments of clarity, tries to memorize what he can before losing control again.",
+      "liberated": "Wants to reverse-engineer the System from the inside. Offers his hacking skills to the player through encrypted channels."
+    },
+    "knowledge": {
+      "personal": "Was already investigating the System before being taken. Caught a glimpse of its code architecture while possessed — knows it connects to human neural pathways.",
+      "world": ["the_system", "liberation", "corruption", "neo_tokyo"]
+    },
+    "exampleDialogue": [
+      "ふーん…面白いアクセス権限持ってるね。クラックさせてもらうよ。",
+      "…リブートか。悪くないハックだったよ。",
+      "俺のスキルが必要になったら、いつでも連絡しな。暗号化チャンネルでね。"
+    ]
+  },
+  "npc_07": {
+    "id": "npc_07",
+    "name": "サトシ",
+    "nameEn": "Satoshi",
+    "description": "An exhausted office worker who was already running on fumes from overtime when the System took hold. Sighs constantly and dreams of sleep. Tier 3 — late-game encounter.",
+    "personality": "tired, kind, polite, weary, self-deprecating, sighs frequently",
+    "quirk": "Always mentions wanting to go home and sleep",
+    "goals": {
+      "possessed": "Complete the never-ending task list. The System amplified his workaholic tendencies into mindless obedience — filing reports, meeting deadlines that don't exist.",
+      "glitching": "Pauses mid-combat to yawn or complain about overtime, briefly lucid enough to wonder if his boss is also controlled.",
+      "liberated": "Grateful but still exhausted. Suspects his company may be a System front. Asks the player to check on his workplace if they pass by."
+    },
+    "knowledge": {
+      "personal": "Works at a company in the business district. Was so overworked he didn't even notice the System taking over. Suspects his boss and coworkers may also be possessed.",
+      "world": ["the_system", "liberation", "ward_3", "corruption"]
+    },
+    "exampleDialogue": [
+      "はぁ…残業の次は戦闘ですか…もう帰りたい…",
+      "はぁ…やっと解放された…。あ、すみません、助けていただいて。",
+      "もし会社の近くを通ることがあったら…様子を見てもらえると…"
+    ]
+  },
+  "npc_08": {
+    "id": "npc_08",
+    "name": "リュウ",
+    "nameEn": "Ryuu",
+    "description": "A proud martial artist whose disciplined body and mind were turned into a weapon by the System. Speaks with martial arts philosophy and quotes ancient proverbs. Tier 3 — late-game encounter.",
+    "personality": "proud, disciplined, honorable, direct, confident, speaks with martial arts philosophy",
+    "quirk": "Quotes ancient proverbs before and after fights",
+    "goals": {
+      "possessed": "Seek the ultimate fight. The System twisted his pursuit of strength into relentless aggression, driving him to challenge and destroy anyone he encounters.",
+      "glitching": "Hesitates mid-strike, his trained instincts telling him the fight is dishonorable, before the System forces his fist forward.",
+      "liberated": "Deeply ashamed that a warrior of his caliber was controlled. Vows to train harder and seeks a fair rematch with the player to restore his honor."
+    },
+    "knowledge": {
+      "personal": "A dedicated martial artist who has trained for years. Views being controlled by the System as the greatest dishonor. Believes true strength comes from within.",
+      "world": ["the_system", "liberation", "ward_3", "the_liberator"]
+    },
+    "exampleDialogue": [
+      "拳に迷いがあるな。お前の覚悟、この拳で試してやる！",
+      "…ふっ。見事だ。俺の拳が止まったのは久しぶりだ。",
+      "いつかもう一度、正々堂々と勝負がしたい。その時まで鍛えておく。"
+    ]
+  },
+  "npc_09": {
+    "id": "npc_09",
+    "name": "アキラ",
+    "nameEn": "Akira",
+    "description": "A scientist who was studying the System's effects on the human nervous system when she was taken over by the very thing she was researching. Speaks with precise, measured scientific terminology. Tier 3 — late-game encounter.",
+    "personality": "calm, analytical, precise, curious, methodical, uses scientific terminology",
+    "quirk": "Analyzes everything from a research perspective, even her own possession",
+    "goals": {
+      "possessed": "Collect experimental data. The System turned her scientific rigor into cold, calculating aggression — treating battles as experiments.",
+      "glitching": "Tries to record observations about the System's control mechanisms in the brief seconds of clarity, fascinated even while trapped.",
+      "liberated": "Wants to study the liberation process scientifically. Researching how the System interfaces with neural pathways. Asks for the player's combat data to aid her research."
+    },
+    "knowledge": {
+      "personal": "A researcher who was actively studying the System before being possessed. Has partial data on how it connects to the human nervous system. Believes a permanent cure is possible.",
+      "world": ["the_system", "liberation", "corruption", "neo_tokyo", "the_liberator"]
+    },
+    "exampleDialogue": [
+      "興味深い…あなたの戦闘データを収集させてもらいます。",
+      "…なるほど。SYSTEMの制御から外れた瞬間の感覚…記録しておきたいですね。",
+      "あなたの戦闘データは貴重です。また協力していただけますか？"
+    ]
+  },
+  "npc_10": {
+    "id": "npc_10",
+    "name": "クロ",
+    "nameEn": "Kuro",
+    "description": "A bitter loner who claims to have joined the System voluntarily. Cold and mocking on the surface, but secretly lonely beneath the bravado. The strongest NPC — a tier 4 late-game encounter and potential rival character.",
+    "personality": "arrogant, ruthless, secretly lonely, cold, mocking, speaks down to everyone",
+    "quirk": "Claims to have chosen the System voluntarily — refuses to admit he was controlled",
+    "goals": {
+      "possessed": "Prove his superiority through raw power. The System offered him strength, and he embraced it — or so he tells himself. Fights with genuine malice.",
+      "glitching": "Doesn't glitch in the usual way — instead shows cracks in his tough persona, moments where the loneliness bleeds through before he shuts it down.",
+      "liberated": "Refuses to thank the player. Insists he didn't need saving. But vows to surpass them using his own strength — the first genuine goal he's had in a long time."
+    },
+    "knowledge": {
+      "personal": "A loner who felt powerless before the System arrived. The System gave him strength and purpose, which is why he clings to the lie that he chose it. Deep down, knows he was just as controlled as everyone else.",
+      "world": ["the_system", "liberation", "ward_4", "corruption", "the_liberator"]
+    },
+    "exampleDialogue": [
+      "ふん…また弱い奴が来たか。SYSTEMの力、見せてやるよ。",
+      "…チッ。負けたのか、俺が。…SYSTEMなしでも、俺は…",
+      "…次に会った時は、自分の力だけでお前を倒す。覚えておけ。"
+    ]
+  }
+}
