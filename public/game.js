@@ -155,6 +155,8 @@ import {
   befriendReplace as apiBefriendReplace,
   getBefriendConversation as apiGetBefriendConversation,
   submitBefriendAnswer as apiSubmitBefriendAnswer,
+  startNpcDialogue,
+  respondNpcDialogue,
 } from './js/api.js';
 
 const API_BASE = '';
@@ -367,6 +369,9 @@ function updateGameContent() {
       if (!combatLoopUI.isCombatActive()) {
         actions.clear();
       }
+      break;
+    case 'npc_dialogue':
+      // Handled by combat-loop's runNpcDialogue()
       break;
     case 'floor_complete':
       explorationUI.renderFloorComplete();
@@ -616,6 +621,10 @@ async function startEncounter() {
           : enemy.dialogue.possessed);
         await showEnemyDialogue(text, 'possessed');
       }
+    }
+    // Show NPC greeting before combat starts
+    if (result?.npc) {
+      await combatLoopUI.showNpcGreeting(result.npc);
     }
     await delay(300);
     startCombatLoop();
@@ -1398,6 +1407,8 @@ async function initGame() {
     apiBefriendReplace: (releaseRobotId) => apiBefriendReplace(releaseRobotId),
     apiGetBefriendConversation,
     apiSubmitBefriendAnswer,
+    apiStartNpcDialogue: startNpcDialogue,
+    apiRespondNpcDialogue: respondNpcDialogue,
   });
 
   setupEventListeners();
