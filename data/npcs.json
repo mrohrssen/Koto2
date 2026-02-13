@@ -1,0 +1,432 @@
+{
+  "npc_01": {
+    "id": "npc_01",
+    "name": "ユウキ",
+    "nameEn": "Yuuki",
+    "area": null,
+    "tier": 1,
+    "personality": {
+      "traits": ["friendly", "energetic"],
+      "speechStyle": "Upbeat and encouraging, uses casual speech",
+      "quirk": "Always wants to high-five after battles"
+    },
+    "greeting": "やあ！キミも強そうだね！勝負しよう！",
+    "defeatLine": "うう…まだ…頭が…ぼんやりする…",
+    "postCombat": {
+      "freed": "はっ！…あれ？僕、何してたんだろう…ありがとう！",
+      "rounds": [
+        {
+          "npcLine": "助けてくれてありがとう！君、すごく強いね！",
+          "options": [
+            { "text": "大丈夫？怪我はない？", "tone": "positive" },
+            { "text": "うん、まあね。", "tone": "neutral" },
+            { "text": "当然だろ。弱すぎ。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "僕、学校の帰りだったんだ。急に頭がぼーっとして…",
+          "options": [
+            { "text": "怖かったよね。もう安心だよ。", "tone": "positive" },
+            { "text": "SYSTEMのせいだと思う。", "tone": "neutral" },
+            { "text": "油断しすぎだろ。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "また会えたら嬉しいな！次はちゃんとした勝負がしたい！",
+          "options": [
+            { "text": "もちろん！楽しみにしてるよ！", "tone": "positive" },
+            { "text": "機会があればね。", "tone": "neutral" },
+            { "text": "勝てると思うの？", "tone": "negative" }
+          ]
+        }
+      ]
+    }
+  },
+  "npc_02": {
+    "id": "npc_02",
+    "name": "ミサキ",
+    "nameEn": "Misaki",
+    "area": null,
+    "tier": 1,
+    "personality": {
+      "traits": ["shy", "intelligent"],
+      "speechStyle": "Quiet and hesitant, uses polite forms",
+      "quirk": "Adjusts glasses when nervous"
+    },
+    "greeting": "あ、あの…戦わないと…いけないみたいです…",
+    "defeatLine": "データ…解析…エラー…",
+    "postCombat": {
+      "freed": "あ…あれ？私…すみません、ご迷惑をおかけしました…",
+      "rounds": [
+        {
+          "npcLine": "あの…助けてくださって、ありがとうございます。",
+          "options": [
+            { "text": "気にしないで。大丈夫だよ。", "tone": "positive" },
+            { "text": "どういたしまして。", "tone": "neutral" },
+            { "text": "もっと気をつけなよ。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "私、図書館で調べ物をしていたんです。SYSTEMについて…",
+          "options": [
+            { "text": "何かわかったことある？教えて！", "tone": "positive" },
+            { "text": "SYSTEMの研究？", "tone": "neutral" },
+            { "text": "それで捕まったのか。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "も、もし良ければ…また情報交換しませんか？",
+          "options": [
+            { "text": "ぜひ！一緒に頑張ろう！", "tone": "positive" },
+            { "text": "情報があればね。", "tone": "neutral" },
+            { "text": "役に立つかどうか次第だな。", "tone": "negative" }
+          ]
+        }
+      ]
+    }
+  },
+  "npc_03": {
+    "id": "npc_03",
+    "name": "タケシ",
+    "nameEn": "Takeshi",
+    "area": null,
+    "tier": 1,
+    "personality": {
+      "traits": ["cheerful", "childish"],
+      "speechStyle": "Very casual, uses kid-like expressions",
+      "quirk": "Gets excited about everything"
+    },
+    "greeting": "うおー！強そうなやつ発見！バトルだバトル！",
+    "defeatLine": "遊び…もっと…遊ばないと…",
+    "postCombat": {
+      "freed": "あれ？僕なんで戦ってたんだ？…お腹すいた。",
+      "rounds": [
+        {
+          "npcLine": "すっげー！めっちゃ強いじゃん！どうやったの！？",
+          "options": [
+            { "text": "練習したからね！君も強くなれるよ！", "tone": "positive" },
+            { "text": "まあ、色々とね。", "tone": "neutral" },
+            { "text": "お前が弱いだけだろ。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "僕、公園で遊んでたらいきなり変になっちゃって…",
+          "options": [
+            { "text": "怖かったね。もう大丈夫だよ。", "tone": "positive" },
+            { "text": "SYSTEMに取り込まれたんだ。", "tone": "neutral" },
+            { "text": "一人で遊んでるからだよ。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "ねえねえ、今度一緒に遊ぼうよ！",
+          "options": [
+            { "text": "いいよ！何して遊ぶ？", "tone": "positive" },
+            { "text": "時間があればね。", "tone": "neutral" },
+            { "text": "ガキと遊ぶ暇はない。", "tone": "negative" }
+          ]
+        }
+      ]
+    }
+  },
+  "npc_04": {
+    "id": "npc_04",
+    "name": "ゲンジ",
+    "nameEn": "Genji",
+    "area": null,
+    "tier": 2,
+    "personality": {
+      "traits": ["stern", "dutiful"],
+      "speechStyle": "Formal and commanding, uses military-like phrases",
+      "quirk": "Stands at attention even in casual conversation"
+    },
+    "greeting": "止まれ。ここは通行禁止だ。従わないなら力ずくだ。",
+    "defeatLine": "警備…任務…遂行…しなければ…",
+    "postCombat": {
+      "freed": "…はっ。俺は…何を守っていたんだ？",
+      "rounds": [
+        {
+          "npcLine": "…すまなかった。俺は任務だと思い込んでいた。",
+          "options": [
+            { "text": "SYSTEMのせいだよ。気にするな。", "tone": "positive" },
+            { "text": "操られていたんだ。仕方ない。", "tone": "neutral" },
+            { "text": "次はちゃんと自分で考えろ。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "この街の治安は…前よりずっと悪くなっている。",
+          "options": [
+            { "text": "一緒に街を守ろう。", "tone": "positive" },
+            { "text": "そうみたいだな。", "tone": "neutral" },
+            { "text": "お前が警備してても同じだろ。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "…もし困ったことがあれば、俺を頼ってくれ。恩返しだ。",
+          "options": [
+            { "text": "ありがとう。頼りにしてる。", "tone": "positive" },
+            { "text": "覚えておく。", "tone": "neutral" },
+            { "text": "期待はしない。", "tone": "negative" }
+          ]
+        }
+      ]
+    }
+  },
+  "npc_05": {
+    "id": "npc_05",
+    "name": "ハナ",
+    "nameEn": "Hana",
+    "area": null,
+    "tier": 2,
+    "personality": {
+      "traits": ["cheerful", "generous"],
+      "speechStyle": "Warm and welcoming, uses friendly Kansai-ish dialect",
+      "quirk": "Offers snacks to everyone she meets"
+    },
+    "greeting": "あらあら、お客さん？…じゃなくて、戦えって言われてるのよ！",
+    "defeatLine": "お店…開けなきゃ…売上…ノルマ…",
+    "postCombat": {
+      "freed": "あら…私、お店はどうなってるの？…ああ、助けてくれたのね。",
+      "rounds": [
+        {
+          "npcLine": "ありがとうねえ！お礼に何かあげたいんだけど…お店が…",
+          "options": [
+            { "text": "お礼なんていらないよ。無事でよかった。", "tone": "positive" },
+            { "text": "気持ちだけで十分です。", "tone": "neutral" },
+            { "text": "物で釣ろうとするなよ。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "SYSTEMってやつ、商店街のみんなも操られてるのかしら…",
+          "options": [
+            { "text": "みんなを助けるよ。任せて！", "tone": "positive" },
+            { "text": "可能性は高いね。", "tone": "neutral" },
+            { "text": "自分のことだけ考えれば。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "お店が再開したら、ぜひ遊びに来てね！サービスするわよ！",
+          "options": [
+            { "text": "絶対行く！楽しみ！", "tone": "positive" },
+            { "text": "機会があれば。", "tone": "neutral" },
+            { "text": "商売上手だね。", "tone": "negative" }
+          ]
+        }
+      ]
+    }
+  },
+  "npc_06": {
+    "id": "npc_06",
+    "name": "レイ",
+    "nameEn": "Rei",
+    "area": null,
+    "tier": 2,
+    "personality": {
+      "traits": ["mysterious", "clever"],
+      "speechStyle": "Cryptic and tech-savvy, mixes in English words",
+      "quirk": "Speaks in hacking metaphors"
+    },
+    "greeting": "ふーん…面白いアクセス権限持ってるね。クラックさせてもらうよ。",
+    "defeatLine": "ファイアウォール…突破…不可…",
+    "postCombat": {
+      "freed": "…リブートか。悪くないハックだったよ。",
+      "rounds": [
+        {
+          "npcLine": "なるほどね…SYSTEMのプロトコルを外から壊したのか。やるじゃん。",
+          "options": [
+            { "text": "君も無事でよかった。", "tone": "positive" },
+            { "text": "SYSTEMについて何か知ってる？", "tone": "neutral" },
+            { "text": "お前のセキュリティが甘いだけだ。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "SYSTEMのコードの一部が見えたんだ。かなりヤバい設計だった。",
+          "options": [
+            { "text": "詳しく教えて！力を合わせよう。", "tone": "positive" },
+            { "text": "どんな設計だった？", "tone": "neutral" },
+            { "text": "見えただけじゃ意味ないだろ。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "俺のスキルが必要になったら、いつでも連絡しな。暗号化チャンネルでね。",
+          "options": [
+            { "text": "心強い！よろしく！", "tone": "positive" },
+            { "text": "連絡先を教えて。", "tone": "neutral" },
+            { "text": "信用できるかわからないな。", "tone": "negative" }
+          ]
+        }
+      ]
+    }
+  },
+  "npc_07": {
+    "id": "npc_07",
+    "name": "サトシ",
+    "nameEn": "Satoshi",
+    "area": null,
+    "tier": 3,
+    "personality": {
+      "traits": ["tired", "kind"],
+      "speechStyle": "Weary but polite, sighs frequently",
+      "quirk": "Always mentions wanting to go home and sleep"
+    },
+    "greeting": "はぁ…残業の次は戦闘ですか…もう帰りたい…",
+    "defeatLine": "業務…報告書…提出期限…過ぎている…",
+    "postCombat": {
+      "freed": "はぁ…やっと解放された…。あ、すみません、助けていただいて。",
+      "rounds": [
+        {
+          "npcLine": "ありがとうございます…。疲れすぎて、操られてることにも気づかなかった…",
+          "options": [
+            { "text": "少し休んだ方がいいですよ。", "tone": "positive" },
+            { "text": "大変でしたね。", "tone": "neutral" },
+            { "text": "それはさすがに鈍すぎだろ。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "会社もSYSTEMに乗っ取られてるんですかね…上司が前より怖くて…",
+          "options": [
+            { "text": "一緒に調べてみよう。力になるよ。", "tone": "positive" },
+            { "text": "その可能性はあるね。", "tone": "neutral" },
+            { "text": "上司が怖いのは普通だろ。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "もし会社の近くを通ることがあったら…様子を見てもらえると…",
+          "options": [
+            { "text": "任せて。必ず確認するよ。", "tone": "positive" },
+            { "text": "時間があれば見てみる。", "tone": "neutral" },
+            { "text": "自分でやれよ。", "tone": "negative" }
+          ]
+        }
+      ]
+    }
+  },
+  "npc_08": {
+    "id": "npc_08",
+    "name": "リュウ",
+    "nameEn": "Ryuu",
+    "area": null,
+    "tier": 3,
+    "personality": {
+      "traits": ["proud", "disciplined"],
+      "speechStyle": "Confident and direct, speaks with martial arts philosophy",
+      "quirk": "Quotes ancient proverbs before and after fights"
+    },
+    "greeting": "拳に迷いがあるな。お前の覚悟、この拳で試してやる！",
+    "defeatLine": "修行…もっと…強く…ならねば…",
+    "postCombat": {
+      "freed": "…ふっ。見事だ。俺の拳が止まったのは久しぶりだ。",
+      "rounds": [
+        {
+          "npcLine": "お前、なかなかの実力だな。名前を聞いておこう。",
+          "options": [
+            { "text": "あなたも強かった。尊敬します。", "tone": "positive" },
+            { "text": "まだまだ修行中だよ。", "tone": "neutral" },
+            { "text": "名乗る義理はない。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "SYSTEMとやらに支配されるとは…武人として恥だ。",
+          "options": [
+            { "text": "誰でもやられる。恥じゃない。", "tone": "positive" },
+            { "text": "強い人でも操られるんだな。", "tone": "neutral" },
+            { "text": "確かに情けないな。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "いつかもう一度、正々堂々と勝負がしたい。その時まで鍛えておく。",
+          "options": [
+            { "text": "楽しみにしてる！いい勝負をしよう。", "tone": "positive" },
+            { "text": "いつでもいいよ。", "tone": "neutral" },
+            { "text": "次も負けるだけだろ。", "tone": "negative" }
+          ]
+        }
+      ]
+    }
+  },
+  "npc_09": {
+    "id": "npc_09",
+    "name": "アキラ",
+    "nameEn": "Akira",
+    "area": null,
+    "tier": 3,
+    "personality": {
+      "traits": ["calm", "analytical"],
+      "speechStyle": "Measured and precise, uses scientific terminology",
+      "quirk": "Analyzes everything from a research perspective"
+    },
+    "greeting": "興味深い…あなたの戦闘データを収集させてもらいます。",
+    "defeatLine": "実験…データ…不完全…再計算…",
+    "postCombat": {
+      "freed": "…なるほど。SYSTEMの制御から外れた瞬間の感覚…記録しておきたいですね。",
+      "rounds": [
+        {
+          "npcLine": "助けていただき感謝します。科学者として、この現象は非常に興味深い。",
+          "options": [
+            { "text": "無事でよかった。体調は大丈夫？", "tone": "positive" },
+            { "text": "SYSTEMについて何かわかった？", "tone": "neutral" },
+            { "text": "実験台にされるのは勘弁だ。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "SYSTEMは人間の神経系に直接接続している。解除方法を研究中です。",
+          "options": [
+            { "text": "すごい！研究を手伝いたい！", "tone": "positive" },
+            { "text": "進展があったら教えて。", "tone": "neutral" },
+            { "text": "机の上の研究じゃ何も変わらない。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "あなたの戦闘データは貴重です。また協力していただけますか？",
+          "options": [
+            { "text": "もちろん。みんなのためになるなら。", "tone": "positive" },
+            { "text": "データの使い方次第だね。", "tone": "neutral" },
+            { "text": "俺をモルモットにするなよ。", "tone": "negative" }
+          ]
+        }
+      ]
+    }
+  },
+  "npc_10": {
+    "id": "npc_10",
+    "name": "クロ",
+    "nameEn": "Kuro",
+    "area": null,
+    "tier": 4,
+    "personality": {
+      "traits": ["arrogant", "ruthless", "secretly lonely"],
+      "speechStyle": "Cold and mocking, speaks down to everyone",
+      "quirk": "Claims to have chosen SYSTEM voluntarily"
+    },
+    "greeting": "ふん…また弱い奴が来たか。SYSTEMの力、見せてやるよ。",
+    "defeatLine": "バカな…この力が…通じないだと…！",
+    "postCombat": {
+      "freed": "…チッ。負けたのか、俺が。…SYSTEMなしでも、俺は…",
+      "rounds": [
+        {
+          "npcLine": "…勘違いするなよ。俺は自分の意思でSYSTEMを使っていたんだ。",
+          "options": [
+            { "text": "本当にそう思う？操られてたんだよ。", "tone": "positive" },
+            { "text": "そうかもしれないし、違うかもしれない。", "tone": "neutral" },
+            { "text": "負け惜しみはみっともないぞ。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "…この街の奴らは弱い。だからSYSTEMに頼るんだ。俺は違う。",
+          "options": [
+            { "text": "強さは一人じゃ手に入らないよ。", "tone": "positive" },
+            { "text": "何が強さだと思う？", "tone": "neutral" },
+            { "text": "お前も負けた側だろ。", "tone": "negative" }
+          ]
+        },
+        {
+          "npcLine": "…次に会った時は、自分の力だけでお前を倒す。覚えておけ。",
+          "options": [
+            { "text": "楽しみにしてる。いつでも来いよ。", "tone": "positive" },
+            { "text": "望むところだ。", "tone": "neutral" },
+            { "text": "何度やっても同じだよ。", "tone": "negative" }
+          ]
+        }
+      ]
+    }
+  }
+}
