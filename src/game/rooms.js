@@ -20,21 +20,14 @@
  * - generateFloorRooms(floor, encountersNeeded) - Create room sequence for floor
  * - getRoomEntryNarration(room) - Get narrative text for room type
  * - getRoomActions(room) - Get available actions for current room
- * - generatePostCombatShop(floor, ownedChips) - Post-battle chip shop
- *
  * Constants:
  * - ROOM_TYPES - Encounter, shrine, boss
  * - FLOOR_NAMES - Ward names for each floor
- *
- * DEPENDENCIES:
- * - ./items/chips.js - generateShopChips, getChipDisplayInfo
  *
  * ROOM SEQUENCE:
  * Each floor: N encounters + optional shrine + boss room.
  * Post-combat shop appears after enemy defeats.
  */
-
-import { generateShopChips, getChipDisplayInfo, getChipPrice, generateDealerChip } from './items/chips.js';
 
 // ============ TEST ROOM QUEUE ============
 // Only used when NODE_ENV=test for deterministic E2E tests
@@ -518,40 +511,3 @@ export function getRoomActions(room) {
   return actions;
 }
 
-// ============ POST-COMBAT CHIP SHOP ============
-
-/**
- * Generate 3 random pipeline chips for post-combat shop
- * Pipeline chips provide sequential damage modification during attacks
- * @param {number} floor - Current floor (1-7)
- * @param {array} ownedChipIds - IDs of chips player already owns (unique only)
- * @param {string} rarity - Optional rarity filter (e.g., 'common')
- * @returns {Array} Array of 3 chip items with id, name, price, type, effects
- */
-export function generatePostCombatShop(floor, ownedChipIds = [], rarity = null) {
-  // Only show pipeline chips in post-combat shop
-  const chips = generateShopChips(floor, ownedChipIds, 3, 'pipeline', rarity);
-
-  // Transform to shop item format (chips are free post-combat rewards)
-  return chips.map(chip => {
-    const displayInfo = getChipDisplayInfo(chip);
-    return {
-      itemId: chip.id,
-      name: chip.name,
-      nameEn: chip.nameEn,
-      description: chip.description,
-      descriptionEn: chip.descriptionEn,
-      price: getChipPrice(chip.id),
-      type: 'chip',
-      category: chip.category,
-      rarity: chip.rarity,
-      rarityColor: displayInfo.rarityInfo.color,
-      rarityName: displayInfo.rarityInfo.name,
-      effectText: displayInfo.effectText,
-      effects: chip.effects,
-      skill: chip.skill,
-      stats: chip.stats,
-      quantity: 1
-    };
-  });
-}

@@ -59,11 +59,9 @@ import {
 
 import { generateEnemy, selectEnemyIntent } from './enemies.js';
 import { determineTurnOrder } from './combat.js';
-import { getRoomActions, generatePostCombatShop, getStartingWardOptions } from './rooms.js';
-import { getItem } from './items.js';
+import { getRoomActions, getStartingWardOptions } from './rooms.js';
 import { derivePhase } from './phase-machine.js';
 import { CombatService, ExplorationService } from './services/index.js';
-import { calculateChipBonusHP, equipChip, incrementAllEquippedCharges } from './items/chips.js';
 import { logger } from '../logger.js';
 import { instantiateRobot, generateEnemyRobot, generateEnemyRobots } from './robots.js';
 import { processAttackTurn, processDefendTurn, processEnemyTurn, processBefriend, processUltimate, awardBattleXp, handleRobotKO, CREDITS_PER_KILL } from './services/robot-combat-service.js';
@@ -288,13 +286,6 @@ export class GameManager {
       player.hp += bonus;
     }
 
-    // HP bonus from equipped chips
-    const chipHPBonus = calculateChipBonusHP(player);
-    if (chipHPBonus > 0) {
-      player.maxHp += chipHPBonus;
-      player.hp += chipHPBonus;
-    }
-
     // Attack bonus
     player.attack += effects.attackBonus || 0;
 
@@ -366,66 +357,11 @@ export class GameManager {
         pendingBranch: this.run.pendingBranch,
         selectedRooms: this.run.selectedRooms,
         rooms: this.run.rooms,
-        // Counter chip tracking (Phase 10)
         runStats: this.run.runStats,
         robotParty: this.run.robotParty,
         itemBuffs: this.run.itemBuffs || null,
-        postCombatShop: this.run.postCombatShop ? {
-          active: this.run.postCombatShop.active,
-          items: this.run.postCombatShop.items.map(item => {
-            const itemData = getItem(item.itemId);
-            return {
-              ...item,
-              name: itemData?.name || item.name,
-              nameEn: itemData?.nameEn || item.nameEn || item.itemId,
-              description: itemData?.description || item.description || '',
-              rarity: itemData?.rarity || item.rarity || 'common',
-              slot: itemData?.slot || null,
-              // Combat stats
-              atk: itemData?.atk || 0,
-              def: itemData?.def || 0,
-              matk: itemData?.matk || 0,
-              mdef: itemData?.mdef || 0,
-              hit: itemData?.hit || 0,
-              flee: itemData?.flee || 0,
-              crit: itemData?.crit || 0,
-              // Base stats
-              str: itemData?.str || 0,
-              agi: itemData?.agi || 0,
-              vit: itemData?.vit || 0,
-              int: itemData?.int || 0,
-              dex: itemData?.dex || 0,
-              luk: itemData?.luk || 0,
-              // Special effects
-              doubleStrike: itemData?.doubleStrike || 0,
-              armorPen: itemData?.armorPen || 0,
-              onKillHp: itemData?.onKillHp || 0,
-              onKillSp: itemData?.onKillSp || 0,
-              healingBonus: itemData?.healingBonus || 0,
-              creditFind: itemData?.creditFind || 0,
-              statusInflict: itemData?.statusInflict || null,
-              setId: itemData?.setId || null
-            };
-          })
-        } : null,
-        startingChipShop: this.run.startingChipShop ? {
-          active: this.run.startingChipShop.active,
-          items: this.run.startingChipShop.items.map(item => {
-            const itemData = getItem(item.itemId);
-            return {
-              ...item,
-              name: itemData?.name || item.name,
-              nameEn: itemData?.nameEn || item.nameEn || item.itemId,
-              description: itemData?.description || item.description || '',
-              descriptionEn: itemData?.descriptionEn || item.descriptionEn || '',
-              rarity: itemData?.rarity || item.rarity || 'common',
-              price: item.price || 0,
-              stats: item.stats || itemData?.stats || { power: 0, bandwidth: 0 },
-              skill: item.skill || itemData?.skill || null
-            };
-          }),
-          freeRefreshUsed: this.run.startingChipShop.freeRefreshUsed || false
-        } : null
+        postCombatShop: null,
+        startingChipShop: null
       } : null,
       room: currentRoom ? {
         ...currentRoom,
@@ -531,108 +467,12 @@ export class GameManager {
       this.run.robotParty.active = ids.map(id => instantiateRobot(id));
     }
 
-    // Generate starting chip choices (skip for robot combat - robots don't use chips)
-    if (!ids) {
-      const ownedChipIds = (this.run.player.chips || []).map(c => c.id);
-      const startingChips = generatePostCombatShop(1, ownedChipIds, 'common');
-      this.run.startingChipShop = {
-        active: true,
-        items: startingChips,
-        freeRefreshUsed: false
-      };
-    }
-
     this.emitState();
 
     return {
       run: this.run,
       wardSelectionRequired: true,
-      wardOptions: getStartingWardOptions(),
-      startingChipShop: this.run.startingChipShop
-    };
-  }
-
-  /**
-   * Claim a free starting chip
-   */
-  claimStartingChip(itemIndex) {
-    if (!this.run?.startingChipShop?.active) {
-      throw new Error('No starting chip selection active');
-    }
-
-    const shop = this.run.startingChipShop;
-    if (itemIndex < 0 || itemIndex >= shop.items.length) {
-      throw new Error('Invalid chip selection');
-    }
-
-    const item = shop.items[itemIndex];
-
-    // Add chip to player inventory (include all properties for HP calculation)
-    if (!this.run.player.chips) {
-      this.run.player.chips = [];
-    }
-    this.run.player.chips.push({
-      id: item.itemId,
-      name: item.name,
-      nameEn: item.nameEn,
-      rarity: item.rarity,
-      category: item.category,
-      effects: item.effects,
-      stats: item.stats
-    });
-
-    // Auto-equip if weapon has fewer than 5 chips (use equipChip to apply HP bonus)
-    const player = this.run.player;
-    const equippedChips = player.equipment?.weapon?.equippedChips || [];
-    if (equippedChips.length < 5 && !equippedChips.includes(item.itemId)) {
-      equipChip(player, 'weapon', item.itemId);
-    }
-
-    // Clear the starting chip shop
-    this.run.startingChipShop.active = false;
-
-    this.emitState();
-
-    return {
-      success: true,
-      chip: item
-    };
-  }
-
-  /**
-   * Refresh the starting chip shop with new chips
-   * First refresh is free, subsequent refreshes cost 25 credits
-   */
-  refreshStartingChipShop() {
-    if (!this.run?.startingChipShop?.active) {
-      throw new Error('No starting chip selection active');
-    }
-
-    const shop = this.run.startingChipShop;
-    const player = this.run.player;
-    const REFRESH_COST = 25;
-
-    let creditsSpent = 0;
-    if (shop.freeRefreshUsed) {
-      if (player.credits < REFRESH_COST) {
-        throw new Error('Not enough credits for refresh');
-      }
-      player.credits -= REFRESH_COST;
-      creditsSpent = REFRESH_COST;
-    } else {
-      shop.freeRefreshUsed = true;
-    }
-
-    // Generate new chips (common only for starting shop)
-    const ownedChipIds = (player.chips || []).map(c => c.id);
-    shop.items = generatePostCombatShop(1, ownedChipIds, 'common');
-
-    this.emitState();
-
-    return {
-      success: true,
-      creditsSpent,
-      items: shop.items
+      wardOptions: getStartingWardOptions()
     };
   }
 
@@ -721,20 +561,6 @@ export class GameManager {
    */
   refreshPostCombatShop() {
     return this.explorationService.refreshPostCombatShop();
-  }
-
-  /**
-   * Sell a chip from inventory
-   */
-  sellChip(chipId) {
-    return this.explorationService.sellChip(chipId);
-  }
-
-  /**
-   * Get inventory status
-   */
-  getInventoryStatus() {
-    return this.explorationService.getInventoryStatus();
   }
 
   /**
@@ -1038,11 +864,6 @@ export class GameManager {
       };
     }
 
-    // Increment chip skill charges each combat cycle
-    if (this.run.player) {
-      incrementAllEquippedCharges(this.run.player);
-    }
-
     this.combat.turnCount++;
 
     // Reset swap phase for next turn (free swaps available again)
@@ -1061,8 +882,7 @@ export class GameManager {
       turnCount: this.combat.turnCount,
       allies: this.combat.allies,
       enemies: this.combat.enemies,
-      robotParty: this.run.robotParty,
-      chipCharges: this.run.player?._chipCharges || {}
+      robotParty: this.run.robotParty
     };
   }
 

@@ -34,9 +34,7 @@ import {
   executeEnemyTurn,
   tickStatusEffects
 } from '../combat/index.js';
-import { generatePostCombatShop, getNextWardOptions } from '../rooms.js';
-import { resetChipCharge, incrementAllEquippedCharges } from '../items/chips.js';
-import { clearAllBuffs } from '../combat/chip-skills.js';
+import { getNextWardOptions } from '../rooms.js';
 import { getSimpleNarration } from '../dm.js';
 import { logger } from '../../logger.js';
 
@@ -76,7 +74,6 @@ export class CombatService {
 
     this.gm.combat = createCombatState(enemy);
     logger.info('[Combat] Started encounter:', { enemy: enemy.nameEn, hp: enemy.hp, hpMultiplier: hpMultiplier.toFixed(2), floor: this.gm.run.floor });
-    this.gm.run.player._combatStacks = {};  // Reset stacking chip counters
     if (this.gm.run.player._runKills === undefined) this.gm.run.player._runKills = 0;  // Init kill counter
     this.gm.combat.turn = determineTurnOrder(this.gm.run.player, enemy);
 
@@ -114,7 +111,6 @@ export class CombatService {
 
     this.gm.combat = createCombatState(boss);
     logger.info('[Combat] Boss encounter started:', { boss: boss.nameEn, hp: boss.hp, hpMultiplier: hpMultiplier.toFixed(2), floor: this.gm.run.floor });
-    this.gm.run.player._combatStacks = {};  // Reset stacking chip counters
 
     // If player has robot party, set up robot combat for boss
     if (this.gm.run.robotParty?.active?.length > 0) {
@@ -183,87 +179,13 @@ export class CombatService {
       // Player attack
       const playerResult = executePlayerAttack(this.gm.run.player, this.gm.combat.enemy, 'normal');
       logger.info('[Combat] Player attacked:', { damage: playerResult.totalDamage, critical: playerResult.anyCritical });
-      logger.debug('[Combat] Attack details:', { pipelineResult: playerResult.pipelineResult });
-
-      // Handle SACRIFICE - permanently destroy sacrificed chips
-      if (playerResult.pipelineResult?.sacrificedChips?.length > 0) {
-        for (const chipId of playerResult.pipelineResult.sacrificedChips) {
-          // Remove from player's chip inventory
-          const chipIndex = this.gm.run.player.chips?.findIndex(c => c.id === chipId);
-          if (chipIndex >= 0) {
-            this.gm.run.player.chips.splice(chipIndex, 1);
-          }
-          // Remove from weapon's equipped chips
-          const weapon = this.gm.run.player.equipment?.weapon;
-          if (weapon?.equippedChips) {
-            const eqIndex = weapon.equippedChips.indexOf(chipId);
-            if (eqIndex >= 0) {
-              weapon.equippedChips.splice(eqIndex, 1);
-            }
-          }
-          resetChipCharge(this.gm.run.player, chipId);
-          // Track total chips destroyed for Phoenix chip
-          this.gm.run.player._runChipsDestroyed = (this.gm.run.player._runChipsDestroyed || 0) + 1;
-        }
-        playerResult.chipsDestroyed = playerResult.pipelineResult.sacrificedChips;
-      }
-
-      // Handle LIFELINK/SIPHON healing from pipeline chips
-      if (playerResult.pipelineResult?.healPlayer > 0) {
-        const healAmount = playerResult.pipelineResult.healPlayer;
-        const oldHp = this.gm.run.player.hp;
-        this.gm.run.player.hp = Math.min(this.gm.run.player.maxHp, this.gm.run.player.hp + healAmount);
-        const actualHeal = this.gm.run.player.hp - oldHp;
-        if (actualHeal > 0) {
-          playerResult.pipelineHeal = actualHeal;
-        }
-      }
-
-      // Handle FIREWORKS BOT - random chip destruction
-      if (playerResult.pipelineResult?.randomDestroyTriggered) {
-        const weapon = this.gm.run.player.equipment?.weapon;
-        const equippedChips = weapon?.equippedChips || [];
-        const destroyableChips = equippedChips.filter(id =>
-          !playerResult.pipelineResult.sacrificedChips?.includes(id) && id !== 'fireworks'
-        );
-        if (destroyableChips.length > 0) {
-          const randomIndex = Math.floor(Math.random() * destroyableChips.length);
-          const victimId = destroyableChips[randomIndex];
-          const chipIndex = this.gm.run.player.chips?.findIndex(c => c.id === victimId);
-          if (chipIndex >= 0) this.gm.run.player.chips.splice(chipIndex, 1);
-          const eqIndex = weapon.equippedChips.indexOf(victimId);
-          if (eqIndex >= 0) weapon.equippedChips.splice(eqIndex, 1);
-          resetChipCharge(this.gm.run.player, victimId);
-          this.gm.run.player._runChipsDestroyed = (this.gm.run.player._runChipsDestroyed || 0) + 1;
-          playerResult.randomChipDestroyed = victimId;
-        }
-      }
-
-      // Handle cascade effect (pachinkoBall chip) - bonus hit with same damage
-      if (playerResult.cascadeTriggered && playerResult.anyHit && !playerResult.enemyDefeated) {
-        const cascadeDamage = playerResult.totalDamage;
-        this.gm.combat.enemy.hp = Math.max(0, this.gm.combat.enemy.hp - cascadeDamage);
-        playerResult.cascadeDamage = cascadeDamage;
-        playerResult.totalDamage += cascadeDamage;
-        playerResult.enemyDefeated = this.gm.combat.enemy.hp <= 0;
-        if (!playerResult.chipEffects) playerResult.chipEffects = [];
-        playerResult.chipEffects.push({
-          chipName: 'パチンコ玉', // Pachinko Ball
-          special: 'cascade',
-          bonusDamage: cascadeDamage
-        });
-      }
 
       result.playerAttack = {
         damage: playerResult.totalDamage,
         critical: playerResult.anyCritical,
         miss: !playerResult.anyHit && !playerResult.anyDodge && !playerResult.anyPerfectDodge,
         dodged: playerResult.anyDodge,
-        perfectDodge: playerResult.anyPerfectDodge,
-        chipEffects: playerResult.chipEffects || [],
-        cascadeTriggered: playerResult.cascadeTriggered,
-        cascadeDamage: playerResult.cascadeDamage,
-        pipelineResult: playerResult.pipelineResult || null
+        perfectDodge: playerResult.anyPerfectDodge
       };
 
       // Tick enemy status effects (DoT damage from defrag, overheated, etc.)
@@ -283,29 +205,6 @@ export class CombatService {
       // Track damage dealt
       this.gm.run.stats.damageDealt += playerResult.totalDamage;
 
-      // Track counter chip stats
-      if (this.gm.run.runStats) {
-        if (result.playerAttack.critical) {
-          this.gm.run.runStats.critsLanded++;
-        }
-        this.gm.run.runStats.damageDealt += playerResult.totalDamage;
-
-        // Track status applications for counter chips
-        if (playerResult.chipEffects) {
-          for (const effect of playerResult.chipEffects) {
-            if (effect.status && this.gm.run.runStats.statusesApplied.hasOwnProperty(effect.status)) {
-              this.gm.run.runStats.statusesApplied[effect.status]++;
-            }
-          }
-        }
-        if (playerResult.statusInflicted?.status) {
-          const status = playerResult.statusInflicted.status;
-          if (this.gm.run.runStats.statusesApplied.hasOwnProperty(status)) {
-            this.gm.run.runStats.statusesApplied[status]++;
-          }
-        }
-      }
-
       // Check if enemy is glitching (HP < 30% but not defeated)
       const hpPercent = this.gm.combat.enemy.hp / this.gm.combat.enemy.maxHp;
       if (hpPercent > 0 && hpPercent <= 0.3 && !this.gm.combat.glitchingShown) {
@@ -314,22 +213,14 @@ export class CombatService {
         this.gm.combat.glitchingShown = true;  // Only show once per combat
       }
 
-      // Increment chip charges after player attack (not after full round)
-      // This ensures skills charge even when enemies die quickly
-      incrementAllEquippedCharges(this.gm.run.player);
-
       // Check if enemy defeated
       if (playerResult.enemyDefeated) {
         result.combatEnded = true;
         result.victory = true;
 
-        // Reset combat stacks (for Stack Overflow, Burst Cycle chips)
-        this.gm.run.player._combatStacks = {};
-
-        // Increment kill count for Bounty Hunter chip
+        // Increment kill count
         this.gm.run.player._runKills = (this.gm.run.player._runKills || 0) + 1;
 
-        // Track kill for counter chips
         if (this.gm.run.runStats) {
           this.gm.run.runStats.kills++;
         }
@@ -353,15 +244,6 @@ export class CombatService {
           if (currentRoom && currentRoom.type === 'encounter') {
             currentRoom.interacted = true;
           }
-
-          // Generate post-combat shop with 3 random chips
-          const ownedChipIds = (this.gm.run.player.chips || []).map(c => c.id);
-          const shopItems = generatePostCombatShop(this.gm.run.floor, ownedChipIds);
-          this.gm.run.postCombatShop = {
-            active: true,
-            items: shopItems,
-            freeRefreshUsed: false
-          };
         }
 
         result.expGained = rewards.xp;
@@ -371,13 +253,9 @@ export class CombatService {
 
         // End combat
         this.gm.combat.active = false;
-        clearAllBuffs(this.gm.run.player);
 
         // Update player HP in result
         result.playerHp.current = this.gm.run.player.hp;
-
-        // Include chip charges for frontend display update
-        result.chipCharges = this.gm.run.player._chipCharges || {};
 
         return result;
       }
@@ -400,14 +278,9 @@ export class CombatService {
       // Track damage taken
       this.gm.run.stats.damageTaken += enemyResult.damage || 0;
 
-      // Track dodges for counter chips
+      // Track dodges
       if (this.gm.run.runStats && (enemyResult.dodge || enemyResult.perfectDodge)) {
         this.gm.run.runStats.dodges++;
-      }
-
-      // On defend, still increment chip charges (skill charging is core mechanic)
-      if (actionType === 'defend') {
-        incrementAllEquippedCharges(this.gm.run.player);
       }
 
       // Check if player defeated
@@ -417,7 +290,6 @@ export class CombatService {
 
         // End combat and run
         this.gm.combat.active = false;
-        clearAllBuffs(this.gm.run.player);
         this.gm.run.active = false;
         this.gm.run.stats.endTime = Date.now();
 
@@ -431,9 +303,6 @@ export class CombatService {
       }
     }
 
-    // Include chip charges for frontend display update
-    result.chipCharges = this.gm.run.player._chipCharges || {};
-
     // Combat continues
     return result;
   }
@@ -443,10 +312,7 @@ export class CombatService {
    * @returns {object} Victory result with rewards, level ups, shop items
    */
   handleVictory() {
-    // Reset combat stacks (for Stack Overflow chip)
-    this.gm.run.player._combatStacks = {};
-
-    // Increment kill count for Bounty Hunter chip
+    // Increment kill count
     this.gm.run.player._runKills = (this.gm.run.player._runKills || 0) + 1;
 
     const enemy = this.gm.combat.enemy;
@@ -479,15 +345,6 @@ export class CombatService {
       if (currentRoom && currentRoom.type === 'encounter') {
         currentRoom.interacted = true;
       }
-
-      // Generate post-combat shop with 3 random chips (excluding already owned)
-      const ownedChipIds = (this.gm.run.player.chips || []).map(c => c.id);
-      shopItems = generatePostCombatShop(this.gm.run.floor, ownedChipIds);
-      this.gm.run.postCombatShop = {
-        active: true,
-        items: shopItems,
-        freeRefreshUsed: false
-      };
     }
 
     // Track liberation in meta-progression

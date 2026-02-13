@@ -107,8 +107,6 @@ import {
 
 // Game imports
 import { GameManager } from './src/game/loop.js';
-import { getItem } from './src/game/items.js';
-import { getChipLoadout, equipChip, unequipChip } from './src/game/items/chips.js';
 import { generateNarration, getSimpleNarration } from './src/game/dm.js';
 import { ACHIEVEMENTS } from './src/game/state.js';
 import { getLiberationTrackerData } from './src/game/enemies.js';
@@ -294,18 +292,6 @@ function enrichPlayerItems(player) {
 
   const enriched = { ...player };
 
-  if (enriched.equipment?.weapon) {
-    const itemDef = getItem(enriched.equipment.weapon.id);
-    enriched.equipment = {
-      weapon: {
-        ...enriched.equipment.weapon,
-        name: itemDef?.name || enriched.equipment.weapon.id,
-        slot: 'weapon',
-        rarity: itemDef?.rarity || 'common'
-      }
-    };
-  }
-
   enriched.derivedStats = {
     atk: enriched.attack || 15
   };
@@ -330,26 +316,22 @@ function enrichRewardDrops(rewards) {
   const enriched = { ...rewards };
 
   if (enriched.drops && Array.isArray(enriched.drops)) {
-    enriched.drops = enriched.drops.map(itemId => {
-      const itemDef = getItem(itemId);
-      return {
-        id: itemId,
-        name: itemDef?.name || itemId,
-        slot: itemDef?.slot || null,
-        type: itemDef?.type || 'consumable',
-        rarity: itemDef?.rarity || 'common'
-      };
-    });
+    enriched.drops = enriched.drops.map(itemId => ({
+      id: itemId,
+      name: itemId,
+      slot: null,
+      type: 'consumable',
+      rarity: 'common'
+    }));
   }
 
   if (enriched.bossDrop) {
-    const itemDef = getItem(enriched.bossDrop.itemId);
     enriched.bossDrop = {
       ...enriched.bossDrop,
-      name: itemDef?.name || enriched.bossDrop.itemId,
-      slot: itemDef?.slot || null,
-      type: itemDef?.type || 'equipment',
-      rarity: itemDef?.rarity || 'epic'
+      name: enriched.bossDrop.itemId,
+      slot: null,
+      type: 'equipment',
+      rarity: 'epic'
     };
   }
 

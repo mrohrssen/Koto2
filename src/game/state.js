@@ -28,19 +28,10 @@
  * Utilities:
  * - generateEncounterCount(floor) - Random encounters per floor
  *
- * DEPENDENCIES:
- * - ./items.js - getClassStartingEquipment for new players
- *
  * ARCHITECTURE NOTES:
  * - Player stats: attack and maxHp (no STR/AGI/VIT/INT/DEX/LUK)
- * - Only chips for equipment (no armor/weapons)
  * - Meta-progression persists across runs via separate save
  */
-
-import { getClassStartingEquipment } from './items.js';
-
-// ============ INVENTORY CONSTANTS ============
-export const MAX_INVENTORY_SIZE = 12;  // Maximum unequipped chips in inventory
 
 // ============ META-PROGRESSION STATE ============
 
@@ -261,9 +252,7 @@ export function createNewPlayer(name = "Hunter") {
     hp: 100,
     maxHp: 100,
     attack: 0,
-    credits: BASE_STARTING_CREDITS,
-    chips: [],
-    equipment: getClassStartingEquipment('hacker')
+    credits: BASE_STARTING_CREDITS
   };
 }
 
@@ -336,7 +325,7 @@ export function createNewRun(player) {
       endTime: null
     },
 
-    // Counter chip tracking stats (reset each run)
+    // Per-run tracking stats
     runStats: {
       kills: 0,
       critsLanded: 0,
@@ -356,11 +345,6 @@ export function createNewRun(player) {
       }
     }
   };
-
-  // Initialize chip state on run player copy
-  run.player._chipCharges = {};
-  run.player._chipLevels = {};
-  run.player._activeBuffs = [];
 
   return run;
 }
