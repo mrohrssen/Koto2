@@ -90,6 +90,8 @@ let showPostCombatShop = null;
 let apiBefriendReplace = null;
 let apiGetBefriendConversation = null;
 let apiSubmitBefriendAnswer = null;
+let apiStartNpcDialogue = null;
+let apiRespondNpcDialogue = null;
 
 // Utility
 let delay = null;
@@ -134,6 +136,8 @@ export function init(callbacks) {
   apiBefriendReplace = callbacks.apiBefriendReplace;
   apiGetBefriendConversation = callbacks.apiGetBefriendConversation;
   apiSubmitBefriendAnswer = callbacks.apiSubmitBefriendAnswer;
+  apiStartNpcDialogue = callbacks.apiStartNpcDialogue;
+  apiRespondNpcDialogue = callbacks.apiRespondNpcDialogue;
 }
 
 // ============ STATE GETTERS/SETTERS ============
@@ -206,7 +210,7 @@ function showNextDualCardsFromQueue() {
   const enemies = state.combat?.enemies || [];
   const party = state.run?.robotParty;
   const anyEnemyBefriendable = enemies.some(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.5);
-  const befriendAvailable = isRobotCombat && anyEnemyBefriendable && party;
+  const befriendAvailable = isRobotCombat && anyEnemyBefriendable && party && !state.combat?.npcId;
 
   if (befriendAvailable && showTripleFlashCards) {
     // Get a third word for the befriend card
@@ -1798,6 +1802,9 @@ export async function stopCombatLoop(result) {
       playSFX('victory');
       const gs = getGameState();
       const isRobotCombat = gs?.combat?.isRobotCombat;
+      if (isRobotCombat && gs?.combat?.npcId) {
+        await runNpcDialogue();
+      }
       if (isRobotCombat && showPostCombatShop) {
         await showPostCombatShop();
       }
@@ -1812,8 +1819,11 @@ export async function stopCombatLoop(result) {
     // Fallback narration
     if (result.victory) {
       await narration.showNarration('市民解放！');
-      const gs = getGameState();
-      const isRobotCombat = gs?.combat?.isRobotCombat;
+      const gs2 = getGameState();
+      if (gs2?.combat?.npcId) {
+        await runNpcDialogue();
+      }
+      const isRobotCombat = gs2?.combat?.isRobotCombat;
       if (isRobotCombat && showPostCombatShop) {
         await showPostCombatShop();
       }
@@ -1827,5 +1837,123 @@ export async function stopCombatLoop(result) {
 
   // Refresh full UI state
   updateUI();
+}
+
+/**
+ * Show NPC greeting before combat
+ */
+export async function showNpcGreeting(npcData) {
+  if (!npcData?.greeting) return;
+  await narration.showNarration(npcData.greeting, { speaker: npcData.name || npcData.nameEn });
+}
+
+/**
+ * Show NPC defeat line when player loses
+ */
+export async function showNpcDefeatLine(npcData) {
+  if (!npcData?.defeatLine) return;
+  await narration.showNarration(npcData.defeatLine, { speaker: npcData.name || npcData.nameEn });
+}
+
+/**
+ * Run the full NPC post-combat dialogue flow
+ */
+export async function runNpcDialogue() {
+  if (!apiStartNpcDialogue || !apiRespondNpcDialogue) return;
+
+  const dialogueData = await apiStartNpcDialogue();
+  if (!dialogueData) return;
+
+  const { npc, freed, rounds } = dialogueData;
+  const npcName = npc.name || npc.nameEn;
+
+  // Show freed narration
+  await narration.showNarration(freed, { speaker: npcName });
+
+  let totalDelta = 0;
+
+  for (let i = 0; i < rounds.length; i++) {
+    const round = rounds[i];
+
+    // Show NPC line (persistent so player can read while choosing)
+    await narration.showNarration(round.npcLine, { speaker: npcName, persistent: true });
+
+    // Show 3 response buttons
+    const selectedIndex = await showNpcResponseOptions(round.options);
+
+    // Hide narration
+    if (narration.forceHideNarration) narration.forceHideNarration();
+
+    // Submit to server
+    const result = await apiRespondNpcDialogue(i, selectedIndex);
+    if (!result) break;
+
+    // Show bond feedback
+    showBondFeedback(result.tone, result.delta);
+    totalDelta += result.delta;
+
+    await delay(1200);
+    document.querySelector('.bond-feedback')?.remove();
+
+    if (result.dialogueComplete) {
+      if (result.state) {
+        updateGameState(result.state);
+      }
+      break;
+    }
+  }
+
+  // Show bond summary toast
+  showBondSummary(npcName, totalDelta);
+  await delay(2200);
+  document.querySelector('.bond-summary')?.remove();
+}
+
+function showNpcResponseOptions(options) {
+  return new Promise(resolve => {
+    const container = document.getElementById('action-area') || document.querySelector('.action-area');
+    if (!container) { resolve(0); return; }
+
+    container.innerHTML = '';
+    options.forEach((option, index) => {
+      const btn = document.createElement('button');
+      btn.className = 'npc-response-btn';
+      btn.textContent = option.text;
+      btn.addEventListener('click', () => {
+        container.querySelectorAll('.npc-response-btn').forEach(b => b.disabled = true);
+        resolve(index);
+      });
+      container.appendChild(btn);
+    });
+  });
+}
+
+function showBondFeedback(tone, delta) {
+  const existing = document.querySelector('.bond-feedback');
+  if (existing) existing.remove();
+
+  const el = document.createElement('div');
+  el.className = `bond-feedback ${tone}`;
+
+  const heart = tone === 'positive' ? '\u2764\uFE0F' : tone === 'negative' ? '\uD83D\uDC94' : '\uD83E\uDD0D';
+  const deltaText = delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : '';
+
+  el.innerHTML = `${heart}${deltaText ? `<span class="bond-delta">${deltaText}</span>` : ''}`;
+
+  const sceneArea = document.getElementById('scene-area') || document.querySelector('.scene-area');
+  if (sceneArea) {
+    sceneArea.appendChild(el);
+  }
+}
+
+function showBondSummary(npcName, totalDelta) {
+  const el = document.createElement('div');
+  el.className = 'bond-summary';
+
+  const sign = totalDelta > 0 ? '+' : '';
+  const cls = totalDelta > 0 ? 'positive' : totalDelta < 0 ? 'negative' : 'neutral';
+
+  el.innerHTML = `${npcName}\u3068\u306E\u7D46 <span class="bond-value ${cls}">${sign}${totalDelta}</span>`;
+  document.body.appendChild(el);
 }
 
