@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { assemblePrompt } from '../../../src/narration-engine/prompt-assembler.js';
+import { assemblePrompt, flattenSystemBlocks } from '../../../src/narration-engine/prompt-assembler.js';
 
 describe('prompt-assembler', () => {
   const minimalInput = {
@@ -30,38 +30,43 @@ describe('prompt-assembler', () => {
     previousLines: ['前のセリフ１', '前のセリフ２']
   };
 
-  it('returns system and user prompt strings', () => {
+  it('flattenSystemBlocks returns a string with all content', () => {
     const result = assemblePrompt(minimalInput);
-    assert.ok(typeof result.systemPrompt === 'string');
-    assert.ok(typeof result.userPrompt === 'string');
-    assert.ok(result.systemPrompt.length > 100);
+    const flat = flattenSystemBlocks(result.systemBlocks);
+    assert.ok(typeof flat === 'string');
+    assert.ok(flat.length > 100);
   });
 
   it('includes character personality', () => {
     const result = assemblePrompt(minimalInput);
-    assert.ok(result.systemPrompt.includes('friendly'));
-    assert.ok(result.systemPrompt.includes('energetic'));
+    const flat = flattenSystemBlocks(result.systemBlocks);
+    assert.ok(flat.includes('friendly'));
+    assert.ok(flat.includes('energetic'));
   });
 
   it('includes vocab constraints', () => {
     const result = assemblePrompt(minimalInput);
-    assert.ok(result.systemPrompt.includes('食べる'));
+    const flat = flattenSystemBlocks(result.systemBlocks);
+    assert.ok(flat.includes('食べる'));
   });
 
   it('includes example dialogue', () => {
     const result = assemblePrompt(minimalInput);
-    assert.ok(result.systemPrompt.includes('やあ！勝負しよう！'));
+    const flat = flattenSystemBlocks(result.systemBlocks);
+    assert.ok(flat.includes('やあ！勝負しよう！'));
   });
 
   it('includes memory/encounter info', () => {
     const result = assemblePrompt(minimalInput);
-    const combined = result.systemPrompt + result.userPrompt;
+    const flat = flattenSystemBlocks(result.systemBlocks);
+    const combined = flat + result.userPrompt;
     assert.ok(combined.includes('Encounters'));
   });
 
   it('includes anti-repetition lines', () => {
     const result = assemblePrompt(minimalInput);
-    assert.ok(result.systemPrompt.includes('前のセリフ１'));
+    const flat = flattenSystemBlocks(result.systemBlocks);
+    assert.ok(flat.includes('前のセリフ１'));
   });
 
   it('includes output schema in user prompt', () => {
@@ -73,12 +78,61 @@ describe('prompt-assembler', () => {
 
   it('uses correct NPC state goal', () => {
     const result = assemblePrompt(minimalInput);
-    assert.ok(result.systemPrompt.includes('Help others'));
+    const flat = flattenSystemBlocks(result.systemBlocks);
+    assert.ok(flat.includes('Help others'));
   });
 
   it('defaults to possessed state when npcState is missing', () => {
     const input = { ...minimalInput, npcState: undefined };
     const result = assemblePrompt(input);
-    assert.ok(result.systemPrompt.includes('Fight everyone'));
+    const flat = flattenSystemBlocks(result.systemBlocks);
+    assert.ok(flat.includes('Fight everyone'));
+  });
+
+  it('returns systemBlocks array instead of flat systemPrompt', () => {
+    const result = assemblePrompt(minimalInput);
+    assert.ok(Array.isArray(result.systemBlocks), 'systemBlocks should be an array');
+    assert.ok(result.systemBlocks.length >= 3, 'should have at least instructions, vocab, character');
+    assert.ok(typeof result.userPrompt === 'string');
+  });
+
+  it('each block has label, text, and cache fields', () => {
+    const result = assemblePrompt(minimalInput);
+    for (const block of result.systemBlocks) {
+      assert.ok(typeof block.label === 'string', `block missing label`);
+      assert.ok(typeof block.text === 'string', `block ${block.label} missing text`);
+      assert.ok(typeof block.cache === 'boolean', `block ${block.label} missing cache flag`);
+    }
+  });
+
+  it('marks instructions and vocab as cacheable, others as not', () => {
+    const result = assemblePrompt(minimalInput);
+    const byLabel = Object.fromEntries(result.systemBlocks.map(b => [b.label, b]));
+    assert.strictEqual(byLabel.instructions.cache, true);
+    assert.strictEqual(byLabel.vocab.cache, true);
+    assert.strictEqual(byLabel.character.cache, false);
+  });
+
+  it('omits empty blocks (no lorebook, no memory, no antiRepeat)', () => {
+    const input = {
+      ...minimalInput,
+      memory: null,
+      previousLines: null,
+      characterCard: { ...minimalInput.characterCard, knowledge: {} }
+    };
+    const result = assemblePrompt(input);
+    const labels = result.systemBlocks.map(b => b.label);
+    assert.ok(!labels.includes('lorebook'), 'should omit empty lorebook block');
+    assert.ok(!labels.includes('memory'), 'should omit empty memory block');
+    assert.ok(!labels.includes('antiRepeat'), 'should omit empty antiRepeat block');
+  });
+
+  it('flattenSystemBlocks produces the same text as old concatenation', () => {
+    const result = assemblePrompt(minimalInput);
+    const flattened = flattenSystemBlocks(result.systemBlocks);
+    assert.ok(flattened.includes('食べる'), 'vocab present');
+    assert.ok(flattened.includes('friendly'), 'character present');
+    assert.ok(flattened.includes('Encounters'), 'memory present');
+    assert.ok(flattened.includes('前のセリフ１'), 'anti-repeat present');
   });
 });

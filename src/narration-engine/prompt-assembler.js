@@ -3,7 +3,7 @@ import { activateEntries } from './lorebook.js';
 
 /**
  * Assemble a layered prompt for NPC dialogue generation.
- * Returns { systemPrompt, userPrompt }.
+ * Returns { systemBlocks, userPrompt }.
  */
 export function assemblePrompt({
   characterCard,
@@ -72,14 +72,15 @@ ${memory.narrative ? `Relationship arc: "${memory.narrative}"` : ''}`;
 ${previousLines.map(l => `- "${l}"`).join('\n')}`;
   }
 
-  const systemPrompt = [
-    systemInstructions,
-    vocabSection,
-    characterSection,
-    lorebookSection,
-    memorySection,
-    antiRepSection
-  ].filter(Boolean).join('\n\n');
+  // Build structured blocks (empty ones filtered out)
+  const systemBlocks = [
+    { label: 'instructions', text: systemInstructions, cache: true },
+    { label: 'vocab', text: vocabSection, cache: true },
+    { label: 'character', text: characterSection, cache: false },
+    lorebookSection ? { label: 'lorebook', text: lorebookSection, cache: false } : null,
+    memorySection ? { label: 'memory', text: memorySection, cache: false } : null,
+    antiRepSection ? { label: 'antiRepeat', text: antiRepSection, cache: false } : null
+  ].filter(Boolean);
 
   // Layer 7: Task (user prompt)
   const userPrompt = `Generate dialogue for this NPC's next encounter with this player.
@@ -102,5 +103,13 @@ Output JSON:
 Generate exactly 3 rounds. All text in Japanese using the player's vocabulary.
 Output ONLY valid JSON. No explanation, no markdown fences.`;
 
-  return { systemPrompt, userPrompt };
+  return { systemBlocks, userPrompt };
+}
+
+/**
+ * Flatten structured blocks into a single string for non-Claude providers.
+ */
+export function flattenSystemBlocks(blocks) {
+  if (!blocks || blocks.length === 0) return '';
+  return blocks.map(b => b.text).join('\n\n');
 }
