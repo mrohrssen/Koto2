@@ -9,7 +9,7 @@
  */
 
 import { getCharacterCard, loadCharacterCards } from './character-cards.js';
-import { assemblePrompt } from './prompt-assembler.js';
+import { assemblePrompt, flattenSystemBlocks } from './prompt-assembler.js';
 import { generateDialogue } from './generation.js';
 import { enforceDialogueVocab } from './dialogue-repair.js';
 import { NpcMemory } from './npc-memory.js';
@@ -148,7 +148,7 @@ async function generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext
     : mem.counters.encounters > 0 ? 'glitching'
     : 'possessed';
 
-  const { systemPrompt, userPrompt } = assemblePrompt({
+  const { systemBlocks, userPrompt } = assemblePrompt({
     characterCard: card,
     vocabWords: vocab,
     jlptLevel: aiConfig.jlptLevel || 'N4',
@@ -157,9 +157,12 @@ async function generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext
     previousLines: cache.getPreviousLines(entityId)
   });
 
+  const systemPrompt = flattenSystemBlocks(systemBlocks);
+
   const dialogue = await generateDialogue({
     chatFn,
     systemPrompt,
+    systemBlocks,
     userPrompt,
     aiConfig
   });
@@ -176,6 +179,7 @@ async function generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext
       checkViolationsFn,
       chatFn,
       systemPrompt,
+      systemBlocks,
       userPrompt,
       aiConfig
     });

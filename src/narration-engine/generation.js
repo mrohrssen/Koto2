@@ -53,6 +53,7 @@ export function validateDialogueShape(obj) {
 export async function generateDialogue({
   chatFn,
   systemPrompt,
+  systemBlocks,
   userPrompt,
   aiConfig,
   maxRetries = 2
@@ -64,6 +65,7 @@ export async function generateDialogue({
         apiKey: aiConfig.apiKey,
         messages: [{ role: 'user', content: userPrompt }],
         customSystemPrompt: systemPrompt,
+        systemBlocks,
         openaiModel: aiConfig.openaiModel,
         openrouterModel: aiConfig.openrouterModel,
         purpose: 'npc-dialogue'

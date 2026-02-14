@@ -99,6 +99,7 @@ export async function enforceDialogueVocab({
   checkViolationsFn,
   chatFn,
   systemPrompt,
+  systemBlocks,
   userPrompt,
   aiConfig,
   maxAttempts = 3
@@ -131,6 +132,7 @@ export async function enforceDialogueVocab({
           { role: 'user', content: repairInstruction }
         ],
         customSystemPrompt: systemPrompt,
+        systemBlocks,
         openaiModel: aiConfig.openaiModel,
         openrouterModel: aiConfig.openrouterModel,
         purpose: 'npc-dialogue-repair'
