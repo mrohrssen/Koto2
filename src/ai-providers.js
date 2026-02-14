@@ -140,7 +140,12 @@ async function chatWithOpenAI(apiKey, messages, systemPrompt, model) {
     content = content.replace(/\s*\n\s*/g, '').replace(/\s{2,}/g, ' ').trim();
   }
 
-  return content;
+  const usage = response.usage ? {
+    inputTokens: response.usage.prompt_tokens || 0,
+    outputTokens: response.usage.completion_tokens || 0
+  } : null;
+
+  return { text: content, usage };
 }
 
 /**
@@ -170,7 +175,7 @@ async function chatWithClaude(apiKey, messages, systemPrompt, model, systemBlock
   }
 
   const response = await client.messages.create({
-    model: model || 'claude-sonnet-4-20250514',
+    model: model || 'claude-sonnet-4-5-20250929',
     max_tokens: 500,
     system,
     messages: messages.map(m => ({
@@ -207,7 +212,13 @@ async function chatWithGemini(apiKey, messages, systemPrompt) {
   const lastMessage = messages[messages.length - 1];
   const result = await chat.sendMessage(lastMessage?.content || 'Hello');
 
-  return result.response.text();
+  const meta = result.response.usageMetadata;
+  const usage = meta ? {
+    inputTokens: meta.promptTokenCount || 0,
+    outputTokens: meta.candidatesTokenCount || 0
+  } : null;
+
+  return { text: result.response.text(), usage };
 }
 
 /**
@@ -232,7 +243,12 @@ async function chatWithOpenRouter(apiKey, messages, systemPrompt, model) {
     max_tokens: 500
   });
 
-  return response.choices[0]?.message?.content || '';
+  const usage = response.usage ? {
+    inputTokens: response.usage.prompt_tokens || 0,
+    outputTokens: response.usage.completion_tokens || 0
+  } : null;
+
+  return { text: response.choices[0]?.message?.content || '', usage };
 }
 
 /**
@@ -269,7 +285,7 @@ export async function chat({
   switch (provider.toLowerCase()) {
     case 'openai': model = openaiModel || 'gpt-4o-mini'; break;
     case 'claude':
-    case 'anthropic': model = claudeModel || 'claude-sonnet-4-20250514'; break;
+    case 'anthropic': model = claudeModel || 'claude-sonnet-4-5-20250929'; break;
     case 'gemini':
     case 'google': model = 'gemini-1.5-flash'; break;
     case 'openrouter': model = openrouterModel || 'anthropic/claude-3.5-sonnet'; break;
@@ -304,12 +320,9 @@ export async function chat({
         throw new Error(`Unknown provider: ${provider}. Use 'openai', 'claude', 'gemini', or 'openrouter'`);
     }
 
-    // Normalize result: Claude returns { text, usage }, others return plain string
-    const isStructured = providerResult && typeof providerResult === 'object' && 'text' in providerResult;
-    const result = isStructured ? providerResult.text : providerResult;
-    const actualUsage = isStructured ? providerResult.usage : null;
+    const { text: result, usage: actualUsage } = providerResult;
 
-    // Record metrics
+    // Record metrics (prefer actual usage from API, fall back to estimates)
     const durationMs = Date.now() - startTime;
     const outputTokens = actualUsage?.outputTokens ?? estimateTokens(result);
     const finalInputTokens = actualUsage?.inputTokens ?? inputTokens;
@@ -324,8 +337,8 @@ export async function chat({
       cacheReadTokens: actualUsage?.cacheReadTokens || 0
     });
 
-    if (returnUsage && actualUsage) {
-      return { text: result, usage: actualUsage };
+    if (returnUsage) {
+      return { text: result, usage: actualUsage || { inputTokens: finalInputTokens, outputTokens } };
     }
     return result;
   } catch (error) {
