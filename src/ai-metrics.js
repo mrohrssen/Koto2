@@ -16,6 +16,7 @@ const MODEL_COSTS = {
   'gpt-5-mini': { input: 0.25, output: 2.00 },
   'gpt-5': { input: 1.25, output: 10.00 },
   // Claude
+  'claude-sonnet-4-5-20250929': { input: 3.00, output: 15.00 },
   'claude-sonnet-4-20250514': { input: 3.00, output: 15.00 },
   'claude-3.5-sonnet': { input: 3.00, output: 15.00 },
   // Gemini
@@ -55,9 +56,12 @@ export function estimateTokens(text) {
 /**
  * Calculate estimated cost for a call
  */
-function calculateCost(model, inputTokens, outputTokens) {
+function calculateCost(model, inputTokens, outputTokens, cacheCreationTokens = 0, cacheReadTokens = 0) {
   const costs = MODEL_COSTS[model] || MODEL_COSTS['default'];
-  const inputCost = (inputTokens / 1_000_000) * costs.input;
+  const nonCachedInput = inputTokens - cacheCreationTokens - cacheReadTokens;
+  const inputCost = (nonCachedInput / 1_000_000) * costs.input
+    + (cacheCreationTokens / 1_000_000) * costs.input * 1.25
+    + (cacheReadTokens / 1_000_000) * costs.input * 0.10;
   const outputCost = (outputTokens / 1_000_000) * costs.output;
   return inputCost + outputCost;
 }
@@ -71,8 +75,10 @@ function calculateCost(model, inputTokens, outputTokens) {
  * @param {number} options.inputTokens - Estimated input tokens
  * @param {number} options.outputTokens - Estimated output tokens
  * @param {number} options.durationMs - Call duration in milliseconds
+ * @param {number} [options.cacheCreationTokens] - Anthropic cache creation tokens
+ * @param {number} [options.cacheReadTokens] - Anthropic cache read tokens
  */
-export function recordCall({ provider, model, purpose, inputTokens, outputTokens, durationMs }) {
+export function recordCall({ provider, model, purpose, inputTokens, outputTokens, durationMs, cacheCreationTokens = 0, cacheReadTokens = 0 }) {
   const call = {
     timestamp: Date.now(),
     provider,
@@ -81,7 +87,9 @@ export function recordCall({ provider, model, purpose, inputTokens, outputTokens
     inputTokens: inputTokens || 0,
     outputTokens: outputTokens || 0,
     durationMs: durationMs || 0,
-    estimatedCost: calculateCost(model, inputTokens, outputTokens)
+    cacheCreationTokens,
+    cacheReadTokens,
+    estimatedCost: calculateCost(model, inputTokens, outputTokens, cacheCreationTokens, cacheReadTokens)
   };
 
   sessionMetrics.calls.push(call);
@@ -91,7 +99,10 @@ export function recordCall({ provider, model, purpose, inputTokens, outputTokens
   sessionMetrics.totals[purposeKey]++;
 
   // Log for debugging
-  console.log(`[AI Metrics] ${purpose} call: ${provider}/${model} - ${inputTokens}+${outputTokens} tokens, $${call.estimatedCost.toFixed(6)}, ${durationMs}ms`);
+  const cacheInfo = cacheCreationTokens || cacheReadTokens
+    ? ` [cache: +${cacheCreationTokens} created, ${cacheReadTokens} read]`
+    : '';
+  console.log(`[AI Metrics] ${purpose} call: ${provider}/${model} - ${inputTokens}+${outputTokens} tokens${cacheInfo}, $${call.estimatedCost.toFixed(6)}, ${durationMs}ms`);
 
   return call;
 }

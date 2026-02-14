@@ -146,20 +146,47 @@ async function chatWithOpenAI(apiKey, messages, systemPrompt, model) {
 /**
  * Claude (Anthropic) Provider
  */
-async function chatWithClaude(apiKey, messages, systemPrompt) {
+async function chatWithClaude(apiKey, messages, systemPrompt, model, systemBlocks) {
   const client = new Anthropic({ apiKey });
 
+  // Build system: structured blocks with cache_control for Claude, or flat string
+  let system;
+  if (systemBlocks && systemBlocks.length > 0) {
+    const filtered = systemBlocks.filter(b => b.text);
+    // Find the index of the last cacheable block
+    let lastCacheIdx = -1;
+    for (let i = filtered.length - 1; i >= 0; i--) {
+      if (filtered[i].cache) { lastCacheIdx = i; break; }
+    }
+    system = filtered.map((block, i) => {
+      const entry = { type: 'text', text: block.text };
+      if (i === lastCacheIdx) {
+        entry.cache_control = { type: 'ephemeral' };
+      }
+      return entry;
+    });
+  } else {
+    system = systemPrompt;
+  }
+
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: model || 'claude-sonnet-4-20250514',
     max_tokens: 500,
-    system: systemPrompt,
+    system,
     messages: messages.map(m => ({
       role: m.role,
       content: m.content
     }))
   });
 
-  return response.content[0]?.text || '';
+  const usage = response.usage ? {
+    inputTokens: response.usage.input_tokens || 0,
+    outputTokens: response.usage.output_tokens || 0,
+    cacheCreationTokens: response.usage.cache_creation_input_tokens || 0,
+    cacheReadTokens: response.usage.cache_read_input_tokens || 0
+  } : null;
+
+  return { text: response.content[0]?.text || '', usage };
 }
 
 /**
@@ -221,8 +248,11 @@ export async function chat({
   personaDescription,
   openrouterModel,
   openaiModel,
+  claudeModel,
   customSystemPrompt,
-  purpose = 'other'
+  systemBlocks,
+  purpose = 'other',
+  returnUsage = false
 }) {
   if (!apiKey) {
     throw new Error(`API key required for ${provider}`);
@@ -239,7 +269,7 @@ export async function chat({
   switch (provider.toLowerCase()) {
     case 'openai': model = openaiModel || 'gpt-4o-mini'; break;
     case 'claude':
-    case 'anthropic': model = 'claude-sonnet-4-20250514'; break;
+    case 'anthropic': model = claudeModel || 'claude-sonnet-4-20250514'; break;
     case 'gemini':
     case 'google': model = 'gemini-1.5-flash'; break;
     case 'openrouter': model = openrouterModel || 'anthropic/claude-3.5-sonnet'; break;
@@ -250,42 +280,53 @@ export async function chat({
   const startTime = Date.now();
 
   try {
-    let result;
+    let providerResult;
     switch (provider.toLowerCase()) {
       case 'openai':
-        result = await chatWithOpenAI(apiKey, messages, systemPrompt, openaiModel);
+        providerResult = await chatWithOpenAI(apiKey, messages, systemPrompt, openaiModel);
         break;
 
       case 'claude':
       case 'anthropic':
-        result = await chatWithClaude(apiKey, messages, systemPrompt);
+        providerResult = await chatWithClaude(apiKey, messages, systemPrompt, claudeModel, systemBlocks);
         break;
 
       case 'gemini':
       case 'google':
-        result = await chatWithGemini(apiKey, messages, systemPrompt);
+        providerResult = await chatWithGemini(apiKey, messages, systemPrompt);
         break;
 
       case 'openrouter':
-        result = await chatWithOpenRouter(apiKey, messages, systemPrompt, openrouterModel);
+        providerResult = await chatWithOpenRouter(apiKey, messages, systemPrompt, openrouterModel);
         break;
 
       default:
         throw new Error(`Unknown provider: ${provider}. Use 'openai', 'claude', 'gemini', or 'openrouter'`);
     }
 
+    // Normalize result: Claude returns { text, usage }, others return plain string
+    const isStructured = providerResult && typeof providerResult === 'object' && 'text' in providerResult;
+    const result = isStructured ? providerResult.text : providerResult;
+    const actualUsage = isStructured ? providerResult.usage : null;
+
     // Record metrics
     const durationMs = Date.now() - startTime;
-    const outputTokens = estimateTokens(result);
+    const outputTokens = actualUsage?.outputTokens ?? estimateTokens(result);
+    const finalInputTokens = actualUsage?.inputTokens ?? inputTokens;
     recordCall({
       provider,
       model,
       purpose,
-      inputTokens,
+      inputTokens: finalInputTokens,
       outputTokens,
-      durationMs
+      durationMs,
+      cacheCreationTokens: actualUsage?.cacheCreationTokens || 0,
+      cacheReadTokens: actualUsage?.cacheReadTokens || 0
     });
 
+    if (returnUsage && actualUsage) {
+      return { text: result, usage: actualUsage };
+    }
     return result;
   } catch (error) {
     console.error(`${provider} API error:`, error);
