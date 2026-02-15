@@ -92,6 +92,8 @@ let apiGetBefriendConversation = null;
 let apiSubmitBefriendAnswer = null;
 let apiStartNpcDialogue = null;
 let apiRespondNpcDialogue = null;
+let showNpcSprite = null;
+let hideNpcSprite = null;
 
 // Utility
 let delay = null;
@@ -138,6 +140,8 @@ export function init(callbacks) {
   apiSubmitBefriendAnswer = callbacks.apiSubmitBefriendAnswer;
   apiStartNpcDialogue = callbacks.apiStartNpcDialogue;
   apiRespondNpcDialogue = callbacks.apiRespondNpcDialogue;
+  showNpcSprite = callbacks.showNpcSprite;
+  hideNpcSprite = callbacks.hideNpcSprite;
 }
 
 // ============ STATE GETTERS/SETTERS ============
@@ -1443,7 +1447,6 @@ function showConversationRound(round, roundNumber, robotName) {
     const actionArea = document.getElementById('action-area');
     if (!actionArea) { resolve(0); return; }
 
-    const roundLabel = t('roundLabel', roundNumber + 1);
     const buttons = round.options.map((opt, idx) => `
       <div class="shrine-chip-option befriend-answer-option" data-answer-index="${idx}" style="width:100%">
         <div class="shrine-chip-info" style="padding:1rem; width:100%; text-align:center">
@@ -1454,7 +1457,6 @@ function showConversationRound(round, roundNumber, robotName) {
 
     actionArea.innerHTML = `
       <div class="shrine-chip-list befriend-answer-list" style="padding:0 1rem">
-        <div style="text-align:center; color:var(--text-secondary); margin-bottom:0.5rem; font-size:12px">${roundLabel}</div>
         ${buttons}
       </div>
     `;
@@ -1867,6 +1869,9 @@ export async function runNpcDialogue() {
   const { npc, freed, rounds } = dialogueData;
   const npcName = npc.name || npc.nameEn;
 
+  // Show NPC sprite placeholder in scene area
+  if (showNpcSprite) showNpcSprite(npcName);
+
   // Show freed narration
   await narration.showNarration(freed, { speaker: npcName });
 
@@ -1876,10 +1881,10 @@ export async function runNpcDialogue() {
     const round = rounds[i];
 
     // Show NPC line (persistent so player can read while choosing)
-    await narration.showNarration(round.npcLine, { speaker: npcName, persistent: true });
+    await narration.showNarration(round.npcLine, { speaker: npcName, persistent: true, skipRewrite: true });
 
-    // Show 3 response buttons
-    const selectedIndex = await showNpcResponseOptions(round.options);
+    // Show 3 response buttons (reuses befriend dialogue styling)
+    const selectedIndex = await showNpcResponseOptions(round.options, i);
 
     // Hide narration
     if (narration.forceHideNarration) narration.forceHideNarration();
@@ -1888,14 +1893,8 @@ export async function runNpcDialogue() {
     const result = await apiRespondNpcDialogue(i, selectedIndex);
     if (!result) break;
 
-    // Show bond feedback
-    showBondFeedback(result.tone, result.delta);
-    totalDelta += result.delta;
-
-    await delay(1200);
-    document.querySelector('.bond-feedback')?.remove();
-
     if (result.dialogueComplete) {
+      totalDelta = result.totalDelta;
       if (result.state) {
         updateGameState(result.state);
       }
@@ -1903,27 +1902,40 @@ export async function runNpcDialogue() {
     }
   }
 
-  // Show bond summary toast
+  // Hide NPC sprite
+  if (hideNpcSprite) hideNpcSprite();
+
+  // Show bond summary toast (server clamps to +1/0/-1)
   showBondSummary(npcName, totalDelta);
   await delay(2200);
   document.querySelector('.bond-summary')?.remove();
 }
 
-function showNpcResponseOptions(options) {
+function showNpcResponseOptions(options, roundNumber) {
   return new Promise(resolve => {
-    const container = document.getElementById('action-area') || document.querySelector('.action-area');
-    if (!container) { resolve(0); return; }
+    const actionArea = document.getElementById('action-area');
+    if (!actionArea) { resolve(0); return; }
 
-    container.innerHTML = '';
-    options.forEach((option, index) => {
-      const btn = document.createElement('button');
-      btn.className = 'npc-response-btn';
-      btn.textContent = option.text;
-      btn.addEventListener('click', () => {
-        container.querySelectorAll('.npc-response-btn').forEach(b => b.disabled = true);
-        resolve(index);
-      });
-      container.appendChild(btn);
+    const buttons = options.map((option, idx) => `
+      <div class="shrine-chip-option befriend-answer-option" data-answer-index="${idx}" style="width:100%">
+        <div class="shrine-chip-info" style="padding:1rem; width:100%; text-align:center">
+          <div class="shrine-chip-name" style="color:var(--accent-primary)">${option.text}</div>
+        </div>
+      </div>
+    `).join('');
+
+    actionArea.innerHTML = `
+      <div class="shrine-chip-list befriend-answer-list" style="padding:0 1rem">
+        ${buttons}
+      </div>
+    `;
+
+    const list = actionArea.querySelector('.befriend-answer-list');
+    list.addEventListener('click', (e) => {
+      const opt = e.target.closest('.befriend-answer-option');
+      if (!opt || list.dataset.answered) return;
+      list.dataset.answered = '1';
+      resolve(parseInt(opt.dataset.answerIndex, 10));
     });
   });
 }

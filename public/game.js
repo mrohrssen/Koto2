@@ -1409,6 +1409,8 @@ async function initGame() {
     apiSubmitBefriendAnswer,
     apiStartNpcDialogue: startNpcDialogue,
     apiRespondNpcDialogue: respondNpcDialogue,
+    showNpcSprite: (name) => scene.showNpcTrainer(name),
+    hideNpcSprite: () => scene.hideNpcTrainer(),
   });
 
   setupEventListeners();

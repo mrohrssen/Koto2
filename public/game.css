@@ -3452,28 +3452,6 @@ html, body {
   100% { opacity: 0; transform: translateX(-50%) translateY(-60px); }
 }
 
-.npc-response-btn {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  margin-bottom: 0.5rem;
-  background: rgba(20, 20, 40, 0.85);
-  border: 1px solid rgba(0, 255, 255, 0.3);
-  border-radius: 8px;
-  color: #e0e0e0;
-  font-size: 1rem;
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 0.2s, background 0.2s;
-}
-
-.npc-response-btn:hover {
-  border-color: rgba(0, 255, 255, 0.6);
-  background: rgba(30, 30, 60, 0.9);
-}
-
-.npc-response-btn:active {
-  background: rgba(0, 255, 255, 0.15);
-}
 
 .bond-summary {
   position: fixed;

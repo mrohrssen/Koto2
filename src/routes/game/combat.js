@@ -525,11 +525,11 @@ export default function createCombatRoutes({
 
     if (dialogueComplete) {
       const meta = gameManager.getMeta();
-      updateBond(meta, dialogue.npcId, dialogue.totalDelta);
+      // Clamp total bond change to +1, 0, or -1
+      const totalDelta = Math.max(-1, Math.min(1, dialogue.totalDelta));
+      updateBond(meta, dialogue.npcId, totalDelta);
       recordEncounter(meta, dialogue.npcId);
       const bond = meta.npcBonds[dialogue.npcId];
-
-      const totalDelta = dialogue.totalDelta;
       const npcName = dialogue.npcData.name;
       const npcNameEn = dialogue.npcData.nameEn;
       const npcId = dialogue.npcId;

@@ -319,6 +319,33 @@ export function hideChippy() {
   hideEnemy();
 }
 
+/** Show NPC trainer in scene (no HP bar) */
+export function showNpcTrainer(npcName) {
+  // Clear multi-enemy row from combat
+  dom.enemySpriteContainer.querySelector('.multi-enemy-row')?.remove();
+
+  dom.enemyName.textContent = npcName;
+  dom.enemyInfo.classList.add('visible');
+  dom.enemyHpBar.style.display = 'none';
+  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
+  dom.enemySpriteContainer.style.borderColor = '';
+  dom.enemySpriteContainer.classList.remove('robot-enemy');
+
+  dom.enemySprite.src = '/assets/sprites/enemies/systemExecutive.webp';
+  dom.enemySprite.onerror = () => {
+    dom.enemySprite.classList.remove('visible');
+  };
+  dom.enemySprite.onload = () => {
+    removePlaceholder();
+    dom.enemySprite.classList.add('visible');
+  };
+}
+
+/** Hide NPC trainer from scene */
+export function hideNpcTrainer() {
+  hideEnemy();
+}
+
 /** Hide enemy from scene */
 export function hideEnemy() {
   dom.enemySprite.classList.remove('visible');

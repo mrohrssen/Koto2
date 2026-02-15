@@ -14,6 +14,10 @@
 
 Japanese vocabulary learning RPG. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the game works.
 
+## Core Design Principle: Comprehensible Input (i+1)
+
+**Every piece of Japanese text shown to the player MUST contain only words they already know, plus at most 1 unknown word (i+1).** This is not a nice-to-have — it is the entire purpose of the game. All AI-generated text (DM narration, NPC dialogue, door hints) must be validated against the player's known vocabulary before being shown. Static fallback text is NOT safe unless it was also generated against that specific player's vocab. Showing unvalidated Japanese text to the player is a critical bug that defeats the game's reason for existing.
+
 ## Commands
 
 ```bash
@@ -122,13 +126,38 @@ For detailed architecture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Playtesting with Playwright MCP
 
-**Before playtesting, READ [`docs/playtest-guide.md`](docs/playtest-guide.md).** It contains phase-by-phase instructions for what to expect at every screen, how to interact (swipe not click for cards), and what bugs to look for. Do not improvise.
+**Before playtesting, READ [`docs/playtest-guide.md`](docs/playtest-guide.md).** It contains phase-by-phase instructions for what to expect at every screen, how to interact, and what bugs to look for.
 
-Key rules:
-- Fresh browser session per phase (close between phases)
-- Always `browser_snapshot` before interacting
-- Screenshot at every checkpoint
-- Know what "correct" looks like before you start
+### Playwright interaction patterns
+
+**Keep the browser open.** Don't close/reopen between phases — the user may be watching on a second screen. Just navigate or reload as needed.
+
+**Narration boxes** have an animated `▼` arrow that Playwright considers "not stable", so clicking by ref often times out. Instead use:
+```js
+await page.evaluate(() => document.querySelector('.narration-box')?.click());
+```
+Some narrations have multiple pages — keep clicking until they dismiss or buttons become enabled.
+
+**Vocab cards (combat):** Cards must be **clicked first** to flip (reveals word + meaning), then **swiped** to register the action. Swipe right = "knew it" (attack), swipe left = "didn't know" (defend). Use mouse gestures:
+```js
+const card = await page.locator('.dual-flash-card.attack').boundingBox();
+const cx = card.x + card.width / 2, cy = card.y + card.height / 2;
+await page.mouse.move(cx, cy);
+await page.mouse.down();
+await page.mouse.move(cx + 200, cy, { steps: 10 }); // swipe right
+await page.mouse.up();
+```
+
+**Game state:** Don't use `/api/game/state` directly (requires auth cookies). Instead read state from the browser:
+```js
+await page.evaluate(() => window.__gameState?.phase);
+```
+
+**General tips:**
+- Always `browser_snapshot` before interacting — refs change after every DOM update
+- Use `browser_take_screenshot` at checkpoints so the user can see visual state. **Delete screenshots after** they've been shown — run `rm <filename>` to avoid cluttering the repo
+- After server restart, wait 3s then verify with `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000`
+- Robot popups can accidentally open if you click a robot slot — dismiss with `page.evaluate(() => document.querySelector('.robot-popup')?.remove())`
 
 Update the guide when adding new features or discovering new interaction patterns.
 
