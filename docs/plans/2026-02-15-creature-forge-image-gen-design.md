@@ -51,8 +51,8 @@ Summary table and approval flow remain at the end, unchanged.
 - **Model:** `gpt-image-1.5` (OpenAI's latest, recommended)
 - **Endpoint:** `POST https://api.openai.com/v1/images/generations`
 - **API key:** Read from `data/.creature-forge-openai-key`
-- **Parameters:** size `1024x1024`, quality `high`, format `b64_json`
-- **Cost:** ~$0.57 per creature (3 images at ~$0.19 each)
+- **Parameters:** size `512x512`, quality `high`, format `b64_json`
+- **Cost:** ~$0.28 per creature (3 images at ~$0.09 each)
 
 ### Prompt Template
 
@@ -78,7 +78,7 @@ Visual description: [Full description text from Section 8]
 1. After Section 8 descriptions are presented, skill says "Generating concept art..."
 2. Run 3 `curl` calls in parallel (one per description A/B/C)
 3. Decode base64 → save to `/tmp/creature-forge-{id}-a.png`, `-b.png`, `-c.png`
-4. Generate HTML preview at `/tmp/creature-forge-{id}-preview.html`
+4. Generate HTML preview at `/tmp/creature-forge-{id}-preview.html` — images referenced via `file:///tmp/` paths (no base64 embedding, no server needed)
 5. Open via Playwright `browser_navigate` to `file:///tmp/creature-forge-{id}-preview.html`
 6. Images are ephemeral — `/tmp` cleans up naturally
 
@@ -96,12 +96,12 @@ Dark-themed page (matching game's cyberpunk aesthetic):
 - **Header:** Creature name, modifier, element badge, archetype badge
 - **3-column grid:** Each column shows:
   - Large letter label (A / B / C)
-  - Generated image (1024x1024, embedded as base64 `data:` URI)
+  - Generated image (512x512, referenced via local `file:///tmp/` path)
   - Full description text underneath
   - Attack skill + Ultimate listed below
 - **Responsive:** Columns stack vertically if viewport is narrow
 
-Images embedded as base64 data URIs so no web server is needed.
+Images referenced as local file paths — no base64 embedding or web server needed.
 
 ### After Viewing
 
