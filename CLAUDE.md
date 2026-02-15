@@ -18,6 +18,16 @@ Japanese vocabulary learning RPG. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.m
 
 **Every piece of Japanese text shown to the player MUST contain only words they already know, plus at most 1 unknown word (i+1).** This is not a nice-to-have — it is the entire purpose of the game. All AI-generated text (DM narration, NPC dialogue, door hints) must be validated against the player's known vocabulary before being shown. Static fallback text is NOT safe unless it was also generated against that specific player's vocab. Showing unvalidated Japanese text to the player is a critical bug that defeats the game's reason for existing.
 
+## Japanese Translation Accuracy
+
+**English translations of Japanese words MUST be dictionary-accurate.** This is a language learning game — every translation the player sees becomes something they memorize. Creative liberties with meaning are as bad as teaching the wrong word entirely.
+
+- **Transitivity matters:** 狂う means "go mad" (intransitive), NOT "drive mad" (transitive/causative). 迷う means "get lost / hesitate," NOT "bewilder." Never flip a word's transitivity to make it sound cooler.
+- **Use primary dictionary definitions:** Present the most common meaning first. If a word has multiple senses, show them separated by `/` (e.g., "invite / tempt").
+- **No embellishment:** Don't upgrade "scatter" to "shatter," "invite" to "lure," or "go mad" to "drive mad." If the accurate translation feels underwhelming for a game ability name, pick a different word — don't bend the translation.
+- **Show raw JPDB definitions:** When suggesting Japanese words, always show the exact `meanings` array from the JPDB API response. Do not paraphrase or summarize. The user must be able to verify every translation against the source data.
+- **When in doubt, check a dictionary.** If you're unsure whether an English gloss is accurate, say so rather than guessing.
+
 ## Commands
 
 ```bash
