@@ -1,6 +1,6 @@
-import { describe, it } from 'node:test';
+import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { tierFromRank, sleep } from '../../scripts/lib/jpdb-helpers.mjs';
+import { tierFromRank, sleep, parseBatch, lookupVocab } from '../../scripts/lib/jpdb-helpers.mjs';
 
 describe('tierFromRank', () => {
   it('returns common for rank 1-3000', () => {
@@ -40,5 +40,188 @@ describe('sleep', () => {
     await sleep(50);
     const elapsed = Date.now() - start;
     assert.ok(elapsed >= 40, `Expected >= 40ms, got ${elapsed}ms`);
+  });
+});
+
+// ── parseBatch & lookupVocab tests ──────────────────────────────────
+
+describe('parseBatch', () => {
+  let originalFetch;
+  let fetchCalls;
+
+  beforeEach(() => {
+    originalFetch = globalThis.fetch;
+    fetchCalls = [];
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('sends a single request for a small batch', async () => {
+    globalThis.fetch = async (url, opts) => {
+      fetchCalls.push({ url, opts });
+      return {
+        ok: true,
+        json: async () => ({
+          vocabulary: [['猫', 'ねこ', 1, 2, ['cat']]],
+          tokens: [[[0]]]
+        })
+      };
+    };
+
+    const result = await parseBatch(['猫'], 'test-key', {
+      interBatchDelayMs: 0
+    });
+
+    assert.equal(fetchCalls.length, 1);
+    assert.equal(fetchCalls[0].url, 'https://jpdb.io/api/v1/parse');
+    const body = JSON.parse(fetchCalls[0].opts.body);
+    assert.equal(body.text, '猫');
+    assert.equal(fetchCalls[0].opts.headers['Authorization'], 'Bearer test-key');
+    assert.deepEqual(result.vocabulary, [['猫', 'ねこ', 1, 2, ['cat']]]);
+    assert.deepEqual(result.tokens, [[[0]]]);
+  });
+
+  it('splits into multiple batches when texts exceed batchSize', async () => {
+    let callCount = 0;
+    globalThis.fetch = async (url, opts) => {
+      fetchCalls.push({ url, opts });
+      callCount++;
+      const body = JSON.parse(opts.body);
+      const words = body.text.split(' ');
+      return {
+        ok: true,
+        json: async () => ({
+          vocabulary: words.map((w, i) => [w, w, i, i, [`meaning-${callCount}-${i}`]]),
+          tokens: [words.map((_, i) => [i])]
+        })
+      };
+    };
+
+    const texts = ['a', 'b', 'c', 'd', 'e'];
+    const result = await parseBatch(texts, 'test-key', {
+      batchSize: 2,
+      interBatchDelayMs: 0
+    });
+
+    // 5 texts / batchSize 2 = 3 batches (2, 2, 1)
+    assert.equal(fetchCalls.length, 3);
+
+    // Verify batch contents
+    const batch1Body = JSON.parse(fetchCalls[0].opts.body);
+    assert.equal(batch1Body.text, 'a b');
+    const batch2Body = JSON.parse(fetchCalls[1].opts.body);
+    assert.equal(batch2Body.text, 'c d');
+    const batch3Body = JSON.parse(fetchCalls[2].opts.body);
+    assert.equal(batch3Body.text, 'e');
+
+    // Vocabulary from all batches is merged
+    assert.equal(result.vocabulary.length, 2 + 2 + 1);
+
+    // Token indices in later batches must be offset
+    // Batch 1 tokens: [[0], [1]]  (no offset)
+    // Batch 2 tokens: [[2], [3]]  (offset by 2)
+    // Batch 3 tokens: [[4]]       (offset by 4)
+    const allTokenIndices = result.tokens.flat().map(t => t[0]);
+    assert.deepEqual(allTokenIndices, [0, 1, 2, 3, 4]);
+  });
+
+  it('retries once on 429', async () => {
+    let callNum = 0;
+    globalThis.fetch = async (url, opts) => {
+      callNum++;
+      fetchCalls.push({ url, opts });
+      if (callNum === 1) {
+        return {
+          ok: false,
+          status: 429,
+          text: async () => 'Rate limited'
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({
+          vocabulary: [['水', 'みず', 3, 4, ['water']]],
+          tokens: [[[0]]]
+        })
+      };
+    };
+
+    const result = await parseBatch(['水'], 'test-key', {
+      interBatchDelayMs: 0,
+      rateLimitWaitMs: 50
+    });
+
+    assert.equal(fetchCalls.length, 2);
+    assert.deepEqual(result.vocabulary, [['水', 'みず', 3, 4, ['water']]]);
+  });
+});
+
+describe('lookupVocab', () => {
+  let originalFetch;
+  let fetchCalls;
+
+  beforeEach(() => {
+    originalFetch = globalThis.fetch;
+    fetchCalls = [];
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('sends request with vid/sid pairs', async () => {
+    globalThis.fetch = async (url, opts) => {
+      fetchCalls.push({ url, opts });
+      return {
+        ok: true,
+        json: async () => ({
+          vocabulary_info: [['猫', 'ねこ', 500, ['cat']]]
+        })
+      };
+    };
+
+    const result = await lookupVocab([[1, 2]], 'test-key', ['spelling', 'reading', 'frequency_rank', 'meanings'], {
+      interBatchDelayMs: 0
+    });
+
+    assert.equal(fetchCalls.length, 1);
+    assert.equal(fetchCalls[0].url, 'https://jpdb.io/api/v1/lookup-vocabulary');
+    const body = JSON.parse(fetchCalls[0].opts.body);
+    assert.deepEqual(body.list, [[1, 2]]);
+    assert.deepEqual(body.fields, ['spelling', 'reading', 'frequency_rank', 'meanings']);
+    assert.equal(fetchCalls[0].opts.headers['Authorization'], 'Bearer test-key');
+    assert.deepEqual(result.vocabulary_info, [['猫', 'ねこ', 500, ['cat']]]);
+  });
+
+  it('splits batches at batchSize boundary', async () => {
+    globalThis.fetch = async (url, opts) => {
+      fetchCalls.push({ url, opts });
+      const body = JSON.parse(opts.body);
+      return {
+        ok: true,
+        json: async () => ({
+          vocabulary_info: body.list.map((pair, i) => [`word-${pair[0]}`, `read-${pair[0]}`, pair[0]])
+        })
+      };
+    };
+
+    // Create 501 pairs to trigger a split at default batchSize=500
+    const pairs = Array.from({ length: 501 }, (_, i) => [i, i + 1000]);
+    const result = await lookupVocab(pairs, 'test-key', ['spelling'], {
+      batchSize: 500,
+      interBatchDelayMs: 0
+    });
+
+    assert.equal(fetchCalls.length, 2);
+    // First batch should have 500 pairs
+    const batch1Body = JSON.parse(fetchCalls[0].opts.body);
+    assert.equal(batch1Body.list.length, 500);
+    // Second batch should have 1 pair
+    const batch2Body = JSON.parse(fetchCalls[1].opts.body);
+    assert.equal(batch2Body.list.length, 1);
+    // Merged result should have all 501 entries
+    assert.equal(result.vocabulary_info.length, 501);
   });
 });
