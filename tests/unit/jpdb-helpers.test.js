@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { tierFromRank, sleep, parseBatch, lookupVocab } from '../../scripts/lib/jpdb-helpers.mjs';
+import { tierFromRank, sleep, parseBatch, lookupVocab, vidVerify, resolveCommonForms } from '../../scripts/lib/jpdb-helpers.mjs';
 
 describe('tierFromRank', () => {
   it('returns common for rank 1-3000', () => {
@@ -223,5 +223,170 @@ describe('lookupVocab', () => {
     assert.equal(batch2Body.list.length, 1);
     // Merged result should have all 501 entries
     assert.equal(result.vocabulary_info.length, 501);
+  });
+});
+
+// ── vidVerify tests ────────────────────────────────────────────────
+
+describe('vidVerify', () => {
+  let originalFetch;
+  let fetchCalls;
+
+  beforeEach(() => {
+    originalFetch = globalThis.fetch;
+    fetchCalls = [];
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('returns true when parsed vid matches expected vid', async () => {
+    globalThis.fetch = async (url, opts) => {
+      fetchCalls.push({ url, opts });
+      return {
+        ok: true,
+        json: async () => ({
+          vocabulary: [['猫', 'ねこ', 1234, 5678]],
+          tokens: [[[0]]]
+        })
+      };
+    };
+
+    const result = await vidVerify('猫', 1234, 'test-key', {
+      interBatchDelayMs: 0,
+      rateLimitWaitMs: 50
+    });
+
+    assert.equal(result, true);
+    assert.equal(fetchCalls.length, 1);
+  });
+
+  it('returns false when parsed vid does not match expected vid', async () => {
+    globalThis.fetch = async (url, opts) => {
+      fetchCalls.push({ url, opts });
+      return {
+        ok: true,
+        json: async () => ({
+          // 'か' parses as particle with vid=9999, not the expected vid=5555
+          vocabulary: [['か', 'か', 9999, 1111]],
+          tokens: [[[0]]]
+        })
+      };
+    };
+
+    const result = await vidVerify('か', 5555, 'test-key', {
+      interBatchDelayMs: 0,
+      rateLimitWaitMs: 50
+    });
+
+    assert.equal(result, false);
+    assert.equal(fetchCalls.length, 1);
+  });
+});
+
+// ── resolveCommonForms tests ───────────────────────────────────────
+
+describe('resolveCommonForms', () => {
+  let originalFetch;
+  let fetchCallNum;
+
+  beforeEach(() => {
+    originalFetch = globalThis.fetch;
+    fetchCallNum = 0;
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('full pipeline: 栗鼠 resolves to リス at rank 13600', async () => {
+    globalThis.fetch = async (url, opts) => {
+      fetchCallNum++;
+      const body = JSON.parse(opts.body);
+
+      // Call 1: parseBatch on input words ['栗鼠']
+      if (fetchCallNum === 1) {
+        assert.ok(url.endsWith('/parse'), `Call 1 should be parse, got ${url}`);
+        assert.equal(body.text, '栗鼠');
+        return {
+          ok: true,
+          json: async () => ({
+            vocabulary: [['栗鼠', 'りす', 1246890, 1191465283, ['squirrel']]],
+            tokens: [[[0]]]
+          })
+        };
+      }
+
+      // Call 2: lookupVocab for parsed words — get rank + alt_spellings
+      if (fetchCallNum === 2) {
+        assert.ok(url.endsWith('/lookup-vocabulary'), `Call 2 should be lookup-vocabulary, got ${url}`);
+        assert.deepEqual(body.list, [[1246890, 1191465283]]);
+        return {
+          ok: true,
+          json: async () => ({
+            vocabulary_info: [['栗鼠', 'りす', 48900, ['squirrel'], ['りす', 'リス']]]
+          })
+        };
+      }
+
+      // Call 3: parseBatch on alt spellings ['りす', 'リス']
+      if (fetchCallNum === 3) {
+        assert.ok(url.endsWith('/parse'), `Call 3 should be parse, got ${url}`);
+        // Both alts joined with space
+        assert.equal(body.text, 'りす リス');
+        return {
+          ok: true,
+          json: async () => ({
+            vocabulary: [
+              ['りす', 'りす', 1246890, 1191465283],
+              ['リス', 'りす', 1246890, 1191465283]
+            ],
+            tokens: [[[0], [1]]]
+          })
+        };
+      }
+
+      // Call 4: lookupVocab on verified alts — get their frequencies
+      if (fetchCallNum === 4) {
+        assert.ok(url.endsWith('/lookup-vocabulary'), `Call 4 should be lookup-vocabulary, got ${url}`);
+        assert.deepEqual(body.list, [[1246890, 1191465283], [1246890, 1191465283]]);
+        return {
+          ok: true,
+          json: async () => ({
+            vocabulary_info: [
+              ['りす', 'りす', 39800],
+              ['リス', 'りす', 13600]
+            ]
+          })
+        };
+      }
+
+      throw new Error(`Unexpected fetch call #${fetchCallNum}: ${url}`);
+    };
+
+    const results = await resolveCommonForms(['栗鼠'], 'test-key', {
+      interBatchDelayMs: 0,
+      rateLimitWaitMs: 50
+    });
+
+    assert.equal(results.length, 1);
+    const r = results[0];
+
+    assert.equal(r.word, '栗鼠');
+    assert.equal(r.bestForm, 'リス');
+    assert.equal(r.reading, 'りす');
+    assert.equal(r.rank, 13600);
+    assert.deepEqual(r.meanings, ['squirrel']);
+
+    // allForms should include all 3 spellings
+    assert.equal(r.allForms.length, 3);
+    const formMap = Object.fromEntries(r.allForms.map(f => [f.spelling, f.rank]));
+    assert.equal(formMap['栗鼠'], 48900);
+    assert.equal(formMap['りす'], 39800);
+    assert.equal(formMap['リス'], 13600);
+
+    // Should have made exactly 4 fetch calls
+    assert.equal(fetchCallNum, 4);
   });
 });
