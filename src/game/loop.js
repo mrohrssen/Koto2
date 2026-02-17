@@ -64,7 +64,7 @@ import { derivePhase } from './phase-machine.js';
 import { CombatService, ExplorationService } from './services/index.js';
 import { logger } from '../logger.js';
 import { instantiateRobot, generateEnemyRobot, generateEnemyRobots } from './robots.js';
-import { processAttackTurn, processDefendTurn, processEnemyTurn, processBefriend, processUltimate, awardBattleXp, handleRobotKO, CREDITS_PER_KILL } from './services/robot-combat-service.js';
+import { processAttackTurn, processDefendTurn, processEnemyTurn, processBefriend, processUltimate, awardBattleXp, handleRobotKO, tickAllEffects, CREDITS_PER_KILL } from './services/robot-combat-service.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/robot-collection-service.js';
 import { selectNpcForEncounter, updateBond, recordEncounter } from './services/npc-service.js';
@@ -751,6 +751,9 @@ export class GameManager {
     // Once an action is committed, free swap window closes
     this.combat.swapPhase = false;
 
+    // Tick active effects at start of round (poison damage, etc.)
+    const effectEvents = tickAllEffects(this.combat.allies, this.combat.enemies);
+
     let playerResult = {};
     let enemyResult = {};
     let befriendResult = null;
@@ -806,6 +809,7 @@ export class GameManager {
         return {
           actionType: 'befriend',
           befriend: befriendResult,
+          effectEvents,
           combatEnded: true,
           victory: true,
           robotParty: this.run.robotParty,
@@ -839,6 +843,7 @@ export class GameManager {
         actionType,
         playerAttacks: playerResult.attacks || [],
         xpEvents: playerResult.xpEvents || [],
+        effectEvents,
         combatEnded: true,
         victory: true,
         isBoss: currentRoom?.isBossRoom || false,
@@ -887,6 +892,7 @@ export class GameManager {
         playerAttacks: playerResult.attacks || [],
         enemyAttacks: enemyResult.attacks || [],
         xpEvents: playerResult.xpEvents || [],
+        effectEvents,
         koSwaps,
         combatEnded: true,
         victory: false,
@@ -907,6 +913,7 @@ export class GameManager {
       playerAttacks: playerResult.attacks || [],
       enemyAttacks: enemyResult.attacks || [],
       xpEvents: playerResult.xpEvents || [],
+      effectEvents,
       befriend: befriendResult,
       koSwaps,
       combatEnded: false,
