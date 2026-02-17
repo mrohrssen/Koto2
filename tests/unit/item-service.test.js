@@ -186,3 +186,38 @@ describe('Item Buffs - Utility', () => {
     assert.ok(changedCount >= 1, 'randomEpic should boost multiple stats');
   });
 });
+
+describe('Item Buffs - Temp Boost', () => {
+  it('tempBoost applies temp_attack_flat effect to all robots', () => {
+    const r1 = mockRobot();
+    r1.activeEffects = [];
+    const r2 = mockRobot();
+    r2.activeEffects = [];
+    const party = { active: [r1, r2], reserves: [] };
+    const buffs = createItemBuffs();
+    const item = {
+      type: 'boost',
+      effect: { tempBoost: { field: 'attack', value: 3, turns: 5, target: 'all' } }
+    };
+    applyItem(item, party, buffs);
+    assert.strictEqual(r1.activeEffects.length, 1);
+    assert.strictEqual(r1.activeEffects[0].type, 'temp_attack_flat');
+    assert.strictEqual(r1.activeEffects[0].value, 3);
+    assert.strictEqual(r1.activeEffects[0].remainingTurns, 5);
+    assert.strictEqual(r2.activeEffects.length, 1);
+  });
+
+  it('tempBoost does not permanently change robot.attack', () => {
+    const r1 = mockRobot();
+    r1.attack = 10;
+    r1.activeEffects = [];
+    const party = { active: [r1], reserves: [] };
+    const buffs = createItemBuffs();
+    const item = {
+      type: 'boost',
+      effect: { tempBoost: { field: 'attack', value: 3, turns: 5, target: 'all' } }
+    };
+    applyItem(item, party, buffs);
+    assert.strictEqual(r1.attack, 10, 'attack should not be permanently modified');
+  });
+});
