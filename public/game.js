@@ -84,7 +84,7 @@ import * as characterUI from './js/ui/character.js';
 import * as modalsUI from './js/ui/modals.js';
 import * as combatLoopUI from './js/ui/combat-loop.js';
 import { playAttackSound, playUltimateSound } from './js/ui/combat-audio.js';
-import { playUltimateAnimation, screenShake, showXpPopup, showLevelUpPopup, healEffect } from './js/ui/combat-effects.js';
+import { playUltimateAnimation, screenShake, showXpPopup, showLevelUpPopup, healEffect, poisonApplyEffect } from './js/ui/combat-effects.js';
 import { dom } from './js/dom.js';
 import * as actions from './js/ui/actions.js';
 import * as takeover from './js/ui/takeover.js';
@@ -939,6 +939,21 @@ async function handleUseRobotUltimate(robotIndex) {
       });
     } else if (enemies[0]) {
       characterUI.updateEnemyHPBar({ current: enemies[0].hp, max: enemies[0].maxHp });
+    }
+  }
+
+  // Show poison application effects for poison ultimates
+  if (result.type === 'poison' && result.hits) {
+    for (const hit of result.hits) {
+      if (hit.poisonApplied) {
+        // Find the enemy element that was poisoned
+        const enemyEl = enemies.length > 1
+          ? document.querySelector(`.enemy-robot-slot[data-enemy-id="${hit.targetId}"]`)
+          : document.getElementById('enemy-sprite-container');
+        if (enemyEl) {
+          await poisonApplyEffect(enemyEl);
+        }
+      }
     }
   }
 

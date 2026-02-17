@@ -40,7 +40,8 @@ import {
   enemyRobotAttackEffect,
   showXpPopup,
   showLevelUpPopup,
-  playUltimateAnimation
+  playUltimateAnimation,
+  poisonTickEffect
 } from './combat-effects.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
 import { configureRobotImg } from './sprite-utils.js';
@@ -574,6 +575,22 @@ async function executeRobotPlayerAttack() {
       return;
     }
 
+    // Show poison tick effects from start-of-round effect processing
+    if (result.effectEvents?.length > 0) {
+      for (const event of result.effectEvents) {
+        if (event.type === 'poison' && event.damage > 0) {
+          // Find target element — could be ally or enemy
+          let targetEl = findRobotSlotByAttackerId(event.targetId);
+          if (!targetEl) {
+            targetEl = findEnemyTargetElement(event.targetId, result.enemies);
+          }
+          if (targetEl) {
+            await poisonTickEffect(targetEl, event.damage);
+          }
+        }
+      }
+    }
+
     // Track each enemy's HP for progressive updates
     const gs = getGameState();
     const enemyHpMap = {};
@@ -850,6 +867,21 @@ async function executeRobotDefendThenPause() {
       }
       if (setCombatAnimationActive) setCombatAnimationActive(false);
       return;
+    }
+
+    // Show poison tick effects from start-of-round effect processing
+    if (result.effectEvents?.length > 0) {
+      for (const event of result.effectEvents) {
+        if (event.type === 'poison' && event.damage > 0) {
+          let targetEl = findRobotSlotByAttackerId(event.targetId);
+          if (!targetEl) {
+            targetEl = findEnemyTargetElement(event.targetId, result.enemies);
+          }
+          if (targetEl) {
+            await poisonTickEffect(targetEl, event.damage);
+          }
+        }
+      }
     }
 
     // Show defend indicator

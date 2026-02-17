@@ -484,6 +484,38 @@ export async function enemyRobotAttackEffect(enemyEl, robotSlotEl, element, dama
   showVignette(200);
 }
 
+// ============ POISON EFFECTS ============
+
+/**
+ * Visual effect for poison being applied to a target.
+ * Adds a 'poisoned' class for persistent HP bar tint and spawns purple particles.
+ * @param {Element} targetEl - The enemy slot or robot slot element being poisoned
+ */
+export async function poisonApplyEffect(targetEl) {
+  targetEl.classList.add('poisoned');
+  spawnParticles(targetEl, 6, '#9C27B0');
+  await delay(400);
+}
+
+/**
+ * Visual effect for poison damage tick.
+ * Shows a purple damage number and a brief purple pulse.
+ * @param {Element} targetEl - The enemy slot or robot slot element taking poison damage
+ * @param {number} damage - Poison damage dealt
+ */
+export async function poisonTickEffect(targetEl, damage) {
+  const popup = document.createElement('div');
+  popup.className = 'poison-tick-number';
+  popup.textContent = `-${damage}`;
+  targetEl.style.position = 'relative';
+  targetEl.appendChild(popup);
+
+  targetEl.classList.add('poison-pulse');
+  await delay(600);
+  targetEl.classList.remove('poison-pulse');
+  popup.remove();
+}
+
 // ============ HEAL EFFECTS ============
 
 /**
