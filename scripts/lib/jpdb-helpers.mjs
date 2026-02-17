@@ -88,9 +88,14 @@ export async function parseBatch(texts, apiKey, options = {}) {
     const vocabOffset = mergedVocabulary.length;
     if (vocabOffset > 0 && data.tokens) {
       for (const sentenceTokens of data.tokens) {
-        for (const token of sentenceTokens) {
-          // Each token is an array where the first element is vocabulary_index
-          token[0] += vocabOffset;
+        for (let j = 0; j < sentenceTokens.length; j++) {
+          const token = sentenceTokens[j];
+          if (Array.isArray(token)) {
+            token[0] += vocabOffset;
+          } else {
+            // Single token_field: JPDB returns bare numbers instead of arrays
+            sentenceTokens[j] = token + vocabOffset;
+          }
         }
       }
     }
