@@ -102,13 +102,12 @@ Higher rarity Mages get more ultimate damage and slightly better survivability, 
 
 | Effect | Target | Description |
 |--------|--------|-------------|
-| **Sleep** | Single enemy | Target skips next turn |
-| **Confuse** | Single enemy | Target attacks its own allies on next action |
-| **Stun** | Single enemy | Target skips next turn (similar to sleep, different flavor) |
-| **Poison** | Single enemy | Target takes damage at start of each turn for N turns |
-| **Attack Buff** | Single ally | Temporarily increase an ally's attack |
-| **Defense Buff** | Single ally | Temporarily reduce damage taken by an ally |
-| **Haste** | Single ally | Ally acts first next turn / gets an extra action |
+| **Sleep** | Single enemy | Target skips 2 turns; wakes if hit |
+| **Stun** | Single enemy | Target skips 1 turn (no break) |
+| **Confuse** | Single enemy | Target randomly hits anyone on field for 2 turns |
+| **Poison** | Single enemy | Half-power immediate damage + 3-turn DoT |
+| **Attack Buff** | Single ally | +power% attack for 2 turns |
+| **Haste** | Single ally | Ally attacks twice on next action (consumed on use) |
 
 - Rare/Epic/Legendary Tricksters may target multiple enemies or all allies with their effects.
 
@@ -118,7 +117,7 @@ Higher rarity Tricksters get stronger/longer-lasting status effects, wider targe
 ### Design Notes
 - Tricksters change what the player *thinks about* during combat. Instead of "deal damage, take damage," suddenly it's "who do I disable? who do I buff?"
 - As wild enemies, Tricksters are annoying in a good way — they disrupt the player's plan.
-- Skill words should evoke trickery and transformation: 眠る (sleep), 惑う (bewilder), 化ける (transform), 誘う (lure), 隠す (hide).
+- Skill words should evoke trickery and transformation: 眠る (sleep), 迷う (get lost), 化ける (transform), 誘う (invite/tempt), 隠す (hide).
 
 ---
 
@@ -142,11 +141,11 @@ Higher rarity Tricksters get stronger/longer-lasting status effects, wider targe
 
 | Effect | Target | Description |
 |--------|--------|-------------|
-| **Heal** | Single ally | Restore HP to one creature |
+| **Heal** | Single ally | Restore HP to lowest-HP% ally |
 | **Group Heal** | All allies | Restore HP to entire team (Rare+ only) |
-| **Damage Reduction** | Single ally | Reduce incoming damage for N turns |
-| **Team Shield** | All allies | Reduce incoming damage for entire team (Legendary only) |
-| **Taunt** | Self | Force enemies to target this creature for N turns |
+| **Shield** | Single ally | Reduce incoming damage by power% for 2 turns |
+| **Team Shield** | All allies | Reduce incoming damage by power% for entire team for 2 turns (Legendary only) |
+| **Taunt** | Self | Force enemies to target this creature for 2 turns |
 
 ### Scaling by Rarity
 Higher rarity Tanks get larger HP pools, stronger heals/shields, and wider targeting. A Common Tank heals one ally; a Legendary Tank shields the whole team.
@@ -169,33 +168,55 @@ Higher rarity Tanks get larger HP pools, stronger heals/shields, and wider targe
 
 ## Implementation Status
 
-### Implemented (feature/archetype-combat)
+All archetypes and status effects are implemented on master.
 
-**Skill types:** `damage`, `heal`, `poison`
-- `damage`: Single-target or AoE based on `target` field. Used by Fighter and Mage ultimates + all auto-attacks.
-- `heal`: Targets `single_ally` (lowest HP%) or `all_allies`. Tank/Healer ultimate. Uses same power formula as damage.
-- `poison`: Half-power immediate damage + 3-turn DoT. Trickster ultimate. Poison cannot kill (min 1 HP).
+### Skill Types
 
-**Skill schema fields:** `type`, `target`, `power`, `element`, `chargesRequired`
-- `type`: `"damage"` | `"heal"` | `"poison"`
-- `target`: `"single_enemy"` | `"all_enemies"` | `"single_ally"` | `"all_allies"`
+| Type | Behavior | Used By |
+|------|----------|---------|
+| `damage` | Single-target or AoE damage | Fighter/Mage auto + ultimate |
+| `heal` | Restore HP to lowest-HP% ally or all allies | Tank/Healer ultimate |
+| `poison` | Half-power immediate damage + 3-turn DoT (can't kill, min 1 HP) | Trickster ultimate |
+| `sleep` | Target skips 2 turns; wakes on damage | Trickster ultimate |
+| `stun` | Target skips 1 turn; no break | Trickster ultimate |
+| `confuse` | Target randomly hits any creature on field for 2 turns | Trickster ultimate |
+| `attack_buff` | +power% attack for 2 turns | Trickster ultimate |
+| `haste` | Target attacks twice on next action (consumed on use) | Trickster ultimate |
+| `shield` | Reduce incoming damage by power% for 2 turns | Tank/Healer ultimate |
+| `team_shield` | Reduce incoming damage by power% for entire team for 2 turns | Tank/Healer ultimate (Legendary) |
+| `taunt` | Force enemies to target this creature for 2 turns | Tank/Healer ultimate |
 
-**Stat system:** Per-creature `baseHp` and `baseAttack` stored in creature data. Forge picks values within archetype ranges. Rarity and level multipliers apply on top.
+### Skill Schema Fields
 
-**Combat effects:** `activeEffects` array on each robot. Effects tick at the start of each combat round. Expired effects auto-remove.
+```json
+{
+  "type": "damage|heal|poison|sleep|stun|confuse|attack_buff|haste|shield|team_shield|taunt",
+  "target": "single_enemy|all_enemies|single_ally|all_allies|self",
+  "power": 30,
+  "element": "fire",
+  "chargesRequired": 5
+}
+```
 
-### Deferred
+`power` is the percentage for `attack_buff`, `shield`, `team_shield`. For `sleep`/`stun`/`confuse`/`haste`/`taunt`, power is 0 or ignored.
 
-**Skill types not yet implemented:** `sleep`, `confuse`, `stun`, `attack_buff`, `defense_buff`, `haste`, `taunt`, `shield`
+### Combat Mechanics
 
-These require more complex state tracking:
-- Sleep/stun: skip turn logic
-- Confuse: redirect attacks to allies
-- Buffs: modify damage formulas for N turns
-- Taunt: override target selection
-- Shield: damage reduction layer
+- **Active effects:** `robot.activeEffects[]` array. Effects tick at start of each round. Expired effects auto-remove.
+- **Stacking:** Effects don't stack. Reapplication refreshes duration.
+- **Damage reduction:** `floor(damage * (1 - percent/100))`. Shield + team_shield stack additively, capped at 90%.
+- **Attack buff:** `floor(attack * (1 + percent/100))`. Multiple buffs stack additively.
+- **Haste:** No `remainingTurns` — consumed when the creature takes its next action.
+- **Sleep break:** Any damage to a sleeping creature removes the sleep effect.
+- **Taunt:** Overrides enemy target selection (ignored if enemy is confused).
+- **Confuse:** Target selected randomly from ALL alive creatures (allies + enemies, excluding self).
 
-Additional schema fields for deferred types:
-- `effect`: specific effect name (e.g., `"sleep"`, `"confuse"`)
-- `duration`: number of turns
-- `shieldAmount`: damage reduction multiplier
+### Stat System
+
+Per-creature `baseHp` and `baseAttack` stored in creature data. Forge picks values within archetype ranges. Rarity and level multipliers apply on top.
+
+### Not Yet Implemented
+
+- UI indicators for status effects (visual icons, colored HP bars)
+- Auto-skill status effects (future traits/passives system)
+- Per-archetype ultimate animations
