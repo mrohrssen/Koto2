@@ -328,6 +328,67 @@ describe('Robot Combat - Status Effects in Attack Turn', () => {
   });
 });
 
+describe('Robot Combat - Status Effects in Enemy Turn', () => {
+  it('sleeping enemy skips its attack', () => {
+    const allies = [instantiateRobot('sizzlit')];
+    const enemies = [instantiateRobot('drizzlet')];
+    enemies[0].activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
+    const startHp = allies[0].hp;
+    const result = processEnemyTurn(enemies, allies);
+    assert.strictEqual(result.attacks.length, 0);
+    assert.strictEqual(allies[0].hp, startHp);
+  });
+
+  it('enemy respects taunt and targets taunting ally', () => {
+    const taunter = instantiateRobot('sizzlit');
+    taunter.activeEffects = [{ type: 'taunt', remainingTurns: 2, sourceId: 'self' }];
+    const other = instantiateRobot('drizzlet');
+    const allies = [other, taunter];
+    const enemies = [instantiateRobot('petalia')];
+    const result = processEnemyTurn(enemies, allies);
+    assert.strictEqual(result.attacks.length, 1);
+    assert.strictEqual(result.attacks[0].targetId, taunter.id);
+  });
+
+  it('shield reduces damage to ally', () => {
+    const ally = instantiateRobot('sizzlit');
+    ally.activeEffects = [{ type: 'shield', percent: 50, remainingTurns: 2, sourceId: 'x' }];
+    const allies = [ally];
+    const enemies = [instantiateRobot('drizzlet')];
+    const result = processEnemyTurn(enemies, allies);
+    assert.strictEqual(result.attacks.length, 1);
+    assert.ok(result.attacks[0].damage >= 0);
+  });
+
+  it('damage wakes up sleeping ally', () => {
+    const ally = instantiateRobot('sizzlit');
+    ally.activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
+    const allies = [ally];
+    const enemies = [instantiateRobot('drizzlet')];
+    processEnemyTurn(enemies, allies);
+    assert.ok(!ally.activeEffects.some(e => e.type === 'sleep'));
+  });
+
+  it('confused enemy can hit its own allies', () => {
+    const allies = [instantiateRobot('sizzlit')];
+    const enemies = [instantiateRobot('drizzlet'), instantiateRobot('petalia')];
+    enemies[0].activeEffects = [{ type: 'confuse', remainingTurns: 2, sourceId: 'x' }];
+    const result = processEnemyTurn(enemies, allies);
+    assert.ok(result.attacks.length >= 1);
+  });
+
+  it('hasted enemy attacks twice', () => {
+    const allies = [instantiateRobot('sizzlit')];
+    allies[0].hp = 9999;
+    allies[0].maxHp = 9999;
+    const enemies = [instantiateRobot('drizzlet')];
+    enemies[0].activeEffects = [{ type: 'haste', sourceId: 'x' }];
+    const result = processEnemyTurn(enemies, allies);
+    assert.strictEqual(result.attacks.length, 2);
+    assert.ok(!enemies[0].activeEffects.some(e => e.type === 'haste'));
+  });
+});
+
 describe('Robot Combat - XP', () => {
   it('active robots get 2x shares, reserves get 1x share', () => {
     const party = {

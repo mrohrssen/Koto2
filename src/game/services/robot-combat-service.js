@@ -125,39 +125,66 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
   const attacks = [];
   for (const enemy of enemies) {
     if (enemy.hp <= 0) continue;
+    if (isIncapacitated(enemy)) continue;
+
     const aliveAllies = allies.filter(a => a.hp > 0);
     if (aliveAllies.length === 0) break;
 
-    const target = selectTarget(enemy, aliveAllies);
-    const elemMult = getElementMultiplier(enemy.autoSkill.element, target.element);
-    const variance = rollVariance();
-    let damage = calculateRobotDamage(enemy.attack, enemy.autoSkill.power, elemMult, variance);
+    const attackCount = hasHaste(enemy) ? 2 : 1;
+    if (hasHaste(enemy)) consumeHaste(enemy);
 
-    if (defendActive) {
-      damage = Math.floor(damage * 0.5);
+    for (let strike = 0; strike < attackCount; strike++) {
+      const currentAliveAllies = allies.filter(a => a.hp > 0);
+      if (currentAliveAllies.length === 0) break;
+
+      let target;
+      if (isConfused(enemy)) {
+        const allAlive = [...allies, ...enemies].filter(c => c.hp > 0 && c.id !== enemy.id);
+        target = allAlive[Math.floor(Math.random() * allAlive.length)];
+      } else {
+        const taunter = getTauntTarget(currentAliveAllies);
+        target = taunter || selectTarget(enemy, currentAliveAllies);
+      }
+
+      const elemMult = getElementMultiplier(enemy.autoSkill.element, target.element);
+      const variance = rollVariance();
+      let buffedAttack = Math.floor(enemy.attack * getAttackMultiplier(enemy));
+      let damage = calculateRobotDamage(buffedAttack, enemy.autoSkill.power, elemMult, variance);
+
+      if (defendActive) {
+        damage = Math.floor(damage * 0.5);
+      }
+      if (itemBuffs) {
+        damage = applyDamageReduction(damage, itemBuffs);
+      }
+
+      const shieldReduction = getDamageReduction(target);
+      if (shieldReduction > 0) {
+        damage = Math.floor(damage * (1 - shieldReduction / 100));
+      }
+
+      target.hp = Math.max(0, target.hp - damage);
+
+      if (damage > 0) breakSleep(target);
+
+      if (strike === 0) {
+        enemy.ultimate.charges = Math.min(
+          enemy.ultimate.charges + 1,
+          enemy.ultimate.chargesRequired
+        );
+      }
+
+      attacks.push({
+        attackerId: enemy.id,
+        attackerName: enemy.nameEn,
+        attackerElement: enemy.element,
+        targetId: target.id,
+        targetName: target.nameEn,
+        damage,
+        elementMultiplier: elemMult,
+        targetDefeated: target.hp <= 0,
+      });
     }
-    if (itemBuffs) {
-      damage = applyDamageReduction(damage, itemBuffs);
-    }
-
-    target.hp = Math.max(0, target.hp - damage);
-
-    // +1 ultimate charge immediately when this enemy attacks
-    enemy.ultimate.charges = Math.min(
-      enemy.ultimate.charges + 1,
-      enemy.ultimate.chargesRequired
-    );
-
-    attacks.push({
-      attackerId: enemy.id,
-      attackerName: enemy.nameEn,
-      attackerElement: enemy.element,
-      targetId: target.id,
-      targetName: target.nameEn,
-      damage,
-      elementMultiplier: elemMult,
-      targetDefeated: target.hp <= 0
-    });
   }
   return { attacks, allAlliesDefeated: allies.every(a => a.hp <= 0) };
 }
