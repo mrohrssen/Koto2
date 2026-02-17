@@ -133,20 +133,27 @@ export function rollRarity() {
   return 'common';
 }
 
-export function generateEnemyRobot(highestAllyLevel = 1) {
-  const elements = ['wood', 'fire', 'earth', 'metal', 'water'];
+export function generateEnemyRobot(highestAllyLevel = 1, creaturePool = null) {
   let group;
-  // Re-roll if the element+rarity combo has no creatures
-  for (let attempts = 0; attempts < 20; attempts++) {
-    const rarity = rollRarity();
-    const element = elements[Math.floor(Math.random() * elements.length)];
-    group = ROBOTS_BY_ELEMENT_RARITY[`${element}-${rarity}`];
-    if (group && group.length > 0) break;
+
+  if (creaturePool && creaturePool.length > 0) {
+    // Area-restricted: only spawn creatures from this area's pool
+    group = ROBOT_DATA.filter(r => creaturePool.includes(r.id));
+    if (group.length === 0) group = ROBOT_DATA; // fallback if pool IDs don't match
+  } else {
+    // Random element+rarity selection (legacy/fallback)
+    const elements = ['wood', 'fire', 'earth', 'metal', 'water'];
+    for (let attempts = 0; attempts < 20; attempts++) {
+      const rarity = rollRarity();
+      const element = elements[Math.floor(Math.random() * elements.length)];
+      group = ROBOTS_BY_ELEMENT_RARITY[`${element}-${rarity}`];
+      if (group && group.length > 0) break;
+    }
+    if (!group || group.length === 0) {
+      group = ROBOT_DATA;
+    }
   }
-  if (!group || group.length === 0) {
-    // Ultimate fallback: pick any creature
-    group = ROBOT_DATA;
-  }
+
   const template = group[Math.floor(Math.random() * group.length)];
   const robot = instantiateRobot(template.id);
 
@@ -165,7 +172,7 @@ const ENEMY_COUNT_WEIGHTS = [
   { count: 3, weight: 10 }
 ];
 
-export function generateEnemyRobots(highestAllyLevel = 1, { maxEnemies } = {}) {
+export function generateEnemyRobots(highestAllyLevel = 1, { maxEnemies, creaturePool } = {}) {
   // Roll enemy count
   const totalWeight = ENEMY_COUNT_WEIGHTS.reduce((s, w) => s + w.weight, 0);
   let roll = Math.random() * totalWeight;
@@ -178,7 +185,7 @@ export function generateEnemyRobots(highestAllyLevel = 1, { maxEnemies } = {}) {
 
   const enemies = [];
   for (let i = 0; i < enemyCount; i++) {
-    enemies.push(generateEnemyRobot(highestAllyLevel));
+    enemies.push(generateEnemyRobot(highestAllyLevel, creaturePool));
   }
   return enemies;
 }

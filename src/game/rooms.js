@@ -1,33 +1,34 @@
 /**
- * @fileoverview Room generation, ward system, and exploration mechanics
+ * @fileoverview Room generation, area system, and exploration mechanics
  * @module src/game/rooms
  *
  * PURPOSE:
- * Manages dungeon exploration through NEO TOKYO wards. Generates room sequences
- * for each floor with encounters, optional shrine, and boss. Implements the ward
- * path system where players choose their route through Tokyo converging on the
- * Imperial Palace (floor 7).
+ * Manages dungeon exploration through themed areas. Generates room sequences
+ * for each area with encounters, optional shrine, quiz, word discovery, and
+ * dealer rooms. Areas are loaded from data/new-areas-staging.json and selected
+ * randomly (excluding the current area) when the player completes an area.
  *
  * KEY EXPORTS:
- * Ward System:
- * - WARD_INFO - All ward definitions (nerima, shibuya, shinjuku, etc.)
- * - WARD_PATHS - Graph of ward connections
- * - STARTING_WARDS - Available starting ward choices
- * - getStartingWardOptions() / getNextWardOptions(currentWard) - Path selection
- * - getWardInfo(wardId) / getWardTier(wardId) - Ward data access
+ * Area System:
+ * - AREAS - All area definitions loaded from JSON
+ * - getAreaSelectionOptions(excludeAreaId) - Get 2 random area choices
+ * - getAreaById(areaId) - Look up area by ID
  *
  * Room Generation:
- * - generateFloorRooms(floor, encountersNeeded) - Create room sequence for floor
+ * - generateFloorRooms(areaId, roomCount) - Create room sequence for area
  * - getRoomEntryNarration(room) - Get narrative text for room type
  * - getRoomActions(room) - Get available actions for current room
  * Constants:
- * - ROOM_TYPES - Encounter, shrine, boss
- * - FLOOR_NAMES - Ward names for each floor
+ * - ROOM_TYPES - Encounter, shrine, quiz, wordDiscovery, dealer
  *
  * ROOM SEQUENCE:
- * Each floor: N encounters + optional shrine + boss room.
+ * Each area: N rooms (encounters + special rooms). No boss room.
  * Post-combat shop appears after enemy defeats.
  */
+
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 // ============ TEST ROOM QUEUE ============
 // Only used when NODE_ENV=test for deterministic E2E tests
@@ -61,203 +62,47 @@ export function popTestRoomType() {
 // Word discovery configuration
 export const WORDS_PER_DISCOVERY = 2;
 
-// Tokyo Ward names (floor -> ward mapping)
-export const FLOOR_NAMES = {
-  1: { name: '練馬区', nameEn: 'Nerima Ward', theme: 'residential' },
-  2: { name: '中野区', nameEn: 'Nakano Ward', theme: 'otaku' },
-  3: { name: '新宿区', nameEn: 'Shinjuku Ward', theme: 'nightlife' },
-  4: { name: '池袋区', nameEn: 'Ikebukuro Ward', theme: 'shopping' },
-  5: { name: '港区', nameEn: 'Minato Ward', theme: 'corporate' },
-  6: { name: '千代田区', nameEn: 'Chiyoda Ward', theme: 'government' },
-  7: { name: '皇居', nameEn: 'Imperial Palace', theme: 'system' }
-};
+// ============ AREA SYSTEM ============
 
-// ============ WARD PATH SYSTEM ============
-// Tokyo ward graph for path selection - converges to Imperial Palace
+const __rooms_dirname = dirname(fileURLToPath(import.meta.url));
+export const AREAS = JSON.parse(
+  readFileSync(join(__rooms_dirname, '../../data/new-areas-staging.json'), 'utf8')
+);
 
-export const WARD_INFO = {
-  nerima: {
-    id: 'nerima',
-    name: '練馬区',
-    nameEn: 'Nerima Ward',
-    theme: '住宅街',
-    themeEn: 'Residential',
-    tier: 1,
-    description: '静かな住宅街。多くの市民がここからSYSTEMに取り込まれた。'
-  },
-  setagaya: {
-    id: 'setagaya',
-    name: '世田谷区',
-    nameEn: 'Setagaya Ward',
-    theme: '学園',
-    themeEn: 'Academic',
-    tier: 1,
-    description: '大学と学校が多い。若い市民たちがSYSTEMに洗脳されている。'
-  },
-  nakano: {
-    id: 'nakano',
-    name: '中野区',
-    nameEn: 'Nakano Ward',
-    theme: 'オタク',
-    themeEn: 'Otaku',
-    tier: 2,
-    description: 'マンガやアニメの聖地。サブカルチャーもSYSTEMに制御されている。'
-  },
-  shibuya: {
-    id: 'shibuya',
-    name: '渋谷区',
-    nameEn: 'Shibuya Ward',
-    theme: 'ファッション',
-    themeEn: 'Fashion',
-    tier: 2,
-    description: '若者の街。トレンドセッターたちがSYSTEMの広告塔に。'
-  },
-  shinjuku: {
-    id: 'shinjuku',
-    name: '新宿区',
-    nameEn: 'Shinjuku Ward',
-    theme: '歓楽街',
-    themeEn: 'Entertainment',
-    tier: 3,
-    description: '眠らない街。ネオンの裏でSYSTEMが全てを監視している。'
-  },
-  ikebukuro: {
-    id: 'ikebukuro',
-    name: '池袋区',
-    nameEn: 'Ikebukuro Ward',
-    theme: '商業',
-    themeEn: 'Commerce',
-    tier: 3,
-    description: '巨大デパートが立ち並ぶ。消費もSYSTEMに最適化されている。'
-  },
-  minato: {
-    id: 'minato',
-    name: '港区',
-    nameEn: 'Minato Ward',
-    theme: '企業',
-    themeEn: 'Corporate',
-    tier: 4,
-    description: '高層ビルが立ち並ぶ。SYSTEMの経済基盤がここにある。'
-  },
-  chiyoda: {
-    id: 'chiyoda',
-    name: '千代田区',
-    nameEn: 'Chiyoda Ward',
-    theme: '政府',
-    themeEn: 'Government',
-    tier: 4,
-    description: '官公庁街。SYSTEMは政治すら支配している。'
-  },
-  palace: {
-    id: 'palace',
-    name: '皇居',
-    nameEn: 'Imperial Palace',
-    theme: 'SYSTEM',
-    themeEn: 'System Core',
-    tier: 5,
-    description: 'SYSTEMのコアが眠る場所。ここで全てが決まる。'
-  },
-  outskirts: {
-    id: 'outskirts',
-    name: '外縁部',
-    nameEn: 'The Outskirts',
-    theme: '荒廃',
-    themeEn: 'Wasteland',
-    tier: 5,
-    description: 'SYSTEMの向こう側。制御を離れた荒野が広がる。'
-  }
-};
-
-// Ward paths - which wards connect to which
-export const WARD_PATHS = {
-  // Starting wards (outer Tokyo)
-  nerima: { next: ['nakano', 'shibuya'], tier: 1 },
-  setagaya: { next: ['nakano', 'shibuya'], tier: 1 },
-
-  // Mid wards
-  nakano: { next: ['shinjuku', 'ikebukuro'], tier: 2 },
-  shibuya: { next: ['shinjuku', 'ikebukuro'], tier: 2 },
-
-  // Inner wards
-  shinjuku: { next: ['minato', 'chiyoda'], tier: 3 },
-  ikebukuro: { next: ['minato', 'chiyoda'], tier: 3 },
-
-  // Core wards
-  minato: { next: ['palace'], tier: 4 },
-  chiyoda: { next: ['palace'], tier: 4 },
-
-  // Final
-  palace: { next: ['outskirts'], tier: 5, isFinal: true },
-
-  // Endless
-  outskirts: { next: ['outskirts'], tier: 5 }
-};
-
-// Starting ward options
-export const STARTING_WARDS = ['nerima', 'setagaya'];
-
-/**
- * Get starting ward options for run start
- * @returns {Array} Array of ward info objects
- */
-export function getStartingWardOptions() {
-  return STARTING_WARDS.map(id => ({
-    ...WARD_INFO[id],
-    paths: WARD_PATHS[id]
-  }));
+const AREAS_BY_ID = {};
+for (const area of AREAS) {
+  AREAS_BY_ID[area.id] = area;
 }
 
 /**
- * Get next ward options after clearing current ward
- * @param {string} currentWard - Current ward ID
- * @returns {Array} Array of ward info objects (or empty if at palace)
+ * Get 2 random area options, excluding the current area
  */
-export function getNextWardOptions(currentWard) {
-  const paths = WARD_PATHS[currentWard];
-  if (!paths || paths.next.length === 0) {
-    return [];
-  }
-
-  return paths.next.map(id => ({
-    ...WARD_INFO[id],
-    paths: WARD_PATHS[id]
-  }));
+export function getAreaSelectionOptions(excludeAreaId = null) {
+  const pool = AREAS.filter(a => a.id !== excludeAreaId);
+  const shuffled = pool.sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, 2);
 }
 
 /**
- * Get ward tier (difficulty level)
- * @param {string} wardId - Ward ID
- * @returns {number} Tier (1-5)
+ * Get area by ID
  */
-export function getWardTier(wardId) {
-  return WARD_PATHS[wardId]?.tier || 1;
+export function getAreaById(areaId) {
+  return AREAS_BY_ID[areaId] || null;
 }
 
-/**
- * Get ward info by ID
- * @param {string} wardId - Ward ID
- * @returns {object} Ward info or null
- */
-export function getWardInfo(wardId) {
-  return WARD_INFO[wardId] || null;
-}
-
-// Room types (simplified: encounters, shrine, boss)
+// Room types (encounters, shrine, quiz, wordDiscovery, dealer)
 export const ROOM_TYPES = {
-  encounter: 'encounter',       // Combat encounter (possessed citizen)
-  shrine: 'shrine',             // Fox shrine (healing)
-  quiz: 'quiz',                 // Quiz master (reward room)
-  wordDiscovery: 'wordDiscovery', // Learn new vocabulary
-  dealer: 'dealer',              // Robot dealer (sell/buy robots)
-  boss: 'boss'                  // Floor boss
+  encounter: 'encounter',
+  shrine: 'shrine',
+  quiz: 'quiz',
+  wordDiscovery: 'wordDiscovery',
+  dealer: 'dealer'
 };
 
 // ============ ROOM GENERATION ============
 
 /**
  * Check if a room type is a special type (subject to constraints)
- * @param {string} type - Room type
- * @returns {boolean}
  */
 function isSpecialType(type) {
   return type === ROOM_TYPES.shrine ||
@@ -268,19 +113,13 @@ function isSpecialType(type) {
 
 /**
  * Generate a single room with type constraints
- * @param {number} floor - Current floor (1-7)
- * @param {number} roomNumber - Room number in sequence
- * @param {number} totalRooms - Total rooms in floor
- * @param {string|null} excludeSpecialType - Special type to exclude (for back-to-back constraint)
- * @returns {object} Room object
  */
-function generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType = null, encountersOnly = false) {
-  const SHRINE_CHANCE = 0.10;          // 10% chance for shrine
-  const QUIZ_CHANCE = 0.10;            // 10% chance for quiz
-  const WORD_DISCOVERY_CHANCE = 0.10;  // 10% chance for word discovery
-  const DEALER_CHANCE = 0.10;          // 10% chance for dealer
+function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType = null, encountersOnly = false) {
+  const SHRINE_CHANCE = 0.10;
+  const QUIZ_CHANCE = 0.10;
+  const WORD_DISCOVERY_CHANCE = 0.10;
+  const DEALER_CHANCE = 0.10;
 
-  // Check test queue first (for deterministic E2E tests)
   const queuedType = popTestRoomType();
   let type;
 
@@ -289,7 +128,6 @@ function generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType = 
   } else if (encountersOnly) {
     type = ROOM_TYPES.encounter;
   } else {
-    // Generate with constraints
     let attempts = 0;
     do {
       const roll = Math.random();
@@ -313,66 +151,48 @@ function generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType = 
     );
   }
 
-  return createRoom(type, floor, roomNumber, totalRooms);
+  return createRoom(type, areaId, roomNumber, totalRooms);
 }
 
 /**
  * Generate a pair of rooms for a branch choice
- * Constraints: no duplicate special types in pair, no back-to-back same special
- * @param {number} floor - Current floor (1-7)
- * @param {number} roomNumber - Room number in sequence
- * @param {number} totalRooms - Total rooms in floor
- * @param {string|null} excludeSpecialType - Special type to exclude (for back-to-back constraint)
- * @returns {Array} Array of 2 room objects
  */
-function generateBranchPair(floor, roomNumber, totalRooms, excludeSpecialType = null, encountersOnly = false) {
-  const room1 = generateSingleRoom(floor, roomNumber, totalRooms, excludeSpecialType, encountersOnly);
+function generateBranchPair(areaId, roomNumber, totalRooms, excludeSpecialType = null, encountersOnly = false) {
+  const room1 = generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType, encountersOnly);
 
-  // For room2, also exclude room1's type if it's special
   let room2ExcludeType = excludeSpecialType;
   if (isSpecialType(room1.type)) {
     room2ExcludeType = room1.type;
   }
 
-  const room2 = generateSingleRoom(floor, roomNumber, totalRooms, room2ExcludeType, encountersOnly);
+  const room2 = generateSingleRoom(areaId, roomNumber, totalRooms, room2ExcludeType, encountersOnly);
 
   return [room1, room2];
 }
 
 /**
- * Generate rooms for a floor with branching
- * Structure: single first room + branch pairs + single boss
- * @param {number} floor - Current floor (1-7)
- * @param {number} encountersNeeded - Number of room slots before boss
- * @param {string|null} lastSpecialType - Last special room type completed (for back-to-back constraint)
- * @param {boolean} encountersOnly - If true, all rooms are encounters (robot combat MVP)
- * @returns {Array} Array of room objects (singles) or pairs (arrays of 2)
+ * Generate rooms for an area with branching
+ * Structure: single first room + branch pairs (no boss)
  */
-export function generateFloorRooms(floor, encountersNeeded = 3, lastSpecialType = null, encountersOnly = false) {
+export function generateFloorRooms(areaId, roomCount = 10, lastSpecialType = null, encountersOnly = false) {
   const rooms = [];
-  const totalSlots = encountersNeeded + 1; // +1 for boss
+  const totalSlots = roomCount;
   let prevSpecialType = lastSpecialType;
 
-  for (let i = 0; i < encountersNeeded; i++) {
+  for (let i = 0; i < roomCount; i++) {
     const roomNumber = i + 1;
 
     if (i === 0) {
-      // First room: single (auto-entered)
-      const room = generateSingleRoom(floor, roomNumber, totalSlots, prevSpecialType, encountersOnly);
+      const room = generateSingleRoom(areaId, roomNumber, totalSlots, prevSpecialType, encountersOnly);
       if (isSpecialType(room.type)) {
         prevSpecialType = room.type;
       }
       rooms.push(room);
     } else {
-      // Middle rooms: branch pairs
-      const pair = generateBranchPair(floor, roomNumber, totalSlots, prevSpecialType, encountersOnly);
+      const pair = generateBranchPair(areaId, roomNumber, totalSlots, prevSpecialType, encountersOnly);
       rooms.push(pair);
-      // Note: prevSpecialType updates when player makes selection (in selectBranch)
     }
   }
-
-  // Boss room (always last, single)
-  rooms.push(createRoom(ROOM_TYPES.boss, floor, totalSlots, totalSlots));
 
   return rooms;
 }
@@ -380,13 +200,13 @@ export function generateFloorRooms(floor, encountersNeeded = 3, lastSpecialType 
 /**
  * Create a room object
  */
-function createRoom(type, floor, roomNumber, totalRooms) {
+function createRoom(type, areaId, roomNumber, totalRooms) {
   const room = {
-    id: `floor${floor}_room${roomNumber}`,
+    id: `${areaId}_room${roomNumber}`,
     type,
     roomNumber,
     totalRooms,
-    floor,
+    areaId,
     explored: false,
     interacted: false
   };
@@ -395,11 +215,9 @@ function createRoom(type, floor, roomNumber, totalRooms) {
     case ROOM_TYPES.shrine:
       room.shrine = { used: false };
       break;
-
     case ROOM_TYPES.quiz:
       room.quiz = { answered: false, rewarded: false };
       break;
-
     case ROOM_TYPES.wordDiscovery:
       room.wordDiscovery = {
         wordsToLearn: WORDS_PER_DISCOVERY,
@@ -408,20 +226,15 @@ function createRoom(type, floor, roomNumber, totalRooms) {
         completed: false
       };
       break;
-
     case ROOM_TYPES.dealer: {
       room.dealer = {
         visited: false,
-        offeredRobots: [],  // populated lazily when player enters room
+        offeredRobots: [],
         soldRobots: [],
         purchasedRobot: null
       };
       break;
     }
-
-    case ROOM_TYPES.boss:
-      room.isBossRoom = true;
-      break;
   }
 
   return room;
@@ -433,28 +246,19 @@ function createRoom(type, floor, roomNumber, totalRooms) {
  * Get narration for entering a room
  */
 export function getRoomEntryNarration(room) {
-  const wardInfo = FLOOR_NAMES[room.floor] || { name: '不明なエリア' };
   const roomNum = `エリア${room.roomNumber}/${room.totalRooms}`;
 
   switch (room.type) {
     case ROOM_TYPES.encounter:
       return `${roomNum}に入った。SYSTEM接続された市民がいる！`;
-
     case ROOM_TYPES.shrine:
       return `${roomNum}に入った。狐の祠がある。神秘的な力が感じられる...`;
-
     case ROOM_TYPES.quiz:
       return `${roomNum}に入った。不思議な老人がいる...「質問に答えよ」`;
-
     case ROOM_TYPES.wordDiscovery:
       return `${roomNum}に入った。知識の泉がある...新しい言葉を発見できそうだ。`;
-
     case ROOM_TYPES.dealer:
       return `${roomNum}に入った。怪しいロボット商人がいる...「良いボットがあるよ」`;
-
-    case ROOM_TYPES.boss:
-      return `${wardInfo.name}の中心部に入った。強力なSYSTEM反応がある...ボスがいる！`;
-
     default:
       return `${roomNum}に入った。`;
   }
@@ -466,11 +270,10 @@ export function getRoomEntryNarration(room) {
 export function getRoomActions(room) {
   const actions = [];
 
-  // All rooms have "proceed" except boss room, unfinished encounter rooms, and unfinished wordDiscovery rooms
   const isUnfinishedEncounter = room.type === 'encounter' && !room.interacted;
   const isUnfinishedWordDiscovery = room.type === 'wordDiscovery' && !room.interacted;
   const isUnfinishedDealer = room.type === 'dealer' && !room.interacted;
-  if (!room.isBossRoom && !isUnfinishedEncounter && !isUnfinishedWordDiscovery && !isUnfinishedDealer) {
+  if (!isUnfinishedEncounter && !isUnfinishedWordDiscovery && !isUnfinishedDealer) {
     actions.push({ id: 'proceed', name: '進む', description: '次のエリアへ進む' });
   }
 
@@ -480,34 +283,24 @@ export function getRoomActions(room) {
         actions.push({ id: 'shrine_upgrade', name: '祈る', description: '狐の祠に祈る' });
       }
       break;
-
     case ROOM_TYPES.quiz:
       if (!room.quiz.rewarded) {
         actions.push({ id: 'quiz_answer', name: '答える', description: 'クイズに答える' });
       }
       break;
-
     case ROOM_TYPES.encounter:
       if (!room.interacted) {
         actions.push({ id: 'fight', name: '解放', description: '市民を解放する' });
       }
       break;
-
     case ROOM_TYPES.wordDiscovery:
-      // No action buttons - flash cards appear automatically
       break;
-
     case ROOM_TYPES.dealer:
       if (!room.dealer?.visited) {
         actions.push({ id: 'dealer_trade', name: '取引', description: 'ロボット商人と取引する' });
       }
       break;
-
-    case ROOM_TYPES.boss:
-      actions.push({ id: 'boss_fight', name: 'ボス戦', description: 'エリアボスに挑む' });
-      break;
   }
 
   return actions;
 }
-
