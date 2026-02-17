@@ -86,9 +86,6 @@ export class SimulationStats {
       avgLevel: this.average(levels),
       maxLevel: Math.max(...levels),
 
-      // Chip usage (if tracked)
-      chipStats: this.aggregateChips(),
-
       // Best run details
       bestRun: this.getBestRun(),
     };
@@ -128,25 +125,6 @@ export class SimulationStats {
       };
     }
     return result;
-  }
-
-  /**
-   * Aggregate chip usage statistics
-   */
-  aggregateChips() {
-    const chipCounts = {};
-    for (const run of this.runs) {
-      for (const chipId of (run.chips || [])) {
-        chipCounts[chipId] = (chipCounts[chipId] || 0) + 1;
-      }
-    }
-
-    // Sort by frequency
-    const sorted = Object.entries(chipCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10); // Top 10
-
-    return Object.fromEntries(sorted);
   }
 
   /**

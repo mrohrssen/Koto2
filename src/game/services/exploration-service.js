@@ -4,7 +4,7 @@
  *
  * PURPOSE:
  * Handles dungeon exploration logic including ward/floor selection,
- * room navigation, shrine interaction, and post-combat chip shop.
+ * room navigation, shrine interaction, and post-combat shop.
  *
  * KEY EXPORTS:
  * - ExplorationService (class) - Exploration and room interaction service
@@ -577,8 +577,8 @@ export class ExplorationService {
   }
 
   /**
-   * Sell a chip to the dealer
-   * @param {string} chipId - ID of chip to sell
+   * Sell a robot to the dealer
+   * @param {string} robotId - ID of robot to sell
    */
   dealerSell(robotId) {
     const room = this.getCurrentRoom();
@@ -647,7 +647,7 @@ export class ExplorationService {
   }
 
   /**
-   * Buy the dealer's offered chip
+   * Buy the dealer's offered robot
    */
   dealerBuy(robotId) {
     const room = this.getCurrentRoom();

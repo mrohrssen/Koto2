@@ -24,7 +24,7 @@
  * Room: /game/room, /game/proceed, /game/interact-trap, /game/loot-body
  * Combat: /game/start-encounter, /game/start-boss, /game/combat-cycle, /game/combat-end-narration
  * Economy: /game/shop, /game/shop/buy, /game/refine, /game/open-treasure
- * Chips: /game/chip-loadout, /game/equip-chip, /game/unequip-chip
+ * Robots: /game/robot-party, /game/robot-swap
  * Meta: /game/upgrades, /game/purchase-upgrade
  *
  * DEPENDENCIES:

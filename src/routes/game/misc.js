@@ -160,27 +160,6 @@ export default function createMiscRoutes({
     }
   });
 
-  // Debug: Give player test chips
-  router.post('/debug-chips', (req, res) => {
-    const gameManager = req.gameManager;
-    const player = gameManager.run?.player || gameManager.player;
-    if (!player) {
-      return res.status(400).json({ error: 'No player found' });
-    }
-
-    const testChips = [
-      { id: 'battery', name: '電池ボット', nameEn: 'Battery Bot', category: 'pipeline', rarity: 'common', effects: { pipeline: { type: 'flatAdd', value: 5, triggerChance: 1 } } },
-      { id: 'speaker', name: 'スピーカーボット', nameEn: 'Speaker Bot', category: 'pipeline', rarity: 'uncommon', effects: { pipeline: { type: 'multiply', value: 1.5, triggerChance: 0.8 } } },
-      { id: 'scissors', name: 'ハサミボット', nameEn: 'Scissors Bot', category: 'pipeline', rarity: 'uncommon', effects: { pipeline: { type: 'flatAdd', value: 8, triggerChance: 0.9 } } }
-    ];
-
-    player.chips = player.chips || [];
-    player.chips.push(...testChips);
-    req.saveGame();
-
-    res.json({ success: true, chipsAdded: testChips.length, totalChips: player.chips.length });
-  });
-
   // Debug: Force a specific game phase
   router.post('/debug-force-phase', async (req, res) => {
     if (!getDebugMode()) {
@@ -243,7 +222,6 @@ export default function createMiscRoutes({
           gameManager.run.wardSelectionRequired = false;
           gameManager.combat = null;
           gameManager.run.bossDefeated = false;
-          // Chip shop removed - post_combat_shop phase no longer generated
           gameManager.run.postCombatShop = null;
           break;
         }

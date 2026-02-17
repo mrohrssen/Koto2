@@ -245,10 +245,10 @@ export function getWardInfo(wardId) {
 // Room types (simplified: encounters, shrine, boss)
 export const ROOM_TYPES = {
   encounter: 'encounter',       // Combat encounter (possessed citizen)
-  shrine: 'shrine',             // Fox shrine (chip upgrade)
+  shrine: 'shrine',             // Fox shrine (healing)
   quiz: 'quiz',                 // Quiz master (reward room)
   wordDiscovery: 'wordDiscovery', // Learn new vocabulary
-  dealer: 'dealer',              // Robot dealer (sell chips, buy uncommon+)
+  dealer: 'dealer',              // Robot dealer (sell/buy robots)
   boss: 'boss'                  // Floor boss
 };
 

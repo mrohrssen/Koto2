@@ -21,7 +21,7 @@ export function getPlayerCombatStats(player) {
     maxHp: player.maxHp,
     sp: player.sp || 0,
     maxSp: player.maxSp || 0,
-    atk: 0,  // Damage comes from chips only (ignore legacy player.attack)
+    atk: 0,
     // Stub out old stats for compatibility
     def: 0,
     matk: 0,
@@ -64,7 +64,7 @@ export function getEnemyCombatStats(enemy) {
  * No hit/miss, no crits, no defense
  */
 export function resolvePhysicalAttack(attacker, defender, skillMultiplier = 1.0, armorPen = 0) {
-  // Simplified: always hits, damage = atk * variance (base attack is 0, chips provide all damage)
+  // Simplified: always hits, damage = atk * variance
   const variance = 0.85 + Math.random() * 0.30;  // 0.85 to 1.15
   const damage = Math.floor(attacker.atk * skillMultiplier * variance);
 

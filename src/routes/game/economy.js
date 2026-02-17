@@ -1,7 +1,7 @@
 /**
  * @fileoverview Economy routes
  *
- * Handles post-combat chip shop, shrines, and meta-progression upgrades
+ * Handles post-combat shop, shrines, and meta-progression upgrades
  */
 
 import { Router } from 'express';
@@ -39,19 +39,6 @@ export default function createEconomyRoutes({ generateGameNarration }) {
     const gameManager = req.gameManager;
     try {
       const result = gameManager.skipShop();
-      req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Sell chip from inventory
-  router.post('/sell-chip', async (req, res) => {
-    const gameManager = req.gameManager;
-    const { chipId } = req.body;
-    try {
-      const result = gameManager.sellChip(chipId);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {

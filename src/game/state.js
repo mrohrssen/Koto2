@@ -9,7 +9,7 @@
  *
  * KEY EXPORTS:
  * State Factories:
- * - createNewPlayer(name) - Player with attack, maxHp, credits, chips, equipment
+ * - createNewPlayer(name) - Player with attack, maxHp, credits
  * - createNewRun(player) - Run state: floor, ward path, rooms, encounters
  * - createCombatState(enemy) - Combat instance for battle
  * - createMetaProgression() - Meta-save: essence, upgrades, achievements
