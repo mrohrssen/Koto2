@@ -3,7 +3,7 @@
  * @module src/game/services/exploration-service
  *
  * PURPOSE:
- * Handles dungeon exploration logic including ward/floor selection,
+ * Handles dungeon exploration logic including area selection,
  * room navigation, shrine interaction, and post-combat shop.
  *
  * KEY EXPORTS:
@@ -11,22 +11,18 @@
  *
  * DEPENDENCIES:
  * - GameManager reference (this.gm) for state access and cross-service calls
- * - rooms.js for ward/room generation and utilities
- * - items.js for item lookup
+ * - rooms.js for area/room generation and utilities
  */
 
 
-import { getSimpleNarration } from '../dm.js';
 import { generateEncounterCount } from '../state.js';
 
 import {
   generateFloorRooms,
   getRoomEntryNarration,
   getRoomActions,
-  STARTING_WARDS,
-  getStartingWardOptions,
-  getNextWardOptions,
-  getWardInfo
+  getAreaSelectionOptions,
+  getAreaById
 } from '../rooms.js';
 
 import { addXpToRobot, XP_PER_LEVEL, instantiateRobot, getRobotBuyPrice, getRobotSellPrice, generateDealerRobots } from '../robots.js';
@@ -46,116 +42,72 @@ export class ExplorationService {
     this.gm = gameManager;
   }
 
-  // ============ WARD PATH SELECTION ============
+  // ============ AREA SELECTION ============
 
   /**
-   * Get starting ward options for run start
+   * Get area options for selection
+   * @returns {Array} 2 random area options
    */
-  getStartingWardOptions() {
-    return getStartingWardOptions();
+  getAreaOptions() {
+    const excludeId = this.gm.run?.currentArea?.id || null;
+    return getAreaSelectionOptions(excludeId);
   }
 
   /**
-   * Select starting ward for a new run
-   * @param {string} wardId - Ward ID (e.g., 'nerima' or 'setagaya')
+   * Select an area (works for both start and between areas)
+   * @param {string} areaId - Area ID to select
    */
-  selectStartingWard(wardId) {
+  selectArea(areaId) {
     if (!this.gm.run) {
       throw new Error('No active run');
     }
 
-    if (!STARTING_WARDS.includes(wardId)) {
-      logger.warn('[Exploration] Invalid starting ward attempted:', { wardId });
-      throw new Error(`Invalid starting ward: ${wardId}`);
+    const area = getAreaById(areaId);
+    if (!area) {
+      throw new Error(`Invalid area: ${areaId}`);
     }
 
-    this.gm.run.currentWard = wardId;
-    this.gm.run.wardPath = [wardId];
-    this.gm.run.floor = 1;
-    this.gm.run.wardSelectionRequired = false;
+    this.gm.run.currentArea = area;
+    this.gm.run.areaPath.push(areaId);
+    this.gm.run.areaSelectionRequired = false;
+    this.gm.run.areaCleared = false;
 
-    // Now enter the floor
-    this.enterFloor();
+    // Enter the area
+    this.enterArea();
 
-    const wardInfo = getWardInfo(wardId);
-
-    logger.info('[Exploration] Starting ward selected:', { ward: wardId, floor: this.gm.run.floor });
+    logger.info('[Exploration] Area selected:', { area: areaId, areasCompleted: this.gm.run.areasCompleted });
 
     return {
       success: true,
-      ward: wardInfo,
-      floor: this.gm.run.floor
+      area,
+      areasCompleted: this.gm.run.areasCompleted
     };
   }
 
   /**
-   * Get next ward options after clearing current ward (boss defeated)
+   * Enter an area — generate rooms, set background, reset per-area state
    */
-  getNextWardOptions() {
-    if (!this.gm.run?.currentWard) {
-      return [];
-    }
-    return getNextWardOptions(this.gm.run.currentWard);
-  }
-
-  /**
-   * Select next ward after defeating boss
-   * @param {string} wardId - Ward ID to advance to
-   */
-  selectNextWard(wardId) {
-    if (!this.gm.run?.bossDefeated) {
-      throw new Error('Boss not defeated');
-    }
-
-    const options = getNextWardOptions(this.gm.run.currentWard);
-    const validOption = options.find(o => o.id === wardId);
-
-    if (!validOption) {
-      throw new Error(`Invalid ward selection: ${wardId}`);
-    }
-
-    this.gm.run.currentWard = wardId;
-    this.gm.run.wardPath.push(wardId);
-    this.gm.run.floor++;
-    this.gm.run.wardSelectionRequired = false;
-
-    // Enter the new floor
-    this.enterFloor();
-
-    const wardInfo = getWardInfo(wardId);
-
-
-    return {
-      success: true,
-      ward: wardInfo,
-      floor: this.gm.run.floor
-    };
-  }
-
-  /**
-   * Enter a floor
-   */
-  enterFloor() {
+  enterArea() {
     if (!this.gm.run) {
       throw new Error('No active run');
     }
 
-    // Reset floor state
+    const areaId = this.gm.run.currentArea?.id || 'unknown';
+
+    // Reset per-area state
     this.gm.run.encountersCompleted = 0;
-    this.gm.run.encountersNeeded = generateEncounterCount(this.gm.run.floor);
-    this.gm.run.bossDefeated = false;
+    this.gm.run.encountersNeeded = generateEncounterCount();
+    this.gm.run.areaCleared = false;
 
-    // Generate rooms for this floor
-    this.gm.run.rooms = generateFloorRooms(this.gm.run.floor, this.gm.run.encountersNeeded, null, false);
+    // Generate rooms for this area (no boss)
+    this.gm.run.rooms = generateFloorRooms(areaId, this.gm.run.encountersNeeded, null, false);
     this.gm.run.currentRoom = 0;
     this.gm.run.roomsExplored = 0;
+    this.gm.run.pendingBranch = false;
+    this.gm.run.selectedRooms = [];
 
-    // Set floor background image
-    if (this.gm.run.floor > 7) {
-      this.gm.run.background = 'outskirts.webp';
-    } else {
-      this.gm.run.background = `floor${this.gm.run.floor}.webp`;
-    }
+    // Set background: area-specific
+    this.gm.run.background = `${areaId}.webp`;
 
     // Mark first room as explored
     if (this.gm.run.rooms.length > 0) {
@@ -163,58 +115,19 @@ export class ExplorationService {
       this.gm.run.roomsExplored = 1;
     }
 
-    this.gm.narrate(getSimpleNarration('enterFloor', this.gm.run.floor));
+    const areaName = this.gm.run.currentArea?.nameEn || areaId;
+    this.gm.narrate(`${areaName}に到着した。探索を開始する...`);
 
-    logger.info('[Exploration] Entered floor:', { floor: this.gm.run.floor, ward: this.gm.run.currentWard });
-    logger.debug('[Exploration] Floor rooms:', { roomCount: this.gm.run.rooms?.length });
+    logger.info('[Exploration] Entered area:', { areaId, rooms: this.gm.run.rooms?.length });
 
     this.gm.emitState();
 
     return {
-      floor: this.gm.run.floor,
+      areaId,
       totalRooms: this.gm.run.rooms.length,
       encountersNeeded: this.gm.run.encountersNeeded,
       firstRoom: this.gm.run.rooms[0]
     };
-  }
-
-  /**
-   * Proceed to next floor after boss defeat
-   */
-  nextFloor() {
-    if (!this.gm.run?.bossDefeated) {
-      throw new Error('Boss not defeated');
-    }
-
-    if (this.gm.run.floor >= 7) {
-      throw new Error('Already at final floor');
-    }
-
-    this.gm.run.floor++;
-
-
-    return this.enterFloor();
-  }
-
-  /**
-   * Continue to next endless floor after boss defeat
-   */
-  continueEndless() {
-    if (!this.gm.run?.bossDefeated && !this.gm.run?.gameVictoryPending) {
-      throw new Error('Boss not defeated');
-    }
-
-    // Clear the victory pending flag if coming from Floor 7
-    this.gm.run.gameVictoryPending = false;
-
-    this.gm.run.floor++;
-    this.gm.run.currentWard = 'outskirts';
-    if (!this.gm.run.wardPath.includes('outskirts')) {
-      this.gm.run.wardPath.push('outskirts');
-    }
-    this.gm.run.wardSelectionRequired = false;
-
-    return this.enterFloor();
   }
 
   // ============ ROOM NAVIGATION ============
@@ -247,18 +160,36 @@ export class ExplorationService {
       throw new Error('Must complete encounter before proceeding');
     }
 
-    // Can't proceed from boss room (use nextFloor instead)
-    if (currentRoom.isBossRoom) {
-      throw new Error('Cannot proceed past boss room');
-    }
-
     // Move to next room
     this.gm.run.currentRoom++;
-    const nextRoom = this.gm.run.rooms[this.gm.run.currentRoom];
 
-    if (!nextRoom) {
-      throw new Error('No more rooms');
+    // Check if we've run out of rooms (area complete)
+    if (this.gm.run.currentRoom >= this.gm.run.rooms.length) {
+      this.gm.run.areaCleared = true;
+      this.gm.run.areasCompleted++;
+      this.gm.run.stats.areasCleared = this.gm.run.areasCompleted;
+      this.gm.run.areaSelectionRequired = true;
+
+      // Check win condition
+      if (this.gm.run.areasCompleted >= this.gm.run.areasToWin) {
+        this.gm.run.gameVictoryPending = true;
+      }
+
+      const areaName = this.gm.run.currentArea?.nameEn || 'Unknown';
+      this.gm.narrate(`${areaName}を制覇した！`);
+      this.gm.emitState();
+
+      logger.info('[Exploration] Area cleared:', { areasCompleted: this.gm.run.areasCompleted });
+
+      return {
+        areaCleared: true,
+        areasCompleted: this.gm.run.areasCompleted,
+        areasToWin: this.gm.run.areasToWin,
+        gameVictory: this.gm.run.areasCompleted >= this.gm.run.areasToWin
+      };
     }
+
+    const nextRoom = this.gm.run.rooms[this.gm.run.currentRoom];
 
     // Check if next room is a branch pair
     if (Array.isArray(nextRoom)) {
@@ -281,13 +212,10 @@ export class ExplorationService {
     this.gm.run.roomsExplored++;
     this.gm.run.stats.roomsExplored++;
 
-    // Vary background per room (floor1_1.webp through floor1_5.webp, cycling)
+    // Vary background per room
     const bgVariant = ((this.gm.run.currentRoom - 1) % 5) + 1;
-    if (this.gm.run.floor > 7) {
-      this.gm.run.background = `outskirts_${bgVariant}.webp`;
-    } else {
-      this.gm.run.background = `floor${this.gm.run.floor}_${bgVariant}.webp`;
-    }
+    const areaId = this.gm.run.currentArea?.id || 'floor1';
+    this.gm.run.background = `${areaId}_${bgVariant}.webp`;
 
     // Track room clears for counter chips
     if (this.gm.run.runStats) {
@@ -352,11 +280,8 @@ export class ExplorationService {
 
     // Vary background per room
     const bgVariant = ((this.gm.run.currentRoom - 1) % 5) + 1;
-    if (this.gm.run.floor > 7) {
-      this.gm.run.background = `outskirts_${bgVariant}.webp`;
-    } else {
-      this.gm.run.background = `floor${this.gm.run.floor}_${bgVariant}.webp`;
-    }
+    const areaId = this.gm.run.currentArea?.id || 'floor1';
+    this.gm.run.background = `${areaId}_${bgVariant}.webp`;
 
     // Clear pending branch
     this.gm.run.pendingBranch = false;
@@ -470,8 +395,8 @@ export class ExplorationService {
       }
 
       case 'credits': {
-        const floor = this.gm.run.floor || 1;
-        const creditReward = 20 + (floor * 10);
+        const areaNum = (this.gm.run.areasCompleted || 0) + 1;
+        const creditReward = 20 + (areaNum * 10);
         this.gm.run.player.credits = (this.gm.run.player.credits || 0) + creditReward;
         description = `${creditReward} credits earned!`;
         break;
@@ -526,8 +451,8 @@ export class ExplorationService {
         }
       }
 
-      // Credits: 20% of a floor-scaled amount (base 15 per enemy)
-      const creditReward = Math.floor(15 * 0.2) + this.gm.run.floor;
+      // Credits: 20% of an area-scaled amount (base 15 per enemy)
+      const creditReward = Math.floor(15 * 0.2) + ((this.gm.run.areasCompleted || 0) + 1);
       this.gm.run.player.credits = (this.gm.run.player.credits || 0) + creditReward;
 
       logger.info('[WordDiscovery] Robot rewards:', { discoveryXp, creditReward, xpGrants: xpGrants.length });
