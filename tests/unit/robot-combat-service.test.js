@@ -6,7 +6,8 @@ import {
   processEnemyTurn,
   processBefriend,
   processUltimate,
-  awardBattleXp
+  awardBattleXp,
+  tickAllEffects
 } from '../../src/game/services/robot-combat-service.js';
 import { instantiateRobot } from '../../src/game/robots.js';
 
@@ -124,16 +125,16 @@ describe('Robot Combat - Ultimate Targeting', () => {
     assert.deepStrictEqual(result.hits, []);
   });
 
-  it('poison type ultimate delegates to stub and returns poison type', () => {
+  it('poison type ultimate returns poison type', () => {
     const allies = [instantiateRobot('sizzlit')];
     const enemies = [instantiateRobot('drizzlet')];
     allies[0].ultimate.type = 'poison';
     allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
-    const result = processUltimate(allies[0], enemies);
+    const party = { active: allies, reserves: [] };
+    const result = processUltimate(allies[0], enemies, null, party);
     assert.ok(result.success);
     assert.strictEqual(result.type, 'poison');
     assert.strictEqual(allies[0].ultimate.charges, 0);
-    assert.deepStrictEqual(result.hits, []);
   });
 
   it('damage type ultimate returns type damage', () => {
@@ -211,6 +212,61 @@ describe('Robot Combat - Heal Ultimate', () => {
   });
 });
 
+describe('Robot Combat - Poison Ultimate', () => {
+  it('applies poison effect to single enemy', () => {
+    const trickster = instantiateRobot('sizzlit');
+    trickster.ultimate.type = 'poison';
+    trickster.ultimate.target = 'single_enemy';
+    trickster.ultimate.power = 30;
+    trickster.ultimate.charges = trickster.ultimate.chargesRequired;
+
+    const enemies = [instantiateRobot('drizzlet'), instantiateRobot('petalia')];
+    const party = { active: [trickster], reserves: [] };
+    const result = processUltimate(trickster, enemies, null, party);
+
+    assert.ok(result.success);
+    assert.strictEqual(result.type, 'poison');
+    assert.strictEqual(result.hits.length, 1);
+    const poisoned = enemies.filter(e => e.activeEffects && e.activeEffects.length > 0);
+    assert.strictEqual(poisoned.length, 1);
+    assert.strictEqual(poisoned[0].activeEffects[0].type, 'poison');
+    assert.strictEqual(poisoned[0].activeEffects[0].remainingTurns, 3);
+  });
+
+  it('deals immediate damage alongside poison', () => {
+    const trickster = instantiateRobot('sizzlit');
+    trickster.ultimate.type = 'poison';
+    trickster.ultimate.target = 'single_enemy';
+    trickster.ultimate.power = 30;
+    trickster.ultimate.charges = trickster.ultimate.chargesRequired;
+
+    const enemies = [instantiateRobot('drizzlet')];
+    const startHp = enemies[0].hp;
+    const party = { active: [trickster], reserves: [] };
+    processUltimate(trickster, enemies, null, party);
+
+    assert.ok(enemies[0].hp < startHp, 'should deal immediate damage');
+  });
+
+  it('does not apply poison to killed target', () => {
+    const trickster = instantiateRobot('sizzlit');
+    trickster.ultimate.type = 'poison';
+    trickster.ultimate.target = 'single_enemy';
+    trickster.ultimate.power = 30;
+    trickster.attack = 100; // massive attack to kill
+    trickster.ultimate.charges = trickster.ultimate.chargesRequired;
+
+    const enemies = [instantiateRobot('drizzlet')];
+    enemies[0].hp = 1; // nearly dead
+    const party = { active: [trickster], reserves: [] };
+    const result = processUltimate(trickster, enemies, null, party);
+
+    assert.strictEqual(enemies[0].hp, 0);
+    assert.ok(!enemies[0].activeEffects || enemies[0].activeEffects.length === 0);
+    assert.strictEqual(result.hits[0].poisonApplied, false);
+  });
+});
+
 describe('Robot Combat - XP', () => {
   it('active robots get 2x shares, reserves get 1x share', () => {
     const party = {
@@ -236,5 +292,49 @@ describe('Robot Combat - XP', () => {
     awardBattleXp(party, 150);
     assert.strictEqual(party.active[0].xp, 50);
     assert.strictEqual(party.active[0].level, 2);
+  });
+});
+
+describe('Robot Combat - Effect Ticking', () => {
+  it('tickAllEffects processes poison on enemies', () => {
+    const allies = [instantiateRobot('sizzlit')];
+    const enemies = [instantiateRobot('drizzlet')];
+    enemies[0].activeEffects = [
+      { type: 'poison', remainingTurns: 2, damagePerTurn: 5, sourceId: 'test' }
+    ];
+    const startHp = enemies[0].hp;
+    const events = tickAllEffects(allies, enemies);
+    assert.ok(enemies[0].hp < startHp);
+    assert.strictEqual(events.length, 1);
+    assert.strictEqual(events[0].type, 'poison');
+  });
+
+  it('ticks effects on allies too', () => {
+    const allies = [instantiateRobot('sizzlit')];
+    allies[0].activeEffects = [
+      { type: 'poison', remainingTurns: 1, damagePerTurn: 8, sourceId: 'enemy' }
+    ];
+    const startHp = allies[0].hp;
+    const events = tickAllEffects(allies, []);
+    assert.ok(allies[0].hp < startHp);
+    assert.strictEqual(allies[0].activeEffects.length, 0);
+  });
+
+  it('skips dead robots', () => {
+    const allies = [instantiateRobot('sizzlit')];
+    const enemies = [instantiateRobot('drizzlet')];
+    enemies[0].hp = 0;
+    enemies[0].activeEffects = [
+      { type: 'poison', remainingTurns: 2, damagePerTurn: 5, sourceId: 'test' }
+    ];
+    const events = tickAllEffects(allies, enemies);
+    assert.strictEqual(events.length, 0);
+  });
+
+  it('returns empty array when no effects exist', () => {
+    const allies = [instantiateRobot('sizzlit')];
+    const enemies = [instantiateRobot('drizzlet')];
+    const events = tickAllEffects(allies, enemies);
+    assert.strictEqual(events.length, 0);
   });
 });

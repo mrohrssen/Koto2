@@ -14,7 +14,7 @@ import {
   getBuffedElementMultiplier,
   applyDamageReduction
 } from './item-service.js';
-import { applyHeal } from '../combat/effects.js';
+import { applyHeal, applyPoison, tickEffects } from '../combat/effects.js';
 import { DM_PROMPTS } from '../dm.js';
 
 export const CREDITS_PER_KILL = 15;
@@ -126,6 +126,25 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
     });
   }
   return { attacks, allAlliesDefeated: allies.every(a => a.hp <= 0) };
+}
+
+/**
+ * Tick active effects on all robots (allies and enemies) at start of a combat round.
+ * Wraps tickEffects for each alive robot and collects all events.
+ *
+ * @param {object[]} allies - Player's active robots
+ * @param {object[]} enemies - Enemy robots
+ * @returns {object[]} Array of effect events (poison damage, etc.)
+ */
+export function tickAllEffects(allies, enemies) {
+  const events = [];
+  for (const robot of [...allies, ...enemies]) {
+    if (robot && robot.hp > 0) {
+      const robotEvents = tickEffects(robot);
+      events.push(...robotEvents);
+    }
+  }
+  return events;
 }
 
 export function processBefriend(enemies, robotParty) {
@@ -287,16 +306,70 @@ function processHealUltimate(robot, enemies, itemBuffs, robotParty) {
 }
 
 function processPoisonUltimate(robot, enemies, itemBuffs, robotParty) {
+  const aliveEnemies = enemies.filter(e => e.hp > 0);
+  const ultTarget = robot.ultimate.target || 'all_enemies';
+
+  // Determine targets based on targeting mode
+  let targets;
+  if (ultTarget === 'single_enemy') {
+    const selected = selectTarget(robot, aliveEnemies);
+    targets = selected ? [selected] : [];
+  } else {
+    targets = aliveEnemies;
+  }
+
+  // Immediate damage uses half power
+  const immediatePower = Math.floor((robot.ultimate.power || 30) * 0.5);
+  // Poison damage-per-turn scales with attack and ultimate power
+  const damagePerTurn = Math.max(1, Math.floor((robot.attack / 10) * (robot.ultimate.power || 30) * 0.2));
+
+  const hits = [];
+  const xpEvents = [];
+  const defeatedEnemyIds = new Set();
+
+  for (const enemy of targets) {
+    const elemMult = getElementMultiplier(robot.ultimate.element, enemy.element);
+    const variance = rollVariance();
+    const buffedAttack = itemBuffs ? getBuffedAttack(robot.attack, itemBuffs) : robot.attack;
+    const buffedElemMult = itemBuffs ? getBuffedElementMultiplier(elemMult, itemBuffs) : elemMult;
+    const damage = calculateRobotDamage(buffedAttack, immediatePower, buffedElemMult, variance);
+    enemy.hp = Math.max(0, enemy.hp - damage);
+
+    const targetDefeated = enemy.hp <= 0;
+
+    // Apply poison only if target survived the immediate damage
+    if (!targetDefeated) {
+      applyPoison(enemy, { damagePerTurn, duration: 3, sourceId: robot.id });
+    }
+
+    hits.push({
+      targetId: enemy.id,
+      targetName: enemy.nameEn,
+      damage,
+      elementMultiplier: elemMult,
+      targetDefeated,
+      poisonApplied: !targetDefeated
+    });
+
+    // Award XP immediately when an enemy is killed
+    if (targetDefeated && !defeatedEnemyIds.has(enemy.id) && robotParty) {
+      defeatedEnemyIds.add(enemy.id);
+      const xpEvent = awardKillXp(robotParty, 50);
+      xpEvents.push({ enemyId: enemy.id, enemyName: enemy.nameEn, ...xpEvent });
+    }
+  }
+
   robot.ultimate.charges = 0;
+
   return {
     success: true,
     type: 'poison',
     robotId: robot.id,
     robotName: robot.nameEn,
     ultimateName: robot.ultimate.nameEn,
-    hits: [],
-    xpEvents: [],
-    allEnemiesDefeated: false
+    hits,
+    xpEvents,
+    allEnemiesDefeated: enemies.every(e => e.hp <= 0)
   };
 }
 
