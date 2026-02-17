@@ -57,64 +57,17 @@ function applyStat(field, value, itemBuffs) {
   }
 }
 
-function applyHpHeal(allRobots, value) {
+function applyChargeBoost(allRobots, amount) {
   for (const robot of allRobots) {
-    const hpGain = Math.floor(robot.maxHp * value);
-    robot.hp = Math.min(robot.maxHp + hpGain, robot.hp + hpGain);
+    robot.ultimate.charges = Math.min(
+      robot.ultimate.charges + amount,
+      robot.ultimate.chargesRequired
+    );
   }
-}
-
-// Pick a random stat field to boost
-const RANDOM_STAT_FIELDS = ['attackMult', 'hpMult', 'autoPowerMult', 'ultimatePowerMult'];
-
-function applyRandomStat(value, itemBuffs) {
-  const field = RANDOM_STAT_FIELDS[Math.floor(Math.random() * RANDOM_STAT_FIELDS.length)];
-  applyStat(field, value, itemBuffs);
 }
 
 export function applyItem(item, robotParty, itemBuffs) {
   const allRobots = [...robotParty.active, ...robotParty.reserves].filter(Boolean);
-
-  if (item.type === 'stat') {
-    const { field, value, penalty, bonus, random: isRandom } = item.effect;
-
-    // Random stat item (e.g. money, thing)
-    if (field === 'random' || isRandom) {
-      applyRandomStat(value || 0.02, itemBuffs);
-      return { applied: true };
-    }
-
-    // Apply primary stat
-    applyStat(field, value, itemBuffs);
-
-    // HP mult also heals
-    if (field === 'hpMult') {
-      applyHpHeal(allRobots, value);
-    }
-
-    // Apply bonus compound effect (e.g. parents: HP + damage reduction)
-    if (bonus) {
-      applyStat(bonus.field, bonus.value, itemBuffs);
-      if (bonus.field === 'hpMult') {
-        applyHpHeal(allRobots, bonus.value);
-      }
-    }
-
-    // Apply penalty (e.g. sake: +attack, -HP)
-    if (penalty) {
-      applyStat(penalty.field, penalty.value, itemBuffs);
-    }
-
-    // allStats boosts all multiplier fields (legendary time item)
-    if (item.effect.allStats) {
-      const boost = item.effect.allStats;
-      for (const f of RANDOM_STAT_FIELDS) {
-        applyStat(f, boost, itemBuffs);
-      }
-    }
-
-    return { applied: true };
-  }
 
   if (item.type === 'heal') {
     if (item.effect.healPercent) {
@@ -124,7 +77,6 @@ export function applyItem(item, robotParty, itemBuffs) {
         const heal = Math.floor(lowest.maxHp * item.effect.healPercent);
         lowest.hp = Math.min(lowest.maxHp, lowest.hp + heal);
       }
-      return { applied: true };
     }
     if (item.effect.healAllPercent) {
       const alive = allRobots.filter(r => r.hp > 0);
@@ -132,7 +84,6 @@ export function applyItem(item, robotParty, itemBuffs) {
         const heal = Math.floor(robot.maxHp * item.effect.healAllPercent);
         robot.hp = Math.min(robot.maxHp, robot.hp + heal);
       }
-      return { applied: true };
     }
     if (item.effect.healMostDamaged) {
       const alive = allRobots.filter(r => r.hp > 0);
@@ -140,46 +91,45 @@ export function applyItem(item, robotParty, itemBuffs) {
         const mostDamaged = alive.sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp))[0];
         mostDamaged.hp = mostDamaged.maxHp;
       }
-      return { applied: true };
     }
+    // Combo: some heal items also grant charges (e.g. strawberry milk)
+    if (item.effect.chargeBoost) {
+      applyChargeBoost(allRobots, item.effect.chargeBoost);
+    }
+    return { applied: true };
+  }
+
+  if (item.type === 'boost') {
+    // Permanent stat boost (e.g. green tea: +2% attack)
+    if (item.effect.field && item.effect.value) {
+      applyStat(item.effect.field, item.effect.value, itemBuffs);
+    }
+    // Temporary boost (e.g. miso soup: +3 attack for 5 turns)
+    if (item.effect.tempBoost) {
+      const tb = item.effect.tempBoost;
+      const targets = tb.target === 'all' ? allRobots : [allRobots[0]];
+      for (const robot of targets.filter(Boolean)) {
+        robot[tb.field] = (robot[tb.field] || 0) + tb.value;
+      }
+    }
+    return { applied: true };
+  }
+
+  if (item.type === 'charge') {
+    if (item.effect.chargeBoost) {
+      applyChargeBoost(allRobots, item.effect.chargeBoost);
+    }
+    return { applied: true };
+  }
+
+  if (item.type === 'revive') {
     if (item.effect.revivePercent) {
       const kos = allRobots.filter(r => r.hp <= 0);
       if (kos.length > 0) {
         const target = kos[Math.floor(Math.random() * kos.length)];
         target.hp = Math.floor(target.maxHp * item.effect.revivePercent);
       }
-      return { applied: true };
     }
-  }
-
-  if (item.type === 'utility') {
-    if (item.effect.chargeBoost) {
-      for (const robot of allRobots) {
-        robot.ultimate.charges = Math.min(
-          robot.ultimate.charges + item.effect.chargeBoost,
-          robot.ultimate.chargesRequired
-        );
-      }
-    }
-
-    // Random utility items resolve to a random beneficial effect
-    if (item.effect.random || item.effect.randomLarge || item.effect.randomEpic) {
-      const magnitude = item.effect.randomEpic ? 0.05 : item.effect.randomLarge ? 0.03 : 0.02;
-      // Boost 1-3 random stats depending on tier
-      const count = item.effect.randomEpic ? 3 : item.effect.randomLarge ? 2 : 1;
-      for (let i = 0; i < count; i++) {
-        applyRandomStat(magnitude, itemBuffs);
-      }
-    }
-
-    // allStats for legendary utility items
-    if (item.effect.allStats) {
-      const boost = item.effect.allStats;
-      for (const f of RANDOM_STAT_FIELDS) {
-        applyStat(f, boost, itemBuffs);
-      }
-    }
-
     return { applied: true };
   }
 

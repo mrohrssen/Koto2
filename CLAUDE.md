@@ -183,6 +183,7 @@ Sprites are served with 1-year immutable cache headers. When regenerating sprite
 - **Don't use Homebrew git** - Use `/usr/bin/git` to avoid library conflicts.
 - **Don't skip worktrees** - Multiple Claude sessions will conflict without them.
 - **Don't forget to bump `SPRITE_VERSION`** - After regenerating sprites, update it in `public/js/ui/sprite-utils.js` or users will see cached old sprites.
+- **Don't use Read tool to "show" images** - The Read tool's image display does NOT render in the terminal. To show the user images, serve them via a local HTTP server and display in the Playwright MCP browser (e.g., `python3 -m http.server` then `browser_navigate`).
 
 ## Deployment
 

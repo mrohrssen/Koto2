@@ -23,13 +23,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const USAGE = 'Usage: node scripts/creature-gemini-gen.mjs --id <id> --visual-tier <tier> --descriptions <path.json> [--style-refs-dir <dir>] [--use-art-briefs]';
 
-const TIER_DIRECTIVES = {
-  common: 'Cute mascot creature — round, simple, big eyes, soft colors, huggable, like a Bangboo or Mini Seelie. Minimal detail, maximum charm.',
-  uncommon: 'Companion creature — balanced proportions, moderate detail, developing elemental identity. Approachable but with personality.',
-  rare: 'Impressive creature — striking design, complex details, strong elemental effects, commanding presence. Noble or fierce.',
-  epic: 'Powerful creature — grand proportions, dramatic effects, elaborate armor or energy. Imposing boss-tier presence.',
-  legendary: 'Mythical creature — otherworldly, cosmic grandeur, maximum visual complexity, flowing energy, divine or primordial aura.',
-};
+const VALID_TIERS = new Set(['common', 'uncommon', 'rare', 'epic', 'legendary']);
 
 const VARIANTS = ['a', 'b', 'c'];
 
@@ -66,8 +60,8 @@ function parseCli() {
     process.exit(1);
   }
 
-  if (!TIER_DIRECTIVES[visualTier]) {
-    process.stderr.write(`Error: Invalid visual-tier "${visualTier}". Must be one of: ${Object.keys(TIER_DIRECTIVES).join(', ')}\n`);
+  if (!VALID_TIERS.has(visualTier)) {
+    process.stderr.write(`Error: Invalid visual-tier "${visualTier}". Must be one of: ${[...VALID_TIERS].join(', ')}\n`);
     process.exit(1);
   }
 
@@ -104,39 +98,18 @@ async function loadStyleRefs(dir) {
 // ---------------------------------------------------------------------------
 
 function buildPrompt(meta, visualTier, descriptionText, hasStyleRefs) {
-  const tierDirective = TIER_DIRECTIVES[visualTier];
+  // Describe the animal, not the game unit. Game-mechanic language (archetype,
+  // moves, "boss-tier presence") causes Gemini to generate bipedal monsters
+  // instead of animals. Let the style refs + description handle the design.
+  const creature = meta.modifier
+    ? `${meta.modifier} ${meta.baseMeaning}`
+    : meta.baseMeaning;
 
-  const styleBlock = hasStyleRefs
-    ? `ART STYLE (match the reference images exactly — same line weight, same shading, same level of detail):
-- Crisp black outlines, uniform weight
-- Cel-shaded flat coloring: base color + one shadow tone per surface
-- No gradients, no soft brushwork, no painterly textures, no airbrushing
-- Large expressive eyes with single white catchlight
-- Limited palette: 5-6 body colors maximum plus black outlines and white highlights
-- Clean readable silhouette suitable for a game UI thumbnail
-- Compact appealing proportions — not hyper-detailed or realistic`
-    : `ART STYLE:
-Anime creature collector style — cel-shaded lighting, expressive eyes.
-NOT chibi — proper proportions but still stylized.`;
+  const styleRef = hasStyleRefs
+    ? 'Design in the same art style as the reference images.'
+    : 'Anime creature collector style — cel-shaded lighting, expressive eyes.';
 
-  return `${styleBlock}
-
-TECHNICAL:
-- Character is completely isolated on a solid, pure magenta background (Hex #FF00FF) with sharp, crisp edges and no lighting bleed, glow, or shadows. No shadow underneath the character. Full body shot, ready for animation.
-- Front-facing idle pose, single character only
-- No text, no UI elements, no humans
-- Creature must not contain any magenta (#FF00FF) in its own colors
-
-CREATURE IDENTITY:
-This creature represents "${meta.baseMeaning}". Looking at it, a viewer must immediately think "${meta.baseMeaning}".
-The creature must visually BE ${meta.baseMeaning}, not be a different animal/object that relates to it.
-
-Rarity: ${visualTier} — ${tierDirective}
-Name: ${meta.name} the ${meta.modifier} ${meta.baseMeaning}
-Element: ${meta.element} | Archetype: ${meta.archetype}
-Moves: ${meta.attack} / ${meta.ultimate}
-
-Appearance: ${descriptionText}`;
+  return `${styleRef} ${descriptionText} Solid magenta (#FF00FF) background, no shadows, full body, front-facing idle pose, ready for animation. No text, no UI elements.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -257,15 +230,10 @@ async function main() {
     }
   }
 
-  // Build metadata from descriptions JSON
+  // Build metadata from descriptions JSON (only animal identity, no game mechanics)
   const meta = {
-    name:        descriptions.name        || id,
     modifier:    descriptions.modifier    || '',
     baseMeaning: descriptions.baseMeaning || '',
-    element:     descriptions.element     || '',
-    archetype:   descriptions.archetype   || '',
-    attack:      descriptions.attack      || '',
-    ultimate:    descriptions.ultimate    || '',
   };
 
   // Load style reference images
@@ -279,7 +247,7 @@ async function main() {
   // Initialize Gemini
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.5-flash-preview-image-generation',
+    model: 'gemini-2.5-flash-image',
   });
 
   // Generate all 3 images concurrently

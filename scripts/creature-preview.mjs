@@ -4,16 +4,17 @@
  * Creature Preview HTML Generator + HTTP Server
  *
  * Generates a cyberpunk-styled HTML preview of creature concept art
- * and serves it via a local HTTP server.
+ * and serves it via a local HTTP server. Uses a shared server registry
+ * so parallel sessions reuse one server instead of spawning many.
  *
- * Normal mode:
+ * Normal mode (generates HTML, starts server if needed):
  *   node scripts/creature-preview.mjs --id <id> --metadata <path.json>
  *
- * Cleanup mode:
- *   node scripts/creature-preview.mjs --cleanup --pid <number>
+ * Cleanup mode (kills the shared server):
+ *   node scripts/creature-preview.mjs --cleanup [--pid <number>]
  */
 
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, unlink } from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
 import { createServer as createHttpServer } from 'node:http';
 import { createServer as createNetServer } from 'node:net';
@@ -21,7 +22,8 @@ import { parseArgs } from 'node:util';
 import { resolve, extname, basename } from 'node:path';
 
 const USAGE = 'Usage: node scripts/creature-preview.mjs --id <id> --metadata <path.json>';
-const CLEANUP_USAGE = 'Usage: node scripts/creature-preview.mjs --cleanup --pid <number>';
+const CLEANUP_USAGE = 'Usage: node scripts/creature-preview.mjs --cleanup [--pid <number>]';
+const SERVER_REGISTRY = '/tmp/creature-preview-server.json';
 
 const VARIANTS = ['a', 'b', 'c'];
 
@@ -79,11 +81,8 @@ function parseCli() {
   const { cleanup, pid, id, metadata } = args.values;
 
   if (cleanup) {
-    if (!pid) {
-      process.stderr.write(CLEANUP_USAGE + '\n');
-      process.exit(1);
-    }
-    return { mode: 'cleanup', pid: Number(pid) };
+    // --pid is optional; if omitted, read from registry
+    return { mode: 'cleanup', pid: pid ? Number(pid) : null };
   }
 
   if (!id || !metadata) {
@@ -98,13 +97,31 @@ function parseCli() {
 // Cleanup mode
 // ---------------------------------------------------------------------------
 
-function runCleanup(pid) {
+async function runCleanup(pidArg) {
+  let pid = pidArg;
+
+  // If no --pid given, read from registry
+  if (!pid && existsSync(SERVER_REGISTRY)) {
+    try {
+      const reg = JSON.parse(readFileSync(SERVER_REGISTRY, 'utf-8'));
+      pid = reg.pid;
+    } catch { /* ignore corrupt registry */ }
+  }
+
+  if (!pid) {
+    process.stdout.write(JSON.stringify({ status: 'no_server', message: 'No server found to clean up' }) + '\n');
+    return;
+  }
+
   try {
     process.kill(pid, 'SIGTERM');
     process.stdout.write(JSON.stringify({ status: 'killed', pid }) + '\n');
   } catch (err) {
     process.stdout.write(JSON.stringify({ status: 'not_found', pid, error: err.message }) + '\n');
   }
+
+  // Remove registry file
+  try { await unlink(SERVER_REGISTRY); } catch { /* already gone */ }
 }
 
 // ---------------------------------------------------------------------------
@@ -327,15 +344,45 @@ function startServer(port) {
 // Main
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Registry helpers
+// ---------------------------------------------------------------------------
+
+function readRegistry() {
+  if (!existsSync(SERVER_REGISTRY)) return null;
+  try {
+    return JSON.parse(readFileSync(SERVER_REGISTRY, 'utf-8'));
+  } catch {
+    return null;
+  }
+}
+
+function isProcessAlive(pid) {
+  try {
+    process.kill(pid, 0); // signal 0 = check existence
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function writeRegistry(pid, port) {
+  await writeFile(SERVER_REGISTRY, JSON.stringify({ pid, port }), 'utf-8');
+}
+
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
+
 async function main() {
   const cli = parseCli();
 
   if (cli.mode === 'cleanup') {
-    runCleanup(cli.pid);
+    await runCleanup(cli.pid);
     return;
   }
 
-  // Normal mode: generate HTML + serve
+  // Normal mode: generate HTML, reuse or start server
   const { id, metadataPath } = cli;
 
   if (!existsSync(metadataPath)) {
@@ -350,11 +397,22 @@ async function main() {
 
   await writeFile(htmlPath, html, 'utf-8');
 
+  // Check if a shared server is already running
+  const reg = readRegistry();
+  if (reg && isProcessAlive(reg.pid)) {
+    // Server already running — just output the URL and exit
+    const url = `http://localhost:${reg.port}/${htmlFile}`;
+    process.stdout.write(JSON.stringify({ url, pid: reg.pid, reused: true }) + '\n');
+    return;
+  }
+
+  // No server running — start one and register it
   const port = await findFreePort();
   startServer(port);
+  await writeRegistry(process.pid, port);
 
   const url = `http://localhost:${port}/${htmlFile}`;
-  process.stdout.write(JSON.stringify({ url, pid: process.pid }) + '\n');
+  process.stdout.write(JSON.stringify({ url, pid: process.pid, reused: false }) + '\n');
 
   // Keep server running until killed
 }

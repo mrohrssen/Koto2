@@ -51,8 +51,8 @@ Summary table and approval flow remain at the end, unchanged.
 - **Model:** `gpt-image-1.5` (OpenAI's latest, recommended)
 - **Endpoint:** `POST https://api.openai.com/v1/images/generations`
 - **API key:** Read from `data/.creature-forge-openai-key`
-- **Parameters:** size `512x512`, quality `high`, format `b64_json`
-- **Cost:** ~$0.28 per creature (3 images at ~$0.09 each)
+- **Parameters:** size `1024x1024` (minimum supported), quality `medium` AND `high` (both generated for comparison). No `response_format` param — model returns `b64_json` by default
+- **Cost (A/B test mode):** ~$0.50 per creature (6 images: 3 medium at ~$0.034 each + 3 high at ~$0.133 each). After the user decides which quality tier is sufficient, this drops to either ~$0.10 (medium only) or ~$0.40 (high only)
 
 ### Prompt Template
 
@@ -78,8 +78,8 @@ Visual description: [Full description text from Section 8]
 1. After Section 8 descriptions are presented, skill says "Generating concept art..."
 2. Run 3 `curl` calls in parallel (one per description A/B/C)
 3. Decode base64 → save to `/tmp/creature-forge-{id}-a.png`, `-b.png`, `-c.png`
-4. Generate HTML preview at `/tmp/creature-forge-{id}-preview.html` — images referenced via `file:///tmp/` paths (no base64 embedding, no server needed)
-5. Open via Playwright `browser_navigate` to `file:///tmp/creature-forge-{id}-preview.html`
+4. Generate HTML preview at `/tmp/creature-forge-{id}-preview.html` — images referenced via relative paths
+5. Serve `/tmp` via `python3 -m http.server 8787` (Playwright blocks `file://` URLs), open via `browser_navigate`
 6. Images are ephemeral — `/tmp` cleans up naturally
 
 ### Error Handling
@@ -96,12 +96,12 @@ Dark-themed page (matching game's cyberpunk aesthetic):
 - **Header:** Creature name, modifier, element badge, archetype badge
 - **3-column grid:** Each column shows:
   - Large letter label (A / B / C)
-  - Generated image (512x512, referenced via local `file:///tmp/` path)
+  - Generated image (1024x1024, served via local HTTP server)
   - Full description text underneath
   - Attack skill + Ultimate listed below
 - **Responsive:** Columns stack vertically if viewport is narrow
 
-Images referenced as local file paths — no base64 embedding or web server needed.
+Images served via temporary `python3 -m http.server` on `/tmp` (Playwright blocks `file://` URLs).
 
 ### After Viewing
 

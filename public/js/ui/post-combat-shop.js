@@ -27,9 +27,10 @@ const RARITY_COLORS = {
 };
 
 const TYPE_ICONS = {
-  stat: '⬆️',
   heal: '💚',
-  utility: '⚡'
+  boost: '⬆️',
+  charge: '⚡',
+  revive: '💫'
 };
 
 export function init({ itemSelectedCallback }) {
