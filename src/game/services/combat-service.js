@@ -11,9 +11,8 @@
  *
  * DEPENDENCIES:
  * - ../state.js - Combat state factory, level up checks
- * - ../enemies.js - Enemy generation, boss drops
+ * - ../enemies.js - Enemy generation
  * - ../combat/index.js - Combat mechanics, victory processing
- * - ../rooms.js - Post-combat shop, ward navigation
  * - ../dm.js - Narration helpers
  */
 
@@ -21,19 +20,15 @@
 import { createCombatState } from '../state.js';
 import {
   generateEnemy,
-  getBossForFloor,
-  getBossDrop,
   selectEnemyIntent,
   pickRandomVoiceLine
 } from '../enemies.js';
 import {
   determineTurnOrder,
   processVictory,
-  processBossVictory,
   executePlayerAttack,
   executeEnemyTurn
 } from '../combat/index.js';
-import { getNextWardOptions } from '../rooms.js';
 import { getSimpleNarration } from '../dm.js';
 import { logger } from '../../logger.js';
 
@@ -63,7 +58,7 @@ export class CombatService {
     const restHeal = Math.floor(player.maxHp * 0.05);
     player.hp = Math.min(player.maxHp, player.hp + restHeal);
 
-    const enemy = generateEnemy(this.gm.run.floor);
+    const enemy = generateEnemy(1);
 
     // Apply compounding HP scaling (10% per enemy defeated in this run)
     const runKills = this.gm.run.player._runKills || 0;
@@ -72,7 +67,7 @@ export class CombatService {
     enemy.hp = enemy.maxHp;
 
     this.gm.combat = createCombatState(enemy);
-    logger.info('[Combat] Started encounter:', { enemy: enemy.nameEn, hp: enemy.hp, hpMultiplier: hpMultiplier.toFixed(2), floor: this.gm.run.floor });
+    logger.info('[Combat] Started encounter:', { enemy: enemy.nameEn, hp: enemy.hp, hpMultiplier: hpMultiplier.toFixed(2) });
     if (this.gm.run.player._runKills === undefined) this.gm.run.player._runKills = 0;  // Init kill counter
     this.gm.combat.turn = determineTurnOrder(this.gm.run.player, enemy);
 
@@ -88,60 +83,6 @@ export class CombatService {
       intent: this.gm.combat.intent,
       playerGoesFirst: this.gm.combat.turn === 'player',
       dialogue: pickRandomVoiceLine(enemy.dialogue?.possessed)  // SYSTEM-controlled dialogue
-    };
-  }
-
-  /**
-   * Start a boss encounter
-   * @returns {object} Combat state with boss, intent, turn order, dialogue
-   */
-  startBossEncounter() {
-    if (!this.gm.run || !this.gm.run.active) {
-      throw new Error('No active run');
-    }
-
-    const boss = getBossForFloor(this.gm.run.floor);
-
-    // Apply compounding HP scaling (10% per enemy defeated in this run)
-    const runKills = this.gm.run.player._runKills || 0;
-    const hpMultiplier = Math.pow(1.1, runKills);
-    boss.maxHp = Math.floor(boss.maxHp * hpMultiplier);
-    boss.hp = boss.maxHp;
-
-    this.gm.combat = createCombatState(boss);
-    logger.info('[Combat] Boss encounter started:', { boss: boss.nameEn, hp: boss.hp, hpMultiplier: hpMultiplier.toFixed(2), floor: this.gm.run.floor });
-
-    // If player has robot party, set up robot combat for boss
-    if (this.gm.run.robotParty?.active?.length > 0) {
-      // Adapt boss to robot combat format
-      const robotBoss = {
-        ...boss,
-        id: boss.id || `boss-${this.gm.run.floor}`,
-        element: boss.element || 'metal',
-        autoSkill: boss.autoSkill || { name: boss.name, nameEn: boss.nameEn, element: boss.element || 'metal', power: 100 },
-        ultimate: boss.ultimate || { name: boss.name, nameEn: boss.nameEn, charges: 0, chargesRequired: 99 },
-      };
-      this.gm.combat.allies = this.gm.run.robotParty.active;
-      this.gm.combat.enemies = [robotBoss];
-      this.gm.combat.isRobotCombat = true;
-    } else {
-      this.gm.combat.turn = determineTurnOrder(this.gm.run.player, boss);
-    }
-
-    // Select initial boss intent
-    this.gm.combat.intent = selectEnemyIntent(boss, 1);
-
-    const isFinal = this.gm.run.floor === 7;
-    this.gm.narrate(getSimpleNarration(isFinal ? 'finalBossAppear' : 'bossAppear', boss));
-    this.gm.emitState();
-
-
-    return {
-      enemy: this.gm.combat.enemy,
-      intent: this.gm.combat.intent,
-      playerGoesFirst: this.gm.combat.turn === 'player',
-      isFinalBoss: isFinal,
-      dialogue: pickRandomVoiceLine(boss.dialogue?.possessed)  // SYSTEM-controlled dialogue
     };
   }
 
@@ -216,28 +157,19 @@ export class CombatService {
         // Process victory rewards (but don't narrate)
         const enemy = this.gm.combat.enemy;
         result.liberatedDialogue = pickRandomVoiceLine(enemy.dialogue?.liberated);
-        const isBoss = enemy.isBoss;
 
-        let rewards;
-        if (isBoss) {
-          const drop = getBossDrop(this.gm.run.floor);
-          rewards = processBossVictory(this.gm.run.player, enemy, this.gm.run.floor, drop, this.gm.run);
-          this.gm.run.bossDefeated = true;
-        } else {
-          rewards = processVictory(this.gm.run.player, enemy, this.gm.run);
-          this.gm.run.encountersCompleted++;
+        const rewards = processVictory(this.gm.run.player, enemy, this.gm.run);
+        this.gm.run.encountersCompleted++;
 
-          // Mark room encounter as completed
-          const currentRoom = this.gm.getCurrentRoom();
-          if (currentRoom && currentRoom.type === 'encounter') {
-            currentRoom.interacted = true;
-          }
+        // Mark room encounter as completed
+        const currentRoom = this.gm.getCurrentRoom();
+        if (currentRoom && currentRoom.type === 'encounter') {
+          currentRoom.interacted = true;
         }
 
         result.expGained = rewards.xp;
         result.creditsGained = rewards.credits;
         result.loot = rewards.drops || [];
-        result.isBoss = isBoss;
 
         // End combat
         this.gm.combat.active = false;
@@ -304,35 +236,16 @@ export class CombatService {
     this.gm.run.player._runKills = (this.gm.run.player._runKills || 0) + 1;
 
     const enemy = this.gm.combat.enemy;
-    const isBoss = enemy.isBoss;
-    logger.info('[Combat] Victory:', { enemy: enemy.nameEn, isBoss, floor: this.gm.run.floor });
+    logger.info('[Combat] Victory:', { enemy: enemy.nameEn, areasCompleted: this.gm.run.areasCompleted });
 
-    let rewards;
-    let shopItems = null;
+    const rewards = processVictory(this.gm.run.player, enemy, this.gm.run);
+    this.gm.narrate(getSimpleNarration('victory', { ...enemy, rewards }));
+    this.gm.run.encountersCompleted++;
 
-    if (isBoss) {
-      const drop = getBossDrop(this.gm.run.floor);
-      rewards = processBossVictory(this.gm.run.player, enemy, this.gm.run.floor, drop, this.gm.run);
-      this.gm.narrate(getSimpleNarration('bossVictory', { ...enemy, rewards }));
-      this.gm.run.bossDefeated = true;
-
-      // Award essence immediately on boss defeat
-      const baseEssence = Math.floor(Math.random() * 16) + 10; // 10-25
-      const floorBonus = this.gm.run.floor * 3; // +3 per floor (3-21)
-      const essenceDrop = baseEssence + floorBonus; // Total: 13-46
-      this.gm.meta.essence += essenceDrop;
-      this.gm.meta.lifetimeStats.totalEssenceEarned += essenceDrop;
-      rewards.essenceDrop = essenceDrop;
-    } else {
-      rewards = processVictory(this.gm.run.player, enemy, this.gm.run);
-      this.gm.narrate(getSimpleNarration('victory', { ...enemy, rewards }));
-      this.gm.run.encountersCompleted++;
-
-      // Mark room encounter as completed
-      const currentRoom = this.gm.getCurrentRoom();
-      if (currentRoom && currentRoom.type === 'encounter') {
-        currentRoom.interacted = true;
-      }
+    // Mark room encounter as completed
+    const currentRoom = this.gm.getCurrentRoom();
+    if (currentRoom && currentRoom.type === 'encounter') {
+      currentRoom.interacted = true;
     }
 
     // Track liberation in meta-progression
@@ -354,40 +267,11 @@ export class CombatService {
 
     // End combat
     this.gm.combat.active = false;
-
-    // Check if floor complete
-    let nextWardOptions = null;
-    if (isBoss) {
-      if (this.gm.run.floor === 7) {
-        // Game complete — offer endless mode choice
-        this.gm.run.gameVictoryPending = true;
-        this.gm.run.bossDefeated = true;
-        this.gm.narrate(getSimpleNarration('gameVictory', this.gm.run.player));
-      } else if (this.gm.run.floor > 7) {
-        // Endless mode floor cleared — auto-continue to next floor
-        this.gm.run.wardSelectionRequired = false;
-        this.gm.narrate(getSimpleNarration('floorClear', this.gm.run.floor));
-      } else {
-        // Normal floor cleared
-        this.gm.run.wardSelectionRequired = true;
-        nextWardOptions = getNextWardOptions(this.gm.run.currentWard);
-        this.gm.narrate(getSimpleNarration('floorClear', this.gm.run.floor));
-      }
-    }
-
     this.gm.emitState();
-
 
     return {
       type: 'victory',
-      rewards,
-      levelUps,
-      isBoss,
-      floorComplete: isBoss,
-      shopItems,
-      // Ward path info
-      wardSelectionRequired: isBoss,
-      nextWardOptions
+      rewards
     };
   }
 
@@ -398,7 +282,7 @@ export class CombatService {
   handleDefeat() {
     this.gm.combat.active = false;
     this.gm.run.active = false;
-    logger.info('[Combat] Defeat:', { floor: this.gm.run.floor, stats: this.gm.run.stats });
+    logger.info('[Combat] Defeat:', { areasCompleted: this.gm.run.areasCompleted, stats: this.gm.run.stats });
     this.gm.run.stats.endTime = Date.now();
 
     // Award essence and update meta stats (delegated to GameManager)
@@ -426,7 +310,7 @@ export class CombatService {
     this.gm.combat.active = false;
     this.gm.run.active = false;
     this.gm.run.stats.endTime = Date.now();
-    this.gm.run.stats.floorsCleared = 7;
+    this.gm.run.stats.areasCleared = this.gm.run.areasCompleted || 0;
 
     // Award essence and update meta stats (victory!)
     const essenceReward = this.gm.awardRunEssence(true);
