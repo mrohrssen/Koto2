@@ -5,8 +5,8 @@ import { instantiateRobot } from '../../src/game/robots.js';
 describe('Robot Swap', () => {
   it('swaps active robot with reserve', () => {
     const party = {
-      active: [instantiateRobot('sizzlit'), instantiateRobot('drizzlet'), instantiateRobot('petalia')],
-      reserves: [instantiateRobot('tablette'), instantiateRobot('shimra')],
+      active: [instantiateRobot('hikaribon'), instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')],
+      reserves: [instantiateRobot('nekotto'), instantiateRobot('kazenoko')],
       maxTotal: 6
     };
     const swappedOut = party.active[1]; // water
@@ -22,8 +22,8 @@ describe('Robot Swap', () => {
 
   it('can swap a KO robot out for a healthy reserve', () => {
     const party = {
-      active: [instantiateRobot('sizzlit')],
-      reserves: [instantiateRobot('drizzlet')],
+      active: [instantiateRobot('hikaribon')],
+      reserves: [instantiateRobot('tsukimochi')],
       maxTotal: 6
     };
     party.active[0].hp = 0; // KO

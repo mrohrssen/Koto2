@@ -72,7 +72,7 @@ export function createMetaProgression() {
     achievements: [],
 
     // Permanent robot collection (persists across runs)
-    robotCollection: ['sizzlit', 'drizzlet', 'petalia'],
+    robotCollection: ['hikaribon', 'hanatchi', 'tsukimochi'],
 
     // NPC bonds (persists across runs)
     npcBonds: {},

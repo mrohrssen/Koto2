@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROBOT_DATA = JSON.parse(readFileSync(join(__dirname, '../../../data/robots.json'), 'utf8'));
+const ROBOT_DATA = JSON.parse(readFileSync(join(__dirname, '../../../data/creatures.json'), 'utf8'));
 const ROBOTS_BY_ID = Object.fromEntries(ROBOT_DATA.map(r => [r.id, r]));
 
 export const RARITY_POINT_COST = {
@@ -16,7 +16,7 @@ export const RARITY_POINT_COST = {
 
 export const MAX_TEAM_POINTS = 10;
 
-export const DEFAULT_COLLECTION = ['sizzlit', 'drizzlet', 'petalia'];
+export const DEFAULT_COLLECTION = ['hikaribon', 'hanatchi', 'tsukimochi'];
 
 export function validateTeamSelection(collection, selectedIds) {
   if (!selectedIds || selectedIds.length === 0) {

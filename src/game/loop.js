@@ -94,7 +94,7 @@ export class GameManager {
     this.meta = metaData || createMetaProgression();
     // Ensure robotCollection exists for saves created before this feature
     if (!this.meta.robotCollection) {
-      this.meta.robotCollection = ['sizzlit', 'drizzlet', 'petalia'];
+      this.meta.robotCollection = ['hikaribon', 'hanatchi', 'tsukimochi'];
     }
     return this.meta;
   }

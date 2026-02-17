@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROBOT_DATA = JSON.parse(readFileSync(join(__dirname, '../../data/robots.json'), 'utf8'));
+const ROBOT_DATA = JSON.parse(readFileSync(join(__dirname, '../../data/creatures.json'), 'utf8'));
 
 const ROBOTS_BY_ID = {};
 const ROBOTS_BY_ELEMENT_RARITY = {};

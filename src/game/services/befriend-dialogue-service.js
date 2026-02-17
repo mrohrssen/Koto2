@@ -240,7 +240,7 @@ export async function generateMissingDialogues(userId, aiConfig, vocabulary, rob
     // Load robot list from file if not provided
     let robots = robotList;
     if (!robots) {
-      robots = JSON.parse(readFileSync('data/robots.json', 'utf-8'));
+      robots = JSON.parse(readFileSync('data/creatures.json', 'utf-8'));
     }
 
     for (let i = 0; i < robots.length; i++) {

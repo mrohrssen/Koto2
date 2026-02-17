@@ -176,7 +176,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     try {
       const meta = gameManager.getMeta();
-      const collection = meta.robotCollection || ['sizzlit', 'drizzlet', 'petalia'];
+      const collection = meta.robotCollection || ['hikaribon', 'hanatchi', 'tsukimochi'];
       res.json({ collection, catalog: getCollectionCatalog(collection) });
     } catch (error) {
       res.status(500).json({ error: error.message });

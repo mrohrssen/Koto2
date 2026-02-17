@@ -13,8 +13,8 @@ import { instantiateRobot } from '../../src/game/robots.js';
 
 describe('Robot Combat - Attack Turn', () => {
   it('each allied robot attacks the enemy sequentially', () => {
-    const allies = [instantiateRobot('sizzlit'), instantiateRobot('drizzlet')];
-    const enemies = [instantiateRobot('shimra')];
+    const allies = [instantiateRobot('hikaribon'), instantiateRobot('tsukimochi')];
+    const enemies = [instantiateRobot('kazenoko')];
     const result = processAttackTurn(allies, enemies);
     assert.ok(result.attacks.length >= 1);
     assert.ok(result.attacks.length <= allies.length);
@@ -22,9 +22,9 @@ describe('Robot Combat - Attack Turn', () => {
   });
 
   it('skips KOd allies', () => {
-    const allies = [instantiateRobot('sizzlit'), instantiateRobot('drizzlet')];
+    const allies = [instantiateRobot('hikaribon'), instantiateRobot('tsukimochi')];
     allies[0].hp = 0;
-    const enemies = [instantiateRobot('shimra')];
+    const enemies = [instantiateRobot('kazenoko')];
     const result = processAttackTurn(allies, enemies);
     assert.strictEqual(result.attacks.length, 1);
   });
@@ -32,7 +32,7 @@ describe('Robot Combat - Attack Turn', () => {
 
 describe('Robot Combat - Defend Turn', () => {
   it('all robots gain +1 ultimate charge', () => {
-    const allies = [instantiateRobot('sizzlit')];
+    const allies = [instantiateRobot('hikaribon')];
     processDefendTurn(allies);
     assert.strictEqual(allies[0].ultimate.charges, 1);
   });
@@ -40,8 +40,8 @@ describe('Robot Combat - Defend Turn', () => {
 
 describe('Robot Combat - Enemy Turn', () => {
   it('enemy attacks allied robots using targeting AI', () => {
-    const allies = [instantiateRobot('sizzlit')];
-    const enemies = [instantiateRobot('drizzlet')];
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('tsukimochi')];
     const result = processEnemyTurn(enemies, allies);
     assert.ok(result.attacks.length >= 1);
     assert.ok(allies[0].hp < allies[0].maxHp);
@@ -50,9 +50,9 @@ describe('Robot Combat - Enemy Turn', () => {
 
 describe('Robot Combat - Befriend', () => {
   it('captures enemy at <=50% HP (marks befriended, hp=0)', () => {
-    const enemies = [instantiateRobot('shimra')];
+    const enemies = [instantiateRobot('kazenoko')];
     enemies[0].hp = 20;
-    const party = { active: [instantiateRobot('sizzlit')], reserves: [], maxTotal: 6 };
+    const party = { active: [instantiateRobot('hikaribon')], reserves: [], maxTotal: 6 };
     const result = processBefriend(enemies, party);
     assert.ok(result.success);
     // Enemy stays in array but is marked as befriended with 0 HP
@@ -62,19 +62,19 @@ describe('Robot Combat - Befriend', () => {
   });
 
   it('rejects befriend if no enemy <=50% HP', () => {
-    const enemies = [instantiateRobot('shimra')];
+    const enemies = [instantiateRobot('kazenoko')];
     enemies[0].hp = Math.floor(enemies[0].maxHp * 0.6); // 60% HP — above threshold
-    const party = { active: [instantiateRobot('sizzlit')], reserves: [], maxTotal: 6 };
+    const party = { active: [instantiateRobot('hikaribon')], reserves: [], maxTotal: 6 };
     const result = processBefriend(enemies, party);
     assert.ok(!result.success);
   });
 
   it('rejects befriend if party full (6)', () => {
-    const enemies = [instantiateRobot('shimra')];
+    const enemies = [instantiateRobot('kazenoko')];
     enemies[0].hp = 20;
     const party = {
-      active: [instantiateRobot('sizzlit'), instantiateRobot('drizzlet'), instantiateRobot('petalia')],
-      reserves: [instantiateRobot('tablette'), instantiateRobot('shimra'), instantiateRobot('glitchi')],
+      active: [instantiateRobot('hikaribon'), instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')],
+      reserves: [instantiateRobot('nekotto'), instantiateRobot('kazenoko'), instantiateRobot('kaminarion')],
       maxTotal: 6
     };
     const result = processBefriend(enemies, party);
@@ -84,8 +84,8 @@ describe('Robot Combat - Befriend', () => {
 
 describe('Robot Combat - Ultimate Targeting', () => {
   it('single_enemy ultimate hits only one target', () => {
-    const allies = [instantiateRobot('sizzlit')];
-    const enemies = [instantiateRobot('drizzlet'), instantiateRobot('petalia')];
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')];
     allies[0].ultimate.target = 'single_enemy';
     allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
     const result = processUltimate(allies[0], enemies);
@@ -94,8 +94,8 @@ describe('Robot Combat - Ultimate Targeting', () => {
   });
 
   it('all_enemies ultimate hits all alive enemies', () => {
-    const allies = [instantiateRobot('sizzlit')];
-    const enemies = [instantiateRobot('drizzlet'), instantiateRobot('petalia')];
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')];
     allies[0].ultimate.target = 'all_enemies';
     allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
     const result = processUltimate(allies[0], enemies);
@@ -104,8 +104,8 @@ describe('Robot Combat - Ultimate Targeting', () => {
   });
 
   it('missing target field defaults to all_enemies', () => {
-    const allies = [instantiateRobot('sizzlit')];
-    const enemies = [instantiateRobot('drizzlet'), instantiateRobot('petalia')];
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')];
     delete allies[0].ultimate.target;
     allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
     const result = processUltimate(allies[0], enemies);
@@ -114,8 +114,8 @@ describe('Robot Combat - Ultimate Targeting', () => {
   });
 
   it('heal type ultimate delegates to stub and returns heal type', () => {
-    const allies = [instantiateRobot('sizzlit')];
-    const enemies = [instantiateRobot('drizzlet')];
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('tsukimochi')];
     allies[0].ultimate.type = 'heal';
     allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
     const result = processUltimate(allies[0], enemies);
@@ -126,8 +126,8 @@ describe('Robot Combat - Ultimate Targeting', () => {
   });
 
   it('poison type ultimate returns poison type', () => {
-    const allies = [instantiateRobot('sizzlit')];
-    const enemies = [instantiateRobot('drizzlet')];
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('tsukimochi')];
     allies[0].ultimate.type = 'poison';
     allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
     const party = { active: allies, reserves: [] };
@@ -138,8 +138,8 @@ describe('Robot Combat - Ultimate Targeting', () => {
   });
 
   it('damage type ultimate returns type damage', () => {
-    const allies = [instantiateRobot('sizzlit')];
-    const enemies = [instantiateRobot('drizzlet')];
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('tsukimochi')];
     allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
     const result = processUltimate(allies[0], enemies);
     assert.ok(result.success);
@@ -149,19 +149,19 @@ describe('Robot Combat - Ultimate Targeting', () => {
 
 describe('Robot Combat - Heal Ultimate', () => {
   it('heals single ally with lowest HP%', () => {
-    const healer = instantiateRobot('sizzlit');
+    const healer = instantiateRobot('hikaribon');
     healer.ultimate.type = 'heal';
     healer.ultimate.target = 'single_ally';
     healer.ultimate.power = 40;
     healer.ultimate.charges = healer.ultimate.chargesRequired;
 
-    const injured = instantiateRobot('drizzlet');
+    const injured = instantiateRobot('tsukimochi');
     injured.hp = 30;
 
-    const healthy = instantiateRobot('petalia');
+    const healthy = instantiateRobot('hanatchi');
 
     const party = { active: [healer, injured, healthy], reserves: [] };
-    const enemies = [instantiateRobot('shimra')];
+    const enemies = [instantiateRobot('kazenoko')];
     const result = processUltimate(healer, enemies, null, party);
 
     assert.ok(result.success);
@@ -173,19 +173,19 @@ describe('Robot Combat - Heal Ultimate', () => {
   });
 
   it('all_allies heals every alive ally', () => {
-    const healer = instantiateRobot('sizzlit');
+    const healer = instantiateRobot('hikaribon');
     healer.ultimate.type = 'heal';
     healer.ultimate.target = 'all_allies';
     healer.ultimate.power = 30;
     healer.ultimate.charges = healer.ultimate.chargesRequired;
 
-    const ally1 = instantiateRobot('drizzlet');
+    const ally1 = instantiateRobot('tsukimochi');
     ally1.hp = 50;
-    const ally2 = instantiateRobot('petalia');
+    const ally2 = instantiateRobot('hanatchi');
     ally2.hp = 60;
 
     const party = { active: [healer, ally1, ally2], reserves: [] };
-    const enemies = [instantiateRobot('shimra')];
+    const enemies = [instantiateRobot('kazenoko')];
     const result = processUltimate(healer, enemies, null, party);
 
     assert.ok(result.success);
@@ -195,17 +195,17 @@ describe('Robot Combat - Heal Ultimate', () => {
   });
 
   it('does not heal KOd allies', () => {
-    const healer = instantiateRobot('sizzlit');
+    const healer = instantiateRobot('hikaribon');
     healer.ultimate.type = 'heal';
     healer.ultimate.target = 'all_allies';
     healer.ultimate.power = 40;
     healer.ultimate.charges = healer.ultimate.chargesRequired;
 
-    const dead = instantiateRobot('drizzlet');
+    const dead = instantiateRobot('tsukimochi');
     dead.hp = 0;
 
     const party = { active: [healer, dead], reserves: [] };
-    const enemies = [instantiateRobot('shimra')];
+    const enemies = [instantiateRobot('kazenoko')];
     const result = processUltimate(healer, enemies, null, party);
 
     assert.strictEqual(dead.hp, 0, 'KOd ally should stay at 0');
@@ -214,13 +214,13 @@ describe('Robot Combat - Heal Ultimate', () => {
 
 describe('Robot Combat - Poison Ultimate', () => {
   it('applies poison effect to single enemy', () => {
-    const trickster = instantiateRobot('sizzlit');
+    const trickster = instantiateRobot('hikaribon');
     trickster.ultimate.type = 'poison';
     trickster.ultimate.target = 'single_enemy';
     trickster.ultimate.power = 30;
     trickster.ultimate.charges = trickster.ultimate.chargesRequired;
 
-    const enemies = [instantiateRobot('drizzlet'), instantiateRobot('petalia')];
+    const enemies = [instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')];
     const party = { active: [trickster], reserves: [] };
     const result = processUltimate(trickster, enemies, null, party);
 
@@ -234,13 +234,13 @@ describe('Robot Combat - Poison Ultimate', () => {
   });
 
   it('deals immediate damage alongside poison', () => {
-    const trickster = instantiateRobot('sizzlit');
+    const trickster = instantiateRobot('hikaribon');
     trickster.ultimate.type = 'poison';
     trickster.ultimate.target = 'single_enemy';
     trickster.ultimate.power = 30;
     trickster.ultimate.charges = trickster.ultimate.chargesRequired;
 
-    const enemies = [instantiateRobot('drizzlet')];
+    const enemies = [instantiateRobot('tsukimochi')];
     const startHp = enemies[0].hp;
     const party = { active: [trickster], reserves: [] };
     processUltimate(trickster, enemies, null, party);
@@ -249,14 +249,14 @@ describe('Robot Combat - Poison Ultimate', () => {
   });
 
   it('does not apply poison to killed target', () => {
-    const trickster = instantiateRobot('sizzlit');
+    const trickster = instantiateRobot('hikaribon');
     trickster.ultimate.type = 'poison';
     trickster.ultimate.target = 'single_enemy';
     trickster.ultimate.power = 30;
     trickster.attack = 100; // massive attack to kill
     trickster.ultimate.charges = trickster.ultimate.chargesRequired;
 
-    const enemies = [instantiateRobot('drizzlet')];
+    const enemies = [instantiateRobot('tsukimochi')];
     enemies[0].hp = 1; // nearly dead
     const party = { active: [trickster], reserves: [] };
     const result = processUltimate(trickster, enemies, null, party);
@@ -269,9 +269,9 @@ describe('Robot Combat - Poison Ultimate', () => {
 
 describe('Robot Combat - Status Effects in Attack Turn', () => {
   it('sleeping robot skips its attack', () => {
-    const allies = [instantiateRobot('sizzlit')];
+    const allies = [instantiateRobot('hikaribon')];
     allies[0].activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
-    const enemies = [instantiateRobot('drizzlet')];
+    const enemies = [instantiateRobot('tsukimochi')];
     const startHp = enemies[0].hp;
     const result = processAttackTurn(allies, enemies);
     assert.strictEqual(result.attacks.length, 0);
@@ -279,9 +279,9 @@ describe('Robot Combat - Status Effects in Attack Turn', () => {
   });
 
   it('stunned robot skips its attack', () => {
-    const allies = [instantiateRobot('sizzlit')];
+    const allies = [instantiateRobot('hikaribon')];
     allies[0].activeEffects = [{ type: 'stun', remainingTurns: 1, sourceId: 'x' }];
-    const enemies = [instantiateRobot('drizzlet')];
+    const enemies = [instantiateRobot('tsukimochi')];
     const startHp = enemies[0].hp;
     const result = processAttackTurn(allies, enemies);
     assert.strictEqual(result.attacks.length, 0);
@@ -289,17 +289,17 @@ describe('Robot Combat - Status Effects in Attack Turn', () => {
   });
 
   it('confused robot randomly targets from all creatures', () => {
-    const allies = [instantiateRobot('sizzlit'), instantiateRobot('drizzlet')];
+    const allies = [instantiateRobot('hikaribon'), instantiateRobot('tsukimochi')];
     allies[0].activeEffects = [{ type: 'confuse', remainingTurns: 2, sourceId: 'x' }];
-    const enemies = [instantiateRobot('petalia')];
+    const enemies = [instantiateRobot('hanatchi')];
     const result = processAttackTurn(allies, enemies);
     assert.ok(result.attacks.length >= 1);
   });
 
   it('hasted robot attacks twice', () => {
-    const allies = [instantiateRobot('sizzlit')];
+    const allies = [instantiateRobot('hikaribon')];
     allies[0].activeEffects = [{ type: 'haste', sourceId: 'x' }];
-    const enemies = [instantiateRobot('drizzlet')];
+    const enemies = [instantiateRobot('tsukimochi')];
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
     const result = processAttackTurn(allies, enemies);
@@ -308,8 +308,8 @@ describe('Robot Combat - Status Effects in Attack Turn', () => {
   });
 
   it('attack-buffed robot deals more damage', () => {
-    const allies = [instantiateRobot('sizzlit')];
-    const enemies = [instantiateRobot('drizzlet')];
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('tsukimochi')];
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
 
@@ -319,7 +319,7 @@ describe('Robot Combat - Status Effects in Attack Turn', () => {
     );
 
     allies[0].activeEffects = [{ type: 'attack_buff', percent: 100, remainingTurns: 2, sourceId: 'x' }];
-    const enemies2 = [instantiateRobot('drizzlet')];
+    const enemies2 = [instantiateRobot('tsukimochi')];
     enemies2[0].hp = 9999;
     enemies2[0].maxHp = 9999;
     const result2 = processAttackTurn(allies, enemies2);
@@ -330,8 +330,8 @@ describe('Robot Combat - Status Effects in Attack Turn', () => {
 
 describe('Robot Combat - Status Effects in Enemy Turn', () => {
   it('sleeping enemy skips its attack', () => {
-    const allies = [instantiateRobot('sizzlit')];
-    const enemies = [instantiateRobot('drizzlet')];
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('tsukimochi')];
     enemies[0].activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
     const startHp = allies[0].hp;
     const result = processEnemyTurn(enemies, allies);
@@ -340,48 +340,48 @@ describe('Robot Combat - Status Effects in Enemy Turn', () => {
   });
 
   it('enemy respects taunt and targets taunting ally', () => {
-    const taunter = instantiateRobot('sizzlit');
+    const taunter = instantiateRobot('hikaribon');
     taunter.activeEffects = [{ type: 'taunt', remainingTurns: 2, sourceId: 'self' }];
-    const other = instantiateRobot('drizzlet');
+    const other = instantiateRobot('tsukimochi');
     const allies = [other, taunter];
-    const enemies = [instantiateRobot('petalia')];
+    const enemies = [instantiateRobot('hanatchi')];
     const result = processEnemyTurn(enemies, allies);
     assert.strictEqual(result.attacks.length, 1);
     assert.strictEqual(result.attacks[0].targetId, taunter.id);
   });
 
   it('shield reduces damage to ally', () => {
-    const ally = instantiateRobot('sizzlit');
+    const ally = instantiateRobot('hikaribon');
     ally.activeEffects = [{ type: 'shield', percent: 50, remainingTurns: 2, sourceId: 'x' }];
     const allies = [ally];
-    const enemies = [instantiateRobot('drizzlet')];
+    const enemies = [instantiateRobot('tsukimochi')];
     const result = processEnemyTurn(enemies, allies);
     assert.strictEqual(result.attacks.length, 1);
     assert.ok(result.attacks[0].damage >= 0);
   });
 
   it('damage wakes up sleeping ally', () => {
-    const ally = instantiateRobot('sizzlit');
+    const ally = instantiateRobot('hikaribon');
     ally.activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
     const allies = [ally];
-    const enemies = [instantiateRobot('drizzlet')];
+    const enemies = [instantiateRobot('tsukimochi')];
     processEnemyTurn(enemies, allies);
     assert.ok(!ally.activeEffects.some(e => e.type === 'sleep'));
   });
 
   it('confused enemy can hit its own allies', () => {
-    const allies = [instantiateRobot('sizzlit')];
-    const enemies = [instantiateRobot('drizzlet'), instantiateRobot('petalia')];
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')];
     enemies[0].activeEffects = [{ type: 'confuse', remainingTurns: 2, sourceId: 'x' }];
     const result = processEnemyTurn(enemies, allies);
     assert.ok(result.attacks.length >= 1);
   });
 
   it('hasted enemy attacks twice', () => {
-    const allies = [instantiateRobot('sizzlit')];
+    const allies = [instantiateRobot('hikaribon')];
     allies[0].hp = 9999;
     allies[0].maxHp = 9999;
-    const enemies = [instantiateRobot('drizzlet')];
+    const enemies = [instantiateRobot('tsukimochi')];
     enemies[0].activeEffects = [{ type: 'haste', sourceId: 'x' }];
     const result = processEnemyTurn(enemies, allies);
     assert.strictEqual(result.attacks.length, 2);
@@ -392,8 +392,8 @@ describe('Robot Combat - Status Effects in Enemy Turn', () => {
 describe('Robot Combat - XP', () => {
   it('active robots get 2x shares, reserves get 1x share', () => {
     const party = {
-      active: [instantiateRobot('sizzlit')],
-      reserves: [instantiateRobot('drizzlet')]
+      active: [instantiateRobot('hikaribon')],
+      reserves: [instantiateRobot('tsukimochi')]
     };
     // 1 active (2 shares) + 1 reserve (1 share) = 3 total shares
     // perShare = 100/3 = 33.3 → active gets floor(66.6)=66, reserve gets floor(33.3)=33
@@ -406,7 +406,7 @@ describe('Robot Combat - XP', () => {
 
   it('levels up when XP exceeds threshold', () => {
     const party = {
-      active: [instantiateRobot('sizzlit')],
+      active: [instantiateRobot('hikaribon')],
       reserves: []
     };
     // 1 active (2 shares), 0 reserves = 2 total shares
@@ -419,8 +419,8 @@ describe('Robot Combat - XP', () => {
 
 describe('Robot Combat - Effect Ticking', () => {
   it('tickAllEffects processes poison on enemies', () => {
-    const allies = [instantiateRobot('sizzlit')];
-    const enemies = [instantiateRobot('drizzlet')];
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('tsukimochi')];
     enemies[0].activeEffects = [
       { type: 'poison', remainingTurns: 2, damagePerTurn: 5, sourceId: 'test' }
     ];
@@ -432,7 +432,7 @@ describe('Robot Combat - Effect Ticking', () => {
   });
 
   it('ticks effects on allies too', () => {
-    const allies = [instantiateRobot('sizzlit')];
+    const allies = [instantiateRobot('hikaribon')];
     allies[0].activeEffects = [
       { type: 'poison', remainingTurns: 1, damagePerTurn: 8, sourceId: 'enemy' }
     ];
@@ -443,8 +443,8 @@ describe('Robot Combat - Effect Ticking', () => {
   });
 
   it('skips dead robots', () => {
-    const allies = [instantiateRobot('sizzlit')];
-    const enemies = [instantiateRobot('drizzlet')];
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('tsukimochi')];
     enemies[0].hp = 0;
     enemies[0].activeEffects = [
       { type: 'poison', remainingTurns: 2, damagePerTurn: 5, sourceId: 'test' }
@@ -454,8 +454,8 @@ describe('Robot Combat - Effect Ticking', () => {
   });
 
   it('returns empty array when no effects exist', () => {
-    const allies = [instantiateRobot('sizzlit')];
-    const enemies = [instantiateRobot('drizzlet')];
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('tsukimochi')];
     const events = tickAllEffects(allies, enemies);
     assert.strictEqual(events.length, 0);
   });
@@ -463,11 +463,11 @@ describe('Robot Combat - Effect Ticking', () => {
 
 describe('Robot Combat - Status Effect Ultimates', () => {
   it('sleep ultimate applies sleep to single enemy', () => {
-    const caster = instantiateRobot('sizzlit');
+    const caster = instantiateRobot('hikaribon');
     caster.ultimate.type = 'sleep';
     caster.ultimate.target = 'single_enemy';
     caster.ultimate.charges = caster.ultimate.chargesRequired;
-    const enemies = [instantiateRobot('drizzlet')];
+    const enemies = [instantiateRobot('tsukimochi')];
     const result = processUltimate(caster, enemies);
     assert.ok(result.success);
     assert.strictEqual(result.type, 'sleep');
@@ -476,11 +476,11 @@ describe('Robot Combat - Status Effect Ultimates', () => {
   });
 
   it('stun ultimate applies stun to single enemy', () => {
-    const caster = instantiateRobot('sizzlit');
+    const caster = instantiateRobot('hikaribon');
     caster.ultimate.type = 'stun';
     caster.ultimate.target = 'single_enemy';
     caster.ultimate.charges = caster.ultimate.chargesRequired;
-    const enemies = [instantiateRobot('drizzlet')];
+    const enemies = [instantiateRobot('tsukimochi')];
     const result = processUltimate(caster, enemies);
     assert.ok(result.success);
     assert.strictEqual(result.type, 'stun');
@@ -488,11 +488,11 @@ describe('Robot Combat - Status Effect Ultimates', () => {
   });
 
   it('confuse ultimate applies confuse to single enemy', () => {
-    const caster = instantiateRobot('sizzlit');
+    const caster = instantiateRobot('hikaribon');
     caster.ultimate.type = 'confuse';
     caster.ultimate.target = 'single_enemy';
     caster.ultimate.charges = caster.ultimate.chargesRequired;
-    const enemies = [instantiateRobot('drizzlet')];
+    const enemies = [instantiateRobot('tsukimochi')];
     const result = processUltimate(caster, enemies);
     assert.ok(result.success);
     assert.strictEqual(result.type, 'confuse');
@@ -500,12 +500,12 @@ describe('Robot Combat - Status Effect Ultimates', () => {
   });
 
   it('attack_buff ultimate buffs single ally', () => {
-    const caster = instantiateRobot('sizzlit');
+    const caster = instantiateRobot('hikaribon');
     caster.ultimate.type = 'attack_buff';
     caster.ultimate.target = 'single_ally';
     caster.ultimate.power = 30;
     caster.ultimate.charges = caster.ultimate.chargesRequired;
-    const ally = instantiateRobot('drizzlet');
+    const ally = instantiateRobot('tsukimochi');
     ally.hp = 50;
     const party = { active: [caster, ally], reserves: [] };
     const result = processUltimate(caster, [], null, party);
@@ -517,11 +517,11 @@ describe('Robot Combat - Status Effect Ultimates', () => {
   });
 
   it('haste ultimate gives haste to single ally', () => {
-    const caster = instantiateRobot('sizzlit');
+    const caster = instantiateRobot('hikaribon');
     caster.ultimate.type = 'haste';
     caster.ultimate.target = 'single_ally';
     caster.ultimate.charges = caster.ultimate.chargesRequired;
-    const ally = instantiateRobot('drizzlet');
+    const ally = instantiateRobot('tsukimochi');
     ally.hp = 50;
     const party = { active: [caster, ally], reserves: [] };
     const result = processUltimate(caster, [], null, party);
@@ -532,12 +532,12 @@ describe('Robot Combat - Status Effect Ultimates', () => {
   });
 
   it('shield ultimate shields single ally', () => {
-    const caster = instantiateRobot('sizzlit');
+    const caster = instantiateRobot('hikaribon');
     caster.ultimate.type = 'shield';
     caster.ultimate.target = 'single_ally';
     caster.ultimate.power = 50;
     caster.ultimate.charges = caster.ultimate.chargesRequired;
-    const ally = instantiateRobot('drizzlet');
+    const ally = instantiateRobot('tsukimochi');
     ally.hp = 50;
     const party = { active: [caster, ally], reserves: [] };
     const result = processUltimate(caster, [], null, party);
@@ -549,13 +549,13 @@ describe('Robot Combat - Status Effect Ultimates', () => {
   });
 
   it('team_shield ultimate shields all allies', () => {
-    const caster = instantiateRobot('sizzlit');
+    const caster = instantiateRobot('hikaribon');
     caster.ultimate.type = 'team_shield';
     caster.ultimate.target = 'all_allies';
     caster.ultimate.power = 40;
     caster.ultimate.charges = caster.ultimate.chargesRequired;
-    const ally1 = instantiateRobot('drizzlet');
-    const ally2 = instantiateRobot('petalia');
+    const ally1 = instantiateRobot('tsukimochi');
+    const ally2 = instantiateRobot('hanatchi');
     const party = { active: [caster, ally1, ally2], reserves: [] };
     const result = processUltimate(caster, [], null, party);
     assert.ok(result.success);
@@ -566,7 +566,7 @@ describe('Robot Combat - Status Effect Ultimates', () => {
   });
 
   it('taunt ultimate applies taunt to self', () => {
-    const caster = instantiateRobot('sizzlit');
+    const caster = instantiateRobot('hikaribon');
     caster.ultimate.type = 'taunt';
     caster.ultimate.target = 'self';
     caster.ultimate.charges = caster.ultimate.chargesRequired;
@@ -578,10 +578,10 @@ describe('Robot Combat - Status Effect Ultimates', () => {
   });
 
   it('effect ultimate rejects if not enough charges', () => {
-    const caster = instantiateRobot('sizzlit');
+    const caster = instantiateRobot('hikaribon');
     caster.ultimate.type = 'sleep';
     caster.ultimate.charges = 0;
-    const enemies = [instantiateRobot('drizzlet')];
+    const enemies = [instantiateRobot('tsukimochi')];
     const result = processUltimate(caster, enemies);
     assert.ok(!result.success);
   });
@@ -589,8 +589,8 @@ describe('Robot Combat - Status Effect Ultimates', () => {
 
 describe('Robot Combat - Shield in Attack Turn', () => {
   it('shielded enemy takes reduced damage from player attacks', () => {
-    const allies = [instantiateRobot('sizzlit')];
-    const enemies = [instantiateRobot('drizzlet')];
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('tsukimochi')];
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
     // 90% shield — should drastically reduce damage
@@ -601,8 +601,8 @@ describe('Robot Combat - Shield in Attack Turn', () => {
   });
 
   it('player attack wakes sleeping enemy', () => {
-    const allies = [instantiateRobot('sizzlit')];
-    const enemies = [instantiateRobot('drizzlet')];
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('tsukimochi')];
     enemies[0].activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
     processAttackTurn(allies, enemies);
     assert.ok(!enemies[0].activeEffects.some(e => e.type === 'sleep'));

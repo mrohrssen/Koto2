@@ -38,49 +38,49 @@ describe('Element Cycle', () => {
 
 describe('Robot Instantiation', () => {
   it('creates a level-1 common robot with base stats', () => {
-    const robot = instantiateRobot('sizzlit');
+    const robot = instantiateRobot('hikaribon');
     assert.strictEqual(robot.element, 'fire');
     assert.strictEqual(robot.rarity, 'common');
     assert.strictEqual(robot.level, 1);
     assert.strictEqual(robot.xp, 0);
-    assert.strictEqual(robot.maxHp, 100);
-    assert.strictEqual(robot.hp, 100);
-    assert.strictEqual(robot.attack, 10);
+    assert.strictEqual(robot.maxHp, 75);
+    assert.strictEqual(robot.hp, 75);
+    assert.strictEqual(robot.attack, 8);
     assert.strictEqual(robot.ultimate.charges, 0);
-    assert.strictEqual(robot.ultimate.chargesRequired, 5);
+    assert.strictEqual(robot.ultimate.chargesRequired, 4);
   });
 
   it('applies rarity multiplier for uncommon', () => {
-    const robot = instantiateRobot('glitchi');
+    const robot = instantiateRobot('kaminarion');
     assert.strictEqual(robot.maxHp, 110); // 100 * 1.1
     assert.strictEqual(robot.attack, 11); // 10 * 1.1
   });
 
-  it('applies rarity multiplier for legendary', () => {
-    const robot = instantiateRobot('gilden');
-    assert.strictEqual(robot.maxHp, 140); // 100 * 1.4
-    assert.strictEqual(robot.attack, 14); // 10 * 1.4
+  it('applies rarity multiplier for rare', () => {
+    const robot = instantiateRobot('kitsunova');
+    assert.strictEqual(robot.maxHp, 102); // 85 * 1.2
+    assert.strictEqual(robot.attack, 10); // floor(9 * 1.2)
   });
 
   it('has archetype field', () => {
-    const robot = instantiateRobot('sizzlit');
-    assert.strictEqual(robot.archetype, 'Fighter');
+    const robot = instantiateRobot('hikaribon');
+    assert.strictEqual(robot.archetype, 'Mage');
   });
 
   it('stores base template values for level-up calculations', () => {
-    const robot = instantiateRobot('sizzlit');
-    assert.strictEqual(robot.baseHpTemplate, 100);
-    assert.strictEqual(robot.baseAttackTemplate, 10);
+    const robot = instantiateRobot('hikaribon');
+    assert.strictEqual(robot.baseHpTemplate, 75);
+    assert.strictEqual(robot.baseAttackTemplate, 8);
   });
 
   it('has type and target on autoSkill', () => {
-    const robot = instantiateRobot('sizzlit');
+    const robot = instantiateRobot('hikaribon');
     assert.strictEqual(robot.autoSkill.type, 'damage');
     assert.strictEqual(robot.autoSkill.target, 'single_enemy');
   });
 
   it('has type and target on ultimate', () => {
-    const robot = instantiateRobot('sizzlit');
+    const robot = instantiateRobot('hikaribon');
     assert.strictEqual(robot.ultimate.type, 'damage');
     assert.strictEqual(robot.ultimate.target, 'all_enemies');
   });
@@ -106,7 +106,7 @@ describe('Robot Leveling', () => {
   });
 
   it('awards XP and levels up', () => {
-    const robot = instantiateRobot('sizzlit');
+    const robot = instantiateRobot('hikaribon');
     addXpToRobot(robot, 100);
     assert.strictEqual(robot.level, 2);
     assert.strictEqual(robot.xp, 0);
@@ -114,7 +114,7 @@ describe('Robot Leveling', () => {
 
   it('uses baseHpTemplate and baseAttackTemplate for level-up stats', () => {
     // Simulate a Tank archetype with non-default base stats
-    const robot = instantiateRobot('sizzlit');
+    const robot = instantiateRobot('hikaribon');
     robot.baseHpTemplate = 160;
     robot.baseAttackTemplate = 7;
     robot.maxHp = 160;
