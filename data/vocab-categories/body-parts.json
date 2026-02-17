@@ -1,0 +1,3890 @@
+[
+  {
+    "rank": 49,
+    "word": "また",
+    "reading": "また",
+    "meaning": "again"
+  },
+  {
+    "rank": 68,
+    "word": "もらう",
+    "reading": "もらう",
+    "meaning": "to receive"
+  },
+  {
+    "rank": 72,
+    "word": "見える",
+    "reading": "みえる",
+    "meaning": "to be seen"
+  },
+  {
+    "rank": 74,
+    "word": "方",
+    "reading": "ほう",
+    "meaning": "direction"
+  },
+  {
+    "rank": 185,
+    "word": "名前",
+    "reading": "なまえ",
+    "meaning": "name"
+  },
+  {
+    "rank": 218,
+    "word": "あり",
+    "reading": "あり",
+    "meaning": "existing (at the present moment)"
+  },
+  {
+    "rank": 251,
+    "word": "買う",
+    "reading": "かう",
+    "meaning": "to buy"
+  },
+  {
+    "rank": 429,
+    "word": "事",
+    "reading": "こと",
+    "meaning": "thing"
+  },
+  {
+    "rank": 448,
+    "word": "そう",
+    "reading": "そう",
+    "meaning": "in that way"
+  },
+  {
+    "rank": 525,
+    "word": "一瞬",
+    "reading": "いっしゅん",
+    "meaning": "instant"
+  },
+  {
+    "rank": 544,
+    "word": "色",
+    "reading": "いろ",
+    "meaning": "colour"
+  },
+  {
+    "rank": 558,
+    "word": "壁",
+    "reading": "かべ",
+    "meaning": "wall"
+  },
+  {
+    "rank": 561,
+    "word": "反応",
+    "reading": "はんのう",
+    "meaning": "reaction"
+  },
+  {
+    "rank": 584,
+    "word": "友達",
+    "reading": "ともだち",
+    "meaning": "friend"
+  },
+  {
+    "rank": 596,
+    "word": "程度",
+    "reading": "ていど",
+    "meaning": "degree"
+  },
+  {
+    "rank": 606,
+    "word": "通り",
+    "reading": "とおり",
+    "meaning": "avenue"
+  },
+  {
+    "rank": 657,
+    "word": "部分",
+    "reading": "ぶぶん",
+    "meaning": "portion"
+  },
+  {
+    "rank": 799,
+    "word": "予定",
+    "reading": "よてい",
+    "meaning": "plans"
+  },
+  {
+    "rank": 964,
+    "word": "間違う",
+    "reading": "まちがう",
+    "meaning": "to make a mistake"
+  },
+  {
+    "rank": 1121,
+    "word": "面",
+    "reading": "つら",
+    "meaning": "face"
+  },
+  {
+    "rank": 1214,
+    "word": "瞳",
+    "reading": "ひとみ",
+    "meaning": "pupil (of eye)"
+  },
+  {
+    "rank": 1230,
+    "word": "唇",
+    "reading": "くちびる",
+    "meaning": "lips"
+  },
+  {
+    "rank": 1235,
+    "word": "両手",
+    "reading": "りょうて",
+    "meaning": "both hands"
+  },
+  {
+    "rank": 1237,
+    "word": "身体",
+    "reading": "からだ",
+    "meaning": "body"
+  },
+  {
+    "rank": 1269,
+    "word": "全身",
+    "reading": "ぜんしん",
+    "meaning": "whole (body)"
+  },
+  {
+    "rank": 1327,
+    "word": "肌",
+    "reading": "はだ",
+    "meaning": "skin"
+  },
+  {
+    "rank": 1346,
+    "word": "頬",
+    "reading": "ほお",
+    "meaning": "cheek (of face)"
+  },
+  {
+    "rank": 1371,
+    "word": "体",
+    "reading": "からだ",
+    "meaning": "body"
+  },
+  {
+    "rank": 1384,
+    "word": "右手",
+    "reading": "みぎて",
+    "meaning": "right hand"
+  },
+  {
+    "rank": 1395,
+    "word": "心臓",
+    "reading": "しんぞう",
+    "meaning": "heart"
+  },
+  {
+    "rank": 1419,
+    "word": "膝",
+    "reading": "ひざ",
+    "meaning": "knee"
+  },
+  {
+    "rank": 1437,
+    "word": "八",
+    "reading": "はち",
+    "meaning": "eight"
+  },
+  {
+    "rank": 1465,
+    "word": "汗",
+    "reading": "あせ",
+    "meaning": "sweat"
+  },
+  {
+    "rank": 1468,
+    "word": "背",
+    "reading": "せい",
+    "meaning": "height"
+  },
+  {
+    "rank": 1529,
+    "word": "身体",
+    "reading": "からだ",
+    "meaning": "body"
+  },
+  {
+    "rank": 1613,
+    "word": "鼻",
+    "reading": "はな",
+    "meaning": "nose"
+  },
+  {
+    "rank": 1639,
+    "word": "喉",
+    "reading": "のど",
+    "meaning": "throat"
+  },
+  {
+    "rank": 1715,
+    "word": "片手",
+    "reading": "かたて",
+    "meaning": "one hand"
+  },
+  {
+    "rank": 1758,
+    "word": "左手",
+    "reading": "ひだりて",
+    "meaning": "left hand"
+  },
+  {
+    "rank": 1864,
+    "word": "骨",
+    "reading": "ほね",
+    "meaning": "bone"
+  },
+  {
+    "rank": 1971,
+    "word": "顔色",
+    "reading": "かおいろ",
+    "meaning": "complexion"
+  },
+  {
+    "rank": 2027,
+    "word": "爪",
+    "reading": "つめ",
+    "meaning": "nail (e.g. fingernail, toenail)"
+  },
+  {
+    "rank": 2046,
+    "word": "足元",
+    "reading": "あしもと",
+    "meaning": "at one's feet"
+  },
+  {
+    "rank": 2085,
+    "word": "脳",
+    "reading": "のう",
+    "meaning": "brain"
+  },
+  {
+    "rank": 2188,
+    "word": "歯",
+    "reading": "は",
+    "meaning": "tooth"
+  },
+  {
+    "rank": 2326,
+    "word": "手足",
+    "reading": "てあし",
+    "meaning": "hands and feet"
+  },
+  {
+    "rank": 2544,
+    "word": "筋",
+    "reading": "すじ",
+    "meaning": "muscle"
+  },
+  {
+    "rank": 2630,
+    "word": "皮",
+    "reading": "かわ",
+    "meaning": "skin"
+  },
+  {
+    "rank": 2834,
+    "word": "眼",
+    "reading": "め",
+    "meaning": "eye"
+  },
+  {
+    "rank": 2843,
+    "word": "顔を上げる",
+    "reading": "かおをあげる",
+    "meaning": "to raise one's face"
+  },
+  {
+    "rank": 2860,
+    "word": "拳",
+    "reading": "こぶし",
+    "meaning": "fist"
+  },
+  {
+    "rank": 2863,
+    "word": "指先",
+    "reading": "ゆびさき",
+    "meaning": "fingertip"
+  },
+  {
+    "rank": 2875,
+    "word": "お腹",
+    "reading": "おなか",
+    "meaning": "belly"
+  },
+  {
+    "rank": 2888,
+    "word": "口元",
+    "reading": "くちもと",
+    "meaning": "mouth"
+  },
+  {
+    "rank": 2902,
+    "word": "肉体",
+    "reading": "にくたい",
+    "meaning": "the body"
+  },
+  {
+    "rank": 2942,
+    "word": "脚",
+    "reading": "きゃく",
+    "meaning": "counter for chairs or seats"
+  },
+  {
+    "rank": 2947,
+    "word": "顎",
+    "reading": "あご",
+    "meaning": "jaw"
+  },
+  {
+    "rank": 2954,
+    "word": "脇",
+    "reading": "わき",
+    "meaning": "armpit"
+  },
+  {
+    "rank": 3038,
+    "word": "翼",
+    "reading": "つばさ",
+    "meaning": "wing"
+  },
+  {
+    "rank": 3070,
+    "word": "眉",
+    "reading": "まゆ",
+    "meaning": "eyebrow"
+  },
+  {
+    "rank": 3087,
+    "word": "筋肉",
+    "reading": "きんにく",
+    "meaning": "muscle"
+  },
+  {
+    "rank": 3127,
+    "word": "手元",
+    "reading": "てもと",
+    "meaning": "at hand"
+  },
+  {
+    "rank": 3136,
+    "word": "黒髪",
+    "reading": "くろかみ",
+    "meaning": "black hair"
+  },
+  {
+    "rank": 3180,
+    "word": "手のひら",
+    "reading": "てのひら",
+    "meaning": "palm (of one's hand)"
+  },
+  {
+    "rank": 3185,
+    "word": "手首",
+    "reading": "てくび",
+    "meaning": "wrist"
+  },
+  {
+    "rank": 3191,
+    "word": "息を吐く",
+    "reading": "いきをはく",
+    "meaning": "to breathe out"
+  },
+  {
+    "rank": 3193,
+    "word": "お尻",
+    "reading": "おしり",
+    "meaning": "bottom"
+  },
+  {
+    "rank": 3248,
+    "word": "髪の毛",
+    "reading": "かみのけ",
+    "meaning": "hair (of the head)"
+  },
+  {
+    "rank": 3251,
+    "word": "背筋",
+    "reading": "せすじ",
+    "meaning": "spine"
+  },
+  {
+    "rank": 3288,
+    "word": "なぜなら",
+    "reading": "なぜなら",
+    "meaning": "because"
+  },
+  {
+    "rank": 3361,
+    "word": "尻尾",
+    "reading": "しっぽ",
+    "meaning": "tail (animal)"
+  },
+  {
+    "rank": 3391,
+    "word": "両腕",
+    "reading": "りょううで",
+    "meaning": "both arms"
+  },
+  {
+    "rank": 3410,
+    "word": "耳元",
+    "reading": "みみもと",
+    "meaning": "close to the ear"
+  },
+  {
+    "rank": 3424,
+    "word": "奴隷",
+    "reading": "どれい",
+    "meaning": "slave"
+  },
+  {
+    "rank": 3432,
+    "word": "制御",
+    "reading": "せいぎょ",
+    "meaning": "control (of a machine, device, etc.)"
+  },
+  {
+    "rank": 3450,
+    "word": "羽",
+    "reading": "はね",
+    "meaning": "feather"
+  },
+  {
+    "rank": 3459,
+    "word": "書",
+    "reading": "しょ",
+    "meaning": "book"
+  },
+  {
+    "rank": 3502,
+    "word": "毛",
+    "reading": "け",
+    "meaning": "hair"
+  },
+  {
+    "rank": 3521,
+    "word": "尻",
+    "reading": "しり",
+    "meaning": "buttocks"
+  },
+  {
+    "rank": 3555,
+    "word": "牙",
+    "reading": "きば",
+    "meaning": "tusk"
+  },
+  {
+    "rank": 3582,
+    "word": "右腕",
+    "reading": "みぎうで",
+    "meaning": "right arm"
+  },
+  {
+    "rank": 3586,
+    "word": "深呼吸",
+    "reading": "しんこきゅう",
+    "meaning": "deep breath"
+  },
+  {
+    "rank": 3596,
+    "word": "横顔",
+    "reading": "よこがお",
+    "meaning": "profile"
+  },
+  {
+    "rank": 3614,
+    "word": "胸を張る",
+    "reading": "むねをはる",
+    "meaning": "to throw out one's chest"
+  },
+  {
+    "rank": 3675,
+    "word": "顔をしかめる",
+    "reading": "かおをしかめる",
+    "meaning": "to grimace"
+  },
+  {
+    "rank": 3700,
+    "word": "首筋",
+    "reading": "くびすじ",
+    "meaning": "nape of the neck"
+  },
+  {
+    "rank": 3744,
+    "word": "体重",
+    "reading": "たいじゅう",
+    "meaning": "(body) weight"
+  },
+  {
+    "rank": 3752,
+    "word": "眉間",
+    "reading": "みけん",
+    "meaning": "brow"
+  },
+  {
+    "rank": 3758,
+    "word": "腕を組む",
+    "reading": "うでをくむ",
+    "meaning": "to fold one's arms"
+  },
+  {
+    "rank": 3759,
+    "word": "肩をすくめる",
+    "reading": "かたをすくめる",
+    "meaning": "to shrug one's shoulders"
+  },
+  {
+    "rank": 3801,
+    "word": "横目",
+    "reading": "よこめ",
+    "meaning": "sidelong glance"
+  },
+  {
+    "rank": 3820,
+    "word": "掌",
+    "reading": "てのひら",
+    "meaning": "palm (of one's hand)"
+  },
+  {
+    "rank": 3827,
+    "word": "顔立ち",
+    "reading": "かおだち",
+    "meaning": "looks"
+  },
+  {
+    "rank": 3835,
+    "word": "顔面",
+    "reading": "がんめん",
+    "meaning": "face (of person)"
+  },
+  {
+    "rank": 3875,
+    "word": "鼓動",
+    "reading": "こどう",
+    "meaning": "beat"
+  },
+  {
+    "rank": 3878,
+    "word": "顔つき",
+    "reading": "かおつき",
+    "meaning": "(outward) looks"
+  },
+  {
+    "rank": 3903,
+    "word": "人差し指",
+    "reading": "ひとさしゆび",
+    "meaning": "index finger"
+  },
+  {
+    "rank": 3992,
+    "word": "皮膚",
+    "reading": "ひふ",
+    "meaning": "skin"
+  },
+  {
+    "rank": 4043,
+    "word": "胃",
+    "reading": "い",
+    "meaning": "stomach"
+  },
+  {
+    "rank": 4069,
+    "word": "体内",
+    "reading": "たいない",
+    "meaning": "interior of the body"
+  },
+  {
+    "rank": 4071,
+    "word": "目つき",
+    "reading": "めつき",
+    "meaning": "look (in someone's eyes)"
+  },
+  {
+    "rank": 4092,
+    "word": "体温",
+    "reading": "たいおん",
+    "meaning": "temperature"
+  },
+  {
+    "rank": 4189,
+    "word": "涙を流す",
+    "reading": "なみだをながす",
+    "meaning": "to shed tears"
+  },
+  {
+    "rank": 4239,
+    "word": "満面",
+    "reading": "まんめん",
+    "meaning": "(the) whole face"
+  },
+  {
+    "rank": 4295,
+    "word": "頭部",
+    "reading": "とうぶ",
+    "meaning": "head"
+  },
+  {
+    "rank": 4309,
+    "word": "息を吐く",
+    "reading": "いきをはく",
+    "meaning": "to breathe out"
+  },
+  {
+    "rank": 4322,
+    "word": "眉をひそめる",
+    "reading": "まゆをひそめる",
+    "meaning": "to knit one's brows (in discomfort, unease, disapproval, ..."
+  },
+  {
+    "rank": 4336,
+    "word": "肘",
+    "reading": "ひじ",
+    "meaning": "elbow"
+  },
+  {
+    "rank": 4343,
+    "word": "瞼",
+    "reading": "まぶた",
+    "meaning": "eyelid"
+  },
+  {
+    "rank": 4355,
+    "word": "親指",
+    "reading": "おやゆび",
+    "meaning": "thumb"
+  },
+  {
+    "rank": 4525,
+    "word": "上半身",
+    "reading": "じょうはんしん",
+    "meaning": "upper half of the body"
+  },
+  {
+    "rank": 4561,
+    "word": "良く",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 4630,
+    "word": "痛",
+    "reading": "つう",
+    "meaning": "pain"
+  },
+  {
+    "rank": 4657,
+    "word": "引きつる",
+    "reading": "ひきつる",
+    "meaning": "to have a cramp"
+  },
+  {
+    "rank": 4679,
+    "word": "下半身",
+    "reading": "かはんしん",
+    "meaning": "lower half of the body"
+  },
+  {
+    "rank": 4685,
+    "word": "膝をつく",
+    "reading": "ひざをつく",
+    "meaning": "to fall to one's knees"
+  },
+  {
+    "rank": 4687,
+    "word": "脳内",
+    "reading": "のうない",
+    "meaning": "intracerebral"
+  },
+  {
+    "rank": 4731,
+    "word": "痙攣",
+    "reading": "けいれん",
+    "meaning": "convulsion"
+  },
+  {
+    "rank": 4756,
+    "word": "目を輝かす",
+    "reading": "めをかがやかす",
+    "meaning": "eyes sparkling"
+  },
+  {
+    "rank": 4764,
+    "word": "肩を落とす",
+    "reading": "かたをおとす",
+    "meaning": "to drop one's shoulders"
+  },
+  {
+    "rank": 4775,
+    "word": "咳払い",
+    "reading": "せきばらい",
+    "meaning": "clearing one's throat"
+  },
+  {
+    "rank": 4808,
+    "word": "顔を見せる",
+    "reading": "かおをみせる",
+    "meaning": "to make an appearance"
+  },
+  {
+    "rank": 4809,
+    "word": "出してくれる",
+    "reading": "だしてくれる",
+    "meaning": "to take out (e.g. garbage)"
+  },
+  {
+    "rank": 4823,
+    "word": "鼻を鳴らす",
+    "reading": "はなをならす",
+    "meaning": "to coo at"
+  },
+  {
+    "rank": 4830,
+    "word": "きゃっ",
+    "reading": "きゃっ",
+    "meaning": "yikes!"
+  },
+  {
+    "rank": 4831,
+    "word": "傷口",
+    "reading": "きずぐち",
+    "meaning": "(opening of) a wound"
+  },
+  {
+    "rank": 4907,
+    "word": "瞬き",
+    "reading": "まばたき",
+    "meaning": "blink (of eyes)"
+  },
+  {
+    "rank": 4959,
+    "word": "拳を握る",
+    "reading": "こぶしをにぎる",
+    "meaning": "to make a fist"
+  },
+  {
+    "rank": 4989,
+    "word": "血液",
+    "reading": "けつえき",
+    "meaning": "blood"
+  },
+  {
+    "rank": 5002,
+    "word": "両足",
+    "reading": "りょうあし",
+    "meaning": "both feet"
+  },
+  {
+    "rank": 5022,
+    "word": "涙目",
+    "reading": "なみだめ",
+    "meaning": "teary eyes"
+  },
+  {
+    "rank": 5100,
+    "word": "唾",
+    "reading": "つば",
+    "meaning": "saliva"
+  },
+  {
+    "rank": 5153,
+    "word": "頭痛",
+    "reading": "ずつう",
+    "meaning": "headache"
+  },
+  {
+    "rank": 5258,
+    "word": "後頭部",
+    "reading": "こうとうぶ",
+    "meaning": "back of head"
+  },
+  {
+    "rank": 5286,
+    "word": "小刻み",
+    "reading": "こきざみ",
+    "meaning": "mincing"
+  },
+  {
+    "rank": 5336,
+    "word": "くらいなら",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 5398,
+    "word": "麻痺",
+    "reading": "まひ",
+    "meaning": "paralysis"
+  },
+  {
+    "rank": 5415,
+    "word": "妊娠",
+    "reading": "にんしん",
+    "meaning": "pregnancy"
+  },
+  {
+    "rank": 5565,
+    "word": "内臓",
+    "reading": "ないぞう",
+    "meaning": "internal organs"
+  },
+  {
+    "rank": 5649,
+    "word": "こめかみ",
+    "reading": "こめかみ",
+    "meaning": "temple (side of head)"
+  },
+  {
+    "rank": 5673,
+    "word": "目元",
+    "reading": "めもと",
+    "meaning": "eyes"
+  },
+  {
+    "rank": 5690,
+    "word": "上目遣い",
+    "reading": "うわめづかい",
+    "meaning": "upturned eyes"
+  },
+  {
+    "rank": 5735,
+    "word": "脇腹",
+    "reading": "わきばら",
+    "meaning": "side (of the torso)"
+  },
+  {
+    "rank": 5748,
+    "word": "鼻先",
+    "reading": "はなさき",
+    "meaning": "tip of nose"
+  },
+  {
+    "rank": 5791,
+    "word": "皺",
+    "reading": "しわ",
+    "meaning": "wrinkle"
+  },
+  {
+    "rank": 5808,
+    "word": "見透かす",
+    "reading": "みすかす",
+    "meaning": "to see through"
+  },
+  {
+    "rank": 5884,
+    "word": "重視",
+    "reading": "じゅうし",
+    "meaning": "regarding as important"
+  },
+  {
+    "rank": 5889,
+    "word": "頭脳",
+    "reading": "ずのう",
+    "meaning": "head"
+  },
+  {
+    "rank": 5899,
+    "word": "気が済む",
+    "reading": "きがすむ",
+    "meaning": "to be satisfied"
+  },
+  {
+    "rank": 5900,
+    "word": "肺",
+    "reading": "はい",
+    "meaning": "lung"
+  },
+  {
+    "rank": 5922,
+    "word": "空腹",
+    "reading": "くうふく",
+    "meaning": "empty stomach"
+  },
+  {
+    "rank": 5949,
+    "word": "足跡",
+    "reading": "あしあと",
+    "meaning": "footprints"
+  },
+  {
+    "rank": 5995,
+    "word": "お顔",
+    "reading": "おかお",
+    "meaning": "face"
+  },
+  {
+    "rank": 6088,
+    "word": "手の甲",
+    "reading": "てのこう",
+    "meaning": "back of the hand"
+  },
+  {
+    "rank": 6232,
+    "word": "右足",
+    "reading": "みぎあし",
+    "meaning": "right foot"
+  },
+  {
+    "rank": 6243,
+    "word": "歯を食いしばる",
+    "reading": "はをくいしばる",
+    "meaning": "to bear up in tragedy"
+  },
+  {
+    "rank": 6440,
+    "word": "血管",
+    "reading": "けっかん",
+    "meaning": "blood vessel"
+  },
+  {
+    "rank": 6441,
+    "word": "堪える",
+    "reading": "たえる",
+    "meaning": "to bear"
+  },
+  {
+    "rank": 6576,
+    "word": "痕",
+    "reading": "こん",
+    "meaning": "scar (e.g. from operation, injection)"
+  },
+  {
+    "rank": 6583,
+    "word": "正直なところ",
+    "reading": "しょうじきなところ",
+    "meaning": "honestly speaking"
+  },
+  {
+    "rank": 6626,
+    "word": "関節",
+    "reading": "かんせつ",
+    "meaning": "joint (knee, elbow, etc.)"
+  },
+  {
+    "rank": 7092,
+    "word": "手先",
+    "reading": "てさき",
+    "meaning": "fingers"
+  },
+  {
+    "rank": 7117,
+    "word": "片足",
+    "reading": "かたあし",
+    "meaning": "one foot"
+  },
+  {
+    "rank": 7309,
+    "word": "肉体的",
+    "reading": "にくたいてき",
+    "meaning": "bodily"
+  },
+  {
+    "rank": 7429,
+    "word": "心身",
+    "reading": "しんしん",
+    "meaning": "mind and body"
+  },
+  {
+    "rank": 7629,
+    "word": "頰",
+    "reading": "ほお",
+    "meaning": "cheek (of face)"
+  },
+  {
+    "rank": 7645,
+    "word": "おっぱい",
+    "reading": "おっぱい",
+    "meaning": "breasts"
+  },
+  {
+    "rank": 7714,
+    "word": "エレベーター",
+    "reading": "エレベーター",
+    "meaning": "elevator"
+  },
+  {
+    "rank": 7723,
+    "word": "王妃",
+    "reading": "おうひ",
+    "meaning": "queen"
+  },
+  {
+    "rank": 7742,
+    "word": "股間",
+    "reading": "こかん",
+    "meaning": "nether region"
+  },
+  {
+    "rank": 7780,
+    "word": "唾液",
+    "reading": "だえき",
+    "meaning": "saliva"
+  },
+  {
+    "rank": 7802,
+    "word": "乳首",
+    "reading": "ちくび",
+    "meaning": "nipple"
+  },
+  {
+    "rank": 7815,
+    "word": "胴体",
+    "reading": "どうたい",
+    "meaning": "body"
+  },
+  {
+    "rank": 7835,
+    "word": "長身",
+    "reading": "ちょうしん",
+    "meaning": "tall figure"
+  },
+  {
+    "rank": 7849,
+    "word": "乳房",
+    "reading": "ちぶさ",
+    "meaning": "breast"
+  },
+  {
+    "rank": 7894,
+    "word": "触手",
+    "reading": "しょくしゅ",
+    "meaning": "feeler"
+  },
+  {
+    "rank": 7902,
+    "word": "決戦",
+    "reading": "けっせん",
+    "meaning": "decisive battle"
+  },
+  {
+    "rank": 7904,
+    "word": "筆頭",
+    "reading": "ひっとう",
+    "meaning": "brush tip"
+  },
+  {
+    "rank": 7964,
+    "word": "精液",
+    "reading": "せいえき",
+    "meaning": "semen"
+  },
+  {
+    "rank": 7977,
+    "word": "腹部",
+    "reading": "ふくぶ",
+    "meaning": "abdomen"
+  },
+  {
+    "rank": 8024,
+    "word": "髭",
+    "reading": "ひげ",
+    "meaning": "moustache"
+  },
+  {
+    "rank": 8054,
+    "word": "鱗",
+    "reading": "うろこ",
+    "meaning": "scale (of fish, snake, etc.)"
+  },
+  {
+    "rank": 8200,
+    "word": "脈",
+    "reading": "みゃく",
+    "meaning": "pulse"
+  },
+  {
+    "rank": 8214,
+    "word": "奥歯",
+    "reading": "おくば",
+    "meaning": "molars"
+  },
+  {
+    "rank": 8294,
+    "word": "羽根",
+    "reading": "はね",
+    "meaning": "feather"
+  },
+  {
+    "rank": 8297,
+    "word": "胴",
+    "reading": "どう",
+    "meaning": "trunk"
+  },
+  {
+    "rank": 8362,
+    "word": "四肢",
+    "reading": "しし",
+    "meaning": "the (four) limbs"
+  },
+  {
+    "rank": 8380,
+    "word": "素手",
+    "reading": "すで",
+    "meaning": "bare hand"
+  },
+  {
+    "rank": 8403,
+    "word": "生身",
+    "reading": "なまみ",
+    "meaning": "living flesh"
+  },
+  {
+    "rank": 8436,
+    "word": "手の平",
+    "reading": "てのひら",
+    "meaning": "palm (of one's hand)"
+  },
+  {
+    "rank": 8471,
+    "word": "目玉",
+    "reading": "めだま",
+    "meaning": "eyeball"
+  },
+  {
+    "rank": 8478,
+    "word": "羽",
+    "reading": "はね",
+    "meaning": "feather"
+  },
+  {
+    "rank": 8500,
+    "word": "体型",
+    "reading": "たいけい",
+    "meaning": "figure"
+  },
+  {
+    "rank": 8519,
+    "word": "片腕",
+    "reading": "かたうで",
+    "meaning": "one arm"
+  },
+  {
+    "rank": 8562,
+    "word": "人体",
+    "reading": "じんたい",
+    "meaning": "human body"
+  },
+  {
+    "rank": 8564,
+    "word": "眼球",
+    "reading": "がんきゅう",
+    "meaning": "eyeball"
+  },
+  {
+    "rank": 8567,
+    "word": "両肩",
+    "reading": "りょうかた",
+    "meaning": "both shoulders"
+  },
+  {
+    "rank": 8588,
+    "word": "両目",
+    "reading": "りょうめ",
+    "meaning": "both eyes"
+  },
+  {
+    "rank": 8629,
+    "word": "細胞",
+    "reading": "さいぼう",
+    "meaning": "cell"
+  },
+  {
+    "rank": 8631,
+    "word": "鼻息",
+    "reading": "はないき",
+    "meaning": "nasal breathing"
+  },
+  {
+    "rank": 8706,
+    "word": "小指",
+    "reading": "こゆび",
+    "meaning": "little finger"
+  },
+  {
+    "rank": 8746,
+    "word": "咳",
+    "reading": "せき",
+    "meaning": "cough"
+  },
+  {
+    "rank": 8752,
+    "word": "吐き気",
+    "reading": "はきけ",
+    "meaning": "nausea"
+  },
+  {
+    "rank": 8792,
+    "word": "目尻",
+    "reading": "めじり",
+    "meaning": "outer canthus"
+  },
+  {
+    "rank": 8870,
+    "word": "急所",
+    "reading": "きゅうしょ",
+    "meaning": "vital part (of the body)"
+  },
+  {
+    "rank": 8879,
+    "word": "部位",
+    "reading": "ぶい",
+    "meaning": "part (esp. of the body)"
+  },
+  {
+    "rank": 8959,
+    "word": "片目",
+    "reading": "かため",
+    "meaning": "one eye"
+  },
+  {
+    "rank": 8979,
+    "word": "頭が痛い",
+    "reading": "あたまがいたい",
+    "meaning": "having a headache"
+  },
+  {
+    "rank": 8996,
+    "word": "眉根を寄せる",
+    "reading": "まゆねをよせる",
+    "meaning": "to frown"
+  },
+  {
+    "rank": 9054,
+    "word": "怪我人",
+    "reading": "けがにん",
+    "meaning": "wounded person"
+  },
+  {
+    "rank": 9097,
+    "word": "膣",
+    "reading": "ちつ",
+    "meaning": "vagina"
+  },
+  {
+    "rank": 9109,
+    "word": "脈打つ",
+    "reading": "みゃくうつ",
+    "meaning": "to pound (e.g. heart)"
+  },
+  {
+    "rank": 9165,
+    "word": "口内",
+    "reading": "こうない",
+    "meaning": "oral"
+  },
+  {
+    "rank": 9180,
+    "word": "首をひねる",
+    "reading": "くびをひねる",
+    "meaning": "to cock one's head in puzzlement"
+  },
+  {
+    "rank": 9252,
+    "word": "股",
+    "reading": "また",
+    "meaning": "crotch"
+  },
+  {
+    "rank": 9255,
+    "word": "鮮血",
+    "reading": "せんけつ",
+    "meaning": "fresh blood"
+  },
+  {
+    "rank": 9284,
+    "word": "血の気",
+    "reading": "ちのけ",
+    "meaning": "blood (in one's face, cheeks, etc.)"
+  },
+  {
+    "rank": 9312,
+    "word": "腹が減る",
+    "reading": "はらがへる",
+    "meaning": "to become hungry"
+  },
+  {
+    "rank": 9325,
+    "word": "顔を赤らめる",
+    "reading": "かおをあからめる",
+    "meaning": "to blush"
+  },
+  {
+    "rank": 9352,
+    "word": "悪寒",
+    "reading": "おかん",
+    "meaning": "chill"
+  },
+  {
+    "rank": 9378,
+    "word": "紅潮",
+    "reading": "こうちょう",
+    "meaning": "flush"
+  },
+  {
+    "rank": 9433,
+    "word": "口角",
+    "reading": "こうかく",
+    "meaning": "corners of the mouth"
+  },
+  {
+    "rank": 9437,
+    "word": "膣内",
+    "reading": "ちつない",
+    "meaning": "intravaginal"
+  },
+  {
+    "rank": 9449,
+    "word": "この期に及んで",
+    "reading": "このごにおよんで",
+    "meaning": "at the last moment"
+  },
+  {
+    "rank": 9453,
+    "word": "プロジェクト",
+    "reading": "プロジェクト",
+    "meaning": "project"
+  },
+  {
+    "rank": 9477,
+    "word": "上気",
+    "reading": "じょうき",
+    "meaning": "flushing (of one's cheeks)"
+  },
+  {
+    "rank": 9551,
+    "word": "血走る",
+    "reading": "ちばしる",
+    "meaning": "to become bloodshot"
+  },
+  {
+    "rank": 9563,
+    "word": "鼓膜",
+    "reading": "こまく",
+    "meaning": "eardrum"
+  },
+  {
+    "rank": 9590,
+    "word": "身震い",
+    "reading": "みぶるい",
+    "meaning": "shivering (with cold)"
+  },
+  {
+    "rank": 9598,
+    "word": "寝息",
+    "reading": "ねいき",
+    "meaning": "breathing of a sleeping person"
+  },
+  {
+    "rank": 9626,
+    "word": "肝",
+    "reading": "きも",
+    "meaning": "liver"
+  },
+  {
+    "rank": 9707,
+    "word": "左足",
+    "reading": "ひだりあし",
+    "meaning": "left foot"
+  },
+  {
+    "rank": 9717,
+    "word": "首元",
+    "reading": "くびもと",
+    "meaning": "base of the throat"
+  },
+  {
+    "rank": 9742,
+    "word": "双眸",
+    "reading": "そうぼう",
+    "meaning": "one's eyes"
+  },
+  {
+    "rank": 9755,
+    "word": "皺を寄せる",
+    "reading": "しわをよせる",
+    "meaning": "to wrinkle up (one's eyebrows, one's nose)"
+  },
+  {
+    "rank": 9761,
+    "word": "膜",
+    "reading": "まく",
+    "meaning": "membrane"
+  },
+  {
+    "rank": 9783,
+    "word": "肩越し",
+    "reading": "かたごし",
+    "meaning": "over one's shoulder"
+  },
+  {
+    "rank": 9828,
+    "word": "溜息を吐く",
+    "reading": "ためいきをつく",
+    "meaning": "to sigh"
+  },
+  {
+    "rank": 9833,
+    "word": "目を落とす",
+    "reading": "めをおとす",
+    "meaning": "to look downwards"
+  },
+  {
+    "rank": 9874,
+    "word": "呻き声",
+    "reading": "うめきごえ",
+    "meaning": "groan"
+  },
+  {
+    "rank": 9899,
+    "word": "おでこ",
+    "reading": "おでこ",
+    "meaning": "brow"
+  },
+  {
+    "rank": 9900,
+    "word": "舌先",
+    "reading": "したさき",
+    "meaning": "tip of tongue"
+  },
+  {
+    "rank": 9907,
+    "word": "筋力",
+    "reading": "きんりょく",
+    "meaning": "physical strength"
+  },
+  {
+    "rank": 9918,
+    "word": "血の気が引く",
+    "reading": "ちのけがひく",
+    "meaning": "to go pale"
+  },
+  {
+    "rank": 9924,
+    "word": "爪先",
+    "reading": "つまさき",
+    "meaning": "toes"
+  },
+  {
+    "rank": 9938,
+    "word": "踵",
+    "reading": "かかと",
+    "meaning": "heel (of foot, shoe, stocking, etc.)"
+  },
+  {
+    "rank": 9943,
+    "word": "汗ばむ",
+    "reading": "あせばむ",
+    "meaning": "to be sweaty"
+  },
+  {
+    "rank": 9947,
+    "word": "眉を顰める",
+    "reading": "まゆをひそめる",
+    "meaning": "to knit one's brows (in discomfort, unease, disapproval, ..."
+  },
+  {
+    "rank": 9960,
+    "word": "中指",
+    "reading": "なかゆび",
+    "meaning": "middle finger"
+  },
+  {
+    "rank": 9995,
+    "word": "胸を撫で下ろす",
+    "reading": "むねをなでおろす",
+    "meaning": "to be relieved"
+  },
+  {
+    "rank": 10021,
+    "word": "二の腕",
+    "reading": "にのうで",
+    "meaning": "upper arm"
+  },
+  {
+    "rank": 10051,
+    "word": "ケツ",
+    "reading": "ケツ",
+    "meaning": "ass"
+  },
+  {
+    "rank": 10055,
+    "word": "体液",
+    "reading": "たいえき",
+    "meaning": "body fluids"
+  },
+  {
+    "rank": 10058,
+    "word": "抱擁",
+    "reading": "ほうよう",
+    "meaning": "embrace"
+  },
+  {
+    "rank": 10101,
+    "word": "亀頭",
+    "reading": "きとう",
+    "meaning": "glans (esp. glans penis)"
+  },
+  {
+    "rank": 10305,
+    "word": "脳みそ",
+    "reading": "のうみそ",
+    "meaning": "brains"
+  },
+  {
+    "rank": 10349,
+    "word": "骨折",
+    "reading": "こっせつ",
+    "meaning": "bone fracture"
+  },
+  {
+    "rank": 10358,
+    "word": "子宮",
+    "reading": "しきゅう",
+    "meaning": "womb"
+  },
+  {
+    "rank": 10528,
+    "word": "付け根",
+    "reading": "つけね",
+    "meaning": "root"
+  },
+  {
+    "rank": 10535,
+    "word": "身体中",
+    "reading": "しんたいじゅう",
+    "meaning": "throughout the body"
+  },
+  {
+    "rank": 10739,
+    "word": "巨乳",
+    "reading": "きょにゅう",
+    "meaning": "huge breasts"
+  },
+  {
+    "rank": 10766,
+    "word": "器官",
+    "reading": "きかん",
+    "meaning": "organ (of body, plant, etc.)"
+  },
+  {
+    "rank": 10852,
+    "word": "貴女",
+    "reading": "きじょ",
+    "meaning": "you"
+  },
+  {
+    "rank": 10856,
+    "word": "腫れる",
+    "reading": "はれる",
+    "meaning": "to swell (from inflammation)"
+  },
+  {
+    "rank": 10876,
+    "word": "体つき",
+    "reading": "からだつき",
+    "meaning": "body build"
+  },
+  {
+    "rank": 10881,
+    "word": "大股",
+    "reading": "おおまた",
+    "meaning": "spreading one's legs wide apart"
+  },
+  {
+    "rank": 10884,
+    "word": "胃袋",
+    "reading": "いぶくろ",
+    "meaning": "stomach"
+  },
+  {
+    "rank": 10993,
+    "word": "下腹部",
+    "reading": "かふくぶ",
+    "meaning": "abdomen"
+  },
+  {
+    "rank": 11052,
+    "word": "体調を崩す",
+    "reading": "たいちょうをくずす",
+    "meaning": "to become indisposed"
+  },
+  {
+    "rank": 11058,
+    "word": "右肩",
+    "reading": "みぎかた",
+    "meaning": "right shoulder"
+  },
+  {
+    "rank": 11067,
+    "word": "うなじ",
+    "reading": "うなじ",
+    "meaning": "nape (of the neck)"
+  },
+  {
+    "rank": 11076,
+    "word": "尻目",
+    "reading": "しりめ",
+    "meaning": "backward glance"
+  },
+  {
+    "rank": 11096,
+    "word": "肢体",
+    "reading": "したい",
+    "meaning": "limbs"
+  },
+  {
+    "rank": 11133,
+    "word": "上体",
+    "reading": "じょうたい",
+    "meaning": "upper body"
+  },
+  {
+    "rank": 11184,
+    "word": "動悸",
+    "reading": "どうき",
+    "meaning": "palpitation (of the heart)"
+  },
+  {
+    "rank": 11253,
+    "word": "お手",
+    "reading": "おて",
+    "meaning": "hand"
+  },
+  {
+    "rank": 11276,
+    "word": "肩を並べる",
+    "reading": "かたをならべる",
+    "meaning": "to stand, walk, etc. shoulder-to-shoulder"
+  },
+  {
+    "rank": 11291,
+    "word": "右目",
+    "reading": "みぎめ",
+    "meaning": "right eye"
+  },
+  {
+    "rank": 11427,
+    "word": "肩で息をする",
+    "reading": "かたでいきをする",
+    "meaning": "to breathe heavily (e.g. with much movement of the should..."
+  },
+  {
+    "rank": 11439,
+    "word": "前足",
+    "reading": "まえあし",
+    "meaning": "forefoot"
+  },
+  {
+    "rank": 11506,
+    "word": "傷跡",
+    "reading": "きずあと",
+    "meaning": "scar"
+  },
+  {
+    "rank": 11508,
+    "word": "はだける",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 11529,
+    "word": "怪我をした",
+    "reading": "けがをした",
+    "meaning": "hurt"
+  },
+  {
+    "rank": 11552,
+    "word": "肩口",
+    "reading": "かたぐち",
+    "meaning": "top of the shoulders"
+  },
+  {
+    "rank": 11554,
+    "word": "脳天",
+    "reading": "のうてん",
+    "meaning": "top of the head"
+  },
+  {
+    "rank": 11568,
+    "word": "ほっぺた",
+    "reading": "ほっぺた",
+    "meaning": "cheek"
+  },
+  {
+    "rank": 11578,
+    "word": "お腹が空く",
+    "reading": "おなかがすく",
+    "meaning": "to become hungry"
+  },
+  {
+    "rank": 11642,
+    "word": "睫毛",
+    "reading": "まつげ",
+    "meaning": "eyelashes"
+  },
+  {
+    "rank": 11677,
+    "word": "喉が渇く",
+    "reading": "のどがかわく",
+    "meaning": "to be thirsty"
+  },
+  {
+    "rank": 11709,
+    "word": "心臓の鼓動",
+    "reading": "しんぞうのこどう",
+    "meaning": "heartbeat"
+  },
+  {
+    "rank": 11720,
+    "word": "耳を貸す",
+    "reading": "みみをかす",
+    "meaning": "to lend an ear to"
+  },
+  {
+    "rank": 11761,
+    "word": "運動神経",
+    "reading": "うんどうしんけい",
+    "meaning": "motor nerve"
+  },
+  {
+    "rank": 11765,
+    "word": "耳を塞ぐ",
+    "reading": "みみをふさぐ",
+    "meaning": "to stop (plug) one's ears"
+  },
+  {
+    "rank": 11828,
+    "word": "指を鳴らす",
+    "reading": "ゆびをならす",
+    "meaning": "to snap one's fingers"
+  },
+  {
+    "rank": 11831,
+    "word": "目眩",
+    "reading": "めまい",
+    "meaning": "dizziness"
+  },
+  {
+    "rank": 11832,
+    "word": "身の回り",
+    "reading": "みのまわり",
+    "meaning": "one's personal belongings"
+  },
+  {
+    "rank": 11877,
+    "word": "萎える",
+    "reading": "なえる",
+    "meaning": "to lose strength"
+  },
+  {
+    "rank": 11891,
+    "word": "胸が痛む",
+    "reading": "むねがいたむ",
+    "meaning": "to experience chest pain"
+  },
+  {
+    "rank": 11910,
+    "word": "腹の中",
+    "reading": "はらのなか",
+    "meaning": "in the belly"
+  },
+  {
+    "rank": 11955,
+    "word": "涎",
+    "reading": "よだれ",
+    "meaning": "drool"
+  },
+  {
+    "rank": 12042,
+    "word": "おしっこ",
+    "reading": "おしっこ",
+    "meaning": "wee-wee"
+  },
+  {
+    "rank": 12072,
+    "word": "脂肪",
+    "reading": "しぼう",
+    "meaning": "fat"
+  },
+  {
+    "rank": 12098,
+    "word": "ヒビ",
+    "reading": "ヒビ",
+    "meaning": "chaps"
+  },
+  {
+    "rank": 12142,
+    "word": "長髪",
+    "reading": "ちょうはつ",
+    "meaning": "long hair"
+  },
+  {
+    "rank": 12159,
+    "word": "ボディ",
+    "reading": "ボディ",
+    "meaning": "body"
+  },
+  {
+    "rank": 12273,
+    "word": "眩暈",
+    "reading": "めまい",
+    "meaning": "dizziness"
+  },
+  {
+    "rank": 12280,
+    "word": "性器",
+    "reading": "せいき",
+    "meaning": "genitals"
+  },
+  {
+    "rank": 12312,
+    "word": "脂汗",
+    "reading": "あぶらあせ",
+    "meaning": "cold sweat"
+  },
+  {
+    "rank": 12314,
+    "word": "胸板",
+    "reading": "むないた",
+    "meaning": "breast"
+  },
+  {
+    "rank": 12353,
+    "word": "目の色",
+    "reading": "めのいろ",
+    "meaning": "eye color"
+  },
+  {
+    "rank": 12450,
+    "word": "頭蓋骨",
+    "reading": "ずがいこつ",
+    "meaning": "skull"
+  },
+  {
+    "rank": 12509,
+    "word": "ジト目",
+    "reading": "ジトめ",
+    "meaning": "(stare or glare with) scornful eyes"
+  },
+  {
+    "rank": 12510,
+    "word": "鼻水",
+    "reading": "はなみず",
+    "meaning": "nasal mucus"
+  },
+  {
+    "rank": 12512,
+    "word": "ポニーテール",
+    "reading": "ポニーテール",
+    "meaning": "ponytail"
+  },
+  {
+    "rank": 12513,
+    "word": "体躯",
+    "reading": "たいく",
+    "meaning": "body"
+  },
+  {
+    "rank": 12563,
+    "word": "目の下",
+    "reading": "めのした",
+    "meaning": "below one's eyes"
+  },
+  {
+    "rank": 12587,
+    "word": "左肩",
+    "reading": "ひだりかた",
+    "meaning": "left shoulder"
+  },
+  {
+    "rank": 12635,
+    "word": "腰を抜かす",
+    "reading": "こしをぬかす",
+    "meaning": "to dislocate one's back"
+  },
+  {
+    "rank": 12637,
+    "word": "痣",
+    "reading": "あざ",
+    "meaning": "birthmark"
+  },
+  {
+    "rank": 12713,
+    "word": "胸部",
+    "reading": "きょうぶ",
+    "meaning": "chest"
+  },
+  {
+    "rank": 12767,
+    "word": "足の裏",
+    "reading": "あしのうら",
+    "meaning": "sole of foot"
+  },
+  {
+    "rank": 12829,
+    "word": "膝枕",
+    "reading": "ひざまくら",
+    "meaning": "laying one's head in someone's lap"
+  },
+  {
+    "rank": 12830,
+    "word": "豊満",
+    "reading": "ほうまん",
+    "meaning": "stout"
+  },
+  {
+    "rank": 12876,
+    "word": "襟元",
+    "reading": "えりもと",
+    "meaning": "(around the) neck"
+  },
+  {
+    "rank": 12880,
+    "word": "毛並み",
+    "reading": "けなみ",
+    "meaning": "coat (of hair or fur)"
+  },
+  {
+    "rank": 12978,
+    "word": "鳥肌が立つ",
+    "reading": "とりはだがたつ",
+    "meaning": "to get goosebumps"
+  },
+  {
+    "rank": 13001,
+    "word": "肋骨",
+    "reading": "あばらぼね",
+    "meaning": "rib"
+  },
+  {
+    "rank": 13207,
+    "word": "骸骨",
+    "reading": "がいこつ",
+    "meaning": "skeleton"
+  },
+  {
+    "rank": 13215,
+    "word": "左目",
+    "reading": "ひだりめ",
+    "meaning": "left eye"
+  },
+  {
+    "rank": 13216,
+    "word": "ツラ",
+    "reading": "ツラ",
+    "meaning": "face"
+  },
+  {
+    "rank": 13315,
+    "word": "肉塊",
+    "reading": "にくかい",
+    "meaning": "lump of meat"
+  },
+  {
+    "rank": 13350,
+    "word": "骨格",
+    "reading": "こっかく",
+    "meaning": "skeleton"
+  },
+  {
+    "rank": 13354,
+    "word": "素肌",
+    "reading": "すはだ",
+    "meaning": "bare (naked) body"
+  },
+  {
+    "rank": 13593,
+    "word": "ゲスト",
+    "reading": "ゲスト",
+    "meaning": "guest"
+  },
+  {
+    "rank": 13647,
+    "word": "本陣",
+    "reading": "ほんじん",
+    "meaning": "troop headquarters"
+  },
+  {
+    "rank": 13678,
+    "word": "ラブレター",
+    "reading": "ラブレター",
+    "meaning": "love letter"
+  },
+  {
+    "rank": 13723,
+    "word": "薬指",
+    "reading": "くすりゆび",
+    "meaning": "ring finger"
+  },
+  {
+    "rank": 13739,
+    "word": "腿",
+    "reading": "もも",
+    "meaning": "thigh"
+  },
+  {
+    "rank": 13783,
+    "word": "お体",
+    "reading": "おからだ",
+    "meaning": "body"
+  },
+  {
+    "rank": 13889,
+    "word": "両脚",
+    "reading": "りょうきゃく",
+    "meaning": "both legs"
+  },
+  {
+    "rank": 13924,
+    "word": "腹筋",
+    "reading": "ふっきん",
+    "meaning": "sit-up"
+  },
+  {
+    "rank": 13946,
+    "word": "肩の力を抜く",
+    "reading": "かたのちからをぬく",
+    "meaning": "to let the tension out of one's shoulders"
+  },
+  {
+    "rank": 14059,
+    "word": "聞く耳",
+    "reading": "きくみみ",
+    "meaning": "acute ear"
+  },
+  {
+    "rank": 14064,
+    "word": "嘔吐",
+    "reading": "おうと",
+    "meaning": "vomiting"
+  },
+  {
+    "rank": 14140,
+    "word": "裸体",
+    "reading": "らたい",
+    "meaning": "naked body"
+  },
+  {
+    "rank": 14199,
+    "word": "鼻腔",
+    "reading": "びこう",
+    "meaning": "the nasal cavity"
+  },
+  {
+    "rank": 14273,
+    "word": "太腿",
+    "reading": "ふともも",
+    "meaning": "thigh"
+  },
+  {
+    "rank": 14305,
+    "word": "腸",
+    "reading": "ちょう",
+    "meaning": "guts"
+  },
+  {
+    "rank": 14312,
+    "word": "首根っこ",
+    "reading": "くびねっこ",
+    "meaning": "the scruff or nape of the neck"
+  },
+  {
+    "rank": 14335,
+    "word": "下唇",
+    "reading": "したくちびる",
+    "meaning": "lower lip"
+  },
+  {
+    "rank": 14560,
+    "word": "生唾",
+    "reading": "なまつば",
+    "meaning": "saliva (in one's mouth)"
+  },
+  {
+    "rank": 14561,
+    "word": "外傷",
+    "reading": "がいしょう",
+    "meaning": "external wound"
+  },
+  {
+    "rank": 14568,
+    "word": "心臓が止まる",
+    "reading": "しんぞうがとまる",
+    "meaning": "to have one's heart stop beating"
+  },
+  {
+    "rank": 14636,
+    "word": "身の丈",
+    "reading": "みのたけ",
+    "meaning": "stature"
+  },
+  {
+    "rank": 14687,
+    "word": "充血",
+    "reading": "じゅうけつ",
+    "meaning": "congestion (with blood)"
+  },
+  {
+    "rank": 14743,
+    "word": "脳髄",
+    "reading": "のうずい",
+    "meaning": "brain"
+  },
+  {
+    "rank": 14786,
+    "word": "眉毛",
+    "reading": "まゆげ",
+    "meaning": "eyebrow"
+  },
+  {
+    "rank": 14906,
+    "word": "謹慎",
+    "reading": "きんしん",
+    "meaning": "self restraint"
+  },
+  {
+    "rank": 14909,
+    "word": "口ずさむ",
+    "reading": "くちずさむ",
+    "meaning": "to hum (a tune)"
+  },
+  {
+    "rank": 14940,
+    "word": "血色",
+    "reading": "けっしょく",
+    "meaning": "complexion"
+  },
+  {
+    "rank": 14956,
+    "word": "クリトリス",
+    "reading": "クリトリス",
+    "meaning": "clitoris"
+  },
+  {
+    "rank": 14958,
+    "word": "片膝をつく",
+    "reading": "かたひざをつく",
+    "meaning": "to kneel down on one knee"
+  },
+  {
+    "rank": 15139,
+    "word": "心臓に悪い",
+    "reading": "しんぞうにわるい",
+    "meaning": "causing concern"
+  },
+  {
+    "rank": 15150,
+    "word": "太股",
+    "reading": "ふともも",
+    "meaning": "thigh"
+  },
+  {
+    "rank": 15159,
+    "word": "いびき",
+    "reading": "いびき",
+    "meaning": "snoring"
+  },
+  {
+    "rank": 15210,
+    "word": "傷痕",
+    "reading": "きずあと",
+    "meaning": "scar"
+  },
+  {
+    "rank": 15232,
+    "word": "上体を起こす",
+    "reading": "じょうたいをおこす",
+    "meaning": "to straighten up"
+  },
+  {
+    "rank": 15296,
+    "word": "臓器",
+    "reading": "ぞうき",
+    "meaning": "internal organs"
+  },
+  {
+    "rank": 15372,
+    "word": "使い勝手",
+    "reading": "つかいがって",
+    "meaning": "ease of use"
+  },
+  {
+    "rank": 15377,
+    "word": "直立",
+    "reading": "ちょくりつ",
+    "meaning": "standing upright"
+  },
+  {
+    "rank": 15395,
+    "word": "血圧",
+    "reading": "けつあつ",
+    "meaning": "blood pressure"
+  },
+  {
+    "rank": 15412,
+    "word": "小脇",
+    "reading": "こわき",
+    "meaning": "under one's arm"
+  },
+  {
+    "rank": 15420,
+    "word": "素足",
+    "reading": "すあし",
+    "meaning": "bare feet"
+  },
+  {
+    "rank": 15423,
+    "word": "血痕",
+    "reading": "けっこん",
+    "meaning": "bloodstain"
+  },
+  {
+    "rank": 15492,
+    "word": "足先",
+    "reading": "あしさき",
+    "meaning": "part of the feet from the ankles to the tips of the toes"
+  },
+  {
+    "rank": 15496,
+    "word": "五体",
+    "reading": "ごたい",
+    "meaning": "the whole body"
+  },
+  {
+    "rank": 15559,
+    "word": "面",
+    "reading": "つら",
+    "meaning": "face"
+  },
+  {
+    "rank": 15575,
+    "word": "平手",
+    "reading": "ひらて",
+    "meaning": "palm"
+  },
+  {
+    "rank": 15576,
+    "word": "瞳孔",
+    "reading": "どうこう",
+    "meaning": "pupil (of the eye)"
+  },
+  {
+    "rank": 15598,
+    "word": "血肉",
+    "reading": "けつにく",
+    "meaning": "blood relative"
+  },
+  {
+    "rank": 15601,
+    "word": "面",
+    "reading": "つら",
+    "meaning": "face"
+  },
+  {
+    "rank": 15776,
+    "word": "碧眼",
+    "reading": "へきがん",
+    "meaning": "blue eyes"
+  },
+  {
+    "rank": 15793,
+    "word": "青筋",
+    "reading": "あおすじ",
+    "meaning": "vein (esp. in head)"
+  },
+  {
+    "rank": 15864,
+    "word": "接近戦",
+    "reading": "せっきんせん",
+    "meaning": "close combat"
+  },
+  {
+    "rank": 15905,
+    "word": "止血",
+    "reading": "しけつ",
+    "meaning": "stopping of bleeding"
+  },
+  {
+    "rank": 15944,
+    "word": "竦む",
+    "reading": "すくむ",
+    "meaning": "to freeze (from fear, etc.)"
+  },
+  {
+    "rank": 15958,
+    "word": "両眼",
+    "reading": "りょうがん",
+    "meaning": "both eyes"
+  },
+  {
+    "rank": 16039,
+    "word": "筋肉痛",
+    "reading": "きんにくつう",
+    "meaning": "muscular pain"
+  },
+  {
+    "rank": 16040,
+    "word": "足腰",
+    "reading": "あしこし",
+    "meaning": "legs and loins"
+  },
+  {
+    "rank": 16270,
+    "word": "耳鳴り",
+    "reading": "みみなり",
+    "meaning": "tinnitus"
+  },
+  {
+    "rank": 16275,
+    "word": "目と鼻の先",
+    "reading": "めとはなのさき",
+    "meaning": "in front of one's eyes"
+  },
+  {
+    "rank": 16516,
+    "word": "鼻の下",
+    "reading": "はなのした",
+    "meaning": "upper lip"
+  },
+  {
+    "rank": 16534,
+    "word": "脛",
+    "reading": "すね",
+    "meaning": "shin"
+  },
+  {
+    "rank": 16698,
+    "word": "発熱",
+    "reading": "はつねつ",
+    "meaning": "generation of heat"
+  },
+  {
+    "rank": 16699,
+    "word": "口腔",
+    "reading": "こうこう",
+    "meaning": "oral cavity"
+  },
+  {
+    "rank": 16730,
+    "word": "検事",
+    "reading": "けんじ",
+    "meaning": "public prosecutor"
+  },
+  {
+    "rank": 16745,
+    "word": "膣口",
+    "reading": "ちつこう",
+    "meaning": "vaginal opening"
+  },
+  {
+    "rank": 16826,
+    "word": "耳朶",
+    "reading": "みみたぶ",
+    "meaning": "earlobe"
+  },
+  {
+    "rank": 16873,
+    "word": "痒い",
+    "reading": "かゆい",
+    "meaning": "itchy"
+  },
+  {
+    "rank": 16882,
+    "word": "痛覚",
+    "reading": "つうかく",
+    "meaning": "sense of pain"
+  },
+  {
+    "rank": 16886,
+    "word": "肩を貸す",
+    "reading": "かたをかす",
+    "meaning": "to lend someone one's shoulder"
+  },
+  {
+    "rank": 16911,
+    "word": "歯ぎしり",
+    "reading": "はぎしり",
+    "meaning": "involuntary nocturnal tooth grinding"
+  },
+  {
+    "rank": 16957,
+    "word": "盲点",
+    "reading": "もうてん",
+    "meaning": "blind spot (on the retina)"
+  },
+  {
+    "rank": 16961,
+    "word": "眉根",
+    "reading": "まゆね",
+    "meaning": "part of the eyebrow closest to the nose"
+  },
+  {
+    "rank": 17008,
+    "word": "熱に浮かされる",
+    "reading": "ねつにうかされる",
+    "meaning": "to be delirious with fever"
+  },
+  {
+    "rank": 17024,
+    "word": "配分",
+    "reading": "はいぶん",
+    "meaning": "distribution"
+  },
+  {
+    "rank": 17052,
+    "word": "童顔",
+    "reading": "どうがん",
+    "meaning": "child's face"
+  },
+  {
+    "rank": 17078,
+    "word": "精子",
+    "reading": "せいし",
+    "meaning": "sperm"
+  },
+  {
+    "rank": 17093,
+    "word": "吸血",
+    "reading": "きゅうけつ",
+    "meaning": "bloodsucking"
+  },
+  {
+    "rank": 17100,
+    "word": "筋肉質",
+    "reading": "きんにくしつ",
+    "meaning": "muscular"
+  },
+  {
+    "rank": 17126,
+    "word": "喘ぎ声",
+    "reading": "あえぎごえ",
+    "meaning": "panting"
+  },
+  {
+    "rank": 17163,
+    "word": "襟首",
+    "reading": "えりくび",
+    "meaning": "nape of the neck"
+  },
+  {
+    "rank": 17185,
+    "word": "歯噛み",
+    "reading": "はがみ",
+    "meaning": "grinding of the teeth"
+  },
+  {
+    "rank": 17342,
+    "word": "胎内",
+    "reading": "たいない",
+    "meaning": "interior of the womb (of a pregnant woman)"
+  },
+  {
+    "rank": 17357,
+    "word": "寝癖",
+    "reading": "ねぐせ",
+    "meaning": "bed hair"
+  },
+  {
+    "rank": 17365,
+    "word": "鳥肌",
+    "reading": "とりはだ",
+    "meaning": "gooseflesh"
+  },
+  {
+    "rank": 17368,
+    "word": "図体",
+    "reading": "ずうたい",
+    "meaning": "body"
+  },
+  {
+    "rank": 17369,
+    "word": "頬杖をつく",
+    "reading": "ほおづえをつく",
+    "meaning": "to rest one's chin in one's hands"
+  },
+  {
+    "rank": 17452,
+    "word": "膝を突く",
+    "reading": "ひざをつく",
+    "meaning": "to fall to one's knees"
+  },
+  {
+    "rank": 17463,
+    "word": "握力",
+    "reading": "あくりょく",
+    "meaning": "grip (of hand)"
+  },
+  {
+    "rank": 17491,
+    "word": "渋面",
+    "reading": "じゅうめん",
+    "meaning": "grimace"
+  },
+  {
+    "rank": 17539,
+    "word": "舞い込む",
+    "reading": "まいこむ",
+    "meaning": "to come fluttering in (e.g. leaves, snow, flowers, etc.)"
+  },
+  {
+    "rank": 17559,
+    "word": "筋トレ",
+    "reading": "きんトレ",
+    "meaning": "weight training"
+  },
+  {
+    "rank": 17593,
+    "word": "片眉",
+    "reading": "かたまゆ",
+    "meaning": "one eyebrow"
+  },
+  {
+    "rank": 17605,
+    "word": "頭蓋",
+    "reading": "ずがい",
+    "meaning": "cranium"
+  },
+  {
+    "rank": 17621,
+    "word": "勃つ",
+    "reading": "たつ",
+    "meaning": "to have an erection"
+  },
+  {
+    "rank": 17658,
+    "word": "ひそめる",
+    "reading": "ひそめる",
+    "meaning": "to knit (one's eyebrows)"
+  },
+  {
+    "rank": 17705,
+    "word": "貌",
+    "reading": "かお",
+    "meaning": "face"
+  },
+  {
+    "rank": 17721,
+    "word": "胸の谷間",
+    "reading": "むねのたにま",
+    "meaning": "cleavage (between breasts)"
+  },
+  {
+    "rank": 17738,
+    "word": "猫耳",
+    "reading": "ねこみみ",
+    "meaning": "cat ears"
+  },
+  {
+    "rank": 17840,
+    "word": "蹄",
+    "reading": "ひづめ",
+    "meaning": "hoof"
+  },
+  {
+    "rank": 17883,
+    "word": "横向き",
+    "reading": "よこむき",
+    "meaning": "turning sideways"
+  },
+  {
+    "rank": 17888,
+    "word": "膂力",
+    "reading": "りょりょく",
+    "meaning": "physical strength"
+  },
+  {
+    "rank": 17951,
+    "word": "目を剥く",
+    "reading": "めをむく",
+    "meaning": "to open one's eyes wide (in anger, surprise, etc.)"
+  },
+  {
+    "rank": 17996,
+    "word": "胎児",
+    "reading": "たいじ",
+    "meaning": "fetus"
+  },
+  {
+    "rank": 18082,
+    "word": "肉眼",
+    "reading": "にくがん",
+    "meaning": "naked eye"
+  },
+  {
+    "rank": 18100,
+    "word": "ハゲ",
+    "reading": "ハゲ",
+    "meaning": "baldness"
+  },
+  {
+    "rank": 18115,
+    "word": "しかめっ面",
+    "reading": "しかめっつら",
+    "meaning": "frown"
+  },
+  {
+    "rank": 18120,
+    "word": "舌なめずり",
+    "reading": "したなめずり",
+    "meaning": "licking one's lips"
+  },
+  {
+    "rank": 18154,
+    "word": "鼻の頭",
+    "reading": "はなのあたま",
+    "meaning": "tip of one's nose"
+  },
+  {
+    "rank": 18188,
+    "word": "髪を切る",
+    "reading": "かみをきる",
+    "meaning": "to get a haircut"
+  },
+  {
+    "rank": 18267,
+    "word": "背",
+    "reading": "せい",
+    "meaning": "height"
+  },
+  {
+    "rank": 18280,
+    "word": "金縛り",
+    "reading": "かなしばり",
+    "meaning": "binding hand and foot"
+  },
+  {
+    "rank": 18353,
+    "word": "切れ長",
+    "reading": "きれなが",
+    "meaning": "long slits (esp. of eyes)"
+  },
+  {
+    "rank": 18393,
+    "word": "体毛",
+    "reading": "たいもう",
+    "meaning": "body hair"
+  },
+  {
+    "rank": 18446,
+    "word": "足を伸ばす",
+    "reading": "あしをのばす",
+    "meaning": "to (relax and) stretch one's legs out"
+  },
+  {
+    "rank": 18463,
+    "word": "腹痛",
+    "reading": "ふくつう",
+    "meaning": "stomach ache"
+  },
+  {
+    "rank": 18467,
+    "word": "おちんちん",
+    "reading": "おちんちん",
+    "meaning": "penis"
+  },
+  {
+    "rank": 18653,
+    "word": "ふくらはぎ",
+    "reading": "ふくらはぎ",
+    "meaning": "calf (of leg)"
+  },
+  {
+    "rank": 18707,
+    "word": "舐め回す",
+    "reading": "なめまわす",
+    "meaning": "to lick all over"
+  },
+  {
+    "rank": 18713,
+    "word": "首をすくめる",
+    "reading": "くびをすくめる",
+    "meaning": "to duck one's head"
+  },
+  {
+    "rank": 18789,
+    "word": "鼻をすする",
+    "reading": "はなをすする",
+    "meaning": "to sniffle"
+  },
+  {
+    "rank": 18866,
+    "word": "舌を巻く",
+    "reading": "したをまく",
+    "meaning": "to be astonished"
+  },
+  {
+    "rank": 18881,
+    "word": "銃器",
+    "reading": "じゅうき",
+    "meaning": "small arms"
+  },
+  {
+    "rank": 18936,
+    "word": "下腹",
+    "reading": "かふく",
+    "meaning": "abdomen"
+  },
+  {
+    "rank": 18942,
+    "word": "唾を吐く",
+    "reading": "つばをはく",
+    "meaning": "to spit"
+  },
+  {
+    "rank": 18945,
+    "word": "頬ずり",
+    "reading": "ほおずり",
+    "meaning": "rubbing cheeks together (as a display of affection)"
+  },
+  {
+    "rank": 18967,
+    "word": "脚力",
+    "reading": "きゃくりょく",
+    "meaning": "leg strength"
+  },
+  {
+    "rank": 18969,
+    "word": "鳩尾",
+    "reading": "みぞおち",
+    "meaning": "pit of the stomach"
+  },
+  {
+    "rank": 19214,
+    "word": "白骨",
+    "reading": "はっこつ",
+    "meaning": "white (bleached) bone"
+  },
+  {
+    "rank": 19227,
+    "word": "肛門",
+    "reading": "こうもん",
+    "meaning": "anus"
+  },
+  {
+    "rank": 19234,
+    "word": "毛先",
+    "reading": "けさき",
+    "meaning": "tips of one's hair"
+  },
+  {
+    "rank": 19248,
+    "word": "指の腹",
+    "reading": "ゆびのはら",
+    "meaning": "ball of a finger"
+  },
+  {
+    "rank": 19354,
+    "word": "頸",
+    "reading": "くび",
+    "meaning": "neck"
+  },
+  {
+    "rank": 19547,
+    "word": "脳味噌",
+    "reading": "のうみそ",
+    "meaning": "brains"
+  },
+  {
+    "rank": 19564,
+    "word": "心拍数",
+    "reading": "しんぱくすう",
+    "meaning": "one's heart rate"
+  },
+  {
+    "rank": 19573,
+    "word": "擦り傷",
+    "reading": "すりきず",
+    "meaning": "scratch"
+  },
+  {
+    "rank": 19605,
+    "word": "鼻孔",
+    "reading": "びこう",
+    "meaning": "nostril"
+  },
+  {
+    "rank": 19671,
+    "word": "マメ",
+    "reading": "マメ",
+    "meaning": "blister"
+  },
+  {
+    "rank": 19698,
+    "word": "創",
+    "reading": "きず",
+    "meaning": "wound"
+  },
+  {
+    "rank": 19778,
+    "word": "甲羅",
+    "reading": "こうら",
+    "meaning": "shell (of crab, tortoise, etc.)"
+  },
+  {
+    "rank": 19805,
+    "word": "嘴",
+    "reading": "くちばし",
+    "meaning": "beak"
+  },
+  {
+    "rank": 19908,
+    "word": "鼻筋",
+    "reading": "はなすじ",
+    "meaning": "bridge of nose"
+  },
+  {
+    "rank": 19917,
+    "word": "肩幅",
+    "reading": "かたはば",
+    "meaning": "shoulder width (breadth)"
+  },
+  {
+    "rank": 19937,
+    "word": "前歯",
+    "reading": "まえば",
+    "meaning": "front tooth"
+  },
+  {
+    "rank": 19946,
+    "word": "髑髏",
+    "reading": "どくろ",
+    "meaning": "skull (esp. weatherbeaten, used as symbol of death)"
+  },
+  {
+    "rank": 20002,
+    "word": "頭頂部",
+    "reading": "とうちょうぶ",
+    "meaning": "calvaria"
+  },
+  {
+    "rank": 20019,
+    "word": "ズキズキ",
+    "reading": "ズキズキ",
+    "meaning": "throbbing with pain"
+  },
+  {
+    "rank": 20079,
+    "word": "握り拳",
+    "reading": "にぎりこぶし",
+    "meaning": "clenched fist"
+  },
+  {
+    "rank": 20137,
+    "word": "生首",
+    "reading": "なまくび",
+    "meaning": "freshly severed head"
+  },
+  {
+    "rank": 20144,
+    "word": "たわけ",
+    "reading": "たわけ",
+    "meaning": "tomfoolery"
+  },
+  {
+    "rank": 20145,
+    "word": "目鼻立ち",
+    "reading": "めはなだち",
+    "meaning": "(set of) facial features"
+  },
+  {
+    "rank": 20165,
+    "word": "鉤爪",
+    "reading": "かぎづめ",
+    "meaning": "claw"
+  },
+  {
+    "rank": 20177,
+    "word": "心音",
+    "reading": "しんおん",
+    "meaning": "(sound of one's) heartbeat"
+  },
+  {
+    "rank": 20249,
+    "word": "目を回す",
+    "reading": "めをまわす",
+    "meaning": "to faint"
+  },
+  {
+    "rank": 20340,
+    "word": "小便",
+    "reading": "しょうべん",
+    "meaning": "urine"
+  },
+  {
+    "rank": 20409,
+    "word": "頰杖",
+    "reading": "ほおづえ",
+    "meaning": "resting one's chin in one's hands"
+  },
+  {
+    "rank": 20426,
+    "word": "猫背",
+    "reading": "ねこぜ",
+    "meaning": "bent back"
+  },
+  {
+    "rank": 20477,
+    "word": "目を覆う",
+    "reading": "めをおおう",
+    "meaning": "to avert one's eyes"
+  },
+  {
+    "rank": 20497,
+    "word": "陰茎",
+    "reading": "いんけい",
+    "meaning": "penis"
+  },
+  {
+    "rank": 20499,
+    "word": "スケルトン",
+    "reading": "スケルトン",
+    "meaning": "skeleton (of a vertebrate, ship, building, etc.)"
+  },
+  {
+    "rank": 20613,
+    "word": "耳が痛い",
+    "reading": "みみがいたい",
+    "meaning": "being painfully-true (e.g. reprimand)"
+  },
+  {
+    "rank": 20637,
+    "word": "バスト",
+    "reading": "バスト",
+    "meaning": "bust (measurement)"
+  },
+  {
+    "rank": 20718,
+    "word": "により",
+    "reading": "により",
+    "meaning": "according to"
+  },
+  {
+    "rank": 20746,
+    "word": "左胸",
+    "reading": "ひだりむね",
+    "meaning": "left breast"
+  },
+  {
+    "rank": 20798,
+    "word": "口許",
+    "reading": "くちもと",
+    "meaning": "mouth"
+  },
+  {
+    "rank": 20868,
+    "word": "頬が緩む",
+    "reading": "ほおがゆるむ",
+    "meaning": "to grin"
+  },
+  {
+    "rank": 20878,
+    "word": "眉尻",
+    "reading": "まゆじり",
+    "meaning": "end of an eyebrow"
+  },
+  {
+    "rank": 20885,
+    "word": "息が切れる",
+    "reading": "いきがきれる",
+    "meaning": "to run out of breath"
+  },
+  {
+    "rank": 20892,
+    "word": "側頭部",
+    "reading": "そくとうぶ",
+    "meaning": "temporal region"
+  },
+  {
+    "rank": 20903,
+    "word": "鼻につく",
+    "reading": "はなにつく",
+    "meaning": "to be cloying"
+  },
+  {
+    "rank": 20949,
+    "word": "鼻をつく",
+    "reading": "はなをつく",
+    "meaning": "to assail the nostrils (smell)"
+  },
+  {
+    "rank": 21078,
+    "word": "血流",
+    "reading": "けつりゅう",
+    "meaning": "bloodstream"
+  },
+  {
+    "rank": 21081,
+    "word": "黒目",
+    "reading": "くろめ",
+    "meaning": "pupil and (dark) iris of the eye"
+  },
+  {
+    "rank": 21089,
+    "word": "眼窩",
+    "reading": "がんか",
+    "meaning": "eye socket"
+  },
+  {
+    "rank": 21104,
+    "word": "短髪",
+    "reading": "たんぱつ",
+    "meaning": "short hair"
+  },
+  {
+    "rank": 21151,
+    "word": "拳",
+    "reading": "こぶし",
+    "meaning": "fist"
+  },
+  {
+    "rank": 21237,
+    "word": "両耳",
+    "reading": "りょうみみ",
+    "meaning": "both ears"
+  },
+  {
+    "rank": 21258,
+    "word": "血潮",
+    "reading": "ちしお",
+    "meaning": "blood spilt from the body"
+  },
+  {
+    "rank": 21276,
+    "word": "子宮口",
+    "reading": "しきゅうこう",
+    "meaning": "os uteri"
+  },
+  {
+    "rank": 21316,
+    "word": "呼気",
+    "reading": "こき",
+    "meaning": "exhaled air"
+  },
+  {
+    "rank": 21364,
+    "word": "母体",
+    "reading": "ぼたい",
+    "meaning": "mother's body (esp. when pregnant or after giving birth)"
+  },
+  {
+    "rank": 21375,
+    "word": "恰幅",
+    "reading": "かっぷく",
+    "meaning": "physique"
+  },
+  {
+    "rank": 21392,
+    "word": "前脚",
+    "reading": "まえあし",
+    "meaning": "forefoot"
+  },
+  {
+    "rank": 21482,
+    "word": "こぶ",
+    "reading": "こぶ",
+    "meaning": "bump"
+  },
+  {
+    "rank": 21519,
+    "word": "秘裂",
+    "reading": "ひれつ",
+    "meaning": "female genitalia"
+  },
+  {
+    "rank": 21561,
+    "word": "犬歯",
+    "reading": "けんし",
+    "meaning": "eyetooth"
+  },
+  {
+    "rank": 21565,
+    "word": "胆",
+    "reading": "きも",
+    "meaning": "liver"
+  },
+  {
+    "rank": 21567,
+    "word": "ネック",
+    "reading": "ネック",
+    "meaning": "neck"
+  },
+  {
+    "rank": 21625,
+    "word": "後ろ髪",
+    "reading": "うしろがみ",
+    "meaning": "hair on the back of one's head"
+  },
+  {
+    "rank": 21666,
+    "word": "片膝",
+    "reading": "かたひざ",
+    "meaning": "one knee"
+  },
+  {
+    "rank": 21683,
+    "word": "裸身",
+    "reading": "らしん",
+    "meaning": "naked body"
+  },
+  {
+    "rank": 21737,
+    "word": "細腕",
+    "reading": "ほそうで",
+    "meaning": "thin arm"
+  },
+  {
+    "rank": 21747,
+    "word": "巨躯",
+    "reading": "きょく",
+    "meaning": "big frame"
+  },
+  {
+    "rank": 21787,
+    "word": "爪痕",
+    "reading": "つめあと",
+    "meaning": "fingernail mark"
+  },
+  {
+    "rank": 21864,
+    "word": "アーム",
+    "reading": "アーム",
+    "meaning": "arm"
+  },
+  {
+    "rank": 21903,
+    "word": "涙腺",
+    "reading": "るいせん",
+    "meaning": "tear gland"
+  },
+  {
+    "rank": 21929,
+    "word": "体ごと",
+    "reading": "からだごと",
+    "meaning": "bodily"
+  },
+  {
+    "rank": 21955,
+    "word": "挫く",
+    "reading": "くじく",
+    "meaning": "to sprain"
+  },
+  {
+    "rank": 21959,
+    "word": "目蓋",
+    "reading": "まぶた",
+    "meaning": "eyelid"
+  },
+  {
+    "rank": 21989,
+    "word": "後ろ足",
+    "reading": "うしろあし",
+    "meaning": "hind foot"
+  },
+  {
+    "rank": 21990,
+    "word": "貧乳",
+    "reading": "ひんにゅう",
+    "meaning": "tiny breasts"
+  },
+  {
+    "rank": 22016,
+    "word": "胃液",
+    "reading": "いえき",
+    "meaning": "gastric juice"
+  },
+  {
+    "rank": 22038,
+    "word": "世界征服",
+    "reading": "せかいせいふく",
+    "meaning": "world conquest"
+  },
+  {
+    "rank": 22098,
+    "word": "体軀",
+    "reading": "たいく",
+    "meaning": "body"
+  },
+  {
+    "rank": 22130,
+    "word": "ムズムズ",
+    "reading": "ムズムズ",
+    "meaning": "to feel itchy"
+  },
+  {
+    "rank": 22154,
+    "word": "筋違い",
+    "reading": "すじちがい",
+    "meaning": "cramp"
+  },
+  {
+    "rank": 22203,
+    "word": "筋骨隆々",
+    "reading": "きんこつりゅうりゅう",
+    "meaning": "muscular"
+  },
+  {
+    "rank": 22255,
+    "word": "痛いところ",
+    "reading": "いたいところ",
+    "meaning": "one's weak point"
+  },
+  {
+    "rank": 22324,
+    "word": "ヘソ",
+    "reading": "ヘソ",
+    "meaning": "navel"
+  },
+  {
+    "rank": 22497,
+    "word": "ケーキ屋",
+    "reading": "ケーキや",
+    "meaning": "cake shop"
+  },
+  {
+    "rank": 22514,
+    "word": "血液型",
+    "reading": "けつえきがた",
+    "meaning": "blood type"
+  },
+  {
+    "rank": 22583,
+    "word": "鼻の穴",
+    "reading": "はなのあな",
+    "meaning": "nostril"
+  },
+  {
+    "rank": 22649,
+    "word": "横腹",
+    "reading": "よこばら",
+    "meaning": "side"
+  },
+  {
+    "rank": 22710,
+    "word": "２５日",
+    "reading": "にじゅうごにち",
+    "meaning": "twenty-fifth day of the month"
+  },
+  {
+    "rank": 22714,
+    "word": "動脈",
+    "reading": "どうみゃく",
+    "meaning": "artery"
+  },
+  {
+    "rank": 22775,
+    "word": "腫れ上がる",
+    "reading": "はれあがる",
+    "meaning": "to swell up"
+  },
+  {
+    "rank": 22814,
+    "word": "臓物",
+    "reading": "ぞうもつ",
+    "meaning": "entrails"
+  },
+  {
+    "rank": 22832,
+    "word": "吐血",
+    "reading": "とけつ",
+    "meaning": "vomiting of blood"
+  },
+  {
+    "rank": 22930,
+    "word": "背が伸びる",
+    "reading": "せがのびる",
+    "meaning": "to grow taller (of people)"
+  },
+  {
+    "rank": 22998,
+    "word": "おへそ",
+    "reading": "おへそ",
+    "meaning": "navel"
+  },
+  {
+    "rank": 23054,
+    "word": "痕",
+    "reading": "こん",
+    "meaning": "scar (e.g. from operation, injection)"
+  },
+  {
+    "rank": 23103,
+    "word": "眸",
+    "reading": "ひとみ",
+    "meaning": "pupil (of eye)"
+  },
+  {
+    "rank": 23141,
+    "word": "痛い目に遭う",
+    "reading": "いたいめにあう",
+    "meaning": "to go through a bitter experience"
+  },
+  {
+    "rank": 23148,
+    "word": "歯を磨く",
+    "reading": "はをみがく",
+    "meaning": "to brush one's teeth"
+  },
+  {
+    "rank": 23188,
+    "word": "おくび",
+    "reading": "おくび",
+    "meaning": "belch"
+  },
+  {
+    "rank": 23246,
+    "word": "ジョー",
+    "reading": "ジョー",
+    "meaning": "joe"
+  },
+  {
+    "rank": 23303,
+    "word": "血眼",
+    "reading": "ちまなこ",
+    "meaning": "bloodshot eyes"
+  },
+  {
+    "rank": 23374,
+    "word": "おまんこ",
+    "reading": "おまんこ",
+    "meaning": "pussy"
+  },
+  {
+    "rank": 23391,
+    "word": "胸に突き刺さる",
+    "reading": "むねにつきささる",
+    "meaning": "to resonate emotionally (with one)"
+  },
+  {
+    "rank": 23478,
+    "word": "プロポーション",
+    "reading": "プロポーション",
+    "meaning": "proportions (esp. body proportions)"
+  },
+  {
+    "rank": 23502,
+    "word": "背格好",
+    "reading": "せいかっこう",
+    "meaning": "stature"
+  },
+  {
+    "rank": 23507,
+    "word": "太い腕",
+    "reading": "ふというで",
+    "meaning": "big arm"
+  },
+  {
+    "rank": 23514,
+    "word": "血を分ける",
+    "reading": "ちをわける",
+    "meaning": "to be related by blood"
+  },
+  {
+    "rank": 23522,
+    "word": "尿",
+    "reading": "にょう",
+    "meaning": "urine"
+  },
+  {
+    "rank": 23539,
+    "word": "足裏",
+    "reading": "あしうら",
+    "meaning": "sole of the foot"
+  },
+  {
+    "rank": 23576,
+    "word": "学歴",
+    "reading": "がくれき",
+    "meaning": "academic background"
+  },
+  {
+    "rank": 23610,
+    "word": "体形",
+    "reading": "たいけい",
+    "meaning": "figure"
+  },
+  {
+    "rank": 23687,
+    "word": "毛穴",
+    "reading": "けあな",
+    "meaning": "pore (of the skin)"
+  },
+  {
+    "rank": 23707,
+    "word": "糞",
+    "reading": "ふん",
+    "meaning": "feces (esp. animal)"
+  },
+  {
+    "rank": 23721,
+    "word": "男根",
+    "reading": "だんこん",
+    "meaning": "penis"
+  },
+  {
+    "rank": 23778,
+    "word": "節々",
+    "reading": "ふしぶし",
+    "meaning": "joints"
+  },
+  {
+    "rank": 23794,
+    "word": "しこり",
+    "reading": "しこり",
+    "meaning": "muscle stiffness (esp. in shoulders)"
+  },
+  {
+    "rank": 23811,
+    "word": "肥大化",
+    "reading": "ひだいか",
+    "meaning": "swelling"
+  },
+  {
+    "rank": 23940,
+    "word": "目を剝く",
+    "reading": "めをむく",
+    "meaning": "to open one's eyes wide (in anger, surprise, etc.)"
+  },
+  {
+    "rank": 24019,
+    "word": "寝ぼけ眼",
+    "reading": "ねぼけまなこ",
+    "meaning": "sleepy eyes"
+  },
+  {
+    "rank": 24026,
+    "word": "輸血",
+    "reading": "ゆけつ",
+    "meaning": "blood transfusion"
+  },
+  {
+    "rank": 24070,
+    "word": "両翼",
+    "reading": "りょうよく",
+    "meaning": "both wings"
+  },
+  {
+    "rank": 24080,
+    "word": "人肌",
+    "reading": "ひとはだ",
+    "meaning": "the skin (of a human being)"
+  },
+  {
+    "rank": 24088,
+    "word": "髪を整える",
+    "reading": "かみをととのえる",
+    "meaning": "to arrange one's hair"
+  },
+  {
+    "rank": 24173,
+    "word": "声帯",
+    "reading": "せいたい",
+    "meaning": "vocal cords"
+  },
+  {
+    "rank": 24273,
+    "word": "吹かす",
+    "reading": "ふかす",
+    "meaning": "to smoke (a cigarette)"
+  },
+  {
+    "rank": 24387,
+    "word": "躰",
+    "reading": "からだ",
+    "meaning": "body"
+  },
+  {
+    "rank": 24439,
+    "word": "尿道",
+    "reading": "にょうどう",
+    "meaning": "urethra"
+  },
+  {
+    "rank": 24481,
+    "word": "肚",
+    "reading": "はら",
+    "meaning": "abdomen"
+  },
+  {
+    "rank": 24615,
+    "word": "髪",
+    "reading": "かみ",
+    "meaning": "hair (on the head)"
+  },
+  {
+    "rank": 24633,
+    "word": "面",
+    "reading": "つら",
+    "meaning": "face"
+  },
+  {
+    "rank": 24635,
+    "word": "臍",
+    "reading": "へそ",
+    "meaning": "navel"
+  },
+  {
+    "rank": 24772,
+    "word": "骨の髄まで",
+    "reading": "ほねのずいまで",
+    "meaning": "to the core"
+  },
+  {
+    "rank": 24778,
+    "word": "歯磨き",
+    "reading": "はみがき",
+    "meaning": "dental brushing"
+  },
+  {
+    "rank": 24851,
+    "word": "上半身裸",
+    "reading": "じょうはんしんはだか",
+    "meaning": "(top) half naked"
+  },
+  {
+    "rank": 24892,
+    "word": "表皮",
+    "reading": "ひょうひ",
+    "meaning": "epidermis"
+  },
+  {
+    "rank": 24895,
+    "word": "眦",
+    "reading": "まなじり",
+    "meaning": "corner of the eye"
+  },
+  {
+    "rank": 24953,
+    "word": "虫歯",
+    "reading": "むしば",
+    "meaning": "cavity"
+  },
+  {
+    "rank": 24963,
+    "word": "柔肌",
+    "reading": "やわはだ",
+    "meaning": "soft fair skin"
+  },
+  {
+    "rank": 25048,
+    "word": "声が裏返る",
+    "reading": "こえがうらがえる",
+    "meaning": "to crack (person's voice)"
+  },
+  {
+    "rank": 25056,
+    "word": "前屈みになる",
+    "reading": "まえかがみになる",
+    "meaning": "to slouch"
+  },
+  {
+    "rank": 25110,
+    "word": "足がつく",
+    "reading": "あしがつく",
+    "meaning": "to be traced (of a criminal)"
+  },
+  {
+    "rank": 25123,
+    "word": "失禁",
+    "reading": "しっきん",
+    "meaning": "incontinence"
+  },
+  {
+    "rank": 25135,
+    "word": "脊髄",
+    "reading": "せきずい",
+    "meaning": "spinal cord"
+  },
+  {
+    "rank": 25208,
+    "word": "聞き耳",
+    "reading": "ききみみ",
+    "meaning": "straining one's ears"
+  },
+  {
+    "rank": 25222,
+    "word": "慧眼",
+    "reading": "けいがん",
+    "meaning": "discerning (quick) eye"
+  },
+  {
+    "rank": 25238,
+    "word": "ほと",
+    "reading": "ほと",
+    "meaning": "female private parts"
+  },
+  {
+    "rank": 25331,
+    "word": "髪を梳く",
+    "reading": "かみをすく",
+    "meaning": "to comb one's hair"
+  },
+  {
+    "rank": 25344,
+    "word": "腰をかがめる",
+    "reading": "こしをかがめる",
+    "meaning": "to bend forward"
+  },
+  {
+    "rank": 25368,
+    "word": "耳につく",
+    "reading": "みみにつく",
+    "meaning": "to catch one's attention"
+  },
+  {
+    "rank": 25371,
+    "word": "喉笛",
+    "reading": "のどぶえ",
+    "meaning": "windpipe"
+  },
+  {
+    "rank": 25406,
+    "word": "肩にかかる",
+    "reading": "かたにかかる",
+    "meaning": "to fall on one's shoulders (e.g. responsibility, duty)"
+  },
+  {
+    "rank": 25409,
+    "word": "髯",
+    "reading": "ひげ",
+    "meaning": "moustache"
+  },
+  {
+    "rank": 25419,
+    "word": "鉄拳",
+    "reading": "てっけん",
+    "meaning": "tightly clenched fist"
+  },
+  {
+    "rank": 25426,
+    "word": "咽",
+    "reading": "のど",
+    "meaning": "throat"
+  },
+  {
+    "rank": 25428,
+    "word": "脈拍",
+    "reading": "みゃくはく",
+    "meaning": "pulse"
+  },
+  {
+    "rank": 25462,
+    "word": "隻眼",
+    "reading": "せきがん",
+    "meaning": "one eye"
+  },
+  {
+    "rank": 25499,
+    "word": "人面",
+    "reading": "じんめん",
+    "meaning": "human face"
+  },
+  {
+    "rank": 25531,
+    "word": "胸ぐら",
+    "reading": "むなぐら",
+    "meaning": "collar"
+  },
+  {
+    "rank": 25537,
+    "word": "骨組み",
+    "reading": "ほねぐみ",
+    "meaning": "skeletal frame"
+  },
+  {
+    "rank": 25578,
+    "word": "身一つ",
+    "reading": "みひとつ",
+    "meaning": "one's body alone"
+  },
+  {
+    "rank": 25616,
+    "word": "汗まみれ",
+    "reading": "あせまみれ",
+    "meaning": "sweaty"
+  },
+  {
+    "rank": 25638,
+    "word": "臓腑",
+    "reading": "ぞうふ",
+    "meaning": "entrails"
+  },
+  {
+    "rank": 25642,
+    "word": "頭皮",
+    "reading": "とうひ",
+    "meaning": "scalp"
+  },
+  {
+    "rank": 25658,
+    "word": "頬を紅潮させる",
+    "reading": "ほおをこうちょうさせる",
+    "meaning": "to blush"
+  },
+  {
+    "rank": 25674,
+    "word": "腹の虫",
+    "reading": "はらのむし",
+    "meaning": "roundworm (Ascaris lumbricoides)"
+  },
+  {
+    "rank": 25689,
+    "word": "義手",
+    "reading": "ぎしゅ",
+    "meaning": "artificial arm (hand)"
+  },
+  {
+    "rank": 25693,
+    "word": "尻に敷く",
+    "reading": "しりにしく",
+    "meaning": "to dominate (usu. one's husband)"
+  },
+  {
+    "rank": 25698,
+    "word": "拳骨",
+    "reading": "げんこつ",
+    "meaning": "(clenched) fist"
+  },
+  {
+    "rank": 25717,
+    "word": "禿頭",
+    "reading": "はげあたま",
+    "meaning": "bald head"
+  },
+  {
+    "rank": 25770,
+    "word": "甲殻",
+    "reading": "こうかく",
+    "meaning": "carapace"
+  },
+  {
+    "rank": 25787,
+    "word": "新任",
+    "reading": "しんにん",
+    "meaning": "newly appointed"
+  },
+  {
+    "rank": 25827,
+    "word": "身体つき",
+    "reading": "からだつき",
+    "meaning": "body build"
+  },
+  {
+    "rank": 25979,
+    "word": "臀部",
+    "reading": "でんぶ",
+    "meaning": "buttocks"
+  },
+  {
+    "rank": 26014,
+    "word": "気管",
+    "reading": "きかん",
+    "meaning": "trachea"
+  },
+  {
+    "rank": 26023,
+    "word": "薄皮",
+    "reading": "うすかわ",
+    "meaning": "thin skin"
+  },
+  {
+    "rank": 26047,
+    "word": "腫瘍",
+    "reading": "しゅよう",
+    "meaning": "tumor"
+  },
+  {
+    "rank": 26061,
+    "word": "巻き毛",
+    "reading": "まきげ",
+    "meaning": "curl"
+  },
+  {
+    "rank": 26102,
+    "word": "腱",
+    "reading": "けん",
+    "meaning": "tendon"
+  },
+  {
+    "rank": 26160,
+    "word": "黒子",
+    "reading": "ほくろ",
+    "meaning": "mole"
+  },
+  {
+    "rank": 26183,
+    "word": "凝",
+    "reading": "しこり",
+    "meaning": "muscle stiffness (esp. in shoulders)"
+  },
+  {
+    "rank": 26283,
+    "word": "顔付き",
+    "reading": "かおつき",
+    "meaning": "(outward) looks"
+  },
+  {
+    "rank": 26310,
+    "word": "三食",
+    "reading": "さんしょく",
+    "meaning": "three meals (a day)"
+  },
+  {
+    "rank": 26336,
+    "word": "一間",
+    "reading": "いっけん",
+    "meaning": "one ken"
+  },
+  {
+    "rank": 26340,
+    "word": "背筋が寒くなる",
+    "reading": "せすじがさむくなる",
+    "meaning": "to feel a chill run down one's spine"
+  },
+  {
+    "rank": 26423,
+    "word": "足",
+    "reading": "あし",
+    "meaning": "foot"
+  },
+  {
+    "rank": 26594,
+    "word": "無精髭",
+    "reading": "ぶしょうひげ",
+    "meaning": "stubble"
+  },
+  {
+    "rank": 26793,
+    "word": "右脚",
+    "reading": "みぎあし",
+    "meaning": "right foot"
+  },
+  {
+    "rank": 26796,
+    "word": "リップ",
+    "reading": "リップ",
+    "meaning": "lip"
+  },
+  {
+    "rank": 26871,
+    "word": "髭面",
+    "reading": "ひげづら",
+    "meaning": "bearded face"
+  },
+  {
+    "rank": 26915,
+    "word": "禿げる",
+    "reading": "はげる",
+    "meaning": "to lose hair"
+  },
+  {
+    "rank": 26948,
+    "word": "喚起",
+    "reading": "かんき",
+    "meaning": "arousal"
+  }
+]

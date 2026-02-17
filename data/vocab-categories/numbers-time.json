@@ -1,0 +1,6584 @@
+[
+  {
+    "rank": 41,
+    "word": "聞く",
+    "reading": "きく",
+    "meaning": "to hear"
+  },
+  {
+    "rank": 45,
+    "word": "出る",
+    "reading": "でる",
+    "meaning": "to leave"
+  },
+  {
+    "rank": 79,
+    "word": "ほど",
+    "reading": "ほど",
+    "meaning": "extent"
+  },
+  {
+    "rank": 90,
+    "word": "家",
+    "reading": "いえ",
+    "meaning": "house"
+  },
+  {
+    "rank": 103,
+    "word": "部屋",
+    "reading": "へや",
+    "meaning": "room"
+  },
+  {
+    "rank": 170,
+    "word": "教える",
+    "reading": "おしえる",
+    "meaning": "to teach"
+  },
+  {
+    "rank": 173,
+    "word": "おる",
+    "reading": "おる",
+    "meaning": "to be (animate)"
+  },
+  {
+    "rank": 233,
+    "word": "感じ",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 317,
+    "word": "新しい",
+    "reading": "あたらしい",
+    "meaning": "new"
+  },
+  {
+    "rank": 364,
+    "word": "急ぐ",
+    "reading": "いそぐ",
+    "meaning": "to hurry"
+  },
+  {
+    "rank": 379,
+    "word": "広い",
+    "reading": "ひろい",
+    "meaning": "spacious"
+  },
+  {
+    "rank": 456,
+    "word": "全部",
+    "reading": "ぜんぶ",
+    "meaning": "all"
+  },
+  {
+    "rank": 459,
+    "word": "光",
+    "reading": "ひかり",
+    "meaning": "light"
+  },
+  {
+    "rank": 467,
+    "word": "気がする",
+    "reading": "きがする",
+    "meaning": "to feel (as if)"
+  },
+  {
+    "rank": 475,
+    "word": "泣く",
+    "reading": "なく",
+    "meaning": "to cry"
+  },
+  {
+    "rank": 486,
+    "word": "変",
+    "reading": "へん",
+    "meaning": "strange"
+  },
+  {
+    "rank": 517,
+    "word": "敵",
+    "reading": "てき",
+    "meaning": "opponent"
+  },
+  {
+    "rank": 526,
+    "word": "落ち着く",
+    "reading": "おちつく",
+    "meaning": "to calm down"
+  },
+  {
+    "rank": 548,
+    "word": "結局",
+    "reading": "けっきょく",
+    "meaning": "after all"
+  },
+  {
+    "rank": 592,
+    "word": "空気",
+    "reading": "くうき",
+    "meaning": "air"
+  },
+  {
+    "rank": 737,
+    "word": "終わり",
+    "reading": "おわり",
+    "meaning": "the end"
+  },
+  {
+    "rank": 769,
+    "word": "出会う",
+    "reading": "であう",
+    "meaning": "to meet (by chance)"
+  },
+  {
+    "rank": 785,
+    "word": "遠い",
+    "reading": "とおい",
+    "meaning": "far"
+  },
+  {
+    "rank": 800,
+    "word": "一緒",
+    "reading": "いっしょ",
+    "meaning": "together"
+  },
+  {
+    "rank": 832,
+    "word": "集める",
+    "reading": "あつめる",
+    "meaning": "to collect"
+  },
+  {
+    "rank": 835,
+    "word": "直接",
+    "reading": "ちょくせつ",
+    "meaning": "direct"
+  },
+  {
+    "rank": 1003,
+    "word": "月",
+    "reading": "げつ",
+    "meaning": "Monday"
+  },
+  {
+    "rank": 1008,
+    "word": "数",
+    "reading": "かず",
+    "meaning": "number"
+  },
+  {
+    "rank": 1009,
+    "word": "万",
+    "reading": "ばん",
+    "meaning": "completely"
+  },
+  {
+    "rank": 1033,
+    "word": "当時",
+    "reading": "とうじ",
+    "meaning": "at that time"
+  },
+  {
+    "rank": 1034,
+    "word": "円",
+    "reading": "えん",
+    "meaning": "yen (Japanese monetary unit)"
+  },
+  {
+    "rank": 1061,
+    "word": "時",
+    "reading": "じ",
+    "meaning": "hour"
+  },
+  {
+    "rank": 1080,
+    "word": "その日",
+    "reading": "そのひ",
+    "meaning": "that day"
+  },
+  {
+    "rank": 1105,
+    "word": "番",
+    "reading": "ばん",
+    "meaning": "number (in a series)"
+  },
+  {
+    "rank": 1106,
+    "word": "日々",
+    "reading": "ひび",
+    "meaning": "every day"
+  },
+  {
+    "rank": 1113,
+    "word": "間",
+    "reading": "かん",
+    "meaning": "interval"
+  },
+  {
+    "rank": 1125,
+    "word": "時には",
+    "reading": "ときには",
+    "meaning": "at times"
+  },
+  {
+    "rank": 1136,
+    "word": "際",
+    "reading": "きわ",
+    "meaning": "edge"
+  },
+  {
+    "rank": 1139,
+    "word": "時期",
+    "reading": "じき",
+    "meaning": "time"
+  },
+  {
+    "rank": 1141,
+    "word": "午後",
+    "reading": "ごご",
+    "meaning": "afternoon"
+  },
+  {
+    "rank": 1143,
+    "word": "以来",
+    "reading": "いらい",
+    "meaning": "since"
+  },
+  {
+    "rank": 1158,
+    "word": "一生",
+    "reading": "いっしょう",
+    "meaning": "whole life"
+  },
+  {
+    "rank": 1166,
+    "word": "代",
+    "reading": "だい",
+    "meaning": "charge"
+  },
+  {
+    "rank": 1174,
+    "word": "回",
+    "reading": "かい",
+    "meaning": "counter for occurrences"
+  },
+  {
+    "rank": 1180,
+    "word": "度",
+    "reading": "たび",
+    "meaning": "time (three times, each time, etc.)"
+  },
+  {
+    "rank": 1189,
+    "word": "将来",
+    "reading": "しょうらい",
+    "meaning": "future (usually near)"
+  },
+  {
+    "rank": 1190,
+    "word": "半",
+    "reading": "はん",
+    "meaning": "half"
+  },
+  {
+    "rank": 1195,
+    "word": "たつ",
+    "reading": "たつ",
+    "meaning": "to pass (of time)"
+  },
+  {
+    "rank": 1200,
+    "word": "いわゆる",
+    "reading": "いわゆる",
+    "meaning": "what is called"
+  },
+  {
+    "rank": 1201,
+    "word": "年",
+    "reading": "ねん",
+    "meaning": "year"
+  },
+  {
+    "rank": 1202,
+    "word": "にかけて",
+    "reading": "にかけて",
+    "meaning": "till"
+  },
+  {
+    "rank": 1219,
+    "word": "五",
+    "reading": "ご",
+    "meaning": "five"
+  },
+  {
+    "rank": 1236,
+    "word": "三人",
+    "reading": "さんにん",
+    "meaning": "three people"
+  },
+  {
+    "rank": 1282,
+    "word": "四",
+    "reading": "よん",
+    "meaning": "four"
+  },
+  {
+    "rank": 1312,
+    "word": "六",
+    "reading": "ろく",
+    "meaning": "six"
+  },
+  {
+    "rank": 1318,
+    "word": "二つ",
+    "reading": "ふたつ",
+    "meaning": "two"
+  },
+  {
+    "rank": 1355,
+    "word": "先ほど",
+    "reading": "さきほど",
+    "meaning": "a short while ago"
+  },
+  {
+    "rank": 1360,
+    "word": "そうそう",
+    "reading": "そうそう",
+    "meaning": "so much"
+  },
+  {
+    "rank": 1361,
+    "word": "七",
+    "reading": "なな",
+    "meaning": "seven"
+  },
+  {
+    "rank": 1408,
+    "word": "タイミング",
+    "reading": "タイミング",
+    "meaning": "timing"
+  },
+  {
+    "rank": 1427,
+    "word": "十",
+    "reading": "じゅう",
+    "meaning": "ten"
+  },
+  {
+    "rank": 1438,
+    "word": "ども",
+    "reading": "ども",
+    "meaning": "first-person plural (or singular)"
+  },
+  {
+    "rank": 1458,
+    "word": "一本",
+    "reading": "いっぽん",
+    "meaning": "one long cylindrical thing"
+  },
+  {
+    "rank": 1523,
+    "word": "今夜",
+    "reading": "こんや",
+    "meaning": "this evening"
+  },
+  {
+    "rank": 1537,
+    "word": "経つ",
+    "reading": "たつ",
+    "meaning": "to pass (of time)"
+  },
+  {
+    "rank": 1609,
+    "word": "二十",
+    "reading": "はたち",
+    "meaning": "20 years old"
+  },
+  {
+    "rank": 1653,
+    "word": "時点",
+    "reading": "じてん",
+    "meaning": "point in time"
+  },
+  {
+    "rank": 1670,
+    "word": "第二",
+    "reading": "だいに",
+    "meaning": "second"
+  },
+  {
+    "rank": 1696,
+    "word": "三十",
+    "reading": "さんじゅう",
+    "meaning": "thirty"
+  },
+  {
+    "rank": 1704,
+    "word": "直後",
+    "reading": "ちょくご",
+    "meaning": "immediately following"
+  },
+  {
+    "rank": 1725,
+    "word": "今年",
+    "reading": "ことし",
+    "meaning": "this year"
+  },
+  {
+    "rank": 1801,
+    "word": "この前",
+    "reading": "このまえ",
+    "meaning": "some time ago"
+  },
+  {
+    "rank": 1805,
+    "word": "先日",
+    "reading": "せんじつ",
+    "meaning": "the other day"
+  },
+  {
+    "rank": 1813,
+    "word": "年齢",
+    "reading": "ねんれい",
+    "meaning": "age"
+  },
+  {
+    "rank": 1820,
+    "word": "一年",
+    "reading": "いちねん",
+    "meaning": "one year"
+  },
+  {
+    "rank": 1834,
+    "word": "九",
+    "reading": "きゅう",
+    "meaning": "nine"
+  },
+  {
+    "rank": 1848,
+    "word": "秒",
+    "reading": "びょう",
+    "meaning": "second (unit of time)"
+  },
+  {
+    "rank": 1861,
+    "word": "数日",
+    "reading": "すうじつ",
+    "meaning": "few days"
+  },
+  {
+    "rank": 1862,
+    "word": "百",
+    "reading": "ひゃく",
+    "meaning": "100"
+  },
+  {
+    "rank": 1914,
+    "word": "翌日",
+    "reading": "よくじつ",
+    "meaning": "next day"
+  },
+  {
+    "rank": 1959,
+    "word": "本日",
+    "reading": "ほんじつ",
+    "meaning": "today"
+  },
+  {
+    "rank": 1970,
+    "word": "たびに",
+    "reading": "たびに",
+    "meaning": "each time"
+  },
+  {
+    "rank": 2000,
+    "word": "今朝",
+    "reading": "けさ",
+    "meaning": "this morning"
+  },
+  {
+    "rank": 2004,
+    "word": "台",
+    "reading": "だい",
+    "meaning": "stand"
+  },
+  {
+    "rank": 2018,
+    "word": "昼",
+    "reading": "ひる",
+    "meaning": "noon"
+  },
+  {
+    "rank": 2034,
+    "word": "枚",
+    "reading": "まい",
+    "meaning": "counter for flat objects (e.g. sheets of paper)"
+  },
+  {
+    "rank": 2040,
+    "word": "夕方",
+    "reading": "ゆうがた",
+    "meaning": "evening"
+  },
+  {
+    "rank": 2047,
+    "word": "三つ",
+    "reading": "みっつ",
+    "meaning": "three"
+  },
+  {
+    "rank": 2053,
+    "word": "時々",
+    "reading": "ときどき",
+    "meaning": "sometimes"
+  },
+  {
+    "rank": 2094,
+    "word": "千",
+    "reading": "せん",
+    "meaning": "1,000"
+  },
+  {
+    "rank": 2095,
+    "word": "最中",
+    "reading": "さいちゅう",
+    "meaning": "(in) the middle of"
+  },
+  {
+    "rank": 2117,
+    "word": "半ば",
+    "reading": "なかば",
+    "meaning": "middle"
+  },
+  {
+    "rank": 2129,
+    "word": "間もない",
+    "reading": "まもない",
+    "meaning": "after (practically) no time"
+  },
+  {
+    "rank": 2130,
+    "word": "とっくに",
+    "reading": "とっくに",
+    "meaning": "long ago"
+  },
+  {
+    "rank": 2136,
+    "word": "直前",
+    "reading": "ちょくぜん",
+    "meaning": "just before"
+  },
+  {
+    "rank": 2143,
+    "word": "何もかも",
+    "reading": "なにもかも",
+    "meaning": "anything and everything"
+  },
+  {
+    "rank": 2180,
+    "word": "人数",
+    "reading": "にんずう",
+    "meaning": "the number of people"
+  },
+  {
+    "rank": 2183,
+    "word": "時計",
+    "reading": "とけい",
+    "meaning": "clock"
+  },
+  {
+    "rank": 2193,
+    "word": "去年",
+    "reading": "きょねん",
+    "meaning": "last year"
+  },
+  {
+    "rank": 2194,
+    "word": "この間",
+    "reading": "このあいだ",
+    "meaning": "the other day"
+  },
+  {
+    "rank": 2196,
+    "word": "一回",
+    "reading": "いっかい",
+    "meaning": "once"
+  },
+  {
+    "rank": 2198,
+    "word": "もう一人",
+    "reading": "もうひとり",
+    "meaning": "another (person)"
+  },
+  {
+    "rank": 2203,
+    "word": "休み",
+    "reading": "やすみ",
+    "meaning": "rest"
+  },
+  {
+    "rank": 2208,
+    "word": "強力",
+    "reading": "きょうりょく",
+    "meaning": "powerful"
+  },
+  {
+    "rank": 2211,
+    "word": "互いに",
+    "reading": "たがいに",
+    "meaning": "mutually"
+  },
+  {
+    "rank": 2220,
+    "word": "個",
+    "reading": "こ",
+    "meaning": "counter for articles"
+  },
+  {
+    "rank": 2236,
+    "word": "号",
+    "reading": "ごう",
+    "meaning": "number"
+  },
+  {
+    "rank": 2240,
+    "word": "計算",
+    "reading": "けいさん",
+    "meaning": "calculation"
+  },
+  {
+    "rank": 2241,
+    "word": "一時",
+    "reading": "いちじ",
+    "meaning": "one o'clock"
+  },
+  {
+    "rank": 2243,
+    "word": "一週間",
+    "reading": "いっしゅうかん",
+    "meaning": "one week"
+  },
+  {
+    "rank": 2248,
+    "word": "年間",
+    "reading": "ねんかん",
+    "meaning": "(period of) a year"
+  },
+  {
+    "rank": 2250,
+    "word": "三日",
+    "reading": "みっか",
+    "meaning": "third day of the month"
+  },
+  {
+    "rank": 2277,
+    "word": "何年",
+    "reading": "なんねん",
+    "meaning": "how many years"
+  },
+  {
+    "rank": 2283,
+    "word": "昼間",
+    "reading": "ひるま",
+    "meaning": "daytime"
+  },
+  {
+    "rank": 2292,
+    "word": "何人",
+    "reading": "なんにん",
+    "meaning": "how many people"
+  },
+  {
+    "rank": 2309,
+    "word": "倍",
+    "reading": "ばい",
+    "meaning": "double"
+  },
+  {
+    "rank": 2310,
+    "word": "約",
+    "reading": "やく",
+    "meaning": "approximately"
+  },
+  {
+    "rank": 2331,
+    "word": "ページ",
+    "reading": "ページ",
+    "meaning": "page"
+  },
+  {
+    "rank": 2351,
+    "word": "秋",
+    "reading": "あき",
+    "meaning": "autumn"
+  },
+  {
+    "rank": 2378,
+    "word": "半年",
+    "reading": "はんとし",
+    "meaning": "half a year"
+  },
+  {
+    "rank": 2393,
+    "word": "時間がかかる",
+    "reading": "じかんがかかる",
+    "meaning": "to take time"
+  },
+  {
+    "rank": 2395,
+    "word": "今のところ",
+    "reading": "いまのところ",
+    "meaning": "at present"
+  },
+  {
+    "rank": 2415,
+    "word": "ある日",
+    "reading": "あるひ",
+    "meaning": "one day"
+  },
+  {
+    "rank": 2422,
+    "word": "前後",
+    "reading": "ぜんご",
+    "meaning": "front and rear"
+  },
+  {
+    "rank": 2424,
+    "word": "以降",
+    "reading": "いこう",
+    "meaning": "on and after"
+  },
+  {
+    "rank": 2433,
+    "word": "今では",
+    "reading": "いまでは",
+    "meaning": "now"
+  },
+  {
+    "rank": 2451,
+    "word": "たび",
+    "reading": "たび",
+    "meaning": "time (three times, each time, etc.)"
+  },
+  {
+    "rank": 2455,
+    "word": "ポイント",
+    "reading": "ポイント",
+    "meaning": "point (of a story, argument, etc.)"
+  },
+  {
+    "rank": 2470,
+    "word": "ゼロ",
+    "reading": "ゼロ",
+    "meaning": "zero"
+  },
+  {
+    "rank": 2472,
+    "word": "事前",
+    "reading": "じぜん",
+    "meaning": "prior"
+  },
+  {
+    "rank": 2475,
+    "word": "一杯",
+    "reading": "いっぱい",
+    "meaning": "amount necessary to fill a container (e.g. cupful, spoonf..."
+  },
+  {
+    "rank": 2480,
+    "word": "数える",
+    "reading": "かぞえる",
+    "meaning": "to count"
+  },
+  {
+    "rank": 2514,
+    "word": "二度",
+    "reading": "にど",
+    "meaning": "two times"
+  },
+  {
+    "rank": 2549,
+    "word": "数字",
+    "reading": "すうじ",
+    "meaning": "numeral"
+  },
+  {
+    "rank": 2560,
+    "word": "前回",
+    "reading": "ぜんかい",
+    "meaning": "previous time"
+  },
+  {
+    "rank": 2576,
+    "word": "季節",
+    "reading": "きせつ",
+    "meaning": "season"
+  },
+  {
+    "rank": 2582,
+    "word": "今頃",
+    "reading": "いまごろ",
+    "meaning": "about this time"
+  },
+  {
+    "rank": 2601,
+    "word": "年上",
+    "reading": "としうえ",
+    "meaning": "older"
+  },
+  {
+    "rank": 2605,
+    "word": "いつから",
+    "reading": "いつから",
+    "meaning": "since when"
+  },
+  {
+    "rank": 2611,
+    "word": "経過",
+    "reading": "けいか",
+    "meaning": "passage (of time)"
+  },
+  {
+    "rank": 2631,
+    "word": "何回",
+    "reading": "なんかい",
+    "meaning": "how many times?"
+  },
+  {
+    "rank": 2645,
+    "word": "キロ",
+    "reading": "キロ",
+    "meaning": "kilo-"
+  },
+  {
+    "rank": 2667,
+    "word": "当初",
+    "reading": "とうしょ",
+    "meaning": "beginning"
+  },
+  {
+    "rank": 2688,
+    "word": "期間",
+    "reading": "きかん",
+    "meaning": "period"
+  },
+  {
+    "rank": 2726,
+    "word": "夜中",
+    "reading": "よなか",
+    "meaning": "middle of the night"
+  },
+  {
+    "rank": 2728,
+    "word": "晩",
+    "reading": "ばん",
+    "meaning": "evening"
+  },
+  {
+    "rank": 2732,
+    "word": "何十",
+    "reading": "なんじゅう",
+    "meaning": "several tens"
+  },
+  {
+    "rank": 2742,
+    "word": "数々",
+    "reading": "かずかず",
+    "meaning": "many"
+  },
+  {
+    "rank": 2746,
+    "word": "厚い",
+    "reading": "あつい",
+    "meaning": "thick"
+  },
+  {
+    "rank": 2749,
+    "word": "最終",
+    "reading": "さいしゅう",
+    "meaning": "last"
+  },
+  {
+    "rank": 2755,
+    "word": "来年",
+    "reading": "らいねん",
+    "meaning": "next year"
+  },
+  {
+    "rank": 2767,
+    "word": "長年",
+    "reading": "ながねん",
+    "meaning": "long time"
+  },
+  {
+    "rank": 2776,
+    "word": "多数",
+    "reading": "たすう",
+    "meaning": "large number (of)"
+  },
+  {
+    "rank": 2792,
+    "word": "数年",
+    "reading": "すうねん",
+    "meaning": "several years"
+  },
+  {
+    "rank": 2804,
+    "word": "後半",
+    "reading": "こうはん",
+    "meaning": "second half"
+  },
+  {
+    "rank": 2810,
+    "word": "日",
+    "reading": "ひ",
+    "meaning": "day"
+  },
+  {
+    "rank": 2890,
+    "word": "四人",
+    "reading": "よにん",
+    "meaning": "four people"
+  },
+  {
+    "rank": 3014,
+    "word": "昨夜",
+    "reading": "ゆうべ",
+    "meaning": "last night"
+  },
+  {
+    "rank": 3065,
+    "word": "五十",
+    "reading": "ごじゅう",
+    "meaning": "fifty"
+  },
+  {
+    "rank": 3073,
+    "word": "途端",
+    "reading": "とたん",
+    "meaning": "just (now, at the moment, etc.)"
+  },
+  {
+    "rank": 3104,
+    "word": "匹",
+    "reading": "ひき",
+    "meaning": "counter for small animals"
+  },
+  {
+    "rank": 3137,
+    "word": "誕生日",
+    "reading": "たんじょうび",
+    "meaning": "birthday"
+  },
+  {
+    "rank": 3154,
+    "word": "第三",
+    "reading": "だいさん",
+    "meaning": "the third"
+  },
+  {
+    "rank": 3189,
+    "word": "時刻",
+    "reading": "じこく",
+    "meaning": "time"
+  },
+  {
+    "rank": 3221,
+    "word": "一時間",
+    "reading": "いちじかん",
+    "meaning": "one hour"
+  },
+  {
+    "rank": 3257,
+    "word": "四十",
+    "reading": "よんじゅう",
+    "meaning": "forty"
+  },
+  {
+    "rank": 3262,
+    "word": "放課後",
+    "reading": "ほうかご",
+    "meaning": "after school (at the end of the day)"
+  },
+  {
+    "rank": 3263,
+    "word": "一旦",
+    "reading": "いったん",
+    "meaning": "once"
+  },
+  {
+    "rank": 3267,
+    "word": "寸前",
+    "reading": "すんぜん",
+    "meaning": "just before"
+  },
+  {
+    "rank": 3269,
+    "word": "三年",
+    "reading": "さんねん",
+    "meaning": "three years"
+  },
+  {
+    "rank": 3321,
+    "word": "二日",
+    "reading": "ふつか",
+    "meaning": "second day of the month"
+  },
+  {
+    "rank": 3364,
+    "word": "歳",
+    "reading": "とし",
+    "meaning": "year"
+  },
+  {
+    "rank": 3387,
+    "word": "十五",
+    "reading": "じゅうご",
+    "meaning": "15"
+  },
+  {
+    "rank": 3415,
+    "word": "夏休み",
+    "reading": "なつやすみ",
+    "meaning": "summer vacation"
+  },
+  {
+    "rank": 3420,
+    "word": "二本",
+    "reading": "にほん",
+    "meaning": "two (long cylindrical things)"
+  },
+  {
+    "rank": 3525,
+    "word": "十年",
+    "reading": "じゅうねん",
+    "meaning": "ten years"
+  },
+  {
+    "rank": 3630,
+    "word": "数十",
+    "reading": "すうじゅう",
+    "meaning": "dozens"
+  },
+  {
+    "rank": 3681,
+    "word": "一点",
+    "reading": "いってん",
+    "meaning": "speck"
+  },
+  {
+    "rank": 3746,
+    "word": "当日",
+    "reading": "とうじつ",
+    "meaning": "day in question"
+  },
+  {
+    "rank": 3754,
+    "word": "一件",
+    "reading": "いっけん",
+    "meaning": "(one) matter"
+  },
+  {
+    "rank": 3762,
+    "word": "沢山",
+    "reading": "たくさん",
+    "meaning": "a lot"
+  },
+  {
+    "rank": 3764,
+    "word": "深夜",
+    "reading": "しんや",
+    "meaning": "late at night"
+  },
+  {
+    "rank": 3780,
+    "word": "億",
+    "reading": "おく",
+    "meaning": "10^8"
+  },
+  {
+    "rank": 3805,
+    "word": "十二",
+    "reading": "じゅうに",
+    "meaning": "twelve"
+  },
+  {
+    "rank": 3815,
+    "word": "再度",
+    "reading": "さいど",
+    "meaning": "twice"
+  },
+  {
+    "rank": 3841,
+    "word": "数秒",
+    "reading": "すうびょう",
+    "meaning": "several seconds"
+  },
+  {
+    "rank": 3894,
+    "word": "額",
+    "reading": "がく",
+    "meaning": "(picture) frame"
+  },
+  {
+    "rank": 3913,
+    "word": "同時",
+    "reading": "どうじ",
+    "meaning": "simultaneous"
+  },
+  {
+    "rank": 3981,
+    "word": "度",
+    "reading": "たび",
+    "meaning": "time (three times, each time, etc.)"
+  },
+  {
+    "rank": 3982,
+    "word": "二回",
+    "reading": "にかい",
+    "meaning": "twice"
+  },
+  {
+    "rank": 4010,
+    "word": "三度",
+    "reading": "さんど",
+    "meaning": "three times"
+  },
+  {
+    "rank": 4050,
+    "word": "番号",
+    "reading": "ばんごう",
+    "meaning": "number"
+  },
+  {
+    "rank": 4058,
+    "word": "子供の頃",
+    "reading": "こどものころ",
+    "meaning": "as a child"
+  },
+  {
+    "rank": 4154,
+    "word": "五分",
+    "reading": "ごぶ",
+    "meaning": "half"
+  },
+  {
+    "rank": 4232,
+    "word": "一",
+    "reading": "いち",
+    "meaning": "one"
+  },
+  {
+    "rank": 4241,
+    "word": "温度",
+    "reading": "おんど",
+    "meaning": "temperature"
+  },
+  {
+    "rank": 4273,
+    "word": "昼休み",
+    "reading": "ひるやすみ",
+    "meaning": "lunch break"
+  },
+  {
+    "rank": 4284,
+    "word": "一個",
+    "reading": "いっこ",
+    "meaning": "piece"
+  },
+  {
+    "rank": 4291,
+    "word": "もう一回",
+    "reading": "もういっかい",
+    "meaning": "one more time"
+  },
+  {
+    "rank": 4320,
+    "word": "段",
+    "reading": "だん",
+    "meaning": "step"
+  },
+  {
+    "rank": 4384,
+    "word": "休日",
+    "reading": "きゅうじつ",
+    "meaning": "holiday"
+  },
+  {
+    "rank": 4402,
+    "word": "に決まっている",
+    "reading": "にきまっている",
+    "meaning": "sure to ..."
+  },
+  {
+    "rank": 4420,
+    "word": "二度目",
+    "reading": "にどめ",
+    "meaning": "the second time"
+  },
+  {
+    "rank": 4432,
+    "word": "一行",
+    "reading": "いちぎょう",
+    "meaning": "(one) line"
+  },
+  {
+    "rank": 4438,
+    "word": "一度だけ",
+    "reading": "いちどだけ",
+    "meaning": "only once"
+  },
+  {
+    "rank": 4447,
+    "word": "最低限",
+    "reading": "さいていげん",
+    "meaning": "minimum"
+  },
+  {
+    "rank": 4449,
+    "word": "たった一人",
+    "reading": "たったひとり",
+    "meaning": "just one person"
+  },
+  {
+    "rank": 4457,
+    "word": "瞬時",
+    "reading": "しゅんじ",
+    "meaning": "instant"
+  },
+  {
+    "rank": 4462,
+    "word": "一晩",
+    "reading": "ひとばん",
+    "meaning": "one night"
+  },
+  {
+    "rank": 4490,
+    "word": "初日",
+    "reading": "しょにち",
+    "meaning": "first day"
+  },
+  {
+    "rank": 4492,
+    "word": "金額",
+    "reading": "きんがく",
+    "meaning": "amount of money"
+  },
+  {
+    "rank": 4522,
+    "word": "毎回",
+    "reading": "まいかい",
+    "meaning": "every time"
+  },
+  {
+    "rank": 4536,
+    "word": "時間をかける",
+    "reading": "じかんをかける",
+    "meaning": "to spend time (on doing something)"
+  },
+  {
+    "rank": 4545,
+    "word": "順番",
+    "reading": "じゅんばん",
+    "meaning": "turn (in line)"
+  },
+  {
+    "rank": 4553,
+    "word": "一刻も早く",
+    "reading": "いっこくもはやく",
+    "meaning": "immediately"
+  },
+  {
+    "rank": 4555,
+    "word": "いくつ",
+    "reading": "いくつ",
+    "meaning": "how many"
+  },
+  {
+    "rank": 4571,
+    "word": "ヶ月",
+    "reading": "かげつ",
+    "meaning": "months (period of)"
+  },
+  {
+    "rank": 4581,
+    "word": "十数",
+    "reading": "じゅうすう",
+    "meaning": "ten-odd"
+  },
+  {
+    "rank": 4596,
+    "word": "この際",
+    "reading": "このさい",
+    "meaning": "on this occasion"
+  },
+  {
+    "rank": 4616,
+    "word": "長い間",
+    "reading": "ながいあいだ",
+    "meaning": "long time"
+  },
+  {
+    "rank": 4639,
+    "word": "何百",
+    "reading": "なんびゃく",
+    "meaning": "hundreds"
+  },
+  {
+    "rank": 4650,
+    "word": "３日",
+    "reading": "みっか",
+    "meaning": "third day of the month"
+  },
+  {
+    "rank": 4675,
+    "word": "尋常",
+    "reading": "じんじょう",
+    "meaning": "common"
+  },
+  {
+    "rank": 4684,
+    "word": "次回",
+    "reading": "じかい",
+    "meaning": "next time (occasion)"
+  },
+  {
+    "rank": 4698,
+    "word": "からといって",
+    "reading": "からといって",
+    "meaning": "just because"
+  },
+  {
+    "rank": 4719,
+    "word": "しき",
+    "reading": "しき",
+    "meaning": "the four seasons"
+  },
+  {
+    "rank": 4759,
+    "word": "数時間",
+    "reading": "すうじかん",
+    "meaning": "a few hours"
+  },
+  {
+    "rank": 4792,
+    "word": "刹那",
+    "reading": "せつな",
+    "meaning": "moment"
+  },
+  {
+    "rank": 4812,
+    "word": "二百",
+    "reading": "にひゃく",
+    "meaning": "200"
+  },
+  {
+    "rank": 4816,
+    "word": "一段",
+    "reading": "いちだん",
+    "meaning": "more"
+  },
+  {
+    "rank": 4822,
+    "word": "数百",
+    "reading": "すうひゃく",
+    "meaning": "several hundreds"
+  },
+  {
+    "rank": 4829,
+    "word": "単位",
+    "reading": "たんい",
+    "meaning": "unit"
+  },
+  {
+    "rank": 4862,
+    "word": "早朝",
+    "reading": "そうちょう",
+    "meaning": "early morning"
+  },
+  {
+    "rank": 4889,
+    "word": "月",
+    "reading": "げつ",
+    "meaning": "Monday"
+  },
+  {
+    "rank": 4932,
+    "word": "翌朝",
+    "reading": "よくあさ",
+    "meaning": "next morning"
+  },
+  {
+    "rank": 4946,
+    "word": "週",
+    "reading": "しゅう",
+    "meaning": "week"
+  },
+  {
+    "rank": 4967,
+    "word": "数分",
+    "reading": "すうふん",
+    "meaning": "several minutes"
+  },
+  {
+    "rank": 5077,
+    "word": "午前中",
+    "reading": "ごぜんちゅう",
+    "meaning": "in the morning"
+  },
+  {
+    "rank": 5114,
+    "word": "中年",
+    "reading": "ちゅうねん",
+    "meaning": "middle-age"
+  },
+  {
+    "rank": 5124,
+    "word": "古代",
+    "reading": "こだい",
+    "meaning": "ancient times"
+  },
+  {
+    "rank": 5191,
+    "word": "寿命",
+    "reading": "じゅみょう",
+    "meaning": "life span"
+  },
+  {
+    "rank": 5192,
+    "word": "初めから",
+    "reading": "はじめから",
+    "meaning": "from the beginning"
+  },
+  {
+    "rank": 5194,
+    "word": "折",
+    "reading": "おり",
+    "meaning": "opportunity"
+  },
+  {
+    "rank": 5195,
+    "word": "十三",
+    "reading": "じゅうさん",
+    "meaning": "thirteen"
+  },
+  {
+    "rank": 5217,
+    "word": "のち",
+    "reading": "のち",
+    "meaning": "later"
+  },
+  {
+    "rank": 5236,
+    "word": "小さい頃",
+    "reading": "ちいさいころ",
+    "meaning": "as a child"
+  },
+  {
+    "rank": 5237,
+    "word": "青春",
+    "reading": "せいしゅん",
+    "meaning": "youth"
+  },
+  {
+    "rank": 5262,
+    "word": "十六",
+    "reading": "じゅうろく",
+    "meaning": "16"
+  },
+  {
+    "rank": 5275,
+    "word": "明後日",
+    "reading": "あさって",
+    "meaning": "day after tomorrow"
+  },
+  {
+    "rank": 5288,
+    "word": "日頃",
+    "reading": "ひごろ",
+    "meaning": "normally"
+  },
+  {
+    "rank": 5301,
+    "word": "前日",
+    "reading": "ぜんじつ",
+    "meaning": "previous day"
+  },
+  {
+    "rank": 5306,
+    "word": "何日",
+    "reading": "なんにち",
+    "meaning": "what day"
+  },
+  {
+    "rank": 5322,
+    "word": "六十",
+    "reading": "ろくじゅう",
+    "meaning": "sixty"
+  },
+  {
+    "rank": 5391,
+    "word": "日曜日",
+    "reading": "にちようび",
+    "meaning": "Sunday"
+  },
+  {
+    "rank": 5492,
+    "word": "今月",
+    "reading": "こんげつ",
+    "meaning": "this month"
+  },
+  {
+    "rank": 5500,
+    "word": "始め",
+    "reading": "はじめ",
+    "meaning": "beginning"
+  },
+  {
+    "rank": 5502,
+    "word": "第四",
+    "reading": "だいよん",
+    "meaning": "fourth"
+  },
+  {
+    "rank": 5503,
+    "word": "一冊",
+    "reading": "いっさつ",
+    "meaning": "one copy (of a book, magazine, etc.)"
+  },
+  {
+    "rank": 5530,
+    "word": "末に",
+    "reading": "すえに",
+    "meaning": "finally"
+  },
+  {
+    "rank": 5533,
+    "word": "三回",
+    "reading": "さんかい",
+    "meaning": "three times"
+  },
+  {
+    "rank": 5535,
+    "word": "回数",
+    "reading": "かいすう",
+    "meaning": "number of times"
+  },
+  {
+    "rank": 5544,
+    "word": "学年",
+    "reading": "がくねん",
+    "meaning": "academic year"
+  },
+  {
+    "rank": 5556,
+    "word": "世紀",
+    "reading": "せいき",
+    "meaning": "century"
+  },
+  {
+    "rank": 5568,
+    "word": "時間が経つ",
+    "reading": "じかんがたつ",
+    "meaning": "time passes"
+  },
+  {
+    "rank": 5570,
+    "word": "二週間",
+    "reading": "にしゅうかん",
+    "meaning": "two weeks"
+  },
+  {
+    "rank": 5573,
+    "word": "今となっては",
+    "reading": "いまとなっては",
+    "meaning": "at this juncture"
+  },
+  {
+    "rank": 5604,
+    "word": "手遅れ",
+    "reading": "ておくれ",
+    "meaning": "being too late"
+  },
+  {
+    "rank": 5616,
+    "word": "一分",
+    "reading": "いちぶ",
+    "meaning": "one tenth"
+  },
+  {
+    "rank": 5619,
+    "word": "後日",
+    "reading": "ごじつ",
+    "meaning": "in the future"
+  },
+  {
+    "rank": 5621,
+    "word": "三百",
+    "reading": "さんびゃく",
+    "meaning": "300"
+  },
+  {
+    "rank": 5657,
+    "word": "一秒",
+    "reading": "いちびょう",
+    "meaning": "one second"
+  },
+  {
+    "rank": 5680,
+    "word": "合間",
+    "reading": "あいま",
+    "meaning": "interval"
+  },
+  {
+    "rank": 5684,
+    "word": "十八",
+    "reading": "じゅうはち",
+    "meaning": "18"
+  },
+  {
+    "rank": 5687,
+    "word": "一夜",
+    "reading": "いちや",
+    "meaning": "one night"
+  },
+  {
+    "rank": 5699,
+    "word": "十七",
+    "reading": "じゅうしち",
+    "meaning": "17"
+  },
+  {
+    "rank": 5714,
+    "word": "半日",
+    "reading": "はんにち",
+    "meaning": "half day"
+  },
+  {
+    "rank": 5744,
+    "word": "か月",
+    "reading": "かげつ",
+    "meaning": "months (period of)"
+  },
+  {
+    "rank": 5822,
+    "word": "今晩",
+    "reading": "こんばん",
+    "meaning": "tonight"
+  },
+  {
+    "rank": 5825,
+    "word": "五百",
+    "reading": "ごひゃく",
+    "meaning": "500"
+  },
+  {
+    "rank": 5834,
+    "word": "当分",
+    "reading": "とうぶん",
+    "meaning": "for the present"
+  },
+  {
+    "rank": 5855,
+    "word": "食卓",
+    "reading": "しょくたく",
+    "meaning": "dining table"
+  },
+  {
+    "rank": 5888,
+    "word": "五日",
+    "reading": "いつか",
+    "meaning": "fifth day of the month"
+  },
+  {
+    "rank": 5890,
+    "word": "四年",
+    "reading": "よねん",
+    "meaning": "four years"
+  },
+  {
+    "rank": 5901,
+    "word": "今になって",
+    "reading": "いまになって",
+    "meaning": "at this stage"
+  },
+  {
+    "rank": 5909,
+    "word": "冊",
+    "reading": "さつ",
+    "meaning": "counter for books"
+  },
+  {
+    "rank": 5917,
+    "word": "何度でも",
+    "reading": "なんどでも",
+    "meaning": "any number of times"
+  },
+  {
+    "rank": 5924,
+    "word": "急ぎ",
+    "reading": "いそぎ",
+    "meaning": "haste"
+  },
+  {
+    "rank": 5928,
+    "word": "眠気",
+    "reading": "ねむけ",
+    "meaning": "sleepiness"
+  },
+  {
+    "rank": 5930,
+    "word": "一瞬にして",
+    "reading": "いっしゅんにして",
+    "meaning": "in an instant"
+  },
+  {
+    "rank": 6035,
+    "word": "日付",
+    "reading": "ひづけ",
+    "meaning": "date"
+  },
+  {
+    "rank": 6041,
+    "word": "先月",
+    "reading": "せんげつ",
+    "meaning": "last month"
+  },
+  {
+    "rank": 6053,
+    "word": "日が暮れる",
+    "reading": "ひがくれる",
+    "meaning": "to set (sun)"
+  },
+  {
+    "rank": 6062,
+    "word": "代々",
+    "reading": "だいだい",
+    "meaning": "for generations"
+  },
+  {
+    "rank": 6068,
+    "word": "２時",
+    "reading": "にじ",
+    "meaning": "two o'clock"
+  },
+  {
+    "rank": 6077,
+    "word": "十一",
+    "reading": "じゅういち",
+    "meaning": "eleven"
+  },
+  {
+    "rank": 6084,
+    "word": "毎朝",
+    "reading": "まいあさ",
+    "meaning": "every morning"
+  },
+  {
+    "rank": 6096,
+    "word": "十日",
+    "reading": "とおか",
+    "meaning": "tenth day of the month"
+  },
+  {
+    "rank": 6104,
+    "word": "夜明け",
+    "reading": "よあけ",
+    "meaning": "dawn"
+  },
+  {
+    "rank": 6129,
+    "word": "火をつける",
+    "reading": "ひをつける",
+    "meaning": "to ignite"
+  },
+  {
+    "rank": 6135,
+    "word": "由来",
+    "reading": "ゆらい",
+    "meaning": "origin"
+  },
+  {
+    "rank": 6162,
+    "word": "今こそ",
+    "reading": "いまこそ",
+    "meaning": "now is the time"
+  },
+  {
+    "rank": 6180,
+    "word": "毎晩",
+    "reading": "まいばん",
+    "meaning": "every night"
+  },
+  {
+    "rank": 6181,
+    "word": "久しい",
+    "reading": "ひさしい",
+    "meaning": "long (time that has passed)"
+  },
+  {
+    "rank": 6194,
+    "word": "先週",
+    "reading": "せんしゅう",
+    "meaning": "last week"
+  },
+  {
+    "rank": 6203,
+    "word": "数日後",
+    "reading": "すうじつご",
+    "meaning": "several days later"
+  },
+  {
+    "rank": 6219,
+    "word": "三本",
+    "reading": "さんぼん",
+    "meaning": "three (long cylindrical things)"
+  },
+  {
+    "rank": 6228,
+    "word": "初め",
+    "reading": "はじめ",
+    "meaning": "beginning"
+  },
+  {
+    "rank": 6230,
+    "word": "時間帯",
+    "reading": "じかんたい",
+    "meaning": "period of time"
+  },
+  {
+    "rank": 6242,
+    "word": "五つ",
+    "reading": "いつつ",
+    "meaning": "five"
+  },
+  {
+    "rank": 6255,
+    "word": "また今度",
+    "reading": "またこんど",
+    "meaning": "another time"
+  },
+  {
+    "rank": 6277,
+    "word": "体質",
+    "reading": "たいしつ",
+    "meaning": "constitution (physical)"
+  },
+  {
+    "rank": 6283,
+    "word": "武",
+    "reading": "ぶ",
+    "meaning": "the art of war"
+  },
+  {
+    "rank": 6285,
+    "word": "手を組む",
+    "reading": "てをくむ",
+    "meaning": "to join hands together"
+  },
+  {
+    "rank": 6299,
+    "word": "遠目",
+    "reading": "とおめ",
+    "meaning": "distant view"
+  },
+  {
+    "rank": 6300,
+    "word": "お時間",
+    "reading": "おじかん",
+    "meaning": "(your) time"
+  },
+  {
+    "rank": 6303,
+    "word": "留守番",
+    "reading": "るすばん",
+    "meaning": "care-taking"
+  },
+  {
+    "rank": 6334,
+    "word": "果実",
+    "reading": "かじつ",
+    "meaning": "fruit"
+  },
+  {
+    "rank": 6354,
+    "word": "一月",
+    "reading": "いちがつ",
+    "meaning": "January"
+  },
+  {
+    "rank": 6361,
+    "word": "数多く",
+    "reading": "かずおおく",
+    "meaning": "in great numbers"
+  },
+  {
+    "rank": 6366,
+    "word": "徹夜",
+    "reading": "てつや",
+    "meaning": "staying up all night"
+  },
+  {
+    "rank": 6372,
+    "word": "ばい",
+    "reading": "ばい",
+    "meaning": "double"
+  },
+  {
+    "rank": 6407,
+    "word": "組み合わせる",
+    "reading": "くみあわせる",
+    "meaning": "to join together"
+  },
+  {
+    "rank": 6434,
+    "word": "質問に答える",
+    "reading": "しつもんにこたえる",
+    "meaning": "to answer a question"
+  },
+  {
+    "rank": 6472,
+    "word": "タイム",
+    "reading": "タイム",
+    "meaning": "time"
+  },
+  {
+    "rank": 6488,
+    "word": "七十",
+    "reading": "しちじゅう",
+    "meaning": "seventy"
+  },
+  {
+    "rank": 6510,
+    "word": "時間の問題",
+    "reading": "じかんのもんだい",
+    "meaning": "matter of time"
+  },
+  {
+    "rank": 6514,
+    "word": "昭和",
+    "reading": "しょうわ",
+    "meaning": "Shōwa era (1926.12.25-1989.1.7)"
+  },
+  {
+    "rank": 6532,
+    "word": "四日",
+    "reading": "よっか",
+    "meaning": "fourth day of the month"
+  },
+  {
+    "rank": 6555,
+    "word": "節",
+    "reading": "せつ",
+    "meaning": "occasion"
+  },
+  {
+    "rank": 6567,
+    "word": "先行",
+    "reading": "せんこう",
+    "meaning": "going ahead"
+  },
+  {
+    "rank": 6577,
+    "word": "毎日のように",
+    "reading": "まいにちのように",
+    "meaning": "almost every day"
+  },
+  {
+    "rank": 6578,
+    "word": "来月",
+    "reading": "らいげつ",
+    "meaning": "next month"
+  },
+  {
+    "rank": 6592,
+    "word": "抜群",
+    "reading": "ばつぐん",
+    "meaning": "outstanding"
+  },
+  {
+    "rank": 6604,
+    "word": "年後",
+    "reading": "ねんご",
+    "meaning": "years later"
+  },
+  {
+    "rank": 6605,
+    "word": "休息",
+    "reading": "きゅうそく",
+    "meaning": "rest"
+  },
+  {
+    "rank": 6640,
+    "word": "長時間",
+    "reading": "ちょうじかん",
+    "meaning": "long time"
+  },
+  {
+    "rank": 6641,
+    "word": "その度",
+    "reading": "そのたび",
+    "meaning": "each time"
+  },
+  {
+    "rank": 6645,
+    "word": "前半",
+    "reading": "ぜんはん",
+    "meaning": "first half"
+  },
+  {
+    "rank": 6660,
+    "word": "一台",
+    "reading": "いちだい",
+    "meaning": "one machine"
+  },
+  {
+    "rank": 6661,
+    "word": "それ以来",
+    "reading": "それいらい",
+    "meaning": "since then"
+  },
+  {
+    "rank": 6669,
+    "word": "死後",
+    "reading": "しご",
+    "meaning": "after death"
+  },
+  {
+    "rank": 6679,
+    "word": "苦悩",
+    "reading": "くのう",
+    "meaning": "(mental) agony"
+  },
+  {
+    "rank": 6686,
+    "word": "自在",
+    "reading": "じざい",
+    "meaning": "being able to do as one pleases"
+  },
+  {
+    "rank": 6690,
+    "word": "良いこと",
+    "reading": "よいこと",
+    "meaning": "good thing"
+  },
+  {
+    "rank": 6715,
+    "word": "一日中",
+    "reading": "いちにちじゅう",
+    "meaning": "all day long"
+  },
+  {
+    "rank": 6729,
+    "word": "週末",
+    "reading": "しゅうまつ",
+    "meaning": "weekend"
+  },
+  {
+    "rank": 6733,
+    "word": "何時",
+    "reading": "なんじ",
+    "meaning": "what time"
+  },
+  {
+    "rank": 6754,
+    "word": "暁",
+    "reading": "あかつき",
+    "meaning": "dawn"
+  },
+  {
+    "rank": 6758,
+    "word": "待ち",
+    "reading": "まち",
+    "meaning": "waiting"
+  },
+  {
+    "rank": 6793,
+    "word": "長いこと",
+    "reading": "ながいこと",
+    "meaning": "for a long time"
+  },
+  {
+    "rank": 6814,
+    "word": "週間",
+    "reading": "しゅうかん",
+    "meaning": "week"
+  },
+  {
+    "rank": 6826,
+    "word": "短時間",
+    "reading": "たんじかん",
+    "meaning": "short time"
+  },
+  {
+    "rank": 6828,
+    "word": "朝早く",
+    "reading": "あさはやく",
+    "meaning": "early in the morning"
+  },
+  {
+    "rank": 6831,
+    "word": "日曜",
+    "reading": "にちよう",
+    "meaning": "Sunday"
+  },
+  {
+    "rank": 6911,
+    "word": "来客",
+    "reading": "らいきゃく",
+    "meaning": "visitor"
+  },
+  {
+    "rank": 6913,
+    "word": "間柄",
+    "reading": "あいだがら",
+    "meaning": "relationship"
+  },
+  {
+    "rank": 6915,
+    "word": "席に着く",
+    "reading": "せきにつく",
+    "meaning": "to sit on a seat"
+  },
+  {
+    "rank": 6939,
+    "word": "生前",
+    "reading": "せいぜん",
+    "meaning": "while alive"
+  },
+  {
+    "rank": 7000,
+    "word": "著しい",
+    "reading": "いちじるしい",
+    "meaning": "striking"
+  },
+  {
+    "rank": 7044,
+    "word": "年代",
+    "reading": "ねんだい",
+    "meaning": "age"
+  },
+  {
+    "rank": 7074,
+    "word": "最小限",
+    "reading": "さいしょうげん",
+    "meaning": "minimum"
+  },
+  {
+    "rank": 7080,
+    "word": "明",
+    "reading": "みん",
+    "meaning": "Ming dynasty (China, 1368-1644)"
+  },
+  {
+    "rank": 7089,
+    "word": "数年前",
+    "reading": "すうねんまえ",
+    "meaning": "a few years ago"
+  },
+  {
+    "rank": 7097,
+    "word": "近いうちに",
+    "reading": "ちかいうちに",
+    "meaning": "before long"
+  },
+  {
+    "rank": 7115,
+    "word": "年生",
+    "reading": "ねんせい",
+    "meaning": "pupil in ... year"
+  },
+  {
+    "rank": 7118,
+    "word": "今週",
+    "reading": "こんしゅう",
+    "meaning": "this week"
+  },
+  {
+    "rank": 7122,
+    "word": "何千",
+    "reading": "なんぜん",
+    "meaning": "many thousands"
+  },
+  {
+    "rank": 7124,
+    "word": "万一",
+    "reading": "まんいち",
+    "meaning": "(unlikely event of) emergency"
+  },
+  {
+    "rank": 7133,
+    "word": "３時",
+    "reading": "さんじ",
+    "meaning": "3 o'clock"
+  },
+  {
+    "rank": 7163,
+    "word": "毎度",
+    "reading": "まいど",
+    "meaning": "each time"
+  },
+  {
+    "rank": 7169,
+    "word": "数千",
+    "reading": "すうせん",
+    "meaning": "thousands"
+  },
+  {
+    "rank": 7176,
+    "word": "一様",
+    "reading": "いちよう",
+    "meaning": "uniform"
+  },
+  {
+    "rank": 7208,
+    "word": "何時間",
+    "reading": "なんじかん",
+    "meaning": "how many hours?"
+  },
+  {
+    "rank": 7217,
+    "word": "次ぐ",
+    "reading": "つぐ",
+    "meaning": "to rank next to"
+  },
+  {
+    "rank": 7229,
+    "word": "石",
+    "reading": "せき",
+    "meaning": "counter for jewels in a watch"
+  },
+  {
+    "rank": 7266,
+    "word": "数回",
+    "reading": "すうかい",
+    "meaning": "several times"
+  },
+  {
+    "rank": 7269,
+    "word": "日中",
+    "reading": "にっちゅう",
+    "meaning": "daytime"
+  },
+  {
+    "rank": 7273,
+    "word": "番目",
+    "reading": "ばんめ",
+    "meaning": "indicates position in a sequence"
+  },
+  {
+    "rank": 7283,
+    "word": "食後",
+    "reading": "しょくご",
+    "meaning": "after a meal"
+  },
+  {
+    "rank": 7287,
+    "word": "期限",
+    "reading": "きげん",
+    "meaning": "term"
+  },
+  {
+    "rank": 7302,
+    "word": "年ぶり",
+    "reading": "ねんぶり",
+    "meaning": "after an interval of ... years"
+  },
+  {
+    "rank": 7316,
+    "word": "一から",
+    "reading": "いちから",
+    "meaning": "from the beginning"
+  },
+  {
+    "rank": 7320,
+    "word": "日課",
+    "reading": "にっか",
+    "meaning": "daily routine"
+  },
+  {
+    "rank": 7336,
+    "word": "連日",
+    "reading": "れんじつ",
+    "meaning": "day after day"
+  },
+  {
+    "rank": 7340,
+    "word": "夜が明ける",
+    "reading": "よがあける",
+    "meaning": "dawn breaks"
+  },
+  {
+    "rank": 7341,
+    "word": "日間",
+    "reading": "ひあい",
+    "meaning": "number of days"
+  },
+  {
+    "rank": 7344,
+    "word": "終始",
+    "reading": "しゅうし",
+    "meaning": "beginning and end"
+  },
+  {
+    "rank": 7346,
+    "word": "早すぎる",
+    "reading": "はやすぎる",
+    "meaning": "premature"
+  },
+  {
+    "rank": 7348,
+    "word": "減少",
+    "reading": "げんしょう",
+    "meaning": "decrease"
+  },
+  {
+    "rank": 7352,
+    "word": "長生き",
+    "reading": "ながいき",
+    "meaning": "longevity"
+  },
+  {
+    "rank": 7357,
+    "word": "分間",
+    "reading": "ふんかん",
+    "meaning": "minutes (period of)"
+  },
+  {
+    "rank": 7360,
+    "word": "見当がつく",
+    "reading": "けんとうがつく",
+    "meaning": "to have a (rough) idea (of what the situation is)"
+  },
+  {
+    "rank": 7367,
+    "word": "このところ",
+    "reading": "このところ",
+    "meaning": "lately"
+  },
+  {
+    "rank": 7368,
+    "word": "半数",
+    "reading": "はんすう",
+    "meaning": "half the number"
+  },
+  {
+    "rank": 7380,
+    "word": "古くから",
+    "reading": "ふるくから",
+    "meaning": "from long ago"
+  },
+  {
+    "rank": 7391,
+    "word": "短期間",
+    "reading": "たんきかん",
+    "meaning": "short term"
+  },
+  {
+    "rank": 7404,
+    "word": "夜遅く",
+    "reading": "よるおそく",
+    "meaning": "late at night"
+  },
+  {
+    "rank": 7423,
+    "word": "平日",
+    "reading": "へいじつ",
+    "meaning": "weekday"
+  },
+  {
+    "rank": 7427,
+    "word": "遅れ",
+    "reading": "おくれ",
+    "meaning": "delay"
+  },
+  {
+    "rank": 7443,
+    "word": "１０時",
+    "reading": "じゅうじ",
+    "meaning": "ten o'clock"
+  },
+  {
+    "rank": 7445,
+    "word": "初めに",
+    "reading": "はじめに",
+    "meaning": "first"
+  },
+  {
+    "rank": 7449,
+    "word": "歴史的",
+    "reading": "れきしてき",
+    "meaning": "historic"
+  },
+  {
+    "rank": 7455,
+    "word": "たびたび",
+    "reading": "たびたび",
+    "meaning": "often"
+  },
+  {
+    "rank": 7460,
+    "word": "１万",
+    "reading": "いちまん",
+    "meaning": "10,000"
+  },
+  {
+    "rank": 7484,
+    "word": "学生時代",
+    "reading": "がくせいじだい",
+    "meaning": "student days"
+  },
+  {
+    "rank": 7496,
+    "word": "日程",
+    "reading": "にってい",
+    "meaning": "schedule"
+  },
+  {
+    "rank": 7500,
+    "word": "毎日毎日",
+    "reading": "まいにちまいにち",
+    "meaning": "day after day"
+  },
+  {
+    "rank": 7506,
+    "word": "正午",
+    "reading": "しょうご",
+    "meaning": "noon"
+  },
+  {
+    "rank": 7507,
+    "word": "日常生活",
+    "reading": "にちじょうせいかつ",
+    "meaning": "everyday life"
+  },
+  {
+    "rank": 7508,
+    "word": "４日",
+    "reading": "よっか",
+    "meaning": "fourth day of the month"
+  },
+  {
+    "rank": 7519,
+    "word": "６時",
+    "reading": "ろくじ",
+    "meaning": "six o'clock"
+  },
+  {
+    "rank": 7524,
+    "word": "歴代",
+    "reading": "れきだい",
+    "meaning": "successive generations"
+  },
+  {
+    "rank": 7528,
+    "word": "転落",
+    "reading": "てんらく",
+    "meaning": "fall"
+  },
+  {
+    "rank": 7532,
+    "word": "８時",
+    "reading": "はちじ",
+    "meaning": "eight o'clock"
+  },
+  {
+    "rank": 7534,
+    "word": "毎月",
+    "reading": "まいつき",
+    "meaning": "every month"
+  },
+  {
+    "rank": 7536,
+    "word": "戦後",
+    "reading": "せんご",
+    "meaning": "postwar period"
+  },
+  {
+    "rank": 7539,
+    "word": "従来",
+    "reading": "じゅうらい",
+    "meaning": "up to now"
+  },
+  {
+    "rank": 7543,
+    "word": "７時",
+    "reading": "しちじ",
+    "meaning": "seven o'clock"
+  },
+  {
+    "rank": 7558,
+    "word": "９時",
+    "reading": "くじ",
+    "meaning": "nine o'clock"
+  },
+  {
+    "rank": 7561,
+    "word": "近年",
+    "reading": "きんねん",
+    "meaning": "recent years"
+  },
+  {
+    "rank": 7564,
+    "word": "長期",
+    "reading": "ちょうき",
+    "meaning": "long-term"
+  },
+  {
+    "rank": 7580,
+    "word": "４月",
+    "reading": "しがつ",
+    "meaning": "April"
+  },
+  {
+    "rank": 7581,
+    "word": "４時",
+    "reading": "よじ",
+    "meaning": "four o'clock"
+  },
+  {
+    "rank": 7587,
+    "word": "末",
+    "reading": "まつ",
+    "meaning": "the end (of)"
+  },
+  {
+    "rank": 7608,
+    "word": "３月",
+    "reading": "さんがつ",
+    "meaning": "March"
+  },
+  {
+    "rank": 7611,
+    "word": "平成",
+    "reading": "へいせい",
+    "meaning": "Heisei era (1989.1.8-2019.4.30)"
+  },
+  {
+    "rank": 7707,
+    "word": "前世",
+    "reading": "ぜんせい",
+    "meaning": "antiquity"
+  },
+  {
+    "rank": 7720,
+    "word": "石",
+    "reading": "せき",
+    "meaning": "counter for jewels in a watch"
+  },
+  {
+    "rank": 7805,
+    "word": "一ヶ月",
+    "reading": "いっかげつ",
+    "meaning": "one month"
+  },
+  {
+    "rank": 7909,
+    "word": "昨晩",
+    "reading": "さくばん",
+    "meaning": "last night"
+  },
+  {
+    "rank": 7929,
+    "word": "次期",
+    "reading": "じき",
+    "meaning": "next term"
+  },
+  {
+    "rank": 7943,
+    "word": "瞬く間に",
+    "reading": "またたくまに",
+    "meaning": "in the twinkling of an eye"
+  },
+  {
+    "rank": 7962,
+    "word": "宴",
+    "reading": "うたげ",
+    "meaning": "party"
+  },
+  {
+    "rank": 7979,
+    "word": "一年生",
+    "reading": "いちねんせい",
+    "meaning": "annual (plant)"
+  },
+  {
+    "rank": 8112,
+    "word": "数名",
+    "reading": "すうめい",
+    "meaning": "several people"
+  },
+  {
+    "rank": 8120,
+    "word": "一万",
+    "reading": "いちまん",
+    "meaning": "10,000"
+  },
+  {
+    "rank": 8148,
+    "word": "予定通り",
+    "reading": "よていどおり",
+    "meaning": "as planned"
+  },
+  {
+    "rank": 8202,
+    "word": "千年",
+    "reading": "せんねん",
+    "meaning": "millennium"
+  },
+  {
+    "rank": 8218,
+    "word": "八十",
+    "reading": "はちじゅう",
+    "meaning": "eighty"
+  },
+  {
+    "rank": 8252,
+    "word": "夕暮れ",
+    "reading": "ゆうぐれ",
+    "meaning": "evening"
+  },
+  {
+    "rank": 8346,
+    "word": "四月",
+    "reading": "しがつ",
+    "meaning": "April"
+  },
+  {
+    "rank": 8468,
+    "word": "五月",
+    "reading": "ごがつ",
+    "meaning": "May"
+  },
+  {
+    "rank": 8517,
+    "word": "三月",
+    "reading": "さんがつ",
+    "meaning": "March"
+  },
+  {
+    "rank": 8533,
+    "word": "刀身",
+    "reading": "とうしん",
+    "meaning": "knife blade"
+  },
+  {
+    "rank": 8534,
+    "word": "十歳",
+    "reading": "じゅっさい",
+    "meaning": "age 10"
+  },
+  {
+    "rank": 8545,
+    "word": "第五",
+    "reading": "だいご",
+    "meaning": "the fifth"
+  },
+  {
+    "rank": 8812,
+    "word": "生命力",
+    "reading": "せいめいりょく",
+    "meaning": "vitality"
+  },
+  {
+    "rank": 8828,
+    "word": "真夜中",
+    "reading": "まよなか",
+    "meaning": "dead of night"
+  },
+  {
+    "rank": 8849,
+    "word": "九時",
+    "reading": "くじ",
+    "meaning": "nine o'clock"
+  },
+  {
+    "rank": 8866,
+    "word": "九十",
+    "reading": "きゅうじゅう",
+    "meaning": "ninety"
+  },
+  {
+    "rank": 8924,
+    "word": "ちょこん",
+    "reading": "ちょこん",
+    "meaning": "slightly (of an action)"
+  },
+  {
+    "rank": 8955,
+    "word": "才",
+    "reading": "さい",
+    "meaning": "-years-old"
+  },
+  {
+    "rank": 8977,
+    "word": "数ヶ月",
+    "reading": "すうかげつ",
+    "meaning": "several months"
+  },
+  {
+    "rank": 9023,
+    "word": "幾度も",
+    "reading": "いくども",
+    "meaning": "many times"
+  },
+  {
+    "rank": 9048,
+    "word": "数多",
+    "reading": "あまた",
+    "meaning": "many"
+  },
+  {
+    "rank": 9050,
+    "word": "今宵",
+    "reading": "こよい",
+    "meaning": "this evening"
+  },
+  {
+    "rank": 9068,
+    "word": "三年生",
+    "reading": "さんねんせい",
+    "meaning": "third-year student"
+  },
+  {
+    "rank": 9083,
+    "word": "十九",
+    "reading": "じゅうきゅう",
+    "meaning": "19"
+  },
+  {
+    "rank": 9102,
+    "word": "十時",
+    "reading": "じゅうじ",
+    "meaning": "ten o'clock"
+  },
+  {
+    "rank": 9131,
+    "word": "八時",
+    "reading": "はちじ",
+    "meaning": "eight o'clock"
+  },
+  {
+    "rank": 9134,
+    "word": "点数",
+    "reading": "てんすう",
+    "meaning": "marks"
+  },
+  {
+    "rank": 9143,
+    "word": "侵す",
+    "reading": "おかす",
+    "meaning": "to invade"
+  },
+  {
+    "rank": 9148,
+    "word": "目を奪う",
+    "reading": "めをうばう",
+    "meaning": "to dazzle one's eyes"
+  },
+  {
+    "rank": 9172,
+    "word": "昨年",
+    "reading": "さくねん",
+    "meaning": "last year"
+  },
+  {
+    "rank": 9174,
+    "word": "二分",
+    "reading": "にぶん",
+    "meaning": "halving"
+  },
+  {
+    "rank": 9175,
+    "word": "六時",
+    "reading": "ろくじ",
+    "meaning": "six o'clock"
+  },
+  {
+    "rank": 9200,
+    "word": "半月",
+    "reading": "はんげつ",
+    "meaning": "half-moon"
+  },
+  {
+    "rank": 9221,
+    "word": "先刻",
+    "reading": "せんこく",
+    "meaning": "a short while ago"
+  },
+  {
+    "rank": 9271,
+    "word": "八月",
+    "reading": "はちがつ",
+    "meaning": "August"
+  },
+  {
+    "rank": 9334,
+    "word": "今日中に",
+    "reading": "きょうじゅうに",
+    "meaning": "by today"
+  },
+  {
+    "rank": 9336,
+    "word": "同年代",
+    "reading": "どうねんだい",
+    "meaning": "the same generation"
+  },
+  {
+    "rank": 9342,
+    "word": "二月",
+    "reading": "にがつ",
+    "meaning": "February"
+  },
+  {
+    "rank": 9353,
+    "word": "休み時間",
+    "reading": "やすみじかん",
+    "meaning": "recess"
+  },
+  {
+    "rank": 9472,
+    "word": "七時",
+    "reading": "しちじ",
+    "meaning": "seven o'clock"
+  },
+  {
+    "rank": 9507,
+    "word": "あっという間",
+    "reading": "あっというま",
+    "meaning": "a blink of time"
+  },
+  {
+    "rank": 9517,
+    "word": "学期",
+    "reading": "がっき",
+    "meaning": "school term"
+  },
+  {
+    "rank": 9521,
+    "word": "七月",
+    "reading": "しちがつ",
+    "meaning": "July"
+  },
+  {
+    "rank": 9523,
+    "word": "一対一",
+    "reading": "いちたいいち",
+    "meaning": "one-to-one"
+  },
+  {
+    "rank": 9556,
+    "word": "若い頃",
+    "reading": "わかいころ",
+    "meaning": "one's youth"
+  },
+  {
+    "rank": 9561,
+    "word": "正月",
+    "reading": "しょうがつ",
+    "meaning": "New Year (esp. first three days)"
+  },
+  {
+    "rank": 9573,
+    "word": "いつまで経っても",
+    "reading": "いつまでたっても",
+    "meaning": "no matter how much time passes"
+  },
+  {
+    "rank": 9578,
+    "word": "最早",
+    "reading": "もはや",
+    "meaning": "already"
+  },
+  {
+    "rank": 9609,
+    "word": "長々",
+    "reading": "ながなが",
+    "meaning": "long"
+  },
+  {
+    "rank": 9615,
+    "word": "一国",
+    "reading": "いっこく",
+    "meaning": "one country"
+  },
+  {
+    "rank": 9697,
+    "word": "五時",
+    "reading": "ごじ",
+    "meaning": "five o'clock"
+  },
+  {
+    "rank": 9714,
+    "word": "三番",
+    "reading": "さんばん",
+    "meaning": "third"
+  },
+  {
+    "rank": 9740,
+    "word": "昼過ぎ",
+    "reading": "ひるすぎ",
+    "meaning": "just past noon"
+  },
+  {
+    "rank": 9764,
+    "word": "二番目",
+    "reading": "にばんめ",
+    "meaning": "second (in a series)"
+  },
+  {
+    "rank": 9766,
+    "word": "七つ",
+    "reading": "ななつ",
+    "meaning": "seven"
+  },
+  {
+    "rank": 9806,
+    "word": "六月",
+    "reading": "ろくがつ",
+    "meaning": "June"
+  },
+  {
+    "rank": 9829,
+    "word": "九月",
+    "reading": "くがつ",
+    "meaning": "September"
+  },
+  {
+    "rank": 9860,
+    "word": "三千",
+    "reading": "さんぜん",
+    "meaning": "3000"
+  },
+  {
+    "rank": 9864,
+    "word": "二人分",
+    "reading": "ふたりぶん",
+    "meaning": "portion for two people"
+  },
+  {
+    "rank": 9967,
+    "word": "二十代",
+    "reading": "にじゅうだい",
+    "meaning": "one's twenties"
+  },
+  {
+    "rank": 10027,
+    "word": "束の間",
+    "reading": "つかのま",
+    "meaning": "moment"
+  },
+  {
+    "rank": 10042,
+    "word": "時分",
+    "reading": "じぶん",
+    "meaning": "time"
+  },
+  {
+    "rank": 10084,
+    "word": "幾度となく",
+    "reading": "いくどとなく",
+    "meaning": "on countless occasions"
+  },
+  {
+    "rank": 10098,
+    "word": "二時",
+    "reading": "にじ",
+    "meaning": "two o'clock"
+  },
+  {
+    "rank": 10119,
+    "word": "これはこれは",
+    "reading": "これはこれは",
+    "meaning": "oh!"
+  },
+  {
+    "rank": 10143,
+    "word": "合同",
+    "reading": "ごうどう",
+    "meaning": "combination"
+  },
+  {
+    "rank": 10215,
+    "word": "パンパン",
+    "reading": "パンパン",
+    "meaning": "kapow"
+  },
+  {
+    "rank": 10237,
+    "word": "幾度",
+    "reading": "いくど",
+    "meaning": "(how) many times"
+  },
+  {
+    "rank": 10238,
+    "word": "醸し出す",
+    "reading": "かもしだす",
+    "meaning": "to create (an atmosphere, feeling, etc.)"
+  },
+  {
+    "rank": 10245,
+    "word": "暖炉",
+    "reading": "だんろ",
+    "meaning": "fireplace"
+  },
+  {
+    "rank": 10252,
+    "word": "他ならぬ",
+    "reading": "ほかならぬ",
+    "meaning": "nothing but"
+  },
+  {
+    "rank": 10269,
+    "word": "馬に乗る",
+    "reading": "うまにのる",
+    "meaning": "to get on a horse"
+  },
+  {
+    "rank": 10318,
+    "word": "六つ",
+    "reading": "むっつ",
+    "meaning": "six"
+  },
+  {
+    "rank": 10356,
+    "word": "二つ目",
+    "reading": "ふたつめ",
+    "meaning": "one after next"
+  },
+  {
+    "rank": 10438,
+    "word": "幾ら",
+    "reading": "いくら",
+    "meaning": "how much"
+  },
+  {
+    "rank": 10451,
+    "word": "電話番号",
+    "reading": "でんわばんごう",
+    "meaning": "telephone number"
+  },
+  {
+    "rank": 10512,
+    "word": "やりすぎる",
+    "reading": "やりすぎる",
+    "meaning": "to overdo"
+  },
+  {
+    "rank": 10542,
+    "word": "四本",
+    "reading": "よんほん",
+    "meaning": "four (long cylindrical things)"
+  },
+  {
+    "rank": 10579,
+    "word": "凍り付く",
+    "reading": "こおりつく",
+    "meaning": "to freeze to"
+  },
+  {
+    "rank": 10610,
+    "word": "四時",
+    "reading": "よじ",
+    "meaning": "four o'clock"
+  },
+  {
+    "rank": 10719,
+    "word": "乱入",
+    "reading": "らんにゅう",
+    "meaning": "trespassing"
+  },
+  {
+    "rank": 10762,
+    "word": "ひと月",
+    "reading": "ひとつき",
+    "meaning": "one month"
+  },
+  {
+    "rank": 10792,
+    "word": "夜間",
+    "reading": "やかん",
+    "meaning": "night"
+  },
+  {
+    "rank": 10843,
+    "word": "正体不明",
+    "reading": "しょうたいふめい",
+    "meaning": "unidentifiable"
+  },
+  {
+    "rank": 10892,
+    "word": "一時期",
+    "reading": "いちじき",
+    "meaning": "a period (of time)"
+  },
+  {
+    "rank": 10916,
+    "word": "本家",
+    "reading": "ほんけ",
+    "meaning": "head house (family)"
+  },
+  {
+    "rank": 10943,
+    "word": "月曜日",
+    "reading": "げつようび",
+    "meaning": "Monday"
+  },
+  {
+    "rank": 10945,
+    "word": "真夏",
+    "reading": "まなつ",
+    "meaning": "middle of summer"
+  },
+  {
+    "rank": 10975,
+    "word": "優位",
+    "reading": "ゆうい",
+    "meaning": "predominance"
+  },
+  {
+    "rank": 10977,
+    "word": "十月",
+    "reading": "じゅうがつ",
+    "meaning": "October"
+  },
+  {
+    "rank": 11019,
+    "word": "ここのところ",
+    "reading": "ここのところ",
+    "meaning": "of late"
+  },
+  {
+    "rank": 11033,
+    "word": "二三",
+    "reading": "にさん",
+    "meaning": "two or three"
+  },
+  {
+    "rank": 11037,
+    "word": "数日間",
+    "reading": "すうじつかん",
+    "meaning": "several day period"
+  },
+  {
+    "rank": 11091,
+    "word": "お盆",
+    "reading": "おぼん",
+    "meaning": "O-Bon"
+  },
+  {
+    "rank": 11150,
+    "word": "数倍",
+    "reading": "すうばい",
+    "meaning": "several times (as large, over)"
+  },
+  {
+    "rank": 11200,
+    "word": "時間的",
+    "reading": "じかんてき",
+    "meaning": "timewise"
+  },
+  {
+    "rank": 11273,
+    "word": "一通",
+    "reading": "いっつう",
+    "meaning": "one copy (of a document)"
+  },
+  {
+    "rank": 11277,
+    "word": "今現在",
+    "reading": "いまげんざい",
+    "meaning": "just now"
+  },
+  {
+    "rank": 11293,
+    "word": "古来",
+    "reading": "こらい",
+    "meaning": "from time immemorial"
+  },
+  {
+    "rank": 11298,
+    "word": "頻度",
+    "reading": "ひんど",
+    "meaning": "frequency (of occurrence)"
+  },
+  {
+    "rank": 11330,
+    "word": "脚",
+    "reading": "きゃく",
+    "meaning": "counter for chairs or seats"
+  },
+  {
+    "rank": 11341,
+    "word": "中世",
+    "reading": "ちゅうせい",
+    "meaning": "Middle Ages (in Japan esp. the Kamakura and Muromachi per..."
+  },
+  {
+    "rank": 11342,
+    "word": "一人ずつ",
+    "reading": "ひとりずつ",
+    "meaning": "one by one"
+  },
+  {
+    "rank": 11369,
+    "word": "候",
+    "reading": "こう",
+    "meaning": "season"
+  },
+  {
+    "rank": 11377,
+    "word": "金曜日",
+    "reading": "きんようび",
+    "meaning": "Friday"
+  },
+  {
+    "rank": 11409,
+    "word": "一粒",
+    "reading": "ひとつぶ",
+    "meaning": "(a) grain"
+  },
+  {
+    "rank": 11444,
+    "word": "一年間",
+    "reading": "いちねんかん",
+    "meaning": "(period of) one year"
+  },
+  {
+    "rank": 11448,
+    "word": "一式",
+    "reading": "いっしき",
+    "meaning": "complete set"
+  },
+  {
+    "rank": 11513,
+    "word": "日に日に",
+    "reading": "ひにひに",
+    "meaning": "day by day"
+  },
+  {
+    "rank": 11515,
+    "word": "三分の一",
+    "reading": "さんぶんのいち",
+    "meaning": "one third"
+  },
+  {
+    "rank": 11517,
+    "word": "こくこく",
+    "reading": "こくこく",
+    "meaning": "moment by moment"
+  },
+  {
+    "rank": 11541,
+    "word": "夕",
+    "reading": "ゆう",
+    "meaning": "evening"
+  },
+  {
+    "rank": 11550,
+    "word": "農民",
+    "reading": "のうみん",
+    "meaning": "farmer"
+  },
+  {
+    "rank": 11567,
+    "word": "明け方",
+    "reading": "あけがた",
+    "meaning": "dawn"
+  },
+  {
+    "rank": 11572,
+    "word": "カウント",
+    "reading": "カウント",
+    "meaning": "count"
+  },
+  {
+    "rank": 11590,
+    "word": "七日",
+    "reading": "なのか",
+    "meaning": "seventh day of the month"
+  },
+  {
+    "rank": 11591,
+    "word": "１００％",
+    "reading": "ひゃくパーセント",
+    "meaning": "100 percent"
+  },
+  {
+    "rank": 11600,
+    "word": "四百",
+    "reading": "よんひゃく",
+    "meaning": "400"
+  },
+  {
+    "rank": 11605,
+    "word": "話し相手",
+    "reading": "はなしあいて",
+    "meaning": "person with whom to speak"
+  },
+  {
+    "rank": 11606,
+    "word": "月日",
+    "reading": "がっぴ",
+    "meaning": "month and day (of the year)"
+  },
+  {
+    "rank": 11672,
+    "word": "一拍",
+    "reading": "いっぱく",
+    "meaning": "one clap"
+  },
+  {
+    "rank": 11687,
+    "word": "十二月",
+    "reading": "じゅうにがつ",
+    "meaning": "December"
+  },
+  {
+    "rank": 11701,
+    "word": "一頭",
+    "reading": "いっとう",
+    "meaning": "one large animal (horses, cattle, etc.)"
+  },
+  {
+    "rank": 11703,
+    "word": "今時",
+    "reading": "いまどき",
+    "meaning": "these days"
+  },
+  {
+    "rank": 11719,
+    "word": "時間の無駄",
+    "reading": "じかんのむだ",
+    "meaning": "waste of time"
+  },
+  {
+    "rank": 11849,
+    "word": "零",
+    "reading": "れい",
+    "meaning": "zero"
+  },
+  {
+    "rank": 11889,
+    "word": "号室",
+    "reading": "ごうしつ",
+    "meaning": "suffix for room numbers"
+  },
+  {
+    "rank": 11920,
+    "word": "数枚",
+    "reading": "すうまい",
+    "meaning": "several sheets (flat objects)"
+  },
+  {
+    "rank": 11952,
+    "word": "度合い",
+    "reading": "どあい",
+    "meaning": "degree"
+  },
+  {
+    "rank": 11973,
+    "word": "一つ目",
+    "reading": "ひとつめ",
+    "meaning": "one-eyed"
+  },
+  {
+    "rank": 12026,
+    "word": "二番",
+    "reading": "にばん",
+    "meaning": "second"
+  },
+  {
+    "rank": 12032,
+    "word": "カ月",
+    "reading": "かげつ",
+    "meaning": "months (period of)"
+  },
+  {
+    "rank": 12035,
+    "word": "シーズン",
+    "reading": "シーズン",
+    "meaning": "season (period in which regulated games are played)"
+  },
+  {
+    "rank": 12082,
+    "word": "後世",
+    "reading": "こうせい",
+    "meaning": "posterity"
+  },
+  {
+    "rank": 12084,
+    "word": "年配",
+    "reading": "ねんぱい",
+    "meaning": "(approximate) age"
+  },
+  {
+    "rank": 12093,
+    "word": "幼少",
+    "reading": "ようしょう",
+    "meaning": "infancy"
+  },
+  {
+    "rank": 12100,
+    "word": "節",
+    "reading": "せつ",
+    "meaning": "occasion"
+  },
+  {
+    "rank": 12124,
+    "word": "毎週",
+    "reading": "まいしゅう",
+    "meaning": "every week"
+  },
+  {
+    "rank": 12132,
+    "word": "数週間",
+    "reading": "すうしゅうかん",
+    "meaning": "several weeks"
+  },
+  {
+    "rank": 12137,
+    "word": "１０万",
+    "reading": "じゅうまん",
+    "meaning": "100,000"
+  },
+  {
+    "rank": 12153,
+    "word": "何日か",
+    "reading": "なんにちか",
+    "meaning": "some days"
+  },
+  {
+    "rank": 12163,
+    "word": "択",
+    "reading": "たく",
+    "meaning": "counter for choices, options, etc."
+  },
+  {
+    "rank": 12168,
+    "word": "最終日",
+    "reading": "さいしゅうび",
+    "meaning": "last day"
+  },
+  {
+    "rank": 12172,
+    "word": "十一時",
+    "reading": "じゅういちじ",
+    "meaning": "eleven o'clock"
+  },
+  {
+    "rank": 12173,
+    "word": "後ほど",
+    "reading": "のちほど",
+    "meaning": "later on"
+  },
+  {
+    "rank": 12199,
+    "word": "数十年",
+    "reading": "すうじゅうねん",
+    "meaning": "few decades"
+  },
+  {
+    "rank": 12215,
+    "word": "一刻",
+    "reading": "いっこく",
+    "meaning": "a minute"
+  },
+  {
+    "rank": 12228,
+    "word": "真っ最中",
+    "reading": "まっさいちゅう",
+    "meaning": "right in the middle (of)"
+  },
+  {
+    "rank": 12230,
+    "word": "今の今まで",
+    "reading": "いまのいままで",
+    "meaning": "till just now"
+  },
+  {
+    "rank": 12243,
+    "word": "今一度",
+    "reading": "いまいちど",
+    "meaning": "once more"
+  },
+  {
+    "rank": 12244,
+    "word": "夕刻",
+    "reading": "ゆうこく",
+    "meaning": "evening"
+  },
+  {
+    "rank": 12252,
+    "word": "十万",
+    "reading": "じゅうまん",
+    "meaning": "100,000"
+  },
+  {
+    "rank": 12270,
+    "word": "休憩時間",
+    "reading": "きゅうけいじかん",
+    "meaning": "rest period"
+  },
+  {
+    "rank": 12274,
+    "word": "朝っぱらから",
+    "reading": "あさっぱらから",
+    "meaning": "very early in the morning"
+  },
+  {
+    "rank": 12402,
+    "word": "永い",
+    "reading": "ながい",
+    "meaning": "long (time)"
+  },
+  {
+    "rank": 12502,
+    "word": "一泊",
+    "reading": "いっぱく",
+    "meaning": "stopping one night"
+  },
+  {
+    "rank": 12519,
+    "word": "数分後",
+    "reading": "すうふんご",
+    "meaning": "a few minutes later"
+  },
+  {
+    "rank": 12520,
+    "word": "なるべく早く",
+    "reading": "なるべくはやく",
+    "meaning": "as soon as possible"
+  },
+  {
+    "rank": 12533,
+    "word": "瞬間的",
+    "reading": "しゅんかんてき",
+    "meaning": "momentary"
+  },
+  {
+    "rank": 12534,
+    "word": "数え切れない",
+    "reading": "かぞえきれない",
+    "meaning": "countless"
+  },
+  {
+    "rank": 12568,
+    "word": "暦",
+    "reading": "こよみ",
+    "meaning": "calendar"
+  },
+  {
+    "rank": 12576,
+    "word": "今しがた",
+    "reading": "いましがた",
+    "meaning": "a moment ago"
+  },
+  {
+    "rank": 12596,
+    "word": "一足先",
+    "reading": "ひとあしさき",
+    "meaning": "(a) step ahead"
+  },
+  {
+    "rank": 12646,
+    "word": "勘定",
+    "reading": "かんじょう",
+    "meaning": "calculation"
+  },
+  {
+    "rank": 12670,
+    "word": "即刻",
+    "reading": "そっこく",
+    "meaning": "immediately"
+  },
+  {
+    "rank": 12671,
+    "word": "ランキング",
+    "reading": "ランキング",
+    "meaning": "ranking"
+  },
+  {
+    "rank": 12817,
+    "word": "六本",
+    "reading": "ろっぽん",
+    "meaning": "six (long cylindrical things)"
+  },
+  {
+    "rank": 12838,
+    "word": "所望",
+    "reading": "しょもう",
+    "meaning": "desire"
+  },
+  {
+    "rank": 12903,
+    "word": "十一月",
+    "reading": "じゅういちがつ",
+    "meaning": "November"
+  },
+  {
+    "rank": 12904,
+    "word": "二手",
+    "reading": "ふたて",
+    "meaning": "two groups"
+  },
+  {
+    "rank": 12933,
+    "word": "千円",
+    "reading": "せんえん",
+    "meaning": "1000 yen"
+  },
+  {
+    "rank": 12999,
+    "word": "少量",
+    "reading": "しょうりょう",
+    "meaning": "small quantity"
+  },
+  {
+    "rank": 13002,
+    "word": "若",
+    "reading": "わか",
+    "meaning": "youth"
+  },
+  {
+    "rank": 13021,
+    "word": "多額",
+    "reading": "たがく",
+    "meaning": "large (amount of money)"
+  },
+  {
+    "rank": 13035,
+    "word": "一晩中",
+    "reading": "ひとばんじゅう",
+    "meaning": "all night long"
+  },
+  {
+    "rank": 13083,
+    "word": "年に一度",
+    "reading": "ねんにいちど",
+    "meaning": "once a year"
+  },
+  {
+    "rank": 13098,
+    "word": "その晩",
+    "reading": "そのばん",
+    "meaning": "that night"
+  },
+  {
+    "rank": 13184,
+    "word": "最短",
+    "reading": "さいたん",
+    "meaning": "shortest"
+  },
+  {
+    "rank": 13187,
+    "word": "近代",
+    "reading": "きんだい",
+    "meaning": "present day"
+  },
+  {
+    "rank": 13197,
+    "word": "暇もなく",
+    "reading": "いとまもなく",
+    "meaning": "without losing time (e.g. to do)"
+  },
+  {
+    "rank": 13253,
+    "word": "同じ年",
+    "reading": "おなじとし",
+    "meaning": "same age"
+  },
+  {
+    "rank": 13267,
+    "word": "初夏",
+    "reading": "しょか",
+    "meaning": "early summer"
+  },
+  {
+    "rank": 13305,
+    "word": "何歳",
+    "reading": "なんさい",
+    "meaning": "how old?"
+  },
+  {
+    "rank": 13337,
+    "word": "定期",
+    "reading": "ていき",
+    "meaning": "fixed period"
+  },
+  {
+    "rank": 13349,
+    "word": "遠い昔",
+    "reading": "とおいむかし",
+    "meaning": "remote past"
+  },
+  {
+    "rank": 13364,
+    "word": "昨今",
+    "reading": "さっこん",
+    "meaning": "nowadays"
+  },
+  {
+    "rank": 13365,
+    "word": "大多数",
+    "reading": "だいたすう",
+    "meaning": "great majority"
+  },
+  {
+    "rank": 13417,
+    "word": "数万",
+    "reading": "すうまん",
+    "meaning": "tens of thousands"
+  },
+  {
+    "rank": 13464,
+    "word": "土曜",
+    "reading": "どよう",
+    "meaning": "Saturday"
+  },
+  {
+    "rank": 13465,
+    "word": "丸一日",
+    "reading": "まるいちにち",
+    "meaning": "the whole day"
+  },
+  {
+    "rank": 13466,
+    "word": "十二時",
+    "reading": "じゅうにじ",
+    "meaning": "twelve o'clock"
+  },
+  {
+    "rank": 13511,
+    "word": "五本",
+    "reading": "ごほん",
+    "meaning": "five (long cylindrical things)"
+  },
+  {
+    "rank": 13520,
+    "word": "六日",
+    "reading": "むいか",
+    "meaning": "sixth day of the month"
+  },
+  {
+    "rank": 13550,
+    "word": "末期",
+    "reading": "まっき",
+    "meaning": "closing years (period, days)"
+  },
+  {
+    "rank": 13560,
+    "word": "丁",
+    "reading": "てい",
+    "meaning": "fourth rank"
+  },
+  {
+    "rank": 13629,
+    "word": "頷き",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 13635,
+    "word": "擁護",
+    "reading": "ようご",
+    "meaning": "protection"
+  },
+  {
+    "rank": 13662,
+    "word": "例年",
+    "reading": "れいねん",
+    "meaning": "average (normal, ordinary) year"
+  },
+  {
+    "rank": 13720,
+    "word": "泊",
+    "reading": "はく",
+    "meaning": "counter for nights of a stay"
+  },
+  {
+    "rank": 13758,
+    "word": "上限",
+    "reading": "じょうげん",
+    "meaning": "upper limit"
+  },
+  {
+    "rank": 13784,
+    "word": "今までで",
+    "reading": "いままでで",
+    "meaning": "to date"
+  },
+  {
+    "rank": 13855,
+    "word": "八つ",
+    "reading": "やっつ",
+    "meaning": "eight"
+  },
+  {
+    "rank": 13888,
+    "word": "ひととき",
+    "reading": "ひととき",
+    "meaning": "a (short) time"
+  },
+  {
+    "rank": 13926,
+    "word": "いつ頃",
+    "reading": "いつごろ",
+    "meaning": "about when"
+  },
+  {
+    "rank": 13935,
+    "word": "四分",
+    "reading": "しぶん",
+    "meaning": "divide into four pieces"
+  },
+  {
+    "rank": 13951,
+    "word": "とっくの昔",
+    "reading": "とっくのむかし",
+    "meaning": "a long time ago"
+  },
+  {
+    "rank": 13962,
+    "word": "真冬",
+    "reading": "まふゆ",
+    "meaning": "midwinter"
+  },
+  {
+    "rank": 14011,
+    "word": "１億",
+    "reading": "いちおく",
+    "meaning": "100,000,000"
+  },
+  {
+    "rank": 14024,
+    "word": "更ける",
+    "reading": "ふける",
+    "meaning": "to get late"
+  },
+  {
+    "rank": 14079,
+    "word": "題",
+    "reading": "だい",
+    "meaning": "title"
+  },
+  {
+    "rank": 14082,
+    "word": "昼下がり",
+    "reading": "ひるさがり",
+    "meaning": "early afternoon"
+  },
+  {
+    "rank": 14091,
+    "word": "数度",
+    "reading": "すうど",
+    "meaning": "several times"
+  },
+  {
+    "rank": 14102,
+    "word": "此度",
+    "reading": "このたび",
+    "meaning": "this occasion"
+  },
+  {
+    "rank": 14139,
+    "word": "ロク",
+    "reading": "ロク",
+    "meaning": "six"
+  },
+  {
+    "rank": 14150,
+    "word": "幼少期",
+    "reading": "ようしょうき",
+    "meaning": "(early) childhood"
+  },
+  {
+    "rank": 14158,
+    "word": "二人目",
+    "reading": "ふたりめ",
+    "meaning": "second person"
+  },
+  {
+    "rank": 14220,
+    "word": "終盤",
+    "reading": "しゅうばん",
+    "meaning": "endgame"
+  },
+  {
+    "rank": 14256,
+    "word": "日時",
+    "reading": "にちじ",
+    "meaning": "date and time"
+  },
+  {
+    "rank": 14272,
+    "word": "早くから",
+    "reading": "はやくから",
+    "meaning": "early on"
+  },
+  {
+    "rank": 14282,
+    "word": "土日",
+    "reading": "どにち",
+    "meaning": "weekend"
+  },
+  {
+    "rank": 14310,
+    "word": "翌年",
+    "reading": "よくねん",
+    "meaning": "following year"
+  },
+  {
+    "rank": 14430,
+    "word": "四六時中",
+    "reading": "しろくじちゅう",
+    "meaning": "around the clock"
+  },
+  {
+    "rank": 14453,
+    "word": "夜更かし",
+    "reading": "よふかし",
+    "meaning": "staying up late"
+  },
+  {
+    "rank": 14652,
+    "word": "三男",
+    "reading": "さんなん",
+    "meaning": "three sons"
+  },
+  {
+    "rank": 14744,
+    "word": "その都度",
+    "reading": "そのつど",
+    "meaning": "each time it happens"
+  },
+  {
+    "rank": 14760,
+    "word": "十中八九",
+    "reading": "じっちゅうはっく",
+    "meaning": "in 8 or 9 cases out of ten"
+  },
+  {
+    "rank": 14765,
+    "word": "一か月",
+    "reading": "いっかげつ",
+    "meaning": "one month"
+  },
+  {
+    "rank": 14772,
+    "word": "壮年",
+    "reading": "そうねん",
+    "meaning": "prime of life"
+  },
+  {
+    "rank": 14831,
+    "word": "時として",
+    "reading": "ときとして",
+    "meaning": "in some cases"
+  },
+  {
+    "rank": 14874,
+    "word": "年末",
+    "reading": "ねんまつ",
+    "meaning": "end-of-year"
+  },
+  {
+    "rank": 14899,
+    "word": "平地",
+    "reading": "へいち",
+    "meaning": "level ground"
+  },
+  {
+    "rank": 14916,
+    "word": "比率",
+    "reading": "ひりつ",
+    "meaning": "ratio"
+  },
+  {
+    "rank": 14928,
+    "word": "数か月",
+    "reading": "すうかげつ",
+    "meaning": "several months"
+  },
+  {
+    "rank": 14954,
+    "word": "昼前",
+    "reading": "ひるまえ",
+    "meaning": "morning"
+  },
+  {
+    "rank": 14976,
+    "word": "今後とも",
+    "reading": "こんごとも",
+    "meaning": "from now on"
+  },
+  {
+    "rank": 14977,
+    "word": "締め切り",
+    "reading": "しめきり",
+    "meaning": "deadline"
+  },
+  {
+    "rank": 14993,
+    "word": "十倍",
+    "reading": "じゅうばい",
+    "meaning": "ten times"
+  },
+  {
+    "rank": 14998,
+    "word": "チラッと",
+    "reading": "チラッと",
+    "meaning": "at a glance"
+  },
+  {
+    "rank": 15000,
+    "word": "今や",
+    "reading": "いまや",
+    "meaning": "now (esp. in contrast to the past)"
+  },
+  {
+    "rank": 15019,
+    "word": "最近になって",
+    "reading": "さいきんになって",
+    "meaning": "only recently"
+  },
+  {
+    "rank": 15020,
+    "word": "何度となく",
+    "reading": "なんどとなく",
+    "meaning": "time after time"
+  },
+  {
+    "rank": 15033,
+    "word": "先程から",
+    "reading": "さきほどから",
+    "meaning": "since some time ago"
+  },
+  {
+    "rank": 15057,
+    "word": "昨日の今日",
+    "reading": "きのうのきょう",
+    "meaning": "right on the heels of yesterday, then today ..."
+  },
+  {
+    "rank": 15077,
+    "word": "ずぶ濡れ",
+    "reading": "ずぶぬれ",
+    "meaning": "dripping wet"
+  },
+  {
+    "rank": 15089,
+    "word": "時間切れ",
+    "reading": "じかんぎれ",
+    "meaning": "being out of time"
+  },
+  {
+    "rank": 15105,
+    "word": "時間が掛かる",
+    "reading": "じかんがかかる",
+    "meaning": "to take time"
+  },
+  {
+    "rank": 15110,
+    "word": "お初",
+    "reading": "おはつ",
+    "meaning": "(for the) first time"
+  },
+  {
+    "rank": 15120,
+    "word": "ヵ月",
+    "reading": "かげつ",
+    "meaning": "months (period of)"
+  },
+  {
+    "rank": 15158,
+    "word": "太古",
+    "reading": "たいこ",
+    "meaning": "ancient times"
+  },
+  {
+    "rank": 15186,
+    "word": "年々",
+    "reading": "ねんねん",
+    "meaning": "year by year"
+  },
+  {
+    "rank": 15226,
+    "word": "数段",
+    "reading": "すうだん",
+    "meaning": "several (levels, floors)"
+  },
+  {
+    "rank": 15247,
+    "word": "新学期",
+    "reading": "しんがっき",
+    "meaning": "new school term"
+  },
+  {
+    "rank": 15258,
+    "word": "二日間",
+    "reading": "ふつかかん",
+    "meaning": "a period of two days"
+  },
+  {
+    "rank": 15275,
+    "word": "万年",
+    "reading": "まんねん",
+    "meaning": "ten thousand years"
+  },
+  {
+    "rank": 15303,
+    "word": "ナイト",
+    "reading": "ナイト",
+    "meaning": "night"
+  },
+  {
+    "rank": 15312,
+    "word": "江戸時代",
+    "reading": "えどじだい",
+    "meaning": "Edo period (1603-1868)"
+  },
+  {
+    "rank": 15354,
+    "word": "一丁",
+    "reading": "いっちょう",
+    "meaning": "one sheet"
+  },
+  {
+    "rank": 15355,
+    "word": "カロリー",
+    "reading": "カロリー",
+    "meaning": "calorie"
+  },
+  {
+    "rank": 15358,
+    "word": "決め手",
+    "reading": "きめて",
+    "meaning": "decider"
+  },
+  {
+    "rank": 15366,
+    "word": "タイムリミット",
+    "reading": "タイムリミット",
+    "meaning": "time limit"
+  },
+  {
+    "rank": 15399,
+    "word": "丁度良い",
+    "reading": "ちょうどいい",
+    "meaning": "just right (time, size, length, etc.)"
+  },
+  {
+    "rank": 15411,
+    "word": "残り少ない",
+    "reading": "のこりすくない",
+    "meaning": "scarce"
+  },
+  {
+    "rank": 15479,
+    "word": "冬休み",
+    "reading": "ふゆやすみ",
+    "meaning": "winter vacation"
+  },
+  {
+    "rank": 15503,
+    "word": "何個",
+    "reading": "なんこ",
+    "meaning": "how many pieces"
+  },
+  {
+    "rank": 15556,
+    "word": "一歳",
+    "reading": "いっさい",
+    "meaning": "one-year-old"
+  },
+  {
+    "rank": 15557,
+    "word": "時世",
+    "reading": "じせい",
+    "meaning": "the times"
+  },
+  {
+    "rank": 15633,
+    "word": "二十日",
+    "reading": "はつか",
+    "meaning": "twentieth day of the month"
+  },
+  {
+    "rank": 15665,
+    "word": "カウントダウン",
+    "reading": "カウントダウン",
+    "meaning": "countdown"
+  },
+  {
+    "rank": 15670,
+    "word": "間髪入れず",
+    "reading": "かんはついれず",
+    "meaning": "immediately"
+  },
+  {
+    "rank": 15682,
+    "word": "高校時代",
+    "reading": "こうこうじだい",
+    "meaning": "one's high school days"
+  },
+  {
+    "rank": 15706,
+    "word": "春休み",
+    "reading": "はるやすみ",
+    "meaning": "spring break"
+  },
+  {
+    "rank": 15724,
+    "word": "新年",
+    "reading": "しんねん",
+    "meaning": "New Year"
+  },
+  {
+    "rank": 15743,
+    "word": "うま",
+    "reading": "うま",
+    "meaning": "the Horse (seventh sign of the Chinese zodiac)"
+  },
+  {
+    "rank": 15755,
+    "word": "着",
+    "reading": "ちゃく",
+    "meaning": "counter for suits of clothing"
+  },
+  {
+    "rank": 15759,
+    "word": "真昼",
+    "reading": "まひる",
+    "meaning": "midday"
+  },
+  {
+    "rank": 15772,
+    "word": "何時",
+    "reading": "なんじ",
+    "meaning": "what time"
+  },
+  {
+    "rank": 15849,
+    "word": "カレンダー",
+    "reading": "カレンダー",
+    "meaning": "calendar"
+  },
+  {
+    "rank": 15857,
+    "word": "時間を作る",
+    "reading": "じかんをつくる",
+    "meaning": "to make time"
+  },
+  {
+    "rank": 15859,
+    "word": "寒",
+    "reading": "かん",
+    "meaning": "midwinter"
+  },
+  {
+    "rank": 15920,
+    "word": "嗅ぎつける",
+    "reading": "かぎつける",
+    "meaning": "to sniff out"
+  },
+  {
+    "rank": 15934,
+    "word": "未満",
+    "reading": "みまん",
+    "meaning": "less than"
+  },
+  {
+    "rank": 16000,
+    "word": "時速",
+    "reading": "じそく",
+    "meaning": "speed (per hour)"
+  },
+  {
+    "rank": 16085,
+    "word": "次代",
+    "reading": "じだい",
+    "meaning": "the next era"
+  },
+  {
+    "rank": 16094,
+    "word": "２位",
+    "reading": "にい",
+    "meaning": "second place"
+  },
+  {
+    "rank": 16175,
+    "word": "星座",
+    "reading": "せいざ",
+    "meaning": "constellation"
+  },
+  {
+    "rank": 16198,
+    "word": "２分",
+    "reading": "にふん",
+    "meaning": "two minutes"
+  },
+  {
+    "rank": 16202,
+    "word": "夜更け",
+    "reading": "よふけ",
+    "meaning": "late at night"
+  },
+  {
+    "rank": 16246,
+    "word": "先の話",
+    "reading": "さきのはなし",
+    "meaning": "a long way off"
+  },
+  {
+    "rank": 16258,
+    "word": "ここんとこ",
+    "reading": "ここんとこ",
+    "meaning": "recently"
+  },
+  {
+    "rank": 16265,
+    "word": "一割",
+    "reading": "いちわり",
+    "meaning": "ten percent"
+  },
+  {
+    "rank": 16323,
+    "word": "常日頃",
+    "reading": "つねひごろ",
+    "meaning": "everyday"
+  },
+  {
+    "rank": 16387,
+    "word": "高齢",
+    "reading": "こうれい",
+    "meaning": "advanced age"
+  },
+  {
+    "rank": 16452,
+    "word": "全額",
+    "reading": "ぜんがく",
+    "meaning": "total"
+  },
+  {
+    "rank": 16458,
+    "word": "長期間",
+    "reading": "ちょうきかん",
+    "meaning": "long period (of time)"
+  },
+  {
+    "rank": 16466,
+    "word": "割り",
+    "reading": "わり",
+    "meaning": "rate"
+  },
+  {
+    "rank": 16470,
+    "word": "乗",
+    "reading": "じょう",
+    "meaning": "(nth) power"
+  },
+  {
+    "rank": 16473,
+    "word": "月夜",
+    "reading": "つきよ",
+    "meaning": "moonlit night"
+  },
+  {
+    "rank": 16498,
+    "word": "代目",
+    "reading": "だいめ",
+    "meaning": "nth generation"
+  },
+  {
+    "rank": 16526,
+    "word": "幾つ",
+    "reading": "いくつ",
+    "meaning": "how many"
+  },
+  {
+    "rank": 16527,
+    "word": "六百",
+    "reading": "ろっぴゃく",
+    "meaning": "600"
+  },
+  {
+    "rank": 16578,
+    "word": "定時",
+    "reading": "ていじ",
+    "meaning": "regular time"
+  },
+  {
+    "rank": 16633,
+    "word": "期間中",
+    "reading": "きかんちゅう",
+    "meaning": "during"
+  },
+  {
+    "rank": 16642,
+    "word": "いつの日か",
+    "reading": "いつのひか",
+    "meaning": "one of these days"
+  },
+  {
+    "rank": 16680,
+    "word": "その節",
+    "reading": "そのせつ",
+    "meaning": "at that time"
+  },
+  {
+    "rank": 16684,
+    "word": "夕闇",
+    "reading": "ゆうやみ",
+    "meaning": "dusk"
+  },
+  {
+    "rank": 16741,
+    "word": "数年後",
+    "reading": "すうねんご",
+    "meaning": "a few years later"
+  },
+  {
+    "rank": 16755,
+    "word": "なんぼ",
+    "reading": "なんぼ",
+    "meaning": "how much"
+  },
+  {
+    "rank": 16782,
+    "word": "１ヶ月",
+    "reading": "いっかげつ",
+    "meaning": "one month"
+  },
+  {
+    "rank": 16816,
+    "word": "時の流れ",
+    "reading": "ときのながれ",
+    "meaning": "flow of time"
+  },
+  {
+    "rank": 16824,
+    "word": "倍増",
+    "reading": "ばいぞう",
+    "meaning": "double"
+  },
+  {
+    "rank": 16825,
+    "word": "事後",
+    "reading": "じご",
+    "meaning": "after"
+  },
+  {
+    "rank": 16847,
+    "word": "日没",
+    "reading": "にちぼつ",
+    "meaning": "sunset"
+  },
+  {
+    "rank": 16849,
+    "word": "盛り",
+    "reading": "さかり",
+    "meaning": "height (e.g. of summer)"
+  },
+  {
+    "rank": 16892,
+    "word": "二十六",
+    "reading": "にじゅうろく",
+    "meaning": "twenty-six"
+  },
+  {
+    "rank": 16893,
+    "word": "四度",
+    "reading": "しど",
+    "meaning": "four times"
+  },
+  {
+    "rank": 16894,
+    "word": "二十四時間",
+    "reading": "にじゅうよじかん",
+    "meaning": "24 hours"
+  },
+  {
+    "rank": 16897,
+    "word": "遅かれ早かれ",
+    "reading": "おそかれはやかれ",
+    "meaning": "sooner or later"
+  },
+  {
+    "rank": 16914,
+    "word": "夜通し",
+    "reading": "よどおし",
+    "meaning": "all night"
+  },
+  {
+    "rank": 16922,
+    "word": "こく",
+    "reading": "こく",
+    "meaning": "period of time (usu. a period of approx. two hours corres..."
+  },
+  {
+    "rank": 17005,
+    "word": "小一時間",
+    "reading": "こいちじかん",
+    "meaning": "nearly one hour"
+  },
+  {
+    "rank": 17011,
+    "word": "リアルタイム",
+    "reading": "リアルタイム",
+    "meaning": "real time"
+  },
+  {
+    "rank": 17022,
+    "word": "非常時",
+    "reading": "ひじょうじ",
+    "meaning": "time of emergency"
+  },
+  {
+    "rank": 17027,
+    "word": "鬱蒼",
+    "reading": "うっそう",
+    "meaning": "thick"
+  },
+  {
+    "rank": 17086,
+    "word": "今の時代",
+    "reading": "いまのじだい",
+    "meaning": "modern times"
+  },
+  {
+    "rank": 17091,
+    "word": "２３日",
+    "reading": "にじゅうさんにち",
+    "meaning": "twenty-third day of the month"
+  },
+  {
+    "rank": 17105,
+    "word": "知らない間に",
+    "reading": "しらないあいだに",
+    "meaning": "before one knows it"
+  },
+  {
+    "rank": 17118,
+    "word": "夜分",
+    "reading": "やぶん",
+    "meaning": "evening"
+  },
+  {
+    "rank": 17158,
+    "word": "早退",
+    "reading": "そうたい",
+    "meaning": "leaving early"
+  },
+  {
+    "rank": 17184,
+    "word": "一号",
+    "reading": "いちごう",
+    "meaning": "number one"
+  },
+  {
+    "rank": 17186,
+    "word": "緊急時",
+    "reading": "きんきゅうじ",
+    "meaning": "(time of) emergency"
+  },
+  {
+    "rank": 17190,
+    "word": "九九",
+    "reading": "くく",
+    "meaning": "multiplication table"
+  },
+  {
+    "rank": 17194,
+    "word": "週刊誌",
+    "reading": "しゅうかんし",
+    "meaning": "weekly publication"
+  },
+  {
+    "rank": 17198,
+    "word": "最年少",
+    "reading": "さいねんしょう",
+    "meaning": "youngest"
+  },
+  {
+    "rank": 17211,
+    "word": "明朝",
+    "reading": "みょうちょう",
+    "meaning": "tomorrow morning"
+  },
+  {
+    "rank": 17215,
+    "word": "記念日",
+    "reading": "きねんび",
+    "meaning": "memorial day"
+  },
+  {
+    "rank": 17235,
+    "word": "早期",
+    "reading": "そうき",
+    "meaning": "early stage"
+  },
+  {
+    "rank": 17236,
+    "word": "できるだけ早く",
+    "reading": "できるだけはやく",
+    "meaning": "as soon as possible"
+  },
+  {
+    "rank": 17237,
+    "word": "制限時間",
+    "reading": "せいげんじかん",
+    "meaning": "time limit"
+  },
+  {
+    "rank": 17318,
+    "word": "潮時",
+    "reading": "しおどき",
+    "meaning": "tidal hour"
+  },
+  {
+    "rank": 17337,
+    "word": "水曜日",
+    "reading": "すいようび",
+    "meaning": "Wednesday"
+  },
+  {
+    "rank": 17355,
+    "word": "夜半",
+    "reading": "やはん",
+    "meaning": "midnight"
+  },
+  {
+    "rank": 17364,
+    "word": "八日",
+    "reading": "ようか",
+    "meaning": "eighth day of the month"
+  },
+  {
+    "rank": 17444,
+    "word": "兆",
+    "reading": "ちょう",
+    "meaning": "10^12"
+  },
+  {
+    "rank": 17459,
+    "word": "夜の街",
+    "reading": "よるのまち",
+    "meaning": "nightlife districts"
+  },
+  {
+    "rank": 17464,
+    "word": "ナンバーワン",
+    "reading": "ナンバーワン",
+    "meaning": "number one"
+  },
+  {
+    "rank": 17558,
+    "word": "三段",
+    "reading": "さんだん",
+    "meaning": "third stage"
+  },
+  {
+    "rank": 17570,
+    "word": "月曜",
+    "reading": "げつよう",
+    "meaning": "Monday"
+  },
+  {
+    "rank": 17582,
+    "word": "ひる",
+    "reading": "ひる",
+    "meaning": "noon"
+  },
+  {
+    "rank": 17588,
+    "word": "今さっき",
+    "reading": "いまさっき",
+    "meaning": "just now"
+  },
+  {
+    "rank": 17591,
+    "word": "二割",
+    "reading": "にわり",
+    "meaning": "20 percent"
+  },
+  {
+    "rank": 17599,
+    "word": "三方",
+    "reading": "さんぼう",
+    "meaning": "three sides"
+  },
+  {
+    "rank": 17628,
+    "word": "最上位",
+    "reading": "さいじょうい",
+    "meaning": "highest rank"
+  },
+  {
+    "rank": 17643,
+    "word": "年長",
+    "reading": "ねんちょう",
+    "meaning": "senior"
+  },
+  {
+    "rank": 17674,
+    "word": "二位",
+    "reading": "にい",
+    "meaning": "second place"
+  },
+  {
+    "rank": 17685,
+    "word": "齢",
+    "reading": "よわい",
+    "meaning": "(one's) age"
+  },
+  {
+    "rank": 17827,
+    "word": "終了後",
+    "reading": "しゅうりょうご",
+    "meaning": "after the end (of something)"
+  },
+  {
+    "rank": 17863,
+    "word": "初回",
+    "reading": "しょかい",
+    "meaning": "first time"
+  },
+  {
+    "rank": 17866,
+    "word": "一等",
+    "reading": "いっとう",
+    "meaning": "first class"
+  },
+  {
+    "rank": 18001,
+    "word": "百倍",
+    "reading": "ひゃくばい",
+    "meaning": "hundredfold"
+  },
+  {
+    "rank": 18007,
+    "word": "朝方",
+    "reading": "あさがた",
+    "meaning": "early morning"
+  },
+  {
+    "rank": 18010,
+    "word": "四季",
+    "reading": "しき",
+    "meaning": "the four seasons"
+  },
+  {
+    "rank": 18025,
+    "word": "お正月",
+    "reading": "おしょうがつ",
+    "meaning": "New Year (esp. first three days)"
+  },
+  {
+    "rank": 18106,
+    "word": "多量",
+    "reading": "たりょう",
+    "meaning": "large quantity"
+  },
+  {
+    "rank": 18128,
+    "word": "軒並み",
+    "reading": "のきなみ",
+    "meaning": "row of houses"
+  },
+  {
+    "rank": 18143,
+    "word": "年度",
+    "reading": "ねんど",
+    "meaning": "fiscal year (usu. April 1 to March 31 in Japan)"
+  },
+  {
+    "rank": 18144,
+    "word": "未知数",
+    "reading": "みちすう",
+    "meaning": "(an) unknown"
+  },
+  {
+    "rank": 18158,
+    "word": "梅雨",
+    "reading": "つゆ",
+    "meaning": "rainy season (in Japan usu. from early June to mid-July)"
+  },
+  {
+    "rank": 18163,
+    "word": "一着",
+    "reading": "いっちゃく",
+    "meaning": "first arrival"
+  },
+  {
+    "rank": 18179,
+    "word": "日の出",
+    "reading": "ひので",
+    "meaning": "sunrise"
+  },
+  {
+    "rank": 18206,
+    "word": "十回",
+    "reading": "じっかい",
+    "meaning": "ten times"
+  },
+  {
+    "rank": 18220,
+    "word": "刻一刻と",
+    "reading": "こくいっこくと",
+    "meaning": "moment by moment"
+  },
+  {
+    "rank": 18236,
+    "word": "第一回",
+    "reading": "だいいっかい",
+    "meaning": "first time"
+  },
+  {
+    "rank": 18279,
+    "word": "とうの昔",
+    "reading": "とうのむかし",
+    "meaning": "a long time ago"
+  },
+  {
+    "rank": 18301,
+    "word": "睡眠時間",
+    "reading": "すいみんじかん",
+    "meaning": "(one's) sleeping hours"
+  },
+  {
+    "rank": 18314,
+    "word": "昼夜",
+    "reading": "ちゅうや",
+    "meaning": "day and night"
+  },
+  {
+    "rank": 18388,
+    "word": "宵",
+    "reading": "よい",
+    "meaning": "evening"
+  },
+  {
+    "rank": 18439,
+    "word": "三重",
+    "reading": "さんじゅう",
+    "meaning": "triple"
+  },
+  {
+    "rank": 18497,
+    "word": "未明",
+    "reading": "みめい",
+    "meaning": "early dawn"
+  },
+  {
+    "rank": 18509,
+    "word": "大正",
+    "reading": "たいしょう",
+    "meaning": "Taishō era (1912.7.30-1926.12.25)"
+  },
+  {
+    "rank": 18523,
+    "word": "寸",
+    "reading": "すん",
+    "meaning": "sun (approx. 3.03 cm)"
+  },
+  {
+    "rank": 18542,
+    "word": "四千",
+    "reading": "よんせん",
+    "meaning": "four thousand"
+  },
+  {
+    "rank": 18690,
+    "word": "一千",
+    "reading": "いっせん",
+    "meaning": "1,000"
+  },
+  {
+    "rank": 18728,
+    "word": "才",
+    "reading": "さい",
+    "meaning": "-years-old"
+  },
+  {
+    "rank": 18754,
+    "word": "十本",
+    "reading": "じっぽん",
+    "meaning": "ten (long cylindrical things)"
+  },
+  {
+    "rank": 18788,
+    "word": "一機",
+    "reading": "いっき",
+    "meaning": "one machine"
+  },
+  {
+    "rank": 18810,
+    "word": "懐中時計",
+    "reading": "かいちゅうどけい",
+    "meaning": "pocket watch"
+  },
+  {
+    "rank": 18812,
+    "word": "夕べ",
+    "reading": "ゆうべ",
+    "meaning": "evening"
+  },
+  {
+    "rank": 18856,
+    "word": "時を待つ",
+    "reading": "ときをまつ",
+    "meaning": "to wait for a favorable chance"
+  },
+  {
+    "rank": 18875,
+    "word": "夕食後",
+    "reading": "ゆうしょくご",
+    "meaning": "after dinner"
+  },
+  {
+    "rank": 18911,
+    "word": "夜な夜な",
+    "reading": "よなよな",
+    "meaning": "every evening"
+  },
+  {
+    "rank": 18915,
+    "word": "明け",
+    "reading": "あけ",
+    "meaning": "dawn"
+  },
+  {
+    "rank": 18933,
+    "word": "千万",
+    "reading": "せんまん",
+    "meaning": "10,000,000"
+  },
+  {
+    "rank": 18950,
+    "word": "一億",
+    "reading": "いちおく",
+    "meaning": "100,000,000"
+  },
+  {
+    "rank": 18979,
+    "word": "一日目",
+    "reading": "いちにちめ",
+    "meaning": "first day (e.g. at work, school)"
+  },
+  {
+    "rank": 18993,
+    "word": "金曜",
+    "reading": "きんよう",
+    "meaning": "Friday"
+  },
+  {
+    "rank": 19085,
+    "word": "下旬",
+    "reading": "げじゅん",
+    "meaning": "last third of a month"
+  },
+  {
+    "rank": 19095,
+    "word": "一昨年",
+    "reading": "おととし",
+    "meaning": "year before last"
+  },
+  {
+    "rank": 19123,
+    "word": "３日間",
+    "reading": "みっかかん",
+    "meaning": "three days"
+  },
+  {
+    "rank": 19146,
+    "word": "枚数",
+    "reading": "まいすう",
+    "meaning": "the number of flat things"
+  },
+  {
+    "rank": 19335,
+    "word": "余命",
+    "reading": "よめい",
+    "meaning": "remainder of one's life"
+  },
+  {
+    "rank": 19402,
+    "word": "千代",
+    "reading": "ちよ",
+    "meaning": "thousand years"
+  },
+  {
+    "rank": 19405,
+    "word": "火曜日",
+    "reading": "かようび",
+    "meaning": "Tuesday"
+  },
+  {
+    "rank": 19428,
+    "word": "数瞬",
+    "reading": "すうしゅん",
+    "meaning": "a few moments"
+  },
+  {
+    "rank": 19458,
+    "word": "十五日",
+    "reading": "じゅうごにち",
+    "meaning": "fifteenth day of the month"
+  },
+  {
+    "rank": 19461,
+    "word": "毎夜",
+    "reading": "まいよ",
+    "meaning": "every evening"
+  },
+  {
+    "rank": 19474,
+    "word": "朝一番",
+    "reading": "あさいちばん",
+    "meaning": "first thing in the morning"
+  },
+  {
+    "rank": 19514,
+    "word": "日",
+    "reading": "ひ",
+    "meaning": "day"
+  },
+  {
+    "rank": 19524,
+    "word": "三代",
+    "reading": "さんだい",
+    "meaning": "three generations"
+  },
+  {
+    "rank": 19649,
+    "word": "刻々",
+    "reading": "こっこく",
+    "meaning": "moment by moment"
+  },
+  {
+    "rank": 19665,
+    "word": "七百",
+    "reading": "ななひゃく",
+    "meaning": "700"
+  },
+  {
+    "rank": 19689,
+    "word": "年の頃",
+    "reading": "としのころ",
+    "meaning": "approximate age"
+  },
+  {
+    "rank": 19735,
+    "word": "期日",
+    "reading": "きじつ",
+    "meaning": "fixed date"
+  },
+  {
+    "rank": 19738,
+    "word": "日夜",
+    "reading": "にちや",
+    "meaning": "day and night"
+  },
+  {
+    "rank": 19748,
+    "word": "未来永劫",
+    "reading": "みらいえいごう",
+    "meaning": "forevermore"
+  },
+  {
+    "rank": 19819,
+    "word": "１４日",
+    "reading": "じゅうよっか",
+    "meaning": "fourteenth day of the month"
+  },
+  {
+    "rank": 19833,
+    "word": "五倍",
+    "reading": "ごばい",
+    "meaning": "five times (as much)"
+  },
+  {
+    "rank": 19839,
+    "word": "早う",
+    "reading": "はよう",
+    "meaning": "early"
+  },
+  {
+    "rank": 19858,
+    "word": "参",
+    "reading": "さん",
+    "meaning": "three"
+  },
+  {
+    "rank": 19860,
+    "word": "年中",
+    "reading": "ねんじゅう",
+    "meaning": "whole year"
+  },
+  {
+    "rank": 19890,
+    "word": "久方ぶり",
+    "reading": "ひさかたぶり",
+    "meaning": "long time (since the last time)"
+  },
+  {
+    "rank": 19910,
+    "word": "木曜日",
+    "reading": "もくようび",
+    "meaning": "Thursday"
+  },
+  {
+    "rank": 19911,
+    "word": "数年間",
+    "reading": "すうねんかん",
+    "meaning": "several years"
+  },
+  {
+    "rank": 19938,
+    "word": "八本",
+    "reading": "はちほん",
+    "meaning": "eight (long cylindrical things)"
+  },
+  {
+    "rank": 20030,
+    "word": "総数",
+    "reading": "そうすう",
+    "meaning": "total (number)"
+  },
+  {
+    "rank": 20051,
+    "word": "中盤",
+    "reading": "ちゅうばん",
+    "meaning": "middle stage"
+  },
+  {
+    "rank": 20102,
+    "word": "ずっと前に",
+    "reading": "ずっとまえに",
+    "meaning": "a long time ago"
+  },
+  {
+    "rank": 20142,
+    "word": "門限",
+    "reading": "もんげん",
+    "meaning": "closing time"
+  },
+  {
+    "rank": 20163,
+    "word": "五度",
+    "reading": "ごど",
+    "meaning": "fifth (interval)"
+  },
+  {
+    "rank": 20210,
+    "word": "超高速",
+    "reading": "ちょうこうそく",
+    "meaning": "ultrahigh speed"
+  },
+  {
+    "rank": 20218,
+    "word": "多過ぎる",
+    "reading": "おおすぎる",
+    "meaning": "to be too numerous"
+  },
+  {
+    "rank": 20238,
+    "word": "二文字",
+    "reading": "ふたもじ",
+    "meaning": "two characters"
+  },
+  {
+    "rank": 20247,
+    "word": "お先",
+    "reading": "おさき",
+    "meaning": "ahead"
+  },
+  {
+    "rank": 20274,
+    "word": "九つ",
+    "reading": "ここのつ",
+    "meaning": "nine"
+  },
+  {
+    "rank": 20293,
+    "word": "命日",
+    "reading": "めいにち",
+    "meaning": "anniversary of a person's death"
+  },
+  {
+    "rank": 20297,
+    "word": "二次",
+    "reading": "にじ",
+    "meaning": "second"
+  },
+  {
+    "rank": 20324,
+    "word": "一ミリ",
+    "reading": "いちミリ",
+    "meaning": "(not even) an inch"
+  },
+  {
+    "rank": 20329,
+    "word": "成長期",
+    "reading": "せいちょうき",
+    "meaning": "growth period"
+  },
+  {
+    "rank": 20333,
+    "word": "春先",
+    "reading": "はるさき",
+    "meaning": "beginning of spring"
+  },
+  {
+    "rank": 20350,
+    "word": "日暮れ",
+    "reading": "ひぐれ",
+    "meaning": "twilight"
+  },
+  {
+    "rank": 20413,
+    "word": "百円",
+    "reading": "ひゃくえん",
+    "meaning": "100 yen"
+  },
+  {
+    "rank": 20416,
+    "word": "限",
+    "reading": "きり",
+    "meaning": "end"
+  },
+  {
+    "rank": 20420,
+    "word": "当座",
+    "reading": "とうざ",
+    "meaning": "for the time being"
+  },
+  {
+    "rank": 20427,
+    "word": "日にち",
+    "reading": "ひにち",
+    "meaning": "the number of days"
+  },
+  {
+    "rank": 20447,
+    "word": "晩年",
+    "reading": "ばんねん",
+    "meaning": "one's later years"
+  },
+  {
+    "rank": 20543,
+    "word": "九日",
+    "reading": "ここのか",
+    "meaning": "ninth day of the month"
+  },
+  {
+    "rank": 20581,
+    "word": "夜闇",
+    "reading": "やあん",
+    "meaning": "dead of night"
+  },
+  {
+    "rank": 20599,
+    "word": "一握り",
+    "reading": "ひとにぎり",
+    "meaning": "handful"
+  },
+  {
+    "rank": 20608,
+    "word": "同日",
+    "reading": "どうじつ",
+    "meaning": "the same day"
+  },
+  {
+    "rank": 20659,
+    "word": "２０歳",
+    "reading": "はたち",
+    "meaning": "20 years old"
+  },
+  {
+    "rank": 20663,
+    "word": "上下左右",
+    "reading": "じょうげさゆう",
+    "meaning": "up and down, left and right"
+  },
+  {
+    "rank": 20685,
+    "word": "時代遅れ",
+    "reading": "じだいおくれ",
+    "meaning": "old-fashioned"
+  },
+  {
+    "rank": 20720,
+    "word": "難度",
+    "reading": "なんど",
+    "meaning": "degree of difficulty"
+  },
+  {
+    "rank": 20751,
+    "word": "幾人も",
+    "reading": "いくにんも",
+    "meaning": "many people"
+  },
+  {
+    "rank": 20816,
+    "word": "刻",
+    "reading": "とき",
+    "meaning": "time"
+  },
+  {
+    "rank": 20832,
+    "word": "深",
+    "reading": "ふけ",
+    "meaning": "growing late"
+  },
+  {
+    "rank": 20895,
+    "word": "一ヵ月",
+    "reading": "いっかげつ",
+    "meaning": "one month"
+  },
+  {
+    "rank": 20921,
+    "word": "一級",
+    "reading": "いっきゅう",
+    "meaning": "one grade"
+  },
+  {
+    "rank": 21068,
+    "word": "一年半",
+    "reading": "いちねんはん",
+    "meaning": "one year and a half"
+  },
+  {
+    "rank": 21090,
+    "word": "千里",
+    "reading": "せんり",
+    "meaning": "1000 ri"
+  },
+  {
+    "rank": 21119,
+    "word": "日取り",
+    "reading": "ひどり",
+    "meaning": "fixed date"
+  },
+  {
+    "rank": 21178,
+    "word": "どのぐらい",
+    "reading": "どのぐらい",
+    "meaning": "how long"
+  },
+  {
+    "rank": 21244,
+    "word": "片時",
+    "reading": "かたとき",
+    "meaning": "moment"
+  },
+  {
+    "rank": 21301,
+    "word": "合",
+    "reading": "ごう",
+    "meaning": "gō"
+  },
+  {
+    "rank": 21346,
+    "word": "五〇〇",
+    "reading": "ごひゃく",
+    "meaning": "500"
+  },
+  {
+    "rank": 21376,
+    "word": "老後",
+    "reading": "ろうご",
+    "meaning": "old age"
+  },
+  {
+    "rank": 21378,
+    "word": "千載一遇",
+    "reading": "せんざいいちぐう",
+    "meaning": "once in a lifetime (opportunity)"
+  },
+  {
+    "rank": 21391,
+    "word": "弥生",
+    "reading": "やよい",
+    "meaning": "third month of the lunar calendar"
+  },
+  {
+    "rank": 21397,
+    "word": "一カ月",
+    "reading": "いっかげつ",
+    "meaning": "one month"
+  },
+  {
+    "rank": 21403,
+    "word": "老齢",
+    "reading": "ろうれい",
+    "meaning": "advanced age"
+  },
+  {
+    "rank": 21407,
+    "word": "暫し",
+    "reading": "しばし",
+    "meaning": "for a short while"
+  },
+  {
+    "rank": 21534,
+    "word": "暮れ",
+    "reading": "くれ",
+    "meaning": "sunset"
+  },
+  {
+    "rank": 21541,
+    "word": "１日",
+    "reading": "いちにち",
+    "meaning": "one day"
+  },
+  {
+    "rank": 21544,
+    "word": "中旬",
+    "reading": "ちゅうじゅん",
+    "meaning": "middle of a month"
+  },
+  {
+    "rank": 21568,
+    "word": "新婚旅行",
+    "reading": "しんこんりょこう",
+    "meaning": "honeymoon"
+  },
+  {
+    "rank": 21589,
+    "word": "ひと時",
+    "reading": "ひととき",
+    "meaning": "a (short) time"
+  },
+  {
+    "rank": 21604,
+    "word": "何ヶ月",
+    "reading": "なんかげつ",
+    "meaning": "how many months?"
+  },
+  {
+    "rank": 21611,
+    "word": "巡",
+    "reading": "じゅん",
+    "meaning": "counter for tours, cycles, rounds, circuits, etc."
+  },
+  {
+    "rank": 21615,
+    "word": "夜目",
+    "reading": "よめ",
+    "meaning": "in the dark"
+  },
+  {
+    "rank": 21694,
+    "word": "短期",
+    "reading": "たんき",
+    "meaning": "short-term"
+  },
+  {
+    "rank": 21715,
+    "word": "近い将来",
+    "reading": "ちかいしょうらい",
+    "meaning": "near future"
+  },
+  {
+    "rank": 21744,
+    "word": "尾",
+    "reading": "び",
+    "meaning": "Chinese \"\"Tail\"\" constellation (one of the 28 mansions)"
+  },
+  {
+    "rank": 21755,
+    "word": "夜気",
+    "reading": "やき",
+    "meaning": "night air"
+  },
+  {
+    "rank": 21769,
+    "word": "一",
+    "reading": "いち",
+    "meaning": "one"
+  },
+  {
+    "rank": 21790,
+    "word": "算数",
+    "reading": "さんすう",
+    "meaning": "arithmetic"
+  },
+  {
+    "rank": 21803,
+    "word": "深",
+    "reading": "ふけ",
+    "meaning": "growing late"
+  },
+  {
+    "rank": 21808,
+    "word": "夏場",
+    "reading": "なつば",
+    "meaning": "summertime"
+  },
+  {
+    "rank": 21829,
+    "word": "遅延",
+    "reading": "ちえん",
+    "meaning": "delay"
+  },
+  {
+    "rank": 21830,
+    "word": "時給",
+    "reading": "じきゅう",
+    "meaning": "hourly pay"
+  },
+  {
+    "rank": 21838,
+    "word": "一世一代",
+    "reading": "いっせいちだい",
+    "meaning": "once in a lifetime"
+  },
+  {
+    "rank": 21854,
+    "word": "後期",
+    "reading": "こうき",
+    "meaning": "latter period"
+  },
+  {
+    "rank": 21870,
+    "word": "二代目",
+    "reading": "にだいめ",
+    "meaning": "second generation"
+  },
+  {
+    "rank": 21899,
+    "word": "連休",
+    "reading": "れんきゅう",
+    "meaning": "consecutive holidays"
+  },
+  {
+    "rank": 21926,
+    "word": "申",
+    "reading": "さる",
+    "meaning": "the Monkey (ninth sign of the Chinese zodiac)"
+  },
+  {
+    "rank": 21930,
+    "word": "リットル",
+    "reading": "リットル",
+    "meaning": "litre"
+  },
+  {
+    "rank": 21932,
+    "word": "１３日",
+    "reading": "じゅうさんにち",
+    "meaning": "thirteenth day of the month"
+  },
+  {
+    "rank": 21933,
+    "word": "最短距離",
+    "reading": "さいたんきょり",
+    "meaning": "shortest distance (to)"
+  },
+  {
+    "rank": 21938,
+    "word": "今の内",
+    "reading": "いまのうち",
+    "meaning": "now (while the time is ripe)"
+  },
+  {
+    "rank": 21947,
+    "word": "一陣",
+    "reading": "いちじん",
+    "meaning": "gust of wind"
+  },
+  {
+    "rank": 21953,
+    "word": "頻発",
+    "reading": "ひんぱつ",
+    "meaning": "frequent occurrence"
+  },
+  {
+    "rank": 22051,
+    "word": "挺",
+    "reading": "ちょう",
+    "meaning": "counter for long and narrow things such as guns, scissors..."
+  },
+  {
+    "rank": 22067,
+    "word": "悠久",
+    "reading": "ゆうきゅう",
+    "meaning": "eternity"
+  },
+  {
+    "rank": 22087,
+    "word": "八分",
+    "reading": "はちぶ",
+    "meaning": "eight-tenths"
+  },
+  {
+    "rank": 22127,
+    "word": "減点",
+    "reading": "げんてん",
+    "meaning": "subtracting points"
+  },
+  {
+    "rank": 22129,
+    "word": "一朝一夕",
+    "reading": "いっちょういっせき",
+    "meaning": "in a day"
+  },
+  {
+    "rank": 22171,
+    "word": "壱",
+    "reading": "いち",
+    "meaning": "one"
+  },
+  {
+    "rank": 22191,
+    "word": "サイクル",
+    "reading": "サイクル",
+    "meaning": "cycle"
+  },
+  {
+    "rank": 22231,
+    "word": "時間目",
+    "reading": "じかんめ",
+    "meaning": "period (e.g. class)"
+  },
+  {
+    "rank": 22295,
+    "word": "秒針",
+    "reading": "びょうしん",
+    "meaning": "second hand (of clock)"
+  },
+  {
+    "rank": 22313,
+    "word": "準備期間",
+    "reading": "じゅんびきかん",
+    "meaning": "preparatory phase"
+  },
+  {
+    "rank": 22327,
+    "word": "５００万",
+    "reading": "ごひゃくまん",
+    "meaning": "5,000,000"
+  },
+  {
+    "rank": 22431,
+    "word": "周期",
+    "reading": "しゅうき",
+    "meaning": "cycle"
+  },
+  {
+    "rank": 22458,
+    "word": "頭数",
+    "reading": "あたまかず",
+    "meaning": "number of persons"
+  },
+  {
+    "rank": 22476,
+    "word": "提督",
+    "reading": "ていとく",
+    "meaning": "admiral"
+  },
+  {
+    "rank": 22484,
+    "word": "夕暮れ時",
+    "reading": "ゆうぐれどき",
+    "meaning": "time around sunset"
+  },
+  {
+    "rank": 22588,
+    "word": "望月",
+    "reading": "もちづき",
+    "meaning": "full moon"
+  },
+  {
+    "rank": 22590,
+    "word": "旬",
+    "reading": "しゅん",
+    "meaning": "season (e.g. fruit, fish)"
+  },
+  {
+    "rank": 22628,
+    "word": "数個",
+    "reading": "すうこ",
+    "meaning": "several (objects, usu. from two to six)"
+  },
+  {
+    "rank": 22638,
+    "word": "本数",
+    "reading": "ほんすう",
+    "meaning": "number of long thin objects (movies, TV programs, basebal..."
+  },
+  {
+    "rank": 22666,
+    "word": "ふたつ",
+    "reading": "ふたつ",
+    "meaning": "two"
+  },
+  {
+    "rank": 22692,
+    "word": "八重",
+    "reading": "やえ",
+    "meaning": "multilayered"
+  },
+  {
+    "rank": 22709,
+    "word": "カルテ",
+    "reading": "カルテ",
+    "meaning": "patient's chart"
+  },
+  {
+    "rank": 22740,
+    "word": "全盛期",
+    "reading": "ぜんせいき",
+    "meaning": "heyday"
+  },
+  {
+    "rank": 22762,
+    "word": "何名",
+    "reading": "なんめい",
+    "meaning": "how many people"
+  },
+  {
+    "rank": 22797,
+    "word": "２４日",
+    "reading": "にじゅうよっか",
+    "meaning": "twenty-fourth day of the month"
+  },
+  {
+    "rank": 22848,
+    "word": "フォー",
+    "reading": "フォー",
+    "meaning": "four"
+  },
+  {
+    "rank": 22947,
+    "word": "ちょっくら",
+    "reading": "ちょっくら",
+    "meaning": "a little"
+  },
+  {
+    "rank": 22963,
+    "word": "昨日今日",
+    "reading": "きのうきょう",
+    "meaning": "yesterday and today"
+  },
+  {
+    "rank": 22994,
+    "word": "長寿",
+    "reading": "ちょうじゅ",
+    "meaning": "long life"
+  },
+  {
+    "rank": 22996,
+    "word": "間中",
+    "reading": "あいだじゅう",
+    "meaning": "during"
+  },
+  {
+    "rank": 23013,
+    "word": "周年",
+    "reading": "しゅうねん",
+    "meaning": "whole year"
+  },
+  {
+    "rank": 23051,
+    "word": "三十日",
+    "reading": "さんじゅうにち",
+    "meaning": "thirtieth day of the month"
+  },
+  {
+    "rank": 23071,
+    "word": "初詣",
+    "reading": "はつもうで",
+    "meaning": "first shrine visit of New Year"
+  },
+  {
+    "rank": 23105,
+    "word": "余生",
+    "reading": "よせい",
+    "meaning": "one's remaining years"
+  },
+  {
+    "rank": 23108,
+    "word": "１０００万",
+    "reading": "いっせんまん",
+    "meaning": "10,000,000"
+  },
+  {
+    "rank": 23115,
+    "word": "八千",
+    "reading": "はっせん",
+    "meaning": "8000"
+  },
+  {
+    "rank": 23119,
+    "word": "三世",
+    "reading": "さんせい",
+    "meaning": "three generations"
+  },
+  {
+    "rank": 23155,
+    "word": "十四日",
+    "reading": "じゅうよっか",
+    "meaning": "fourteenth day of the month"
+  },
+  {
+    "rank": 23193,
+    "word": "歳を取る",
+    "reading": "としをとる",
+    "meaning": "to grow old"
+  },
+  {
+    "rank": 23211,
+    "word": "イヴ",
+    "reading": "イヴ",
+    "meaning": "eve (esp. Christmas Eve)"
+  },
+  {
+    "rank": 23212,
+    "word": "長命",
+    "reading": "ちょうめい",
+    "meaning": "long life"
+  },
+  {
+    "rank": 23220,
+    "word": "間",
+    "reading": "かん",
+    "meaning": "interval"
+  },
+  {
+    "rank": 23264,
+    "word": "今年度",
+    "reading": "こんねんど",
+    "meaning": "this year"
+  },
+  {
+    "rank": 23285,
+    "word": "今世",
+    "reading": "こんせ",
+    "meaning": "this world"
+  },
+  {
+    "rank": 23308,
+    "word": "一世紀",
+    "reading": "いっせいき",
+    "meaning": "century"
+  },
+  {
+    "rank": 23342,
+    "word": "四年生",
+    "reading": "よねんせい",
+    "meaning": "fourth-year student"
+  },
+  {
+    "rank": 23422,
+    "word": "十分の一",
+    "reading": "じゅうぶんのいち",
+    "meaning": "tenth"
+  },
+  {
+    "rank": 23510,
+    "word": "三分の二",
+    "reading": "さんぶんのに",
+    "meaning": "two thirds"
+  },
+  {
+    "rank": 23518,
+    "word": "一日",
+    "reading": "いちにち",
+    "meaning": "one day"
+  },
+  {
+    "rank": 23625,
+    "word": "朝一",
+    "reading": "あさいち",
+    "meaning": "first thing in the morning"
+  },
+  {
+    "rank": 23648,
+    "word": "興奮状態",
+    "reading": "こうふんじょうたい",
+    "meaning": "excited condition"
+  },
+  {
+    "rank": 23797,
+    "word": "週明け",
+    "reading": "しゅうあけ",
+    "meaning": "beginning of next week (usu. Monday)"
+  },
+  {
+    "rank": 23850,
+    "word": "新月",
+    "reading": "しんげつ",
+    "meaning": "new moon"
+  },
+  {
+    "rank": 23861,
+    "word": "今週末",
+    "reading": "こんしゅうまつ",
+    "meaning": "this weekend"
+  },
+  {
+    "rank": 23885,
+    "word": "子供時代",
+    "reading": "こどもじだい",
+    "meaning": "childhood"
+  },
+  {
+    "rank": 23895,
+    "word": "モグラ",
+    "reading": "モグラ",
+    "meaning": "mole (Talpidae spp., esp. the small Japanese mole, Mogera..."
+  },
+  {
+    "rank": 23956,
+    "word": "年金",
+    "reading": "ねんきん",
+    "meaning": "annuity"
+  },
+  {
+    "rank": 23980,
+    "word": "ただの一度も",
+    "reading": "ただのいちども",
+    "meaning": "(not) even once"
+  },
+  {
+    "rank": 24093,
+    "word": "今朝方",
+    "reading": "けさがた",
+    "meaning": "this morning"
+  },
+  {
+    "rank": 24094,
+    "word": "久し振りに",
+    "reading": "ひさしぶりに",
+    "meaning": "after a long time"
+  },
+  {
+    "rank": 24102,
+    "word": "七分",
+    "reading": "しちぶ",
+    "meaning": "seven tenths"
+  },
+  {
+    "rank": 24140,
+    "word": "刺し貫く",
+    "reading": "さしつらぬく",
+    "meaning": "to pierce"
+  },
+  {
+    "rank": 24145,
+    "word": "人気が出る",
+    "reading": "にんきがでる",
+    "meaning": "to become popular"
+  },
+  {
+    "rank": 24161,
+    "word": "直近",
+    "reading": "ちょっきん",
+    "meaning": "latest"
+  },
+  {
+    "rank": 24206,
+    "word": "時間軸",
+    "reading": "じかんじく",
+    "meaning": "time axis"
+  },
+  {
+    "rank": 24208,
+    "word": "１２日",
+    "reading": "じゅうににち",
+    "meaning": "twelfth day of the month"
+  },
+  {
+    "rank": 24254,
+    "word": "個目",
+    "reading": "こめ",
+    "meaning": "the n-th"
+  },
+  {
+    "rank": 24276,
+    "word": "榊",
+    "reading": "さかき",
+    "meaning": "sakaki (species of evergreen sacred to Shinto, Cleyera ja..."
+  },
+  {
+    "rank": 24316,
+    "word": "指を折る",
+    "reading": "ゆびをおる",
+    "meaning": "to count on one's fingers"
+  },
+  {
+    "rank": 24336,
+    "word": "今の所",
+    "reading": "いまのところ",
+    "meaning": "at present"
+  },
+  {
+    "rank": 24337,
+    "word": "三種",
+    "reading": "さんしゅ",
+    "meaning": "three kinds"
+  },
+  {
+    "rank": 24346,
+    "word": "年数",
+    "reading": "ねんすう",
+    "meaning": "number of years"
+  },
+  {
+    "rank": 24349,
+    "word": "弐",
+    "reading": "に",
+    "meaning": "two"
+  },
+  {
+    "rank": 24406,
+    "word": "二十五日",
+    "reading": "にじゅうごにち",
+    "meaning": "twenty-fifth day of the month"
+  },
+  {
+    "rank": 24408,
+    "word": "休み明け",
+    "reading": "やすみあけ",
+    "meaning": "just after a holiday break"
+  },
+  {
+    "rank": 24431,
+    "word": "あっと言う間に",
+    "reading": "あっというまに",
+    "meaning": "just like that"
+  },
+  {
+    "rank": 24501,
+    "word": "２１日",
+    "reading": "にじゅういちにち",
+    "meaning": "twenty-first day of the month"
+  },
+  {
+    "rank": 24515,
+    "word": "今し方",
+    "reading": "いましがた",
+    "meaning": "a moment ago"
+  },
+  {
+    "rank": 24537,
+    "word": "世紀末",
+    "reading": "せいきまつ",
+    "meaning": "end of a century (esp. 19th)"
+  },
+  {
+    "rank": 24571,
+    "word": "尋",
+    "reading": "ひろ",
+    "meaning": "fathom"
+  },
+  {
+    "rank": 24621,
+    "word": "六分",
+    "reading": "ろっぷん",
+    "meaning": "six minutes"
+  },
+  {
+    "rank": 24622,
+    "word": "何割",
+    "reading": "なんわり",
+    "meaning": "what percentage"
+  },
+  {
+    "rank": 24644,
+    "word": "幾千",
+    "reading": "いくせん",
+    "meaning": "thousands"
+  },
+  {
+    "rank": 24678,
+    "word": "月末",
+    "reading": "げつまつ",
+    "meaning": "end of the month"
+  },
+  {
+    "rank": 24698,
+    "word": "一千万",
+    "reading": "いっせんまん",
+    "meaning": "10,000,000"
+  },
+  {
+    "rank": 24702,
+    "word": "微苦笑",
+    "reading": "びくしょう",
+    "meaning": "faint, ironic or bittersweet smile"
+  },
+  {
+    "rank": 24703,
+    "word": "刻限",
+    "reading": "こくげん",
+    "meaning": "time"
+  },
+  {
+    "rank": 24718,
+    "word": "一万円",
+    "reading": "いちまんえん",
+    "meaning": "10,000 yen"
+  },
+  {
+    "rank": 24740,
+    "word": "年が明ける",
+    "reading": "としがあける",
+    "meaning": "the New Year begins"
+  },
+  {
+    "rank": 24780,
+    "word": "数冊",
+    "reading": "すうさつ",
+    "meaning": "several volumes (books)"
+  },
+  {
+    "rank": 24808,
+    "word": "いい時間",
+    "reading": "いいじかん",
+    "meaning": "(getting) late"
+  },
+  {
+    "rank": 24870,
+    "word": "千秋",
+    "reading": "せんしゅう",
+    "meaning": "thousand years"
+  },
+  {
+    "rank": 24956,
+    "word": "昼頃",
+    "reading": "ひるごろ",
+    "meaning": "about noon"
+  },
+  {
+    "rank": 24966,
+    "word": "夜",
+    "reading": "よる",
+    "meaning": "evening"
+  },
+  {
+    "rank": 24967,
+    "word": "曜日",
+    "reading": "ようび",
+    "meaning": "day of the week"
+  },
+  {
+    "rank": 25003,
+    "word": "時間制限",
+    "reading": "じかんせいげん",
+    "meaning": "time limit"
+  },
+  {
+    "rank": 25030,
+    "word": "総額",
+    "reading": "そうがく",
+    "meaning": "sum total"
+  },
+  {
+    "rank": 25031,
+    "word": "天井裏",
+    "reading": "てんじょううら",
+    "meaning": "above the ceiling"
+  },
+  {
+    "rank": 25059,
+    "word": "先々",
+    "reading": "さきざき",
+    "meaning": "distant future"
+  },
+  {
+    "rank": 25062,
+    "word": "始めに",
+    "reading": "はじめに",
+    "meaning": "first"
+  },
+  {
+    "rank": 25078,
+    "word": "単",
+    "reading": "たん",
+    "meaning": "single"
+  },
+  {
+    "rank": 25084,
+    "word": "数分間",
+    "reading": "すうふんかん",
+    "meaning": "a few minutes"
+  },
+  {
+    "rank": 25148,
+    "word": "先だって",
+    "reading": "せんだって",
+    "meaning": "the other day"
+  },
+  {
+    "rank": 25157,
+    "word": "長きにわたる",
+    "reading": "ながきにわたる",
+    "meaning": "long (time)"
+  },
+  {
+    "rank": 25235,
+    "word": "前年",
+    "reading": "ぜんねん",
+    "meaning": "the preceding year"
+  },
+  {
+    "rank": 25241,
+    "word": "夜が更ける",
+    "reading": "よがふける",
+    "meaning": "evening deepens into night"
+  },
+  {
+    "rank": 25245,
+    "word": "戦時中",
+    "reading": "せんじちゅう",
+    "meaning": "during the war"
+  },
+  {
+    "rank": 25266,
+    "word": "年越し",
+    "reading": "としこし",
+    "meaning": "New Year's Eve"
+  },
+  {
+    "rank": 25269,
+    "word": "半生",
+    "reading": "はんせい",
+    "meaning": "half a lifetime"
+  },
+  {
+    "rank": 25335,
+    "word": "一も二もなく",
+    "reading": "いちもにもなく",
+    "meaning": "unhesitatingly"
+  },
+  {
+    "rank": 25336,
+    "word": "十三日",
+    "reading": "じゅうさんにち",
+    "meaning": "thirteenth day of the month"
+  },
+  {
+    "rank": 25340,
+    "word": "如月",
+    "reading": "きさらぎ",
+    "meaning": "second month of the lunar calendar"
+  },
+  {
+    "rank": 25347,
+    "word": "一個人",
+    "reading": "いっこじん",
+    "meaning": "private person"
+  },
+  {
+    "rank": 25395,
+    "word": "ただ一度",
+    "reading": "ただいちど",
+    "meaning": "only once"
+  },
+  {
+    "rank": 25413,
+    "word": "１８日",
+    "reading": "じゅうはちにち",
+    "meaning": "eighteenth day of the month"
+  },
+  {
+    "rank": 25427,
+    "word": "賞味期限",
+    "reading": "しょうみきげん",
+    "meaning": "best-before date (on food)"
+  },
+  {
+    "rank": 25463,
+    "word": "頃合",
+    "reading": "ころあい",
+    "meaning": "suitable time"
+  },
+  {
+    "rank": 25496,
+    "word": "七夕",
+    "reading": "たなばた",
+    "meaning": "Star Festival (held in July or August)"
+  },
+  {
+    "rank": 25514,
+    "word": "朝夕",
+    "reading": "あさゆう",
+    "meaning": "morning and evening"
+  },
+  {
+    "rank": 25520,
+    "word": "一つ二つ",
+    "reading": "ひとつふたつ",
+    "meaning": "one or two"
+  },
+  {
+    "rank": 25566,
+    "word": "八方",
+    "reading": "はっぽう",
+    "meaning": "all sides"
+  },
+  {
+    "rank": 25567,
+    "word": "セカンド",
+    "reading": "セカンド",
+    "meaning": "second"
+  },
+  {
+    "rank": 25590,
+    "word": "砂時計",
+    "reading": "すなどけい",
+    "meaning": "hourglass"
+  },
+  {
+    "rank": 25603,
+    "word": "一人でも多く",
+    "reading": "ひとりでもおおく",
+    "meaning": "as many (people) as possible"
+  },
+  {
+    "rank": 25625,
+    "word": "半世紀",
+    "reading": "はんせいき",
+    "meaning": "half century"
+  },
+  {
+    "rank": 25640,
+    "word": "１１日",
+    "reading": "じゅういちにち",
+    "meaning": "eleventh day of the month"
+  },
+  {
+    "rank": 25691,
+    "word": "バレンタインデー",
+    "reading": "バレンタインデー",
+    "meaning": "Valentine's Day"
+  },
+  {
+    "rank": 25699,
+    "word": "一定数",
+    "reading": "いっていすう",
+    "meaning": "fixed number"
+  },
+  {
+    "rank": 25728,
+    "word": "元年",
+    "reading": "がんねん",
+    "meaning": "first year (of an imperial era)"
+  },
+  {
+    "rank": 25774,
+    "word": "いくよ",
+    "reading": "いくよ",
+    "meaning": "number of nights"
+  },
+  {
+    "rank": 25791,
+    "word": "二度三度",
+    "reading": "にどさんど",
+    "meaning": "again and again"
+  },
+  {
+    "rank": 25808,
+    "word": "１７日",
+    "reading": "じゅうしちにち",
+    "meaning": "seventeenth day of the month"
+  },
+  {
+    "rank": 25818,
+    "word": "祝日",
+    "reading": "しゅくじつ",
+    "meaning": "national holiday"
+  },
+  {
+    "rank": 25838,
+    "word": "年来",
+    "reading": "ねんらい",
+    "meaning": "for some years"
+  },
+  {
+    "rank": 25847,
+    "word": "ゴールデンウィーク",
+    "reading": "ゴールデンウィーク",
+    "meaning": "Golden Week (early-May holiday season in Japan)"
+  },
+  {
+    "rank": 25852,
+    "word": "定年",
+    "reading": "ていねん",
+    "meaning": "retirement age"
+  },
+  {
+    "rank": 25892,
+    "word": "初夜",
+    "reading": "しょや",
+    "meaning": "first night"
+  },
+  {
+    "rank": 25941,
+    "word": "寝る時間",
+    "reading": "ねるじかん",
+    "meaning": "bedtime"
+  },
+  {
+    "rank": 26013,
+    "word": "遥か昔",
+    "reading": "はるかむかし",
+    "meaning": "long ago"
+  },
+  {
+    "rank": 26066,
+    "word": "真っ昼間",
+    "reading": "まっぴるま",
+    "meaning": "broad daylight"
+  },
+  {
+    "rank": 26070,
+    "word": "十二日",
+    "reading": "じゅうににち",
+    "meaning": "twelfth day of the month"
+  },
+  {
+    "rank": 26104,
+    "word": "２８日",
+    "reading": "にじゅうはちにち",
+    "meaning": "twenty-eighth day of the month"
+  },
+  {
+    "rank": 26153,
+    "word": "ずい",
+    "reading": "ずい",
+    "meaning": "Sui dynasty (China, 581-618)"
+  },
+  {
+    "rank": 26189,
+    "word": "最年長",
+    "reading": "さいねんちょう",
+    "meaning": "eldest"
+  },
+  {
+    "rank": 26192,
+    "word": "終日",
+    "reading": "しゅうじつ",
+    "meaning": "all day"
+  },
+  {
+    "rank": 26223,
+    "word": "中二",
+    "reading": "ちゅうに",
+    "meaning": "second year of junior high school"
+  },
+  {
+    "rank": 26248,
+    "word": "昼時",
+    "reading": "ひるどき",
+    "meaning": "noon"
+  },
+  {
+    "rank": 26292,
+    "word": "水くさい",
+    "reading": "みずくさい",
+    "meaning": "stand-offish"
+  },
+  {
+    "rank": 26311,
+    "word": "水柱",
+    "reading": "みずばしら",
+    "meaning": "column of water"
+  },
+  {
+    "rank": 26401,
+    "word": "死期",
+    "reading": "しき",
+    "meaning": "time of death"
+  },
+  {
+    "rank": 26471,
+    "word": "千歳",
+    "reading": "ちとせ",
+    "meaning": "millennium"
+  },
+  {
+    "rank": 26480,
+    "word": "精神年齢",
+    "reading": "せいしんねんれい",
+    "meaning": "mental age"
+  },
+  {
+    "rank": 26504,
+    "word": "一銭",
+    "reading": "いっせん",
+    "meaning": "one sen"
+  },
+  {
+    "rank": 26507,
+    "word": "１６日",
+    "reading": "じゅうろくにち",
+    "meaning": "sixteenth day of the month"
+  },
+  {
+    "rank": 26569,
+    "word": "タンクトップ",
+    "reading": "タンクトップ",
+    "meaning": "tank top"
+  },
+  {
+    "rank": 26661,
+    "word": "年少",
+    "reading": "ねんしょう",
+    "meaning": "young"
+  },
+  {
+    "rank": 26718,
+    "word": "メイド喫茶",
+    "reading": "メイドきっさ",
+    "meaning": "maid cafe"
+  },
+  {
+    "rank": 26722,
+    "word": "通し",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 26775,
+    "word": "時を同じくして",
+    "reading": "ときをおなじくして",
+    "meaning": "at the same time"
+  },
+  {
+    "rank": 26839,
+    "word": "昼も夜も",
+    "reading": "ひるもよるも",
+    "meaning": "day and night"
+  },
+  {
+    "rank": 26864,
+    "word": "冬場",
+    "reading": "ふゆば",
+    "meaning": "wintertime"
+  },
+  {
+    "rank": 26866,
+    "word": "今日明日",
+    "reading": "きょうあす",
+    "meaning": "today and tomorrow"
+  },
+  {
+    "rank": 26950,
+    "word": "九百",
+    "reading": "きゅうひゃく",
+    "meaning": "900"
+  },
+  {
+    "rank": 26977,
+    "word": "情愛",
+    "reading": "じょうあい",
+    "meaning": "affection"
+  }
+]

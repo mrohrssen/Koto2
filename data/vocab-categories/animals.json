@@ -1,0 +1,1652 @@
+[
+  {
+    "rank": 1351,
+    "word": "犬",
+    "reading": "いぬ",
+    "meaning": "dog (Canis (lupus) familiaris)"
+  },
+  {
+    "rank": 1394,
+    "word": "猫",
+    "reading": "ねこ",
+    "meaning": "cat (esp. the domestic cat, Felis catus)"
+  },
+  {
+    "rank": 1455,
+    "word": "馬",
+    "reading": "うま",
+    "meaning": "horse"
+  },
+  {
+    "rank": 1581,
+    "word": "鳥",
+    "reading": "とり",
+    "meaning": "bird"
+  },
+  {
+    "rank": 1751,
+    "word": "魚",
+    "reading": "さかな",
+    "meaning": "fish"
+  },
+  {
+    "rank": 1918,
+    "word": "動物",
+    "reading": "どうぶつ",
+    "meaning": "animal"
+  },
+  {
+    "rank": 2028,
+    "word": "生き物",
+    "reading": "いきもの",
+    "meaning": "living thing"
+  },
+  {
+    "rank": 2061,
+    "word": "虫",
+    "reading": "むし",
+    "meaning": "insect"
+  },
+  {
+    "rank": 2856,
+    "word": "獣",
+    "reading": "けもの",
+    "meaning": "beast"
+  },
+  {
+    "rank": 2996,
+    "word": "竜",
+    "reading": "りゅう",
+    "meaning": "dragon (esp. a Chinese dragon)"
+  },
+  {
+    "rank": 3038,
+    "word": "翼",
+    "reading": "つばさ",
+    "meaning": "wing"
+  },
+  {
+    "rank": 3103,
+    "word": "卵",
+    "reading": "たまご",
+    "meaning": "eggs"
+  },
+  {
+    "rank": 3177,
+    "word": "群れ",
+    "reading": "むれ",
+    "meaning": "group"
+  },
+  {
+    "rank": 3297,
+    "word": "獲物",
+    "reading": "えもの",
+    "meaning": "prey"
+  },
+  {
+    "rank": 3333,
+    "word": "蛇",
+    "reading": "へび",
+    "meaning": "snake"
+  },
+  {
+    "rank": 3361,
+    "word": "尻尾",
+    "reading": "しっぽ",
+    "meaning": "tail (animal)"
+  },
+  {
+    "rank": 3363,
+    "word": "狼",
+    "reading": "おおかみ",
+    "meaning": "wolf (Canis lupus)"
+  },
+  {
+    "rank": 3450,
+    "word": "羽",
+    "reading": "はね",
+    "meaning": "feather"
+  },
+  {
+    "rank": 3502,
+    "word": "毛",
+    "reading": "け",
+    "meaning": "hair"
+  },
+  {
+    "rank": 3555,
+    "word": "牙",
+    "reading": "きば",
+    "meaning": "tusk"
+  },
+  {
+    "rank": 3580,
+    "word": "飼う",
+    "reading": "かう",
+    "meaning": "to keep (a pet or other animal)"
+  },
+  {
+    "rank": 3618,
+    "word": "鳴く",
+    "reading": "なく",
+    "meaning": "to make sound (of an animal)"
+  },
+  {
+    "rank": 3708,
+    "word": "鳴き声",
+    "reading": "なきごえ",
+    "meaning": "cry (esp. animal)"
+  },
+  {
+    "rank": 4029,
+    "word": "牛",
+    "reading": "うし",
+    "meaning": "cattle (Bos taurus)"
+  },
+  {
+    "rank": 4149,
+    "word": "釣る",
+    "reading": "つる",
+    "meaning": "to fish"
+  },
+  {
+    "rank": 4302,
+    "word": "熊",
+    "reading": "くま",
+    "meaning": "bear (any mammal of family Ursidae)"
+  },
+  {
+    "rank": 4381,
+    "word": "尾",
+    "reading": "び",
+    "meaning": "Chinese \"\"Tail\"\" constellation (one of the 28 mansions)"
+  },
+  {
+    "rank": 4644,
+    "word": "鈴",
+    "reading": "すず",
+    "meaning": "bell (often globular)"
+  },
+  {
+    "rank": 4745,
+    "word": "巣",
+    "reading": "す",
+    "meaning": "nest"
+  },
+  {
+    "rank": 4793,
+    "word": "猿",
+    "reading": "さる",
+    "meaning": "monkey (esp. the Japanese macaque, Macaca fuscata)"
+  },
+  {
+    "rank": 4892,
+    "word": "駒",
+    "reading": "こま",
+    "meaning": "piece (in shogi, chess, etc.)"
+  },
+  {
+    "rank": 5051,
+    "word": "豚",
+    "reading": "ぶた",
+    "meaning": "pig (Sus scrofa domesticus)"
+  },
+  {
+    "rank": 5167,
+    "word": "吠える",
+    "reading": "ほえる",
+    "meaning": "to bark"
+  },
+  {
+    "rank": 5208,
+    "word": "虎",
+    "reading": "とら",
+    "meaning": "tiger (Panthera tigris)"
+  },
+  {
+    "rank": 5579,
+    "word": "アリ",
+    "reading": "アリ",
+    "meaning": "ant"
+  },
+  {
+    "rank": 5777,
+    "word": "小鳥",
+    "reading": "ことり",
+    "meaning": "small bird"
+  },
+  {
+    "rank": 6066,
+    "word": "鹿",
+    "reading": "しか",
+    "meaning": "deer (esp. the sika deer, Cervus nippon)"
+  },
+  {
+    "rank": 6113,
+    "word": "亡くす",
+    "reading": "なくす",
+    "meaning": "to lose (through death) (e.g. wife, child)"
+  },
+  {
+    "rank": 7674,
+    "word": "龍",
+    "reading": "りゅう",
+    "meaning": "dragon (esp. a Chinese dragon)"
+  },
+  {
+    "rank": 7688,
+    "word": "ドラゴン",
+    "reading": "ドラゴン",
+    "meaning": "dragon (as depicted in Western myths)"
+  },
+  {
+    "rank": 7700,
+    "word": "狩る",
+    "reading": "かる",
+    "meaning": "to hunt (animals)"
+  },
+  {
+    "rank": 7747,
+    "word": "ウサギ",
+    "reading": "ウサギ",
+    "meaning": "rabbit"
+  },
+  {
+    "rank": 7796,
+    "word": "ネズミ",
+    "reading": "ネズミ",
+    "meaning": "mouse"
+  },
+  {
+    "rank": 7971,
+    "word": "蝶",
+    "reading": "ちょう",
+    "meaning": "butterfly"
+  },
+  {
+    "rank": 7985,
+    "word": "狐",
+    "reading": "きつね",
+    "meaning": "fox (esp. the red fox, Vulpes vulpes)"
+  },
+  {
+    "rank": 8054,
+    "word": "鱗",
+    "reading": "うろこ",
+    "meaning": "scale (of fish, snake, etc.)"
+  },
+  {
+    "rank": 8082,
+    "word": "羊",
+    "reading": "ひつじ",
+    "meaning": "sheep (Ovis aries)"
+  },
+  {
+    "rank": 8083,
+    "word": "雑魚",
+    "reading": "ざこ",
+    "meaning": "small fish"
+  },
+  {
+    "rank": 8136,
+    "word": "銃口",
+    "reading": "じゅうこう",
+    "meaning": "gun point"
+  },
+  {
+    "rank": 8155,
+    "word": "ちくしょう",
+    "reading": "ちくしょう",
+    "meaning": "beast (i.e. any animal other than man)"
+  },
+  {
+    "rank": 8191,
+    "word": "兎",
+    "reading": "うさぎ",
+    "meaning": "rabbit"
+  },
+  {
+    "rank": 8326,
+    "word": "畜生",
+    "reading": "ちくしょう",
+    "meaning": "beast (i.e. any animal other than man)"
+  },
+  {
+    "rank": 8328,
+    "word": "獅子",
+    "reading": "しし",
+    "meaning": "lion"
+  },
+  {
+    "rank": 8393,
+    "word": "鶏",
+    "reading": "とり",
+    "meaning": "bird"
+  },
+  {
+    "rank": 8430,
+    "word": "子犬",
+    "reading": "こいぬ",
+    "meaning": "puppy"
+  },
+  {
+    "rank": 8434,
+    "word": "蜘蛛",
+    "reading": "くも",
+    "meaning": "spider"
+  },
+  {
+    "rank": 8557,
+    "word": "毛皮",
+    "reading": "けがわ",
+    "meaning": "fur"
+  },
+  {
+    "rank": 8595,
+    "word": "亀",
+    "reading": "かめ",
+    "meaning": "tortoise"
+  },
+  {
+    "rank": 8682,
+    "word": "優",
+    "reading": "ゆう",
+    "meaning": "Excellent (grade)"
+  },
+  {
+    "rank": 8807,
+    "word": "野生",
+    "reading": "やせい",
+    "meaning": "wild"
+  },
+  {
+    "rank": 8900,
+    "word": "小動物",
+    "reading": "しょうどうぶつ",
+    "meaning": "small animal"
+  },
+  {
+    "rank": 9019,
+    "word": "家畜",
+    "reading": "かちく",
+    "meaning": "domestic animals"
+  },
+  {
+    "rank": 9060,
+    "word": "タコ",
+    "reading": "タコ",
+    "meaning": "octopus"
+  },
+  {
+    "rank": 9147,
+    "word": "二十五",
+    "reading": "にじゅうご",
+    "meaning": "twenty-five"
+  },
+  {
+    "rank": 9295,
+    "word": "雄",
+    "reading": "おす",
+    "meaning": "male (animal, plant)"
+  },
+  {
+    "rank": 9321,
+    "word": "飼い主",
+    "reading": "かいぬし",
+    "meaning": "(pet) owner"
+  },
+  {
+    "rank": 9505,
+    "word": "鼠",
+    "reading": "ねずみ",
+    "meaning": "mouse"
+  },
+  {
+    "rank": 9547,
+    "word": "カラス",
+    "reading": "カラス",
+    "meaning": "crow (Corvus spp.)"
+  },
+  {
+    "rank": 9595,
+    "word": "貝",
+    "reading": "かい",
+    "meaning": "shellfish"
+  },
+  {
+    "rank": 9744,
+    "word": "メス",
+    "reading": "メス",
+    "meaning": "female (animal, plant)"
+  },
+  {
+    "rank": 10067,
+    "word": "お宝",
+    "reading": "おたから",
+    "meaning": "treasure"
+  },
+  {
+    "rank": 10151,
+    "word": "実る",
+    "reading": "みのる",
+    "meaning": "to bear fruit"
+  },
+  {
+    "rank": 10270,
+    "word": "署",
+    "reading": "しょ",
+    "meaning": "station (esp. a police station)"
+  },
+  {
+    "rank": 10391,
+    "word": "反芻",
+    "reading": "はんすう",
+    "meaning": "rumination"
+  },
+  {
+    "rank": 10675,
+    "word": "鷲",
+    "reading": "わし",
+    "meaning": "eagle (Accipitridae family)"
+  },
+  {
+    "rank": 10730,
+    "word": "昆虫",
+    "reading": "こんちゅう",
+    "meaning": "insect"
+  },
+  {
+    "rank": 10758,
+    "word": "トカゲ",
+    "reading": "トカゲ",
+    "meaning": "lizard"
+  },
+  {
+    "rank": 10879,
+    "word": "蛙",
+    "reading": "かえる",
+    "meaning": "frog"
+  },
+  {
+    "rank": 10954,
+    "word": "イカ",
+    "reading": "イカ",
+    "meaning": "cuttlefish"
+  },
+  {
+    "rank": 11188,
+    "word": "蟻",
+    "reading": "あり",
+    "meaning": "ant"
+  },
+  {
+    "rank": 11280,
+    "word": "騎馬",
+    "reading": "きば",
+    "meaning": "horse riding"
+  },
+  {
+    "rank": 11436,
+    "word": "猛獣",
+    "reading": "もうじゅう",
+    "meaning": "fierce animal"
+  },
+  {
+    "rank": 11439,
+    "word": "前足",
+    "reading": "まえあし",
+    "meaning": "forefoot"
+  },
+  {
+    "rank": 11445,
+    "word": "狩猟",
+    "reading": "しゅりょう",
+    "meaning": "hunting"
+  },
+  {
+    "rank": 11518,
+    "word": "猪",
+    "reading": "いのしし",
+    "meaning": "wild boar"
+  },
+  {
+    "rank": 11538,
+    "word": "蚊",
+    "reading": "か",
+    "meaning": "mosquito"
+  },
+  {
+    "rank": 11676,
+    "word": "蜂",
+    "reading": "はち",
+    "meaning": "bee"
+  },
+  {
+    "rank": 11701,
+    "word": "一頭",
+    "reading": "いっとう",
+    "meaning": "one large animal (horses, cattle, etc.)"
+  },
+  {
+    "rank": 11721,
+    "word": "カニ",
+    "reading": "カニ",
+    "meaning": "crab"
+  },
+  {
+    "rank": 11728,
+    "word": "コンコン",
+    "reading": "コンコン",
+    "meaning": "tap-tap"
+  },
+  {
+    "rank": 11797,
+    "word": "鳩",
+    "reading": "はと",
+    "meaning": "pigeon"
+  },
+  {
+    "rank": 11909,
+    "word": "餌食",
+    "reading": "えじき",
+    "meaning": "prey"
+  },
+  {
+    "rank": 12116,
+    "word": "使い魔",
+    "reading": "つかいま",
+    "meaning": "familiar (spirit or otherwise magical creature which aids..."
+  },
+  {
+    "rank": 12156,
+    "word": "天敵",
+    "reading": "てんてき",
+    "meaning": "natural enemy"
+  },
+  {
+    "rank": 12239,
+    "word": "怪獣",
+    "reading": "かいじゅう",
+    "meaning": "monster"
+  },
+  {
+    "rank": 12569,
+    "word": "リス",
+    "reading": "リス",
+    "meaning": "squirrel (any mammal of family Sciuridae)"
+  },
+  {
+    "rank": 12636,
+    "word": "牧場",
+    "reading": "ぼくじょう",
+    "meaning": "farm (livestock)"
+  },
+  {
+    "rank": 12773,
+    "word": "棲む",
+    "reading": "すむ",
+    "meaning": "to live (of animals)"
+  },
+  {
+    "rank": 12880,
+    "word": "毛並み",
+    "reading": "けなみ",
+    "meaning": "coat (of hair or fur)"
+  },
+  {
+    "rank": 12927,
+    "word": "象",
+    "reading": "ぞう",
+    "meaning": "elephant (Elephantidae spp.)"
+  },
+  {
+    "rank": 12978,
+    "word": "鳥肌が立つ",
+    "reading": "とりはだがたつ",
+    "meaning": "to get goosebumps"
+  },
+  {
+    "rank": 13119,
+    "word": "野獣",
+    "reading": "やじゅう",
+    "meaning": "wild beast"
+  },
+  {
+    "rank": 13155,
+    "word": "エビ",
+    "reading": "エビ",
+    "meaning": "prawn"
+  },
+  {
+    "rank": 13281,
+    "word": "雌",
+    "reading": "めす",
+    "meaning": "female (animal, plant)"
+  },
+  {
+    "rank": 13414,
+    "word": "狸",
+    "reading": "たぬき",
+    "meaning": "tanuki (Nyctereutes procyonoides)"
+  },
+  {
+    "rank": 13781,
+    "word": "蛍",
+    "reading": "ほたる",
+    "meaning": "firefly (Luciola cruciata)"
+  },
+  {
+    "rank": 14046,
+    "word": "雛",
+    "reading": "ひな",
+    "meaning": "young bird"
+  },
+  {
+    "rank": 14052,
+    "word": "にゃー",
+    "reading": "にゃー",
+    "meaning": "meow"
+  },
+  {
+    "rank": 14087,
+    "word": "黒猫",
+    "reading": "くろねこ",
+    "meaning": "black cat"
+  },
+  {
+    "rank": 14127,
+    "word": "親近感",
+    "reading": "しんきんかん",
+    "meaning": "affinity"
+  },
+  {
+    "rank": 14157,
+    "word": "大蛇",
+    "reading": "だいじゃ",
+    "meaning": "big snake"
+  },
+  {
+    "rank": 14204,
+    "word": "かえる",
+    "reading": "かえる",
+    "meaning": "frog"
+  },
+  {
+    "rank": 14205,
+    "word": "金魚",
+    "reading": "きんぎょ",
+    "meaning": "goldfish (Carassius auratus)"
+  },
+  {
+    "rank": 14374,
+    "word": "蛇のよう",
+    "reading": "へびのよう",
+    "meaning": "snakelike"
+  },
+  {
+    "rank": 14380,
+    "word": "銀河",
+    "reading": "ぎんが",
+    "meaning": "Milky Way"
+  },
+  {
+    "rank": 14402,
+    "word": "ゴリラ",
+    "reading": "ゴリラ",
+    "meaning": "gorilla (Gorilla spp., esp. western gorilla, Gorilla gori..."
+  },
+  {
+    "rank": 14495,
+    "word": "乗馬",
+    "reading": "じょうば",
+    "meaning": "horse riding"
+  },
+  {
+    "rank": 14627,
+    "word": "ゴキブリ",
+    "reading": "ゴキブリ",
+    "meaning": "cockroach"
+  },
+  {
+    "rank": 14877,
+    "word": "わんわん",
+    "reading": "わんわん",
+    "meaning": "bow-wow"
+  },
+  {
+    "rank": 14949,
+    "word": "蟲",
+    "reading": "むし",
+    "meaning": "insect"
+  },
+  {
+    "rank": 15014,
+    "word": "負け犬",
+    "reading": "まけいぬ",
+    "meaning": "loser"
+  },
+  {
+    "rank": 15145,
+    "word": "馬乗り",
+    "reading": "うまのり",
+    "meaning": "horseback riding"
+  },
+  {
+    "rank": 15168,
+    "word": "鶏肉",
+    "reading": "とりにく",
+    "meaning": "chicken meat"
+  },
+  {
+    "rank": 15220,
+    "word": "からす",
+    "reading": "からす",
+    "meaning": "crow (Corvus spp.)"
+  },
+  {
+    "rank": 15320,
+    "word": "くんくん",
+    "reading": "くんくん",
+    "meaning": "sniff"
+  },
+  {
+    "rank": 15394,
+    "word": "烏",
+    "reading": "からす",
+    "meaning": "crow (Corvus spp.)"
+  },
+  {
+    "rank": 15458,
+    "word": "白鳥",
+    "reading": "はくちょう",
+    "meaning": "swan (Cygnus spp.)"
+  },
+  {
+    "rank": 15646,
+    "word": "つかつか",
+    "reading": "つかつか",
+    "meaning": "walking briskly"
+  },
+  {
+    "rank": 15672,
+    "word": "恐竜",
+    "reading": "きょうりゅう",
+    "meaning": "dinosaur"
+  },
+  {
+    "rank": 15722,
+    "word": "らば",
+    "reading": "らば",
+    "meaning": "mule"
+  },
+  {
+    "rank": 15743,
+    "word": "うま",
+    "reading": "うま",
+    "meaning": "the Horse (seventh sign of the Chinese zodiac)"
+  },
+  {
+    "rank": 15758,
+    "word": "山羊",
+    "reading": "やぎ",
+    "meaning": "goat"
+  },
+  {
+    "rank": 15816,
+    "word": "大の字",
+    "reading": "だいのじ",
+    "meaning": "shape of the \"\"dai\"\" kanji (esp. person with arms and leg..."
+  },
+  {
+    "rank": 15882,
+    "word": "尻尾を振る",
+    "reading": "しっぽをふる",
+    "meaning": "to wag one's tail"
+  },
+  {
+    "rank": 16095,
+    "word": "雀",
+    "reading": "すずめ",
+    "meaning": "tree sparrow (Passer montanus)"
+  },
+  {
+    "rank": 16294,
+    "word": "心配事",
+    "reading": "しんぱいごと",
+    "meaning": "worries"
+  },
+  {
+    "rank": 16337,
+    "word": "コウモリ",
+    "reading": "コウモリ",
+    "meaning": "bat (Chiroptera spp.)"
+  },
+  {
+    "rank": 16392,
+    "word": "羽毛",
+    "reading": "うもう",
+    "meaning": "feathers"
+  },
+  {
+    "rank": 16433,
+    "word": "牛肉",
+    "reading": "ぎゅうにく",
+    "meaning": "beef"
+  },
+  {
+    "rank": 16517,
+    "word": "チキン",
+    "reading": "チキン",
+    "meaning": "chicken"
+  },
+  {
+    "rank": 16524,
+    "word": "繭",
+    "reading": "まゆ",
+    "meaning": "cocoon"
+  },
+  {
+    "rank": 16561,
+    "word": "肉食獣",
+    "reading": "にくしょくじゅう",
+    "meaning": "carnivore"
+  },
+  {
+    "rank": 16570,
+    "word": "羽音",
+    "reading": "はおと",
+    "meaning": "flapping sound (of wings)"
+  },
+  {
+    "rank": 16674,
+    "word": "捕食",
+    "reading": "ほしょく",
+    "meaning": "predation"
+  },
+  {
+    "rank": 16677,
+    "word": "豹",
+    "reading": "ひょう",
+    "meaning": "leopard (Panthera pardus)"
+  },
+  {
+    "rank": 16796,
+    "word": "焼き肉",
+    "reading": "やきにく",
+    "meaning": "yakiniku"
+  },
+  {
+    "rank": 16842,
+    "word": "パンダ",
+    "reading": "パンダ",
+    "meaning": "panda"
+  },
+  {
+    "rank": 16915,
+    "word": "蝙蝠",
+    "reading": "こうもり",
+    "meaning": "bat (Chiroptera spp.)"
+  },
+  {
+    "rank": 16938,
+    "word": "牙を剥く",
+    "reading": "きばをむく",
+    "meaning": "to bare one's fangs"
+  },
+  {
+    "rank": 17152,
+    "word": "何の変哲もない",
+    "reading": "なんのへんてつもない",
+    "meaning": "completely ordinary"
+  },
+  {
+    "rank": 17156,
+    "word": "野良猫",
+    "reading": "のらねこ",
+    "meaning": "stray cat"
+  },
+  {
+    "rank": 17205,
+    "word": "ワイバーン",
+    "reading": "ワイバーン",
+    "meaning": "wyvern (two-legged dragon)"
+  },
+  {
+    "rank": 17282,
+    "word": "蜘蛛の巣",
+    "reading": "くものす",
+    "meaning": "spiderweb"
+  },
+  {
+    "rank": 17340,
+    "word": "ミミズ",
+    "reading": "ミミズ",
+    "meaning": "earthworm"
+  },
+  {
+    "rank": 17365,
+    "word": "鳥肌",
+    "reading": "とりはだ",
+    "meaning": "gooseflesh"
+  },
+  {
+    "rank": 17428,
+    "word": "野良犬",
+    "reading": "のらいぬ",
+    "meaning": "stray dog"
+  },
+  {
+    "rank": 17439,
+    "word": "つがう",
+    "reading": "つがう",
+    "meaning": "to pair with"
+  },
+  {
+    "rank": 17619,
+    "word": "虫けら",
+    "reading": "むしけら",
+    "meaning": "worm"
+  },
+  {
+    "rank": 17662,
+    "word": "マウス",
+    "reading": "マウス",
+    "meaning": "mouse (esp. laboratory)"
+  },
+  {
+    "rank": 17741,
+    "word": "ペンギン",
+    "reading": "ペンギン",
+    "meaning": "penguin"
+  },
+  {
+    "rank": 17786,
+    "word": "イルカ",
+    "reading": "イルカ",
+    "meaning": "dolphin (or other small toothed whales, such as porpoises..."
+  },
+  {
+    "rank": 17840,
+    "word": "蹄",
+    "reading": "ひづめ",
+    "meaning": "hoof"
+  },
+  {
+    "rank": 17852,
+    "word": "翡翠",
+    "reading": "かわせみ",
+    "meaning": "kingfisher (esp. the common kingfisher, Alcedo atthis)"
+  },
+  {
+    "rank": 17921,
+    "word": "サメ",
+    "reading": "サメ",
+    "meaning": "shark"
+  },
+  {
+    "rank": 18219,
+    "word": "豚肉",
+    "reading": "ぶたにく",
+    "meaning": "pork"
+  },
+  {
+    "rank": 18230,
+    "word": "鯨",
+    "reading": "くじら",
+    "meaning": "whale (Cetacea spp.)"
+  },
+  {
+    "rank": 18281,
+    "word": "体長",
+    "reading": "たいちょう",
+    "meaning": "length (of an animal)"
+  },
+  {
+    "rank": 18469,
+    "word": "マグロ",
+    "reading": "マグロ",
+    "meaning": "tuna (edible fish, Thunnus spp.)"
+  },
+  {
+    "rank": 18482,
+    "word": "鯉",
+    "reading": "こい",
+    "meaning": "common carp (Cyprinus carpio)"
+  },
+  {
+    "rank": 18552,
+    "word": "蜂の巣",
+    "reading": "はちのす",
+    "meaning": "beehive"
+  },
+  {
+    "rank": 18806,
+    "word": "ニャー",
+    "reading": "ニャー",
+    "meaning": "meow"
+  },
+  {
+    "rank": 18841,
+    "word": "ワニ",
+    "reading": "ワニ",
+    "meaning": "crocodile"
+  },
+  {
+    "rank": 18938,
+    "word": "芋虫",
+    "reading": "いもむし",
+    "meaning": "hornworm (caterpillar of a hawk moth)"
+  },
+  {
+    "rank": 18958,
+    "word": "番犬",
+    "reading": "ばんけん",
+    "meaning": "watchdog"
+  },
+  {
+    "rank": 19168,
+    "word": "爬虫類",
+    "reading": "はちゅうるい",
+    "meaning": "reptiles"
+  },
+  {
+    "rank": 19254,
+    "word": "羽虫",
+    "reading": "はむし",
+    "meaning": "biting louse (any louse of order Mallophaga)"
+  },
+  {
+    "rank": 19314,
+    "word": "クラゲ",
+    "reading": "クラゲ",
+    "meaning": "jellyfish"
+  },
+  {
+    "rank": 19322,
+    "word": "野生動物",
+    "reading": "やせいどうぶつ",
+    "meaning": "wild animal"
+  },
+  {
+    "rank": 19368,
+    "word": "鴉",
+    "reading": "からす",
+    "meaning": "crow (Corvus spp.)"
+  },
+  {
+    "rank": 19435,
+    "word": "蠅",
+    "reading": "はえ",
+    "meaning": "fly (any insect of infraorder Muscomorpha)"
+  },
+  {
+    "rank": 19483,
+    "word": "数匹",
+    "reading": "すうひき",
+    "meaning": "several animals"
+  },
+  {
+    "rank": 19541,
+    "word": "鮭",
+    "reading": "さけ",
+    "meaning": "salmon (Salmonidae spp.)"
+  },
+  {
+    "rank": 19731,
+    "word": "蝉",
+    "reading": "せみ",
+    "meaning": "cicada"
+  },
+  {
+    "rank": 19778,
+    "word": "甲羅",
+    "reading": "こうら",
+    "meaning": "shell (of crab, tortoise, etc.)"
+  },
+  {
+    "rank": 19805,
+    "word": "嘴",
+    "reading": "くちばし",
+    "meaning": "beak"
+  },
+  {
+    "rank": 19867,
+    "word": "舐め取る",
+    "reading": "なめとる",
+    "meaning": "to lick off"
+  },
+  {
+    "rank": 19869,
+    "word": "海老",
+    "reading": "えび",
+    "meaning": "prawn"
+  },
+  {
+    "rank": 19976,
+    "word": "飼い犬",
+    "reading": "かいいぬ",
+    "meaning": "pet dog"
+  },
+  {
+    "rank": 20059,
+    "word": "蜥蜴",
+    "reading": "とかげ",
+    "meaning": "lizard"
+  },
+  {
+    "rank": 20165,
+    "word": "鉤爪",
+    "reading": "かぎづめ",
+    "meaning": "claw"
+  },
+  {
+    "rank": 20323,
+    "word": "人狼",
+    "reading": "じんろう",
+    "meaning": "werewolf"
+  },
+  {
+    "rank": 20381,
+    "word": "害虫",
+    "reading": "がいちゅう",
+    "meaning": "harmful insect"
+  },
+  {
+    "rank": 20476,
+    "word": "苦虫",
+    "reading": "にがむし",
+    "meaning": "bitter-tasting bug"
+  },
+  {
+    "rank": 20496,
+    "word": "白馬",
+    "reading": "はくば",
+    "meaning": "white horse"
+  },
+  {
+    "rank": 20501,
+    "word": "焼き鳥",
+    "reading": "やきとり",
+    "meaning": "yakitori"
+  },
+  {
+    "rank": 20587,
+    "word": "とど",
+    "reading": "とど",
+    "meaning": "adult striped mullet"
+  },
+  {
+    "rank": 20607,
+    "word": "ついばむ",
+    "reading": "ついばむ",
+    "meaning": "to pick at"
+  },
+  {
+    "rank": 20641,
+    "word": "狩",
+    "reading": "かり",
+    "meaning": "hunting"
+  },
+  {
+    "rank": 20846,
+    "word": "鳳",
+    "reading": "ほう",
+    "meaning": "feng (male Chinese firebird)"
+  },
+  {
+    "rank": 20968,
+    "word": "大満足",
+    "reading": "だいまんぞく",
+    "meaning": "completely satisfied"
+  },
+  {
+    "rank": 20970,
+    "word": "飛竜",
+    "reading": "ひりゅう",
+    "meaning": "flying dragon"
+  },
+  {
+    "rank": 21099,
+    "word": "燕",
+    "reading": "つばめ",
+    "meaning": "swallow (bird of the Hirundinidae family)"
+  },
+  {
+    "rank": 21157,
+    "word": "遠吠え",
+    "reading": "とおぼえ",
+    "meaning": "(distant) howling"
+  },
+  {
+    "rank": 21288,
+    "word": "裏山",
+    "reading": "うらやま",
+    "meaning": "mountain (or hill) behind a house, village, etc."
+  },
+  {
+    "rank": 21392,
+    "word": "前脚",
+    "reading": "まえあし",
+    "meaning": "forefoot"
+  },
+  {
+    "rank": 21393,
+    "word": "蛾",
+    "reading": "が",
+    "meaning": "moth"
+  },
+  {
+    "rank": 21466,
+    "word": "汚",
+    "reading": "よごれ",
+    "meaning": "oceanic whitetip shark (Carcharhinus longimanus)"
+  },
+  {
+    "rank": 21624,
+    "word": "馬の骨",
+    "reading": "うまのほね",
+    "meaning": "person of doubtful origin"
+  },
+  {
+    "rank": 21744,
+    "word": "尾",
+    "reading": "び",
+    "meaning": "Chinese \"\"Tail\"\" constellation (one of the 28 mansions)"
+  },
+  {
+    "rank": 21855,
+    "word": "神獣",
+    "reading": "しんじゅう",
+    "meaning": "divine beast"
+  },
+  {
+    "rank": 21926,
+    "word": "申",
+    "reading": "さる",
+    "meaning": "the Monkey (ninth sign of the Chinese zodiac)"
+  },
+  {
+    "rank": 21950,
+    "word": "啼く",
+    "reading": "なく",
+    "meaning": "to make sound (of an animal)"
+  },
+  {
+    "rank": 21976,
+    "word": "鮫",
+    "reading": "さめ",
+    "meaning": "shark"
+  },
+  {
+    "rank": 21989,
+    "word": "後ろ足",
+    "reading": "うしろあし",
+    "meaning": "hind foot"
+  },
+  {
+    "rank": 22069,
+    "word": "ひょう",
+    "reading": "ひょう",
+    "meaning": "Lagenaria siceraria var. gourda (variety of bottle gourd)"
+  },
+  {
+    "rank": 22163,
+    "word": "蝶々",
+    "reading": "ちょうちょう",
+    "meaning": "butterfly"
+  },
+  {
+    "rank": 22226,
+    "word": "競馬",
+    "reading": "けいば",
+    "meaning": "horse racing"
+  },
+  {
+    "rank": 22276,
+    "word": "びし",
+    "reading": "びし",
+    "meaning": "uropod"
+  },
+  {
+    "rank": 22330,
+    "word": "ワンワン",
+    "reading": "ワンワン",
+    "meaning": "bow-wow"
+  },
+  {
+    "rank": 22378,
+    "word": "早馬",
+    "reading": "はやうま",
+    "meaning": "fast horse"
+  },
+  {
+    "rank": 22386,
+    "word": "アヒル",
+    "reading": "アヒル",
+    "meaning": "domestic duck"
+  },
+  {
+    "rank": 22512,
+    "word": "寄生虫",
+    "reading": "きせいちゅう",
+    "meaning": "parasite"
+  },
+  {
+    "rank": 22647,
+    "word": "仔",
+    "reading": "こ",
+    "meaning": "young (animal)"
+  },
+  {
+    "rank": 23136,
+    "word": "食い殺す",
+    "reading": "くいころす",
+    "meaning": "to devour"
+  },
+  {
+    "rank": 23280,
+    "word": "鯛",
+    "reading": "たい",
+    "meaning": "sea bream (Sparidae)"
+  },
+  {
+    "rank": 23745,
+    "word": "巣食う",
+    "reading": "すくう",
+    "meaning": "to build (a nest)"
+  },
+  {
+    "rank": 23753,
+    "word": "獣道",
+    "reading": "けものみち",
+    "meaning": "animal trail"
+  },
+  {
+    "rank": 23754,
+    "word": "シメ",
+    "reading": "シメ",
+    "meaning": "hawfinch (Coccothraustes coccothraustes)"
+  },
+  {
+    "rank": 23769,
+    "word": "狗",
+    "reading": "いぬ",
+    "meaning": "dog (Canis (lupus) familiaris)"
+  },
+  {
+    "rank": 23798,
+    "word": "幻獣",
+    "reading": "げんじゅう",
+    "meaning": "cryptid (unidentified mysterious creature)"
+  },
+  {
+    "rank": 23862,
+    "word": "梟",
+    "reading": "ふくろう",
+    "meaning": "owl (esp. the Ural owl, Strix uralensis)"
+  },
+  {
+    "rank": 23894,
+    "word": "名だたる",
+    "reading": "なだたる",
+    "meaning": "famous"
+  },
+  {
+    "rank": 23922,
+    "word": "餌付け",
+    "reading": "えづけ",
+    "meaning": "artificial feeding"
+  },
+  {
+    "rank": 23974,
+    "word": "狂犬",
+    "reading": "きょうけん",
+    "meaning": "mad dog"
+  },
+  {
+    "rank": 23985,
+    "word": "黒竜",
+    "reading": "こくりゅう",
+    "meaning": "black dragon"
+  },
+  {
+    "rank": 24025,
+    "word": "あぶ",
+    "reading": "あぶ",
+    "meaning": "horsefly"
+  },
+  {
+    "rank": 24107,
+    "word": "毒蛇",
+    "reading": "どくじゃ",
+    "meaning": "poisonous snake"
+  },
+  {
+    "rank": 24229,
+    "word": "野犬",
+    "reading": "やけん",
+    "meaning": "stray dog"
+  },
+  {
+    "rank": 24308,
+    "word": "ハムスター",
+    "reading": "ハムスター",
+    "meaning": "hamster"
+  },
+  {
+    "rank": 24376,
+    "word": "トンボ",
+    "reading": "トンボ",
+    "meaning": "dragonfly"
+  },
+  {
+    "rank": 24380,
+    "word": "不死鳥",
+    "reading": "ふしちょう",
+    "meaning": "phoenix"
+  },
+  {
+    "rank": 24413,
+    "word": "鳥籠",
+    "reading": "とりかご",
+    "meaning": "birdcage"
+  },
+  {
+    "rank": 24603,
+    "word": "無法者",
+    "reading": "むほうしゃ",
+    "meaning": "outlaw"
+  },
+  {
+    "rank": 24625,
+    "word": "交尾",
+    "reading": "こうび",
+    "meaning": "copulation (among animals)"
+  },
+  {
+    "rank": 24720,
+    "word": "バッタ",
+    "reading": "バッタ",
+    "meaning": "grasshopper"
+  },
+  {
+    "rank": 24765,
+    "word": "小魚",
+    "reading": "こざかな",
+    "meaning": "small fish"
+  },
+  {
+    "rank": 24791,
+    "word": "殆どない",
+    "reading": "ほとんどない",
+    "meaning": "hardly any"
+  },
+  {
+    "rank": 24809,
+    "word": "飛鳥",
+    "reading": "ひちょう",
+    "meaning": "flying bird"
+  },
+  {
+    "rank": 24824,
+    "word": "苦虫を噛み潰したよう",
+    "reading": "にがむしをかみつぶしたよう",
+    "meaning": "sour (expression)"
+  },
+  {
+    "rank": 24944,
+    "word": "鳳凰",
+    "reading": "ほうおう",
+    "meaning": "Chinese firebird"
+  },
+  {
+    "rank": 25028,
+    "word": "焼き魚",
+    "reading": "やきざかな",
+    "meaning": "grilled fish"
+  },
+  {
+    "rank": 25053,
+    "word": "サソリ",
+    "reading": "サソリ",
+    "meaning": "scorpion (Scorpiones spp.)"
+  },
+  {
+    "rank": 25060,
+    "word": "純血",
+    "reading": "じゅんけつ",
+    "meaning": "pure-bred (usu. animal)"
+  },
+  {
+    "rank": 25095,
+    "word": "牙を剝く",
+    "reading": "きばをむく",
+    "meaning": "to bare one's fangs"
+  },
+  {
+    "rank": 25155,
+    "word": "ムカデ",
+    "reading": "ムカデ",
+    "meaning": "centipede"
+  },
+  {
+    "rank": 25207,
+    "word": "ユニコーン",
+    "reading": "ユニコーン",
+    "meaning": "unicorn"
+  },
+  {
+    "rank": 25338,
+    "word": "ウナギ",
+    "reading": "ウナギ",
+    "meaning": "eel (esp. the Japanese eel, Anguilla japonica)"
+  },
+  {
+    "rank": 25409,
+    "word": "髯",
+    "reading": "ひげ",
+    "meaning": "moustache"
+  },
+  {
+    "rank": 25436,
+    "word": "ナメクジ",
+    "reading": "ナメクジ",
+    "meaning": "slug"
+  },
+  {
+    "rank": 25504,
+    "word": "飛び",
+    "reading": "とび",
+    "meaning": "flying"
+  },
+  {
+    "rank": 25517,
+    "word": "カブトムシ",
+    "reading": "カブトムシ",
+    "meaning": "rhinoceros beetle (esp. the Japanese rhinoceros beetle, T..."
+  },
+  {
+    "rank": 25634,
+    "word": "落馬",
+    "reading": "らくば",
+    "meaning": "falling from a horse"
+  },
+  {
+    "rank": 25674,
+    "word": "腹の虫",
+    "reading": "はらのむし",
+    "meaning": "roundworm (Ascaris lumbricoides)"
+  },
+  {
+    "rank": 25770,
+    "word": "甲殻",
+    "reading": "こうかく",
+    "meaning": "carapace"
+  },
+  {
+    "rank": 25909,
+    "word": "ガー",
+    "reading": "ガー",
+    "meaning": "gar (any fish of family Lepisosteidae)"
+  },
+  {
+    "rank": 25965,
+    "word": "狩りに行く",
+    "reading": "かりにいく",
+    "meaning": "to go hunting"
+  },
+  {
+    "rank": 25969,
+    "word": "ニャン",
+    "reading": "ニャン",
+    "meaning": "meow"
+  },
+  {
+    "rank": 26025,
+    "word": "愛馬",
+    "reading": "あいば",
+    "meaning": "favourite horse"
+  },
+  {
+    "rank": 26163,
+    "word": "捕食者",
+    "reading": "ほしょくしゃ",
+    "meaning": "predator"
+  },
+  {
+    "rank": 26232,
+    "word": "仕方なしに",
+    "reading": "しかたなしに",
+    "meaning": "helplessly"
+  },
+  {
+    "rank": 26336,
+    "word": "一間",
+    "reading": "いっけん",
+    "meaning": "one ken"
+  },
+  {
+    "rank": 26407,
+    "word": "怪鳥",
+    "reading": "かいちょう",
+    "meaning": "mysterious bird"
+  },
+  {
+    "rank": 26729,
+    "word": "きゃっきゃ",
+    "reading": "きゃっきゃ",
+    "meaning": "chitter"
+  },
+  {
+    "rank": 26851,
+    "word": "天馬",
+    "reading": "てんば",
+    "meaning": "flying horse"
+  },
+  {
+    "rank": 26948,
+    "word": "喚起",
+    "reading": "かんき",
+    "meaning": "arousal"
+  }
+]

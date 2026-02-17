@@ -1,0 +1,9902 @@
+[
+  {
+    "rank": 119,
+    "word": "こう",
+    "reading": "こう",
+    "meaning": "in this way"
+  },
+  {
+    "rank": 165,
+    "word": "ことになる",
+    "reading": "ことになる",
+    "meaning": "to have been decided (so) that"
+  },
+  {
+    "rank": 188,
+    "word": "信じる",
+    "reading": "しんじる",
+    "meaning": "to believe"
+  },
+  {
+    "rank": 208,
+    "word": "初めて",
+    "reading": "はじめて",
+    "meaning": "for the first time"
+  },
+  {
+    "rank": 225,
+    "word": "いけない",
+    "reading": "いけない",
+    "meaning": "wrong"
+  },
+  {
+    "rank": 275,
+    "word": "夢",
+    "reading": "ゆめ",
+    "meaning": "dream"
+  },
+  {
+    "rank": 283,
+    "word": "一度",
+    "reading": "いちど",
+    "meaning": "once"
+  },
+  {
+    "rank": 362,
+    "word": "調べる",
+    "reading": "しらべる",
+    "meaning": "to examine"
+  },
+  {
+    "rank": 380,
+    "word": "やすい",
+    "reading": "やすい",
+    "meaning": "easy"
+  },
+  {
+    "rank": 598,
+    "word": "母",
+    "reading": "はは",
+    "meaning": "mother"
+  },
+  {
+    "rank": 754,
+    "word": "内容",
+    "reading": "ないよう",
+    "meaning": "contents"
+  },
+  {
+    "rank": 786,
+    "word": "本人",
+    "reading": "ほんにん",
+    "meaning": "the person in question"
+  },
+  {
+    "rank": 791,
+    "word": "事情",
+    "reading": "じじょう",
+    "meaning": "circumstances"
+  },
+  {
+    "rank": 820,
+    "word": "回る",
+    "reading": "まわる",
+    "meaning": "to turn"
+  },
+  {
+    "rank": 843,
+    "word": "連れる",
+    "reading": "つれる",
+    "meaning": "to take (someone) with one"
+  },
+  {
+    "rank": 902,
+    "word": "写真",
+    "reading": "しゃしん",
+    "meaning": "photograph"
+  },
+  {
+    "rank": 1010,
+    "word": "重要",
+    "reading": "じゅうよう",
+    "meaning": "important"
+  },
+  {
+    "rank": 1017,
+    "word": "速い",
+    "reading": "はやい",
+    "meaning": "fast"
+  },
+  {
+    "rank": 1029,
+    "word": "確実",
+    "reading": "かくじつ",
+    "meaning": "certain"
+  },
+  {
+    "rank": 1030,
+    "word": "立派",
+    "reading": "りっぱ",
+    "meaning": "splendid"
+  },
+  {
+    "rank": 1084,
+    "word": "寒い",
+    "reading": "さむい",
+    "meaning": "cold (e.g. weather)"
+  },
+  {
+    "rank": 1098,
+    "word": "古い",
+    "reading": "ふるい",
+    "meaning": "old"
+  },
+  {
+    "rank": 1130,
+    "word": "有名",
+    "reading": "ゆうめい",
+    "meaning": "famous"
+  },
+  {
+    "rank": 1134,
+    "word": "正確",
+    "reading": "せいかく",
+    "meaning": "accurate"
+  },
+  {
+    "rank": 1147,
+    "word": "狭い",
+    "reading": "せまい",
+    "meaning": "narrow"
+  },
+  {
+    "rank": 1161,
+    "word": "複雑",
+    "reading": "ふくざつ",
+    "meaning": "complex"
+  },
+  {
+    "rank": 1183,
+    "word": "最大",
+    "reading": "さいだい",
+    "meaning": "biggest"
+  },
+  {
+    "rank": 1233,
+    "word": "可愛い",
+    "reading": "かわいい",
+    "meaning": "cute"
+  },
+  {
+    "rank": 1298,
+    "word": "綺麗",
+    "reading": "きれい",
+    "meaning": "pretty"
+  },
+  {
+    "rank": 1311,
+    "word": "巨大",
+    "reading": "きょだい",
+    "meaning": "huge"
+  },
+  {
+    "rank": 1340,
+    "word": "マジ",
+    "reading": "マジ",
+    "meaning": "serious"
+  },
+  {
+    "rank": 1358,
+    "word": "真剣",
+    "reading": "しんけん",
+    "meaning": "serious"
+  },
+  {
+    "rank": 1363,
+    "word": "鋭い",
+    "reading": "するどい",
+    "meaning": "sharp (blade)"
+  },
+  {
+    "rank": 1364,
+    "word": "まずい",
+    "reading": "まずい",
+    "meaning": "bad (taste)"
+  },
+  {
+    "rank": 1392,
+    "word": "適当",
+    "reading": "てきとう",
+    "meaning": "suitable"
+  },
+  {
+    "rank": 1402,
+    "word": "真面目",
+    "reading": "まじめ",
+    "meaning": "serious"
+  },
+  {
+    "rank": 1414,
+    "word": "細い",
+    "reading": "ほそい",
+    "meaning": "thin"
+  },
+  {
+    "rank": 1447,
+    "word": "怪しい",
+    "reading": "あやしい",
+    "meaning": "suspicious"
+  },
+  {
+    "rank": 1496,
+    "word": "見事",
+    "reading": "みごと",
+    "meaning": "splendid"
+  },
+  {
+    "rank": 1500,
+    "word": "苦手",
+    "reading": "にがて",
+    "meaning": "poor (at)"
+  },
+  {
+    "rank": 1505,
+    "word": "単純",
+    "reading": "たんじゅん",
+    "meaning": "simple"
+  },
+  {
+    "rank": 1517,
+    "word": "完璧",
+    "reading": "かんぺき",
+    "meaning": "perfect"
+  },
+  {
+    "rank": 1518,
+    "word": "とんでもない",
+    "reading": "とんでもない",
+    "meaning": "unthinkable"
+  },
+  {
+    "rank": 1548,
+    "word": "穏やか",
+    "reading": "おだやか",
+    "meaning": "calm"
+  },
+  {
+    "rank": 1549,
+    "word": "異常",
+    "reading": "いじょう",
+    "meaning": "strangeness"
+  },
+  {
+    "rank": 1561,
+    "word": "柔らかい",
+    "reading": "やわらかい",
+    "meaning": "soft"
+  },
+  {
+    "rank": 1598,
+    "word": "辛い",
+    "reading": "つらい",
+    "meaning": "painful"
+  },
+  {
+    "rank": 1612,
+    "word": "大した",
+    "reading": "たいした",
+    "meaning": "considerable"
+  },
+  {
+    "rank": 1619,
+    "word": "最悪",
+    "reading": "さいあく",
+    "meaning": "worst"
+  },
+  {
+    "rank": 1627,
+    "word": "同様",
+    "reading": "どうよう",
+    "meaning": "same"
+  },
+  {
+    "rank": 1637,
+    "word": "素晴らしい",
+    "reading": "すばらしい",
+    "meaning": "wonderful"
+  },
+  {
+    "rank": 1700,
+    "word": "微妙",
+    "reading": "びみょう",
+    "meaning": "subtle"
+  },
+  {
+    "rank": 1720,
+    "word": "素敵",
+    "reading": "すてき",
+    "meaning": "lovely"
+  },
+  {
+    "rank": 1726,
+    "word": "硬い",
+    "reading": "かたい",
+    "meaning": "hard"
+  },
+  {
+    "rank": 1768,
+    "word": "幼い",
+    "reading": "おさない",
+    "meaning": "very young"
+  },
+  {
+    "rank": 1784,
+    "word": "偉い",
+    "reading": "えらい",
+    "meaning": "great"
+  },
+  {
+    "rank": 1791,
+    "word": "優秀",
+    "reading": "ゆうしゅう",
+    "meaning": "superior"
+  },
+  {
+    "rank": 1799,
+    "word": "様々",
+    "reading": "さまざま",
+    "meaning": "various"
+  },
+  {
+    "rank": 1831,
+    "word": "固い",
+    "reading": "かたい",
+    "meaning": "hard"
+  },
+  {
+    "rank": 1844,
+    "word": "温かい",
+    "reading": "あたたかい",
+    "meaning": "warm"
+  },
+  {
+    "rank": 1852,
+    "word": "すっごい",
+    "reading": "すっごい",
+    "meaning": "terrible"
+  },
+  {
+    "rank": 1866,
+    "word": "強引",
+    "reading": "ごういん",
+    "meaning": "overbearing"
+  },
+  {
+    "rank": 1889,
+    "word": "丁寧",
+    "reading": "ていねい",
+    "meaning": "polite"
+  },
+  {
+    "rank": 1892,
+    "word": "きつい",
+    "reading": "きつい",
+    "meaning": "tough"
+  },
+  {
+    "rank": 1896,
+    "word": "下手",
+    "reading": "へた",
+    "meaning": "unskillful"
+  },
+  {
+    "rank": 1923,
+    "word": "特殊",
+    "reading": "とくしゅ",
+    "meaning": "special"
+  },
+  {
+    "rank": 1938,
+    "word": "派手",
+    "reading": "はで",
+    "meaning": "showy"
+  },
+  {
+    "rank": 1967,
+    "word": "奇妙",
+    "reading": "きみょう",
+    "meaning": "strange"
+  },
+  {
+    "rank": 1978,
+    "word": "慎重",
+    "reading": "しんちょう",
+    "meaning": "careful"
+  },
+  {
+    "rank": 2014,
+    "word": "暑い",
+    "reading": "あつい",
+    "meaning": "hot"
+  },
+  {
+    "rank": 2015,
+    "word": "安い",
+    "reading": "やすい",
+    "meaning": "cheap"
+  },
+  {
+    "rank": 2031,
+    "word": "堂々",
+    "reading": "どうどう",
+    "meaning": "magnificent"
+  },
+  {
+    "rank": 2042,
+    "word": "濃い",
+    "reading": "こい",
+    "meaning": "deep (colour)"
+  },
+  {
+    "rank": 2052,
+    "word": "おかしな",
+    "reading": "おかしな",
+    "meaning": "ridiculous"
+  },
+  {
+    "rank": 2055,
+    "word": "細かい",
+    "reading": "こまかい",
+    "meaning": "small"
+  },
+  {
+    "rank": 2067,
+    "word": "太い",
+    "reading": "ふとい",
+    "meaning": "fat"
+  },
+  {
+    "rank": 2075,
+    "word": "最低",
+    "reading": "さいてい",
+    "meaning": "least"
+  },
+  {
+    "rank": 2081,
+    "word": "生",
+    "reading": "なま",
+    "meaning": "raw"
+  },
+  {
+    "rank": 2088,
+    "word": "圧倒的",
+    "reading": "あっとうてき",
+    "meaning": "overwhelming"
+  },
+  {
+    "rank": 2100,
+    "word": "素早い",
+    "reading": "すばやい",
+    "meaning": "quick"
+  },
+  {
+    "rank": 2162,
+    "word": "親しい",
+    "reading": "したしい",
+    "meaning": "close (e.g. friend)"
+  },
+  {
+    "rank": 2209,
+    "word": "つながる",
+    "reading": "つながる",
+    "meaning": "to be tied together"
+  },
+  {
+    "rank": 2260,
+    "word": "荒い",
+    "reading": "あらい",
+    "meaning": "rough"
+  },
+  {
+    "rank": 2267,
+    "word": "さっぱり",
+    "reading": "さっぱり",
+    "meaning": "feeling refreshed"
+  },
+  {
+    "rank": 2295,
+    "word": "貴重",
+    "reading": "きちょう",
+    "meaning": "precious"
+  },
+  {
+    "rank": 2299,
+    "word": "つまらない",
+    "reading": "つまらない",
+    "meaning": "dull"
+  },
+  {
+    "rank": 2302,
+    "word": "力強い",
+    "reading": "ちからづよい",
+    "meaning": "powerful"
+  },
+  {
+    "rank": 2356,
+    "word": "上手",
+    "reading": "うわて",
+    "meaning": "upper part"
+  },
+  {
+    "rank": 2362,
+    "word": "おとなしい",
+    "reading": "おとなしい",
+    "meaning": "obedient"
+  },
+  {
+    "rank": 2363,
+    "word": "浅い",
+    "reading": "あさい",
+    "meaning": "shallow"
+  },
+  {
+    "rank": 2364,
+    "word": "眠い",
+    "reading": "ねむい",
+    "meaning": "sleepy"
+  },
+  {
+    "rank": 2391,
+    "word": "愚か",
+    "reading": "おろか",
+    "meaning": "foolish"
+  },
+  {
+    "rank": 2394,
+    "word": "大",
+    "reading": "だい",
+    "meaning": "large"
+  },
+  {
+    "rank": 2401,
+    "word": "生",
+    "reading": "なま",
+    "meaning": "raw"
+  },
+  {
+    "rank": 2409,
+    "word": "どのよう",
+    "reading": "どのよう",
+    "meaning": "what sort"
+  },
+  {
+    "rank": 2414,
+    "word": "不自然",
+    "reading": "ふしぜん",
+    "meaning": "unnatural"
+  },
+  {
+    "rank": 2431,
+    "word": "強烈",
+    "reading": "きょうれつ",
+    "meaning": "strong"
+  },
+  {
+    "rank": 2492,
+    "word": "優れる",
+    "reading": "すぐれる",
+    "meaning": "to surpass"
+  },
+  {
+    "rank": 2496,
+    "word": "汚い",
+    "reading": "きたない",
+    "meaning": "dirty"
+  },
+  {
+    "rank": 2508,
+    "word": "順調",
+    "reading": "じゅんちょう",
+    "meaning": "favourable"
+  },
+  {
+    "rank": 2520,
+    "word": "豊か",
+    "reading": "ゆたか",
+    "meaning": "abundant"
+  },
+  {
+    "rank": 2542,
+    "word": "ぴったり",
+    "reading": "ぴったり",
+    "meaning": "tightly"
+  },
+  {
+    "rank": 2548,
+    "word": "容易",
+    "reading": "ようい",
+    "meaning": "easy"
+  },
+  {
+    "rank": 2575,
+    "word": "積極的",
+    "reading": "せっきょくてき",
+    "meaning": "positive"
+  },
+  {
+    "rank": 2585,
+    "word": "しつこい",
+    "reading": "しつこい",
+    "meaning": "insistent"
+  },
+  {
+    "rank": 2589,
+    "word": "明確",
+    "reading": "めいかく",
+    "meaning": "clear"
+  },
+  {
+    "rank": 2602,
+    "word": "ふさわしい",
+    "reading": "ふさわしい",
+    "meaning": "appropriate"
+  },
+  {
+    "rank": 2624,
+    "word": "熱心",
+    "reading": "ねっしん",
+    "meaning": "zealous"
+  },
+  {
+    "rank": 2681,
+    "word": "深刻",
+    "reading": "しんこく",
+    "meaning": "serious"
+  },
+  {
+    "rank": 2708,
+    "word": "新鮮",
+    "reading": "しんせん",
+    "meaning": "fresh"
+  },
+  {
+    "rank": 2745,
+    "word": "足る",
+    "reading": "たる",
+    "meaning": "to be sufficient"
+  },
+  {
+    "rank": 2761,
+    "word": "親切",
+    "reading": "しんせつ",
+    "meaning": "kind"
+  },
+  {
+    "rank": 2771,
+    "word": "大胆",
+    "reading": "だいたん",
+    "meaning": "bold"
+  },
+  {
+    "rank": 2780,
+    "word": "徹底的",
+    "reading": "てっていてき",
+    "meaning": "thorough"
+  },
+  {
+    "rank": 2839,
+    "word": "美味しい",
+    "reading": "おいしい",
+    "meaning": "delicious"
+  },
+  {
+    "rank": 2855,
+    "word": "凄い",
+    "reading": "すごい",
+    "meaning": "terrible"
+  },
+  {
+    "rank": 2922,
+    "word": "ヤバい",
+    "reading": "ヤバい",
+    "meaning": "dangerous"
+  },
+  {
+    "rank": 2924,
+    "word": "酷い",
+    "reading": "ひどい",
+    "meaning": "cruel"
+  },
+  {
+    "rank": 2953,
+    "word": "最強",
+    "reading": "さいきょう",
+    "meaning": "strongest"
+  },
+  {
+    "rank": 2979,
+    "word": "無数",
+    "reading": "むすう",
+    "meaning": "innumerable"
+  },
+  {
+    "rank": 2989,
+    "word": "可愛らしい",
+    "reading": "かわいらしい",
+    "meaning": "lovely"
+  },
+  {
+    "rank": 2995,
+    "word": "大人しい",
+    "reading": "おとなしい",
+    "meaning": "obedient"
+  },
+  {
+    "rank": 3101,
+    "word": "かすか",
+    "reading": "かすか",
+    "meaning": "faint"
+  },
+  {
+    "rank": 3156,
+    "word": "輝き",
+    "reading": "かがやき",
+    "meaning": "brightness"
+  },
+  {
+    "rank": 3157,
+    "word": "暗闇",
+    "reading": "くらやみ",
+    "meaning": "darkness"
+  },
+  {
+    "rank": 3163,
+    "word": "異様",
+    "reading": "いよう",
+    "meaning": "bizarre"
+  },
+  {
+    "rank": 3164,
+    "word": "真っ白",
+    "reading": "まっしろ",
+    "meaning": "pure white"
+  },
+  {
+    "rank": 3166,
+    "word": "曖昧",
+    "reading": "あいまい",
+    "meaning": "vague"
+  },
+  {
+    "rank": 3174,
+    "word": "めちゃくちゃ",
+    "reading": "めちゃくちゃ",
+    "meaning": "absurd"
+  },
+  {
+    "rank": 3176,
+    "word": "不気味",
+    "reading": "ぶきみ",
+    "meaning": "weird"
+  },
+  {
+    "rank": 3253,
+    "word": "淡々",
+    "reading": "たんたん",
+    "meaning": "uninterested"
+  },
+  {
+    "rank": 3254,
+    "word": "無表情",
+    "reading": "むひょうじょう",
+    "meaning": "lack of expression"
+  },
+  {
+    "rank": 3265,
+    "word": "柄",
+    "reading": "がら",
+    "meaning": "pattern"
+  },
+  {
+    "rank": 3280,
+    "word": "その辺",
+    "reading": "そのへん",
+    "meaning": "around there"
+  },
+  {
+    "rank": 3291,
+    "word": "薄暗い",
+    "reading": "うすぐらい",
+    "meaning": "dim"
+  },
+  {
+    "rank": 3292,
+    "word": "冷える",
+    "reading": "ひえる",
+    "meaning": "to grow cold (from room temperature, e.g. in refrigerator)"
+  },
+  {
+    "rank": 3324,
+    "word": "外見",
+    "reading": "がいけん",
+    "meaning": "outward appearance"
+  },
+  {
+    "rank": 3347,
+    "word": "犯罪",
+    "reading": "はんざい",
+    "meaning": "crime"
+  },
+  {
+    "rank": 3353,
+    "word": "見据える",
+    "reading": "みすえる",
+    "meaning": "to stare fixedly at"
+  },
+  {
+    "rank": 3357,
+    "word": "冷める",
+    "reading": "さめる",
+    "meaning": "to cool down"
+  },
+  {
+    "rank": 3367,
+    "word": "危うい",
+    "reading": "あやうい",
+    "meaning": "dangerous"
+  },
+  {
+    "rank": 3383,
+    "word": "地味",
+    "reading": "じみ",
+    "meaning": "plain"
+  },
+  {
+    "rank": 3416,
+    "word": "キラキラ",
+    "reading": "キラキラ",
+    "meaning": "glittering"
+  },
+  {
+    "rank": 3436,
+    "word": "でかい",
+    "reading": "でかい",
+    "meaning": "huge"
+  },
+  {
+    "rank": 3478,
+    "word": "ずるい",
+    "reading": "ずるい",
+    "meaning": "sly"
+  },
+  {
+    "rank": 3480,
+    "word": "丸い",
+    "reading": "まるい",
+    "meaning": "round"
+  },
+  {
+    "rank": 3485,
+    "word": "微か",
+    "reading": "かすか",
+    "meaning": "faint"
+  },
+  {
+    "rank": 3552,
+    "word": "フォロー",
+    "reading": "フォロー",
+    "meaning": "follow"
+  },
+  {
+    "rank": 3578,
+    "word": "柔らか",
+    "reading": "やわらか",
+    "meaning": "soft"
+  },
+  {
+    "rank": 3606,
+    "word": "小柄",
+    "reading": "こがら",
+    "meaning": "small build"
+  },
+  {
+    "rank": 3641,
+    "word": "透明",
+    "reading": "とうめい",
+    "meaning": "transparent"
+  },
+  {
+    "rank": 3654,
+    "word": "騒がしい",
+    "reading": "さわがしい",
+    "meaning": "noisy"
+  },
+  {
+    "rank": 3664,
+    "word": "暖かい",
+    "reading": "あたたかい",
+    "meaning": "warm"
+  },
+  {
+    "rank": 3751,
+    "word": "大げさ",
+    "reading": "おおげさ",
+    "meaning": "grandiose"
+  },
+  {
+    "rank": 3755,
+    "word": "優雅",
+    "reading": "ゆうが",
+    "meaning": "elegant"
+  },
+  {
+    "rank": 3763,
+    "word": "敏感",
+    "reading": "びんかん",
+    "meaning": "sensitive"
+  },
+  {
+    "rank": 3776,
+    "word": "魅力的",
+    "reading": "みりょくてき",
+    "meaning": "charming"
+  },
+  {
+    "rank": 3781,
+    "word": "相応しい",
+    "reading": "ふさわしい",
+    "meaning": "appropriate"
+  },
+  {
+    "rank": 3783,
+    "word": "容姿",
+    "reading": "ようし",
+    "meaning": "(physical) appearance (of a person)"
+  },
+  {
+    "rank": 3787,
+    "word": "尖る",
+    "reading": "とがる",
+    "meaning": "to taper to a point"
+  },
+  {
+    "rank": 3794,
+    "word": "盛大",
+    "reading": "せいだい",
+    "meaning": "grand"
+  },
+  {
+    "rank": 3795,
+    "word": "臭い",
+    "reading": "くさい",
+    "meaning": "stinking"
+  },
+  {
+    "rank": 3851,
+    "word": "苦い",
+    "reading": "にがい",
+    "meaning": "bitter"
+  },
+  {
+    "rank": 3872,
+    "word": "シンプル",
+    "reading": "シンプル",
+    "meaning": "simple"
+  },
+  {
+    "rank": 3895,
+    "word": "鮮やか",
+    "reading": "あざやか",
+    "meaning": "vivid"
+  },
+  {
+    "rank": 3899,
+    "word": "大型",
+    "reading": "おおがた",
+    "meaning": "large"
+  },
+  {
+    "rank": 3907,
+    "word": "高級",
+    "reading": "こうきゅう",
+    "meaning": "high class"
+  },
+  {
+    "rank": 3956,
+    "word": "賢い",
+    "reading": "かしこい",
+    "meaning": "wise"
+  },
+  {
+    "rank": 3963,
+    "word": "ボロボロ",
+    "reading": "ボロボロ",
+    "meaning": "worn-out"
+  },
+  {
+    "rank": 3994,
+    "word": "眩しい",
+    "reading": "まぶしい",
+    "meaning": "dazzling"
+  },
+  {
+    "rank": 4006,
+    "word": "高度",
+    "reading": "こうど",
+    "meaning": "altitude"
+  },
+  {
+    "rank": 4032,
+    "word": "硬直",
+    "reading": "こうちょく",
+    "meaning": "stiffening"
+  },
+  {
+    "rank": 4051,
+    "word": "頼もしい",
+    "reading": "たのもしい",
+    "meaning": "reliable"
+  },
+  {
+    "rank": 4059,
+    "word": "豪華",
+    "reading": "ごうか",
+    "meaning": "extravagant"
+  },
+  {
+    "rank": 4074,
+    "word": "有利",
+    "reading": "ゆうり",
+    "meaning": "advantageous"
+  },
+  {
+    "rank": 4078,
+    "word": "独特",
+    "reading": "どくとく",
+    "meaning": "peculiarity"
+  },
+  {
+    "rank": 4080,
+    "word": "美味い",
+    "reading": "うまい",
+    "meaning": "skillful"
+  },
+  {
+    "rank": 4088,
+    "word": "偉大",
+    "reading": "いだい",
+    "meaning": "great"
+  },
+  {
+    "rank": 4090,
+    "word": "斜め",
+    "reading": "ななめ",
+    "meaning": "slanting"
+  },
+  {
+    "rank": 4117,
+    "word": "生意気",
+    "reading": "なまいき",
+    "meaning": "impertinent"
+  },
+  {
+    "rank": 4121,
+    "word": "懸命",
+    "reading": "けんめい",
+    "meaning": "eager"
+  },
+  {
+    "rank": 4131,
+    "word": "贅沢",
+    "reading": "ぜいたく",
+    "meaning": "luxury"
+  },
+  {
+    "rank": 4134,
+    "word": "わがまま",
+    "reading": "わがまま",
+    "meaning": "selfish"
+  },
+  {
+    "rank": 4138,
+    "word": "スタイル",
+    "reading": "スタイル",
+    "meaning": "(one's) figure"
+  },
+  {
+    "rank": 4148,
+    "word": "ふわふわ",
+    "reading": "ふわふわ",
+    "meaning": "lightly (floating, drifting, etc.)"
+  },
+  {
+    "rank": 4152,
+    "word": "分厚い",
+    "reading": "ぶあつい",
+    "meaning": "bulky"
+  },
+  {
+    "rank": 4191,
+    "word": "中途半端",
+    "reading": "ちゅうとはんぱ",
+    "meaning": "halfway"
+  },
+  {
+    "rank": 4200,
+    "word": "醜い",
+    "reading": "みにくい",
+    "meaning": "ugly"
+  },
+  {
+    "rank": 4223,
+    "word": "いやらしい",
+    "reading": "いやらしい",
+    "meaning": "unpleasant"
+  },
+  {
+    "rank": 4225,
+    "word": "わかりやすい",
+    "reading": "わかりやすい",
+    "meaning": "easy to understand"
+  },
+  {
+    "rank": 4246,
+    "word": "高速",
+    "reading": "こうそく",
+    "meaning": "high-speed"
+  },
+  {
+    "rank": 4262,
+    "word": "クリア",
+    "reading": "クリア",
+    "meaning": "clear"
+  },
+  {
+    "rank": 4269,
+    "word": "切ない",
+    "reading": "せつない",
+    "meaning": "painful"
+  },
+  {
+    "rank": 4275,
+    "word": "真っ暗",
+    "reading": "まっくら",
+    "meaning": "total darkness"
+  },
+  {
+    "rank": 4287,
+    "word": "あからさま",
+    "reading": "あからさま",
+    "meaning": "plain"
+  },
+  {
+    "rank": 4315,
+    "word": "面倒くさい",
+    "reading": "めんどうくさい",
+    "meaning": "bothersome"
+  },
+  {
+    "rank": 4316,
+    "word": "臭い",
+    "reading": "くさい",
+    "meaning": "stinking"
+  },
+  {
+    "rank": 4327,
+    "word": "マズイ",
+    "reading": "マズイ",
+    "meaning": "bad (taste)"
+  },
+  {
+    "rank": 4351,
+    "word": "涼しい",
+    "reading": "すずしい",
+    "meaning": "cool"
+  },
+  {
+    "rank": 4361,
+    "word": "繊細",
+    "reading": "せんさい",
+    "meaning": "dainty"
+  },
+  {
+    "rank": 4363,
+    "word": "くすぐったい",
+    "reading": "くすぐったい",
+    "meaning": "ticklish"
+  },
+  {
+    "rank": 4371,
+    "word": "卑怯",
+    "reading": "ひきょう",
+    "meaning": "cowardly"
+  },
+  {
+    "rank": 4399,
+    "word": "不安定",
+    "reading": "ふあんてい",
+    "meaning": "instability"
+  },
+  {
+    "rank": 4421,
+    "word": "決定的",
+    "reading": "けっていてき",
+    "meaning": "definite"
+  },
+  {
+    "rank": 4422,
+    "word": "弱々しい",
+    "reading": "よわよわしい",
+    "meaning": "frail"
+  },
+  {
+    "rank": 4442,
+    "word": "ぎこちない",
+    "reading": "ぎこちない",
+    "meaning": "awkward"
+  },
+  {
+    "rank": 4451,
+    "word": "物騒",
+    "reading": "ぶっそう",
+    "meaning": "dangerous"
+  },
+  {
+    "rank": 4452,
+    "word": "青ざめる",
+    "reading": "あおざめる",
+    "meaning": "to become pale"
+  },
+  {
+    "rank": 4488,
+    "word": "大規模",
+    "reading": "だいきぼ",
+    "meaning": "large-scale"
+  },
+  {
+    "rank": 4513,
+    "word": "特有",
+    "reading": "とくゆう",
+    "meaning": "characteristic (of)"
+  },
+  {
+    "rank": 4514,
+    "word": "急速",
+    "reading": "きゅうそく",
+    "meaning": "rapid (e.g. progress)"
+  },
+  {
+    "rank": 4528,
+    "word": "すっきり",
+    "reading": "すっきり",
+    "meaning": "refreshingly"
+  },
+  {
+    "rank": 4533,
+    "word": "ふらふら",
+    "reading": "ふらふら",
+    "meaning": "unsteadily (e.g. on one's feet)"
+  },
+  {
+    "rank": 4546,
+    "word": "無礼",
+    "reading": "ぶれい",
+    "meaning": "rudeness"
+  },
+  {
+    "rank": 4578,
+    "word": "リアル",
+    "reading": "リアル",
+    "meaning": "real"
+  },
+  {
+    "rank": 4604,
+    "word": "キツい",
+    "reading": "キツい",
+    "meaning": "tough"
+  },
+  {
+    "rank": 4611,
+    "word": "太る",
+    "reading": "ふとる",
+    "meaning": "to put on weight"
+  },
+  {
+    "rank": 4618,
+    "word": "極端",
+    "reading": "きょくたん",
+    "meaning": "extreme"
+  },
+  {
+    "rank": 4627,
+    "word": "急激",
+    "reading": "きゅうげき",
+    "meaning": "sudden"
+  },
+  {
+    "rank": 4631,
+    "word": "上等",
+    "reading": "じょうとう",
+    "meaning": "superior"
+  },
+  {
+    "rank": 4652,
+    "word": "体格",
+    "reading": "たいかく",
+    "meaning": "physique"
+  },
+  {
+    "rank": 4660,
+    "word": "華やか",
+    "reading": "はなやか",
+    "meaning": "showy"
+  },
+  {
+    "rank": 4662,
+    "word": "神聖",
+    "reading": "しんせい",
+    "meaning": "holiness"
+  },
+  {
+    "rank": 4750,
+    "word": "わざとらしい",
+    "reading": "わざとらしい",
+    "meaning": "unnatural"
+  },
+  {
+    "rank": 4758,
+    "word": "爽やか",
+    "reading": "さわやか",
+    "meaning": "fresh"
+  },
+  {
+    "rank": 4761,
+    "word": "広大",
+    "reading": "こうだい",
+    "meaning": "vast"
+  },
+  {
+    "rank": 4768,
+    "word": "気軽",
+    "reading": "きがる",
+    "meaning": "carefree"
+  },
+  {
+    "rank": 4778,
+    "word": "膨大",
+    "reading": "ぼうだい",
+    "meaning": "huge"
+  },
+  {
+    "rank": 4794,
+    "word": "青白い",
+    "reading": "あおじろい",
+    "meaning": "pale"
+  },
+  {
+    "rank": 4801,
+    "word": "無謀",
+    "reading": "むぼう",
+    "meaning": "reckless"
+  },
+  {
+    "rank": 4802,
+    "word": "賑やか",
+    "reading": "にぎやか",
+    "meaning": "bustling"
+  },
+  {
+    "rank": 4826,
+    "word": "上品",
+    "reading": "じょうひん",
+    "meaning": "elegant"
+  },
+  {
+    "rank": 4827,
+    "word": "前向き",
+    "reading": "まえむき",
+    "meaning": "front-facing"
+  },
+  {
+    "rank": 4878,
+    "word": "頼りない",
+    "reading": "たよりない",
+    "meaning": "unreliable"
+  },
+  {
+    "rank": 4881,
+    "word": "誇らしい",
+    "reading": "ほこらしい",
+    "meaning": "proud"
+  },
+  {
+    "rank": 4897,
+    "word": "間抜け",
+    "reading": "まぬけ",
+    "meaning": "stupid"
+  },
+  {
+    "rank": 4922,
+    "word": "不器用",
+    "reading": "ぶきよう",
+    "meaning": "clumsy"
+  },
+  {
+    "rank": 4940,
+    "word": "ぐったり",
+    "reading": "ぐったり",
+    "meaning": "limply"
+  },
+  {
+    "rank": 4975,
+    "word": "的確",
+    "reading": "てきかく",
+    "meaning": "precise"
+  },
+  {
+    "rank": 4990,
+    "word": "愛らしい",
+    "reading": "あいらしい",
+    "meaning": "pretty"
+  },
+  {
+    "rank": 4996,
+    "word": "強大",
+    "reading": "きょうだい",
+    "meaning": "mighty"
+  },
+  {
+    "rank": 5007,
+    "word": "美貌",
+    "reading": "びぼう",
+    "meaning": "beautiful face"
+  },
+  {
+    "rank": 5010,
+    "word": "真顔",
+    "reading": "まがお",
+    "meaning": "serious look (on one's face)"
+  },
+  {
+    "rank": 5021,
+    "word": "独自",
+    "reading": "どくじ",
+    "meaning": "original"
+  },
+  {
+    "rank": 5023,
+    "word": "頑丈",
+    "reading": "がんじょう",
+    "meaning": "solid"
+  },
+  {
+    "rank": 5029,
+    "word": "小型",
+    "reading": "こがた",
+    "meaning": "small"
+  },
+  {
+    "rank": 5045,
+    "word": "湿る",
+    "reading": "しめる",
+    "meaning": "to become damp"
+  },
+  {
+    "rank": 5066,
+    "word": "険しい",
+    "reading": "けわしい",
+    "meaning": "precipitous"
+  },
+  {
+    "rank": 5080,
+    "word": "ささやか",
+    "reading": "ささやか",
+    "meaning": "small"
+  },
+  {
+    "rank": 5116,
+    "word": "明白",
+    "reading": "めいはく",
+    "meaning": "obvious"
+  },
+  {
+    "rank": 5125,
+    "word": "装飾",
+    "reading": "そうしょく",
+    "meaning": "ornament"
+  },
+  {
+    "rank": 5157,
+    "word": "平穏",
+    "reading": "へいおん",
+    "meaning": "tranquil"
+  },
+  {
+    "rank": 5160,
+    "word": "一流",
+    "reading": "いちりゅう",
+    "meaning": "first-class"
+  },
+  {
+    "rank": 5162,
+    "word": "不穏",
+    "reading": "ふおん",
+    "meaning": "disquieting"
+  },
+  {
+    "rank": 5176,
+    "word": "とてつもない",
+    "reading": "とてつもない",
+    "meaning": "extravagant"
+  },
+  {
+    "rank": 5190,
+    "word": "平凡",
+    "reading": "へいぼん",
+    "meaning": "ordinary"
+  },
+  {
+    "rank": 5222,
+    "word": "厳重",
+    "reading": "げんじゅう",
+    "meaning": "strict"
+  },
+  {
+    "rank": 5231,
+    "word": "甲高い",
+    "reading": "かんだかい",
+    "meaning": "high-pitched"
+  },
+  {
+    "rank": 5238,
+    "word": "猛烈",
+    "reading": "もうれつ",
+    "meaning": "fierce"
+  },
+  {
+    "rank": 5244,
+    "word": "空っぽ",
+    "reading": "からっぽ",
+    "meaning": "empty"
+  },
+  {
+    "rank": 5260,
+    "word": "致命的",
+    "reading": "ちめいてき",
+    "meaning": "fatal"
+  },
+  {
+    "rank": 5267,
+    "word": "過剰",
+    "reading": "かじょう",
+    "meaning": "excess"
+  },
+  {
+    "rank": 5269,
+    "word": "不敵",
+    "reading": "ふてき",
+    "meaning": "daring"
+  },
+  {
+    "rank": 5285,
+    "word": "誤る",
+    "reading": "あやまる",
+    "meaning": "to make a mistake (in)"
+  },
+  {
+    "rank": 5296,
+    "word": "だらしない",
+    "reading": "だらしない",
+    "meaning": "slovenly (appearance, work, etc.)"
+  },
+  {
+    "rank": 5300,
+    "word": "辛い",
+    "reading": "つらい",
+    "meaning": "painful"
+  },
+  {
+    "rank": 5314,
+    "word": "控えめ",
+    "reading": "ひかえめ",
+    "meaning": "moderate"
+  },
+  {
+    "rank": 5323,
+    "word": "高価",
+    "reading": "こうか",
+    "meaning": "highly priced"
+  },
+  {
+    "rank": 5333,
+    "word": "偽",
+    "reading": "にせ",
+    "meaning": "imitation"
+  },
+  {
+    "rank": 5369,
+    "word": "傲慢",
+    "reading": "ごうまん",
+    "meaning": "haughty"
+  },
+  {
+    "rank": 5397,
+    "word": "重たい",
+    "reading": "おもたい",
+    "meaning": "heavy"
+  },
+  {
+    "rank": 5412,
+    "word": "豊富",
+    "reading": "ほうふ",
+    "meaning": "abundant"
+  },
+  {
+    "rank": 5461,
+    "word": "音声",
+    "reading": "おんせい",
+    "meaning": "voice"
+  },
+  {
+    "rank": 5478,
+    "word": "ストレート",
+    "reading": "ストレート",
+    "meaning": "straight"
+  },
+  {
+    "rank": 5490,
+    "word": "陽気",
+    "reading": "ようき",
+    "meaning": "cheerful"
+  },
+  {
+    "rank": 5499,
+    "word": "正常",
+    "reading": "せいじょう",
+    "meaning": "normalcy"
+  },
+  {
+    "rank": 5548,
+    "word": "不良",
+    "reading": "ふりょう",
+    "meaning": "bad"
+  },
+  {
+    "rank": 5552,
+    "word": "万全",
+    "reading": "ばんぜん",
+    "meaning": "perfection"
+  },
+  {
+    "rank": 5577,
+    "word": "堅い",
+    "reading": "かたい",
+    "meaning": "hard"
+  },
+  {
+    "rank": 5606,
+    "word": "不吉",
+    "reading": "ふきつ",
+    "meaning": "ominous"
+  },
+  {
+    "rank": 5613,
+    "word": "華奢",
+    "reading": "かしゃ",
+    "meaning": "lavish"
+  },
+  {
+    "rank": 5614,
+    "word": "背の高い",
+    "reading": "せのたかい",
+    "meaning": "tall (of a person)"
+  },
+  {
+    "rank": 5622,
+    "word": "息苦しい",
+    "reading": "いきぐるしい",
+    "meaning": "choking"
+  },
+  {
+    "rank": 5640,
+    "word": "並",
+    "reading": "なみ",
+    "meaning": "average"
+  },
+  {
+    "rank": 5643,
+    "word": "風情",
+    "reading": "ふぜい",
+    "meaning": "taste"
+  },
+  {
+    "rank": 5675,
+    "word": "誠実",
+    "reading": "せいじつ",
+    "meaning": "sincere"
+  },
+  {
+    "rank": 5683,
+    "word": "定期的",
+    "reading": "ていきてき",
+    "meaning": "periodic"
+  },
+  {
+    "rank": 5689,
+    "word": "対照的",
+    "reading": "たいしょうてき",
+    "meaning": "contrastive"
+  },
+  {
+    "rank": 5705,
+    "word": "クール",
+    "reading": "クール",
+    "meaning": "cool (temperature, color, etc.)"
+  },
+  {
+    "rank": 5711,
+    "word": "ラッキー",
+    "reading": "ラッキー",
+    "meaning": "lucky"
+  },
+  {
+    "rank": 5721,
+    "word": "足早",
+    "reading": "あしばや",
+    "meaning": "fast (walking)"
+  },
+  {
+    "rank": 5730,
+    "word": "絶対的",
+    "reading": "ぜったいてき",
+    "meaning": "absolute"
+  },
+  {
+    "rank": 5750,
+    "word": "並み",
+    "reading": "なみ",
+    "meaning": "average"
+  },
+  {
+    "rank": 5756,
+    "word": "日差し",
+    "reading": "ひざし",
+    "meaning": "sunlight"
+  },
+  {
+    "rank": 5765,
+    "word": "平静",
+    "reading": "へいせい",
+    "meaning": "calm"
+  },
+  {
+    "rank": 5766,
+    "word": "銀行",
+    "reading": "ぎんこう",
+    "meaning": "bank"
+  },
+  {
+    "rank": 5771,
+    "word": "共にする",
+    "reading": "ともにする",
+    "meaning": "to do together"
+  },
+  {
+    "rank": 5791,
+    "word": "皺",
+    "reading": "しわ",
+    "meaning": "wrinkle"
+  },
+  {
+    "rank": 5795,
+    "word": "食い込む",
+    "reading": "くいこむ",
+    "meaning": "to bite into (e.g. rope into skin)"
+  },
+  {
+    "rank": 5832,
+    "word": "大幅",
+    "reading": "おおはば",
+    "meaning": "big"
+  },
+  {
+    "rank": 5845,
+    "word": "タダ",
+    "reading": "タダ",
+    "meaning": "ordinary"
+  },
+  {
+    "rank": 5853,
+    "word": "対決",
+    "reading": "たいけつ",
+    "meaning": "confrontation"
+  },
+  {
+    "rank": 5880,
+    "word": "不便",
+    "reading": "ふべん",
+    "meaning": "inconvenience"
+  },
+  {
+    "rank": 5925,
+    "word": "軽やか",
+    "reading": "かろやか",
+    "meaning": "light"
+  },
+  {
+    "rank": 5957,
+    "word": "貧しい",
+    "reading": "まずしい",
+    "meaning": "poor"
+  },
+  {
+    "rank": 5965,
+    "word": "率直",
+    "reading": "そっちょく",
+    "meaning": "frank"
+  },
+  {
+    "rank": 5982,
+    "word": "すんなり",
+    "reading": "すんなり",
+    "meaning": "slim"
+  },
+  {
+    "rank": 5994,
+    "word": "滑らか",
+    "reading": "なめらか",
+    "meaning": "smooth (of a surface)"
+  },
+  {
+    "rank": 6011,
+    "word": "ベスト",
+    "reading": "ベスト",
+    "meaning": "best"
+  },
+  {
+    "rank": 6020,
+    "word": "丈",
+    "reading": "たけ",
+    "meaning": "height"
+  },
+  {
+    "rank": 6024,
+    "word": "平",
+    "reading": "ひら",
+    "meaning": "something broad and flat"
+  },
+  {
+    "rank": 6025,
+    "word": "さらなる",
+    "reading": "さらなる",
+    "meaning": "even more"
+  },
+  {
+    "rank": 6072,
+    "word": "難い",
+    "reading": "かたい",
+    "meaning": "difficult"
+  },
+  {
+    "rank": 6075,
+    "word": "滑稽",
+    "reading": "こっけい",
+    "meaning": "funny"
+  },
+  {
+    "rank": 6090,
+    "word": "さらり",
+    "reading": "さらり",
+    "meaning": "sleek"
+  },
+  {
+    "rank": 6095,
+    "word": "ひらひら",
+    "reading": "ひらひら",
+    "meaning": "fluttering"
+  },
+  {
+    "rank": 6098,
+    "word": "最適",
+    "reading": "さいてき",
+    "meaning": "most suitable"
+  },
+  {
+    "rank": 6100,
+    "word": "不可解",
+    "reading": "ふかかい",
+    "meaning": "incomprehensible"
+  },
+  {
+    "rank": 6118,
+    "word": "進展",
+    "reading": "しんてん",
+    "meaning": "progress"
+  },
+  {
+    "rank": 6131,
+    "word": "許し",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 6134,
+    "word": "年寄り",
+    "reading": "としより",
+    "meaning": "old person"
+  },
+  {
+    "rank": 6138,
+    "word": "長男",
+    "reading": "ちょうなん",
+    "meaning": "eldest son (may be the only son)"
+  },
+  {
+    "rank": 6140,
+    "word": "お約束",
+    "reading": "おやくそく",
+    "meaning": "promise"
+  },
+  {
+    "rank": 6143,
+    "word": "連想",
+    "reading": "れんそう",
+    "meaning": "association (of ideas)"
+  },
+  {
+    "rank": 6157,
+    "word": "輪郭",
+    "reading": "りんかく",
+    "meaning": "contour"
+  },
+  {
+    "rank": 6167,
+    "word": "客観的",
+    "reading": "きゃっかんてき",
+    "meaning": "objective"
+  },
+  {
+    "rank": 6168,
+    "word": "頼むから",
+    "reading": "たのむから",
+    "meaning": "please!"
+  },
+  {
+    "rank": 6170,
+    "word": "口に運ぶ",
+    "reading": "くちにはこぶ",
+    "meaning": "to put into the mouth"
+  },
+  {
+    "rank": 6174,
+    "word": "費やす",
+    "reading": "ついやす",
+    "meaning": "to spend"
+  },
+  {
+    "rank": 6181,
+    "word": "久しい",
+    "reading": "ひさしい",
+    "meaning": "long (time that has passed)"
+  },
+  {
+    "rank": 6188,
+    "word": "寒気",
+    "reading": "さむけ",
+    "meaning": "chill"
+  },
+  {
+    "rank": 6193,
+    "word": "正反対",
+    "reading": "せいはんたい",
+    "meaning": "exactly opposite (of)"
+  },
+  {
+    "rank": 6216,
+    "word": "やかましい",
+    "reading": "やかましい",
+    "meaning": "noisy"
+  },
+  {
+    "rank": 6217,
+    "word": "窮屈",
+    "reading": "きゅうくつ",
+    "meaning": "narrow"
+  },
+  {
+    "rank": 6229,
+    "word": "ぬるい",
+    "reading": "ぬるい",
+    "meaning": "lukewarm"
+  },
+  {
+    "rank": 6234,
+    "word": "よさそう",
+    "reading": "よさそう",
+    "meaning": "looking good"
+  },
+  {
+    "rank": 6248,
+    "word": "濃厚",
+    "reading": "のうこう",
+    "meaning": "rich (in flavor, color, smell, etc.)"
+  },
+  {
+    "rank": 6256,
+    "word": "至極",
+    "reading": "しごく",
+    "meaning": "very"
+  },
+  {
+    "rank": 6257,
+    "word": "透き通る",
+    "reading": "すきとおる",
+    "meaning": "to be transparent"
+  },
+  {
+    "rank": 6281,
+    "word": "生まれて初めて",
+    "reading": "うまれてはじめて",
+    "meaning": "for the first time in one's life"
+  },
+  {
+    "rank": 6290,
+    "word": "口ぶり",
+    "reading": "くちぶり",
+    "meaning": "way of speaking"
+  },
+  {
+    "rank": 6320,
+    "word": "上では",
+    "reading": "うえでは",
+    "meaning": "from the viewpoint of"
+  },
+  {
+    "rank": 6328,
+    "word": "ドイツ",
+    "reading": "ドイツ",
+    "meaning": "Germany"
+  },
+  {
+    "rank": 6355,
+    "word": "全体的",
+    "reading": "ぜんたいてき",
+    "meaning": "overall"
+  },
+  {
+    "rank": 6356,
+    "word": "緩やか",
+    "reading": "ゆるやか",
+    "meaning": "loose"
+  },
+  {
+    "rank": 6358,
+    "word": "過酷",
+    "reading": "かこく",
+    "meaning": "severe"
+  },
+  {
+    "rank": 6370,
+    "word": "限りない",
+    "reading": "かぎりない",
+    "meaning": "eternal"
+  },
+  {
+    "rank": 6371,
+    "word": "慌ただしい",
+    "reading": "あわただしい",
+    "meaning": "busy"
+  },
+  {
+    "rank": 6385,
+    "word": "熱気",
+    "reading": "ねっき",
+    "meaning": "heat"
+  },
+  {
+    "rank": 6399,
+    "word": "確証",
+    "reading": "かくしょう",
+    "meaning": "conclusive evidence"
+  },
+  {
+    "rank": 6428,
+    "word": "遅く",
+    "reading": "おそく",
+    "meaning": "late"
+  },
+  {
+    "rank": 6429,
+    "word": "前",
+    "reading": "まえ",
+    "meaning": "in front (of)"
+  },
+  {
+    "rank": 6444,
+    "word": "見込み",
+    "reading": "みこみ",
+    "meaning": "hope"
+  },
+  {
+    "rank": 6445,
+    "word": "真摯",
+    "reading": "しんし",
+    "meaning": "sincere"
+  },
+  {
+    "rank": 6446,
+    "word": "各自",
+    "reading": "かくじ",
+    "meaning": "each (person)"
+  },
+  {
+    "rank": 6453,
+    "word": "大きめ",
+    "reading": "おおきめ",
+    "meaning": "largish"
+  },
+  {
+    "rank": 6454,
+    "word": "無難",
+    "reading": "ぶなん",
+    "meaning": "safe (e.g. choice)"
+  },
+  {
+    "rank": 6455,
+    "word": "必然",
+    "reading": "ひつぜん",
+    "meaning": "inevitable"
+  },
+  {
+    "rank": 6461,
+    "word": "細長い",
+    "reading": "ほそながい",
+    "meaning": "long and narrow"
+  },
+  {
+    "rank": 6463,
+    "word": "強気",
+    "reading": "つよき",
+    "meaning": "confident"
+  },
+  {
+    "rank": 6485,
+    "word": "大きすぎる",
+    "reading": "おおきすぎる",
+    "meaning": "to be oversized (overloud, etc.)"
+  },
+  {
+    "rank": 6502,
+    "word": "数少ない",
+    "reading": "かずすくない",
+    "meaning": "few in number"
+  },
+  {
+    "rank": 6508,
+    "word": "まれ",
+    "reading": "まれ",
+    "meaning": "rare"
+  },
+  {
+    "rank": 6515,
+    "word": "強",
+    "reading": "きょう",
+    "meaning": "a little over"
+  },
+  {
+    "rank": 6517,
+    "word": "華麗",
+    "reading": "かれい",
+    "meaning": "splendid"
+  },
+  {
+    "rank": 6536,
+    "word": "男らしい",
+    "reading": "おとこらしい",
+    "meaning": "manly"
+  },
+  {
+    "rank": 6543,
+    "word": "効果的",
+    "reading": "こうかてき",
+    "meaning": "effective"
+  },
+  {
+    "rank": 6560,
+    "word": "驚くべき",
+    "reading": "おどろくべき",
+    "meaning": "astonishing"
+  },
+  {
+    "rank": 6561,
+    "word": "渋い",
+    "reading": "しぶい",
+    "meaning": "astringent"
+  },
+  {
+    "rank": 6586,
+    "word": "甲斐",
+    "reading": "かい",
+    "meaning": "effect"
+  },
+  {
+    "rank": 6591,
+    "word": "現時点",
+    "reading": "げんじてん",
+    "meaning": "present point (i.e. in history)"
+  },
+  {
+    "rank": 6593,
+    "word": "闘う",
+    "reading": "たたかう",
+    "meaning": "to make war (on)"
+  },
+  {
+    "rank": 6599,
+    "word": "抱え込む",
+    "reading": "かかえこむ",
+    "meaning": "to hold a thing in one's arms"
+  },
+  {
+    "rank": 6617,
+    "word": "執拗",
+    "reading": "しつよう",
+    "meaning": "persistent"
+  },
+  {
+    "rank": 6623,
+    "word": "大層",
+    "reading": "たいそう",
+    "meaning": "very"
+  },
+  {
+    "rank": 6629,
+    "word": "速やか",
+    "reading": "すみやか",
+    "meaning": "quick"
+  },
+  {
+    "rank": 6630,
+    "word": "スムーズ",
+    "reading": "スムーズ",
+    "meaning": "smooth"
+  },
+  {
+    "rank": 6631,
+    "word": "巧み",
+    "reading": "たくみ",
+    "meaning": "skillful"
+  },
+  {
+    "rank": 6656,
+    "word": "弱気",
+    "reading": "よわき",
+    "meaning": "timid"
+  },
+  {
+    "rank": 6682,
+    "word": "のめる",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 6694,
+    "word": "年月",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 6700,
+    "word": "弱",
+    "reading": "じゃく",
+    "meaning": "little less than"
+  },
+  {
+    "rank": 6712,
+    "word": "ほのか",
+    "reading": "ほのか",
+    "meaning": "faint"
+  },
+  {
+    "rank": 6716,
+    "word": "半端",
+    "reading": "はんぱ",
+    "meaning": "remnant"
+  },
+  {
+    "rank": 6724,
+    "word": "高らか",
+    "reading": "たからか",
+    "meaning": "loud"
+  },
+  {
+    "rank": 6726,
+    "word": "高貴",
+    "reading": "こうき",
+    "meaning": "high class"
+  },
+  {
+    "rank": 6731,
+    "word": "好ましい",
+    "reading": "このましい",
+    "meaning": "nice"
+  },
+  {
+    "rank": 6732,
+    "word": "健全",
+    "reading": "けんぜん",
+    "meaning": "healthy"
+  },
+  {
+    "rank": 6734,
+    "word": "身勝手",
+    "reading": "みがって",
+    "meaning": "selfish"
+  },
+  {
+    "rank": 6737,
+    "word": "ちっちゃい",
+    "reading": "ちっちゃい",
+    "meaning": "tiny"
+  },
+  {
+    "rank": 6749,
+    "word": "大小",
+    "reading": "だいしょう",
+    "meaning": "size"
+  },
+  {
+    "rank": 6751,
+    "word": "いつにない",
+    "reading": "いつにない",
+    "meaning": "unusual"
+  },
+  {
+    "rank": 6756,
+    "word": "気安い",
+    "reading": "きやすい",
+    "meaning": "relaxed"
+  },
+  {
+    "rank": 6757,
+    "word": "あっけない",
+    "reading": "あっけない",
+    "meaning": "unsatisfying"
+  },
+  {
+    "rank": 6773,
+    "word": "疑わしい",
+    "reading": "うたがわしい",
+    "meaning": "doubtful"
+  },
+  {
+    "rank": 6802,
+    "word": "くっきり",
+    "reading": "くっきり",
+    "meaning": "distinctly (standing out)"
+  },
+  {
+    "rank": 6825,
+    "word": "荒々しい",
+    "reading": "あらあらしい",
+    "meaning": "rough"
+  },
+  {
+    "rank": 6843,
+    "word": "律儀",
+    "reading": "りちぎ",
+    "meaning": "upright"
+  },
+  {
+    "rank": 6845,
+    "word": "生々しい",
+    "reading": "なまなましい",
+    "meaning": "vivid (memory, description, etc.)"
+  },
+  {
+    "rank": 6857,
+    "word": "しなやか",
+    "reading": "しなやか",
+    "meaning": "supple"
+  },
+  {
+    "rank": 6863,
+    "word": "水分",
+    "reading": "すいぶん",
+    "meaning": "water"
+  },
+  {
+    "rank": 6865,
+    "word": "脆い",
+    "reading": "もろい",
+    "meaning": "brittle"
+  },
+  {
+    "rank": 6920,
+    "word": "しんどい",
+    "reading": "しんどい",
+    "meaning": "tired"
+  },
+  {
+    "rank": 6963,
+    "word": "ちょうどよい",
+    "reading": "ちょうどよい",
+    "meaning": "just right (time, size, length, etc.)"
+  },
+  {
+    "rank": 6969,
+    "word": "直接的",
+    "reading": "ちょくせつてき",
+    "meaning": "direct"
+  },
+  {
+    "rank": 6982,
+    "word": "重苦しい",
+    "reading": "おもくるしい",
+    "meaning": "heavy (feeling, etc.)"
+  },
+  {
+    "rank": 6983,
+    "word": "ひとしきり",
+    "reading": "ひとしきり",
+    "meaning": "for a while"
+  },
+  {
+    "rank": 6986,
+    "word": "正真正銘",
+    "reading": "しょうしんしょうめい",
+    "meaning": "genuine"
+  },
+  {
+    "rank": 6987,
+    "word": "入れ替える",
+    "reading": "いれかえる",
+    "meaning": "to replace"
+  },
+  {
+    "rank": 6996,
+    "word": "力を合わせる",
+    "reading": "ちからをあわせる",
+    "meaning": "to join forces"
+  },
+  {
+    "rank": 7001,
+    "word": "影響力",
+    "reading": "えいきょうりょく",
+    "meaning": "influence"
+  },
+  {
+    "rank": 7002,
+    "word": "たくましい",
+    "reading": "たくましい",
+    "meaning": "burly"
+  },
+  {
+    "rank": 7005,
+    "word": "背が高い",
+    "reading": "せがたかい",
+    "meaning": "tall (of a person)"
+  },
+  {
+    "rank": 7006,
+    "word": "物足りない",
+    "reading": "ものたりない",
+    "meaning": "unsatisfied"
+  },
+  {
+    "rank": 7025,
+    "word": "色とりどり",
+    "reading": "いろとりどり",
+    "meaning": "multicolored"
+  },
+  {
+    "rank": 7049,
+    "word": "迅速",
+    "reading": "じんそく",
+    "meaning": "quick"
+  },
+  {
+    "rank": 7052,
+    "word": "健在",
+    "reading": "けんざい",
+    "meaning": "in good health"
+  },
+  {
+    "rank": 7058,
+    "word": "潔い",
+    "reading": "いさぎよい",
+    "meaning": "manly"
+  },
+  {
+    "rank": 7059,
+    "word": "安易",
+    "reading": "あんい",
+    "meaning": "easy"
+  },
+  {
+    "rank": 7067,
+    "word": "乾燥",
+    "reading": "かんそう",
+    "meaning": "dryness"
+  },
+  {
+    "rank": 7072,
+    "word": "たやすい",
+    "reading": "たやすい",
+    "meaning": "easy"
+  },
+  {
+    "rank": 7084,
+    "word": "色",
+    "reading": "いろ",
+    "meaning": "colour"
+  },
+  {
+    "rank": 7086,
+    "word": "賢明",
+    "reading": "けんめい",
+    "meaning": "wise"
+  },
+  {
+    "rank": 7091,
+    "word": "盛ん",
+    "reading": "さかん",
+    "meaning": "prosperous"
+  },
+  {
+    "rank": 7101,
+    "word": "適度",
+    "reading": "てきど",
+    "meaning": "moderate (degree)"
+  },
+  {
+    "rank": 7126,
+    "word": "安らか",
+    "reading": "やすらか",
+    "meaning": "peaceful"
+  },
+  {
+    "rank": 7138,
+    "word": "まったい",
+    "reading": "まったい",
+    "meaning": "complete"
+  },
+  {
+    "rank": 7145,
+    "word": "安",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 7148,
+    "word": "大手",
+    "reading": "おおて",
+    "meaning": "major company"
+  },
+  {
+    "rank": 7151,
+    "word": "割く",
+    "reading": "さく",
+    "meaning": "to cut up"
+  },
+  {
+    "rank": 7171,
+    "word": "注意深い",
+    "reading": "ちゅういぶかい",
+    "meaning": "attentive"
+  },
+  {
+    "rank": 7177,
+    "word": "勇敢",
+    "reading": "ゆうかん",
+    "meaning": "brave"
+  },
+  {
+    "rank": 7178,
+    "word": "素朴",
+    "reading": "そぼく",
+    "meaning": "simple"
+  },
+  {
+    "rank": 7179,
+    "word": "不運",
+    "reading": "ふうん",
+    "meaning": "misfortune"
+  },
+  {
+    "rank": 7226,
+    "word": "活発",
+    "reading": "かっぱつ",
+    "meaning": "lively"
+  },
+  {
+    "rank": 7231,
+    "word": "無知",
+    "reading": "むち",
+    "meaning": "ignorance"
+  },
+  {
+    "rank": 7238,
+    "word": "怖い顔",
+    "reading": "こわいかお",
+    "meaning": "grim face"
+  },
+  {
+    "rank": 7239,
+    "word": "見苦しい",
+    "reading": "みぐるしい",
+    "meaning": "unsightly"
+  },
+  {
+    "rank": 7240,
+    "word": "全面的",
+    "reading": "ぜんめんてき",
+    "meaning": "total"
+  },
+  {
+    "rank": 7242,
+    "word": "過激",
+    "reading": "かげき",
+    "meaning": "extreme"
+  },
+  {
+    "rank": 7245,
+    "word": "念入り",
+    "reading": "ねんいり",
+    "meaning": "careful"
+  },
+  {
+    "rank": 7254,
+    "word": "若き",
+    "reading": "わかき",
+    "meaning": "young person"
+  },
+  {
+    "rank": 7275,
+    "word": "無口",
+    "reading": "むくち",
+    "meaning": "taciturn"
+  },
+  {
+    "rank": 7290,
+    "word": "だるい",
+    "reading": "だるい",
+    "meaning": "sluggish"
+  },
+  {
+    "rank": 7410,
+    "word": "軽快",
+    "reading": "けいかい",
+    "meaning": "light (of movements)"
+  },
+  {
+    "rank": 7420,
+    "word": "格段",
+    "reading": "かくだん",
+    "meaning": "dramatic (improvement)"
+  },
+  {
+    "rank": 7422,
+    "word": "印象的",
+    "reading": "いんしょうてき",
+    "meaning": "impressive"
+  },
+  {
+    "rank": 7426,
+    "word": "劇的",
+    "reading": "げきてき",
+    "meaning": "dramatic"
+  },
+  {
+    "rank": 7485,
+    "word": "生き生き",
+    "reading": "いきいき",
+    "meaning": "in a lively way"
+  },
+  {
+    "rank": 7538,
+    "word": "柔軟",
+    "reading": "じゅうなん",
+    "meaning": "flexible"
+  },
+  {
+    "rank": 7559,
+    "word": "望ましい",
+    "reading": "のぞましい",
+    "meaning": "desirable"
+  },
+  {
+    "rank": 7577,
+    "word": "厳格",
+    "reading": "げんかく",
+    "meaning": "strict"
+  },
+  {
+    "rank": 7607,
+    "word": "幅広い",
+    "reading": "はばひろい",
+    "meaning": "extensive"
+  },
+  {
+    "rank": 7702,
+    "word": "漆黒",
+    "reading": "しっこく",
+    "meaning": "jet black"
+  },
+  {
+    "rank": 7714,
+    "word": "エレベーター",
+    "reading": "エレベーター",
+    "meaning": "elevator"
+  },
+  {
+    "rank": 7792,
+    "word": "デカい",
+    "reading": "デカい",
+    "meaning": "huge"
+  },
+  {
+    "rank": 7807,
+    "word": "おっきい",
+    "reading": "おっきい",
+    "meaning": "big"
+  },
+  {
+    "rank": 7830,
+    "word": "無傷",
+    "reading": "むきず",
+    "meaning": "unhurt"
+  },
+  {
+    "rank": 7835,
+    "word": "長身",
+    "reading": "ちょうしん",
+    "meaning": "tall figure"
+  },
+  {
+    "rank": 7848,
+    "word": "容易い",
+    "reading": "たやすい",
+    "meaning": "easy"
+  },
+  {
+    "rank": 7890,
+    "word": "迂闊",
+    "reading": "うかつ",
+    "meaning": "careless"
+  },
+  {
+    "rank": 7896,
+    "word": "照れくさい",
+    "reading": "てれくさい",
+    "meaning": "embarrassing"
+  },
+  {
+    "rank": 7910,
+    "word": "温もり",
+    "reading": "ぬくもり",
+    "meaning": "warmth"
+  },
+  {
+    "rank": 7936,
+    "word": "凶悪",
+    "reading": "きょうあく",
+    "meaning": "atrocious"
+  },
+  {
+    "rank": 7941,
+    "word": "無様",
+    "reading": "ぶざま",
+    "meaning": "unshapely"
+  },
+  {
+    "rank": 7947,
+    "word": "凛",
+    "reading": "りん",
+    "meaning": "cold"
+  },
+  {
+    "rank": 8003,
+    "word": "恐い",
+    "reading": "こわい",
+    "meaning": "scary"
+  },
+  {
+    "rank": 8036,
+    "word": "訝しい",
+    "reading": "いぶかしい",
+    "meaning": "suspicious"
+  },
+  {
+    "rank": 8060,
+    "word": "白髪",
+    "reading": "しらが",
+    "meaning": "white hair"
+  },
+  {
+    "rank": 8061,
+    "word": "すげぇ",
+    "reading": "すげぇ",
+    "meaning": "incredible"
+  },
+  {
+    "rank": 8074,
+    "word": "冷ややか",
+    "reading": "ひややか",
+    "meaning": "cold"
+  },
+  {
+    "rank": 8104,
+    "word": "おぞましい",
+    "reading": "おぞましい",
+    "meaning": "disgusting"
+  },
+  {
+    "rank": 8107,
+    "word": "暗黒",
+    "reading": "あんこく",
+    "meaning": "darkness"
+  },
+  {
+    "rank": 8142,
+    "word": "純白",
+    "reading": "じゅんぱく",
+    "meaning": "pure white"
+  },
+  {
+    "rank": 8160,
+    "word": "虚しい",
+    "reading": "むなしい",
+    "meaning": "empty"
+  },
+  {
+    "rank": 8168,
+    "word": "苦々しい",
+    "reading": "にがにがしい",
+    "meaning": "unpleasant"
+  },
+  {
+    "rank": 8211,
+    "word": "伊達",
+    "reading": "だて",
+    "meaning": "elegance"
+  },
+  {
+    "rank": 8224,
+    "word": "銀髪",
+    "reading": "ぎんぱつ",
+    "meaning": "silver hair"
+  },
+  {
+    "rank": 8260,
+    "word": "恐るべき",
+    "reading": "おそるべき",
+    "meaning": "dreadful"
+  },
+  {
+    "rank": 8264,
+    "word": "全裸",
+    "reading": "ぜんら",
+    "meaning": "stark naked"
+  },
+  {
+    "rank": 8271,
+    "word": "物凄い",
+    "reading": "ものすごい",
+    "meaning": "terrific"
+  },
+  {
+    "rank": 8280,
+    "word": "大男",
+    "reading": "おおおとこ",
+    "meaning": "big man"
+  },
+  {
+    "rank": 8296,
+    "word": "鬱陶しい",
+    "reading": "うっとうしい",
+    "meaning": "gloomy (e.g. mood)"
+  },
+  {
+    "rank": 8306,
+    "word": "大袈裟",
+    "reading": "おおげさ",
+    "meaning": "grandiose"
+  },
+  {
+    "rank": 8320,
+    "word": "異形",
+    "reading": "いぎょう",
+    "meaning": "fantastic"
+  },
+  {
+    "rank": 8338,
+    "word": "色合い",
+    "reading": "いろあい",
+    "meaning": "colouring"
+  },
+  {
+    "rank": 8369,
+    "word": "細身",
+    "reading": "ほそみ",
+    "meaning": "narrow"
+  },
+  {
+    "rank": 8378,
+    "word": "頑な",
+    "reading": "かたくな",
+    "meaning": "obstinate"
+  },
+  {
+    "rank": 8391,
+    "word": "凶暴",
+    "reading": "きょうぼう",
+    "meaning": "ferocious"
+  },
+  {
+    "rank": 8413,
+    "word": "冷気",
+    "reading": "れいき",
+    "meaning": "cold"
+  },
+  {
+    "rank": 8439,
+    "word": "はしたない",
+    "reading": "はしたない",
+    "meaning": "improper"
+  },
+  {
+    "rank": 8484,
+    "word": "得体の知れない",
+    "reading": "えたいのしれない",
+    "meaning": "strange"
+  },
+  {
+    "rank": 8500,
+    "word": "体型",
+    "reading": "たいけい",
+    "meaning": "figure"
+  },
+  {
+    "rank": 8529,
+    "word": "自我",
+    "reading": "じが",
+    "meaning": "self"
+  },
+  {
+    "rank": 8540,
+    "word": "か細い",
+    "reading": "かぼそい",
+    "meaning": "thin"
+  },
+  {
+    "rank": 8548,
+    "word": "強度",
+    "reading": "きょうど",
+    "meaning": "strength"
+  },
+  {
+    "rank": 8592,
+    "word": "重々しい",
+    "reading": "おもおもしい",
+    "meaning": "serious"
+  },
+  {
+    "rank": 8612,
+    "word": "不味い",
+    "reading": "まずい",
+    "meaning": "bad (taste)"
+  },
+  {
+    "rank": 8698,
+    "word": "蒼い",
+    "reading": "あおい",
+    "meaning": "blue"
+  },
+  {
+    "rank": 8700,
+    "word": "鈍感",
+    "reading": "どんかん",
+    "meaning": "thickheaded"
+  },
+  {
+    "rank": 8703,
+    "word": "異質",
+    "reading": "いしつ",
+    "meaning": "different (quality, nature)"
+  },
+  {
+    "rank": 8744,
+    "word": "四角い",
+    "reading": "しかくい",
+    "meaning": "square"
+  },
+  {
+    "rank": 8747,
+    "word": "特徴的",
+    "reading": "とくちょうてき",
+    "meaning": "characteristic"
+  },
+  {
+    "rank": 8765,
+    "word": "ちっぽけ",
+    "reading": "ちっぽけ",
+    "meaning": "very small"
+  },
+  {
+    "rank": 8772,
+    "word": "背丈",
+    "reading": "せたけ",
+    "meaning": "stature"
+  },
+  {
+    "rank": 8816,
+    "word": "冷酷",
+    "reading": "れいこく",
+    "meaning": "cruelty"
+  },
+  {
+    "rank": 8869,
+    "word": "白銀",
+    "reading": "しろがね",
+    "meaning": "silver (Ag)"
+  },
+  {
+    "rank": 8878,
+    "word": "朗らか",
+    "reading": "ほがらか",
+    "meaning": "cheerful"
+  },
+  {
+    "rank": 8893,
+    "word": "定か",
+    "reading": "さだか",
+    "meaning": "definite"
+  },
+  {
+    "rank": 8897,
+    "word": "悠然",
+    "reading": "ゆうぜん",
+    "meaning": "calm"
+  },
+  {
+    "rank": 8905,
+    "word": "大柄",
+    "reading": "おおがら",
+    "meaning": "large build"
+  },
+  {
+    "rank": 8914,
+    "word": "眩い",
+    "reading": "まぶい",
+    "meaning": "cute"
+  },
+  {
+    "rank": 8940,
+    "word": "大いなる",
+    "reading": "おおいなる",
+    "meaning": "big"
+  },
+  {
+    "rank": 8986,
+    "word": "奇怪",
+    "reading": "きかい",
+    "meaning": "strange"
+  },
+  {
+    "rank": 8989,
+    "word": "朦朧",
+    "reading": "もうろう",
+    "meaning": "dim"
+  },
+  {
+    "rank": 9002,
+    "word": "子供っぽい",
+    "reading": "こどもっぽい",
+    "meaning": "childish"
+  },
+  {
+    "rank": 9028,
+    "word": "がっちり",
+    "reading": "がっちり",
+    "meaning": "solid"
+  },
+  {
+    "rank": 9044,
+    "word": "禍々しい",
+    "reading": "まがまがしい",
+    "meaning": "ominous"
+  },
+  {
+    "rank": 9056,
+    "word": "簡素",
+    "reading": "かんそ",
+    "meaning": "simple"
+  },
+  {
+    "rank": 9058,
+    "word": "むき出し",
+    "reading": "むきだし",
+    "meaning": "naked"
+  },
+  {
+    "rank": 9064,
+    "word": "互角",
+    "reading": "ごかく",
+    "meaning": "equal (in ability)"
+  },
+  {
+    "rank": 9115,
+    "word": "赤黒い",
+    "reading": "あかぐろい",
+    "meaning": "dark red"
+  },
+  {
+    "rank": 9117,
+    "word": "全い",
+    "reading": "まったい",
+    "meaning": "complete"
+  },
+  {
+    "rank": 9122,
+    "word": "もやもや",
+    "reading": "もやもや",
+    "meaning": "hazy"
+  },
+  {
+    "rank": 9125,
+    "word": "馬鹿馬鹿しい",
+    "reading": "ばかばかしい",
+    "meaning": "absurd"
+  },
+  {
+    "rank": 9169,
+    "word": "露わ",
+    "reading": "あらわ",
+    "meaning": "exposed"
+  },
+  {
+    "rank": 9177,
+    "word": "途方もない",
+    "reading": "とほうもない",
+    "meaning": "extraordinary"
+  },
+  {
+    "rank": 9193,
+    "word": "真逆",
+    "reading": "まぎゃく",
+    "meaning": "the exact opposite"
+  },
+  {
+    "rank": 9201,
+    "word": "ぶっきらぼう",
+    "reading": "ぶっきらぼう",
+    "meaning": "curt"
+  },
+  {
+    "rank": 9214,
+    "word": "無垢",
+    "reading": "むく",
+    "meaning": "pure"
+  },
+  {
+    "rank": 9219,
+    "word": "歪",
+    "reading": "いびつ",
+    "meaning": "distorted"
+  },
+  {
+    "rank": 9224,
+    "word": "蒼白",
+    "reading": "そうはく",
+    "meaning": "pale"
+  },
+  {
+    "rank": 9265,
+    "word": "酷",
+    "reading": "こく",
+    "meaning": "severe"
+  },
+  {
+    "rank": 9309,
+    "word": "裕福",
+    "reading": "ゆうふく",
+    "meaning": "wealthy"
+  },
+  {
+    "rank": 9314,
+    "word": "従順",
+    "reading": "じゅうじゅん",
+    "meaning": "obedient"
+  },
+  {
+    "rank": 9326,
+    "word": "麗しい",
+    "reading": "うるわしい",
+    "meaning": "beautiful"
+  },
+  {
+    "rank": 9328,
+    "word": "艶やか",
+    "reading": "あでやか",
+    "meaning": "glamorous"
+  },
+  {
+    "rank": 9344,
+    "word": "聡明",
+    "reading": "そうめい",
+    "meaning": "wise"
+  },
+  {
+    "rank": 9356,
+    "word": "まばら",
+    "reading": "まばら",
+    "meaning": "sparse"
+  },
+  {
+    "rank": 9408,
+    "word": "滅茶苦茶",
+    "reading": "めちゃくちゃ",
+    "meaning": "absurd"
+  },
+  {
+    "rank": 9425,
+    "word": "カッコイイ",
+    "reading": "カッコイイ",
+    "meaning": "attractive"
+  },
+  {
+    "rank": 9426,
+    "word": "か弱い",
+    "reading": "かよわい",
+    "meaning": "weak"
+  },
+  {
+    "rank": 9474,
+    "word": "簡易",
+    "reading": "かんい",
+    "meaning": "simplicity"
+  },
+  {
+    "rank": 9475,
+    "word": "遠慮がち",
+    "reading": "えんりょがち",
+    "meaning": "shy"
+  },
+  {
+    "rank": 9481,
+    "word": "疎い",
+    "reading": "うとい",
+    "meaning": "distant (from someone)"
+  },
+  {
+    "rank": 9486,
+    "word": "歪み",
+    "reading": "ゆがみ",
+    "meaning": "contortion"
+  },
+  {
+    "rank": 9490,
+    "word": "厳密",
+    "reading": "げんみつ",
+    "meaning": "strict"
+  },
+  {
+    "rank": 9502,
+    "word": "おしゃれ",
+    "reading": "おしゃれ",
+    "meaning": "smartly dressed"
+  },
+  {
+    "rank": 9503,
+    "word": "善良",
+    "reading": "ぜんりょう",
+    "meaning": "goodness"
+  },
+  {
+    "rank": 9514,
+    "word": "素っ気ない",
+    "reading": "そっけない",
+    "meaning": "cold"
+  },
+  {
+    "rank": 9516,
+    "word": "颯爽",
+    "reading": "さっそう",
+    "meaning": "gallant"
+  },
+  {
+    "rank": 9519,
+    "word": "勿体ない",
+    "reading": "もったいない",
+    "meaning": "wasteful"
+  },
+  {
+    "rank": 9528,
+    "word": "不完全",
+    "reading": "ふかんぜん",
+    "meaning": "imperfect"
+  },
+  {
+    "rank": 9541,
+    "word": "丁重",
+    "reading": "ていちょう",
+    "meaning": "polite"
+  },
+  {
+    "rank": 9543,
+    "word": "清々しい",
+    "reading": "すがすがしい",
+    "meaning": "refreshing (e.g. feeling, scene, wind, morning air)"
+  },
+  {
+    "rank": 9566,
+    "word": "逞しい",
+    "reading": "たくましい",
+    "meaning": "burly"
+  },
+  {
+    "rank": 9652,
+    "word": "バカみたい",
+    "reading": "バカみたい",
+    "meaning": "foolish"
+  },
+  {
+    "rank": 9700,
+    "word": "大人っぽい",
+    "reading": "おとなっぽい",
+    "meaning": "grown-up (manner, etc.)"
+  },
+  {
+    "rank": 9729,
+    "word": "茶色い",
+    "reading": "ちゃいろい",
+    "meaning": "light brown"
+  },
+  {
+    "rank": 9738,
+    "word": "正規",
+    "reading": "せいき",
+    "meaning": "regular"
+  },
+  {
+    "rank": 9745,
+    "word": "呑気",
+    "reading": "のんき",
+    "meaning": "carefree"
+  },
+  {
+    "rank": 9748,
+    "word": "獰猛",
+    "reading": "どうもう",
+    "meaning": "ferocious"
+  },
+  {
+    "rank": 9750,
+    "word": "外観",
+    "reading": "がいかん",
+    "meaning": "outward appearance"
+  },
+  {
+    "rank": 9754,
+    "word": "大成功",
+    "reading": "だいせいこう",
+    "meaning": "huge success"
+  },
+  {
+    "rank": 9787,
+    "word": "灼熱",
+    "reading": "しゃくねつ",
+    "meaning": "becoming red hot"
+  },
+  {
+    "rank": 9821,
+    "word": "人間らしい",
+    "reading": "にんげんらしい",
+    "meaning": "human"
+  },
+  {
+    "rank": 9826,
+    "word": "信じがたい",
+    "reading": "しんじがたい",
+    "meaning": "unbelievable"
+  },
+  {
+    "rank": 9862,
+    "word": "あどけない",
+    "reading": "あどけない",
+    "meaning": "innocent"
+  },
+  {
+    "rank": 9887,
+    "word": "卑劣",
+    "reading": "ひれつ",
+    "meaning": "mean"
+  },
+  {
+    "rank": 9908,
+    "word": "礼儀正しい",
+    "reading": "れいぎただしい",
+    "meaning": "courteous"
+  },
+  {
+    "rank": 9932,
+    "word": "清楚",
+    "reading": "せいそ",
+    "meaning": "neat and clean"
+  },
+  {
+    "rank": 9972,
+    "word": "身軽",
+    "reading": "みがる",
+    "meaning": "agile"
+  },
+  {
+    "rank": 9976,
+    "word": "拙い",
+    "reading": "つたない",
+    "meaning": "poor-quality"
+  },
+  {
+    "rank": 9984,
+    "word": "穏便",
+    "reading": "おんびん",
+    "meaning": "gentle"
+  },
+  {
+    "rank": 9994,
+    "word": "切実",
+    "reading": "せつじつ",
+    "meaning": "earnest"
+  },
+  {
+    "rank": 10018,
+    "word": "屈強",
+    "reading": "くっきょう",
+    "meaning": "robust"
+  },
+  {
+    "rank": 10053,
+    "word": "胡散臭い",
+    "reading": "うさんくさい",
+    "meaning": "suspicious-looking"
+  },
+  {
+    "rank": 10075,
+    "word": "生真面目",
+    "reading": "きまじめ",
+    "meaning": "overserious"
+  },
+  {
+    "rank": 10088,
+    "word": "意味深",
+    "reading": "いみしん",
+    "meaning": "with profound (often hidden) meaning"
+  },
+  {
+    "rank": 10090,
+    "word": "悠々",
+    "reading": "ゆうゆう",
+    "meaning": "quiet"
+  },
+  {
+    "rank": 10110,
+    "word": "すらり",
+    "reading": "すらり",
+    "meaning": "long, slender and well-proportioned"
+  },
+  {
+    "rank": 10117,
+    "word": "広範囲",
+    "reading": "こうはんい",
+    "meaning": "extensive"
+  },
+  {
+    "rank": 10118,
+    "word": "一年前",
+    "reading": "いちねんまえ",
+    "meaning": "one year ago"
+  },
+  {
+    "rank": 10162,
+    "word": "擦れる",
+    "reading": "すれる",
+    "meaning": "to rub"
+  },
+  {
+    "rank": 10182,
+    "word": "キャンセル",
+    "reading": "キャンセル",
+    "meaning": "cancellation"
+  },
+  {
+    "rank": 10231,
+    "word": "あながち",
+    "reading": "あながち",
+    "meaning": "not necessarily"
+  },
+  {
+    "rank": 10275,
+    "word": "ピンとくる",
+    "reading": "ピンとくる",
+    "meaning": "to get (a joke or explanation)"
+  },
+  {
+    "rank": 10282,
+    "word": "信",
+    "reading": "しん",
+    "meaning": "honesty"
+  },
+  {
+    "rank": 10289,
+    "word": "表面上",
+    "reading": "ひょうめんじょう",
+    "meaning": "on the surface"
+  },
+  {
+    "rank": 10296,
+    "word": "妖しい",
+    "reading": "あやしい",
+    "meaning": "mysterious"
+  },
+  {
+    "rank": 10309,
+    "word": "達者",
+    "reading": "たっしゃ",
+    "meaning": "in good health"
+  },
+  {
+    "rank": 10317,
+    "word": "馬鹿みたい",
+    "reading": "ばかみたい",
+    "meaning": "foolish"
+  },
+  {
+    "rank": 10321,
+    "word": "がっしり",
+    "reading": "がっしり",
+    "meaning": "firmly"
+  },
+  {
+    "rank": 10333,
+    "word": "堅苦しい",
+    "reading": "かたくるしい",
+    "meaning": "formal"
+  },
+  {
+    "rank": 10337,
+    "word": "無慈悲",
+    "reading": "むじひ",
+    "meaning": "merciless"
+  },
+  {
+    "rank": 10339,
+    "word": "ソフト",
+    "reading": "ソフト",
+    "meaning": "soft"
+  },
+  {
+    "rank": 10363,
+    "word": "純",
+    "reading": "じゅん",
+    "meaning": "innocent"
+  },
+  {
+    "rank": 10369,
+    "word": "容貌",
+    "reading": "ようぼう",
+    "meaning": "looks"
+  },
+  {
+    "rank": 10401,
+    "word": "名高い",
+    "reading": "なだかい",
+    "meaning": "famous"
+  },
+  {
+    "rank": 10405,
+    "word": "大仰",
+    "reading": "おおぎょう",
+    "meaning": "exaggerated"
+  },
+  {
+    "rank": 10410,
+    "word": "好い",
+    "reading": "よい",
+    "meaning": "good"
+  },
+  {
+    "rank": 10424,
+    "word": "冷徹",
+    "reading": "れいてつ",
+    "meaning": "cool-headed"
+  },
+  {
+    "rank": 10426,
+    "word": "可笑しい",
+    "reading": "おかしい",
+    "meaning": "funny"
+  },
+  {
+    "rank": 10436,
+    "word": "質素",
+    "reading": "しっそ",
+    "meaning": "simple"
+  },
+  {
+    "rank": 10453,
+    "word": "気さく",
+    "reading": "きさく",
+    "meaning": "friendly"
+  },
+  {
+    "rank": 10466,
+    "word": "恭しい",
+    "reading": "うやうやしい",
+    "meaning": "polite"
+  },
+  {
+    "rank": 10473,
+    "word": "寛大",
+    "reading": "かんだい",
+    "meaning": "tolerant"
+  },
+  {
+    "rank": 10485,
+    "word": "気丈",
+    "reading": "きじょう",
+    "meaning": "stout-hearted"
+  },
+  {
+    "rank": 10520,
+    "word": "幻想的",
+    "reading": "げんそうてき",
+    "meaning": "fantastic"
+  },
+  {
+    "rank": 10558,
+    "word": "粗末",
+    "reading": "そまつ",
+    "meaning": "crude"
+  },
+  {
+    "rank": 10560,
+    "word": "無愛想",
+    "reading": "ぶあいそう",
+    "meaning": "unsociable"
+  },
+  {
+    "rank": 10570,
+    "word": "不毛",
+    "reading": "ふもう",
+    "meaning": "barren"
+  },
+  {
+    "rank": 10639,
+    "word": "神秘的",
+    "reading": "しんぴてき",
+    "meaning": "mysterious"
+  },
+  {
+    "rank": 10641,
+    "word": "美形",
+    "reading": "びけい",
+    "meaning": "beautiful face"
+  },
+  {
+    "rank": 10650,
+    "word": "豪奢",
+    "reading": "ごうしゃ",
+    "meaning": "luxurious"
+  },
+  {
+    "rank": 10659,
+    "word": "鋭利",
+    "reading": "えいり",
+    "meaning": "sharp"
+  },
+  {
+    "rank": 10679,
+    "word": "勇ましい",
+    "reading": "いさましい",
+    "meaning": "brave"
+  },
+  {
+    "rank": 10680,
+    "word": "程遠い",
+    "reading": "ほどとおい",
+    "meaning": "far away"
+  },
+  {
+    "rank": 10712,
+    "word": "民家",
+    "reading": "みんか",
+    "meaning": "private house"
+  },
+  {
+    "rank": 10727,
+    "word": "お人好し",
+    "reading": "おひとよし",
+    "meaning": "good-naturedness"
+  },
+  {
+    "rank": 10732,
+    "word": "毅然",
+    "reading": "きぜん",
+    "meaning": "resolute"
+  },
+  {
+    "rank": 10741,
+    "word": "艶",
+    "reading": "つや",
+    "meaning": "gloss"
+  },
+  {
+    "rank": 10742,
+    "word": "神々しい",
+    "reading": "こうごうしい",
+    "meaning": "divine"
+  },
+  {
+    "rank": 10765,
+    "word": "機械的",
+    "reading": "きかいてき",
+    "meaning": "mechanical"
+  },
+  {
+    "rank": 10810,
+    "word": "和やか",
+    "reading": "なごやか",
+    "meaning": "mild"
+  },
+  {
+    "rank": 10960,
+    "word": "果てしない",
+    "reading": "はてしない",
+    "meaning": "endless"
+  },
+  {
+    "rank": 10970,
+    "word": "野暮",
+    "reading": "やぼ",
+    "meaning": "boorish"
+  },
+  {
+    "rank": 10976,
+    "word": "平坦",
+    "reading": "へいたん",
+    "meaning": "even"
+  },
+  {
+    "rank": 10980,
+    "word": "半透明",
+    "reading": "はんとうめい",
+    "meaning": "semi-transparent"
+  },
+  {
+    "rank": 10982,
+    "word": "しどろもどろ",
+    "reading": "しどろもどろ",
+    "meaning": "confused"
+  },
+  {
+    "rank": 11007,
+    "word": "光沢",
+    "reading": "こうたく",
+    "meaning": "brilliance"
+  },
+  {
+    "rank": 11017,
+    "word": "ハード",
+    "reading": "ハード",
+    "meaning": "hard"
+  },
+  {
+    "rank": 11034,
+    "word": "耳障り",
+    "reading": "みみざわり",
+    "meaning": "hard (on the ears)"
+  },
+  {
+    "rank": 11050,
+    "word": "苛烈",
+    "reading": "かれつ",
+    "meaning": "severe"
+  },
+  {
+    "rank": 11075,
+    "word": "顔色が悪い",
+    "reading": "かおいろがわるい",
+    "meaning": "looking pale"
+  },
+  {
+    "rank": 11082,
+    "word": "一目瞭然",
+    "reading": "いちもくりょうぜん",
+    "meaning": "apparent"
+  },
+  {
+    "rank": 11086,
+    "word": "端的",
+    "reading": "たんてき",
+    "meaning": "frank"
+  },
+  {
+    "rank": 11134,
+    "word": "ゆるゆる",
+    "reading": "ゆるゆる",
+    "meaning": "very loose"
+  },
+  {
+    "rank": 11138,
+    "word": "濃密",
+    "reading": "のうみつ",
+    "meaning": "thick"
+  },
+  {
+    "rank": 11140,
+    "word": "味わい",
+    "reading": "あじわい",
+    "meaning": "flavour"
+  },
+  {
+    "rank": 11142,
+    "word": "易い",
+    "reading": "やすい",
+    "meaning": "easy"
+  },
+  {
+    "rank": 11163,
+    "word": "辛辣",
+    "reading": "しんらつ",
+    "meaning": "bitter (e.g. criticism)"
+  },
+  {
+    "rank": 11166,
+    "word": "祈りを捧げる",
+    "reading": "いのりをささげる",
+    "meaning": "to pray"
+  },
+  {
+    "rank": 11174,
+    "word": "手強い",
+    "reading": "てごわい",
+    "meaning": "difficult"
+  },
+  {
+    "rank": 11177,
+    "word": "柔和",
+    "reading": "にゅうわ",
+    "meaning": "gentle"
+  },
+  {
+    "rank": 11178,
+    "word": "より一層",
+    "reading": "よりいっそう",
+    "meaning": "still more"
+  },
+  {
+    "rank": 11179,
+    "word": "精密",
+    "reading": "せいみつ",
+    "meaning": "precise"
+  },
+  {
+    "rank": 11180,
+    "word": "垂直",
+    "reading": "すいちょく",
+    "meaning": "vertical"
+  },
+  {
+    "rank": 11209,
+    "word": "香ばしい",
+    "reading": "こうばしい",
+    "meaning": "aromatic (roasted beans, roasted tea, etc.)"
+  },
+  {
+    "rank": 11233,
+    "word": "険悪",
+    "reading": "けんあく",
+    "meaning": "dangerous"
+  },
+  {
+    "rank": 11235,
+    "word": "危なっかしい",
+    "reading": "あぶなっかしい",
+    "meaning": "dangerous"
+  },
+  {
+    "rank": 11242,
+    "word": "明瞭",
+    "reading": "めいりょう",
+    "meaning": "clear"
+  },
+  {
+    "rank": 11261,
+    "word": "面倒臭い",
+    "reading": "めんどうくさい",
+    "meaning": "bothersome"
+  },
+  {
+    "rank": 11267,
+    "word": "肌寒い",
+    "reading": "はださむい",
+    "meaning": "chilly"
+  },
+  {
+    "rank": 11274,
+    "word": "極上",
+    "reading": "ごくじょう",
+    "meaning": "first-rate"
+  },
+  {
+    "rank": 11317,
+    "word": "甘ったるい",
+    "reading": "あまったるい",
+    "meaning": "sentimental"
+  },
+  {
+    "rank": 11322,
+    "word": "重厚",
+    "reading": "じゅうこう",
+    "meaning": "profound"
+  },
+  {
+    "rank": 11367,
+    "word": "嘘のよう",
+    "reading": "うそのよう",
+    "meaning": "hard to believe"
+  },
+  {
+    "rank": 11368,
+    "word": "清らか",
+    "reading": "きよらか",
+    "meaning": "clean"
+  },
+  {
+    "rank": 11429,
+    "word": "晴れやか",
+    "reading": "はれやか",
+    "meaning": "clear"
+  },
+  {
+    "rank": 11457,
+    "word": "健康的",
+    "reading": "けんこうてき",
+    "meaning": "hygienic"
+  },
+  {
+    "rank": 11471,
+    "word": "真新しい",
+    "reading": "まあたらしい",
+    "meaning": "brand new"
+  },
+  {
+    "rank": 11499,
+    "word": "希少",
+    "reading": "きしょう",
+    "meaning": "scarce"
+  },
+  {
+    "rank": 11524,
+    "word": "細心",
+    "reading": "さいしん",
+    "meaning": "meticulous"
+  },
+  {
+    "rank": 11536,
+    "word": "日焼け",
+    "reading": "ひやけ",
+    "meaning": "sunburn"
+  },
+  {
+    "rank": 11539,
+    "word": "優美",
+    "reading": "ゆうび",
+    "meaning": "grace"
+  },
+  {
+    "rank": 11558,
+    "word": "切れ味",
+    "reading": "きれあじ",
+    "meaning": "sharpness"
+  },
+  {
+    "rank": 11584,
+    "word": "狡猾",
+    "reading": "こうかつ",
+    "meaning": "sly"
+  },
+  {
+    "rank": 11585,
+    "word": "温い",
+    "reading": "ぬるい",
+    "meaning": "lukewarm"
+  },
+  {
+    "rank": 11626,
+    "word": "低",
+    "reading": "てい",
+    "meaning": "low (level, value, price, etc.)"
+  },
+  {
+    "rank": 11637,
+    "word": "密",
+    "reading": "みつ",
+    "meaning": "dense"
+  },
+  {
+    "rank": 11646,
+    "word": "図々しい",
+    "reading": "ずうずうしい",
+    "meaning": "impudent"
+  },
+  {
+    "rank": 11647,
+    "word": "良し",
+    "reading": "よし",
+    "meaning": "good"
+  },
+  {
+    "rank": 11654,
+    "word": "軽率",
+    "reading": "けいそつ",
+    "meaning": "rash"
+  },
+  {
+    "rank": 11655,
+    "word": "不謹慎",
+    "reading": "ふきんしん",
+    "meaning": "indiscrete"
+  },
+  {
+    "rank": 11702,
+    "word": "ダサい",
+    "reading": "ダサい",
+    "meaning": "uncool"
+  },
+  {
+    "rank": 11723,
+    "word": "凄惨",
+    "reading": "せいさん",
+    "meaning": "ghastly"
+  },
+  {
+    "rank": 11740,
+    "word": "貧弱",
+    "reading": "ひんじゃく",
+    "meaning": "poor"
+  },
+  {
+    "rank": 11760,
+    "word": "攻撃的",
+    "reading": "こうげきてき",
+    "meaning": "offensive"
+  },
+  {
+    "rank": 11794,
+    "word": "醜悪",
+    "reading": "しゅうあく",
+    "meaning": "ugly"
+  },
+  {
+    "rank": 11806,
+    "word": "色濃い",
+    "reading": "いろこい",
+    "meaning": "marked"
+  },
+  {
+    "rank": 11815,
+    "word": "殊勝",
+    "reading": "しゅしょう",
+    "meaning": "admirable"
+  },
+  {
+    "rank": 11858,
+    "word": "丹念",
+    "reading": "たんねん",
+    "meaning": "painstaking"
+  },
+  {
+    "rank": 11870,
+    "word": "論理的",
+    "reading": "ろんりてき",
+    "meaning": "logical"
+  },
+  {
+    "rank": 11884,
+    "word": "どんより",
+    "reading": "どんより",
+    "meaning": "dark"
+  },
+  {
+    "rank": 11921,
+    "word": "無神経",
+    "reading": "むしんけい",
+    "meaning": "insensitive"
+  },
+  {
+    "rank": 11937,
+    "word": "軽薄",
+    "reading": "けいはく",
+    "meaning": "frivolous"
+  },
+  {
+    "rank": 11946,
+    "word": "安っぽい",
+    "reading": "やすっぽい",
+    "meaning": "cheap-looking"
+  },
+  {
+    "rank": 12006,
+    "word": "目障り",
+    "reading": "めざわり",
+    "meaning": "eyesore"
+  },
+  {
+    "rank": 12021,
+    "word": "大雑把",
+    "reading": "おおざっぱ",
+    "meaning": "rough (estimate, manner, etc.)"
+  },
+  {
+    "rank": 12029,
+    "word": "本質的",
+    "reading": "ほんしつてき",
+    "meaning": "essential"
+  },
+  {
+    "rank": 12033,
+    "word": "薄汚れる",
+    "reading": "うすよごれる",
+    "meaning": "to get slightly dirty (all over)"
+  },
+  {
+    "rank": 12048,
+    "word": "謙虚",
+    "reading": "けんきょ",
+    "meaning": "modest"
+  },
+  {
+    "rank": 12054,
+    "word": "高め",
+    "reading": "たかめ",
+    "meaning": "high (e.g. ball in baseball)"
+  },
+  {
+    "rank": 12061,
+    "word": "難しい顔をする",
+    "reading": "むずかしいかおをする",
+    "meaning": "to look displeased"
+  },
+  {
+    "rank": 12066,
+    "word": "じっとり",
+    "reading": "じっとり",
+    "meaning": "damp"
+  },
+  {
+    "rank": 12073,
+    "word": "似つかわしい",
+    "reading": "につかわしい",
+    "meaning": "suitable"
+  },
+  {
+    "rank": 12074,
+    "word": "単調",
+    "reading": "たんちょう",
+    "meaning": "monotony"
+  },
+  {
+    "rank": 12081,
+    "word": "過保護",
+    "reading": "かほご",
+    "meaning": "overprotective"
+  },
+  {
+    "rank": 12083,
+    "word": "甘い声",
+    "reading": "あまいこえ",
+    "meaning": "sweet voice"
+  },
+  {
+    "rank": 12096,
+    "word": "暑苦しい",
+    "reading": "あつくるしい",
+    "meaning": "sultry"
+  },
+  {
+    "rank": 12099,
+    "word": "突起",
+    "reading": "とっき",
+    "meaning": "protuberance"
+  },
+  {
+    "rank": 12102,
+    "word": "半開き",
+    "reading": "はんびらき",
+    "meaning": "partly open"
+  },
+  {
+    "rank": 12131,
+    "word": "最良",
+    "reading": "さいりょう",
+    "meaning": "the best"
+  },
+  {
+    "rank": 12134,
+    "word": "怠惰",
+    "reading": "たいだ",
+    "meaning": "lazy"
+  },
+  {
+    "rank": 12144,
+    "word": "カラカラ",
+    "reading": "カラカラ",
+    "meaning": "parched"
+  },
+  {
+    "rank": 12154,
+    "word": "あやふや",
+    "reading": "あやふや",
+    "meaning": "uncertain"
+  },
+  {
+    "rank": 12167,
+    "word": "回りくどい",
+    "reading": "まわりくどい",
+    "meaning": "circuitous"
+  },
+  {
+    "rank": 12177,
+    "word": "後ろ向き",
+    "reading": "うしろむき",
+    "meaning": "back-facing"
+  },
+  {
+    "rank": 12188,
+    "word": "確固",
+    "reading": "かっこ",
+    "meaning": "firm"
+  },
+  {
+    "rank": 12191,
+    "word": "キョトン",
+    "reading": "キョトン",
+    "meaning": "(looking) blankly"
+  },
+  {
+    "rank": 12200,
+    "word": "猛然",
+    "reading": "もうぜん",
+    "meaning": "fiercely"
+  },
+  {
+    "rank": 12208,
+    "word": "卑猥",
+    "reading": "ひわい",
+    "meaning": "indecent"
+  },
+  {
+    "rank": 12221,
+    "word": "輝かしい",
+    "reading": "かがやかしい",
+    "meaning": "brilliant"
+  },
+  {
+    "rank": 12250,
+    "word": "煩わしい",
+    "reading": "わずらわしい",
+    "meaning": "troublesome"
+  },
+  {
+    "rank": 12276,
+    "word": "薄情",
+    "reading": "はくじょう",
+    "meaning": "unfeeling"
+  },
+  {
+    "rank": 12291,
+    "word": "無骨",
+    "reading": "ぶこつ",
+    "meaning": "boorish"
+  },
+  {
+    "rank": 12299,
+    "word": "水平",
+    "reading": "すいへい",
+    "meaning": "horizontal"
+  },
+  {
+    "rank": 12319,
+    "word": "格好良い",
+    "reading": "かっこいい",
+    "meaning": "attractive"
+  },
+  {
+    "rank": 12338,
+    "word": "特異",
+    "reading": "とくい",
+    "meaning": "unique"
+  },
+  {
+    "rank": 12340,
+    "word": "白々しい",
+    "reading": "しらじらしい",
+    "meaning": "barefaced (e.g. lie)"
+  },
+  {
+    "rank": 12344,
+    "word": "黒々",
+    "reading": "くろぐろ",
+    "meaning": "in deep black"
+  },
+  {
+    "rank": 12347,
+    "word": "ビリビリ",
+    "reading": "ビリビリ",
+    "meaning": "(tear) to pieces"
+  },
+  {
+    "rank": 12360,
+    "word": "入念",
+    "reading": "にゅうねん",
+    "meaning": "careful"
+  },
+  {
+    "rank": 12367,
+    "word": "用心深い",
+    "reading": "ようじんぶかい",
+    "meaning": "careful"
+  },
+  {
+    "rank": 12374,
+    "word": "やべえ",
+    "reading": "やべえ",
+    "meaning": "dangerous"
+  },
+  {
+    "rank": 12381,
+    "word": "スマート",
+    "reading": "スマート",
+    "meaning": "smart (clothing, etc.)"
+  },
+  {
+    "rank": 12398,
+    "word": "淫ら",
+    "reading": "みだら",
+    "meaning": "obscene"
+  },
+  {
+    "rank": 12402,
+    "word": "永い",
+    "reading": "ながい",
+    "meaning": "long (time)"
+  },
+  {
+    "rank": 12404,
+    "word": "厳か",
+    "reading": "おごそか",
+    "meaning": "solemn (ceremony, atmosphere, etc.)"
+  },
+  {
+    "rank": 12406,
+    "word": "裸足",
+    "reading": "はだし",
+    "meaning": "barefoot"
+  },
+  {
+    "rank": 12424,
+    "word": "億劫",
+    "reading": "おっくう",
+    "meaning": "troublesome"
+  },
+  {
+    "rank": 12440,
+    "word": "愚",
+    "reading": "ぐ",
+    "meaning": "foolishness"
+  },
+  {
+    "rank": 12494,
+    "word": "たどたどしい",
+    "reading": "たどたどしい",
+    "meaning": "with difficulty"
+  },
+  {
+    "rank": 12501,
+    "word": "科学的",
+    "reading": "かがくてき",
+    "meaning": "scientific"
+  },
+  {
+    "rank": 12511,
+    "word": "調子が悪い",
+    "reading": "ちょうしがわるい",
+    "meaning": "in bad shape"
+  },
+  {
+    "rank": 12523,
+    "word": "平常",
+    "reading": "へいじょう",
+    "meaning": "normal"
+  },
+  {
+    "rank": 12542,
+    "word": "誠",
+    "reading": "まこと",
+    "meaning": "truth"
+  },
+  {
+    "rank": 12552,
+    "word": "うっさい",
+    "reading": "うっさい",
+    "meaning": "noisy"
+  },
+  {
+    "rank": 12562,
+    "word": "規則正しい",
+    "reading": "きそくただしい",
+    "meaning": "regular"
+  },
+  {
+    "rank": 12575,
+    "word": "ふかふか",
+    "reading": "ふかふか",
+    "meaning": "soft (and fluffy) (e.g. bed, bread, baked potato)"
+  },
+  {
+    "rank": 12589,
+    "word": "めちゃめちゃ",
+    "reading": "めちゃめちゃ",
+    "meaning": "disorderly"
+  },
+  {
+    "rank": 12601,
+    "word": "冷淡",
+    "reading": "れいたん",
+    "meaning": "cool"
+  },
+  {
+    "rank": 12602,
+    "word": "手触り",
+    "reading": "てざわり",
+    "meaning": "feel"
+  },
+  {
+    "rank": 12617,
+    "word": "過度",
+    "reading": "かど",
+    "meaning": "excessive"
+  },
+  {
+    "rank": 12622,
+    "word": "不慣れ",
+    "reading": "ふなれ",
+    "meaning": "inexperienced"
+  },
+  {
+    "rank": 12631,
+    "word": "手軽",
+    "reading": "てがる",
+    "meaning": "easy"
+  },
+  {
+    "rank": 12643,
+    "word": "不動",
+    "reading": "ふどう",
+    "meaning": "immovable"
+  },
+  {
+    "rank": 12648,
+    "word": "卑しい",
+    "reading": "いやしい",
+    "meaning": "lowborn"
+  },
+  {
+    "rank": 12665,
+    "word": "おぼろげ",
+    "reading": "おぼろげ",
+    "meaning": "vague"
+  },
+  {
+    "rank": 12672,
+    "word": "ガラガラ",
+    "reading": "ガラガラ",
+    "meaning": "with a clatter"
+  },
+  {
+    "rank": 12686,
+    "word": "至高",
+    "reading": "しこう",
+    "meaning": "supreme"
+  },
+  {
+    "rank": 12714,
+    "word": "緩慢",
+    "reading": "かんまん",
+    "meaning": "slow"
+  },
+  {
+    "rank": 12717,
+    "word": "より大きい",
+    "reading": "よりおおきい",
+    "meaning": "greater than ..."
+  },
+  {
+    "rank": 12721,
+    "word": "事務的",
+    "reading": "じむてき",
+    "meaning": "administrative"
+  },
+  {
+    "rank": 12730,
+    "word": "若々しい",
+    "reading": "わかわかしい",
+    "meaning": "youthful"
+  },
+  {
+    "rank": 12737,
+    "word": "凛々しい",
+    "reading": "りりしい",
+    "meaning": "gallant"
+  },
+  {
+    "rank": 12740,
+    "word": "木造",
+    "reading": "もくぞう",
+    "meaning": "wooden"
+  },
+  {
+    "rank": 12774,
+    "word": "厚み",
+    "reading": "あつみ",
+    "meaning": "thickness"
+  },
+  {
+    "rank": 12784,
+    "word": "甘美",
+    "reading": "かんび",
+    "meaning": "sweet (taste)"
+  },
+  {
+    "rank": 12790,
+    "word": "乱雑",
+    "reading": "らんざつ",
+    "meaning": "disorder"
+  },
+  {
+    "rank": 12798,
+    "word": "ほっそり",
+    "reading": "ほっそり",
+    "meaning": "slim"
+  },
+  {
+    "rank": 12822,
+    "word": "おぼつかない",
+    "reading": "おぼつかない",
+    "meaning": "uncertain"
+  },
+  {
+    "rank": 12830,
+    "word": "豊満",
+    "reading": "ほうまん",
+    "meaning": "stout"
+  },
+  {
+    "rank": 12833,
+    "word": "辟易",
+    "reading": "へきえき",
+    "meaning": "to be fed up (with)"
+  },
+  {
+    "rank": 12834,
+    "word": "ただならぬ",
+    "reading": "ただならぬ",
+    "meaning": "unusual"
+  },
+  {
+    "rank": 12855,
+    "word": "鷹揚",
+    "reading": "おうよう",
+    "meaning": "large-hearted"
+  },
+  {
+    "rank": 12877,
+    "word": "イマイチ",
+    "reading": "イマイチ",
+    "meaning": "not quite (right)"
+  },
+  {
+    "rank": 12934,
+    "word": "最速",
+    "reading": "さいそく",
+    "meaning": "fastest"
+  },
+  {
+    "rank": 12942,
+    "word": "いかがわしい",
+    "reading": "いかがわしい",
+    "meaning": "suspicious"
+  },
+  {
+    "rank": 12953,
+    "word": "豊",
+    "reading": "ゆたか",
+    "meaning": "abundant"
+  },
+  {
+    "rank": 13015,
+    "word": "垂れ下がる",
+    "reading": "たれさがる",
+    "meaning": "to hang"
+  },
+  {
+    "rank": 13023,
+    "word": "おっとり",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 13024,
+    "word": "気の利いた",
+    "reading": "きのきいた",
+    "meaning": "sensible"
+  },
+  {
+    "rank": 13029,
+    "word": "申し分ない",
+    "reading": "もうしぶんない",
+    "meaning": "no objection"
+  },
+  {
+    "rank": 13033,
+    "word": "ぬるぬる",
+    "reading": "ぬるぬる",
+    "meaning": "slimy"
+  },
+  {
+    "rank": 13036,
+    "word": "上から目線",
+    "reading": "うえからめせん",
+    "meaning": "condescending attitude"
+  },
+  {
+    "rank": 13053,
+    "word": "浅はか",
+    "reading": "あさはか",
+    "meaning": "shallow"
+  },
+  {
+    "rank": 13054,
+    "word": "空しい",
+    "reading": "むなしい",
+    "meaning": "empty"
+  },
+  {
+    "rank": 13056,
+    "word": "佇まい",
+    "reading": "たたずまい",
+    "meaning": "appearance"
+  },
+  {
+    "rank": 13068,
+    "word": "即席",
+    "reading": "そくせき",
+    "meaning": "extempore"
+  },
+  {
+    "rank": 13078,
+    "word": "気取り",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 13079,
+    "word": "挑発的",
+    "reading": "ちょうはつてき",
+    "meaning": "provocative"
+  },
+  {
+    "rank": 13084,
+    "word": "大々的",
+    "reading": "だいだいてき",
+    "meaning": "great"
+  },
+  {
+    "rank": 13088,
+    "word": "凜",
+    "reading": "りん",
+    "meaning": "cold"
+  },
+  {
+    "rank": 13095,
+    "word": "一途",
+    "reading": "いちず",
+    "meaning": "wholehearted"
+  },
+  {
+    "rank": 13097,
+    "word": "いやに",
+    "reading": "いやに",
+    "meaning": "awfully"
+  },
+  {
+    "rank": 13101,
+    "word": "馬鹿らしい",
+    "reading": "ばからしい",
+    "meaning": "absurd"
+  },
+  {
+    "rank": 13106,
+    "word": "顕著",
+    "reading": "けんちょ",
+    "meaning": "remarkable"
+  },
+  {
+    "rank": 13109,
+    "word": "荒っぽい",
+    "reading": "あらっぽい",
+    "meaning": "wild"
+  },
+  {
+    "rank": 13124,
+    "word": "ネガティブ",
+    "reading": "ネガティブ",
+    "meaning": "negative (e.g. thinking)"
+  },
+  {
+    "rank": 13134,
+    "word": "気品",
+    "reading": "きひん",
+    "meaning": "elegance"
+  },
+  {
+    "rank": 13137,
+    "word": "上々",
+    "reading": "じょうじょう",
+    "meaning": "the very best"
+  },
+  {
+    "rank": 13141,
+    "word": "ふっくら",
+    "reading": "ふっくら",
+    "meaning": "fully"
+  },
+  {
+    "rank": 13179,
+    "word": "ベタベタ",
+    "reading": "ベタベタ",
+    "meaning": "sticky"
+  },
+  {
+    "rank": 13181,
+    "word": "変わり者",
+    "reading": "かわりもの",
+    "meaning": "eccentric"
+  },
+  {
+    "rank": 13198,
+    "word": "突拍子もない",
+    "reading": "とっぴょうしもない",
+    "meaning": "astounding"
+  },
+  {
+    "rank": 13239,
+    "word": "呆気ない",
+    "reading": "あっけない",
+    "meaning": "unsatisfying"
+  },
+  {
+    "rank": 13243,
+    "word": "人間的",
+    "reading": "にんげんてき",
+    "meaning": "human"
+  },
+  {
+    "rank": 13244,
+    "word": "殺風景",
+    "reading": "さっぷうけい",
+    "meaning": "dreary"
+  },
+  {
+    "rank": 13290,
+    "word": "端正",
+    "reading": "たんせい",
+    "meaning": "handsome"
+  },
+  {
+    "rank": 13301,
+    "word": "ラフ",
+    "reading": "ラフ",
+    "meaning": "rough"
+  },
+  {
+    "rank": 13310,
+    "word": "しょっぱい",
+    "reading": "しょっぱい",
+    "meaning": "salty"
+  },
+  {
+    "rank": 13311,
+    "word": "剛",
+    "reading": "ごう",
+    "meaning": "strong"
+  },
+  {
+    "rank": 13336,
+    "word": "芳しい",
+    "reading": "かんばしい",
+    "meaning": "sweet-smelling"
+  },
+  {
+    "rank": 13339,
+    "word": "みすぼらしい",
+    "reading": "みすぼらしい",
+    "meaning": "shabby"
+  },
+  {
+    "rank": 13343,
+    "word": "特大",
+    "reading": "とくだい",
+    "meaning": "extra-large"
+  },
+  {
+    "rank": 13345,
+    "word": "味気ない",
+    "reading": "あじけない",
+    "meaning": "wearisome"
+  },
+  {
+    "rank": 13353,
+    "word": "上質",
+    "reading": "じょうしつ",
+    "meaning": "fine quality"
+  },
+  {
+    "rank": 13356,
+    "word": "がむしゃら",
+    "reading": "がむしゃら",
+    "meaning": "reckless"
+  },
+  {
+    "rank": 13369,
+    "word": "残虐",
+    "reading": "ざんぎゃく",
+    "meaning": "cruel"
+  },
+  {
+    "rank": 13375,
+    "word": "不遜",
+    "reading": "ふそん",
+    "meaning": "arrogance"
+  },
+  {
+    "rank": 13377,
+    "word": "一味",
+    "reading": "ひとあじ",
+    "meaning": "unique flavor (flavour)"
+  },
+  {
+    "rank": 13397,
+    "word": "平ら",
+    "reading": "たいら",
+    "meaning": "flat"
+  },
+  {
+    "rank": 13416,
+    "word": "初々しい",
+    "reading": "ういういしい",
+    "meaning": "innocent"
+  },
+  {
+    "rank": 13428,
+    "word": "パン屋",
+    "reading": "パンや",
+    "meaning": "bakery"
+  },
+  {
+    "rank": 13431,
+    "word": "ギョッと",
+    "reading": "ギョッと",
+    "meaning": "being startled"
+  },
+  {
+    "rank": 13439,
+    "word": "異名",
+    "reading": "いみょう",
+    "meaning": "another name"
+  },
+  {
+    "rank": 13445,
+    "word": "猛",
+    "reading": "もう",
+    "meaning": "greatly energetic"
+  },
+  {
+    "rank": 13449,
+    "word": "歩き方",
+    "reading": "あるきかた",
+    "meaning": "way one walks"
+  },
+  {
+    "rank": 13452,
+    "word": "潤う",
+    "reading": "うるおう",
+    "meaning": "to be moist"
+  },
+  {
+    "rank": 13497,
+    "word": "強靭",
+    "reading": "きょうじん",
+    "meaning": "tough"
+  },
+  {
+    "rank": 13500,
+    "word": "人並み",
+    "reading": "ひとなみ",
+    "meaning": "ordinary"
+  },
+  {
+    "rank": 13501,
+    "word": "スケベ",
+    "reading": "スケベ",
+    "meaning": "lewdness"
+  },
+  {
+    "rank": 13514,
+    "word": "険しい顔",
+    "reading": "けわしいかお",
+    "meaning": "grim face"
+  },
+  {
+    "rank": 13516,
+    "word": "無自覚",
+    "reading": "むじかく",
+    "meaning": "unaware"
+  },
+  {
+    "rank": 13527,
+    "word": "セクシー",
+    "reading": "セクシー",
+    "meaning": "sexy"
+  },
+  {
+    "rank": 13538,
+    "word": "物珍しい",
+    "reading": "ものめずらしい",
+    "meaning": "curious"
+  },
+  {
+    "rank": 13541,
+    "word": "デタラメ",
+    "reading": "デタラメ",
+    "meaning": "nonsense"
+  },
+  {
+    "rank": 13571,
+    "word": "高等",
+    "reading": "こうとう",
+    "meaning": "high class"
+  },
+  {
+    "rank": 13600,
+    "word": "酸味",
+    "reading": "さんみ",
+    "meaning": "sourness"
+  },
+  {
+    "rank": 13601,
+    "word": "風格",
+    "reading": "ふうかく",
+    "meaning": "personality"
+  },
+  {
+    "rank": 13602,
+    "word": "特集",
+    "reading": "とくしゅう",
+    "meaning": "feature (e.g. newspaper)"
+  },
+  {
+    "rank": 13612,
+    "word": "菊",
+    "reading": "きく",
+    "meaning": "chrysanthemum (Chrysanthemum morifolium)"
+  },
+  {
+    "rank": 13620,
+    "word": "甚だ",
+    "reading": "はなはだ",
+    "meaning": "very"
+  },
+  {
+    "rank": 13628,
+    "word": "歳月",
+    "reading": "さいげつ",
+    "meaning": "time"
+  },
+  {
+    "rank": 13631,
+    "word": "意識的",
+    "reading": "いしきてき",
+    "meaning": "conscious"
+  },
+  {
+    "rank": 13637,
+    "word": "決め込む",
+    "reading": "きめこむ",
+    "meaning": "to take for granted"
+  },
+  {
+    "rank": 13641,
+    "word": "築き上げる",
+    "reading": "きずきあげる",
+    "meaning": "to build up"
+  },
+  {
+    "rank": 13646,
+    "word": "背骨",
+    "reading": "せぼね",
+    "meaning": "spine"
+  },
+  {
+    "rank": 13658,
+    "word": "受けて立つ",
+    "reading": "うけてたつ",
+    "meaning": "to accept somebody's challenge"
+  },
+  {
+    "rank": 13676,
+    "word": "振り落とす",
+    "reading": "ふりおとす",
+    "meaning": "to shake off"
+  },
+  {
+    "rank": 13681,
+    "word": "ドリンク",
+    "reading": "ドリンク",
+    "meaning": "drink"
+  },
+  {
+    "rank": 13687,
+    "word": "されるがまま",
+    "reading": "されるがまま",
+    "meaning": "resigning to another's will"
+  },
+  {
+    "rank": 13740,
+    "word": "硬質",
+    "reading": "こうしつ",
+    "meaning": "hardness"
+  },
+  {
+    "rank": 13745,
+    "word": "我儘",
+    "reading": "わがまま",
+    "meaning": "selfish"
+  },
+  {
+    "rank": 13749,
+    "word": "ちゃっかり",
+    "reading": "ちゃっかり",
+    "meaning": "shrewdly"
+  },
+  {
+    "rank": 13751,
+    "word": "荘厳",
+    "reading": "そうごん",
+    "meaning": "solemn"
+  },
+  {
+    "rank": 13755,
+    "word": "甚だしい",
+    "reading": "はなはだしい",
+    "meaning": "extreme"
+  },
+  {
+    "rank": 13761,
+    "word": "精巧",
+    "reading": "せいこう",
+    "meaning": "elaborate"
+  },
+  {
+    "rank": 13769,
+    "word": "消極的",
+    "reading": "しょうきょくてき",
+    "meaning": "negative"
+  },
+  {
+    "rank": 13771,
+    "word": "逆さ",
+    "reading": "さかさ",
+    "meaning": "inverted"
+  },
+  {
+    "rank": 13792,
+    "word": "美少年",
+    "reading": "びしょうねん",
+    "meaning": "handsome youth (male)"
+  },
+  {
+    "rank": 13794,
+    "word": "お洒落",
+    "reading": "おしゃれ",
+    "meaning": "smartly dressed"
+  },
+  {
+    "rank": 13815,
+    "word": "温厚",
+    "reading": "おんこう",
+    "meaning": "gentle"
+  },
+  {
+    "rank": 13817,
+    "word": "瑞々しい",
+    "reading": "みずみずしい",
+    "meaning": "fresh and youthful"
+  },
+  {
+    "rank": 13842,
+    "word": "奇異",
+    "reading": "きい",
+    "meaning": "odd"
+  },
+  {
+    "rank": 13863,
+    "word": "下手くそ",
+    "reading": "へたくそ",
+    "meaning": "unskilled"
+  },
+  {
+    "rank": 13867,
+    "word": "素っ頓狂",
+    "reading": "すっとんきょう",
+    "meaning": "wild"
+  },
+  {
+    "rank": 13880,
+    "word": "長め",
+    "reading": "ながめ",
+    "meaning": "longish"
+  },
+  {
+    "rank": 13902,
+    "word": "デリケート",
+    "reading": "デリケート",
+    "meaning": "sensitive (person, heart, etc.)"
+  },
+  {
+    "rank": 13905,
+    "word": "ぞんざい",
+    "reading": "ぞんざい",
+    "meaning": "rough"
+  },
+  {
+    "rank": 13911,
+    "word": "ぐしゃぐしゃ",
+    "reading": "ぐしゃぐしゃ",
+    "meaning": "soggy"
+  },
+  {
+    "rank": 13913,
+    "word": "ヘタレ",
+    "reading": "ヘタレ",
+    "meaning": "incompetence"
+  },
+  {
+    "rank": 13967,
+    "word": "驚異的",
+    "reading": "きょういてき",
+    "meaning": "wonderful"
+  },
+  {
+    "rank": 13987,
+    "word": "最高級",
+    "reading": "さいこうきゅう",
+    "meaning": "highest grade"
+  },
+  {
+    "rank": 13994,
+    "word": "巨漢",
+    "reading": "きょかん",
+    "meaning": "giant"
+  },
+  {
+    "rank": 14029,
+    "word": "ツンと",
+    "reading": "ツンと",
+    "meaning": "standoffishly"
+  },
+  {
+    "rank": 14067,
+    "word": "くどい",
+    "reading": "くどい",
+    "meaning": "repetitious"
+  },
+  {
+    "rank": 14071,
+    "word": "無惨",
+    "reading": "むざん",
+    "meaning": "cruel"
+  },
+  {
+    "rank": 14075,
+    "word": "断片的",
+    "reading": "だんぺんてき",
+    "meaning": "fragmentary"
+  },
+  {
+    "rank": 14100,
+    "word": "むっつり",
+    "reading": "むっつり",
+    "meaning": "sullenly"
+  },
+  {
+    "rank": 14109,
+    "word": "気の抜けた",
+    "reading": "きのぬけた",
+    "meaning": "insipid"
+  },
+  {
+    "rank": 14122,
+    "word": "三体",
+    "reading": "さんたい",
+    "meaning": "the three character styles: square and semicursive and grass"
+  },
+  {
+    "rank": 14144,
+    "word": "戦闘機",
+    "reading": "せんとうき",
+    "meaning": "fighter (aircraft)"
+  },
+  {
+    "rank": 14175,
+    "word": "ベタ",
+    "reading": "ベタ",
+    "meaning": "covering"
+  },
+  {
+    "rank": 14203,
+    "word": "浅ましい",
+    "reading": "あさましい",
+    "meaning": "wretched"
+  },
+  {
+    "rank": 14214,
+    "word": "生ぬるい",
+    "reading": "なまぬるい",
+    "meaning": "lukewarm"
+  },
+  {
+    "rank": 14225,
+    "word": "俗",
+    "reading": "ぞく",
+    "meaning": "layman (esp. as opposed to a Buddhist monk)"
+  },
+  {
+    "rank": 14233,
+    "word": "貧相",
+    "reading": "ひんそう",
+    "meaning": "seedy-looking"
+  },
+  {
+    "rank": 14258,
+    "word": "健やか",
+    "reading": "すこやか",
+    "meaning": "vigorous"
+  },
+  {
+    "rank": 14314,
+    "word": "ペラペラ",
+    "reading": "ペラペラ",
+    "meaning": "fluently (speaking a foreign language)"
+  },
+  {
+    "rank": 14326,
+    "word": "断続的",
+    "reading": "だんぞくてき",
+    "meaning": "intermittent"
+  },
+  {
+    "rank": 14375,
+    "word": "モテない",
+    "reading": "モテない",
+    "meaning": "unwelcome"
+  },
+  {
+    "rank": 14398,
+    "word": "元気いっぱい",
+    "reading": "げんきいっぱい",
+    "meaning": "brimming with health (vigor, vigour)"
+  },
+  {
+    "rank": 14407,
+    "word": "悪質",
+    "reading": "あくしつ",
+    "meaning": "malicious"
+  },
+  {
+    "rank": 14414,
+    "word": "邪険",
+    "reading": "じゃけん",
+    "meaning": "cruelty"
+  },
+  {
+    "rank": 14424,
+    "word": "尊大",
+    "reading": "そんだい",
+    "meaning": "haughty"
+  },
+  {
+    "rank": 14425,
+    "word": "気だるい",
+    "reading": "けだるい",
+    "meaning": "languid"
+  },
+  {
+    "rank": 14493,
+    "word": "長すぎる",
+    "reading": "ながすぎる",
+    "meaning": "to be too long"
+  },
+  {
+    "rank": 14494,
+    "word": "険しい表情",
+    "reading": "けわしいひょうじょう",
+    "meaning": "stern expression"
+  },
+  {
+    "rank": 14503,
+    "word": "崇高",
+    "reading": "すうこう",
+    "meaning": "lofty"
+  },
+  {
+    "rank": 14522,
+    "word": "旨い",
+    "reading": "うまい",
+    "meaning": "skillful"
+  },
+  {
+    "rank": 14529,
+    "word": "女らしい",
+    "reading": "おんならしい",
+    "meaning": "womanly"
+  },
+  {
+    "rank": 14531,
+    "word": "個性的",
+    "reading": "こせいてき",
+    "meaning": "individual"
+  },
+  {
+    "rank": 14567,
+    "word": "斬新",
+    "reading": "ざんしん",
+    "meaning": "novel"
+  },
+  {
+    "rank": 14582,
+    "word": "真っ白い",
+    "reading": "まっしろい",
+    "meaning": "pure white"
+  },
+  {
+    "rank": 14595,
+    "word": "生暖かい",
+    "reading": "なまあたたかい",
+    "meaning": "lukewarm"
+  },
+  {
+    "rank": 14640,
+    "word": "能天気",
+    "reading": "のうてんき",
+    "meaning": "laid-back"
+  },
+  {
+    "rank": 14642,
+    "word": "甚大",
+    "reading": "じんだい",
+    "meaning": "very great"
+  },
+  {
+    "rank": 14681,
+    "word": "声高",
+    "reading": "こわだか",
+    "meaning": "loud (of a voice)"
+  },
+  {
+    "rank": 14697,
+    "word": "目がない",
+    "reading": "めがない",
+    "meaning": "being extremely fond of"
+  },
+  {
+    "rank": 14730,
+    "word": "残忍",
+    "reading": "ざんにん",
+    "meaning": "brutal"
+  },
+  {
+    "rank": 14756,
+    "word": "酸っぱい",
+    "reading": "すっぱい",
+    "meaning": "sour"
+  },
+  {
+    "rank": 14789,
+    "word": "ハッピー",
+    "reading": "ハッピー",
+    "meaning": "happy"
+  },
+  {
+    "rank": 14796,
+    "word": "不潔",
+    "reading": "ふけつ",
+    "meaning": "unclean"
+  },
+  {
+    "rank": 14823,
+    "word": "強欲",
+    "reading": "ごうよく",
+    "meaning": "greedy"
+  },
+  {
+    "rank": 14842,
+    "word": "鮮烈",
+    "reading": "せんれつ",
+    "meaning": "vivid"
+  },
+  {
+    "rank": 14844,
+    "word": "軟弱",
+    "reading": "なんじゃく",
+    "meaning": "weakness"
+  },
+  {
+    "rank": 14875,
+    "word": "ポジティブ",
+    "reading": "ポジティブ",
+    "meaning": "positive (e.g. thinking)"
+  },
+  {
+    "rank": 14883,
+    "word": "爛々",
+    "reading": "らんらん",
+    "meaning": "glaring"
+  },
+  {
+    "rank": 14885,
+    "word": "艶めかしい",
+    "reading": "なまめかしい",
+    "meaning": "charming"
+  },
+  {
+    "rank": 14886,
+    "word": "背の低い",
+    "reading": "せのひくい",
+    "meaning": "short (of a person)"
+  },
+  {
+    "rank": 14894,
+    "word": "丸々",
+    "reading": "まるまる",
+    "meaning": "plump"
+  },
+  {
+    "rank": 14895,
+    "word": "艶",
+    "reading": "つや",
+    "meaning": "gloss"
+  },
+  {
+    "rank": 14897,
+    "word": "平たい",
+    "reading": "ひらたい",
+    "meaning": "flat"
+  },
+  {
+    "rank": 14921,
+    "word": "清い",
+    "reading": "きよい",
+    "meaning": "clear"
+  },
+  {
+    "rank": 14941,
+    "word": "閑散",
+    "reading": "かんさん",
+    "meaning": "deserted (esp. store, market, town, streets)"
+  },
+  {
+    "rank": 14942,
+    "word": "憎々しい",
+    "reading": "にくにくしい",
+    "meaning": "hateful"
+  },
+  {
+    "rank": 14953,
+    "word": "段違い",
+    "reading": "だんちがい",
+    "meaning": "wildly different (in ability, strength, etc.)"
+  },
+  {
+    "rank": 14959,
+    "word": "これ見よがし",
+    "reading": "これみよがし",
+    "meaning": "showy"
+  },
+  {
+    "rank": 15007,
+    "word": "モテモテ",
+    "reading": "モテモテ",
+    "meaning": "sexy"
+  },
+  {
+    "rank": 15013,
+    "word": "すべすべ",
+    "reading": "すべすべ",
+    "meaning": "smooth (skin, etc.)"
+  },
+  {
+    "rank": 15018,
+    "word": "絶品",
+    "reading": "ぜっぴん",
+    "meaning": "superb piece of work"
+  },
+  {
+    "rank": 15030,
+    "word": "色白",
+    "reading": "いろじろ",
+    "meaning": "fair-skinned"
+  },
+  {
+    "rank": 15069,
+    "word": "ピカピカ",
+    "reading": "ピカピカ",
+    "meaning": "with a glitter"
+  },
+  {
+    "rank": 15078,
+    "word": "日常茶飯事",
+    "reading": "にちじょうさはんじ",
+    "meaning": "everyday occurrence"
+  },
+  {
+    "rank": 15088,
+    "word": "突飛",
+    "reading": "とっぴ",
+    "meaning": "erratic"
+  },
+  {
+    "rank": 15091,
+    "word": "すれすれ",
+    "reading": "すれすれ",
+    "meaning": "grazing"
+  },
+  {
+    "rank": 15113,
+    "word": "小さめ",
+    "reading": "ちいさめ",
+    "meaning": "smallish"
+  },
+  {
+    "rank": 15166,
+    "word": "溺愛",
+    "reading": "できあい",
+    "meaning": "infatuation"
+  },
+  {
+    "rank": 15195,
+    "word": "屈指",
+    "reading": "くっし",
+    "meaning": "leading"
+  },
+  {
+    "rank": 15229,
+    "word": "豪",
+    "reading": "ごう",
+    "meaning": "strong"
+  },
+  {
+    "rank": 15235,
+    "word": "もっともらしい",
+    "reading": "もっともらしい",
+    "meaning": "plausible"
+  },
+  {
+    "rank": 15290,
+    "word": "相",
+    "reading": "そう",
+    "meaning": "appearance"
+  },
+  {
+    "rank": 15293,
+    "word": "ずっしり",
+    "reading": "ずっしり",
+    "meaning": "heavily"
+  },
+  {
+    "rank": 15302,
+    "word": "勤勉",
+    "reading": "きんべん",
+    "meaning": "diligent"
+  },
+  {
+    "rank": 15399,
+    "word": "丁度良い",
+    "reading": "ちょうどいい",
+    "meaning": "just right (time, size, length, etc.)"
+  },
+  {
+    "rank": 15404,
+    "word": "堅実",
+    "reading": "けんじつ",
+    "meaning": "steady"
+  },
+  {
+    "rank": 15411,
+    "word": "残り少ない",
+    "reading": "のこりすくない",
+    "meaning": "scarce"
+  },
+  {
+    "rank": 15434,
+    "word": "煌々",
+    "reading": "こうこう",
+    "meaning": "brilliant"
+  },
+  {
+    "rank": 15457,
+    "word": "紳士的",
+    "reading": "しんしてき",
+    "meaning": "gentlemanly"
+  },
+  {
+    "rank": 15475,
+    "word": "物静か",
+    "reading": "ものしずか",
+    "meaning": "quiet"
+  },
+  {
+    "rank": 15529,
+    "word": "生臭い",
+    "reading": "なまぐさい",
+    "meaning": "smelling of fish"
+  },
+  {
+    "rank": 15552,
+    "word": "女性らしい",
+    "reading": "じょせいらしい",
+    "meaning": "feminine"
+  },
+  {
+    "rank": 15566,
+    "word": "子供らしい",
+    "reading": "こどもらしい",
+    "meaning": "childish"
+  },
+  {
+    "rank": 15574,
+    "word": "感覚的",
+    "reading": "かんかくてき",
+    "meaning": "sensible"
+  },
+  {
+    "rank": 15590,
+    "word": "人懐っこい",
+    "reading": "ひとなつっこい",
+    "meaning": "friendly"
+  },
+  {
+    "rank": 15597,
+    "word": "有数",
+    "reading": "ゆうすう",
+    "meaning": "prominent"
+  },
+  {
+    "rank": 15599,
+    "word": "疾い",
+    "reading": "はやい",
+    "meaning": "fast"
+  },
+  {
+    "rank": 15600,
+    "word": "野太い",
+    "reading": "のぶとい",
+    "meaning": "audacious"
+  },
+  {
+    "rank": 15651,
+    "word": "機敏",
+    "reading": "きびん",
+    "meaning": "clever"
+  },
+  {
+    "rank": 15656,
+    "word": "仰々しい",
+    "reading": "ぎょうぎょうしい",
+    "meaning": "exaggerated"
+  },
+  {
+    "rank": 15659,
+    "word": "凄腕",
+    "reading": "すごうで",
+    "meaning": "remarkable ability"
+  },
+  {
+    "rank": 15662,
+    "word": "ブス",
+    "reading": "ブス",
+    "meaning": "ugly woman"
+  },
+  {
+    "rank": 15667,
+    "word": "渋い顔をする",
+    "reading": "しぶいかおをする",
+    "meaning": "to frown (on)"
+  },
+  {
+    "rank": 15669,
+    "word": "心優しい",
+    "reading": "こころやさしい",
+    "meaning": "kind"
+  },
+  {
+    "rank": 15695,
+    "word": "芸術的",
+    "reading": "げいじゅつてき",
+    "meaning": "artistic"
+  },
+  {
+    "rank": 15705,
+    "word": "好戦的",
+    "reading": "こうせんてき",
+    "meaning": "belligerent"
+  },
+  {
+    "rank": 15712,
+    "word": "過",
+    "reading": "か",
+    "meaning": "surplus-"
+  },
+  {
+    "rank": 15728,
+    "word": "しら",
+    "reading": "しら",
+    "meaning": "white"
+  },
+  {
+    "rank": 15802,
+    "word": "器量",
+    "reading": "きりょう",
+    "meaning": "looks (esp. of a woman)"
+  },
+  {
+    "rank": 15811,
+    "word": "無頓着",
+    "reading": "むとんちゃく",
+    "meaning": "indifferent"
+  },
+  {
+    "rank": 15839,
+    "word": "薄闇",
+    "reading": "うすやみ",
+    "meaning": "very dim light"
+  },
+  {
+    "rank": 15847,
+    "word": "もうもう",
+    "reading": "もうもう",
+    "meaning": "dense (e.g. fog, dust, etc.)"
+  },
+  {
+    "rank": 15880,
+    "word": "広々とした",
+    "reading": "ひろびろとした",
+    "meaning": "open"
+  },
+  {
+    "rank": 15881,
+    "word": "つまらぬ",
+    "reading": "つまらぬ",
+    "meaning": "dull"
+  },
+  {
+    "rank": 15891,
+    "word": "汚らわしい",
+    "reading": "けがらわしい",
+    "meaning": "filthy"
+  },
+  {
+    "rank": 15937,
+    "word": "破格",
+    "reading": "はかく",
+    "meaning": "extraordinary"
+  },
+  {
+    "rank": 15968,
+    "word": "黒煙",
+    "reading": "こくえん",
+    "meaning": "black smoke"
+  },
+  {
+    "rank": 16001,
+    "word": "緻密",
+    "reading": "ちみつ",
+    "meaning": "minute"
+  },
+  {
+    "rank": 16004,
+    "word": "晴天",
+    "reading": "せいてん",
+    "meaning": "fine weather (i.e. little or no clouds)"
+  },
+  {
+    "rank": 16025,
+    "word": "より良い",
+    "reading": "よりよい",
+    "meaning": "superior"
+  },
+  {
+    "rank": 16044,
+    "word": "滅多",
+    "reading": "めった",
+    "meaning": "thoughtless"
+  },
+  {
+    "rank": 16084,
+    "word": "年若い",
+    "reading": "としわかい",
+    "meaning": "young"
+  },
+  {
+    "rank": 16086,
+    "word": "盲目",
+    "reading": "もうもく",
+    "meaning": "blindness"
+  },
+  {
+    "rank": 16105,
+    "word": "図太い",
+    "reading": "ずぶとい",
+    "meaning": "bold"
+  },
+  {
+    "rank": 16108,
+    "word": "殺伐",
+    "reading": "さつばつ",
+    "meaning": "brutal (atmosphere, society, etc.)"
+  },
+  {
+    "rank": 16119,
+    "word": "自信たっぷり",
+    "reading": "じしんたっぷり",
+    "meaning": "confident"
+  },
+  {
+    "rank": 16132,
+    "word": "待ち遠しい",
+    "reading": "まちどおしい",
+    "meaning": "longed-for"
+  },
+  {
+    "rank": 16138,
+    "word": "否定的",
+    "reading": "ひていてき",
+    "meaning": "negative"
+  },
+  {
+    "rank": 16141,
+    "word": "目まぐるしい",
+    "reading": "めまぐるしい",
+    "meaning": "hectic"
+  },
+  {
+    "rank": 16149,
+    "word": "果敢",
+    "reading": "かかん",
+    "meaning": "resolute"
+  },
+  {
+    "rank": 16173,
+    "word": "クラクラ",
+    "reading": "クラクラ",
+    "meaning": "dizzy"
+  },
+  {
+    "rank": 16182,
+    "word": "半裸",
+    "reading": "はんら",
+    "meaning": "half-nakedness"
+  },
+  {
+    "rank": 16184,
+    "word": "奇抜",
+    "reading": "きばつ",
+    "meaning": "novel"
+  },
+  {
+    "rank": 16188,
+    "word": "古めかしい",
+    "reading": "ふるめかしい",
+    "meaning": "old-fashioned"
+  },
+  {
+    "rank": 16189,
+    "word": "気怠い",
+    "reading": "けだるい",
+    "meaning": "languid"
+  },
+  {
+    "rank": 16190,
+    "word": "ご立派",
+    "reading": "ごりっぱ",
+    "meaning": "splendid"
+  },
+  {
+    "rank": 16207,
+    "word": "腹黒い",
+    "reading": "はらぐろい",
+    "meaning": "mean"
+  },
+  {
+    "rank": 16208,
+    "word": "細やか",
+    "reading": "こまやか",
+    "meaning": "tender"
+  },
+  {
+    "rank": 16209,
+    "word": "カリカリ",
+    "reading": "カリカリ",
+    "meaning": "crisp (e.g. potato chip, fried fish, etc.)"
+  },
+  {
+    "rank": 16217,
+    "word": "煌びやか",
+    "reading": "きらびやか",
+    "meaning": "gorgeous"
+  },
+  {
+    "rank": 16224,
+    "word": "仄か",
+    "reading": "ほのか",
+    "meaning": "faint"
+  },
+  {
+    "rank": 16233,
+    "word": "和服",
+    "reading": "わふく",
+    "meaning": "Japanese clothes"
+  },
+  {
+    "rank": 16241,
+    "word": "程よい",
+    "reading": "ほどよい",
+    "meaning": "moderate"
+  },
+  {
+    "rank": 16245,
+    "word": "平均的",
+    "reading": "へいきんてき",
+    "meaning": "average"
+  },
+  {
+    "rank": 16267,
+    "word": "不思議なくらい",
+    "reading": "ふしぎなくらい",
+    "meaning": "curiously"
+  },
+  {
+    "rank": 16274,
+    "word": "悪臭",
+    "reading": "あくしゅう",
+    "meaning": "stink"
+  },
+  {
+    "rank": 16284,
+    "word": "順当",
+    "reading": "じゅんとう",
+    "meaning": "proper"
+  },
+  {
+    "rank": 16311,
+    "word": "聡い",
+    "reading": "さとい",
+    "meaning": "clever"
+  },
+  {
+    "rank": 16312,
+    "word": "頑強",
+    "reading": "がんきょう",
+    "meaning": "stubborn"
+  },
+  {
+    "rank": 16328,
+    "word": "どろり",
+    "reading": "どろり",
+    "meaning": "thick (of a liquid)"
+  },
+  {
+    "rank": 16355,
+    "word": "気が早い",
+    "reading": "きがはやい",
+    "meaning": "short-tempered"
+  },
+  {
+    "rank": 16358,
+    "word": "意のままに",
+    "reading": "いのままに",
+    "meaning": "at will"
+  },
+  {
+    "rank": 16361,
+    "word": "彩り",
+    "reading": "いろどり",
+    "meaning": "coloring"
+  },
+  {
+    "rank": 16370,
+    "word": "ほど近い",
+    "reading": "ほどちかい",
+    "meaning": "near"
+  },
+  {
+    "rank": 16371,
+    "word": "反抗的",
+    "reading": "はんこうてき",
+    "meaning": "rebellious"
+  },
+  {
+    "rank": 16383,
+    "word": "人となり",
+    "reading": "ひととなり",
+    "meaning": "hereditary disposition"
+  },
+  {
+    "rank": 16387,
+    "word": "高齢",
+    "reading": "こうれい",
+    "meaning": "advanced age"
+  },
+  {
+    "rank": 16395,
+    "word": "剣呑",
+    "reading": "けんのん",
+    "meaning": "risky"
+  },
+  {
+    "rank": 16405,
+    "word": "ナチュラル",
+    "reading": "ナチュラル",
+    "meaning": "natural"
+  },
+  {
+    "rank": 16408,
+    "word": "甘味",
+    "reading": "かんみ",
+    "meaning": "sweetness"
+  },
+  {
+    "rank": 16435,
+    "word": "専門的",
+    "reading": "せんもんてき",
+    "meaning": "technical (e.g. discussion)"
+  },
+  {
+    "rank": 16442,
+    "word": "適正",
+    "reading": "てきせい",
+    "meaning": "reasonable"
+  },
+  {
+    "rank": 16448,
+    "word": "すんごい",
+    "reading": "すんごい",
+    "meaning": "terrible"
+  },
+  {
+    "rank": 16451,
+    "word": "理性的",
+    "reading": "りせいてき",
+    "meaning": "rational"
+  },
+  {
+    "rank": 16453,
+    "word": "密接",
+    "reading": "みっせつ",
+    "meaning": "close (relationship, connection, etc.)"
+  },
+  {
+    "rank": 16461,
+    "word": "手薄",
+    "reading": "てうす",
+    "meaning": "shorthanded"
+  },
+  {
+    "rank": 16463,
+    "word": "ワイルド",
+    "reading": "ワイルド",
+    "meaning": "wild"
+  },
+  {
+    "rank": 16474,
+    "word": "平行",
+    "reading": "へいこう",
+    "meaning": "parallelism"
+  },
+  {
+    "rank": 16493,
+    "word": "やらしい",
+    "reading": "やらしい",
+    "meaning": "unpleasant"
+  },
+  {
+    "rank": 16494,
+    "word": "如何なる",
+    "reading": "いかなる",
+    "meaning": "any kind of"
+  },
+  {
+    "rank": 16495,
+    "word": "特色",
+    "reading": "とくしょく",
+    "meaning": "characteristic"
+  },
+  {
+    "rank": 16496,
+    "word": "最大級",
+    "reading": "さいだいきゅう",
+    "meaning": "largest class"
+  },
+  {
+    "rank": 16519,
+    "word": "薄気味悪い",
+    "reading": "うすきみわるい",
+    "meaning": "weird"
+  },
+  {
+    "rank": 16530,
+    "word": "高潔",
+    "reading": "こうけつ",
+    "meaning": "noble"
+  },
+  {
+    "rank": 16539,
+    "word": "手厳しい",
+    "reading": "てきびしい",
+    "meaning": "harsh (criticism, treatment, etc.)"
+  },
+  {
+    "rank": 16564,
+    "word": "高名",
+    "reading": "こうめい",
+    "meaning": "famous"
+  },
+  {
+    "rank": 16573,
+    "word": "愚かしい",
+    "reading": "おろかしい",
+    "meaning": "foolish"
+  },
+  {
+    "rank": 16586,
+    "word": "薄手",
+    "reading": "うすで",
+    "meaning": "thin (paper, cloth, porcelain, etc.)"
+  },
+  {
+    "rank": 16624,
+    "word": "デブ",
+    "reading": "デブ",
+    "meaning": "fat"
+  },
+  {
+    "rank": 16659,
+    "word": "酷似",
+    "reading": "こくじ",
+    "meaning": "resembling closely"
+  },
+  {
+    "rank": 16690,
+    "word": "旺盛",
+    "reading": "おうせい",
+    "meaning": "lively"
+  },
+  {
+    "rank": 16695,
+    "word": "浮かない顔",
+    "reading": "うかないかお",
+    "meaning": "looking depressed"
+  },
+  {
+    "rank": 16701,
+    "word": "流暢",
+    "reading": "りゅうちょう",
+    "meaning": "fluent (in a language)"
+  },
+  {
+    "rank": 16718,
+    "word": "浅黒い",
+    "reading": "あさぐろい",
+    "meaning": "dark (skin, complexion, etc.)"
+  },
+  {
+    "rank": 16749,
+    "word": "危機的",
+    "reading": "ききてき",
+    "meaning": "critical"
+  },
+  {
+    "rank": 16762,
+    "word": "暢気",
+    "reading": "のんき",
+    "meaning": "carefree"
+  },
+  {
+    "rank": 16767,
+    "word": "白熱",
+    "reading": "はくねつ",
+    "meaning": "white heat"
+  },
+  {
+    "rank": 16768,
+    "word": "頭が良い",
+    "reading": "あたまがよい",
+    "meaning": "bright"
+  },
+  {
+    "rank": 16797,
+    "word": "頭のいい",
+    "reading": "あたまのいい",
+    "meaning": "bright"
+  },
+  {
+    "rank": 16810,
+    "word": "ヒラヒラ",
+    "reading": "ヒラヒラ",
+    "meaning": "fluttering"
+  },
+  {
+    "rank": 16829,
+    "word": "大真面目",
+    "reading": "おおまじめ",
+    "meaning": "deadly serious"
+  },
+  {
+    "rank": 16839,
+    "word": "不細工",
+    "reading": "ぶさいく",
+    "meaning": "clumsy (work)"
+  },
+  {
+    "rank": 16856,
+    "word": "生温かい",
+    "reading": "なまあたたかい",
+    "meaning": "lukewarm"
+  },
+  {
+    "rank": 16857,
+    "word": "傍若無人",
+    "reading": "ぼうじゃくぶじん",
+    "meaning": "behaving outrageously as though there were no one around"
+  },
+  {
+    "rank": 16858,
+    "word": "下等",
+    "reading": "かとう",
+    "meaning": "inferior"
+  },
+  {
+    "rank": 16865,
+    "word": "えげつない",
+    "reading": "えげつない",
+    "meaning": "dirty"
+  },
+  {
+    "rank": 16866,
+    "word": "華々しい",
+    "reading": "はなばなしい",
+    "meaning": "brilliant"
+  },
+  {
+    "rank": 16882,
+    "word": "痛覚",
+    "reading": "つうかく",
+    "meaning": "sense of pain"
+  },
+  {
+    "rank": 16939,
+    "word": "堅牢",
+    "reading": "けんろう",
+    "meaning": "solid"
+  },
+  {
+    "rank": 16946,
+    "word": "微細",
+    "reading": "びさい",
+    "meaning": "minute"
+  },
+  {
+    "rank": 16951,
+    "word": "誇り高い",
+    "reading": "ほこりたかい",
+    "meaning": "proud"
+  },
+  {
+    "rank": 16952,
+    "word": "フワフワ",
+    "reading": "フワフワ",
+    "meaning": "lightly (floating, drifting, etc.)"
+  },
+  {
+    "rank": 16956,
+    "word": "持ち前",
+    "reading": "もちまえ",
+    "meaning": "one's nature"
+  },
+  {
+    "rank": 16958,
+    "word": "並大抵",
+    "reading": "なみたいてい",
+    "meaning": "ordinary"
+  },
+  {
+    "rank": 16968,
+    "word": "衝動的",
+    "reading": "しょうどうてき",
+    "meaning": "impulsive"
+  },
+  {
+    "rank": 16982,
+    "word": "狂おしい",
+    "reading": "くるおしい",
+    "meaning": "mad (with grief, love, etc.)"
+  },
+  {
+    "rank": 16992,
+    "word": "スタミナ",
+    "reading": "スタミナ",
+    "meaning": "stamina"
+  },
+  {
+    "rank": 16997,
+    "word": "ごつい",
+    "reading": "ごつい",
+    "meaning": "large and rough"
+  },
+  {
+    "rank": 16998,
+    "word": "恐れ多い",
+    "reading": "おそれおおい",
+    "meaning": "awesome"
+  },
+  {
+    "rank": 17014,
+    "word": "気色悪い",
+    "reading": "きしょくわるい",
+    "meaning": "weird"
+  },
+  {
+    "rank": 17028,
+    "word": "オロオロ",
+    "reading": "オロオロ",
+    "meaning": "in confusion"
+  },
+  {
+    "rank": 17041,
+    "word": "ちょろい",
+    "reading": "ちょろい",
+    "meaning": "easy"
+  },
+  {
+    "rank": 17048,
+    "word": "几帳面",
+    "reading": "きちょうめん",
+    "meaning": "methodical"
+  },
+  {
+    "rank": 17052,
+    "word": "童顔",
+    "reading": "どうがん",
+    "meaning": "child's face"
+  },
+  {
+    "rank": 17059,
+    "word": "びしょ濡れ",
+    "reading": "びしょぬれ",
+    "meaning": "sopping wet"
+  },
+  {
+    "rank": 17064,
+    "word": "メジャー",
+    "reading": "メジャー",
+    "meaning": "major"
+  },
+  {
+    "rank": 17100,
+    "word": "筋肉質",
+    "reading": "きんにくしつ",
+    "meaning": "muscular"
+  },
+  {
+    "rank": 17106,
+    "word": "人聞きの悪い",
+    "reading": "ひとぎきのわるい",
+    "meaning": "disreputable"
+  },
+  {
+    "rank": 17111,
+    "word": "綿密",
+    "reading": "めんみつ",
+    "meaning": "minute"
+  },
+  {
+    "rank": 17114,
+    "word": "むず痒い",
+    "reading": "むずがゆい",
+    "meaning": "itchy"
+  },
+  {
+    "rank": 17115,
+    "word": "とびっきり",
+    "reading": "とびっきり",
+    "meaning": "best"
+  },
+  {
+    "rank": 17121,
+    "word": "薄っぺらい",
+    "reading": "うすっぺらい",
+    "meaning": "very thin"
+  },
+  {
+    "rank": 17147,
+    "word": "あんぐり",
+    "reading": "あんぐり",
+    "meaning": "open-mouthed"
+  },
+  {
+    "rank": 17151,
+    "word": "カッコ悪い",
+    "reading": "カッコわるい",
+    "meaning": "unattractive"
+  },
+  {
+    "rank": 17157,
+    "word": "静粛",
+    "reading": "せいしゅく",
+    "meaning": "silent"
+  },
+  {
+    "rank": 17159,
+    "word": "頭いい",
+    "reading": "あたまいい",
+    "meaning": "bright"
+  },
+  {
+    "rank": 17160,
+    "word": "敏捷",
+    "reading": "びんしょう",
+    "meaning": "nimble"
+  },
+  {
+    "rank": 17175,
+    "word": "雄大",
+    "reading": "ゆうだい",
+    "meaning": "grand"
+  },
+  {
+    "rank": 17176,
+    "word": "チョロい",
+    "reading": "チョロい",
+    "meaning": "easy"
+  },
+  {
+    "rank": 17189,
+    "word": "昏い",
+    "reading": "くらい",
+    "meaning": "dark"
+  },
+  {
+    "rank": 17221,
+    "word": "硬度",
+    "reading": "こうど",
+    "meaning": "hardness"
+  },
+  {
+    "rank": 17259,
+    "word": "頭の悪い",
+    "reading": "あたまのわるい",
+    "meaning": "slow"
+  },
+  {
+    "rank": 17293,
+    "word": "粗い",
+    "reading": "あらい",
+    "meaning": "coarse"
+  },
+  {
+    "rank": 17295,
+    "word": "寡黙",
+    "reading": "かもく",
+    "meaning": "untalkative"
+  },
+  {
+    "rank": 17299,
+    "word": "威圧的",
+    "reading": "いあつてき",
+    "meaning": "coercive"
+  },
+  {
+    "rank": 17302,
+    "word": "惜しみない",
+    "reading": "おしみない",
+    "meaning": "generous"
+  },
+  {
+    "rank": 17310,
+    "word": "ざら",
+    "reading": "ざら",
+    "meaning": "common"
+  },
+  {
+    "rank": 17322,
+    "word": "寂れる",
+    "reading": "さびれる",
+    "meaning": "to decline (in prosperity)"
+  },
+  {
+    "rank": 17326,
+    "word": "雄々しい",
+    "reading": "おおしい",
+    "meaning": "manly"
+  },
+  {
+    "rank": 17338,
+    "word": "混濁",
+    "reading": "こんだく",
+    "meaning": "turbidity"
+  },
+  {
+    "rank": 17352,
+    "word": "長大",
+    "reading": "ちょうだい",
+    "meaning": "long and large"
+  },
+  {
+    "rank": 17356,
+    "word": "陳腐",
+    "reading": "ちんぷ",
+    "meaning": "stale"
+  },
+  {
+    "rank": 17390,
+    "word": "ごつごつ",
+    "reading": "ごつごつ",
+    "meaning": "rugged"
+  },
+  {
+    "rank": 17399,
+    "word": "ふてぶてしい",
+    "reading": "ふてぶてしい",
+    "meaning": "impudent"
+  },
+  {
+    "rank": 17410,
+    "word": "白む",
+    "reading": "しらむ",
+    "meaning": "to grow light"
+  },
+  {
+    "rank": 17420,
+    "word": "敬遠",
+    "reading": "けいえん",
+    "meaning": "pretending to respect someone while in fact staying distant"
+  },
+  {
+    "rank": 17429,
+    "word": "大人げない",
+    "reading": "おとなげない",
+    "meaning": "immature"
+  },
+  {
+    "rank": 17435,
+    "word": "奔放",
+    "reading": "ほんぽう",
+    "meaning": "wild"
+  },
+  {
+    "rank": 17447,
+    "word": "清浄",
+    "reading": "せいじょう",
+    "meaning": "pure"
+  },
+  {
+    "rank": 17460,
+    "word": "つるつる",
+    "reading": "つるつる",
+    "meaning": "smooth"
+  },
+  {
+    "rank": 17484,
+    "word": "厳粛",
+    "reading": "げんしゅく",
+    "meaning": "grave"
+  },
+  {
+    "rank": 17493,
+    "word": "背が低い",
+    "reading": "せがひくい",
+    "meaning": "short (of a person)"
+  },
+  {
+    "rank": 17494,
+    "word": "強面",
+    "reading": "こわもて",
+    "meaning": "fierce look"
+  },
+  {
+    "rank": 17499,
+    "word": "天才的",
+    "reading": "てんさいてき",
+    "meaning": "talented"
+  },
+  {
+    "rank": 17550,
+    "word": "凡庸",
+    "reading": "ぼんよう",
+    "meaning": "mediocre"
+  },
+  {
+    "rank": 17567,
+    "word": "凹凸",
+    "reading": "おうとつ",
+    "meaning": "unevenness"
+  },
+  {
+    "rank": 17569,
+    "word": "壮観",
+    "reading": "そうかん",
+    "meaning": "magnificent spectacle"
+  },
+  {
+    "rank": 17579,
+    "word": "別格",
+    "reading": "べっかく",
+    "meaning": "special"
+  },
+  {
+    "rank": 17612,
+    "word": "色鮮やか",
+    "reading": "いろあざやか",
+    "meaning": "vivid"
+  },
+  {
+    "rank": 17647,
+    "word": "代表的",
+    "reading": "だいひょうてき",
+    "meaning": "representative"
+  },
+  {
+    "rank": 17669,
+    "word": "えぐい",
+    "reading": "えぐい",
+    "meaning": "harsh (taste, feeling, etc.)"
+  },
+  {
+    "rank": 17670,
+    "word": "敬虔",
+    "reading": "けいけん",
+    "meaning": "pious"
+  },
+  {
+    "rank": 17679,
+    "word": "バツが悪い",
+    "reading": "バツがわるい",
+    "meaning": "awkward"
+  },
+  {
+    "rank": 17690,
+    "word": "どちらからともなく",
+    "reading": "どちらからともなく",
+    "meaning": "both"
+  },
+  {
+    "rank": 17696,
+    "word": "ちぐはぐ",
+    "reading": "ちぐはぐ",
+    "meaning": "mismatched"
+  },
+  {
+    "rank": 17697,
+    "word": "人為的",
+    "reading": "じんいてき",
+    "meaning": "artificial"
+  },
+  {
+    "rank": 17704,
+    "word": "お粗末",
+    "reading": "おそまつ",
+    "meaning": "poor"
+  },
+  {
+    "rank": 17742,
+    "word": "うっとい",
+    "reading": "うっとい",
+    "meaning": "irritating"
+  },
+  {
+    "rank": 17782,
+    "word": "献身的",
+    "reading": "けんしんてき",
+    "meaning": "devoted"
+  },
+  {
+    "rank": 17804,
+    "word": "画期的",
+    "reading": "かっきてき",
+    "meaning": "ground-breaking"
+  },
+  {
+    "rank": 17830,
+    "word": "大当たり",
+    "reading": "おおあたり",
+    "meaning": "big hit"
+  },
+  {
+    "rank": 17838,
+    "word": "びっしょり",
+    "reading": "びっしょり",
+    "meaning": "wet through"
+  },
+  {
+    "rank": 17844,
+    "word": "姑息",
+    "reading": "こそく",
+    "meaning": "underhanded"
+  },
+  {
+    "rank": 17849,
+    "word": "不格好",
+    "reading": "ぶかっこう",
+    "meaning": "unshapely"
+  },
+  {
+    "rank": 17886,
+    "word": "周到",
+    "reading": "しゅうとう",
+    "meaning": "careful"
+  },
+  {
+    "rank": 17894,
+    "word": "毒々しい",
+    "reading": "どくどくしい",
+    "meaning": "poisonous"
+  },
+  {
+    "rank": 17900,
+    "word": "安価",
+    "reading": "あんか",
+    "meaning": "low-priced"
+  },
+  {
+    "rank": 17914,
+    "word": "ぐにゃり",
+    "reading": "ぐにゃり",
+    "meaning": "flabbily"
+  },
+  {
+    "rank": 17918,
+    "word": "べっとり",
+    "reading": "べっとり",
+    "meaning": "sticky"
+  },
+  {
+    "rank": 17923,
+    "word": "神速",
+    "reading": "しんそく",
+    "meaning": "great speed"
+  },
+  {
+    "rank": 17930,
+    "word": "表面的",
+    "reading": "ひょうめんてき",
+    "meaning": "superficial"
+  },
+  {
+    "rank": 17945,
+    "word": "ひたむき",
+    "reading": "ひたむき",
+    "meaning": "earnest"
+  },
+  {
+    "rank": 17946,
+    "word": "陰湿",
+    "reading": "いんしつ",
+    "meaning": "malicious"
+  },
+  {
+    "rank": 18027,
+    "word": "手の込んだ",
+    "reading": "てのこんだ",
+    "meaning": "intricate"
+  },
+  {
+    "rank": 18029,
+    "word": "ぎくしゃく",
+    "reading": "ぎくしゃく",
+    "meaning": "awkward (movements, speech, etc.)"
+  },
+  {
+    "rank": 18033,
+    "word": "格好悪い",
+    "reading": "かっこうわるい",
+    "meaning": "unattractive"
+  },
+  {
+    "rank": 18034,
+    "word": "しようもない",
+    "reading": "しようもない",
+    "meaning": "stupid"
+  },
+  {
+    "rank": 18044,
+    "word": "多様",
+    "reading": "たよう",
+    "meaning": "diverse"
+  },
+  {
+    "rank": 18045,
+    "word": "朗々",
+    "reading": "ろうろう",
+    "meaning": "clear"
+  },
+  {
+    "rank": 18076,
+    "word": "身振り",
+    "reading": "みぶり",
+    "meaning": "gesture"
+  },
+  {
+    "rank": 18088,
+    "word": "ろく",
+    "reading": "ろく",
+    "meaning": "satisfactory"
+  },
+  {
+    "rank": 18090,
+    "word": "品",
+    "reading": "ひん",
+    "meaning": "elegance"
+  },
+  {
+    "rank": 18097,
+    "word": "口うるさい",
+    "reading": "くちうるさい",
+    "meaning": "nagging"
+  },
+  {
+    "rank": 18100,
+    "word": "ハゲ",
+    "reading": "ハゲ",
+    "meaning": "baldness"
+  },
+  {
+    "rank": 18103,
+    "word": "熱々",
+    "reading": "あつあつ",
+    "meaning": "piping hot"
+  },
+  {
+    "rank": 18109,
+    "word": "逆さま",
+    "reading": "さかさま",
+    "meaning": "inverted"
+  },
+  {
+    "rank": 18115,
+    "word": "しかめっ面",
+    "reading": "しかめっつら",
+    "meaning": "frown"
+  },
+  {
+    "rank": 18156,
+    "word": "つぶら",
+    "reading": "つぶら",
+    "meaning": "round and cute (esp. of eyes)"
+  },
+  {
+    "rank": 18165,
+    "word": "歴然",
+    "reading": "れきぜん",
+    "meaning": "evident"
+  },
+  {
+    "rank": 18183,
+    "word": "サクサク",
+    "reading": "サクサク",
+    "meaning": "crisp (not moist or juicy)"
+  },
+  {
+    "rank": 18185,
+    "word": "空高い",
+    "reading": "そらたかい",
+    "meaning": "high in the sky"
+  },
+  {
+    "rank": 18186,
+    "word": "むごい",
+    "reading": "むごい",
+    "meaning": "cruel"
+  },
+  {
+    "rank": 18199,
+    "word": "部分的",
+    "reading": "ぶぶんてき",
+    "meaning": "partial"
+  },
+  {
+    "rank": 18202,
+    "word": "トロトロ",
+    "reading": "トロトロ",
+    "meaning": "sticky"
+  },
+  {
+    "rank": 18204,
+    "word": "旨味",
+    "reading": "うまみ",
+    "meaning": "good flavor (flavour)"
+  },
+  {
+    "rank": 18222,
+    "word": "大がかり",
+    "reading": "おおがかり",
+    "meaning": "large-scale"
+  },
+  {
+    "rank": 18232,
+    "word": "壊滅的",
+    "reading": "かいめつてき",
+    "meaning": "devastating"
+  },
+  {
+    "rank": 18237,
+    "word": "紛らわしい",
+    "reading": "まぎらわしい",
+    "meaning": "easily mixed up (e.g. similar words)"
+  },
+  {
+    "rank": 18267,
+    "word": "背",
+    "reading": "せい",
+    "meaning": "height"
+  },
+  {
+    "rank": 18281,
+    "word": "体長",
+    "reading": "たいちょう",
+    "meaning": "length (of an animal)"
+  },
+  {
+    "rank": 18294,
+    "word": "黒っぽい",
+    "reading": "くろっぽい",
+    "meaning": "dark"
+  },
+  {
+    "rank": 18327,
+    "word": "小賢しい",
+    "reading": "こざかしい",
+    "meaning": "clever"
+  },
+  {
+    "rank": 18336,
+    "word": "外面",
+    "reading": "がいめん",
+    "meaning": "outer surface"
+  },
+  {
+    "rank": 18339,
+    "word": "性急",
+    "reading": "せいきゅう",
+    "meaning": "hasty"
+  },
+  {
+    "rank": 18343,
+    "word": "血塗れ",
+    "reading": "ちまみれ",
+    "meaning": "bloodstained"
+  },
+  {
+    "rank": 18353,
+    "word": "切れ長",
+    "reading": "きれなが",
+    "meaning": "long slits (esp. of eyes)"
+  },
+  {
+    "rank": 18373,
+    "word": "辛抱強い",
+    "reading": "しんぼうづよい",
+    "meaning": "patient"
+  },
+  {
+    "rank": 18397,
+    "word": "末永い",
+    "reading": "すえながい",
+    "meaning": "permanent"
+  },
+  {
+    "rank": 18451,
+    "word": "険",
+    "reading": "けん",
+    "meaning": "steepness"
+  },
+  {
+    "rank": 18458,
+    "word": "つやつや",
+    "reading": "つやつや",
+    "meaning": "glossy"
+  },
+  {
+    "rank": 18478,
+    "word": "利口",
+    "reading": "りこう",
+    "meaning": "clever"
+  },
+  {
+    "rank": 18490,
+    "word": "色褪せる",
+    "reading": "いろあせる",
+    "meaning": "to fade (of a colour)"
+  },
+  {
+    "rank": 18501,
+    "word": "挑戦的",
+    "reading": "ちょうせんてき",
+    "meaning": "challenging"
+  },
+  {
+    "rank": 18516,
+    "word": "粗野",
+    "reading": "そや",
+    "meaning": "rustic"
+  },
+  {
+    "rank": 18520,
+    "word": "グロテスク",
+    "reading": "グロテスク",
+    "meaning": "grotesque"
+  },
+  {
+    "rank": 18624,
+    "word": "くりくり",
+    "reading": "くりくり",
+    "meaning": "big and round (eyes, shaven head, etc.)"
+  },
+  {
+    "rank": 18627,
+    "word": "華美",
+    "reading": "かび",
+    "meaning": "splendor"
+  },
+  {
+    "rank": 18663,
+    "word": "高尚",
+    "reading": "こうしょう",
+    "meaning": "high"
+  },
+  {
+    "rank": 18666,
+    "word": "願ってもない",
+    "reading": "ねがってもない",
+    "meaning": "best one could ask for"
+  },
+  {
+    "rank": 18676,
+    "word": "相",
+    "reading": "そう",
+    "meaning": "appearance"
+  },
+  {
+    "rank": 18691,
+    "word": "色香",
+    "reading": "いろか",
+    "meaning": "loveliness"
+  },
+  {
+    "rank": 18730,
+    "word": "あざとい",
+    "reading": "あざとい",
+    "meaning": "calculating"
+  },
+  {
+    "rank": 18769,
+    "word": "血だらけ",
+    "reading": "ちだらけ",
+    "meaning": "covered in blood"
+  },
+  {
+    "rank": 18778,
+    "word": "小路",
+    "reading": "こうじ",
+    "meaning": "lane"
+  },
+  {
+    "rank": 18826,
+    "word": "悪辣",
+    "reading": "あくらつ",
+    "meaning": "crafty"
+  },
+  {
+    "rank": 18849,
+    "word": "実直",
+    "reading": "じっちょく",
+    "meaning": "honest"
+  },
+  {
+    "rank": 18913,
+    "word": "精緻",
+    "reading": "せいち",
+    "meaning": "delicate"
+  },
+  {
+    "rank": 18944,
+    "word": "さり気ない",
+    "reading": "さりげない",
+    "meaning": "nonchalant"
+  },
+  {
+    "rank": 18972,
+    "word": "黒塗り",
+    "reading": "くろぬり",
+    "meaning": "blackened"
+  },
+  {
+    "rank": 18981,
+    "word": "横柄",
+    "reading": "おうへい",
+    "meaning": "arrogant"
+  },
+  {
+    "rank": 18999,
+    "word": "大振り",
+    "reading": "おおぶり",
+    "meaning": "somewhat large"
+  },
+  {
+    "rank": 19007,
+    "word": "熾烈",
+    "reading": "しれつ",
+    "meaning": "fierce (fight, competition, etc.)"
+  },
+  {
+    "rank": 19034,
+    "word": "他愛のない",
+    "reading": "たわいのない",
+    "meaning": "silly"
+  },
+  {
+    "rank": 19060,
+    "word": "パーフェクト",
+    "reading": "パーフェクト",
+    "meaning": "perfect"
+  },
+  {
+    "rank": 19064,
+    "word": "ハンサム",
+    "reading": "ハンサム",
+    "meaning": "handsome"
+  },
+  {
+    "rank": 19081,
+    "word": "ちっこい",
+    "reading": "ちっこい",
+    "meaning": "very small"
+  },
+  {
+    "rank": 19088,
+    "word": "薄まる",
+    "reading": "うすまる",
+    "meaning": "to become weak"
+  },
+  {
+    "rank": 19093,
+    "word": "有害",
+    "reading": "ゆうがい",
+    "meaning": "harmful"
+  },
+  {
+    "rank": 19101,
+    "word": "煩い",
+    "reading": "うるさい",
+    "meaning": "noisy"
+  },
+  {
+    "rank": 19127,
+    "word": "ピンピン",
+    "reading": "ピンピン",
+    "meaning": "lively"
+  },
+  {
+    "rank": 19129,
+    "word": "奇麗",
+    "reading": "きれい",
+    "meaning": "pretty"
+  },
+  {
+    "rank": 19133,
+    "word": "あてもない",
+    "reading": "あてもない",
+    "meaning": "random"
+  },
+  {
+    "rank": 19144,
+    "word": "朧",
+    "reading": "おぼろ",
+    "meaning": "hazy"
+  },
+  {
+    "rank": 19147,
+    "word": "ふくよか",
+    "reading": "ふくよか",
+    "meaning": "plump"
+  },
+  {
+    "rank": 19156,
+    "word": "野性",
+    "reading": "やせい",
+    "meaning": "wildness (plants, animals, etc.)"
+  },
+  {
+    "rank": 19202,
+    "word": "古典的",
+    "reading": "こてんてき",
+    "meaning": "classical"
+  },
+  {
+    "rank": 19211,
+    "word": "微弱",
+    "reading": "びじゃく",
+    "meaning": "feeble"
+  },
+  {
+    "rank": 19230,
+    "word": "超一流",
+    "reading": "ちょういちりゅう",
+    "meaning": "tip-top"
+  },
+  {
+    "rank": 19237,
+    "word": "有限",
+    "reading": "ゆうげん",
+    "meaning": "finite"
+  },
+  {
+    "rank": 19238,
+    "word": "湿っぽい",
+    "reading": "しめっぽい",
+    "meaning": "damp"
+  },
+  {
+    "rank": 19250,
+    "word": "真白",
+    "reading": "まっしろ",
+    "meaning": "pure white"
+  },
+  {
+    "rank": 19270,
+    "word": "ユニーク",
+    "reading": "ユニーク",
+    "meaning": "unique"
+  },
+  {
+    "rank": 19271,
+    "word": "形式的",
+    "reading": "けいしきてき",
+    "meaning": "formal"
+  },
+  {
+    "rank": 19289,
+    "word": "胡乱",
+    "reading": "うろん",
+    "meaning": "suspicious-looking"
+  },
+  {
+    "rank": 19290,
+    "word": "文句なし",
+    "reading": "もんくなし",
+    "meaning": "undisputed"
+  },
+  {
+    "rank": 19307,
+    "word": "馬鹿正直",
+    "reading": "ばかしょうじき",
+    "meaning": "honest to a fault"
+  },
+  {
+    "rank": 19336,
+    "word": "高圧的",
+    "reading": "こうあつてき",
+    "meaning": "high-handed"
+  },
+  {
+    "rank": 19344,
+    "word": "しがない",
+    "reading": "しがない",
+    "meaning": "worthless"
+  },
+  {
+    "rank": 19382,
+    "word": "洒落",
+    "reading": "しゃらく",
+    "meaning": "free and easy"
+  },
+  {
+    "rank": 19384,
+    "word": "当たり障りのない",
+    "reading": "あたりさわりのない",
+    "meaning": "harmless and inoffensive"
+  },
+  {
+    "rank": 19393,
+    "word": "重度",
+    "reading": "じゅうど",
+    "meaning": "severe (injury, handicap, etc.)"
+  },
+  {
+    "rank": 19441,
+    "word": "だだっ広い",
+    "reading": "だだっぴろい",
+    "meaning": "excessively spacious"
+  },
+  {
+    "rank": 19444,
+    "word": "多彩",
+    "reading": "たさい",
+    "meaning": "variegated"
+  },
+  {
+    "rank": 19469,
+    "word": "マッチョ",
+    "reading": "マッチョ",
+    "meaning": "macho"
+  },
+  {
+    "rank": 19477,
+    "word": "厚かましい",
+    "reading": "あつかましい",
+    "meaning": "impudent"
+  },
+  {
+    "rank": 19486,
+    "word": "意地っ張り",
+    "reading": "いじっぱり",
+    "meaning": "obstinate"
+  },
+  {
+    "rank": 19495,
+    "word": "穴だらけ",
+    "reading": "あなだらけ",
+    "meaning": "riddled with holes"
+  },
+  {
+    "rank": 19496,
+    "word": "慎ましい",
+    "reading": "つつましい",
+    "meaning": "modest"
+  },
+  {
+    "rank": 19505,
+    "word": "明快",
+    "reading": "めいかい",
+    "meaning": "clear"
+  },
+  {
+    "rank": 19507,
+    "word": "刺々しい",
+    "reading": "とげとげしい",
+    "meaning": "sharp"
+  },
+  {
+    "rank": 19526,
+    "word": "不明瞭",
+    "reading": "ふめいりょう",
+    "meaning": "dimness"
+  },
+  {
+    "rank": 19540,
+    "word": "少い",
+    "reading": "すくない",
+    "meaning": "few"
+  },
+  {
+    "rank": 19587,
+    "word": "短め",
+    "reading": "みじかめ",
+    "meaning": "shortish"
+  },
+  {
+    "rank": 19596,
+    "word": "つつがない",
+    "reading": "つつがない",
+    "meaning": "well"
+  },
+  {
+    "rank": 19626,
+    "word": "酷薄",
+    "reading": "こくはく",
+    "meaning": "cruel"
+  },
+  {
+    "rank": 19644,
+    "word": "ダーク",
+    "reading": "ダーク",
+    "meaning": "dark"
+  },
+  {
+    "rank": 19669,
+    "word": "手厚い",
+    "reading": "てあつい",
+    "meaning": "warm (treatment, reception, etc.)"
+  },
+  {
+    "rank": 19707,
+    "word": "生温い",
+    "reading": "なまぬるい",
+    "meaning": "lukewarm"
+  },
+  {
+    "rank": 19715,
+    "word": "堅固",
+    "reading": "けんご",
+    "meaning": "solid"
+  },
+  {
+    "rank": 19794,
+    "word": "最小",
+    "reading": "さいしょう",
+    "meaning": "smallest (in size, degree, etc.)"
+  },
+  {
+    "rank": 19795,
+    "word": "色っぽい",
+    "reading": "いろっぽい",
+    "meaning": "amorous"
+  },
+  {
+    "rank": 19829,
+    "word": "艶やか",
+    "reading": "あでやか",
+    "meaning": "glamorous"
+  },
+  {
+    "rank": 19864,
+    "word": "目ざとい",
+    "reading": "めざとい",
+    "meaning": "sharp sighted"
+  },
+  {
+    "rank": 19887,
+    "word": "不向き",
+    "reading": "ふむき",
+    "meaning": "unfit"
+  },
+  {
+    "rank": 19935,
+    "word": "薄らぐ",
+    "reading": "うすらぐ",
+    "meaning": "to become thin"
+  },
+  {
+    "rank": 20008,
+    "word": "気の弱い",
+    "reading": "きのよわい",
+    "meaning": "timid"
+  },
+  {
+    "rank": 20020,
+    "word": "めぼしい",
+    "reading": "めぼしい",
+    "meaning": "notable"
+  },
+  {
+    "rank": 20029,
+    "word": "増し",
+    "reading": "まし",
+    "meaning": "better"
+  },
+  {
+    "rank": 20065,
+    "word": "確",
+    "reading": "かく",
+    "meaning": "certain"
+  },
+  {
+    "rank": 20072,
+    "word": "綺麗さっぱり",
+    "reading": "きれいさっぱり",
+    "meaning": "once and for all"
+  },
+  {
+    "rank": 20087,
+    "word": "内気",
+    "reading": "うちき",
+    "meaning": "shy"
+  },
+  {
+    "rank": 20095,
+    "word": "相対的",
+    "reading": "そうたいてき",
+    "meaning": "relative"
+  },
+  {
+    "rank": 20097,
+    "word": "薄目",
+    "reading": "うすめ",
+    "meaning": "slight"
+  },
+  {
+    "rank": 20104,
+    "word": "ぼさぼさ",
+    "reading": "ぼさぼさ",
+    "meaning": "ruffled (hair, brush bristles, etc.)"
+  },
+  {
+    "rank": 20108,
+    "word": "ヌルヌル",
+    "reading": "ヌルヌル",
+    "meaning": "slimy"
+  },
+  {
+    "rank": 20109,
+    "word": "腕利き",
+    "reading": "うできき",
+    "meaning": "able"
+  },
+  {
+    "rank": 20114,
+    "word": "烈しい",
+    "reading": "はげしい",
+    "meaning": "violent"
+  },
+  {
+    "rank": 20117,
+    "word": "時代劇",
+    "reading": "じだいげき",
+    "meaning": "historical play"
+  },
+  {
+    "rank": 20122,
+    "word": "こまめ",
+    "reading": "こまめ",
+    "meaning": "diligent"
+  },
+  {
+    "rank": 20141,
+    "word": "怖ろしい",
+    "reading": "おそろしい",
+    "meaning": "terrible"
+  },
+  {
+    "rank": 20145,
+    "word": "目鼻立ち",
+    "reading": "めはなだち",
+    "meaning": "(set of) facial features"
+  },
+  {
+    "rank": 20146,
+    "word": "厚手",
+    "reading": "あつで",
+    "meaning": "thick (paper, cloth, etc.)"
+  },
+  {
+    "rank": 20174,
+    "word": "意固地",
+    "reading": "いこじ",
+    "meaning": "obstinate"
+  },
+  {
+    "rank": 20175,
+    "word": "経験豊富",
+    "reading": "けいけんほうふ",
+    "meaning": "experienced"
+  },
+  {
+    "rank": 20206,
+    "word": "愛くるしい",
+    "reading": "あいくるしい",
+    "meaning": "lovely"
+  },
+  {
+    "rank": 20214,
+    "word": "偏屈",
+    "reading": "へんくつ",
+    "meaning": "narrow-minded"
+  },
+  {
+    "rank": 20219,
+    "word": "丸み",
+    "reading": "まるみ",
+    "meaning": "roundness"
+  },
+  {
+    "rank": 20224,
+    "word": "最弱",
+    "reading": "さいじゃく",
+    "meaning": "weakest"
+  },
+  {
+    "rank": 20240,
+    "word": "嫌らしい",
+    "reading": "いやらしい",
+    "meaning": "unpleasant"
+  },
+  {
+    "rank": 20241,
+    "word": "際どい",
+    "reading": "きわどい",
+    "meaning": "risky"
+  },
+  {
+    "rank": 20256,
+    "word": "後ろ暗い",
+    "reading": "うしろぐらい",
+    "meaning": "shady"
+  },
+  {
+    "rank": 20267,
+    "word": "ぐっしょり",
+    "reading": "ぐっしょり",
+    "meaning": "soaking (wet)"
+  },
+  {
+    "rank": 20285,
+    "word": "抑揚のない",
+    "reading": "よくようのない",
+    "meaning": "monotonous"
+  },
+  {
+    "rank": 20318,
+    "word": "怜悧",
+    "reading": "れいり",
+    "meaning": "clever"
+  },
+  {
+    "rank": 20331,
+    "word": "下劣",
+    "reading": "げれつ",
+    "meaning": "base"
+  },
+  {
+    "rank": 20335,
+    "word": "根強い",
+    "reading": "ねづよい",
+    "meaning": "firmly rooted"
+  },
+  {
+    "rank": 20337,
+    "word": "なんてことない",
+    "reading": "なんてことない",
+    "meaning": "ordinary"
+  },
+  {
+    "rank": 20341,
+    "word": "弱小",
+    "reading": "じゃくしょう",
+    "meaning": "puniness"
+  },
+  {
+    "rank": 20358,
+    "word": "訳の分からない",
+    "reading": "わけのわからない",
+    "meaning": "incomprehensible"
+  },
+  {
+    "rank": 20359,
+    "word": "決然",
+    "reading": "けつぜん",
+    "meaning": "decisive"
+  },
+  {
+    "rank": 20400,
+    "word": "格安",
+    "reading": "かくやす",
+    "meaning": "cheap"
+  },
+  {
+    "rank": 20415,
+    "word": "いかつい",
+    "reading": "いかつい",
+    "meaning": "stern"
+  },
+  {
+    "rank": 20418,
+    "word": "度量",
+    "reading": "どりょう",
+    "meaning": "generosity"
+  },
+  {
+    "rank": 20426,
+    "word": "猫背",
+    "reading": "ねこぜ",
+    "meaning": "bent back"
+  },
+  {
+    "rank": 20453,
+    "word": "更",
+    "reading": "さら",
+    "meaning": "new"
+  },
+  {
+    "rank": 20487,
+    "word": "肌触り",
+    "reading": "はだざわり",
+    "meaning": "the touch of"
+  },
+  {
+    "rank": 20490,
+    "word": "陰険",
+    "reading": "いんけん",
+    "meaning": "crafty"
+  },
+  {
+    "rank": 20495,
+    "word": "美男子",
+    "reading": "びだんし",
+    "meaning": "handsome man"
+  },
+  {
+    "rank": 20510,
+    "word": "のびのび",
+    "reading": "のびのび",
+    "meaning": "comfortably"
+  },
+  {
+    "rank": 20514,
+    "word": "女々しい",
+    "reading": "めめしい",
+    "meaning": "effeminate"
+  },
+  {
+    "rank": 20515,
+    "word": "善い",
+    "reading": "よい",
+    "meaning": "good"
+  },
+  {
+    "rank": 20523,
+    "word": "ちっちゃな",
+    "reading": "ちっちゃな",
+    "meaning": "tiny"
+  },
+  {
+    "rank": 20524,
+    "word": "並々ならぬ",
+    "reading": "なみなみならぬ",
+    "meaning": "extraordinary"
+  },
+  {
+    "rank": 20540,
+    "word": "汚らしい",
+    "reading": "きたならしい",
+    "meaning": "dirty-looking"
+  },
+  {
+    "rank": 20542,
+    "word": "不誠実",
+    "reading": "ふせいじつ",
+    "meaning": "insincerity"
+  },
+  {
+    "rank": 20560,
+    "word": "性格悪い",
+    "reading": "せいかくわるい",
+    "meaning": "nasty"
+  },
+  {
+    "rank": 20582,
+    "word": "口が悪い",
+    "reading": "くちがわるい",
+    "meaning": "sarcastic"
+  },
+  {
+    "rank": 20610,
+    "word": "気長",
+    "reading": "きなが",
+    "meaning": "patient"
+  },
+  {
+    "rank": 20625,
+    "word": "口先だけ",
+    "reading": "くちさきだけ",
+    "meaning": "all talk"
+  },
+  {
+    "rank": 20631,
+    "word": "ひどすぎる",
+    "reading": "ひどすぎる",
+    "meaning": "egregious"
+  },
+  {
+    "rank": 20642,
+    "word": "たおやか",
+    "reading": "たおやか",
+    "meaning": "willowy"
+  },
+  {
+    "rank": 20648,
+    "word": "棟",
+    "reading": "むね",
+    "meaning": "ridge (of roof)"
+  },
+  {
+    "rank": 20666,
+    "word": "秀才",
+    "reading": "しゅうさい",
+    "meaning": "bright person"
+  },
+  {
+    "rank": 20670,
+    "word": "こっぴどい",
+    "reading": "こっぴどい",
+    "meaning": "(really) terrible"
+  },
+  {
+    "rank": 20672,
+    "word": "厳",
+    "reading": "げん",
+    "meaning": "strict"
+  },
+  {
+    "rank": 20673,
+    "word": "全能",
+    "reading": "ぜんのう",
+    "meaning": "almighty"
+  },
+  {
+    "rank": 20685,
+    "word": "時代遅れ",
+    "reading": "じだいおくれ",
+    "meaning": "old-fashioned"
+  },
+  {
+    "rank": 20691,
+    "word": "限定的",
+    "reading": "げんていてき",
+    "meaning": "limited"
+  },
+  {
+    "rank": 20710,
+    "word": "所為",
+    "reading": "しょい",
+    "meaning": "act"
+  },
+  {
+    "rank": 20741,
+    "word": "艶っぽい",
+    "reading": "つやっぽい",
+    "meaning": "romantic"
+  },
+  {
+    "rank": 20760,
+    "word": "エグい",
+    "reading": "エグい",
+    "meaning": "harsh (taste, feeling, etc.)"
+  },
+  {
+    "rank": 20780,
+    "word": "髪形",
+    "reading": "かみがた",
+    "meaning": "hair style"
+  },
+  {
+    "rank": 20795,
+    "word": "華やぐ",
+    "reading": "はなやぐ",
+    "meaning": "to become brilliant"
+  },
+  {
+    "rank": 20804,
+    "word": "激烈",
+    "reading": "げきれつ",
+    "meaning": "violence"
+  },
+  {
+    "rank": 20806,
+    "word": "小太り",
+    "reading": "こぶとり",
+    "meaning": "plump"
+  },
+  {
+    "rank": 20854,
+    "word": "端整",
+    "reading": "たんせい",
+    "meaning": "handsome"
+  },
+  {
+    "rank": 20874,
+    "word": "潤い",
+    "reading": "うるおい",
+    "meaning": "moisture"
+  },
+  {
+    "rank": 20880,
+    "word": "天真爛漫",
+    "reading": "てんしんらんまん",
+    "meaning": "naivete"
+  },
+  {
+    "rank": 20901,
+    "word": "歯切れの悪い",
+    "reading": "はぎれのわるい",
+    "meaning": "inarticulate"
+  },
+  {
+    "rank": 20918,
+    "word": "狡い",
+    "reading": "ずるい",
+    "meaning": "sly"
+  },
+  {
+    "rank": 20922,
+    "word": "巧い",
+    "reading": "うまい",
+    "meaning": "skillful"
+  },
+  {
+    "rank": 20928,
+    "word": "ゴツゴツ",
+    "reading": "ゴツゴツ",
+    "meaning": "rugged"
+  },
+  {
+    "rank": 20940,
+    "word": "目新しい",
+    "reading": "めあたらしい",
+    "meaning": "original"
+  },
+  {
+    "rank": 20960,
+    "word": "所定",
+    "reading": "しょてい",
+    "meaning": "prescribed"
+  },
+  {
+    "rank": 21006,
+    "word": "まずまず",
+    "reading": "まずまず",
+    "meaning": "tolerable"
+  },
+  {
+    "rank": 21007,
+    "word": "粗暴",
+    "reading": "そぼう",
+    "meaning": "rough (behaviour, temperament, etc.)"
+  },
+  {
+    "rank": 21016,
+    "word": "頭の良い",
+    "reading": "あたまのいい",
+    "meaning": "bright"
+  },
+  {
+    "rank": 21063,
+    "word": "魅惑的",
+    "reading": "みわくてき",
+    "meaning": "charming"
+  },
+  {
+    "rank": 21067,
+    "word": "不適切",
+    "reading": "ふてきせつ",
+    "meaning": "unsuitable"
+  },
+  {
+    "rank": 21085,
+    "word": "シビア",
+    "reading": "シビア",
+    "meaning": "severe"
+  },
+  {
+    "rank": 21086,
+    "word": "まちまち",
+    "reading": "まちまち",
+    "meaning": "several"
+  },
+  {
+    "rank": 21114,
+    "word": "小難しい",
+    "reading": "こむずかしい",
+    "meaning": "slightly difficult"
+  },
+  {
+    "rank": 21156,
+    "word": "びしょびしょ",
+    "reading": "びしょびしょ",
+    "meaning": "soaked"
+  },
+  {
+    "rank": 21162,
+    "word": "寒々しい",
+    "reading": "さむざむしい",
+    "meaning": "bleak"
+  },
+  {
+    "rank": 21189,
+    "word": "まどろっこしい",
+    "reading": "まどろっこしい",
+    "meaning": "dull (e.g. of movement or reaction)"
+  },
+  {
+    "rank": 21190,
+    "word": "底知れぬ",
+    "reading": "そこしれぬ",
+    "meaning": "bottomless"
+  },
+  {
+    "rank": 21195,
+    "word": "人がいい",
+    "reading": "ひとがいい",
+    "meaning": "generous"
+  },
+  {
+    "rank": 21198,
+    "word": "むくむく",
+    "reading": "むくむく",
+    "meaning": "rising up"
+  },
+  {
+    "rank": 21218,
+    "word": "子供じみた",
+    "reading": "こどもじみた",
+    "meaning": "childish"
+  },
+  {
+    "rank": 21266,
+    "word": "フレンドリー",
+    "reading": "フレンドリー",
+    "meaning": "friendly"
+  },
+  {
+    "rank": 21268,
+    "word": "ノーマル",
+    "reading": "ノーマル",
+    "meaning": "normal"
+  },
+  {
+    "rank": 21274,
+    "word": "稀有",
+    "reading": "けう",
+    "meaning": "rare"
+  },
+  {
+    "rank": 21311,
+    "word": "より小さい",
+    "reading": "よりちいさい",
+    "meaning": "less than ..."
+  },
+  {
+    "rank": 21314,
+    "word": "縞",
+    "reading": "しま",
+    "meaning": "stripe"
+  },
+  {
+    "rank": 21363,
+    "word": "社交的",
+    "reading": "しゃこうてき",
+    "meaning": "sociable"
+  },
+  {
+    "rank": 21382,
+    "word": "見目麗しい",
+    "reading": "みめうるわしい",
+    "meaning": "good-looking"
+  },
+  {
+    "rank": 21433,
+    "word": "分かりにくい",
+    "reading": "わかりにくい",
+    "meaning": "hard to understand"
+  },
+  {
+    "rank": 21434,
+    "word": "自分らしい",
+    "reading": "じぶんらしい",
+    "meaning": "characteristic"
+  },
+  {
+    "rank": 21441,
+    "word": "物質的",
+    "reading": "ぶっしつてき",
+    "meaning": "material"
+  },
+  {
+    "rank": 21449,
+    "word": "ドライ",
+    "reading": "ドライ",
+    "meaning": "dry"
+  },
+  {
+    "rank": 21472,
+    "word": "しょぼい",
+    "reading": "しょぼい",
+    "meaning": "shabby"
+  },
+  {
+    "rank": 21552,
+    "word": "執念深い",
+    "reading": "しゅうねんぶかい",
+    "meaning": "vindictive"
+  },
+  {
+    "rank": 21570,
+    "word": "矮小",
+    "reading": "わいしょう",
+    "meaning": "diminutive"
+  },
+  {
+    "rank": 21572,
+    "word": "軽量",
+    "reading": "けいりょう",
+    "meaning": "light weight"
+  },
+  {
+    "rank": 21577,
+    "word": "勇気ある",
+    "reading": "ゆうきある",
+    "meaning": "courageous"
+  },
+  {
+    "rank": 21602,
+    "word": "ロング",
+    "reading": "ロング",
+    "meaning": "long"
+  },
+  {
+    "rank": 21617,
+    "word": "例外的",
+    "reading": "れいがいてき",
+    "meaning": "exceptional"
+  },
+  {
+    "rank": 21623,
+    "word": "猛々しい",
+    "reading": "たけだけしい",
+    "meaning": "ferocious"
+  },
+  {
+    "rank": 21636,
+    "word": "癖のある",
+    "reading": "くせのある",
+    "meaning": "quirky"
+  },
+  {
+    "rank": 21655,
+    "word": "怠慢",
+    "reading": "たいまん",
+    "meaning": "negligence"
+  },
+  {
+    "rank": 21663,
+    "word": "フラット",
+    "reading": "フラット",
+    "meaning": "flat"
+  },
+  {
+    "rank": 21677,
+    "word": "夥しい",
+    "reading": "おびただしい",
+    "meaning": "large number"
+  },
+  {
+    "rank": 21690,
+    "word": "精力的",
+    "reading": "せいりょくてき",
+    "meaning": "energetic"
+  },
+  {
+    "rank": 21719,
+    "word": "お高い",
+    "reading": "おたかい",
+    "meaning": "haughty"
+  },
+  {
+    "rank": 21720,
+    "word": "ピュア",
+    "reading": "ピュア",
+    "meaning": "pure"
+  },
+  {
+    "rank": 21777,
+    "word": "顕",
+    "reading": "あらわ",
+    "meaning": "exposed"
+  },
+  {
+    "rank": 21825,
+    "word": "甲斐甲斐しい",
+    "reading": "かいがいしい",
+    "meaning": "brisk and efficient"
+  },
+  {
+    "rank": 21840,
+    "word": "等身大",
+    "reading": "とうしんだい",
+    "meaning": "life-size"
+  },
+  {
+    "rank": 21844,
+    "word": "溢れんばかり",
+    "reading": "あふれんばかり",
+    "meaning": "overflowing"
+  },
+  {
+    "rank": 21853,
+    "word": "思慮深い",
+    "reading": "しりょぶかい",
+    "meaning": "prudent"
+  },
+  {
+    "rank": 21871,
+    "word": "微量",
+    "reading": "びりょう",
+    "meaning": "minuscule amount"
+  },
+  {
+    "rank": 21878,
+    "word": "規則的",
+    "reading": "きそくてき",
+    "meaning": "systematic"
+  },
+  {
+    "rank": 21879,
+    "word": "血みどろ",
+    "reading": "ちみどろ",
+    "meaning": "bloody"
+  },
+  {
+    "rank": 21897,
+    "word": "テキトー",
+    "reading": "テキトー",
+    "meaning": "perfunctory"
+  },
+  {
+    "rank": 21949,
+    "word": "威勢のいい",
+    "reading": "いせいのいい",
+    "meaning": "high-spirited"
+  },
+  {
+    "rank": 21956,
+    "word": "勇猛",
+    "reading": "ゆうもう",
+    "meaning": "daring"
+  },
+  {
+    "rank": 21983,
+    "word": "早計",
+    "reading": "そうけい",
+    "meaning": "overhasty"
+  },
+  {
+    "rank": 21999,
+    "word": "お堅い",
+    "reading": "おかたい",
+    "meaning": "prudish"
+  },
+  {
+    "rank": 22004,
+    "word": "価値ある",
+    "reading": "かちある",
+    "meaning": "valuable"
+  },
+  {
+    "rank": 22008,
+    "word": "稀代",
+    "reading": "きたい",
+    "meaning": "uncommon"
+  },
+  {
+    "rank": 22011,
+    "word": "冷静沈着",
+    "reading": "れいせいちんちゃく",
+    "meaning": "calm, cool, and collected"
+  },
+  {
+    "rank": 22041,
+    "word": "潤沢",
+    "reading": "じゅんたく",
+    "meaning": "abundant"
+  },
+  {
+    "rank": 22044,
+    "word": "奥行き",
+    "reading": "おくゆき",
+    "meaning": "depth"
+  },
+  {
+    "rank": 22045,
+    "word": "ガサガサ",
+    "reading": "ガサガサ",
+    "meaning": "rustling"
+  },
+  {
+    "rank": 22055,
+    "word": "ギクシャク",
+    "reading": "ギクシャク",
+    "meaning": "awkward (movements, speech, etc.)"
+  },
+  {
+    "rank": 22059,
+    "word": "黒焦げ",
+    "reading": "くろこげ",
+    "meaning": "charred"
+  },
+  {
+    "rank": 22066,
+    "word": "めちゃ",
+    "reading": "めちゃ",
+    "meaning": "absurd"
+  },
+  {
+    "rank": 22078,
+    "word": "我が物顔",
+    "reading": "わがものがお",
+    "meaning": "looking or acting as if one owned the place"
+  },
+  {
+    "rank": 22090,
+    "word": "風流",
+    "reading": "ふうりゅう",
+    "meaning": "elegance"
+  },
+  {
+    "rank": 22095,
+    "word": "素っ裸",
+    "reading": "すっぱだか",
+    "meaning": "nudity"
+  },
+  {
+    "rank": 22109,
+    "word": "遅め",
+    "reading": "おそめ",
+    "meaning": "a little late"
+  },
+  {
+    "rank": 22139,
+    "word": "罪のない",
+    "reading": "つみのない",
+    "meaning": "guiltless"
+  },
+  {
+    "rank": 22148,
+    "word": "コンパクト",
+    "reading": "コンパクト",
+    "meaning": "compact"
+  },
+  {
+    "rank": 22158,
+    "word": "ミステリアス",
+    "reading": "ミステリアス",
+    "meaning": "mysterious"
+  },
+  {
+    "rank": 22174,
+    "word": "潜在的",
+    "reading": "せんざいてき",
+    "meaning": "latent"
+  },
+  {
+    "rank": 22180,
+    "word": "ポカポカ",
+    "reading": "ポカポカ",
+    "meaning": "pleasantly warm"
+  },
+  {
+    "rank": 22184,
+    "word": "俄",
+    "reading": "にわか",
+    "meaning": "sudden"
+  },
+  {
+    "rank": 22185,
+    "word": "惨い",
+    "reading": "むごい",
+    "meaning": "cruel"
+  },
+  {
+    "rank": 22193,
+    "word": "ポップ",
+    "reading": "ポップ",
+    "meaning": "pop"
+  },
+  {
+    "rank": 22198,
+    "word": "新興",
+    "reading": "しんこう",
+    "meaning": "rising"
+  },
+  {
+    "rank": 22203,
+    "word": "筋骨隆々",
+    "reading": "きんこつりゅうりゅう",
+    "meaning": "muscular"
+  },
+  {
+    "rank": 22213,
+    "word": "実用的",
+    "reading": "じつようてき",
+    "meaning": "practical"
+  },
+  {
+    "rank": 22256,
+    "word": "脳天気",
+    "reading": "のうてんき",
+    "meaning": "laid-back"
+  },
+  {
+    "rank": 22274,
+    "word": "ダルい",
+    "reading": "ダルい",
+    "meaning": "sluggish"
+  },
+  {
+    "rank": 22275,
+    "word": "薄っすら",
+    "reading": "うっすら",
+    "meaning": "slightly"
+  },
+  {
+    "rank": 22283,
+    "word": "圧巻",
+    "reading": "あっかん",
+    "meaning": "highlight"
+  },
+  {
+    "rank": 22292,
+    "word": "厳然",
+    "reading": "げんぜん",
+    "meaning": "grave"
+  },
+  {
+    "rank": 22309,
+    "word": "きゃん",
+    "reading": "きゃん",
+    "meaning": "pert"
+  },
+  {
+    "rank": 22317,
+    "word": "おざなり",
+    "reading": "おざなり",
+    "meaning": "perfunctory"
+  },
+  {
+    "rank": 22348,
+    "word": "真っ暗闇",
+    "reading": "まっくらやみ",
+    "meaning": "pitch dark"
+  },
+  {
+    "rank": 22352,
+    "word": "展望台",
+    "reading": "てんぼうだい",
+    "meaning": "viewing platform"
+  },
+  {
+    "rank": 22356,
+    "word": "シェア",
+    "reading": "シェア",
+    "meaning": "sharing"
+  },
+  {
+    "rank": 22420,
+    "word": "安穏",
+    "reading": "あんのん",
+    "meaning": "peace"
+  },
+  {
+    "rank": 22433,
+    "word": "ふしだら",
+    "reading": "ふしだら",
+    "meaning": "dissolute"
+  },
+  {
+    "rank": 22437,
+    "word": "流麗",
+    "reading": "りゅうれい",
+    "meaning": "fluent"
+  },
+  {
+    "rank": 22439,
+    "word": "厳つい",
+    "reading": "いかつい",
+    "meaning": "stern"
+  },
+  {
+    "rank": 22463,
+    "word": "手狭",
+    "reading": "てぜま",
+    "meaning": "narrow"
+  },
+  {
+    "rank": 22528,
+    "word": "きゅう",
+    "reading": "きゅう",
+    "meaning": "sudden"
+  },
+  {
+    "rank": 22543,
+    "word": "柔軟性",
+    "reading": "じゅうなんせい",
+    "meaning": "flexibility"
+  },
+  {
+    "rank": 22549,
+    "word": "ひ弱",
+    "reading": "ひよわ",
+    "meaning": "weak"
+  },
+  {
+    "rank": 22550,
+    "word": "強靱",
+    "reading": "きょうじん",
+    "meaning": "tough"
+  },
+  {
+    "rank": 22560,
+    "word": "蠱惑的",
+    "reading": "こわくてき",
+    "meaning": "fascinating"
+  },
+  {
+    "rank": 22568,
+    "word": "心ない",
+    "reading": "こころない",
+    "meaning": "thoughtless"
+  },
+  {
+    "rank": 22569,
+    "word": "まん丸",
+    "reading": "まんまる",
+    "meaning": "perfect circle"
+  },
+  {
+    "rank": 22581,
+    "word": "粗雑",
+    "reading": "そざつ",
+    "meaning": "coarse"
+  },
+  {
+    "rank": 22582,
+    "word": "まめ",
+    "reading": "まめ",
+    "meaning": "diligent"
+  },
+  {
+    "rank": 22587,
+    "word": "優良",
+    "reading": "ゆうりょう",
+    "meaning": "superior"
+  },
+  {
+    "rank": 22595,
+    "word": "初歩的",
+    "reading": "しょほてき",
+    "meaning": "elementary"
+  },
+  {
+    "rank": 22596,
+    "word": "事細か",
+    "reading": "ことこまか",
+    "meaning": "detailed"
+  },
+  {
+    "rank": 22600,
+    "word": "人の良い",
+    "reading": "ひとのいい",
+    "meaning": "of good character"
+  },
+  {
+    "rank": 22612,
+    "word": "荒ぶる",
+    "reading": "あらぶる",
+    "meaning": "savage"
+  },
+  {
+    "rank": 22616,
+    "word": "汗臭い",
+    "reading": "あせくさい",
+    "meaning": "smell(ing) of sweat"
+  },
+  {
+    "rank": 22623,
+    "word": "ふさふさ",
+    "reading": "ふさふさ",
+    "meaning": "in tufts"
+  },
+  {
+    "rank": 22627,
+    "word": "泰然",
+    "reading": "たいぜん",
+    "meaning": "calm"
+  },
+  {
+    "rank": 22635,
+    "word": "女性的",
+    "reading": "じょせいてき",
+    "meaning": "feminine"
+  },
+  {
+    "rank": 22656,
+    "word": "ひや",
+    "reading": "ひや",
+    "meaning": "cold water"
+  },
+  {
+    "rank": 22674,
+    "word": "ぱっちり",
+    "reading": "ぱっちり",
+    "meaning": "wide open (of eyes)"
+  },
+  {
+    "rank": 22681,
+    "word": "霊感",
+    "reading": "れいかん",
+    "meaning": "inspiration"
+  },
+  {
+    "rank": 22682,
+    "word": "稀少",
+    "reading": "きしょう",
+    "meaning": "scarce"
+  },
+  {
+    "rank": 22686,
+    "word": "陰り",
+    "reading": "かげり",
+    "meaning": "shadow or cloud (e.g. on someone's happiness)"
+  },
+  {
+    "rank": 22694,
+    "word": "毛色",
+    "reading": "けいろ",
+    "meaning": "hair color"
+  },
+  {
+    "rank": 22742,
+    "word": "手痛い",
+    "reading": "ていたい",
+    "meaning": "severe"
+  },
+  {
+    "rank": 22745,
+    "word": "キッパリ",
+    "reading": "キッパリ",
+    "meaning": "clearly"
+  },
+  {
+    "rank": 22748,
+    "word": "嘯く",
+    "reading": "うそぶく",
+    "meaning": "to boast"
+  },
+  {
+    "rank": 22840,
+    "word": "強弱",
+    "reading": "きょうじゃく",
+    "meaning": "strength and weakness"
+  },
+  {
+    "rank": 22841,
+    "word": "美麗",
+    "reading": "びれい",
+    "meaning": "beautiful"
+  },
+  {
+    "rank": 22847,
+    "word": "密やか",
+    "reading": "ひそやか",
+    "meaning": "quiet"
+  },
+  {
+    "rank": 22860,
+    "word": "鈍重",
+    "reading": "どんじゅう",
+    "meaning": "thickheaded"
+  },
+  {
+    "rank": 22865,
+    "word": "ぎらつく",
+    "reading": "ぎらつく",
+    "meaning": "to glare"
+  },
+  {
+    "rank": 22875,
+    "word": "きらめき",
+    "reading": "きらめき",
+    "meaning": "glitter"
+  },
+  {
+    "rank": 22881,
+    "word": "不屈",
+    "reading": "ふくつ",
+    "meaning": "persistence"
+  },
+  {
+    "rank": 22883,
+    "word": "天辺",
+    "reading": "てっぺん",
+    "meaning": "top"
+  },
+  {
+    "rank": 22935,
+    "word": "力無い",
+    "reading": "ちからない",
+    "meaning": "feeble"
+  },
+  {
+    "rank": 22942,
+    "word": "直線的",
+    "reading": "ちょくせんてき",
+    "meaning": "linear"
+  },
+  {
+    "rank": 22949,
+    "word": "ちゃっちゃと",
+    "reading": "ちゃっちゃと",
+    "meaning": "lickety-split"
+  },
+  {
+    "rank": 22950,
+    "word": "グッド",
+    "reading": "グッド",
+    "meaning": "good"
+  },
+  {
+    "rank": 22981,
+    "word": "ざらざら",
+    "reading": "ざらざら",
+    "meaning": "rough (touch, voice, etc.)"
+  },
+  {
+    "rank": 22987,
+    "word": "ぱちり",
+    "reading": "ぱちり",
+    "meaning": "(with a) click (e.g. camera shutter)"
+  },
+  {
+    "rank": 22992,
+    "word": "不浄",
+    "reading": "ふじょう",
+    "meaning": "uncleanliness"
+  },
+  {
+    "rank": 22993,
+    "word": "ずしり",
+    "reading": "ずしり",
+    "meaning": "heavily"
+  },
+  {
+    "rank": 22997,
+    "word": "いたいけ",
+    "reading": "いたいけ",
+    "meaning": "young and sweet"
+  },
+  {
+    "rank": 23004,
+    "word": "へなへな",
+    "reading": "へなへな",
+    "meaning": "weakly"
+  },
+  {
+    "rank": 23005,
+    "word": "タチが悪い",
+    "reading": "タチがわるい",
+    "meaning": "of bad character"
+  },
+  {
+    "rank": 23012,
+    "word": "凜々しい",
+    "reading": "りりしい",
+    "meaning": "gallant"
+  },
+  {
+    "rank": 23015,
+    "word": "ルックス",
+    "reading": "ルックス",
+    "meaning": "looks"
+  },
+  {
+    "rank": 23070,
+    "word": "高低",
+    "reading": "こうてい",
+    "meaning": "high and low"
+  },
+  {
+    "rank": 23099,
+    "word": "たわわ",
+    "reading": "たわわ",
+    "meaning": "heavily laden (of a branch)"
+  },
+  {
+    "rank": 23114,
+    "word": "凄絶",
+    "reading": "せいぜつ",
+    "meaning": "extremely gruesome"
+  },
+  {
+    "rank": 23147,
+    "word": "キメ",
+    "reading": "キメ",
+    "meaning": "texture (e.g. skin, fabric)"
+  },
+  {
+    "rank": 23167,
+    "word": "清潔感",
+    "reading": "せいけつかん",
+    "meaning": "(sense of) cleanliness"
+  },
+  {
+    "rank": 23186,
+    "word": "フリフリ",
+    "reading": "フリフリ",
+    "meaning": "frilly"
+  },
+  {
+    "rank": 23267,
+    "word": "まっさら",
+    "reading": "まっさら",
+    "meaning": "brand new"
+  },
+  {
+    "rank": 23268,
+    "word": "板につく",
+    "reading": "いたにつく",
+    "meaning": "to get used to"
+  },
+  {
+    "rank": 23281,
+    "word": "見上げるよう",
+    "reading": "みあげるよう",
+    "meaning": "towering"
+  },
+  {
+    "rank": 23349,
+    "word": "大き過ぎる",
+    "reading": "おおきすぎる",
+    "meaning": "to be oversized (overloud, etc.)"
+  },
+  {
+    "rank": 23350,
+    "word": "人が悪い",
+    "reading": "ひとがわるい",
+    "meaning": "ill-natured"
+  },
+  {
+    "rank": 23357,
+    "word": "狭苦しい",
+    "reading": "せまくるしい",
+    "meaning": "cramped"
+  },
+  {
+    "rank": 23359,
+    "word": "極寒",
+    "reading": "ごっかん",
+    "meaning": "extreme cold"
+  },
+  {
+    "rank": 23386,
+    "word": "性格が悪い",
+    "reading": "せいかくがわるい",
+    "meaning": "nasty"
+  },
+  {
+    "rank": 23432,
+    "word": "代わり映え",
+    "reading": "かわりばえ",
+    "meaning": "change for the better"
+  },
+  {
+    "rank": 23448,
+    "word": "好調",
+    "reading": "こうちょう",
+    "meaning": "favourable"
+  },
+  {
+    "rank": 23454,
+    "word": "小汚い",
+    "reading": "こぎたない",
+    "meaning": "somehow dirty"
+  },
+  {
+    "rank": 23455,
+    "word": "おろそか",
+    "reading": "おろそか",
+    "meaning": "negligent"
+  },
+  {
+    "rank": 23502,
+    "word": "背格好",
+    "reading": "せいかっこう",
+    "meaning": "stature"
+  },
+  {
+    "rank": 23505,
+    "word": "暗澹",
+    "reading": "あんたん",
+    "meaning": "dark"
+  },
+  {
+    "rank": 23531,
+    "word": "底冷え",
+    "reading": "そこびえ",
+    "meaning": "penetrating cold"
+  },
+  {
+    "rank": 23573,
+    "word": "俵",
+    "reading": "たわら",
+    "meaning": "straw bag"
+  },
+  {
+    "rank": 23610,
+    "word": "体形",
+    "reading": "たいけい",
+    "meaning": "figure"
+  },
+  {
+    "rank": 23615,
+    "word": "利己的",
+    "reading": "りこてき",
+    "meaning": "selfish"
+  },
+  {
+    "rank": 23627,
+    "word": "調子がいい",
+    "reading": "ちょうしがいい",
+    "meaning": "in good condition"
+  },
+  {
+    "rank": 23644,
+    "word": "青黒い",
+    "reading": "あおぐろい",
+    "meaning": "black with hints of blue (as in a bruise)"
+  },
+  {
+    "rank": 23646,
+    "word": "ビジュアル",
+    "reading": "ビジュアル",
+    "meaning": "visual"
+  },
+  {
+    "rank": 23659,
+    "word": "腕のいい",
+    "reading": "うでのいい",
+    "meaning": "skilled"
+  },
+  {
+    "rank": 23699,
+    "word": "冥い",
+    "reading": "くらい",
+    "meaning": "dark"
+  },
+  {
+    "rank": 23709,
+    "word": "ゴージャス",
+    "reading": "ゴージャス",
+    "meaning": "gorgeous"
+  },
+  {
+    "rank": 23714,
+    "word": "極小",
+    "reading": "きょくしょう",
+    "meaning": "minimum"
+  },
+  {
+    "rank": 23723,
+    "word": "純朴",
+    "reading": "じゅんぼく",
+    "meaning": "rustic simplicity"
+  },
+  {
+    "rank": 23725,
+    "word": "表層",
+    "reading": "ひょうそう",
+    "meaning": "surface"
+  },
+  {
+    "rank": 23727,
+    "word": "広々",
+    "reading": "ひろびろ",
+    "meaning": "extensive"
+  },
+  {
+    "rank": 23782,
+    "word": "ストイック",
+    "reading": "ストイック",
+    "meaning": "stoic"
+  },
+  {
+    "rank": 23783,
+    "word": "親しみやすい",
+    "reading": "したしみやすい",
+    "meaning": "friendly"
+  },
+  {
+    "rank": 23793,
+    "word": "まだら",
+    "reading": "まだら",
+    "meaning": "spots"
+  },
+  {
+    "rank": 23806,
+    "word": "棒状",
+    "reading": "ぼうじょう",
+    "meaning": "cylinder or rod-shaped"
+  },
+  {
+    "rank": 23813,
+    "word": "雑然",
+    "reading": "ざつぜん",
+    "meaning": "messy"
+  },
+  {
+    "rank": 23820,
+    "word": "無鉄砲",
+    "reading": "むてっぽう",
+    "meaning": "rash"
+  },
+  {
+    "rank": 23834,
+    "word": "体が弱い",
+    "reading": "からだがよわい",
+    "meaning": "frail"
+  },
+  {
+    "rank": 23836,
+    "word": "ビッグ",
+    "reading": "ビッグ",
+    "meaning": "big"
+  },
+  {
+    "rank": 23844,
+    "word": "敵を討つ",
+    "reading": "かたきをうつ",
+    "meaning": "to avenge (somebody) by striking down their killer"
+  },
+  {
+    "rank": 23849,
+    "word": "差し出がましい",
+    "reading": "さしでがましい",
+    "meaning": "forward"
+  },
+  {
+    "rank": 23859,
+    "word": "壮麗",
+    "reading": "そうれい",
+    "meaning": "splendour"
+  },
+  {
+    "rank": 23863,
+    "word": "均整",
+    "reading": "きんせい",
+    "meaning": "symmetry"
+  },
+  {
+    "rank": 23928,
+    "word": "スレンダー",
+    "reading": "スレンダー",
+    "meaning": "slender"
+  },
+  {
+    "rank": 23933,
+    "word": "風変わり",
+    "reading": "ふうがわり",
+    "meaning": "strange"
+  },
+  {
+    "rank": 23938,
+    "word": "頭悪い",
+    "reading": "あたまわるい",
+    "meaning": "slow"
+  },
+  {
+    "rank": 24008,
+    "word": "がら空き",
+    "reading": "がらあき",
+    "meaning": "virtually empty"
+  },
+  {
+    "rank": 24013,
+    "word": "盤石",
+    "reading": "ばんじゃく",
+    "meaning": "huge rock"
+  },
+  {
+    "rank": 24015,
+    "word": "程々",
+    "reading": "ほどほど",
+    "meaning": "moderate"
+  },
+  {
+    "rank": 24018,
+    "word": "ほくほく",
+    "reading": "ほくほく",
+    "meaning": "soft and flaky (pie, potatoes, squash, etc.)"
+  },
+  {
+    "rank": 24019,
+    "word": "寝ぼけ眼",
+    "reading": "ねぼけまなこ",
+    "meaning": "sleepy eyes"
+  },
+  {
+    "rank": 24035,
+    "word": "まろやか",
+    "reading": "まろやか",
+    "meaning": "round"
+  },
+  {
+    "rank": 24043,
+    "word": "主観的",
+    "reading": "しゅかんてき",
+    "meaning": "subjective"
+  },
+  {
+    "rank": 24045,
+    "word": "広め",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 24052,
+    "word": "翳る",
+    "reading": "かげる",
+    "meaning": "to darken"
+  },
+  {
+    "rank": 24069,
+    "word": "勇姿",
+    "reading": "ゆうし",
+    "meaning": "brave figure"
+  },
+  {
+    "rank": 24096,
+    "word": "親身",
+    "reading": "しんみ",
+    "meaning": "relation"
+  },
+  {
+    "rank": 24115,
+    "word": "現実離れ",
+    "reading": "げんじつばなれ",
+    "meaning": "unreality"
+  },
+  {
+    "rank": 24151,
+    "word": "雷が落ちる",
+    "reading": "かみなりがおちる",
+    "meaning": "to be struck by lightning"
+  },
+  {
+    "rank": 24162,
+    "word": "甘やか",
+    "reading": "あまやか",
+    "meaning": "sweet (voice, fragrance, etc.)"
+  },
+  {
+    "rank": 24243,
+    "word": "べとべと",
+    "reading": "べとべと",
+    "meaning": "being sticky"
+  },
+  {
+    "rank": 24256,
+    "word": "荒涼",
+    "reading": "こうりょう",
+    "meaning": "desolate"
+  },
+  {
+    "rank": 24285,
+    "word": "ボンボン",
+    "reading": "ボンボン",
+    "meaning": "bonbon"
+  },
+  {
+    "rank": 24315,
+    "word": "楕円形",
+    "reading": "だえんけい",
+    "meaning": "elliptical shape"
+  },
+  {
+    "rank": 24323,
+    "word": "清涼",
+    "reading": "せいりょう",
+    "meaning": "cool"
+  },
+  {
+    "rank": 24332,
+    "word": "軽め",
+    "reading": "かるめ",
+    "meaning": "light (weight)"
+  },
+  {
+    "rank": 24356,
+    "word": "きりり",
+    "reading": "きりり",
+    "meaning": "stiff and slackless"
+  },
+  {
+    "rank": 24362,
+    "word": "キザ",
+    "reading": "キザ",
+    "meaning": "affected"
+  },
+  {
+    "rank": 24381,
+    "word": "こってり",
+    "reading": "こってり",
+    "meaning": "thickly"
+  },
+  {
+    "rank": 24411,
+    "word": "お茶目",
+    "reading": "おちゃめ",
+    "meaning": "playful"
+  },
+  {
+    "rank": 24443,
+    "word": "きりっと",
+    "reading": "きりっと",
+    "meaning": "having a crisp appearance"
+  },
+  {
+    "rank": 24467,
+    "word": "飾り気のない",
+    "reading": "かざりけのない",
+    "meaning": "plain"
+  },
+  {
+    "rank": 24560,
+    "word": "シャン",
+    "reading": "シャン",
+    "meaning": "beautiful"
+  },
+  {
+    "rank": 24637,
+    "word": "無地",
+    "reading": "むじ",
+    "meaning": "plain"
+  },
+  {
+    "rank": 24673,
+    "word": "ベトベト",
+    "reading": "ベトベト",
+    "meaning": "being sticky"
+  },
+  {
+    "rank": 24713,
+    "word": "立体的",
+    "reading": "りったいてき",
+    "meaning": "three-dimensional"
+  },
+  {
+    "rank": 24714,
+    "word": "もこもこ",
+    "reading": "もこもこ",
+    "meaning": "fluffy"
+  },
+  {
+    "rank": 24729,
+    "word": "肉厚",
+    "reading": "にくあつ",
+    "meaning": "thick"
+  },
+  {
+    "rank": 24751,
+    "word": "丸っこい",
+    "reading": "まるっこい",
+    "meaning": "round"
+  },
+  {
+    "rank": 24766,
+    "word": "がりがり",
+    "reading": "がりがり",
+    "meaning": "crunching"
+  },
+  {
+    "rank": 24796,
+    "word": "ほの",
+    "reading": "ほの",
+    "meaning": "slight"
+  },
+  {
+    "rank": 24821,
+    "word": "レトロ",
+    "reading": "レトロ",
+    "meaning": "retro"
+  },
+  {
+    "rank": 24845,
+    "word": "べらべら",
+    "reading": "べらべら",
+    "meaning": "non-stop talking"
+  },
+  {
+    "rank": 24847,
+    "word": "極彩色",
+    "reading": "ごくさいしき",
+    "meaning": "richly colored"
+  },
+  {
+    "rank": 24851,
+    "word": "上半身裸",
+    "reading": "じょうはんしんはだか",
+    "meaning": "(top) half naked"
+  },
+  {
+    "rank": 24868,
+    "word": "珍",
+    "reading": "ちん",
+    "meaning": "rare"
+  },
+  {
+    "rank": 24899,
+    "word": "淡泊",
+    "reading": "たんぱく",
+    "meaning": "light (color, colour, taste)"
+  },
+  {
+    "rank": 24931,
+    "word": "キンキン",
+    "reading": "キンキン",
+    "meaning": "shrill"
+  },
+  {
+    "rank": 24935,
+    "word": "斑点",
+    "reading": "はんてん",
+    "meaning": "speck"
+  },
+  {
+    "rank": 24963,
+    "word": "柔肌",
+    "reading": "やわはだ",
+    "meaning": "soft fair skin"
+  },
+  {
+    "rank": 25072,
+    "word": "高飛車",
+    "reading": "たかびしゃ",
+    "meaning": "high-handed"
+  },
+  {
+    "rank": 25120,
+    "word": "模範的",
+    "reading": "もはんてき",
+    "meaning": "exemplary"
+  },
+  {
+    "rank": 25137,
+    "word": "あくどい",
+    "reading": "あくどい",
+    "meaning": "gaudy"
+  },
+  {
+    "rank": 25138,
+    "word": "保守的",
+    "reading": "ほしゅてき",
+    "meaning": "conservative"
+  },
+  {
+    "rank": 25139,
+    "word": "威風堂々",
+    "reading": "いふうどうどう",
+    "meaning": "majestic"
+  },
+  {
+    "rank": 25142,
+    "word": "瑞",
+    "reading": "みず",
+    "meaning": "youth"
+  },
+  {
+    "rank": 25143,
+    "word": "低俗",
+    "reading": "ていぞく",
+    "meaning": "vulgar"
+  },
+  {
+    "rank": 25147,
+    "word": "小振り",
+    "reading": "こぶり",
+    "meaning": "smallish"
+  },
+  {
+    "rank": 25173,
+    "word": "良からぬ",
+    "reading": "よからぬ",
+    "meaning": "bad"
+  },
+  {
+    "rank": 25182,
+    "word": "劣悪",
+    "reading": "れつあく",
+    "meaning": "inferior"
+  },
+  {
+    "rank": 25189,
+    "word": "ずんぐり",
+    "reading": "ずんぐり",
+    "meaning": "short and stout"
+  },
+  {
+    "rank": 25219,
+    "word": "チャラい",
+    "reading": "チャラい",
+    "meaning": "flashy"
+  },
+  {
+    "rank": 25224,
+    "word": "粘り",
+    "reading": "ねばり",
+    "meaning": "stickiness"
+  },
+  {
+    "rank": 25230,
+    "word": "おしとやか",
+    "reading": "おしとやか",
+    "meaning": "graceful"
+  },
+  {
+    "rank": 25237,
+    "word": "詩的",
+    "reading": "してき",
+    "meaning": "poetic"
+  },
+  {
+    "rank": 25277,
+    "word": "ふにゃふにゃ",
+    "reading": "ふにゃふにゃ",
+    "meaning": "limpness"
+  },
+  {
+    "rank": 25377,
+    "word": "古臭い",
+    "reading": "ふるくさい",
+    "meaning": "stale"
+  },
+  {
+    "rank": 25394,
+    "word": "貴い",
+    "reading": "とうとい",
+    "meaning": "precious"
+  },
+  {
+    "rank": 25457,
+    "word": "すげない",
+    "reading": "すげない",
+    "meaning": "curt"
+  },
+  {
+    "rank": 25527,
+    "word": "美点",
+    "reading": "びてん",
+    "meaning": "virtue"
+  },
+  {
+    "rank": 25610,
+    "word": "宜い",
+    "reading": "よい",
+    "meaning": "good"
+  },
+  {
+    "rank": 25647,
+    "word": "低級",
+    "reading": "ていきゅう",
+    "meaning": "low grade"
+  },
+  {
+    "rank": 25696,
+    "word": "瀟洒",
+    "reading": "しょうしゃ",
+    "meaning": "stylish"
+  },
+  {
+    "rank": 25781,
+    "word": "明晰",
+    "reading": "めいせき",
+    "meaning": "clear"
+  },
+  {
+    "rank": 25794,
+    "word": "淡白",
+    "reading": "たんぱく",
+    "meaning": "light (color, colour, taste)"
+  },
+  {
+    "rank": 26017,
+    "word": "手のかかる",
+    "reading": "てのかかる",
+    "meaning": "troublesome"
+  },
+  {
+    "rank": 26021,
+    "word": "フランク",
+    "reading": "フランク",
+    "meaning": "frank"
+  },
+  {
+    "rank": 26027,
+    "word": "我慢強い",
+    "reading": "がまんづよい",
+    "meaning": "(very) patient"
+  },
+  {
+    "rank": 26059,
+    "word": "閑静",
+    "reading": "かんせい",
+    "meaning": "quiet (e.g. neighbourhood)"
+  },
+  {
+    "rank": 26090,
+    "word": "不健全",
+    "reading": "ふけんぜん",
+    "meaning": "morbid"
+  },
+  {
+    "rank": 26095,
+    "word": "居心地がいい",
+    "reading": "いごこちがいい",
+    "meaning": "comfortable (to live in)"
+  },
+  {
+    "rank": 26115,
+    "word": "奇特",
+    "reading": "きとく",
+    "meaning": "praiseworthy"
+  },
+  {
+    "rank": 26126,
+    "word": "いけ好かない",
+    "reading": "いけすかない",
+    "meaning": "nasty"
+  },
+  {
+    "rank": 26140,
+    "word": "絶世の美女",
+    "reading": "ぜっせいのびじょ",
+    "meaning": "woman of unmatched beauty"
+  },
+  {
+    "rank": 26146,
+    "word": "ふにふに",
+    "reading": "ふにふに",
+    "meaning": "stroke"
+  },
+  {
+    "rank": 26152,
+    "word": "円い",
+    "reading": "まるい",
+    "meaning": "round"
+  },
+  {
+    "rank": 26162,
+    "word": "ツルツル",
+    "reading": "ツルツル",
+    "meaning": "smooth"
+  },
+  {
+    "rank": 26199,
+    "word": "真一文字",
+    "reading": "まいちもんじ",
+    "meaning": "straight"
+  },
+  {
+    "rank": 26217,
+    "word": "奥ゆかしい",
+    "reading": "おくゆかしい",
+    "meaning": "refined"
+  },
+  {
+    "rank": 26219,
+    "word": "毛むくじゃら",
+    "reading": "けむくじゃら",
+    "meaning": "densely covered in thick hair"
+  },
+  {
+    "rank": 26266,
+    "word": "官能的",
+    "reading": "かんのうてき",
+    "meaning": "sensual"
+  },
+  {
+    "rank": 26274,
+    "word": "全幅",
+    "reading": "ぜんぷく",
+    "meaning": "full"
+  },
+  {
+    "rank": 26280,
+    "word": "すばしっこい",
+    "reading": "すばしっこい",
+    "meaning": "nimble"
+  },
+  {
+    "rank": 26283,
+    "word": "顔付き",
+    "reading": "かおつき",
+    "meaning": "(outward) looks"
+  },
+  {
+    "rank": 26287,
+    "word": "調子のいい",
+    "reading": "ちょうしのいい",
+    "meaning": "in good condition"
+  },
+  {
+    "rank": 26293,
+    "word": "還す",
+    "reading": "かえす",
+    "meaning": "to send (someone) back"
+  },
+  {
+    "rank": 26298,
+    "word": "このほか",
+    "reading": "このほか",
+    "meaning": "besides"
+  },
+  {
+    "rank": 26305,
+    "word": "伸び上がる",
+    "reading": "のびあがる",
+    "meaning": "to stretch"
+  },
+  {
+    "rank": 26318,
+    "word": "不得意",
+    "reading": "ふとくい",
+    "meaning": "one's weak point"
+  },
+  {
+    "rank": 26358,
+    "word": "思わしい",
+    "reading": "おもわしい",
+    "meaning": "suitable"
+  },
+  {
+    "rank": 26363,
+    "word": "むさ苦しい",
+    "reading": "むさくるしい",
+    "meaning": "filthy"
+  },
+  {
+    "rank": 26375,
+    "word": "ド派手",
+    "reading": "ドはで",
+    "meaning": "very cheesy"
+  },
+  {
+    "rank": 26388,
+    "word": "河童",
+    "reading": "かっぱ",
+    "meaning": "kappa"
+  },
+  {
+    "rank": 26394,
+    "word": "泥まみれ",
+    "reading": "どろまみれ",
+    "meaning": "muddy"
+  },
+  {
+    "rank": 26396,
+    "word": "水臭い",
+    "reading": "みずくさい",
+    "meaning": "stand-offish"
+  },
+  {
+    "rank": 26405,
+    "word": "半端じゃない",
+    "reading": "はんぱじゃない",
+    "meaning": "considerable"
+  },
+  {
+    "rank": 26420,
+    "word": "抜け目ない",
+    "reading": "ぬけめない",
+    "meaning": "shrewd"
+  },
+  {
+    "rank": 26421,
+    "word": "アクティブ",
+    "reading": "アクティブ",
+    "meaning": "active"
+  },
+  {
+    "rank": 26428,
+    "word": "非凡",
+    "reading": "ひぼん",
+    "meaning": "extraordinary"
+  },
+  {
+    "rank": 26433,
+    "word": "不断",
+    "reading": "ふだん",
+    "meaning": "constant"
+  },
+  {
+    "rank": 26445,
+    "word": "口汚い",
+    "reading": "くちぎたない",
+    "meaning": "foul-mouthed"
+  },
+  {
+    "rank": 26447,
+    "word": "散漫",
+    "reading": "さんまん",
+    "meaning": "vague"
+  },
+  {
+    "rank": 26492,
+    "word": "けばい",
+    "reading": "けばい",
+    "meaning": "gaudy (esp. of makeup or clothing)"
+  },
+  {
+    "rank": 26515,
+    "word": "冷やか",
+    "reading": "ひややか",
+    "meaning": "cold"
+  },
+  {
+    "rank": 26620,
+    "word": "極悪",
+    "reading": "ごくあく",
+    "meaning": "heinous"
+  },
+  {
+    "rank": 26643,
+    "word": "ヤケクソ",
+    "reading": "ヤケクソ",
+    "meaning": "desperate"
+  },
+  {
+    "rank": 26656,
+    "word": "異",
+    "reading": "い",
+    "meaning": "difference (of opinion)"
+  },
+  {
+    "rank": 26662,
+    "word": "見目",
+    "reading": "みめ",
+    "meaning": "appearance"
+  },
+  {
+    "rank": 26663,
+    "word": "庶民的",
+    "reading": "しょみんてき",
+    "meaning": "popular"
+  },
+  {
+    "rank": 26678,
+    "word": "グロい",
+    "reading": "グロい",
+    "meaning": "grotesque"
+  },
+  {
+    "rank": 26702,
+    "word": "白い目で見る",
+    "reading": "しろいめでみる",
+    "meaning": "to look coldly at"
+  },
+  {
+    "rank": 26717,
+    "word": "数カ月",
+    "reading": "すうかげつ",
+    "meaning": "several months"
+  },
+  {
+    "rank": 26731,
+    "word": "消灯",
+    "reading": "しょうとう",
+    "meaning": "putting out the light"
+  },
+  {
+    "rank": 26748,
+    "word": "考え抜く",
+    "reading": "かんがえぬく",
+    "meaning": "to think thoroughly"
+  },
+  {
+    "rank": 26751,
+    "word": "オスカー",
+    "reading": "オスカー",
+    "meaning": "Oscar"
+  },
+  {
+    "rank": 26761,
+    "word": "銃撃戦",
+    "reading": "じゅうげきせん",
+    "meaning": "firefight"
+  },
+  {
+    "rank": 26773,
+    "word": "途轍もない",
+    "reading": "とてつもない",
+    "meaning": "extravagant"
+  },
+  {
+    "rank": 26817,
+    "word": "ぶっとい",
+    "reading": "ぶっとい",
+    "meaning": "fat"
+  },
+  {
+    "rank": 26829,
+    "word": "超高",
+    "reading": "ちょうこう",
+    "meaning": "extra-high"
+  },
+  {
+    "rank": 26830,
+    "word": "仄暗い",
+    "reading": "ほのぐらい",
+    "meaning": "gloomy"
+  },
+  {
+    "rank": 26832,
+    "word": "弱っちい",
+    "reading": "よわっちい",
+    "meaning": "weak"
+  },
+  {
+    "rank": 26833,
+    "word": "和気藹々",
+    "reading": "わきあいあい",
+    "meaning": "harmonious"
+  },
+  {
+    "rank": 26844,
+    "word": "小綺麗",
+    "reading": "こぎれい",
+    "meaning": "neat"
+  },
+  {
+    "rank": 26872,
+    "word": "義理堅い",
+    "reading": "ぎりがたい",
+    "meaning": "possessed of a strong sense of duty"
+  },
+  {
+    "rank": 26880,
+    "word": "ダイナミック",
+    "reading": "ダイナミック",
+    "meaning": "dynamic"
+  },
+  {
+    "rank": 26893,
+    "word": "克明",
+    "reading": "こくめい",
+    "meaning": "detailed"
+  },
+  {
+    "rank": 26907,
+    "word": "破天荒",
+    "reading": "はてんこう",
+    "meaning": "unheard-of"
+  },
+  {
+    "rank": 26911,
+    "word": "いかめしい",
+    "reading": "いかめしい",
+    "meaning": "stern"
+  },
+  {
+    "rank": 26972,
+    "word": "ピリッと",
+    "reading": "ピリッと",
+    "meaning": "tingling"
+  }
+]

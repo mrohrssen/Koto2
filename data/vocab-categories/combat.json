@@ -1,0 +1,6980 @@
+[
+  {
+    "rank": 229,
+    "word": "とても",
+    "reading": "とても",
+    "meaning": "very"
+  },
+  {
+    "rank": 427,
+    "word": "じゃないか",
+    "reading": "じゃないか",
+    "meaning": "isn't it?"
+  },
+  {
+    "rank": 518,
+    "word": "後ろ",
+    "reading": "うしろ",
+    "meaning": "back"
+  },
+  {
+    "rank": 531,
+    "word": "現れる",
+    "reading": "あらわれる",
+    "meaning": "to appear"
+  },
+  {
+    "rank": 550,
+    "word": "上がる",
+    "reading": "あがる",
+    "meaning": "to rise"
+  },
+  {
+    "rank": 563,
+    "word": "どうやら",
+    "reading": "どうやら",
+    "meaning": "possibly"
+  },
+  {
+    "rank": 676,
+    "word": "涙",
+    "reading": "なみだ",
+    "meaning": "tear"
+  },
+  {
+    "rank": 724,
+    "word": "足りる",
+    "reading": "たりる",
+    "meaning": "to be sufficient"
+  },
+  {
+    "rank": 829,
+    "word": "親",
+    "reading": "おや",
+    "meaning": "parent"
+  },
+  {
+    "rank": 1020,
+    "word": "せめて",
+    "reading": "せめて",
+    "meaning": "offense"
+  },
+  {
+    "rank": 1224,
+    "word": "攻撃",
+    "reading": "こうげき",
+    "meaning": "attack"
+  },
+  {
+    "rank": 1249,
+    "word": "倒す",
+    "reading": "たおす",
+    "meaning": "to throw down"
+  },
+  {
+    "rank": 1264,
+    "word": "叩く",
+    "reading": "たたく",
+    "meaning": "to strike"
+  },
+  {
+    "rank": 1275,
+    "word": "戦い",
+    "reading": "たたかい",
+    "meaning": "battle"
+  },
+  {
+    "rank": 1288,
+    "word": "放つ",
+    "reading": "はなつ",
+    "meaning": "to fire (gun, arrow, questions, etc.)"
+  },
+  {
+    "rank": 1290,
+    "word": "傷",
+    "reading": "きず",
+    "meaning": "wound"
+  },
+  {
+    "rank": 1325,
+    "word": "武器",
+    "reading": "ぶき",
+    "meaning": "weapon"
+  },
+  {
+    "rank": 1326,
+    "word": "当てる",
+    "reading": "あてる",
+    "meaning": "to hit"
+  },
+  {
+    "rank": 1357,
+    "word": "勝負",
+    "reading": "しょうぶ",
+    "meaning": "victory or defeat"
+  },
+  {
+    "rank": 1381,
+    "word": "作戦",
+    "reading": "さくせん",
+    "meaning": "tactics"
+  },
+  {
+    "rank": 1406,
+    "word": "警戒",
+    "reading": "けいかい",
+    "meaning": "vigilance"
+  },
+  {
+    "rank": 1407,
+    "word": "味方",
+    "reading": "みかた",
+    "meaning": "friend"
+  },
+  {
+    "rank": 1446,
+    "word": "衝撃",
+    "reading": "しょうげき",
+    "meaning": "shock"
+  },
+  {
+    "rank": 1462,
+    "word": "押さえる",
+    "reading": "おさえる",
+    "meaning": "to pin down"
+  },
+  {
+    "rank": 1483,
+    "word": "抵抗",
+    "reading": "ていこう",
+    "meaning": "resistance"
+  },
+  {
+    "rank": 1501,
+    "word": "囲む",
+    "reading": "かこむ",
+    "meaning": "to surround"
+  },
+  {
+    "rank": 1504,
+    "word": "破壊",
+    "reading": "はかい",
+    "meaning": "destruction"
+  },
+  {
+    "rank": 1535,
+    "word": "殴る",
+    "reading": "なぐる",
+    "meaning": "to strike"
+  },
+  {
+    "rank": 1553,
+    "word": "戦争",
+    "reading": "せんそう",
+    "meaning": "war"
+  },
+  {
+    "rank": 1593,
+    "word": "焦る",
+    "reading": "あせる",
+    "meaning": "to be in a hurry"
+  },
+  {
+    "rank": 1631,
+    "word": "爆発",
+    "reading": "ばくはつ",
+    "meaning": "explosion"
+  },
+  {
+    "rank": 1679,
+    "word": "傷つける",
+    "reading": "きずつける",
+    "meaning": "to wound"
+  },
+  {
+    "rank": 1697,
+    "word": "ぶつかる",
+    "reading": "ぶつかる",
+    "meaning": "to strike against"
+  },
+  {
+    "rank": 1701,
+    "word": "怪我",
+    "reading": "けが",
+    "meaning": "injury"
+  },
+  {
+    "rank": 1743,
+    "word": "勝利",
+    "reading": "しょうり",
+    "meaning": "victory"
+  },
+  {
+    "rank": 1781,
+    "word": "捕まえる",
+    "reading": "つかまえる",
+    "meaning": "to catch"
+  },
+  {
+    "rank": 1797,
+    "word": "潰す",
+    "reading": "つぶす",
+    "meaning": "to smash"
+  },
+  {
+    "rank": 1809,
+    "word": "防ぐ",
+    "reading": "ふせぐ",
+    "meaning": "to defend against"
+  },
+  {
+    "rank": 1924,
+    "word": "仕掛ける",
+    "reading": "しかける",
+    "meaning": "to start"
+  },
+  {
+    "rank": 1933,
+    "word": "刺す",
+    "reading": "さす",
+    "meaning": "to pierce"
+  },
+  {
+    "rank": 1952,
+    "word": "破る",
+    "reading": "やぶる",
+    "meaning": "to tear"
+  },
+  {
+    "rank": 1955,
+    "word": "傷つく",
+    "reading": "きずつく",
+    "meaning": "to be wounded"
+  },
+  {
+    "rank": 1960,
+    "word": "手を出す",
+    "reading": "てをだす",
+    "meaning": "to turn one's hand to"
+  },
+  {
+    "rank": 1964,
+    "word": "戦",
+    "reading": "せん",
+    "meaning": "war"
+  },
+  {
+    "rank": 1968,
+    "word": "ぶつける",
+    "reading": "ぶつける",
+    "meaning": "to hit (e.g. one's head)"
+  },
+  {
+    "rank": 1982,
+    "word": "蹴る",
+    "reading": "ける",
+    "meaning": "to kick"
+  },
+  {
+    "rank": 1988,
+    "word": "暴れる",
+    "reading": "あばれる",
+    "meaning": "to act violently"
+  },
+  {
+    "rank": 2050,
+    "word": "突く",
+    "reading": "つく",
+    "meaning": "to prick"
+  },
+  {
+    "rank": 2161,
+    "word": "捉える",
+    "reading": "とらえる",
+    "meaning": "to catch"
+  },
+  {
+    "rank": 2191,
+    "word": "侵入",
+    "reading": "しんにゅう",
+    "meaning": "invasion"
+  },
+  {
+    "rank": 2223,
+    "word": "盗む",
+    "reading": "ぬすむ",
+    "meaning": "to steal"
+  },
+  {
+    "rank": 2259,
+    "word": "縛る",
+    "reading": "しばる",
+    "meaning": "to tie"
+  },
+  {
+    "rank": 2263,
+    "word": "乱暴",
+    "reading": "らんぼう",
+    "meaning": "violence"
+  },
+  {
+    "rank": 2467,
+    "word": "犯す",
+    "reading": "おかす",
+    "meaning": "to commit (e.g. crime)"
+  },
+  {
+    "rank": 2502,
+    "word": "勝ち",
+    "reading": "かち",
+    "meaning": "win"
+  },
+  {
+    "rank": 2639,
+    "word": "対抗",
+    "reading": "たいこう",
+    "meaning": "opposition"
+  },
+  {
+    "rank": 2698,
+    "word": "争い",
+    "reading": "あらそい",
+    "meaning": "dispute"
+  },
+  {
+    "rank": 2700,
+    "word": "争う",
+    "reading": "あらそう",
+    "meaning": "to compete"
+  },
+  {
+    "rank": 2733,
+    "word": "挑戦",
+    "reading": "ちょうせん",
+    "meaning": "challenge"
+  },
+  {
+    "rank": 2827,
+    "word": "剣",
+    "reading": "けん",
+    "meaning": "sword (esp. a large, double-edged one)"
+  },
+  {
+    "rank": 2841,
+    "word": "戦闘",
+    "reading": "せんとう",
+    "meaning": "battle"
+  },
+  {
+    "rank": 2851,
+    "word": "軍",
+    "reading": "ぐん",
+    "meaning": "army"
+  },
+  {
+    "rank": 2853,
+    "word": "撃つ",
+    "reading": "うつ",
+    "meaning": "to shoot (at)"
+  },
+  {
+    "rank": 2892,
+    "word": "一撃",
+    "reading": "いちげき",
+    "meaning": "blow"
+  },
+  {
+    "rank": 2911,
+    "word": "護衛",
+    "reading": "ごえい",
+    "meaning": "guard"
+  },
+  {
+    "rank": 2913,
+    "word": "ナイフ",
+    "reading": "ナイフ",
+    "meaning": "knife"
+  },
+  {
+    "rank": 2914,
+    "word": "兵士",
+    "reading": "へいし",
+    "meaning": "soldier"
+  },
+  {
+    "rank": 2915,
+    "word": "矢",
+    "reading": "や",
+    "meaning": "arrow"
+  },
+  {
+    "rank": 2920,
+    "word": "兵",
+    "reading": "へい",
+    "meaning": "(common) soldier"
+  },
+  {
+    "rank": 2940,
+    "word": "斬る",
+    "reading": "きる",
+    "meaning": "to kill (a human) using a blade (sword, machete, knife, e..."
+  },
+  {
+    "rank": 2943,
+    "word": "戦場",
+    "reading": "せんじょう",
+    "meaning": "battlefield"
+  },
+  {
+    "rank": 2949,
+    "word": "技",
+    "reading": "わざ",
+    "meaning": "technique"
+  },
+  {
+    "rank": 2953,
+    "word": "最強",
+    "reading": "さいきょう",
+    "meaning": "strongest"
+  },
+  {
+    "rank": 2962,
+    "word": "部隊",
+    "reading": "ぶたい",
+    "meaning": "force"
+  },
+  {
+    "rank": 2968,
+    "word": "槍",
+    "reading": "やり",
+    "meaning": "spear"
+  },
+  {
+    "rank": 2973,
+    "word": "盾",
+    "reading": "たて",
+    "meaning": "shield"
+  },
+  {
+    "rank": 2980,
+    "word": "試合",
+    "reading": "しあい",
+    "meaning": "match"
+  },
+  {
+    "rank": 2983,
+    "word": "銃",
+    "reading": "じゅう",
+    "meaning": "gun"
+  },
+  {
+    "rank": 2988,
+    "word": "喧嘩",
+    "reading": "けんか",
+    "meaning": "quarrel"
+  },
+  {
+    "rank": 2991,
+    "word": "隊",
+    "reading": "たい",
+    "meaning": "party"
+  },
+  {
+    "rank": 3003,
+    "word": "刀",
+    "reading": "かたな",
+    "meaning": "sword (esp. Japanese single-edged)"
+  },
+  {
+    "rank": 3005,
+    "word": "刃",
+    "reading": "は",
+    "meaning": "edge (of a knife or sword)"
+  },
+  {
+    "rank": 3032,
+    "word": "回避",
+    "reading": "かいひ",
+    "meaning": "evasion"
+  },
+  {
+    "rank": 3039,
+    "word": "ダメージ",
+    "reading": "ダメージ",
+    "meaning": "damage"
+  },
+  {
+    "rank": 3048,
+    "word": "振り回す",
+    "reading": "ふりまわす",
+    "meaning": "to wield"
+  },
+  {
+    "rank": 3055,
+    "word": "攻める",
+    "reading": "せめる",
+    "meaning": "to attack"
+  },
+  {
+    "rank": 3062,
+    "word": "防御",
+    "reading": "ぼうぎょ",
+    "meaning": "defense"
+  },
+  {
+    "rank": 3069,
+    "word": "一発",
+    "reading": "いっぱつ",
+    "meaning": "shot"
+  },
+  {
+    "rank": 3124,
+    "word": "挑む",
+    "reading": "いどむ",
+    "meaning": "to challenge to (a fight, game, etc.)"
+  },
+  {
+    "rank": 3126,
+    "word": "鎧",
+    "reading": "よろい",
+    "meaning": "armor"
+  },
+  {
+    "rank": 3141,
+    "word": "戦力",
+    "reading": "せんりょく",
+    "meaning": "war potential"
+  },
+  {
+    "rank": 3161,
+    "word": "振るう",
+    "reading": "ふるう",
+    "meaning": "to swing"
+  },
+  {
+    "rank": 3210,
+    "word": "襲撃",
+    "reading": "しゅうげき",
+    "meaning": "attack"
+  },
+  {
+    "rank": 3215,
+    "word": "復讐",
+    "reading": "ふくしゅう",
+    "meaning": "revenge"
+  },
+  {
+    "rank": 3264,
+    "word": "陣",
+    "reading": "じん",
+    "meaning": "battle formation"
+  },
+  {
+    "rank": 3329,
+    "word": "叩きつける",
+    "reading": "たたきつける",
+    "meaning": "to throw violently against"
+  },
+  {
+    "rank": 3369,
+    "word": "戦",
+    "reading": "せん",
+    "meaning": "war"
+  },
+  {
+    "rank": 3393,
+    "word": "突破",
+    "reading": "とっぱ",
+    "meaning": "breaking through"
+  },
+  {
+    "rank": 3408,
+    "word": "負け",
+    "reading": "まけ",
+    "meaning": "defeat"
+  },
+  {
+    "rank": 3412,
+    "word": "戦士",
+    "reading": "せんし",
+    "meaning": "soldier"
+  },
+  {
+    "rank": 3414,
+    "word": "警備",
+    "reading": "けいび",
+    "meaning": "defense"
+  },
+  {
+    "rank": 3592,
+    "word": "襲いかかる",
+    "reading": "おそいかかる",
+    "meaning": "to rush on"
+  },
+  {
+    "rank": 3649,
+    "word": "反撃",
+    "reading": "はんげき",
+    "meaning": "counterattack"
+  },
+  {
+    "rank": 3657,
+    "word": "突き刺さる",
+    "reading": "つきささる",
+    "meaning": "to stick into"
+  },
+  {
+    "rank": 3665,
+    "word": "突きつける",
+    "reading": "つきつける",
+    "meaning": "to thrust before"
+  },
+  {
+    "rank": 3666,
+    "word": "暴力",
+    "reading": "ぼうりょく",
+    "meaning": "violence"
+  },
+  {
+    "rank": 3705,
+    "word": "滅ぼす",
+    "reading": "ほろぼす",
+    "meaning": "to destroy"
+  },
+  {
+    "rank": 3713,
+    "word": "攻略",
+    "reading": "こうりゃく",
+    "meaning": "capture (of enemy territory)"
+  },
+  {
+    "rank": 3845,
+    "word": "敗北",
+    "reading": "はいぼく",
+    "meaning": "defeat"
+  },
+  {
+    "rank": 3856,
+    "word": "脅威",
+    "reading": "きょうい",
+    "meaning": "threat"
+  },
+  {
+    "rank": 3898,
+    "word": "脅す",
+    "reading": "おどす",
+    "meaning": "to threaten"
+  },
+  {
+    "rank": 3932,
+    "word": "刃",
+    "reading": "は",
+    "meaning": "edge (of a knife or sword)"
+  },
+  {
+    "rank": 3954,
+    "word": "砕く",
+    "reading": "くだく",
+    "meaning": "to break"
+  },
+  {
+    "rank": 3957,
+    "word": "弓",
+    "reading": "ゆみ",
+    "meaning": "bow (weapon)"
+  },
+  {
+    "rank": 3967,
+    "word": "切り裂く",
+    "reading": "きりさく",
+    "meaning": "to cut off"
+  },
+  {
+    "rank": 3980,
+    "word": "振り下ろす",
+    "reading": "ふりおろす",
+    "meaning": "to swing downward"
+  },
+  {
+    "rank": 4055,
+    "word": "爆弾",
+    "reading": "ばくだん",
+    "meaning": "bomb"
+  },
+  {
+    "rank": 4073,
+    "word": "取り囲む",
+    "reading": "とりかこむ",
+    "meaning": "to surround"
+  },
+  {
+    "rank": 4099,
+    "word": "刺さる",
+    "reading": "ささる",
+    "meaning": "to stick into (of something with a sharp point)"
+  },
+  {
+    "rank": 4101,
+    "word": "殺し",
+    "reading": "ころし",
+    "meaning": "murder"
+  },
+  {
+    "rank": 4103,
+    "word": "突撃",
+    "reading": "とつげき",
+    "meaning": "charge"
+  },
+  {
+    "rank": 4110,
+    "word": "殺人",
+    "reading": "さつじん",
+    "meaning": "murder"
+  },
+  {
+    "rank": 4132,
+    "word": "庇う",
+    "reading": "かばう",
+    "meaning": "to protect (someone)"
+  },
+  {
+    "rank": 4175,
+    "word": "制する",
+    "reading": "せいする",
+    "meaning": "to hold back (e.g. emotions)"
+  },
+  {
+    "rank": 4289,
+    "word": "敵意",
+    "reading": "てきい",
+    "meaning": "hostility"
+  },
+  {
+    "rank": 4303,
+    "word": "衝突",
+    "reading": "しょうとつ",
+    "meaning": "collision"
+  },
+  {
+    "rank": 4305,
+    "word": "追い込む",
+    "reading": "おいこむ",
+    "meaning": "to herd"
+  },
+  {
+    "rank": 4313,
+    "word": "騒動",
+    "reading": "そうどう",
+    "meaning": "strife"
+  },
+  {
+    "rank": 4338,
+    "word": "撤退",
+    "reading": "てったい",
+    "meaning": "evacuation"
+  },
+  {
+    "rank": 4339,
+    "word": "対峙",
+    "reading": "たいじ",
+    "meaning": "standing facing each other (e.g. mountains, buildings)"
+  },
+  {
+    "rank": 4382,
+    "word": "裂く",
+    "reading": "さく",
+    "meaning": "to tear"
+  },
+  {
+    "rank": 4397,
+    "word": "殺害",
+    "reading": "さつがい",
+    "meaning": "killing"
+  },
+  {
+    "rank": 4428,
+    "word": "直撃",
+    "reading": "ちょくげき",
+    "meaning": "direct hit"
+  },
+  {
+    "rank": 4459,
+    "word": "弾",
+    "reading": "たま",
+    "meaning": "ball"
+  },
+  {
+    "rank": 4508,
+    "word": "発射",
+    "reading": "はっしゃ",
+    "meaning": "firing (esp. a rocket or missile)"
+  },
+  {
+    "rank": 4524,
+    "word": "全滅",
+    "reading": "ぜんめつ",
+    "meaning": "annihilation"
+  },
+  {
+    "rank": 4584,
+    "word": "打ち込む",
+    "reading": "うちこむ",
+    "meaning": "to drive in (e.g. nail, stake)"
+  },
+  {
+    "rank": 4588,
+    "word": "圧倒",
+    "reading": "あっとう",
+    "meaning": "to overwhelm (e.g. an opponent)"
+  },
+  {
+    "rank": 4628,
+    "word": "身構える",
+    "reading": "みがまえる",
+    "meaning": "to put oneself on guard"
+  },
+  {
+    "rank": 4656,
+    "word": "立ち向かう",
+    "reading": "たちむかう",
+    "meaning": "to fight against"
+  },
+  {
+    "rank": 4680,
+    "word": "武装",
+    "reading": "ぶそう",
+    "meaning": "arms"
+  },
+  {
+    "rank": 4707,
+    "word": "突進",
+    "reading": "とっしん",
+    "meaning": "rush"
+  },
+  {
+    "rank": 4786,
+    "word": "殺意",
+    "reading": "さつい",
+    "meaning": "intent to kill"
+  },
+  {
+    "rank": 4798,
+    "word": "抗う",
+    "reading": "あらがう",
+    "meaning": "to go against"
+  },
+  {
+    "rank": 4828,
+    "word": "犯罪者",
+    "reading": "はんざいしゃ",
+    "meaning": "criminal"
+  },
+  {
+    "rank": 4864,
+    "word": "突き刺す",
+    "reading": "つきさす",
+    "meaning": "to stab"
+  },
+  {
+    "rank": 4865,
+    "word": "防衛",
+    "reading": "ぼうえい",
+    "meaning": "defense"
+  },
+  {
+    "rank": 4886,
+    "word": "殺気",
+    "reading": "さっき",
+    "meaning": "thirst for blood"
+  },
+  {
+    "rank": 4916,
+    "word": "処刑",
+    "reading": "しょけい",
+    "meaning": "execution"
+  },
+  {
+    "rank": 4936,
+    "word": "ぶつ",
+    "reading": "ぶつ",
+    "meaning": "to hit (a person)"
+  },
+  {
+    "rank": 4960,
+    "word": "敵う",
+    "reading": "かなう",
+    "meaning": "to come true (of a wish, prayer, etc.)"
+  },
+  {
+    "rank": 4961,
+    "word": "退治",
+    "reading": "たいじ",
+    "meaning": "extermination (e.g. of pests, demons, bandits)"
+  },
+  {
+    "rank": 4969,
+    "word": "引き裂く",
+    "reading": "ひきさく",
+    "meaning": "to tear up"
+  },
+  {
+    "rank": 5041,
+    "word": "敵対",
+    "reading": "てきたい",
+    "meaning": "hostility"
+  },
+  {
+    "rank": 5065,
+    "word": "断つ",
+    "reading": "たつ",
+    "meaning": "to sever"
+  },
+  {
+    "rank": 5078,
+    "word": "阻む",
+    "reading": "はばむ",
+    "meaning": "to keep someone from doing"
+  },
+  {
+    "rank": 5089,
+    "word": "対立",
+    "reading": "たいりつ",
+    "meaning": "confrontation"
+  },
+  {
+    "rank": 5117,
+    "word": "気合い",
+    "reading": "きあい",
+    "meaning": "(fighting) spirit"
+  },
+  {
+    "rank": 5174,
+    "word": "拷問",
+    "reading": "ごうもん",
+    "meaning": "torture"
+  },
+  {
+    "rank": 5196,
+    "word": "囚われる",
+    "reading": "とらわれる",
+    "meaning": "to be caught"
+  },
+  {
+    "rank": 5220,
+    "word": "切り捨てる",
+    "reading": "きりすてる",
+    "meaning": "to cut down"
+  },
+  {
+    "rank": 5240,
+    "word": "刃物",
+    "reading": "はもの",
+    "meaning": "edged tool"
+  },
+  {
+    "rank": 5310,
+    "word": "切断",
+    "reading": "せつだん",
+    "meaning": "cutting"
+  },
+  {
+    "rank": 5420,
+    "word": "実戦",
+    "reading": "じっせん",
+    "meaning": "combat"
+  },
+  {
+    "rank": 5439,
+    "word": "反発",
+    "reading": "はんぱつ",
+    "meaning": "opposition"
+  },
+  {
+    "rank": 5477,
+    "word": "不意打ち",
+    "reading": "ふいうち",
+    "meaning": "surprise attack"
+  },
+  {
+    "rank": 5514,
+    "word": "断ち切る",
+    "reading": "たちきる",
+    "meaning": "to cut apart (cloth, paper, etc.)"
+  },
+  {
+    "rank": 5522,
+    "word": "軍隊",
+    "reading": "ぐんたい",
+    "meaning": "armed forces"
+  },
+  {
+    "rank": 5569,
+    "word": "犯行",
+    "reading": "はんこう",
+    "meaning": "crime"
+  },
+  {
+    "rank": 5623,
+    "word": "押し倒す",
+    "reading": "おしたおす",
+    "meaning": "to pin down"
+  },
+  {
+    "rank": 5626,
+    "word": "押さえつける",
+    "reading": "おさえつける",
+    "meaning": "to press down"
+  },
+  {
+    "rank": 5713,
+    "word": "脅かす",
+    "reading": "おびやかす",
+    "meaning": "to intimidate"
+  },
+  {
+    "rank": 5715,
+    "word": "戦略",
+    "reading": "せんりゃく",
+    "meaning": "strategy"
+  },
+  {
+    "rank": 5764,
+    "word": "貧乏",
+    "reading": "びんぼう",
+    "meaning": "poverty-stricken"
+  },
+  {
+    "rank": 5852,
+    "word": "貢献",
+    "reading": "こうけん",
+    "meaning": "contribution (furthering a goal or cause)"
+  },
+  {
+    "rank": 5860,
+    "word": "有能",
+    "reading": "ゆうのう",
+    "meaning": "able"
+  },
+  {
+    "rank": 5865,
+    "word": "牽制",
+    "reading": "けんせい",
+    "meaning": "check"
+  },
+  {
+    "rank": 5866,
+    "word": "押し殺す",
+    "reading": "おしころす",
+    "meaning": "to crush to death"
+  },
+  {
+    "rank": 5932,
+    "word": "侮辱",
+    "reading": "ぶじょく",
+    "meaning": "insult"
+  },
+  {
+    "rank": 5972,
+    "word": "奪い取る",
+    "reading": "うばいとる",
+    "meaning": "to plunder"
+  },
+  {
+    "rank": 5973,
+    "word": "出血",
+    "reading": "しゅっけつ",
+    "meaning": "bleeding"
+  },
+  {
+    "rank": 5984,
+    "word": "切り離す",
+    "reading": "きりはなす",
+    "meaning": "to detach"
+  },
+  {
+    "rank": 6009,
+    "word": "突き飛ばす",
+    "reading": "つきとばす",
+    "meaning": "to thrust away"
+  },
+  {
+    "rank": 6037,
+    "word": "破裂",
+    "reading": "はれつ",
+    "meaning": "explosion"
+  },
+  {
+    "rank": 6056,
+    "word": "人殺し",
+    "reading": "ひとごろし",
+    "meaning": "murder"
+  },
+  {
+    "rank": 6116,
+    "word": "頼りにする",
+    "reading": "たよりにする",
+    "meaning": "to rely on"
+  },
+  {
+    "rank": 6161,
+    "word": "打撃",
+    "reading": "だげき",
+    "meaning": "blow"
+  },
+  {
+    "rank": 6186,
+    "word": "負傷",
+    "reading": "ふしょう",
+    "meaning": "injury"
+  },
+  {
+    "rank": 6260,
+    "word": "苦戦",
+    "reading": "くせん",
+    "meaning": "hard fight"
+  },
+  {
+    "rank": 6284,
+    "word": "ある時",
+    "reading": "あるとき",
+    "meaning": "on one occasion"
+  },
+  {
+    "rank": 6302,
+    "word": "二十歳",
+    "reading": "はたち",
+    "meaning": "20 years old"
+  },
+  {
+    "rank": 6313,
+    "word": "意味不明",
+    "reading": "いみふめい",
+    "meaning": "of uncertain meaning"
+  },
+  {
+    "rank": 6341,
+    "word": "コメント",
+    "reading": "コメント",
+    "meaning": "comment"
+  },
+  {
+    "rank": 6342,
+    "word": "燃え上がる",
+    "reading": "もえあがる",
+    "meaning": "to flare up"
+  },
+  {
+    "rank": 6364,
+    "word": "脅迫",
+    "reading": "きょうはく",
+    "meaning": "threat"
+  },
+  {
+    "rank": 6369,
+    "word": "敗れる",
+    "reading": "やぶれる",
+    "meaning": "to be defeated"
+  },
+  {
+    "rank": 6387,
+    "word": "悪口",
+    "reading": "わるぐち",
+    "meaning": "slander"
+  },
+  {
+    "rank": 6513,
+    "word": "勝",
+    "reading": "しょう",
+    "meaning": "win"
+  },
+  {
+    "rank": 6516,
+    "word": "匹敵",
+    "reading": "ひってき",
+    "meaning": "to be a match for"
+  },
+  {
+    "rank": 6528,
+    "word": "反抗",
+    "reading": "はんこう",
+    "meaning": "opposition"
+  },
+  {
+    "rank": 6556,
+    "word": "かすめる",
+    "reading": "かすめる",
+    "meaning": "to steal"
+  },
+  {
+    "rank": 6594,
+    "word": "奏でる",
+    "reading": "かなでる",
+    "meaning": "to play an instrument (esp. string instruments)"
+  },
+  {
+    "rank": 6606,
+    "word": "圧迫",
+    "reading": "あっぱく",
+    "meaning": "pressure"
+  },
+  {
+    "rank": 6621,
+    "word": "押しのける",
+    "reading": "おしのける",
+    "meaning": "to push aside"
+  },
+  {
+    "rank": 6667,
+    "word": "勝る",
+    "reading": "まさる",
+    "meaning": "to excel"
+  },
+  {
+    "rank": 6668,
+    "word": "血を流す",
+    "reading": "ちをながす",
+    "meaning": "to shed blood"
+  },
+  {
+    "rank": 6670,
+    "word": "競争",
+    "reading": "きょうそう",
+    "meaning": "competition"
+  },
+  {
+    "rank": 6728,
+    "word": "降参",
+    "reading": "こうさん",
+    "meaning": "surrender"
+  },
+  {
+    "rank": 6743,
+    "word": "監禁",
+    "reading": "かんきん",
+    "meaning": "confinement"
+  },
+  {
+    "rank": 6744,
+    "word": "荒らす",
+    "reading": "あらす",
+    "meaning": "to lay waste"
+  },
+  {
+    "rank": 6794,
+    "word": "犠牲になる",
+    "reading": "ぎせいになる",
+    "meaning": "to be sacrificed"
+  },
+  {
+    "rank": 6895,
+    "word": "突き放す",
+    "reading": "つきはなす",
+    "meaning": "to push away"
+  },
+  {
+    "rank": 6921,
+    "word": "格闘",
+    "reading": "かくとう",
+    "meaning": "hand-to-hand fighting"
+  },
+  {
+    "rank": 6952,
+    "word": "競う",
+    "reading": "きそう",
+    "meaning": "to compete"
+  },
+  {
+    "rank": 6953,
+    "word": "開き直る",
+    "reading": "ひらきなおる",
+    "meaning": "to become defiant"
+  },
+  {
+    "rank": 6962,
+    "word": "脅し",
+    "reading": "おどし",
+    "meaning": "threat"
+  },
+  {
+    "rank": 6977,
+    "word": "見とれる",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 7150,
+    "word": "多大",
+    "reading": "ただい",
+    "meaning": "great (quantity, amount, etc.)"
+  },
+  {
+    "rank": 7157,
+    "word": "仕返し",
+    "reading": "しかえし",
+    "meaning": "payback"
+  },
+  {
+    "rank": 7170,
+    "word": "踏みにじる",
+    "reading": "ふみにじる",
+    "meaning": "to trample underfoot"
+  },
+  {
+    "rank": 7323,
+    "word": "打",
+    "reading": "だ",
+    "meaning": "hitting a ball"
+  },
+  {
+    "rank": 7473,
+    "word": "痛める",
+    "reading": "いためる",
+    "meaning": "to hurt"
+  },
+  {
+    "rank": 7619,
+    "word": "魔王",
+    "reading": "まおう",
+    "meaning": "Satan"
+  },
+  {
+    "rank": 7650,
+    "word": "討伐",
+    "reading": "とうばつ",
+    "meaning": "subjugation (using military force)"
+  },
+  {
+    "rank": 7652,
+    "word": "兵器",
+    "reading": "へいき",
+    "meaning": "arms"
+  },
+  {
+    "rank": 7683,
+    "word": "弾丸",
+    "reading": "だんがん",
+    "meaning": "bullet"
+  },
+  {
+    "rank": 7703,
+    "word": "暗殺",
+    "reading": "あんさつ",
+    "meaning": "assassination"
+  },
+  {
+    "rank": 7740,
+    "word": "討つ",
+    "reading": "うつ",
+    "meaning": "to shoot (at)"
+  },
+  {
+    "rank": 7751,
+    "word": "仕留める",
+    "reading": "しとめる",
+    "meaning": "to bring down (an animal, opponent, etc.)"
+  },
+  {
+    "rank": 7755,
+    "word": "激突",
+    "reading": "げきとつ",
+    "meaning": "crash into"
+  },
+  {
+    "rank": 7765,
+    "word": "蹴り",
+    "reading": "けり",
+    "meaning": "kick"
+  },
+  {
+    "rank": 7772,
+    "word": "拳銃",
+    "reading": "けんじゅう",
+    "meaning": "pistol"
+  },
+  {
+    "rank": 7795,
+    "word": "銃声",
+    "reading": "じゅうせい",
+    "meaning": "(sound of a) gunshot"
+  },
+  {
+    "rank": 7823,
+    "word": "戦術",
+    "reading": "せんじゅつ",
+    "meaning": "tactics"
+  },
+  {
+    "rank": 7824,
+    "word": "包囲",
+    "reading": "ほうい",
+    "meaning": "siege"
+  },
+  {
+    "rank": 7830,
+    "word": "無傷",
+    "reading": "むきず",
+    "meaning": "unhurt"
+  },
+  {
+    "rank": 7843,
+    "word": "突き立てる",
+    "reading": "つきたてる",
+    "meaning": "to stab"
+  },
+  {
+    "rank": 7854,
+    "word": "切り札",
+    "reading": "きりふだ",
+    "meaning": "trump card"
+  },
+  {
+    "rank": 7855,
+    "word": "援護",
+    "reading": "えんご",
+    "meaning": "covering"
+  },
+  {
+    "rank": 7857,
+    "word": "決闘",
+    "reading": "けっとう",
+    "meaning": "duel"
+  },
+  {
+    "rank": 7866,
+    "word": "追撃",
+    "reading": "ついげき",
+    "meaning": "pursuit (of a fleeing enemy)"
+  },
+  {
+    "rank": 7875,
+    "word": "護る",
+    "reading": "まもる",
+    "meaning": "to protect"
+  },
+  {
+    "rank": 7897,
+    "word": "壊滅",
+    "reading": "かいめつ",
+    "meaning": "destruction"
+  },
+  {
+    "rank": 7901,
+    "word": "草原",
+    "reading": "そうげん",
+    "meaning": "grassy field"
+  },
+  {
+    "rank": 7913,
+    "word": "斧",
+    "reading": "おの",
+    "meaning": "axe"
+  },
+  {
+    "rank": 7922,
+    "word": "殲滅",
+    "reading": "せんめつ",
+    "meaning": "extermination"
+  },
+  {
+    "rank": 7926,
+    "word": "気合",
+    "reading": "きあい",
+    "meaning": "(fighting) spirit"
+  },
+  {
+    "rank": 7938,
+    "word": "剣術",
+    "reading": "けんじゅつ",
+    "meaning": "(art of) fencing"
+  },
+  {
+    "rank": 7939,
+    "word": "命中",
+    "reading": "めいちゅう",
+    "meaning": "(direct) hit"
+  },
+  {
+    "rank": 7945,
+    "word": "受け流す",
+    "reading": "うけながす",
+    "meaning": "to ward off (e.g. an attack)"
+  },
+  {
+    "rank": 7965,
+    "word": "制圧",
+    "reading": "せいあつ",
+    "meaning": "gaining total control (of people or counties)"
+  },
+  {
+    "rank": 7996,
+    "word": "恰好",
+    "reading": "かっこう",
+    "meaning": "shape"
+  },
+  {
+    "rank": 7997,
+    "word": "迎撃",
+    "reading": "げいげき",
+    "meaning": "intercept"
+  },
+  {
+    "rank": 8006,
+    "word": "必殺",
+    "reading": "ひっさつ",
+    "meaning": "bringing certain death"
+  },
+  {
+    "rank": 8014,
+    "word": "火傷",
+    "reading": "やけど",
+    "meaning": "burn"
+  },
+  {
+    "rank": 8015,
+    "word": "奇襲",
+    "reading": "きしゅう",
+    "meaning": "surprise attack"
+  },
+  {
+    "rank": 8026,
+    "word": "守護",
+    "reading": "しゅご",
+    "meaning": "protection"
+  },
+  {
+    "rank": 8046,
+    "word": "前線",
+    "reading": "ぜんせん",
+    "meaning": "(weather) front"
+  },
+  {
+    "rank": 8056,
+    "word": "致命傷",
+    "reading": "ちめいしょう",
+    "meaning": "fatal wound"
+  },
+  {
+    "rank": 8058,
+    "word": "銃弾",
+    "reading": "じゅうだん",
+    "meaning": "bullet (from a rifle)"
+  },
+  {
+    "rank": 8071,
+    "word": "偵察",
+    "reading": "ていさつ",
+    "meaning": "scouting"
+  },
+  {
+    "rank": 8106,
+    "word": "乗っ取る",
+    "reading": "のっとる",
+    "meaning": "to take over"
+  },
+  {
+    "rank": 8139,
+    "word": "滅ぶ",
+    "reading": "ほろぶ",
+    "meaning": "to be ruined"
+  },
+  {
+    "rank": 8157,
+    "word": "撃退",
+    "reading": "げきたい",
+    "meaning": "repulse"
+  },
+  {
+    "rank": 8169,
+    "word": "砲",
+    "reading": "ほう",
+    "meaning": "gun"
+  },
+  {
+    "rank": 8171,
+    "word": "凶器",
+    "reading": "きょうき",
+    "meaning": "dangerous weapon"
+  },
+  {
+    "rank": 8174,
+    "word": "炸裂",
+    "reading": "さくれつ",
+    "meaning": "violent explosion"
+  },
+  {
+    "rank": 8187,
+    "word": "射撃",
+    "reading": "しゃげき",
+    "meaning": "firing"
+  },
+  {
+    "rank": 8195,
+    "word": "要塞",
+    "reading": "ようさい",
+    "meaning": "fort"
+  },
+  {
+    "rank": 8196,
+    "word": "侵攻",
+    "reading": "しんこう",
+    "meaning": "invasion"
+  },
+  {
+    "rank": 8230,
+    "word": "射る",
+    "reading": "いる",
+    "meaning": "to shoot (arrow, bolt, dart)"
+  },
+  {
+    "rank": 8249,
+    "word": "切っ先",
+    "reading": "きっさき",
+    "meaning": "point (of a sword, etc.)"
+  },
+  {
+    "rank": 8250,
+    "word": "斬撃",
+    "reading": "ざんげき",
+    "meaning": "slash"
+  },
+  {
+    "rank": 8253,
+    "word": "殺し合う",
+    "reading": "ころしあう",
+    "meaning": "to kill each other"
+  },
+  {
+    "rank": 8276,
+    "word": "軍勢",
+    "reading": "ぐんぜい",
+    "meaning": "military forces"
+  },
+  {
+    "rank": 8281,
+    "word": "攻撃力",
+    "reading": "こうげきりょく",
+    "meaning": "offensive ability"
+  },
+  {
+    "rank": 8292,
+    "word": "彼等",
+    "reading": "かれら",
+    "meaning": "they"
+  },
+  {
+    "rank": 8293,
+    "word": "命を奪う",
+    "reading": "いのちをうばう",
+    "meaning": "to take someone's life"
+  },
+  {
+    "rank": 8298,
+    "word": "反則",
+    "reading": "はんそく",
+    "meaning": "foul play (sport)"
+  },
+  {
+    "rank": 8325,
+    "word": "強敵",
+    "reading": "きょうてき",
+    "meaning": "formidable enemy"
+  },
+  {
+    "rank": 8359,
+    "word": "襲い掛かる",
+    "reading": "おそいかかる",
+    "meaning": "to rush on"
+  },
+  {
+    "rank": 8366,
+    "word": "降伏",
+    "reading": "こうふく",
+    "meaning": "capitulation"
+  },
+  {
+    "rank": 8379,
+    "word": "突き",
+    "reading": "つき",
+    "meaning": "thrust"
+  },
+  {
+    "rank": 8381,
+    "word": "粉砕",
+    "reading": "ふんさい",
+    "meaning": "pulverization"
+  },
+  {
+    "rank": 8392,
+    "word": "貫通",
+    "reading": "かんつう",
+    "meaning": "passing through (of a tunnel, bullet, etc.)"
+  },
+  {
+    "rank": 8396,
+    "word": "即死",
+    "reading": "そくし",
+    "meaning": "instant death"
+  },
+  {
+    "rank": 8405,
+    "word": "勝者",
+    "reading": "しょうしゃ",
+    "meaning": "winner"
+  },
+  {
+    "rank": 8421,
+    "word": "殺到",
+    "reading": "さっとう",
+    "meaning": "rush"
+  },
+  {
+    "rank": 8435,
+    "word": "敵に回す",
+    "reading": "てきにまわす",
+    "meaning": "to make an enemy (of)"
+  },
+  {
+    "rank": 8449,
+    "word": "捕獲",
+    "reading": "ほかく",
+    "meaning": "capture"
+  },
+  {
+    "rank": 8463,
+    "word": "ガード",
+    "reading": "ガード",
+    "meaning": "guard"
+  },
+  {
+    "rank": 8472,
+    "word": "皆殺し",
+    "reading": "みなごろし",
+    "meaning": "massacre"
+  },
+  {
+    "rank": 8476,
+    "word": "破壊力",
+    "reading": "はかいりょく",
+    "meaning": "destructive power"
+  },
+  {
+    "rank": 8490,
+    "word": "パンチ",
+    "reading": "パンチ",
+    "meaning": "punch (with the fist)"
+  },
+  {
+    "rank": 8509,
+    "word": "攫う",
+    "reading": "さらう",
+    "meaning": "to carry off"
+  },
+  {
+    "rank": 8510,
+    "word": "押し潰す",
+    "reading": "おしつぶす",
+    "meaning": "to squash"
+  },
+  {
+    "rank": 8512,
+    "word": "封鎖",
+    "reading": "ふうさ",
+    "meaning": "blockade"
+  },
+  {
+    "rank": 8524,
+    "word": "死骸",
+    "reading": "しがい",
+    "meaning": "(dead) body"
+  },
+  {
+    "rank": 8527,
+    "word": "衛兵",
+    "reading": "えいへい",
+    "meaning": "guard"
+  },
+  {
+    "rank": 8530,
+    "word": "ひんやり",
+    "reading": "ひんやり",
+    "meaning": "cool"
+  },
+  {
+    "rank": 8532,
+    "word": "宮廷",
+    "reading": "きゅうてい",
+    "meaning": "imperial court"
+  },
+  {
+    "rank": 8546,
+    "word": "砕け散る",
+    "reading": "くだけちる",
+    "meaning": "to be smashed up"
+  },
+  {
+    "rank": 8560,
+    "word": "勝ち目",
+    "reading": "かちめ",
+    "meaning": "chance (of success)"
+  },
+  {
+    "rank": 8563,
+    "word": "勝敗",
+    "reading": "しょうはい",
+    "meaning": "victory or defeat"
+  },
+  {
+    "rank": 8572,
+    "word": "兵隊",
+    "reading": "へいたい",
+    "meaning": "soldier"
+  },
+  {
+    "rank": 8583,
+    "word": "死角",
+    "reading": "しかく",
+    "meaning": "blind spot (e.g. of a driver)"
+  },
+  {
+    "rank": 8590,
+    "word": "振りかぶる",
+    "reading": "ふりかぶる",
+    "meaning": "to hold aloft (e.g. a sword)"
+  },
+  {
+    "rank": 8600,
+    "word": "剣を抜く",
+    "reading": "つるぎをぬく",
+    "meaning": "to draw a sword"
+  },
+  {
+    "rank": 8608,
+    "word": "対戦",
+    "reading": "たいせん",
+    "meaning": "fighting (against)"
+  },
+  {
+    "rank": 8617,
+    "word": "勝ち誇る",
+    "reading": "かちほこる",
+    "meaning": "to triumph"
+  },
+  {
+    "rank": 8632,
+    "word": "軍団",
+    "reading": "ぐんだん",
+    "meaning": "army corps"
+  },
+  {
+    "rank": 8675,
+    "word": "重傷",
+    "reading": "じゅうしょう",
+    "meaning": "serious wound"
+  },
+  {
+    "rank": 8687,
+    "word": "打ち付ける",
+    "reading": "うちつける",
+    "meaning": "to nail"
+  },
+  {
+    "rank": 8688,
+    "word": "援軍",
+    "reading": "えんぐん",
+    "meaning": "reinforcement"
+  },
+  {
+    "rank": 8705,
+    "word": "撃破",
+    "reading": "げきは",
+    "meaning": "crushing"
+  },
+  {
+    "rank": 8722,
+    "word": "突き抜ける",
+    "reading": "つきぬける",
+    "meaning": "to pierce through"
+  },
+  {
+    "rank": 8733,
+    "word": "大剣",
+    "reading": "たいけん",
+    "meaning": "large sword"
+  },
+  {
+    "rank": 8749,
+    "word": "血が流れる",
+    "reading": "ちがながれる",
+    "meaning": "blood flows"
+  },
+  {
+    "rank": 8766,
+    "word": "防具",
+    "reading": "ぼうぐ",
+    "meaning": "guard"
+  },
+  {
+    "rank": 8821,
+    "word": "陣取る",
+    "reading": "じんどる",
+    "meaning": "to encamp"
+  },
+  {
+    "rank": 8839,
+    "word": "蹴散らす",
+    "reading": "けちらす",
+    "meaning": "to kick about"
+  },
+  {
+    "rank": 8870,
+    "word": "急所",
+    "reading": "きゅうしょ",
+    "meaning": "vital part (of the body)"
+  },
+  {
+    "rank": 8872,
+    "word": "威圧",
+    "reading": "いあつ",
+    "meaning": "coercion"
+  },
+  {
+    "rank": 8874,
+    "word": "ぶつかり合う",
+    "reading": "ぶつかりあう",
+    "meaning": "to collide"
+  },
+  {
+    "rank": 8881,
+    "word": "手下",
+    "reading": "てした",
+    "meaning": "subordinate"
+  },
+  {
+    "rank": 8890,
+    "word": "打ち砕く",
+    "reading": "うちくだく",
+    "meaning": "to smash"
+  },
+  {
+    "rank": 8891,
+    "word": "侵略",
+    "reading": "しんりゃく",
+    "meaning": "aggression"
+  },
+  {
+    "rank": 8896,
+    "word": "火力",
+    "reading": "かりょく",
+    "meaning": "heating power"
+  },
+  {
+    "rank": 8932,
+    "word": "迎え撃つ",
+    "reading": "むかえうつ",
+    "meaning": "to meet (the enemy) and attack"
+  },
+  {
+    "rank": 8933,
+    "word": "害する",
+    "reading": "がいする",
+    "meaning": "to injure"
+  },
+  {
+    "rank": 8943,
+    "word": "弾き飛ばす",
+    "reading": "はじきとばす",
+    "meaning": "to flick off"
+  },
+  {
+    "rank": 8957,
+    "word": "吹っ飛ばす",
+    "reading": "ふっとばす",
+    "meaning": "to blow off (strongly)"
+  },
+  {
+    "rank": 8958,
+    "word": "競技",
+    "reading": "きょうぎ",
+    "meaning": "game"
+  },
+  {
+    "rank": 8981,
+    "word": "戦況",
+    "reading": "せんきょう",
+    "meaning": "war situation"
+  },
+  {
+    "rank": 9011,
+    "word": "狙撃",
+    "reading": "そげき",
+    "meaning": "shooting"
+  },
+  {
+    "rank": 9018,
+    "word": "返り討ち",
+    "reading": "かえりうち",
+    "meaning": "killing a would-be avenger"
+  },
+  {
+    "rank": 9032,
+    "word": "苛む",
+    "reading": "さいなむ",
+    "meaning": "to torment"
+  },
+  {
+    "rank": 9038,
+    "word": "危害を加える",
+    "reading": "きがいをくわえる",
+    "meaning": "to harm"
+  },
+  {
+    "rank": 9045,
+    "word": "艦",
+    "reading": "かん",
+    "meaning": "warship"
+  },
+  {
+    "rank": 9055,
+    "word": "突き破る",
+    "reading": "つきやぶる",
+    "meaning": "to break through"
+  },
+  {
+    "rank": 9057,
+    "word": "砲撃",
+    "reading": "ほうげき",
+    "meaning": "bombarding"
+  },
+  {
+    "rank": 9073,
+    "word": "射程",
+    "reading": "しゃてい",
+    "meaning": "range (of a rifle, missile, etc.)"
+  },
+  {
+    "rank": 9106,
+    "word": "死刑",
+    "reading": "しけい",
+    "meaning": "death penalty"
+  },
+  {
+    "rank": 9119,
+    "word": "爆発音",
+    "reading": "ばくはつおん",
+    "meaning": "sound of an explosion"
+  },
+  {
+    "rank": 9124,
+    "word": "戦闘力",
+    "reading": "せんとうりょく",
+    "meaning": "fighting strength"
+  },
+  {
+    "rank": 9126,
+    "word": "楽勝",
+    "reading": "らくしょう",
+    "meaning": "easy victory"
+  },
+  {
+    "rank": 9144,
+    "word": "ふむふむ",
+    "reading": "ふむふむ",
+    "meaning": "hmmm"
+  },
+  {
+    "rank": 9178,
+    "word": "爆破",
+    "reading": "ばくは",
+    "meaning": "destructive blast"
+  },
+  {
+    "rank": 9226,
+    "word": "陥れる",
+    "reading": "おとしいれる",
+    "meaning": "to trap (into a difficult situation)"
+  },
+  {
+    "rank": 9235,
+    "word": "殴りつける",
+    "reading": "なぐりつける",
+    "meaning": "to bash"
+  },
+  {
+    "rank": 9246,
+    "word": "噛みつく",
+    "reading": "かみつく",
+    "meaning": "to bite (at)"
+  },
+  {
+    "rank": 9247,
+    "word": "矢先",
+    "reading": "やさき",
+    "meaning": "arrowhead"
+  },
+  {
+    "rank": 9264,
+    "word": "一閃",
+    "reading": "いっせん",
+    "meaning": "flash"
+  },
+  {
+    "rank": 9273,
+    "word": "修羅場",
+    "reading": "しゅらば",
+    "meaning": "fighting scene"
+  },
+  {
+    "rank": 9277,
+    "word": "爆",
+    "reading": "ばく",
+    "meaning": "burst of laughter"
+  },
+  {
+    "rank": 9305,
+    "word": "かます",
+    "reading": "かます",
+    "meaning": "to force someone to clamp with their teeth"
+  },
+  {
+    "rank": 9311,
+    "word": "待ち伏せ",
+    "reading": "まちぶせ",
+    "meaning": "ambush"
+  },
+  {
+    "rank": 9349,
+    "word": "ぶっ殺す",
+    "reading": "ぶっころす",
+    "meaning": "to beat to death"
+  },
+  {
+    "rank": 9362,
+    "word": "強盗",
+    "reading": "ごうとう",
+    "meaning": "robber"
+  },
+  {
+    "rank": 9370,
+    "word": "捕縛",
+    "reading": "ほばく",
+    "meaning": "arrest"
+  },
+  {
+    "rank": 9375,
+    "word": "ぶん殴る",
+    "reading": "ぶんなぐる",
+    "meaning": "to hit hard"
+  },
+  {
+    "rank": 9379,
+    "word": "海賊",
+    "reading": "かいぞく",
+    "meaning": "pirate"
+  },
+  {
+    "rank": 9389,
+    "word": "武力",
+    "reading": "ぶりょく",
+    "meaning": "armed might"
+  },
+  {
+    "rank": 9401,
+    "word": "戦車",
+    "reading": "せんしゃ",
+    "meaning": "tank (military vehicle)"
+  },
+  {
+    "rank": 9420,
+    "word": "捕虜",
+    "reading": "ほりょ",
+    "meaning": "prisoner (of war)"
+  },
+  {
+    "rank": 9424,
+    "word": "出撃",
+    "reading": "しゅつげき",
+    "meaning": "sortie"
+  },
+  {
+    "rank": 9435,
+    "word": "兵力",
+    "reading": "へいりょく",
+    "meaning": "military force"
+  },
+  {
+    "rank": 9451,
+    "word": "トランプ",
+    "reading": "トランプ",
+    "meaning": "(Western) playing cards"
+  },
+  {
+    "rank": 9457,
+    "word": "具合が悪い",
+    "reading": "ぐあいがわるい",
+    "meaning": "unwell"
+  },
+  {
+    "rank": 9459,
+    "word": "報復",
+    "reading": "ほうふく",
+    "meaning": "retaliation"
+  },
+  {
+    "rank": 9484,
+    "word": "攻防",
+    "reading": "こうぼう",
+    "meaning": "offense and defense"
+  },
+  {
+    "rank": 9494,
+    "word": "真っ二つに",
+    "reading": "まっぷたつに",
+    "meaning": "right in half"
+  },
+  {
+    "rank": 9496,
+    "word": "軍事",
+    "reading": "ぐんじ",
+    "meaning": "military affairs"
+  },
+  {
+    "rank": 9533,
+    "word": "忍者",
+    "reading": "にんじゃ",
+    "meaning": "ninja"
+  },
+  {
+    "rank": 9546,
+    "word": "突き落とす",
+    "reading": "つきおとす",
+    "meaning": "to thrust down"
+  },
+  {
+    "rank": 9548,
+    "word": "痛めつける",
+    "reading": "いためつける",
+    "meaning": "to torment"
+  },
+  {
+    "rank": 9565,
+    "word": "占拠",
+    "reading": "せんきょ",
+    "meaning": "occupation (e.g. of territory)"
+  },
+  {
+    "rank": 9567,
+    "word": "脱走",
+    "reading": "だっそう",
+    "meaning": "escape"
+  },
+  {
+    "rank": 9602,
+    "word": "刺客",
+    "reading": "しかく",
+    "meaning": "assassin"
+  },
+  {
+    "rank": 9604,
+    "word": "血まみれ",
+    "reading": "ちまみれ",
+    "meaning": "bloodstained"
+  },
+  {
+    "rank": 9625,
+    "word": "殺戮",
+    "reading": "さつりく",
+    "meaning": "slaughter"
+  },
+  {
+    "rank": 9641,
+    "word": "打ち上げる",
+    "reading": "うちあげる",
+    "meaning": "to launch"
+  },
+  {
+    "rank": 9650,
+    "word": "殺る",
+    "reading": "やる",
+    "meaning": "to do someone in"
+  },
+  {
+    "rank": 9685,
+    "word": "殺人事件",
+    "reading": "さつじんじけん",
+    "meaning": "murder case"
+  },
+  {
+    "rank": 9698,
+    "word": "処罰",
+    "reading": "しょばつ",
+    "meaning": "punishment"
+  },
+  {
+    "rank": 9734,
+    "word": "恥をかく",
+    "reading": "はじをかく",
+    "meaning": "to be embarrassed"
+  },
+  {
+    "rank": 9743,
+    "word": "潜伏",
+    "reading": "せんぷく",
+    "meaning": "concealment"
+  },
+  {
+    "rank": 9758,
+    "word": "締め上げる",
+    "reading": "しめあげる",
+    "meaning": "to screw up"
+  },
+  {
+    "rank": 9803,
+    "word": "へし折る",
+    "reading": "へしおる",
+    "meaning": "to smash"
+  },
+  {
+    "rank": 9854,
+    "word": "交戦",
+    "reading": "こうせん",
+    "meaning": "war"
+  },
+  {
+    "rank": 9869,
+    "word": "斬",
+    "reading": "ざん",
+    "meaning": "beheading"
+  },
+  {
+    "rank": 9902,
+    "word": "打ち破る",
+    "reading": "うちやぶる",
+    "meaning": "to break"
+  },
+  {
+    "rank": 9913,
+    "word": "自爆",
+    "reading": "じばく",
+    "meaning": "suicide bombing (e.g. crashing one's plane into a target)"
+  },
+  {
+    "rank": 9917,
+    "word": "電話を切る",
+    "reading": "でんわをきる",
+    "meaning": "to hang up"
+  },
+  {
+    "rank": 9919,
+    "word": "ミサイル",
+    "reading": "ミサイル",
+    "meaning": "missile"
+  },
+  {
+    "rank": 9971,
+    "word": "勝ち取る",
+    "reading": "かちとる",
+    "meaning": "to exert oneself and win"
+  },
+  {
+    "rank": 9977,
+    "word": "刑",
+    "reading": "けい",
+    "meaning": "penalty"
+  },
+  {
+    "rank": 9980,
+    "word": "矛先",
+    "reading": "ほこさき",
+    "meaning": "point of a spear"
+  },
+  {
+    "rank": 9982,
+    "word": "参戦",
+    "reading": "さんせん",
+    "meaning": "participation in a war"
+  },
+  {
+    "rank": 10001,
+    "word": "拉致",
+    "reading": "らち",
+    "meaning": "taking captive"
+  },
+  {
+    "rank": 10004,
+    "word": "電撃",
+    "reading": "でんげき",
+    "meaning": "electric shock"
+  },
+  {
+    "rank": 10015,
+    "word": "衝撃波",
+    "reading": "しょうげきは",
+    "meaning": "shock wave"
+  },
+  {
+    "rank": 10069,
+    "word": "お願いいたします",
+    "reading": "おねがいいたします",
+    "meaning": "please"
+  },
+  {
+    "rank": 10107,
+    "word": "征服",
+    "reading": "せいふく",
+    "meaning": "conquest"
+  },
+  {
+    "rank": 10159,
+    "word": "一色",
+    "reading": "いっしょく",
+    "meaning": "one color"
+  },
+  {
+    "rank": 10227,
+    "word": "攻め込む",
+    "reading": "せめこむ",
+    "meaning": "to invade"
+  },
+  {
+    "rank": 10228,
+    "word": "ヒール",
+    "reading": "ヒール",
+    "meaning": "heel (of a shoe)"
+  },
+  {
+    "rank": 10241,
+    "word": "最前線",
+    "reading": "さいぜんせん",
+    "meaning": "front line"
+  },
+  {
+    "rank": 10242,
+    "word": "うちら",
+    "reading": "うちら",
+    "meaning": "we"
+  },
+  {
+    "rank": 10272,
+    "word": "こねる",
+    "reading": "こねる",
+    "meaning": "to knead"
+  },
+  {
+    "rank": 10281,
+    "word": "けたたましい",
+    "reading": "けたたましい",
+    "meaning": "piercing"
+  },
+  {
+    "rank": 10287,
+    "word": "戦意",
+    "reading": "せんい",
+    "meaning": "fighting spirit"
+  },
+  {
+    "rank": 10291,
+    "word": "撃ち抜く",
+    "reading": "うちぬく",
+    "meaning": "to shoot out (lights, window, etc.)"
+  },
+  {
+    "rank": 10294,
+    "word": "遠征",
+    "reading": "えんせい",
+    "meaning": "expedition"
+  },
+  {
+    "rank": 10323,
+    "word": "発砲",
+    "reading": "はっぽう",
+    "meaning": "firing"
+  },
+  {
+    "rank": 10329,
+    "word": "前衛",
+    "reading": "ぜんえい",
+    "meaning": "advance guard"
+  },
+  {
+    "rank": 10330,
+    "word": "艦隊",
+    "reading": "かんたい",
+    "meaning": "(naval) fleet"
+  },
+  {
+    "rank": 10365,
+    "word": "追っ手",
+    "reading": "おって",
+    "meaning": "pursuer"
+  },
+  {
+    "rank": 10368,
+    "word": "叩き潰す",
+    "reading": "たたきつぶす",
+    "meaning": "to smash up"
+  },
+  {
+    "rank": 10409,
+    "word": "無機質",
+    "reading": "むきしつ",
+    "meaning": "inorganic matter"
+  },
+  {
+    "rank": 10411,
+    "word": "捕える",
+    "reading": "とらえる",
+    "meaning": "to catch"
+  },
+  {
+    "rank": 10572,
+    "word": "武具",
+    "reading": "ぶぐ",
+    "meaning": "arms"
+  },
+  {
+    "rank": 10642,
+    "word": "速攻",
+    "reading": "そっこう",
+    "meaning": "swift attack"
+  },
+  {
+    "rank": 10654,
+    "word": "大砲",
+    "reading": "たいほう",
+    "meaning": "gun"
+  },
+  {
+    "rank": 10678,
+    "word": "金属音",
+    "reading": "きんぞくおん",
+    "meaning": "metallic sound"
+  },
+  {
+    "rank": 10695,
+    "word": "球",
+    "reading": "きゅう",
+    "meaning": "sphere"
+  },
+  {
+    "rank": 10723,
+    "word": "効力",
+    "reading": "こうりょく",
+    "meaning": "effect"
+  },
+  {
+    "rank": 10757,
+    "word": "切り開く",
+    "reading": "きりひらく",
+    "meaning": "to cut open"
+  },
+  {
+    "rank": 10787,
+    "word": "鍛冶",
+    "reading": "かじ",
+    "meaning": "smithing"
+  },
+  {
+    "rank": 10829,
+    "word": "ぱちぱち",
+    "reading": "ぱちぱち",
+    "meaning": "crackling"
+  },
+  {
+    "rank": 10910,
+    "word": "ポンポン",
+    "reading": "ポンポン",
+    "meaning": "tummy"
+  },
+  {
+    "rank": 10927,
+    "word": "一片",
+    "reading": "いっぺん",
+    "meaning": "a piece"
+  },
+  {
+    "rank": 10964,
+    "word": "太刀",
+    "reading": "たち",
+    "meaning": "long sword (esp. the tachi, worn on the hip edge down by ..."
+  },
+  {
+    "rank": 11002,
+    "word": "抹殺",
+    "reading": "まっさつ",
+    "meaning": "erasure"
+  },
+  {
+    "rank": 11027,
+    "word": "聖剣",
+    "reading": "せいけん",
+    "meaning": "holy sword"
+  },
+  {
+    "rank": 11099,
+    "word": "取り押さえる",
+    "reading": "とりおさえる",
+    "meaning": "to seize"
+  },
+  {
+    "rank": 11102,
+    "word": "撃ち込む",
+    "reading": "うちこむ",
+    "meaning": "to fire into (e.g. a crowd)"
+  },
+  {
+    "rank": 11103,
+    "word": "合戦",
+    "reading": "かっせん",
+    "meaning": "battle"
+  },
+  {
+    "rank": 11113,
+    "word": "射抜く",
+    "reading": "いぬく",
+    "meaning": "to shoot through something (wall, body, etc.)"
+  },
+  {
+    "rank": 11159,
+    "word": "砲弾",
+    "reading": "ほうだん",
+    "meaning": "shell"
+  },
+  {
+    "rank": 11244,
+    "word": "ぶち込む",
+    "reading": "ぶちこむ",
+    "meaning": "to throw"
+  },
+  {
+    "rank": 11257,
+    "word": "進軍",
+    "reading": "しんぐん",
+    "meaning": "march"
+  },
+  {
+    "rank": 11258,
+    "word": "命がけ",
+    "reading": "いのちがけ",
+    "meaning": "putting one's life on the line"
+  },
+  {
+    "rank": 11285,
+    "word": "斬りかかる",
+    "reading": "きりかかる",
+    "meaning": "to assault with a sword"
+  },
+  {
+    "rank": 11325,
+    "word": "闘争",
+    "reading": "とうそう",
+    "meaning": "fight"
+  },
+  {
+    "rank": 11343,
+    "word": "攻勢",
+    "reading": "こうせい",
+    "meaning": "offensive (movement)"
+  },
+  {
+    "rank": 11346,
+    "word": "一戦",
+    "reading": "いっせん",
+    "meaning": "battle"
+  },
+  {
+    "rank": 11348,
+    "word": "照準",
+    "reading": "しょうじゅん",
+    "meaning": "sight (e.g. of a gun)"
+  },
+  {
+    "rank": 11359,
+    "word": "目を引く",
+    "reading": "めをひく",
+    "meaning": "to attract notice"
+  },
+  {
+    "rank": 11397,
+    "word": "投擲",
+    "reading": "とうてき",
+    "meaning": "throw"
+  },
+  {
+    "rank": 11467,
+    "word": "着弾",
+    "reading": "ちゃくだん",
+    "meaning": "impact (of a projectile)"
+  },
+  {
+    "rank": 11474,
+    "word": "一掃",
+    "reading": "いっそう",
+    "meaning": "clean sweep"
+  },
+  {
+    "rank": 11489,
+    "word": "睨み合う",
+    "reading": "にらみあう",
+    "meaning": "to glare at each other"
+  },
+  {
+    "rank": 11492,
+    "word": "叩き落とす",
+    "reading": "たたきおとす",
+    "meaning": "to knock down"
+  },
+  {
+    "rank": 11501,
+    "word": "陥落",
+    "reading": "かんらく",
+    "meaning": "fall"
+  },
+  {
+    "rank": 11560,
+    "word": "陣地",
+    "reading": "じんち",
+    "meaning": "encampment"
+  },
+  {
+    "rank": 11561,
+    "word": "大戦",
+    "reading": "たいせん",
+    "meaning": "great war"
+  },
+  {
+    "rank": 11595,
+    "word": "立ち回る",
+    "reading": "たちまわる",
+    "meaning": "to walk about"
+  },
+  {
+    "rank": 11618,
+    "word": "奮闘",
+    "reading": "ふんとう",
+    "meaning": "hard struggle"
+  },
+  {
+    "rank": 11641,
+    "word": "引き金を引く",
+    "reading": "ひきがねをひく",
+    "meaning": "to pull the trigger"
+  },
+  {
+    "rank": 11695,
+    "word": "とどめを刺す",
+    "reading": "とどめをさす",
+    "meaning": "to finish off"
+  },
+  {
+    "rank": 11697,
+    "word": "射出",
+    "reading": "しゃしゅつ",
+    "meaning": "shooting"
+  },
+  {
+    "rank": 11743,
+    "word": "作戦会議",
+    "reading": "さくせんかいぎ",
+    "meaning": "strategy meeting"
+  },
+  {
+    "rank": 11744,
+    "word": "炎上",
+    "reading": "えんじょう",
+    "meaning": "going up in flames"
+  },
+  {
+    "rank": 11760,
+    "word": "攻撃的",
+    "reading": "こうげきてき",
+    "meaning": "offensive"
+  },
+  {
+    "rank": 11767,
+    "word": "首を絞める",
+    "reading": "くびをしめる",
+    "meaning": "to wring the neck"
+  },
+  {
+    "rank": 11796,
+    "word": "勝機",
+    "reading": "しょうき",
+    "meaning": "chance to win"
+  },
+  {
+    "rank": 11827,
+    "word": "ライフル",
+    "reading": "ライフル",
+    "meaning": "rifle"
+  },
+  {
+    "rank": 11841,
+    "word": "お見事",
+    "reading": "おみごと",
+    "meaning": "well done!"
+  },
+  {
+    "rank": 11857,
+    "word": "ぶち壊す",
+    "reading": "ぶちこわす",
+    "meaning": "to destroy"
+  },
+  {
+    "rank": 11875,
+    "word": "武人",
+    "reading": "ぶじん",
+    "meaning": "military man"
+  },
+  {
+    "rank": 11892,
+    "word": "アタック",
+    "reading": "アタック",
+    "meaning": "attack"
+  },
+  {
+    "rank": 11893,
+    "word": "突き付ける",
+    "reading": "つきつける",
+    "meaning": "to thrust before"
+  },
+  {
+    "rank": 11902,
+    "word": "歩兵",
+    "reading": "ほへい",
+    "meaning": "infantry"
+  },
+  {
+    "rank": 11929,
+    "word": "応戦",
+    "reading": "おうせん",
+    "meaning": "fighting back"
+  },
+  {
+    "rank": 11940,
+    "word": "大軍",
+    "reading": "たいぐん",
+    "meaning": "large army"
+  },
+  {
+    "rank": 11947,
+    "word": "荒れ狂う",
+    "reading": "あれくるう",
+    "meaning": "to rampage"
+  },
+  {
+    "rank": 11958,
+    "word": "薙ぎ払う",
+    "reading": "なぎはらう",
+    "meaning": "to mow down"
+  },
+  {
+    "rank": 11968,
+    "word": "虐殺",
+    "reading": "ぎゃくさつ",
+    "meaning": "slaughter"
+  },
+  {
+    "rank": 11971,
+    "word": "手錠",
+    "reading": "てじょう",
+    "meaning": "handcuffs"
+  },
+  {
+    "rank": 11982,
+    "word": "爆風",
+    "reading": "ばくふう",
+    "meaning": "bomb blast"
+  },
+  {
+    "rank": 11996,
+    "word": "出陣",
+    "reading": "しゅつじん",
+    "meaning": "going into battle"
+  },
+  {
+    "rank": 12000,
+    "word": "優勢",
+    "reading": "ゆうせい",
+    "meaning": "superiority"
+  },
+  {
+    "rank": 12002,
+    "word": "横取り",
+    "reading": "よこどり",
+    "meaning": "snatching"
+  },
+  {
+    "rank": 12056,
+    "word": "小隊",
+    "reading": "しょうたい",
+    "meaning": "platoon"
+  },
+  {
+    "rank": 12088,
+    "word": "得物",
+    "reading": "えもの",
+    "meaning": "specialized weapon or skill"
+  },
+  {
+    "rank": 12090,
+    "word": "いなす",
+    "reading": "いなす",
+    "meaning": "to parry"
+  },
+  {
+    "rank": 12139,
+    "word": "ボコボコ",
+    "reading": "ボコボコ",
+    "meaning": "with a burble"
+  },
+  {
+    "rank": 12150,
+    "word": "命を懸ける",
+    "reading": "いのちをかける",
+    "meaning": "to put one's life on the line"
+  },
+  {
+    "rank": 12160,
+    "word": "斬りつける",
+    "reading": "きりつける",
+    "meaning": "to cut at"
+  },
+  {
+    "rank": 12200,
+    "word": "猛然",
+    "reading": "もうぜん",
+    "meaning": "fiercely"
+  },
+  {
+    "rank": 12204,
+    "word": "打倒",
+    "reading": "だとう",
+    "meaning": "overthrow"
+  },
+  {
+    "rank": 12233,
+    "word": "タンク",
+    "reading": "タンク",
+    "meaning": "tank (of liquid)"
+  },
+  {
+    "rank": 12264,
+    "word": "蹴飛ばす",
+    "reading": "けとばす",
+    "meaning": "to kick away"
+  },
+  {
+    "rank": 12302,
+    "word": "機動",
+    "reading": "きどう",
+    "meaning": "maneuver (usu. of military force)"
+  },
+  {
+    "rank": 12322,
+    "word": "海軍",
+    "reading": "かいぐん",
+    "meaning": "navy"
+  },
+  {
+    "rank": 12326,
+    "word": "中立",
+    "reading": "ちゅうりつ",
+    "meaning": "neutrality"
+  },
+  {
+    "rank": 12361,
+    "word": "暴行",
+    "reading": "ぼうこう",
+    "meaning": "assault"
+  },
+  {
+    "rank": 12388,
+    "word": "崇拝",
+    "reading": "すうはい",
+    "meaning": "worship"
+  },
+  {
+    "rank": 12389,
+    "word": "隊列",
+    "reading": "たいれつ",
+    "meaning": "rank (of troops)"
+  },
+  {
+    "rank": 12395,
+    "word": "決勝",
+    "reading": "けっしょう",
+    "meaning": "decision of a contest"
+  },
+  {
+    "rank": 12429,
+    "word": "反逆",
+    "reading": "はんぎゃく",
+    "meaning": "treason"
+  },
+  {
+    "rank": 12434,
+    "word": "盗る",
+    "reading": "とる",
+    "meaning": "to steal"
+  },
+  {
+    "rank": 12436,
+    "word": "負傷者",
+    "reading": "ふしょうしゃ",
+    "meaning": "injured person"
+  },
+  {
+    "rank": 12449,
+    "word": "制裁",
+    "reading": "せいさい",
+    "meaning": "sanctions"
+  },
+  {
+    "rank": 12498,
+    "word": "地雷",
+    "reading": "じらい",
+    "meaning": "land mine"
+  },
+  {
+    "rank": 12532,
+    "word": "駆逐",
+    "reading": "くちく",
+    "meaning": "extermination"
+  },
+  {
+    "rank": 12638,
+    "word": "捕捉",
+    "reading": "ほそく",
+    "meaning": "capture"
+  },
+  {
+    "rank": 12647,
+    "word": "闘技場",
+    "reading": "とうぎじょう",
+    "meaning": "arena"
+  },
+  {
+    "rank": 12651,
+    "word": "残党",
+    "reading": "ざんとう",
+    "meaning": "remnants"
+  },
+  {
+    "rank": 12694,
+    "word": "増援",
+    "reading": "ぞうえん",
+    "meaning": "reinforcement (e.g. of troops)"
+  },
+  {
+    "rank": 12696,
+    "word": "命懸け",
+    "reading": "いのちがけ",
+    "meaning": "putting one's life on the line"
+  },
+  {
+    "rank": 12707,
+    "word": "闘志",
+    "reading": "とうし",
+    "meaning": "fighting spirit"
+  },
+  {
+    "rank": 12711,
+    "word": "連射",
+    "reading": "れんしゃ",
+    "meaning": "rapid-fire"
+  },
+  {
+    "rank": 12728,
+    "word": "銃撃",
+    "reading": "じゅうげき",
+    "meaning": "shooting"
+  },
+  {
+    "rank": 12732,
+    "word": "一蹴",
+    "reading": "いっしゅう",
+    "meaning": "flatly rejecting"
+  },
+  {
+    "rank": 12757,
+    "word": "暴動",
+    "reading": "ぼうどう",
+    "meaning": "insurrection"
+  },
+  {
+    "rank": 12760,
+    "word": "なげ",
+    "reading": "なげ",
+    "meaning": "a throw"
+  },
+  {
+    "rank": 12764,
+    "word": "怒り狂う",
+    "reading": "いかりくるう",
+    "meaning": "to be in a fit (of anger)"
+  },
+  {
+    "rank": 12807,
+    "word": "それゆえに",
+    "reading": "それゆえに",
+    "meaning": "and so"
+  },
+  {
+    "rank": 12814,
+    "word": "危険を冒す",
+    "reading": "きけんをおかす",
+    "meaning": "to brave a danger"
+  },
+  {
+    "rank": 12820,
+    "word": "全軍",
+    "reading": "ぜんぐん",
+    "meaning": "whole army"
+  },
+  {
+    "rank": 12823,
+    "word": "盗み",
+    "reading": "ぬすみ",
+    "meaning": "stealing"
+  },
+  {
+    "rank": 12846,
+    "word": "ファイト",
+    "reading": "ファイト",
+    "meaning": "fight"
+  },
+  {
+    "rank": 12850,
+    "word": "戦果",
+    "reading": "せんか",
+    "meaning": "military gains"
+  },
+  {
+    "rank": 12862,
+    "word": "骸",
+    "reading": "むくろ",
+    "meaning": "(dead) body"
+  },
+  {
+    "rank": 12866,
+    "word": "根気",
+    "reading": "こんき",
+    "meaning": "patience"
+  },
+  {
+    "rank": 12890,
+    "word": "略奪",
+    "reading": "りゃくだつ",
+    "meaning": "pillage"
+  },
+  {
+    "rank": 12893,
+    "word": "惨劇",
+    "reading": "さんげき",
+    "meaning": "tragedy"
+  },
+  {
+    "rank": 12897,
+    "word": "喧嘩を売る",
+    "reading": "けんかをうる",
+    "meaning": "to pick a fight"
+  },
+  {
+    "rank": 12914,
+    "word": "殺人鬼",
+    "reading": "さつじんき",
+    "meaning": "bloodthirsty killer"
+  },
+  {
+    "rank": 12915,
+    "word": "蹴り上げる",
+    "reading": "けりあげる",
+    "meaning": "to kick into the air"
+  },
+  {
+    "rank": 12938,
+    "word": "戦死",
+    "reading": "せんし",
+    "meaning": "death in battle"
+  },
+  {
+    "rank": 12959,
+    "word": "殴りかかる",
+    "reading": "なぐりかかる",
+    "meaning": "to throw a punch at"
+  },
+  {
+    "rank": 12963,
+    "word": "虐げる",
+    "reading": "しいたげる",
+    "meaning": "to oppress"
+  },
+  {
+    "rank": 12969,
+    "word": "新手",
+    "reading": "あらて",
+    "meaning": "fresh troops"
+  },
+  {
+    "rank": 12981,
+    "word": "長剣",
+    "reading": "ちょうけん",
+    "meaning": "long sword"
+  },
+  {
+    "rank": 12996,
+    "word": "剣道",
+    "reading": "けんどう",
+    "meaning": "kendo"
+  },
+  {
+    "rank": 12998,
+    "word": "跳ね返す",
+    "reading": "はねかえす",
+    "meaning": "to reject"
+  },
+  {
+    "rank": 13011,
+    "word": "本隊",
+    "reading": "ほんたい",
+    "meaning": "main body (of an army)"
+  },
+  {
+    "rank": 13030,
+    "word": "弓矢",
+    "reading": "ゆみや",
+    "meaning": "bow and arrow"
+  },
+  {
+    "rank": 13104,
+    "word": "叩き付ける",
+    "reading": "たたきつける",
+    "meaning": "to throw violently against"
+  },
+  {
+    "rank": 13111,
+    "word": "突き入れる",
+    "reading": "つきいれる",
+    "meaning": "to thrust into"
+  },
+  {
+    "rank": 13152,
+    "word": "流星",
+    "reading": "りゅうせい",
+    "meaning": "meteor"
+  },
+  {
+    "rank": 13180,
+    "word": "死闘",
+    "reading": "しとう",
+    "meaning": "life or death struggle"
+  },
+  {
+    "rank": 13219,
+    "word": "持ちこたえる",
+    "reading": "もちこたえる",
+    "meaning": "to hold out (e.g. against an attack)"
+  },
+  {
+    "rank": 13220,
+    "word": "空振り",
+    "reading": "からぶり",
+    "meaning": "striking (at something) and missing"
+  },
+  {
+    "rank": 13233,
+    "word": "冒す",
+    "reading": "おかす",
+    "meaning": "to brave"
+  },
+  {
+    "rank": 13234,
+    "word": "索敵",
+    "reading": "さくてき",
+    "meaning": "searching for the enemy"
+  },
+  {
+    "rank": 13249,
+    "word": "敵を倒す",
+    "reading": "てきをたおす",
+    "meaning": "to kill one's enemy (opponent)"
+  },
+  {
+    "rank": 13256,
+    "word": "戦艦",
+    "reading": "せんかん",
+    "meaning": "battleship"
+  },
+  {
+    "rank": 13307,
+    "word": "射",
+    "reading": "しゃ",
+    "meaning": "archery"
+  },
+  {
+    "rank": 13325,
+    "word": "隙を突く",
+    "reading": "すきをつく",
+    "meaning": "to take advantage of one's carelessness"
+  },
+  {
+    "rank": 13340,
+    "word": "両断",
+    "reading": "りょうだん",
+    "meaning": "bisection"
+  },
+  {
+    "rank": 13399,
+    "word": "叩きのめす",
+    "reading": "たたきのめす",
+    "meaning": "to knock down"
+  },
+  {
+    "rank": 13411,
+    "word": "親衛隊",
+    "reading": "しんえいたい",
+    "meaning": "bodyguards"
+  },
+  {
+    "rank": 13438,
+    "word": "豪勢",
+    "reading": "ごうせい",
+    "meaning": "grand"
+  },
+  {
+    "rank": 13451,
+    "word": "爽快",
+    "reading": "そうかい",
+    "meaning": "refreshing"
+  },
+  {
+    "rank": 13463,
+    "word": "敗者",
+    "reading": "はいしゃ",
+    "meaning": "loser"
+  },
+  {
+    "rank": 13488,
+    "word": "将校",
+    "reading": "しょうこう",
+    "meaning": "commissioned officer"
+  },
+  {
+    "rank": 13508,
+    "word": "大尉",
+    "reading": "たいい",
+    "meaning": "captain (Army, U.S. Marine Corps, USAF)"
+  },
+  {
+    "rank": 13544,
+    "word": "司令",
+    "reading": "しれい",
+    "meaning": "command"
+  },
+  {
+    "rank": 13559,
+    "word": "絞める",
+    "reading": "しめる",
+    "meaning": "to strangle"
+  },
+  {
+    "rank": 13595,
+    "word": "走り寄る",
+    "reading": "はしりよる",
+    "meaning": "to run up to"
+  },
+  {
+    "rank": 13626,
+    "word": "じゃーん",
+    "reading": "じゃーん",
+    "meaning": "ta-dah!"
+  },
+  {
+    "rank": 13644,
+    "word": "峠",
+    "reading": "とうげ",
+    "meaning": "(mountain) pass"
+  },
+  {
+    "rank": 13648,
+    "word": "風に乗る",
+    "reading": "かぜにのる",
+    "meaning": "to ride upon the winds"
+  },
+  {
+    "rank": 13653,
+    "word": "ぶっ壊す",
+    "reading": "ぶっこわす",
+    "meaning": "to destroy"
+  },
+  {
+    "rank": 13659,
+    "word": "危険にさらす",
+    "reading": "きけんにさらす",
+    "meaning": "to expose to danger"
+  },
+  {
+    "rank": 13686,
+    "word": "古風",
+    "reading": "こふう",
+    "meaning": "old-fashioned"
+  },
+  {
+    "rank": 13700,
+    "word": "いたぶる",
+    "reading": "いたぶる",
+    "meaning": "to torment"
+  },
+  {
+    "rank": 13728,
+    "word": "ピストル",
+    "reading": "ピストル",
+    "meaning": "pistol"
+  },
+  {
+    "rank": 13772,
+    "word": "少佐",
+    "reading": "しょうさ",
+    "meaning": "major"
+  },
+  {
+    "rank": 13808,
+    "word": "劣勢",
+    "reading": "れっせい",
+    "meaning": "inferiority (e.g. numerical)"
+  },
+  {
+    "rank": 13812,
+    "word": "戦友",
+    "reading": "せんゆう",
+    "meaning": "comrade in arms"
+  },
+  {
+    "rank": 13839,
+    "word": "強奪",
+    "reading": "ごうだつ",
+    "meaning": "robbery"
+  },
+  {
+    "rank": 13865,
+    "word": "鎮圧",
+    "reading": "ちんあつ",
+    "meaning": "suppression"
+  },
+  {
+    "rank": 13898,
+    "word": "木刀",
+    "reading": "ぼくとう",
+    "meaning": "wooden sword"
+  },
+  {
+    "rank": 13940,
+    "word": "打ち倒す",
+    "reading": "うちたおす",
+    "meaning": "to knock down"
+  },
+  {
+    "rank": 13973,
+    "word": "屈服",
+    "reading": "くっぷく",
+    "meaning": "yielding"
+  },
+  {
+    "rank": 13974,
+    "word": "棍棒",
+    "reading": "こんぼう",
+    "meaning": "stick"
+  },
+  {
+    "rank": 13989,
+    "word": "ねじ伏せる",
+    "reading": "ねじふせる",
+    "meaning": "to hold down"
+  },
+  {
+    "rank": 14019,
+    "word": "敵兵",
+    "reading": "てきへい",
+    "meaning": "enemy (soldier)"
+  },
+  {
+    "rank": 14031,
+    "word": "ガツン",
+    "reading": "ガツン",
+    "meaning": "klop"
+  },
+  {
+    "rank": 14069,
+    "word": "模擬戦",
+    "reading": "もぎせん",
+    "meaning": "sham battle"
+  },
+  {
+    "rank": 14070,
+    "word": "開戦",
+    "reading": "かいせん",
+    "meaning": "outbreak of war"
+  },
+  {
+    "rank": 14081,
+    "word": "打ち勝つ",
+    "reading": "うちかつ",
+    "meaning": "to conquer (e.g. an enemy)"
+  },
+  {
+    "rank": 14092,
+    "word": "襲撃者",
+    "reading": "しゅうげきしゃ",
+    "meaning": "assailant"
+  },
+  {
+    "rank": 14110,
+    "word": "屠る",
+    "reading": "ほふる",
+    "meaning": "to slaughter"
+  },
+  {
+    "rank": 14145,
+    "word": "諜報",
+    "reading": "ちょうほう",
+    "meaning": "secret information"
+  },
+  {
+    "rank": 14147,
+    "word": "手筈",
+    "reading": "てはず",
+    "meaning": "arrangements"
+  },
+  {
+    "rank": 14161,
+    "word": "ガン",
+    "reading": "ガン",
+    "meaning": "gun"
+  },
+  {
+    "rank": 14184,
+    "word": "火花を散らす",
+    "reading": "ひばなをちらす",
+    "meaning": "to give off sparks"
+  },
+  {
+    "rank": 14186,
+    "word": "拮抗",
+    "reading": "きっこう",
+    "meaning": "rivalry (between two equally strong sides)"
+  },
+  {
+    "rank": 14210,
+    "word": "守備",
+    "reading": "しゅび",
+    "meaning": "defense"
+  },
+  {
+    "rank": 14219,
+    "word": "討ち取る",
+    "reading": "うちとる",
+    "meaning": "to kill (with a weapon)"
+  },
+  {
+    "rank": 14301,
+    "word": "先陣",
+    "reading": "せんじん",
+    "meaning": "vanguard"
+  },
+  {
+    "rank": 14304,
+    "word": "対戦相手",
+    "reading": "たいせんあいて",
+    "meaning": "opponent"
+  },
+  {
+    "rank": 14324,
+    "word": "奪い返す",
+    "reading": "うばいかえす",
+    "meaning": "to take back"
+  },
+  {
+    "rank": 14337,
+    "word": "乱",
+    "reading": "らん",
+    "meaning": "revolt"
+  },
+  {
+    "rank": 14355,
+    "word": "負けず嫌い",
+    "reading": "まけずぎらい",
+    "meaning": "hating to lose"
+  },
+  {
+    "rank": 14399,
+    "word": "脆弱",
+    "reading": "ぜいじゃく",
+    "meaning": "weak"
+  },
+  {
+    "rank": 14417,
+    "word": "射殺",
+    "reading": "しゃさつ",
+    "meaning": "shooting to death"
+  },
+  {
+    "rank": 14455,
+    "word": "打破",
+    "reading": "だは",
+    "meaning": "breaking down"
+  },
+  {
+    "rank": 14458,
+    "word": "少なすぎる",
+    "reading": "すくなすぎる",
+    "meaning": "to be lacking in options"
+  },
+  {
+    "rank": 14519,
+    "word": "襲来",
+    "reading": "しゅうらい",
+    "meaning": "invasion"
+  },
+  {
+    "rank": 14520,
+    "word": "挽回",
+    "reading": "ばんかい",
+    "meaning": "recovery"
+  },
+  {
+    "rank": 14538,
+    "word": "打ち合う",
+    "reading": "うちあう",
+    "meaning": "to fight"
+  },
+  {
+    "rank": 14543,
+    "word": "投降",
+    "reading": "とうこう",
+    "meaning": "surrender"
+  },
+  {
+    "rank": 14551,
+    "word": "クーデター",
+    "reading": "クーデター",
+    "meaning": "coup d'état"
+  },
+  {
+    "rank": 14609,
+    "word": "詰む",
+    "reading": "つむ",
+    "meaning": "to become fine (of fabric)"
+  },
+  {
+    "rank": 14635,
+    "word": "撃墜",
+    "reading": "げきつい",
+    "meaning": "shooting down (aircraft)"
+  },
+  {
+    "rank": 14704,
+    "word": "陸軍",
+    "reading": "りくぐん",
+    "meaning": "army"
+  },
+  {
+    "rank": 14716,
+    "word": "あれれ",
+    "reading": "あれれ",
+    "meaning": "tsk tsk"
+  },
+  {
+    "rank": 14726,
+    "word": "猛者",
+    "reading": "もさ",
+    "meaning": "tough guy"
+  },
+  {
+    "rank": 14761,
+    "word": "歴戦",
+    "reading": "れきせん",
+    "meaning": "long military service"
+  },
+  {
+    "rank": 14862,
+    "word": "敵陣",
+    "reading": "てきじん",
+    "meaning": "enemy camp"
+  },
+  {
+    "rank": 14955,
+    "word": "爆撃",
+    "reading": "ばくげき",
+    "meaning": "bombing (raid)"
+  },
+  {
+    "rank": 14983,
+    "word": "粉々に砕く",
+    "reading": "こなごなにくだく",
+    "meaning": "to smash to pieces"
+  },
+  {
+    "rank": 15009,
+    "word": "武闘",
+    "reading": "ぶとう",
+    "meaning": "armed struggle"
+  },
+  {
+    "rank": 15116,
+    "word": "女同士",
+    "reading": "おんなどうし",
+    "meaning": "fellow women"
+  },
+  {
+    "rank": 15123,
+    "word": "衝く",
+    "reading": "つく",
+    "meaning": "to prick"
+  },
+  {
+    "rank": 15125,
+    "word": "命取り",
+    "reading": "いのちとり",
+    "meaning": "fatal"
+  },
+  {
+    "rank": 15140,
+    "word": "切り込む",
+    "reading": "きりこむ",
+    "meaning": "to cut deep into"
+  },
+  {
+    "rank": 15160,
+    "word": "薙ぐ",
+    "reading": "なぐ",
+    "meaning": "to mow down"
+  },
+  {
+    "rank": 15170,
+    "word": "布陣",
+    "reading": "ふじん",
+    "meaning": "battle formation"
+  },
+  {
+    "rank": 15214,
+    "word": "連合軍",
+    "reading": "れんごうぐん",
+    "meaning": "allied forces"
+  },
+  {
+    "rank": 15230,
+    "word": "技術的",
+    "reading": "ぎじゅつてき",
+    "meaning": "technical"
+  },
+  {
+    "rank": 15231,
+    "word": "敵視",
+    "reading": "てきし",
+    "meaning": "looking on (somebody) as hostile"
+  },
+  {
+    "rank": 15237,
+    "word": "陽動",
+    "reading": "ようどう",
+    "meaning": "diversion (action meant to attract attention away from th..."
+  },
+  {
+    "rank": 15245,
+    "word": "激戦",
+    "reading": "げきせん",
+    "meaning": "fierce battle"
+  },
+  {
+    "rank": 15248,
+    "word": "渡り合う",
+    "reading": "わたりあう",
+    "meaning": "to fight"
+  },
+  {
+    "rank": 15259,
+    "word": "痛手",
+    "reading": "いたで",
+    "meaning": "serious wound"
+  },
+  {
+    "rank": 15272,
+    "word": "敵軍",
+    "reading": "てきぐん",
+    "meaning": "enemy army"
+  },
+  {
+    "rank": 15284,
+    "word": "傷がつく",
+    "reading": "きずがつく",
+    "meaning": "to get damaged"
+  },
+  {
+    "rank": 15300,
+    "word": "千切る",
+    "reading": "ちぎる",
+    "meaning": "to tear to pieces"
+  },
+  {
+    "rank": 15318,
+    "word": "大爆発",
+    "reading": "だいばくはつ",
+    "meaning": "large explosion"
+  },
+  {
+    "rank": 15336,
+    "word": "大罪",
+    "reading": "だいざい",
+    "meaning": "serious crime"
+  },
+  {
+    "rank": 15346,
+    "word": "勃発",
+    "reading": "ぼっぱつ",
+    "meaning": "outbreak (e.g. of war)"
+  },
+  {
+    "rank": 15371,
+    "word": "かすり傷",
+    "reading": "かすりきず",
+    "meaning": "scratch"
+  },
+  {
+    "rank": 15372,
+    "word": "使い勝手",
+    "reading": "つかいがって",
+    "meaning": "ease of use"
+  },
+  {
+    "rank": 15379,
+    "word": "自殺行為",
+    "reading": "じさつこうい",
+    "meaning": "suicidal act"
+  },
+  {
+    "rank": 15382,
+    "word": "槌",
+    "reading": "つち",
+    "meaning": "hammer"
+  },
+  {
+    "rank": 15397,
+    "word": "武将",
+    "reading": "ぶしょう",
+    "meaning": "military commander"
+  },
+  {
+    "rank": 15409,
+    "word": "先手を打つ",
+    "reading": "せんてをうつ",
+    "meaning": "to forestall"
+  },
+  {
+    "rank": 15410,
+    "word": "一刀",
+    "reading": "いっとう",
+    "meaning": "sword"
+  },
+  {
+    "rank": 15417,
+    "word": "無抵抗",
+    "reading": "むていこう",
+    "meaning": "nonresistance"
+  },
+  {
+    "rank": 15433,
+    "word": "連打",
+    "reading": "れんだ",
+    "meaning": "repeated blows"
+  },
+  {
+    "rank": 15437,
+    "word": "ぶつけ合う",
+    "reading": "ぶつけあう",
+    "meaning": "to knock (ideas) against each other"
+  },
+  {
+    "rank": 15469,
+    "word": "傷付く",
+    "reading": "きずつく",
+    "meaning": "to be wounded"
+  },
+  {
+    "rank": 15478,
+    "word": "内乱",
+    "reading": "ないらん",
+    "meaning": "civil war"
+  },
+  {
+    "rank": 15525,
+    "word": "勝ち目はない",
+    "reading": "かちめはない",
+    "meaning": "to have no chance (of succeeding)"
+  },
+  {
+    "rank": 15526,
+    "word": "武者",
+    "reading": "むしゃ",
+    "meaning": "warrior"
+  },
+  {
+    "rank": 15606,
+    "word": "圧す",
+    "reading": "おす",
+    "meaning": "to apply pressure from above"
+  },
+  {
+    "rank": 15620,
+    "word": "倒壊",
+    "reading": "とうかい",
+    "meaning": "destruction"
+  },
+  {
+    "rank": 15621,
+    "word": "籠城",
+    "reading": "ろうじょう",
+    "meaning": "holding a castle (during a siege)"
+  },
+  {
+    "rank": 15653,
+    "word": "物々しい",
+    "reading": "ものものしい",
+    "meaning": "strict (e.g. security)"
+  },
+  {
+    "rank": 15657,
+    "word": "剣先",
+    "reading": "けんさき",
+    "meaning": "point of a sword"
+  },
+  {
+    "rank": 15675,
+    "word": "奪取",
+    "reading": "だっしゅ",
+    "meaning": "usurpation"
+  },
+  {
+    "rank": 15676,
+    "word": "総勢",
+    "reading": "そうぜい",
+    "meaning": "all members"
+  },
+  {
+    "rank": 15678,
+    "word": "猛攻",
+    "reading": "もうこう",
+    "meaning": "fierce attack"
+  },
+  {
+    "rank": 15698,
+    "word": "逆手",
+    "reading": "ぎゃくて",
+    "meaning": "underhand grip"
+  },
+  {
+    "rank": 15705,
+    "word": "好戦的",
+    "reading": "こうせんてき",
+    "meaning": "belligerent"
+  },
+  {
+    "rank": 15719,
+    "word": "制覇",
+    "reading": "せいは",
+    "meaning": "conquest"
+  },
+  {
+    "rank": 15774,
+    "word": "暴力を振るう",
+    "reading": "ぼうりょくをふるう",
+    "meaning": "to behave violently"
+  },
+  {
+    "rank": 15787,
+    "word": "聖騎士",
+    "reading": "せいきし",
+    "meaning": "holy knight"
+  },
+  {
+    "rank": 15788,
+    "word": "放火",
+    "reading": "ほうか",
+    "meaning": "arson"
+  },
+  {
+    "rank": 15825,
+    "word": "シールド",
+    "reading": "シールド",
+    "meaning": "shield"
+  },
+  {
+    "rank": 15828,
+    "word": "怪力",
+    "reading": "かいりき",
+    "meaning": "superhuman strength"
+  },
+  {
+    "rank": 15831,
+    "word": "しなる",
+    "reading": "しなる",
+    "meaning": "to bend"
+  },
+  {
+    "rank": 15835,
+    "word": "雷撃",
+    "reading": "らいげき",
+    "meaning": "being struck by lightning"
+  },
+  {
+    "rank": 15846,
+    "word": "戦乱",
+    "reading": "せんらん",
+    "meaning": "wars"
+  },
+  {
+    "rank": 15848,
+    "word": "敵国",
+    "reading": "てきこく",
+    "meaning": "enemy nation"
+  },
+  {
+    "rank": 15863,
+    "word": "受付嬢",
+    "reading": "うけつけじょう",
+    "meaning": "receptionist"
+  },
+  {
+    "rank": 15907,
+    "word": "強襲",
+    "reading": "きょうしゅう",
+    "meaning": "assault"
+  },
+  {
+    "rank": 15972,
+    "word": "自衛",
+    "reading": "じえい",
+    "meaning": "self-defense"
+  },
+  {
+    "rank": 15974,
+    "word": "共闘",
+    "reading": "きょうとう",
+    "meaning": "joint struggle"
+  },
+  {
+    "rank": 15981,
+    "word": "死地",
+    "reading": "しち",
+    "meaning": "(nearly certain) death"
+  },
+  {
+    "rank": 15989,
+    "word": "体術",
+    "reading": "たいじゅつ",
+    "meaning": "classical form of martial art"
+  },
+  {
+    "rank": 15991,
+    "word": "城塞",
+    "reading": "じょうさい",
+    "meaning": "fortress"
+  },
+  {
+    "rank": 16043,
+    "word": "瞬殺",
+    "reading": "しゅんさつ",
+    "meaning": "defeating in an instant"
+  },
+  {
+    "rank": 16090,
+    "word": "柔道",
+    "reading": "じゅうどう",
+    "meaning": "judo"
+  },
+  {
+    "rank": 16108,
+    "word": "殺伐",
+    "reading": "さつばつ",
+    "meaning": "brutal (atmosphere, society, etc.)"
+  },
+  {
+    "rank": 16153,
+    "word": "暴挙",
+    "reading": "ぼうきょ",
+    "meaning": "violence"
+  },
+  {
+    "rank": 16172,
+    "word": "包囲網",
+    "reading": "ほういもう",
+    "meaning": "encirclement"
+  },
+  {
+    "rank": 16223,
+    "word": "投げ",
+    "reading": "なげ",
+    "meaning": "a throw"
+  },
+  {
+    "rank": 16236,
+    "word": "楯",
+    "reading": "たて",
+    "meaning": "shield"
+  },
+  {
+    "rank": 16247,
+    "word": "敵味方",
+    "reading": "てきみかた",
+    "meaning": "friend and foe"
+  },
+  {
+    "rank": 16259,
+    "word": "完敗",
+    "reading": "かんぱい",
+    "meaning": "complete defeat"
+  },
+  {
+    "rank": 16269,
+    "word": "轢く",
+    "reading": "ひく",
+    "meaning": "to run over (with a vehicle)"
+  },
+  {
+    "rank": 16271,
+    "word": "肉薄",
+    "reading": "にくはく",
+    "meaning": "closing in on (the enemy, first place, etc.)"
+  },
+  {
+    "rank": 16278,
+    "word": "軍用",
+    "reading": "ぐんよう",
+    "meaning": "for military use"
+  },
+  {
+    "rank": 16285,
+    "word": "武運",
+    "reading": "ぶうん",
+    "meaning": "fortunes of war"
+  },
+  {
+    "rank": 16286,
+    "word": "臨戦態勢",
+    "reading": "りんせんたいせい",
+    "meaning": "war preparation"
+  },
+  {
+    "rank": 16310,
+    "word": "土壇場",
+    "reading": "どたんば",
+    "meaning": "last moment"
+  },
+  {
+    "rank": 16327,
+    "word": "命を絶つ",
+    "reading": "いのちをたつ",
+    "meaning": "to end one's life"
+  },
+  {
+    "rank": 16341,
+    "word": "斬り捨てる",
+    "reading": "きりすてる",
+    "meaning": "to cut down"
+  },
+  {
+    "rank": 16354,
+    "word": "うめえ",
+    "reading": "うめえ",
+    "meaning": "delicious"
+  },
+  {
+    "rank": 16378,
+    "word": "自害",
+    "reading": "じがい",
+    "meaning": "suicide"
+  },
+  {
+    "rank": 16381,
+    "word": "特攻",
+    "reading": "とっこう",
+    "meaning": "suicide attack"
+  },
+  {
+    "rank": 16386,
+    "word": "滅する",
+    "reading": "めっする",
+    "meaning": "to be destroyed"
+  },
+  {
+    "rank": 16416,
+    "word": "押える",
+    "reading": "おさえる",
+    "meaning": "to pin down"
+  },
+  {
+    "rank": 16428,
+    "word": "満身創痍",
+    "reading": "まんしんそうい",
+    "meaning": "having wounds all over one's body"
+  },
+  {
+    "rank": 16441,
+    "word": "敵地",
+    "reading": "てきち",
+    "meaning": "enemy territory"
+  },
+  {
+    "rank": 16472,
+    "word": "死守",
+    "reading": "ししゅ",
+    "meaning": "defending to the last"
+  },
+  {
+    "rank": 16483,
+    "word": "絡め取る",
+    "reading": "からめとる",
+    "meaning": "to catch and tie up"
+  },
+  {
+    "rank": 16505,
+    "word": "不意を突く",
+    "reading": "ふいをつく",
+    "meaning": "to take by surprise"
+  },
+  {
+    "rank": 16536,
+    "word": "抜刀",
+    "reading": "ばっとう",
+    "meaning": "drawing a sword"
+  },
+  {
+    "rank": 16554,
+    "word": "一騎打ち",
+    "reading": "いっきうち",
+    "meaning": "personal combat"
+  },
+  {
+    "rank": 16592,
+    "word": "キック",
+    "reading": "キック",
+    "meaning": "kick"
+  },
+  {
+    "rank": 16617,
+    "word": "突き立つ",
+    "reading": "つきたつ",
+    "meaning": "to pierce through"
+  },
+  {
+    "rank": 16635,
+    "word": "殺傷",
+    "reading": "さっしょう",
+    "meaning": "killing and wounding"
+  },
+  {
+    "rank": 16645,
+    "word": "敗戦",
+    "reading": "はいせん",
+    "meaning": "defeat"
+  },
+  {
+    "rank": 16678,
+    "word": "返り血",
+    "reading": "かえりち",
+    "meaning": "spurt of blood (from one's victim)"
+  },
+  {
+    "rank": 16692,
+    "word": "戦いを挑む",
+    "reading": "たたかいをいどむ",
+    "meaning": "to challenge (a person) to a fight"
+  },
+  {
+    "rank": 16702,
+    "word": "刎ねる",
+    "reading": "はねる",
+    "meaning": "to hit (e.g. to have a car hit someone)"
+  },
+  {
+    "rank": 16758,
+    "word": "勝ち負け",
+    "reading": "かちまけ",
+    "meaning": "victory or defeat"
+  },
+  {
+    "rank": 16761,
+    "word": "暴れ出す",
+    "reading": "あばれだす",
+    "meaning": "to grow restive"
+  },
+  {
+    "rank": 16785,
+    "word": "警備兵",
+    "reading": "けいびへい",
+    "meaning": "guard (soldier)"
+  },
+  {
+    "rank": 16786,
+    "word": "秘密基地",
+    "reading": "ひみつきち",
+    "meaning": "secret base"
+  },
+  {
+    "rank": 16790,
+    "word": "殺める",
+    "reading": "あやめる",
+    "meaning": "to wound"
+  },
+  {
+    "rank": 16806,
+    "word": "ラスボス",
+    "reading": "ラスボス",
+    "meaning": "final boss"
+  },
+  {
+    "rank": 16808,
+    "word": "粛清",
+    "reading": "しゅくせい",
+    "meaning": "(political) purge"
+  },
+  {
+    "rank": 16819,
+    "word": "毒殺",
+    "reading": "どくさつ",
+    "meaning": "poisoning"
+  },
+  {
+    "rank": 16854,
+    "word": "宿敵",
+    "reading": "しゅくてき",
+    "meaning": "old enemy"
+  },
+  {
+    "rank": 16883,
+    "word": "相撲",
+    "reading": "すもう",
+    "meaning": "sumo wrestling"
+  },
+  {
+    "rank": 16896,
+    "word": "殴り合い",
+    "reading": "なぐりあい",
+    "meaning": "fist fight"
+  },
+  {
+    "rank": 16909,
+    "word": "半壊",
+    "reading": "はんかい",
+    "meaning": "partial destruction"
+  },
+  {
+    "rank": 16916,
+    "word": "つんざく",
+    "reading": "つんざく",
+    "meaning": "to break"
+  },
+  {
+    "rank": 16938,
+    "word": "牙を剥く",
+    "reading": "きばをむく",
+    "meaning": "to bare one's fangs"
+  },
+  {
+    "rank": 16949,
+    "word": "撃ち出す",
+    "reading": "うちだす",
+    "meaning": "to begin shooting"
+  },
+  {
+    "rank": 16967,
+    "word": "戦隊",
+    "reading": "せんたい",
+    "meaning": "squadron"
+  },
+  {
+    "rank": 16987,
+    "word": "ぶっ放す",
+    "reading": "ぶっぱなす",
+    "meaning": "to fire a gun"
+  },
+  {
+    "rank": 17017,
+    "word": "紛争",
+    "reading": "ふんそう",
+    "meaning": "dispute"
+  },
+  {
+    "rank": 17026,
+    "word": "一代",
+    "reading": "いちだい",
+    "meaning": "generation"
+  },
+  {
+    "rank": 17073,
+    "word": "正攻法",
+    "reading": "せいこうほう",
+    "meaning": "frontal attack"
+  },
+  {
+    "rank": 17128,
+    "word": "なぎ倒す",
+    "reading": "なぎたおす",
+    "meaning": "to mow down"
+  },
+  {
+    "rank": 17131,
+    "word": "トーナメント",
+    "reading": "トーナメント",
+    "meaning": "tournament"
+  },
+  {
+    "rank": 17137,
+    "word": "日本刀",
+    "reading": "にほんとう",
+    "meaning": "Japanese sword (usu. single-edged and curved)"
+  },
+  {
+    "rank": 17148,
+    "word": "銃身",
+    "reading": "じゅうしん",
+    "meaning": "gun barrel"
+  },
+  {
+    "rank": 17154,
+    "word": "見て見ぬふり",
+    "reading": "みてみぬふり",
+    "meaning": "pretending not to see something"
+  },
+  {
+    "rank": 17169,
+    "word": "切り傷",
+    "reading": "きりきず",
+    "meaning": "cut"
+  },
+  {
+    "rank": 17222,
+    "word": "一矢",
+    "reading": "いっし",
+    "meaning": "an arrow"
+  },
+  {
+    "rank": 17243,
+    "word": "内戦",
+    "reading": "ないせん",
+    "meaning": "civil war"
+  },
+  {
+    "rank": 17266,
+    "word": "乱戦",
+    "reading": "らんせん",
+    "meaning": "melee"
+  },
+  {
+    "rank": 17269,
+    "word": "小競り合い",
+    "reading": "こぜりあい",
+    "meaning": "skirmish"
+  },
+  {
+    "rank": 17278,
+    "word": "追い打ちをかける",
+    "reading": "おいうちをかける",
+    "meaning": "to attack a routed enemy"
+  },
+  {
+    "rank": 17287,
+    "word": "死ぬ気で",
+    "reading": "しぬきで",
+    "meaning": "all out"
+  },
+  {
+    "rank": 17311,
+    "word": "死を覚悟する",
+    "reading": "しをかくごする",
+    "meaning": "to prepare for death"
+  },
+  {
+    "rank": 17382,
+    "word": "修羅",
+    "reading": "しゅら",
+    "meaning": "Asura"
+  },
+  {
+    "rank": 17415,
+    "word": "抜き放つ",
+    "reading": "ぬきはなつ",
+    "meaning": "to unsheathe"
+  },
+  {
+    "rank": 17418,
+    "word": "死に至る",
+    "reading": "しにいたる",
+    "meaning": "to result in death"
+  },
+  {
+    "rank": 17469,
+    "word": "格闘技",
+    "reading": "かくとうぎ",
+    "meaning": "martial arts which involve fighting without weapons"
+  },
+  {
+    "rank": 17471,
+    "word": "勝ち抜く",
+    "reading": "かちぬく",
+    "meaning": "to win through (e.g. to the next round)"
+  },
+  {
+    "rank": 17475,
+    "word": "空手",
+    "reading": "からて",
+    "meaning": "karate"
+  },
+  {
+    "rank": 17476,
+    "word": "大暴れ",
+    "reading": "おおあばれ",
+    "meaning": "rampaging"
+  },
+  {
+    "rank": 17528,
+    "word": "戦闘態勢",
+    "reading": "せんとうたいせい",
+    "meaning": "combat readiness"
+  },
+  {
+    "rank": 17543,
+    "word": "丸腰",
+    "reading": "まるごし",
+    "meaning": "unarmed"
+  },
+  {
+    "rank": 17553,
+    "word": "殴り飛ばす",
+    "reading": "なぐりとばす",
+    "meaning": "to knock (a person) off his feet"
+  },
+  {
+    "rank": 17578,
+    "word": "フェイント",
+    "reading": "フェイント",
+    "meaning": "feint"
+  },
+  {
+    "rank": 17584,
+    "word": "弾き返す",
+    "reading": "はじきかえす",
+    "meaning": "to reject"
+  },
+  {
+    "rank": 17594,
+    "word": "外敵",
+    "reading": "がいてき",
+    "meaning": "foreign enemy"
+  },
+  {
+    "rank": 17596,
+    "word": "撃ち落とす",
+    "reading": "うちおとす",
+    "meaning": "to knock down"
+  },
+  {
+    "rank": 17606,
+    "word": "一人分",
+    "reading": "ひとりぶん",
+    "meaning": "one person's portion"
+  },
+  {
+    "rank": 17660,
+    "word": "鍔",
+    "reading": "つば",
+    "meaning": "guard on sword, polearms, etc."
+  },
+  {
+    "rank": 17664,
+    "word": "成敗",
+    "reading": "せいばい",
+    "meaning": "punishment"
+  },
+  {
+    "rank": 17667,
+    "word": "決勝戦",
+    "reading": "けっしょうせん",
+    "meaning": "championship game"
+  },
+  {
+    "rank": 17733,
+    "word": "打って出る",
+    "reading": "うってでる",
+    "meaning": "to launch oneself upon"
+  },
+  {
+    "rank": 17740,
+    "word": "鉄槌",
+    "reading": "てっつい",
+    "meaning": "iron hammer"
+  },
+  {
+    "rank": 17747,
+    "word": "戦利品",
+    "reading": "せんりひん",
+    "meaning": "spoils of war"
+  },
+  {
+    "rank": 17764,
+    "word": "逸する",
+    "reading": "いっする",
+    "meaning": "to lose (a chance)"
+  },
+  {
+    "rank": 17791,
+    "word": "優柔不断",
+    "reading": "ゆうじゅうふだん",
+    "meaning": "indecisive"
+  },
+  {
+    "rank": 17825,
+    "word": "敗",
+    "reading": "はい",
+    "meaning": "loss"
+  },
+  {
+    "rank": 17829,
+    "word": "結託",
+    "reading": "けったく",
+    "meaning": "conspiracy"
+  },
+  {
+    "rank": 17842,
+    "word": "謀反",
+    "reading": "むほん",
+    "meaning": "rebellion"
+  },
+  {
+    "rank": 17858,
+    "word": "攻め入る",
+    "reading": "せめいる",
+    "meaning": "to invade"
+  },
+  {
+    "rank": 17877,
+    "word": "剣聖",
+    "reading": "けんせい",
+    "meaning": "master swordsman"
+  },
+  {
+    "rank": 17978,
+    "word": "虚を突く",
+    "reading": "きょをつく",
+    "meaning": "to attack the enemy in his unguarded moment"
+  },
+  {
+    "rank": 18005,
+    "word": "被弾",
+    "reading": "ひだん",
+    "meaning": "being shot"
+  },
+  {
+    "rank": 18009,
+    "word": "命を賭ける",
+    "reading": "いのちをかける",
+    "meaning": "to put one's life on the line"
+  },
+  {
+    "rank": 18019,
+    "word": "かきむしる",
+    "reading": "かきむしる",
+    "meaning": "to tear off"
+  },
+  {
+    "rank": 18026,
+    "word": "首を切る",
+    "reading": "くびをきる",
+    "meaning": "to fire from a job"
+  },
+  {
+    "rank": 18131,
+    "word": "戦火",
+    "reading": "せんか",
+    "meaning": "wartime fire"
+  },
+  {
+    "rank": 18136,
+    "word": "タックル",
+    "reading": "タックル",
+    "meaning": "tackle (e.g. rugby)"
+  },
+  {
+    "rank": 18180,
+    "word": "殺気立つ",
+    "reading": "さっきだつ",
+    "meaning": "to be seething (with anger)"
+  },
+  {
+    "rank": 18187,
+    "word": "切りつける",
+    "reading": "きりつける",
+    "meaning": "to cut at"
+  },
+  {
+    "rank": 18208,
+    "word": "剣戟",
+    "reading": "けんげき",
+    "meaning": "weapons"
+  },
+  {
+    "rank": 18239,
+    "word": "浴びせかける",
+    "reading": "あびせかける",
+    "meaning": "to throw (liquid) at"
+  },
+  {
+    "rank": 18250,
+    "word": "一刀両断",
+    "reading": "いっとうりょうだん",
+    "meaning": "cutting in two with a single stroke"
+  },
+  {
+    "rank": 18262,
+    "word": "消し飛ばす",
+    "reading": "けしとばす",
+    "meaning": "to scatter away"
+  },
+  {
+    "rank": 18268,
+    "word": "噛み付く",
+    "reading": "かみつく",
+    "meaning": "to bite (at)"
+  },
+  {
+    "rank": 18284,
+    "word": "射貫く",
+    "reading": "いぬく",
+    "meaning": "to shoot through something (wall, body, etc.)"
+  },
+  {
+    "rank": 18285,
+    "word": "奪い合う",
+    "reading": "うばいあう",
+    "meaning": "to scramble for"
+  },
+  {
+    "rank": 18292,
+    "word": "先手",
+    "reading": "せんて",
+    "meaning": "first move (in go, shogi, etc.)"
+  },
+  {
+    "rank": 18297,
+    "word": "反逆者",
+    "reading": "はんぎゃくしゃ",
+    "meaning": "rebel"
+  },
+  {
+    "rank": 18343,
+    "word": "血塗れ",
+    "reading": "ちまみれ",
+    "meaning": "bloodstained"
+  },
+  {
+    "rank": 18354,
+    "word": "根城",
+    "reading": "ねじろ",
+    "meaning": "stronghold"
+  },
+  {
+    "rank": 18358,
+    "word": "強打",
+    "reading": "きょうだ",
+    "meaning": "heavy blow"
+  },
+  {
+    "rank": 18363,
+    "word": "食ってかかる",
+    "reading": "くってかかる",
+    "meaning": "to lash out at"
+  },
+  {
+    "rank": 18392,
+    "word": "私兵",
+    "reading": "しへい",
+    "meaning": "private army"
+  },
+  {
+    "rank": 18408,
+    "word": "斡旋",
+    "reading": "あっせん",
+    "meaning": "kind offices"
+  },
+  {
+    "rank": 18410,
+    "word": "殴打",
+    "reading": "おうだ",
+    "meaning": "hit"
+  },
+  {
+    "rank": 18411,
+    "word": "主導権を握る",
+    "reading": "しゅどうけんをにぎる",
+    "meaning": "to seize the initiative"
+  },
+  {
+    "rank": 18452,
+    "word": "召集",
+    "reading": "しょうしゅう",
+    "meaning": "convening"
+  },
+  {
+    "rank": 18473,
+    "word": "敵襲",
+    "reading": "てきしゅう",
+    "meaning": "enemy attack"
+  },
+  {
+    "rank": 18507,
+    "word": "奪い去る",
+    "reading": "うばいさる",
+    "meaning": "to take away"
+  },
+  {
+    "rank": 18517,
+    "word": "一触即発",
+    "reading": "いっしょくそくはつ",
+    "meaning": "critical (touch and go) situation"
+  },
+  {
+    "rank": 18525,
+    "word": "凱旋",
+    "reading": "がいせん",
+    "meaning": "triumphant return"
+  },
+  {
+    "rank": 18556,
+    "word": "蹴りつける",
+    "reading": "けりつける",
+    "meaning": "to kick (at someone, something)"
+  },
+  {
+    "rank": 18589,
+    "word": "進撃",
+    "reading": "しんげき",
+    "meaning": "advance"
+  },
+  {
+    "rank": 18592,
+    "word": "戦国",
+    "reading": "せんごく",
+    "meaning": "country in civil war"
+  },
+  {
+    "rank": 18606,
+    "word": "爆薬",
+    "reading": "ばくやく",
+    "meaning": "explosive"
+  },
+  {
+    "rank": 18618,
+    "word": "挑戦者",
+    "reading": "ちょうせんしゃ",
+    "meaning": "challenger"
+  },
+  {
+    "rank": 18628,
+    "word": "寝返り",
+    "reading": "ねがえり",
+    "meaning": "turning over while sleeping in bed"
+  },
+  {
+    "rank": 18629,
+    "word": "矛",
+    "reading": "ほこ",
+    "meaning": "long-handled Chinese spear"
+  },
+  {
+    "rank": 18643,
+    "word": "ぶち抜く",
+    "reading": "ぶちぬく",
+    "meaning": "to punch"
+  },
+  {
+    "rank": 18699,
+    "word": "負かす",
+    "reading": "まかす",
+    "meaning": "to defeat"
+  },
+  {
+    "rank": 18715,
+    "word": "手が出る",
+    "reading": "てがでる",
+    "meaning": "to resort to violence"
+  },
+  {
+    "rank": 18739,
+    "word": "乱闘",
+    "reading": "らんとう",
+    "meaning": "fray"
+  },
+  {
+    "rank": 18761,
+    "word": "明け渡す",
+    "reading": "あけわたす",
+    "meaning": "to vacate"
+  },
+  {
+    "rank": 18769,
+    "word": "血だらけ",
+    "reading": "ちだらけ",
+    "meaning": "covered in blood"
+  },
+  {
+    "rank": 18786,
+    "word": "弾薬",
+    "reading": "だんやく",
+    "meaning": "ammunition"
+  },
+  {
+    "rank": 18811,
+    "word": "裏をかく",
+    "reading": "うらをかく",
+    "meaning": "to outwit"
+  },
+  {
+    "rank": 18853,
+    "word": "破砕",
+    "reading": "はさい",
+    "meaning": "crushing (into pieces)"
+  },
+  {
+    "rank": 18858,
+    "word": "刃先",
+    "reading": "はさき",
+    "meaning": "edge of blade"
+  },
+  {
+    "rank": 18860,
+    "word": "健闘",
+    "reading": "けんとう",
+    "meaning": "fighting bravely"
+  },
+  {
+    "rank": 18867,
+    "word": "軍曹",
+    "reading": "ぐんそう",
+    "meaning": "sergeant"
+  },
+  {
+    "rank": 18873,
+    "word": "竹刀",
+    "reading": "しない",
+    "meaning": "bamboo sword (for kendo)"
+  },
+  {
+    "rank": 18880,
+    "word": "風が強い",
+    "reading": "かぜがつよい",
+    "meaning": "windy"
+  },
+  {
+    "rank": 18900,
+    "word": "浮かす",
+    "reading": "うかす",
+    "meaning": "to float"
+  },
+  {
+    "rank": 18920,
+    "word": "ものともせず",
+    "reading": "ものともせず",
+    "meaning": "in the face of"
+  },
+  {
+    "rank": 18921,
+    "word": "打撲",
+    "reading": "だぼく",
+    "meaning": "blow"
+  },
+  {
+    "rank": 18930,
+    "word": "伏兵",
+    "reading": "ふくへい",
+    "meaning": "ambush"
+  },
+  {
+    "rank": 18934,
+    "word": "武芸",
+    "reading": "ぶげい",
+    "meaning": "martial arts"
+  },
+  {
+    "rank": 18939,
+    "word": "真剣勝負",
+    "reading": "しんけんしょうぶ",
+    "meaning": "fighting with real swords"
+  },
+  {
+    "rank": 18985,
+    "word": "怪盗",
+    "reading": "かいとう",
+    "meaning": "mysterious thief"
+  },
+  {
+    "rank": 19001,
+    "word": "守りきる",
+    "reading": "まもりきる",
+    "meaning": "to hold on to something (secret, lead in a race, etc.)"
+  },
+  {
+    "rank": 19031,
+    "word": "実力行使",
+    "reading": "じつりょくこうし",
+    "meaning": "use of force"
+  },
+  {
+    "rank": 19155,
+    "word": "凄む",
+    "reading": "すごむ",
+    "meaning": "to threaten"
+  },
+  {
+    "rank": 19170,
+    "word": "止めを刺す",
+    "reading": "とどめをさす",
+    "meaning": "to finish off"
+  },
+  {
+    "rank": 19205,
+    "word": "荒事",
+    "reading": "あらごと",
+    "meaning": "(theatrical) fighting scene"
+  },
+  {
+    "rank": 19210,
+    "word": "打ち払う",
+    "reading": "うちはらう",
+    "meaning": "to brush away"
+  },
+  {
+    "rank": 19224,
+    "word": "中隊",
+    "reading": "ちゅうたい",
+    "meaning": "company, battery, troop"
+  },
+  {
+    "rank": 19226,
+    "word": "決死",
+    "reading": "けっし",
+    "meaning": "preparedness for death"
+  },
+  {
+    "rank": 19228,
+    "word": "蹴落とす",
+    "reading": "けおとす",
+    "meaning": "to kick down"
+  },
+  {
+    "rank": 19247,
+    "word": "起因",
+    "reading": "きいん",
+    "meaning": "cause"
+  },
+  {
+    "rank": 19252,
+    "word": "惨殺",
+    "reading": "ざんさつ",
+    "meaning": "slaughter"
+  },
+  {
+    "rank": 19287,
+    "word": "殺生",
+    "reading": "せっしょう",
+    "meaning": "killing"
+  },
+  {
+    "rank": 19295,
+    "word": "流血",
+    "reading": "りゅうけつ",
+    "meaning": "bloodshed"
+  },
+  {
+    "rank": 19313,
+    "word": "戦闘不能",
+    "reading": "せんとうふのう",
+    "meaning": "unable to fight (esp. in video games)"
+  },
+  {
+    "rank": 19349,
+    "word": "玉砕",
+    "reading": "ぎょくさい",
+    "meaning": "honourable defeat"
+  },
+  {
+    "rank": 19360,
+    "word": "敵同士",
+    "reading": "かたきどうし",
+    "meaning": "mutual enemies"
+  },
+  {
+    "rank": 19361,
+    "word": "勇士",
+    "reading": "ゆうし",
+    "meaning": "brave warrior"
+  },
+  {
+    "rank": 19452,
+    "word": "挟み撃ち",
+    "reading": "はさみうち",
+    "meaning": "attack on both sides"
+  },
+  {
+    "rank": 19455,
+    "word": "牛耳る",
+    "reading": "ぎゅうじる",
+    "meaning": "to control"
+  },
+  {
+    "rank": 19494,
+    "word": "死に物狂い",
+    "reading": "しにものぐるい",
+    "meaning": "desperation"
+  },
+  {
+    "rank": 19506,
+    "word": "切り返す",
+    "reading": "きりかえす",
+    "meaning": "to slash back"
+  },
+  {
+    "rank": 19522,
+    "word": "弾幕",
+    "reading": "だんまく",
+    "meaning": "(artillery) barrage"
+  },
+  {
+    "rank": 19534,
+    "word": "戦地",
+    "reading": "せんち",
+    "meaning": "front (in battle)"
+  },
+  {
+    "rank": 19538,
+    "word": "息巻く",
+    "reading": "いきまく",
+    "meaning": "to rage"
+  },
+  {
+    "rank": 19552,
+    "word": "武道",
+    "reading": "ぶどう",
+    "meaning": "martial arts"
+  },
+  {
+    "rank": 19566,
+    "word": "勝率",
+    "reading": "しょうりつ",
+    "meaning": "winning percentage"
+  },
+  {
+    "rank": 19583,
+    "word": "息の根を止める",
+    "reading": "いきのねをとめる",
+    "meaning": "to kill"
+  },
+  {
+    "rank": 19591,
+    "word": "ひっぱたく",
+    "reading": "ひっぱたく",
+    "meaning": "to slap"
+  },
+  {
+    "rank": 19592,
+    "word": "木剣",
+    "reading": "ぼっけん",
+    "meaning": "bokken"
+  },
+  {
+    "rank": 19624,
+    "word": "目に焼き付ける",
+    "reading": "めにやきつける",
+    "meaning": "to burn into one's memory"
+  },
+  {
+    "rank": 19652,
+    "word": "特殊部隊",
+    "reading": "とくしゅぶたい",
+    "meaning": "special forces"
+  },
+  {
+    "rank": 19685,
+    "word": "決定打",
+    "reading": "けっていだ",
+    "meaning": "decisive blow"
+  },
+  {
+    "rank": 19728,
+    "word": "助太刀",
+    "reading": "すけだち",
+    "meaning": "assistance (in a fight)"
+  },
+  {
+    "rank": 19733,
+    "word": "べくもない",
+    "reading": "べくもない",
+    "meaning": "cannot possibly be"
+  },
+  {
+    "rank": 19741,
+    "word": "殺人者",
+    "reading": "さつじんしゃ",
+    "meaning": "killer"
+  },
+  {
+    "rank": 19789,
+    "word": "撃沈",
+    "reading": "げきちん",
+    "meaning": "sending a ship to the bottom"
+  },
+  {
+    "rank": 19809,
+    "word": "白刃",
+    "reading": "はくじん",
+    "meaning": "drawn sword"
+  },
+  {
+    "rank": 19824,
+    "word": "一網打尽",
+    "reading": "いちもうだじん",
+    "meaning": "round-up (e.g. of criminals)"
+  },
+  {
+    "rank": 19862,
+    "word": "長期戦",
+    "reading": "ちょうきせん",
+    "meaning": "drawn-out (protracted) war or contest"
+  },
+  {
+    "rank": 19889,
+    "word": "逆襲",
+    "reading": "ぎゃくしゅう",
+    "meaning": "counterattack"
+  },
+  {
+    "rank": 19894,
+    "word": "ルーク",
+    "reading": "ルーク",
+    "meaning": "rook (chess piece)"
+  },
+  {
+    "rank": 19895,
+    "word": "小刀",
+    "reading": "こがたな",
+    "meaning": "(small) knife"
+  },
+  {
+    "rank": 20000,
+    "word": "通り魔",
+    "reading": "とおりま",
+    "meaning": "random attacker"
+  },
+  {
+    "rank": 20035,
+    "word": "悪あがき",
+    "reading": "わるあがき",
+    "meaning": "useless resistance"
+  },
+  {
+    "rank": 20060,
+    "word": "白旗",
+    "reading": "しらはた",
+    "meaning": "white flag"
+  },
+  {
+    "rank": 20113,
+    "word": "砲台",
+    "reading": "ほうだい",
+    "meaning": "(gun) battery"
+  },
+  {
+    "rank": 20147,
+    "word": "反乱軍",
+    "reading": "はんらんぐん",
+    "meaning": "rebel army"
+  },
+  {
+    "rank": 20151,
+    "word": "当店",
+    "reading": "とうてん",
+    "meaning": "this store"
+  },
+  {
+    "rank": 20160,
+    "word": "フック",
+    "reading": "フック",
+    "meaning": "hook (fishing, golf, boxing, etc.)"
+  },
+  {
+    "rank": 20162,
+    "word": "先鋒",
+    "reading": "せんぽう",
+    "meaning": "advance guard"
+  },
+  {
+    "rank": 20168,
+    "word": "決裂",
+    "reading": "けつれつ",
+    "meaning": "breakdown"
+  },
+  {
+    "rank": 20169,
+    "word": "大技",
+    "reading": "おおわざ",
+    "meaning": "bold move (in sumo, judo, etc.)"
+  },
+  {
+    "rank": 20172,
+    "word": "切腹",
+    "reading": "せっぷく",
+    "meaning": "seppuku"
+  },
+  {
+    "rank": 20227,
+    "word": "再戦",
+    "reading": "さいせん",
+    "meaning": "rematch"
+  },
+  {
+    "rank": 20233,
+    "word": "弄する",
+    "reading": "ろうする",
+    "meaning": "to play with"
+  },
+  {
+    "rank": 20275,
+    "word": "刃向かう",
+    "reading": "はむかう",
+    "meaning": "to strike back at"
+  },
+  {
+    "rank": 20292,
+    "word": "恫喝",
+    "reading": "どうかつ",
+    "meaning": "intimidation"
+  },
+  {
+    "rank": 20347,
+    "word": "撃ち殺す",
+    "reading": "うちころす",
+    "meaning": "to shoot to death"
+  },
+  {
+    "rank": 20363,
+    "word": "兵団",
+    "reading": "へいだん",
+    "meaning": "army corps"
+  },
+  {
+    "rank": 20372,
+    "word": "射つ",
+    "reading": "うつ",
+    "meaning": "to shoot (at)"
+  },
+  {
+    "rank": 20378,
+    "word": "出荷",
+    "reading": "しゅっか",
+    "meaning": "shipping"
+  },
+  {
+    "rank": 20411,
+    "word": "戦い抜く",
+    "reading": "たたかいぬく",
+    "meaning": "to fight to the bitter end"
+  },
+  {
+    "rank": 20419,
+    "word": "鈍器",
+    "reading": "どんき",
+    "meaning": "blunt weapon"
+  },
+  {
+    "rank": 20441,
+    "word": "仇敵",
+    "reading": "きゅうてき",
+    "meaning": "bitter enemy"
+  },
+  {
+    "rank": 20446,
+    "word": "初戦",
+    "reading": "しょせん",
+    "meaning": "first match (in a series)"
+  },
+  {
+    "rank": 20454,
+    "word": "身を挺する",
+    "reading": "みをていする",
+    "meaning": "to risk one's life (to do)"
+  },
+  {
+    "rank": 20459,
+    "word": "鉄則",
+    "reading": "てっそく",
+    "meaning": "ironclad rule"
+  },
+  {
+    "rank": 20504,
+    "word": "防護",
+    "reading": "ぼうご",
+    "meaning": "protection"
+  },
+  {
+    "rank": 20508,
+    "word": "敵に回る",
+    "reading": "てきにまわる",
+    "meaning": "to turn against"
+  },
+  {
+    "rank": 20512,
+    "word": "ビンタ",
+    "reading": "ビンタ",
+    "meaning": "slap in the face"
+  },
+  {
+    "rank": 20537,
+    "word": "戦局",
+    "reading": "せんきょく",
+    "meaning": "state of the war"
+  },
+  {
+    "rank": 20559,
+    "word": "総攻撃",
+    "reading": "そうこうげき",
+    "meaning": "all-out attack"
+  },
+  {
+    "rank": 20573,
+    "word": "正当防衛",
+    "reading": "せいとうぼうえい",
+    "meaning": "legitimate self-defence"
+  },
+  {
+    "rank": 20633,
+    "word": "罰せられる",
+    "reading": "ばっせられる",
+    "meaning": "to be subject to punishment"
+  },
+  {
+    "rank": 20697,
+    "word": "誘拐事件",
+    "reading": "ゆうかいじけん",
+    "meaning": "kidnapping"
+  },
+  {
+    "rank": 20712,
+    "word": "鞭打つ",
+    "reading": "むちうつ",
+    "meaning": "to whip"
+  },
+  {
+    "rank": 20721,
+    "word": "一太刀",
+    "reading": "ひとたち",
+    "meaning": "stroke of sword"
+  },
+  {
+    "rank": 20734,
+    "word": "武勇",
+    "reading": "ぶゆう",
+    "meaning": "bravery"
+  },
+  {
+    "rank": 20737,
+    "word": "仇を討つ",
+    "reading": "かたきをうつ",
+    "meaning": "to avenge (somebody) by striking down their killer"
+  },
+  {
+    "rank": 20756,
+    "word": "一突き",
+    "reading": "ひとつき",
+    "meaning": "stab"
+  },
+  {
+    "rank": 20763,
+    "word": "機関銃",
+    "reading": "きかんじゅう",
+    "meaning": "machine gun"
+  },
+  {
+    "rank": 20776,
+    "word": "手勢",
+    "reading": "てぜい",
+    "meaning": "one's troops"
+  },
+  {
+    "rank": 20785,
+    "word": "回し蹴り",
+    "reading": "まわしげり",
+    "meaning": "roundhouse kick"
+  },
+  {
+    "rank": 20825,
+    "word": "悪手",
+    "reading": "あくしゅ",
+    "meaning": "bad move (in chess, shogi, etc.)"
+  },
+  {
+    "rank": 20830,
+    "word": "仇",
+    "reading": "あだ",
+    "meaning": "foe"
+  },
+  {
+    "rank": 20831,
+    "word": "護送",
+    "reading": "ごそう",
+    "meaning": "escort (e.g. under guard)"
+  },
+  {
+    "rank": 20836,
+    "word": "一隊",
+    "reading": "いったい",
+    "meaning": "party"
+  },
+  {
+    "rank": 20850,
+    "word": "根負け",
+    "reading": "こんまけ",
+    "meaning": "being beaten by one's opponent's persistence"
+  },
+  {
+    "rank": 20962,
+    "word": "奪い合い",
+    "reading": "うばいあい",
+    "meaning": "scramble (for)"
+  },
+  {
+    "rank": 20984,
+    "word": "両軍",
+    "reading": "りょうぐん",
+    "meaning": "both armies"
+  },
+  {
+    "rank": 20996,
+    "word": "先制攻撃",
+    "reading": "せんせいこうげき",
+    "meaning": "preemptive strike"
+  },
+  {
+    "rank": 20997,
+    "word": "膠着状態",
+    "reading": "こうちゃくじょうたい",
+    "meaning": "deadlock"
+  },
+  {
+    "rank": 21000,
+    "word": "一刻を争う",
+    "reading": "いっこくをあらそう",
+    "meaning": "to race against time"
+  },
+  {
+    "rank": 21015,
+    "word": "ぶっ潰す",
+    "reading": "ぶっつぶす",
+    "meaning": "to smash violently"
+  },
+  {
+    "rank": 21095,
+    "word": "毒を盛る",
+    "reading": "どくをもる",
+    "meaning": "to poison (e.g. food, drink)"
+  },
+  {
+    "rank": 21111,
+    "word": "叩き割る",
+    "reading": "たたきわる",
+    "meaning": "to smash"
+  },
+  {
+    "rank": 21169,
+    "word": "弾み",
+    "reading": "はずみ",
+    "meaning": "bounce"
+  },
+  {
+    "rank": 21171,
+    "word": "あそばす",
+    "reading": "あそばす",
+    "meaning": "to let (someone) play"
+  },
+  {
+    "rank": 21182,
+    "word": "主砲",
+    "reading": "しゅほう",
+    "meaning": "main battery"
+  },
+  {
+    "rank": 21228,
+    "word": "ぶちかます",
+    "reading": "ぶちかます",
+    "meaning": "to ram one's opponent head-first in the initial charge"
+  },
+  {
+    "rank": 21230,
+    "word": "ぶち破る",
+    "reading": "ぶちやぶる",
+    "meaning": "to smash down"
+  },
+  {
+    "rank": 21231,
+    "word": "命を捨てる",
+    "reading": "いのちをすてる",
+    "meaning": "to give one's life"
+  },
+  {
+    "rank": 21257,
+    "word": "秘密兵器",
+    "reading": "ひみつへいき",
+    "meaning": "secret weapon"
+  },
+  {
+    "rank": 21278,
+    "word": "刺突",
+    "reading": "しとつ",
+    "meaning": "thrusting (a spear, etc.)"
+  },
+  {
+    "rank": 21339,
+    "word": "敗走",
+    "reading": "はいそう",
+    "meaning": "flight"
+  },
+  {
+    "rank": 21357,
+    "word": "停戦",
+    "reading": "ていせん",
+    "meaning": "armistice"
+  },
+  {
+    "rank": 21417,
+    "word": "戦闘員",
+    "reading": "せんとういん",
+    "meaning": "combatant"
+  },
+  {
+    "rank": 21425,
+    "word": "蹴破る",
+    "reading": "けやぶる",
+    "meaning": "to break (by kicking)"
+  },
+  {
+    "rank": 21430,
+    "word": "ぶち殺す",
+    "reading": "ぶちころす",
+    "meaning": "to kill by hitting"
+  },
+  {
+    "rank": 21442,
+    "word": "突き込む",
+    "reading": "つきこむ",
+    "meaning": "to thrust (something) into (something)"
+  },
+  {
+    "rank": 21444,
+    "word": "平手打ち",
+    "reading": "ひらてうち",
+    "meaning": "slap"
+  },
+  {
+    "rank": 21495,
+    "word": "闘気",
+    "reading": "とうき",
+    "meaning": "fighting spirit"
+  },
+  {
+    "rank": 21512,
+    "word": "初陣",
+    "reading": "ういじん",
+    "meaning": "one's first campaign"
+  },
+  {
+    "rank": 21518,
+    "word": "烈火",
+    "reading": "れっか",
+    "meaning": "raging fire"
+  },
+  {
+    "rank": 21524,
+    "word": "ガン",
+    "reading": "ガン",
+    "meaning": "gun"
+  },
+  {
+    "rank": 21550,
+    "word": "敗退",
+    "reading": "はいたい",
+    "meaning": "being defeated"
+  },
+  {
+    "rank": 21583,
+    "word": "仇討ち",
+    "reading": "あだうち",
+    "meaning": "vengeance"
+  },
+  {
+    "rank": 21586,
+    "word": "打ち抜く",
+    "reading": "うちぬく",
+    "meaning": "to punch"
+  },
+  {
+    "rank": 21588,
+    "word": "じん",
+    "reading": "じん",
+    "meaning": "battle formation"
+  },
+  {
+    "rank": 21640,
+    "word": "相打ち",
+    "reading": "あいうち",
+    "meaning": "simultaneously striking one another (in kendo, etc.)"
+  },
+  {
+    "rank": 21679,
+    "word": "犠牲を払う",
+    "reading": "ぎせいをはらう",
+    "meaning": "to make sacrifices for"
+  },
+  {
+    "rank": 21697,
+    "word": "暴",
+    "reading": "ぼう",
+    "meaning": "violence"
+  },
+  {
+    "rank": 21714,
+    "word": "殴り合う",
+    "reading": "なぐりあう",
+    "meaning": "to fight"
+  },
+  {
+    "rank": 21716,
+    "word": "総大将",
+    "reading": "そうだいしょう",
+    "meaning": "supreme commander"
+  },
+  {
+    "rank": 21724,
+    "word": "射手",
+    "reading": "いて",
+    "meaning": "archer"
+  },
+  {
+    "rank": 21728,
+    "word": "防衛線",
+    "reading": "ぼうえいせん",
+    "meaning": "line of defence (defense)"
+  },
+  {
+    "rank": 21753,
+    "word": "鉄球",
+    "reading": "てっきゅう",
+    "meaning": "iron ball"
+  },
+  {
+    "rank": 21760,
+    "word": "爆散",
+    "reading": "ばくさん",
+    "meaning": "bursting and scattering"
+  },
+  {
+    "rank": 21766,
+    "word": "武勇伝",
+    "reading": "ぶゆうでん",
+    "meaning": "biography of a brave fighter"
+  },
+  {
+    "rank": 21784,
+    "word": "薙刀",
+    "reading": "なぎなた",
+    "meaning": "naginata"
+  },
+  {
+    "rank": 21810,
+    "word": "犠牲者が出る",
+    "reading": "ぎせいしゃがでる",
+    "meaning": "to claim victims"
+  },
+  {
+    "rank": 21824,
+    "word": "狼藉",
+    "reading": "ろうぜき",
+    "meaning": "disorder"
+  },
+  {
+    "rank": 21851,
+    "word": "敗因",
+    "reading": "はいいん",
+    "meaning": "cause of defeat"
+  },
+  {
+    "rank": 21863,
+    "word": "激闘",
+    "reading": "げきとう",
+    "meaning": "fierce fighting"
+  },
+  {
+    "rank": 21895,
+    "word": "将兵",
+    "reading": "しょうへい",
+    "meaning": "officers and men"
+  },
+  {
+    "rank": 21907,
+    "word": "弾圧",
+    "reading": "だんあつ",
+    "meaning": "oppression"
+  },
+  {
+    "rank": 21988,
+    "word": "投手",
+    "reading": "とうしゅ",
+    "meaning": "pitcher"
+  },
+  {
+    "rank": 22005,
+    "word": "磔",
+    "reading": "はりつけ",
+    "meaning": "execution by tying a victim to a post and stabbing with s..."
+  },
+  {
+    "rank": 22015,
+    "word": "立てこもる",
+    "reading": "たてこもる",
+    "meaning": "to barricade oneself in"
+  },
+  {
+    "rank": 22039,
+    "word": "ご覧の通り",
+    "reading": "ごらんのとおり",
+    "meaning": "as you see"
+  },
+  {
+    "rank": 22089,
+    "word": "歯向かう",
+    "reading": "はむかう",
+    "meaning": "to strike back at"
+  },
+  {
+    "rank": 22113,
+    "word": "手裏剣",
+    "reading": "しゅりけん",
+    "meaning": "shuriken"
+  },
+  {
+    "rank": 22204,
+    "word": "守り切る",
+    "reading": "まもりきる",
+    "meaning": "to hold on to something (secret, lead in a race, etc.)"
+  },
+  {
+    "rank": 22211,
+    "word": "ボコる",
+    "reading": "ボコる",
+    "meaning": "to beat the hell out of"
+  },
+  {
+    "rank": 22224,
+    "word": "奮戦",
+    "reading": "ふんせん",
+    "meaning": "hard fighting"
+  },
+  {
+    "rank": 22232,
+    "word": "待ち伏せる",
+    "reading": "まちぶせる",
+    "meaning": "to ambush"
+  },
+  {
+    "rank": 22244,
+    "word": "羽交い締め",
+    "reading": "はがいじめ",
+    "meaning": "pinioning"
+  },
+  {
+    "rank": 22258,
+    "word": "惨敗",
+    "reading": "ざんぱい",
+    "meaning": "ignominious defeat"
+  },
+  {
+    "rank": 22268,
+    "word": "手榴弾",
+    "reading": "しゅりゅうだん",
+    "meaning": "hand grenade"
+  },
+  {
+    "rank": 22269,
+    "word": "斬り殺す",
+    "reading": "きりころす",
+    "meaning": "to kill with a sword (knife, dagger, etc.)"
+  },
+  {
+    "rank": 22314,
+    "word": "休戦",
+    "reading": "きゅうせん",
+    "meaning": "cease-fire"
+  },
+  {
+    "rank": 22365,
+    "word": "強豪",
+    "reading": "きょうごう",
+    "meaning": "overwhelming strength"
+  },
+  {
+    "rank": 22428,
+    "word": "ボクシング",
+    "reading": "ボクシング",
+    "meaning": "boxing"
+  },
+  {
+    "rank": 22453,
+    "word": "抜き身",
+    "reading": "ぬきみ",
+    "meaning": "naked sword"
+  },
+  {
+    "rank": 22518,
+    "word": "防戦一方",
+    "reading": "ぼうせんいっぽう",
+    "meaning": "defensive-only"
+  },
+  {
+    "rank": 22525,
+    "word": "兵装",
+    "reading": "へいそう",
+    "meaning": "armament"
+  },
+  {
+    "rank": 22541,
+    "word": "復讐心",
+    "reading": "ふくしゅうしん",
+    "meaning": "desire for revenge"
+  },
+  {
+    "rank": 22584,
+    "word": "射止める",
+    "reading": "いとめる",
+    "meaning": "to shoot dead"
+  },
+  {
+    "rank": 22597,
+    "word": "大破",
+    "reading": "たいは",
+    "meaning": "serious damage"
+  },
+  {
+    "rank": 22618,
+    "word": "火の海",
+    "reading": "ひのうみ",
+    "meaning": "sea of fire"
+  },
+  {
+    "rank": 22653,
+    "word": "レイプ",
+    "reading": "レイプ",
+    "meaning": "rape"
+  },
+  {
+    "rank": 22665,
+    "word": "弓を引く",
+    "reading": "ゆみをひく",
+    "meaning": "to draw a bow"
+  },
+  {
+    "rank": 22677,
+    "word": "物がある",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 22679,
+    "word": "義務感",
+    "reading": "ぎむかん",
+    "meaning": "sense of duty (obligation)"
+  },
+  {
+    "rank": 22701,
+    "word": "弾倉",
+    "reading": "だんそう",
+    "meaning": "magazine (of a firearm)"
+  },
+  {
+    "rank": 22715,
+    "word": "反旗を翻す",
+    "reading": "はんきをひるがえす",
+    "meaning": "to rise in revolt"
+  },
+  {
+    "rank": 22721,
+    "word": "木っ端微塵",
+    "reading": "こっぱみじん",
+    "meaning": "broken into small fragments"
+  },
+  {
+    "rank": 22724,
+    "word": "殴り倒す",
+    "reading": "なぐりたおす",
+    "meaning": "to knock down"
+  },
+  {
+    "rank": 22739,
+    "word": "斬り込む",
+    "reading": "きりこむ",
+    "meaning": "to cut deep into"
+  },
+  {
+    "rank": 22765,
+    "word": "凶行",
+    "reading": "きょうこう",
+    "meaning": "violence"
+  },
+  {
+    "rank": 22789,
+    "word": "首を落とす",
+    "reading": "くびをおとす",
+    "meaning": "to behead"
+  },
+  {
+    "rank": 22810,
+    "word": "打ち負かす",
+    "reading": "うちまかす",
+    "meaning": "to defeat"
+  },
+  {
+    "rank": 22856,
+    "word": "狙い撃ち",
+    "reading": "ねらいうち",
+    "meaning": "sharpshooting"
+  },
+  {
+    "rank": 22900,
+    "word": "連勝",
+    "reading": "れんしょう",
+    "meaning": "consecutive victories"
+  },
+  {
+    "rank": 22912,
+    "word": "狙撃手",
+    "reading": "そげきしゅ",
+    "meaning": "sniper"
+  },
+  {
+    "rank": 22958,
+    "word": "ゲリラ",
+    "reading": "ゲリラ",
+    "meaning": "guerrilla"
+  },
+  {
+    "rank": 23056,
+    "word": "打ち据える",
+    "reading": "うちすえる",
+    "meaning": "to place firmly"
+  },
+  {
+    "rank": 23080,
+    "word": "死者が出る",
+    "reading": "ししゃがでる",
+    "meaning": "to cause casualties"
+  },
+  {
+    "rank": 23098,
+    "word": "準決勝",
+    "reading": "じゅんけっしょう",
+    "meaning": "semifinal"
+  },
+  {
+    "rank": 23111,
+    "word": "駐留",
+    "reading": "ちゅうりゅう",
+    "meaning": "stationing (e.g. of troops)"
+  },
+  {
+    "rank": 23114,
+    "word": "凄絶",
+    "reading": "せいぜつ",
+    "meaning": "extremely gruesome"
+  },
+  {
+    "rank": 23130,
+    "word": "追い討ち",
+    "reading": "おいうち",
+    "meaning": "attacking a fleeing enemy"
+  },
+  {
+    "rank": 23145,
+    "word": "痛いところを突く",
+    "reading": "いたいところをつく",
+    "meaning": "to hit a nerve"
+  },
+  {
+    "rank": 23181,
+    "word": "流れ弾",
+    "reading": "ながれだま",
+    "meaning": "stray bullet"
+  },
+  {
+    "rank": 23209,
+    "word": "組み伏せる",
+    "reading": "くみふせる",
+    "meaning": "to hold (someone) down"
+  },
+  {
+    "rank": 23240,
+    "word": "得意技",
+    "reading": "とくいわざ",
+    "meaning": "signature move (assoc. with a martial artist, wrestler, e..."
+  },
+  {
+    "rank": 23360,
+    "word": "必勝",
+    "reading": "ひっしょう",
+    "meaning": "certain victory"
+  },
+  {
+    "rank": 23441,
+    "word": "弓兵",
+    "reading": "きゅうへい",
+    "meaning": "archer"
+  },
+  {
+    "rank": 23444,
+    "word": "弾道",
+    "reading": "だんどう",
+    "meaning": "trajectory"
+  },
+  {
+    "rank": 23513,
+    "word": "取っ組み合う",
+    "reading": "とっくみあう",
+    "meaning": "to grapple with (each other)"
+  },
+  {
+    "rank": 23541,
+    "word": "馬鹿力",
+    "reading": "ばかぢから",
+    "meaning": "great physical power"
+  },
+  {
+    "rank": 23616,
+    "word": "勝利を収める",
+    "reading": "しょうりをおさめる",
+    "meaning": "to gain a victory"
+  },
+  {
+    "rank": 23657,
+    "word": "分隊",
+    "reading": "ぶんたい",
+    "meaning": "squad"
+  },
+  {
+    "rank": 23728,
+    "word": "自軍",
+    "reading": "じぐん",
+    "meaning": "one's own army"
+  },
+  {
+    "rank": 23743,
+    "word": "防備",
+    "reading": "ぼうび",
+    "meaning": "defense"
+  },
+  {
+    "rank": 23763,
+    "word": "多勢に無勢",
+    "reading": "たぜいにぶぜい",
+    "meaning": "being outnumbered (e.g. in a military context)"
+  },
+  {
+    "rank": 23777,
+    "word": "試合開始",
+    "reading": "しあいかいし",
+    "meaning": "beginning of the game"
+  },
+  {
+    "rank": 23796,
+    "word": "勝ち残る",
+    "reading": "かちのこる",
+    "meaning": "to win and advance to the next round"
+  },
+  {
+    "rank": 23809,
+    "word": "急襲",
+    "reading": "きゅうしゅう",
+    "meaning": "raid"
+  },
+  {
+    "rank": 23843,
+    "word": "色仕掛け",
+    "reading": "いろじかけ",
+    "meaning": "use of seductive techniques to attain one's ends (usu. of..."
+  },
+  {
+    "rank": 23889,
+    "word": "連戦",
+    "reading": "れんせん",
+    "meaning": "series of battles"
+  },
+  {
+    "rank": 23936,
+    "word": "敵方",
+    "reading": "てきがた",
+    "meaning": "hostile party"
+  },
+  {
+    "rank": 23946,
+    "word": "毒ガス",
+    "reading": "どくガス",
+    "meaning": "poison gas"
+  },
+  {
+    "rank": 23967,
+    "word": "弱肉強食",
+    "reading": "じゃくにくきょうしょく",
+    "meaning": "survival of the fittest"
+  },
+  {
+    "rank": 23970,
+    "word": "遠縁",
+    "reading": "とおえん",
+    "meaning": "distant relative"
+  },
+  {
+    "rank": 24005,
+    "word": "百戦錬磨",
+    "reading": "ひゃくせんれんま",
+    "meaning": "veteran"
+  },
+  {
+    "rank": 24023,
+    "word": "警戒態勢",
+    "reading": "けいかいたいせい",
+    "meaning": "alert status"
+  },
+  {
+    "rank": 24033,
+    "word": "同士討ち",
+    "reading": "どうしうち",
+    "meaning": "friendly fire"
+  },
+  {
+    "rank": 24049,
+    "word": "防衛戦",
+    "reading": "ぼうえいせん",
+    "meaning": "defensive battle"
+  },
+  {
+    "rank": 24077,
+    "word": "強行突破",
+    "reading": "きょうこうとっぱ",
+    "meaning": "force (bulldoze) one's way through"
+  },
+  {
+    "rank": 24082,
+    "word": "砲身",
+    "reading": "ほうしん",
+    "meaning": "gun barrel"
+  },
+  {
+    "rank": 24120,
+    "word": "自由行動",
+    "reading": "じゆうこうどう",
+    "meaning": "free action"
+  },
+  {
+    "rank": 24139,
+    "word": "暮",
+    "reading": "くれ",
+    "meaning": "sunset"
+  },
+  {
+    "rank": 24141,
+    "word": "たたらを踏む",
+    "reading": "たたらをふむ",
+    "meaning": "to stumble a step or two forward (when trying to stop)"
+  },
+  {
+    "rank": 24159,
+    "word": "半殺し",
+    "reading": "はんごろし",
+    "meaning": "half killed"
+  },
+  {
+    "rank": 24210,
+    "word": "力押し",
+    "reading": "ちからおし",
+    "meaning": "brute force approach (esp. in a video game)"
+  },
+  {
+    "rank": 24226,
+    "word": "攻守",
+    "reading": "こうしゅ",
+    "meaning": "offense and defense"
+  },
+  {
+    "rank": 24232,
+    "word": "小隊長",
+    "reading": "しょうたいちょう",
+    "meaning": "platoon commander"
+  },
+  {
+    "rank": 24290,
+    "word": "別働隊",
+    "reading": "べつどうたい",
+    "meaning": "flying column"
+  },
+  {
+    "rank": 24294,
+    "word": "剣を交える",
+    "reading": "けんをまじえる",
+    "meaning": "to cross swords (with)"
+  },
+  {
+    "rank": 24298,
+    "word": "あすこ",
+    "reading": "あすこ",
+    "meaning": "there"
+  },
+  {
+    "rank": 24319,
+    "word": "腹を切る",
+    "reading": "はらをきる",
+    "meaning": "to commit seppuku"
+  },
+  {
+    "rank": 24347,
+    "word": "乱射",
+    "reading": "らんしゃ",
+    "meaning": "indiscriminate shooting"
+  },
+  {
+    "rank": 24363,
+    "word": "折檻",
+    "reading": "せっかん",
+    "meaning": "physical punishment"
+  },
+  {
+    "rank": 24392,
+    "word": "騒乱",
+    "reading": "そうらん",
+    "meaning": "disturbance"
+  },
+  {
+    "rank": 24485,
+    "word": "弾頭",
+    "reading": "だんとう",
+    "meaning": "warhead"
+  },
+  {
+    "rank": 24499,
+    "word": "挟撃",
+    "reading": "きょうげき",
+    "meaning": "attack on both sides"
+  },
+  {
+    "rank": 24509,
+    "word": "引き倒す",
+    "reading": "ひきたおす",
+    "meaning": "to pull down"
+  },
+  {
+    "rank": 24514,
+    "word": "プロレス",
+    "reading": "プロレス",
+    "meaning": "pro wrestling"
+  },
+  {
+    "rank": 24542,
+    "word": "遊撃",
+    "reading": "ゆうげき",
+    "meaning": "raid"
+  },
+  {
+    "rank": 24548,
+    "word": "スパイク",
+    "reading": "スパイク",
+    "meaning": "spike (on a shoe or tyre)"
+  },
+  {
+    "rank": 24553,
+    "word": "追い打ち",
+    "reading": "おいうち",
+    "meaning": "attacking a fleeing enemy"
+  },
+  {
+    "rank": 24582,
+    "word": "突き返す",
+    "reading": "つきかえす",
+    "meaning": "to deal a blow in return"
+  },
+  {
+    "rank": 24585,
+    "word": "ディフェンス",
+    "reading": "ディフェンス",
+    "meaning": "defense"
+  },
+  {
+    "rank": 24616,
+    "word": "罠にかかる",
+    "reading": "わなにかかる",
+    "meaning": "to be caught in a trap (snare, etc.)"
+  },
+  {
+    "rank": 24630,
+    "word": "硝煙",
+    "reading": "しょうえん",
+    "meaning": "gunpowder smoke"
+  },
+  {
+    "rank": 24643,
+    "word": "レイピア",
+    "reading": "レイピア",
+    "meaning": "rapier"
+  },
+  {
+    "rank": 24655,
+    "word": "兵法",
+    "reading": "へいほう",
+    "meaning": "art of war"
+  },
+  {
+    "rank": 24704,
+    "word": "身をかわす",
+    "reading": "みをかわす",
+    "meaning": "to dodge"
+  },
+  {
+    "rank": 24710,
+    "word": "散弾",
+    "reading": "さんだん",
+    "meaning": "shot"
+  },
+  {
+    "rank": 24734,
+    "word": "終戦",
+    "reading": "しゅうせん",
+    "meaning": "end of war"
+  },
+  {
+    "rank": 24741,
+    "word": "好敵手",
+    "reading": "こうてきしゅ",
+    "meaning": "worthy opponent"
+  },
+  {
+    "rank": 24742,
+    "word": "ポーン",
+    "reading": "ポーン",
+    "meaning": "pawn (chess piece)"
+  },
+  {
+    "rank": 24759,
+    "word": "絞め殺す",
+    "reading": "しめころす",
+    "meaning": "to strangle to death"
+  },
+  {
+    "rank": 24803,
+    "word": "太刀筋",
+    "reading": "たちすじ",
+    "meaning": "swordsmanship"
+  },
+  {
+    "rank": 24842,
+    "word": "戦時",
+    "reading": "せんじ",
+    "meaning": "wartime"
+  },
+  {
+    "rank": 24866,
+    "word": "戦闘服",
+    "reading": "せんとうふく",
+    "meaning": "(combat) uniform"
+  },
+  {
+    "rank": 24923,
+    "word": "未経験",
+    "reading": "みけいけん",
+    "meaning": "inexperienced"
+  },
+  {
+    "rank": 24924,
+    "word": "起爆",
+    "reading": "きばく",
+    "meaning": "ignition"
+  },
+  {
+    "rank": 24925,
+    "word": "宝剣",
+    "reading": "ほうけん",
+    "meaning": "treasured sword"
+  },
+  {
+    "rank": 24936,
+    "word": "指揮系統",
+    "reading": "しきけいとう",
+    "meaning": "chain of command"
+  },
+  {
+    "rank": 24975,
+    "word": "戦斧",
+    "reading": "せんぷ",
+    "meaning": "battleaxe"
+  },
+  {
+    "rank": 24990,
+    "word": "かち合う",
+    "reading": "かちあう",
+    "meaning": "to clash"
+  },
+  {
+    "rank": 25055,
+    "word": "二撃",
+    "reading": "にげき",
+    "meaning": "two shots"
+  },
+  {
+    "rank": 25066,
+    "word": "蜂起",
+    "reading": "ほうき",
+    "meaning": "uprising"
+  },
+  {
+    "rank": 25080,
+    "word": "震撼",
+    "reading": "しんかん",
+    "meaning": "shake"
+  },
+  {
+    "rank": 25082,
+    "word": "せめぎ合う",
+    "reading": "せめぎあう",
+    "meaning": "to fight each other"
+  },
+  {
+    "rank": 25095,
+    "word": "牙を剝く",
+    "reading": "きばをむく",
+    "meaning": "to bare one's fangs"
+  },
+  {
+    "rank": 25102,
+    "word": "ぶった切る",
+    "reading": "ぶったぎる",
+    "meaning": "to chop (a branch, etc.)"
+  },
+  {
+    "rank": 25105,
+    "word": "大作戦",
+    "reading": "だいさくせん",
+    "meaning": "large-scale operation"
+  },
+  {
+    "rank": 25114,
+    "word": "悪戦苦闘",
+    "reading": "あくせんくとう",
+    "meaning": "hard fighting"
+  },
+  {
+    "rank": 25127,
+    "word": "大勝利",
+    "reading": "だいしょうり",
+    "meaning": "huge win"
+  },
+  {
+    "rank": 25149,
+    "word": "足蹴にする",
+    "reading": "あしげにする",
+    "meaning": "to kick"
+  },
+  {
+    "rank": 25164,
+    "word": "傷害",
+    "reading": "しょうがい",
+    "meaning": "wound"
+  },
+  {
+    "rank": 25172,
+    "word": "ぶっ倒す",
+    "reading": "ぶったおす",
+    "meaning": "to knock down"
+  },
+  {
+    "rank": 25175,
+    "word": "ランス",
+    "reading": "ランス",
+    "meaning": "lance"
+  },
+  {
+    "rank": 25229,
+    "word": "裂傷",
+    "reading": "れっしょう",
+    "meaning": "laceration"
+  },
+  {
+    "rank": 25245,
+    "word": "戦時中",
+    "reading": "せんじちゅう",
+    "meaning": "during the war"
+  },
+  {
+    "rank": 25246,
+    "word": "援護射撃",
+    "reading": "えんごしゃげき",
+    "meaning": "(providing) covering fire"
+  },
+  {
+    "rank": 25253,
+    "word": "雑兵",
+    "reading": "ぞうひょう",
+    "meaning": "common soldier"
+  },
+  {
+    "rank": 25274,
+    "word": "闘争心",
+    "reading": "とうそうしん",
+    "meaning": "belligerence"
+  },
+  {
+    "rank": 25320,
+    "word": "攻め立てる",
+    "reading": "せめたてる",
+    "meaning": "to make an incessant onslaught"
+  },
+  {
+    "rank": 25356,
+    "word": "連敗",
+    "reading": "れんぱい",
+    "meaning": "consecutive defeats"
+  },
+  {
+    "rank": 25390,
+    "word": "後方支援",
+    "reading": "こうほうしえん",
+    "meaning": "logistical support"
+  },
+  {
+    "rank": 25392,
+    "word": "矢面に立つ",
+    "reading": "やおもてにたつ",
+    "meaning": "to be in the firing line"
+  },
+  {
+    "rank": 25402,
+    "word": "新兵",
+    "reading": "しんぺい",
+    "meaning": "new recruit"
+  },
+  {
+    "rank": 25419,
+    "word": "鉄拳",
+    "reading": "てっけん",
+    "meaning": "tightly clenched fist"
+  },
+  {
+    "rank": 25443,
+    "word": "軍議",
+    "reading": "ぐんぎ",
+    "meaning": "war council"
+  },
+  {
+    "rank": 25456,
+    "word": "野戦",
+    "reading": "やせん",
+    "meaning": "field battle"
+  },
+  {
+    "rank": 25539,
+    "word": "脅かす",
+    "reading": "おびやかす",
+    "meaning": "to intimidate"
+  },
+  {
+    "rank": 25543,
+    "word": "手傷",
+    "reading": "てきず",
+    "meaning": "wound suffered in a fight"
+  },
+  {
+    "rank": 25544,
+    "word": "力技",
+    "reading": "ちからわざ",
+    "meaning": "heavy work"
+  },
+  {
+    "rank": 25575,
+    "word": "撃ちまくる",
+    "reading": "うちまくる",
+    "meaning": "to pound away"
+  },
+  {
+    "rank": 25608,
+    "word": "守備隊",
+    "reading": "しゅびたい",
+    "meaning": "garrison"
+  },
+  {
+    "rank": 25615,
+    "word": "武勲",
+    "reading": "ぶくん",
+    "meaning": "feats of arms"
+  },
+  {
+    "rank": 25641,
+    "word": "精鋭部隊",
+    "reading": "せいえいぶたい",
+    "meaning": "elite unit"
+  },
+  {
+    "rank": 25652,
+    "word": "一騎",
+    "reading": "いっき",
+    "meaning": "one horseman"
+  },
+  {
+    "rank": 25695,
+    "word": "撥ねる",
+    "reading": "はねる",
+    "meaning": "to hit (e.g. to have a car hit someone)"
+  },
+  {
+    "rank": 25698,
+    "word": "拳骨",
+    "reading": "げんこつ",
+    "meaning": "(clenched) fist"
+  },
+  {
+    "rank": 25745,
+    "word": "完全武装",
+    "reading": "かんぜんぶそう",
+    "meaning": "fully armed"
+  },
+  {
+    "rank": 25761,
+    "word": "強姦",
+    "reading": "ごうかん",
+    "meaning": "rape"
+  },
+  {
+    "rank": 25765,
+    "word": "夜襲",
+    "reading": "やしゅう",
+    "meaning": "night attack"
+  },
+  {
+    "rank": 25767,
+    "word": "非戦闘員",
+    "reading": "ひせんとういん",
+    "meaning": "non-combatant"
+  },
+  {
+    "rank": 25778,
+    "word": "連続殺人",
+    "reading": "れんぞくさつじん",
+    "meaning": "serial murders"
+  },
+  {
+    "rank": 25782,
+    "word": "張り込む",
+    "reading": "はりこむ",
+    "meaning": "to be on the lookout"
+  },
+  {
+    "rank": 25854,
+    "word": "突貫",
+    "reading": "とっかん",
+    "meaning": "charging (at the enemy) with a shout"
+  },
+  {
+    "rank": 25867,
+    "word": "魔弾",
+    "reading": "まだん",
+    "meaning": "magic bullet"
+  },
+  {
+    "rank": 25915,
+    "word": "首を取る",
+    "reading": "くびをとる",
+    "meaning": "to decapitate"
+  },
+  {
+    "rank": 25931,
+    "word": "スナイパー",
+    "reading": "スナイパー",
+    "meaning": "sniper"
+  },
+  {
+    "rank": 26009,
+    "word": "善戦",
+    "reading": "ぜんせん",
+    "meaning": "fighting a good fight"
+  },
+  {
+    "rank": 26071,
+    "word": "朱に染まる",
+    "reading": "あけにそまる",
+    "meaning": "to welter in blood"
+  },
+  {
+    "rank": 26132,
+    "word": "抗する",
+    "reading": "こうする",
+    "meaning": "to resist"
+  },
+  {
+    "rank": 26179,
+    "word": "粉々にする",
+    "reading": "こなごなにする",
+    "meaning": "to pulverize"
+  },
+  {
+    "rank": 26191,
+    "word": "鏃",
+    "reading": "やじり",
+    "meaning": "arrowhead"
+  },
+  {
+    "rank": 26225,
+    "word": "斃す",
+    "reading": "たおす",
+    "meaning": "to kill"
+  },
+  {
+    "rank": 26389,
+    "word": "槍の穂先",
+    "reading": "やりのほさき",
+    "meaning": "spearhead"
+  },
+  {
+    "rank": 26399,
+    "word": "大敵",
+    "reading": "たいてき",
+    "meaning": "great rival"
+  },
+  {
+    "rank": 26484,
+    "word": "厳密に言えば",
+    "reading": "げんみつにいえば",
+    "meaning": "strictly speaking"
+  },
+  {
+    "rank": 26527,
+    "word": "カノン",
+    "reading": "カノン",
+    "meaning": "cannon"
+  },
+  {
+    "rank": 26537,
+    "word": "大打撃",
+    "reading": "だいだげき",
+    "meaning": "serious damage"
+  },
+  {
+    "rank": 26549,
+    "word": "駐屯",
+    "reading": "ちゅうとん",
+    "meaning": "stationing (troops)"
+  },
+  {
+    "rank": 26567,
+    "word": "それでいて",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 26659,
+    "word": "防戦",
+    "reading": "ぼうせん",
+    "meaning": "defensive fight (battle)"
+  },
+  {
+    "rank": 26691,
+    "word": "兵馬",
+    "reading": "へいば",
+    "meaning": "arms and cavalry"
+  },
+  {
+    "rank": 26701,
+    "word": "良心的",
+    "reading": "りょうしんてき",
+    "meaning": "upright"
+  },
+  {
+    "rank": 26734,
+    "word": "ショットガン",
+    "reading": "ショットガン",
+    "meaning": "shotgun"
+  },
+  {
+    "rank": 26762,
+    "word": "飛び込み",
+    "reading": "とびこみ",
+    "meaning": "jump"
+  },
+  {
+    "rank": 26771,
+    "word": "陵辱",
+    "reading": "りょうじょく",
+    "meaning": "insult"
+  },
+  {
+    "rank": 26778,
+    "word": "弾切れ",
+    "reading": "たまぎれ",
+    "meaning": "out of bullets"
+  },
+  {
+    "rank": 26790,
+    "word": "聖戦",
+    "reading": "せいせん",
+    "meaning": "holy war"
+  },
+  {
+    "rank": 26815,
+    "word": "数発",
+    "reading": "すうぱつ",
+    "meaning": "several shots"
+  },
+  {
+    "rank": 26857,
+    "word": "全面戦争",
+    "reading": "ぜんめんせんそう",
+    "meaning": "total war"
+  },
+  {
+    "rank": 26858,
+    "word": "戦勝",
+    "reading": "せんしょう",
+    "meaning": "winning a war"
+  },
+  {
+    "rank": 26899,
+    "word": "無敗",
+    "reading": "むはい",
+    "meaning": "undefeated"
+  },
+  {
+    "rank": 26913,
+    "word": "徴兵",
+    "reading": "ちょうへい",
+    "meaning": "conscription"
+  },
+  {
+    "rank": 26928,
+    "word": "軍備",
+    "reading": "ぐんび",
+    "meaning": "armaments"
+  },
+  {
+    "rank": 26985,
+    "word": "白兵戦",
+    "reading": "はくへいせん",
+    "meaning": "hand-to-hand combat"
+  }
+]

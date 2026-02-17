@@ -1,0 +1,3470 @@
+[
+  {
+    "rank": 142,
+    "word": "必要",
+    "reading": "ひつよう",
+    "meaning": "necessary"
+  },
+  {
+    "rank": 419,
+    "word": "ようだ",
+    "reading": "ようだ",
+    "meaning": "seeming to be"
+  },
+  {
+    "rank": 1067,
+    "word": "役",
+    "reading": "やく",
+    "meaning": "role"
+  },
+  {
+    "rank": 1217,
+    "word": "先輩",
+    "reading": "せんぱい",
+    "meaning": "senior (at work or school)"
+  },
+  {
+    "rank": 1297,
+    "word": "生徒",
+    "reading": "せいと",
+    "meaning": "pupil"
+  },
+  {
+    "rank": 1310,
+    "word": "王",
+    "reading": "おう",
+    "meaning": "king"
+  },
+  {
+    "rank": 1457,
+    "word": "警察",
+    "reading": "けいさつ",
+    "meaning": "police"
+  },
+  {
+    "rank": 1497,
+    "word": "犯人",
+    "reading": "はんにん",
+    "meaning": "offender"
+  },
+  {
+    "rank": 1533,
+    "word": "主",
+    "reading": "ぬし",
+    "meaning": "head (of a household, etc.)"
+  },
+  {
+    "rank": 1550,
+    "word": "長",
+    "reading": "ちょう",
+    "meaning": "head"
+  },
+  {
+    "rank": 1705,
+    "word": "担当",
+    "reading": "たんとう",
+    "meaning": "being in charge (of an area of responsibility)"
+  },
+  {
+    "rank": 1765,
+    "word": "部下",
+    "reading": "ぶか",
+    "meaning": "subordinate person"
+  },
+  {
+    "rank": 1935,
+    "word": "主人",
+    "reading": "しゅじん",
+    "meaning": "head (of a household)"
+  },
+  {
+    "rank": 1962,
+    "word": "教師",
+    "reading": "きょうし",
+    "meaning": "teacher (classroom)"
+  },
+  {
+    "rank": 2254,
+    "word": "医者",
+    "reading": "いしゃ",
+    "meaning": "(medical) doctor"
+  },
+  {
+    "rank": 2838,
+    "word": "貴族",
+    "reading": "きぞく",
+    "meaning": "noble"
+  },
+  {
+    "rank": 2847,
+    "word": "騎士",
+    "reading": "きし",
+    "meaning": "samurai on horseback"
+  },
+  {
+    "rank": 3027,
+    "word": "メイド",
+    "reading": "メイド",
+    "meaning": "maid"
+  },
+  {
+    "rank": 3063,
+    "word": "社長",
+    "reading": "しゃちょう",
+    "meaning": "company president"
+  },
+  {
+    "rank": 3084,
+    "word": "店員",
+    "reading": "てんいん",
+    "meaning": "employee (of a store)"
+  },
+  {
+    "rank": 3099,
+    "word": "師匠",
+    "reading": "ししょう",
+    "meaning": "master"
+  },
+  {
+    "rank": 3109,
+    "word": "バイト",
+    "reading": "バイト",
+    "meaning": "part-time job"
+  },
+  {
+    "rank": 3175,
+    "word": "師",
+    "reading": "し",
+    "meaning": "teacher"
+  },
+  {
+    "rank": 3412,
+    "word": "戦士",
+    "reading": "せんし",
+    "meaning": "soldier"
+  },
+  {
+    "rank": 3418,
+    "word": "商人",
+    "reading": "しょうにん",
+    "meaning": "merchant"
+  },
+  {
+    "rank": 3425,
+    "word": "田舎",
+    "reading": "いなか",
+    "meaning": "rural area"
+  },
+  {
+    "rank": 3435,
+    "word": "会長",
+    "reading": "かいちょう",
+    "meaning": "president (of a society)"
+  },
+  {
+    "rank": 3466,
+    "word": "仕える",
+    "reading": "つかえる",
+    "meaning": "to serve"
+  },
+  {
+    "rank": 3650,
+    "word": "弟子",
+    "reading": "でし",
+    "meaning": "pupil"
+  },
+  {
+    "rank": 3803,
+    "word": "職業",
+    "reading": "しょくぎょう",
+    "meaning": "occupation"
+  },
+  {
+    "rank": 3826,
+    "word": "教授",
+    "reading": "きょうじゅ",
+    "meaning": "professor"
+  },
+  {
+    "rank": 3865,
+    "word": "医師",
+    "reading": "いし",
+    "meaning": "doctor"
+  },
+  {
+    "rank": 3921,
+    "word": "係",
+    "reading": "かかり",
+    "meaning": "charge"
+  },
+  {
+    "rank": 3940,
+    "word": "枕",
+    "reading": "まくら",
+    "meaning": "pillow"
+  },
+  {
+    "rank": 3946,
+    "word": "黄金",
+    "reading": "おうごん",
+    "meaning": "gold (Au)"
+  },
+  {
+    "rank": 4022,
+    "word": "派遣",
+    "reading": "はけん",
+    "meaning": "dispatch"
+  },
+  {
+    "rank": 4042,
+    "word": "博士",
+    "reading": "はかせ",
+    "meaning": "expert"
+  },
+  {
+    "rank": 4137,
+    "word": "職員",
+    "reading": "しょくいん",
+    "meaning": "staff member"
+  },
+  {
+    "rank": 4182,
+    "word": "監督",
+    "reading": "かんとく",
+    "meaning": "supervision"
+  },
+  {
+    "rank": 4266,
+    "word": "職",
+    "reading": "しょく",
+    "meaning": "job"
+  },
+  {
+    "rank": 4498,
+    "word": "店主",
+    "reading": "てんしゅ",
+    "meaning": "shopkeeper"
+  },
+  {
+    "rank": 4875,
+    "word": "通",
+    "reading": "つう",
+    "meaning": "authority"
+  },
+  {
+    "rank": 4912,
+    "word": "幹部",
+    "reading": "かんぶ",
+    "meaning": "management"
+  },
+  {
+    "rank": 5158,
+    "word": "作家",
+    "reading": "さっか",
+    "meaning": "author"
+  },
+  {
+    "rank": 5168,
+    "word": "主役",
+    "reading": "しゅやく",
+    "meaning": "leading part"
+  },
+  {
+    "rank": 5356,
+    "word": "職場",
+    "reading": "しょくば",
+    "meaning": "one's post"
+  },
+  {
+    "rank": 5381,
+    "word": "社員",
+    "reading": "しゃいん",
+    "meaning": "company employee"
+  },
+  {
+    "rank": 5387,
+    "word": "恋をする",
+    "reading": "こいをする",
+    "meaning": "to fall in love"
+  },
+  {
+    "rank": 5531,
+    "word": "従業員",
+    "reading": "じゅうぎょういん",
+    "meaning": "employee"
+  },
+  {
+    "rank": 5651,
+    "word": "運転手",
+    "reading": "うんてんしゅ",
+    "meaning": "driver"
+  },
+  {
+    "rank": 5654,
+    "word": "官",
+    "reading": "かん",
+    "meaning": "government service"
+  },
+  {
+    "rank": 5785,
+    "word": "弁護士",
+    "reading": "べんごし",
+    "meaning": "lawyer"
+  },
+  {
+    "rank": 5813,
+    "word": "出世",
+    "reading": "しゅっせ",
+    "meaning": "success in life"
+  },
+  {
+    "rank": 5872,
+    "word": "都会",
+    "reading": "とかい",
+    "meaning": "city"
+  },
+  {
+    "rank": 5875,
+    "word": "記者",
+    "reading": "きしゃ",
+    "meaning": "reporter"
+  },
+  {
+    "rank": 5936,
+    "word": "就職",
+    "reading": "しゅうしょく",
+    "meaning": "finding employment"
+  },
+  {
+    "rank": 5964,
+    "word": "役者",
+    "reading": "やくしゃ",
+    "meaning": "actor"
+  },
+  {
+    "rank": 6039,
+    "word": "専門家",
+    "reading": "せんもんか",
+    "meaning": "specialist"
+  },
+  {
+    "rank": 6050,
+    "word": "学者",
+    "reading": "がくしゃ",
+    "meaning": "scholar"
+  },
+  {
+    "rank": 6065,
+    "word": "責任者",
+    "reading": "せきにんしゃ",
+    "meaning": "person in charge (including a supervisory role for other ..."
+  },
+  {
+    "rank": 6124,
+    "word": "と考えられる",
+    "reading": "とかんがえられる",
+    "meaning": "to be conceivable that"
+  },
+  {
+    "rank": 6378,
+    "word": "アルバイト",
+    "reading": "アルバイト",
+    "meaning": "part-time job"
+  },
+  {
+    "rank": 6422,
+    "word": "見習う",
+    "reading": "みならう",
+    "meaning": "to follow another's example"
+  },
+  {
+    "rank": 6530,
+    "word": "政治家",
+    "reading": "せいじか",
+    "meaning": "politician"
+  },
+  {
+    "rank": 6752,
+    "word": "警察官",
+    "reading": "けいさつかん",
+    "meaning": "police officer"
+  },
+  {
+    "rank": 6970,
+    "word": "就く",
+    "reading": "つく",
+    "meaning": "to take (seat, position, course, office, etc.)"
+  },
+  {
+    "rank": 7018,
+    "word": "勤務",
+    "reading": "きんむ",
+    "meaning": "service"
+  },
+  {
+    "rank": 7149,
+    "word": "絶つ",
+    "reading": "たつ",
+    "meaning": "to sever"
+  },
+  {
+    "rank": 7175,
+    "word": "間際",
+    "reading": "まぎわ",
+    "meaning": "the point just before"
+  },
+  {
+    "rank": 7234,
+    "word": "職務",
+    "reading": "しょくむ",
+    "meaning": "professional duties"
+  },
+  {
+    "rank": 7304,
+    "word": "乗客",
+    "reading": "じょうきゃく",
+    "meaning": "passenger"
+  },
+  {
+    "rank": 7350,
+    "word": "就任",
+    "reading": "しゅうにん",
+    "meaning": "assumption (of office)"
+  },
+  {
+    "rank": 7488,
+    "word": "農家",
+    "reading": "のうか",
+    "meaning": "farmer"
+  },
+  {
+    "rank": 7544,
+    "word": "担当者",
+    "reading": "たんとうしゃ",
+    "meaning": "person in charge (of an area of work)"
+  },
+  {
+    "rank": 7575,
+    "word": "ビジネス",
+    "reading": "ビジネス",
+    "meaning": "business"
+  },
+  {
+    "rank": 7614,
+    "word": "俺達",
+    "reading": "おれたち",
+    "meaning": "we"
+  },
+  {
+    "rank": 7618,
+    "word": "勇者",
+    "reading": "ゆうしゃ",
+    "meaning": "hero"
+  },
+  {
+    "rank": 7622,
+    "word": "隊長",
+    "reading": "たいちょう",
+    "meaning": "commanding officer"
+  },
+  {
+    "rank": 7625,
+    "word": "国王",
+    "reading": "こくおう",
+    "meaning": "king"
+  },
+  {
+    "rank": 7633,
+    "word": "伯爵",
+    "reading": "はくしゃく",
+    "meaning": "count"
+  },
+  {
+    "rank": 7641,
+    "word": "使用人",
+    "reading": "しようにん",
+    "meaning": "employee"
+  },
+  {
+    "rank": 7644,
+    "word": "公爵",
+    "reading": "こうしゃく",
+    "meaning": "prince"
+  },
+  {
+    "rank": 7648,
+    "word": "魔法使い",
+    "reading": "まほうつかい",
+    "meaning": "magician"
+  },
+  {
+    "rank": 7649,
+    "word": "刑事",
+    "reading": "けいじ",
+    "meaning": "(police) detective"
+  },
+  {
+    "rank": 7654,
+    "word": "将軍",
+    "reading": "しょうぐん",
+    "meaning": "general"
+  },
+  {
+    "rank": 7659,
+    "word": "ボス",
+    "reading": "ボス",
+    "meaning": "boss"
+  },
+  {
+    "rank": 7666,
+    "word": "冒険者",
+    "reading": "ぼうけんしゃ",
+    "meaning": "adventurer"
+  },
+  {
+    "rank": 7668,
+    "word": "侍女",
+    "reading": "じじょ",
+    "meaning": "lady attendant"
+  },
+  {
+    "rank": 7689,
+    "word": "王様",
+    "reading": "おうさま",
+    "meaning": "king"
+  },
+  {
+    "rank": 7690,
+    "word": "執事",
+    "reading": "しつじ",
+    "meaning": "steward"
+  },
+  {
+    "rank": 7692,
+    "word": "皇帝",
+    "reading": "こうてい",
+    "meaning": "emperor"
+  },
+  {
+    "rank": 7694,
+    "word": "当主",
+    "reading": "とうしゅ",
+    "meaning": "(present) head of a family"
+  },
+  {
+    "rank": 7695,
+    "word": "魔術師",
+    "reading": "まじゅつし",
+    "meaning": "magician"
+  },
+  {
+    "rank": 7709,
+    "word": "団長",
+    "reading": "だんちょう",
+    "meaning": "leader of a delegation (body, party)"
+  },
+  {
+    "rank": 7724,
+    "word": "ご主人様",
+    "reading": "ごしゅじんさま",
+    "meaning": "master"
+  },
+  {
+    "rank": 7725,
+    "word": "店長",
+    "reading": "てんちょう",
+    "meaning": "shop manager"
+  },
+  {
+    "rank": 7748,
+    "word": "盗賊",
+    "reading": "とうぞく",
+    "meaning": "thief"
+  },
+  {
+    "rank": 7749,
+    "word": "侯爵",
+    "reading": "こうしゃく",
+    "meaning": "marquis"
+  },
+  {
+    "rank": 7759,
+    "word": "使者",
+    "reading": "ししゃ",
+    "meaning": "messenger"
+  },
+  {
+    "rank": 7762,
+    "word": "探偵",
+    "reading": "たんてい",
+    "meaning": "detective"
+  },
+  {
+    "rank": 7768,
+    "word": "軍人",
+    "reading": "ぐんじん",
+    "meaning": "military personnel"
+  },
+  {
+    "rank": 7775,
+    "word": "従者",
+    "reading": "じゅうしゃ",
+    "meaning": "follower"
+  },
+  {
+    "rank": 7779,
+    "word": "警官",
+    "reading": "けいかん",
+    "meaning": "police officer"
+  },
+  {
+    "rank": 7799,
+    "word": "剣士",
+    "reading": "けんし",
+    "meaning": "swordsman"
+  },
+  {
+    "rank": 7813,
+    "word": "巫女",
+    "reading": "みこ",
+    "meaning": "miko"
+  },
+  {
+    "rank": 7820,
+    "word": "大将",
+    "reading": "たいしょう",
+    "meaning": "general"
+  },
+  {
+    "rank": 7846,
+    "word": "男爵",
+    "reading": "だんしゃく",
+    "meaning": "baron"
+  },
+  {
+    "rank": 7877,
+    "word": "委員長",
+    "reading": "いいんちょう",
+    "meaning": "(committee) chairman"
+  },
+  {
+    "rank": 7908,
+    "word": "担任",
+    "reading": "たんにん",
+    "meaning": "being in charge of (esp. a class or subject)"
+  },
+  {
+    "rank": 7925,
+    "word": "坊主",
+    "reading": "ぼうず",
+    "meaning": "Buddhist priest"
+  },
+  {
+    "rank": 7927,
+    "word": "傭兵",
+    "reading": "ようへい",
+    "meaning": "mercenary (soldier)"
+  },
+  {
+    "rank": 7950,
+    "word": "帝",
+    "reading": "みかど",
+    "meaning": "emperor (of Japan)"
+  },
+  {
+    "rank": 7974,
+    "word": "侵入者",
+    "reading": "しんにゅうしゃ",
+    "meaning": "intruder"
+  },
+  {
+    "rank": 7982,
+    "word": "助手",
+    "reading": "じょしゅ",
+    "meaning": "assistant"
+  },
+  {
+    "rank": 8007,
+    "word": "料理人",
+    "reading": "りょうりにん",
+    "meaning": "cook"
+  },
+  {
+    "rank": 8025,
+    "word": "指揮官",
+    "reading": "しきかん",
+    "meaning": "commander"
+  },
+  {
+    "rank": 8041,
+    "word": "初心者",
+    "reading": "しょしんしゃ",
+    "meaning": "beginner"
+  },
+  {
+    "rank": 8043,
+    "word": "看護師",
+    "reading": "かんごし",
+    "meaning": "(hospital) nurse"
+  },
+  {
+    "rank": 8051,
+    "word": "役人",
+    "reading": "やくにん",
+    "meaning": "government official"
+  },
+  {
+    "rank": 8084,
+    "word": "スパイ",
+    "reading": "スパイ",
+    "meaning": "spy"
+  },
+  {
+    "rank": 8124,
+    "word": "侍",
+    "reading": "さむらい",
+    "meaning": "warrior (esp. of military retainers of daimyos in the Edo..."
+  },
+  {
+    "rank": 8147,
+    "word": "将",
+    "reading": "しょう",
+    "meaning": "commander"
+  },
+  {
+    "rank": 8177,
+    "word": "生徒会長",
+    "reading": "せいとかいちょう",
+    "meaning": "head of the student council"
+  },
+  {
+    "rank": 8197,
+    "word": "神官",
+    "reading": "しんかん",
+    "meaning": "Shinto priest"
+  },
+  {
+    "rank": 8212,
+    "word": "武士",
+    "reading": "ぶし",
+    "meaning": "warrior"
+  },
+  {
+    "rank": 8244,
+    "word": "宰相",
+    "reading": "さいしょう",
+    "meaning": "prime minister"
+  },
+  {
+    "rank": 8266,
+    "word": "子爵",
+    "reading": "ししゃく",
+    "meaning": "viscount"
+  },
+  {
+    "rank": 8282,
+    "word": "課長",
+    "reading": "かちょう",
+    "meaning": "section manager"
+  },
+  {
+    "rank": 8428,
+    "word": "女優",
+    "reading": "じょゆう",
+    "meaning": "actress"
+  },
+  {
+    "rank": 8450,
+    "word": "近衛",
+    "reading": "このえ",
+    "meaning": "Imperial Guards"
+  },
+  {
+    "rank": 8483,
+    "word": "給仕",
+    "reading": "きゅうじ",
+    "meaning": "waiting on a table"
+  },
+  {
+    "rank": 8580,
+    "word": "門番",
+    "reading": "もんばん",
+    "meaning": "gatekeeper"
+  },
+  {
+    "rank": 8665,
+    "word": "校長",
+    "reading": "こうちょう",
+    "meaning": "principal"
+  },
+  {
+    "rank": 8704,
+    "word": "暗殺者",
+    "reading": "あんさつしゃ",
+    "meaning": "assassin"
+  },
+  {
+    "rank": 8716,
+    "word": "村長",
+    "reading": "そんちょう",
+    "meaning": "village headman"
+  },
+  {
+    "rank": 8852,
+    "word": "警備員",
+    "reading": "けいびいん",
+    "meaning": "guard"
+  },
+  {
+    "rank": 8877,
+    "word": "初代",
+    "reading": "しょだい",
+    "meaning": "first generation"
+  },
+  {
+    "rank": 8909,
+    "word": "支配者",
+    "reading": "しはいしゃ",
+    "meaning": "governor"
+  },
+  {
+    "rank": 8911,
+    "word": "家臣",
+    "reading": "かしん",
+    "meaning": "vassal"
+  },
+  {
+    "rank": 8968,
+    "word": "役員",
+    "reading": "やくいん",
+    "meaning": "director"
+  },
+  {
+    "rank": 9107,
+    "word": "オーナー",
+    "reading": "オーナー",
+    "meaning": "owner"
+  },
+  {
+    "rank": 9157,
+    "word": "札",
+    "reading": "さつ",
+    "meaning": "banknote"
+  },
+  {
+    "rank": 9321,
+    "word": "飼い主",
+    "reading": "かいぬし",
+    "meaning": "(pet) owner"
+  },
+  {
+    "rank": 9324,
+    "word": "議員",
+    "reading": "ぎいん",
+    "meaning": "member of an assembly"
+  },
+  {
+    "rank": 9416,
+    "word": "主婦",
+    "reading": "しゅふ",
+    "meaning": "housewife"
+  },
+  {
+    "rank": 9476,
+    "word": "主任",
+    "reading": "しゅにん",
+    "meaning": "person in charge"
+  },
+  {
+    "rank": 9478,
+    "word": "院長",
+    "reading": "いんちょう",
+    "meaning": "director"
+  },
+  {
+    "rank": 9533,
+    "word": "忍者",
+    "reading": "にんじゃ",
+    "meaning": "ninja"
+  },
+  {
+    "rank": 9582,
+    "word": "家庭教師",
+    "reading": "かていきょうし",
+    "meaning": "private tutor"
+  },
+  {
+    "rank": 9589,
+    "word": "教官",
+    "reading": "きょうかん",
+    "meaning": "teacher"
+  },
+  {
+    "rank": 9638,
+    "word": "役職",
+    "reading": "やくしょく",
+    "meaning": "post"
+  },
+  {
+    "rank": 9655,
+    "word": "主",
+    "reading": "ぬし",
+    "meaning": "head (of a household, etc.)"
+  },
+  {
+    "rank": 9725,
+    "word": "出勤",
+    "reading": "しゅっきん",
+    "meaning": "going to work"
+  },
+  {
+    "rank": 9901,
+    "word": "講師",
+    "reading": "こうし",
+    "meaning": "lecturer"
+  },
+  {
+    "rank": 9934,
+    "word": "任命",
+    "reading": "にんめい",
+    "meaning": "appointment"
+  },
+  {
+    "rank": 9968,
+    "word": "サラリーマン",
+    "reading": "サラリーマン",
+    "meaning": "office worker"
+  },
+  {
+    "rank": 10000,
+    "word": "指導者",
+    "reading": "しどうしゃ",
+    "meaning": "leader"
+  },
+  {
+    "rank": 10003,
+    "word": "画家",
+    "reading": "がか",
+    "meaning": "painter"
+  },
+  {
+    "rank": 10008,
+    "word": "神父",
+    "reading": "しんぷ",
+    "meaning": "Catholic priest"
+  },
+  {
+    "rank": 10133,
+    "word": "面子",
+    "reading": "メンツ",
+    "meaning": "face"
+  },
+  {
+    "rank": 10198,
+    "word": "逆に言えば",
+    "reading": "ぎゃくにいえば",
+    "meaning": "if anything"
+  },
+  {
+    "rank": 10314,
+    "word": "ベテラン",
+    "reading": "ベテラン",
+    "meaning": "person with a lot of experience"
+  },
+  {
+    "rank": 10334,
+    "word": "マネージャー",
+    "reading": "マネージャー",
+    "meaning": "manager (e.g. of a business, an idol, etc.)"
+  },
+  {
+    "rank": 10415,
+    "word": "赤色",
+    "reading": "あかいろ",
+    "meaning": "red"
+  },
+  {
+    "rank": 10442,
+    "word": "スカウト",
+    "reading": "スカウト",
+    "meaning": "(talent) scout"
+  },
+  {
+    "rank": 10505,
+    "word": "長",
+    "reading": "ちょう",
+    "meaning": "head"
+  },
+  {
+    "rank": 10636,
+    "word": "お医者さん",
+    "reading": "おいしゃさん",
+    "meaning": "doctor"
+  },
+  {
+    "rank": 10711,
+    "word": "妖艶",
+    "reading": "ようえん",
+    "meaning": "fascinating"
+  },
+  {
+    "rank": 10789,
+    "word": "司令官",
+    "reading": "しれいかん",
+    "meaning": "commandant"
+  },
+  {
+    "rank": 10835,
+    "word": "管理人",
+    "reading": "かんりにん",
+    "meaning": "administrator"
+  },
+  {
+    "rank": 11010,
+    "word": "俳優",
+    "reading": "はいゆう",
+    "meaning": "actor"
+  },
+  {
+    "rank": 11014,
+    "word": "理事長",
+    "reading": "りじちょう",
+    "meaning": "board chairman"
+  },
+  {
+    "rank": 11073,
+    "word": "転校生",
+    "reading": "てんこうせい",
+    "meaning": "transfer student"
+  },
+  {
+    "rank": 11078,
+    "word": "科学者",
+    "reading": "かがくしゃ",
+    "meaning": "scientist"
+  },
+  {
+    "rank": 11145,
+    "word": "芸術家",
+    "reading": "げいじゅつか",
+    "meaning": "artist"
+  },
+  {
+    "rank": 11160,
+    "word": "親方",
+    "reading": "おやかた",
+    "meaning": "master"
+  },
+  {
+    "rank": 11228,
+    "word": "参謀",
+    "reading": "さんぼう",
+    "meaning": "staff officer"
+  },
+  {
+    "rank": 11297,
+    "word": "術者",
+    "reading": "じゅつしゃ",
+    "meaning": "practitioner (of medicine, sorcery, fortune telling, etc.)"
+  },
+  {
+    "rank": 11301,
+    "word": "亭主",
+    "reading": "ていしゅ",
+    "meaning": "household head"
+  },
+  {
+    "rank": 11310,
+    "word": "詩人",
+    "reading": "しじん",
+    "meaning": "poet"
+  },
+  {
+    "rank": 11437,
+    "word": "狩人",
+    "reading": "かりゅうど",
+    "meaning": "hunter"
+  },
+  {
+    "rank": 11525,
+    "word": "テロリスト",
+    "reading": "テロリスト",
+    "meaning": "terrorist"
+  },
+  {
+    "rank": 11696,
+    "word": "大佐",
+    "reading": "たいさ",
+    "meaning": "colonel"
+  },
+  {
+    "rank": 11736,
+    "word": "市長",
+    "reading": "しちょう",
+    "meaning": "mayor"
+  },
+  {
+    "rank": 11762,
+    "word": "漁師",
+    "reading": "りょうし",
+    "meaning": "fisherman"
+  },
+  {
+    "rank": 11770,
+    "word": "警部",
+    "reading": "けいぶ",
+    "meaning": "police inspector"
+  },
+  {
+    "rank": 11875,
+    "word": "武人",
+    "reading": "ぶじん",
+    "meaning": "military man"
+  },
+  {
+    "rank": 11902,
+    "word": "歩兵",
+    "reading": "ほへい",
+    "meaning": "infantry"
+  },
+  {
+    "rank": 12008,
+    "word": "上官",
+    "reading": "じょうかん",
+    "meaning": "superior officer"
+  },
+  {
+    "rank": 12022,
+    "word": "女将",
+    "reading": "おかみ",
+    "meaning": "proprietress (of a traditional Japanese inn or restaurant)"
+  },
+  {
+    "rank": 12046,
+    "word": "新入り",
+    "reading": "しんいり",
+    "meaning": "newcomer"
+  },
+  {
+    "rank": 12122,
+    "word": "権力者",
+    "reading": "けんりょくしゃ",
+    "meaning": "powerful person"
+  },
+  {
+    "rank": 12238,
+    "word": "長官",
+    "reading": "ちょうかん",
+    "meaning": "secretary (government)"
+  },
+  {
+    "rank": 12263,
+    "word": "候補者",
+    "reading": "こうほしゃ",
+    "meaning": "candidate"
+  },
+  {
+    "rank": 12275,
+    "word": "僧",
+    "reading": "そう",
+    "meaning": "monk"
+  },
+  {
+    "rank": 12287,
+    "word": "労働者",
+    "reading": "ろうどうしゃ",
+    "meaning": "employee"
+  },
+  {
+    "rank": 12288,
+    "word": "正義の味方",
+    "reading": "せいぎのみかた",
+    "meaning": "champion of justice"
+  },
+  {
+    "rank": 12298,
+    "word": "使徒",
+    "reading": "しと",
+    "meaning": "apostle"
+  },
+  {
+    "rank": 12331,
+    "word": "人事",
+    "reading": "じんじ",
+    "meaning": "personnel affairs"
+  },
+  {
+    "rank": 12375,
+    "word": "司会",
+    "reading": "しかい",
+    "meaning": "leading a meeting"
+  },
+  {
+    "rank": 12387,
+    "word": "主導",
+    "reading": "しゅどう",
+    "meaning": "leadership"
+  },
+  {
+    "rank": 12397,
+    "word": "聖人",
+    "reading": "せいじん",
+    "meaning": "saint"
+  },
+  {
+    "rank": 12453,
+    "word": "親分",
+    "reading": "おやぶん",
+    "meaning": "boss"
+  },
+  {
+    "rank": 12468,
+    "word": "説明がつく",
+    "reading": "せつめいがつく",
+    "meaning": "to explain adequately"
+  },
+  {
+    "rank": 12507,
+    "word": "経営者",
+    "reading": "けいえいしゃ",
+    "meaning": "manager"
+  },
+  {
+    "rank": 12527,
+    "word": "首謀者",
+    "reading": "しゅぼうしゃ",
+    "meaning": "ringleader"
+  },
+  {
+    "rank": 12540,
+    "word": "管理者",
+    "reading": "かんりしゃ",
+    "meaning": "manager"
+  },
+  {
+    "rank": 12593,
+    "word": "副会長",
+    "reading": "ふくかいちょう",
+    "meaning": "vice president (of a club or organization, organisation)"
+  },
+  {
+    "rank": 12597,
+    "word": "文官",
+    "reading": "ぶんかん",
+    "meaning": "civil official"
+  },
+  {
+    "rank": 12624,
+    "word": "士官",
+    "reading": "しかん",
+    "meaning": "officer"
+  },
+  {
+    "rank": 12669,
+    "word": "キャプテン",
+    "reading": "キャプテン",
+    "meaning": "captain"
+  },
+  {
+    "rank": 12695,
+    "word": "司",
+    "reading": "つかさ",
+    "meaning": "office"
+  },
+  {
+    "rank": 12762,
+    "word": "著者",
+    "reading": "ちょしゃ",
+    "meaning": "author (usu. of a particular book)"
+  },
+  {
+    "rank": 12769,
+    "word": "パイロット",
+    "reading": "パイロット",
+    "meaning": "pilot"
+  },
+  {
+    "rank": 12808,
+    "word": "師団",
+    "reading": "しだん",
+    "meaning": "(army) division"
+  },
+  {
+    "rank": 12828,
+    "word": "僧侶",
+    "reading": "そうりょ",
+    "meaning": "priest"
+  },
+  {
+    "rank": 12832,
+    "word": "持ち場",
+    "reading": "もちば",
+    "meaning": "one's post"
+  },
+  {
+    "rank": 12856,
+    "word": "名探偵",
+    "reading": "めいたんてい",
+    "meaning": "great detective"
+  },
+  {
+    "rank": 12873,
+    "word": "異能",
+    "reading": "いのう",
+    "meaning": "unusual power"
+  },
+  {
+    "rank": 12874,
+    "word": "百姓",
+    "reading": "ひゃくしょう",
+    "meaning": "farmer"
+  },
+  {
+    "rank": 13007,
+    "word": "芸人",
+    "reading": "げいにん",
+    "meaning": "entertainer (esp. in a traditional art)"
+  },
+  {
+    "rank": 13040,
+    "word": "芸能人",
+    "reading": "げいのうじん",
+    "meaning": "performer"
+  },
+  {
+    "rank": 13058,
+    "word": "子育て",
+    "reading": "こそだて",
+    "meaning": "child rearing"
+  },
+  {
+    "rank": 13077,
+    "word": "ドクター",
+    "reading": "ドクター",
+    "meaning": "doctor"
+  },
+  {
+    "rank": 13126,
+    "word": "雇い主",
+    "reading": "やといぬし",
+    "meaning": "employer"
+  },
+  {
+    "rank": 13133,
+    "word": "殺し屋",
+    "reading": "ころしや",
+    "meaning": "professional killer"
+  },
+  {
+    "rank": 13143,
+    "word": "守護者",
+    "reading": "しゅごしゃ",
+    "meaning": "guardian"
+  },
+  {
+    "rank": 13145,
+    "word": "通訳",
+    "reading": "つうやく",
+    "meaning": "interpretation (i.e. oral translation)"
+  },
+  {
+    "rank": 13158,
+    "word": "詐欺師",
+    "reading": "さぎし",
+    "meaning": "swindler"
+  },
+  {
+    "rank": 13165,
+    "word": "先生方",
+    "reading": "せんせいがた",
+    "meaning": "doctors"
+  },
+  {
+    "rank": 13300,
+    "word": "勤め",
+    "reading": "つとめ",
+    "meaning": "service"
+  },
+  {
+    "rank": 13302,
+    "word": "本職",
+    "reading": "ほんしょく",
+    "meaning": "principal occupation"
+  },
+  {
+    "rank": 13329,
+    "word": "ハンター",
+    "reading": "ハンター",
+    "meaning": "hunter"
+  },
+  {
+    "rank": 13408,
+    "word": "教員",
+    "reading": "きょういん",
+    "meaning": "teacher"
+  },
+  {
+    "rank": 13488,
+    "word": "将校",
+    "reading": "しょうこう",
+    "meaning": "commissioned officer"
+  },
+  {
+    "rank": 13508,
+    "word": "大尉",
+    "reading": "たいい",
+    "meaning": "captain (Army, U.S. Marine Corps, USAF)"
+  },
+  {
+    "rank": 13557,
+    "word": "代官",
+    "reading": "だいかん",
+    "meaning": "local governor (Edo period)"
+  },
+  {
+    "rank": 13605,
+    "word": "浪人",
+    "reading": "ろうにん",
+    "meaning": "ronin"
+  },
+  {
+    "rank": 13606,
+    "word": "誤差",
+    "reading": "ごさ",
+    "meaning": "measurement error"
+  },
+  {
+    "rank": 13618,
+    "word": "跳ね上げる",
+    "reading": "はねあげる",
+    "meaning": "to churn up"
+  },
+  {
+    "rank": 13686,
+    "word": "古風",
+    "reading": "こふう",
+    "meaning": "old-fashioned"
+  },
+  {
+    "rank": 13743,
+    "word": "従事",
+    "reading": "じゅうじ",
+    "meaning": "engaging in (work)"
+  },
+  {
+    "rank": 13772,
+    "word": "少佐",
+    "reading": "しょうさ",
+    "meaning": "major"
+  },
+  {
+    "rank": 13785,
+    "word": "シェフ",
+    "reading": "シェフ",
+    "meaning": "chef"
+  },
+  {
+    "rank": 13816,
+    "word": "王者",
+    "reading": "おうじゃ",
+    "meaning": "king"
+  },
+  {
+    "rank": 13843,
+    "word": "転職",
+    "reading": "てんしょく",
+    "meaning": "change of occupation"
+  },
+  {
+    "rank": 13931,
+    "word": "山賊",
+    "reading": "さんぞく",
+    "meaning": "bandit"
+  },
+  {
+    "rank": 14019,
+    "word": "敵兵",
+    "reading": "てきへい",
+    "meaning": "enemy (soldier)"
+  },
+  {
+    "rank": 14022,
+    "word": "昇進",
+    "reading": "しょうしん",
+    "meaning": "promotion"
+  },
+  {
+    "rank": 14039,
+    "word": "カメラマン",
+    "reading": "カメラマン",
+    "meaning": "photographer"
+  },
+  {
+    "rank": 14050,
+    "word": "名家",
+    "reading": "めいか",
+    "meaning": "distinguished family"
+  },
+  {
+    "rank": 14051,
+    "word": "技術者",
+    "reading": "ぎじゅつしゃ",
+    "meaning": "engineer"
+  },
+  {
+    "rank": 14077,
+    "word": "副官",
+    "reading": "ふくかん",
+    "meaning": "adjutant"
+  },
+  {
+    "rank": 14092,
+    "word": "襲撃者",
+    "reading": "しゅうげきしゃ",
+    "meaning": "assailant"
+  },
+  {
+    "rank": 14094,
+    "word": "代表者",
+    "reading": "だいひょうしゃ",
+    "meaning": "representative"
+  },
+  {
+    "rank": 14121,
+    "word": "タフ",
+    "reading": "タフ",
+    "meaning": "tough"
+  },
+  {
+    "rank": 14248,
+    "word": "錬金術師",
+    "reading": "れんきんじゅつし",
+    "meaning": "alchemist"
+  },
+  {
+    "rank": 14252,
+    "word": "家来",
+    "reading": "けらい",
+    "meaning": "retainer"
+  },
+  {
+    "rank": 14347,
+    "word": "明言",
+    "reading": "めいげん",
+    "meaning": "declaration"
+  },
+  {
+    "rank": 14385,
+    "word": "官僚",
+    "reading": "かんりょう",
+    "meaning": "bureaucrat"
+  },
+  {
+    "rank": 14390,
+    "word": "大名",
+    "reading": "だいみょう",
+    "meaning": "daimyo (Japanese feudal lord)"
+  },
+  {
+    "rank": 14411,
+    "word": "貴婦人",
+    "reading": "きふじん",
+    "meaning": "lady"
+  },
+  {
+    "rank": 14536,
+    "word": "聖職者",
+    "reading": "せいしょくしゃ",
+    "meaning": "clergyman"
+  },
+  {
+    "rank": 14579,
+    "word": "大口",
+    "reading": "おおぐち",
+    "meaning": "big mouth"
+  },
+  {
+    "rank": 14580,
+    "word": "首領",
+    "reading": "しゅりょう",
+    "meaning": "head"
+  },
+  {
+    "rank": 14599,
+    "word": "自衛隊",
+    "reading": "じえいたい",
+    "meaning": "Japan Self-Defense Forces"
+  },
+  {
+    "rank": 14638,
+    "word": "番人",
+    "reading": "ばんにん",
+    "meaning": "guard"
+  },
+  {
+    "rank": 14663,
+    "word": "公務",
+    "reading": "こうむ",
+    "meaning": "official business"
+  },
+  {
+    "rank": 14668,
+    "word": "局長",
+    "reading": "きょくちょう",
+    "meaning": "bureau director"
+  },
+  {
+    "rank": 14676,
+    "word": "名人",
+    "reading": "めいじん",
+    "meaning": "master"
+  },
+  {
+    "rank": 14677,
+    "word": "芝居がかる",
+    "reading": "しばいがかる",
+    "meaning": "to be affected"
+  },
+  {
+    "rank": 14704,
+    "word": "陸軍",
+    "reading": "りくぐん",
+    "meaning": "army"
+  },
+  {
+    "rank": 14748,
+    "word": "大使",
+    "reading": "たいし",
+    "meaning": "ambassador"
+  },
+  {
+    "rank": 14753,
+    "word": "医",
+    "reading": "い",
+    "meaning": "medicine"
+  },
+  {
+    "rank": 14812,
+    "word": "何故だか",
+    "reading": "なぜだか",
+    "meaning": "somehow"
+  },
+  {
+    "rank": 14813,
+    "word": "首相",
+    "reading": "しゅしょう",
+    "meaning": "prime minister"
+  },
+  {
+    "rank": 14867,
+    "word": "乳母",
+    "reading": "うば",
+    "meaning": "wet nurse"
+  },
+  {
+    "rank": 14879,
+    "word": "女官",
+    "reading": "じょかん",
+    "meaning": "court lady"
+  },
+  {
+    "rank": 14963,
+    "word": "中尉",
+    "reading": "ちゅうい",
+    "meaning": "first lieutenant"
+  },
+  {
+    "rank": 15025,
+    "word": "編集者",
+    "reading": "へんしゅうしゃ",
+    "meaning": "editor (in publishing, etc.)"
+  },
+  {
+    "rank": 15027,
+    "word": "看護婦",
+    "reading": "かんごふ",
+    "meaning": "(female) nurse"
+  },
+  {
+    "rank": 15035,
+    "word": "校長先生",
+    "reading": "こうちょうせんせい",
+    "meaning": "school principal"
+  },
+  {
+    "rank": 15095,
+    "word": "皇太子",
+    "reading": "こうたいし",
+    "meaning": "crown prince"
+  },
+  {
+    "rank": 15124,
+    "word": "解雇",
+    "reading": "かいこ",
+    "meaning": "discharge"
+  },
+  {
+    "rank": 15148,
+    "word": "主従",
+    "reading": "しゅうじゅう",
+    "meaning": "master and servant"
+  },
+  {
+    "rank": 15175,
+    "word": "巡査",
+    "reading": "じゅんさ",
+    "meaning": "police officer"
+  },
+  {
+    "rank": 15179,
+    "word": "使用者",
+    "reading": "しようしゃ",
+    "meaning": "user"
+  },
+  {
+    "rank": 15239,
+    "word": "祠",
+    "reading": "ほこら",
+    "meaning": "hokora"
+  },
+  {
+    "rank": 15277,
+    "word": "教皇",
+    "reading": "きょうこう",
+    "meaning": "Pope"
+  },
+  {
+    "rank": 15279,
+    "word": "要人",
+    "reading": "ようじん",
+    "meaning": "important person"
+  },
+  {
+    "rank": 15321,
+    "word": "稼業",
+    "reading": "かぎょう",
+    "meaning": "trade"
+  },
+  {
+    "rank": 15334,
+    "word": "姐さん",
+    "reading": "ねえさん",
+    "meaning": "older sister"
+  },
+  {
+    "rank": 15370,
+    "word": "総理大臣",
+    "reading": "そうりだいじん",
+    "meaning": "prime minister (as the head of a cabinet government)"
+  },
+  {
+    "rank": 15375,
+    "word": "プロデューサー",
+    "reading": "プロデューサー",
+    "meaning": "producer (film, TV, etc.)"
+  },
+  {
+    "rank": 15397,
+    "word": "武将",
+    "reading": "ぶしょう",
+    "meaning": "military commander"
+  },
+  {
+    "rank": 15414,
+    "word": "暴君",
+    "reading": "ぼうくん",
+    "meaning": "tyrant"
+  },
+  {
+    "rank": 15416,
+    "word": "族長",
+    "reading": "ぞくちょう",
+    "meaning": "patriarch"
+  },
+  {
+    "rank": 15508,
+    "word": "軍師",
+    "reading": "ぐんし",
+    "meaning": "strategist"
+  },
+  {
+    "rank": 15515,
+    "word": "重鎮",
+    "reading": "じゅうちん",
+    "meaning": "leader"
+  },
+  {
+    "rank": 15526,
+    "word": "武者",
+    "reading": "むしゃ",
+    "meaning": "warrior"
+  },
+  {
+    "rank": 15546,
+    "word": "行商人",
+    "reading": "ぎょうしょうにん",
+    "meaning": "peddler"
+  },
+  {
+    "rank": 15570,
+    "word": "皇女",
+    "reading": "こうじょ",
+    "meaning": "imperial princess"
+  },
+  {
+    "rank": 15582,
+    "word": "無職",
+    "reading": "むしょく",
+    "meaning": "without an occupation"
+  },
+  {
+    "rank": 15585,
+    "word": "艦長",
+    "reading": "かんちょう",
+    "meaning": "captain (of a warship)"
+  },
+  {
+    "rank": 15589,
+    "word": "研究員",
+    "reading": "けんきゅういん",
+    "meaning": "researcher"
+  },
+  {
+    "rank": 15680,
+    "word": "履歴",
+    "reading": "りれき",
+    "meaning": "personal history"
+  },
+  {
+    "rank": 15684,
+    "word": "侯",
+    "reading": "こう",
+    "meaning": "marquis"
+  },
+  {
+    "rank": 15738,
+    "word": "入社",
+    "reading": "にゅうしゃ",
+    "meaning": "joining a company"
+  },
+  {
+    "rank": 15853,
+    "word": "議長",
+    "reading": "ぎちょう",
+    "meaning": "chair"
+  },
+  {
+    "rank": 15862,
+    "word": "晩餐",
+    "reading": "ばんさん",
+    "meaning": "dinner"
+  },
+  {
+    "rank": 15913,
+    "word": "苔",
+    "reading": "こけ",
+    "meaning": "moss"
+  },
+  {
+    "rank": 15925,
+    "word": "受験生",
+    "reading": "じゅけんせい",
+    "meaning": "student preparing for or taking examinations (usu. entran..."
+  },
+  {
+    "rank": 15942,
+    "word": "裏方",
+    "reading": "うらかた",
+    "meaning": "someone working behind-the-scenes"
+  },
+  {
+    "rank": 15963,
+    "word": "大王",
+    "reading": "だいおう",
+    "meaning": "great king"
+  },
+  {
+    "rank": 15973,
+    "word": "船員",
+    "reading": "せんいん",
+    "meaning": "sailor"
+  },
+  {
+    "rank": 15985,
+    "word": "デザイナー",
+    "reading": "デザイナー",
+    "meaning": "designer"
+  },
+  {
+    "rank": 15995,
+    "word": "退職",
+    "reading": "たいしょく",
+    "meaning": "retirement"
+  },
+  {
+    "rank": 15999,
+    "word": "お役目",
+    "reading": "おやくめ",
+    "meaning": "(public) duty"
+  },
+  {
+    "rank": 16012,
+    "word": "作業員",
+    "reading": "さぎょういん",
+    "meaning": "laborer"
+  },
+  {
+    "rank": 16013,
+    "word": "皇子",
+    "reading": "おうじ",
+    "meaning": "imperial prince"
+  },
+  {
+    "rank": 16117,
+    "word": "編集長",
+    "reading": "へんしゅうちょう",
+    "meaning": "editor-in-chief"
+  },
+  {
+    "rank": 16120,
+    "word": "密偵",
+    "reading": "みってい",
+    "meaning": "spy"
+  },
+  {
+    "rank": 16123,
+    "word": "歌手",
+    "reading": "かしゅ",
+    "meaning": "singer"
+  },
+  {
+    "rank": 16135,
+    "word": "用心棒",
+    "reading": "ようじんぼう",
+    "meaning": "bodyguard"
+  },
+  {
+    "rank": 16140,
+    "word": "庭師",
+    "reading": "にわし",
+    "meaning": "gardener"
+  },
+  {
+    "rank": 16186,
+    "word": "技師",
+    "reading": "ぎし",
+    "meaning": "engineer"
+  },
+  {
+    "rank": 16222,
+    "word": "会社員",
+    "reading": "かいしゃいん",
+    "meaning": "company employee"
+  },
+  {
+    "rank": 16237,
+    "word": "教頭",
+    "reading": "きょうとう",
+    "meaning": "deputy head teacher"
+  },
+  {
+    "rank": 16315,
+    "word": "料理長",
+    "reading": "りょうりちょう",
+    "meaning": "head chef"
+  },
+  {
+    "rank": 16319,
+    "word": "雇用",
+    "reading": "こよう",
+    "meaning": "employment (long term)"
+  },
+  {
+    "rank": 16348,
+    "word": "波の音",
+    "reading": "なみのおと",
+    "meaning": "roar of waves"
+  },
+  {
+    "rank": 16482,
+    "word": "ボーイ",
+    "reading": "ボーイ",
+    "meaning": "boy"
+  },
+  {
+    "rank": 16602,
+    "word": "ＯＬ",
+    "reading": "オーエル",
+    "meaning": "female office worker"
+  },
+  {
+    "rank": 16676,
+    "word": "肩書",
+    "reading": "かたがき",
+    "meaning": "title (e.g. Doctor, Professor, Lord)"
+  },
+  {
+    "rank": 16697,
+    "word": "取引先",
+    "reading": "とりひきさき",
+    "meaning": "customer"
+  },
+  {
+    "rank": 16704,
+    "word": "書記",
+    "reading": "しょき",
+    "meaning": "clerk"
+  },
+  {
+    "rank": 16706,
+    "word": "生業",
+    "reading": "なりわい",
+    "meaning": "occupation"
+  },
+  {
+    "rank": 16729,
+    "word": "あっそ",
+    "reading": "あっそ",
+    "meaning": "oh, OK"
+  },
+  {
+    "rank": 16747,
+    "word": "奉公",
+    "reading": "ほうこう",
+    "meaning": "live-in domestic service"
+  },
+  {
+    "rank": 16785,
+    "word": "警備兵",
+    "reading": "けいびへい",
+    "meaning": "guard (soldier)"
+  },
+  {
+    "rank": 16795,
+    "word": "力仕事",
+    "reading": "ちからしごと",
+    "meaning": "physical work"
+  },
+  {
+    "rank": 16844,
+    "word": "仕",
+    "reading": "し",
+    "meaning": "official"
+  },
+  {
+    "rank": 16846,
+    "word": "審査員",
+    "reading": "しんさいん",
+    "meaning": "examiner"
+  },
+  {
+    "rank": 16881,
+    "word": "家政婦",
+    "reading": "かせいふ",
+    "meaning": "housekeeper"
+  },
+  {
+    "rank": 16926,
+    "word": "班長",
+    "reading": "はんちょう",
+    "meaning": "squad leader"
+  },
+  {
+    "rank": 17016,
+    "word": "代役",
+    "reading": "だいやく",
+    "meaning": "substitute (e.g. actor)"
+  },
+  {
+    "rank": 17060,
+    "word": "親玉",
+    "reading": "おやだま",
+    "meaning": "boss"
+  },
+  {
+    "rank": 17061,
+    "word": "臣",
+    "reading": "おみ",
+    "meaning": "retainer"
+  },
+  {
+    "rank": 17076,
+    "word": "診療所",
+    "reading": "しんりょうしょ",
+    "meaning": "clinic"
+  },
+  {
+    "rank": 17095,
+    "word": "武家",
+    "reading": "ぶけ",
+    "meaning": "samurai"
+  },
+  {
+    "rank": 17135,
+    "word": "司書",
+    "reading": "ししょ",
+    "meaning": "librarian"
+  },
+  {
+    "rank": 17162,
+    "word": "主催者",
+    "reading": "しゅさいしゃ",
+    "meaning": "sponsor"
+  },
+  {
+    "rank": 17212,
+    "word": "声優",
+    "reading": "せいゆう",
+    "meaning": "voice actor or actress (radio, animation, etc.)"
+  },
+  {
+    "rank": 17217,
+    "word": "術師",
+    "reading": "じゅつし",
+    "meaning": "technique user"
+  },
+  {
+    "rank": 17232,
+    "word": "君主",
+    "reading": "くんしゅ",
+    "meaning": "ruler"
+  },
+  {
+    "rank": 17360,
+    "word": "お医者様",
+    "reading": "おいしゃさま",
+    "meaning": "doctor"
+  },
+  {
+    "rank": 17367,
+    "word": "やり手",
+    "reading": "やりて",
+    "meaning": "skilled person"
+  },
+  {
+    "rank": 17402,
+    "word": "番頭",
+    "reading": "ばんとう",
+    "meaning": "(head) clerk"
+  },
+  {
+    "rank": 17409,
+    "word": "誘拐犯",
+    "reading": "ゆうかいはん",
+    "meaning": "kidnapper"
+  },
+  {
+    "rank": 17412,
+    "word": "コック",
+    "reading": "コック",
+    "meaning": "cook"
+  },
+  {
+    "rank": 17419,
+    "word": "貧乏人",
+    "reading": "びんぼうにん",
+    "meaning": "poor person"
+  },
+  {
+    "rank": 17440,
+    "word": "司教",
+    "reading": "しきょう",
+    "meaning": "bishop (Catholic)"
+  },
+  {
+    "rank": 17451,
+    "word": "看護",
+    "reading": "かんご",
+    "meaning": "nursing"
+  },
+  {
+    "rank": 17601,
+    "word": "家主",
+    "reading": "やぬし",
+    "meaning": "landlord"
+  },
+  {
+    "rank": 17603,
+    "word": "帝王",
+    "reading": "ていおう",
+    "meaning": "sovereign"
+  },
+  {
+    "rank": 17625,
+    "word": "しもべ",
+    "reading": "しもべ",
+    "meaning": "servant"
+  },
+  {
+    "rank": 17652,
+    "word": "警備隊",
+    "reading": "けいびたい",
+    "meaning": "garrison"
+  },
+  {
+    "rank": 17676,
+    "word": "利用者",
+    "reading": "りようしゃ",
+    "meaning": "user"
+  },
+  {
+    "rank": 17713,
+    "word": "ウェイトレス",
+    "reading": "ウェイトレス",
+    "meaning": "waitress"
+  },
+  {
+    "rank": 17737,
+    "word": "実行委員",
+    "reading": "じっこういいん",
+    "meaning": "action committee"
+  },
+  {
+    "rank": 17776,
+    "word": "学園長",
+    "reading": "がくえんちょう",
+    "meaning": "headmaster"
+  },
+  {
+    "rank": 17777,
+    "word": "依頼主",
+    "reading": "いらいぬし",
+    "meaning": "client"
+  },
+  {
+    "rank": 17778,
+    "word": "同業者",
+    "reading": "どうぎょうしゃ",
+    "meaning": "person in the same line of business"
+  },
+  {
+    "rank": 17809,
+    "word": "知事",
+    "reading": "ちじ",
+    "meaning": "prefectural governor"
+  },
+  {
+    "rank": 17811,
+    "word": "重臣",
+    "reading": "じゅうしん",
+    "meaning": "chief vassal"
+  },
+  {
+    "rank": 17836,
+    "word": "案内役",
+    "reading": "あんないやく",
+    "meaning": "guide"
+  },
+  {
+    "rank": 17867,
+    "word": "鍛冶屋",
+    "reading": "かじや",
+    "meaning": "smith"
+  },
+  {
+    "rank": 17877,
+    "word": "剣聖",
+    "reading": "けんせい",
+    "meaning": "master swordsman"
+  },
+  {
+    "rank": 17884,
+    "word": "主演",
+    "reading": "しゅえん",
+    "meaning": "starring (in a film, play, etc.)"
+  },
+  {
+    "rank": 17906,
+    "word": "少尉",
+    "reading": "しょうい",
+    "meaning": "second lieutenant"
+  },
+  {
+    "rank": 17909,
+    "word": "軍部",
+    "reading": "ぐんぶ",
+    "meaning": "military authorities"
+  },
+  {
+    "rank": 17916,
+    "word": "ホスト",
+    "reading": "ホスト",
+    "meaning": "host (of a party, summit, etc.)"
+  },
+  {
+    "rank": 17917,
+    "word": "看守",
+    "reading": "かんしゅ",
+    "meaning": "prison guard"
+  },
+  {
+    "rank": 17976,
+    "word": "諸侯",
+    "reading": "しょこう",
+    "meaning": "princes"
+  },
+  {
+    "rank": 18032,
+    "word": "商家",
+    "reading": "しょうか",
+    "meaning": "merchant"
+  },
+  {
+    "rank": 18037,
+    "word": "仕事ぶり",
+    "reading": "しごとぶり",
+    "meaning": "the way one works"
+  },
+  {
+    "rank": 18069,
+    "word": "係員",
+    "reading": "かかりいん",
+    "meaning": "person in charge"
+  },
+  {
+    "rank": 18160,
+    "word": "魔導師",
+    "reading": "まどうし",
+    "meaning": "sorcerer"
+  },
+  {
+    "rank": 18166,
+    "word": "漫画家",
+    "reading": "まんがか",
+    "meaning": "cartoonist"
+  },
+  {
+    "rank": 18178,
+    "word": "女主人",
+    "reading": "おんなしゅじん",
+    "meaning": "mistress (of the house)"
+  },
+  {
+    "rank": 18318,
+    "word": "公務員",
+    "reading": "こうむいん",
+    "meaning": "government worker"
+  },
+  {
+    "rank": 18324,
+    "word": "町人",
+    "reading": "ちょうにん",
+    "meaning": "chōnin (Edo-period social class of town-dwelling commoner..."
+  },
+  {
+    "rank": 18372,
+    "word": "殿様",
+    "reading": "とのさま",
+    "meaning": "nobleman"
+  },
+  {
+    "rank": 18377,
+    "word": "手の者",
+    "reading": "てのもの",
+    "meaning": "one's subordinate"
+  },
+  {
+    "rank": 18378,
+    "word": "猟師",
+    "reading": "りょうし",
+    "meaning": "hunter"
+  },
+  {
+    "rank": 18383,
+    "word": "いっぺん",
+    "reading": "いっぺん",
+    "meaning": "once"
+  },
+  {
+    "rank": 18431,
+    "word": "ナース",
+    "reading": "ナース",
+    "meaning": "nurse"
+  },
+  {
+    "rank": 18455,
+    "word": "大家",
+    "reading": "たいか",
+    "meaning": "master"
+  },
+  {
+    "rank": 18572,
+    "word": "アシスタント",
+    "reading": "アシスタント",
+    "meaning": "assistant"
+  },
+  {
+    "rank": 18645,
+    "word": "家人",
+    "reading": "けにん",
+    "meaning": "retainer"
+  },
+  {
+    "rank": 18831,
+    "word": "取り扱い",
+    "reading": "とりあつかい",
+    "meaning": "treatment"
+  },
+  {
+    "rank": 18836,
+    "word": "財",
+    "reading": "ざい",
+    "meaning": "fortune"
+  },
+  {
+    "rank": 18852,
+    "word": "副長",
+    "reading": "ふくちょう",
+    "meaning": "deputy head"
+  },
+  {
+    "rank": 18867,
+    "word": "軍曹",
+    "reading": "ぐんそう",
+    "meaning": "sergeant"
+  },
+  {
+    "rank": 18872,
+    "word": "アナウンサー",
+    "reading": "アナウンサー",
+    "meaning": "announcer"
+  },
+  {
+    "rank": 18985,
+    "word": "怪盗",
+    "reading": "かいとう",
+    "meaning": "mysterious thief"
+  },
+  {
+    "rank": 19006,
+    "word": "駆け出し",
+    "reading": "かけだし",
+    "meaning": "novice"
+  },
+  {
+    "rank": 19021,
+    "word": "リーダー格",
+    "reading": "リーダーかく",
+    "meaning": "leader"
+  },
+  {
+    "rank": 19073,
+    "word": "工",
+    "reading": "たくみ",
+    "meaning": "craftsman"
+  },
+  {
+    "rank": 19074,
+    "word": "大貴族",
+    "reading": "だいきぞく",
+    "meaning": "leading aristocrat"
+  },
+  {
+    "rank": 19086,
+    "word": "主犯",
+    "reading": "しゅはん",
+    "meaning": "principal offence"
+  },
+  {
+    "rank": 19091,
+    "word": "船乗り",
+    "reading": "ふなのり",
+    "meaning": "getting on board"
+  },
+  {
+    "rank": 19145,
+    "word": "署長",
+    "reading": "しょちょう",
+    "meaning": "chief (of police)"
+  },
+  {
+    "rank": 19215,
+    "word": "町長",
+    "reading": "ちょうちょう",
+    "meaning": "town mayor"
+  },
+  {
+    "rank": 19273,
+    "word": "司会者",
+    "reading": "しかいしゃ",
+    "meaning": "chairman"
+  },
+  {
+    "rank": 19312,
+    "word": "アーティスト",
+    "reading": "アーティスト",
+    "meaning": "artist"
+  },
+  {
+    "rank": 19324,
+    "word": "盗人",
+    "reading": "ぬすびと",
+    "meaning": "thief"
+  },
+  {
+    "rank": 19326,
+    "word": "乞食",
+    "reading": "こじき",
+    "meaning": "beggar"
+  },
+  {
+    "rank": 19361,
+    "word": "勇士",
+    "reading": "ゆうし",
+    "meaning": "brave warrior"
+  },
+  {
+    "rank": 19409,
+    "word": "支配人",
+    "reading": "しはいにん",
+    "meaning": "manager"
+  },
+  {
+    "rank": 19418,
+    "word": "被告",
+    "reading": "ひこく",
+    "meaning": "defendant"
+  },
+  {
+    "rank": 19460,
+    "word": "高官",
+    "reading": "こうかん",
+    "meaning": "high official"
+  },
+  {
+    "rank": 19485,
+    "word": "奉行",
+    "reading": "ぶぎょう",
+    "meaning": "magistrate"
+  },
+  {
+    "rank": 19528,
+    "word": "裁判官",
+    "reading": "さいばんかん",
+    "meaning": "judge"
+  },
+  {
+    "rank": 19668,
+    "word": "牧師",
+    "reading": "ぼくし",
+    "meaning": "pastor"
+  },
+  {
+    "rank": 19722,
+    "word": "重役",
+    "reading": "じゅうやく",
+    "meaning": "(company) director"
+  },
+  {
+    "rank": 19737,
+    "word": "策士",
+    "reading": "さくし",
+    "meaning": "tactician"
+  },
+  {
+    "rank": 19741,
+    "word": "殺人者",
+    "reading": "さつじんしゃ",
+    "meaning": "killer"
+  },
+  {
+    "rank": 19831,
+    "word": "官吏",
+    "reading": "かんり",
+    "meaning": "government official"
+  },
+  {
+    "rank": 19922,
+    "word": "武官",
+    "reading": "ぶかん",
+    "meaning": "military officer"
+  },
+  {
+    "rank": 20017,
+    "word": "商売人",
+    "reading": "しょうばいにん",
+    "meaning": "merchant"
+  },
+  {
+    "rank": 20033,
+    "word": "貴人",
+    "reading": "きじん",
+    "meaning": "aristocrat"
+  },
+  {
+    "rank": 20037,
+    "word": "ガイド",
+    "reading": "ガイド",
+    "meaning": "guide"
+  },
+  {
+    "rank": 20063,
+    "word": "中将",
+    "reading": "ちゅうじょう",
+    "meaning": "lieutenant general"
+  },
+  {
+    "rank": 20077,
+    "word": "室長",
+    "reading": "しつちょう",
+    "meaning": "section chief"
+  },
+  {
+    "rank": 20123,
+    "word": "総理",
+    "reading": "そうり",
+    "meaning": "prime minister (as the head of a cabinet government)"
+  },
+  {
+    "rank": 20151,
+    "word": "当店",
+    "reading": "とうてん",
+    "meaning": "this store"
+  },
+  {
+    "rank": 20162,
+    "word": "先鋒",
+    "reading": "せんぽう",
+    "meaning": "advance guard"
+  },
+  {
+    "rank": 20196,
+    "word": "労働力",
+    "reading": "ろうどうりょく",
+    "meaning": "labor"
+  },
+  {
+    "rank": 20277,
+    "word": "ボディーガード",
+    "reading": "ボディーガード",
+    "meaning": "bodyguard"
+  },
+  {
+    "rank": 20295,
+    "word": "外交官",
+    "reading": "がいこうかん",
+    "meaning": "diplomat"
+  },
+  {
+    "rank": 20302,
+    "word": "びっくりするほど",
+    "reading": "びっくりするほど",
+    "meaning": "surprisingly"
+  },
+  {
+    "rank": 20307,
+    "word": "係長",
+    "reading": "かかりちょう",
+    "meaning": "subsection head"
+  },
+  {
+    "rank": 20327,
+    "word": "候補生",
+    "reading": "こうほせい",
+    "meaning": "cadet"
+  },
+  {
+    "rank": 20356,
+    "word": "働き者",
+    "reading": "はたらきもの",
+    "meaning": "hard worker"
+  },
+  {
+    "rank": 20374,
+    "word": "専務",
+    "reading": "せんむ",
+    "meaning": "special duty"
+  },
+  {
+    "rank": 20398,
+    "word": "主治医",
+    "reading": "しゅじい",
+    "meaning": "attending physician"
+  },
+  {
+    "rank": 20410,
+    "word": "大家さん",
+    "reading": "おおやさん",
+    "meaning": "landlord"
+  },
+  {
+    "rank": 20455,
+    "word": "太夫",
+    "reading": "たゆう",
+    "meaning": "high-ranking noh actor"
+  },
+  {
+    "rank": 20538,
+    "word": "中佐",
+    "reading": "ちゅうさ",
+    "meaning": "lieutenant colonel"
+  },
+  {
+    "rank": 20611,
+    "word": "伯爵夫人",
+    "reading": "はくしゃくふじん",
+    "meaning": "countess"
+  },
+  {
+    "rank": 20623,
+    "word": "音楽家",
+    "reading": "おんがくか",
+    "meaning": "musician"
+  },
+  {
+    "rank": 20717,
+    "word": "聖者",
+    "reading": "せいじゃ",
+    "meaning": "saint"
+  },
+  {
+    "rank": 20730,
+    "word": "裁判長",
+    "reading": "さいばんちょう",
+    "meaning": "presiding judge"
+  },
+  {
+    "rank": 20765,
+    "word": "従僕",
+    "reading": "じゅうぼく",
+    "meaning": "attendant male servant"
+  },
+  {
+    "rank": 20769,
+    "word": "書き方",
+    "reading": "かきかた",
+    "meaning": "way of writing"
+  },
+  {
+    "rank": 20812,
+    "word": "貴公子",
+    "reading": "きこうし",
+    "meaning": "young nobleman"
+  },
+  {
+    "rank": 20821,
+    "word": "努力家",
+    "reading": "どりょくか",
+    "meaning": "hard worker"
+  },
+  {
+    "rank": 20851,
+    "word": "守衛",
+    "reading": "しゅえい",
+    "meaning": "security guard"
+  },
+  {
+    "rank": 20906,
+    "word": "新聞記者",
+    "reading": "しんぶんきしゃ",
+    "meaning": "newspaper reporter"
+  },
+  {
+    "rank": 20929,
+    "word": "目上",
+    "reading": "めうえ",
+    "meaning": "superior"
+  },
+  {
+    "rank": 20993,
+    "word": "召使い",
+    "reading": "めしつかい",
+    "meaning": "servant"
+  },
+  {
+    "rank": 21004,
+    "word": "ピエロ",
+    "reading": "ピエロ",
+    "meaning": "clown"
+  },
+  {
+    "rank": 21014,
+    "word": "名無し",
+    "reading": "ななし",
+    "meaning": "being without a name"
+  },
+  {
+    "rank": 21133,
+    "word": "元帥",
+    "reading": "げんすい",
+    "meaning": "(field) marshal"
+  },
+  {
+    "rank": 21152,
+    "word": "少将",
+    "reading": "しょうしょう",
+    "meaning": "major general"
+  },
+  {
+    "rank": 21207,
+    "word": "満員",
+    "reading": "まんいん",
+    "meaning": "full house"
+  },
+  {
+    "rank": 21254,
+    "word": "チーフ",
+    "reading": "チーフ",
+    "meaning": "chief"
+  },
+  {
+    "rank": 21280,
+    "word": "役得",
+    "reading": "やくとく",
+    "meaning": "perquisite"
+  },
+  {
+    "rank": 21330,
+    "word": "役回り",
+    "reading": "やくまわり",
+    "meaning": "role"
+  },
+  {
+    "rank": 21331,
+    "word": "学長",
+    "reading": "がくちょう",
+    "meaning": "(university) president"
+  },
+  {
+    "rank": 21388,
+    "word": "駅員",
+    "reading": "えきいん",
+    "meaning": "(train) station attendant"
+  },
+  {
+    "rank": 21417,
+    "word": "戦闘員",
+    "reading": "せんとういん",
+    "meaning": "combatant"
+  },
+  {
+    "rank": 21423,
+    "word": "恩師",
+    "reading": "おんし",
+    "meaning": "teacher (to whom one owes a debt of gratitude)"
+  },
+  {
+    "rank": 21440,
+    "word": "頭目",
+    "reading": "とうもく",
+    "meaning": "chief"
+  },
+  {
+    "rank": 21477,
+    "word": "修道女",
+    "reading": "しゅうどうじょ",
+    "meaning": "(Catholic) nun"
+  },
+  {
+    "rank": 21516,
+    "word": "頭領",
+    "reading": "とうりょう",
+    "meaning": "head"
+  },
+  {
+    "rank": 21553,
+    "word": "総督",
+    "reading": "そうとく",
+    "meaning": "governor-general"
+  },
+  {
+    "rank": 21595,
+    "word": "家業",
+    "reading": "かぎょう",
+    "meaning": "family business"
+  },
+  {
+    "rank": 21596,
+    "word": "覇者",
+    "reading": "はしゃ",
+    "meaning": "supreme ruler"
+  },
+  {
+    "rank": 21619,
+    "word": "教諭",
+    "reading": "きょうゆ",
+    "meaning": "(licensed) teacher"
+  },
+  {
+    "rank": 21716,
+    "word": "総大将",
+    "reading": "そうだいしょう",
+    "meaning": "supreme commander"
+  },
+  {
+    "rank": 21724,
+    "word": "射手",
+    "reading": "いて",
+    "meaning": "archer"
+  },
+  {
+    "rank": 21725,
+    "word": "小姓",
+    "reading": "こしょう",
+    "meaning": "(noble's) page"
+  },
+  {
+    "rank": 21771,
+    "word": "船頭",
+    "reading": "せんどう",
+    "meaning": "boatman"
+  },
+  {
+    "rank": 21774,
+    "word": "匠",
+    "reading": "たくみ",
+    "meaning": "craftsman"
+  },
+  {
+    "rank": 21805,
+    "word": "エージェント",
+    "reading": "エージェント",
+    "meaning": "agent"
+  },
+  {
+    "rank": 21895,
+    "word": "将兵",
+    "reading": "しょうへい",
+    "meaning": "officers and men"
+  },
+  {
+    "rank": 21988,
+    "word": "投手",
+    "reading": "とうしゅ",
+    "meaning": "pitcher"
+  },
+  {
+    "rank": 22063,
+    "word": "農夫",
+    "reading": "のうふ",
+    "meaning": "(male) farmer"
+  },
+  {
+    "rank": 22065,
+    "word": "近衛兵",
+    "reading": "このえへい",
+    "meaning": "Imperial Guard (Meiji)"
+  },
+  {
+    "rank": 22133,
+    "word": "工作員",
+    "reading": "こうさくいん",
+    "meaning": "spy"
+  },
+  {
+    "rank": 22220,
+    "word": "師範",
+    "reading": "しはん",
+    "meaning": "instructor"
+  },
+  {
+    "rank": 22318,
+    "word": "館長",
+    "reading": "かんちょう",
+    "meaning": "superintendent"
+  },
+  {
+    "rank": 22382,
+    "word": "捜査官",
+    "reading": "そうさかん",
+    "meaning": "police investigator"
+  },
+  {
+    "rank": 22494,
+    "word": "ロマンス",
+    "reading": "ロマンス",
+    "meaning": "romance"
+  },
+  {
+    "rank": 22573,
+    "word": "担任の先生",
+    "reading": "たんにんのせんせい",
+    "meaning": "class teacher"
+  },
+  {
+    "rank": 22589,
+    "word": "捜査員",
+    "reading": "そうさいん",
+    "meaning": "investigator (usu. of criminal cases)"
+  },
+  {
+    "rank": 22592,
+    "word": "お巡りさん",
+    "reading": "おまわりさん",
+    "meaning": "police officer"
+  },
+  {
+    "rank": 22813,
+    "word": "外科医",
+    "reading": "げかい",
+    "meaning": "surgeon"
+  },
+  {
+    "rank": 22816,
+    "word": "行商",
+    "reading": "ぎょうしょう",
+    "meaning": "monger"
+  },
+  {
+    "rank": 22912,
+    "word": "狙撃手",
+    "reading": "そげきしゅ",
+    "meaning": "sniper"
+  },
+  {
+    "rank": 23003,
+    "word": "ゲーマー",
+    "reading": "ゲーマー",
+    "meaning": "gamer"
+  },
+  {
+    "rank": 23057,
+    "word": "尼",
+    "reading": "に",
+    "meaning": "bhikkhuni (fully ordained Buddhist nun)"
+  },
+  {
+    "rank": 23068,
+    "word": "理事",
+    "reading": "りじ",
+    "meaning": "director"
+  },
+  {
+    "rank": 23083,
+    "word": "夜勤",
+    "reading": "やきん",
+    "meaning": "night shift"
+  },
+  {
+    "rank": 23110,
+    "word": "大司教",
+    "reading": "だいしきょう",
+    "meaning": "archbishop (Catholic)"
+  },
+  {
+    "rank": 23146,
+    "word": "任じる",
+    "reading": "にんじる",
+    "meaning": "to appoint"
+  },
+  {
+    "rank": 23170,
+    "word": "歌姫",
+    "reading": "うたひめ",
+    "meaning": "songstress"
+  },
+  {
+    "rank": 23190,
+    "word": "ジャーナリスト",
+    "reading": "ジャーナリスト",
+    "meaning": "journalist"
+  },
+  {
+    "rank": 23258,
+    "word": "家老",
+    "reading": "かろう",
+    "meaning": "chief retainer"
+  },
+  {
+    "rank": 23278,
+    "word": "車掌",
+    "reading": "しゃしょう",
+    "meaning": "(train) conductor"
+  },
+  {
+    "rank": 23353,
+    "word": "不動産屋",
+    "reading": "ふどうさんや",
+    "meaning": "real estate agent"
+  },
+  {
+    "rank": 23361,
+    "word": "公爵夫人",
+    "reading": "こうしゃくふじん",
+    "meaning": "princess"
+  },
+  {
+    "rank": 23388,
+    "word": "総帥",
+    "reading": "そうすい",
+    "meaning": "commander-in-chief"
+  },
+  {
+    "rank": 23508,
+    "word": "皇后",
+    "reading": "こうごう",
+    "meaning": "(Japanese) empress"
+  },
+  {
+    "rank": 23525,
+    "word": "女教師",
+    "reading": "おんなきょうし",
+    "meaning": "female teacher"
+  },
+  {
+    "rank": 23563,
+    "word": "本部長",
+    "reading": "ほんぶちょう",
+    "meaning": "general manager"
+  },
+  {
+    "rank": 23597,
+    "word": "駐在",
+    "reading": "ちゅうざい",
+    "meaning": "residence"
+  },
+  {
+    "rank": 23620,
+    "word": "駿河",
+    "reading": "するが",
+    "meaning": "Suruga (former province located in the central and northe..."
+  },
+  {
+    "rank": 23621,
+    "word": "天職",
+    "reading": "てんしょく",
+    "meaning": "vocation"
+  },
+  {
+    "rank": 23708,
+    "word": "売り子",
+    "reading": "うりこ",
+    "meaning": "salesperson"
+  },
+  {
+    "rank": 23757,
+    "word": "書生",
+    "reading": "しょせい",
+    "meaning": "student"
+  },
+  {
+    "rank": 23810,
+    "word": "為政者",
+    "reading": "いせいしゃ",
+    "meaning": "statesman"
+  },
+  {
+    "rank": 23826,
+    "word": "教祖",
+    "reading": "きょうそ",
+    "meaning": "founder of a religious sect"
+  },
+  {
+    "rank": 23901,
+    "word": "妖精さん",
+    "reading": "ようせいさん",
+    "meaning": "older employee who does not have much actual work"
+  },
+  {
+    "rank": 24064,
+    "word": "着任",
+    "reading": "ちゃくにん",
+    "meaning": "taking up a new post"
+  },
+  {
+    "rank": 24084,
+    "word": "日直",
+    "reading": "にっちょく",
+    "meaning": "day duty"
+  },
+  {
+    "rank": 24117,
+    "word": "辻褄",
+    "reading": "つじつま",
+    "meaning": "coherence"
+  },
+  {
+    "rank": 24177,
+    "word": "ピアニスト",
+    "reading": "ピアニスト",
+    "meaning": "pianist"
+  },
+  {
+    "rank": 24326,
+    "word": "開発者",
+    "reading": "かいはつしゃ",
+    "meaning": "developer"
+  },
+  {
+    "rank": 24334,
+    "word": "製作者",
+    "reading": "せいさくしゃ",
+    "meaning": "manufacturer"
+  },
+  {
+    "rank": 24388,
+    "word": "住職",
+    "reading": "じゅうしょく",
+    "meaning": "chief priest (of a Buddhist temple)"
+  },
+  {
+    "rank": 24429,
+    "word": "召使",
+    "reading": "めしつかい",
+    "meaning": "servant"
+  },
+  {
+    "rank": 24589,
+    "word": "ハリイ",
+    "reading": "ハリイ",
+    "meaning": "acupuncturist"
+  },
+  {
+    "rank": 24594,
+    "word": "筆者",
+    "reading": "ひっしゃ",
+    "meaning": "writer"
+  },
+  {
+    "rank": 24600,
+    "word": "作業着",
+    "reading": "さぎょうぎ",
+    "meaning": "work clothes"
+  },
+  {
+    "rank": 24661,
+    "word": "世話係",
+    "reading": "せわがかり",
+    "meaning": "attendant"
+  },
+  {
+    "rank": 24788,
+    "word": "道化師",
+    "reading": "どうけし",
+    "meaning": "clown"
+  },
+  {
+    "rank": 24993,
+    "word": "出家",
+    "reading": "しゅっけ",
+    "meaning": "entering the priesthood"
+  },
+  {
+    "rank": 25007,
+    "word": "本店",
+    "reading": "ほんてん",
+    "meaning": "head office"
+  },
+  {
+    "rank": 25067,
+    "word": "就職先",
+    "reading": "しゅうしょくさき",
+    "meaning": "place of employment"
+  },
+  {
+    "rank": 25089,
+    "word": "予言者",
+    "reading": "よげんしゃ",
+    "meaning": "prophet"
+  },
+  {
+    "rank": 25107,
+    "word": "警部補",
+    "reading": "けいぶほ",
+    "meaning": "assistant inspector"
+  },
+  {
+    "rank": 25154,
+    "word": "主席",
+    "reading": "しゅせき",
+    "meaning": "head"
+  },
+  {
+    "rank": 25214,
+    "word": "ボディガード",
+    "reading": "ボディガード",
+    "meaning": "bodyguard"
+  },
+  {
+    "rank": 25217,
+    "word": "部隊長",
+    "reading": "ぶたいちょう",
+    "meaning": "commanding officer"
+  },
+  {
+    "rank": 25253,
+    "word": "雑兵",
+    "reading": "ぞうひょう",
+    "meaning": "common soldier"
+  },
+  {
+    "rank": 25271,
+    "word": "オペレーター",
+    "reading": "オペレーター",
+    "meaning": "operator"
+  },
+  {
+    "rank": 25273,
+    "word": "支店長",
+    "reading": "してんちょう",
+    "meaning": "branch manager"
+  },
+  {
+    "rank": 25292,
+    "word": "敵機",
+    "reading": "てっき",
+    "meaning": "enemy plane"
+  },
+  {
+    "rank": 25330,
+    "word": "副業",
+    "reading": "ふくぎょう",
+    "meaning": "side job"
+  },
+  {
+    "rank": 25402,
+    "word": "新兵",
+    "reading": "しんぺい",
+    "meaning": "new recruit"
+  },
+  {
+    "rank": 25420,
+    "word": "パティシエ",
+    "reading": "パティシエ",
+    "meaning": "patissier"
+  },
+  {
+    "rank": 25429,
+    "word": "九六",
+    "reading": "くんろく",
+    "meaning": "ozeki ranked wrestler unable to live up to the expectatio..."
+  },
+  {
+    "rank": 25435,
+    "word": "トレーナー",
+    "reading": "トレーナー",
+    "meaning": "trainer (someone who works with sports athletes)"
+  },
+  {
+    "rank": 25455,
+    "word": "下女",
+    "reading": "げじょ",
+    "meaning": "maidservant"
+  },
+  {
+    "rank": 25494,
+    "word": "相談役",
+    "reading": "そうだんやく",
+    "meaning": "counselor"
+  },
+  {
+    "rank": 25495,
+    "word": "人足",
+    "reading": "にんそく",
+    "meaning": "coolie"
+  },
+  {
+    "rank": 25515,
+    "word": "ボクサー",
+    "reading": "ボクサー",
+    "meaning": "boxer"
+  },
+  {
+    "rank": 25560,
+    "word": "坊さん",
+    "reading": "ぼうさん",
+    "meaning": "Buddhist priest"
+  },
+  {
+    "rank": 25630,
+    "word": "神主",
+    "reading": "かんぬし",
+    "meaning": "Shinto priest"
+  },
+  {
+    "rank": 25633,
+    "word": "辞職",
+    "reading": "じしょく",
+    "meaning": "resignation"
+  },
+  {
+    "rank": 25637,
+    "word": "ディレクター",
+    "reading": "ディレクター",
+    "meaning": "director"
+  },
+  {
+    "rank": 25767,
+    "word": "非戦闘員",
+    "reading": "ひせんとういん",
+    "meaning": "non-combatant"
+  },
+  {
+    "rank": 25786,
+    "word": "超常",
+    "reading": "ちょうじょう",
+    "meaning": "paranormality"
+  },
+  {
+    "rank": 25931,
+    "word": "スナイパー",
+    "reading": "スナイパー",
+    "meaning": "sniper"
+  },
+  {
+    "rank": 25940,
+    "word": "教育者",
+    "reading": "きょういくしゃ",
+    "meaning": "educator"
+  },
+  {
+    "rank": 25989,
+    "word": "絵師",
+    "reading": "えし",
+    "meaning": "painter"
+  },
+  {
+    "rank": 26024,
+    "word": "秘書官",
+    "reading": "ひしょかん",
+    "meaning": "minister's secretary"
+  },
+  {
+    "rank": 26041,
+    "word": "判事",
+    "reading": "はんじ",
+    "meaning": "judge"
+  },
+  {
+    "rank": 26167,
+    "word": "ミュージシャン",
+    "reading": "ミュージシャン",
+    "meaning": "musician"
+  },
+  {
+    "rank": 26233,
+    "word": "大型犬",
+    "reading": "おおがたけん",
+    "meaning": "large-breed dog"
+  },
+  {
+    "rank": 26371,
+    "word": "弁護人",
+    "reading": "べんごにん",
+    "meaning": "counsel"
+  },
+  {
+    "rank": 26459,
+    "word": "衛士",
+    "reading": "えじ",
+    "meaning": "gate guard (during the ritsuryo system)"
+  },
+  {
+    "rank": 26635,
+    "word": "諜報員",
+    "reading": "ちょうほういん",
+    "meaning": "intelligence operative"
+  },
+  {
+    "rank": 26886,
+    "word": "術士",
+    "reading": "じゅつし",
+    "meaning": "tactician"
+  },
+  {
+    "rank": 26914,
+    "word": "侯爵夫人",
+    "reading": "こうしゃくふじん",
+    "meaning": "marchioness"
+  }
+]

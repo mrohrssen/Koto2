@@ -1,0 +1,8210 @@
+[
+  {
+    "rank": 111,
+    "word": "呼ぶ",
+    "reading": "よぶ",
+    "meaning": "to call out (to)"
+  },
+  {
+    "rank": 124,
+    "word": "相手",
+    "reading": "あいて",
+    "meaning": "companion"
+  },
+  {
+    "rank": 164,
+    "word": "大きい",
+    "reading": "おおきい",
+    "meaning": "big"
+  },
+  {
+    "rank": 172,
+    "word": "年",
+    "reading": "ねん",
+    "meaning": "year"
+  },
+  {
+    "rank": 231,
+    "word": "どこか",
+    "reading": "どこか",
+    "meaning": "somewhere"
+  },
+  {
+    "rank": 237,
+    "word": "もし",
+    "reading": "もし",
+    "meaning": "if"
+  },
+  {
+    "rank": 246,
+    "word": "飲む",
+    "reading": "のむ",
+    "meaning": "to drink"
+  },
+  {
+    "rank": 328,
+    "word": "残す",
+    "reading": "のこす",
+    "meaning": "to leave (behind)"
+  },
+  {
+    "rank": 331,
+    "word": "大事",
+    "reading": "だいじ",
+    "meaning": "important"
+  },
+  {
+    "rank": 347,
+    "word": "なかなか",
+    "reading": "なかなか",
+    "meaning": "very"
+  },
+  {
+    "rank": 443,
+    "word": "ごめん",
+    "reading": "ごめん",
+    "meaning": "I'm sorry"
+  },
+  {
+    "rank": 471,
+    "word": "嫌",
+    "reading": "いや",
+    "meaning": "disagreeable"
+  },
+  {
+    "rank": 472,
+    "word": "あいつ",
+    "reading": "あいつ",
+    "meaning": "he"
+  },
+  {
+    "rank": 476,
+    "word": "怒る",
+    "reading": "おこる",
+    "meaning": "to get angry"
+  },
+  {
+    "rank": 477,
+    "word": "頑張る",
+    "reading": "がんばる",
+    "meaning": "to persevere"
+  },
+  {
+    "rank": 565,
+    "word": "空",
+    "reading": "から",
+    "meaning": "emptiness"
+  },
+  {
+    "rank": 574,
+    "word": "行動",
+    "reading": "こうどう",
+    "meaning": "action"
+  },
+  {
+    "rank": 579,
+    "word": "すむ",
+    "reading": "すむ",
+    "meaning": "to finish"
+  },
+  {
+    "rank": 609,
+    "word": "むしろ",
+    "reading": "むしろ",
+    "meaning": "rather"
+  },
+  {
+    "rank": 618,
+    "word": "危険",
+    "reading": "きけん",
+    "meaning": "danger"
+  },
+  {
+    "rank": 686,
+    "word": "楽しむ",
+    "reading": "たのしむ",
+    "meaning": "to enjoy (oneself)"
+  },
+  {
+    "rank": 714,
+    "word": "受け取る",
+    "reading": "うけとる",
+    "meaning": "to receive"
+  },
+  {
+    "rank": 782,
+    "word": "興味",
+    "reading": "きょうみ",
+    "meaning": "interest (in something)"
+  },
+  {
+    "rank": 808,
+    "word": "覚悟",
+    "reading": "かくご",
+    "meaning": "readiness"
+  },
+  {
+    "rank": 860,
+    "word": "協力",
+    "reading": "きょうりょく",
+    "meaning": "cooperation"
+  },
+  {
+    "rank": 868,
+    "word": "ような気がする",
+    "reading": "ようなきがする",
+    "meaning": "(I) think (that)"
+  },
+  {
+    "rank": 870,
+    "word": "というもの",
+    "reading": "というもの",
+    "meaning": "something like ..."
+  },
+  {
+    "rank": 878,
+    "word": "成功",
+    "reading": "せいこう",
+    "meaning": "success"
+  },
+  {
+    "rank": 881,
+    "word": "最高",
+    "reading": "さいこう",
+    "meaning": "most"
+  },
+  {
+    "rank": 923,
+    "word": "すぎ",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 969,
+    "word": "まだまだ",
+    "reading": "まだまだ",
+    "meaning": "still"
+  },
+  {
+    "rank": 1021,
+    "word": "後悔",
+    "reading": "こうかい",
+    "meaning": "regret"
+  },
+  {
+    "rank": 1027,
+    "word": "楽",
+    "reading": "らく",
+    "meaning": "comfort"
+  },
+  {
+    "rank": 1054,
+    "word": "得意",
+    "reading": "とくい",
+    "meaning": "satisfaction"
+  },
+  {
+    "rank": 1099,
+    "word": "迷惑",
+    "reading": "めいわく",
+    "meaning": "trouble"
+  },
+  {
+    "rank": 1104,
+    "word": "楽しみ",
+    "reading": "たのしみ",
+    "meaning": "enjoyment"
+  },
+  {
+    "rank": 1157,
+    "word": "不満",
+    "reading": "ふまん",
+    "meaning": "dissatisfaction"
+  },
+  {
+    "rank": 1191,
+    "word": "苦しむ",
+    "reading": "くるしむ",
+    "meaning": "to suffer"
+  },
+  {
+    "rank": 1204,
+    "word": "嬉しい",
+    "reading": "うれしい",
+    "meaning": "happy"
+  },
+  {
+    "rank": 1221,
+    "word": "慌てる",
+    "reading": "あわてる",
+    "meaning": "to become confused (disconcerted, disorganized, disorgani..."
+  },
+  {
+    "rank": 1254,
+    "word": "笑み",
+    "reading": "えみ",
+    "meaning": "smile"
+  },
+  {
+    "rank": 1258,
+    "word": "仕方ない",
+    "reading": "しかたない",
+    "meaning": "there's no (other) way"
+  },
+  {
+    "rank": 1287,
+    "word": "怒り",
+    "reading": "いかり",
+    "meaning": "anger"
+  },
+  {
+    "rank": 1295,
+    "word": "痛み",
+    "reading": "いたみ",
+    "meaning": "pain"
+  },
+  {
+    "rank": 1330,
+    "word": "恐怖",
+    "reading": "きょうふ",
+    "meaning": "fear"
+  },
+  {
+    "rank": 1423,
+    "word": "興奮",
+    "reading": "こうふん",
+    "meaning": "excitement"
+  },
+  {
+    "rank": 1439,
+    "word": "冷静",
+    "reading": "れいせい",
+    "meaning": "calmness"
+  },
+  {
+    "rank": 1479,
+    "word": "悔しい",
+    "reading": "くやしい",
+    "meaning": "frustrated (over a failure, humiliation or injustice)"
+  },
+  {
+    "rank": 1499,
+    "word": "恋",
+    "reading": "こい",
+    "meaning": "(romantic) love"
+  },
+  {
+    "rank": 1582,
+    "word": "驚き",
+    "reading": "おどろき",
+    "meaning": "surprise"
+  },
+  {
+    "rank": 1597,
+    "word": "申し訳ない",
+    "reading": "もうしわけない",
+    "meaning": "I'm sorry"
+  },
+  {
+    "rank": 1598,
+    "word": "辛い",
+    "reading": "つらい",
+    "meaning": "painful"
+  },
+  {
+    "rank": 1624,
+    "word": "ありがたい",
+    "reading": "ありがたい",
+    "meaning": "grateful"
+  },
+  {
+    "rank": 1647,
+    "word": "動揺",
+    "reading": "どうよう",
+    "meaning": "shaking"
+  },
+  {
+    "rank": 1678,
+    "word": "抱く",
+    "reading": "いだく",
+    "meaning": "to hold in one's arms (e.g. a baby)"
+  },
+  {
+    "rank": 1681,
+    "word": "恐れる",
+    "reading": "おそれる",
+    "meaning": "to fear"
+  },
+  {
+    "rank": 1739,
+    "word": "感",
+    "reading": "かん",
+    "meaning": "feeling"
+  },
+  {
+    "rank": 1774,
+    "word": "懐かしい",
+    "reading": "なつかしい",
+    "meaning": "dear (old)"
+  },
+  {
+    "rank": 1795,
+    "word": "感心",
+    "reading": "かんしん",
+    "meaning": "admiration"
+  },
+  {
+    "rank": 1854,
+    "word": "勇気",
+    "reading": "ゆうき",
+    "meaning": "courage"
+  },
+  {
+    "rank": 1857,
+    "word": "絶望",
+    "reading": "ぜつぼう",
+    "meaning": "despair"
+  },
+  {
+    "rank": 1872,
+    "word": "好きになる",
+    "reading": "すきになる",
+    "meaning": "to come to like"
+  },
+  {
+    "rank": 1876,
+    "word": "甘える",
+    "reading": "あまえる",
+    "meaning": "to behave like a spoiled child"
+  },
+  {
+    "rank": 1877,
+    "word": "違和感",
+    "reading": "いわかん",
+    "meaning": "uncomfortable feeling"
+  },
+  {
+    "rank": 1882,
+    "word": "情けない",
+    "reading": "なさけない",
+    "meaning": "miserable"
+  },
+  {
+    "rank": 1916,
+    "word": "びっくり",
+    "reading": "びっくり",
+    "meaning": "to be surprised"
+  },
+  {
+    "rank": 2030,
+    "word": "幸い",
+    "reading": "さいわい",
+    "meaning": "happiness"
+  },
+  {
+    "rank": 2033,
+    "word": "ショック",
+    "reading": "ショック",
+    "meaning": "shock (psychological)"
+  },
+  {
+    "rank": 2054,
+    "word": "感動",
+    "reading": "かんどう",
+    "meaning": "being deeply moved emotionally"
+  },
+  {
+    "rank": 2070,
+    "word": "不幸",
+    "reading": "ふこう",
+    "meaning": "unhappiness"
+  },
+  {
+    "rank": 2093,
+    "word": "恋愛",
+    "reading": "れんあい",
+    "meaning": "love"
+  },
+  {
+    "rank": 2104,
+    "word": "喜び",
+    "reading": "よろこび",
+    "meaning": "joy"
+  },
+  {
+    "rank": 2150,
+    "word": "やる気",
+    "reading": "やるき",
+    "meaning": "willingness (e.g. to do something)"
+  },
+  {
+    "rank": 2160,
+    "word": "狂う",
+    "reading": "くるう",
+    "meaning": "to go mad"
+  },
+  {
+    "rank": 2185,
+    "word": "夢中",
+    "reading": "むちゅう",
+    "meaning": "absorbed in"
+  },
+  {
+    "rank": 2206,
+    "word": "気にしない",
+    "reading": "きにしない",
+    "meaning": "not caring"
+  },
+  {
+    "rank": 2214,
+    "word": "盛り上がる",
+    "reading": "もりあがる",
+    "meaning": "to swell"
+  },
+  {
+    "rank": 2218,
+    "word": "落ち込む",
+    "reading": "おちこむ",
+    "meaning": "to feel down"
+  },
+  {
+    "rank": 2267,
+    "word": "さっぱり",
+    "reading": "さっぱり",
+    "meaning": "feeling refreshed"
+  },
+  {
+    "rank": 2299,
+    "word": "つまらない",
+    "reading": "つまらない",
+    "meaning": "dull"
+  },
+  {
+    "rank": 2330,
+    "word": "尊敬",
+    "reading": "そんけい",
+    "meaning": "respect"
+  },
+  {
+    "rank": 2337,
+    "word": "好み",
+    "reading": "このみ",
+    "meaning": "liking"
+  },
+  {
+    "rank": 2338,
+    "word": "楽しみにする",
+    "reading": "たのしみにする",
+    "meaning": "to look forward to something"
+  },
+  {
+    "rank": 2341,
+    "word": "同情",
+    "reading": "どうじょう",
+    "meaning": "sympathy"
+  },
+  {
+    "rank": 2374,
+    "word": "嫉妬",
+    "reading": "しっと",
+    "meaning": "jealousy"
+  },
+  {
+    "rank": 2430,
+    "word": "恨む",
+    "reading": "うらむ",
+    "meaning": "to bear a grudge against"
+  },
+  {
+    "rank": 2457,
+    "word": "退屈",
+    "reading": "たいくつ",
+    "meaning": "tedium"
+  },
+  {
+    "rank": 2462,
+    "word": "飽きる",
+    "reading": "あきる",
+    "meaning": "to get tired of"
+  },
+  {
+    "rank": 2468,
+    "word": "苦痛",
+    "reading": "くつう",
+    "meaning": "pain"
+  },
+  {
+    "rank": 2474,
+    "word": "疑い",
+    "reading": "うたがい",
+    "meaning": "doubt"
+  },
+  {
+    "rank": 2479,
+    "word": "悲しみ",
+    "reading": "かなしみ",
+    "meaning": "sadness"
+  },
+  {
+    "rank": 2530,
+    "word": "愛情",
+    "reading": "あいじょう",
+    "meaning": "love"
+  },
+  {
+    "rank": 2532,
+    "word": "感じがする",
+    "reading": "かんじがする",
+    "meaning": "to have a feeling (that)"
+  },
+  {
+    "rank": 2541,
+    "word": "悩み",
+    "reading": "なやみ",
+    "meaning": "trouble"
+  },
+  {
+    "rank": 2580,
+    "word": "憎む",
+    "reading": "にくむ",
+    "meaning": "to hate"
+  },
+  {
+    "rank": 2593,
+    "word": "かわいそう",
+    "reading": "かわいそう",
+    "meaning": "poor"
+  },
+  {
+    "rank": 2604,
+    "word": "歓迎",
+    "reading": "かんげい",
+    "meaning": "welcome"
+  },
+  {
+    "rank": 2624,
+    "word": "熱心",
+    "reading": "ねっしん",
+    "meaning": "zealous"
+  },
+  {
+    "rank": 2628,
+    "word": "好む",
+    "reading": "このむ",
+    "meaning": "to like"
+  },
+  {
+    "rank": 2638,
+    "word": "悲しむ",
+    "reading": "かなしむ",
+    "meaning": "to be sad"
+  },
+  {
+    "rank": 2672,
+    "word": "慰める",
+    "reading": "なぐさめる",
+    "meaning": "to comfort"
+  },
+  {
+    "rank": 2692,
+    "word": "精神的",
+    "reading": "せいしんてき",
+    "meaning": "mental"
+  },
+  {
+    "rank": 2855,
+    "word": "凄い",
+    "reading": "すごい",
+    "meaning": "terrible"
+  },
+  {
+    "rank": 2858,
+    "word": "苦笑",
+    "reading": "くしょう",
+    "meaning": "bitter smile"
+  },
+  {
+    "rank": 2859,
+    "word": "呆れる",
+    "reading": "あきれる",
+    "meaning": "to be amazed"
+  },
+  {
+    "rank": 2886,
+    "word": "気持ちいい",
+    "reading": "きもちいい",
+    "meaning": "good feeling"
+  },
+  {
+    "rank": 2889,
+    "word": "戸惑う",
+    "reading": "とまどう",
+    "meaning": "to be bewildered"
+  },
+  {
+    "rank": 2899,
+    "word": "震わせる",
+    "reading": "ふるわせる",
+    "meaning": "to (make something) quiver"
+  },
+  {
+    "rank": 2922,
+    "word": "ヤバい",
+    "reading": "ヤバい",
+    "meaning": "dangerous"
+  },
+  {
+    "rank": 2933,
+    "word": "怯える",
+    "reading": "おびえる",
+    "meaning": "to become frightened"
+  },
+  {
+    "rank": 2944,
+    "word": "内心",
+    "reading": "ないしん",
+    "meaning": "inner thoughts"
+  },
+  {
+    "rank": 2946,
+    "word": "安堵",
+    "reading": "あんど",
+    "meaning": "relief"
+  },
+  {
+    "rank": 2952,
+    "word": "照れる",
+    "reading": "てれる",
+    "meaning": "to be shy"
+  },
+  {
+    "rank": 2960,
+    "word": "呆然",
+    "reading": "ぼうぜん",
+    "meaning": "dumbfounded"
+  },
+  {
+    "rank": 2967,
+    "word": "ため息をつく",
+    "reading": "ためいきをつく",
+    "meaning": "to sigh"
+  },
+  {
+    "rank": 2969,
+    "word": "ため息",
+    "reading": "ためいき",
+    "meaning": "sigh"
+  },
+  {
+    "rank": 2984,
+    "word": "気持ちよい",
+    "reading": "きもちよい",
+    "meaning": "good feeling"
+  },
+  {
+    "rank": 2987,
+    "word": "困惑",
+    "reading": "こんわく",
+    "meaning": "bewilderment"
+  },
+  {
+    "rank": 3018,
+    "word": "気持ち悪い",
+    "reading": "きもちわるい",
+    "meaning": "bad feeling"
+  },
+  {
+    "rank": 3046,
+    "word": "ドキドキ",
+    "reading": "ドキドキ",
+    "meaning": "thump-thump"
+  },
+  {
+    "rank": 3056,
+    "word": "不機嫌",
+    "reading": "ふきげん",
+    "meaning": "pout"
+  },
+  {
+    "rank": 3117,
+    "word": "羨ましい",
+    "reading": "うらやましい",
+    "meaning": "envious"
+  },
+  {
+    "rank": 3139,
+    "word": "気まずい",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 3142,
+    "word": "迷い",
+    "reading": "まよい",
+    "meaning": "hesitation"
+  },
+  {
+    "rank": 3186,
+    "word": "歓声",
+    "reading": "かんせい",
+    "meaning": "cheer"
+  },
+  {
+    "rank": 3253,
+    "word": "淡々",
+    "reading": "たんたん",
+    "meaning": "uninterested"
+  },
+  {
+    "rank": 3254,
+    "word": "無表情",
+    "reading": "むひょうじょう",
+    "meaning": "lack of expression"
+  },
+  {
+    "rank": 3256,
+    "word": "嫌がる",
+    "reading": "いやがる",
+    "meaning": "to hate"
+  },
+  {
+    "rank": 3298,
+    "word": "憧れる",
+    "reading": "あこがれる",
+    "meaning": "to long for"
+  },
+  {
+    "rank": 3386,
+    "word": "本心",
+    "reading": "ほんしん",
+    "meaning": "true feelings"
+  },
+  {
+    "rank": 3388,
+    "word": "本音",
+    "reading": "ほんね",
+    "meaning": "real intention"
+  },
+  {
+    "rank": 3396,
+    "word": "幸福",
+    "reading": "こうふく",
+    "meaning": "happiness"
+  },
+  {
+    "rank": 3398,
+    "word": "思いっきり",
+    "reading": "おもいっきり",
+    "meaning": "to one's heart's content"
+  },
+  {
+    "rank": 3419,
+    "word": "欲望",
+    "reading": "よくぼう",
+    "meaning": "desire"
+  },
+  {
+    "rank": 3440,
+    "word": "お疲れ",
+    "reading": "おつかれ",
+    "meaning": "thanks (for coming, helping, etc.)"
+  },
+  {
+    "rank": 3483,
+    "word": "微笑",
+    "reading": "びしょう",
+    "meaning": "smile"
+  },
+  {
+    "rank": 3486,
+    "word": "快感",
+    "reading": "かいかん",
+    "meaning": "pleasant feeling"
+  },
+  {
+    "rank": 3535,
+    "word": "はしゃぐ",
+    "reading": "はしゃぐ",
+    "meaning": "to make merry"
+  },
+  {
+    "rank": 3548,
+    "word": "不審",
+    "reading": "ふしん",
+    "meaning": "incomplete understanding"
+  },
+  {
+    "rank": 3566,
+    "word": "躊躇",
+    "reading": "ちゅうちょ",
+    "meaning": "hesitation"
+  },
+  {
+    "rank": 3575,
+    "word": "孤独",
+    "reading": "こどく",
+    "meaning": "solitude"
+  },
+  {
+    "rank": 3576,
+    "word": "心底",
+    "reading": "しんそこ",
+    "meaning": "bottom of one's heart"
+  },
+  {
+    "rank": 3579,
+    "word": "幸運",
+    "reading": "こううん",
+    "meaning": "good luck"
+  },
+  {
+    "rank": 3662,
+    "word": "誇り",
+    "reading": "ほこり",
+    "meaning": "pride"
+  },
+  {
+    "rank": 3706,
+    "word": "心の底",
+    "reading": "こころのそこ",
+    "meaning": "bottom of one's heart"
+  },
+  {
+    "rank": 3712,
+    "word": "悪意",
+    "reading": "あくい",
+    "meaning": "ill will"
+  },
+  {
+    "rank": 3742,
+    "word": "不快",
+    "reading": "ふかい",
+    "meaning": "displeasure"
+  },
+  {
+    "rank": 3743,
+    "word": "怪訝",
+    "reading": "けげん",
+    "meaning": "dubious"
+  },
+  {
+    "rank": 3763,
+    "word": "敏感",
+    "reading": "びんかん",
+    "meaning": "sensitive"
+  },
+  {
+    "rank": 3773,
+    "word": "好意",
+    "reading": "こうい",
+    "meaning": "kindness"
+  },
+  {
+    "rank": 3774,
+    "word": "残酷",
+    "reading": "ざんこく",
+    "meaning": "cruel"
+  },
+  {
+    "rank": 3775,
+    "word": "罪悪感",
+    "reading": "ざいあくかん",
+    "meaning": "feelings of guilt"
+  },
+  {
+    "rank": 3779,
+    "word": "憧れ",
+    "reading": "あこがれ",
+    "meaning": "yearning"
+  },
+  {
+    "rank": 3806,
+    "word": "ホッと",
+    "reading": "ホッと",
+    "meaning": "with a feeling of relief"
+  },
+  {
+    "rank": 3808,
+    "word": "衝動",
+    "reading": "しょうどう",
+    "meaning": "impulse"
+  },
+  {
+    "rank": 3811,
+    "word": "心地よい",
+    "reading": "ここちよい",
+    "meaning": "comfortable"
+  },
+  {
+    "rank": 3858,
+    "word": "気遣う",
+    "reading": "きづかう",
+    "meaning": "to worry about (someone's welfare or comfort)"
+  },
+  {
+    "rank": 3863,
+    "word": "思い込む",
+    "reading": "おもいこむ",
+    "meaning": "to be convinced (that)"
+  },
+  {
+    "rank": 3883,
+    "word": "意地悪",
+    "reading": "いじわる",
+    "meaning": "malicious"
+  },
+  {
+    "rank": 3910,
+    "word": "テンション",
+    "reading": "テンション",
+    "meaning": "(emotional) tension"
+  },
+  {
+    "rank": 3934,
+    "word": "プライド",
+    "reading": "プライド",
+    "meaning": "pride"
+  },
+  {
+    "rank": 3938,
+    "word": "苦笑い",
+    "reading": "にがわらい",
+    "meaning": "bitter smile"
+  },
+  {
+    "rank": 4019,
+    "word": "別れ",
+    "reading": "わかれ",
+    "meaning": "parting"
+  },
+  {
+    "rank": 4023,
+    "word": "慕う",
+    "reading": "したう",
+    "meaning": "to yearn for"
+  },
+  {
+    "rank": 4039,
+    "word": "好奇心",
+    "reading": "こうきしん",
+    "meaning": "curiosity"
+  },
+  {
+    "rank": 4057,
+    "word": "意",
+    "reading": "い",
+    "meaning": "feelings"
+  },
+  {
+    "rank": 4076,
+    "word": "哀れ",
+    "reading": "あわれ",
+    "meaning": "pity"
+  },
+  {
+    "rank": 4079,
+    "word": "弱る",
+    "reading": "よわる",
+    "meaning": "to weaken"
+  },
+  {
+    "rank": 4086,
+    "word": "気楽",
+    "reading": "きらく",
+    "meaning": "carefree"
+  },
+  {
+    "rank": 4114,
+    "word": "恐る恐る",
+    "reading": "おそるおそる",
+    "meaning": "fearfully"
+  },
+  {
+    "rank": 4121,
+    "word": "懸命",
+    "reading": "けんめい",
+    "meaning": "eager"
+  },
+  {
+    "rank": 4165,
+    "word": "焦り",
+    "reading": "あせり",
+    "meaning": "impatience"
+  },
+  {
+    "rank": 4181,
+    "word": "心",
+    "reading": "しん",
+    "meaning": "heart"
+  },
+  {
+    "rank": 4201,
+    "word": "挑発",
+    "reading": "ちょうはつ",
+    "meaning": "provocation"
+  },
+  {
+    "rank": 4212,
+    "word": "可哀想",
+    "reading": "かわいそう",
+    "meaning": "poor"
+  },
+  {
+    "rank": 4227,
+    "word": "機嫌",
+    "reading": "きげん",
+    "meaning": "humour"
+  },
+  {
+    "rank": 4249,
+    "word": "惚れる",
+    "reading": "ほれる",
+    "meaning": "to fall in love"
+  },
+  {
+    "rank": 4267,
+    "word": "苦しめる",
+    "reading": "くるしめる",
+    "meaning": "to torment"
+  },
+  {
+    "rank": 4268,
+    "word": "あるらしい",
+    "reading": "あるらしい",
+    "meaning": "seems to be"
+  },
+  {
+    "rank": 4288,
+    "word": "興味を持つ",
+    "reading": "きょうみをもつ",
+    "meaning": "to have an interest (in)"
+  },
+  {
+    "rank": 4289,
+    "word": "敵意",
+    "reading": "てきい",
+    "meaning": "hostility"
+  },
+  {
+    "rank": 4298,
+    "word": "緊張感",
+    "reading": "きんちょうかん",
+    "meaning": "feeling of tension"
+  },
+  {
+    "rank": 4356,
+    "word": "憎い",
+    "reading": "にくい",
+    "meaning": "hateful"
+  },
+  {
+    "rank": 4370,
+    "word": "嘆く",
+    "reading": "なげく",
+    "meaning": "to lament"
+  },
+  {
+    "rank": 4460,
+    "word": "友情",
+    "reading": "ゆうじょう",
+    "meaning": "friendship"
+  },
+  {
+    "rank": 4469,
+    "word": "快楽",
+    "reading": "かいらく",
+    "meaning": "pleasure"
+  },
+  {
+    "rank": 4505,
+    "word": "心地",
+    "reading": "ここち",
+    "meaning": "feeling"
+  },
+  {
+    "rank": 4531,
+    "word": "情熱",
+    "reading": "じょうねつ",
+    "meaning": "passion"
+  },
+  {
+    "rank": 4537,
+    "word": "うんざり",
+    "reading": "うんざり",
+    "meaning": "tedious"
+  },
+  {
+    "rank": 4552,
+    "word": "落ち着ける",
+    "reading": "おちつける",
+    "meaning": "to quiet"
+  },
+  {
+    "rank": 4595,
+    "word": "悲劇",
+    "reading": "ひげき",
+    "meaning": "tragedy"
+  },
+  {
+    "rank": 4603,
+    "word": "愛しい",
+    "reading": "いとしい",
+    "meaning": "lovely"
+  },
+  {
+    "rank": 4608,
+    "word": "不愉快",
+    "reading": "ふゆかい",
+    "meaning": "unpleasant"
+  },
+  {
+    "rank": 4646,
+    "word": "情",
+    "reading": "じょう",
+    "meaning": "feelings"
+  },
+  {
+    "rank": 4682,
+    "word": "腹が立つ",
+    "reading": "はらがたつ",
+    "meaning": "to get angry"
+  },
+  {
+    "rank": 4720,
+    "word": "憎しみ",
+    "reading": "にくしみ",
+    "meaning": "hatred"
+  },
+  {
+    "rank": 4724,
+    "word": "代物",
+    "reading": "しろもの",
+    "meaning": "article"
+  },
+  {
+    "rank": 4742,
+    "word": "がっかり",
+    "reading": "がっかり",
+    "meaning": "to be disappointed"
+  },
+  {
+    "rank": 4746,
+    "word": "懸念",
+    "reading": "けねん",
+    "meaning": "worry"
+  },
+  {
+    "rank": 4747,
+    "word": "憎悪",
+    "reading": "ぞうお",
+    "meaning": "hatred"
+  },
+  {
+    "rank": 4748,
+    "word": "誘惑",
+    "reading": "ゆうわく",
+    "meaning": "temptation"
+  },
+  {
+    "rank": 4768,
+    "word": "気軽",
+    "reading": "きがる",
+    "meaning": "carefree"
+  },
+  {
+    "rank": 4804,
+    "word": "恥",
+    "reading": "はじ",
+    "meaning": "shame"
+  },
+  {
+    "rank": 4870,
+    "word": "ストレス",
+    "reading": "ストレス",
+    "meaning": "stress"
+  },
+  {
+    "rank": 4885,
+    "word": "浮かれる",
+    "reading": "うかれる",
+    "meaning": "to make merry"
+  },
+  {
+    "rank": 4915,
+    "word": "うっとり",
+    "reading": "うっとり",
+    "meaning": "ecstatically"
+  },
+  {
+    "rank": 4927,
+    "word": "むく",
+    "reading": "むく",
+    "meaning": "pure"
+  },
+  {
+    "rank": 4951,
+    "word": "戸惑い",
+    "reading": "とまどい",
+    "meaning": "being at sea"
+  },
+  {
+    "rank": 4952,
+    "word": "失望",
+    "reading": "しつぼう",
+    "meaning": "disappointment"
+  },
+  {
+    "rank": 4986,
+    "word": "心強い",
+    "reading": "こころづよい",
+    "meaning": "heartening"
+  },
+  {
+    "rank": 5001,
+    "word": "絶望的",
+    "reading": "ぜつぼうてき",
+    "meaning": "desperate"
+  },
+  {
+    "rank": 5086,
+    "word": "気の毒",
+    "reading": "きのどく",
+    "meaning": "pitiful"
+  },
+  {
+    "rank": 5097,
+    "word": "ご機嫌",
+    "reading": "ごきげん",
+    "meaning": "humour"
+  },
+  {
+    "rank": 5117,
+    "word": "気合い",
+    "reading": "きあい",
+    "meaning": "(fighting) spirit"
+  },
+  {
+    "rank": 5136,
+    "word": "苛立ち",
+    "reading": "いらだち",
+    "meaning": "irritation"
+  },
+  {
+    "rank": 5157,
+    "word": "平穏",
+    "reading": "へいおん",
+    "meaning": "tranquil"
+  },
+  {
+    "rank": 5161,
+    "word": "張り切る",
+    "reading": "はりきる",
+    "meaning": "to be in high spirits"
+  },
+  {
+    "rank": 5162,
+    "word": "不穏",
+    "reading": "ふおん",
+    "meaning": "disquieting"
+  },
+  {
+    "rank": 5173,
+    "word": "執着",
+    "reading": "しゅうちゃく",
+    "meaning": "attachment"
+  },
+  {
+    "rank": 5185,
+    "word": "歓喜",
+    "reading": "かんき",
+    "meaning": "delight"
+  },
+  {
+    "rank": 5223,
+    "word": "ビックリ",
+    "reading": "ビックリ",
+    "meaning": "to be surprised"
+  },
+  {
+    "rank": 5228,
+    "word": "感嘆",
+    "reading": "かんたん",
+    "meaning": "admiration"
+  },
+  {
+    "rank": 5300,
+    "word": "辛い",
+    "reading": "つらい",
+    "meaning": "painful"
+  },
+  {
+    "rank": 5325,
+    "word": "恐縮",
+    "reading": "きょうしゅく",
+    "meaning": "feeling obliged"
+  },
+  {
+    "rank": 5343,
+    "word": "もどかしい",
+    "reading": "もどかしい",
+    "meaning": "irritating"
+  },
+  {
+    "rank": 5360,
+    "word": "上機嫌",
+    "reading": "じょうきげん",
+    "meaning": "good humour (humor)"
+  },
+  {
+    "rank": 5369,
+    "word": "傲慢",
+    "reading": "ごうまん",
+    "meaning": "haughty"
+  },
+  {
+    "rank": 5383,
+    "word": "愚痴",
+    "reading": "ぐち",
+    "meaning": "idle complaint"
+  },
+  {
+    "rank": 5388,
+    "word": "からすると",
+    "reading": "からすると",
+    "meaning": "judging from"
+  },
+  {
+    "rank": 5395,
+    "word": "ムカつく",
+    "reading": "ムカつく",
+    "meaning": "to feel irritated"
+  },
+  {
+    "rank": 5397,
+    "word": "重たい",
+    "reading": "おもたい",
+    "meaning": "heavy"
+  },
+  {
+    "rank": 5402,
+    "word": "愕然",
+    "reading": "がくぜん",
+    "meaning": "astonished"
+  },
+  {
+    "rank": 5404,
+    "word": "冷静になる",
+    "reading": "れいせいになる",
+    "meaning": "to collect oneself"
+  },
+  {
+    "rank": 5411,
+    "word": "拗ねる",
+    "reading": "すねる",
+    "meaning": "to be peevish"
+  },
+  {
+    "rank": 5433,
+    "word": "惜しむ",
+    "reading": "おしむ",
+    "meaning": "to be frugal"
+  },
+  {
+    "rank": 5454,
+    "word": "微笑ましい",
+    "reading": "ほほえましい",
+    "meaning": "pleasant"
+  },
+  {
+    "rank": 5458,
+    "word": "掻く",
+    "reading": "かく",
+    "meaning": "to scratch"
+  },
+  {
+    "rank": 5469,
+    "word": "パニック",
+    "reading": "パニック",
+    "meaning": "panic"
+  },
+  {
+    "rank": 5481,
+    "word": "志",
+    "reading": "こころざし",
+    "meaning": "will"
+  },
+  {
+    "rank": 5482,
+    "word": "驚かす",
+    "reading": "おどろかす",
+    "meaning": "to surprise"
+  },
+  {
+    "rank": 5483,
+    "word": "狂気",
+    "reading": "きょうき",
+    "meaning": "madness"
+  },
+  {
+    "rank": 5490,
+    "word": "陽気",
+    "reading": "ようき",
+    "meaning": "cheerful"
+  },
+  {
+    "rank": 5493,
+    "word": "怪しむ",
+    "reading": "あやしむ",
+    "meaning": "to suspect"
+  },
+  {
+    "rank": 5517,
+    "word": "ビビる",
+    "reading": "ビビる",
+    "meaning": "to feel nervous"
+  },
+  {
+    "rank": 5529,
+    "word": "屈辱",
+    "reading": "くつじょく",
+    "meaning": "disgrace"
+  },
+  {
+    "rank": 5537,
+    "word": "未練",
+    "reading": "みれん",
+    "meaning": "lingering attachment"
+  },
+  {
+    "rank": 5550,
+    "word": "冷やす",
+    "reading": "ひやす",
+    "meaning": "to cool (from room temperature)"
+  },
+  {
+    "rank": 5572,
+    "word": "恥じる",
+    "reading": "はじる",
+    "meaning": "to feel ashamed"
+  },
+  {
+    "rank": 5576,
+    "word": "仲直り",
+    "reading": "なかなおり",
+    "meaning": "reconciliation"
+  },
+  {
+    "rank": 5586,
+    "word": "大嫌い",
+    "reading": "だいきらい",
+    "meaning": "detestable"
+  },
+  {
+    "rank": 5596,
+    "word": "気まぐれ",
+    "reading": "きまぐれ",
+    "meaning": "whim"
+  },
+  {
+    "rank": 5601,
+    "word": "幻想",
+    "reading": "げんそう",
+    "meaning": "fantasy"
+  },
+  {
+    "rank": 5608,
+    "word": "愛おしい",
+    "reading": "いとおしい",
+    "meaning": "lovely"
+  },
+  {
+    "rank": 5675,
+    "word": "誠実",
+    "reading": "せいじつ",
+    "meaning": "sincere"
+  },
+  {
+    "rank": 5701,
+    "word": "苛立つ",
+    "reading": "いらだつ",
+    "meaning": "to be irritated"
+  },
+  {
+    "rank": 5733,
+    "word": "イライラ",
+    "reading": "イライラ",
+    "meaning": "to get irritated"
+  },
+  {
+    "rank": 5756,
+    "word": "日差し",
+    "reading": "ひざし",
+    "meaning": "sunlight"
+  },
+  {
+    "rank": 5766,
+    "word": "銀行",
+    "reading": "ぎんこう",
+    "meaning": "bank"
+  },
+  {
+    "rank": 5853,
+    "word": "対決",
+    "reading": "たいけつ",
+    "meaning": "confrontation"
+  },
+  {
+    "rank": 5933,
+    "word": "ぞっと",
+    "reading": "ぞっと",
+    "meaning": "shuddering"
+  },
+  {
+    "rank": 5948,
+    "word": "気恥ずかしい",
+    "reading": "きはずかしい",
+    "meaning": "embarrassed"
+  },
+  {
+    "rank": 5953,
+    "word": "めでたい",
+    "reading": "めでたい",
+    "meaning": "happy"
+  },
+  {
+    "rank": 5976,
+    "word": "侮る",
+    "reading": "あなどる",
+    "meaning": "to disdain"
+  },
+  {
+    "rank": 6004,
+    "word": "落胆",
+    "reading": "らくたん",
+    "meaning": "discouragement"
+  },
+  {
+    "rank": 6016,
+    "word": "懐く",
+    "reading": "いだく",
+    "meaning": "to hold in one's arms (e.g. a baby)"
+  },
+  {
+    "rank": 6018,
+    "word": "同感",
+    "reading": "どうかん",
+    "meaning": "same feeling"
+  },
+  {
+    "rank": 6036,
+    "word": "はにかむ",
+    "reading": "はにかむ",
+    "meaning": "to be shy"
+  },
+  {
+    "rank": 6044,
+    "word": "気を取り直す",
+    "reading": "きをとりなおす",
+    "meaning": "to pull oneself together"
+  },
+  {
+    "rank": 6057,
+    "word": "動じる",
+    "reading": "どうじる",
+    "meaning": "to be perturbed"
+  },
+  {
+    "rank": 6075,
+    "word": "滑稽",
+    "reading": "こっけい",
+    "meaning": "funny"
+  },
+  {
+    "rank": 6081,
+    "word": "心細い",
+    "reading": "こころぼそい",
+    "meaning": "helpless"
+  },
+  {
+    "rank": 6097,
+    "word": "自嘲",
+    "reading": "じちょう",
+    "meaning": "self-deprecation"
+  },
+  {
+    "rank": 6127,
+    "word": "プレッシャー",
+    "reading": "プレッシャー",
+    "meaning": "pressure"
+  },
+  {
+    "rank": 6148,
+    "word": "欠点",
+    "reading": "けってん",
+    "meaning": "fault"
+  },
+  {
+    "rank": 6149,
+    "word": "悲痛",
+    "reading": "ひつう",
+    "meaning": "grief"
+  },
+  {
+    "rank": 6204,
+    "word": "くつろぐ",
+    "reading": "くつろぐ",
+    "meaning": "to relax"
+  },
+  {
+    "rank": 6251,
+    "word": "嫌悪",
+    "reading": "けんお",
+    "meaning": "disgust"
+  },
+  {
+    "rank": 6253,
+    "word": "うろたえる",
+    "reading": "うろたえる",
+    "meaning": "to be flustered"
+  },
+  {
+    "rank": 6292,
+    "word": "呼び寄せる",
+    "reading": "よびよせる",
+    "meaning": "to call"
+  },
+  {
+    "rank": 6319,
+    "word": "軽々",
+    "reading": "かるがる",
+    "meaning": "lightly"
+  },
+  {
+    "rank": 6328,
+    "word": "ドイツ",
+    "reading": "ドイツ",
+    "meaning": "Germany"
+  },
+  {
+    "rank": 6337,
+    "word": "無責任",
+    "reading": "むせきにん",
+    "meaning": "irresponsibility"
+  },
+  {
+    "rank": 6352,
+    "word": "感激",
+    "reading": "かんげき",
+    "meaning": "deep emotion"
+  },
+  {
+    "rank": 6371,
+    "word": "慌ただしい",
+    "reading": "あわただしい",
+    "meaning": "busy"
+  },
+  {
+    "rank": 6381,
+    "word": "惨め",
+    "reading": "みじめ",
+    "meaning": "miserable"
+  },
+  {
+    "rank": 6385,
+    "word": "熱気",
+    "reading": "ねっき",
+    "meaning": "heat"
+  },
+  {
+    "rank": 6396,
+    "word": "あり得る",
+    "reading": "ありうる",
+    "meaning": "possible"
+  },
+  {
+    "rank": 6410,
+    "word": "行事",
+    "reading": "ぎょうじ",
+    "meaning": "event"
+  },
+  {
+    "rank": 6448,
+    "word": "疑念",
+    "reading": "ぎねん",
+    "meaning": "doubt"
+  },
+  {
+    "rank": 6449,
+    "word": "さぞ",
+    "reading": "さぞ",
+    "meaning": "surely"
+  },
+  {
+    "rank": 6464,
+    "word": "ふらつく",
+    "reading": "ふらつく",
+    "meaning": "to feel giddy"
+  },
+  {
+    "rank": 6465,
+    "word": "無念",
+    "reading": "むねん",
+    "meaning": "regret"
+  },
+  {
+    "rank": 6481,
+    "word": "腹立たしい",
+    "reading": "はらだたしい",
+    "meaning": "irritating"
+  },
+  {
+    "rank": 6497,
+    "word": "嫌味",
+    "reading": "いやみ",
+    "meaning": "disagreeableness"
+  },
+  {
+    "rank": 6504,
+    "word": "嫌になる",
+    "reading": "いやになる",
+    "meaning": "to get fed up with"
+  },
+  {
+    "rank": 6550,
+    "word": "悲惨",
+    "reading": "ひさん",
+    "meaning": "disastrous"
+  },
+  {
+    "rank": 6569,
+    "word": "演説",
+    "reading": "えんぜつ",
+    "meaning": "speech"
+  },
+  {
+    "rank": 6571,
+    "word": "じりじり",
+    "reading": "じりじり",
+    "meaning": "slowly (but steadily)"
+  },
+  {
+    "rank": 6606,
+    "word": "圧迫",
+    "reading": "あっぱく",
+    "meaning": "pressure"
+  },
+  {
+    "rank": 6614,
+    "word": "居心地",
+    "reading": "いごこち",
+    "meaning": "comfort"
+  },
+  {
+    "rank": 6627,
+    "word": "悔やむ",
+    "reading": "くやむ",
+    "meaning": "to mourn"
+  },
+  {
+    "rank": 6656,
+    "word": "弱気",
+    "reading": "よわき",
+    "meaning": "timid"
+  },
+  {
+    "rank": 6657,
+    "word": "不服",
+    "reading": "ふふく",
+    "meaning": "dissatisfaction"
+  },
+  {
+    "rank": 6658,
+    "word": "心情",
+    "reading": "しんじょう",
+    "meaning": "sentiment"
+  },
+  {
+    "rank": 6680,
+    "word": "がん",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 6682,
+    "word": "のめる",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 6698,
+    "word": "現役",
+    "reading": "げんえき",
+    "meaning": "active duty"
+  },
+  {
+    "rank": 6705,
+    "word": "電話をかける",
+    "reading": "でんわをかける",
+    "meaning": "to telephone"
+  },
+  {
+    "rank": 6731,
+    "word": "好ましい",
+    "reading": "このましい",
+    "meaning": "nice"
+  },
+  {
+    "rank": 6755,
+    "word": "笑い出す",
+    "reading": "わらいだす",
+    "meaning": "to burst into laughter"
+  },
+  {
+    "rank": 6756,
+    "word": "気安い",
+    "reading": "きやすい",
+    "meaning": "relaxed"
+  },
+  {
+    "rank": 6757,
+    "word": "あっけない",
+    "reading": "あっけない",
+    "meaning": "unsatisfying"
+  },
+  {
+    "rank": 6765,
+    "word": "拍子抜け",
+    "reading": "ひょうしぬけ",
+    "meaning": "anticlimax"
+  },
+  {
+    "rank": 6848,
+    "word": "危機感",
+    "reading": "ききかん",
+    "meaning": "sense of impending crisis"
+  },
+  {
+    "rank": 6854,
+    "word": "涙が出る",
+    "reading": "なみだがでる",
+    "meaning": "to shed tears"
+  },
+  {
+    "rank": 6885,
+    "word": "両側",
+    "reading": "りょうがわ",
+    "meaning": "both sides"
+  },
+  {
+    "rank": 6894,
+    "word": "痛々しい",
+    "reading": "いたいたしい",
+    "meaning": "pitiful"
+  },
+  {
+    "rank": 6920,
+    "word": "しんどい",
+    "reading": "しんどい",
+    "meaning": "tired"
+  },
+  {
+    "rank": 6940,
+    "word": "案じる",
+    "reading": "あんじる",
+    "meaning": "to be anxious or concerned about"
+  },
+  {
+    "rank": 6980,
+    "word": "気を取られる",
+    "reading": "きをとられる",
+    "meaning": "to have one's attention attracted (caught)"
+  },
+  {
+    "rank": 6983,
+    "word": "ひとしきり",
+    "reading": "ひとしきり",
+    "meaning": "for a while"
+  },
+  {
+    "rank": 6986,
+    "word": "正真正銘",
+    "reading": "しょうしんしょうめい",
+    "meaning": "genuine"
+  },
+  {
+    "rank": 7012,
+    "word": "憂い",
+    "reading": "うい",
+    "meaning": "unhappy"
+  },
+  {
+    "rank": 7016,
+    "word": "こだわり",
+    "reading": "こだわり",
+    "meaning": "obsession"
+  },
+  {
+    "rank": 7047,
+    "word": "活気",
+    "reading": "かっき",
+    "meaning": "energy"
+  },
+  {
+    "rank": 7070,
+    "word": "辛抱",
+    "reading": "しんぼう",
+    "meaning": "patience"
+  },
+  {
+    "rank": 7109,
+    "word": "恋しい",
+    "reading": "こいしい",
+    "meaning": "yearned for"
+  },
+  {
+    "rank": 7125,
+    "word": "誠意",
+    "reading": "せいい",
+    "meaning": "sincerity"
+  },
+  {
+    "rank": 7126,
+    "word": "安らか",
+    "reading": "やすらか",
+    "meaning": "peaceful"
+  },
+  {
+    "rank": 7128,
+    "word": "気分が悪い",
+    "reading": "きぶんがわるい",
+    "meaning": "feel sick"
+  },
+  {
+    "rank": 7129,
+    "word": "心の準備",
+    "reading": "こころのじゅんび",
+    "meaning": "mental preparedness"
+  },
+  {
+    "rank": 7144,
+    "word": "手っ取り早い",
+    "reading": "てっとりばやい",
+    "meaning": "quick"
+  },
+  {
+    "rank": 7154,
+    "word": "自負",
+    "reading": "じふ",
+    "meaning": "pride"
+  },
+  {
+    "rank": 7188,
+    "word": "乗り気",
+    "reading": "のりき",
+    "meaning": "interest"
+  },
+  {
+    "rank": 7197,
+    "word": "悪気",
+    "reading": "わるぎ",
+    "meaning": "ill will"
+  },
+  {
+    "rank": 7203,
+    "word": "空想",
+    "reading": "くうそう",
+    "meaning": "daydream"
+  },
+  {
+    "rank": 7236,
+    "word": "喜ばしい",
+    "reading": "よろこばしい",
+    "meaning": "delightful"
+  },
+  {
+    "rank": 7285,
+    "word": "愛想",
+    "reading": "あいそ",
+    "meaning": "amiability"
+  },
+  {
+    "rank": 7290,
+    "word": "だるい",
+    "reading": "だるい",
+    "meaning": "sluggish"
+  },
+  {
+    "rank": 7300,
+    "word": "愛す",
+    "reading": "あいす",
+    "meaning": "to love"
+  },
+  {
+    "rank": 7315,
+    "word": "衝撃的",
+    "reading": "しょうげきてき",
+    "meaning": "devastating"
+  },
+  {
+    "rank": 7324,
+    "word": "無関心",
+    "reading": "むかんしん",
+    "meaning": "apathetic"
+  },
+  {
+    "rank": 7361,
+    "word": "安心感",
+    "reading": "あんしんかん",
+    "meaning": "sense of security"
+  },
+  {
+    "rank": 7366,
+    "word": "感情的",
+    "reading": "かんじょうてき",
+    "meaning": "emotional"
+  },
+  {
+    "rank": 7421,
+    "word": "痛感",
+    "reading": "つうかん",
+    "meaning": "feeling keenly"
+  },
+  {
+    "rank": 7477,
+    "word": "このため",
+    "reading": "このため",
+    "meaning": "because of this"
+  },
+  {
+    "rank": 7490,
+    "word": "悩ます",
+    "reading": "なやます",
+    "meaning": "to afflict"
+  },
+  {
+    "rank": 7504,
+    "word": "親しみ",
+    "reading": "したしみ",
+    "meaning": "intimacy"
+  },
+  {
+    "rank": 7540,
+    "word": "思いやり",
+    "reading": "おもいやり",
+    "meaning": "consideration"
+  },
+  {
+    "rank": 7598,
+    "word": "意欲",
+    "reading": "いよく",
+    "meaning": "will"
+  },
+  {
+    "rank": 7754,
+    "word": "気持",
+    "reading": "きもち",
+    "meaning": "feeling"
+  },
+  {
+    "rank": 7834,
+    "word": "気持ち良い",
+    "reading": "きもちいい",
+    "meaning": "good feeling"
+  },
+  {
+    "rank": 7896,
+    "word": "照れくさい",
+    "reading": "てれくさい",
+    "meaning": "embarrassing"
+  },
+  {
+    "rank": 7926,
+    "word": "気合",
+    "reading": "きあい",
+    "meaning": "(fighting) spirit"
+  },
+  {
+    "rank": 7960,
+    "word": "ぎょっと",
+    "reading": "ぎょっと",
+    "meaning": "being startled"
+  },
+  {
+    "rank": 7990,
+    "word": "忌々しい",
+    "reading": "いまいましい",
+    "meaning": "annoying"
+  },
+  {
+    "rank": 8003,
+    "word": "恐い",
+    "reading": "こわい",
+    "meaning": "scary"
+  },
+  {
+    "rank": 8013,
+    "word": "唖然",
+    "reading": "あぜん",
+    "meaning": "dumbfounded"
+  },
+  {
+    "rank": 8030,
+    "word": "もじもじ",
+    "reading": "もじもじ",
+    "meaning": "bashfully"
+  },
+  {
+    "rank": 8052,
+    "word": "戦慄",
+    "reading": "せんりつ",
+    "meaning": "shudder"
+  },
+  {
+    "rank": 8074,
+    "word": "冷ややか",
+    "reading": "ひややか",
+    "meaning": "cold"
+  },
+  {
+    "rank": 8075,
+    "word": "羞恥",
+    "reading": "しゅうち",
+    "meaning": "shyness"
+  },
+  {
+    "rank": 8104,
+    "word": "おぞましい",
+    "reading": "おぞましい",
+    "meaning": "disgusting"
+  },
+  {
+    "rank": 8123,
+    "word": "ぼーっと",
+    "reading": "ぼーっと",
+    "meaning": "in a daze"
+  },
+  {
+    "rank": 8126,
+    "word": "こみ上げる",
+    "reading": "こみあげる",
+    "meaning": "to well up (of tears, anger, joy, etc.)"
+  },
+  {
+    "rank": 8154,
+    "word": "顔を歪める",
+    "reading": "かおをゆがめる",
+    "meaning": "to grimace"
+  },
+  {
+    "rank": 8160,
+    "word": "虚しい",
+    "reading": "むなしい",
+    "meaning": "empty"
+  },
+  {
+    "rank": 8165,
+    "word": "ため息を吐く",
+    "reading": "ためいきをつく",
+    "meaning": "to sigh"
+  },
+  {
+    "rank": 8168,
+    "word": "苦々しい",
+    "reading": "にがにがしい",
+    "meaning": "unpleasant"
+  },
+  {
+    "rank": 8189,
+    "word": "眉を寄せる",
+    "reading": "まゆをよせる",
+    "meaning": "to frown"
+  },
+  {
+    "rank": 8206,
+    "word": "魅了",
+    "reading": "みりょう",
+    "meaning": "fascination"
+  },
+  {
+    "rank": 8260,
+    "word": "恐るべき",
+    "reading": "おそるべき",
+    "meaning": "dreadful"
+  },
+  {
+    "rank": 8271,
+    "word": "物凄い",
+    "reading": "ものすごい",
+    "meaning": "terrific"
+  },
+  {
+    "rank": 8273,
+    "word": "慈悲",
+    "reading": "じひ",
+    "meaning": "mercy"
+  },
+  {
+    "rank": 8295,
+    "word": "トラウマ",
+    "reading": "トラウマ",
+    "meaning": "trauma (usu. psychological)"
+  },
+  {
+    "rank": 8296,
+    "word": "鬱陶しい",
+    "reading": "うっとうしい",
+    "meaning": "gloomy (e.g. mood)"
+  },
+  {
+    "rank": 8308,
+    "word": "威圧感",
+    "reading": "いあつかん",
+    "meaning": "intimidating air"
+  },
+  {
+    "rank": 8309,
+    "word": "苦悶",
+    "reading": "くもん",
+    "meaning": "anguish"
+  },
+  {
+    "rank": 8316,
+    "word": "溜息をつく",
+    "reading": "ためいきをつく",
+    "meaning": "to sigh"
+  },
+  {
+    "rank": 8318,
+    "word": "たじろぐ",
+    "reading": "たじろぐ",
+    "meaning": "to shrink back"
+  },
+  {
+    "rank": 8388,
+    "word": "肩を竦める",
+    "reading": "かたをすくめる",
+    "meaning": "to shrug one's shoulders"
+  },
+  {
+    "rank": 8391,
+    "word": "凶暴",
+    "reading": "きょうぼう",
+    "meaning": "ferocious"
+  },
+  {
+    "rank": 8402,
+    "word": "見惚れる",
+    "reading": "みとれる",
+    "meaning": "to be fascinated (by)"
+  },
+  {
+    "rank": 8427,
+    "word": "逡巡",
+    "reading": "しゅんじゅん",
+    "meaning": "hesitation"
+  },
+  {
+    "rank": 8446,
+    "word": "初恋",
+    "reading": "はつこい",
+    "meaning": "first love"
+  },
+  {
+    "rank": 8464,
+    "word": "回想",
+    "reading": "かいそう",
+    "meaning": "recollection"
+  },
+  {
+    "rank": 8485,
+    "word": "がっくり",
+    "reading": "がっくり",
+    "meaning": "heartbroken"
+  },
+  {
+    "rank": 8486,
+    "word": "悶える",
+    "reading": "もだえる",
+    "meaning": "to writhe (in pain)"
+  },
+  {
+    "rank": 8504,
+    "word": "うめき声",
+    "reading": "うめきごえ",
+    "meaning": "groan"
+  },
+  {
+    "rank": 8506,
+    "word": "馬鹿げる",
+    "reading": "ばかげる",
+    "meaning": "to be foolish"
+  },
+  {
+    "rank": 8516,
+    "word": "込み上げる",
+    "reading": "こみあげる",
+    "meaning": "to well up (of tears, anger, joy, etc.)"
+  },
+  {
+    "rank": 8547,
+    "word": "嫌悪感",
+    "reading": "けんおかん",
+    "meaning": "unpleasant feelings (e.g. hatred, disgust, revulsion, fear)"
+  },
+  {
+    "rank": 8578,
+    "word": "健気",
+    "reading": "けなげ",
+    "meaning": "admirable"
+  },
+  {
+    "rank": 8591,
+    "word": "名残惜しい",
+    "reading": "なごりおしい",
+    "meaning": "reluctant (to part)"
+  },
+  {
+    "rank": 8605,
+    "word": "ビクビク",
+    "reading": "ビクビク",
+    "meaning": "being afraid of"
+  },
+  {
+    "rank": 8638,
+    "word": "呆ける",
+    "reading": "ぼける",
+    "meaning": "to grow senile"
+  },
+  {
+    "rank": 8645,
+    "word": "怒声",
+    "reading": "どせい",
+    "meaning": "angry voice"
+  },
+  {
+    "rank": 8659,
+    "word": "しょんぼり",
+    "reading": "しょんぼり",
+    "meaning": "downheartedly"
+  },
+  {
+    "rank": 8668,
+    "word": "思いきや",
+    "reading": "おもいきや",
+    "meaning": "contrary to expectations"
+  },
+  {
+    "rank": 8712,
+    "word": "セクハラ",
+    "reading": "セクハラ",
+    "meaning": "sexual harassment"
+  },
+  {
+    "rank": 8720,
+    "word": "赤面",
+    "reading": "せきめん",
+    "meaning": "blushing"
+  },
+  {
+    "rank": 8730,
+    "word": "恍惚",
+    "reading": "こうこつ",
+    "meaning": "ecstasy"
+  },
+  {
+    "rank": 8745,
+    "word": "赤らめる",
+    "reading": "あからめる",
+    "meaning": "to blush"
+  },
+  {
+    "rank": 8763,
+    "word": "狂",
+    "reading": "きょう",
+    "meaning": "(some type of) enthusiast"
+  },
+  {
+    "rank": 8778,
+    "word": "諦め",
+    "reading": "あきらめ",
+    "meaning": "resignation"
+  },
+  {
+    "rank": 8780,
+    "word": "感慨",
+    "reading": "かんがい",
+    "meaning": "deep emotion"
+  },
+  {
+    "rank": 8791,
+    "word": "危惧",
+    "reading": "きぐ",
+    "meaning": "apprehensions"
+  },
+  {
+    "rank": 8809,
+    "word": "心外",
+    "reading": "しんがい",
+    "meaning": "regrettable"
+  },
+  {
+    "rank": 8815,
+    "word": "心の声",
+    "reading": "こころのこえ",
+    "meaning": "(one's) inner voice"
+  },
+  {
+    "rank": 8816,
+    "word": "冷酷",
+    "reading": "れいこく",
+    "meaning": "cruelty"
+  },
+  {
+    "rank": 8827,
+    "word": "恨めしい",
+    "reading": "うらめしい",
+    "meaning": "reproachful"
+  },
+  {
+    "rank": 8829,
+    "word": "むっと",
+    "reading": "むっと",
+    "meaning": "to be sullen"
+  },
+  {
+    "rank": 8844,
+    "word": "不本意",
+    "reading": "ふほんい",
+    "meaning": "reluctant"
+  },
+  {
+    "rank": 8851,
+    "word": "気圧される",
+    "reading": "けおされる",
+    "meaning": "to be overawed"
+  },
+  {
+    "rank": 8878,
+    "word": "朗らか",
+    "reading": "ほがらか",
+    "meaning": "cheerful"
+  },
+  {
+    "rank": 8894,
+    "word": "頬を染める",
+    "reading": "ほおをそめる",
+    "meaning": "to blush"
+  },
+  {
+    "rank": 8897,
+    "word": "悠然",
+    "reading": "ゆうぜん",
+    "meaning": "calm"
+  },
+  {
+    "rank": 8929,
+    "word": "びくりと",
+    "reading": "びくりと",
+    "meaning": "with a start"
+  },
+  {
+    "rank": 8934,
+    "word": "恐れ入る",
+    "reading": "おそれいる",
+    "meaning": "to be sorry"
+  },
+  {
+    "rank": 8944,
+    "word": "キモイ",
+    "reading": "キモイ",
+    "meaning": "gross"
+  },
+  {
+    "rank": 9000,
+    "word": "賞賛",
+    "reading": "しょうさん",
+    "meaning": "praise"
+  },
+  {
+    "rank": 9004,
+    "word": "大喜び",
+    "reading": "おおよろこび",
+    "meaning": "great joy"
+  },
+  {
+    "rank": 9021,
+    "word": "善意",
+    "reading": "ぜんい",
+    "meaning": "virtuous mind"
+  },
+  {
+    "rank": 9066,
+    "word": "気がかり",
+    "reading": "きがかり",
+    "meaning": "worry"
+  },
+  {
+    "rank": 9072,
+    "word": "途方に暮れる",
+    "reading": "とほうにくれる",
+    "meaning": "to be at a loss"
+  },
+  {
+    "rank": 9074,
+    "word": "疲弊",
+    "reading": "ひへい",
+    "meaning": "exhaustion"
+  },
+  {
+    "rank": 9091,
+    "word": "馴染み",
+    "reading": "なじみ",
+    "meaning": "intimacy"
+  },
+  {
+    "rank": 9095,
+    "word": "気がない",
+    "reading": "きがない",
+    "meaning": "not feeling like doing ..."
+  },
+  {
+    "rank": 9122,
+    "word": "もやもや",
+    "reading": "もやもや",
+    "meaning": "hazy"
+  },
+  {
+    "rank": 9152,
+    "word": "一理",
+    "reading": "いちり",
+    "meaning": "(a) principle"
+  },
+  {
+    "rank": 9161,
+    "word": "雄叫び",
+    "reading": "おたけび",
+    "meaning": "war cry"
+  },
+  {
+    "rank": 9167,
+    "word": "胸の内",
+    "reading": "むねのうち",
+    "meaning": "what's in one's heart"
+  },
+  {
+    "rank": 9203,
+    "word": "心苦しい",
+    "reading": "こころぐるしい",
+    "meaning": "painful"
+  },
+  {
+    "rank": 9213,
+    "word": "情け",
+    "reading": "なさけ",
+    "meaning": "pity"
+  },
+  {
+    "rank": 9287,
+    "word": "憤怒",
+    "reading": "ふんぬ",
+    "meaning": "anger"
+  },
+  {
+    "rank": 9292,
+    "word": "気分転換",
+    "reading": "きぶんてんかん",
+    "meaning": "change of pace"
+  },
+  {
+    "rank": 9357,
+    "word": "激怒",
+    "reading": "げきど",
+    "meaning": "rage"
+  },
+  {
+    "rank": 9372,
+    "word": "高揚",
+    "reading": "こうよう",
+    "meaning": "elevation (of spirits)"
+  },
+  {
+    "rank": 9403,
+    "word": "性欲",
+    "reading": "せいよく",
+    "meaning": "sexual desire"
+  },
+  {
+    "rank": 9444,
+    "word": "溢れ出る",
+    "reading": "あふれでる",
+    "meaning": "to overflow from something full"
+  },
+  {
+    "rank": 9475,
+    "word": "遠慮がち",
+    "reading": "えんりょがち",
+    "meaning": "shy"
+  },
+  {
+    "rank": 9491,
+    "word": "八つ当たり",
+    "reading": "やつあたり",
+    "meaning": "venting one's anger (on someone or something)"
+  },
+  {
+    "rank": 9504,
+    "word": "不快感",
+    "reading": "ふかいかん",
+    "meaning": "discomfort"
+  },
+  {
+    "rank": 9520,
+    "word": "酔い",
+    "reading": "よい",
+    "meaning": "drunkenness"
+  },
+  {
+    "rank": 9562,
+    "word": "憤慨",
+    "reading": "ふんがい",
+    "meaning": "indignation"
+  },
+  {
+    "rank": 9574,
+    "word": "嬉々",
+    "reading": "きき",
+    "meaning": "merry"
+  },
+  {
+    "rank": 9593,
+    "word": "激昂",
+    "reading": "げっこう",
+    "meaning": "excitement"
+  },
+  {
+    "rank": 9642,
+    "word": "激情",
+    "reading": "げきじょう",
+    "meaning": "violent emotion"
+  },
+  {
+    "rank": 9745,
+    "word": "呑気",
+    "reading": "のんき",
+    "meaning": "carefree"
+  },
+  {
+    "rank": 9795,
+    "word": "涙を浮かべる",
+    "reading": "なみだをうかべる",
+    "meaning": "to have tears in one's eyes"
+  },
+  {
+    "rank": 9824,
+    "word": "涙ぐむ",
+    "reading": "なみだぐむ",
+    "meaning": "to have tears in one's eyes"
+  },
+  {
+    "rank": 9865,
+    "word": "慈愛",
+    "reading": "じあい",
+    "meaning": "affection (esp. parental)"
+  },
+  {
+    "rank": 9926,
+    "word": "恋心",
+    "reading": "こいごころ",
+    "meaning": "(feelings of) love"
+  },
+  {
+    "rank": 9939,
+    "word": "照れ隠し",
+    "reading": "てれかくし",
+    "meaning": "hiding one's embarrassment"
+  },
+  {
+    "rank": 10061,
+    "word": "冠",
+    "reading": "かんむり",
+    "meaning": "traditional cap worn by Shinto clergy and courtiers"
+  },
+  {
+    "rank": 10081,
+    "word": "親密",
+    "reading": "しんみつ",
+    "meaning": "intimacy"
+  },
+  {
+    "rank": 10117,
+    "word": "広範囲",
+    "reading": "こうはんい",
+    "meaning": "extensive"
+  },
+  {
+    "rank": 10125,
+    "word": "たが",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 10175,
+    "word": "期待に応える",
+    "reading": "きたいにこたえる",
+    "meaning": "to live up to expectations"
+  },
+  {
+    "rank": 10180,
+    "word": "乗り",
+    "reading": "のり",
+    "meaning": "riding"
+  },
+  {
+    "rank": 10207,
+    "word": "わん",
+    "reading": "わん",
+    "meaning": "bay"
+  },
+  {
+    "rank": 10217,
+    "word": "よろしくお願いいたします",
+    "reading": "よろしくおねがいいたします",
+    "meaning": "please remember me"
+  },
+  {
+    "rank": 10258,
+    "word": "通行人",
+    "reading": "つうこうにん",
+    "meaning": "passerby"
+  },
+  {
+    "rank": 10284,
+    "word": "失恋",
+    "reading": "しつれん",
+    "meaning": "disappointed love"
+  },
+  {
+    "rank": 10287,
+    "word": "戦意",
+    "reading": "せんい",
+    "meaning": "fighting spirit"
+  },
+  {
+    "rank": 10293,
+    "word": "憤り",
+    "reading": "いきどおり",
+    "meaning": "resentment"
+  },
+  {
+    "rank": 10371,
+    "word": "気が合う",
+    "reading": "きがあう",
+    "meaning": "to get along (with someone)"
+  },
+  {
+    "rank": 10378,
+    "word": "手当",
+    "reading": "てあて",
+    "meaning": "salary"
+  },
+  {
+    "rank": 10381,
+    "word": "精神力",
+    "reading": "せいしんりょく",
+    "meaning": "emotional strength"
+  },
+  {
+    "rank": 10382,
+    "word": "杞憂",
+    "reading": "きゆう",
+    "meaning": "needless fear"
+  },
+  {
+    "rank": 10384,
+    "word": "下心",
+    "reading": "したごころ",
+    "meaning": "secret intention"
+  },
+  {
+    "rank": 10394,
+    "word": "イチャイチャ",
+    "reading": "イチャイチャ",
+    "meaning": "flirting"
+  },
+  {
+    "rank": 10423,
+    "word": "感慨深い",
+    "reading": "かんがいぶかい",
+    "meaning": "deeply emotive"
+  },
+  {
+    "rank": 10424,
+    "word": "冷徹",
+    "reading": "れいてつ",
+    "meaning": "cool-headed"
+  },
+  {
+    "rank": 10453,
+    "word": "気さく",
+    "reading": "きさく",
+    "meaning": "friendly"
+  },
+  {
+    "rank": 10454,
+    "word": "気に食わない",
+    "reading": "きにくわない",
+    "meaning": "unable to stomach"
+  },
+  {
+    "rank": 10459,
+    "word": "甘んじる",
+    "reading": "あまんじる",
+    "meaning": "to content oneself with"
+  },
+  {
+    "rank": 10461,
+    "word": "気高い",
+    "reading": "けだかい",
+    "meaning": "sublime"
+  },
+  {
+    "rank": 10469,
+    "word": "近しい",
+    "reading": "ちかしい",
+    "meaning": "intimate"
+  },
+  {
+    "rank": 10485,
+    "word": "気丈",
+    "reading": "きじょう",
+    "meaning": "stout-hearted"
+  },
+  {
+    "rank": 10490,
+    "word": "そのはず",
+    "reading": "そのはず",
+    "meaning": "only natural"
+  },
+  {
+    "rank": 10503,
+    "word": "悔いる",
+    "reading": "くいる",
+    "meaning": "to regret"
+  },
+  {
+    "rank": 10516,
+    "word": "人見知り",
+    "reading": "ひとみしり",
+    "meaning": "shyness"
+  },
+  {
+    "rank": 10521,
+    "word": "モヤモヤ",
+    "reading": "モヤモヤ",
+    "meaning": "hazy"
+  },
+  {
+    "rank": 10560,
+    "word": "無愛想",
+    "reading": "ぶあいそう",
+    "meaning": "unsociable"
+  },
+  {
+    "rank": 10563,
+    "word": "不甲斐ない",
+    "reading": "ふがいない",
+    "meaning": "good-for-nothing"
+  },
+  {
+    "rank": 10569,
+    "word": "おろおろ",
+    "reading": "おろおろ",
+    "meaning": "in confusion"
+  },
+  {
+    "rank": 10585,
+    "word": "気迫",
+    "reading": "きはく",
+    "meaning": "spirit"
+  },
+  {
+    "rank": 10591,
+    "word": "気にかかる",
+    "reading": "きにかかる",
+    "meaning": "to weigh on one's mind"
+  },
+  {
+    "rank": 10679,
+    "word": "勇ましい",
+    "reading": "いさましい",
+    "meaning": "brave"
+  },
+  {
+    "rank": 10701,
+    "word": "上出来",
+    "reading": "じょうでき",
+    "meaning": "good performance"
+  },
+  {
+    "rank": 10707,
+    "word": "約束を守る",
+    "reading": "やくそくをまもる",
+    "meaning": "to keep a promise"
+  },
+  {
+    "rank": 10712,
+    "word": "民家",
+    "reading": "みんか",
+    "meaning": "private house"
+  },
+  {
+    "rank": 10732,
+    "word": "毅然",
+    "reading": "きぜん",
+    "meaning": "resolute"
+  },
+  {
+    "rank": 10810,
+    "word": "和やか",
+    "reading": "なごやか",
+    "meaning": "mild"
+  },
+  {
+    "rank": 10849,
+    "word": "替わる",
+    "reading": "かわる",
+    "meaning": "to succeed"
+  },
+  {
+    "rank": 10891,
+    "word": "怒気",
+    "reading": "どき",
+    "meaning": "anger"
+  },
+  {
+    "rank": 10896,
+    "word": "厭う",
+    "reading": "いとう",
+    "meaning": "to be loath to"
+  },
+  {
+    "rank": 11000,
+    "word": "悩ましい",
+    "reading": "なやましい",
+    "meaning": "seductive"
+  },
+  {
+    "rank": 11020,
+    "word": "ときめく",
+    "reading": "ときめく",
+    "meaning": "to beat fast (of one's heart)"
+  },
+  {
+    "rank": 11064,
+    "word": "熱中",
+    "reading": "ねっちゅう",
+    "meaning": "being enthusiastic about"
+  },
+  {
+    "rank": 11068,
+    "word": "忌まわしい",
+    "reading": "いまわしい",
+    "meaning": "unpleasant"
+  },
+  {
+    "rank": 11070,
+    "word": "心持ち",
+    "reading": "こころもち",
+    "meaning": "feeling"
+  },
+  {
+    "rank": 11147,
+    "word": "親愛",
+    "reading": "しんあい",
+    "meaning": "deep affection"
+  },
+  {
+    "rank": 11169,
+    "word": "すうっと",
+    "reading": "すうっと",
+    "meaning": "straight"
+  },
+  {
+    "rank": 11176,
+    "word": "心の奥底",
+    "reading": "こころのおくそこ",
+    "meaning": "innermost depths of one's heart"
+  },
+  {
+    "rank": 11181,
+    "word": "丸くなる",
+    "reading": "まるくなる",
+    "meaning": "to mellow (e.g. personality)"
+  },
+  {
+    "rank": 11191,
+    "word": "切羽詰まる",
+    "reading": "せっぱつまる",
+    "meaning": "to be at one's wits' end"
+  },
+  {
+    "rank": 11233,
+    "word": "険悪",
+    "reading": "けんあく",
+    "meaning": "dangerous"
+  },
+  {
+    "rank": 11234,
+    "word": "思いやる",
+    "reading": "おもいやる",
+    "meaning": "to sympathize with"
+  },
+  {
+    "rank": 11245,
+    "word": "気が楽",
+    "reading": "きがらく",
+    "meaning": "feeling good"
+  },
+  {
+    "rank": 11270,
+    "word": "呆気にとられる",
+    "reading": "あっけにとられる",
+    "meaning": "to be taken aback"
+  },
+  {
+    "rank": 11272,
+    "word": "和む",
+    "reading": "なごむ",
+    "meaning": "to be softened"
+  },
+  {
+    "rank": 11312,
+    "word": "意気込む",
+    "reading": "いきごむ",
+    "meaning": "to be enthusiastic about"
+  },
+  {
+    "rank": 11318,
+    "word": "茫然",
+    "reading": "ぼうぜん",
+    "meaning": "dumbfounded"
+  },
+  {
+    "rank": 11320,
+    "word": "気が抜ける",
+    "reading": "きがぬける",
+    "meaning": "to lose heart"
+  },
+  {
+    "rank": 11333,
+    "word": "心地いい",
+    "reading": "ここちいい",
+    "meaning": "comfortable"
+  },
+  {
+    "rank": 11334,
+    "word": "気合を入れる",
+    "reading": "きあいをいれる",
+    "meaning": "to fire oneself up"
+  },
+  {
+    "rank": 11340,
+    "word": "侮蔑",
+    "reading": "ぶべつ",
+    "meaning": "scorn"
+  },
+  {
+    "rank": 11358,
+    "word": "絶命",
+    "reading": "ぜつめい",
+    "meaning": "end of life"
+  },
+  {
+    "rank": 11363,
+    "word": "ケチ",
+    "reading": "ケチ",
+    "meaning": "stinginess"
+  },
+  {
+    "rank": 11366,
+    "word": "気味悪い",
+    "reading": "きみわるい",
+    "meaning": "unpleasant"
+  },
+  {
+    "rank": 11371,
+    "word": "意気揚々",
+    "reading": "いきようよう",
+    "meaning": "triumphant"
+  },
+  {
+    "rank": 11386,
+    "word": "矜持",
+    "reading": "きょうじ",
+    "meaning": "pride"
+  },
+  {
+    "rank": 11402,
+    "word": "慌てふためく",
+    "reading": "あわてふためく",
+    "meaning": "to get into a panic"
+  },
+  {
+    "rank": 11412,
+    "word": "思い詰める",
+    "reading": "おもいつめる",
+    "meaning": "to think hard"
+  },
+  {
+    "rank": 11419,
+    "word": "卑屈",
+    "reading": "ひくつ",
+    "meaning": "menial"
+  },
+  {
+    "rank": 11431,
+    "word": "志望",
+    "reading": "しぼう",
+    "meaning": "wish"
+  },
+  {
+    "rank": 11450,
+    "word": "カッと",
+    "reading": "カッと",
+    "meaning": "flaring up"
+  },
+  {
+    "rank": 11485,
+    "word": "感極まる",
+    "reading": "かんきわまる",
+    "meaning": "to be overcome with emotion"
+  },
+  {
+    "rank": 11495,
+    "word": "愛嬌",
+    "reading": "あいきょう",
+    "meaning": "charm"
+  },
+  {
+    "rank": 11498,
+    "word": "ロマンチック",
+    "reading": "ロマンチック",
+    "meaning": "romantic"
+  },
+  {
+    "rank": 11540,
+    "word": "心遣い",
+    "reading": "こころづかい",
+    "meaning": "consideration (for)"
+  },
+  {
+    "rank": 11557,
+    "word": "腹立つ",
+    "reading": "はらだつ",
+    "meaning": "to get angry"
+  },
+  {
+    "rank": 11566,
+    "word": "羞恥心",
+    "reading": "しゅうちしん",
+    "meaning": "shyness"
+  },
+  {
+    "rank": 11579,
+    "word": "機嫌が悪い",
+    "reading": "きげんがわるい",
+    "meaning": "in a bad mood"
+  },
+  {
+    "rank": 11581,
+    "word": "無情",
+    "reading": "むじょう",
+    "meaning": "heartlessness"
+  },
+  {
+    "rank": 11635,
+    "word": "おどおど",
+    "reading": "おどおど",
+    "meaning": "timidly"
+  },
+  {
+    "rank": 11644,
+    "word": "淋しい",
+    "reading": "さびしい",
+    "meaning": "lonely"
+  },
+  {
+    "rank": 11648,
+    "word": "ゾッと",
+    "reading": "ゾッと",
+    "meaning": "shuddering"
+  },
+  {
+    "rank": 11656,
+    "word": "心構え",
+    "reading": "こころがまえ",
+    "meaning": "preparedness"
+  },
+  {
+    "rank": 11657,
+    "word": "非情",
+    "reading": "ひじょう",
+    "meaning": "cold-hearted"
+  },
+  {
+    "rank": 11662,
+    "word": "緊迫",
+    "reading": "きんぱく",
+    "meaning": "tension"
+  },
+  {
+    "rank": 11673,
+    "word": "あたふた",
+    "reading": "あたふた",
+    "meaning": "in a hurry"
+  },
+  {
+    "rank": 11769,
+    "word": "いたたまれない",
+    "reading": "いたたまれない",
+    "meaning": "unable to stay (on)"
+  },
+  {
+    "rank": 11793,
+    "word": "気に病む",
+    "reading": "きにやむ",
+    "meaning": "to worry (about)"
+  },
+  {
+    "rank": 11816,
+    "word": "媚びる",
+    "reading": "こびる",
+    "meaning": "to flatter"
+  },
+  {
+    "rank": 11817,
+    "word": "熱烈",
+    "reading": "ねつれつ",
+    "meaning": "ardent"
+  },
+  {
+    "rank": 11833,
+    "word": "意地悪い",
+    "reading": "いじわるい",
+    "meaning": "ill-natured"
+  },
+  {
+    "rank": 11839,
+    "word": "呆気に取られる",
+    "reading": "あっけにとられる",
+    "meaning": "to be taken aback"
+  },
+  {
+    "rank": 11850,
+    "word": "目を白黒させる",
+    "reading": "めをしろくろさせる",
+    "meaning": "to dart one's eyes about"
+  },
+  {
+    "rank": 11854,
+    "word": "泣かす",
+    "reading": "なかす",
+    "meaning": "to make someone cry"
+  },
+  {
+    "rank": 11861,
+    "word": "不憫",
+    "reading": "ふびん",
+    "meaning": "poor"
+  },
+  {
+    "rank": 11869,
+    "word": "気弱",
+    "reading": "きよわ",
+    "meaning": "timid"
+  },
+  {
+    "rank": 11885,
+    "word": "友好的",
+    "reading": "ゆうこうてき",
+    "meaning": "friendly"
+  },
+  {
+    "rank": 11891,
+    "word": "胸が痛む",
+    "reading": "むねがいたむ",
+    "meaning": "to experience chest pain"
+  },
+  {
+    "rank": 11899,
+    "word": "圧迫感",
+    "reading": "あっぱくかん",
+    "meaning": "feeling of oppression"
+  },
+  {
+    "rank": 11905,
+    "word": "恐怖心",
+    "reading": "きょうふしん",
+    "meaning": "fear"
+  },
+  {
+    "rank": 11910,
+    "word": "腹の中",
+    "reading": "はらのなか",
+    "meaning": "in the belly"
+  },
+  {
+    "rank": 11914,
+    "word": "思うところがある",
+    "reading": "おもうところがある",
+    "meaning": "to have something on one's mind"
+  },
+  {
+    "rank": 11921,
+    "word": "無神経",
+    "reading": "むしんけい",
+    "meaning": "insensitive"
+  },
+  {
+    "rank": 11924,
+    "word": "這い上がる",
+    "reading": "はいあがる",
+    "meaning": "to creep up"
+  },
+  {
+    "rank": 11932,
+    "word": "貪欲",
+    "reading": "どんよく",
+    "meaning": "avarice"
+  },
+  {
+    "rank": 11941,
+    "word": "ドキッと",
+    "reading": "ドキッと",
+    "meaning": "being startled"
+  },
+  {
+    "rank": 11976,
+    "word": "待ち望む",
+    "reading": "まちのぞむ",
+    "meaning": "to wait eagerly for"
+  },
+  {
+    "rank": 11978,
+    "word": "厭",
+    "reading": "いや",
+    "meaning": "disagreeable"
+  },
+  {
+    "rank": 12005,
+    "word": "気味が悪い",
+    "reading": "きみがわるい",
+    "meaning": "creepy (feeling)"
+  },
+  {
+    "rank": 12009,
+    "word": "昂ぶる",
+    "reading": "たかぶる",
+    "meaning": "to become aroused (of emotions, nerves, etc.)"
+  },
+  {
+    "rank": 12016,
+    "word": "好感",
+    "reading": "こうかん",
+    "meaning": "good feeling"
+  },
+  {
+    "rank": 12018,
+    "word": "くらくら",
+    "reading": "くらくら",
+    "meaning": "dizzy"
+  },
+  {
+    "rank": 12023,
+    "word": "心配性",
+    "reading": "しんぱいしょう",
+    "meaning": "nervous temperament"
+  },
+  {
+    "rank": 12027,
+    "word": "うなされる",
+    "reading": "うなされる",
+    "meaning": "to have a nightmare"
+  },
+  {
+    "rank": 12040,
+    "word": "沈み込む",
+    "reading": "しずみこむ",
+    "meaning": "to sink (into)"
+  },
+  {
+    "rank": 12047,
+    "word": "気が向く",
+    "reading": "きがむく",
+    "meaning": "to feel like"
+  },
+  {
+    "rank": 12052,
+    "word": "羨望",
+    "reading": "せんぼう",
+    "meaning": "envy"
+  },
+  {
+    "rank": 12057,
+    "word": "ドン引き",
+    "reading": "ドンびき",
+    "meaning": "being put off (by someone's words, behaviour, etc.)"
+  },
+  {
+    "rank": 12058,
+    "word": "癪",
+    "reading": "しゃく",
+    "meaning": "cause of offense"
+  },
+  {
+    "rank": 12120,
+    "word": "憤る",
+    "reading": "いきどおる",
+    "meaning": "to be angry"
+  },
+  {
+    "rank": 12121,
+    "word": "訝しむ",
+    "reading": "いぶかしむ",
+    "meaning": "to be suspicious of"
+  },
+  {
+    "rank": 12128,
+    "word": "立ちすくむ",
+    "reading": "たちすくむ",
+    "meaning": "to be petrified"
+  },
+  {
+    "rank": 12134,
+    "word": "怠惰",
+    "reading": "たいだ",
+    "meaning": "lazy"
+  },
+  {
+    "rank": 12140,
+    "word": "憮然",
+    "reading": "ぶぜん",
+    "meaning": "disappointed"
+  },
+  {
+    "rank": 12166,
+    "word": "思い悩む",
+    "reading": "おもいなやむ",
+    "meaning": "to worry about"
+  },
+  {
+    "rank": 12191,
+    "word": "キョトン",
+    "reading": "キョトン",
+    "meaning": "(looking) blankly"
+  },
+  {
+    "rank": 12196,
+    "word": "自己嫌悪",
+    "reading": "じこけんお",
+    "meaning": "self-hatred"
+  },
+  {
+    "rank": 12206,
+    "word": "ノリノリ",
+    "reading": "ノリノリ",
+    "meaning": "in high spirits"
+  },
+  {
+    "rank": 12241,
+    "word": "恋に落ちる",
+    "reading": "こいにおちる",
+    "meaning": "to fall in love"
+  },
+  {
+    "rank": 12245,
+    "word": "ラブラブ",
+    "reading": "ラブラブ",
+    "meaning": "lovey-dovey"
+  },
+  {
+    "rank": 12273,
+    "word": "眩暈",
+    "reading": "めまい",
+    "meaning": "dizziness"
+  },
+  {
+    "rank": 12276,
+    "word": "薄情",
+    "reading": "はくじょう",
+    "meaning": "unfeeling"
+  },
+  {
+    "rank": 12300,
+    "word": "当惑",
+    "reading": "とうわく",
+    "meaning": "bewilderment"
+  },
+  {
+    "rank": 12301,
+    "word": "安らぐ",
+    "reading": "やすらぐ",
+    "meaning": "to feel at ease"
+  },
+  {
+    "rank": 12329,
+    "word": "萌える",
+    "reading": "もえる",
+    "meaning": "to burst into bud"
+  },
+  {
+    "rank": 12348,
+    "word": "陰気",
+    "reading": "いんき",
+    "meaning": "gloomy"
+  },
+  {
+    "rank": 12355,
+    "word": "精神状態",
+    "reading": "せいしんじょうたい",
+    "meaning": "mental condition"
+  },
+  {
+    "rank": 12357,
+    "word": "げんなり",
+    "reading": "げんなり",
+    "meaning": "to be weary"
+  },
+  {
+    "rank": 12378,
+    "word": "達成感",
+    "reading": "たっせいかん",
+    "meaning": "sense of accomplishment"
+  },
+  {
+    "rank": 12379,
+    "word": "ほくそ笑む",
+    "reading": "ほくそえむ",
+    "meaning": "to chuckle to oneself"
+  },
+  {
+    "rank": 12408,
+    "word": "慈しむ",
+    "reading": "いつくしむ",
+    "meaning": "to love (someone weaker than oneself)"
+  },
+  {
+    "rank": 12419,
+    "word": "心残り",
+    "reading": "こころのこり",
+    "meaning": "regret"
+  },
+  {
+    "rank": 12424,
+    "word": "億劫",
+    "reading": "おっくう",
+    "meaning": "troublesome"
+  },
+  {
+    "rank": 12433,
+    "word": "傷む",
+    "reading": "いたむ",
+    "meaning": "to hurt"
+  },
+  {
+    "rank": 12444,
+    "word": "敬愛",
+    "reading": "けいあい",
+    "meaning": "respect and affection"
+  },
+  {
+    "rank": 12469,
+    "word": "下僕",
+    "reading": "げぼく",
+    "meaning": "manservant"
+  },
+  {
+    "rank": 12474,
+    "word": "厚意",
+    "reading": "こうい",
+    "meaning": "kindness"
+  },
+  {
+    "rank": 12478,
+    "word": "呆れ顔",
+    "reading": "あきれがお",
+    "meaning": "look of amazement"
+  },
+  {
+    "rank": 12488,
+    "word": "ころころ",
+    "reading": "ころころ",
+    "meaning": "lightly rolling (of a small and round thing)"
+  },
+  {
+    "rank": 12500,
+    "word": "ぞくぞく",
+    "reading": "ぞくぞく",
+    "meaning": "shivering"
+  },
+  {
+    "rank": 12508,
+    "word": "悲しげ",
+    "reading": "かなしげ",
+    "meaning": "seeming sad"
+  },
+  {
+    "rank": 12511,
+    "word": "調子が悪い",
+    "reading": "ちょうしがわるい",
+    "meaning": "in bad shape"
+  },
+  {
+    "rank": 12516,
+    "word": "生命体",
+    "reading": "せいめいたい",
+    "meaning": "life-form"
+  },
+  {
+    "rank": 12528,
+    "word": "一安心",
+    "reading": "ひとあんしん",
+    "meaning": "feeling of relief (for the time being)"
+  },
+  {
+    "rank": 12531,
+    "word": "泣きつく",
+    "reading": "なきつく",
+    "meaning": "to cling to ... in tears"
+  },
+  {
+    "rank": 12536,
+    "word": "心を開く",
+    "reading": "こころをひらく",
+    "meaning": "to divulge one's true feelings"
+  },
+  {
+    "rank": 12552,
+    "word": "うっさい",
+    "reading": "うっさい",
+    "meaning": "noisy"
+  },
+  {
+    "rank": 12578,
+    "word": "安らぎ",
+    "reading": "やすらぎ",
+    "meaning": "peace (of mind)"
+  },
+  {
+    "rank": 12580,
+    "word": "鼓舞",
+    "reading": "こぶ",
+    "meaning": "encouragement"
+  },
+  {
+    "rank": 12601,
+    "word": "冷淡",
+    "reading": "れいたん",
+    "meaning": "cool"
+  },
+  {
+    "rank": 12604,
+    "word": "思い入れ",
+    "reading": "おもいいれ",
+    "meaning": "emotional attachment"
+  },
+  {
+    "rank": 12611,
+    "word": "有難い",
+    "reading": "ありがたい",
+    "meaning": "grateful"
+  },
+  {
+    "rank": 12619,
+    "word": "嬌声",
+    "reading": "きょうせい",
+    "meaning": "coquettish voice"
+  },
+  {
+    "rank": 12621,
+    "word": "懺悔",
+    "reading": "さんげ",
+    "meaning": "repentance"
+  },
+  {
+    "rank": 12623,
+    "word": "安泰",
+    "reading": "あんたい",
+    "meaning": "peace"
+  },
+  {
+    "rank": 12677,
+    "word": "愛想笑い",
+    "reading": "あいそわらい",
+    "meaning": "insincere smile"
+  },
+  {
+    "rank": 12705,
+    "word": "夢想",
+    "reading": "むそう",
+    "meaning": "dream"
+  },
+  {
+    "rank": 12707,
+    "word": "闘志",
+    "reading": "とうし",
+    "meaning": "fighting spirit"
+  },
+  {
+    "rank": 12764,
+    "word": "怒り狂う",
+    "reading": "いかりくるう",
+    "meaning": "to be in a fit (of anger)"
+  },
+  {
+    "rank": 12833,
+    "word": "辟易",
+    "reading": "へきえき",
+    "meaning": "to be fed up (with)"
+  },
+  {
+    "rank": 12851,
+    "word": "痛ましい",
+    "reading": "いたましい",
+    "meaning": "pitiful"
+  },
+  {
+    "rank": 12907,
+    "word": "狼狽える",
+    "reading": "うろたえる",
+    "meaning": "to be flustered"
+  },
+  {
+    "rank": 12931,
+    "word": "ドヤ顔",
+    "reading": "ドヤがお",
+    "meaning": "self-satisfied look"
+  },
+  {
+    "rank": 12962,
+    "word": "声援",
+    "reading": "せいえん",
+    "meaning": "(shout of) encouragement"
+  },
+  {
+    "rank": 13003,
+    "word": "放心",
+    "reading": "ほうしん",
+    "meaning": "absentmindedness"
+  },
+  {
+    "rank": 13004,
+    "word": "仰天",
+    "reading": "ぎょうてん",
+    "meaning": "being amazed"
+  },
+  {
+    "rank": 13026,
+    "word": "疲れ果てる",
+    "reading": "つかれはてる",
+    "meaning": "to get tired out"
+  },
+  {
+    "rank": 13054,
+    "word": "空しい",
+    "reading": "むなしい",
+    "meaning": "empty"
+  },
+  {
+    "rank": 13060,
+    "word": "呼称",
+    "reading": "こしょう",
+    "meaning": "naming"
+  },
+  {
+    "rank": 13093,
+    "word": "不平",
+    "reading": "ふへい",
+    "meaning": "discontent"
+  },
+  {
+    "rank": 13095,
+    "word": "一途",
+    "reading": "いちず",
+    "meaning": "wholehearted"
+  },
+  {
+    "rank": 13117,
+    "word": "赤の他人",
+    "reading": "あかのたにん",
+    "meaning": "complete stranger"
+  },
+  {
+    "rank": 13120,
+    "word": "気兼ね",
+    "reading": "きがね",
+    "meaning": "constraint"
+  },
+  {
+    "rank": 13124,
+    "word": "ネガティブ",
+    "reading": "ネガティブ",
+    "meaning": "negative (e.g. thinking)"
+  },
+  {
+    "rank": 13132,
+    "word": "甘え",
+    "reading": "あまえ",
+    "meaning": "lack of self-reliance"
+  },
+  {
+    "rank": 13190,
+    "word": "欲情",
+    "reading": "よくじょう",
+    "meaning": "passion"
+  },
+  {
+    "rank": 13199,
+    "word": "興",
+    "reading": "きょう",
+    "meaning": "interest"
+  },
+  {
+    "rank": 13227,
+    "word": "ひとりぼっち",
+    "reading": "ひとりぼっち",
+    "meaning": "aloneness"
+  },
+  {
+    "rank": 13230,
+    "word": "コンプレックス",
+    "reading": "コンプレックス",
+    "meaning": "complex"
+  },
+  {
+    "rank": 13239,
+    "word": "呆気ない",
+    "reading": "あっけない",
+    "meaning": "unsatisfying"
+  },
+  {
+    "rank": 13251,
+    "word": "気味の悪い",
+    "reading": "きみのわるい",
+    "meaning": "creepy (feeling)"
+  },
+  {
+    "rank": 13303,
+    "word": "口惜しい",
+    "reading": "くやしい",
+    "meaning": "frustrated (over a failure, humiliation or injustice)"
+  },
+  {
+    "rank": 13345,
+    "word": "味気ない",
+    "reading": "あじけない",
+    "meaning": "wearisome"
+  },
+  {
+    "rank": 13416,
+    "word": "初々しい",
+    "reading": "ういういしい",
+    "meaning": "innocent"
+  },
+  {
+    "rank": 13432,
+    "word": "馬上",
+    "reading": "ばじょう",
+    "meaning": "horseback"
+  },
+  {
+    "rank": 13452,
+    "word": "潤う",
+    "reading": "うるおう",
+    "meaning": "to be moist"
+  },
+  {
+    "rank": 13457,
+    "word": "ハラハラ",
+    "reading": "ハラハラ",
+    "meaning": "to feel anxious"
+  },
+  {
+    "rank": 13478,
+    "word": "切迫",
+    "reading": "せっぱく",
+    "meaning": "pressure"
+  },
+  {
+    "rank": 13486,
+    "word": "負い目",
+    "reading": "おいめ",
+    "meaning": "(feeling of) indebtedness"
+  },
+  {
+    "rank": 13499,
+    "word": "啞然",
+    "reading": "あぜん",
+    "meaning": "dumbfounded"
+  },
+  {
+    "rank": 13513,
+    "word": "本望",
+    "reading": "ほんもう",
+    "meaning": "long-cherished ambition"
+  },
+  {
+    "rank": 13597,
+    "word": "家の人",
+    "reading": "いえのひと",
+    "meaning": "one's family"
+  },
+  {
+    "rank": 13608,
+    "word": "クレープ",
+    "reading": "クレープ",
+    "meaning": "crêpe"
+  },
+  {
+    "rank": 13610,
+    "word": "具現化",
+    "reading": "ぐげんか",
+    "meaning": "embodiment"
+  },
+  {
+    "rank": 13668,
+    "word": "恥じらう",
+    "reading": "はじらう",
+    "meaning": "to feel shy"
+  },
+  {
+    "rank": 13730,
+    "word": "優越感",
+    "reading": "ゆうえつかん",
+    "meaning": "superiority complex"
+  },
+  {
+    "rank": 13732,
+    "word": "気のない",
+    "reading": "きのない",
+    "meaning": "indifferent"
+  },
+  {
+    "rank": 13733,
+    "word": "錯乱",
+    "reading": "さくらん",
+    "meaning": "confusion"
+  },
+  {
+    "rank": 13769,
+    "word": "消極的",
+    "reading": "しょうきょくてき",
+    "meaning": "negative"
+  },
+  {
+    "rank": 13791,
+    "word": "生半可",
+    "reading": "なまはんか",
+    "meaning": "superficial"
+  },
+  {
+    "rank": 13798,
+    "word": "躍起",
+    "reading": "やっき",
+    "meaning": "desperate"
+  },
+  {
+    "rank": 13813,
+    "word": "苛立たしい",
+    "reading": "いらだたしい",
+    "meaning": "irritating"
+  },
+  {
+    "rank": 13815,
+    "word": "温厚",
+    "reading": "おんこう",
+    "meaning": "gentle"
+  },
+  {
+    "rank": 13819,
+    "word": "忙しない",
+    "reading": "せわしない",
+    "meaning": "restless"
+  },
+  {
+    "rank": 13914,
+    "word": "渇望",
+    "reading": "かつぼう",
+    "meaning": "craving"
+  },
+  {
+    "rank": 13930,
+    "word": "気を悪くする",
+    "reading": "きをわるくする",
+    "meaning": "to take offense (at)"
+  },
+  {
+    "rank": 13933,
+    "word": "意気込み",
+    "reading": "いきごみ",
+    "meaning": "ardor"
+  },
+  {
+    "rank": 13937,
+    "word": "ガッカリ",
+    "reading": "ガッカリ",
+    "meaning": "to be disappointed"
+  },
+  {
+    "rank": 13941,
+    "word": "楽観的",
+    "reading": "らっかんてき",
+    "meaning": "optimistic"
+  },
+  {
+    "rank": 13950,
+    "word": "陰鬱",
+    "reading": "いんうつ",
+    "meaning": "gloomy"
+  },
+  {
+    "rank": 13961,
+    "word": "気が進む",
+    "reading": "きがすすむ",
+    "meaning": "to be inclined to do"
+  },
+  {
+    "rank": 13980,
+    "word": "逆恨み",
+    "reading": "さかうらみ",
+    "meaning": "being resented (by someone one holds resentment towards)"
+  },
+  {
+    "rank": 14006,
+    "word": "悶々",
+    "reading": "もんもん",
+    "meaning": "anguished"
+  },
+  {
+    "rank": 14020,
+    "word": "凹む",
+    "reading": "へこむ",
+    "meaning": "to be dented"
+  },
+  {
+    "rank": 14026,
+    "word": "哀れむ",
+    "reading": "あわれむ",
+    "meaning": "to pity"
+  },
+  {
+    "rank": 14028,
+    "word": "めげる",
+    "reading": "めげる",
+    "meaning": "to be discouraged"
+  },
+  {
+    "rank": 14057,
+    "word": "泣き虫",
+    "reading": "なきむし",
+    "meaning": "crybaby"
+  },
+  {
+    "rank": 14066,
+    "word": "遺憾",
+    "reading": "いかん",
+    "meaning": "regrettable"
+  },
+  {
+    "rank": 14097,
+    "word": "怨念",
+    "reading": "おんねん",
+    "meaning": "deep-seated grudge"
+  },
+  {
+    "rank": 14098,
+    "word": "冷笑",
+    "reading": "れいしょう",
+    "meaning": "sneer"
+  },
+  {
+    "rank": 14099,
+    "word": "記憶喪失",
+    "reading": "きおくそうしつ",
+    "meaning": "loss of memory"
+  },
+  {
+    "rank": 14100,
+    "word": "むっつり",
+    "reading": "むっつり",
+    "meaning": "sullenly"
+  },
+  {
+    "rank": 14109,
+    "word": "気の抜けた",
+    "reading": "きのぬけた",
+    "meaning": "insipid"
+  },
+  {
+    "rank": 14128,
+    "word": "超人",
+    "reading": "ちょうじん",
+    "meaning": "superman"
+  },
+  {
+    "rank": 14132,
+    "word": "マッチ",
+    "reading": "マッチ",
+    "meaning": "match (to light fire with)"
+  },
+  {
+    "rank": 14163,
+    "word": "仲睦まじい",
+    "reading": "なかむつまじい",
+    "meaning": "harmonious"
+  },
+  {
+    "rank": 14164,
+    "word": "ホラー",
+    "reading": "ホラー",
+    "meaning": "horror"
+  },
+  {
+    "rank": 14187,
+    "word": "きゅん",
+    "reading": "きゅん",
+    "meaning": "with a pitter-patter"
+  },
+  {
+    "rank": 14190,
+    "word": "わなわな",
+    "reading": "わなわな",
+    "meaning": "trembling from fear"
+  },
+  {
+    "rank": 14194,
+    "word": "苦渋",
+    "reading": "くじゅう",
+    "meaning": "bitterness"
+  },
+  {
+    "rank": 14203,
+    "word": "浅ましい",
+    "reading": "あさましい",
+    "meaning": "wretched"
+  },
+  {
+    "rank": 14228,
+    "word": "屈託",
+    "reading": "くったく",
+    "meaning": "worry"
+  },
+  {
+    "rank": 14239,
+    "word": "情緒",
+    "reading": "じょうちょ",
+    "meaning": "emotion"
+  },
+  {
+    "rank": 14240,
+    "word": "耽る",
+    "reading": "ふける",
+    "meaning": "to indulge in"
+  },
+  {
+    "rank": 14253,
+    "word": "気負う",
+    "reading": "きおう",
+    "meaning": "to get worked up"
+  },
+  {
+    "rank": 14254,
+    "word": "不信感",
+    "reading": "ふしんかん",
+    "meaning": "distrust"
+  },
+  {
+    "rank": 14268,
+    "word": "どきり",
+    "reading": "どきり",
+    "meaning": "being startled"
+  },
+  {
+    "rank": 14271,
+    "word": "いい気になる",
+    "reading": "いいきになる",
+    "meaning": "to be self-complacent"
+  },
+  {
+    "rank": 14275,
+    "word": "爆笑",
+    "reading": "ばくしょう",
+    "meaning": "roar of laughter (from multiple people)"
+  },
+  {
+    "rank": 14308,
+    "word": "興奮気味",
+    "reading": "こうふんぎみ",
+    "meaning": "being somewhat excited (agitated)"
+  },
+  {
+    "rank": 14313,
+    "word": "驚嘆",
+    "reading": "きょうたん",
+    "meaning": "wonder"
+  },
+  {
+    "rank": 14318,
+    "word": "しゅんと",
+    "reading": "しゅんと",
+    "meaning": "to feel despondent"
+  },
+  {
+    "rank": 14341,
+    "word": "心配いらない",
+    "reading": "しんぱいいらない",
+    "meaning": "don't worry"
+  },
+  {
+    "rank": 14355,
+    "word": "負けず嫌い",
+    "reading": "まけずぎらい",
+    "meaning": "hating to lose"
+  },
+  {
+    "rank": 14384,
+    "word": "至福",
+    "reading": "しふく",
+    "meaning": "beatitude"
+  },
+  {
+    "rank": 14391,
+    "word": "心より",
+    "reading": "こころより",
+    "meaning": "heartfelt"
+  },
+  {
+    "rank": 14416,
+    "word": "気が重い",
+    "reading": "きがおもい",
+    "meaning": "depressed"
+  },
+  {
+    "rank": 14420,
+    "word": "へらへら",
+    "reading": "へらへら",
+    "meaning": "(laughing) foolishly"
+  },
+  {
+    "rank": 14424,
+    "word": "尊大",
+    "reading": "そんだい",
+    "meaning": "haughty"
+  },
+  {
+    "rank": 14425,
+    "word": "気だるい",
+    "reading": "けだるい",
+    "meaning": "languid"
+  },
+  {
+    "rank": 14437,
+    "word": "辛い",
+    "reading": "つらい",
+    "meaning": "painful"
+  },
+  {
+    "rank": 14440,
+    "word": "笑む",
+    "reading": "えむ",
+    "meaning": "to smile"
+  },
+  {
+    "rank": 14462,
+    "word": "逸る",
+    "reading": "はやる",
+    "meaning": "to be impatient"
+  },
+  {
+    "rank": 14478,
+    "word": "高ぶる",
+    "reading": "たかぶる",
+    "meaning": "to become aroused (of emotions, nerves, etc.)"
+  },
+  {
+    "rank": 14488,
+    "word": "メンタル",
+    "reading": "メンタル",
+    "meaning": "mental"
+  },
+  {
+    "rank": 14494,
+    "word": "険しい表情",
+    "reading": "けわしいひょうじょう",
+    "meaning": "stern expression"
+  },
+  {
+    "rank": 14511,
+    "word": "人情",
+    "reading": "にんじょう",
+    "meaning": "humanity"
+  },
+  {
+    "rank": 14525,
+    "word": "悲願",
+    "reading": "ひがん",
+    "meaning": "one's dearest wish"
+  },
+  {
+    "rank": 14534,
+    "word": "激する",
+    "reading": "げきする",
+    "meaning": "to intensify"
+  },
+  {
+    "rank": 14537,
+    "word": "魅入る",
+    "reading": "みいる",
+    "meaning": "to entrance"
+  },
+  {
+    "rank": 14542,
+    "word": "なだらか",
+    "reading": "なだらか",
+    "meaning": "gently sloping"
+  },
+  {
+    "rank": 14548,
+    "word": "待ちわびる",
+    "reading": "まちわびる",
+    "meaning": "to be tired of waiting"
+  },
+  {
+    "rank": 14568,
+    "word": "心臓が止まる",
+    "reading": "しんぞうがとまる",
+    "meaning": "to have one's heart stop beating"
+  },
+  {
+    "rank": 14575,
+    "word": "ハグ",
+    "reading": "ハグ",
+    "meaning": "hug"
+  },
+  {
+    "rank": 14594,
+    "word": "逆上",
+    "reading": "ぎゃくじょう",
+    "meaning": "going into a frenzy"
+  },
+  {
+    "rank": 14607,
+    "word": "懐かしむ",
+    "reading": "なつかしむ",
+    "meaning": "to yearn for (someone, something)"
+  },
+  {
+    "rank": 14628,
+    "word": "のぼせる",
+    "reading": "のぼせる",
+    "meaning": "to feel dizzy"
+  },
+  {
+    "rank": 14639,
+    "word": "発狂",
+    "reading": "はっきょう",
+    "meaning": "madness"
+  },
+  {
+    "rank": 14640,
+    "word": "能天気",
+    "reading": "のうてんき",
+    "meaning": "laid-back"
+  },
+  {
+    "rank": 14643,
+    "word": "バクバク",
+    "reading": "バクバク",
+    "meaning": "thumping (heart)"
+  },
+  {
+    "rank": 14646,
+    "word": "焦燥感",
+    "reading": "しょうそうかん",
+    "meaning": "irritability"
+  },
+  {
+    "rank": 14660,
+    "word": "感服",
+    "reading": "かんぷく",
+    "meaning": "admiration"
+  },
+  {
+    "rank": 14682,
+    "word": "照れ",
+    "reading": "てれ",
+    "meaning": "abashment"
+  },
+  {
+    "rank": 14684,
+    "word": "恥じらい",
+    "reading": "はじらい",
+    "meaning": "shyness"
+  },
+  {
+    "rank": 14686,
+    "word": "憐れむ",
+    "reading": "あわれむ",
+    "meaning": "to pity"
+  },
+  {
+    "rank": 14697,
+    "word": "目がない",
+    "reading": "めがない",
+    "meaning": "being extremely fond of"
+  },
+  {
+    "rank": 14711,
+    "word": "言外",
+    "reading": "げんがい",
+    "meaning": "unexpressed"
+  },
+  {
+    "rank": 14736,
+    "word": "頭に血が上る",
+    "reading": "あたまにちがのぼる",
+    "meaning": "to lose one's cool"
+  },
+  {
+    "rank": 14740,
+    "word": "心を許す",
+    "reading": "こころをゆるす",
+    "meaning": "to trust"
+  },
+  {
+    "rank": 14777,
+    "word": "愉悦",
+    "reading": "ゆえつ",
+    "meaning": "joy"
+  },
+  {
+    "rank": 14804,
+    "word": "気が狂う",
+    "reading": "きがくるう",
+    "meaning": "to go mad"
+  },
+  {
+    "rank": 14823,
+    "word": "強欲",
+    "reading": "ごうよく",
+    "meaning": "greedy"
+  },
+  {
+    "rank": 14838,
+    "word": "興味本位",
+    "reading": "きょうみほんい",
+    "meaning": "(just) out of curiosity"
+  },
+  {
+    "rank": 14853,
+    "word": "号泣",
+    "reading": "ごうきゅう",
+    "meaning": "crying loudly"
+  },
+  {
+    "rank": 14861,
+    "word": "涙声",
+    "reading": "なみだごえ",
+    "meaning": "tearful voice"
+  },
+  {
+    "rank": 14865,
+    "word": "気に障る",
+    "reading": "きにさわる",
+    "meaning": "to hurt one's feelings"
+  },
+  {
+    "rank": 14872,
+    "word": "泣き止む",
+    "reading": "なきやむ",
+    "meaning": "to stop crying"
+  },
+  {
+    "rank": 14875,
+    "word": "ポジティブ",
+    "reading": "ポジティブ",
+    "meaning": "positive (e.g. thinking)"
+  },
+  {
+    "rank": 14883,
+    "word": "爛々",
+    "reading": "らんらん",
+    "meaning": "glaring"
+  },
+  {
+    "rank": 14904,
+    "word": "応じて",
+    "reading": "おうじて",
+    "meaning": "in proportion to"
+  },
+  {
+    "rank": 14907,
+    "word": "両膝",
+    "reading": "りょうひざ",
+    "meaning": "both knees"
+  },
+  {
+    "rank": 14926,
+    "word": "心が折れる",
+    "reading": "こころがおれる",
+    "meaning": "to lose heart"
+  },
+  {
+    "rank": 14934,
+    "word": "心労",
+    "reading": "しんろう",
+    "meaning": "anxiety"
+  },
+  {
+    "rank": 14942,
+    "word": "憎々しい",
+    "reading": "にくにくしい",
+    "meaning": "hateful"
+  },
+  {
+    "rank": 14968,
+    "word": "ほどなくして",
+    "reading": "ほどなくして",
+    "meaning": "after a short while"
+  },
+  {
+    "rank": 14974,
+    "word": "屈託のない",
+    "reading": "くったくのない",
+    "meaning": "carefree"
+  },
+  {
+    "rank": 14989,
+    "word": "やるせない",
+    "reading": "やるせない",
+    "meaning": "miserable"
+  },
+  {
+    "rank": 15015,
+    "word": "おっかない",
+    "reading": "おっかない",
+    "meaning": "frightening"
+  },
+  {
+    "rank": 15064,
+    "word": "熱狂",
+    "reading": "ねっきょう",
+    "meaning": "wild enthusiasm"
+  },
+  {
+    "rank": 15066,
+    "word": "せっかち",
+    "reading": "せっかち",
+    "meaning": "hasty"
+  },
+  {
+    "rank": 15068,
+    "word": "怖れる",
+    "reading": "おそれる",
+    "meaning": "to fear"
+  },
+  {
+    "rank": 15087,
+    "word": "半泣き",
+    "reading": "はんなき",
+    "meaning": "being about to cry"
+  },
+  {
+    "rank": 15099,
+    "word": "平常心",
+    "reading": "へいじょうしん",
+    "meaning": "one's self-possession"
+  },
+  {
+    "rank": 15122,
+    "word": "可愛がる",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 15134,
+    "word": "渇き",
+    "reading": "かわき",
+    "meaning": "thirst"
+  },
+  {
+    "rank": 15142,
+    "word": "気後れ",
+    "reading": "きおくれ",
+    "meaning": "diffidence"
+  },
+  {
+    "rank": 15154,
+    "word": "高揚感",
+    "reading": "こうようかん",
+    "meaning": "exaltation"
+  },
+  {
+    "rank": 15162,
+    "word": "おめでたい",
+    "reading": "おめでたい",
+    "meaning": "special"
+  },
+  {
+    "rank": 15197,
+    "word": "とろん",
+    "reading": "とろん",
+    "meaning": "appearing drowsy or intoxicated (of eyes, actions, etc.)"
+  },
+  {
+    "rank": 15216,
+    "word": "いい気",
+    "reading": "いいき",
+    "meaning": "easygoing"
+  },
+  {
+    "rank": 15228,
+    "word": "嫌々",
+    "reading": "いやいや",
+    "meaning": "unwillingly"
+  },
+  {
+    "rank": 15256,
+    "word": "純情",
+    "reading": "じゅんじょう",
+    "meaning": "pure heart"
+  },
+  {
+    "rank": 15261,
+    "word": "ふてくされる",
+    "reading": "ふてくされる",
+    "meaning": "to become sulky"
+  },
+  {
+    "rank": 15287,
+    "word": "二日酔い",
+    "reading": "ふつかよい",
+    "meaning": "hangover"
+  },
+  {
+    "rank": 15294,
+    "word": "希薄",
+    "reading": "きはく",
+    "meaning": "thin (e.g. air)"
+  },
+  {
+    "rank": 15337,
+    "word": "ぽかぽか",
+    "reading": "ぽかぽか",
+    "meaning": "pleasantly warm"
+  },
+  {
+    "rank": 15351,
+    "word": "ブルブル",
+    "reading": "ブルブル",
+    "meaning": "trembling (with fear, anger, etc.)"
+  },
+  {
+    "rank": 15376,
+    "word": "溜め息をつく",
+    "reading": "ためいきをつく",
+    "meaning": "to sigh"
+  },
+  {
+    "rank": 15389,
+    "word": "ゾクゾク",
+    "reading": "ゾクゾク",
+    "meaning": "shivering"
+  },
+  {
+    "rank": 15418,
+    "word": "気休め",
+    "reading": "きやすめ",
+    "meaning": "mere consolation"
+  },
+  {
+    "rank": 15421,
+    "word": "心持",
+    "reading": "こころもち",
+    "meaning": "feeling"
+  },
+  {
+    "rank": 15429,
+    "word": "心を動かす",
+    "reading": "こころをうごかす",
+    "meaning": "to impress"
+  },
+  {
+    "rank": 15430,
+    "word": "純潔",
+    "reading": "じゅんけつ",
+    "meaning": "purity"
+  },
+  {
+    "rank": 15431,
+    "word": "羨む",
+    "reading": "うらやむ",
+    "meaning": "to envy"
+  },
+  {
+    "rank": 15448,
+    "word": "感銘",
+    "reading": "かんめい",
+    "meaning": "deep impression"
+  },
+  {
+    "rank": 15452,
+    "word": "頭を冷やす",
+    "reading": "あたまをひやす",
+    "meaning": "to cool down one's anger"
+  },
+  {
+    "rank": 15467,
+    "word": "目撃情報",
+    "reading": "もくげきじょうほう",
+    "meaning": "eyewitness report"
+  },
+  {
+    "rank": 15470,
+    "word": "震え上がる",
+    "reading": "ふるえあがる",
+    "meaning": "to tremble violently"
+  },
+  {
+    "rank": 15500,
+    "word": "慣れ親しむ",
+    "reading": "なれしたしむ",
+    "meaning": "to become familiar with and cherish"
+  },
+  {
+    "rank": 15565,
+    "word": "独りぼっち",
+    "reading": "ひとりぼっち",
+    "meaning": "aloneness"
+  },
+  {
+    "rank": 15567,
+    "word": "心の傷",
+    "reading": "こころのきず",
+    "meaning": "emotional scars"
+  },
+  {
+    "rank": 15568,
+    "word": "わいわい",
+    "reading": "わいわい",
+    "meaning": "noisily"
+  },
+  {
+    "rank": 15590,
+    "word": "人懐っこい",
+    "reading": "ひとなつっこい",
+    "meaning": "friendly"
+  },
+  {
+    "rank": 15610,
+    "word": "静謐",
+    "reading": "せいひつ",
+    "meaning": "peace (esp. of the world)"
+  },
+  {
+    "rank": 15616,
+    "word": "頭が真っ白になる",
+    "reading": "あたまがまっしろになる",
+    "meaning": "to blank out"
+  },
+  {
+    "rank": 15637,
+    "word": "恐慌",
+    "reading": "きょうこう",
+    "meaning": "panic"
+  },
+  {
+    "rank": 15649,
+    "word": "自惚れる",
+    "reading": "うぬぼれる",
+    "meaning": "to be conceited"
+  },
+  {
+    "rank": 15667,
+    "word": "渋い顔をする",
+    "reading": "しぶいかおをする",
+    "meaning": "to frown (on)"
+  },
+  {
+    "rank": 15669,
+    "word": "心優しい",
+    "reading": "こころやさしい",
+    "meaning": "kind"
+  },
+  {
+    "rank": 15689,
+    "word": "武蔵",
+    "reading": "むさし",
+    "meaning": "Musashi (former province located in parts of present-day ..."
+  },
+  {
+    "rank": 15708,
+    "word": "沈痛",
+    "reading": "ちんつう",
+    "meaning": "grave"
+  },
+  {
+    "rank": 15709,
+    "word": "ツンツン",
+    "reading": "ツンツン",
+    "meaning": "aloof"
+  },
+  {
+    "rank": 15751,
+    "word": "気の強い",
+    "reading": "きのつよい",
+    "meaning": "strong-willed"
+  },
+  {
+    "rank": 15777,
+    "word": "ぎくり",
+    "reading": "ぎくり",
+    "meaning": "(with a) start"
+  },
+  {
+    "rank": 15805,
+    "word": "ガクガク",
+    "reading": "ガクガク",
+    "meaning": "trembling (with fear, cold, etc.)"
+  },
+  {
+    "rank": 15809,
+    "word": "気を許す",
+    "reading": "きをゆるす",
+    "meaning": "to let one's guard down"
+  },
+  {
+    "rank": 15876,
+    "word": "揺るぎない",
+    "reading": "ゆるぎない",
+    "meaning": "solid"
+  },
+  {
+    "rank": 15883,
+    "word": "困り果てる",
+    "reading": "こまりはてる",
+    "meaning": "to be at a complete loss"
+  },
+  {
+    "rank": 15894,
+    "word": "こじれる",
+    "reading": "こじれる",
+    "meaning": "to get complicated"
+  },
+  {
+    "rank": 15910,
+    "word": "内包",
+    "reading": "ないほう",
+    "meaning": "connotation"
+  },
+  {
+    "rank": 15917,
+    "word": "失笑",
+    "reading": "しっしょう",
+    "meaning": "laughing at an inappropriate time"
+  },
+  {
+    "rank": 15935,
+    "word": "喪失感",
+    "reading": "そうしつかん",
+    "meaning": "sense of loss"
+  },
+  {
+    "rank": 15940,
+    "word": "焦れる",
+    "reading": "じれる",
+    "meaning": "to get impatient"
+  },
+  {
+    "rank": 15943,
+    "word": "薬師",
+    "reading": "やくし",
+    "meaning": "Bhaisajyaguru"
+  },
+  {
+    "rank": 15951,
+    "word": "劣等感",
+    "reading": "れっとうかん",
+    "meaning": "inferiority complex"
+  },
+  {
+    "rank": 15969,
+    "word": "気さえする",
+    "reading": "きさえする",
+    "meaning": "to have a certain mood or feeling"
+  },
+  {
+    "rank": 15986,
+    "word": "わだかまり",
+    "reading": "わだかまり",
+    "meaning": "cares"
+  },
+  {
+    "rank": 15988,
+    "word": "気難しい",
+    "reading": "きむずかしい",
+    "meaning": "hard to please"
+  },
+  {
+    "rank": 16046,
+    "word": "片思い",
+    "reading": "かたおもい",
+    "meaning": "unrequited love"
+  },
+  {
+    "rank": 16066,
+    "word": "気落ち",
+    "reading": "きおち",
+    "meaning": "discouraged"
+  },
+  {
+    "rank": 16067,
+    "word": "懐疑",
+    "reading": "かいぎ",
+    "meaning": "doubt"
+  },
+  {
+    "rank": 16087,
+    "word": "すすり泣く",
+    "reading": "すすりなく",
+    "meaning": "to sob"
+  },
+  {
+    "rank": 16109,
+    "word": "心意気",
+    "reading": "こころいき",
+    "meaning": "spirit"
+  },
+  {
+    "rank": 16132,
+    "word": "待ち遠しい",
+    "reading": "まちどおしい",
+    "meaning": "longed-for"
+  },
+  {
+    "rank": 16146,
+    "word": "お気の毒",
+    "reading": "おきのどく",
+    "meaning": "I am sorry (to hear, to say, etc.)"
+  },
+  {
+    "rank": 16154,
+    "word": "ひねくれる",
+    "reading": "ひねくれる",
+    "meaning": "to become twisted"
+  },
+  {
+    "rank": 16159,
+    "word": "ドキリ",
+    "reading": "ドキリ",
+    "meaning": "being startled"
+  },
+  {
+    "rank": 16167,
+    "word": "元気が出る",
+    "reading": "げんきがでる",
+    "meaning": "to feel uplifted"
+  },
+  {
+    "rank": 16169,
+    "word": "負の感情",
+    "reading": "ふのかんじょう",
+    "meaning": "negative emotions"
+  },
+  {
+    "rank": 16173,
+    "word": "クラクラ",
+    "reading": "クラクラ",
+    "meaning": "dizzy"
+  },
+  {
+    "rank": 16174,
+    "word": "忍びない",
+    "reading": "しのびない",
+    "meaning": "cannot bring oneself (to do)"
+  },
+  {
+    "rank": 16189,
+    "word": "気怠い",
+    "reading": "けだるい",
+    "meaning": "languid"
+  },
+  {
+    "rank": 16204,
+    "word": "泣き崩れる",
+    "reading": "なきくずれる",
+    "meaning": "to break down crying"
+  },
+  {
+    "rank": 16207,
+    "word": "腹黒い",
+    "reading": "はらぐろい",
+    "meaning": "mean"
+  },
+  {
+    "rank": 16242,
+    "word": "心許ない",
+    "reading": "こころもとない",
+    "meaning": "uneasy"
+  },
+  {
+    "rank": 16263,
+    "word": "自暴自棄",
+    "reading": "じぼうじき",
+    "meaning": "desperation"
+  },
+  {
+    "rank": 16300,
+    "word": "じれったい",
+    "reading": "じれったい",
+    "meaning": "vexing"
+  },
+  {
+    "rank": 16301,
+    "word": "怨嗟",
+    "reading": "えんさ",
+    "meaning": "(deeply held) resentment"
+  },
+  {
+    "rank": 16302,
+    "word": "うずうず",
+    "reading": "うずうず",
+    "meaning": "itching to do something"
+  },
+  {
+    "rank": 16306,
+    "word": "こそばゆい",
+    "reading": "こそばゆい",
+    "meaning": "ticklish"
+  },
+  {
+    "rank": 16318,
+    "word": "女心",
+    "reading": "おんなごころ",
+    "meaning": "woman's heart"
+  },
+  {
+    "rank": 16326,
+    "word": "悲観",
+    "reading": "ひかん",
+    "meaning": "pessimism"
+  },
+  {
+    "rank": 16350,
+    "word": "盗聴",
+    "reading": "とうちょう",
+    "meaning": "interception (email)"
+  },
+  {
+    "rank": 16353,
+    "word": "無双",
+    "reading": "むそう",
+    "meaning": "peerless"
+  },
+  {
+    "rank": 16356,
+    "word": "根幹",
+    "reading": "こんかん",
+    "meaning": "foundation"
+  },
+  {
+    "rank": 16360,
+    "word": "底なし",
+    "reading": "そこなし",
+    "meaning": "bottomless"
+  },
+  {
+    "rank": 16380,
+    "word": "一人ぼっち",
+    "reading": "ひとりぼっち",
+    "meaning": "aloneness"
+  },
+  {
+    "rank": 16397,
+    "word": "含み笑い",
+    "reading": "ふくみわらい",
+    "meaning": "suppressed laugh"
+  },
+  {
+    "rank": 16407,
+    "word": "煩悩",
+    "reading": "ぼんのう",
+    "meaning": "worldly desires"
+  },
+  {
+    "rank": 16423,
+    "word": "慢心",
+    "reading": "まんしん",
+    "meaning": "self-conceit"
+  },
+  {
+    "rank": 16446,
+    "word": "照れ臭い",
+    "reading": "てれくさい",
+    "meaning": "embarrassing"
+  },
+  {
+    "rank": 16477,
+    "word": "夢物語",
+    "reading": "ゆめものがたり",
+    "meaning": "account of a dream"
+  },
+  {
+    "rank": 16478,
+    "word": "短気",
+    "reading": "たんき",
+    "meaning": "short temper"
+  },
+  {
+    "rank": 16509,
+    "word": "耐え難い",
+    "reading": "たえがたい",
+    "meaning": "unbearable"
+  },
+  {
+    "rank": 16510,
+    "word": "満ち足りる",
+    "reading": "みちたりる",
+    "meaning": "to be content"
+  },
+  {
+    "rank": 16513,
+    "word": "浮つく",
+    "reading": "うわつく",
+    "meaning": "to be fickle"
+  },
+  {
+    "rank": 16519,
+    "word": "薄気味悪い",
+    "reading": "うすきみわるい",
+    "meaning": "weird"
+  },
+  {
+    "rank": 16520,
+    "word": "気持ちが悪い",
+    "reading": "きもちがわるい",
+    "meaning": "bad-feeling"
+  },
+  {
+    "rank": 16540,
+    "word": "どうかしている",
+    "reading": "どうかしている",
+    "meaning": "something's wrong (with someone)"
+  },
+  {
+    "rank": 16569,
+    "word": "好意を持つ",
+    "reading": "こういをもつ",
+    "meaning": "to feel goodwill (towards)"
+  },
+  {
+    "rank": 16573,
+    "word": "愚かしい",
+    "reading": "おろかしい",
+    "meaning": "foolish"
+  },
+  {
+    "rank": 16594,
+    "word": "恨みがましい",
+    "reading": "うらみがましい",
+    "meaning": "reproachful"
+  },
+  {
+    "rank": 16628,
+    "word": "揉め事",
+    "reading": "もめごと",
+    "meaning": "quarrel"
+  },
+  {
+    "rank": 16636,
+    "word": "人心",
+    "reading": "じんしん",
+    "meaning": "human nature"
+  },
+  {
+    "rank": 16660,
+    "word": "エゴ",
+    "reading": "エゴ",
+    "meaning": "ego"
+  },
+  {
+    "rank": 16663,
+    "word": "よからぬ",
+    "reading": "よからぬ",
+    "meaning": "bad"
+  },
+  {
+    "rank": 16664,
+    "word": "悦ぶ",
+    "reading": "よろこぶ",
+    "meaning": "to be delighted"
+  },
+  {
+    "rank": 16672,
+    "word": "謳歌",
+    "reading": "おうか",
+    "meaning": "rejoicing"
+  },
+  {
+    "rank": 16695,
+    "word": "浮かない顔",
+    "reading": "うかないかお",
+    "meaning": "looking depressed"
+  },
+  {
+    "rank": 16709,
+    "word": "歯がゆい",
+    "reading": "はがゆい",
+    "meaning": "impatient"
+  },
+  {
+    "rank": 16737,
+    "word": "狂乱",
+    "reading": "きょうらん",
+    "meaning": "fury"
+  },
+  {
+    "rank": 16762,
+    "word": "暢気",
+    "reading": "のんき",
+    "meaning": "carefree"
+  },
+  {
+    "rank": 16773,
+    "word": "ウキウキ",
+    "reading": "ウキウキ",
+    "meaning": "cheerfully"
+  },
+  {
+    "rank": 16807,
+    "word": "待ちきれない",
+    "reading": "まちきれない",
+    "meaning": "waiting impatiently for"
+  },
+  {
+    "rank": 16814,
+    "word": "陶酔",
+    "reading": "とうすい",
+    "meaning": "intoxication"
+  },
+  {
+    "rank": 16821,
+    "word": "疑心暗鬼",
+    "reading": "ぎしんあんき",
+    "meaning": "suspicion will raise bogies"
+  },
+  {
+    "rank": 16838,
+    "word": "憂い",
+    "reading": "うい",
+    "meaning": "unhappy"
+  },
+  {
+    "rank": 16889,
+    "word": "おっかなびっくり",
+    "reading": "おっかなびっくり",
+    "meaning": "fearfully"
+  },
+  {
+    "rank": 16908,
+    "word": "哀しみ",
+    "reading": "かなしみ",
+    "meaning": "sadness"
+  },
+  {
+    "rank": 16923,
+    "word": "テンパる",
+    "reading": "テンパる",
+    "meaning": "to become one tile away from completion"
+  },
+  {
+    "rank": 16930,
+    "word": "憎たらしい",
+    "reading": "にくたらしい",
+    "meaning": "odious"
+  },
+  {
+    "rank": 16936,
+    "word": "我が儘",
+    "reading": "わがまま",
+    "meaning": "selfish"
+  },
+  {
+    "rank": 16951,
+    "word": "誇り高い",
+    "reading": "ほこりたかい",
+    "meaning": "proud"
+  },
+  {
+    "rank": 16963,
+    "word": "幸福感",
+    "reading": "こうふくかん",
+    "meaning": "feeling of happiness"
+  },
+  {
+    "rank": 16965,
+    "word": "悦び",
+    "reading": "よろこび",
+    "meaning": "joy"
+  },
+  {
+    "rank": 16973,
+    "word": "独占欲",
+    "reading": "どくせんよく",
+    "meaning": "possessiveness"
+  },
+  {
+    "rank": 16977,
+    "word": "睡魔",
+    "reading": "すいま",
+    "meaning": "sleepiness"
+  },
+  {
+    "rank": 16982,
+    "word": "狂おしい",
+    "reading": "くるおしい",
+    "meaning": "mad (with grief, love, etc.)"
+  },
+  {
+    "rank": 16998,
+    "word": "恐れ多い",
+    "reading": "おそれおおい",
+    "meaning": "awesome"
+  },
+  {
+    "rank": 17029,
+    "word": "嘘を吐く",
+    "reading": "うそをつく",
+    "meaning": "to tell a lie"
+  },
+  {
+    "rank": 17033,
+    "word": "いたわる",
+    "reading": "いたわる",
+    "meaning": "to pity"
+  },
+  {
+    "rank": 17038,
+    "word": "テンションが上がる",
+    "reading": "テンションがあがる",
+    "meaning": "to get excited"
+  },
+  {
+    "rank": 17069,
+    "word": "酔いしれる",
+    "reading": "よいしれる",
+    "meaning": "to be befuddled (with drink)"
+  },
+  {
+    "rank": 17084,
+    "word": "忍耐",
+    "reading": "にんたい",
+    "meaning": "endurance"
+  },
+  {
+    "rank": 17089,
+    "word": "元気づける",
+    "reading": "げんきづける",
+    "meaning": "to pep up"
+  },
+  {
+    "rank": 17096,
+    "word": "思いがする",
+    "reading": "おもいがする",
+    "meaning": "to feel as though ..."
+  },
+  {
+    "rank": 17112,
+    "word": "心待ちにする",
+    "reading": "こころまちにする",
+    "meaning": "to look forward to"
+  },
+  {
+    "rank": 17133,
+    "word": "打ちひしぐ",
+    "reading": "うちひしぐ",
+    "meaning": "to crush (with the weight of misfortune)"
+  },
+  {
+    "rank": 17134,
+    "word": "心を痛める",
+    "reading": "こころをいためる",
+    "meaning": "to be grieved at heart"
+  },
+  {
+    "rank": 17142,
+    "word": "意気投合",
+    "reading": "いきとうごう",
+    "meaning": "hit it off with (a person)"
+  },
+  {
+    "rank": 17161,
+    "word": "悩み事",
+    "reading": "なやみごと",
+    "meaning": "matter causing distress"
+  },
+  {
+    "rank": 17168,
+    "word": "スリル",
+    "reading": "スリル",
+    "meaning": "thrill"
+  },
+  {
+    "rank": 17196,
+    "word": "腹を抱える",
+    "reading": "はらをかかえる",
+    "meaning": "to roll around laughing"
+  },
+  {
+    "rank": 17244,
+    "word": "負け惜しみ",
+    "reading": "まけおしみ",
+    "meaning": "being a poor loser"
+  },
+  {
+    "rank": 17264,
+    "word": "モジモジ",
+    "reading": "モジモジ",
+    "meaning": "bashfully"
+  },
+  {
+    "rank": 17274,
+    "word": "友好",
+    "reading": "ゆうこう",
+    "meaning": "friendship"
+  },
+  {
+    "rank": 17275,
+    "word": "惚ける",
+    "reading": "ぼける",
+    "meaning": "to grow senile"
+  },
+  {
+    "rank": 17334,
+    "word": "むずむず",
+    "reading": "むずむず",
+    "meaning": "to feel itchy"
+  },
+  {
+    "rank": 17373,
+    "word": "不安がる",
+    "reading": "ふあんがる",
+    "meaning": "to be uneasy"
+  },
+  {
+    "rank": 17403,
+    "word": "疎遠",
+    "reading": "そえん",
+    "meaning": "estrangement"
+  },
+  {
+    "rank": 17491,
+    "word": "渋面",
+    "reading": "じゅうめん",
+    "meaning": "grimace"
+  },
+  {
+    "rank": 17518,
+    "word": "いちゃつく",
+    "reading": "いちゃつく",
+    "meaning": "to flirt with"
+  },
+  {
+    "rank": 17589,
+    "word": "気まま",
+    "reading": "きまま",
+    "meaning": "willful"
+  },
+  {
+    "rank": 17592,
+    "word": "悲哀",
+    "reading": "ひあい",
+    "meaning": "sorrow"
+  },
+  {
+    "rank": 17655,
+    "word": "無力感",
+    "reading": "むりょくかん",
+    "meaning": "sense of helplessness"
+  },
+  {
+    "rank": 17657,
+    "word": "愉しむ",
+    "reading": "たのしむ",
+    "meaning": "to enjoy (oneself)"
+  },
+  {
+    "rank": 17665,
+    "word": "面目ない",
+    "reading": "めんぼくない",
+    "meaning": "ashamed"
+  },
+  {
+    "rank": 17679,
+    "word": "バツが悪い",
+    "reading": "バツがわるい",
+    "meaning": "awkward"
+  },
+  {
+    "rank": 17684,
+    "word": "忌み嫌う",
+    "reading": "いみきらう",
+    "meaning": "to detest"
+  },
+  {
+    "rank": 17695,
+    "word": "不信",
+    "reading": "ふしん",
+    "meaning": "distrust"
+  },
+  {
+    "rank": 17749,
+    "word": "いきり立つ",
+    "reading": "いきりたつ",
+    "meaning": "to get angry"
+  },
+  {
+    "rank": 17750,
+    "word": "気配り",
+    "reading": "きくばり",
+    "meaning": "care"
+  },
+  {
+    "rank": 17760,
+    "word": "キュン",
+    "reading": "キュン",
+    "meaning": "with a pitter-patter"
+  },
+  {
+    "rank": 17780,
+    "word": "くじける",
+    "reading": "くじける",
+    "meaning": "to be disheartened"
+  },
+  {
+    "rank": 17790,
+    "word": "満悦",
+    "reading": "まんえつ",
+    "meaning": "great delight"
+  },
+  {
+    "rank": 17812,
+    "word": "冷やかす",
+    "reading": "ひやかす",
+    "meaning": "to banter"
+  },
+  {
+    "rank": 17843,
+    "word": "愚弄",
+    "reading": "ぐろう",
+    "meaning": "mockery"
+  },
+  {
+    "rank": 17846,
+    "word": "おののく",
+    "reading": "おののく",
+    "meaning": "to shake (from fear, cold, excitement, etc.)"
+  },
+  {
+    "rank": 17861,
+    "word": "気が滅入る",
+    "reading": "きがめいる",
+    "meaning": "to feel depressed"
+  },
+  {
+    "rank": 17889,
+    "word": "先を行く",
+    "reading": "さきをいく",
+    "meaning": "to go ahead"
+  },
+  {
+    "rank": 17891,
+    "word": "開き",
+    "reading": "ひらき",
+    "meaning": "opening"
+  },
+  {
+    "rank": 17960,
+    "word": "しのぶ",
+    "reading": "しのぶ",
+    "meaning": "to recollect"
+  },
+  {
+    "rank": 17966,
+    "word": "苛々",
+    "reading": "いらいら",
+    "meaning": "to get irritated"
+  },
+  {
+    "rank": 17990,
+    "word": "頭にくる",
+    "reading": "あたまにくる",
+    "meaning": "to get mad"
+  },
+  {
+    "rank": 18000,
+    "word": "困り顔",
+    "reading": "こまりがお",
+    "meaning": "troubled face"
+  },
+  {
+    "rank": 18004,
+    "word": "寛ぐ",
+    "reading": "くつろぐ",
+    "meaning": "to relax"
+  },
+  {
+    "rank": 18008,
+    "word": "ボーっと",
+    "reading": "ボーっと",
+    "meaning": "in a daze"
+  },
+  {
+    "rank": 18023,
+    "word": "物怖じ",
+    "reading": "ものおじ",
+    "meaning": "cowardice"
+  },
+  {
+    "rank": 18028,
+    "word": "猛る",
+    "reading": "たける",
+    "meaning": "to rage"
+  },
+  {
+    "rank": 18029,
+    "word": "ぎくしゃく",
+    "reading": "ぎくしゃく",
+    "meaning": "awkward (movements, speech, etc.)"
+  },
+  {
+    "rank": 18031,
+    "word": "嘆かわしい",
+    "reading": "なげかわしい",
+    "meaning": "sad"
+  },
+  {
+    "rank": 18071,
+    "word": "慈悲深い",
+    "reading": "じひぶかい",
+    "meaning": "compassionate"
+  },
+  {
+    "rank": 18087,
+    "word": "心変わり",
+    "reading": "こころがわり",
+    "meaning": "change of heart"
+  },
+  {
+    "rank": 18103,
+    "word": "熱々",
+    "reading": "あつあつ",
+    "meaning": "piping hot"
+  },
+  {
+    "rank": 18121,
+    "word": "胸が熱くなる",
+    "reading": "むねがあつくなる",
+    "meaning": "to become fraught with emotion"
+  },
+  {
+    "rank": 18122,
+    "word": "イラッと",
+    "reading": "イラッと",
+    "meaning": "becoming irritated (suddenly)"
+  },
+  {
+    "rank": 18133,
+    "word": "増長",
+    "reading": "ぞうちょう",
+    "meaning": "growing impudent"
+  },
+  {
+    "rank": 18153,
+    "word": "恨みを買う",
+    "reading": "うらみをかう",
+    "meaning": "to incur someone's enmity"
+  },
+  {
+    "rank": 18180,
+    "word": "殺気立つ",
+    "reading": "さっきだつ",
+    "meaning": "to be seething (with anger)"
+  },
+  {
+    "rank": 18186,
+    "word": "むごい",
+    "reading": "むごい",
+    "meaning": "cruel"
+  },
+  {
+    "rank": 18221,
+    "word": "ソワソワ",
+    "reading": "ソワソワ",
+    "meaning": "restlessly"
+  },
+  {
+    "rank": 18245,
+    "word": "愉しい",
+    "reading": "たのしい",
+    "meaning": "enjoyable"
+  },
+  {
+    "rank": 18309,
+    "word": "震え出す",
+    "reading": "ふるえだす",
+    "meaning": "to begin to tremble"
+  },
+  {
+    "rank": 18344,
+    "word": "感傷的",
+    "reading": "かんしょうてき",
+    "meaning": "sentimental"
+  },
+  {
+    "rank": 18366,
+    "word": "執心",
+    "reading": "しゅうしん",
+    "meaning": "devotion"
+  },
+  {
+    "rank": 18387,
+    "word": "晴れ晴れ",
+    "reading": "はればれ",
+    "meaning": "bright"
+  },
+  {
+    "rank": 18394,
+    "word": "薄笑い",
+    "reading": "うすわらい",
+    "meaning": "faint smile"
+  },
+  {
+    "rank": 18403,
+    "word": "妬く",
+    "reading": "やく",
+    "meaning": "to be jealous of"
+  },
+  {
+    "rank": 18449,
+    "word": "温情",
+    "reading": "おんじょう",
+    "meaning": "warm heart"
+  },
+  {
+    "rank": 18460,
+    "word": "のめり込む",
+    "reading": "のめりこむ",
+    "meaning": "to be completely absorbed in"
+  },
+  {
+    "rank": 18461,
+    "word": "心酔",
+    "reading": "しんすい",
+    "meaning": "adoration"
+  },
+  {
+    "rank": 18464,
+    "word": "過敏",
+    "reading": "かびん",
+    "meaning": "nervousness"
+  },
+  {
+    "rank": 18472,
+    "word": "愛すべき",
+    "reading": "あいすべき",
+    "meaning": "lovable"
+  },
+  {
+    "rank": 18477,
+    "word": "魅せられる",
+    "reading": "みせられる",
+    "meaning": "to be enchanted"
+  },
+  {
+    "rank": 18491,
+    "word": "弱虫",
+    "reading": "よわむし",
+    "meaning": "coward"
+  },
+  {
+    "rank": 18498,
+    "word": "感動的",
+    "reading": "かんどうてき",
+    "meaning": "moving"
+  },
+  {
+    "rank": 18502,
+    "word": "気が緩む",
+    "reading": "きがゆるむ",
+    "meaning": "to relax one's mind"
+  },
+  {
+    "rank": 18503,
+    "word": "カッとなる",
+    "reading": "カッとなる",
+    "meaning": "to flare up"
+  },
+  {
+    "rank": 18596,
+    "word": "無感情",
+    "reading": "むかんじょう",
+    "meaning": "apathy"
+  },
+  {
+    "rank": 18659,
+    "word": "親睦",
+    "reading": "しんぼく",
+    "meaning": "friendship"
+  },
+  {
+    "rank": 18660,
+    "word": "円滑",
+    "reading": "えんかつ",
+    "meaning": "smooth"
+  },
+  {
+    "rank": 18672,
+    "word": "動転",
+    "reading": "どうてん",
+    "meaning": "disturbance of mind"
+  },
+  {
+    "rank": 18675,
+    "word": "悲",
+    "reading": "ひ",
+    "meaning": "karuna (compassion)"
+  },
+  {
+    "rank": 18678,
+    "word": "度肝を抜く",
+    "reading": "どぎもをぬく",
+    "meaning": "to astonish"
+  },
+  {
+    "rank": 18710,
+    "word": "挫ける",
+    "reading": "くじける",
+    "meaning": "to be disheartened"
+  },
+  {
+    "rank": 18746,
+    "word": "したり顔",
+    "reading": "したりがお",
+    "meaning": "self-satisfied look"
+  },
+  {
+    "rank": 18790,
+    "word": "正気を失う",
+    "reading": "しょうきをうしなう",
+    "meaning": "to lose one's mind"
+  },
+  {
+    "rank": 18843,
+    "word": "憧憬",
+    "reading": "どうけい",
+    "meaning": "longing"
+  },
+  {
+    "rank": 18845,
+    "word": "乙女心",
+    "reading": "おとめごころ",
+    "meaning": "girl's feeling"
+  },
+  {
+    "rank": 18869,
+    "word": "立腹",
+    "reading": "りっぷく",
+    "meaning": "anger"
+  },
+  {
+    "rank": 18957,
+    "word": "可哀相",
+    "reading": "かわいそう",
+    "meaning": "poor"
+  },
+  {
+    "rank": 18976,
+    "word": "焦がれる",
+    "reading": "こがれる",
+    "meaning": "to yearn for"
+  },
+  {
+    "rank": 18978,
+    "word": "憐れ",
+    "reading": "あわれ",
+    "meaning": "pity"
+  },
+  {
+    "rank": 19027,
+    "word": "痛快",
+    "reading": "つうかい",
+    "meaning": "exhilarating"
+  },
+  {
+    "rank": 19038,
+    "word": "閉口",
+    "reading": "へいこう",
+    "meaning": "to be stumped"
+  },
+  {
+    "rank": 19042,
+    "word": "ぷんぷん",
+    "reading": "ぷんぷん",
+    "meaning": "(smelling) strongly"
+  },
+  {
+    "rank": 19057,
+    "word": "勇気づける",
+    "reading": "ゆうきづける",
+    "meaning": "to encourage"
+  },
+  {
+    "rank": 19061,
+    "word": "浮き立つ",
+    "reading": "うきたつ",
+    "meaning": "to be enlivened"
+  },
+  {
+    "rank": 19098,
+    "word": "恨み言",
+    "reading": "うらみごと",
+    "meaning": "grudge"
+  },
+  {
+    "rank": 19125,
+    "word": "ハイテンション",
+    "reading": "ハイテンション",
+    "meaning": "high tension (as in electronics, etc.)"
+  },
+  {
+    "rank": 19163,
+    "word": "ヒステリック",
+    "reading": "ヒステリック",
+    "meaning": "hysterical"
+  },
+  {
+    "rank": 19245,
+    "word": "心根",
+    "reading": "こころね",
+    "meaning": "innermost feelings"
+  },
+  {
+    "rank": 19264,
+    "word": "照れ笑い",
+    "reading": "てれわらい",
+    "meaning": "embarrassed smile"
+  },
+  {
+    "rank": 19300,
+    "word": "憐憫",
+    "reading": "れんびん",
+    "meaning": "pity"
+  },
+  {
+    "rank": 19340,
+    "word": "デレデレ",
+    "reading": "デレデレ",
+    "meaning": "idling"
+  },
+  {
+    "rank": 19366,
+    "word": "機嫌を直す",
+    "reading": "きげんをなおす",
+    "meaning": "to put back in a good mood"
+  },
+  {
+    "rank": 19378,
+    "word": "メロメロ",
+    "reading": "メロメロ",
+    "meaning": "madly in love"
+  },
+  {
+    "rank": 19390,
+    "word": "怖気",
+    "reading": "おぞけ",
+    "meaning": "fear"
+  },
+  {
+    "rank": 19398,
+    "word": "ペコペコ",
+    "reading": "ペコペコ",
+    "meaning": "very hungry"
+  },
+  {
+    "rank": 19404,
+    "word": "欲張り",
+    "reading": "よくばり",
+    "meaning": "greed"
+  },
+  {
+    "rank": 19416,
+    "word": "腹いせ",
+    "reading": "はらいせ",
+    "meaning": "retaliation"
+  },
+  {
+    "rank": 19475,
+    "word": "魅惑",
+    "reading": "みわく",
+    "meaning": "attraction"
+  },
+  {
+    "rank": 19494,
+    "word": "死に物狂い",
+    "reading": "しにものぐるい",
+    "meaning": "desperation"
+  },
+  {
+    "rank": 19536,
+    "word": "苛つく",
+    "reading": "いらつく",
+    "meaning": "to get irritated"
+  },
+  {
+    "rank": 19538,
+    "word": "息巻く",
+    "reading": "いきまく",
+    "meaning": "to rage"
+  },
+  {
+    "rank": 19544,
+    "word": "無気力",
+    "reading": "むきりょく",
+    "meaning": "apathy"
+  },
+  {
+    "rank": 19572,
+    "word": "ほれほれ",
+    "reading": "ほれほれ",
+    "meaning": "fondly"
+  },
+  {
+    "rank": 19580,
+    "word": "気乗り",
+    "reading": "きのり",
+    "meaning": "interest (in something)"
+  },
+  {
+    "rank": 19621,
+    "word": "かたじけない",
+    "reading": "かたじけない",
+    "meaning": "grateful"
+  },
+  {
+    "rank": 19637,
+    "word": "鬱憤",
+    "reading": "うっぷん",
+    "meaning": "resentment"
+  },
+  {
+    "rank": 19696,
+    "word": "解放感",
+    "reading": "かいほうかん",
+    "meaning": "sense of liberation"
+  },
+  {
+    "rank": 19723,
+    "word": "熱血",
+    "reading": "ねっけつ",
+    "meaning": "hot blood"
+  },
+  {
+    "rank": 19752,
+    "word": "不思議がる",
+    "reading": "ふしぎがる",
+    "meaning": "to be curious"
+  },
+  {
+    "rank": 19766,
+    "word": "痛烈",
+    "reading": "つうれつ",
+    "meaning": "severe"
+  },
+  {
+    "rank": 19779,
+    "word": "いい気味",
+    "reading": "いいきみ",
+    "meaning": "it serves you (him) right"
+  },
+  {
+    "rank": 19812,
+    "word": "気に掛ける",
+    "reading": "きにかける",
+    "meaning": "to weigh on one's mind"
+  },
+  {
+    "rank": 19814,
+    "word": "やけくそ",
+    "reading": "やけくそ",
+    "meaning": "desperate"
+  },
+  {
+    "rank": 19870,
+    "word": "毛嫌い",
+    "reading": "けぎらい",
+    "meaning": "antipathy"
+  },
+  {
+    "rank": 19942,
+    "word": "熱狂的",
+    "reading": "ねっきょうてき",
+    "meaning": "wildly enthusiastic"
+  },
+  {
+    "rank": 19951,
+    "word": "どぎまぎ",
+    "reading": "どぎまぎ",
+    "meaning": "flurried"
+  },
+  {
+    "rank": 19952,
+    "word": "白ける",
+    "reading": "しらける",
+    "meaning": "to be dampened (of the mood, interest, etc.)"
+  },
+  {
+    "rank": 19995,
+    "word": "わたわた",
+    "reading": "わたわた",
+    "meaning": "flustered"
+  },
+  {
+    "rank": 20004,
+    "word": "告る",
+    "reading": "こくる",
+    "meaning": "to confess one's love"
+  },
+  {
+    "rank": 20008,
+    "word": "気の弱い",
+    "reading": "きのよわい",
+    "meaning": "timid"
+  },
+  {
+    "rank": 20019,
+    "word": "ズキズキ",
+    "reading": "ズキズキ",
+    "meaning": "throbbing with pain"
+  },
+  {
+    "rank": 20040,
+    "word": "思い上がる",
+    "reading": "おもいあがる",
+    "meaning": "to be conceited"
+  },
+  {
+    "rank": 20054,
+    "word": "諦観",
+    "reading": "ていかん",
+    "meaning": "clear insight"
+  },
+  {
+    "rank": 20080,
+    "word": "心境の変化",
+    "reading": "しんきょうのへんか",
+    "meaning": "change of heart"
+  },
+  {
+    "rank": 20085,
+    "word": "腰が引ける",
+    "reading": "こしがひける",
+    "meaning": "to get cold feet"
+  },
+  {
+    "rank": 20086,
+    "word": "咎め",
+    "reading": "とがめ",
+    "meaning": "blame"
+  },
+  {
+    "rank": 20087,
+    "word": "内気",
+    "reading": "うちき",
+    "meaning": "shy"
+  },
+  {
+    "rank": 20117,
+    "word": "時代劇",
+    "reading": "じだいげき",
+    "meaning": "historical play"
+  },
+  {
+    "rank": 20141,
+    "word": "怖ろしい",
+    "reading": "おそろしい",
+    "meaning": "terrible"
+  },
+  {
+    "rank": 20174,
+    "word": "意固地",
+    "reading": "いこじ",
+    "meaning": "obstinate"
+  },
+  {
+    "rank": 20181,
+    "word": "悔恨",
+    "reading": "かいこん",
+    "meaning": "regret"
+  },
+  {
+    "rank": 20182,
+    "word": "再認識",
+    "reading": "さいにんしき",
+    "meaning": "recognizing anew"
+  },
+  {
+    "rank": 20185,
+    "word": "我慢ならない",
+    "reading": "がまんならない",
+    "meaning": "unbearable"
+  },
+  {
+    "rank": 20189,
+    "word": "心置きなく",
+    "reading": "こころおきなく",
+    "meaning": "freely"
+  },
+  {
+    "rank": 20190,
+    "word": "親交",
+    "reading": "しんこう",
+    "meaning": "intimacy"
+  },
+  {
+    "rank": 20198,
+    "word": "怒り出す",
+    "reading": "おこりだす",
+    "meaning": "to fly into a rage"
+  },
+  {
+    "rank": 20199,
+    "word": "堪忍",
+    "reading": "かんにん",
+    "meaning": "patience"
+  },
+  {
+    "rank": 20206,
+    "word": "愛くるしい",
+    "reading": "あいくるしい",
+    "meaning": "lovely"
+  },
+  {
+    "rank": 20214,
+    "word": "偏屈",
+    "reading": "へんくつ",
+    "meaning": "narrow-minded"
+  },
+  {
+    "rank": 20229,
+    "word": "思いっ切り",
+    "reading": "おもいっきり",
+    "meaning": "to one's heart's content"
+  },
+  {
+    "rank": 20240,
+    "word": "嫌らしい",
+    "reading": "いやらしい",
+    "meaning": "unpleasant"
+  },
+  {
+    "rank": 20245,
+    "word": "怒りを買う",
+    "reading": "いかりをかう",
+    "meaning": "to rouse anger"
+  },
+  {
+    "rank": 20248,
+    "word": "作り笑い",
+    "reading": "つくりわらい",
+    "meaning": "forced laugh"
+  },
+  {
+    "rank": 20249,
+    "word": "目を回す",
+    "reading": "めをまわす",
+    "meaning": "to faint"
+  },
+  {
+    "rank": 20263,
+    "word": "胸を打つ",
+    "reading": "むねをうつ",
+    "meaning": "to be touching"
+  },
+  {
+    "rank": 20272,
+    "word": "狂わす",
+    "reading": "くるわす",
+    "meaning": "to drive mad"
+  },
+  {
+    "rank": 20318,
+    "word": "怜悧",
+    "reading": "れいり",
+    "meaning": "clever"
+  },
+  {
+    "rank": 20358,
+    "word": "訳の分からない",
+    "reading": "わけのわからない",
+    "meaning": "incomprehensible"
+  },
+  {
+    "rank": 20359,
+    "word": "決然",
+    "reading": "けつぜん",
+    "meaning": "decisive"
+  },
+  {
+    "rank": 20370,
+    "word": "泣き笑い",
+    "reading": "なきわらい",
+    "meaning": "laughing while crying"
+  },
+  {
+    "rank": 20382,
+    "word": "失意",
+    "reading": "しつい",
+    "meaning": "disappointment"
+  },
+  {
+    "rank": 20417,
+    "word": "ありがたく思う",
+    "reading": "ありがたくおもう",
+    "meaning": "to be grateful"
+  },
+  {
+    "rank": 20461,
+    "word": "しょげる",
+    "reading": "しょげる",
+    "meaning": "to be dispirited"
+  },
+  {
+    "rank": 20466,
+    "word": "血迷う",
+    "reading": "ちまよう",
+    "meaning": "to lose one's mind"
+  },
+  {
+    "rank": 20472,
+    "word": "逆ギレ",
+    "reading": "ぎゃくギレ",
+    "meaning": "snapping back (at someone)"
+  },
+  {
+    "rank": 20473,
+    "word": "意気消沈",
+    "reading": "いきしょうちん",
+    "meaning": "depressed in spirits"
+  },
+  {
+    "rank": 20490,
+    "word": "陰険",
+    "reading": "いんけん",
+    "meaning": "crafty"
+  },
+  {
+    "rank": 20498,
+    "word": "哀願",
+    "reading": "あいがん",
+    "meaning": "supplication"
+  },
+  {
+    "rank": 20510,
+    "word": "のびのび",
+    "reading": "のびのび",
+    "meaning": "comfortably"
+  },
+  {
+    "rank": 20514,
+    "word": "女々しい",
+    "reading": "めめしい",
+    "meaning": "effeminate"
+  },
+  {
+    "rank": 20539,
+    "word": "畏敬",
+    "reading": "いけい",
+    "meaning": "reverence"
+  },
+  {
+    "rank": 20560,
+    "word": "性格悪い",
+    "reading": "せいかくわるい",
+    "meaning": "nasty"
+  },
+  {
+    "rank": 20610,
+    "word": "気長",
+    "reading": "きなが",
+    "meaning": "patient"
+  },
+  {
+    "rank": 20612,
+    "word": "機嫌が良い",
+    "reading": "きげんがいい",
+    "meaning": "in a good mood"
+  },
+  {
+    "rank": 20613,
+    "word": "耳が痛い",
+    "reading": "みみがいたい",
+    "meaning": "being painfully-true (e.g. reprimand)"
+  },
+  {
+    "rank": 20681,
+    "word": "怖気づく",
+    "reading": "おじけづく",
+    "meaning": "to be seized with fear"
+  },
+  {
+    "rank": 20682,
+    "word": "素知らぬ顔",
+    "reading": "そしらぬかお",
+    "meaning": "pretending not to recognize (recognise)"
+  },
+  {
+    "rank": 20683,
+    "word": "気を回す",
+    "reading": "きをまわす",
+    "meaning": "to read too much into things"
+  },
+  {
+    "rank": 20710,
+    "word": "所為",
+    "reading": "しょい",
+    "meaning": "act"
+  },
+  {
+    "rank": 20715,
+    "word": "控え目",
+    "reading": "ひかえめ",
+    "meaning": "moderate"
+  },
+  {
+    "rank": 20722,
+    "word": "不真面目",
+    "reading": "ふまじめ",
+    "meaning": "not serious"
+  },
+  {
+    "rank": 20726,
+    "word": "まごつく",
+    "reading": "まごつく",
+    "meaning": "to be confused"
+  },
+  {
+    "rank": 20741,
+    "word": "艶っぽい",
+    "reading": "つやっぽい",
+    "meaning": "romantic"
+  },
+  {
+    "rank": 20742,
+    "word": "円満",
+    "reading": "えんまん",
+    "meaning": "harmonious"
+  },
+  {
+    "rank": 20752,
+    "word": "逆境",
+    "reading": "ぎゃっきょう",
+    "meaning": "adverse circumstances"
+  },
+  {
+    "rank": 20760,
+    "word": "エグい",
+    "reading": "エグい",
+    "meaning": "harsh (taste, feeling, etc.)"
+  },
+  {
+    "rank": 20761,
+    "word": "鬱",
+    "reading": "うつ",
+    "meaning": "depression"
+  },
+  {
+    "rank": 20770,
+    "word": "顔負け",
+    "reading": "かおまけ",
+    "meaning": "being put to shame"
+  },
+  {
+    "rank": 20815,
+    "word": "溜め息を吐く",
+    "reading": "ためいきをつく",
+    "meaning": "to sigh"
+  },
+  {
+    "rank": 20868,
+    "word": "頬が緩む",
+    "reading": "ほおがゆるむ",
+    "meaning": "to grin"
+  },
+  {
+    "rank": 20873,
+    "word": "恋仲",
+    "reading": "こいなか",
+    "meaning": "being in love with each other"
+  },
+  {
+    "rank": 20876,
+    "word": "愛想よく",
+    "reading": "あいそよく",
+    "meaning": "engagingly"
+  },
+  {
+    "rank": 20880,
+    "word": "天真爛漫",
+    "reading": "てんしんらんまん",
+    "meaning": "naivete"
+  },
+  {
+    "rank": 20914,
+    "word": "野盗",
+    "reading": "やとう",
+    "meaning": "brigand"
+  },
+  {
+    "rank": 20923,
+    "word": "嫌味を言う",
+    "reading": "いやみをいう",
+    "meaning": "to make snide remarks"
+  },
+  {
+    "rank": 20960,
+    "word": "所定",
+    "reading": "しょてい",
+    "meaning": "prescribed"
+  },
+  {
+    "rank": 20969,
+    "word": "甘い言葉",
+    "reading": "あまいことば",
+    "meaning": "alluring words"
+  },
+  {
+    "rank": 20986,
+    "word": "ときめき",
+    "reading": "ときめき",
+    "meaning": "beating (of the heart, with joy, excitement, etc.)"
+  },
+  {
+    "rank": 20989,
+    "word": "物憂い",
+    "reading": "ものうい",
+    "meaning": "languid"
+  },
+  {
+    "rank": 21033,
+    "word": "苦手意識",
+    "reading": "にがていしき",
+    "meaning": "awareness that somebody will be hard to deal with"
+  },
+  {
+    "rank": 21036,
+    "word": "すごすご",
+    "reading": "すごすご",
+    "meaning": "in low spirits"
+  },
+  {
+    "rank": 21077,
+    "word": "好き",
+    "reading": "すき",
+    "meaning": "liked"
+  },
+  {
+    "rank": 21084,
+    "word": "良い感じ",
+    "reading": "いいかんじ",
+    "meaning": "pleasant feeling"
+  },
+  {
+    "rank": 21112,
+    "word": "不遇",
+    "reading": "ふぐう",
+    "meaning": "misfortune"
+  },
+  {
+    "rank": 21126,
+    "word": "癒る",
+    "reading": "いる",
+    "meaning": "to calm down"
+  },
+  {
+    "rank": 21130,
+    "word": "ほのぼの",
+    "reading": "ほのぼの",
+    "meaning": "dimly"
+  },
+  {
+    "rank": 21229,
+    "word": "危ぶむ",
+    "reading": "あやぶむ",
+    "meaning": "to fear"
+  },
+  {
+    "rank": 21240,
+    "word": "気の迷い",
+    "reading": "きのまよい",
+    "meaning": "delusion"
+  },
+  {
+    "rank": 21241,
+    "word": "放心状態",
+    "reading": "ほうしんじょうたい",
+    "meaning": "being in abstraction"
+  },
+  {
+    "rank": 21247,
+    "word": "顔面蒼白",
+    "reading": "がんめんそうはく",
+    "meaning": "one's face turning pale (ashen)"
+  },
+  {
+    "rank": 21263,
+    "word": "未練がましい",
+    "reading": "みれんがましい",
+    "meaning": "not knowing when to let go (give up, etc.)"
+  },
+  {
+    "rank": 21269,
+    "word": "恥ずべき",
+    "reading": "はずべき",
+    "meaning": "disgraceful"
+  },
+  {
+    "rank": 21285,
+    "word": "ヤキモチ",
+    "reading": "ヤキモチ",
+    "meaning": "jealousy"
+  },
+  {
+    "rank": 21294,
+    "word": "恥ずかしがり屋",
+    "reading": "はずかしがりや",
+    "meaning": "shy person"
+  },
+  {
+    "rank": 21349,
+    "word": "泣き始める",
+    "reading": "なきはじめる",
+    "meaning": "to begin to cry"
+  },
+  {
+    "rank": 21359,
+    "word": "害意",
+    "reading": "がいい",
+    "meaning": "malice"
+  },
+  {
+    "rank": 21373,
+    "word": "情欲",
+    "reading": "じょうよく",
+    "meaning": "passions"
+  },
+  {
+    "rank": 21398,
+    "word": "緊迫感",
+    "reading": "きんぱくかん",
+    "meaning": "sense of urgency"
+  },
+  {
+    "rank": 21401,
+    "word": "癒やし",
+    "reading": "いやし",
+    "meaning": "healing"
+  },
+  {
+    "rank": 21426,
+    "word": "郷愁",
+    "reading": "きょうしゅう",
+    "meaning": "nostalgia"
+  },
+  {
+    "rank": 21454,
+    "word": "心ここにあらず",
+    "reading": "こころここにあらず",
+    "meaning": "there in body, but not in spirit"
+  },
+  {
+    "rank": 21458,
+    "word": "小心者",
+    "reading": "しょうしんもの",
+    "meaning": "timid person"
+  },
+  {
+    "rank": 21462,
+    "word": "飽き足る",
+    "reading": "あきたる",
+    "meaning": "to be satisfied"
+  },
+  {
+    "rank": 21463,
+    "word": "倦怠感",
+    "reading": "けんたいかん",
+    "meaning": "physical weariness"
+  },
+  {
+    "rank": 21483,
+    "word": "敗北感",
+    "reading": "はいぼくかん",
+    "meaning": "sense of defeat"
+  },
+  {
+    "rank": 21495,
+    "word": "闘気",
+    "reading": "とうき",
+    "meaning": "fighting spirit"
+  },
+  {
+    "rank": 21531,
+    "word": "せいせい",
+    "reading": "せいせい",
+    "meaning": "feeling refreshed"
+  },
+  {
+    "rank": 21537,
+    "word": "愚痴をこぼす",
+    "reading": "ぐちをこぼす",
+    "meaning": "to whinge"
+  },
+  {
+    "rank": 21580,
+    "word": "引っ込み思案",
+    "reading": "ひっこみじあん",
+    "meaning": "reserved"
+  },
+  {
+    "rank": 21590,
+    "word": "やり場",
+    "reading": "やりば",
+    "meaning": "outlet (for one's anger, etc.)"
+  },
+  {
+    "rank": 21603,
+    "word": "昂る",
+    "reading": "たかぶる",
+    "meaning": "to become aroused (of emotions, nerves, etc.)"
+  },
+  {
+    "rank": 21648,
+    "word": "心を込める",
+    "reading": "こころをこめる",
+    "meaning": "to do wholeheartedly"
+  },
+  {
+    "rank": 21660,
+    "word": "しくしく",
+    "reading": "しくしく",
+    "meaning": "weeping"
+  },
+  {
+    "rank": 21676,
+    "word": "哀愁",
+    "reading": "あいしゅう",
+    "meaning": "pathos"
+  },
+  {
+    "rank": 21698,
+    "word": "ぷりぷり",
+    "reading": "ぷりぷり",
+    "meaning": "angrily"
+  },
+  {
+    "rank": 21726,
+    "word": "涙ながら",
+    "reading": "なみだながら",
+    "meaning": "while crying"
+  },
+  {
+    "rank": 21782,
+    "word": "業を煮やす",
+    "reading": "ごうをにやす",
+    "meaning": "to lose one's temper"
+  },
+  {
+    "rank": 21795,
+    "word": "背徳感",
+    "reading": "はいとくかん",
+    "meaning": "sense of guilty pleasure"
+  },
+  {
+    "rank": 21828,
+    "word": "痺れを切らす",
+    "reading": "しびれをきらす",
+    "meaning": "to get tired of waiting"
+  },
+  {
+    "rank": 21860,
+    "word": "親身になって",
+    "reading": "しんみになって",
+    "meaning": "warmly"
+  },
+  {
+    "rank": 21951,
+    "word": "鬱屈",
+    "reading": "うっくつ",
+    "meaning": "gloomy"
+  },
+  {
+    "rank": 21973,
+    "word": "憤然",
+    "reading": "ふんぜん",
+    "meaning": "angry"
+  },
+  {
+    "rank": 22103,
+    "word": "得意気",
+    "reading": "とくいげ",
+    "meaning": "proud"
+  },
+  {
+    "rank": 22120,
+    "word": "心の支え",
+    "reading": "こころのささえ",
+    "meaning": "moral support"
+  },
+  {
+    "rank": 22121,
+    "word": "嫌気がさす",
+    "reading": "いやけがさす",
+    "meaning": "to be tired of"
+  },
+  {
+    "rank": 22130,
+    "word": "ムズムズ",
+    "reading": "ムズムズ",
+    "meaning": "to feel itchy"
+  },
+  {
+    "rank": 22135,
+    "word": "から元気",
+    "reading": "からげんき",
+    "meaning": "putting on a brave face"
+  },
+  {
+    "rank": 22138,
+    "word": "心を決める",
+    "reading": "こころをきめる",
+    "meaning": "to resolve to do"
+  },
+  {
+    "rank": 22140,
+    "word": "気勢",
+    "reading": "きせい",
+    "meaning": "fervour"
+  },
+  {
+    "rank": 22179,
+    "word": "妬み",
+    "reading": "ねたみ",
+    "meaning": "jealousy"
+  },
+  {
+    "rank": 22194,
+    "word": "いい迷惑",
+    "reading": "いいめいわく",
+    "meaning": "real nuisance"
+  },
+  {
+    "rank": 22200,
+    "word": "癇癪",
+    "reading": "かんしゃく",
+    "meaning": "passion"
+  },
+  {
+    "rank": 22207,
+    "word": "ガツガツ",
+    "reading": "ガツガツ",
+    "meaning": "hungrily"
+  },
+  {
+    "rank": 22208,
+    "word": "怖じ気づく",
+    "reading": "おじけづく",
+    "meaning": "to be seized with fear"
+  },
+  {
+    "rank": 22209,
+    "word": "快",
+    "reading": "かい",
+    "meaning": "pleasure"
+  },
+  {
+    "rank": 22249,
+    "word": "大泣き",
+    "reading": "おおなき",
+    "meaning": "crying hard"
+  },
+  {
+    "rank": 22274,
+    "word": "ダルい",
+    "reading": "ダルい",
+    "meaning": "sluggish"
+  },
+  {
+    "rank": 22286,
+    "word": "劣情",
+    "reading": "れつじょう",
+    "meaning": "animal passions"
+  },
+  {
+    "rank": 22290,
+    "word": "悲嘆",
+    "reading": "ひたん",
+    "meaning": "grief"
+  },
+  {
+    "rank": 22302,
+    "word": "ヒヤヒヤ",
+    "reading": "ヒヤヒヤ",
+    "meaning": "feeling chilly"
+  },
+  {
+    "rank": 22329,
+    "word": "思い残す",
+    "reading": "おもいのこす",
+    "meaning": "to regret"
+  },
+  {
+    "rank": 22340,
+    "word": "愛情表現",
+    "reading": "あいじょうひょうげん",
+    "meaning": "expression of love"
+  },
+  {
+    "rank": 22363,
+    "word": "思い上がり",
+    "reading": "おもいあがり",
+    "meaning": "conceit"
+  },
+  {
+    "rank": 22385,
+    "word": "欲求不満",
+    "reading": "よっきゅうふまん",
+    "meaning": "frustration"
+  },
+  {
+    "rank": 22391,
+    "word": "物欲しそう",
+    "reading": "ものほしそう",
+    "meaning": "wistful"
+  },
+  {
+    "rank": 22405,
+    "word": "憐れみ",
+    "reading": "あわれみ",
+    "meaning": "pity"
+  },
+  {
+    "rank": 22410,
+    "word": "色恋",
+    "reading": "いろこい",
+    "meaning": "sensual love"
+  },
+  {
+    "rank": 22454,
+    "word": "不安感",
+    "reading": "ふあんかん",
+    "meaning": "uneasy feeling"
+  },
+  {
+    "rank": 22489,
+    "word": "よしんば",
+    "reading": "よしんば",
+    "meaning": "even if"
+  },
+  {
+    "rank": 22495,
+    "word": "引っ張り込む",
+    "reading": "ひっぱりこむ",
+    "meaning": "to drag in"
+  },
+  {
+    "rank": 22502,
+    "word": "一縷の望み",
+    "reading": "いちるののぞみ",
+    "meaning": "sliver of hope"
+  },
+  {
+    "rank": 22534,
+    "word": "充実感",
+    "reading": "じゅうじつかん",
+    "meaning": "sense of fulfillment"
+  },
+  {
+    "rank": 22541,
+    "word": "復讐心",
+    "reading": "ふくしゅうしん",
+    "meaning": "desire for revenge"
+  },
+  {
+    "rank": 22546,
+    "word": "感じやすい",
+    "reading": "かんじやすい",
+    "meaning": "sensitive"
+  },
+  {
+    "rank": 22608,
+    "word": "喜色",
+    "reading": "きしょく",
+    "meaning": "glad countenance"
+  },
+  {
+    "rank": 22620,
+    "word": "痛み入る",
+    "reading": "いたみいる",
+    "meaning": "to be greatly obliged"
+  },
+  {
+    "rank": 22644,
+    "word": "感じ入る",
+    "reading": "かんじいる",
+    "meaning": "to be impressed"
+  },
+  {
+    "rank": 22668,
+    "word": "平安",
+    "reading": "へいあん",
+    "meaning": "peace"
+  },
+  {
+    "rank": 22678,
+    "word": "斬り伏せる",
+    "reading": "きりふせる",
+    "meaning": "to slay"
+  },
+  {
+    "rank": 22684,
+    "word": "感情移入",
+    "reading": "かんじょういにゅう",
+    "meaning": "empathy"
+  },
+  {
+    "rank": 22693,
+    "word": "見切りをつける",
+    "reading": "みきりをつける",
+    "meaning": "to give up as hopeless"
+  },
+  {
+    "rank": 22821,
+    "word": "有頂天",
+    "reading": "うちょうてん",
+    "meaning": "ecstasy"
+  },
+  {
+    "rank": 22827,
+    "word": "プンプン",
+    "reading": "プンプン",
+    "meaning": "(smelling) strongly"
+  },
+  {
+    "rank": 22830,
+    "word": "愛想を尽かす",
+    "reading": "あいそをつかす",
+    "meaning": "to be disgusted with"
+  },
+  {
+    "rank": 22839,
+    "word": "恥かしい",
+    "reading": "はずかしい",
+    "meaning": "embarrassing"
+  },
+  {
+    "rank": 22842,
+    "word": "恩がある",
+    "reading": "おんがある",
+    "meaning": "to be in one's debt"
+  },
+  {
+    "rank": 22850,
+    "word": "恥じ入る",
+    "reading": "はじいる",
+    "meaning": "to feel ashamed"
+  },
+  {
+    "rank": 22905,
+    "word": "恋愛対象",
+    "reading": "れんあいたいしょう",
+    "meaning": "object of romantic interest"
+  },
+  {
+    "rank": 22941,
+    "word": "熱情",
+    "reading": "ねつじょう",
+    "meaning": "ardour (ardor)"
+  },
+  {
+    "rank": 22980,
+    "word": "ガックリ",
+    "reading": "ガックリ",
+    "meaning": "heartbroken"
+  },
+  {
+    "rank": 23037,
+    "word": "傷心",
+    "reading": "しょうしん",
+    "meaning": "heartbreak"
+  },
+  {
+    "rank": 23064,
+    "word": "妬ましい",
+    "reading": "ねたましい",
+    "meaning": "jealous"
+  },
+  {
+    "rank": 23074,
+    "word": "死の恐怖",
+    "reading": "しのきょうふ",
+    "meaning": "fear of death"
+  },
+  {
+    "rank": 23076,
+    "word": "気が立つ",
+    "reading": "きがたつ",
+    "meaning": "to be wrought up"
+  },
+  {
+    "rank": 23106,
+    "word": "平静を保つ",
+    "reading": "へいせいをたもつ",
+    "meaning": "to keep one's temper"
+  },
+  {
+    "rank": 23112,
+    "word": "憂慮",
+    "reading": "ゆうりょ",
+    "meaning": "anxiety"
+  },
+  {
+    "rank": 23127,
+    "word": "片道",
+    "reading": "かたみち",
+    "meaning": "one-way (trip)"
+  },
+  {
+    "rank": 23134,
+    "word": "やけ",
+    "reading": "やけ",
+    "meaning": "desperation"
+  },
+  {
+    "rank": 23185,
+    "word": "悲観的",
+    "reading": "ひかんてき",
+    "meaning": "pessimistic"
+  },
+  {
+    "rank": 23219,
+    "word": "嫉妬心",
+    "reading": "しっとしん",
+    "meaning": "feeling of envy"
+  },
+  {
+    "rank": 23224,
+    "word": "気分が良い",
+    "reading": "きぶんがいい",
+    "meaning": "feel good (pleasant)"
+  },
+  {
+    "rank": 23270,
+    "word": "心に響く",
+    "reading": "こころにひびく",
+    "meaning": "to resonate emotionally (with one)"
+  },
+  {
+    "rank": 23271,
+    "word": "無感動",
+    "reading": "むかんどう",
+    "meaning": "unimpressive"
+  },
+  {
+    "rank": 23272,
+    "word": "向上心",
+    "reading": "こうじょうしん",
+    "meaning": "ambition"
+  },
+  {
+    "rank": 23346,
+    "word": "自粛",
+    "reading": "じしゅく",
+    "meaning": "self-restraint"
+  },
+  {
+    "rank": 23365,
+    "word": "勇気を持つ",
+    "reading": "ゆうきをもつ",
+    "meaning": "to have (the) courage (to)"
+  },
+  {
+    "rank": 23413,
+    "word": "気苦労",
+    "reading": "きぐろう",
+    "meaning": "worry"
+  },
+  {
+    "rank": 23438,
+    "word": "うるうる",
+    "reading": "うるうる",
+    "meaning": "teary-eyed"
+  },
+  {
+    "rank": 23460,
+    "word": "気になれない",
+    "reading": "きになれない",
+    "meaning": "don't feel like doing"
+  },
+  {
+    "rank": 23471,
+    "word": "陰惨",
+    "reading": "いんさん",
+    "meaning": "sadness and gloom"
+  },
+  {
+    "rank": 23533,
+    "word": "胸がいっぱいになる",
+    "reading": "むねがいっぱいになる",
+    "meaning": "to get a lump in one's throat"
+  },
+  {
+    "rank": 23546,
+    "word": "心にもない",
+    "reading": "こころにもない",
+    "meaning": "(something) one does not really mean"
+  },
+  {
+    "rank": 23550,
+    "word": "悦",
+    "reading": "えつ",
+    "meaning": "self-satisfaction"
+  },
+  {
+    "rank": 23552,
+    "word": "心を打つ",
+    "reading": "こころをうつ",
+    "meaning": "to touch (a person's) heart"
+  },
+  {
+    "rank": 23573,
+    "word": "俵",
+    "reading": "たわら",
+    "meaning": "straw bag"
+  },
+  {
+    "rank": 23606,
+    "word": "抵抗感",
+    "reading": "ていこうかん",
+    "meaning": "antipathy"
+  },
+  {
+    "rank": 23612,
+    "word": "機嫌を取る",
+    "reading": "きげんをとる",
+    "meaning": "to curry favour"
+  },
+  {
+    "rank": 23617,
+    "word": "昂奮",
+    "reading": "こうふん",
+    "meaning": "excitement"
+  },
+  {
+    "rank": 23636,
+    "word": "寝心地",
+    "reading": "ねごこち",
+    "meaning": "sleeping comfort or snugness"
+  },
+  {
+    "rank": 23658,
+    "word": "一体感",
+    "reading": "いったいかん",
+    "meaning": "(feeling of) identification"
+  },
+  {
+    "rank": 23762,
+    "word": "安堵感",
+    "reading": "あんどかん",
+    "meaning": "sense of relief"
+  },
+  {
+    "rank": 23780,
+    "word": "悲壮感",
+    "reading": "ひそうかん",
+    "meaning": "feeling of tragic heroism"
+  },
+  {
+    "rank": 23800,
+    "word": "恥を知る",
+    "reading": "はじをしる",
+    "meaning": "to know shame"
+  },
+  {
+    "rank": 23842,
+    "word": "本懐",
+    "reading": "ほんかい",
+    "meaning": "one's long-cherished desire"
+  },
+  {
+    "rank": 23851,
+    "word": "胸いっぱい",
+    "reading": "むねいっぱい",
+    "meaning": "getting a lump in one's throat"
+  },
+  {
+    "rank": 23869,
+    "word": "意に介する",
+    "reading": "いにかいする",
+    "meaning": "to mind"
+  },
+  {
+    "rank": 23893,
+    "word": "物悲しい",
+    "reading": "ものがなしい",
+    "meaning": "sad"
+  },
+  {
+    "rank": 23927,
+    "word": "慄く",
+    "reading": "おののく",
+    "meaning": "to shake (from fear, cold, excitement, etc.)"
+  },
+  {
+    "rank": 23978,
+    "word": "一喜一憂",
+    "reading": "いっきいちゆう",
+    "meaning": "now rejoicing, now worrying"
+  },
+  {
+    "rank": 24042,
+    "word": "怨み",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 24053,
+    "word": "心ゆく",
+    "reading": "こころゆく",
+    "meaning": "to be completely satisfied"
+  },
+  {
+    "rank": 24090,
+    "word": "期待通り",
+    "reading": "きたいどおり",
+    "meaning": "as expected (positive events)"
+  },
+  {
+    "rank": 24127,
+    "word": "練り歩く",
+    "reading": "ねりあるく",
+    "meaning": "to parade"
+  },
+  {
+    "rank": 24133,
+    "word": "嫌な思いをする",
+    "reading": "いやなおもいをする",
+    "meaning": "to feel uncomfortable"
+  },
+  {
+    "rank": 24134,
+    "word": "疎外感",
+    "reading": "そがいかん",
+    "meaning": "feeling of alienation"
+  },
+  {
+    "rank": 24267,
+    "word": "滲み出す",
+    "reading": "しみだす",
+    "meaning": "to ooze (out)"
+  },
+  {
+    "rank": 24353,
+    "word": "甘ったれる",
+    "reading": "あまったれる",
+    "meaning": "to behave like a spoiled child"
+  },
+  {
+    "rank": 24358,
+    "word": "脅える",
+    "reading": "おびえる",
+    "meaning": "to become frightened"
+  },
+  {
+    "rank": 24374,
+    "word": "邪念",
+    "reading": "じゃねん",
+    "meaning": "wicked thought"
+  },
+  {
+    "rank": 24375,
+    "word": "薄ら笑い",
+    "reading": "うすらわらい",
+    "meaning": "faint smile"
+  },
+  {
+    "rank": 24384,
+    "word": "茫然自失",
+    "reading": "ぼうぜんじしつ",
+    "meaning": "stupor"
+  },
+  {
+    "rank": 24400,
+    "word": "怨恨",
+    "reading": "えんこん",
+    "meaning": "enmity"
+  },
+  {
+    "rank": 24451,
+    "word": "ドギマギ",
+    "reading": "ドギマギ",
+    "meaning": "flurried"
+  },
+  {
+    "rank": 24452,
+    "word": "こわごわ",
+    "reading": "こわごわ",
+    "meaning": "fearfully"
+  },
+  {
+    "rank": 24460,
+    "word": "気のいい",
+    "reading": "きのいい",
+    "meaning": "good-natured"
+  },
+  {
+    "rank": 24469,
+    "word": "灼ける",
+    "reading": "やける",
+    "meaning": "to be jealous"
+  },
+  {
+    "rank": 24534,
+    "word": "喜悦",
+    "reading": "きえつ",
+    "meaning": "joy"
+  },
+  {
+    "rank": 24543,
+    "word": "萎れる",
+    "reading": "しおれる",
+    "meaning": "to wither"
+  },
+  {
+    "rank": 24555,
+    "word": "感受性",
+    "reading": "かんじゅせい",
+    "meaning": "sensitivity"
+  },
+  {
+    "rank": 24570,
+    "word": "喜びの声",
+    "reading": "よろこびのこえ",
+    "meaning": "shout of joy"
+  },
+  {
+    "rank": 24626,
+    "word": "気を落とす",
+    "reading": "きをおとす",
+    "meaning": "to be discouraged"
+  },
+  {
+    "rank": 24668,
+    "word": "情緒不安定",
+    "reading": "じょうちょふあんてい",
+    "meaning": "emotional instability"
+  },
+  {
+    "rank": 24709,
+    "word": "怒りに震える",
+    "reading": "いかりにふるえる",
+    "meaning": "to shake with rage"
+  },
+  {
+    "rank": 24783,
+    "word": "いい気持ち",
+    "reading": "いいきもち",
+    "meaning": "good feeling"
+  },
+  {
+    "rank": 24785,
+    "word": "元気づく",
+    "reading": "げんきづく",
+    "meaning": "to get encouraged"
+  },
+  {
+    "rank": 24806,
+    "word": "嫉妬深い",
+    "reading": "しっとぶかい",
+    "meaning": "(deeply) jealous"
+  },
+  {
+    "rank": 24827,
+    "word": "私怨",
+    "reading": "しえん",
+    "meaning": "personal grudge"
+  },
+  {
+    "rank": 24857,
+    "word": "辞さない",
+    "reading": "じさない",
+    "meaning": "willing to do"
+  },
+  {
+    "rank": 24862,
+    "word": "生易しい",
+    "reading": "なまやさしい",
+    "meaning": "simple"
+  },
+  {
+    "rank": 24878,
+    "word": "労る",
+    "reading": "いたわる",
+    "meaning": "to pity"
+  },
+  {
+    "rank": 24881,
+    "word": "落着く",
+    "reading": "おちつく",
+    "meaning": "to calm down"
+  },
+  {
+    "rank": 24888,
+    "word": "満更でもない",
+    "reading": "まんざらでもない",
+    "meaning": "not all bad"
+  },
+  {
+    "rank": 24934,
+    "word": "くよくよ",
+    "reading": "くよくよ",
+    "meaning": "to fret (over)"
+  },
+  {
+    "rank": 24946,
+    "word": "懊悩",
+    "reading": "おうのう",
+    "meaning": "anguish"
+  },
+  {
+    "rank": 24996,
+    "word": "遺恨",
+    "reading": "いこん",
+    "meaning": "grudge"
+  },
+  {
+    "rank": 25012,
+    "word": "呆れ果てる",
+    "reading": "あきれはてる",
+    "meaning": "to be flabbergasted"
+  },
+  {
+    "rank": 25019,
+    "word": "気が動転する",
+    "reading": "きがどうてんする",
+    "meaning": "to lose composure"
+  },
+  {
+    "rank": 25039,
+    "word": "辱め",
+    "reading": "はずかしめ",
+    "meaning": "shame"
+  },
+  {
+    "rank": 25044,
+    "word": "おっちょこちょい",
+    "reading": "おっちょこちょい",
+    "meaning": "careless person"
+  },
+  {
+    "rank": 25045,
+    "word": "茶目っ気",
+    "reading": "ちゃめっけ",
+    "meaning": "playfulness"
+  },
+  {
+    "rank": 25047,
+    "word": "面白半分",
+    "reading": "おもしろはんぶん",
+    "meaning": "for fun"
+  },
+  {
+    "rank": 25088,
+    "word": "反感を買う",
+    "reading": "はんかんをかう",
+    "meaning": "to antagonize"
+  },
+  {
+    "rank": 25092,
+    "word": "寂しがり屋",
+    "reading": "さびしがりや",
+    "meaning": "lonely person"
+  },
+  {
+    "rank": 25146,
+    "word": "物思い",
+    "reading": "ものおもい",
+    "meaning": "reverie"
+  },
+  {
+    "rank": 25170,
+    "word": "不興を買う",
+    "reading": "ふきょうをかう",
+    "meaning": "to fall into disgrace with"
+  },
+  {
+    "rank": 25171,
+    "word": "哀",
+    "reading": "あい",
+    "meaning": "pity"
+  },
+  {
+    "rank": 25180,
+    "word": "嫌気が差す",
+    "reading": "いやけがさす",
+    "meaning": "to be tired of"
+  },
+  {
+    "rank": 25231,
+    "word": "別れを惜しむ",
+    "reading": "わかれをおしむ",
+    "meaning": "to loathe to part (with)"
+  },
+  {
+    "rank": 25274,
+    "word": "闘争心",
+    "reading": "とうそうしん",
+    "meaning": "belligerence"
+  },
+  {
+    "rank": 25288,
+    "word": "成れの果て",
+    "reading": "なれのはて",
+    "meaning": "the mere shadow of one's former self"
+  },
+  {
+    "rank": 25290,
+    "word": "中出し",
+    "reading": "なかだし",
+    "meaning": "intravaginal (anal, etc.) ejaculation"
+  },
+  {
+    "rank": 25391,
+    "word": "自棄になる",
+    "reading": "やけになる",
+    "meaning": "to become desperate"
+  },
+  {
+    "rank": 25410,
+    "word": "飽く",
+    "reading": "あく",
+    "meaning": "to tire of"
+  },
+  {
+    "rank": 25411,
+    "word": "こりごり",
+    "reading": "こりごり",
+    "meaning": "having had enough (of)"
+  },
+  {
+    "rank": 25415,
+    "word": "戦々恐々",
+    "reading": "せんせんきょうきょう",
+    "meaning": "trembling with fear"
+  },
+  {
+    "rank": 25438,
+    "word": "心が躍る",
+    "reading": "こころがおどる",
+    "meaning": "to be thrilled"
+  },
+  {
+    "rank": 25447,
+    "word": "癪に障る",
+    "reading": "しゃくにさわる",
+    "meaning": "to irritate"
+  },
+  {
+    "rank": 25465,
+    "word": "喜怒哀楽",
+    "reading": "きどあいらく",
+    "meaning": "human emotions (joy, anger, grief and pleasure)"
+  },
+  {
+    "rank": 25467,
+    "word": "肝を冷やす",
+    "reading": "きもをひやす",
+    "meaning": "to be struck with terror"
+  },
+  {
+    "rank": 25503,
+    "word": "悦楽",
+    "reading": "えつらく",
+    "meaning": "enjoyment"
+  },
+  {
+    "rank": 25525,
+    "word": "享楽",
+    "reading": "きょうらく",
+    "meaning": "enjoyment"
+  },
+  {
+    "rank": 25548,
+    "word": "気が弱い",
+    "reading": "きがよわい",
+    "meaning": "timid"
+  },
+  {
+    "rank": 25599,
+    "word": "気が晴れる",
+    "reading": "きがはれる",
+    "meaning": "to feel refreshed"
+  },
+  {
+    "rank": 25632,
+    "word": "幻惑",
+    "reading": "げんわく",
+    "meaning": "fascination"
+  },
+  {
+    "rank": 25643,
+    "word": "気が気でない",
+    "reading": "きがきでない",
+    "meaning": "feeling uneasy"
+  },
+  {
+    "rank": 25664,
+    "word": "感謝の念",
+    "reading": "かんしゃのねん",
+    "meaning": "feelings of gratitude"
+  },
+  {
+    "rank": 25670,
+    "word": "小躍り",
+    "reading": "こおどり",
+    "meaning": "dancing or jumping for joy"
+  },
+  {
+    "rank": 25671,
+    "word": "夢見心地",
+    "reading": "ゆめみごこち",
+    "meaning": "dreamy state of mind"
+  },
+  {
+    "rank": 25673,
+    "word": "清々",
+    "reading": "せいせい",
+    "meaning": "feeling refreshed"
+  },
+  {
+    "rank": 25681,
+    "word": "悼む",
+    "reading": "いたむ",
+    "meaning": "to grieve over"
+  },
+  {
+    "rank": 25692,
+    "word": "癇に障る",
+    "reading": "かんにさわる",
+    "meaning": "to irritate one"
+  },
+  {
+    "rank": 25707,
+    "word": "悲劇的",
+    "reading": "ひげきてき",
+    "meaning": "tragic"
+  },
+  {
+    "rank": 25711,
+    "word": "親心",
+    "reading": "おやごころ",
+    "meaning": "parental love or affection"
+  },
+  {
+    "rank": 25740,
+    "word": "驕る",
+    "reading": "おごる",
+    "meaning": "to give (someone) a treat"
+  },
+  {
+    "rank": 25832,
+    "word": "悄然",
+    "reading": "しょうぜん",
+    "meaning": "dejected"
+  },
+  {
+    "rank": 25857,
+    "word": "足がすくむ",
+    "reading": "あしがすくむ",
+    "meaning": "to freeze (from fear)"
+  },
+  {
+    "rank": 25860,
+    "word": "無作法",
+    "reading": "ぶさほう",
+    "meaning": "ill-mannered"
+  },
+  {
+    "rank": 25868,
+    "word": "頭に来る",
+    "reading": "あたまにくる",
+    "meaning": "to get mad"
+  },
+  {
+    "rank": 25887,
+    "word": "励み",
+    "reading": "はげみ",
+    "meaning": "(act of) encouragement"
+  },
+  {
+    "rank": 25899,
+    "word": "居たたまれない",
+    "reading": "いたたまれない",
+    "meaning": "unable to stay (on)"
+  },
+  {
+    "rank": 25919,
+    "word": "好印象",
+    "reading": "こういんしょう",
+    "meaning": "good impression"
+  },
+  {
+    "rank": 25928,
+    "word": "感情表現",
+    "reading": "かんじょうひょうげん",
+    "meaning": "expressing emotion"
+  },
+  {
+    "rank": 25962,
+    "word": "ご愁傷様",
+    "reading": "ごしゅうしょうさま",
+    "meaning": "my condolences"
+  },
+  {
+    "rank": 25980,
+    "word": "罰が当たる",
+    "reading": "ばちがあたる",
+    "meaning": "to incur divine punishment"
+  },
+  {
+    "rank": 26027,
+    "word": "我慢強い",
+    "reading": "がまんづよい",
+    "meaning": "(very) patient"
+  },
+  {
+    "rank": 26032,
+    "word": "片想い",
+    "reading": "かたおもい",
+    "meaning": "unrequited love"
+  },
+  {
+    "rank": 26033,
+    "word": "情動",
+    "reading": "じょうどう",
+    "meaning": "emotion"
+  },
+  {
+    "rank": 26044,
+    "word": "ヒステリー",
+    "reading": "ヒステリー",
+    "meaning": "hysteria"
+  },
+  {
+    "rank": 26046,
+    "word": "うつつを抜かす",
+    "reading": "うつつをぬかす",
+    "meaning": "to be infatuated (with)"
+  },
+  {
+    "rank": 26052,
+    "word": "痛切",
+    "reading": "つうせつ",
+    "meaning": "keen"
+  },
+  {
+    "rank": 26059,
+    "word": "閑静",
+    "reading": "かんせい",
+    "meaning": "quiet (e.g. neighbourhood)"
+  },
+  {
+    "rank": 26074,
+    "word": "没入",
+    "reading": "ぼつにゅう",
+    "meaning": "immersion"
+  },
+  {
+    "rank": 26095,
+    "word": "居心地がいい",
+    "reading": "いごこちがいい",
+    "meaning": "comfortable (to live in)"
+  },
+  {
+    "rank": 26101,
+    "word": "鬱々",
+    "reading": "うつうつ",
+    "meaning": "gloomy"
+  },
+  {
+    "rank": 26125,
+    "word": "私利私欲",
+    "reading": "しりしよく",
+    "meaning": "desire to act only in one's self-interest"
+  },
+  {
+    "rank": 26126,
+    "word": "いけ好かない",
+    "reading": "いけすかない",
+    "meaning": "nasty"
+  },
+  {
+    "rank": 26129,
+    "word": "泣く泣く",
+    "reading": "なくなく",
+    "meaning": "tearfully"
+  },
+  {
+    "rank": 26195,
+    "word": "切望",
+    "reading": "せつぼう",
+    "meaning": "earnest desire"
+  },
+  {
+    "rank": 26236,
+    "word": "疑",
+    "reading": "ぎ",
+    "meaning": "doubt"
+  },
+  {
+    "rank": 26237,
+    "word": "煩悶",
+    "reading": "はんもん",
+    "meaning": "worry"
+  },
+  {
+    "rank": 26244,
+    "word": "好きすぎる",
+    "reading": "すきすぎる",
+    "meaning": "to like too much"
+  },
+  {
+    "rank": 26249,
+    "word": "心を鬼にする",
+    "reading": "こころをおににする",
+    "meaning": "to harden one's heart"
+  },
+  {
+    "rank": 26257,
+    "word": "飽き飽き",
+    "reading": "あきあき",
+    "meaning": "getting tired of"
+  },
+  {
+    "rank": 26259,
+    "word": "せき込む",
+    "reading": "せきこむ",
+    "meaning": "to get flustered"
+  },
+  {
+    "rank": 26268,
+    "word": "苦になる",
+    "reading": "くになる",
+    "meaning": "to be bothered (by something)"
+  },
+  {
+    "rank": 26273,
+    "word": "憤懣",
+    "reading": "ふんまん",
+    "meaning": "anger"
+  },
+  {
+    "rank": 26286,
+    "word": "気疲れ",
+    "reading": "きづかれ",
+    "meaning": "mental fatigue"
+  },
+  {
+    "rank": 26303,
+    "word": "狂信者",
+    "reading": "きょうしんしゃ",
+    "meaning": "fanatic"
+  },
+  {
+    "rank": 26338,
+    "word": "怖れ",
+    "reading": "おそれ",
+    "meaning": "fear"
+  },
+  {
+    "rank": 26339,
+    "word": "腑",
+    "reading": "ふ",
+    "meaning": "internal organ"
+  },
+  {
+    "rank": 26343,
+    "word": "気を揉む",
+    "reading": "きをもむ",
+    "meaning": "to worry"
+  },
+  {
+    "rank": 26344,
+    "word": "空軍",
+    "reading": "くうぐん",
+    "meaning": "air force"
+  },
+  {
+    "rank": 26381,
+    "word": "癇癪を起こす",
+    "reading": "かんしゃくをおこす",
+    "meaning": "to lose one's temper"
+  },
+  {
+    "rank": 26494,
+    "word": "恐怖感",
+    "reading": "きょうふかん",
+    "meaning": "feeling of dread"
+  },
+  {
+    "rank": 26546,
+    "word": "男心",
+    "reading": "おとこごころ",
+    "meaning": "male instincts"
+  },
+  {
+    "rank": 26554,
+    "word": "勇む",
+    "reading": "いさむ",
+    "meaning": "to be in high spirits"
+  },
+  {
+    "rank": 26609,
+    "word": "思い過ごし",
+    "reading": "おもいすごし",
+    "meaning": "groundless fear"
+  },
+  {
+    "rank": 26643,
+    "word": "ヤケクソ",
+    "reading": "ヤケクソ",
+    "meaning": "desperate"
+  },
+  {
+    "rank": 26645,
+    "word": "デレる",
+    "reading": "デレる",
+    "meaning": "to act lovestruck"
+  },
+  {
+    "rank": 26653,
+    "word": "狂暴",
+    "reading": "きょうぼう",
+    "meaning": "rage"
+  },
+  {
+    "rank": 26654,
+    "word": "ムカムカ",
+    "reading": "ムカムカ",
+    "meaning": "feeling sick"
+  },
+  {
+    "rank": 26664,
+    "word": "悩みを抱える",
+    "reading": "なやみをかかえる",
+    "meaning": "to have troubles"
+  },
+  {
+    "rank": 26686,
+    "word": "心が動く",
+    "reading": "こころがうごく",
+    "meaning": "to take a fancy to something"
+  },
+  {
+    "rank": 26689,
+    "word": "気が気ではない",
+    "reading": "きがきではない",
+    "meaning": "feeling uneasy"
+  },
+  {
+    "rank": 26741,
+    "word": "空元気",
+    "reading": "からげんき",
+    "meaning": "putting on a brave face"
+  },
+  {
+    "rank": 26748,
+    "word": "考え抜く",
+    "reading": "かんがえぬく",
+    "meaning": "to think thoroughly"
+  },
+  {
+    "rank": 26767,
+    "word": "お経",
+    "reading": "おきょう",
+    "meaning": "sutra"
+  },
+  {
+    "rank": 26821,
+    "word": "狂喜",
+    "reading": "きょうき",
+    "meaning": "wild joy"
+  },
+  {
+    "rank": 26846,
+    "word": "乱心",
+    "reading": "らんしん",
+    "meaning": "mental derangement"
+  },
+  {
+    "rank": 26847,
+    "word": "悲愴",
+    "reading": "ひそう",
+    "meaning": "pathetic"
+  },
+  {
+    "rank": 26853,
+    "word": "義憤",
+    "reading": "ぎふん",
+    "meaning": "righteous indignation"
+  },
+  {
+    "rank": 26931,
+    "word": "惚れ込む",
+    "reading": "ほれこむ",
+    "meaning": "to be charmed by"
+  },
+  {
+    "rank": 26940,
+    "word": "意地張る",
+    "reading": "いじばる",
+    "meaning": "to be stubborn"
+  },
+  {
+    "rank": 26951,
+    "word": "情念",
+    "reading": "じょうねん",
+    "meaning": "sentiments"
+  },
+  {
+    "rank": 26971,
+    "word": "大はしゃぎ",
+    "reading": "おおはしゃぎ",
+    "meaning": "high spirits"
+  },
+  {
+    "rank": 26978,
+    "word": "プラネタリウム",
+    "reading": "プラネタリウム",
+    "meaning": "planetarium"
+  }
+]

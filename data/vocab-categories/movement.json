@@ -1,0 +1,8180 @@
+[
+  {
+    "rank": 19,
+    "word": "くれる",
+    "reading": "くれる",
+    "meaning": "to give"
+  },
+  {
+    "rank": 24,
+    "word": "行く",
+    "reading": "いく",
+    "meaning": "to go"
+  },
+  {
+    "rank": 32,
+    "word": "人",
+    "reading": "ひと",
+    "meaning": "person"
+  },
+  {
+    "rank": 126,
+    "word": "音",
+    "reading": "おと",
+    "meaning": "sound"
+  },
+  {
+    "rank": 140,
+    "word": "力",
+    "reading": "りょく",
+    "meaning": "strength"
+  },
+  {
+    "rank": 156,
+    "word": "こちら",
+    "reading": "こちら",
+    "meaning": "this way"
+  },
+  {
+    "rank": 167,
+    "word": "何も",
+    "reading": "なにも",
+    "meaning": "(not) anything"
+  },
+  {
+    "rank": 198,
+    "word": "開く",
+    "reading": "ひらく",
+    "meaning": "to open"
+  },
+  {
+    "rank": 248,
+    "word": "以外",
+    "reading": "いがい",
+    "meaning": "with the exception of"
+  },
+  {
+    "rank": 291,
+    "word": "人",
+    "reading": "ひと",
+    "meaning": "person"
+  },
+  {
+    "rank": 309,
+    "word": "近づく",
+    "reading": "ちかづく",
+    "meaning": "to approach"
+  },
+  {
+    "rank": 310,
+    "word": "与える",
+    "reading": "あたえる",
+    "meaning": "to give (esp. to someone of lower status)"
+  },
+  {
+    "rank": 608,
+    "word": "気分",
+    "reading": "きぶん",
+    "meaning": "feeling"
+  },
+  {
+    "rank": 640,
+    "word": "海",
+    "reading": "うみ",
+    "meaning": "sea"
+  },
+  {
+    "rank": 653,
+    "word": "握る",
+    "reading": "にぎる",
+    "meaning": "to clasp"
+  },
+  {
+    "rank": 743,
+    "word": "それぞれ",
+    "reading": "それぞれ",
+    "meaning": "each"
+  },
+  {
+    "rank": 761,
+    "word": "雰囲気",
+    "reading": "ふんいき",
+    "meaning": "atmosphere"
+  },
+  {
+    "rank": 828,
+    "word": "打つ",
+    "reading": "うつ",
+    "meaning": "to hit"
+  },
+  {
+    "rank": 937,
+    "word": "地",
+    "reading": "ち",
+    "meaning": "earth"
+  },
+  {
+    "rank": 960,
+    "word": "平気",
+    "reading": "へいき",
+    "meaning": "coolness"
+  },
+  {
+    "rank": 1019,
+    "word": "超える",
+    "reading": "こえる",
+    "meaning": "to cross over"
+  },
+  {
+    "rank": 1026,
+    "word": "いなくなる",
+    "reading": "いなくなる",
+    "meaning": "to disappear (of people or animals)"
+  },
+  {
+    "rank": 1037,
+    "word": "伸びる",
+    "reading": "のびる",
+    "meaning": "to stretch"
+  },
+  {
+    "rank": 1040,
+    "word": "下がる",
+    "reading": "さがる",
+    "meaning": "to come down"
+  },
+  {
+    "rank": 1044,
+    "word": "通う",
+    "reading": "かよう",
+    "meaning": "to go to and from (a place)"
+  },
+  {
+    "rank": 1047,
+    "word": "一歩",
+    "reading": "いっぽ",
+    "meaning": "(a) step"
+  },
+  {
+    "rank": 1053,
+    "word": "通じる",
+    "reading": "つうじる",
+    "meaning": "to be open (to traffic)"
+  },
+  {
+    "rank": 1060,
+    "word": "遅れる",
+    "reading": "おくれる",
+    "meaning": "to be late"
+  },
+  {
+    "rank": 1119,
+    "word": "間に合う",
+    "reading": "まにあう",
+    "meaning": "to be in time (for)"
+  },
+  {
+    "rank": 1120,
+    "word": "到着",
+    "reading": "とうちゃく",
+    "meaning": "arrival"
+  },
+  {
+    "rank": 1122,
+    "word": "寄る",
+    "reading": "よる",
+    "meaning": "to approach"
+  },
+  {
+    "rank": 1145,
+    "word": "大きくなる",
+    "reading": "おおきくなる",
+    "meaning": "to grow up"
+  },
+  {
+    "rank": 1149,
+    "word": "至る",
+    "reading": "いたる",
+    "meaning": "to arrive at (e.g. a decision)"
+  },
+  {
+    "rank": 1150,
+    "word": "降る",
+    "reading": "くだる",
+    "meaning": "to descend"
+  },
+  {
+    "rank": 1156,
+    "word": "出かける",
+    "reading": "でかける",
+    "meaning": "to go out (e.g. on an excursion or outing)"
+  },
+  {
+    "rank": 1186,
+    "word": "及ぶ",
+    "reading": "およぶ",
+    "meaning": "to reach"
+  },
+  {
+    "rank": 1228,
+    "word": "立ち上がる",
+    "reading": "たちあがる",
+    "meaning": "to stand up"
+  },
+  {
+    "rank": 1232,
+    "word": "浮かべる",
+    "reading": "うかべる",
+    "meaning": "to float"
+  },
+  {
+    "rank": 1255,
+    "word": "振り返る",
+    "reading": "ふりかえる",
+    "meaning": "to turn one's head"
+  },
+  {
+    "rank": 1267,
+    "word": "見上げる",
+    "reading": "みあげる",
+    "meaning": "to look up at"
+  },
+  {
+    "rank": 1286,
+    "word": "浮かぶ",
+    "reading": "うかぶ",
+    "meaning": "to float"
+  },
+  {
+    "rank": 1370,
+    "word": "揺れる",
+    "reading": "ゆれる",
+    "meaning": "to shake"
+  },
+  {
+    "rank": 1377,
+    "word": "頭を下げる",
+    "reading": "あたまをさげる",
+    "meaning": "to bow"
+  },
+  {
+    "rank": 1415,
+    "word": "飛び出す",
+    "reading": "とびだす",
+    "meaning": "to jump out"
+  },
+  {
+    "rank": 1441,
+    "word": "伸ばす",
+    "reading": "のばす",
+    "meaning": "to grow long (e.g. hair, nails)"
+  },
+  {
+    "rank": 1502,
+    "word": "追いかける",
+    "reading": "おいかける",
+    "meaning": "to chase"
+  },
+  {
+    "rank": 1506,
+    "word": "船",
+    "reading": "ふね",
+    "meaning": "ship"
+  },
+  {
+    "rank": 1574,
+    "word": "投げる",
+    "reading": "なげる",
+    "meaning": "to throw"
+  },
+  {
+    "rank": 1583,
+    "word": "突っ込む",
+    "reading": "つっこむ",
+    "meaning": "to thrust (something) into (something)"
+  },
+  {
+    "rank": 1585,
+    "word": "振り向く",
+    "reading": "ふりむく",
+    "meaning": "to turn one's face"
+  },
+  {
+    "rank": 1622,
+    "word": "転がる",
+    "reading": "ころがる",
+    "meaning": "to roll"
+  },
+  {
+    "rank": 1628,
+    "word": "旅",
+    "reading": "たび",
+    "meaning": "travel"
+  },
+  {
+    "rank": 1640,
+    "word": "飛ばす",
+    "reading": "とばす",
+    "meaning": "to let fly"
+  },
+  {
+    "rank": 1641,
+    "word": "連れてくる",
+    "reading": "つれてくる",
+    "meaning": "to bring someone along"
+  },
+  {
+    "rank": 1645,
+    "word": "見送る",
+    "reading": "みおくる",
+    "meaning": "to see someone off (at a station, an airport, etc.)"
+  },
+  {
+    "rank": 1657,
+    "word": "参る",
+    "reading": "まいる",
+    "meaning": "to go"
+  },
+  {
+    "rank": 1660,
+    "word": "行ってくる",
+    "reading": "いってくる",
+    "meaning": "I'm off"
+  },
+  {
+    "rank": 1661,
+    "word": "踏む",
+    "reading": "ふむ",
+    "meaning": "to step on"
+  },
+  {
+    "rank": 1663,
+    "word": "沈む",
+    "reading": "しずむ",
+    "meaning": "to sink"
+  },
+  {
+    "rank": 1693,
+    "word": "背負う",
+    "reading": "せおう",
+    "meaning": "to carry on one's back"
+  },
+  {
+    "rank": 1712,
+    "word": "飛び込む",
+    "reading": "とびこむ",
+    "meaning": "to jump in"
+  },
+  {
+    "rank": 1717,
+    "word": "逃げ出す",
+    "reading": "にげだす",
+    "meaning": "to run away"
+  },
+  {
+    "rank": 1767,
+    "word": "越える",
+    "reading": "こえる",
+    "meaning": "to cross over"
+  },
+  {
+    "rank": 1771,
+    "word": "漂う",
+    "reading": "ただよう",
+    "meaning": "to drift"
+  },
+  {
+    "rank": 1786,
+    "word": "崩れる",
+    "reading": "くずれる",
+    "meaning": "to collapse"
+  },
+  {
+    "rank": 1822,
+    "word": "やって来る",
+    "reading": "やってくる",
+    "meaning": "to come along"
+  },
+  {
+    "rank": 1832,
+    "word": "込む",
+    "reading": "こむ",
+    "meaning": "to be crowded"
+  },
+  {
+    "rank": 1853,
+    "word": "帰り",
+    "reading": "かえり",
+    "meaning": "return"
+  },
+  {
+    "rank": 1859,
+    "word": "育つ",
+    "reading": "そだつ",
+    "meaning": "to be raised (e.g. child)"
+  },
+  {
+    "rank": 1871,
+    "word": "吹く",
+    "reading": "ふく",
+    "meaning": "to blow (of the wind)"
+  },
+  {
+    "rank": 1894,
+    "word": "寄せる",
+    "reading": "よせる",
+    "meaning": "to come near"
+  },
+  {
+    "rank": 1950,
+    "word": "泳ぐ",
+    "reading": "およぐ",
+    "meaning": "to swim"
+  },
+  {
+    "rank": 1958,
+    "word": "踊る",
+    "reading": "おどる",
+    "meaning": "to dance (orig. a hopping dance)"
+  },
+  {
+    "rank": 1979,
+    "word": "追いつく",
+    "reading": "おいつく",
+    "meaning": "to catch up (with)"
+  },
+  {
+    "rank": 1980,
+    "word": "ついてくる",
+    "reading": "ついてくる",
+    "meaning": "to follow"
+  },
+  {
+    "rank": 2009,
+    "word": "出発",
+    "reading": "しゅっぱつ",
+    "meaning": "departure"
+  },
+  {
+    "rank": 2051,
+    "word": "連れて行く",
+    "reading": "つれていく",
+    "meaning": "to take someone (to some place)"
+  },
+  {
+    "rank": 2062,
+    "word": "返る",
+    "reading": "かえる",
+    "meaning": "to return"
+  },
+  {
+    "rank": 2083,
+    "word": "浮く",
+    "reading": "うく",
+    "meaning": "to float"
+  },
+  {
+    "rank": 2084,
+    "word": "顔を出す",
+    "reading": "かおをだす",
+    "meaning": "to turn up"
+  },
+  {
+    "rank": 2097,
+    "word": "渡る",
+    "reading": "わたる",
+    "meaning": "to cross over"
+  },
+  {
+    "rank": 2114,
+    "word": "逃がす",
+    "reading": "にがす",
+    "meaning": "to set free"
+  },
+  {
+    "rank": 2121,
+    "word": "生える",
+    "reading": "はえる",
+    "meaning": "to grow"
+  },
+  {
+    "rank": 2127,
+    "word": "導く",
+    "reading": "みちびく",
+    "meaning": "to guide"
+  },
+  {
+    "rank": 2168,
+    "word": "持っていく",
+    "reading": "もっていく",
+    "meaning": "to take"
+  },
+  {
+    "rank": 2173,
+    "word": "達する",
+    "reading": "たっする",
+    "meaning": "to reach"
+  },
+  {
+    "rank": 2178,
+    "word": "移す",
+    "reading": "うつす",
+    "meaning": "to change"
+  },
+  {
+    "rank": 2186,
+    "word": "逃れる",
+    "reading": "のがれる",
+    "meaning": "to escape"
+  },
+  {
+    "rank": 2199,
+    "word": "登場",
+    "reading": "とうじょう",
+    "meaning": "entry (on stage)"
+  },
+  {
+    "rank": 2204,
+    "word": "移る",
+    "reading": "うつる",
+    "meaning": "to move (house)"
+  },
+  {
+    "rank": 2207,
+    "word": "発",
+    "reading": "はつ",
+    "meaning": "departure"
+  },
+  {
+    "rank": 2214,
+    "word": "盛り上がる",
+    "reading": "もりあがる",
+    "meaning": "to swell"
+  },
+  {
+    "rank": 2264,
+    "word": "詰まる",
+    "reading": "つまる",
+    "meaning": "to be packed (with)"
+  },
+  {
+    "rank": 2274,
+    "word": "登る",
+    "reading": "のぼる",
+    "meaning": "to ascend"
+  },
+  {
+    "rank": 2294,
+    "word": "運動",
+    "reading": "うんどう",
+    "meaning": "exercise"
+  },
+  {
+    "rank": 2311,
+    "word": "上る",
+    "reading": "のぼる",
+    "meaning": "to ascend"
+  },
+  {
+    "rank": 2318,
+    "word": "乗り込む",
+    "reading": "のりこむ",
+    "meaning": "to board"
+  },
+  {
+    "rank": 2329,
+    "word": "くだる",
+    "reading": "くだる",
+    "meaning": "to descend"
+  },
+  {
+    "rank": 2346,
+    "word": "泊まる",
+    "reading": "とまる",
+    "meaning": "to stay at (e.g. hotel)"
+  },
+  {
+    "rank": 2390,
+    "word": "近寄る",
+    "reading": "ちかよる",
+    "meaning": "to approach"
+  },
+  {
+    "rank": 2402,
+    "word": "訪ねる",
+    "reading": "たずねる",
+    "meaning": "to visit"
+  },
+  {
+    "rank": 2420,
+    "word": "よっぽど",
+    "reading": "よっぽど",
+    "meaning": "very"
+  },
+  {
+    "rank": 2421,
+    "word": "散歩",
+    "reading": "さんぽ",
+    "meaning": "walk"
+  },
+  {
+    "rank": 2426,
+    "word": "転ぶ",
+    "reading": "ころぶ",
+    "meaning": "to fall down"
+  },
+  {
+    "rank": 2436,
+    "word": "引きずる",
+    "reading": "ひきずる",
+    "meaning": "to drag along"
+  },
+  {
+    "rank": 2437,
+    "word": "陥る",
+    "reading": "おちいる",
+    "meaning": "to fall into (e.g. a hole)"
+  },
+  {
+    "rank": 2456,
+    "word": "電車",
+    "reading": "でんしゃ",
+    "meaning": "train"
+  },
+  {
+    "rank": 2458,
+    "word": "旅行",
+    "reading": "りょこう",
+    "meaning": "travel"
+  },
+  {
+    "rank": 2459,
+    "word": "乗り越える",
+    "reading": "のりこえる",
+    "meaning": "to climb over"
+  },
+  {
+    "rank": 2488,
+    "word": "くっつく",
+    "reading": "くっつく",
+    "meaning": "to adhere to"
+  },
+  {
+    "rank": 2494,
+    "word": "抜け出す",
+    "reading": "ぬけだす",
+    "meaning": "to slip out"
+  },
+  {
+    "rank": 2509,
+    "word": "下る",
+    "reading": "くだる",
+    "meaning": "to descend"
+  },
+  {
+    "rank": 2596,
+    "word": "入り込む",
+    "reading": "はいりこむ",
+    "meaning": "to go into"
+  },
+  {
+    "rank": 2616,
+    "word": "出入り",
+    "reading": "でいり",
+    "meaning": "going in and out"
+  },
+  {
+    "rank": 2620,
+    "word": "持ち込む",
+    "reading": "もちこむ",
+    "meaning": "to take something into ..."
+  },
+  {
+    "rank": 2623,
+    "word": "近づける",
+    "reading": "ちかづける",
+    "meaning": "to bring near"
+  },
+  {
+    "rank": 2661,
+    "word": "見に行く",
+    "reading": "みにいく",
+    "meaning": "to go to see (something, someone)"
+  },
+  {
+    "rank": 2674,
+    "word": "入り",
+    "reading": "いり",
+    "meaning": "entering"
+  },
+  {
+    "rank": 2701,
+    "word": "逃す",
+    "reading": "のがす",
+    "meaning": "to miss (e.g. a chance)"
+  },
+  {
+    "rank": 2702,
+    "word": "姿を見せる",
+    "reading": "すがたをみせる",
+    "meaning": "to show up"
+  },
+  {
+    "rank": 2731,
+    "word": "高まる",
+    "reading": "たかまる",
+    "meaning": "to rise"
+  },
+  {
+    "rank": 2737,
+    "word": "歩む",
+    "reading": "あゆむ",
+    "meaning": "to walk"
+  },
+  {
+    "rank": 2760,
+    "word": "帰す",
+    "reading": "かえす",
+    "meaning": "to send (someone) back"
+  },
+  {
+    "rank": 2782,
+    "word": "外出",
+    "reading": "がいしゅつ",
+    "meaning": "going out"
+  },
+  {
+    "rank": 2862,
+    "word": "手を伸ばす",
+    "reading": "てをのばす",
+    "meaning": "to put out one's hand"
+  },
+  {
+    "rank": 2876,
+    "word": "見下ろす",
+    "reading": "みおろす",
+    "meaning": "to overlook"
+  },
+  {
+    "rank": 2877,
+    "word": "溢れる",
+    "reading": "あふれる",
+    "meaning": "to overflow"
+  },
+  {
+    "rank": 2882,
+    "word": "覗く",
+    "reading": "のぞく",
+    "meaning": "to peek (through a keyhole, gap, etc.)"
+  },
+  {
+    "rank": 2908,
+    "word": "馬車",
+    "reading": "ばしゃ",
+    "meaning": "coach (horse-drawn)"
+  },
+  {
+    "rank": 2932,
+    "word": "手を振る",
+    "reading": "てをふる",
+    "meaning": "to wave one's hand"
+  },
+  {
+    "rank": 2936,
+    "word": "立ち止まる",
+    "reading": "たちどまる",
+    "meaning": "to stop (in one's tracks)"
+  },
+  {
+    "rank": 2981,
+    "word": "駆け寄る",
+    "reading": "かけよる",
+    "meaning": "to rush over"
+  },
+  {
+    "rank": 3006,
+    "word": "脱出",
+    "reading": "だっしゅつ",
+    "meaning": "escape"
+  },
+  {
+    "rank": 3017,
+    "word": "舞う",
+    "reading": "まう",
+    "meaning": "to dance (orig. a whirling dance)"
+  },
+  {
+    "rank": 3032,
+    "word": "回避",
+    "reading": "かいひ",
+    "meaning": "evasion"
+  },
+  {
+    "rank": 3076,
+    "word": "生き残る",
+    "reading": "いきのこる",
+    "meaning": "to survive"
+  },
+  {
+    "rank": 3082,
+    "word": "突き出す",
+    "reading": "つきだす",
+    "meaning": "to push out"
+  },
+  {
+    "rank": 3086,
+    "word": "駆ける",
+    "reading": "かける",
+    "meaning": "to run"
+  },
+  {
+    "rank": 3090,
+    "word": "合流",
+    "reading": "ごうりゅう",
+    "meaning": "confluence (of rivers)"
+  },
+  {
+    "rank": 3093,
+    "word": "回転",
+    "reading": "かいてん",
+    "meaning": "rotation (usu. around something)"
+  },
+  {
+    "rank": 3098,
+    "word": "足を止める",
+    "reading": "あしをとめる",
+    "meaning": "to stop walking"
+  },
+  {
+    "rank": 3119,
+    "word": "暴走",
+    "reading": "ぼうそう",
+    "meaning": "acting rashly"
+  },
+  {
+    "rank": 3122,
+    "word": "跳ねる",
+    "reading": "はねる",
+    "meaning": "to jump"
+  },
+  {
+    "rank": 3171,
+    "word": "背を向ける",
+    "reading": "せをむける",
+    "meaning": "to pretend not to see"
+  },
+  {
+    "rank": 3187,
+    "word": "立ち去る",
+    "reading": "たちさる",
+    "meaning": "to leave"
+  },
+  {
+    "rank": 3196,
+    "word": "後にする",
+    "reading": "あとにする",
+    "meaning": "to leave behind"
+  },
+  {
+    "rank": 3198,
+    "word": "踏み込む",
+    "reading": "ふみこむ",
+    "meaning": "to step into (e.g. someone else's territory)"
+  },
+  {
+    "rank": 3205,
+    "word": "追い詰める",
+    "reading": "おいつめる",
+    "meaning": "to corner"
+  },
+  {
+    "rank": 3217,
+    "word": "滑る",
+    "reading": "すべる",
+    "meaning": "to glide"
+  },
+  {
+    "rank": 3259,
+    "word": "たどり着く",
+    "reading": "たどりつく",
+    "meaning": "to arrive at (after a struggle)"
+  },
+  {
+    "rank": 3261,
+    "word": "動き出す",
+    "reading": "うごきだす",
+    "meaning": "to come alive"
+  },
+  {
+    "rank": 3266,
+    "word": "巡る",
+    "reading": "めぐる",
+    "meaning": "to go around"
+  },
+  {
+    "rank": 3277,
+    "word": "目にする",
+    "reading": "めにする",
+    "meaning": "to see"
+  },
+  {
+    "rank": 3295,
+    "word": "姿を消す",
+    "reading": "すがたをけす",
+    "meaning": "to disappear"
+  },
+  {
+    "rank": 3300,
+    "word": "辿り着く",
+    "reading": "たどりつく",
+    "meaning": "to arrive at (after a struggle)"
+  },
+  {
+    "rank": 3327,
+    "word": "接近",
+    "reading": "せっきん",
+    "meaning": "getting closer"
+  },
+  {
+    "rank": 3330,
+    "word": "走り出す",
+    "reading": "はしりだす",
+    "meaning": "to begin to run"
+  },
+  {
+    "rank": 3335,
+    "word": "向き直る",
+    "reading": "むきなおる",
+    "meaning": "to turn round"
+  },
+  {
+    "rank": 3342,
+    "word": "通り過ぎる",
+    "reading": "とおりすぎる",
+    "meaning": "to go past"
+  },
+  {
+    "rank": 3344,
+    "word": "姿を現す",
+    "reading": "すがたをあらわす",
+    "meaning": "to make an appearance"
+  },
+  {
+    "rank": 3345,
+    "word": "起き上がる",
+    "reading": "おきあがる",
+    "meaning": "to rise"
+  },
+  {
+    "rank": 3346,
+    "word": "鈍い",
+    "reading": "にぶい",
+    "meaning": "dull (e.g. a knife)"
+  },
+  {
+    "rank": 3351,
+    "word": "この辺り",
+    "reading": "このあたり",
+    "meaning": "this area"
+  },
+  {
+    "rank": 3353,
+    "word": "見据える",
+    "reading": "みすえる",
+    "meaning": "to stare fixedly at"
+  },
+  {
+    "rank": 3403,
+    "word": "俯く",
+    "reading": "うつむく",
+    "meaning": "to hang one's head"
+  },
+  {
+    "rank": 3439,
+    "word": "足取り",
+    "reading": "あしどり",
+    "meaning": "gait"
+  },
+  {
+    "rank": 3441,
+    "word": "遭遇",
+    "reading": "そうぐう",
+    "meaning": "encounter"
+  },
+  {
+    "rank": 3468,
+    "word": "落下",
+    "reading": "らっか",
+    "meaning": "fall"
+  },
+  {
+    "rank": 3472,
+    "word": "這う",
+    "reading": "はう",
+    "meaning": "to crawl"
+  },
+  {
+    "rank": 3491,
+    "word": "加速",
+    "reading": "かそく",
+    "meaning": "acceleration"
+  },
+  {
+    "rank": 3492,
+    "word": "同行",
+    "reading": "どうこう",
+    "meaning": "accompanying"
+  },
+  {
+    "rank": 3493,
+    "word": "手を引く",
+    "reading": "てをひく",
+    "meaning": "to withdraw from (a deal)"
+  },
+  {
+    "rank": 3523,
+    "word": "横たわる",
+    "reading": "よこたわる",
+    "meaning": "to lie down"
+  },
+  {
+    "rank": 3530,
+    "word": "逸らす",
+    "reading": "そらす",
+    "meaning": "to turn away (one's eyes, face, etc.)"
+  },
+  {
+    "rank": 3581,
+    "word": "腰を下ろす",
+    "reading": "こしをおろす",
+    "meaning": "to sit down"
+  },
+  {
+    "rank": 3619,
+    "word": "出迎える",
+    "reading": "でむかえる",
+    "meaning": "to meet"
+  },
+  {
+    "rank": 3622,
+    "word": "駆けつける",
+    "reading": "かけつける",
+    "meaning": "to run to"
+  },
+  {
+    "rank": 3623,
+    "word": "帰って来る",
+    "reading": "かえってくる",
+    "meaning": "to return"
+  },
+  {
+    "rank": 3632,
+    "word": "響き渡る",
+    "reading": "ひびきわたる",
+    "meaning": "to resound"
+  },
+  {
+    "rank": 3633,
+    "word": "傾く",
+    "reading": "かたむく",
+    "meaning": "to incline toward"
+  },
+  {
+    "rank": 3668,
+    "word": "避難",
+    "reading": "ひなん",
+    "meaning": "taking refuge"
+  },
+  {
+    "rank": 3683,
+    "word": "浮かび上がる",
+    "reading": "うかびあがる",
+    "meaning": "to rise to the surface"
+  },
+  {
+    "rank": 3711,
+    "word": "歩み寄る",
+    "reading": "あゆみよる",
+    "meaning": "to compromise"
+  },
+  {
+    "rank": 3731,
+    "word": "押し込む",
+    "reading": "おしこむ",
+    "meaning": "to push into"
+  },
+  {
+    "rank": 3732,
+    "word": "遠ざかる",
+    "reading": "とおざかる",
+    "meaning": "to go away"
+  },
+  {
+    "rank": 3748,
+    "word": "垂れる",
+    "reading": "たれる",
+    "meaning": "to hang"
+  },
+  {
+    "rank": 3753,
+    "word": "引き取る",
+    "reading": "ひきとる",
+    "meaning": "to take into one's possession"
+  },
+  {
+    "rank": 3756,
+    "word": "昇る",
+    "reading": "のぼる",
+    "meaning": "to ascend"
+  },
+  {
+    "rank": 3765,
+    "word": "歩",
+    "reading": "ほ",
+    "meaning": "step"
+  },
+  {
+    "rank": 3767,
+    "word": "到達",
+    "reading": "とうたつ",
+    "meaning": "reaching"
+  },
+  {
+    "rank": 3784,
+    "word": "潜む",
+    "reading": "ひそむ",
+    "meaning": "to lurk"
+  },
+  {
+    "rank": 3809,
+    "word": "突入",
+    "reading": "とつにゅう",
+    "meaning": "rushing into"
+  },
+  {
+    "rank": 3852,
+    "word": "足を踏み入れる",
+    "reading": "あしをふみいれる",
+    "meaning": "to set foot into"
+  },
+  {
+    "rank": 3882,
+    "word": "上昇",
+    "reading": "じょうしょう",
+    "meaning": "rising"
+  },
+  {
+    "rank": 3888,
+    "word": "見失う",
+    "reading": "みうしなう",
+    "meaning": "to lose sight of"
+  },
+  {
+    "rank": 3905,
+    "word": "横になる",
+    "reading": "よこになる",
+    "meaning": "to lie down (and rest)"
+  },
+  {
+    "rank": 3917,
+    "word": "伝う",
+    "reading": "つたう",
+    "meaning": "to go along"
+  },
+  {
+    "rank": 3975,
+    "word": "向き",
+    "reading": "むき",
+    "meaning": "direction"
+  },
+  {
+    "rank": 3984,
+    "word": "帰宅",
+    "reading": "きたく",
+    "meaning": "returning home"
+  },
+  {
+    "rank": 3985,
+    "word": "押し寄せる",
+    "reading": "おしよせる",
+    "meaning": "to advance on"
+  },
+  {
+    "rank": 3986,
+    "word": "自転車",
+    "reading": "じてんしゃ",
+    "meaning": "bicycle"
+  },
+  {
+    "rank": 4002,
+    "word": "掛かる",
+    "reading": "かかる",
+    "meaning": "to take (a resource, e.g. time or money)"
+  },
+  {
+    "rank": 4007,
+    "word": "崩れ落ちる",
+    "reading": "くずれおちる",
+    "meaning": "to crumble down"
+  },
+  {
+    "rank": 4015,
+    "word": "進行",
+    "reading": "しんこう",
+    "meaning": "moving forward (e.g. vehicle)"
+  },
+  {
+    "rank": 4061,
+    "word": "戻って来る",
+    "reading": "もどってくる",
+    "meaning": "to come back"
+  },
+  {
+    "rank": 4064,
+    "word": "駆け出す",
+    "reading": "かけだす",
+    "meaning": "to run off"
+  },
+  {
+    "rank": 4081,
+    "word": "座り込む",
+    "reading": "すわりこむ",
+    "meaning": "to sit down (and refuse to move)"
+  },
+  {
+    "rank": 4093,
+    "word": "腰掛ける",
+    "reading": "こしかける",
+    "meaning": "to sit (down)"
+  },
+  {
+    "rank": 4103,
+    "word": "突撃",
+    "reading": "とつげき",
+    "meaning": "charge"
+  },
+  {
+    "rank": 4106,
+    "word": "寄り添う",
+    "reading": "よりそう",
+    "meaning": "to get close"
+  },
+  {
+    "rank": 4140,
+    "word": "帰還",
+    "reading": "きかん",
+    "meaning": "repatriation"
+  },
+  {
+    "rank": 4173,
+    "word": "着地",
+    "reading": "ちゃくち",
+    "meaning": "landing"
+  },
+  {
+    "rank": 4190,
+    "word": "飛び降りる",
+    "reading": "とびおりる",
+    "meaning": "to jump down"
+  },
+  {
+    "rank": 4194,
+    "word": "運転",
+    "reading": "うんてん",
+    "meaning": "operation (of a machine, etc.)"
+  },
+  {
+    "rank": 4199,
+    "word": "くぐる",
+    "reading": "くぐる",
+    "meaning": "to go under"
+  },
+  {
+    "rank": 4209,
+    "word": "引き返す",
+    "reading": "ひきかえす",
+    "meaning": "to turn back"
+  },
+  {
+    "rank": 4215,
+    "word": "目に遭う",
+    "reading": "めにあう",
+    "meaning": "to go through"
+  },
+  {
+    "rank": 4247,
+    "word": "異変",
+    "reading": "いへん",
+    "meaning": "unusual event"
+  },
+  {
+    "rank": 4253,
+    "word": "敷地",
+    "reading": "しきち",
+    "meaning": "site"
+  },
+  {
+    "rank": 4274,
+    "word": "いでる",
+    "reading": "いでる",
+    "meaning": "to go"
+  },
+  {
+    "rank": 4301,
+    "word": "迎えに来る",
+    "reading": "むかえにくる",
+    "meaning": "to call for somebody"
+  },
+  {
+    "rank": 4310,
+    "word": "すれ違う",
+    "reading": "すれちがう",
+    "meaning": "to pass (by) each other"
+  },
+  {
+    "rank": 4317,
+    "word": "前に進む",
+    "reading": "まえにすすむ",
+    "meaning": "to move forward"
+  },
+  {
+    "rank": 4337,
+    "word": "潜る",
+    "reading": "もぐる",
+    "meaning": "to dive (into or under water)"
+  },
+  {
+    "rank": 4338,
+    "word": "撤退",
+    "reading": "てったい",
+    "meaning": "evacuation"
+  },
+  {
+    "rank": 4340,
+    "word": "身を乗り出す",
+    "reading": "みをのりだす",
+    "meaning": "to bend oneself forward (esp. in curiosity or excitement)"
+  },
+  {
+    "rank": 4349,
+    "word": "立ち尽くす",
+    "reading": "たちつくす",
+    "meaning": "to stand stock still"
+  },
+  {
+    "rank": 4366,
+    "word": "持って行く",
+    "reading": "もっていく",
+    "meaning": "to take"
+  },
+  {
+    "rank": 4425,
+    "word": "吹き飛ぶ",
+    "reading": "ふきとぶ",
+    "meaning": "to be blown off"
+  },
+  {
+    "rank": 4439,
+    "word": "退く",
+    "reading": "しりぞく",
+    "meaning": "to step back"
+  },
+  {
+    "rank": 4512,
+    "word": "歩み",
+    "reading": "あゆみ",
+    "meaning": "walking"
+  },
+  {
+    "rank": 4519,
+    "word": "後を追う",
+    "reading": "あとをおう",
+    "meaning": "to follow"
+  },
+  {
+    "rank": 4520,
+    "word": "元に戻る",
+    "reading": "もとにもどる",
+    "meaning": "to return to normal"
+  },
+  {
+    "rank": 4526,
+    "word": "通過",
+    "reading": "つうか",
+    "meaning": "passing through (a tunnel, station, town, etc.)"
+  },
+  {
+    "rank": 4539,
+    "word": "ついていく",
+    "reading": "ついていく",
+    "meaning": "to accompany"
+  },
+  {
+    "rank": 4541,
+    "word": "浸る",
+    "reading": "ひたる",
+    "meaning": "to be soaked in"
+  },
+  {
+    "rank": 4623,
+    "word": "に従い",
+    "reading": "にしたがい",
+    "meaning": "in accordance with"
+  },
+  {
+    "rank": 4624,
+    "word": "溺れる",
+    "reading": "おぼれる",
+    "meaning": "to struggle in the water"
+  },
+  {
+    "rank": 4653,
+    "word": "駆け抜ける",
+    "reading": "かけぬける",
+    "meaning": "to run past from behind"
+  },
+  {
+    "rank": 4656,
+    "word": "立ち向かう",
+    "reading": "たちむかう",
+    "meaning": "to fight against"
+  },
+  {
+    "rank": 4673,
+    "word": "呼び止める",
+    "reading": "よびとめる",
+    "meaning": "to (call and) stop"
+  },
+  {
+    "rank": 4685,
+    "word": "膝をつく",
+    "reading": "ひざをつく",
+    "meaning": "to fall to one's knees"
+  },
+  {
+    "rank": 4751,
+    "word": "降ろす",
+    "reading": "おろす",
+    "meaning": "to take down"
+  },
+  {
+    "rank": 4764,
+    "word": "肩を落とす",
+    "reading": "かたをおとす",
+    "meaning": "to drop one's shoulders"
+  },
+  {
+    "rank": 4765,
+    "word": "跳ぶ",
+    "reading": "とぶ",
+    "meaning": "to fly"
+  },
+  {
+    "rank": 4771,
+    "word": "持ち帰る",
+    "reading": "もちかえる",
+    "meaning": "to take home"
+  },
+  {
+    "rank": 4835,
+    "word": "赴く",
+    "reading": "おもむく",
+    "meaning": "to go in the direction of"
+  },
+  {
+    "rank": 4837,
+    "word": "広まる",
+    "reading": "ひろまる",
+    "meaning": "to spread"
+  },
+  {
+    "rank": 4842,
+    "word": "転がす",
+    "reading": "ころがす",
+    "meaning": "to roll"
+  },
+  {
+    "rank": 4853,
+    "word": "生き延びる",
+    "reading": "いきのびる",
+    "meaning": "to survive"
+  },
+  {
+    "rank": 4859,
+    "word": "後退",
+    "reading": "こうたい",
+    "meaning": "retreat"
+  },
+  {
+    "rank": 4879,
+    "word": "潜り込む",
+    "reading": "もぐりこむ",
+    "meaning": "to slip into"
+  },
+  {
+    "rank": 4898,
+    "word": "飛び散る",
+    "reading": "とびちる",
+    "meaning": "to fly around"
+  },
+  {
+    "rank": 4965,
+    "word": "割り込む",
+    "reading": "わりこむ",
+    "meaning": "to cut into (a line, conversation, etc.)"
+  },
+  {
+    "rank": 4997,
+    "word": "飛行機",
+    "reading": "ひこうき",
+    "meaning": "aeroplane"
+  },
+  {
+    "rank": 5016,
+    "word": "ずれる",
+    "reading": "ずれる",
+    "meaning": "to slide"
+  },
+  {
+    "rank": 5030,
+    "word": "垂らす",
+    "reading": "たらす",
+    "meaning": "to dribble"
+  },
+  {
+    "rank": 5033,
+    "word": "帰り道",
+    "reading": "かえりみち",
+    "meaning": "the way back"
+  },
+  {
+    "rank": 5040,
+    "word": "進路",
+    "reading": "しんろ",
+    "meaning": "route"
+  },
+  {
+    "rank": 5046,
+    "word": "登校",
+    "reading": "とうこう",
+    "meaning": "attendance (at school)"
+  },
+  {
+    "rank": 5090,
+    "word": "さらう",
+    "reading": "さらう",
+    "meaning": "to carry off"
+  },
+  {
+    "rank": 5093,
+    "word": "連れて来る",
+    "reading": "つれてくる",
+    "meaning": "to bring someone along"
+  },
+  {
+    "rank": 5110,
+    "word": "佇む",
+    "reading": "たたずむ",
+    "meaning": "to stand (still) a while"
+  },
+  {
+    "rank": 5130,
+    "word": "追い払う",
+    "reading": "おいはらう",
+    "meaning": "to drive away"
+  },
+  {
+    "rank": 5140,
+    "word": "前進",
+    "reading": "ぜんしん",
+    "meaning": "advance"
+  },
+  {
+    "rank": 5143,
+    "word": "引っ越す",
+    "reading": "ひっこす",
+    "meaning": "to move (house)"
+  },
+  {
+    "rank": 5145,
+    "word": "もがく",
+    "reading": "もがく",
+    "meaning": "to struggle"
+  },
+  {
+    "rank": 5151,
+    "word": "詰め寄る",
+    "reading": "つめよる",
+    "meaning": "to draw near"
+  },
+  {
+    "rank": 5152,
+    "word": "辿る",
+    "reading": "たどる",
+    "meaning": "to follow (road)"
+  },
+  {
+    "rank": 5154,
+    "word": "踵を返す",
+    "reading": "きびすをかえす",
+    "meaning": "to turn on one's heel"
+  },
+  {
+    "rank": 5159,
+    "word": "身動き",
+    "reading": "みうごき",
+    "meaning": "moving about"
+  },
+  {
+    "rank": 5171,
+    "word": "道中",
+    "reading": "どうちゅう",
+    "meaning": "journey"
+  },
+  {
+    "rank": 5196,
+    "word": "囚われる",
+    "reading": "とらわれる",
+    "meaning": "to be caught"
+  },
+  {
+    "rank": 5201,
+    "word": "飛びつく",
+    "reading": "とびつく",
+    "meaning": "to jump at"
+  },
+  {
+    "rank": 5212,
+    "word": "引き続く",
+    "reading": "ひきつづく",
+    "meaning": "to continue (for a long time)"
+  },
+  {
+    "rank": 5227,
+    "word": "舞い上がる",
+    "reading": "まいあがる",
+    "meaning": "to soar"
+  },
+  {
+    "rank": 5232,
+    "word": "空を飛ぶ",
+    "reading": "そらをとぶ",
+    "meaning": "to fly in the air"
+  },
+  {
+    "rank": 5263,
+    "word": "軌道",
+    "reading": "きどう",
+    "meaning": "orbit"
+  },
+  {
+    "rank": 5277,
+    "word": "送り出す",
+    "reading": "おくりだす",
+    "meaning": "to send out"
+  },
+  {
+    "rank": 5289,
+    "word": "一直線",
+    "reading": "いっちょくせん",
+    "meaning": "straight line"
+  },
+  {
+    "rank": 5290,
+    "word": "倒れ込む",
+    "reading": "たおれこむ",
+    "meaning": "to collapse into"
+  },
+  {
+    "rank": 5293,
+    "word": "大通り",
+    "reading": "おおどおり",
+    "meaning": "main street"
+  },
+  {
+    "rank": 5302,
+    "word": "くるくる",
+    "reading": "くるくる",
+    "meaning": "whirling"
+  },
+  {
+    "rank": 5303,
+    "word": "紛れる",
+    "reading": "まぎれる",
+    "meaning": "to disappear into"
+  },
+  {
+    "rank": 5304,
+    "word": "流れ込む",
+    "reading": "ながれこむ",
+    "meaning": "to flow into"
+  },
+  {
+    "rank": 5326,
+    "word": "降り立つ",
+    "reading": "おりたつ",
+    "meaning": "to go down and stand"
+  },
+  {
+    "rank": 5340,
+    "word": "引退",
+    "reading": "いんたい",
+    "meaning": "retirement"
+  },
+  {
+    "rank": 5341,
+    "word": "遠ざける",
+    "reading": "とおざける",
+    "meaning": "to keep away"
+  },
+  {
+    "rank": 5371,
+    "word": "ずらす",
+    "reading": "ずらす",
+    "meaning": "to shift"
+  },
+  {
+    "rank": 5393,
+    "word": "うずくまる",
+    "reading": "うずくまる",
+    "meaning": "to crouch"
+  },
+  {
+    "rank": 5419,
+    "word": "逃走",
+    "reading": "とうそう",
+    "meaning": "flight"
+  },
+  {
+    "rank": 5425,
+    "word": "ぐるりと",
+    "reading": "ぐるりと",
+    "meaning": "turning round"
+  },
+  {
+    "rank": 5437,
+    "word": "通り抜ける",
+    "reading": "とおりぬける",
+    "meaning": "to go through"
+  },
+  {
+    "rank": 5443,
+    "word": "出向く",
+    "reading": "でむく",
+    "meaning": "to go to"
+  },
+  {
+    "rank": 5448,
+    "word": "行",
+    "reading": "こう",
+    "meaning": "going"
+  },
+  {
+    "rank": 5507,
+    "word": "往復",
+    "reading": "おうふく",
+    "meaning": "making a round trip"
+  },
+  {
+    "rank": 5527,
+    "word": "飛び上がる",
+    "reading": "とびあがる",
+    "meaning": "to spring"
+  },
+  {
+    "rank": 5536,
+    "word": "足を運ぶ",
+    "reading": "あしをはこぶ",
+    "meaning": "to go"
+  },
+  {
+    "rank": 5558,
+    "word": "引っ込む",
+    "reading": "ひっこむ",
+    "meaning": "to draw back"
+  },
+  {
+    "rank": 5582,
+    "word": "張り付く",
+    "reading": "はりつく",
+    "meaning": "to stick (to)"
+  },
+  {
+    "rank": 5605,
+    "word": "放り投げる",
+    "reading": "ほうりなげる",
+    "meaning": "to throw"
+  },
+  {
+    "rank": 5636,
+    "word": "越す",
+    "reading": "こす",
+    "meaning": "to cross over (e.g. mountain)"
+  },
+  {
+    "rank": 5644,
+    "word": "立ち直る",
+    "reading": "たちなおる",
+    "meaning": "to regain one's footing"
+  },
+  {
+    "rank": 5651,
+    "word": "運転手",
+    "reading": "うんてんしゅ",
+    "meaning": "driver"
+  },
+  {
+    "rank": 5685,
+    "word": "行き先",
+    "reading": "いきさき",
+    "meaning": "destination"
+  },
+  {
+    "rank": 5686,
+    "word": "歩き回る",
+    "reading": "あるきまわる",
+    "meaning": "to walk about"
+  },
+  {
+    "rank": 5704,
+    "word": "すがる",
+    "reading": "すがる",
+    "meaning": "to cling to"
+  },
+  {
+    "rank": 5721,
+    "word": "足早",
+    "reading": "あしばや",
+    "meaning": "fast (walking)"
+  },
+  {
+    "rank": 5727,
+    "word": "何度も",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 5732,
+    "word": "よろめく",
+    "reading": "よろめく",
+    "meaning": "to stagger"
+  },
+  {
+    "rank": 5747,
+    "word": "吹っ飛ぶ",
+    "reading": "ふっとぶ",
+    "meaning": "to blow off"
+  },
+  {
+    "rank": 5770,
+    "word": "無能",
+    "reading": "むのう",
+    "meaning": "incompetence"
+  },
+  {
+    "rank": 5783,
+    "word": "建つ",
+    "reading": "たつ",
+    "meaning": "to be erected"
+  },
+  {
+    "rank": 5784,
+    "word": "忍び込む",
+    "reading": "しのびこむ",
+    "meaning": "to creep in"
+  },
+  {
+    "rank": 5810,
+    "word": "おもむろに",
+    "reading": "おもむろに",
+    "meaning": "suddenly"
+  },
+  {
+    "rank": 5823,
+    "word": "明ける",
+    "reading": "あける",
+    "meaning": "to empty"
+  },
+  {
+    "rank": 5824,
+    "word": "迎えに行く",
+    "reading": "むかえにいく",
+    "meaning": "to go to meet somebody"
+  },
+  {
+    "rank": 5828,
+    "word": "行き来",
+    "reading": "ゆきき",
+    "meaning": "coming and going"
+  },
+  {
+    "rank": 5837,
+    "word": "すり抜ける",
+    "reading": "すりぬける",
+    "meaning": "to slip through"
+  },
+  {
+    "rank": 5838,
+    "word": "手を上げる",
+    "reading": "てをあげる",
+    "meaning": "to raise one's hand"
+  },
+  {
+    "rank": 5856,
+    "word": "つくづく",
+    "reading": "つくづく",
+    "meaning": "deeply"
+  },
+  {
+    "rank": 5867,
+    "word": "留まる",
+    "reading": "とまる",
+    "meaning": "to stop (moving)"
+  },
+  {
+    "rank": 5869,
+    "word": "取り乱す",
+    "reading": "とりみだす",
+    "meaning": "to be upset"
+  },
+  {
+    "rank": 5891,
+    "word": "立ちはだかる",
+    "reading": "たちはだかる",
+    "meaning": "to stand in the way (esp. with legs spread out)"
+  },
+  {
+    "rank": 5893,
+    "word": "とどまる",
+    "reading": "とどまる",
+    "meaning": "to remain"
+  },
+  {
+    "rank": 5895,
+    "word": "のく",
+    "reading": "のく",
+    "meaning": "to step aside"
+  },
+  {
+    "rank": 5902,
+    "word": "横切る",
+    "reading": "よこぎる",
+    "meaning": "to cross (e.g. road)"
+  },
+  {
+    "rank": 5911,
+    "word": "入れ替わる",
+    "reading": "いれかわる",
+    "meaning": "to change places"
+  },
+  {
+    "rank": 5923,
+    "word": "通りかかる",
+    "reading": "とおりかかる",
+    "meaning": "to happen to pass by"
+  },
+  {
+    "rank": 5935,
+    "word": "走り回る",
+    "reading": "はしりまわる",
+    "meaning": "to run around"
+  },
+  {
+    "rank": 5952,
+    "word": "割って入る",
+    "reading": "わってはいる",
+    "meaning": "to wedge one's way in"
+  },
+  {
+    "rank": 5958,
+    "word": "逃亡",
+    "reading": "とうぼう",
+    "meaning": "escape"
+  },
+  {
+    "rank": 5992,
+    "word": "立ち寄る",
+    "reading": "たちよる",
+    "meaning": "to stop by"
+  },
+  {
+    "rank": 6006,
+    "word": "出くわす",
+    "reading": "でくわす",
+    "meaning": "to happen to meet"
+  },
+  {
+    "rank": 6021,
+    "word": "動き回る",
+    "reading": "うごきまわる",
+    "meaning": "to move around"
+  },
+  {
+    "rank": 6031,
+    "word": "自動車",
+    "reading": "じどうしゃ",
+    "meaning": "car"
+  },
+  {
+    "rank": 6049,
+    "word": "突っ立つ",
+    "reading": "つったつ",
+    "meaning": "to stick up (hair, etc.)"
+  },
+  {
+    "rank": 6064,
+    "word": "逃げ込む",
+    "reading": "にげこむ",
+    "meaning": "to take refuge in"
+  },
+  {
+    "rank": 6076,
+    "word": "埋もれる",
+    "reading": "うもれる",
+    "meaning": "to be buried"
+  },
+  {
+    "rank": 6082,
+    "word": "小走り",
+    "reading": "こばしり",
+    "meaning": "trot"
+  },
+  {
+    "rank": 6091,
+    "word": "留まる",
+    "reading": "とまる",
+    "meaning": "to stop (moving)"
+  },
+  {
+    "rank": 6095,
+    "word": "ひらひら",
+    "reading": "ひらひら",
+    "meaning": "fluttering"
+  },
+  {
+    "rank": 6110,
+    "word": "押し出す",
+    "reading": "おしだす",
+    "meaning": "to crowd out"
+  },
+  {
+    "rank": 6121,
+    "word": "性別",
+    "reading": "せいべつ",
+    "meaning": "gender"
+  },
+  {
+    "rank": 6146,
+    "word": "果てる",
+    "reading": "はてる",
+    "meaning": "to end"
+  },
+  {
+    "rank": 6155,
+    "word": "さまよう",
+    "reading": "さまよう",
+    "meaning": "to loiter"
+  },
+  {
+    "rank": 6179,
+    "word": "順に",
+    "reading": "じゅんに",
+    "meaning": "in order"
+  },
+  {
+    "rank": 6223,
+    "word": "駆け込む",
+    "reading": "かけこむ",
+    "meaning": "to run into"
+  },
+  {
+    "rank": 6275,
+    "word": "無縁",
+    "reading": "むえん",
+    "meaning": "unrelated"
+  },
+  {
+    "rank": 6316,
+    "word": "ガス",
+    "reading": "ガス",
+    "meaning": "gas (state of matter, e.g. poison gas, natural gas)"
+  },
+  {
+    "rank": 6318,
+    "word": "そわそわ",
+    "reading": "そわそわ",
+    "meaning": "restlessly"
+  },
+  {
+    "rank": 6331,
+    "word": "一滴",
+    "reading": "いってき",
+    "meaning": "one drop (of fluid)"
+  },
+  {
+    "rank": 6349,
+    "word": "経由",
+    "reading": "けいゆ",
+    "meaning": "going through"
+  },
+  {
+    "rank": 6377,
+    "word": "突き進む",
+    "reading": "つきすすむ",
+    "meaning": "to push on"
+  },
+  {
+    "rank": 6409,
+    "word": "憂鬱",
+    "reading": "ゆううつ",
+    "meaning": "depression"
+  },
+  {
+    "rank": 6439,
+    "word": "手応え",
+    "reading": "てごたえ",
+    "meaning": "response (felt in the hands)"
+  },
+  {
+    "rank": 6464,
+    "word": "ふらつく",
+    "reading": "ふらつく",
+    "meaning": "to feel giddy"
+  },
+  {
+    "rank": 6468,
+    "word": "徒歩",
+    "reading": "とほ",
+    "meaning": "walking"
+  },
+  {
+    "rank": 6491,
+    "word": "帰国",
+    "reading": "きこく",
+    "meaning": "return to one's country"
+  },
+  {
+    "rank": 6495,
+    "word": "立ち上る",
+    "reading": "たちのぼる",
+    "meaning": "to rise up (e.g. pillar of smoke)"
+  },
+  {
+    "rank": 6511,
+    "word": "通り越す",
+    "reading": "とおりこす",
+    "meaning": "to go past (a place or thing)"
+  },
+  {
+    "rank": 6529,
+    "word": "なびく",
+    "reading": "なびく",
+    "meaning": "to bend"
+  },
+  {
+    "rank": 6548,
+    "word": "デビュー",
+    "reading": "デビュー",
+    "meaning": "debut"
+  },
+  {
+    "rank": 6596,
+    "word": "沸く",
+    "reading": "わく",
+    "meaning": "to grow hot (e.g. water)"
+  },
+  {
+    "rank": 6602,
+    "word": "踏みつける",
+    "reading": "ふみつける",
+    "meaning": "to trample down"
+  },
+  {
+    "rank": 6608,
+    "word": "持ち歩く",
+    "reading": "もちあるく",
+    "meaning": "to carry around"
+  },
+  {
+    "rank": 6659,
+    "word": "往来",
+    "reading": "おうらい",
+    "meaning": "coming and going"
+  },
+  {
+    "rank": 6663,
+    "word": "追いやる",
+    "reading": "おいやる",
+    "meaning": "to drive away"
+  },
+  {
+    "rank": 6665,
+    "word": "食いつく",
+    "reading": "くいつく",
+    "meaning": "to bite at"
+  },
+  {
+    "rank": 6693,
+    "word": "絶好",
+    "reading": "ぜっこう",
+    "meaning": "best"
+  },
+  {
+    "rank": 6742,
+    "word": "生存",
+    "reading": "せいぞん",
+    "meaning": "existence"
+  },
+  {
+    "rank": 6764,
+    "word": "群がる",
+    "reading": "むらがる",
+    "meaning": "to swarm"
+  },
+  {
+    "rank": 6787,
+    "word": "飛び交う",
+    "reading": "とびかう",
+    "meaning": "to fly about"
+  },
+  {
+    "rank": 6788,
+    "word": "ゆらゆら",
+    "reading": "ゆらゆら",
+    "meaning": "swaying"
+  },
+  {
+    "rank": 6790,
+    "word": "行列",
+    "reading": "ぎょうれつ",
+    "meaning": "line"
+  },
+  {
+    "rank": 6803,
+    "word": "立ち入る",
+    "reading": "たちいる",
+    "meaning": "to enter"
+  },
+  {
+    "rank": 6805,
+    "word": "背伸び",
+    "reading": "せのび",
+    "meaning": "standing on tiptoe and stretching one's back to make ones..."
+  },
+  {
+    "rank": 6829,
+    "word": "連なる",
+    "reading": "つらなる",
+    "meaning": "to extend"
+  },
+  {
+    "rank": 6893,
+    "word": "交わる",
+    "reading": "まじわる",
+    "meaning": "to cross"
+  },
+  {
+    "rank": 6954,
+    "word": "入る",
+    "reading": "はいる",
+    "meaning": "to enter"
+  },
+  {
+    "rank": 6961,
+    "word": "連れ戻す",
+    "reading": "つれもどす",
+    "meaning": "to bring back"
+  },
+  {
+    "rank": 7027,
+    "word": "道のり",
+    "reading": "みちのり",
+    "meaning": "distance"
+  },
+  {
+    "rank": 7031,
+    "word": "ついて来る",
+    "reading": "ついてくる",
+    "meaning": "to follow"
+  },
+  {
+    "rank": 7054,
+    "word": "延びる",
+    "reading": "のびる",
+    "meaning": "to stretch"
+  },
+  {
+    "rank": 7056,
+    "word": "溶け込む",
+    "reading": "とけこむ",
+    "meaning": "to melt into"
+  },
+  {
+    "rank": 7076,
+    "word": "移行",
+    "reading": "いこう",
+    "meaning": "switching over to"
+  },
+  {
+    "rank": 7085,
+    "word": "連れ込む",
+    "reading": "つれこむ",
+    "meaning": "to bring (somebody into a place)"
+  },
+  {
+    "rank": 7156,
+    "word": "旅に出る",
+    "reading": "たびにでる",
+    "meaning": "to start a journey"
+  },
+  {
+    "rank": 7162,
+    "word": "追い返す",
+    "reading": "おいかえす",
+    "meaning": "to drive away"
+  },
+  {
+    "rank": 7181,
+    "word": "退散",
+    "reading": "たいさん",
+    "meaning": "dispersing"
+  },
+  {
+    "rank": 7262,
+    "word": "過ぎ去る",
+    "reading": "すぎさる",
+    "meaning": "to pass"
+  },
+  {
+    "rank": 7280,
+    "word": "早まる",
+    "reading": "はやまる",
+    "meaning": "to be brought forward (e.g. by three hours)"
+  },
+  {
+    "rank": 7304,
+    "word": "乗客",
+    "reading": "じょうきゃく",
+    "meaning": "passenger"
+  },
+  {
+    "rank": 7313,
+    "word": "ステップ",
+    "reading": "ステップ",
+    "meaning": "step (of a staircase, etc.)"
+  },
+  {
+    "rank": 7327,
+    "word": "乗り出す",
+    "reading": "のりだす",
+    "meaning": "to set out"
+  },
+  {
+    "rank": 7435,
+    "word": "かけ離れる",
+    "reading": "かけはなれる",
+    "meaning": "to be very far apart from"
+  },
+  {
+    "rank": 7437,
+    "word": "転じる",
+    "reading": "てんじる",
+    "meaning": "to turn"
+  },
+  {
+    "rank": 7454,
+    "word": "またがる",
+    "reading": "またがる",
+    "meaning": "to straddle"
+  },
+  {
+    "rank": 7499,
+    "word": "脱する",
+    "reading": "だっする",
+    "meaning": "to escape from"
+  },
+  {
+    "rank": 7562,
+    "word": "進出",
+    "reading": "しんしゅつ",
+    "meaning": "advance (into a new market or stage of progress)"
+  },
+  {
+    "rank": 7595,
+    "word": "飛躍",
+    "reading": "ひやく",
+    "meaning": "leaping"
+  },
+  {
+    "rank": 7604,
+    "word": "先立つ",
+    "reading": "さきだつ",
+    "meaning": "to lead"
+  },
+  {
+    "rank": 7678,
+    "word": "近付く",
+    "reading": "ちかづく",
+    "meaning": "to approach"
+  },
+  {
+    "rank": 7710,
+    "word": "ヒロイン",
+    "reading": "ヒロイン",
+    "meaning": "heroine"
+  },
+  {
+    "rank": 7784,
+    "word": "向う",
+    "reading": "むかう",
+    "meaning": "to face"
+  },
+  {
+    "rank": 7829,
+    "word": "蠢く",
+    "reading": "うごめく",
+    "meaning": "to wriggle"
+  },
+  {
+    "rank": 7840,
+    "word": "バイク",
+    "reading": "バイク",
+    "meaning": "motorcycle"
+  },
+  {
+    "rank": 7864,
+    "word": "跳躍",
+    "reading": "ちょうやく",
+    "meaning": "jump"
+  },
+  {
+    "rank": 7892,
+    "word": "絡みつく",
+    "reading": "からみつく",
+    "meaning": "to twine around"
+  },
+  {
+    "rank": 7924,
+    "word": "飛びかかる",
+    "reading": "とびかかる",
+    "meaning": "to spring at"
+  },
+  {
+    "rank": 7932,
+    "word": "列車",
+    "reading": "れっしゃ",
+    "meaning": "train"
+  },
+  {
+    "rank": 7934,
+    "word": "歩き始める",
+    "reading": "あるきはじめる",
+    "meaning": "to begin to walk"
+  },
+  {
+    "rank": 7972,
+    "word": "回り込む",
+    "reading": "まわりこむ",
+    "meaning": "to go round and cut in"
+  },
+  {
+    "rank": 8020,
+    "word": "距離を詰める",
+    "reading": "きょりをつめる",
+    "meaning": "to shorten the distance (between)"
+  },
+  {
+    "rank": 8032,
+    "word": "浮遊",
+    "reading": "ふゆう",
+    "meaning": "floating"
+  },
+  {
+    "rank": 8050,
+    "word": "顔を背ける",
+    "reading": "かおをそむける",
+    "meaning": "to turn one's face away"
+  },
+  {
+    "rank": 8053,
+    "word": "零れる",
+    "reading": "こぼれる",
+    "meaning": "to spill"
+  },
+  {
+    "rank": 8064,
+    "word": "跳ね上がる",
+    "reading": "はねあがる",
+    "meaning": "to jump up"
+  },
+  {
+    "rank": 8069,
+    "word": "ジャンプ",
+    "reading": "ジャンプ",
+    "meaning": "jump"
+  },
+  {
+    "rank": 8086,
+    "word": "跪く",
+    "reading": "ひざまずく",
+    "meaning": "to kneel"
+  },
+  {
+    "rank": 8132,
+    "word": "突っ伏す",
+    "reading": "つっぷす",
+    "meaning": "to fall prostrate"
+  },
+  {
+    "rank": 8143,
+    "word": "まとわりつく",
+    "reading": "まとわりつく",
+    "meaning": "to coil about"
+  },
+  {
+    "rank": 8153,
+    "word": "寄りかかる",
+    "reading": "よりかかる",
+    "meaning": "to lean against"
+  },
+  {
+    "rank": 8185,
+    "word": "彷徨う",
+    "reading": "さまよう",
+    "meaning": "to loiter"
+  },
+  {
+    "rank": 8194,
+    "word": "浸かる",
+    "reading": "つかる",
+    "meaning": "to be submerged"
+  },
+  {
+    "rank": 8204,
+    "word": "駆け上がる",
+    "reading": "かけあがる",
+    "meaning": "to run up (a hill, stairs etc.)"
+  },
+  {
+    "rank": 8208,
+    "word": "後ずさる",
+    "reading": "あとずさる",
+    "meaning": "to retreat"
+  },
+  {
+    "rank": 8227,
+    "word": "階段を上る",
+    "reading": "かいだんをのぼる",
+    "meaning": "to go up the stairs"
+  },
+  {
+    "rank": 8301,
+    "word": "溢れ出す",
+    "reading": "あふれだす",
+    "meaning": "to begin to overflow"
+  },
+  {
+    "rank": 8314,
+    "word": "羽ばたく",
+    "reading": "はばたく",
+    "meaning": "to flap (wings)"
+  },
+  {
+    "rank": 8318,
+    "word": "たじろぐ",
+    "reading": "たじろぐ",
+    "meaning": "to shrink back"
+  },
+  {
+    "rank": 8345,
+    "word": "寝転がる",
+    "reading": "ねころがる",
+    "meaning": "to lie down"
+  },
+  {
+    "rank": 8350,
+    "word": "躱す",
+    "reading": "かわす",
+    "meaning": "to dodge"
+  },
+  {
+    "rank": 8351,
+    "word": "しゃがみ込む",
+    "reading": "しゃがみこむ",
+    "meaning": "to squat"
+  },
+  {
+    "rank": 8419,
+    "word": "滴る",
+    "reading": "したたる",
+    "meaning": "to drip"
+  },
+  {
+    "rank": 8423,
+    "word": "身を起こす",
+    "reading": "みをおこす",
+    "meaning": "to get up (e.g. from bed)"
+  },
+  {
+    "rank": 8453,
+    "word": "飛び立つ",
+    "reading": "とびたつ",
+    "meaning": "to jump up"
+  },
+  {
+    "rank": 8482,
+    "word": "早足",
+    "reading": "はやあし",
+    "meaning": "quick pace"
+  },
+  {
+    "rank": 8505,
+    "word": "よぎる",
+    "reading": "よぎる",
+    "meaning": "to go by"
+  },
+  {
+    "rank": 8522,
+    "word": "はて",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 8549,
+    "word": "出掛ける",
+    "reading": "でかける",
+    "meaning": "to go out (e.g. on an excursion or outing)"
+  },
+  {
+    "rank": 8569,
+    "word": "運び込む",
+    "reading": "はこびこむ",
+    "meaning": "to carry in"
+  },
+  {
+    "rank": 8579,
+    "word": "するり",
+    "reading": "するり",
+    "meaning": "with a smooth, unhindered motion"
+  },
+  {
+    "rank": 8596,
+    "word": "体を起こす",
+    "reading": "からだをおこす",
+    "meaning": "to rise"
+  },
+  {
+    "rank": 8611,
+    "word": "こぼれ落ちる",
+    "reading": "こぼれおちる",
+    "meaning": "to spill over and fall"
+  },
+  {
+    "rank": 8637,
+    "word": "浮き上がる",
+    "reading": "うきあがる",
+    "meaning": "to float"
+  },
+  {
+    "rank": 8648,
+    "word": "波打つ",
+    "reading": "なみうつ",
+    "meaning": "to dash against (of waves)"
+  },
+  {
+    "rank": 8660,
+    "word": "宙に浮く",
+    "reading": "ちゅうにうく",
+    "meaning": "to float in the air"
+  },
+  {
+    "rank": 8689,
+    "word": "飛び越える",
+    "reading": "とびこえる",
+    "meaning": "to jump over"
+  },
+  {
+    "rank": 8692,
+    "word": "滑り込む",
+    "reading": "すべりこむ",
+    "meaning": "to slide into"
+  },
+  {
+    "rank": 8697,
+    "word": "飛び回る",
+    "reading": "とびまわる",
+    "meaning": "to fly about"
+  },
+  {
+    "rank": 8723,
+    "word": "躍る",
+    "reading": "おどる",
+    "meaning": "to jump up"
+  },
+  {
+    "rank": 8726,
+    "word": "逃げ切る",
+    "reading": "にげきる",
+    "meaning": "to make good one's escape"
+  },
+  {
+    "rank": 8728,
+    "word": "逝く",
+    "reading": "いく",
+    "meaning": "to go"
+  },
+  {
+    "rank": 8762,
+    "word": "遡る",
+    "reading": "さかのぼる",
+    "meaning": "to go upstream"
+  },
+  {
+    "rank": 8786,
+    "word": "駆け巡る",
+    "reading": "かけめぐる",
+    "meaning": "to run about"
+  },
+  {
+    "rank": 8793,
+    "word": "ずるずる",
+    "reading": "ずるずる",
+    "meaning": "(dragging a large or heavy item) slowly"
+  },
+  {
+    "rank": 8831,
+    "word": "堕ちる",
+    "reading": "おちる",
+    "meaning": "to fall down"
+  },
+  {
+    "rank": 8842,
+    "word": "行き交う",
+    "reading": "ゆきかう",
+    "meaning": "to come and go"
+  },
+  {
+    "rank": 8861,
+    "word": "消え失せる",
+    "reading": "きえうせる",
+    "meaning": "to disappear"
+  },
+  {
+    "rank": 8865,
+    "word": "飛び跳ねる",
+    "reading": "とびはねる",
+    "meaning": "to jump up and down"
+  },
+  {
+    "rank": 8868,
+    "word": "切り抜ける",
+    "reading": "きりぬける",
+    "meaning": "to cut one's way through"
+  },
+  {
+    "rank": 8945,
+    "word": "巡回",
+    "reading": "じゅんかい",
+    "meaning": "going around"
+  },
+  {
+    "rank": 8956,
+    "word": "降りかかる",
+    "reading": "ふりかかる",
+    "meaning": "to fall onto"
+  },
+  {
+    "rank": 8980,
+    "word": "舟",
+    "reading": "ふね",
+    "meaning": "ship"
+  },
+  {
+    "rank": 8991,
+    "word": "飛び乗る",
+    "reading": "とびのる",
+    "meaning": "to jump upon (a moving object)"
+  },
+  {
+    "rank": 9008,
+    "word": "走り抜ける",
+    "reading": "はしりぬける",
+    "meaning": "to run through"
+  },
+  {
+    "rank": 9014,
+    "word": "ぶら下がる",
+    "reading": "ぶらさがる",
+    "meaning": "to hang down (from)"
+  },
+  {
+    "rank": 9026,
+    "word": "ズレる",
+    "reading": "ズレる",
+    "meaning": "to slide"
+  },
+  {
+    "rank": 9029,
+    "word": "迷子になる",
+    "reading": "まいごになる",
+    "meaning": "to get lost"
+  },
+  {
+    "rank": 9036,
+    "word": "送り届ける",
+    "reading": "おくりとどける",
+    "meaning": "to send to"
+  },
+  {
+    "rank": 9041,
+    "word": "チラチラ",
+    "reading": "チラチラ",
+    "meaning": "falling lightly (e.g. snow, petals, confetti)"
+  },
+  {
+    "rank": 9053,
+    "word": "ダッシュ",
+    "reading": "ダッシュ",
+    "meaning": "dash"
+  },
+  {
+    "rank": 9065,
+    "word": "寄り道",
+    "reading": "よりみち",
+    "meaning": "dropping in on the way"
+  },
+  {
+    "rank": 9075,
+    "word": "縮こまる",
+    "reading": "ちぢこまる",
+    "meaning": "to curl oneself up"
+  },
+  {
+    "rank": 9092,
+    "word": "漁る",
+    "reading": "あさる",
+    "meaning": "to fish"
+  },
+  {
+    "rank": 9114,
+    "word": "行き着く",
+    "reading": "いきつく",
+    "meaning": "to arrive (at one's destination)"
+  },
+  {
+    "rank": 9127,
+    "word": "身を寄せる",
+    "reading": "みをよせる",
+    "meaning": "to live under another's roof"
+  },
+  {
+    "rank": 9133,
+    "word": "踏ん張る",
+    "reading": "ふんばる",
+    "meaning": "to brace one's legs"
+  },
+  {
+    "rank": 9146,
+    "word": "カエル",
+    "reading": "カエル",
+    "meaning": "frog"
+  },
+  {
+    "rank": 9159,
+    "word": "不審者",
+    "reading": "ふしんしゃ",
+    "meaning": "suspicious person"
+  },
+  {
+    "rank": 9183,
+    "word": "乗っかる",
+    "reading": "のっかる",
+    "meaning": "to get on"
+  },
+  {
+    "rank": 9220,
+    "word": "賑わう",
+    "reading": "にぎわう",
+    "meaning": "to be crowded with people"
+  },
+  {
+    "rank": 9223,
+    "word": "走り続ける",
+    "reading": "はしりつづける",
+    "meaning": "to keep running"
+  },
+  {
+    "rank": 9245,
+    "word": "引っ掛かる",
+    "reading": "ひっかかる",
+    "meaning": "to be caught in"
+  },
+  {
+    "rank": 9249,
+    "word": "寝そべる",
+    "reading": "ねそべる",
+    "meaning": "to sprawl"
+  },
+  {
+    "rank": 9250,
+    "word": "混む",
+    "reading": "こむ",
+    "meaning": "to be crowded"
+  },
+  {
+    "rank": 9261,
+    "word": "廻る",
+    "reading": "まわる",
+    "meaning": "to turn"
+  },
+  {
+    "rank": 9263,
+    "word": "絡まる",
+    "reading": "からまる",
+    "meaning": "to be entwined"
+  },
+  {
+    "rank": 9274,
+    "word": "うねる",
+    "reading": "うねる",
+    "meaning": "to wind (of a road, etc.)"
+  },
+  {
+    "rank": 9288,
+    "word": "ぶら下げる",
+    "reading": "ぶらさげる",
+    "meaning": "to hang"
+  },
+  {
+    "rank": 9294,
+    "word": "中へ入る",
+    "reading": "なかへはいる",
+    "meaning": "to go (come) inside"
+  },
+  {
+    "rank": 9307,
+    "word": "揺らめく",
+    "reading": "ゆらめく",
+    "meaning": "to flicker"
+  },
+  {
+    "rank": 9318,
+    "word": "不用意",
+    "reading": "ふようい",
+    "meaning": "unprepared"
+  },
+  {
+    "rank": 9320,
+    "word": "居合わせる",
+    "reading": "いあわせる",
+    "meaning": "to happen to be present"
+  },
+  {
+    "rank": 9327,
+    "word": "飛び出る",
+    "reading": "とびでる",
+    "meaning": "to project"
+  },
+  {
+    "rank": 9358,
+    "word": "迷い込む",
+    "reading": "まよいこむ",
+    "meaning": "to stray into"
+  },
+  {
+    "rank": 9359,
+    "word": "逃げ回る",
+    "reading": "にげまわる",
+    "meaning": "to run around trying to escape"
+  },
+  {
+    "rank": 9360,
+    "word": "紛れ込む",
+    "reading": "まぎれこむ",
+    "meaning": "to disappear into"
+  },
+  {
+    "rank": 9382,
+    "word": "ぺこり",
+    "reading": "ぺこり",
+    "meaning": "sound of thin metal or plastic surface caving in and spri..."
+  },
+  {
+    "rank": 9385,
+    "word": "持ち上がる",
+    "reading": "もちあがる",
+    "meaning": "to be lifted"
+  },
+  {
+    "rank": 9386,
+    "word": "抜き取る",
+    "reading": "ぬきとる",
+    "meaning": "to pull out"
+  },
+  {
+    "rank": 9387,
+    "word": "停まる",
+    "reading": "とまる",
+    "meaning": "to stop (moving)"
+  },
+  {
+    "rank": 9405,
+    "word": "だらだら",
+    "reading": "だらだら",
+    "meaning": "in drops"
+  },
+  {
+    "rank": 9407,
+    "word": "浮上",
+    "reading": "ふじょう",
+    "meaning": "surfacing"
+  },
+  {
+    "rank": 9436,
+    "word": "体を動かす",
+    "reading": "からだをうごかす",
+    "meaning": "to do physical exercise"
+  },
+  {
+    "rank": 9445,
+    "word": "証人",
+    "reading": "しょうにん",
+    "meaning": "witness"
+  },
+  {
+    "rank": 9463,
+    "word": "踏みしめる",
+    "reading": "ふみしめる",
+    "meaning": "to step firmly"
+  },
+  {
+    "rank": 9470,
+    "word": "旋回",
+    "reading": "せんかい",
+    "meaning": "revolution"
+  },
+  {
+    "rank": 9500,
+    "word": "絡み合う",
+    "reading": "からみあう",
+    "meaning": "to be(come) intertwined"
+  },
+  {
+    "rank": 9509,
+    "word": "寝込む",
+    "reading": "ねこむ",
+    "meaning": "to fall fast asleep"
+  },
+  {
+    "rank": 9518,
+    "word": "バック",
+    "reading": "バック",
+    "meaning": "back"
+  },
+  {
+    "rank": 9527,
+    "word": "動",
+    "reading": "どう",
+    "meaning": "motion"
+  },
+  {
+    "rank": 9535,
+    "word": "くねる",
+    "reading": "くねる",
+    "meaning": "to bend loosely back and forth"
+  },
+  {
+    "rank": 9557,
+    "word": "居座る",
+    "reading": "いすわる",
+    "meaning": "to remain"
+  },
+  {
+    "rank": 9567,
+    "word": "脱走",
+    "reading": "だっそう",
+    "meaning": "escape"
+  },
+  {
+    "rank": 9571,
+    "word": "ついて行く",
+    "reading": "ついていく",
+    "meaning": "to accompany"
+  },
+  {
+    "rank": 9607,
+    "word": "流れ落ちる",
+    "reading": "ながれおちる",
+    "meaning": "to run off (fluid)"
+  },
+  {
+    "rank": 9622,
+    "word": "停める",
+    "reading": "とめる",
+    "meaning": "to stop"
+  },
+  {
+    "rank": 9624,
+    "word": "身じろぎ",
+    "reading": "みじろぎ",
+    "meaning": "stirring"
+  },
+  {
+    "rank": 9631,
+    "word": "空港",
+    "reading": "くうこう",
+    "meaning": "airport"
+  },
+  {
+    "rank": 9633,
+    "word": "先走る",
+    "reading": "さきばしる",
+    "meaning": "to be forward"
+  },
+  {
+    "rank": 9653,
+    "word": "転倒",
+    "reading": "てんとう",
+    "meaning": "falling down"
+  },
+  {
+    "rank": 9663,
+    "word": "交じり",
+    "reading": "まじり",
+    "meaning": "mixed"
+  },
+  {
+    "rank": 9675,
+    "word": "横たえる",
+    "reading": "よこたえる",
+    "meaning": "to lay down"
+  },
+  {
+    "rank": 9687,
+    "word": "街灯",
+    "reading": "がいとう",
+    "meaning": "street light"
+  },
+  {
+    "rank": 9688,
+    "word": "墜落",
+    "reading": "ついらく",
+    "meaning": "fall"
+  },
+  {
+    "rank": 9693,
+    "word": "引きずり出す",
+    "reading": "ひきずりだす",
+    "meaning": "to drag out"
+  },
+  {
+    "rank": 9694,
+    "word": "寝かす",
+    "reading": "ねかす",
+    "meaning": "to put to sleep"
+  },
+  {
+    "rank": 9701,
+    "word": "持参",
+    "reading": "じさん",
+    "meaning": "bringing"
+  },
+  {
+    "rank": 9703,
+    "word": "抜け落ちる",
+    "reading": "ぬけおちる",
+    "meaning": "to come out (e.g. hair)"
+  },
+  {
+    "rank": 9707,
+    "word": "左足",
+    "reading": "ひだりあし",
+    "meaning": "left foot"
+  },
+  {
+    "rank": 9719,
+    "word": "一周",
+    "reading": "いっしゅう",
+    "meaning": "one round"
+  },
+  {
+    "rank": 9732,
+    "word": "迂回",
+    "reading": "うかい",
+    "meaning": "detour"
+  },
+  {
+    "rank": 9751,
+    "word": "ボート",
+    "reading": "ボート",
+    "meaning": "boat"
+  },
+  {
+    "rank": 9756,
+    "word": "すがりつく",
+    "reading": "すがりつく",
+    "meaning": "to cling to"
+  },
+  {
+    "rank": 9773,
+    "word": "別れを告げる",
+    "reading": "わかれをつげる",
+    "meaning": "to say goodbye"
+  },
+  {
+    "rank": 9813,
+    "word": "散らかる",
+    "reading": "ちらかる",
+    "meaning": "to be in disorder"
+  },
+  {
+    "rank": 9816,
+    "word": "遠回り",
+    "reading": "とおまわり",
+    "meaning": "detour"
+  },
+  {
+    "rank": 9846,
+    "word": "聞き入れる",
+    "reading": "ききいれる",
+    "meaning": "to grant (a wish)"
+  },
+  {
+    "rank": 9847,
+    "word": "疾走",
+    "reading": "しっそう",
+    "meaning": "sprint"
+  },
+  {
+    "rank": 9857,
+    "word": "身をよじる",
+    "reading": "みをよじる",
+    "meaning": "to twist"
+  },
+  {
+    "rank": 9867,
+    "word": "発進",
+    "reading": "はっしん",
+    "meaning": "departure"
+  },
+  {
+    "rank": 9873,
+    "word": "ちらつく",
+    "reading": "ちらつく",
+    "meaning": "to flicker"
+  },
+  {
+    "rank": 9880,
+    "word": "籠もる",
+    "reading": "こもる",
+    "meaning": "to shut oneself in (e.g. one's room)"
+  },
+  {
+    "rank": 9911,
+    "word": "降下",
+    "reading": "こうか",
+    "meaning": "descent"
+  },
+  {
+    "rank": 9920,
+    "word": "丸出し",
+    "reading": "まるだし",
+    "meaning": "exposing fully"
+  },
+  {
+    "rank": 9925,
+    "word": "歩き続ける",
+    "reading": "あるきつづける",
+    "meaning": "to keep walking"
+  },
+  {
+    "rank": 9936,
+    "word": "足を引っ張る",
+    "reading": "あしをひっぱる",
+    "meaning": "to hold back others from achieving success"
+  },
+  {
+    "rank": 9940,
+    "word": "飛来",
+    "reading": "ひらい",
+    "meaning": "coming flying in (migratory birds, airborne sand, pollen,..."
+  },
+  {
+    "rank": 9945,
+    "word": "逃げ道",
+    "reading": "にげみち",
+    "meaning": "way out"
+  },
+  {
+    "rank": 9972,
+    "word": "身軽",
+    "reading": "みがる",
+    "meaning": "agile"
+  },
+  {
+    "rank": 10005,
+    "word": "迸る",
+    "reading": "ほとばしる",
+    "meaning": "to surge"
+  },
+  {
+    "rank": 10019,
+    "word": "老いる",
+    "reading": "おいる",
+    "meaning": "to age"
+  },
+  {
+    "rank": 10034,
+    "word": "出回る",
+    "reading": "でまわる",
+    "meaning": "to appear on the market"
+  },
+  {
+    "rank": 10054,
+    "word": "退避",
+    "reading": "たいひ",
+    "meaning": "taking refuge"
+  },
+  {
+    "rank": 10094,
+    "word": "頭を垂れる",
+    "reading": "こうべをたれる",
+    "meaning": "to droop (e.g. ears of grain)"
+  },
+  {
+    "rank": 10127,
+    "word": "行動を取る",
+    "reading": "こうどうをとる",
+    "meaning": "to act"
+  },
+  {
+    "rank": 10131,
+    "word": "眼鏡をかける",
+    "reading": "めがねをかける",
+    "meaning": "to wear glasses"
+  },
+  {
+    "rank": 10158,
+    "word": "武術",
+    "reading": "ぶじゅつ",
+    "meaning": "martial arts"
+  },
+  {
+    "rank": 10181,
+    "word": "騒々しい",
+    "reading": "そうぞうしい",
+    "meaning": "noisy"
+  },
+  {
+    "rank": 10196,
+    "word": "お互い様",
+    "reading": "おたがいさま",
+    "meaning": "we are of equal status in this regard"
+  },
+  {
+    "rank": 10228,
+    "word": "ヒール",
+    "reading": "ヒール",
+    "meaning": "heel (of a shoe)"
+  },
+  {
+    "rank": 10265,
+    "word": "大急ぎ",
+    "reading": "おおいそぎ",
+    "meaning": "great hurry"
+  },
+  {
+    "rank": 10270,
+    "word": "署",
+    "reading": "しょ",
+    "meaning": "station (esp. a police station)"
+  },
+  {
+    "rank": 10294,
+    "word": "遠征",
+    "reading": "えんせい",
+    "meaning": "expedition"
+  },
+  {
+    "rank": 10310,
+    "word": "飛翔",
+    "reading": "ひしょう",
+    "meaning": "flight"
+  },
+  {
+    "rank": 10366,
+    "word": "進み出る",
+    "reading": "すすみでる",
+    "meaning": "to step forward"
+  },
+  {
+    "rank": 10390,
+    "word": "発つ",
+    "reading": "たつ",
+    "meaning": "to depart (on a plane, train, etc.)"
+  },
+  {
+    "rank": 10419,
+    "word": "めんどい",
+    "reading": "めんどい",
+    "meaning": "troublesome"
+  },
+  {
+    "rank": 10425,
+    "word": "籠る",
+    "reading": "こもる",
+    "meaning": "to shut oneself in (e.g. one's room)"
+  },
+  {
+    "rank": 10430,
+    "word": "めり込む",
+    "reading": "めりこむ",
+    "meaning": "to sink (into)"
+  },
+  {
+    "rank": 10431,
+    "word": "姿勢を正す",
+    "reading": "しせいをただす",
+    "meaning": "to straighten oneself"
+  },
+  {
+    "rank": 10450,
+    "word": "散策",
+    "reading": "さんさく",
+    "meaning": "walking"
+  },
+  {
+    "rank": 10456,
+    "word": "坐る",
+    "reading": "すわる",
+    "meaning": "to sit"
+  },
+  {
+    "rank": 10479,
+    "word": "こっから",
+    "reading": "こっから",
+    "meaning": "from here"
+  },
+  {
+    "rank": 10481,
+    "word": "項垂れる",
+    "reading": "うなだれる",
+    "meaning": "to hang one's head"
+  },
+  {
+    "rank": 10482,
+    "word": "先に立つ",
+    "reading": "さきにたつ",
+    "meaning": "to lead"
+  },
+  {
+    "rank": 10488,
+    "word": "大樹",
+    "reading": "たいじゅ",
+    "meaning": "large tree"
+  },
+  {
+    "rank": 10493,
+    "word": "水泳",
+    "reading": "すいえい",
+    "meaning": "swimming"
+  },
+  {
+    "rank": 10526,
+    "word": "抱っこ",
+    "reading": "だっこ",
+    "meaning": "hug"
+  },
+  {
+    "rank": 10553,
+    "word": "ひらり",
+    "reading": "ひらり",
+    "meaning": "nimbly"
+  },
+  {
+    "rank": 10595,
+    "word": "腰を浮かす",
+    "reading": "こしをうかす",
+    "meaning": "to half-rise to one's feet"
+  },
+  {
+    "rank": 10624,
+    "word": "栄える",
+    "reading": "さかえる",
+    "meaning": "to prosper"
+  },
+  {
+    "rank": 10638,
+    "word": "足を踏み出す",
+    "reading": "あしをふみだす",
+    "meaning": "to step forward"
+  },
+  {
+    "rank": 10649,
+    "word": "追っかける",
+    "reading": "おっかける",
+    "meaning": "to chase"
+  },
+  {
+    "rank": 10667,
+    "word": "一大",
+    "reading": "いちだい",
+    "meaning": "one large ..."
+  },
+  {
+    "rank": 10673,
+    "word": "粘膜",
+    "reading": "ねんまく",
+    "meaning": "mucous membrane"
+  },
+  {
+    "rank": 10674,
+    "word": "舞い降りる",
+    "reading": "まいおりる",
+    "meaning": "to swoop down upon"
+  },
+  {
+    "rank": 10677,
+    "word": "流れ出す",
+    "reading": "ながれだす",
+    "meaning": "to flow out"
+  },
+  {
+    "rank": 10700,
+    "word": "愛でる",
+    "reading": "めでる",
+    "meaning": "to love"
+  },
+  {
+    "rank": 10720,
+    "word": "叔母",
+    "reading": "おば",
+    "meaning": "aunt"
+  },
+  {
+    "rank": 10738,
+    "word": "眠りに落ちる",
+    "reading": "ねむりにおちる",
+    "meaning": "to fall asleep"
+  },
+  {
+    "rank": 10809,
+    "word": "駆け回る",
+    "reading": "かけまわる",
+    "meaning": "to run around"
+  },
+  {
+    "rank": 10821,
+    "word": "来る",
+    "reading": "くる",
+    "meaning": "to come (spatially or temporally)"
+  },
+  {
+    "rank": 10836,
+    "word": "へたり込む",
+    "reading": "へたりこむ",
+    "meaning": "to sit down hard"
+  },
+  {
+    "rank": 10867,
+    "word": "飛び起きる",
+    "reading": "とびおきる",
+    "meaning": "to jump up to one's feet"
+  },
+  {
+    "rank": 10868,
+    "word": "ねっとり",
+    "reading": "ねっとり",
+    "meaning": "viscously"
+  },
+  {
+    "rank": 10873,
+    "word": "尻餅をつく",
+    "reading": "しりもちをつく",
+    "meaning": "to fall on one's backside"
+  },
+  {
+    "rank": 10890,
+    "word": "船に乗る",
+    "reading": "ふねにのる",
+    "meaning": "to board a ship"
+  },
+  {
+    "rank": 10895,
+    "word": "還る",
+    "reading": "かえる",
+    "meaning": "to return"
+  },
+  {
+    "rank": 10940,
+    "word": "歩を進める",
+    "reading": "ほをすすめる",
+    "meaning": "to walk"
+  },
+  {
+    "rank": 11029,
+    "word": "くるまる",
+    "reading": "くるまる",
+    "meaning": "to be wrapped up (e.g. in a blanket)"
+  },
+  {
+    "rank": 11032,
+    "word": "はためく",
+    "reading": "はためく",
+    "meaning": "to flutter (e.g. a flag)"
+  },
+  {
+    "rank": 11035,
+    "word": "足を向ける",
+    "reading": "あしをむける",
+    "meaning": "to head towards"
+  },
+  {
+    "rank": 11043,
+    "word": "突っ走る",
+    "reading": "つっぱしる",
+    "meaning": "to run swiftly"
+  },
+  {
+    "rank": 11044,
+    "word": "つきまとう",
+    "reading": "つきまとう",
+    "meaning": "to follow around"
+  },
+  {
+    "rank": 11083,
+    "word": "身を翻す",
+    "reading": "みをひるがえす",
+    "meaning": "to turn aside adroitly"
+  },
+  {
+    "rank": 11098,
+    "word": "滑り落ちる",
+    "reading": "すべりおちる",
+    "meaning": "to slip off"
+  },
+  {
+    "rank": 11114,
+    "word": "出立",
+    "reading": "しゅったつ",
+    "meaning": "departure"
+  },
+  {
+    "rank": 11120,
+    "word": "奔流",
+    "reading": "ほんりゅう",
+    "meaning": "torrent"
+  },
+  {
+    "rank": 11130,
+    "word": "流れ出る",
+    "reading": "ながれでる",
+    "meaning": "to flow out"
+  },
+  {
+    "rank": 11131,
+    "word": "泊る",
+    "reading": "とまる",
+    "meaning": "to stay at (e.g. hotel)"
+  },
+  {
+    "rank": 11148,
+    "word": "仰け反る",
+    "reading": "のけぞる",
+    "meaning": "to bend backwards"
+  },
+  {
+    "rank": 11181,
+    "word": "丸くなる",
+    "reading": "まるくなる",
+    "meaning": "to mellow (e.g. personality)"
+  },
+  {
+    "rank": 11183,
+    "word": "座り直す",
+    "reading": "すわりなおす",
+    "meaning": "to reseat oneself"
+  },
+  {
+    "rank": 11186,
+    "word": "波動",
+    "reading": "はどう",
+    "meaning": "wave motion"
+  },
+  {
+    "rank": 11198,
+    "word": "吹き抜ける",
+    "reading": "ふきぬける",
+    "meaning": "to blow through"
+  },
+  {
+    "rank": 11257,
+    "word": "進軍",
+    "reading": "しんぐん",
+    "meaning": "march"
+  },
+  {
+    "rank": 11280,
+    "word": "騎馬",
+    "reading": "きば",
+    "meaning": "horse riding"
+  },
+  {
+    "rank": 11287,
+    "word": "横を向く",
+    "reading": "よこをむく",
+    "meaning": "to look away"
+  },
+  {
+    "rank": 11290,
+    "word": "ふらり",
+    "reading": "ふらり",
+    "meaning": "aimlessly"
+  },
+  {
+    "rank": 11295,
+    "word": "道に迷う",
+    "reading": "みちにまよう",
+    "meaning": "to lose one's way"
+  },
+  {
+    "rank": 11314,
+    "word": "寝転ぶ",
+    "reading": "ねころぶ",
+    "meaning": "to lie down"
+  },
+  {
+    "rank": 11319,
+    "word": "消え入る",
+    "reading": "きえいる",
+    "meaning": "to vanish gradually (e.g. of a voice)"
+  },
+  {
+    "rank": 11338,
+    "word": "移住",
+    "reading": "いじゅう",
+    "meaning": "migration"
+  },
+  {
+    "rank": 11343,
+    "word": "攻勢",
+    "reading": "こうせい",
+    "meaning": "offensive (movement)"
+  },
+  {
+    "rank": 11364,
+    "word": "道筋",
+    "reading": "みちすじ",
+    "meaning": "path"
+  },
+  {
+    "rank": 11388,
+    "word": "綻ぶ",
+    "reading": "ほころぶ",
+    "meaning": "to begin to open"
+  },
+  {
+    "rank": 11427,
+    "word": "肩で息をする",
+    "reading": "かたでいきをする",
+    "meaning": "to breathe heavily (e.g. with much movement of the should..."
+  },
+  {
+    "rank": 11435,
+    "word": "息を切らす",
+    "reading": "いきをきらす",
+    "meaning": "to be out of breath"
+  },
+  {
+    "rank": 11455,
+    "word": "みなぎる",
+    "reading": "みなぎる",
+    "meaning": "to rise high (of water)"
+  },
+  {
+    "rank": 11480,
+    "word": "巻き起こる",
+    "reading": "まきおこる",
+    "meaning": "to arise"
+  },
+  {
+    "rank": 11501,
+    "word": "陥落",
+    "reading": "かんらく",
+    "meaning": "fall"
+  },
+  {
+    "rank": 11523,
+    "word": "踏みとどまる",
+    "reading": "ふみとどまる",
+    "meaning": "to stay on"
+  },
+  {
+    "rank": 11595,
+    "word": "立ち回る",
+    "reading": "たちまわる",
+    "meaning": "to walk about"
+  },
+  {
+    "rank": 11597,
+    "word": "飄々",
+    "reading": "ひょうひょう",
+    "meaning": "whistling (wind)"
+  },
+  {
+    "rank": 11616,
+    "word": "腰を上げる",
+    "reading": "こしをあげる",
+    "meaning": "to get up (from sitting)"
+  },
+  {
+    "rank": 11653,
+    "word": "追い抜く",
+    "reading": "おいぬく",
+    "meaning": "to pass (a car)"
+  },
+  {
+    "rank": 11673,
+    "word": "あたふた",
+    "reading": "あたふた",
+    "meaning": "in a hurry"
+  },
+  {
+    "rank": 11683,
+    "word": "よろける",
+    "reading": "よろける",
+    "meaning": "to stagger"
+  },
+  {
+    "rank": 11688,
+    "word": "連れ帰る",
+    "reading": "つれかえる",
+    "meaning": "to bring (someone) back home"
+  },
+  {
+    "rank": 11732,
+    "word": "飛び退く",
+    "reading": "とびのく",
+    "meaning": "to jump (out of the way)"
+  },
+  {
+    "rank": 11735,
+    "word": "遅すぎる",
+    "reading": "おそすぎる",
+    "meaning": "to be too late"
+  },
+  {
+    "rank": 11745,
+    "word": "流出",
+    "reading": "りゅうしゅつ",
+    "meaning": "discharge"
+  },
+  {
+    "rank": 11747,
+    "word": "ふわっと",
+    "reading": "ふわっと",
+    "meaning": "floating"
+  },
+  {
+    "rank": 11772,
+    "word": "転げ落ちる",
+    "reading": "ころげおちる",
+    "meaning": "to fall off"
+  },
+  {
+    "rank": 11791,
+    "word": "零れ落ちる",
+    "reading": "こぼれおちる",
+    "meaning": "to spill over and fall"
+  },
+  {
+    "rank": 11800,
+    "word": "追い越す",
+    "reading": "おいこす",
+    "meaning": "to pass (e.g. car)"
+  },
+  {
+    "rank": 11805,
+    "word": "倒れ伏す",
+    "reading": "たおれふす",
+    "meaning": "to fall flat"
+  },
+  {
+    "rank": 11852,
+    "word": "徘徊",
+    "reading": "はいかい",
+    "meaning": "loitering"
+  },
+  {
+    "rank": 11865,
+    "word": "一歩を踏み出す",
+    "reading": "いっぽをふみだす",
+    "meaning": "to step forward"
+  },
+  {
+    "rank": 11874,
+    "word": "見回る",
+    "reading": "みまわる",
+    "meaning": "to make one's rounds"
+  },
+  {
+    "rank": 11897,
+    "word": "覆い被さる",
+    "reading": "おおいかぶさる",
+    "meaning": "to hang over"
+  },
+  {
+    "rank": 11915,
+    "word": "丸まる",
+    "reading": "まるまる",
+    "meaning": "to become rounded"
+  },
+  {
+    "rank": 11923,
+    "word": "最後尾",
+    "reading": "さいこうび",
+    "meaning": "end (e.g. of a line)"
+  },
+  {
+    "rank": 11970,
+    "word": "走り",
+    "reading": "はしり",
+    "meaning": "running"
+  },
+  {
+    "rank": 11979,
+    "word": "よじ登る",
+    "reading": "よじのぼる",
+    "meaning": "to climb"
+  },
+  {
+    "rank": 12020,
+    "word": "投じる",
+    "reading": "とうじる",
+    "meaning": "to throw"
+  },
+  {
+    "rank": 12030,
+    "word": "駆け下りる",
+    "reading": "かけおりる",
+    "meaning": "to run down (stairs, etc.)"
+  },
+  {
+    "rank": 12040,
+    "word": "沈み込む",
+    "reading": "しずみこむ",
+    "meaning": "to sink (into)"
+  },
+  {
+    "rank": 12051,
+    "word": "参上",
+    "reading": "さんじょう",
+    "meaning": "calling on"
+  },
+  {
+    "rank": 12062,
+    "word": "生き抜く",
+    "reading": "いきぬく",
+    "meaning": "to live through"
+  },
+  {
+    "rank": 12065,
+    "word": "そびえる",
+    "reading": "そびえる",
+    "meaning": "to rise (of a building, mountain, etc.)"
+  },
+  {
+    "rank": 12067,
+    "word": "着席",
+    "reading": "ちゃくせき",
+    "meaning": "taking a seat"
+  },
+  {
+    "rank": 12080,
+    "word": "素通り",
+    "reading": "すどおり",
+    "meaning": "passing through without stopping"
+  },
+  {
+    "rank": 12097,
+    "word": "転がり落ちる",
+    "reading": "ころがりおちる",
+    "meaning": "to tumble down"
+  },
+  {
+    "rank": 12176,
+    "word": "一目散に",
+    "reading": "いちもくさんに",
+    "meaning": "at full speed"
+  },
+  {
+    "rank": 12183,
+    "word": "立ち塞がる",
+    "reading": "たちふさがる",
+    "meaning": "to stand in the way"
+  },
+  {
+    "rank": 12194,
+    "word": "脱げる",
+    "reading": "ぬげる",
+    "meaning": "to come off"
+  },
+  {
+    "rank": 12201,
+    "word": "伏す",
+    "reading": "ふす",
+    "meaning": "to bend down"
+  },
+  {
+    "rank": 12222,
+    "word": "挟まる",
+    "reading": "はさまる",
+    "meaning": "to get between"
+  },
+  {
+    "rank": 12265,
+    "word": "探検",
+    "reading": "たんけん",
+    "meaning": "exploration"
+  },
+  {
+    "rank": 12267,
+    "word": "付き従う",
+    "reading": "つきしたがう",
+    "meaning": "to follow"
+  },
+  {
+    "rank": 12302,
+    "word": "機動",
+    "reading": "きどう",
+    "meaning": "maneuver (usu. of military force)"
+  },
+  {
+    "rank": 12358,
+    "word": "停車",
+    "reading": "ていしゃ",
+    "meaning": "stopping (of a train, car, etc.)"
+  },
+  {
+    "rank": 12362,
+    "word": "生き続ける",
+    "reading": "いきつづける",
+    "meaning": "to carry on"
+  },
+  {
+    "rank": 12369,
+    "word": "振りほどく",
+    "reading": "ふりほどく",
+    "meaning": "to shake and untangle"
+  },
+  {
+    "rank": 12391,
+    "word": "つまずく",
+    "reading": "つまずく",
+    "meaning": "to trip (over)"
+  },
+  {
+    "rank": 12459,
+    "word": "はみ出す",
+    "reading": "はみだす",
+    "meaning": "to protrude"
+  },
+  {
+    "rank": 12497,
+    "word": "差し掛かる",
+    "reading": "さしかかる",
+    "meaning": "to come near"
+  },
+  {
+    "rank": 12574,
+    "word": "着陸",
+    "reading": "ちゃくりく",
+    "meaning": "landing"
+  },
+  {
+    "rank": 12606,
+    "word": "上を向く",
+    "reading": "うえをむく",
+    "meaning": "to look upward"
+  },
+  {
+    "rank": 12640,
+    "word": "乗り換える",
+    "reading": "のりかえる",
+    "meaning": "to transfer (trains)"
+  },
+  {
+    "rank": 12642,
+    "word": "突っ切る",
+    "reading": "つっきる",
+    "meaning": "to cross"
+  },
+  {
+    "rank": 12660,
+    "word": "屈む",
+    "reading": "かがむ",
+    "meaning": "to stoop"
+  },
+  {
+    "rank": 12687,
+    "word": "居なくなる",
+    "reading": "いなくなる",
+    "meaning": "to disappear (of people or animals)"
+  },
+  {
+    "rank": 12749,
+    "word": "汽車",
+    "reading": "きしゃ",
+    "meaning": "train (esp. long distance train)"
+  },
+  {
+    "rank": 12773,
+    "word": "棲む",
+    "reading": "すむ",
+    "meaning": "to live (of animals)"
+  },
+  {
+    "rank": 12806,
+    "word": "降臨",
+    "reading": "こうりん",
+    "meaning": "descent (to earth, esp. of a god)"
+  },
+  {
+    "rank": 12900,
+    "word": "全力疾走",
+    "reading": "ぜんりょくしっそう",
+    "meaning": "running as fast as one can"
+  },
+  {
+    "rank": 12918,
+    "word": "一歩一歩",
+    "reading": "いっぽいっぽ",
+    "meaning": "step by step"
+  },
+  {
+    "rank": 12928,
+    "word": "取りつく",
+    "reading": "とりつく",
+    "meaning": "to cling to"
+  },
+  {
+    "rank": 12937,
+    "word": "身を潜める",
+    "reading": "みをひそめる",
+    "meaning": "to hide oneself"
+  },
+  {
+    "rank": 12964,
+    "word": "消し飛ぶ",
+    "reading": "けしとぶ",
+    "meaning": "to scatter away"
+  },
+  {
+    "rank": 13012,
+    "word": "駆け足",
+    "reading": "かけあし",
+    "meaning": "running fast"
+  },
+  {
+    "rank": 13013,
+    "word": "大和",
+    "reading": "やまと",
+    "meaning": "(ancient) Japan"
+  },
+  {
+    "rank": 13016,
+    "word": "踏み潰す",
+    "reading": "ふみつぶす",
+    "meaning": "to trample"
+  },
+  {
+    "rank": 13062,
+    "word": "甘酸っぱい",
+    "reading": "あまずっぱい",
+    "meaning": "sweet and sour"
+  },
+  {
+    "rank": 13069,
+    "word": "差し伸べる",
+    "reading": "さしのべる",
+    "meaning": "to hold out"
+  },
+  {
+    "rank": 13092,
+    "word": "突き出る",
+    "reading": "つきでる",
+    "meaning": "to project"
+  },
+  {
+    "rank": 13096,
+    "word": "行き過ぎる",
+    "reading": "いきすぎる",
+    "meaning": "to go too far"
+  },
+  {
+    "rank": 13112,
+    "word": "並行",
+    "reading": "へいこう",
+    "meaning": "going side-by-side"
+  },
+  {
+    "rank": 13129,
+    "word": "一回転",
+    "reading": "いちかいてん",
+    "meaning": "one revolution"
+  },
+  {
+    "rank": 13147,
+    "word": "添う",
+    "reading": "そう",
+    "meaning": "to meet (wishes, expectations, etc.)"
+  },
+  {
+    "rank": 13152,
+    "word": "流星",
+    "reading": "りゅうせい",
+    "meaning": "meteor"
+  },
+  {
+    "rank": 13160,
+    "word": "迫り来る",
+    "reading": "せまりくる",
+    "meaning": "to be imminent"
+  },
+  {
+    "rank": 13169,
+    "word": "遅らせる",
+    "reading": "おくらせる",
+    "meaning": "to delay"
+  },
+  {
+    "rank": 13172,
+    "word": "奔走",
+    "reading": "ほんそう",
+    "meaning": "running about"
+  },
+  {
+    "rank": 13183,
+    "word": "群れる",
+    "reading": "むれる",
+    "meaning": "to crowd"
+  },
+  {
+    "rank": 13185,
+    "word": "行き渡る",
+    "reading": "いきわたる",
+    "meaning": "to diffuse"
+  },
+  {
+    "rank": 13191,
+    "word": "ぐらり",
+    "reading": "ぐらり",
+    "meaning": "shaking violently"
+  },
+  {
+    "rank": 13196,
+    "word": "ダイブ",
+    "reading": "ダイブ",
+    "meaning": "dive (e.g. into water)"
+  },
+  {
+    "rank": 13201,
+    "word": "通りすがり",
+    "reading": "とおりすがり",
+    "meaning": "passing by"
+  },
+  {
+    "rank": 13211,
+    "word": "身を投げる",
+    "reading": "みをなげる",
+    "meaning": "to throw oneself (e.g. off a cliff, etc.)"
+  },
+  {
+    "rank": 13217,
+    "word": "後戻り",
+    "reading": "あともどり",
+    "meaning": "going backward"
+  },
+  {
+    "rank": 13232,
+    "word": "追い求める",
+    "reading": "おいもとめる",
+    "meaning": "to pursue"
+  },
+  {
+    "rank": 13236,
+    "word": "跨る",
+    "reading": "またがる",
+    "meaning": "to straddle"
+  },
+  {
+    "rank": 13265,
+    "word": "忍び寄る",
+    "reading": "しのびよる",
+    "meaning": "to creep"
+  },
+  {
+    "rank": 13270,
+    "word": "身のこなし",
+    "reading": "みのこなし",
+    "meaning": "carriage"
+  },
+  {
+    "rank": 13273,
+    "word": "くぐり抜ける",
+    "reading": "くぐりぬける",
+    "meaning": "to go through"
+  },
+  {
+    "rank": 13324,
+    "word": "瞬間移動",
+    "reading": "しゅんかんいどう",
+    "meaning": "teleportation"
+  },
+  {
+    "rank": 13328,
+    "word": "またぐ",
+    "reading": "またぐ",
+    "meaning": "to step over"
+  },
+  {
+    "rank": 13371,
+    "word": "うまく行く",
+    "reading": "うまくいく",
+    "meaning": "to go smoothly"
+  },
+  {
+    "rank": 13378,
+    "word": "駈ける",
+    "reading": "かける",
+    "meaning": "to run"
+  },
+  {
+    "rank": 13381,
+    "word": "ダラダラ",
+    "reading": "ダラダラ",
+    "meaning": "in drops"
+  },
+  {
+    "rank": 13391,
+    "word": "足掻く",
+    "reading": "あがく",
+    "meaning": "to paw (at) the ground"
+  },
+  {
+    "rank": 13421,
+    "word": "すくむ",
+    "reading": "すくむ",
+    "meaning": "to freeze (from fear, etc.)"
+  },
+  {
+    "rank": 13424,
+    "word": "追い付く",
+    "reading": "おいつく",
+    "meaning": "to catch up (with)"
+  },
+  {
+    "rank": 13433,
+    "word": "余力",
+    "reading": "よりょく",
+    "meaning": "spare energy, time or money"
+  },
+  {
+    "rank": 13450,
+    "word": "太刀打ち",
+    "reading": "たちうち",
+    "meaning": "crossing swords"
+  },
+  {
+    "rank": 13469,
+    "word": "置いて行く",
+    "reading": "おいていく",
+    "meaning": "to leave behind"
+  },
+  {
+    "rank": 13472,
+    "word": "みっちり",
+    "reading": "みっちり",
+    "meaning": "intensely"
+  },
+  {
+    "rank": 13482,
+    "word": "湧き出る",
+    "reading": "わきでる",
+    "meaning": "to gush forth"
+  },
+  {
+    "rank": 13484,
+    "word": "歩調",
+    "reading": "ほちょう",
+    "meaning": "pace"
+  },
+  {
+    "rank": 13485,
+    "word": "別れ際",
+    "reading": "わかれぎわ",
+    "meaning": "at parting"
+  },
+  {
+    "rank": 13506,
+    "word": "遠足",
+    "reading": "えんそく",
+    "meaning": "excursion"
+  },
+  {
+    "rank": 13510,
+    "word": "ドライブ",
+    "reading": "ドライブ",
+    "meaning": "drive"
+  },
+  {
+    "rank": 13536,
+    "word": "震動",
+    "reading": "しんどう",
+    "meaning": "shock"
+  },
+  {
+    "rank": 13578,
+    "word": "点在",
+    "reading": "てんざい",
+    "meaning": "being dotted with"
+  },
+  {
+    "rank": 13584,
+    "word": "ぐいと",
+    "reading": "ぐいと",
+    "meaning": "suddenly and forcefully (e.g. jerk, poke, shove)"
+  },
+  {
+    "rank": 13592,
+    "word": "目頭",
+    "reading": "めがしら",
+    "meaning": "inner canthus"
+  },
+  {
+    "rank": 13596,
+    "word": "挫折",
+    "reading": "ざせつ",
+    "meaning": "setback"
+  },
+  {
+    "rank": 13619,
+    "word": "鬼畜",
+    "reading": "きちく",
+    "meaning": "brute"
+  },
+  {
+    "rank": 13649,
+    "word": "向かい側",
+    "reading": "むかいがわ",
+    "meaning": "opposite side"
+  },
+  {
+    "rank": 13672,
+    "word": "統べる",
+    "reading": "すべる",
+    "meaning": "to rule over"
+  },
+  {
+    "rank": 13693,
+    "word": "行ったり来たり",
+    "reading": "いったりきたり",
+    "meaning": "going to and fro"
+  },
+  {
+    "rank": 13716,
+    "word": "うとうと",
+    "reading": "うとうと",
+    "meaning": "falling into a doze"
+  },
+  {
+    "rank": 13718,
+    "word": "じたばた",
+    "reading": "じたばた",
+    "meaning": "(kicking and) struggling"
+  },
+  {
+    "rank": 13719,
+    "word": "飛び去る",
+    "reading": "とびさる",
+    "meaning": "to fly away"
+  },
+  {
+    "rank": 13725,
+    "word": "走",
+    "reading": "そう",
+    "meaning": "run"
+  },
+  {
+    "rank": 13774,
+    "word": "付きまとう",
+    "reading": "つきまとう",
+    "meaning": "to follow around"
+  },
+  {
+    "rank": 13827,
+    "word": "連れ立つ",
+    "reading": "つれだつ",
+    "meaning": "to accompany"
+  },
+  {
+    "rank": 13830,
+    "word": "右往左往",
+    "reading": "うおうさおう",
+    "meaning": "moving about in confusion"
+  },
+  {
+    "rank": 13833,
+    "word": "空を切る",
+    "reading": "くうをきる",
+    "meaning": "to fly through the air"
+  },
+  {
+    "rank": 13859,
+    "word": "揺れ動く",
+    "reading": "ゆれうごく",
+    "meaning": "to shake"
+  },
+  {
+    "rank": 13872,
+    "word": "通行",
+    "reading": "つうこう",
+    "meaning": "passage (of people, traffic)"
+  },
+  {
+    "rank": 13884,
+    "word": "近付ける",
+    "reading": "ちかづける",
+    "meaning": "to bring near"
+  },
+  {
+    "rank": 13893,
+    "word": "蹲る",
+    "reading": "うずくまる",
+    "meaning": "to crouch"
+  },
+  {
+    "rank": 13895,
+    "word": "空飛ぶ",
+    "reading": "そらとぶ",
+    "meaning": "to fly in the sky"
+  },
+  {
+    "rank": 13922,
+    "word": "四つん這い",
+    "reading": "よつんばい",
+    "meaning": "crawling on all fours"
+  },
+  {
+    "rank": 13927,
+    "word": "つるむ",
+    "reading": "つるむ",
+    "meaning": "to go with (a companion)"
+  },
+  {
+    "rank": 13966,
+    "word": "裏返る",
+    "reading": "うらがえる",
+    "meaning": "to be turned inside out"
+  },
+  {
+    "rank": 13984,
+    "word": "遠出",
+    "reading": "とおで",
+    "meaning": "trip"
+  },
+  {
+    "rank": 13992,
+    "word": "着く",
+    "reading": "つく",
+    "meaning": "to arrive at"
+  },
+  {
+    "rank": 13996,
+    "word": "移動中",
+    "reading": "いどうちゅう",
+    "meaning": "while moving"
+  },
+  {
+    "rank": 14001,
+    "word": "転がり込む",
+    "reading": "ころがりこむ",
+    "meaning": "to roll in"
+  },
+  {
+    "rank": 14041,
+    "word": "押し入る",
+    "reading": "おしいる",
+    "meaning": "to push in"
+  },
+  {
+    "rank": 14044,
+    "word": "弾け飛ぶ",
+    "reading": "はじけとぶ",
+    "meaning": "to pop off"
+  },
+  {
+    "rank": 14065,
+    "word": "走行",
+    "reading": "そうこう",
+    "meaning": "running (of a car, bus, etc.)"
+  },
+  {
+    "rank": 14073,
+    "word": "押し流す",
+    "reading": "おしながす",
+    "meaning": "to wash away"
+  },
+  {
+    "rank": 14130,
+    "word": "ゆかり",
+    "reading": "ゆかり",
+    "meaning": "connection (to a person, place, etc.)"
+  },
+  {
+    "rank": 14137,
+    "word": "逆流",
+    "reading": "ぎゃくりゅう",
+    "meaning": "counter-current"
+  },
+  {
+    "rank": 14143,
+    "word": "不躾",
+    "reading": "ぶしつけ",
+    "meaning": "ill-bred"
+  },
+  {
+    "rank": 14160,
+    "word": "かいくぐる",
+    "reading": "かいくぐる",
+    "meaning": "to slip through"
+  },
+  {
+    "rank": 14181,
+    "word": "へばりつく",
+    "reading": "へばりつく",
+    "meaning": "to cling to"
+  },
+  {
+    "rank": 14191,
+    "word": "進行方向",
+    "reading": "しんこうほうこう",
+    "meaning": "direction of movement (motion)"
+  },
+  {
+    "rank": 14255,
+    "word": "踊らす",
+    "reading": "おどらす",
+    "meaning": "to manipulate (someone)"
+  },
+  {
+    "rank": 14292,
+    "word": "瘦せる",
+    "reading": "やせる",
+    "meaning": "to become thin"
+  },
+  {
+    "rank": 14293,
+    "word": "捕らわれる",
+    "reading": "とらわれる",
+    "meaning": "to be caught"
+  },
+  {
+    "rank": 14306,
+    "word": "そる",
+    "reading": "そる",
+    "meaning": "to warp"
+  },
+  {
+    "rank": 14319,
+    "word": "とぼとぼ",
+    "reading": "とぼとぼ",
+    "meaning": "totteringly"
+  },
+  {
+    "rank": 14340,
+    "word": "足を組む",
+    "reading": "あしをくむ",
+    "meaning": "to cross one's legs"
+  },
+  {
+    "rank": 14358,
+    "word": "風を切る",
+    "reading": "かぜをきる",
+    "meaning": "to go flying along"
+  },
+  {
+    "rank": 14360,
+    "word": "這いずる",
+    "reading": "はいずる",
+    "meaning": "to creep"
+  },
+  {
+    "rank": 14368,
+    "word": "召す",
+    "reading": "めす",
+    "meaning": "to call"
+  },
+  {
+    "rank": 14372,
+    "word": "航海",
+    "reading": "こうかい",
+    "meaning": "(sea) voyage"
+  },
+  {
+    "rank": 14400,
+    "word": "行軍",
+    "reading": "こうぐん",
+    "meaning": "march"
+  },
+  {
+    "rank": 14408,
+    "word": "一歩下がる",
+    "reading": "いっぽさがる",
+    "meaning": "to take a step backward"
+  },
+  {
+    "rank": 14463,
+    "word": "ウロウロ",
+    "reading": "ウロウロ",
+    "meaning": "restlessly"
+  },
+  {
+    "rank": 14466,
+    "word": "旅路",
+    "reading": "たびじ",
+    "meaning": "journey"
+  },
+  {
+    "rank": 14481,
+    "word": "コマ",
+    "reading": "コマ",
+    "meaning": "frame (e.g. of film, panel in a comic, etc.)"
+  },
+  {
+    "rank": 14485,
+    "word": "棒立ち",
+    "reading": "ぼうだち",
+    "meaning": "standing upright"
+  },
+  {
+    "rank": 14495,
+    "word": "乗馬",
+    "reading": "じょうば",
+    "meaning": "horse riding"
+  },
+  {
+    "rank": 14512,
+    "word": "落ち合う",
+    "reading": "おちあう",
+    "meaning": "to meet"
+  },
+  {
+    "rank": 14532,
+    "word": "コロコロ",
+    "reading": "コロコロ",
+    "meaning": "lightly rolling (of a small and round thing)"
+  },
+  {
+    "rank": 14544,
+    "word": "スキップ",
+    "reading": "スキップ",
+    "meaning": "skip (bounding forward with alternate hops on each foot)"
+  },
+  {
+    "rank": 14613,
+    "word": "巻きつく",
+    "reading": "まきつく",
+    "meaning": "to twine around"
+  },
+  {
+    "rank": 14645,
+    "word": "すたすた",
+    "reading": "すたすた",
+    "meaning": "(walk) briskly"
+  },
+  {
+    "rank": 14657,
+    "word": "逆立つ",
+    "reading": "さかだつ",
+    "meaning": "to stand on end"
+  },
+  {
+    "rank": 14661,
+    "word": "ふんぞり返る",
+    "reading": "ふんぞりかえる",
+    "meaning": "to lie on one's back with legs outstretched"
+  },
+  {
+    "rank": 14700,
+    "word": "そびえ立つ",
+    "reading": "そびえたつ",
+    "meaning": "to tower over the surroundings"
+  },
+  {
+    "rank": 14718,
+    "word": "バーベキュー",
+    "reading": "バーベキュー",
+    "meaning": "barbecue"
+  },
+  {
+    "rank": 14722,
+    "word": "投げ飛ばす",
+    "reading": "なげとばす",
+    "meaning": "to fling (away)"
+  },
+  {
+    "rank": 14750,
+    "word": "ぴょんぴょん",
+    "reading": "ぴょんぴょん",
+    "meaning": "hopping"
+  },
+  {
+    "rank": 14754,
+    "word": "逃げ帰る",
+    "reading": "にげかえる",
+    "meaning": "to scurry home"
+  },
+  {
+    "rank": 14755,
+    "word": "逃げ惑う",
+    "reading": "にげまどう",
+    "meaning": "to run about trying to escape"
+  },
+  {
+    "rank": 14762,
+    "word": "便乗",
+    "reading": "びんじょう",
+    "meaning": "taking advantage of (an opportunity)"
+  },
+  {
+    "rank": 14854,
+    "word": "翻る",
+    "reading": "ひるがえる",
+    "meaning": "to flutter (in the wind)"
+  },
+  {
+    "rank": 14855,
+    "word": "ぶっ倒れる",
+    "reading": "ぶったおれる",
+    "meaning": "to fall flat"
+  },
+  {
+    "rank": 14896,
+    "word": "駆け付ける",
+    "reading": "かけつける",
+    "meaning": "to run to"
+  },
+  {
+    "rank": 14935,
+    "word": "急降下",
+    "reading": "きゅうこうか",
+    "meaning": "sudden drop"
+  },
+  {
+    "rank": 14948,
+    "word": "放浪",
+    "reading": "ほうろう",
+    "meaning": "wandering"
+  },
+  {
+    "rank": 14958,
+    "word": "片膝をつく",
+    "reading": "かたひざをつく",
+    "meaning": "to kneel down on one knee"
+  },
+  {
+    "rank": 14972,
+    "word": "据わる",
+    "reading": "すわる",
+    "meaning": "to sit"
+  },
+  {
+    "rank": 15003,
+    "word": "ちょこちょこ",
+    "reading": "ちょこちょこ",
+    "meaning": "toddling"
+  },
+  {
+    "rank": 15011,
+    "word": "お座り",
+    "reading": "おすわり",
+    "meaning": "sit down"
+  },
+  {
+    "rank": 15024,
+    "word": "立ち込める",
+    "reading": "たちこめる",
+    "meaning": "to hang over"
+  },
+  {
+    "rank": 15041,
+    "word": "小舟",
+    "reading": "こぶね",
+    "meaning": "small boat"
+  },
+  {
+    "rank": 15048,
+    "word": "うねり",
+    "reading": "うねり",
+    "meaning": "undulation"
+  },
+  {
+    "rank": 15049,
+    "word": "先を急ぐ",
+    "reading": "さきをいそぐ",
+    "meaning": "to hurry"
+  },
+  {
+    "rank": 15061,
+    "word": "たかる",
+    "reading": "たかる",
+    "meaning": "to gather"
+  },
+  {
+    "rank": 15074,
+    "word": "洗礼",
+    "reading": "せんれい",
+    "meaning": "baptism"
+  },
+  {
+    "rank": 15080,
+    "word": "地下鉄",
+    "reading": "ちかてつ",
+    "meaning": "underground train"
+  },
+  {
+    "rank": 15081,
+    "word": "行進",
+    "reading": "こうしん",
+    "meaning": "march"
+  },
+  {
+    "rank": 15129,
+    "word": "急ぎ足",
+    "reading": "いそぎあし",
+    "meaning": "fast pace"
+  },
+  {
+    "rank": 15135,
+    "word": "抱え上げる",
+    "reading": "かかえあげる",
+    "meaning": "to gather up into one's arms"
+  },
+  {
+    "rank": 15145,
+    "word": "馬乗り",
+    "reading": "うまのり",
+    "meaning": "horseback riding"
+  },
+  {
+    "rank": 15172,
+    "word": "滴り落ちる",
+    "reading": "したたりおちる",
+    "meaning": "to trickle down"
+  },
+  {
+    "rank": 15205,
+    "word": "道案内",
+    "reading": "みちあんない",
+    "meaning": "guidance"
+  },
+  {
+    "rank": 15209,
+    "word": "おんぶ",
+    "reading": "おんぶ",
+    "meaning": "carrying on one's back (e.g. baby)"
+  },
+  {
+    "rank": 15221,
+    "word": "航行",
+    "reading": "こうこう",
+    "meaning": "cruise"
+  },
+  {
+    "rank": 15223,
+    "word": "道すがら",
+    "reading": "みちすがら",
+    "meaning": "along the road"
+  },
+  {
+    "rank": 15232,
+    "word": "上体を起こす",
+    "reading": "じょうたいをおこす",
+    "meaning": "to straighten up"
+  },
+  {
+    "rank": 15237,
+    "word": "陽動",
+    "reading": "ようどう",
+    "meaning": "diversion (action meant to attract attention away from th..."
+  },
+  {
+    "rank": 15250,
+    "word": "速める",
+    "reading": "はやめる",
+    "meaning": "to bring forward (e.g. by 3 hours)"
+  },
+  {
+    "rank": 15253,
+    "word": "荷車",
+    "reading": "にぐるま",
+    "meaning": "cart"
+  },
+  {
+    "rank": 15280,
+    "word": "半歩",
+    "reading": "はんぽ",
+    "meaning": "half step"
+  },
+  {
+    "rank": 15316,
+    "word": "仰ぎ見る",
+    "reading": "あおぎみる",
+    "meaning": "to look upwards"
+  },
+  {
+    "rank": 15319,
+    "word": "ひくつく",
+    "reading": "ひくつく",
+    "meaning": "to twitch"
+  },
+  {
+    "rank": 15338,
+    "word": "這い出る",
+    "reading": "はいでる",
+    "meaning": "to crawl out of"
+  },
+  {
+    "rank": 15361,
+    "word": "張り出す",
+    "reading": "はりだす",
+    "meaning": "to project"
+  },
+  {
+    "rank": 15369,
+    "word": "名乗り出る",
+    "reading": "なのりでる",
+    "meaning": "to introduce oneself"
+  },
+  {
+    "rank": 15377,
+    "word": "直立",
+    "reading": "ちょくりつ",
+    "meaning": "standing upright"
+  },
+  {
+    "rank": 15378,
+    "word": "躓く",
+    "reading": "つまずく",
+    "meaning": "to trip (over)"
+  },
+  {
+    "rank": 15390,
+    "word": "体操",
+    "reading": "たいそう",
+    "meaning": "gymnastics"
+  },
+  {
+    "rank": 15398,
+    "word": "道行く",
+    "reading": "みちゆく",
+    "meaning": "to walk down the road"
+  },
+  {
+    "rank": 15405,
+    "word": "お忍び",
+    "reading": "おしのび",
+    "meaning": "travelling incognito (traveling)"
+  },
+  {
+    "rank": 15427,
+    "word": "持ち去る",
+    "reading": "もちさる",
+    "meaning": "to take away"
+  },
+  {
+    "rank": 15459,
+    "word": "滾る",
+    "reading": "たぎる",
+    "meaning": "to boil"
+  },
+  {
+    "rank": 15470,
+    "word": "震え上がる",
+    "reading": "ふるえあがる",
+    "meaning": "to tremble violently"
+  },
+  {
+    "rank": 15476,
+    "word": "過る",
+    "reading": "よぎる",
+    "meaning": "to go by"
+  },
+  {
+    "rank": 15492,
+    "word": "足先",
+    "reading": "あしさき",
+    "meaning": "part of the feet from the ankles to the tips of the toes"
+  },
+  {
+    "rank": 15518,
+    "word": "ぶっ飛ぶ",
+    "reading": "ぶっとぶ",
+    "meaning": "to fly (with great force)"
+  },
+  {
+    "rank": 15530,
+    "word": "帰省",
+    "reading": "きせい",
+    "meaning": "homecoming"
+  },
+  {
+    "rank": 15591,
+    "word": "あぐらをかく",
+    "reading": "あぐらをかく",
+    "meaning": "to sit cross-legged"
+  },
+  {
+    "rank": 15594,
+    "word": "足踏み",
+    "reading": "あしぶみ",
+    "meaning": "stepping (in place)"
+  },
+  {
+    "rank": 15615,
+    "word": "風呂上がり",
+    "reading": "ふろあがり",
+    "meaning": "just out of the bath"
+  },
+  {
+    "rank": 15628,
+    "word": "釣り上げる",
+    "reading": "つりあげる",
+    "meaning": "to pull in (fish)"
+  },
+  {
+    "rank": 15647,
+    "word": "蟹",
+    "reading": "かに",
+    "meaning": "crab"
+  },
+  {
+    "rank": 15664,
+    "word": "寝入る",
+    "reading": "ねいる",
+    "meaning": "to fall asleep"
+  },
+  {
+    "rank": 15673,
+    "word": "どこもかしこも",
+    "reading": "どこもかしこも",
+    "meaning": "all over"
+  },
+  {
+    "rank": 15674,
+    "word": "ひれ伏す",
+    "reading": "ひれふす",
+    "meaning": "to prostrate oneself before"
+  },
+  {
+    "rank": 15696,
+    "word": "船体",
+    "reading": "せんたい",
+    "meaning": "hull"
+  },
+  {
+    "rank": 15723,
+    "word": "翼を広げる",
+    "reading": "つばさをひろげる",
+    "meaning": "to spread one's wings"
+  },
+  {
+    "rank": 15733,
+    "word": "出でる",
+    "reading": "いでる",
+    "meaning": "to go"
+  },
+  {
+    "rank": 15763,
+    "word": "入り乱れる",
+    "reading": "いりみだれる",
+    "meaning": "to be jumbled together"
+  },
+  {
+    "rank": 15780,
+    "word": "一本道",
+    "reading": "いっぽんみち",
+    "meaning": "direct unforked road"
+  },
+  {
+    "rank": 15786,
+    "word": "巻き付く",
+    "reading": "まきつく",
+    "meaning": "to twine around"
+  },
+  {
+    "rank": 15821,
+    "word": "急行",
+    "reading": "きゅうこう",
+    "meaning": "hurrying (to somewhere)"
+  },
+  {
+    "rank": 15830,
+    "word": "古き",
+    "reading": "ふるき",
+    "meaning": "old"
+  },
+  {
+    "rank": 15836,
+    "word": "跳ね返る",
+    "reading": "はねかえる",
+    "meaning": "to rebound"
+  },
+  {
+    "rank": 15838,
+    "word": "通学路",
+    "reading": "つうがくろ",
+    "meaning": "school route"
+  },
+  {
+    "rank": 15845,
+    "word": "駆り立てる",
+    "reading": "かりたてる",
+    "meaning": "to flush out (game, etc.)"
+  },
+  {
+    "rank": 15851,
+    "word": "艇",
+    "reading": "てい",
+    "meaning": "boat"
+  },
+  {
+    "rank": 15875,
+    "word": "ぐるっと",
+    "reading": "ぐるっと",
+    "meaning": "turning round"
+  },
+  {
+    "rank": 15939,
+    "word": "漏れ出す",
+    "reading": "もれだす",
+    "meaning": "to leak out"
+  },
+  {
+    "rank": 15943,
+    "word": "薬師",
+    "reading": "やくし",
+    "meaning": "Bhaisajyaguru"
+  },
+  {
+    "rank": 15955,
+    "word": "荷馬車",
+    "reading": "にばしゃ",
+    "meaning": "(horse-drawn) cart"
+  },
+  {
+    "rank": 15959,
+    "word": "下り",
+    "reading": "くだり",
+    "meaning": "down-train"
+  },
+  {
+    "rank": 15962,
+    "word": "這い出す",
+    "reading": "はいだす",
+    "meaning": "to crawl out"
+  },
+  {
+    "rank": 15976,
+    "word": "逃避",
+    "reading": "とうひ",
+    "meaning": "escape"
+  },
+  {
+    "rank": 16006,
+    "word": "クルクル",
+    "reading": "クルクル",
+    "meaning": "whirling"
+  },
+  {
+    "rank": 16010,
+    "word": "まっしぐら",
+    "reading": "まっしぐら",
+    "meaning": "at full speed"
+  },
+  {
+    "rank": 16018,
+    "word": "にじり寄る",
+    "reading": "にじりよる",
+    "meaning": "to sidle up to"
+  },
+  {
+    "rank": 16021,
+    "word": "転々",
+    "reading": "てんてん",
+    "meaning": "moving from place to place"
+  },
+  {
+    "rank": 16051,
+    "word": "落っこちる",
+    "reading": "おっこちる",
+    "meaning": "to fall down"
+  },
+  {
+    "rank": 16052,
+    "word": "のたうち回る",
+    "reading": "のたうちまわる",
+    "meaning": "to writhe (in pain)"
+  },
+  {
+    "rank": 16061,
+    "word": "崩れ去る",
+    "reading": "くずれさる",
+    "meaning": "to crumble away"
+  },
+  {
+    "rank": 16071,
+    "word": "躍り出る",
+    "reading": "おどりでる",
+    "meaning": "to leap out (e.g. onto the stage)"
+  },
+  {
+    "rank": 16077,
+    "word": "家内",
+    "reading": "かない",
+    "meaning": "(my) wife"
+  },
+  {
+    "rank": 16080,
+    "word": "吹きつける",
+    "reading": "ふきつける",
+    "meaning": "to blow against"
+  },
+  {
+    "rank": 16093,
+    "word": "奥まる",
+    "reading": "おくまる",
+    "meaning": "to lie deep in"
+  },
+  {
+    "rank": 16102,
+    "word": "踏破",
+    "reading": "とうは",
+    "meaning": "travelling on foot"
+  },
+  {
+    "rank": 16139,
+    "word": "息を切る",
+    "reading": "いきをきる",
+    "meaning": "to gasp for air"
+  },
+  {
+    "rank": 16152,
+    "word": "追いすがる",
+    "reading": "おいすがる",
+    "meaning": "to be hot on a person's heels"
+  },
+  {
+    "rank": 16179,
+    "word": "巻き戻す",
+    "reading": "まきもどす",
+    "meaning": "to rewind"
+  },
+  {
+    "rank": 16187,
+    "word": "どくどく",
+    "reading": "どくどく",
+    "meaning": "gushingly"
+  },
+  {
+    "rank": 16193,
+    "word": "駆け落ち",
+    "reading": "かけおち",
+    "meaning": "elopement"
+  },
+  {
+    "rank": 16235,
+    "word": "退路",
+    "reading": "たいろ",
+    "meaning": "path of retreat"
+  },
+  {
+    "rank": 16240,
+    "word": "身を屈める",
+    "reading": "みをかがめる",
+    "meaning": "to stoop"
+  },
+  {
+    "rank": 16249,
+    "word": "歩行",
+    "reading": "ほこう",
+    "meaning": "walk"
+  },
+  {
+    "rank": 16255,
+    "word": "靴音",
+    "reading": "くつおと",
+    "meaning": "walking sound"
+  },
+  {
+    "rank": 16262,
+    "word": "反る",
+    "reading": "かえる",
+    "meaning": "to return"
+  },
+  {
+    "rank": 16314,
+    "word": "住み着く",
+    "reading": "すみつく",
+    "meaning": "to settle (in a place)"
+  },
+  {
+    "rank": 16352,
+    "word": "慟哭",
+    "reading": "どうこく",
+    "meaning": "wailing"
+  },
+  {
+    "rank": 16365,
+    "word": "跳ね起きる",
+    "reading": "はねおきる",
+    "meaning": "to jump up"
+  },
+  {
+    "rank": 16367,
+    "word": "赴任",
+    "reading": "ふにん",
+    "meaning": "moving to a different location to start a new job"
+  },
+  {
+    "rank": 16379,
+    "word": "水流",
+    "reading": "すいりゅう",
+    "meaning": "water current"
+  },
+  {
+    "rank": 16424,
+    "word": "寝付く",
+    "reading": "ねつく",
+    "meaning": "to go to bed"
+  },
+  {
+    "rank": 16436,
+    "word": "駆け上る",
+    "reading": "かけのぼる",
+    "meaning": "to run (up hill, stairs, etc.)"
+  },
+  {
+    "rank": 16450,
+    "word": "引き揚げる",
+    "reading": "ひきあげる",
+    "meaning": "to pull up"
+  },
+  {
+    "rank": 16467,
+    "word": "足を取られる",
+    "reading": "あしをとられる",
+    "meaning": "to be tripped up"
+  },
+  {
+    "rank": 16479,
+    "word": "わらわら",
+    "reading": "わらわら",
+    "meaning": "bustling"
+  },
+  {
+    "rank": 16481,
+    "word": "身の危険",
+    "reading": "みのきけん",
+    "meaning": "danger to oneself"
+  },
+  {
+    "rank": 16502,
+    "word": "抜け出る",
+    "reading": "ぬけでる",
+    "meaning": "to slip out"
+  },
+  {
+    "rank": 16512,
+    "word": "せり上がる",
+    "reading": "せりあがる",
+    "meaning": "to gradually rise"
+  },
+  {
+    "rank": 16538,
+    "word": "出逢う",
+    "reading": "であう",
+    "meaning": "to meet (by chance)"
+  },
+  {
+    "rank": 16543,
+    "word": "直進",
+    "reading": "ちょくしん",
+    "meaning": "going straight on"
+  },
+  {
+    "rank": 16563,
+    "word": "道連れ",
+    "reading": "みちづれ",
+    "meaning": "fellow traveler"
+  },
+  {
+    "rank": 16565,
+    "word": "離れ離れになる",
+    "reading": "はなればなれになる",
+    "meaning": "to be dispersed"
+  },
+  {
+    "rank": 16572,
+    "word": "起床",
+    "reading": "きしょう",
+    "meaning": "rising (from one's bed)"
+  },
+  {
+    "rank": 16590,
+    "word": "手数",
+    "reading": "てすう",
+    "meaning": "trouble"
+  },
+  {
+    "rank": 16629,
+    "word": "旋風",
+    "reading": "せんぷう",
+    "meaning": "whirlwind"
+  },
+  {
+    "rank": 16671,
+    "word": "難航",
+    "reading": "なんこう",
+    "meaning": "difficult voyage"
+  },
+  {
+    "rank": 16673,
+    "word": "ぎゅうぎゅう",
+    "reading": "ぎゅうぎゅう",
+    "meaning": "creaking"
+  },
+  {
+    "rank": 16694,
+    "word": "息切れ",
+    "reading": "いきぎれ",
+    "meaning": "shortness of breath"
+  },
+  {
+    "rank": 16717,
+    "word": "腰が抜ける",
+    "reading": "こしがぬける",
+    "meaning": "to be unable to stand"
+  },
+  {
+    "rank": 16719,
+    "word": "帰路につく",
+    "reading": "きろにつく",
+    "meaning": "to head home"
+  },
+  {
+    "rank": 16724,
+    "word": "落ちぶれる",
+    "reading": "おちぶれる",
+    "meaning": "to be ruined (reduced to poverty)"
+  },
+  {
+    "rank": 16746,
+    "word": "行き詰まる",
+    "reading": "いきづまる",
+    "meaning": "to come to a dead end"
+  },
+  {
+    "rank": 16753,
+    "word": "上京",
+    "reading": "じょうきょう",
+    "meaning": "proceeding to the capital (Tokyo)"
+  },
+  {
+    "rank": 16769,
+    "word": "つんのめる",
+    "reading": "つんのめる",
+    "meaning": "to pitch forward"
+  },
+  {
+    "rank": 16778,
+    "word": "元も子もない",
+    "reading": "もともこもない",
+    "meaning": "losing everything"
+  },
+  {
+    "rank": 16840,
+    "word": "背中を追う",
+    "reading": "せなかをおう",
+    "meaning": "to walk behind someone"
+  },
+  {
+    "rank": 16880,
+    "word": "舞い散る",
+    "reading": "まいちる",
+    "meaning": "to dance down (leaves, petals, etc.)"
+  },
+  {
+    "rank": 16940,
+    "word": "ランニング",
+    "reading": "ランニング",
+    "meaning": "running"
+  },
+  {
+    "rank": 16945,
+    "word": "後をつける",
+    "reading": "あとをつける",
+    "meaning": "to tag along"
+  },
+  {
+    "rank": 16947,
+    "word": "すり寄る",
+    "reading": "すりよる",
+    "meaning": "to draw close to"
+  },
+  {
+    "rank": 16962,
+    "word": "乗り移る",
+    "reading": "のりうつる",
+    "meaning": "to change (cars or horses)"
+  },
+  {
+    "rank": 16990,
+    "word": "移民",
+    "reading": "いみん",
+    "meaning": "emigration"
+  },
+  {
+    "rank": 17012,
+    "word": "上り詰める",
+    "reading": "のぼりつめる",
+    "meaning": "to go to the top"
+  },
+  {
+    "rank": 17045,
+    "word": "踏み外す",
+    "reading": "ふみはずす",
+    "meaning": "to miss one's footing"
+  },
+  {
+    "rank": 17058,
+    "word": "グレる",
+    "reading": "グレる",
+    "meaning": "to stray from the right path"
+  },
+  {
+    "rank": 17094,
+    "word": "立ち入り",
+    "reading": "たちいり",
+    "meaning": "entering"
+  },
+  {
+    "rank": 17097,
+    "word": "拡がる",
+    "reading": "ひろがる",
+    "meaning": "to spread (out)"
+  },
+  {
+    "rank": 17098,
+    "word": "伝播",
+    "reading": "でんぱ",
+    "meaning": "transmission"
+  },
+  {
+    "rank": 17103,
+    "word": "戻って行く",
+    "reading": "もどっていく",
+    "meaning": "to go back"
+  },
+  {
+    "rank": 17117,
+    "word": "身を投じる",
+    "reading": "みをとうじる",
+    "meaning": "to throw oneself (into an activity)"
+  },
+  {
+    "rank": 17119,
+    "word": "居並ぶ",
+    "reading": "いならぶ",
+    "meaning": "to sit in a row"
+  },
+  {
+    "rank": 17138,
+    "word": "跨ぐ",
+    "reading": "またぐ",
+    "meaning": "to step over"
+  },
+  {
+    "rank": 17165,
+    "word": "振れる",
+    "reading": "ふれる",
+    "meaning": "to swing"
+  },
+  {
+    "rank": 17180,
+    "word": "踏み越える",
+    "reading": "ふみこえる",
+    "meaning": "to step over or across"
+  },
+  {
+    "rank": 17207,
+    "word": "馳せる",
+    "reading": "はせる",
+    "meaning": "to run"
+  },
+  {
+    "rank": 17226,
+    "word": "気を付け",
+    "reading": "きをつけ",
+    "meaning": "(stand to) attention!"
+  },
+  {
+    "rank": 17227,
+    "word": "渋滞",
+    "reading": "じゅうたい",
+    "meaning": "congestion (e.g. traffic)"
+  },
+  {
+    "rank": 17251,
+    "word": "運行",
+    "reading": "うんこう",
+    "meaning": "service (bus, train)"
+  },
+  {
+    "rank": 17253,
+    "word": "挙がる",
+    "reading": "あがる",
+    "meaning": "to rise"
+  },
+  {
+    "rank": 17260,
+    "word": "搭乗",
+    "reading": "とうじょう",
+    "meaning": "embarkation"
+  },
+  {
+    "rank": 17277,
+    "word": "騎乗",
+    "reading": "きじょう",
+    "meaning": "riding (on horseback)"
+  },
+  {
+    "rank": 17283,
+    "word": "立ち昇る",
+    "reading": "たちのぼる",
+    "meaning": "to rise up (e.g. pillar of smoke)"
+  },
+  {
+    "rank": 17285,
+    "word": "腰をかける",
+    "reading": "こしをかける",
+    "meaning": "to sit down"
+  },
+  {
+    "rank": 17315,
+    "word": "ぶち当たる",
+    "reading": "ぶちあたる",
+    "meaning": "to slam into"
+  },
+  {
+    "rank": 17317,
+    "word": "急上昇",
+    "reading": "きゅうじょうしょう",
+    "meaning": "sudden rise"
+  },
+  {
+    "rank": 17371,
+    "word": "墜ちる",
+    "reading": "おちる",
+    "meaning": "to fall down"
+  },
+  {
+    "rank": 17375,
+    "word": "潜り抜ける",
+    "reading": "くぐりぬける",
+    "meaning": "to go through"
+  },
+  {
+    "rank": 17432,
+    "word": "亡命",
+    "reading": "ぼうめい",
+    "meaning": "flight from one's country"
+  },
+  {
+    "rank": 17433,
+    "word": "帰路",
+    "reading": "きろ",
+    "meaning": "one's way back"
+  },
+  {
+    "rank": 17446,
+    "word": "往く",
+    "reading": "いく",
+    "meaning": "to go"
+  },
+  {
+    "rank": 17448,
+    "word": "ずかずか",
+    "reading": "ずかずか",
+    "meaning": "rudely (barging in)"
+  },
+  {
+    "rank": 17452,
+    "word": "膝を突く",
+    "reading": "ひざをつく",
+    "meaning": "to fall to one's knees"
+  },
+  {
+    "rank": 17465,
+    "word": "床につく",
+    "reading": "とこにつく",
+    "meaning": "to go to bed"
+  },
+  {
+    "rank": 17479,
+    "word": "発車",
+    "reading": "はっしゃ",
+    "meaning": "departure (of a train, car, etc.)"
+  },
+  {
+    "rank": 17495,
+    "word": "飛び移る",
+    "reading": "とびうつる",
+    "meaning": "to jump from one thing to another"
+  },
+  {
+    "rank": 17496,
+    "word": "折り曲げる",
+    "reading": "おりまげる",
+    "meaning": "to bend"
+  },
+  {
+    "rank": 17509,
+    "word": "移送",
+    "reading": "いそう",
+    "meaning": "transfer"
+  },
+  {
+    "rank": 17516,
+    "word": "下敷きになる",
+    "reading": "したじきになる",
+    "meaning": "to be squashed by"
+  },
+  {
+    "rank": 17522,
+    "word": "座する",
+    "reading": "ざする",
+    "meaning": "to sit"
+  },
+  {
+    "rank": 17523,
+    "word": "噴射",
+    "reading": "ふんしゃ",
+    "meaning": "jet"
+  },
+  {
+    "rank": 17538,
+    "word": "おびき寄せる",
+    "reading": "おびきよせる",
+    "meaning": "to lure someone"
+  },
+  {
+    "rank": 17551,
+    "word": "足を滑らせる",
+    "reading": "あしをすべらせる",
+    "meaning": "to lose one's footing"
+  },
+  {
+    "rank": 17576,
+    "word": "入り浸る",
+    "reading": "いりびたる",
+    "meaning": "to stay long"
+  },
+  {
+    "rank": 17597,
+    "word": "進入",
+    "reading": "しんにゅう",
+    "meaning": "entry"
+  },
+  {
+    "rank": 17613,
+    "word": "入国",
+    "reading": "にゅうこく",
+    "meaning": "entry into a country"
+  },
+  {
+    "rank": 17634,
+    "word": "追手",
+    "reading": "おいて",
+    "meaning": "pursuer"
+  },
+  {
+    "rank": 17681,
+    "word": "逃げ去る",
+    "reading": "にげさる",
+    "meaning": "to take flight"
+  },
+  {
+    "rank": 17796,
+    "word": "北上",
+    "reading": "ほくじょう",
+    "meaning": "going north"
+  },
+  {
+    "rank": 17820,
+    "word": "湧き出す",
+    "reading": "わきだす",
+    "meaning": "to gush out"
+  },
+  {
+    "rank": 17823,
+    "word": "お見えになる",
+    "reading": "おみえになる",
+    "meaning": "to arrive"
+  },
+  {
+    "rank": 17875,
+    "word": "ヘリコプター",
+    "reading": "ヘリコプター",
+    "meaning": "helicopter"
+  },
+  {
+    "rank": 17878,
+    "word": "上り",
+    "reading": "のぼり",
+    "meaning": "ascent"
+  },
+  {
+    "rank": 17892,
+    "word": "寝静まる",
+    "reading": "ねしずまる",
+    "meaning": "to fall asleep"
+  },
+  {
+    "rank": 17895,
+    "word": "鎮まる",
+    "reading": "しずまる",
+    "meaning": "to become quiet"
+  },
+  {
+    "rank": 17933,
+    "word": "信じ込む",
+    "reading": "しんじこむ",
+    "meaning": "to believe implicitly"
+  },
+  {
+    "rank": 17934,
+    "word": "ずり落ちる",
+    "reading": "ずりおちる",
+    "meaning": "to slip down"
+  },
+  {
+    "rank": 17937,
+    "word": "退く",
+    "reading": "しりぞく",
+    "meaning": "to step back"
+  },
+  {
+    "rank": 17969,
+    "word": "足音を立てる",
+    "reading": "あしおとをたてる",
+    "meaning": "to walk noisily"
+  },
+  {
+    "rank": 17992,
+    "word": "追い回す",
+    "reading": "おいまわす",
+    "meaning": "to chase about"
+  },
+  {
+    "rank": 18050,
+    "word": "居住まいを正す",
+    "reading": "いずまいをただす",
+    "meaning": "to sit up straight"
+  },
+  {
+    "rank": 18051,
+    "word": "転入",
+    "reading": "てんにゅう",
+    "meaning": "moving (to a new place)"
+  },
+  {
+    "rank": 18053,
+    "word": "染み渡る",
+    "reading": "しみわたる",
+    "meaning": "to penetrate"
+  },
+  {
+    "rank": 18085,
+    "word": "噴き出る",
+    "reading": "ふきでる",
+    "meaning": "to blow out"
+  },
+  {
+    "rank": 18110,
+    "word": "出遅れる",
+    "reading": "でおくれる",
+    "meaning": "to get a late start"
+  },
+  {
+    "rank": 18130,
+    "word": "怒濤",
+    "reading": "どとう",
+    "meaning": "surging waves"
+  },
+  {
+    "rank": 18162,
+    "word": "降り続く",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 18164,
+    "word": "懸かる",
+    "reading": "かかる",
+    "meaning": "to take (a resource, e.g. time or money)"
+  },
+  {
+    "rank": 18184,
+    "word": "靡く",
+    "reading": "なびく",
+    "meaning": "to bend"
+  },
+  {
+    "rank": 18194,
+    "word": "くるっと",
+    "reading": "くるっと",
+    "meaning": "turning around"
+  },
+  {
+    "rank": 18205,
+    "word": "登山",
+    "reading": "とざん",
+    "meaning": "mountain climbing"
+  },
+  {
+    "rank": 18212,
+    "word": "出張る",
+    "reading": "でばる",
+    "meaning": "to project"
+  },
+  {
+    "rank": 18214,
+    "word": "退去",
+    "reading": "たいきょ",
+    "meaning": "departure"
+  },
+  {
+    "rank": 18263,
+    "word": "反り返る",
+    "reading": "そりかえる",
+    "meaning": "to warp"
+  },
+  {
+    "rank": 18334,
+    "word": "同乗",
+    "reading": "どうじょう",
+    "meaning": "riding together"
+  },
+  {
+    "rank": 18347,
+    "word": "飛躍的",
+    "reading": "ひやくてき",
+    "meaning": "rapidly"
+  },
+  {
+    "rank": 18374,
+    "word": "入れ込む",
+    "reading": "いれこむ",
+    "meaning": "to put in"
+  },
+  {
+    "rank": 18376,
+    "word": "起立",
+    "reading": "きりつ",
+    "meaning": "standing up"
+  },
+  {
+    "rank": 18412,
+    "word": "追尾",
+    "reading": "ついび",
+    "meaning": "following"
+  },
+  {
+    "rank": 18416,
+    "word": "先に進める",
+    "reading": "さきにすすめる",
+    "meaning": "to proceed with"
+  },
+  {
+    "rank": 18446,
+    "word": "足を伸ばす",
+    "reading": "あしをのばす",
+    "meaning": "to (relax and) stretch one's legs out"
+  },
+  {
+    "rank": 18459,
+    "word": "成り下がる",
+    "reading": "なりさがる",
+    "meaning": "to be degraded"
+  },
+  {
+    "rank": 18476,
+    "word": "闊歩",
+    "reading": "かっぽ",
+    "meaning": "striding"
+  },
+  {
+    "rank": 18522,
+    "word": "起つ",
+    "reading": "たつ",
+    "meaning": "to rise up"
+  },
+  {
+    "rank": 18532,
+    "word": "降り始める",
+    "reading": "ふりはじめる",
+    "meaning": "to begin to fall (rain, etc.)"
+  },
+  {
+    "rank": 18536,
+    "word": "積み込む",
+    "reading": "つみこむ",
+    "meaning": "to load (with goods, cargo)"
+  },
+  {
+    "rank": 18544,
+    "word": "出かかる",
+    "reading": "でかかる",
+    "meaning": "to just appear"
+  },
+  {
+    "rank": 18549,
+    "word": "逃げ足",
+    "reading": "にげあし",
+    "meaning": "running away"
+  },
+  {
+    "rank": 18573,
+    "word": "躍動",
+    "reading": "やくどう",
+    "meaning": "lively motion"
+  },
+  {
+    "rank": 18589,
+    "word": "進撃",
+    "reading": "しんげき",
+    "meaning": "advance"
+  },
+  {
+    "rank": 18590,
+    "word": "搬入",
+    "reading": "はんにゅう",
+    "meaning": "carrying in (esp. heavy objects, artwork, furniture)"
+  },
+  {
+    "rank": 18633,
+    "word": "流れ星",
+    "reading": "ながれぼし",
+    "meaning": "shooting star"
+  },
+  {
+    "rank": 18657,
+    "word": "降り積もる",
+    "reading": "ふりつもる",
+    "meaning": "to fall and pile up (e.g. snow)"
+  },
+  {
+    "rank": 18680,
+    "word": "くねくね",
+    "reading": "くねくね",
+    "meaning": "winding"
+  },
+  {
+    "rank": 18698,
+    "word": "バスに乗る",
+    "reading": "バスにのる",
+    "meaning": "to take the bus"
+  },
+  {
+    "rank": 18700,
+    "word": "屹立",
+    "reading": "きつりつ",
+    "meaning": "standing tall"
+  },
+  {
+    "rank": 18716,
+    "word": "沁みる",
+    "reading": "しみる",
+    "meaning": "to pierce"
+  },
+  {
+    "rank": 18732,
+    "word": "おびき出す",
+    "reading": "おびきだす",
+    "meaning": "to lure out of"
+  },
+  {
+    "rank": 18752,
+    "word": "直立不動",
+    "reading": "ちょくりつふどう",
+    "meaning": "standing at attention"
+  },
+  {
+    "rank": 18797,
+    "word": "渡り歩く",
+    "reading": "わたりあるく",
+    "meaning": "to wander from place to place"
+  },
+  {
+    "rank": 18868,
+    "word": "なだれ込む",
+    "reading": "なだれこむ",
+    "meaning": "to rush into"
+  },
+  {
+    "rank": 18879,
+    "word": "ぐらつく",
+    "reading": "ぐらつく",
+    "meaning": "to be unsteady"
+  },
+  {
+    "rank": 18896,
+    "word": "はみ出る",
+    "reading": "はみでる",
+    "meaning": "to protrude"
+  },
+  {
+    "rank": 18899,
+    "word": "懲罰",
+    "reading": "ちょうばつ",
+    "meaning": "discipline"
+  },
+  {
+    "rank": 18948,
+    "word": "のたうつ",
+    "reading": "のたうつ",
+    "meaning": "to writhe"
+  },
+  {
+    "rank": 18964,
+    "word": "並び立つ",
+    "reading": "ならびたつ",
+    "meaning": "to stand in a line"
+  },
+  {
+    "rank": 18982,
+    "word": "足を引きずる",
+    "reading": "あしをひきずる",
+    "meaning": "to limp"
+  },
+  {
+    "rank": 19010,
+    "word": "下降",
+    "reading": "かこう",
+    "meaning": "descent"
+  },
+  {
+    "rank": 19017,
+    "word": "ばたつく",
+    "reading": "ばたつく",
+    "meaning": "to clatter"
+  },
+  {
+    "rank": 19030,
+    "word": "ステップを踏む",
+    "reading": "ステップをふむ",
+    "meaning": "to dance"
+  },
+  {
+    "rank": 19039,
+    "word": "這い回る",
+    "reading": "はいまわる",
+    "meaning": "to creep about"
+  },
+  {
+    "rank": 19043,
+    "word": "ぶらつく",
+    "reading": "ぶらつく",
+    "meaning": "to stroll about"
+  },
+  {
+    "rank": 19069,
+    "word": "ばっと",
+    "reading": "ばっと",
+    "meaning": "suddenly"
+  },
+  {
+    "rank": 19075,
+    "word": "ふつふつ",
+    "reading": "ふつふつ",
+    "meaning": "simmer"
+  },
+  {
+    "rank": 19078,
+    "word": "いざる",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 19084,
+    "word": "ドクドク",
+    "reading": "ドクドク",
+    "meaning": "gushingly"
+  },
+  {
+    "rank": 19099,
+    "word": "ぽたぽた",
+    "reading": "ぽたぽた",
+    "meaning": "dripping"
+  },
+  {
+    "rank": 19102,
+    "word": "マラソン",
+    "reading": "マラソン",
+    "meaning": "marathon"
+  },
+  {
+    "rank": 19104,
+    "word": "周回",
+    "reading": "しゅうかい",
+    "meaning": "going around"
+  },
+  {
+    "rank": 19130,
+    "word": "ごろん",
+    "reading": "ごろん",
+    "meaning": "flopping (e.g. on a bed)"
+  },
+  {
+    "rank": 19134,
+    "word": "寄せ付ける",
+    "reading": "よせつける",
+    "meaning": "to allow (someone or something) to come near"
+  },
+  {
+    "rank": 19186,
+    "word": "泳ぎ",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 19231,
+    "word": "転げる",
+    "reading": "ころげる",
+    "meaning": "to roll over"
+  },
+  {
+    "rank": 19233,
+    "word": "のっそり",
+    "reading": "のっそり",
+    "meaning": "sluggishly"
+  },
+  {
+    "rank": 19260,
+    "word": "沸き上がる",
+    "reading": "わきあがる",
+    "meaning": "to boil up"
+  },
+  {
+    "rank": 19269,
+    "word": "逃げ延びる",
+    "reading": "にげのびる",
+    "meaning": "to make good one's escape"
+  },
+  {
+    "rank": 19347,
+    "word": "這いつくばう",
+    "reading": "はいつくばう",
+    "meaning": "to grovel"
+  },
+  {
+    "rank": 19381,
+    "word": "折れ曲がる",
+    "reading": "おれまがる",
+    "meaning": "to bend"
+  },
+  {
+    "rank": 19383,
+    "word": "飛び抜ける",
+    "reading": "とびぬける",
+    "meaning": "to be preeminent"
+  },
+  {
+    "rank": 19389,
+    "word": "南下",
+    "reading": "なんか",
+    "meaning": "going south"
+  },
+  {
+    "rank": 19415,
+    "word": "持ち運ぶ",
+    "reading": "もちはこぶ",
+    "meaning": "to carry"
+  },
+  {
+    "rank": 19422,
+    "word": "縋りつく",
+    "reading": "すがりつく",
+    "meaning": "to cling to"
+  },
+  {
+    "rank": 19481,
+    "word": "旅立ち",
+    "reading": "たびだち",
+    "meaning": "setting off (on a trip)"
+  },
+  {
+    "rank": 19579,
+    "word": "回れ右",
+    "reading": "まわれみぎ",
+    "meaning": "right about-face"
+  },
+  {
+    "rank": 19608,
+    "word": "スキー",
+    "reading": "スキー",
+    "meaning": "skiing"
+  },
+  {
+    "rank": 19609,
+    "word": "移り住む",
+    "reading": "うつりすむ",
+    "meaning": "to change one's place of residence"
+  },
+  {
+    "rank": 19620,
+    "word": "乱舞",
+    "reading": "らんぶ",
+    "meaning": "boisterous dance"
+  },
+  {
+    "rank": 19648,
+    "word": "すっ飛ぶ",
+    "reading": "すっとぶ",
+    "meaning": "to fly"
+  },
+  {
+    "rank": 19680,
+    "word": "横倒し",
+    "reading": "よこだおし",
+    "meaning": "falling over"
+  },
+  {
+    "rank": 19692,
+    "word": "そそり立つ",
+    "reading": "そそりたつ",
+    "meaning": "to rise (steeply)"
+  },
+  {
+    "rank": 19701,
+    "word": "ラッシュ",
+    "reading": "ラッシュ",
+    "meaning": "rush"
+  },
+  {
+    "rank": 19720,
+    "word": "追随",
+    "reading": "ついずい",
+    "meaning": "following (in the footsteps of)"
+  },
+  {
+    "rank": 19721,
+    "word": "ワープ",
+    "reading": "ワープ",
+    "meaning": "warp (fictional faster-than-light spacecraft propulsion)"
+  },
+  {
+    "rank": 19770,
+    "word": "取り付く",
+    "reading": "とりつく",
+    "meaning": "to cling to"
+  },
+  {
+    "rank": 19784,
+    "word": "身を捩る",
+    "reading": "みをよじる",
+    "meaning": "to twist"
+  },
+  {
+    "rank": 19789,
+    "word": "撃沈",
+    "reading": "げきちん",
+    "meaning": "sending a ship to the bottom"
+  },
+  {
+    "rank": 19830,
+    "word": "ぶるり",
+    "reading": "ぶるり",
+    "meaning": "with a vroom"
+  },
+  {
+    "rank": 19885,
+    "word": "もそもそ",
+    "reading": "もそもそ",
+    "meaning": "creeping about"
+  },
+  {
+    "rank": 19950,
+    "word": "跳び上がる",
+    "reading": "とびあがる",
+    "meaning": "to spring"
+  },
+  {
+    "rank": 19990,
+    "word": "ブラブラ",
+    "reading": "ブラブラ",
+    "meaning": "dangling heavily"
+  },
+  {
+    "rank": 20012,
+    "word": "ストレッチ",
+    "reading": "ストレッチ",
+    "meaning": "stretch"
+  },
+  {
+    "rank": 20015,
+    "word": "助け起こす",
+    "reading": "たすけおこす",
+    "meaning": "to help up"
+  },
+  {
+    "rank": 20021,
+    "word": "身を固める",
+    "reading": "みをかためる",
+    "meaning": "to settle down"
+  },
+  {
+    "rank": 20027,
+    "word": "後れを取る",
+    "reading": "おくれをとる",
+    "meaning": "to fall behind"
+  },
+  {
+    "rank": 20044,
+    "word": "一方通行",
+    "reading": "いっぽうつうこう",
+    "meaning": "one-way traffic"
+  },
+  {
+    "rank": 20048,
+    "word": "出航",
+    "reading": "しゅっこう",
+    "meaning": "departure (of a boat, plane)"
+  },
+  {
+    "rank": 20083,
+    "word": "室を出る",
+    "reading": "しつをでる",
+    "meaning": "to leave the room"
+  },
+  {
+    "rank": 20084,
+    "word": "逆立ち",
+    "reading": "さかだち",
+    "meaning": "handstand"
+  },
+  {
+    "rank": 20085,
+    "word": "腰が引ける",
+    "reading": "こしがひける",
+    "meaning": "to get cold feet"
+  },
+  {
+    "rank": 20088,
+    "word": "海水浴",
+    "reading": "かいすいよく",
+    "meaning": "swimming in the ocean"
+  },
+  {
+    "rank": 20096,
+    "word": "押し広げる",
+    "reading": "おしひろげる",
+    "meaning": "to extend"
+  },
+  {
+    "rank": 20119,
+    "word": "代名詞",
+    "reading": "だいめいし",
+    "meaning": "pronoun"
+  },
+  {
+    "rank": 20179,
+    "word": "走り出る",
+    "reading": "はしりでる",
+    "meaning": "to run out (e.g. of the room)"
+  },
+  {
+    "rank": 20201,
+    "word": "纏わりつく",
+    "reading": "まとわりつく",
+    "meaning": "to coil about"
+  },
+  {
+    "rank": 20213,
+    "word": "歩き去る",
+    "reading": "あるきさる",
+    "meaning": "to walk away"
+  },
+  {
+    "rank": 20220,
+    "word": "平伏す",
+    "reading": "ひれふす",
+    "meaning": "to prostrate oneself before"
+  },
+  {
+    "rank": 20242,
+    "word": "引き払う",
+    "reading": "ひきはらう",
+    "meaning": "to vacate"
+  },
+  {
+    "rank": 20261,
+    "word": "渡り",
+    "reading": "わたり",
+    "meaning": "crossing"
+  },
+  {
+    "rank": 20262,
+    "word": "身を沈める",
+    "reading": "みをしずめる",
+    "meaning": "to sink (into one's seat, etc.)"
+  },
+  {
+    "rank": 20299,
+    "word": "巡り会う",
+    "reading": "めぐりあう",
+    "meaning": "to meet fortuitously (e.g. running into an old friend)"
+  },
+  {
+    "rank": 20345,
+    "word": "捗る",
+    "reading": "はかどる",
+    "meaning": "to make (good) progress"
+  },
+  {
+    "rank": 20422,
+    "word": "吊り上がる",
+    "reading": "つりあがる",
+    "meaning": "to be lifted up"
+  },
+  {
+    "rank": 20460,
+    "word": "跳ね飛ばす",
+    "reading": "はねとばす",
+    "meaning": "to send (something) flying"
+  },
+  {
+    "rank": 20475,
+    "word": "起き出す",
+    "reading": "おきだす",
+    "meaning": "to get out of bed"
+  },
+  {
+    "rank": 20491,
+    "word": "腰を落ち着ける",
+    "reading": "こしをおちつける",
+    "meaning": "to settle down"
+  },
+  {
+    "rank": 20521,
+    "word": "準備運動",
+    "reading": "じゅんびうんどう",
+    "meaning": "warming (limbering) up"
+  },
+  {
+    "rank": 20530,
+    "word": "様子を伺う",
+    "reading": "ようすをうかがう",
+    "meaning": "to wait and see"
+  },
+  {
+    "rank": 20567,
+    "word": "頭をもたげる",
+    "reading": "あたまをもたげる",
+    "meaning": "to raise one's head"
+  },
+  {
+    "rank": 20589,
+    "word": "流れ着く",
+    "reading": "ながれつく",
+    "meaning": "to drift (to)"
+  },
+  {
+    "rank": 20602,
+    "word": "朝飯前",
+    "reading": "あさめしまえ",
+    "meaning": "very easy"
+  },
+  {
+    "rank": 20650,
+    "word": "樹海",
+    "reading": "じゅかい",
+    "meaning": "sea of trees"
+  },
+  {
+    "rank": 20675,
+    "word": "鉢合わせる",
+    "reading": "はちあわせる",
+    "meaning": "to bump heads"
+  },
+  {
+    "rank": 20676,
+    "word": "助走",
+    "reading": "じょそう",
+    "meaning": "approach run"
+  },
+  {
+    "rank": 20772,
+    "word": "這いつくばる",
+    "reading": "はいつくばる",
+    "meaning": "to grovel"
+  },
+  {
+    "rank": 20793,
+    "word": "飛び掛かる",
+    "reading": "とびかかる",
+    "meaning": "to spring at"
+  },
+  {
+    "rank": 20852,
+    "word": "海を渡る",
+    "reading": "うみをわたる",
+    "meaning": "to cross the ocean (i.e. to go to or come from overseas)"
+  },
+  {
+    "rank": 20858,
+    "word": "キャッチボール",
+    "reading": "キャッチボール",
+    "meaning": "catch"
+  },
+  {
+    "rank": 20859,
+    "word": "綱渡り",
+    "reading": "つなわたり",
+    "meaning": "tightrope walking"
+  },
+  {
+    "rank": 20866,
+    "word": "貼り付く",
+    "reading": "はりつく",
+    "meaning": "to stick (to)"
+  },
+  {
+    "rank": 20891,
+    "word": "没する",
+    "reading": "ぼっする",
+    "meaning": "to sink"
+  },
+  {
+    "rank": 20909,
+    "word": "かなぐり捨てる",
+    "reading": "かなぐりすてる",
+    "meaning": "to fling off"
+  },
+  {
+    "rank": 20910,
+    "word": "たゆたう",
+    "reading": "たゆたう",
+    "meaning": "to sway to and fro"
+  },
+  {
+    "rank": 20930,
+    "word": "急く",
+    "reading": "せく",
+    "meaning": "to hurry"
+  },
+  {
+    "rank": 20971,
+    "word": "抱き付く",
+    "reading": "だきつく",
+    "meaning": "to cling to"
+  },
+  {
+    "rank": 21021,
+    "word": "吹き付ける",
+    "reading": "ふきつける",
+    "meaning": "to blow against"
+  },
+  {
+    "rank": 21022,
+    "word": "すっ飛ばす",
+    "reading": "すっとばす",
+    "meaning": "to speed"
+  },
+  {
+    "rank": 21024,
+    "word": "乗車",
+    "reading": "じょうしゃ",
+    "meaning": "boarding (a train, bus, etc.)"
+  },
+  {
+    "rank": 21031,
+    "word": "ちょこまか",
+    "reading": "ちょこまか",
+    "meaning": "restlessly"
+  },
+  {
+    "rank": 21035,
+    "word": "じゃれつく",
+    "reading": "じゃれつく",
+    "meaning": "to coil around (of a child or animal)"
+  },
+  {
+    "rank": 21079,
+    "word": "巡り合う",
+    "reading": "めぐりあう",
+    "meaning": "to meet fortuitously (e.g. running into an old friend)"
+  },
+  {
+    "rank": 21091,
+    "word": "建ち並ぶ",
+    "reading": "たちならぶ",
+    "meaning": "to stand in a row (e.g. shops on a street)"
+  },
+  {
+    "rank": 21135,
+    "word": "うねうね",
+    "reading": "うねうね",
+    "meaning": "winding"
+  },
+  {
+    "rank": 21154,
+    "word": "追い掛ける",
+    "reading": "おいかける",
+    "meaning": "to chase"
+  },
+  {
+    "rank": 21191,
+    "word": "濡れそぼつ",
+    "reading": "ぬれそぼつ",
+    "meaning": "to be dripping wet"
+  },
+  {
+    "rank": 21267,
+    "word": "位置につく",
+    "reading": "いちにつく",
+    "meaning": "to take one's place"
+  },
+  {
+    "rank": 21289,
+    "word": "フクロウ",
+    "reading": "フクロウ",
+    "meaning": "owl (esp. the Ural owl, Strix uralensis)"
+  },
+  {
+    "rank": 21297,
+    "word": "沈没",
+    "reading": "ちんぼつ",
+    "meaning": "sinking"
+  },
+  {
+    "rank": 21300,
+    "word": "浮ぶ",
+    "reading": "うかぶ",
+    "meaning": "to float"
+  },
+  {
+    "rank": 21339,
+    "word": "敗走",
+    "reading": "はいそう",
+    "meaning": "flight"
+  },
+  {
+    "rank": 21402,
+    "word": "上向く",
+    "reading": "うわむく",
+    "meaning": "to point upward"
+  },
+  {
+    "rank": 21446,
+    "word": "二足歩行",
+    "reading": "にそくほこう",
+    "meaning": "bipedal walking"
+  },
+  {
+    "rank": 21480,
+    "word": "成り上がる",
+    "reading": "なりあがる",
+    "meaning": "to rise (suddenly) in the world (to a higher position)"
+  },
+  {
+    "rank": 21503,
+    "word": "一路",
+    "reading": "いちろ",
+    "meaning": "straight"
+  },
+  {
+    "rank": 21509,
+    "word": "踏んづける",
+    "reading": "ふんづける",
+    "meaning": "to step on"
+  },
+  {
+    "rank": 21514,
+    "word": "眠りこける",
+    "reading": "ねむりこける",
+    "meaning": "to sleep like a log"
+  },
+  {
+    "rank": 21527,
+    "word": "無駄足",
+    "reading": "むだあし",
+    "meaning": "visit for no reason"
+  },
+  {
+    "rank": 21529,
+    "word": "ひっつく",
+    "reading": "ひっつく",
+    "meaning": "to stick to"
+  },
+  {
+    "rank": 21533,
+    "word": "道連れにする",
+    "reading": "みちづれにする",
+    "meaning": "to force (someone) to take part"
+  },
+  {
+    "rank": 21536,
+    "word": "篭る",
+    "reading": "こもる",
+    "meaning": "to shut oneself in (e.g. one's room)"
+  },
+  {
+    "rank": 21557,
+    "word": "振り仰ぐ",
+    "reading": "ふりあおぐ",
+    "meaning": "to look up"
+  },
+  {
+    "rank": 21562,
+    "word": "横転",
+    "reading": "おうてん",
+    "meaning": "toppling sideways"
+  },
+  {
+    "rank": 21573,
+    "word": "流入",
+    "reading": "りゅうにゅう",
+    "meaning": "afflux"
+  },
+  {
+    "rank": 21659,
+    "word": "出過ぎる",
+    "reading": "ですぎる",
+    "meaning": "to stick out too much"
+  },
+  {
+    "rank": 21681,
+    "word": "背ける",
+    "reading": "そむける",
+    "meaning": "to turn (one's face) away"
+  },
+  {
+    "rank": 21691,
+    "word": "ちょろちょろ",
+    "reading": "ちょろちょろ",
+    "meaning": "trickling (of water)"
+  },
+  {
+    "rank": 21696,
+    "word": "里帰り",
+    "reading": "さとがえり",
+    "meaning": "returning home"
+  },
+  {
+    "rank": 21700,
+    "word": "乗っける",
+    "reading": "のっける",
+    "meaning": "to place on (something)"
+  },
+  {
+    "rank": 21704,
+    "word": "萎む",
+    "reading": "しぼむ",
+    "meaning": "to wither (of flowers, dreams, etc.)"
+  },
+  {
+    "rank": 21708,
+    "word": "後になる",
+    "reading": "あとになる",
+    "meaning": "to become late"
+  },
+  {
+    "rank": 21721,
+    "word": "遅れを取る",
+    "reading": "おくれをとる",
+    "meaning": "to fall behind"
+  },
+  {
+    "rank": 21746,
+    "word": "寄りつく",
+    "reading": "よりつく",
+    "meaning": "to approach"
+  },
+  {
+    "rank": 21772,
+    "word": "沸き起こる",
+    "reading": "わきおこる",
+    "meaning": "to well up"
+  },
+  {
+    "rank": 21773,
+    "word": "湧き起こる",
+    "reading": "わきおこる",
+    "meaning": "to well up"
+  },
+  {
+    "rank": 21788,
+    "word": "浮き足立つ",
+    "reading": "うきあしだつ",
+    "meaning": "to be prepared to flee"
+  },
+  {
+    "rank": 21794,
+    "word": "乗船",
+    "reading": "じょうせん",
+    "meaning": "embarking (a ship)"
+  },
+  {
+    "rank": 21801,
+    "word": "通ずる",
+    "reading": "つうずる",
+    "meaning": "to be open (to traffic)"
+  },
+  {
+    "rank": 21804,
+    "word": "廻る",
+    "reading": "まわる",
+    "meaning": "to turn"
+  },
+  {
+    "rank": 21816,
+    "word": "舞い落ちる",
+    "reading": "まいおちる",
+    "meaning": "to flutter down"
+  },
+  {
+    "rank": 21819,
+    "word": "停泊",
+    "reading": "ていはく",
+    "meaning": "anchorage"
+  },
+  {
+    "rank": 21837,
+    "word": "はびこる",
+    "reading": "はびこる",
+    "meaning": "to become overgrown"
+  },
+  {
+    "rank": 21881,
+    "word": "隣り合う",
+    "reading": "となりあう",
+    "meaning": "to adjoin each other"
+  },
+  {
+    "rank": 21888,
+    "word": "廻り",
+    "reading": "まわり",
+    "meaning": "rotation"
+  },
+  {
+    "rank": 21918,
+    "word": "掛る",
+    "reading": "かかる",
+    "meaning": "to take (a resource, e.g. time or money)"
+  },
+  {
+    "rank": 21942,
+    "word": "充ちる",
+    "reading": "みちる",
+    "meaning": "to fill"
+  },
+  {
+    "rank": 21978,
+    "word": "道を開ける",
+    "reading": "みちをあける",
+    "meaning": "to make way for"
+  },
+  {
+    "rank": 21985,
+    "word": "深追い",
+    "reading": "ふかおい",
+    "meaning": "chasing too far"
+  },
+  {
+    "rank": 21986,
+    "word": "転覆",
+    "reading": "てんぷく",
+    "meaning": "overturning"
+  },
+  {
+    "rank": 21992,
+    "word": "邁進",
+    "reading": "まいしん",
+    "meaning": "pushing forward (undaunted, bravely)"
+  },
+  {
+    "rank": 21997,
+    "word": "到る",
+    "reading": "いたる",
+    "meaning": "to arrive at (e.g. a decision)"
+  },
+  {
+    "rank": 22064,
+    "word": "ぴょこん",
+    "reading": "ぴょこん",
+    "meaning": "quickly, in a bouncing way (e.g. for a bow)"
+  },
+  {
+    "rank": 22091,
+    "word": "ぶり返す",
+    "reading": "ぶりかえす",
+    "meaning": "to come back"
+  },
+  {
+    "rank": 22093,
+    "word": "走り込む",
+    "reading": "はしりこむ",
+    "meaning": "to run into (room, building, etc.)"
+  },
+  {
+    "rank": 22119,
+    "word": "駆け戻る",
+    "reading": "かけもどる",
+    "meaning": "to rush back"
+  },
+  {
+    "rank": 22128,
+    "word": "傾げる",
+    "reading": "かしげる",
+    "meaning": "to tilt (esp. head)"
+  },
+  {
+    "rank": 22170,
+    "word": "のそのそ",
+    "reading": "のそのそ",
+    "meaning": "(move) slowly (e.g. walk)"
+  },
+  {
+    "rank": 22225,
+    "word": "跳ね回る",
+    "reading": "はねまわる",
+    "meaning": "to jump about"
+  },
+  {
+    "rank": 22252,
+    "word": "農作業",
+    "reading": "のうさぎょう",
+    "meaning": "farmwork"
+  },
+  {
+    "rank": 22296,
+    "word": "上がり込む",
+    "reading": "あがりこむ",
+    "meaning": "to enter (house, room, etc.)"
+  },
+  {
+    "rank": 22321,
+    "word": "急ブレーキ",
+    "reading": "きゅうブレーキ",
+    "meaning": "sudden brake"
+  },
+  {
+    "rank": 22374,
+    "word": "切り立つ",
+    "reading": "きりたつ",
+    "meaning": "to rise perpendicularly"
+  },
+  {
+    "rank": 22419,
+    "word": "出奔",
+    "reading": "しゅっぽん",
+    "meaning": "flight"
+  },
+  {
+    "rank": 22429,
+    "word": "立ち居振る舞い",
+    "reading": "たちいふるまい",
+    "meaning": "movements"
+  },
+  {
+    "rank": 22524,
+    "word": "聳える",
+    "reading": "そびえる",
+    "meaning": "to rise (of a building, mountain, etc.)"
+  },
+  {
+    "rank": 22527,
+    "word": "座り",
+    "reading": "すわり",
+    "meaning": "sitting"
+  },
+  {
+    "rank": 22558,
+    "word": "乗り継ぐ",
+    "reading": "のりつぐ",
+    "meaning": "to connect (with a different flight, train, etc.)"
+  },
+  {
+    "rank": 22594,
+    "word": "滑空",
+    "reading": "かっくう",
+    "meaning": "gliding (through the air)"
+  },
+  {
+    "rank": 22641,
+    "word": "ライダー",
+    "reading": "ライダー",
+    "meaning": "rider"
+  },
+  {
+    "rank": 22650,
+    "word": "帰り着く",
+    "reading": "かえりつく",
+    "meaning": "to arrive home"
+  },
+  {
+    "rank": 22664,
+    "word": "たんまり",
+    "reading": "たんまり",
+    "meaning": "quite a lot"
+  },
+  {
+    "rank": 22685,
+    "word": "ぬかるむ",
+    "reading": "ぬかるむ",
+    "meaning": "to be muddy"
+  },
+  {
+    "rank": 22753,
+    "word": "這入る",
+    "reading": "はいる",
+    "meaning": "to enter"
+  },
+  {
+    "rank": 22777,
+    "word": "バウンド",
+    "reading": "バウンド",
+    "meaning": "bounce"
+  },
+  {
+    "rank": 22793,
+    "word": "疾駆",
+    "reading": "しっく",
+    "meaning": "riding fast"
+  },
+  {
+    "rank": 22794,
+    "word": "ハンドルを握る",
+    "reading": "ハンドルをにぎる",
+    "meaning": "to hold the steering wheel"
+  },
+  {
+    "rank": 22873,
+    "word": "足を速める",
+    "reading": "あしをはやめる",
+    "meaning": "to quicken one's pace (steps)"
+  },
+  {
+    "rank": 22874,
+    "word": "傾ぐ",
+    "reading": "かしぐ",
+    "meaning": "to incline toward"
+  },
+  {
+    "rank": 22953,
+    "word": "立ち往生",
+    "reading": "たちおうじょう",
+    "meaning": "being brought to a standstill"
+  },
+  {
+    "rank": 23010,
+    "word": "膝立ち",
+    "reading": "ひざだち",
+    "meaning": "kneeling"
+  },
+  {
+    "rank": 23022,
+    "word": "余剰",
+    "reading": "よじょう",
+    "meaning": "surplus"
+  },
+  {
+    "rank": 23032,
+    "word": "超す",
+    "reading": "こす",
+    "meaning": "to cross over (e.g. mountain)"
+  },
+  {
+    "rank": 23033,
+    "word": "下り坂",
+    "reading": "くだりざか",
+    "meaning": "downhill"
+  },
+  {
+    "rank": 23086,
+    "word": "曲がりくねる",
+    "reading": "まがりくねる",
+    "meaning": "to bend many times"
+  },
+  {
+    "rank": 23097,
+    "word": "絡み付く",
+    "reading": "からみつく",
+    "meaning": "to twine around"
+  },
+  {
+    "rank": 23132,
+    "word": "度が過ぎる",
+    "reading": "どがすぎる",
+    "meaning": "to go too far"
+  },
+  {
+    "rank": 23237,
+    "word": "突き当たる",
+    "reading": "つきあたる",
+    "meaning": "to run into"
+  },
+  {
+    "rank": 23334,
+    "word": "下山",
+    "reading": "げざん",
+    "meaning": "descending (mountain)"
+  },
+  {
+    "rank": 23369,
+    "word": "立て込む",
+    "reading": "たてこむ",
+    "meaning": "to be crowded (with)"
+  },
+  {
+    "rank": 23370,
+    "word": "モーション",
+    "reading": "モーション",
+    "meaning": "motion"
+  },
+  {
+    "rank": 23385,
+    "word": "乗り心地",
+    "reading": "のりごこち",
+    "meaning": "one's feeling while riding"
+  },
+  {
+    "rank": 23452,
+    "word": "離陸",
+    "reading": "りりく",
+    "meaning": "takeoff"
+  },
+  {
+    "rank": 23457,
+    "word": "しなだれかかる",
+    "reading": "しなだれかかる",
+    "meaning": "to lean coquettishly against"
+  },
+  {
+    "rank": 23463,
+    "word": "出港",
+    "reading": "しゅっこう",
+    "meaning": "departure from a port"
+  },
+  {
+    "rank": 23469,
+    "word": "すり寄せる",
+    "reading": "すりよせる",
+    "meaning": "to snuggle up to"
+  },
+  {
+    "rank": 23492,
+    "word": "日帰り",
+    "reading": "ひがえり",
+    "meaning": "day trip"
+  },
+  {
+    "rank": 23496,
+    "word": "立ち振る舞い",
+    "reading": "たちふるまい",
+    "meaning": "movements"
+  },
+  {
+    "rank": 23512,
+    "word": "息継ぎ",
+    "reading": "いきつぎ",
+    "meaning": "taking a breath (while singing, swimming, etc.)"
+  },
+  {
+    "rank": 23520,
+    "word": "たわむ",
+    "reading": "たわむ",
+    "meaning": "to bend"
+  },
+  {
+    "rank": 23572,
+    "word": "根暗",
+    "reading": "ねくら",
+    "meaning": "dark-natured"
+  },
+  {
+    "rank": 23605,
+    "word": "詰めかける",
+    "reading": "つめかける",
+    "meaning": "to crowd (a house)"
+  },
+  {
+    "rank": 23653,
+    "word": "どっかり",
+    "reading": "どっかり",
+    "meaning": "plunking (down something heavy)"
+  },
+  {
+    "rank": 23729,
+    "word": "涼む",
+    "reading": "すずむ",
+    "meaning": "to cool oneself"
+  },
+  {
+    "rank": 23741,
+    "word": "くずおれる",
+    "reading": "くずおれる",
+    "meaning": "to collapse (physically or emotionally)"
+  },
+  {
+    "rank": 23745,
+    "word": "巣食う",
+    "reading": "すくう",
+    "meaning": "to build (a nest)"
+  },
+  {
+    "rank": 23788,
+    "word": "逃げおおせる",
+    "reading": "にげおおせる",
+    "meaning": "to escape"
+  },
+  {
+    "rank": 23801,
+    "word": "激高",
+    "reading": "げっこう",
+    "meaning": "excitement"
+  },
+  {
+    "rank": 23805,
+    "word": "染み出す",
+    "reading": "しみだす",
+    "meaning": "to ooze (out)"
+  },
+  {
+    "rank": 23818,
+    "word": "ひた走る",
+    "reading": "ひたはしる",
+    "meaning": "to run at full speed"
+  },
+  {
+    "rank": 23822,
+    "word": "ジョギング",
+    "reading": "ジョギング",
+    "meaning": "jogging"
+  },
+  {
+    "rank": 23853,
+    "word": "縋り付く",
+    "reading": "すがりつく",
+    "meaning": "to cling to"
+  },
+  {
+    "rank": 23870,
+    "word": "掻き消える",
+    "reading": "かききえる",
+    "meaning": "to disappear"
+  },
+  {
+    "rank": 23897,
+    "word": "手が離れる",
+    "reading": "てがはなれる",
+    "meaning": "to become independent"
+  },
+  {
+    "rank": 23908,
+    "word": "昇天",
+    "reading": "しょうてん",
+    "meaning": "ascension (into heaven)"
+  },
+  {
+    "rank": 23926,
+    "word": "ぴくりとも動かない",
+    "reading": "ぴくりともうごかない",
+    "meaning": "to be completely still"
+  },
+  {
+    "rank": 23963,
+    "word": "乗用車",
+    "reading": "じょうようしゃ",
+    "meaning": "(passenger) car"
+  },
+  {
+    "rank": 23982,
+    "word": "軌道に乗る",
+    "reading": "きどうにのる",
+    "meaning": "to be on track"
+  },
+  {
+    "rank": 24016,
+    "word": "水没",
+    "reading": "すいぼつ",
+    "meaning": "submerge"
+  },
+  {
+    "rank": 24055,
+    "word": "横行",
+    "reading": "おうこう",
+    "meaning": "walking sideways"
+  },
+  {
+    "rank": 24085,
+    "word": "擦り寄る",
+    "reading": "すりよる",
+    "meaning": "to draw close to"
+  },
+  {
+    "rank": 24122,
+    "word": "日が浅い",
+    "reading": "ひがあさい",
+    "meaning": "it hasn't been long since"
+  },
+  {
+    "rank": 24128,
+    "word": "勿体無い",
+    "reading": "もったいない",
+    "meaning": "wasteful"
+  },
+  {
+    "rank": 24142,
+    "word": "全否定",
+    "reading": "ぜんひてい",
+    "meaning": "complete denial"
+  },
+  {
+    "rank": 24165,
+    "word": "引き立つ",
+    "reading": "ひきたつ",
+    "meaning": "to cheer up"
+  },
+  {
+    "rank": 24225,
+    "word": "歩きはじめ",
+    "reading": "あるきはじめ",
+    "meaning": "starting to walk"
+  },
+  {
+    "rank": 24239,
+    "word": "引きずり下ろす",
+    "reading": "ひきずりおろす",
+    "meaning": "to drag down"
+  },
+  {
+    "rank": 24280,
+    "word": "しがみ付く",
+    "reading": "しがみつく",
+    "meaning": "to cling"
+  },
+  {
+    "rank": 24281,
+    "word": "醒ます",
+    "reading": "さます",
+    "meaning": "to awaken"
+  },
+  {
+    "rank": 24293,
+    "word": "忍び足",
+    "reading": "しのびあし",
+    "meaning": "stealthy steps"
+  },
+  {
+    "rank": 24297,
+    "word": "サーベル",
+    "reading": "サーベル",
+    "meaning": "saber (cavalry sword)"
+  },
+  {
+    "rank": 24342,
+    "word": "過ぎる",
+    "reading": "すぎる",
+    "meaning": "to pass through"
+  },
+  {
+    "rank": 24359,
+    "word": "二人乗り",
+    "reading": "ふたりのり",
+    "meaning": "two people using the same (vehicle) (often two on a bike)"
+  },
+  {
+    "rank": 24377,
+    "word": "転げ回る",
+    "reading": "ころげまわる",
+    "meaning": "to roll about"
+  },
+  {
+    "rank": 24420,
+    "word": "とことこ",
+    "reading": "とことこ",
+    "meaning": "briskly with small steps"
+  },
+  {
+    "rank": 24508,
+    "word": "順々に",
+    "reading": "じゅんじゅんに",
+    "meaning": "in order"
+  },
+  {
+    "rank": 24516,
+    "word": "後ろに倒れる",
+    "reading": "うしろにたおれる",
+    "meaning": "to fall backward"
+  },
+  {
+    "rank": 24627,
+    "word": "スーッと",
+    "reading": "スーッと",
+    "meaning": "straight"
+  },
+  {
+    "rank": 24631,
+    "word": "蛇行",
+    "reading": "だこう",
+    "meaning": "meandering"
+  },
+  {
+    "rank": 24663,
+    "word": "一足飛び",
+    "reading": "いっそくとび",
+    "meaning": "(at) one bound"
+  },
+  {
+    "rank": 24687,
+    "word": "見つめ直す",
+    "reading": "みつめなおす",
+    "meaning": "to take another good look at"
+  },
+  {
+    "rank": 24704,
+    "word": "身をかわす",
+    "reading": "みをかわす",
+    "meaning": "to dodge"
+  },
+  {
+    "rank": 24727,
+    "word": "腰を据える",
+    "reading": "こしをすえる",
+    "meaning": "to settle down (and deal with something)"
+  },
+  {
+    "rank": 24730,
+    "word": "姿をくらます",
+    "reading": "すがたをくらます",
+    "meaning": "to disappear"
+  },
+  {
+    "rank": 24771,
+    "word": "よたよた",
+    "reading": "よたよた",
+    "meaning": "unsteadily (walking)"
+  },
+  {
+    "rank": 24774,
+    "word": "屈み込む",
+    "reading": "かがみこむ",
+    "meaning": "to lean over"
+  },
+  {
+    "rank": 24784,
+    "word": "現在に至る",
+    "reading": "げんざいにいたる",
+    "meaning": "arriving at the present"
+  },
+  {
+    "rank": 24876,
+    "word": "すい",
+    "reading": "すい",
+    "meaning": "lightly"
+  },
+  {
+    "rank": 24883,
+    "word": "宙返り",
+    "reading": "ちゅうがえり",
+    "meaning": "somersault"
+  },
+  {
+    "rank": 24938,
+    "word": "達す",
+    "reading": "たっす",
+    "meaning": "to reach"
+  },
+  {
+    "rank": 25005,
+    "word": "混",
+    "reading": "こん",
+    "meaning": "(traffic) congestion"
+  },
+  {
+    "rank": 25052,
+    "word": "道を空ける",
+    "reading": "みちをあける",
+    "meaning": "to make way for"
+  },
+  {
+    "rank": 25056,
+    "word": "前屈みになる",
+    "reading": "まえかがみになる",
+    "meaning": "to slouch"
+  },
+  {
+    "rank": 25087,
+    "word": "しゃしゃり出る",
+    "reading": "しゃしゃりでる",
+    "meaning": "to come uninvited"
+  },
+  {
+    "rank": 25110,
+    "word": "足がつく",
+    "reading": "あしがつく",
+    "meaning": "to be traced (of a criminal)"
+  },
+  {
+    "rank": 25113,
+    "word": "ひょいひょい",
+    "reading": "ひょいひょい",
+    "meaning": "lightly"
+  },
+  {
+    "rank": 25124,
+    "word": "伝い",
+    "reading": "づたい",
+    "meaning": "along (wall, coast, river, etc.)"
+  },
+  {
+    "rank": 25153,
+    "word": "逆行",
+    "reading": "ぎゃっこう",
+    "meaning": "reverse movement"
+  },
+  {
+    "rank": 25163,
+    "word": "しずしず",
+    "reading": "しずしず",
+    "meaning": "quietly"
+  },
+  {
+    "rank": 25166,
+    "word": "真っ逆さま",
+    "reading": "まっさかさま",
+    "meaning": "head over heels"
+  },
+  {
+    "rank": 25199,
+    "word": "跨がる",
+    "reading": "またがる",
+    "meaning": "to straddle"
+  },
+  {
+    "rank": 25213,
+    "word": "浮べる",
+    "reading": "うかべる",
+    "meaning": "to float"
+  },
+  {
+    "rank": 25268,
+    "word": "行方をくらます",
+    "reading": "ゆくえをくらます",
+    "meaning": "to disappear"
+  },
+  {
+    "rank": 25296,
+    "word": "うろちょろ",
+    "reading": "うろちょろ",
+    "meaning": "loitering"
+  },
+  {
+    "rank": 25323,
+    "word": "ころり",
+    "reading": "ころり",
+    "meaning": "easily"
+  },
+  {
+    "rank": 25344,
+    "word": "腰をかがめる",
+    "reading": "こしをかがめる",
+    "meaning": "to bend forward"
+  },
+  {
+    "rank": 25421,
+    "word": "被さる",
+    "reading": "かぶさる",
+    "meaning": "to hang over"
+  },
+  {
+    "rank": 25454,
+    "word": "てくてく",
+    "reading": "てくてく",
+    "meaning": "(walking a long distance) at a steady pace"
+  },
+  {
+    "rank": 25476,
+    "word": "登り",
+    "reading": "のぼり",
+    "meaning": "ascent"
+  },
+  {
+    "rank": 25504,
+    "word": "飛び",
+    "reading": "とび",
+    "meaning": "flying"
+  },
+  {
+    "rank": 25523,
+    "word": "彷徨",
+    "reading": "ほうこう",
+    "meaning": "wandering"
+  },
+  {
+    "rank": 25554,
+    "word": "のし上がる",
+    "reading": "のしあがる",
+    "meaning": "to stand on tiptoe"
+  },
+  {
+    "rank": 25605,
+    "word": "追いかけ回す",
+    "reading": "おいかけまわす",
+    "meaning": "to chase around"
+  },
+  {
+    "rank": 25634,
+    "word": "落馬",
+    "reading": "らくば",
+    "meaning": "falling from a horse"
+  },
+  {
+    "rank": 25648,
+    "word": "乗りこなす",
+    "reading": "のりこなす",
+    "meaning": "to manage skillfully"
+  },
+  {
+    "rank": 25661,
+    "word": "混み合う",
+    "reading": "こみあう",
+    "meaning": "to be crowded"
+  },
+  {
+    "rank": 25669,
+    "word": "飛散",
+    "reading": "ひさん",
+    "meaning": "scattering (e.g. dust in the wind, enemies before an assa..."
+  },
+  {
+    "rank": 25670,
+    "word": "小躍り",
+    "reading": "こおどり",
+    "meaning": "dancing or jumping for joy"
+  },
+  {
+    "rank": 25694,
+    "word": "ランナー",
+    "reading": "ランナー",
+    "meaning": "runner"
+  },
+  {
+    "rank": 25723,
+    "word": "勢いづく",
+    "reading": "いきおいづく",
+    "meaning": "to gather strength"
+  },
+  {
+    "rank": 25750,
+    "word": "御する",
+    "reading": "ぎょする",
+    "meaning": "to drive (e.g. horse, carriage)"
+  },
+  {
+    "rank": 25797,
+    "word": "ひょこひょこ",
+    "reading": "ひょこひょこ",
+    "meaning": "unsteady steps"
+  },
+  {
+    "rank": 25830,
+    "word": "並走",
+    "reading": "へいそう",
+    "meaning": "running parallel (to)"
+  },
+  {
+    "rank": 25863,
+    "word": "牽引",
+    "reading": "けんいん",
+    "meaning": "traction"
+  },
+  {
+    "rank": 25871,
+    "word": "馳せ参じる",
+    "reading": "はせさんじる",
+    "meaning": "to hasten to join"
+  },
+  {
+    "rank": 25935,
+    "word": "踏み入れる",
+    "reading": "ふみいれる",
+    "meaning": "to walk in on"
+  },
+  {
+    "rank": 25958,
+    "word": "遜色ない",
+    "reading": "そんしょくない",
+    "meaning": "standing comparison with"
+  },
+  {
+    "rank": 26010,
+    "word": "齎す",
+    "reading": "もたらす",
+    "meaning": "to bring"
+  },
+  {
+    "rank": 26018,
+    "word": "すくすく",
+    "reading": "すくすく",
+    "meaning": "(growing) quickly (esp. children, plants)"
+  },
+  {
+    "rank": 26036,
+    "word": "進退",
+    "reading": "しんたい",
+    "meaning": "advance or retreat"
+  },
+  {
+    "rank": 26054,
+    "word": "ピクリとも動かない",
+    "reading": "ピクリともうごかない",
+    "meaning": "to be completely still"
+  },
+  {
+    "rank": 26063,
+    "word": "吹き出る",
+    "reading": "ふきでる",
+    "meaning": "to blow out"
+  },
+  {
+    "rank": 26072,
+    "word": "軌道修正",
+    "reading": "きどうしゅうせい",
+    "meaning": "course correction"
+  },
+  {
+    "rank": 26087,
+    "word": "ゴソゴソ",
+    "reading": "ゴソゴソ",
+    "meaning": "with a rustling sound"
+  },
+  {
+    "rank": 26124,
+    "word": "連れ添う",
+    "reading": "つれそう",
+    "meaning": "to become a couple"
+  },
+  {
+    "rank": 26150,
+    "word": "宅配",
+    "reading": "たくはい",
+    "meaning": "home delivery"
+  },
+  {
+    "rank": 26158,
+    "word": "寄り集まる",
+    "reading": "よりあつまる",
+    "meaning": "to gather together"
+  },
+  {
+    "rank": 26193,
+    "word": "海外旅行",
+    "reading": "かいがいりょこう",
+    "meaning": "trip abroad"
+  },
+  {
+    "rank": 26198,
+    "word": "平伏",
+    "reading": "へいふく",
+    "meaning": "falling prostrate"
+  },
+  {
+    "rank": 26205,
+    "word": "入居",
+    "reading": "にゅうきょ",
+    "meaning": "moving into (house)"
+  },
+  {
+    "rank": 26218,
+    "word": "漂流",
+    "reading": "ひょうりゅう",
+    "meaning": "drifting"
+  },
+  {
+    "rank": 26239,
+    "word": "モタモタ",
+    "reading": "モタモタ",
+    "meaning": "slowly"
+  },
+  {
+    "rank": 26241,
+    "word": "右に曲がる",
+    "reading": "みぎにまがる",
+    "meaning": "to turn right"
+  },
+  {
+    "rank": 26253,
+    "word": "押し掛ける",
+    "reading": "おしかける",
+    "meaning": "to go uninvited"
+  },
+  {
+    "rank": 26277,
+    "word": "ゆさゆさ",
+    "reading": "ゆさゆさ",
+    "meaning": "swaying (with large slow movements)"
+  },
+  {
+    "rank": 26278,
+    "word": "早歩き",
+    "reading": "はやあるき",
+    "meaning": "fast walking"
+  },
+  {
+    "rank": 26291,
+    "word": "三〇〇",
+    "reading": "さんびゃく",
+    "meaning": "300"
+  },
+  {
+    "rank": 26294,
+    "word": "それにもかかわらず",
+    "reading": "それにもかかわらず",
+    "meaning": "nonetheless"
+  },
+  {
+    "rank": 26306,
+    "word": "周波数",
+    "reading": "しゅうはすう",
+    "meaning": "frequency (esp. of waveforms)"
+  },
+  {
+    "rank": 26364,
+    "word": "ほっつき歩く",
+    "reading": "ほっつきあるく",
+    "meaning": "to loiter around"
+  },
+  {
+    "rank": 26369,
+    "word": "くびれる",
+    "reading": "くびれる",
+    "meaning": "to be constricted"
+  },
+  {
+    "rank": 26439,
+    "word": "道を切り開く",
+    "reading": "みちをきりひらく",
+    "meaning": "to open a path"
+  },
+  {
+    "rank": 26491,
+    "word": "吹きすさぶ",
+    "reading": "ふきすさぶ",
+    "meaning": "to blow fiercely"
+  },
+  {
+    "rank": 26506,
+    "word": "舞い踊る",
+    "reading": "まいおどる",
+    "meaning": "to dance"
+  },
+  {
+    "rank": 26534,
+    "word": "雪崩れ込む",
+    "reading": "なだれこむ",
+    "meaning": "to rush into"
+  },
+  {
+    "rank": 26548,
+    "word": "羽を伸ばす",
+    "reading": "はねをのばす",
+    "meaning": "to let your hair down"
+  },
+  {
+    "rank": 26593,
+    "word": "道を譲る",
+    "reading": "みちをゆずる",
+    "meaning": "to yield"
+  },
+  {
+    "rank": 26628,
+    "word": "左右に分かれる",
+    "reading": "さゆうにわかれる",
+    "meaning": "to part left and right"
+  },
+  {
+    "rank": 26630,
+    "word": "立ち続ける",
+    "reading": "たちつづける",
+    "meaning": "to keep standing"
+  },
+  {
+    "rank": 26668,
+    "word": "サーブ",
+    "reading": "サーブ",
+    "meaning": "serve"
+  },
+  {
+    "rank": 26679,
+    "word": "くぼむ",
+    "reading": "くぼむ",
+    "meaning": "to cave in"
+  },
+  {
+    "rank": 26688,
+    "word": "位置を変える",
+    "reading": "いちをかえる",
+    "meaning": "to change the position of"
+  },
+  {
+    "rank": 26763,
+    "word": "人智",
+    "reading": "じんち",
+    "meaning": "human intellect"
+  },
+  {
+    "rank": 26769,
+    "word": "テレポート",
+    "reading": "テレポート",
+    "meaning": "teleport"
+  },
+  {
+    "rank": 26835,
+    "word": "足並み",
+    "reading": "あしなみ",
+    "meaning": "pace"
+  },
+  {
+    "rank": 26851,
+    "word": "天馬",
+    "reading": "てんば",
+    "meaning": "flying horse"
+  },
+  {
+    "rank": 26908,
+    "word": "捲く",
+    "reading": "まく",
+    "meaning": "to wind"
+  },
+  {
+    "rank": 26957,
+    "word": "目に入ってくる",
+    "reading": "めにはいってくる",
+    "meaning": "to come into view"
+  }
+]

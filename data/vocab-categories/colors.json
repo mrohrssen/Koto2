@@ -1,0 +1,902 @@
+[
+  {
+    "rank": 545,
+    "word": "学校",
+    "reading": "がっこう",
+    "meaning": "school"
+  },
+  {
+    "rank": 555,
+    "word": "白い",
+    "reading": "しろい",
+    "meaning": "white"
+  },
+  {
+    "rank": 556,
+    "word": "動き",
+    "reading": "うごき",
+    "meaning": "movement"
+  },
+  {
+    "rank": 681,
+    "word": "決して",
+    "reading": "けっして",
+    "meaning": "(not) ever"
+  },
+  {
+    "rank": 1315,
+    "word": "黒",
+    "reading": "くろ",
+    "meaning": "black"
+  },
+  {
+    "rank": 1387,
+    "word": "白",
+    "reading": "しろ",
+    "meaning": "white"
+  },
+  {
+    "rank": 1463,
+    "word": "青い",
+    "reading": "あおい",
+    "meaning": "blue"
+  },
+  {
+    "rank": 1503,
+    "word": "真っ赤",
+    "reading": "まっか",
+    "meaning": "bright red"
+  },
+  {
+    "rank": 1564,
+    "word": "赤",
+    "reading": "",
+    "meaning": ""
+  },
+  {
+    "rank": 1939,
+    "word": "青",
+    "reading": "あお",
+    "meaning": "blue"
+  },
+  {
+    "rank": 2049,
+    "word": "緑",
+    "reading": "みどり",
+    "meaning": "green"
+  },
+  {
+    "rank": 3002,
+    "word": "銀",
+    "reading": "ぎん",
+    "meaning": "silver (Ag)"
+  },
+  {
+    "rank": 3044,
+    "word": "染める",
+    "reading": "そめる",
+    "meaning": "to dye"
+  },
+  {
+    "rank": 3136,
+    "word": "黒髪",
+    "reading": "くろかみ",
+    "meaning": "black hair"
+  },
+  {
+    "rank": 3164,
+    "word": "真っ白",
+    "reading": "まっしろ",
+    "meaning": "pure white"
+  },
+  {
+    "rank": 3318,
+    "word": "金髪",
+    "reading": "きんぱつ",
+    "meaning": "blond hair"
+  },
+  {
+    "rank": 3325,
+    "word": "灰色",
+    "reading": "はいいろ",
+    "meaning": "grey"
+  },
+  {
+    "rank": 3359,
+    "word": "金色",
+    "reading": "きんいろ",
+    "meaning": "golden (colour, color)"
+  },
+  {
+    "rank": 3895,
+    "word": "鮮やか",
+    "reading": "あざやか",
+    "meaning": "vivid"
+  },
+  {
+    "rank": 3945,
+    "word": "矛盾",
+    "reading": "むじゅん",
+    "meaning": "contradiction"
+  },
+  {
+    "rank": 3947,
+    "word": "職人",
+    "reading": "しょくにん",
+    "meaning": "craftsman"
+  },
+  {
+    "rank": 4222,
+    "word": "紫",
+    "reading": "むらさき",
+    "meaning": "purple"
+  },
+  {
+    "rank": 4378,
+    "word": "緑色",
+    "reading": "みどりいろ",
+    "meaning": "green"
+  },
+  {
+    "rank": 4387,
+    "word": "黄色い",
+    "reading": "きいろい",
+    "meaning": "yellow"
+  },
+  {
+    "rank": 4557,
+    "word": "紅",
+    "reading": "くれない",
+    "meaning": "deep red"
+  },
+  {
+    "rank": 4612,
+    "word": "ピンク",
+    "reading": "ピンク",
+    "meaning": "pink"
+  },
+  {
+    "rank": 5253,
+    "word": "黄色",
+    "reading": "きいろ",
+    "meaning": "yellow"
+  },
+  {
+    "rank": 5257,
+    "word": "真っ黒",
+    "reading": "まっくろ",
+    "meaning": "pitch black"
+  },
+  {
+    "rank": 5602,
+    "word": "青空",
+    "reading": "あおぞら",
+    "meaning": "blue sky"
+  },
+  {
+    "rank": 5607,
+    "word": "紫色",
+    "reading": "むらさきいろ",
+    "meaning": "purple"
+  },
+  {
+    "rank": 5653,
+    "word": "真っ青",
+    "reading": "まっさお",
+    "meaning": "deep blue"
+  },
+  {
+    "rank": 5983,
+    "word": "茶色",
+    "reading": "ちゃいろ",
+    "meaning": "light brown"
+  },
+  {
+    "rank": 6123,
+    "word": "業者",
+    "reading": "ぎょうしゃ",
+    "meaning": "trader"
+  },
+  {
+    "rank": 6225,
+    "word": "ピンク色",
+    "reading": "ピンクいろ",
+    "meaning": "pink"
+  },
+  {
+    "rank": 6433,
+    "word": "土曜日",
+    "reading": "どようび",
+    "meaning": "Saturday"
+  },
+  {
+    "rank": 7025,
+    "word": "色とりどり",
+    "reading": "いろとりどり",
+    "meaning": "multicolored"
+  },
+  {
+    "rank": 7084,
+    "word": "色",
+    "reading": "いろ",
+    "meaning": "colour"
+  },
+  {
+    "rank": 7305,
+    "word": "色彩",
+    "reading": "しきさい",
+    "meaning": "colour"
+  },
+  {
+    "rank": 7702,
+    "word": "漆黒",
+    "reading": "しっこく",
+    "meaning": "jet black"
+  },
+  {
+    "rank": 8060,
+    "word": "白髪",
+    "reading": "しらが",
+    "meaning": "white hair"
+  },
+  {
+    "rank": 8142,
+    "word": "純白",
+    "reading": "じゅんぱく",
+    "meaning": "pure white"
+  },
+  {
+    "rank": 8224,
+    "word": "銀髪",
+    "reading": "ぎんぱつ",
+    "meaning": "silver hair"
+  },
+  {
+    "rank": 8270,
+    "word": "紅い",
+    "reading": "あかい",
+    "meaning": "red"
+  },
+  {
+    "rank": 8338,
+    "word": "色合い",
+    "reading": "いろあい",
+    "meaning": "colouring"
+  },
+  {
+    "rank": 8358,
+    "word": "水色",
+    "reading": "みずいろ",
+    "meaning": "light blue"
+  },
+  {
+    "rank": 8698,
+    "word": "蒼い",
+    "reading": "あおい",
+    "meaning": "blue"
+  },
+  {
+    "rank": 8832,
+    "word": "オレンジ",
+    "reading": "オレンジ",
+    "meaning": "orange (fruit, colour)"
+  },
+  {
+    "rank": 8869,
+    "word": "白銀",
+    "reading": "しろがね",
+    "meaning": "silver (Ag)"
+  },
+  {
+    "rank": 8889,
+    "word": "桃色",
+    "reading": "ももいろ",
+    "meaning": "pink (colour, color)"
+  },
+  {
+    "rank": 9034,
+    "word": "オレンジ色",
+    "reading": "オレンジいろ",
+    "meaning": "orange (colour, color)"
+  },
+  {
+    "rank": 9115,
+    "word": "赤黒い",
+    "reading": "あかぐろい",
+    "meaning": "dark red"
+  },
+  {
+    "rank": 9181,
+    "word": "黄",
+    "reading": "き",
+    "meaning": "yellow"
+  },
+  {
+    "rank": 9224,
+    "word": "蒼白",
+    "reading": "そうはく",
+    "meaning": "pale"
+  },
+  {
+    "rank": 9335,
+    "word": "朱",
+    "reading": "しゅ",
+    "meaning": "cinnabar"
+  },
+  {
+    "rank": 9427,
+    "word": "青色",
+    "reading": "あおいろ",
+    "meaning": "blue"
+  },
+  {
+    "rank": 9458,
+    "word": "蒼",
+    "reading": "あお",
+    "meaning": "blue"
+  },
+  {
+    "rank": 9629,
+    "word": "真紅",
+    "reading": "しんく",
+    "meaning": "deep crimson"
+  },
+  {
+    "rank": 9729,
+    "word": "茶色い",
+    "reading": "ちゃいろい",
+    "meaning": "light brown"
+  },
+  {
+    "rank": 9771,
+    "word": "ブルー",
+    "reading": "ブルー",
+    "meaning": "blue (colour, color)"
+  },
+  {
+    "rank": 9848,
+    "word": "ブラック",
+    "reading": "ブラック",
+    "meaning": "black"
+  },
+  {
+    "rank": 10332,
+    "word": "赤毛",
+    "reading": "あかげ",
+    "meaning": "red hair"
+  },
+  {
+    "rank": 10416,
+    "word": "下校",
+    "reading": "げこう",
+    "meaning": "coming home from school"
+  },
+  {
+    "rank": 10797,
+    "word": "褐色",
+    "reading": "かっしょく",
+    "meaning": "dark brown"
+  },
+  {
+    "rank": 11636,
+    "word": "どす黒い",
+    "reading": "どすぐろい",
+    "meaning": "darkish"
+  },
+  {
+    "rank": 11806,
+    "word": "色濃い",
+    "reading": "いろこい",
+    "meaning": "marked"
+  },
+  {
+    "rank": 11822,
+    "word": "紅葉",
+    "reading": "こうよう",
+    "meaning": "autumn colours"
+  },
+  {
+    "rank": 12041,
+    "word": "黄金色",
+    "reading": "こがねいろ",
+    "meaning": "golden"
+  },
+  {
+    "rank": 12125,
+    "word": "変色",
+    "reading": "へんしょく",
+    "meaning": "change of color"
+  },
+  {
+    "rank": 12353,
+    "word": "目の色",
+    "reading": "めのいろ",
+    "meaning": "eye color"
+  },
+  {
+    "rank": 12396,
+    "word": "赤み",
+    "reading": "あかみ",
+    "meaning": "reddish tinge"
+  },
+  {
+    "rank": 12442,
+    "word": "白黒",
+    "reading": "しろくろ",
+    "meaning": "black and white"
+  },
+  {
+    "rank": 12560,
+    "word": "紺色",
+    "reading": "こんいろ",
+    "meaning": "deep blue"
+  },
+  {
+    "rank": 12768,
+    "word": "虹色",
+    "reading": "にじいろ",
+    "meaning": "rainbow-colored"
+  },
+  {
+    "rank": 13570,
+    "word": "青くなる",
+    "reading": "あおくなる",
+    "meaning": "to become blue"
+  },
+  {
+    "rank": 13580,
+    "word": "桜色",
+    "reading": "さくらいろ",
+    "meaning": "cherry blossom (colour, color)"
+  },
+  {
+    "rank": 13722,
+    "word": "黒色",
+    "reading": "くろいろ",
+    "meaning": "black (colour, color)"
+  },
+  {
+    "rank": 13735,
+    "word": "茜",
+    "reading": "あかね",
+    "meaning": "madder (esp. Japanese madder, Rubia argyi)"
+  },
+  {
+    "rank": 14260,
+    "word": "カラフル",
+    "reading": "カラフル",
+    "meaning": "colorful"
+  },
+  {
+    "rank": 14296,
+    "word": "紺",
+    "reading": "こん",
+    "meaning": "navy blue"
+  },
+  {
+    "rank": 14298,
+    "word": "ギラギラ",
+    "reading": "ギラギラ",
+    "meaning": "glaringly"
+  },
+  {
+    "rank": 14352,
+    "word": "深紅",
+    "reading": "しんく",
+    "meaning": "deep crimson"
+  },
+  {
+    "rank": 14447,
+    "word": "英",
+    "reading": "えい",
+    "meaning": "United Kingdom"
+  },
+  {
+    "rank": 14582,
+    "word": "真っ白い",
+    "reading": "まっしろい",
+    "meaning": "pure white"
+  },
+  {
+    "rank": 14621,
+    "word": "栗色",
+    "reading": "くりいろ",
+    "meaning": "chestnut-color"
+  },
+  {
+    "rank": 14641,
+    "word": "グレー",
+    "reading": "グレー",
+    "meaning": "grey (gray)"
+  },
+  {
+    "rank": 14913,
+    "word": "ルビー",
+    "reading": "ルビー",
+    "meaning": "ruby"
+  },
+  {
+    "rank": 14940,
+    "word": "血色",
+    "reading": "けっしょく",
+    "meaning": "complexion"
+  },
+  {
+    "rank": 15006,
+    "word": "グリーン",
+    "reading": "グリーン",
+    "meaning": "green (colour)"
+  },
+  {
+    "rank": 15030,
+    "word": "色白",
+    "reading": "いろじろ",
+    "meaning": "fair-skinned"
+  },
+  {
+    "rank": 15092,
+    "word": "黒ずむ",
+    "reading": "くろずむ",
+    "meaning": "to blacken"
+  },
+  {
+    "rank": 15166,
+    "word": "溺愛",
+    "reading": "できあい",
+    "meaning": "infatuation"
+  },
+  {
+    "rank": 15217,
+    "word": "朱色",
+    "reading": "しゅいろ",
+    "meaning": "vermilion"
+  },
+  {
+    "rank": 15573,
+    "word": "絵の具",
+    "reading": "えのぐ",
+    "meaning": "paint"
+  },
+  {
+    "rank": 15579,
+    "word": "藍色",
+    "reading": "あいいろ",
+    "meaning": "indigo blue"
+  },
+  {
+    "rank": 15815,
+    "word": "鴨",
+    "reading": "かも",
+    "meaning": "duck"
+  },
+  {
+    "rank": 15993,
+    "word": "白色",
+    "reading": "しろいろ",
+    "meaning": "white"
+  },
+  {
+    "rank": 16215,
+    "word": "赤髪",
+    "reading": "あかがみ",
+    "meaning": "red hair"
+  },
+  {
+    "rank": 16361,
+    "word": "彩り",
+    "reading": "いろどり",
+    "meaning": "coloring"
+  },
+  {
+    "rank": 16548,
+    "word": "紅色",
+    "reading": "こうしょく",
+    "meaning": "red (color, colour)"
+  },
+  {
+    "rank": 16696,
+    "word": "橙色",
+    "reading": "だいだいいろ",
+    "meaning": "orange (color, colour)"
+  },
+  {
+    "rank": 16718,
+    "word": "浅黒い",
+    "reading": "あさぐろい",
+    "meaning": "dark (skin, complexion, etc.)"
+  },
+  {
+    "rank": 16781,
+    "word": "レッド",
+    "reading": "レッド",
+    "meaning": "red"
+  },
+  {
+    "rank": 16818,
+    "word": "七色",
+    "reading": "なないろ",
+    "meaning": "the seven prismatic colors (colours)"
+  },
+  {
+    "rank": 17209,
+    "word": "藍",
+    "reading": "あい",
+    "meaning": "dyer's knotweed (Persicaria tinctoria, used to produce in..."
+  },
+  {
+    "rank": 17214,
+    "word": "カラー",
+    "reading": "カラー",
+    "meaning": "collar"
+  },
+  {
+    "rank": 17410,
+    "word": "白む",
+    "reading": "しらむ",
+    "meaning": "to grow light"
+  },
+  {
+    "rank": 17612,
+    "word": "色鮮やか",
+    "reading": "いろあざやか",
+    "meaning": "vivid"
+  },
+  {
+    "rank": 17646,
+    "word": "碧",
+    "reading": "あお",
+    "meaning": "blue"
+  },
+  {
+    "rank": 17808,
+    "word": "翠",
+    "reading": "みどり",
+    "meaning": "green"
+  },
+  {
+    "rank": 17967,
+    "word": "ゴールド",
+    "reading": "ゴールド",
+    "meaning": "gold"
+  },
+  {
+    "rank": 18264,
+    "word": "黒ずくめ",
+    "reading": "くろずくめ",
+    "meaning": "completely black"
+  },
+  {
+    "rank": 18294,
+    "word": "黒っぽい",
+    "reading": "くろっぽい",
+    "meaning": "dark"
+  },
+  {
+    "rank": 18490,
+    "word": "色褪せる",
+    "reading": "いろあせる",
+    "meaning": "to fade (of a colour)"
+  },
+  {
+    "rank": 18972,
+    "word": "黒塗り",
+    "reading": "くろぬり",
+    "meaning": "blackened"
+  },
+  {
+    "rank": 19036,
+    "word": "肌色",
+    "reading": "はだいろ",
+    "meaning": "(one's) skin colour"
+  },
+  {
+    "rank": 19072,
+    "word": "何色",
+    "reading": "なにいろ",
+    "meaning": "what color"
+  },
+  {
+    "rank": 19094,
+    "word": "緋",
+    "reading": "あけ",
+    "meaning": "scarlet"
+  },
+  {
+    "rank": 19250,
+    "word": "真白",
+    "reading": "まっしろ",
+    "meaning": "pure white"
+  },
+  {
+    "rank": 19275,
+    "word": "シルバー",
+    "reading": "シルバー",
+    "meaning": "silver"
+  },
+  {
+    "rank": 19570,
+    "word": "ブラウン",
+    "reading": "ブラウン",
+    "meaning": "brown"
+  },
+  {
+    "rank": 19836,
+    "word": "ホワイト",
+    "reading": "ホワイト",
+    "meaning": "white"
+  },
+  {
+    "rank": 20230,
+    "word": "黒光り",
+    "reading": "くろびかり",
+    "meaning": "black lustre"
+  },
+  {
+    "rank": 20254,
+    "word": "グレイ",
+    "reading": "グレイ",
+    "meaning": "grey (gray)"
+  },
+  {
+    "rank": 20465,
+    "word": "茜色",
+    "reading": "あかねいろ",
+    "meaning": "madder red"
+  },
+  {
+    "rank": 20724,
+    "word": "空色",
+    "reading": "そらいろ",
+    "meaning": "sky-blue"
+  },
+  {
+    "rank": 21409,
+    "word": "赤々",
+    "reading": "あかあか",
+    "meaning": "bright red"
+  },
+  {
+    "rank": 21487,
+    "word": "丹",
+    "reading": "に",
+    "meaning": "red earth (i.e. containing cinnabar or minium)"
+  },
+  {
+    "rank": 21813,
+    "word": "白",
+    "reading": "しろ",
+    "meaning": "white"
+  },
+  {
+    "rank": 21912,
+    "word": "橙",
+    "reading": "だいだい",
+    "meaning": "bitter orange (Citrus aurantium)"
+  },
+  {
+    "rank": 22088,
+    "word": "濃紺",
+    "reading": "のうこん",
+    "meaning": "dark blue"
+  },
+  {
+    "rank": 22395,
+    "word": "クリーム色",
+    "reading": "クリームいろ",
+    "meaning": "cream (colour, color)"
+  },
+  {
+    "rank": 22598,
+    "word": "色を失う",
+    "reading": "いろをうしなう",
+    "meaning": "to turn pale"
+  },
+  {
+    "rank": 22613,
+    "word": "ブロンド",
+    "reading": "ブロンド",
+    "meaning": "blonde"
+  },
+  {
+    "rank": 22617,
+    "word": "真っ黒い",
+    "reading": "まっくろい",
+    "meaning": "pitch black"
+  },
+  {
+    "rank": 22722,
+    "word": "濃",
+    "reading": "のう",
+    "meaning": "dark (color)"
+  },
+  {
+    "rank": 22746,
+    "word": "色違い",
+    "reading": "いろちがい",
+    "meaning": "variation in color (colour)"
+  },
+  {
+    "rank": 22919,
+    "word": "薄桃色",
+    "reading": "うすももいろ",
+    "meaning": "pale pink"
+  },
+  {
+    "rank": 23430,
+    "word": "乳白色",
+    "reading": "にゅうはくしょく",
+    "meaning": "milk-white"
+  },
+  {
+    "rank": 23644,
+    "word": "青黒い",
+    "reading": "あおぐろい",
+    "meaning": "black with hints of blue (as in a bruise)"
+  },
+  {
+    "rank": 23906,
+    "word": "薔薇色",
+    "reading": "ばらいろ",
+    "meaning": "rose-colour"
+  },
+  {
+    "rank": 24092,
+    "word": "深緑",
+    "reading": "しんりょく",
+    "meaning": "dark (deep) green"
+  },
+  {
+    "rank": 24847,
+    "word": "極彩色",
+    "reading": "ごくさいしき",
+    "meaning": "richly colored"
+  },
+  {
+    "rank": 24901,
+    "word": "鈍色",
+    "reading": "にびいろ",
+    "meaning": "dark gray"
+  },
+  {
+    "rank": 25658,
+    "word": "頬を紅潮させる",
+    "reading": "ほおをこうちょうさせる",
+    "meaning": "to blush"
+  },
+  {
+    "rank": 25933,
+    "word": "真赤",
+    "reading": "まあか",
+    "meaning": "bright red"
+  },
+  {
+    "rank": 26050,
+    "word": "真白い",
+    "reading": "まっしろい",
+    "meaning": "pure white"
+  },
+  {
+    "rank": 26116,
+    "word": "紅白",
+    "reading": "こうはく",
+    "meaning": "red and white"
+  },
+  {
+    "rank": 26397,
+    "word": "同色",
+    "reading": "どうしょく",
+    "meaning": "same color"
+  },
+  {
+    "rank": 26650,
+    "word": "スカーレット",
+    "reading": "スカーレット",
+    "meaning": "scarlet"
+  },
+  {
+    "rank": 26963,
+    "word": "色紙",
+    "reading": "いろがみ",
+    "meaning": "coloured paper"
+  }
+]
