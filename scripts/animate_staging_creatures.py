@@ -88,6 +88,89 @@ def find_staging_image(creature_id):
     return None
 
 
+# ── RMBG post-processing ─────────────────────────────────────────────
+
+def cleanup_rmbg_frame(img, bg_color=(218, 47, 139)):
+    """Post-process an RMBG frame: harden alpha, kill pink fringe, despill.
+
+    RMBG-2.0 produces soft alpha masks (max ~254, never 255) and can't
+    distinguish between intentional creature content and background color
+    that WAN bled into semi-transparent effects (flames, wisps, edges).
+
+    Pipeline:
+    1. Compute per-pixel hue to detect pink/magenta contamination
+    2. Semi-transparent + pink hue → fully transparent (BG bleed wisps)
+    3. Harden remaining alpha (>240 → 255, <15 → 0)
+    4. Despill: desaturate any remaining pink-hued pixels near edges
+    """
+    import numpy as np
+
+    arr = np.array(img, dtype=np.float32)
+    r, g, b, alpha = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2], arr[:, :, 3]
+
+    # Compute hue and saturation for pink detection
+    mx = np.maximum(np.maximum(r, g), b)
+    mn = np.minimum(np.minimum(r, g), b)
+    chroma = mx - mn
+
+    # Compute hue (0-360 degrees)
+    hue = np.zeros_like(chroma)
+    nonzero = chroma > 1
+    r_max = nonzero & (mx == r)
+    g_max = nonzero & (mx == g)
+    b_max = nonzero & (mx == b) & ~r_max & ~g_max
+    hue[r_max] = 60 * (((g[r_max] - b[r_max]) / chroma[r_max]) % 6)
+    hue[g_max] = 60 * ((b[g_max] - r[g_max]) / chroma[g_max] + 2)
+    hue[b_max] = 60 * ((r[b_max] - g[b_max]) / chroma[b_max] + 4)
+
+    # Pink/magenta hue range: ~280-360 (centered on BG at ~328°)
+    is_pink = ((hue >= 280) | (hue <= 10)) & (chroma > 25)
+
+    # Phase 1: Kill pink semi-transparent pixels (these are BG bleed wisps)
+    # Semi-transparent (alpha < 230) + pink → force fully transparent
+    pink_semitrans = is_pink & (alpha > 0) & (alpha < 230)
+    arr[:, :, 3] = np.where(pink_semitrans, 0.0, arr[:, :, 3])
+
+    # Phase 2: Harden alpha on remaining pixels
+    alpha = arr[:, :, 3]  # re-read after phase 1
+    arr[:, :, 3] = np.where(alpha > 240, 255.0, alpha)
+    arr[:, :, 3] = np.where((arr[:, :, 3] > 0) & (arr[:, :, 3] < 15), 0.0, arr[:, :, 3])
+
+    # Phase 3: Despill remaining pink-hued opaque pixels near transparency
+    # These are edge pixels that survived the alpha hardening but have pink tint
+    alpha = arr[:, :, 3]
+    still_pink = is_pink & (alpha > 0)
+    if still_pink.any():
+        # Desaturate pink pixels: pull toward luminance
+        lum = 0.299 * r + 0.587 * g + 0.114 * b
+        # Strength: more desaturation for more saturated pink pixels
+        sat = np.where(mx > 0, chroma / np.maximum(mx, 1.0), 0.0)
+        desat_strength = np.where(still_pink, np.clip(sat * 1.5, 0, 1), 0.0)
+
+        for c_idx, channel in enumerate([r, g, b]):
+            desaturated = channel * (1.0 - desat_strength) + lum * desat_strength
+            arr[:, :, c_idx] = np.where(still_pink, desaturated, arr[:, :, c_idx])
+
+    arr = np.clip(arr, 0, 255)
+
+    from PIL import Image
+    return Image.fromarray(arr.astype(np.uint8), "RGBA")
+
+
+def detect_bg_color(staging_path):
+    """Detect the staging image's background color from corner pixels."""
+    import numpy as np
+    from PIL import Image
+
+    img = Image.open(staging_path).convert("RGB")
+    arr = np.array(img)
+    h, w = arr.shape[:2]
+    m = 10
+    corners = [arr[m, m], arr[m, w - m], arr[h - m, m], arr[h - m, w - m]]
+    median = np.median(corners, axis=0).astype(int)
+    return tuple(median)
+
+
 # ── RMBG via ComfyUI ────────────────────────────────────────────────
 
 def build_rmbg_workflow(server_filename, creature_id, frame_idx):
@@ -168,7 +251,7 @@ def download_rmbg_frame(history_entry):
     return tmp.name
 
 
-def rmbg_single_image(image_path, output_webp, creature_id):
+def rmbg_single_image(image_path, output_webp, creature_id, bg_color=(218, 47, 139)):
     """Remove background from a single image via ComfyUI RMBG. Save as webp."""
     from PIL import Image
 
@@ -185,13 +268,14 @@ def rmbg_single_image(image_path, output_webp, creature_id):
         print(f"    [{timestamp()}] RMBG failed for static image")
         return False
 
-    # Download and convert to webp
+    # Download, cleanup, and convert to webp
     frame_path = download_rmbg_frame(history)
     if not frame_path:
         print(f"    [{timestamp()}] RMBG download failed for static image")
         return False
 
     img = Image.open(frame_path).convert("RGBA")
+    img = cleanup_rmbg_frame(img, bg_color=bg_color)
     img.save(output_webp, "WEBP", quality=95)
     os.unlink(frame_path)
 
@@ -200,7 +284,7 @@ def rmbg_single_image(image_path, output_webp, creature_id):
     return True
 
 
-def rmbg_animated_webp(input_webp, output_webp, creature_id):
+def rmbg_animated_webp(input_webp, output_webp, creature_id, bg_color=(218, 47, 139)):
     """Remove background from all frames of an animated webp via ComfyUI RMBG."""
     from PIL import Image
 
@@ -236,7 +320,8 @@ def rmbg_animated_webp(input_webp, output_webp, creature_id):
         if success and history:
             frame_path = download_rmbg_frame(history)
             if frame_path:
-                transparent_frames[frame_idx] = Image.open(frame_path).convert("RGBA")
+                frame_img = Image.open(frame_path).convert("RGBA")
+                transparent_frames[frame_idx] = cleanup_rmbg_frame(frame_img, bg_color=bg_color)
                 os.unlink(frame_path)
             else:
                 print(f"    [{timestamp()}] Frame {frame_idx} download failed")
@@ -354,13 +439,15 @@ def main():
             if args.dry_run:
                 print(f"  {cid}: [DRY RUN] would RMBG {raw_path}")
                 continue
+            bg = detect_bg_color(staging_path)
+            print(f"  [{timestamp()}] {cid}: BG color #{bg[0]:02x}{bg[1]:02x}{bg[2]:02x}")
             game_path = os.path.join(GAME_SPRITE_DIR, f"{cid}-idle.webp")
             print(f"  [{timestamp()}] {cid}: RMBG on animation...")
-            if rmbg_animated_webp(raw_path, game_path, cid):
+            if rmbg_animated_webp(raw_path, game_path, cid, bg_color=bg):
                 success += 1
             if not args.no_static:
                 print(f"  [{timestamp()}] {cid}: RMBG on static...")
-                rmbg_single_image(staging_path, os.path.join(GAME_SPRITE_DIR, f"{cid}.webp"), cid)
+                rmbg_single_image(staging_path, os.path.join(GAME_SPRITE_DIR, f"{cid}.webp"), cid, bg_color=bg)
         print(f"\n[{timestamp()}] RMBG complete: {success} animations processed")
         return
 
@@ -451,9 +538,10 @@ def main():
                         print(f"\n  [{timestamp()}] WAN DONE: {cid} ({size_kb:.0f} KB raw)")
 
                         # Phase 3: RMBG on animation frames
+                        bg = detect_bg_color(staging_path)
                         game_idle = os.path.join(GAME_SPRITE_DIR, f"{cid}-idle.webp")
-                        print(f"  [{timestamp()}] Starting RMBG on {cid} animation...")
-                        if rmbg_animated_webp(out_path, game_idle, cid):
+                        print(f"  [{timestamp()}] Starting RMBG on {cid} animation (BG #{bg[0]:02x}{bg[1]:02x}{bg[2]:02x})...")
+                        if rmbg_animated_webp(out_path, game_idle, cid, bg_color=bg):
                             idle_kb = os.path.getsize(game_idle) / 1024
                             print(f"  [{timestamp()}] DEPLOYED: {cid}-idle.webp ({idle_kb:.0f} KB, transparent)")
                         else:
@@ -464,7 +552,7 @@ def main():
                         if not args.no_static:
                             game_static = os.path.join(GAME_SPRITE_DIR, f"{cid}.webp")
                             print(f"  [{timestamp()}] RMBG on {cid} static...")
-                            rmbg_single_image(staging_path, game_static, cid)
+                            rmbg_single_image(staging_path, game_static, cid, bg_color=bg)
                     else:
                         print(f"\n  [{timestamp()}] WAN DONE: {cid} (but download failed)")
                         failed.append((cid, "download failed"))
