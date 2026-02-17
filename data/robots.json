@@ -13,6 +13,7 @@
     "baseRank": 677,
     "area": "Enchanted Wilderness",
     "description": "A tiny round creature with colorful petals fanning out from its head like a crown. Big cheerful eyes and leaf-arms that wave when excited.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "刺す",
       "nameEn": "Pierce",
@@ -20,7 +21,9 @@
       "element": "wood",
       "word": "刺す",
       "reading": "さす",
-      "rank": 1933
+      "rank": 1933,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "包む",
@@ -30,7 +33,9 @@
       "chargesRequired": 5,
       "word": "包む",
       "reading": "つつむ",
-      "rank": 931
+      "rank": 931,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -47,6 +52,7 @@
     "baseRank": 751,
     "area": "Enchanted Wilderness",
     "description": "A stout little creature with bark-patterned skin and small branches sprouting from its head. Stands on stubby root-feet with a gentle smile.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "伸びる",
       "nameEn": "Stretch",
@@ -54,7 +60,9 @@
       "element": "wood",
       "word": "伸びる",
       "reading": "のびる",
-      "rank": 1037
+      "rank": 1037,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "叩く",
@@ -64,7 +72,9 @@
       "chargesRequired": 5,
       "word": "叩く",
       "reading": "たたく",
-      "rank": 1264
+      "rank": 1264,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -81,6 +91,7 @@
     "baseRank": 894,
     "area": "Enchanted Wilderness",
     "description": "A teardrop-shaped creature made of shimmering water with a tiny cloud hat on its head. Leaves sparkly droplets wherever it bounces.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "落ちる",
       "nameEn": "Fall",
@@ -88,7 +99,9 @@
       "element": "water",
       "word": "落ちる",
       "reading": "おちる",
-      "rank": 254
+      "rank": 254,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "流れる",
@@ -98,7 +111,9 @@
       "chargesRequired": 5,
       "word": "流れる",
       "reading": "ながれる",
-      "rank": 665
+      "rank": 665,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -115,6 +130,7 @@
     "baseRank": 942,
     "area": "Enchanted Wilderness",
     "description": "A sleek serpentine creature that flows like a living river. Playful fish-like face with fins of rushing water and a spiraling tail.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "泳ぐ",
       "nameEn": "Swim",
@@ -122,7 +138,9 @@
       "element": "water",
       "word": "泳ぐ",
       "reading": "およぐ",
-      "rank": 1950
+      "rank": 1950,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "巻く",
@@ -132,7 +150,9 @@
       "chargesRequired": 5,
       "word": "巻く",
       "reading": "まく",
-      "rank": 1949
+      "rank": 1949,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -149,6 +169,7 @@
     "baseRank": 1245,
     "area": "Enchanted Wilderness",
     "description": "A small mossy creature with tiny trees and mushrooms growing on its back. Woodland flowers peek out from its leafy body as it waddles along.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "絡む",
       "nameEn": "Entangle",
@@ -156,7 +177,9 @@
       "element": "wood",
       "word": "絡む",
       "reading": "からむ",
-      "rank": 2221
+      "rank": 2221,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "夢",
@@ -166,7 +189,9 @@
       "chargesRequired": 5,
       "word": "夢",
       "reading": "ゆめ",
-      "rank": 275
+      "rank": 275,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -183,6 +208,7 @@
     "baseRank": 2020,
     "area": "Enchanted Wilderness",
     "description": "A tiny green creature no bigger than a blade of grass with a single bouncing sprout on its head. Always found in groups, peeking out from meadows.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "育つ",
       "nameEn": "Grow",
@@ -190,7 +216,9 @@
       "element": "wood",
       "word": "育つ",
       "reading": "そだつ",
-      "rank": 1859
+      "rank": 1859,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "種",
@@ -200,7 +228,9 @@
       "chargesRequired": 5,
       "word": "種",
       "reading": "たね",
-      "rank": 2382
+      "rank": 2382,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -217,6 +247,7 @@
     "baseRank": 1351,
     "area": "Enchanted Wilderness",
     "description": "A loyal round-bodied pup with oversized floppy ears and a fluffy tail that never stops wagging. Bright curious eyes, patches of earthy brown.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "走る",
       "nameEn": "Run",
@@ -224,7 +255,9 @@
       "element": "earth",
       "word": "走る",
       "reading": "はしる",
-      "rank": 247
+      "rank": 247,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "守る",
@@ -234,7 +267,9 @@
       "chargesRequired": 5,
       "word": "守る",
       "reading": "まもる",
-      "rank": 228
+      "rank": 228,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -251,6 +286,7 @@
     "baseRank": 1394,
     "area": "Enchanted Wilderness",
     "description": "A sleek feline with long whiskers that glow softly. Curled tail with a leaf-shaped tip, moves through the canopy with effortless grace.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "切る",
       "nameEn": "Cut",
@@ -258,7 +294,9 @@
       "element": "wood",
       "word": "切る",
       "reading": "きる",
-      "rank": 354
+      "rank": 354,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "飛ぶ",
@@ -268,7 +306,9 @@
       "chargesRequired": 5,
       "word": "飛ぶ",
       "reading": "とぶ",
-      "rank": 607
+      "rank": 607,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -285,6 +325,7 @@
     "baseRank": 1455,
     "area": "Enchanted Wilderness",
     "description": "A spirited little horse with a bouncy fluffy mane. Always prancing, always ready to race across the open wilderness.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "踏む",
       "nameEn": "Stomp",
@@ -292,7 +333,9 @@
       "element": "earth",
       "word": "踏む",
       "reading": "ふむ",
-      "rank": 1661
+      "rank": 1661,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "揺れる",
@@ -302,7 +345,9 @@
       "chargesRequired": 5,
       "word": "揺れる",
       "reading": "ゆれる",
-      "rank": 1370
+      "rank": 1370,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -319,6 +364,7 @@
     "baseRank": 1587,
     "area": "Enchanted Wilderness",
     "description": "A fluffy living snowball with sparkling crystal eyes. Tiny ice-crystal antennae twinkle on its head, and it leaves a trail of fresh snowflakes wherever it hops.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "回る",
       "nameEn": "Spin",
@@ -326,7 +372,9 @@
       "element": "water",
       "word": "回る",
       "reading": "まわる",
-      "rank": 820
+      "rank": 820,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "氷",
@@ -336,7 +384,9 @@
       "chargesRequired": 5,
       "word": "氷",
       "reading": "こおり",
-      "rank": 1884
+      "rank": 1884,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -353,6 +403,7 @@
     "baseRank": 1581,
     "area": "Enchanted Wilderness",
     "description": "A small round bird with oversized colorful wings and a tiny beak. Puffs up to twice its size when startled.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "吹く",
       "nameEn": "Blow",
@@ -360,7 +411,9 @@
       "element": "wood",
       "word": "吹く",
       "reading": "ふく",
-      "rank": 1871
+      "rank": 1871,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "光る",
@@ -370,7 +423,9 @@
       "chargesRequired": 5,
       "word": "光る",
       "reading": "ひかる",
-      "rank": 1433
+      "rank": 1433,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -387,6 +442,7 @@
     "baseRank": 1957,
     "area": "Enchanted Wilderness",
     "description": "A pillowy creature of soft cloud fluff that constantly shifts shape. Sleepy content expression, floats lazily above the ground. Tiny raindrops sometimes fall from its underside.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "影",
       "nameEn": "Shadow",
@@ -394,7 +450,9 @@
       "element": "water",
       "word": "影",
       "reading": "かげ",
-      "rank": 1280
+      "rank": 1280,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "風",
@@ -404,7 +462,9 @@
       "chargesRequired": 5,
       "word": "風",
       "reading": "かぜ",
-      "rank": 663
+      "rank": 663,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -421,6 +481,7 @@
     "baseRank": 2061,
     "area": "Enchanted Wilderness",
     "description": "A colorful bug with iridescent wings that shimmer in sunlight. Oversized round eyes and stubby little legs that wiggle adorably when it flies.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "毒",
       "nameEn": "Poison",
@@ -428,7 +489,9 @@
       "element": "wood",
       "word": "毒",
       "reading": "どく",
-      "rank": 1688
+      "rank": 1688,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "掴む",
@@ -438,7 +501,9 @@
       "chargesRequired": 5,
       "word": "掴む",
       "reading": "つかむ",
-      "rank": 2842
+      "rank": 2842,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -455,6 +520,7 @@
     "baseRank": 2122,
     "area": "Enchanted Wilderness",
     "description": "A graceful creature riding on a cresting wave. Translucent blue-green body with flowing fins that trail behind like ribbons of sea foam.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "投げる",
       "nameEn": "Throw",
@@ -462,7 +528,9 @@
       "element": "water",
       "word": "投げる",
       "reading": "なげる",
-      "rank": 1574
+      "rank": 1574,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "潰す",
@@ -472,7 +540,9 @@
       "chargesRequired": 5,
       "word": "潰す",
       "reading": "つぶす",
-      "rank": 1797
+      "rank": 1797,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -489,6 +559,7 @@
     "baseRank": 2469,
     "area": "Enchanted Wilderness",
     "description": "A round earthy creature that burrows underground with gnarled root-tentacles. Cheerful face peeking from a tangle of roots, with small gems embedded in its body.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "握る",
       "nameEn": "Grip",
@@ -496,7 +567,9 @@
       "element": "earth",
       "word": "握る",
       "reading": "にぎる",
-      "rank": 653
+      "rank": 653,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "引く",
@@ -506,7 +579,9 @@
       "chargesRequired": 5,
       "word": "引く",
       "reading": "ひく",
-      "rank": 641
+      "rank": 641,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -523,6 +598,7 @@
     "baseRank": 1747,
     "area": "Enchanted Wilderness",
     "description": "A radiant creature wreathed in warm golden light. Its mane flows like dancing sunbeams, and small solar flares orbit around it like playful companions.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "燃える",
       "nameEn": "Burn",
@@ -530,7 +606,9 @@
       "element": "fire",
       "word": "燃える",
       "reading": "もえる",
-      "rank": 1756
+      "rank": 1756,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "星",
@@ -540,7 +618,9 @@
       "chargesRequired": 5,
       "word": "星",
       "reading": "ほし",
-      "rank": 1365
+      "rank": 1365,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -557,6 +637,7 @@
     "baseRank": 1297,
     "area": "School District",
     "description": "A small eager creature always carrying a backpack twice its size. Round glasses perched on its nose, pencil behind one ear, constantly scribbling notes.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "学ぶ",
       "nameEn": "Learn",
@@ -564,7 +645,9 @@
       "element": "wood",
       "word": "学ぶ",
       "reading": "まなぶ",
-      "rank": 1178
+      "rank": 1178,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "見つける",
@@ -574,7 +657,9 @@
       "chargesRequired": 5,
       "word": "見つける",
       "reading": "みつける",
-      "rank": 284
+      "rank": 284,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -591,6 +676,7 @@
     "baseRank": 1304,
     "area": "School District",
     "description": "A sturdy four-legged creature with a perfectly flat back. Things placed on it bounce off with surprising force. Its polished surface reflects light cheerfully.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "支える",
       "nameEn": "Support",
@@ -598,7 +684,9 @@
       "element": "metal",
       "word": "支える",
       "reading": "ささえる",
-      "rank": 1043
+      "rank": 1043,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "壊す",
@@ -608,7 +696,9 @@
       "chargesRequired": 5,
       "word": "壊す",
       "reading": "こわす",
-      "rank": 1603
+      "rank": 1603,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -625,6 +715,7 @@
     "baseRank": 1308,
     "area": "School District",
     "description": "A round creature shaped like a rotary phone with a curly cord for a tail. Big dial eyes spin when excited, and it makes cheerful ringing sounds to greet friends.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "鳴る",
       "nameEn": "Ring",
@@ -632,7 +723,9 @@
       "element": "metal",
       "word": "鳴る",
       "reading": "なる",
-      "rank": 1432
+      "rank": 1432,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "呼ぶ",
@@ -642,7 +735,9 @@
       "chargesRequired": 5,
       "word": "呼ぶ",
       "reading": "よぶ",
-      "rank": 111
+      "rank": 111,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -659,6 +754,7 @@
     "baseRank": 1322,
     "area": "School District",
     "description": "A bouncy chair creature that hops around on four springy legs. Cushioned arms wave hello and its seat back puffs up proudly.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "動く",
       "nameEn": "Move",
@@ -666,7 +762,9 @@
       "element": "metal",
       "word": "動く",
       "reading": "うごく",
-      "rank": 151
+      "rank": 151,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "止まる",
@@ -676,7 +774,9 @@
       "chargesRequired": 5,
       "word": "止まる",
       "reading": "とまる",
-      "rank": 577
+      "rank": 577,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -693,6 +793,7 @@
     "baseRank": 1354,
     "area": "School District",
     "description": "A boxy creature with a hinged lid that opens and closes like a mouth. Stores treasures inside its drawer-belly and gets grumpy if you try to peek.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "開く",
       "nameEn": "Open",
@@ -700,7 +801,9 @@
       "element": "metal",
       "word": "開く",
       "reading": "ひらく",
-      "rank": 198
+      "rank": 198,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "閉じる",
@@ -710,7 +813,9 @@
       "chargesRequired": 5,
       "word": "閉じる",
       "reading": "とじる",
-      "rank": 1442
+      "rank": 1442,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -727,6 +832,7 @@
     "baseRank": 1359,
     "area": "School District",
     "description": "A pixelated creature that flickers between different shapes. Has a screen-like face with ever-changing expressions and leaves a trail of colorful pixels.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "変える",
       "nameEn": "Change",
@@ -734,7 +840,9 @@
       "element": "fire",
       "word": "変える",
       "reading": "かえる",
-      "rank": 297
+      "rank": 297,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "消す",
@@ -744,7 +852,9 @@
       "chargesRequired": 5,
       "word": "消す",
       "reading": "けす",
-      "rank": 971
+      "rank": 971,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -761,6 +871,7 @@
     "baseRank": 1490,
     "area": "School District",
     "description": "A floating ink creature that reshapes itself into different kanji. Has brushstroke arms and leaves beautiful calligraphy trails in the air.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "書く",
       "nameEn": "Write",
@@ -768,7 +879,9 @@
       "element": "metal",
       "word": "書く",
       "reading": "かく",
-      "rank": 210
+      "rank": 210,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "読む",
@@ -778,7 +891,9 @@
       "chargesRequired": 5,
       "word": "読む",
       "reading": "よむ",
-      "rank": 253
+      "rank": 253,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -795,6 +910,7 @@
     "baseRank": 1870,
     "area": "School District",
     "description": "A boxy creature with antenna ears and an animated face on its screen. Broadcasts different channels through its belly and crackles with static when startled.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "送る",
       "nameEn": "Send",
@@ -802,7 +918,9 @@
       "element": "metal",
       "word": "送る",
       "reading": "おくる",
-      "rank": 305
+      "rank": 305,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "音",
@@ -812,7 +930,9 @@
       "chargesRequired": 5,
       "word": "音",
       "reading": "おと",
-      "rank": 126
+      "rank": 126,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -829,6 +949,7 @@
     "baseRank": 2536,
     "area": "School District",
     "description": "A tall rectangular creature lined with tiny shelves full of books. Wobbles when it walks and occasionally drops a book on someone's head.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "並ぶ",
       "nameEn": "Line Up",
@@ -836,7 +957,9 @@
       "element": "wood",
       "word": "並ぶ",
       "reading": "ならぶ",
-      "rank": 716
+      "rank": 716,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "集める",
@@ -846,7 +969,9 @@
       "chargesRequired": 5,
       "word": "集める",
       "reading": "あつめる",
-      "rank": 832
+      "rank": 832,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -863,6 +988,7 @@
     "baseRank": 1262,
     "area": "Market District",
     "description": "A chunk of grilled meat with stubby legs and a sizzling surface that pops and crackles. Has a juicy friendly face and leaves a delicious aroma trail wherever it waddles.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "当たる",
       "nameEn": "Hit",
@@ -870,7 +996,9 @@
       "element": "fire",
       "word": "当たる",
       "reading": "あたる",
-      "rank": 838
+      "rank": 838,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "重い",
@@ -880,7 +1008,9 @@
       "chargesRequired": 5,
       "word": "重い",
       "reading": "おもい",
-      "rank": 369
+      "rank": 369,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -897,6 +1027,7 @@
     "baseRank": 1751,
     "area": "Market District",
     "description": "A round bubbly fish with oversized cheeks puffed full of water. Tiny fins flutter like wings and big glistening eyes always look surprised.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "外す",
       "nameEn": "Dodge",
@@ -904,7 +1035,9 @@
       "element": "water",
       "word": "外す",
       "reading": "はずす",
-      "rank": 950
+      "rank": 950,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "跳ねる",
@@ -914,7 +1047,9 @@
       "chargesRequired": 5,
       "word": "跳ねる",
       "reading": "はねる",
-      "rank": 3122
+      "rank": 3122,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -931,6 +1066,7 @@
     "baseRank": 1775,
     "area": "Market District",
     "description": "A golden-brown bread loaf with a warm crusty exterior and a soft doughy smile. Rolls around instead of walking and gets puffier when happy.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "転がる",
       "nameEn": "Roll",
@@ -938,7 +1074,9 @@
       "element": "earth",
       "word": "転がる",
       "reading": "ころがる",
-      "rank": 1622
+      "rank": 1622,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "固い",
@@ -948,7 +1086,9 @@
       "chargesRequired": 5,
       "word": "固い",
       "reading": "かたい",
-      "rank": 1831
+      "rank": 1831,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -965,6 +1105,7 @@
     "baseRank": 2333,
     "area": "Market District",
     "description": "A bundle of colorful vegetables stacked into a cheerful creature. Carrot legs, lettuce wings, and a tomato nose. Different veggies peek out from all directions.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "立つ",
       "nameEn": "Stand",
@@ -972,7 +1113,9 @@
       "element": "wood",
       "word": "立つ",
       "reading": "たつ",
-      "rank": 174
+      "rank": 174,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "色",
@@ -982,7 +1125,9 @@
       "chargesRequired": 5,
       "word": "色",
       "reading": "いろ",
-      "rank": 544
+      "rank": 544,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -999,6 +1144,7 @@
     "baseRank": 2972,
     "area": "Market District",
     "description": "A sparkling candy creature wrapped in shiny foil with a bow on top. Gummy bear paws, lollipop antennae, and a trail of sugar sparkles.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "隠す",
       "nameEn": "Hide",
@@ -1006,7 +1152,9 @@
       "element": "earth",
       "word": "隠す",
       "reading": "かくす",
-      "rank": 496
+      "rank": 496,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "溶ける",
@@ -1016,7 +1164,9 @@
       "chargesRequired": 5,
       "word": "溶ける",
       "reading": "とける",
-      "rank": 2285
+      "rank": 2285,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -1033,6 +1183,7 @@
     "baseRank": 117,
     "area": "Family Village",
     "description": "A graceful translucent creature that shifts between different silhouettes. Its body shimmers like a mirage, mimicking the outline of whatever stands near it.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "覚える",
       "nameEn": "Memorize",
@@ -1040,7 +1191,9 @@
       "element": "earth",
       "word": "覚える",
       "reading": "おぼえる",
-      "rank": 220
+      "rank": 220,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "返す",
@@ -1050,7 +1203,9 @@
       "chargesRequired": 5,
       "word": "返す",
       "reading": "かえす",
-      "rank": 488
+      "rank": 488,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -1067,6 +1222,7 @@
     "baseRank": 304,
     "area": "Family Village",
     "description": "A squishy clay-like creature that molds itself into new shapes. Curious face with stretchy limbs that can flatten, stretch, or ball up at will.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "受ける",
       "nameEn": "Receive",
@@ -1074,7 +1230,9 @@
       "element": "earth",
       "word": "受ける",
       "reading": "うける",
-      "rank": 168
+      "rank": 168,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "直す",
@@ -1084,7 +1242,9 @@
       "chargesRequired": 5,
       "word": "直す",
       "reading": "なおす",
-      "rank": 1071
+      "rank": 1071,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -1101,6 +1261,7 @@
     "baseRank": 440,
     "area": "Family Village",
     "description": "A round-faced creature whose features cycle through emotions — happy, surprised, thoughtful, excited. A ring of tiny emotive symbols orbits its head.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "声",
       "nameEn": "Voice",
@@ -1108,7 +1269,9 @@
       "element": "wood",
       "word": "声",
       "reading": "こえ",
-      "rank": 67
+      "rank": 67,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "教える",
@@ -1118,7 +1281,9 @@
       "chargesRequired": 5,
       "word": "教える",
       "reading": "おしえる",
-      "rank": 170
+      "rank": 170,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -1135,6 +1300,7 @@
     "baseRank": 503,
     "area": "Family Village",
     "description": "An irresistibly cheerful creature with an enormous warm smile. Rosy cheeks glow softly, and its happiness is so contagious that even grumpy creatures smile back.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "軽い",
       "nameEn": "Light",
@@ -1142,7 +1308,9 @@
       "element": "wood",
       "word": "軽い",
       "reading": "かるい",
-      "rank": 504
+      "rank": 504,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "力",
@@ -1152,7 +1320,9 @@
       "chargesRequired": 5,
       "word": "力",
       "reading": "ちから",
-      "rank": 140
+      "rank": 140,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -1169,6 +1339,7 @@
     "baseRank": 1793,
     "area": "Family Village",
     "description": "A round jiggly creature that bounces around in fits of giggles. Its belly ripples with laughter, and its infectious chuckles make flowers bloom.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "弾く",
       "nameEn": "Flick",
@@ -1176,7 +1347,9 @@
       "element": "wood",
       "word": "弾く",
       "reading": "はじく",
-      "rank": 2976
+      "rank": 2976,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "崩す",
@@ -1186,7 +1359,9 @@
       "chargesRequired": 5,
       "word": "崩す",
       "reading": "くずす",
-      "rank": 1930
+      "rank": 1930,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -1203,6 +1378,7 @@
     "baseRank": 1510,
     "area": "Family Village",
     "description": "A flat papery creature that looks like a living watercolor painting. New drawings appear on its body as it moves, and it can peel sketches off to bring them to life.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "浮かぶ",
       "nameEn": "Float",
@@ -1210,7 +1386,9 @@
       "element": "wood",
       "word": "浮かぶ",
       "reading": "うかぶ",
-      "rank": 1286
+      "rank": 1286,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "染まる",
@@ -1220,7 +1398,9 @@
       "chargesRequired": 5,
       "word": "染まる",
       "reading": "そまる",
-      "rank": 1976
+      "rank": 1976,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -1237,6 +1417,7 @@
     "baseRank": 1610,
     "area": "Family Village",
     "description": "A charming wooden doll with jointed limbs and painted rosy cheeks. Moves with a springy marionette bounce, though no strings are visible.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "抜く",
       "nameEn": "Pull",
@@ -1244,7 +1425,9 @@
       "element": "metal",
       "word": "抜く",
       "reading": "ぬく",
-      "rank": 1022
+      "rank": 1022,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "挟む",
@@ -1254,7 +1437,9 @@
       "chargesRequired": 5,
       "word": "挟む",
       "reading": "はさむ",
-      "rank": 1816
+      "rank": 1816,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -1271,6 +1456,7 @@
     "baseRank": 1708,
     "area": "Family Village",
     "description": "A graceful creature shaped like a musical note. Hums constantly, and tiny floating music notes trail behind wherever it goes.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "光",
       "nameEn": "Light",
@@ -1278,7 +1464,9 @@
       "element": "wood",
       "word": "光",
       "reading": "ひかり",
-      "rank": 459
+      "rank": 459,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "全力",
@@ -1288,7 +1476,9 @@
       "chargesRequired": 5,
       "word": "全力",
       "reading": "ぜんりょく",
-      "rank": 1514
+      "rank": 1514,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -1305,6 +1495,7 @@
     "baseRank": 2411,
     "area": "Family Village",
     "description": "A perfectly spherical creature with swirling mystical patterns across its surface. Hovers slightly off the ground and pulses with stored energy.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "石",
       "nameEn": "Stone",
@@ -1312,7 +1503,9 @@
       "element": "earth",
       "word": "石",
       "reading": "いし",
-      "rank": 1316
+      "rank": 1316,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "一撃",
@@ -1322,7 +1515,9 @@
       "chargesRequired": 5,
       "word": "一撃",
       "reading": "いちげき",
-      "rank": 2892
+      "rank": 2892,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -1339,6 +1534,7 @@
     "baseRank": 2656,
     "area": "Family Village",
     "description": "A dazzling creature covered in ever-shifting geometric patterns. Its body is a living kaleidoscope, with colors and shapes flowing across its surface in mesmerizing waves.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "炎",
       "nameEn": "Flame",
@@ -1346,7 +1542,9 @@
       "element": "fire",
       "word": "炎",
       "reading": "ほのお",
-      "rank": 1405
+      "rank": 1405,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "積む",
@@ -1356,7 +1554,9 @@
       "chargesRequired": 5,
       "word": "積む",
       "reading": "つむ",
-      "rank": 2146
+      "rank": 2146,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -1373,6 +1573,7 @@
     "baseRank": 592,
     "area": "Crossroads Inn",
     "description": "A nearly invisible wispy creature made of swirling air currents. Its cheerful face is outlined by tiny sparkles of dust caught in its breeze. Loves to playfully ruffle hair.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "通る",
       "nameEn": "Pass Through",
@@ -1380,7 +1581,9 @@
       "element": "wood",
       "word": "通る",
       "reading": "とおる",
-      "rank": 886
+      "rank": 886,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "広がる",
@@ -1390,7 +1593,9 @@
       "chargesRequired": 5,
       "word": "広がる",
       "reading": "ひろがる",
-      "rank": 825
+      "rank": 825,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -1407,6 +1612,7 @@
     "baseRank": 1203,
     "area": "Crossroads Inn",
     "description": "A floating eye-shaped creature surrounded by a ring of smaller orbiting eyes. Each eye blinks independently, and its main iris shifts colors with its mood.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "見つめる",
       "nameEn": "Stare",
@@ -1414,7 +1620,9 @@
       "element": "fire",
       "word": "見つめる",
       "reading": "みつめる",
-      "rank": 1208
+      "rank": 1208,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "鋭い",
@@ -1424,7 +1632,9 @@
       "chargesRequired": 5,
       "word": "鋭い",
       "reading": "するどい",
-      "rank": 1363
+      "rank": 1363,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -1441,6 +1651,7 @@
     "baseRank": 1993,
     "area": "Crossroads Inn",
     "description": "A boxy projector-shaped creature with film reels for ears that spin constantly. Projects colorful scenes from its lens-eye and makes classic movie sound effects.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "暗い",
       "nameEn": "Dark",
@@ -1448,7 +1659,9 @@
       "element": "fire",
       "word": "暗い",
       "reading": "くらい",
-      "rank": 790
+      "rank": 790,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "明るい",
@@ -1458,7 +1671,9 @@
       "chargesRequired": 5,
       "word": "明るい",
       "reading": "あかるい",
-      "rank": 842
+      "rank": 842,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -1475,6 +1690,7 @@
     "baseRank": 2035,
     "area": "Crossroads Inn",
     "description": "A graceful silk creature with delicate thread limbs and a spindle-shaped body. Weaves intricate patterns in the air and leaves behind beautiful web trails.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "結ぶ",
       "nameEn": "Tie",
@@ -1482,7 +1698,9 @@
       "element": "metal",
       "word": "結ぶ",
       "reading": "むすぶ",
-      "rank": 1095
+      "rank": 1095,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "解く",
@@ -1492,7 +1710,9 @@
       "chargesRequired": 5,
       "word": "解く",
       "reading": "とく",
-      "rank": 1646
+      "rank": 1646,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -1509,6 +1729,7 @@
     "baseRank": 2955,
     "area": "Crossroads Inn",
     "description": "An amorphous blob that constantly shifts shape, with a happy face that stays put no matter how much it morphs. Translucent and loves to absorb small objects.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "合う",
       "nameEn": "Merge",
@@ -1516,7 +1737,9 @@
       "element": "earth",
       "word": "合う",
       "reading": "あう",
-      "rank": 350
+      "rank": 350,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "深い",
@@ -1526,7 +1749,9 @@
       "chargesRequired": 5,
       "word": "深い",
       "reading": "ふかい",
-      "rank": 282
+      "rank": 282,
+      "type": "damage",
+      "target": "all_enemies"
     }
   },
   {
@@ -1543,6 +1768,7 @@
     "baseRank": 715,
     "area": "Crossroads Inn",
     "description": "A magnificent creature with a gleaming golden body that reflects light in every direction. Regal but friendly, with nugget-shaped paws and a crown of natural gold crystals.",
+    "archetype": "Fighter",
     "autoSkill": {
       "name": "輝く",
       "nameEn": "Sparkle",
@@ -1550,7 +1776,9 @@
       "element": "metal",
       "word": "輝く",
       "reading": "かがやく",
-      "rank": 907
+      "rank": 907,
+      "type": "damage",
+      "target": "single_enemy"
     },
     "ultimate": {
       "name": "高い",
@@ -1560,7 +1788,9 @@
       "chargesRequired": 5,
       "word": "高い",
       "reading": "たかい",
-      "rank": 207
+      "rank": 207,
+      "type": "damage",
+      "target": "all_enemies"
     }
   }
 ]

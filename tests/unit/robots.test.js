@@ -61,6 +61,29 @@ describe('Robot Instantiation', () => {
     assert.strictEqual(robot.maxHp, 140); // 100 * 1.4
     assert.strictEqual(robot.attack, 14); // 10 * 1.4
   });
+
+  it('has archetype field', () => {
+    const robot = instantiateRobot('sizzlit');
+    assert.strictEqual(robot.archetype, 'Fighter');
+  });
+
+  it('stores base template values for level-up calculations', () => {
+    const robot = instantiateRobot('sizzlit');
+    assert.strictEqual(robot.baseHpTemplate, 100);
+    assert.strictEqual(robot.baseAttackTemplate, 10);
+  });
+
+  it('has type and target on autoSkill', () => {
+    const robot = instantiateRobot('sizzlit');
+    assert.strictEqual(robot.autoSkill.type, 'damage');
+    assert.strictEqual(robot.autoSkill.target, 'single_enemy');
+  });
+
+  it('has type and target on ultimate', () => {
+    const robot = instantiateRobot('sizzlit');
+    assert.strictEqual(robot.ultimate.type, 'damage');
+    assert.strictEqual(robot.ultimate.target, 'all_enemies');
+  });
 });
 
 describe('Robot Damage', () => {
