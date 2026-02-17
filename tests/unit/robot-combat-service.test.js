@@ -460,3 +460,129 @@ describe('Robot Combat - Effect Ticking', () => {
     assert.strictEqual(events.length, 0);
   });
 });
+
+describe('Robot Combat - Status Effect Ultimates', () => {
+  it('sleep ultimate applies sleep to single enemy', () => {
+    const caster = instantiateRobot('sizzlit');
+    caster.ultimate.type = 'sleep';
+    caster.ultimate.target = 'single_enemy';
+    caster.ultimate.charges = caster.ultimate.chargesRequired;
+    const enemies = [instantiateRobot('drizzlet')];
+    const result = processUltimate(caster, enemies);
+    assert.ok(result.success);
+    assert.strictEqual(result.type, 'sleep');
+    assert.strictEqual(caster.ultimate.charges, 0);
+    assert.ok(enemies[0].activeEffects.some(e => e.type === 'sleep'));
+  });
+
+  it('stun ultimate applies stun to single enemy', () => {
+    const caster = instantiateRobot('sizzlit');
+    caster.ultimate.type = 'stun';
+    caster.ultimate.target = 'single_enemy';
+    caster.ultimate.charges = caster.ultimate.chargesRequired;
+    const enemies = [instantiateRobot('drizzlet')];
+    const result = processUltimate(caster, enemies);
+    assert.ok(result.success);
+    assert.strictEqual(result.type, 'stun');
+    assert.ok(enemies[0].activeEffects.some(e => e.type === 'stun'));
+  });
+
+  it('confuse ultimate applies confuse to single enemy', () => {
+    const caster = instantiateRobot('sizzlit');
+    caster.ultimate.type = 'confuse';
+    caster.ultimate.target = 'single_enemy';
+    caster.ultimate.charges = caster.ultimate.chargesRequired;
+    const enemies = [instantiateRobot('drizzlet')];
+    const result = processUltimate(caster, enemies);
+    assert.ok(result.success);
+    assert.strictEqual(result.type, 'confuse');
+    assert.ok(enemies[0].activeEffects.some(e => e.type === 'confuse'));
+  });
+
+  it('attack_buff ultimate buffs single ally', () => {
+    const caster = instantiateRobot('sizzlit');
+    caster.ultimate.type = 'attack_buff';
+    caster.ultimate.target = 'single_ally';
+    caster.ultimate.power = 30;
+    caster.ultimate.charges = caster.ultimate.chargesRequired;
+    const ally = instantiateRobot('drizzlet');
+    ally.hp = 50;
+    const party = { active: [caster, ally], reserves: [] };
+    const result = processUltimate(caster, [], null, party);
+    assert.ok(result.success);
+    assert.strictEqual(result.type, 'attack_buff');
+    const buffed = party.active.find(r => r.activeEffects?.some(e => e.type === 'attack_buff'));
+    assert.ok(buffed);
+    assert.strictEqual(buffed.activeEffects.find(e => e.type === 'attack_buff').percent, 30);
+  });
+
+  it('haste ultimate gives haste to single ally', () => {
+    const caster = instantiateRobot('sizzlit');
+    caster.ultimate.type = 'haste';
+    caster.ultimate.target = 'single_ally';
+    caster.ultimate.charges = caster.ultimate.chargesRequired;
+    const ally = instantiateRobot('drizzlet');
+    ally.hp = 50;
+    const party = { active: [caster, ally], reserves: [] };
+    const result = processUltimate(caster, [], null, party);
+    assert.ok(result.success);
+    assert.strictEqual(result.type, 'haste');
+    const hasted = party.active.find(r => r.activeEffects?.some(e => e.type === 'haste'));
+    assert.ok(hasted);
+  });
+
+  it('shield ultimate shields single ally', () => {
+    const caster = instantiateRobot('sizzlit');
+    caster.ultimate.type = 'shield';
+    caster.ultimate.target = 'single_ally';
+    caster.ultimate.power = 50;
+    caster.ultimate.charges = caster.ultimate.chargesRequired;
+    const ally = instantiateRobot('drizzlet');
+    ally.hp = 50;
+    const party = { active: [caster, ally], reserves: [] };
+    const result = processUltimate(caster, [], null, party);
+    assert.ok(result.success);
+    assert.strictEqual(result.type, 'shield');
+    const shielded = party.active.find(r => r.activeEffects?.some(e => e.type === 'shield'));
+    assert.ok(shielded);
+    assert.strictEqual(shielded.activeEffects.find(e => e.type === 'shield').percent, 50);
+  });
+
+  it('team_shield ultimate shields all allies', () => {
+    const caster = instantiateRobot('sizzlit');
+    caster.ultimate.type = 'team_shield';
+    caster.ultimate.target = 'all_allies';
+    caster.ultimate.power = 40;
+    caster.ultimate.charges = caster.ultimate.chargesRequired;
+    const ally1 = instantiateRobot('drizzlet');
+    const ally2 = instantiateRobot('petalia');
+    const party = { active: [caster, ally1, ally2], reserves: [] };
+    const result = processUltimate(caster, [], null, party);
+    assert.ok(result.success);
+    assert.strictEqual(result.type, 'team_shield');
+    assert.ok(caster.activeEffects.some(e => e.type === 'team_shield'));
+    assert.ok(ally1.activeEffects.some(e => e.type === 'team_shield'));
+    assert.ok(ally2.activeEffects.some(e => e.type === 'team_shield'));
+  });
+
+  it('taunt ultimate applies taunt to self', () => {
+    const caster = instantiateRobot('sizzlit');
+    caster.ultimate.type = 'taunt';
+    caster.ultimate.target = 'self';
+    caster.ultimate.charges = caster.ultimate.chargesRequired;
+    const party = { active: [caster], reserves: [] };
+    const result = processUltimate(caster, [], null, party);
+    assert.ok(result.success);
+    assert.strictEqual(result.type, 'taunt');
+    assert.ok(caster.activeEffects.some(e => e.type === 'taunt'));
+  });
+
+  it('effect ultimate rejects if not enough charges', () => {
+    const caster = instantiateRobot('sizzlit');
+    caster.ultimate.type = 'sleep';
+    caster.ultimate.charges = 0;
+    const enemies = [instantiateRobot('drizzlet')];
+    const result = processUltimate(caster, enemies);
+    assert.ok(!result.success);
+  });
+});

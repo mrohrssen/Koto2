@@ -259,6 +259,12 @@ export function processUltimate(robot, enemies, itemBuffs = null, robotParty = n
     return processPoisonUltimate(robot, enemies, itemBuffs, robotParty);
   }
 
+  // Status effect ultimates
+  const STATUS_EFFECT_TYPES = ['sleep', 'stun', 'confuse', 'attack_buff', 'haste', 'shield', 'team_shield', 'taunt'];
+  if (STATUS_EFFECT_TYPES.includes(ultType)) {
+    return processStatusEffectUltimate(robot, ultType, enemies, robotParty);
+  }
+
   // Determine targets based on targeting mode
   let targets;
   if (ultTarget === 'single_enemy') {
@@ -431,6 +437,100 @@ function processPoisonUltimate(robot, enemies, itemBuffs, robotParty) {
     hits,
     xpEvents,
     allEnemiesDefeated: enemies.every(e => e.hp <= 0)
+  };
+}
+
+function processStatusEffectUltimate(robot, effectType, enemies, robotParty) {
+  const ultTarget = robot.ultimate.target || 'single_enemy';
+  const power = robot.ultimate.power || 0;
+  const effectEvents = [];
+  const allies = robotParty?.active || [];
+
+  // Debuffs target enemies
+  if (['sleep', 'stun', 'confuse'].includes(effectType)) {
+    const aliveEnemies = enemies.filter(e => e.hp > 0);
+    let targets;
+    if (ultTarget === 'all_enemies') {
+      targets = aliveEnemies;
+    } else {
+      const selected = selectTarget(robot, aliveEnemies);
+      targets = selected ? [selected] : [];
+    }
+
+    for (const target of targets) {
+      if (effectType === 'sleep') applySleep(target, { duration: 2, sourceId: robot.id });
+      else if (effectType === 'stun') applyStun(target, { sourceId: robot.id });
+      else if (effectType === 'confuse') applyConfuse(target, { duration: 2, sourceId: robot.id });
+
+      effectEvents.push({
+        type: effectType,
+        targetId: target.id,
+        targetName: target.nameEn,
+      });
+    }
+  }
+
+  // Buffs target allies
+  if (['attack_buff', 'haste', 'shield'].includes(effectType)) {
+    let targets;
+    if (ultTarget === 'all_allies') {
+      targets = allies.filter(r => r.hp > 0);
+    } else {
+      // single_ally: pick ally with lowest HP%
+      const candidates = allies.filter(r => r.hp > 0);
+      candidates.sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
+      targets = candidates.length > 0 ? [candidates[0]] : [];
+    }
+
+    for (const target of targets) {
+      if (effectType === 'attack_buff') applyAttackBuff(target, { percent: power, duration: 2, sourceId: robot.id });
+      else if (effectType === 'haste') applyHaste(target, { sourceId: robot.id });
+      else if (effectType === 'shield') applyShield(target, { percent: power, duration: 2, sourceId: robot.id });
+
+      effectEvents.push({
+        type: effectType,
+        targetId: target.id,
+        targetName: target.nameEn,
+        percent: power || undefined,
+      });
+    }
+  }
+
+  // team_shield: all allies
+  if (effectType === 'team_shield') {
+    applyTeamShield(allies, { percent: power, duration: 2, sourceId: robot.id });
+    for (const ally of allies.filter(r => r.hp > 0)) {
+      effectEvents.push({
+        type: 'team_shield',
+        targetId: ally.id,
+        targetName: ally.nameEn,
+        percent: power,
+      });
+    }
+  }
+
+  // taunt: self
+  if (effectType === 'taunt') {
+    applyTaunt(robot, { duration: 2, sourceId: robot.id });
+    effectEvents.push({
+      type: 'taunt',
+      targetId: robot.id,
+      targetName: robot.nameEn,
+    });
+  }
+
+  robot.ultimate.charges = 0;
+
+  return {
+    success: true,
+    type: effectType,
+    robotId: robot.id,
+    robotName: robot.nameEn,
+    ultimateName: robot.ultimate.nameEn,
+    effectEvents,
+    hits: [],
+    xpEvents: [],
+    allEnemiesDefeated: false,
   };
 }
 
