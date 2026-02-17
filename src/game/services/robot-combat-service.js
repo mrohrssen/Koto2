@@ -167,12 +167,31 @@ export function processUltimate(robot, enemies, itemBuffs = null, robotParty = n
     return { success: false, reason: 'Not enough charges' };
   }
 
+  const ultType = robot.ultimate.type || 'damage';
+  const ultTarget = robot.ultimate.target || 'all_enemies';
+
+  // Delegate non-damage types to their stub handlers
+  if (ultType === 'heal') {
+    return processHealUltimate(robot, enemies, itemBuffs, robotParty);
+  }
+  if (ultType === 'poison') {
+    return processPoisonUltimate(robot, enemies, itemBuffs, robotParty);
+  }
+
+  // Determine targets based on targeting mode
+  let targets;
+  if (ultTarget === 'single_enemy') {
+    const selected = selectTarget(robot, enemies.filter(e => e.hp > 0));
+    targets = selected ? [selected] : [];
+  } else {
+    targets = enemies.filter(e => e.hp > 0);
+  }
+
   const hits = [];
   const xpEvents = [];
   const defeatedEnemyIds = new Set();
 
-  for (const enemy of enemies) {
-    if (enemy.hp <= 0) continue;
+  for (const enemy of targets) {
     const elemMult = getElementMultiplier(robot.ultimate.element, enemy.element);
     const variance = rollVariance();
     const buffedAttack = itemBuffs ? getBuffedAttack(robot.attack, itemBuffs) : robot.attack;
@@ -201,12 +220,42 @@ export function processUltimate(robot, enemies, itemBuffs = null, robotParty = n
 
   return {
     success: true,
+    type: 'damage',
     robotId: robot.id,
     robotName: robot.nameEn,
     ultimateName: robot.ultimate.nameEn,
     hits,
     xpEvents,
     allEnemiesDefeated: enemies.every(e => e.hp <= 0)
+  };
+}
+
+function processHealUltimate(robot, enemies, itemBuffs, robotParty) {
+  robot.ultimate.charges = 0;
+  return {
+    success: true,
+    type: 'heal',
+    robotId: robot.id,
+    robotName: robot.nameEn,
+    ultimateName: robot.ultimate.nameEn,
+    healEvents: [],
+    hits: [],
+    xpEvents: [],
+    allEnemiesDefeated: false
+  };
+}
+
+function processPoisonUltimate(robot, enemies, itemBuffs, robotParty) {
+  robot.ultimate.charges = 0;
+  return {
+    success: true,
+    type: 'poison',
+    robotId: robot.id,
+    robotName: robot.nameEn,
+    ultimateName: robot.ultimate.nameEn,
+    hits: [],
+    xpEvents: [],
+    allEnemiesDefeated: false
   };
 }
 

@@ -81,6 +81,71 @@ describe('Robot Combat - Befriend', () => {
   });
 });
 
+describe('Robot Combat - Ultimate Targeting', () => {
+  it('single_enemy ultimate hits only one target', () => {
+    const allies = [instantiateRobot('sizzlit')];
+    const enemies = [instantiateRobot('drizzlet'), instantiateRobot('petalia')];
+    allies[0].ultimate.target = 'single_enemy';
+    allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
+    const result = processUltimate(allies[0], enemies);
+    assert.ok(result.success);
+    assert.strictEqual(result.hits.length, 1);
+  });
+
+  it('all_enemies ultimate hits all alive enemies', () => {
+    const allies = [instantiateRobot('sizzlit')];
+    const enemies = [instantiateRobot('drizzlet'), instantiateRobot('petalia')];
+    allies[0].ultimate.target = 'all_enemies';
+    allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
+    const result = processUltimate(allies[0], enemies);
+    assert.ok(result.success);
+    assert.strictEqual(result.hits.length, 2);
+  });
+
+  it('missing target field defaults to all_enemies', () => {
+    const allies = [instantiateRobot('sizzlit')];
+    const enemies = [instantiateRobot('drizzlet'), instantiateRobot('petalia')];
+    delete allies[0].ultimate.target;
+    allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
+    const result = processUltimate(allies[0], enemies);
+    assert.ok(result.success);
+    assert.strictEqual(result.hits.length, 2);
+  });
+
+  it('heal type ultimate delegates to stub and returns heal type', () => {
+    const allies = [instantiateRobot('sizzlit')];
+    const enemies = [instantiateRobot('drizzlet')];
+    allies[0].ultimate.type = 'heal';
+    allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
+    const result = processUltimate(allies[0], enemies);
+    assert.ok(result.success);
+    assert.strictEqual(result.type, 'heal');
+    assert.strictEqual(allies[0].ultimate.charges, 0);
+    assert.deepStrictEqual(result.hits, []);
+  });
+
+  it('poison type ultimate delegates to stub and returns poison type', () => {
+    const allies = [instantiateRobot('sizzlit')];
+    const enemies = [instantiateRobot('drizzlet')];
+    allies[0].ultimate.type = 'poison';
+    allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
+    const result = processUltimate(allies[0], enemies);
+    assert.ok(result.success);
+    assert.strictEqual(result.type, 'poison');
+    assert.strictEqual(allies[0].ultimate.charges, 0);
+    assert.deepStrictEqual(result.hits, []);
+  });
+
+  it('damage type ultimate returns type damage', () => {
+    const allies = [instantiateRobot('sizzlit')];
+    const enemies = [instantiateRobot('drizzlet')];
+    allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
+    const result = processUltimate(allies[0], enemies);
+    assert.ok(result.success);
+    assert.strictEqual(result.type, 'damage');
+  });
+});
+
 describe('Robot Combat - XP', () => {
   it('active robots get 2x shares, reserves get 1x share', () => {
     const party = {
