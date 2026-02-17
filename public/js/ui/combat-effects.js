@@ -484,6 +484,28 @@ export async function enemyRobotAttackEffect(enemyEl, robotSlotEl, element, dama
   showVignette(200);
 }
 
+// ============ HEAL EFFECTS ============
+
+/**
+ * Show green heal number floating up from a robot slot.
+ * Flashes the robot icon and spawns green particles.
+ * @param {Element} robotSlotEl - The .robot-slot element being healed
+ * @param {number} healAmount - Amount of HP healed
+ */
+export async function healEffect(robotSlotEl, healAmount) {
+  const popup = document.createElement('div');
+  popup.className = 'heal-number';
+  popup.textContent = `+${healAmount}`;
+  robotSlotEl.style.position = 'relative';
+  robotSlotEl.appendChild(popup);
+
+  flashElement(robotSlotEl.querySelector('.robot-icon'), 1);
+  spawnParticles(robotSlotEl, 8, '#4CAF50');
+
+  await delay(1200);
+  popup.remove();
+}
+
 // ============ XP POPUP EFFECTS ============
 
 /**

@@ -2653,6 +2653,25 @@ html, body {
   white-space: nowrap;
 }
 
+.heal-number {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #4CAF50;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-shadow: 0 0 4px rgba(76, 175, 80, 0.8);
+  animation: float-up 1.2s ease-out forwards;
+  pointer-events: none;
+  z-index: 100;
+}
+
+@keyframes float-up {
+  0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-40px); }
+}
+
 .robot-popup-name { font-weight: bold; font-size: 14px; color: var(--text-primary); }
 .robot-popup-element { font-size: 12px; color: #aaa; margin: 4px 0; }
 .robot-popup-stats { font-size: 11px; color: #ccc; }

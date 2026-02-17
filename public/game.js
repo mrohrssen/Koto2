@@ -84,7 +84,7 @@ import * as characterUI from './js/ui/character.js';
 import * as modalsUI from './js/ui/modals.js';
 import * as combatLoopUI from './js/ui/combat-loop.js';
 import { playAttackSound, playUltimateSound } from './js/ui/combat-audio.js';
-import { playUltimateAnimation, screenShake, showXpPopup, showLevelUpPopup } from './js/ui/combat-effects.js';
+import { playUltimateAnimation, screenShake, showXpPopup, showLevelUpPopup, healEffect } from './js/ui/combat-effects.js';
 import { dom } from './js/dom.js';
 import * as actions from './js/ui/actions.js';
 import * as takeover from './js/ui/takeover.js';
@@ -910,8 +910,25 @@ async function handleUseRobotUltimate(robotIndex) {
   // Show ultimate name in action area
   const actionArea = document.getElementById('action-area');
   if (actionArea && result.ultimateName) {
-    const totalDmg = (result.hits || []).reduce((sum, h) => sum + h.damage, 0);
-    actionArea.innerHTML = `<div class="combat-robot-attack" style="color: #FFD700; font-size: 16px;">${result.robotName} uses ${result.ultimateName}! <strong>${totalDmg}</strong> total damage</div>`;
+    if (result.type === 'heal') {
+      const totalHeal = (result.healEvents || []).reduce((sum, h) => sum + h.healAmount, 0);
+      actionArea.innerHTML = `<div class="combat-robot-attack" style="color: #4CAF50; font-size: 16px;">${result.robotName} uses ${result.ultimateName}! <strong>+${totalHeal}</strong> HP</div>`;
+    } else {
+      const totalDmg = (result.hits || []).reduce((sum, h) => sum + h.damage, 0);
+      actionArea.innerHTML = `<div class="combat-robot-attack" style="color: #FFD700; font-size: 16px;">${result.robotName} uses ${result.ultimateName}! <strong>${totalDmg}</strong> total damage</div>`;
+    }
+  }
+
+  // Show heal effects on healed robots
+  if (result.type === 'heal' && result.healEvents) {
+    const slots = document.querySelectorAll('#chip-row .robot-slot');
+    const active = state.run?.robotParty?.active || [];
+    for (const heal of result.healEvents) {
+      const targetIdx = active.findIndex(r => r && r.id === heal.targetId);
+      if (targetIdx >= 0 && slots[targetIdx]) {
+        await healEffect(slots[targetIdx], heal.healAmount);
+      }
+    }
   }
 
   // Update enemy HP bars with damage from hits
