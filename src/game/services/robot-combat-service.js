@@ -19,7 +19,8 @@ import {
   applySleep, applyStun, applyConfuse,
   applyAttackBuff, applyHaste, applyShield, applyTeamShield, applyTaunt,
   isIncapacitated, isConfused, hasHaste, consumeHaste,
-  getAttackMultiplier, getDamageReduction, getTauntTarget, breakSleep
+  getAttackMultiplier, getDamageReduction, getTauntTarget, breakSleep,
+  getFlatAttackBonus
 } from '../combat/effects.js';
 import { DM_PROMPTS } from '../dm.js';
 
@@ -55,7 +56,7 @@ export function processAttackTurn(allies, enemies, itemBuffs = null, robotParty 
       const elemMult = getElementMultiplier(robot.autoSkill.element, target.element);
       const variance = rollVariance();
       let buffedAttack = itemBuffs ? getBuffedAttack(robot.attack, itemBuffs) : robot.attack;
-      buffedAttack = Math.floor(buffedAttack * getAttackMultiplier(robot));
+      buffedAttack = Math.floor((buffedAttack + getFlatAttackBonus(robot)) * getAttackMultiplier(robot));
       const buffedPower = itemBuffs ? getBuffedAutoPower(robot.autoSkill.power, itemBuffs) : robot.autoSkill.power;
       const buffedElemMult = itemBuffs ? getBuffedElementMultiplier(elemMult, itemBuffs) : elemMult;
       let damage = calculateRobotDamage(buffedAttack, buffedPower, buffedElemMult, variance);
@@ -281,10 +282,10 @@ export function processUltimate(robot, enemies, itemBuffs = null, robotParty = n
   for (const enemy of targets) {
     const elemMult = getElementMultiplier(robot.ultimate.element, enemy.element);
     const variance = rollVariance();
-    const buffedAttack = itemBuffs ? getBuffedAttack(robot.attack, itemBuffs) : robot.attack;
+    const baseAttack = (itemBuffs ? getBuffedAttack(robot.attack, itemBuffs) : robot.attack) + getFlatAttackBonus(robot);
     const buffedPower = itemBuffs ? getBuffedUltimatePower(robot.ultimate.power, itemBuffs) : robot.ultimate.power;
     const buffedElemMult = itemBuffs ? getBuffedElementMultiplier(elemMult, itemBuffs) : elemMult;
-    const damage = calculateRobotDamage(buffedAttack, buffedPower, buffedElemMult, variance);
+    const damage = calculateRobotDamage(baseAttack, buffedPower, buffedElemMult, variance);
     enemy.hp = Math.max(0, enemy.hp - damage);
     const targetDefeated = enemy.hp <= 0;
     hits.push({

@@ -5,7 +5,8 @@ import {
   applySleep, applyStun, applyConfuse,
   applyAttackBuff, applyHaste, applyShield, applyTeamShield, applyTaunt,
   isIncapacitated, isConfused, hasHaste, consumeHaste,
-  getAttackMultiplier, getDamageReduction, getTauntTarget, breakSleep
+  getAttackMultiplier, getDamageReduction, getTauntTarget, breakSleep,
+  applyTempAttackFlat, getFlatAttackBonus
 } from '../../src/game/combat/effects.js';
 
 describe('Combat Effects - Tick', () => {
@@ -341,5 +342,73 @@ describe('Combat Effects - Tick expands to all types', () => {
     ]};
     tickEffects(robot);
     assert.strictEqual(robot.activeEffects.length, 1, 'haste should persist through ticks');
+  });
+});
+
+describe('Combat Effects - Temp Attack Flat', () => {
+  it('adds temp_attack_flat effect to robot', () => {
+    const target = { hp: 100, maxHp: 100, activeEffects: [] };
+    applyTempAttackFlat(target, { value: 3, duration: 5, sourceId: 'miso' });
+    assert.strictEqual(target.activeEffects.length, 1);
+    assert.strictEqual(target.activeEffects[0].type, 'temp_attack_flat');
+    assert.strictEqual(target.activeEffects[0].value, 3);
+    assert.strictEqual(target.activeEffects[0].remainingTurns, 5);
+  });
+
+  it('stacks additively (two separate effects)', () => {
+    const target = { hp: 100, maxHp: 100, activeEffects: [] };
+    applyTempAttackFlat(target, { value: 3, duration: 5, sourceId: 'miso' });
+    applyTempAttackFlat(target, { value: 5, duration: 5, sourceId: 'takoyaki' });
+    assert.strictEqual(target.activeEffects.length, 2);
+  });
+
+  it('initializes activeEffects if missing', () => {
+    const target = { hp: 100, maxHp: 100 };
+    applyTempAttackFlat(target, { value: 3, duration: 5, sourceId: 'miso' });
+    assert.strictEqual(target.activeEffects.length, 1);
+  });
+});
+
+describe('Combat Effects - getFlatAttackBonus', () => {
+  it('returns 0 with no effects', () => {
+    assert.strictEqual(getFlatAttackBonus({ activeEffects: [] }), 0);
+  });
+
+  it('returns 0 when activeEffects is missing', () => {
+    assert.strictEqual(getFlatAttackBonus({}), 0);
+  });
+
+  it('sums multiple temp_attack_flat effects', () => {
+    const robot = { activeEffects: [
+      { type: 'temp_attack_flat', value: 3, remainingTurns: 5 },
+      { type: 'temp_attack_flat', value: 5, remainingTurns: 3 }
+    ]};
+    assert.strictEqual(getFlatAttackBonus(robot), 8);
+  });
+
+  it('ignores other effect types', () => {
+    const robot = { activeEffects: [
+      { type: 'temp_attack_flat', value: 3, remainingTurns: 5 },
+      { type: 'attack_buff', percent: 30, remainingTurns: 2 }
+    ]};
+    assert.strictEqual(getFlatAttackBonus(robot), 3);
+  });
+});
+
+describe('Combat Effects - Tick temp_attack_flat', () => {
+  it('decrements remainingTurns each tick', () => {
+    const robot = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
+      { type: 'temp_attack_flat', value: 3, remainingTurns: 3 }
+    ]};
+    tickEffects(robot);
+    assert.strictEqual(robot.activeEffects[0].remainingTurns, 2);
+  });
+
+  it('removes effect when remainingTurns hits 0', () => {
+    const robot = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
+      { type: 'temp_attack_flat', value: 3, remainingTurns: 1 }
+    ]};
+    tickEffects(robot);
+    assert.strictEqual(robot.activeEffects.length, 0);
   });
 });

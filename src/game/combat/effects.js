@@ -203,3 +203,23 @@ export function breakSleep(target) {
   if (!target.activeEffects) return;
   target.activeEffects = target.activeEffects.filter(e => e.type !== 'sleep');
 }
+
+export function applyTempAttackFlat(target, { value, duration, sourceId }) {
+  if (!target.activeEffects) {
+    target.activeEffects = [];
+  }
+  // Stack additively — each application is a separate effect
+  target.activeEffects.push({
+    type: 'temp_attack_flat',
+    value,
+    remainingTurns: duration,
+    sourceId,
+  });
+}
+
+export function getFlatAttackBonus(robot) {
+  if (!robot.activeEffects) return 0;
+  return robot.activeEffects
+    .filter(e => e.type === 'temp_attack_flat')
+    .reduce((sum, e) => sum + e.value, 0);
+}

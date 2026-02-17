@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { applyTempAttackFlat } from '../combat/effects.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ITEMS = JSON.parse(readFileSync(join(__dirname, '../../../data/items.json'), 'utf8'));
@@ -109,7 +110,11 @@ export function applyItem(item, robotParty, itemBuffs) {
       const tb = item.effect.tempBoost;
       const targets = tb.target === 'all' ? allRobots : [allRobots[0]];
       for (const robot of targets.filter(Boolean)) {
-        robot[tb.field] = (robot[tb.field] || 0) + tb.value;
+        applyTempAttackFlat(robot, {
+          value: tb.value,
+          duration: tb.turns,
+          sourceId: item.id,
+        });
       }
     }
     return { applied: true };

@@ -608,3 +608,16 @@ describe('Robot Combat - Shield in Attack Turn', () => {
     assert.ok(!enemies[0].activeEffects.some(e => e.type === 'sleep'));
   });
 });
+
+describe('Robot Combat - Temp Attack Flat Bonus', () => {
+  it('processAttackTurn uses flat attack bonus from activeEffects', () => {
+    const ally = instantiateRobot('sizzlit');
+    ally.activeEffects = [{ type: 'temp_attack_flat', value: 50, remainingTurns: 5 }];
+    const enemy = instantiateRobot('shimra');
+    const baseHp = enemy.hp;
+
+    const result = processAttackTurn([ally], [enemy]);
+    assert.ok(result.attacks.length >= 1);
+    assert.ok(enemy.hp < baseHp, 'enemy should take damage with flat buff');
+  });
+});
