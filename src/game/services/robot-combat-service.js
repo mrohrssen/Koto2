@@ -14,7 +14,13 @@ import {
   getBuffedElementMultiplier,
   applyDamageReduction
 } from './item-service.js';
-import { applyHeal, applyPoison, tickEffects } from '../combat/effects.js';
+import {
+  applyHeal, applyPoison, tickEffects,
+  applySleep, applyStun, applyConfuse,
+  applyAttackBuff, applyHaste, applyShield, applyTeamShield, applyTaunt,
+  isIncapacitated, isConfused, hasHaste, consumeHaste,
+  getAttackMultiplier, getDamageReduction, getTauntTarget, breakSleep
+} from '../combat/effects.js';
 import { DM_PROMPTS } from '../dm.js';
 
 export const CREDITS_PER_KILL = 15;
@@ -26,44 +32,72 @@ export function processAttackTurn(allies, enemies, itemBuffs = null, robotParty 
 
   for (const robot of allies) {
     if (robot.hp <= 0) continue;
+    if (isIncapacitated(robot)) continue;
+
     const aliveEnemies = enemies.filter(e => e.hp > 0);
     if (aliveEnemies.length === 0) break;
 
-    const target = selectTarget(robot, aliveEnemies);
-    const elemMult = getElementMultiplier(robot.autoSkill.element, target.element);
-    const variance = rollVariance();
-    const buffedAttack = itemBuffs ? getBuffedAttack(robot.attack, itemBuffs) : robot.attack;
-    const buffedPower = itemBuffs ? getBuffedAutoPower(robot.autoSkill.power, itemBuffs) : robot.autoSkill.power;
-    const buffedElemMult = itemBuffs ? getBuffedElementMultiplier(elemMult, itemBuffs) : elemMult;
-    const damage = calculateRobotDamage(buffedAttack, buffedPower, buffedElemMult, variance);
-    target.hp = Math.max(0, target.hp - damage);
+    const attackCount = hasHaste(robot) ? 2 : 1;
+    if (hasHaste(robot)) consumeHaste(robot);
 
-    // +1 ultimate charge immediately when this robot attacks
-    robot.ultimate.charges = Math.min(
-      robot.ultimate.charges + 1,
-      robot.ultimate.chargesRequired
-    );
+    for (let strike = 0; strike < attackCount; strike++) {
+      const currentAliveEnemies = enemies.filter(e => e.hp > 0);
+      if (currentAliveEnemies.length === 0) break;
 
-    const targetDefeated = target.hp <= 0;
+      let target;
+      if (isConfused(robot)) {
+        const allAlive = [...allies, ...enemies].filter(c => c.hp > 0 && c.id !== robot.id);
+        target = allAlive[Math.floor(Math.random() * allAlive.length)];
+      } else {
+        target = selectTarget(robot, currentAliveEnemies);
+      }
 
-    attacks.push({
-      attackerId: robot.id,
-      attackerName: robot.nameEn,
-      attackerElement: robot.element,
-      targetId: target.id,
-      targetName: target.nameEn,
-      damage,
-      elementMultiplier: elemMult,
-      targetDefeated,
-      attackerCharges: robot.ultimate.charges,
-      attackerChargesRequired: robot.ultimate.chargesRequired
-    });
+      const elemMult = getElementMultiplier(robot.autoSkill.element, target.element);
+      const variance = rollVariance();
+      let buffedAttack = itemBuffs ? getBuffedAttack(robot.attack, itemBuffs) : robot.attack;
+      buffedAttack = Math.floor(buffedAttack * getAttackMultiplier(robot));
+      const buffedPower = itemBuffs ? getBuffedAutoPower(robot.autoSkill.power, itemBuffs) : robot.autoSkill.power;
+      const buffedElemMult = itemBuffs ? getBuffedElementMultiplier(elemMult, itemBuffs) : elemMult;
+      let damage = calculateRobotDamage(buffedAttack, buffedPower, buffedElemMult, variance);
 
-    // Award XP immediately when an enemy is killed (BUG C)
-    if (targetDefeated && !defeatedEnemyIds.has(target.id) && robotParty) {
-      defeatedEnemyIds.add(target.id);
-      const xpEvent = awardKillXp(robotParty, 50);
-      xpEvents.push({ enemyId: target.id, enemyName: target.nameEn, ...xpEvent });
+      // Apply shield/team_shield damage reduction on target
+      const shieldReduction = getDamageReduction(target);
+      if (shieldReduction > 0) {
+        damage = Math.floor(damage * (1 - shieldReduction / 100));
+      }
+
+      target.hp = Math.max(0, target.hp - damage);
+
+      if (damage > 0) breakSleep(target);
+
+      // +1 ultimate charge only on first strike
+      if (strike === 0) {
+        robot.ultimate.charges = Math.min(
+          robot.ultimate.charges + 1,
+          robot.ultimate.chargesRequired
+        );
+      }
+
+      const targetDefeated = target.hp <= 0;
+
+      attacks.push({
+        attackerId: robot.id,
+        attackerName: robot.nameEn,
+        attackerElement: robot.element,
+        targetId: target.id,
+        targetName: target.nameEn,
+        damage,
+        elementMultiplier: elemMult,
+        targetDefeated,
+        attackerCharges: robot.ultimate.charges,
+        attackerChargesRequired: robot.ultimate.chargesRequired,
+      });
+
+      if (targetDefeated && !defeatedEnemyIds.has(target.id) && robotParty) {
+        defeatedEnemyIds.add(target.id);
+        const xpEvent = awardKillXp(robotParty, 50);
+        xpEvents.push({ enemyId: target.id, enemyName: target.nameEn, ...xpEvent });
+      }
     }
   }
 
