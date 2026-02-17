@@ -1,59 +1,5 @@
 [
   {
-    "rank": 49,
-    "word": "また",
-    "reading": "また",
-    "meaning": "again"
-  },
-  {
-    "rank": 68,
-    "word": "もらう",
-    "reading": "もらう",
-    "meaning": "to receive"
-  },
-  {
-    "rank": 72,
-    "word": "見える",
-    "reading": "みえる",
-    "meaning": "to be seen"
-  },
-  {
-    "rank": 74,
-    "word": "方",
-    "reading": "ほう",
-    "meaning": "direction"
-  },
-  {
-    "rank": 185,
-    "word": "名前",
-    "reading": "なまえ",
-    "meaning": "name"
-  },
-  {
-    "rank": 218,
-    "word": "あり",
-    "reading": "あり",
-    "meaning": "existing (at the present moment)"
-  },
-  {
-    "rank": 251,
-    "word": "買う",
-    "reading": "かう",
-    "meaning": "to buy"
-  },
-  {
-    "rank": 429,
-    "word": "事",
-    "reading": "こと",
-    "meaning": "thing"
-  },
-  {
-    "rank": 448,
-    "word": "そう",
-    "reading": "そう",
-    "meaning": "in that way"
-  },
-  {
     "rank": 525,
     "word": "一瞬",
     "reading": "いっしゅん",
@@ -100,6 +46,12 @@
     "word": "部分",
     "reading": "ぶぶん",
     "meaning": "portion"
+  },
+  {
+    "rank": 676,
+    "word": "涙",
+    "reading": "なみだ",
+    "meaning": "tear"
   },
   {
     "rank": 799,

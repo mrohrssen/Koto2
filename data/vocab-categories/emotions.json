@@ -1,69 +1,15 @@
 [
   {
-    "rank": 111,
-    "word": "呼ぶ",
-    "reading": "よぶ",
-    "meaning": "to call out (to)"
+    "rank": 171,
+    "word": "心配",
+    "reading": "しんぱい",
+    "meaning": "worry"
   },
   {
-    "rank": 124,
-    "word": "相手",
-    "reading": "あいて",
-    "meaning": "companion"
-  },
-  {
-    "rank": 164,
-    "word": "大きい",
-    "reading": "おおきい",
-    "meaning": "big"
-  },
-  {
-    "rank": 172,
-    "word": "年",
-    "reading": "ねん",
-    "meaning": "year"
-  },
-  {
-    "rank": 231,
-    "word": "どこか",
-    "reading": "どこか",
-    "meaning": "somewhere"
-  },
-  {
-    "rank": 237,
-    "word": "もし",
-    "reading": "もし",
-    "meaning": "if"
-  },
-  {
-    "rank": 246,
-    "word": "飲む",
-    "reading": "のむ",
-    "meaning": "to drink"
-  },
-  {
-    "rank": 328,
-    "word": "残す",
-    "reading": "のこす",
-    "meaning": "to leave (behind)"
-  },
-  {
-    "rank": 331,
-    "word": "大事",
-    "reading": "だいじ",
-    "meaning": "important"
-  },
-  {
-    "rank": 347,
-    "word": "なかなか",
-    "reading": "なかなか",
-    "meaning": "very"
-  },
-  {
-    "rank": 443,
-    "word": "ごめん",
-    "reading": "ごめん",
-    "meaning": "I'm sorry"
+    "rank": 233,
+    "word": "感じ",
+    "reading": "",
+    "meaning": ""
   },
   {
     "rank": 471,
@@ -72,10 +18,10 @@
     "meaning": "disagreeable"
   },
   {
-    "rank": 472,
-    "word": "あいつ",
-    "reading": "あいつ",
-    "meaning": "he"
+    "rank": 475,
+    "word": "泣く",
+    "reading": "なく",
+    "meaning": "to cry"
   },
   {
     "rank": 476,
@@ -154,12 +100,6 @@
     "word": "ような気がする",
     "reading": "ようなきがする",
     "meaning": "(I) think (that)"
-  },
-  {
-    "rank": 870,
-    "word": "というもの",
-    "reading": "というもの",
-    "meaning": "something like ..."
   },
   {
     "rank": 878,

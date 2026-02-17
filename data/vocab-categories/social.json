@@ -1,15 +1,9 @@
 [
   {
-    "rank": 42,
-    "word": "ような",
-    "reading": "ような",
-    "meaning": "like"
-  },
-  {
-    "rank": 58,
-    "word": "できる",
-    "reading": "できる",
-    "meaning": "to be able (in a position) to do"
+    "rank": 111,
+    "word": "呼ぶ",
+    "reading": "よぶ",
+    "meaning": "to call out (to)"
   },
   {
     "rank": 112,
@@ -18,16 +12,16 @@
     "meaning": "to talk"
   },
   {
-    "rank": 113,
-    "word": "何か",
-    "reading": "なにか",
-    "meaning": "something"
-  },
-  {
     "rank": 122,
     "word": "一緒に",
     "reading": "いっしょに",
     "meaning": "together (with)"
+  },
+  {
+    "rank": 124,
+    "word": "相手",
+    "reading": "あいて",
+    "meaning": "companion"
   },
   {
     "rank": 125,
@@ -36,28 +30,22 @@
     "meaning": "to return"
   },
   {
-    "rank": 171,
-    "word": "心配",
-    "reading": "しんぱい",
-    "meaning": "worry"
+    "rank": 170,
+    "word": "教える",
+    "reading": "おしえる",
+    "meaning": "to teach"
   },
   {
-    "rank": 216,
-    "word": "そのまま",
-    "reading": "そのまま",
-    "meaning": "without change"
+    "rank": 443,
+    "word": "ごめん",
+    "reading": "ごめん",
+    "meaning": "I'm sorry"
   },
   {
-    "rank": 272,
-    "word": "先に",
-    "reading": "さきに",
-    "meaning": "previously"
-  },
-  {
-    "rank": 342,
-    "word": "用",
-    "reading": "よう",
-    "meaning": "business"
+    "rank": 460,
+    "word": "子供",
+    "reading": "こども",
+    "meaning": "child"
   },
   {
     "rank": 570,
@@ -84,12 +72,6 @@
     "meaning": "difficult"
   },
   {
-    "rank": 614,
-    "word": "ごめんなさい",
-    "reading": "ごめんなさい",
-    "meaning": "I'm sorry"
-  },
-  {
     "rank": 645,
     "word": "逆",
     "reading": "ぎゃく",
@@ -106,6 +88,12 @@
     "word": "戻ってくる",
     "reading": "もどってくる",
     "meaning": "to come back"
+  },
+  {
+    "rank": 727,
+    "word": "話をする",
+    "reading": "はなしをする",
+    "meaning": "to have a talk"
   },
   {
     "rank": 728,
@@ -142,6 +130,12 @@
     "word": "弱い",
     "reading": "よわい",
     "meaning": "weak"
+  },
+  {
+    "rank": 829,
+    "word": "親",
+    "reading": "おや",
+    "meaning": "parent"
   },
   {
     "rank": 830,

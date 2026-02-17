@@ -1,99 +1,27 @@
 [
   {
-    "rank": 41,
-    "word": "聞く",
-    "reading": "きく",
-    "meaning": "to hear"
+    "rank": 172,
+    "word": "年",
+    "reading": "ねん",
+    "meaning": "year"
   },
   {
-    "rank": 45,
-    "word": "出る",
-    "reading": "でる",
-    "meaning": "to leave"
+    "rank": 208,
+    "word": "初めて",
+    "reading": "はじめて",
+    "meaning": "for the first time"
   },
   {
-    "rank": 79,
-    "word": "ほど",
-    "reading": "ほど",
-    "meaning": "extent"
-  },
-  {
-    "rank": 90,
-    "word": "家",
-    "reading": "いえ",
-    "meaning": "house"
-  },
-  {
-    "rank": 103,
-    "word": "部屋",
-    "reading": "へや",
-    "meaning": "room"
-  },
-  {
-    "rank": 170,
-    "word": "教える",
-    "reading": "おしえる",
-    "meaning": "to teach"
-  },
-  {
-    "rank": 173,
-    "word": "おる",
-    "reading": "おる",
-    "meaning": "to be (animate)"
-  },
-  {
-    "rank": 233,
-    "word": "感じ",
-    "reading": "",
-    "meaning": ""
-  },
-  {
-    "rank": 317,
-    "word": "新しい",
-    "reading": "あたらしい",
-    "meaning": "new"
-  },
-  {
-    "rank": 364,
-    "word": "急ぐ",
-    "reading": "いそぐ",
-    "meaning": "to hurry"
-  },
-  {
-    "rank": 379,
-    "word": "広い",
-    "reading": "ひろい",
-    "meaning": "spacious"
+    "rank": 283,
+    "word": "一度",
+    "reading": "いちど",
+    "meaning": "once"
   },
   {
     "rank": 456,
     "word": "全部",
     "reading": "ぜんぶ",
     "meaning": "all"
-  },
-  {
-    "rank": 459,
-    "word": "光",
-    "reading": "ひかり",
-    "meaning": "light"
-  },
-  {
-    "rank": 467,
-    "word": "気がする",
-    "reading": "きがする",
-    "meaning": "to feel (as if)"
-  },
-  {
-    "rank": 475,
-    "word": "泣く",
-    "reading": "なく",
-    "meaning": "to cry"
-  },
-  {
-    "rank": 486,
-    "word": "変",
-    "reading": "へん",
-    "meaning": "strange"
   },
   {
     "rank": 517,
@@ -142,6 +70,12 @@
     "word": "一緒",
     "reading": "いっしょ",
     "meaning": "together"
+  },
+  {
+    "rank": 831,
+    "word": "現在",
+    "reading": "げんざい",
+    "meaning": "the present"
   },
   {
     "rank": 832,

@@ -1,63 +1,9 @@
 [
   {
-    "rank": 19,
-    "word": "くれる",
-    "reading": "くれる",
-    "meaning": "to give"
-  },
-  {
-    "rank": 24,
-    "word": "行く",
-    "reading": "いく",
-    "meaning": "to go"
-  },
-  {
-    "rank": 32,
-    "word": "人",
-    "reading": "ひと",
-    "meaning": "person"
-  },
-  {
-    "rank": 126,
-    "word": "音",
-    "reading": "おと",
-    "meaning": "sound"
-  },
-  {
-    "rank": 140,
-    "word": "力",
-    "reading": "りょく",
-    "meaning": "strength"
-  },
-  {
-    "rank": 156,
-    "word": "こちら",
-    "reading": "こちら",
-    "meaning": "this way"
-  },
-  {
-    "rank": 167,
-    "word": "何も",
-    "reading": "なにも",
-    "meaning": "(not) anything"
-  },
-  {
-    "rank": 198,
-    "word": "開く",
-    "reading": "ひらく",
-    "meaning": "to open"
-  },
-  {
-    "rank": 248,
-    "word": "以外",
-    "reading": "いがい",
-    "meaning": "with the exception of"
-  },
-  {
-    "rank": 291,
-    "word": "人",
-    "reading": "ひと",
-    "meaning": "person"
+    "rank": 247,
+    "word": "走る",
+    "reading": "はしる",
+    "meaning": "to run"
   },
   {
     "rank": 309,
@@ -66,10 +12,16 @@
     "meaning": "to approach"
   },
   {
-    "rank": 310,
-    "word": "与える",
-    "reading": "あたえる",
-    "meaning": "to give (esp. to someone of lower status)"
+    "rank": 364,
+    "word": "急ぐ",
+    "reading": "いそぐ",
+    "meaning": "to hurry"
+  },
+  {
+    "rank": 607,
+    "word": "飛ぶ",
+    "reading": "とぶ",
+    "meaning": "to fly"
   },
   {
     "rank": 608,

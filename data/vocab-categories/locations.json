@@ -1,81 +1,27 @@
 [
   {
-    "rank": 91,
-    "word": "彼",
-    "reading": "かれ",
-    "meaning": "he"
+    "rank": 90,
+    "word": "家",
+    "reading": "いえ",
+    "meaning": "house"
   },
   {
-    "rank": 104,
-    "word": "おく",
-    "reading": "おく",
-    "meaning": "to put"
+    "rank": 103,
+    "word": "部屋",
+    "reading": "へや",
+    "meaning": "room"
   },
   {
-    "rank": 129,
-    "word": "ずっと",
-    "reading": "ずっと",
-    "meaning": "continuously in some state (for a long time, distance)"
+    "rank": 132,
+    "word": "場所",
+    "reading": "ばしょ",
+    "meaning": "place"
   },
   {
-    "rank": 133,
-    "word": "あと",
-    "reading": "あと",
-    "meaning": "behind"
-  },
-  {
-    "rank": 296,
-    "word": "簡単",
-    "reading": "かんたん",
-    "meaning": "simple"
-  },
-  {
-    "rank": 491,
-    "word": "座る",
-    "reading": "すわる",
-    "meaning": "to sit"
-  },
-  {
-    "rank": 546,
-    "word": "触れる",
-    "reading": "ふれる",
-    "meaning": "to touch"
-  },
-  {
-    "rank": 602,
-    "word": "さて",
-    "reading": "さて",
-    "meaning": "well"
-  },
-  {
-    "rank": 607,
-    "word": "飛ぶ",
-    "reading": "とぶ",
-    "meaning": "to fly"
-  },
-  {
-    "rank": 712,
-    "word": "食事",
-    "reading": "しょくじ",
-    "meaning": "meal"
-  },
-  {
-    "rank": 727,
-    "word": "話をする",
-    "reading": "はなしをする",
-    "meaning": "to have a talk"
-  },
-  {
-    "rank": 831,
-    "word": "現在",
-    "reading": "げんざい",
-    "meaning": "the present"
-  },
-  {
-    "rank": 939,
-    "word": "部",
-    "reading": "ぶ",
-    "meaning": "department (in an organization)"
+    "rank": 711,
+    "word": "町",
+    "reading": "まち",
+    "meaning": "town"
   },
   {
     "rank": 999,
