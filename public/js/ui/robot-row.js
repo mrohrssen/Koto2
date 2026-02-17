@@ -136,9 +136,12 @@ function showPopup(index, robot) {
     .filter(entry => entry.robot && entry.index !== index && entry.robot.hp > 0);
   const canRearrange = !hasReserves && otherActives.length > 0 && onRearrangeRobot;
 
+  const archetypeLabel = robot.archetype || 'Fighter';
+
   dom.chipPopup.innerHTML = `
     <div class="robot-popup-name">${robot.name} (${robot.nameEn}) ${rarityStars(robot.rarity)}</div>
     <div class="robot-popup-element">${ELEMENT_ICONS[robot.element]} ${robot.element}</div>
+    <div class="robot-popup-archetype">${archetypeLabel}</div>
     <div class="robot-popup-stats">
       HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}
     </div>

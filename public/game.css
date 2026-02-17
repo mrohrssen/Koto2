@@ -2700,6 +2700,13 @@ html, body {
 
 .robot-popup-name { font-weight: bold; font-size: 14px; color: var(--text-primary); }
 .robot-popup-element { font-size: 12px; color: #aaa; margin: 4px 0; }
+.robot-popup-archetype {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #aaa);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
 .robot-popup-stats { font-size: 11px; color: #ccc; }
 .robot-popup-ultimate { font-size: 11px; color: #aaa; margin: 8px 0; }
 .robot-popup-ultimate-btn {
