@@ -586,3 +586,25 @@ describe('Robot Combat - Status Effect Ultimates', () => {
     assert.ok(!result.success);
   });
 });
+
+describe('Robot Combat - Shield in Attack Turn', () => {
+  it('shielded enemy takes reduced damage from player attacks', () => {
+    const allies = [instantiateRobot('sizzlit')];
+    const enemies = [instantiateRobot('drizzlet')];
+    enemies[0].hp = 9999;
+    enemies[0].maxHp = 9999;
+    // 90% shield — should drastically reduce damage
+    enemies[0].activeEffects = [{ type: 'shield', percent: 90, remainingTurns: 2, sourceId: 'x' }];
+    const result = processAttackTurn(allies, enemies);
+    // With 90% shield, damage should be very small
+    assert.ok(result.attacks[0].damage < allies[0].attack);
+  });
+
+  it('player attack wakes sleeping enemy', () => {
+    const allies = [instantiateRobot('sizzlit')];
+    const enemies = [instantiateRobot('drizzlet')];
+    enemies[0].activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
+    processAttackTurn(allies, enemies);
+    assert.ok(!enemies[0].activeEffects.some(e => e.type === 'sleep'));
+  });
+});
