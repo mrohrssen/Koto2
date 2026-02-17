@@ -210,74 +210,40 @@ async function forfeitRun() {
 }
 
 /**
- * Get starting ward options for a new run
- * @returns {Promise<Array>} Array of ward options
+ * Get area options for selection
+ * @returns {Promise<Array>} Array of area options
  */
-async function getStartingWards() {
+async function getAreaOptions() {
   try {
-    const response = await fetch('/api/game/starting-wards', {
+    const response = await fetch('/api/game/area-options', {
       headers: getAuthHeaders()
     });
     return await response.json();
   } catch (error) {
-    logger.error('[API] Failed to fetch starting wards:', error.message);
+    logger.error('[API] Failed to fetch area options:', error.message);
     return [];
   }
 }
 
 /**
- * Select a starting ward
- * @param {string} wardId - Ward identifier
+ * Select an area
+ * @param {string} areaId - Area identifier
  * @returns {Promise<object>} Result with state
  */
-async function selectStartingWard(wardId) {
+async function selectArea(areaId) {
   try {
-    const response = await fetch('/api/game/select-starting-ward', {
+    const response = await fetch('/api/game/select-area', {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ wardId })
+      body: JSON.stringify({ areaId })
     });
     return await response.json();
   } catch (error) {
-    logger.error('[API] Failed to select starting ward:', error.message);
+    logger.error('[API] Failed to select area:', error.message);
     return { error: 'Network error' };
   }
 }
 
-/**
- * Get next ward options after completing a floor
- * @returns {Promise<Array>} Array of ward options
- */
-async function getNextWardOptions() {
-  try {
-    const response = await fetch('/api/game/next-ward-options', {
-      headers: getAuthHeaders()
-    });
-    return await response.json();
-  } catch (error) {
-    logger.error('[API] Failed to fetch next ward options:', error.message);
-    return [];
-  }
-}
-
-/**
- * Select the next ward
- * @param {string} wardId - Ward identifier
- * @returns {Promise<object>} Result with state
- */
-async function selectNextWard(wardId) {
-  try {
-    const response = await fetch('/api/game/select-next-ward', {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ wardId })
-    });
-    return await response.json();
-  } catch (error) {
-    logger.error('[API] Failed to select next ward:', error.message);
-    return { error: 'Network error' };
-  }
-}
 
 // ============ ROOM EXPLORATION ENDPOINTS ============
 
@@ -436,20 +402,6 @@ async function dealerLeave() {
   return apiCall('/dealer-leave', 'POST');
 }
 
-/** Advance to the next floor */
-async function nextFloor() {
-  return apiCall('/next-floor', 'POST');
-}
-
-/** Continue to next endless floor */
-async function continueEndless() {
-  return apiCall('/continue-endless', 'POST');
-}
-
-/** Return to hub after game victory (declining endless) */
-async function returnToHubFromVictory() {
-  return apiCall('/return-to-hub-from-victory', 'POST');
-}
 
 // ============ VOCAB/JPDB ENDPOINTS ============
 
@@ -663,10 +615,8 @@ export {
   // Run management endpoints
   startRun,
   forfeitRun,
-  getStartingWards,
-  selectStartingWard,
-  getNextWardOptions,
-  selectNextWard,
+  getAreaOptions,
+  selectArea,
   // Room exploration endpoints
   proceed,
   roomEncounter,
@@ -701,9 +651,6 @@ export {
   dealerSell,
   dealerBuy,
   dealerLeave,
-  nextFloor,
-  continueEndless,
-  returnToHubFromVictory,
   // Vocab/JPDB endpoints
   sendJpdbReview,
   parseJpdbText,
