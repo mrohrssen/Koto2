@@ -122,8 +122,8 @@ NOT chibi — proper proportions but still stylized.`;
   return `${styleBlock}
 
 TECHNICAL:
-- Solid flat magenta (#FF00FF) background, NO gradients, shadows, or ground
-- Full body visible, front-facing idle pose, single character only
+- Character is completely isolated on a solid, pure magenta background (Hex #FF00FF) with sharp, crisp edges and no lighting bleed, glow, or shadows. No shadow underneath the character. Full body shot, ready for animation.
+- Front-facing idle pose, single character only
 - No text, no UI elements, no humans
 - Creature must not contain any magenta (#FF00FF) in its own colors
 
