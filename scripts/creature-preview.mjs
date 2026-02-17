@@ -132,7 +132,7 @@ function buildHtml(id, meta) {
 
   const cards = VARIANTS.map(v => {
     const label = v.toUpperCase();
-    const desc = descriptions?.[v] || '';
+    const desc = meta.richDescriptions?.[v] || descriptions?.[v] || '';
     const imgFile = `creature-forge-${id}-${v}.png`;
     return `
       <div class="card">
