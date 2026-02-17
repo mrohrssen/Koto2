@@ -73,6 +73,36 @@ export function applyPoison(target, { damagePerTurn, duration, sourceId }) {
  * @param {number} amount - HP to restore
  * @returns {number} Actual HP restored (may be less than amount if near max, or 0 if KO'd)
  */
+/**
+ * Apply or refresh a status effect on a target. If the target already has
+ * the same effect type, refresh its duration instead of stacking.
+ */
+function applyOrRefresh(target, effect) {
+  if (!target.activeEffects) {
+    target.activeEffects = [];
+  }
+  const existing = target.activeEffects.find(e => e.type === effect.type);
+  if (existing) {
+    existing.remainingTurns = effect.remainingTurns;
+    existing.sourceId = effect.sourceId;
+    if (effect.percent !== undefined) existing.percent = effect.percent;
+  } else {
+    target.activeEffects.push(effect);
+  }
+}
+
+export function applySleep(target, { duration = 2, sourceId }) {
+  applyOrRefresh(target, { type: 'sleep', remainingTurns: duration, sourceId });
+}
+
+export function applyStun(target, { sourceId }) {
+  applyOrRefresh(target, { type: 'stun', remainingTurns: 1, sourceId });
+}
+
+export function applyConfuse(target, { duration = 2, sourceId }) {
+  applyOrRefresh(target, { type: 'confuse', remainingTurns: duration, sourceId });
+}
+
 export function applyHeal(target, amount) {
   if (target.hp <= 0) {
     return 0;
