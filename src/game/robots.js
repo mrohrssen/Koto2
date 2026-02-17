@@ -89,8 +89,8 @@ export function addXpToRobot(robot, xp) {
     robot.xp -= XP_PER_LEVEL;
     robot.level++;
     const rarityMult = RARITY_MULTIPLIERS[robot.rarity] || 1.0;
-    const baseHp = Math.floor(100 * rarityMult);
-    const baseAtk = Math.floor(10 * rarityMult);
+    const baseHp = Math.floor((robot.baseHpTemplate || 100) * rarityMult);
+    const baseAtk = Math.floor((robot.baseAttackTemplate || 10) * rarityMult);
     const stats = getStatsForLevel(baseHp, baseAtk, robot.level);
     const hpDiff = stats.maxHp - robot.maxHp;
     robot.maxHp = stats.maxHp;
