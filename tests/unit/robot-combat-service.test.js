@@ -146,6 +146,71 @@ describe('Robot Combat - Ultimate Targeting', () => {
   });
 });
 
+describe('Robot Combat - Heal Ultimate', () => {
+  it('heals single ally with lowest HP%', () => {
+    const healer = instantiateRobot('sizzlit');
+    healer.ultimate.type = 'heal';
+    healer.ultimate.target = 'single_ally';
+    healer.ultimate.power = 40;
+    healer.ultimate.charges = healer.ultimate.chargesRequired;
+
+    const injured = instantiateRobot('drizzlet');
+    injured.hp = 30;
+
+    const healthy = instantiateRobot('petalia');
+
+    const party = { active: [healer, injured, healthy], reserves: [] };
+    const enemies = [instantiateRobot('shimra')];
+    const result = processUltimate(healer, enemies, null, party);
+
+    assert.ok(result.success);
+    assert.strictEqual(result.type, 'heal');
+    assert.ok(injured.hp > 30, 'injured ally should be healed');
+    assert.strictEqual(healthy.hp, healthy.maxHp, 'healthy ally should not be healed');
+    assert.strictEqual(healer.ultimate.charges, 0);
+    assert.ok(result.healEvents.length > 0);
+  });
+
+  it('all_allies heals every alive ally', () => {
+    const healer = instantiateRobot('sizzlit');
+    healer.ultimate.type = 'heal';
+    healer.ultimate.target = 'all_allies';
+    healer.ultimate.power = 30;
+    healer.ultimate.charges = healer.ultimate.chargesRequired;
+
+    const ally1 = instantiateRobot('drizzlet');
+    ally1.hp = 50;
+    const ally2 = instantiateRobot('petalia');
+    ally2.hp = 60;
+
+    const party = { active: [healer, ally1, ally2], reserves: [] };
+    const enemies = [instantiateRobot('shimra')];
+    const result = processUltimate(healer, enemies, null, party);
+
+    assert.ok(result.success);
+    assert.strictEqual(result.type, 'heal');
+    assert.ok(ally1.hp > 50);
+    assert.ok(ally2.hp > 60);
+  });
+
+  it('does not heal KOd allies', () => {
+    const healer = instantiateRobot('sizzlit');
+    healer.ultimate.type = 'heal';
+    healer.ultimate.target = 'all_allies';
+    healer.ultimate.power = 40;
+    healer.ultimate.charges = healer.ultimate.chargesRequired;
+
+    const dead = instantiateRobot('drizzlet');
+    dead.hp = 0;
+
+    const party = { active: [healer, dead], reserves: [] };
+    const enemies = [instantiateRobot('shimra')];
+    const result = processUltimate(healer, enemies, null, party);
+
+    assert.strictEqual(dead.hp, 0, 'KOd ally should stay at 0');
+  });
+});
+
 describe('Robot Combat - XP', () => {
   it('active robots get 2x shares, reserves get 1x share', () => {
     const party = {

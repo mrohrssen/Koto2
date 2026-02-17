@@ -14,6 +14,7 @@ import {
   getBuffedElementMultiplier,
   applyDamageReduction
 } from './item-service.js';
+import { applyHeal } from '../combat/effects.js';
 import { DM_PROMPTS } from '../dm.js';
 
 export const CREDITS_PER_KILL = 15;
@@ -231,14 +232,54 @@ export function processUltimate(robot, enemies, itemBuffs = null, robotParty = n
 }
 
 function processHealUltimate(robot, enemies, itemBuffs, robotParty) {
+  const healPower = robot.ultimate.power || 40;
+  const ultTarget = robot.ultimate.target || 'single_ally';
+  const healEvents = [];
+
+  if (ultTarget === 'single_ally') {
+    // Pick the alive ally with lowest HP% that has HP < maxHp
+    const candidates = (robotParty?.active || [])
+      .filter(r => r.hp > 0 && r.hp < r.maxHp);
+    if (candidates.length > 0) {
+      candidates.sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
+      const target = candidates[0];
+      const variance = rollVariance();
+      const healAmount = Math.max(1, Math.floor((robot.attack / 10) * healPower * variance));
+      const actualHealed = applyHeal(target, healAmount);
+      healEvents.push({
+        targetId: target.id,
+        targetName: target.nameEn,
+        healAmount: actualHealed,
+        targetHp: target.hp,
+        targetMaxHp: target.maxHp
+      });
+    }
+  } else {
+    // all_allies: target all alive allies
+    const targets = (robotParty?.active || []).filter(r => r.hp > 0);
+    for (const target of targets) {
+      const variance = rollVariance();
+      const healAmount = Math.max(1, Math.floor((robot.attack / 10) * healPower * variance));
+      const actualHealed = applyHeal(target, healAmount);
+      healEvents.push({
+        targetId: target.id,
+        targetName: target.nameEn,
+        healAmount: actualHealed,
+        targetHp: target.hp,
+        targetMaxHp: target.maxHp
+      });
+    }
+  }
+
   robot.ultimate.charges = 0;
+
   return {
     success: true,
     type: 'heal',
     robotId: robot.id,
     robotName: robot.nameEn,
     ultimateName: robot.ultimate.nameEn,
-    healEvents: [],
+    healEvents,
     hits: [],
     xpEvents: [],
     allEnemiesDefeated: false
