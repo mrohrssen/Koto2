@@ -3,7 +3,9 @@ import assert from 'node:assert';
 import {
   tickEffects, applyPoison, applyHeal,
   applySleep, applyStun, applyConfuse,
-  applyAttackBuff, applyHaste, applyShield, applyTeamShield, applyTaunt
+  applyAttackBuff, applyHaste, applyShield, applyTeamShield, applyTaunt,
+  isIncapacitated, isConfused, hasHaste, consumeHaste,
+  getAttackMultiplier, getDamageReduction, getTauntTarget, breakSleep
 } from '../../src/game/combat/effects.js';
 
 describe('Combat Effects - Tick', () => {
@@ -199,5 +201,145 @@ describe('Combat Effects - Apply Taunt', () => {
     assert.strictEqual(target.activeEffects.length, 1);
     assert.strictEqual(target.activeEffects[0].type, 'taunt');
     assert.strictEqual(target.activeEffects[0].remainingTurns, 2);
+  });
+});
+
+describe('Combat Effects - Query Helpers', () => {
+  it('isIncapacitated returns true for sleep', () => {
+    const robot = { activeEffects: [{ type: 'sleep', remainingTurns: 2 }] };
+    assert.strictEqual(isIncapacitated(robot), true);
+  });
+
+  it('isIncapacitated returns true for stun', () => {
+    const robot = { activeEffects: [{ type: 'stun', remainingTurns: 1 }] };
+    assert.strictEqual(isIncapacitated(robot), true);
+  });
+
+  it('isIncapacitated returns false with no effects', () => {
+    const robot = { activeEffects: [] };
+    assert.strictEqual(isIncapacitated(robot), false);
+  });
+
+  it('isIncapacitated returns false when activeEffects is missing', () => {
+    const robot = {};
+    assert.strictEqual(isIncapacitated(robot), false);
+  });
+
+  it('isConfused returns true for confuse', () => {
+    const robot = { activeEffects: [{ type: 'confuse', remainingTurns: 2 }] };
+    assert.strictEqual(isConfused(robot), true);
+  });
+
+  it('isConfused returns false with no confuse', () => {
+    const robot = { activeEffects: [] };
+    assert.strictEqual(isConfused(robot), false);
+  });
+
+  it('hasHaste returns true when haste effect present', () => {
+    const robot = { activeEffects: [{ type: 'haste', sourceId: 'x' }] };
+    assert.strictEqual(hasHaste(robot), true);
+  });
+
+  it('consumeHaste removes the haste effect', () => {
+    const robot = { activeEffects: [{ type: 'haste', sourceId: 'x' }, { type: 'poison', remainingTurns: 2, damagePerTurn: 5, sourceId: 'y' }] };
+    consumeHaste(robot);
+    assert.strictEqual(hasHaste(robot), false);
+    assert.strictEqual(robot.activeEffects.length, 1);
+  });
+
+  it('getAttackMultiplier returns 1 with no buffs', () => {
+    const robot = { activeEffects: [] };
+    assert.strictEqual(getAttackMultiplier(robot), 1);
+  });
+
+  it('getAttackMultiplier returns 1.3 with 30% attack buff', () => {
+    const robot = { activeEffects: [{ type: 'attack_buff', percent: 30, remainingTurns: 2 }] };
+    assert.strictEqual(getAttackMultiplier(robot), 1.3);
+  });
+
+  it('getDamageReduction returns 0 with no shields', () => {
+    const robot = { activeEffects: [] };
+    assert.strictEqual(getDamageReduction(robot), 0);
+  });
+
+  it('getDamageReduction combines shield and team_shield', () => {
+    const robot = { activeEffects: [
+      { type: 'shield', percent: 30, remainingTurns: 2 },
+      { type: 'team_shield', percent: 20, remainingTurns: 2 }
+    ]};
+    assert.strictEqual(getDamageReduction(robot), 50);
+  });
+
+  it('getDamageReduction caps at 90', () => {
+    const robot = { activeEffects: [
+      { type: 'shield', percent: 60, remainingTurns: 2 },
+      { type: 'team_shield', percent: 50, remainingTurns: 2 }
+    ]};
+    assert.strictEqual(getDamageReduction(robot), 90);
+  });
+
+  it('getTauntTarget returns taunting ally', () => {
+    const allies = [
+      { id: 'a', hp: 100, activeEffects: [] },
+      { id: 'b', hp: 100, activeEffects: [{ type: 'taunt', remainingTurns: 2 }] }
+    ];
+    assert.strictEqual(getTauntTarget(allies), allies[1]);
+  });
+
+  it('getTauntTarget returns null when no taunt', () => {
+    const allies = [
+      { id: 'a', hp: 100, activeEffects: [] }
+    ];
+    assert.strictEqual(getTauntTarget(allies), null);
+  });
+
+  it('getTauntTarget ignores KOd taunter', () => {
+    const allies = [
+      { id: 'a', hp: 0, activeEffects: [{ type: 'taunt', remainingTurns: 2 }] }
+    ];
+    assert.strictEqual(getTauntTarget(allies), null);
+  });
+});
+
+describe('Combat Effects - breakSleep', () => {
+  it('removes sleep effect from target', () => {
+    const target = { activeEffects: [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }] };
+    breakSleep(target);
+    assert.strictEqual(target.activeEffects.length, 0);
+  });
+
+  it('does nothing if no sleep effect', () => {
+    const target = { activeEffects: [{ type: 'poison', remainingTurns: 2, damagePerTurn: 5, sourceId: 'x' }] };
+    breakSleep(target);
+    assert.strictEqual(target.activeEffects.length, 1);
+  });
+});
+
+describe('Combat Effects - Tick expands to all types', () => {
+  it('decrements sleep remainingTurns and removes when expired', () => {
+    const robot = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
+      { type: 'sleep', remainingTurns: 1, sourceId: 'x' }
+    ]};
+    const events = tickEffects(robot);
+    assert.strictEqual(robot.activeEffects.length, 0);
+    assert.strictEqual(events.length, 1);
+    assert.strictEqual(events[0].type, 'sleep_tick');
+  });
+
+  it('decrements attack_buff and keeps while remaining > 0', () => {
+    const robot = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
+      { type: 'attack_buff', percent: 30, remainingTurns: 2, sourceId: 'x' }
+    ]};
+    tickEffects(robot);
+    assert.strictEqual(robot.activeEffects.length, 1);
+    assert.strictEqual(robot.activeEffects[0].remainingTurns, 1);
+  });
+
+  it('does not tick haste (no remainingTurns)', () => {
+    const robot = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
+      { type: 'haste', sourceId: 'x' }
+    ]};
+    tickEffects(robot);
+    assert.strictEqual(robot.activeEffects.length, 1, 'haste should persist through ticks');
   });
 });

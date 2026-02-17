@@ -25,9 +25,7 @@ export function tickEffects(robot) {
       const actualDamage = Math.min(effect.damagePerTurn, robot.hp - 1);
       const damage = Math.max(0, actualDamage);
       robot.hp -= damage;
-
       effect.remainingTurns -= 1;
-
       events.push({
         type: 'poison',
         targetId: robot.id,
@@ -35,11 +33,25 @@ export function tickEffects(robot) {
         damage,
         remainingTurns: effect.remainingTurns,
       });
+    } else if (effect.type === 'haste') {
+      // Haste has no remainingTurns — consumed on use, not on tick
+      continue;
+    } else if (effect.remainingTurns !== undefined) {
+      // All other turn-based effects: decrement
+      effect.remainingTurns -= 1;
+      events.push({
+        type: effect.type + '_tick',
+        targetId: robot.id,
+        targetName: robot.nameEn,
+        remainingTurns: effect.remainingTurns,
+      });
     }
   }
 
-  // Remove expired effects
-  robot.activeEffects = robot.activeEffects.filter(e => e.remainingTurns > 0);
+  // Remove expired effects (remainingTurns <= 0), keep haste (no remainingTurns)
+  robot.activeEffects = robot.activeEffects.filter(
+    e => e.remainingTurns === undefined || e.remainingTurns > 0
+  );
 
   return events;
 }
@@ -142,4 +154,52 @@ export function applyHeal(target, amount) {
   const before = target.hp;
   target.hp = Math.min(target.hp + amount, target.maxHp);
   return target.hp - before;
+}
+
+// ── Query helpers ──────────────────────────────────────────────────
+
+export function isIncapacitated(robot) {
+  if (!robot.activeEffects) return false;
+  return robot.activeEffects.some(e => e.type === 'sleep' || e.type === 'stun');
+}
+
+export function isConfused(robot) {
+  if (!robot.activeEffects) return false;
+  return robot.activeEffects.some(e => e.type === 'confuse');
+}
+
+export function hasHaste(robot) {
+  if (!robot.activeEffects) return false;
+  return robot.activeEffects.some(e => e.type === 'haste');
+}
+
+export function consumeHaste(robot) {
+  if (!robot.activeEffects) return;
+  robot.activeEffects = robot.activeEffects.filter(e => e.type !== 'haste');
+}
+
+export function getAttackMultiplier(robot) {
+  if (!robot.activeEffects) return 1;
+  const totalPercent = robot.activeEffects
+    .filter(e => e.type === 'attack_buff')
+    .reduce((sum, e) => sum + e.percent, 0);
+  return 1 + totalPercent / 100;
+}
+
+export function getDamageReduction(robot) {
+  if (!robot.activeEffects) return 0;
+  const totalPercent = robot.activeEffects
+    .filter(e => e.type === 'shield' || e.type === 'team_shield')
+    .reduce((sum, e) => sum + e.percent, 0);
+  return Math.min(totalPercent, 90);
+}
+
+export function getTauntTarget(allies) {
+  const taunter = allies.find(a => a.hp > 0 && a.activeEffects?.some(e => e.type === 'taunt'));
+  return taunter || null;
+}
+
+export function breakSleep(target) {
+  if (!target.activeEffects) return;
+  target.activeEffects = target.activeEffects.filter(e => e.type !== 'sleep');
 }
