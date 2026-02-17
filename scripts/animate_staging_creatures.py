@@ -30,6 +30,7 @@ Usage:
 import argparse
 import json
 import os
+import random
 import sys
 import time
 from datetime import datetime
@@ -99,7 +100,7 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Show what would be queued without sending")
     parser.add_argument("--batch-size", type=int, default=1,
                         help="Queue this many jobs then wait (default: 1, safer for staging)")
-    parser.add_argument("--seed", type=int, default=88, help="Base seed (default: 88)")
+    parser.add_argument("--seed", type=int, default=None, help="Fixed seed (default: random)")
     parser.add_argument("--poll-interval", type=int, default=30,
                         help="Seconds between status checks (default: 30)")
     parser.add_argument("--chroma-only", action="store_true",
@@ -155,7 +156,8 @@ def main():
     print(f"  Source: data/creature-staging-images/*.png (magenta BG)")
     print(f"  Output: public/assets/sprites/robots/{{id}}-idle.webp (animated)")
     print(f"          public/assets/sprites/robots/{{id}}.webp (static fallback)")
-    print(f"  Batch: {args.batch_size} | Seed: {args.seed}")
+    seed_label = str(args.seed) if args.seed is not None else "random"
+    print(f"  Batch: {args.batch_size} | Seed: {seed_label}")
     print("=" * 64)
 
     for c, p in available:
@@ -210,7 +212,7 @@ def main():
 
             positive = build_idle_prompt(creature)
             negative = build_negative_prompt(creature)
-            seed = args.seed + sum(ord(c) for c in cid) % 1000
+            seed = args.seed if args.seed is not None else random.randint(0, 2**31)
 
             print(f"\n  [{timestamp()}] [{idx}/{total}] {cid} ({creature.get('element', '?')})")
             print(f"    Staging: {os.path.relpath(staging_path, PROJECT_ROOT)}")
@@ -235,7 +237,7 @@ def main():
 
             try:
                 prompt_id = queue_prompt(workflow)
-                print(f"    [{timestamp()}] Queued: {prompt_id}")
+                print(f"    [{timestamp()}] Queued: {prompt_id} (seed={seed})")
                 jobs[prompt_id] = (creature, staging_path)
             except Exception as e:
                 print(f"    [{timestamp()}] QUEUE FAILED: {e}")
