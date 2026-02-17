@@ -1,6 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { tickEffects, applyPoison, applyHeal, applySleep, applyStun, applyConfuse } from '../../src/game/combat/effects.js';
+import {
+  tickEffects, applyPoison, applyHeal,
+  applySleep, applyStun, applyConfuse,
+  applyAttackBuff, applyHaste, applyShield, applyTeamShield, applyTaunt
+} from '../../src/game/combat/effects.js';
 
 describe('Combat Effects - Tick', () => {
   it('poison deals damage and decrements remaining turns', () => {
@@ -126,6 +130,74 @@ describe('Combat Effects - Apply Confuse', () => {
     applyConfuse(target, { duration: 2, sourceId: 'attacker-1' });
     assert.strictEqual(target.activeEffects.length, 1);
     assert.strictEqual(target.activeEffects[0].type, 'confuse');
+    assert.strictEqual(target.activeEffects[0].remainingTurns, 2);
+  });
+});
+
+describe('Combat Effects - Apply Attack Buff', () => {
+  it('adds attack_buff with percent from skill power', () => {
+    const target = { hp: 100, maxHp: 100, activeEffects: [] };
+    applyAttackBuff(target, { percent: 30, duration: 2, sourceId: 'buffer-1' });
+    assert.strictEqual(target.activeEffects.length, 1);
+    assert.strictEqual(target.activeEffects[0].type, 'attack_buff');
+    assert.strictEqual(target.activeEffects[0].percent, 30);
+    assert.strictEqual(target.activeEffects[0].remainingTurns, 2);
+  });
+
+  it('refreshes duration on reapplication', () => {
+    const target = { hp: 100, maxHp: 100, activeEffects: [
+      { type: 'attack_buff', percent: 30, remainingTurns: 1, sourceId: 'old' }
+    ]};
+    applyAttackBuff(target, { percent: 50, duration: 2, sourceId: 'new' });
+    const buffs = target.activeEffects.filter(e => e.type === 'attack_buff');
+    assert.strictEqual(buffs.length, 1);
+    assert.strictEqual(buffs[0].percent, 50);
+    assert.strictEqual(buffs[0].remainingTurns, 2);
+  });
+});
+
+describe('Combat Effects - Apply Haste', () => {
+  it('adds haste effect (no remainingTurns)', () => {
+    const target = { hp: 100, maxHp: 100, activeEffects: [] };
+    applyHaste(target, { sourceId: 'buffer-1' });
+    assert.strictEqual(target.activeEffects.length, 1);
+    assert.strictEqual(target.activeEffects[0].type, 'haste');
+    assert.strictEqual(target.activeEffects[0].remainingTurns, undefined);
+  });
+});
+
+describe('Combat Effects - Apply Shield', () => {
+  it('adds shield with percent damage reduction', () => {
+    const target = { hp: 100, maxHp: 100, activeEffects: [] };
+    applyShield(target, { percent: 50, duration: 2, sourceId: 'tank-1' });
+    assert.strictEqual(target.activeEffects.length, 1);
+    assert.strictEqual(target.activeEffects[0].type, 'shield');
+    assert.strictEqual(target.activeEffects[0].percent, 50);
+    assert.strictEqual(target.activeEffects[0].remainingTurns, 2);
+  });
+});
+
+describe('Combat Effects - Apply Team Shield', () => {
+  it('applies shield to all alive allies', () => {
+    const allies = [
+      { hp: 100, maxHp: 100, activeEffects: [] },
+      { hp: 80, maxHp: 100, activeEffects: [] },
+      { hp: 0, maxHp: 100, activeEffects: [] }  // KO'd
+    ];
+    applyTeamShield(allies, { percent: 40, duration: 2, sourceId: 'tank-1' });
+    assert.strictEqual(allies[0].activeEffects.length, 1);
+    assert.strictEqual(allies[0].activeEffects[0].type, 'team_shield');
+    assert.strictEqual(allies[1].activeEffects.length, 1);
+    assert.strictEqual(allies[2].activeEffects.length, 0, 'KOd ally should not get shield');
+  });
+});
+
+describe('Combat Effects - Apply Taunt', () => {
+  it('adds taunt effect with 2-turn duration', () => {
+    const target = { hp: 100, maxHp: 100, activeEffects: [] };
+    applyTaunt(target, { duration: 2, sourceId: 'tank-1' });
+    assert.strictEqual(target.activeEffects.length, 1);
+    assert.strictEqual(target.activeEffects[0].type, 'taunt');
     assert.strictEqual(target.activeEffects[0].remainingTurns, 2);
   });
 });

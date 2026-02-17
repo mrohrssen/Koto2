@@ -103,6 +103,37 @@ export function applyConfuse(target, { duration = 2, sourceId }) {
   applyOrRefresh(target, { type: 'confuse', remainingTurns: duration, sourceId });
 }
 
+export function applyAttackBuff(target, { percent, duration = 2, sourceId }) {
+  applyOrRefresh(target, { type: 'attack_buff', percent, remainingTurns: duration, sourceId });
+}
+
+export function applyHaste(target, { sourceId }) {
+  if (!target.activeEffects) {
+    target.activeEffects = [];
+  }
+  // Haste has no remainingTurns — consumed on use
+  const existing = target.activeEffects.find(e => e.type === 'haste');
+  if (!existing) {
+    target.activeEffects.push({ type: 'haste', sourceId });
+  }
+}
+
+export function applyShield(target, { percent, duration = 2, sourceId }) {
+  applyOrRefresh(target, { type: 'shield', percent, remainingTurns: duration, sourceId });
+}
+
+export function applyTeamShield(allies, { percent, duration = 2, sourceId }) {
+  for (const ally of allies) {
+    if (ally.hp > 0) {
+      applyOrRefresh(ally, { type: 'team_shield', percent, remainingTurns: duration, sourceId });
+    }
+  }
+}
+
+export function applyTaunt(target, { duration = 2, sourceId }) {
+  applyOrRefresh(target, { type: 'taunt', remainingTurns: duration, sourceId });
+}
+
 export function applyHeal(target, amount) {
   if (target.hp <= 0) {
     return 0;
