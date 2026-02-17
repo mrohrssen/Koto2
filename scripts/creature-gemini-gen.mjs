@@ -7,16 +7,21 @@
  * image generation, writing PNGs to /tmp and outputting results as JSON.
  *
  * Usage:
- *   node scripts/creature-gemini-gen.mjs --id <id> --visual-tier <tier> --descriptions <path.json>
+ *   node scripts/creature-gemini-gen.mjs --id <id> --visual-tier <tier> --descriptions <path.json> [--style-refs-dir <dir>] [--use-art-briefs]
+ *
+ * Options:
+ *   --style-refs-dir  Directory of .png/.jpg/.jpeg/.webp style reference images.
+ *                     If omitted, checks data/creature-forge-style-refs/ in project root.
+ *   --use-art-briefs  Use artBriefs.a/b/c from descriptions JSON instead of top-level a/b/c.
  */
 
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { dirname, extname, resolve } from 'node:path';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const USAGE = 'Usage: node scripts/creature-gemini-gen.mjs --id <id> --visual-tier <tier> --descriptions <path.json>';
+const USAGE = 'Usage: node scripts/creature-gemini-gen.mjs --id <id> --visual-tier <tier> --descriptions <path.json> [--style-refs-dir <dir>] [--use-art-briefs]';
 
 const TIER_DIRECTIVES = {
   common: 'Cute mascot creature — round, simple, big eyes, soft colors, huggable, like a Bangboo or Mini Seelie. Minimal detail, maximum charm.',
@@ -37,9 +42,11 @@ function parseCli() {
   try {
     args = parseArgs({
       options: {
-        id:            { type: 'string' },
-        'visual-tier': { type: 'string' },
-        descriptions:  { type: 'string' },
+        id:              { type: 'string' },
+        'visual-tier':   { type: 'string' },
+        descriptions:    { type: 'string' },
+        'style-refs-dir': { type: 'string' },
+        'use-art-briefs': { type: 'boolean' },
       },
       strict: true,
     });
@@ -48,9 +55,11 @@ function parseCli() {
     process.exit(1);
   }
 
-  const id          = args.values.id;
-  const visualTier  = args.values['visual-tier'];
-  const descPath    = args.values.descriptions;
+  const id            = args.values.id;
+  const visualTier    = args.values['visual-tier'];
+  const descPath      = args.values.descriptions;
+  const styleRefsDir  = args.values['style-refs-dir'] || undefined;
+  const useArtBriefs  = args.values['use-art-briefs'] || false;
 
   if (!id || !visualTier || !descPath) {
     process.stderr.write(USAGE + '\n');
@@ -62,35 +71,72 @@ function parseCli() {
     process.exit(1);
   }
 
-  return { id, visualTier, descPath };
+  return { id, visualTier, descPath, styleRefsDir, useArtBriefs };
+}
+
+// ---------------------------------------------------------------------------
+// Style reference image loading
+// ---------------------------------------------------------------------------
+
+const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
+
+async function loadStyleRefs(dir) {
+  if (!dir) return [];
+  let files;
+  try {
+    files = await readdir(dir);
+  } catch {
+    return []; // directory doesn't exist
+  }
+  const refs = [];
+  for (const f of files.sort()) {
+    const ext = extname(f).toLowerCase();
+    if (!IMAGE_EXTS.has(ext)) continue;
+    const data = await readFile(resolve(dir, f));
+    const mimeType = ext === '.png' ? 'image/png' : ext === '.webp' ? 'image/webp' : 'image/jpeg';
+    refs.push({ inlineData: { mimeType, data: data.toString('base64') } });
+  }
+  return refs;
 }
 
 // ---------------------------------------------------------------------------
 // Prompt construction
 // ---------------------------------------------------------------------------
 
-function buildPrompt(meta, visualTier, descriptionText) {
+function buildPrompt(meta, visualTier, descriptionText, hasStyleRefs) {
   const tierDirective = TIER_DIRECTIVES[visualTier];
 
-  return `Game-ready creature sprite, single character on a solid magenta (#FF00FF) background.
-The background MUST be perfectly flat, uniform magenta with NO gradients, shadows, or ground.
-Full body, front-facing idle pose. Anime creature collector style
-(Pokemon meets Genshin Impact) — cel-shaded lighting, expressive eyes.
-NOT chibi — proper proportions but still stylized.
-No text, no UI, no humans. The creature must not contain any magenta (#FF00FF) in its own design.
+  const styleBlock = hasStyleRefs
+    ? `ART STYLE (match the reference images exactly — same line weight, same shading, same level of detail):
+- Crisp black outlines, uniform weight
+- Cel-shaded flat coloring: base color + one shadow tone per surface
+- No gradients, no soft brushwork, no painterly textures, no airbrushing
+- Large expressive eyes with single white catchlight
+- Limited palette: 5-6 body colors maximum plus black outlines and white highlights
+- Clean readable silhouette suitable for a game UI thumbnail
+- Compact appealing proportions — not hyper-detailed or realistic`
+    : `ART STYLE:
+Anime creature collector style — cel-shaded lighting, expressive eyes.
+NOT chibi — proper proportions but still stylized.`;
 
-CRITICAL — This is for a language learning game. The creature represents the word "${meta.baseMeaning}".
-Looking at this creature, a viewer must immediately think "${meta.baseMeaning}" — not any other noun.
-The creature should visually BE ${meta.baseMeaning}, not be a different animal/object that relates to it.
-Do NOT draw a real-world animal or object unless the base word IS that animal/object.
+  return `${styleBlock}
+
+TECHNICAL:
+- Solid flat magenta (#FF00FF) background, NO gradients, shadows, or ground
+- Full body visible, front-facing idle pose, single character only
+- No text, no UI elements, no humans
+- Creature must not contain any magenta (#FF00FF) in its own colors
+
+CREATURE IDENTITY:
+This creature represents "${meta.baseMeaning}". Looking at it, a viewer must immediately think "${meta.baseMeaning}".
+The creature must visually BE ${meta.baseMeaning}, not be a different animal/object that relates to it.
 
 Rarity: ${visualTier} — ${tierDirective}
-Creature: ${meta.name} the ${meta.modifier} ${meta.baseMeaning}
-Element: ${meta.element}
-Archetype: ${meta.archetype}
+Name: ${meta.name} the ${meta.modifier} ${meta.baseMeaning}
+Element: ${meta.element} | Archetype: ${meta.archetype}
 Moves: ${meta.attack} / ${meta.ultimate}
 
-Visual description: ${descriptionText}`;
+Appearance: ${descriptionText}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -111,26 +157,27 @@ function isRetryable(err) {
   return RETRYABLE_PATTERNS.some(pat => pat.test(msg));
 }
 
-async function generateImage(model, prompt, outputPath) {
+async function generateImage(model, prompt, outputPath, styleRefParts) {
   let lastError;
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
+      const requestParts = [...styleRefParts, { text: prompt }];
       const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        contents: [{ role: 'user', parts: requestParts }],
         generationConfig: { responseModalities: ['image', 'text'] },
       });
 
-      const parts = result.response.candidates?.[0]?.content?.parts;
-      if (!parts) {
+      const responseParts = result.response.candidates?.[0]?.content?.parts;
+      if (!responseParts) {
         throw new Error('No parts in response');
       }
 
       // Find the image part with inlineData
-      const imagePart = parts.find(p => p.inlineData);
+      const imagePart = responseParts.find(p => p.inlineData);
       if (!imagePart) {
         // Check if there's a text part that might indicate a content policy block
-        const textPart = parts.find(p => p.text);
+        const textPart = responseParts.find(p => p.text);
         const reason = textPart?.text || 'No image data in response';
         throw new Error(`content policy: ${reason}`);
       }
@@ -167,7 +214,7 @@ async function generateImage(model, prompt, outputPath) {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  const { id, visualTier, descPath } = parseCli();
+  const { id, visualTier, descPath, styleRefsDir, useArtBriefs } = parseCli();
 
   // Resolve project root (one level up from scripts/)
   const __filename = fileURLToPath(import.meta.url);
@@ -198,10 +245,14 @@ async function main() {
     process.exit(1);
   }
 
+  // Determine description source: artBriefs (if --use-art-briefs) or top-level a/b/c
+  const descSource = (useArtBriefs && descriptions.artBriefs) ? descriptions.artBriefs : descriptions;
+
   // Validate description variants exist
   for (const v of VARIANTS) {
-    if (!descriptions[v]) {
-      process.stderr.write(JSON.stringify({ error: `Missing description key "${v}" in ${descPath}` }) + '\n');
+    if (!descSource[v]) {
+      const location = (useArtBriefs && descriptions.artBriefs) ? `artBriefs.${v}` : v;
+      process.stderr.write(JSON.stringify({ error: `Missing description key "${location}" in ${descPath}` }) + '\n');
       process.exit(1);
     }
   }
@@ -217,6 +268,14 @@ async function main() {
     ultimate:    descriptions.ultimate    || '',
   };
 
+  // Load style reference images
+  const resolvedStyleDir = styleRefsDir || resolve(projectRoot, 'data/creature-forge-style-refs');
+  const styleRefParts = await loadStyleRefs(resolvedStyleDir);
+  if (styleRefParts.length > 0) {
+    process.stderr.write(`Loaded ${styleRefParts.length} style reference image(s) from ${resolvedStyleDir}\n`);
+  }
+  const hasStyleRefs = styleRefParts.length > 0;
+
   // Initialize Gemini
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
@@ -226,9 +285,9 @@ async function main() {
   // Generate all 3 images concurrently
   const results = await Promise.allSettled(
     VARIANTS.map(variant => {
-      const prompt = buildPrompt(meta, visualTier, descriptions[variant]);
+      const prompt = buildPrompt(meta, visualTier, descSource[variant], hasStyleRefs);
       const outputPath = `/tmp/creature-forge-${id}-${variant}.png`;
-      return generateImage(model, prompt, outputPath);
+      return generateImage(model, prompt, outputPath, styleRefParts);
     })
   );
 
