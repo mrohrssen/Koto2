@@ -378,7 +378,7 @@ export function showToast(message, durationMs = 3000) {
  * @param {Object} options - Display options
  * @param {boolean} options.isCrit - Is critical hit
  * @param {boolean} options.isHeal - Is healing
- * @param {string} options.tierClass - Tier CSS class (dmg-chip, dmg-normal, dmg-solid, dmg-big, dmg-massive)
+ * @param {string} options.tierClass - Tier CSS class (dmg-light, dmg-normal, dmg-solid, dmg-big, dmg-massive)
  */
 export function showDamageNumber(amount, { isCrit = false, isHeal = false, tierClass = '' } = {}) {
   const el = document.createElement('div');

@@ -22,11 +22,11 @@ const CONFIG = {
     heavy: { intensity: 6, duration: 200 }
   },
   // Tier-based effect configuration
-  // Tiers: 0=Chip (<10%), 1=Normal (10-20%), 2=Solid (20-35%), 3=Big (35-50%), 4=Massive (50%+)
+  // Tiers: 0=Light (<10%), 1=Normal (10-20%), 2=Solid (20-35%), 3=Big (35-50%), 4=Massive (50%+)
   tiers: {
     thresholds: [10, 20, 35, 50], // % of enemy HP for tiers 1, 2, 3, 4
     effects: [
-      // Tier 0: Chip
+      // Tier 0: Light
       { shake: 'none', hitStop: 0, particles: 4, flash: 'none' },
       // Tier 1: Normal
       { shake: 'light', hitStop: 30, particles: 8, flash: 'none' },
@@ -52,7 +52,7 @@ export const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
  * Calculate damage tier based on % of enemy max HP
  * @param {number} damage - Damage dealt
  * @param {number} enemyMaxHp - Enemy's maximum HP
- * @returns {number} Tier 0-4 (Chip, Normal, Solid, Big, Massive)
+ * @returns {number} Tier 0-4 (Light, Normal, Solid, Big, Massive)
  */
 export function getDamageTier(damage, enemyMaxHp) {
   if (!enemyMaxHp || enemyMaxHp <= 0) return 1; // Fallback to Normal
@@ -62,7 +62,7 @@ export function getDamageTier(damage, enemyMaxHp) {
   if (percent >= thresholds[2]) return 3; // Big (35-50%)
   if (percent >= thresholds[1]) return 2; // Solid (20-35%)
   if (percent >= thresholds[0]) return 1; // Normal (10-20%)
-  return 0; // Chip (<10%)
+  return 0; // Light (<10%)
 }
 
 /**
@@ -79,7 +79,7 @@ export const isBigDamage = (damage, enemyMaxHp) => getDamageTier(damage, enemyMa
  * @returns {string} CSS class suffix
  */
 export function getTierClassName(tier) {
-  const names = ['chip', 'normal', 'solid', 'big', 'massive'];
+  const names = ['light', 'normal', 'solid', 'big', 'massive'];
   return names[tier] || 'normal';
 }
 
@@ -328,45 +328,7 @@ export function pop(targets, scale = 1.3) {
 // ============ COMBAT MOMENTS ============
 
 /**
- * Moment 1: Chip firing with effects
- * Called for each chip in the activation sequence
- * @param {Element} chipEl - The chip slot element
- * @param {Object} chipData - Chip data with stats.power and stats.bandwidth
- * @param {Object} poolEls - { power: Element, bandwidth: Element } pool display elements
- */
-export async function fireChipEffect(chipEl, chipData, poolEls = {}) {
-  if (!chipEl) return;
-
-  // 1. Chip pops
-  pop(chipEl.querySelector('.chip-icon') || chipEl, 1.4);
-
-  // 2. Enhanced glow
-  const icon = chipEl.querySelector('.chip-icon');
-  if (icon) {
-    icon.classList.add('chip-firing-enhanced');
-    setTimeout(() => icon.classList.remove('chip-firing-enhanced'), 300);
-  }
-
-  // 3. Speed lines to pools (if pool elements exist)
-  const stats = chipData?.stats || {};
-  if (stats.power > 0 && poolEls.power) {
-    spawnSpeedLines(chipEl, poolEls.power, 3, 'rgba(231, 76, 60, 0.9)');
-    setTimeout(() => flashElement(poolEls.power), 150);
-  }
-  if (stats.bandwidth > 0 && poolEls.bandwidth) {
-    spawnSpeedLines(chipEl, poolEls.bandwidth, 3, 'rgba(52, 152, 219, 0.9)');
-    setTimeout(() => flashElement(poolEls.bandwidth), 150);
-  }
-
-  // 4. Particles from chip
-  spawnParticles(chipEl, 5, '#3498db');
-
-  // 5. Subtle screen pulse
-  flashScreen();
-}
-
-/**
- * Moment 2: Enemy takes damage with tiered feedback
+ * Enemy takes damage with tiered feedback
  * @param {number} damage - Damage dealt
  * @param {Element} enemyEl - Enemy sprite element
  * @param {number} enemyMaxHp - Enemy's maximum HP (for tier calculation)
@@ -419,12 +381,12 @@ export async function impactEnemyEffect(damage, enemyEl, enemyMaxHp = 0) {
 }
 
 /**
- * Moment 3: Player takes damage
+ * Player takes damage
  * @param {number} damage - Damage taken
  * @param {Element} hpBarEl - Player HP bar element
- * @param {Element} chipRowEl - Chip row element
+ * @param {Element} robotRowEl - Robot row element (#chip-row)
  */
-export async function playerHitEffect(damage, hpBarEl, chipRowEl) {
+export async function playerHitEffect(damage, hpBarEl, robotRowEl) {
   // 1. Hit stop (shorter than enemy)
   await hitStop(50);
 
@@ -434,9 +396,9 @@ export async function playerHitEffect(damage, hpBarEl, chipRowEl) {
   // 3. Red vignette
   showVignette(300);
 
-  // 4. Chip row shudders
-  if (chipRowEl) {
-    anime(chipRowEl.querySelectorAll('.chip-slot'), {
+  // 4. Robot row shudders
+  if (robotRowEl) {
+    anime(robotRowEl.querySelectorAll('.robot-slot'), {
       translateX: [-2, 2, -1, 0],
     }, {
       duration: 150,

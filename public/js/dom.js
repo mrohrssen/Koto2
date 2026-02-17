@@ -33,7 +33,7 @@ export const dom = {
   get enemySprite() { return el('enemy-sprite'); },
   get sceneToast() { return el('scene-toast'); },
 
-  // Chip row (also used for robot slots)
+  // Robot row (uses #chip-row element ID for backwards compatibility)
   get chipRow() { return el('chip-row'); },
 
   // Player HP
@@ -62,7 +62,7 @@ export const dom = {
   get gameoverView() { return el('gameover-view'); },
   get gameoverContent() { return el('gameover-content'); },
 
-  // Chip popup (robot-row.js writes its own innerHTML)
+  // Robot popup (robot-row.js writes its own innerHTML; uses #chip-popup element ID)
   get chipPopup() { return el('chip-popup'); },
 
   // Lookup mode

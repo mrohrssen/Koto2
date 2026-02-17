@@ -9,7 +9,7 @@
  * KEY EXPORTS:
  * - init(callbacks): Setup with game state, UI, and API callbacks
  * - startCombatLoop(): Begin combat, fetch chips, show first flash card
- * - executePlayerAttack(): Process player attack with chip pipeline
+ * - executePlayerAttack(): Process player attack
  * - executeEnemyAttack(): Process enemy attack and update HP
  * - executeEnemyAttackThenPause(): Enemy attacks then pauses for vocab
  * - resumeCombatAfterVocab(): Continue combat after word review
@@ -18,14 +18,12 @@
  * - cleanupCombat(): Reset state without showing results
  *
  * DEPENDENCIES:
- * - ../audio.js: Sound effects (attack, player-hit, chip-equip, victory)
+ * - ../audio.js: Sound effects (attack, player-hit, victory)
  * - ../api.js: getAuthHeaders for authenticated requests
  * - Callbacks: wordPractice, characterUI, settings, narration modules
  *
  * COMBAT MATH DISPLAY:
- * Shows dual-pool damage formula: PWR × (1 + BW) = DAMAGE
- * Chip contributions show pool additions/multiplications.
- * Progressive display with tooltips above firing chips.
+ * Shows damage numbers with tiered visual feedback.
  */
 
 import { playSFX } from '../audio.js';
@@ -1228,7 +1226,7 @@ export function resumeCombatAfterVocab(grade, actionType = 'attack') {
       executeRobotPlayerAttack();
     }
   } else {
-    // Chip combat: use original functions
+    // Legacy combat: use original functions
     if (actionType === 'defend') {
       executeDefendThenPause();
     } else {
