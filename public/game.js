@@ -1389,6 +1389,7 @@ async function initGame() {
     apiRespondNpcDialogue: respondNpcDialogue,
     showNpcSprite: (name) => scene.showNpcTrainer(name),
     hideNpcSprite: () => scene.hideNpcTrainer(),
+    updateRobotRowData: (robots) => robotRow.updateData(robots),
   });
 
   setupEventListeners();

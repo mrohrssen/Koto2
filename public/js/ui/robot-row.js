@@ -63,6 +63,14 @@ export function setReserves(reserves) {
   currentReserves = reserves || [];
 }
 
+/**
+ * Update robot data without full DOM re-render.
+ * Keeps popup charge checks in sync during combat.
+ */
+export function updateData(robots) {
+  currentActiveRobots = robots || [];
+}
+
 export function render(robots) {
   const row = dom.chipRow;
   row.innerHTML = '';
@@ -102,7 +110,7 @@ export function render(robots) {
         el.nextElementSibling.style.display = '';
       });
 
-      slot.addEventListener('click', () => togglePopup(i, robot));
+      slot.addEventListener('click', () => togglePopup(i));
     }
     row.appendChild(slot);
   }
@@ -116,11 +124,13 @@ function buildChargeSegments(charges, required) {
   return html;
 }
 
-function togglePopup(index, robot) {
+function togglePopup(index) {
   if (currentPopupIndex === index) {
     hidePopup();
     return;
   }
+  const robot = currentActiveRobots[index];
+  if (!robot) return;
   showPopup(index, robot);
 }
 

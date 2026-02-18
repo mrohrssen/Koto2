@@ -93,6 +93,7 @@ let apiStartNpcDialogue = null;
 let apiRespondNpcDialogue = null;
 let showNpcSprite = null;
 let hideNpcSprite = null;
+let updateRobotRowData = null;
 
 // Utility
 let delay = null;
@@ -141,6 +142,7 @@ export function init(callbacks) {
   apiRespondNpcDialogue = callbacks.apiRespondNpcDialogue;
   showNpcSprite = callbacks.showNpcSprite;
   hideNpcSprite = callbacks.hideNpcSprite;
+  updateRobotRowData = callbacks.updateRobotRowData;
 }
 
 // ============ STATE GETTERS/SETTERS ============
@@ -796,6 +798,10 @@ async function executeRobotPlayerAttack() {
         };
       }
       updateGameState(updates);
+      // Keep robot-row popup data in sync with latest charges/HP
+      if (result.robotParty?.active && updateRobotRowData) {
+        updateRobotRowData(result.robotParty.active);
+      }
       // Set final HP bars without full DOM rebuild
       if (result.enemies?.length > 1) {
         result.enemies.forEach((e, i) => characterUI.updateEnemyHPAtIndex(i, e.hp, e.maxHp));
@@ -1006,6 +1012,10 @@ async function executeRobotDefendThenPause() {
         };
       }
       updateGameState(updates);
+      // Keep robot-row popup data in sync with latest charges/HP
+      if (result.robotParty?.active && updateRobotRowData) {
+        updateRobotRowData(result.robotParty.active);
+      }
       // Set final robot HP bars without full DOM rebuild
       updateRobotHpBars(result.robotParty?.active, null);
     }
