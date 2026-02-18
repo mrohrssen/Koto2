@@ -1,5 +1,11 @@
 [
   {
+    "rank": 544,
+    "word": "色",
+    "reading": "いろ",
+    "meaning": "colour"
+  },
+  {
     "rank": 555,
     "word": "白い",
     "reading": "しろい",
@@ -322,6 +328,12 @@
     "word": "赤毛",
     "reading": "あかげ",
     "meaning": "red hair"
+  },
+  {
+    "rank": 10415,
+    "word": "赤色",
+    "reading": "あかいろ",
+    "meaning": "red"
   },
   {
     "rank": 10797,

@@ -24,6 +24,18 @@
     "meaning": "school"
   },
   {
+    "rank": 558,
+    "word": "壁",
+    "reading": "かべ",
+    "meaning": "wall"
+  },
+  {
+    "rank": 606,
+    "word": "通り",
+    "reading": "とおり",
+    "meaning": "avenue"
+  },
+  {
     "rank": 711,
     "word": "町",
     "reading": "まち",
@@ -1234,6 +1246,12 @@
     "word": "無人",
     "reading": "むじん",
     "meaning": "unmanned"
+  },
+  {
+    "rank": 5872,
+    "word": "都会",
+    "reading": "とかい",
+    "meaning": "city"
   },
   {
     "rank": 5898,
@@ -3480,6 +3498,12 @@
     "meaning": "Italy"
   },
   {
+    "rank": 13647,
+    "word": "本陣",
+    "reading": "ほんじん",
+    "meaning": "troop headquarters"
+  },
+  {
     "rank": 13649,
     "word": "向かい側",
     "reading": "むかいがわ",
@@ -3850,6 +3874,12 @@
     "word": "道すがら",
     "reading": "みちすがら",
     "meaning": "along the road"
+  },
+  {
+    "rank": 15239,
+    "word": "祠",
+    "reading": "ほこら",
+    "meaning": "hokora"
   },
   {
     "rank": 15255,
@@ -6610,6 +6640,12 @@
     "word": "洲",
     "reading": "す",
     "meaning": "sandbank"
+  },
+  {
+    "rank": 23620,
+    "word": "駿河",
+    "reading": "するが",
+    "meaning": "Suruga (former province located in the central and northe..."
   },
   {
     "rank": 23637,

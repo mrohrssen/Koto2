@@ -1,39 +1,9 @@
 [
   {
-    "rank": 525,
-    "word": "一瞬",
-    "reading": "いっしゅん",
-    "meaning": "instant"
-  },
-  {
-    "rank": 544,
-    "word": "色",
-    "reading": "いろ",
-    "meaning": "colour"
-  },
-  {
-    "rank": 558,
-    "word": "壁",
-    "reading": "かべ",
-    "meaning": "wall"
-  },
-  {
-    "rank": 561,
-    "word": "反応",
-    "reading": "はんのう",
-    "meaning": "reaction"
-  },
-  {
     "rank": 567,
     "word": "血",
     "reading": "ち",
     "meaning": "blood"
-  },
-  {
-    "rank": 584,
-    "word": "友達",
-    "reading": "ともだち",
-    "meaning": "friend"
   },
   {
     "rank": 595,
@@ -42,40 +12,10 @@
     "meaning": "neck"
   },
   {
-    "rank": 596,
-    "word": "程度",
-    "reading": "ていど",
-    "meaning": "degree"
-  },
-  {
-    "rank": 606,
-    "word": "通り",
-    "reading": "とおり",
-    "meaning": "avenue"
-  },
-  {
-    "rank": 657,
-    "word": "部分",
-    "reading": "ぶぶん",
-    "meaning": "portion"
-  },
-  {
     "rank": 676,
     "word": "涙",
     "reading": "なみだ",
     "meaning": "tear"
-  },
-  {
-    "rank": 799,
-    "word": "予定",
-    "reading": "よてい",
-    "meaning": "plans"
-  },
-  {
-    "rank": 964,
-    "word": "間違う",
-    "reading": "まちがう",
-    "meaning": "to make a mistake"
   },
   {
     "rank": 1121,
@@ -154,12 +94,6 @@
     "word": "舌",
     "reading": "した",
     "meaning": "tongue"
-  },
-  {
-    "rank": 1437,
-    "word": "八",
-    "reading": "はち",
-    "meaning": "eight"
   },
   {
     "rank": 1465,
@@ -300,12 +234,6 @@
     "meaning": "the body"
   },
   {
-    "rank": 2942,
-    "word": "脚",
-    "reading": "きゃく",
-    "meaning": "counter for chairs or seats"
-  },
-  {
     "rank": 2947,
     "word": "顎",
     "reading": "あご",
@@ -384,12 +312,6 @@
     "meaning": "spine"
   },
   {
-    "rank": 3288,
-    "word": "なぜなら",
-    "reading": "なぜなら",
-    "meaning": "because"
-  },
-  {
     "rank": 3361,
     "word": "尻尾",
     "reading": "しっぽ",
@@ -408,18 +330,6 @@
     "meaning": "close to the ear"
   },
   {
-    "rank": 3424,
-    "word": "奴隷",
-    "reading": "どれい",
-    "meaning": "slave"
-  },
-  {
-    "rank": 3432,
-    "word": "制御",
-    "reading": "せいぎょ",
-    "meaning": "control (of a machine, device, etc.)"
-  },
-  {
     "rank": 3450,
     "word": "羽",
     "reading": "はね",
@@ -430,12 +340,6 @@
     "word": "神経",
     "reading": "しんけい",
     "meaning": "nerve"
-  },
-  {
-    "rank": 3459,
-    "word": "書",
-    "reading": "しょ",
-    "meaning": "book"
   },
   {
     "rank": 3502,
@@ -642,12 +546,6 @@
     "meaning": "upper half of the body"
   },
   {
-    "rank": 4561,
-    "word": "良く",
-    "reading": "",
-    "meaning": ""
-  },
-  {
     "rank": 4630,
     "word": "痛",
     "reading": "つう",
@@ -708,12 +606,6 @@
     "meaning": "to make an appearance"
   },
   {
-    "rank": 4809,
-    "word": "出してくれる",
-    "reading": "だしてくれる",
-    "meaning": "to take out (e.g. garbage)"
-  },
-  {
     "rank": 4810,
     "word": "前髪",
     "reading": "まえがみ",
@@ -724,12 +616,6 @@
     "word": "鼻を鳴らす",
     "reading": "はなをならす",
     "meaning": "to coo at"
-  },
-  {
-    "rank": 4830,
-    "word": "きゃっ",
-    "reading": "きゃっ",
-    "meaning": "yikes!"
   },
   {
     "rank": 4831,
@@ -786,28 +672,10 @@
     "meaning": "back of head"
   },
   {
-    "rank": 5286,
-    "word": "小刻み",
-    "reading": "こきざみ",
-    "meaning": "mincing"
-  },
-  {
-    "rank": 5336,
-    "word": "くらいなら",
-    "reading": "",
-    "meaning": ""
-  },
-  {
     "rank": 5398,
     "word": "麻痺",
     "reading": "まひ",
     "meaning": "paralysis"
-  },
-  {
-    "rank": 5415,
-    "word": "妊娠",
-    "reading": "にんしん",
-    "meaning": "pregnancy"
   },
   {
     "rank": 5565,
@@ -858,18 +726,6 @@
     "meaning": "wrinkle"
   },
   {
-    "rank": 5808,
-    "word": "見透かす",
-    "reading": "みすかす",
-    "meaning": "to see through"
-  },
-  {
-    "rank": 5884,
-    "word": "重視",
-    "reading": "じゅうし",
-    "meaning": "regarding as important"
-  },
-  {
     "rank": 5885,
     "word": "寝顔",
     "reading": "ねがお",
@@ -882,12 +738,6 @@
     "meaning": "head"
   },
   {
-    "rank": 5899,
-    "word": "気が済む",
-    "reading": "きがすむ",
-    "meaning": "to be satisfied"
-  },
-  {
     "rank": 5900,
     "word": "肺",
     "reading": "はい",
@@ -898,12 +748,6 @@
     "word": "空腹",
     "reading": "くうふく",
     "meaning": "empty stomach"
-  },
-  {
-    "rank": 5949,
-    "word": "足跡",
-    "reading": "あしあと",
-    "meaning": "footprints"
   },
   {
     "rank": 5995,
@@ -942,12 +786,6 @@
     "meaning": "blood vessel"
   },
   {
-    "rank": 6441,
-    "word": "堪える",
-    "reading": "たえる",
-    "meaning": "to bear"
-  },
-  {
     "rank": 6576,
     "word": "痕",
     "reading": "こん",
@@ -958,12 +796,6 @@
     "word": "足首",
     "reading": "あしくび",
     "meaning": "ankle"
-  },
-  {
-    "rank": 6583,
-    "word": "正直なところ",
-    "reading": "しょうじきなところ",
-    "meaning": "honestly speaking"
   },
   {
     "rank": 6626,
@@ -1008,22 +840,10 @@
     "meaning": "breasts"
   },
   {
-    "rank": 7714,
-    "word": "エレベーター",
-    "reading": "エレベーター",
-    "meaning": "elevator"
-  },
-  {
     "rank": 7715,
     "word": "巨体",
     "reading": "きょたい",
     "meaning": "huge body"
-  },
-  {
-    "rank": 7723,
-    "word": "王妃",
-    "reading": "おうひ",
-    "meaning": "queen"
   },
   {
     "rank": 7742,
@@ -1066,18 +886,6 @@
     "word": "触手",
     "reading": "しょくしゅ",
     "meaning": "feeler"
-  },
-  {
-    "rank": 7902,
-    "word": "決戦",
-    "reading": "けっせん",
-    "meaning": "decisive battle"
-  },
-  {
-    "rank": 7904,
-    "word": "筆頭",
-    "reading": "ひっとう",
-    "meaning": "brush tip"
   },
   {
     "rank": 7964,
@@ -1266,12 +1074,6 @@
     "meaning": "to frown"
   },
   {
-    "rank": 9054,
-    "word": "怪我人",
-    "reading": "けがにん",
-    "meaning": "wounded person"
-  },
-  {
     "rank": 9097,
     "word": "膣",
     "reading": "ちつ",
@@ -1348,24 +1150,6 @@
     "word": "膣内",
     "reading": "ちつない",
     "meaning": "intravaginal"
-  },
-  {
-    "rank": 9449,
-    "word": "この期に及んで",
-    "reading": "このごにおよんで",
-    "meaning": "at the last moment"
-  },
-  {
-    "rank": 9453,
-    "word": "プロジェクト",
-    "reading": "プロジェクト",
-    "meaning": "project"
-  },
-  {
-    "rank": 9457,
-    "word": "具合が悪い",
-    "reading": "ぐあいがわるい",
-    "meaning": "unwell"
   },
   {
     "rank": 9477,
@@ -1602,12 +1386,6 @@
     "meaning": "organ (of body, plant, etc.)"
   },
   {
-    "rank": 10852,
-    "word": "貴女",
-    "reading": "きじょ",
-    "meaning": "you"
-  },
-  {
     "rank": 10856,
     "word": "腫れる",
     "reading": "はれる",
@@ -1722,12 +1500,6 @@
     "meaning": "scar"
   },
   {
-    "rank": 11508,
-    "word": "はだける",
-    "reading": "",
-    "meaning": ""
-  },
-  {
     "rank": 11529,
     "word": "怪我をした",
     "reading": "けがをした",
@@ -1804,12 +1576,6 @@
     "word": "目眩",
     "reading": "めまい",
     "meaning": "dizziness"
-  },
-  {
-    "rank": 11832,
-    "word": "身の回り",
-    "reading": "みのまわり",
-    "meaning": "one's personal belongings"
   },
   {
     "rank": 11877,
@@ -1968,12 +1734,6 @@
     "meaning": "laying one's head in someone's lap"
   },
   {
-    "rank": 12830,
-    "word": "豊満",
-    "reading": "ほうまん",
-    "meaning": "stout"
-  },
-  {
     "rank": 12876,
     "word": "襟元",
     "reading": "えりもと",
@@ -2038,24 +1798,6 @@
     "word": "目頭",
     "reading": "めがしら",
     "meaning": "inner canthus"
-  },
-  {
-    "rank": 13593,
-    "word": "ゲスト",
-    "reading": "ゲスト",
-    "meaning": "guest"
-  },
-  {
-    "rank": 13647,
-    "word": "本陣",
-    "reading": "ほんじん",
-    "meaning": "troop headquarters"
-  },
-  {
-    "rank": 13678,
-    "word": "ラブレター",
-    "reading": "ラブレター",
-    "meaning": "love letter"
   },
   {
     "rank": 13723,
@@ -2184,22 +1926,10 @@
     "meaning": "eyebrow"
   },
   {
-    "rank": 14906,
-    "word": "謹慎",
-    "reading": "きんしん",
-    "meaning": "self restraint"
-  },
-  {
     "rank": 14907,
     "word": "両膝",
     "reading": "りょうひざ",
     "meaning": "both knees"
-  },
-  {
-    "rank": 14909,
-    "word": "口ずさむ",
-    "reading": "くちずさむ",
-    "meaning": "to hum (a tune)"
   },
   {
     "rank": 14940,
@@ -2254,12 +1984,6 @@
     "word": "臓器",
     "reading": "ぞうき",
     "meaning": "internal organs"
-  },
-  {
-    "rank": 15372,
-    "word": "使い勝手",
-    "reading": "つかいがって",
-    "meaning": "ease of use"
   },
   {
     "rank": 15377,
@@ -2346,22 +2070,10 @@
     "meaning": "vein (esp. in head)"
   },
   {
-    "rank": 15864,
-    "word": "接近戦",
-    "reading": "せっきんせん",
-    "meaning": "close combat"
-  },
-  {
     "rank": 15905,
     "word": "止血",
     "reading": "しけつ",
     "meaning": "stopping of bleeding"
-  },
-  {
-    "rank": 15944,
-    "word": "竦む",
-    "reading": "すくむ",
-    "meaning": "to freeze (from fear, etc.)"
   },
   {
     "rank": 15958,
@@ -2418,12 +2130,6 @@
     "meaning": "oral cavity"
   },
   {
-    "rank": 16730,
-    "word": "検事",
-    "reading": "けんじ",
-    "meaning": "public prosecutor"
-  },
-  {
     "rank": 16745,
     "word": "膣口",
     "reading": "ちつこう",
@@ -2476,12 +2182,6 @@
     "word": "熱に浮かされる",
     "reading": "ねつにうかされる",
     "meaning": "to be delirious with fever"
-  },
-  {
-    "rank": 17024,
-    "word": "配分",
-    "reading": "はいぶん",
-    "meaning": "distribution"
   },
   {
     "rank": 17052,
@@ -2574,12 +2274,6 @@
     "meaning": "grimace"
   },
   {
-    "rank": 17539,
-    "word": "舞い込む",
-    "reading": "まいこむ",
-    "meaning": "to come fluttering in (e.g. leaves, snow, flowers, etc.)"
-  },
-  {
     "rank": 17559,
     "word": "筋トレ",
     "reading": "きんトレ",
@@ -2632,12 +2326,6 @@
     "word": "蹄",
     "reading": "ひづめ",
     "meaning": "hoof"
-  },
-  {
-    "rank": 17883,
-    "word": "横向き",
-    "reading": "よこむき",
-    "meaning": "turning sideways"
   },
   {
     "rank": 17888,
@@ -2764,12 +2452,6 @@
     "word": "舌を巻く",
     "reading": "したをまく",
     "meaning": "to be astonished"
-  },
-  {
-    "rank": 18881,
-    "word": "銃器",
-    "reading": "じゅうき",
-    "meaning": "small arms"
   },
   {
     "rank": 18936,
@@ -2940,12 +2622,6 @@
     "meaning": "freshly severed head"
   },
   {
-    "rank": 20144,
-    "word": "たわけ",
-    "reading": "たわけ",
-    "meaning": "tomfoolery"
-  },
-  {
     "rank": 20145,
     "word": "目鼻立ち",
     "reading": "めはなだち",
@@ -3016,12 +2692,6 @@
     "word": "バスト",
     "reading": "バスト",
     "meaning": "bust (measurement)"
-  },
-  {
-    "rank": 20718,
-    "word": "により",
-    "reading": "により",
-    "meaning": "according to"
   },
   {
     "rank": 20746,
@@ -3264,12 +2934,6 @@
     "meaning": "gastric juice"
   },
   {
-    "rank": 22038,
-    "word": "世界征服",
-    "reading": "せかいせいふく",
-    "meaning": "world conquest"
-  },
-  {
     "rank": 22098,
     "word": "体軀",
     "reading": "たいく",
@@ -3306,12 +2970,6 @@
     "meaning": "navel"
   },
   {
-    "rank": 22497,
-    "word": "ケーキ屋",
-    "reading": "ケーキや",
-    "meaning": "cake shop"
-  },
-  {
     "rank": 22514,
     "word": "血液型",
     "reading": "けつえきがた",
@@ -3328,12 +2986,6 @@
     "word": "横腹",
     "reading": "よこばら",
     "meaning": "side"
-  },
-  {
-    "rank": 22710,
-    "word": "２５日",
-    "reading": "にじゅうごにち",
-    "meaning": "twenty-fifth day of the month"
   },
   {
     "rank": 22714,
@@ -3402,12 +3054,6 @@
     "meaning": "belch"
   },
   {
-    "rank": 23246,
-    "word": "ジョー",
-    "reading": "ジョー",
-    "meaning": "joe"
-  },
-  {
     "rank": 23303,
     "word": "血眼",
     "reading": "ちまなこ",
@@ -3460,12 +3106,6 @@
     "word": "足裏",
     "reading": "あしうら",
     "meaning": "sole of the foot"
-  },
-  {
-    "rank": 23576,
-    "word": "学歴",
-    "reading": "がくれき",
-    "meaning": "academic background"
   },
   {
     "rank": 23610,
@@ -3556,12 +3196,6 @@
     "word": "脳細胞",
     "reading": "のうさいぼう",
     "meaning": "brain cell"
-  },
-  {
-    "rank": 24273,
-    "word": "吹かす",
-    "reading": "ふかす",
-    "meaning": "to smoke (a cigarette)"
   },
   {
     "rank": 24387,
@@ -3840,12 +3474,6 @@
     "meaning": "carapace"
   },
   {
-    "rank": 25787,
-    "word": "新任",
-    "reading": "しんにん",
-    "meaning": "newly appointed"
-  },
-  {
     "rank": 25827,
     "word": "身体つき",
     "reading": "からだつき",
@@ -3906,18 +3534,6 @@
     "meaning": "(outward) looks"
   },
   {
-    "rank": 26310,
-    "word": "三食",
-    "reading": "さんしょく",
-    "meaning": "three meals (a day)"
-  },
-  {
-    "rank": 26336,
-    "word": "一間",
-    "reading": "いっけん",
-    "meaning": "one ken"
-  },
-  {
     "rank": 26339,
     "word": "腑",
     "reading": "ふ",
@@ -3964,11 +3580,5 @@
     "word": "禿げる",
     "reading": "はげる",
     "meaning": "to lose hair"
-  },
-  {
-    "rank": 26948,
-    "word": "喚起",
-    "reading": "かんき",
-    "meaning": "arousal"
   }
 ]

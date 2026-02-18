@@ -39,14 +39,14 @@ export function getManager(userId) {
           }
           // Migrate: remove stale creature IDs and ensure defaults
           if (data.meta.robotCollection) {
-            const before = data.meta.robotCollection.length;
+            const original = JSON.stringify(data.meta.robotCollection);
             data.meta.robotCollection = data.meta.robotCollection.filter(id => ROBOTS_BY_ID[id]);
             for (const id of DEFAULT_COLLECTION) {
               if (!data.meta.robotCollection.includes(id)) {
                 data.meta.robotCollection.push(id);
               }
             }
-            if (data.meta.robotCollection.length !== before) {
+            if (JSON.stringify(data.meta.robotCollection) !== original) {
               needsSave = true;
             }
           }

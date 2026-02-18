@@ -138,12 +138,6 @@
     "meaning": "merchant"
   },
   {
-    "rank": 3425,
-    "word": "田舎",
-    "reading": "いなか",
-    "meaning": "rural area"
-  },
-  {
     "rank": 3435,
     "word": "会長",
     "reading": "かいちょう",
@@ -184,18 +178,6 @@
     "word": "係",
     "reading": "かかり",
     "meaning": "charge"
-  },
-  {
-    "rank": 3940,
-    "word": "枕",
-    "reading": "まくら",
-    "meaning": "pillow"
-  },
-  {
-    "rank": 3946,
-    "word": "黄金",
-    "reading": "おうごん",
-    "meaning": "gold (Au)"
   },
   {
     "rank": 4022,
@@ -270,12 +252,6 @@
     "meaning": "company employee"
   },
   {
-    "rank": 5387,
-    "word": "恋をする",
-    "reading": "こいをする",
-    "meaning": "to fall in love"
-  },
-  {
     "rank": 5531,
     "word": "従業員",
     "reading": "じゅうぎょういん",
@@ -304,12 +280,6 @@
     "word": "出世",
     "reading": "しゅっせ",
     "meaning": "success in life"
-  },
-  {
-    "rank": 5872,
-    "word": "都会",
-    "reading": "とかい",
-    "meaning": "city"
   },
   {
     "rank": 5875,
@@ -348,12 +318,6 @@
     "meaning": "person in charge (including a supervisory role for other ..."
   },
   {
-    "rank": 6124,
-    "word": "と考えられる",
-    "reading": "とかんがえられる",
-    "meaning": "to be conceivable that"
-  },
-  {
     "rank": 6378,
     "word": "アルバイト",
     "reading": "アルバイト",
@@ -390,18 +354,6 @@
     "meaning": "service"
   },
   {
-    "rank": 7149,
-    "word": "絶つ",
-    "reading": "たつ",
-    "meaning": "to sever"
-  },
-  {
-    "rank": 7175,
-    "word": "間際",
-    "reading": "まぎわ",
-    "meaning": "the point just before"
-  },
-  {
     "rank": 7234,
     "word": "職務",
     "reading": "しょくむ",
@@ -436,12 +388,6 @@
     "word": "ビジネス",
     "reading": "ビジネス",
     "meaning": "business"
-  },
-  {
-    "rank": 7614,
-    "word": "俺達",
-    "reading": "おれたち",
-    "meaning": "we"
   },
   {
     "rank": 7618,
@@ -834,12 +780,6 @@
     "meaning": "owner"
   },
   {
-    "rank": 9157,
-    "word": "札",
-    "reading": "さつ",
-    "meaning": "banknote"
-  },
-  {
     "rank": 9321,
     "word": "飼い主",
     "reading": "かいぬし",
@@ -894,12 +834,6 @@
     "meaning": "post"
   },
   {
-    "rank": 9655,
-    "word": "主",
-    "reading": "ぬし",
-    "meaning": "head (of a household, etc.)"
-  },
-  {
     "rank": 9725,
     "word": "出勤",
     "reading": "しゅっきん",
@@ -942,18 +876,6 @@
     "meaning": "Catholic priest"
   },
   {
-    "rank": 10133,
-    "word": "面子",
-    "reading": "メンツ",
-    "meaning": "face"
-  },
-  {
-    "rank": 10198,
-    "word": "逆に言えば",
-    "reading": "ぎゃくにいえば",
-    "meaning": "if anything"
-  },
-  {
     "rank": 10314,
     "word": "ベテラン",
     "reading": "ベテラン",
@@ -966,34 +888,16 @@
     "meaning": "manager (e.g. of a business, an idol, etc.)"
   },
   {
-    "rank": 10415,
-    "word": "赤色",
-    "reading": "あかいろ",
-    "meaning": "red"
-  },
-  {
     "rank": 10442,
     "word": "スカウト",
     "reading": "スカウト",
     "meaning": "(talent) scout"
   },
   {
-    "rank": 10505,
-    "word": "長",
-    "reading": "ちょう",
-    "meaning": "head"
-  },
-  {
     "rank": 10636,
     "word": "お医者さん",
     "reading": "おいしゃさん",
     "meaning": "doctor"
-  },
-  {
-    "rank": 10711,
-    "word": "妖艶",
-    "reading": "ようえん",
-    "meaning": "fascinating"
   },
   {
     "rank": 10789,
@@ -1206,12 +1110,6 @@
     "meaning": "boss"
   },
   {
-    "rank": 12468,
-    "word": "説明がつく",
-    "reading": "せつめいがつく",
-    "meaning": "to explain adequately"
-  },
-  {
     "rank": 12507,
     "word": "経営者",
     "reading": "けいえいしゃ",
@@ -1296,12 +1194,6 @@
     "meaning": "great detective"
   },
   {
-    "rank": 12873,
-    "word": "異能",
-    "reading": "いのう",
-    "meaning": "unusual power"
-  },
-  {
     "rank": 12874,
     "word": "百姓",
     "reading": "ひゃくしょう",
@@ -1318,12 +1210,6 @@
     "word": "芸能人",
     "reading": "げいのうじん",
     "meaning": "performer"
-  },
-  {
-    "rank": 13058,
-    "word": "子育て",
-    "reading": "こそだて",
-    "meaning": "child rearing"
   },
   {
     "rank": 13077,
@@ -1416,24 +1302,6 @@
     "meaning": "ronin"
   },
   {
-    "rank": 13606,
-    "word": "誤差",
-    "reading": "ごさ",
-    "meaning": "measurement error"
-  },
-  {
-    "rank": 13618,
-    "word": "跳ね上げる",
-    "reading": "はねあげる",
-    "meaning": "to churn up"
-  },
-  {
-    "rank": 13686,
-    "word": "古風",
-    "reading": "こふう",
-    "meaning": "old-fashioned"
-  },
-  {
     "rank": 13743,
     "word": "従事",
     "reading": "じゅうじ",
@@ -1518,12 +1386,6 @@
     "meaning": "representative"
   },
   {
-    "rank": 14121,
-    "word": "タフ",
-    "reading": "タフ",
-    "meaning": "tough"
-  },
-  {
     "rank": 14248,
     "word": "錬金術師",
     "reading": "れんきんじゅつし",
@@ -1534,12 +1396,6 @@
     "word": "家来",
     "reading": "けらい",
     "meaning": "retainer"
-  },
-  {
-    "rank": 14347,
-    "word": "明言",
-    "reading": "めいげん",
-    "meaning": "declaration"
   },
   {
     "rank": 14385,
@@ -1564,12 +1420,6 @@
     "word": "聖職者",
     "reading": "せいしょくしゃ",
     "meaning": "clergyman"
-  },
-  {
-    "rank": 14579,
-    "word": "大口",
-    "reading": "おおぐち",
-    "meaning": "big mouth"
   },
   {
     "rank": 14580,
@@ -1608,12 +1458,6 @@
     "meaning": "master"
   },
   {
-    "rank": 14677,
-    "word": "芝居がかる",
-    "reading": "しばいがかる",
-    "meaning": "to be affected"
-  },
-  {
     "rank": 14704,
     "word": "陸軍",
     "reading": "りくぐん",
@@ -1630,12 +1474,6 @@
     "word": "医",
     "reading": "い",
     "meaning": "medicine"
-  },
-  {
-    "rank": 14812,
-    "word": "何故だか",
-    "reading": "なぜだか",
-    "meaning": "somehow"
   },
   {
     "rank": 14813,
@@ -1710,12 +1548,6 @@
     "meaning": "user"
   },
   {
-    "rank": 15239,
-    "word": "祠",
-    "reading": "ほこら",
-    "meaning": "hokora"
-  },
-  {
     "rank": 15277,
     "word": "教皇",
     "reading": "きょうこう",
@@ -1732,12 +1564,6 @@
     "word": "稼業",
     "reading": "かぎょう",
     "meaning": "trade"
-  },
-  {
-    "rank": 15334,
-    "word": "姐さん",
-    "reading": "ねえさん",
-    "meaning": "older sister"
   },
   {
     "rank": 15370,
@@ -1840,18 +1666,6 @@
     "word": "議長",
     "reading": "ぎちょう",
     "meaning": "chair"
-  },
-  {
-    "rank": 15862,
-    "word": "晩餐",
-    "reading": "ばんさん",
-    "meaning": "dinner"
-  },
-  {
-    "rank": 15913,
-    "word": "苔",
-    "reading": "こけ",
-    "meaning": "moss"
   },
   {
     "rank": 15925,
@@ -1968,12 +1782,6 @@
     "meaning": "employment (long term)"
   },
   {
-    "rank": 16348,
-    "word": "波の音",
-    "reading": "なみのおと",
-    "meaning": "roar of waves"
-  },
-  {
     "rank": 16482,
     "word": "ボーイ",
     "reading": "ボーイ",
@@ -2008,12 +1816,6 @@
     "word": "生業",
     "reading": "なりわい",
     "meaning": "occupation"
-  },
-  {
-    "rank": 16729,
-    "word": "あっそ",
-    "reading": "あっそ",
-    "meaning": "oh, OK"
   },
   {
     "rank": 16747,
@@ -2074,12 +1876,6 @@
     "word": "臣",
     "reading": "おみ",
     "meaning": "retainer"
-  },
-  {
-    "rank": 17076,
-    "word": "診療所",
-    "reading": "しんりょうしょ",
-    "meaning": "clinic"
   },
   {
     "rank": 17095,
@@ -2358,12 +2154,6 @@
     "meaning": "hunter"
   },
   {
-    "rank": 18383,
-    "word": "いっぺん",
-    "reading": "いっぺん",
-    "meaning": "once"
-  },
-  {
     "rank": 18431,
     "word": "ナース",
     "reading": "ナース",
@@ -2386,18 +2176,6 @@
     "word": "家人",
     "reading": "けにん",
     "meaning": "retainer"
-  },
-  {
-    "rank": 18831,
-    "word": "取り扱い",
-    "reading": "とりあつかい",
-    "meaning": "treatment"
-  },
-  {
-    "rank": 18836,
-    "word": "財",
-    "reading": "ざい",
-    "meaning": "fortune"
   },
   {
     "rank": 18852,
@@ -2604,12 +2382,6 @@
     "meaning": "prime minister (as the head of a cabinet government)"
   },
   {
-    "rank": 20151,
-    "word": "当店",
-    "reading": "とうてん",
-    "meaning": "this store"
-  },
-  {
     "rank": 20162,
     "word": "先鋒",
     "reading": "せんぽう",
@@ -2632,12 +2404,6 @@
     "word": "外交官",
     "reading": "がいこうかん",
     "meaning": "diplomat"
-  },
-  {
-    "rank": 20302,
-    "word": "びっくりするほど",
-    "reading": "びっくりするほど",
-    "meaning": "surprisingly"
   },
   {
     "rank": 20307,
@@ -2718,12 +2484,6 @@
     "meaning": "attendant male servant"
   },
   {
-    "rank": 20769,
-    "word": "書き方",
-    "reading": "かきかた",
-    "meaning": "way of writing"
-  },
-  {
     "rank": 20812,
     "word": "貴公子",
     "reading": "きこうし",
@@ -2766,12 +2526,6 @@
     "meaning": "clown"
   },
   {
-    "rank": 21014,
-    "word": "名無し",
-    "reading": "ななし",
-    "meaning": "being without a name"
-  },
-  {
     "rank": 21133,
     "word": "元帥",
     "reading": "げんすい",
@@ -2782,12 +2536,6 @@
     "word": "少将",
     "reading": "しょうしょう",
     "meaning": "major general"
-  },
-  {
-    "rank": 21207,
-    "word": "満員",
-    "reading": "まんいん",
-    "meaning": "full house"
   },
   {
     "rank": 21254,
@@ -2958,12 +2706,6 @@
     "meaning": "police investigator"
   },
   {
-    "rank": 22494,
-    "word": "ロマンス",
-    "reading": "ロマンス",
-    "meaning": "romance"
-  },
-  {
     "rank": 22573,
     "word": "担任の先生",
     "reading": "たんにんのせんせい",
@@ -3102,12 +2844,6 @@
     "meaning": "residence"
   },
   {
-    "rank": 23620,
-    "word": "駿河",
-    "reading": "するが",
-    "meaning": "Suruga (former province located in the central and northe..."
-  },
-  {
     "rank": 23621,
     "word": "天職",
     "reading": "てんしょく",
@@ -3156,12 +2892,6 @@
     "meaning": "day duty"
   },
   {
-    "rank": 24117,
-    "word": "辻褄",
-    "reading": "つじつま",
-    "meaning": "coherence"
-  },
-  {
     "rank": 24177,
     "word": "ピアニスト",
     "reading": "ピアニスト",
@@ -3204,12 +2934,6 @@
     "meaning": "writer"
   },
   {
-    "rank": 24600,
-    "word": "作業着",
-    "reading": "さぎょうぎ",
-    "meaning": "work clothes"
-  },
-  {
     "rank": 24661,
     "word": "世話係",
     "reading": "せわがかり",
@@ -3226,12 +2950,6 @@
     "word": "出家",
     "reading": "しゅっけ",
     "meaning": "entering the priesthood"
-  },
-  {
-    "rank": 25007,
-    "word": "本店",
-    "reading": "ほんてん",
-    "meaning": "head office"
   },
   {
     "rank": 25067,
@@ -3286,12 +3004,6 @@
     "word": "支店長",
     "reading": "してんちょう",
     "meaning": "branch manager"
-  },
-  {
-    "rank": 25292,
-    "word": "敵機",
-    "reading": "てっき",
-    "meaning": "enemy plane"
   },
   {
     "rank": 25330,
@@ -3378,12 +3090,6 @@
     "meaning": "non-combatant"
   },
   {
-    "rank": 25786,
-    "word": "超常",
-    "reading": "ちょうじょう",
-    "meaning": "paranormality"
-  },
-  {
     "rank": 25931,
     "word": "スナイパー",
     "reading": "スナイパー",
@@ -3418,12 +3124,6 @@
     "word": "ミュージシャン",
     "reading": "ミュージシャン",
     "meaning": "musician"
-  },
-  {
-    "rank": 26233,
-    "word": "大型犬",
-    "reading": "おおがたけん",
-    "meaning": "large-breed dog"
   },
   {
     "rank": 26371,

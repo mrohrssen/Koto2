@@ -534,6 +534,12 @@
     "meaning": "(finger) ring"
   },
   {
+    "rank": 3459,
+    "word": "書",
+    "reading": "しょ",
+    "meaning": "book"
+  },
+  {
     "rank": 3488,
     "word": "メニュー",
     "reading": "メニュー",
@@ -700,6 +706,18 @@
     "word": "ハンカチ",
     "reading": "ハンカチ",
     "meaning": "handkerchief"
+  },
+  {
+    "rank": 3940,
+    "word": "枕",
+    "reading": "まくら",
+    "meaning": "pillow"
+  },
+  {
+    "rank": 3946,
+    "word": "黄金",
+    "reading": "おうごん",
+    "meaning": "gold (Au)"
   },
   {
     "rank": 3957,
@@ -1242,6 +1260,12 @@
     "meaning": "bullet"
   },
   {
+    "rank": 7714,
+    "word": "エレベーター",
+    "reading": "エレベーター",
+    "meaning": "elevator"
+  },
+  {
     "rank": 7716,
     "word": "ぬいぐるみ",
     "reading": "ぬいぐるみ",
@@ -1354,6 +1378,12 @@
     "word": "薬草",
     "reading": "やくそう",
     "meaning": "medicinal herb"
+  },
+  {
+    "rank": 7904,
+    "word": "筆頭",
+    "reading": "ひっとう",
+    "meaning": "brush tip"
   },
   {
     "rank": 7912,
@@ -1804,6 +1834,12 @@
     "word": "腕時計",
     "reading": "うでどけい",
     "meaning": "wristwatch"
+  },
+  {
+    "rank": 9157,
+    "word": "札",
+    "reading": "さつ",
+    "meaning": "banknote"
   },
   {
     "rank": 9168,
@@ -2568,6 +2604,12 @@
     "meaning": "rifle"
   },
   {
+    "rank": 11832,
+    "word": "身の回り",
+    "reading": "みのまわり",
+    "meaning": "one's personal belongings"
+  },
+  {
     "rank": 11835,
     "word": "珠",
     "reading": "たま",
@@ -3184,6 +3226,12 @@
     "word": "アラーム",
     "reading": "アラーム",
     "meaning": "alarm"
+  },
+  {
+    "rank": 13678,
+    "word": "ラブレター",
+    "reading": "ラブレター",
+    "meaning": "love letter"
   },
   {
     "rank": 13728,
@@ -4762,6 +4810,12 @@
     "word": "懐中時計",
     "reading": "かいちゅうどけい",
     "meaning": "pocket watch"
+  },
+  {
+    "rank": 18836,
+    "word": "財",
+    "reading": "ざい",
+    "meaning": "fortune"
   },
   {
     "rank": 18858,

@@ -1698,6 +1698,12 @@
     "meaning": "to make a mistake (in)"
   },
   {
+    "rank": 5286,
+    "word": "小刻み",
+    "reading": "こきざみ",
+    "meaning": "mincing"
+  },
+  {
     "rank": 5292,
     "word": "ひっそり",
     "reading": "ひっそり",
@@ -3720,6 +3726,12 @@
     "meaning": "weak"
   },
   {
+    "rank": 9457,
+    "word": "具合が悪い",
+    "reading": "ぐあいがわるい",
+    "meaning": "unwell"
+  },
+  {
     "rank": 9474,
     "word": "簡易",
     "reading": "かんい",
@@ -4234,6 +4246,12 @@
     "word": "程遠い",
     "reading": "ほどとおい",
     "meaning": "far away"
+  },
+  {
+    "rank": 10711,
+    "word": "妖艶",
+    "reading": "ようえん",
+    "meaning": "fascinating"
   },
   {
     "rank": 10712,
@@ -5154,6 +5172,12 @@
     "meaning": "stout"
   },
   {
+    "rank": 12830,
+    "word": "豊満",
+    "reading": "ほうまん",
+    "meaning": "stout"
+  },
+  {
     "rank": 12833,
     "word": "辟易",
     "reading": "へきえき",
@@ -5868,6 +5892,12 @@
     "meaning": "insipid"
   },
   {
+    "rank": 14121,
+    "word": "タフ",
+    "reading": "タフ",
+    "meaning": "tough"
+  },
+  {
     "rank": 14122,
     "word": "三体",
     "reading": "さんたい",
@@ -6024,6 +6054,12 @@
     "meaning": "novel"
   },
   {
+    "rank": 14579,
+    "word": "大口",
+    "reading": "おおぐち",
+    "meaning": "big mouth"
+  },
+  {
     "rank": 14582,
     "word": "真っ白い",
     "reading": "まっしろい",
@@ -6046,6 +6082,12 @@
     "word": "甚大",
     "reading": "じんだい",
     "meaning": "very great"
+  },
+  {
+    "rank": 14677,
+    "word": "芝居がかる",
+    "reading": "しばいがかる",
+    "meaning": "to be affected"
   },
   {
     "rank": 14681,
@@ -8412,6 +8454,12 @@
     "meaning": "monotonous"
   },
   {
+    "rank": 20302,
+    "word": "びっくりするほど",
+    "reading": "びっくりするほど",
+    "meaning": "surprisingly"
+  },
+  {
     "rank": 20318,
     "word": "怜悧",
     "reading": "れいり",
@@ -8742,6 +8790,12 @@
     "meaning": "rough (behaviour, temperament, etc.)"
   },
   {
+    "rank": 21014,
+    "word": "名無し",
+    "reading": "ななし",
+    "meaning": "being without a name"
+  },
+  {
     "rank": 21016,
     "word": "頭の良い",
     "reading": "あたまのいい",
@@ -8812,6 +8866,12 @@
     "word": "むくむく",
     "reading": "むくむく",
     "meaning": "rising up"
+  },
+  {
+    "rank": 21207,
+    "word": "満員",
+    "reading": "まんいん",
+    "meaning": "full house"
   },
   {
     "rank": 21218,
@@ -10312,6 +10372,18 @@
     "word": "明晰",
     "reading": "めいせき",
     "meaning": "clear"
+  },
+  {
+    "rank": 25786,
+    "word": "超常",
+    "reading": "ちょうじょう",
+    "meaning": "paranormality"
+  },
+  {
+    "rank": 25787,
+    "word": "新任",
+    "reading": "しんにん",
+    "meaning": "newly appointed"
   },
   {
     "rank": 25794,

@@ -48,6 +48,12 @@
     "meaning": "discourtesy"
   },
   {
+    "rank": 584,
+    "word": "友達",
+    "reading": "ともだち",
+    "meaning": "friend"
+  },
+  {
     "rank": 651,
     "word": "会話",
     "reading": "かいわ",
@@ -1686,6 +1692,12 @@
     "meaning": "fan"
   },
   {
+    "rank": 3424,
+    "word": "奴隷",
+    "reading": "どれい",
+    "meaning": "slave"
+  },
+  {
     "rank": 3426,
     "word": "お兄さん",
     "reading": "おにいさん",
@@ -3030,6 +3042,12 @@
     "meaning": "How do you do?"
   },
   {
+    "rank": 5415,
+    "word": "妊娠",
+    "reading": "にんしん",
+    "meaning": "pregnancy"
+  },
+  {
     "rank": 5418,
     "word": "おしゃべり",
     "reading": "おしゃべり",
@@ -3682,6 +3700,12 @@
     "word": "問い詰める",
     "reading": "といつめる",
     "meaning": "to press a question"
+  },
+  {
+    "rank": 6583,
+    "word": "正直なところ",
+    "reading": "しょうじきなところ",
+    "meaning": "honestly speaking"
   },
   {
     "rank": 6598,
@@ -4474,6 +4498,12 @@
     "word": "マント",
     "reading": "マント",
     "meaning": "mantle"
+  },
+  {
+    "rank": 7723,
+    "word": "王妃",
+    "reading": "おうひ",
+    "meaning": "queen"
   },
   {
     "rank": 7724,
@@ -5776,6 +5806,12 @@
     "word": "同期",
     "reading": "どうき",
     "meaning": "same period"
+  },
+  {
+    "rank": 9054,
+    "word": "怪我人",
+    "reading": "けがにん",
+    "meaning": "wounded person"
   },
   {
     "rank": 9068,
@@ -7168,6 +7204,12 @@
     "word": "掛け声",
     "reading": "かけごえ",
     "meaning": "shout (of encouragement, etc.)"
+  },
+  {
+    "rank": 10852,
+    "word": "貴女",
+    "reading": "きじょ",
+    "meaning": "you"
   },
   {
     "rank": 10853,
@@ -9286,6 +9328,12 @@
     "word": "婚約破棄",
     "reading": "こんやくはき",
     "meaning": "breaking off an engagement"
+  },
+  {
+    "rank": 13593,
+    "word": "ゲスト",
+    "reading": "ゲスト",
+    "meaning": "guest"
   },
   {
     "rank": 13594,
@@ -11590,6 +11638,12 @@
     "word": "失礼ながら",
     "reading": "しつれいながら",
     "meaning": "with all due respect"
+  },
+  {
+    "rank": 16730,
+    "word": "検事",
+    "reading": "けんじ",
+    "meaning": "public prosecutor"
   },
   {
     "rank": 16732,
@@ -15672,6 +15726,12 @@
     "meaning": "contact"
   },
   {
+    "rank": 23246,
+    "word": "ジョー",
+    "reading": "ジョー",
+    "meaning": "joe"
+  },
+  {
     "rank": 23254,
     "word": "マナー違反",
     "reading": "マナーいはん",
@@ -15766,6 +15826,12 @@
     "word": "一致団結",
     "reading": "いっちだんけつ",
     "meaning": "solidarity"
+  },
+  {
+    "rank": 23576,
+    "word": "学歴",
+    "reading": "がくれき",
+    "meaning": "academic background"
   },
   {
     "rank": 23595,

@@ -6,6 +6,18 @@
     "meaning": "dream"
   },
   {
+    "rank": 525,
+    "word": "一瞬",
+    "reading": "いっしゅん",
+    "meaning": "instant"
+  },
+  {
+    "rank": 561,
+    "word": "反応",
+    "reading": "はんのう",
+    "meaning": "reaction"
+  },
+  {
     "rank": 589,
     "word": "ようやく",
     "reading": "ようやく",
@@ -18,10 +30,22 @@
     "meaning": "again"
   },
   {
+    "rank": 596,
+    "word": "程度",
+    "reading": "ていど",
+    "meaning": "degree"
+  },
+  {
     "rank": 609,
     "word": "むしろ",
     "reading": "むしろ",
     "meaning": "rather"
+  },
+  {
+    "rank": 657,
+    "word": "部分",
+    "reading": "ぶぶん",
+    "meaning": "portion"
   },
   {
     "rank": 678,
@@ -52,6 +76,12 @@
     "word": "雰囲気",
     "reading": "ふんいき",
     "meaning": "atmosphere"
+  },
+  {
+    "rank": 799,
+    "word": "予定",
+    "reading": "よてい",
+    "meaning": "plans"
   },
   {
     "rank": 852,
@@ -3120,6 +3150,12 @@
     "meaning": "irony"
   },
   {
+    "rank": 3288,
+    "word": "なぜなら",
+    "reading": "なぜなら",
+    "meaning": "because"
+  },
+  {
     "rank": 3326,
     "word": "デザイン",
     "reading": "デザイン",
@@ -3214,6 +3250,12 @@
     "word": "中学",
     "reading": "ちゅうがく",
     "meaning": "junior high school"
+  },
+  {
+    "rank": 3432,
+    "word": "制御",
+    "reading": "せいぎょ",
+    "meaning": "control (of a machine, device, etc.)"
   },
   {
     "rank": 3432,
@@ -6000,6 +6042,12 @@
     "meaning": "evil"
   },
   {
+    "rank": 5884,
+    "word": "重視",
+    "reading": "じゅうし",
+    "meaning": "regarding as important"
+  },
+  {
     "rank": 5892,
     "word": "最新",
     "reading": "さいしん",
@@ -7360,6 +7408,12 @@
     "word": "形跡",
     "reading": "けいせき",
     "meaning": "traces"
+  },
+  {
+    "rank": 7175,
+    "word": "間際",
+    "reading": "まぎわ",
+    "meaning": "the point just before"
   },
   {
     "rank": 7180,
@@ -10446,6 +10500,18 @@
     "meaning": "category"
   },
   {
+    "rank": 9449,
+    "word": "この期に及んで",
+    "reading": "このごにおよんで",
+    "meaning": "at the last moment"
+  },
+  {
+    "rank": 9453,
+    "word": "プロジェクト",
+    "reading": "プロジェクト",
+    "meaning": "project"
+  },
+  {
     "rank": 9464,
     "word": "神秘",
     "reading": "しんぴ",
@@ -11056,6 +11122,12 @@
     "word": "出動",
     "reading": "しゅつどう",
     "meaning": "sailing"
+  },
+  {
+    "rank": 10198,
+    "word": "逆に言えば",
+    "reading": "ぎゃくにいえば",
+    "meaning": "if anything"
   },
   {
     "rank": 10200,
@@ -14082,6 +14154,12 @@
     "meaning": "getting information (esp. by interviewing witnesses, etc...."
   },
   {
+    "rank": 12468,
+    "word": "説明がつく",
+    "reading": "せつめいがつく",
+    "meaning": "to explain adequately"
+  },
+  {
     "rank": 12470,
     "word": "ラブ",
     "reading": "ラブ",
@@ -15972,6 +16050,12 @@
     "meaning": "one's family"
   },
   {
+    "rank": 13606,
+    "word": "誤差",
+    "reading": "ごさ",
+    "meaning": "measurement error"
+  },
+  {
     "rank": 13607,
     "word": "幻滅",
     "reading": "げんめつ",
@@ -16728,6 +16812,12 @@
     "meaning": "unreliable"
   },
   {
+    "rank": 14347,
+    "word": "明言",
+    "reading": "めいげん",
+    "meaning": "declaration"
+  },
+  {
     "rank": 14349,
     "word": "基",
     "reading": "もと",
@@ -16980,6 +17070,12 @@
     "meaning": "traditional"
   },
   {
+    "rank": 14812,
+    "word": "何故だか",
+    "reading": "なぜだか",
+    "meaning": "somehow"
+  },
+  {
     "rank": 14814,
     "word": "意思表示",
     "reading": "いしひょうじ",
@@ -17044,6 +17140,12 @@
     "word": "応じて",
     "reading": "おうじて",
     "meaning": "in proportion to"
+  },
+  {
+    "rank": 14906,
+    "word": "謹慎",
+    "reading": "きんしん",
+    "meaning": "self restraint"
   },
   {
     "rank": 14918,
@@ -17326,6 +17428,12 @@
     "word": "仏教",
     "reading": "ぶっきょう",
     "meaning": "Buddhism"
+  },
+  {
+    "rank": 15372,
+    "word": "使い勝手",
+    "reading": "つかいがって",
+    "meaning": "ease of use"
   },
   {
     "rank": 15372,
@@ -17952,6 +18060,12 @@
     "meaning": "meditation"
   },
   {
+    "rank": 16729,
+    "word": "あっそ",
+    "reading": "あっそ",
+    "meaning": "oh, OK"
+  },
+  {
     "rank": 16737,
     "word": "狂乱",
     "reading": "きょうらん",
@@ -17974,6 +18088,12 @@
     "word": "哲学者",
     "reading": "てつがくしゃ",
     "meaning": "philosopher"
+  },
+  {
+    "rank": 17024,
+    "word": "配分",
+    "reading": "はいぶん",
+    "meaning": "distribution"
   },
   {
     "rank": 17042,
@@ -23454,6 +23574,12 @@
     "meaning": "moderate"
   },
   {
+    "rank": 20718,
+    "word": "により",
+    "reading": "により",
+    "meaning": "according to"
+  },
+  {
     "rank": 20719,
     "word": "へそ",
     "reading": "へそ",
@@ -25366,6 +25492,12 @@
     "word": "絵描き",
     "reading": "えかき",
     "meaning": "painter"
+  },
+  {
+    "rank": 24117,
+    "word": "辻褄",
+    "reading": "つじつま",
+    "meaning": "coherence"
   },
   {
     "rank": 24118,
