@@ -183,10 +183,8 @@ export function generateFloorRooms(areaId, roomCount = 10, lastSpecialType = nul
     const roomNumber = i + 1;
 
     if (i === 0) {
-      const room = generateSingleRoom(areaId, roomNumber, totalSlots, prevSpecialType, encountersOnly);
-      if (isSpecialType(room.type)) {
-        prevSpecialType = room.type;
-      }
+      // First room is always a creature encounter
+      const room = generateSingleRoom(areaId, roomNumber, totalSlots, prevSpecialType, true);
       rooms.push(room);
     } else {
       const pair = generateBranchPair(areaId, roomNumber, totalSlots, prevSpecialType, encountersOnly);
