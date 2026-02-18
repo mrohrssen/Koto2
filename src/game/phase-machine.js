@@ -30,6 +30,7 @@ export const PHASES = {
   ROOM_ENCOUNTER: 'room_encounter',
   WORD_DISCOVERY: 'wordDiscovery',
   DEALER: 'dealer',
+  WHACK_A_MOLE: 'whackAMole',
   BRANCH_SELECTION: 'branch_selection',
 
   COMBAT: 'combat',
@@ -67,6 +68,7 @@ export const VALID_TRANSITIONS = {
   [PHASES.EXPLORING]: [
     PHASES.ROOM,
     PHASES.ROOM_ENCOUNTER,
+    PHASES.WHACK_A_MOLE,
     PHASES.COMBAT,
     PHASES.SHOP,
     PHASES.BLACKSMITH
@@ -75,6 +77,7 @@ export const VALID_TRANSITIONS = {
   [PHASES.ROOM]: [
     PHASES.ROOM,
     PHASES.ROOM_ENCOUNTER,
+    PHASES.WHACK_A_MOLE,
     PHASES.COMBAT,
     PHASES.SHOP,
     PHASES.BLACKSMITH,
@@ -130,6 +133,8 @@ export const VALID_TRANSITIONS = {
     PHASES.HUB
   ],
 
+  [PHASES.WHACK_A_MOLE]: [PHASES.ROOM],
+
   [PHASES.AREA_COMPLETE]: [
     PHASES.AREA_SELECTION,
     PHASES.RUN_COMPLETE
@@ -175,6 +180,7 @@ export function derivePhase(state) {
     if (currentRoom.type === 'quiz' && !currentRoom.interacted) return 'quiz';
     if (currentRoom.type === 'wordDiscovery' && !currentRoom.interacted) return PHASES.WORD_DISCOVERY;
     if (currentRoom.type === 'dealer' && !currentRoom.interacted) return 'dealer';
+    if (currentRoom.type === 'whackAMole' && !currentRoom.interacted) return PHASES.WHACK_A_MOLE;
     if (currentRoom.type === 'encounter' && !currentRoom.interacted) return PHASES.ROOM_ENCOUNTER;
     return PHASES.ROOM;
   }
@@ -199,6 +205,7 @@ export function getPhaseName(phase) {
     [PHASES.SHOP]: 'Shop',
     [PHASES.BLACKSMITH]: 'Blacksmith',
     [PHASES.POST_COMBAT_SHOP]: 'Post-Combat Shop',
+    [PHASES.WHACK_A_MOLE]: 'Whack-a-Mole',
     [PHASES.LEVEL_SELECT]: 'Level Select',
     [PHASES.RUN_COMPLETE]: 'Run Complete'
   };
