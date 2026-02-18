@@ -71,9 +71,9 @@ export default function createRunRoutes({
         if (userKeys.aiApiKey) {
           const { words: vocabulary } = getUserVocabulary(req.user.id);
           generateMissingDialoguesFn(req.user.id, {
-            provider: userKeys.aiProvider || 'openai',
+            provider: userKeys.aiProvider || 'anthropic',
             apiKey: userKeys.aiApiKey,
-            openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+            openaiModel: userKeys.openaiModel || 'claude-sonnet-4-6',
             openrouterModel: userKeys.openrouterModel,
             jlptLevel: userKeys.jlptLevel || 'N4'
           }, vocabulary).catch(e => {
@@ -92,9 +92,9 @@ export default function createRunRoutes({
             ? async (text) => checkSentenceViolations(text, vocabSet, userKeys.jpdbApiKey, new Set(), vidSet)
             : null;
           queueMissingNpcDialoguesFn(req.user.id, {
-            provider: userKeys.aiProvider || 'openai',
+            provider: userKeys.aiProvider || 'anthropic',
             apiKey: userKeys.aiApiKey,
-            openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+            openaiModel: userKeys.openaiModel || 'claude-sonnet-4-6',
             openrouterModel: userKeys.openrouterModel,
             jlptLevel: userKeys.jlptLevel || 'N4'
           }, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {
@@ -171,9 +171,9 @@ export default function createRunRoutes({
         if (userKeys.aiApiKey) {
           const { words: vocabulary } = getUserVocabulary(req.user.id);
           generateMissingDialoguesFn(req.user.id, {
-            provider: userKeys.aiProvider || 'openai',
+            provider: userKeys.aiProvider || 'anthropic',
             apiKey: userKeys.aiApiKey,
-            openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+            openaiModel: userKeys.openaiModel || 'claude-sonnet-4-6',
             openrouterModel: userKeys.openrouterModel,
             jlptLevel: userKeys.jlptLevel || 'N4'
           }, vocabulary).catch(e => {
@@ -192,9 +192,9 @@ export default function createRunRoutes({
             ? async (text) => checkSentenceViolations(text, vocabSet, userKeys.jpdbApiKey, new Set(), vidSet)
             : null;
           queueMissingNpcDialoguesFn(req.user.id, {
-            provider: userKeys.aiProvider || 'openai',
+            provider: userKeys.aiProvider || 'anthropic',
             apiKey: userKeys.aiApiKey,
-            openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+            openaiModel: userKeys.openaiModel || 'claude-sonnet-4-6',
             openrouterModel: userKeys.openrouterModel,
             jlptLevel: userKeys.jlptLevel || 'N4'
           }, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {

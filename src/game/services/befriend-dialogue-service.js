@@ -144,7 +144,7 @@ export async function generateOneRobotDialogue(robot, vocabulary, aiConfig) {
   try {
     const prompt = DM_PROMPTS.befriendConversation({ robot });
     const response = await aiConfig.chat({
-      provider: aiConfig.provider || 'openai',
+      provider: aiConfig.provider || 'anthropic',
       apiKey: aiConfig.apiKey,
       messages: [{ role: 'user', content: prompt }],
       vocabulary,

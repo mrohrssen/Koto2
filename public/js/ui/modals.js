@@ -81,7 +81,7 @@ export async function openSettings() {
       <label class="settings-label" style="margin-top:12px">
         Model
         <input type="text" id="settings-model" class="settings-input"
-          value="${keyInfo.openaiModel || 'gpt-4o-mini'}" placeholder="e.g. gpt-4o-mini">
+          value="${keyInfo.openaiModel || 'claude-sonnet-4-6'}" placeholder="e.g. claude-sonnet-4-6">
       </label>
       <label class="settings-label" style="margin-top:12px">
         JLPT Level

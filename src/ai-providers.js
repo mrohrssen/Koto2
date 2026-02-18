@@ -175,7 +175,7 @@ async function chatWithClaude(apiKey, messages, systemPrompt, model, systemBlock
   }
 
   const response = await client.messages.create({
-    model: model || 'claude-sonnet-4-5-20250929',
+    model: model || 'claude-sonnet-4-6',
     max_tokens: 500,
     system,
     messages: messages.map(m => ({
@@ -285,7 +285,7 @@ export async function chat({
   switch (provider.toLowerCase()) {
     case 'openai': model = openaiModel || 'gpt-4o-mini'; break;
     case 'claude':
-    case 'anthropic': model = claudeModel || 'claude-sonnet-4-5-20250929'; break;
+    case 'anthropic': model = claudeModel || 'claude-sonnet-4-6'; break;
     case 'gemini':
     case 'google': model = 'gemini-1.5-flash'; break;
     case 'openrouter': model = openrouterModel || 'anthropic/claude-3.5-sonnet'; break;

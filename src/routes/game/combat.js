@@ -13,9 +13,9 @@ function triggerDialogueRegen(userId, targetEnemy, userKeys, getUserVocabularyFn
   if (!regenFn || !targetEnemy || !userKeys?.aiApiKey) return;
   const { words: vocabulary } = getUserVocabularyFn(userId);
   regenFn(userId, targetEnemy, {
-    provider: userKeys.aiProvider || 'openai',
+    provider: userKeys.aiProvider || 'anthropic',
     apiKey: userKeys.aiApiKey,
-    openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+    openaiModel: userKeys.openaiModel || 'claude-sonnet-4-6',
     openrouterModel: userKeys.openrouterModel,
     jlptLevel: userKeys.jlptLevel || 'N4'
   }, vocabulary).catch(e => {
@@ -283,9 +283,9 @@ export default function createCombatRoutes({
       if (!rounds) {
         console.log(`[BefriendDialogue] No pre-generated dialogue for ${target.id}, generating on-the-fly`);
         rounds = await generateBefriendConversationFn(target, vocabulary, {
-          provider: userKeys.aiProvider || 'openai',
+          provider: userKeys.aiProvider || 'anthropic',
           apiKey: userKeys.aiApiKey,
-          openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+          openaiModel: userKeys.openaiModel || 'claude-sonnet-4-6',
           openrouterModel: userKeys.openrouterModel,
           jlptLevel: userKeys.jlptLevel || 'N4'
         });
@@ -540,9 +540,9 @@ export default function createCombatRoutes({
             ? async (text) => checkSentenceViolations(text, vocabSet, userKeys.jpdbApiKey, new Set(), vidSet)
             : null;
           regenNpcDialogueFn(req.user.id, npcId, {
-            provider: userKeys.aiProvider || 'openai',
+            provider: userKeys.aiProvider || 'anthropic',
             apiKey: userKeys.aiApiKey,
-            openaiModel: userKeys.openaiModel || 'gpt-4o-mini',
+            openaiModel: userKeys.openaiModel || 'claude-sonnet-4-6',
             openrouterModel: userKeys.openrouterModel,
             jlptLevel: userKeys.jlptLevel || 'N4'
           }, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {
