@@ -906,6 +906,12 @@
     "meaning": "fragment"
   },
   {
+    "rank": 4997,
+    "word": "飛行機",
+    "reading": "ひこうき",
+    "meaning": "aeroplane"
+  },
+  {
     "rank": 5038,
     "word": "本",
     "reading": "ほん",
@@ -1198,6 +1204,12 @@
     "word": "小石",
     "reading": "こいし",
     "meaning": "pebble"
+  },
+  {
+    "rank": 7313,
+    "word": "ステップ",
+    "reading": "ステップ",
+    "meaning": "step (of a staircase, etc.)"
   },
   {
     "rank": 7411,
@@ -1912,6 +1924,12 @@
     "word": "くだ",
     "reading": "くだ",
     "meaning": "pipe"
+  },
+  {
+    "rank": 9687,
+    "word": "街灯",
+    "reading": "がいとう",
+    "meaning": "street light"
   },
   {
     "rank": 9696,
@@ -2916,6 +2934,12 @@
     "meaning": "contact"
   },
   {
+    "rank": 12749,
+    "word": "汽車",
+    "reading": "きしゃ",
+    "meaning": "train (esp. long distance train)"
+  },
+  {
     "rank": 12772,
     "word": "つまみ",
     "reading": "つまみ",
@@ -3408,6 +3432,12 @@
     "meaning": "trigger"
   },
   {
+    "rank": 14481,
+    "word": "コマ",
+    "reading": "コマ",
+    "meaning": "frame (e.g. of film, panel in a comic, etc.)"
+  },
+  {
     "rank": 14496,
     "word": "繊維",
     "reading": "せんい",
@@ -3544,6 +3574,12 @@
     "word": "粘土",
     "reading": "ねんど",
     "meaning": "clay"
+  },
+  {
+    "rank": 15080,
+    "word": "地下鉄",
+    "reading": "ちかてつ",
+    "meaning": "underground train"
   },
   {
     "rank": 15097,

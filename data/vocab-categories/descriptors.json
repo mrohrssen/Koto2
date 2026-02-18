@@ -606,6 +606,12 @@
     "meaning": "unnatural"
   },
   {
+    "rank": 2420,
+    "word": "よっぽど",
+    "reading": "よっぽど",
+    "meaning": "very"
+  },
+  {
     "rank": 2431,
     "word": "強烈",
     "reading": "きょうれつ",
@@ -886,6 +892,12 @@
     "word": "外見",
     "reading": "がいけん",
     "meaning": "outward appearance"
+  },
+  {
+    "rank": 3346,
+    "word": "鈍い",
+    "reading": "にぶい",
+    "meaning": "dull (e.g. a knife)"
   },
   {
     "rank": 3347,
@@ -1956,6 +1968,12 @@
     "meaning": "bank"
   },
   {
+    "rank": 5770,
+    "word": "無能",
+    "reading": "むのう",
+    "meaning": "incompetence"
+  },
+  {
     "rank": 5771,
     "word": "共にする",
     "reading": "ともにする",
@@ -1974,6 +1992,12 @@
     "meaning": "to bite into (e.g. rope into skin)"
   },
   {
+    "rank": 5810,
+    "word": "おもむろに",
+    "reading": "おもむろに",
+    "meaning": "suddenly"
+  },
+  {
     "rank": 5832,
     "word": "大幅",
     "reading": "おおはば",
@@ -1990,6 +2014,12 @@
     "word": "対決",
     "reading": "たいけつ",
     "meaning": "confrontation"
+  },
+  {
+    "rank": 5856,
+    "word": "つくづく",
+    "reading": "つくづく",
+    "meaning": "deeply"
   },
   {
     "rank": 5860,
@@ -3642,6 +3672,12 @@
     "meaning": "obedient"
   },
   {
+    "rank": 9318,
+    "word": "不用意",
+    "reading": "ふようい",
+    "meaning": "unprepared"
+  },
+  {
     "rank": 9326,
     "word": "麗しい",
     "reading": "うるわしい",
@@ -3774,6 +3810,12 @@
     "meaning": "foolish"
   },
   {
+    "rank": 9663,
+    "word": "交じり",
+    "reading": "まじり",
+    "meaning": "mixed"
+  },
+  {
     "rank": 9700,
     "word": "大人っぽい",
     "reading": "おとなっぽい",
@@ -3822,6 +3864,12 @@
     "meaning": "becoming red hot"
   },
   {
+    "rank": 9813,
+    "word": "散らかる",
+    "reading": "ちらかる",
+    "meaning": "to be in disorder"
+  },
+  {
     "rank": 9821,
     "word": "人間らしい",
     "reading": "にんげんらしい",
@@ -3850,6 +3898,12 @@
     "word": "礼儀正しい",
     "reading": "れいぎただしい",
     "meaning": "courteous"
+  },
+  {
+    "rank": 9920,
+    "word": "丸出し",
+    "reading": "まるだし",
+    "meaning": "exposing fully"
   },
   {
     "rank": 9927,
@@ -3958,6 +4012,12 @@
     "word": "擦れる",
     "reading": "すれる",
     "meaning": "to rub"
+  },
+  {
+    "rank": 10181,
+    "word": "騒々しい",
+    "reading": "そうぞうしい",
+    "meaning": "noisy"
   },
   {
     "rank": 10182,
@@ -4222,6 +4282,12 @@
     "word": "ぱちぱち",
     "reading": "ぱちぱち",
     "meaning": "crackling"
+  },
+  {
+    "rank": 10868,
+    "word": "ねっとり",
+    "reading": "ねっとり",
+    "meaning": "viscously"
   },
   {
     "rank": 10912,
@@ -5448,6 +5514,12 @@
     "meaning": "to be moist"
   },
   {
+    "rank": 13472,
+    "word": "みっちり",
+    "reading": "みっちり",
+    "meaning": "intensely"
+  },
+  {
     "rank": 13497,
     "word": "強靭",
     "reading": "きょうじん",
@@ -5530,6 +5602,12 @@
     "word": "菊",
     "reading": "きく",
     "meaning": "chrysanthemum (Chrysanthemum morifolium)"
+  },
+  {
+    "rank": 13619,
+    "word": "鬼畜",
+    "reading": "きちく",
+    "meaning": "brute"
   },
   {
     "rank": 13620,
@@ -5800,6 +5878,12 @@
     "word": "超人",
     "reading": "ちょうじん",
     "meaning": "superman"
+  },
+  {
+    "rank": 14143,
+    "word": "不躾",
+    "reading": "ぶしつけ",
+    "meaning": "ill-bred"
   },
   {
     "rank": 14144,

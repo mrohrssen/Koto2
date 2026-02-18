@@ -42,6 +42,18 @@
     "meaning": "circumference"
   },
   {
+    "rank": 743,
+    "word": "それぞれ",
+    "reading": "それぞれ",
+    "meaning": "each"
+  },
+  {
+    "rank": 761,
+    "word": "雰囲気",
+    "reading": "ふんいき",
+    "meaning": "atmosphere"
+  },
+  {
     "rank": 852,
     "word": "他に",
     "reading": "ほかに",
@@ -3888,6 +3900,12 @@
     "meaning": "angle"
   },
   {
+    "rank": 4002,
+    "word": "掛かる",
+    "reading": "かかる",
+    "meaning": "to take (a resource, e.g. time or money)"
+  },
+  {
     "rank": 4012,
     "word": "経緯",
     "reading": "いきさつ",
@@ -4150,6 +4168,12 @@
     "word": "一角",
     "reading": "いっかく",
     "meaning": "corner"
+  },
+  {
+    "rank": 4247,
+    "word": "異変",
+    "reading": "いへん",
+    "meaning": "unusual event"
   },
   {
     "rank": 4248,
@@ -4660,6 +4684,12 @@
     "word": "位",
     "reading": "くらい",
     "meaning": "throne"
+  },
+  {
+    "rank": 4623,
+    "word": "に従い",
+    "reading": "にしたがい",
+    "meaning": "in accordance with"
   },
   {
     "rank": 4636,
@@ -5410,6 +5440,12 @@
     "word": "権限",
     "reading": "けんげん",
     "meaning": "power"
+  },
+  {
+    "rank": 5212,
+    "word": "引き続く",
+    "reading": "ひきつづく",
+    "meaning": "to continue (for a long time)"
   },
   {
     "rank": 5216,
@@ -6240,6 +6276,12 @@
     "meaning": "oath"
   },
   {
+    "rank": 6179,
+    "word": "順に",
+    "reading": "じゅんに",
+    "meaning": "in order"
+  },
+  {
     "rank": 6183,
     "word": "進歩",
     "reading": "しんぽ",
@@ -6318,6 +6360,12 @@
     "meaning": "depending on the situation"
   },
   {
+    "rank": 6275,
+    "word": "無縁",
+    "reading": "むえん",
+    "meaning": "unrelated"
+  },
+  {
     "rank": 6278,
     "word": "音もなく",
     "reading": "おともなく",
@@ -6382,6 +6430,12 @@
     "word": "こうなると",
     "reading": "こうなると",
     "meaning": "given the situation"
+  },
+  {
+    "rank": 6331,
+    "word": "一滴",
+    "reading": "いってき",
+    "meaning": "one drop (of fluid)"
   },
   {
     "rank": 6333,
@@ -6460,6 +6514,12 @@
     "word": "カバー",
     "reading": "カバー",
     "meaning": "cover"
+  },
+  {
+    "rank": 6439,
+    "word": "手応え",
+    "reading": "てごたえ",
+    "meaning": "response (felt in the hands)"
   },
   {
     "rank": 6445,
@@ -6766,6 +6826,12 @@
     "word": "定義",
     "reading": "ていぎ",
     "meaning": "definition"
+  },
+  {
+    "rank": 6742,
+    "word": "生存",
+    "reading": "せいぞん",
+    "meaning": "existence"
   },
   {
     "rank": 6743,
@@ -12048,6 +12114,12 @@
     "meaning": "slowly"
   },
   {
+    "rank": 10624,
+    "word": "栄える",
+    "reading": "さかえる",
+    "meaning": "to prosper"
+  },
+  {
     "rank": 10625,
     "word": "軽々しい",
     "reading": "かるがるしい",
@@ -12166,6 +12238,12 @@
     "word": "言葉を濁す",
     "reading": "ことばをにごす",
     "meaning": "to be vague"
+  },
+  {
+    "rank": 10667,
+    "word": "一大",
+    "reading": "いちだい",
+    "meaning": "one large ..."
   },
   {
     "rank": 10668,
@@ -15636,6 +15714,12 @@
     "meaning": "collapse"
   },
   {
+    "rank": 13433,
+    "word": "余力",
+    "reading": "よりょく",
+    "meaning": "spare energy, time or money"
+  },
+  {
     "rank": 13434,
     "word": "大空",
     "reading": "おおぞら",
@@ -15874,6 +15958,12 @@
     "word": "まどろむ",
     "reading": "まどろむ",
     "meaning": "to doze (off)"
+  },
+  {
+    "rank": 13596,
+    "word": "挫折",
+    "reading": "ざせつ",
+    "meaning": "setback"
   },
   {
     "rank": 13597,
@@ -16542,6 +16632,12 @@
     "meaning": "heir"
   },
   {
+    "rank": 14130,
+    "word": "ゆかり",
+    "reading": "ゆかり",
+    "meaning": "connection (to a person, place, etc.)"
+  },
+  {
     "rank": 14145,
     "word": "諜報",
     "reading": "ちょうほう",
@@ -16842,6 +16938,12 @@
     "meaning": "other intention"
   },
   {
+    "rank": 14762,
+    "word": "便乗",
+    "reading": "びんじょう",
+    "meaning": "taking advantage of (an opportunity)"
+  },
+  {
     "rank": 14774,
     "word": "源",
     "reading": "げん",
@@ -17044,6 +17146,12 @@
     "word": "同義",
     "reading": "どうぎ",
     "meaning": "same meaning"
+  },
+  {
+    "rank": 15074,
+    "word": "洗礼",
+    "reading": "せんれい",
+    "meaning": "baptism"
   },
   {
     "rank": 15084,

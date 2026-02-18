@@ -36,6 +36,12 @@
     "meaning": "to persevere"
   },
   {
+    "rank": 608,
+    "word": "気分",
+    "reading": "きぶん",
+    "meaning": "feeling"
+  },
+  {
     "rank": 618,
     "word": "危険",
     "reading": "きけん",
@@ -70,6 +76,12 @@
     "word": "願う",
     "reading": "ねがう",
     "meaning": "to desire"
+  },
+  {
+    "rank": 960,
+    "word": "平気",
+    "reading": "へいき",
+    "meaning": "coolness"
   },
   {
     "rank": 974,
@@ -1320,6 +1332,12 @@
     "meaning": "pleasant"
   },
   {
+    "rank": 5869,
+    "word": "取り乱す",
+    "reading": "とりみだす",
+    "meaning": "to be upset"
+  },
+  {
     "rank": 5933,
     "word": "ぞっと",
     "reading": "ぞっと",
@@ -1462,6 +1480,12 @@
     "word": "惨め",
     "reading": "みじめ",
     "meaning": "miserable"
+  },
+  {
+    "rank": 6409,
+    "word": "憂鬱",
+    "reading": "ゆううつ",
+    "meaning": "depression"
   },
   {
     "rank": 6447,
@@ -2566,6 +2590,12 @@
     "word": "勇ましい",
     "reading": "いさましい",
     "meaning": "brave"
+  },
+  {
+    "rank": 10700,
+    "word": "愛でる",
+    "reading": "めでる",
+    "meaning": "to love"
   },
   {
     "rank": 10701,

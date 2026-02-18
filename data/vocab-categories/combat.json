@@ -1,5 +1,11 @@
 [
   {
+    "rank": 828,
+    "word": "打つ",
+    "reading": "うつ",
+    "meaning": "to hit"
+  },
+  {
     "rank": 1224,
     "word": "攻撃",
     "reading": "こうげき",
@@ -2466,6 +2472,12 @@
     "meaning": "(on the) verge of death"
   },
   {
+    "rank": 10158,
+    "word": "武術",
+    "reading": "ぶじゅつ",
+    "meaning": "martial arts"
+  },
+  {
     "rank": 10227,
     "word": "攻め込む",
     "reading": "せめこむ",
@@ -3274,6 +3286,12 @@
     "word": "親衛隊",
     "reading": "しんえいたい",
     "meaning": "bodyguards"
+  },
+  {
+    "rank": 13450,
+    "word": "太刀打ち",
+    "reading": "たちうち",
+    "meaning": "crossing swords"
   },
   {
     "rank": 13463,
