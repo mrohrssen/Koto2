@@ -28,8 +28,11 @@ import {
 import { addXpToRobot, XP_PER_LEVEL, instantiateRobot, getRobotBuyPrice, getRobotSellPrice, generateDealerRobots } from '../robots.js';
 import { logger } from '../../logger.js';
 
-
-
+const AREA_BG_COUNT = 20;
+function randomAreaBg(areaId) {
+  const n = Math.floor(Math.random() * AREA_BG_COUNT) + 1;
+  return `areas/${areaId}/${areaId}_${String(n).padStart(2, '0')}.webp`;
+}
 
 /**
  * ExplorationService - Handles dungeon exploration and room interactions
@@ -106,8 +109,8 @@ export class ExplorationService {
     this.gm.run.pendingBranch = false;
     this.gm.run.selectedRooms = [];
 
-    // Set background: area-specific
-    this.gm.run.background = `${areaId}.webp`;
+    // Set background: random area-specific
+    this.gm.run.background = randomAreaBg(areaId);
 
     // Mark first room as explored
     if (this.gm.run.rooms.length > 0) {
@@ -213,9 +216,8 @@ export class ExplorationService {
     this.gm.run.stats.roomsExplored++;
 
     // Vary background per room
-    const bgVariant = ((this.gm.run.currentRoom - 1) % 5) + 1;
-    const areaId = this.gm.run.currentArea?.id || 'floor1';
-    this.gm.run.background = `${areaId}_${bgVariant}.webp`;
+    const areaId = this.gm.run.currentArea?.id || 'okunomori';
+    this.gm.run.background = randomAreaBg(areaId);
 
     // Track room clears for counter chips
     if (this.gm.run.runStats) {
@@ -279,9 +281,8 @@ export class ExplorationService {
     }
 
     // Vary background per room
-    const bgVariant = ((this.gm.run.currentRoom - 1) % 5) + 1;
-    const areaId = this.gm.run.currentArea?.id || 'floor1';
-    this.gm.run.background = `${areaId}_${bgVariant}.webp`;
+    const areaId = this.gm.run.currentArea?.id || 'okunomori';
+    this.gm.run.background = randomAreaBg(areaId);
 
     // Clear pending branch
     this.gm.run.pendingBranch = false;
