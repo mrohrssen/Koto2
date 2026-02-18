@@ -1,27 +1,9 @@
 [
   {
-    "rank": 559,
-    "word": "失礼",
-    "reading": "しつれい",
-    "meaning": "discourtesy"
-  },
-  {
-    "rank": 647,
-    "word": "捨てる",
-    "reading": "すてる",
-    "meaning": "to throw away"
-  },
-  {
-    "rank": 716,
-    "word": "並ぶ",
-    "reading": "ならぶ",
-    "meaning": "to line up"
-  },
-  {
-    "rank": 848,
-    "word": "他人",
-    "reading": "たにん",
-    "meaning": "another person"
+    "rank": 830,
+    "word": "席",
+    "reading": "せき",
+    "meaning": "seat"
   },
   {
     "rank": 876,
@@ -30,22 +12,10 @@
     "meaning": "heat"
   },
   {
-    "rank": 903,
-    "word": "隠れる",
-    "reading": "かくれる",
-    "meaning": "to hide"
-  },
-  {
     "rank": 1086,
     "word": "型",
     "reading": "かた",
     "meaning": "model"
-  },
-  {
-    "rank": 1097,
-    "word": "屋",
-    "reading": "や",
-    "meaning": "shop"
   },
   {
     "rank": 1211,
@@ -138,24 +108,6 @@
     "meaning": "key"
   },
   {
-    "rank": 1431,
-    "word": "っていうか",
-    "reading": "っていうか",
-    "meaning": "or rather (say)"
-  },
-  {
-    "rank": 1435,
-    "word": "差し出す",
-    "reading": "さしだす",
-    "meaning": "to present"
-  },
-  {
-    "rank": 1450,
-    "word": "城",
-    "reading": "しろ",
-    "meaning": "castle"
-  },
-  {
     "rank": 1495,
     "word": "箱",
     "reading": "はこ",
@@ -222,12 +174,6 @@
     "meaning": "television"
   },
   {
-    "rank": 1884,
-    "word": "氷",
-    "reading": "こおり",
-    "meaning": "ice"
-  },
-  {
     "rank": 1885,
     "word": "布",
     "reading": "ぬの",
@@ -262,12 +208,6 @@
     "word": "プレゼント",
     "reading": "プレゼント",
     "meaning": "present"
-  },
-  {
-    "rank": 2027,
-    "word": "爪",
-    "reading": "つめ",
-    "meaning": "nail (e.g. fingernail, toenail)"
   },
   {
     "rank": 2035,
@@ -306,22 +246,10 @@
     "meaning": "document"
   },
   {
-    "rank": 2155,
-    "word": "映像",
-    "reading": "えいぞう",
-    "meaning": "image (on a screen)"
-  },
-  {
     "rank": 2183,
     "word": "時計",
     "reading": "とけい",
     "meaning": "clock"
-  },
-  {
-    "rank": 2190,
-    "word": "資料",
-    "reading": "しりょう",
-    "meaning": "materials"
   },
   {
     "rank": 2219,
@@ -390,22 +318,10 @@
     "meaning": "newspaper"
   },
   {
-    "rank": 2655,
-    "word": "世話",
-    "reading": "せわ",
-    "meaning": "care"
-  },
-  {
     "rank": 2827,
     "word": "剣",
     "reading": "けん",
     "meaning": "sword (esp. a large, double-edged one)"
-  },
-  {
-    "rank": 2836,
-    "word": "屋敷",
-    "reading": "やしき",
-    "meaning": "residence"
   },
   {
     "rank": 2883,
@@ -594,34 +510,10 @@
     "meaning": "pole"
   },
   {
-    "rank": 3315,
-    "word": "食らう",
-    "reading": "くらう",
-    "meaning": "to eat"
-  },
-  {
-    "rank": 3319,
-    "word": "懐",
-    "reading": "ふところ",
-    "meaning": "inside the breast of one's clothing (esp. kimono)"
-  },
-  {
-    "rank": 3371,
-    "word": "エネルギー",
-    "reading": "エネルギー",
-    "meaning": "energy"
-  },
-  {
     "rank": 3375,
     "word": "ソファ",
     "reading": "ソファ",
     "meaning": "sofa"
-  },
-  {
-    "rank": 3400,
-    "word": "帽子",
-    "reading": "ぼうし",
-    "meaning": "hat"
   },
   {
     "rank": 3406,
@@ -640,12 +532,6 @@
     "word": "指輪",
     "reading": "ゆびわ",
     "meaning": "(finger) ring"
-  },
-  {
-    "rank": 3460,
-    "word": "級",
-    "reading": "きゅう",
-    "meaning": "class (e.g. school)"
   },
   {
     "rank": 3488,
@@ -732,28 +618,10 @@
     "meaning": "curtain"
   },
   {
-    "rank": 3691,
-    "word": "文句を言う",
-    "reading": "もんくをいう",
-    "meaning": "to complain"
-  },
-  {
     "rank": 3702,
     "word": "メモ",
     "reading": "メモ",
     "meaning": "note"
-  },
-  {
-    "rank": 3709,
-    "word": "小屋",
-    "reading": "こや",
-    "meaning": "hut"
-  },
-  {
-    "rank": 3716,
-    "word": "お弁当",
-    "reading": "おべんとう",
-    "meaning": "bento"
   },
   {
     "rank": 3730,
@@ -792,6 +660,12 @@
     "meaning": "hot water"
   },
   {
+    "rank": 3792,
+    "word": "列",
+    "reading": "れつ",
+    "meaning": "row"
+  },
+  {
     "rank": 3797,
     "word": "財布",
     "reading": "さいふ",
@@ -826,18 +700,6 @@
     "word": "ハンカチ",
     "reading": "ハンカチ",
     "meaning": "handkerchief"
-  },
-  {
-    "rank": 3932,
-    "word": "刃",
-    "reading": "は",
-    "meaning": "edge (of a knife or sword)"
-  },
-  {
-    "rank": 3939,
-    "word": "愉快",
-    "reading": "ゆかい",
-    "meaning": "pleasant"
   },
   {
     "rank": 3957,
@@ -924,22 +786,16 @@
     "meaning": "pen"
   },
   {
-    "rank": 4459,
-    "word": "弾",
-    "reading": "たま",
-    "meaning": "ball"
-  },
-  {
     "rank": 4471,
     "word": "冷蔵庫",
     "reading": "れいぞうこ",
     "meaning": "refrigerator"
   },
   {
-    "rank": 4479,
-    "word": "サポート",
-    "reading": "サポート",
-    "meaning": "support"
+    "rank": 4544,
+    "word": "花火",
+    "reading": "はなび",
+    "meaning": "fireworks"
   },
   {
     "rank": 4586,
@@ -1062,12 +918,6 @@
     "meaning": "engine"
   },
   {
-    "rank": 5123,
-    "word": "たった今",
-    "reading": "たったいま",
-    "meaning": "just now"
-  },
-  {
     "rank": 5129,
     "word": "照明",
     "reading": "しょうめい",
@@ -1086,24 +936,6 @@
     "meaning": "whip"
   },
   {
-    "rank": 5199,
-    "word": "埃",
-    "reading": "ほこり",
-    "meaning": "dust"
-  },
-  {
-    "rank": 5205,
-    "word": "リスト",
-    "reading": "リスト",
-    "meaning": "list"
-  },
-  {
-    "rank": 5210,
-    "word": "粉",
-    "reading": "こな",
-    "meaning": "flour"
-  },
-  {
     "rank": 5240,
     "word": "刃物",
     "reading": "はもの",
@@ -1116,16 +948,16 @@
     "meaning": "equipment"
   },
   {
-    "rank": 5282,
-    "word": "法律",
-    "reading": "ほうりつ",
-    "meaning": "law"
-  },
-  {
     "rank": 5283,
     "word": "汚れ",
     "reading": "よごれ",
     "meaning": "dirt"
+  },
+  {
+    "rank": 5284,
+    "word": "包丁",
+    "reading": "ほうちょう",
+    "meaning": "kitchen knife"
   },
   {
     "rank": 5317,
@@ -1138,18 +970,6 @@
     "word": "ノリ",
     "reading": "ノリ",
     "meaning": "paste"
-  },
-  {
-    "rank": 5330,
-    "word": "なおも",
-    "reading": "なおも",
-    "meaning": "still (continuing)"
-  },
-  {
-    "rank": 5337,
-    "word": "冷や汗",
-    "reading": "ひやあせ",
-    "meaning": "cold sweat"
   },
   {
     "rank": 5354,
@@ -1242,18 +1062,6 @@
     "meaning": "tatami mat"
   },
   {
-    "rank": 5842,
-    "word": "器",
-    "reading": "うつわ",
-    "meaning": "bowl"
-  },
-  {
-    "rank": 5854,
-    "word": "快い",
-    "reading": "こころよい",
-    "meaning": "pleasant"
-  },
-  {
     "rank": 5863,
     "word": "粒",
     "reading": "つぶ",
@@ -1270,12 +1078,6 @@
     "word": "おもちゃ",
     "reading": "おもちゃ",
     "meaning": "toy"
-  },
-  {
-    "rank": 6026,
-    "word": "幹",
-    "reading": "みき",
-    "meaning": "(tree) trunk"
   },
   {
     "rank": 6031,
@@ -1296,22 +1098,16 @@
     "meaning": "roll (e.g. of cloth)"
   },
   {
-    "rank": 6112,
-    "word": "ペット",
-    "reading": "ペット",
-    "meaning": "pet"
+    "rank": 6139,
+    "word": "ライト",
+    "reading": "ライト",
+    "meaning": "light"
   },
   {
-    "rank": 6140,
-    "word": "お約束",
-    "reading": "おやくそく",
-    "meaning": "promise"
-  },
-  {
-    "rank": 6176,
-    "word": "元に戻す",
-    "reading": "もとにもどす",
-    "meaning": "to go back to the start"
+    "rank": 6175,
+    "word": "忘れ物",
+    "reading": "わすれもの",
+    "meaning": "lost article"
   },
   {
     "rank": 6220,
@@ -1326,34 +1122,10 @@
     "meaning": "cover (of a book, magazine, etc.)"
   },
   {
-    "rank": 6271,
-    "word": "べし",
-    "reading": "べし",
-    "meaning": "shall"
-  },
-  {
-    "rank": 6273,
-    "word": "場合によって",
-    "reading": "ばあいによって",
-    "meaning": "depending on the situation"
-  },
-  {
     "rank": 6317,
     "word": "ちらちら",
     "reading": "ちらちら",
     "meaning": "falling lightly (e.g. snow, petals, confetti)"
-  },
-  {
-    "rank": 6324,
-    "word": "積もる",
-    "reading": "つもる",
-    "meaning": "to pile up"
-  },
-  {
-    "rank": 6339,
-    "word": "びる",
-    "reading": "びる",
-    "meaning": "to seem to be ..."
   },
   {
     "rank": 6359,
@@ -1362,40 +1134,16 @@
     "meaning": "drawer"
   },
   {
-    "rank": 6391,
-    "word": "よって",
-    "reading": "",
-    "meaning": ""
-  },
-  {
-    "rank": 6395,
-    "word": "嘲笑",
-    "reading": "ちょうしょう",
-    "meaning": "scornful laughter"
-  },
-  {
-    "rank": 6432,
-    "word": "彩る",
-    "reading": "いろどる",
-    "meaning": "to colour"
-  },
-  {
-    "rank": 6437,
-    "word": "投げ捨てる",
-    "reading": "なげすてる",
-    "meaning": "to throw away"
+    "rank": 6394,
+    "word": "楽器",
+    "reading": "がっき",
+    "meaning": "musical instrument"
   },
   {
     "rank": 6552,
     "word": "救急車",
     "reading": "きゅうきゅうしゃ",
     "meaning": "ambulance"
-  },
-  {
-    "rank": 6582,
-    "word": "足首",
-    "reading": "あしくび",
-    "meaning": "ankle"
   },
   {
     "rank": 6646,
@@ -1470,18 +1218,6 @@
     "meaning": "bullet"
   },
   {
-    "rank": 7713,
-    "word": "呻く",
-    "reading": "うめく",
-    "meaning": "to moan"
-  },
-  {
-    "rank": 7715,
-    "word": "巨体",
-    "reading": "きょたい",
-    "meaning": "huge body"
-  },
-  {
     "rank": 7716,
     "word": "ぬいぐるみ",
     "reading": "ぬいぐるみ",
@@ -1492,12 +1228,6 @@
     "word": "鞘",
     "reading": "さや",
     "meaning": "scabbard"
-  },
-  {
-    "rank": 7743,
-    "word": "厨房",
-    "reading": "ちゅうぼう",
-    "meaning": "kitchen"
   },
   {
     "rank": 7744,
@@ -1534,6 +1264,12 @@
     "word": "結晶",
     "reading": "けっしょう",
     "meaning": "crystal"
+  },
+  {
+    "rank": 7795,
+    "word": "銃声",
+    "reading": "じゅうせい",
+    "meaning": "(sound of a) gunshot"
   },
   {
     "rank": 7797,
@@ -1656,12 +1392,6 @@
     "meaning": "leather"
   },
   {
-    "rank": 7988,
-    "word": "ベルト",
-    "reading": "ベルト",
-    "meaning": "belt (waist, seat, etc.)"
-  },
-  {
     "rank": 7989,
     "word": "亀裂",
     "reading": "きれつ",
@@ -1728,12 +1458,6 @@
     "meaning": "pot"
   },
   {
-    "rank": 8121,
-    "word": "井戸",
-    "reading": "いど",
-    "meaning": "water well"
-  },
-  {
     "rank": 8127,
     "word": "寝台",
     "reading": "しんだい",
@@ -1780,12 +1504,6 @@
     "word": "絵本",
     "reading": "えほん",
     "meaning": "picture book"
-  },
-  {
-    "rank": 8209,
-    "word": "木製",
-    "reading": "もくせい",
-    "meaning": "wooden"
   },
   {
     "rank": 8240,
@@ -1890,12 +1608,6 @@
     "meaning": "ringtone"
   },
   {
-    "rank": 8532,
-    "word": "宮廷",
-    "reading": "きゅうてい",
-    "meaning": "imperial court"
-  },
-  {
     "rank": 8568,
     "word": "首輪",
     "reading": "くびわ",
@@ -1924,12 +1636,6 @@
     "word": "石畳",
     "reading": "いしだたみ",
     "meaning": "stone paving"
-  },
-  {
-    "rank": 8670,
-    "word": "これっぽっち",
-    "reading": "これっぽっち",
-    "meaning": "tiny amount (degree, extent)"
   },
   {
     "rank": 8732,
@@ -1972,12 +1678,6 @@
     "word": "殻",
     "reading": "から",
     "meaning": "shell"
-  },
-  {
-    "rank": 8820,
-    "word": "軽",
-    "reading": "けい",
-    "meaning": "light (e.g. aircraft, truck)"
   },
   {
     "rank": 8833,
@@ -2076,16 +1776,10 @@
     "meaning": "container"
   },
   {
-    "rank": 9143,
-    "word": "侵す",
-    "reading": "おかす",
-    "meaning": "to invade"
-  },
-  {
-    "rank": 9158,
-    "word": "立ち並ぶ",
-    "reading": "たちならぶ",
-    "meaning": "to stand in a row (e.g. shops on a street)"
+    "rank": 9142,
+    "word": "腕時計",
+    "reading": "うでどけい",
+    "meaning": "wristwatch"
   },
   {
     "rank": 9168,
@@ -2142,12 +1836,6 @@
     "meaning": "deck (of a ship)"
   },
   {
-    "rank": 9319,
-    "word": "畳",
-    "reading": "たたみ",
-    "meaning": "tatami mat"
-  },
-  {
     "rank": 9322,
     "word": "ポスター",
     "reading": "ポスター",
@@ -2172,10 +1860,10 @@
     "meaning": "lamp"
   },
   {
-    "rank": 9452,
-    "word": "咳き込む",
-    "reading": "せきこむ",
-    "meaning": "to cough violently"
+    "rank": 9451,
+    "word": "トランプ",
+    "reading": "トランプ",
+    "meaning": "(Western) playing cards"
   },
   {
     "rank": 9466,
@@ -2184,28 +1872,10 @@
     "meaning": "band"
   },
   {
-    "rank": 9468,
-    "word": "穴が開く",
-    "reading": "あながあく",
-    "meaning": "to have a hole"
-  },
-  {
-    "rank": 9482,
-    "word": "倉",
-    "reading": "くら",
-    "meaning": "warehouse"
-  },
-  {
     "rank": 9522,
     "word": "木箱",
     "reading": "きばこ",
     "meaning": "wooden box"
-  },
-  {
-    "rank": 9584,
-    "word": "応接室",
-    "reading": "おうせつしつ",
-    "meaning": "drawing room"
   },
   {
     "rank": 9594,
@@ -2280,12 +1950,6 @@
     "meaning": "gear"
   },
   {
-    "rank": 9818,
-    "word": "お守り",
-    "reading": "おまもり",
-    "meaning": "charm"
-  },
-  {
     "rank": 9842,
     "word": "杭",
     "reading": "くい",
@@ -2358,28 +2022,10 @@
     "meaning": "lead (Pb)"
   },
   {
-    "rank": 10062,
-    "word": "広告",
-    "reading": "こうこく",
-    "meaning": "advertisement"
-  },
-  {
-    "rank": 10065,
-    "word": "空洞",
-    "reading": "くうどう",
-    "meaning": "cave"
-  },
-  {
-    "rank": 10082,
-    "word": "石造り",
-    "reading": "いしづくり",
-    "meaning": "(made of) stone"
-  },
-  {
-    "rank": 10136,
-    "word": "っ子",
-    "reading": "っこ",
-    "meaning": "someone with a liking or characteristic"
+    "rank": 10067,
+    "word": "お宝",
+    "reading": "おたから",
+    "meaning": "treasure"
   },
   {
     "rank": 10141,
@@ -2400,46 +2046,16 @@
     "meaning": "to like"
   },
   {
-    "rank": 10177,
-    "word": "無実",
-    "reading": "むじつ",
-    "meaning": "innocence"
-  },
-  {
     "rank": 10192,
     "word": "そそる",
     "reading": "そそる",
     "meaning": "to excite"
   },
   {
-    "rank": 10229,
-    "word": "同類",
-    "reading": "どうるい",
-    "meaning": "the same kind"
-  },
-  {
-    "rank": 10246,
-    "word": "許容",
-    "reading": "きょよう",
-    "meaning": "permission"
-  },
-  {
-    "rank": 10248,
-    "word": "考察",
-    "reading": "こうさつ",
-    "meaning": "consideration"
-  },
-  {
     "rank": 10260,
     "word": "家賃",
     "reading": "やちん",
     "meaning": "rent"
-  },
-  {
-    "rank": 10278,
-    "word": "気を配る",
-    "reading": "きをくばる",
-    "meaning": "to pay attention"
   },
   {
     "rank": 10297,
@@ -2544,22 +2160,10 @@
     "meaning": "lumber"
   },
   {
-    "rank": 10646,
-    "word": "客室",
-    "reading": "きゃくしつ",
-    "meaning": "guest room (at a hotel)"
-  },
-  {
     "rank": 10654,
     "word": "大砲",
     "reading": "たいほう",
     "meaning": "gun"
-  },
-  {
-    "rank": 10656,
-    "word": "座敷",
-    "reading": "ざしき",
-    "meaning": "tatami room"
   },
   {
     "rank": 10670,
@@ -2590,18 +2194,6 @@
     "word": "脂",
     "reading": "あぶら",
     "meaning": "fat"
-  },
-  {
-    "rank": 10714,
-    "word": "吹雪",
-    "reading": "ふぶき",
-    "meaning": "snow storm"
-  },
-  {
-    "rank": 10737,
-    "word": "ベランダ",
-    "reading": "ベランダ",
-    "meaning": "balcony"
   },
   {
     "rank": 10749,
@@ -2640,22 +2232,10 @@
     "meaning": "hearth"
   },
   {
-    "rank": 10912,
-    "word": "パタパタ",
-    "reading": "パタパタ",
-    "meaning": "flapping (of a flag, fan, etc.)"
-  },
-  {
     "rank": 10914,
     "word": "乗り物",
     "reading": "のりもの",
     "meaning": "vehicle"
-  },
-  {
-    "rank": 10915,
-    "word": "一位",
-    "reading": "いちい",
-    "meaning": "first place"
   },
   {
     "rank": 10920,
@@ -2680,12 +2260,6 @@
     "word": "テープ",
     "reading": "テープ",
     "meaning": "tape"
-  },
-  {
-    "rank": 10988,
-    "word": "こみ",
-    "reading": "こみ",
-    "meaning": "including"
   },
   {
     "rank": 10992,
@@ -2742,16 +2316,16 @@
     "meaning": "tray"
   },
   {
+    "rank": 11156,
+    "word": "鐘の音",
+    "reading": "かねのね",
+    "meaning": "chimes"
+  },
+  {
     "rank": 11159,
     "word": "砲弾",
     "reading": "ほうだん",
     "meaning": "shell"
-  },
-  {
-    "rank": 11168,
-    "word": "奮い立つ",
-    "reading": "ふるいたつ",
-    "meaning": "to cheer up"
   },
   {
     "rank": 11182,
@@ -2856,12 +2430,6 @@
     "meaning": "pearl"
   },
   {
-    "rank": 11487,
-    "word": "物置",
-    "reading": "ものおき",
-    "meaning": "storage room"
-  },
-  {
     "rank": 11512,
     "word": "ピン",
     "reading": "ピン",
@@ -2880,28 +2448,10 @@
     "meaning": "dictionary"
   },
   {
-    "rank": 11559,
-    "word": "金属製",
-    "reading": "きんぞくせい",
-    "meaning": "made of metal"
-  },
-  {
-    "rank": 11576,
-    "word": "書庫",
-    "reading": "しょこ",
-    "meaning": "library"
-  },
-  {
     "rank": 11607,
     "word": "ディスプレイ",
     "reading": "ディスプレイ",
     "meaning": "display"
-  },
-  {
-    "rank": 11622,
-    "word": "ごらんなさい",
-    "reading": "ごらんなさい",
-    "meaning": "(please) look"
   },
   {
     "rank": 11632,
@@ -2932,12 +2482,6 @@
     "word": "陶器",
     "reading": "とうき",
     "meaning": "porcelain (esp. soft-paste porcelain)"
-  },
-  {
-    "rank": 11713,
-    "word": "オーバー",
-    "reading": "オーバー",
-    "meaning": "overcoat"
   },
   {
     "rank": 11756,
@@ -3078,12 +2622,6 @@
     "meaning": "map"
   },
   {
-    "rank": 12146,
-    "word": "立てかける",
-    "reading": "たてかける",
-    "meaning": "to lean against"
-  },
-  {
     "rank": 12159,
     "word": "ボディ",
     "reading": "ボディ",
@@ -3172,12 +2710,6 @@
     "word": "タイヤ",
     "reading": "タイヤ",
     "meaning": "tire"
-  },
-  {
-    "rank": 12320,
-    "word": "蔵",
-    "reading": "くら",
-    "meaning": "warehouse"
   },
   {
     "rank": 12324,
@@ -3492,12 +3024,6 @@
     "meaning": "book"
   },
   {
-    "rank": 13099,
-    "word": "手製",
-    "reading": "てせい",
-    "meaning": "handmade"
-  },
-  {
     "rank": 13100,
     "word": "チップ",
     "reading": "チップ",
@@ -3600,22 +3126,10 @@
     "meaning": "sculpture"
   },
   {
-    "rank": 13595,
-    "word": "走り寄る",
-    "reading": "はしりよる",
-    "meaning": "to run up to"
-  },
-  {
     "rank": 13661,
     "word": "アラーム",
     "reading": "アラーム",
     "meaning": "alarm"
-  },
-  {
-    "rank": 13675,
-    "word": "俊敏",
-    "reading": "しゅんびん",
-    "meaning": "quick-witted and agile"
   },
   {
     "rank": 13728,
@@ -3750,18 +3264,6 @@
     "meaning": "zabuton (flat floor cushion used when sitting or kneeling"
   },
   {
-    "rank": 14133,
-    "word": "年老いる",
-    "reading": "としおいる",
-    "meaning": "to grow old"
-  },
-  {
-    "rank": 14145,
-    "word": "諜報",
-    "reading": "ちょうほう",
-    "meaning": "secret information"
-  },
-  {
     "rank": 14161,
     "word": "ガン",
     "reading": "ガン",
@@ -3802,12 +3304,6 @@
     "word": "ワイヤー",
     "reading": "ワイヤー",
     "meaning": "wire"
-  },
-  {
-    "rank": 14245,
-    "word": "建国",
-    "reading": "けんこく",
-    "meaning": "founding of a nation"
   },
   {
     "rank": 14250,
@@ -3918,12 +3414,6 @@
     "meaning": "film"
   },
   {
-    "rank": 14678,
-    "word": "灯",
-    "reading": "あかり",
-    "meaning": "lamp"
-  },
-  {
     "rank": 14679,
     "word": "取っ手",
     "reading": "とって",
@@ -3940,18 +3430,6 @@
     "word": "ストロー",
     "reading": "ストロー",
     "meaning": "drinking straw"
-  },
-  {
-    "rank": 14693,
-    "word": "匿う",
-    "reading": "かくまう",
-    "meaning": "to shelter (e.g. a fugitive)"
-  },
-  {
-    "rank": 14716,
-    "word": "あれれ",
-    "reading": "あれれ",
-    "meaning": "tsk tsk"
   },
   {
     "rank": 14764,
@@ -3982,12 +3460,6 @@
     "word": "口笛",
     "reading": "くちぶえ",
     "meaning": "whistle (sound made with the lips)"
-  },
-  {
-    "rank": 14858,
-    "word": "藪",
-    "reading": "やぶ",
-    "meaning": "thicket"
   },
   {
     "rank": 14873,
@@ -4056,12 +3528,6 @@
     "meaning": "porcelain bowl"
   },
   {
-    "rank": 15240,
-    "word": "お偉いさん",
-    "reading": "おえらいさん",
-    "meaning": "big shot"
-  },
-  {
     "rank": 15253,
     "word": "荷車",
     "reading": "にぐるま",
@@ -4122,12 +3588,6 @@
     "meaning": "rust"
   },
   {
-    "rank": 15485,
-    "word": "溜め息",
-    "reading": "ためいき",
-    "meaning": "sigh"
-  },
-  {
     "rank": 15493,
     "word": "環",
     "reading": "わ",
@@ -4158,16 +3618,10 @@
     "meaning": "book"
   },
   {
-    "rank": 15572,
-    "word": "そんなら",
-    "reading": "そんなら",
-    "meaning": "if that's the case ..."
-  },
-  {
-    "rank": 15580,
-    "word": "修繕",
-    "reading": "しゅうぜん",
-    "meaning": "repair"
+    "rank": 15573,
+    "word": "絵の具",
+    "reading": "えのぐ",
+    "meaning": "paint"
   },
   {
     "rank": 15643,
@@ -4194,12 +3648,6 @@
     "meaning": "medal"
   },
   {
-    "rank": 15762,
-    "word": "造形",
-    "reading": "ぞうけい",
-    "meaning": "molding"
-  },
-  {
     "rank": 15818,
     "word": "ゴーグル",
     "reading": "ゴーグル",
@@ -4216,18 +3664,6 @@
     "word": "艇",
     "reading": "てい",
     "meaning": "boat"
-  },
-  {
-    "rank": 15854,
-    "word": "殺人犯",
-    "reading": "さつじんはん",
-    "meaning": "murderer"
-  },
-  {
-    "rank": 15865,
-    "word": "肩に担ぐ",
-    "reading": "かたにかつぐ",
-    "meaning": "to bear"
   },
   {
     "rank": 15916,
@@ -4252,12 +3688,6 @@
     "word": "模型",
     "reading": "もけい",
     "meaning": "model"
-  },
-  {
-    "rank": 15997,
-    "word": "点ける",
-    "reading": "つける",
-    "meaning": "to turn on"
   },
   {
     "rank": 16003,
@@ -4644,12 +4074,6 @@
     "meaning": "telescope"
   },
   {
-    "rank": 17312,
-    "word": "コロッケ",
-    "reading": "コロッケ",
-    "meaning": "croquette"
-  },
-  {
     "rank": 17408,
     "word": "タイル",
     "reading": "タイル",
@@ -4710,12 +4134,6 @@
     "meaning": "sponge"
   },
   {
-    "rank": 17598,
-    "word": "輪",
-    "reading": "わ",
-    "meaning": "ring"
-  },
-  {
     "rank": 17606,
     "word": "一人分",
     "reading": "ひとりぶん",
@@ -4750,12 +4168,6 @@
     "word": "お膳立て",
     "reading": "おぜんだて",
     "meaning": "setting the table"
-  },
-  {
-    "rank": 17692,
-    "word": "必要最低限",
-    "reading": "ひつようさいていげん",
-    "meaning": "bare minimum"
   },
   {
     "rank": 17707,
@@ -4824,22 +4236,10 @@
     "meaning": "alarm clock"
   },
   {
-    "rank": 17798,
-    "word": "用済み",
-    "reading": "ようずみ",
-    "meaning": "having served one's purpose"
-  },
-  {
     "rank": 17802,
     "word": "神器",
     "reading": "じんぎ",
     "meaning": "sacred treasure"
-  },
-  {
-    "rank": 17807,
-    "word": "研ぐ",
-    "reading": "とぐ",
-    "meaning": "to sharpen"
   },
   {
     "rank": 17813,
@@ -4870,6 +4270,12 @@
     "word": "姿見",
     "reading": "すがたみ",
     "meaning": "full-length mirror"
+  },
+  {
+    "rank": 17912,
+    "word": "花火大会",
+    "reading": "はなびたいかい",
+    "meaning": "display of fireworks"
   },
   {
     "rank": 17913,
@@ -5196,12 +4602,6 @@
     "meaning": "shovel"
   },
   {
-    "rank": 18626,
-    "word": "ジム",
-    "reading": "ジム",
-    "meaning": "gym"
-  },
-  {
     "rank": 18629,
     "word": "矛",
     "reading": "ほこ",
@@ -5226,16 +4626,16 @@
     "meaning": "bookshelf"
   },
   {
+    "rank": 18687,
+    "word": "ラノベ",
+    "reading": "ラノベ",
+    "meaning": "light novel"
+  },
+  {
     "rank": 18692,
     "word": "ストラップ",
     "reading": "ストラップ",
     "meaning": "strap (often decorative for key-holder, mobile phones, etc.)"
-  },
-  {
-    "rank": 18718,
-    "word": "大盛り",
-    "reading": "おおもり",
-    "meaning": "large serving"
   },
   {
     "rank": 18743,
@@ -5244,22 +4644,10 @@
     "meaning": "straight-laced person"
   },
   {
-    "rank": 18749,
-    "word": "納屋",
-    "reading": "なや",
-    "meaning": "shed"
-  },
-  {
     "rank": 18753,
     "word": "点灯",
     "reading": "てんとう",
     "meaning": "lighting (a lamp)"
-  },
-  {
-    "rank": 18754,
-    "word": "十本",
-    "reading": "じっぽん",
-    "meaning": "ten (long cylindrical things)"
   },
   {
     "rank": 18776,
@@ -5424,12 +4812,6 @@
     "meaning": "wood (for building)"
   },
   {
-    "rank": 19263,
-    "word": "ガン",
-    "reading": "ガン",
-    "meaning": "gun"
-  },
-  {
     "rank": 19268,
     "word": "壁紙",
     "reading": "かべがみ",
@@ -5472,12 +4854,6 @@
     "meaning": "telephone receiver"
   },
   {
-    "rank": 19434,
-    "word": "巻",
-    "reading": "まき",
-    "meaning": "roll (e.g. of cloth)"
-  },
-  {
     "rank": 19500,
     "word": "ドラム",
     "reading": "ドラム",
@@ -5518,12 +4894,6 @@
     "word": "レンジ",
     "reading": "レンジ",
     "meaning": "range"
-  },
-  {
-    "rank": 19733,
-    "word": "べくもない",
-    "reading": "べくもない",
-    "meaning": "cannot possibly be"
   },
   {
     "rank": 19746,
@@ -5802,12 +5172,6 @@
     "meaning": "handle"
   },
   {
-    "rank": 20468,
-    "word": "こうすると",
-    "reading": "こうすると",
-    "meaning": "having done this"
-  },
-  {
     "rank": 20470,
     "word": "軒",
     "reading": "のき",
@@ -5938,6 +5302,12 @@
     "word": "非常階段",
     "reading": "ひじょうかいだん",
     "meaning": "emergency staircase"
+  },
+  {
+    "rank": 20822,
+    "word": "煙幕",
+    "reading": "えんまく",
+    "meaning": "smokescreen"
   },
   {
     "rank": 20837,
@@ -6282,12 +5652,6 @@
     "meaning": "identification papers"
   },
   {
-    "rank": 21456,
-    "word": "床",
-    "reading": "ゆか",
-    "meaning": "floor"
-  },
-  {
     "rank": 21476,
     "word": "塗料",
     "reading": "とりょう",
@@ -6316,12 +5680,6 @@
     "word": "シートベルト",
     "reading": "シートベルト",
     "meaning": "seat belt"
-  },
-  {
-    "rank": 21524,
-    "word": "ガン",
-    "reading": "ガン",
-    "meaning": "gun"
   },
   {
     "rank": 21528,
@@ -6478,6 +5836,12 @@
     "word": "風車",
     "reading": "ふうしゃ",
     "meaning": "windmill"
+  },
+  {
+    "rank": 21833,
+    "word": "立花",
+    "reading": "りっか",
+    "meaning": "rikka"
   },
   {
     "rank": 21857,
@@ -6796,12 +6160,6 @@
     "word": "刷り込む",
     "reading": "すりこむ",
     "meaning": "to print (on)"
-  },
-  {
-    "rank": 22717,
-    "word": "綿",
-    "reading": "わた",
-    "meaning": "cotton plant (Gossypium spp.)"
   },
   {
     "rank": 22760,
@@ -7338,12 +6696,6 @@
     "meaning": "spike (on a shoe or tyre)"
   },
   {
-    "rank": 24596,
-    "word": "威",
-    "reading": "おどし",
-    "meaning": "leather strap binding the plates of traditional Japanese ..."
-  },
-  {
     "rank": 24624,
     "word": "窯",
     "reading": "かま",
@@ -7530,12 +6882,6 @@
     "meaning": "ornate hairpin"
   },
   {
-    "rank": 25200,
-    "word": "戸",
-    "reading": "と",
-    "meaning": "door (esp. Japanese-style)"
-  },
-  {
     "rank": 25201,
     "word": "天窓",
     "reading": "てんまど",
@@ -7702,12 +7048,6 @@
     "word": "請求書",
     "reading": "せいきゅうしょ",
     "meaning": "bill"
-  },
-  {
-    "rank": 25557,
-    "word": "クロス",
-    "reading": "クロス",
-    "meaning": "cloth"
   },
   {
     "rank": 25561,
@@ -8214,12 +7554,6 @@
     "meaning": "to nod"
   },
   {
-    "rank": 26715,
-    "word": "ぬめり",
-    "reading": "",
-    "meaning": ""
-  },
-  {
     "rank": 26734,
     "word": "ショットガン",
     "reading": "ショットガン",
@@ -8320,5 +7654,47 @@
     "word": "日焼け止め",
     "reading": "ひやけどめ",
     "meaning": "sunscreen"
+  },
+  {
+    "rank": 6636,
+    "word": "サイト",
+    "reading": "サイト",
+    "meaning": "site (usu. website)"
+  },
+  {
+    "rank": 10208,
+    "word": "荷台",
+    "reading": "にだい",
+    "meaning": "(truck) load-carrying tray"
+  },
+  {
+    "rank": 11888,
+    "word": "チャンネル",
+    "reading": "チャンネル",
+    "meaning": "channel"
+  },
+  {
+    "rank": 14849,
+    "word": "ホームページ",
+    "reading": "ホームページ",
+    "meaning": "web site"
+  },
+  {
+    "rank": 21873,
+    "word": "雑貨",
+    "reading": "ざっか",
+    "meaning": "miscellaneous goods"
+  },
+  {
+    "rank": 22983,
+    "word": "留守電",
+    "reading": "るすでん",
+    "meaning": "answering machine"
+  },
+  {
+    "rank": 10166,
+    "word": "桶",
+    "reading": "おけ",
+    "meaning": "bucket"
   }
 ]

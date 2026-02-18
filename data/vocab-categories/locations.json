@@ -18,10 +18,22 @@
     "meaning": "place"
   },
   {
+    "rank": 545,
+    "word": "学校",
+    "reading": "がっこう",
+    "meaning": "school"
+  },
+  {
     "rank": 711,
     "word": "町",
     "reading": "まち",
     "meaning": "town"
+  },
+  {
+    "rank": 938,
+    "word": "位置",
+    "reading": "いち",
+    "meaning": "place"
   },
   {
     "rank": 999,
@@ -108,22 +120,10 @@
     "meaning": "space"
   },
   {
-    "rank": 1431,
-    "word": "っていうか",
-    "reading": "っていうか",
-    "meaning": "or rather (say)"
-  },
-  {
     "rank": 1450,
     "word": "城",
     "reading": "しろ",
     "meaning": "castle"
-  },
-  {
-    "rank": 1474,
-    "word": "家",
-    "reading": "いえ",
-    "meaning": "house"
   },
   {
     "rank": 1478,
@@ -160,12 +160,6 @@
     "word": "島",
     "reading": "しま",
     "meaning": "island"
-  },
-  {
-    "rank": 1558,
-    "word": "やっぱ",
-    "reading": "やっぱ",
-    "meaning": "too"
   },
   {
     "rank": 1565,
@@ -240,28 +234,10 @@
     "meaning": "west"
   },
   {
-    "rank": 1816,
-    "word": "挟む",
-    "reading": "はさむ",
-    "meaning": "to hold between (e.g. one's fingers, chopsticks)"
-  },
-  {
-    "rank": 1819,
-    "word": "今すぐ",
-    "reading": "いますぐ",
-    "meaning": "at once"
-  },
-  {
     "rank": 1883,
     "word": "北",
     "reading": "きた",
     "meaning": "north"
-  },
-  {
-    "rank": 1898,
-    "word": "土",
-    "reading": "ど",
-    "meaning": "Saturday"
   },
   {
     "rank": 1915,
@@ -456,12 +432,6 @@
     "meaning": "scenery"
   },
   {
-    "rank": 2578,
-    "word": "下す",
-    "reading": "くだす",
-    "meaning": "to make a decision"
-  },
-  {
     "rank": 2629,
     "word": "地域",
     "reading": "ちいき",
@@ -516,22 +486,16 @@
     "meaning": "residence"
   },
   {
-    "rank": 2837,
-    "word": "殿",
-    "reading": "との",
-    "meaning": "feudal lord"
-  },
-  {
     "rank": 2895,
     "word": "学園",
     "reading": "がくえん",
     "meaning": "educational institution"
   },
   {
-    "rank": 2930,
-    "word": "ドレス",
-    "reading": "ドレス",
-    "meaning": "dress"
+    "rank": 2931,
+    "word": "王国",
+    "reading": "おうこく",
+    "meaning": "kingdom"
   },
   {
     "rank": 2943,
@@ -554,8 +518,8 @@
   {
     "rank": 3001,
     "word": "室内",
-    "reading": "",
-    "meaning": ""
+    "reading": "しつない",
+    "meaning": "indoor"
   },
   {
     "rank": 3011,
@@ -568,12 +532,6 @@
     "word": "風呂",
     "reading": "ふろ",
     "meaning": "bath"
-  },
-  {
-    "rank": 3050,
-    "word": "城",
-    "reading": "しろ",
-    "meaning": "castle"
   },
   {
     "rank": 3059,
@@ -660,6 +618,12 @@
     "meaning": "multi-floor building"
   },
   {
+    "rank": 3350,
+    "word": "ルート",
+    "reading": "ルート",
+    "meaning": "route"
+  },
+  {
     "rank": 3373,
     "word": "宇宙",
     "reading": "うちゅう",
@@ -684,16 +648,10 @@
     "meaning": "tower"
   },
   {
-    "rank": 3426,
-    "word": "お兄さん",
-    "reading": "おにいさん",
-    "meaning": "older brother"
-  },
-  {
-    "rank": 3462,
-    "word": "素人",
-    "reading": "しろうと",
-    "meaning": "amateur"
+    "rank": 3425,
+    "word": "田舎",
+    "reading": "いなか",
+    "meaning": "rural area"
   },
   {
     "rank": 3489,
@@ -712,12 +670,6 @@
     "word": "上空",
     "reading": "じょうくう",
     "meaning": "sky"
-  },
-  {
-    "rank": 3554,
-    "word": "一匹",
-    "reading": "いっぴき",
-    "meaning": "one animal (small)"
   },
   {
     "rank": 3565,
@@ -808,12 +760,6 @@
     "word": "というところ",
     "reading": "というところ",
     "meaning": "the point of ..."
-  },
-  {
-    "rank": 3973,
-    "word": "街",
-    "reading": "がい",
-    "meaning": "street"
   },
   {
     "rank": 3988,
@@ -918,10 +864,10 @@
     "meaning": "headquarters"
   },
   {
-    "rank": 4254,
-    "word": "繰り出す",
-    "reading": "くりだす",
-    "meaning": "to draw (a thread)"
+    "rank": 4253,
+    "word": "敷地",
+    "reading": "しきち",
+    "meaning": "site"
   },
   {
     "rank": 4278,
@@ -946,18 +892,6 @@
     "word": "拠点",
     "reading": "きょてん",
     "meaning": "position"
-  },
-  {
-    "rank": 4393,
-    "word": "惹く",
-    "reading": "ひく",
-    "meaning": "to draw (attention, sympathy, etc.)"
-  },
-  {
-    "rank": 4395,
-    "word": "目当て",
-    "reading": "めあて",
-    "meaning": "mark"
   },
   {
     "rank": 4412,
@@ -1020,12 +954,6 @@
     "meaning": "cliff"
   },
   {
-    "rank": 4744,
-    "word": "癒す",
-    "reading": "いやす",
-    "meaning": "to heal"
-  },
-  {
     "rank": 4784,
     "word": "州",
     "reading": "しゅう",
@@ -1066,12 +994,6 @@
     "word": "港",
     "reading": "みなと",
     "meaning": "harbour"
-  },
-  {
-    "rank": 4947,
-    "word": "こんばんは",
-    "reading": "こんばんは",
-    "meaning": "good evening"
   },
   {
     "rank": 5004,
@@ -1146,12 +1068,6 @@
     "meaning": "journey"
   },
   {
-    "rank": 5234,
-    "word": "島",
-    "reading": "しま",
-    "meaning": "island"
-  },
-  {
     "rank": 5263,
     "word": "軌道",
     "reading": "きどう",
@@ -1164,18 +1080,6 @@
     "meaning": "national border"
   },
   {
-    "rank": 5292,
-    "word": "ひっそり",
-    "reading": "ひっそり",
-    "meaning": "quiet (place)"
-  },
-  {
-    "rank": 5295,
-    "word": "出",
-    "reading": "で",
-    "meaning": "coming out"
-  },
-  {
     "rank": 5298,
     "word": "スーパー",
     "reading": "スーパー",
@@ -1186,12 +1090,6 @@
     "word": "棟",
     "reading": "むね",
     "meaning": "ridge (of roof)"
-  },
-  {
-    "rank": 5353,
-    "word": "見物",
-    "reading": "けんぶつ",
-    "meaning": "sightseeing"
   },
   {
     "rank": 5355,
@@ -1210,6 +1108,12 @@
     "word": "宮",
     "reading": "きゅう",
     "meaning": "palace"
+  },
+  {
+    "rank": 5467,
+    "word": "堂",
+    "reading": "どう",
+    "meaning": "temple"
   },
   {
     "rank": 5468,
@@ -1234,12 +1138,6 @@
     "word": "境",
     "reading": "さかい",
     "meaning": "border"
-  },
-  {
-    "rank": 5584,
-    "word": "館",
-    "reading": "かん",
-    "meaning": "house"
   },
   {
     "rank": 5618,
@@ -1302,18 +1200,6 @@
     "meaning": "downtown"
   },
   {
-    "rank": 5755,
-    "word": "臆病",
-    "reading": "おくびょう",
-    "meaning": "cowardly"
-  },
-  {
-    "rank": 5767,
-    "word": "お詫び",
-    "reading": "おわび",
-    "meaning": "apology"
-  },
-  {
     "rank": 5806,
     "word": "局",
     "reading": "きょく",
@@ -1330,12 +1216,6 @@
     "word": "無人",
     "reading": "むじん",
     "meaning": "unmanned"
-  },
-  {
-    "rank": 5871,
-    "word": "究極",
-    "reading": "きゅうきょく",
-    "meaning": "ultimate"
   },
   {
     "rank": 5898,
@@ -1366,12 +1246,6 @@
     "word": "個室",
     "reading": "こしつ",
     "meaning": "private room"
-  },
-  {
-    "rank": 6005,
-    "word": "建設",
-    "reading": "けんせつ",
-    "meaning": "construction"
   },
   {
     "rank": 6015,
@@ -1416,34 +1290,10 @@
     "meaning": "river"
   },
   {
-    "rank": 6304,
-    "word": "揺れ",
-    "reading": "ゆれ",
-    "meaning": "shaking"
-  },
-  {
-    "rank": 6329,
-    "word": "人手",
-    "reading": "ひとで",
-    "meaning": "someone else's hands"
-  },
-  {
-    "rank": 6339,
-    "word": "びる",
-    "reading": "びる",
-    "meaning": "to seem to be ..."
-  },
-  {
     "rank": 6373,
     "word": "座席",
     "reading": "ざせき",
     "meaning": "seat"
-  },
-  {
-    "rank": 6427,
-    "word": "尊い",
-    "reading": "とうとい",
-    "meaning": "precious"
   },
   {
     "rank": 6537,
@@ -1456,12 +1306,6 @@
     "word": "岡",
     "reading": "おか",
     "meaning": "hill"
-  },
-  {
-    "rank": 6590,
-    "word": "下品",
-    "reading": "げひん",
-    "meaning": "vulgar"
   },
   {
     "rank": 6612,
@@ -1488,12 +1332,6 @@
     "meaning": "Tsu (city in Mie)"
   },
   {
-    "rank": 6636,
-    "word": "サイト",
-    "reading": "サイト",
-    "meaning": "site (usu. website)"
-  },
-  {
     "rank": 6646,
     "word": "寝床",
     "reading": "ねどこ",
@@ -1506,16 +1344,10 @@
     "meaning": "(at the) window"
   },
   {
-    "rank": 6677,
-    "word": "集中力",
-    "reading": "しゅうちゅうりょく",
-    "meaning": "(powers of) concentration"
-  },
-  {
-    "rank": 6708,
-    "word": "リラックス",
-    "reading": "リラックス",
-    "meaning": "relax"
+    "rank": 6707,
+    "word": "浜",
+    "reading": "はま",
+    "meaning": "beach"
   },
   {
     "rank": 6725,
@@ -1530,16 +1362,10 @@
     "meaning": "(place of) refuge"
   },
   {
-    "rank": 6908,
-    "word": "仲がいい",
-    "reading": "なかがいい",
-    "meaning": "close"
-  },
-  {
-    "rank": 6995,
-    "word": "細か",
-    "reading": "こまか",
-    "meaning": "small"
+    "rank": 6994,
+    "word": "岸",
+    "reading": "きし",
+    "meaning": "bank"
   },
   {
     "rank": 7007,
@@ -1560,12 +1386,6 @@
     "meaning": "Hokkaido (island, prefectural-level administrative unit)"
   },
   {
-    "rank": 7068,
-    "word": "図星",
-    "reading": "ずぼし",
-    "meaning": "bull's-eye"
-  },
-  {
     "rank": 7082,
     "word": "店舗",
     "reading": "てんぽ",
@@ -1578,22 +1398,10 @@
     "meaning": "ditch"
   },
   {
-    "rank": 7112,
-    "word": "家",
-    "reading": "いえ",
-    "meaning": "house"
-  },
-  {
     "rank": 7132,
     "word": "市内",
     "reading": "しない",
     "meaning": "(within a) city"
-  },
-  {
-    "rank": 7149,
-    "word": "絶つ",
-    "reading": "たつ",
-    "meaning": "to sever"
   },
   {
     "rank": 7153,
@@ -1602,16 +1410,16 @@
     "meaning": "warehouse"
   },
   {
-    "rank": 7174,
-    "word": "大統領",
-    "reading": "だいとうりょう",
-    "meaning": "president (of a nation)"
-  },
-  {
     "rank": 7206,
     "word": "郊外",
     "reading": "こうがい",
     "meaning": "suburb"
+  },
+  {
+    "rank": 7221,
+    "word": "隅々",
+    "reading": "すみずみ",
+    "meaning": "every corner"
   },
   {
     "rank": 7222,
@@ -1636,12 +1444,6 @@
     "word": "センター",
     "reading": "センター",
     "meaning": "centre"
-  },
-  {
-    "rank": 7322,
-    "word": "米",
-    "reading": "べい",
-    "meaning": "(United States of) America"
   },
   {
     "rank": 7339,
@@ -1684,12 +1486,6 @@
     "word": "南部",
     "reading": "なんぶ",
     "meaning": "southern part"
-  },
-  {
-    "rank": 7488,
-    "word": "農家",
-    "reading": "のうか",
-    "meaning": "farmer"
   },
   {
     "rank": 7554,
@@ -1770,12 +1566,6 @@
     "meaning": "cavern"
   },
   {
-    "rank": 7682,
-    "word": "領主",
-    "reading": "りょうしゅ",
-    "meaning": "feudal lord"
-  },
-  {
     "rank": 7684,
     "word": "街道",
     "reading": "かいどう",
@@ -1792,12 +1582,6 @@
     "word": "神殿",
     "reading": "しんでん",
     "meaning": "temple"
-  },
-  {
-    "rank": 7725,
-    "word": "店長",
-    "reading": "てんちょう",
-    "meaning": "shop manager"
   },
   {
     "rank": 7732,
@@ -1878,12 +1662,6 @@
     "meaning": "fort"
   },
   {
-    "rank": 7860,
-    "word": "ご主人",
-    "reading": "ごしゅじん",
-    "meaning": "your husband"
-  },
-  {
     "rank": 7868,
     "word": "邸",
     "reading": "てい",
@@ -1894,12 +1672,6 @@
     "word": "体育館",
     "reading": "たいいくかん",
     "meaning": "gymnasium"
-  },
-  {
-    "rank": 7871,
-    "word": "上級",
-    "reading": "じょうきゅう",
-    "meaning": "advanced level"
   },
   {
     "rank": 7872,
@@ -1938,12 +1710,6 @@
     "meaning": "small peninsula"
   },
   {
-    "rank": 7900,
-    "word": "お主",
-    "reading": "おぬし",
-    "meaning": "you (when referring to one's equals or inferiors)"
-  },
-  {
     "rank": 7919,
     "word": "遺跡",
     "reading": "いせき",
@@ -1954,12 +1720,6 @@
     "word": "我が国",
     "reading": "わがくに",
     "meaning": "our country"
-  },
-  {
-    "rank": 7961,
-    "word": "嘆息",
-    "reading": "たんそく",
-    "meaning": "sigh (of grief, disappointment, etc.)"
   },
   {
     "rank": 7968,
@@ -2208,10 +1968,10 @@
     "meaning": "ryokan"
   },
   {
-    "rank": 8531,
-    "word": "強者",
-    "reading": "きょうしゃ",
-    "meaning": "strong person"
+    "rank": 8532,
+    "word": "宮廷",
+    "reading": "きゅうてい",
+    "meaning": "imperial court"
   },
   {
     "rank": 8551,
@@ -2286,28 +2046,10 @@
     "meaning": "imperial capital"
   },
   {
-    "rank": 8709,
-    "word": "ジャケット",
-    "reading": "ジャケット",
-    "meaning": "jacket"
-  },
-  {
-    "rank": 8713,
-    "word": "火照る",
-    "reading": "ほてる",
-    "meaning": "to feel hot"
-  },
-  {
     "rank": 8718,
     "word": "裏手",
     "reading": "うらて",
     "meaning": "back (esp. of a building, etc.)"
-  },
-  {
-    "rank": 8739,
-    "word": "里",
-    "reading": "さと",
-    "meaning": "village"
   },
   {
     "rank": 8782,
@@ -2448,12 +2190,6 @@
     "meaning": "deck (of a ship)"
   },
   {
-    "rank": 9317,
-    "word": "ぶらぶら",
-    "reading": "ぶらぶら",
-    "meaning": "dangling heavily"
-  },
-  {
     "rank": 9377,
     "word": "最上階",
     "reading": "さいじょうかい",
@@ -2482,12 +2218,6 @@
     "word": "街並み",
     "reading": "まちなみ",
     "meaning": "townscape"
-  },
-  {
-    "rank": 9456,
-    "word": "蹴り飛ばす",
-    "reading": "けりとばす",
-    "meaning": "to kick flying (often a person in sport, martial arts, etc.)"
   },
   {
     "rank": 9473,
@@ -2520,12 +2250,6 @@
     "meaning": "mountain range"
   },
   {
-    "rank": 9564,
-    "word": "惨状",
-    "reading": "さんじょう",
-    "meaning": "disastrous scene"
-  },
-  {
     "rank": 9584,
     "word": "応接室",
     "reading": "おうせつしつ",
@@ -2536,12 +2260,6 @@
     "word": "一国",
     "reading": "いっこく",
     "meaning": "one country"
-  },
-  {
-    "rank": 9632,
-    "word": "相まって",
-    "reading": "あいまって",
-    "meaning": "coupled with"
   },
   {
     "rank": 9647,
@@ -2568,22 +2286,10 @@
     "meaning": "entrance"
   },
   {
-    "rank": 9704,
-    "word": "都",
-    "reading": "と",
-    "meaning": "Metropolis (of Tokyo)"
-  },
-  {
     "rank": 9708,
     "word": "浴室",
     "reading": "よくしつ",
     "meaning": "bathroom"
-  },
-  {
-    "rank": 9709,
-    "word": "宮",
-    "reading": "きゅう",
-    "meaning": "palace"
   },
   {
     "rank": 9757,
@@ -2646,12 +2352,6 @@
     "meaning": "limits"
   },
   {
-    "rank": 9850,
-    "word": "黒板",
-    "reading": "こくばん",
-    "meaning": "blackboard"
-  },
-  {
     "rank": 9884,
     "word": "大広間",
     "reading": "おおひろま",
@@ -2700,10 +2400,10 @@
     "meaning": "spring water"
   },
   {
-    "rank": 10066,
-    "word": "ライオン",
-    "reading": "ライオン",
-    "meaning": "lion (Panthera leo)"
+    "rank": 10065,
+    "word": "空洞",
+    "reading": "くうどう",
+    "meaning": "cave"
   },
   {
     "rank": 10071,
@@ -2718,58 +2418,10 @@
     "meaning": "back street"
   },
   {
-    "rank": 10109,
-    "word": "階",
-    "reading": "きざはし",
-    "meaning": "stairs"
-  },
-  {
     "rank": 10130,
     "word": "退場",
     "reading": "たいじょう",
     "meaning": "exit (from a stage)"
-  },
-  {
-    "rank": 10184,
-    "word": "形作る",
-    "reading": "かたちづくる",
-    "meaning": "to form"
-  },
-  {
-    "rank": 10208,
-    "word": "荷台",
-    "reading": "にだい",
-    "meaning": "(truck) load-carrying tray"
-  },
-  {
-    "rank": 10209,
-    "word": "百合",
-    "reading": "ゆり",
-    "meaning": "lily (Lilium spp.)"
-  },
-  {
-    "rank": 10225,
-    "word": "挙動",
-    "reading": "きょどう",
-    "meaning": "conduct"
-  },
-  {
-    "rank": 10227,
-    "word": "攻め込む",
-    "reading": "せめこむ",
-    "meaning": "to invade"
-  },
-  {
-    "rank": 10242,
-    "word": "うちら",
-    "reading": "うちら",
-    "meaning": "we"
-  },
-  {
-    "rank": 10246,
-    "word": "許容",
-    "reading": "きょよう",
-    "meaning": "permission"
   },
   {
     "rank": 10259,
@@ -2778,16 +2430,10 @@
     "meaning": "fusuma"
   },
   {
-    "rank": 10261,
-    "word": "死因",
-    "reading": "しいん",
-    "meaning": "cause of death"
-  },
-  {
-    "rank": 10271,
-    "word": "宣戦布告",
-    "reading": "せんせんふこく",
-    "meaning": "declaration of war"
+    "rank": 10270,
+    "word": "署",
+    "reading": "しょ",
+    "meaning": "station (esp. a police station)"
   },
   {
     "rank": 10285,
@@ -2904,28 +2550,10 @@
     "meaning": "corridor"
   },
   {
-    "rank": 10713,
-    "word": "脂",
-    "reading": "あぶら",
-    "meaning": "fat"
-  },
-  {
-    "rank": 10725,
-    "word": "堕落",
-    "reading": "だらく",
-    "meaning": "depravity"
-  },
-  {
     "rank": 10737,
     "word": "ベランダ",
     "reading": "ベランダ",
     "meaning": "balcony"
-  },
-  {
-    "rank": 10782,
-    "word": "湖",
-    "reading": "みずうみ",
-    "meaning": "lake"
   },
   {
     "rank": 10794,
@@ -2940,12 +2568,6 @@
     "meaning": "street stall"
   },
   {
-    "rank": 10845,
-    "word": "こだま",
-    "reading": "こだま",
-    "meaning": "echo"
-  },
-  {
     "rank": 10874,
     "word": "隠れ家",
     "reading": "かくれが",
@@ -2956,18 +2578,6 @@
     "word": "河原",
     "reading": "かわら",
     "meaning": "dry riverbed"
-  },
-  {
-    "rank": 10920,
-    "word": "まるっきり",
-    "reading": "まるっきり",
-    "meaning": "completely"
-  },
-  {
-    "rank": 10925,
-    "word": "換える",
-    "reading": "かえる",
-    "meaning": "to replace"
   },
   {
     "rank": 10938,
@@ -3022,12 +2632,6 @@
     "word": "海面",
     "reading": "かいめん",
     "meaning": "sea level"
-  },
-  {
-    "rank": 11062,
-    "word": "開店",
-    "reading": "かいてん",
-    "meaning": "opening a new shop"
   },
   {
     "rank": 11072,
@@ -3144,10 +2748,10 @@
     "meaning": "lawn"
   },
   {
-    "rank": 11355,
-    "word": "バカ野郎",
-    "reading": "バカやろう",
-    "meaning": "goddamn idiot"
+    "rank": 11354,
+    "word": "沖縄",
+    "reading": "おきなわ",
+    "meaning": "Okinawa (city, prefecture)"
   },
   {
     "rank": 11364,
@@ -3228,6 +2832,12 @@
     "meaning": "dead end"
   },
   {
+    "rank": 11576,
+    "word": "書庫",
+    "reading": "しょこ",
+    "meaning": "library"
+  },
+  {
     "rank": 11580,
     "word": "町中",
     "reading": "まちなか",
@@ -3258,40 +2868,16 @@
     "meaning": "business district"
   },
   {
-    "rank": 11620,
-    "word": "頭がおかしい",
-    "reading": "あたまがおかしい",
-    "meaning": "insane"
-  },
-  {
     "rank": 11621,
     "word": "近道",
     "reading": "ちかみち",
     "meaning": "short way"
   },
   {
-    "rank": 11629,
-    "word": "小規模",
-    "reading": "しょうきぼ",
-    "meaning": "small scale"
-  },
-  {
     "rank": 11630,
     "word": "壁面",
     "reading": "へきめん",
     "meaning": "surface of a wall"
-  },
-  {
-    "rank": 11681,
-    "word": "立ち入り禁止",
-    "reading": "たちいりきんし",
-    "meaning": "No Entry"
-  },
-  {
-    "rank": 11698,
-    "word": "ポスト",
-    "reading": "ポスト",
-    "meaning": "postbox"
   },
   {
     "rank": 11704,
@@ -3342,12 +2928,6 @@
     "meaning": "north side"
   },
   {
-    "rank": 11842,
-    "word": "剣技",
-    "reading": "けんぎ",
-    "meaning": "sword skills"
-  },
-  {
     "rank": 11860,
     "word": "映画館",
     "reading": "えいがかん",
@@ -3364,12 +2944,6 @@
     "word": "デパート",
     "reading": "デパート",
     "meaning": "department store"
-  },
-  {
-    "rank": 11888,
-    "word": "チャンネル",
-    "reading": "チャンネル",
-    "meaning": "channel"
   },
   {
     "rank": 11903,
@@ -3456,12 +3030,6 @@
     "meaning": "the south"
   },
   {
-    "rank": 12186,
-    "word": "石像",
-    "reading": "せきぞう",
-    "meaning": "stone statue"
-  },
-  {
     "rank": 12187,
     "word": "外界",
     "reading": "がいかい",
@@ -3484,12 +3052,6 @@
     "word": "海底",
     "reading": "かいてい",
     "meaning": "bottom of the ocean"
-  },
-  {
-    "rank": 12218,
-    "word": "障害物",
-    "reading": "しょうがいぶつ",
-    "meaning": "obstacle"
   },
   {
     "rank": 12237,
@@ -3528,28 +3090,10 @@
     "meaning": "partition"
   },
   {
-    "rank": 12262,
-    "word": "ハーレム",
-    "reading": "ハーレム",
-    "meaning": "harem"
-  },
-  {
     "rank": 12293,
     "word": "東側",
     "reading": "ひがしがわ",
     "meaning": "east side"
-  },
-  {
-    "rank": 12320,
-    "word": "蔵",
-    "reading": "くら",
-    "meaning": "warehouse"
-  },
-  {
-    "rank": 12363,
-    "word": "梯子",
-    "reading": "はしご",
-    "meaning": "ladder"
   },
   {
     "rank": 12405,
@@ -3720,12 +3264,6 @@
     "meaning": "the whole area"
   },
   {
-    "rank": 12842,
-    "word": "吊るす",
-    "reading": "つるす",
-    "meaning": "to hang"
-  },
-  {
     "rank": 12852,
     "word": "控え室",
     "reading": "ひかえしつ",
@@ -3738,34 +3276,10 @@
     "meaning": "one's heart"
   },
   {
-    "rank": 12875,
-    "word": "野宿",
-    "reading": "のじゅく",
-    "meaning": "sleeping outdoors"
-  },
-  {
     "rank": 12917,
     "word": "天上",
     "reading": "てんじょう",
     "meaning": "the heavens"
-  },
-  {
-    "rank": 12923,
-    "word": "地理",
-    "reading": "ちり",
-    "meaning": "geography"
-  },
-  {
-    "rank": 12935,
-    "word": "監視カメラ",
-    "reading": "かんしカメラ",
-    "meaning": "surveillance camera"
-  },
-  {
-    "rank": 12965,
-    "word": "浴槽",
-    "reading": "よくそう",
-    "meaning": "bathtub"
   },
   {
     "rank": 12977,
@@ -3784,18 +3298,6 @@
     "word": "幕府",
     "reading": "ばくふ",
     "meaning": "bakufu"
-  },
-  {
-    "rank": 13014,
-    "word": "危ねえ",
-    "reading": "あぶねえ",
-    "meaning": "dangerous"
-  },
-  {
-    "rank": 13116,
-    "word": "反感",
-    "reading": "はんかん",
-    "meaning": "antipathy"
   },
   {
     "rank": 13121,
@@ -3852,12 +3354,6 @@
     "meaning": "republic"
   },
   {
-    "rank": 13320,
-    "word": "打ち上げ",
-    "reading": "",
-    "meaning": ""
-  },
-  {
     "rank": 13331,
     "word": "国々",
     "reading": "くにぐに",
@@ -3876,12 +3372,6 @@
     "meaning": "Shinkansen"
   },
   {
-    "rank": 13389,
-    "word": "邸",
-    "reading": "てい",
-    "meaning": "residence"
-  },
-  {
     "rank": 13395,
     "word": "銀座",
     "reading": "ぎんざ",
@@ -3898,12 +3388,6 @@
     "word": "城下",
     "reading": "じょうか",
     "meaning": "land near a castle"
-  },
-  {
-    "rank": 13429,
-    "word": "ブレる",
-    "reading": "ブレる",
-    "meaning": "to be blurred (due to motion"
   },
   {
     "rank": 13471,
@@ -3930,34 +3414,22 @@
     "meaning": "horizon (related to land)"
   },
   {
-    "rank": 13566,
-    "word": "私立",
-    "reading": "しりつ",
-    "meaning": "private (establishment)"
-  },
-  {
     "rank": 13583,
     "word": "対岸",
     "reading": "たいがん",
     "meaning": "opposite shore"
   },
   {
-    "rank": 13616,
-    "word": "ゼリー",
-    "reading": "ゼリー",
-    "meaning": "jello (gelatin-based dessert)"
+    "rank": 13589,
+    "word": "伊",
+    "reading": "い",
+    "meaning": "Italy"
   },
   {
-    "rank": 13645,
-    "word": "狂人",
-    "reading": "きょうじん",
-    "meaning": "lunatic"
-  },
-  {
-    "rank": 13648,
-    "word": "風に乗る",
-    "reading": "かぜにのる",
-    "meaning": "to ride upon the winds"
+    "rank": 13649,
+    "word": "向かい側",
+    "reading": "むかいがわ",
+    "meaning": "opposite side"
   },
   {
     "rank": 13694,
@@ -4068,22 +3540,10 @@
     "meaning": "Nagoya (city)"
   },
   {
-    "rank": 14237,
-    "word": "と言えど",
-    "reading": "といえど",
-    "meaning": "be (that) as it may"
-  },
-  {
     "rank": 14274,
     "word": "市街",
     "reading": "しがい",
     "meaning": "urban areas"
-  },
-  {
-    "rank": 14277,
-    "word": "路",
-    "reading": "じ",
-    "meaning": "route"
   },
   {
     "rank": 14284,
@@ -4158,6 +3618,12 @@
     "meaning": "gallery"
   },
   {
+    "rank": 14447,
+    "word": "英",
+    "reading": "えい",
+    "meaning": "United Kingdom"
+  },
+  {
     "rank": 14483,
     "word": "境目",
     "reading": "さかいめ",
@@ -4174,12 +3640,6 @@
     "word": "ショップ",
     "reading": "ショップ",
     "meaning": "shop"
-  },
-  {
-    "rank": 14506,
-    "word": "いい度胸",
-    "reading": "いいどきょう",
-    "meaning": "some nerve (as in 'you must have some nerve to ...')"
   },
   {
     "rank": 14530,
@@ -4242,12 +3702,6 @@
     "meaning": "before the gate"
   },
   {
-    "rank": 14713,
-    "word": "ほほほ",
-    "reading": "ほほほ",
-    "meaning": "ho-ho"
-  },
-  {
     "rank": 14720,
     "word": "孔",
     "reading": "あな",
@@ -4272,18 +3726,6 @@
     "meaning": "examination of tickets"
   },
   {
-    "rank": 14846,
-    "word": "小ぶり",
-    "reading": "こぶり",
-    "meaning": "smallish"
-  },
-  {
-    "rank": 14849,
-    "word": "ホームページ",
-    "reading": "ホームページ",
-    "meaning": "web site"
-  },
-  {
     "rank": 14889,
     "word": "応接間",
     "reading": "おうせつま",
@@ -4294,18 +3736,6 @@
     "word": "大河",
     "reading": "たいが",
     "meaning": "large river"
-  },
-  {
-    "rank": 14898,
-    "word": "準",
-    "reading": "じゅん",
-    "meaning": "semi-"
-  },
-  {
-    "rank": 14930,
-    "word": "港",
-    "reading": "みなと",
-    "meaning": "harbour"
   },
   {
     "rank": 14933,
@@ -4350,12 +3780,6 @@
     "meaning": "headquarters"
   },
   {
-    "rank": 15183,
-    "word": "建造",
-    "reading": "けんぞう",
-    "meaning": "building"
-  },
-  {
     "rank": 15204,
     "word": "売店",
     "reading": "ばいてん",
@@ -4374,12 +3798,6 @@
     "meaning": "along the road"
   },
   {
-    "rank": 15238,
-    "word": "言いようのない",
-    "reading": "いいようのない",
-    "meaning": "indescribable"
-  },
-  {
     "rank": 15255,
     "word": "支店",
     "reading": "してん",
@@ -4396,12 +3814,6 @@
     "word": "関西",
     "reading": "かんさい",
     "meaning": "Kansai"
-  },
-  {
-    "rank": 15312,
-    "word": "江戸時代",
-    "reading": "えどじだい",
-    "meaning": "Edo period (1603-1868)"
   },
   {
     "rank": 15332,
@@ -4512,22 +3924,10 @@
     "meaning": "western part"
   },
   {
-    "rank": 15690,
-    "word": "先入観",
-    "reading": "せんにゅうかん",
-    "meaning": "preconception"
-  },
-  {
     "rank": 15703,
     "word": "長屋",
     "reading": "ながや",
     "meaning": "tenement house"
-  },
-  {
-    "rank": 15713,
-    "word": "鋭敏",
-    "reading": "えいびん",
-    "meaning": "sharp"
   },
   {
     "rank": 15750,
@@ -4552,12 +3952,6 @@
     "word": "一本道",
     "reading": "いっぽんみち",
     "meaning": "direct unforked road"
-  },
-  {
-    "rank": 15824,
-    "word": "学校生活",
-    "reading": "がっこうせいかつ",
-    "meaning": "school life"
   },
   {
     "rank": 15838,
@@ -4588,12 +3982,6 @@
     "word": "城塞",
     "reading": "じょうさい",
     "meaning": "fortress"
-  },
-  {
-    "rank": 16008,
-    "word": "市",
-    "reading": "いち",
-    "meaning": "market"
   },
   {
     "rank": 16024,
@@ -4764,12 +4152,6 @@
     "meaning": "agricultural community"
   },
   {
-    "rank": 16481,
-    "word": "身の危険",
-    "reading": "みのきけん",
-    "meaning": "danger to oneself"
-  },
-  {
     "rank": 16489,
     "word": "本土",
     "reading": "ほんど",
@@ -4866,12 +4248,6 @@
     "meaning": "Kobe (city)"
   },
   {
-    "rank": 16714,
-    "word": "隆起",
-    "reading": "りゅうき",
-    "meaning": "protuberance"
-  },
-  {
     "rank": 16752,
     "word": "花屋",
     "reading": "はなや",
@@ -4882,12 +4258,6 @@
     "word": "上京",
     "reading": "じょうきょう",
     "meaning": "proceeding to the capital (Tokyo)"
-  },
-  {
-    "rank": 16763,
-    "word": "家",
-    "reading": "いえ",
-    "meaning": "house"
   },
   {
     "rank": 16783,
@@ -4992,12 +4362,6 @@
     "meaning": "empty seat"
   },
   {
-    "rank": 17155,
-    "word": "軽装",
-    "reading": "けいそう",
-    "meaning": "light clothing"
-  },
-  {
     "rank": 17178,
     "word": "母屋",
     "reading": "おもや",
@@ -5044,18 +4408,6 @@
     "word": "浴場",
     "reading": "よくじょう",
     "meaning": "bathhouse"
-  },
-  {
-    "rank": 17321,
-    "word": "羽織",
-    "reading": "はおり",
-    "meaning": "haori (Japanese formal coat)"
-  },
-  {
-    "rank": 17331,
-    "word": "棚に上げる",
-    "reading": "たなにあげる",
-    "meaning": "to be blind to one's shortcomings"
   },
   {
     "rank": 17346,
@@ -5256,28 +4608,10 @@
     "meaning": "field"
   },
   {
-    "rank": 17961,
-    "word": "気分がいい",
-    "reading": "きぶんがいい",
-    "meaning": "feel good (pleasant)"
-  },
-  {
     "rank": 17977,
     "word": "音楽室",
     "reading": "おんがくしつ",
     "meaning": "music room"
-  },
-  {
-    "rank": 18006,
-    "word": "不動産",
-    "reading": "ふどうさん",
-    "meaning": "real estate"
-  },
-  {
-    "rank": 18032,
-    "word": "商家",
-    "reading": "しょうか",
-    "meaning": "merchant"
   },
   {
     "rank": 18038,
@@ -5304,12 +4638,6 @@
     "meaning": "(teacher's) platform"
   },
   {
-    "rank": 18074,
-    "word": "注",
-    "reading": "ちゅう",
-    "meaning": "annotation"
-  },
-  {
     "rank": 18079,
     "word": "タワー",
     "reading": "タワー",
@@ -5334,12 +4662,6 @@
     "meaning": "neighboring town"
   },
   {
-    "rank": 18129,
-    "word": "嵌る",
-    "reading": "はまる",
-    "meaning": "to fit"
-  },
-  {
     "rank": 18151,
     "word": "表通り",
     "reading": "おもてどおり",
@@ -5350,12 +4672,6 @@
     "word": "広島",
     "reading": "ひろしま",
     "meaning": "Hiroshima (city, prefecture)"
-  },
-  {
-    "rank": 18205,
-    "word": "登山",
-    "reading": "とざん",
-    "meaning": "mountain climbing"
   },
   {
     "rank": 18210,
@@ -5514,18 +4830,6 @@
     "meaning": "outskirts"
   },
   {
-    "rank": 18779,
-    "word": "流行り",
-    "reading": "はやり",
-    "meaning": "fashion"
-  },
-  {
-    "rank": 18781,
-    "word": "予防",
-    "reading": "よぼう",
-    "meaning": "prevention"
-  },
-  {
     "rank": 18817,
     "word": "本場",
     "reading": "ほんば",
@@ -5536,12 +4840,6 @@
     "word": "戸を開ける",
     "reading": "とをあける",
     "meaning": "to open the door"
-  },
-  {
-    "rank": 18919,
-    "word": "江",
-    "reading": "こう",
-    "meaning": "large river (esp. the Yangtze)"
   },
   {
     "rank": 18932,
@@ -5560,12 +4858,6 @@
     "word": "大都市",
     "reading": "だいとし",
     "meaning": "metropolis"
-  },
-  {
-    "rank": 18969,
-    "word": "鳩尾",
-    "reading": "みぞおち",
-    "meaning": "pit of the stomach"
   },
   {
     "rank": 18996,
@@ -5680,12 +4972,6 @@
     "word": "廃屋",
     "reading": "はいおく",
     "meaning": "dilapidated house"
-  },
-  {
-    "rank": 19261,
-    "word": "城主",
-    "reading": "じょうしゅ",
-    "meaning": "lord of a castle"
   },
   {
     "rank": 19276,
@@ -5838,18 +5124,6 @@
     "meaning": "beach"
   },
   {
-    "rank": 19639,
-    "word": "移転",
-    "reading": "いてん",
-    "meaning": "moving"
-  },
-  {
-    "rank": 19652,
-    "word": "特殊部隊",
-    "reading": "とくしゅぶたい",
-    "meaning": "special forces"
-  },
-  {
     "rank": 19653,
     "word": "奈良",
     "reading": "なら",
@@ -5896,12 +5170,6 @@
     "word": "湖畔",
     "reading": "こはん",
     "meaning": "lake shore"
-  },
-  {
-    "rank": 19761,
-    "word": "押し入れ",
-    "reading": "",
-    "meaning": ""
   },
   {
     "rank": 19777,
@@ -6012,12 +5280,6 @@
     "meaning": "tower"
   },
   {
-    "rank": 20081,
-    "word": "パイプ椅子",
-    "reading": "パイプいす",
-    "meaning": "folding chair (with tubular metal frame)"
-  },
-  {
     "rank": 20100,
     "word": "名所",
     "reading": "めいしょ",
@@ -6030,22 +5292,10 @@
     "meaning": "preparatory school (for entrance examinations)"
   },
   {
-    "rank": 20110,
-    "word": "膣壁",
-    "reading": "ちつへき",
-    "meaning": "vaginal wall"
-  },
-  {
     "rank": 20113,
     "word": "砲台",
     "reading": "ほうだい",
     "meaning": "(gun) battery"
-  },
-  {
-    "rank": 20126,
-    "word": "人が変わる",
-    "reading": "ひとがかわる",
-    "meaning": "to become like a different person"
   },
   {
     "rank": 20127,
@@ -6066,10 +5316,10 @@
     "meaning": "vacant house"
   },
   {
-    "rank": 20150,
-    "word": "侵略者",
-    "reading": "しんりゃくしゃ",
-    "meaning": "aggressor"
+    "rank": 20151,
+    "word": "当店",
+    "reading": "とうてん",
+    "meaning": "this store"
   },
   {
     "rank": 20154,
@@ -6090,18 +5340,6 @@
     "meaning": "water's edge"
   },
   {
-    "rank": 20200,
-    "word": "同居人",
-    "reading": "どうきょにん",
-    "meaning": "person living with a family"
-  },
-  {
-    "rank": 20212,
-    "word": "洗面台",
-    "reading": "せんめんだい",
-    "meaning": "washbasin"
-  },
-  {
     "rank": 20215,
     "word": "突破口",
     "reading": "とっぱこう",
@@ -6118,12 +5356,6 @@
     "word": "水場",
     "reading": "みずば",
     "meaning": "watering hole"
-  },
-  {
-    "rank": 20250,
-    "word": "足元を見る",
-    "reading": "あしもとをみる",
-    "meaning": "to take advantage (e.g. of a weak situation)"
   },
   {
     "rank": 20251,
@@ -6222,12 +5454,6 @@
     "meaning": "Izu (former province located on the Izu Peninsula in pres..."
   },
   {
-    "rank": 20470,
-    "word": "軒",
-    "reading": "のき",
-    "meaning": "eaves"
-  },
-  {
     "rank": 20480,
     "word": "寝所",
     "reading": "しんじょ",
@@ -6252,22 +5478,10 @@
     "meaning": "farm (agriculture)"
   },
   {
-    "rank": 20531,
-    "word": "後を継ぐ",
-    "reading": "あとをつぐ",
-    "meaning": "to succeed (someone)"
-  },
-  {
     "rank": 20536,
     "word": "支那",
     "reading": "しな",
     "meaning": "China"
-  },
-  {
-    "rank": 20564,
-    "word": "裏付け",
-    "reading": "うらづけ",
-    "meaning": "support (e.g. for an argument)"
   },
   {
     "rank": 20579,
@@ -6286,12 +5500,6 @@
     "word": "避難所",
     "reading": "ひなんじょ",
     "meaning": "shelter"
-  },
-  {
-    "rank": 20603,
-    "word": "連れ回す",
-    "reading": "つれまわす",
-    "meaning": "to take (someone) to one place after another (forcibly)"
   },
   {
     "rank": 20630,
@@ -6360,22 +5568,10 @@
     "meaning": "entrance door"
   },
   {
-    "rank": 20796,
-    "word": "見栄を張る",
-    "reading": "みえをはる",
-    "meaning": "to be pretentious"
-  },
-  {
     "rank": 20797,
     "word": "非常階段",
     "reading": "ひじょうかいだん",
     "meaning": "emergency staircase"
-  },
-  {
-    "rank": 20798,
-    "word": "口許",
-    "reading": "くちもと",
-    "meaning": "mouth"
   },
   {
     "rank": 20819,
@@ -6438,18 +5634,6 @@
     "meaning": "post office"
   },
   {
-    "rank": 20905,
-    "word": "幌",
-    "reading": "ほろ",
-    "meaning": "canopy (esp. the cloth or canvas used for it)"
-  },
-  {
-    "rank": 20938,
-    "word": "なりすます",
-    "reading": "なりすます",
-    "meaning": "to pose as"
-  },
-  {
     "rank": 20939,
     "word": "ピラミッド",
     "reading": "ピラミッド",
@@ -6510,12 +5694,6 @@
     "meaning": "Fukuoka (city, prefecture)"
   },
   {
-    "rank": 21108,
-    "word": "見せ場",
-    "reading": "みせば",
-    "meaning": "highlight (scene)"
-  },
-  {
     "rank": 21109,
     "word": "アトリエ",
     "reading": "アトリエ",
@@ -6552,12 +5730,6 @@
     "meaning": "bar"
   },
   {
-    "rank": 21205,
-    "word": "同罪",
-    "reading": "どうざい",
-    "meaning": "same crime"
-  },
-  {
     "rank": 21226,
     "word": "裏道",
     "reading": "うらみち",
@@ -6586,6 +5758,12 @@
     "word": "王座",
     "reading": "おうざ",
     "meaning": "throne"
+  },
+  {
+    "rank": 21288,
+    "word": "裏山",
+    "reading": "うらやま",
+    "meaning": "mountain (or hill) behind a house, village, etc."
   },
   {
     "rank": 21305,
@@ -6622,12 +5800,6 @@
     "word": "川崎",
     "reading": "かわさき",
     "meaning": "Kawasaki (city)"
-  },
-  {
-    "rank": 21456,
-    "word": "床",
-    "reading": "ゆか",
-    "meaning": "floor"
   },
   {
     "rank": 21481,
@@ -6726,18 +5898,6 @@
     "meaning": "villages"
   },
   {
-    "rank": 21728,
-    "word": "防衛線",
-    "reading": "ぼうえいせん",
-    "meaning": "line of defence (defense)"
-  },
-  {
-    "rank": 21779,
-    "word": "地主",
-    "reading": "じぬし",
-    "meaning": "landowner"
-  },
-  {
     "rank": 21789,
     "word": "参道",
     "reading": "さんどう",
@@ -6774,12 +5934,6 @@
     "meaning": "Koshien Stadium, a baseball stadium in Koshien which is t..."
   },
   {
-    "rank": 21873,
-    "word": "雑貨",
-    "reading": "ざっか",
-    "meaning": "miscellaneous goods"
-  },
-  {
     "rank": 21874,
     "word": "朝鮮",
     "reading": "ちょうせん",
@@ -6804,12 +5958,6 @@
     "meaning": "kitchen door"
   },
   {
-    "rank": 21935,
-    "word": "郷",
-    "reading": "きょう",
-    "meaning": "hometown"
-  },
-  {
     "rank": 21952,
     "word": "オランダ",
     "reading": "オランダ",
@@ -6826,12 +5974,6 @@
     "word": "左隣",
     "reading": "ひだりどなり",
     "meaning": "neighbour to the left (person, building, etc.)"
-  },
-  {
-    "rank": 21974,
-    "word": "郷",
-    "reading": "きょう",
-    "meaning": "hometown"
   },
   {
     "rank": 21981,
@@ -6858,16 +6000,10 @@
     "meaning": "palace"
   },
   {
-    "rank": 22030,
-    "word": "つべこべ",
-    "reading": "つべこべ",
-    "meaning": "complaining"
-  },
-  {
-    "rank": 22034,
-    "word": "神童",
-    "reading": "しんどう",
-    "meaning": "child prodigy"
+    "rank": 22029,
+    "word": "県内",
+    "reading": "けんない",
+    "meaning": "within the prefecture"
   },
   {
     "rank": 22072,
@@ -6936,12 +6072,6 @@
     "meaning": "high place"
   },
   {
-    "rank": 22175,
-    "word": "外来",
-    "reading": "がいらい",
-    "meaning": "foreign"
-  },
-  {
     "rank": 22201,
     "word": "水戸",
     "reading": "みと",
@@ -6978,28 +6108,10 @@
     "meaning": "rough sketch"
   },
   {
-    "rank": 22298,
-    "word": "ほとんどの人",
-    "reading": "ほとんどのひと",
-    "meaning": "almost everyone"
-  },
-  {
     "rank": 22343,
     "word": "新田",
     "reading": "しんでん",
     "meaning": "new rice field"
-  },
-  {
-    "rank": 22351,
-    "word": "ゴチャゴチャ",
-    "reading": "ゴチャゴチャ",
-    "meaning": "messy"
-  },
-  {
-    "rank": 22353,
-    "word": "食いしばる",
-    "reading": "くいしばる",
-    "meaning": "to set one's teeth"
   },
   {
     "rank": 22360,
@@ -7050,12 +6162,6 @@
     "meaning": "house"
   },
   {
-    "rank": 22498,
-    "word": "一択",
-    "reading": "いったく",
-    "meaning": "(only) one option"
-  },
-  {
     "rank": 22505,
     "word": "野営地",
     "reading": "やえいち",
@@ -7104,12 +6210,6 @@
     "meaning": "gap"
   },
   {
-    "rank": 22621,
-    "word": "改築",
-    "reading": "かいちく",
-    "meaning": "structural alteration (of a building)"
-  },
-  {
     "rank": 22634,
     "word": "ちく",
     "reading": "ちく",
@@ -7126,6 +6226,12 @@
     "word": "両開き",
     "reading": "りょうびらき",
     "meaning": "double (two-leaf) door"
+  },
+  {
+    "rank": 22732,
+    "word": "美濃",
+    "reading": "みの",
+    "meaning": "Mino (former province located in the south of present-day..."
   },
   {
     "rank": 22761,
@@ -7188,18 +6294,6 @@
     "meaning": "Ōmi (former province located in present-day Shiga Prefect..."
   },
   {
-    "rank": 22876,
-    "word": "路頭に迷う",
-    "reading": "ろとうにまよう",
-    "meaning": "to be left without means of sustenance"
-  },
-  {
-    "rank": 22882,
-    "word": "小気味よい",
-    "reading": "こきみよい",
-    "meaning": "delightful"
-  },
-  {
     "rank": 22891,
     "word": "分岐点",
     "reading": "ぶんきてん",
@@ -7242,12 +6336,6 @@
     "meaning": "workshop"
   },
   {
-    "rank": 22983,
-    "word": "留守電",
-    "reading": "るすでん",
-    "meaning": "answering machine"
-  },
-  {
     "rank": 22991,
     "word": "女子寮",
     "reading": "じょしりょう",
@@ -7288,12 +6376,6 @@
     "word": "右端",
     "reading": "みぎはし",
     "meaning": "right end"
-  },
-  {
-    "rank": 23128,
-    "word": "医術",
-    "reading": "いじゅつ",
-    "meaning": "medicine"
   },
   {
     "rank": 23133,
@@ -7350,16 +6432,10 @@
     "meaning": "neighborhood"
   },
   {
-    "rank": 23319,
-    "word": "色めき立つ",
-    "reading": "いろめきたつ",
-    "meaning": "to become excited"
-  },
-  {
-    "rank": 23327,
-    "word": "あわや",
-    "reading": "あわや",
-    "meaning": "nearly"
+    "rank": 23326,
+    "word": "古城",
+    "reading": "こじょう",
+    "meaning": "old castle"
   },
   {
     "rank": 23353,
@@ -7372,18 +6448,6 @@
     "word": "外務省",
     "reading": "がいむしょう",
     "meaning": "Ministry of Foreign Affairs"
-  },
-  {
-    "rank": 23367,
-    "word": "定例",
-    "reading": "ていれい",
-    "meaning": "regular"
-  },
-  {
-    "rank": 23371,
-    "word": "新築",
-    "reading": "しんちく",
-    "meaning": "new building"
   },
   {
     "rank": 23379,
@@ -7512,12 +6576,6 @@
     "meaning": "Izumo (former province located in the east of present-day..."
   },
   {
-    "rank": 23668,
-    "word": "親切心",
-    "reading": "しんせつしん",
-    "meaning": "kindness"
-  },
-  {
     "rank": 23722,
     "word": "式場",
     "reading": "しきじょう",
@@ -7608,12 +6666,6 @@
     "meaning": "nesting hole"
   },
   {
-    "rank": 23960,
-    "word": "尖",
-    "reading": "こすみ",
-    "meaning": "diagonal move (in the game of go)"
-  },
-  {
     "rank": 23961,
     "word": "本館",
     "reading": "ほんかん",
@@ -7692,12 +6744,6 @@
     "meaning": "dry riverbed"
   },
   {
-    "rank": 24137,
-    "word": "激務",
-    "reading": "げきむ",
-    "meaning": "exhausting work"
-  },
-  {
     "rank": 24169,
     "word": "八百屋",
     "reading": "やおや",
@@ -7738,12 +6784,6 @@
     "word": "下水道",
     "reading": "げすいどう",
     "meaning": "sewer"
-  },
-  {
-    "rank": 24272,
-    "word": "脳細胞",
-    "reading": "のうさいぼう",
-    "meaning": "brain cell"
   },
   {
     "rank": 24341,
@@ -7932,12 +6972,6 @@
     "meaning": "dressing room"
   },
   {
-    "rank": 24960,
-    "word": "力比べ",
-    "reading": "ちからくらべ",
-    "meaning": "contest of strength"
-  },
-  {
     "rank": 24981,
     "word": "越前",
     "reading": "えちぜん",
@@ -8064,12 +7098,6 @@
     "meaning": "alma mater"
   },
   {
-    "rank": 25440,
-    "word": "小高い",
-    "reading": "こだかい",
-    "meaning": "slightly elevated"
-  },
-  {
     "rank": 25498,
     "word": "神域",
     "reading": "しんいき",
@@ -8148,10 +7176,10 @@
     "meaning": "Saitama prefecture (Kanto area)"
   },
   {
-    "rank": 25737,
-    "word": "白雪姫",
-    "reading": "しらゆきひめ",
-    "meaning": "Snow White"
+    "rank": 25714,
+    "word": "学舎",
+    "reading": "がくしゃ",
+    "meaning": "school (building)"
   },
   {
     "rank": 25811,
@@ -8358,24 +7386,6 @@
     "meaning": "student accommodation"
   },
   {
-    "rank": 26272,
-    "word": "ぶっちぎり",
-    "reading": "ぶっちぎり",
-    "meaning": "(establishing a) big lead"
-  },
-  {
-    "rank": 26317,
-    "word": "高価い",
-    "reading": "たかい",
-    "meaning": "expensive"
-  },
-  {
-    "rank": 26322,
-    "word": "近所さん",
-    "reading": "きんじょさん",
-    "meaning": "neighbors"
-  },
-  {
     "rank": 26362,
     "word": "北朝鮮",
     "reading": "きたちょうせん",
@@ -8418,12 +7428,6 @@
     "meaning": "fish market"
   },
   {
-    "rank": 26560,
-    "word": "増築",
-    "reading": "ぞうちく",
-    "meaning": "addition to a building"
-  },
-  {
     "rank": 26587,
     "word": "階上",
     "reading": "かいじょう",
@@ -8442,12 +7446,6 @@
     "meaning": "mouth of river"
   },
   {
-    "rank": 26633,
-    "word": "造作",
-    "reading": "ぞうさく",
-    "meaning": "building (esp. a house)"
-  },
-  {
     "rank": 26640,
     "word": "上田",
     "reading": "じょうでん",
@@ -8458,12 +7456,6 @@
     "word": "庁舎",
     "reading": "ちょうしゃ",
     "meaning": "government office building"
-  },
-  {
-    "rank": 26675,
-    "word": "余念がない",
-    "reading": "よねんがない",
-    "meaning": "being concentrated on one thing"
   },
   {
     "rank": 26676,
@@ -8484,24 +7476,6 @@
     "meaning": "four and a half tatami mats"
   },
   {
-    "rank": 26704,
-    "word": "ひけらかす",
-    "reading": "ひけらかす",
-    "meaning": "to show off"
-  },
-  {
-    "rank": 26706,
-    "word": "空襲",
-    "reading": "くうしゅう",
-    "meaning": "air-raid"
-  },
-  {
-    "rank": 26719,
-    "word": "判断基準",
-    "reading": "はんだんきじゅん",
-    "meaning": "evaluation criteria"
-  },
-  {
     "rank": 26733,
     "word": "湖水",
     "reading": "こすい",
@@ -8512,12 +7486,6 @@
     "word": "宮崎",
     "reading": "みやざき",
     "meaning": "Miyazaki (city, prefecture)"
-  },
-  {
-    "rank": 26747,
-    "word": "一途",
-    "reading": "いちず",
-    "meaning": "wholehearted"
   },
   {
     "rank": 26774,
@@ -8556,12 +7524,6 @@
     "meaning": "moon's surface"
   },
   {
-    "rank": 26875,
-    "word": "後妻",
-    "reading": "ごさい",
-    "meaning": "second wife"
-  },
-  {
     "rank": 26882,
     "word": "更地",
     "reading": "さらち",
@@ -8586,10 +7548,10 @@
     "meaning": "operating room"
   },
   {
-    "rank": 26979,
-    "word": "後付け",
-    "reading": "あとづけ",
-    "meaning": "appendix"
+    "rank": 26978,
+    "word": "プラネタリウム",
+    "reading": "プラネタリウム",
+    "meaning": "planetarium"
   },
   {
     "rank": 26988,
@@ -8598,9 +7560,9 @@
     "meaning": "ice house"
   },
   {
-    "rank": 26993,
-    "word": "ボソッと",
-    "reading": "ボソッと",
-    "meaning": "absent-mindedly"
+    "rank": 26992,
+    "word": "雑居ビル",
+    "reading": "ざっきょビル",
+    "meaning": "multi-tenant building"
   }
 ]

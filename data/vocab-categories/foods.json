@@ -198,6 +198,12 @@
     "meaning": "(animal) feed"
   },
   {
+    "rank": 3716,
+    "word": "お弁当",
+    "reading": "おべんとう",
+    "meaning": "bento"
+  },
+  {
     "rank": 3717,
     "word": "いい子",
     "reading": "いいこ",
@@ -384,6 +390,12 @@
     "meaning": "fruit"
   },
   {
+    "rank": 5401,
+    "word": "果物",
+    "reading": "くだもの",
+    "meaning": "fruit"
+  },
+  {
     "rank": 5405,
     "word": "ミルク",
     "reading": "ミルク",
@@ -414,6 +426,12 @@
     "meaning": "legume (esp. edible legumes or their seeds, e.g. beans, p..."
   },
   {
+    "rank": 5781,
+    "word": "豆",
+    "reading": "まめ",
+    "meaning": "legume (esp. edible legumes or their seeds, e.g. beans, p..."
+  },
+  {
     "rank": 5793,
     "word": "汁",
     "reading": "しる",
@@ -436,6 +454,12 @@
     "word": "朝日",
     "reading": "あさひ",
     "meaning": "morning sun"
+  },
+  {
+    "rank": 6363,
+    "word": "おかわり",
+    "reading": "おかわり",
+    "meaning": "another helping"
   },
   {
     "rank": 6363,
@@ -672,6 +696,12 @@
     "meaning": "tomato (Solanum lycopersicum)"
   },
   {
+    "rank": 8841,
+    "word": "トマト",
+    "reading": "トマト",
+    "meaning": "tomato (Solanum lycopersicum)"
+  },
+  {
     "rank": 8928,
     "word": "食糧",
     "reading": "しょくりょう",
@@ -694,6 +724,12 @@
     "word": "バター",
     "reading": "バター",
     "meaning": "butter"
+  },
+  {
+    "rank": 9137,
+    "word": "ハンバーグ",
+    "reading": "ハンバーグ",
+    "meaning": "Hamburg steak"
   },
   {
     "rank": 9138,
@@ -814,6 +850,12 @@
     "word": "啜る",
     "reading": "すする",
     "meaning": "to slurp"
+  },
+  {
+    "rank": 10002,
+    "word": "芋",
+    "reading": "いも",
+    "meaning": "tuber"
   },
   {
     "rank": 10002,
@@ -1008,6 +1050,12 @@
     "meaning": "strawberry (esp. the garden strawberry, Fragaria x ananassa)"
   },
   {
+    "rank": 11876,
+    "word": "イチゴ",
+    "reading": "イチゴ",
+    "meaning": "strawberry (esp. the garden strawberry, Fragaria x ananassa)"
+  },
+  {
     "rank": 11880,
     "word": "昼ご飯",
     "reading": "ひるごはん",
@@ -1024,6 +1072,12 @@
     "word": "平らげる",
     "reading": "たいらげる",
     "meaning": "to eat up (completely)"
+  },
+  {
+    "rank": 12089,
+    "word": "大根",
+    "reading": "だいこん",
+    "meaning": "daikon (variety of large white Oriental radish, Raphanus ..."
   },
   {
     "rank": 12089,
@@ -1110,6 +1164,12 @@
     "meaning": "apple (fruit)"
   },
   {
+    "rank": 12504,
+    "word": "林檎",
+    "reading": "りんご",
+    "meaning": "apple (fruit)"
+  },
+  {
     "rank": 12506,
     "word": "かぶりつく",
     "reading": "かぶりつく",
@@ -1126,6 +1186,12 @@
     "word": "お米",
     "reading": "おこめ",
     "meaning": "(husked grains of) rice"
+  },
+  {
+    "rank": 12550,
+    "word": "フルーツ",
+    "reading": "フルーツ",
+    "meaning": "fruit"
   },
   {
     "rank": 12550,
@@ -1200,6 +1266,12 @@
     "meaning": "lemon"
   },
   {
+    "rank": 12854,
+    "word": "レモン",
+    "reading": "レモン",
+    "meaning": "lemon"
+  },
+  {
     "rank": 12888,
     "word": "飲ます",
     "reading": "のます",
@@ -1212,10 +1284,22 @@
     "meaning": "honey"
   },
   {
+    "rank": 12913,
+    "word": "蜂蜜",
+    "reading": "はちみつ",
+    "meaning": "honey"
+  },
+  {
     "rank": 12921,
     "word": "アイスクリーム",
     "reading": "アイスクリーム",
     "meaning": "ice cream"
+  },
+  {
+    "rank": 13025,
+    "word": "栗",
+    "reading": "くり",
+    "meaning": "Japanese chestnut (Castanea crenata)"
   },
   {
     "rank": 13025,
@@ -1288,6 +1372,18 @@
     "word": "一目惚れ",
     "reading": "ひとめぼれ",
     "meaning": "love at first sight"
+  },
+  {
+    "rank": 13616,
+    "word": "ゼリー",
+    "reading": "ゼリー",
+    "meaning": "jello (gelatin-based dessert)"
+  },
+  {
+    "rank": 13616,
+    "word": "ゼリー",
+    "reading": "ゼリー",
+    "meaning": "jello (gelatin-based dessert)"
   },
   {
     "rank": 13682,
@@ -1410,6 +1506,12 @@
     "meaning": "wheat"
   },
   {
+    "rank": 14751,
+    "word": "小麦",
+    "reading": "こむぎ",
+    "meaning": "wheat"
+  },
+  {
     "rank": 14833,
     "word": "夜食",
     "reading": "やしょく",
@@ -1462,6 +1564,12 @@
     "word": "丼",
     "reading": "どんぶり",
     "meaning": "porcelain bowl"
+  },
+  {
+    "rank": 15234,
+    "word": "ネギ",
+    "reading": "ネギ",
+    "meaning": "Welsh onion (Allium fistulosum)"
   },
   {
     "rank": 15234,
@@ -1626,6 +1734,12 @@
     "meaning": "toast"
   },
   {
+    "rank": 16354,
+    "word": "うめえ",
+    "reading": "うめえ",
+    "meaning": "delicious"
+  },
+  {
     "rank": 16355,
     "word": "気が早い",
     "reading": "きがはやい",
@@ -1728,6 +1842,12 @@
     "meaning": "wheat bran"
   },
   {
+    "rank": 17188,
+    "word": "ふすま",
+    "reading": "ふすま",
+    "meaning": "wheat bran"
+  },
+  {
     "rank": 17206,
     "word": "目玉焼き",
     "reading": "めだまやき",
@@ -1738,6 +1858,12 @@
     "word": "外食",
     "reading": "がいしょく",
     "meaning": "eating out"
+  },
+  {
+    "rank": 17233,
+    "word": "穀物",
+    "reading": "こくもつ",
+    "meaning": "grain"
   },
   {
     "rank": 17233,
@@ -1770,10 +1896,22 @@
     "meaning": "food expense"
   },
   {
+    "rank": 17312,
+    "word": "コロッケ",
+    "reading": "コロッケ",
+    "meaning": "croquette"
+  },
+  {
     "rank": 17328,
     "word": "今なお",
     "reading": "いまなお",
     "meaning": "still"
+  },
+  {
+    "rank": 17341,
+    "word": "カボチャ",
+    "reading": "カボチャ",
+    "meaning": "pumpkin (Cucurbita sp.)"
   },
   {
     "rank": 17341,
@@ -1872,6 +2010,18 @@
     "meaning": "mandarin (esp. the satsuma mandarin (Citrus unshiu))"
   },
   {
+    "rank": 18024,
+    "word": "みかん",
+    "reading": "みかん",
+    "meaning": "mandarin (esp. the satsuma mandarin (Citrus unshiu))"
+  },
+  {
+    "rank": 18042,
+    "word": "メロン",
+    "reading": "メロン",
+    "meaning": "melon (esp. a muskmelon, Cucumis melo)"
+  },
+  {
     "rank": 18042,
     "word": "メロン",
     "reading": "メロン",
@@ -1938,6 +2088,12 @@
     "meaning": "nashi (Pyrus pyrifolia, esp. var. culta)"
   },
   {
+    "rank": 18306,
+    "word": "梨",
+    "reading": "なし",
+    "meaning": "nashi (Pyrus pyrifolia, esp. var. culta)"
+  },
+  {
     "rank": 18364,
     "word": "飲食",
     "reading": "いんしょく",
@@ -1978,6 +2134,12 @@
     "word": "かき氷",
     "reading": "かきごおり",
     "meaning": "shaved ice (usually served with flavored simple syrup)"
+  },
+  {
+    "rank": 18718,
+    "word": "大盛り",
+    "reading": "おおもり",
+    "meaning": "large serving"
   },
   {
     "rank": 18720,
@@ -2208,6 +2370,12 @@
     "meaning": "lettuce (Lactuca sativa)"
   },
   {
+    "rank": 20386,
+    "word": "レタス",
+    "reading": "レタス",
+    "meaning": "lettuce (Lactuca sativa)"
+  },
+  {
     "rank": 20424,
     "word": "肴",
     "reading": "さかな",
@@ -2274,6 +2442,18 @@
     "meaning": "strawberry (esp. the garden strawberry, Fragaria x ananassa)"
   },
   {
+    "rank": 20568,
+    "word": "苺",
+    "reading": "いちご",
+    "meaning": "strawberry (esp. the garden strawberry, Fragaria x ananassa)"
+  },
+  {
+    "rank": 20571,
+    "word": "人参",
+    "reading": "にんじん",
+    "meaning": "carrot (Daucus carota)"
+  },
+  {
     "rank": 20571,
     "word": "人参",
     "reading": "にんじん",
@@ -2292,10 +2472,22 @@
     "meaning": "kaki"
   },
   {
+    "rank": 20661,
+    "word": "柿",
+    "reading": "かき",
+    "meaning": "kaki"
+  },
+  {
     "rank": 20748,
     "word": "食べかけ",
     "reading": "たべかけ",
     "meaning": "half-eaten"
+  },
+  {
+    "rank": 20862,
+    "word": "葉巻",
+    "reading": "はまき",
+    "meaning": "cigar"
   },
   {
     "rank": 20894,
@@ -2310,10 +2502,22 @@
     "meaning": "garlic (Allium sativum)"
   },
   {
+    "rank": 20900,
+    "word": "ニンニク",
+    "reading": "ニンニク",
+    "meaning": "garlic (Allium sativum)"
+  },
+  {
     "rank": 20935,
     "word": "クラッカー",
     "reading": "クラッカー",
     "meaning": "cracker"
+  },
+  {
+    "rank": 20985,
+    "word": "苦味",
+    "reading": "にがみ",
+    "meaning": "bitterness"
   },
   {
     "rank": 20985,
@@ -2586,6 +2790,12 @@
     "meaning": "rising (smoke, clouds, etc.)"
   },
   {
+    "rank": 22576,
+    "word": "キュウリ",
+    "reading": "キュウリ",
+    "meaning": "removal of dissolute sons from the family register (Edo p..."
+  },
+  {
     "rank": 22601,
     "word": "保存食",
     "reading": "ほぞんしょく",
@@ -2620,6 +2830,12 @@
     "word": "美濃",
     "reading": "みの",
     "meaning": "Mino (former province located in the south of present-day..."
+  },
+  {
+    "rank": 22782,
+    "word": "盛",
+    "reading": "もり",
+    "meaning": "serving (of food)"
   },
   {
     "rank": 22785,
@@ -2664,6 +2880,12 @@
     "meaning": "kombu (usu. Saccharina japonica)"
   },
   {
+    "rank": 22937,
+    "word": "昆布",
+    "reading": "こんぶ",
+    "meaning": "kombu (usu. Saccharina japonica)"
+  },
+  {
     "rank": 23001,
     "word": "コーン",
     "reading": "コーン",
@@ -2698,6 +2920,12 @@
     "word": "ハーブティー",
     "reading": "ハーブティー",
     "meaning": "herbal tea"
+  },
+  {
+    "rank": 23286,
+    "word": "葡萄",
+    "reading": "ぶどう",
+    "meaning": "grape"
   },
   {
     "rank": 23286,
@@ -2874,6 +3102,12 @@
     "meaning": "nori"
   },
   {
+    "rank": 24450,
+    "word": "海苔",
+    "reading": "のり",
+    "meaning": "nori"
+  },
+  {
     "rank": 24513,
     "word": "ミンチ",
     "reading": "ミンチ",
@@ -2926,6 +3160,12 @@
     "word": "ウーロン茶",
     "reading": "ウーロンちゃ",
     "meaning": "oolong tea"
+  },
+  {
+    "rank": 24728,
+    "word": "小豆",
+    "reading": "あずき",
+    "meaning": "adzuki bean (Vigna angularis)"
   },
   {
     "rank": 24728,
@@ -3030,6 +3270,12 @@
     "meaning": "eggplant (Solanum melongena)"
   },
   {
+    "rank": 25366,
+    "word": "ナス",
+    "reading": "ナス",
+    "meaning": "eggplant (Solanum melongena)"
+  },
+  {
     "rank": 25398,
     "word": "グルメ",
     "reading": "グルメ",
@@ -3040,6 +3286,18 @@
     "word": "クルミ",
     "reading": "クルミ",
     "meaning": "walnut (Juglans spp., esp. Juglans regia)"
+  },
+  {
+    "rank": 25412,
+    "word": "クルミ",
+    "reading": "クルミ",
+    "meaning": "walnut (Juglans spp., esp. Juglans regia)"
+  },
+  {
+    "rank": 25414,
+    "word": "大豆",
+    "reading": "だいず",
+    "meaning": "soya bean (Glycine max)"
   },
   {
     "rank": 25414,
@@ -3096,6 +3354,12 @@
     "meaning": "mandarin (esp. the satsuma mandarin (Citrus unshiu))"
   },
   {
+    "rank": 25559,
+    "word": "ミカン",
+    "reading": "ミカン",
+    "meaning": "mandarin (esp. the satsuma mandarin (Citrus unshiu))"
+  },
+  {
     "rank": 25685,
     "word": "ポップコーン",
     "reading": "ポップコーン",
@@ -3112,6 +3376,12 @@
     "word": "茶菓子",
     "reading": "ちゃがし",
     "meaning": "cake served with tea"
+  },
+  {
+    "rank": 25812,
+    "word": "にら",
+    "reading": "にら",
+    "meaning": "garlic chives (Allium tuberosum)"
   },
   {
     "rank": 25812,
@@ -3142,6 +3412,12 @@
     "word": "むしゃむしゃ",
     "reading": "むしゃむしゃ",
     "meaning": "munching"
+  },
+  {
+    "rank": 26049,
+    "word": "トウモロコシ",
+    "reading": "トウモロコシ",
+    "meaning": "corn (Zea mays)"
   },
   {
     "rank": 26049,
@@ -3240,6 +3516,12 @@
     "meaning": "baton (relay, orchestral conducting, etc.)"
   },
   {
+    "rank": 26743,
+    "word": "唐辛子",
+    "reading": "とうがらし",
+    "meaning": "capsicum (Capsicum annuum, esp. the cultivated chili pepp..."
+  },
+  {
     "rank": 26744,
     "word": "ソーサー",
     "reading": "ソーサー",
@@ -3262,6 +3544,12 @@
     "word": "単一",
     "reading": "たんいつ",
     "meaning": "single"
+  },
+  {
+    "rank": 26888,
+    "word": "胡椒",
+    "reading": "こしょう",
+    "meaning": "pepper"
   },
   {
     "rank": 26888,

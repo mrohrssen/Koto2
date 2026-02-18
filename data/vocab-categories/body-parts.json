@@ -24,10 +24,22 @@
     "meaning": "reaction"
   },
   {
+    "rank": 567,
+    "word": "血",
+    "reading": "ち",
+    "meaning": "blood"
+  },
+  {
     "rank": 584,
     "word": "友達",
     "reading": "ともだち",
     "meaning": "friend"
+  },
+  {
+    "rank": 595,
+    "word": "首",
+    "reading": "くび",
+    "meaning": "neck"
   },
   {
     "rank": 596,
@@ -136,6 +148,12 @@
     "word": "膝",
     "reading": "ひざ",
     "meaning": "knee"
+  },
+  {
+    "rank": 1436,
+    "word": "舌",
+    "reading": "した",
+    "meaning": "tongue"
   },
   {
     "rank": 1437,
@@ -406,6 +424,12 @@
     "word": "羽",
     "reading": "はね",
     "meaning": "feather"
+  },
+  {
+    "rank": 3458,
+    "word": "神経",
+    "reading": "しんけい",
+    "meaning": "nerve"
   },
   {
     "rank": 3459,
@@ -690,6 +714,12 @@
     "meaning": "to take out (e.g. garbage)"
   },
   {
+    "rank": 4810,
+    "word": "前髪",
+    "reading": "まえがみ",
+    "meaning": "forelock"
+  },
+  {
     "rank": 4823,
     "word": "鼻を鳴らす",
     "reading": "はなをならす",
@@ -804,6 +834,12 @@
     "meaning": "upturned eyes"
   },
   {
+    "rank": 5690,
+    "word": "上目遣い",
+    "reading": "うわめづかい",
+    "meaning": "upturned eyes"
+  },
+  {
     "rank": 5735,
     "word": "脇腹",
     "reading": "わきばら",
@@ -832,6 +868,12 @@
     "word": "重視",
     "reading": "じゅうし",
     "meaning": "regarding as important"
+  },
+  {
+    "rank": 5885,
+    "word": "寝顔",
+    "reading": "ねがお",
+    "meaning": "sleeping face"
   },
   {
     "rank": 5889,
@@ -888,6 +930,12 @@
     "meaning": "to bear up in tragedy"
   },
   {
+    "rank": 6329,
+    "word": "人手",
+    "reading": "ひとで",
+    "meaning": "someone else's hands"
+  },
+  {
     "rank": 6440,
     "word": "血管",
     "reading": "けっかん",
@@ -904,6 +952,12 @@
     "word": "痕",
     "reading": "こん",
     "meaning": "scar (e.g. from operation, injection)"
+  },
+  {
+    "rank": 6582,
+    "word": "足首",
+    "reading": "あしくび",
+    "meaning": "ankle"
   },
   {
     "rank": 6583,
@@ -958,6 +1012,12 @@
     "word": "エレベーター",
     "reading": "エレベーター",
     "meaning": "elevator"
+  },
+  {
+    "rank": 7715,
+    "word": "巨体",
+    "reading": "きょたい",
+    "meaning": "huge body"
   },
   {
     "rank": 7723,
@@ -1302,6 +1362,12 @@
     "meaning": "project"
   },
   {
+    "rank": 9457,
+    "word": "具合が悪い",
+    "reading": "ぐあいがわるい",
+    "meaning": "unwell"
+  },
+  {
     "rank": 9477,
     "word": "上気",
     "reading": "じょうき",
@@ -1512,6 +1578,12 @@
     "meaning": "throughout the body"
   },
   {
+    "rank": 10713,
+    "word": "脂",
+    "reading": "あぶら",
+    "meaning": "fat"
+  },
+  {
     "rank": 10739,
     "word": "巨乳",
     "reading": "きょにゅう",
@@ -1552,6 +1624,12 @@
     "word": "胃袋",
     "reading": "いぶくろ",
     "meaning": "stomach"
+  },
+  {
+    "rank": 10910,
+    "word": "ポンポン",
+    "reading": "ポンポン",
+    "meaning": "tummy"
   },
   {
     "rank": 10993,
@@ -2706,6 +2784,12 @@
     "meaning": "pit of the stomach"
   },
   {
+    "rank": 18969,
+    "word": "鳩尾",
+    "reading": "みぞおち",
+    "meaning": "pit of the stomach"
+  },
+  {
     "rank": 19214,
     "word": "白骨",
     "reading": "はっこつ",
@@ -2826,6 +2910,12 @@
     "meaning": "clenched fist"
   },
   {
+    "rank": 20110,
+    "word": "膣壁",
+    "reading": "ちつへき",
+    "meaning": "vaginal wall"
+  },
+  {
     "rank": 20137,
     "word": "生首",
     "reading": "なまくび",
@@ -2920,6 +3010,12 @@
     "word": "左胸",
     "reading": "ひだりむね",
     "meaning": "left breast"
+  },
+  {
+    "rank": 20798,
+    "word": "口許",
+    "reading": "くちもと",
+    "meaning": "mouth"
   },
   {
     "rank": 20798,
@@ -3438,6 +3534,12 @@
     "meaning": "vocal cords"
   },
   {
+    "rank": 24272,
+    "word": "脳細胞",
+    "reading": "のうさいぼう",
+    "meaning": "brain cell"
+  },
+  {
     "rank": 24273,
     "word": "吹かす",
     "reading": "ふかす",
@@ -3556,6 +3658,12 @@
     "word": "聞き耳",
     "reading": "ききみみ",
     "meaning": "straining one's ears"
+  },
+  {
+    "rank": 25216,
+    "word": "カンカン",
+    "reading": "カンカン",
+    "meaning": "hair"
   },
   {
     "rank": 25222,

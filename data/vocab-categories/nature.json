@@ -6,82 +6,10 @@
     "meaning": "light"
   },
   {
-    "rank": 593,
-    "word": "再び",
-    "reading": "ふたたび",
-    "meaning": "again"
-  },
-  {
-    "rank": 620,
-    "word": "以前",
-    "reading": "いぜん",
-    "meaning": "ago"
-  },
-  {
-    "rank": 641,
-    "word": "引く",
-    "reading": "ひく",
-    "meaning": "to pull"
-  },
-  {
-    "rank": 678,
-    "word": "人生",
-    "reading": "じんせい",
-    "meaning": "(one's) life"
-  },
-  {
-    "rank": 691,
-    "word": "周り",
-    "reading": "まわり",
-    "meaning": "circumference"
-  },
-  {
-    "rank": 752,
-    "word": "素直",
-    "reading": "すなお",
-    "meaning": "obedient"
-  },
-  {
-    "rank": 855,
-    "word": "いたす",
-    "reading": "いたす",
-    "meaning": "to do"
-  },
-  {
-    "rank": 877,
-    "word": "満足",
-    "reading": "まんぞく",
-    "meaning": "satisfaction"
-  },
-  {
-    "rank": 892,
-    "word": "暮らす",
-    "reading": "くらす",
-    "meaning": "to live"
-  },
-  {
-    "rank": 895,
-    "word": "否定",
-    "reading": "ひてい",
-    "meaning": "denial"
-  },
-  {
-    "rank": 908,
-    "word": "ちょうど",
-    "reading": "ちょうど",
-    "meaning": "exactly"
-  },
-  {
-    "rank": 938,
-    "word": "位置",
-    "reading": "いち",
-    "meaning": "place"
-  },
-  {
-    "rank": 943,
-    "word": "願う",
-    "reading": "ねがう",
-    "meaning": "to desire"
+    "rank": 894,
+    "word": "雨",
+    "reading": "あめ",
+    "meaning": "rain"
   },
   {
     "rank": 1079,
@@ -132,10 +60,10 @@
     "meaning": "-itis (indicating an inflammatory disease)"
   },
   {
-    "rank": 1434,
-    "word": "タイプ",
-    "reading": "タイプ",
-    "meaning": "type"
+    "rank": 1430,
+    "word": "穴",
+    "reading": "あな",
+    "meaning": "hole"
   },
   {
     "rank": 1491,
@@ -180,12 +108,6 @@
     "meaning": "aroma"
   },
   {
-    "rank": 1811,
-    "word": "土地",
-    "reading": "とち",
-    "meaning": "plot of land"
-  },
-  {
     "rank": 1855,
     "word": "冬",
     "reading": "ふゆ",
@@ -202,12 +124,6 @@
     "word": "氷",
     "reading": "こおり",
     "meaning": "ice"
-  },
-  {
-    "rank": 1898,
-    "word": "土",
-    "reading": "ど",
-    "meaning": "Saturday"
   },
   {
     "rank": 1915,
@@ -238,12 +154,6 @@
     "word": "夕方",
     "reading": "ゆうがた",
     "meaning": "evening"
-  },
-  {
-    "rank": 2049,
-    "word": "緑",
-    "reading": "みどり",
-    "meaning": "green"
   },
   {
     "rank": 2119,
@@ -408,24 +318,6 @@
     "meaning": "cherry tree"
   },
   {
-    "rank": 3226,
-    "word": "崩壊",
-    "reading": "ほうかい",
-    "meaning": "collapse"
-  },
-  {
-    "rank": 3255,
-    "word": "現象",
-    "reading": "げんしょう",
-    "meaning": "phenomenon"
-  },
-  {
-    "rank": 3291,
-    "word": "薄暗い",
-    "reading": "うすぐらい",
-    "meaning": "dim"
-  },
-  {
     "rank": 3328,
     "word": "雷",
     "reading": "かみなり",
@@ -442,18 +334,6 @@
     "word": "上空",
     "reading": "じょうくう",
     "meaning": "sky"
-  },
-  {
-    "rank": 3552,
-    "word": "フォロー",
-    "reading": "フォロー",
-    "meaning": "follow"
-  },
-  {
-    "rank": 3554,
-    "word": "一匹",
-    "reading": "いっぴき",
-    "meaning": "one animal (small)"
   },
   {
     "rank": 3557,
@@ -474,12 +354,6 @@
     "meaning": "to bloom"
   },
   {
-    "rank": 3686,
-    "word": "だからといって",
-    "reading": "だからといって",
-    "meaning": "while it may be true that"
-  },
-  {
     "rank": 3690,
     "word": "つる",
     "reading": "つる",
@@ -496,12 +370,6 @@
     "word": "大陸",
     "reading": "たいりく",
     "meaning": "continent"
-  },
-  {
-    "rank": 3855,
-    "word": "流",
-    "reading": "りゅう",
-    "meaning": "fashion"
   },
   {
     "rank": 3970,
@@ -582,10 +450,10 @@
     "meaning": "bubble"
   },
   {
-    "rank": 4378,
-    "word": "緑色",
-    "reading": "みどりいろ",
-    "meaning": "green"
+    "rank": 4381,
+    "word": "尾",
+    "reading": "び",
+    "meaning": "Chinese \"\"Tail\"\" constellation (one of the 28 mansions)"
   },
   {
     "rank": 4390,
@@ -612,12 +480,6 @@
     "meaning": "tree"
   },
   {
-    "rank": 4544,
-    "word": "花火",
-    "reading": "はなび",
-    "meaning": "fireworks"
-  },
-  {
     "rank": 4548,
     "word": "天気",
     "reading": "てんき",
@@ -640,12 +502,6 @@
     "word": "渦",
     "reading": "うず",
     "meaning": "whirlpool"
-  },
-  {
-    "rank": 4744,
-    "word": "癒す",
-    "reading": "いやす",
-    "meaning": "to heal"
   },
   {
     "rank": 4840,
@@ -684,12 +540,6 @@
     "meaning": "to become damp"
   },
   {
-    "rank": 5066,
-    "word": "険しい",
-    "reading": "けわしい",
-    "meaning": "precipitous"
-  },
-  {
     "rank": 5105,
     "word": "華",
     "reading": "はな",
@@ -708,22 +558,10 @@
     "meaning": "island"
   },
   {
-    "rank": 5261,
-    "word": "重力",
-    "reading": "じゅうりょく",
-    "meaning": "gravity"
-  },
-  {
     "rank": 5365,
     "word": "枯れる",
     "reading": "かれる",
     "meaning": "to wither (of a plant)"
-  },
-  {
-    "rank": 5401,
-    "word": "果物",
-    "reading": "くだもの",
-    "meaning": "fruit"
   },
   {
     "rank": 5602,
@@ -736,12 +574,6 @@
     "word": "天然",
     "reading": "てんねん",
     "meaning": "nature"
-  },
-  {
-    "rank": 5643,
-    "word": "風情",
-    "reading": "ふぜい",
-    "meaning": "taste"
   },
   {
     "rank": 5691,
@@ -762,30 +594,6 @@
     "meaning": "base (of a plant, tree, pillar, etc.)"
   },
   {
-    "rank": 5757,
-    "word": "悪戯",
-    "reading": "いたずら",
-    "meaning": "mischief"
-  },
-  {
-    "rank": 5763,
-    "word": "従える",
-    "reading": "したがえる",
-    "meaning": "to be accompanied by"
-  },
-  {
-    "rank": 5781,
-    "word": "豆",
-    "reading": "まめ",
-    "meaning": "legume (esp. edible legumes or their seeds, e.g. beans, p..."
-  },
-  {
-    "rank": 5857,
-    "word": "旅立つ",
-    "reading": "たびだつ",
-    "meaning": "to begin a trip"
-  },
-  {
     "rank": 5878,
     "word": "大気",
     "reading": "たいき",
@@ -796,12 +604,6 @@
     "word": "陸",
     "reading": "りく",
     "meaning": "land"
-  },
-  {
-    "rank": 6007,
-    "word": "釣り",
-    "reading": "つり",
-    "meaning": "fishing"
   },
   {
     "rank": 6026,
@@ -840,18 +642,6 @@
     "meaning": "dawn"
   },
   {
-    "rank": 6130,
-    "word": "鮮明",
-    "reading": "せんめい",
-    "meaning": "vivid"
-  },
-  {
-    "rank": 6174,
-    "word": "費やす",
-    "reading": "ついやす",
-    "meaning": "to spend"
-  },
-  {
     "rank": 6188,
     "word": "寒気",
     "reading": "さむけ",
@@ -876,22 +666,10 @@
     "meaning": "evening sun"
   },
   {
-    "rank": 6288,
-    "word": "連絡を取る",
-    "reading": "れんらくをとる",
-    "meaning": "to get in touch with"
-  },
-  {
-    "rank": 6318,
-    "word": "そわそわ",
-    "reading": "そわそわ",
-    "meaning": "restlessly"
-  },
-  {
-    "rank": 6325,
-    "word": "こうなると",
-    "reading": "こうなると",
-    "meaning": "given the situation"
+    "rank": 6316,
+    "word": "ガス",
+    "reading": "ガス",
+    "meaning": "gas (state of matter, e.g. poison gas, natural gas)"
   },
   {
     "rank": 6335,
@@ -900,16 +678,16 @@
     "meaning": "morning sun"
   },
   {
-    "rank": 6336,
-    "word": "キレる",
-    "reading": "キレる",
-    "meaning": "to get angry"
+    "rank": 6342,
+    "word": "燃え上がる",
+    "reading": "もえあがる",
+    "meaning": "to flare up"
   },
   {
-    "rank": 6424,
-    "word": "余韻",
-    "reading": "よいん",
-    "meaning": "reverberation"
+    "rank": 6423,
+    "word": "潮",
+    "reading": "しお",
+    "meaning": "tide"
   },
   {
     "rank": 6537,
@@ -918,10 +696,10 @@
     "meaning": "coast"
   },
   {
-    "rank": 6597,
-    "word": "名目",
-    "reading": "めいもく",
-    "meaning": "name"
+    "rank": 6707,
+    "word": "浜",
+    "reading": "はま",
+    "meaning": "beach"
   },
   {
     "rank": 6708,
@@ -954,10 +732,10 @@
     "meaning": "water"
   },
   {
-    "rank": 6995,
-    "word": "細か",
-    "reading": "こまか",
-    "meaning": "small"
+    "rank": 6994,
+    "word": "岸",
+    "reading": "きし",
+    "meaning": "bank"
   },
   {
     "rank": 7007,
@@ -1050,22 +828,16 @@
     "meaning": "small peninsula"
   },
   {
-    "rank": 7900,
-    "word": "お主",
-    "reading": "おぬし",
-    "meaning": "you (when referring to one's equals or inferiors)"
+    "rank": 7901,
+    "word": "草原",
+    "reading": "そうげん",
+    "meaning": "grassy field"
   },
   {
     "rank": 7910,
     "word": "温もり",
     "reading": "ぬくもり",
     "meaning": "warmth"
-  },
-  {
-    "rank": 7971,
-    "word": "蝶",
-    "reading": "ちょう",
-    "meaning": "butterfly"
   },
   {
     "rank": 7986,
@@ -1104,24 +876,6 @@
     "meaning": "peach (Prunus persica)"
   },
   {
-    "rank": 8294,
-    "word": "羽根",
-    "reading": "はね",
-    "meaning": "feather"
-  },
-  {
-    "rank": 8299,
-    "word": "土",
-    "reading": "ど",
-    "meaning": "Saturday"
-  },
-  {
-    "rank": 8314,
-    "word": "羽ばたく",
-    "reading": "はばたく",
-    "meaning": "to flap (wings)"
-  },
-  {
     "rank": 8352,
     "word": "月明かり",
     "reading": "つきあかり",
@@ -1132,12 +886,6 @@
     "word": "冷気",
     "reading": "れいき",
     "meaning": "cold"
-  },
-  {
-    "rank": 8417,
-    "word": "薪",
-    "reading": "まき",
-    "meaning": "piece(s) of firewood (esp. chopped or split from logs)"
   },
   {
     "rank": 8425,
@@ -1162,12 +910,6 @@
     "word": "閃く",
     "reading": "ひらめく",
     "meaning": "to flash (e.g. lightning)"
-  },
-  {
-    "rank": 8478,
-    "word": "羽",
-    "reading": "はね",
-    "meaning": "feather"
   },
   {
     "rank": 8521,
@@ -1206,18 +948,6 @@
     "meaning": "to dash against (of waves)"
   },
   {
-    "rank": 8709,
-    "word": "ジャケット",
-    "reading": "ジャケット",
-    "meaning": "jacket"
-  },
-  {
-    "rank": 8729,
-    "word": "粒子",
-    "reading": "りゅうし",
-    "meaning": "particle"
-  },
-  {
     "rank": 8764,
     "word": "月光",
     "reading": "げっこう",
@@ -1228,12 +958,6 @@
     "word": "野生",
     "reading": "やせい",
     "meaning": "wild"
-  },
-  {
-    "rank": 8841,
-    "word": "トマト",
-    "reading": "トマト",
-    "meaning": "tomato (Solanum lycopersicum)"
   },
   {
     "rank": 8856,
@@ -1254,12 +978,6 @@
     "meaning": "to smell"
   },
   {
-    "rank": 8882,
-    "word": "反乱",
-    "reading": "はんらん",
-    "meaning": "insurrection"
-  },
-  {
     "rank": 8883,
     "word": "花束",
     "reading": "はなたば",
@@ -1270,12 +988,6 @@
     "word": "チラチラ",
     "reading": "チラチラ",
     "meaning": "falling lightly (e.g. snow, petals, confetti)"
-  },
-  {
-    "rank": 9103,
-    "word": "撒き散らす",
-    "reading": "まきちらす",
-    "meaning": "to scatter"
   },
   {
     "rank": 9105,
@@ -1306,12 +1018,6 @@
     "word": "美術",
     "reading": "びじゅつ",
     "meaning": "art"
-  },
-  {
-    "rank": 9142,
-    "word": "腕時計",
-    "reading": "うでどけい",
-    "meaning": "wristwatch"
   },
   {
     "rank": 9164,
@@ -1360,12 +1066,6 @@
     "word": "芽",
     "reading": "め",
     "meaning": "sprout"
-  },
-  {
-    "rank": 9347,
-    "word": "鎮める",
-    "reading": "しずめる",
-    "meaning": "to appease"
   },
   {
     "rank": 9368,
@@ -1464,12 +1164,6 @@
     "meaning": "lightning"
   },
   {
-    "rank": 9637,
-    "word": "散乱",
-    "reading": "さんらん",
-    "meaning": "dispersion"
-  },
-  {
     "rank": 9658,
     "word": "杉",
     "reading": "すぎ",
@@ -1486,12 +1180,6 @@
     "word": "坂道",
     "reading": "さかみち",
     "meaning": "hill road"
-  },
-  {
-    "rank": 9765,
-    "word": "瞬く",
-    "reading": "またたく",
-    "meaning": "to blink (one's eyes)"
   },
   {
     "rank": 9767,
@@ -1512,12 +1200,6 @@
     "meaning": "to glitter"
   },
   {
-    "rank": 9797,
-    "word": "狭間",
-    "reading": "はざま",
-    "meaning": "interval"
-  },
-  {
     "rank": 9811,
     "word": "瀬",
     "reading": "せ",
@@ -1536,12 +1218,6 @@
     "meaning": "to flicker"
   },
   {
-    "rank": 9927,
-    "word": "遙か",
-    "reading": "はるか",
-    "meaning": "far away"
-  },
-  {
     "rank": 9928,
     "word": "台風",
     "reading": "たいふう",
@@ -1552,12 +1228,6 @@
     "word": "飛来",
     "reading": "ひらい",
     "meaning": "coming flying in (migratory birds, airborne sand, pollen,..."
-  },
-  {
-    "rank": 10002,
-    "word": "芋",
-    "reading": "いも",
-    "meaning": "tuber"
   },
   {
     "rank": 10029,
@@ -1590,10 +1260,10 @@
     "meaning": "to bear fruit"
   },
   {
-    "rank": 10152,
-    "word": "良",
-    "reading": "りょう",
-    "meaning": "good (quality, condition, etc.)"
+    "rank": 10151,
+    "word": "実る",
+    "reading": "みのる",
+    "meaning": "to bear fruit"
   },
   {
     "rank": 10164,
@@ -1602,16 +1272,10 @@
     "meaning": "sky"
   },
   {
-    "rank": 10165,
-    "word": "ブラ",
-    "reading": "ブラ",
-    "meaning": "bra"
-  },
-  {
-    "rank": 10210,
-    "word": "やらす",
-    "reading": "やらす",
-    "meaning": "to allow"
+    "rank": 10209,
+    "word": "百合",
+    "reading": "ゆり",
+    "meaning": "lily (Lilium spp.)"
   },
   {
     "rank": 10286,
@@ -1662,12 +1326,6 @@
     "meaning": "bamboo grass"
   },
   {
-    "rank": 10489,
-    "word": "心地良い",
-    "reading": "ここちよい",
-    "meaning": "comfortable"
-  },
-  {
     "rank": 10500,
     "word": "竜巻",
     "reading": "たつまき",
@@ -1710,12 +1368,6 @@
     "meaning": "seawater"
   },
   {
-    "rank": 10640,
-    "word": "木材",
-    "reading": "もくざい",
-    "meaning": "lumber"
-  },
-  {
     "rank": 10655,
     "word": "夜風",
     "reading": "よかぜ",
@@ -1734,22 +1386,10 @@
     "meaning": "to flow out"
   },
   {
-    "rank": 10699,
-    "word": "あがく",
-    "reading": "あがく",
-    "meaning": "to paw (at) the ground"
-  },
-  {
-    "rank": 10715,
-    "word": "釣り合う",
-    "reading": "つりあう",
-    "meaning": "to balance"
-  },
-  {
-    "rank": 10725,
-    "word": "堕落",
-    "reading": "だらく",
-    "meaning": "depravity"
+    "rank": 10714,
+    "word": "吹雪",
+    "reading": "ふぶき",
+    "meaning": "snow storm"
   },
   {
     "rank": 10782,
@@ -1764,10 +1404,10 @@
     "meaning": "climate"
   },
   {
-    "rank": 10872,
-    "word": "知らしめる",
-    "reading": "しらしめる",
-    "meaning": "to make known"
+    "rank": 10845,
+    "word": "こだま",
+    "reading": "こだま",
+    "meaning": "echo"
   },
   {
     "rank": 10887,
@@ -1780,18 +1420,6 @@
     "word": "河原",
     "reading": "かわら",
     "meaning": "dry riverbed"
-  },
-  {
-    "rank": 10914,
-    "word": "乗り物",
-    "reading": "のりもの",
-    "meaning": "vehicle"
-  },
-  {
-    "rank": 10965,
-    "word": "花を咲かせる",
-    "reading": "はなをさかせる",
-    "meaning": "to enliven (e.g. a conversation)"
   },
   {
     "rank": 10991,
@@ -1842,12 +1470,6 @@
     "meaning": "crop"
   },
   {
-    "rank": 11156,
-    "word": "鐘の音",
-    "reading": "かねのね",
-    "meaning": "chimes"
-  },
-  {
     "rank": 11182,
     "word": "麻",
     "reading": "あさ",
@@ -1878,12 +1500,6 @@
     "meaning": "ore"
   },
   {
-    "rank": 11248,
-    "word": "汚染",
-    "reading": "おせん",
-    "meaning": "pollution"
-  },
-  {
     "rank": 11262,
     "word": "丸太",
     "reading": "まるた",
@@ -1894,12 +1510,6 @@
     "word": "森の奥",
     "reading": "もりのおく",
     "meaning": "deep in the forest"
-  },
-  {
-    "rank": 11354,
-    "word": "沖縄",
-    "reading": "おきなわ",
-    "meaning": "Okinawa (city, prefecture)"
   },
   {
     "rank": 11369,
@@ -1962,34 +1572,10 @@
     "meaning": "evening sun"
   },
   {
-    "rank": 11606,
-    "word": "月日",
-    "reading": "がっぴ",
-    "meaning": "month and day (of the year)"
-  },
-  {
-    "rank": 11612,
-    "word": "恒例",
-    "reading": "こうれい",
-    "meaning": "established practice"
-  },
-  {
-    "rank": 11614,
-    "word": "ぐる",
-    "reading": "ぐる",
-    "meaning": "accomplice"
-  },
-  {
     "rank": 11631,
     "word": "風の音",
     "reading": "かぜのおと",
     "meaning": "sound of the wind"
-  },
-  {
-    "rank": 11676,
-    "word": "蜂",
-    "reading": "はち",
-    "meaning": "bee"
   },
   {
     "rank": 11704,
@@ -2064,12 +1650,6 @@
     "meaning": "depth"
   },
   {
-    "rank": 11876,
-    "word": "イチゴ",
-    "reading": "イチゴ",
-    "meaning": "strawberry (esp. the garden strawberry, Fragaria x ananassa)"
-  },
-  {
     "rank": 11881,
     "word": "凍結",
     "reading": "とうけつ",
@@ -2124,12 +1704,6 @@
     "meaning": "to grow thickly"
   },
   {
-    "rank": 12089,
-    "word": "大根",
-    "reading": "だいこん",
-    "meaning": "daikon (variety of large white Oriental radish, Raphanus ..."
-  },
-  {
     "rank": 12096,
     "word": "暑苦しい",
     "reading": "あつくるしい",
@@ -2160,28 +1734,10 @@
     "meaning": "bottom of the ocean"
   },
   {
-    "rank": 12307,
-    "word": "火災",
-    "reading": "かさい",
-    "meaning": "conflagration"
-  },
-  {
     "rank": 12329,
     "word": "萌える",
     "reading": "もえる",
     "meaning": "to burst into bud"
-  },
-  {
-    "rank": 12504,
-    "word": "林檎",
-    "reading": "りんご",
-    "meaning": "apple (fruit)"
-  },
-  {
-    "rank": 12550,
-    "word": "フルーツ",
-    "reading": "フルーツ",
-    "meaning": "fruit"
   },
   {
     "rank": 12571,
@@ -2206,12 +1762,6 @@
     "word": "日向",
     "reading": "ひなた",
     "meaning": "sunny place"
-  },
-  {
-    "rank": 12689,
-    "word": "大理石",
-    "reading": "だいりせき",
-    "meaning": "marble"
   },
   {
     "rank": 12697,
@@ -2250,22 +1800,10 @@
     "meaning": "to burn down (to the ground)"
   },
   {
-    "rank": 12854,
-    "word": "レモン",
-    "reading": "レモン",
-    "meaning": "lemon"
-  },
-  {
     "rank": 12875,
     "word": "野宿",
     "reading": "のじゅく",
     "meaning": "sleeping outdoors"
-  },
-  {
-    "rank": 12913,
-    "word": "蜂蜜",
-    "reading": "はちみつ",
-    "meaning": "honey"
   },
   {
     "rank": 12917,
@@ -2286,16 +1824,16 @@
     "meaning": "new moon"
   },
   {
-    "rank": 13025,
-    "word": "栗",
-    "reading": "くり",
-    "meaning": "Japanese chestnut (Castanea crenata)"
-  },
-  {
     "rank": 13064,
     "word": "穂",
     "reading": "ほ",
     "meaning": "ear (of a cereal plant)"
+  },
+  {
+    "rank": 13152,
+    "word": "流星",
+    "reading": "りゅうせい",
+    "meaning": "meteor"
   },
   {
     "rank": 13173,
@@ -2322,22 +1860,10 @@
     "meaning": "stars"
   },
   {
-    "rank": 13320,
-    "word": "打ち上げ",
-    "reading": "",
-    "meaning": ""
-  },
-  {
     "rank": 13373,
     "word": "隕石",
     "reading": "いんせき",
     "meaning": "meteorite"
-  },
-  {
-    "rank": 13435,
-    "word": "お泊まり",
-    "reading": "おとまり",
-    "meaning": "sleepover"
   },
   {
     "rank": 13471,
@@ -2376,52 +1902,16 @@
     "meaning": "horizon (related to land)"
   },
   {
-    "rank": 13580,
-    "word": "桜色",
-    "reading": "さくらいろ",
-    "meaning": "cherry blossom (colour, color)"
-  },
-  {
     "rank": 13583,
     "word": "対岸",
     "reading": "たいがん",
     "meaning": "opposite shore"
   },
   {
-    "rank": 13589,
-    "word": "伊",
-    "reading": "い",
-    "meaning": "Italy"
-  },
-  {
-    "rank": 13613,
-    "word": "ぎる",
-    "reading": "ぎる",
-    "meaning": "to swipe"
-  },
-  {
-    "rank": 13616,
-    "word": "ゼリー",
-    "reading": "ゼリー",
-    "meaning": "jello (gelatin-based dessert)"
-  },
-  {
-    "rank": 13625,
-    "word": "串刺し",
-    "reading": "くしざし",
-    "meaning": "skewer"
-  },
-  {
-    "rank": 13645,
-    "word": "狂人",
-    "reading": "きょうじん",
-    "meaning": "lunatic"
-  },
-  {
-    "rank": 13649,
-    "word": "向かい側",
-    "reading": "むかいがわ",
-    "meaning": "opposite side"
+    "rank": 13644,
+    "word": "峠",
+    "reading": "とうげ",
+    "meaning": "(mountain) pass"
   },
   {
     "rank": 13696,
@@ -2446,12 +1936,6 @@
     "word": "大雨",
     "reading": "おおあめ",
     "meaning": "heavy rain"
-  },
-  {
-    "rank": 13781,
-    "word": "蛍",
-    "reading": "ほたる",
-    "meaning": "firefly (Luciola cruciata)"
   },
   {
     "rank": 13817,
@@ -2586,22 +2070,16 @@
     "meaning": "shade"
   },
   {
-    "rank": 14379,
-    "word": "無名",
-    "reading": "むめい",
-    "meaning": "nameless"
+    "rank": 14380,
+    "word": "銀河",
+    "reading": "ぎんが",
+    "meaning": "Milky Way"
   },
   {
     "rank": 14381,
     "word": "寄生",
     "reading": "きせい",
     "meaning": "parasitism"
-  },
-  {
-    "rank": 14448,
-    "word": "紅蓮",
-    "reading": "ぐれん",
-    "meaning": "bright red"
   },
   {
     "rank": 14491,
@@ -2634,12 +2112,6 @@
     "meaning": "to freeze"
   },
   {
-    "rank": 14699,
-    "word": "十二分",
-    "reading": "じゅうにぶん",
-    "meaning": "more than enough"
-  },
-  {
     "rank": 14707,
     "word": "枯渇",
     "reading": "こかつ",
@@ -2658,22 +2130,10 @@
     "meaning": "orchid"
   },
   {
-    "rank": 14732,
-    "word": "下宿",
-    "reading": "げしゅく",
-    "meaning": "boarding"
-  },
-  {
     "rank": 14737,
     "word": "泥沼",
     "reading": "どろぬま",
     "meaning": "bog"
-  },
-  {
-    "rank": 14751,
-    "word": "小麦",
-    "reading": "こむぎ",
-    "meaning": "wheat"
   },
   {
     "rank": 14806,
@@ -2694,12 +2154,6 @@
     "meaning": "(flower) bud"
   },
   {
-    "rank": 14846,
-    "word": "小ぶり",
-    "reading": "こぶり",
-    "meaning": "smallish"
-  },
-  {
     "rank": 14847,
     "word": "水平線",
     "reading": "すいへいせん",
@@ -2710,6 +2164,12 @@
     "word": "土手",
     "reading": "どて",
     "meaning": "embankment"
+  },
+  {
+    "rank": 14858,
+    "word": "藪",
+    "reading": "やぶ",
+    "meaning": "thicket"
   },
   {
     "rank": 14866,
@@ -2728,12 +2188,6 @@
     "word": "大河",
     "reading": "たいが",
     "meaning": "large river"
-  },
-  {
-    "rank": 14898,
-    "word": "準",
-    "reading": "じゅん",
-    "meaning": "semi-"
   },
   {
     "rank": 14927,
@@ -2766,12 +2220,6 @@
     "meaning": "vine"
   },
   {
-    "rank": 15006,
-    "word": "グリーン",
-    "reading": "グリーン",
-    "meaning": "green (colour)"
-  },
-  {
     "rank": 15024,
     "word": "立ち込める",
     "reading": "たちこめる",
@@ -2802,12 +2250,6 @@
     "meaning": "puddle"
   },
   {
-    "rank": 15166,
-    "word": "溺愛",
-    "reading": "できあい",
-    "meaning": "infatuation"
-  },
-  {
     "rank": 15172,
     "word": "滴り落ちる",
     "reading": "したたりおちる",
@@ -2820,18 +2262,6 @@
     "meaning": "raining"
   },
   {
-    "rank": 15234,
-    "word": "ネギ",
-    "reading": "ネギ",
-    "meaning": "Welsh onion (Allium fistulosum)"
-  },
-  {
-    "rank": 15238,
-    "word": "言いようのない",
-    "reading": "いいようのない",
-    "meaning": "indescribable"
-  },
-  {
     "rank": 15262,
     "word": "かさ",
     "reading": "かさ",
@@ -2842,18 +2272,6 @@
     "word": "強風",
     "reading": "きょうふう",
     "meaning": "strong wind"
-  },
-  {
-    "rank": 15275,
-    "word": "万年",
-    "reading": "まんねん",
-    "meaning": "ten thousand years"
-  },
-  {
-    "rank": 15281,
-    "word": "蔓延",
-    "reading": "まんえん",
-    "meaning": "spread (e.g. of a disease)"
   },
   {
     "rank": 15291,
@@ -2910,18 +2328,6 @@
     "meaning": "to boil"
   },
   {
-    "rank": 15482,
-    "word": "手一杯",
-    "reading": "ていっぱい",
-    "meaning": "having one's hands full"
-  },
-  {
-    "rank": 15489,
-    "word": "空き地",
-    "reading": "あきち",
-    "meaning": "vacant land"
-  },
-  {
     "rank": 15499,
     "word": "晴れ",
     "reading": "はれ",
@@ -2970,12 +2376,6 @@
     "meaning": "open air"
   },
   {
-    "rank": 15653,
-    "word": "物々しい",
-    "reading": "ものものしい",
-    "meaning": "strict (e.g. security)"
-  },
-  {
     "rank": 15654,
     "word": "落雷",
     "reading": "らくらい",
@@ -2986,12 +2386,6 @@
     "word": "飛沫",
     "reading": "ひまつ",
     "meaning": "splash"
-  },
-  {
-    "rank": 15723,
-    "word": "翼を広げる",
-    "reading": "つばさをひろげる",
-    "meaning": "to spread one's wings"
   },
   {
     "rank": 15729,
@@ -3042,12 +2436,6 @@
     "meaning": "open-air fire (e.g. for garden refuse)"
   },
   {
-    "rank": 15912,
-    "word": "子分",
-    "reading": "こぶん",
-    "meaning": "henchman"
-  },
-  {
     "rank": 15922,
     "word": "圏内",
     "reading": "けんない",
@@ -3096,12 +2484,6 @@
     "meaning": "fireball"
   },
   {
-    "rank": 16349,
-    "word": "イラつく",
-    "reading": "イラつく",
-    "meaning": "to get irritated"
-  },
-  {
     "rank": 16379,
     "word": "水流",
     "reading": "すいりゅう",
@@ -3126,12 +2508,6 @@
     "meaning": "moonlit night"
   },
   {
-    "rank": 16524,
-    "word": "繭",
-    "reading": "まゆ",
-    "meaning": "cocoon"
-  },
-  {
     "rank": 16533,
     "word": "木霊",
     "reading": "こだま",
@@ -3142,12 +2518,6 @@
     "word": "花見",
     "reading": "はなみ",
     "meaning": "cherry blossom viewing"
-  },
-  {
-    "rank": 16570,
-    "word": "羽音",
-    "reading": "はおと",
-    "meaning": "flapping sound (of wings)"
   },
   {
     "rank": 16580,
@@ -3178,12 +2548,6 @@
     "word": "風圧",
     "reading": "ふうあつ",
     "meaning": "wind pressure"
-  },
-  {
-    "rank": 16649,
-    "word": "天性",
-    "reading": "てんせい",
-    "meaning": "nature"
   },
   {
     "rank": 16667,
@@ -3312,34 +2676,10 @@
     "meaning": "to be delirious with fever"
   },
   {
-    "rank": 17028,
-    "word": "オロオロ",
-    "reading": "オロオロ",
-    "meaning": "in confusion"
-  },
-  {
-    "rank": 17044,
-    "word": "泥だらけ",
-    "reading": "どろだらけ",
-    "meaning": "covered in mud"
-  },
-  {
     "rank": 17057,
     "word": "肥料",
     "reading": "ひりょう",
     "meaning": "manure"
-  },
-  {
-    "rank": 17059,
-    "word": "びしょ濡れ",
-    "reading": "びしょぬれ",
-    "meaning": "sopping wet"
-  },
-  {
-    "rank": 17074,
-    "word": "暖房",
-    "reading": "だんぼう",
-    "meaning": "(indoor) heating"
   },
   {
     "rank": 17090,
@@ -3354,28 +2694,10 @@
     "meaning": "freezing"
   },
   {
-    "rank": 17188,
-    "word": "ふすま",
-    "reading": "ふすま",
-    "meaning": "wheat bran"
-  },
-  {
     "rank": 17209,
     "word": "藍",
     "reading": "あい",
     "meaning": "dyer's knotweed (Persicaria tinctoria, used to produce in..."
-  },
-  {
-    "rank": 17233,
-    "word": "穀物",
-    "reading": "こくもつ",
-    "meaning": "grain"
-  },
-  {
-    "rank": 17282,
-    "word": "蜘蛛の巣",
-    "reading": "くものす",
-    "meaning": "spiderweb"
   },
   {
     "rank": 17318,
@@ -3400,12 +2722,6 @@
     "word": "混濁",
     "reading": "こんだく",
     "meaning": "turbidity"
-  },
-  {
-    "rank": 17341,
-    "word": "カボチャ",
-    "reading": "カボチャ",
-    "meaning": "pumpkin (Cucurbita sp.)"
   },
   {
     "rank": 17349,
@@ -3468,12 +2784,6 @@
     "meaning": "rock"
   },
   {
-    "rank": 17690,
-    "word": "どちらからともなく",
-    "reading": "どちらからともなく",
-    "meaning": "both"
-  },
-  {
     "rank": 17723,
     "word": "熟する",
     "reading": "じゅくする",
@@ -3486,12 +2796,6 @@
     "meaning": "green"
   },
   {
-    "rank": 17818,
-    "word": "果",
-    "reading": "か",
-    "meaning": "phala (attained state, result)"
-  },
-  {
     "rank": 17819,
     "word": "灯火",
     "reading": "とうか",
@@ -3502,12 +2806,6 @@
     "word": "照る",
     "reading": "てる",
     "meaning": "to shine"
-  },
-  {
-    "rank": 17852,
-    "word": "翡翠",
-    "reading": "かわせみ",
-    "meaning": "kingfisher (esp. the common kingfisher, Alcedo atthis)"
   },
   {
     "rank": 17869,
@@ -3534,22 +2832,10 @@
     "meaning": "oasis"
   },
   {
-    "rank": 17912,
-    "word": "花火大会",
-    "reading": "はなびたいかい",
-    "meaning": "display of fireworks"
-  },
-  {
     "rank": 17919,
     "word": "影を落とす",
     "reading": "かげをおとす",
     "meaning": "to cast a shadow"
-  },
-  {
-    "rank": 17934,
-    "word": "ずり落ちる",
-    "reading": "ずりおちる",
-    "meaning": "to slip down"
   },
   {
     "rank": 17935,
@@ -3564,18 +2850,6 @@
     "meaning": "field"
   },
   {
-    "rank": 17961,
-    "word": "気分がいい",
-    "reading": "きぶんがいい",
-    "meaning": "feel good (pleasant)"
-  },
-  {
-    "rank": 17997,
-    "word": "夏祭り",
-    "reading": "なつまつり",
-    "meaning": "summer festival"
-  },
-  {
     "rank": 18010,
     "word": "四季",
     "reading": "しき",
@@ -3586,18 +2860,6 @@
     "word": "水蒸気",
     "reading": "すいじょうき",
     "meaning": "water vapour"
-  },
-  {
-    "rank": 18024,
-    "word": "みかん",
-    "reading": "みかん",
-    "meaning": "mandarin (esp. the satsuma mandarin (Citrus unshiu))"
-  },
-  {
-    "rank": 18042,
-    "word": "メロン",
-    "reading": "メロン",
-    "meaning": "melon (esp. a muskmelon, Cucumis melo)"
   },
   {
     "rank": 18055,
@@ -3624,22 +2886,10 @@
     "meaning": "moisture"
   },
   {
-    "rank": 18131,
-    "word": "戦火",
-    "reading": "せんか",
-    "meaning": "wartime fire"
-  },
-  {
     "rank": 18158,
     "word": "梅雨",
     "reading": "つゆ",
     "meaning": "rainy season (in Japan usu. from early June to mid-July)"
-  },
-  {
-    "rank": 18162,
-    "word": "降り続く",
-    "reading": "",
-    "meaning": ""
   },
   {
     "rank": 18173,
@@ -3720,12 +2970,6 @@
     "meaning": "hollow"
   },
   {
-    "rank": 18306,
-    "word": "梨",
-    "reading": "なし",
-    "meaning": "nashi (Pyrus pyrifolia, esp. var. culta)"
-  },
-  {
     "rank": 18315,
     "word": "焼け焦げる",
     "reading": "やけこげる",
@@ -3750,12 +2994,6 @@
     "meaning": "lightning"
   },
   {
-    "rank": 18433,
-    "word": "石炭",
-    "reading": "せきたん",
-    "meaning": "coal"
-  },
-  {
     "rank": 18448,
     "word": "晴れ渡る",
     "reading": "はれわたる",
@@ -3778,12 +3016,6 @@
     "word": "降り始める",
     "reading": "ふりはじめる",
     "meaning": "to begin to fall (rain, etc.)"
-  },
-  {
-    "rank": 18552,
-    "word": "蜂の巣",
-    "reading": "はちのす",
-    "meaning": "beehive"
   },
   {
     "rank": 18557,
@@ -3822,18 +3054,6 @@
     "meaning": "to fall and pile up (e.g. snow)"
   },
   {
-    "rank": 18660,
-    "word": "円滑",
-    "reading": "えんかつ",
-    "meaning": "smooth"
-  },
-  {
-    "rank": 18687,
-    "word": "ラノベ",
-    "reading": "ラノベ",
-    "meaning": "light novel"
-  },
-  {
     "rank": 18804,
     "word": "芽吹く",
     "reading": "めぶく",
@@ -3852,6 +3072,12 @@
     "meaning": "ignition"
   },
   {
+    "rank": 18880,
+    "word": "風が強い",
+    "reading": "かぜがつよい",
+    "meaning": "windy"
+  },
+  {
     "rank": 18917,
     "word": "風化",
     "reading": "ふうか",
@@ -3868,12 +3094,6 @@
     "word": "野良",
     "reading": "のら",
     "meaning": "field"
-  },
-  {
-    "rank": 18938,
-    "word": "芋虫",
-    "reading": "いもむし",
-    "meaning": "hornworm (caterpillar of a hawk moth)"
   },
   {
     "rank": 18955,
@@ -3952,12 +3172,6 @@
     "word": "雨雲",
     "reading": "あまぐも",
     "meaning": "rain cloud"
-  },
-  {
-    "rank": 19243,
-    "word": "お見知りおき",
-    "reading": "おみしりおき",
-    "meaning": "pleased to make your acquaintance"
   },
   {
     "rank": 19257,
@@ -4272,12 +3486,6 @@
     "meaning": "to set fire (to)"
   },
   {
-    "rank": 20386,
-    "word": "レタス",
-    "reading": "レタス",
-    "meaning": "lettuce (Lactuca sativa)"
-  },
-  {
     "rank": 20431,
     "word": "リリー",
     "reading": "リリー",
@@ -4302,24 +3510,6 @@
     "meaning": "to smoke (e.g. fire)"
   },
   {
-    "rank": 20531,
-    "word": "後を継ぐ",
-    "reading": "あとをつぐ",
-    "meaning": "to succeed (someone)"
-  },
-  {
-    "rank": 20568,
-    "word": "苺",
-    "reading": "いちご",
-    "meaning": "strawberry (esp. the garden strawberry, Fragaria x ananassa)"
-  },
-  {
-    "rank": 20571,
-    "word": "人参",
-    "reading": "にんじん",
-    "meaning": "carrot (Daucus carota)"
-  },
-  {
     "rank": 20575,
     "word": "根を張る",
     "reading": "ねをはる",
@@ -4336,18 +3526,6 @@
     "word": "土埃",
     "reading": "つちぼこり",
     "meaning": "dust"
-  },
-  {
-    "rank": 20649,
-    "word": "一日も早い",
-    "reading": "いちにちもはやい",
-    "meaning": "speedy"
-  },
-  {
-    "rank": 20661,
-    "word": "柿",
-    "reading": "かき",
-    "meaning": "kaki"
   },
   {
     "rank": 20699,
@@ -4386,12 +3564,6 @@
     "meaning": "to become brilliant"
   },
   {
-    "rank": 20822,
-    "word": "煙幕",
-    "reading": "えんまく",
-    "meaning": "smokescreen"
-  },
-  {
     "rank": 20824,
     "word": "泥水",
     "reading": "どろみず",
@@ -4402,18 +3574,6 @@
     "word": "農地",
     "reading": "のうち",
     "meaning": "agricultural land"
-  },
-  {
-    "rank": 20862,
-    "word": "葉巻",
-    "reading": "はまき",
-    "meaning": "cigar"
-  },
-  {
-    "rank": 20900,
-    "word": "ニンニク",
-    "reading": "ニンニク",
-    "meaning": "garlic (Allium sativum)"
   },
   {
     "rank": 20932,
@@ -4428,22 +3588,10 @@
     "meaning": "disastrous flooding"
   },
   {
-    "rank": 20985,
-    "word": "苦味",
-    "reading": "にがみ",
-    "meaning": "bitterness"
-  },
-  {
     "rank": 20995,
     "word": "密林",
     "reading": "みつりん",
     "meaning": "close thicket"
-  },
-  {
-    "rank": 21050,
-    "word": "さえずり",
-    "reading": "さえずり",
-    "meaning": "chirp"
   },
   {
     "rank": 21073,
@@ -4494,12 +3642,6 @@
     "meaning": "natural calamity"
   },
   {
-    "rank": 21205,
-    "word": "同罪",
-    "reading": "どうざい",
-    "meaning": "same crime"
-  },
-  {
     "rank": 21232,
     "word": "杏",
     "reading": "あんず",
@@ -4510,12 +3652,6 @@
     "word": "ひまわり",
     "reading": "ひまわり",
     "meaning": "sunflower (Helianthus annuus)"
-  },
-  {
-    "rank": 21391,
-    "word": "弥生",
-    "reading": "やよい",
-    "meaning": "third month of the lunar calendar"
   },
   {
     "rank": 21422,
@@ -4540,12 +3676,6 @@
     "word": "桜の木",
     "reading": "さくらのき",
     "meaning": "cherry tree"
-  },
-  {
-    "rank": 21575,
-    "word": "ジンジン",
-    "reading": "ジンジン",
-    "meaning": "each encampment"
   },
   {
     "rank": 21587,
@@ -4578,6 +3708,12 @@
     "meaning": "to wither (of flowers, dreams, etc.)"
   },
   {
+    "rank": 21744,
+    "word": "尾",
+    "reading": "び",
+    "meaning": "Chinese \"\"Tail\"\" constellation (one of the 28 mansions)"
+  },
+  {
     "rank": 21748,
     "word": "生態系",
     "reading": "せいたいけい",
@@ -4608,12 +3744,6 @@
     "meaning": "windmill"
   },
   {
-    "rank": 21833,
-    "word": "立花",
-    "reading": "りっか",
-    "meaning": "rikka"
-  },
-  {
     "rank": 21837,
     "word": "はびこる",
     "reading": "はびこる",
@@ -4642,18 +3772,6 @@
     "word": "降りしきる",
     "reading": "ふりしきる",
     "meaning": "to fall incessantly (rain, snow, etc.)"
-  },
-  {
-    "rank": 22029,
-    "word": "県内",
-    "reading": "けんない",
-    "meaning": "within the prefecture"
-  },
-  {
-    "rank": 22034,
-    "word": "神童",
-    "reading": "しんどう",
-    "meaning": "child prodigy"
   },
   {
     "rank": 22069,
@@ -4746,12 +3864,6 @@
     "meaning": "raging waves"
   },
   {
-    "rank": 22415,
-    "word": "恐れをなす",
-    "reading": "おそれをなす",
-    "meaning": "to be scared"
-  },
-  {
     "rank": 22425,
     "word": "殻",
     "reading": "から",
@@ -4768,12 +3880,6 @@
     "word": "焚火",
     "reading": "たきび",
     "meaning": "open-air fire (e.g. for garden refuse)"
-  },
-  {
-    "rank": 22481,
-    "word": "手ほどき",
-    "reading": "てほどき",
-    "meaning": "teaching the basics"
   },
   {
     "rank": 22506,
@@ -4798,12 +3904,6 @@
     "word": "温度差",
     "reading": "おんどさ",
     "meaning": "difference in temperature"
-  },
-  {
-    "rank": 22576,
-    "word": "キュウリ",
-    "reading": "キュウリ",
-    "meaning": "removal of dissolute sons from the family register (Edo p..."
   },
   {
     "rank": 22588,
@@ -4848,12 +3948,6 @@
     "meaning": "cloud of dust"
   },
   {
-    "rank": 22681,
-    "word": "霊感",
-    "reading": "れいかん",
-    "meaning": "inspiration"
-  },
-  {
     "rank": 22689,
     "word": "ミント",
     "reading": "ミント",
@@ -4864,18 +3958,6 @@
     "word": "綿",
     "reading": "わた",
     "meaning": "cotton plant (Gossypium spp.)"
-  },
-  {
-    "rank": 22732,
-    "word": "美濃",
-    "reading": "みの",
-    "meaning": "Mino (former province located in the south of present-day..."
-  },
-  {
-    "rank": 22782,
-    "word": "盛",
-    "reading": "もり",
-    "meaning": "serving (of food)"
   },
   {
     "rank": 22788,
@@ -4902,12 +3984,6 @@
     "meaning": "abundant (grain) crop"
   },
   {
-    "rank": 22876,
-    "word": "路頭に迷う",
-    "reading": "ろとうにまよう",
-    "meaning": "to be left without means of sustenance"
-  },
-  {
     "rank": 22911,
     "word": "宵闇",
     "reading": "よいやみ",
@@ -4920,22 +3996,10 @@
     "meaning": "heavenly body"
   },
   {
-    "rank": 22934,
-    "word": "花柄",
-    "reading": "はながら",
-    "meaning": "flower pattern"
-  },
-  {
     "rank": 22936,
     "word": "丘陵",
     "reading": "きゅうりょう",
     "meaning": "hill"
-  },
-  {
-    "rank": 22937,
-    "word": "昆布",
-    "reading": "こんぶ",
-    "meaning": "kombu (usu. Saccharina japonica)"
   },
   {
     "rank": 22955,
@@ -4948,12 +4012,6 @@
     "word": "川辺",
     "reading": "かわべ",
     "meaning": "riverside"
-  },
-  {
-    "rank": 22990,
-    "word": "冬眠",
-    "reading": "とうみん",
-    "meaning": "hibernation"
   },
   {
     "rank": 23007,
@@ -5034,22 +4092,10 @@
     "meaning": "raging stream"
   },
   {
-    "rank": 23286,
-    "word": "葡萄",
-    "reading": "ぶどう",
-    "meaning": "grape"
-  },
-  {
     "rank": 23294,
     "word": "気象",
     "reading": "きしょう",
     "meaning": "weather"
-  },
-  {
-    "rank": 23326,
-    "word": "古城",
-    "reading": "こじょう",
-    "meaning": "old castle"
   },
   {
     "rank": 23330,
@@ -5106,12 +4152,6 @@
     "meaning": "damp"
   },
   {
-    "rank": 23477,
-    "word": "風の吹き回し",
-    "reading": "かぜのふきまわし",
-    "meaning": "chance"
-  },
-  {
     "rank": 23531,
     "word": "底冷え",
     "reading": "そこびえ",
@@ -5122,12 +4162,6 @@
     "word": "植え込み",
     "reading": "うえこみ",
     "meaning": "thick growth of plants"
-  },
-  {
-    "rank": 23579,
-    "word": "表彰",
-    "reading": "ひょうしょう",
-    "meaning": "public acknowledgment"
   },
   {
     "rank": 23599,
@@ -5160,12 +4194,6 @@
     "meaning": "lightning"
   },
   {
-    "rank": 23668,
-    "word": "親切心",
-    "reading": "しんせつしん",
-    "meaning": "kindness"
-  },
-  {
     "rank": 23677,
     "word": "黒い霧",
     "reading": "くろいきり",
@@ -5184,22 +4212,10 @@
     "meaning": "being frozen in ice"
   },
   {
-    "rank": 23799,
-    "word": "鉢植え",
-    "reading": "はちうえ",
-    "meaning": "potted plant"
-  },
-  {
     "rank": 23828,
     "word": "雲行き",
     "reading": "くもゆき",
     "meaning": "weather"
-  },
-  {
-    "rank": 23830,
-    "word": "雲泥の差",
-    "reading": "うんでいのさ",
-    "meaning": "wide difference"
   },
   {
     "rank": 23850,
@@ -5236,12 +4252,6 @@
     "word": "放電",
     "reading": "ほうでん",
     "meaning": "electrical discharge"
-  },
-  {
-    "rank": 23969,
-    "word": "蜘蛛の糸",
-    "reading": "くものいと",
-    "meaning": "spider's thread"
   },
   {
     "rank": 23997,
@@ -5310,24 +4320,6 @@
     "meaning": "dry riverbed"
   },
   {
-    "rank": 24137,
-    "word": "激務",
-    "reading": "げきむ",
-    "meaning": "exhausting work"
-  },
-  {
-    "rank": 24140,
-    "word": "刺し貫く",
-    "reading": "さしつらぬく",
-    "meaning": "to pierce"
-  },
-  {
-    "rank": 24152,
-    "word": "ウェディングドレス",
-    "reading": "ウェディングドレス",
-    "meaning": "wedding dress"
-  },
-  {
     "rank": 24154,
     "word": "花粉",
     "reading": "かふん",
@@ -5368,18 +4360,6 @@
     "word": "山間",
     "reading": "さんかん",
     "meaning": "among the mountains"
-  },
-  {
-    "rank": 24258,
-    "word": "枝",
-    "reading": "し",
-    "meaning": "counter for long, thin things (i.e. swords)"
-  },
-  {
-    "rank": 24277,
-    "word": "供する",
-    "reading": "きょうする",
-    "meaning": "to offer"
   },
   {
     "rank": 24289,
@@ -5434,12 +4414,6 @@
     "word": "農作物",
     "reading": "のうさくぶつ",
     "meaning": "crops"
-  },
-  {
-    "rank": 24450,
-    "word": "海苔",
-    "reading": "のり",
-    "meaning": "nori"
   },
   {
     "rank": 24475,
@@ -5512,12 +4486,6 @@
     "word": "砂場",
     "reading": "すなば",
     "meaning": "sandpit"
-  },
-  {
-    "rank": 24728,
-    "word": "小豆",
-    "reading": "あずき",
-    "meaning": "adzuki bean (Vigna angularis)"
   },
   {
     "rank": 24743,
@@ -5688,24 +4656,6 @@
     "meaning": "high ground"
   },
   {
-    "rank": 25366,
-    "word": "ナス",
-    "reading": "ナス",
-    "meaning": "eggplant (Solanum melongena)"
-  },
-  {
-    "rank": 25412,
-    "word": "クルミ",
-    "reading": "クルミ",
-    "meaning": "walnut (Juglans spp., esp. Juglans regia)"
-  },
-  {
-    "rank": 25414,
-    "word": "大豆",
-    "reading": "だいず",
-    "meaning": "soya bean (Glycine max)"
-  },
-  {
     "rank": 25417,
     "word": "飛び火",
     "reading": "とびひ",
@@ -5736,12 +4686,6 @@
     "meaning": "famine"
   },
   {
-    "rank": 25476,
-    "word": "登り",
-    "reading": "のぼり",
-    "meaning": "ascent"
-  },
-  {
     "rank": 25486,
     "word": "蒔く",
     "reading": "まく",
@@ -5760,12 +4704,6 @@
     "meaning": "(of fire) to spread"
   },
   {
-    "rank": 25559,
-    "word": "ミカン",
-    "reading": "ミカン",
-    "meaning": "mandarin (esp. the satsuma mandarin (Citrus unshiu))"
-  },
-  {
     "rank": 25579,
     "word": "焚きつける",
     "reading": "たきつける",
@@ -5776,12 +4714,6 @@
     "word": "災禍",
     "reading": "さいか",
     "meaning": "disaster"
-  },
-  {
-    "rank": 25614,
-    "word": "高嶺の花",
-    "reading": "たかねのはな",
-    "meaning": "prize beyond one's reach"
   },
   {
     "rank": 25620,
@@ -5808,16 +4740,10 @@
     "meaning": "source of river"
   },
   {
-    "rank": 25714,
-    "word": "学舎",
-    "reading": "がくしゃ",
-    "meaning": "school (building)"
-  },
-  {
-    "rank": 25721,
-    "word": "濡れ衣",
-    "reading": "ぬれぎぬ",
-    "meaning": "false accusations"
+    "rank": 25720,
+    "word": "炎天下",
+    "reading": "えんてんか",
+    "meaning": "under blazing sun"
   },
   {
     "rank": 25726,
@@ -5854,12 +4780,6 @@
     "word": "崖下",
     "reading": "がいか",
     "meaning": "below a cliff"
-  },
-  {
-    "rank": 25812,
-    "word": "にら",
-    "reading": "にら",
-    "meaning": "garlic chives (Allium tuberosum)"
   },
   {
     "rank": 25889,
@@ -5910,12 +4830,6 @@
     "meaning": "air"
   },
   {
-    "rank": 26049,
-    "word": "トウモロコシ",
-    "reading": "トウモロコシ",
-    "meaning": "corn (Zea mays)"
-  },
-  {
     "rank": 26077,
     "word": "稜線",
     "reading": "りょうせん",
@@ -5932,30 +4846,6 @@
     "word": "波風",
     "reading": "なみかぜ",
     "meaning": "wind and waves"
-  },
-  {
-    "rank": 26272,
-    "word": "ぶっちぎり",
-    "reading": "ぶっちぎり",
-    "meaning": "(establishing a) big lead"
-  },
-  {
-    "rank": 26312,
-    "word": "割増し",
-    "reading": "わりまし",
-    "meaning": "extra (charge, fare, etc.)"
-  },
-  {
-    "rank": 26322,
-    "word": "近所さん",
-    "reading": "きんじょさん",
-    "meaning": "neighbors"
-  },
-  {
-    "rank": 26330,
-    "word": "追々",
-    "reading": "おいおい",
-    "meaning": "gradually"
   },
   {
     "rank": 26355,
@@ -6036,18 +4926,6 @@
     "meaning": "chitter"
   },
   {
-    "rank": 26743,
-    "word": "唐辛子",
-    "reading": "とうがらし",
-    "meaning": "capsicum (Capsicum annuum, esp. the cultivated chili pepp..."
-  },
-  {
-    "rank": 26750,
-    "word": "いっぱし",
-    "reading": "いっぱし",
-    "meaning": "fully fledged"
-  },
-  {
     "rank": 26791,
     "word": "水飛沫",
     "reading": "みずしぶき",
@@ -6066,12 +4944,6 @@
     "meaning": "violet (any flower of genus Viola, esp. the Fuji dawn, Vi..."
   },
   {
-    "rank": 26888,
-    "word": "胡椒",
-    "reading": "こしょう",
-    "meaning": "pepper"
-  },
-  {
     "rank": 26916,
     "word": "篠原",
     "reading": "しのはら",
@@ -6082,11 +4954,5 @@
     "word": "柏木",
     "reading": "かしわぎ",
     "meaning": "oak tree"
-  },
-  {
-    "rank": 26992,
-    "word": "雑居ビル",
-    "reading": "ざっきょビル",
-    "meaning": "multi-tenant building"
   }
 ]

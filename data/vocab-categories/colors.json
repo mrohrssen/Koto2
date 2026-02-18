@@ -1,27 +1,9 @@
 [
   {
-    "rank": 545,
-    "word": "学校",
-    "reading": "がっこう",
-    "meaning": "school"
-  },
-  {
     "rank": 555,
     "word": "白い",
     "reading": "しろい",
     "meaning": "white"
-  },
-  {
-    "rank": 556,
-    "word": "動き",
-    "reading": "うごき",
-    "meaning": "movement"
-  },
-  {
-    "rank": 681,
-    "word": "決して",
-    "reading": "けっして",
-    "meaning": "(not) ever"
   },
   {
     "rank": 1315,
@@ -50,8 +32,8 @@
   {
     "rank": 1564,
     "word": "赤",
-    "reading": "",
-    "meaning": ""
+    "reading": "あか",
+    "meaning": "red"
   },
   {
     "rank": 1939,
@@ -112,18 +94,6 @@
     "word": "鮮やか",
     "reading": "あざやか",
     "meaning": "vivid"
-  },
-  {
-    "rank": 3945,
-    "word": "矛盾",
-    "reading": "むじゅん",
-    "meaning": "contradiction"
-  },
-  {
-    "rank": 3947,
-    "word": "職人",
-    "reading": "しょくにん",
-    "meaning": "craftsman"
   },
   {
     "rank": 4222,
@@ -192,22 +162,10 @@
     "meaning": "light brown"
   },
   {
-    "rank": 6123,
-    "word": "業者",
-    "reading": "ぎょうしゃ",
-    "meaning": "trader"
-  },
-  {
     "rank": 6225,
     "word": "ピンク色",
     "reading": "ピンクいろ",
     "meaning": "pink"
-  },
-  {
-    "rank": 6433,
-    "word": "土曜日",
-    "reading": "どようび",
-    "meaning": "Saturday"
   },
   {
     "rank": 7025,
@@ -366,12 +324,6 @@
     "meaning": "red hair"
   },
   {
-    "rank": 10416,
-    "word": "下校",
-    "reading": "げこう",
-    "meaning": "coming home from school"
-  },
-  {
     "rank": 10797,
     "word": "褐色",
     "reading": "かっしょく",
@@ -474,22 +426,16 @@
     "meaning": "navy blue"
   },
   {
-    "rank": 14298,
-    "word": "ギラギラ",
-    "reading": "ギラギラ",
-    "meaning": "glaringly"
-  },
-  {
     "rank": 14352,
     "word": "深紅",
     "reading": "しんく",
     "meaning": "deep crimson"
   },
   {
-    "rank": 14447,
-    "word": "英",
-    "reading": "えい",
-    "meaning": "United Kingdom"
+    "rank": 14448,
+    "word": "紅蓮",
+    "reading": "ぐれん",
+    "meaning": "bright red"
   },
   {
     "rank": 14582,
@@ -540,34 +486,16 @@
     "meaning": "to blacken"
   },
   {
-    "rank": 15166,
-    "word": "溺愛",
-    "reading": "できあい",
-    "meaning": "infatuation"
-  },
-  {
     "rank": 15217,
     "word": "朱色",
     "reading": "しゅいろ",
     "meaning": "vermilion"
   },
   {
-    "rank": 15573,
-    "word": "絵の具",
-    "reading": "えのぐ",
-    "meaning": "paint"
-  },
-  {
     "rank": 15579,
     "word": "藍色",
     "reading": "あいいろ",
     "meaning": "indigo blue"
-  },
-  {
-    "rank": 15815,
-    "word": "鴨",
-    "reading": "かも",
-    "meaning": "duck"
   },
   {
     "rank": 15993,
@@ -622,12 +550,6 @@
     "word": "藍",
     "reading": "あい",
     "meaning": "dyer's knotweed (Persicaria tinctoria, used to produce in..."
-  },
-  {
-    "rank": 17214,
-    "word": "カラー",
-    "reading": "カラー",
-    "meaning": "collar"
   },
   {
     "rank": 17410,
@@ -762,12 +684,6 @@
     "meaning": "red earth (i.e. containing cinnabar or minium)"
   },
   {
-    "rank": 21813,
-    "word": "白",
-    "reading": "しろ",
-    "meaning": "white"
-  },
-  {
     "rank": 21912,
     "word": "橙",
     "reading": "だいだい",
@@ -892,11 +808,5 @@
     "word": "スカーレット",
     "reading": "スカーレット",
     "meaning": "scarlet"
-  },
-  {
-    "rank": 26963,
-    "word": "色紙",
-    "reading": "いろがみ",
-    "meaning": "coloured paper"
   }
 ]

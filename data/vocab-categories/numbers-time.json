@@ -48,6 +48,12 @@
     "meaning": "air"
   },
   {
+    "rank": 620,
+    "word": "以前",
+    "reading": "いぜん",
+    "meaning": "ago"
+  },
+  {
     "rank": 737,
     "word": "終わり",
     "reading": "おわり",
@@ -342,6 +348,12 @@
     "meaning": "second"
   },
   {
+    "rank": 1676,
+    "word": "さっきから",
+    "reading": "さっきから",
+    "meaning": "since some time ago"
+  },
+  {
     "rank": 1696,
     "word": "三十",
     "reading": "さんじゅう",
@@ -378,6 +390,12 @@
     "meaning": "age"
   },
   {
+    "rank": 1819,
+    "word": "今すぐ",
+    "reading": "いますぐ",
+    "meaning": "at once"
+  },
+  {
     "rank": 1820,
     "word": "一年",
     "reading": "いちねん",
@@ -406,6 +424,18 @@
     "word": "百",
     "reading": "ひゃく",
     "meaning": "100"
+  },
+  {
+    "rank": 1898,
+    "word": "土",
+    "reading": "ど",
+    "meaning": "Saturday"
+  },
+  {
+    "rank": 1898,
+    "word": "土",
+    "reading": "ど",
+    "meaning": "Saturday"
   },
   {
     "rank": 1914,
@@ -990,6 +1020,12 @@
     "meaning": "ten years"
   },
   {
+    "rank": 3554,
+    "word": "一匹",
+    "reading": "いっぴき",
+    "meaning": "one animal (small)"
+  },
+  {
     "rank": 3630,
     "word": "数十",
     "reading": "すうじゅう",
@@ -1144,6 +1180,12 @@
     "word": "に決まっている",
     "reading": "にきまっている",
     "meaning": "sure to ..."
+  },
+  {
+    "rank": 4403,
+    "word": "四つ",
+    "reading": "よっつ",
+    "meaning": "four"
   },
   {
     "rank": 4420,
@@ -1366,6 +1408,12 @@
     "word": "中年",
     "reading": "ちゅうねん",
     "meaning": "middle-age"
+  },
+  {
+    "rank": 5123,
+    "word": "たった今",
+    "reading": "たったいま",
+    "meaning": "just now"
   },
   {
     "rank": 5124,
@@ -1806,6 +1854,12 @@
     "meaning": "the art of war"
   },
   {
+    "rank": 6284,
+    "word": "ある時",
+    "reading": "あるとき",
+    "meaning": "on one occasion"
+  },
+  {
     "rank": 6285,
     "word": "手を組む",
     "reading": "てをくむ",
@@ -1824,10 +1878,28 @@
     "meaning": "(your) time"
   },
   {
+    "rank": 6302,
+    "word": "二十歳",
+    "reading": "はたち",
+    "meaning": "20 years old"
+  },
+  {
+    "rank": 6302,
+    "word": "二十歳",
+    "reading": "はたち",
+    "meaning": "20 years old"
+  },
+  {
     "rank": 6303,
     "word": "留守番",
     "reading": "るすばん",
     "meaning": "care-taking"
+  },
+  {
+    "rank": 6331,
+    "word": "一滴",
+    "reading": "いってき",
+    "meaning": "one drop (of fluid)"
   },
   {
     "rank": 6334,
@@ -1864,6 +1936,18 @@
     "word": "組み合わせる",
     "reading": "くみあわせる",
     "meaning": "to join together"
+  },
+  {
+    "rank": 6433,
+    "word": "土曜日",
+    "reading": "どようび",
+    "meaning": "Saturday"
+  },
+  {
+    "rank": 6433,
+    "word": "土曜日",
+    "reading": "どようび",
+    "meaning": "Saturday"
   },
   {
     "rank": 6434,
@@ -1930,6 +2014,12 @@
     "word": "抜群",
     "reading": "ばつぐん",
     "meaning": "outstanding"
+  },
+  {
+    "rank": 6603,
+    "word": "この頃",
+    "reading": "このごろ",
+    "meaning": "these days"
   },
   {
     "rank": 6604,
@@ -2070,6 +2160,12 @@
     "meaning": "relationship"
   },
   {
+    "rank": 6914,
+    "word": "少数",
+    "reading": "しょうすう",
+    "meaning": "small number"
+  },
+  {
     "rank": 6915,
     "word": "席に着く",
     "reading": "せきにつく",
@@ -2080,6 +2176,12 @@
     "word": "生前",
     "reading": "せいぜん",
     "meaning": "while alive"
+  },
+  {
+    "rank": 6975,
+    "word": "そのうちに",
+    "reading": "そのうちに",
+    "meaning": "before very long"
   },
   {
     "rank": 7000,
@@ -2574,6 +2676,12 @@
     "meaning": "evening"
   },
   {
+    "rank": 8299,
+    "word": "土",
+    "reading": "ど",
+    "meaning": "Saturday"
+  },
+  {
     "rank": 8346,
     "word": "四月",
     "reading": "しがつ",
@@ -2704,6 +2812,12 @@
     "word": "侵す",
     "reading": "おかす",
     "meaning": "to invade"
+  },
+  {
+    "rank": 9147,
+    "word": "二十五",
+    "reading": "にじゅうご",
+    "meaning": "twenty-five"
   },
   {
     "rank": 9148,
@@ -3048,6 +3162,12 @@
     "meaning": "a period (of time)"
   },
   {
+    "rank": 10915,
+    "word": "一位",
+    "reading": "いちい",
+    "meaning": "first place"
+  },
+  {
     "rank": 10916,
     "word": "本家",
     "reading": "ほんけ",
@@ -3250,6 +3370,12 @@
     "word": "話し相手",
     "reading": "はなしあいて",
     "meaning": "person with whom to speak"
+  },
+  {
+    "rank": 11606,
+    "word": "月日",
+    "reading": "がっぴ",
+    "meaning": "month and day (of the year)"
   },
   {
     "rank": 11606,
@@ -4062,10 +4188,22 @@
     "meaning": "ten thousand years"
   },
   {
+    "rank": 15275,
+    "word": "万年",
+    "reading": "まんねん",
+    "meaning": "ten thousand years"
+  },
+  {
     "rank": 15303,
     "word": "ナイト",
     "reading": "ナイト",
     "meaning": "night"
+  },
+  {
+    "rank": 15312,
+    "word": "江戸時代",
+    "reading": "えどじだい",
+    "meaning": "Edo period (1603-1868)"
   },
   {
     "rank": 15312,
@@ -4470,6 +4608,12 @@
     "meaning": "time of emergency"
   },
   {
+    "rank": 17026,
+    "word": "一代",
+    "reading": "いちだい",
+    "meaning": "generation"
+  },
+  {
     "rank": 17027,
     "word": "鬱蒼",
     "reading": "うっそう",
@@ -4642,6 +4786,12 @@
     "word": "三方",
     "reading": "さんぼう",
     "meaning": "three sides"
+  },
+  {
+    "rank": 17606,
+    "word": "一人分",
+    "reading": "ひとりぶん",
+    "meaning": "one person's portion"
   },
   {
     "rank": 17628,
@@ -5226,6 +5376,12 @@
     "meaning": "the same day"
   },
   {
+    "rank": 20649,
+    "word": "一日も早い",
+    "reading": "いちにちもはやい",
+    "meaning": "speedy"
+  },
+  {
     "rank": 20659,
     "word": "２０歳",
     "reading": "はたち",
@@ -5332,6 +5488,12 @@
     "word": "千載一遇",
     "reading": "せんざいいちぐう",
     "meaning": "once in a lifetime (opportunity)"
+  },
+  {
+    "rank": 21391,
+    "word": "弥生",
+    "reading": "やよい",
+    "meaning": "third month of the lunar calendar"
   },
   {
     "rank": 21391,
@@ -5934,6 +6096,12 @@
     "meaning": "the n-th"
   },
   {
+    "rank": 24258,
+    "word": "枝",
+    "reading": "し",
+    "meaning": "counter for long, thin things (i.e. swords)"
+  },
+  {
     "rank": 24276,
     "word": "榊",
     "reading": "さかき",
@@ -6424,6 +6592,12 @@
     "word": "水柱",
     "reading": "みずばしら",
     "meaning": "column of water"
+  },
+  {
+    "rank": 26336,
+    "word": "一間",
+    "reading": "いっけん",
+    "meaning": "one ken"
   },
   {
     "rank": 26401,

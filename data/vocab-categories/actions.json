@@ -6,10 +6,52 @@
     "meaning": "to open"
   },
   {
+    "rank": 641,
+    "word": "引く",
+    "reading": "ひく",
+    "meaning": "to pull"
+  },
+  {
     "rank": 642,
     "word": "叫ぶ",
     "reading": "さけぶ",
     "meaning": "to shout"
+  },
+  {
+    "rank": 647,
+    "word": "捨てる",
+    "reading": "すてる",
+    "meaning": "to throw away"
+  },
+  {
+    "rank": 716,
+    "word": "並ぶ",
+    "reading": "ならぶ",
+    "meaning": "to line up"
+  },
+  {
+    "rank": 729,
+    "word": "諦める",
+    "reading": "あきらめる",
+    "meaning": "to give up"
+  },
+  {
+    "rank": 855,
+    "word": "いたす",
+    "reading": "いたす",
+    "meaning": "to do"
+  },
+  {
+    "rank": 892,
+    "word": "暮らす",
+    "reading": "くらす",
+    "meaning": "to live"
+  },
+  {
+    "rank": 903,
+    "word": "隠れる",
+    "reading": "かくれる",
+    "meaning": "to hide"
   },
   {
     "rank": 1019,
@@ -64,12 +106,6 @@
     "word": "重ねる",
     "reading": "かさねる",
     "meaning": "to pile up"
-  },
-  {
-    "rank": 1078,
-    "word": "行為",
-    "reading": "こうい",
-    "meaning": "act"
   },
   {
     "rank": 1095,
@@ -180,12 +216,6 @@
     "meaning": "to stare at"
   },
   {
-    "rank": 1224,
-    "word": "攻撃",
-    "reading": "こうげき",
-    "meaning": "attack"
-  },
-  {
     "rank": 1231,
     "word": "震える",
     "reading": "ふるえる",
@@ -252,12 +282,6 @@
     "meaning": "to look up at"
   },
   {
-    "rank": 1275,
-    "word": "戦い",
-    "reading": "たたかい",
-    "meaning": "battle"
-  },
-  {
     "rank": 1279,
     "word": "取り出す",
     "reading": "とりだす",
@@ -306,10 +330,10 @@
     "meaning": "to shine"
   },
   {
-    "rank": 1436,
-    "word": "舌",
-    "reading": "した",
-    "meaning": "tongue"
+    "rank": 1435,
+    "word": "差し出す",
+    "reading": "さしだす",
+    "meaning": "to present"
   },
   {
     "rank": 1441,
@@ -382,12 +406,6 @@
     "word": "追いかける",
     "reading": "おいかける",
     "meaning": "to chase"
-  },
-  {
-    "rank": 1504,
-    "word": "破壊",
-    "reading": "はかい",
-    "meaning": "destruction"
   },
   {
     "rank": 1508,
@@ -546,22 +564,10 @@
     "meaning": "to vomit"
   },
   {
-    "rank": 1631,
-    "word": "爆発",
-    "reading": "ばくはつ",
-    "meaning": "explosion"
-  },
-  {
     "rank": 1632,
     "word": "受け止める",
     "reading": "うけとめる",
     "meaning": "to catch"
-  },
-  {
-    "rank": 1634,
-    "word": "自体",
-    "reading": "じたい",
-    "meaning": "itself"
   },
   {
     "rank": 1640,
@@ -610,12 +616,6 @@
     "word": "手にする",
     "reading": "てにする",
     "meaning": "to hold (in one's hand)"
-  },
-  {
-    "rank": 1676,
-    "word": "さっきから",
-    "reading": "さっきから",
-    "meaning": "since some time ago"
   },
   {
     "rank": 1678,
@@ -738,12 +738,6 @@
     "meaning": "to let out"
   },
   {
-    "rank": 1793,
-    "word": "笑い",
-    "reading": "わらい",
-    "meaning": "laugh"
-  },
-  {
     "rank": 1797,
     "word": "潰す",
     "reading": "つぶす",
@@ -756,10 +750,10 @@
     "meaning": "to defend against"
   },
   {
-    "rank": 1817,
-    "word": "いろんな",
-    "reading": "いろんな",
-    "meaning": "various"
+    "rank": 1816,
+    "word": "挟む",
+    "reading": "はさむ",
+    "meaning": "to hold between (e.g. one's fingers, chopsticks)"
   },
   {
     "rank": 1824,
@@ -966,12 +960,6 @@
     "meaning": "to close"
   },
   {
-    "rank": 2023,
-    "word": "確保",
-    "reading": "かくほ",
-    "meaning": "securing"
-  },
-  {
     "rank": 2026,
     "word": "照らす",
     "reading": "てらす",
@@ -1042,12 +1030,6 @@
     "word": "導く",
     "reading": "みちびく",
     "meaning": "to guide"
-  },
-  {
-    "rank": 2128,
-    "word": "操作",
-    "reading": "そうさ",
-    "meaning": "operation"
   },
   {
     "rank": 2135,
@@ -1128,12 +1110,6 @@
     "meaning": "to turn over (face down)"
   },
   {
-    "rank": 2191,
-    "word": "侵入",
-    "reading": "しんにゅう",
-    "meaning": "invasion"
-  },
-  {
     "rank": 2192,
     "word": "重なる",
     "reading": "かさなる",
@@ -1194,12 +1170,6 @@
     "meaning": "to put up (a notice, sign, etc.)"
   },
   {
-    "rank": 2263,
-    "word": "乱暴",
-    "reading": "らんぼう",
-    "meaning": "violence"
-  },
-  {
     "rank": 2272,
     "word": "負う",
     "reading": "おう",
@@ -1228,12 +1198,6 @@
     "word": "溶ける",
     "reading": "とける",
     "meaning": "to melt"
-  },
-  {
-    "rank": 2294,
-    "word": "運動",
-    "reading": "うんどう",
-    "meaning": "exercise"
   },
   {
     "rank": 2304,
@@ -1410,12 +1374,6 @@
     "meaning": "to divide"
   },
   {
-    "rank": 2529,
-    "word": "おめでとう",
-    "reading": "おめでとう",
-    "meaning": "congratulations!"
-  },
-  {
     "rank": 2537,
     "word": "施す",
     "reading": "ほどこす",
@@ -1464,6 +1422,12 @@
     "meaning": "to dedicate"
   },
   {
+    "rank": 2578,
+    "word": "下す",
+    "reading": "くだす",
+    "meaning": "to make a decision"
+  },
+  {
     "rank": 2591,
     "word": "生かす",
     "reading": "いかす",
@@ -1498,12 +1462,6 @@
     "word": "固める",
     "reading": "かためる",
     "meaning": "to harden"
-  },
-  {
-    "rank": 2639,
-    "word": "対抗",
-    "reading": "たいこう",
-    "meaning": "opposition"
   },
   {
     "rank": 2640,
@@ -1620,12 +1578,6 @@
     "meaning": "to build"
   },
   {
-    "rank": 2733,
-    "word": "挑戦",
-    "reading": "ちょうせん",
-    "meaning": "challenge"
-  },
-  {
     "rank": 2738,
     "word": "高める",
     "reading": "たかめる",
@@ -1734,12 +1686,6 @@
     "meaning": "to open one's eyes wide"
   },
   {
-    "rank": 2873,
-    "word": "上手い",
-    "reading": "うまい",
-    "meaning": "skillful"
-  },
-  {
     "rank": 2876,
     "word": "見下ろす",
     "reading": "みおろす",
@@ -1756,12 +1702,6 @@
     "word": "舐める",
     "reading": "なめる",
     "meaning": "to lick"
-  },
-  {
-    "rank": 2892,
-    "word": "一撃",
-    "reading": "いちげき",
-    "meaning": "blow"
   },
   {
     "rank": 2893,
@@ -1810,12 +1750,6 @@
     "word": "首を傾げる",
     "reading": "くびをかしげる",
     "meaning": "to incline one's head to the side (in doubt)"
-  },
-  {
-    "rank": 2931,
-    "word": "王国",
-    "reading": "おうこく",
-    "meaning": "kingdom"
   },
   {
     "rank": 2939,
@@ -1876,12 +1810,6 @@
     "word": "見渡す",
     "reading": "みわたす",
     "meaning": "to look out over"
-  },
-  {
-    "rank": 3000,
-    "word": "回収",
-    "reading": "かいしゅう",
-    "meaning": "collection"
   },
   {
     "rank": 3004,
@@ -1986,12 +1914,6 @@
     "meaning": "action"
   },
   {
-    "rank": 3119,
-    "word": "暴走",
-    "reading": "ぼうそう",
-    "meaning": "acting rashly"
-  },
-  {
     "rank": 3120,
     "word": "吸い込む",
     "reading": "すいこむ",
@@ -2040,22 +1962,10 @@
     "meaning": "to breathe out"
   },
   {
-    "rank": 3204,
-    "word": "拘束",
-    "reading": "こうそく",
-    "meaning": "restriction"
-  },
-  {
     "rank": 3205,
     "word": "追い詰める",
     "reading": "おいつめる",
     "meaning": "to corner"
-  },
-  {
-    "rank": 3210,
-    "word": "襲撃",
-    "reading": "しゅうげき",
-    "meaning": "attack"
   },
   {
     "rank": 3216,
@@ -2068,12 +1978,6 @@
     "word": "引っかかる",
     "reading": "ひっかかる",
     "meaning": "to be caught in"
-  },
-  {
-    "rank": 3226,
-    "word": "崩壊",
-    "reading": "ほうかい",
-    "meaning": "collapse"
   },
   {
     "rank": 3233,
@@ -2100,18 +2004,6 @@
     "meaning": "to point at"
   },
   {
-    "rank": 3272,
-    "word": "封印",
-    "reading": "ふういん",
-    "meaning": "seal"
-  },
-  {
-    "rank": 3279,
-    "word": "淡い",
-    "reading": "あわい",
-    "meaning": "light"
-  },
-  {
     "rank": 3290,
     "word": "宿る",
     "reading": "やどる",
@@ -2130,10 +2022,10 @@
     "meaning": "to shake one's head"
   },
   {
-    "rank": 3313,
-    "word": "怪物",
-    "reading": "かいぶつ",
-    "meaning": "monster"
+    "rank": 3315,
+    "word": "食らう",
+    "reading": "くらう",
+    "meaning": "to eat"
   },
   {
     "rank": 3316,
@@ -2146,12 +2038,6 @@
     "word": "叩きつける",
     "reading": "たたきつける",
     "meaning": "to throw violently against"
-  },
-  {
-    "rank": 3331,
-    "word": "解除",
-    "reading": "かいじょ",
-    "meaning": "cancellation"
   },
   {
     "rank": 3334,
@@ -2184,12 +2070,6 @@
     "meaning": "clicking one's tongue"
   },
   {
-    "rank": 3393,
-    "word": "突破",
-    "reading": "とっぱ",
-    "meaning": "breaking through"
-  },
-  {
     "rank": 3395,
     "word": "治す",
     "reading": "なおす",
@@ -2214,22 +2094,10 @@
     "meaning": "to bear"
   },
   {
-    "rank": 3432,
-    "word": "制御",
-    "reading": "せいぎょ",
-    "meaning": "control (of a machine, device, etc.)"
-  },
-  {
     "rank": 3433,
     "word": "閉じ込める",
     "reading": "とじこめる",
     "meaning": "to lock up"
-  },
-  {
-    "rank": 3439,
-    "word": "足取り",
-    "reading": "あしどり",
-    "meaning": "gait"
   },
   {
     "rank": 3446,
@@ -2260,12 +2128,6 @@
     "word": "引き抜く",
     "reading": "ひきぬく",
     "meaning": "to extract"
-  },
-  {
-    "rank": 3500,
-    "word": "排除",
-    "reading": "はいじょ",
-    "meaning": "exclusion"
   },
   {
     "rank": 3517,
@@ -2340,12 +2202,6 @@
     "meaning": "deep breath"
   },
   {
-    "rank": 3590,
-    "word": "散々",
-    "reading": "さんざん",
-    "meaning": "thoroughly"
-  },
-  {
     "rank": 3591,
     "word": "見張る",
     "reading": "みはる",
@@ -2400,12 +2256,6 @@
     "meaning": "to perceive"
   },
   {
-    "rank": 3644,
-    "word": "着替え",
-    "reading": "きがえ",
-    "meaning": "changing clothes"
-  },
-  {
     "rank": 3653,
     "word": "唸る",
     "reading": "うなる",
@@ -2440,12 +2290,6 @@
     "word": "突きつける",
     "reading": "つきつける",
     "meaning": "to thrust before"
-  },
-  {
-    "rank": 3666,
-    "word": "暴力",
-    "reading": "ぼうりょく",
-    "meaning": "violence"
   },
   {
     "rank": 3667,
@@ -2484,22 +2328,10 @@
     "meaning": "to destroy"
   },
   {
-    "rank": 3708,
-    "word": "鳴き声",
-    "reading": "なきごえ",
-    "meaning": "cry (esp. animal)"
-  },
-  {
     "rank": 3711,
     "word": "歩み寄る",
     "reading": "あゆみよる",
     "meaning": "to compromise"
-  },
-  {
-    "rank": 3713,
-    "word": "攻略",
-    "reading": "こうりゃく",
-    "meaning": "capture (of enemy territory)"
   },
   {
     "rank": 3719,
@@ -2610,12 +2442,6 @@
     "meaning": "surely"
   },
   {
-    "rank": 3792,
-    "word": "列",
-    "reading": "れつ",
-    "meaning": "row"
-  },
-  {
     "rank": 3796,
     "word": "埋まる",
     "reading": "うまる",
@@ -2632,12 +2458,6 @@
     "word": "横目",
     "reading": "よこめ",
     "meaning": "sidelong glance"
-  },
-  {
-    "rank": 3809,
-    "word": "突入",
-    "reading": "とつにゅう",
-    "meaning": "rushing into"
   },
   {
     "rank": 3818,
@@ -2674,12 +2494,6 @@
     "word": "配る",
     "reading": "くばる",
     "meaning": "to distribute"
-  },
-  {
-    "rank": 3847,
-    "word": "逮捕",
-    "reading": "たいほ",
-    "meaning": "arrest"
   },
   {
     "rank": 3857,
@@ -2766,12 +2580,6 @@
     "meaning": "to finger"
   },
   {
-    "rank": 3941,
-    "word": "上司",
-    "reading": "じょうし",
-    "meaning": "(one's) superior"
-  },
-  {
     "rank": 3942,
     "word": "揃える",
     "reading": "そろえる",
@@ -2838,12 +2646,6 @@
     "meaning": "to behave"
   },
   {
-    "rank": 3996,
-    "word": "泣き声",
-    "reading": "なきごえ",
-    "meaning": "cry"
-  },
-  {
     "rank": 4024,
     "word": "振り払う",
     "reading": "ふりはらう",
@@ -2884,12 +2686,6 @@
     "word": "刺さる",
     "reading": "ささる",
     "meaning": "to stick into (of something with a sharp point)"
-  },
-  {
-    "rank": 4103,
-    "word": "突撃",
-    "reading": "とつげき",
-    "meaning": "charge"
   },
   {
     "rank": 4105,
@@ -2988,6 +2784,12 @@
     "meaning": "to throw down"
   },
   {
+    "rank": 4254,
+    "word": "繰り出す",
+    "reading": "くりだす",
+    "meaning": "to draw (a thread)"
+  },
+  {
     "rank": 4255,
     "word": "独り言",
     "reading": "ひとりごと",
@@ -3072,12 +2874,6 @@
     "meaning": "to raise overhead"
   },
   {
-    "rank": 4367,
-    "word": "手続き",
-    "reading": "てつづき",
-    "meaning": "procedure"
-  },
-  {
     "rank": 4368,
     "word": "放り込む",
     "reading": "ほうりこむ",
@@ -3094,6 +2890,12 @@
     "word": "力が抜ける",
     "reading": "ちからがぬける",
     "meaning": "to grow weak"
+  },
+  {
+    "rank": 4393,
+    "word": "惹く",
+    "reading": "ひく",
+    "meaning": "to draw (attention, sympathy, etc.)"
   },
   {
     "rank": 4416,
@@ -3174,6 +2976,12 @@
     "meaning": "to cause"
   },
   {
+    "rank": 4558,
+    "word": "演奏",
+    "reading": "えんそう",
+    "meaning": "musical performance"
+  },
+  {
     "rank": 4566,
     "word": "映す",
     "reading": "うつす",
@@ -3222,12 +3030,6 @@
     "meaning": "to find out"
   },
   {
-    "rank": 4707,
-    "word": "突進",
-    "reading": "とっしん",
-    "meaning": "rush"
-  },
-  {
     "rank": 4714,
     "word": "歪める",
     "reading": "ゆがめる",
@@ -3252,6 +3054,18 @@
     "meaning": "to give directions"
   },
   {
+    "rank": 4744,
+    "word": "癒す",
+    "reading": "いやす",
+    "meaning": "to heal"
+  },
+  {
+    "rank": 4744,
+    "word": "癒す",
+    "reading": "いやす",
+    "meaning": "to heal"
+  },
+  {
     "rank": 4756,
     "word": "目を輝かす",
     "reading": "めをかがやかす",
@@ -3274,12 +3088,6 @@
     "word": "傾ける",
     "reading": "かたむける",
     "meaning": "to incline"
-  },
-  {
-    "rank": 4810,
-    "word": "前髪",
-    "reading": "まえがみ",
-    "meaning": "forelock"
   },
   {
     "rank": 4811,
@@ -3558,12 +3366,6 @@
     "meaning": "to throw at"
   },
   {
-    "rank": 5174,
-    "word": "拷問",
-    "reading": "ごうもん",
-    "meaning": "torture"
-  },
-  {
     "rank": 5177,
     "word": "目を離す",
     "reading": "めをはなす",
@@ -3636,12 +3438,6 @@
     "meaning": "to spout out"
   },
   {
-    "rank": 5284,
-    "word": "包丁",
-    "reading": "ほうちょう",
-    "meaning": "kitchen knife"
-  },
-  {
     "rank": 5286,
     "word": "小刻み",
     "reading": "こきざみ",
@@ -3684,10 +3480,10 @@
     "meaning": "to prohibit"
   },
   {
-    "rank": 5377,
-    "word": "制止",
-    "reading": "せいし",
-    "meaning": "control"
+    "rank": 5353,
+    "word": "見物",
+    "reading": "けんぶつ",
+    "meaning": "sightseeing"
   },
   {
     "rank": 5392,
@@ -3718,12 +3514,6 @@
     "word": "溜める",
     "reading": "ためる",
     "meaning": "to amass"
-  },
-  {
-    "rank": 5420,
-    "word": "実戦",
-    "reading": "じっせん",
-    "meaning": "combat"
   },
   {
     "rank": 5432,
@@ -3780,24 +3570,6 @@
     "meaning": "to spin"
   },
   {
-    "rank": 5457,
-    "word": "堪能",
-    "reading": "たんのう",
-    "meaning": "proficient"
-  },
-  {
-    "rank": 5459,
-    "word": "異性",
-    "reading": "いせい",
-    "meaning": "the opposite sex"
-  },
-  {
-    "rank": 5463,
-    "word": "解体",
-    "reading": "かいたい",
-    "meaning": "demolition"
-  },
-  {
     "rank": 5465,
     "word": "引き離す",
     "reading": "ひきはなす",
@@ -3808,12 +3580,6 @@
     "word": "絞り出す",
     "reading": "しぼりだす",
     "meaning": "to squeeze out"
-  },
-  {
-    "rank": 5477,
-    "word": "不意打ち",
-    "reading": "ふいうち",
-    "meaning": "surprise attack"
   },
   {
     "rank": 5482,
@@ -3880,12 +3646,6 @@
     "word": "拾い上げる",
     "reading": "ひろいあげる",
     "meaning": "to pick up"
-  },
-  {
-    "rank": 5549,
-    "word": "強制的",
-    "reading": "きょうせいてき",
-    "meaning": "forced"
   },
   {
     "rank": 5550,
@@ -3996,12 +3756,6 @@
     "meaning": "to disclose"
   },
   {
-    "rank": 5665,
-    "word": "追跡",
-    "reading": "ついせき",
-    "meaning": "chase"
-  },
-  {
     "rank": 5676,
     "word": "ほっとく",
     "reading": "ほっとく",
@@ -4018,12 +3772,6 @@
     "word": "縮める",
     "reading": "ちぢめる",
     "meaning": "to shorten"
-  },
-  {
-    "rank": 5690,
-    "word": "上目遣い",
-    "reading": "うわめづかい",
-    "meaning": "upturned eyes"
   },
   {
     "rank": 5694,
@@ -4048,12 +3796,6 @@
     "word": "遂げる",
     "reading": "とげる",
     "meaning": "to accomplish"
-  },
-  {
-    "rank": 5720,
-    "word": "構築",
-    "reading": "こうちく",
-    "meaning": "construction"
   },
   {
     "rank": 5722,
@@ -4086,28 +3828,10 @@
     "meaning": "to perceive"
   },
   {
-    "rank": 5753,
-    "word": "だけあって",
-    "reading": "",
-    "meaning": ""
-  },
-  {
-    "rank": 5761,
-    "word": "ほんのり",
-    "reading": "ほんのり",
-    "meaning": "slightly"
-  },
-  {
-    "rank": 5764,
-    "word": "貧乏",
-    "reading": "びんぼう",
-    "meaning": "poverty-stricken"
-  },
-  {
-    "rank": 5776,
-    "word": "威嚇",
-    "reading": "いかく",
-    "meaning": "threat"
+    "rank": 5763,
+    "word": "従える",
+    "reading": "したがえる",
+    "meaning": "to be accompanied by"
   },
   {
     "rank": 5778,
@@ -4182,18 +3906,6 @@
     "meaning": "to aim at"
   },
   {
-    "rank": 5860,
-    "word": "有能",
-    "reading": "ゆうのう",
-    "meaning": "able"
-  },
-  {
-    "rank": 5865,
-    "word": "牽制",
-    "reading": "けんせい",
-    "meaning": "check"
-  },
-  {
     "rank": 5866,
     "word": "押し殺す",
     "reading": "おしころす",
@@ -4210,12 +3922,6 @@
     "word": "咎める",
     "reading": "とがめる",
     "meaning": "to blame"
-  },
-  {
-    "rank": 5885,
-    "word": "寝顔",
-    "reading": "ねがお",
-    "meaning": "sleeping face"
   },
   {
     "rank": 5891,
@@ -4294,6 +4000,18 @@
     "word": "仕切る",
     "reading": "しきる",
     "meaning": "to partition"
+  },
+  {
+    "rank": 6005,
+    "word": "建設",
+    "reading": "けんせつ",
+    "meaning": "construction"
+  },
+  {
+    "rank": 6007,
+    "word": "釣り",
+    "reading": "つり",
+    "meaning": "fishing"
   },
   {
     "rank": 6007,
@@ -4398,24 +4116,6 @@
     "meaning": "to rely on"
   },
   {
-    "rank": 6126,
-    "word": "狼狽",
-    "reading": "ろうばい",
-    "meaning": "confusion"
-  },
-  {
-    "rank": 6130,
-    "word": "鮮明",
-    "reading": "せんめい",
-    "meaning": "vivid"
-  },
-  {
-    "rank": 6142,
-    "word": "特性",
-    "reading": "とくせい",
-    "meaning": "special characteristic"
-  },
-  {
     "rank": 6145,
     "word": "すする",
     "reading": "すする",
@@ -4432,12 +4132,6 @@
     "word": "なだめる",
     "reading": "なだめる",
     "meaning": "to soothe"
-  },
-  {
-    "rank": 6148,
-    "word": "欠点",
-    "reading": "けってん",
-    "meaning": "fault"
   },
   {
     "rank": 6151,
@@ -4464,12 +4158,6 @@
     "meaning": "to play with (a toy, one's hair, etc.)"
   },
   {
-    "rank": 6161,
-    "word": "打撃",
-    "reading": "だげき",
-    "meaning": "blow"
-  },
-  {
     "rank": 6171,
     "word": "待ち受ける",
     "reading": "まちうける",
@@ -4482,10 +4170,16 @@
     "meaning": "passing (a test, examination, etc.)"
   },
   {
-    "rank": 6175,
-    "word": "忘れ物",
-    "reading": "わすれもの",
-    "meaning": "lost article"
+    "rank": 6174,
+    "word": "費やす",
+    "reading": "ついやす",
+    "meaning": "to spend"
+  },
+  {
+    "rank": 6176,
+    "word": "元に戻す",
+    "reading": "もとにもどす",
+    "meaning": "to go back to the start"
   },
   {
     "rank": 6177,
@@ -4620,22 +4314,10 @@
     "meaning": "what one has a mind to do"
   },
   {
-    "rank": 6302,
-    "word": "二十歳",
-    "reading": "はたち",
-    "meaning": "20 years old"
-  },
-  {
     "rank": 6312,
     "word": "命を落とす",
     "reading": "いのちをおとす",
     "meaning": "to lose one's life"
-  },
-  {
-    "rank": 6313,
-    "word": "意味不明",
-    "reading": "いみふめい",
-    "meaning": "of uncertain meaning"
   },
   {
     "rank": 6315,
@@ -4644,16 +4326,16 @@
     "meaning": "to show in"
   },
   {
-    "rank": 6316,
-    "word": "ガス",
-    "reading": "ガス",
-    "meaning": "gas (state of matter, e.g. poison gas, natural gas)"
-  },
-  {
     "rank": 6323,
     "word": "造り",
     "reading": "つくり",
     "meaning": "making"
+  },
+  {
+    "rank": 6324,
+    "word": "積もる",
+    "reading": "つもる",
+    "meaning": "to pile up"
   },
   {
     "rank": 6325,
@@ -4662,34 +4344,10 @@
     "meaning": "given the situation"
   },
   {
-    "rank": 6327,
-    "word": "快適",
-    "reading": "かいてき",
-    "meaning": "pleasant"
-  },
-  {
-    "rank": 6331,
-    "word": "一滴",
-    "reading": "いってき",
-    "meaning": "one drop (of fluid)"
-  },
-  {
-    "rank": 6341,
-    "word": "コメント",
-    "reading": "コメント",
-    "meaning": "comment"
-  },
-  {
     "rank": 6342,
     "word": "燃え上がる",
     "reading": "もえあがる",
     "meaning": "to flare up"
-  },
-  {
-    "rank": 6363,
-    "word": "おかわり",
-    "reading": "おかわり",
-    "meaning": "another helping"
   },
   {
     "rank": 6367,
@@ -4716,34 +4374,22 @@
     "meaning": "to stop"
   },
   {
-    "rank": 6394,
-    "word": "楽器",
-    "reading": "がっき",
-    "meaning": "musical instrument"
-  },
-  {
-    "rank": 6403,
-    "word": "やしない",
-    "reading": "",
-    "meaning": ""
-  },
-  {
     "rank": 6408,
     "word": "しゃがむ",
     "reading": "しゃがむ",
     "meaning": "to squat"
   },
   {
-    "rank": 6423,
-    "word": "潮",
-    "reading": "しお",
-    "meaning": "tide"
+    "rank": 6432,
+    "word": "彩る",
+    "reading": "いろどる",
+    "meaning": "to colour"
   },
   {
-    "rank": 6433,
-    "word": "土曜日",
-    "reading": "どようび",
-    "meaning": "Saturday"
+    "rank": 6437,
+    "word": "投げ捨てる",
+    "reading": "なげすてる",
+    "meaning": "to throw away"
   },
   {
     "rank": 6438,
@@ -4758,28 +4404,10 @@
     "meaning": "looking up (e.g. a word in a dictionary)"
   },
   {
-    "rank": 6452,
-    "word": "でっかい",
-    "reading": "でっかい",
-    "meaning": "huge"
-  },
-  {
-    "rank": 6460,
-    "word": "分かりやすい",
-    "reading": "わかりやすい",
-    "meaning": "easy to understand"
-  },
-  {
     "rank": 6462,
     "word": "仕上げる",
     "reading": "しあげる",
     "meaning": "to finish up"
-  },
-  {
-    "rank": 6467,
-    "word": "手当て",
-    "reading": "てあて",
-    "meaning": "salary"
   },
   {
     "rank": 6475,
@@ -4884,12 +4512,6 @@
     "meaning": "to anticipate"
   },
   {
-    "rank": 6546,
-    "word": "形態",
-    "reading": "けいたい",
-    "meaning": "form"
-  },
-  {
     "rank": 6553,
     "word": "束ねる",
     "reading": "たばねる",
@@ -4908,18 +4530,6 @@
     "meaning": "to speak to"
   },
   {
-    "rank": 6569,
-    "word": "演説",
-    "reading": "えんぜつ",
-    "meaning": "speech"
-  },
-  {
-    "rank": 6570,
-    "word": "警戒心",
-    "reading": "けいかいしん",
-    "meaning": "wariness"
-  },
-  {
     "rank": 6572,
     "word": "見舞う",
     "reading": "みまう",
@@ -4936,12 +4546,6 @@
     "word": "問い詰める",
     "reading": "といつめる",
     "meaning": "to press a question"
-  },
-  {
-    "rank": 6585,
-    "word": "奥深い",
-    "reading": "おくふかい",
-    "meaning": "profound"
   },
   {
     "rank": 6594,
@@ -4966,18 +4570,6 @@
     "word": "呼びかけ",
     "reading": "よびかけ",
     "meaning": "call"
-  },
-  {
-    "rank": 6603,
-    "word": "この頃",
-    "reading": "このごろ",
-    "meaning": "these days"
-  },
-  {
-    "rank": 6606,
-    "word": "圧迫",
-    "reading": "あっぱく",
-    "meaning": "pressure"
   },
   {
     "rank": 6608,
@@ -5028,12 +4620,6 @@
     "meaning": "to tell (a story)"
   },
   {
-    "rank": 6650,
-    "word": "労働",
-    "reading": "ろうどう",
-    "meaning": "manual labor"
-  },
-  {
     "rank": 6662,
     "word": "目で追う",
     "reading": "めでおう",
@@ -5082,16 +4668,10 @@
     "meaning": "seeing"
   },
   {
-    "rank": 6684,
-    "word": "正気",
-    "reading": "しょうき",
-    "meaning": "sanity"
-  },
-  {
-    "rank": 6693,
-    "word": "絶好",
-    "reading": "ぜっこう",
-    "meaning": "best"
+    "rank": 6702,
+    "word": "寝ぼける",
+    "reading": "ねぼける",
+    "meaning": "to be still half asleep"
   },
   {
     "rank": 6703,
@@ -5104,12 +4684,6 @@
     "word": "広める",
     "reading": "ひろめる",
     "meaning": "to spread"
-  },
-  {
-    "rank": 6707,
-    "word": "浜",
-    "reading": "はま",
-    "meaning": "beach"
   },
   {
     "rank": 6711,
@@ -5128,12 +4702,6 @@
     "word": "花が咲く",
     "reading": "はながさく",
     "meaning": "to bloom"
-  },
-  {
-    "rank": 6728,
-    "word": "降参",
-    "reading": "こうさん",
-    "meaning": "surrender"
   },
   {
     "rank": 6736,
@@ -5238,12 +4806,6 @@
     "meaning": "to track down"
   },
   {
-    "rank": 6805,
-    "word": "背伸び",
-    "reading": "せのび",
-    "meaning": "standing on tiptoe and stretching one's back to make ones..."
-  },
-  {
     "rank": 6817,
     "word": "欠く",
     "reading": "かく",
@@ -5304,12 +4866,6 @@
     "meaning": "to shed tears"
   },
   {
-    "rank": 6855,
-    "word": "援助",
-    "reading": "えんじょ",
-    "meaning": "assistance"
-  },
-  {
     "rank": 6858,
     "word": "適する",
     "reading": "てきする",
@@ -5328,22 +4884,10 @@
     "meaning": "to lean over (someone)"
   },
   {
-    "rank": 6879,
-    "word": "恩人",
-    "reading": "おんじん",
-    "meaning": "benefactor"
-  },
-  {
     "rank": 6883,
     "word": "アウト",
     "reading": "アウト",
     "meaning": "out (of a ball, in tennis, etc.)"
-  },
-  {
-    "rank": 6887,
-    "word": "計",
-    "reading": "けい",
-    "meaning": "plan"
   },
   {
     "rank": 6895,
@@ -5382,18 +4926,6 @@
     "meaning": "to put one's palms together (e.g. when praying or asking ..."
   },
   {
-    "rank": 6921,
-    "word": "格闘",
-    "reading": "かくとう",
-    "meaning": "hand-to-hand fighting"
-  },
-  {
-    "rank": 6922,
-    "word": "強固",
-    "reading": "きょうこ",
-    "meaning": "firm"
-  },
-  {
     "rank": 6923,
     "word": "偽る",
     "reading": "いつわる",
@@ -5424,22 +4956,10 @@
     "meaning": "to entrust (a matter) to"
   },
   {
-    "rank": 6944,
-    "word": "罵倒",
-    "reading": "ばとう",
-    "meaning": "(verbal) abuse"
-  },
-  {
     "rank": 6947,
     "word": "打ち消す",
     "reading": "うちけす",
     "meaning": "to deny"
-  },
-  {
-    "rank": 6950,
-    "word": "看病",
-    "reading": "かんびょう",
-    "meaning": "nursing (a patient)"
   },
   {
     "rank": 6952,
@@ -5490,36 +5010,6 @@
     "meaning": "to carry in one's hand"
   },
   {
-    "rank": 6975,
-    "word": "そのうちに",
-    "reading": "そのうちに",
-    "meaning": "before very long"
-  },
-  {
-    "rank": 6977,
-    "word": "見とれる",
-    "reading": "",
-    "meaning": ""
-  },
-  {
-    "rank": 6979,
-    "word": "思いがけない",
-    "reading": "おもいがけない",
-    "meaning": "unexpected"
-  },
-  {
-    "rank": 6981,
-    "word": "清潔",
-    "reading": "せいけつ",
-    "meaning": "clean"
-  },
-  {
-    "rank": 6985,
-    "word": "のんき",
-    "reading": "のんき",
-    "meaning": "carefree"
-  },
-  {
     "rank": 6988,
     "word": "がかる",
     "reading": "がかる",
@@ -5536,12 +5026,6 @@
     "word": "をおいて",
     "reading": "をおいて",
     "meaning": "other than"
-  },
-  {
-    "rank": 6994,
-    "word": "岸",
-    "reading": "きし",
-    "meaning": "bank"
   },
   {
     "rank": 6997,
@@ -5610,18 +5094,6 @@
     "meaning": "to close (one's eyes)"
   },
   {
-    "rank": 7037,
-    "word": "休める",
-    "reading": "",
-    "meaning": ""
-  },
-  {
-    "rank": 7045,
-    "word": "お伺い",
-    "reading": "おうかがい",
-    "meaning": "call"
-  },
-  {
     "rank": 7053,
     "word": "写真を撮る",
     "reading": "しゃしんをとる",
@@ -5644,12 +5116,6 @@
     "word": "念を押す",
     "reading": "ねんをおす",
     "meaning": "to remind (someone of something)"
-  },
-  {
-    "rank": 7062,
-    "word": "遂行",
-    "reading": "すいこう",
-    "meaning": "accomplishment"
   },
   {
     "rank": 7073,
@@ -5730,64 +5196,22 @@
     "meaning": "to be clear (of a sight, sound, colour, etc.)"
   },
   {
-    "rank": 7137,
-    "word": "改良",
-    "reading": "かいりょう",
-    "meaning": "improvement"
-  },
-  {
-    "rank": 7139,
-    "word": "談笑",
-    "reading": "だんしょう",
-    "meaning": "friendly chat"
-  },
-  {
-    "rank": 7141,
-    "word": "呼び出し",
-    "reading": "",
-    "meaning": ""
-  },
-  {
     "rank": 7143,
     "word": "腹を立てる",
     "reading": "はらをたてる",
     "meaning": "to take offense"
   },
   {
-    "rank": 7144,
-    "word": "手っ取り早い",
-    "reading": "てっとりばやい",
-    "meaning": "quick"
-  },
-  {
-    "rank": 7150,
-    "word": "多大",
-    "reading": "ただい",
-    "meaning": "great (quantity, amount, etc.)"
-  },
-  {
-    "rank": 7152,
-    "word": "絶大",
-    "reading": "ぜつだい",
-    "meaning": "tremendous"
-  },
-  {
-    "rank": 7157,
-    "word": "仕返し",
-    "reading": "しかえし",
-    "meaning": "payback"
+    "rank": 7149,
+    "word": "絶つ",
+    "reading": "たつ",
+    "meaning": "to sever"
   },
   {
     "rank": 7159,
     "word": "お見通し",
     "reading": "おみとおし",
     "meaning": "seeing through (a trick, someone's mind, etc.)"
-  },
-  {
-    "rank": 7160,
-    "word": "確立",
-    "reading": "かくりつ",
-    "meaning": "establishment"
   },
   {
     "rank": 7162,
@@ -5832,34 +5256,16 @@
     "meaning": "rattling"
   },
   {
-    "rank": 7181,
-    "word": "退散",
-    "reading": "たいさん",
-    "meaning": "dispersing"
-  },
-  {
     "rank": 7185,
     "word": "懲りる",
     "reading": "こりる",
     "meaning": "to learn by experience"
   },
   {
-    "rank": 7189,
-    "word": "お世辞",
-    "reading": "おせじ",
-    "meaning": "flattery"
-  },
-  {
     "rank": 7191,
     "word": "とどめる",
     "reading": "とどめる",
     "meaning": "to stop"
-  },
-  {
-    "rank": 7192,
-    "word": "解明",
-    "reading": "かいめい",
-    "meaning": "elucidation"
   },
   {
     "rank": 7193,
@@ -5904,12 +5310,6 @@
     "meaning": "to harvest"
   },
   {
-    "rank": 7220,
-    "word": "身なり",
-    "reading": "みなり",
-    "meaning": "dress"
-  },
-  {
     "rank": 7230,
     "word": "沿う",
     "reading": "そう",
@@ -5952,12 +5352,6 @@
     "meaning": "to fill (with)"
   },
   {
-    "rank": 7258,
-    "word": "良好",
-    "reading": "りょうこう",
-    "meaning": "good"
-  },
-  {
     "rank": 7261,
     "word": "押し切る",
     "reading": "おしきる",
@@ -5974,12 +5368,6 @@
     "word": "暮れる",
     "reading": "くれる",
     "meaning": "to get dark"
-  },
-  {
-    "rank": 7272,
-    "word": "強要",
-    "reading": "きょうよう",
-    "meaning": "coercion"
   },
   {
     "rank": 7277,
@@ -6084,18 +5472,6 @@
     "meaning": "to give a glance (at)"
   },
   {
-    "rank": 7337,
-    "word": "署名",
-    "reading": "しょめい",
-    "meaning": "signature"
-  },
-  {
-    "rank": 7338,
-    "word": "主催",
-    "reading": "しゅさい",
-    "meaning": "sponsorship (i.e. conducting under one's auspices)"
-  },
-  {
     "rank": 7355,
     "word": "和らぐ",
     "reading": "やわらぐ",
@@ -6142,18 +5518,6 @@
     "word": "結びつける",
     "reading": "むすびつける",
     "meaning": "to combine"
-  },
-  {
-    "rank": 7384,
-    "word": "収集",
-    "reading": "しゅうしゅう",
-    "meaning": "collecting"
-  },
-  {
-    "rank": 7385,
-    "word": "投資",
-    "reading": "とうし",
-    "meaning": "investment"
   },
   {
     "rank": 7393,
@@ -6246,12 +5610,6 @@
     "meaning": "to apply (a rule)"
   },
   {
-    "rank": 7480,
-    "word": "尽力",
-    "reading": "じんりょく",
-    "meaning": "efforts"
-  },
-  {
     "rank": 7481,
     "word": "省く",
     "reading": "はぶく",
@@ -6268,12 +5626,6 @@
     "word": "早める",
     "reading": "はやめる",
     "meaning": "to bring forward (e.g. by 3 hours)"
-  },
-  {
-    "rank": 7489,
-    "word": "浸透",
-    "reading": "しんとう",
-    "meaning": "permeation (of thought, ideology, culture, etc.)"
   },
   {
     "rank": 7490,
@@ -6300,18 +5652,6 @@
     "meaning": "to accept"
   },
   {
-    "rank": 7521,
-    "word": "いたずら",
-    "reading": "いたずら",
-    "meaning": "mischief"
-  },
-  {
-    "rank": 7526,
-    "word": "改革",
-    "reading": "かいかく",
-    "meaning": "reform"
-  },
-  {
     "rank": 7529,
     "word": "まつわる",
     "reading": "まつわる",
@@ -6330,22 +5670,10 @@
     "meaning": "to announce"
   },
   {
-    "rank": 7542,
-    "word": "防止",
-    "reading": "ぼうし",
-    "meaning": "prevention"
-  },
-  {
     "rank": 7557,
     "word": "携わる",
     "reading": "たずさわる",
     "meaning": "to engage in"
-  },
-  {
-    "rank": 7562,
-    "word": "進出",
-    "reading": "しんしゅつ",
-    "meaning": "advance (into a new market or stage of progress)"
   },
   {
     "rank": 7566,
@@ -6370,12 +5698,6 @@
     "word": "基づく",
     "reading": "もとづく",
     "meaning": "to be grounded on"
-  },
-  {
-    "rank": 7595,
-    "word": "飛躍",
-    "reading": "ひやく",
-    "meaning": "leaping"
   },
   {
     "rank": 7599,
@@ -6406,18 +5728,6 @@
     "word": "親しむ",
     "reading": "したしむ",
     "meaning": "to be intimate with"
-  },
-  {
-    "rank": 7627,
-    "word": "魔女",
-    "reading": "まじょ",
-    "meaning": "witch"
-  },
-  {
-    "rank": 7650,
-    "word": "討伐",
-    "reading": "とうばつ",
-    "meaning": "subjugation (using military force)"
   },
   {
     "rank": 7678,
@@ -6456,22 +5766,16 @@
     "meaning": "to hunt (animals)"
   },
   {
-    "rank": 7703,
-    "word": "暗殺",
-    "reading": "あんさつ",
-    "meaning": "assassination"
-  },
-  {
-    "rank": 7711,
-    "word": "飛行",
-    "reading": "ひこう",
-    "meaning": "aviation"
-  },
-  {
     "rank": 7712,
     "word": "仰る",
     "reading": "おっしゃる",
     "meaning": "to say"
+  },
+  {
+    "rank": 7713,
+    "word": "呻く",
+    "reading": "うめく",
+    "meaning": "to moan"
   },
   {
     "rank": 7718,
@@ -6510,12 +5814,6 @@
     "meaning": "to bring down (an animal, opponent, etc.)"
   },
   {
-    "rank": 7755,
-    "word": "激突",
-    "reading": "げきとつ",
-    "meaning": "crash into"
-  },
-  {
     "rank": 7756,
     "word": "云う",
     "reading": "いう",
@@ -6532,12 +5830,6 @@
     "word": "細める",
     "reading": "ほそめる",
     "meaning": "to make narrow"
-  },
-  {
-    "rank": 7765,
-    "word": "蹴り",
-    "reading": "けり",
-    "meaning": "kick"
   },
   {
     "rank": 7774,
@@ -6570,34 +5862,16 @@
     "meaning": "thrust"
   },
   {
-    "rank": 7795,
-    "word": "銃声",
-    "reading": "じゅうせい",
-    "meaning": "(sound of a) gunshot"
-  },
-  {
     "rank": 7798,
     "word": "くすくす",
     "reading": "くすくす",
     "meaning": "chuckle"
   },
   {
-    "rank": 7804,
-    "word": "潜入",
-    "reading": "せんにゅう",
-    "meaning": "infiltration"
-  },
-  {
     "rank": 7806,
     "word": "締め付ける",
     "reading": "しめつける",
     "meaning": "to tighten"
-  },
-  {
-    "rank": 7817,
-    "word": "咆哮",
-    "reading": "ほうこう",
-    "meaning": "roar"
   },
   {
     "rank": 7819,
@@ -6636,18 +5910,6 @@
     "meaning": "to make (tea, coffee, etc.)"
   },
   {
-    "rank": 7864,
-    "word": "跳躍",
-    "reading": "ちょうやく",
-    "meaning": "jump"
-  },
-  {
-    "rank": 7866,
-    "word": "追撃",
-    "reading": "ついげき",
-    "meaning": "pursuit (of a fleeing enemy)"
-  },
-  {
     "rank": 7875,
     "word": "護る",
     "reading": "まもる",
@@ -6670,12 +5932,6 @@
     "word": "絡みつく",
     "reading": "からみつく",
     "meaning": "to twine around"
-  },
-  {
-    "rank": 7922,
-    "word": "殲滅",
-    "reading": "せんめつ",
-    "meaning": "extermination"
   },
   {
     "rank": 7924,
@@ -6720,12 +5976,6 @@
     "meaning": "it does not mean that ..."
   },
   {
-    "rank": 7996,
-    "word": "恰好",
-    "reading": "かっこう",
-    "meaning": "shape"
-  },
-  {
     "rank": 8000,
     "word": "きゅっと",
     "reading": "きゅっと",
@@ -6736,12 +5986,6 @@
     "word": "瞬く",
     "reading": "またたく",
     "meaning": "to blink (one's eyes)"
-  },
-  {
-    "rank": 8028,
-    "word": "蹂躙",
-    "reading": "じゅうりん",
-    "meaning": "trampling down"
   },
   {
     "rank": 8033,
@@ -6798,22 +6042,10 @@
     "meaning": "to shut one's eyes"
   },
   {
-    "rank": 8071,
-    "word": "偵察",
-    "reading": "ていさつ",
-    "meaning": "scouting"
-  },
-  {
     "rank": 8073,
     "word": "繫がる",
     "reading": "つながる",
     "meaning": "to be tied together"
-  },
-  {
-    "rank": 8078,
-    "word": "開閉",
-    "reading": "かいへい",
-    "meaning": "opening and shutting"
   },
   {
     "rank": 8086,
@@ -6882,12 +6114,6 @@
     "meaning": "to meet"
   },
   {
-    "rank": 8137,
-    "word": "尋問",
-    "reading": "じんもん",
-    "meaning": "questioning"
-  },
-  {
     "rank": 8143,
     "word": "まとわりつく",
     "reading": "まとわりつく",
@@ -6910,12 +6136,6 @@
     "word": "顔を歪める",
     "reading": "かおをゆがめる",
     "meaning": "to grimace"
-  },
-  {
-    "rank": 8157,
-    "word": "撃退",
-    "reading": "げきたい",
-    "meaning": "repulse"
   },
   {
     "rank": 8158,
@@ -6942,28 +6162,10 @@
     "meaning": "to redeem (from sin)"
   },
   {
-    "rank": 8174,
-    "word": "炸裂",
-    "reading": "さくれつ",
-    "meaning": "violent explosion"
-  },
-  {
-    "rank": 8187,
-    "word": "射撃",
-    "reading": "しゃげき",
-    "meaning": "firing"
-  },
-  {
     "rank": 8189,
     "word": "眉を寄せる",
     "reading": "まゆをよせる",
     "meaning": "to frown"
-  },
-  {
-    "rank": 8192,
-    "word": "尾行",
-    "reading": "びこう",
-    "meaning": "shadow"
   },
   {
     "rank": 8194,
@@ -7038,12 +6240,6 @@
     "meaning": "picking"
   },
   {
-    "rank": 8250,
-    "word": "斬撃",
-    "reading": "ざんげき",
-    "meaning": "slash"
-  },
-  {
     "rank": 8253,
     "word": "殺し合う",
     "reading": "ころしあう",
@@ -7092,12 +6288,6 @@
     "meaning": "to begin to overflow"
   },
   {
-    "rank": 8304,
-    "word": "白衣",
-    "reading": "はくい",
-    "meaning": "white clothes"
-  },
-  {
     "rank": 8310,
     "word": "言葉を切る",
     "reading": "ことばをきる",
@@ -7120,12 +6310,6 @@
     "word": "背中を向ける",
     "reading": "せなかをむける",
     "meaning": "to turn one's back on"
-  },
-  {
-    "rank": 8329,
-    "word": "謁見",
-    "reading": "えっけん",
-    "meaning": "audience (with a superior, e.g. nobility)"
   },
   {
     "rank": 8331,
@@ -7164,12 +6348,6 @@
     "meaning": "to squat"
   },
   {
-    "rank": 8354,
-    "word": "連行",
-    "reading": "れんこう",
-    "meaning": "taking (a suspect to the police)"
-  },
-  {
     "rank": 8359,
     "word": "襲い掛かる",
     "reading": "おそいかかる",
@@ -7200,28 +6378,10 @@
     "meaning": "to memorize"
   },
   {
-    "rank": 8379,
-    "word": "突き",
-    "reading": "つき",
-    "meaning": "thrust"
-  },
-  {
-    "rank": 8381,
-    "word": "粉砕",
-    "reading": "ふんさい",
-    "meaning": "pulverization"
-  },
-  {
     "rank": 8388,
     "word": "肩を竦める",
     "reading": "かたをすくめる",
     "meaning": "to shrug one's shoulders"
-  },
-  {
-    "rank": 8392,
-    "word": "貫通",
-    "reading": "かんつう",
-    "meaning": "passing through (of a tunnel, bullet, etc.)"
   },
   {
     "rank": 8400,
@@ -7272,12 +6432,6 @@
     "meaning": "to strip someone"
   },
   {
-    "rank": 8416,
-    "word": "有",
-    "reading": "ゆう",
-    "meaning": "existence"
-  },
-  {
     "rank": 8419,
     "word": "滴る",
     "reading": "したたる",
@@ -7308,18 +6462,6 @@
     "meaning": "to make an enemy (of)"
   },
   {
-    "rank": 8440,
-    "word": "お喋り",
-    "reading": "おしゃべり",
-    "meaning": "chattering"
-  },
-  {
-    "rank": 8449,
-    "word": "捕獲",
-    "reading": "ほかく",
-    "meaning": "capture"
-  },
-  {
     "rank": 8459,
     "word": "引き締める",
     "reading": "ひきしめる",
@@ -7338,12 +6480,6 @@
     "meaning": "to flash (e.g. lightning)"
   },
   {
-    "rank": 8472,
-    "word": "皆殺し",
-    "reading": "みなごろし",
-    "meaning": "massacre"
-  },
-  {
     "rank": 8480,
     "word": "口説く",
     "reading": "くどく",
@@ -7354,12 +6490,6 @@
     "word": "悶える",
     "reading": "もだえる",
     "meaning": "to writhe (in pain)"
-  },
-  {
-    "rank": 8490,
-    "word": "パンチ",
-    "reading": "パンチ",
-    "meaning": "punch (with the fist)"
   },
   {
     "rank": 8495,
@@ -7378,12 +6508,6 @@
     "word": "創る",
     "reading": "つくる",
     "meaning": "to make"
-  },
-  {
-    "rank": 8501,
-    "word": "愛撫",
-    "reading": "あいぶ",
-    "meaning": "caressing"
   },
   {
     "rank": 8504,
@@ -7408,18 +6532,6 @@
     "word": "押し潰す",
     "reading": "おしつぶす",
     "meaning": "to squash"
-  },
-  {
-    "rank": 8512,
-    "word": "封鎖",
-    "reading": "ふうさ",
-    "meaning": "blockade"
-  },
-  {
-    "rank": 8522,
-    "word": "はて",
-    "reading": "",
-    "meaning": ""
   },
   {
     "rank": 8546,
@@ -7492,12 +6604,6 @@
     "word": "体を起こす",
     "reading": "からだをおこす",
     "meaning": "to rise"
-  },
-  {
-    "rank": 8597,
-    "word": "敬礼",
-    "reading": "けいれい",
-    "meaning": "salute"
   },
   {
     "rank": 8599,
@@ -7630,6 +6736,18 @@
     "word": "撃破",
     "reading": "げきは",
     "meaning": "crushing"
+  },
+  {
+    "rank": 8708,
+    "word": "切り替わる",
+    "reading": "きりかわる",
+    "meaning": "to change completely"
+  },
+  {
+    "rank": 8713,
+    "word": "火照る",
+    "reading": "ほてる",
+    "meaning": "to feel hot"
   },
   {
     "rank": 8722,
@@ -7878,6 +6996,12 @@
     "meaning": "to scatter"
   },
   {
+    "rank": 9103,
+    "word": "撒き散らす",
+    "reading": "まきちらす",
+    "meaning": "to scatter"
+  },
+  {
     "rank": 9109,
     "word": "脈打つ",
     "reading": "みゃくうつ",
@@ -7908,6 +7032,12 @@
     "meaning": "to brace one's legs"
   },
   {
+    "rank": 9143,
+    "word": "侵す",
+    "reading": "おかす",
+    "meaning": "to invade"
+  },
+  {
     "rank": 9144,
     "word": "ふむふむ",
     "reading": "ふむふむ",
@@ -7918,6 +7048,12 @@
     "word": "顧問",
     "reading": "こもん",
     "meaning": "adviser"
+  },
+  {
+    "rank": 9158,
+    "word": "立ち並ぶ",
+    "reading": "たちならぶ",
+    "meaning": "to stand in a row (e.g. shops on a street)"
   },
   {
     "rank": 9162,
@@ -8064,6 +7200,12 @@
     "meaning": "to appease"
   },
   {
+    "rank": 9347,
+    "word": "鎮める",
+    "reading": "しずめる",
+    "meaning": "to appease"
+  },
+  {
     "rank": 9349,
     "word": "ぶっ殺す",
     "reading": "ぶっころす",
@@ -8106,10 +7248,22 @@
     "meaning": "to entrust (someone) with"
   },
   {
+    "rank": 9452,
+    "word": "咳き込む",
+    "reading": "せきこむ",
+    "meaning": "to cough violently"
+  },
+  {
     "rank": 9453,
     "word": "プロジェクト",
     "reading": "プロジェクト",
     "meaning": "project"
+  },
+  {
+    "rank": 9456,
+    "word": "蹴り飛ばす",
+    "reading": "けりとばす",
+    "meaning": "to kick flying (often a person in sport, martial arts, etc.)"
   },
   {
     "rank": 9457,
@@ -8322,6 +7476,12 @@
     "meaning": "to blink (one's eyes)"
   },
   {
+    "rank": 9765,
+    "word": "瞬く",
+    "reading": "またたく",
+    "meaning": "to blink (one's eyes)"
+  },
+  {
     "rank": 9769,
     "word": "穿く",
     "reading": "はく",
@@ -8476,6 +7636,12 @@
     "word": "行なう",
     "reading": "おこなう",
     "meaning": "to perform"
+  },
+  {
+    "rank": 9917,
+    "word": "電話を切る",
+    "reading": "でんわをきる",
+    "meaning": "to hang up"
   },
   {
     "rank": 9929,
@@ -8712,6 +7878,12 @@
     "meaning": "plentiful"
   },
   {
+    "rank": 10184,
+    "word": "形作る",
+    "reading": "かたちづくる",
+    "meaning": "to form"
+  },
+  {
     "rank": 10185,
     "word": "片",
     "reading": "かた",
@@ -8742,10 +7914,22 @@
     "meaning": "weeping"
   },
   {
+    "rank": 10210,
+    "word": "やらす",
+    "reading": "やらす",
+    "meaning": "to allow"
+  },
+  {
     "rank": 10213,
     "word": "そうはいかない",
     "reading": "そうはいかない",
     "meaning": "not a chance"
+  },
+  {
+    "rank": 10227,
+    "word": "攻め込む",
+    "reading": "せめこむ",
+    "meaning": "to invade"
   },
   {
     "rank": 10236,
@@ -8766,6 +7950,12 @@
     "meaning": "front line"
   },
   {
+    "rank": 10272,
+    "word": "こねる",
+    "reading": "こねる",
+    "meaning": "to knead"
+  },
+  {
     "rank": 10273,
     "word": "ご協力",
     "reading": "ごきょうりょく",
@@ -8776,6 +7966,12 @@
     "word": "ゴミ箱",
     "reading": "ゴミばこ",
     "meaning": "garbage can"
+  },
+  {
+    "rank": 10278,
+    "word": "気を配る",
+    "reading": "きをくばる",
+    "meaning": "to pay attention"
   },
   {
     "rank": 10280,
@@ -9042,6 +8238,12 @@
     "meaning": "wave"
   },
   {
+    "rank": 10872,
+    "word": "知らしめる",
+    "reading": "しらしめる",
+    "meaning": "to make known"
+  },
+  {
     "rank": 10873,
     "word": "尻餅をつく",
     "reading": "しりもちをつく",
@@ -9064,6 +8266,12 @@
     "word": "必殺技",
     "reading": "ひっさつわざ",
     "meaning": "killer technique"
+  },
+  {
+    "rank": 10925,
+    "word": "換える",
+    "reading": "かえる",
+    "meaning": "to replace"
   },
   {
     "rank": 10927,
@@ -9138,6 +8346,12 @@
     "meaning": "to accomplish"
   },
   {
+    "rank": 11062,
+    "word": "開店",
+    "reading": "かいてん",
+    "meaning": "opening a new shop"
+  },
+  {
     "rank": 11099,
     "word": "取り押さえる",
     "reading": "とりおさえる",
@@ -9172,6 +8386,12 @@
     "word": "書き換える",
     "reading": "かきかえる",
     "meaning": "to rewrite"
+  },
+  {
+    "rank": 11168,
+    "word": "奮い立つ",
+    "reading": "ふるいたつ",
+    "meaning": "to cheer up"
   },
   {
     "rank": 11185,
@@ -9238,6 +8458,12 @@
     "word": "ムッと",
     "reading": "ムッと",
     "meaning": "to be sullen"
+  },
+  {
+    "rank": 11359,
+    "word": "目を引く",
+    "reading": "めをひく",
+    "meaning": "to attract notice"
   },
   {
     "rank": 11387,
@@ -10212,6 +9438,12 @@
     "meaning": "sushi"
   },
   {
+    "rank": 12842,
+    "word": "吊るす",
+    "reading": "つるす",
+    "meaning": "to hang"
+  },
+  {
     "rank": 12859,
     "word": "聖地",
     "reading": "せいち",
@@ -10222,6 +9454,12 @@
     "word": "根気",
     "reading": "こんき",
     "meaning": "patience"
+  },
+  {
+    "rank": 12875,
+    "word": "野宿",
+    "reading": "のじゅく",
+    "meaning": "sleeping outdoors"
   },
   {
     "rank": 12887,
@@ -10644,6 +9882,12 @@
     "meaning": "to freeze (from fear, etc.)"
   },
   {
+    "rank": 13429,
+    "word": "ブレる",
+    "reading": "ブレる",
+    "meaning": "to be blurred (due to motion"
+  },
+  {
     "rank": 13438,
     "word": "豪勢",
     "reading": "ごうせい",
@@ -10714,6 +9958,18 @@
     "word": "差し向ける",
     "reading": "さしむける",
     "meaning": "to send or direct a person to"
+  },
+  {
+    "rank": 13595,
+    "word": "走り寄る",
+    "reading": "はしりよる",
+    "meaning": "to run up to"
+  },
+  {
+    "rank": 13613,
+    "word": "ぎる",
+    "reading": "ぎる",
+    "meaning": "to swipe"
   },
   {
     "rank": 13619,
@@ -11002,6 +10258,12 @@
     "word": "屠る",
     "reading": "ほふる",
     "meaning": "to slaughter"
+  },
+  {
+    "rank": 14133,
+    "word": "年老いる",
+    "reading": "としおいる",
+    "meaning": "to grow old"
   },
   {
     "rank": 14147,
@@ -11316,6 +10578,12 @@
     "meaning": ""
   },
   {
+    "rank": 14693,
+    "word": "匿う",
+    "reading": "かくまう",
+    "meaning": "to shelter (e.g. a fugitive)"
+  },
+  {
     "rank": 14699,
     "word": "十二分",
     "reading": "じゅうにぶん",
@@ -11596,6 +10864,12 @@
     "word": "手を染める",
     "reading": "てをそめる",
     "meaning": "to get involved (with)"
+  },
+  {
+    "rank": 15183,
+    "word": "建造",
+    "reading": "けんぞう",
+    "meaning": "building"
   },
   {
     "rank": 15183,
@@ -12036,6 +11310,12 @@
     "meaning": "close combat"
   },
   {
+    "rank": 15865,
+    "word": "肩に担ぐ",
+    "reading": "かたにかつぐ",
+    "meaning": "to bear"
+  },
+  {
     "rank": 15882,
     "word": "尻尾を振る",
     "reading": "しっぽをふる",
@@ -12094,6 +11374,12 @@
     "word": "振り乱す",
     "reading": "ふりみだす",
     "meaning": "to dishevel (hair)"
+  },
+  {
+    "rank": 15997,
+    "word": "点ける",
+    "reading": "つける",
+    "meaning": "to turn on"
   },
   {
     "rank": 16011,
@@ -13392,6 +12678,12 @@
     "meaning": "cooperative"
   },
   {
+    "rank": 17807,
+    "word": "研ぐ",
+    "reading": "とぐ",
+    "meaning": "to sharpen"
+  },
+  {
     "rank": 17812,
     "word": "冷やかす",
     "reading": "ひやかす",
@@ -13548,6 +12840,12 @@
     "meaning": "licking one's lips"
   },
   {
+    "rank": 18129,
+    "word": "嵌る",
+    "reading": "はまる",
+    "meaning": "to fit"
+  },
+  {
     "rank": 18130,
     "word": "怒濤",
     "reading": "どとう",
@@ -13618,6 +12916,12 @@
     "word": "食い",
     "reading": "くい",
     "meaning": "eating"
+  },
+  {
+    "rank": 18205,
+    "word": "登山",
+    "reading": "とざん",
+    "meaning": "mountain climbing"
   },
   {
     "rank": 18212,
@@ -14388,6 +13692,12 @@
     "meaning": "tearing limb from limb"
   },
   {
+    "rank": 19639,
+    "word": "移転",
+    "reading": "いてん",
+    "meaning": "moving"
+  },
+  {
     "rank": 19643,
     "word": "噛み殺す",
     "reading": "かみころす",
@@ -15012,6 +14322,18 @@
     "meaning": "to wait and see"
   },
   {
+    "rank": 20531,
+    "word": "後を継ぐ",
+    "reading": "あとをつぐ",
+    "meaning": "to succeed (someone)"
+  },
+  {
+    "rank": 20531,
+    "word": "後を継ぐ",
+    "reading": "あとをつぐ",
+    "meaning": "to succeed (someone)"
+  },
+  {
     "rank": 20532,
     "word": "高山",
     "reading": "こうざん",
@@ -15076,6 +14398,12 @@
     "word": "朝飯前",
     "reading": "あさめしまえ",
     "meaning": "very easy"
+  },
+  {
+    "rank": 20603,
+    "word": "連れ回す",
+    "reading": "つれまわす",
+    "meaning": "to take (someone) to one place after another (forcibly)"
   },
   {
     "rank": 20607,
@@ -15346,6 +14674,12 @@
     "word": "澱む",
     "reading": "よどむ",
     "meaning": "to stagnate"
+  },
+  {
+    "rank": 20938,
+    "word": "なりすます",
+    "reading": "なりすます",
+    "meaning": "to pose as"
   },
   {
     "rank": 20944,
@@ -16236,6 +15570,12 @@
     "meaning": "to be torn off"
   },
   {
+    "rank": 22353,
+    "word": "食いしばる",
+    "reading": "くいしばる",
+    "meaning": "to set one's teeth"
+  },
+  {
     "rank": 22354,
     "word": "根も葉もない",
     "reading": "ねもはもない",
@@ -16402,6 +15742,12 @@
     "word": "擦り切れる",
     "reading": "すりきれる",
     "meaning": "to wear out"
+  },
+  {
+    "rank": 22621,
+    "word": "改築",
+    "reading": "かいちく",
+    "meaning": "structural alteration (of a building)"
   },
   {
     "rank": 22637,
@@ -16752,6 +16098,12 @@
     "meaning": "swallowing"
   },
   {
+    "rank": 23123,
+    "word": "ガラリ",
+    "reading": "ガラリ",
+    "meaning": "loudly (flinging open a door)"
+  },
+  {
     "rank": 23136,
     "word": "食い殺す",
     "reading": "くいころす",
@@ -16810,6 +16162,12 @@
     "word": "果す",
     "reading": "はたす",
     "meaning": "to accomplish"
+  },
+  {
+    "rank": 23371,
+    "word": "新築",
+    "reading": "しんちく",
+    "meaning": "new building"
   },
   {
     "rank": 23410,
@@ -17130,6 +16488,12 @@
     "meaning": "wasteful"
   },
   {
+    "rank": 24140,
+    "word": "刺し貫く",
+    "reading": "さしつらぬく",
+    "meaning": "to pierce"
+  },
+  {
     "rank": 24141,
     "word": "たたらを踏む",
     "reading": "たたらをふむ",
@@ -17218,6 +16582,12 @@
     "word": "時機",
     "reading": "じき",
     "meaning": "opportunity"
+  },
+  {
+    "rank": 24277,
+    "word": "供する",
+    "reading": "きょうする",
+    "meaning": "to offer"
   },
   {
     "rank": 24278,
@@ -18186,6 +17556,12 @@
     "meaning": "to press for an answer"
   },
   {
+    "rank": 26560,
+    "word": "増築",
+    "reading": "ぞうちく",
+    "meaning": "addition to a building"
+  },
+  {
     "rank": 26565,
     "word": "掠る",
     "reading": "かする",
@@ -18222,10 +17598,22 @@
     "meaning": "to let go"
   },
   {
+    "rank": 26633,
+    "word": "造作",
+    "reading": "ぞうさく",
+    "meaning": "building (esp. a house)"
+  },
+  {
     "rank": 26684,
     "word": "閉め切る",
     "reading": "しめきる",
     "meaning": "to close up"
+  },
+  {
+    "rank": 26704,
+    "word": "ひけらかす",
+    "reading": "ひけらかす",
+    "meaning": "to show off"
   },
   {
     "rank": 26714,

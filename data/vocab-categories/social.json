@@ -24,12 +24,6 @@
     "meaning": "companion"
   },
   {
-    "rank": 125,
-    "word": "帰る",
-    "reading": "かえる",
-    "meaning": "to return"
-  },
-  {
     "rank": 170,
     "word": "教える",
     "reading": "おしえる",
@@ -48,46 +42,16 @@
     "meaning": "child"
   },
   {
-    "rank": 570,
-    "word": "過ぎる",
-    "reading": "すぎる",
-    "meaning": "to pass through"
-  },
-  {
-    "rank": 585,
-    "word": "渡す",
-    "reading": "わたす",
-    "meaning": "to ferry across (e.g. a river)"
-  },
-  {
-    "rank": 589,
-    "word": "ようやく",
-    "reading": "ようやく",
-    "meaning": "finally"
-  },
-  {
-    "rank": 599,
-    "word": "難しい",
-    "reading": "むずかしい",
-    "meaning": "difficult"
-  },
-  {
-    "rank": 645,
-    "word": "逆",
-    "reading": "ぎゃく",
-    "meaning": "reverse"
+    "rank": 559,
+    "word": "失礼",
+    "reading": "しつれい",
+    "meaning": "discourtesy"
   },
   {
     "rank": 651,
     "word": "会話",
     "reading": "かいわ",
     "meaning": "conversation"
-  },
-  {
-    "rank": 652,
-    "word": "戻ってくる",
-    "reading": "もどってくる",
-    "meaning": "to come back"
   },
   {
     "rank": 727,
@@ -102,34 +66,10 @@
     "meaning": "contacting"
   },
   {
-    "rank": 729,
-    "word": "諦める",
-    "reading": "あきらめる",
-    "meaning": "to give up"
-  },
-  {
-    "rank": 739,
-    "word": "ところで",
-    "reading": "",
-    "meaning": ""
-  },
-  {
     "rank": 770,
     "word": "手伝う",
     "reading": "てつだう",
     "meaning": "to help"
-  },
-  {
-    "rank": 777,
-    "word": "正しい",
-    "reading": "ただしい",
-    "meaning": "right"
-  },
-  {
-    "rank": 819,
-    "word": "弱い",
-    "reading": "よわい",
-    "meaning": "weak"
   },
   {
     "rank": 829,
@@ -138,34 +78,10 @@
     "meaning": "parent"
   },
   {
-    "rank": 830,
-    "word": "席",
-    "reading": "せき",
-    "meaning": "seat"
-  },
-  {
-    "rank": 852,
-    "word": "他に",
-    "reading": "ほかに",
-    "meaning": "in addition"
-  },
-  {
-    "rank": 862,
-    "word": "詳しい",
-    "reading": "くわしい",
-    "meaning": "detailed"
-  },
-  {
-    "rank": 894,
-    "word": "雨",
-    "reading": "あめ",
-    "meaning": "rain"
-  },
-  {
-    "rank": 974,
-    "word": "疑う",
-    "reading": "うたがう",
-    "meaning": "to doubt"
+    "rank": 848,
+    "word": "他人",
+    "reading": "たにん",
+    "meaning": "another person"
   },
   {
     "rank": 1002,
@@ -190,12 +106,6 @@
     "word": "妻",
     "reading": "つま",
     "meaning": "wife"
-  },
-  {
-    "rank": 1053,
-    "word": "通じる",
-    "reading": "つうじる",
-    "meaning": "to be open (to traffic)"
   },
   {
     "rank": 1058,
@@ -516,10 +426,10 @@
     "meaning": "younger brother"
   },
   {
-    "rank": 1430,
-    "word": "穴",
-    "reading": "あな",
-    "meaning": "hole"
+    "rank": 1431,
+    "word": "っていうか",
+    "reading": "っていうか",
+    "meaning": "or rather (say)"
   },
   {
     "rank": 1449,
@@ -594,6 +504,12 @@
     "meaning": "head"
   },
   {
+    "rank": 1558,
+    "word": "やっぱ",
+    "reading": "やっぱ",
+    "meaning": "too"
+  },
+  {
     "rank": 1559,
     "word": "会社",
     "reading": "かいしゃ",
@@ -604,12 +520,6 @@
     "word": "男の子",
     "reading": "おとこのこ",
     "meaning": "boy"
-  },
-  {
-    "rank": 1591,
-    "word": "ほう",
-    "reading": "ほう",
-    "meaning": "oh"
   },
   {
     "rank": 1597,
@@ -768,12 +678,6 @@
     "meaning": "youth"
   },
   {
-    "rank": 1873,
-    "word": "下りる",
-    "reading": "おりる",
-    "meaning": "to descend (e.g. a mountain)"
-  },
-  {
     "rank": 1875,
     "word": "言い訳",
     "reading": "いいわけ",
@@ -904,12 +808,6 @@
     "word": "しゃべる",
     "reading": "しゃべる",
     "meaning": "to talk"
-  },
-  {
-    "rank": 2073,
-    "word": "買い物",
-    "reading": "かいもの",
-    "meaning": "shopping"
   },
   {
     "rank": 2084,
@@ -1224,6 +1122,12 @@
     "meaning": "to keep company"
   },
   {
+    "rank": 2529,
+    "word": "おめでとう",
+    "reading": "おめでとう",
+    "meaning": "congratulations!"
+  },
+  {
     "rank": 2533,
     "word": "グループ",
     "reading": "グループ",
@@ -1264,6 +1168,12 @@
     "word": "対抗",
     "reading": "たいこう",
     "meaning": "opposition"
+  },
+  {
+    "rank": 2655,
+    "word": "世話",
+    "reading": "せわ",
+    "meaning": "care"
   },
   {
     "rank": 2672,
@@ -1368,6 +1278,12 @@
     "meaning": "feudal lord"
   },
   {
+    "rank": 2837,
+    "word": "殿",
+    "reading": "との",
+    "meaning": "feudal lord"
+  },
+  {
     "rank": 2838,
     "word": "貴族",
     "reading": "きぞく",
@@ -1432,12 +1348,6 @@
     "word": "お兄ちゃん",
     "reading": "おにいちゃん",
     "meaning": "(one's) older brother"
-  },
-  {
-    "rank": 2880,
-    "word": "何故",
-    "reading": "なぜ",
-    "meaning": "why"
   },
   {
     "rank": 2881,
@@ -1534,6 +1444,12 @@
     "word": "僕たち",
     "reading": "ぼくたち",
     "meaning": "we"
+  },
+  {
+    "rank": 2929,
+    "word": "おじさん",
+    "reading": "おじさん",
+    "meaning": "uncle"
   },
   {
     "rank": 2931,
@@ -1728,12 +1644,6 @@
     "meaning": "revenge"
   },
   {
-    "rank": 3231,
-    "word": "かも知れない",
-    "reading": "かもしれない",
-    "meaning": "may"
-  },
-  {
     "rank": 3238,
     "word": "民",
     "reading": "みん",
@@ -1764,10 +1674,10 @@
     "meaning": "fan"
   },
   {
-    "rank": 3425,
-    "word": "田舎",
-    "reading": "いなか",
-    "meaning": "rural area"
+    "rank": 3426,
+    "word": "お兄さん",
+    "reading": "おにいさん",
+    "meaning": "older brother"
   },
   {
     "rank": 3437,
@@ -1780,12 +1690,6 @@
     "word": "姉妹",
     "reading": "しまい",
     "meaning": "sisters"
-  },
-  {
-    "rank": 3458,
-    "word": "神経",
-    "reading": "しんけい",
-    "meaning": "nerve"
   },
   {
     "rank": 3504,
@@ -1804,6 +1708,12 @@
     "word": "団",
     "reading": "だん",
     "meaning": "body"
+  },
+  {
+    "rank": 3552,
+    "word": "フォロー",
+    "reading": "フォロー",
+    "meaning": "follow"
   },
   {
     "rank": 3556,
@@ -1864,6 +1774,12 @@
     "word": "口に出す",
     "reading": "くちにだす",
     "meaning": "to express (orally)"
+  },
+  {
+    "rank": 3691,
+    "word": "文句を言う",
+    "reading": "もんくをいう",
+    "meaning": "to complain"
   },
   {
     "rank": 3734,
@@ -1950,6 +1866,12 @@
     "meaning": "arrest"
   },
   {
+    "rank": 3847,
+    "word": "逮捕",
+    "reading": "たいほ",
+    "meaning": "arrest"
+  },
+  {
     "rank": 3856,
     "word": "脅威",
     "reading": "きょうい",
@@ -1978,6 +1900,18 @@
     "word": "親戚",
     "reading": "しんせき",
     "meaning": "relative"
+  },
+  {
+    "rank": 3941,
+    "word": "上司",
+    "reading": "じょうし",
+    "meaning": "(one's) superior"
+  },
+  {
+    "rank": 3947,
+    "word": "職人",
+    "reading": "しょくにん",
+    "meaning": "craftsman"
   },
   {
     "rank": 3987,
@@ -2136,12 +2070,6 @@
     "meaning": "dead person"
   },
   {
-    "rank": 4115,
-    "word": "明かす",
-    "reading": "あかす",
-    "meaning": "to pass (the night)"
-  },
-  {
     "rank": 4120,
     "word": "迷惑をかける",
     "reading": "めいわくをかける",
@@ -2248,12 +2176,6 @@
     "word": "子たち",
     "reading": "こたち",
     "meaning": "children"
-  },
-  {
-    "rank": 4253,
-    "word": "敷地",
-    "reading": "しきち",
-    "meaning": "site"
   },
   {
     "rank": 4256,
@@ -2388,12 +2310,6 @@
     "meaning": "member"
   },
   {
-    "rank": 4403,
-    "word": "四つ",
-    "reading": "よっつ",
-    "meaning": "four"
-  },
-  {
     "rank": 4405,
     "word": "交流",
     "reading": "こうりゅう",
@@ -2484,12 +2400,6 @@
     "meaning": "to be opposite"
   },
   {
-    "rank": 4478,
-    "word": "高",
-    "reading": "こう",
-    "meaning": "high"
-  },
-  {
     "rank": 4497,
     "word": "差し上げる",
     "reading": "さしあげる",
@@ -2520,12 +2430,6 @@
     "meaning": "older brother and younger sister"
   },
   {
-    "rank": 4524,
-    "word": "全滅",
-    "reading": "ぜんめつ",
-    "meaning": "annihilation"
-  },
-  {
     "rank": 4540,
     "word": "誘拐",
     "reading": "ゆうかい",
@@ -2536,18 +2440,6 @@
     "word": "アイドル",
     "reading": "アイドル",
     "meaning": "entertainer (esp. boy band or girl group member) whose im..."
-  },
-  {
-    "rank": 4547,
-    "word": "そうすると",
-    "reading": "そうすると",
-    "meaning": "having done that"
-  },
-  {
-    "rank": 4558,
-    "word": "演奏",
-    "reading": "えんそう",
-    "meaning": "musical performance"
   },
   {
     "rank": 4564,
@@ -2880,6 +2772,12 @@
     "meaning": "gentleman"
   },
   {
+    "rank": 4947,
+    "word": "こんばんは",
+    "reading": "こんばんは",
+    "meaning": "good evening"
+  },
+  {
     "rank": 4963,
     "word": "離婚",
     "reading": "りこん",
@@ -2956,12 +2854,6 @@
     "word": "世代",
     "reading": "せだい",
     "meaning": "generation"
-  },
-  {
-    "rank": 5121,
-    "word": "それなら",
-    "reading": "",
-    "meaning": ""
   },
   {
     "rank": 5131,
@@ -3048,12 +2940,6 @@
     "meaning": "feeling obliged"
   },
   {
-    "rank": 5334,
-    "word": "未熟",
-    "reading": "みじゅく",
-    "meaning": "unripe"
-  },
-  {
     "rank": 5362,
     "word": "はじめまして",
     "reading": "はじめまして",
@@ -3090,12 +2976,6 @@
     "meaning": "other people's affairs"
   },
   {
-    "rank": 5388,
-    "word": "からすると",
-    "reading": "からすると",
-    "meaning": "judging from"
-  },
-  {
     "rank": 5396,
     "word": "笑いかける",
     "reading": "わらいかける",
@@ -3126,12 +3006,6 @@
     "meaning": "special someone"
   },
   {
-    "rank": 5428,
-    "word": "可憐",
-    "reading": "かれん",
-    "meaning": "sweet (e.g. young girls, flowers blooming)"
-  },
-  {
     "rank": 5430,
     "word": "流行",
     "reading": "りゅうこう",
@@ -3150,16 +3024,16 @@
     "meaning": "favour"
   },
   {
+    "rank": 5459,
+    "word": "異性",
+    "reading": "いせい",
+    "meaning": "the opposite sex"
+  },
+  {
     "rank": 5460,
     "word": "神妙",
     "reading": "しんみょう",
     "meaning": "meek"
-  },
-  {
-    "rank": 5467,
-    "word": "堂",
-    "reading": "どう",
-    "meaning": "temple"
   },
   {
     "rank": 5486,
@@ -3186,6 +3060,12 @@
     "meaning": "guardian"
   },
   {
+    "rank": 5569,
+    "word": "犯行",
+    "reading": "はんこう",
+    "meaning": "crime"
+  },
+  {
     "rank": 5574,
     "word": "面会",
     "reading": "めんかい",
@@ -3208,12 +3088,6 @@
     "word": "婦人",
     "reading": "ふじん",
     "meaning": "woman"
-  },
-  {
-    "rank": 5599,
-    "word": "都合のいい",
-    "reading": "つごうのいい",
-    "meaning": "convenient"
   },
   {
     "rank": 5652,
@@ -3258,16 +3132,16 @@
     "meaning": "present"
   },
   {
+    "rank": 5757,
+    "word": "悪戯",
+    "reading": "いたずら",
+    "meaning": "mischief"
+  },
+  {
     "rank": 5768,
     "word": "ご挨拶",
     "reading": "ごあいさつ",
     "meaning": "greeting"
-  },
-  {
-    "rank": 5772,
-    "word": "気を抜く",
-    "reading": "きをぬく",
-    "meaning": "to lose focus"
   },
   {
     "rank": 5774,
@@ -3292,12 +3166,6 @@
     "word": "参加者",
     "reading": "さんかしゃ",
     "meaning": "participant"
-  },
-  {
-    "rank": 5797,
-    "word": "わけではありません",
-    "reading": "わけではありません",
-    "meaning": "it does not mean that ..."
   },
   {
     "rank": 5804,
@@ -3376,12 +3244,6 @@
     "word": "振る舞い",
     "reading": "ふるまい",
     "meaning": "behavior"
-  },
-  {
-    "rank": 5929,
-    "word": "人口",
-    "reading": "じんこう",
-    "meaning": "population"
   },
   {
     "rank": 5932,
@@ -3468,40 +3330,34 @@
     "meaning": "to pay attention to another's needs"
   },
   {
+    "rank": 6116,
+    "word": "頼りにする",
+    "reading": "たよりにする",
+    "meaning": "to rely on"
+  },
+  {
     "rank": 6122,
     "word": "ハート",
     "reading": "ハート",
     "meaning": "heart"
   },
   {
-    "rank": 6124,
-    "word": "と考えられる",
-    "reading": "とかんがえられる",
-    "meaning": "to be conceivable that"
+    "rank": 6123,
+    "word": "業者",
+    "reading": "ぎょうしゃ",
+    "meaning": "trader"
   },
   {
-    "rank": 6135,
-    "word": "由来",
-    "reading": "ゆらい",
-    "meaning": "origin"
-  },
-  {
-    "rank": 6139,
-    "word": "ライト",
-    "reading": "ライト",
-    "meaning": "light"
+    "rank": 6140,
+    "word": "お約束",
+    "reading": "おやくそく",
+    "meaning": "promise"
   },
   {
     "rank": 6151,
     "word": "背中を押す",
     "reading": "せなかをおす",
     "meaning": "to push someone (towards)"
-  },
-  {
-    "rank": 6166,
-    "word": "雑",
-    "reading": "ざつ",
-    "meaning": "rough"
   },
   {
     "rank": 6199,
@@ -3546,28 +3402,10 @@
     "meaning": "recommendation"
   },
   {
-    "rank": 6286,
-    "word": "成し遂げる",
-    "reading": "なしとげる",
-    "meaning": "to accomplish"
-  },
-  {
-    "rank": 6289,
-    "word": "丈夫",
-    "reading": "じょうぶ",
-    "meaning": "healthy"
-  },
-  {
-    "rank": 6291,
-    "word": "わくわく",
-    "reading": "わくわく",
-    "meaning": "trembling"
-  },
-  {
-    "rank": 6293,
-    "word": "直る",
-    "reading": "なおる",
-    "meaning": "to get mended"
+    "rank": 6288,
+    "word": "連絡を取る",
+    "reading": "れんらくをとる",
+    "meaning": "to get in touch with"
   },
   {
     "rank": 6330,
@@ -3576,10 +3414,16 @@
     "meaning": "to take (someone) away"
   },
   {
-    "rank": 6345,
-    "word": "平均",
-    "reading": "へいきん",
-    "meaning": "average"
+    "rank": 6341,
+    "word": "コメント",
+    "reading": "コメント",
+    "meaning": "comment"
+  },
+  {
+    "rank": 6341,
+    "word": "コメント",
+    "reading": "コメント",
+    "meaning": "comment"
   },
   {
     "rank": 6353,
@@ -3618,16 +3462,16 @@
     "meaning": "slander"
   },
   {
+    "rank": 6395,
+    "word": "嘲笑",
+    "reading": "ちょうしょう",
+    "meaning": "scornful laughter"
+  },
+  {
     "rank": 6402,
     "word": "手出し",
     "reading": "てだし",
     "meaning": "meddling"
-  },
-  {
-    "rank": 6411,
-    "word": "相違",
-    "reading": "そうい",
-    "meaning": "difference"
   },
   {
     "rank": 6413,
@@ -3636,40 +3480,22 @@
     "meaning": "each (person)"
   },
   {
-    "rank": 6414,
-    "word": "務め",
-    "reading": "",
-    "meaning": ""
-  },
-  {
     "rank": 6422,
     "word": "見習う",
     "reading": "みならう",
     "meaning": "to follow another's example"
   },
   {
-    "rank": 6435,
-    "word": "要因",
-    "reading": "よういん",
-    "meaning": "main cause"
-  },
-  {
-    "rank": 6447,
-    "word": "ワクワク",
-    "reading": "ワクワク",
-    "meaning": "trembling"
-  },
-  {
-    "rank": 6457,
-    "word": "追求",
-    "reading": "ついきゅう",
-    "meaning": "pursuit (of a goal, ideal, etc.)"
-  },
-  {
     "rank": 6466,
     "word": "先祖",
     "reading": "せんぞ",
     "meaning": "ancestor"
+  },
+  {
+    "rank": 6467,
+    "word": "手当て",
+    "reading": "てあて",
+    "meaning": "salary"
   },
   {
     "rank": 6470,
@@ -3774,6 +3600,18 @@
     "meaning": "to speak to"
   },
   {
+    "rank": 6569,
+    "word": "演説",
+    "reading": "えんぜつ",
+    "meaning": "speech"
+  },
+  {
+    "rank": 6570,
+    "word": "警戒心",
+    "reading": "けいかいしん",
+    "meaning": "wariness"
+  },
+  {
     "rank": 6570,
     "word": "警戒心",
     "reading": "けいかいしん",
@@ -3790,12 +3628,6 @@
     "word": "有力",
     "reading": "ゆうりょく",
     "meaning": "influential"
-  },
-  {
-    "rank": 6601,
-    "word": "出歩く",
-    "reading": "であるく",
-    "meaning": "to go out"
   },
   {
     "rank": 6618,
@@ -3828,46 +3660,16 @@
     "meaning": "recruitment"
   },
   {
-    "rank": 6659,
-    "word": "往来",
-    "reading": "おうらい",
-    "meaning": "coming and going"
-  },
-  {
     "rank": 6670,
     "word": "競争",
     "reading": "きょうそう",
     "meaning": "competition"
   },
   {
-    "rank": 6699,
-    "word": "必須",
-    "reading": "ひっす",
-    "meaning": "indispensable"
-  },
-  {
-    "rank": 6702,
-    "word": "寝ぼける",
-    "reading": "ねぼける",
-    "meaning": "to be still half asleep"
-  },
-  {
-    "rank": 6704,
-    "word": "自信満々",
-    "reading": "じしんまんまん",
-    "meaning": "full of confidence"
-  },
-  {
     "rank": 6706,
     "word": "広める",
     "reading": "ひろめる",
     "meaning": "to spread"
-  },
-  {
-    "rank": 6707,
-    "word": "浜",
-    "reading": "はま",
-    "meaning": "beach"
   },
   {
     "rank": 6713,
@@ -3996,6 +3798,12 @@
     "meaning": "assistance"
   },
   {
+    "rank": 6855,
+    "word": "援助",
+    "reading": "えんじょ",
+    "meaning": "assistance"
+  },
+  {
     "rank": 6856,
     "word": "リード",
     "reading": "リード",
@@ -4032,28 +3840,22 @@
     "meaning": "benefactor"
   },
   {
+    "rank": 6879,
+    "word": "恩人",
+    "reading": "おんじん",
+    "meaning": "benefactor"
+  },
+  {
     "rank": 6880,
     "word": "有名人",
     "reading": "ゆうめいじん",
     "meaning": "celebrity"
   },
   {
-    "rank": 6881,
-    "word": "成分",
-    "reading": "せいぶん",
-    "meaning": "ingredient"
-  },
-  {
     "rank": 6891,
     "word": "お使い",
     "reading": "おつかい",
     "meaning": "errand"
-  },
-  {
-    "rank": 6892,
-    "word": "を回って",
-    "reading": "をめぐって",
-    "meaning": "in regard to"
   },
   {
     "rank": 6898,
@@ -4066,18 +3868,6 @@
     "word": "ずる",
     "reading": "ずる",
     "meaning": "cunning deed"
-  },
-  {
-    "rank": 6912,
-    "word": "初めは",
-    "reading": "はじめは",
-    "meaning": "at first"
-  },
-  {
-    "rank": 6914,
-    "word": "少数",
-    "reading": "しょうすう",
-    "meaning": "small number"
   },
   {
     "rank": 6919,
@@ -4104,6 +3894,12 @@
     "meaning": "(verbal) abuse"
   },
   {
+    "rank": 6950,
+    "word": "看病",
+    "reading": "かんびょう",
+    "meaning": "nursing (a patient)"
+  },
+  {
     "rank": 6962,
     "word": "脅し",
     "reading": "おどし",
@@ -4114,12 +3910,6 @@
     "word": "認定",
     "reading": "にんてい",
     "meaning": "authorization"
-  },
-  {
-    "rank": 6994,
-    "word": "岸",
-    "reading": "きし",
-    "meaning": "bank"
   },
   {
     "rank": 6997,
@@ -4146,6 +3936,12 @@
     "meaning": "call"
   },
   {
+    "rank": 7045,
+    "word": "お伺い",
+    "reading": "おうかがい",
+    "meaning": "call"
+  },
+  {
     "rank": 7051,
     "word": "言葉遣い",
     "reading": "ことばづかい",
@@ -4164,12 +3960,6 @@
     "meaning": "acquaintance"
   },
   {
-    "rank": 7092,
-    "word": "手先",
-    "reading": "てさき",
-    "meaning": "fingers"
-  },
-  {
     "rank": 7114,
     "word": "子孫",
     "reading": "しそん",
@@ -4182,6 +3972,18 @@
     "meaning": "friendly chat"
   },
   {
+    "rank": 7139,
+    "word": "談笑",
+    "reading": "だんしょう",
+    "meaning": "friendly chat"
+  },
+  {
+    "rank": 7157,
+    "word": "仕返し",
+    "reading": "しかえし",
+    "meaning": "payback"
+  },
+  {
     "rank": 7164,
     "word": "語り合う",
     "reading": "かたりあう",
@@ -4192,6 +3994,18 @@
     "word": "話し声",
     "reading": "はなしごえ",
     "meaning": "speaking voice"
+  },
+  {
+    "rank": 7174,
+    "word": "大統領",
+    "reading": "だいとうりょう",
+    "meaning": "president (of a nation)"
+  },
+  {
+    "rank": 7189,
+    "word": "お世辞",
+    "reading": "おせじ",
+    "meaning": "flattery"
   },
   {
     "rank": 7189,
@@ -4230,6 +4044,12 @@
     "meaning": "coercion"
   },
   {
+    "rank": 7272,
+    "word": "強要",
+    "reading": "きょうよう",
+    "meaning": "coercion"
+  },
+  {
     "rank": 7284,
     "word": "コミュニケーション",
     "reading": "コミュニケーション",
@@ -4252,6 +4072,18 @@
     "word": "署名",
     "reading": "しょめい",
     "meaning": "signature"
+  },
+  {
+    "rank": 7337,
+    "word": "署名",
+    "reading": "しょめい",
+    "meaning": "signature"
+  },
+  {
+    "rank": 7338,
+    "word": "主催",
+    "reading": "しゅさい",
+    "meaning": "sponsorship (i.e. conducting under one's auspices)"
   },
   {
     "rank": 7338,
@@ -4302,10 +4134,22 @@
     "meaning": "state of things"
   },
   {
+    "rank": 7488,
+    "word": "農家",
+    "reading": "のうか",
+    "meaning": "farmer"
+  },
+  {
     "rank": 7504,
     "word": "親しみ",
     "reading": "したしみ",
     "meaning": "intimacy"
+  },
+  {
+    "rank": 7521,
+    "word": "いたずら",
+    "reading": "いたずら",
+    "meaning": "mischief"
   },
   {
     "rank": 7540,
@@ -4366,6 +4210,12 @@
     "word": "国王",
     "reading": "こくおう",
     "meaning": "king"
+  },
+  {
+    "rank": 7627,
+    "word": "魔女",
+    "reading": "まじょ",
+    "meaning": "witch"
   },
   {
     "rank": 7631,
@@ -4476,6 +4326,12 @@
     "meaning": "you"
   },
   {
+    "rank": 7682,
+    "word": "領主",
+    "reading": "りょうしゅ",
+    "meaning": "feudal lord"
+  },
+  {
     "rank": 7686,
     "word": "双子",
     "reading": "ふたご",
@@ -4546,6 +4402,12 @@
     "word": "ご主人様",
     "reading": "ごしゅじんさま",
     "meaning": "master"
+  },
+  {
+    "rank": 7725,
+    "word": "店長",
+    "reading": "てんちょう",
+    "meaning": "shop manager"
   },
   {
     "rank": 7727,
@@ -4674,6 +4536,12 @@
     "meaning": "alliance"
   },
   {
+    "rank": 7860,
+    "word": "ご主人",
+    "reading": "ごしゅじん",
+    "meaning": "your husband"
+  },
+  {
     "rank": 7869,
     "word": "先代",
     "reading": "せんだい",
@@ -4696,6 +4564,18 @@
     "word": "裏切り者",
     "reading": "うらぎりもの",
     "meaning": "betrayer"
+  },
+  {
+    "rank": 7900,
+    "word": "お主",
+    "reading": "おぬし",
+    "meaning": "you (when referring to one's equals or inferiors)"
+  },
+  {
+    "rank": 7900,
+    "word": "お主",
+    "reading": "おぬし",
+    "meaning": "you (when referring to one's equals or inferiors)"
   },
   {
     "rank": 7903,
@@ -4896,6 +4776,12 @@
     "meaning": "younger sister"
   },
   {
+    "rank": 8137,
+    "word": "尋問",
+    "reading": "じんもん",
+    "meaning": "questioning"
+  },
+  {
     "rank": 8145,
     "word": "手を繋ぐ",
     "reading": "てをつなぐ",
@@ -5040,6 +4926,12 @@
     "meaning": "changing schools"
   },
   {
+    "rank": 8292,
+    "word": "彼等",
+    "reading": "かれら",
+    "meaning": "they"
+  },
+  {
     "rank": 8302,
     "word": "爺",
     "reading": "じじ",
@@ -5076,6 +4968,12 @@
     "meaning": "audience (with a superior, e.g. nobility)"
   },
   {
+    "rank": 8329,
+    "word": "謁見",
+    "reading": "えっけん",
+    "meaning": "audience (with a superior, e.g. nobility)"
+  },
+  {
     "rank": 8330,
     "word": "プロポーズ",
     "reading": "プロポーズ",
@@ -5098,6 +4996,12 @@
     "word": "言葉を紡ぐ",
     "reading": "ことばをつむぐ",
     "meaning": "to express in a refined fashion"
+  },
+  {
+    "rank": 8354,
+    "word": "連行",
+    "reading": "れんこう",
+    "meaning": "taking (a suspect to the police)"
   },
   {
     "rank": 8356,
@@ -5178,6 +5082,12 @@
     "meaning": "chattering"
   },
   {
+    "rank": 8440,
+    "word": "お喋り",
+    "reading": "おしゃべり",
+    "meaning": "chattering"
+  },
+  {
     "rank": 8442,
     "word": "口づけ",
     "reading": "くちづけ",
@@ -5238,6 +5148,12 @@
     "meaning": "caressing"
   },
   {
+    "rank": 8501,
+    "word": "愛撫",
+    "reading": "あいぶ",
+    "meaning": "caressing"
+  },
+  {
     "rank": 8503,
     "word": "エスコート",
     "reading": "エスコート",
@@ -5254,6 +5170,12 @@
     "word": "衛兵",
     "reading": "えいへい",
     "meaning": "guard"
+  },
+  {
+    "rank": 8531,
+    "word": "強者",
+    "reading": "きょうしゃ",
+    "meaning": "strong person"
   },
   {
     "rank": 8544,
@@ -5296,6 +5218,12 @@
     "word": "揉める",
     "reading": "もめる",
     "meaning": "to disagree"
+  },
+  {
+    "rank": 8597,
+    "word": "敬礼",
+    "reading": "けいれい",
+    "meaning": "salute"
   },
   {
     "rank": 8597,
@@ -5574,6 +5502,12 @@
     "meaning": "subordinate"
   },
   {
+    "rank": 8882,
+    "word": "反乱",
+    "reading": "はんらん",
+    "meaning": "insurrection"
+  },
+  {
     "rank": 8884,
     "word": "常人",
     "reading": "じょうじん",
@@ -5818,6 +5752,12 @@
     "word": "建前",
     "reading": "たてまえ",
     "meaning": "face"
+  },
+  {
+    "rank": 9144,
+    "word": "ふむふむ",
+    "reading": "ふむふむ",
+    "meaning": "hmmm"
   },
   {
     "rank": 9150,
@@ -6666,6 +6606,12 @@
     "meaning": "invalid"
   },
   {
+    "rank": 10069,
+    "word": "お願いいたします",
+    "reading": "おねがいいたします",
+    "meaning": "please"
+  },
+  {
     "rank": 10081,
     "word": "親密",
     "reading": "しんみつ",
@@ -6696,6 +6642,12 @@
     "meaning": "tenacity"
   },
   {
+    "rank": 10132,
+    "word": "船長",
+    "reading": "せんちょう",
+    "meaning": "ship's captain"
+  },
+  {
     "rank": 10133,
     "word": "面子",
     "reading": "メンツ",
@@ -6706,6 +6658,12 @@
     "word": "あなた様",
     "reading": "あなたさま",
     "meaning": "you"
+  },
+  {
+    "rank": 10136,
+    "word": "っ子",
+    "reading": "っこ",
+    "meaning": "someone with a liking or characteristic"
   },
   {
     "rank": 10142,
@@ -6766,6 +6724,18 @@
     "word": "病",
     "reading": "びょう",
     "meaning": "disease"
+  },
+  {
+    "rank": 10242,
+    "word": "うちら",
+    "reading": "うちら",
+    "meaning": "we"
+  },
+  {
+    "rank": 10242,
+    "word": "うちら",
+    "reading": "うちら",
+    "meaning": "we"
   },
   {
     "rank": 10243,
@@ -7110,6 +7080,12 @@
     "meaning": "noted family"
   },
   {
+    "rank": 10965,
+    "word": "花を咲かせる",
+    "reading": "はなをさかせる",
+    "meaning": "to enliven (e.g. a conversation)"
+  },
+  {
     "rank": 11004,
     "word": "ナメる",
     "reading": "ナメる",
@@ -7338,6 +7314,12 @@
     "meaning": "scorn"
   },
   {
+    "rank": 11355,
+    "word": "バカ野郎",
+    "reading": "バカやろう",
+    "meaning": "goddamn idiot"
+  },
+  {
     "rank": 11356,
     "word": "かき回す",
     "reading": "かきまわす",
@@ -7456,6 +7438,12 @@
     "word": "燃え尽きる",
     "reading": "もえつきる",
     "meaning": "to burn out"
+  },
+  {
+    "rank": 11614,
+    "word": "ぐる",
+    "reading": "ぐる",
+    "meaning": "accomplice"
   },
   {
     "rank": 11615,
@@ -8002,6 +7990,12 @@
     "word": "言わす",
     "reading": "いわす",
     "meaning": "to get someone to say"
+  },
+  {
+    "rank": 12262,
+    "word": "ハーレム",
+    "reading": "ハーレム",
+    "meaning": "harem"
   },
   {
     "rank": 12263,
@@ -9072,6 +9066,12 @@
     "meaning": "bodyguards"
   },
   {
+    "rank": 13435,
+    "word": "お泊まり",
+    "reading": "おとまり",
+    "meaning": "sleepover"
+  },
+  {
     "rank": 13463,
     "word": "敗者",
     "reading": "はいしゃ",
@@ -9160,6 +9160,24 @@
     "word": "誤差",
     "reading": "ごさ",
     "meaning": "measurement error"
+  },
+  {
+    "rank": 13626,
+    "word": "じゃーん",
+    "reading": "じゃーん",
+    "meaning": "ta-dah!"
+  },
+  {
+    "rank": 13645,
+    "word": "狂人",
+    "reading": "きょうじん",
+    "meaning": "lunatic"
+  },
+  {
+    "rank": 13645,
+    "word": "狂人",
+    "reading": "きょうじん",
+    "meaning": "lunatic"
   },
   {
     "rank": 13667,
@@ -9690,6 +9708,18 @@
     "meaning": "unexpressed"
   },
   {
+    "rank": 14713,
+    "word": "ほほほ",
+    "reading": "ほほほ",
+    "meaning": "ho-ho"
+  },
+  {
+    "rank": 14716,
+    "word": "あれれ",
+    "reading": "あれれ",
+    "meaning": "tsk tsk"
+  },
+  {
     "rank": 14726,
     "word": "猛者",
     "reading": "もさ",
@@ -10026,6 +10056,12 @@
     "meaning": "favorable treatment"
   },
   {
+    "rank": 15116,
+    "word": "女同士",
+    "reading": "おんなどうし",
+    "meaning": "fellow women"
+  },
+  {
     "rank": 15117,
     "word": "届",
     "reading": "とどけ",
@@ -10186,6 +10222,12 @@
     "word": "祠",
     "reading": "ほこら",
     "meaning": "hokora"
+  },
+  {
+    "rank": 15240,
+    "word": "お偉いさん",
+    "reading": "おえらいさん",
+    "meaning": "big shot"
   },
   {
     "rank": 15242,
@@ -10716,6 +10758,12 @@
     "meaning": "chair"
   },
   {
+    "rank": 15854,
+    "word": "殺人犯",
+    "reading": "さつじんはん",
+    "meaning": "murderer"
+  },
+  {
     "rank": 15855,
     "word": "扇子",
     "reading": "せんす",
@@ -10726,6 +10774,12 @@
     "word": "晩餐",
     "reading": "ばんさん",
     "meaning": "dinner"
+  },
+  {
+    "rank": 15863,
+    "word": "受付嬢",
+    "reading": "うけつけじょう",
+    "meaning": "receptionist"
   },
   {
     "rank": 15878,
@@ -10750,6 +10804,12 @@
     "word": "いじける",
     "reading": "いじける",
     "meaning": "to grow timid"
+  },
+  {
+    "rank": 15912,
+    "word": "子分",
+    "reading": "こぶん",
+    "meaning": "henchman"
   },
   {
     "rank": 15917,
@@ -11712,6 +11772,12 @@
     "meaning": "public entertainment"
   },
   {
+    "rank": 17154,
+    "word": "見て見ぬふり",
+    "reading": "みてみぬふり",
+    "meaning": "pretending not to see something"
+  },
+  {
     "rank": 17162,
     "word": "主催者",
     "reading": "しゅさいしゃ",
@@ -12126,6 +12192,12 @@
     "meaning": "summer festival"
   },
   {
+    "rank": 17997,
+    "word": "夏祭り",
+    "reading": "なつまつり",
+    "meaning": "summer festival"
+  },
+  {
     "rank": 18003,
     "word": "陰口",
     "reading": "かげぐち",
@@ -12136,6 +12208,18 @@
     "word": "共犯",
     "reading": "きょうはん",
     "meaning": "complicity"
+  },
+  {
+    "rank": 18026,
+    "word": "首を切る",
+    "reading": "くびをきる",
+    "meaning": "to fire from a job"
+  },
+  {
+    "rank": 18032,
+    "word": "商家",
+    "reading": "しょうか",
+    "meaning": "merchant"
   },
   {
     "rank": 18047,
@@ -12382,6 +12466,12 @@
     "word": "留学生",
     "reading": "りゅうがくせい",
     "meaning": "overseas student"
+  },
+  {
+    "rank": 18408,
+    "word": "斡旋",
+    "reading": "あっせん",
+    "meaning": "kind offices"
   },
   {
     "rank": 18409,
@@ -12888,6 +12978,18 @@
     "meaning": "company, battery, troop"
   },
   {
+    "rank": 19243,
+    "word": "お見知りおき",
+    "reading": "おみしりおき",
+    "meaning": "pleased to make your acquaintance"
+  },
+  {
+    "rank": 19261,
+    "word": "城主",
+    "reading": "じょうしゅ",
+    "meaning": "lord of a castle"
+  },
+  {
     "rank": 19265,
     "word": "正妻",
     "reading": "せいさい",
@@ -13314,6 +13416,12 @@
     "meaning": "rebel army"
   },
   {
+    "rank": 20150,
+    "word": "侵略者",
+    "reading": "しんりゃくしゃ",
+    "meaning": "aggressor"
+  },
+  {
     "rank": 20157,
     "word": "話術",
     "reading": "わじゅつ",
@@ -13342,6 +13450,12 @@
     "word": "労働力",
     "reading": "ろうどうりょく",
     "meaning": "labor"
+  },
+  {
+    "rank": 20200,
+    "word": "同居人",
+    "reading": "どうきょにん",
+    "meaning": "person living with a family"
   },
   {
     "rank": 20200,
@@ -14316,6 +14430,12 @@
     "meaning": "companion"
   },
   {
+    "rank": 21575,
+    "word": "ジンジン",
+    "reading": "ジンジン",
+    "meaning": "each encampment"
+  },
+  {
     "rank": 21576,
     "word": "老いぼれ",
     "reading": "おいぼれ",
@@ -14338,6 +14458,12 @@
     "word": "丸め込む",
     "reading": "まるめこむ",
     "meaning": "to coax"
+  },
+  {
+    "rank": 21624,
+    "word": "馬の骨",
+    "reading": "うまのほね",
+    "meaning": "person of doubtful origin"
   },
   {
     "rank": 21635,
@@ -14434,6 +14560,12 @@
     "word": "功労者",
     "reading": "こうろうしゃ",
     "meaning": "person who has rendered distinguished service"
+  },
+  {
+    "rank": 21779,
+    "word": "地主",
+    "reading": "じぬし",
+    "meaning": "landowner"
   },
   {
     "rank": 21827,
@@ -14586,10 +14718,28 @@
     "meaning": "being excluded"
   },
   {
+    "rank": 22030,
+    "word": "つべこべ",
+    "reading": "つべこべ",
+    "meaning": "complaining"
+  },
+  {
     "rank": 22032,
     "word": "大口を開ける",
     "reading": "おおぐちをあける",
     "meaning": "to gape"
+  },
+  {
+    "rank": 22034,
+    "word": "神童",
+    "reading": "しんどう",
+    "meaning": "child prodigy"
+  },
+  {
+    "rank": 22034,
+    "word": "神童",
+    "reading": "しんどう",
+    "meaning": "child prodigy"
   },
   {
     "rank": 22035,
@@ -14742,6 +14892,12 @@
     "meaning": "leader"
   },
   {
+    "rank": 22298,
+    "word": "ほとんどの人",
+    "reading": "ほとんどのひと",
+    "meaning": "almost everyone"
+  },
+  {
     "rank": 22305,
     "word": "総長",
     "reading": "そうちょう",
@@ -14860,6 +15016,12 @@
     "word": "意志の強い",
     "reading": "いしのつよい",
     "meaning": "strong-minded"
+  },
+  {
+    "rank": 22481,
+    "word": "手ほどき",
+    "reading": "てほどき",
+    "meaning": "teaching the basics"
   },
   {
     "rank": 22483,
@@ -15480,6 +15642,12 @@
     "meaning": "riverbank"
   },
   {
+    "rank": 23668,
+    "word": "親切心",
+    "reading": "しんせつしん",
+    "meaning": "kindness"
+  },
+  {
     "rank": 23669,
     "word": "今一つ",
     "reading": "いまひとつ",
@@ -16068,6 +16236,12 @@
     "meaning": "loved one"
   },
   {
+    "rank": 24603,
+    "word": "無法者",
+    "reading": "むほうしゃ",
+    "meaning": "outlaw"
+  },
+  {
     "rank": 24606,
     "word": "闖入者",
     "reading": "ちんにゅうしゃ",
@@ -16464,6 +16638,12 @@
     "meaning": "diplomatic relations"
   },
   {
+    "rank": 25435,
+    "word": "トレーナー",
+    "reading": "トレーナー",
+    "meaning": "trainer (someone who works with sports athletes)"
+  },
+  {
     "rank": 25469,
     "word": "友好関係",
     "reading": "ゆうこうかんけい",
@@ -16546,6 +16726,12 @@
     "word": "盟主",
     "reading": "めいしゅ",
     "meaning": "leader (of an alliance)"
+  },
+  {
+    "rank": 25737,
+    "word": "白雪姫",
+    "reading": "しらゆきひめ",
+    "meaning": "Snow White"
   },
   {
     "rank": 25761,
@@ -16780,6 +16966,18 @@
     "word": "趣味の悪い",
     "reading": "しゅみのわるい",
     "meaning": "in bad taste"
+  },
+  {
+    "rank": 26322,
+    "word": "近所さん",
+    "reading": "きんじょさん",
+    "meaning": "neighbors"
+  },
+  {
+    "rank": 26322,
+    "word": "近所さん",
+    "reading": "きんじょさん",
+    "meaning": "neighbors"
   },
   {
     "rank": 26323,
@@ -17034,12 +17232,6 @@
     "meaning": "slaver"
   },
   {
-    "rank": 26766,
-    "word": "出来心",
-    "reading": "できごころ",
-    "meaning": "sudden impulse"
-  },
-  {
     "rank": 26770,
     "word": "チームメイト",
     "reading": "チームメイト",
@@ -17118,6 +17310,12 @@
     "meaning": "total war"
   },
   {
+    "rank": 26875,
+    "word": "後妻",
+    "reading": "ごさい",
+    "meaning": "second wife"
+  },
+  {
     "rank": 26881,
     "word": "死刑囚",
     "reading": "しけいしゅう",
@@ -17130,12 +17328,6 @@
     "meaning": "conscription"
   },
   {
-    "rank": 26928,
-    "word": "軍備",
-    "reading": "ぐんび",
-    "meaning": "armaments"
-  },
-  {
     "rank": 26967,
     "word": "消費者",
     "reading": "しょうひしゃ",
@@ -17146,18 +17338,6 @@
     "word": "異母",
     "reading": "いぼ",
     "meaning": "different mother"
-  },
-  {
-    "rank": 26978,
-    "word": "プラネタリウム",
-    "reading": "プラネタリウム",
-    "meaning": "planetarium"
-  },
-  {
-    "rank": 26985,
-    "word": "白兵戦",
-    "reading": "はくへいせん",
-    "meaning": "hand-to-hand combat"
   },
   {
     "rank": 26994,
