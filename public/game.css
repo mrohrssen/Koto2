@@ -3539,14 +3539,23 @@ html, body {
 /* ===== WHACK-A-MOLE MINI GAME ===== */
 
 .wam-container {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--bg-main, #f0ede6);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
   padding: 1rem;
+  padding-top: env(safe-area-inset-top, 1rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wam-container > * {
   width: 100%;
   max-width: 400px;
-  margin: 0 auto;
 }
 
 /* HUD: score + timer */
@@ -3743,9 +3752,11 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 1rem;
   padding: 2rem 1rem;
   text-align: center;
+  flex: 1;
 }
 
 .wam-start-title {
@@ -3764,9 +3775,11 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
   padding: 2rem 1rem;
   text-align: center;
+  flex: 1;
 }
 
 .wam-results-title {
