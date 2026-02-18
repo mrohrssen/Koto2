@@ -96,7 +96,8 @@ export const ROOM_TYPES = {
   shrine: 'shrine',
   quiz: 'quiz',
   wordDiscovery: 'wordDiscovery',
-  dealer: 'dealer'
+  dealer: 'dealer',
+  whackAMole: 'whackAMole'
 };
 
 // ============ ROOM GENERATION ============
@@ -108,7 +109,8 @@ function isSpecialType(type) {
   return type === ROOM_TYPES.shrine ||
          type === ROOM_TYPES.quiz ||
          type === ROOM_TYPES.wordDiscovery ||
-         type === ROOM_TYPES.dealer;
+         type === ROOM_TYPES.dealer ||
+         type === ROOM_TYPES.whackAMole;
 }
 
 /**
@@ -119,6 +121,7 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
   const QUIZ_CHANCE = 0.10;
   const WORD_DISCOVERY_CHANCE = 0.10;
   const DEALER_CHANCE = 0.10;
+  const WHACK_A_MOLE_CHANCE = 0.05;
 
   const queuedType = popTestRoomType();
   let type;
@@ -139,6 +142,8 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
         type = ROOM_TYPES.wordDiscovery;
       } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE) {
         type = ROOM_TYPES.dealer;
+      } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE + WHACK_A_MOLE_CHANCE) {
+        type = ROOM_TYPES.whackAMole;
       } else {
         type = ROOM_TYPES.encounter;
       }
@@ -233,6 +238,9 @@ function createRoom(type, areaId, roomNumber, totalRooms) {
       };
       break;
     }
+    case ROOM_TYPES.whackAMole:
+      room.whackAMole = { score: 0, completed: false };
+      break;
   }
 
   return room;
@@ -257,6 +265,8 @@ export function getRoomEntryNarration(room) {
       return `${roomNum}に入った。知識の泉がある...新しい言葉を発見できそうだ。`;
     case ROOM_TYPES.dealer:
       return `${roomNum}に入った。怪しいロボット商人がいる...「良いボットがあるよ」`;
+    case ROOM_TYPES.whackAMole:
+      return `${roomNum}に入った。不思議なゲーム機がある...`;
     default:
       return `${roomNum}に入った。`;
   }
@@ -271,7 +281,8 @@ export function getRoomActions(room) {
   const isUnfinishedEncounter = room.type === 'encounter' && !room.interacted;
   const isUnfinishedWordDiscovery = room.type === 'wordDiscovery' && !room.interacted;
   const isUnfinishedDealer = room.type === 'dealer' && !room.interacted;
-  if (!isUnfinishedEncounter && !isUnfinishedWordDiscovery && !isUnfinishedDealer) {
+  const isUnfinishedWhackAMole = room.type === 'whackAMole' && !room.interacted;
+  if (!isUnfinishedEncounter && !isUnfinishedWordDiscovery && !isUnfinishedDealer && !isUnfinishedWhackAMole) {
     actions.push({ id: 'proceed', name: '進む', description: '次のエリアへ進む' });
   }
 
@@ -296,6 +307,11 @@ export function getRoomActions(room) {
     case ROOM_TYPES.dealer:
       if (!room.dealer?.visited) {
         actions.push({ id: 'dealer_trade', name: '取引', description: 'ロボット商人と取引する' });
+      }
+      break;
+    case ROOM_TYPES.whackAMole:
+      if (!room.interacted) {
+        actions.push({ id: 'play_whack_a_mole', name: 'プレイ', description: 'ゲームをプレイする' });
       }
       break;
   }
