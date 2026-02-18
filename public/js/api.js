@@ -397,6 +397,17 @@ async function dealerLeave() {
   return apiCall('/dealer-leave', 'POST');
 }
 
+// ============ WHACK-A-MOLE ENDPOINTS ============
+
+/** Get the vocab pool for whack-a-mole mini-game */
+async function getWhackAMolePool() {
+  return apiCall('/whack-a-mole-pool', 'GET');
+}
+
+/** Submit whack-a-mole completion with score */
+async function completeWhackAMole(score) {
+  return apiCall('/whack-a-mole-complete', 'POST', { score });
+}
 
 // ============ VOCAB/JPDB ENDPOINTS ============
 
@@ -645,6 +656,9 @@ export {
   dealerSell,
   dealerBuy,
   dealerLeave,
+  // Whack-a-mole endpoints
+  getWhackAMolePool,
+  completeWhackAMole,
   // Vocab/JPDB endpoints
   sendJpdbReview,
   parseJpdbText,
