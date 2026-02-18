@@ -647,19 +647,22 @@ export class GameManager {
     this.combat.isRobotCombat = true;
     this.combat.swapPhase = true; // Free swap available before first action
 
-    // Assign NPC to this encounter
+    // Assign area-locked NPC to this encounter (one NPC per area, skipped if already met)
+    const areaId = this.run.currentArea?.id || null;
     const usedNpcIds = this.run.usedNpcIds || [];
-    const npc = selectNpcForEncounter((this.run.areasCompleted || 0) + 1, usedNpcIds);
-    this.combat.npcId = npc.id;
-    this.combat.npcData = {
-      id: npc.id,
-      name: npc.name,
-      nameEn: npc.nameEn,
-      greeting: npc.greeting,
-      defeatLine: npc.defeatLine
-    };
-    if (!this.run.usedNpcIds) this.run.usedNpcIds = [];
-    this.run.usedNpcIds.push(npc.id);
+    const npc = selectNpcForEncounter(areaId, usedNpcIds);
+    if (npc) {
+      this.combat.npcId = npc.id;
+      this.combat.npcData = {
+        id: npc.id,
+        name: npc.name,
+        nameEn: npc.nameEn,
+        greeting: npc.greeting,
+        defeatLine: npc.defeatLine
+      };
+      if (!this.run.usedNpcIds) this.run.usedNpcIds = [];
+      this.run.usedNpcIds.push(npc.id);
+    }
 
     this.emitState();
 
