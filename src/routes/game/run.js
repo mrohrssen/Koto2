@@ -19,6 +19,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const quizQuestionsPath = join(__dirname, '../../data/quiz-questions.json');
 const levelsPath = join(__dirname, '../../../data/levels.json');
+const creaturesPath = join(__dirname, '../../../data/creatures.json');
+const itemsPath = join(__dirname, '../../../data/items.json');
+const allCreatures = JSON.parse(readFileSync(creaturesPath, 'utf8'));
+const allItems = JSON.parse(readFileSync(itemsPath, 'utf8'));
 
 function loadQuizQuestions() {
   const data = JSON.parse(readFileSync(quizQuestionsPath, 'utf-8'));
@@ -508,6 +512,49 @@ export default function createRunRoutes({
     } catch (error) {
       console.error('[Discovery] Error completing discovery:', error.message);
       res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Whack-a-Mole: get random pool of creatures + items for matching game
+  router.get('/whack-a-mole-pool', (req, res) => {
+    try {
+      const shuffledCreatures = [...allCreatures].sort(() => Math.random() - 0.5);
+      const shuffledItems = [...allItems].sort(() => Math.random() - 0.5);
+
+      const creaturePool = shuffledCreatures.slice(0, 8).map(c => ({
+        id: c.id,
+        type: 'creature',
+        word: c.baseWord,
+        reading: c.baseReading,
+        meaning: c.baseMeaning,
+        sprite: `/assets/sprites/robots/${c.id}.webp`
+      }));
+
+      const itemPool = shuffledItems.slice(0, 8).map(i => ({
+        id: i.id,
+        type: 'item',
+        word: i.word,
+        reading: i.reading,
+        meaning: i.meaning,
+        sprite: `/assets/sprites/items/${i.id}.webp`
+      }));
+
+      const pool = [...creaturePool, ...itemPool].sort(() => Math.random() - 0.5);
+      res.json({ pool });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to build whack-a-mole pool' });
+    }
+  });
+
+  // Whack-a-Mole: complete game and award credits
+  router.post('/whack-a-mole-complete', (req, res) => {
+    try {
+      const { score } = req.body;
+      const result = req.gameManager.completeWhackAMole(score);
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
     }
   });
 

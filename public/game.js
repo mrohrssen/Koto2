@@ -151,6 +151,8 @@ import {
   submitBefriendAnswer as apiSubmitBefriendAnswer,
   startNpcDialogue,
   respondNpcDialogue,
+  getWhackAMolePool as apiGetWhackAMolePool,
+  completeWhackAMole as apiCompleteWhackAMole,
 } from './js/api.js';
 
 const API_BASE = '';
@@ -350,6 +352,9 @@ function updateGameContent() {
       break;
     case 'dealer':
       economyUI.renderDealerRoom(actions);
+      break;
+    case 'whackAMole':
+      explorationUI.renderWhackAMole();
       break;
     case 'branch_selection':
       console.log('[DEBUG] branch_selection phase. pendingBranch:', gameState.run?.pendingBranch, 'currentRoom:', gameState.run?.currentRoom, 'rooms:', gameState.run?.rooms);
@@ -769,6 +774,10 @@ function setupPhaserEventListeners() {
         updateUI();
         break;
       case 'dealer':
+        await loadGameState();
+        updateUI();
+        break;
+      case 'whackAMole':
         await loadGameState();
         updateUI();
         break;
@@ -1315,6 +1324,8 @@ async function initGame() {
     apiSelectLevel,
     apiGetRobotCollection,
     showCollectionSelect,
+    apiGetWhackAMolePool,
+    apiCompleteWhackAMole,
   });
 
   economyUI.init({

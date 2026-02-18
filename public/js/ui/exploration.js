@@ -102,6 +102,10 @@ let apiPostCombatRefresh = null;
 let apiSelectBranch = null;
 let apiDoorHints = null;
 
+// Whack-a-Mole API
+let apiGetWhackAMolePool = null;
+let apiCompleteWhackAMole = null;
+
 // Speed review API
 let apiGetDueWords = null;
 
@@ -141,6 +145,8 @@ export function init(callbacks) {
   apiSelectLevel = callbacks.apiSelectLevel;
   apiGetRobotCollection = callbacks.apiGetRobotCollection;
   showCollectionSelect = callbacks.showCollectionSelect;
+  apiGetWhackAMolePool = callbacks.apiGetWhackAMolePool;
+  apiCompleteWhackAMole = callbacks.apiCompleteWhackAMole;
 }
 
 // ============ INVENTORY OVERLAY ============
@@ -1103,4 +1109,326 @@ export async function renderWordDiscovery() {
     document.dispatchEvent(new CustomEvent('discovery-card-swiped', { detail: e.detail }));
   };
   document.addEventListener('test-swipe', testSwipeHandler, { once: true });
+}
+
+// ============ WHACK-A-MOLE MINI GAME ============
+
+/** Whack-a-Mole mini game — match Japanese words to creature/item sprites */
+export async function renderWhackAMole() {
+  const gameState = getGameState();
+  const room = gameState.run.rooms[gameState.run.currentRoom];
+
+  // Already completed — just show proceed
+  if (room?.interacted) {
+    actions.setContent(`
+      <div class="wam-results">
+        <div class="wam-results-title">ゲーム完了!</div>
+        <div class="wam-results-score">Score: ${room.whackAMole?.score || 0}</div>
+      </div>
+    `);
+    return;
+  }
+
+  // Fetch pool from server
+  let pool;
+  try {
+    const resp = await apiGetWhackAMolePool();
+    pool = resp.pool;
+  } catch (err) {
+    actions.setContent('<div class="wam-error">Failed to load game data</div>');
+    return;
+  }
+
+  if (!pool || pool.length < 9) {
+    actions.setContent('<div class="wam-error">Not enough creatures/items for game</div>');
+    return;
+  }
+
+  // Show start screen
+  actions.setContent(`
+    <div class="wam-container">
+      <div class="wam-start">
+        <div class="wam-start-title">ワードマッチ!</div>
+        <div class="wam-start-desc">Match the word to the correct creature or item</div>
+        <button class="action-btn action-btn-primary wam-start-btn">プレイ</button>
+      </div>
+    </div>
+  `);
+
+  document.querySelector('.wam-start-btn')?.addEventListener('click', () => {
+    startWhackAMoleGame(pool, room);
+  });
+}
+
+function startWhackAMoleGame(pool, room) {
+  let score = 0;
+  let timeLeft = 30.0;
+  let targetIndex = 0;
+  let tiles = Array(9).fill(null).map(() => ({ faceUp: false, poolIndex: -1, isCorrect: false }));
+  let gameOver = false;
+  let flipTimeout = null;
+  let timerInterval = null;
+
+  // Pick initial target
+  targetIndex = Math.floor(Math.random() * pool.length);
+
+  function formatTime(t) {
+    const secs = Math.max(0, Math.ceil(t));
+    return secs.toString().padStart(2, '0');
+  }
+
+  // Render game UI
+  function renderGameUI() {
+    const target = pool[targetIndex];
+    actions.setContent(`
+      <div class="wam-container">
+        <div class="wam-hud">
+          <div class="wam-score">★ ${score}</div>
+          <div class="wam-timer" id="wam-timer">${formatTime(timeLeft)}</div>
+        </div>
+        <div class="wam-word-card">
+          <div class="wam-word-kanji">${target.word}</div>
+          <div class="wam-word-reading">${target.reading}</div>
+          <div class="wam-word-meaning">${target.meaning}</div>
+        </div>
+        <div class="wam-grid" id="wam-grid">
+          ${tiles.map((_, i) => `
+            <div class="wam-tile" data-index="${i}">
+              <div class="wam-tile-inner">
+                <div class="wam-tile-front"></div>
+                <div class="wam-tile-back">
+                  <img class="wam-tile-img" src="" alt="" />
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `);
+
+    // Bind click handlers
+    document.querySelectorAll('.wam-tile').forEach(tile => {
+      tile.addEventListener('click', () => handleTileTap(parseInt(tile.dataset.index)));
+    });
+  }
+
+  function updateTimerDisplay() {
+    const el = document.getElementById('wam-timer');
+    if (!el) return;
+    const secs = Math.max(0, Math.ceil(timeLeft));
+    el.textContent = secs.toString().padStart(2, '0');
+    el.classList.toggle('wam-timer-warn', timeLeft <= 10 && timeLeft > 5);
+    el.classList.toggle('wam-timer-danger', timeLeft <= 5);
+  }
+
+  function updateWordCard() {
+    const target = pool[targetIndex];
+    const kanji = document.querySelector('.wam-word-kanji');
+    const reading = document.querySelector('.wam-word-reading');
+    const meaning = document.querySelector('.wam-word-meaning');
+    if (kanji) kanji.textContent = target.word;
+    if (reading) reading.textContent = target.reading;
+    if (meaning) meaning.textContent = target.meaning;
+  }
+
+  function updateScoreDisplay() {
+    const el = document.querySelector('.wam-score');
+    if (el) el.textContent = `★ ${score}`;
+  }
+
+  // Tile state management
+  function setTileFaceUp(index, poolIdx, isCorrect) {
+    tiles[index] = { faceUp: true, poolIndex: poolIdx, isCorrect };
+    const tileEl = document.querySelector(`.wam-tile[data-index="${index}"]`);
+    if (!tileEl) return;
+    tileEl.classList.add('wam-flipped');
+    const img = tileEl.querySelector('.wam-tile-img');
+    if (img) img.src = pool[poolIdx].sprite;
+  }
+
+  function setTileFaceDown(index) {
+    tiles[index] = { faceUp: false, poolIndex: -1, isCorrect: false };
+    const tileEl = document.querySelector(`.wam-tile[data-index="${index}"]`);
+    if (!tileEl) return;
+    tileEl.classList.remove('wam-flipped');
+  }
+
+  // Get a random distractor index (not the current target)
+  function randomDistractorIndex() {
+    let idx;
+    do {
+      idx = Math.floor(Math.random() * pool.length);
+    } while (idx === targetIndex);
+    return idx;
+  }
+
+  // Ensure exactly one correct tile is visible
+  function ensureCorrectTileVisible() {
+    const correctTiles = tiles.filter(t => t.faceUp && t.isCorrect);
+    if (correctTiles.length === 0) {
+      const candidates = [];
+      for (let i = 0; i < 9; i++) candidates.push(i);
+      const shuffled = candidates.sort(() => Math.random() - 0.5);
+      // Prefer a face-down tile
+      const downTile = shuffled.find(i => !tiles[i].faceUp);
+      const target = downTile !== undefined ? downTile : shuffled[0];
+      setTileFaceUp(target, targetIndex, true);
+    }
+  }
+
+  // Flip event: randomly flip a tile up or down
+  function flipEvent() {
+    if (gameOver) return;
+
+    const faceUpCount = tiles.filter(t => t.faceUp).length;
+    const faceDownCount = 9 - faceUpCount;
+
+    // Bias: try to keep 4-5 face up
+    let shouldFlipUp;
+    if (faceUpCount <= 3) shouldFlipUp = true;
+    else if (faceUpCount >= 7) shouldFlipUp = false;
+    else shouldFlipUp = Math.random() < 0.5;
+
+    if (shouldFlipUp && faceDownCount > 0) {
+      const downIndices = tiles.map((t, i) => (!t.faceUp ? i : -1)).filter(i => i >= 0);
+      const pick = downIndices[Math.floor(Math.random() * downIndices.length)];
+      setTileFaceUp(pick, randomDistractorIndex(), false);
+    } else if (!shouldFlipUp && faceUpCount > 1) {
+      const upIndices = tiles.map((t, i) => (t.faceUp && !t.isCorrect ? i : -1)).filter(i => i >= 0);
+      if (upIndices.length > 0) {
+        const pick = upIndices[Math.floor(Math.random() * upIndices.length)];
+        setTileFaceDown(pick);
+      }
+    }
+
+    ensureCorrectTileVisible();
+  }
+
+  // Handle tile tap
+  function handleTileTap(index) {
+    if (gameOver) return;
+    const tile = tiles[index];
+    if (!tile.faceUp) return;
+
+    const tileEl = document.querySelector(`.wam-tile[data-index="${index}"]`);
+
+    if (tile.isCorrect) {
+      // HIT
+      score++;
+      timeLeft = Math.min(timeLeft + 5, 99);
+      updateScoreDisplay();
+      updateTimerDisplay();
+
+      // Non-blocking celebration
+      if (tileEl) {
+        tileEl.classList.add('wam-hit');
+        const plus = document.createElement('div');
+        plus.className = 'wam-plus-one';
+        plus.textContent = '+1';
+        tileEl.appendChild(plus);
+        setTimeout(() => {
+          tileEl.classList.remove('wam-hit');
+          plus.remove();
+        }, 600);
+      }
+
+      // Mark old correct tile as distractor
+      for (let i = 0; i < 9; i++) {
+        if (tiles[i].isCorrect) {
+          tiles[i].isCorrect = false;
+          tiles[i].poolIndex = randomDistractorIndex();
+          const img = document.querySelector(`.wam-tile[data-index="${i}"] .wam-tile-img`);
+          if (img) img.src = pool[tiles[i].poolIndex].sprite;
+        }
+      }
+
+      // Choose new target (different from old)
+      const oldTarget = targetIndex;
+      do {
+        targetIndex = Math.floor(Math.random() * pool.length);
+      } while (targetIndex === oldTarget && pool.length > 1);
+
+      updateWordCard();
+      ensureCorrectTileVisible();
+
+      try { playSFX('correct'); } catch (e) { /* sfx optional */ }
+    } else {
+      // MISS
+      timeLeft = Math.max(0, timeLeft - 3);
+      updateTimerDisplay();
+
+      if (tileEl) {
+        tileEl.classList.add('wam-miss');
+        setTimeout(() => tileEl.classList.remove('wam-miss'), 400);
+      }
+
+      if (timeLeft <= 0) endGame();
+    }
+  }
+
+  // End game
+  async function endGame() {
+    gameOver = true;
+    clearTimeout(flipTimeout);
+    clearInterval(timerInterval);
+
+    try {
+      const result = await apiCompleteWhackAMole(score);
+      updateGameState(result.state);
+    } catch (err) {
+      // Still show results even if save fails
+    }
+
+    actions.setContent(`
+      <div class="wam-container">
+        <div class="wam-results">
+          <div class="wam-results-title">タイムアップ!</div>
+          <div class="wam-results-score">★ ${score}</div>
+          <div class="wam-results-credits">${score} credits earned</div>
+          <button class="action-btn action-btn-primary wam-continue-btn">Continue</button>
+        </div>
+      </div>
+    `);
+
+    document.querySelector('.wam-continue-btn')?.addEventListener('click', () => {
+      updateUI();
+    });
+  }
+
+  // Initialize game
+  renderGameUI();
+
+  // Set up initial board: 4-5 face-up tiles
+  const initialUp = 4 + Math.floor(Math.random() * 2);
+  const indices = [0,1,2,3,4,5,6,7,8].sort(() => Math.random() - 0.5);
+
+  // First, place the correct answer
+  setTileFaceUp(indices[0], targetIndex, true);
+
+  // Then fill remaining initial tiles with distractors
+  for (let i = 1; i < initialUp; i++) {
+    setTileFaceUp(indices[i], randomDistractorIndex(), false);
+  }
+
+  // Start flip scheduling (random interval 1-2s)
+  function scheduleFlip() {
+    if (gameOver) return;
+    const delay = 1000 + Math.random() * 1000;
+    flipTimeout = setTimeout(() => {
+      flipEvent();
+      scheduleFlip();
+    }, delay);
+  }
+  scheduleFlip();
+
+  // Start timer countdown (update every 100ms for smooth display)
+  timerInterval = setInterval(() => {
+    if (gameOver) return;
+    timeLeft -= 0.1;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      timeLeft = 0;
+      endGame();
+    }
+  }, 100);
 }
