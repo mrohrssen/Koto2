@@ -554,7 +554,7 @@ export default function createRunRoutes({
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      res.status(400).json({ error: err.message });
     }
   });
 
