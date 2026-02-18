@@ -14,15 +14,15 @@ import {
 } from '../../src/game/services/npc-service.js';
 
 describe('NPC Service - loadNpcs', () => {
-  it('loads all NPCs (>=10 entries)', () => {
+  it('loads all NPCs (5 entries)', () => {
     const npcs = loadNpcs();
     const ids = Object.keys(npcs);
-    assert.ok(ids.length >= 10, `Expected >=10 NPCs, got ${ids.length}`);
+    assert.strictEqual(ids.length, 5, `Expected 5 NPCs, got ${ids.length}`);
   });
 
-  it('npc_01 exists', () => {
+  it('nagi exists', () => {
     const npcs = loadNpcs();
-    assert.ok(npcs.npc_01, 'npc_01 should exist');
+    assert.ok(npcs.nagi, 'nagi should exist');
   });
 
   it('NPCs have required fields', () => {
@@ -31,6 +31,7 @@ describe('NPC Service - loadNpcs', () => {
       assert.ok(npc.id, `${id} missing id`);
       assert.ok(npc.name, `${id} missing name`);
       assert.ok(npc.nameEn, `${id} missing nameEn`);
+      assert.ok(npc.area, `${id} missing area`);
       assert.ok(npc.personality, `${id} missing personality`);
       assert.ok(npc.greeting, `${id} missing greeting`);
       assert.ok(npc.postCombat, `${id} missing postCombat`);
@@ -47,33 +48,27 @@ describe('NPC Service - loadNpcs', () => {
 });
 
 describe('NPC Service - selectNpcForEncounter', () => {
-  it('returns an NPC object', () => {
-    const npc = selectNpcForEncounter(1, []);
+  it('returns NPC matching the area', () => {
+    const npc = selectNpcForEncounter('okunomori', []);
     assert.ok(npc, 'should return an NPC');
-    assert.ok(npc.id, 'NPC should have an id');
-    assert.ok(npc.name, 'NPC should have a name');
+    assert.strictEqual(npc.id, 'nagi');
+    assert.strictEqual(npc.area, 'okunomori');
   });
 
-  it('avoids used IDs', () => {
-    const npcs = loadNpcs();
-    const allIds = Object.keys(npcs);
-    // Mark all but one as used
-    const usedIds = allIds.slice(1);
-    const remaining = allIds[0];
-
-    // Run multiple times to confirm it picks the remaining one
-    for (let i = 0; i < 10; i++) {
-      const npc = selectNpcForEncounter(1, usedIds);
-      assert.strictEqual(npc.id, remaining, `Should pick ${remaining} when all others are used`);
-    }
+  it('returns null for unknown area', () => {
+    const npc = selectNpcForEncounter('nonexistent-area', []);
+    assert.strictEqual(npc, null, 'should return null for area with no NPC');
   });
 
-  it('falls back to any NPC when all are used', () => {
-    const npcs = loadNpcs();
-    const allIds = Object.keys(npcs);
-    const npc = selectNpcForEncounter(1, allIds);
-    assert.ok(npc, 'should still return an NPC even when all IDs are used');
-    assert.ok(allIds.includes(npc.id), 'returned NPC should be from the roster');
+  it('returns null when area NPC is already used', () => {
+    const npc = selectNpcForEncounter('okunomori', ['nagi']);
+    assert.strictEqual(npc, null, 'should return null when area NPC already used');
+  });
+
+  it('returns NPC when used list has unrelated IDs', () => {
+    const npc = selectNpcForEncounter('okunomori', ['makoto', 'sora']);
+    assert.ok(npc, 'should return nagi despite other NPCs being used');
+    assert.strictEqual(npc.id, 'nagi');
   });
 });
 

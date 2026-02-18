@@ -17,19 +17,18 @@ export function loadNpcs() {
 }
 
 /**
- * Picks a random NPC from roster, avoids IDs in alreadyUsedNpcIds.
- * Falls back to any NPC if all are used.
+ * Picks the NPC assigned to areaId, skipping if already used.
+ * Returns null if no matching NPC is available.
  */
-export function selectNpcForEncounter(areaNumber, alreadyUsedNpcIds) {
+export function selectNpcForEncounter(areaId, alreadyUsedNpcIds) {
   const npcs = loadNpcs();
   const allEntries = Object.values(npcs);
   const usedSet = new Set(alreadyUsedNpcIds);
 
-  let available = allEntries.filter(npc => !usedSet.has(npc.id));
+  const available = allEntries.filter(npc => npc.area === areaId && !usedSet.has(npc.id));
 
-  // Fall back to full roster if all are used
   if (available.length === 0) {
-    available = allEntries;
+    return null;
   }
 
   const idx = Math.floor(Math.random() * available.length);
