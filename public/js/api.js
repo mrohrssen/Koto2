@@ -370,11 +370,6 @@ async function startEncounter() {
   return apiCall('/start-encounter', 'POST');
 }
 
-/** Start a boss encounter */
-async function startBoss() {
-  return apiCall('/start-boss', 'POST');
-}
-
 // ============ SHOP/ECONOMY ENDPOINTS ============
 
 /** Skip the current shop */
@@ -629,7 +624,6 @@ export {
   rewriteNarration,
   // Combat endpoints
   startEncounter,
-  startBoss,
   startRobotEncounter,
   robotCombatCycle,
   useRobotUltimate,

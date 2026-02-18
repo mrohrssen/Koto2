@@ -115,7 +115,6 @@ import {
   proceed as apiProceed,
   roomEncounter as apiRoomEncounter,
   startEncounter as apiStartEncounter,
-  startBoss as apiStartBoss,
   shopSkip as apiShopSkip,
   sendJpdbReview as apiSendJpdbReview,
   getDueWords as apiGetDueWords,
@@ -619,23 +618,6 @@ async function startEncounter() {
       await combatLoopUI.showNpcGreeting(result.npc);
     }
     await delay(300);
-    startCombatLoop();
-  }
-}
-
-async function startBossEncounter() {
-  const result = await apiStartBoss();
-  if (result?.state) {
-    updateGameState(result.state);
-    updateUI();
-    const enemy = gameState.combat?.enemy;
-    if (result?.dialogue || enemy?.dialogue?.possessed) {
-      const text = result.dialogue || (Array.isArray(enemy.dialogue.possessed)
-        ? enemy.dialogue.possessed[Math.floor(Math.random() * enemy.dialogue.possessed.length)]
-        : enemy.dialogue.possessed);
-      await showEnemyDialogue(text, 'possessed');
-    }
-    await delay(500);
     startCombatLoop();
   }
 }
@@ -1306,7 +1288,6 @@ async function initGame() {
     actions,
     scene: { ...scene, showNarration: (text, opts) => narrationBox.show(text, opts), forceHideNarration: () => narrationBox.forceHide() },
     startEncounter,
-    startBossEncounter,
     startNewRun,
     returnToHub,
     apiGetAreaOptions,

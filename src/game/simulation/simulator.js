@@ -76,14 +76,11 @@ function simulateSingleRun(config) {
     gm.run.player.hp = gm.run.player.maxHp;
   }
 
-  // Select starting ward (always nerima for consistency)
-  const startingWards = gm.getStartingWardOptions();
-  if (startingWards && startingWards.length > 0) {
-    gm.selectStartingWard(startingWards[0].id);
+  // Select starting area (always first option for consistency)
+  const areaOptions = gm.getAreaOptions();
+  if (areaOptions && areaOptions.length > 0) {
+    gm.selectArea(areaOptions[0].id);
   }
-
-  // Enter the floor (generates rooms)
-  gm.enterFloor();
 
   // Game loop
   let turnCount = 0;
@@ -99,7 +96,7 @@ function simulateSingleRun(config) {
     const phase = gm.getPhase();
 
     if (config.verbose && turnCount <= 20) {
-      console.log(`  Turn ${turnCount}: phase=${phase}, floor=${gm.run?.floor}, room=${gm.run?.currentRoom}`);
+      console.log(`  Turn ${turnCount}: phase=${phase}, area=${gm.run?.currentArea?.id}, room=${gm.run?.currentRoom}`);
     }
 
     switch (phase) {
@@ -118,10 +115,6 @@ function simulateSingleRun(config) {
         handleCombat(gm, ai);
         break;
 
-      case 'boss_ready':
-        gm.startBossEncounter();
-        break;
-
       case 'post_combat_shop':
         // Auto-allocate any stat points earned from level ups
         autoAllocateStats(gm);
@@ -129,12 +122,12 @@ function simulateSingleRun(config) {
         handlePostCombatShop(gm, config);
         break;
 
-      case 'floor_complete':
-      case 'ward_selection':
+      case 'area_complete':
+      case 'area_selection':
         if (config.verbose) {
-          console.log(`  Ward selection: floor=${gm.run?.floor}, bossDefeated=${gm.run?.bossDefeated}`);
+          console.log(`  Area selection: areasCompleted=${gm.run?.areasCompleted}`);
         }
-        handleWardSelection(gm);
+        handleAreaSelection(gm);
         break;
 
       default:
@@ -219,10 +212,6 @@ function handleRoom(gm, ai) {
     case 'blacksmith':
       // Skip shops for speed
       room.interacted = true;
-      break;
-
-    case 'boss':
-      gm.startBossEncounter();
       break;
 
     default:
@@ -339,19 +328,16 @@ function handlePostCombatShop(gm, config) {
 }
 
 /**
- * Handle ward selection between floors
+ * Handle area selection between areas
  */
-function handleWardSelection(gm) {
-  const options = gm.getNextWardOptions();
+function handleAreaSelection(gm) {
+  const options = gm.getAreaOptions();
   if (options && options.length > 0) {
-    // Pick first available ward
-    gm.selectNextWard(options[0].id);
+    gm.selectArea(options[0].id);
   } else {
-    // No next ward = game complete (palace boss defeated)
-    // Mark run as complete
     gm.run.active = false;
     gm.run.stats = gm.run.stats || {};
-    gm.run.stats.floorsCleared = gm.run.floor; // Mark as full clear
+    gm.run.stats.areasCleared = gm.run.areasCompleted;
   }
 }
 
@@ -362,16 +348,16 @@ function extractRunResult(gm) {
   const run = gm.run;
   const player = run?.player || gm.player;
 
-  // Victory if we cleared floor 5 (palace) or more
-  const floorsCleared = run?.stats?.floorsCleared || run?.floor || 1;
-  const victory = floorsCleared >= 5 && run?.stats?.bossesDefeated >= 5;
+  // Victory if we cleared 10 areas
+  const areasCompleted = run?.areasCompleted || 0;
+  const areasToWin = run?.areasToWin || 10;
+  const victory = areasCompleted >= areasToWin;
 
   return {
     victory,
-    floor: run?.floor || 1,
-    floorsCleared: run?.stats?.floorsCleared || 0,
+    areasCompleted,
+    areasCleared: run?.stats?.areasCleared || 0,
     enemiesDefeated: run?.stats?.enemiesDefeated || 0,
-    bossesDefeated: run?.stats?.bossesDefeated || 0,
     damageDealt: run?.stats?.damageDealt || 0,
     damageTaken: run?.stats?.damageTaken || 0,
     creditsEarned: run?.stats?.creditsEarned || 0,

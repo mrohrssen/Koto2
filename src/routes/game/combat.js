@@ -112,25 +112,6 @@ export default function createCombatRoutes({
     }
   });
 
-  // Start boss encounter
-  router.post('/start-boss', async (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      const encounter = gameManager.startBossEncounter();
-      const narration = await generateGameNarration('bossStart', {
-        enemy: encounter.enemy,
-        player: gameManager.run.player,
-        allies: gameManager.combat?.allies || [],
-        isFinalBoss: encounter.isFinalBoss
-      }, req.userKeys);
-
-      req.saveGame();
-      res.json({ ...encounter, state: req.getEnrichedGameState(), narration });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
   // ============ ROBOT COMBAT ============
 
   // Start robot encounter
