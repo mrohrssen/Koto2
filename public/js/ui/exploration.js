@@ -2,24 +2,23 @@
  * @file exploration.js - Non-Combat Navigation UI
  *
  * PURPOSE:
- * Handles all non-combat game phases: hub, ward selection, room exploration,
+ * Handles all non-combat game phases: hub, area selection, room exploration,
  * shrine upgrades, and quiz encounters. Renders appropriate buttons and
  * manages phase-specific interactions.
  *
  * KEY EXPORTS:
  * - init(callbacks): Initialize with game state and API callbacks
  * - renderHub(): Show hub phase (Equip Bots + Infiltrate buttons)
- * - renderWardSelection(): Show ward picker cards
+ * - renderAreaSelection(): Show area picker cards
  * - renderExploring(): Show Proceed/Fight buttons for room navigation
- * - renderBossReady(): Show Boss Fight button
- * - renderFloorComplete(): Show Continue button after floor cleared
+ * - renderAreaComplete(): Show Continue button after area cleared
  * - renderRunEnded(): Show Return to Hub button
  * - renderShrine(): Show robot level-up selection
  * - renderQuiz(): Show quiz question and reward selection
  *
  * DEPENDENCIES:
  * - Callbacks injected via init(): getGameState, updateGameState, updateUI
- * - API functions: apiGetStartingWards, apiSelectStartingWard, apiProceed, etc.
+ * - API functions: apiGetAreaOptions, apiSelectArea, apiProceed, etc.
  * - actions module: For button rendering
  * - scene module: For narration display
  */
@@ -36,10 +35,6 @@ let updateUI = null;
 let actions = null;
 let sceneModule = null;
 let startEncounter = null;
-let startBossEncounter = null;
-let nextFloor = null;
-let continueEndless = null;
-let returnToHubFromVictory = null;
 let startNewRun = null;
 let returnToHub = null;
 
@@ -87,10 +82,9 @@ let discoveryState = {
 };
 
 // API functions
-let apiGetStartingWards = null;
-let apiSelectStartingWard = null;
-let apiGetNextWardOptions = null;
-let apiSelectNextWard = null;
+let apiGetAreaOptions = null;
+let apiSelectArea = null;
+let apiReturnToHub = null;
 let apiProceed = null;
 let apiRoomEncounter = null;
 let apiShrineUpgrade = null;
@@ -124,16 +118,11 @@ export function init(callbacks) {
   actions = callbacks.actions;
   sceneModule = callbacks.scene;
   startEncounter = callbacks.startEncounter;
-  startBossEncounter = callbacks.startBossEncounter;
-  nextFloor = callbacks.nextFloor;
-  continueEndless = callbacks.continueEndless;
-  returnToHubFromVictory = callbacks.returnToHubFromVictory;
   startNewRun = callbacks.startNewRun;
   returnToHub = callbacks.returnToHub;
-  apiGetStartingWards = callbacks.apiGetStartingWards;
-  apiSelectStartingWard = callbacks.apiSelectStartingWard;
-  apiGetNextWardOptions = callbacks.apiGetNextWardOptions;
-  apiSelectNextWard = callbacks.apiSelectNextWard;
+  apiGetAreaOptions = callbacks.apiGetAreaOptions;
+  apiSelectArea = callbacks.apiSelectArea;
+  apiReturnToHub = callbacks.apiReturnToHub;
   apiProceed = callbacks.apiProceed;
   apiRoomEncounter = callbacks.apiRoomEncounter;
   apiShrineUpgrade = callbacks.apiShrineUpgrade;
@@ -349,8 +338,8 @@ export async function renderLevelSelect() {
   });
 }
 
-/** Ward selection — show ward cards, proceed button */
-export async function renderWardSelection() {
+/** Area selection — show area cards, proceed button */
+export async function renderAreaSelection() {
   const gameState = getGameState();
 
   // Skip if starting chip shop is active - chip selection will render instead
@@ -358,47 +347,46 @@ export async function renderWardSelection() {
     return;
   }
 
-  let wards;
-  if (!gameState.run?.currentWard) {
-    wards = await apiGetStartingWards();
-  } else {
-    wards = await apiGetNextWardOptions();
-  }
+  const areas = await apiGetAreaOptions();
 
-  if (!wards || !wards.length) {
-    actions.setContent('<p style="text-align:center">No wards available</p>');
+  if (!areas || !areas.length) {
+    actions.setContent('<p style="text-align:center">No areas available</p>');
     return;
   }
 
-  let selectedWardId = null;
+  let selectedAreaId = null;
 
-  const wardHtml = wards.map(w => `
-    <div class="ward-option" data-ward-id="${w.id}">
-      <strong>${w.nameEn || w.name}</strong>
-      <small>${w.description || ''}</small>
+  const areaHtml = areas.map(a => `
+    <div class="ward-option" data-area-id="${a.id}">
+      <strong>${a.nameEn || a.name}</strong>
+      <small>${a.theme || ''}</small>
     </div>
   `).join('');
 
+  const areasCompleted = gameState.run?.areasCompleted || 0;
+  const areasToWin = gameState.run?.areasToWin || 10;
+
   actions.setContent(`
-    <div class="ward-selection-list">${wardHtml}</div>
-    <button class="action-btn action-btn-primary" id="ward-proceed-btn" disabled>進む</button>
+    <p style="text-align:center;color:var(--text-secondary);margin-bottom:0.5rem">
+      Area ${areasCompleted + 1} / ${areasToWin}
+    </p>
+    <div class="ward-selection-list">${areaHtml}</div>
+    <button class="action-btn action-btn-primary" id="area-proceed-btn" disabled>進む</button>
   `);
 
   document.querySelectorAll('.ward-option').forEach(el => {
     el.addEventListener('click', () => {
       document.querySelectorAll('.ward-option').forEach(o => o.classList.remove('selected'));
       el.classList.add('selected');
-      selectedWardId = el.dataset.wardId;
-      const btn = document.getElementById('ward-proceed-btn');
+      selectedAreaId = el.dataset.areaId;
+      const btn = document.getElementById('area-proceed-btn');
       if (btn) btn.disabled = false;
     });
   });
 
-  document.getElementById('ward-proceed-btn')?.addEventListener('click', async () => {
-    if (!selectedWardId) return;
-    const result = gameState.run?.currentWard
-      ? await apiSelectNextWard(selectedWardId)
-      : await apiSelectStartingWard(selectedWardId);
+  document.getElementById('area-proceed-btn')?.addEventListener('click', async () => {
+    if (!selectedAreaId) return;
+    const result = await apiSelectArea(selectedAreaId);
     if (result?.state) {
       updateGameState(result.state);
       updateUI();
@@ -551,54 +539,34 @@ export async function renderBranchSelection() {
   });
 }
 
-/** Boss ready phase */
-export function renderBossReady() {
-  actions.setContent(`
-    <button class="action-btn action-btn-tertiary" id="inventory-btn">\uD83D\uDCE6 インベントリ</button>
-    <button class="action-btn action-btn-primary" id="equip-bots-btn">\uD83E\uDD16 ボット装備</button>
-    <button class="action-btn action-btn-secondary" id="boss-fight-btn">\uD83D\uDC32 ボス戦</button>
-  `);
-  document.getElementById('inventory-btn')?.addEventListener('click', showInventory);
-  document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
-    actions.triggerEquipBots();
-  });
-  document.getElementById('boss-fight-btn')?.addEventListener('click', () => {
-    startBossEncounter();
-  });
-}
-
-/** Floor complete — show Continue button */
-export function renderFloorComplete() {
+/** Area complete — proceed to area selection */
+export function renderAreaComplete() {
   const gameState = getGameState();
-  if (gameState.run?.floor > 7) {
-    // Endless mode — continue to next endless floor
-    actions.setContent(`
-      <button class="action-btn action-btn-primary" id="endless-continue-btn">続ける</button>
-    `);
-    document.getElementById('endless-continue-btn')?.addEventListener('click', () => {
-      continueEndless();
-    });
-  } else {
-    actions.setContent(`
-      <button class="action-btn action-btn-primary" id="next-floor-btn">続ける</button>
-    `);
-    document.getElementById('next-floor-btn')?.addEventListener('click', () => {
-      nextFloor();
-    });
-  }
+  const areasCompleted = gameState.run?.areasCompleted || 0;
+  const areasToWin = gameState.run?.areasToWin || 10;
+
+  actions.setContent(`
+    <p style="text-align:center;color:var(--accent-primary);margin-bottom:0.5rem">
+      Area ${areasCompleted} / ${areasToWin} cleared!
+    </p>
+    <button class="action-btn action-btn-primary" id="next-area-btn">次のエリアへ</button>
+  `);
+
+  document.getElementById('next-area-btn')?.addEventListener('click', () => {
+    updateUI();
+  });
 }
 
-/** Run complete (game victory) — show Keep Going / Return to Hub */
+/** Run complete (game victory) — show Return to Hub */
 export function renderRunComplete() {
   actions.setContent(`
-    <button class="action-btn action-btn-primary" id="endless-btn">まだまだ</button>
-    <button class="action-btn action-btn-secondary" id="victory-hub-btn">ハブに戻る</button>
+    <p style="text-align:center;color:var(--accent-primary);margin-bottom:0.5rem">
+      ゲームクリア！おめでとう！
+    </p>
+    <button class="action-btn action-btn-primary" id="victory-hub-btn">ハブに戻る</button>
   `);
-  document.getElementById('endless-btn')?.addEventListener('click', () => {
-    continueEndless();
-  });
   document.getElementById('victory-hub-btn')?.addEventListener('click', () => {
-    returnToHubFromVictory();
+    apiReturnToHub();
   });
 }
 

@@ -36,30 +36,26 @@ describe('BRANCH_SELECTION phase', () => {
 });
 
 describe('generateFloorRooms with branching', () => {
-  it('should generate first room as single, middle rooms as pairs, boss as single', () => {
-    const rooms = generateFloorRooms(1, 4); // 4 room slots + boss = 5 total
+  it('should generate first room as single, rest as branch pairs', () => {
+    const rooms = generateFloorRooms('okunomori', 4); // 4 room slots
 
     // First room: single (not an array)
     assert.strictEqual(Array.isArray(rooms[0]), false);
     assert.strictEqual(rooms[0].roomNumber, 1);
 
-    // Middle rooms (indices 1, 2, 3): pairs (arrays of 2)
+    // Remaining rooms (indices 1, 2, 3): pairs (arrays of 2)
     assert.strictEqual(Array.isArray(rooms[1]), true);
     assert.strictEqual(rooms[1].length, 2);
     assert.strictEqual(Array.isArray(rooms[2]), true);
     assert.strictEqual(rooms[2].length, 2);
     assert.strictEqual(Array.isArray(rooms[3]), true);
     assert.strictEqual(rooms[3].length, 2);
-
-    // Boss room: single
-    assert.strictEqual(Array.isArray(rooms[4]), false);
-    assert.strictEqual(rooms[4].type, ROOM_TYPES.boss);
   });
 
   it('should not have duplicate special types in same branch', () => {
     // Run multiple times to catch randomness
     for (let i = 0; i < 20; i++) {
-      const rooms = generateFloorRooms(1, 5);
+      const rooms = generateFloorRooms('okunomori', 5);
       for (let j = 1; j < rooms.length - 1; j++) {
         const pair = rooms[j];
         if (Array.isArray(pair)) {
@@ -91,8 +87,7 @@ describe('proceedToNextRoom with branching', () => {
       pendingBranch: false,
       roomsExplored: 1,
       stats: { roomsExplored: 1 },
-      runStats: { roomsCleared: 0 },
-      floor: 1
+      runStats: { roomsCleared: 0 }
     };
 
     // Simulate proceeding: check if next is pair

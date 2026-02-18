@@ -110,18 +110,12 @@ import {
   createPlayer as apiCreatePlayer,
   startRun as apiStartRun,
   forfeitRun as apiForfeitRun,
-  getStartingWards as apiGetStartingWards,
-  selectStartingWard as apiSelectStartingWard,
-  getNextWardOptions as apiGetNextWardOptions,
-  selectNextWard as apiSelectNextWard,
+  getAreaOptions as apiGetAreaOptions,
+  selectArea as apiSelectArea,
   proceed as apiProceed,
   roomEncounter as apiRoomEncounter,
   startEncounter as apiStartEncounter,
-  startBoss as apiStartBoss,
   shopSkip as apiShopSkip,
-  nextFloor as apiNextFloor,
-  continueEndless as apiContinueEndless,
-  returnToHubFromVictory as apiReturnToHubFromVictory,
   sendJpdbReview as apiSendJpdbReview,
   getDueWords as apiGetDueWords,
   getAuthHeaders,
@@ -293,7 +287,7 @@ function updateScene() {
 
 function updateChipRow() {
   // Hide row on hub and non-run phases
-  if (!gameState.run && (gameState.phase === 'hub' || gameState.phase === 'no_save' || gameState.phase === 'ward_selection')) {
+  if (!gameState.run && (gameState.phase === 'hub' || gameState.phase === 'no_save' || gameState.phase === 'area_selection')) {
     dom.chipRow.innerHTML = '';
     return;
   }
@@ -316,7 +310,7 @@ function updatePlayerHP() {
     return;
   }
   // Hide HP bar on hub and non-combat phases
-  if (!gameState.phase || gameState.phase === 'hub' || gameState.phase === 'no_save' || gameState.phase === 'ward_selection') {
+  if (!gameState.phase || gameState.phase === 'hub' || gameState.phase === 'no_save' || gameState.phase === 'area_selection') {
     hpBar.setVisible(false);
     return;
   }
@@ -337,16 +331,13 @@ function updateGameContent() {
     case 'hub':
       explorationUI.renderHub();
       break;
-    case 'ward_selection':
-      explorationUI.renderWardSelection();
+    case 'area_selection':
+      explorationUI.renderAreaSelection();
       break;
     case 'exploring':
     case 'room':
     case 'room_encounter':
       explorationUI.renderExploring();
-      break;
-    case 'boss_ready':
-      explorationUI.renderBossReady();
       break;
     case 'shrine':
       explorationUI.renderShrine();
@@ -373,8 +364,8 @@ function updateGameContent() {
     case 'npc_dialogue':
       // Handled by combat-loop's runNpcDialogue()
       break;
-    case 'floor_complete':
-      explorationUI.renderFloorComplete();
+    case 'area_complete':
+      explorationUI.renderAreaComplete();
       break;
     case 'run_complete':
       explorationUI.renderRunComplete();
@@ -631,46 +622,6 @@ async function startEncounter() {
   }
 }
 
-async function startBossEncounter() {
-  const result = await apiStartBoss();
-  if (result?.state) {
-    updateGameState(result.state);
-    updateUI();
-    const enemy = gameState.combat?.enemy;
-    if (result?.dialogue || enemy?.dialogue?.possessed) {
-      const text = result.dialogue || (Array.isArray(enemy.dialogue.possessed)
-        ? enemy.dialogue.possessed[Math.floor(Math.random() * enemy.dialogue.possessed.length)]
-        : enemy.dialogue.possessed);
-      await showEnemyDialogue(text, 'possessed');
-    }
-    await delay(500);
-    startCombatLoop();
-  }
-}
-
-async function nextFloor() {
-  const result = await apiNextFloor();
-  if (result?.state) {
-    updateGameState(result.state);
-    updateUI();
-  }
-}
-
-async function continueEndless() {
-  const result = await apiContinueEndless();
-  if (result?.state) {
-    updateGameState(result.state);
-    updateUI();
-  }
-}
-
-async function returnToHubFromVictory() {
-  const result = await apiReturnToHubFromVictory();
-  if (result?.state) {
-    updateGameState(result.state);
-    updateUI();
-  }
-}
 
 async function returnToHub() {
   if (combatLoopUI.isCombatActive()) {
@@ -1337,16 +1288,11 @@ async function initGame() {
     actions,
     scene: { ...scene, showNarration: (text, opts) => narrationBox.show(text, opts), forceHideNarration: () => narrationBox.forceHide() },
     startEncounter,
-    startBossEncounter,
-    nextFloor,
-    continueEndless,
-    returnToHubFromVictory,
     startNewRun,
     returnToHub,
-    apiGetStartingWards,
-    apiSelectStartingWard,
-    apiGetNextWardOptions,
-    apiSelectNextWard,
+    apiGetAreaOptions,
+    apiSelectArea,
+    apiReturnToHub: returnToHub,
     apiProceed,
     apiRoomEncounter,
     apiShrineUpgrade,

@@ -32,11 +32,11 @@
  * GAME PHASES (via phase-machine.js):
  * - 'no_save' - No player exists
  * - 'hub' - In town between runs
- * - 'ward_selection' - Choosing starting/next ward
+ * - 'area_selection' - Choosing area
  * - 'exploring' / 'room' / 'room_encounter' - Dungeon navigation
  * - 'combat' / 'victory' / 'defeat' - Battle states
  * - 'post_combat_shop' - Buying drops after combat
- * - 'boss_defeated' / 'run_complete' - Victory states
+ * - 'area_complete' / 'run_complete' - Victory states
  *
  * DEPENDENCIES:
  * - ./services/combat-service.js - Combat logic
@@ -59,7 +59,7 @@ import {
 
 import { generateEnemy, selectEnemyIntent } from './enemies.js';
 import { determineTurnOrder } from './combat.js';
-import { getRoomActions, getStartingWardOptions } from './rooms.js';
+import { getRoomActions, getAreaSelectionOptions } from './rooms.js';
 import { derivePhase } from './phase-machine.js';
 import { CombatService, ExplorationService } from './services/index.js';
 import { logger } from '../logger.js';
@@ -189,7 +189,7 @@ export class GameManager {
 
     const essence = calculateEssenceReward(
       this.run.stats,
-      this.run.floor,
+      this.run.areasCompleted || 0,
       isVictory
     );
 
@@ -221,8 +221,9 @@ export class GameManager {
     stats.totalDamageTaken += runStats.damageTaken || 0;
     stats.totalCreditsEarned += runStats.creditsEarned || 0;
 
-    if (this.run.floor > stats.highestFloor) {
-      stats.highestFloor = this.run.floor;
+    const areasCleared = this.run.areasCompleted || 0;
+    if (areasCleared > (stats.highestAreasCleared || 0)) {
+      stats.highestAreasCleared = areasCleared;
     }
 
     // Play time
@@ -338,23 +339,23 @@ export class GameManager {
     return {
       player: player,
       run: this.run ? {
-        floor: this.run.floor,
-        maxFloors: this.run.maxFloors,
-        background: this.run.background || `floor${this.run.floor}.webp`,
+        // Area system
+        currentArea: this.run.currentArea,
+        areasCompleted: this.run.areasCompleted,
+        areasToWin: this.run.areasToWin,
+        areaPath: this.run.areaPath,
+        areaSelectionRequired: this.run.areaSelectionRequired,
+        areaCleared: this.run.areaCleared,
+        background: this.run.background || 'floor1.webp',
+        // Room state
         currentRoom: this.run.currentRoom,
         totalRooms: this.run.rooms?.length || 0,
         roomsExplored: this.run.roomsExplored,
         encountersCompleted: this.run.encountersCompleted,
         encountersNeeded: this.run.encountersNeeded,
-        bossDefeated: this.run.bossDefeated,
         active: this.run.active,
         levelId: this.run.levelId,
         stats: this.run.stats,
-        // Ward path system (Phase 12)
-        currentWard: this.run.currentWard,
-        wardPath: this.run.wardPath,
-        wardSelectionRequired: this.run.wardSelectionRequired,
-        // Branch selection system
         pendingBranch: this.run.pendingBranch,
         selectedRooms: this.run.selectedRooms,
         rooms: this.run.rooms,
@@ -449,7 +450,7 @@ export class GameManager {
       }
     }
 
-    logger.info('[GameManager] Run started:', { floor: this.run.floor, playerHp: this.run.player.hp });
+    logger.info('[GameManager] Run started:', { playerHp: this.run.player.hp });
 
     // Reset credits to base starting value (before meta bonuses)
     this.run.player.credits = BASE_STARTING_CREDITS;
@@ -462,8 +463,8 @@ export class GameManager {
     // Reset HP to full at start of run
     this.run.player.hp = this.run.player.maxHp;
 
-    // Ward selection is required at start
-    this.run.wardSelectionRequired = true;
+    // Area selection is required at start
+    this.run.areaSelectionRequired = true;
 
     // Initialize robot starter(s) if provided
     const ids = starterIds || (starterId ? [starterId] : null);
@@ -475,48 +476,19 @@ export class GameManager {
 
     return {
       run: this.run,
-      wardSelectionRequired: true,
-      wardOptions: getStartingWardOptions()
+      areaSelectionRequired: true,
+      areaOptions: getAreaSelectionOptions()
     };
   }
 
-  // ============ WARD PATH SELECTION ============
+  // ============ AREA SELECTION ============
 
-  /**
-   * Get starting ward options for run start
-   */
-  getStartingWardOptions() {
-    return this.explorationService.getStartingWardOptions();
+  getAreaOptions() {
+    return this.explorationService.getAreaOptions();
   }
 
-  /**
-   * Select starting ward for a new run
-   * @param {string} wardId - Ward ID (e.g., 'nerima' or 'setagaya')
-   */
-  selectStartingWard(wardId) {
-    return this.explorationService.selectStartingWard(wardId);
-  }
-
-  /**
-   * Get next ward options after clearing current ward (boss defeated)
-   */
-  getNextWardOptions() {
-    return this.explorationService.getNextWardOptions();
-  }
-
-  /**
-   * Select next ward after defeating boss
-   * @param {string} wardId - Ward ID to advance to
-   */
-  selectNextWard(wardId) {
-    return this.explorationService.selectNextWard(wardId);
-  }
-
-  /**
-   * Enter a floor
-   */
-  enterFloor() {
-    return this.explorationService.enterFloor();
+  selectArea(areaId) {
+    return this.explorationService.selectArea(areaId);
   }
 
   // ============ ROOM EXPLORATION ============
@@ -619,12 +591,6 @@ export class GameManager {
     return this.combatService.startEncounter();
   }
 
-  /**
-   * Start boss encounter
-   */
-  startBossEncounter() {
-    return this.combatService.startBossEncounter();
-  }
 
   // ============ COMBAT CYCLE ============
 
@@ -652,31 +618,6 @@ export class GameManager {
     return this.combatService.handleGameVictory();
   }
 
-  // ============ FLOOR PROGRESSION ============
-
-  /**
-   * Proceed to next floor after boss defeat
-   */
-  nextFloor() {
-    return this.explorationService.nextFloor();
-  }
-
-  /**
-   * Continue to next endless floor
-   */
-  continueEndless() {
-    return this.explorationService.continueEndless();
-  }
-
-  /**
-   * Return to hub after game victory (declining endless mode)
-   */
-  returnToHubFromVictory() {
-    if (!this.run?.gameVictoryPending) {
-      throw new Error('No pending game victory');
-    }
-    return this.combatService.handleGameVictory();
-  }
 
   // ============ ROBOT COMBAT ============
 
@@ -694,7 +635,11 @@ export class GameManager {
 
     const highestLevel = Math.max(...this.run.robotParty.active.map(r => r.level), 1);
     const isFirstBattle = (this.run.encountersCompleted || 0) === 0;
-    const enemyRobots = generateEnemyRobots(highestLevel, isFirstBattle ? { maxEnemies: 2 } : {});
+    const creaturePool = this.run.currentArea?.creatures || null;
+    const enemyRobots = generateEnemyRobots(highestLevel, {
+      maxEnemies: isFirstBattle ? 2 : undefined,
+      creaturePool
+    });
 
     this.combat = createCombatState(enemyRobots[0]);
     this.combat.allies = this.run.robotParty.active;
@@ -704,7 +649,7 @@ export class GameManager {
 
     // Assign NPC to this encounter
     const usedNpcIds = this.run.usedNpcIds || [];
-    const npc = selectNpcForEncounter(this.run.floor, usedNpcIds);
+    const npc = selectNpcForEncounter((this.run.areasCompleted || 0) + 1, usedNpcIds);
     this.combat.npcId = npc.id;
     this.combat.npcData = {
       id: npc.id,
@@ -797,13 +742,10 @@ export class GameManager {
         const newCollectionAdditions = flushPendingCaptures();
         this.combat.active = false;
         this.run.encountersCompleted++;
-        // Mark room as interacted and handle boss defeat
+        // Mark room as interacted
         const currentRoom = this.run.rooms?.[this.run.currentRoom];
         if (currentRoom) {
           currentRoom.interacted = true;
-          if (currentRoom.isBossRoom) {
-            this.run.bossDefeated = true;
-          }
         }
         this.emitState();
         return {
@@ -830,13 +772,10 @@ export class GameManager {
       const newCollectionAdditions = flushPendingCaptures();
       this.combat.active = false;
       this.run.encountersCompleted++;
-      // Mark room as interacted and handle boss defeat
+      // Mark room as interacted
       const currentRoom = this.run.rooms?.[this.run.currentRoom];
       if (currentRoom) {
         currentRoom.interacted = true;
-        if (currentRoom.isBossRoom) {
-          this.run.bossDefeated = true;
-        }
       }
       this.emitState();
       return {
@@ -846,7 +785,6 @@ export class GameManager {
         effectEvents,
         combatEnded: true,
         victory: true,
-        isBoss: currentRoom?.isBossRoom || false,
         robotParty: this.run.robotParty,
         newCollectionAdditions
       };
@@ -974,13 +912,10 @@ export class GameManager {
       this.run.robotParty.pendingCaptures = [];
       this.combat.active = false;
       this.run.encountersCompleted++;
-      // Mark room as interacted and handle boss defeat (same as robotCombatCycle)
+      // Mark room as interacted
       const currentRoom = this.run.rooms?.[this.run.currentRoom];
       if (currentRoom) {
         currentRoom.interacted = true;
-        if (currentRoom.isBossRoom) {
-          this.run.bossDefeated = true;
-        }
       }
     }
 
@@ -1233,13 +1168,10 @@ export class GameManager {
       party.pendingCaptures = [];
       this.combat.active = false;
       this.run.encountersCompleted++;
-      // Mark room as interacted and handle boss defeat
+      // Mark room as interacted
       const currentRoom = this.run.rooms?.[this.run.currentRoom];
       if (currentRoom) {
         currentRoom.interacted = true;
-        if (currentRoom.isBossRoom) {
-          this.run.bossDefeated = true;
-        }
       }
     }
 
@@ -1264,7 +1196,7 @@ export class GameManager {
    */
   forfeitRun() {
     if (this.run) {
-      logger.info('[GameManager] Run forfeited:', { floor: this.run.floor, roomsExplored: this.run.roomsExplored });
+      logger.info('[GameManager] Run forfeited:', { areasCompleted: this.run.areasCompleted, roomsExplored: this.run.roomsExplored });
       // Only award essence/stats if run was still active (not already ended by combat defeat)
       if (this.run.active) {
         this.run.active = false;
@@ -1323,14 +1255,14 @@ export class GameManager {
     // Ensure we have an active run
     if (!this.run || !this.run.active) {
       this.startRun();
-      // Auto-select first ward for testing
-      if (this.run.wardSelectionRequired) {
-        this.selectStartingWard('nerima');
+      // Auto-select first area for testing
+      if (this.run.areaSelectionRequired) {
+        this.selectArea('okunomori');
       }
     }
 
     // Generate enemy using real enemy generation
-    const enemy = generateEnemy(this.run.floor);
+    const enemy = generateEnemy(1);
 
     // Create real combat state
     this.combat = createCombatState(enemy);

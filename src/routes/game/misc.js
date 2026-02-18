@@ -134,7 +134,7 @@ export default function createMiscRoutes({
         type: 'blacksmith',
         roomNumber: 1,
         totalRooms: 5,
-        floor: 1,
+        areaId: gameManager.run.currentArea?.id || 'okunomori',
         explored: true,
         interacted: false,
         blacksmith: {
@@ -172,42 +172,25 @@ export default function createMiscRoutes({
         gameManager.createPlayer('TestPlayer');
       }
       switch (phase) {
-        case 'boss_ready': {
+        case 'area_selection': {
           if (!gameManager.run || !gameManager.run.active) {
             gameManager.startRun();
-            if (gameManager.run.wardSelectionRequired) {
-              gameManager.selectStartingWard('nerima');
-            }
           }
-          gameManager.run.wardSelectionRequired = false;
-          gameManager.run.encountersCompleted = gameManager.run.encountersNeeded;
+          gameManager.run.areaSelectionRequired = true;
+          gameManager.run.areaCleared = false;
           gameManager.combat = null;
           gameManager.run.postCombatShop = null;
-          gameManager.run.bossDefeated = false;
-          // Set up a boss room so derivePhase returns boss_ready
-          const bossRoom = {
-            id: 'debug_boss',
-            type: 'boss',
-            isBossRoom: true,
-            roomNumber: gameManager.run.encountersNeeded,
-            totalRooms: gameManager.run.encountersNeeded,
-            floor: gameManager.run.floor || 1,
-            explored: true,
-            interacted: false
-          };
-          gameManager.run.rooms = [bossRoom];
-          gameManager.run.currentRoom = 0;
           break;
         }
-        case 'floor_complete': {
+        case 'area_complete': {
           if (!gameManager.run || !gameManager.run.active) {
             gameManager.startRun();
-            if (gameManager.run.wardSelectionRequired) {
-              gameManager.selectStartingWard('nerima');
+            if (gameManager.run.areaSelectionRequired) {
+              gameManager.selectArea('okunomori');
             }
           }
-          gameManager.run.wardSelectionRequired = false;
-          gameManager.run.bossDefeated = true;
+          gameManager.run.areaSelectionRequired = false;
+          gameManager.run.areaCleared = true;
           gameManager.combat = null;
           gameManager.run.postCombatShop = null;
           break;
@@ -215,27 +198,25 @@ export default function createMiscRoutes({
         case 'post_combat_shop': {
           if (!gameManager.run || !gameManager.run.active) {
             gameManager.startRun();
-            if (gameManager.run.wardSelectionRequired) {
-              gameManager.selectStartingWard('nerima');
+            if (gameManager.run.areaSelectionRequired) {
+              gameManager.selectArea('okunomori');
             }
           }
-          gameManager.run.wardSelectionRequired = false;
+          gameManager.run.areaSelectionRequired = false;
           gameManager.combat = null;
-          gameManager.run.bossDefeated = false;
           gameManager.run.postCombatShop = null;
           break;
         }
         case 'wordDiscovery': {
           if (!gameManager.run || !gameManager.run.active) {
             gameManager.startRun();
-            if (gameManager.run.wardSelectionRequired) {
-              gameManager.selectStartingWard('nerima');
+            if (gameManager.run.areaSelectionRequired) {
+              gameManager.selectArea('okunomori');
             }
           }
-          gameManager.run.wardSelectionRequired = false;
+          gameManager.run.areaSelectionRequired = false;
           gameManager.combat = null;
           gameManager.run.postCombatShop = null;
-          gameManager.run.bossDefeated = false;
           const { WORDS_PER_DISCOVERY } = await import('../../game/rooms.js');
           // Set up a word discovery room
           const wordRoom = {
@@ -243,7 +224,7 @@ export default function createMiscRoutes({
             type: 'wordDiscovery',
             roomNumber: 1,
             totalRooms: 3,
-            floor: gameManager.run.floor || 1,
+            areaId: gameManager.run.currentArea?.id || 'okunomori',
             explored: true,
             interacted: false,
             wordDiscovery: {

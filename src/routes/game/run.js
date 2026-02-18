@@ -1,7 +1,7 @@
 /**
  * @fileoverview Run routes
  *
- * Handles run lifecycle: start-run, forfeit, floor navigation, ward selection
+ * Handles run lifecycle: start-run, forfeit, area selection, room navigation
  */
 
 import { Router } from 'express';
@@ -212,115 +212,26 @@ export default function createRunRoutes({
     }
   });
 
-  // Ward selection
-  router.get('/starting-wards', (req, res) => {
+  // Area selection
+  router.get('/area-options', (req, res) => {
     try {
-      const options = req.gameManager.getStartingWardOptions();
+      const options = req.gameManager.getAreaOptions();
       res.json(options);
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
   });
 
-  router.post('/select-starting-ward', async (req, res) => {
+  router.post('/select-area', async (req, res) => {
     const gameManager = req.gameManager;
     try {
-      const { wardId } = req.body;
-      const result = gameManager.selectStartingWard(wardId);
+      const { areaId } = req.body;
+      const result = gameManager.selectArea(areaId);
       req.saveGame();
       res.json({
         ...result,
         state: req.getEnrichedGameState()
       });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  router.get('/next-ward-options', (req, res) => {
-    try {
-      const options = req.gameManager.getNextWardOptions();
-      res.json(options);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  router.post('/select-next-ward', async (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      const { wardId } = req.body;
-      const result = gameManager.selectNextWard(wardId);
-      req.saveGame();
-      res.json({
-        ...result,
-        state: req.getEnrichedGameState()
-      });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Floor navigation
-  router.post('/enter-floor', async (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      const floor = gameManager.enterFloor();
-      const narration = await generateGameNarration('floorEnter', {
-        floor,
-        player: gameManager.run.player
-      }, req.userKeys);
-
-      req.saveGame();
-      res.json({
-        state: req.getEnrichedGameState(),
-        narration
-      });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  router.post('/next-floor', async (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      const floor = gameManager.nextFloor();
-      const narration = await generateGameNarration('floorEnter', {
-        floor: gameManager.run.floor,
-        player: gameManager.run.player
-      }, req.userKeys);
-
-      req.saveGame();
-      res.json({ state: req.getEnrichedGameState(), narration });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Continue to next endless floor
-  router.post('/continue-endless', async (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      const floor = gameManager.continueEndless();
-      const narration = await generateGameNarration('floorEnter', {
-        floor: gameManager.run.floor,
-        player: gameManager.run.player
-      }, req.userKeys);
-
-      req.saveGame();
-      res.json({ state: req.getEnrichedGameState(), narration });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Return to hub after game victory (choosing not to continue)
-  router.post('/return-to-hub-from-victory', async (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      const result = gameManager.returnToHubFromVictory();
-      req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }

@@ -4,20 +4,20 @@
  *
  * PURPOSE:
  * State factory functions for all game objects. Defines player stats (simplified
- * to attack/maxHp), run state with ward progression, combat state, and meta-
+ * to attack/maxHp), run state with area progression, combat state, and meta-
  * progression system for cross-run upgrades.
  *
  * KEY EXPORTS:
  * State Factories:
  * - createNewPlayer(name) - Player with attack, maxHp, credits
- * - createNewRun(player) - Run state: floor, ward path, rooms, encounters
+ * - createNewRun(player) - Run state: area loop, rooms, encounters
  * - createCombatState(enemy) - Combat instance for battle
  * - createMetaProgression() - Meta-save: essence, upgrades, achievements
  *
  * Meta-Progression:
  * - META_UPGRADES - Upgrade definitions (vitality, startingCredits, attackPower, creditFind)
  * - ACHIEVEMENTS - Achievement definitions and unlock conditions
- * - calculateEssenceReward(runStats, floor, isVictory) - Compute essence earned
+ * - calculateEssenceReward(runStats, areasCompleted, isVictory) - Compute essence earned
  * - getMetaUpgradeEffects(meta) - Aggregate effects from purchased upgrades
  *
  * Persistence:
@@ -26,7 +26,7 @@
  * - deleteSave(fs) - Delete save file
  *
  * Utilities:
- * - generateEncounterCount(floor) - Random encounters per floor
+ * - generateEncounterCount() - Random rooms per area (8-12)
  *
  * ARCHITECTURE NOTES:
  * - Player stats: attack and maxHp (no STR/AGI/VIT/INT/DEX/LUK)
@@ -58,7 +58,7 @@ export function createMetaProgression() {
       totalDamageTaken: 0,
       totalCreditsEarned: 0,
       totalEssenceEarned: 0,
-      highestFloor: 0,
+      highestAreasCleared: 0,
       totalPlayTime: 0,      // in milliseconds
       firstPlayDate: null,
       lastPlayDate: null,
@@ -169,7 +169,7 @@ export const ACHIEVEMENTS = {
     id: 'dungeonMaster',
     name: 'ダンジョンマスター',
     nameEn: 'Dungeon Master',
-    description: 'Clear all 7 floors',
+    description: 'Clear 10 areas',
     check: (stats) => stats.runsCompleted >= 1,
     reward: { essence: 200 }
   },
@@ -188,7 +188,7 @@ export const ACHIEVEMENTS = {
     name: 'パーフェクトラン',
     nameEn: 'Perfect Run',
     description: 'Clear the dungeon without dying',
-    check: (stats, runStats) => runStats?.floorsCleared === 7,
+    check: (stats, runStats) => runStats?.areasCleared >= 10,
     reward: { essence: 150 }
   }
 };
@@ -198,18 +198,16 @@ export const ACHIEVEMENTS = {
 /**
  * Calculate essence reward for a completed run
  */
-export function calculateEssenceReward(runStats, floor, isVictory) {
+export function calculateEssenceReward(runStats, areasCompleted, isVictory) {
   let essence = 0;
 
-  // Base reward per floor reached
-  essence += floor * 10;
+  // Base reward per area completed
+  essence += areasCompleted * 10;
 
-  // Bonus for full clear
-  if (isVictory && floor === 7) {
+  // Bonus for full clear (10 areas)
+  if (isVictory) {
     essence += 100;
   }
-
-  // Note: Boss essence is awarded immediately on defeat, not at run end
 
   // Bonus per 10 enemies
   essence += Math.floor((runStats?.enemiesDefeated || 0) / 10) * 5;
@@ -264,27 +262,27 @@ export function createNewRun(player) {
   const run = {
     active: true,
     levelId: null,
-    floor: 1,
-    maxFloors: 7,
 
-    // Ward path system (NEO TOKYO)
-    currentWard: null,      // Current ward ID (e.g., 'nerima')
-    wardPath: [],           // Array of ward IDs visited in order
-    wardSelectionRequired: true,  // True at start and after each boss
+    // Area loop system
+    currentArea: null,           // full area object from staging JSON
+    areasCompleted: 0,           // number of areas cleared
+    areasToWin: 10,              // win condition threshold
+    areaPath: [],                // array of area IDs visited (for history)
+    areaSelectionRequired: true, // true at start and after each area
+    areaCleared: false,          // true when all rooms in current area are done
 
-    // Room-based exploration
-    rooms: [],              // Array of room objects for current floor
-    currentRoom: 0,         // Index of current room (0-based)
-    roomsExplored: 0,       // Total rooms explored this floor
+    // Room-based exploration (per-area, reset each area)
+    rooms: [],
+    currentRoom: 0,
+    roomsExplored: 0,
 
     // Branching room selection
-    pendingBranch: false,     // True when showing branch choice
-    selectedRooms: [],        // Track door choices: [0, 1, 0, ...]
+    pendingBranch: false,
+    selectedRooms: [],
 
-    // Current floor progress
+    // Current area progress
     encountersCompleted: 0,
-    encountersNeeded: 0,    // Set when generating floor rooms
-    bossDefeated: false,
+    encountersNeeded: 0,
 
     // Player state for this run (copy so we can reset)
     player: JSON.parse(JSON.stringify(player)),
@@ -320,7 +318,7 @@ export function createNewRun(player) {
       damageTaken: 0,
       itemsUsed: 0,
       creditsEarned: 0,
-      floorsCleared: 0,
+      areasCleared: 0,
       roomsExplored: 0,
       trapsDisarmed: 0,
       treasuresOpened: 0,
@@ -377,10 +375,10 @@ export function createCombatState(enemy) {
 
 
 // ============ ENCOUNTER GENERATION ============
-export function generateEncounterCount(floor) {
-  // Floors have 7-10 encounters before the boss (8-11 rooms total)
-  const min = 7;
-  const max = 10;
+export function generateEncounterCount() {
+  // Areas have 8-12 rooms
+  const min = 8;
+  const max = 12;
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 

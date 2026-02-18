@@ -15,7 +15,7 @@ describe('Word Discovery Room', () => {
     // Run generation 100 times to verify room type can appear
     let foundWordDiscovery = false;
     for (let i = 0; i < 100; i++) {
-      const rooms = generateFloorRooms(1, 5);
+      const rooms = generateFloorRooms('okunomori', 5);
       if (rooms.some(r => r.type === 'wordDiscovery')) {
         foundWordDiscovery = true;
         break;
@@ -25,12 +25,12 @@ describe('Word Discovery Room', () => {
   });
 
   it('should create wordDiscovery room with correct structure', () => {
-    // Force random to produce wordDiscovery (40% threshold = shrine + quiz, next 20% = wordDiscovery)
+    // Force random to produce wordDiscovery (shrine=0-10%, quiz=10-20%, wordDiscovery=20-30%)
     const originalRandom = Math.random;
-    Math.random = () => 0.45; // 40-60% range = wordDiscovery
+    Math.random = () => 0.25; // 20-30% range = wordDiscovery
 
     try {
-      const rooms = generateFloorRooms(1, 1);
+      const rooms = generateFloorRooms('okunomori', 1);
       const room = rooms[0];
 
       assert.strictEqual(room.type, 'wordDiscovery');

@@ -20,7 +20,7 @@ export function loadNpcs() {
  * Picks a random NPC from roster, avoids IDs in alreadyUsedNpcIds.
  * Falls back to any NPC if all are used.
  */
-export function selectNpcForEncounter(floor, alreadyUsedNpcIds) {
+export function selectNpcForEncounter(areaNumber, alreadyUsedNpcIds) {
   const npcs = loadNpcs();
   const allEntries = Object.values(npcs);
   const usedSet = new Set(alreadyUsedNpcIds);
