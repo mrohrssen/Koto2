@@ -1,0 +1,25 @@
+[
+  {
+    "id": "nagi",
+    "name": "ナギ",
+    "nameEn": "Nagi",
+    "baseWord": "住人",
+    "baseReading": "じゅうにん",
+    "baseMeaning": "dweller",
+    "baseRank": 3900,
+    "modifier": {
+      "word": "孤独",
+      "reading": "こどく",
+      "meaning": "Solitary",
+      "rank": 3900
+    },
+    "area": "okunomori",
+    "tier": 1,
+    "personality": {
+      "traits": ["quiet", "self-reliant", "observant", "unhurried"],
+      "speechStyle": "Terse and unhurried, uses plain form without rudeness, long pauses between thoughts, says only what needs saying",
+      "quirk": "Listens to the forest before answering — tilts his head toward the canopy as if checking with the trees first"
+    },
+    "createdAt": "2026-02-18"
+  }
+]

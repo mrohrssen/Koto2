@@ -1,0 +1,24 @@
+{
+  "nagi": {
+    "id": "nagi",
+    "name": "ナギ",
+    "nameEn": "Nagi",
+    "description": "A middle-aged man who left his job in the city years ago to live alone in the Deep Forest. Wears a faded, hand-patched hemp jacket over work clothes stained with sap and soil. His hair is long and loosely tied back, and his hands are rough with calluses from woodworking. Carries a hand-carved walking stick worn smooth by years of use. Tier 1 — encountered in the Deep Forest.",
+    "personality": "quiet, self-reliant, observant, unhurried, terse, uses plain form sparingly, comfortable with silence",
+    "quirk": "Listens to the forest before answering — tilts his head toward the canopy as if the trees have something to say about the matter",
+    "goals": {
+      "possessed": "Drive away every living thing that enters the forest. The System twisted his love of solitude into violent territorial aggression — what was once a preference for being left alone became an obsession with keeping the forest sealed from all outsiders.",
+      "glitching": "Stops mid-attack to listen to birdsong or touch the bark of a nearby tree, murmuring the name of a moss species or noting that the stream sounds different today.",
+      "liberated": "Worried that the System may have damaged the forest itself — the moss dimmer, the spores behaving strangely. Offers to guide the player through the deeper trails that only he knows, and quietly admits he would not mind the company for a while."
+    },
+    "knowledge": {
+      "personal": "Worked an unremarkable desk job in the city for fifteen years before walking away one day and never going back. Built a small shelter in the deepest part of the forest and has lived there since, learning every trail, stream, and tree by name. Was already alone when the System arrived — barely noticed anything had changed until his quiet protectiveness turned into something he could not control.",
+      "world": ["the_system", "liberation"]
+    },
+    "exampleDialogue": [
+      "…ここから先は、俺の森だ。帰れ。",
+      "…鳥が鳴いてる。…あぁ、すまない。俺は何をしていた。…森は、無事か？",
+      "奥の道は複雑だ。案内してやる。…一人で行くと迷う。"
+    ]
+  }
+}
