@@ -2,6 +2,8 @@ import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { GameManager } from './loop.js';
 import { DATA_DIR } from '../data-dir.js';
+import { ROBOTS_BY_ID } from './robots.js';
+import { DEFAULT_COLLECTION } from './services/robot-collection-service.js';
 
 const SAVE_VERSION = 2;
 
@@ -19,6 +21,7 @@ export function getManager(userId) {
 
   const manager = new GameManager();
   const saveFile = join(DATA_DIR, `.jrpg-save-${userId}.json`);
+  let needsSave = false;
 
   if (existsSync(saveFile)) {
     try {
@@ -34,8 +37,24 @@ export function getManager(userId) {
               current: null
             };
           }
+          // Migrate: remove stale creature IDs and ensure defaults
+          if (data.meta.robotCollection) {
+            const before = data.meta.robotCollection.length;
+            data.meta.robotCollection = data.meta.robotCollection.filter(id => ROBOTS_BY_ID[id]);
+            for (const id of DEFAULT_COLLECTION) {
+              if (!data.meta.robotCollection.includes(id)) {
+                data.meta.robotCollection.push(id);
+              }
+            }
+            if (data.meta.robotCollection.length !== before) {
+              needsSave = true;
+            }
+          }
           manager.initMeta(data.meta);
         }
+      }
+      if (needsSave) {
+        console.log(`Migrated stale creature IDs for user ${userId}`);
       }
     } catch (e) {
       console.warn(`Failed to load save for ${userId}:`, e.message);
@@ -43,6 +62,7 @@ export function getManager(userId) {
   }
 
   managers.set(userId, manager);
+  if (needsSave) saveManager(userId);
   return manager;
 }
 
