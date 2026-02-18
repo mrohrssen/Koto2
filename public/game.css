@@ -3211,93 +3211,92 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 8px;
+  gap: 10px;
+  padding: 8px 12px;
 }
 
 .shop-title {
-  font-size: 16px;
-  font-weight: bold;
-  color: var(--accent-gold, #FFD700);
+  font-size: 18px;
+  font-weight: 700;
+  color: #5b6abf;
+  letter-spacing: 0.5px;
 }
 
 .shop-items {
   display: flex;
-  gap: 8px;
-  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
   width: 100%;
 }
 
 .shop-item-card {
-  flex: 1;
-  max-width: 130px;
-  background: var(--bg-dark, #1a1a2e);
-  border: 2px solid #333;
-  border-radius: 8px;
-  padding: 10px 6px;
+  background: #fff;
+  border: 2px solid #e0e0e0;
+  border-radius: 14px;
+  padding: 12px 16px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 14px;
   cursor: pointer;
-  transition: border-color 0.2s, transform 0.1s;
+  transition: border-color 0.2s, transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
 .shop-item-card:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 .shop-item-card.selected {
-  border-color: var(--accent-gold, #FFD700);
-  box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+  border-color: #5b6abf;
+  box-shadow: 0 0 0 3px rgba(91,106,191,0.2);
 }
 
 .shop-item-sprite {
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
   object-fit: contain;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  margin: 2px 0;
+  border-radius: 10px;
+  background: #f5f5fa;
+  flex-shrink: 0;
 }
 
 .shop-item-rarity {
-  font-size: 9px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
 .shop-item-word {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: bold;
-  color: #fff;
+  color: #2d2d3a;
   line-height: 1.2;
-  text-shadow: 0 0 6px rgba(255,255,255,0.3);
 }
 
 .shop-item-reading {
   font-size: 11px;
-  color: #ccc;
+  color: #888;
 }
 
 .shop-item-meaning {
-  font-size: 11px;
-  font-weight: bold;
-  color: var(--accent-gold, #FFD700);
-  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5b6abf;
 }
 
 .shop-item-divider {
-  width: 60%;
-  height: 1px;
-  background: #333;
-  margin: 3px 0;
+  display: none;
+}
+
+.shop-item-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .shop-item-effect {
-  font-size: 9px;
-  color: #aaa;
-  text-align: center;
+  font-size: 11px;
+  color: #666;
   line-height: 1.3;
 }
 

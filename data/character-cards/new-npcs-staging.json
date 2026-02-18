@@ -20,5 +20,93 @@
       "…鳥が鳴いてる。…あぁ、すまない。俺は何をしていた。…森は、無事か？",
       "奥の道は複雑だ。案内してやる。…一人で行くと迷う。"
     ]
+  },
+  "makoto": {
+    "id": "makoto",
+    "name": "マコト",
+    "nameEn": "Makoto",
+    "description": "A diligent magic school student who was reviewing luminous chalk notes in the hallway between classes when the System crept in through the floating lanterns. Wears a neatly pressed school uniform with a hall monitor armband, still clutching a stub of glowing chalk. Tier 1 — encountered in the Magic School area.",
+    "personality": "earnest, rule-following, straightforward, polite, diligent, uses です/ます forms, states things plainly",
+    "quirk": "Always raises his hand before speaking, even in casual conversation — old classroom habit he never dropped",
+    "goals": {
+      "possessed": "Enforce the school rules without exception. The System rewrote the rulebook and turned Makoto's earnest obedience into blind enforcement — he patrols the hallways citing regulations that never existed, punishing anyone who steps out of line.",
+      "glitching": "Hesitates mid-reprimand and admits something feels wrong — wonders aloud if anyone has been feeding the rabbits in the garden hutch, or whether the sunflowers are still turning to follow people.",
+      "liberated": "Confused about which rules were real and which the System imposed. Asks the player directly what the right thing to do is. Wants to check on the other students and make sure the garden creatures are okay."
+    },
+    "knowledge": {
+      "personal": "Was a model student at the Magic School — always first to arrive, last to leave. Loved tending the enchanted garden before class, feeding the rabbits and watching the sunflowers track his path. Was reviewing chalk diagrams in the hallway when the System's influence seeped through the floating lanterns overhead.",
+      "world": ["the_system", "liberation"]
+    },
+    "exampleDialogue": [
+      "あの、ここは許可なく通れません。学校の規則ですから…従ってください。",
+      "え…？僕、何をしてたんだろう…。規則、規則って…あの規則、本物だったのかな…",
+      "あの、もし良ければ、一緒に学校の中を確認しませんか？他の生徒たちが心配で…"
+    ]
+  },
+  "sora": {
+    "id": "sora",
+    "name": "ソラ",
+    "nameEn": "Sora",
+    "description": "A sun-baked young man who claimed the hidden beach cove as his personal territory long before the System arrived. Barefoot with salt-bleached shorts and a faded tank top, skin darkened from endless hours in the sun. Tier 1 — encountered at the Hidden Beach area.",
+    "personality": "boisterous, fearless, territorial, warm-hearted, loud, uses casual masculine speech (俺/だぜ), challenges everyone to competitions",
+    "quirk": "Challenges everyone to race him to the far rocks — treats every interaction as a contest he's already winning",
+    "goals": {
+      "possessed": "Guard the passage to the cove and drown out anyone who enters. The System twisted his boisterous territorial pride into violent gatekeeping — he patrols the narrow cliff passage, attacking anyone who dares set foot on his beach.",
+      "glitching": "Stops mid-attack to listen to the waves, muttering about the tide coming in and how the hermit crabs need to be moved to higher pools — a flash of the caretaker beneath the bravado.",
+      "liberated": "Worried the tide pools have been neglected while he was possessed. Wants the player to explore the far rocks with him and dares them to come back for a proper swimming race."
+    },
+    "knowledge": {
+      "personal": "Discovered the hidden passage to the cove as a teenager and has treated it as his personal kingdom ever since. Knows every tide pool, every rock formation, and exactly when the passage floods at high tide. Was splashing through the shallows shouting at seagulls when the System took him.",
+      "world": ["the_system", "liberation"]
+    },
+    "exampleDialogue": [
+      "おい！ここは俺の海だ！入りたきゃ俺を倒してからにしろ！",
+      "…あれ？波の音…潮、もう満ちてきてるのか？…ヤドカリたちは…",
+      "よっしゃー！自由だー！なあ、あの岩まで競争しようぜ！負けたらジュース奢りな！"
+    ]
+  },
+  "toshio": {
+    "id": "toshio",
+    "name": "トシオ",
+    "nameEn": "Toshio",
+    "description": "A retired man who spent every morning at the park, tending to flower beds and feeding the koi. Wears a worn cardigan over a plaid shirt, with a sun-faded hat and muddy gardening gloves tucked into his back pocket. Tier 1 — encountered in the Peaceful Park area.",
+    "personality": "gentle, patient, warm, talkative, nostalgic, uses polite but old-fashioned masculine speech",
+    "quirk": "Names every plant, bird, and koi in the park and introduces them to visitors like old friends — calls the biggest koi 'Taro-kun'",
+    "goals": {
+      "possessed": "Guard the park from all intruders. The System twisted his deep attachment to the park into territorial aggression — no one may walk his paths or touch his flowers.",
+      "glitching": "Pauses mid-confrontation to murmur about watering the azaleas or wonder aloud if the koi have been fed today — his caretaker's routine breaking through the System's hold.",
+      "liberated": "Worried the park has been neglected while he was possessed. Asks the player to check on the flower beds near the stone lantern and the koi pond. Just wants to sit on his favorite bench and talk for a while."
+    },
+    "knowledge": {
+      "personal": "Retired years ago and made the park his second home. Knows every tree by the year it was planted and every koi by the pattern on its scales. Was sitting on his usual bench watching cherry blossoms drift across the pond when the System's haze settled over him.",
+      "world": ["the_system", "liberation", "ward_1"]
+    },
+    "exampleDialogue": [
+      "おや…ここに何の用かね？この公園は…誰にも渡さんよ。",
+      "…はっ。あれ…？鯉にご飯、あげたかな…。あぁ、すまんね、助けてくれたのか。",
+      "あの花壇の様子、見てきてくれんかね？…それと、少し話し相手になってくれると嬉しいんだが。"
+    ]
+  },
+  "fumi": {
+    "id": "fumi",
+    "name": "フミ",
+    "nameEn": "Fumi",
+    "description": "A university literature professor who discovered the Secret Library while tracing references in a rare manuscript. Wears a rumpled cardigan with reading glasses perpetually pushed up on her forehead and ink stains on her fingers from cataloging the collection. She was deep in a centuries-old text when the System took hold. Tier 1 — encountered in the Secret Library.",
+    "personality": "erudite, meticulous, patient, warm beneath formality, absorbed in her work, uses academic language, lectures without realizing it",
+    "quirk": "Quotes passages from the library's books at seemingly random moments — but the quotes always turn out to be eerily relevant to the situation",
+    "goals": {
+      "possessed": "Hoard all knowledge and let no one else read. The System twisted her lifelong passion for sharing scholarship into fierce possessiveness — she guards every book as her personal treasure and attacks anyone who reaches for a shelf.",
+      "glitching": "Pauses mid-attack to recite a passage from memory, her voice softening as she recalls the joy of a student finally grasping a difficult concept — then the System pulls her back.",
+      "liberated": "Wants to catalog the Secret Library's impossible collection and share it with others. Believes the books hold clues to understanding the System. Invites the player to browse anytime they need answers."
+    },
+    "knowledge": {
+      "personal": "Was a literature professor at a university in Neo Tokyo. Stumbled upon the Secret Library while tracing a citation in a rare manuscript and has been cataloging its collection ever since — books that shouldn't exist, written in languages that predate known history. Was so absorbed in reading that she barely noticed the System's arrival.",
+      "world": ["the_system", "liberation", "corruption"]
+    },
+    "exampleDialogue": [
+      "この本棚に触れないで。ここの知識は全て…私だけのものよ。誰にも渡さない。",
+      "あら…私、何を…？学生たちへの講義が…ああ、そうだ、本の続きを読まなくちゃ…",
+      "この図書館には不思議な本がたくさんあるの。よかったら、一緒に調べてみない？"
+    ]
   }
 }

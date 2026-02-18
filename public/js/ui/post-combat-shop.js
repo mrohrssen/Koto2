@@ -50,13 +50,13 @@ export function show(items) {
           const icon = TYPE_ICONS[item.type] || '📦';
           return `
           <div class="shop-item-card" data-index="${i}" style="border-color: ${rarityColor}40">
-            <div class="shop-item-rarity" style="color: ${rarityColor}">${item.rarity || 'common'}</div>
-            <img class="shop-item-sprite" src="/assets/sprites/items/${item.id}.webp" alt="${item.meaning}" />
-            <div class="shop-item-word">${item.word}</div>
-            <div class="shop-item-reading">${item.reading}</div>
-            <div class="shop-item-meaning">${item.meaning}</div>
-            <div class="shop-item-divider"></div>
-            <div class="shop-item-effect">${icon} ${isJapanified() && item.descriptionJa ? item.descriptionJa : item.description}</div>
+            <img class="shop-item-sprite" src="/assets/sprites/items/${item.id}.webp?v=20260218" alt="${item.meaning}" />
+            <div class="shop-item-info">
+              <div class="shop-item-rarity" style="color: ${rarityColor}">${item.rarity || 'common'}</div>
+              <div class="shop-item-word">${item.word}</div>
+              <div class="shop-item-reading">${item.reading} · <span class="shop-item-meaning">${item.meaning}</span></div>
+              <div class="shop-item-effect">${icon} ${isJapanified() && item.descriptionJa ? item.descriptionJa : item.description}</div>
+            </div>
           </div>
         `}).join('')}
       </div>
