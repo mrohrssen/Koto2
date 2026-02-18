@@ -84,6 +84,12 @@
     "meaning": "another person"
   },
   {
+    "rank": 860,
+    "word": "協力",
+    "reading": "きょうりょく",
+    "meaning": "cooperation"
+  },
+  {
     "rank": 1002,
     "word": "息子",
     "reading": "むすこ",
@@ -1152,6 +1158,12 @@
     "meaning": "welcome"
   },
   {
+    "rank": 2604,
+    "word": "歓迎",
+    "reading": "かんげい",
+    "meaning": "welcome"
+  },
+  {
     "rank": 2612,
     "word": "家庭",
     "reading": "かてい",
@@ -1686,6 +1698,12 @@
     "meaning": "to tell"
   },
   {
+    "rank": 3440,
+    "word": "お疲れ",
+    "reading": "おつかれ",
+    "meaning": "thanks (for coming, helping, etc.)"
+  },
+  {
     "rank": 3442,
     "word": "姉妹",
     "reading": "しまい",
@@ -1948,6 +1966,12 @@
     "word": "女の人",
     "reading": "おんなのひと",
     "meaning": "woman"
+  },
+  {
+    "rank": 4019,
+    "word": "別れ",
+    "reading": "わかれ",
+    "meaning": "parting"
   },
   {
     "rank": 4019,
@@ -2356,6 +2380,12 @@
     "word": "カップル",
     "reading": "カップル",
     "meaning": "couple"
+  },
+  {
+    "rank": 4460,
+    "word": "友情",
+    "reading": "ゆうじょう",
+    "meaning": "friendship"
   },
   {
     "rank": 4460,
@@ -3078,6 +3108,12 @@
     "meaning": "reconciliation"
   },
   {
+    "rank": 5576,
+    "word": "仲直り",
+    "reading": "なかなおり",
+    "meaning": "reconciliation"
+  },
+  {
     "rank": 5591,
     "word": "当人",
     "reading": "とうにん",
@@ -3474,6 +3510,12 @@
     "meaning": "meddling"
   },
   {
+    "rank": 6410,
+    "word": "行事",
+    "reading": "ぎょうじ",
+    "meaning": "event"
+  },
+  {
     "rank": 6413,
     "word": "一人一人",
     "reading": "ひとりひとり",
@@ -3606,6 +3648,12 @@
     "meaning": "speech"
   },
   {
+    "rank": 6569,
+    "word": "演説",
+    "reading": "えんぜつ",
+    "meaning": "speech"
+  },
+  {
     "rank": 6570,
     "word": "警戒心",
     "reading": "けいかいしん",
@@ -3664,6 +3712,12 @@
     "word": "競争",
     "reading": "きょうそう",
     "meaning": "competition"
+  },
+  {
+    "rank": 6698,
+    "word": "現役",
+    "reading": "げんえき",
+    "meaning": "active duty"
   },
   {
     "rank": 6706,
@@ -5364,6 +5418,12 @@
     "meaning": "out-of-place"
   },
   {
+    "rank": 8712,
+    "word": "セクハラ",
+    "reading": "セクハラ",
+    "meaning": "sexual harassment"
+  },
+  {
     "rank": 8714,
     "word": "殿",
     "reading": "との",
@@ -6702,6 +6762,12 @@
     "meaning": "to soak"
   },
   {
+    "rank": 10217,
+    "word": "よろしくお願いいたします",
+    "reading": "よろしくおねがいいたします",
+    "meaning": "please remember me"
+  },
+  {
     "rank": 10218,
     "word": "偉い人",
     "reading": "えらいひと",
@@ -6742,6 +6808,12 @@
     "word": "話し方",
     "reading": "はなしかた",
     "meaning": "way of talking"
+  },
+  {
+    "rank": 10258,
+    "word": "通行人",
+    "reading": "つうこうにん",
+    "meaning": "passerby"
   },
   {
     "rank": 10264,
@@ -6988,6 +7060,12 @@
     "word": "悪びれる",
     "reading": "わるびれる",
     "meaning": "to act timid (about doing)"
+  },
+  {
+    "rank": 10707,
+    "word": "約束を守る",
+    "reading": "やくそくをまもる",
+    "meaning": "to keep a promise"
   },
   {
     "rank": 10708,
@@ -8256,6 +8334,12 @@
     "meaning": "manservant"
   },
   {
+    "rank": 12469,
+    "word": "下僕",
+    "reading": "げぼく",
+    "meaning": "manservant"
+  },
+  {
     "rank": 12473,
     "word": "にやける",
     "reading": "にやける",
@@ -8856,6 +8940,12 @@
     "meaning": "union"
   },
   {
+    "rank": 13117,
+    "word": "赤の他人",
+    "reading": "あかのたにん",
+    "meaning": "complete stranger"
+  },
+  {
     "rank": 13118,
     "word": "ロリコン",
     "reading": "ロリコン",
@@ -9148,6 +9238,12 @@
     "word": "短刀",
     "reading": "たんとう",
     "meaning": "short sword"
+  },
+  {
+    "rank": 13597,
+    "word": "家の人",
+    "reading": "いえのひと",
+    "meaning": "one's family"
   },
   {
     "rank": 13598,
@@ -12636,6 +12732,12 @@
     "meaning": "friendship"
   },
   {
+    "rank": 18659,
+    "word": "親睦",
+    "reading": "しんぼく",
+    "meaning": "friendship"
+  },
+  {
     "rank": 18669,
     "word": "プリンセス",
     "reading": "プリンセス",
@@ -14110,6 +14212,12 @@
     "word": "陽子",
     "reading": "ようし",
     "meaning": "proton"
+  },
+  {
+    "rank": 20914,
+    "word": "野盗",
+    "reading": "やとう",
+    "meaning": "brigand"
   },
   {
     "rank": 20923,
@@ -16984,6 +17092,12 @@
     "word": "肥大",
     "reading": "ひだい",
     "meaning": "swelling"
+  },
+  {
+    "rank": 26344,
+    "word": "空軍",
+    "reading": "くうぐん",
+    "meaning": "air force"
   },
   {
     "rank": 26347,

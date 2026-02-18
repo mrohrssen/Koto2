@@ -768,6 +768,12 @@
     "meaning": "to hold back (e.g. emotions)"
   },
   {
+    "rank": 4201,
+    "word": "挑発",
+    "reading": "ちょうはつ",
+    "meaning": "provocation"
+  },
+  {
     "rank": 4289,
     "word": "敵意",
     "reading": "てきい",
@@ -1066,6 +1072,12 @@
     "word": "威嚇",
     "reading": "いかく",
     "meaning": "threat"
+  },
+  {
+    "rank": 5853,
+    "word": "対決",
+    "reading": "たいけつ",
+    "meaning": "confrontation"
   },
   {
     "rank": 5865,
@@ -2136,6 +2148,12 @@
     "meaning": "easy victory"
   },
   {
+    "rank": 9161,
+    "word": "雄叫び",
+    "reading": "おたけび",
+    "meaning": "war cry"
+  },
+  {
     "rank": 9178,
     "word": "爆破",
     "reading": "ばくは",
@@ -2440,6 +2458,12 @@
     "word": "征服",
     "reading": "せいふく",
     "meaning": "conquest"
+  },
+  {
+    "rank": 10147,
+    "word": "瀕死",
+    "reading": "ひんし",
+    "meaning": "(on the) verge of death"
   },
   {
     "rank": 10227,
@@ -2764,6 +2788,12 @@
     "word": "お見事",
     "reading": "おみごと",
     "meaning": "well done!"
+  },
+  {
+    "rank": 11842,
+    "word": "剣技",
+    "reading": "けんぎ",
+    "meaning": "sword skills"
   },
   {
     "rank": 11857,
@@ -4926,6 +4956,12 @@
     "meaning": "special forces"
   },
   {
+    "rank": 19652,
+    "word": "特殊部隊",
+    "reading": "とくしゅぶたい",
+    "meaning": "special forces"
+  },
+  {
     "rank": 19685,
     "word": "決定打",
     "reading": "けっていだ",
@@ -5448,6 +5484,12 @@
     "meaning": "line of defence (defense)"
   },
   {
+    "rank": 21728,
+    "word": "防衛線",
+    "reading": "ぼうえいせん",
+    "meaning": "line of defence (defense)"
+  },
+  {
     "rank": 21753,
     "word": "鉄球",
     "reading": "てっきゅう",
@@ -5668,6 +5710,12 @@
     "word": "物がある",
     "reading": "",
     "meaning": ""
+  },
+  {
+    "rank": 22678,
+    "word": "斬り伏せる",
+    "reading": "きりふせる",
+    "meaning": "to slay"
   },
   {
     "rank": 22679,
@@ -6204,6 +6252,12 @@
     "meaning": "chain of command"
   },
   {
+    "rank": 24960,
+    "word": "力比べ",
+    "reading": "ちからくらべ",
+    "meaning": "contest of strength"
+  },
+  {
     "rank": 24975,
     "word": "戦斧",
     "reading": "せんぷ",
@@ -6570,6 +6624,12 @@
     "meaning": ""
   },
   {
+    "rank": 26568,
+    "word": "刺し殺す",
+    "reading": "さしころす",
+    "meaning": "to stab to death"
+  },
+  {
     "rank": 26659,
     "word": "防戦",
     "reading": "ぼうせん",
@@ -6586,6 +6646,12 @@
     "word": "良心的",
     "reading": "りょうしんてき",
     "meaning": "upright"
+  },
+  {
+    "rank": 26706,
+    "word": "空襲",
+    "reading": "くうしゅう",
+    "meaning": "air-raid"
   },
   {
     "rank": 26734,
@@ -6658,47 +6724,5 @@
     "word": "白兵戦",
     "reading": "はくへいせん",
     "meaning": "hand-to-hand combat"
-  },
-  {
-    "rank": 11842,
-    "word": "剣技",
-    "reading": "けんぎ",
-    "meaning": "sword skills"
-  },
-  {
-    "rank": 19652,
-    "word": "特殊部隊",
-    "reading": "とくしゅぶたい",
-    "meaning": "special forces"
-  },
-  {
-    "rank": 21728,
-    "word": "防衛線",
-    "reading": "ぼうえいせん",
-    "meaning": "line of defence (defense)"
-  },
-  {
-    "rank": 24960,
-    "word": "力比べ",
-    "reading": "ちからくらべ",
-    "meaning": "contest of strength"
-  },
-  {
-    "rank": 26706,
-    "word": "空襲",
-    "reading": "くうしゅう",
-    "meaning": "air-raid"
-  },
-  {
-    "rank": 10147,
-    "word": "瀕死",
-    "reading": "ひんし",
-    "meaning": "(on the) verge of death"
-  },
-  {
-    "rank": 26568,
-    "word": "刺し殺す",
-    "reading": "さしころす",
-    "meaning": "to stab to death"
   }
 ]

@@ -1698,6 +1698,12 @@
     "meaning": "main street"
   },
   {
+    "rank": 5295,
+    "word": "出",
+    "reading": "で",
+    "meaning": "coming out"
+  },
+  {
     "rank": 5302,
     "word": "くるくる",
     "reading": "くるくる",
@@ -2112,6 +2118,12 @@
     "meaning": "unrelated"
   },
   {
+    "rank": 6304,
+    "word": "揺れ",
+    "reading": "ゆれ",
+    "meaning": "shaking"
+  },
+  {
     "rank": 6316,
     "word": "ガス",
     "reading": "ガス",
@@ -2194,6 +2206,12 @@
     "word": "デビュー",
     "reading": "デビュー",
     "meaning": "debut"
+  },
+  {
+    "rank": 6571,
+    "word": "じりじり",
+    "reading": "じりじり",
+    "meaning": "slowly (but steadily)"
   },
   {
     "rank": 6596,
@@ -3012,6 +3030,12 @@
     "meaning": "to flicker"
   },
   {
+    "rank": 9317,
+    "word": "ぶらぶら",
+    "reading": "ぶらぶら",
+    "meaning": "dangling heavily"
+  },
+  {
     "rank": 9318,
     "word": "不用意",
     "reading": "ふようい",
@@ -3414,6 +3438,12 @@
     "meaning": "martial arts"
   },
   {
+    "rank": 10180,
+    "word": "乗り",
+    "reading": "のり",
+    "meaning": "riding"
+  },
+  {
     "rank": 10181,
     "word": "騒々しい",
     "reading": "そうぞうしい",
@@ -3750,6 +3780,12 @@
     "meaning": "to bend backwards"
   },
   {
+    "rank": 11169,
+    "word": "すうっと",
+    "reading": "すうっと",
+    "meaning": "straight"
+  },
+  {
     "rank": 11181,
     "word": "丸くなる",
     "reading": "まるくなる",
@@ -4002,6 +4038,12 @@
     "meaning": "end (e.g. of a line)"
   },
   {
+    "rank": 11924,
+    "word": "這い上がる",
+    "reading": "はいあがる",
+    "meaning": "to creep up"
+  },
+  {
     "rank": 11970,
     "word": "走り",
     "reading": "はしり",
@@ -4144,6 +4186,12 @@
     "word": "はみ出す",
     "reading": "はみだす",
     "meaning": "to protrude"
+  },
+  {
+    "rank": 12488,
+    "word": "ころころ",
+    "reading": "ころころ",
+    "meaning": "lightly rolling (of a small and round thing)"
   },
   {
     "rank": 12497,
@@ -4440,6 +4488,12 @@
     "meaning": "to catch up (with)"
   },
   {
+    "rank": 13432,
+    "word": "馬上",
+    "reading": "ばじょう",
+    "meaning": "horseback"
+  },
+  {
     "rank": 13433,
     "word": "余力",
     "reading": "よりょく",
@@ -4534,6 +4588,12 @@
     "word": "鬼畜",
     "reading": "きちく",
     "meaning": "brute"
+  },
+  {
+    "rank": 13648,
+    "word": "風に乗る",
+    "reading": "かぜにのる",
+    "meaning": "to ride upon the winds"
   },
   {
     "rank": 13648,
@@ -5650,6 +5710,12 @@
     "word": "息切れ",
     "reading": "いきぎれ",
     "meaning": "shortness of breath"
+  },
+  {
+    "rank": 16714,
+    "word": "隆起",
+    "reading": "りゅうき",
+    "meaning": "protuberance"
   },
   {
     "rank": 16717,
@@ -7650,6 +7716,12 @@
     "meaning": "it hasn't been long since"
   },
   {
+    "rank": 24127,
+    "word": "練り歩く",
+    "reading": "ねりあるく",
+    "meaning": "to parade"
+  },
+  {
     "rank": 24128,
     "word": "勿体無い",
     "reading": "もったいない",
@@ -8290,35 +8362,5 @@
     "word": "目に入ってくる",
     "reading": "めにはいってくる",
     "meaning": "to come into view"
-  },
-  {
-    "rank": 5295,
-    "word": "出",
-    "reading": "で",
-    "meaning": "coming out"
-  },
-  {
-    "rank": 6304,
-    "word": "揺れ",
-    "reading": "ゆれ",
-    "meaning": "shaking"
-  },
-  {
-    "rank": 9317,
-    "word": "ぶらぶら",
-    "reading": "ぶらぶら",
-    "meaning": "dangling heavily"
-  },
-  {
-    "rank": 13648,
-    "word": "風に乗る",
-    "reading": "かぜにのる",
-    "meaning": "to ride upon the winds"
-  },
-  {
-    "rank": 16714,
-    "word": "隆起",
-    "reading": "りゅうき",
-    "meaning": "protuberance"
   }
 ]

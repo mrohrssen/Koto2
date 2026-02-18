@@ -1200,6 +1200,12 @@
     "meaning": "downtown"
   },
   {
+    "rank": 5766,
+    "word": "銀行",
+    "reading": "ぎんこう",
+    "meaning": "bank"
+  },
+  {
     "rank": 5806,
     "word": "局",
     "reading": "きょく",
@@ -1290,6 +1296,12 @@
     "meaning": "river"
   },
   {
+    "rank": 6328,
+    "word": "ドイツ",
+    "reading": "ドイツ",
+    "meaning": "Germany"
+  },
+  {
     "rank": 6373,
     "word": "座席",
     "reading": "ざせき",
@@ -1360,6 +1372,12 @@
     "word": "逃げ場",
     "reading": "にげば",
     "meaning": "(place of) refuge"
+  },
+  {
+    "rank": 6885,
+    "word": "両側",
+    "reading": "りょうがわ",
+    "meaning": "both sides"
   },
   {
     "rank": 6994,
@@ -2424,6 +2442,12 @@
     "meaning": "exit (from a stage)"
   },
   {
+    "rank": 10207,
+    "word": "わん",
+    "reading": "わん",
+    "meaning": "bay"
+  },
+  {
     "rank": 10259,
     "word": "襖",
     "reading": "ふすま",
@@ -2548,6 +2572,12 @@
     "word": "回廊",
     "reading": "かいろう",
     "meaning": "corridor"
+  },
+  {
+    "rank": 10712,
+    "word": "民家",
+    "reading": "みんか",
+    "meaning": "private house"
   },
   {
     "rank": 10737,
@@ -3922,6 +3952,12 @@
     "word": "西部",
     "reading": "せいぶ",
     "meaning": "western part"
+  },
+  {
+    "rank": 15689,
+    "word": "武蔵",
+    "reading": "むさし",
+    "meaning": "Musashi (former province located in parts of present-day ..."
   },
   {
     "rank": 15703,
@@ -7546,6 +7582,12 @@
     "word": "手術室",
     "reading": "しゅじゅつしつ",
     "meaning": "operating room"
+  },
+  {
+    "rank": 26978,
+    "word": "プラネタリウム",
+    "reading": "プラネタリウム",
+    "meaning": "planetarium"
   },
   {
     "rank": 26978,

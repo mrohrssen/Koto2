@@ -834,6 +834,12 @@
     "meaning": "chopsticks"
   },
   {
+    "rank": 4724,
+    "word": "代物",
+    "reading": "しろもの",
+    "meaning": "article"
+  },
+  {
     "rank": 4833,
     "word": "チャイム",
     "reading": "チャイム",
@@ -1144,6 +1150,12 @@
     "word": "救急車",
     "reading": "きゅうきゅうしゃ",
     "meaning": "ambulance"
+  },
+  {
+    "rank": 6636,
+    "word": "サイト",
+    "reading": "サイト",
+    "meaning": "site (usu. website)"
   },
   {
     "rank": 6646,
@@ -2040,6 +2052,12 @@
     "meaning": "gently"
   },
   {
+    "rank": 10166,
+    "word": "桶",
+    "reading": "おけ",
+    "meaning": "bucket"
+  },
+  {
     "rank": 10167,
     "word": "お気に召す",
     "reading": "おきにめす",
@@ -2050,6 +2068,12 @@
     "word": "そそる",
     "reading": "そそる",
     "meaning": "to excite"
+  },
+  {
+    "rank": 10208,
+    "word": "荷台",
+    "reading": "にだい",
+    "meaning": "(truck) load-carrying tray"
   },
   {
     "rank": 10260,
@@ -2548,6 +2572,12 @@
     "word": "安物",
     "reading": "やすもの",
     "meaning": "cheap article"
+  },
+  {
+    "rank": 11888,
+    "word": "チャンネル",
+    "reading": "チャンネル",
+    "meaning": "channel"
   },
   {
     "rank": 11904,
@@ -3264,6 +3294,12 @@
     "meaning": "zabuton (flat floor cushion used when sitting or kneeling"
   },
   {
+    "rank": 14132,
+    "word": "マッチ",
+    "reading": "マッチ",
+    "meaning": "match (to light fire with)"
+  },
+  {
     "rank": 14161,
     "word": "ガン",
     "reading": "ガン",
@@ -3460,6 +3496,12 @@
     "word": "口笛",
     "reading": "くちぶえ",
     "meaning": "whistle (sound made with the lips)"
+  },
+  {
+    "rank": 14849,
+    "word": "ホームページ",
+    "reading": "ホームページ",
+    "meaning": "web site"
   },
   {
     "rank": 14873,
@@ -5856,6 +5898,12 @@
     "meaning": "change (for a purchase)"
   },
   {
+    "rank": 21873,
+    "word": "雑貨",
+    "reading": "ざっか",
+    "meaning": "miscellaneous goods"
+  },
+  {
     "rank": 21875,
     "word": "下敷き",
     "reading": "したじき",
@@ -6216,6 +6264,12 @@
     "meaning": "low dining table"
   },
   {
+    "rank": 22983,
+    "word": "留守電",
+    "reading": "るすでん",
+    "meaning": "answering machine"
+  },
+  {
     "rank": 23007,
     "word": "篝火",
     "reading": "かがりび",
@@ -6394,6 +6448,12 @@
     "word": "キット",
     "reading": "キット",
     "meaning": "kit"
+  },
+  {
+    "rank": 23573,
+    "word": "俵",
+    "reading": "たわら",
+    "meaning": "straw bag"
   },
   {
     "rank": 23574,
@@ -7654,47 +7714,5 @@
     "word": "日焼け止め",
     "reading": "ひやけどめ",
     "meaning": "sunscreen"
-  },
-  {
-    "rank": 6636,
-    "word": "サイト",
-    "reading": "サイト",
-    "meaning": "site (usu. website)"
-  },
-  {
-    "rank": 10208,
-    "word": "荷台",
-    "reading": "にだい",
-    "meaning": "(truck) load-carrying tray"
-  },
-  {
-    "rank": 11888,
-    "word": "チャンネル",
-    "reading": "チャンネル",
-    "meaning": "channel"
-  },
-  {
-    "rank": 14849,
-    "word": "ホームページ",
-    "reading": "ホームページ",
-    "meaning": "web site"
-  },
-  {
-    "rank": 21873,
-    "word": "雑貨",
-    "reading": "ざっか",
-    "meaning": "miscellaneous goods"
-  },
-  {
-    "rank": 22983,
-    "word": "留守電",
-    "reading": "るすでん",
-    "meaning": "answering machine"
-  },
-  {
-    "rank": 10166,
-    "word": "桶",
-    "reading": "おけ",
-    "meaning": "bucket"
   }
 ]

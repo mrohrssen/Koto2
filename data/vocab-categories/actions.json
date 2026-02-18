@@ -6,6 +6,18 @@
     "meaning": "to open"
   },
   {
+    "rank": 574,
+    "word": "行動",
+    "reading": "こうどう",
+    "meaning": "action"
+  },
+  {
+    "rank": 579,
+    "word": "すむ",
+    "reading": "すむ",
+    "meaning": "to finish"
+  },
+  {
     "rank": 641,
     "word": "引く",
     "reading": "ひく",
@@ -22,6 +34,12 @@
     "word": "捨てる",
     "reading": "すてる",
     "meaning": "to throw away"
+  },
+  {
+    "rank": 714,
+    "word": "受け取る",
+    "reading": "うけとる",
+    "meaning": "to receive"
   },
   {
     "rank": 716,
@@ -616,6 +634,12 @@
     "word": "手にする",
     "reading": "てにする",
     "meaning": "to hold (in one's hand)"
+  },
+  {
+    "rank": 1678,
+    "word": "抱く",
+    "reading": "いだく",
+    "meaning": "to hold in one's arms (e.g. a baby)"
   },
   {
     "rank": 1678,
@@ -1720,6 +1744,12 @@
     "word": "操る",
     "reading": "あやつる",
     "meaning": "to operate (e.g. a machine)"
+  },
+  {
+    "rank": 2899,
+    "word": "震わせる",
+    "reading": "ふるわせる",
+    "meaning": "to (make something) quiver"
   },
   {
     "rank": 2899,
@@ -3570,6 +3600,12 @@
     "meaning": "to spin"
   },
   {
+    "rank": 5458,
+    "word": "掻く",
+    "reading": "かく",
+    "meaning": "to scratch"
+  },
+  {
     "rank": 5465,
     "word": "引き離す",
     "reading": "ひきはなす",
@@ -3646,6 +3682,12 @@
     "word": "拾い上げる",
     "reading": "ひろいあげる",
     "meaning": "to pick up"
+  },
+  {
+    "rank": 5550,
+    "word": "冷やす",
+    "reading": "ひやす",
+    "meaning": "to cool (from room temperature)"
   },
   {
     "rank": 5550,
@@ -4038,6 +4080,12 @@
     "meaning": "to hold in one's arms (e.g. a baby)"
   },
   {
+    "rank": 6016,
+    "word": "懐く",
+    "reading": "いだく",
+    "meaning": "to hold in one's arms (e.g. a baby)"
+  },
+  {
     "rank": 6017,
     "word": "活かす",
     "reading": "いかす",
@@ -4300,6 +4348,12 @@
     "word": "連絡を取る",
     "reading": "れんらくをとる",
     "meaning": "to get in touch with"
+  },
+  {
+    "rank": 6292,
+    "word": "呼び寄せる",
+    "reading": "よびよせる",
+    "meaning": "to call"
   },
   {
     "rank": 6293,
@@ -4678,6 +4732,12 @@
     "word": "治安",
     "reading": "ちあん",
     "meaning": "public order"
+  },
+  {
+    "rank": 6705,
+    "word": "電話をかける",
+    "reading": "でんわをかける",
+    "meaning": "to telephone"
   },
   {
     "rank": 6706,
@@ -6376,6 +6436,12 @@
     "word": "憶える",
     "reading": "おぼえる",
     "meaning": "to memorize"
+  },
+  {
+    "rank": 8388,
+    "word": "肩を竦める",
+    "reading": "かたをすくめる",
+    "meaning": "to shrug one's shoulders"
   },
   {
     "rank": 8388,
@@ -8224,6 +8290,12 @@
     "word": "へたり込む",
     "reading": "へたりこむ",
     "meaning": "to sit down hard"
+  },
+  {
+    "rank": 10849,
+    "word": "替わる",
+    "reading": "かわる",
+    "meaning": "to succeed"
   },
   {
     "rank": 10867,
@@ -11674,6 +11746,12 @@
     "word": "斬り捨てる",
     "reading": "きりすてる",
     "meaning": "to cut down"
+  },
+  {
+    "rank": 16350,
+    "word": "盗聴",
+    "reading": "とうちょう",
+    "meaning": "interception (email)"
   },
   {
     "rank": 16352,
@@ -15664,6 +15742,12 @@
     "word": "枢機卿",
     "reading": "すうききょう",
     "meaning": "cardinal (Catholic church)"
+  },
+  {
+    "rank": 22495,
+    "word": "引っ張り込む",
+    "reading": "ひっぱりこむ",
+    "meaning": "to drag in"
   },
   {
     "rank": 22496,

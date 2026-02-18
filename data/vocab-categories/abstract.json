@@ -18,6 +18,12 @@
     "meaning": "again"
   },
   {
+    "rank": 609,
+    "word": "むしろ",
+    "reading": "むしろ",
+    "meaning": "rather"
+  },
+  {
     "rank": 678,
     "word": "人生",
     "reading": "じんせい",
@@ -48,6 +54,18 @@
     "meaning": "change"
   },
   {
+    "rank": 868,
+    "word": "ような気がする",
+    "reading": "ようなきがする",
+    "meaning": "(I) think (that)"
+  },
+  {
+    "rank": 878,
+    "word": "成功",
+    "reading": "せいこう",
+    "meaning": "success"
+  },
+  {
     "rank": 895,
     "word": "否定",
     "reading": "ひてい",
@@ -58,6 +76,12 @@
     "word": "ちょうど",
     "reading": "ちょうど",
     "meaning": "exactly"
+  },
+  {
+    "rank": 969,
+    "word": "まだまだ",
+    "reading": "まだまだ",
+    "meaning": "still"
   },
   {
     "rank": 1005,
@@ -3156,6 +3180,12 @@
     "meaning": "real intention"
   },
   {
+    "rank": 3398,
+    "word": "思いっきり",
+    "reading": "おもいっきり",
+    "meaning": "to one's heart's content"
+  },
+  {
     "rank": 3409,
     "word": "器用",
     "reading": "きよう",
@@ -3298,6 +3328,12 @@
     "word": "心底",
     "reading": "しんそこ",
     "meaning": "bottom of one's heart"
+  },
+  {
+    "rank": 3579,
+    "word": "幸運",
+    "reading": "こううん",
+    "meaning": "good luck"
   },
   {
     "rank": 3585,
@@ -4158,6 +4194,12 @@
     "meaning": "job"
   },
   {
+    "rank": 4268,
+    "word": "あるらしい",
+    "reading": "あるらしい",
+    "meaning": "seems to be"
+  },
+  {
     "rank": 4270,
     "word": "位",
     "reading": "くらい",
@@ -4582,6 +4624,12 @@
     "word": "知恵",
     "reading": "ちえ",
     "meaning": "wisdom"
+  },
+  {
+    "rank": 4595,
+    "word": "悲劇",
+    "reading": "ひげき",
+    "meaning": "tragedy"
   },
   {
     "rank": 4595,
@@ -5502,6 +5550,12 @@
     "meaning": "judging from"
   },
   {
+    "rank": 5388,
+    "word": "からすると",
+    "reading": "からすると",
+    "meaning": "judging from"
+  },
+  {
     "rank": 5389,
     "word": "主義",
     "reading": "しゅぎ",
@@ -5656,6 +5710,12 @@
     "word": "功績",
     "reading": "こうせき",
     "meaning": "achievement"
+  },
+  {
+    "rank": 5601,
+    "word": "幻想",
+    "reading": "げんそう",
+    "meaning": "fantasy"
   },
   {
     "rank": 5601,
@@ -6348,6 +6408,12 @@
     "meaning": "to draw in"
   },
   {
+    "rank": 6396,
+    "word": "あり得る",
+    "reading": "ありうる",
+    "meaning": "possible"
+  },
+  {
     "rank": 6401,
     "word": "自称",
     "reading": "じしょう",
@@ -6400,6 +6466,12 @@
     "word": "真摯",
     "reading": "しんし",
     "meaning": "sincere"
+  },
+  {
+    "rank": 6449,
+    "word": "さぞ",
+    "reading": "さぞ",
+    "meaning": "surely"
   },
   {
     "rank": 6456,
@@ -6532,6 +6604,12 @@
     "word": "名目",
     "reading": "めいもく",
     "meaning": "name"
+  },
+  {
+    "rank": 6606,
+    "word": "圧迫",
+    "reading": "あっぱく",
+    "meaning": "pressure"
   },
   {
     "rank": 6606,
@@ -7030,6 +7108,12 @@
     "word": "価格",
     "reading": "かかく",
     "meaning": "price"
+  },
+  {
+    "rank": 7047,
+    "word": "活気",
+    "reading": "かっき",
+    "meaning": "energy"
   },
   {
     "rank": 7047,
@@ -7864,6 +7948,12 @@
     "word": "熱意",
     "reading": "ねつい",
     "meaning": "zeal"
+  },
+  {
+    "rank": 7477,
+    "word": "このため",
+    "reading": "このため",
+    "meaning": "because of this"
   },
   {
     "rank": 7477,
@@ -10200,6 +10290,12 @@
     "meaning": "rainbow"
   },
   {
+    "rank": 9152,
+    "word": "一理",
+    "reading": "いちり",
+    "meaning": "(a) principle"
+  },
+  {
     "rank": 9153,
     "word": "大差",
     "reading": "たいさ",
@@ -11322,6 +11418,12 @@
     "meaning": "impatience"
   },
   {
+    "rank": 10378,
+    "word": "手当",
+    "reading": "てあて",
+    "meaning": "salary"
+  },
+  {
     "rank": 10379,
     "word": "なきゃ",
     "reading": "なきゃ",
@@ -11548,6 +11650,12 @@
     "word": "もつれる",
     "reading": "もつれる",
     "meaning": "to get entangled"
+  },
+  {
+    "rank": 10490,
+    "word": "そのはず",
+    "reading": "そのはず",
+    "meaning": "only natural"
   },
   {
     "rank": 10491,
@@ -13084,6 +13192,12 @@
     "word": "正義感",
     "reading": "せいぎかん",
     "meaning": "sense of justice"
+  },
+  {
+    "rank": 11358,
+    "word": "絶命",
+    "reading": "ぜつめい",
+    "meaning": "end of life"
   },
   {
     "rank": 11410,
@@ -15132,6 +15246,12 @@
     "meaning": "promotion"
   },
   {
+    "rank": 13060,
+    "word": "呼称",
+    "reading": "こしょう",
+    "meaning": "naming"
+  },
+  {
     "rank": 13063,
     "word": "チート",
     "reading": "チート",
@@ -15766,6 +15886,12 @@
     "word": "幻滅",
     "reading": "げんめつ",
     "meaning": "disillusionment"
+  },
+  {
+    "rank": 13610,
+    "word": "具現化",
+    "reading": "ぐげんか",
+    "meaning": "embodiment"
   },
   {
     "rank": 13610,
@@ -16812,6 +16938,12 @@
     "meaning": "semi-"
   },
   {
+    "rank": 14904,
+    "word": "応じて",
+    "reading": "おうじて",
+    "meaning": "in proportion to"
+  },
+  {
     "rank": 14918,
     "word": "想像を絶する",
     "reading": "そうぞうをぜっする",
@@ -17574,6 +17706,12 @@
     "meaning": "to be to the point"
   },
   {
+    "rank": 15910,
+    "word": "内包",
+    "reading": "ないほう",
+    "meaning": "connotation"
+  },
+  {
     "rank": 15914,
     "word": "キャリア",
     "reading": "キャリア",
@@ -17602,6 +17740,12 @@
     "word": "不純",
     "reading": "ふじゅん",
     "meaning": "impure"
+  },
+  {
+    "rank": 15943,
+    "word": "薬師",
+    "reading": "やくし",
+    "meaning": "Bhaisajyaguru"
   },
   {
     "rank": 15945,
@@ -17650,6 +17794,12 @@
     "word": "続けざま",
     "reading": "つづけざま",
     "meaning": "successive"
+  },
+  {
+    "rank": 16356,
+    "word": "根幹",
+    "reading": "こんかん",
+    "meaning": "foundation"
   },
   {
     "rank": 16477,
@@ -22572,6 +22722,12 @@
     "meaning": "critical moment"
   },
   {
+    "rank": 20117,
+    "word": "時代劇",
+    "reading": "じだいげき",
+    "meaning": "historical play"
+  },
+  {
     "rank": 20126,
     "word": "人が変わる",
     "reading": "ひとがかわる",
@@ -22660,6 +22816,12 @@
     "word": "タブー",
     "reading": "タブー",
     "meaning": "taboo"
+  },
+  {
+    "rank": 20229,
+    "word": "思いっ切り",
+    "reading": "おもいっきり",
+    "meaning": "to one's heart's content"
   },
   {
     "rank": 20229,
@@ -23172,6 +23334,12 @@
     "meaning": "to glance at"
   },
   {
+    "rank": 20710,
+    "word": "所為",
+    "reading": "しょい",
+    "meaning": "act"
+  },
+  {
     "rank": 20715,
     "word": "控え目",
     "reading": "ひかえめ",
@@ -23488,6 +23656,12 @@
     "word": "つぶさに",
     "reading": "つぶさに",
     "meaning": "in detail"
+  },
+  {
+    "rank": 20960,
+    "word": "所定",
+    "reading": "しょてい",
+    "meaning": "prescribed"
   },
   {
     "rank": 20966,
@@ -23926,6 +24100,12 @@
     "word": "ぐんと",
     "reading": "ぐんと",
     "meaning": "remarkably"
+  },
+  {
+    "rank": 22489,
+    "word": "よしんば",
+    "reading": "よしんば",
+    "meaning": "even if"
   },
   {
     "rank": 22498,
