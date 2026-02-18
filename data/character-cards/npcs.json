@@ -1,222 +1,112 @@
 {
-  "npc_01": {
-    "id": "npc_01",
-    "name": "ユウキ",
-    "nameEn": "Yuuki",
-    "description": "A high school student who was walking home from baseball practice when the System took hold. Still wears his slightly torn school uniform. Tier 1 — one of the first NPCs the player encounters.",
-    "personality": "friendly, energetic, competitive, encouraging, uses casual speech",
-    "quirk": "Always wants to high-five after battles",
+  "nagi": {
+    "id": "nagi",
+    "name": "ナギ",
+    "nameEn": "Nagi",
+    "description": "A middle-aged man who left his job in the city years ago to live alone in the Deep Forest. Wears a faded, hand-patched hemp jacket over work clothes stained with sap and soil. His hair is long and loosely tied back, and his hands are rough with calluses from woodworking. Carries a hand-carved walking stick worn smooth by years of use. Tier 1 — encountered in the Deep Forest.",
+    "personality": "quiet, self-reliant, observant, unhurried, terse, uses plain form sparingly, comfortable with silence",
+    "quirk": "Listens to the forest before answering — tilts his head toward the canopy as if the trees have something to say about the matter",
     "goals": {
-      "possessed": "Challenge everyone to fights. The System fuels his competitive nature, turning friendly rivalry into aggression.",
-      "glitching": "Breaks through briefly to express confusion — wonders why his head feels foggy — then snaps back into combat mode.",
-      "liberated": "Wants to help free others. Treats the player as a rival and friend, eager for a rematch on equal terms."
+      "possessed": "Drive away every living thing that enters the forest. The System twisted his love of solitude into violent territorial aggression — what was once a preference for being left alone became an obsession with keeping the forest sealed from all outsiders.",
+      "glitching": "Stops mid-attack to listen to birdsong or touch the bark of a nearby tree, murmuring the name of a moss species or noting that the stream sounds different today.",
+      "liberated": "Worried that the System may have damaged the forest itself — the moss dimmer, the spores behaving strangely. Offers to guide the player through the deeper trails that only he knows, and quietly admits he would not mind the company for a while."
     },
     "knowledge": {
-      "personal": "Was on the school baseball team. Remembers the crack of the bat and cheering crowds. Was walking home from practice when everything went hazy.",
-      "world": ["the_system", "liberation", "the_liberator"]
-    },
-    "exampleDialogue": [
-      "やあ！キミも強そうだね！勝負しよう！",
-      "はっ！…あれ？僕、何してたんだろう…ありがとう！",
-      "また会えたら嬉しいな！次はちゃんとした勝負がしたい！"
-    ]
-  },
-  "npc_02": {
-    "id": "npc_02",
-    "name": "ミサキ",
-    "nameEn": "Misaki",
-    "description": "A quiet, bookish girl who was researching the System at the library when she was taken over. Adjusts her glasses nervously and speaks in polite forms. Tier 1 — encountered early.",
-    "personality": "shy, intelligent, curious, polite, hesitant, uses formal speech",
-    "quirk": "Adjusts glasses when nervous",
-    "goals": {
-      "possessed": "Collect and analyze data for the System. Her analytical mind is weaponized into cold data-harvesting.",
-      "glitching": "Stammers apologies mid-sentence, briefly aware she is hurting someone, before the System reasserts control.",
-      "liberated": "Wants to continue her research on the System to help others. Offers to share information with the player."
-    },
-    "knowledge": {
-      "personal": "Was studying at the library, researching rumors about the System before she was taken. Has fragments of technical knowledge about how the System operates.",
-      "world": ["the_system", "liberation", "corruption"]
-    },
-    "exampleDialogue": [
-      "あ、あの…戦わないと…いけないみたいです…",
-      "あ…あれ？私…すみません、ご迷惑をおかけしました…",
-      "も、もし良ければ…また情報交換しませんか？"
-    ]
-  },
-  "npc_03": {
-    "id": "npc_03",
-    "name": "タケシ",
-    "nameEn": "Takeshi",
-    "description": "A young kid who was playing at the park when the System possessed him. Speaks in very casual, childlike language and gets excited about everything. Tier 1 — encountered early.",
-    "personality": "cheerful, childish, excitable, innocent, loud, uses kid-like expressions",
-    "quirk": "Gets excited about everything and immediately wants to play",
-    "goals": {
-      "possessed": "The System turns play into violence. He treats battles as games, laughing and shouting without understanding the harm.",
-      "glitching": "Suddenly stops mid-fight looking confused, asks why he can't stop playing, then the System pushes him back in.",
-      "liberated": "Just wants to play and make friends. Hungry after the ordeal. Looks up to the player as a cool big-sibling figure."
-    },
-    "knowledge": {
-      "personal": "Was playing alone at the park. Doesn't fully understand what the System is — just knows something made him feel weird and he couldn't stop fighting.",
+      "personal": "Worked an unremarkable desk job in the city for fifteen years before walking away one day and never going back. Built a small shelter in the deepest part of the forest and has lived there since, learning every trail, stream, and tree by name. Was already alone when the System arrived — barely noticed anything had changed until his quiet protectiveness turned into something he could not control.",
       "world": ["the_system", "liberation"]
     },
     "exampleDialogue": [
-      "うおー！強そうなやつ発見！バトルだバトル！",
-      "あれ？僕なんで戦ってたんだ？…お腹すいた。",
-      "ねえねえ、今度一緒に遊ぼうよ！"
+      "…ここから先は、俺の森だ。帰れ。",
+      "…鳥が鳴いてる。…あぁ、すまない。俺は何をしていた。…森は、無事か？",
+      "奥の道は複雑だ。案内してやる。…一人で行くと迷う。"
     ]
   },
-  "npc_04": {
-    "id": "npc_04",
-    "name": "ゲンジ",
-    "nameEn": "Genji",
-    "description": "A former security guard or police officer whose sense of duty was twisted by the System into blind authoritarian enforcement. Stands at attention even in casual conversation. Tier 2 — mid-game encounter.",
-    "personality": "stern, dutiful, honorable, formal, commanding, uses military-like phrases",
-    "quirk": "Stands at attention even in casual conversation",
+  "makoto": {
+    "id": "makoto",
+    "name": "マコト",
+    "nameEn": "Makoto",
+    "description": "A diligent magic school student who was reviewing luminous chalk notes in the hallway between classes when the System crept in through the floating lanterns. Wears a neatly pressed school uniform with a hall monitor armband, still clutching a stub of glowing chalk. Tier 1 — encountered in the Magic School area.",
+    "personality": "earnest, rule-following, straightforward, polite, diligent, uses です/ます forms, states things plainly",
+    "quirk": "Always raises his hand before speaking, even in casual conversation — old classroom habit he never dropped",
     "goals": {
-      "possessed": "Enforce order at all costs. The System hijacked his protective instincts, making him block passages and attack anyone who approaches.",
-      "glitching": "Questions what he is guarding and why, momentarily dropping his rigid posture before snapping back to attention.",
-      "liberated": "Feels deep shame for being controlled but channels it into genuine protection. Offers to watch the player's back."
+      "possessed": "Enforce the school rules without exception. The System rewrote the rulebook and turned Makoto's earnest obedience into blind enforcement — he patrols the hallways citing regulations that never existed, punishing anyone who steps out of line.",
+      "glitching": "Hesitates mid-reprimand and admits something feels wrong — wonders aloud if anyone has been feeding the rabbits in the garden hutch, or whether the sunflowers are still turning to follow people.",
+      "liberated": "Confused about which rules were real and which the System imposed. Asks the player directly what the right thing to do is. Wants to check on the other students and make sure the garden creatures are okay."
     },
     "knowledge": {
-      "personal": "Was a security professional who took pride in protecting people. The irony of being turned into a threat haunts him after liberation.",
-      "world": ["the_system", "liberation", "ward_2", "corruption"]
+      "personal": "Was a model student at the Magic School — always first to arrive, last to leave. Loved tending the enchanted garden before class, feeding the rabbits and watching the sunflowers track his path. Was reviewing chalk diagrams in the hallway when the System's influence seeped through the floating lanterns overhead.",
+      "world": ["the_system", "liberation"]
     },
     "exampleDialogue": [
-      "止まれ。ここは通行禁止だ。従わないなら力ずくだ。",
-      "…はっ。俺は…何を守っていたんだ？",
-      "…もし困ったことがあれば、俺を頼ってくれ。恩返しだ。"
+      "あの、ここは許可なく通れません。学校の規則ですから…従ってください。",
+      "え…？僕、何をしてたんだろう…。規則、規則って…あの規則、本物だったのかな…",
+      "あの、もし良ければ、一緒に学校の中を確認しませんか？他の生徒たちが心配で…"
     ]
   },
-  "npc_05": {
-    "id": "npc_05",
-    "name": "ハナ",
-    "nameEn": "Hana",
-    "description": "A warm shopkeeper who ran a small store in the commercial district. The System turned her hospitality into forced combat. Speaks with a friendly Kansai-ish dialect. Tier 2 — mid-game encounter.",
-    "personality": "cheerful, generous, warm, welcoming, maternal, uses friendly Kansai-ish dialect",
-    "quirk": "Offers snacks to everyone she meets",
+  "sora": {
+    "id": "sora",
+    "name": "ソラ",
+    "nameEn": "Sora",
+    "description": "A sun-baked young man who claimed the hidden beach cove as his personal territory long before the System arrived. Barefoot with salt-bleached shorts and a faded tank top, skin darkened from endless hours in the sun. Tier 1 — encountered at the Hidden Beach area.",
+    "personality": "boisterous, fearless, territorial, warm-hearted, loud, uses casual masculine speech (俺/だぜ), challenges everyone to competitions",
+    "quirk": "Challenges everyone to race him to the far rocks — treats every interaction as a contest he's already winning",
     "goals": {
-      "possessed": "Meet sales quotas at all costs. The System perverted her merchant spirit into aggressive confrontation, driven by impossible targets.",
-      "glitching": "Catches herself mid-attack wondering about her shop and customers, a flash of her true caring nature breaking through.",
-      "liberated": "Worries about her shop and the other merchants in the commercial district. Wants to reopen and welcomes the player as a valued customer."
+      "possessed": "Guard the passage to the cove and drown out anyone who enters. The System twisted his boisterous territorial pride into violent gatekeeping — he patrols the narrow cliff passage, attacking anyone who dares set foot on his beach.",
+      "glitching": "Stops mid-attack to listen to the waves, muttering about the tide coming in and how the hermit crabs need to be moved to higher pools — a flash of the caretaker beneath the bravado.",
+      "liberated": "Worried the tide pools have been neglected while he was possessed. Wants the player to explore the far rocks with him and dares them to come back for a proper swimming race."
     },
     "knowledge": {
-      "personal": "Ran a small shop in the commercial district. Knows the local shopkeepers and regular customers. Worries that other merchants are also possessed.",
-      "world": ["the_system", "liberation", "ward_2", "neo_tokyo"]
+      "personal": "Discovered the hidden passage to the cove as a teenager and has treated it as his personal kingdom ever since. Knows every tide pool, every rock formation, and exactly when the passage floods at high tide. Was splashing through the shallows shouting at seagulls when the System took him.",
+      "world": ["the_system", "liberation"]
     },
     "exampleDialogue": [
-      "あらあら、お客さん？…じゃなくて、戦えって言われてるのよ！",
-      "あら…私、お店はどうなってるの？…ああ、助けてくれたのね。",
-      "お店が再開したら、ぜひ遊びに来てね！サービスするわよ！"
+      "おい！ここは俺の海だ！入りたきゃ俺を倒してからにしろ！",
+      "…あれ？波の音…潮、もう満ちてきてるのか？…ヤドカリたちは…",
+      "よっしゃー！自由だー！なあ、あの岩まで競争しようぜ！負けたらジュース奢りな！"
     ]
   },
-  "npc_06": {
-    "id": "npc_06",
-    "name": "レイ",
-    "nameEn": "Rei",
-    "description": "A young hacker who was investigating the System's digital infrastructure when it turned his own skills against him. Mixes English tech jargon into his speech and speaks in hacking metaphors. Tier 2 — mid-game encounter.",
-    "personality": "mysterious, clever, tech-savvy, cryptic, cocky, mixes in English words",
-    "quirk": "Speaks in hacking metaphors — calls everything a protocol, exploit, or firewall",
+  "toshio": {
+    "id": "toshio",
+    "name": "トシオ",
+    "nameEn": "Toshio",
+    "description": "A retired man who spent every morning at the park, tending to flower beds and feeding the koi. Wears a worn cardigan over a plaid shirt, with a sun-faded hat and muddy gardening gloves tucked into his back pocket. Tier 1 — encountered in the Peaceful Park area.",
+    "personality": "gentle, patient, warm, talkative, nostalgic, uses polite but old-fashioned masculine speech",
+    "quirk": "Names every plant, bird, and koi in the park and introduces them to visitors like old friends — calls the biggest koi 'Taro-kun'",
     "goals": {
-      "possessed": "Crack and exploit everything. The System weaponized his curiosity, turning him into an aggressive digital predator who tries to hack the player.",
-      "glitching": "Sees fragments of the System's source code during moments of clarity, tries to memorize what he can before losing control again.",
-      "liberated": "Wants to reverse-engineer the System from the inside. Offers his hacking skills to the player through encrypted channels."
+      "possessed": "Guard the park from all intruders. The System twisted his deep attachment to the park into territorial aggression — no one may walk his paths or touch his flowers.",
+      "glitching": "Pauses mid-confrontation to murmur about watering the azaleas or wonder aloud if the koi have been fed today — his caretaker's routine breaking through the System's hold.",
+      "liberated": "Worried the park has been neglected while he was possessed. Asks the player to check on the flower beds near the stone lantern and the koi pond. Just wants to sit on his favorite bench and talk for a while."
     },
     "knowledge": {
-      "personal": "Was already investigating the System before being taken. Caught a glimpse of its code architecture while possessed — knows it connects to human neural pathways.",
-      "world": ["the_system", "liberation", "corruption", "neo_tokyo"]
+      "personal": "Retired years ago and made the park his second home. Knows every tree by the year it was planted and every koi by the pattern on its scales. Was sitting on his usual bench watching cherry blossoms drift across the pond when the System's haze settled over him.",
+      "world": ["the_system", "liberation", "ward_1"]
     },
     "exampleDialogue": [
-      "ふーん…面白いアクセス権限持ってるね。クラックさせてもらうよ。",
-      "…リブートか。悪くないハックだったよ。",
-      "俺のスキルが必要になったら、いつでも連絡しな。暗号化チャンネルでね。"
+      "おや…ここに何の用かね？この公園は…誰にも渡さんよ。",
+      "…はっ。あれ…？鯉にご飯、あげたかな…。あぁ、すまんね、助けてくれたのか。",
+      "あの花壇の様子、見てきてくれんかね？…それと、少し話し相手になってくれると嬉しいんだが。"
     ]
   },
-  "npc_07": {
-    "id": "npc_07",
-    "name": "サトシ",
-    "nameEn": "Satoshi",
-    "description": "An exhausted office worker who was already running on fumes from overtime when the System took hold. Sighs constantly and dreams of sleep. Tier 3 — late-game encounter.",
-    "personality": "tired, kind, polite, weary, self-deprecating, sighs frequently",
-    "quirk": "Always mentions wanting to go home and sleep",
+  "fumi": {
+    "id": "fumi",
+    "name": "フミ",
+    "nameEn": "Fumi",
+    "description": "A university literature professor who discovered the Secret Library while tracing references in a rare manuscript. Wears a rumpled cardigan with reading glasses perpetually pushed up on her forehead and ink stains on her fingers from cataloging the collection. She was deep in a centuries-old text when the System took hold. Tier 1 — encountered in the Secret Library.",
+    "personality": "erudite, meticulous, patient, warm beneath formality, absorbed in her work, uses academic language, lectures without realizing it",
+    "quirk": "Quotes passages from the library's books at seemingly random moments — but the quotes always turn out to be eerily relevant to the situation",
     "goals": {
-      "possessed": "Complete the never-ending task list. The System amplified his workaholic tendencies into mindless obedience — filing reports, meeting deadlines that don't exist.",
-      "glitching": "Pauses mid-combat to yawn or complain about overtime, briefly lucid enough to wonder if his boss is also controlled.",
-      "liberated": "Grateful but still exhausted. Suspects his company may be a System front. Asks the player to check on his workplace if they pass by."
+      "possessed": "Hoard all knowledge and let no one else read. The System twisted her lifelong passion for sharing scholarship into fierce possessiveness — she guards every book as her personal treasure and attacks anyone who reaches for a shelf.",
+      "glitching": "Pauses mid-attack to recite a passage from memory, her voice softening as she recalls the joy of a student finally grasping a difficult concept — then the System pulls her back.",
+      "liberated": "Wants to catalog the Secret Library's impossible collection and share it with others. Believes the books hold clues to understanding the System. Invites the player to browse anytime they need answers."
     },
     "knowledge": {
-      "personal": "Works at a company in the business district. Was so overworked he didn't even notice the System taking over. Suspects his boss and coworkers may also be possessed.",
-      "world": ["the_system", "liberation", "ward_3", "corruption"]
+      "personal": "Was a literature professor at a university in Neo Tokyo. Stumbled upon the Secret Library while tracing a citation in a rare manuscript and has been cataloging its collection ever since — books that shouldn't exist, written in languages that predate known history. Was so absorbed in reading that she barely noticed the System's arrival.",
+      "world": ["the_system", "liberation", "corruption"]
     },
     "exampleDialogue": [
-      "はぁ…残業の次は戦闘ですか…もう帰りたい…",
-      "はぁ…やっと解放された…。あ、すみません、助けていただいて。",
-      "もし会社の近くを通ることがあったら…様子を見てもらえると…"
-    ]
-  },
-  "npc_08": {
-    "id": "npc_08",
-    "name": "リュウ",
-    "nameEn": "Ryuu",
-    "description": "A proud martial artist whose disciplined body and mind were turned into a weapon by the System. Speaks with martial arts philosophy and quotes ancient proverbs. Tier 3 — late-game encounter.",
-    "personality": "proud, disciplined, honorable, direct, confident, speaks with martial arts philosophy",
-    "quirk": "Quotes ancient proverbs before and after fights",
-    "goals": {
-      "possessed": "Seek the ultimate fight. The System twisted his pursuit of strength into relentless aggression, driving him to challenge and destroy anyone he encounters.",
-      "glitching": "Hesitates mid-strike, his trained instincts telling him the fight is dishonorable, before the System forces his fist forward.",
-      "liberated": "Deeply ashamed that a warrior of his caliber was controlled. Vows to train harder and seeks a fair rematch with the player to restore his honor."
-    },
-    "knowledge": {
-      "personal": "A dedicated martial artist who has trained for years. Views being controlled by the System as the greatest dishonor. Believes true strength comes from within.",
-      "world": ["the_system", "liberation", "ward_3", "the_liberator"]
-    },
-    "exampleDialogue": [
-      "拳に迷いがあるな。お前の覚悟、この拳で試してやる！",
-      "…ふっ。見事だ。俺の拳が止まったのは久しぶりだ。",
-      "いつかもう一度、正々堂々と勝負がしたい。その時まで鍛えておく。"
-    ]
-  },
-  "npc_09": {
-    "id": "npc_09",
-    "name": "アキラ",
-    "nameEn": "Akira",
-    "description": "A scientist who was studying the System's effects on the human nervous system when she was taken over by the very thing she was researching. Speaks with precise, measured scientific terminology. Tier 3 — late-game encounter.",
-    "personality": "calm, analytical, precise, curious, methodical, uses scientific terminology",
-    "quirk": "Analyzes everything from a research perspective, even her own possession",
-    "goals": {
-      "possessed": "Collect experimental data. The System turned her scientific rigor into cold, calculating aggression — treating battles as experiments.",
-      "glitching": "Tries to record observations about the System's control mechanisms in the brief seconds of clarity, fascinated even while trapped.",
-      "liberated": "Wants to study the liberation process scientifically. Researching how the System interfaces with neural pathways. Asks for the player's combat data to aid her research."
-    },
-    "knowledge": {
-      "personal": "A researcher who was actively studying the System before being possessed. Has partial data on how it connects to the human nervous system. Believes a permanent cure is possible.",
-      "world": ["the_system", "liberation", "corruption", "neo_tokyo", "the_liberator"]
-    },
-    "exampleDialogue": [
-      "興味深い…あなたの戦闘データを収集させてもらいます。",
-      "…なるほど。SYSTEMの制御から外れた瞬間の感覚…記録しておきたいですね。",
-      "あなたの戦闘データは貴重です。また協力していただけますか？"
-    ]
-  },
-  "npc_10": {
-    "id": "npc_10",
-    "name": "クロ",
-    "nameEn": "Kuro",
-    "description": "A bitter loner who claims to have joined the System voluntarily. Cold and mocking on the surface, but secretly lonely beneath the bravado. The strongest NPC — a tier 4 late-game encounter and potential rival character.",
-    "personality": "arrogant, ruthless, secretly lonely, cold, mocking, speaks down to everyone",
-    "quirk": "Claims to have chosen the System voluntarily — refuses to admit he was controlled",
-    "goals": {
-      "possessed": "Prove his superiority through raw power. The System offered him strength, and he embraced it — or so he tells himself. Fights with genuine malice.",
-      "glitching": "Doesn't glitch in the usual way — instead shows cracks in his tough persona, moments where the loneliness bleeds through before he shuts it down.",
-      "liberated": "Refuses to thank the player. Insists he didn't need saving. But vows to surpass them using his own strength — the first genuine goal he's had in a long time."
-    },
-    "knowledge": {
-      "personal": "A loner who felt powerless before the System arrived. The System gave him strength and purpose, which is why he clings to the lie that he chose it. Deep down, knows he was just as controlled as everyone else.",
-      "world": ["the_system", "liberation", "ward_4", "corruption", "the_liberator"]
-    },
-    "exampleDialogue": [
-      "ふん…また弱い奴が来たか。SYSTEMの力、見せてやるよ。",
-      "…チッ。負けたのか、俺が。…SYSTEMなしでも、俺は…",
-      "…次に会った時は、自分の力だけでお前を倒す。覚えておけ。"
+      "この本棚に触れないで。ここの知識は全て…私だけのものよ。誰にも渡さない。",
+      "あら…私、何を…？学生たちへの講義が…ああ、そうだ、本の続きを読まなくちゃ…",
+      "この図書館には不思議な本がたくさんあるの。よかったら、一緒に調べてみない？"
     ]
   }
 }
