@@ -465,6 +465,31 @@ export class ExplorationService {
     return { type: 'word_discovery_complete', xpGrants, levelUps };
   }
 
+  /**
+   * Complete whack-a-mole game and award credits
+   */
+  completeWhackAMole(score) {
+    const room = this.getCurrentRoom();
+    if (!room || room.type !== 'whackAMole') {
+      throw new Error('No whack-a-mole room here');
+    }
+
+    if (room.interacted) {
+      return { type: 'whack_a_mole_complete', alreadyComplete: true, score: room.whackAMole.score, creditsAwarded: 0 };
+    }
+
+    const clampedScore = Math.max(0, Math.floor(score || 0));
+    room.whackAMole.score = clampedScore;
+    room.whackAMole.completed = true;
+    room.interacted = true;
+
+    // Award 1 credit per point
+    const creditsAwarded = clampedScore;
+    this.gm.run.player.credits = (this.gm.run.player.credits || 0) + creditsAwarded;
+
+    return { type: 'whack_a_mole_complete', score: clampedScore, creditsAwarded };
+  }
+
   // ============ DEALER ROOM ============
 
   /**

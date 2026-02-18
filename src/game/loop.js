@@ -557,6 +557,10 @@ export class GameManager {
     return this.explorationService.completeWordDiscovery();
   }
 
+  completeWhackAMole(score) {
+    return this.explorationService.completeWhackAMole(score);
+  }
+
   // Dealer room delegates
   getDealerState() {
     return this.explorationService.getDealerState();
