@@ -1189,7 +1189,6 @@ function startWhackAMoleGame(pool, room) {
         <div class="wam-word-card">
           <div class="wam-word-kanji">${target.word}</div>
           <div class="wam-word-reading">${target.reading}</div>
-          <div class="wam-word-meaning">${target.meaning}</div>
         </div>
         <div class="wam-grid" id="wam-grid">
           ${tiles.map((_, i) => `
@@ -1225,10 +1224,8 @@ function startWhackAMoleGame(pool, room) {
     const target = pool[targetIndex];
     const kanji = document.querySelector('.wam-word-kanji');
     const reading = document.querySelector('.wam-word-reading');
-    const meaning = document.querySelector('.wam-word-meaning');
     if (kanji) kanji.textContent = target.word;
     if (reading) reading.textContent = target.reading;
-    if (meaning) meaning.textContent = target.meaning;
   }
 
   function updateScoreDisplay() {
