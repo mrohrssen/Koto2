@@ -1164,7 +1164,7 @@ function startWhackAMoleGame(pool, room) {
   let score = 0;
   let timeLeft = 30.0;
   let targetIndex = 0;
-  let tiles = Array(9).fill(null).map(() => ({ faceUp: false, poolIndex: -1, isCorrect: false }));
+  let tiles = Array(9).fill(null).map(() => ({ faceUp: false, poolIndex: -1 }));
   let gameOver = false;
   let flipTimeout = null;
   let timerInterval = null;
@@ -1234,8 +1234,8 @@ function startWhackAMoleGame(pool, room) {
   }
 
   // Tile state management
-  function setTileFaceUp(index, poolIdx, isCorrect) {
-    tiles[index] = { faceUp: true, poolIndex: poolIdx, isCorrect };
+  function setTileFaceUp(index, poolIdx) {
+    tiles[index] = { faceUp: true, poolIndex: poolIdx };
     const tileEl = document.querySelector(`.wam-tile[data-index="${index}"]`);
     if (!tileEl) return;
     tileEl.classList.add('wam-flipped');
@@ -1244,33 +1244,40 @@ function startWhackAMoleGame(pool, room) {
   }
 
   function setTileFaceDown(index) {
-    tiles[index] = { faceUp: false, poolIndex: -1, isCorrect: false };
+    tiles[index] = { faceUp: false, poolIndex: -1 };
     const tileEl = document.querySelector(`.wam-tile[data-index="${index}"]`);
     if (!tileEl) return;
     tileEl.classList.remove('wam-flipped');
   }
 
-  // Get a random distractor index (not the current target)
+  // Score checker: is this tile showing the current target?
+  function isCorrectTile(index) {
+    const tile = tiles[index];
+    if (!tile.faceUp || tile.poolIndex < 0) return false;
+    return pool[tile.poolIndex].id === pool[targetIndex].id;
+  }
+
   function randomDistractorIndex() {
+    const targetId = pool[targetIndex].id;
     let idx;
     do {
       idx = Math.floor(Math.random() * pool.length);
-    } while (idx === targetIndex);
+    } while (pool[idx].id === targetId);
     return idx;
   }
 
-  // Ensure exactly one correct tile is visible
   function ensureCorrectTileVisible() {
-    const correctTiles = tiles.filter(t => t.faceUp && t.isCorrect);
-    if (correctTiles.length === 0) {
-      const candidates = [];
-      for (let i = 0; i < 9; i++) candidates.push(i);
-      const shuffled = candidates.sort(() => Math.random() - 0.5);
-      // Prefer a face-down tile
-      const downTile = shuffled.find(i => !tiles[i].faceUp);
-      const target = downTile !== undefined ? downTile : shuffled[0];
-      setTileFaceUp(target, targetIndex, true);
+    // Check if any face-up tile already shows the target
+    for (let i = 0; i < 9; i++) {
+      if (isCorrectTile(i)) return; // already visible
     }
+    // No correct tile visible — flip one up
+    const candidates = [];
+    for (let i = 0; i < 9; i++) candidates.push(i);
+    const shuffled = candidates.sort(() => Math.random() - 0.5);
+    const downTile = shuffled.find(i => !tiles[i].faceUp);
+    const pick = downTile !== undefined ? downTile : shuffled[0];
+    setTileFaceUp(pick, targetIndex);
   }
 
   // Flip event: randomly flip a tile up or down
@@ -1289,9 +1296,9 @@ function startWhackAMoleGame(pool, room) {
     if (shouldFlipUp && faceDownCount > 0) {
       const downIndices = tiles.map((t, i) => (!t.faceUp ? i : -1)).filter(i => i >= 0);
       const pick = downIndices[Math.floor(Math.random() * downIndices.length)];
-      setTileFaceUp(pick, randomDistractorIndex(), false);
+      setTileFaceUp(pick, randomDistractorIndex());
     } else if (!shouldFlipUp && faceUpCount > 1) {
-      const upIndices = tiles.map((t, i) => (t.faceUp && !t.isCorrect ? i : -1)).filter(i => i >= 0);
+      const upIndices = tiles.map((t, i) => (t.faceUp && !isCorrectTile(i) ? i : -1)).filter(i => i >= 0);
       if (upIndices.length > 0) {
         const pick = upIndices[Math.floor(Math.random() * upIndices.length)];
         setTileFaceDown(pick);
@@ -1309,7 +1316,7 @@ function startWhackAMoleGame(pool, room) {
 
     const tileEl = document.querySelector(`.wam-tile[data-index="${index}"]`);
 
-    if (tile.isCorrect) {
+    if (isCorrectTile(index)) {
       // HIT
       score++;
       timeLeft = Math.min(timeLeft + 5, 99);
@@ -1329,25 +1336,7 @@ function startWhackAMoleGame(pool, room) {
         }, 600);
       }
 
-      // Mark old correct tile as distractor
-      for (let i = 0; i < 9; i++) {
-        if (tiles[i].isCorrect) {
-          tiles[i].isCorrect = false;
-          tiles[i].poolIndex = randomDistractorIndex();
-          const img = document.querySelector(`.wam-tile[data-index="${i}"] .wam-tile-img`);
-          if (img) img.src = pool[tiles[i].poolIndex].sprite;
-        }
-      }
-
-      // Choose new target (different from old)
-      const oldTarget = targetIndex;
-      do {
-        targetIndex = Math.floor(Math.random() * pool.length);
-      } while (targetIndex === oldTarget && pool.length > 1);
-
-      updateWordCard();
-      ensureCorrectTileVisible();
-
+      advanceToNextWord();
       try { playSFX('correct'); } catch (e) { /* sfx optional */ }
     } else {
       // MISS
@@ -1361,6 +1350,16 @@ function startWhackAMoleGame(pool, room) {
 
       if (timeLeft <= 0) endGame();
     }
+  }
+
+  function advanceToNextWord() {
+    const oldTarget = targetIndex;
+    do {
+      targetIndex = Math.floor(Math.random() * pool.length);
+    } while (targetIndex === oldTarget && pool.length > 1);
+
+    updateWordCard();
+    ensureCorrectTileVisible();
   }
 
   // End game
@@ -1400,11 +1399,11 @@ function startWhackAMoleGame(pool, room) {
   const indices = [0,1,2,3,4,5,6,7,8].sort(() => Math.random() - 0.5);
 
   // First, place the correct answer
-  setTileFaceUp(indices[0], targetIndex, true);
+  setTileFaceUp(indices[0], targetIndex);
 
   // Then fill remaining initial tiles with distractors
   for (let i = 1; i < initialUp; i++) {
-    setTileFaceUp(indices[i], randomDistractorIndex(), false);
+    setTileFaceUp(indices[i], randomDistractorIndex());
   }
 
   // Start flip scheduling (random interval 1-2s)
