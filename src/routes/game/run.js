@@ -518,10 +518,7 @@ export default function createRunRoutes({
   // Whack-a-Mole: get random pool of creatures + items for matching game
   router.get('/whack-a-mole-pool', (req, res) => {
     try {
-      const shuffledCreatures = [...allCreatures].sort(() => Math.random() - 0.5);
-      const shuffledItems = [...allItems].sort(() => Math.random() - 0.5);
-
-      const creaturePool = shuffledCreatures.slice(0, 8).map(c => ({
+      const creaturePool = allCreatures.map(c => ({
         id: c.id,
         type: 'creature',
         word: c.baseWord,
@@ -530,7 +527,7 @@ export default function createRunRoutes({
         sprite: `/assets/sprites/robots/${c.id}.webp`
       }));
 
-      const itemPool = shuffledItems.slice(0, 8).map(i => ({
+      const itemPool = allItems.map(i => ({
         id: i.id,
         type: 'item',
         word: i.word,
