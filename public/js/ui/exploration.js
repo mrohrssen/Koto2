@@ -1168,6 +1168,8 @@ function startWhackAMoleGame(pool, room) {
   let gameOver = false;
   let flipTimeout = null;
   let timerInterval = null;
+  let wordTimeLeft = 5.0;
+  const WORD_TIME_LIMIT = 5.0;
 
   // Pick initial target
   targetIndex = Math.floor(Math.random() * pool.length);
@@ -1189,6 +1191,7 @@ function startWhackAMoleGame(pool, room) {
         <div class="wam-word-card">
           <div class="wam-word-kanji">${target.word}</div>
           <div class="wam-word-reading">${target.reading}</div>
+          <div class="wam-word-timer-bar"><div class="wam-word-timer-fill" id="wam-word-timer-fill"></div></div>
         </div>
         <div class="wam-grid" id="wam-grid">
           ${tiles.map((_, i) => `
@@ -1231,6 +1234,14 @@ function startWhackAMoleGame(pool, room) {
   function updateScoreDisplay() {
     const el = document.querySelector('.wam-score');
     if (el) el.textContent = `★ ${score}`;
+  }
+
+  function updateWordTimerBar() {
+    const fill = document.getElementById('wam-word-timer-fill');
+    if (!fill) return;
+    const pct = Math.max(0, (wordTimeLeft / WORD_TIME_LIMIT) * 100);
+    fill.style.width = pct + '%';
+    fill.classList.toggle('wam-word-timer-warn', wordTimeLeft <= 2);
   }
 
   // Tile state management
@@ -1358,7 +1369,9 @@ function startWhackAMoleGame(pool, room) {
       targetIndex = Math.floor(Math.random() * pool.length);
     } while (targetIndex === oldTarget && pool.length > 1);
 
+    wordTimeLeft = WORD_TIME_LIMIT;
     updateWordCard();
+    updateWordTimerBar();
     ensureCorrectTileVisible();
   }
 
@@ -1421,7 +1434,14 @@ function startWhackAMoleGame(pool, room) {
   timerInterval = setInterval(() => {
     if (gameOver) return;
     timeLeft -= 0.1;
+    wordTimeLeft -= 0.1;
     updateTimerDisplay();
+    updateWordTimerBar();
+
+    if (wordTimeLeft <= 0) {
+      advanceToNextWord();
+    }
+
     if (timeLeft <= 0) {
       timeLeft = 0;
       endGame();

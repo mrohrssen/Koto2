@@ -3624,6 +3624,27 @@ html, body {
   margin-top: 0.125rem;
 }
 
+.wam-word-timer-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--bg-elevated);
+  border-radius: 2px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.wam-word-timer-fill {
+  height: 100%;
+  width: 100%;
+  background: var(--accent-cyan);
+  border-radius: 2px;
+  transition: width 0.1s linear;
+}
+
+.wam-word-timer-fill.wam-word-timer-warn {
+  background: var(--accent-amber);
+}
+
 /* 3x3 Tile Grid */
 .wam-grid {
   display: grid;
