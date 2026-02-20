@@ -29,6 +29,51 @@ import * as audio from '../audio.js';
 import * as tts from '../tts.js';
 import { setLang } from './i18n.js';
 
+const MODEL_OPTIONS = {
+  anthropic: [
+    { id: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6 (Best value)' },
+    { id: 'claude-sonnet-4-5', name: 'Claude Sonnet 4.5' },
+    { id: 'claude-haiku-4-5', name: 'Claude Haiku 4.5 (Fast)' },
+    { id: 'claude-opus-4-6', name: 'Claude Opus 4.6 (Most capable)' },
+    { id: 'claude-3-5-haiku-latest', name: 'Claude 3.5 Haiku (Cheapest)' },
+  ],
+  openai: [
+    { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini (Fast, cheap)' },
+    { id: 'gpt-4.1', name: 'GPT-4.1' },
+    { id: 'gpt-4.1-nano', name: 'GPT-4.1 Nano (Cheapest)' },
+    { id: 'gpt-5-nano', name: 'GPT-5 Nano (Reasoning)' },
+    { id: 'gpt-5-mini', name: 'GPT-5 Mini (Reasoning)' },
+    { id: 'gpt-5', name: 'GPT-5 (Reasoning)' },
+    { id: 'gpt-5.1-mini', name: 'GPT-5.1 Mini' },
+    { id: 'gpt-5.1', name: 'GPT-5.1' },
+    { id: 'gpt-5.2', name: 'GPT-5.2 (Latest)' },
+    { id: 'gpt-5.2-pro', name: 'GPT-5.2 Pro' },
+    { id: 'o4-mini', name: 'o4-mini (Reasoning)' },
+  ],
+  google: [
+    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash (Fast)' },
+    { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
+    { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash (Preview)' },
+    { id: 'gemini-3-pro-preview', name: 'Gemini 3 Pro (Preview)' },
+    { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash (Legacy)' },
+  ],
+  openrouter: [
+    { id: 'anthropic/claude-sonnet-4-6', name: 'Claude Sonnet 4.6' },
+    { id: 'anthropic/claude-haiku-4-5', name: 'Claude Haiku 4.5' },
+    { id: 'openai/gpt-4.1-mini', name: 'GPT-4.1 Mini' },
+    { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
+    { id: 'meta-llama/llama-4-maverick', name: 'Llama 4 Maverick' },
+    { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1' },
+  ],
+};
+
+function buildModelOptions(provider, selectedModel) {
+  const models = MODEL_OPTIONS[provider] || MODEL_OPTIONS.anthropic;
+  return models.map(m =>
+    `<option value="${m.id}" ${m.id === selectedModel ? 'selected' : ''}>${m.name}</option>`
+  ).join('');
+}
+
 let takeover = null;
 let sceneModule = null;
 let settingsModule = null;
@@ -80,8 +125,9 @@ export async function openSettings() {
       </label>
       <label class="settings-label" style="margin-top:12px">
         Model
-        <input type="text" id="settings-model" class="settings-input"
-          value="${keyInfo.openaiModel || 'claude-sonnet-4-6'}" placeholder="e.g. claude-sonnet-4-6">
+        <select id="settings-model" class="settings-input">
+          ${buildModelOptions(keyInfo.aiProvider || 'anthropic', keyInfo.openaiModel || 'claude-sonnet-4-6')}
+        </select>
       </label>
       <label class="settings-label" style="margin-top:12px">
         JLPT Level
@@ -142,6 +188,16 @@ export async function openSettings() {
         style="margin-top:20px;width:100%">Save</button>
     </div>
   `;
+
+  // Update model dropdown when provider changes
+  document.getElementById('settings-ai-provider')?.addEventListener('change', (e) => {
+    const modelSelect = document.getElementById('settings-model');
+    if (modelSelect) {
+      const provider = e.target.value;
+      const models = MODEL_OPTIONS[provider] || MODEL_OPTIONS.anthropic;
+      modelSelect.innerHTML = buildModelOptions(provider, models[0]?.id);
+    }
+  });
 
   document.getElementById('settings-save-btn')?.addEventListener('click', async () => {
     const jpdbKey = document.getElementById('settings-jpdb-key')?.value?.trim();
