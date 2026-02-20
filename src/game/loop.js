@@ -738,41 +738,23 @@ export class GameManager {
     // Tick active effects at start of round (poison damage, etc.)
     const effectEvents = tickAllEffects(this.combat.allies, this.combat.enemies);
 
-    let playerResult = {};
-    let enemyResult = {};
-    let befriendResult = null;
-    const defendActive = actionType === 'defend';
-
-    // Player phase
-    if (actionType === 'attack') {
-      playerResult = processAttackTurn(this.combat.allies, this.combat.enemies, this.run.itemBuffs, this.run.robotParty);
-    } else if (actionType === 'defend') {
-      processDefendTurn(this.combat.allies);
-    } else if (actionType === 'befriend') {
-      befriendResult = processBefriend(this.combat.enemies, this.run.robotParty);
-      if (befriendResult.success && befriendResult.allEnemiesDefeated) {
-        // Captured last enemy — victory
-        awardBattleXp(this.run.robotParty, 100);
-        const newCollectionAdditions = this._flushPendingCaptures();
-        this.combat.active = false;
-        this.run.encountersCompleted++;
-        // Mark room as interacted
-        const currentRoom = this.run.rooms?.[this.run.currentRoom];
-        if (currentRoom) {
-          currentRoom.interacted = true;
-        }
-        this.emitState();
-        return {
-          actionType: 'befriend',
-          befriend: befriendResult,
-          effectEvents,
-          combatEnded: true,
-          victory: true,
-          robotParty: this.run.robotParty,
-          newCollectionAdditions
-        };
-      }
+    switch (actionType) {
+      case 'attack':  return this._handleRobotAttackTurn(effectEvents);
+      case 'defend':  return this._handleRobotDefendTurn(effectEvents);
+      case 'befriend': return this._handleRobotBefriendTurn(effectEvents);
+      default: throw new Error(`Unknown action: ${actionType}`);
     }
+  }
+
+  /**
+   * Handle attack action in robot combat.
+   * Player attacks, checks victory, then enemy turn with defeat/continuation.
+   * @param {Array} effectEvents - Effect tick events from start of round
+   * @returns {Object} Combat cycle result
+   * @private
+   */
+  _handleRobotAttackTurn(effectEvents) {
+    const playerResult = processAttackTurn(this.combat.allies, this.combat.enemies, this.run.itemBuffs, this.run.robotParty);
 
     // Award credits for kills
     if (playerResult.xpEvents?.length > 0) {
@@ -786,14 +768,13 @@ export class GameManager {
       const newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.encountersCompleted++;
-      // Mark room as interacted
       const currentRoom = this.run.rooms?.[this.run.currentRoom];
       if (currentRoom) {
         currentRoom.interacted = true;
       }
       this.emitState();
       return {
-        actionType,
+        actionType: 'attack',
         playerAttacks: playerResult.attacks || [],
         xpEvents: playerResult.xpEvents || [],
         effectEvents,
@@ -805,7 +786,7 @@ export class GameManager {
     }
 
     // Enemy phase
-    enemyResult = processEnemyTurn(this.combat.enemies, this.combat.allies, defendActive, this.run.itemBuffs);
+    const enemyResult = processEnemyTurn(this.combat.enemies, this.combat.allies, false, this.run.itemBuffs);
 
     // Handle KO'd allies — swap reserves in
     const koSwaps = [];
@@ -818,7 +799,6 @@ export class GameManager {
         }
       }
     }
-    // Refresh allies reference after swaps
     this.combat.allies = this.run.robotParty.active;
 
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
@@ -840,7 +820,7 @@ export class GameManager {
       this.run.active = false;
       this.emitState();
       return {
-        actionType,
+        actionType: 'attack',
         playerAttacks: playerResult.attacks || [],
         enemyAttacks: enemyResult.attacks || [],
         xpEvents: playerResult.xpEvents || [],
@@ -854,17 +834,193 @@ export class GameManager {
     }
 
     this.combat.turnCount++;
-
-    // Reset swap phase for next turn (free swaps available again)
     this.combat.swapPhase = true;
-
     this.emitState();
 
     return {
-      actionType,
+      actionType: 'attack',
       playerAttacks: playerResult.attacks || [],
       enemyAttacks: enemyResult.attacks || [],
       xpEvents: playerResult.xpEvents || [],
+      effectEvents,
+      befriend: null,
+      koSwaps,
+      combatEnded: false,
+      turnCount: this.combat.turnCount,
+      allies: this.combat.allies,
+      enemies: this.combat.enemies,
+      robotParty: this.run.robotParty
+    };
+  }
+
+  /**
+   * Handle defend action in robot combat.
+   * Player defends (reduces incoming damage), then enemy turn with defeat/continuation.
+   * @param {Array} effectEvents - Effect tick events from start of round
+   * @returns {Object} Combat cycle result
+   * @private
+   */
+  _handleRobotDefendTurn(effectEvents) {
+    processDefendTurn(this.combat.allies);
+
+    // Enemy phase (defendActive = true reduces damage)
+    const enemyResult = processEnemyTurn(this.combat.enemies, this.combat.allies, true, this.run.itemBuffs);
+
+    // Handle KO'd allies — swap reserves in
+    const koSwaps = [];
+    for (let i = 0; i < this.combat.allies.length; i++) {
+      if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
+        const replacement = handleRobotKO(this.run.robotParty, i);
+        if (replacement) {
+          koSwaps.push({ slot: i, replacement: replacement.nameEn });
+          logger.info('[RobotCombat] KO swap: slot', i, '→', replacement.nameEn);
+        }
+      }
+    }
+    this.combat.allies = this.run.robotParty.active;
+
+    // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
+    const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
+    if (allAlliesKO) {
+      // Save any befriended robots to permanent collection before defeat
+      const pending = this.run.robotParty.pendingCaptures || [];
+      for (const robot of pending) {
+        if (this.meta && !robot.temporary) {
+          const result = addToCollection(this.meta.robotCollection || [], robot.id);
+          if (result.added) {
+            this.meta.robotCollection = result.collection;
+          }
+        }
+      }
+      this.run.robotParty.pendingCaptures = [];
+
+      this.combat.active = false;
+      this.run.active = false;
+      this.emitState();
+      return {
+        actionType: 'defend',
+        playerAttacks: [],
+        enemyAttacks: enemyResult.attacks || [],
+        xpEvents: [],
+        effectEvents,
+        koSwaps,
+        combatEnded: true,
+        victory: false,
+        turnCount: this.combat.turnCount,
+        robotParty: this.run.robotParty
+      };
+    }
+
+    this.combat.turnCount++;
+    this.combat.swapPhase = true;
+    this.emitState();
+
+    return {
+      actionType: 'defend',
+      playerAttacks: [],
+      enemyAttacks: enemyResult.attacks || [],
+      xpEvents: [],
+      effectEvents,
+      befriend: null,
+      koSwaps,
+      combatEnded: false,
+      turnCount: this.combat.turnCount,
+      allies: this.combat.allies,
+      enemies: this.combat.enemies,
+      robotParty: this.run.robotParty
+    };
+  }
+
+  /**
+   * Handle befriend action in robot combat.
+   * Attempt to capture an enemy. If last enemy captured, victory.
+   * Otherwise, enemy turn with defeat/continuation.
+   * @param {Array} effectEvents - Effect tick events from start of round
+   * @returns {Object} Combat cycle result
+   * @private
+   */
+  _handleRobotBefriendTurn(effectEvents) {
+    const befriendResult = processBefriend(this.combat.enemies, this.run.robotParty);
+
+    // Captured last enemy — immediate victory
+    if (befriendResult.success && befriendResult.allEnemiesDefeated) {
+      awardBattleXp(this.run.robotParty, 100);
+      const newCollectionAdditions = this._flushPendingCaptures();
+      this.combat.active = false;
+      this.run.encountersCompleted++;
+      const currentRoom = this.run.rooms?.[this.run.currentRoom];
+      if (currentRoom) {
+        currentRoom.interacted = true;
+      }
+      this.emitState();
+      return {
+        actionType: 'befriend',
+        befriend: befriendResult,
+        effectEvents,
+        combatEnded: true,
+        victory: true,
+        robotParty: this.run.robotParty,
+        newCollectionAdditions
+      };
+    }
+
+    // Enemy phase
+    const enemyResult = processEnemyTurn(this.combat.enemies, this.combat.allies, false, this.run.itemBuffs);
+
+    // Handle KO'd allies — swap reserves in
+    const koSwaps = [];
+    for (let i = 0; i < this.combat.allies.length; i++) {
+      if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
+        const replacement = handleRobotKO(this.run.robotParty, i);
+        if (replacement) {
+          koSwaps.push({ slot: i, replacement: replacement.nameEn });
+          logger.info('[RobotCombat] KO swap: slot', i, '→', replacement.nameEn);
+        }
+      }
+    }
+    this.combat.allies = this.run.robotParty.active;
+
+    // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
+    const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
+    if (allAlliesKO) {
+      // Save any befriended robots to permanent collection before defeat
+      const pending = this.run.robotParty.pendingCaptures || [];
+      for (const robot of pending) {
+        if (this.meta && !robot.temporary) {
+          const result = addToCollection(this.meta.robotCollection || [], robot.id);
+          if (result.added) {
+            this.meta.robotCollection = result.collection;
+          }
+        }
+      }
+      this.run.robotParty.pendingCaptures = [];
+
+      this.combat.active = false;
+      this.run.active = false;
+      this.emitState();
+      return {
+        actionType: 'befriend',
+        playerAttacks: [],
+        enemyAttacks: enemyResult.attacks || [],
+        xpEvents: [],
+        effectEvents,
+        koSwaps,
+        combatEnded: true,
+        victory: false,
+        turnCount: this.combat.turnCount,
+        robotParty: this.run.robotParty
+      };
+    }
+
+    this.combat.turnCount++;
+    this.combat.swapPhase = true;
+    this.emitState();
+
+    return {
+      actionType: 'befriend',
+      playerAttacks: [],
+      enemyAttacks: enemyResult.attacks || [],
+      xpEvents: [],
       effectEvents,
       befriend: befriendResult,
       koSwaps,
