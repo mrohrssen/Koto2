@@ -8,6 +8,7 @@ import { Router } from 'express';
 import { processEnemyTurn, handleRobotKO } from '../../game/services/robot-combat-service.js';
 import { getCollectionCatalog } from '../../game/services/robot-collection-service.js';
 import { loadNpcs, shuffleOptions, updateBond, recordEncounter } from '../../game/services/npc-service.js';
+import { buildVocabConfig } from './route-helpers.js';
 
 function triggerDialogueRegen(userId, targetEnemy, userKeys, getUserVocabularyFn, regenFn) {
   if (!regenFn || !targetEnemy || !userKeys?.aiApiKey) return;
@@ -527,21 +528,14 @@ export default function createCombatRoutes({
       }
 
       // Trigger background regeneration for next encounter
-      if (regenNpcDialogueFn && getUserVocabulary) {
-        const userKeys = req.userKeys || {};
-        if (userKeys.aiApiKey) {
-          const { words: vocabulary, vidSet } = getUserVocabulary(req.user.id);
-          const vocabSet = new Set(vocabulary);
-          const checkViolationsFn = userKeys.jpdbApiKey && checkSentenceViolations
-            ? async (text) => checkSentenceViolations(text, vocabSet, userKeys.jpdbApiKey, new Set(), vidSet)
-            : null;
-          regenNpcDialogueFn(req.user.id, npcId, {
-            provider: userKeys.aiProvider || 'anthropic',
-            apiKey: userKeys.aiApiKey,
-            openaiModel: userKeys.openaiModel,
-            openrouterModel: userKeys.openrouterModel,
-            jlptLevel: userKeys.jlptLevel || 'N4'
-          }, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {
+      if (regenNpcDialogueFn) {
+        const vocabConfig = buildVocabConfig(req, getUserVocabulary, checkSentenceViolations);
+        if (vocabConfig) {
+          regenNpcDialogueFn(req.user.id, npcId, vocabConfig.aiConfig, {
+            words: vocabConfig.vocabulary,
+            vidSet: vocabConfig.vidSet,
+            checkViolationsFn: vocabConfig.checkViolationsFn
+          }).catch(e => {
             console.error('[NpcDialogue] Background regen failed:', e.message);
           });
         }
