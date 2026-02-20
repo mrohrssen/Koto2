@@ -319,25 +319,6 @@ export function getEnemyDialogue(personality, action) {
 }
 
 /**
- * Get a random sensory detail for the current floor
- */
-export function getRandomSensoryDetail(floor, sense) {
-  const lore = getFloorLore(floor);
-  const details = lore.senses?.[sense];
-  if (!details || details.length === 0) return null;
-  return details[Math.floor(Math.random() * details.length)];
-}
-
-/**
- * Get room description for room type
- */
-export function getRoomDescription(roomType) {
-  const lore = ROOM_LORE[roomType];
-  if (!lore) return null;
-  return lore.descriptions[Math.floor(Math.random() * lore.descriptions.length)];
-}
-
-/**
  * Build world context string for narration prompt
  */
 export function buildWorldContext(floor, enemy = null) {

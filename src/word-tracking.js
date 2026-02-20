@@ -142,14 +142,3 @@ export function incrementDiscoveryCount(userId, dailyLimit) {
   };
 }
 
-/**
- * Get full tracking stats for a user (for future leaderboard)
- */
-export function getTrackingStats(userId) {
-  const user = getUserTracking(userId);
-  return {
-    today: user.today.count,
-    weekly: user.weekly,
-    lifetime: user.lifetime
-  };
-}

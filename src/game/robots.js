@@ -190,10 +190,6 @@ export function generateEnemyRobots(highestAllyLevel = 1, { maxEnemies, creature
   return enemies;
 }
 
-export function getAllRobots() {
-  return ROBOT_DATA;
-}
-
 const ROBOT_PRICES = {
   common: 20,
   uncommon: 40,

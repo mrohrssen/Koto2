@@ -7,7 +7,6 @@ import {
   regenerateDialogue,
   setMemoryFlag,
   updateMemoryBond,
-  recordDefeat,
   setNarrative
 } from '../../../src/narration-engine/index.js';
 
@@ -20,7 +19,6 @@ describe('narration-engine public interface', () => {
       assert.strictEqual(typeof regenerateDialogue, 'function');
       assert.strictEqual(typeof setMemoryFlag, 'function');
       assert.strictEqual(typeof updateMemoryBond, 'function');
-      assert.strictEqual(typeof recordDefeat, 'function');
       assert.strictEqual(typeof setNarrative, 'function');
     });
   });

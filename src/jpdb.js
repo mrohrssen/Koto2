@@ -374,27 +374,6 @@ export function getVocabulary() {
 }
 
 /**
- * Set manual vocabulary
- */
-export function setManualVocabulary(vocabText) {
-  if (!vocabText || !vocabText.trim()) {
-    manualVocabulary = [];
-    return { words: [], count: 0 };
-  }
-
-  const words = vocabText
-    .split(/[\n,\s]+/)
-    .map(w => w.trim())
-    .filter(w => w.length > 0);
-
-  manualVocabulary = [...new Set(words)];
-  vocabCache = { words: manualVocabulary, count: manualVocabulary.length, source: 'manual' };
-  saveVocabToFile(vocabCache);
-
-  return { words: manualVocabulary, count: manualVocabulary.length };
-}
-
-/**
  * Clear vocabulary cache (memory only, keeps file for persistence)
  */
 export function clearVocabCache() {

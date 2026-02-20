@@ -127,13 +127,6 @@ export function updateMemoryBond(userId, entityId, delta) {
 }
 
 /**
- * Record a defeat
- */
-export function recordDefeat(userId, entityId) {
-  getMemory(userId).incrementDefeat(entityId);
-}
-
-/**
  * Set narrative summary (from AI summarization)
  */
 export function setNarrative(userId, entityId, narrative) {

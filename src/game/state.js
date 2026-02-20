@@ -408,14 +408,3 @@ export async function loadGame(fs) {
   }
 }
 
-export async function deleteSave(fs) {
-  try {
-    await fs.promises.unlink(SAVE_FILE);
-    return true;
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      return true;  // Already doesn't exist
-    }
-    throw error;
-  }
-}

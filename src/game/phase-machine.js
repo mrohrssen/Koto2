@@ -188,26 +188,3 @@ export function derivePhase(state) {
   return PHASES.EXPLORING;
 }
 
-export function getPhaseName(phase) {
-  const names = {
-    [PHASES.NO_SAVE]: 'No Save',
-    [PHASES.HUB]: 'Hub',
-    [PHASES.RUN_ENDED]: 'Run Ended',
-    [PHASES.AREA_SELECTION]: 'Area Selection',
-    [PHASES.AREA_COMPLETE]: 'Area Complete',
-    [PHASES.EXPLORING]: 'Exploring',
-    [PHASES.ROOM]: 'Room',
-    [PHASES.ROOM_ENCOUNTER]: 'Room Encounter',
-    [PHASES.COMBAT]: 'Combat',
-    [PHASES.VICTORY]: 'Victory',
-    [PHASES.DEFEAT]: 'Defeat',
-    [PHASES.NPC_DIALOGUE]: 'NPC Dialogue',
-    [PHASES.SHOP]: 'Shop',
-    [PHASES.BLACKSMITH]: 'Blacksmith',
-    [PHASES.POST_COMBAT_SHOP]: 'Post-Combat Shop',
-    [PHASES.WHACK_A_MOLE]: 'Whack-a-Mole',
-    [PHASES.LEVEL_SELECT]: 'Level Select',
-    [PHASES.RUN_COMPLETE]: 'Run Complete'
-  };
-  return names[phase] || phase;
-}

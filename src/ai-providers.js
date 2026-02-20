@@ -360,20 +360,6 @@ export function getProviders() {
 }
 
 /**
- * Get available OpenAI models
- */
-export function getOpenAIModels() {
-  return [
-    { id: 'gpt-5-mini', name: 'GPT-5 Mini (Fast, cheap)', description: '$0.25/$2 per 1M tokens' },
-    { id: 'gpt-5-nano', name: 'GPT-5 Nano (Cheapest)', description: '$0.05/$0.40 per 1M tokens' },
-    { id: 'gpt-5', name: 'GPT-5 (Reasoning)', description: '$1.25/$10 per 1M tokens' },
-    { id: 'gpt-5.2', name: 'GPT-5.2 (Latest)' },
-    { id: 'gpt-5.2-pro', name: 'GPT-5.2 Pro' },
-    { id: 'gpt-4.1', name: 'GPT-4.1 (Legacy)', description: '$2/$8 per 1M tokens' },
-  ];
-}
-
-/**
  * Get JLPT levels
  */
 export function getJLPTLevels() {
