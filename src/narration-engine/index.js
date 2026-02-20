@@ -9,90 +9,92 @@
  */
 
 import { getCharacterCard, loadCharacterCards } from './character-cards.js';
-import { assemblePrompt, flattenSystemBlocks } from './prompt-assembler.js';
+import { flattenSystemBlocks } from './prompt-assembler.js';
 import { generateDialogue } from './generation.js';
 import { enforceDialogueVocab } from './dialogue-repair.js';
+import { getEntityType } from './entity-types/index.js';
 import { NpcMemory } from './npc-memory.js';
 import { TextCache } from './text-cache.js';
 import { logger } from '../logger.js';
 
-// Per-user instances, keyed by userId
+// Per-user instances, keyed by `${userId}:${entityType}`
 const _memories = new Map();
 const _caches = new Map();
 
-function getMemory(userId) {
-  if (!_memories.has(userId)) {
-    _memories.set(userId, new NpcMemory({ userId }));
+function getMemory(userId, entityType = 'npc') {
+  const key = `${userId}:${entityType}`;
+  if (!_memories.has(key)) {
+    _memories.set(key, new NpcMemory({ userId, entityType }));
   }
-  return _memories.get(userId);
+  return _memories.get(key);
 }
 
-function getCache(userId) {
-  if (!_caches.has(userId)) {
-    _caches.set(userId, new TextCache({ userId }));
+function getCache(userId, entityType = 'npc') {
+  const key = `${userId}:${entityType}`;
+  if (!_caches.has(key)) {
+    _caches.set(key, new TextCache({ userId, entityType }));
   }
-  return _caches.get(userId);
+  return _caches.get(key);
 }
 
 /**
  * Get pre-generated dialogue from cache. Returns null on miss.
  */
-export function getDialogueFromCache(userId, entityId) {
-  return getCache(userId).get(entityId);
+export function getDialogueFromCache(userId, entityId, entityType = 'npc') {
+  return getCache(userId, entityType).get(entityId);
 }
 
 /**
- * Get the full dialogue cache for a user (all NPCs).
+ * Get the full dialogue cache for a user (all entities of a given type).
  */
-export function getAllDialogueCache(userId) {
-  return getCache(userId).getAll();
+export function getAllDialogueCache(userId, entityType = 'npc') {
+  return getCache(userId, entityType).getAll();
 }
 
 /**
  * Clear all cached dialogues for a user. Next exploration will regenerate them.
  */
-export function clearDialogueCache(userId) {
-  getCache(userId).clear();
+export function clearDialogueCache(userId, entityType = 'npc') {
+  getCache(userId, entityType).clear();
 }
 
 /**
  * Queue generation for all entities that are missing or stale in cache.
  * Fire-and-forget — runs in background with concurrency limit.
  */
-export async function queueMissingDialogues(userId, chatFn, aiConfig, vocabContext) {
+export async function queueMissingDialogues(userId, chatFn, aiConfig, vocabContext, entityType = 'npc') {
   const vocab = vocabContext?.words || vocabContext || [];
   const vocabCount = Array.isArray(vocab) ? vocab.length : 0;
-  const cards = loadCharacterCards();
+  const cards = loadCharacterCards(entityType === 'creature' ? 'creature' : 'npc');
   const entityIds = Object.keys(cards);
-  const cache = getCache(userId);
-  const memory = getMemory(userId);
+  const cache = getCache(userId, entityType);
+  const memory = getMemory(userId, entityType);
+  const { getMemorySnapshot } = getEntityType(entityType);
 
   const toGenerate = [];
   for (const id of entityIds) {
     const mem = memory.getMemory(id);
-    const memSnap = {
-      encounters: mem.counters.encounters,
-      bond: mem.bond,
-      liberated: mem.flags.liberated
-    };
+    const memSnap = getMemorySnapshot(mem);
     if (cache.isStale(id, vocabCount, memSnap)) {
       toGenerate.push(id);
     }
   }
 
+  const logTag = entityType === 'npc' ? 'NpcDialogue' : 'CreatureDialogue';
+
   if (toGenerate.length === 0) {
-    logger.info('[NpcDialogue] All dialogues up to date');
+    logger.info(`[${logTag}] All dialogues up to date`);
     return;
   }
 
-  logger.info(`[NpcDialogue] Generating ${toGenerate.length} missing/stale dialogues`);
+  logger.info(`[${logTag}] Generating ${toGenerate.length} missing/stale dialogues`);
 
   // Concurrency limit: 3 simultaneous
   const CONCURRENCY = 3;
   for (let i = 0; i < toGenerate.length; i += CONCURRENCY) {
     const batch = toGenerate.slice(i, i + CONCURRENCY);
     await Promise.allSettled(
-      batch.map(id => generateAndCache(userId, id, chatFn, aiConfig, vocabContext))
+      batch.map(id => generateAndCache(userId, id, chatFn, aiConfig, vocabContext, entityType))
     );
   }
 }
@@ -100,70 +102,77 @@ export async function queueMissingDialogues(userId, chatFn, aiConfig, vocabConte
 /**
  * Log an encounter result and update memory.
  */
-export function logEncounter(userId, entityId, outcome, summary) {
-  getMemory(userId).logEncounter(entityId, outcome, summary);
+export function logEncounter(userId, entityId, outcome, summary, entityType = 'npc') {
+  getMemory(userId, entityType).logEncounter(entityId, outcome, summary);
 }
 
 /**
  * Regenerate dialogue for a single entity after an encounter.
  * Runs in background — returns a promise.
  */
-export async function regenerateDialogue(userId, entityId, chatFn, aiConfig, vocabContext) {
-  return generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext);
+export async function regenerateDialogue(userId, entityId, chatFn, aiConfig, vocabContext, entityType = 'npc') {
+  return generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext, entityType);
 }
 
 /**
  * Update memory flags (liberated, befriended, etc.)
  */
-export function setMemoryFlag(userId, entityId, flag, value) {
-  getMemory(userId).setFlag(entityId, flag, value);
+export function setMemoryFlag(userId, entityId, flag, value, entityType = 'npc') {
+  getMemory(userId, entityType).setFlag(entityId, flag, value);
 }
 
 /**
  * Update bond score
  */
-export function updateMemoryBond(userId, entityId, delta) {
-  getMemory(userId).updateBond(entityId, delta);
+export function updateMemoryBond(userId, entityId, delta, entityType = 'npc') {
+  getMemory(userId, entityType).updateBond(entityId, delta);
 }
 
 /**
  * Set narrative summary (from AI summarization)
  */
-export function setNarrative(userId, entityId, narrative) {
-  getMemory(userId).setNarrative(entityId, narrative);
+export function setNarrative(userId, entityId, narrative, entityType = 'npc') {
+  getMemory(userId, entityType).setNarrative(entityId, narrative);
 }
 
 // --- Internal ---
 
-async function generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext) {
-  const card = getCharacterCard(entityId);
+async function generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext, entityType = 'npc') {
+  const cardType = entityType === 'creature' ? 'creature' : 'npc';
+  const card = getCharacterCard(entityId, cardType);
   if (!card) {
     logger.warn(`[NpcDialogue] No character card for ${entityId}`);
     return;
   }
 
+  const entityTypeDef = getEntityType(entityType);
+  const logTag = entityType === 'npc' ? 'NpcDialogue' : 'CreatureDialogue';
+
   // Unpack vocabContext (backward compatible with plain array)
   const vocab = vocabContext?.words || vocabContext || [];
   const checkViolationsFn = vocabContext?.checkViolationsFn || null;
 
-  const memory = getMemory(userId);
-  const cache = getCache(userId);
+  const memory = getMemory(userId, entityType);
+  const cache = getCache(userId, entityType);
   const mem = memory.getMemory(entityId);
 
-  // Determine NPC state from memory
-  const npcState = mem.flags.liberated ? 'liberated'
-    : mem.counters.encounters > 0 ? 'glitching'
-    : 'possessed';
-
-  const { systemBlocks, userPrompt } = assemblePrompt({
+  // Build prompt args — NPC type needs npcState, creature type does not
+  const promptArgs = {
     characterCard: card,
     vocabWords: vocab,
     jlptLevel: aiConfig.jlptLevel || 'N4',
     memory: mem,
-    npcState,
     previousLines: cache.getPreviousLines(entityId)
-  });
+  };
 
+  // NPC-specific: determine state from memory
+  if (entityType === 'npc') {
+    promptArgs.npcState = mem.flags.liberated ? 'liberated'
+      : mem.counters.encounters > 0 ? 'glitching'
+      : 'possessed';
+  }
+
+  const { systemBlocks, userPrompt } = entityTypeDef.assemblePrompt(promptArgs);
   const systemPrompt = flattenSystemBlocks(systemBlocks);
 
   const dialogue = await generateDialogue({
@@ -171,11 +180,12 @@ async function generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext
     systemPrompt,
     systemBlocks,
     userPrompt,
-    aiConfig
+    aiConfig,
+    entityType
   });
 
   if (!dialogue) {
-    logger.warn(`[NpcDialogue] Failed to generate dialogue for ${entityId}`);
+    logger.warn(`[${logTag}] Failed to generate dialogue for ${entityId}`);
     return;
   }
 
@@ -188,28 +198,27 @@ async function generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext
       systemPrompt,
       systemBlocks,
       userPrompt,
-      aiConfig
+      aiConfig,
+      entityType
     });
 
   if (!repairedDialogue) {
-    logger.error(`[NpcDialogue] CRITICAL: Dialogue for ${entityId} failed vocab repair after ${attempts} attempts. ${violations.length} fields still violate i+1. Not caching — static fallback will be used.`);
+    logger.error(`[${logTag}] CRITICAL: Dialogue for ${entityId} failed vocab repair after ${attempts} attempts. ${violations.length} fields still violate i+1. Not caching — static fallback will be used.`);
     return;
   }
 
   if (repaired) {
-    logger.info(`[NpcDialogue] Dialogue for ${entityId} repaired in ${attempts} attempt(s)`);
+    logger.info(`[${logTag}] Dialogue for ${entityId} repaired in ${attempts} attempt(s)`);
   }
+
+  const memSnap = entityTypeDef.getMemorySnapshot(mem);
 
   cache.set(entityId, {
     ...repairedDialogue,
     npcId: entityId,
     generatedAt: new Date().toISOString(),
     vocabSnapshot: vocab.length,
-    memorySnapshot: {
-      encounters: mem.counters.encounters,
-      bond: mem.bond,
-      liberated: mem.flags.liberated
-    }
+    memorySnapshot: memSnap
   });
-  logger.info(`[NpcDialogue] Cached dialogue for ${entityId}`);
+  logger.info(`[${logTag}] Cached dialogue for ${entityId}`);
 }
