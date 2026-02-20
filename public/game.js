@@ -1259,12 +1259,10 @@ async function initGame() {
     getEnemyDialogueActive: () => enemyDialogueActive,
     getDialogueDismissPromise: () => dialogueDismissPromise,
     delay,
-    showFlashCard: (word) => {
-      currentFlashCardWord = word;
-      actions.showFlashCard(word);
+    showFlashCards: (words, options) => {
+      currentFlashCardWord = words.length === 1 ? words[0] : null;
+      actions.showFlashCards(words, options);
     },
-    showDualFlashCards: actions.showDualFlashCards,
-    showTripleFlashCards: actions.showTripleFlashCards,
     setCombatAnimationActive: (active) => { combatAnimationActive = active; },
     apiRobotCombatCycle,
     showPostCombatShop: showPostCombatShopFlow,

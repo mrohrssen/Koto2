@@ -80,9 +80,7 @@ let showGameOverModal = null;
 let showEnemyDialogue = null;
 let getEnemyDialogueActive = null;
 let getDialogueDismissPromise = null;
-let showFlashCard = null;
-let showDualFlashCards = null;
-let showTripleFlashCards = null;
+let showFlashCards = null;
 let setCombatAnimationActive = null;
 let apiRobotCombatCycle = null;
 let showPostCombatShop = null;
@@ -136,9 +134,7 @@ export function init(callbacks) {
   showEnemyDialogue = callbacks.showEnemyDialogue;
   getEnemyDialogueActive = callbacks.getEnemyDialogueActive;
   getDialogueDismissPromise = callbacks.getDialogueDismissPromise;
-  showFlashCard = callbacks.showFlashCard;
-  showDualFlashCards = callbacks.showDualFlashCards;
-  showTripleFlashCards = callbacks.showTripleFlashCards;
+  showFlashCards = callbacks.showFlashCards;
 
   // Utility
   delay = callbacks.delay;
@@ -212,9 +208,9 @@ function showNextDualCardsFromQueue() {
   if (!words || !words.attackWord) {
     // Fallback: not enough words, use single card flow
     const word = wordPractice.getNextCombatWord?.();
-    if (word && showFlashCard) {
+    if (word && showFlashCards) {
       pendingActionType = 'attack'; // Default to attack if single card
-      showFlashCard(word);
+      showFlashCards([word]);
     }
     return;
   }
@@ -227,25 +223,25 @@ function showNextDualCardsFromQueue() {
   const anyEnemyBefriendable = enemies.some(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.5);
   const befriendAvailable = isRobotCombat && anyEnemyBefriendable && party && !state.combat?.npcId;
 
-  if (befriendAvailable && showTripleFlashCards) {
+  if (befriendAvailable && showFlashCards) {
     // Get a third word for the befriend card
     const thirdWord = wordPractice.getNextCombatWord?.();
     if (thirdWord) {
-      showTripleFlashCards(words.attackWord, words.defendWord, thirdWord);
+      showFlashCards([words.attackWord, words.defendWord, thirdWord]);
     } else {
       // Not enough words for triple, fall back to dual
-      showDualFlashCards(words.attackWord, words.defendWord);
+      showFlashCards([words.attackWord, words.defendWord]);
     }
-  } else if (showDualFlashCards) {
-    showDualFlashCards(words.attackWord, words.defendWord);
+  } else if (showFlashCards) {
+    showFlashCards([words.attackWord, words.defendWord]);
   }
 }
 
 // Keep old function for backwards compatibility / fallback
 function showNextFlashCardFromQueue() {
   const word = wordPractice.getNextCombatWord?.();
-  if (word && showFlashCard) {
-    showFlashCard(word);
+  if (word && showFlashCards) {
+    showFlashCards([word]);
   }
 }
 

@@ -1070,7 +1070,7 @@ export async function renderWordDiscovery() {
     persistent: true
   });
 
-  actions.showFlashCard(currentWord, { discoveryMode: true });
+  actions.showFlashCards([currentWord], { discoveryMode: true });
 
   // Set up swipe handler - we need to use the actions module's init callback mechanism
   // The actions module was initialized with cardSwipe callback, but we need discovery-specific behavior

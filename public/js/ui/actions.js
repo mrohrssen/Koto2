@@ -9,12 +9,11 @@
  * KEY EXPORTS:
  * - init({ equipBots, contextAction, cardSwipe, cardFlip, dualCardSelect }): Set up callbacks
  * - showButtons(contextLabel, options): Display action buttons
- * - showFlashCard(word, options): Display swipeable vocabulary card (combat or discovery mode)
- * - showDualFlashCards(attackWord, defendWord): Display dual cards for attack/defend selection
+ * - showFlashCards(words, options): Display 1-3 swipeable vocabulary cards
  * - triggerEquipBots(): Programmatically trigger equip callback
  * - clear(): Empty the action area
  * - setContent(html): Set custom HTML content
- * - getSelectedActionType(): Get the action type selected from dual cards
+ * - getSelectedActionType(): Get the action type selected from multi-card modes
  * - clearSelectedActionType(): Clear the selected action type
  *
  * DEPENDENCIES:
@@ -22,8 +21,8 @@
  * - ../audio.js: Sound effects (button-tap, swipe-left, swipe-right)
  *
  * FLASH CARD BEHAVIOR:
- * - Tap to flip card (shows reading + meaning)
- * - After flip: swipe right = "knew it", swipe left = "didn't know"
+ * - Single card: tap to flip, then swipe right = "knew it", left = "didn't know"
+ * - Dual/Triple cards: tap to select action, then swipe to grade
  * - Supports both touch and mouse input
  * - SWIPE_THRESHOLD = 80px to register a swipe
  */
@@ -89,73 +88,177 @@ export function showButtons(contextLabel, { contextDisabled = false } = {}) {
   }
 }
 
-/**
- * Show flash card (combat mode or discovery mode)
- * @param {Object} word - { word, meanings, reading }
- * @param {Object} options - { discoveryMode: boolean }
- */
-export function showFlashCard(word, { discoveryMode = false } = {}) {
-  cardFlipped = false;
-  isSwiping = false;
+// --- Card config for multi-card modes ---
 
-  const hintText = discoveryMode ? t('hintDiscovery') : t('hintCombat');
+const CARD_ICONS = {
+  attack: `<svg class="dual-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg>`,
+  defend: `<svg class="dual-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+  befriend: `<svg class="dual-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+};
 
-  dom.actionArea.innerHTML = `
-    <div class="flash-card-container" id="flash-card-container">
-      <div class="flash-card" id="flash-card">
-        <div class="flash-card-front">${escapeHtml(word.word)}</div>
-        <div class="flash-card-back">
-          <div class="flash-card-word">${word.reading && word.reading !== word.word
-            ? `<ruby>${escapeHtml(word.word)}<rt>${escapeHtml(word.reading)}</rt></ruby>`
-            : escapeHtml(word.word)}</div>
-          <div class="flash-card-meaning">${formatMeanings(word.meanings)}</div>
-          <div class="flash-card-hint">${hintText}</div>
-        </div>
-      </div>
-    </div>
-  `;
+const CARD_ACTIONS = ['attack', 'defend', 'befriend'];
 
-  const card = document.getElementById('flash-card');
-  activeCard = card;
+/** Render ruby reading for a word */
+function renderRuby(word) {
+  return word.reading && word.reading !== word.word
+    ? `<ruby>${escapeHtml(word.word)}<rt>${escapeHtml(word.reading)}</rt></ruby>`
+    : escapeHtml(word.word);
+}
 
-  // Tap to flip, or tap sides to grade after flip
-  card.addEventListener('click', (e) => {
-    if (isSwiping) return;
-
-    if (!cardFlipped) {
-      // First tap: flip the card
-      cardFlipped = true;
-      card.classList.add('flipped');
-      if (onCardFlip) onCardFlip();
-    } else {
-      // Card is flipped: check click position for grading
-      const rect = card.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const cardWidth = rect.width;
-      const relativeX = clickX / cardWidth;
-
-      // Dead zone: middle 20% (40% to 60%)
-      if (relativeX < 0.4) {
-        // Left side: grade as failed
-        triggerSwipeAnimation(card, 'left');
-      } else if (relativeX > 0.6) {
-        // Right side: grade as good
-        triggerSwipeAnimation(card, 'right');
-      }
-      // Middle 20%: do nothing (dead zone)
-    }
-  });
-
-  // Swipe handling (only after flip)
+/** Attach swipe + click-to-grade handlers to a card element */
+function attachGradeHandlers(card) {
   card.addEventListener('touchstart', handleTouchStart, { passive: true });
   card.addEventListener('touchmove', handleTouchMove, { passive: false });
   card.addEventListener('touchend', handleTouchEnd, { passive: true });
-
-  // Mouse swipe handling (for desktop)
   card.addEventListener('mousedown', handleMouseDown);
   card.addEventListener('mousemove', handleMouseMove);
   card.addEventListener('mouseup', handleMouseUp);
   card.addEventListener('mouseleave', handleMouseUp);
+
+  card.addEventListener('click', (e) => {
+    if (isSwiping) return;
+    const rect = card.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const relativeX = clickX / rect.width;
+    if (relativeX < 0.4) {
+      triggerSwipeAnimation(card, 'left');
+    } else if (relativeX > 0.6) {
+      triggerSwipeAnimation(card, 'right');
+    }
+  });
+}
+
+/**
+ * Show flash cards (1 = single, 2 = dual attack/defend, 3 = triple attack/defend/befriend)
+ * @param {Object[]} words - Array of word objects { word, meanings, reading }
+ * @param {Object} options - { discoveryMode: boolean } (only used for single card mode)
+ */
+export function showFlashCards(words, { discoveryMode = false } = {}) {
+  selectedActionType = null;
+  cardFlipped = false;
+  isSwiping = false;
+
+  const count = words.length;
+  const hintText = (count === 1 && discoveryMode) ? t('hintDiscovery') : t('hintCombat');
+
+  if (count === 1) {
+    // === SINGLE CARD MODE ===
+    const word = words[0];
+    dom.actionArea.innerHTML = `
+      <div class="flash-card-container" id="flash-card-container">
+        <div class="flash-card" id="flash-card">
+          <div class="flash-card-front">${escapeHtml(word.word)}</div>
+          <div class="flash-card-back">
+            <div class="flash-card-word">${renderRuby(word)}</div>
+            <div class="flash-card-meaning">${formatMeanings(word.meanings)}</div>
+            <div class="flash-card-hint">${hintText}</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const card = document.getElementById('flash-card');
+    activeCard = card;
+
+    // Tap to flip, or tap sides to grade after flip
+    card.addEventListener('click', (e) => {
+      if (isSwiping) return;
+
+      if (!cardFlipped) {
+        // First tap: flip the card
+        cardFlipped = true;
+        card.classList.add('flipped');
+        if (onCardFlip) onCardFlip();
+      } else {
+        // Card is flipped: check click position for grading
+        const rect = card.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const relativeX = clickX / rect.width;
+
+        // Dead zone: middle 20% (40% to 60%)
+        if (relativeX < 0.4) {
+          triggerSwipeAnimation(card, 'left');
+        } else if (relativeX > 0.6) {
+          triggerSwipeAnimation(card, 'right');
+        }
+      }
+    });
+
+    // Swipe handling (only after flip)
+    card.addEventListener('touchstart', handleTouchStart, { passive: true });
+    card.addEventListener('touchmove', handleTouchMove, { passive: false });
+    card.addEventListener('touchend', handleTouchEnd, { passive: true });
+    card.addEventListener('mousedown', handleMouseDown);
+    card.addEventListener('mousemove', handleMouseMove);
+    card.addEventListener('mouseup', handleMouseUp);
+    card.addEventListener('mouseleave', handleMouseUp);
+  } else {
+    // === MULTI-CARD MODE (2 or 3 cards) ===
+    const containerClass = count === 3
+      ? 'dual-flash-card-container triple'
+      : 'dual-flash-card-container';
+
+    const cardsHtml = words.map((word, i) => {
+      const action = CARD_ACTIONS[i];
+      return `
+        <div class="dual-card-wrapper" id="${action}-wrapper">
+          <div class="dual-flash-card ${action}" id="${action}-card" data-action="${action}">
+            <div class="dual-card-front">${CARD_ICONS[action]}<span>${escapeHtml(word.word)}</span></div>
+            <div class="dual-card-back">
+              <div class="flash-card-word">${renderRuby(word)}</div>
+              <div class="flash-card-meaning">${formatMeanings(word.meanings)}</div>
+              <div class="flash-card-hint">${hintText}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    dom.actionArea.innerHTML = `
+      <div class="${containerClass}" id="dual-flash-card-container">
+        ${cardsHtml}
+      </div>
+    `;
+
+    // Gather card/wrapper references
+    const cards = words.map((_, i) => document.getElementById(`${CARD_ACTIONS[i]}-card`));
+    const wrappers = words.map((_, i) => document.getElementById(`${CARD_ACTIONS[i]}-wrapper`));
+
+    function selectCard(index) {
+      if (cardFlipped) return;
+
+      const action = CARD_ACTIONS[index];
+      const word = words[index];
+      const selectedCard = cards[index];
+
+      selectedActionType = action;
+      playSFX('button-tap');
+
+      // Hide all other cards
+      wrappers.forEach((w, j) => { if (j !== index) w.classList.add('hidden'); });
+
+      // Flip and expand the selected card
+      selectedCard.classList.add('selected');
+      cardFlipped = true;
+      activeCard = selectedCard;
+
+      if (onCardFlip) onCardFlip();
+      if (onDualCardSelect) onDualCardSelect(action, word);
+
+      // Add swipe/click-to-grade handlers
+      attachGradeHandlers(selectedCard);
+    }
+
+    // Wire up click-to-select on each card
+    cards.forEach((card, i) => {
+      card.addEventListener('click', (e) => {
+        if (!cardFlipped) {
+          e.stopPropagation();
+          selectCard(i);
+        }
+      });
+    });
+  }
 }
 
 /** Trigger the equip bots callback (for use by other modules) */
@@ -189,235 +292,6 @@ export function clearSelectedActionType() {
   selectedActionType = null;
 }
 
-/**
- * Show dual flash cards (combat mode - Attack/Defend selection)
- * @param {Object} attackWord - Word for attack card { word, meanings, reading }
- * @param {Object} defendWord - Word for defend card { word, meanings, reading }
- */
-export function showDualFlashCards(attackWord, defendWord) {
-  selectedActionType = null;
-  cardFlipped = false;
-  isSwiping = false;
-
-  const hintText = t('hintCombat');
-
-  const swordIcon = `<svg class="dual-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg>`;
-  const shieldIcon = `<svg class="dual-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
-
-  dom.actionArea.innerHTML = `
-    <div class="dual-flash-card-container" id="dual-flash-card-container">
-      <div class="dual-card-wrapper" id="attack-wrapper">
-        <div class="dual-flash-card attack" id="attack-card" data-action="attack">
-          <div class="dual-card-front">${swordIcon}<span>${escapeHtml(attackWord.word)}</span></div>
-          <div class="dual-card-back">
-            <div class="flash-card-word">${attackWord.reading && attackWord.reading !== attackWord.word
-              ? `<ruby>${escapeHtml(attackWord.word)}<rt>${escapeHtml(attackWord.reading)}</rt></ruby>`
-              : escapeHtml(attackWord.word)}</div>
-            <div class="flash-card-meaning">${formatMeanings(attackWord.meanings)}</div>
-            <div class="flash-card-hint">${hintText}</div>
-          </div>
-        </div>
-      </div>
-      <div class="dual-card-wrapper" id="defend-wrapper">
-        <div class="dual-flash-card defend" id="defend-card" data-action="defend">
-          <div class="dual-card-front">${shieldIcon}<span>${escapeHtml(defendWord.word)}</span></div>
-          <div class="dual-card-back">
-            <div class="flash-card-word">${defendWord.reading && defendWord.reading !== defendWord.word
-              ? `<ruby>${escapeHtml(defendWord.word)}<rt>${escapeHtml(defendWord.reading)}</rt></ruby>`
-              : escapeHtml(defendWord.word)}</div>
-            <div class="flash-card-meaning">${formatMeanings(defendWord.meanings)}</div>
-            <div class="flash-card-hint">${hintText}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  const attackCard = document.getElementById('attack-card');
-  const defendCard = document.getElementById('defend-card');
-  const attackWrapper = document.getElementById('attack-wrapper');
-  const defendWrapper = document.getElementById('defend-wrapper');
-
-  function selectCard(actionType, word, selectedCard, selectedWrapper, otherWrapper) {
-    if (cardFlipped) return; // Already selected
-
-    selectedActionType = actionType;
-    playSFX('button-tap');
-
-    // Hide the other card
-    otherWrapper.classList.add('hidden');
-
-    // Flip and expand the selected card
-    selectedCard.classList.add('selected');
-    cardFlipped = true;
-    activeCard = selectedCard;
-
-    if (onCardFlip) onCardFlip();
-    if (onDualCardSelect) onDualCardSelect(actionType, word);
-
-    // Add swipe handlers to the selected card
-    selectedCard.addEventListener('touchstart', handleTouchStart, { passive: true });
-    selectedCard.addEventListener('touchmove', handleTouchMove, { passive: false });
-    selectedCard.addEventListener('touchend', handleTouchEnd, { passive: true });
-    selectedCard.addEventListener('mousedown', handleMouseDown);
-    selectedCard.addEventListener('mousemove', handleMouseMove);
-    selectedCard.addEventListener('mouseup', handleMouseUp);
-    selectedCard.addEventListener('mouseleave', handleMouseUp);
-
-    // Click sides to grade (reuse flash card logic)
-    selectedCard.addEventListener('click', (e) => {
-      if (isSwiping) return;
-      const rect = selectedCard.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const relativeX = clickX / rect.width;
-
-      if (relativeX < 0.4) {
-        triggerSwipeAnimation(selectedCard, 'left');
-      } else if (relativeX > 0.6) {
-        triggerSwipeAnimation(selectedCard, 'right');
-      }
-    });
-  }
-
-  attackCard.addEventListener('click', (e) => {
-    if (!cardFlipped) {
-      e.stopPropagation();
-      selectCard('attack', attackWord, attackCard, attackWrapper, defendWrapper);
-    }
-  });
-
-  defendCard.addEventListener('click', (e) => {
-    if (!cardFlipped) {
-      e.stopPropagation();
-      selectCard('defend', defendWord, defendCard, defendWrapper, attackWrapper);
-    }
-  });
-}
-
-/**
- * Show three flash cards: Attack, Defend, and Befriend
- * Used when an enemy robot is at ≤30% HP and party isn't full
- */
-export function showTripleFlashCards(attackWord, defendWord, befriendWord) {
-  selectedActionType = null;
-  cardFlipped = false;
-  isSwiping = false;
-
-  const hintText = t('hintCombat');
-
-  const swordIcon = `<svg class="dual-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg>`;
-  const shieldIcon = `<svg class="dual-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
-  const heartIcon = `<svg class="dual-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
-
-  dom.actionArea.innerHTML = `
-    <div class="dual-flash-card-container triple" id="dual-flash-card-container">
-      <div class="dual-card-wrapper" id="attack-wrapper">
-        <div class="dual-flash-card attack" id="attack-card" data-action="attack">
-          <div class="dual-card-front">${swordIcon}<span>${escapeHtml(attackWord.word)}</span></div>
-          <div class="dual-card-back">
-            <div class="flash-card-word">${attackWord.reading && attackWord.reading !== attackWord.word
-              ? `<ruby>${escapeHtml(attackWord.word)}<rt>${escapeHtml(attackWord.reading)}</rt></ruby>`
-              : escapeHtml(attackWord.word)}</div>
-            <div class="flash-card-meaning">${formatMeanings(attackWord.meanings)}</div>
-            <div class="flash-card-hint">${hintText}</div>
-          </div>
-        </div>
-      </div>
-      <div class="dual-card-wrapper" id="defend-wrapper">
-        <div class="dual-flash-card defend" id="defend-card" data-action="defend">
-          <div class="dual-card-front">${shieldIcon}<span>${escapeHtml(defendWord.word)}</span></div>
-          <div class="dual-card-back">
-            <div class="flash-card-word">${defendWord.reading && defendWord.reading !== defendWord.word
-              ? `<ruby>${escapeHtml(defendWord.word)}<rt>${escapeHtml(defendWord.reading)}</rt></ruby>`
-              : escapeHtml(defendWord.word)}</div>
-            <div class="flash-card-meaning">${formatMeanings(defendWord.meanings)}</div>
-            <div class="flash-card-hint">${hintText}</div>
-          </div>
-        </div>
-      </div>
-      <div class="dual-card-wrapper" id="befriend-wrapper">
-        <div class="dual-flash-card befriend" id="befriend-card" data-action="befriend">
-          <div class="dual-card-front">${heartIcon}<span>${escapeHtml(befriendWord.word)}</span></div>
-          <div class="dual-card-back">
-            <div class="flash-card-word">${befriendWord.reading && befriendWord.reading !== befriendWord.word
-              ? `<ruby>${escapeHtml(befriendWord.word)}<rt>${escapeHtml(befriendWord.reading)}</rt></ruby>`
-              : escapeHtml(befriendWord.word)}</div>
-            <div class="flash-card-meaning">${formatMeanings(befriendWord.meanings)}</div>
-            <div class="flash-card-hint">${hintText}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  const attackCard = document.getElementById('attack-card');
-  const defendCard = document.getElementById('defend-card');
-  const befriendCard = document.getElementById('befriend-card');
-  const attackWrapper = document.getElementById('attack-wrapper');
-  const defendWrapper = document.getElementById('defend-wrapper');
-  const befriendWrapper = document.getElementById('befriend-wrapper');
-
-  function selectCard(actionType, word, selectedCard, selectedWrapper, otherWrappers) {
-    if (cardFlipped) return;
-
-    selectedActionType = actionType;
-    playSFX('button-tap');
-
-    // Hide the other cards
-    for (const wrapper of otherWrappers) {
-      wrapper.classList.add('hidden');
-    }
-
-    selectedCard.classList.add('selected');
-    cardFlipped = true;
-    activeCard = selectedCard;
-
-    if (onCardFlip) onCardFlip();
-    if (onDualCardSelect) onDualCardSelect(actionType, word);
-
-    // Add swipe/click handlers for grading
-    selectedCard.addEventListener('touchstart', handleTouchStart, { passive: true });
-    selectedCard.addEventListener('touchmove', handleTouchMove, { passive: false });
-    selectedCard.addEventListener('touchend', handleTouchEnd, { passive: true });
-    selectedCard.addEventListener('mousedown', handleMouseDown);
-    selectedCard.addEventListener('mousemove', handleMouseMove);
-    selectedCard.addEventListener('mouseup', handleMouseUp);
-    selectedCard.addEventListener('mouseleave', handleMouseUp);
-
-    selectedCard.addEventListener('click', (e) => {
-      if (isSwiping) return;
-      const rect = selectedCard.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const relativeX = clickX / rect.width;
-      if (relativeX < 0.4) {
-        triggerSwipeAnimation(selectedCard, 'left');
-      } else if (relativeX > 0.6) {
-        triggerSwipeAnimation(selectedCard, 'right');
-      }
-    });
-  }
-
-  attackCard.addEventListener('click', (e) => {
-    if (!cardFlipped) {
-      e.stopPropagation();
-      selectCard('attack', attackWord, attackCard, attackWrapper, [defendWrapper, befriendWrapper]);
-    }
-  });
-
-  defendCard.addEventListener('click', (e) => {
-    if (!cardFlipped) {
-      e.stopPropagation();
-      selectCard('defend', defendWord, defendCard, defendWrapper, [attackWrapper, befriendWrapper]);
-    }
-  });
-
-  befriendCard.addEventListener('click', (e) => {
-    if (!cardFlipped) {
-      e.stopPropagation();
-      selectCard('befriend', befriendWord, befriendCard, befriendWrapper, [attackWrapper, defendWrapper]);
-    }
-  });
-}
 
 // --- Touch handlers ---
 
