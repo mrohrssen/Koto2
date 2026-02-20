@@ -4,9 +4,9 @@ import { loadCharacterCards, getCharacterCard, validateCard } from '../../../src
 
 describe('character-cards', () => {
   describe('loadCharacterCards', () => {
-    it('loads all 10 NPC cards', () => {
+    it('loads all 5 NPC cards', () => {
       const cards = loadCharacterCards();
-      assert.strictEqual(Object.keys(cards).length, 10);
+      assert.strictEqual(Object.keys(cards).length, 5);
     });
 
     it('returns cached reference on second call', () => {
@@ -16,14 +16,38 @@ describe('character-cards', () => {
     });
   });
 
+  describe('loadCharacterCards with type', () => {
+    it('loads NPC cards with type=npc', () => {
+      const cards = loadCharacterCards('npc');
+      assert.strictEqual(Object.keys(cards).length, 5);
+    });
+
+    it('defaults to npc when no type', () => {
+      const cards = loadCharacterCards();
+      assert.strictEqual(Object.keys(cards).length, 5);
+    });
+
+    it('returns same cache for same type', () => {
+      const a = loadCharacterCards('npc');
+      const b = loadCharacterCards('npc');
+      assert.strictEqual(a, b);
+    });
+  });
+
   describe('getCharacterCard', () => {
     it('returns card for valid id', () => {
-      const card = getCharacterCard('npc_01');
+      const card = getCharacterCard('nagi');
       assert.ok(card);
-      assert.strictEqual(card.id, 'npc_01');
+      assert.strictEqual(card.id, 'nagi');
       assert.ok(card.name);
       assert.ok(card.personality);
       assert.ok(card.exampleDialogue);
+    });
+
+    it('returns card with type param', () => {
+      const card = getCharacterCard('nagi', 'npc');
+      assert.ok(card);
+      assert.strictEqual(card.id, 'nagi');
     });
 
     it('returns null for unknown id', () => {
@@ -33,7 +57,7 @@ describe('character-cards', () => {
 
   describe('validateCard', () => {
     it('accepts a valid card', () => {
-      const card = getCharacterCard('npc_01');
+      const card = getCharacterCard('nagi');
       const result = validateCard(card);
       assert.strictEqual(result.valid, true);
     });
@@ -55,6 +79,34 @@ describe('character-cards', () => {
         const result = validateCard(card);
         assert.strictEqual(result.valid, true, `${id} failed: ${result.errors?.join(', ')}`);
       }
+    });
+
+    it('validates NPC card with type=npc', () => {
+      const card = getCharacterCard('nagi', 'npc');
+      const result = validateCard(card, 'npc');
+      assert.strictEqual(result.valid, true);
+    });
+
+    it('defaults type to npc for validateCard', () => {
+      const card = getCharacterCard('nagi');
+      const result = validateCard(card);
+      assert.strictEqual(result.valid, true);
+    });
+
+    it('uses entity type requiredCardFields for validation', () => {
+      // creature type only requires id, name, nameEn, personality
+      const minimalCreatureCard = { id: 'c1', name: 'test', nameEn: 'test', personality: 'shy' };
+      const result = validateCard(minimalCreatureCard, 'creature');
+      assert.strictEqual(result.valid, true);
+    });
+
+    it('NPC validation rejects card missing NPC-specific fields', () => {
+      // This card has only creature-required fields, missing exampleDialogue and goals
+      const minimalCard = { id: 'c1', name: 'test', nameEn: 'test', personality: 'shy' };
+      const result = validateCard(minimalCard, 'npc');
+      assert.strictEqual(result.valid, false);
+      assert.ok(result.errors.some(e => e.includes('exampleDialogue')));
+      assert.ok(result.errors.some(e => e.includes('goals')));
     });
   });
 });

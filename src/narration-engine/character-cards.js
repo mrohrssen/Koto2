@@ -1,32 +1,32 @@
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { getEntityType } from './entity-types/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const CARDS_PATH = join(__dirname, '../../data/character-cards/npcs.json');
 
-const REQUIRED_FIELDS = ['id', 'name', 'nameEn', 'personality', 'exampleDialogue', 'goals'];
+const _caches = {};
 
-let _cache = null;
-
-export function loadCharacterCards() {
-  if (!_cache) {
-    _cache = JSON.parse(readFileSync(CARDS_PATH, 'utf8'));
+export function loadCharacterCards(type = 'npc') {
+  if (!_caches[type]) {
+    const cardsPath = join(__dirname, `../../data/character-cards/${type}s.json`);
+    _caches[type] = JSON.parse(readFileSync(cardsPath, 'utf8'));
   }
-  return _cache;
+  return _caches[type];
 }
 
-export function getCharacterCard(id) {
-  const cards = loadCharacterCards();
+export function getCharacterCard(id, type = 'npc') {
+  const cards = loadCharacterCards(type);
   return cards[id] || null;
 }
 
-export function validateCard(card) {
+export function validateCard(card, type = 'npc') {
   const errors = [];
   if (!card) {
     return { valid: false, errors: ['card is null'] };
   }
-  for (const field of REQUIRED_FIELDS) {
+  const { requiredCardFields } = getEntityType(type);
+  for (const field of requiredCardFields) {
     if (!card[field]) errors.push(`missing ${field}`);
   }
   if (card.exampleDialogue && !Array.isArray(card.exampleDialogue)) {
