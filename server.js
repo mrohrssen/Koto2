@@ -127,12 +127,6 @@ import {
 } from './src/game/prefetch.js';
 import { enforceVocabLimit, checkSentenceViolations } from './src/game/vocab-repair.js';
 import { generateDoorHints as _generateDoorHints } from './src/game/services/door-hint-service.js';
-import { generateBefriendConversation } from './src/game/services/robot-combat-service.js';
-import {
-  getDialogueForRobot,
-  generateMissingDialogues,
-  regenerateRobotDialogue
-} from './src/game/services/befriend-dialogue-service.js';
 import {
   getDialogueFromCache as getNpcDialogueFromCache,
   getAllDialogueCache as getAllNpcDialogueCache,
@@ -371,17 +365,13 @@ app.use('/api', createRoutes({
   setDebugMode: (val) => { debugMode = val; },
   vocabCacheFile: VOCAB_CACHE_FILE,
   staticWordList,
-  generateBefriendConversationFn: async (robot, vocabulary, aiConfig) => {
-    return generateBefriendConversation(robot, vocabulary, { ...aiConfig, chat });
-  },
   getUserVocabulary: getUserNarrationVocabulary,
-  getDialogueForRobot,
-  generateMissingDialoguesFn: async (userId, aiConfig, vocabulary) => {
-    return generateMissingDialogues(userId, { ...aiConfig, chat }, vocabulary);
-  },
-  regenerateRobotDialogueFn: async (userId, robot, aiConfig, vocabulary) => {
-    return regenerateRobotDialogue(userId, robot, { ...aiConfig, chat }, vocabulary);
-  },
+  getCreatureDialogueFromCache: (userId, creatureId) =>
+    getNpcDialogueFromCache(userId, creatureId, 'creature'),
+  queueMissingCreatureDialoguesFn: async (userId, aiConfig, vocabContext) =>
+    queueNpcDialogues(userId, chat, aiConfig, vocabContext, 'creature'),
+  regenCreatureDialogueFn: async (userId, creatureId, aiConfig, vocabContext) =>
+    regenNpcDialogue(userId, creatureId, chat, aiConfig, vocabContext, 'creature'),
   // NPC narration engine deps
   getNpcDialogueFromCache,
   getAllNpcDialogueCache,
