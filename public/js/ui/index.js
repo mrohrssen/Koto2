@@ -38,3 +38,4 @@ export * as postCombatShop from './post-combat-shop.js';
 export * as combatAudio from './combat-audio.js';
 export * as spriteUtils from './sprite-utils.js';
 export * as i18n from './i18n.js';
+export * as whackAMole from './whack-a-mole.js';
