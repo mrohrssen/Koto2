@@ -22,7 +22,6 @@ import createBugReportRoutes from './bug-reports.js';
  * @param {function} deps.saveSettings - Save settings to file
  * @param {function} deps.enrichGameState - Enrich game state (accepts gameManager)
  * @param {function} deps.generateGameNarration - Generate AI narration
- * @param {function} deps.adaptExistingNarrationText - Adapt existing narration text for vocab readiness
  * @param {function} deps.cancelPendingPrefetches - Cancel pending prefetches
  * @param {function} deps.clearPrefetchCache - Clear prefetch cache
  * @returns {Router}
@@ -50,7 +49,6 @@ export default function createRoutes(deps) {
   router.use('/game', createGameRoutes({
     enrichGameState: deps.enrichGameState,
     generateGameNarration: deps.generateGameNarration,
-    adaptExistingNarrationText: deps.adaptExistingNarrationText,
     generateDoorHints: deps.generateDoorHints,
     cancelPendingPrefetches: deps.cancelPendingPrefetches,
     clearPrefetchCache: deps.clearPrefetchCache,
@@ -68,6 +66,7 @@ export default function createRoutes(deps) {
     getUserVocabulary: deps.getUserVocabulary,
     // NPC narration engine deps
     getNpcDialogueFromCache: deps.getNpcDialogueFromCache,
+    getAllNpcDialogueCache: deps.getAllNpcDialogueCache,
     queueMissingNpcDialoguesFn: deps.queueMissingNpcDialoguesFn,
     logNpcEncounterFn: deps.logNpcEncounterFn,
     regenNpcDialogueFn: deps.regenNpcDialogueFn,

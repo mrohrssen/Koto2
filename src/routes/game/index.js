@@ -21,7 +21,6 @@ import createMiscRoutes from './misc.js';
  * @param {object} deps - Dependencies
  * @param {function} deps.enrichGameState - Enrich a game state with item data
  * @param {function} deps.generateGameNarration - Generate AI narration
- * @param {function} deps.adaptExistingNarrationText - Adapt existing narration text
  * @param {function} deps.cancelPendingPrefetches - Cancel pending prefetches
  * @param {function} deps.clearPrefetchCache - Clear prefetch cache
  * @param {function} deps.enrichRewardDrops - Enrich reward drops with item data
@@ -99,7 +98,6 @@ export default function createGameRoutes(deps) {
   // Mount misc routes
   router.use(createMiscRoutes({
     generateGameNarration: deps.generateGameNarration,
-    adaptExistingNarrationText: deps.adaptExistingNarrationText,
     cancelPendingPrefetches: deps.cancelPendingPrefetches,
     clearPrefetchCache: deps.clearPrefetchCache,
     getGameStats: deps.getGameStats,
@@ -107,7 +105,8 @@ export default function createGameRoutes(deps) {
     getDebugMode: deps.getDebugMode,
     setDebugMode: deps.setDebugMode,
     vocabCacheFile: deps.vocabCacheFile,
-    staticWordList: deps.staticWordList
+    staticWordList: deps.staticWordList,
+    getAllNpcDialogueCache: deps.getAllNpcDialogueCache
   }));
 
   return router;

@@ -29,7 +29,6 @@ import { getSaveFilePath } from '../../game/manager-registry.js';
 
 export default function createMiscRoutes({
   generateGameNarration,
-  adaptExistingNarrationText,
   cancelPendingPrefetches,
   clearPrefetchCache,
   getGameStats,
@@ -37,7 +36,8 @@ export default function createMiscRoutes({
   getDebugMode,
   setDebugMode,
   vocabCacheFile,
-  staticWordList
+  staticWordList,
+  getAllNpcDialogueCache
 }) {
   const router = Router();
 
@@ -49,22 +49,6 @@ export default function createMiscRoutes({
       res.json({ narration });
     } catch (error) {
       res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Rewrite existing narration text for vocab/grammar readiness
-  router.post('/rewrite-narration', async (req, res) => {
-    const sourceText = typeof req.body?.text === 'string' ? req.body.text : '';
-    if (!sourceText) {
-      return res.json({ narration: sourceText });
-    }
-
-    try {
-      const narration = await adaptExistingNarrationText(sourceText, req.userKeys);
-      res.json({ narration: typeof narration === 'string' ? narration : sourceText });
-    } catch (error) {
-      console.warn('[Rewrite Narration] Falling back to source text:', error.message);
-      res.json({ narration: sourceText });
     }
   });
 
@@ -299,6 +283,16 @@ export default function createMiscRoutes({
     clearTestRoomQueue();
 
     res.json({ success: true });
+  });
+
+  // Debug: Dump NPC dialogue cache for the current user
+  router.get('/debug-npc-dialogue-cache', (req, res) => {
+    if (!getDebugMode()) {
+      return res.status(403).json({ error: 'Debug mode not enabled' });
+    }
+    const cache = getAllNpcDialogueCache?.(req.user.id) || {};
+    const npcCount = Object.keys(cache).length;
+    res.json({ userId: req.user.id, npcCount, cache });
   });
 
   // Heal

@@ -323,46 +323,6 @@ async function submitQuizAnswer(questionId, selectedIndex, bunproMeta = null) {
   }
 }
 
-/** Adapt existing narration text without generating new narration */
-async function rewriteNarration(text) {
-  const sourceText = typeof text === 'string' ? text : '';
-  if (!sourceText) {
-    return { narration: sourceText };
-  }
-
-  const startedAt = performance.now();
-  console.log(`[Narration Rewrite] SOURCE: ${sourceText}`);
-
-  try {
-    const response = await fetch('/api/game/rewrite-narration', {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ text: sourceText })
-    });
-    const data = await response.json();
-    const elapsedMs = Math.round(performance.now() - startedAt);
-    console.log(`[API Timing] POST /api/game/rewrite-narration -> ${response.status} in ${elapsedMs}ms`);
-
-    if (!response.ok) {
-      console.log('[Narration Rewrite] FALLBACK (non-200): using source text');
-      return { narration: sourceText };
-    }
-
-    const narration = typeof data?.narration === 'string' ? data.narration : sourceText;
-    console.log(`[Narration Rewrite] REWRITTEN: ${narration}`);
-
-    return {
-      narration
-    };
-  } catch (error) {
-    const elapsedMs = Math.round(performance.now() - startedAt);
-    console.log(`[API Timing] POST /api/game/rewrite-narration -> error in ${elapsedMs}ms`);
-    console.log('[Narration Rewrite] FALLBACK (network/error): using source text');
-    logger.debug('[API] rewriteNarration fallback:', error.message);
-    return { narration: sourceText };
-  }
-}
-
 // ============ COMBAT ENDPOINTS ============
 
 /** Start a regular enemy encounter */
@@ -632,7 +592,6 @@ export {
   quizReward,
   getQuizQuestion,
   submitQuizAnswer,
-  rewriteNarration,
   // Combat endpoints
   startEncounter,
   startRobotEncounter,

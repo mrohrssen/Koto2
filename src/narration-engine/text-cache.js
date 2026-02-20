@@ -34,6 +34,10 @@ export class TextCache {
     writeFileSync(this._filePath, JSON.stringify(this._data, null, 2));
   }
 
+  getAll() {
+    return { ...this._data };
+  }
+
   get(npcId) {
     return this._data[npcId] || null;
   }

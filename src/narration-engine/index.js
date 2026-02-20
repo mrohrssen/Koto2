@@ -42,6 +42,13 @@ export function getDialogueFromCache(userId, entityId) {
 }
 
 /**
+ * Get the full dialogue cache for a user (all NPCs).
+ */
+export function getAllDialogueCache(userId) {
+  return getCache(userId).getAll();
+}
+
+/**
  * Queue generation for all entities that are missing or stale in cache.
  * Fire-and-forget — runs in background with concurrency limit.
  */

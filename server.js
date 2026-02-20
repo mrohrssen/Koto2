@@ -135,6 +135,7 @@ import {
 } from './src/game/services/befriend-dialogue-service.js';
 import {
   getDialogueFromCache as getNpcDialogueFromCache,
+  getAllDialogueCache as getAllNpcDialogueCache,
   queueMissingDialogues as queueNpcDialogues,
   logEncounter as logNpcEncounter,
   regenerateDialogue as regenNpcDialogue,
@@ -357,7 +358,6 @@ app.use('/api', createRoutes({
   saveSettings: saveSettings,
   enrichGameState,
   generateGameNarration,
-  adaptExistingNarrationText,
   generateDoorHints: generateDoorHintsForRoute,
   cancelPendingPrefetches,
   clearPrefetchCache,
@@ -383,6 +383,7 @@ app.use('/api', createRoutes({
   },
   // NPC narration engine deps
   getNpcDialogueFromCache,
+  getAllNpcDialogueCache,
   queueMissingNpcDialoguesFn: async (userId, aiConfig, vocabContext) => {
     return queueNpcDialogues(userId, chat, aiConfig, vocabContext);
   },
@@ -578,16 +579,6 @@ async function generateGameNarration(event, context, userKeys = {}) {
   trackNarrationStats(narration, jpdbApiKey, userId);
 
   return narration;
-}
-
-async function adaptExistingNarrationText(text, userKeys = {}) {
-  if (typeof text !== 'string' || text.length === 0) {
-    return typeof text === 'string' ? text : '';
-  }
-
-  const { words: vocabulary, vidSet } = getUserNarrationVocabulary(userKeys?.userId);
-  const repaired = await applyVocabRepair(text, vocabulary, userKeys, [], vidSet);
-  return typeof repaired === 'string' ? repaired : text;
 }
 
 function generateDoorHintsForRoute(roomType1, roomType2) {

@@ -1480,8 +1480,7 @@ function showConversationRound(round, roundNumber, robotName) {
     // Show robot's line in narration box
     narration.showNarration(round.speaker, {
       speaker: robotName,
-      persistent: true,
-      skipRewrite: true
+      persistent: true
     });
 
     const actionArea = document.getElementById('action-area');
@@ -1586,7 +1585,7 @@ async function executeBefriendAction() {
       if (!answerResult.correct) {
         // --- FAILURE ---
         narration.showNarration('？？？', {
-          speaker: robotName, autoDismiss: 1000, skipRewrite: true
+          speaker: robotName, autoDismiss: 1000
         });
 
         // Shake target enemy
@@ -1641,7 +1640,7 @@ async function executeBefriendAction() {
       if (answerResult.conversationComplete) {
         // All 3 rounds correct!
         narration.showNarration('\u3058\u3083\u3042\u3001\u53cb\u9054\u306b\u306a\u308d\u3046\uff01', {
-          speaker: robotName, autoDismiss: 1500, skipRewrite: true
+          speaker: robotName, autoDismiss: 1500
         });
         playSFX('chip-skill');
 
@@ -1921,7 +1920,7 @@ export async function runNpcDialogue() {
     const round = rounds[i];
 
     // Show NPC line (persistent so player can read while choosing)
-    await narration.showNarration(round.npcLine, { speaker: npcName, persistent: true, skipRewrite: true });
+    await narration.showNarration(round.npcLine, { speaker: npcName, persistent: true });
 
     // Show 3 response buttons (reuses befriend dialogue styling)
     const selectedIndex = await showNpcResponseOptions(round.options, i);

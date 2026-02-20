@@ -26,8 +26,6 @@
  */
 
 import * as lookup from './lookup.js';
-import { rewriteNarration } from '../api.js';
-import { isAiNarrationEnabled } from '../settings.js';
 
 const box = document.getElementById('narration-box');
 const textEl = document.getElementById('narration-text');
@@ -174,7 +172,6 @@ function handleClick(e) {
  * @param {string} [options.speaker] - Name label shown above text
  * @param {number} [options.autoDismiss] - Ms to auto-dismiss (no click needed)
  * @param {boolean} [options.persistent] - If true, stays visible until forceHide() is called
- * @param {boolean} [options.skipRewrite] - If true, bypass vocab rewrite for this text
  * @returns {Promise<void>} Resolves when dismissed
  */
 export async function show(text, options = {}) {
@@ -183,22 +180,10 @@ export async function show(text, options = {}) {
   const {
     speaker,
     autoDismiss,
-    persistent,
-    skipRewrite = false
+    persistent
   } = options;
 
-  let displayText = sourceText;
-  if (!skipRewrite && isAiNarrationEnabled() && sourceText.trim()) {
-    console.log(`[NarrationBox] Original before rewrite: ${sourceText}`);
-    try {
-      const rewritten = await rewriteNarration(sourceText);
-      if (requestId !== showRequestCounter) return;
-      if (typeof rewritten?.narration === 'string' && rewritten.narration.length > 0) {
-        displayText = rewritten.narration;
-      }
-      console.log(`[NarrationBox] Rewrite result: ${displayText}`);
-    } catch {}
-  }
+  const displayText = sourceText;
 
   if (requestId !== showRequestCounter) return;
 
