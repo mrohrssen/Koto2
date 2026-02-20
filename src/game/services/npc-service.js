@@ -57,6 +57,70 @@ export function shuffleOptions(options) {
 }
 
 /**
+ * Process an NPC dialogue round response.
+ * Pure game logic extracted from the /npc-dialogue-respond route.
+ *
+ * @param {object} gameManager - The GameManager instance
+ * @param {object} params - { roundIndex, selectedIndex }
+ * @returns {object} Result object with response data, or { error, statusCode } on validation failure
+ */
+export function handleNpcDialogueResponse(gameManager, { roundIndex, selectedIndex }) {
+  const dialogue = gameManager.run?.npcDialogue;
+
+  if (!dialogue?.active) {
+    return { error: 'No active NPC dialogue', statusCode: 400 };
+  }
+
+  if (roundIndex !== dialogue.currentRound) {
+    return { error: 'Wrong round index', statusCode: 400 };
+  }
+
+  if (selectedIndex < 0 || selectedIndex > 2) {
+    return { error: 'Invalid selection', statusCode: 400 };
+  }
+
+  const round = dialogue.rounds[roundIndex];
+  const tone = round._toneMap[selectedIndex];
+  const delta = tone === 'positive' ? 1 : tone === 'negative' ? -1 : 0;
+  dialogue.totalDelta += delta;
+  dialogue.currentRound++;
+
+  const dialogueComplete = dialogue.currentRound >= 3;
+
+  if (dialogueComplete) {
+    const meta = gameManager.getMeta();
+    // Clamp total bond change to +1, 0, or -1
+    const totalDelta = Math.max(-1, Math.min(1, dialogue.totalDelta));
+    updateBond(meta, dialogue.npcId, totalDelta);
+    recordEncounter(meta, dialogue.npcId);
+    const bond = meta.npcBonds[dialogue.npcId];
+    const npcName = dialogue.npcData.name;
+    const npcNameEn = dialogue.npcData.nameEn;
+    const npcId = dialogue.npcId;
+
+    gameManager.run.npcDialogue = null;
+
+    return {
+      tone,
+      delta,
+      dialogueComplete: true,
+      totalDelta,
+      bond: bond.bond,
+      npcName,
+      npcNameEn,
+      npcId
+    };
+  }
+
+  return {
+    tone,
+    delta,
+    dialogueComplete: false,
+    currentRound: dialogue.currentRound
+  };
+}
+
+/**
  * Returns meta.npcBonds[npcId] or null.
  */
 export function getNpcBond(meta, npcId) {

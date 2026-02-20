@@ -657,6 +657,107 @@ export async function generateBefriendConversation(robot, vocabulary, aiConfig =
   return getStaticConversation(robot.id);
 }
 
+/**
+ * Process a befriend conversation answer.
+ * Pure game logic extracted from the /befriend-answer route.
+ *
+ * @param {object} gameManager - The GameManager instance
+ * @param {object} params - { roundIndex, selectedIndex }
+ * @returns {object} Result object with response data, or { error, statusCode } on validation failure
+ */
+export function handleBefriendAnswer(gameManager, { roundIndex, selectedIndex }) {
+  const combat = gameManager.combat;
+
+  if (!combat?.active || !combat.befriendConversation?.active) {
+    return { error: 'No active befriend conversation', statusCode: 400 };
+  }
+
+  const convo = combat.befriendConversation;
+  const targetEnemy = combat.enemies[convo.targetEnemyIndex];
+
+  if (roundIndex !== convo.currentRound) {
+    return { error: 'Wrong round index', statusCode: 400 };
+  }
+
+  const round = convo.rounds[roundIndex];
+  if (!round) {
+    return { error: 'Invalid round', statusCode: 400 };
+  }
+
+  const correct = selectedIndex === round.correctIndex;
+
+  if (!correct) {
+    // Failure: clear conversation, enemies attack
+    combat.befriendConversation = null;
+
+    const enemyResult = processEnemyTurn(
+      combat.enemies, combat.allies, false, gameManager.run?.itemBuffs
+    );
+
+    // Handle KO'd allies
+    const koSwaps = [];
+    for (let i = 0; i < combat.allies.length; i++) {
+      if (combat.allies[i] && combat.allies[i].hp <= 0) {
+        const replacement = handleRobotKO(gameManager.run.robotParty, i);
+        if (replacement) {
+          koSwaps.push({ slot: i, replacement: replacement.nameEn });
+        }
+      }
+    }
+    combat.allies = gameManager.run.robotParty.active;
+
+    const allAlliesKO = combat.allies.every(a => !a || a.hp <= 0);
+    if (allAlliesKO) {
+      combat.active = false;
+      gameManager.run.active = false;
+    }
+
+    return {
+      correct: false,
+      correctIndex: round.correctIndex,
+      enemyAttacks: enemyResult.attacks || [],
+      koSwaps,
+      combatEnded: allAlliesKO,
+      victory: false,
+      allies: combat.allies,
+      enemies: combat.enemies,
+      targetEnemy,
+      needsDialogueRegen: true
+    };
+  }
+
+  // Correct answer
+  convo.currentRound++;
+
+  if (convo.currentRound >= 3) {
+    // All 3 rounds correct -- use existing befriend cycle
+    combat.befriendConversation = null;
+
+    const result = gameManager.robotCombatCycle('befriend');
+
+    return {
+      correct: true,
+      correctIndex: round.correctIndex,
+      conversationComplete: true,
+      befriend: result.befriend,
+      combatEnded: result.combatEnded || false,
+      victory: result.victory || false,
+      robotParty: result.robotParty,
+      enemies: combat.enemies,
+      targetEnemy,
+      needsDialogueRegen: true
+    };
+  }
+
+  // Correct but more rounds to go
+  return {
+    correct: true,
+    correctIndex: round.correctIndex,
+    conversationComplete: false,
+    currentRound: convo.currentRound
+  };
+}
+
 function getStaticConversation(robotId) {
   try {
     const data = JSON.parse(readFileSync('data/befriend-conversations.json', 'utf8'));

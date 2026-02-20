@@ -5,9 +5,9 @@
  */
 
 import { Router } from 'express';
-import { processEnemyTurn, handleRobotKO } from '../../game/services/robot-combat-service.js';
+import { processEnemyTurn, handleRobotKO, handleBefriendAnswer } from '../../game/services/robot-combat-service.js';
 import { getCollectionCatalog } from '../../game/services/robot-collection-service.js';
-import { loadNpcs, shuffleOptions, updateBond, recordEncounter } from '../../game/services/npc-service.js';
+import { loadNpcs, shuffleOptions, updateBond, recordEncounter, handleNpcDialogueResponse } from '../../game/services/npc-service.js';
 import { buildVocabConfig } from './route-helpers.js';
 
 function triggerDialogueRegen(userId, targetEnemy, userKeys, getUserVocabularyFn, regenFn) {
@@ -316,107 +316,36 @@ export default function createCombatRoutes({
 
   // Validate befriend conversation answer
   router.post('/befriend-answer', (req, res) => {
-    const gameManager = req.gameManager;
-    const { roundIndex, selectedIndex } = req.body;
-    const combat = gameManager.combat;
+    const result = handleBefriendAnswer(req.gameManager, req.body);
 
-    if (!combat?.active || !combat.befriendConversation?.active) {
-      console.error('[BefriendAnswer] Rejected:', {
-        hasCombat: !!combat,
-        combatActive: combat?.active,
-        hasBefriendConvo: !!combat?.befriendConversation,
-        convoActive: combat?.befriendConversation?.active,
-        roundIndex, selectedIndex
-      });
-      return res.status(400).json({ error: 'No active befriend conversation' });
-    }
-
-    const convo = combat.befriendConversation;
-    const targetEnemy = combat.enemies[convo.targetEnemyIndex];
-
-    if (roundIndex !== convo.currentRound) {
-      return res.status(400).json({ error: 'Wrong round index' });
-    }
-
-    const round = convo.rounds[roundIndex];
-    if (!round) {
-      return res.status(400).json({ error: 'Invalid round' });
-    }
-
-    const correct = selectedIndex === round.correctIndex;
-
-    if (!correct) {
-      // Failure: clear conversation, enemies attack
-      combat.befriendConversation = null;
-
-      const enemyResult = processEnemyTurn(
-        combat.enemies, combat.allies, false, gameManager.run?.itemBuffs
-      );
-
-      // Handle KO'd allies
-      const koSwaps = [];
-      for (let i = 0; i < combat.allies.length; i++) {
-        if (combat.allies[i] && combat.allies[i].hp <= 0) {
-          const replacement = handleRobotKO(gameManager.run.robotParty, i);
-          if (replacement) {
-            koSwaps.push({ slot: i, replacement: replacement.nameEn });
-          }
-        }
+    if (result.error) {
+      if (result.statusCode === 400 && result.error === 'No active befriend conversation') {
+        const combat = req.gameManager.combat;
+        console.error('[BefriendAnswer] Rejected:', {
+          hasCombat: !!combat,
+          combatActive: combat?.active,
+          hasBefriendConvo: !!combat?.befriendConversation,
+          convoActive: combat?.befriendConversation?.active,
+          roundIndex: req.body.roundIndex,
+          selectedIndex: req.body.selectedIndex
+        });
       }
-      combat.allies = gameManager.run.robotParty.active;
-
-      const allAlliesKO = combat.allies.every(a => !a || a.hp <= 0);
-      if (allAlliesKO) {
-        combat.active = false;
-        gameManager.run.active = false;
-      }
-
-      req.saveGame();
-      triggerDialogueRegen(req.user.id, targetEnemy, req.userKeys, getUserVocabulary, regenerateRobotDialogueFn);
-      return res.json({
-        correct: false,
-        correctIndex: round.correctIndex,
-        enemyAttacks: enemyResult.attacks || [],
-        koSwaps,
-        combatEnded: allAlliesKO,
-        victory: false,
-        allies: combat.allies,
-        enemies: combat.enemies
-      });
+      return res.status(result.statusCode || 400).json({ error: result.error });
     }
 
-    // Correct answer
-    convo.currentRound++;
-
-    if (convo.currentRound >= 3) {
-      // All 3 rounds correct — use existing befriend cycle
-      combat.befriendConversation = null;
-
-      const result = gameManager.robotCombatCycle('befriend');
-
-      req.saveGame();
-      triggerDialogueRegen(req.user.id, targetEnemy, req.userKeys, getUserVocabulary, regenerateRobotDialogueFn);
-      return res.json({
-        correct: true,
-        correctIndex: round.correctIndex,
-        conversationComplete: true,
-        befriend: result.befriend,
-        combatEnded: result.combatEnded || false,
-        victory: result.victory || false,
-        robotParty: result.robotParty,
-        enemies: combat.enemies,
-        state: req.getEnrichedGameState()
-      });
-    }
-
-    // Correct but more rounds to go
     req.saveGame();
-    res.json({
-      correct: true,
-      correctIndex: round.correctIndex,
-      conversationComplete: false,
-      currentRound: convo.currentRound
-    });
+
+    if (result.needsDialogueRegen) {
+      triggerDialogueRegen(req.user.id, result.targetEnemy, req.userKeys, getUserVocabulary, regenerateRobotDialogueFn);
+    }
+
+    // Build client response (strip internal fields, add state when needed)
+    const { targetEnemy, needsDialogueRegen, ...clientResult } = result;
+    if (result.conversationComplete && result.correct) {
+      clientResult.state = req.getEnrichedGameState();
+    }
+
+    res.json(clientResult);
   });
 
   // Start NPC post-combat dialogue
@@ -477,45 +406,18 @@ export default function createCombatRoutes({
 
   // Respond to NPC dialogue round
   router.post('/npc-dialogue-respond', (req, res) => {
-    const gameManager = req.gameManager;
-    const { roundIndex, selectedIndex } = req.body;
-    const dialogue = gameManager.run?.npcDialogue;
+    const result = handleNpcDialogueResponse(req.gameManager, req.body);
 
-    if (!dialogue?.active) {
-      return res.status(400).json({ error: 'No active NPC dialogue' });
+    if (result.error) {
+      return res.status(result.statusCode || 400).json({ error: result.error });
     }
 
-    if (roundIndex !== dialogue.currentRound) {
-      return res.status(400).json({ error: 'Wrong round index' });
-    }
+    req.saveGame();
 
-    if (selectedIndex < 0 || selectedIndex > 2) {
-      return res.status(400).json({ error: 'Invalid selection' });
-    }
+    // Post-completion side effects (memory logging, background regen)
+    if (result.dialogueComplete) {
+      const { npcId, totalDelta } = result;
 
-    const round = dialogue.rounds[roundIndex];
-    const tone = round._toneMap[selectedIndex];
-    const delta = tone === 'positive' ? 1 : tone === 'negative' ? -1 : 0;
-    dialogue.totalDelta += delta;
-    dialogue.currentRound++;
-
-    const dialogueComplete = dialogue.currentRound >= 3;
-
-    if (dialogueComplete) {
-      const meta = gameManager.getMeta();
-      // Clamp total bond change to +1, 0, or -1
-      const totalDelta = Math.max(-1, Math.min(1, dialogue.totalDelta));
-      updateBond(meta, dialogue.npcId, totalDelta);
-      recordEncounter(meta, dialogue.npcId);
-      const bond = meta.npcBonds[dialogue.npcId];
-      const npcName = dialogue.npcData.name;
-      const npcNameEn = dialogue.npcData.nameEn;
-      const npcId = dialogue.npcId;
-
-      gameManager.run.npcDialogue = null;
-      req.saveGame();
-
-      // Log to narration engine memory
       if (logNpcEncounterFn) {
         const outcome = totalDelta > 0 ? 'positive' : totalDelta < 0 ? 'negative' : 'neutral';
         logNpcEncounterFn(req.user.id, npcId, outcome, `Bond change: ${totalDelta}`);
@@ -527,7 +429,6 @@ export default function createCombatRoutes({
         setNpcMemoryFlagFn(req.user.id, npcId, 'liberated', true);
       }
 
-      // Trigger background regeneration for next encounter
       if (regenNpcDialogueFn) {
         const vocabConfig = buildVocabConfig(req, getUserVocabulary, checkSentenceViolations);
         if (vocabConfig) {
@@ -541,25 +442,13 @@ export default function createCombatRoutes({
         }
       }
 
-      return res.json({
-        tone,
-        delta,
-        dialogueComplete: true,
-        totalDelta,
-        bond: bond.bond,
-        npcName,
-        npcNameEn,
-        state: req.getEnrichedGameState()
-      });
+      // Build client response (strip internal npcId, add state)
+      const { npcId: _npcId, ...clientResult } = result;
+      clientResult.state = req.getEnrichedGameState();
+      return res.json(clientResult);
     }
 
-    req.saveGame();
-    res.json({
-      tone,
-      delta,
-      dialogueComplete: false,
-      currentRound: dialogue.currentRound
-    });
+    res.json(result);
   });
 
   return router;
