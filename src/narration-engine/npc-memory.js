@@ -1,5 +1,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { dataPath } from '../data-dir.js';
+import { getEntityType } from './entity-types/index.js';
+
 const MAX_LOG_ENTRIES = 5;
 
 function emptyNpcState() {
@@ -14,13 +16,14 @@ function emptyNpcState() {
 }
 
 export class NpcMemory {
-  constructor({ userId, inMemory = false } = {}) {
+  constructor({ userId, entityType = 'npc', inMemory = false } = {}) {
     this._inMemory = inMemory;
     this._userId = userId;
     this._data = {};
 
     if (!inMemory && userId) {
-      this._filePath = dataPath(`npc-memory-${userId}.json`);
+      const { memoryPrefix } = getEntityType(entityType);
+      this._filePath = dataPath(`${memoryPrefix}-${userId}.json`);
       this._load();
     }
   }

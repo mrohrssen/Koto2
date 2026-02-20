@@ -1,15 +1,18 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { isVocabStale } from './vocab-constraints.js';
 import { dataPath } from '../data-dir.js';
+import { getEntityType } from './entity-types/index.js';
 
 export class TextCache {
-  constructor({ userId, inMemory = false } = {}) {
+  constructor({ userId, entityType = 'npc', inMemory = false } = {}) {
     this._inMemory = inMemory;
     this._userId = userId;
+    this._entityType = entityType;
     this._data = {};
 
     if (!inMemory && userId) {
-      this._filePath = dataPath(`npc-dialogue-cache-${userId}.json`);
+      const { cachePrefix } = getEntityType(entityType);
+      this._filePath = dataPath(`${cachePrefix}-${userId}.json`);
       this._load();
     }
   }
@@ -57,8 +60,8 @@ export class TextCache {
    * Check if cached dialogue is stale.
    * Stale if: missing, vocab grew past threshold, or memory changed.
    */
-  isStale(npcId, currentVocabCount, currentMemorySnapshot) {
-    const cached = this._data[npcId];
+  isStale(entityId, currentVocabCount, currentMemorySnapshot) {
+    const cached = this._data[entityId];
     if (!cached) return true;
 
     if (isVocabStale(cached.vocabSnapshot || 0, currentVocabCount)) {
@@ -66,10 +69,8 @@ export class TextCache {
     }
 
     const snap = cached.memorySnapshot || {};
-    if (snap.encounters !== currentMemorySnapshot.encounters ||
-        snap.bond !== currentMemorySnapshot.bond ||
-        snap.liberated !== currentMemorySnapshot.liberated) {
-      return true;
+    for (const key of Object.keys(currentMemorySnapshot || {})) {
+      if (snap[key] !== currentMemorySnapshot[key]) return true;
     }
 
     return false;
@@ -77,20 +78,11 @@ export class TextCache {
 
   /**
    * Extract previously generated lines for anti-repetition.
+   * Dispatches to the entity type's getPreviousLines implementation.
    */
-  getPreviousLines(npcId) {
-    const cached = this._data[npcId];
+  getPreviousLines(entityId) {
+    const cached = this._data[entityId];
     if (!cached) return [];
-
-    const lines = [];
-    if (cached.greeting) lines.push(cached.greeting);
-    if (cached.defeatLine) lines.push(cached.defeatLine);
-    if (cached.freedLine) lines.push(cached.freedLine);
-    if (cached.rounds) {
-      for (const round of cached.rounds) {
-        if (round.npcLine) lines.push(round.npcLine);
-      }
-    }
-    return lines;
+    return getEntityType(this._entityType).getPreviousLines(cached);
   }
 }
