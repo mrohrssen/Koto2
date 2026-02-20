@@ -1,31 +1,17 @@
-import { parseDialogueJson, validateDialogueShape } from './generation.js';
+import { parseDialogueJson } from './generation.js';
+import { getEntityType } from './entity-types/index.js';
 import { logger } from '../logger.js';
 
 /**
  * Extract all Japanese text fields from a dialogue JSON object.
- * Returns array of { path: string, text: string } entries.
- * Standard dialogue has 15 fields: greeting + defeatLine + freedLine +
- * 3 rounds x (npcLine + 3 option texts).
+ * Dispatches to the appropriate entity type's extractStrings function.
+ *
+ * @param {object} dialogue - The dialogue JSON object
+ * @param {string} [entityType='npc'] - Entity type ('npc' or 'creature')
+ * @returns {Array<{ path: string, text: string }>}
  */
-export function extractDialogueStrings(dialogue) {
-  const entries = [];
-  if (dialogue.greeting) entries.push({ path: 'greeting', text: dialogue.greeting });
-  if (dialogue.defeatLine) entries.push({ path: 'defeatLine', text: dialogue.defeatLine });
-  if (dialogue.freedLine) entries.push({ path: 'freedLine', text: dialogue.freedLine });
-  if (dialogue.rounds) {
-    for (let i = 0; i < dialogue.rounds.length; i++) {
-      const round = dialogue.rounds[i];
-      if (round.npcLine) entries.push({ path: `rounds[${i}].npcLine`, text: round.npcLine });
-      if (round.options) {
-        for (let j = 0; j < round.options.length; j++) {
-          if (round.options[j].text) {
-            entries.push({ path: `rounds[${i}].options[${j}].text`, text: round.options[j].text });
-          }
-        }
-      }
-    }
-  }
-  return entries;
+export function extractDialogueStrings(dialogue, entityType = 'npc') {
+  return getEntityType(entityType).extractStrings(dialogue);
 }
 
 /**
@@ -38,10 +24,10 @@ export function extractDialogueStrings(dialogue) {
  *   If null, validation is skipped (no JPDB API key available).
  * @returns {Array<{ path: string, text: string, unknowns: string[] }>} Violations (empty = clean)
  */
-export async function validateDialogueVocab(dialogue, checkFn) {
+export async function validateDialogueVocab(dialogue, checkFn, entityType = 'npc') {
   if (!checkFn) return [];
 
-  const entries = extractDialogueStrings(dialogue);
+  const entries = extractDialogueStrings(dialogue, entityType);
   const violations = [];
 
   for (const entry of entries) {
@@ -62,23 +48,8 @@ export async function validateDialogueVocab(dialogue, checkFn) {
  * Build the repair instruction listing specific violations.
  * This becomes the final user message in the multi-turn repair conversation.
  */
-export function buildRepairInstruction(violations) {
-  const violationList = violations.map(v =>
-    `- ${v.path}: unknown words [${v.unknowns.join(', ')}]`
-  ).join('\n');
-
-  return `The dialogue you generated contains words the player doesn't know yet.
-
-Violations:
-${violationList}
-
-Rewrite the ENTIRE dialogue JSON fixing these violations.
-Rules:
-1. Replace unknown words with simpler alternatives from the vocabulary list in the system prompt.
-2. Keep the same personality, mood, and meaning.
-3. Keep the exact same JSON structure (greeting, defeatLine, freedLine, 3 rounds with 3 options each).
-4. Each field may contain at most 1 word not in the vocabulary list.
-5. Output ONLY valid JSON. No explanation, no markdown fences.`;
+export function buildRepairInstruction(violations, entityType = 'npc') {
+  return getEntityType(entityType).buildRepairInstruction(violations);
 }
 
 /**
@@ -102,15 +73,18 @@ export async function enforceDialogueVocab({
   systemBlocks,
   userPrompt,
   aiConfig,
-  maxAttempts = 3
+  maxAttempts = 3,
+  entityType = 'npc'
 }) {
   // No checker = skip validation (no JPDB API key)
   if (!checkViolationsFn) {
     return { dialogue, repaired: false, attempts: 0, violations: [] };
   }
 
+  const { validateShape } = getEntityType(entityType);
+
   // Initial validation
-  let violations = await validateDialogueVocab(dialogue, checkViolationsFn);
+  let violations = await validateDialogueVocab(dialogue, checkViolationsFn, entityType);
   if (violations.length === 0) {
     return { dialogue, repaired: false, attempts: 0, violations: [] };
   }
@@ -120,7 +94,7 @@ export async function enforceDialogueVocab({
   let currentDialogue = dialogue;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const repairInstruction = buildRepairInstruction(violations);
+      const repairInstruction = buildRepairInstruction(violations, entityType);
 
       // Multi-turn repair: original prompt + flawed output + repair instruction
       const response = await chatFn({
@@ -145,14 +119,14 @@ export async function enforceDialogueVocab({
         continue;
       }
 
-      const shapeCheck = validateDialogueShape(parsed);
+      const shapeCheck = validateShape(parsed);
       if (!shapeCheck.valid) {
         logger.warn(`[NpcDialogue] Repair attempt ${attempt}: invalid shape: ${shapeCheck.errors.join(', ')}`);
         continue;
       }
 
       // Re-validate vocab on repaired dialogue
-      violations = await validateDialogueVocab(parsed, checkViolationsFn);
+      violations = await validateDialogueVocab(parsed, checkViolationsFn, entityType);
       if (violations.length === 0) {
         logger.info(`[NpcDialogue] Repair succeeded on attempt ${attempt}`);
         return { dialogue: parsed, repaired: true, attempts: attempt, violations: [] };
