@@ -6,7 +6,6 @@ import {
   addXpToRobot,
   generateEnemyRobot
 } from '../robots.js';
-import { readFileSync } from 'fs';
 import {
   getBuffedAttack,
   getBuffedAutoPower,
@@ -22,8 +21,6 @@ import {
   getAttackMultiplier, getDamageReduction, getTauntTarget, breakSleep,
   getFlatAttackBonus
 } from '../combat/effects.js';
-import { DM_PROMPTS } from '../dm.js';
-
 export const CREDITS_PER_KILL = 15;
 
 export function processAttackTurn(allies, enemies, itemBuffs = null, robotParty = null) {
@@ -611,53 +608,6 @@ export function handleRobotKO(robotParty, koRobotIndex) {
 }
 
 /**
- * Generate befriend conversation rounds for a target enemy robot.
- * Tries AI generation first, falls back to static data.
- * @param {object} robot - The enemy robot to converse with
- * @param {string[]} vocabulary - Player's known vocabulary
- * @param {object} aiConfig - { chat, provider, apiKey, openaiModel, openrouterModel, jlptLevel }
- * @returns {object[]} Array of 3 rounds: { speaker, options, correctIndex }
- */
-export async function generateBefriendConversation(robot, vocabulary, aiConfig = {}) {
-  // Try AI generation
-  if (aiConfig.chat && aiConfig.apiKey && vocabulary.length > 0) {
-    try {
-      const prompt = DM_PROMPTS.befriendConversation({ robot });
-      const response = await aiConfig.chat({
-        provider: aiConfig.provider || 'anthropic',
-        apiKey: aiConfig.apiKey,
-        messages: [{ role: 'user', content: prompt }],
-        vocabulary,
-        jlptLevel: aiConfig.jlptLevel || 'N4',
-        personaName: robot.name || robot.nameEn,
-        openaiModel: aiConfig.openaiModel,
-        openrouterModel: aiConfig.openrouterModel,
-        purpose: 'other'
-      });
-
-      // Try to extract JSON from response (may have markdown fences)
-      let jsonStr = response;
-      const fenceMatch = response.match(/```(?:json)?\s*([\s\S]*?)```/);
-      if (fenceMatch) jsonStr = fenceMatch[1];
-
-      const parsed = JSON.parse(jsonStr.trim());
-      if (Array.isArray(parsed) && parsed.length === 3) {
-        const valid = parsed.every(r =>
-          r.speaker && Array.isArray(r.options) && r.options.length === 3 &&
-          typeof r.correctIndex === 'number' && r.correctIndex >= 0 && r.correctIndex <= 2
-        );
-        if (valid) return parsed;
-      }
-    } catch (e) {
-      console.warn('[Befriend] AI conversation generation failed, using fallback:', e.message);
-    }
-  }
-
-  // Fallback to static data
-  return getStaticConversation(robot.id);
-}
-
-/**
  * Process a befriend conversation answer.
  * Pure game logic extracted from the /befriend-answer route.
  *
@@ -756,22 +706,4 @@ export function handleBefriendAnswer(gameManager, { roundIndex, selectedIndex })
     conversationComplete: false,
     currentRound: convo.currentRound
   };
-}
-
-function getStaticConversation(robotId) {
-  try {
-    const data = JSON.parse(readFileSync('data/befriend-conversations.json', 'utf8'));
-    if (data[robotId]?.rounds) {
-      return data[robotId].rounds;
-    }
-  } catch (e) {
-    console.warn('[Befriend] Failed to load static conversations:', e.message);
-  }
-
-  // Ultimate fallback
-  return [
-    { speaker: '友達になりたい？', options: ['うん、なろう！', '魚が好き。', '靴を買った。'], correctIndex: 0 },
-    { speaker: '一緒に遊ぼう！', options: ['テレビを見た。', 'いいね、遊ぼう！', '車が速い。'], correctIndex: 1 },
-    { speaker: '仲間だね！', options: ['昨日は暑かった。', 'お金がない。', 'ずっと仲間だよ！'], correctIndex: 2 }
-  ];
 }
