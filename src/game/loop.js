@@ -697,6 +697,33 @@ export class GameManager {
   }
 
   /**
+   * Move pending captures into party and collection after victory.
+   * @returns {Array} New collection additions
+   */
+  _flushPendingCaptures() {
+    const pending = this.run.robotParty.pendingCaptures || [];
+    const newAdditions = [];
+    for (const robot of pending) {
+      const total = this.run.robotParty.active.length + this.run.robotParty.reserves.length;
+      if (total >= this.run.robotParty.maxTotal) break;
+      if (this.run.robotParty.active.length < 3) {
+        this.run.robotParty.active.push(robot);
+      } else {
+        this.run.robotParty.reserves.push(robot);
+      }
+      if (this.meta && !robot.temporary) {
+        const result = addToCollection(this.meta.robotCollection || [], robot.id);
+        if (result.added) {
+          this.meta.robotCollection = result.collection;
+          newAdditions.push({ id: robot.id, name: robot.name, nameEn: robot.nameEn, element: robot.element, rarity: robot.rarity });
+        }
+      }
+    }
+    this.run.robotParty.pendingCaptures = [];
+    return newAdditions;
+  }
+
+  /**
    * Execute one robot combat cycle
    * @param {string} actionType - 'attack' | 'defend' | 'befriend'
    */
@@ -716,31 +743,6 @@ export class GameManager {
     let befriendResult = null;
     const defendActive = actionType === 'defend';
 
-    // Helper: move pending captures into party (called on victory)
-    const flushPendingCaptures = () => {
-      const pending = this.run.robotParty.pendingCaptures || [];
-      const newAdditions = [];
-      for (const robot of pending) {
-        const total = this.run.robotParty.active.length + this.run.robotParty.reserves.length;
-        if (total >= this.run.robotParty.maxTotal) break;
-        if (this.run.robotParty.active.length < 3) {
-          this.run.robotParty.active.push(robot);
-        } else {
-          this.run.robotParty.reserves.push(robot);
-        }
-        // Add to permanent collection (skip temporary dealer robots)
-        if (this.meta && !robot.temporary) {
-          const result = addToCollection(this.meta.robotCollection || [], robot.id);
-          if (result.added) {
-            this.meta.robotCollection = result.collection;
-            newAdditions.push({ id: robot.id, name: robot.name, nameEn: robot.nameEn, element: robot.element, rarity: robot.rarity });
-          }
-        }
-      }
-      this.run.robotParty.pendingCaptures = [];
-      return newAdditions;
-    };
-
     // Player phase
     if (actionType === 'attack') {
       playerResult = processAttackTurn(this.combat.allies, this.combat.enemies, this.run.itemBuffs, this.run.robotParty);
@@ -751,7 +753,7 @@ export class GameManager {
       if (befriendResult.success && befriendResult.allEnemiesDefeated) {
         // Captured last enemy — victory
         awardBattleXp(this.run.robotParty, 100);
-        const newCollectionAdditions = flushPendingCaptures();
+        const newCollectionAdditions = this._flushPendingCaptures();
         this.combat.active = false;
         this.run.encountersCompleted++;
         // Mark room as interacted
@@ -781,7 +783,7 @@ export class GameManager {
     // Check if all enemies defeated after player attack
     if (playerResult.allEnemiesDefeated) {
       // XP already awarded per-kill in processAttackTurn (BUG C fix)
-      const newCollectionAdditions = flushPendingCaptures();
+      const newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.encountersCompleted++;
       // Mark room as interacted
@@ -902,26 +904,7 @@ export class GameManager {
     let newCollectionAdditions = [];
     if (result.allEnemiesDefeated) {
       // XP already awarded per-kill in processUltimate (BUG C fix)
-      // Flush pending captures into party on victory
-      const pending = this.run.robotParty.pendingCaptures || [];
-      for (const robot of pending) {
-        const total = this.run.robotParty.active.length + this.run.robotParty.reserves.length;
-        if (total >= this.run.robotParty.maxTotal) break;
-        if (this.run.robotParty.active.length < 3) {
-          this.run.robotParty.active.push(robot);
-        } else {
-          this.run.robotParty.reserves.push(robot);
-        }
-        // Add to permanent collection (skip temporary dealer robots)
-        if (this.meta && !robot.temporary) {
-          const result2 = addToCollection(this.meta.robotCollection || [], robot.id);
-          if (result2.added) {
-            this.meta.robotCollection = result2.collection;
-            newCollectionAdditions.push({ id: robot.id, name: robot.name, nameEn: robot.nameEn, element: robot.element, rarity: robot.rarity });
-          }
-        }
-      }
-      this.run.robotParty.pendingCaptures = [];
+      newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.encountersCompleted++;
       // Mark room as interacted
@@ -1158,26 +1141,7 @@ export class GameManager {
     let newCollectionAdditions = [];
     if (allEnemiesDefeated) {
       awardBattleXp(party, 100);
-      // Flush pending captures into party on victory
-      const pending = party.pendingCaptures || [];
-      for (const robot of pending) {
-        const total = party.active.length + party.reserves.length;
-        if (total >= party.maxTotal) break;
-        if (party.active.length < 3) {
-          party.active.push(robot);
-        } else {
-          party.reserves.push(robot);
-        }
-        // Add to permanent collection (skip temporary dealer robots)
-        if (this.meta && !robot.temporary) {
-          const result = addToCollection(this.meta.robotCollection || [], robot.id);
-          if (result.added) {
-            this.meta.robotCollection = result.collection;
-            newCollectionAdditions.push({ id: robot.id, name: robot.name, nameEn: robot.nameEn, element: robot.element, rarity: robot.rarity });
-          }
-        }
-      }
-      party.pendingCaptures = [];
+      newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.encountersCompleted++;
       // Mark room as interacted
