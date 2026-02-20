@@ -45,6 +45,38 @@ export default function createRunRoutes({
 }) {
   const router = Router();
 
+  /** Fire-and-forget: queue missing befriend + NPC dialogues for current run */
+  function queueBackgroundDialogues(req) {
+    const userKeys = req.userKeys || {};
+    if (!userKeys.aiApiKey) return;
+
+    const aiConfig = {
+      provider: userKeys.aiProvider || 'anthropic',
+      apiKey: userKeys.aiApiKey,
+      openaiModel: userKeys.openaiModel,
+      openrouterModel: userKeys.openrouterModel,
+      jlptLevel: userKeys.jlptLevel || 'N4'
+    };
+
+    if (generateMissingDialoguesFn && getUserVocabulary) {
+      const { words: vocabulary } = getUserVocabulary(req.user.id);
+      generateMissingDialoguesFn(req.user.id, aiConfig, vocabulary).catch(e => {
+        console.error('[BefriendDialogue] Background bulk generation failed:', e.message);
+      });
+    }
+
+    if (queueMissingNpcDialoguesFn && getUserVocabulary) {
+      const { words: vocabulary, vidSet } = getUserVocabulary(req.user.id);
+      const vocabSet = new Set(vocabulary);
+      const checkViolationsFn = userKeys.jpdbApiKey && checkSentenceViolations
+        ? async (text) => checkSentenceViolations(text, vocabSet, userKeys.jpdbApiKey, new Set(), vidSet)
+        : null;
+      queueMissingNpcDialoguesFn(req.user.id, aiConfig, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {
+        console.error('[NpcDialogue] Background generation failed:', e.message);
+      });
+    }
+  }
+
   // Start a new run
   router.post('/start-run', async (req, res) => {
     const gameManager = req.gameManager;
@@ -67,43 +99,7 @@ export default function createRunRoutes({
 
       req.saveGame();
 
-      // Fire-and-forget: generate any missing befriend dialogues
-      if (generateMissingDialoguesFn && getUserVocabulary) {
-        const userKeys = req.userKeys || {};
-        if (userKeys.aiApiKey) {
-          const { words: vocabulary } = getUserVocabulary(req.user.id);
-          generateMissingDialoguesFn(req.user.id, {
-            provider: userKeys.aiProvider || 'anthropic',
-            apiKey: userKeys.aiApiKey,
-            openaiModel: userKeys.openaiModel,
-            openrouterModel: userKeys.openrouterModel,
-            jlptLevel: userKeys.jlptLevel || 'N4'
-          }, vocabulary).catch(e => {
-            console.error('[BefriendDialogue] Background bulk generation failed:', e.message);
-          });
-        }
-      }
-
-      // Fire-and-forget: generate missing NPC dialogues
-      if (queueMissingNpcDialoguesFn && getUserVocabulary) {
-        const userKeys = req.userKeys || {};
-        if (userKeys.aiApiKey) {
-          const { words: vocabulary, vidSet } = getUserVocabulary(req.user.id);
-          const vocabSet = new Set(vocabulary);
-          const checkViolationsFn = userKeys.jpdbApiKey && checkSentenceViolations
-            ? async (text) => checkSentenceViolations(text, vocabSet, userKeys.jpdbApiKey, new Set(), vidSet)
-            : null;
-          queueMissingNpcDialoguesFn(req.user.id, {
-            provider: userKeys.aiProvider || 'anthropic',
-            apiKey: userKeys.aiApiKey,
-            openaiModel: userKeys.openaiModel,
-            openrouterModel: userKeys.openrouterModel,
-            jlptLevel: userKeys.jlptLevel || 'N4'
-          }, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {
-            console.error('[NpcDialogue] Background generation failed:', e.message);
-          });
-        }
-      }
+      queueBackgroundDialogues(req);
 
       res.json({
         state: req.getEnrichedGameState(),
@@ -165,43 +161,7 @@ export default function createRunRoutes({
 
       req.saveGame();
 
-      // Fire-and-forget: generate any missing befriend dialogues
-      if (generateMissingDialoguesFn && getUserVocabulary) {
-        const userKeys = req.userKeys || {};
-        if (userKeys.aiApiKey) {
-          const { words: vocabulary } = getUserVocabulary(req.user.id);
-          generateMissingDialoguesFn(req.user.id, {
-            provider: userKeys.aiProvider || 'anthropic',
-            apiKey: userKeys.aiApiKey,
-            openaiModel: userKeys.openaiModel,
-            openrouterModel: userKeys.openrouterModel,
-            jlptLevel: userKeys.jlptLevel || 'N4'
-          }, vocabulary).catch(e => {
-            console.error('[BefriendDialogue] Background bulk generation failed:', e.message);
-          });
-        }
-      }
-
-      // Fire-and-forget: generate missing NPC dialogues
-      if (queueMissingNpcDialoguesFn && getUserVocabulary) {
-        const userKeys = req.userKeys || {};
-        if (userKeys.aiApiKey) {
-          const { words: vocabulary, vidSet } = getUserVocabulary(req.user.id);
-          const vocabSet = new Set(vocabulary);
-          const checkViolationsFn = userKeys.jpdbApiKey && checkSentenceViolations
-            ? async (text) => checkSentenceViolations(text, vocabSet, userKeys.jpdbApiKey, new Set(), vidSet)
-            : null;
-          queueMissingNpcDialoguesFn(req.user.id, {
-            provider: userKeys.aiProvider || 'anthropic',
-            apiKey: userKeys.aiApiKey,
-            openaiModel: userKeys.openaiModel,
-            openrouterModel: userKeys.openrouterModel,
-            jlptLevel: userKeys.jlptLevel || 'N4'
-          }, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {
-            console.error('[NpcDialogue] Background generation failed:', e.message);
-          });
-        }
-      }
+      queueBackgroundDialogues(req);
 
       res.json({
         state: req.getEnrichedGameState(),
