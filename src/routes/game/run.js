@@ -38,14 +38,14 @@ export default function createRunRoutes({
   generateDoorHints,
   cancelPendingPrefetches,
   clearPrefetchCache,
-  generateMissingDialoguesFn,
+  queueMissingCreatureDialoguesFn,
   getUserVocabulary,
   queueMissingNpcDialoguesFn,
   checkSentenceViolations
 }) {
   const router = Router();
 
-  /** Fire-and-forget: queue missing befriend + NPC dialogues for current run */
+  /** Fire-and-forget: queue missing creature + NPC dialogues for current run */
   function queueBackgroundDialogues(req) {
     const userKeys = req.userKeys || {};
     if (!userKeys.aiApiKey) return;
@@ -58,10 +58,14 @@ export default function createRunRoutes({
       jlptLevel: userKeys.jlptLevel || 'N4'
     };
 
-    if (generateMissingDialoguesFn && getUserVocabulary) {
-      const { words: vocabulary } = getUserVocabulary(req.user.id);
-      generateMissingDialoguesFn(req.user.id, aiConfig, vocabulary).catch(e => {
-        console.error('[BefriendDialogue] Background bulk generation failed:', e.message);
+    if (queueMissingCreatureDialoguesFn && getUserVocabulary) {
+      const { words: vocabulary, vidSet } = getUserVocabulary(req.user.id);
+      const vocabSet = new Set(vocabulary);
+      const checkViolationsFn = userKeys.jpdbApiKey && checkSentenceViolations
+        ? async (text) => checkSentenceViolations(text, vocabSet, userKeys.jpdbApiKey, new Set(), vidSet)
+        : null;
+      queueMissingCreatureDialoguesFn(req.user.id, aiConfig, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {
+        console.error('[CreatureDialogue] Background generation failed:', e.message);
       });
     }
 

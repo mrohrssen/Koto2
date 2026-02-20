@@ -10,28 +10,13 @@ import { getCollectionCatalog } from '../../game/services/robot-collection-servi
 import { loadNpcs, shuffleOptions, updateBond, recordEncounter, handleNpcDialogueResponse } from '../../game/services/npc-service.js';
 import { buildVocabConfig } from './route-helpers.js';
 
-function triggerDialogueRegen(userId, targetEnemy, userKeys, getUserVocabularyFn, regenFn) {
-  if (!regenFn || !targetEnemy || !userKeys?.aiApiKey) return;
-  const { words: vocabulary } = getUserVocabularyFn(userId);
-  regenFn(userId, targetEnemy, {
-    provider: userKeys.aiProvider || 'anthropic',
-    apiKey: userKeys.aiApiKey,
-    openaiModel: userKeys.openaiModel,
-    openrouterModel: userKeys.openrouterModel,
-    jlptLevel: userKeys.jlptLevel || 'N4'
-  }, vocabulary).catch(e => {
-    console.error('[BefriendDialogue] Background regen failed:', e.message);
-  });
-}
-
 export default function createCombatRoutes({
   updateGameStatsWithEvent,
   saveGameStats,
   getGameStats,
-  generateBefriendConversationFn,
   getUserVocabulary,
-  getDialogueForRobot,
-  regenerateRobotDialogueFn,
+  getCreatureDialogueFromCache,
+  regenCreatureDialogueFn,
   getNpcDialogueFromCache,
   logNpcEncounterFn,
   regenNpcDialogueFn,
@@ -252,29 +237,23 @@ export default function createCombatRoutes({
     }
 
     try {
-      const { words: vocabulary } = getUserVocabulary(req.user.id);
-      const userKeys = req.userKeys || {};
-
-      // Try pre-generated dialogue first
-      let rounds = null;
-      if (getDialogueForRobot) {
-        const preGenerated = getDialogueForRobot(req.user.id, target.id);
-        if (preGenerated) {
-          rounds = preGenerated;
-          console.log(`[BefriendDialogue] Using pre-generated dialogue for ${target.id}`);
+      // Try cached dialogue first, generate on-demand if missing
+      let cached = getCreatureDialogueFromCache?.(req.user.id, target.id);
+      if (!cached?.rounds) {
+        const vocabConfig = buildVocabConfig(req, getUserVocabulary, checkSentenceViolations);
+        if (vocabConfig) {
+          console.log(`[CreatureDialogue] No cached dialogue for ${target.id}, generating on-demand`);
+          await regenCreatureDialogueFn(
+            req.user.id, target.id, vocabConfig.aiConfig,
+            { words: vocabConfig.vocabulary, checkViolationsFn: vocabConfig.checkViolationsFn }
+          );
+          cached = getCreatureDialogueFromCache?.(req.user.id, target.id);
         }
       }
 
-      // Fall back to on-the-fly generation
+      const rounds = cached?.rounds;
       if (!rounds) {
-        console.log(`[BefriendDialogue] No pre-generated dialogue for ${target.id}, generating on-the-fly`);
-        rounds = await generateBefriendConversationFn(target, vocabulary, {
-          provider: userKeys.aiProvider || 'anthropic',
-          apiKey: userKeys.aiApiKey,
-          openaiModel: userKeys.openaiModel,
-          openrouterModel: userKeys.openrouterModel,
-          jlptLevel: userKeys.jlptLevel || 'N4'
-        });
+        return res.status(503).json({ error: 'Creature dialogue generation failed' });
       }
 
       combat.befriendConversation = {
@@ -324,8 +303,14 @@ export default function createCombatRoutes({
 
     req.saveGame();
 
-    if (result.needsDialogueRegen) {
-      triggerDialogueRegen(req.user.id, result.targetEnemy, req.userKeys, getUserVocabulary, regenerateRobotDialogueFn);
+    if (result.needsDialogueRegen && regenCreatureDialogueFn) {
+      const vocabConfig = buildVocabConfig(req, getUserVocabulary, checkSentenceViolations);
+      if (vocabConfig) {
+        regenCreatureDialogueFn(
+          req.user.id, result.targetEnemy?.id, vocabConfig.aiConfig,
+          { words: vocabConfig.vocabulary, checkViolationsFn: vocabConfig.checkViolationsFn }
+        ).catch(e => console.error('[CreatureDialogue] Background regen failed:', e.message));
+      }
     }
 
     // Build client response (strip internal fields, add state when needed)

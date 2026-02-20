@@ -150,4 +150,61 @@ describe('generation', () => {
       assert.strictEqual(result.greeting, 'やあ！');
     });
   });
+
+  describe('generateDialogue with entityType', () => {
+    const validBefriend = {
+      rounds: [
+        { speaker: '友達になろう！', options: ['うん！', '魚。', '靴。'], correctIndex: 0 },
+        { speaker: '遊ぼう！', options: ['テレビ。', 'いいね！', '車。'], correctIndex: 1 },
+        { speaker: '仲間！', options: ['暑い。', 'ない。', 'ずっと仲間！'], correctIndex: 2 }
+      ]
+    };
+
+    it('validates creature shape when entityType is creature', async () => {
+      const mockChat = async () => JSON.stringify(validBefriend);
+      const result = await generateDialogue({
+        chatFn: mockChat,
+        systemPrompt: 'test',
+        userPrompt: 'test',
+        aiConfig: { provider: 'openai', apiKey: 'test' },
+        entityType: 'creature'
+      });
+      assert.ok(result);
+      assert.strictEqual(result.rounds.length, 3);
+      assert.ok(result.rounds[0].speaker);
+    });
+
+    it('rejects NPC shape when entityType is creature', async () => {
+      const npcDialogue = {
+        greeting: 'やあ', defeatLine: 'うう', freedLine: 'ありがとう',
+        rounds: [
+          { npcLine: 'こんにちは', options: [{ text: 'はい', tone: 'positive' }, { text: 'まあ', tone: 'neutral' }, { text: 'いいえ', tone: 'negative' }] },
+          { npcLine: '元気？', options: [{ text: 'うん', tone: 'positive' }, { text: 'まあまあ', tone: 'neutral' }, { text: '別に', tone: 'negative' }] },
+          { npcLine: 'また', options: [{ text: 'もちろん', tone: 'positive' }, { text: 'いつか', tone: 'neutral' }, { text: 'いらない', tone: 'negative' }] }
+        ]
+      };
+      const mockChat = async () => JSON.stringify(npcDialogue);
+      const result = await generateDialogue({
+        chatFn: mockChat,
+        systemPrompt: 'test',
+        userPrompt: 'test',
+        aiConfig: { provider: 'openai', apiKey: 'test' },
+        entityType: 'creature',
+        maxRetries: 0
+      });
+      assert.strictEqual(result, null);
+    });
+
+    it('defaults to NPC validation when entityType is omitted', async () => {
+      const mockChat = async () => JSON.stringify(validDialogue);
+      const result = await generateDialogue({
+        chatFn: mockChat,
+        systemPrompt: 'test',
+        userPrompt: 'test',
+        aiConfig: { provider: 'openai', apiKey: 'test' }
+      });
+      assert.ok(result);
+      assert.strictEqual(result.greeting, 'やあ！');
+    });
+  });
 });

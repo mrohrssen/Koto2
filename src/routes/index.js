@@ -62,7 +62,6 @@ export default function createRoutes(deps) {
     vocabCacheFile: deps.vocabCacheFile,
     staticWordList: deps.staticWordList,
     getSettings: deps.getSettings,
-    generateBefriendConversationFn: deps.generateBefriendConversationFn,
     getUserVocabulary: deps.getUserVocabulary,
     // NPC narration engine deps
     getNpcDialogueFromCache: deps.getNpcDialogueFromCache,

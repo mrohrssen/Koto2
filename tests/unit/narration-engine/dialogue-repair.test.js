@@ -241,6 +241,46 @@ describe('dialogue-repair', () => {
       assert.strictEqual(result.dialogue, null);
     });
 
+    it('repairs creature dialogue when entityType is creature', async () => {
+      let callCount = 0;
+      const checkFn = async (text) => {
+        callCount++;
+        if (callCount <= 12 && text === 'BAD') {
+          return { unknownWords: ['未知1', '未知2'], count: 2 };
+        }
+        return { unknownWords: [], count: 0 };
+      };
+
+      const validBefriend = {
+        rounds: [
+          { speaker: '友達になろう！', options: ['うん！', '魚。', '靴。'], correctIndex: 0 },
+          { speaker: '遊ぼう！', options: ['テレビ。', 'いいね！', '車。'], correctIndex: 1 },
+          { speaker: '仲間！', options: ['暑い。', 'ない。', 'ずっと仲間！'], correctIndex: 2 }
+        ]
+      };
+      const repaired = {
+        rounds: validBefriend.rounds.map(r => ({ ...r }))
+      };
+      repaired.rounds[0] = { ...repaired.rounds[0], speaker: 'いい台詞' };
+      const mockChat = async () => JSON.stringify(repaired);
+
+      const dirty = {
+        rounds: validBefriend.rounds.map(r => ({ ...r }))
+      };
+      dirty.rounds[0] = { ...dirty.rounds[0], speaker: 'BAD' };
+
+      const result = await enforceDialogueVocab({
+        dialogue: dirty,
+        checkViolationsFn: checkFn,
+        chatFn: mockChat,
+        systemPrompt: 'sys',
+        userPrompt: 'usr',
+        aiConfig: {},
+        entityType: 'creature'
+      });
+      assert.strictEqual(result.repaired, true);
+    });
+
     it('sends multi-turn repair conversation to AI', async () => {
       let capturedMessages = null;
       const checkFn = async (text) => {
@@ -269,6 +309,57 @@ describe('dialogue-repair', () => {
       assert.strictEqual(capturedMessages[1].role, 'assistant');
       assert.strictEqual(capturedMessages[2].role, 'user');
       assert.ok(capturedMessages[2].content.includes('greeting'));
+    });
+  });
+
+  describe('creature entity type support', () => {
+    const validBefriend = {
+      rounds: [
+        { speaker: '友達になろう！', options: ['うん！', '魚。', '靴。'], correctIndex: 0 },
+        { speaker: '遊ぼう！', options: ['テレビ。', 'いいね！', '車。'], correctIndex: 1 },
+        { speaker: '仲間！', options: ['暑い。', 'ない。', 'ずっと仲間！'], correctIndex: 2 }
+      ]
+    };
+
+    it('extractDialogueStrings extracts 12 fields for creature type', () => {
+      const entries = extractDialogueStrings(validBefriend, 'creature');
+      assert.strictEqual(entries.length, 12);
+    });
+
+    it('validateDialogueVocab works with creature strings', async () => {
+      const cleanCheck = async () => ({ unknownWords: [], count: 0 });
+      const violations = await validateDialogueVocab(validBefriend, cleanCheck, 'creature');
+      assert.strictEqual(violations.length, 0);
+    });
+
+    it('enforceDialogueVocab repairs creature dialogue', async () => {
+      let callCount = 0;
+      const checkFn = async (text) => {
+        callCount++;
+        if (callCount <= 12 && text === 'BAD') {
+          return { unknownWords: ['未知1', '未知2'], count: 2 };
+        }
+        return { unknownWords: [], count: 0 };
+      };
+      const repaired = { ...validBefriend };
+      repaired.rounds = repaired.rounds.map(r => ({ ...r }));
+      repaired.rounds[0] = { ...repaired.rounds[0], speaker: 'いい台詞' };
+      const mockChat = async () => JSON.stringify(repaired);
+
+      const dirty = { ...validBefriend };
+      dirty.rounds = dirty.rounds.map(r => ({ ...r }));
+      dirty.rounds[0] = { ...dirty.rounds[0], speaker: 'BAD' };
+
+      const result = await enforceDialogueVocab({
+        dialogue: dirty,
+        checkViolationsFn: checkFn,
+        chatFn: mockChat,
+        systemPrompt: 'sys',
+        userPrompt: 'usr',
+        aiConfig: {},
+        entityType: 'creature'
+      });
+      assert.strictEqual(result.repaired, true);
     });
   });
 });

@@ -81,3 +81,36 @@ describe('TextCache', () => {
     });
   });
 });
+
+describe('TextCache with entityType', () => {
+  it('uses creature prefix for creature type', () => {
+    const cache = new TextCache({ userId: 'test', entityType: 'creature', inMemory: true });
+    assert.ok(cache);
+  });
+
+  it('getPreviousLines dispatches to entity type', () => {
+    const cache = new TextCache({ entityType: 'creature', inMemory: true });
+    const befriendDialogue = {
+      rounds: [
+        { speaker: '\u53cb\u9054\u306b\u306a\u308d\u3046\uff01', options: ['\u3046\u3093\uff01', '\u9b5a\u3002', '\u9774\u3002'], correctIndex: 0 },
+        { speaker: '\u904a\u307c\u3046\uff01', options: ['\u30c6\u30ec\u30d3\u3002', '\u3044\u3044\u306d\uff01', '\u8eca\u3002'], correctIndex: 1 },
+        { speaker: '\u4ef2\u9593\uff01', options: ['\u6691\u3044\u3002', '\u306a\u3044\u3002', '\u305a\u3063\u3068\u4ef2\u9593\uff01'], correctIndex: 2 }
+      ]
+    };
+    cache.set('kamedor', befriendDialogue);
+    const lines = cache.getPreviousLines('kamedor');
+    assert.ok(lines.includes('\u53cb\u9054\u306b\u306a\u308d\u3046\uff01'));
+    assert.strictEqual(lines.length, 3);
+  });
+
+  it('isStale uses entity type memory snapshot', () => {
+    const cache = new TextCache({ entityType: 'creature', inMemory: true });
+    cache.set('kamedor', {
+      vocabSnapshot: 100,
+      memorySnapshot: { befriendAttempts: 1, befriended: false },
+      rounds: []
+    });
+    assert.strictEqual(cache.isStale('kamedor', 100, { befriendAttempts: 1, befriended: false }), false);
+    assert.strictEqual(cache.isStale('kamedor', 100, { befriendAttempts: 2, befriended: false }), true);
+  });
+});

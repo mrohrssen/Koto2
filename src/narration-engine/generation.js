@@ -1,6 +1,5 @@
 import { logger } from '../logger.js';
-
-const VALID_TONES = new Set(['positive', 'neutral', 'negative']);
+import { getEntityType } from './entity-types/index.js';
 
 /**
  * Parse AI response text as dialogue JSON, stripping markdown fences if present.
@@ -20,35 +19,22 @@ export function parseDialogueJson(text) {
 
 /**
  * Validate that parsed JSON has the correct dialogue shape.
+ * Delegates to the NPC entity type validator for backward compatibility.
  */
 export function validateDialogueShape(obj) {
-  const errors = [];
-  if (!obj) return { valid: false, errors: ['null object'] };
-  if (!obj.greeting) errors.push('missing greeting');
-  if (!obj.defeatLine) errors.push('missing defeatLine');
-  if (!obj.freedLine) errors.push('missing freedLine');
-  if (!Array.isArray(obj.rounds) || obj.rounds.length !== 3) {
-    errors.push('rounds must be an array of exactly 3');
-  } else {
-    for (let i = 0; i < obj.rounds.length; i++) {
-      const round = obj.rounds[i];
-      if (!round.npcLine) errors.push(`round ${i} missing npcLine`);
-      if (!Array.isArray(round.options) || round.options.length !== 3) {
-        errors.push(`round ${i} must have exactly 3 options`);
-      } else {
-        for (let j = 0; j < round.options.length; j++) {
-          const opt = round.options[j];
-          if (!opt.text) errors.push(`round ${i} option ${j} missing text`);
-          if (!VALID_TONES.has(opt.tone)) errors.push(`round ${i} option ${j} invalid tone: ${opt.tone}`);
-        }
-      }
-    }
-  }
-  return { valid: errors.length === 0, errors };
+  return getEntityType('npc').validateShape(obj);
 }
 
 /**
  * Generate dialogue via AI with retry and validation.
+ * @param {Object} opts
+ * @param {Function} opts.chatFn - AI chat function
+ * @param {string} [opts.systemPrompt] - Plain text system prompt
+ * @param {Array} [opts.systemBlocks] - Structured system prompt blocks
+ * @param {string} opts.userPrompt - User prompt
+ * @param {Object} opts.aiConfig - AI provider configuration
+ * @param {number} [opts.maxRetries=2] - Number of retries on failure
+ * @param {string} [opts.entityType='npc'] - Entity type for shape validation ('npc' or 'creature')
  */
 export async function generateDialogue({
   chatFn,
@@ -56,8 +42,12 @@ export async function generateDialogue({
   systemBlocks,
   userPrompt,
   aiConfig,
-  maxRetries = 2
+  maxRetries = 2,
+  entityType = 'npc'
 }) {
+  const { validateShape } = getEntityType(entityType);
+  const logTag = entityType === 'npc' ? 'NpcDialogue' : 'CreatureDialogue';
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       const response = await chatFn({
@@ -73,22 +63,22 @@ export async function generateDialogue({
 
       const parsed = parseDialogueJson(response);
       if (!parsed) {
-        logger.warn(`[NpcDialogue] Attempt ${attempt + 1}: failed to parse JSON`);
+        logger.warn(`[${logTag}] Attempt ${attempt + 1}: failed to parse JSON`);
         continue;
       }
 
-      const validation = validateDialogueShape(parsed);
+      const validation = validateShape(parsed);
       if (!validation.valid) {
-        logger.warn(`[NpcDialogue] Attempt ${attempt + 1}: invalid shape: ${validation.errors.join(', ')}`);
+        logger.warn(`[${logTag}] Attempt ${attempt + 1}: invalid shape: ${validation.errors.join(', ')}`);
         continue;
       }
 
       return parsed;
     } catch (error) {
-      logger.error(`[NpcDialogue] Attempt ${attempt + 1} error:`, error.message);
+      logger.error(`[${logTag}] Attempt ${attempt + 1} error:`, error.message);
     }
   }
 
-  logger.error('[NpcDialogue] All generation attempts failed');
+  logger.error(`[${logTag}] All generation attempts failed`);
   return null;
 }
