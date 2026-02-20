@@ -651,10 +651,15 @@ export class GameManager {
     this.combat.isRobotCombat = true;
     this.combat.swapPhase = true; // Free swap available before first action
 
-    // Assign area-locked NPC to this encounter (one NPC per area, skipped if already met)
+    // Assign area-locked NPC to this encounter
+    // - Never on the first encounter of a run
+    // - ~15% chance per encounter after the first
+    // - One NPC per area, skipped if already met
+    const NPC_ENCOUNTER_CHANCE = 0.15;
     const areaId = this.run.currentArea?.id || null;
     const usedNpcIds = this.run.usedNpcIds || [];
-    const npc = selectNpcForEncounter(areaId, usedNpcIds);
+    const npcRoll = !isFirstBattle && Math.random() < NPC_ENCOUNTER_CHANCE;
+    const npc = npcRoll ? selectNpcForEncounter(areaId, usedNpcIds) : null;
     if (npc) {
       this.combat.npcId = npc.id;
       this.combat.npcData = {

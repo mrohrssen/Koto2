@@ -1908,10 +1908,10 @@ export async function runNpcDialogue() {
   const { npc, freed, rounds } = dialogueData;
   const npcName = npc.name || npc.nameEn;
 
-  // Show NPC sprite placeholder in scene area
-  if (showNpcSprite) showNpcSprite(npcName);
+  // Show NPC sprite in scene area
+  if (showNpcSprite) showNpcSprite(npcName, npc.id);
 
-  // Show freed narration
+  // Show freed narration (click to dismiss)
   await narration.showNarration(freed, { speaker: npcName });
 
   let totalDelta = 0;

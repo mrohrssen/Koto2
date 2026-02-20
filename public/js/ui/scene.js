@@ -320,7 +320,7 @@ export function hideChippy() {
 }
 
 /** Show NPC trainer in scene (no HP bar) */
-export function showNpcTrainer(npcName) {
+export function showNpcTrainer(npcName, npcId) {
   // Clear multi-enemy row from combat
   dom.enemySpriteContainer.querySelector('.multi-enemy-row')?.remove();
 
@@ -331,7 +331,10 @@ export function showNpcTrainer(npcName) {
   dom.enemySpriteContainer.style.borderColor = '';
   dom.enemySpriteContainer.classList.remove('robot-enemy');
 
-  dom.enemySprite.src = '/assets/sprites/enemies/systemExecutive.webp';
+  const spritePath = npcId
+    ? `/assets/sprites/npcs/${npcId}.png`
+    : '/assets/sprites/enemies/systemExecutive.webp';
+  dom.enemySprite.src = spritePath;
   dom.enemySprite.onerror = () => {
     dom.enemySprite.classList.remove('visible');
   };
