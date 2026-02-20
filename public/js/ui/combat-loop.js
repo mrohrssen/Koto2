@@ -100,6 +100,16 @@ let delay = null;
 
 const API_BASE = '';
 
+/** Wrap an async combat animation sequence with the animation-active guard. */
+async function withAnimationActive(fn) {
+  if (setCombatAnimationActive) setCombatAnimationActive(true);
+  try {
+    return await fn();
+  } finally {
+    if (setCombatAnimationActive) setCombatAnimationActive(false);
+  }
+}
+
 /**
  * Initialize the combat loop UI module with callbacks
  * @param {Object} callbacks - Dependency injection callbacks
@@ -428,122 +438,116 @@ export async function executePlayerAttack() {
   if (!combatActive || playerAttackPending || combatPausedForVocab || getEnemyDialogueActive()) return;
 
   playerAttackPending = true;
-  if (setCombatAnimationActive) setCombatAnimationActive(true);
 
-  try {
-    const apiKeys = settings.getApiKeys();
-    const response = await fetch(`${API_BASE}/api/game/combat-cycle`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ attackerType: 'player', ...apiKeys })
-    });
-    const result = await response.json();
-    logger.info('[CombatLoop] Player attack:', { damage: result.playerAttack?.damage, critical: result.playerAttack?.critical });
+  return withAnimationActive(async () => {
+    try {
+      const apiKeys = settings.getApiKeys();
+      const response = await fetch(`${API_BASE}/api/game/combat-cycle`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ attackerType: 'player', ...apiKeys })
+      });
+      const result = await response.json();
+      logger.info('[CombatLoop] Player attack:', { damage: result.playerAttack?.damage, critical: result.playerAttack?.critical });
 
-    if (result.error) {
-      // "No active combat" means server state is out of sync - don't trigger false game over
-      if (result.error === 'No active combat') {
-        logger.warn('[CombatLoop] Stale attack detected');
-        combatActive = false; // Sync client state
-        if (setCombatAnimationActive) setCombatAnimationActive(false);
+      if (result.error) {
+        // "No active combat" means server state is out of sync - don't trigger false game over
+        if (result.error === 'No active combat') {
+          logger.warn('[CombatLoop] Stale attack detected');
+          combatActive = false; // Sync client state
+          return;
+        }
+        console.error('Player attack error:', result.error);
+        // Don't trigger defeat for errors - let player retry
+        playerAttackPending = false;
         return;
       }
-      console.error('Player attack error:', result.error);
-      // Don't trigger defeat for errors - let player retry
+
+      // If dialogue appeared during fetch, don't process results
+      if (getEnemyDialogueActive()) {
+        playerAttackPending = false;
+        return;
+      }
+
+
+      // Show player's attack result
+      if (result.playerAttack) {
+        const pa = result.playerAttack;
+        if (pa.perfectDodge) {
+          showDamageNumber(0, false, false, false, false, 'perfect');
+        } else if (pa.dodged) {
+          showDamageNumber(0, false, false, false, false, 'dodge');
+        } else if (pa.miss) {
+          showDamageNumber(0, false, false, false, false, 'miss');
+        } else {
+          // Play attack sound immediately
+          playSFX('attack');
+
+          // Calculate damage tier for visual feedback
+          const state = getGameState();
+          const enemyMaxHp = state.combat?.enemy?.maxHp || 100;
+          const tier = getDamageTier(pa.damage, enemyMaxHp);
+          const tierClass = `dmg-${getTierClassName(tier)}`;
+
+          // Show damage at same time as final damage reveal
+          showDamageNumber(pa.damage, false, pa.critical, false, false, null, tierClass);
+          animateEnemyHurt();
+
+          // Visual effects for enemy damage (pass enemyMaxHp for tier-based effects)
+          const enemySprite = document.getElementById('enemy-sprite');
+          await impactEnemyEffect(pa.damage, enemySprite, enemyMaxHp);
+        }
+      }
+
+      // Update HP bars
+      characterUI.updateEnemyHPBar(result.enemyHp);
+      characterUI.updatePlayerHPBar(result.playerHp);
+
+      // Show glitching dialogue when enemy HP drops below 30%
+      // Combat pauses until dialogue dismisses, then enemy attacks
+      if (result.enemyGlitching && result.glitchingDialogue) {
+        playerAttackPending = false;
+        showEnemyDialogue(result.glitchingDialogue, 'glitching');
+        return;
+      }
+
+      // Check if combat ended
+      if (result.combatEnded) {
+        // Show liberated dialogue on victory
+        if (result.victory && result.liberatedDialogue) {
+          showEnemyDialogue(result.liberatedDialogue, 'liberated');
+        }
+        // Let HP bar drain animation (300ms CSS transition) be visible before stopping
+        if (result.victory) {
+          await delay(500);
+        }
+        stopCombatLoop(result);
+        return;
+      }
+
       playerAttackPending = false;
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      return;
-    }
 
-    // If dialogue appeared during fetch, don't process results
-    if (getEnemyDialogueActive()) {
+      // Combat pause mode: trigger enemy attack after player, then pause for vocab review
+      if (combatActive && !getEnemyDialogueActive()) {
+        // Small delay before enemy attacks back
+        setTimeout(() => {
+          executeEnemyAttackThenPause();
+        }, 400);
+      }
+
+    } catch (error) {
+      console.error('Player attack error:', error);
+      // Don't trigger defeat for errors - recover by showing next flashcard
       playerAttackPending = false;
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      return;
-    }
 
-
-    // Show player's attack result
-    if (result.playerAttack) {
-      const pa = result.playerAttack;
-      if (pa.perfectDodge) {
-        showDamageNumber(0, false, false, false, false, 'perfect');
-      } else if (pa.dodged) {
-        showDamageNumber(0, false, false, false, false, 'dodge');
-      } else if (pa.miss) {
-        showDamageNumber(0, false, false, false, false, 'miss');
-      } else {
-        // Play attack sound immediately
-        playSFX('attack');
-
-        // Calculate damage tier for visual feedback
-        const state = getGameState();
-        const enemyMaxHp = state.combat?.enemy?.maxHp || 100;
-        const tier = getDamageTier(pa.damage, enemyMaxHp);
-        const tierClass = `dmg-${getTierClassName(tier)}`;
-
-        // Show damage at same time as final damage reveal
-        showDamageNumber(pa.damage, false, pa.critical, false, false, null, tierClass);
-        animateEnemyHurt();
-
-        // Visual effects for enemy damage (pass enemyMaxHp for tier-based effects)
-        const enemySprite = document.getElementById('enemy-sprite');
-        await impactEnemyEffect(pa.damage, enemySprite, enemyMaxHp);
+      // Recovery: pause for vocab and show dual cards so player can continue
+      if (combatActive) {
+        combatPausedForVocab = true;
+        showNextDualCardsFromQueue();
+        logger.warn('[CombatLoop] Recovered from player attack error, showing dual cards');
       }
     }
-
-    // Update HP bars
-    characterUI.updateEnemyHPBar(result.enemyHp);
-    characterUI.updatePlayerHPBar(result.playerHp);
-
-    // Show glitching dialogue when enemy HP drops below 30%
-    // Combat pauses until dialogue dismisses, then enemy attacks
-    if (result.enemyGlitching && result.glitchingDialogue) {
-      playerAttackPending = false;
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      showEnemyDialogue(result.glitchingDialogue, 'glitching');
-      return;
-    }
-
-    // Check if combat ended
-    if (result.combatEnded) {
-      // Show liberated dialogue on victory
-      if (result.victory && result.liberatedDialogue) {
-        showEnemyDialogue(result.liberatedDialogue, 'liberated');
-      }
-      // Let HP bar drain animation (300ms CSS transition) be visible before stopping
-      if (result.victory) {
-        await delay(500);
-      }
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      stopCombatLoop(result);
-      return;
-    }
-
-    playerAttackPending = false;
-    if (setCombatAnimationActive) setCombatAnimationActive(false);
-
-    // Combat pause mode: trigger enemy attack after player, then pause for vocab review
-    if (combatActive && !getEnemyDialogueActive()) {
-      // Small delay before enemy attacks back
-      setTimeout(() => {
-        executeEnemyAttackThenPause();
-      }, 400);
-    }
-
-  } catch (error) {
-    console.error('Player attack error:', error);
-    // Don't trigger defeat for errors - recover by showing next flashcard
-    playerAttackPending = false;
-    if (setCombatAnimationActive) setCombatAnimationActive(false);
-
-    // Recovery: pause for vocab and show dual cards so player can continue
-    if (combatActive) {
-      combatPausedForVocab = true;
-      showNextDualCardsFromQueue();
-      logger.warn('[CombatLoop] Recovered from player attack error, showing dual cards');
-    }
-  }
+  });
 }
 
 /**
@@ -554,218 +558,427 @@ async function executeRobotPlayerAttack() {
   if (!combatActive || playerAttackPending || combatPausedForVocab || getEnemyDialogueActive()) return;
 
   playerAttackPending = true;
-  if (setCombatAnimationActive) setCombatAnimationActive(true);
 
-  try {
-    const response = await fetch(`${API_BASE}/api/game/robot-combat-cycle`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ actionType: 'attack' })
-    });
-    const result = await response.json();
-    logger.info('[CombatLoop] Robot attack result:', { attacks: result.playerAttacks?.length });
+  return withAnimationActive(async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/game/robot-combat-cycle`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ actionType: 'attack' })
+      });
+      const result = await response.json();
+      logger.info('[CombatLoop] Robot attack result:', { attacks: result.playerAttacks?.length });
 
-    if (result.error) {
-      if (result.error === 'No active combat') {
-        combatActive = false;
-        if (setCombatAnimationActive) setCombatAnimationActive(false);
+      if (result.error) {
+        if (result.error === 'No active combat') {
+          combatActive = false;
+          return;
+        }
+        console.error('Robot attack error:', result.error);
+        playerAttackPending = false;
         return;
       }
-      console.error('Robot attack error:', result.error);
-      playerAttackPending = false;
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      return;
-    }
 
-    // Show poison tick effects from start-of-round effect processing
-    if (result.effectEvents?.length > 0) {
-      for (const event of result.effectEvents) {
-        if (event.type === 'poison' && event.damage > 0) {
-          // Find target element — could be ally or enemy
-          let targetEl = findRobotSlotByAttackerId(event.targetId);
-          if (!targetEl) {
-            targetEl = findEnemyTargetElement(event.targetId, result.enemies);
-          }
-          if (targetEl) {
-            await poisonTickEffect(targetEl, event.damage);
-          }
-        }
-      }
-    }
-
-    // Track each enemy's HP for progressive updates
-    const gs = getGameState();
-    const enemyHpMap = {};
-    if (result.enemies) {
-      for (const enemy of result.enemies) {
-        const dmgToThisEnemy = (result.playerAttacks || [])
-          .filter(a => a.targetId === enemy.id)
-          .reduce((sum, a) => sum + a.damage, 0);
-        enemyHpMap[enemy.id] = { hp: enemy.hp + dmgToThisEnemy, maxHp: enemy.maxHp, index: result.enemies.indexOf(enemy) };
-      }
-    }
-
-    // Show each allied robot's attack result sequentially with real-time HP
-    if (result.playerAttacks?.length > 0) {
-      // Track which enemies have been defeated for XP popups
-      const killedEnemies = new Set();
-
-      for (let atkIdx = 0; atkIdx < result.playerAttacks.length; atkIdx++) {
-        const atk = result.playerAttacks[atkIdx];
-        const effectKey = atk.elementMultiplier > 1 ? 'dealsStrong' :
-                          atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
-        const actionArea = document.getElementById('action-area');
-        if (actionArea) {
-          actionArea.innerHTML = `<div class="combat-robot-attack">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
-        }
-        playSFX('attack');
-
-        // Find the robot slot element for this attacker and specific enemy target
-        const robotSlotEl = findRobotSlotByAttackerId(atk.attackerId);
-        const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies);
-
-        // Update charge bar for this attacker immediately after its attack
-        // Find slot by matching attackerId against result.robotParty (not stale gameState)
-        const attackerSlotIdx = (result.robotParty?.active || []).findIndex(r => r && r.id === atk.attackerId);
-        const attackerSlot = attackerSlotIdx >= 0 ? document.querySelectorAll('#chip-row .robot-slot')[attackerSlotIdx] : null;
-        if (attackerSlot && atk.attackerCharges != null) {
-          const chargeBar = attackerSlot.querySelector('.robot-charge-bar');
-          if (chargeBar) {
-            const segments = chargeBar.querySelectorAll('.charge-segment');
-            segments.forEach((seg, s) => {
-              if (s < atk.attackerCharges) {
-                seg.classList.add('filled');
-              } else {
-                seg.classList.remove('filled');
-              }
-            });
-          }
-          const icon = attackerSlot.querySelector('.robot-icon');
-          if (icon) {
-            if (atk.attackerCharges >= atk.attackerChargesRequired) {
-              icon.classList.add('charged');
-            } else {
-              icon.classList.remove('charged');
+      // Show poison tick effects from start-of-round effect processing
+      if (result.effectEvents?.length > 0) {
+        for (const event of result.effectEvents) {
+          if (event.type === 'poison' && event.damage > 0) {
+            // Find target element — could be ally or enemy
+            let targetEl = findRobotSlotByAttackerId(event.targetId);
+            if (!targetEl) {
+              targetEl = findEnemyTargetElement(event.targetId, result.enemies);
+            }
+            if (targetEl) {
+              await poisonTickEffect(targetEl, event.damage);
             }
           }
         }
+      }
 
-        // Fire element-colored orb from robot to enemy with impact effects
-        if (robotSlotEl && enemyEl && atk.attackerElement) {
-          playAttackSound(atk.attackerElement);
-          const targetMaxHp = enemyHpMap[atk.targetId]?.maxHp || 100;
-          await fireRobotAttackEffect(robotSlotEl, enemyEl, atk.attackerElement, atk.damage, targetMaxHp);
-        } else {
-          animateEnemyHurt();
+      // Track each enemy's HP for progressive updates
+      const gs = getGameState();
+      const enemyHpMap = {};
+      if (result.enemies) {
+        for (const enemy of result.enemies) {
+          const dmgToThisEnemy = (result.playerAttacks || [])
+            .filter(a => a.targetId === enemy.id)
+            .reduce((sum, a) => sum + a.damage, 0);
+          enemyHpMap[enemy.id] = { hp: enemy.hp + dmgToThisEnemy, maxHp: enemy.maxHp, index: result.enemies.indexOf(enemy) };
         }
+      }
 
-        showDamageNumber(atk.damage, false, false);
-        // Update enemy HP bar after each hit
-        if (enemyHpMap[atk.targetId]) {
-          enemyHpMap[atk.targetId].hp = Math.max(0, enemyHpMap[atk.targetId].hp - atk.damage);
-          const entry = enemyHpMap[atk.targetId];
-          if (result.enemies.length > 1) {
-            characterUI.updateEnemyHPAtIndex(entry.index, entry.hp, entry.maxHp);
+      // Show each allied robot's attack result sequentially with real-time HP
+      if (result.playerAttacks?.length > 0) {
+        // Track which enemies have been defeated for XP popups
+        const killedEnemies = new Set();
+
+        for (let atkIdx = 0; atkIdx < result.playerAttacks.length; atkIdx++) {
+          const atk = result.playerAttacks[atkIdx];
+          const effectKey = atk.elementMultiplier > 1 ? 'dealsStrong' :
+                            atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
+          const actionArea = document.getElementById('action-area');
+          if (actionArea) {
+            actionArea.innerHTML = `<div class="combat-robot-attack">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
+          }
+          playSFX('attack');
+
+          // Find the robot slot element for this attacker and specific enemy target
+          const robotSlotEl = findRobotSlotByAttackerId(atk.attackerId);
+          const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies);
+
+          // Update charge bar for this attacker immediately after its attack
+          // Find slot by matching attackerId against result.robotParty (not stale gameState)
+          const attackerSlotIdx = (result.robotParty?.active || []).findIndex(r => r && r.id === atk.attackerId);
+          const attackerSlot = attackerSlotIdx >= 0 ? document.querySelectorAll('#chip-row .robot-slot')[attackerSlotIdx] : null;
+          if (attackerSlot && atk.attackerCharges != null) {
+            const chargeBar = attackerSlot.querySelector('.robot-charge-bar');
+            if (chargeBar) {
+              const segments = chargeBar.querySelectorAll('.charge-segment');
+              segments.forEach((seg, s) => {
+                if (s < atk.attackerCharges) {
+                  seg.classList.add('filled');
+                } else {
+                  seg.classList.remove('filled');
+                }
+              });
+            }
+            const icon = attackerSlot.querySelector('.robot-icon');
+            if (icon) {
+              if (atk.attackerCharges >= atk.attackerChargesRequired) {
+                icon.classList.add('charged');
+              } else {
+                icon.classList.remove('charged');
+              }
+            }
+          }
+
+          // Fire element-colored orb from robot to enemy with impact effects
+          if (robotSlotEl && enemyEl && atk.attackerElement) {
+            playAttackSound(atk.attackerElement);
+            const targetMaxHp = enemyHpMap[atk.targetId]?.maxHp || 100;
+            await fireRobotAttackEffect(robotSlotEl, enemyEl, atk.attackerElement, atk.damage, targetMaxHp);
           } else {
-            characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
+            animateEnemyHurt();
           }
-        }
 
-        // Show XP popups when an enemy is killed (BUG B + C)
-        if (atk.targetDefeated && !killedEnemies.has(atk.targetId) && result.xpEvents) {
-          killedEnemies.add(atk.targetId);
-          const xpEvent = result.xpEvents.find(ev => ev.enemyId === atk.targetId);
-          if (xpEvent) {
-            showXpEvents([xpEvent]);
+          showDamageNumber(atk.damage, false, false);
+          // Update enemy HP bar after each hit
+          if (enemyHpMap[atk.targetId]) {
+            enemyHpMap[atk.targetId].hp = Math.max(0, enemyHpMap[atk.targetId].hp - atk.damage);
+            const entry = enemyHpMap[atk.targetId];
+            if (result.enemies.length > 1) {
+              characterUI.updateEnemyHPAtIndex(entry.index, entry.hp, entry.maxHp);
+            } else {
+              characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
+            }
           }
-        }
 
+          // Show XP popups when an enemy is killed (BUG B + C)
+          if (atk.targetDefeated && !killedEnemies.has(atk.targetId) && result.xpEvents) {
+            killedEnemies.add(atk.targetId);
+            const xpEvent = result.xpEvents.find(ev => ev.enemyId === atk.targetId);
+            if (xpEvent) {
+              showXpEvents([xpEvent]);
+            }
+          }
+
+          await delay(400);
+        }
+      }
+
+      // Build a map of ally HP before enemy attacks for progressive updates
+      const allyHpMap = {};
+      if (result.allies) {
+        for (const ally of result.allies) {
+          // Reconstruct pre-enemy-attack HP by adding back enemy damage dealt to this ally
+          const dmgToThisAlly = (result.enemyAttacks || [])
+            .filter(a => a.targetId === ally.id)
+            .reduce((sum, a) => sum + a.damage, 0);
+          allyHpMap[ally.id] = { hp: ally.hp + dmgToThisAlly, maxHp: ally.maxHp };
+        }
+      }
+
+      // Show enemy robot attacks with real-time ally HP updates
+      if (result.enemyAttacks?.length > 0) {
         await delay(400);
+        for (const atk of result.enemyAttacks) {
+          const effectKey2 = atk.elementMultiplier > 1 ? 'dealsStrong' :
+                             atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
+          const actionArea = document.getElementById('action-area');
+          if (actionArea) {
+            actionArea.innerHTML = `<div class="combat-robot-attack enemy">${t(effectKey2, atk.attackerName, atk.damage)}</div>`;
+          }
+          showDamageNumber(atk.damage, true, false);
+          playSFX('player-hit');
+
+          // Fire element-colored orb from specific attacking enemy to targeted robot
+          const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies);
+          const targetSlotEl = findRobotSlotByAttackerId(atk.targetId);
+          if (enemyEl && targetSlotEl && atk.attackerElement) {
+            playAttackSound(atk.attackerElement);
+            await enemyRobotAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
+          } else {
+            animatePlayerHurt();
+          }
+
+          // Update targeted ally's running HP in the DOM directly (avoid full updateUI)
+          if (allyHpMap[atk.targetId]) {
+            allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
+          }
+          updateRobotHpBars(result.robotParty?.active, allyHpMap);
+          await delay(400);
+        }
+      }
+
+      // Show KO swap messages with death/swap-in animations (Bug F)
+      if (result.koSwaps?.length > 0) {
+        for (const swap of result.koSwaps) {
+          // Animate the KO'd robot dying
+          const koIndex = swap.slot ?? -1;
+          if (koIndex >= 0) {
+            const slots = document.querySelectorAll('#chip-row .robot-slot');
+            const dyingSlot = slots[koIndex];
+            if (dyingSlot) {
+              dyingSlot.classList.add('robot-dying');
+              await delay(600);
+            }
+          }
+
+          const actionArea = document.getElementById('action-area');
+          if (actionArea) {
+            actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${t('swapsIn', swap.replacement)}</div>`;
+          }
+
+          // Re-render the robot row with updated party, then animate new robot in
+          if (result.robotParty?.active) {
+            const robotRow = document.getElementById('chip-row');
+            if (robotRow) {
+              // Temporarily update the display inline
+              const slots = robotRow.querySelectorAll('.robot-slot');
+              const swapSlot = slots[koIndex];
+              if (swapSlot) {
+                swapSlot.classList.remove('robot-dying');
+                swapSlot.classList.add('robot-swapping-in');
+                // Update sprite and HP for the new robot
+                const newRobot = result.robotParty.active[koIndex];
+                if (newRobot) {
+                  const icon = swapSlot.querySelector('.robot-sprite-icon');
+                  if (icon) configureRobotImg(icon, newRobot.id, el => {
+                    el.style.display = 'none';
+                    const fallback = el.nextElementSibling;
+                    if (fallback) fallback.style.display = '';
+                  });
+                  const hpFill = swapSlot.querySelector('.robot-hp-fill');
+                  if (hpFill) {
+                    const pct = Math.max(0, (newRobot.hp / newRobot.maxHp) * 100);
+                    hpFill.style.width = `${pct}%`;
+                    hpFill.style.backgroundColor = pct > 60 ? 'var(--hp-green)' : pct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+                  }
+                  const koIcon = swapSlot.querySelector('.robot-icon');
+                  if (koIcon) koIcon.classList.remove('ko');
+                }
+                setTimeout(() => swapSlot.classList.remove('robot-swapping-in'), 500);
+              }
+            }
+          }
+          await delay(800);
+        }
+      }
+
+      // Final state update with server-authoritative values (no updateUI to avoid DOM rebuild flicker)
+      if (result.robotParty || result.enemies) {
+        const updates = { ...gs };
+        if (result.robotParty) {
+          updates.run = { ...gs.run, robotParty: result.robotParty };
+        }
+        if (result.enemies && gs.combat) {
+          updates.combat = {
+            ...gs.combat,
+            enemies: result.enemies,
+            allies: result.allies || gs.combat.allies,
+            turnCount: result.turnCount ?? gs.combat.turnCount
+          };
+        }
+        updateGameState(updates);
+        // Keep robot-row popup data in sync with latest charges/HP
+        if (result.robotParty?.active && updateRobotRowData) {
+          updateRobotRowData(result.robotParty.active);
+        }
+        // Set final HP bars without full DOM rebuild
+        if (result.enemies?.length > 1) {
+          result.enemies.forEach((e, i) => characterUI.updateEnemyHPAtIndex(i, e.hp, e.maxHp));
+        } else if (result.enemies?.[0]) {
+          characterUI.updateEnemyHPBar({ current: result.enemies[0].hp, max: result.enemies[0].maxHp });
+        }
+        updateRobotHpBars(result.robotParty?.active, null);
+      }
+
+
+      // Check combat end
+      if (result.combatEnded) {
+        // Let HP bar drain animation (300ms CSS transition) be visible before stopping
+        if (result.victory) {
+          await delay(500);
+        }
+        stopCombatLoop(result);
+        return;
+      }
+
+      playerAttackPending = false;
+
+      // Pause for next vocab review
+      combatPausedForVocab = true;
+      await delay(1440);
+      showNextDualCardsFromQueue();
+
+    } catch (error) {
+      console.error('Robot attack error:', error);
+      playerAttackPending = false;
+      if (combatActive) {
+        combatPausedForVocab = true;
+        showNextDualCardsFromQueue();
       }
     }
+  });
+}
 
-    // Build a map of ally HP before enemy attacks for progressive updates
-    const allyHpMap = {};
-    if (result.allies) {
-      for (const ally of result.allies) {
-        // Reconstruct pre-enemy-attack HP by adding back enemy damage dealt to this ally
-        const dmgToThisAlly = (result.enemyAttacks || [])
-          .filter(a => a.targetId === ally.id)
-          .reduce((sum, a) => sum + a.damage, 0);
-        allyHpMap[ally.id] = { hp: ally.hp + dmgToThisAlly, maxHp: ally.maxHp };
+/**
+ * Execute robot defend — calls /robot-combat-cycle with 'defend'
+ * Defend: all robots gain +1 ultimate charge, enemies attack with 50% damage
+ */
+async function executeRobotDefendThenPause() {
+  if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
+
+  enemyAttackPending = true;
+
+  return withAnimationActive(async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/game/robot-combat-cycle`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ actionType: 'defend' })
+      });
+      const result = await response.json();
+      logger.info('[CombatLoop] Robot defend result:', { enemyAttacks: result.enemyAttacks?.length });
+
+      if (result.error) {
+        if (result.error === 'No active combat') {
+          combatActive = false;
+          return;
+        }
+        console.error('Robot defend error:', result.error);
+        if (combatActive) {
+          stopCombatLoop({ combatEnded: true, victory: false, error: true });
+        }
+        return;
       }
-    }
 
-    // Show enemy robot attacks with real-time ally HP updates
-    if (result.enemyAttacks?.length > 0) {
-      await delay(400);
-      for (const atk of result.enemyAttacks) {
-        const effectKey2 = atk.elementMultiplier > 1 ? 'dealsStrong' :
-                           atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
-        const actionArea = document.getElementById('action-area');
-        if (actionArea) {
-          actionArea.innerHTML = `<div class="combat-robot-attack enemy">${t(effectKey2, atk.attackerName, atk.damage)}</div>`;
-        }
-        showDamageNumber(atk.damage, true, false);
-        playSFX('player-hit');
-
-        // Fire element-colored orb from specific attacking enemy to targeted robot
-        const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies);
-        const targetSlotEl = findRobotSlotByAttackerId(atk.targetId);
-        if (enemyEl && targetSlotEl && atk.attackerElement) {
-          playAttackSound(atk.attackerElement);
-          await enemyRobotAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
-        } else {
-          animatePlayerHurt();
-        }
-
-        // Update targeted ally's running HP in the DOM directly (avoid full updateUI)
-        if (allyHpMap[atk.targetId]) {
-          allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
-        }
-        updateRobotHpBars(result.robotParty?.active, allyHpMap);
-        await delay(400);
-      }
-    }
-
-    // Show KO swap messages with death/swap-in animations (Bug F)
-    if (result.koSwaps?.length > 0) {
-      for (const swap of result.koSwaps) {
-        // Animate the KO'd robot dying
-        const koIndex = swap.slot ?? -1;
-        if (koIndex >= 0) {
-          const slots = document.querySelectorAll('#chip-row .robot-slot');
-          const dyingSlot = slots[koIndex];
-          if (dyingSlot) {
-            dyingSlot.classList.add('robot-dying');
-            await delay(600);
+      // Show poison tick effects from start-of-round effect processing
+      if (result.effectEvents?.length > 0) {
+        for (const event of result.effectEvents) {
+          if (event.type === 'poison' && event.damage > 0) {
+            let targetEl = findRobotSlotByAttackerId(event.targetId);
+            if (!targetEl) {
+              targetEl = findEnemyTargetElement(event.targetId, result.enemies);
+            }
+            if (targetEl) {
+              await poisonTickEffect(targetEl, event.damage);
+            }
           }
         }
+      }
 
-        const actionArea = document.getElementById('action-area');
-        if (actionArea) {
-          actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${t('swapsIn', swap.replacement)}</div>`;
+      // Show defend indicator
+      const actionArea = document.getElementById('action-area');
+      if (actionArea) {
+        actionArea.innerHTML = `<div class="combat-defend-indicator">${t('defending')}</div>`;
+      }
+
+      // Update charge bars immediately for defend (BUG A fix)
+      if (result.robotParty?.active) {
+        updateRobotHpBars(result.robotParty.active, null);
+      }
+      await delay(600);
+
+      // Build ally HP map for progressive updates during enemy attacks
+      const gs = getGameState();
+      const allyHpMap = {};
+      if (result.allies) {
+        for (const ally of result.allies) {
+          const dmgToThisAlly = (result.enemyAttacks || [])
+            .filter(a => a.targetId === ally.id)
+            .reduce((sum, a) => sum + a.damage, 0);
+          allyHpMap[ally.id] = { hp: ally.hp + dmgToThisAlly, maxHp: ally.maxHp };
         }
+      }
 
-        // Re-render the robot row with updated party, then animate new robot in
-        if (result.robotParty?.active) {
-          const robotRow = document.getElementById('chip-row');
-          if (robotRow) {
-            // Temporarily update the display inline
-            const slots = robotRow.querySelectorAll('.robot-slot');
+      // Show enemy attacks (50% damage already applied server-side) with real-time HP
+      if (result.enemyAttacks?.length > 0) {
+        for (const atk of result.enemyAttacks) {
+          const actionArea2 = document.getElementById('action-area');
+          if (actionArea2) {
+            actionArea2.innerHTML = `<div class="combat-robot-attack enemy">${t('dealsHalved', atk.attackerName, atk.damage)}</div>`;
+          }
+          showDamageNumber(atk.damage, true, false);
+          playSFX('player-hit');
+
+          // Fire element-colored orb from specific attacking enemy to targeted robot
+          const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies);
+          const targetSlotEl = findRobotSlotByAttackerId(atk.targetId);
+          if (enemyEl && targetSlotEl && atk.attackerElement) {
+            playAttackSound(atk.attackerElement);
+            await enemyRobotAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
+          } else {
+            animatePlayerHurt();
+          }
+
+          // Update targeted ally's running HP in the DOM directly (avoid full updateUI)
+          if (allyHpMap[atk.targetId]) {
+            allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
+          }
+          updateRobotHpBars(result.robotParty?.active, allyHpMap);
+          await delay(400);
+        }
+      }
+
+      // Update enemy HP (all enemies in multi-enemy combat)
+      if (result.enemies?.length > 1) {
+        result.enemies.forEach((e, i) => characterUI.updateEnemyHPAtIndex(i, e.hp, e.maxHp));
+      } else if (result.enemies?.[0]) {
+        const enemy = result.enemies[0];
+        characterUI.updateEnemyHPBar({ current: enemy.hp, max: enemy.maxHp });
+      }
+
+      // Show KO swap messages with death/swap-in animations (Bug F)
+      if (result.koSwaps?.length > 0) {
+        for (const swap of result.koSwaps) {
+          // Animate the KO'd robot dying
+          const koIndex = swap.slot ?? -1;
+          if (koIndex >= 0) {
+            const slots = document.querySelectorAll('#chip-row .robot-slot');
+            const dyingSlot = slots[koIndex];
+            if (dyingSlot) {
+              dyingSlot.classList.add('robot-dying');
+              await delay(600);
+            }
+          }
+
+          const actionArea2 = document.getElementById('action-area');
+          if (actionArea2) {
+            actionArea2.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${t('swapsIn', swap.replacement)}</div>`;
+          }
+
+          // Update sprite and HP for the new robot with swap-in animation
+          if (result.robotParty?.active && koIndex >= 0) {
+            const slots = document.querySelectorAll('#chip-row .robot-slot');
             const swapSlot = slots[koIndex];
             if (swapSlot) {
               swapSlot.classList.remove('robot-dying');
               swapSlot.classList.add('robot-swapping-in');
-              // Update sprite and HP for the new robot
               const newRobot = result.robotParty.active[koIndex];
               if (newRobot) {
                 const icon = swapSlot.querySelector('.robot-sprite-icon');
-                if (icon) configureRobotImg(icon, newRobot.id, el => {
-                  el.style.display = 'none';
-                  const fallback = el.nextElementSibling;
-                  if (fallback) fallback.style.display = '';
-                });
+                if (icon) configureRobotImg(icon, newRobot.id, el => { el.style.display = 'none'; });
                 const hpFill = swapSlot.querySelector('.robot-hp-fill');
                 if (hpFill) {
                   const pct = Math.max(0, (newRobot.hp / newRobot.maxHp) * 100);
@@ -778,271 +991,54 @@ async function executeRobotPlayerAttack() {
               setTimeout(() => swapSlot.classList.remove('robot-swapping-in'), 500);
             }
           }
+          await delay(800);
         }
-        await delay(800);
       }
-    }
 
-    // Final state update with server-authoritative values (no updateUI to avoid DOM rebuild flicker)
-    if (result.robotParty || result.enemies) {
-      const updates = { ...gs };
-      if (result.robotParty) {
-        updates.run = { ...gs.run, robotParty: result.robotParty };
+      // Final state update with server-authoritative values (no updateUI to avoid DOM rebuild flicker)
+      if (result.robotParty || result.enemies) {
+        const updates = { ...gs };
+        if (result.robotParty) {
+          updates.run = { ...gs.run, robotParty: result.robotParty };
+        }
+        if (result.enemies && gs.combat) {
+          updates.combat = {
+            ...gs.combat,
+            enemies: result.enemies,
+            allies: result.allies || gs.combat.allies,
+            turnCount: result.turnCount ?? gs.combat.turnCount
+          };
+        }
+        updateGameState(updates);
+        // Keep robot-row popup data in sync with latest charges/HP
+        if (result.robotParty?.active && updateRobotRowData) {
+          updateRobotRowData(result.robotParty.active);
+        }
+        // Set final robot HP bars without full DOM rebuild
+        updateRobotHpBars(result.robotParty?.active, null);
       }
-      if (result.enemies && gs.combat) {
-        updates.combat = {
-          ...gs.combat,
-          enemies: result.enemies,
-          allies: result.allies || gs.combat.allies,
-          turnCount: result.turnCount ?? gs.combat.turnCount
-        };
-      }
-      updateGameState(updates);
-      // Keep robot-row popup data in sync with latest charges/HP
-      if (result.robotParty?.active && updateRobotRowData) {
-        updateRobotRowData(result.robotParty.active);
-      }
-      // Set final HP bars without full DOM rebuild
-      if (result.enemies?.length > 1) {
-        result.enemies.forEach((e, i) => characterUI.updateEnemyHPAtIndex(i, e.hp, e.maxHp));
-      } else if (result.enemies?.[0]) {
-        characterUI.updateEnemyHPBar({ current: result.enemies[0].hp, max: result.enemies[0].maxHp });
-      }
-      updateRobotHpBars(result.robotParty?.active, null);
-    }
 
 
-    // Check combat end
-    if (result.combatEnded) {
-      // Let HP bar drain animation (300ms CSS transition) be visible before stopping
-      if (result.victory) {
-        await delay(500);
-      }
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      stopCombatLoop(result);
-      return;
-    }
-
-    playerAttackPending = false;
-    if (setCombatAnimationActive) setCombatAnimationActive(false);
-
-    // Pause for next vocab review
-    combatPausedForVocab = true;
-    await delay(1440);
-    showNextDualCardsFromQueue();
-
-  } catch (error) {
-    console.error('Robot attack error:', error);
-    playerAttackPending = false;
-    if (setCombatAnimationActive) setCombatAnimationActive(false);
-    if (combatActive) {
-      combatPausedForVocab = true;
-      showNextDualCardsFromQueue();
-    }
-  }
-}
-
-/**
- * Execute robot defend — calls /robot-combat-cycle with 'defend'
- * Defend: all robots gain +1 ultimate charge, enemies attack with 50% damage
- */
-async function executeRobotDefendThenPause() {
-  if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
-
-  enemyAttackPending = true;
-  if (setCombatAnimationActive) setCombatAnimationActive(true);
-
-  try {
-    const response = await fetch(`${API_BASE}/api/game/robot-combat-cycle`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ actionType: 'defend' })
-    });
-    const result = await response.json();
-    logger.info('[CombatLoop] Robot defend result:', { enemyAttacks: result.enemyAttacks?.length });
-
-    if (result.error) {
-      if (result.error === 'No active combat') {
-        combatActive = false;
-        if (setCombatAnimationActive) setCombatAnimationActive(false);
+      // Check combat end
+      if (result.combatEnded) {
+        stopCombatLoop(result);
         return;
       }
-      console.error('Robot defend error:', result.error);
-      if (combatActive) {
-        stopCombatLoop({ combatEnded: true, victory: false, error: true });
-      }
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      return;
-    }
 
-    // Show poison tick effects from start-of-round effect processing
-    if (result.effectEvents?.length > 0) {
-      for (const event of result.effectEvents) {
-        if (event.type === 'poison' && event.damage > 0) {
-          let targetEl = findRobotSlotByAttackerId(event.targetId);
-          if (!targetEl) {
-            targetEl = findEnemyTargetElement(event.targetId, result.enemies);
-          }
-          if (targetEl) {
-            await poisonTickEffect(targetEl, event.damage);
-          }
-        }
-      }
-    }
-
-    // Show defend indicator
-    const actionArea = document.getElementById('action-area');
-    if (actionArea) {
-      actionArea.innerHTML = `<div class="combat-defend-indicator">${t('defending')}</div>`;
-    }
-
-    // Update charge bars immediately for defend (BUG A fix)
-    if (result.robotParty?.active) {
-      updateRobotHpBars(result.robotParty.active, null);
-    }
-    await delay(600);
-
-    // Build ally HP map for progressive updates during enemy attacks
-    const gs = getGameState();
-    const allyHpMap = {};
-    if (result.allies) {
-      for (const ally of result.allies) {
-        const dmgToThisAlly = (result.enemyAttacks || [])
-          .filter(a => a.targetId === ally.id)
-          .reduce((sum, a) => sum + a.damage, 0);
-        allyHpMap[ally.id] = { hp: ally.hp + dmgToThisAlly, maxHp: ally.maxHp };
-      }
-    }
-
-    // Show enemy attacks (50% damage already applied server-side) with real-time HP
-    if (result.enemyAttacks?.length > 0) {
-      for (const atk of result.enemyAttacks) {
-        const actionArea2 = document.getElementById('action-area');
-        if (actionArea2) {
-          actionArea2.innerHTML = `<div class="combat-robot-attack enemy">${t('dealsHalved', atk.attackerName, atk.damage)}</div>`;
-        }
-        showDamageNumber(atk.damage, true, false);
-        playSFX('player-hit');
-
-        // Fire element-colored orb from specific attacking enemy to targeted robot
-        const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies);
-        const targetSlotEl = findRobotSlotByAttackerId(atk.targetId);
-        if (enemyEl && targetSlotEl && atk.attackerElement) {
-          playAttackSound(atk.attackerElement);
-          await enemyRobotAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
-        } else {
-          animatePlayerHurt();
-        }
-
-        // Update targeted ally's running HP in the DOM directly (avoid full updateUI)
-        if (allyHpMap[atk.targetId]) {
-          allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
-        }
-        updateRobotHpBars(result.robotParty?.active, allyHpMap);
-        await delay(400);
-      }
-    }
-
-    // Update enemy HP (all enemies in multi-enemy combat)
-    if (result.enemies?.length > 1) {
-      result.enemies.forEach((e, i) => characterUI.updateEnemyHPAtIndex(i, e.hp, e.maxHp));
-    } else if (result.enemies?.[0]) {
-      const enemy = result.enemies[0];
-      characterUI.updateEnemyHPBar({ current: enemy.hp, max: enemy.maxHp });
-    }
-
-    // Show KO swap messages with death/swap-in animations (Bug F)
-    if (result.koSwaps?.length > 0) {
-      for (const swap of result.koSwaps) {
-        // Animate the KO'd robot dying
-        const koIndex = swap.slot ?? -1;
-        if (koIndex >= 0) {
-          const slots = document.querySelectorAll('#chip-row .robot-slot');
-          const dyingSlot = slots[koIndex];
-          if (dyingSlot) {
-            dyingSlot.classList.add('robot-dying');
-            await delay(600);
-          }
-        }
-
-        const actionArea2 = document.getElementById('action-area');
-        if (actionArea2) {
-          actionArea2.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${t('swapsIn', swap.replacement)}</div>`;
-        }
-
-        // Update sprite and HP for the new robot with swap-in animation
-        if (result.robotParty?.active && koIndex >= 0) {
-          const slots = document.querySelectorAll('#chip-row .robot-slot');
-          const swapSlot = slots[koIndex];
-          if (swapSlot) {
-            swapSlot.classList.remove('robot-dying');
-            swapSlot.classList.add('robot-swapping-in');
-            const newRobot = result.robotParty.active[koIndex];
-            if (newRobot) {
-              const icon = swapSlot.querySelector('.robot-sprite-icon');
-              if (icon) configureRobotImg(icon, newRobot.id, el => { el.style.display = 'none'; });
-              const hpFill = swapSlot.querySelector('.robot-hp-fill');
-              if (hpFill) {
-                const pct = Math.max(0, (newRobot.hp / newRobot.maxHp) * 100);
-                hpFill.style.width = `${pct}%`;
-                hpFill.style.backgroundColor = pct > 60 ? 'var(--hp-green)' : pct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
-              }
-              const koIcon = swapSlot.querySelector('.robot-icon');
-              if (koIcon) koIcon.classList.remove('ko');
-            }
-            setTimeout(() => swapSlot.classList.remove('robot-swapping-in'), 500);
-          }
-        }
-        await delay(800);
-      }
-    }
-
-    // Final state update with server-authoritative values (no updateUI to avoid DOM rebuild flicker)
-    if (result.robotParty || result.enemies) {
-      const updates = { ...gs };
-      if (result.robotParty) {
-        updates.run = { ...gs.run, robotParty: result.robotParty };
-      }
-      if (result.enemies && gs.combat) {
-        updates.combat = {
-          ...gs.combat,
-          enemies: result.enemies,
-          allies: result.allies || gs.combat.allies,
-          turnCount: result.turnCount ?? gs.combat.turnCount
-        };
-      }
-      updateGameState(updates);
-      // Keep robot-row popup data in sync with latest charges/HP
-      if (result.robotParty?.active && updateRobotRowData) {
-        updateRobotRowData(result.robotParty.active);
-      }
-      // Set final robot HP bars without full DOM rebuild
-      updateRobotHpBars(result.robotParty?.active, null);
-    }
-
-
-    // Check combat end
-    if (result.combatEnded) {
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      stopCombatLoop(result);
-      return;
-    }
-
-    enemyAttackPending = false;
-    if (setCombatAnimationActive) setCombatAnimationActive(false);
-    combatPausedForVocab = true;
-    await delay(1440);
-    showNextDualCardsFromQueue();
-
-  } catch (error) {
-    console.error('Robot defend error:', error);
-    enemyAttackPending = false;
-    if (setCombatAnimationActive) setCombatAnimationActive(false);
-    if (combatActive) {
+      enemyAttackPending = false;
       combatPausedForVocab = true;
+      await delay(1440);
       showNextDualCardsFromQueue();
+
+    } catch (error) {
+      console.error('Robot defend error:', error);
+      enemyAttackPending = false;
+      if (combatActive) {
+        combatPausedForVocab = true;
+        showNextDualCardsFromQueue();
+      }
     }
-  }
+  });
 }
 
 /**
@@ -1052,88 +1048,83 @@ export async function executeEnemyAttack() {
   if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
 
   enemyAttackPending = true;
-  if (setCombatAnimationActive) setCombatAnimationActive(true);
 
-  try {
-    const apiKeys = settings.getApiKeys();
-    const response = await fetch(`${API_BASE}/api/game/combat-cycle`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ attackerType: 'enemy', ...apiKeys })
-    });
-    const result = await response.json();
-    console.log('[Combat] Enemy attack:', result.enemyAttack?.damage);
+  return withAnimationActive(async () => {
+    try {
+      const apiKeys = settings.getApiKeys();
+      const response = await fetch(`${API_BASE}/api/game/combat-cycle`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ attackerType: 'enemy', ...apiKeys })
+      });
+      const result = await response.json();
+      console.log('[Combat] Enemy attack:', result.enemyAttack?.damage);
 
-    if (result.error) {
-      // "No active combat" means server state is out of sync - don't trigger false game over
-      if (result.error === 'No active combat') {
-        logger.warn('[CombatLoop] Stale attack detected');
-        combatActive = false; // Sync client state
-        if (setCombatAnimationActive) setCombatAnimationActive(false);
+      if (result.error) {
+        // "No active combat" means server state is out of sync - don't trigger false game over
+        if (result.error === 'No active combat') {
+          logger.warn('[CombatLoop] Stale attack detected');
+          combatActive = false; // Sync client state
+          return;
+        }
+        console.error('Enemy attack error:', result.error);
+        // Only trigger defeat for real errors, not sync issues
+        if (combatActive) {
+          stopCombatLoop({ combatEnded: true, victory: false, error: true });
+        }
         return;
       }
-      console.error('Enemy attack error:', result.error);
-      // Only trigger defeat for real errors, not sync issues
-      if (combatActive) {
-        stopCombatLoop({ combatEnded: true, victory: false, error: true });
-      }
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      return;
-    }
 
-    // If dialogue appeared during fetch, don't process results
-    if (getEnemyDialogueActive()) {
+      // If dialogue appeared during fetch, don't process results
+      if (getEnemyDialogueActive()) {
+        enemyAttackPending = false;
+        return;
+      }
+
+
+      // Show enemy's attack result
+      if (result.enemyAttack) {
+        const ea = result.enemyAttack;
+        if (ea.perfectDodge) {
+          showDamageNumber(0, true, false, false, false, 'perfect');
+        } else if (ea.dodged) {
+          showDamageNumber(0, true, false, false, false, 'dodge');
+        } else if (ea.miss) {
+          showDamageNumber(0, true, false, false, false, 'miss');
+        } else {
+          showDamageNumber(ea.damage, true, ea.critical);
+          animatePlayerHurt();
+          playSFX('player-hit');
+        }
+      }
+
+      // Update HP bars
+      characterUI.updateEnemyHPBar(result.enemyHp);
+      characterUI.updatePlayerHPBar(result.playerHp);
+
+
+      // Check if combat ended
+      if (result.combatEnded) {
+        stopCombatLoop(result);
+        return;
+      }
+
+      // Don't reschedule - the vocab pause flow handles attack cycling
       enemyAttackPending = false;
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      return;
-    }
 
+    } catch (error) {
+      console.error('Enemy attack error:', error);
+      // Don't trigger defeat for errors - recover by showing next flashcard
+      enemyAttackPending = false;
 
-    // Show enemy's attack result
-    if (result.enemyAttack) {
-      const ea = result.enemyAttack;
-      if (ea.perfectDodge) {
-        showDamageNumber(0, true, false, false, false, 'perfect');
-      } else if (ea.dodged) {
-        showDamageNumber(0, true, false, false, false, 'dodge');
-      } else if (ea.miss) {
-        showDamageNumber(0, true, false, false, false, 'miss');
-      } else {
-        showDamageNumber(ea.damage, true, ea.critical);
-        animatePlayerHurt();
-        playSFX('player-hit');
+      // Recovery: pause for vocab and show dual cards so player can continue
+      if (combatActive) {
+        combatPausedForVocab = true;
+        showNextDualCardsFromQueue();
+        logger.warn('[CombatLoop] Recovered from enemy attack error, showing dual cards');
       }
     }
-
-    // Update HP bars
-    characterUI.updateEnemyHPBar(result.enemyHp);
-    characterUI.updatePlayerHPBar(result.playerHp);
-
-
-    // Check if combat ended
-    if (result.combatEnded) {
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      stopCombatLoop(result);
-      return;
-    }
-
-    // Don't reschedule - the vocab pause flow handles attack cycling
-    enemyAttackPending = false;
-    if (setCombatAnimationActive) setCombatAnimationActive(false);
-
-  } catch (error) {
-    console.error('Enemy attack error:', error);
-    // Don't trigger defeat for errors - recover by showing next flashcard
-    enemyAttackPending = false;
-    if (setCombatAnimationActive) setCombatAnimationActive(false);
-
-    // Recovery: pause for vocab and show dual cards so player can continue
-    if (combatActive) {
-      combatPausedForVocab = true;
-      showNextDualCardsFromQueue();
-      logger.warn('[CombatLoop] Recovered from enemy attack error, showing dual cards');
-    }
-  }
+  });
 }
 
 /**
@@ -1143,104 +1134,99 @@ export async function executeEnemyAttackThenPause() {
   if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
 
   enemyAttackPending = true;
-  if (setCombatAnimationActive) setCombatAnimationActive(true);
 
-  try {
-    const apiKeys = settings.getApiKeys();
-    const response = await fetch(`${API_BASE}/api/game/combat-cycle`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ attackerType: 'enemy', ...apiKeys })
-    });
-    const result = await response.json();
-    console.log('[Combat] Enemy attack (then pause):', result.enemyAttack?.damage);
+  return withAnimationActive(async () => {
+    try {
+      const apiKeys = settings.getApiKeys();
+      const response = await fetch(`${API_BASE}/api/game/combat-cycle`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ attackerType: 'enemy', ...apiKeys })
+      });
+      const result = await response.json();
+      console.log('[Combat] Enemy attack (then pause):', result.enemyAttack?.damage);
 
-    if (result.error) {
-      if (result.error === 'No active combat') {
-        logger.warn('[CombatLoop] Stale attack detected');
-        combatActive = false;
-        if (setCombatAnimationActive) setCombatAnimationActive(false);
+      if (result.error) {
+        if (result.error === 'No active combat') {
+          logger.warn('[CombatLoop] Stale attack detected');
+          combatActive = false;
+          return;
+        }
+        console.error('Enemy attack error:', result.error);
+        if (combatActive) {
+          stopCombatLoop({ combatEnded: true, victory: false, error: true });
+        }
         return;
       }
-      console.error('Enemy attack error:', result.error);
-      if (combatActive) {
-        stopCombatLoop({ combatEnded: true, victory: false, error: true });
-      }
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      return;
-    }
 
-    if (getEnemyDialogueActive()) {
+      if (getEnemyDialogueActive()) {
+        enemyAttackPending = false;
+        return;
+      }
+
+
+      // Show enemy's attack result
+      if (result.enemyAttack) {
+        const ea = result.enemyAttack;
+        if (ea.perfectDodge) {
+          showDamageNumber(0, true, false, false, false, 'perfect');
+        } else if (ea.dodged) {
+          showDamageNumber(0, true, false, false, false, 'dodge');
+        } else if (ea.miss) {
+          showDamageNumber(0, true, false, false, false, 'miss');
+        } else {
+          showDamageNumber(ea.damage, true, ea.critical);
+          animatePlayerHurt();
+          playSFX('player-hit');
+        }
+        // Show enemy damage in action area (big red text)
+        showEnemyDamageDisplay(ea);
+
+        // Visual effects for player damage
+        const playerHpBar = document.getElementById('player-hp-fill');
+        const chipRow = document.getElementById('chip-row');
+        await playerHitEffect(result.enemyAttack.damage, playerHpBar, chipRow);
+
+        // Check for critical HP state
+        const gameState = getGameState();
+        if (gameState?.player) {
+          updateHpCriticalState(playerHpBar, gameState.player.hp, gameState.player.maxHp);
+        }
+      }
+
+      // Update HP bars
+      characterUI.updateEnemyHPBar(result.enemyHp);
+      characterUI.updatePlayerHPBar(result.playerHp);
+
+
+      // Check if combat ended
+      if (result.combatEnded) {
+        stopCombatLoop(result);
+        return;
+      }
+
+      // Pause combat - wait for vocab review before next cycle
       enemyAttackPending = false;
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      return;
-    }
-
-
-    // Show enemy's attack result
-    if (result.enemyAttack) {
-      const ea = result.enemyAttack;
-      if (ea.perfectDodge) {
-        showDamageNumber(0, true, false, false, false, 'perfect');
-      } else if (ea.dodged) {
-        showDamageNumber(0, true, false, false, false, 'dodge');
-      } else if (ea.miss) {
-        showDamageNumber(0, true, false, false, false, 'miss');
-      } else {
-        showDamageNumber(ea.damage, true, ea.critical);
-        animatePlayerHurt();
-        playSFX('player-hit');
-      }
-      // Show enemy damage in action area (big red text)
-      showEnemyDamageDisplay(ea);
-
-      // Visual effects for player damage
-      const playerHpBar = document.getElementById('player-hp-fill');
-      const chipRow = document.getElementById('chip-row');
-      await playerHitEffect(result.enemyAttack.damage, playerHpBar, chipRow);
-
-      // Check for critical HP state
-      const gameState = getGameState();
-      if (gameState?.player) {
-        updateHpCriticalState(playerHpBar, gameState.player.hp, gameState.player.maxHp);
-      }
-    }
-
-    // Update HP bars
-    characterUI.updateEnemyHPBar(result.enemyHp);
-    characterUI.updatePlayerHPBar(result.playerHp);
-
-
-    // Check if combat ended
-    if (result.combatEnded) {
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      stopCombatLoop(result);
-      return;
-    }
-
-    // Pause combat - wait for vocab review before next cycle
-    enemyAttackPending = false;
-    if (setCombatAnimationActive) setCombatAnimationActive(false);
-    combatPausedForVocab = true;
-    // Delay before showing dual cards so player can see the damage
-    await delay(1440);
-    // Show next dual cards for the next review
-    showNextDualCardsFromQueue();
-    console.log('[Combat] Paused for vocab review. Review a word to continue.');
-
-  } catch (error) {
-    console.error('Enemy attack error:', error);
-    // Don't trigger defeat for errors - recover by showing dual cards
-    enemyAttackPending = false;
-    if (setCombatAnimationActive) setCombatAnimationActive(false);
-
-    // Recovery: pause for vocab and show dual cards so player can continue
-    if (combatActive) {
       combatPausedForVocab = true;
+      // Delay before showing dual cards so player can see the damage
+      await delay(1440);
+      // Show next dual cards for the next review
       showNextDualCardsFromQueue();
-      logger.warn('[CombatLoop] Recovered from enemy attack error, showing dual cards');
+      console.log('[Combat] Paused for vocab review. Review a word to continue.');
+
+    } catch (error) {
+      console.error('Enemy attack error:', error);
+      // Don't trigger defeat for errors - recover by showing dual cards
+      enemyAttackPending = false;
+
+      // Recovery: pause for vocab and show dual cards so player can continue
+      if (combatActive) {
+        combatPausedForVocab = true;
+        showNextDualCardsFromQueue();
+        logger.warn('[CombatLoop] Recovered from enemy attack error, showing dual cards');
+      }
     }
-  }
+  });
 }
 
 /**
@@ -1284,102 +1270,97 @@ async function executeDefendThenPause() {
   if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
 
   enemyAttackPending = true;
-  if (setCombatAnimationActive) setCombatAnimationActive(true);
 
-  try {
-    const apiKeys = settings.getApiKeys();
-    const response = await fetch(`${API_BASE}/api/game/combat-cycle`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ attackerType: 'enemy', actionType: 'defend', ...apiKeys })
-    });
-    const result = await response.json();
-    logger.info('[Combat] Defend - Enemy attack (50% damage):', result.enemyAttack?.damage);
+  return withAnimationActive(async () => {
+    try {
+      const apiKeys = settings.getApiKeys();
+      const response = await fetch(`${API_BASE}/api/game/combat-cycle`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ attackerType: 'enemy', actionType: 'defend', ...apiKeys })
+      });
+      const result = await response.json();
+      logger.info('[Combat] Defend - Enemy attack (50% damage):', result.enemyAttack?.damage);
 
-    if (result.error) {
-      if (result.error === 'No active combat') {
-        logger.warn('[CombatLoop] Stale attack detected');
-        combatActive = false;
-        if (setCombatAnimationActive) setCombatAnimationActive(false);
+      if (result.error) {
+        if (result.error === 'No active combat') {
+          logger.warn('[CombatLoop] Stale attack detected');
+          combatActive = false;
+          return;
+        }
+        console.error('Enemy attack error:', result.error);
+        if (combatActive) {
+          stopCombatLoop({ combatEnded: true, victory: false, error: true });
+        }
         return;
       }
-      console.error('Enemy attack error:', result.error);
-      if (combatActive) {
-        stopCombatLoop({ combatEnded: true, victory: false, error: true });
-      }
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      return;
-    }
 
-    if (getEnemyDialogueActive()) {
+      if (getEnemyDialogueActive()) {
+        enemyAttackPending = false;
+        return;
+      }
+
+      // Show defend indicator
+      const actionArea = document.getElementById('action-area');
+      if (actionArea) {
+        actionArea.innerHTML = `<div class="combat-defend-indicator">${t('defendingChip')}</div>`;
+      }
+      await delay(600);
+
+      // Show enemy's attack result (damage already halved by backend)
+      if (result.enemyAttack) {
+        const ea = result.enemyAttack;
+        if (ea.perfectDodge) {
+          showDamageNumber(0, true, false, false, false, 'perfect');
+        } else if (ea.dodged) {
+          showDamageNumber(0, true, false, false, false, 'dodge');
+        } else if (ea.miss) {
+          showDamageNumber(0, true, false, false, false, 'miss');
+        } else {
+          showDamageNumber(ea.damage, true, ea.critical);
+          animatePlayerHurt();
+          playSFX('player-hit');
+        }
+        showEnemyDamageDisplay(ea);
+
+        const playerHpBar = document.getElementById('player-hp-fill');
+        const chipRow = document.getElementById('chip-row');
+        await playerHitEffect(result.enemyAttack.damage, playerHpBar, chipRow);
+
+        const gameState = getGameState();
+        if (gameState?.player) {
+          updateHpCriticalState(playerHpBar, gameState.player.hp, gameState.player.maxHp);
+        }
+      }
+
+      // Update HP bars
+      characterUI.updateEnemyHPBar(result.enemyHp);
+      characterUI.updatePlayerHPBar(result.playerHp);
+
+
+      // Check if combat ended
+      if (result.combatEnded) {
+        stopCombatLoop(result);
+        return;
+      }
+
       enemyAttackPending = false;
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      return;
-    }
-
-    // Show defend indicator
-    const actionArea = document.getElementById('action-area');
-    if (actionArea) {
-      actionArea.innerHTML = `<div class="combat-defend-indicator">${t('defendingChip')}</div>`;
-    }
-    await delay(600);
-
-    // Show enemy's attack result (damage already halved by backend)
-    if (result.enemyAttack) {
-      const ea = result.enemyAttack;
-      if (ea.perfectDodge) {
-        showDamageNumber(0, true, false, false, false, 'perfect');
-      } else if (ea.dodged) {
-        showDamageNumber(0, true, false, false, false, 'dodge');
-      } else if (ea.miss) {
-        showDamageNumber(0, true, false, false, false, 'miss');
-      } else {
-        showDamageNumber(ea.damage, true, ea.critical);
-        animatePlayerHurt();
-        playSFX('player-hit');
-      }
-      showEnemyDamageDisplay(ea);
-
-      const playerHpBar = document.getElementById('player-hp-fill');
-      const chipRow = document.getElementById('chip-row');
-      await playerHitEffect(result.enemyAttack.damage, playerHpBar, chipRow);
-
-      const gameState = getGameState();
-      if (gameState?.player) {
-        updateHpCriticalState(playerHpBar, gameState.player.hp, gameState.player.maxHp);
-      }
-    }
-
-    // Update HP bars
-    characterUI.updateEnemyHPBar(result.enemyHp);
-    characterUI.updatePlayerHPBar(result.playerHp);
-
-
-    // Check if combat ended
-    if (result.combatEnded) {
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      stopCombatLoop(result);
-      return;
-    }
-
-    enemyAttackPending = false;
-    if (setCombatAnimationActive) setCombatAnimationActive(false);
-    combatPausedForVocab = true;
-    await delay(1440);
-    showNextDualCardsFromQueue();
-    logger.info('[Combat] Defend complete. Paused for vocab review.');
-
-  } catch (error) {
-    console.error('Defend action error:', error);
-    enemyAttackPending = false;
-    if (setCombatAnimationActive) setCombatAnimationActive(false);
-
-    if (combatActive) {
       combatPausedForVocab = true;
+      await delay(1440);
       showNextDualCardsFromQueue();
-      logger.warn('[CombatLoop] Recovered from defend error, showing dual cards');
+      logger.info('[Combat] Defend complete. Paused for vocab review.');
+
+    } catch (error) {
+      console.error('Defend action error:', error);
+      enemyAttackPending = false;
+
+      if (combatActive) {
+        combatPausedForVocab = true;
+        showNextDualCardsFromQueue();
+        logger.warn('[CombatLoop] Recovered from defend error, showing dual cards');
+      }
     }
-  }
+  });
 }
 
 /**
@@ -1533,33 +1514,31 @@ function showAnswerFeedback(selectedIndex, correctIndex, correct) {
  */
 async function executeBefriendAction() {
   if (!combatActive) return;
-  if (setCombatAnimationActive) setCombatAnimationActive(true);
 
-  try {
-    const state = getGameState();
-    const enemies = state.combat?.enemies || [];
+  return withAnimationActive(async () => {
+    try {
+      const state = getGameState();
+      const enemies = state.combat?.enemies || [];
 
-    // Target selection (auto if only one eligible)
-    const eligible = enemies.filter(e => e.hp > 0 && !e.befriended && (e.hp / e.maxHp) <= 0.5);
-    let enemyIndex;
-    if (eligible.length > 1) {
-      enemyIndex = await showBefriendTargetSelect(enemies);
-      if (enemyIndex < 0) {
-        if (setCombatAnimationActive) setCombatAnimationActive(false);
-        combatPausedForVocab = true;
+      // Target selection (auto if only one eligible)
+      const eligible = enemies.filter(e => e.hp > 0 && !e.befriended && (e.hp / e.maxHp) <= 0.5);
+      let enemyIndex;
+      if (eligible.length > 1) {
+        enemyIndex = await showBefriendTargetSelect(enemies);
+        if (enemyIndex < 0) {
+          combatPausedForVocab = true;
+          showNextDualCardsFromQueue();
+          return;
+        }
+      }
+
+      // Fetch conversation from server
+      const convoResult = await apiGetBefriendConversation(enemyIndex);
+      if (convoResult.error) {
+        console.error('Befriend conversation error:', convoResult.error);
         showNextDualCardsFromQueue();
         return;
       }
-    }
-
-    // Fetch conversation from server
-    const convoResult = await apiGetBefriendConversation(enemyIndex);
-    if (convoResult.error) {
-      console.error('Befriend conversation error:', convoResult.error);
-      if (setCombatAnimationActive) setCombatAnimationActive(false);
-      showNextDualCardsFromQueue();
-      return;
-    }
 
     const { rounds, targetEnemy, targetEnemyIndex } = convoResult;
     const robotName = targetEnemy?.nameEn || targetEnemy?.name || 'Robot';
@@ -1572,7 +1551,6 @@ async function executeBefriendAction() {
       if (!answerResult) {
         // API error - recover gracefully by resuming normal combat
         logger.error("[CombatLoop] Befriend answer API returned null, resuming combat");
-        if (setCombatAnimationActive) setCombatAnimationActive(false);
         combatPausedForVocab = true;
         showNextDualCardsFromQueue();
         return;
@@ -1630,7 +1608,6 @@ async function executeBefriendAction() {
         }
 
         // Resume normal combat
-        if (setCombatAnimationActive) setCombatAnimationActive(false);
         combatPausedForVocab = true;
         showNextDualCardsFromQueue();
         return;
@@ -1726,7 +1703,6 @@ async function executeBefriendAction() {
         }
 
         // Continue combat
-        if (setCombatAnimationActive) setCombatAnimationActive(false);
         combatPausedForVocab = true;
         showNextDualCardsFromQueue();
         return;
@@ -1736,11 +1712,10 @@ async function executeBefriendAction() {
       await delay(300);
     }
 
-  } catch (error) {
-    console.error('Befriend conversation error:', error);
-  } finally {
-    if (setCombatAnimationActive) setCombatAnimationActive(false);
-  }
+    } catch (error) {
+      console.error('Befriend conversation error:', error);
+    }
+  });
 }
 
 /**
