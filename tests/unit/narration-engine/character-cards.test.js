@@ -109,4 +109,41 @@ describe('character-cards', () => {
       assert.ok(result.errors.some(e => e.includes('goals')));
     });
   });
+
+  describe('creature cards', () => {
+    it('loads creature cards with type=creature', () => {
+      const cards = loadCharacterCards('creature');
+      assert.ok(Object.keys(cards).length >= 37);
+    });
+
+    it('all creature cards have required fields', () => {
+      const cards = loadCharacterCards('creature');
+      for (const [id, card] of Object.entries(cards)) {
+        assert.ok(card.id, `${id} missing id`);
+        assert.ok(card.name, `${id} missing name`);
+        assert.ok(card.nameEn, `${id} missing nameEn`);
+        assert.ok(card.personality, `${id} missing personality`);
+      }
+    });
+
+    it('all creature cards pass validateCard with type=creature', () => {
+      const cards = loadCharacterCards('creature');
+      for (const [id, card] of Object.entries(cards)) {
+        const result = validateCard(card, 'creature');
+        assert.strictEqual(result.valid, true, `${id} failed: ${result.errors?.join(', ')}`);
+      }
+    });
+
+    it('retrieves individual creature card by id', () => {
+      const card = getCharacterCard('kamedor', 'creature');
+      assert.ok(card);
+      assert.strictEqual(card.id, 'kamedor');
+      assert.strictEqual(card.element, 'water');
+      assert.strictEqual(card.archetype, 'Tank/Healer');
+    });
+
+    it('returns null for unknown creature id', () => {
+      assert.strictEqual(getCharacterCard('nonexistent', 'creature'), null);
+    });
+  });
 });
