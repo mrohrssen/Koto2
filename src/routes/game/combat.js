@@ -25,8 +25,6 @@ function triggerDialogueRegen(userId, targetEnemy, userKeys, getUserVocabularyFn
 }
 
 export default function createCombatRoutes({
-  generateGameNarration,
-  enrichRewardDrops,
   updateGameStatsWithEvent,
   saveGameStats,
   getGameStats,
@@ -67,26 +65,17 @@ export default function createCombatRoutes({
       const allies = gameManager.combat?.allies || [];
 
       if (victory) {
-        const rewards = { xp: expGained, credits: creditsGained, drops: loot };
-        const enrichedRewards = enrichRewardDrops(rewards);
         updateGameStatsWithEvent(gameStats, 'combat', {
           victory: true,
           enemyName: enemy?.name
         });
         saveGameStats(gameStats);
 
-        narration = await generateGameNarration('victory', {
-          player: gameManager.run?.player,
-          enemy,
-          allies,
-          rewards: enrichedRewards
-        }, req.userKeys);
+        narration = isBoss
+          ? 'ボスが倒れる。「お前は...強かった...」長い戦いが終わった。よくやった！'
+          : '敵が倒れる。「まさか...」最後の言葉が消える。勝利だ。';
       } else {
-        narration = await generateGameNarration('defeat', {
-          player: gameManager.run?.player,
-          enemy,
-          allies
-        }, req.userKeys);
+        narration = '力が抜ける。「弱かったな...」敵の声が遠くなる。目の前が暗くなる...';
       }
 
       res.json({ narration, state: req.getEnrichedGameState() });
