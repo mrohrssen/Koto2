@@ -207,6 +207,12 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function getHpColor(pct) {
+  if (pct > 60) return 'var(--hp-green)';
+  if (pct > 30) return 'var(--hp-yellow)';
+  return 'var(--hp-red)';
+}
+
 // ============ UI UPDATES ============
 function updateUI() {
   // Clear any persistent narration on phase transitions
@@ -859,7 +865,7 @@ async function openRobotEquipView() {
             <div class="robot-equip-name">${ELEMENT_ICONS[robot.element] || ''} ${robot.nameEn} ${rarityStars(robot.rarity)} <span style="opacity:0.6">Lv${robot.level}</span></div>
             <div class="robot-equip-stats">HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}</div>
             <div class="robot-hp-bar" style="width:100%;height:4px;margin-top:2px">
-              <div class="robot-hp-fill" style="width:${hpPct}%;background-color:${hpPct > 60 ? 'var(--hp-green)' : hpPct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)'}"></div>
+              <div class="robot-hp-fill" style="width:${hpPct}%;background-color:${getHpColor(hpPct)}"></div>
             </div>
           </div>
         </div>
@@ -877,7 +883,7 @@ async function openRobotEquipView() {
             <div class="robot-equip-name">${ELEMENT_ICONS[robot.element] || ''} ${robot.nameEn} ${rarityStars(robot.rarity)} <span style="opacity:0.6">Lv${robot.level}</span></div>
             <div class="robot-equip-stats">HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}</div>
             <div class="robot-hp-bar" style="width:100%;height:4px;margin-top:2px">
-              <div class="robot-hp-fill" style="width:${hpPct}%;background-color:${hpPct > 60 ? 'var(--hp-green)' : hpPct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)'}"></div>
+              <div class="robot-hp-fill" style="width:${hpPct}%;background-color:${getHpColor(hpPct)}"></div>
             </div>
           </div>
         </div>
