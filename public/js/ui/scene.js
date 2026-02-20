@@ -175,23 +175,6 @@ export function updateEnemyHPAtIndex(index, current, max) {
   }
 }
 
-/** Mark a specific enemy slot as befriended (disappears with upward animation) */
-export function markEnemyBefriended(enemyId) {
-  // Try by enemy ID first, then fall back to first non-defeated slot
-  let slot = dom.enemySpriteContainer.querySelector(`.enemy-robot-slot[data-enemy-id="${enemyId}"]`);
-  if (!slot) {
-    slot = dom.enemySpriteContainer.querySelector('.enemy-robot-slot:not(.defeated):not(.befriended)');
-  }
-  if (slot) {
-    slot.classList.add('befriended');
-  }
-}
-
-/** Get the DOM element for a specific enemy slot by index */
-export function getEnemySlotElement(index) {
-  return dom.enemySpriteContainer.querySelector(`.enemy-robot-slot[data-enemy-index="${index}"]`);
-}
-
 /** Hide all enemies (single and multi) */
 export function hideEnemies() {
   hideEnemy();

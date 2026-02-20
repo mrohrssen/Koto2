@@ -10,7 +10,6 @@
  * - init(callbacks): Setup with game state, UI, and API callbacks
  * - startCombatLoop(): Begin combat, fetch chips, show first flash card
  * - executePlayerAttack(): Process player attack
- * - executeEnemyAttack(): Process enemy attack and update HP
  * - executeEnemyAttackThenPause(): Enemy attacks then pauses for vocab
  * - resumeCombatAfterVocab(): Continue combat after word review
  * - stopCombatLoop(result): End combat, show narration and victory/defeat
@@ -167,14 +166,6 @@ export function isCombatActive() {
  */
 export function isCombatPausedForVocab() {
   return combatPausedForVocab;
-}
-
-/**
- * Set combat active state (for external sync)
- * @param {boolean} active
- */
-export function setCombatActive(active) {
-  combatActive = active;
 }
 
 /**
@@ -1038,92 +1029,6 @@ async function executeRobotDefendThenPause() {
 }
 
 /**
- * Execute a single enemy attack and schedule the next one
- */
-export async function executeEnemyAttack() {
-  if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
-
-  enemyAttackPending = true;
-
-  return withAnimationActive(async () => {
-    try {
-      const apiKeys = settings.getApiKeys();
-      const response = await fetch(`${API_BASE}/api/game/combat-cycle`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ attackerType: 'enemy', ...apiKeys })
-      });
-      const result = await response.json();
-      console.log('[Combat] Enemy attack:', result.enemyAttack?.damage);
-
-      if (result.error) {
-        // "No active combat" means server state is out of sync - don't trigger false game over
-        if (result.error === 'No active combat') {
-          logger.warn('[CombatLoop] Stale attack detected');
-          combatActive = false; // Sync client state
-          return;
-        }
-        console.error('Enemy attack error:', result.error);
-        // Only trigger defeat for real errors, not sync issues
-        if (combatActive) {
-          stopCombatLoop({ combatEnded: true, victory: false, error: true });
-        }
-        return;
-      }
-
-      // If dialogue appeared during fetch, don't process results
-      if (getEnemyDialogueActive()) {
-        enemyAttackPending = false;
-        return;
-      }
-
-
-      // Show enemy's attack result
-      if (result.enemyAttack) {
-        const ea = result.enemyAttack;
-        if (ea.perfectDodge) {
-          showDamageNumber(0, true, false, false, false, 'perfect');
-        } else if (ea.dodged) {
-          showDamageNumber(0, true, false, false, false, 'dodge');
-        } else if (ea.miss) {
-          showDamageNumber(0, true, false, false, false, 'miss');
-        } else {
-          showDamageNumber(ea.damage, true, ea.critical);
-          animatePlayerHurt();
-          playSFX('player-hit');
-        }
-      }
-
-      // Update HP bars
-      characterUI.updateEnemyHPBar(result.enemyHp);
-      characterUI.updatePlayerHPBar(result.playerHp);
-
-
-      // Check if combat ended
-      if (result.combatEnded) {
-        stopCombatLoop(result);
-        return;
-      }
-
-      // Don't reschedule - the vocab pause flow handles attack cycling
-      enemyAttackPending = false;
-
-    } catch (error) {
-      console.error('Enemy attack error:', error);
-      // Don't trigger defeat for errors - recover by showing next flashcard
-      enemyAttackPending = false;
-
-      // Recovery: pause for vocab and show dual cards so player can continue
-      if (combatActive) {
-        combatPausedForVocab = true;
-        showNextDualCardsFromQueue();
-        logger.warn('[CombatLoop] Recovered from enemy attack error, showing dual cards');
-      }
-    }
-  });
-}
-
-/**
  * Execute enemy attack and then pause combat for vocab review
  */
 export async function executeEnemyAttackThenPause() {
@@ -1857,14 +1762,6 @@ export async function stopCombatLoop(result) {
 export async function showNpcGreeting(npcData) {
   if (!npcData?.greeting) return;
   await narration.showNarration(npcData.greeting, { speaker: npcData.name || npcData.nameEn });
-}
-
-/**
- * Show NPC defeat line when player loses
- */
-export async function showNpcDefeatLine(npcData) {
-  if (!npcData?.defeatLine) return;
-  await narration.showNarration(npcData.defeatLine, { speaker: npcData.name || npcData.nameEn });
 }
 
 /**

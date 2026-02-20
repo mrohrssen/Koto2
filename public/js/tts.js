@@ -118,10 +118,6 @@ export function setMuted(val) {
   muted = val;
 }
 
-export function getLastSpokenNarration() {
-  return lastSpokenNarration;
-}
-
 export function isWordAudioEnabled() {
   return wordAudioEnabled;
 }
@@ -412,9 +408,3 @@ export function initSettings(settings) {
   ttsVolume = settings.gameTtsVolume || 1.0;
 }
 
-/**
- * Get speaker ID for a personality type
- */
-export function getSpeakerForPersonality(personality) {
-  return PERSONALITY_SPEAKERS[personality] ?? PERSONALITY_SPEAKERS.default;
-}

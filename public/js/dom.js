@@ -101,7 +101,3 @@ export const dom = {
   },
 };
 
-/** Clear cache (for testing or hot reload) */
-export function clearDomCache() {
-  Object.keys(cache).forEach(k => delete cache[k]);
-}

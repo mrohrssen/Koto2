@@ -89,13 +89,6 @@ export function setReviewType(type) {
 }
 
 /**
- * Get the review type
- */
-export function getReviewType() {
-  return reviewType;
-}
-
-/**
  * Fetch due words from JPDB API
  */
 export async function fetchJpdbDueWords() {
@@ -323,71 +316,6 @@ export function prefetchCombatWordAudio() {
 
   for (let i = 0; i < 3 && i < availableWords.length; i++) {
     tts.prefetchWord(availableWords[i].word);
-  }
-}
-
-/**
- * Keyboard handler for word practice
- */
-export function handleWordPracticeKeydown(e) {
-  if (!isCombatActive || !isCombatActive()) return;
-  if (isEnemyDialogueActive && isEnemyDialogueActive()) return;
-
-  const typingModal = document.getElementById('word-input-modal');
-  const selfGradeModal = document.getElementById('self-grade-modal');
-  const typingOpen = typingModal && !typingModal.classList.contains('hidden');
-  const selfGradeOpen = selfGradeModal && !selfGradeModal.classList.contains('hidden');
-
-  if (selfGradeOpen) {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      closeSelfGradeModal();
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      selfGradeSelectedIndex = Math.max(0, selfGradeSelectedIndex - 1);
-      updateSelfGradeSelection();
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      selfGradeSelectedIndex = Math.min(4, selfGradeSelectedIndex + 1);
-      updateSelfGradeSelection();
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      submitSelfGradeReview(selfGradeSelectedIndex + 1);
-    } else {
-      const gradeKey = parseInt(e.key);
-      if (gradeKey >= 1 && gradeKey <= 5) {
-        e.preventDefault();
-        submitSelfGradeReview(gradeKey);
-      }
-    }
-  } else if (typingOpen) {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      closeWordInputModal();
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      checkWordAnswer();
-    }
-  } else {
-    if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      selectedWordIndex = Math.max(0, selectedWordIndex - 1);
-      renderWordCards();
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      selectedWordIndex = Math.min(combatWords.length - 1, selectedWordIndex + 1);
-      renderWordCards();
-    } else if (e.key === 'Enter' && combatWords.length > 0) {
-      e.preventDefault();
-      openWordInputModal();
-    } else if (e.key === 'r' || e.key === 'R') {
-      e.preventDefault();
-      refreshWordCards();
-      damagePlayerForRefresh(2);
-    } else if (e.key === 'f' || e.key === 'F') {
-      e.preventDefault();
-      quickFailWord();
-    }
   }
 }
 
@@ -813,31 +741,6 @@ export function showDefinitionsReveal(word, meanings, reading = null) {
 }
 
 /**
- * Heal player from correct word answer
- */
-export function healPlayerFromWord(amount) {
-  const gameState = getGameState ? getGameState() : {};
-  if (!gameState.player && !gameState.run?.player) return;
-
-  const player = gameState.run?.player || gameState.player;
-  const maxHp = player.maxHp || 100;
-  const currentHp = player.hp || 0;
-  const newHp = Math.min(currentHp + amount, maxHp);
-
-  player.hp = newHp;
-  if (gameState.player) gameState.player.hp = newHp;
-
-  if (updatePlayerHPBar) updatePlayerHPBar({ current: newHp, max: maxHp });
-  if (showDamageNumber) showDamageNumber(amount, true, false, true);
-
-  fetch(`${apiBase}/api/game/heal`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ amount })
-  }).catch(err => console.warn('Heal sync failed:', err));
-}
-
-/**
  * Damage player for refreshing word cards
  */
 export function damagePlayerForRefresh(amount) {
@@ -860,20 +763,6 @@ export function damagePlayerForRefresh(amount) {
     headers: getAuthHeaders(),
     body: JSON.stringify({ amount })
   }).catch(err => console.warn('Damage sync failed:', err));
-}
-
-/**
- * Get combat words count
- */
-export function getCombatWordsCount() {
-  return combatWords.length;
-}
-
-/**
- * Get selected word index
- */
-export function getSelectedWordIndex() {
-  return selectedWordIndex;
 }
 
 /**

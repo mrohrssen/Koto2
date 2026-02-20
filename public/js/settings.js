@@ -109,18 +109,6 @@ export function getBunproToken() {
 }
 
 /**
- * Set Bunpro API token
- * @param {string} token - Bunpro token
- */
-export function setBunproToken(token) {
-  if (token) {
-    localStorage.setItem(STORAGE_KEYS.bunproToken, token);
-  } else {
-    localStorage.removeItem(STORAGE_KEYS.bunproToken);
-  }
-}
-
-/**
  * Check if Bunpro token is configured
  * @returns {boolean} True if Bunpro token is set
  */
@@ -263,57 +251,12 @@ export function setJapanifyUIEnabled(enabled) {
 // ============ AUDIO SETTINGS ============
 
 /**
- * Get BGM volume (0-1)
- * @returns {number}
- */
-export function getBgmVolume() {
-  const val = localStorage.getItem('jrpg_bgmVolume');
-  return val !== null ? parseFloat(val) : 0.7;
-}
-
-/**
- * Set BGM volume
- * @param {number} vol - 0 to 1
- */
-export function setBgmVolume(vol) {
-  localStorage.setItem('jrpg_bgmVolume', String(Math.max(0, Math.min(1, vol))));
-}
-
-/**
  * Get SFX volume (0-1)
  * @returns {number}
  */
 export function getSfxVolume() {
   const val = localStorage.getItem('jrpg_sfxVolume');
   return val !== null ? parseFloat(val) : 0.8;
-}
-
-/**
- * Set SFX volume
- * @param {number} vol - 0 to 1
- */
-export function setSfxVolume(vol) {
-  localStorage.setItem('jrpg_sfxVolume', String(Math.max(0, Math.min(1, vol))));
-}
-
-/**
- * Check if audio is muted
- * @returns {boolean}
- */
-export function isAudioMuted() {
-  return localStorage.getItem('jrpg_audioMuted') === 'true';
-}
-
-/**
- * Set audio mute state
- * @param {boolean} muted
- */
-export function setAudioMuted(muted) {
-  if (muted) {
-    localStorage.setItem('jrpg_audioMuted', 'true');
-  } else {
-    localStorage.removeItem('jrpg_audioMuted');
-  }
 }
 
 // ============ SERVER-SIDE API KEY MANAGEMENT ============

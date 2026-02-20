@@ -66,14 +66,6 @@ export function getDamageTier(damage, enemyMaxHp) {
 }
 
 /**
- * Check if damage qualifies as "big hit" (tier 3+)
- * @param {number} damage - Damage dealt
- * @param {number} enemyMaxHp - Enemy's maximum HP
- * @returns {boolean}
- */
-export const isBigDamage = (damage, enemyMaxHp) => getDamageTier(damage, enemyMaxHp) >= 3;
-
-/**
  * Get tier name for CSS class
  * @param {number} tier - Tier 0-4
  * @returns {string} CSS class suffix

@@ -17,11 +17,6 @@ export function robotSpritePath(id) {
   return `${BASE}/${id}-idle.webp?v=${SPRITE_VERSION}`;
 }
 
-/** Always-static path. */
-export function robotSpritePathStatic(id) {
-  return `${BASE}/${id}.webp?v=${SPRITE_VERSION}`;
-}
-
 /**
  * Configure an <img> with idle-first loading.
  * src → idle.webp → onerror → static.webp → onerror → finalFallback()
