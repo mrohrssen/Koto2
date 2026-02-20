@@ -2462,7 +2462,7 @@ html, body {
 .robot-icon {
   width: 110px;
   height: 110px;
-  border-radius: 50%;
+  border-radius: 0;
   border: none;
   display: flex;
   align-items: center;
@@ -2540,7 +2540,7 @@ html, body {
   width: 110px;
   height: 110px;
   object-fit: contain;
-  border-radius: 50%;
+  border-radius: 0;
 }
 
 .robot-element-icon {

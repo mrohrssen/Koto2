@@ -308,7 +308,7 @@ export function recoil(targets, distance = 5, direction = 'right') {
  * @param {string|Element} targets
  * @param {number} scale - Max scale
  */
-export function pop(targets, scale = 1.3) {
+export function pop(targets, scale = 1.15) {
   anime(targets, {
     scale: [1, scale, 1],
   }, {
@@ -431,7 +431,7 @@ export async function fireRobotAttackEffect(robotSlotEl, enemyEl, element, damag
 
   // 1. Robot icon pops
   const icon = robotSlotEl.querySelector('.robot-icon');
-  if (icon) pop(icon, 1.4);
+  if (icon) pop(icon, 1.2);
 
   // 2. Fire element-colored orbs from robot to enemy
   spawnSpeedLines(robotSlotEl, enemyEl, 3, color);
