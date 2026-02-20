@@ -537,6 +537,180 @@ export async function executePlayerAttack() {
   });
 }
 
+// ============ SHARED ROBOT COMBAT HELPERS ============
+
+/**
+ * Show poison tick effects from start-of-round effect processing.
+ * Used by both attack and defend paths.
+ * @param {Object} result - Combat cycle result from server
+ */
+async function showEffectEvents(result) {
+  if (!result.effectEvents?.length) return;
+  for (const event of result.effectEvents) {
+    if (event.type === 'poison' && event.damage > 0) {
+      // Find target element — could be ally or enemy
+      let targetEl = findRobotSlotByAttackerId(event.targetId);
+      if (!targetEl) {
+        targetEl = findEnemyTargetElement(event.targetId, result.enemies);
+      }
+      if (targetEl) {
+        await poisonTickEffect(targetEl, event.damage);
+      }
+    }
+  }
+}
+
+/**
+ * Build a map of ally HP before enemy attacks for progressive DOM updates.
+ * Reconstructs pre-enemy-attack HP by adding back damage dealt to each ally.
+ * @param {Object} result - Combat cycle result from server
+ * @returns {Object} Map of robotId -> { hp, maxHp }
+ */
+function buildAllyHpMap(result) {
+  const allyHpMap = {};
+  if (result.allies) {
+    for (const ally of result.allies) {
+      const dmgToThisAlly = (result.enemyAttacks || [])
+        .filter(a => a.targetId === ally.id)
+        .reduce((sum, a) => sum + a.damage, 0);
+      allyHpMap[ally.id] = { hp: ally.hp + dmgToThisAlly, maxHp: ally.maxHp };
+    }
+  }
+  return allyHpMap;
+}
+
+/**
+ * Animate enemy attacks against player robots with real-time HP bar updates.
+ * @param {Object} result - Combat cycle result from server
+ * @param {Object} allyHpMap - Running ally HP map (mutated in place)
+ * @param {boolean} halved - If true, show "halved" damage text (defend mode)
+ */
+async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
+  if (!result.enemyAttacks?.length) return;
+  for (const atk of result.enemyAttacks) {
+    // Pick i18n key: halved for defend, element-based for attack
+    const effectKey = halved ? 'dealsHalved' :
+      atk.elementMultiplier > 1 ? 'dealsStrong' :
+      atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
+    const actionArea = document.getElementById('action-area');
+    if (actionArea) {
+      actionArea.innerHTML = `<div class="combat-robot-attack enemy">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
+    }
+    showDamageNumber(atk.damage, true, false);
+    playSFX('player-hit');
+
+    // Fire element-colored orb from specific attacking enemy to targeted robot
+    const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies);
+    const targetSlotEl = findRobotSlotByAttackerId(atk.targetId);
+    if (enemyEl && targetSlotEl && atk.attackerElement) {
+      playAttackSound(atk.attackerElement);
+      await enemyRobotAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
+    } else {
+      animatePlayerHurt();
+    }
+
+    // Update targeted ally's running HP in the DOM directly (avoid full updateUI)
+    if (allyHpMap[atk.targetId]) {
+      allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
+    }
+    updateRobotHpBars(result.robotParty?.active, allyHpMap);
+    await delay(400);
+  }
+}
+
+/**
+ * Show KO swap messages with death/swap-in animations (Bug F).
+ * @param {Object} result - Combat cycle result from server
+ */
+async function showKoSwapAnimations(result) {
+  if (!result.koSwaps?.length) return;
+  for (const swap of result.koSwaps) {
+    // Animate the KO'd robot dying
+    const koIndex = swap.slot ?? -1;
+    if (koIndex >= 0) {
+      const slots = document.querySelectorAll('#chip-row .robot-slot');
+      const dyingSlot = slots[koIndex];
+      if (dyingSlot) {
+        dyingSlot.classList.add('robot-dying');
+        await delay(600);
+      }
+    }
+
+    const actionArea = document.getElementById('action-area');
+    if (actionArea) {
+      actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${t('swapsIn', swap.replacement)}</div>`;
+    }
+
+    // Update sprite and HP for the new robot with swap-in animation
+    if (result.robotParty?.active && koIndex >= 0) {
+      const slots = document.querySelectorAll('#chip-row .robot-slot');
+      const swapSlot = slots[koIndex];
+      if (swapSlot) {
+        swapSlot.classList.remove('robot-dying');
+        swapSlot.classList.add('robot-swapping-in');
+        const newRobot = result.robotParty.active[koIndex];
+        if (newRobot) {
+          const icon = swapSlot.querySelector('.robot-sprite-icon');
+          if (icon) configureRobotImg(icon, newRobot.id, el => {
+            el.style.display = 'none';
+            const fallback = el.nextElementSibling;
+            if (fallback) fallback.style.display = '';
+          });
+          const hpFill = swapSlot.querySelector('.robot-hp-fill');
+          if (hpFill) {
+            const pct = Math.max(0, (newRobot.hp / newRobot.maxHp) * 100);
+            hpFill.style.width = `${pct}%`;
+            hpFill.style.backgroundColor = pct > 60 ? 'var(--hp-green)' : pct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+          }
+          const koIcon = swapSlot.querySelector('.robot-icon');
+          if (koIcon) koIcon.classList.remove('ko');
+        }
+        setTimeout(() => swapSlot.classList.remove('robot-swapping-in'), 500);
+      }
+    }
+    await delay(800);
+  }
+}
+
+/**
+ * Sync final combat state with server-authoritative values.
+ * Updates game state, robot row popup data, enemy HP bars, and ally HP bars.
+ * Avoids full updateUI to prevent DOM rebuild flicker.
+ * @param {Object} result - Combat cycle result from server
+ */
+function syncFinalState(result) {
+  if (!result.robotParty && !result.enemies) return;
+
+  const gs = getGameState();
+  const updates = { ...gs };
+  if (result.robotParty) {
+    updates.run = { ...gs.run, robotParty: result.robotParty };
+  }
+  if (result.enemies && gs.combat) {
+    updates.combat = {
+      ...gs.combat,
+      enemies: result.enemies,
+      allies: result.allies || gs.combat.allies,
+      turnCount: result.turnCount ?? gs.combat.turnCount
+    };
+  }
+  updateGameState(updates);
+
+  // Keep robot-row popup data in sync with latest charges/HP
+  if (result.robotParty?.active && updateRobotRowData) {
+    updateRobotRowData(result.robotParty.active);
+  }
+  // Set final HP bars without full DOM rebuild
+  if (result.enemies?.length > 1) {
+    result.enemies.forEach((e, i) => characterUI.updateEnemyHPAtIndex(i, e.hp, e.maxHp));
+  } else if (result.enemies?.[0]) {
+    characterUI.updateEnemyHPBar({ current: result.enemies[0].hp, max: result.enemies[0].maxHp });
+  }
+  updateRobotHpBars(result.robotParty?.active, null);
+}
+
+// ============ ROBOT COMBAT ORCHESTRATORS ============
+
 /**
  * Execute robot player attack — calls /robot-combat-cycle with 'attack'
  * The backend processes both player and enemy phases in one call.
@@ -566,24 +740,10 @@ async function executeRobotPlayerAttack() {
         return;
       }
 
-      // Show poison tick effects from start-of-round effect processing
-      if (result.effectEvents?.length > 0) {
-        for (const event of result.effectEvents) {
-          if (event.type === 'poison' && event.damage > 0) {
-            // Find target element — could be ally or enemy
-            let targetEl = findRobotSlotByAttackerId(event.targetId);
-            if (!targetEl) {
-              targetEl = findEnemyTargetElement(event.targetId, result.enemies);
-            }
-            if (targetEl) {
-              await poisonTickEffect(targetEl, event.damage);
-            }
-          }
-        }
-      }
+      // Show poison/effect ticks
+      await showEffectEvents(result);
 
-      // Track each enemy's HP for progressive updates
-      const gs = getGameState();
+      // Track each enemy's HP for progressive updates during player attacks
       const enemyHpMap = {};
       if (result.enemies) {
         for (const enemy of result.enemies) {
@@ -596,7 +756,6 @@ async function executeRobotPlayerAttack() {
 
       // Show each allied robot's attack result sequentially with real-time HP
       if (result.playerAttacks?.length > 0) {
-        // Track which enemies have been defeated for XP popups
         const killedEnemies = new Set();
 
         for (let atkIdx = 0; atkIdx < result.playerAttacks.length; atkIdx++) {
@@ -609,12 +768,10 @@ async function executeRobotPlayerAttack() {
           }
           playSFX('attack');
 
-          // Find the robot slot element for this attacker and specific enemy target
           const robotSlotEl = findRobotSlotByAttackerId(atk.attackerId);
           const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies);
 
           // Update charge bar for this attacker immediately after its attack
-          // Find slot by matching attackerId against result.robotParty (not stale gameState)
           const attackerSlotIdx = (result.robotParty?.active || []).findIndex(r => r && r.id === atk.attackerId);
           const attackerSlot = attackerSlotIdx >= 0 ? document.querySelectorAll('#chip-row .robot-slot')[attackerSlotIdx] : null;
           if (attackerSlot && atk.attackerCharges != null) {
@@ -673,140 +830,22 @@ async function executeRobotPlayerAttack() {
         }
       }
 
-      // Build a map of ally HP before enemy attacks for progressive updates
-      const allyHpMap = {};
-      if (result.allies) {
-        for (const ally of result.allies) {
-          // Reconstruct pre-enemy-attack HP by adding back enemy damage dealt to this ally
-          const dmgToThisAlly = (result.enemyAttacks || [])
-            .filter(a => a.targetId === ally.id)
-            .reduce((sum, a) => sum + a.damage, 0);
-          allyHpMap[ally.id] = { hp: ally.hp + dmgToThisAlly, maxHp: ally.maxHp };
-        }
-      }
-
-      // Show enemy robot attacks with real-time ally HP updates
+      // Enemy attacks phase
+      const allyHpMap = buildAllyHpMap(result);
       if (result.enemyAttacks?.length > 0) {
-        await delay(400);
-        for (const atk of result.enemyAttacks) {
-          const effectKey2 = atk.elementMultiplier > 1 ? 'dealsStrong' :
-                             atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
-          const actionArea = document.getElementById('action-area');
-          if (actionArea) {
-            actionArea.innerHTML = `<div class="combat-robot-attack enemy">${t(effectKey2, atk.attackerName, atk.damage)}</div>`;
-          }
-          showDamageNumber(atk.damage, true, false);
-          playSFX('player-hit');
-
-          // Fire element-colored orb from specific attacking enemy to targeted robot
-          const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies);
-          const targetSlotEl = findRobotSlotByAttackerId(atk.targetId);
-          if (enemyEl && targetSlotEl && atk.attackerElement) {
-            playAttackSound(atk.attackerElement);
-            await enemyRobotAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
-          } else {
-            animatePlayerHurt();
-          }
-
-          // Update targeted ally's running HP in the DOM directly (avoid full updateUI)
-          if (allyHpMap[atk.targetId]) {
-            allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
-          }
-          updateRobotHpBars(result.robotParty?.active, allyHpMap);
-          await delay(400);
-        }
+        await delay(400); // Brief pause between player and enemy attack phases
       }
+      await showEnemyAttacksAnimated(result, allyHpMap, false);
 
-      // Show KO swap messages with death/swap-in animations (Bug F)
-      if (result.koSwaps?.length > 0) {
-        for (const swap of result.koSwaps) {
-          // Animate the KO'd robot dying
-          const koIndex = swap.slot ?? -1;
-          if (koIndex >= 0) {
-            const slots = document.querySelectorAll('#chip-row .robot-slot');
-            const dyingSlot = slots[koIndex];
-            if (dyingSlot) {
-              dyingSlot.classList.add('robot-dying');
-              await delay(600);
-            }
-          }
+      // KO swap animations
+      await showKoSwapAnimations(result);
 
-          const actionArea = document.getElementById('action-area');
-          if (actionArea) {
-            actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${t('swapsIn', swap.replacement)}</div>`;
-          }
-
-          // Re-render the robot row with updated party, then animate new robot in
-          if (result.robotParty?.active) {
-            const robotRow = document.getElementById('chip-row');
-            if (robotRow) {
-              // Temporarily update the display inline
-              const slots = robotRow.querySelectorAll('.robot-slot');
-              const swapSlot = slots[koIndex];
-              if (swapSlot) {
-                swapSlot.classList.remove('robot-dying');
-                swapSlot.classList.add('robot-swapping-in');
-                // Update sprite and HP for the new robot
-                const newRobot = result.robotParty.active[koIndex];
-                if (newRobot) {
-                  const icon = swapSlot.querySelector('.robot-sprite-icon');
-                  if (icon) configureRobotImg(icon, newRobot.id, el => {
-                    el.style.display = 'none';
-                    const fallback = el.nextElementSibling;
-                    if (fallback) fallback.style.display = '';
-                  });
-                  const hpFill = swapSlot.querySelector('.robot-hp-fill');
-                  if (hpFill) {
-                    const pct = Math.max(0, (newRobot.hp / newRobot.maxHp) * 100);
-                    hpFill.style.width = `${pct}%`;
-                    hpFill.style.backgroundColor = pct > 60 ? 'var(--hp-green)' : pct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
-                  }
-                  const koIcon = swapSlot.querySelector('.robot-icon');
-                  if (koIcon) koIcon.classList.remove('ko');
-                }
-                setTimeout(() => swapSlot.classList.remove('robot-swapping-in'), 500);
-              }
-            }
-          }
-          await delay(800);
-        }
-      }
-
-      // Final state update with server-authoritative values (no updateUI to avoid DOM rebuild flicker)
-      if (result.robotParty || result.enemies) {
-        const updates = { ...gs };
-        if (result.robotParty) {
-          updates.run = { ...gs.run, robotParty: result.robotParty };
-        }
-        if (result.enemies && gs.combat) {
-          updates.combat = {
-            ...gs.combat,
-            enemies: result.enemies,
-            allies: result.allies || gs.combat.allies,
-            turnCount: result.turnCount ?? gs.combat.turnCount
-          };
-        }
-        updateGameState(updates);
-        // Keep robot-row popup data in sync with latest charges/HP
-        if (result.robotParty?.active && updateRobotRowData) {
-          updateRobotRowData(result.robotParty.active);
-        }
-        // Set final HP bars without full DOM rebuild
-        if (result.enemies?.length > 1) {
-          result.enemies.forEach((e, i) => characterUI.updateEnemyHPAtIndex(i, e.hp, e.maxHp));
-        } else if (result.enemies?.[0]) {
-          characterUI.updateEnemyHPBar({ current: result.enemies[0].hp, max: result.enemies[0].maxHp });
-        }
-        updateRobotHpBars(result.robotParty?.active, null);
-      }
-
+      // Sync authoritative state from server
+      syncFinalState(result);
 
       // Check combat end
       if (result.combatEnded) {
-        // Let HP bar drain animation (300ms CSS transition) be visible before stopping
-        if (result.victory) {
-          await delay(500);
-        }
+        if (result.victory) await delay(500); // Let HP bar drain animation be visible
         stopCombatLoop(result);
         return;
       }
@@ -860,20 +899,8 @@ async function executeRobotDefendThenPause() {
         return;
       }
 
-      // Show poison tick effects from start-of-round effect processing
-      if (result.effectEvents?.length > 0) {
-        for (const event of result.effectEvents) {
-          if (event.type === 'poison' && event.damage > 0) {
-            let targetEl = findRobotSlotByAttackerId(event.targetId);
-            if (!targetEl) {
-              targetEl = findEnemyTargetElement(event.targetId, result.enemies);
-            }
-            if (targetEl) {
-              await poisonTickEffect(targetEl, event.damage);
-            }
-          }
-        }
-      }
+      // Show poison/effect ticks
+      await showEffectEvents(result);
 
       // Show defend indicator
       const actionArea = document.getElementById('action-area');
@@ -887,124 +914,15 @@ async function executeRobotDefendThenPause() {
       }
       await delay(600);
 
-      // Build ally HP map for progressive updates during enemy attacks
-      const gs = getGameState();
-      const allyHpMap = {};
-      if (result.allies) {
-        for (const ally of result.allies) {
-          const dmgToThisAlly = (result.enemyAttacks || [])
-            .filter(a => a.targetId === ally.id)
-            .reduce((sum, a) => sum + a.damage, 0);
-          allyHpMap[ally.id] = { hp: ally.hp + dmgToThisAlly, maxHp: ally.maxHp };
-        }
-      }
+      // Enemy attacks phase (50% damage already applied server-side)
+      const allyHpMap = buildAllyHpMap(result);
+      await showEnemyAttacksAnimated(result, allyHpMap, true);
 
-      // Show enemy attacks (50% damage already applied server-side) with real-time HP
-      if (result.enemyAttacks?.length > 0) {
-        for (const atk of result.enemyAttacks) {
-          const actionArea2 = document.getElementById('action-area');
-          if (actionArea2) {
-            actionArea2.innerHTML = `<div class="combat-robot-attack enemy">${t('dealsHalved', atk.attackerName, atk.damage)}</div>`;
-          }
-          showDamageNumber(atk.damage, true, false);
-          playSFX('player-hit');
+      // KO swap animations
+      await showKoSwapAnimations(result);
 
-          // Fire element-colored orb from specific attacking enemy to targeted robot
-          const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies);
-          const targetSlotEl = findRobotSlotByAttackerId(atk.targetId);
-          if (enemyEl && targetSlotEl && atk.attackerElement) {
-            playAttackSound(atk.attackerElement);
-            await enemyRobotAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
-          } else {
-            animatePlayerHurt();
-          }
-
-          // Update targeted ally's running HP in the DOM directly (avoid full updateUI)
-          if (allyHpMap[atk.targetId]) {
-            allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
-          }
-          updateRobotHpBars(result.robotParty?.active, allyHpMap);
-          await delay(400);
-        }
-      }
-
-      // Update enemy HP (all enemies in multi-enemy combat)
-      if (result.enemies?.length > 1) {
-        result.enemies.forEach((e, i) => characterUI.updateEnemyHPAtIndex(i, e.hp, e.maxHp));
-      } else if (result.enemies?.[0]) {
-        const enemy = result.enemies[0];
-        characterUI.updateEnemyHPBar({ current: enemy.hp, max: enemy.maxHp });
-      }
-
-      // Show KO swap messages with death/swap-in animations (Bug F)
-      if (result.koSwaps?.length > 0) {
-        for (const swap of result.koSwaps) {
-          // Animate the KO'd robot dying
-          const koIndex = swap.slot ?? -1;
-          if (koIndex >= 0) {
-            const slots = document.querySelectorAll('#chip-row .robot-slot');
-            const dyingSlot = slots[koIndex];
-            if (dyingSlot) {
-              dyingSlot.classList.add('robot-dying');
-              await delay(600);
-            }
-          }
-
-          const actionArea2 = document.getElementById('action-area');
-          if (actionArea2) {
-            actionArea2.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${t('swapsIn', swap.replacement)}</div>`;
-          }
-
-          // Update sprite and HP for the new robot with swap-in animation
-          if (result.robotParty?.active && koIndex >= 0) {
-            const slots = document.querySelectorAll('#chip-row .robot-slot');
-            const swapSlot = slots[koIndex];
-            if (swapSlot) {
-              swapSlot.classList.remove('robot-dying');
-              swapSlot.classList.add('robot-swapping-in');
-              const newRobot = result.robotParty.active[koIndex];
-              if (newRobot) {
-                const icon = swapSlot.querySelector('.robot-sprite-icon');
-                if (icon) configureRobotImg(icon, newRobot.id, el => { el.style.display = 'none'; });
-                const hpFill = swapSlot.querySelector('.robot-hp-fill');
-                if (hpFill) {
-                  const pct = Math.max(0, (newRobot.hp / newRobot.maxHp) * 100);
-                  hpFill.style.width = `${pct}%`;
-                  hpFill.style.backgroundColor = pct > 60 ? 'var(--hp-green)' : pct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
-                }
-                const koIcon = swapSlot.querySelector('.robot-icon');
-                if (koIcon) koIcon.classList.remove('ko');
-              }
-              setTimeout(() => swapSlot.classList.remove('robot-swapping-in'), 500);
-            }
-          }
-          await delay(800);
-        }
-      }
-
-      // Final state update with server-authoritative values (no updateUI to avoid DOM rebuild flicker)
-      if (result.robotParty || result.enemies) {
-        const updates = { ...gs };
-        if (result.robotParty) {
-          updates.run = { ...gs.run, robotParty: result.robotParty };
-        }
-        if (result.enemies && gs.combat) {
-          updates.combat = {
-            ...gs.combat,
-            enemies: result.enemies,
-            allies: result.allies || gs.combat.allies,
-            turnCount: result.turnCount ?? gs.combat.turnCount
-          };
-        }
-        updateGameState(updates);
-        // Keep robot-row popup data in sync with latest charges/HP
-        if (result.robotParty?.active && updateRobotRowData) {
-          updateRobotRowData(result.robotParty.active);
-        }
-        // Set final robot HP bars without full DOM rebuild
-        updateRobotHpBars(result.robotParty?.active, null);
-      }
-
+      // Sync authoritative state from server
+      syncFinalState(result);
 
       // Check combat end
       if (result.combatEnded) {
