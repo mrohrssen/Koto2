@@ -2447,7 +2447,7 @@ html, body {
 
 /* ===== ROBOT SLOTS ===== */
 .chip-row:has(.robot-slot) {
-  gap: 16px;
+  gap: 28px;
   padding: 8px 10px;
 }
 
@@ -2460,8 +2460,8 @@ html, body {
 }
 
 .robot-icon {
-  width: 90px;
-  height: 90px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
   border: none;
   display: flex;
@@ -2527,7 +2527,7 @@ html, body {
   color: #555;
   font-weight: 600;
   text-align: center;
-  max-width: 90px;
+  max-width: 110px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2537,8 +2537,8 @@ html, body {
 }
 
 .robot-sprite-icon {
-  width: 90px;
-  height: 90px;
+  width: 110px;
+  height: 110px;
   object-fit: contain;
   border-radius: 50%;
 }
