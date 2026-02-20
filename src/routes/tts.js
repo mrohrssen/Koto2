@@ -11,8 +11,6 @@ import {
   synthesize,
   getVersion as getVoicevoxVersion
 } from '../voicevox.js';
-import { getCachedAudio } from '../game/prefetch.js';
-
 /**
  * Create TTS router
  * @param {object} deps - Dependencies
@@ -67,17 +65,6 @@ export default function createTTSRoutes({ getSettings }) {
       res.send(Buffer.from(audioBuffer));
     } catch (error) {
       res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Get cached audio
-  router.get('/cached/:key', async (req, res) => {
-    const cached = await getCachedAudio(req.params.key);
-    if (cached) {
-      res.set('Content-Type', 'audio/wav');
-      res.send(Buffer.from(cached));
-    } else {
-      res.status(404).json({ error: 'Not found' });
     }
   });
 

@@ -55,9 +55,7 @@ export default function createGameRoutes(deps) {
   router.use(createGameStateRoutes());
 
   // Mount player routes
-  router.use(createPlayerRoutes({
-    generateGameNarration: deps.generateGameNarration
-  }));
+  router.use(createPlayerRoutes());
 
   // Mount run routes
   router.use(createRunRoutes({
@@ -91,20 +89,12 @@ export default function createGameRoutes(deps) {
   }));
 
   // Mount economy routes
-  router.use(createEconomyRoutes({
-    generateGameNarration: deps.generateGameNarration
-  }));
+  router.use(createEconomyRoutes());
 
   // Mount misc routes
   router.use(createMiscRoutes({
-    generateGameNarration: deps.generateGameNarration,
-    cancelPendingPrefetches: deps.cancelPendingPrefetches,
-    clearPrefetchCache: deps.clearPrefetchCache,
-    getGameStats: deps.getGameStats,
-    setGameStats: deps.setGameStats,
     getDebugMode: deps.getDebugMode,
     setDebugMode: deps.setDebugMode,
-    vocabCacheFile: deps.vocabCacheFile,
     staticWordList: deps.staticWordList,
     getAllNpcDialogueCache: deps.getAllNpcDialogueCache,
     clearNpcDialogueCache: deps.clearNpcDialogueCache

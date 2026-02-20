@@ -6,8 +6,6 @@
 
 import { Router } from 'express';
 import {
-  testConnection,
-  getVocabulary,
   parseText,
   reviewVocabulary,
   invalidateWordStateCache,
@@ -26,27 +24,6 @@ import { incrementDiscoveryCount, getDiscoveryStatus } from '../word-tracking.js
  */
 export default function createVocabRoutes({ getSettings }) {
   const router = Router();
-
-  // Vocab status - test JPDB connection
-  router.post('/vocab/status', async (req, res) => {
-    const { jpdbApiKey } = req.body;
-    if (!jpdbApiKey) {
-      return res.json({ connected: false, error: 'No API key configured' });
-    }
-
-    const result = await testConnection(jpdbApiKey);
-    res.json(result);
-  });
-
-  // Get cached vocabulary words
-  router.get('/vocab/words', async (req, res) => {
-    const vocabResult = getVocabulary();
-    res.json({
-      words: vocabResult.words,
-      count: vocabResult.words.length,
-      source: vocabResult.source
-    });
-  });
 
   /**
    * POST /api/vocab/due-words

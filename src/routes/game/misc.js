@@ -1,81 +1,28 @@
 /**
  * @fileoverview Miscellaneous game routes
  *
- * Handles narrate, reset, debug, heal, stats, vocab-cache, word-states
+ * Handles debug, heal, session-start, post-combat-refresh, due-words, NPC cache
  */
 
 import { Router } from 'express';
-import { existsSync, unlinkSync, readFileSync, writeFileSync } from 'fs';
 import {
-  getVocabulary,
-  lookupWordStates,
   getDueWordsWithMeanings,
   fetchDueWordsDirectly,
-  parseWordBatch,
-  configure as configureJpdb
+  parseWordBatch
 } from '../../jpdb.js';
 import {
-  refreshWordStateCache,
-  invalidateWordStateCache as invalidateVocabManagerCache,
   performFullParse,
   updateWordStates
 } from '../../game/vocab-manager.js';
-import {
-  getGameStatsForPeriod,
-  getGameStatsAvailableDates,
-  resetGameStats
-} from '../../game-stats.js';
-import { getSaveFilePath } from '../../game/manager-registry.js';
 
 export default function createMiscRoutes({
-  generateGameNarration,
-  cancelPendingPrefetches,
-  clearPrefetchCache,
-  getGameStats,
-  setGameStats,
   getDebugMode,
   setDebugMode,
-  vocabCacheFile,
   staticWordList,
   getAllNpcDialogueCache,
   clearNpcDialogueCache
 }) {
   const router = Router();
-
-  // Narrate
-  router.post('/narrate', async (req, res) => {
-    const { event, context } = req.body;
-    try {
-      const narration = await generateGameNarration(event, context, req.userKeys);
-      res.json({ narration });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Reset (full game reset)
-  router.post('/reset', (req, res) => {
-    const gameManager = req.gameManager;
-    gameManager.fullReset();
-    cancelPendingPrefetches();
-    clearPrefetchCache();
-
-    try {
-      const saveFile = getSaveFilePath(req.user.id);
-      if (existsSync(saveFile)) {
-        unlinkSync(saveFile);
-      }
-      // Delete user-specific vocab cache file
-      const userVocabCacheFile = vocabCacheFile.replace(/[^/]+$/, `vocab-cache-${req.user.id}.json`);
-      if (existsSync(userVocabCacheFile)) {
-        unlinkSync(userVocabCacheFile);
-      }
-    } catch (err) {
-      console.error('Error deleting save files:', err);
-    }
-
-    res.json({ state: gameManager.getState(), fullReset: true });
-  });
 
   // Debug mode toggle
   router.post('/debug-mode', (req, res) => {
@@ -322,56 +269,6 @@ export default function createMiscRoutes({
     }
   });
 
-  // Full reset (used by tests)
-  router.post('/full-reset', (req, res) => {
-    const gameManager = req.gameManager;
-    gameManager.player = null;
-    gameManager.run = null;
-    gameManager.combat = null;
-    gameManager.meta = {
-      essence: 0,
-      upgrades: [],
-      achievements: [],
-      achievementProgress: {},
-      lifetimeStats: { runs: 0, deaths: 0, kills: 0, creditsEarned: 0, bossesKilled: 0 },
-      levels: { highestUnlocked: 1, completed: [], current: null }
-    };
-    cancelPendingPrefetches();
-    clearPrefetchCache();
-    req.saveGame();
-    res.json({ success: true, state: gameManager.getState() });
-  });
-
-  // Game stats
-  router.get('/stats', async (req, res) => {
-    const { period, startDate, endDate } = req.query;
-    try {
-      const stats = await getGameStatsForPeriod(period || 'all', startDate, endDate);
-      res.json(stats);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  router.get('/stats/dates', (req, res) => {
-    res.json(getGameStatsAvailableDates());
-  });
-
-  router.post('/stats/reset', (req, res) => {
-    const newStats = resetGameStats();
-    setGameStats(newStats);
-    res.json({ success: true });
-  });
-
-  router.get('/stats/word-states', (req, res) => {
-    const gameStats = getGameStats();
-    if (gameStats.cachedWordStates) {
-      res.json({ ...gameStats.cachedWordStates, cached: true });
-    } else {
-      res.json({ words: [], stateCounts: {}, totalWords: 0, cached: false });
-    }
-  });
-
   // Session start - warm cache with full parse if needed
   router.post('/session-start', async (req, res) => {
     // Use userKeys from middleware (same as /api/jpdb/parse)
@@ -468,74 +365,6 @@ export default function createMiscRoutes({
       res.json({ words: result.words, count: result.words.length, source: result.source });
     } catch (error) {
       console.error('[Due Words] Error:', error.message);
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Refresh word states
-  router.post('/refresh-word-states', async (req, res) => {
-    const jpdbApiKey = req.userKeys?.jpdbApiKey;
-    if (!jpdbApiKey) {
-      return res.status(400).json({ error: 'JPDB API key not configured' });
-    }
-
-    try {
-      const vocabResult = getVocabulary();
-      if (vocabResult.words.length === 0) {
-        return res.json({ refreshed: 0 });
-      }
-
-      const states = await refreshWordStateCache(jpdbApiKey, vocabResult.words, false, req.user.id);
-      invalidateVocabManagerCache(req.user.id);
-
-      res.json({
-        refreshed: Object.keys(states).length,
-        message: 'Word states refreshed'
-      });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Word states lookup
-  router.post('/stats/word-states', async (req, res) => {
-    const jpdbApiKey = req.userKeys?.jpdbApiKey;
-    const gameStats = getGameStats();
-    if (!jpdbApiKey) {
-      return res.status(400).json({ error: 'JPDB API key not configured' });
-    }
-
-    try {
-      const usedWords = Object.keys(gameStats.vocabulary?.uniqueWords || {});
-      if (usedWords.length === 0) {
-        return res.json({ words: [], stateCounts: {}, totalWords: 0 });
-      }
-
-      const states = await lookupWordStates(jpdbApiKey, usedWords);
-
-      const stateCounts = {};
-      const wordsWithStates = usedWords.map(word => {
-        const state = states[word];
-        const stateName = state?.states?.[0] || 'unknown';
-        stateCounts[stateName] = (stateCounts[stateName] || 0) + 1;
-        return {
-          word,
-          count: gameStats.vocabulary.uniqueWords[word],
-          state: stateName,
-          vid: state?.vid,
-          sid: state?.sid
-        };
-      });
-
-      gameStats.cachedWordStates = {
-        words: wordsWithStates,
-        stateCounts,
-        totalWords: usedWords.length,
-        cachedAt: new Date().toISOString()
-      };
-
-      res.json(gameStats.cachedWordStates);
-    } catch (error) {
       res.status(500).json({ error: error.message });
     }
   });

@@ -4,7 +4,7 @@
 
 import { Router } from 'express';
 
-export default function createPlayerRoutes({ generateGameNarration }) {
+export default function createPlayerRoutes() {
   const router = Router();
 
   // Create new player
