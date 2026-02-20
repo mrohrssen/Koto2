@@ -38,7 +38,7 @@ what WAN needs. After WAN generates the animation, local chroma-key removes
 the magenta from both the animation and the static source.
 
 Requirements:
-  - ComfyUI running at COMFYUI_URL (default: http://192.168.1.222:8188)
+  - ComfyUI running at COMFYUI_URL (default: http://10.5.0.2:8188)
   - Wan 2.2 models (high-noise + low-noise 14B Q4)
   - Pillow + numpy: pip install Pillow numpy
 
@@ -211,7 +211,7 @@ def main():
     if not args.dry_run:
         print(f"\n[{timestamp()}] Verifying ComfyUI connection...")
         if not verify_comfyui():
-            print("\nStart ComfyUI first on 192.168.1.222")
+            print("\nStart ComfyUI first on 10.5.0.2")
             sys.exit(1)
         print()
 
@@ -386,7 +386,7 @@ Then create `/Users/michia/.claude/skills/creature-animate/SKILL.md` with this c
 ````markdown
 ---
 name: creature-animate
-description: Animate staging creature images into game-ready idle sprites. Runs WAN 2.2 via ComfyUI on the local PC (192.168.1.222) to generate transparent animated webp + static fallback webp. Triggers on "animate creature", "creature animate", "idle animation", "animate staging".
+description: Animate staging creature images into game-ready idle sprites. Runs WAN 2.2 via ComfyUI on the local PC (10.5.0.2) to generate transparent animated webp + static fallback webp. Triggers on "animate creature", "creature animate", "idle animation", "animate staging".
 ---
 
 # Creature Animate
@@ -400,11 +400,11 @@ Turn staging creature PNGs (from the creature-forge skill) into game-ready anima
 
 1. **Staging images exist** in `data/creature-staging-images/` — created by the creature-forge skill
 2. **Creature metadata** in `data/new-creatures-staging.json` — needed for element-based prompt flavoring
-3. **ComfyUI running** on `192.168.1.222:8188` with WAN 2.2 models loaded
+3. **ComfyUI running** on `10.5.0.2:8188` with WAN 2.2 models loaded
 
 Verify ComfyUI is reachable:
 ```bash
-curl -s http://192.168.1.222:8188/system_stats | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'GPU: {d[\"devices\"][0][\"vram_total\"]/1e9:.0f}GB VRAM')"
+curl -s http://10.5.0.2:8188/system_stats | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'GPU: {d[\"devices\"][0][\"vram_total\"]/1e9:.0f}GB VRAM')"
 ```
 
 ## Run the Animation Pipeline
@@ -470,7 +470,7 @@ python3 scripts/animate_staging_creatures.py --ids kazenoko --seed 42
 
 | Problem | Solution |
 |---------|----------|
-| "Cannot reach ComfyUI" | Start ComfyUI on the Windows PC at 192.168.1.222 |
+| "Cannot reach ComfyUI" | Start ComfyUI on the Windows PC at 10.5.0.2 |
 | VRAM OOM | Close other GPU tasks, restart ComfyUI |
 | Magenta fringe on edges | Adjust chroma key tolerance in `generate_idle_animations.py` `chroma_key_frame()` |
 | Animation too jittery | Lower shift value (currently 4.0) — edit in `generate_idle_animations.py` |

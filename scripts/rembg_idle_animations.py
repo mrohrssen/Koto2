@@ -29,7 +29,7 @@ PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 INPUT_DIR = os.path.join(PROJECT_ROOT, "output", "animated-sprites")
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "public", "assets", "sprites", "robots")
 TMP_DIR = os.path.join(PROJECT_ROOT, "tmp", "rembg-frames")
-COMFYUI_URL = os.environ.get("COMFYUI_URL", "http://192.168.1.222:8188")
+COMFYUI_URL = os.environ.get("COMFYUI_URL", "http://10.5.0.2:8188")
 
 
 def extract_frames(webp_path):

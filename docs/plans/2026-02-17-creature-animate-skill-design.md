@@ -62,7 +62,7 @@ python scripts/animate_staging_creatures.py --seed 42          # custom seed
 
 Minimal runbook. The skill tells the agent:
 
-1. **Verify prerequisites:** ComfyUI running at 192.168.1.222:8188, staging images exist
+1. **Verify prerequisites:** ComfyUI running at 10.5.0.2:8188, staging images exist
 2. **Run the script** with appropriate flags
 3. **Monitor output** — script prints verbose progress
 4. **Preview results** — optionally serve sprites via `python3 -m http.server` and view in browser
@@ -82,7 +82,7 @@ data/new-creatures-staging.json  ────────┤
           (imports from generate_idle_animations.py)
                     │
                     ▼
-          ComfyUI @ 192.168.1.222:8188
+          ComfyUI @ 10.5.0.2:8188
           (WAN 2.2 I2V, two-pass MoE)
                     │
                     ▼
@@ -119,4 +119,4 @@ data/new-creatures-staging.json  ────────┤
 
 **Python:** Pillow, numpy (already used by existing scripts)
 **ComfyUI:** WAN 2.2 high-noise + low-noise 14B Q4 models, CLIP Vision, T5 encoder, VAE
-**Network:** Local network access to 192.168.1.222:8188
+**Network:** Local network access to 10.5.0.2:8188

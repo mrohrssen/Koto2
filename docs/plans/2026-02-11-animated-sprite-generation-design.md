@@ -6,7 +6,7 @@
 
 **Architecture:** Script 1 uploads each robot's static sprite to ComfyUI, patches an external Wan 2.2 I2V workflow JSON with per-robot motion prompts, queues the job, polls for completion, and downloads the resulting MP4. Script 2 uses ffmpeg to extract frames, rembg for background removal, Pillow for resizing/assembly into horizontal WebP strips, and auto-updates the manifest.json with actual frame counts. Both scripts support single-robot and batch modes with resume (skip existing outputs).
 
-**Tech Stack:** Python 3.10+, Pillow, rembg, ffmpeg (CLI), requests, ComfyUI REST API at `http://192.168.1.222:8188`
+**Tech Stack:** Python 3.10+, Pillow, rembg, ffmpeg (CLI), requests, ComfyUI REST API at `http://10.5.0.2:8188`
 
 **Existing infrastructure:**
 - 25 static robot sprites: `public/assets/sprites/robots/{id}.webp`
@@ -232,7 +232,7 @@ import shutil
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
-COMFYUI_URL = "http://192.168.1.222:8188"
+COMFYUI_URL = "http://10.5.0.2:8188"
 SPRITE_DIR = os.path.join(PROJECT_ROOT, "public", "assets", "sprites", "robots")
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "output", "animated-sprites")
 PROMPTS_FILE = os.path.join(SCRIPT_DIR, "animation-prompts.json")
@@ -994,7 +994,7 @@ No commit needed. The dry run verified the pipeline works.
 
 ## Task 6: Generate starter robot videos (requires ComfyUI)
 
-**Prerequisites:** ComfyUI running at `192.168.1.222:8188` with Wan 2.2 model loaded. Workflow JSONs exported and node IDs configured in `scripts/workflows/workflow-config.json`.
+**Prerequisites:** ComfyUI running at `10.5.0.2:8188` with Wan 2.2 model loaded. Workflow JSONs exported and node IDs configured in `scripts/workflows/workflow-config.json`.
 
 This task cannot be run by an automated agent — it requires:
 1. The user to export their ComfyUI workflow and fill in `workflow-config.json` node IDs

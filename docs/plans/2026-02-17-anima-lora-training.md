@@ -4,12 +4,12 @@
 
 **Goal:** Train an SDXL LoRA on ~65 Honkai: Nexus Anima creature portraits so Nova v16 can generate creatures in that style locally.
 
-**Architecture:** Scrape images + captions from the Fandom wiki, install kohya_ss sd-scripts on the Windows gaming PC (192.168.1.222), train a LoRA on top of `novaAnimeXL_ilV160.safetensors`, drop the result into ComfyUI's loras folder.
+**Architecture:** Scrape images + captions from the Fandom wiki, install kohya_ss sd-scripts on the Windows gaming PC (10.5.0.2), train a LoRA on top of `novaAnimeXL_ilV160.safetensors`, drop the result into ComfyUI's loras folder.
 
 **Tech Stack:** Python 3.10, kohya_ss sd-scripts, PyTorch 2.5 + CUDA 12.1, ComfyUI, RTX 3090 (24GB)
 
 **Remote machine details:**
-- SSH: `ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222`
+- SSH: `ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2`
 - OS: Windows
 - User dir: `C:\Users\michi`
 - ComfyUI: `C:\Users\michi\ComfyUI` (venv at `ComfyUI\venv\Scripts\python.exe`, torch 2.5.1+cu121)
@@ -440,7 +440,7 @@ git commit -m "feat: add dataset preparation script for Anima LoRA training"
 **Step 1: Create the training directory on the gaming PC**
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "mkdir C:\Users\michi\anima-lora-training && mkdir C:\Users\michi\anima-lora-training\dataset && mkdir C:\Users\michi\anima-lora-training\output"
 ```
 
@@ -449,13 +449,13 @@ ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
 ```bash
 scp -i ~/.ssh/id_ed25519_remote_pc -r \
   data/anima-lora-dataset/* \
-  michia@192.168.1.222:"C:/Users/michi/anima-lora-training/dataset/"
+  michia@10.5.0.2:"C:/Users/michi/anima-lora-training/dataset/"
 ```
 
 **Step 3: Verify upload**
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "dir /b C:\Users\michi\anima-lora-training\dataset\5_nexus_anima\*.png | find /c /v \"\""
 ```
 
@@ -468,42 +468,42 @@ Expected: Same count as local dataset.
 **Step 1: Clone sd-scripts**
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "cd C:\Users\michi\anima-lora-training && git clone https://github.com/kohya-ss/sd-scripts.git"
 ```
 
 **Step 2: Create Python venv and install dependencies**
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "cd C:\Users\michi\anima-lora-training && python -m venv venv && venv\Scripts\python.exe -m pip install --upgrade pip"
 ```
 
 **Step 3: Install PyTorch with CUDA 12.1**
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "C:\Users\michi\anima-lora-training\venv\Scripts\python.exe -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121"
 ```
 
 **Step 4: Install sd-scripts requirements**
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "cd C:\Users\michi\anima-lora-training\sd-scripts && ..\venv\Scripts\python.exe -m pip install -r requirements.txt"
 ```
 
 **Step 5: Install accelerate**
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "C:\Users\michi\anima-lora-training\venv\Scripts\python.exe -m pip install accelerate"
 ```
 
 **Step 6: Verify installation**
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "C:\Users\michi\anima-lora-training\venv\Scripts\python.exe -c \"import torch; print(f'torch={torch.__version__}, CUDA={torch.cuda.is_available()}'); import accelerate; print(f'accelerate={accelerate.__version__}')\""
 ```
 
@@ -519,7 +519,7 @@ Expected: torch with CUDA=True, accelerate version printed.
 **Step 1: Write the TOML config via SSH**
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "cd C:\Users\michi\anima-lora-training && (
 echo [model]
 echo pretrained_model_name_or_path = \"C:/Users/michi/ComfyUI/models/checkpoints/novaAnimeXL_ilV160.safetensors\"
@@ -567,7 +567,7 @@ Note: The exact config file format may need adjustment based on the sd-scripts v
 **Step 2: Verify config was written**
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "type C:\Users\michi\anima-lora-training\train_config.toml"
 ```
 
@@ -578,14 +578,14 @@ ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
 **Step 1: Configure accelerate**
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "C:\Users\michi\anima-lora-training\venv\Scripts\accelerate.exe config default"
 ```
 
 **Step 2: Launch training**
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "cd C:\Users\michi\anima-lora-training\sd-scripts && ..\venv\Scripts\accelerate.exe launch sdxl_train_network.py --config_file ..\train_config.toml"
 ```
 
@@ -596,7 +596,7 @@ Note: If the TOML config format doesn't match what sd-scripts expects, fall back
 **Step 3: Verify output**
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "dir C:\Users\michi\anima-lora-training\output\*.safetensors"
 ```
 
@@ -609,13 +609,13 @@ Expected: Multiple checkpoint files — `nexus-anima-lora-epoch3.safetensors`, `
 **Step 1: Copy the final LoRA to ComfyUI's loras directory**
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "copy C:\Users\michi\anima-lora-training\output\nexus-anima-lora.safetensors C:\Users\michi\ComfyUI\models\loras\"
 ```
 
 Also copy intermediate checkpoints for comparison:
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "copy C:\Users\michi\anima-lora-training\output\nexus-anima-lora-epoch*.safetensors C:\Users\michi\ComfyUI\models\loras\"
 ```
 
@@ -628,7 +628,7 @@ If ComfyUI is running, it should auto-detect new loras on refresh. Otherwise res
 Generate a test image using an existing bakeoff creature (e.g., kamedor) with and without the LoRA. Use the existing `bakeoff_checkpoints.py` as a reference for building the ComfyUI workflow JSON, but add a LoRA loader node.
 
 Quick manual test via ComfyUI web UI:
-1. Open `http://192.168.1.222:8188` in browser
+1. Open `http://10.5.0.2:8188` in browser
 2. Load a basic txt2img workflow with Nova v16
 3. Add a LoRA Loader node, select `nexus-anima-lora.safetensors`, strength 0.7
 4. Prompt: `nexus_anima, masterpiece, best quality, game-ready creature sprite, single character on solid magenta background, full body, front-facing idle pose, a fierce dragon-like creature with crystal armor and flame effects`

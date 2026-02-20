@@ -13,7 +13,7 @@ import urllib.request
 import time
 import random
 
-COMFYUI_URL = "http://192.168.1.222:8188"
+COMFYUI_URL = "http://10.5.0.2:8188"
 
 STYLE = "solo, chibi character, gacha game art style, mobile game character icon, white background, bright vivid colors, high quality, clean, cute mecha robot, centered composition, single subject only, full body, standing pose"
 

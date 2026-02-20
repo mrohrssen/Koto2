@@ -30,7 +30,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 CREATURES_FILE = os.path.join(PROJECT_ROOT, "data", "creatures.json")
 SPRITE_DIR = os.path.join(PROJECT_ROOT, "public", "assets", "sprites", "robots")
-_COMFYUI_URL = "http://192.168.1.222:8188"
+_COMFYUI_URL = "http://10.5.0.2:8188"
 
 
 def get_comfyui_url():

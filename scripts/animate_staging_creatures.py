@@ -18,7 +18,7 @@ Pipeline per creature:
 6. Deploy both to game sprites directory
 
 Requirements:
-  - ComfyUI running at COMFYUI_URL (default: http://192.168.1.222:8188)
+  - ComfyUI running at COMFYUI_URL (default: http://10.5.0.2:8188)
   - Wan 2.2 models (high-noise + low-noise 14B Q4)
   - RMBG-2.0 model in ComfyUI
   - Pillow: pip install Pillow
@@ -427,7 +427,7 @@ def main():
         print(f"\n[{timestamp()}] RMBG-ONLY MODE: Processing existing raw animations...\n")
         if not args.dry_run:
             if not verify_comfyui():
-                print("\nStart ComfyUI first on 192.168.1.222")
+                print("\nStart ComfyUI first on 10.5.0.2")
                 sys.exit(1)
         success = 0
         for c, staging_path in available:
@@ -455,7 +455,7 @@ def main():
     if not args.dry_run:
         print(f"\n[{timestamp()}] Verifying ComfyUI connection...")
         if not verify_comfyui():
-            print("\nStart ComfyUI first on 192.168.1.222")
+            print("\nStart ComfyUI first on 10.5.0.2")
             sys.exit(1)
         print()
 

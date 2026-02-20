@@ -13,7 +13,7 @@ End-to-end pipeline per creature:
 The game auto-detects idle sprites via sprite-utils.js configureRobotImg().
 
 Requirements:
-  - ComfyUI running at COMFYUI_URL (default: http://192.168.1.222:8188)
+  - ComfyUI running at COMFYUI_URL (default: http://10.5.0.2:8188)
   - Wan 2.2 models (high-noise + low-noise 14B Q4)
   - Pillow + numpy: pip install Pillow numpy
 
@@ -44,7 +44,7 @@ SPRITE_DIR = os.path.join(PROJECT_ROOT, "public", "assets", "sprites", "robots")
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "output", "animated-sprites")
 TMP_DIR = os.path.join(PROJECT_ROOT, "tmp", "idle-gen")
 
-COMFYUI_URL = os.environ.get("COMFYUI_URL", "http://192.168.1.222:8188")
+COMFYUI_URL = os.environ.get("COMFYUI_URL", "http://10.5.0.2:8188")
 
 GAME_SPRITE_DIR = os.path.join(PROJECT_ROOT, "public", "assets", "sprites", "robots")
 CHROMA_KEY_COLOR = (255, 0, 255)  # Magenta — game-dev standard, no creature uses this color

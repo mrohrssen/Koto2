@@ -14,8 +14,8 @@ import random
 import os
 import subprocess
 
-COMFYUI_URL = "http://192.168.1.222:8188"
-SSH_HOST = "michia@192.168.1.222"
+COMFYUI_URL = "http://10.5.0.2:8188"
+SSH_HOST = "michia@10.5.0.2"
 
 # Output goes to ComfyUI output dir, we'll SCP it back after
 OUTPUT_PREFIX = "quiz_assets"

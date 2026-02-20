@@ -29,33 +29,33 @@ bg.save('sprite-rgb.png')
 ## Server Setup
 
 - **Machine:** Windows 10, RTX 3090 (24GB VRAM), 32GB RAM
-- **ComfyUI:** v0.8.0 at `http://192.168.1.222:8188`
-- **SSH:** `ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222`
+- **ComfyUI:** v0.8.0 at `http://10.5.0.2:8188`
+- **SSH:** `ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2`
 
 ### Starting ComfyUI remotely (via scheduled task — SSH processes don't survive)
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "schtasks /Create /TN ComfyUI /TR \"C:\Users\michi\ComfyUI\venv\Scripts\python.exe C:\Users\michi\ComfyUI\main.py --listen 0.0.0.0 --port 8188\" /SC ONCE /ST 00:00 /F && schtasks /Run /TN ComfyUI"
 ```
 
 ### Disable sleep
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 \
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 \
   "powershell -Command \"powercfg -change -standby-timeout-ac 0\""
 ```
 
 ### Verify running
 
 ```bash
-curl -s http://192.168.1.222:8188/system_stats
+curl -s http://10.5.0.2:8188/system_stats
 ```
 
 ## Upload Image
 
 ```bash
-curl -s -X POST http://192.168.1.222:8188/upload/image \
+curl -s -X POST http://10.5.0.2:8188/upload/image \
   -F "image=@/tmp/fire-common-rgb.png;type=image/png"
 ```
 
@@ -73,7 +73,7 @@ This is the exact JSON that produced good results. 13 nodes total.
 - **49 frames at 24fps = 2 second loop** — good duration for idle animations
 
 ```bash
-curl -s -X POST http://192.168.1.222:8188/prompt -H "Content-Type: application/json" -d '{
+curl -s -X POST http://10.5.0.2:8188/prompt -H "Content-Type: application/json" -d '{
   "prompt": {
     "1": {
       "class_type": "LoadImage",
@@ -311,10 +311,10 @@ bright tones, overexposed, blurred details, worst quality, low quality, ugly, de
 
 ```bash
 # Check queue
-curl -s http://192.168.1.222:8188/queue | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'Running: {len(d.get(\"queue_running\",[]))}, Pending: {len(d.get(\"queue_pending\",[]))}')"
+curl -s http://10.5.0.2:8188/queue | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'Running: {len(d.get(\"queue_running\",[]))}, Pending: {len(d.get(\"queue_pending\",[]))}')"
 
 # Check specific job status
-curl -s "http://192.168.1.222:8188/history/PROMPT_ID_HERE" | python3 -c "
+curl -s "http://10.5.0.2:8188/history/PROMPT_ID_HERE" | python3 -c "
 import json,sys
 d=json.load(sys.stdin)
 for k,v in d.items():
@@ -323,7 +323,7 @@ for k,v in d.items():
 "
 
 # Download result
-curl -s "http://192.168.1.222:8188/view?filename=FILENAME&subfolder=robot_anim_test&type=output" -o output.webp
+curl -s "http://10.5.0.2:8188/view?filename=FILENAME&subfolder=robot_anim_test&type=output" -o output.webp
 ```
 
 ## Available Models
@@ -356,7 +356,7 @@ curl -s "http://192.168.1.222:8188/view?filename=FILENAME&subfolder=robot_anim_t
 
 ## Networking Limitation
 
-ComfyUI is at `192.168.1.222:8188` — a **local network IP**. Only reachable from the same wifi. If you need remote access from another network, options:
+ComfyUI is at `10.5.0.2:8188` — a **local network IP**. Only reachable from the same wifi. If you need remote access from another network, options:
 
 1. **Tailscale/ZeroTier** — install on both machines, gives a private IP that works anywhere (easiest)
 2. **Port forwarding** — expose 8188 on your router (less secure)

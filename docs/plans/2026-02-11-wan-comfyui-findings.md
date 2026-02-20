@@ -3,9 +3,9 @@
 ## Server
 
 - **Machine:** Windows 10, RTX 3090 (24GB VRAM), 32GB RAM
-- **ComfyUI:** v0.8.0 at `http://192.168.1.222:8188`
+- **ComfyUI:** v0.8.0 at `http://10.5.0.2:8188`
 - **Python:** 3.10.6, venv at `C:\Users\michi\ComfyUI\venv\`
-- **SSH:** `ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222`
+- **SSH:** `ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2`
 - **Start command:** `C:\Users\michi\ComfyUI\venv\Scripts\python.exe C:\Users\michi\ComfyUI\main.py --listen 0.0.0.0 --port 8188`
 
 ## Available Models
@@ -207,7 +207,7 @@ Output: `public/assets/sprites/robots/{robotId}/{idle,attack,hit}.webp` + `manif
 
 ```bash
 # Connect
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2
 
 # Start ComfyUI (from Windows terminal, not SSH — process dies when SSH closes)
 # Use PowerShell Start-Process or run in a terminal on the machine directly
@@ -220,7 +220,7 @@ C:\Users\michi\ComfyUI\venv\Scripts\python.exe C:\Users\michi\ComfyUI\main.py --
 ## Checklist for Next Session
 
 1. Start ComfyUI on the Windows machine (from desktop, not SSH)
-2. Verify: `curl http://192.168.1.222:8188/system_stats`
+2. Verify: `curl http://10.5.0.2:8188/system_stats`
 3. Queue test job with `num_frames: 41` (halved from 81)
 4. Disable sleep on Windows machine (`powercfg -change -standby-timeout-ac 0`)
 5. If successful, run all 3 starters × 3 states = 9 jobs

@@ -84,7 +84,7 @@ Broad search terms for discovering relevant models:
 - **Resolution**: 1024x1024 (sprites/chips), landscape (backgrounds)
 - **Post-processing**: RMBG-2.0
 - **Embeddings**: None currently
-- **ComfyUI host**: 192.168.1.222 (SSH user: michia)
+- **ComfyUI host**: 10.5.0.2 (SSH user: michia)
 
 ## Lessons Learned
 

@@ -9,7 +9,7 @@ Train an SDXL LoRA on ~65 Honkai: Nexus Anima creature portraits to teach Nova v
 
 ## Approach
 
-LoRA (Low-Rank Adaptation) trained via kohya_ss sd-scripts on the gaming PC (192.168.1.222, RTX 3090 24GB). Integrates into existing ComfyUI workflow as a single LoRA loader node.
+LoRA (Low-Rank Adaptation) trained via kohya_ss sd-scripts on the gaming PC (10.5.0.2, RTX 3090 24GB). Integrates into existing ComfyUI workflow as a single LoRA loader node.
 
 ## Section 1: Data Pipeline
 
@@ -39,7 +39,7 @@ Image source: Fandom CDN — each creature page has a portrait at `{Name}_Anima_
 
 ## Section 2: Training Setup
 
-SSH into 192.168.1.222 and install:
+SSH into 10.5.0.2 and install:
 
 ```
 ~/anima-lora-training/

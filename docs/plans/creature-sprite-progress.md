@@ -5,8 +5,8 @@
 All 46 creature sprites have been regenerated to acceptable quality across 4 rounds.
 
 ## Connection Details
-- ComfyUI: `http://192.168.1.222:8188`
-- SSH: `ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222`
+- ComfyUI: `http://10.5.0.2:8188`
+- SSH: `ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2`
 - Checkpoint: `waiIllustriousSDXL_v160.safetensors`
 - Settings: 1024x1024, 30 steps, CFG 8.5 (bumped from 7.5 in R3), dpmpp_2m sampler, karras scheduler
 - Background removal: RMBG-2.0
@@ -62,10 +62,10 @@ All 5 borderline sprites were re-rolled with improved prompts:
 ## How to Re-run Specific Creatures
 ```bash
 # Check ComfyUI is running
-curl -s http://192.168.1.222:8188/system_stats | head -c 100
+curl -s http://10.5.0.2:8188/system_stats | head -c 100
 
 # If not running, SSH in and start it:
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2
 # Then run: C:\Users\michi\ComfyUI\venv\Scripts\python.exe C:\Users\michi\ComfyUI\main.py --listen 0.0.0.0 --port 8188
 
 # Re-run specific creatures (uses custom prompts from CUSTOM_PROMPTS dict)

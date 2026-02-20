@@ -6,7 +6,7 @@
 
 **Architecture:** The existing generation script (`generate_idle_animations.py`) already handles the full Wan 2.2 pipeline and batched polling. We extend it with a post-processing phase that runs after each creature's animation downloads: extract frames, queue per-frame RMBG jobs to ComfyUI, download transparent frames, reassemble, and copy to the game sprite directory. The RMBG script becomes inlined helper functions rather than a separate script.
 
-**Tech Stack:** Python 3 (stdlib + Pillow), ComfyUI REST API at `http://192.168.1.222:8188`, RMBG-2.0 node, Wan 2.2 14B Q4 two-pass MoE models.
+**Tech Stack:** Python 3 (stdlib + Pillow), ComfyUI REST API at `http://10.5.0.2:8188`, RMBG-2.0 node, Wan 2.2 14B Q4 two-pass MoE models.
 
 ---
 
@@ -373,7 +373,7 @@ End-to-end pipeline per creature:
 The game auto-detects idle sprites via sprite-utils.js configureRobotImg().
 
 Requirements:
-  - ComfyUI running at COMFYUI_URL (default: http://192.168.1.222:8188)
+  - ComfyUI running at COMFYUI_URL (default: http://10.5.0.2:8188)
   - Wan 2.2 models (high-noise + low-noise 14B Q4)
   - RMBG-2.0 node installed in ComfyUI
   - Pillow: pip install Pillow

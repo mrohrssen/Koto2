@@ -92,13 +92,13 @@ AI background removal using the U2-Net neural network via the `rembg` Python pac
 
 ```bash
 # Upload script
-scp -i ~/.ssh/id_ed25519_remote_pc /tmp/rembg-sprites.py michia@192.168.1.222:'C:\Users\michi\rembg-sprites.py'
+scp -i ~/.ssh/id_ed25519_remote_pc /tmp/rembg-sprites.py michia@10.5.0.2:'C:\Users\michi\rembg-sprites.py'
 
 # Run on PC
-ssh -i ~/.ssh/id_ed25519_remote_pc michia@192.168.1.222 'python C:\Users\michi\rembg-sprites.py'
+ssh -i ~/.ssh/id_ed25519_remote_pc michia@10.5.0.2 'python C:\Users\michi\rembg-sprites.py'
 
 # Download results
-scp -i ~/.ssh/id_ed25519_remote_pc 'michia@192.168.1.222:/Users/michi/ComfyUI/output/robot_sprites_transparent/*' test-animations/
+scp -i ~/.ssh/id_ed25519_remote_pc 'michia@10.5.0.2:/Users/michi/ComfyUI/output/robot_sprites_transparent/*' test-animations/
 ```
 
 The script lives at `C:\Users\michi\rembg-sprites.py` on the PC. Transparent outputs go to `C:\Users\michi\ComfyUI\output\robot_sprites_transparent\`.
@@ -113,7 +113,7 @@ Petalia idle failed twice — ComfyUI reported "success" with empty outputs. Thi
 
 ## Originals on ComfyUI Server
 
-The raw (white background) outputs are still available on the ComfyUI server at `192.168.1.222:8188` under `robot_sprites/` subfolder:
+The raw (white background) outputs are still available on the ComfyUI server at `10.5.0.2:8188` under `robot_sprites/` subfolder:
 
 | Server filename | Local name |
 |----------------|------------|
