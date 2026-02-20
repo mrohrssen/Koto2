@@ -9,6 +9,7 @@ import { Router } from 'express';
 import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync } from 'fs';
 import { join } from 'path';
 import { dataPath } from '../data-dir.js';
+import { findUserByUsername } from '../auth/users.js';
 
 const BUG_REPORTS_DIR = dataPath('bug-reports');
 
@@ -131,6 +132,28 @@ export default function createBugReportRoutes() {
     } catch (error) {
       console.error('Delete bug report error:', error);
       res.status(500).json({ error: 'Failed to delete bug report' });
+    }
+  });
+
+  // GET /api/diagnostic/npc-dialogue-cache/:username - Dump NPC dialogue cache for a user
+  router.get('/diagnostic/npc-dialogue-cache/:username', (req, res) => {
+    try {
+      const user = findUserByUsername(req.params.username);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const cachePath = dataPath(`npc-dialogue-cache-${user.id}.json`);
+      if (!existsSync(cachePath)) {
+        return res.json({ userId: user.id, username: user.username, npcCount: 0, cache: {} });
+      }
+
+      const cache = JSON.parse(readFileSync(cachePath, 'utf8'));
+      const npcCount = Object.keys(cache).length;
+      res.json({ userId: user.id, username: user.username, npcCount, cache });
+    } catch (error) {
+      console.error('Diagnostic npc-dialogue-cache error:', error);
+      res.status(500).json({ error: 'Failed to read cache' });
     }
   });
 
