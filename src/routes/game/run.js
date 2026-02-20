@@ -63,9 +63,7 @@ export default function createRunRoutes({
 
       gameManager.startRun(null, starterId, starterIds);
 
-      const narration = await generateGameNarration('runStart', {
-        player: gameManager.run.player
-      }, req.userKeys);
+      const narration = null; // DM narration disabled — frontend discards this
 
       req.saveGame();
 
@@ -163,9 +161,7 @@ export default function createRunRoutes({
 
       gameManager.startRun(levelId, starterId, starterIds);
 
-      const narration = await generateGameNarration('runStart', {
-        player: gameManager.run.player
-      }, req.userKeys);
+      const narration = null; // DM narration disabled — frontend discards this
 
       req.saveGame();
 
@@ -246,13 +242,7 @@ export default function createRunRoutes({
     try {
       const room = gameManager.proceedToNextRoom();
 
-      let narration = null;
-      if (room.type === 'monster') {
-        narration = await generateGameNarration('encounterStart', {
-          enemy: room.enemy,
-          player: gameManager.run.player
-        }, req.userKeys);
-      }
+      const narration = null; // DM narration disabled — frontend discards this
 
       req.saveGame();
       res.json({ room, state: req.getEnrichedGameState(), narration });

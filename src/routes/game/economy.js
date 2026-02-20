@@ -63,10 +63,7 @@ export default function createEconomyRoutes({ generateGameNarration }) {
     try {
       const result = gameManager.useShrine();
 
-      const narration = await generateGameNarration('shrine', {
-        player: gameManager.run.player,
-        effect: result.effect
-      }, req.userKeys);
+      const narration = null; // DM narration disabled — frontend discards this
 
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState(), narration });

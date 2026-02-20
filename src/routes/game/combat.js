@@ -99,11 +99,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     try {
       const encounter = gameManager.startEncounter();
-      const narration = await generateGameNarration('encounterStart', {
-        enemy: encounter.enemy,
-        player: gameManager.run.player,
-        allies: gameManager.combat?.allies || []
-      }, req.userKeys);
+      const narration = null; // DM narration disabled — frontend discards this
 
       req.saveGame();
       res.json({ ...encounter, state: req.getEnrichedGameState(), narration });

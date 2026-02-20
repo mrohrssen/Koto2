@@ -15,7 +15,7 @@ export default function createPlayerRoutes({ generateGameNarration }) {
     gameManager.createPlayer(name || 'Hunter', stats || null, statPoints ?? null);
     req.saveGame();
 
-    const narration = await generateGameNarration('runStart', gameManager.player, req.userKeys);
+    const narration = null; // DM narration disabled — frontend discards this
 
     res.json({
       state: req.getEnrichedGameState(),
