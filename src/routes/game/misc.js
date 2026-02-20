@@ -37,7 +37,8 @@ export default function createMiscRoutes({
   setDebugMode,
   vocabCacheFile,
   staticWordList,
-  getAllNpcDialogueCache
+  getAllNpcDialogueCache,
+  clearNpcDialogueCache
 }) {
   const router = Router();
 
@@ -293,6 +294,17 @@ export default function createMiscRoutes({
     const cache = getAllNpcDialogueCache?.(req.user.id) || {};
     const npcCount = Object.keys(cache).length;
     res.json({ userId: req.user.id, npcCount, cache });
+  });
+
+  // Clear NPC dialogue cache — forces regeneration on next exploration
+  router.post('/clear-npc-dialogue-cache', (req, res) => {
+    try {
+      clearNpcDialogueCache(req.user.id);
+      res.json({ success: true, message: 'NPC dialogue cache cleared' });
+    } catch (error) {
+      console.error('Clear NPC dialogue cache error:', error);
+      res.status(500).json({ error: 'Failed to clear cache' });
+    }
   });
 
   // Heal

@@ -49,6 +49,13 @@ export function getAllDialogueCache(userId) {
 }
 
 /**
+ * Clear all cached dialogues for a user. Next exploration will regenerate them.
+ */
+export function clearDialogueCache(userId) {
+  getCache(userId).clear();
+}
+
+/**
  * Queue generation for all entities that are missing or stale in cache.
  * Fire-and-forget — runs in background with concurrency limit.
  */

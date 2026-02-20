@@ -48,6 +48,11 @@ export class TextCache {
     this._save();
   }
 
+  clear() {
+    this._data = {};
+    this._save();
+  }
+
   /**
    * Check if cached dialogue is stale.
    * Stale if: missing, vocab grew past threshold, or memory changed.

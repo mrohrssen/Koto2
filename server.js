@@ -136,6 +136,7 @@ import {
 import {
   getDialogueFromCache as getNpcDialogueFromCache,
   getAllDialogueCache as getAllNpcDialogueCache,
+  clearDialogueCache as clearNpcDialogueCache,
   queueMissingDialogues as queueNpcDialogues,
   logEncounter as logNpcEncounter,
   regenerateDialogue as regenNpcDialogue,
@@ -384,6 +385,7 @@ app.use('/api', createRoutes({
   // NPC narration engine deps
   getNpcDialogueFromCache,
   getAllNpcDialogueCache,
+  clearNpcDialogueCache,
   queueMissingNpcDialoguesFn: async (userId, aiConfig, vocabContext) => {
     return queueNpcDialogues(userId, chat, aiConfig, vocabContext);
   },

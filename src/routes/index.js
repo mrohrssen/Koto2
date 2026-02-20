@@ -67,6 +67,7 @@ export default function createRoutes(deps) {
     // NPC narration engine deps
     getNpcDialogueFromCache: deps.getNpcDialogueFromCache,
     getAllNpcDialogueCache: deps.getAllNpcDialogueCache,
+    clearNpcDialogueCache: deps.clearNpcDialogueCache,
     queueMissingNpcDialoguesFn: deps.queueMissingNpcDialoguesFn,
     logNpcEncounterFn: deps.logNpcEncounterFn,
     regenNpcDialogueFn: deps.regenNpcDialogueFn,

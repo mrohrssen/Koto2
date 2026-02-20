@@ -28,6 +28,7 @@
 import * as audio from '../audio.js';
 import * as tts from '../tts.js';
 import { setLang } from './i18n.js';
+import { getAuthHeaders } from '../api.js';
 
 const MODEL_OPTIONS = {
   anthropic: [
@@ -179,6 +180,11 @@ export async function openSettings() {
         Mute All Audio
       </label>
 
+      <h4 style="margin:20px 0 8px;color:var(--accent)">Data</h4>
+      <button class="action-btn" id="settings-clear-npc-cache-btn"
+        style="width:100%;background:var(--surface-2);color:var(--text)">Clear NPC Dialogue Cache</button>
+      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Regenerates all NPC dialogue on next exploration. Useful after switching AI models.</small>
+
       <button class="action-btn action-btn-primary" id="settings-save-btn"
         style="margin-top:20px;width:100%">Save</button>
     </div>
@@ -191,6 +197,28 @@ export async function openSettings() {
       const provider = e.target.value;
       const models = MODEL_OPTIONS[provider] || MODEL_OPTIONS.anthropic;
       modelSelect.innerHTML = buildModelOptions(provider, models[0]?.id);
+    }
+  });
+
+  document.getElementById('settings-clear-npc-cache-btn')?.addEventListener('click', async (e) => {
+    const btn = e.target;
+    btn.disabled = true;
+    btn.textContent = 'Clearing...';
+    try {
+      const resp = await fetch('/api/game/clear-npc-dialogue-cache', {
+        method: 'POST',
+        headers: getAuthHeaders()
+      });
+      if (resp.ok) {
+        btn.textContent = 'Cleared!';
+        setTimeout(() => { btn.textContent = 'Clear NPC Dialogue Cache'; btn.disabled = false; }, 2000);
+      } else {
+        btn.textContent = 'Failed';
+        setTimeout(() => { btn.textContent = 'Clear NPC Dialogue Cache'; btn.disabled = false; }, 2000);
+      }
+    } catch {
+      btn.textContent = 'Error';
+      setTimeout(() => { btn.textContent = 'Clear NPC Dialogue Cache'; btn.disabled = false; }, 2000);
     }
   });
 
