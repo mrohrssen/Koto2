@@ -109,7 +109,7 @@ CRITICAL: Before sending your response, verify EVERY Japanese word is in the all
 async function chatWithOpenAI(apiKey, messages, systemPrompt, model) {
   const client = new OpenAI({ apiKey });
 
-  const modelId = model || 'gpt-4.1-mini';
+  const modelId = model || 'gpt-5-mini';
   const isReasoningModel = modelId.startsWith('o1') || modelId.startsWith('o3') || modelId.startsWith('o4') || modelId.startsWith('gpt-5');
 
   const params = {
@@ -283,7 +283,7 @@ export async function chat({
   // Determine model for metrics
   let model;
   switch (provider.toLowerCase()) {
-    case 'openai': model = openaiModel || 'gpt-4.1-mini'; break;
+    case 'openai': model = openaiModel || 'gpt-5-mini'; break;
     case 'claude':
     case 'anthropic': model = claudeModel || 'claude-sonnet-4-6'; break;
     case 'gemini':
@@ -364,17 +364,12 @@ export function getProviders() {
  */
 export function getOpenAIModels() {
   return [
-    { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini (Fast, Cheap)', description: '$0.40/$1.60 per 1M tokens' },
-    { id: 'gpt-4.1', name: 'GPT-4.1', description: '$2/$8 per 1M tokens' },
-    { id: 'gpt-4.1-nano', name: 'GPT-4.1 Nano (Cheapest)', description: '$0.10/$0.40 per 1M tokens' },
-    { id: 'gpt-5-nano', name: 'GPT-5 Nano (Reasoning)', description: '$0.05/$0.40 per 1M tokens' },
-    { id: 'gpt-5-mini', name: 'GPT-5 Mini (Reasoning)', description: '$0.25/$2 per 1M tokens' },
+    { id: 'gpt-5-mini', name: 'GPT-5 Mini (Fast, cheap)', description: '$0.25/$2 per 1M tokens' },
+    { id: 'gpt-5-nano', name: 'GPT-5 Nano (Cheapest)', description: '$0.05/$0.40 per 1M tokens' },
     { id: 'gpt-5', name: 'GPT-5 (Reasoning)', description: '$1.25/$10 per 1M tokens' },
-    { id: 'gpt-5.1-mini', name: 'GPT-5.1 Mini' },
-    { id: 'gpt-5.1', name: 'GPT-5.1' },
     { id: 'gpt-5.2', name: 'GPT-5.2 (Latest)' },
     { id: 'gpt-5.2-pro', name: 'GPT-5.2 Pro' },
-    { id: 'o4-mini', name: 'o4-mini (Reasoning)' }
+    { id: 'gpt-4.1', name: 'GPT-4.1 (Legacy)', description: '$2/$8 per 1M tokens' },
   ];
 }
 

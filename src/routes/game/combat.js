@@ -15,7 +15,7 @@ function triggerDialogueRegen(userId, targetEnemy, userKeys, getUserVocabularyFn
   regenFn(userId, targetEnemy, {
     provider: userKeys.aiProvider || 'anthropic',
     apiKey: userKeys.aiApiKey,
-    openaiModel: userKeys.openaiModel || 'claude-sonnet-4-6',
+    openaiModel: userKeys.openaiModel,
     openrouterModel: userKeys.openrouterModel,
     jlptLevel: userKeys.jlptLevel || 'N4'
   }, vocabulary).catch(e => {
@@ -285,7 +285,7 @@ export default function createCombatRoutes({
         rounds = await generateBefriendConversationFn(target, vocabulary, {
           provider: userKeys.aiProvider || 'anthropic',
           apiKey: userKeys.aiApiKey,
-          openaiModel: userKeys.openaiModel || 'claude-sonnet-4-6',
+          openaiModel: userKeys.openaiModel,
           openrouterModel: userKeys.openrouterModel,
           jlptLevel: userKeys.jlptLevel || 'N4'
         });
@@ -542,7 +542,7 @@ export default function createCombatRoutes({
           regenNpcDialogueFn(req.user.id, npcId, {
             provider: userKeys.aiProvider || 'anthropic',
             apiKey: userKeys.aiApiKey,
-            openaiModel: userKeys.openaiModel || 'claude-sonnet-4-6',
+            openaiModel: userKeys.openaiModel,
             openrouterModel: userKeys.openrouterModel,
             jlptLevel: userKeys.jlptLevel || 'N4'
           }, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {

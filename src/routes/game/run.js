@@ -77,7 +77,7 @@ export default function createRunRoutes({
           generateMissingDialoguesFn(req.user.id, {
             provider: userKeys.aiProvider || 'anthropic',
             apiKey: userKeys.aiApiKey,
-            openaiModel: userKeys.openaiModel || 'claude-sonnet-4-6',
+            openaiModel: userKeys.openaiModel,
             openrouterModel: userKeys.openrouterModel,
             jlptLevel: userKeys.jlptLevel || 'N4'
           }, vocabulary).catch(e => {
@@ -98,7 +98,7 @@ export default function createRunRoutes({
           queueMissingNpcDialoguesFn(req.user.id, {
             provider: userKeys.aiProvider || 'anthropic',
             apiKey: userKeys.aiApiKey,
-            openaiModel: userKeys.openaiModel || 'claude-sonnet-4-6',
+            openaiModel: userKeys.openaiModel,
             openrouterModel: userKeys.openrouterModel,
             jlptLevel: userKeys.jlptLevel || 'N4'
           }, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {
@@ -177,7 +177,7 @@ export default function createRunRoutes({
           generateMissingDialoguesFn(req.user.id, {
             provider: userKeys.aiProvider || 'anthropic',
             apiKey: userKeys.aiApiKey,
-            openaiModel: userKeys.openaiModel || 'claude-sonnet-4-6',
+            openaiModel: userKeys.openaiModel,
             openrouterModel: userKeys.openrouterModel,
             jlptLevel: userKeys.jlptLevel || 'N4'
           }, vocabulary).catch(e => {
@@ -198,7 +198,7 @@ export default function createRunRoutes({
           queueMissingNpcDialoguesFn(req.user.id, {
             provider: userKeys.aiProvider || 'anthropic',
             apiKey: userKeys.aiApiKey,
-            openaiModel: userKeys.openaiModel || 'claude-sonnet-4-6',
+            openaiModel: userKeys.openaiModel,
             openrouterModel: userKeys.openrouterModel,
             jlptLevel: userKeys.jlptLevel || 'N4'
           }, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {

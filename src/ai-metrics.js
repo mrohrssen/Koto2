@@ -8,13 +8,12 @@
 // Approximate costs per 1M tokens (input/output)
 const MODEL_COSTS = {
   // OpenAI
-  'gpt-4o-mini': { input: 0.15, output: 0.60 },
-  'gpt-4o': { input: 2.50, output: 10.00 },
-  'gpt-4.1-mini': { input: 0.40, output: 1.60 },
   'gpt-4.1': { input: 2.00, output: 8.00 },
   'gpt-5-nano': { input: 0.05, output: 0.40 },
   'gpt-5-mini': { input: 0.25, output: 2.00 },
   'gpt-5': { input: 1.25, output: 10.00 },
+  'gpt-5.2': { input: 2.00, output: 10.00 },
+  'gpt-5.2-pro': { input: 10.00, output: 40.00 },
   // Claude
   'claude-sonnet-4-5-20250929': { input: 3.00, output: 15.00 },
   'claude-sonnet-4-20250514': { input: 3.00, output: 15.00 },
