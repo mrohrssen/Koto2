@@ -1,10 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 import { isVocabStale } from './vocab-constraints.js';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = join(__dirname, '../../data');
+import { dataPath } from '../data-dir.js';
 
 export class TextCache {
   constructor({ userId, inMemory = false } = {}) {
@@ -13,7 +9,7 @@ export class TextCache {
     this._data = {};
 
     if (!inMemory && userId) {
-      this._filePath = join(DATA_DIR, `npc-dialogue-cache-${userId}.json`);
+      this._filePath = dataPath(`npc-dialogue-cache-${userId}.json`);
       this._load();
     }
   }

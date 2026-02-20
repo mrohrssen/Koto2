@@ -1,9 +1,5 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = join(__dirname, '../../data');
+import { dataPath } from '../data-dir.js';
 const MAX_LOG_ENTRIES = 5;
 
 function emptyNpcState() {
@@ -24,7 +20,7 @@ export class NpcMemory {
     this._data = {};
 
     if (!inMemory && userId) {
-      this._filePath = join(DATA_DIR, `npc-memory-${userId}.json`);
+      this._filePath = dataPath(`npc-memory-${userId}.json`);
       this._load();
     }
   }
