@@ -138,6 +138,13 @@ export function applyItem(item, robotParty, itemBuffs) {
     return { applied: true };
   }
 
+  if (item.type === 'keepsake') {
+    for (const [field, value] of Object.entries(item.effect)) {
+      applyStat(field, value, itemBuffs);
+    }
+    return { applied: true };
+  }
+
   return { applied: false };
 }
 

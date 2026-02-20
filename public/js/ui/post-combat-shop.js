@@ -30,7 +30,8 @@ const TYPE_ICONS = {
   heal: '💚',
   boost: '⬆️',
   charge: '⚡',
-  revive: '💫'
+  revive: '💫',
+  keepsake: '🔒'
 };
 
 export function init({ itemSelectedCallback }) {
