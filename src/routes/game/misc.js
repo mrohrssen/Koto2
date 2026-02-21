@@ -20,6 +20,7 @@ export default function createMiscRoutes({
   setDebugMode,
   staticWordList,
   getAllNpcDialogueCache,
+  getAllCreatureDialogueCache,
   clearNpcDialogueCache
 }) {
   const router = Router();
@@ -241,6 +242,16 @@ export default function createMiscRoutes({
     const cache = getAllNpcDialogueCache?.(req.user.id) || {};
     const npcCount = Object.keys(cache).length;
     res.json({ userId: req.user.id, npcCount, cache });
+  });
+
+  // Debug: Dump creature befriend dialogue cache for the current user
+  router.get('/debug-creature-dialogue-cache', (req, res) => {
+    if (!getDebugMode()) {
+      return res.status(403).json({ error: 'Debug mode not enabled' });
+    }
+    const cache = getAllCreatureDialogueCache?.(req.user.id) || {};
+    const creatureCount = Object.keys(cache).length;
+    res.json({ userId: req.user.id, creatureCount, cache });
   });
 
   // Clear NPC dialogue cache — forces regeneration on next exploration

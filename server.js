@@ -368,6 +368,8 @@ app.use('/api', createRoutes({
   getUserVocabulary: getUserNarrationVocabulary,
   getCreatureDialogueFromCache: (userId, creatureId) =>
     getNpcDialogueFromCache(userId, creatureId, 'creature'),
+  getAllCreatureDialogueCache: (userId) =>
+    getAllNpcDialogueCache(userId, 'creature'),
   queueMissingCreatureDialoguesFn: async (userId, aiConfig, vocabContext) =>
     queueNpcDialogues(userId, chat, aiConfig, vocabContext, 'creature'),
   regenCreatureDialogueFn: async (userId, creatureId, aiConfig, vocabContext) =>

@@ -65,6 +65,7 @@ export default function createRoutes(deps) {
     getUserVocabulary: deps.getUserVocabulary,
     // Creature narration engine deps
     getCreatureDialogueFromCache: deps.getCreatureDialogueFromCache,
+    getAllCreatureDialogueCache: deps.getAllCreatureDialogueCache,
     queueMissingCreatureDialoguesFn: deps.queueMissingCreatureDialoguesFn,
     regenCreatureDialogueFn: deps.regenCreatureDialogueFn,
     // NPC narration engine deps

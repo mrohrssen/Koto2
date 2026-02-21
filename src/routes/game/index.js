@@ -96,6 +96,7 @@ export default function createGameRoutes(deps) {
     setDebugMode: deps.setDebugMode,
     staticWordList: deps.staticWordList,
     getAllNpcDialogueCache: deps.getAllNpcDialogueCache,
+    getAllCreatureDialogueCache: deps.getAllCreatureDialogueCache,
     clearNpcDialogueCache: deps.clearNpcDialogueCache
   }));
 
