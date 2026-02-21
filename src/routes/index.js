@@ -63,6 +63,10 @@ export default function createRoutes(deps) {
     staticWordList: deps.staticWordList,
     getSettings: deps.getSettings,
     getUserVocabulary: deps.getUserVocabulary,
+    // Creature narration engine deps
+    getCreatureDialogueFromCache: deps.getCreatureDialogueFromCache,
+    queueMissingCreatureDialoguesFn: deps.queueMissingCreatureDialoguesFn,
+    regenCreatureDialogueFn: deps.regenCreatureDialogueFn,
     // NPC narration engine deps
     getNpcDialogueFromCache: deps.getNpcDialogueFromCache,
     getAllNpcDialogueCache: deps.getAllNpcDialogueCache,

@@ -1353,8 +1353,8 @@ async function executeBefriendAction() {
 
       // Fetch conversation from server
       const convoResult = await apiGetBefriendConversation(enemyIndex);
-      if (convoResult.error) {
-        console.error('Befriend conversation error:', convoResult.error);
+      if (!convoResult || convoResult.error) {
+        console.error('Befriend conversation error:', convoResult?.error || 'request failed');
         showNextDualCardsFromQueue();
         return;
       }
