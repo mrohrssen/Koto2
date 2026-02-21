@@ -157,5 +157,27 @@ export default function createBugReportRoutes() {
     }
   });
 
+  // GET /api/diagnostic/creature-dialogue-cache/:username - Dump creature befriend dialogue cache
+  router.get('/diagnostic/creature-dialogue-cache/:username', (req, res) => {
+    try {
+      const user = findUserByUsername(req.params.username);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const cachePath = dataPath(`creature-dialogue-cache-${user.id}.json`);
+      if (!existsSync(cachePath)) {
+        return res.json({ userId: user.id, username: user.username, creatureCount: 0, cache: {} });
+      }
+
+      const cache = JSON.parse(readFileSync(cachePath, 'utf8'));
+      const creatureCount = Object.keys(cache).length;
+      res.json({ userId: user.id, username: user.username, creatureCount, cache });
+    } catch (error) {
+      console.error('Diagnostic creature-dialogue-cache error:', error);
+      res.status(500).json({ error: 'Failed to read cache' });
+    }
+  });
+
   return router;
 }
