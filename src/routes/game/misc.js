@@ -21,7 +21,8 @@ export default function createMiscRoutes({
   staticWordList,
   getAllNpcDialogueCache,
   getAllCreatureDialogueCache,
-  clearNpcDialogueCache
+  clearNpcDialogueCache,
+  clearCreatureDialogueCache
 }) {
   const router = Router();
 
@@ -261,6 +262,17 @@ export default function createMiscRoutes({
       res.json({ success: true, message: 'NPC dialogue cache cleared' });
     } catch (error) {
       console.error('Clear NPC dialogue cache error:', error);
+      res.status(500).json({ error: 'Failed to clear cache' });
+    }
+  });
+
+  // Clear creature dialogue cache — forces regeneration on next exploration
+  router.post('/clear-creature-dialogue-cache', (req, res) => {
+    try {
+      clearCreatureDialogueCache(req.user.id);
+      res.json({ success: true, message: 'Creature dialogue cache cleared' });
+    } catch (error) {
+      console.error('Clear creature dialogue cache error:', error);
       res.status(500).json({ error: 'Failed to clear cache' });
     }
   });

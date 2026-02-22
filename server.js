@@ -378,6 +378,8 @@ app.use('/api', createRoutes({
   getNpcDialogueFromCache,
   getAllNpcDialogueCache,
   clearNpcDialogueCache,
+  clearCreatureDialogueCache: (userId) =>
+    clearNpcDialogueCache(userId, 'creature'),
   queueMissingNpcDialoguesFn: async (userId, aiConfig, vocabContext) => {
     return queueNpcDialogues(userId, chat, aiConfig, vocabContext);
   },

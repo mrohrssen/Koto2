@@ -97,7 +97,8 @@ export default function createGameRoutes(deps) {
     staticWordList: deps.staticWordList,
     getAllNpcDialogueCache: deps.getAllNpcDialogueCache,
     getAllCreatureDialogueCache: deps.getAllCreatureDialogueCache,
-    clearNpcDialogueCache: deps.clearNpcDialogueCache
+    clearNpcDialogueCache: deps.clearNpcDialogueCache,
+    clearCreatureDialogueCache: deps.clearCreatureDialogueCache
   }));
 
   return router;

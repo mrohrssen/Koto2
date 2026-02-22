@@ -236,6 +236,10 @@ export async function openSettings() {
     const ttsVol = parseInt(document.getElementById('settings-tts-volume')?.value || '100') / 100;
     const audioMuted = document.getElementById('settings-audio-muted')?.checked;
 
+    // Detect if AI provider or model changed (for cache clearing prompt)
+    const modelChanged = (aiProvider && aiProvider !== keyInfo.aiProvider) ||
+      (model && model !== keyInfo.openaiModel);
+
     // Save API keys to server (only send non-empty values)
     const keysToSave = {};
     if (jpdbKey) keysToSave.jpdbApiKey = jpdbKey;
@@ -253,6 +257,19 @@ export async function openSettings() {
       if (!saved) {
         sceneModule.showToast('Failed to save API keys', 2000);
         return;
+      }
+    }
+
+    // If AI model changed, offer to clear dialogue caches
+    if (modelChanged && confirm('You switched AI models. Clear cached dialogue so it regenerates with the new model?')) {
+      try {
+        await Promise.all([
+          fetch('/api/game/clear-npc-dialogue-cache', { method: 'POST', headers: getAuthHeaders() }),
+          fetch('/api/game/clear-creature-dialogue-cache', { method: 'POST', headers: getAuthHeaders() })
+        ]);
+        sceneModule.showToast('Dialogue cache cleared — will regenerate on next exploration', 3000);
+      } catch {
+        sceneModule.showToast('Failed to clear dialogue cache', 2000);
       }
     }
 

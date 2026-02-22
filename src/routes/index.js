@@ -72,6 +72,7 @@ export default function createRoutes(deps) {
     getNpcDialogueFromCache: deps.getNpcDialogueFromCache,
     getAllNpcDialogueCache: deps.getAllNpcDialogueCache,
     clearNpcDialogueCache: deps.clearNpcDialogueCache,
+    clearCreatureDialogueCache: deps.clearCreatureDialogueCache,
     queueMissingNpcDialoguesFn: deps.queueMissingNpcDialoguesFn,
     logNpcEncounterFn: deps.logNpcEncounterFn,
     regenNpcDialogueFn: deps.regenNpcDialogueFn,
