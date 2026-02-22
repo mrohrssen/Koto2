@@ -662,6 +662,67 @@ describe('Robot Combat - Shield in Attack Turn', () => {
   });
 });
 
+describe('Robot Combat - XP Balance Redistribution', () => {
+  it('redistributes XP toward lower-leveled robots with 1 stack', () => {
+    const highLevel = instantiateRobot('hikaribon');
+    highLevel.level = 10;
+    highLevel.xp = 0;
+
+    const lowLevel = instantiateRobot('tsukimochi');
+    lowLevel.level = 3;
+    lowLevel.xp = 0;
+
+    const party = {
+      active: [highLevel, lowLevel],
+      reserves: []
+    };
+
+    // enemyLevel 10: base = 10*10*1.0 = 100
+    // Without balance: 2 active = 4 shares, perShare=25, each gets 50
+    // With 1 stack (t=0.2): low-level gets more, high-level gets less
+    const result = awardKillXp(party, 10, 1.0, 1);
+
+    const highGrant = result.xpGrants.find(g => g.robotId === highLevel.id);
+    const lowGrant = result.xpGrants.find(g => g.robotId === lowLevel.id);
+    assert.ok(lowGrant.xp > highGrant.xp, 'lower-level robot should receive more XP');
+  });
+
+  it('no redistribution with 0 balance stacks', () => {
+    const highLevel = instantiateRobot('hikaribon');
+    highLevel.level = 10;
+    const lowLevel = instantiateRobot('tsukimochi');
+    lowLevel.level = 3;
+
+    const party = { active: [highLevel, lowLevel], reserves: [] };
+    const result = awardKillXp(party, 10, 1.0, 0);
+
+    const highGrant = result.xpGrants.find(g => g.robotId === highLevel.id);
+    const lowGrant = result.xpGrants.find(g => g.robotId === lowLevel.id);
+    assert.strictEqual(highGrant.xp, lowGrant.xp, 'both should get equal shares');
+  });
+
+  it('higher stacks redistribute more aggressively', () => {
+    const highLevel = instantiateRobot('hikaribon');
+    highLevel.level = 10;
+    const lowLevel = instantiateRobot('tsukimochi');
+    lowLevel.level = 3;
+
+    // 1 stack
+    const party1 = { active: [{ ...highLevel }, { ...lowLevel }], reserves: [] };
+    const result1 = awardKillXp(party1, 10, 1.0, 1);
+    const low1 = result1.xpGrants.find(g => g.robotId === lowLevel.id).xp;
+
+    // 3 stacks
+    const party3 = { active: [instantiateRobot('hikaribon'), instantiateRobot('tsukimochi')], reserves: [] };
+    party3.active[0].level = 10;
+    party3.active[1].level = 3;
+    const result3 = awardKillXp(party3, 10, 1.0, 3);
+    const low3 = result3.xpGrants.find(g => g.robotId === party3.active[1].id).xp;
+
+    assert.ok(low3 > low1, 'more stacks should give underleveled robot even more XP');
+  });
+});
+
 describe('Robot Combat - Temp Attack Flat Bonus', () => {
   it('processAttackTurn uses flat attack bonus from activeEffects', () => {
     const ally = instantiateRobot('sizzlit');
