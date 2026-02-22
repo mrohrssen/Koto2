@@ -40,6 +40,16 @@ describe('Robot Combat - Attack Turn', () => {
     assert.ok(atk.attackerSkillName, 'should have Japanese skill name');
     assert.ok(atk.attackerSkillEn, 'should have English skill name for icon lookup');
   });
+
+  it('includes reading fields and target Japanese name', () => {
+    const allies = [instantiateRobot('kamedor')];
+    const enemies = [instantiateRobot('kazenoko')];
+    const result = processAttackTurn(allies, enemies);
+    const atk = result.attacks[0];
+    assert.strictEqual(atk.attackerBaseReading, 'かめ');
+    assert.strictEqual(atk.attackerSkillReading, 'かむ');
+    assert.strictEqual(atk.targetNameJp, 'カゼノコ');
+  });
 });
 
 describe('Robot Combat - Defend Turn', () => {
@@ -68,6 +78,16 @@ describe('Robot Combat - Enemy Turn', () => {
     assert.strictEqual(atk.attackerBaseWord, '亀');
     assert.ok(atk.attackerSkillName);
     assert.ok(atk.attackerSkillEn);
+  });
+
+  it('includes reading fields and target Japanese name in enemy attacks', () => {
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('kamedor')];
+    const result = processEnemyTurn(enemies, allies);
+    const atk = result.attacks[0];
+    assert.strictEqual(atk.attackerBaseReading, 'かめ');
+    assert.strictEqual(atk.attackerSkillReading, 'かむ');
+    assert.strictEqual(atk.targetNameJp, 'ヒカリボン');
   });
 });
 

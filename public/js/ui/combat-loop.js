@@ -46,48 +46,134 @@ import { playAttackSound, playUltimateSound } from './combat-audio.js';
 import { configureRobotImg } from './sprite-utils.js';
 import { t } from './i18n.js';
 
-// ============ VOCAB ATTACK CARD ============
+// ============ SPLIT ATTACK CARD ============
 
-const ELEMENT_COLORS_VOCAB = {
-  wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63', metal: '#9E9E9E', water: '#2196F3'
+const ATTACK_CARD_TIMING = {
+  ROW_STAGGER: 50,
+  ROW_ANIM_DURATION: 100,
+  FADE_OUT_DURATION: 100
 };
 
-const ACTION_ICON_BASE = '/assets/sprites/actions';
+const ELEMENT_THEME = {
+  water:  { border: 'rgba(33,150,243,0.4)',  bg: 'rgba(33,150,243,0.15)',  light: '#64B5F6' },
+  fire:   { border: 'rgba(244,67,54,0.4)',   bg: 'rgba(244,67,54,0.15)',   light: '#EF9A9A' },
+  earth:  { border: 'rgba(141,110,99,0.4)',  bg: 'rgba(141,110,99,0.15)',  light: '#BCAAA4' },
+  metal:  { border: 'rgba(158,158,158,0.4)', bg: 'rgba(158,158,158,0.15)', light: '#BDBDBD' },
+  wood:   { border: 'rgba(76,175,80,0.4)',   bg: 'rgba(76,175,80,0.15)',   light: '#A5D6A7' }
+};
 
-/**
- * Build HTML for the vocab attack card shown when a creature attacks.
- * @param {Object} atk - Attack object from server (with vocab fields)
- * @param {boolean} isEnemy - Whether this is an enemy attack
- * @param {string} effectKey - i18n key for damage text
- * @returns {string} HTML string
- */
-function buildVocabAttackCard(atk, isEnemy, effectKey) {
-  const elementColor = ELEMENT_COLORS_VOCAB[atk.attackerElement] || '#aaa';
-  const enemyClass = isEnemy ? ' enemy' : '';
+const KANJI_RE = /[\u4e00-\u9faf\u3400-\u4dbf]/;
 
-  // Creature sprite (24px mini version)
+function wrapWithRuby(word, reading) {
+  if (!word || !reading || word === reading || !KANJI_RE.test(word)) return word || '';
+  return `<ruby>${word}<rt>${reading}</rt></ruby>`;
+}
+
+function buildSplitAttackCard(atk, isEnemy) {
+  const theme = ELEMENT_THEME[atk.attackerElement] || { border: 'rgba(255,255,255,0.15)', bg: 'rgba(255,255,255,0.06)', light: '#aaa' };
   const spriteUrl = `/assets/sprites/robots/${atk.attackerId}-idle.webp`;
   const spriteFallback = `/assets/sprites/robots/${atk.attackerId}.webp`;
+  const targetSprite = `/assets/sprites/robots/${atk.targetId}-idle.webp`;
+  const targetSpriteFallback = `/assets/sprites/robots/${atk.targetId}.webp`;
 
-  // Action icon from skill English name
-  const skillSlug = (atk.attackerSkillEn || '').toLowerCase().replace(/\s+/g, '-');
-  const actionIconUrl = `${ACTION_ICON_BASE}/${skillSlug}.webp`;
+  const baseWordHtml = wrapWithRuby(atk.attackerBaseWord, atk.attackerBaseReading);
+  const skillNameHtml = wrapWithRuby(atk.attackerSkillName, atk.attackerSkillReading);
 
-  return `<div class="vocab-attack-card${enemyClass}" style="--vocab-card-element-color: ${elementColor}">
-    <div class="vocab-attack-row">
-      <img class="vocab-attack-icon" src="${spriteUrl}" onerror="this.src='${spriteFallback}'" alt="">
-      <span class="vocab-attack-text">${atk.attackerNameJp || atk.attackerName}</span>
+  const damageSign = atk.damage > 0 ? `-${atk.damage}` : '0';
+  const targetDisplayName = atk.targetNameJp || atk.targetName || '';
+
+  return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-gradient:linear-gradient(135deg,${theme.bg},rgba(0,0,0,0.3));--sac-light:${theme.light};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
+    <div class="sac-left">
+      <img class="sac-sprite" src="${spriteUrl}" onerror="this.onerror=null;this.src='${spriteFallback}'" alt="">
+      <div class="sac-attacker-name">${atk.attackerNameJp || atk.attackerName}</div>
     </div>
-    <div class="vocab-attack-row">
-      <img class="vocab-attack-icon" src="${spriteUrl}" onerror="this.src='${spriteFallback}'" alt="">
-      <span class="vocab-attack-text">${atk.attackerBaseWord || ''}</span>
+    <div class="sac-right">
+      <div class="sac-row" data-row="0">
+        <span class="sac-vocab">${baseWordHtml}</span>
+        <span class="sac-meaning">${atk.attackerBaseMeaning || ''}</span>
+        <span class="sac-tag sac-tag-base">BASE</span>
+      </div>
+      <div class="sac-row" data-row="1">
+        <span class="sac-vocab">${skillNameHtml}</span>
+        <span class="sac-meaning">${atk.attackerSkillEn || ''}</span>
+        <span class="sac-tag sac-tag-atk">ATK</span>
+      </div>
+      <div class="sac-row sac-impact" data-row="2">
+        <span class="sac-impact-arrow">\u2192</span>
+        <img class="sac-impact-sprite" src="${targetSprite}" onerror="this.onerror=null;this.src='${targetSpriteFallback}'" alt="">
+        <span class="sac-impact-name">${targetDisplayName}</span>
+        <span class="sac-damage">${damageSign}</span>
+      </div>
     </div>
-    <div class="vocab-attack-row">
-      <img class="vocab-attack-icon" src="${actionIconUrl}" onerror="this.style.display='none'" alt="">
-      <span class="vocab-attack-text">${atk.attackerSkillName || ''}</span>
-    </div>
-    <div class="combat-damage-line">${t(effectKey, atk.attackerName, atk.damage)}</div>
+    <span class="sac-continue" style="display:none">\u25BC</span>
   </div>`;
+}
+
+/**
+ * Insert the split attack card into the action area and start staggered reveal.
+ * @param {Object} atk - Attack object from server
+ * @param {boolean} isEnemy - Whether this is an enemy attack
+ * @returns {Element|null} The card element, or null if action-area not found
+ */
+function insertAttackCard(atk, isEnemy) {
+  const actionArea = document.getElementById('action-area');
+  if (!actionArea) return null;
+
+  actionArea.innerHTML = buildSplitAttackCard(atk, isEnemy);
+
+  const card = actionArea.querySelector('.split-attack-card');
+  if (!card) return null;
+
+  // Staggered row reveal
+  const rows = card.querySelectorAll('.sac-row');
+  rows.forEach((row, i) => {
+    setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
+  });
+
+  return card;
+}
+
+/**
+ * Wait for the player to tap the attack card to continue.
+ * Shows the continue indicator, resolves on click, fades out card.
+ * @param {Element} card - The .split-attack-card element
+ * @returns {Promise<void>}
+ */
+function waitForCardTap(card) {
+  return new Promise((resolve) => {
+    if (!card) { resolve(); return; }
+
+    const actionArea = card.closest('#action-area') || card.parentElement;
+
+    // Show continue indicator
+    const indicator = card.querySelector('.sac-continue');
+    if (indicator) indicator.style.display = '';
+
+    let resolved = false;
+    const onTap = () => {
+      if (resolved) return;
+      resolved = true;
+      if (actionArea) actionArea.removeEventListener('click', onTap);
+
+      card.classList.add('sac-fading-out');
+      setTimeout(() => resolve(), ATTACK_CARD_TIMING.FADE_OUT_DURATION);
+    };
+
+    // Listen on action-area (larger tap target) or card itself
+    (actionArea || card).addEventListener('click', onTap);
+  });
+}
+
+/**
+ * Convenience: show card and immediately wait for tap.
+ * Use when there are no effects to fire between card display and tap.
+ * @param {Object} atk - Attack object from server
+ * @param {boolean} isEnemy - Whether this is an enemy attack
+ * @returns {Promise<void>}
+ */
+function showAttackCardAndWait(atk, isEnemy) {
+  const card = insertAttackCard(atk, isEnemy);
+  return waitForCardTap(card);
 }
 
 // ============ MODULE STATE ============
@@ -636,12 +722,18 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
     const effectKey = halved ? 'dealsHalved' :
       atk.elementMultiplier > 1 ? 'dealsStrong' :
       atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
-    const actionArea = document.getElementById('action-area');
-    if (actionArea) {
-      actionArea.innerHTML = atk.attackerNameJp
-        ? buildVocabAttackCard(atk, true, effectKey)
-        : `<div class="combat-robot-attack enemy">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
+    // Insert attack card (if JP name available) or fallback text
+    let attackCard = null;
+    if (atk.attackerNameJp) {
+      attackCard = insertAttackCard(atk, true);
+    } else {
+      const actionArea = document.getElementById('action-area');
+      if (actionArea) {
+        actionArea.innerHTML = `<div class="combat-robot-attack enemy">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
+      }
     }
+
+    // Fire effects while card is showing
     showDamageNumber(atk.damage, true, false);
     playSFX('player-hit');
 
@@ -660,7 +752,13 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
       allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
     }
     updateRobotHpBars(result.robotParty?.active, allyHpMap);
-    await delay(400);
+
+    // Wait for tap (attack card) or fixed delay (fallback)
+    if (attackCard) {
+      await waitForCardTap(attackCard);
+    } else {
+      await delay(400);
+    }
   }
 }
 
@@ -808,12 +906,18 @@ async function executeRobotPlayerAttack() {
           const atk = result.playerAttacks[atkIdx];
           const effectKey = atk.elementMultiplier > 1 ? 'dealsStrong' :
                             atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
-          const actionArea = document.getElementById('action-area');
-          if (actionArea) {
-            actionArea.innerHTML = atk.attackerNameJp
-              ? buildVocabAttackCard(atk, false, effectKey)
-              : `<div class="combat-robot-attack">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
+          // Insert attack card (if JP name available) or fallback text
+          let attackCard = null;
+          if (atk.attackerNameJp) {
+            attackCard = insertAttackCard(atk, false);
+          } else {
+            const actionArea = document.getElementById('action-area');
+            if (actionArea) {
+              actionArea.innerHTML = `<div class="combat-robot-attack">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
+            }
           }
+
+          // Fire effects while card is showing
           playSFX('attack');
 
           const robotSlotEl = findRobotSlotByAttackerId(atk.attackerId);
@@ -874,7 +978,12 @@ async function executeRobotPlayerAttack() {
             }
           }
 
-          await delay(400);
+          // Wait for tap (attack card) or fixed delay (fallback)
+          if (attackCard) {
+            await waitForCardTap(attackCard);
+          } else {
+            await delay(400);
+          }
         }
       }
 

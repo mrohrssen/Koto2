@@ -85,6 +85,11 @@ describe('Robot Instantiation', () => {
     assert.strictEqual(robot.ultimate.type, 'damage');
     assert.strictEqual(robot.ultimate.target, 'all_enemies');
   });
+
+  it('includes baseReading from template', () => {
+    const robot = instantiateRobot('kamedor');
+    assert.strictEqual(robot.baseReading, 'かめ');
+  });
 });
 
 describe('Robot Damage', () => {
