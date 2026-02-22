@@ -57,6 +57,17 @@ describe('Robot Combat - Enemy Turn', () => {
     assert.ok(result.attacks.length >= 1);
     assert.ok(allies[0].hp < allies[0].maxHp);
   });
+
+  it('includes vocab fields in enemy attack objects', () => {
+    const allies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateRobot('kamedor')];
+    const result = processEnemyTurn(enemies, allies);
+    const atk = result.attacks[0];
+    assert.strictEqual(atk.attackerNameJp, 'カメドル');
+    assert.strictEqual(atk.attackerBaseWord, '亀');
+    assert.ok(atk.attackerSkillName);
+    assert.ok(atk.attackerSkillEn);
+  });
 });
 
 describe('Robot Combat - Befriend', () => {

@@ -179,6 +179,10 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
       attacks.push({
         attackerId: enemy.id,
         attackerName: enemy.nameEn,
+        attackerNameJp: enemy.name,
+        attackerBaseWord: enemy.baseWord,
+        attackerSkillName: enemy.autoSkill.name,
+        attackerSkillEn: enemy.autoSkill.nameEn,
         attackerElement: enemy.element,
         targetId: target.id,
         targetName: target.nameEn,
