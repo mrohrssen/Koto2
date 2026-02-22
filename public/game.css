@@ -908,9 +908,10 @@ html, body {
 /* ===== SPLIT ATTACK CARD ===== */
 .split-attack-card {
   display: flex;
-  max-width: 320px;
+  max-width: 340px;
+  min-height: 90px;
   margin: 0 auto;
-  border-radius: 12px;
+  border-radius: var(--card-radius);
   overflow: hidden;
   border: 1px solid var(--sac-border, rgba(255,255,255,0.15));
   animation: sacFadeIn 200ms ease-out;
@@ -925,19 +926,19 @@ html, body {
 
 /* Left panel: sprite */
 .sac-left {
-  width: 72px;
+  width: 88px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8px 4px;
+  padding: 10px 8px;
   background: var(--sac-gradient, linear-gradient(135deg, rgba(255,255,255,0.06), rgba(0,0,0,0.3)));
   flex-shrink: 0;
 }
 
 .sac-sprite {
-  width: 52px;
-  height: 52px;
+  width: 64px;
+  height: 64px;
   object-fit: contain;
   image-rendering: pixelated;
   border-radius: 8px;
@@ -946,14 +947,14 @@ html, body {
 }
 
 .sac-attacker-name {
-  font-size: 9px;
+  font-size: 10px;
   margin-top: 4px;
   color: var(--sac-light, #aaa);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 68px;
+  max-width: 80px;
 }
 
 /* Right panel: vocab rows */
@@ -969,8 +970,8 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 5px 10px;
-  gap: 6px;
+  padding: 10px 14px;
+  gap: 8px;
   opacity: 0;
   transform: translateX(-8px);
   transition: opacity var(--sac-row-dur, 100ms) ease-out,
@@ -988,7 +989,7 @@ html, body {
 
 /* Vocab text with ruby */
 .sac-vocab {
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 700;
   color: #fff;
   white-space: nowrap;
@@ -996,13 +997,13 @@ html, body {
 }
 
 .sac-vocab rt {
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 400;
   color: rgba(255,255,255,0.6);
 }
 
 .sac-meaning {
-  font-size: 10px;
+  font-size: 12px;
   color: #888;
   white-space: nowrap;
 }
@@ -2740,14 +2741,9 @@ html, body {
   transition: width 0.3s, background-color 0.3s;
 }
 
-/* XP Bar */
+/* XP Bar - hidden in combat, shown on level-up */
 .robot-xp-bar {
-  width: 100%;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  margin-top: 2px;
-  overflow: hidden;
+  display: none;
 }
 
 .robot-xp-fill {
