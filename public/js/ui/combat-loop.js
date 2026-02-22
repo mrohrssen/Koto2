@@ -46,6 +46,50 @@ import { playAttackSound, playUltimateSound } from './combat-audio.js';
 import { configureRobotImg } from './sprite-utils.js';
 import { t } from './i18n.js';
 
+// ============ VOCAB ATTACK CARD ============
+
+const ELEMENT_COLORS_VOCAB = {
+  wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63', metal: '#9E9E9E', water: '#2196F3'
+};
+
+const ACTION_ICON_BASE = '/assets/sprites/actions';
+
+/**
+ * Build HTML for the vocab attack card shown when a creature attacks.
+ * @param {Object} atk - Attack object from server (with vocab fields)
+ * @param {boolean} isEnemy - Whether this is an enemy attack
+ * @param {string} effectKey - i18n key for damage text
+ * @returns {string} HTML string
+ */
+function buildVocabAttackCard(atk, isEnemy, effectKey) {
+  const elementColor = ELEMENT_COLORS_VOCAB[atk.attackerElement] || '#aaa';
+  const enemyClass = isEnemy ? ' enemy' : '';
+
+  // Creature sprite (24px mini version)
+  const spriteUrl = `/assets/sprites/robots/${atk.attackerId}-idle.webp`;
+  const spriteFallback = `/assets/sprites/robots/${atk.attackerId}.webp`;
+
+  // Action icon from skill English name
+  const skillSlug = (atk.attackerSkillEn || '').toLowerCase().replace(/\s+/g, '-');
+  const actionIconUrl = `${ACTION_ICON_BASE}/${skillSlug}.webp`;
+
+  return `<div class="vocab-attack-card${enemyClass}" style="--vocab-card-element-color: ${elementColor}">
+    <div class="vocab-attack-row">
+      <img class="vocab-attack-icon" src="${spriteUrl}" onerror="this.src='${spriteFallback}'" alt="">
+      <span class="vocab-attack-text">${atk.attackerNameJp || atk.attackerName}</span>
+    </div>
+    <div class="vocab-attack-row">
+      <img class="vocab-attack-icon" src="${spriteUrl}" onerror="this.src='${spriteFallback}'" alt="">
+      <span class="vocab-attack-text">${atk.attackerBaseWord || ''}</span>
+    </div>
+    <div class="vocab-attack-row">
+      <img class="vocab-attack-icon" src="${actionIconUrl}" onerror="this.style.display='none'" alt="">
+      <span class="vocab-attack-text">${atk.attackerSkillName || ''}</span>
+    </div>
+    <div class="combat-damage-line">${t(effectKey, atk.attackerName, atk.damage)}</div>
+  </div>`;
+}
+
 // ============ MODULE STATE ============
 
 // Combat state
@@ -594,7 +638,9 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
       atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
     const actionArea = document.getElementById('action-area');
     if (actionArea) {
-      actionArea.innerHTML = `<div class="combat-robot-attack enemy">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
+      actionArea.innerHTML = atk.attackerNameJp
+        ? buildVocabAttackCard(atk, true, effectKey)
+        : `<div class="combat-robot-attack enemy">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
     }
     showDamageNumber(atk.damage, true, false);
     playSFX('player-hit');
@@ -764,7 +810,9 @@ async function executeRobotPlayerAttack() {
                             atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
           const actionArea = document.getElementById('action-area');
           if (actionArea) {
-            actionArea.innerHTML = `<div class="combat-robot-attack">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
+            actionArea.innerHTML = atk.attackerNameJp
+              ? buildVocabAttackCard(atk, false, effectKey)
+              : `<div class="combat-robot-attack">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
           }
           playSFX('attack');
 
