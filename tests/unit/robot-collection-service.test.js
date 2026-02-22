@@ -5,7 +5,8 @@ import {
   MAX_TEAM_POINTS,
   DEFAULT_COLLECTION,
   validateTeamSelection,
-  addToCollection
+  addToCollection,
+  getCollectionCatalog
 } from '../../src/game/services/robot-collection-service.js';
 
 describe('robot-collection-service', () => {
@@ -58,6 +59,38 @@ describe('robot-collection-service', () => {
       const result = validateTeamSelection(coll, ['hikaribon', 'tsukimochi', 'kumaro']);
       assert.strictEqual(result.valid, true);
       assert.strictEqual(result.totalCost, 10);
+    });
+  });
+
+  describe('getCollectionCatalog', () => {
+    it('includes full ultimate skill data', () => {
+      const catalog = getCollectionCatalog([]);
+      const kamedor = catalog.find(c => c.id === 'kamedor');
+      assert.ok(kamedor, 'kamedor should exist in catalog');
+      assert.ok(kamedor.ultimate.power, 'ultimate should have power');
+      assert.ok(kamedor.ultimate.chargesRequired, 'ultimate should have chargesRequired');
+      assert.ok(kamedor.ultimate.type, 'ultimate should have type');
+      assert.ok(kamedor.ultimate.target, 'ultimate should have target');
+    });
+
+    it('includes archetype and modifier', () => {
+      const catalog = getCollectionCatalog([]);
+      const kamedor = catalog.find(c => c.id === 'kamedor');
+      assert.strictEqual(kamedor.archetype, 'Tank/Healer');
+      assert.ok(kamedor.modifier, 'should have modifier');
+      assert.strictEqual(kamedor.modifier.meaning, 'Ancient');
+    });
+
+    it('includes befriendCount from meta', () => {
+      const catalog = getCollectionCatalog(['kamedor'], { kamedor: 5 });
+      const kamedor = catalog.find(c => c.id === 'kamedor');
+      assert.strictEqual(kamedor.befriendCount, 5);
+    });
+
+    it('defaults befriendCount to 0', () => {
+      const catalog = getCollectionCatalog([]);
+      const kamedor = catalog.find(c => c.id === 'kamedor');
+      assert.strictEqual(kamedor.befriendCount, 0);
     });
   });
 

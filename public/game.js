@@ -472,6 +472,82 @@ function showCollectionSelect(catalog, collection) {
   return new Promise((resolve) => {
     const selected = new Set();
     let usedPoints = 0;
+    let inspectedId = null;
+
+    // Element emoji map
+    const ELEMENT_EMOJI = { water: '\u{1F4A7}', fire: '\u{1F525}', earth: '\u{1F30D}', metal: '\u2699\uFE0F', wood: '\u{1F33F}' };
+
+    // Rarity display names
+    const RARITY_LABELS = { common: 'Common', uncommon: 'Uncommon', rare: 'Rare', epic: 'Epic', legendary: 'Legendary' };
+
+    // Build full display name: "Kamedor the Ancient Turtle"
+    function fullName(r) {
+      if (r.modifier && r.baseMeaning) {
+        return `${r.nameEn} the ${r.modifier.meaning} ${r.baseMeaning.charAt(0).toUpperCase() + r.baseMeaning.slice(1)}`;
+      }
+      return r.nameEn;
+    }
+
+    // Render the owned creature card HTML
+    function renderOwnedCard(r) {
+      const el = ELEMENT_EMOJI[r.element] || '';
+      const chargePips = r.ultimate?.chargesRequired
+        ? Array(r.ultimate.chargesRequired).fill('<span class="cc-charge-pip"></span>').join('')
+        : '';
+      return `
+        <div class="creature-card" data-element="${r.element}">
+          <div class="cc-hero">
+            <div class="cc-sprite"><img data-robot-id="${r.id}" alt="${r.nameEn}" /></div>
+            <div class="cc-meta">
+              <div class="cc-name">${fullName(r)}</div>
+              <div class="cc-sub">${el} ${r.element.charAt(0).toUpperCase() + r.element.slice(1)} · ${r.archetype || ''}</div>
+              <div class="cc-chips">
+                <span class="cc-chip"><span class="cc-chip-val">${r.baseHp}</span>&nbsp;<span class="cc-chip-lbl">HP</span></span>
+                <span class="cc-chip"><span class="cc-chip-val">${r.baseAttack}</span>&nbsp;<span class="cc-chip-lbl">ATK</span></span>
+                <span class="cc-chip"><span class="cc-chip-lbl">${RARITY_LABELS[r.rarity] || r.rarity}</span></span>
+                <span class="cc-chip"><span class="cc-chip-lbl">${r.pointCost} pts</span></span>
+              </div>
+            </div>
+          </div>
+          <div class="cc-skills">
+            <div class="cc-sk">
+              <div class="cc-sk-head">
+                <span class="cc-sk-tag atk">ATK</span>
+                <span class="cc-sk-jp">${r.autoSkill?.name || ''}</span>
+                <span class="cc-sk-en">${r.autoSkill?.nameEn || ''}</span>
+              </div>
+              <div class="cc-sk-meta">${r.autoSkill?.power || 0} pwr · ${(r.autoSkill?.target || '').replace(/_/g, ' ')} · ${r.autoSkill?.type || ''}</div>
+            </div>
+            <div class="cc-sk">
+              <div class="cc-sk-head">
+                <span class="cc-sk-tag ult">ULT</span>
+                <span class="cc-sk-jp">${r.ultimate?.name || ''}</span>
+                <span class="cc-sk-en">${r.ultimate?.nameEn || ''}</span>
+              </div>
+              <div class="cc-sk-meta">${r.ultimate?.power || 0} pwr · ${(r.ultimate?.target || '').replace(/_/g, ' ')} · ${r.ultimate?.type || ''}${chargePips ? `<span class="cc-charges">${chargePips}</span>` : ''}</div>
+            </div>
+          </div>
+          <div class="cc-foot">
+            <span>${r.pointCost} pts</span>
+            <span>Befriended ${r.befriendCount || 0}x</span>
+          </div>
+        </div>`;
+    }
+
+    // Render redacted card for unowned creatures
+    function renderRedactedCard(r) {
+      const el = ELEMENT_EMOJI[r.element] || '';
+      return `
+        <div class="creature-card cc-redacted" data-element="${r.element}">
+          <div class="cc-qmarks">???</div>
+          <div class="cc-unknown">Unknown Creature</div>
+          <div class="cc-tags">
+            <span class="cc-tag">${el} ${r.element.charAt(0).toUpperCase() + r.element.slice(1)}</span>
+            <span class="cc-tag">${RARITY_LABELS[r.rarity] || r.rarity}</span>
+          </div>
+          <div class="cc-hint">Befriend this creature to unlock its details</div>
+        </div>`;
+    }
 
     // Sort: common first, then by element within rarity
     const sorted = [...catalog].sort((a, b) => {
@@ -512,11 +588,26 @@ function showCollectionSelect(catalog, collection) {
         overlay.className = 'collection-select';
         gameApp.appendChild(overlay);
       }
+      // Card area
+      let cardHtml;
+      if (!inspectedId) {
+        cardHtml = '<div class="creature-card-prompt">Tap a creature to view its stats</div>';
+      } else {
+        const inspected = sorted.find(r => r.id === inspectedId);
+        if (inspected) {
+          const owned = collection.includes(inspected.id);
+          cardHtml = owned ? renderOwnedCard(inspected) : renderRedactedCard(inspected);
+        } else {
+          cardHtml = '<div class="creature-card-prompt">Tap a creature to view its stats</div>';
+        }
+      }
+
       overlay.innerHTML = `
         <div class="collection-header">
           <span class="collection-title">${t('selectTeam')}</span>
           <span class="collection-points ${budgetClass}">${usedPoints} / ${MAX_POINTS} pts</span>
         </div>
+        ${cardHtml}
         <div class="collection-grid">${cellsHtml}</div>
         <button class="action-btn action-btn-primary" id="collection-confirm-btn" ${selected.size === 0 ? 'disabled' : ''}>
           ${t('startRun', selected.size, selected.size !== 1 ? 's' : '')}
@@ -532,19 +623,29 @@ function showCollectionSelect(catalog, collection) {
       scene.setBackground('/assets/backgrounds/hub.webp');
 
       // Bind click handlers
-      document.querySelectorAll('.collection-cell:not(.unowned)').forEach(cell => {
+      document.querySelectorAll('.collection-cell').forEach(cell => {
         cell.addEventListener('click', () => {
           const id = cell.dataset.id;
           const robot = sorted.find(r => r.id === id);
           if (!robot) return;
 
-          if (selected.has(id)) {
-            selected.delete(id);
-            usedPoints -= robot.pointCost;
-          } else {
-            if (robot.pointCost > MAX_POINTS - usedPoints) return;
-            selected.add(id);
-            usedPoints += robot.pointCost;
+          // Always update inspection (even for unowned)
+          inspectedId = id;
+
+          // Only toggle selection for owned creatures
+          const owned = collection.includes(id);
+          if (owned) {
+            if (selected.has(id)) {
+              selected.delete(id);
+              usedPoints -= robot.pointCost;
+            } else {
+              if (robot.pointCost > MAX_POINTS - usedPoints) {
+                render();
+                return;
+              }
+              selected.add(id);
+              usedPoints += robot.pointCost;
+            }
           }
           render();
         });

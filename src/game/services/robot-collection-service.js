@@ -53,7 +53,7 @@ export function addToCollection(collection, robotId) {
   return { added: true, collection };
 }
 
-export function getCollectionCatalog(collection) {
+export function getCollectionCatalog(collection, befriendCount = {}) {
   return ROBOT_DATA.map(r => ({
     id: r.id,
     name: r.name,
@@ -62,13 +62,15 @@ export function getCollectionCatalog(collection) {
     rarity: r.rarity,
     baseHp: r.baseHp,
     baseAttack: r.baseAttack,
+    archetype: r.archetype,
     area: r.area,
-    description: r.description,
     baseWord: r.baseWord,
     baseMeaning: r.baseMeaning,
+    modifier: r.modifier || null,
     autoSkill: r.autoSkill,
-    ultimate: { name: r.ultimate.name, nameEn: r.ultimate.nameEn },
+    ultimate: r.ultimate,
     pointCost: RARITY_POINT_COST[r.rarity] || 3,
-    owned: collection.includes(r.id)
+    owned: collection.includes(r.id),
+    befriendCount: befriendCount[r.id] || 0
   }));
 }

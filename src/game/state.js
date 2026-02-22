@@ -74,6 +74,9 @@ export function createMetaProgression() {
     // Permanent robot collection (persists across runs)
     robotCollection: ['hikaribon', 'hanatchi', 'tsukimochi'],
 
+    // Befriend counts per creature (persists across runs)
+    befriendCount: {},
+
     // NPC bonds (persists across runs)
     npcBonds: {},
 

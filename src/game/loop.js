@@ -712,6 +712,10 @@ export class GameManager {
         this.run.robotParty.reserves.push(robot);
       }
       if (this.meta && !robot.temporary) {
+        // Increment befriend counter (always, even if already owned)
+        if (!this.meta.befriendCount) this.meta.befriendCount = {};
+        this.meta.befriendCount[robot.id] = (this.meta.befriendCount[robot.id] || 0) + 1;
+
         const result = addToCollection(this.meta.robotCollection || [], robot.id);
         if (result.added) {
           this.meta.robotCollection = result.collection;
