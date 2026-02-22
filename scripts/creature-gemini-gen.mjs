@@ -109,7 +109,7 @@ function buildPrompt(meta, visualTier, descriptionText, hasStyleRefs) {
     ? 'Design in the same art style as the reference images.'
     : 'Anime creature collector style — cel-shaded lighting, expressive eyes.';
 
-  return `${styleRef} ${descriptionText} Solid magenta (#FF00FF) background, no shadows, full body, front-facing idle pose, ready for animation. No text, no UI elements.`;
+  return `${styleRef} ${descriptionText} Solid white (#FFFFFF) background, no shadows, no light glow, no transparent pixels, full body, front-facing idle pose, ready for animation. No text, no UI elements.`;
 }
 
 // ---------------------------------------------------------------------------
