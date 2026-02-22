@@ -25,7 +25,7 @@ import {
   getAreaById
 } from '../rooms.js';
 
-import { addXpToRobot, xpToNextLevel, XP_PER_LEVEL, instantiateRobot, getRobotBuyPrice, getRobotSellPrice, generateDealerRobots } from '../robots.js';
+import { addXpToRobot, xpToNextLevel, instantiateRobot, getRobotBuyPrice, getRobotSellPrice, generateDealerRobots } from '../robots.js';
 import { logger } from '../../logger.js';
 
 const AREA_BG_COUNT = 20;
