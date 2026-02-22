@@ -905,74 +905,183 @@ html, body {
   font-weight: var(--font-weight-bold);
 }
 
-/* ===== VOCAB ATTACK CARD ===== */
-.vocab-attack-card {
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  border-radius: 8px;
-  border-left: 3px solid var(--vocab-card-element-color, #aaa);
-  padding: 6px 12px;
+/* ===== SPLIT ATTACK CARD ===== */
+.split-attack-card {
+  display: flex;
+  max-width: 320px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--sac-border, rgba(255,255,255,0.15));
+  animation: sacFadeIn 200ms ease-out;
+  position: relative;
+  cursor: pointer;
+}
+
+.split-attack-card.sac-fading-out {
+  opacity: 0;
+  transition: opacity 100ms ease-out;
+}
+
+/* Left panel: sprite */
+.sac-left {
+  width: 72px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  animation: vocabCardIn 200ms ease-out;
-  max-width: 260px;
-  margin: 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  background: var(--sac-gradient, linear-gradient(135deg, rgba(255,255,255,0.06), rgba(0,0,0,0.3)));
+  flex-shrink: 0;
 }
 
-.vocab-attack-card.enemy {
-  border-left-color: var(--accent-red, #ff5252);
+.sac-sprite {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(0,0,0,0.3);
 }
 
-.vocab-attack-row {
+.sac-attacker-name {
+  font-size: 9px;
+  margin-top: 4px;
+  color: var(--sac-light, #aaa);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 68px;
+}
+
+/* Right panel: vocab rows */
+.sac-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: rgba(0,0,0,0.3);
+  min-width: 0;
+}
+
+.sac-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  padding: 5px 10px;
+  gap: 6px;
   opacity: 0;
-  animation: vocabRowIn 150ms ease-out forwards;
+  transform: translateX(-8px);
+  transition: opacity var(--sac-row-dur, 100ms) ease-out,
+              transform var(--sac-row-dur, 100ms) ease-out;
 }
 
-.vocab-attack-row:nth-child(1) { animation-delay: 0ms; }
-.vocab-attack-row:nth-child(2) { animation-delay: 50ms; }
-.vocab-attack-row:nth-child(3) { animation-delay: 100ms; }
-
-.vocab-attack-icon {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-  flex-shrink: 0;
-  border-radius: 4px;
+.sac-row.sac-visible {
+  opacity: 1;
+  transform: translateX(0);
 }
 
-.vocab-attack-text {
-  font-size: 15px;
-  font-weight: var(--font-weight-semi, 600);
-  color: var(--text-primary, #fff);
+.sac-row + .sac-row {
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Vocab text with ruby */
+.sac-vocab {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.sac-vocab rt {
+  font-size: 8px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.6);
+}
+
+.sac-meaning {
+  font-size: 10px;
+  color: #888;
   white-space: nowrap;
 }
 
-.vocab-attack-card .combat-damage-line {
-  text-align: center;
+/* Tag pills */
+.sac-tag {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.sac-tag-base {
+  background: rgba(255,255,255,0.08);
+  color: #888;
+}
+
+.sac-tag-atk {
+  background: rgba(244,67,54,0.3);
+  color: #EF9A9A;
+}
+
+/* Impact row */
+.sac-impact {
+  background: rgba(239,83,80,0.06);
+  border-top: 1px solid rgba(239,83,80,0.1);
+}
+
+.sac-impact-arrow {
+  color: var(--sac-light, #aaa);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.sac-impact-sprite {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  border: 1px solid rgba(239,83,80,0.3);
+  flex-shrink: 0;
+}
+
+.sac-impact-name {
+  font-size: 12px;
+  color: #ccc;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sac-damage {
   font-size: 16px;
-  font-weight: var(--font-weight-bold, 700);
-  margin-top: 2px;
-  opacity: 0;
-  animation: vocabRowIn 150ms ease-out 150ms forwards;
-}
-
-.vocab-attack-card.enemy .combat-damage-line {
+  font-weight: 700;
   color: var(--accent-red, #ff5252);
+  flex-shrink: 0;
 }
 
-@keyframes vocabCardIn {
+/* Continue indicator */
+.sac-continue {
+  position: absolute;
+  bottom: 4px;
+  right: 8px;
+  color: rgba(49, 183, 224, 0.75);
+  font-size: 10px;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(85, 196, 233, 0.45);
+  animation: narration-glow 2s ease-in-out infinite;
+}
+
+/* Element theming (set via CSS custom properties in JS) */
+@keyframes sacFadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes vocabRowIn {
-  from { opacity: 0; transform: translateX(-6px); }
-  to { opacity: 1; transform: translateX(0); }
 }
 
 /* ===== MINI TOOLBAR ===== */
