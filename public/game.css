@@ -3122,6 +3122,230 @@ html, body {
   text-overflow: ellipsis;
 }
 
+/* ====== Creature Detail Card (team select) ====== */
+.creature-card {
+  flex-shrink: 0;
+  margin: 0 8px 6px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: border-color 0.2s;
+}
+
+.creature-card .cc-hero {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(0,0,0,0.3));
+}
+
+.creature-card .cc-sprite {
+  width: 72px;
+  height: 72px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,0.1);
+  overflow: hidden;
+}
+
+.creature-card .cc-sprite img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.creature-card .cc-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.creature-card .cc-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.creature-card .cc-sub {
+  font-size: 10px;
+  color: #64B5F6;
+  margin-bottom: 4px;
+}
+
+.creature-card .cc-chips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.creature-card .cc-chip {
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: bold;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.creature-card .cc-chip-val { color: #fff; }
+.creature-card .cc-chip-lbl { color: #888; font-weight: normal; }
+
+/* Skill split row */
+.creature-card .cc-skills {
+  display: flex;
+  gap: 1px;
+  background: rgba(0,0,0,0.15);
+}
+
+.creature-card .cc-sk {
+  flex: 1;
+  padding: 6px 8px;
+  background: rgba(26,26,46,0.9);
+}
+
+.creature-card .cc-sk-head {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+
+.creature-card .cc-sk-tag {
+  font-size: 7px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: bold;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.creature-card .cc-sk-tag.atk { background: rgba(244,67,54,0.3); color: #EF9A9A; }
+.creature-card .cc-sk-tag.ult { background: rgba(156,39,176,0.3); color: #CE93D8; }
+
+.creature-card .cc-sk-jp {
+  font-size: 14px;
+  color: #fff;
+  font-weight: bold;
+}
+
+.creature-card .cc-sk-en {
+  font-size: 9px;
+  color: #bbb;
+  font-weight: normal;
+}
+
+.creature-card .cc-sk-meta {
+  font-size: 8px;
+  color: #666;
+}
+
+.creature-card .cc-charges {
+  display: inline-flex;
+  gap: 2px;
+  vertical-align: middle;
+  margin-left: 3px;
+}
+
+.creature-card .cc-charge-pip {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(156,39,176,0.3);
+  border: 1px solid #CE93D8;
+  display: inline-block;
+}
+
+.creature-card .cc-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 10px;
+  font-size: 9px;
+  color: #555;
+  background: rgba(0,0,0,0.15);
+}
+
+/* Element tints */
+.creature-card[data-element="water"] { border-color: rgba(33,150,243,0.4); }
+.creature-card[data-element="water"] .cc-hero { background: linear-gradient(135deg, rgba(33,150,243,0.15), rgba(0,0,0,0.3)); }
+.creature-card[data-element="water"] .cc-sub { color: #64B5F6; }
+
+.creature-card[data-element="fire"] { border-color: rgba(244,67,54,0.4); }
+.creature-card[data-element="fire"] .cc-hero { background: linear-gradient(135deg, rgba(244,67,54,0.15), rgba(0,0,0,0.3)); }
+.creature-card[data-element="fire"] .cc-sub { color: #EF9A9A; }
+
+.creature-card[data-element="earth"] { border-color: rgba(141,110,99,0.4); }
+.creature-card[data-element="earth"] .cc-hero { background: linear-gradient(135deg, rgba(141,110,99,0.15), rgba(0,0,0,0.3)); }
+.creature-card[data-element="earth"] .cc-sub { color: #BCAAA4; }
+
+.creature-card[data-element="metal"] { border-color: rgba(158,158,158,0.4); }
+.creature-card[data-element="metal"] .cc-hero { background: linear-gradient(135deg, rgba(158,158,158,0.15), rgba(0,0,0,0.3)); }
+.creature-card[data-element="metal"] .cc-sub { color: #BDBDBD; }
+
+.creature-card[data-element="wood"] { border-color: rgba(76,175,80,0.4); }
+.creature-card[data-element="wood"] .cc-hero { background: linear-gradient(135deg, rgba(76,175,80,0.15), rgba(0,0,0,0.3)); }
+.creature-card[data-element="wood"] .cc-sub { color: #A5D6A7; }
+
+/* Redacted state */
+.creature-card.cc-redacted {
+  text-align: center;
+  padding: 12px;
+  background: rgba(0,0,0,0.3);
+  border-style: dashed;
+}
+
+.creature-card.cc-redacted .cc-qmarks {
+  font-size: 24px;
+  letter-spacing: 4px;
+  color: #444;
+  margin-bottom: 4px;
+}
+
+.creature-card.cc-redacted .cc-unknown {
+  color: #555;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.creature-card.cc-redacted .cc-tags {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.creature-card.cc-redacted .cc-tag {
+  font-size: 9px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  color: #777;
+}
+
+.creature-card.cc-redacted .cc-hint {
+  font-size: 10px;
+  color: #555;
+  margin-top: 6px;
+}
+
+/* Empty state prompt */
+.creature-card-prompt {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 14px 8px;
+  color: #555;
+  font-size: 12px;
+  font-style: italic;
+}
+
 /* Collection toast */
 .collection-toast {
   position: fixed;
