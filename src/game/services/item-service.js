@@ -22,7 +22,9 @@ export function createItemBuffs() {
     autoPowerMult: 1.0,
     ultimatePowerMult: 1.0,
     elementEdge: 0,
-    flatDamageReduction: 0
+    flatDamageReduction: 0,
+    xpMultiplier: 1.0,
+    xpBalanceStacks: 0
   };
 }
 
@@ -142,6 +144,16 @@ export function applyItem(item, robotParty, itemBuffs) {
     for (const [field, value] of Object.entries(item.effect)) {
       applyStat(field, value, itemBuffs);
     }
+    return { applied: true };
+  }
+
+  if (item.type === 'xpCharm') {
+    itemBuffs.xpMultiplier = (itemBuffs.xpMultiplier || 1.0) * (1 + item.effect.value);
+    return { applied: true };
+  }
+
+  if (item.type === 'xpBalance') {
+    itemBuffs.xpBalanceStacks = (itemBuffs.xpBalanceStacks || 0) + item.effect.value;
     return { applied: true };
   }
 

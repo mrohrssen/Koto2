@@ -87,6 +87,9 @@ export function render(robots) {
       const isCharged = robot.ultimate.charges >= robot.ultimate.chargesRequired;
       const isKO = robot.hp <= 0;
       const hpColor = hpPct > 60 ? 'var(--hp-green)' : hpPct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+      // Must match xpToNextLevel() in src/game/robots.js
+      const xpNeeded = Math.pow(robot.level + 1, 3) - Math.pow(robot.level, 3);
+      const xpPct = Math.min(100, (robot.xp / xpNeeded) * 100);
 
       slot.innerHTML = `
         <div class="robot-icon${isKO ? ' ko' : ''}${isCharged ? ' charged' : ''}"
@@ -98,6 +101,9 @@ export function render(robots) {
         <div class="robot-slot-name">${robot.nameEn}</div>
         <div class="robot-hp-bar">
           <div class="robot-hp-fill" style="width: ${hpPct}%; background-color: ${hpColor}"></div>
+        </div>
+        <div class="robot-xp-bar">
+          <div class="robot-xp-fill" style="width: ${xpPct}%"></div>
         </div>
         <div class="robot-charge-bar">
           ${buildChargeSegments(robot.ultimate.charges, robot.ultimate.chargesRequired)}

@@ -561,20 +561,39 @@ export function showXpPopup(robotSlotEl, xpAmount) {
  * Show animated "Level Up!" text floating up from a robot slot element.
  * @param {Element} robotSlotEl - The .robot-slot element
  * @param {number} newLevel - The new level reached
+ * @param {number} [hpGain] - HP gained from this level-up
+ * @param {number} [attackGain] - ATK gained from this level-up
  */
-export function showLevelUpPopup(robotSlotEl, newLevel) {
+export function showLevelUpPopup(robotSlotEl, newLevel, hpGain, attackGain) {
   if (!robotSlotEl) return;
 
   const popup = document.createElement('div');
   popup.className = 'robot-levelup-popup';
-  popup.textContent = `Level Up! Lv${newLevel}`;
+  let text = `Level Up! Lv${newLevel}`;
+  if (hpGain || attackGain) {
+    const parts = [];
+    if (hpGain) parts.push(`+${hpGain} HP`);
+    if (attackGain) parts.push(`+${attackGain} ATK`);
+    text += `\n${parts.join(', ')}`;
+  }
+  popup.textContent = text;
+  popup.style.whiteSpace = 'pre-line';
   robotSlotEl.style.position = 'relative';
   robotSlotEl.appendChild(popup);
 
-  // Flash the robot icon gold
+  // Flash the robot icon with a neon glow
   const icon = robotSlotEl.querySelector('.robot-icon');
   if (icon) {
-    flashElement(icon, 2);
+    icon.classList.add('level-up-glow');
+    setTimeout(() => icon.classList.remove('level-up-glow'), 1500);
+  }
+
+  // Update level badge in DOM
+  const badge = robotSlotEl.querySelector('.robot-level-badge');
+  if (badge) {
+    badge.textContent = `Lv${newLevel}`;
+    badge.classList.add('level-badge-pop');
+    setTimeout(() => badge.classList.remove('level-badge-pop'), 600);
   }
 
   anime(popup, {
@@ -586,12 +605,6 @@ export function showLevelUpPopup(robotSlotEl, newLevel) {
     ease: 'outQuad',
     onComplete: () => popup.remove()
   });
-
-  // Update the level badge immediately
-  const badge = robotSlotEl.querySelector('.robot-level-badge');
-  if (badge) {
-    badge.textContent = `Lv${newLevel}`;
-  }
 }
 
 /**

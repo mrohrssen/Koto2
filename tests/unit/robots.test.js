@@ -7,6 +7,7 @@ import {
   RARITY_MULTIPLIERS,
   calculateRobotDamage,
   addXpToRobot,
+  xpToNextLevel,
   getStatsForLevel,
   selectTarget,
   generateEnemyRobots
@@ -107,7 +108,7 @@ describe('Robot Leveling', () => {
 
   it('awards XP and levels up', () => {
     const robot = instantiateRobot('hikaribon');
-    addXpToRobot(robot, 100);
+    addXpToRobot(robot, 7);
     assert.strictEqual(robot.level, 2);
     assert.strictEqual(robot.xp, 0);
   });
@@ -124,7 +125,7 @@ describe('Robot Leveling', () => {
     robot.level = 1;
     robot.xp = 0;
 
-    addXpToRobot(robot, 100); // Level up to 2
+    addXpToRobot(robot, 7); // Level up to 2
 
     assert.strictEqual(robot.level, 2);
     // Level 2: base * 1.1 => floor(160 * 1.1) = 176
@@ -133,6 +134,54 @@ describe('Robot Leveling', () => {
     assert.strictEqual(robot.attack, 7);
     // HP should have increased by the same diff
     assert.strictEqual(robot.hp, 176);
+  });
+
+  it('xpToNextLevel returns cubic deltas', () => {
+    assert.strictEqual(xpToNextLevel(1), 7);   // 2³ - 1³
+    assert.strictEqual(xpToNextLevel(2), 19);  // 3³ - 2³
+    assert.strictEqual(xpToNextLevel(3), 37);  // 4³ - 3³
+    assert.strictEqual(xpToNextLevel(4), 61);  // 5³ - 4³
+    assert.strictEqual(xpToNextLevel(9), 271); // 10³ - 9³
+  });
+
+  it('levels up with cubic curve (7 XP to reach L2)', () => {
+    const robot = instantiateRobot('hikaribon');
+    addXpToRobot(robot, 7);
+    assert.strictEqual(robot.level, 2);
+    assert.strictEqual(robot.xp, 0);
+  });
+
+  it('does not level up with 6 XP (needs 7)', () => {
+    const robot = instantiateRobot('hikaribon');
+    addXpToRobot(robot, 6);
+    assert.strictEqual(robot.level, 1);
+    assert.strictEqual(robot.xp, 6);
+  });
+
+  it('cascading multi-level-up from a single large XP grant', () => {
+    const robot = instantiateRobot('hikaribon');
+    // 7 (L1→2) + 19 (L2→3) = 26 needed for L3
+    addXpToRobot(robot, 26);
+    assert.strictEqual(robot.level, 3);
+    assert.strictEqual(robot.xp, 0);
+  });
+
+  it('addXpToRobot returns array of level-up events', () => {
+    const robot = instantiateRobot('hikaribon');
+    const levelUps = addXpToRobot(robot, 26);
+    assert.strictEqual(levelUps.length, 2);
+    assert.strictEqual(levelUps[0].level, 2);
+    assert.strictEqual(levelUps[1].level, 3);
+    assert.ok(levelUps[0].maxHp > 0);
+    assert.ok(levelUps[0].attack > 0);
+    assert.ok(levelUps[0].hpGain >= 0);
+  });
+
+  it('addXpToRobot returns empty array when no level-up', () => {
+    const robot = instantiateRobot('hikaribon');
+    const levelUps = addXpToRobot(robot, 3);
+    assert.strictEqual(levelUps.length, 0);
+    assert.strictEqual(robot.xp, 3);
   });
 });
 

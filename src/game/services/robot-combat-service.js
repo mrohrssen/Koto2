@@ -4,7 +4,8 @@ import {
   rollVariance,
   selectTarget,
   addXpToRobot,
-  generateEnemyRobot
+  generateEnemyRobot,
+  xpToNextLevel
 } from '../robots.js';
 import {
   getBuffedAttack,
@@ -22,6 +23,7 @@ import {
   getFlatAttackBonus
 } from '../combat/effects.js';
 export const CREDITS_PER_KILL = 15;
+export const BASE_KILL_XP = 10;
 
 export function processAttackTurn(allies, enemies, itemBuffs = null, robotParty = null) {
   const attacks = [];
@@ -97,7 +99,7 @@ export function processAttackTurn(allies, enemies, itemBuffs = null, robotParty 
 
       if (targetDefeated && !defeatedEnemyIds.has(target.id) && robotParty) {
         defeatedEnemyIds.add(target.id);
-        const xpEvent = awardKillXp(robotParty, 50);
+        const xpEvent = awardKillXp(robotParty, target.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks);
         xpEvents.push({ enemyId: target.id, enemyName: target.nameEn, ...xpEvent });
       }
     }
@@ -304,7 +306,7 @@ export function processUltimate(robot, enemies, itemBuffs = null, robotParty = n
     // Award XP immediately when an enemy is killed by ultimate
     if (targetDefeated && !defeatedEnemyIds.has(enemy.id) && robotParty) {
       defeatedEnemyIds.add(enemy.id);
-      const xpEvent = awardKillXp(robotParty, 50);
+      const xpEvent = awardKillXp(robotParty, enemy.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks);
       xpEvents.push({ enemyId: enemy.id, enemyName: enemy.nameEn, ...xpEvent });
     }
   }
@@ -427,7 +429,7 @@ function processPoisonUltimate(robot, enemies, itemBuffs, robotParty) {
     // Award XP immediately when an enemy is killed
     if (targetDefeated && !defeatedEnemyIds.has(enemy.id) && robotParty) {
       defeatedEnemyIds.add(enemy.id);
-      const xpEvent = awardKillXp(robotParty, 50);
+      const xpEvent = awardKillXp(robotParty, enemy.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks);
       xpEvents.push({ enemyId: enemy.id, enemyName: enemy.nameEn, ...xpEvent });
     }
   }
@@ -542,50 +544,65 @@ function processStatusEffectUltimate(robot, effectType, enemies, robotParty) {
 
 /**
  * Award XP to all alive equipped robots when an enemy is killed during combat.
+ * XP scales with enemy level: BASE_KILL_XP * enemyLevel * xpMultiplier.
+ * Active robots get 2 shares, reserves get 1 share.
+ * When xpBalanceStacks > 0, XP is redistributed from overleveled to underleveled robots.
  * Returns per-robot XP amounts and any level-ups that occurred.
  */
-export function awardKillXp(robotParty, baseXp) {
-  const activeCount = robotParty.active.filter(r => r && r.hp > 0).length;
-  const reserveCount = robotParty.reserves.length;
-  const totalShares = activeCount * 2 + reserveCount * 1;
+export function awardKillXp(robotParty, enemyLevel, xpMultiplier = 1.0, xpBalanceStacks = 0) {
+  const baseXp = Math.floor(BASE_KILL_XP * enemyLevel * xpMultiplier);
+  const activeRobots = robotParty.active.filter(r => r && r.hp > 0);
+  const reserveRobots = robotParty.reserves.filter(r => r != null);
+  const totalShares = activeRobots.length * 2 + reserveRobots.length * 1;
   if (totalShares === 0) return { xpGrants: [], levelUps: [] };
 
   const perShare = baseXp / totalShares;
-  const xpGrants = [];
-  const levelUps = [];
 
-  for (const robot of robotParty.active) {
-    if (!robot || robot.hp <= 0) continue;
-    const xpAmount = Math.floor(perShare * 2);
-    const prevLevel = robot.level;
-    addXpToRobot(robot, xpAmount);
-    xpGrants.push({ robotId: robot.id, robotName: robot.nameEn, xp: xpAmount });
-    if (robot.level > prevLevel) {
-      levelUps.push({
-        robotId: robot.id,
-        robotName: robot.nameEn,
-        oldLevel: prevLevel,
-        newLevel: robot.level,
-        maxHp: robot.maxHp,
-        attack: robot.attack
-      });
+  // Compute initial XP shares per robot
+  const entries = [];
+  for (const robot of activeRobots) {
+    entries.push({ robot, xp: Math.floor(perShare * 2) });
+  }
+  for (const robot of reserveRobots) {
+    entries.push({ robot, xp: Math.floor(perShare * 1) });
+  }
+
+  // Apply EXP Balance redistribution
+  if (xpBalanceStacks > 0 && entries.length > 1) {
+    const totalLevel = entries.reduce((sum, e) => sum + e.robot.level, 0);
+    const meanLevel = Math.floor(totalLevel / entries.length);
+    const totalXp = entries.reduce((sum, e) => sum + e.xp, 0);
+    const recipientCount = entries.filter(e => e.robot.level <= meanLevel).length;
+
+    if (recipientCount > 0) {
+      const splitXp = totalXp / recipientCount;
+      const t = Math.min(0.2 * xpBalanceStacks, 0.8);
+
+      for (const entry of entries) {
+        const isRecipient = entry.robot.level <= meanLevel;
+        const target = isRecipient ? splitXp : 0;
+        entry.xp = Math.floor(entry.xp + (target - entry.xp) * t);
+      }
     }
   }
 
-  for (const robot of robotParty.reserves) {
-    if (!robot) continue;
-    const xpAmount = Math.floor(perShare);
-    const prevLevel = robot.level;
-    addXpToRobot(robot, xpAmount);
-    xpGrants.push({ robotId: robot.id, robotName: robot.nameEn, xp: xpAmount });
-    if (robot.level > prevLevel) {
+  // Award XP to robots and collect results
+  const xpGrants = [];
+  const levelUps = [];
+
+  for (const entry of entries) {
+    const prevLevel = entry.robot.level;
+    const robotLevelUps = addXpToRobot(entry.robot, entry.xp);
+    xpGrants.push({ robotId: entry.robot.id, robotName: entry.robot.nameEn, xp: entry.xp });
+    for (const lu of robotLevelUps) {
       levelUps.push({
-        robotId: robot.id,
-        robotName: robot.nameEn,
+        robotId: entry.robot.id,
+        robotName: entry.robot.nameEn,
         oldLevel: prevLevel,
-        newLevel: robot.level,
-        maxHp: robot.maxHp,
-        attack: robot.attack
+        newLevel: lu.level,
+        maxHp: lu.maxHp,
+        attack: lu.attack,
+        hpGain: lu.hpGain
       });
     }
   }
@@ -593,18 +610,13 @@ export function awardKillXp(robotParty, baseXp) {
   return { xpGrants, levelUps };
 }
 
-export function awardBattleXp(robotParty, baseXp) {
-  const activeCount = robotParty.active.filter(r => r).length;
-  const reserveCount = robotParty.reserves.length;
-  const totalShares = activeCount * 2 + reserveCount * 1;
-  if (totalShares === 0) return;
-
-  const perShare = baseXp / totalShares;
+export function awardBattleXp(robotParty) {
+  // Befriend victory: each robot gains 1 full level worth of XP
   for (const robot of robotParty.active) {
-    if (robot) addXpToRobot(robot, Math.floor(perShare * 2));
+    if (robot) addXpToRobot(robot, xpToNextLevel(robot.level));
   }
   for (const robot of robotParty.reserves) {
-    addXpToRobot(robot, Math.floor(perShare));
+    if (robot) addXpToRobot(robot, xpToNextLevel(robot.level));
   }
 }
 

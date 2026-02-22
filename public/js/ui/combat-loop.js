@@ -429,7 +429,7 @@ function showXpEvents(xpEvents) {
         const index = activeRobots.findIndex(r => r && r.id === lu.robotId);
         if (index >= 0 && slots[index]) {
           // Slight delay so it appears after XP popup
-          setTimeout(() => showLevelUpPopup(slots[index], lu.newLevel), 400);
+          setTimeout(() => showLevelUpPopup(slots[index], lu.newLevel, lu.hpGain), 400);
         }
       }
     }
