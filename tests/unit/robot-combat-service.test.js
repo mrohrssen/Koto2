@@ -7,6 +7,7 @@ import {
   processBefriend,
   processUltimate,
   awardBattleXp,
+  awardKillXp,
   tickAllEffects
 } from '../../src/game/services/robot-combat-service.js';
 import { instantiateRobot } from '../../src/game/robots.js';
@@ -412,30 +413,60 @@ describe('Robot Combat - Status Effects in Enemy Turn', () => {
 });
 
 describe('Robot Combat - XP', () => {
-  it('active robots get 2x shares, reserves get 1x share', () => {
+  it('awardBattleXp grants one full level to each robot', () => {
     const party = {
       active: [instantiateRobot('hikaribon')],
       reserves: [instantiateRobot('tsukimochi')]
     };
-    // 1 active (2 shares) + 1 reserve (1 share) = 3 total shares
-    // perShare = 100/3 = 33.3 → active gets floor(66.6)=66, reserve gets floor(33.3)=33
-    awardBattleXp(party, 100);
-    assert.strictEqual(party.active[0].xp, 66);
-    assert.strictEqual(party.active[0].level, 1);
-    assert.strictEqual(party.reserves[0].xp, 33);
-    assert.strictEqual(party.reserves[0].level, 1);
+    awardBattleXp(party);
+    // Both should be L2 (each gets xpToNextLevel which is 1 full level)
+    assert.strictEqual(party.active[0].level, 2);
+    assert.strictEqual(party.reserves[0].level, 2);
   });
+});
 
-  it('levels up when XP exceeds threshold', () => {
+describe('Robot Combat - Kill XP Scaling', () => {
+  it('awardKillXp scales with enemy level (BASE_KILL_XP * enemyLevel)', () => {
     const party = {
       active: [instantiateRobot('hikaribon')],
       reserves: []
     };
     // 1 active (2 shares), 0 reserves = 2 total shares
-    // perShare = 150/2 = 75 → active gets floor(75*2)=150 → level up (100 XP), 50 remaining
-    awardBattleXp(party, 150);
-    assert.strictEqual(party.active[0].xp, 50);
-    assert.strictEqual(party.active[0].level, 2);
+    // enemyLevel 5: 10 * 5 = 50 base XP, perShare = 50/2 = 25, active gets floor(25*2) = 50
+    const result = awardKillXp(party, 5);
+    assert.strictEqual(result.xpGrants[0].xp, 50);
+  });
+
+  it('awardKillXp applies xpMultiplier', () => {
+    const party = {
+      active: [instantiateRobot('hikaribon')],
+      reserves: []
+    };
+    // enemyLevel 5, multiplier 1.25: 10 * 5 * 1.25 = 62, perShare = 62/2 = 31, active = floor(31*2)=62
+    const result = awardKillXp(party, 5, 1.25);
+    assert.strictEqual(result.xpGrants[0].xp, 62);
+  });
+
+  it('awardKillXp returns levelUps from cubic curve', () => {
+    const party = {
+      active: [instantiateRobot('hikaribon')],
+      reserves: []
+    };
+    // enemyLevel 10: 10 * 10 = 100 base, perShare = 100/2 = 50, active = 100
+    // L1 needs 7 XP -> should level up multiple times
+    const result = awardKillXp(party, 10);
+    assert.ok(result.levelUps.length > 0);
+    assert.ok(party.active[0].level > 1);
+  });
+
+  it('awardKillXp defaults xpMultiplier to 1.0', () => {
+    const party = {
+      active: [instantiateRobot('hikaribon')],
+      reserves: []
+    };
+    // enemyLevel 1: 10 * 1 * 1.0 = 10, perShare = 10/2 = 5, active = floor(5*2) = 10
+    const result = awardKillXp(party, 1);
+    assert.strictEqual(result.xpGrants[0].xp, 10);
   });
 });
 

@@ -948,7 +948,7 @@ export class GameManager {
 
     // Captured last enemy — immediate victory
     if (befriendResult.success && befriendResult.allEnemiesDefeated) {
-      awardBattleXp(this.run.robotParty, 100);
+      awardBattleXp(this.run.robotParty);
       const newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.encountersCompleted++;
@@ -1300,7 +1300,7 @@ export class GameManager {
 
     let newCollectionAdditions = [];
     if (allEnemiesDefeated) {
-      awardBattleXp(party, 100);
+      awardBattleXp(party);
       newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.encountersCompleted++;
