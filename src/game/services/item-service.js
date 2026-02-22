@@ -22,7 +22,9 @@ export function createItemBuffs() {
     autoPowerMult: 1.0,
     ultimatePowerMult: 1.0,
     elementEdge: 0,
-    flatDamageReduction: 0
+    flatDamageReduction: 0,
+    xpMultiplier: 1.0,
+    xpBalanceStacks: 0
   };
 }
 
