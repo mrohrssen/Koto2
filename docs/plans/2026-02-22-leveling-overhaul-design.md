@@ -241,7 +241,160 @@ PokeRogue's 192 events come from 6 party members leveling. Per-Pokemon they get 
 
 ---
 
-## 8. Files to Modify
+## 8. Critical Implementation Details
+
+These details prevent bugs. Read carefully.
+
+### 8a. XP Storage: Keep Per-Level (Not Cumulative)
+
+The current code stores `robot.xp` as XP toward the current level (resets to 0 on level-up). **Keep this model.** Don't switch to cumulative — it would break save compatibility and make the level-up loop harder.
+
+```javascript
+// KEEP this pattern from current addXpToRobot (robots.js:87-101)
+// robot.xp = XP toward next level (resets on level-up)
+// robot.level = current level
+
+function xpToNextLevel(level) {
+  // XP needed to go from `level` to `level + 1`
+  return Math.pow(level + 1, 3) - Math.pow(level, 3);
+  // L1→L2: 7, L2→L3: 19, L3→L4: 37, L4→L5: 61, etc.
+}
+```
+
+### 8b. Updated addXpToRobot (Full Replacement)
+
+```javascript
+export function addXpToRobot(robot, xp) {
+  robot.xp += xp;
+  const levelUps = [];
+  while (robot.xp >= xpToNextLevel(robot.level)) {
+    robot.xp -= xpToNextLevel(robot.level);
+    robot.level++;
+    const rarityMult = RARITY_MULTIPLIERS[robot.rarity] || 1.0;
+    const baseHp = Math.floor((robot.baseHpTemplate || 100) * rarityMult);
+    const baseAtk = Math.floor((robot.baseAttackTemplate || 10) * rarityMult);
+    const stats = getStatsForLevel(baseHp, baseAtk, robot.level);
+    const hpDiff = stats.maxHp - robot.maxHp;
+    robot.maxHp = stats.maxHp;
+    robot.attack = stats.attack;
+    robot.hp += hpDiff;
+    levelUps.push({ level: robot.level, maxHp: stats.maxHp, attack: stats.attack, hpGain: hpDiff });
+  }
+  return levelUps; // Return for UI animation
+}
+```
+
+**Key change:** `while (robot.xp >= xpToNextLevel(robot.level))` instead of `while (robot.xp >= XP_PER_LEVEL)`. At low levels, one kill can trigger 2-3 level-ups in one call. The while loop already exists in the current code — just change the threshold.
+
+**Return value:** Returns array of level-up events for the UI to animate (new — current code returns nothing).
+
+### 8c. Updated awardKillXp (Apply xpMultiplier + Enemy Level Scaling)
+
+```javascript
+const BASE_KILL_XP = 10;
+
+function awardKillXp(robotParty, enemyLevel, xpMultiplier = 1.0) {
+  const baseXp = Math.floor(BASE_KILL_XP * enemyLevel * xpMultiplier);
+
+  // Existing share logic unchanged
+  const active = robotParty.filter(r => r.hp > 0 && r.isActive);
+  const reserves = robotParty.filter(r => r.hp > 0 && !r.isActive);
+  const totalShares = active.length * 2 + reserves.length * 1;
+  if (totalShares === 0) return [];
+
+  const perShare = baseXp / totalShares;
+  const xpEvents = [];
+
+  for (const robot of active) {
+    const xp = Math.floor(perShare * 2);
+    const levelUps = addXpToRobot(robot, xp);
+    xpEvents.push({ robot, xp, levelUps });
+  }
+  for (const robot of reserves) {
+    const xp = Math.floor(perShare * 1);
+    const levelUps = addXpToRobot(robot, xp);
+    xpEvents.push({ robot, xp, levelUps });
+  }
+
+  return xpEvents;
+}
+```
+
+**Call site change** (robot-combat-service.js, currently line 100):
+```javascript
+// OLD: awardKillXp(robotParty, 50)
+// NEW: awardKillXp(robotParty, enemy.level, this.run.itemBuffs.xpMultiplier)
+```
+
+### 8d. EXP Balance: Use Mean Level (Not Mean XP)
+
+PokeRogue's algorithm exactly:
+
+```javascript
+function applyXpBalance(xpEvents, xpBalanceStacks) {
+  if (!xpBalanceStacks || xpBalanceStacks <= 0) return;
+
+  // 1. Calculate mean level of all robots that received XP
+  const totalLevel = xpEvents.reduce((sum, e) => sum + e.robot.level, 0);
+  const meanLevel = Math.floor(totalLevel / xpEvents.length);
+
+  // 2. Recipients = robots at or below mean level
+  const totalXp = xpEvents.reduce((sum, e) => sum + e.xp, 0);
+  const recipientCount = xpEvents.filter(e => e.robot.level <= meanLevel).length;
+  if (recipientCount === 0) return;
+
+  const splitXp = totalXp / recipientCount;
+  const t = Math.min(0.2 * xpBalanceStacks, 0.8); // 20% per stack, max 80%
+
+  // 3. Lerp each robot's XP toward target
+  for (const event of xpEvents) {
+    const isRecipient = event.robot.level <= meanLevel;
+    const target = isRecipient ? splitXp : 0;
+    event.xp = Math.floor(event.xp + (target - event.xp) * t);
+  }
+}
+```
+
+**Called after** share distribution, **before** `addXpToRobot` is called. This means `awardKillXp` needs restructuring: compute shares first, apply balance, then add XP to robots.
+
+### 8e. EXP Charm Multiplier Scope
+
+**Applies to combat kills only.** Not shrine, quiz, discovery, or befriend XP.
+
+Rationale: PokeRogue's EXP Charms only apply to battle XP. Shrine/quiz are fixed level-up rewards — they should always grant exactly 1 level regardless of multipliers.
+
+| XP Source | Charm applies? | Formula |
+|-----------|---------------|---------|
+| Combat kill | **Yes** | `BASE_KILL_XP * enemyLevel * xpMultiplier` |
+| Shrine | No | `xpToNextLevel(robot.level)` (always 1 level) |
+| Quiz levelup | No | `xpToNextLevel(robot.level)` (always 1 level) |
+| Befriend | No | `xpToNextLevel(robot.level)` (always 1 level) |
+| Word Discovery | **Yes** | `20% of getKillXp(enemyLevel) * xpMultiplier` |
+
+### 8f. EXP Charm applyItem Implementation
+
+```javascript
+// In item-service.js applyItem():
+case 'xpCharm':
+  itemBuffs.xpMultiplier = (itemBuffs.xpMultiplier || 1.0) * (1 + item.effect.value);
+  // 1st charm: 1.0 * 1.25 = 1.25
+  // 2nd charm: 1.25 * 1.25 = 1.5625
+  break;
+
+case 'xpBalance':
+  itemBuffs.xpBalanceStacks = (itemBuffs.xpBalanceStacks || 0) + 1;
+  break;
+```
+
+### 8g. Save Compatibility
+
+Existing robots have `robot.xp` as XP-toward-current-level with the old flat 100 system. Since we keep the per-level model, old saves just work — `robot.xp` is some value 0-99, and the new `xpToNextLevel(robot.level)` will be larger than 100 for any level above ~4. Old robots won't spontaneously level up or down.
+
+New `itemBuffs` fields (`xpMultiplier`, `xpBalanceStacks`) default to `1.0` and `0` respectively if missing. No migration needed — just use `|| 1.0` and `|| 0` fallbacks.
+
+---
+
+## 9. Files to Modify
 
 | File | Change |
 |------|--------|
@@ -258,7 +411,7 @@ PokeRogue's 192 events come from 6 party members leveling. Per-Pokemon they get 
 
 ---
 
-## 9. UI: Level-Up Juice (Presentation)
+## 10. UI: Level-Up Juice (Presentation)
 
 The mechanical changes above make leveling fast. This section makes it FEEL fast.
 
