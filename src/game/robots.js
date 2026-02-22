@@ -61,6 +61,7 @@ export function instantiateRobot(templateId) {
     rarity: template.rarity,
     archetype: template.archetype || 'Fighter',
     baseWord: template.baseWord,
+    baseReading: template.baseReading,
     level: 1,
     xp: 0,
     hp,
