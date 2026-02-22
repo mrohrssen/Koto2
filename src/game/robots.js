@@ -34,8 +34,6 @@ const RARITY_WEIGHTS = {
   legendary: 1
 };
 
-export const XP_PER_LEVEL = 100;
-
 export function xpToNextLevel(level) {
   return Math.pow(level + 1, 3) - Math.pow(level, 3);
 }

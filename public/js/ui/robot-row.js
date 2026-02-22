@@ -87,6 +87,7 @@ export function render(robots) {
       const isCharged = robot.ultimate.charges >= robot.ultimate.chargesRequired;
       const isKO = robot.hp <= 0;
       const hpColor = hpPct > 60 ? 'var(--hp-green)' : hpPct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+      // Must match xpToNextLevel() in src/game/robots.js
       const xpNeeded = Math.pow(robot.level + 1, 3) - Math.pow(robot.level, 3);
       const xpPct = Math.min(100, (robot.xp / xpNeeded) * 100);
 
