@@ -80,6 +80,18 @@ describe('robot-collection-service', () => {
       assert.ok(kamedor.modifier, 'should have modifier');
       assert.strictEqual(kamedor.modifier.meaning, 'Ancient');
     });
+
+    it('includes befriendCount from meta', () => {
+      const catalog = getCollectionCatalog(['kamedor'], { kamedor: 5 });
+      const kamedor = catalog.find(c => c.id === 'kamedor');
+      assert.strictEqual(kamedor.befriendCount, 5);
+    });
+
+    it('defaults befriendCount to 0', () => {
+      const catalog = getCollectionCatalog([]);
+      const kamedor = catalog.find(c => c.id === 'kamedor');
+      assert.strictEqual(kamedor.befriendCount, 0);
+    });
   });
 
   describe('addToCollection', () => {

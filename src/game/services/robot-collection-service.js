@@ -53,7 +53,7 @@ export function addToCollection(collection, robotId) {
   return { added: true, collection };
 }
 
-export function getCollectionCatalog(collection) {
+export function getCollectionCatalog(collection, befriendCount = {}) {
   return ROBOT_DATA.map(r => ({
     id: r.id,
     name: r.name,
@@ -70,6 +70,7 @@ export function getCollectionCatalog(collection) {
     autoSkill: r.autoSkill,
     ultimate: r.ultimate,
     pointCost: RARITY_POINT_COST[r.rarity] || 3,
-    owned: collection.includes(r.id)
+    owned: collection.includes(r.id),
+    befriendCount: befriendCount[r.id] || 0
   }));
 }
