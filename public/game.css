@@ -905,6 +905,76 @@ html, body {
   font-weight: var(--font-weight-bold);
 }
 
+/* ===== VOCAB ATTACK CARD ===== */
+.vocab-attack-card {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-radius: 8px;
+  border-left: 3px solid var(--vocab-card-element-color, #aaa);
+  padding: 6px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: vocabCardIn 200ms ease-out;
+  max-width: 260px;
+  margin: 0 auto;
+}
+
+.vocab-attack-card.enemy {
+  border-left-color: var(--accent-red, #ff5252);
+}
+
+.vocab-attack-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  animation: vocabRowIn 150ms ease-out forwards;
+}
+
+.vocab-attack-row:nth-child(1) { animation-delay: 0ms; }
+.vocab-attack-row:nth-child(2) { animation-delay: 50ms; }
+.vocab-attack-row:nth-child(3) { animation-delay: 100ms; }
+
+.vocab-attack-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.vocab-attack-text {
+  font-size: 15px;
+  font-weight: var(--font-weight-semi, 600);
+  color: var(--text-primary, #fff);
+  white-space: nowrap;
+}
+
+.vocab-attack-card .combat-damage-line {
+  text-align: center;
+  font-size: 16px;
+  font-weight: var(--font-weight-bold, 700);
+  margin-top: 2px;
+  opacity: 0;
+  animation: vocabRowIn 150ms ease-out 150ms forwards;
+}
+
+.vocab-attack-card.enemy .combat-damage-line {
+  color: var(--accent-red, #ff5252);
+}
+
+@keyframes vocabCardIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vocabRowIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
 /* ===== MINI TOOLBAR ===== */
 .mini-toolbar {
   display: flex;
