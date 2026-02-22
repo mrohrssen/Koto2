@@ -36,6 +36,10 @@ const RARITY_WEIGHTS = {
 
 export const XP_PER_LEVEL = 100;
 
+export function xpToNextLevel(level) {
+  return Math.pow(level + 1, 3) - Math.pow(level, 3);
+}
+
 export function getElementMultiplier(attackerElement, defenderElement) {
   const ai = ELEMENT_CYCLE.indexOf(attackerElement);
   const di = ELEMENT_CYCLE.indexOf(defenderElement);
@@ -86,8 +90,9 @@ export function getStatsForLevel(baseHp, baseAttack, level) {
 
 export function addXpToRobot(robot, xp) {
   robot.xp += xp;
-  while (robot.xp >= XP_PER_LEVEL) {
-    robot.xp -= XP_PER_LEVEL;
+  const levelUps = [];
+  while (robot.xp >= xpToNextLevel(robot.level)) {
+    robot.xp -= xpToNextLevel(robot.level);
     robot.level++;
     const rarityMult = RARITY_MULTIPLIERS[robot.rarity] || 1.0;
     const baseHp = Math.floor((robot.baseHpTemplate || 100) * rarityMult);
@@ -97,7 +102,9 @@ export function addXpToRobot(robot, xp) {
     robot.maxHp = stats.maxHp;
     robot.attack = stats.attack;
     robot.hp += hpDiff;
+    levelUps.push({ level: robot.level, maxHp: stats.maxHp, attack: stats.attack, hpGain: hpDiff });
   }
+  return levelUps;
 }
 
 export function calculateRobotDamage(attack, abilityPower, elementMultiplier, variance) {
@@ -161,7 +168,7 @@ export function generateEnemyRobot(highestAllyLevel = 1, creaturePool = null) {
   const levelVariance = Math.floor(Math.random() * 3) - 1;
   const targetLevel = Math.max(1, highestAllyLevel + levelVariance);
   while (robot.level < targetLevel) {
-    addXpToRobot(robot, XP_PER_LEVEL);
+    addXpToRobot(robot, xpToNextLevel(robot.level));
   }
 
   return robot;
