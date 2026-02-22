@@ -2693,6 +2693,28 @@ html, body {
   white-space: nowrap;
 }
 
+/* Level-up glow effect */
+.robot-icon.level-up-glow {
+  animation: levelUpGlow 1.5s ease-out;
+}
+
+@keyframes levelUpGlow {
+  0% { box-shadow: 0 0 5px #7C4DFF, 0 0 15px #7C4DFF; }
+  50% { box-shadow: 0 0 15px #B388FF, 0 0 30px #7C4DFF, 0 0 45px #B388FF; }
+  100% { box-shadow: none; }
+}
+
+/* Level badge pop animation */
+.robot-level-badge.level-badge-pop {
+  animation: badgePop 0.3s ease-out;
+}
+
+@keyframes badgePop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
 .heal-number {
   position: absolute;
   top: -10px;
