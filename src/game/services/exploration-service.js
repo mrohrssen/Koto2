@@ -25,7 +25,7 @@ import {
   getAreaById
 } from '../rooms.js';
 
-import { addXpToRobot, XP_PER_LEVEL, instantiateRobot, getRobotBuyPrice, getRobotSellPrice, generateDealerRobots } from '../robots.js';
+import { addXpToRobot, xpToNextLevel, XP_PER_LEVEL, instantiateRobot, getRobotBuyPrice, getRobotSellPrice, generateDealerRobots } from '../robots.js';
 import { logger } from '../../logger.js';
 
 const AREA_BG_COUNT = 20;
@@ -330,8 +330,8 @@ export class ExplorationService {
     const prevMaxHp = robot.maxHp;
     const prevAttack = robot.attack;
 
-    // Grant one full level-up worth of XP
-    addXpToRobot(robot, XP_PER_LEVEL);
+    // Grant one full level-up worth of XP (cubic curve)
+    addXpToRobot(robot, xpToNextLevel(robot.level));
 
     room.shrine.used = true;
     room.interacted = true;
@@ -390,7 +390,7 @@ export class ExplorationService {
         ].filter(Boolean);
         const robot = allRobots.find(r => r.id === robotId);
         if (!robot) throw new Error('Robot not in party');
-        addXpToRobot(robot, XP_PER_LEVEL);
+        addXpToRobot(robot, xpToNextLevel(robot.level));
         description = `${robot.nameEn} leveled up to Lv. ${robot.level}!`;
         break;
       }
@@ -436,8 +436,9 @@ export class ExplorationService {
     const xpGrants = [];
     const levelUps = [];
     if (this.gm.run.robotParty?.active?.length > 0) {
-      const baseEnemyXp = 50;  // same as robot-combat-service kill XP
-      const discoveryXp = Math.floor(baseEnemyXp * 0.2);  // 20% = 10 XP
+      const BASE_KILL_XP = 10;
+      const highestLevel = Math.max(...this.gm.run.robotParty.active.filter(r => r && r.hp > 0).map(r => r.level), 1);
+      const discoveryXp = Math.floor(BASE_KILL_XP * highestLevel * (this.gm.run.itemBuffs?.xpMultiplier || 1.0) * 0.2);
 
       for (const robot of this.gm.run.robotParty.active) {
         if (!robot || robot.hp <= 0) continue;
