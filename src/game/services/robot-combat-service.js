@@ -81,6 +81,10 @@ export function processAttackTurn(allies, enemies, itemBuffs = null, robotParty 
       attacks.push({
         attackerId: robot.id,
         attackerName: robot.nameEn,
+        attackerNameJp: robot.name,
+        attackerBaseWord: robot.baseWord,
+        attackerSkillName: robot.autoSkill.name,
+        attackerSkillEn: robot.autoSkill.nameEn,
         attackerElement: robot.element,
         targetId: target.id,
         targetName: target.nameEn,

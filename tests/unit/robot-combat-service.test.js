@@ -28,6 +28,17 @@ describe('Robot Combat - Attack Turn', () => {
     const result = processAttackTurn(allies, enemies);
     assert.strictEqual(result.attacks.length, 1);
   });
+
+  it('includes vocab fields in attack objects', () => {
+    const allies = [instantiateRobot('kamedor')];
+    const enemies = [instantiateRobot('kazenoko')];
+    const result = processAttackTurn(allies, enemies);
+    const atk = result.attacks[0];
+    assert.strictEqual(atk.attackerNameJp, 'カメドル');
+    assert.strictEqual(atk.attackerBaseWord, '亀');
+    assert.ok(atk.attackerSkillName, 'should have Japanese skill name');
+    assert.ok(atk.attackerSkillEn, 'should have English skill name for icon lookup');
+  });
 });
 
 describe('Robot Combat - Defend Turn', () => {
