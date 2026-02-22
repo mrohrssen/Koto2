@@ -110,52 +110,70 @@ function buildSplitAttackCard(atk, isEnemy) {
 }
 
 /**
- * Show the split attack card with staggered reveal and wait for player tap.
- * Returns a Promise that resolves when the player clicks to continue.
+ * Insert the split attack card into the action area and start staggered reveal.
+ * @param {Object} atk - Attack object from server
+ * @param {boolean} isEnemy - Whether this is an enemy attack
+ * @returns {Element|null} The card element, or null if action-area not found
+ */
+function insertAttackCard(atk, isEnemy) {
+  const actionArea = document.getElementById('action-area');
+  if (!actionArea) return null;
+
+  actionArea.innerHTML = buildSplitAttackCard(atk, isEnemy);
+
+  const card = actionArea.querySelector('.split-attack-card');
+  if (!card) return null;
+
+  // Staggered row reveal
+  const rows = card.querySelectorAll('.sac-row');
+  rows.forEach((row, i) => {
+    setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
+  });
+
+  return card;
+}
+
+/**
+ * Wait for the player to tap the attack card to continue.
+ * Shows the continue indicator, resolves on click, fades out card.
+ * @param {Element} card - The .split-attack-card element
+ * @returns {Promise<void>}
+ */
+function waitForCardTap(card) {
+  return new Promise((resolve) => {
+    if (!card) { resolve(); return; }
+
+    const actionArea = card.closest('#action-area') || card.parentElement;
+
+    // Show continue indicator
+    const indicator = card.querySelector('.sac-continue');
+    if (indicator) indicator.style.display = '';
+
+    let resolved = false;
+    const onTap = () => {
+      if (resolved) return;
+      resolved = true;
+      if (actionArea) actionArea.removeEventListener('click', onTap);
+
+      card.classList.add('sac-fading-out');
+      setTimeout(() => resolve(), ATTACK_CARD_TIMING.FADE_OUT_DURATION);
+    };
+
+    // Listen on action-area (larger tap target) or card itself
+    (actionArea || card).addEventListener('click', onTap);
+  });
+}
+
+/**
+ * Convenience: show card and immediately wait for tap.
+ * Use when there are no effects to fire between card display and tap.
  * @param {Object} atk - Attack object from server
  * @param {boolean} isEnemy - Whether this is an enemy attack
  * @returns {Promise<void>}
  */
 function showAttackCardAndWait(atk, isEnemy) {
-  return new Promise((resolve) => {
-    const actionArea = document.getElementById('action-area');
-    if (!actionArea) { resolve(); return; }
-
-    actionArea.innerHTML = buildSplitAttackCard(atk, isEnemy);
-
-    const card = actionArea.querySelector('.split-attack-card');
-    if (!card) { resolve(); return; }
-
-    // Staggered row reveal
-    const rows = card.querySelectorAll('.sac-row');
-    rows.forEach((row, i) => {
-      setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
-    });
-
-    // Show continue indicator after all rows visible
-    const totalRevealTime = rows.length * ATTACK_CARD_TIMING.ROW_STAGGER + ATTACK_CARD_TIMING.ROW_ANIM_DURATION;
-    setTimeout(() => {
-      const indicator = card.querySelector('.sac-continue');
-      if (indicator) indicator.style.display = '';
-    }, totalRevealTime);
-
-    // Wait for tap
-    let resolved = false;
-    const onTap = () => {
-      if (resolved) return;
-      resolved = true;
-      actionArea.removeEventListener('click', onTap);
-
-      // Fade out
-      card.classList.add('sac-fading-out');
-      setTimeout(() => {
-        resolve();
-      }, ATTACK_CARD_TIMING.FADE_OUT_DURATION);
-    };
-
-    // Allow tap any time (even during reveal for speed players)
-    actionArea.addEventListener('click', onTap);
-  });
+  const card = insertAttackCard(atk, isEnemy);
+  return waitForCardTap(card);
 }
 
 // ============ MODULE STATE ============
@@ -704,12 +722,18 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
     const effectKey = halved ? 'dealsHalved' :
       atk.elementMultiplier > 1 ? 'dealsStrong' :
       atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
-    const actionArea = document.getElementById('action-area');
-    if (actionArea) {
-      actionArea.innerHTML = atk.attackerNameJp
-        ? buildVocabAttackCard(atk, true, effectKey)
-        : `<div class="combat-robot-attack enemy">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
+    // Insert attack card (if JP name available) or fallback text
+    let attackCard = null;
+    if (atk.attackerNameJp) {
+      attackCard = insertAttackCard(atk, true);
+    } else {
+      const actionArea = document.getElementById('action-area');
+      if (actionArea) {
+        actionArea.innerHTML = `<div class="combat-robot-attack enemy">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
+      }
     }
+
+    // Fire effects while card is showing
     showDamageNumber(atk.damage, true, false);
     playSFX('player-hit');
 
@@ -728,7 +752,13 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
       allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
     }
     updateRobotHpBars(result.robotParty?.active, allyHpMap);
-    await delay(400);
+
+    // Wait for tap (attack card) or fixed delay (fallback)
+    if (attackCard) {
+      await waitForCardTap(attackCard);
+    } else {
+      await delay(400);
+    }
   }
 }
 
@@ -876,12 +906,18 @@ async function executeRobotPlayerAttack() {
           const atk = result.playerAttacks[atkIdx];
           const effectKey = atk.elementMultiplier > 1 ? 'dealsStrong' :
                             atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
-          const actionArea = document.getElementById('action-area');
-          if (actionArea) {
-            actionArea.innerHTML = atk.attackerNameJp
-              ? buildVocabAttackCard(atk, false, effectKey)
-              : `<div class="combat-robot-attack">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
+          // Insert attack card (if JP name available) or fallback text
+          let attackCard = null;
+          if (atk.attackerNameJp) {
+            attackCard = insertAttackCard(atk, false);
+          } else {
+            const actionArea = document.getElementById('action-area');
+            if (actionArea) {
+              actionArea.innerHTML = `<div class="combat-robot-attack">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
+            }
           }
+
+          // Fire effects while card is showing
           playSFX('attack');
 
           const robotSlotEl = findRobotSlotByAttackerId(atk.attackerId);
@@ -942,7 +978,12 @@ async function executeRobotPlayerAttack() {
             }
           }
 
-          await delay(400);
+          // Wait for tap (attack card) or fixed delay (fallback)
+          if (attackCard) {
+            await waitForCardTap(attackCard);
+          } else {
+            await delay(400);
+          }
         }
       }
 
