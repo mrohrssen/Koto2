@@ -410,5 +410,39 @@
     "effect": { "tempBoost": { "field": "attack", "value": 5, "turns": 5, "target": "all" } },
     "description": "Boost all creatures' attack by 5 for 5 turns",
     "descriptionJa": "全クリーチャーの攻撃力を5ターン+5"
+  },
+  {
+    "id": "exp-charm",
+    "word": "経験の魔石",
+    "reading": "けいけんのませき",
+    "meaning": "EXP Charm",
+    "components": [
+      { "word": "経験", "reading": "けいけん", "meanings": ["experience"], "rank": 1200 },
+      { "word": "魔石", "reading": "ませき", "meanings": ["magic stone; enchanted gem"], "rank": null }
+    ],
+    "compoundRank": null,
+    "rank": 1200,
+    "rarity": "uncommon",
+    "type": "xpCharm",
+    "effect": { "field": "xpMultiplier", "value": 0.25 },
+    "description": "Amplify battle XP by 25% (stacks multiplicatively)",
+    "descriptionJa": "戦闘経験値を25%増幅（重複可）"
+  },
+  {
+    "id": "exp-balance",
+    "word": "均衡の魔石",
+    "reading": "きんこうのませき",
+    "meaning": "EXP Balance",
+    "components": [
+      { "word": "均衡", "reading": "きんこう", "meanings": ["equilibrium; balance"], "rank": 9800 },
+      { "word": "魔石", "reading": "ませき", "meanings": ["magic stone; enchanted gem"], "rank": null }
+    ],
+    "compoundRank": null,
+    "rank": 9800,
+    "rarity": "epic",
+    "type": "xpBalance",
+    "effect": { "field": "xpBalanceStacks", "value": 1 },
+    "description": "Redistribute XP toward lower-leveled creatures",
+    "descriptionJa": "経験値を低レベルの仲間に再分配する"
   }
 ]

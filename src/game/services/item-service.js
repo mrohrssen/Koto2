@@ -147,6 +147,16 @@ export function applyItem(item, robotParty, itemBuffs) {
     return { applied: true };
   }
 
+  if (item.type === 'xpCharm') {
+    itemBuffs.xpMultiplier = (itemBuffs.xpMultiplier || 1.0) * (1 + item.effect.value);
+    return { applied: true };
+  }
+
+  if (item.type === 'xpBalance') {
+    itemBuffs.xpBalanceStacks = (itemBuffs.xpBalanceStacks || 0) + item.effect.value;
+    return { applied: true };
+  }
+
   return { applied: false };
 }
 
