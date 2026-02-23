@@ -136,6 +136,21 @@ describe('Robot Combat - Befriend', () => {
     const result = processBefriend(enemies, party);
     assert.ok(!result.success);
   });
+
+  it('rejects befriend if party + pendingCaptures reaches maxTotal', () => {
+    const enemies = [instantiateRobot('kazenoko'), instantiateRobot('kamedor')];
+    enemies[0].hp = 20;
+    enemies[1].hp = 20;
+    const party = {
+      active: [instantiateRobot('hikaribon'), instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')],
+      reserves: [instantiateRobot('nekotto'), instantiateRobot('kazenoko')],
+      pendingCaptures: [instantiateRobot('kaminarion')], // 5 in party + 1 pending = 6 = maxTotal
+      maxTotal: 6
+    };
+    const result = processBefriend(enemies, party, 0);
+    assert.ok(!result.success);
+    assert.strictEqual(result.reason, 'Party full');
+  });
 });
 
 describe('Robot Combat - Ultimate Targeting', () => {

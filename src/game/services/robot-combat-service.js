@@ -225,7 +225,7 @@ export function tickAllEffects(allies, enemies) {
 }
 
 export function processBefriend(enemies, robotParty, targetEnemyIndex) {
-  const totalRobots = robotParty.active.length + robotParty.reserves.length;
+  const totalRobots = robotParty.active.length + robotParty.reserves.length + (robotParty.pendingCaptures?.length || 0);
   if (totalRobots >= robotParty.maxTotal) {
     return { success: false, reason: 'Party full' };
   }
