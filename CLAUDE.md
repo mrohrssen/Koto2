@@ -138,6 +138,11 @@ For detailed architecture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 **Before playtesting, READ [`docs/playtest-guide.md`](docs/playtest-guide.md).** It contains phase-by-phase instructions for what to expect at every screen, how to interact, and what bugs to look for.
 
+**For CSS/visual work**, Playwright is configured to use WebKit (Safari's engine) with iPhone 15 Pro emulation via `.mcp.json`. See the "Visual CSS Audit" section in the playtest guide. Inject safe-area mocks at session start:
+```js
+await page.addStyleTag({ path: 'public/dev-safe-area.css' });
+```
+
 ### Playwright interaction patterns
 
 **Keep the browser open.** Don't close/reopen between phases — the user may be watching on a second screen. Just navigate or reload as needed.
