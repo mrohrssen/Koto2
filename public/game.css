@@ -1059,10 +1059,10 @@ html, body {
 .sac-impact-sprite {
   width: 20px;
   height: 20px;
-  border-radius: 50%;
+  border-radius: 4px;
   object-fit: contain;
   image-rendering: pixelated;
-  border: 1px solid rgba(239,83,80,0.2);
+  border: none;
   flex-shrink: 0;
 }
 
