@@ -1,0 +1,15 @@
+/*
+ * Dev-only: Simulates iPhone 15 Pro safe area insets for Playwright visual testing.
+ * NOT loaded in production. Injected via page.addStyleTag() during visual audits.
+ *
+ * iPhone 15 Pro insets:
+ *   top: 59px (Dynamic Island)
+ *   bottom: 34px (home indicator)
+ *   left/right: 0px (portrait only)
+ */
+:root {
+  --safe-area-inset-top: 59px;
+  --safe-area-inset-bottom: 34px;
+  --safe-area-inset-left: 0px;
+  --safe-area-inset-right: 0px;
+}

@@ -33,5 +33,3 @@ tmp/
 output/
 .playwright-mcp/
 __pycache__/
-# Dev-only safe area mock for Playwright visual testing
-public/dev-safe-area.css
