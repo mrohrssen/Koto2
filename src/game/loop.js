@@ -944,7 +944,10 @@ export class GameManager {
    * @private
    */
   _handleRobotBefriendTurn(effectEvents) {
-    const befriendResult = processBefriend(this.combat.enemies, this.run.robotParty);
+    const targetIdx = this.combat.befriendConversation?.targetEnemyIndex;
+    // Preserve targetEnemyIndex for befriendReplace (party-full flow)
+    if (typeof targetIdx === 'number') this.combat.lastBefriendTargetIndex = targetIdx;
+    const befriendResult = processBefriend(this.combat.enemies, this.run.robotParty, targetIdx);
 
     // Captured last enemy — immediate victory
     if (befriendResult.success && befriendResult.allEnemiesDefeated) {
@@ -1256,12 +1259,20 @@ export class GameManager {
     const party = this.run.robotParty;
     const enemies = this.combat.enemies;
 
-    // Find the befriendable enemy (same logic as processBefriend)
-    const eligible = enemies
-      .filter(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.5)
-      .sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
-    if (eligible.length === 0) {
-      return { success: false, reason: 'No enemy at <=50% HP' };
+    // Use the stored target from the befriend conversation
+    const targetIdx = this.combat.lastBefriendTargetIndex;
+    let captured;
+    if (typeof targetIdx === 'number' && enemies[targetIdx]?.hp > 0 && !enemies[targetIdx]?.befriended) {
+      captured = enemies[targetIdx];
+    } else {
+      // Fallback: find any eligible enemy
+      const eligible = enemies
+        .filter(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.5)
+        .sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
+      if (eligible.length === 0) {
+        return { success: false, reason: 'No enemy at <=50% HP' };
+      }
+      captured = eligible[0];
     }
 
     // Find the robot to release
@@ -1276,7 +1287,6 @@ export class GameManager {
     }
 
     // Mark enemy as befriended (don't splice — preserve indices for frontend)
-    const captured = eligible[0];
     captured.hp = 0;
     captured.befriended = true;
 
