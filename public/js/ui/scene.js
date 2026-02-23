@@ -258,7 +258,7 @@ export function showWordDiscoveryNpc() {
 
 /** Show robot dealer NPC (shop merchant, no HP bar) */
 export function showDealer() {
-  dom.enemyName.textContent = 'Robot Dealer';
+  dom.enemyName.textContent = 'Traveling Merchant';
   dom.enemyInfo.classList.add('visible');
   dom.enemyHpBar.style.display = 'none';
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
