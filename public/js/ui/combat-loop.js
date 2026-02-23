@@ -55,11 +55,11 @@ const ATTACK_CARD_TIMING = {
 };
 
 const ELEMENT_THEME = {
-  water:  { border: 'rgba(33,150,243,0.5)',  bg: '#1a2a3a',  light: '#64B5F6' },
-  fire:   { border: 'rgba(244,67,54,0.5)',   bg: '#3a1a1a',  light: '#EF9A9A' },
-  earth:  { border: 'rgba(141,110,99,0.5)',  bg: '#2a2520',  light: '#BCAAA4' },
-  metal:  { border: 'rgba(158,158,158,0.5)', bg: '#2a2a2a',  light: '#BDBDBD' },
-  wood:   { border: 'rgba(76,175,80,0.5)',   bg: '#1a2a1a',  light: '#A5D6A7' }
+  water:  { border: 'rgba(33,150,243,0.35)',  bg: '#e8f4fd',  accent: '#1976D2' },
+  fire:   { border: 'rgba(244,67,54,0.35)',   bg: '#fdecea',  accent: '#D32F2F' },
+  earth:  { border: 'rgba(141,110,99,0.35)',  bg: '#f0ebe8',  accent: '#6D4C41' },
+  metal:  { border: 'rgba(158,158,158,0.35)', bg: '#eeeeee',  accent: '#616161' },
+  wood:   { border: 'rgba(76,175,80,0.35)',   bg: '#e8f5e9',  accent: '#388E3C' }
 };
 
 const KANJI_RE = /[\u4e00-\u9faf\u3400-\u4dbf]/;
@@ -70,7 +70,7 @@ function wrapWithRuby(word, reading) {
 }
 
 function buildSplitAttackCard(atk, isEnemy) {
-  const theme = ELEMENT_THEME[atk.attackerElement] || { border: 'rgba(255,255,255,0.15)', bg: 'rgba(255,255,255,0.06)', light: '#aaa' };
+  const theme = ELEMENT_THEME[atk.attackerElement] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
   const spriteUrl = robotSpritePath(atk.attackerId);
   const targetSprite = robotSpritePath(atk.targetId);
 
@@ -80,7 +80,7 @@ function buildSplitAttackCard(atk, isEnemy) {
   const damageSign = atk.damage > 0 ? `-${atk.damage}` : '0';
   const targetDisplayName = atk.targetNameJp || atk.targetName || '';
 
-  return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-gradient:linear-gradient(135deg,${theme.bg},rgba(0,0,0,0.3));--sac-light:${theme.light};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
+  return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
     <div class="sac-left">
       <img class="sac-sprite" src="${spriteUrl}" alt="">
       <div class="sac-attacker-name">${atk.attackerNameJp || atk.attackerName}</div>
