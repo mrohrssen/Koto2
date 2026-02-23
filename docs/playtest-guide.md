@@ -353,3 +353,73 @@ When new features are added on top of robot combat, replay relevant phases to ve
 - Element cycle: wood → earth → water → fire → metal → wood. Each beats the next, weak to the previous.
 - Damage formula: `max(1, floor((atk/10) * power * elemMult * variance))`. If damage seems off, check element multiplier (1.5x advantage, 0.67x disadvantage, 1.0x neutral).
 - Enemy auto-targeting prioritizes element advantage first, then lowest HP%.
+
+---
+
+## Visual CSS Audit
+
+Use this workflow when making CSS changes. Playwright runs WebKit with iPhone 15 Pro emulation (configured in `.mcp.json`), giving realistic Safari rendering at the correct viewport.
+
+### Setup
+
+1. Start the dev server:
+```bash
+npm run dev &
+sleep 3
+curl -s -o /dev/null -w "%{http_code}" http://localhost:3000
+```
+
+2. Navigate Playwright to `http://localhost:3000`
+
+3. Inject safe-area mocks (simulates Dynamic Island + home indicator):
+```javascript
+await page.addStyleTag({ path: 'public/dev-safe-area.css' });
+```
+Re-inject after every full page navigation (page.goto). In-app state changes (clicking buttons, opening overlays) do NOT require re-injection.
+
+### Per-Screen Checklist
+
+For each screen, take a screenshot and verify:
+
+- [ ] No horizontal overflow (nothing extends beyond 393px width)
+- [ ] No content clipped or hidden behind notch area (top 59px) or home indicator (bottom 34px)
+- [ ] Text is readable — minimum 14px, Japanese text minimum 16px
+- [ ] Touch targets are at least 44x44px
+- [ ] No overlapping elements
+- [ ] Animations play smoothly (take 2 screenshots 500ms apart if needed)
+- [ ] Colors/contrast sufficient (no light text on light background)
+
+### Screens to Audit
+
+Navigate through these in order. Log in or register first, then start a new game.
+
+| # | Screen | How to reach | Key things to check |
+|---|--------|-------------|---------------------|
+| 1 | Login/Register | Initial page load | Form fits viewport, inputs not clipped |
+| 2 | Starter Selection | Start new game | 2-column grid, cards don't overflow, element icons visible |
+| 3 | Level Select | After starters | Buttons fit, NEW tag visible on level 1 |
+| 4 | Ward Select | After level pick | Ward cards readable, descriptions not truncated |
+| 5 | Exploration | After ward pick | Branch buttons visible, Chippy narration fits |
+| 6 | Combat | Enter encounter room | Enemy row + ally row + card area all visible without scroll |
+| 7 | Triple Cards | When befriend available | 3 cards fit side-by-side without overlap |
+| 8 | Shop | After combat victory | 3 reward cards fit, tap targets clear |
+| 9 | Inventory | Tap inventory button | Overlay covers full screen, items scrollable, close button not under notch |
+| 10 | Settings | Tap settings button | Header not under notch, all toggles visible, scrollable |
+
+### Fixing Issues
+
+When you find a visual bug:
+1. Note the screen and specific issue
+2. Edit `public/game.css`
+3. Reload the page in Playwright (navigate to same URL)
+4. Re-inject safe-area mocks
+5. Screenshot and verify the fix
+6. Continue to next screen
+
+### Limitations
+
+This workflow catches ~90-95% of iPhone visual issues. The remaining ~5% requires real device testing:
+- Real `env(safe-area-inset-*)` values (mocked here)
+- PWA standalone mode (Playwright runs in browser mode)
+- iOS system font rendering (San Francisco)
+- Scroll momentum and touch physics
