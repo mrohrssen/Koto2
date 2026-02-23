@@ -43,7 +43,7 @@ import {
   poisonTickEffect
 } from './combat-effects.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
-import { configureRobotImg } from './sprite-utils.js';
+import { configureRobotImg, robotSpritePath } from './sprite-utils.js';
 import { t } from './i18n.js';
 
 // ============ SPLIT ATTACK CARD ============
@@ -71,10 +71,8 @@ function wrapWithRuby(word, reading) {
 
 function buildSplitAttackCard(atk, isEnemy) {
   const theme = ELEMENT_THEME[atk.attackerElement] || { border: 'rgba(255,255,255,0.15)', bg: 'rgba(255,255,255,0.06)', light: '#aaa' };
-  const spriteUrl = `/assets/sprites/robots/${atk.attackerId}-idle.webp`;
-  const spriteFallback = `/assets/sprites/robots/${atk.attackerId}.webp`;
-  const targetSprite = `/assets/sprites/robots/${atk.targetId}-idle.webp`;
-  const targetSpriteFallback = `/assets/sprites/robots/${atk.targetId}.webp`;
+  const spriteUrl = robotSpritePath(atk.attackerId);
+  const targetSprite = robotSpritePath(atk.targetId);
 
   const baseWordHtml = wrapWithRuby(atk.attackerBaseWord, atk.attackerBaseReading);
   const skillNameHtml = wrapWithRuby(atk.attackerSkillName, atk.attackerSkillReading);
@@ -84,7 +82,7 @@ function buildSplitAttackCard(atk, isEnemy) {
 
   return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-gradient:linear-gradient(135deg,${theme.bg},rgba(0,0,0,0.3));--sac-light:${theme.light};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
     <div class="sac-left">
-      <img class="sac-sprite" src="${spriteUrl}" onerror="this.onerror=null;this.src='${spriteFallback}'" alt="">
+      <img class="sac-sprite" src="${spriteUrl}" alt="">
       <div class="sac-attacker-name">${atk.attackerNameJp || atk.attackerName}</div>
     </div>
     <div class="sac-right">
@@ -100,7 +98,7 @@ function buildSplitAttackCard(atk, isEnemy) {
       </div>
       <div class="sac-row sac-impact" data-row="2">
         <span class="sac-impact-arrow">\u2192</span>
-        <img class="sac-impact-sprite" src="${targetSprite}" onerror="this.onerror=null;this.src='${targetSpriteFallback}'" alt="">
+        <img class="sac-impact-sprite" src="${targetSprite}" alt="">
         <span class="sac-impact-name">${targetDisplayName}</span>
         <span class="sac-damage">${damageSign}</span>
       </div>
