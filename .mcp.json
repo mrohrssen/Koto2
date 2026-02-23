@@ -1,0 +1,10 @@
+{
+  "playwright": {
+    "command": "npx",
+    "args": [
+      "@playwright/mcp@latest",
+      "--browser", "webkit",
+      "--device", "iPhone 15 Pro"
+    ]
+  }
+}
