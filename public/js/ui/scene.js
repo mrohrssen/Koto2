@@ -160,8 +160,7 @@ export function showEnemies(enemies) {
 export function updateEnemyHPAtIndex(index, current, max) {
   const slot = dom.enemySpriteContainer.querySelector(`.enemy-robot-slot[data-enemy-index="${index}"]`);
   if (!slot) {
-    // Fallback to single-enemy update
-    updateEnemyHP(current, max);
+    console.warn(`[Scene] No enemy slot found at index ${index}, skipping HP update`);
     return;
   }
   const fill = slot.querySelector('.enemy-robot-hp-fill');
