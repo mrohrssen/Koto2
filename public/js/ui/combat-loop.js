@@ -1894,7 +1894,7 @@ export async function stopCombatLoop(result) {
  */
 export async function showNpcGreeting(npcData) {
   if (!npcData?.greeting) return;
-  await narration.showNarration(npcData.greeting, { speaker: npcData.name || npcData.nameEn });
+  await narration.showNarration(npcData.greeting, { speaker: npcData.nameEn || npcData.name });
 }
 
 /**
@@ -1907,7 +1907,7 @@ export async function runNpcDialogue() {
   if (!dialogueData) return;
 
   const { npc, freed, rounds } = dialogueData;
-  const npcName = npc.name || npc.nameEn;
+  const npcName = npc.nameEn || npc.name;
 
   // Show NPC sprite in scene area
   if (showNpcSprite) showNpcSprite(npcName, npc.id);
