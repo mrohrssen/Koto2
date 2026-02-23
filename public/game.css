@@ -1438,6 +1438,14 @@ html, body {
   margin-top: 4px;
 }
 
+/* Area selection proceed button pinned at bottom */
+#area-proceed-btn {
+  position: sticky;
+  bottom: 0;
+  margin-top: 8px;
+  z-index: 2;
+}
+
 /* ===== LEVEL SELECT ===== */
 .level-select-header {
   text-align: center;
