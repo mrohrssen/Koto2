@@ -22,7 +22,9 @@ import {
   getRoomEntryNarration,
   getRoomActions,
   getAreaSelectionOptions,
-  getAreaById
+  getAreaById,
+  createRoom,
+  ROOM_TYPES
 } from '../rooms.js';
 
 import { addXpToRobot, xpToNextLevel, instantiateRobot, getRobotBuyPrice, getRobotSellPrice, generateDealerRobots } from '../robots.js';
@@ -60,7 +62,7 @@ export class ExplorationService {
    * Select an area (works for both start and between areas)
    * @param {string} areaId - Area ID to select
    */
-  selectArea(areaId) {
+  selectArea(areaId, forceRoomType = null) {
     if (!this.gm.run) {
       throw new Error('No active run');
     }
@@ -76,7 +78,7 @@ export class ExplorationService {
     this.gm.run.areaCleared = false;
 
     // Enter the area
-    this.enterArea();
+    this.enterArea(forceRoomType);
 
     logger.info('[Exploration] Area selected:', { area: areaId, areasCompleted: this.gm.run.areasCompleted });
 
@@ -90,7 +92,7 @@ export class ExplorationService {
   /**
    * Enter an area — generate rooms, set background, reset per-area state
    */
-  enterArea() {
+  enterArea(forceRoomType = null) {
     if (!this.gm.run) {
       throw new Error('No active run');
     }
@@ -103,7 +105,7 @@ export class ExplorationService {
     this.gm.run.areaCleared = false;
 
     // Generate rooms for this area (no boss)
-    this.gm.run.rooms = generateFloorRooms(areaId, this.gm.run.encountersNeeded, null, false);
+    this.gm.run.rooms = generateFloorRooms(areaId, this.gm.run.encountersNeeded, null, false, forceRoomType);
     this.gm.run.currentRoom = 0;
     this.gm.run.roomsExplored = 0;
     this.gm.run.pendingBranch = false;
@@ -148,7 +150,7 @@ export class ExplorationService {
   /**
    * Proceed to next room
    */
-  proceedToNextRoom() {
+  proceedToNextRoom(forceRoomType = null) {
     if (!this.gm.run || !this.gm.run.active) {
       throw new Error('No active run');
     }
@@ -196,6 +198,14 @@ export class ExplorationService {
 
     // Check if next room is a branch pair
     if (Array.isArray(nextRoom)) {
+      if (forceRoomType && ROOM_TYPES[forceRoomType]) {
+        const areaId = this.gm.run.currentArea?.id || 'unknown';
+        for (let i = 0; i < nextRoom.length; i++) {
+          if (nextRoom[i].type !== forceRoomType) {
+            nextRoom[i] = createRoom(forceRoomType, areaId, nextRoom[i].roomNumber, nextRoom[i].totalRooms);
+          }
+        }
+      }
       this.gm.run.pendingBranch = true;
       this.gm.emitState();
 
@@ -210,8 +220,16 @@ export class ExplorationService {
       };
     }
 
-    // Single room - mark as explored (existing logic)
-    nextRoom.explored = true;
+    // Single room - override type if forceRoomType is set
+    if (forceRoomType && ROOM_TYPES[forceRoomType] && nextRoom.type !== forceRoomType) {
+      const areaId = this.gm.run.currentArea?.id || 'unknown';
+      const replaced = createRoom(forceRoomType, areaId, nextRoom.roomNumber, nextRoom.totalRooms);
+      this.gm.run.rooms[this.gm.run.currentRoom] = replaced;
+    }
+    const room = this.gm.run.rooms[this.gm.run.currentRoom]; // re-read after possible replacement
+
+    // Mark as explored
+    room.explored = true;
     this.gm.run.roomsExplored++;
     this.gm.run.stats.roomsExplored++;
 
@@ -225,17 +243,17 @@ export class ExplorationService {
     }
 
     // Get narration for new room
-    const narration = getRoomEntryNarration(nextRoom);
+    const narration = getRoomEntryNarration(room);
     this.gm.narrate(narration);
     this.gm.emitState();
 
-    logger.info('[Exploration] Proceeded to room:', { type: nextRoom.type, index: this.gm.run.currentRoom });
+    logger.info('[Exploration] Proceeded to room:', { type: room.type, index: this.gm.run.currentRoom });
 
     return {
-      room: nextRoom,
+      room,
       roomNumber: this.gm.run.currentRoom + 1,
       totalRooms: this.gm.run.rooms.length,
-      actions: getRoomActions(nextRoom),
+      actions: getRoomActions(room),
       narration
     };
   }
@@ -244,7 +262,7 @@ export class ExplorationService {
    * Select a door at a branch point
    * @param {number} doorIndex - 0 for door 1, 1 for door 2
    */
-  selectBranch(doorIndex) {
+  selectBranch(doorIndex, forceRoomType = null) {
     if (!this.gm.run || !this.gm.run.active) {
       throw new Error('No active run');
     }
@@ -262,7 +280,12 @@ export class ExplorationService {
       throw new Error('Invalid door index');
     }
 
-    const selectedRoom = pair[doorIndex];
+    let selectedRoom = pair[doorIndex];
+
+    if (forceRoomType && ROOM_TYPES[forceRoomType] && selectedRoom.type !== forceRoomType) {
+      const areaId = this.gm.run.currentArea?.id || 'unknown';
+      selectedRoom = createRoom(forceRoomType, areaId, selectedRoom.roomNumber, selectedRoom.totalRooms);
+    }
 
     // Replace pair with selected room
     this.gm.run.rooms[this.gm.run.currentRoom] = selectedRoom;
