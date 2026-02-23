@@ -60,6 +60,7 @@ const MODEL_OPTIONS = {
     { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
     { id: 'meta-llama/llama-4-maverick', name: 'Llama 4 Maverick' },
     { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1' },
+    { id: 'tngtech/deepseek-r1t2-chimera', name: 'DeepSeek R1T2 Chimera' },
   ],
 };
 
