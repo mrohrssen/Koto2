@@ -507,8 +507,8 @@ export async function renderBranchSelection() {
   let selectedDoor = null;
 
   actions.setContent(`
-    <button class="action-btn action-btn-secondary branch-option" data-door="0">\uD83D\uDEAA 左のドア</button>
-    <button class="action-btn action-btn-secondary branch-option" data-door="1">\uD83D\uDEAA 右のドア</button>
+    <button class="action-btn action-btn-secondary branch-option" data-door="0">🛤️ 左の道</button>
+    <button class="action-btn action-btn-secondary branch-option" data-door="1">🛤️ 右の道</button>
     <button class="action-btn action-btn-primary" id="branch-proceed-btn" disabled>進む</button>
   `);
 
