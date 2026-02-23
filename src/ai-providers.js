@@ -244,8 +244,13 @@ async function chatWithOpenRouter(apiKey, messages, systemPrompt, model) {
       }))
     ],
     temperature: 0.7,
-    max_tokens: 500
+    max_tokens: 4096
   });
+
+  const finishReason = response.choices[0]?.finish_reason;
+  if (finishReason === 'length') {
+    console.warn(`[OpenRouter] Response truncated (finish_reason=length, model=${model}, output_tokens=${response.usage?.completion_tokens || '?'})`);
+  }
 
   const usage = response.usage ? {
     inputTokens: response.usage.prompt_tokens || 0,
