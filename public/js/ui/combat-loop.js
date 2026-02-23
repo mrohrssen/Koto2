@@ -55,11 +55,11 @@ const ATTACK_CARD_TIMING = {
 };
 
 const ELEMENT_THEME = {
-  water:  { border: 'rgba(33,150,243,0.4)',  bg: 'rgba(33,150,243,0.15)',  light: '#64B5F6' },
-  fire:   { border: 'rgba(244,67,54,0.4)',   bg: 'rgba(244,67,54,0.15)',   light: '#EF9A9A' },
-  earth:  { border: 'rgba(141,110,99,0.4)',  bg: 'rgba(141,110,99,0.15)',  light: '#BCAAA4' },
-  metal:  { border: 'rgba(158,158,158,0.4)', bg: 'rgba(158,158,158,0.15)', light: '#BDBDBD' },
-  wood:   { border: 'rgba(76,175,80,0.4)',   bg: 'rgba(76,175,80,0.15)',   light: '#A5D6A7' }
+  water:  { border: 'rgba(33,150,243,0.5)',  bg: '#1a2a3a',  light: '#64B5F6' },
+  fire:   { border: 'rgba(244,67,54,0.5)',   bg: '#3a1a1a',  light: '#EF9A9A' },
+  earth:  { border: 'rgba(141,110,99,0.5)',  bg: '#2a2520',  light: '#BCAAA4' },
+  metal:  { border: 'rgba(158,158,158,0.5)', bg: '#2a2a2a',  light: '#BDBDBD' },
+  wood:   { border: 'rgba(76,175,80,0.5)',   bg: '#1a2a1a',  light: '#A5D6A7' }
 };
 
 const KANJI_RE = /[\u4e00-\u9faf\u3400-\u4dbf]/;

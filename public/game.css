@@ -932,7 +932,7 @@ html, body {
   align-items: center;
   justify-content: center;
   padding: 10px 8px;
-  background: var(--sac-gradient, linear-gradient(135deg, rgba(255,255,255,0.06), rgba(0,0,0,0.3)));
+  background: var(--sac-gradient);
   flex-shrink: 0;
 }
 
@@ -962,7 +962,7 @@ html, body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: rgba(0,0,0,0.3);
+  background: var(--bg-elevated, #1e1e2e);
   min-width: 0;
 }
 
