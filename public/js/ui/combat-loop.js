@@ -669,8 +669,22 @@ export async function executePlayerAttack() {
 
 // ============ SHARED ROBOT COMBAT HELPERS ============
 
+/** Show a floating text label above a target element (for status effects) */
+function showFloatingText(targetEl, text) {
+  const rect = targetEl.getBoundingClientRect();
+  const popup = document.createElement('div');
+  popup.className = 'floating-effect-text';
+  popup.textContent = text;
+  popup.style.left = `${rect.left + rect.width / 2}px`;
+  popup.style.top = `${rect.top}px`;
+  document.body.appendChild(popup);
+  popup.addEventListener('animationend', () => popup.remove());
+}
+
 /**
- * Show poison tick effects from start-of-round effect processing.
+ * Show status effect events from start-of-round effect processing.
+ * Handles poison ticks with damage animation AND all other status effects
+ * (confuse, stun, sleep, buffs, shields) with floating text labels.
  * Used by both attack and defend paths.
  * @param {Object} result - Combat cycle result from server
  */
@@ -685,6 +699,27 @@ async function showEffectEvents(result) {
       }
       if (targetEl) {
         await poisonTickEffect(targetEl, event.damage);
+      }
+    } else if (event.type !== 'poison') {
+      const EFFECT_LABELS = {
+        confuse: '混乱!',
+        stun: 'スタン!',
+        sleep: '眠り!',
+        attack_buff: 'ATK UP!',
+        haste: 'ヘイスト!',
+        shield: 'シールド!',
+        team_shield: 'シールド!',
+        defense_buff: 'DEF UP!',
+        speed_buff: 'SPD UP!'
+      };
+      const label = EFFECT_LABELS[event.type] || event.type;
+      let targetEl = findRobotSlotByAttackerId(event.targetId);
+      if (!targetEl) {
+        targetEl = findEnemyTargetElement(event.targetId, result.enemies);
+      }
+      if (targetEl) {
+        showFloatingText(targetEl, label);
+        await delay(400);
       }
     }
   }

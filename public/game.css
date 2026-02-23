@@ -1887,6 +1887,24 @@ html, body {
   animation: damage-float-massive 1.5s ease-out forwards;
 }
 
+/* Floating status effect text */
+.floating-effect-text {
+  position: fixed;
+  transform: translateX(-50%);
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFD54F;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+  pointer-events: none;
+  z-index: 1000;
+  animation: floatUp 800ms ease-out forwards;
+}
+
+@keyframes floatUp {
+  0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-40px); }
+}
+
 @keyframes damage-float {
   0% { opacity: 1; transform: translateY(0); }
   100% { opacity: 0; transform: translateY(-40px); }
