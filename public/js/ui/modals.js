@@ -142,6 +142,19 @@ export async function openSettings() {
           min="0" max="50" value="${keyInfo.dailyWordLimit ?? 10}">
         <small style="color:#888;font-size:0.85em">0 = skip discovery rooms, max 50</small>
       </label>
+      <label class="settings-label" style="margin-top:12px">
+        Force Room Type
+        <select id="settings-force-room-type" class="settings-input">
+          <option value="">Standard</option>
+          <option value="encounter">Encounter</option>
+          <option value="shrine">Shrine</option>
+          <option value="quiz">Quiz</option>
+          <option value="wordDiscovery">Word Discovery</option>
+          <option value="dealer">Dealer</option>
+          <option value="whackAMole">Whack-A-Mole</option>
+        </select>
+        <small style="color:#888;font-size:0.85em">Forces all rooms to this type for playtesting</small>
+      </label>
       <hr style="margin:16px 0;border:none;border-top:1px solid #e0e0e0">
       <label class="settings-label">
         <input type="checkbox" id="settings-tts-enabled"
@@ -190,6 +203,20 @@ export async function openSettings() {
         style="margin-top:20px;width:100%">Save</button>
     </div>
   `;
+
+  // Set force room type from localStorage
+  const forceRoomSelect = document.getElementById('settings-force-room-type');
+  if (forceRoomSelect) {
+    forceRoomSelect.value = localStorage.getItem('jrpg_forceRoomType') || '';
+    forceRoomSelect.addEventListener('change', (e) => {
+      const val = e.target.value;
+      if (val) {
+        localStorage.setItem('jrpg_forceRoomType', val);
+      } else {
+        localStorage.removeItem('jrpg_forceRoomType');
+      }
+    });
+  }
 
   // Update model dropdown when provider changes
   document.getElementById('settings-ai-provider')?.addEventListener('change', (e) => {
