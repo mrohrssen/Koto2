@@ -64,6 +64,12 @@ const ELEMENT_THEME = {
 
 const KANJI_RE = /[\u4e00-\u9faf\u3400-\u4dbf]/;
 
+/** Map an English skill/base name to the action icon sprite path. */
+function actionIconPath(nameEn) {
+  if (!nameEn) return '';
+  return `/assets/sprites/actions/${nameEn.toLowerCase().replace(/ /g, '-')}.webp`;
+}
+
 function wrapWithRuby(word, reading) {
   if (!word || !reading || word === reading || !KANJI_RE.test(word)) return word || '';
   return `<ruby>${word}<rt>${reading}</rt></ruby>`;
@@ -80,6 +86,9 @@ function buildSplitAttackCard(atk, isEnemy) {
   const damageSign = atk.damage > 0 ? `-${atk.damage}` : '0';
   const targetDisplayName = atk.targetNameJp || atk.targetName || '';
 
+  const baseIcon = actionIconPath(atk.attackerBaseMeaning);
+  const skillIcon = actionIconPath(atk.attackerSkillEn);
+
   return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
     <div class="sac-left">
       <img class="sac-sprite" src="${spriteUrl}" alt="">
@@ -87,11 +96,13 @@ function buildSplitAttackCard(atk, isEnemy) {
     </div>
     <div class="sac-right">
       <div class="sac-row" data-row="0">
+        ${baseIcon ? `<img class="sac-action-icon" src="${baseIcon}" alt="" onerror="this.style.display='none'">` : ''}
         <span class="sac-vocab">${baseWordHtml}</span>
         <span class="sac-meaning">${atk.attackerBaseMeaning || ''}</span>
         <span class="sac-tag sac-tag-base">BASE</span>
       </div>
       <div class="sac-row" data-row="1">
+        ${skillIcon ? `<img class="sac-action-icon" src="${skillIcon}" alt="" onerror="this.style.display='none'">` : ''}
         <span class="sac-vocab">${skillNameHtml}</span>
         <span class="sac-meaning">${atk.attackerSkillEn || ''}</span>
         <span class="sac-tag sac-tag-atk">ATK</span>

@@ -915,7 +915,7 @@ html, body {
 /* ===== SPLIT ATTACK CARD ===== */
 .split-attack-card {
   display: flex;
-  max-width: 340px;
+  max-width: 410px;
   min-height: 110px;
   margin: 0 auto;
   border-radius: var(--card-radius);
@@ -1013,6 +1013,15 @@ html, body {
   font-size: 12px;
   color: var(--text-secondary);
   white-space: nowrap;
+}
+
+/* Action icon in BASE/ATK rows */
+.sac-action-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 6px;
+  flex-shrink: 0;
 }
 
 /* Tag pills */
