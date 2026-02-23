@@ -459,7 +459,8 @@ export async function renderBranchSelection() {
 
   // Show Chippy sprite and two-door background
   sceneModule.showChippy();
-  sceneModule.setBackground('/assets/backgrounds/branch_doors.webp');
+  const areaBg = gameState.run?.background;
+  sceneModule.setBackground(areaBg ? `/assets/backgrounds/${areaBg}` : '/assets/backgrounds/branch_doors.webp');
 
   // Show greyed-out door buttons while Chippy narrates
   actions.setContent(`
