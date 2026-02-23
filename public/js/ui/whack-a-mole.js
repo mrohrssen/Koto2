@@ -1,3 +1,5 @@
+import { animate as anime } from '../lib/anime.esm.min.js';
+
 /**
  * @file whack-a-mole.js - Word-Match Mini Game
  *
@@ -166,6 +168,13 @@ export class WhackAMoleGame {
     tileEl.classList.add('wam-flipped');
     const img = tileEl.querySelector('.wam-tile-img');
     if (img) img.src = this.pool[poolIdx].sprite;
+    anime({
+      targets: tileEl,
+      scale: [0.8, 1],
+      opacity: [0.5, 1],
+      duration: 250,
+      easing: 'easeOutBack'
+    });
   }
 
   _setTileFaceDown(index) {
@@ -241,7 +250,7 @@ export class WhackAMoleGame {
     if (this._isCorrectTile(index)) {
       // HIT
       this.score++;
-      this.timeLeft = Math.min(this.timeLeft + 5, 99);
+      this.timeLeft = Math.min(this.timeLeft + 2, 99);
       this._updateScoreDisplay();
       this._updateTimerDisplay();
 
@@ -252,10 +261,17 @@ export class WhackAMoleGame {
         plus.className = 'wam-plus-one';
         plus.textContent = '+1';
         tileEl.appendChild(plus);
-        setTimeout(() => {
-          tileEl.classList.remove('wam-hit');
-          plus.remove();
-        }, 600);
+        anime({
+          targets: tileEl,
+          scale: [1, 1.2, 1],
+          rotate: [0, 8, 0],
+          duration: 400,
+          easing: 'easeOutElastic(1, .6)',
+          complete: () => {
+            tileEl.classList.remove('wam-hit');
+            plus.remove();
+          }
+        });
       }
 
       this._advanceToNextWord();
@@ -267,8 +283,15 @@ export class WhackAMoleGame {
 
       if (tileEl) {
         tileEl.classList.add('wam-miss');
-        setTimeout(() => tileEl.classList.remove('wam-miss'), 400);
+        anime({
+          targets: tileEl,
+          translateX: [-6, 6, -4, 4, 0],
+          duration: 300,
+          easing: 'easeInOutQuad',
+          complete: () => tileEl.classList.remove('wam-miss')
+        });
       }
+      try { this.playSFX('wrong'); } catch (e) { /* sfx optional */ }
 
       if (this.timeLeft <= 0) this._endGame();
     }

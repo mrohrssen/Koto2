@@ -470,7 +470,7 @@ export default function createRunRoutes({
     }
   });
 
-  // Whack-a-Mole: get random pool of creatures + items for matching game
+  // Whack-a-Mole: get random pool of creatures + items + skills for matching game
   router.get('/whack-a-mole-pool', (req, res) => {
     try {
       const creaturePool = allCreatures.map(c => ({
@@ -491,7 +491,34 @@ export default function createRunRoutes({
         sprite: `/assets/sprites/items/${i.id}.webp`
       }));
 
-      const pool = [...creaturePool, ...itemPool].sort(() => Math.random() - 0.5);
+      // Creature ATK and ULT skills — icon tiles like food items
+      const skillPool = [];
+      for (const c of allCreatures) {
+        if (c.autoSkill?.word) {
+          const slug = (c.autoSkill.nameEn || '').toLowerCase().replace(/ /g, '-');
+          skillPool.push({
+            id: `${c.id}-atk`,
+            type: 'skill',
+            word: c.autoSkill.word,
+            reading: c.autoSkill.reading,
+            meaning: c.autoSkill.nameEn || c.autoSkill.name,
+            sprite: `/assets/sprites/actions/${slug}.webp`
+          });
+        }
+        if (c.ultimate?.word) {
+          const slug = (c.ultimate.nameEn || '').toLowerCase().replace(/ /g, '-');
+          skillPool.push({
+            id: `${c.id}-ult`,
+            type: 'skill',
+            word: c.ultimate.word,
+            reading: c.ultimate.reading,
+            meaning: c.ultimate.nameEn || c.ultimate.name,
+            sprite: `/assets/sprites/actions/${slug}.webp`
+          });
+        }
+      }
+
+      const pool = [...creaturePool, ...itemPool, ...skillPool].sort(() => Math.random() - 0.5);
       res.json({ pool });
     } catch (err) {
       res.status(500).json({ error: 'Failed to build whack-a-mole pool' });
