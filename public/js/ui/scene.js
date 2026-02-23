@@ -132,6 +132,8 @@ export function showEnemies(enemies) {
 
     const slot = document.createElement('div');
     slot.className = 'enemy-robot-slot';
+    if (enemy.befriended) slot.classList.add('befriended');
+    else if (enemy.hp <= 0) slot.classList.add('defeated');
     slot.dataset.enemyIndex = i;
     slot.dataset.enemyId = enemy.id;
     slot.innerHTML = `

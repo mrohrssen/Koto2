@@ -112,6 +112,19 @@ describe('Robot Combat - Befriend', () => {
     assert.ok(!result.success);
   });
 
+  it('captures the specified target by index instead of lowest HP', () => {
+    const enemies = [instantiateRobot('kazenoko'), instantiateRobot('kamedor')];
+    enemies[0].hp = 10; // ratio 10/75=0.133 — lowest ratio (buggy code picks this)
+    enemies[1].hp = 50; // ratio 50/160=0.3125 — higher ratio but this is the target
+    const party = { active: [instantiateRobot('hikaribon')], reserves: [], maxTotal: 6 };
+    const result = processBefriend(enemies, party, 1); // target index 1
+    assert.ok(result.success);
+    // Should capture index 1 (kamedor), NOT index 0 (kazenoko) which has lower HP ratio
+    assert.strictEqual(enemies[1].befriended, true);
+    assert.strictEqual(enemies[1].hp, 0);
+    assert.ok(!enemies[0].befriended); // index 0 should be untouched
+  });
+
   it('rejects befriend if party full (6)', () => {
     const enemies = [instantiateRobot('kazenoko')];
     enemies[0].hp = 20;
@@ -122,6 +135,21 @@ describe('Robot Combat - Befriend', () => {
     };
     const result = processBefriend(enemies, party);
     assert.ok(!result.success);
+  });
+
+  it('rejects befriend if party + pendingCaptures reaches maxTotal', () => {
+    const enemies = [instantiateRobot('kazenoko'), instantiateRobot('kamedor')];
+    enemies[0].hp = 20;
+    enemies[1].hp = 20;
+    const party = {
+      active: [instantiateRobot('hikaribon'), instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')],
+      reserves: [instantiateRobot('nekotto'), instantiateRobot('kazenoko')],
+      pendingCaptures: [instantiateRobot('kaminarion')], // 5 in party + 1 pending = 6 = maxTotal
+      maxTotal: 6
+    };
+    const result = processBefriend(enemies, party, 0);
+    assert.ok(!result.success);
+    assert.strictEqual(result.reason, 'Party full');
   });
 });
 

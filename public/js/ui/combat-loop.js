@@ -1894,7 +1894,10 @@ export async function stopCombatLoop(result) {
  */
 export async function showNpcGreeting(npcData) {
   if (!npcData?.greeting) return;
-  await narration.showNarration(npcData.greeting, { speaker: npcData.nameEn || npcData.name });
+  const npcName = npcData.nameEn || npcData.name;
+  if (showNpcSprite) showNpcSprite(npcName, npcData.id);
+  await narration.showNarration(npcData.greeting, { speaker: npcName });
+  if (hideNpcSprite) hideNpcSprite();
 }
 
 /**

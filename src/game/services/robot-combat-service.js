@@ -224,21 +224,30 @@ export function tickAllEffects(allies, enemies) {
   return events;
 }
 
-export function processBefriend(enemies, robotParty) {
-  const totalRobots = robotParty.active.length + robotParty.reserves.length;
+export function processBefriend(enemies, robotParty, targetEnemyIndex) {
+  const totalRobots = robotParty.active.length + robotParty.reserves.length + (robotParty.pendingCaptures?.length || 0);
   if (totalRobots >= robotParty.maxTotal) {
     return { success: false, reason: 'Party full' };
   }
 
-  const eligible = enemies
-    .filter(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.5)
-    .sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
-
-  if (eligible.length === 0) {
-    return { success: false, reason: 'No enemy at <=50% HP' };
+  let captured;
+  if (typeof targetEnemyIndex === 'number' && targetEnemyIndex >= 0) {
+    const target = enemies[targetEnemyIndex];
+    if (!target || target.hp <= 0 || target.befriended || (target.hp / target.maxHp) > 0.5) {
+      return { success: false, reason: 'Target not eligible' };
+    }
+    captured = target;
+  } else {
+    // Fallback: pick lowest HP eligible (legacy behavior)
+    const eligible = enemies
+      .filter(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.5)
+      .sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
+    if (eligible.length === 0) {
+      return { success: false, reason: 'No enemy at <=50% HP' };
+    }
+    captured = eligible[0];
   }
 
-  const captured = eligible[0];
   // Mark as captured but don't remove from array (preserve indices for frontend targeting)
   captured.hp = 0;
   captured.befriended = true;
