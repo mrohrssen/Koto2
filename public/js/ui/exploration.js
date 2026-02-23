@@ -47,26 +47,26 @@ let branchSelectionRequestId = 0;
 
 // Chippy's natural transition phrases for left/right door hints (20 pairs)
 const DOOR_INTROS = [
-  { left: '左のドアだけど…', right: 'で、右のドアは…' },
+  { left: '左の道だけど…', right: 'で、右の道は…' },
   { left: '左の方はね…', right: '右の方はね…' },
-  { left: 'まず左のドアから。', right: 'それから右のドア。' },
-  { left: '左のドアからいくよ。', right: '次、右のドア。' },
-  { left: '左側のドア…', right: 'そして右側は…' },
-  { left: 'えっとね、左のドアは…', right: 'んで、右のドアは…' },
-  { left: '左のドアの奥から…', right: '右のドアの奥からは…' },
+  { left: 'まず左の道から。', right: 'それから右の道。' },
+  { left: '左の道からいくよ。', right: '次、右の道。' },
+  { left: '左側の道…', right: 'そして右側は…' },
+  { left: 'えっとね、左の道は…', right: 'んで、右の道は…' },
+  { left: '左の道の奥から…', right: '右の道の奥からは…' },
   { left: '左から感じるのは…', right: '右から感じるのは…' },
-  { left: '左のドア、ちょっと気になる。', right: '右のドアも見てみると…' },
-  { left: 'こっちの左のドアはね…', right: 'あっちの右のドアは…' },
-  { left: '左の扉に近づくと…', right: '右の扉に近づくと…' },
+  { left: '左の道、ちょっと気になる。', right: '右の道も見てみると…' },
+  { left: 'こっちの左の道はね…', right: 'あっちの右の道は…' },
+  { left: '左の道に近づくと…', right: '右の道に近づくと…' },
   { left: 'まずは左！', right: 'そして右！' },
-  { left: '左のドア、嗅いでみると…', right: '右のドア、嗅いでみると…' },
+  { left: '左の方、嗅いでみると…', right: '右の方、嗅いでみると…' },
   { left: '左の方に耳を当てると…', right: '右の方に耳を当てると…' },
-  { left: '左のドアに触れてみた。', right: '右のドアにも触れてみた。' },
-  { left: 'ねえ、左のドアなんだけど…', right: 'で、右のドアはっていうと…' },
+  { left: '左の道に触れてみた。', right: '右の道にも触れてみた。' },
+  { left: 'ねえ、左の道なんだけど…', right: 'で、右の道はっていうと…' },
   { left: '左の気配は…', right: '右の気配は…' },
-  { left: '左のドア、覗いてみたよ。', right: '右のドアも覗いてみた。' },
+  { left: '左の道、覗いてみたよ。', right: '右の道も覗いてみた。' },
   { left: 'うーん、左はね…', right: 'うーん、右はね…' },
-  { left: '左のドアの向こうは…', right: '右のドアの向こうは…' },
+  { left: '左の道の向こうは…', right: '右の道の向こうは…' },
 ];
 
 // Module-level state for word discovery (persists across gameState updates)
@@ -463,8 +463,8 @@ export async function renderBranchSelection() {
 
   // Show greyed-out door buttons while Chippy narrates
   actions.setContent(`
-    <button class="action-btn action-btn-secondary branch-option disabled" data-door="0" disabled>\uD83D\uDEAA 左のドア</button>
-    <button class="action-btn action-btn-secondary branch-option disabled" data-door="1" disabled>\uD83D\uDEAA 右のドア</button>
+    <button class="action-btn action-btn-secondary branch-option disabled" data-door="0" disabled>\u2B05\uFE0F 左の道</button>
+    <button class="action-btn action-btn-secondary branch-option disabled" data-door="1" disabled>\u27A1\uFE0F 右の道</button>
     <button class="action-btn action-btn-primary" id="branch-proceed-btn" disabled>進む</button>
   `);
 
