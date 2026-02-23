@@ -785,6 +785,7 @@ export class GameManager {
         combatEnded: true,
         victory: true,
         robotParty: this.run.robotParty,
+        enemies: this.combat.enemies,
         newCollectionAdditions
       };
     }
@@ -964,6 +965,7 @@ export class GameManager {
         combatEnded: true,
         victory: true,
         robotParty: this.run.robotParty,
+        enemies: this.combat.enemies,
         newCollectionAdditions
       };
     }
