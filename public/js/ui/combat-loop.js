@@ -1784,12 +1784,6 @@ export async function stopCombatLoop(result) {
     await dialogueDismissPromise;
   }
 
-  // Animate victory or defeat
-  if (result.victory) {
-    animateEnemyDefeat();
-    playSFX('enemy-defeat');
-  }
-
   // Request narration from server
   try {
     const apiKeys = settings.getApiKeys();
@@ -1809,9 +1803,15 @@ export async function stopCombatLoop(result) {
     });
     const narrationResult = await response.json();
 
-    // Display narration (click-to-continue)
+    // Display narration (click-to-continue) with enemy sprites still visible
     if (narrationResult.narration) {
       await narration.showNarration(narrationResult.narration);
+    }
+
+    // NOW animate enemy defeat - after player has read the narration
+    if (result.victory) {
+      animateEnemyDefeat();
+      playSFX('enemy-defeat');
     }
 
     // Update game state from server
