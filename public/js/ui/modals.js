@@ -182,9 +182,9 @@ export async function openSettings() {
       </label>
 
       <h4 style="margin:20px 0 8px;color:var(--accent)">Data</h4>
-      <button class="action-btn" id="settings-clear-npc-cache-btn"
-        style="width:100%;background:var(--surface-2);color:var(--text)">Clear NPC Dialogue Cache</button>
-      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Regenerates all NPC dialogue on next exploration. Useful after switching AI models.</small>
+      <button class="action-btn" id="settings-clear-dialogue-cache-btn"
+        style="width:100%;background:var(--surface-2);color:var(--text)">Clear Dialogue Cache</button>
+      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Regenerates all NPC and creature dialogue on next exploration. Useful after switching AI models.</small>
 
       <button class="action-btn action-btn-primary" id="settings-save-btn"
         style="margin-top:20px;width:100%">Save</button>
@@ -201,25 +201,25 @@ export async function openSettings() {
     }
   });
 
-  document.getElementById('settings-clear-npc-cache-btn')?.addEventListener('click', async (e) => {
+  document.getElementById('settings-clear-dialogue-cache-btn')?.addEventListener('click', async (e) => {
     const btn = e.target;
     btn.disabled = true;
     btn.textContent = 'Clearing...';
     try {
-      const resp = await fetch('/api/game/clear-npc-dialogue-cache', {
-        method: 'POST',
-        headers: getAuthHeaders()
-      });
-      if (resp.ok) {
+      const [npcResp, creatureResp] = await Promise.all([
+        fetch('/api/game/clear-npc-dialogue-cache', { method: 'POST', headers: getAuthHeaders() }),
+        fetch('/api/game/clear-creature-dialogue-cache', { method: 'POST', headers: getAuthHeaders() })
+      ]);
+      if (npcResp.ok && creatureResp.ok) {
         btn.textContent = 'Cleared!';
-        setTimeout(() => { btn.textContent = 'Clear NPC Dialogue Cache'; btn.disabled = false; }, 2000);
+        setTimeout(() => { btn.textContent = 'Clear Dialogue Cache'; btn.disabled = false; }, 2000);
       } else {
         btn.textContent = 'Failed';
-        setTimeout(() => { btn.textContent = 'Clear NPC Dialogue Cache'; btn.disabled = false; }, 2000);
+        setTimeout(() => { btn.textContent = 'Clear Dialogue Cache'; btn.disabled = false; }, 2000);
       }
     } catch {
       btn.textContent = 'Error';
-      setTimeout(() => { btn.textContent = 'Clear NPC Dialogue Cache'; btn.disabled = false; }, 2000);
+      setTimeout(() => { btn.textContent = 'Clear Dialogue Cache'; btn.disabled = false; }, 2000);
     }
   });
 
