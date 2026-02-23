@@ -30,6 +30,9 @@ import { speakNarration, prefetchNarration } from '../tts.js';
 import { robotBgUrl, configureRobotImg } from './sprite-utils.js';
 import { t, isJapanified } from './i18n.js';
 
+const PATH_LEFT_SVG = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:4px"><path d="M10 18 C10 14 10 12 10 10 C10 8 8 6 4 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><circle cx="10" cy="18" r="1.5" fill="currentColor"/><path d="M10 18 C10 14 10 12 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.3"/></svg>`;
+const PATH_RIGHT_SVG = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:4px"><path d="M10 18 C10 14 10 12 10 10 C10 8 12 6 16 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><circle cx="10" cy="18" r="1.5" fill="currentColor"/><path d="M10 18 C10 14 10 12 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.3"/></svg>`;
+
 let getGameState = null;
 let updateGameState = null;
 let updateUI = null;
@@ -517,8 +520,8 @@ export async function renderBranchSelection() {
 
   // Show greyed-out door buttons while Chippy narrates
   actions.setContent(`
-    <button class="action-btn action-btn-secondary branch-option disabled" data-door="0" disabled>\u2B05\uFE0F 左の道</button>
-    <button class="action-btn action-btn-secondary branch-option disabled" data-door="1" disabled>\u27A1\uFE0F 右の道</button>
+    <button class="action-btn action-btn-secondary branch-option disabled" data-door="0" disabled>${PATH_LEFT_SVG} 左の道</button>
+    <button class="action-btn action-btn-secondary branch-option disabled" data-door="1" disabled>${PATH_RIGHT_SVG} 右の道</button>
     <button class="action-btn action-btn-primary" id="branch-proceed-btn" disabled>進む</button>
   `);
 
@@ -560,8 +563,8 @@ export async function renderBranchSelection() {
   let selectedDoor = null;
 
   actions.setContent(`
-    <button class="action-btn action-btn-secondary branch-option" data-door="0">🛤️ 左の道</button>
-    <button class="action-btn action-btn-secondary branch-option" data-door="1">🛤️ 右の道</button>
+    <button class="action-btn action-btn-secondary branch-option" data-door="0">${PATH_LEFT_SVG} 左の道</button>
+    <button class="action-btn action-btn-secondary branch-option" data-door="1">${PATH_RIGHT_SVG} 右の道</button>
     <button class="action-btn action-btn-primary" id="branch-proceed-btn" disabled>進む</button>
   `);
 
