@@ -189,8 +189,8 @@ export default function createRunRoutes({
   router.post('/select-area', async (req, res) => {
     const gameManager = req.gameManager;
     try {
-      const { areaId } = req.body;
-      const result = gameManager.selectArea(areaId);
+      const { areaId, forceRoomType } = req.body;
+      const result = gameManager.selectArea(areaId, forceRoomType || null);
       req.saveGame();
       res.json({
         ...result,
@@ -204,7 +204,8 @@ export default function createRunRoutes({
   router.post('/proceed', async (req, res) => {
     const gameManager = req.gameManager;
     try {
-      const room = gameManager.proceedToNextRoom();
+      const { forceRoomType } = req.body || {};
+      const room = gameManager.proceedToNextRoom(forceRoomType || null);
 
       const narration = null; // DM narration disabled — frontend discards this
 
@@ -219,11 +220,11 @@ export default function createRunRoutes({
   router.post('/select-branch', async (req, res) => {
     const gameManager = req.gameManager;
     try {
-      const { door } = req.body;
+      const { door, forceRoomType } = req.body;
       if (door !== 0 && door !== 1) {
         return res.status(400).json({ error: 'door must be 0 or 1' });
       }
-      const result = gameManager.selectBranch(door);
+      const result = gameManager.selectBranch(door, forceRoomType || null);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {

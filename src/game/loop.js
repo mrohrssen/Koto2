@@ -487,8 +487,8 @@ export class GameManager {
     return this.explorationService.getAreaOptions();
   }
 
-  selectArea(areaId) {
-    return this.explorationService.selectArea(areaId);
+  selectArea(areaId, forceRoomType = null) {
+    return this.explorationService.selectArea(areaId, forceRoomType);
   }
 
   // ============ ROOM EXPLORATION ============
@@ -503,16 +503,16 @@ export class GameManager {
   /**
    * Proceed to next room
    */
-  proceedToNextRoom() {
-    return this.explorationService.proceedToNextRoom();
+  proceedToNextRoom(forceRoomType = null) {
+    return this.explorationService.proceedToNextRoom(forceRoomType);
   }
 
   /**
    * Select a branch door in a branching room
    * @param {number} doorIndex - Index of door to select (0 or 1)
    */
-  selectBranch(doorIndex) {
-    return this.explorationService.selectBranch(doorIndex);
+  selectBranch(doorIndex, forceRoomType = null) {
+    return this.explorationService.selectBranch(doorIndex, forceRoomType);
   }
 
   // ============ POST-COMBAT SHOP ============

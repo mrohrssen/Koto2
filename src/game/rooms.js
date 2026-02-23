@@ -116,7 +116,7 @@ function isSpecialType(type) {
 /**
  * Generate a single room with type constraints
  */
-function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType = null, encountersOnly = false) {
+function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType = null, encountersOnly = false, forceRoomType = null) {
   const SHRINE_CHANCE = 0.10;
   const QUIZ_CHANCE = 0.10;
   const WORD_DISCOVERY_CHANCE = 0.10;
@@ -128,6 +128,8 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
 
   if (queuedType && ROOM_TYPES[queuedType]) {
     type = ROOM_TYPES[queuedType];
+  } else if (forceRoomType && ROOM_TYPES[forceRoomType]) {
+    type = ROOM_TYPES[forceRoomType];
   } else if (encountersOnly) {
     type = ROOM_TYPES.encounter;
   } else {
@@ -162,15 +164,15 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
 /**
  * Generate a pair of rooms for a branch choice
  */
-function generateBranchPair(areaId, roomNumber, totalRooms, excludeSpecialType = null, encountersOnly = false) {
-  const room1 = generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType, encountersOnly);
+function generateBranchPair(areaId, roomNumber, totalRooms, excludeSpecialType = null, encountersOnly = false, forceRoomType = null) {
+  const room1 = generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType, encountersOnly, forceRoomType);
 
   let room2ExcludeType = excludeSpecialType;
   if (isSpecialType(room1.type)) {
     room2ExcludeType = room1.type;
   }
 
-  const room2 = generateSingleRoom(areaId, roomNumber, totalRooms, room2ExcludeType, encountersOnly);
+  const room2 = generateSingleRoom(areaId, roomNumber, totalRooms, room2ExcludeType, encountersOnly, forceRoomType);
 
   return [room1, room2];
 }
@@ -179,7 +181,7 @@ function generateBranchPair(areaId, roomNumber, totalRooms, excludeSpecialType =
  * Generate rooms for an area with branching
  * Structure: single first room + branch pairs (no boss)
  */
-export function generateFloorRooms(areaId, roomCount = 10, lastSpecialType = null, encountersOnly = false) {
+export function generateFloorRooms(areaId, roomCount = 10, lastSpecialType = null, encountersOnly = false, forceRoomType = null) {
   const rooms = [];
   const totalSlots = roomCount;
   let prevSpecialType = lastSpecialType;
@@ -188,11 +190,10 @@ export function generateFloorRooms(areaId, roomCount = 10, lastSpecialType = nul
     const roomNumber = i + 1;
 
     if (i === 0) {
-      // First room is always a creature encounter
-      const room = generateSingleRoom(areaId, roomNumber, totalSlots, prevSpecialType, true);
+      const room = generateSingleRoom(areaId, roomNumber, totalSlots, prevSpecialType, !forceRoomType, forceRoomType);
       rooms.push(room);
     } else {
-      const pair = generateBranchPair(areaId, roomNumber, totalSlots, prevSpecialType, encountersOnly);
+      const pair = generateBranchPair(areaId, roomNumber, totalSlots, prevSpecialType, encountersOnly, forceRoomType);
       rooms.push(pair);
     }
   }
@@ -203,7 +204,7 @@ export function generateFloorRooms(areaId, roomCount = 10, lastSpecialType = nul
 /**
  * Create a room object
  */
-function createRoom(type, areaId, roomNumber, totalRooms) {
+export function createRoom(type, areaId, roomNumber, totalRooms) {
   const room = {
     id: `${areaId}_room${roomNumber}`,
     type,
