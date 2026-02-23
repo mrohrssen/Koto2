@@ -99,6 +99,7 @@ export function render(robots) {
           <span class="robot-level-badge">Lv${robot.level}</span>
         </div>
         <div class="robot-slot-name">${robot.nameEn}</div>
+        <div class="robot-ultimate-label">必殺技</div>
         <div class="robot-hp-bar">
           <div class="robot-hp-fill" style="width: ${hpPct}%; background-color: ${hpColor}"></div>
         </div>
@@ -109,6 +110,8 @@ export function render(robots) {
           ${buildChargeSegments(robot.ultimate.charges, robot.ultimate.chargesRequired)}
         </div>
       `;
+
+      if (isCharged) slot.classList.add('charged');
 
       const spriteImg = slot.querySelector('.robot-sprite-icon');
       configureRobotImg(spriteImg, robot.id, el => {

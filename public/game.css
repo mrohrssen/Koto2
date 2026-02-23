@@ -2715,12 +2715,30 @@ html, body {
 }
 
 .robot-icon.charged {
-  animation: robot-charged-pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
 }
 
-@keyframes robot-charged-pulse {
-  0%, 100% { box-shadow: 0 0 4px rgba(255, 215, 0, 0.4); }
-  50% { box-shadow: 0 0 12px rgba(255, 215, 0, 0.8); }
+.robot-slot.charged .robot-slot-name {
+  animation: name-charged-glow 1.5s ease-in-out infinite;
+  color: #FFD54F;
+}
+
+.robot-slot.charged .robot-ultimate-label {
+  display: block;
+}
+
+@keyframes name-charged-glow {
+  0%, 100% { text-shadow: 0 0 4px rgba(255, 215, 0, 0.4); }
+  50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
+}
+
+.robot-ultimate-label {
+  display: none;
+  font-size: 8px;
+  color: #FFD54F;
+  text-align: center;
+  letter-spacing: 0.5px;
+  line-height: 1;
 }
 
 .robot-level-badge {
