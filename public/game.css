@@ -782,6 +782,13 @@ html, body {
   padding: 12px 16px;
 }
 
+/* Compact flash cards when 3+ are showing */
+.dual-flash-card:first-child:nth-last-child(n+3),
+.dual-flash-card:first-child:nth-last-child(n+3) ~ .dual-flash-card {
+  min-height: 68px;
+  font-size: 24px;
+}
+
 .dual-flash-card:active {
   transform: scale(0.98);
 }
