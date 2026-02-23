@@ -168,9 +168,9 @@ export function updateEnemyHPAtIndex(index, current, max) {
     const pct = Math.max(0, Math.min(100, (current / max) * 100));
     fill.style.width = `${pct}%`;
   }
-  // Mark defeated with transition (CSS handles fade out)
+  // Delay defeated fade so HP bar drain animation (0.3s) completes first
   if (current <= 0 && !slot.classList.contains('defeated')) {
-    slot.classList.add('defeated');
+    setTimeout(() => slot.classList.add('defeated'), 600);
   }
 }
 

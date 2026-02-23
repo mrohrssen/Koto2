@@ -938,7 +938,7 @@ async function executeRobotPlayerAttack() {
           const dmgToThisEnemy = (result.playerAttacks || [])
             .filter(a => a.targetId === enemy.id)
             .reduce((sum, a) => sum + a.damage, 0);
-          enemyHpMap[enemy.id] = { hp: enemy.hp + dmgToThisEnemy, maxHp: enemy.maxHp, index: result.enemies.indexOf(enemy) };
+          enemyHpMap[enemy.id] = { hp: Math.min(enemy.hp + dmgToThisEnemy, enemy.maxHp), maxHp: enemy.maxHp, index: result.enemies.indexOf(enemy) };
         }
       }
 
