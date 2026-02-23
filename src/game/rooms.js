@@ -265,7 +265,7 @@ export function getRoomEntryNarration(room) {
     case ROOM_TYPES.wordDiscovery:
       return `${roomNum}に入った。知識の泉がある...新しい言葉を発見できそうだ。`;
     case ROOM_TYPES.dealer:
-      return `${roomNum}に入った。怪しいロボット商人がいる...「良いボットがあるよ」`;
+      return `${roomNum}に入った。旅の行商人がいる...「珍しいモンスターがいるよ」`;
     case ROOM_TYPES.whackAMole:
       return `${roomNum}に入った。不思議なゲーム機がある...`;
     default:
@@ -307,7 +307,7 @@ export function getRoomActions(room) {
       break;
     case ROOM_TYPES.dealer:
       if (!room.dealer?.visited) {
-        actions.push({ id: 'dealer_trade', name: '取引', description: 'ロボット商人と取引する' });
+        actions.push({ id: 'dealer_trade', name: '取引', description: '行商人と取引する' });
       }
       break;
     case ROOM_TYPES.whackAMole:

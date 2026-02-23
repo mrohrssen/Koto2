@@ -465,7 +465,7 @@ export function renderExploring() {
   if (room?.encounter || gameState.phase === 'room_encounter') {
     actions.setContent(`
       <button class="action-btn action-btn-tertiary" id="inventory-btn">\uD83D\uDCE6 インベントリ</button>
-      <button class="action-btn action-btn-secondary" id="equip-bots-btn">\uD83E\uDD16 ボット装備</button>
+      <button class="action-btn action-btn-secondary" id="equip-bots-btn">\uD83D\uDC3E モンスター装備</button>
       <button class="action-btn action-btn-primary" id="fight-btn">\u2694\uFE0F 戦う</button>
     `);
     document.getElementById('inventory-btn')?.addEventListener('click', showInventory);
@@ -480,7 +480,7 @@ export function renderExploring() {
 
   actions.setContent(`
     <button class="action-btn action-btn-tertiary" id="inventory-btn">\uD83D\uDCE6 インベントリ</button>
-    <button class="action-btn action-btn-secondary" id="equip-bots-btn">\uD83E\uDD16 ボット装備</button>
+    <button class="action-btn action-btn-secondary" id="equip-bots-btn">\uD83D\uDC3E モンスター装備</button>
     <button class="action-btn action-btn-primary" id="proceed-btn">\u27A1\uFE0F 進む</button>
   `);
   document.getElementById('inventory-btn')?.addEventListener('click', showInventory);

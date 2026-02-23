@@ -42,7 +42,7 @@ const strings = {
   cascade:          { en: 'Cascade: +{0}',            ja: 'カスケード: +{0}' },
 
   // ── Combat: befriend ──
-  partyFullTitle:   { en: 'Party Full! Choose a robot to release:', ja: 'パーティが満員！誰をリリースする？' },
+  partyFullTitle:   { en: 'Party Full! Choose a monster to release:', ja: 'パーティが満員！誰をリリースする？' },
   equipped:         { en: 'Equipped',     ja: '装備中' },
   reserve:          { en: 'Reserve',      ja: '控え' },
   letItGoBtn:       { en: 'Let it go (skip)', ja: '見送る（スキップ）' },
@@ -50,7 +50,7 @@ const strings = {
 
   // ── Collection / team select ──
   selectTeam:       { en: 'Select Your Team', ja: 'チーム選択' },
-  startRun:         { en: 'Start Run ({0} robot{1})', ja: '出撃（{0}体）' },
+  startRun:         { en: 'Start Run ({0} monster{1})', ja: '出撃（{0}体）' },
   newRobot:         { en: 'New: {0}!',       ja: '新規: {0}！' },
 
   // ── Equip screens ──
@@ -58,10 +58,10 @@ const strings = {
   inventory:        { en: 'Inventory',       ja: 'インベントリ' },
   noChips:          { en: 'No chips in inventory', ja: 'チップがありません' },
   emptySlot:        { en: 'Empty',           ja: '空き' },
-  equippedRobots:   { en: 'Equipped Robots (Front Line)', ja: '出撃ロボット（前衛）' },
-  reserveRobots:    { en: 'Reserve Robots',  ja: '控えロボット' },
-  noReserves:       { en: 'No reserve robots', ja: '控えロボットなし' },
-  swapInstruction:  { en: 'Tap an equipped robot, then a reserve to swap them.', ja: '前衛→控えの順にタップで交代' },
+  equippedRobots:   { en: 'Equipped Monsters (Front Line)', ja: '出撃モンスター（前衛）' },
+  reserveRobots:    { en: 'Reserve Monsters',  ja: '控えモンスター' },
+  noReserves:       { en: 'No reserve monsters', ja: '控えモンスターなし' },
+  swapInstruction:  { en: 'Tap an equipped monster, then a reserve to swap them.', ja: '前衛→控えの順にタップで交代' },
 
   // ── Game over ──
   defeated:         { en: 'Defeated',           ja: '敗北' },
@@ -69,12 +69,12 @@ const strings = {
   floorRooms:       { en: 'Floor {0} · {1} rooms cleared', ja: 'フロア{0}・{1}部屋クリア' },
 
   // ── Shrine ──
-  chooseToTrain:    { en: 'Choose a robot to train', ja: '修練するロボットを選べ' },
+  chooseToTrain:    { en: 'Choose a monster to train', ja: '修練するモンスターを選べ' },
   leveledUp:        { en: '{0} leveled up to Lv. {1}!', ja: '{0}がLv.{1}にレベルアップ！' },
 
   // ── Quiz rewards ──
-  chooseToHeal:     { en: 'Choose a robot to heal',     ja: '回復するロボットを選べ' },
-  chooseToLevelUp:  { en: 'Choose a robot to level up', ja: 'レベルアップするロボットを選べ' },
+  chooseToHeal:     { en: 'Choose a monster to heal',     ja: '回復するモンスターを選べ' },
+  chooseToLevelUp:  { en: 'Choose a monster to level up', ja: 'レベルアップするモンスターを選べ' },
 
   // ── Exploration: badges ──
   new:              { en: 'NEW', ja: '新規' },

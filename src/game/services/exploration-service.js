@@ -363,7 +363,7 @@ export class ExplorationService {
       robot: robot.nameEn, robotId, newLevel: robot.level
     });
 
-    this.gm.narrate(`修練場の力でロボットが強化された！ Lv. ${robot.level}`);
+    this.gm.narrate(`修練場の力でモンスターが強化された！ Lv. ${robot.level}`);
     this.gm.emitState();
 
     return {
@@ -698,7 +698,7 @@ export class ExplorationService {
     room.dealer.visited = true;
     room.interacted = true;
 
-    this.gm.narrate('ロボット商人に別れを告げた。');
+    this.gm.narrate('行商人に別れを告げた。');
     this.gm.emitState();
 
     return { success: true };

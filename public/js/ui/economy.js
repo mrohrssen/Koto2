@@ -63,13 +63,13 @@ export async function renderDealerRoom(actionsModule) {
               <div class="dealer-offer-desc">HP: ${robot.maxHp} \u00B7 ATK: ${robot.attack}</div>
             </div>
           </div>
-          <button class="dealer-buy-btn action-btn action-btn-primary" data-robot-id="${robot.id}" ${btnDisabled}>${robot.buyPrice}cr \u3067\u96C7\u3046</button>
+          <button class="dealer-buy-btn action-btn action-btn-primary" data-robot-id="${robot.id}" ${btnDisabled}>${robot.buyPrice}cr で仲間に</button>
         </div>
       `;
     }).join('');
 
     buyHtml = `
-      <div class="dealer-section-title">\u50AD\u5175\u30ED\u30DC\u30C3\u30C8</div>
+      <div class="dealer-section-title">仲間モンスター</div>
       ${robotCards}
     `;
   } else if (!canBuy) {
@@ -96,7 +96,7 @@ export async function renderDealerRoom(actionsModule) {
         </button>
       </div>
     `;
-  }).join('') : '<p style="text-align:center;color:var(--text-secondary)">\u30ED\u30DC\u30C3\u30C8\u304C\u3044\u306A\u3044</p>';
+  }).join('') : '<p style="text-align:center;color:var(--text-secondary)">モンスターがいない</p>';
 
   actionsModule.setContent(`
     <div class="dealer-room">
@@ -113,7 +113,7 @@ export async function renderDealerRoom(actionsModule) {
   `);
 
   // Show dealer greeting via standard narration system
-  narrationBox.show('いらっしゃい！珍しいロボットが入荷したよ！', { speaker: 'ディーラー', autoDismiss: 3000 });
+  narrationBox.show('いらっしゃい！珍しいモンスターが入荷したよ！', { speaker: '行商人' });
 
   // Wire buy buttons
   document.querySelectorAll('.dealer-buy-btn').forEach(btn => {
