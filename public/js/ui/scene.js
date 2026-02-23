@@ -314,7 +314,7 @@ export function showNpcTrainer(npcName, npcId) {
   dom.enemySpriteContainer.classList.remove('robot-enemy');
 
   const spritePath = npcId
-    ? `/assets/sprites/npcs/${npcId}.png`
+    ? `/assets/sprites/npcs/${npcId}.webp`
     : '/assets/sprites/enemies/systemExecutive.webp';
   dom.enemySprite.src = spritePath;
   dom.enemySprite.onerror = () => {
