@@ -225,13 +225,17 @@ async function chatWithGemini(apiKey, messages, systemPrompt) {
  * OpenRouter Provider
  */
 async function chatWithOpenRouter(apiKey, messages, systemPrompt, model) {
+  if (!model) {
+    throw new Error('OpenRouter requires a model to be specified in settings (e.g. "tngtech/deepseek-r1t2-chimera")');
+  }
+
   const client = new OpenAI({
     apiKey,
     baseURL: 'https://openrouter.ai/api/v1'
   });
 
   const response = await client.chat.completions.create({
-    model: model || 'anthropic/claude-3.5-sonnet',
+    model,
     messages: [
       { role: 'system', content: systemPrompt },
       ...messages.map(m => ({
@@ -270,6 +274,10 @@ export async function chat({
   purpose = 'other',
   returnUsage = false
 }) {
+  if (!provider) {
+    throw new Error('AI provider is required — configure it in Settings');
+  }
+
   if (!apiKey) {
     throw new Error(`API key required for ${provider}`);
   }
@@ -288,7 +296,7 @@ export async function chat({
     case 'anthropic': model = claudeModel || 'claude-sonnet-4-6'; break;
     case 'gemini':
     case 'google': model = 'gemini-1.5-flash'; break;
-    case 'openrouter': model = openrouterModel || 'anthropic/claude-3.5-sonnet'; break;
+    case 'openrouter': model = openrouterModel || 'unknown-openrouter'; break;
     default: model = 'unknown';
   }
 

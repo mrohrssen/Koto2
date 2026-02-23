@@ -4,7 +4,7 @@
  */
 export function buildVocabConfig(req, getUserVocabulary, checkSentenceViolations) {
   const userKeys = req.userKeys || {};
-  if (!userKeys.aiApiKey || !getUserVocabulary) return null;
+  if (!userKeys.aiApiKey || !userKeys.aiProvider || !getUserVocabulary) return null;
 
   const { words: vocabulary, vidSet } = getUserVocabulary(req.user.id);
   const vocabSet = new Set(vocabulary);
@@ -14,7 +14,7 @@ export function buildVocabConfig(req, getUserVocabulary, checkSentenceViolations
 
   return {
     aiConfig: {
-      provider: userKeys.aiProvider || 'anthropic',
+      provider: userKeys.aiProvider,
       apiKey: userKeys.aiApiKey,
       openaiModel: userKeys.openaiModel,
       openrouterModel: userKeys.openrouterModel,

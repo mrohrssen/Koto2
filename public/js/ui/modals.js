@@ -65,7 +65,7 @@ const MODEL_OPTIONS = {
 };
 
 function buildModelOptions(provider, selectedModel) {
-  const models = MODEL_OPTIONS[provider] || MODEL_OPTIONS.anthropic;
+  const models = MODEL_OPTIONS[provider] || MODEL_OPTIONS.openrouter;
   return models.map(m =>
     `<option value="${m.id}" ${m.id === selectedModel ? 'selected' : ''}>${m.name}</option>`
   ).join('');
@@ -123,7 +123,7 @@ export async function openSettings() {
       <label class="settings-label" style="margin-top:12px">
         Model
         <select id="settings-model" class="settings-input">
-          ${buildModelOptions(keyInfo.aiProvider || 'anthropic', keyInfo.openaiModel || 'claude-sonnet-4-6')}
+          ${buildModelOptions(keyInfo.aiProvider || 'openrouter', (keyInfo.aiProvider === 'openrouter' ? keyInfo.openrouterModel : keyInfo.openaiModel) || '')}
         </select>
       </label>
       <label class="settings-label" style="margin-top:12px">
@@ -196,7 +196,7 @@ export async function openSettings() {
     const modelSelect = document.getElementById('settings-model');
     if (modelSelect) {
       const provider = e.target.value;
-      const models = MODEL_OPTIONS[provider] || MODEL_OPTIONS.anthropic;
+      const models = MODEL_OPTIONS[provider] || MODEL_OPTIONS.openrouter;
       modelSelect.innerHTML = buildModelOptions(provider, models[0]?.id);
     }
   });
@@ -238,8 +238,9 @@ export async function openSettings() {
     const audioMuted = document.getElementById('settings-audio-muted')?.checked;
 
     // Detect if AI provider or model changed (for cache clearing prompt)
+    const prevModel = keyInfo.aiProvider === 'openrouter' ? keyInfo.openrouterModel : keyInfo.openaiModel;
     const modelChanged = (aiProvider && aiProvider !== keyInfo.aiProvider) ||
-      (model && model !== keyInfo.openaiModel);
+      (model && model !== prevModel);
 
     // Save API keys to server (only send non-empty values)
     const keysToSave = {};
@@ -247,7 +248,14 @@ export async function openSettings() {
     if (bunproToken) keysToSave.bunproToken = bunproToken;
     if (aiKey) keysToSave.aiApiKey = aiKey;
     if (aiProvider) keysToSave.aiProvider = aiProvider;
-    if (model) keysToSave.openaiModel = model;
+    if (model) {
+      // Route the model to the correct field based on provider
+      if (aiProvider === 'openrouter') {
+        keysToSave.openrouterModel = model;
+      } else {
+        keysToSave.openaiModel = model;
+      }
+    }
     if (jlptLevel) keysToSave.jlptLevel = jlptLevel;
     if (!isNaN(dailyWordLimit)) {
       keysToSave.dailyWordLimit = dailyWordLimit;

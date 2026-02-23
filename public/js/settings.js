@@ -33,8 +33,8 @@ const STORAGE_KEYS = {
 const API_KEY_DEFAULTS = {
   jpdbApiKey: '',
   aiApiKey: '',
-  aiProvider: 'anthropic',
-  openaiModel: 'claude-sonnet-4-6',
+  aiProvider: '',
+  openaiModel: '',
   openrouterModel: '',
   jlptLevel: 'N4'
 };
