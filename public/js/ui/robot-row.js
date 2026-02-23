@@ -18,7 +18,7 @@
 
 import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
-import { configureRobotImg } from './sprite-utils.js';
+import { configureRobotImg, robotStaticPath } from './sprite-utils.js';
 
 function rarityStars(rarity) {
   const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity];
@@ -114,10 +114,19 @@ export function render(robots) {
       if (isCharged) slot.classList.add('charged');
 
       const spriteImg = slot.querySelector('.robot-sprite-icon');
-      configureRobotImg(spriteImg, robot.id, el => {
-        el.style.display = 'none';
-        el.nextElementSibling.style.display = '';
-      });
+      if (isKO) {
+        // Use static sprite for KO creatures (no idle animation)
+        spriteImg.src = robotStaticPath(robot.id);
+        spriteImg.onerror = () => {
+          spriteImg.style.display = 'none';
+          spriteImg.nextElementSibling.style.display = '';
+        };
+      } else {
+        configureRobotImg(spriteImg, robot.id, el => {
+          el.style.display = 'none';
+          el.nextElementSibling.style.display = '';
+        });
+      }
 
       slot.addEventListener('click', () => togglePopup(i));
     }
