@@ -412,34 +412,33 @@
     "descriptionJa": "全クリーチャーの攻撃力を5ターン+5"
   },
   {
-    "id": "exp-charm",
-    "word": "経験の魔石",
-    "reading": "けいけんのませき",
-    "meaning": "EXP Charm",
+    "id": "hourglass",
+    "word": "砂時計",
+    "reading": "すなどけい",
+    "meaning": "hourglass",
     "components": [
-      { "word": "経験", "reading": "けいけん", "meanings": ["experience"], "rank": 1200 },
-      { "word": "魔石", "reading": "ませき", "meanings": ["magic stone; enchanted gem"], "rank": null }
+      { "word": "砂", "reading": "すな", "meanings": ["sand; grit"], "rank": 3400 },
+      { "word": "時計", "reading": "とけい", "meanings": ["clock; watch; timepiece"], "rank": 2400 }
     ],
-    "compoundRank": null,
-    "rank": 1200,
-    "rarity": "uncommon",
+    "compoundRank": 28400,
+    "rank": 3400,
+    "rarity": "legendary",
     "type": "xpCharm",
     "effect": { "field": "xpMultiplier", "value": 0.25 },
     "description": "Amplify battle XP by 25% (stacks multiplicatively)",
     "descriptionJa": "戦闘経験値を25%増幅（重複可）"
   },
   {
-    "id": "exp-balance",
-    "word": "均衡の魔石",
-    "reading": "きんこうのませき",
-    "meaning": "EXP Balance",
+    "id": "balance-scales",
+    "word": "天秤",
+    "reading": "てんびん",
+    "meaning": "balance scales",
     "components": [
-      { "word": "均衡", "reading": "きんこう", "meanings": ["equilibrium; balance"], "rank": 9800 },
-      { "word": "魔石", "reading": "ませき", "meanings": ["magic stone; enchanted gem"], "rank": null }
+      { "word": "天秤", "reading": "てんびん", "meanings": ["(balance) scales", "shoulder carrying pole", "steelyard"], "rank": 15000 }
     ],
-    "compoundRank": null,
-    "rank": 9800,
-    "rarity": "epic",
+    "compoundRank": 15000,
+    "rank": 15000,
+    "rarity": "legendary",
     "type": "xpBalance",
     "effect": { "field": "xpBalanceStacks", "value": 1 },
     "description": "Redistribute XP toward lower-leveled creatures",
