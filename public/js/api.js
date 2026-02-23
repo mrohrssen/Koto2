@@ -235,7 +235,7 @@ async function selectArea(areaId) {
     const response = await fetch('/api/game/select-area', {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ areaId })
+      body: JSON.stringify({ areaId, forceRoomType: getForceRoomType() })
     });
     return await response.json();
   } catch (error) {
@@ -245,11 +245,15 @@ async function selectArea(areaId) {
 }
 
 
+function getForceRoomType() {
+  return localStorage.getItem('jrpg_forceRoomType') || null;
+}
+
 // ============ ROOM EXPLORATION ENDPOINTS ============
 
 /** Proceed to next room */
 async function proceed() {
-  return apiCall('/proceed', 'POST');
+  return apiCall('/proceed', 'POST', { forceRoomType: getForceRoomType() });
 }
 
 /** Start room encounter */
@@ -261,7 +265,7 @@ async function roomEncounter() {
  * @param {string} door - Door identifier ('left' or 'right')
  */
 async function selectBranch(door) {
-  return apiCall('/select-branch', 'POST', { door });
+  return apiCall('/select-branch', 'POST', { door, forceRoomType: getForceRoomType() });
 }
 
 /** Fetch Chippy's door hints for current branch point */
