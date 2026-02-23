@@ -63,6 +63,7 @@ const ELEMENT_THEME = {
 };
 
 const KANJI_RE = /[\u4e00-\u9faf\u3400-\u4dbf]/;
+const KATAKANA_RE = /[\u30A0-\u30FF]/;
 
 /** Map an English skill/base name to the action icon sprite path. */
 function actionIconPath(nameEn) {
@@ -70,9 +71,17 @@ function actionIconPath(nameEn) {
   return `/assets/sprites/actions/${nameEn.toLowerCase().replace(/ /g, '-')}.webp`;
 }
 
-function wrapWithRuby(word, reading) {
-  if (!word || !reading || word === reading || !KANJI_RE.test(word)) return word || '';
-  return `<ruby>${word}<rt>${reading}</rt></ruby>`;
+function wrapWithRuby(word, reading, englishReading) {
+  if (!word || !reading) return word || '';
+  // Kanji: show hiragana reading
+  if (KANJI_RE.test(word) && word !== reading) {
+    return `<ruby>${word}<rt>${reading}</rt></ruby>`;
+  }
+  // Katakana creature names: show English reading if provided
+  if (englishReading && KATAKANA_RE.test(word)) {
+    return `<ruby>${word}<rt>${englishReading}</rt></ruby>`;
+  }
+  return word || '';
 }
 
 function buildSplitAttackCard(atk, isEnemy) {
@@ -83,8 +92,13 @@ function buildSplitAttackCard(atk, isEnemy) {
   const baseWordHtml = wrapWithRuby(atk.attackerBaseWord, atk.attackerBaseReading);
   const skillNameHtml = wrapWithRuby(atk.attackerSkillName, atk.attackerSkillReading);
 
+  // Creature names: use English name as furigana for katakana
+  const attackerNameJp = atk.attackerNameJp || atk.attackerName;
+  const attackerNameHtml = wrapWithRuby(attackerNameJp, attackerNameJp, atk.attackerName);
+
   const damageSign = atk.damage > 0 ? `-${atk.damage}` : '0';
   const targetDisplayName = atk.targetNameJp || atk.targetName || '';
+  const targetNameHtml = wrapWithRuby(targetDisplayName, targetDisplayName, atk.targetName);
 
   const baseIcon = actionIconPath(atk.attackerBaseMeaning);
   const skillIcon = actionIconPath(atk.attackerSkillEn);
@@ -92,7 +106,7 @@ function buildSplitAttackCard(atk, isEnemy) {
   return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
     <div class="sac-left">
       <img class="sac-sprite" src="${spriteUrl}" alt="">
-      <div class="sac-attacker-name">${atk.attackerNameJp || atk.attackerName}</div>
+      <div class="sac-attacker-name">${attackerNameHtml}</div>
     </div>
     <div class="sac-right">
       <div class="sac-row" data-row="0">
@@ -110,7 +124,7 @@ function buildSplitAttackCard(atk, isEnemy) {
       <div class="sac-row sac-impact" data-row="2">
         <span class="sac-impact-arrow">\u2192</span>
         <img class="sac-impact-sprite" src="${targetSprite}" alt="">
-        <span class="sac-impact-name">${targetDisplayName}</span>
+        <span class="sac-impact-name">${targetNameHtml}</span>
         <span class="sac-damage">${damageSign}</span>
       </div>
     </div>
