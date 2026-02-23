@@ -186,6 +186,55 @@ function showInventory() {
     }
   }
 
+  // Collect temp effects from active robots
+  const tempEffects = [];
+  const robots = gameState.robotParty?.active || [];
+  for (const robot of robots) {
+    if (!robot?.activeEffects) continue;
+    for (const eff of robot.activeEffects) {
+      if (eff.type === 'temp_attack_flat') {
+        tempEffects.push({
+          icon: '⚔️',
+          name: `${robot.nameEn || robot.name} ATK +${eff.value}`,
+          turns: eff.remainingTurns
+        });
+      } else if (eff.type === 'poison') {
+        tempEffects.push({
+          icon: '☠️',
+          name: `${robot.nameEn || robot.name} Poison`,
+          turns: eff.remainingTurns
+        });
+      } else if (eff.type === 'attack_buff') {
+        tempEffects.push({
+          icon: '🔥',
+          name: `${robot.nameEn || robot.name} ATK +${eff.percent}%`,
+          turns: eff.remainingTurns
+        });
+      } else if (eff.type === 'shield' || eff.type === 'team_shield') {
+        tempEffects.push({
+          icon: '🛡️',
+          name: `${robot.nameEn || robot.name} Shield`,
+          turns: eff.remainingTurns
+        });
+      }
+    }
+  }
+
+  const tempHtml = tempEffects.length > 0
+    ? `<div class="inventory-section-label" style="font-size:11px;color:var(--text-secondary);margin:12px 0 4px;padding:0 4px">Active Effects</div>` +
+      tempEffects.map(e => `
+        <div class="inventory-item">
+          <span class="inventory-item-icon">${e.icon}</span>
+          <div class="inventory-item-info">
+            <span class="inventory-item-name">${e.name}</span>
+          </div>
+          <span class="inventory-item-value" style="font-size:11px">${e.turns != null ? `${e.turns}t` : ''}</span>
+        </div>
+      `).join('')
+    : '';
+
+  const hasAnything = activeBuffs.length > 0 || tempEffects.length > 0;
+
   const buffsHtml = activeBuffs.length > 0
     ? activeBuffs.map(b => `
         <div class="inventory-item">
@@ -197,7 +246,11 @@ function showInventory() {
           <span class="inventory-item-value">${b.value}</span>
         </div>
       `).join('')
-    : '<div class="inventory-empty">アイテムなし<br><small>No active buffs</small></div>';
+    : '';
+
+  const emptyHtml = !hasAnything
+    ? '<div class="inventory-empty">アイテムなし<br><small>No active buffs</small></div>'
+    : '';
 
   const overlay = document.createElement('div');
   overlay.id = 'inventory-overlay';
@@ -209,7 +262,7 @@ function showInventory() {
         <span class="inventory-title">インベントリ</span>
         <button class="inventory-close" id="inventory-close-btn">&times;</button>
       </div>
-      <div class="inventory-list">${buffsHtml}</div>
+      <div class="inventory-list">${buffsHtml}${tempHtml}${emptyHtml}</div>
     </div>
   `;
 
