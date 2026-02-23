@@ -258,14 +258,14 @@ export function showWordDiscoveryNpc() {
   };
 }
 
-/** Show robot dealer NPC (shop merchant, no HP bar) */
+/** Show traveling merchant NPC (shop merchant, no HP bar) */
 export function showDealer() {
   dom.enemyName.textContent = 'Traveling Merchant';
   dom.enemyInfo.classList.add('visible');
   dom.enemyHpBar.style.display = 'none';
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
 
-  dom.enemySprite.src = '/assets/sprites/robot_dealer.webp';
+  dom.enemySprite.src = '/assets/sprites/traveling_merchant.webp';
   dom.enemySprite.onerror = () => {
     dom.enemySprite.classList.remove('visible');
   };

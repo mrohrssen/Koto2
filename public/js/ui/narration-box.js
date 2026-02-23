@@ -159,7 +159,7 @@ function handleClick(e) {
     currentPage += 1;
     if (textEl) {
       textEl.textContent = pagedText[currentPage];
-      lookup.refresh();
+      lookup.refresh().catch(() => {});
     }
     return;
   }
@@ -204,21 +204,21 @@ export async function show(text, options = {}) {
   if (autoDismiss) {
     if (textEl) {
       textEl.textContent = displayText;
-      lookup.refresh();
+      lookup.refresh().catch(() => {});
     }
   } else if (persistent) {
     // Persistent: truncate to 2 lines (no click-to-advance available)
     const pages = paginateForTwoLines(displayText);
     if (textEl) {
       textEl.textContent = pages[0] || '';
-      lookup.refresh();
+      lookup.refresh().catch(() => {});
     }
   } else {
     pagedText = paginateForTwoLines(displayText);
     currentPage = 0;
     if (textEl) {
       textEl.textContent = pagedText[0] || '';
-      lookup.refresh();
+      lookup.refresh().catch(() => {});
     }
   }
   if (indicatorEl) indicatorEl.style.display = (autoDismiss || persistent) ? 'none' : '';
