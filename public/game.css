@@ -104,14 +104,15 @@ html, body {
 .game-app {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
+  /* fixed + inset:0 spans the real viewport on all devices, unlike 100dvh
+     which can fall short of the screen edge on some iOS PWA configurations */
+  position: fixed;
+  inset: 0;
   max-width: 430px;
   margin: 0 auto;
   background: linear-gradient(160deg, #f0efe8, #e8edf3, #e0e4f0, #e8e0f0);
   background-size: 300% 300%;
   animation: action-area-gradient 12s ease infinite;
-  position: relative;
   overflow: hidden;
   /* iOS safe areas for notch and home indicator */
   padding-top: env(safe-area-inset-top, var(--safe-area-inset-top, 0px));
