@@ -1,93 +1,129 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert';
 import {
-  processAttackTurn,
+  processMoveTurn,
   processDefendTurn,
   processEnemyTurn,
   processBefriend,
-  processUltimate,
   awardBattleXp,
   awardKillXp,
   tickAllEffects
 } from '../../src/game/services/robot-combat-service.js';
 import { instantiateRobot } from '../../src/game/robots.js';
 
-describe('Robot Combat - Attack Turn', () => {
-  it('each allied robot attacks the enemy sequentially', () => {
-    const allies = [instantiateRobot('hikaribon'), instantiateRobot('tsukimochi')];
-    const enemies = [instantiateRobot('kazenoko')];
-    const result = processAttackTurn(allies, enemies);
+describe('Robot Combat - Move Turn', () => {
+  it('each allied robot uses a move against the enemy', () => {
+    // kazenoko has 'fuku' (damage, all_enemies, pow=15)
+    const allies = [instantiateRobot('kazenoko'), instantiateRobot('kamedor')];
+    const enemies = [instantiateRobot('hikaribon')];
+    // kamedor has 'kamu' (damage, single_enemy, pow=18)
+    const moveChoices = [
+      { robotIndex: 0, moveId: 'fuku', targetIndex: 0 },
+      { robotIndex: 1, moveId: 'kamu', targetIndex: 0 }
+    ];
+    const result = processMoveTurn(allies, enemies, moveChoices);
     assert.ok(result.attacks.length >= 1);
-    assert.ok(result.attacks.length <= allies.length);
     assert.ok(enemies[0].hp < enemies[0].maxHp, 'enemy should have taken damage');
   });
 
   it('skips KOd allies', () => {
-    const allies = [instantiateRobot('hikaribon'), instantiateRobot('tsukimochi')];
+    const allies = [instantiateRobot('kazenoko'), instantiateRobot('kamedor')];
     allies[0].hp = 0;
-    const enemies = [instantiateRobot('kazenoko')];
-    const result = processAttackTurn(allies, enemies);
+    const enemies = [instantiateRobot('hikaribon')];
+    const moveChoices = [
+      { robotIndex: 0, moveId: 'fuku', targetIndex: 0 },
+      { robotIndex: 1, moveId: 'kamu', targetIndex: 0 }
+    ];
+    const result = processMoveTurn(allies, enemies, moveChoices);
+    // Only kamedor (index 1) should attack
     assert.strictEqual(result.attacks.length, 1);
   });
 
-  it('includes vocab fields in attack objects', () => {
+  it('includes move fields in attack records', () => {
     const allies = [instantiateRobot('kamedor')];
     const enemies = [instantiateRobot('kazenoko')];
-    const result = processAttackTurn(allies, enemies);
+    const moveChoices = [
+      { robotIndex: 0, moveId: 'kamu', targetIndex: 0 }
+    ];
+    const result = processMoveTurn(allies, enemies, moveChoices);
     const atk = result.attacks[0];
-    assert.strictEqual(atk.attackerNameJp, 'カメドル');
-    assert.strictEqual(atk.attackerBaseWord, '亀');
-    assert.ok(atk.attackerSkillName, 'should have Japanese skill name');
-    assert.ok(atk.attackerSkillEn, 'should have English skill name for icon lookup');
+    assert.strictEqual(atk.attackerId, 'kamedor');
+    assert.ok(atk.attackerNameJp, 'should have attacker Japanese name');
+    assert.strictEqual(atk.moveId, 'kamu');
+    assert.ok(atk.moveName, 'should have move Japanese name');
+    assert.strictEqual(atk.moveNameEn, 'Bite');
+    assert.ok(atk.targetNameJp, 'should have target Japanese name');
+    assert.strictEqual(atk.targetId, 'kazenoko');
   });
 
-  it('includes reading fields and target Japanese name', () => {
+  it('deducts MP when using a move', () => {
     const allies = [instantiateRobot('kamedor')];
-    const enemies = [instantiateRobot('kazenoko')];
-    const result = processAttackTurn(allies, enemies);
-    const atk = result.attacks[0];
-    assert.strictEqual(atk.attackerBaseReading, 'かめ');
-    assert.strictEqual(atk.attackerSkillReading, 'かむ');
-    assert.strictEqual(atk.targetNameJp, 'カゼノコ');
+    const enemies = [instantiateRobot('hikaribon')];
+    const startMp = allies[0].mp;
+    const moveCost = allies[0].moves.find(m => m.id === 'kamu').mpCost;
+    const moveChoices = [
+      { robotIndex: 0, moveId: 'kamu', targetIndex: 0 }
+    ];
+    processMoveTurn(allies, enemies, moveChoices);
+    // MP should decrease by move cost, then regen 12% of maxMp
+    const expectedMp = Math.min(allies[0].maxMp, startMp - moveCost + Math.floor(allies[0].maxMp * 0.12));
+    assert.strictEqual(allies[0].mp, expectedMp);
+  });
+
+  it('skips move if insufficient MP', () => {
+    const allies = [instantiateRobot('kamedor')];
+    allies[0].mp = 0;
+    const enemies = [instantiateRobot('hikaribon')];
+    const startHp = enemies[0].hp;
+    const moveChoices = [
+      { robotIndex: 0, moveId: 'kamu', targetIndex: 0 }
+    ];
+    const result = processMoveTurn(allies, enemies, moveChoices);
+    assert.strictEqual(result.attacks.length, 0);
+    // Enemy should not take damage (move skipped)
+    assert.strictEqual(enemies[0].hp, startHp);
+  });
+
+  it('returns mpRegens for alive allies', () => {
+    const allies = [instantiateRobot('kamedor')];
+    allies[0].mp = 0;
+    const enemies = [instantiateRobot('hikaribon')];
+    const moveChoices = [];
+    const result = processMoveTurn(allies, enemies, moveChoices);
+    assert.ok(result.mpRegens.length >= 1);
+    assert.ok(result.mpRegens[0].regen > 0, 'should regen some MP');
   });
 });
 
 describe('Robot Combat - Defend Turn', () => {
-  it('all robots gain +1 ultimate charge', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    processDefendTurn(allies);
-    assert.strictEqual(allies[0].ultimate.charges, 1);
+  it('all robots gain MP regen on defend', () => {
+    const allies = [instantiateRobot('kamedor')];
+    allies[0].mp = 10;
+    const result = processDefendTurn(allies);
+    assert.ok(result.mpRegens.length >= 1);
+    assert.ok(allies[0].mp > 10, 'MP should increase from defend regen');
   });
 });
 
 describe('Robot Combat - Enemy Turn', () => {
-  it('enemy attacks allied robots using targeting AI', () => {
+  it('enemy attacks allied robots using its first move', () => {
     const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('tsukimochi')];
+    const enemies = [instantiateRobot('kamedor')]; // kamedor has 'kamu' (damage move)
     const result = processEnemyTurn(enemies, allies);
     assert.ok(result.attacks.length >= 1);
     assert.ok(allies[0].hp < allies[0].maxHp);
   });
 
-  it('includes vocab fields in enemy attack objects', () => {
+  it('includes move fields in enemy attack records', () => {
     const allies = [instantiateRobot('hikaribon')];
     const enemies = [instantiateRobot('kamedor')];
     const result = processEnemyTurn(enemies, allies);
     const atk = result.attacks[0];
-    assert.strictEqual(atk.attackerNameJp, 'カメドル');
-    assert.strictEqual(atk.attackerBaseWord, '亀');
-    assert.ok(atk.attackerSkillName);
-    assert.ok(atk.attackerSkillEn);
-  });
-
-  it('includes reading fields and target Japanese name in enemy attacks', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('kamedor')];
-    const result = processEnemyTurn(enemies, allies);
-    const atk = result.attacks[0];
-    assert.strictEqual(atk.attackerBaseReading, 'かめ');
-    assert.strictEqual(atk.attackerSkillReading, 'かむ');
-    assert.strictEqual(atk.targetNameJp, 'ヒカリボン');
+    assert.strictEqual(atk.attackerNameJp, '\u30AB\u30E1\u30C9\u30EB');
+    assert.strictEqual(atk.moveId, 'kamu');
+    assert.ok(atk.moveName);
+    assert.ok(atk.moveNameEn);
+    assert.strictEqual(atk.targetNameJp, '\u30D2\u30AB\u30EA\u30DC\u30F3');
   });
 });
 
@@ -106,7 +142,7 @@ describe('Robot Combat - Befriend', () => {
 
   it('rejects befriend if no enemy <=50% HP', () => {
     const enemies = [instantiateRobot('kazenoko')];
-    enemies[0].hp = Math.floor(enemies[0].maxHp * 0.6); // 60% HP — above threshold
+    enemies[0].hp = Math.floor(enemies[0].maxHp * 0.6); // 60% HP -- above threshold
     const party = { active: [instantiateRobot('hikaribon')], reserves: [], maxTotal: 6 };
     const result = processBefriend(enemies, party);
     assert.ok(!result.success);
@@ -114,12 +150,12 @@ describe('Robot Combat - Befriend', () => {
 
   it('captures the specified target by index instead of lowest HP', () => {
     const enemies = [instantiateRobot('kazenoko'), instantiateRobot('kamedor')];
-    enemies[0].hp = 10; // ratio 10/75=0.133 — lowest ratio (buggy code picks this)
-    enemies[1].hp = 50; // ratio 50/160=0.3125 — higher ratio but this is the target
+    enemies[0].hp = 10; // lower ratio
+    enemies[1].hp = 50; // higher ratio but this is the target
     const party = { active: [instantiateRobot('hikaribon')], reserves: [], maxTotal: 6 };
     const result = processBefriend(enemies, party, 1); // target index 1
     assert.ok(result.success);
-    // Should capture index 1 (kamedor), NOT index 0 (kazenoko) which has lower HP ratio
+    // Should capture index 1 (kamedor), NOT index 0 (kazenoko)
     assert.strictEqual(enemies[1].befriended, true);
     assert.strictEqual(enemies[1].hp, 0);
     assert.ok(!enemies[0].befriended); // index 0 should be untouched
@@ -153,247 +189,59 @@ describe('Robot Combat - Befriend', () => {
   });
 });
 
-describe('Robot Combat - Ultimate Targeting', () => {
-  it('single_enemy ultimate hits only one target', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')];
-    allies[0].ultimate.target = 'single_enemy';
-    allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
-    const result = processUltimate(allies[0], enemies);
-    assert.ok(result.success);
-    assert.strictEqual(result.hits.length, 1);
-  });
-
-  it('all_enemies ultimate hits all alive enemies', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')];
-    allies[0].ultimate.target = 'all_enemies';
-    allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
-    const result = processUltimate(allies[0], enemies);
-    assert.ok(result.success);
-    assert.strictEqual(result.hits.length, 2);
-  });
-
-  it('missing target field defaults to all_enemies', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')];
-    delete allies[0].ultimate.target;
-    allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
-    const result = processUltimate(allies[0], enemies);
-    assert.ok(result.success);
-    assert.strictEqual(result.hits.length, 2);
-  });
-
-  it('heal type ultimate delegates to stub and returns heal type', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('tsukimochi')];
-    allies[0].ultimate.type = 'heal';
-    allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
-    const result = processUltimate(allies[0], enemies);
-    assert.ok(result.success);
-    assert.strictEqual(result.type, 'heal');
-    assert.strictEqual(allies[0].ultimate.charges, 0);
-    assert.deepStrictEqual(result.hits, []);
-  });
-
-  it('poison type ultimate returns poison type', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('tsukimochi')];
-    allies[0].ultimate.type = 'poison';
-    allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
-    const party = { active: allies, reserves: [] };
-    const result = processUltimate(allies[0], enemies, null, party);
-    assert.ok(result.success);
-    assert.strictEqual(result.type, 'poison');
-    assert.strictEqual(allies[0].ultimate.charges, 0);
-  });
-
-  it('damage type ultimate returns type damage', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('tsukimochi')];
-    allies[0].ultimate.charges = allies[0].ultimate.chargesRequired;
-    const result = processUltimate(allies[0], enemies);
-    assert.ok(result.success);
-    assert.strictEqual(result.type, 'damage');
-  });
-});
-
-describe('Robot Combat - Heal Ultimate', () => {
-  it('heals single ally with lowest HP%', () => {
-    const healer = instantiateRobot('hikaribon');
-    healer.ultimate.type = 'heal';
-    healer.ultimate.target = 'single_ally';
-    healer.ultimate.power = 40;
-    healer.ultimate.charges = healer.ultimate.chargesRequired;
-
-    const injured = instantiateRobot('tsukimochi');
-    injured.hp = 30;
-
-    const healthy = instantiateRobot('hanatchi');
-
-    const party = { active: [healer, injured, healthy], reserves: [] };
-    const enemies = [instantiateRobot('kazenoko')];
-    const result = processUltimate(healer, enemies, null, party);
-
-    assert.ok(result.success);
-    assert.strictEqual(result.type, 'heal');
-    assert.ok(injured.hp > 30, 'injured ally should be healed');
-    assert.strictEqual(healthy.hp, healthy.maxHp, 'healthy ally should not be healed');
-    assert.strictEqual(healer.ultimate.charges, 0);
-    assert.ok(result.healEvents.length > 0);
-  });
-
-  it('all_allies heals every alive ally', () => {
-    const healer = instantiateRobot('hikaribon');
-    healer.ultimate.type = 'heal';
-    healer.ultimate.target = 'all_allies';
-    healer.ultimate.power = 30;
-    healer.ultimate.charges = healer.ultimate.chargesRequired;
-
-    const ally1 = instantiateRobot('tsukimochi');
-    ally1.hp = 50;
-    const ally2 = instantiateRobot('hanatchi');
-    ally2.hp = 60;
-
-    const party = { active: [healer, ally1, ally2], reserves: [] };
-    const enemies = [instantiateRobot('kazenoko')];
-    const result = processUltimate(healer, enemies, null, party);
-
-    assert.ok(result.success);
-    assert.strictEqual(result.type, 'heal');
-    assert.ok(ally1.hp > 50);
-    assert.ok(ally2.hp > 60);
-  });
-
-  it('does not heal KOd allies', () => {
-    const healer = instantiateRobot('hikaribon');
-    healer.ultimate.type = 'heal';
-    healer.ultimate.target = 'all_allies';
-    healer.ultimate.power = 40;
-    healer.ultimate.charges = healer.ultimate.chargesRequired;
-
-    const dead = instantiateRobot('tsukimochi');
-    dead.hp = 0;
-
-    const party = { active: [healer, dead], reserves: [] };
-    const enemies = [instantiateRobot('kazenoko')];
-    const result = processUltimate(healer, enemies, null, party);
-
-    assert.strictEqual(dead.hp, 0, 'KOd ally should stay at 0');
-  });
-});
-
-describe('Robot Combat - Poison Ultimate', () => {
-  it('applies poison effect to single enemy', () => {
-    const trickster = instantiateRobot('hikaribon');
-    trickster.ultimate.type = 'poison';
-    trickster.ultimate.target = 'single_enemy';
-    trickster.ultimate.power = 30;
-    trickster.ultimate.charges = trickster.ultimate.chargesRequired;
-
-    const enemies = [instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')];
-    const party = { active: [trickster], reserves: [] };
-    const result = processUltimate(trickster, enemies, null, party);
-
-    assert.ok(result.success);
-    assert.strictEqual(result.type, 'poison');
-    assert.strictEqual(result.hits.length, 1);
-    const poisoned = enemies.filter(e => e.activeEffects && e.activeEffects.length > 0);
-    assert.strictEqual(poisoned.length, 1);
-    assert.strictEqual(poisoned[0].activeEffects[0].type, 'poison');
-    assert.strictEqual(poisoned[0].activeEffects[0].remainingTurns, 3);
-  });
-
-  it('deals immediate damage alongside poison', () => {
-    const trickster = instantiateRobot('hikaribon');
-    trickster.ultimate.type = 'poison';
-    trickster.ultimate.target = 'single_enemy';
-    trickster.ultimate.power = 30;
-    trickster.ultimate.charges = trickster.ultimate.chargesRequired;
-
-    const enemies = [instantiateRobot('tsukimochi')];
-    const startHp = enemies[0].hp;
-    const party = { active: [trickster], reserves: [] };
-    processUltimate(trickster, enemies, null, party);
-
-    assert.ok(enemies[0].hp < startHp, 'should deal immediate damage');
-  });
-
-  it('does not apply poison to killed target', () => {
-    const trickster = instantiateRobot('hikaribon');
-    trickster.ultimate.type = 'poison';
-    trickster.ultimate.target = 'single_enemy';
-    trickster.ultimate.power = 30;
-    trickster.attack = 100; // massive attack to kill
-    trickster.ultimate.charges = trickster.ultimate.chargesRequired;
-
-    const enemies = [instantiateRobot('tsukimochi')];
-    enemies[0].hp = 1; // nearly dead
-    const party = { active: [trickster], reserves: [] };
-    const result = processUltimate(trickster, enemies, null, party);
-
-    assert.strictEqual(enemies[0].hp, 0);
-    assert.ok(!enemies[0].activeEffects || enemies[0].activeEffects.length === 0);
-    assert.strictEqual(result.hits[0].poisonApplied, false);
-  });
-});
-
-describe('Robot Combat - Status Effects in Attack Turn', () => {
-  it('sleeping robot skips its attack', () => {
-    const allies = [instantiateRobot('hikaribon')];
+describe('Robot Combat - Status Effects in Move Turn', () => {
+  it('sleeping robot skips its move', () => {
+    const allies = [instantiateRobot('kamedor')];
     allies[0].activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
-    const enemies = [instantiateRobot('tsukimochi')];
+    const enemies = [instantiateRobot('hikaribon')];
     const startHp = enemies[0].hp;
-    const result = processAttackTurn(allies, enemies);
+    const moveChoices = [{ robotIndex: 0, moveId: 'kamu', targetIndex: 0 }];
+    const result = processMoveTurn(allies, enemies, moveChoices);
     assert.strictEqual(result.attacks.length, 0);
     assert.strictEqual(enemies[0].hp, startHp, 'enemy should not take damage');
   });
 
-  it('stunned robot skips its attack', () => {
-    const allies = [instantiateRobot('hikaribon')];
+  it('stunned robot skips its move', () => {
+    const allies = [instantiateRobot('kamedor')];
     allies[0].activeEffects = [{ type: 'stun', remainingTurns: 1, sourceId: 'x' }];
-    const enemies = [instantiateRobot('tsukimochi')];
+    const enemies = [instantiateRobot('hikaribon')];
     const startHp = enemies[0].hp;
-    const result = processAttackTurn(allies, enemies);
+    const moveChoices = [{ robotIndex: 0, moveId: 'kamu', targetIndex: 0 }];
+    const result = processMoveTurn(allies, enemies, moveChoices);
     assert.strictEqual(result.attacks.length, 0);
     assert.strictEqual(enemies[0].hp, startHp);
   });
 
-  it('confused robot randomly targets from all creatures', () => {
-    const allies = [instantiateRobot('hikaribon'), instantiateRobot('tsukimochi')];
-    allies[0].activeEffects = [{ type: 'confuse', remainingTurns: 2, sourceId: 'x' }];
-    const enemies = [instantiateRobot('hanatchi')];
-    const result = processAttackTurn(allies, enemies);
-    assert.ok(result.attacks.length >= 1);
-  });
-
   it('hasted robot attacks twice', () => {
-    const allies = [instantiateRobot('hikaribon')];
+    const allies = [instantiateRobot('kamedor')];
     allies[0].activeEffects = [{ type: 'haste', sourceId: 'x' }];
-    const enemies = [instantiateRobot('tsukimochi')];
+    const enemies = [instantiateRobot('hikaribon')];
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
-    const result = processAttackTurn(allies, enemies);
+    const moveChoices = [{ robotIndex: 0, moveId: 'kamu', targetIndex: 0 }];
+    const result = processMoveTurn(allies, enemies, moveChoices);
     assert.strictEqual(result.attacks.length, 2, 'hasted robot should attack twice');
     assert.ok(!allies[0].activeEffects.some(e => e.type === 'haste'));
   });
 
   it('attack-buffed robot deals more damage', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('tsukimochi')];
+    const allies = [instantiateRobot('kamedor')];
+    const enemies = [instantiateRobot('hikaribon')];
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
 
-    const result1 = processAttackTurn(
+    const moveChoices = [{ robotIndex: 0, moveId: 'kamu', targetIndex: 0 }];
+    const result1 = processMoveTurn(
       [{ ...allies[0], activeEffects: [] }],
-      [{ ...enemies[0] }]
+      [{ ...enemies[0] }],
+      [{ robotIndex: 0, moveId: 'kamu', targetIndex: 0 }]
     );
 
     allies[0].activeEffects = [{ type: 'attack_buff', percent: 100, remainingTurns: 2, sourceId: 'x' }];
-    const enemies2 = [instantiateRobot('tsukimochi')];
+    const enemies2 = [instantiateRobot('hikaribon')];
     enemies2[0].hp = 9999;
     enemies2[0].maxHp = 9999;
-    const result2 = processAttackTurn(allies, enemies2);
+    const result2 = processMoveTurn(allies, enemies2, moveChoices);
 
     assert.ok(result2.attacks[0].damage > 0);
   });
@@ -402,7 +250,7 @@ describe('Robot Combat - Status Effects in Attack Turn', () => {
 describe('Robot Combat - Status Effects in Enemy Turn', () => {
   it('sleeping enemy skips its attack', () => {
     const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('tsukimochi')];
+    const enemies = [instantiateRobot('kamedor')];
     enemies[0].activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
     const startHp = allies[0].hp;
     const result = processEnemyTurn(enemies, allies);
@@ -415,7 +263,7 @@ describe('Robot Combat - Status Effects in Enemy Turn', () => {
     taunter.activeEffects = [{ type: 'taunt', remainingTurns: 2, sourceId: 'self' }];
     const other = instantiateRobot('tsukimochi');
     const allies = [other, taunter];
-    const enemies = [instantiateRobot('hanatchi')];
+    const enemies = [instantiateRobot('kamedor')]; // has damage move 'kamu'
     const result = processEnemyTurn(enemies, allies);
     assert.strictEqual(result.attacks.length, 1);
     assert.strictEqual(result.attacks[0].targetId, taunter.id);
@@ -425,7 +273,7 @@ describe('Robot Combat - Status Effects in Enemy Turn', () => {
     const ally = instantiateRobot('hikaribon');
     ally.activeEffects = [{ type: 'shield', percent: 50, remainingTurns: 2, sourceId: 'x' }];
     const allies = [ally];
-    const enemies = [instantiateRobot('tsukimochi')];
+    const enemies = [instantiateRobot('kamedor')];
     const result = processEnemyTurn(enemies, allies);
     assert.strictEqual(result.attacks.length, 1);
     assert.ok(result.attacks[0].damage >= 0);
@@ -435,14 +283,14 @@ describe('Robot Combat - Status Effects in Enemy Turn', () => {
     const ally = instantiateRobot('hikaribon');
     ally.activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
     const allies = [ally];
-    const enemies = [instantiateRobot('tsukimochi')];
+    const enemies = [instantiateRobot('kamedor')];
     processEnemyTurn(enemies, allies);
     assert.ok(!ally.activeEffects.some(e => e.type === 'sleep'));
   });
 
   it('confused enemy can hit its own allies', () => {
     const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')];
+    const enemies = [instantiateRobot('kamedor'), instantiateRobot('kazenoko')];
     enemies[0].activeEffects = [{ type: 'confuse', remainingTurns: 2, sourceId: 'x' }];
     const result = processEnemyTurn(enemies, allies);
     assert.ok(result.attacks.length >= 1);
@@ -452,7 +300,7 @@ describe('Robot Combat - Status Effects in Enemy Turn', () => {
     const allies = [instantiateRobot('hikaribon')];
     allies[0].hp = 9999;
     allies[0].maxHp = 9999;
-    const enemies = [instantiateRobot('tsukimochi')];
+    const enemies = [instantiateRobot('kamedor')];
     enemies[0].activeEffects = [{ type: 'haste', sourceId: 'x' }];
     const result = processEnemyTurn(enemies, allies);
     assert.strictEqual(result.attacks.length, 2);
@@ -562,150 +410,26 @@ describe('Robot Combat - Effect Ticking', () => {
   });
 });
 
-describe('Robot Combat - Status Effect Ultimates', () => {
-  it('sleep ultimate applies sleep to single enemy', () => {
-    const caster = instantiateRobot('hikaribon');
-    caster.ultimate.type = 'sleep';
-    caster.ultimate.target = 'single_enemy';
-    caster.ultimate.charges = caster.ultimate.chargesRequired;
-    const enemies = [instantiateRobot('tsukimochi')];
-    const result = processUltimate(caster, enemies);
-    assert.ok(result.success);
-    assert.strictEqual(result.type, 'sleep');
-    assert.strictEqual(caster.ultimate.charges, 0);
-    assert.ok(enemies[0].activeEffects.some(e => e.type === 'sleep'));
-  });
-
-  it('stun ultimate applies stun to single enemy', () => {
-    const caster = instantiateRobot('hikaribon');
-    caster.ultimate.type = 'stun';
-    caster.ultimate.target = 'single_enemy';
-    caster.ultimate.charges = caster.ultimate.chargesRequired;
-    const enemies = [instantiateRobot('tsukimochi')];
-    const result = processUltimate(caster, enemies);
-    assert.ok(result.success);
-    assert.strictEqual(result.type, 'stun');
-    assert.ok(enemies[0].activeEffects.some(e => e.type === 'stun'));
-  });
-
-  it('confuse ultimate applies confuse to single enemy', () => {
-    const caster = instantiateRobot('hikaribon');
-    caster.ultimate.type = 'confuse';
-    caster.ultimate.target = 'single_enemy';
-    caster.ultimate.charges = caster.ultimate.chargesRequired;
-    const enemies = [instantiateRobot('tsukimochi')];
-    const result = processUltimate(caster, enemies);
-    assert.ok(result.success);
-    assert.strictEqual(result.type, 'confuse');
-    assert.ok(enemies[0].activeEffects.some(e => e.type === 'confuse'));
-  });
-
-  it('attack_buff ultimate buffs single ally', () => {
-    const caster = instantiateRobot('hikaribon');
-    caster.ultimate.type = 'attack_buff';
-    caster.ultimate.target = 'single_ally';
-    caster.ultimate.power = 30;
-    caster.ultimate.charges = caster.ultimate.chargesRequired;
-    const ally = instantiateRobot('tsukimochi');
-    ally.hp = 50;
-    const party = { active: [caster, ally], reserves: [] };
-    const result = processUltimate(caster, [], null, party);
-    assert.ok(result.success);
-    assert.strictEqual(result.type, 'attack_buff');
-    const buffed = party.active.find(r => r.activeEffects?.some(e => e.type === 'attack_buff'));
-    assert.ok(buffed);
-    assert.strictEqual(buffed.activeEffects.find(e => e.type === 'attack_buff').percent, 30);
-  });
-
-  it('haste ultimate gives haste to single ally', () => {
-    const caster = instantiateRobot('hikaribon');
-    caster.ultimate.type = 'haste';
-    caster.ultimate.target = 'single_ally';
-    caster.ultimate.charges = caster.ultimate.chargesRequired;
-    const ally = instantiateRobot('tsukimochi');
-    ally.hp = 50;
-    const party = { active: [caster, ally], reserves: [] };
-    const result = processUltimate(caster, [], null, party);
-    assert.ok(result.success);
-    assert.strictEqual(result.type, 'haste');
-    const hasted = party.active.find(r => r.activeEffects?.some(e => e.type === 'haste'));
-    assert.ok(hasted);
-  });
-
-  it('shield ultimate shields single ally', () => {
-    const caster = instantiateRobot('hikaribon');
-    caster.ultimate.type = 'shield';
-    caster.ultimate.target = 'single_ally';
-    caster.ultimate.power = 50;
-    caster.ultimate.charges = caster.ultimate.chargesRequired;
-    const ally = instantiateRobot('tsukimochi');
-    ally.hp = 50;
-    const party = { active: [caster, ally], reserves: [] };
-    const result = processUltimate(caster, [], null, party);
-    assert.ok(result.success);
-    assert.strictEqual(result.type, 'shield');
-    const shielded = party.active.find(r => r.activeEffects?.some(e => e.type === 'shield'));
-    assert.ok(shielded);
-    assert.strictEqual(shielded.activeEffects.find(e => e.type === 'shield').percent, 50);
-  });
-
-  it('team_shield ultimate shields all allies', () => {
-    const caster = instantiateRobot('hikaribon');
-    caster.ultimate.type = 'team_shield';
-    caster.ultimate.target = 'all_allies';
-    caster.ultimate.power = 40;
-    caster.ultimate.charges = caster.ultimate.chargesRequired;
-    const ally1 = instantiateRobot('tsukimochi');
-    const ally2 = instantiateRobot('hanatchi');
-    const party = { active: [caster, ally1, ally2], reserves: [] };
-    const result = processUltimate(caster, [], null, party);
-    assert.ok(result.success);
-    assert.strictEqual(result.type, 'team_shield');
-    assert.ok(caster.activeEffects.some(e => e.type === 'team_shield'));
-    assert.ok(ally1.activeEffects.some(e => e.type === 'team_shield'));
-    assert.ok(ally2.activeEffects.some(e => e.type === 'team_shield'));
-  });
-
-  it('taunt ultimate applies taunt to self', () => {
-    const caster = instantiateRobot('hikaribon');
-    caster.ultimate.type = 'taunt';
-    caster.ultimate.target = 'self';
-    caster.ultimate.charges = caster.ultimate.chargesRequired;
-    const party = { active: [caster], reserves: [] };
-    const result = processUltimate(caster, [], null, party);
-    assert.ok(result.success);
-    assert.strictEqual(result.type, 'taunt');
-    assert.ok(caster.activeEffects.some(e => e.type === 'taunt'));
-  });
-
-  it('effect ultimate rejects if not enough charges', () => {
-    const caster = instantiateRobot('hikaribon');
-    caster.ultimate.type = 'sleep';
-    caster.ultimate.charges = 0;
-    const enemies = [instantiateRobot('tsukimochi')];
-    const result = processUltimate(caster, enemies);
-    assert.ok(!result.success);
-  });
-});
-
-describe('Robot Combat - Shield in Attack Turn', () => {
-  it('shielded enemy takes reduced damage from player attacks', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('tsukimochi')];
+describe('Robot Combat - Shield in Move Turn', () => {
+  it('shielded enemy takes reduced damage from player moves', () => {
+    const allies = [instantiateRobot('kamedor')]; // 'kamu' does damage
+    const enemies = [instantiateRobot('hikaribon')];
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
-    // 90% shield — should drastically reduce damage
+    // 90% shield -- should drastically reduce damage
     enemies[0].activeEffects = [{ type: 'shield', percent: 90, remainingTurns: 2, sourceId: 'x' }];
-    const result = processAttackTurn(allies, enemies);
+    const moveChoices = [{ robotIndex: 0, moveId: 'kamu', targetIndex: 0 }];
+    const result = processMoveTurn(allies, enemies, moveChoices);
     // With 90% shield, damage should be very small
     assert.ok(result.attacks[0].damage < allies[0].attack);
   });
 
-  it('player attack wakes sleeping enemy', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('tsukimochi')];
+  it('player move wakes sleeping enemy', () => {
+    const allies = [instantiateRobot('kamedor')];
+    const enemies = [instantiateRobot('hikaribon')];
     enemies[0].activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
-    processAttackTurn(allies, enemies);
+    const moveChoices = [{ robotIndex: 0, moveId: 'kamu', targetIndex: 0 }];
+    processMoveTurn(allies, enemies, moveChoices);
     assert.ok(!enemies[0].activeEffects.some(e => e.type === 'sleep'));
   });
 });
@@ -772,13 +496,14 @@ describe('Robot Combat - XP Balance Redistribution', () => {
 });
 
 describe('Robot Combat - Temp Attack Flat Bonus', () => {
-  it('processAttackTurn uses flat attack bonus from activeEffects', () => {
-    const ally = instantiateRobot('sizzlit');
+  it('processMoveTurn uses flat attack bonus from activeEffects', () => {
+    const ally = instantiateRobot('kamedor'); // has 'kamu' damage move
     ally.activeEffects = [{ type: 'temp_attack_flat', value: 50, remainingTurns: 5 }];
-    const enemy = instantiateRobot('shimra');
+    const enemy = instantiateRobot('hikaribon');
     const baseHp = enemy.hp;
 
-    const result = processAttackTurn([ally], [enemy]);
+    const moveChoices = [{ robotIndex: 0, moveId: 'kamu', targetIndex: 0 }];
+    const result = processMoveTurn([ally], [enemy], moveChoices);
     assert.ok(result.attacks.length >= 1);
     assert.ok(enemy.hp < baseHp, 'enemy should take damage with flat buff');
   });
