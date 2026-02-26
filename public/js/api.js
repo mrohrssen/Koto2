@@ -515,12 +515,8 @@ async function startRobotEncounter() {
   return apiCall('/start-robot-encounter', 'POST');
 }
 
-async function robotCombatCycle(actionType) {
-  return apiCall('/robot-combat-cycle', 'POST', { actionType });
-}
-
-async function useRobotUltimate(robotIndex) {
-  return apiCall('/use-robot-ultimate', 'POST', { robotIndex });
+async function robotCombatCycle(actionType, moveChoices = []) {
+  return apiCall('/robot-combat-cycle', 'POST', { actionType, moveChoices });
 }
 
 async function getRobotCollection() {
@@ -600,7 +596,6 @@ export {
   startEncounter,
   startRobotEncounter,
   robotCombatCycle,
-  useRobotUltimate,
   getRobotCollection,
   rollPostCombatShop,
   selectShopItem,

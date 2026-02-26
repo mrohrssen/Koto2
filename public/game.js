@@ -137,7 +137,6 @@ import {
   dealerLeave as apiDealerLeave,
   startRobotEncounter as apiStartRobotEncounter,
   robotCombatCycle as apiRobotCombatCycle,
-  useRobotUltimate as apiUseRobotUltimate,
   getRobotCollection as apiGetRobotCollection,
   rollPostCombatShop as apiRollPostCombatShop,
   selectShopItem as apiSelectShopItem,
@@ -813,132 +812,6 @@ async function showPostCombatShopFlow() {
   }
 }
 
-async function handleUseRobotUltimate(robotIndex) {
-  const result = await apiUseRobotUltimate(robotIndex);
-  if (!result?.success) {
-    console.warn('[Ultimate] Failed:', result?.reason);
-    return;
-  }
-
-  // Find the robot that used the ultimate for animation source
-  const state = gameState;
-  const robot = state.run?.robotParty?.active?.[robotIndex];
-  const robotElement = robot?.element || 'fire';
-  const robotSlotEl = document.querySelectorAll('#chip-row .robot-slot')[robotIndex] || null;
-
-  // Gather all enemy target elements
-  const enemies = result.enemies || state.combat?.enemies || [];
-  const targetEls = [];
-  if (enemies.length > 1) {
-    enemies.forEach((e, i) => {
-      const el = document.querySelector(`.enemy-robot-slot[data-enemy-index="${i}"]`);
-      if (el) targetEls.push(el);
-    });
-  } else {
-    const el = document.getElementById('enemy-sprite-container');
-    if (el) targetEls.push(el);
-  }
-
-  // Play ultimate sound and animation simultaneously
-  playUltimateSound(robotElement);
-  await playUltimateAnimation(robotElement, robotSlotEl, targetEls);
-
-  // Show ultimate name in action area
-  const actionArea = document.getElementById('action-area');
-  if (actionArea && result.ultimateName) {
-    if (result.type === 'heal') {
-      const totalHeal = (result.healEvents || []).reduce((sum, h) => sum + h.healAmount, 0);
-      actionArea.innerHTML = `<div class="combat-robot-attack" style="color: #4CAF50; font-size: 16px;">${result.robotName} uses ${result.ultimateName}! <strong>+${totalHeal}</strong> HP</div>`;
-    } else {
-      const totalDmg = (result.hits || []).reduce((sum, h) => sum + h.damage, 0);
-      actionArea.innerHTML = `<div class="combat-robot-attack" style="color: #FFD700; font-size: 16px;">${result.robotName} uses ${result.ultimateName}! <strong>${totalDmg}</strong> total damage</div>`;
-    }
-  }
-
-  // Show heal effects on healed robots
-  if (result.type === 'heal' && result.healEvents) {
-    const slots = document.querySelectorAll('#chip-row .robot-slot');
-    const active = state.run?.robotParty?.active || [];
-    for (const heal of result.healEvents) {
-      const targetIdx = active.findIndex(r => r && r.id === heal.targetId);
-      if (targetIdx >= 0 && slots[targetIdx]) {
-        await healEffect(slots[targetIdx], heal.healAmount);
-      }
-    }
-  }
-
-  // Update enemy HP bars with damage from hits
-  if (result.hits?.length > 0) {
-    if (enemies.length > 1) {
-      enemies.forEach((enemy, idx) => {
-        characterUI.updateEnemyHPAtIndex(idx, enemy.hp, enemy.maxHp);
-      });
-    } else if (enemies[0]) {
-      characterUI.updateEnemyHPBar({ current: enemies[0].hp, max: enemies[0].maxHp });
-    }
-  }
-
-  // Show poison application effects for poison ultimates
-  if (result.type === 'poison' && result.hits) {
-    for (const hit of result.hits) {
-      if (hit.poisonApplied) {
-        // Find the enemy element that was poisoned
-        const enemyEl = enemies.length > 1
-          ? document.querySelector(`.enemy-robot-slot[data-enemy-id="${hit.targetId}"]`)
-          : document.getElementById('enemy-sprite-container');
-        if (enemyEl) {
-          await poisonApplyEffect(enemyEl);
-        }
-      }
-    }
-  }
-
-  // Show XP popups for enemies killed by ultimate
-  if (result.xpEvents?.length > 0) {
-    const activeRobots = state.run?.robotParty?.active || [];
-    const slots = document.querySelectorAll('#chip-row .robot-slot');
-    for (const event of result.xpEvents) {
-      if (event.xpGrants) {
-        for (const grant of event.xpGrants) {
-          const index = activeRobots.findIndex(r => r && r.id === grant.robotId);
-          if (index >= 0 && slots[index]) {
-            showXpPopup(slots[index], grant.xp);
-          }
-        }
-      }
-      if (event.levelUps) {
-        for (const lu of event.levelUps) {
-          const index = activeRobots.findIndex(r => r && r.id === lu.robotId);
-          if (index >= 0 && slots[index]) {
-            setTimeout(() => showLevelUpPopup(slots[index], lu.newLevel), 400);
-          }
-        }
-      }
-    }
-  }
-
-  // Update game state
-  if (result.state) {
-    updateGameState(result.state);
-    // Don't updateUI() when combat ended - stopCombatLoop handles victory flow
-    // (calling updateUI here would render room phase while shop/narration still pending)
-    if (!result.combatEnded) {
-      updateUI();
-    }
-  }
-
-  if (result.combatEnded && result.victory) {
-    combatLoopUI.stopCombatLoop({
-      combatEnded: true,
-      victory: true,
-      newCollectionAdditions: result.newCollectionAdditions,
-    });
-  } else if (!result.combatEnded) {
-    // Resume combat loop so next vocab cards appear
-    combatLoopUI.pauseForNextVocab();
-  }
-}
-
 // ============ ROBOT EQUIP UI ============
 async function openRobotEquipView() {
   const party = gameState.run?.robotParty;
@@ -1205,7 +1078,6 @@ async function initGame() {
   });
 
   robotRow.init({
-    useUltimateCallback: handleUseRobotUltimate,
     swapRobotCallback: async (activeIndex, reserveIndex) => {
       const result = await apiSwapRobot(activeIndex, reserveIndex);
       if (result.error) {
@@ -1376,6 +1248,9 @@ async function initGame() {
     hideNpcSprite: () => scene.hideNpcTrainer(),
     updateRobotRowData: (robots) => robotRow.updateData(robots),
   });
+
+  // Initialize move/target selection UI for Pokemon-style combat
+  combatLoopUI.initMoveUI();
 
   setupEventListeners();
 

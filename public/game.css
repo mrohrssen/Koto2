@@ -1096,6 +1096,23 @@ html, body {
   animation: narration-glow 2s ease-in-out infinite;
 }
 
+/* STAB (Same Type Attack Bonus) indicator */
+.stab-indicator {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  color: #FFD700;
+  font-weight: bold;
+  font-size: 11px;
+  text-shadow: 0 0 4px rgba(255,215,0,0.5);
+  animation: stab-pulse 0.5s ease-out;
+}
+@keyframes stab-pulse {
+  0% { transform: scale(1.5); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 /* Element theming (set via CSS custom properties in JS) */
 @keyframes sacFadeIn {
   from { opacity: 0; transform: translateY(4px); }
