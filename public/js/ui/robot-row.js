@@ -4,10 +4,10 @@
  * PURPOSE:
  * Renders 3 robot slots at the bottom of the combat screen using
  * dom.chipRow and dom.chipPopup containers. Shows robot-specific content:
- * element icons, HP bars, charge bars, and ultimate popups.
+ * element icons, HP bars, MP bars, and move list popups.
  *
  * KEY EXPORTS:
- * - init({ useUltimateCallback }): Setup with ultimate skill callback
+ * - init({ swapRobotCallback, rearrangeRobotCallback }): Setup callbacks
  * - render(robots): Draw all 3 robot slots
  * - isPopupVisible(): Check if a robot popup is currently open
  *
@@ -17,7 +17,6 @@
  */
 
 import { dom } from '../dom.js';
-import { playSFX } from '../audio.js';
 import { configureRobotImg, robotStaticPath } from './sprite-utils.js';
 
 function rarityStars(rarity) {
@@ -25,7 +24,6 @@ function rarityStars(rarity) {
   return n ? `<span style="color:#FFD700">${n}★</span>` : '';
 }
 
-let onUseUltimate = null;
 let currentPopupIndex = -1;
 let onSwapRobot = null;
 let onRearrangeRobot = null;
@@ -48,8 +46,7 @@ export const ELEMENT_ICONS = {
   water: '💧'
 };
 
-export function init({ useUltimateCallback, swapRobotCallback, rearrangeRobotCallback }) {
-  onUseUltimate = useUltimateCallback;
+export function init({ swapRobotCallback, rearrangeRobotCallback }) {
   onSwapRobot = swapRobotCallback;
   onRearrangeRobot = rearrangeRobotCallback || null;
   document.addEventListener('click', (e) => {
@@ -84,7 +81,6 @@ export function render(robots) {
 
     if (robot) {
       const hpPct = Math.max(0, (robot.hp / robot.maxHp) * 100);
-      const isCharged = robot.ultimate.charges >= robot.ultimate.chargesRequired;
       const isKO = robot.hp <= 0;
       const hpColor = hpPct > 60 ? 'var(--hp-green)' : hpPct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
       // Must match xpToNextLevel() in src/game/robots.js
@@ -92,26 +88,24 @@ export function render(robots) {
       const xpPct = Math.min(100, (robot.xp / xpNeeded) * 100);
 
       slot.innerHTML = `
-        <div class="robot-icon${isKO ? ' ko' : ''}${isCharged ? ' charged' : ''}"
+        <div class="robot-icon${isKO ? ' ko' : ''}"
              style="border-color: ${ELEMENT_COLORS[robot.element]}">
           <img class="robot-sprite-icon" alt="">
           <span class="robot-element-icon" style="display:none">${ELEMENT_ICONS[robot.element]}</span>
           <span class="robot-level-badge">Lv${robot.level}</span>
         </div>
         <div class="robot-slot-name">${robot.nameEn}</div>
-        <div class="robot-ultimate-label">必殺技</div>
         <div class="robot-hp-bar">
           <div class="robot-hp-fill" style="width: ${hpPct}%; background-color: ${hpColor}"></div>
         </div>
         <div class="robot-xp-bar">
           <div class="robot-xp-fill" style="width: ${xpPct}%"></div>
         </div>
-        <div class="robot-charge-bar">
-          ${buildChargeSegments(robot.ultimate.charges, robot.ultimate.chargesRequired)}
+        <div class="robot-mp-bar">
+          <div class="robot-mp-fill" style="width:${(robot.mp / robot.maxMp) * 100}%"></div>
+          <span class="robot-mp-text">${robot.mp}/${robot.maxMp}</span>
         </div>
       `;
-
-      if (isCharged) slot.classList.add('charged');
 
       const spriteImg = slot.querySelector('.robot-sprite-icon');
       if (isKO) {
@@ -134,14 +128,6 @@ export function render(robots) {
   }
 }
 
-function buildChargeSegments(charges, required) {
-  let html = '';
-  for (let i = 0; i < required; i++) {
-    html += `<div class="charge-segment${i < charges ? ' filled' : ''}"></div>`;
-  }
-  return html;
-}
-
 function togglePopup(index) {
   if (currentPopupIndex === index) {
     hidePopup();
@@ -154,7 +140,6 @@ function togglePopup(index) {
 
 function showPopup(index, robot) {
   currentPopupIndex = index;
-  const isReady = robot.ultimate.charges >= robot.ultimate.chargesRequired;
   const hasReserves = currentReserves.length > 0;
   const isKO = robot.hp <= 0;
 
@@ -171,16 +156,18 @@ function showPopup(index, robot) {
     <div class="robot-popup-element">${ELEMENT_ICONS[robot.element]} ${robot.element}</div>
     <div class="robot-popup-archetype">${archetypeLabel}</div>
     <div class="robot-popup-stats">
-      HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}
+      HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack} | MP: ${robot.mp}/${robot.maxMp}
     </div>
     ${!isKO ? `
-      <div class="robot-popup-ultimate">
-        Ultimate: ${robot.ultimate.name} (${robot.ultimate.nameEn})
-        <br>Power: ${robot.ultimate.power} | Charges: ${robot.ultimate.charges}/${robot.ultimate.chargesRequired}
+      <div class="robot-popup-moves">
+        <div class="robot-popup-moves-label">Moves:</div>
+        ${robot.moves.map(m => `
+          <div class="robot-popup-move-row">
+            <span style="color:${ELEMENT_COLORS[m.element] || '#888'}">●</span>
+            ${m.name} (${m.nameEn}) — ${m.category} ${m.power}pw ${m.mpCost}mp
+          </div>
+        `).join('')}
       </div>
-      <button class="robot-popup-ultimate-btn" ${isReady ? '' : 'disabled'}>
-        ${isReady ? 'Use Ultimate' : `${robot.ultimate.charges}/${robot.ultimate.chargesRequired} Charges`}
-      </button>
     ` : ''}
     ${hasReserves ? `
       <div class="robot-popup-swap-section">
@@ -220,15 +207,6 @@ function showPopup(index, robot) {
   }
 
   dom.chipPopup.classList.add('visible');
-
-  const btn = dom.chipPopup.querySelector('.robot-popup-ultimate-btn');
-  if (isReady && btn) {
-    btn.addEventListener('click', () => {
-      playSFX('chip-skill');
-      hidePopup();
-      if (onUseUltimate) onUseUltimate(index);
-    });
-  }
 
   // Swap button handlers (swap with reserves)
   const swapBtns = dom.chipPopup.querySelectorAll('.robot-popup-swap-btn');
