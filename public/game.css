@@ -104,10 +104,16 @@ html, body {
 .game-app {
   display: flex;
   flex-direction: column;
-  /* fixed + inset:0 spans the real viewport on all devices, unlike 100dvh
-     which can fall short of the screen edge on some iOS PWA configurations */
+  /* In some iOS PWA configurations the layout viewport is shorter than the
+     physical screen. Prefer lvh when available so the app/background reaches
+     the real bottom edge, with dvh/vh fallbacks for older engines. */
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  height: 100dvh;
+  height: 100lvh;
   max-width: 430px;
   margin: 0 auto;
   background: linear-gradient(160deg, #f0efe8, #e8edf3, #e0e4f0, #e8e0f0);
