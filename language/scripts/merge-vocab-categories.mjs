@@ -12,8 +12,8 @@ const CATEGORIES = [
 
 const BATCH_COUNT = 27;
 const RESULT_DIR = '/tmp';
-const SOURCE_CSV = '/Users/michia/Documents/jrpg/data/jpdb-wordlist.csv';
-const OUTPUT_DIR = '/Users/michia/Documents/jrpg/data/vocab-categories';
+const SOURCE_CSV = '/Users/michia/Documents/jrpg/language/dictionaries/jpdb-wordlist.csv';
+const OUTPUT_DIR = '/Users/michia/Documents/jrpg/language/categories';
 
 // Parse the source CSV into a rank -> {word, reading, meaning} lookup
 async function loadSourceData() {

@@ -1,0 +1,3497 @@
+[
+  {
+    "kanji": "言う",
+    "reading": "いう",
+    "meaning": "to say, to utter, to declare",
+    "vid": 1587040,
+    "sid": 1847411251,
+    "frequencyRank": 100
+  },
+  {
+    "kanji": "する",
+    "reading": "する",
+    "meaning": "to do, to carry out, to perform",
+    "vid": 1157170,
+    "sid": 460825390,
+    "frequencyRank": 100
+  },
+  {
+    "kanji": "なる",
+    "reading": "なる",
+    "meaning": "to become, to get, to grow",
+    "vid": 1375610,
+    "sid": 4283029021,
+    "frequencyRank": 100
+  },
+  {
+    "kanji": "思う",
+    "reading": "おもう",
+    "meaning": "to think, to consider, to believe",
+    "vid": 1589350,
+    "sid": 3737793312,
+    "frequencyRank": 100
+  },
+  {
+    "kanji": "行く",
+    "reading": "いく",
+    "meaning": "to go, to move",
+    "vid": 1578850,
+    "sid": 495123619,
+    "frequencyRank": 100
+  },
+  {
+    "kanji": "来る",
+    "reading": "くる",
+    "meaning": "to come",
+    "vid": 1547720,
+    "sid": 1154899103,
+    "frequencyRank": 100
+  },
+  {
+    "kanji": "見る",
+    "reading": "みる",
+    "meaning": "to see, to look, to watch",
+    "vid": 1259290,
+    "sid": 3110766742,
+    "frequencyRank": 100
+  },
+  {
+    "kanji": "やる",
+    "reading": "やる",
+    "meaning": "to do, to undertake, to perform",
+    "vid": 1012980,
+    "sid": 4075472354,
+    "frequencyRank": 100
+  },
+  {
+    "kanji": "出る",
+    "reading": "でる",
+    "meaning": "to leave, to exit, to go out",
+    "vid": 1338240,
+    "sid": 2094085577,
+    "frequencyRank": 100
+  },
+  {
+    "kanji": "考える",
+    "reading": "かんがえる",
+    "meaning": "to think about",
+    "vid": 1281020,
+    "sid": 345772560,
+    "frequencyRank": 100
+  },
+  {
+    "kanji": "聞く",
+    "reading": "きく",
+    "meaning": "to hear",
+    "vid": 1591110,
+    "sid": 3865890281,
+    "frequencyRank": 100
+  },
+  {
+    "kanji": "知る",
+    "reading": "しる",
+    "meaning": "to be aware of, to know",
+    "vid": 1420470,
+    "sid": 2987388496,
+    "frequencyRank": 100
+  },
+  {
+    "kanji": "知らせる",
+    "reading": "しらせる",
+    "meaning": "to notify, to advise, to inform",
+    "vid": 1420470,
+    "sid": 2987388496,
+    "frequencyRank": 100
+  },
+  {
+    "kanji": "持つ",
+    "reading": "もつ",
+    "meaning": "to hold, to take, to carry",
+    "vid": 1315720,
+    "sid": 4156671150,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "入る",
+    "reading": "はいる",
+    "meaning": "to enter, to go into",
+    "vid": 1465590,
+    "sid": 3525459948,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "作る",
+    "reading": "つくる",
+    "meaning": "to make, to produce, to manufacture",
+    "vid": 1597890,
+    "sid": 3991669848,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "使う",
+    "reading": "つかう",
+    "meaning": "to use",
+    "vid": 1305990,
+    "sid": 44399515,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "食べる",
+    "reading": "たべる",
+    "meaning": "to eat",
+    "vid": 1358280,
+    "sid": 1232985445,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "出す",
+    "reading": "だす",
+    "meaning": "to take out, to get out",
+    "vid": 1338180,
+    "sid": 2094651512,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "違う",
+    "reading": "ちがう",
+    "meaning": "to differ, to vary",
+    "vid": 1158880,
+    "sid": 808424796,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "話す",
+    "reading": "はなす",
+    "meaning": "to talk, to speak, to converse",
+    "vid": 1562350,
+    "sid": 4280520068,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "帰る",
+    "reading": "かえる",
+    "meaning": "to return, to come home",
+    "vid": 1221270,
+    "sid": 1589949286,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "感じる",
+    "reading": "かんじる",
+    "meaning": "to feel, to sense, to experience",
+    "vid": 1212260,
+    "sid": 933168246,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "見える",
+    "reading": "みえる",
+    "meaning": "to be seen, to be in sight",
+    "vid": 1259140,
+    "sid": 762214806,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "呼ぶ",
+    "reading": "よぶ",
+    "meaning": "to call out, to invoke",
+    "vid": 1266440,
+    "sid": 241123685,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "待つ",
+    "reading": "まつ",
+    "meaning": "to wait",
+    "vid": 1410590,
+    "sid": 4237858223,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "死ぬ",
+    "reading": "しぬ",
+    "meaning": "to die, to pass away",
+    "vid": 1310730,
+    "sid": 1521963167,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "会う",
+    "reading": "あう",
+    "meaning": "to meet, to encounter, to see",
+    "vid": 1198180,
+    "sid": 2261593789,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "続ける",
+    "reading": "つづける",
+    "meaning": "to continue, to keep up",
+    "vid": 1405800,
+    "sid": 984607581,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "戻る",
+    "reading": "もどる",
+    "meaning": "to turn back, to return",
+    "vid": 1535880,
+    "sid": 216748198,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "持てる",
+    "reading": "もてる",
+    "meaning": "to be well liked, to be popular",
+    "vid": 1315720,
+    "sid": 4156671150,
+    "frequencyRank": 200
+  },
+  {
+    "kanji": "取る",
+    "reading": "とる",
+    "meaning": "to take, to pick up, to harvest",
+    "vid": 1326980,
+    "sid": 1627986133,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "書く",
+    "reading": "かく",
+    "meaning": "to write, to compose, to pen",
+    "vid": 1343950,
+    "sid": 1331899251,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "入れる",
+    "reading": "いれる",
+    "meaning": "to put in, to let in, to take in",
+    "vid": 1465610,
+    "sid": 2002715133,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "受ける",
+    "reading": "うける",
+    "meaning": "to receive, to get",
+    "vid": 1329590,
+    "sid": 731201245,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "終わる",
+    "reading": "おわる",
+    "meaning": "to finish, to end, to close",
+    "vid": 1589600,
+    "sid": 644188301,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "変わる",
+    "reading": "かわる",
+    "meaning": "to change, to be transformed",
+    "vid": 1510790,
+    "sid": 1860281155,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "教える",
+    "reading": "おしえる",
+    "meaning": "to teach, to inform, to instruct",
+    "vid": 1236900,
+    "sid": 2389903049,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "置く",
+    "reading": "おく",
+    "meaning": "to put, to place",
+    "vid": 1421850,
+    "sid": 4185559434,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "残る",
+    "reading": "のこる",
+    "meaning": "to remain, to be left",
+    "vid": 1304510,
+    "sid": 476130704,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "立つ",
+    "reading": "たつ",
+    "meaning": "to stand, to rise",
+    "vid": 1597040,
+    "sid": 1419495272,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "歩く",
+    "reading": "あるく",
+    "meaning": "to walk",
+    "vid": 1514320,
+    "sid": 1913041488,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "信じる",
+    "reading": "しんじる",
+    "meaning": "to believe, to have faith",
+    "vid": 1359040,
+    "sid": 2711624849,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "忘れる",
+    "reading": "わすれる",
+    "meaning": "to forget",
+    "vid": 1519210,
+    "sid": 2039505008,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "止める",
+    "reading": "とめる",
+    "meaning": "to stop, to turn off",
+    "vid": 1310670,
+    "sid": 1468822476,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "始める",
+    "reading": "はじめる",
+    "meaning": "to start, to begin, to commence",
+    "vid": 1307550,
+    "sid": 1377034300,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "覚える",
+    "reading": "おぼえる",
+    "meaning": "to memorize, to commit to memory",
+    "vid": 1206050,
+    "sid": 4157290589,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "答える",
+    "reading": "こたえる",
+    "meaning": "to answer, to reply",
+    "vid": 1449540,
+    "sid": 2641282849,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "生きる",
+    "reading": "いきる",
+    "meaning": "to live, to exist, to make a living",
+    "vid": 1378520,
+    "sid": 3986518776,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "困る",
+    "reading": "こまる",
+    "meaning": "to be troubled, to be worried",
+    "vid": 1289590,
+    "sid": 1584746423,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "驚く",
+    "reading": "おどろく",
+    "meaning": "to be surprised, to be astonished",
+    "vid": 1238680,
+    "sid": 2331949400,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "向かう",
+    "reading": "むかう",
+    "meaning": "to face, to go towards",
+    "vid": 1604800,
+    "sid": 3831925586,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "許す",
+    "reading": "ゆるす",
+    "meaning": "to permit, to allow, to approve",
+    "vid": 1232870,
+    "sid": 2621950303,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "助ける",
+    "reading": "たすける",
+    "meaning": "to save, to rescue, to help",
+    "vid": 1344410,
+    "sid": 888223510,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "動く",
+    "reading": "うごく",
+    "meaning": "to move, to stir, to shift",
+    "vid": 1451210,
+    "sid": 2393840321,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "開く",
+    "reading": "ひらく",
+    "meaning": "to open, to undo, to unseal",
+    "vid": 1202440,
+    "sid": 1699703816,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "守る",
+    "reading": "まもる",
+    "meaning": "to protect, to guard, to defend",
+    "vid": 1327120,
+    "sid": 397212964,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "逃げる",
+    "reading": "にげる",
+    "meaning": "to escape, to run away",
+    "vid": 1450330,
+    "sid": 2633380045,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "離れる",
+    "reading": "はなれる",
+    "meaning": "to be separated, to be apart",
+    "vid": 1550840,
+    "sid": 2620033746,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "見せる",
+    "reading": "みせる",
+    "meaning": "to show, to display",
+    "vid": 1259210,
+    "sid": 3683820677,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "消える",
+    "reading": "きえる",
+    "meaning": "to go out, to vanish, to disappear",
+    "vid": 1350040,
+    "sid": 2289671793,
+    "frequencyRank": 300
+  },
+  {
+    "kanji": "行う",
+    "reading": "おこなう",
+    "meaning": "to perform, to do, to conduct",
+    "vid": 1589060,
+    "sid": 495126664,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "上げる",
+    "reading": "あげる",
+    "meaning": "to raise, to elevate",
+    "vid": 1352320,
+    "sid": 2966556241,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "乗る",
+    "reading": "のる",
+    "meaning": "to get on, to board, to take",
+    "vid": 1355120,
+    "sid": 1576986911,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "読む",
+    "reading": "よむ",
+    "meaning": "to read",
+    "vid": 1456360,
+    "sid": 3629470669,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "飲む",
+    "reading": "のむ",
+    "meaning": "to drink, to gulp, to swallow",
+    "vid": 1169870,
+    "sid": 2839775424,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "起きる",
+    "reading": "おきる",
+    "meaning": "to get up, to rise",
+    "vid": 1223640,
+    "sid": 3230428144,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "買う",
+    "reading": "かう",
+    "meaning": "to buy, to purchase",
+    "vid": 1473740,
+    "sid": 2721851026,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "走る",
+    "reading": "はしる",
+    "meaning": "to run",
+    "vid": 1402540,
+    "sid": 1878475704,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "決める",
+    "reading": "きめる",
+    "meaning": "to decide, to choose, to determine",
+    "vid": 1254180,
+    "sid": 2319289704,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "選ぶ",
+    "reading": "えらぶ",
+    "meaning": "to choose, to select",
+    "vid": 1588730,
+    "sid": 490270093,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "見つける",
+    "reading": "みつける",
+    "meaning": "to discover, to find",
+    "vid": 1604570,
+    "sid": 1176293899,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "決まる",
+    "reading": "きまる",
+    "meaning": "to be decided, to be settled",
+    "vid": 1591420,
+    "sid": 159854514,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "始まる",
+    "reading": "はじまる",
+    "meaning": "to begin, to start, to commence",
+    "vid": 1307500,
+    "sid": 1787354718,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "変える",
+    "reading": "かえる",
+    "meaning": "to change, to alter, to transform",
+    "vid": 1510650,
+    "sid": 1247002465,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "続く",
+    "reading": "つづく",
+    "meaning": "to continue, to last",
+    "vid": 1405790,
+    "sid": 2828738887,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "落ちる",
+    "reading": "おちる",
+    "meaning": "to fall down, to drop",
+    "vid": 1548550,
+    "sid": 1271807159,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "得る",
+    "reading": "える",
+    "meaning": "to get, to earn, to acquire",
+    "vid": 1588760,
+    "sid": 4214403587,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "進む",
+    "reading": "すすむ",
+    "meaning": "to advance, to go forward",
+    "vid": 1365980,
+    "sid": 3039701473,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "残す",
+    "reading": "のこす",
+    "meaning": "to leave behind, to leave undone",
+    "vid": 1600260,
+    "sid": 476439989,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "失う",
+    "reading": "うしなう",
+    "meaning": "to lose, to part with",
+    "vid": 1319750,
+    "sid": 3799197123,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "認める",
+    "reading": "したためる",
+    "meaning": "to write up, to eat",
+    "vid": 1467530,
+    "sid": 2964792240,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "求める",
+    "reading": "もとめる",
+    "meaning": "to want, to wish for, to request",
+    "vid": 1229350,
+    "sid": 3236154592,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "似る",
+    "reading": "にる",
+    "meaning": "to resemble, to look like",
+    "vid": 1314600,
+    "sid": 3424098855,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "送る",
+    "reading": "おくる",
+    "meaning": "to send, to dispatch, to transmit",
+    "vid": 1402730,
+    "sid": 3499277923,
+    "frequencyRank": 400
+  },
+  {
+    "kanji": "分かる",
+    "reading": "わかる",
+    "meaning": "to understand, to comprehend",
+    "vid": 1606560,
+    "sid": 2821891307,
+    "frequencyRank": 500
+  },
+  {
+    "kanji": "住む",
+    "reading": "すむ",
+    "meaning": "to live, to reside, to inhabit",
+    "vid": 1334040,
+    "sid": 714476934,
+    "frequencyRank": 500
+  },
+  {
+    "kanji": "笑う",
+    "reading": "わらう",
+    "meaning": "to laugh",
+    "vid": 1351360,
+    "sid": 4225260933,
+    "frequencyRank": 500
+  },
+  {
+    "kanji": "切る",
+    "reading": "きる",
+    "meaning": "to cut, to cut through",
+    "vid": 1384830,
+    "sid": 2971507209,
+    "frequencyRank": 500
+  },
+  {
+    "kanji": "働く",
+    "reading": "はたらく",
+    "meaning": "to work, to labor",
+    "vid": 1451150,
+    "sid": 3837223345,
+    "frequencyRank": 500
+  },
+  {
+    "kanji": "聞こえる",
+    "reading": "きこえる",
+    "meaning": "to be heard, to be audible",
+    "vid": 1591150,
+    "sid": 3643612127,
+    "frequencyRank": 500
+  },
+  {
+    "kanji": "見つかる",
+    "reading": "みつかる",
+    "meaning": "to be found, to be discovered",
+    "vid": 1604550,
+    "sid": 2852903145,
+    "frequencyRank": 500
+  },
+  {
+    "kanji": "調べる",
+    "reading": "しらべる",
+    "meaning": "to examine, to investigate, to check",
+    "vid": 1429060,
+    "sid": 4083276543,
+    "frequencyRank": 500
+  },
+  {
+    "kanji": "集まる",
+    "reading": "あつまる",
+    "meaning": "to gather, to collect, to assemble",
+    "vid": 1333550,
+    "sid": 3327807893,
+    "frequencyRank": 500
+  },
+  {
+    "kanji": "急ぐ",
+    "reading": "いそぐ",
+    "meaning": "to hurry, to rush, to hasten",
+    "vid": 1228650,
+    "sid": 2132636602,
+    "frequencyRank": 500
+  },
+  {
+    "kanji": "殺す",
+    "reading": "ころす",
+    "meaning": "to kill",
+    "vid": 1299030,
+    "sid": 408732872,
+    "frequencyRank": 500
+  },
+  {
+    "kanji": "合う",
+    "reading": "あう",
+    "meaning": "to come together, to merge, to unite",
+    "vid": 1284430,
+    "sid": 828367074,
+    "frequencyRank": 500
+  },
+  {
+    "kanji": "思い出す",
+    "reading": "おもいだす",
+    "meaning": "to recall, to remember, to recollect",
+    "vid": 1309260,
+    "sid": 18274147,
+    "frequencyRank": 500
+  },
+  {
+    "kanji": "生まれる",
+    "reading": "うまれる",
+    "meaning": "to be born",
+    "vid": 1588410,
+    "sid": 1661815850,
+    "frequencyRank": 500
+  },
+  {
+    "kanji": "寝る",
+    "reading": "ねる",
+    "meaning": "to lie down, to sleep",
+    "vid": 1360010,
+    "sid": 2923483838,
+    "frequencyRank": 600
+  },
+  {
+    "kanji": "開ける",
+    "reading": "あける",
+    "meaning": "to open, to unwrap, to unlock",
+    "vid": 1202450,
+    "sid": 2654101000,
+    "frequencyRank": 600
+  },
+  {
+    "kanji": "泣く",
+    "reading": "なく",
+    "meaning": "to cry, to weep, to sob",
+    "vid": 1229840,
+    "sid": 1833911624,
+    "frequencyRank": 600
+  },
+  {
+    "kanji": "座る",
+    "reading": "すわる",
+    "meaning": "to sit, to squat",
+    "vid": 1291800,
+    "sid": 3544098783,
+    "frequencyRank": 600
+  },
+  {
+    "kanji": "探す",
+    "reading": "さがす",
+    "meaning": "to search for, to look for",
+    "vid": 1593670,
+    "sid": 1867082528,
+    "frequencyRank": 600
+  },
+  {
+    "kanji": "頑張る",
+    "reading": "がんばる",
+    "meaning": "to persevere, to persist",
+    "vid": 1217700,
+    "sid": 2745979877,
+    "frequencyRank": 600
+  },
+  {
+    "kanji": "返す",
+    "reading": "かえす",
+    "meaning": "to return, to restore",
+    "vid": 1512130,
+    "sid": 1054766255,
+    "frequencyRank": 600
+  },
+  {
+    "kanji": "怒る",
+    "reading": "おこる",
+    "meaning": "to get angry, to get mad",
+    "vid": 1445690,
+    "sid": 2644908063,
+    "frequencyRank": 600
+  },
+  {
+    "kanji": "隠す",
+    "reading": "かくす",
+    "meaning": "to hide, to conceal",
+    "vid": 1170650,
+    "sid": 1104135009,
+    "frequencyRank": 600
+  },
+  {
+    "kanji": "開ける",
+    "reading": "はだける",
+    "meaning": "to open, to bare, to expose",
+    "vid": 1202450,
+    "sid": 2654101000,
+    "frequencyRank": 600
+  },
+  {
+    "kanji": "頼む",
+    "reading": "たのむ",
+    "meaning": "to request, to beg, to ask",
+    "vid": 1548370,
+    "sid": 4237392867,
+    "frequencyRank": 600
+  },
+  {
+    "kanji": "黙る",
+    "reading": "だまる",
+    "meaning": "to be silent",
+    "vid": 1534930,
+    "sid": 1828312578,
+    "frequencyRank": 600
+  },
+  {
+    "kanji": "怖がる",
+    "reading": "こわがる",
+    "meaning": "to be afraid of, to fear",
+    "vid": 1593480,
+    "sid": 1786237497,
+    "frequencyRank": 600
+  },
+  {
+    "kanji": "着る",
+    "reading": "きる",
+    "meaning": "to wear, to put on",
+    "vid": 1423000,
+    "sid": 2035433959,
+    "frequencyRank": 700
+  },
+  {
+    "kanji": "飛ぶ",
+    "reading": "とぶ",
+    "meaning": "to fly, to soar",
+    "vid": 1429700,
+    "sid": 545729736,
+    "frequencyRank": 700
+  },
+  {
+    "kanji": "約束する",
+    "reading": "やくそくする",
+    "meaning": "to promise, to agree",
+    "vid": 1538130,
+    "sid": 2017403864,
+    "frequencyRank": 700
+  },
+  {
+    "kanji": "喜ぶ",
+    "reading": "よろこぶ",
+    "meaning": "to be delighted, to be glad",
+    "vid": 1218760,
+    "sid": 3457288712,
+    "frequencyRank": 700
+  },
+  {
+    "kanji": "眠る",
+    "reading": "ねむる",
+    "meaning": "to sleep, to die",
+    "vid": 1529390,
+    "sid": 4024238656,
+    "frequencyRank": 700
+  },
+  {
+    "kanji": "上がる",
+    "reading": "あがる",
+    "meaning": "to rise, to go up, to come up",
+    "vid": 1352290,
+    "sid": 1966034655,
+    "frequencyRank": 700
+  },
+  {
+    "kanji": "渡す",
+    "reading": "わたす",
+    "meaning": "to hand over, to pass, to give",
+    "vid": 1444610,
+    "sid": 755520873,
+    "frequencyRank": 700
+  },
+  {
+    "kanji": "負ける",
+    "reading": "まける",
+    "meaning": "to lose, to be defeated, to succumb",
+    "vid": 1497980,
+    "sid": 259217662,
+    "frequencyRank": 700
+  },
+  {
+    "kanji": "過ぎる",
+    "reading": "すぎる",
+    "meaning": "to pass through, to pass by",
+    "vid": 1195970,
+    "sid": 878748339,
+    "frequencyRank": 700
+  },
+  {
+    "kanji": "届く",
+    "reading": "とどく",
+    "meaning": "to reach, to arrive, to get through",
+    "vid": 1457200,
+    "sid": 2466902140,
+    "frequencyRank": 700
+  },
+  {
+    "kanji": "止まる",
+    "reading": "とまる",
+    "meaning": "to stop moving, to come to a stop",
+    "vid": 1310620,
+    "sid": 2437673166,
+    "frequencyRank": 700
+  },
+  {
+    "kanji": "触れる",
+    "reading": "ふれる",
+    "meaning": "to touch, to feel, to experience",
+    "vid": 1357990,
+    "sid": 88752281,
+    "frequencyRank": 700
+  },
+  {
+    "kanji": "勝つ",
+    "reading": "かつ",
+    "meaning": "to win, to gain victory",
+    "vid": 1346150,
+    "sid": 3999015736,
+    "frequencyRank": 700
+  },
+  {
+    "kanji": "現る",
+    "reading": "あらわれる",
+    "meaning": "to appear, to come in sight",
+    "vid": 1263510,
+    "sid": 1484481072,
+    "frequencyRank": 700
+  },
+  {
+    "kanji": "遊ぶ",
+    "reading": "あそぶ",
+    "meaning": "to play, to enjoy oneself",
+    "vid": 1542160,
+    "sid": 1271968427,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "襲う",
+    "reading": "おそう",
+    "meaning": "to attack, to assail",
+    "vid": 1333330,
+    "sid": 1524741462,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "避ける",
+    "reading": "さける",
+    "meaning": "to avoid, to ward off",
+    "vid": 1583260,
+    "sid": 897487375,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "追う",
+    "reading": "おう",
+    "meaning": "to chase, to run after, to pursue",
+    "vid": 1432410,
+    "sid": 3712358827,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "楽しむ",
+    "reading": "たのしむ",
+    "meaning": "to enjoy oneself",
+    "vid": 1207270,
+    "sid": 3619176319,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "倒れる",
+    "reading": "たおれる",
+    "meaning": "to fall, to collapse, to drop",
+    "vid": 1445790,
+    "sid": 1110285701,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "流れる",
+    "reading": "ながれる",
+    "meaning": "to stream, to flow, to run",
+    "vid": 1552140,
+    "sid": 1893997440,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "並ぶ",
+    "reading": "ならぶ",
+    "meaning": "to line up, to stand in a line",
+    "vid": 1508380,
+    "sid": 597328413,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "疲れる",
+    "reading": "つかれる",
+    "meaning": "to get tired, to tire",
+    "vid": 1483740,
+    "sid": 1426769269,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "慣れる",
+    "reading": "なれる",
+    "meaning": "to get used to, to grow accustomed",
+    "vid": 1212670,
+    "sid": 991582954,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "握る",
+    "reading": "にぎる",
+    "meaning": "to clasp, to grasp, to grip",
+    "vid": 1152720,
+    "sid": 4155310685,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "落とす",
+    "reading": "おとす",
+    "meaning": "to drop, to lose, to let fall",
+    "vid": 1589260,
+    "sid": 4272768555,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "愛する",
+    "reading": "あいする",
+    "meaning": "to love, to like, to care",
+    "vid": 1150450,
+    "sid": 2839117867,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "動かす",
+    "reading": "うごかす",
+    "meaning": "to move, to shift, to stir",
+    "vid": 1451170,
+    "sid": 4076396120,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "起こる",
+    "reading": "おこる",
+    "meaning": "to occur, to happen",
+    "vid": 1223680,
+    "sid": 2146305150,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "引く",
+    "reading": "ひく",
+    "meaning": "to pull",
+    "vid": 1169250,
+    "sid": 1274113860,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "受け取る",
+    "reading": "うけとる",
+    "meaning": "to receive, to get, to accept",
+    "vid": 1329650,
+    "sid": 438243057,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "捨てる",
+    "reading": "すてる",
+    "meaning": "to throw away, to cast away, to dump",
+    "vid": 1322320,
+    "sid": 1830631716,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "起こす",
+    "reading": "おこす",
+    "meaning": "to raise, to raise up, to set up",
+    "vid": 1223660,
+    "sid": 2145626115,
+    "frequencyRank": 800
+  },
+  {
+    "kanji": "休む",
+    "reading": "やすむ",
+    "meaning": "to be absent, to take a day off",
+    "vid": 1227560,
+    "sid": 665431007,
+    "frequencyRank": 900
+  },
+  {
+    "kanji": "手伝う",
+    "reading": "てつだう",
+    "meaning": "to help, to assist, to aid",
+    "vid": 1328190,
+    "sid": 1497502454,
+    "frequencyRank": 900
+  },
+  {
+    "kanji": "足りる",
+    "reading": "たりる",
+    "meaning": "to be sufficient, to be enough",
+    "vid": 1404740,
+    "sid": 395064533,
+    "frequencyRank": 900
+  },
+  {
+    "kanji": "運ぶ",
+    "reading": "はこぶ",
+    "meaning": "to carry, to transport, to move",
+    "vid": 1172660,
+    "sid": 2716527478,
+    "frequencyRank": 900
+  },
+  {
+    "kanji": "描く",
+    "reading": "えがく",
+    "meaning": "to draw, to paint, to sketch",
+    "vid": 1583460,
+    "sid": 1573455288,
+    "frequencyRank": 900
+  },
+  {
+    "kanji": "増える",
+    "reading": "ふえる",
+    "meaning": "to increase, to multiply",
+    "vid": 1602440,
+    "sid": 3052729445,
+    "frequencyRank": 900
+  },
+  {
+    "kanji": "示す",
+    "reading": "しめす",
+    "meaning": "to show, to demonstrate",
+    "vid": 1317110,
+    "sid": 2347714431,
+    "frequencyRank": 900
+  },
+  {
+    "kanji": "繰り返す",
+    "reading": "くりかえす",
+    "meaning": "to repeat, to do something over",
+    "vid": 1247030,
+    "sid": 3664104734,
+    "frequencyRank": 900
+  },
+  {
+    "kanji": "救う",
+    "reading": "すくう",
+    "meaning": "to rescue from, to help out of",
+    "vid": 1229060,
+    "sid": 737164699,
+    "frequencyRank": 900
+  },
+  {
+    "kanji": "借りる",
+    "reading": "かりる",
+    "meaning": "to borrow",
+    "vid": 1323560,
+    "sid": 2177379476,
+    "frequencyRank": 1000
+  },
+  {
+    "kanji": "立てる",
+    "reading": "たてる",
+    "meaning": "to stand up, to put up, to set up",
+    "vid": 1551530,
+    "sid": 984631052,
+    "frequencyRank": 1000
+  },
+  {
+    "kanji": "抱く",
+    "reading": "だく",
+    "meaning": "to hold in one's arms, to embrace, to hug",
+    "vid": 1584090,
+    "sid": 2482074605,
+    "frequencyRank": 1000
+  },
+  {
+    "kanji": "降りる",
+    "reading": "おりる",
+    "meaning": "to descend, to go down",
+    "vid": 1589500,
+    "sid": 423983675,
+    "frequencyRank": 1000
+  },
+  {
+    "kanji": "回る",
+    "reading": "まわる",
+    "meaning": "to turn, to revolve, to visit",
+    "vid": 1604300,
+    "sid": 3048222121,
+    "frequencyRank": 1000
+  },
+  {
+    "kanji": "隠れる",
+    "reading": "かくれる",
+    "meaning": "to hide, to be hidden, to conceal",
+    "vid": 1170660,
+    "sid": 3563559581,
+    "frequencyRank": 1000
+  },
+  {
+    "kanji": "抱える",
+    "reading": "かかえる",
+    "meaning": "to hold or carry under or in the arms",
+    "vid": 1516310,
+    "sid": 2984096870,
+    "frequencyRank": 1000
+  },
+  {
+    "kanji": "誘う",
+    "reading": "さそう",
+    "meaning": "to invite, to ask, to call for",
+    "vid": 1541900,
+    "sid": 2169398293,
+    "frequencyRank": 1000
+  },
+  {
+    "kanji": "連れる",
+    "reading": "つれる",
+    "meaning": "to lead, to take a person",
+    "vid": 1559290,
+    "sid": 2893581426,
+    "frequencyRank": 1000
+  },
+  {
+    "kanji": "暮らす",
+    "reading": "くらす",
+    "meaning": "to live, to get along, to spend time",
+    "vid": 1514940,
+    "sid": 3240317318,
+    "frequencyRank": 1000
+  },
+  {
+    "kanji": "押す",
+    "reading": "おす",
+    "meaning": "to push, to press",
+    "vid": 1180470,
+    "sid": 2965825874,
+    "frequencyRank": 1000
+  },
+  {
+    "kanji": "断る",
+    "reading": "ことわる",
+    "meaning": "to refuse, to reject, to dismiss",
+    "vid": 1419570,
+    "sid": 2741695118,
+    "frequencyRank": 1000
+  },
+  {
+    "kanji": "輝く",
+    "reading": "かがやく",
+    "meaning": "to shine, to glitter, to sparkle",
+    "vid": 1224020,
+    "sid": 1682403321,
+    "frequencyRank": 1000
+  },
+  {
+    "kanji": "着く",
+    "reading": "つく",
+    "meaning": "to arrive at, to reach",
+    "vid": 1422970,
+    "sid": 2035134244,
+    "frequencyRank": 1100
+  },
+  {
+    "kanji": "迷う",
+    "reading": "まよう",
+    "meaning": "to lose one's way, to waver, to hesitate",
+    "vid": 1532710,
+    "sid": 1325480293,
+    "frequencyRank": 1100
+  },
+  {
+    "kanji": "迎える",
+    "reading": "むかえる",
+    "meaning": "to go out to meet, to receive",
+    "vid": 1253190,
+    "sid": 2450897584,
+    "frequencyRank": 1100
+  },
+  {
+    "kanji": "外す",
+    "reading": "はずす",
+    "meaning": "to unfasten, to undo, to remove",
+    "vid": 1203270,
+    "sid": 1060618593,
+    "frequencyRank": 1100
+  },
+  {
+    "kanji": "払う",
+    "reading": "はらう",
+    "meaning": "to pay, to brush off, to clear away",
+    "vid": 1501620,
+    "sid": 3909736523,
+    "frequencyRank": 1100
+  },
+  {
+    "kanji": "戻す",
+    "reading": "もどす",
+    "meaning": "to put back, to return, to give back",
+    "vid": 1535850,
+    "sid": 216180523,
+    "frequencyRank": 1100
+  },
+  {
+    "kanji": "売る",
+    "reading": "うる",
+    "meaning": "to sell",
+    "vid": 1473950,
+    "sid": 2606769653,
+    "frequencyRank": 1100
+  },
+  {
+    "kanji": "消す",
+    "reading": "けす",
+    "meaning": "to erase, to delete, to cross out",
+    "vid": 1350110,
+    "sid": 3680893938,
+    "frequencyRank": 1100
+  },
+  {
+    "kanji": "包む",
+    "reading": "つつむ",
+    "meaning": "to wrap up, to tuck in, to pack",
+    "vid": 1584060,
+    "sid": 3754625698,
+    "frequencyRank": 1100
+  },
+  {
+    "kanji": "遅れる",
+    "reading": "おくれる",
+    "meaning": "to be late, to be delayed",
+    "vid": 1589040,
+    "sid": 2099959741,
+    "frequencyRank": 1200
+  },
+  {
+    "kanji": "気をつける",
+    "reading": "きをつける",
+    "meaning": "to be careful, to pay attention",
+    "vid": 1591990,
+    "sid": 1376747224,
+    "frequencyRank": 1200
+  },
+  {
+    "kanji": "通う",
+    "reading": "かよう",
+    "meaning": "to go to and from, to commute",
+    "vid": 1432850,
+    "sid": 70933296,
+    "frequencyRank": 1200
+  },
+  {
+    "kanji": "下がる",
+    "reading": "さがる",
+    "meaning": "to come down, to go down, to fall",
+    "vid": 1184160,
+    "sid": 3465585120,
+    "frequencyRank": 1200
+  },
+  {
+    "kanji": "別れる",
+    "reading": "わかれる",
+    "meaning": "to part, to separate, to break up",
+    "vid": 1606590,
+    "sid": 1385655880,
+    "frequencyRank": 1200
+  },
+  {
+    "kanji": "重ねる",
+    "reading": "かさねる",
+    "meaning": "to pile up, to put on top of",
+    "vid": 1335830,
+    "sid": 2894188223,
+    "frequencyRank": 1200
+  },
+  {
+    "kanji": "乗せる",
+    "reading": "のせる",
+    "meaning": "to place on, to give a ride",
+    "vid": 1600270,
+    "sid": 1929606430,
+    "frequencyRank": 1200
+  },
+  {
+    "kanji": "直す",
+    "reading": "なおす",
+    "meaning": "to cure, to heal, to fix, to correct",
+    "vid": 1599390,
+    "sid": 3032092316,
+    "frequencyRank": 1200
+  },
+  {
+    "kanji": "抑える",
+    "reading": "おさえる",
+    "meaning": "to keep within limits, to restrain",
+    "vid": 2836285,
+    "sid": 3858252550,
+    "frequencyRank": 1200
+  },
+  {
+    "kanji": "支える",
+    "reading": "ささえる",
+    "meaning": "to support, to prop, to sustain",
+    "vid": 1310090,
+    "sid": 2854602150,
+    "frequencyRank": 1200
+  },
+  {
+    "kanji": "関わる",
+    "reading": "かかわる",
+    "meaning": "to be affected, to be influenced",
+    "vid": 1589880,
+    "sid": 1318975444,
+    "frequencyRank": 1200
+  },
+  {
+    "kanji": "結ぶ",
+    "reading": "むすぶ",
+    "meaning": "to tie, to bind, to link",
+    "vid": 1254670,
+    "sid": 3110010343,
+    "frequencyRank": 1200
+  },
+  {
+    "kanji": "加える",
+    "reading": "くわえる",
+    "meaning": "to add, to increase",
+    "vid": 1189960,
+    "sid": 1623686920,
+    "frequencyRank": 1300
+  },
+  {
+    "kanji": "目立つ",
+    "reading": "めだつ",
+    "meaning": "to be conspicuous, to stand out",
+    "vid": 1535700,
+    "sid": 2506715734,
+    "frequencyRank": 1300
+  },
+  {
+    "kanji": "切れる",
+    "reading": "きれる",
+    "meaning": "to break, to snap, to be cut",
+    "vid": 1384860,
+    "sid": 1595945698,
+    "frequencyRank": 1300
+  },
+  {
+    "kanji": "比べる",
+    "reading": "くらべる",
+    "meaning": "to compare, to make a comparison",
+    "vid": 1483540,
+    "sid": 1932174713,
+    "frequencyRank": 1300
+  },
+  {
+    "kanji": "減る",
+    "reading": "へる",
+    "meaning": "to decrease, to diminish, to abate",
+    "vid": 1263120,
+    "sid": 4240864470,
+    "frequencyRank": 1300
+  },
+  {
+    "kanji": "降る",
+    "reading": "ふる",
+    "meaning": "to fall (e.g., rain), to precipitate",
+    "vid": 1282790,
+    "sid": 2997417532,
+    "frequencyRank": 1300
+  },
+  {
+    "kanji": "出かける",
+    "reading": "でかける",
+    "meaning": "to go out, to leave, to depart",
+    "vid": 1598550,
+    "sid": 4186166701,
+    "frequencyRank": 1300
+  },
+  {
+    "kanji": "貸す",
+    "reading": "かす",
+    "meaning": "to lend, to loan",
+    "vid": 1411160,
+    "sid": 2438708848,
+    "frequencyRank": 1300
+  },
+  {
+    "kanji": "限る",
+    "reading": "かぎる",
+    "meaning": "to restrict, to limit, to confine",
+    "vid": 1264640,
+    "sid": 3763394705,
+    "frequencyRank": 1300
+  },
+  {
+    "kanji": "及ぶ",
+    "reading": "およぶ",
+    "meaning": "to reach, to amount to",
+    "vid": 1228170,
+    "sid": 3132482557,
+    "frequencyRank": 1300
+  },
+  {
+    "kanji": "苦しむ",
+    "reading": "くるしむ",
+    "meaning": "to suffer, to groan, to be worried",
+    "vid": 1244350,
+    "sid": 754838270,
+    "frequencyRank": 1300
+  },
+  {
+    "kanji": "分ける",
+    "reading": "わける",
+    "meaning": "to divide, to split, to part",
+    "vid": 1503000,
+    "sid": 3692908233,
+    "frequencyRank": 1300
+  },
+  {
+    "kanji": "出来る",
+    "reading": "できる",
+    "meaning": "to be able to do",
+    "vid": 1340450,
+    "sid": 2257572231,
+    "frequencyRank": 1400
+  },
+  {
+    "kanji": "構う",
+    "reading": "かまう",
+    "meaning": "to mind, to care about",
+    "vid": 1279680,
+    "sid": 1308750735,
+    "frequencyRank": 1400
+  },
+  {
+    "kanji": "倒す",
+    "reading": "たおす",
+    "meaning": "to demolish, to destroy, to trounce",
+    "vid": 1445770,
+    "sid": 4175667849,
+    "frequencyRank": 1400
+  },
+  {
+    "kanji": "慌てる",
+    "reading": "あわてる",
+    "meaning": "to become confused, to be flustered",
+    "vid": 1278830,
+    "sid": 3874621976,
+    "frequencyRank": 1400
+  },
+  {
+    "kanji": "気付く",
+    "reading": "きづく",
+    "meaning": "to notice, to recognize",
+    "vid": 1591330,
+    "sid": 3747610012,
+    "frequencyRank": 1400
+  },
+  {
+    "kanji": "眺める",
+    "reading": "ながめる",
+    "meaning": "to look, to examine, to see",
+    "vid": 1428830,
+    "sid": 594472506,
+    "frequencyRank": 1400
+  },
+  {
+    "kanji": "可愛がる",
+    "reading": "かわいがる",
+    "meaning": "to love, to be affectionate",
+    "vid": 1577200,
+    "sid": 3616536919,
+    "frequencyRank": 1400
+  },
+  {
+    "kanji": "付き合う",
+    "reading": "つきあう",
+    "meaning": "to associate with, to keep company",
+    "vid": 1597790,
+    "sid": 3581079748,
+    "frequencyRank": 1500
+  },
+  {
+    "kanji": "触る",
+    "reading": "さわる",
+    "meaning": "to touch, to feel",
+    "vid": 1357980,
+    "sid": 1115279608,
+    "frequencyRank": 1500
+  },
+  {
+    "kanji": "御座います",
+    "reading": "ございます",
+    "meaning": "to be, to exist",
+    "vid": 1270350,
+    "sid": 178644199,
+    "frequencyRank": 1500
+  },
+  {
+    "kanji": "伸ばす",
+    "reading": "のばす",
+    "meaning": "to grow long, to lengthen, to extend",
+    "vid": 1600290,
+    "sid": 1002190072,
+    "frequencyRank": 1600
+  },
+  {
+    "kanji": "褒める",
+    "reading": "ほめる",
+    "meaning": "to praise, to admire",
+    "vid": 1603550,
+    "sid": 831692611,
+    "frequencyRank": 1600
+  },
+  {
+    "kanji": "光る",
+    "reading": "ひかる",
+    "meaning": "to shine, to glitter, to be bright",
+    "vid": 1272820,
+    "sid": 503732280,
+    "frequencyRank": 1600
+  },
+  {
+    "kanji": "付く",
+    "reading": "つく",
+    "meaning": "to be attached, to be connected",
+    "vid": 1495740,
+    "sid": 1593634821,
+    "frequencyRank": 1700
+  },
+  {
+    "kanji": "焼く",
+    "reading": "やく",
+    "meaning": "to burn, to roast, to broil, to grill",
+    "vid": 1350600,
+    "sid": 2996793111,
+    "frequencyRank": 1700
+  },
+  {
+    "kanji": "壊れる",
+    "reading": "こわれる",
+    "meaning": "to be broken, to break",
+    "vid": 1199900,
+    "sid": 1360495302,
+    "frequencyRank": 1700
+  },
+  {
+    "kanji": "拾う",
+    "reading": "ひろう",
+    "meaning": "to pick up, to find, to gather",
+    "vid": 1332570,
+    "sid": 1787622098,
+    "frequencyRank": 1700
+  },
+  {
+    "kanji": "殴る",
+    "reading": "なぐる",
+    "meaning": "to strike, to hit, to beat",
+    "vid": 1181390,
+    "sid": 3605840807,
+    "frequencyRank": 1700
+  },
+  {
+    "kanji": "吸う",
+    "reading": "すう",
+    "meaning": "to smoke, to breathe in, to inhale",
+    "vid": 1228260,
+    "sid": 1498252658,
+    "frequencyRank": 1700
+  },
+  {
+    "kanji": "構える",
+    "reading": "かまえる",
+    "meaning": "to set up, to prepare in advance",
+    "vid": 1279700,
+    "sid": 78746853,
+    "frequencyRank": 1700
+  },
+  {
+    "kanji": "張る",
+    "reading": "はる",
+    "meaning": "to stick, to paste, to affix",
+    "vid": 1427900,
+    "sid": 859553063,
+    "frequencyRank": 1700
+  },
+  {
+    "kanji": "囲む",
+    "reading": "かこむ",
+    "meaning": "to surround, to encircle, to enclose",
+    "vid": 1155980,
+    "sid": 1935122620,
+    "frequencyRank": 1700
+  },
+  {
+    "kanji": "脱ぐ",
+    "reading": "ぬぐ",
+    "meaning": "to take off clothes, to undress",
+    "vid": 1416400,
+    "sid": 3657552448,
+    "frequencyRank": 1700
+  },
+  {
+    "kanji": "試す",
+    "reading": "ためす",
+    "meaning": "to attempt, to test, to try out",
+    "vid": 1312260,
+    "sid": 746797599,
+    "frequencyRank": 1700
+  },
+  {
+    "kanji": "付ける",
+    "reading": "つける",
+    "meaning": "to attach, to join, to add",
+    "vid": 1495770,
+    "sid": 1950397999,
+    "frequencyRank": 1800
+  },
+  {
+    "kanji": "洗う",
+    "reading": "あらう",
+    "meaning": "to wash",
+    "vid": 1390930,
+    "sid": 1196399242,
+    "frequencyRank": 1800
+  },
+  {
+    "kanji": "濡れる",
+    "reading": "ぬれる",
+    "meaning": "to get wet",
+    "vid": 1467620,
+    "sid": 2324280454,
+    "frequencyRank": 1800
+  },
+  {
+    "kanji": "沈む",
+    "reading": "しずむ",
+    "meaning": "to sink, to go under, to submerge",
+    "vid": 1431670,
+    "sid": 1636335130,
+    "frequencyRank": 1800
+  },
+  {
+    "kanji": "着替える",
+    "reading": "きがえる",
+    "meaning": "to change one's clothes",
+    "vid": 1423170,
+    "sid": 2019631867,
+    "frequencyRank": 1800
+  },
+  {
+    "kanji": "壊す",
+    "reading": "こわす",
+    "meaning": "to break, to destroy, to demolish",
+    "vid": 1199890,
+    "sid": 283849084,
+    "frequencyRank": 1800
+  },
+  {
+    "kanji": "踏む",
+    "reading": "ふむ",
+    "meaning": "to step on, to tread on, to experience",
+    "vid": 1450270,
+    "sid": 1702977109,
+    "frequencyRank": 1800
+  },
+  {
+    "kanji": "思いつく",
+    "reading": "おもいつく",
+    "meaning": "to think of, to come into one's mind",
+    "vid": 1589330,
+    "sid": 787590195,
+    "frequencyRank": 1800
+  },
+  {
+    "kanji": "投げる",
+    "reading": "なげる",
+    "meaning": "to throw, to cast away",
+    "vid": 1447000,
+    "sid": 4274216480,
+    "frequencyRank": 1800
+  },
+  {
+    "kanji": "組む",
+    "reading": "くむ",
+    "meaning": "to cross legs, to link arms, to construct",
+    "vid": 1397590,
+    "sid": 1557791374,
+    "frequencyRank": 1800
+  },
+  {
+    "kanji": "解く",
+    "reading": "とく",
+    "meaning": "to untie, to unfasten, to solve",
+    "vid": 1198890,
+    "sid": 2257956262,
+    "frequencyRank": 1800
+  },
+  {
+    "kanji": "吐く",
+    "reading": "はく",
+    "meaning": "to throw up, to vomit, to spew",
+    "vid": 2646460,
+    "sid": 2775709157,
+    "frequencyRank": 1800
+  },
+  {
+    "kanji": "恐れる",
+    "reading": "おそれる",
+    "meaning": "to fear, to be afraid of",
+    "vid": 1589200,
+    "sid": 2235571627,
+    "frequencyRank": 1900
+  },
+  {
+    "kanji": "並べる",
+    "reading": "ならべる",
+    "meaning": "to line up, to set up, to arrange",
+    "vid": 1508390,
+    "sid": 446596702,
+    "frequencyRank": 1900
+  },
+  {
+    "kanji": "騒ぐ",
+    "reading": "さわぐ",
+    "meaning": "to make noise, to make racket",
+    "vid": 1403040,
+    "sid": 1834529778,
+    "frequencyRank": 1900
+  },
+  {
+    "kanji": "傷つける",
+    "reading": "きずつける",
+    "meaning": "to wound, to injure, to harm",
+    "vid": 1345930,
+    "sid": 4103380502,
+    "frequencyRank": 1900
+  },
+  {
+    "kanji": "挟む",
+    "reading": "はさむ",
+    "meaning": "to interpose, to hold between",
+    "vid": 1600740,
+    "sid": 3654468067,
+    "frequencyRank": 2000
+  },
+  {
+    "kanji": "崩れる",
+    "reading": "くずれる",
+    "meaning": "to collapse, to crumble",
+    "vid": 1516270,
+    "sid": 2979956624,
+    "frequencyRank": 2000
+  },
+  {
+    "kanji": "越える",
+    "reading": "こえる",
+    "meaning": "to cross over, to cross",
+    "vid": 1593070,
+    "sid": 2076013981,
+    "frequencyRank": 2000
+  },
+  {
+    "kanji": "漏れる",
+    "reading": "もれる",
+    "meaning": "to leak out, to escape",
+    "vid": 1605330,
+    "sid": 1345461491,
+    "frequencyRank": 2000
+  },
+  {
+    "kanji": "下げる",
+    "reading": "さげる",
+    "meaning": "to hang, to suspend, to wear",
+    "vid": 1184170,
+    "sid": 3769156622,
+    "frequencyRank": 2000
+  },
+  {
+    "kanji": "間違える",
+    "reading": "まちがえる",
+    "meaning": "to make a mistake, to commit an error",
+    "vid": 1215330,
+    "sid": 652966770,
+    "frequencyRank": 2000
+  },
+  {
+    "kanji": "祈る",
+    "reading": "いのる",
+    "meaning": "to pray, to wish",
+    "vid": 1222770,
+    "sid": 1130404279,
+    "frequencyRank": 2000
+  },
+  {
+    "kanji": "歌う",
+    "reading": "うたう",
+    "meaning": "to sing",
+    "vid": 1588120,
+    "sid": 3704222458,
+    "frequencyRank": 2000
+  },
+  {
+    "kanji": "掛ける",
+    "reading": "かける",
+    "meaning": "to hang up",
+    "vid": 1207610,
+    "sid": 3520685881,
+    "frequencyRank": 2100
+  },
+  {
+    "kanji": "泳ぐ",
+    "reading": "およぐ",
+    "meaning": "to swim",
+    "vid": 1174340,
+    "sid": 2161402165,
+    "frequencyRank": 2100
+  },
+  {
+    "kanji": "空く",
+    "reading": "すく",
+    "meaning": "to become less crowded, to thin out",
+    "vid": 1586270,
+    "sid": 804226642,
+    "frequencyRank": 2100
+  },
+  {
+    "kanji": "吹く",
+    "reading": "ふく",
+    "meaning": "to blow, to play a wind instrument",
+    "vid": 1370760,
+    "sid": 53703612,
+    "frequencyRank": 2100
+  },
+  {
+    "kanji": "外れる",
+    "reading": "はずれる",
+    "meaning": "to be disconnected, to get out of place",
+    "vid": 1203310,
+    "sid": 2028094621,
+    "frequencyRank": 2100
+  },
+  {
+    "kanji": "崩す",
+    "reading": "くずす",
+    "meaning": "to destroy, to demolish, to pull down",
+    "vid": 1516260,
+    "sid": 3841110610,
+    "frequencyRank": 2100
+  },
+  {
+    "kanji": "育つ",
+    "reading": "そだつ",
+    "meaning": "to be raised, to be brought up",
+    "vid": 1160540,
+    "sid": 275944265,
+    "frequencyRank": 2100
+  },
+  {
+    "kanji": "刺す",
+    "reading": "さす",
+    "meaning": "to pierce, to stab, to prick",
+    "vid": 1306470,
+    "sid": 1829684025,
+    "frequencyRank": 2100
+  },
+  {
+    "kanji": "閉める",
+    "reading": "しめる",
+    "meaning": "to close, to shut",
+    "vid": 1508590,
+    "sid": 3227400623,
+    "frequencyRank": 2200
+  },
+  {
+    "kanji": "折れる",
+    "reading": "おれる",
+    "meaning": "to break, to snap, to fracture",
+    "vid": 1385920,
+    "sid": 3732603388,
+    "frequencyRank": 2200
+  },
+  {
+    "kanji": "踊る",
+    "reading": "おどる",
+    "meaning": "to dance",
+    "vid": 1538440,
+    "sid": 863783217,
+    "frequencyRank": 2200
+  },
+  {
+    "kanji": "蹴る",
+    "reading": "ける",
+    "meaning": "to kick, to refuse, to reject",
+    "vid": 1333400,
+    "sid": 1427611120,
+    "frequencyRank": 2200
+  },
+  {
+    "kanji": "言い出す",
+    "reading": "いいだす",
+    "meaning": "to start talking, to speak, to tell",
+    "vid": 1264080,
+    "sid": 2415327900,
+    "frequencyRank": 2200
+  },
+  {
+    "kanji": "渡る",
+    "reading": "わたる",
+    "meaning": "to cross over, to go across",
+    "vid": 1444680,
+    "sid": 755441268,
+    "frequencyRank": 2300
+  },
+  {
+    "kanji": "生える",
+    "reading": "はえる",
+    "meaning": "to grow, to spring up, to sprout",
+    "vid": 1378490,
+    "sid": 833670029,
+    "frequencyRank": 2300
+  },
+  {
+    "kanji": "浴びる",
+    "reading": "あびる",
+    "meaning": "to dash over oneself, to take shower",
+    "vid": 1547450,
+    "sid": 3813678581,
+    "frequencyRank": 2300
+  },
+  {
+    "kanji": "異なる",
+    "reading": "ことなる",
+    "meaning": "to differ, to vary, to disagree",
+    "vid": 1157510,
+    "sid": 4177008775,
+    "frequencyRank": 2400
+  },
+  {
+    "kanji": "狂う",
+    "reading": "くるう",
+    "meaning": "to go mad, to get out of order",
+    "vid": 1237510,
+    "sid": 344498395,
+    "frequencyRank": 2400
+  },
+  {
+    "kanji": "伏せる",
+    "reading": "ふせる",
+    "meaning": "to turn over, to lay face down",
+    "vid": 1500220,
+    "sid": 430149143,
+    "frequencyRank": 2400
+  },
+  {
+    "kanji": "稼ぐ",
+    "reading": "かせぐ",
+    "meaning": "to earn income, to labor",
+    "vid": 1194450,
+    "sid": 3267324530,
+    "frequencyRank": 2400
+  },
+  {
+    "kanji": "盗む",
+    "reading": "ぬすむ",
+    "meaning": "to steal",
+    "vid": 1448440,
+    "sid": 294064931,
+    "frequencyRank": 2400
+  },
+  {
+    "kanji": "治る",
+    "reading": "なおる",
+    "meaning": "to be cured, to get well, to be healed",
+    "vid": 1599400,
+    "sid": 1640163452,
+    "frequencyRank": 2500
+  },
+  {
+    "kanji": "晴れる",
+    "reading": "はれる",
+    "meaning": "to clear up, to be sunny",
+    "vid": 1376470,
+    "sid": 470538391,
+    "frequencyRank": 2500
+  },
+  {
+    "kanji": "登る",
+    "reading": "のぼる",
+    "meaning": "to ascend, to climb, to go up",
+    "vid": 1352570,
+    "sid": 1711867320,
+    "frequencyRank": 2500
+  },
+  {
+    "kanji": "飾る",
+    "reading": "かざる",
+    "meaning": "to decorate, to ornament, to adorn",
+    "vid": 1357210,
+    "sid": 1056785989,
+    "frequencyRank": 2500
+  },
+  {
+    "kanji": "溶ける",
+    "reading": "とける",
+    "meaning": "to melt, to thaw, to fuse",
+    "vid": 1546070,
+    "sid": 1279882638,
+    "frequencyRank": 2500
+  },
+  {
+    "kanji": "見逃す",
+    "reading": "みのがす",
+    "meaning": "to miss, to overlook",
+    "vid": 1604670,
+    "sid": 2653589569,
+    "frequencyRank": 2500
+  },
+  {
+    "kanji": "産む",
+    "reading": "うむ",
+    "meaning": "to beget, to generate, to give birth",
+    "vid": 1588410,
+    "sid": 2751011542,
+    "frequencyRank": 2500
+  },
+  {
+    "kanji": "痛む",
+    "reading": "いたむ",
+    "meaning": "to hurt, to ache, to feel a pain",
+    "vid": 1432710,
+    "sid": 1510766155,
+    "frequencyRank": 2600
+  },
+  {
+    "kanji": "解ける",
+    "reading": "とける",
+    "meaning": "to be solved, to loosen",
+    "vid": 1198910,
+    "sid": 1907636826,
+    "frequencyRank": 2600
+  },
+  {
+    "kanji": "話し合う",
+    "reading": "はなしあう",
+    "meaning": "to discuss, to talk together",
+    "vid": 1562310,
+    "sid": 4170951201,
+    "frequencyRank": 2600
+  },
+  {
+    "kanji": "転ぶ",
+    "reading": "ころぶ",
+    "meaning": "to fall down, to fall over",
+    "vid": 1582130,
+    "sid": 304404848,
+    "frequencyRank": 2600
+  },
+  {
+    "kanji": "詰める",
+    "reading": "つめる",
+    "meaning": "to stuff into, to jam, to cram",
+    "vid": 1226510,
+    "sid": 3368361712,
+    "frequencyRank": 2600
+  },
+  {
+    "kanji": "引き受ける",
+    "reading": "ひきうける",
+    "meaning": "to be responsible for, to take over",
+    "vid": 1601520,
+    "sid": 296619892,
+    "frequencyRank": 2600
+  },
+  {
+    "kanji": "恨む",
+    "reading": "うらむ",
+    "meaning": "to resent, to curse, to feel bitter",
+    "vid": 1289780,
+    "sid": 609542227,
+    "frequencyRank": 2700
+  },
+  {
+    "kanji": "乾く",
+    "reading": "かわく",
+    "meaning": "to get dry",
+    "vid": 1209650,
+    "sid": 3420864197,
+    "frequencyRank": 2700
+  },
+  {
+    "kanji": "数える",
+    "reading": "かぞえる",
+    "meaning": "to count, to enumerate",
+    "vid": 1372900,
+    "sid": 3888927626,
+    "frequencyRank": 2700
+  },
+  {
+    "kanji": "優れる",
+    "reading": "すぐれる",
+    "meaning": "to surpass, to outstrip, to excel",
+    "vid": 1539080,
+    "sid": 3748912937,
+    "frequencyRank": 2700
+  },
+  {
+    "kanji": "雇う",
+    "reading": "やとう",
+    "meaning": "to employ, to hire, to charter",
+    "vid": 1605570,
+    "sid": 2699059996,
+    "frequencyRank": 2800
+  },
+  {
+    "kanji": "叱る",
+    "reading": "しかる",
+    "meaning": "to scold",
+    "vid": 1319580,
+    "sid": 1281615050,
+    "frequencyRank": 2800
+  },
+  {
+    "kanji": "曲がる",
+    "reading": "まがる",
+    "meaning": "to bend, to curve, to warp",
+    "vid": 1239730,
+    "sid": 1091692374,
+    "frequencyRank": 2800
+  },
+  {
+    "kanji": "悲しむ",
+    "reading": "かなしむ",
+    "meaning": "to be sad, to mourn for, to regret",
+    "vid": 1483200,
+    "sid": 1281468989,
+    "frequencyRank": 2900
+  },
+  {
+    "kanji": "焼ける",
+    "reading": "やける",
+    "meaning": "to burn, to be roasted, to be heated",
+    "vid": 1350610,
+    "sid": 4197220845,
+    "frequencyRank": 2900
+  },
+  {
+    "kanji": "慰める",
+    "reading": "なぐさめる",
+    "meaning": "to comfort, to console, to amuse",
+    "vid": 1156890,
+    "sid": 3683435018,
+    "frequencyRank": 2900
+  },
+  {
+    "kanji": "塗る",
+    "reading": "ぬる",
+    "meaning": "to paint, to plaster, to lacquer",
+    "vid": 1444270,
+    "sid": 1926861842,
+    "frequencyRank": 2900
+  },
+  {
+    "kanji": "敷く",
+    "reading": "しく",
+    "meaning": "to spread out, to lay out",
+    "vid": 1497020,
+    "sid": 1435261190,
+    "frequencyRank": 2900
+  },
+  {
+    "kanji": "固める",
+    "reading": "かためる",
+    "meaning": "to harden, to freeze, to strengthen",
+    "vid": 1266570,
+    "sid": 86188451,
+    "frequencyRank": 2900
+  },
+  {
+    "kanji": "定める",
+    "reading": "さだめる",
+    "meaning": "to decide, to establish, to determine",
+    "vid": 1435380,
+    "sid": 3311683086,
+    "frequencyRank": 3000
+  },
+  {
+    "kanji": "習う",
+    "reading": "ならう",
+    "meaning": "to take lessons in, to study under",
+    "vid": 1333070,
+    "sid": 3256404455,
+    "frequencyRank": 3000
+  },
+  {
+    "kanji": "減らす",
+    "reading": "へらす",
+    "meaning": "to abate, to decrease, to diminish",
+    "vid": 1263110,
+    "sid": 2205086195,
+    "frequencyRank": 3000
+  },
+  {
+    "kanji": "強める",
+    "reading": "つよめる",
+    "meaning": "to strengthen, to emphasize",
+    "vid": 1236150,
+    "sid": 1568585291,
+    "frequencyRank": 3000
+  },
+  {
+    "kanji": "居る",
+    "reading": "いる",
+    "meaning": "to be (of animate objects)",
+    "vid": 1577980,
+    "sid": 3559791304,
+    "frequencyRank": 3100
+  },
+  {
+    "kanji": "喋る",
+    "reading": "しゃべる",
+    "meaning": "to talk, to chat, to chatter",
+    "vid": 1427510,
+    "sid": 65229855,
+    "frequencyRank": 3100
+  },
+  {
+    "kanji": "睨む",
+    "reading": "にらむ",
+    "meaning": "to glare at, to scowl at",
+    "vid": 1569880,
+    "sid": 4006904746,
+    "frequencyRank": 3100
+  },
+  {
+    "kanji": "舐める",
+    "reading": "なめる",
+    "meaning": "to lick, to taste, to experience",
+    "vid": 1571320,
+    "sid": 3371119733,
+    "frequencyRank": 3100
+  },
+  {
+    "kanji": "貰う",
+    "reading": "もらう",
+    "meaning": "to receive, to take, to accept",
+    "vid": 1535910,
+    "sid": 721852741,
+    "frequencyRank": 3100
+  },
+  {
+    "kanji": "騙す",
+    "reading": "だます",
+    "meaning": "to trick, to cheat, to deceive",
+    "vid": 1574550,
+    "sid": 640015498,
+    "frequencyRank": 3200
+  },
+  {
+    "kanji": "混じる",
+    "reading": "こんじる",
+    "meaning": "to meld, to conflate, to commingle",
+    "vid": 1603930,
+    "sid": 2362289177,
+    "frequencyRank": 3400
+  },
+  {
+    "kanji": "片付ける",
+    "reading": "かたづける",
+    "meaning": "to tidy up, to put in order",
+    "vid": 1511790,
+    "sid": 3181547622,
+    "frequencyRank": 3400
+  },
+  {
+    "kanji": "滑る",
+    "reading": "すべる",
+    "meaning": "to glide, to slide, to slip",
+    "vid": 1208640,
+    "sid": 1329020977,
+    "frequencyRank": 3500
+  },
+  {
+    "kanji": "噛む",
+    "reading": "かむ",
+    "meaning": "to bite, to chew, to gnaw",
+    "vid": 1209240,
+    "sid": 2537097427,
+    "frequencyRank": 3500
+  },
+  {
+    "kanji": "嫌がる",
+    "reading": "いやがる",
+    "meaning": "to hate, to dislike",
+    "vid": 1609260,
+    "sid": 3754093541,
+    "frequencyRank": 3500
+  },
+  {
+    "kanji": "叶う",
+    "reading": "かなう",
+    "meaning": "to come true, to be realized",
+    "vid": 1208870,
+    "sid": 2019398281,
+    "frequencyRank": 3500
+  },
+  {
+    "kanji": "冷える",
+    "reading": "ひえる",
+    "meaning": "to grow cold, to get chilly",
+    "vid": 1556630,
+    "sid": 28887809,
+    "frequencyRank": 3600
+  },
+  {
+    "kanji": "腐る",
+    "reading": "くさる",
+    "meaning": "to rot, to go bad, to decay",
+    "vid": 1497800,
+    "sid": 3050738312,
+    "frequencyRank": 3600
+  },
+  {
+    "kanji": "要る",
+    "reading": "いる",
+    "meaning": "to be needed, to be wanted",
+    "vid": 1546640,
+    "sid": 3617251076,
+    "frequencyRank": 3800
+  },
+  {
+    "kanji": "怒鳴る",
+    "reading": "どなる",
+    "meaning": "to shout, to yell",
+    "vid": 1445740,
+    "sid": 1701499141,
+    "frequencyRank": 3800
+  },
+  {
+    "kanji": "溜まる",
+    "reading": "たまる",
+    "meaning": "to collect, to gather, to save",
+    "vid": 1552650,
+    "sid": 1518607319,
+    "frequencyRank": 3900
+  },
+  {
+    "kanji": "咲く",
+    "reading": "さく",
+    "meaning": "to bloom",
+    "vid": 1297210,
+    "sid": 327542465,
+    "frequencyRank": 3900
+  },
+  {
+    "kanji": "閉まる",
+    "reading": "しまる",
+    "meaning": "to be shut, to close, to be closed",
+    "vid": 1436560,
+    "sid": 2118019993,
+    "frequencyRank": 3900
+  },
+  {
+    "kanji": "鳴く",
+    "reading": "なく",
+    "meaning": "to sing, to bark, to purr",
+    "vid": 1532870,
+    "sid": 3635992132,
+    "frequencyRank": 3900
+  },
+  {
+    "kanji": "飼う",
+    "reading": "かう",
+    "meaning": "to keep a pet, to have, to own",
+    "vid": 1312970,
+    "sid": 1727607511,
+    "frequencyRank": 3900
+  },
+  {
+    "kanji": "傾く",
+    "reading": "かたむく",
+    "meaning": "to incline toward, to slant, to lurch",
+    "vid": 1578210,
+    "sid": 179086861,
+    "frequencyRank": 3900
+  },
+  {
+    "kanji": "見張る",
+    "reading": "みはる",
+    "meaning": "to stand watch, to stand guard",
+    "vid": 1259880,
+    "sid": 71166626,
+    "frequencyRank": 3900
+  },
+  {
+    "kanji": "滅ぼす",
+    "reading": "ほろぼす",
+    "meaning": "to destroy, to overthrow, to wreck",
+    "vid": 1603620,
+    "sid": 3369246126,
+    "frequencyRank": 4000
+  },
+  {
+    "kanji": "仰ぐ",
+    "reading": "あおぐ",
+    "meaning": "to look up, to respect, to revere",
+    "vid": 1238780,
+    "sid": 340088656,
+    "frequencyRank": 4000
+  },
+  {
+    "kanji": "混ぜる",
+    "reading": "まぜる",
+    "meaning": "to mix, to stir, to blend",
+    "vid": 1290310,
+    "sid": 3220772693,
+    "frequencyRank": 4200
+  },
+  {
+    "kanji": "気遣う",
+    "reading": "きづかう",
+    "meaning": "to worry about, to feel anxious",
+    "vid": 1222150,
+    "sid": 1159963791,
+    "frequencyRank": 4200
+  },
+  {
+    "kanji": "試みる",
+    "reading": "こころみる",
+    "meaning": "to try, to attempt, to have a go",
+    "vid": 1312280,
+    "sid": 1199247261,
+    "frequencyRank": 4200
+  },
+  {
+    "kanji": "掛かる",
+    "reading": "かかる",
+    "meaning": "to take, to hang, to come into view",
+    "vid": 1207590,
+    "sid": 528841083,
+    "frequencyRank": 4300
+  },
+  {
+    "kanji": "繋ぐ",
+    "reading": "つなぐ",
+    "meaning": "to tie, to fasten, to connect",
+    "vid": 1251900,
+    "sid": 3945961090,
+    "frequencyRank": 4300
+  },
+  {
+    "kanji": "砕く",
+    "reading": "くだく",
+    "meaning": "to break, to smash",
+    "vid": 1295170,
+    "sid": 508275058,
+    "frequencyRank": 4300
+  },
+  {
+    "kanji": "磨く",
+    "reading": "みがく",
+    "meaning": "to polish, to shine, to brush",
+    "vid": 1523940,
+    "sid": 3351754402,
+    "frequencyRank": 4300
+  },
+  {
+    "kanji": "蘇る",
+    "reading": "よみがえる",
+    "meaning": "to be resurrected, to be revived",
+    "vid": 1606020,
+    "sid": 1334113484,
+    "frequencyRank": 4400
+  },
+  {
+    "kanji": "掘る",
+    "reading": "ほる",
+    "meaning": "to dig, to excavate, to hollow",
+    "vid": 1246690,
+    "sid": 3791083075,
+    "frequencyRank": 4400
+  },
+  {
+    "kanji": "腰掛ける",
+    "reading": "こしかける",
+    "meaning": "to sit down",
+    "vid": 1288350,
+    "sid": 1434835160,
+    "frequencyRank": 4400
+  },
+  {
+    "kanji": "励ます",
+    "reading": "はげます",
+    "meaning": "to encourage, to cheer",
+    "vid": 1557350,
+    "sid": 3653231704,
+    "frequencyRank": 4500
+  },
+  {
+    "kanji": "釣る",
+    "reading": "つる",
+    "meaning": "to fish, to angle, to catch",
+    "vid": 1434120,
+    "sid": 2118985516,
+    "frequencyRank": 4500
+  },
+  {
+    "kanji": "曇る",
+    "reading": "くもる",
+    "meaning": "to get cloudy, to cloud over",
+    "vid": 1457560,
+    "sid": 3680068743,
+    "frequencyRank": 4500
+  },
+  {
+    "kanji": "履く",
+    "reading": "はく",
+    "meaning": "to put on (lower-body clothing)",
+    "vid": 1607260,
+    "sid": 3974728811,
+    "frequencyRank": 4500
+  },
+  {
+    "kanji": "惚れる",
+    "reading": "ほれる",
+    "meaning": "to fall in love, to be charmed with",
+    "vid": 1288500,
+    "sid": 2219408535,
+    "frequencyRank": 4600
+  },
+  {
+    "kanji": "苦しめる",
+    "reading": "くるしめる",
+    "meaning": "to torment, to pain",
+    "vid": 1244360,
+    "sid": 2239813109,
+    "frequencyRank": 4600
+  },
+  {
+    "kanji": "無くなる",
+    "reading": "なくなる",
+    "meaning": "to be lost, to be missing, to disappear",
+    "vid": 1529550,
+    "sid": 4086841194,
+    "frequencyRank": 4700
+  },
+  {
+    "kanji": "仕込む",
+    "reading": "しこむ",
+    "meaning": "to train, to teach, to educate",
+    "vid": 1304940,
+    "sid": 2884881430,
+    "frequencyRank": 4800
+  },
+  {
+    "kanji": "滅びる",
+    "reading": "ほろびる",
+    "meaning": "to be ruined, to go under, to perish",
+    "vid": 1603610,
+    "sid": 4182961504,
+    "frequencyRank": 4900
+  },
+  {
+    "kanji": "太る",
+    "reading": "ふとる",
+    "meaning": "to grow fat, to become fat",
+    "vid": 1408220,
+    "sid": 1783197448,
+    "frequencyRank": 5000
+  },
+  {
+    "kanji": "上回る",
+    "reading": "うわまわる",
+    "meaning": "to exceed, to surpass",
+    "vid": 1352770,
+    "sid": 2343344213,
+    "frequencyRank": 5000
+  },
+  {
+    "kanji": "馴染む",
+    "reading": "なじむ",
+    "meaning": "to become familiar with, to adapt",
+    "vid": 1459820,
+    "sid": 3827640369,
+    "frequencyRank": 5100
+  },
+  {
+    "kanji": "広まる",
+    "reading": "ひろまる",
+    "meaning": "to spread, to be propagated",
+    "vid": 1278450,
+    "sid": 368377711,
+    "frequencyRank": 5200
+  },
+  {
+    "kanji": "勤める",
+    "reading": "つとめる",
+    "meaning": "to work for, to be employed",
+    "vid": 1240825,
+    "sid": 1391585837,
+    "frequencyRank": 5300
+  },
+  {
+    "kanji": "祝う",
+    "reading": "いわう",
+    "meaning": "to congratulate, to celebrate",
+    "vid": 1337390,
+    "sid": 1022256726,
+    "frequencyRank": 5400
+  },
+  {
+    "kanji": "サボる",
+    "reading": "サボる",
+    "meaning": "to be truant, to slack off, to play hooky",
+    "vid": 1057580,
+    "sid": 3315914335,
+    "frequencyRank": 5400
+  },
+  {
+    "kanji": "企む",
+    "reading": "たくらむ",
+    "meaning": "to scheme, to plan, to play a trick",
+    "vid": 1218140,
+    "sid": 1359445295,
+    "frequencyRank": 5500
+  },
+  {
+    "kanji": "禁じる",
+    "reading": "きんじる",
+    "meaning": "to prohibit",
+    "vid": 1241470,
+    "sid": 871931013,
+    "frequencyRank": 5800
+  },
+  {
+    "kanji": "惜しむ",
+    "reading": "おしむ",
+    "meaning": "to be frugal, to value, to regret",
+    "vid": 1382300,
+    "sid": 252011134,
+    "frequencyRank": 5900
+  },
+  {
+    "kanji": "担ぐ",
+    "reading": "かつぐ",
+    "meaning": "to shoulder, to carry on one's shoulder",
+    "vid": 1418140,
+    "sid": 1884747687,
+    "frequencyRank": 6000
+  },
+  {
+    "kanji": "冷やす",
+    "reading": "ひやす",
+    "meaning": "to cool, to chill, to refrigerate",
+    "vid": 1556770,
+    "sid": 2594473933,
+    "frequencyRank": 6000
+  },
+  {
+    "kanji": "計る",
+    "reading": "はかる",
+    "meaning": "to measure, to weigh, to survey",
+    "vid": 1600650,
+    "sid": 290770091,
+    "frequencyRank": 6000
+  },
+  {
+    "kanji": "越す",
+    "reading": "こす",
+    "meaning": "to cross over, to go across",
+    "vid": 1175300,
+    "sid": 370297814,
+    "frequencyRank": 6100
+  },
+  {
+    "kanji": "干す",
+    "reading": "ほす",
+    "meaning": "to air, to dry, to desiccate",
+    "vid": 1603510,
+    "sid": 2618039366,
+    "frequencyRank": 6100
+  },
+  {
+    "kanji": "励む",
+    "reading": "はげむ",
+    "meaning": "to strive, to endeavour, to make an effort",
+    "vid": 1557390,
+    "sid": 3342953912,
+    "frequencyRank": 6200
+  },
+  {
+    "kanji": "罵る",
+    "reading": "ののしる",
+    "meaning": "to abuse verbally, to curse at",
+    "vid": 1471520,
+    "sid": 3395094242,
+    "frequencyRank": 6500
+  },
+  {
+    "kanji": "植える",
+    "reading": "うえる",
+    "meaning": "to plant, to grow, to raise",
+    "vid": 1357250,
+    "sid": 1825857068,
+    "frequencyRank": 6500
+  },
+  {
+    "kanji": "はやる",
+    "reading": "はやる",
+    "meaning": "to be popular, to come into fashion",
+    "vid": 1552310,
+    "sid": 811393614,
+    "frequencyRank": 6500
+  },
+  {
+    "kanji": "弄ぶ",
+    "reading": "もてあそぶ",
+    "meaning": "to play with, to fiddle with",
+    "vid": 1980760,
+    "sid": 1536894410,
+    "frequencyRank": 6700
+  },
+  {
+    "kanji": "積もる",
+    "reading": "つもる",
+    "meaning": "to pile up, to accumulate",
+    "vid": 1382990,
+    "sid": 3101475181,
+    "frequencyRank": 6800
+  },
+  {
+    "kanji": "闘う",
+    "reading": "たたかう",
+    "meaning": "to fight, to contend, to compete",
+    "vid": 1596960,
+    "sid": 1877959535,
+    "frequencyRank": 7100
+  },
+  {
+    "kanji": "広める",
+    "reading": "ひろめる",
+    "meaning": "to spread, to propagate, to popularize",
+    "vid": 1278460,
+    "sid": 1500065509,
+    "frequencyRank": 7200
+  },
+  {
+    "kanji": "足す",
+    "reading": "たす",
+    "meaning": "to add numbers",
+    "vid": 1404700,
+    "sid": 2398287331,
+    "frequencyRank": 7400
+  },
+  {
+    "kanji": "畳む",
+    "reading": "たたむ",
+    "meaning": "to fold clothes, to close a shop",
+    "vid": 1356780,
+    "sid": 2981430173,
+    "frequencyRank": 7400
+  },
+  {
+    "kanji": "焦げる",
+    "reading": "こげる",
+    "meaning": "to burn, to be burned",
+    "vid": 1350730,
+    "sid": 40848492,
+    "frequencyRank": 7500
+  },
+  {
+    "kanji": "偽る",
+    "reading": "いつわる",
+    "meaning": "to lie, to cheat, to pretend",
+    "vid": 1224390,
+    "sid": 786798112,
+    "frequencyRank": 7500
+  },
+  {
+    "kanji": "次ぐ",
+    "reading": "つぐ",
+    "meaning": "to rank next to, to come after",
+    "vid": 1316400,
+    "sid": 2201822506,
+    "frequencyRank": 7800
+  },
+  {
+    "kanji": "強まる",
+    "reading": "つよまる",
+    "meaning": "to get strong, to gain strength",
+    "vid": 1236130,
+    "sid": 1721673821,
+    "frequencyRank": 7800
+  },
+  {
+    "kanji": "暮れる",
+    "reading": "くれる",
+    "meaning": "to get dark, to end, to close",
+    "vid": 1514960,
+    "sid": 2805572714,
+    "frequencyRank": 7800
+  },
+  {
+    "kanji": "蓄える",
+    "reading": "たくわえる",
+    "meaning": "to store, to lay in stock",
+    "vid": 1596860,
+    "sid": 4059332374,
+    "frequencyRank": 7800
+  },
+  {
+    "kanji": "見なす",
+    "reading": "みなす",
+    "meaning": "to consider as, to regard",
+    "vid": 1604630,
+    "sid": 15329585,
+    "frequencyRank": 8000
+  },
+  {
+    "kanji": "痛める",
+    "reading": "いためる",
+    "meaning": "to hurt, to injure, to damage",
+    "vid": 1432720,
+    "sid": 2320977302,
+    "frequencyRank": 8100
+  },
+  {
+    "kanji": "基づく",
+    "reading": "もとづく",
+    "meaning": "to be based, to be founded",
+    "vid": 1605270,
+    "sid": 3893517225,
+    "frequencyRank": 8200
+  },
+  {
+    "kanji": "弾く",
+    "reading": "ひく",
+    "meaning": "to play piano, to play guitar",
+    "vid": 1419360,
+    "sid": 3456272231,
+    "frequencyRank": 8300
+  },
+  {
+    "kanji": "有る",
+    "reading": "ある",
+    "meaning": "to be, to exist, to live",
+    "vid": 1296400,
+    "sid": 2870626104,
+    "frequencyRank": 8600
+  },
+  {
+    "kanji": "零れる",
+    "reading": "こぼれる",
+    "meaning": "to spill, to fall out of, to overflow",
+    "vid": 1557650,
+    "sid": 715287358,
+    "frequencyRank": 8700
+  },
+  {
+    "kanji": "零す",
+    "reading": "こぼす",
+    "meaning": "to spill, to drop, to shed",
+    "vid": 1557640,
+    "sid": 2097177076,
+    "frequencyRank": 8800
+  },
+  {
+    "kanji": "捻る",
+    "reading": "ひねる",
+    "meaning": "to twist, to wrench, to turn",
+    "vid": 1469530,
+    "sid": 472635105,
+    "frequencyRank": 9000
+  },
+  {
+    "kanji": "口説く",
+    "reading": "くどく",
+    "meaning": "to persuade, to coax, to solicit",
+    "vid": 1276490,
+    "sid": 2650445261,
+    "frequencyRank": 9200
+  },
+  {
+    "kanji": "無くす",
+    "reading": "なくす",
+    "meaning": "to lose something",
+    "vid": 1529530,
+    "sid": 2023061869,
+    "frequencyRank": 9300
+  },
+  {
+    "kanji": "泣き叫ぶ",
+    "reading": "なきさけぶ",
+    "meaning": "to cry and shout, to scream",
+    "vid": 1229680,
+    "sid": 2511827871,
+    "frequencyRank": 9800
+  },
+  {
+    "kanji": "霞む",
+    "reading": "かすむ",
+    "meaning": "to grow hazy, to be misty",
+    "vid": 1196520,
+    "sid": 658687033,
+    "frequencyRank": 10000
+  },
+  {
+    "kanji": "静まる",
+    "reading": "しずまる",
+    "meaning": "to quieten down, to calm down",
+    "vid": 1594270,
+    "sid": 1668412658,
+    "frequencyRank": 10100
+  },
+  {
+    "kanji": "貯める",
+    "reading": "ためる",
+    "meaning": "to save up money",
+    "vid": 1427160,
+    "sid": 3093253198,
+    "frequencyRank": 10200
+  },
+  {
+    "kanji": "実る",
+    "reading": "みのる",
+    "meaning": "to bear fruit, to ripen",
+    "vid": 1320850,
+    "sid": 4293389339,
+    "frequencyRank": 11000
+  },
+  {
+    "kanji": "酔っ払う",
+    "reading": "よっぱらう",
+    "meaning": "to get drunk",
+    "vid": 1372670,
+    "sid": 2475442528,
+    "frequencyRank": 11100
+  },
+  {
+    "kanji": "言い換える",
+    "reading": "いいかえる",
+    "meaning": "to say in other words, to rephrase",
+    "vid": 1610580,
+    "sid": 2968083529,
+    "frequencyRank": 11200
+  },
+  {
+    "kanji": "言いつける",
+    "reading": "いいつける",
+    "meaning": "to tell to do, to order, to charge",
+    "vid": 1264230,
+    "sid": 3496381676,
+    "frequencyRank": 11400
+  },
+  {
+    "kanji": "温まる",
+    "reading": "あたたまる",
+    "meaning": "to warm oneself, to sun oneself",
+    "vid": 1586430,
+    "sid": 3744596602,
+    "frequencyRank": 11500
+  },
+  {
+    "kanji": "嚔ひる",
+    "reading": "はなひる",
+    "meaning": "to sneeze",
+    "vid": 1003710,
+    "sid": 1491142192,
+    "frequencyRank": 11500
+  },
+  {
+    "kanji": "儲ける",
+    "reading": "もうける",
+    "meaning": "to profit, to get, to earn",
+    "vid": 1534500,
+    "sid": 1896113897,
+    "frequencyRank": 11700
+  },
+  {
+    "kanji": "道に迷う",
+    "reading": "みちにまよう",
+    "meaning": "to lose one's way, to get lost",
+    "vid": 2132030,
+    "sid": 2066760229,
+    "frequencyRank": 12200
+  },
+  {
+    "kanji": "企てる",
+    "reading": "くわだてる",
+    "meaning": "to plan, to plot, to propose",
+    "vid": 1218120,
+    "sid": 3495306668,
+    "frequencyRank": 12600
+  },
+  {
+    "kanji": "茂る",
+    "reading": "しげる",
+    "meaning": "to grow thickly, to be in full leaf",
+    "vid": 1533740,
+    "sid": 1876559549,
+    "frequencyRank": 13100
+  },
+  {
+    "kanji": "こしらえる",
+    "reading": "こしらえる",
+    "meaning": "to make, to manufacture",
+    "vid": 1567390,
+    "sid": 1789779075,
+    "frequencyRank": 13200
+  },
+  {
+    "kanji": "儲かる",
+    "reading": "もうかる",
+    "meaning": "to be profitable, to yield a profit",
+    "vid": 1534490,
+    "sid": 219504651,
+    "frequencyRank": 13300
+  },
+  {
+    "kanji": "被る",
+    "reading": "かぶる",
+    "meaning": "to put on one's head, to wear",
+    "vid": 1484340,
+    "sid": 2128416242,
+    "frequencyRank": 13600
+  },
+  {
+    "kanji": "乗り換える",
+    "reading": "のりかえる",
+    "meaning": "to transfer trains, to change bus",
+    "vid": 1600470,
+    "sid": 2778590982,
+    "frequencyRank": 13700
+  },
+  {
+    "kanji": "威張る",
+    "reading": "いばる",
+    "meaning": "to put on airs, to act big",
+    "vid": 1156320,
+    "sid": 1514677377,
+    "frequencyRank": 14400
+  },
+  {
+    "kanji": "取り替える",
+    "reading": "とりかえる",
+    "meaning": "to exchange, to replace",
+    "vid": 1326830,
+    "sid": 2937825900,
+    "frequencyRank": 15200
+  },
+  {
+    "kanji": "更ける",
+    "reading": "ふける",
+    "meaning": "to get late, to advance",
+    "vid": 1279290,
+    "sid": 2461886085,
+    "frequencyRank": 15300
+  },
+  {
+    "kanji": "戒める",
+    "reading": "いましめる",
+    "meaning": "to warn against, to admonish",
+    "vid": 1200650,
+    "sid": 2462336481,
+    "frequencyRank": 15900
+  },
+  {
+    "kanji": "齧る",
+    "reading": "かじる",
+    "meaning": "to chew, to bite, to gnaw",
+    "vid": 1610640,
+    "sid": 29544794,
+    "frequencyRank": 16100
+  },
+  {
+    "kanji": "志す",
+    "reading": "こころざす",
+    "meaning": "to plan, to intend, to aspire",
+    "vid": 1309060,
+    "sid": 3414037633,
+    "frequencyRank": 16400
+  },
+  {
+    "kanji": "差し引く",
+    "reading": "さしひく",
+    "meaning": "to deduct, to take away, to dock",
+    "vid": 1291100,
+    "sid": 3689116183,
+    "frequencyRank": 16900
+  },
+  {
+    "kanji": "点ける",
+    "reading": "つける",
+    "meaning": "to turn on, to switch on",
+    "vid": 1610400,
+    "sid": 2548757536,
+    "frequencyRank": 17500
+  },
+  {
+    "kanji": "言い表す",
+    "reading": "いいあらわす",
+    "meaning": "to express in words, to confess",
+    "vid": 1264220,
+    "sid": 584322373,
+    "frequencyRank": 17600
+  },
+  {
+    "kanji": "苛める",
+    "reading": "いじめる",
+    "meaning": "to tease, to torment, to persecute",
+    "vid": 1195140,
+    "sid": 2126692639,
+    "frequencyRank": 18300
+  },
+  {
+    "kanji": "凝らす",
+    "reading": "こごらす",
+    "meaning": "to freeze, to congeal",
+    "vid": 1239010,
+    "sid": 253308259,
+    "frequencyRank": 18500
+  },
+  {
+    "kanji": "冷やかす",
+    "reading": "ひやかす",
+    "meaning": "to banter, to make fun of, to jeer",
+    "vid": 1556760,
+    "sid": 1016365274,
+    "frequencyRank": 19500
+  },
+  {
+    "kanji": "照る",
+    "reading": "てる",
+    "meaning": "to shine, to look slightly upward",
+    "vid": 1350860,
+    "sid": 85122032,
+    "frequencyRank": 19600
+  },
+  {
+    "kanji": "先延ばしにする",
+    "reading": "さきのばしにする",
+    "meaning": "to delay, to put off, to procrastinate",
+    "vid": 2098640,
+    "sid": 3072836062,
+    "frequencyRank": 20400
+  },
+  {
+    "kanji": "負かす",
+    "reading": "まかす",
+    "meaning": "to defeat",
+    "vid": 1497950,
+    "sid": 2202029057,
+    "frequencyRank": 20500
+  },
+  {
+    "kanji": "怠ける",
+    "reading": "なまける",
+    "meaning": "to be idle, to slacken, to neglect",
+    "vid": 1410660,
+    "sid": 3279058978,
+    "frequencyRank": 21400
+  },
+  {
+    "kanji": "梳く",
+    "reading": "すく",
+    "meaning": "to comb out, to card",
+    "vid": 2063050,
+    "sid": 1697083231,
+    "frequencyRank": 21600
+  },
+  {
+    "kanji": "漬ける",
+    "reading": "つける",
+    "meaning": "to soak, to seep, to dip in",
+    "vid": 1433680,
+    "sid": 1427061530,
+    "frequencyRank": 23000
+  },
+  {
+    "kanji": "祭る",
+    "reading": "まつる",
+    "meaning": "to deify, to enshrine, to pray",
+    "vid": 1295250,
+    "sid": 2131474306,
+    "frequencyRank": 23500
+  },
+  {
+    "kanji": "眩む",
+    "reading": "くらむ",
+    "meaning": "to be dazzled by, to be dizzied",
+    "vid": 1980700,
+    "sid": 1729541520,
+    "frequencyRank": 24600
+  },
+  {
+    "kanji": "食い違う",
+    "reading": "くいちがう",
+    "meaning": "to cross each other, to differ",
+    "vid": 1358110,
+    "sid": 904407131,
+    "frequencyRank": 25200
+  },
+  {
+    "kanji": "口付ける",
+    "reading": "くちづける",
+    "meaning": "to kiss",
+    "vid": 1276860,
+    "sid": 1718758578,
+    "frequencyRank": 25400
+  },
+  {
+    "kanji": "捩る",
+    "reading": "ねじる",
+    "meaning": "to screw, to twist, to distort",
+    "vid": 1611090,
+    "sid": 864487291,
+    "frequencyRank": 29400
+  },
+  {
+    "kanji": "呉れる",
+    "reading": "くれる",
+    "meaning": "to give, to let have, to do for one",
+    "vid": 1269130,
+    "sid": 1481259181,
+    "frequencyRank": 30700
+  },
+  {
+    "kanji": "滅入る",
+    "reading": "めいる",
+    "meaning": "to feel depressed",
+    "vid": 1533010,
+    "sid": 1717872872,
+    "frequencyRank": 32200
+  },
+  {
+    "kanji": "年取る",
+    "reading": "としとる",
+    "meaning": "to grow old, to age",
+    "vid": 1468820,
+    "sid": 4275435053,
+    "frequencyRank": 32200
+  },
+  {
+    "kanji": "仄めかす",
+    "reading": "ほのめかす",
+    "meaning": "to hint at, to intimate, to suggest",
+    "vid": 1563040,
+    "sid": 749722344,
+    "frequencyRank": 40300
+  },
+  {
+    "kanji": "毟る",
+    "reading": "むしる",
+    "meaning": "to pluck, to pick, to tear",
+    "vid": 1568540,
+    "sid": 4073881107,
+    "frequencyRank": 41300
+  },
+  {
+    "kanji": "ドジる",
+    "reading": "ドジる",
+    "meaning": "to fail, to mess up, to bungle",
+    "vid": 2151390,
+    "sid": 2850654305,
+    "frequencyRank": 50500
+  },
+  {
+    "kanji": "見忘れる",
+    "reading": "みわすれる",
+    "meaning": "to forget, to fail to recognize",
+    "vid": 1641770,
+    "sid": 2327976435,
+    "frequencyRank": 56000
+  },
+  {
+    "kanji": "熟す",
+    "reading": "こなす",
+    "meaning": "to digest, to break down",
+    "vid": 1337800,
+    "sid": 3844868120,
+    "frequencyRank": 60200
+  },
+  {
+    "kanji": "冗談を飛ばす",
+    "reading": "じょうだんをとばす",
+    "meaning": "to crack a joke, to tell a joke",
+    "vid": 2773750,
+    "sid": 1282398818,
+    "frequencyRank": 70200
+  },
+  {
+    "kanji": "見縊る",
+    "reading": "みくびる",
+    "meaning": "to underrate, to belittle, to look down on",
+    "vid": 1259170,
+    "sid": 627679531,
+    "frequencyRank": 72100
+  },
+  {
+    "kanji": "野次る",
+    "reading": "やじる",
+    "meaning": "to jeer at, to hoot, to boo",
+    "vid": 1537400,
+    "sid": 120374736,
+    "frequencyRank": 84800
+  },
+  {
+    "kanji": "佞む",
+    "reading": "かだむ",
+    "meaning": "to deceive, to fool, to lie",
+    "vid": 2534590,
+    "sid": 1783250439
+  }
+]

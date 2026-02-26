@@ -3,7 +3,7 @@
 // Classification done by manual review, not algorithmic.
 
 import { readFileSync, writeFileSync } from 'fs';
-const dir = 'data/vocab-categories';
+const dir = 'language/categories';
 
 const movement = JSON.parse(readFileSync(`${dir}/movement.json`, 'utf8'));
 
