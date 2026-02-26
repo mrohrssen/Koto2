@@ -113,20 +113,15 @@ export function processAttackTurn(allies, enemies, itemBuffs = null, robotParty 
 }
 
 export function processDefendTurn(allies) {
-  const chargeUpdates = [];
+  // MP regen on defend (12% of maxMp)
+  const mpRegens = [];
   for (const robot of allies) {
     if (robot.hp <= 0) continue;
-    robot.ultimate.charges = Math.min(
-      robot.ultimate.charges + 1,
-      robot.ultimate.chargesRequired
-    );
-    chargeUpdates.push({
-      robotId: robot.id,
-      charges: robot.ultimate.charges,
-      chargesRequired: robot.ultimate.chargesRequired
-    });
+    const regen = Math.floor((robot.maxMp || 0) * 0.12);
+    robot.mp = Math.min(robot.maxMp || 0, (robot.mp || 0) + regen);
+    mpRegens.push({ robotId: robot.id, mp: robot.mp, maxMp: robot.maxMp, regen });
   }
-  return { chargeUpdates };
+  return { mpRegens };
 }
 
 export function processEnemyTurn(enemies, allies, defendActive = false, itemBuffs = null) {
@@ -253,8 +248,7 @@ export function processBefriend(enemies, robotParty, targetEnemyIndex) {
   captured.befriended = true;
 
   // Reset for when it joins the party after combat
-  const capturedCopy = { ...captured, hp: captured.maxHp, befriended: false };
-  capturedCopy.ultimate = { ...captured.ultimate, charges: 0 };
+  const capturedCopy = { ...captured, hp: captured.maxHp, mp: captured.maxMp, befriended: false };
 
   // Store in pending list — added to party AFTER combat ends
   if (!robotParty.pendingCaptures) robotParty.pendingCaptures = [];
