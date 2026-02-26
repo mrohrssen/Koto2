@@ -1,0 +1,880 @@
+{
+  "kamedor": [
+    {
+      "moveId": "kamu",
+      "level": 1
+    },
+    {
+      "moveId": "nomu",
+      "level": 5
+    },
+    {
+      "moveId": "nemuru",
+      "level": 9
+    },
+    {
+      "moveId": "katameru",
+      "level": 12
+    },
+    {
+      "moveId": "watasu",
+      "level": 16
+    },
+    {
+      "moveId": "ukabu",
+      "level": 20
+    }
+  ],
+  "umarak": [
+    {
+      "moveId": "keru",
+      "level": 1
+    },
+    {
+      "moveId": "nigiru",
+      "level": 5
+    },
+    {
+      "moveId": "taosu",
+      "level": 9
+    },
+    {
+      "moveId": "kakeru_gallop",
+      "level": 12
+    },
+    {
+      "moveId": "naguru",
+      "level": 16
+    },
+    {
+      "moveId": "fumu",
+      "level": 20
+    }
+  ],
+  "chouri": [
+    {
+      "moveId": "mau",
+      "level": 1
+    },
+    {
+      "moveId": "karamu",
+      "level": 5
+    },
+    {
+      "moveId": "sakebu",
+      "level": 9
+    },
+    {
+      "moveId": "madowasu",
+      "level": 12
+    },
+    {
+      "moveId": "kakomu",
+      "level": 16
+    }
+  ],
+  "hebiveil": [
+    {
+      "moveId": "kamu",
+      "level": 1
+    },
+    {
+      "moveId": "karamu",
+      "level": 5
+    },
+    {
+      "moveId": "madowasu",
+      "level": 9
+    },
+    {
+      "moveId": "shimeru",
+      "level": 12
+    },
+    {
+      "moveId": "sakebu",
+      "level": 16
+    }
+  ],
+  "kumaro": [
+    {
+      "moveId": "tsukamu",
+      "level": 1
+    },
+    {
+      "moveId": "mawaru",
+      "level": 5
+    },
+    {
+      "moveId": "taeru",
+      "level": 9
+    },
+    {
+      "moveId": "tsubusu",
+      "level": 12
+    },
+    {
+      "moveId": "hirogeru",
+      "level": 16
+    },
+    {
+      "moveId": "katameru",
+      "level": 20
+    }
+  ],
+  "yuureimu": [
+    {
+      "moveId": "sakebu",
+      "level": 1
+    },
+    {
+      "moveId": "naku",
+      "level": 5
+    },
+    {
+      "moveId": "suu",
+      "level": 9
+    },
+    {
+      "moveId": "norou",
+      "level": 12
+    },
+    {
+      "moveId": "nagasu",
+      "level": 16
+    }
+  ],
+  "kazenoko": [
+    {
+      "moveId": "fuku",
+      "level": 1
+    },
+    {
+      "moveId": "kasaneru",
+      "level": 5
+    },
+    {
+      "moveId": "kakeru_gallop",
+      "level": 9
+    },
+    {
+      "moveId": "fukitobasu",
+      "level": 12
+    },
+    {
+      "moveId": "nigiru",
+      "level": 16
+    }
+  ],
+  "hikaribon": [
+    {
+      "moveId": "hikaru",
+      "level": 1
+    },
+    {
+      "moveId": "bakuhatsu",
+      "level": 5
+    },
+    {
+      "moveId": "abareru",
+      "level": 9
+    },
+    {
+      "moveId": "kagayaku",
+      "level": 12
+    },
+    {
+      "moveId": "semeru",
+      "level": 16
+    }
+  ],
+  "kitsunova": [
+    {
+      "moveId": "damasu",
+      "level": 1
+    },
+    {
+      "moveId": "okoru",
+      "level": 5
+    },
+    {
+      "moveId": "tokeru",
+      "level": 9
+    },
+    {
+      "moveId": "bakeru",
+      "level": 12
+    },
+    {
+      "moveId": "ochiru",
+      "level": 16
+    }
+  ],
+  "tsukimochi": [
+    {
+      "moveId": "terasu",
+      "level": 1
+    },
+    {
+      "moveId": "makikomu",
+      "level": 5
+    },
+    {
+      "moveId": "arau",
+      "level": 9
+    },
+    {
+      "moveId": "mangetsu",
+      "level": 12
+    },
+    {
+      "moveId": "sosogu",
+      "level": 16
+    }
+  ],
+  "taiyoun": [
+    {
+      "moveId": "yaku",
+      "level": 1
+    },
+    {
+      "moveId": "abareru",
+      "level": 5
+    },
+    {
+      "moveId": "semeru",
+      "level": 9
+    },
+    {
+      "moveId": "bakuhatsu",
+      "level": 12
+    },
+    {
+      "moveId": "horobosu",
+      "level": 16
+    }
+  ],
+  "kaeroki": [
+    {
+      "moveId": "nameru",
+      "level": 1
+    },
+    {
+      "moveId": "nagasu",
+      "level": 5
+    },
+    {
+      "moveId": "makikomu",
+      "level": 9
+    },
+    {
+      "moveId": "nomikomu",
+      "level": 12
+    },
+    {
+      "moveId": "arau",
+      "level": 16
+    },
+    {
+      "moveId": "suberu",
+      "level": 20
+    }
+  ],
+  "kumonid": [
+    {
+      "moveId": "maku",
+      "level": 1
+    },
+    {
+      "moveId": "musubu",
+      "level": 5
+    },
+    {
+      "moveId": "nuku",
+      "level": 9
+    },
+    {
+      "moveId": "toraeru",
+      "level": 12
+    },
+    {
+      "moveId": "kagiru",
+      "level": 16
+    }
+  ],
+  "raioni": [
+    {
+      "moveId": "kamu",
+      "level": 1
+    },
+    {
+      "moveId": "ochiru",
+      "level": 5
+    },
+    {
+      "moveId": "hanatsu",
+      "level": 9
+    },
+    {
+      "moveId": "houkou",
+      "level": 12
+    },
+    {
+      "moveId": "yaku",
+      "level": 16
+    },
+    {
+      "moveId": "bakuhatsu",
+      "level": 20
+    }
+  ],
+  "ookamiru": [
+    {
+      "moveId": "kamu",
+      "level": 1
+    },
+    {
+      "moveId": "kakomu",
+      "level": 5
+    },
+    {
+      "moveId": "nobiru",
+      "level": 9
+    },
+    {
+      "moveId": "kurau",
+      "level": 12
+    },
+    {
+      "moveId": "nobasu",
+      "level": 16
+    },
+    {
+      "moveId": "hiku",
+      "level": 20
+    }
+  ],
+  "penginrok": [
+    {
+      "moveId": "suberu",
+      "level": 1
+    },
+    {
+      "moveId": "nomu",
+      "level": 5
+    },
+    {
+      "moveId": "nemuru",
+      "level": 9
+    },
+    {
+      "moveId": "fubuki",
+      "level": 12
+    },
+    {
+      "moveId": "watasu",
+      "level": 16
+    },
+    {
+      "moveId": "ukabu",
+      "level": 20
+    }
+  ],
+  "irukami": [
+    {
+      "moveId": "oyogu",
+      "level": 1
+    },
+    {
+      "moveId": "makikomu",
+      "level": 5
+    },
+    {
+      "moveId": "arau",
+      "level": 9
+    },
+    {
+      "moveId": "hibiku",
+      "level": 12
+    },
+    {
+      "moveId": "sosogu",
+      "level": 16
+    }
+  ],
+  "hoshirin": [
+    {
+      "moveId": "ochiru",
+      "level": 1
+    },
+    {
+      "moveId": "bakuhatsu",
+      "level": 5
+    },
+    {
+      "moveId": "abareru",
+      "level": 9
+    },
+    {
+      "moveId": "negau",
+      "level": 12
+    },
+    {
+      "moveId": "semeru",
+      "level": 16
+    }
+  ],
+  "hanatchi": [
+    {
+      "moveId": "tsutsumu",
+      "level": 1
+    },
+    {
+      "moveId": "kakomu",
+      "level": 5
+    },
+    {
+      "moveId": "nobiru",
+      "level": 9
+    },
+    {
+      "moveId": "saku",
+      "level": 12
+    },
+    {
+      "moveId": "nobasu",
+      "level": 16
+    }
+  ],
+  "kujirath": [
+    {
+      "moveId": "moguru",
+      "level": 1
+    },
+    {
+      "moveId": "nomu",
+      "level": 5
+    },
+    {
+      "moveId": "nemuru",
+      "level": 9
+    },
+    {
+      "moveId": "kudaku",
+      "level": 12
+    },
+    {
+      "moveId": "watasu",
+      "level": 16
+    },
+    {
+      "moveId": "ukabu",
+      "level": 20
+    }
+  ],
+  "nekotto": [
+    {
+      "moveId": "kaku_scratch",
+      "level": 1
+    },
+    {
+      "moveId": "musubu",
+      "level": 5
+    },
+    {
+      "moveId": "nuku",
+      "level": 9
+    },
+    {
+      "moveId": "niramu",
+      "level": 12
+    },
+    {
+      "moveId": "kagiru",
+      "level": 16
+    }
+  ],
+  "kaminarion": [
+    {
+      "moveId": "utsu_beat",
+      "level": 1
+    },
+    {
+      "moveId": "kiru",
+      "level": 5
+    },
+    {
+      "moveId": "mawasu",
+      "level": 9
+    },
+    {
+      "moveId": "hajikeru",
+      "level": 12
+    },
+    {
+      "moveId": "kizutsukeru",
+      "level": 16
+    },
+    {
+      "moveId": "musubu",
+      "level": 20
+    }
+  ],
+  "karasume": [
+    {
+      "moveId": "tsuibamu",
+      "level": 1
+    },
+    {
+      "moveId": "kiru",
+      "level": 5
+    },
+    {
+      "moveId": "mawasu",
+      "level": 9
+    },
+    {
+      "moveId": "tsuranuku",
+      "level": 12
+    },
+    {
+      "moveId": "kizutsukeru",
+      "level": 16
+    },
+    {
+      "moveId": "musubu",
+      "level": 20
+    }
+  ],
+  "usagira": [
+    {
+      "moveId": "tobu",
+      "level": 1
+    },
+    {
+      "moveId": "furueru",
+      "level": 5
+    },
+    {
+      "moveId": "yureru",
+      "level": 9
+    },
+    {
+      "moveId": "naguru",
+      "level": 12
+    },
+    {
+      "moveId": "osaeru",
+      "level": 16
+    }
+  ],
+  "nezumini": [
+    {
+      "moveId": "haneru",
+      "level": 1
+    },
+    {
+      "moveId": "furueru",
+      "level": 5
+    },
+    {
+      "moveId": "yureru",
+      "level": 9
+    },
+    {
+      "moveId": "muragaru",
+      "level": 12
+    },
+    {
+      "moveId": "osaeru",
+      "level": 16
+    }
+  ],
+  "samegaron": [
+    {
+      "moveId": "kuitsuku",
+      "level": 1
+    },
+    {
+      "moveId": "nagasu",
+      "level": 5
+    },
+    {
+      "moveId": "makikomu",
+      "level": 9
+    },
+    {
+      "moveId": "hikisaku",
+      "level": 12
+    },
+    {
+      "moveId": "arau",
+      "level": 16
+    },
+    {
+      "moveId": "suberu",
+      "level": 20
+    }
+  ],
+  "sarukkii": [
+    {
+      "moveId": "nageru",
+      "level": 1
+    },
+    {
+      "moveId": "karamu",
+      "level": 5
+    },
+    {
+      "moveId": "madowasu",
+      "level": 9
+    },
+    {
+      "moveId": "abareru",
+      "level": 12
+    },
+    {
+      "moveId": "sakebu",
+      "level": 16
+    }
+  ],
+  "takogon": [
+    {
+      "moveId": "karamu",
+      "level": 1
+    },
+    {
+      "moveId": "naku",
+      "level": 5
+    },
+    {
+      "moveId": "suu",
+      "level": 9
+    },
+    {
+      "moveId": "shibaru",
+      "level": 12
+    },
+    {
+      "moveId": "nagasu",
+      "level": 16
+    }
+  ],
+  "ryuugi": [
+    {
+      "moveId": "tataku",
+      "level": 1
+    },
+    {
+      "moveId": "bakuhatsu",
+      "level": 5
+    },
+    {
+      "moveId": "abareru",
+      "level": 9
+    },
+    {
+      "moveId": "horobosu",
+      "level": 12
+    },
+    {
+      "moveId": "semeru",
+      "level": 16
+    }
+  ],
+  "hasamiden": [
+    {
+      "moveId": "kiru",
+      "level": 1
+    },
+    {
+      "moveId": "mawasu",
+      "level": 5
+    },
+    {
+      "moveId": "kizutsukeru",
+      "level": 9
+    },
+    {
+      "moveId": "kiru_slice",
+      "level": 12
+    },
+    {
+      "moveId": "maku",
+      "level": 16
+    },
+    {
+      "moveId": "musubu",
+      "level": 20
+    }
+  ],
+  "kasamii": [
+    {
+      "moveId": "furu",
+      "level": 1
+    },
+    {
+      "moveId": "nomu",
+      "level": 5
+    },
+    {
+      "moveId": "nemuru",
+      "level": 9
+    },
+    {
+      "moveId": "saegiru",
+      "level": 12
+    },
+    {
+      "moveId": "watasu",
+      "level": 16
+    },
+    {
+      "moveId": "ukabu",
+      "level": 20
+    }
+  ],
+  "honmo": [
+    {
+      "moveId": "hiraku",
+      "level": 1
+    },
+    {
+      "moveId": "kakomu",
+      "level": 5
+    },
+    {
+      "moveId": "nobiru",
+      "level": 9
+    },
+    {
+      "moveId": "tojiru",
+      "level": 12
+    },
+    {
+      "moveId": "nobasu",
+      "level": 16
+    }
+  ],
+  "makurami": [
+    {
+      "moveId": "ateru",
+      "level": 1
+    },
+    {
+      "moveId": "tasukeru",
+      "level": 5
+    },
+    {
+      "moveId": "kakusu",
+      "level": 9
+    },
+    {
+      "moveId": "dakishimeru",
+      "level": 12
+    },
+    {
+      "moveId": "tetsudau",
+      "level": 16
+    },
+    {
+      "moveId": "kakureru",
+      "level": 20
+    }
+  ],
+  "ranpuuru": [
+    {
+      "moveId": "terasu",
+      "level": 1
+    },
+    {
+      "moveId": "okoru",
+      "level": 5
+    },
+    {
+      "moveId": "tokeru",
+      "level": 9
+    },
+    {
+      "moveId": "kogasu",
+      "level": 12
+    },
+    {
+      "moveId": "niramu",
+      "level": 16
+    }
+  ],
+  "supiikaazou": [
+    {
+      "moveId": "hibiku",
+      "level": 1
+    },
+    {
+      "moveId": "hajikeru",
+      "level": 5
+    },
+    {
+      "moveId": "kiru",
+      "level": 9
+    },
+    {
+      "moveId": "ensou",
+      "level": 12
+    },
+    {
+      "moveId": "mawasu",
+      "level": 16
+    }
+  ],
+  "bakudango": [
+    {
+      "moveId": "nageru",
+      "level": 1
+    },
+    {
+      "moveId": "ochiru",
+      "level": 5
+    },
+    {
+      "moveId": "hanatsu",
+      "level": 9
+    },
+    {
+      "moveId": "bakuhatsu",
+      "level": 12
+    },
+    {
+      "moveId": "yaku",
+      "level": 16
+    },
+    {
+      "moveId": "chikazuku",
+      "level": 20
+    }
+  ],
+  "moufuwa": [
+    {
+      "moveId": "tsutsumu",
+      "level": 1
+    },
+    {
+      "moveId": "atatameru",
+      "level": 5
+    },
+    {
+      "moveId": "chikazuku",
+      "level": 9
+    },
+    {
+      "moveId": "shibaru",
+      "level": 12
+    },
+    {
+      "moveId": "sakeru",
+      "level": 16
+    },
+    {
+      "moveId": "ochiru",
+      "level": 20
+    }
+  ]
+}
