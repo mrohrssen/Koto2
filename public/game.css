@@ -4493,3 +4493,98 @@ html, body {
 .robot-popup-moves { margin-top: 8px; }
 .robot-popup-moves-label { font-size: 11px; color: #888; margin-bottom: 4px; }
 .robot-popup-move-row { font-size: 12px; padding: 2px 0; color: #ccc; }
+
+/* === Move Learn Panel === */
+.move-learn-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  max-height: 100%;
+  overflow-y: auto;
+}
+.move-learn-header {
+  text-align: center;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+.move-learn-new-name {
+  font-size: 18px;
+  font-weight: bold;
+}
+.move-learn-card {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #888;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: rgba(0,0,0,0.6);
+  position: relative;
+}
+.move-learn-card-name {
+  font-size: 14px;
+  font-weight: bold;
+}
+.move-learn-card-name small {
+  font-weight: normal;
+  opacity: 0.7;
+  font-size: 12px;
+}
+.move-learn-card-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+.move-learn-badge {
+  position: absolute;
+  top: -8px;
+  right: 8px;
+  background: #4CAF50;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.move-learn-label {
+  text-align: center;
+  font-size: 13px;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+.move-learn-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.move-learn-replaceable {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.move-learn-replaceable:hover,
+.move-learn-replaceable:active {
+  background: rgba(255,255,255,0.1);
+}
+.move-learn-auto {
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  color: #4CAF50;
+  margin: 8px 0;
+}
+.move-learn-ok-btn,
+.move-learn-skip-btn {
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px;
+  background: rgba(0,0,0,0.4);
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: center;
+}
+.move-learn-skip-btn {
+  opacity: 0.6;
+}

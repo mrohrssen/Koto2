@@ -539,6 +539,10 @@ async function rearrangeRobots(indexA, indexB) {
   return apiCall('/rearrange-robots', 'POST', { indexA, indexB });
 }
 
+async function learnMove(robotIndex, newMoveId, replaceIndex) {
+  return apiCall('/learn-move', 'POST', { robotIndex, newMoveId, replaceIndex });
+}
+
 async function swapRobotEquip(activeIndex, reserveIndex) {
   return apiCall('/swap-robot-equip', 'POST', { activeIndex, reserveIndex });
 }
@@ -601,6 +605,7 @@ export {
   selectShopItem,
   swapRobot,
   rearrangeRobots,
+  learnMove,
   swapRobotEquip,
   befriendReplace,
   getBefriendConversation,

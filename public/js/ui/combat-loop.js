@@ -47,6 +47,7 @@ import { configureRobotImg, robotSpritePath } from './sprite-utils.js';
 import { t } from './i18n.js';
 import { init as initMoveSelect, showMoves, clear as clearMoveSelect, setActiveLabel } from './move-select.js';
 import { init as initTargetSelect, showEnemies, showAllies, clear as clearTargetSelect } from './target-select.js';
+import { showLearnPrompt } from './move-learn.js';
 
 // ============ SPLIT ATTACK CARD ============
 
@@ -614,11 +615,12 @@ function showEnemyDamageDisplay(enemyAttack) {
  * @param {Array} xpEvents - Array of { xpGrants: [...], levelUps: [...] }
  */
 function showXpEvents(xpEvents) {
-  if (!xpEvents || xpEvents.length === 0) return;
+  const pendingMoveLearn = [];
+  if (!xpEvents || xpEvents.length === 0) return pendingMoveLearn;
 
   const state = getGameState();
   const activeRobots = state.run?.robotParty?.active;
-  if (!activeRobots) return;
+  if (!activeRobots) return pendingMoveLearn;
 
   const slots = document.querySelectorAll('#chip-row .robot-slot');
 
@@ -641,6 +643,63 @@ function showXpEvents(xpEvents) {
           // Slight delay so it appears after XP popup
           setTimeout(() => showLevelUpPopup(slots[index], lu.newLevel, lu.hpGain), 400);
         }
+        // Collect move learns for later processing
+        if (lu.newMove) {
+          const robot = activeRobots.find(r => r && r.id === lu.robotId);
+          if (robot) {
+            const robotIdx = activeRobots.findIndex(r => r && r.id === lu.robotId);
+            pendingMoveLearn.push({ robot, robotIndex: robotIdx, newMove: lu.newMove });
+          }
+        }
+      }
+    }
+  }
+
+  return pendingMoveLearn;
+}
+
+/**
+ * Process pending move-learn prompts after combat state sync.
+ * For each pending item, checks if the move was auto-learned (already in moves array)
+ * or needs replacement (robot has 4 moves). Shows UI prompt and calls backend API.
+ * @param {Array} pendingList - Array of { robot, robotIndex, newMove }
+ */
+async function processPendingMoveLearn(pendingList) {
+  const state = getGameState();
+  const activeRobots = state.run?.robotParty?.active;
+  if (!activeRobots) return;
+
+  for (const item of pendingList) {
+    // Re-read robot from synced state (may have been updated by syncFinalState)
+    const robot = activeRobots.find(r => r && r.id === item.robot.id);
+    if (!robot) continue;
+    const robotIndex = activeRobots.findIndex(r => r && r.id === item.robot.id);
+
+    // Check if move was auto-learned (already in robot's moves after state sync)
+    const alreadyLearned = robot.moves?.some(m => m.id === item.newMove.id);
+
+    // Pass alreadyLearned flag so the prompt shows the right UI
+    // (after syncFinalState, auto-added moves make robot.moves.length == 4)
+    const result = await showLearnPrompt(robot, robotIndex, item.newMove, alreadyLearned);
+
+    if (result.action === 'skip') {
+      continue;
+    }
+
+    if (result.action === 'replace') {
+      // Call backend to replace the move
+      const response = await fetch(`${API_BASE}/api/game/learn-move`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          robotIndex: robotIndex,
+          newMoveId: item.newMove.id,
+          replaceIndex: result.replaceIndex
+        })
+      });
+      const data = await response.json();
+      if (data.state) {
+        updateGameState(data.state);
       }
     }
   }
@@ -1053,6 +1112,7 @@ async function executeRobotMovesTurn(choices) {
       }
 
       // Show each attack result sequentially
+      const allPendingMoveLearn = [];
       if (result.playerAttacks?.length > 0) {
         const killedEnemies = new Set();
         for (const atk of result.playerAttacks) {
@@ -1115,11 +1175,14 @@ async function executeRobotMovesTurn(choices) {
             }
           }
 
-          // XP popups on kill
+          // XP popups on kill — collect pending move learns
           if (atk.targetDefeated && !killedEnemies.has(atk.targetId) && result.xpEvents) {
             killedEnemies.add(atk.targetId);
             const xpEvent = result.xpEvents.find(ev => ev.enemyId === atk.targetId);
-            if (xpEvent) showXpEvents([xpEvent]);
+            if (xpEvent) {
+              const pending = showXpEvents([xpEvent]);
+              if (pending?.length) allPendingMoveLearn.push(...pending);
+            }
           }
 
           // STAB indicator
@@ -1152,6 +1215,11 @@ async function executeRobotMovesTurn(choices) {
 
       // Sync state
       syncFinalState(result);
+
+      // Handle pending move learns (after state sync so robot data is current)
+      if (allPendingMoveLearn.length > 0) {
+        await processPendingMoveLearn(allPendingMoveLearn);
+      }
 
       if (result.combatEnded) {
         if (result.victory) await delay(500);
@@ -1220,6 +1288,7 @@ async function executeRobotPlayerAttack() {
       }
 
       // Show each allied robot's attack result sequentially with real-time HP
+      const allPendingMoveLearn2 = [];
       if (result.playerAttacks?.length > 0) {
         const killedEnemies = new Set();
 
@@ -1290,12 +1359,13 @@ async function executeRobotPlayerAttack() {
             }
           }
 
-          // Show XP popups when an enemy is killed (BUG B + C)
+          // Show XP popups when an enemy is killed (BUG B + C) — collect pending move learns
           if (atk.targetDefeated && !killedEnemies.has(atk.targetId) && result.xpEvents) {
             killedEnemies.add(atk.targetId);
             const xpEvent = result.xpEvents.find(ev => ev.enemyId === atk.targetId);
             if (xpEvent) {
-              showXpEvents([xpEvent]);
+              const pending = showXpEvents([xpEvent]);
+              if (pending?.length) allPendingMoveLearn2.push(...pending);
             }
           }
 
@@ -1320,6 +1390,11 @@ async function executeRobotPlayerAttack() {
 
       // Sync authoritative state from server
       syncFinalState(result);
+
+      // Handle pending move learns (after state sync so robot data is current)
+      if (allPendingMoveLearn2.length > 0) {
+        await processPendingMoveLearn(allPendingMoveLearn2);
+      }
 
       // Check combat end
       if (result.combatEnded) {
