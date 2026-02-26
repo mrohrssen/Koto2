@@ -6,6 +6,7 @@
 
 import { Router } from 'express';
 import { processEnemyTurn, handleRobotKO, handleBefriendAnswer } from '../../game/services/robot-combat-service.js';
+import { MOVES_BY_ID } from '../../game/robots.js';
 import { getCollectionCatalog } from '../../game/services/robot-collection-service.js';
 import { loadNpcs, shuffleOptions, updateBond, recordEncounter, handleNpcDialogueResponse } from '../../game/services/npc-service.js';
 import { buildVocabConfig } from './route-helpers.js';
@@ -98,11 +99,14 @@ export default function createCombatRoutes({
   });
 
   // Robot combat cycle
+  // Attack: { actionType: 'attack', moveChoices: [{ robotIndex, moveId, targetIndex }] }
+  // Defend: { actionType: 'defend' }
+  // Befriend: { actionType: 'befriend', targetEnemyIndex }
   router.post('/robot-combat-cycle', (req, res) => {
     const gameManager = req.gameManager;
-    const { actionType } = req.body;
+    const { actionType, moveChoices } = req.body;
     try {
-      const result = gameManager.robotCombatCycle(actionType || 'attack');
+      const result = gameManager.robotCombatCycle(actionType || 'attack', moveChoices || []);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -110,14 +114,28 @@ export default function createCombatRoutes({
     }
   });
 
-  // Use robot ultimate
-  router.post('/use-robot-ultimate', (req, res) => {
+  // Learn a new move on level-up (add or replace)
+  router.post('/learn-move', (req, res) => {
     const gameManager = req.gameManager;
-    const { robotIndex } = req.body;
+    const { robotIndex, newMoveId, replaceIndex } = req.body;
     try {
-      const result = gameManager.useRobotUltimate(robotIndex);
+      if (!gameManager.run?.robotParty) throw new Error('No active run');
+      const robot = gameManager.run.robotParty.active[robotIndex];
+      if (!robot) throw new Error('Invalid robot index');
+
+      const moveData = MOVES_BY_ID[newMoveId];
+      if (!moveData) throw new Error('Invalid move ID');
+
+      if (typeof replaceIndex === 'number' && replaceIndex >= 0 && replaceIndex < robot.moves.length) {
+        robot.moves[replaceIndex] = { ...moveData };
+      } else if (robot.moves.length < 4) {
+        robot.moves.push({ ...moveData });
+      } else {
+        throw new Error('Move slots full — must specify replaceIndex');
+      }
+
       req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
+      res.json({ success: true, moves: robot.moves, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
