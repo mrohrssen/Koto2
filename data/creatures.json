@@ -350,6 +350,10 @@
     "baseMp": 120,
     "learnset": [
       {
+        "moveId": "hanatsu",
+        "level": 1
+      },
+      {
         "moveId": "hikaru",
         "level": 1
       },
@@ -439,6 +443,10 @@
     "createdAt": "2026-02-17",
     "baseMp": 120,
     "learnset": [
+      {
+        "moveId": "nagasu",
+        "level": 1
+      },
       {
         "moveId": "terasu",
         "level": 1
@@ -860,6 +868,10 @@
     "createdAt": "2026-02-17",
     "baseMp": 120,
     "learnset": [
+      {
+        "moveId": "utsu_beat",
+        "level": 1
+      },
       {
         "moveId": "tsutsumu",
         "level": 1

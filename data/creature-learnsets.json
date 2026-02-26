@@ -167,6 +167,10 @@
   ],
   "hikaribon": [
     {
+      "moveId": "hanatsu",
+      "level": 1
+    },
+    {
       "moveId": "hikaru",
       "level": 1
     },
@@ -210,6 +214,10 @@
     }
   ],
   "tsukimochi": [
+    {
+      "moveId": "nagasu",
+      "level": 1
+    },
     {
       "moveId": "terasu",
       "level": 1
@@ -424,6 +432,10 @@
     }
   ],
   "hanatchi": [
+    {
+      "moveId": "utsu_beat",
+      "level": 1
+    },
     {
       "moveId": "tsutsumu",
       "level": 1

@@ -490,9 +490,11 @@ function showCollectionSelect(catalog, collection) {
     // Render the owned creature card HTML
     function renderOwnedCard(r) {
       const el = ELEMENT_EMOJI[r.element] || '';
-      const chargePips = r.ultimate?.chargesRequired
-        ? Array(r.ultimate.chargesRequired).fill('<span class="cc-charge-pip"></span>').join('')
-        : '';
+      const movesHtml = (r.learnset || []).slice(0, 4).map(entry => {
+        const lvl = entry.level || '?';
+        const name = entry.nameEn || entry.moveId || '';
+        return `<span class="cc-move-tag">Lv${lvl} ${name}</span>`;
+      }).join('');
       return `
         <div class="creature-card" data-element="${r.element}">
           <div class="cc-hero">
@@ -503,6 +505,7 @@ function showCollectionSelect(catalog, collection) {
               <div class="cc-chips">
                 <span class="cc-chip"><span class="cc-chip-val">${r.baseHp}</span>&nbsp;<span class="cc-chip-lbl">HP</span></span>
                 <span class="cc-chip"><span class="cc-chip-val">${r.baseAttack}</span>&nbsp;<span class="cc-chip-lbl">ATK</span></span>
+                <span class="cc-chip"><span class="cc-chip-val">${r.baseMp || '?'}</span>&nbsp;<span class="cc-chip-lbl">MP</span></span>
                 <span class="cc-chip"><span class="cc-chip-lbl">${RARITY_LABELS[r.rarity] || r.rarity}</span></span>
                 <span class="cc-chip"><span class="cc-chip-lbl">${r.pointCost} pts</span></span>
               </div>
@@ -510,20 +513,8 @@ function showCollectionSelect(catalog, collection) {
           </div>
           <div class="cc-skills">
             <div class="cc-sk">
-              <div class="cc-sk-head">
-                <span class="cc-sk-tag atk">ATK</span>
-                <span class="cc-sk-jp">${r.autoSkill?.name || ''}</span>
-                <span class="cc-sk-en">${r.autoSkill?.nameEn || ''}</span>
-              </div>
-              <div class="cc-sk-meta">${r.autoSkill?.power || 0} pwr · ${(r.autoSkill?.target || '').replace(/_/g, ' ')} · ${r.autoSkill?.type || ''}</div>
-            </div>
-            <div class="cc-sk">
-              <div class="cc-sk-head">
-                <span class="cc-sk-tag ult">ULT</span>
-                <span class="cc-sk-jp">${r.ultimate?.name || ''}</span>
-                <span class="cc-sk-en">${r.ultimate?.nameEn || ''}</span>
-              </div>
-              <div class="cc-sk-meta">${r.ultimate?.power || 0} pwr · ${(r.ultimate?.target || '').replace(/_/g, ' ')} · ${r.ultimate?.type || ''}${chargePips ? `<span class="cc-charges">${chargePips}</span>` : ''}</div>
+              <div class="cc-sk-head"><span class="cc-sk-tag atk">MOVES</span></div>
+              <div class="cc-sk-meta cc-moves-list">${movesHtml || 'None'}</div>
             </div>
           </div>
           <div class="cc-foot">

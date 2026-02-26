@@ -2807,9 +2807,9 @@ html, body {
 
 .robot-hp-bar {
   width: 64px;
-  height: 5px;
+  height: 8px;
   background: #333;
-  border-radius: 2px;
+  border-radius: 3px;
   overflow: hidden;
 }
 
@@ -4366,19 +4366,6 @@ html, body {
 .move-power { color: #ff9800; }
 .move-cost { color: #64b5f6; }
 
-.move-defend-btn {
-  display: block;
-  width: calc(100% - 16px);
-  margin: 4px 8px 8px;
-  padding: 10px;
-  background: rgba(100,100,100,0.4);
-  border: 1px solid #555;
-  border-radius: 8px;
-  color: #aaa;
-  font-size: 14px;
-  cursor: pointer;
-}
-
 .move-active-label {
   text-align: center;
   color: #64b5f6;
@@ -4465,8 +4452,9 @@ html, body {
 
 /* === MP Bar (robot-row) === */
 .robot-mp-bar {
-  height: 6px;
-  background: rgba(255,255,255,0.1);
+  width: 64px;
+  height: 8px;
+  background: #333;
   border-radius: 3px;
   overflow: hidden;
   position: relative;
@@ -4482,10 +4470,10 @@ html, body {
 
 .robot-mp-text {
   position: absolute;
-  top: -1px;
+  top: 0;
   right: 2px;
-  font-size: 7px;
-  color: rgba(255,255,255,0.6);
+  font-size: 8px;
+  color: rgba(255,255,255,0.8);
   line-height: 8px;
 }
 

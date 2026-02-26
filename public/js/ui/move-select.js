@@ -9,11 +9,9 @@ const ELEMENT_COLORS = {
 };
 
 let onMoveSelect = null;
-let onDefend = null;
 
-export function init({ onMoveSelectCb, onDefendCb }) {
+export function init({ onMoveSelectCb }) {
   onMoveSelect = onMoveSelectCb;
-  onDefend = onDefendCb;
 }
 
 export function showMoves(robot, robotIndex) {
@@ -47,16 +45,7 @@ export function showMoves(robot, robotIndex) {
     grid.appendChild(cell);
   }
 
-  // Defend button at bottom
-  const defendBtn = document.createElement('button');
-  defendBtn.className = 'move-defend-btn';
-  defendBtn.textContent = 'Defend';
-  defendBtn.addEventListener('click', () => {
-    if (onDefend) onDefend();
-  });
-
   container.appendChild(grid);
-  container.appendChild(defendBtn);
 }
 
 export function clear() {

@@ -317,8 +317,7 @@ export function init(callbacks) {
  */
 export function initMoveUI() {
   initMoveSelect({
-    onMoveSelectCb: handleMoveSelected,
-    onDefendCb: handleDefendSelected
+    onMoveSelectCb: handleMoveSelected
   });
   initTargetSelect({
     onTargetSelectCb: handleTargetSelected,
@@ -557,7 +556,7 @@ function updateRobotHpBars(robots, allyHpMap) {
       fill.style.width = `${hpPct}%`;
       fill.style.backgroundColor = getHpColor(hpPct);
     }
-    // Update KO state and charged glow
+    // Update KO state
     const icon = slot.querySelector('.robot-icon');
     if (icon) {
       if (currentHp <= 0) {
@@ -565,24 +564,12 @@ function updateRobotHpBars(robots, allyHpMap) {
       } else {
         icon.classList.remove('ko');
       }
-      const isCharged = robot.ultimate.charges >= robot.ultimate.chargesRequired;
-      if (isCharged) {
-        icon.classList.add('charged');
-      } else {
-        icon.classList.remove('charged');
-      }
     }
-    // Update charge bar segments
-    const chargeBar = slot.querySelector('.robot-charge-bar');
-    if (chargeBar) {
-      const segments = chargeBar.querySelectorAll('.charge-segment');
-      segments.forEach((seg, s) => {
-        if (s < robot.ultimate.charges) {
-          seg.classList.add('filled');
-        } else {
-          seg.classList.remove('filled');
-        }
-      });
+    // Update MP bar
+    const mpFill = slot.querySelector('.robot-mp-fill');
+    if (mpFill && robot.maxMp > 0) {
+      const mpPct = Math.max(0, Math.min(100, (robot.mp / robot.maxMp) * 100));
+      mpFill.style.width = `${mpPct}%`;
     }
   });
 }
@@ -1050,7 +1037,7 @@ function syncFinalState(result) {
   }
   updateGameState(updates);
 
-  // Keep robot-row popup data in sync with latest charges/HP
+  // Keep robot-row popup data in sync with latest MP/HP
   if (result.robotParty?.active && updateRobotRowData) {
     updateRobotRowData(result.robotParty.active);
   }
@@ -1313,28 +1300,14 @@ async function executeRobotPlayerAttack() {
           const robotSlotEl = findRobotSlotByAttackerId(atk.attackerId);
           const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies);
 
-          // Update charge bar for this attacker immediately after its attack
+          // Update MP bar for this attacker immediately after its attack
           const attackerSlotIdx = (result.robotParty?.active || []).findIndex(r => r && r.id === atk.attackerId);
           const attackerSlot = attackerSlotIdx >= 0 ? document.querySelectorAll('#chip-row .robot-slot')[attackerSlotIdx] : null;
-          if (attackerSlot && atk.attackerCharges != null) {
-            const chargeBar = attackerSlot.querySelector('.robot-charge-bar');
-            if (chargeBar) {
-              const segments = chargeBar.querySelectorAll('.charge-segment');
-              segments.forEach((seg, s) => {
-                if (s < atk.attackerCharges) {
-                  seg.classList.add('filled');
-                } else {
-                  seg.classList.remove('filled');
-                }
-              });
-            }
-            const icon = attackerSlot.querySelector('.robot-icon');
-            if (icon) {
-              if (atk.attackerCharges >= atk.attackerChargesRequired) {
-                icon.classList.add('charged');
-              } else {
-                icon.classList.remove('charged');
-              }
+          if (attackerSlot && atk.attackerMp != null) {
+            const mpFill = attackerSlot.querySelector('.robot-mp-fill');
+            if (mpFill && atk.attackerMaxMp > 0) {
+              const mpPct = Math.max(0, Math.min(100, (atk.attackerMp / atk.attackerMaxMp) * 100));
+              mpFill.style.width = `${mpPct}%`;
             }
           }
 
@@ -1423,7 +1396,7 @@ async function executeRobotPlayerAttack() {
 
 /**
  * Execute robot defend — calls /robot-combat-cycle with 'defend'
- * Defend: all robots gain +1 ultimate charge, enemies attack with 50% damage
+ * Defend: all robots regen MP, enemies attack with 50% damage
  */
 async function executeRobotDefendThenPause() {
   if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
