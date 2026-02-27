@@ -1,6 +1,6 @@
-# NEO TOKYO: System Liberation
+# Koto
 
-Japanese vocabulary learning RPG set in cyberpunk Tokyo. Fight SYSTEM-possessed citizens, build chip synergies, and learn Japanese through immersive gameplay.
+Japanese vocabulary learning RPG. Explore a vibrant fantasy world, befriend creatures, and learn Japanese through immersive gameplay. See [docs/WORLD.md](docs/WORLD.md) for the world bible.
 
 ## Quick Start
 
