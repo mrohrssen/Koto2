@@ -1,7 +1,24 @@
 // public/js/ui/target-select.js
 // Shows targetable enemies or allies after a move is selected
+// Design: Full info card with sprite panel + kanji element badge
 import { dom } from '../dom.js';
 import { ELEMENT_COLORS } from './robot-row.js';
+import { configureRobotImg } from './sprite-utils.js';
+
+const ELEMENT_KANJI = {
+  fire: '火', water: '水', wood: '木',
+  earth: '土', metal: '金', neutral: '—'
+};
+
+// Element tint as rgba for sprite panel backgrounds
+const ELEMENT_TINTS = {
+  fire: 'rgba(244,67,54,0.1)',
+  water: 'rgba(33,150,243,0.1)',
+  wood: 'rgba(76,175,80,0.1)',
+  earth: 'rgba(141,110,99,0.1)',
+  metal: 'rgba(158,158,158,0.1)',
+  neutral: 'rgba(136,136,136,0.1)'
+};
 
 let onTargetSelect = null;
 let onCancel = null;
@@ -25,7 +42,7 @@ function showTargets(targets, move, type) {
 
   const header = document.createElement('div');
   header.className = 'target-header';
-  header.innerHTML = `<span class="target-move-name">${move.nameEn}</span> → Select target`;
+  header.innerHTML = `<span class="target-move-name">${move.name}</span> ${move.nameEn} → Select target`;
   container.appendChild(header);
 
   const list = document.createElement('div');
@@ -34,22 +51,59 @@ function showTargets(targets, move, type) {
   targets.forEach((target, i) => {
     if (target.hp <= 0) return; // Skip KO'd targets
 
+    const elemColor = ELEMENT_COLORS[target.element] || '#888';
+    const elemKanji = ELEMENT_KANJI[target.element] || '—';
+    const elemTint = ELEMENT_TINTS[target.element] || ELEMENT_TINTS.neutral;
+    const hpPct = Math.max(0, Math.round((target.hp / target.maxHp) * 100));
+    const hpColor = hpPct > 60 ? 'var(--hp-green)' : hpPct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+    const hpPctColor = hpPct <= 30 ? 'var(--hp-red)' : '#666';
+
     const row = document.createElement('button');
     row.className = 'target-row';
+    row.style.borderColor = elemColor;
 
-    const hpPct = Math.max(0, (target.hp / target.maxHp) * 100);
-    const hpColor = hpPct > 60 ? 'var(--hp-green)' : hpPct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+    // Sprite panel
+    const spritePanel = document.createElement('div');
+    spritePanel.className = 'target-sprite-panel';
+    spritePanel.style.background = elemTint;
 
-    row.innerHTML = `
-      <div class="target-info">
-        <span class="target-element-dot" style="background:${ELEMENT_COLORS[target.element] || '#888'}"></span>
-        <span class="target-name">${target.nameEn}</span>
-        <span class="target-level">Lv${target.level}</span>
-      </div>
-      <div class="target-hp-bar">
-        <div class="target-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div>
+    const spriteImg = document.createElement('img');
+    spriteImg.className = 'target-sprite-img';
+    spriteImg.alt = target.nameEn || '';
+    configureRobotImg(spriteImg, target.id, (img) => {
+      img.style.display = 'none';
+      // Show element emoji as fallback
+      const fallback = document.createElement('span');
+      fallback.className = 'target-sprite-fallback';
+      fallback.textContent = elemKanji;
+      spritePanel.insertBefore(fallback, spritePanel.firstChild);
+    });
+    spritePanel.appendChild(spriteImg);
+
+    // Element kanji badge
+    const badge = document.createElement('span');
+    badge.className = 'target-elem-badge';
+    badge.style.background = elemColor;
+    badge.textContent = elemKanji;
+    spritePanel.appendChild(badge);
+
+    // Info panel
+    const infoPanel = document.createElement('div');
+    infoPanel.className = 'target-info-panel';
+    infoPanel.innerHTML = `
+      <div class="target-jp">${target.name}</div>
+      <div class="target-en">${target.nameEn}</div>
+      <div class="target-stats">
+        <span class="target-lv">Lv${target.level}</span>
+        <div class="target-hp-bar">
+          <div class="target-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div>
+        </div>
+        <span class="target-hp-pct" style="color:${hpPctColor}">${hpPct}%</span>
       </div>
     `;
+
+    row.appendChild(spritePanel);
+    row.appendChild(infoPanel);
 
     row.addEventListener('click', () => {
       if (onTargetSelect) onTargetSelect(i);
