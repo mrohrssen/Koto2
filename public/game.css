@@ -4305,17 +4305,19 @@ html, body {
 .move-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  padding: 10px;
+  grid-auto-rows: 1fr;
+  gap: 8px;
+  padding: 8px;
   flex: 1;
-  align-content: stretch;
+  width: 100%;
+  min-height: 0;
 }
 
 .move-cell {
   background: rgba(0,0,0,0.7);
   border: 2px solid #444;
   border-radius: 12px;
-  padding: 12px;
+  padding: 6px 8px;
   text-align: center;
   color: #fff;
   cursor: pointer;
@@ -4325,7 +4327,8 @@ html, body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 4px;
+  gap: 1px;
+  min-height: 0;
   transition: border-color 0.2s, opacity 0.2s, transform 0.1s;
 }
 
@@ -4338,60 +4341,61 @@ html, body {
 
 /* Icon */
 .move-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   background: rgba(255,255,255,0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-  margin-bottom: 4px;
+  font-size: 18px;
+  flex-shrink: 0;
 }
 
 .move-icon img {
-  width: 40px;
-  height: 40px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
   image-rendering: auto;
 }
 
 /* Furigana + Kanji */
 .move-furigana {
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(255,255,255,0.5);
   line-height: 1;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
 
 .move-name-jp {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: bold;
-  line-height: 1.15;
+  line-height: 1.1;
 }
 
 /* Stats row */
 .move-stats {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   width: 100%;
-  font-size: 13px;
+  font-size: 12px;
   margin-top: auto;
-  padding: 0 4px;
+  padding: 0 2px;
 }
 
 .move-power { color: #ff9800; font-weight: bold; }
 .move-cost { color: #64b5f6; font-weight: bold; }
 
-/* Status pill */
+/* Status pill — sits inside stats row */
 .move-status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   background: rgba(255,255,255,0.1);
-  border-radius: 10px;
-  padding: 2px 8px;
-  font-size: 11px;
+  border-radius: 8px;
+  padding: 1px 6px;
+  font-size: 10px;
   color: rgba(255,255,255,0.7);
 }
 

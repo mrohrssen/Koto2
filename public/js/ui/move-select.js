@@ -64,9 +64,9 @@ function buildMoveCell(move, canAfford) {
     <div class="move-name-jp">${move.name}</div>
     <div class="move-stats">
       <span class="move-power">${powerText}</span>
+      ${statusHtml}
       <span class="move-cost">${move.mpCost} MP</span>
     </div>
-    ${statusHtml}
     <div class="move-element-bar" style="background:${color}"></div>
   `;
 
