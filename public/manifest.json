@@ -1,10 +1,10 @@
 {
-  "name": "NEO TOKYO: System Liberation",
-  "short_name": "NEO TOKYO",
+  "name": "Koto",
+  "short_name": "Koto",
   "start_url": "/game.html",
   "display": "standalone",
-  "background_color": "#0a0a0f",
-  "theme_color": "#0a0a0f",
+  "background_color": "#f0f4ff",
+  "theme_color": "#4a90d9",
   "icons": [
     {
       "src": "/assets/icons/app-192.webp",
