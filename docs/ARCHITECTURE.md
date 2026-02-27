@@ -1,6 +1,6 @@
-# NEO TOKYO: System Liberation - Architecture
+# Koto - Architecture
 
-This document describes the technical architecture of the JRPG codebase. It covers the game flow, core systems, data structures, and how the frontend and backend communicate.
+This document describes the technical architecture of Koto. It covers the game flow, core systems, data structures, and how the frontend and backend communicate. For theme and lore, see [docs/WORLD.md](../WORLD.md).
 
 ## Table of Contents
 
@@ -9,7 +9,7 @@ This document describes the technical architecture of the JRPG codebase. It cove
 3. [Game Flow and Phases](#game-flow-and-phases)
 4. [Robot Combat (Core Mechanic)](#robot-combat-core-mechanic)
 5. [Combat System](#combat-system)
-5. [Ward System (Dungeons)](#ward-system-dungeons)
+5. [Area System (Exploration)](#area-system-exploration)
 6. [Vocabulary Integration (JPDB)](#vocabulary-integration-jpdb)
 7. [AI Narration and TTS](#ai-narration-and-tts)
 8. [Meta-Progression](#meta-progression)
@@ -23,7 +23,7 @@ This document describes the technical architecture of the JRPG codebase. It cove
 
 ## Overview
 
-NEO TOKYO: System Liberation is a Japanese vocabulary learning RPG set in cyberpunk Tokyo. Citizens are possessed by the SYSTEM AI and need liberation through turn-based dungeon combat.
+Koto is a Japanese vocabulary learning RPG set in a vibrant fantasy world inspired by Earth. The player explores areas, befriends creatures disrupted by a mysterious force, and learns Japanese through immersive gameplay.
 
 **Tech Stack:**
 - Backend: Express.js (Node.js ES modules)
