@@ -1,10 +1,10 @@
-# NEO TOKYO: System Liberation — Art Style Guide
+# Koto — Art Style Guide
 
 ## Game Identity
 
-Near-future Tokyo. Citizens possessed by SYSTEM AI need liberation. Turn-based dungeon crawling across 7 Tokyo wards converging on the Imperial Palace.
+Vibrant fantasy world inspired by Earth. Creatures and humans coexist — a mysterious disruption is making creatures aggressive. Turn-based exploration across themed areas.
 
-**Tone**: Bright, optimistic, energetic. The world is threatened but feels alive and vibrant — not dystopian or grimdark. Think Saturday morning anime, not Blade Runner.
+**Tone**: Bright, optimistic, energetic. A beautiful world worth protecting — not dystopian or grimdark. Think Saturday morning anime meets Genshin Impact.
 
 **Visual references**:
 - Pokemon Z-A — futuristic urban setting, clean colorful design
