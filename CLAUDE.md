@@ -1,4 +1,4 @@
-# NEO TOKYO: System Liberation
+# Koto
 
 > **BEFORE WRITING ANY CODE** - Multiple Claude sessions share this repo. Use git worktrees to isolate your work:
 > ```bash
@@ -12,7 +12,7 @@
 > # Now work here - this directory is isolated from other sessions
 > ```
 
-Japanese vocabulary learning RPG. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the game works.
+Japanese vocabulary learning RPG — bright sci-fi fantasy where creatures and humans coexist. See [docs/WORLD.md](docs/WORLD.md) for theme/lore and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for technical architecture.
 
 ## Core Design Principle: Comprehensible Input (i+1)
 
