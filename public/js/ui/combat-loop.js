@@ -320,6 +320,9 @@ export function initMoveUI() {
     onMoveSelectCb: handleMoveSelected,
     onItemsOpenCb: () => {
       console.log('[combat] Items button pressed — not yet implemented');
+    },
+    onMoveHelpCb: (move) => {
+      console.log('[combat] Move help:', move.nameEn, '—', move.meaning || move.description);
     }
   });
   initTargetSelect({

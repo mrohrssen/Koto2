@@ -1,11 +1,6 @@
 // public/js/ui/move-select.js
-// Renders a 2x2 grid of the active creature's moves (vertical icon-top cards)
+// Renders a 2x2 grid of the active creature's moves
 import { dom } from '../dom.js';
-
-const ELEMENT_COLORS = {
-  wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63',
-  metal: '#9E9E9E', water: '#2196F3', neutral: '#888'
-};
 
 const STATUS_ICONS = {
   poison: '☠', stun: '⚡', confuse: '😵',
@@ -20,10 +15,12 @@ const CATEGORY_ICONS = {
 
 let onMoveSelect = null;
 let onItemsOpen = null;
+let onMoveHelp = null;
 
-export function init({ onMoveSelectCb, onItemsOpenCb }) {
+export function init({ onMoveSelectCb, onItemsOpenCb, onMoveHelpCb }) {
   onMoveSelect = onMoveSelectCb;
   if (onItemsOpenCb) onItemsOpen = onItemsOpenCb;
+  if (onMoveHelpCb) onMoveHelp = onMoveHelpCb;
 }
 
 function iconSlug(nameEn) {
@@ -34,17 +31,8 @@ function buildMoveCell(move, canAfford) {
   const cell = document.createElement('button');
   cell.className = 'move-cell' + (canAfford ? '' : ' disabled');
 
-  const color = ELEMENT_COLORS[move.element] || ELEMENT_COLORS.neutral;
-  cell.style.borderColor = color;
-
-  // Icon — try sprite, fall back to category emoji
   const slug = iconSlug(move.nameEn);
   const iconFallback = CATEGORY_ICONS[move.category] || '★';
-  const iconHtml = `<div class="move-icon">
-    <img src="/assets/sprites/actions/${slug}.webp"
-         onerror="this.parentElement.textContent='${iconFallback}'; this.remove();"
-         alt="">
-  </div>`;
 
   // Power display
   const powerIcon = CATEGORY_ICONS[move.category] || '★';
@@ -59,16 +47,30 @@ function buildMoveCell(move, canAfford) {
   }
 
   cell.innerHTML = `
-    ${iconHtml}
-    <div class="move-furigana">${move.reading || ''}</div>
-    <div class="move-name-jp">${move.name}</div>
+    <div class="move-hero">
+      <div class="move-icon">
+        <img src="/assets/sprites/actions/${slug}.webp"
+             onerror="this.parentElement.textContent='${iconFallback}'; this.remove();"
+             alt="">
+      </div>
+      <div class="move-name-block">
+        <div class="move-furigana">${move.reading || ''}</div>
+        <div class="move-name-jp">${move.name}</div>
+      </div>
+    </div>
     <div class="move-stats">
       <span class="move-power">${powerText}</span>
       ${statusHtml}
       <span class="move-cost">${move.mpCost} MP</span>
     </div>
-    <div class="move-element-bar" style="background:${color}"></div>
+    <div class="move-help-btn" data-move-id="${move.id}">?</div>
   `;
+
+  const helpBtn = cell.querySelector('.move-help-btn');
+  helpBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (onMoveHelp) onMoveHelp(move);
+  });
 
   return cell;
 }
@@ -76,10 +78,7 @@ function buildMoveCell(move, canAfford) {
 function buildItemsCell() {
   const cell = document.createElement('div');
   cell.className = 'move-items-cell';
-  cell.innerHTML = `
-    <div class="move-items-icon">🎒</div>
-    <div class="move-items-label">Items</div>
-  `;
+  cell.innerHTML = `<span class="move-items-emoji">🎒</span><span class="move-items-label">アイテム</span>`;
   cell.addEventListener('click', () => {
     if (onItemsOpen) onItemsOpen();
   });
@@ -105,7 +104,7 @@ export function showMoves(robot, robotIndex) {
     grid.appendChild(cell);
   }
 
-  // Items button fills the last cell
+  // Items button fills the last cell in the grid
   grid.appendChild(buildItemsCell());
 
   container.appendChild(grid);
