@@ -317,7 +317,10 @@ export function init(callbacks) {
  */
 export function initMoveUI() {
   initMoveSelect({
-    onMoveSelectCb: handleMoveSelected
+    onMoveSelectCb: handleMoveSelected,
+    onItemsOpenCb: () => {
+      console.log('[combat] Items button pressed — not yet implemented');
+    }
   });
   initTargetSelect({
     onTargetSelectCb: handleTargetSelected,
