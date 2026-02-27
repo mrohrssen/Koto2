@@ -17,7 +17,7 @@ export function assemblePrompt({
   const state = npcState || 'possessed';
 
   // Layer 1: System instructions
-  const systemInstructions = `You write dialogue for NPCs in a cyberpunk Japanese-learning RPG.
+  const systemInstructions = `You write dialogue for NPCs in Koto, a bright sci-fi fantasy Japanese-learning RPG where creatures and humans coexist.
 Each NPC has a distinct personality and remembers past encounters.
 Output valid JSON matching the schema below.
 The player is learning Japanese. Use ONLY words from their known vocabulary list, plus at most 1 unknown word per sentence.`;
@@ -88,7 +88,7 @@ Output JSON:
 {
   "greeting": "one line, NPC greets the player before interaction",
   "defeatLine": "one line if the player loses to this NPC",
-  "freedLine": "one line when the NPC is liberated from corruption",
+  "freedLine": "one line when the NPC is calmed and befriended",
   "rounds": [
     {
       "npcLine": "NPC speaks to the player",
