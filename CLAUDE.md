@@ -93,7 +93,7 @@ server.js              # Main Express server (50+ API endpoints)
 public/
   js/game.js           # Frontend coordinator
   js/ui/               # UI modules (combat-loop, robot-row, lookup, etc.)
-  game.css             # Cyberpunk UI styling
+  game.css             # Game UI styling
   game.html            # Main game template
   assets/              # Sprites, backgrounds
 src/
