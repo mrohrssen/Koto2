@@ -139,6 +139,7 @@ import {
 } from './src/narration-engine/index.js';
 import createRoutes from './src/routes/index.js';
 import createAuthRoutes from './src/auth/routes.js';
+import { createDevRouter } from './src/routes/dev.js';
 import { dataPath } from './src/data-dir.js';
 import { logger } from './src/logger.js';
 
@@ -396,6 +397,14 @@ app.use('/api', createRoutes({
   updateNpcMemoryBondFn: updateNpcMemoryBond,
   checkSentenceViolations
 }));
+
+// Dev tools (sprite review dashboard)
+const devPassword = process.env.DEV_DASHBOARD_PASSWORD || '';
+if (devPassword) {
+  app.use('/dev', createDevRouter({ password: devPassword }));
+} else if (process.env.NODE_ENV !== 'production') {
+  app.use('/dev', createDevRouter({ password: '' }));
+}
 
 // Narration helpers
 function trackNarrationStats(narration, jpdbApiKey = null, userId = null) {
