@@ -189,7 +189,7 @@ export default function createMiscRoutes({
     }
     const gameManager = req.gameManager;
     const { hp } = req.body;
-    // Handle both old combat (combat.enemy) and robot combat (combat.enemies[])
+    // Handle both old combat (combat.enemy) and creature combat (combat.enemies[])
     if (!gameManager.combat) {
       return res.status(400).json({ error: 'No active combat' });
     }

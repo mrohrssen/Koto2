@@ -542,12 +542,12 @@ export class GameManager {
   /**
    * Use a shrine to level up a creature
    */
-  useShrine(robotId) {
-    return this.explorationService.useShrine(robotId);
+  useShrine(creatureId) {
+    return this.explorationService.useShrine(creatureId);
   }
 
-  useQuizReward(rewardType, robotId) {
-    return this.explorationService.useQuizReward(rewardType, robotId);
+  useQuizReward(rewardType, creatureId) {
+    return this.explorationService.useQuizReward(rewardType, creatureId);
   }
 
   /**
@@ -566,12 +566,12 @@ export class GameManager {
     return this.explorationService.getDealerState();
   }
 
-  dealerSell(robotId) {
-    return this.explorationService.dealerSell(robotId);
+  dealerSell(creatureId) {
+    return this.explorationService.dealerSell(creatureId);
   }
 
-  dealerBuy(robotId) {
-    return this.explorationService.dealerBuy(robotId);
+  dealerBuy(creatureId) {
+    return this.explorationService.dealerBuy(creatureId);
   }
 
   leaveDealer() {

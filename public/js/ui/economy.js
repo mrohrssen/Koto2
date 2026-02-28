@@ -63,7 +63,7 @@ export async function renderDealerRoom(actionsModule) {
               <div class="dealer-offer-desc">HP: ${robot.maxHp} \u00B7 ATK: ${robot.attack}</div>
             </div>
           </div>
-          <button class="dealer-buy-btn action-btn action-btn-primary" data-robot-id="${robot.id}" ${btnDisabled}>${robot.buyPrice}cr で仲間に</button>
+          <button class="dealer-buy-btn action-btn action-btn-primary" data-creature-id="${robot.id}" ${btnDisabled}>${robot.buyPrice}cr で仲間に</button>
         </div>
       `;
     }).join('');
@@ -82,7 +82,7 @@ export async function renderDealerRoom(actionsModule) {
     const hpPercent = Math.floor((robot.hp / robot.maxHp) * 100);
     const slotBadge = robot.slot === 'active' ? '\u30A2\u30AF\u30C6\u30A3\u30D6' : '\u30EA\u30B6\u30FC\u30D6';
     return `
-      <div class="dealer-inventory-item" data-robot-id="${robot.id}">
+      <div class="dealer-inventory-item" data-creature-id="${robot.id}">
         <div class="shrine-chip-icon" style="border-color: var(--rarity-${robot.rarity || 'common'})"><img src="${robotSpritePath(robot.id)}" alt="${robot.nameEn}" style="width:100%;height:100%;object-fit:contain" /></div>
         <div class="dealer-item-info">
           <div class="dealer-item-name">${robot.nameEn} Lv.${robot.level}</div>
@@ -91,7 +91,7 @@ export async function renderDealerRoom(actionsModule) {
             <span style="font-size:0.75rem;opacity:0.7">${slotBadge}</span>
           </div>
         </div>
-        <button class="dealer-sell-btn" data-robot-id="${robot.id}" data-sell-price="${robot.sellPrice}" ${!canSellMore ? 'disabled' : ''}>
+        <button class="dealer-sell-btn" data-creature-id="${robot.id}" data-sell-price="${robot.sellPrice}" ${!canSellMore ? 'disabled' : ''}>
           \u58F2 ${robot.sellPrice}cr
         </button>
       </div>
@@ -120,8 +120,8 @@ export async function renderDealerRoom(actionsModule) {
     btn.addEventListener('click', async (e) => {
       e.target.disabled = true;
       try {
-        const robotId = e.target.dataset.robotId;
-        const result = await apiDealerBuy(robotId);
+        const creatureId = e.target.dataset.creatureId;
+        const result = await apiDealerBuy(creatureId);
         if (result?.state) { updateGameState(result.state); }
         updateUI();
         renderDealerRoom(actionsModule);
@@ -137,10 +137,10 @@ export async function renderDealerRoom(actionsModule) {
     const sellBtn = e.target.closest('.dealer-sell-btn');
     if (!sellBtn || sellBtn.disabled) return;
 
-    const robotId = sellBtn.dataset.robotId;
+    const creatureId = sellBtn.dataset.creatureId;
     sellBtn.disabled = true;
     try {
-      const result = await apiDealerSell(robotId);
+      const result = await apiDealerSell(creatureId);
       if (result?.state) { updateGameState(result.state); }
       updateUI();
       renderDealerRoom(actionsModule);

@@ -85,20 +85,20 @@ function buildItemsCell() {
   return cell;
 }
 
-export function showMoves(robot, robotIndex) {
+export function showMoves(creature, creatureIndex) {
   const container = dom.actionArea;
   container.innerHTML = '';
 
   const grid = document.createElement('div');
   grid.className = 'move-grid';
 
-  for (const move of robot.moves) {
-    const canAfford = robot.mp >= move.mpCost;
+  for (const move of creature.moves) {
+    const canAfford = creature.mp >= move.mpCost;
     const cell = buildMoveCell(move, canAfford);
 
     if (canAfford) {
       cell.addEventListener('click', () => {
-        if (onMoveSelect) onMoveSelect(move, robotIndex);
+        if (onMoveSelect) onMoveSelect(move, creatureIndex);
       });
     }
     grid.appendChild(cell);

@@ -273,14 +273,14 @@ async function doorHints() {
   return apiCall('/door-hints', 'POST');
 }
 
-/** Upgrade robot at shrine */
-async function shrineUpgrade(robotId) {
-  return apiCall('/shrine-upgrade', 'POST', { robotId });
+/** Upgrade creature at shrine */
+async function shrineUpgrade(creatureId) {
+  return apiCall('/shrine-upgrade', 'POST', { creatureId });
 }
 
 /** Claim quiz reward */
-async function quizReward(rewardType, robotId = null) {
-  return apiCall('/quiz-reward', 'POST', { rewardType, robotId });
+async function quizReward(rewardType, creatureId = null) {
+  return apiCall('/quiz-reward', 'POST', { rewardType, creatureId });
 }
 
 /** Get a quiz question (may be from Bunpro or static) */
@@ -346,14 +346,14 @@ async function getDealerState() {
   return apiCall('/dealer-state', 'GET');
 }
 
-/** Sell a robot to the dealer */
-async function dealerSell(robotId) {
-  return apiCall('/dealer-sell', 'POST', { robotId });
+/** Sell a creature to the dealer */
+async function dealerSell(creatureId) {
+  return apiCall('/dealer-sell', 'POST', { creatureId });
 }
 
-/** Buy a robot from the dealer */
-async function dealerBuy(robotId) {
-  return apiCall('/dealer-buy', 'POST', { robotId });
+/** Buy a creature from the dealer */
+async function dealerBuy(creatureId) {
+  return apiCall('/dealer-buy', 'POST', { creatureId });
 }
 
 /** Leave the dealer room */
@@ -509,46 +509,46 @@ async function completeDiscovery() {
   return apiCall('/complete-discovery', 'POST');
 }
 
-// ============ ROBOT COMBAT ============
+// ============ CREATURE COMBAT ============
 
-async function startRobotEncounter() {
-  return apiCall('/start-robot-encounter', 'POST');
+async function startCreatureEncounter() {
+  return apiCall('/start-creature-encounter', 'POST');
 }
 
-async function robotCombatCycle(actionType, moveChoices = []) {
-  return apiCall('/robot-combat-cycle', 'POST', { actionType, moveChoices });
+async function creatureCombatCycle(actionType, moveChoices = []) {
+  return apiCall('/creature-combat-cycle', 'POST', { actionType, moveChoices });
 }
 
-async function getRobotCollection() {
-  return apiCall('/robot-collection', 'GET');
+async function getCreatureCollection() {
+  return apiCall('/creature-collection', 'GET');
 }
 
 async function rollPostCombatShop() {
-  return apiCall('/robot-shop-roll', 'POST');
+  return apiCall('/creature-shop-roll', 'POST');
 }
 
 async function selectShopItem(itemIndex) {
-  return apiCall('/robot-shop-select', 'POST', { itemIndex });
+  return apiCall('/creature-shop-select', 'POST', { itemIndex });
 }
 
-async function swapRobot(activeIndex, reserveIndex) {
-  return apiCall('/swap-robot', 'POST', { activeIndex, reserveIndex });
+async function swapCreature(activeIndex, reserveIndex) {
+  return apiCall('/swap-creature', 'POST', { activeIndex, reserveIndex });
 }
 
-async function rearrangeRobots(indexA, indexB) {
-  return apiCall('/rearrange-robots', 'POST', { indexA, indexB });
+async function rearrangeCreatures(indexA, indexB) {
+  return apiCall('/rearrange-creatures', 'POST', { indexA, indexB });
 }
 
-async function learnMove(robotIndex, newMoveId, replaceIndex) {
-  return apiCall('/learn-move', 'POST', { robotIndex, newMoveId, replaceIndex });
+async function learnMove(creatureIndex, newMoveId, replaceIndex) {
+  return apiCall('/learn-move', 'POST', { creatureIndex, newMoveId, replaceIndex });
 }
 
-async function swapRobotEquip(activeIndex, reserveIndex) {
-  return apiCall('/swap-robot-equip', 'POST', { activeIndex, reserveIndex });
+async function swapCreatureEquip(activeIndex, reserveIndex) {
+  return apiCall('/swap-creature-equip', 'POST', { activeIndex, reserveIndex });
 }
 
-async function befriendReplace(releaseRobotId) {
-  return apiCall('/befriend-replace', 'POST', { releaseRobotId });
+async function befriendReplace(releaseCreatureId) {
+  return apiCall('/befriend-replace', 'POST', { releaseCreatureId });
 }
 
 async function getBefriendConversation(enemyIndex) {
@@ -598,15 +598,15 @@ export {
   submitQuizAnswer,
   // Combat endpoints
   startEncounter,
-  startRobotEncounter,
-  robotCombatCycle,
-  getRobotCollection,
+  startCreatureEncounter,
+  creatureCombatCycle,
+  getCreatureCollection,
   rollPostCombatShop,
   selectShopItem,
-  swapRobot,
-  rearrangeRobots,
+  swapCreature,
+  rearrangeCreatures,
   learnMove,
-  swapRobotEquip,
+  swapCreatureEquip,
   befriendReplace,
   getBefriendConversation,
   submitBefriendAnswer,

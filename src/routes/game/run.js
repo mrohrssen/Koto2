@@ -479,7 +479,7 @@ export default function createRunRoutes({
         word: c.baseWord,
         reading: c.baseReading,
         meaning: c.baseMeaning,
-        sprite: `/assets/sprites/robots/${c.id}.webp`
+        sprite: `/assets/sprites/creatures/${c.id}.webp`
       }));
 
       const itemPool = allItems.map(i => ({

@@ -52,12 +52,12 @@ export default function createEconomyRoutes() {
     }
   });
 
-  // Dealer room: sell a robot
+  // Dealer room: sell a creature
   router.post('/dealer-sell', async (req, res) => {
     const gameManager = req.gameManager;
-    const { robotId } = req.body;
+    const { creatureId } = req.body;
     try {
-      const result = gameManager.dealerSell(robotId);
+      const result = gameManager.dealerSell(creatureId);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -65,12 +65,12 @@ export default function createEconomyRoutes() {
     }
   });
 
-  // Dealer room: buy offered robot
+  // Dealer room: buy offered creature
   router.post('/dealer-buy', async (req, res) => {
     const gameManager = req.gameManager;
-    const { robotId } = req.body;
+    const { creatureId } = req.body;
     try {
-      const result = gameManager.dealerBuy(robotId);
+      const result = gameManager.dealerBuy(creatureId);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {

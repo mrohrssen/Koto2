@@ -87,7 +87,7 @@ export default function createCombatRoutes({
   // ============ CREATURE COMBAT ============
 
   // Start creature encounter
-  router.post('/start-robot-encounter', async (req, res) => {
+  router.post('/start-creature-encounter', async (req, res) => {
     const gameManager = req.gameManager;
     try {
       const encounter = gameManager.startCreatureEncounter();
@@ -99,10 +99,10 @@ export default function createCombatRoutes({
   });
 
   // Creature combat cycle
-  // Attack: { actionType: 'attack', moveChoices: [{ robotIndex, moveId, targetIndex }] }
+  // Attack: { actionType: 'attack', moveChoices: [{ creatureIndex, moveId, targetIndex }] }
   // Defend: { actionType: 'defend' }
   // Befriend: { actionType: 'befriend', targetEnemyIndex }
-  router.post('/robot-combat-cycle', (req, res) => {
+  router.post('/creature-combat-cycle', (req, res) => {
     const gameManager = req.gameManager;
     const { actionType, moveChoices } = req.body;
     try {
@@ -117,10 +117,10 @@ export default function createCombatRoutes({
   // Learn a new move on level-up (add or replace)
   router.post('/learn-move', (req, res) => {
     const gameManager = req.gameManager;
-    const { robotIndex, newMoveId, replaceIndex } = req.body;
+    const { creatureIndex, newMoveId, replaceIndex } = req.body;
     try {
       if (!gameManager.run?.creatureParty) throw new Error('No active run');
-      const creature = gameManager.run.creatureParty.active[robotIndex];
+      const creature = gameManager.run.creatureParty.active[creatureIndex];
       if (!creature) throw new Error('Invalid creature index');
 
       const moveData = MOVES_BY_ID[newMoveId];
@@ -142,7 +142,7 @@ export default function createCombatRoutes({
   });
 
   // Get creature collection + catalog for team select
-  router.get('/robot-collection', (req, res) => {
+  router.get('/creature-collection', (req, res) => {
     const gameManager = req.gameManager;
     try {
       const meta = gameManager.getMeta();
@@ -155,7 +155,7 @@ export default function createCombatRoutes({
   });
 
   // Post-combat item shop
-  router.post('/robot-shop-roll', (req, res) => {
+  router.post('/creature-shop-roll', (req, res) => {
     const gameManager = req.gameManager;
     try {
       const result = gameManager.rollPostCombatShop();
@@ -166,7 +166,7 @@ export default function createCombatRoutes({
     }
   });
 
-  router.post('/robot-shop-select', (req, res) => {
+  router.post('/creature-shop-select', (req, res) => {
     const gameManager = req.gameManager;
     const { itemIndex } = req.body;
     try {
@@ -179,7 +179,7 @@ export default function createCombatRoutes({
   });
 
   // Creature swap (in combat)
-  router.post('/swap-robot', (req, res) => {
+  router.post('/swap-creature', (req, res) => {
     const gameManager = req.gameManager;
     const { activeIndex, reserveIndex } = req.body;
     try {
@@ -192,7 +192,7 @@ export default function createCombatRoutes({
   });
 
   // Rearrange active creatures (swap positions, works in and out of combat)
-  router.post('/rearrange-robots', (req, res) => {
+  router.post('/rearrange-creatures', (req, res) => {
     const gameManager = req.gameManager;
     const { indexA, indexB } = req.body;
     try {
@@ -205,7 +205,7 @@ export default function createCombatRoutes({
   });
 
   // Creature swap (out of combat, equip screen)
-  router.post('/swap-robot-equip', (req, res) => {
+  router.post('/swap-creature-equip', (req, res) => {
     const gameManager = req.gameManager;
     const { activeIndex, reserveIndex } = req.body;
     try {

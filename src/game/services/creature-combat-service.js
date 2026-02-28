@@ -347,7 +347,7 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
 
   // Process each move choice
   for (const choice of moveChoices) {
-    const creature = allies[choice.robotIndex];
+    const creature = allies[choice.creatureIndex];
     if (!creature || creature.hp <= 0) continue;
     if (isIncapacitated(creature)) continue;
 
@@ -365,14 +365,14 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
     creature.mp = (creature.mp || 0) - move.mpCost;
 
     // Execute the move
-    const result = executeMove(creature, choice.robotIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds);
+    const result = executeMove(creature, choice.creatureIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds);
     attacks.push(...result.attacks);
     xpEvents.push(...result.xpEvents);
 
     // If this creature had haste, execute the same move a second time
-    if (hastedCreatureIndices.has(choice.robotIndex)) {
+    if (hastedCreatureIndices.has(choice.creatureIndex)) {
       // Don't charge MP again for haste extra action
-      const result2 = executeMove(creature, choice.robotIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds);
+      const result2 = executeMove(creature, choice.creatureIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds);
       attacks.push(...result2.attacks);
       xpEvents.push(...result2.xpEvents);
     }

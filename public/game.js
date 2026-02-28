@@ -135,14 +135,14 @@ import {
   dealerSell as apiDealerSell,
   dealerBuy as apiDealerBuy,
   dealerLeave as apiDealerLeave,
-  startRobotEncounter as apiStartRobotEncounter,
-  robotCombatCycle as apiRobotCombatCycle,
-  getRobotCollection as apiGetRobotCollection,
+  startCreatureEncounter as apiStartCreatureEncounter,
+  creatureCombatCycle as apiCreatureCombatCycle,
+  getCreatureCollection as apiGetCreatureCollection,
   rollPostCombatShop as apiRollPostCombatShop,
   selectShopItem as apiSelectShopItem,
-  swapRobot as apiSwapRobot,
-  rearrangeRobots as apiRearrangeRobots,
-  swapRobotEquip as apiSwapRobotEquip,
+  swapCreature as apiSwapCreature,
+  rearrangeCreatures as apiRearrangeCreatures,
+  swapCreatureEquip as apiSwapCreatureEquip,
   befriendReplace as apiBefriendReplace,
   getBefriendConversation as apiGetBefriendConversation,
   submitBefriendAnswer as apiSubmitBefriendAnswer,
@@ -438,7 +438,7 @@ async function startNewRun() {
   // Note: clearWordCache() moved to returnToHub() for earlier prefetching
 
   // Fetch robot collection for team select
-  const collectionResult = await apiGetRobotCollection();
+  const collectionResult = await apiGetCreatureCollection();
   const catalog = collectionResult?.catalog;
   const collection = collectionResult?.collection;
 
@@ -498,7 +498,7 @@ function showCollectionSelect(catalog, collection) {
       return `
         <div class="creature-card" data-element="${r.element}">
           <div class="cc-hero">
-            <div class="cc-sprite"><img data-robot-id="${r.id}" alt="${r.nameEn}" /></div>
+            <div class="cc-sprite"><img data-creature-id="${r.id}" alt="${r.nameEn}" /></div>
             <div class="cc-meta">
               <div class="cc-name">${fullName(r)}</div>
               <div class="cc-sub">${el} ${r.element.charAt(0).toUpperCase() + r.element.slice(1)} · ${r.archetype || ''}</div>
@@ -563,7 +563,7 @@ function showCollectionSelect(catalog, collection) {
 
         return `
           <div class="${classes}" data-id="${r.id}" data-rarity="${r.rarity}" data-element="${r.element}">
-            <img data-robot-id="${r.id}" alt="${r.nameEn}" />
+            <img data-creature-id="${r.id}" alt="${r.nameEn}" />
             ${owned ? `<span class="point-badge">${r.pointCost}</span>` : ''}
             <span class="robot-name">${owned ? r.nameEn : '???'}</span>
           </div>
@@ -605,8 +605,8 @@ function showCollectionSelect(catalog, collection) {
       `;
 
       // Configure animated idle sprites with static fallback
-      overlay.querySelectorAll('img[data-robot-id]').forEach(img => {
-        configureRobotImg(img, img.dataset.robotId, el => { el.style.display = 'none'; });
+      overlay.querySelectorAll('img[data-creature-id]').forEach(img => {
+        configureRobotImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
       });
 
       // Set background
@@ -674,7 +674,7 @@ async function startEncounter() {
 
   let result;
   if (hasRobots) {
-    result = await apiStartRobotEncounter();
+    result = await apiStartCreatureEncounter();
   } else if (gameState.phase === 'room_encounter') {
     result = await apiRoomEncounter();
   } else {
@@ -823,9 +823,9 @@ async function openRobotEquipView() {
       if (!robot) return `<div class="robot-equip-slot empty" data-type="active" data-index="${i}"><span style="opacity:0.4">${t('emptySlot')}</span></div>`;
       const hpPct = Math.max(0, (robot.hp / robot.maxHp) * 100);
       return `
-        <div class="robot-equip-slot" data-type="active" data-index="${i}" data-robot-id="${robot.id}"
+        <div class="robot-equip-slot" data-type="active" data-index="${i}" data-creature-id="${robot.id}"
              style="border-left: 3px solid ${ELEMENT_COLORS[robot.element] || '#666'}">
-          <img class="robot-equip-sprite" data-robot-id="${robot.id}" alt="">
+          <img class="robot-equip-sprite" data-creature-id="${robot.id}" alt="">
           <div class="robot-equip-info">
             <div class="robot-equip-name">${ELEMENT_ICONS[robot.element] || ''} ${robot.nameEn} ${rarityStars(robot.rarity)} <span style="opacity:0.6">Lv${robot.level}</span></div>
             <div class="robot-equip-stats">HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}</div>
@@ -841,9 +841,9 @@ async function openRobotEquipView() {
       if (!robot) return '';
       const hpPct = Math.max(0, (robot.hp / robot.maxHp) * 100);
       return `
-        <div class="robot-equip-slot" data-type="reserve" data-index="${i}" data-robot-id="${robot.id}"
+        <div class="robot-equip-slot" data-type="reserve" data-index="${i}" data-creature-id="${robot.id}"
              style="border-left: 3px solid ${ELEMENT_COLORS[robot.element] || '#666'}">
-          <img class="robot-equip-sprite" data-robot-id="${robot.id}" alt="">
+          <img class="robot-equip-sprite" data-creature-id="${robot.id}" alt="">
           <div class="robot-equip-info">
             <div class="robot-equip-name">${ELEMENT_ICONS[robot.element] || ''} ${robot.nameEn} ${rarityStars(robot.rarity)} <span style="opacity:0.6">Lv${robot.level}</span></div>
             <div class="robot-equip-stats">HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}</div>
@@ -864,8 +864,8 @@ async function openRobotEquipView() {
     `;
 
     // Configure animated idle sprites with static fallback
-    content.querySelectorAll('.robot-equip-sprite[data-robot-id]').forEach(img => {
-      configureRobotImg(img, img.dataset.robotId, el => { el.style.display = 'none'; });
+    content.querySelectorAll('.robot-equip-sprite[data-creature-id]').forEach(img => {
+      configureRobotImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
     });
 
     // Selection logic: tap active then reserve to swap
@@ -881,7 +881,7 @@ async function openRobotEquipView() {
 
         if (selectedReserve !== null) {
           // Both selected: perform swap
-          const result = await apiSwapRobotEquip(selectedActive, selectedReserve);
+          const result = await apiSwapCreatureEquip(selectedActive, selectedReserve);
           if (result?.creatureParty) {
             // Update party data in gameState immediately (BUG C fix)
             party.active = result.creatureParty.active;
@@ -904,7 +904,7 @@ async function openRobotEquipView() {
 
         if (selectedActive !== null) {
           // Both selected: perform swap
-          const result = await apiSwapRobotEquip(selectedActive, selectedReserve);
+          const result = await apiSwapCreatureEquip(selectedActive, selectedReserve);
           if (result?.creatureParty) {
             // Update party data in gameState immediately (BUG C fix)
             party.active = result.creatureParty.active;
@@ -1070,7 +1070,7 @@ async function initGame() {
 
   robotRow.init({
     swapRobotCallback: async (activeIndex, reserveIndex) => {
-      const result = await apiSwapRobot(activeIndex, reserveIndex);
+      const result = await apiSwapCreature(activeIndex, reserveIndex);
       if (result.error) {
         console.error('Swap failed:', result.error);
         return;
@@ -1097,7 +1097,7 @@ async function initGame() {
       updateUI();
     },
     rearrangeRobotCallback: async (indexA, indexB) => {
-      const result = await apiRearrangeRobots(indexA, indexB);
+      const result = await apiRearrangeCreatures(indexA, indexB);
       if (result?.error) {
         console.error('Rearrange failed:', result.error);
         return;
@@ -1161,7 +1161,7 @@ async function initGame() {
     apiGetDueWords,
     apiGetLevels,
     apiSelectLevel,
-    apiGetRobotCollection,
+    apiGetCreatureCollection,
     showCollectionSelect,
     apiGetWhackAMolePool,
     apiCompleteWhackAMole,
@@ -1228,7 +1228,7 @@ async function initGame() {
       actions.showFlashCards(words, options);
     },
     setCombatAnimationActive: (active) => { combatAnimationActive = active; },
-    apiRobotCombatCycle,
+    apiCreatureCombatCycle,
     showPostCombatShop: showPostCombatShopFlow,
     apiBefriendReplace: (releaseRobotId) => apiBefriendReplace(releaseRobotId),
     apiGetBefriendConversation,

@@ -669,9 +669,9 @@ export function renderShrine() {
   const robotCards = allRobots.map(robot => {
     const hpPercent = Math.floor((robot.hp / robot.maxHp) * 100);
     return `
-      <div class="shrine-chip-option" data-robot-id="${robot.id}">
+      <div class="shrine-chip-option" data-creature-id="${robot.id}">
         <div class="shrine-chip-icon" style="border-color: var(--rarity-${robot.rarity || 'common'})">
-          <img class="shrine-chip-img" data-robot-id="${robot.id}" alt="">
+          <img class="shrine-chip-img" data-creature-id="${robot.id}" alt="">
         </div>
         <div class="shrine-chip-info">
           <div class="shrine-chip-name">${robot.nameEn} Lv.${robot.level} <span class="shrine-chip-upgrade">\u2192 Lv.${robot.level + 1}</span></div>
@@ -689,7 +689,7 @@ export function renderShrine() {
 
   // Wire up sprite images with proper idle->static fallback
   document.querySelectorAll('.shrine-chip-img').forEach(img => {
-    configureRobotImg(img, img.dataset.robotId, el => { el.style.display = 'none'; });
+    configureRobotImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
   });
 
   if (shrineInProgress) return;
@@ -705,10 +705,10 @@ export function renderShrine() {
         o.style.pointerEvents = 'none';
       });
 
-      const robotId = option.dataset.robotId;
-      const result = await apiShrineUpgrade(robotId);
+      const creatureId = option.dataset.creatureId;
+      const result = await apiShrineUpgrade(creatureId);
       if (result?.state) { updateGameState(result.state); }
-      sceneModule.showNarration(t('leveledUp', result?.robotName || 'Robot', result?.newLevel || '?'), { autoDismiss: 2000 });
+      sceneModule.showNarration(t('leveledUp', result?.creatureName || 'Creature', result?.newLevel || '?'), { autoDismiss: 2000 });
 
       const proceedResult = await apiProceed();
       shrineInProgress = false;
@@ -861,9 +861,9 @@ async function renderQuizRewards() {
         ? `HP: ${robot.hp}/${robot.maxHp}`
         : `Lv.${robot.level} \u2192 Lv.${robot.level + 1}`;
       return `
-        <div class="shrine-chip-option quiz-reward-robot" data-robot-id="${robot.id}" style="width:100%">
+        <div class="shrine-chip-option quiz-reward-robot" data-creature-id="${robot.id}" style="width:100%">
           <div class="shrine-chip-icon" style="border-color: var(--rarity-${robot.rarity || 'common'})">
-            <img class="shrine-chip-img" data-robot-id="${robot.id}" alt="">
+            <img class="shrine-chip-img" data-creature-id="${robot.id}" alt="">
           </div>
           <div class="shrine-chip-info" style="padding:0.75rem">
             <div class="shrine-chip-name">${robot.nameEn}</div>
@@ -878,7 +878,7 @@ async function renderQuizRewards() {
 
     // Wire up sprite images with proper idle->static fallback
     document.querySelectorAll('.shrine-chip-img').forEach(img => {
-      configureRobotImg(img, img.dataset.robotId, el => { el.style.display = 'none'; });
+      configureRobotImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
     });
 
     const list = document.querySelector('.shrine-chip-list');
@@ -893,8 +893,8 @@ async function renderQuizRewards() {
           o.style.opacity = '0.5'; o.style.pointerEvents = 'none';
         });
 
-        const robotId = option.dataset.robotId;
-        const result = await apiQuizReward(rewardType, robotId);
+        const creatureId = option.dataset.creatureId;
+        const result = await apiQuizReward(rewardType, creatureId);
         if (result?.state) { updateGameState(result.state); }
 
         if (sceneModule.forceHideNarration) sceneModule.forceHideNarration();

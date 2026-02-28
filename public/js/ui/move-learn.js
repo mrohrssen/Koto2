@@ -12,7 +12,7 @@ const ELEMENT_COLORS = {
 
 // Returns a promise that resolves with { action: 'replace', replaceIndex } or { action: 'skip' } or { action: 'auto' }
 // @param {boolean} alreadyLearned - If true, the move was auto-added by the backend (show confirmation only)
-export function showLearnPrompt(robot, robotIndex, newMove, alreadyLearned = false) {
+export function showLearnPrompt(creature, creatureIndex, newMove, alreadyLearned = false) {
   return new Promise((resolve) => {
     const container = dom.actionArea;
     container.innerHTML = '';
@@ -20,17 +20,17 @@ export function showLearnPrompt(robot, robotIndex, newMove, alreadyLearned = fal
     const panel = document.createElement('div');
     panel.className = 'move-learn-panel';
 
-    // Header: "[Robot] wants to learn [Move]!"
+    // Header: "[Creature] wants to learn [Move]!"
     const header = document.createElement('div');
     header.className = 'move-learn-header';
-    header.innerHTML = `<strong>${robot.nameEn || robot.name}</strong> wants to learn<br><span class="move-learn-new-name" style="color:${ELEMENT_COLORS[newMove.element] || ELEMENT_COLORS.neutral}">${newMove.name} (${newMove.nameEn})</span>`;
+    header.innerHTML = `<strong>${creature.nameEn || creature.name}</strong> wants to learn<br><span class="move-learn-new-name" style="color:${ELEMENT_COLORS[newMove.element] || ELEMENT_COLORS.neutral}">${newMove.name} (${newMove.nameEn})</span>`;
     panel.appendChild(header);
 
     // New move details
     const newCard = buildMoveCard(newMove, 'NEW');
     panel.appendChild(newCard);
 
-    if (alreadyLearned || robot.moves.length < 4) {
+    if (alreadyLearned || creature.moves.length < 4) {
       // Auto-learned, just show confirmation
       const msg = document.createElement('div');
       msg.className = 'move-learn-auto';
@@ -55,7 +55,7 @@ export function showLearnPrompt(robot, robotIndex, newMove, alreadyLearned = fal
       const moveList = document.createElement('div');
       moveList.className = 'move-learn-list';
 
-      robot.moves.forEach((move, i) => {
+      creature.moves.forEach((move, i) => {
         const row = buildMoveCard(move, null);
         row.classList.add('move-learn-replaceable');
         row.addEventListener('click', () => {
