@@ -861,7 +861,7 @@ async function renderQuizRewards() {
         ? `HP: ${creature.hp}/${creature.maxHp}`
         : `Lv.${creature.level} \u2192 Lv.${creature.level + 1}`;
       return `
-        <div class="shrine-chip-option quiz-reward-robot" data-creature-id="${creature.id}" style="width:100%">
+        <div class="shrine-chip-option quiz-reward-creature" data-creature-id="${creature.id}" style="width:100%">
           <div class="shrine-chip-icon" style="border-color: var(--rarity-${creature.rarity || 'common'})">
             <img class="shrine-chip-img" data-creature-id="${creature.id}" alt="">
           </div>
@@ -885,11 +885,11 @@ async function renderQuizRewards() {
     if (list && !list.dataset.bound) {
       list.dataset.bound = '1';
       list.addEventListener('click', async (e) => {
-        const option = e.target.closest('.quiz-reward-robot');
+        const option = e.target.closest('.quiz-reward-creature');
         if (!option || list.dataset.used) return;
         list.dataset.used = '1';
 
-        document.querySelectorAll('.quiz-reward-robot').forEach(o => {
+        document.querySelectorAll('.quiz-reward-creature').forEach(o => {
           o.style.opacity = '0.5'; o.style.pointerEvents = 'none';
         });
 

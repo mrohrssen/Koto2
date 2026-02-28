@@ -390,7 +390,7 @@ export async function playerHitEffect(damage, hpBarEl, creatureRowEl) {
 
   // 4. Creature row shudders
   if (creatureRowEl) {
-    anime(creatureRowEl.querySelectorAll('.robot-slot'), {
+    anime(creatureRowEl.querySelectorAll('.creature-slot'), {
       translateX: [-2, 2, -1, 0],
     }, {
       duration: 150,
@@ -418,7 +418,7 @@ const ELEMENT_COLORS = {
 /**
  * Fire element-colored energy orbs from an allied creature to the enemy.
  * Reuses spawnSpeedLines for the projectile, plus pop and particle burst.
- * @param {Element} creatureSlotEl - The .robot-slot element that is attacking
+ * @param {Element} creatureSlotEl - The .creature-slot element that is attacking
  * @param {Element} enemyEl - The enemy sprite element
  * @param {string} element - Creature element ('fire', 'water', 'wood', 'earth', 'metal')
  * @param {number} damage - Damage dealt (for tier-based impact)
@@ -430,7 +430,7 @@ export async function fireCreatureAttackEffect(creatureSlotEl, enemyEl, element,
   const color = ELEMENT_COLORS[element] || '#fff';
 
   // 1. Creature icon pops
-  const icon = creatureSlotEl.querySelector('.robot-icon');
+  const icon = creatureSlotEl.querySelector('.creature-icon');
   if (icon) pop(icon, 1.2);
 
   // 2. Fire element-colored orbs from creature to enemy
@@ -449,7 +449,7 @@ export async function fireCreatureAttackEffect(creatureSlotEl, enemyEl, element,
 /**
  * Fire element-colored energy orbs from the enemy to a targeted allied creature.
  * @param {Element} enemyEl - The enemy sprite element
- * @param {Element} creatureSlotEl - The targeted .robot-slot element
+ * @param {Element} creatureSlotEl - The targeted .creature-slot element
  * @param {string} element - Enemy creature element
  * @param {number} damage - Damage dealt
  */
@@ -468,7 +468,7 @@ export async function enemyCreatureAttackEffect(enemyEl, creatureSlotEl, element
   await delay(300);
 
   // 4. Flash the targeted creature
-  const icon = creatureSlotEl.querySelector('.robot-icon');
+  const icon = creatureSlotEl.querySelector('.creature-icon');
   if (icon) flashElement(icon);
 
   // 5. Screen shake + vignette
@@ -513,7 +513,7 @@ export async function poisonTickEffect(targetEl, damage) {
 /**
  * Show green heal number floating up from a creature slot.
  * Flashes the creature icon and spawns green particles.
- * @param {Element} creatureSlotEl - The .robot-slot element being healed
+ * @param {Element} creatureSlotEl - The .creature-slot element being healed
  * @param {number} healAmount - Amount of HP healed
  */
 export async function healEffect(creatureSlotEl, healAmount) {
@@ -523,7 +523,7 @@ export async function healEffect(creatureSlotEl, healAmount) {
   creatureSlotEl.style.position = 'relative';
   creatureSlotEl.appendChild(popup);
 
-  flashElement(creatureSlotEl.querySelector('.robot-icon'), 1);
+  flashElement(creatureSlotEl.querySelector('.creature-icon'), 1);
   spawnParticles(creatureSlotEl, 8, '#4CAF50');
 
   await delay(1200);
@@ -534,14 +534,14 @@ export async function healEffect(creatureSlotEl, healAmount) {
 
 /**
  * Show animated "+XP" text floating up from a creature slot element.
- * @param {Element} creatureSlotEl - The .robot-slot element to show the popup over
+ * @param {Element} creatureSlotEl - The .creature-slot element to show the popup over
  * @param {number} xpAmount - Amount of XP gained
  */
 export function showXpPopup(creatureSlotEl, xpAmount) {
   if (!creatureSlotEl || !xpAmount) return;
 
   const popup = document.createElement('div');
-  popup.className = 'robot-xp-popup';
+  popup.className = 'creature-xp-popup';
   popup.textContent = `+${xpAmount} XP`;
   creatureSlotEl.style.position = 'relative';
   creatureSlotEl.appendChild(popup);
@@ -559,7 +559,7 @@ export function showXpPopup(creatureSlotEl, xpAmount) {
 
 /**
  * Show animated "Level Up!" text floating up from a creature slot element.
- * @param {Element} creatureSlotEl - The .robot-slot element
+ * @param {Element} creatureSlotEl - The .creature-slot element
  * @param {number} newLevel - The new level reached
  * @param {number} [hpGain] - HP gained from this level-up
  * @param {number} [attackGain] - ATK gained from this level-up
@@ -568,7 +568,7 @@ export function showLevelUpPopup(creatureSlotEl, newLevel, hpGain, attackGain) {
   if (!creatureSlotEl) return;
 
   const popup = document.createElement('div');
-  popup.className = 'robot-levelup-popup';
+  popup.className = 'creature-levelup-popup';
   let text = `Level Up! Lv${newLevel}`;
   if (hpGain || attackGain) {
     const parts = [];
@@ -582,14 +582,14 @@ export function showLevelUpPopup(creatureSlotEl, newLevel, hpGain, attackGain) {
   creatureSlotEl.appendChild(popup);
 
   // Flash the creature icon with a neon glow
-  const icon = creatureSlotEl.querySelector('.robot-icon');
+  const icon = creatureSlotEl.querySelector('.creature-icon');
   if (icon) {
     icon.classList.add('level-up-glow');
     setTimeout(() => icon.classList.remove('level-up-glow'), 1500);
   }
 
   // Update level badge in DOM
-  const badge = creatureSlotEl.querySelector('.robot-level-badge');
+  const badge = creatureSlotEl.querySelector('.creature-level-badge');
   if (badge) {
     badge.textContent = `Lv${newLevel}`;
     badge.classList.add('level-badge-pop');

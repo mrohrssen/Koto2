@@ -53,9 +53,9 @@ export const dom = {
   get botsBtn() { return el('bots-btn'); },
 
   // Takeover views
-  get creatureEquipView() { return el('robot-equip-view'); },
-  get creatureEquipClose() { return el('robot-equip-close'); },
-  get creatureEquipContent() { return el('robot-equip-content'); },
+  get creatureEquipView() { return el('creature-equip-view'); },
+  get creatureEquipClose() { return el('creature-equip-close'); },
+  get creatureEquipContent() { return el('creature-equip-content'); },
   get settingsView() { return el('settings-view'); },
   get settingsClose() { return el('settings-close'); },
   get settingsContent() { return el('settings-content'); },

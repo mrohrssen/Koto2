@@ -565,7 +565,7 @@ function showCollectionSelect(catalog, collection) {
           <div class="${classes}" data-id="${r.id}" data-rarity="${r.rarity}" data-element="${r.element}">
             <img data-creature-id="${r.id}" alt="${r.nameEn}" />
             ${owned ? `<span class="point-badge">${r.pointCost}</span>` : ''}
-            <span class="robot-name">${owned ? r.nameEn : '???'}</span>
+            <span class="creature-name">${owned ? r.nameEn : '???'}</span>
           </div>
         `;
       }).join('');
@@ -781,7 +781,7 @@ function handleCardFlip() {
   }
 }
 
-// ============ ROBOT COMBAT HANDLERS ============
+// ============ CREATURE COMBAT HANDLERS ============
 async function showPostCombatShopFlow() {
   try {
     const shopResult = await apiRollPostCombatShop();
@@ -820,17 +820,17 @@ async function openCreatureEquipView() {
     const rarityStars = (rarity) => { const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity]; return n ? `<span style="color:#FFD700">${n}★</span>` : ''; };
 
     const activeHtml = active.map((creature, i) => {
-      if (!creature) return `<div class="robot-equip-slot empty" data-type="active" data-index="${i}"><span style="opacity:0.4">${t('emptySlot')}</span></div>`;
+      if (!creature) return `<div class="creature-equip-slot empty" data-type="active" data-index="${i}"><span style="opacity:0.4">${t('emptySlot')}</span></div>`;
       const hpPct = Math.max(0, (creature.hp / creature.maxHp) * 100);
       return `
-        <div class="robot-equip-slot" data-type="active" data-index="${i}" data-creature-id="${creature.id}"
+        <div class="creature-equip-slot" data-type="active" data-index="${i}" data-creature-id="${creature.id}"
              style="border-left: 3px solid ${ELEMENT_COLORS[creature.element] || '#666'}">
-          <img class="robot-equip-sprite" data-creature-id="${creature.id}" alt="">
-          <div class="robot-equip-info">
-            <div class="robot-equip-name">${ELEMENT_ICONS[creature.element] || ''} ${creature.nameEn} ${rarityStars(creature.rarity)} <span style="opacity:0.6">Lv${creature.level}</span></div>
-            <div class="robot-equip-stats">HP: ${creature.hp}/${creature.maxHp} | ATK: ${creature.attack}</div>
-            <div class="robot-hp-bar" style="width:100%;height:4px;margin-top:2px">
-              <div class="robot-hp-fill" style="width:${hpPct}%;background-color:${getHpColor(hpPct)}"></div>
+          <img class="creature-equip-sprite" data-creature-id="${creature.id}" alt="">
+          <div class="creature-equip-info">
+            <div class="creature-equip-name">${ELEMENT_ICONS[creature.element] || ''} ${creature.nameEn} ${rarityStars(creature.rarity)} <span style="opacity:0.6">Lv${creature.level}</span></div>
+            <div class="creature-equip-stats">HP: ${creature.hp}/${creature.maxHp} | ATK: ${creature.attack}</div>
+            <div class="creature-hp-bar" style="width:100%;height:4px;margin-top:2px">
+              <div class="creature-hp-fill" style="width:${hpPct}%;background-color:${getHpColor(hpPct)}"></div>
             </div>
           </div>
         </div>
@@ -841,14 +841,14 @@ async function openCreatureEquipView() {
       if (!creature) return '';
       const hpPct = Math.max(0, (creature.hp / creature.maxHp) * 100);
       return `
-        <div class="robot-equip-slot" data-type="reserve" data-index="${i}" data-creature-id="${creature.id}"
+        <div class="creature-equip-slot" data-type="reserve" data-index="${i}" data-creature-id="${creature.id}"
              style="border-left: 3px solid ${ELEMENT_COLORS[creature.element] || '#666'}">
-          <img class="robot-equip-sprite" data-creature-id="${creature.id}" alt="">
-          <div class="robot-equip-info">
-            <div class="robot-equip-name">${ELEMENT_ICONS[creature.element] || ''} ${creature.nameEn} ${rarityStars(creature.rarity)} <span style="opacity:0.6">Lv${creature.level}</span></div>
-            <div class="robot-equip-stats">HP: ${creature.hp}/${creature.maxHp} | ATK: ${creature.attack}</div>
-            <div class="robot-hp-bar" style="width:100%;height:4px;margin-top:2px">
-              <div class="robot-hp-fill" style="width:${hpPct}%;background-color:${getHpColor(hpPct)}"></div>
+          <img class="creature-equip-sprite" data-creature-id="${creature.id}" alt="">
+          <div class="creature-equip-info">
+            <div class="creature-equip-name">${ELEMENT_ICONS[creature.element] || ''} ${creature.nameEn} ${rarityStars(creature.rarity)} <span style="opacity:0.6">Lv${creature.level}</span></div>
+            <div class="creature-equip-stats">HP: ${creature.hp}/${creature.maxHp} | ATK: ${creature.attack}</div>
+            <div class="creature-hp-bar" style="width:100%;height:4px;margin-top:2px">
+              <div class="creature-hp-fill" style="width:${hpPct}%;background-color:${getHpColor(hpPct)}"></div>
             </div>
           </div>
         </div>
@@ -857,14 +857,14 @@ async function openCreatureEquipView() {
 
     content.innerHTML = `
       <h3 style="margin:16px">${t('equippedCreatures')}</h3>
-      <div class="robot-equip-list">${activeHtml}</div>
+      <div class="creature-equip-list">${activeHtml}</div>
       <h3 style="margin:16px">${t('reserveCreatures')}</h3>
-      <div class="robot-equip-list">${reservesHtml}</div>
+      <div class="creature-equip-list">${reservesHtml}</div>
       <p style="padding:8px 16px;opacity:0.5;font-size:0.8em;text-align:center">${t('swapInstruction')}</p>
     `;
 
     // Configure animated idle sprites with static fallback
-    content.querySelectorAll('.robot-equip-sprite[data-creature-id]').forEach(img => {
+    content.querySelectorAll('.creature-equip-sprite[data-creature-id]').forEach(img => {
       configureCreatureImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
     });
 
@@ -872,10 +872,10 @@ async function openCreatureEquipView() {
     let selectedActive = null;
     let selectedReserve = null;
 
-    content.querySelectorAll('.robot-equip-slot[data-type="active"]').forEach(el => {
+    content.querySelectorAll('.creature-equip-slot[data-type="active"]').forEach(el => {
       el.addEventListener('click', async () => {
         // Clear previous selections
-        content.querySelectorAll('.robot-equip-slot').forEach(s => s.classList.remove('selected'));
+        content.querySelectorAll('.creature-equip-slot').forEach(s => s.classList.remove('selected'));
         selectedActive = parseInt(el.dataset.index, 10);
         el.classList.add('selected');
 
@@ -896,9 +896,9 @@ async function openCreatureEquipView() {
       });
     });
 
-    content.querySelectorAll('.robot-equip-slot[data-type="reserve"]').forEach(el => {
+    content.querySelectorAll('.creature-equip-slot[data-type="reserve"]').forEach(el => {
       el.addEventListener('click', async () => {
-        content.querySelectorAll('.robot-equip-slot[data-type="reserve"]').forEach(s => s.classList.remove('selected'));
+        content.querySelectorAll('.creature-equip-slot[data-type="reserve"]').forEach(s => s.classList.remove('selected'));
         selectedReserve = parseInt(el.dataset.index, 10);
         el.classList.add('selected');
 
@@ -921,11 +921,11 @@ async function openCreatureEquipView() {
 
     // Also support rearranging: tap two active slots to swap positions
     let firstActiveClick = null;
-    content.querySelectorAll('.robot-equip-slot[data-type="active"]').forEach(el => {
+    content.querySelectorAll('.creature-equip-slot[data-type="active"]').forEach(el => {
       el.addEventListener('dblclick', async () => {
         // Double-click to initiate rearrange mode (deselect reserve selection)
         selectedReserve = null;
-        content.querySelectorAll('.robot-equip-slot').forEach(s => s.classList.remove('selected'));
+        content.querySelectorAll('.creature-equip-slot').forEach(s => s.classList.remove('selected'));
       });
     });
   }
@@ -1087,7 +1087,7 @@ async function initGame() {
         for (const atk of result.enemyAttacks) {
           const actionArea = document.getElementById('action-area');
           if (actionArea) {
-            actionArea.innerHTML = `<div class="combat-robot-attack enemy">${atk.attackerName} deals <strong>${atk.damage}</strong></div>`;
+            actionArea.innerHTML = `<div class="combat-creature-attack enemy">${atk.attackerName} deals <strong>${atk.damage}</strong></div>`;
           }
         }
       }

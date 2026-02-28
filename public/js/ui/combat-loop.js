@@ -501,7 +501,7 @@ function showNextFlashCardFromQueue() {
  * Find a creature slot element by creature ID (matches against game state).
  * Works for both allied creature slots (attacker) and targeted creature slots.
  * @param {string} creatureId - The creature's ID
- * @returns {Element|null} The .robot-slot DOM element, or null
+ * @returns {Element|null} The .creature-slot DOM element, or null
  */
 function findCreatureSlotByAttackerId(creatureId) {
   const state = getGameState();
@@ -511,7 +511,7 @@ function findCreatureSlotByAttackerId(creatureId) {
   const index = activeCreatures.findIndex(r => r && r.id === creatureId);
   if (index < 0) return null;
 
-  const slots = document.querySelectorAll('#chip-row .robot-slot');
+  const slots = document.querySelectorAll('#chip-row .creature-slot');
   return slots[index] || null;
 }
 
@@ -526,11 +526,11 @@ function findEnemyTargetElement(targetId, enemies) {
   if (enemies && enemies.length > 1) {
     const idx = enemies.findIndex(e => e.id === targetId);
     if (idx >= 0) {
-      const slot = document.querySelector(`.enemy-robot-slot[data-enemy-index="${idx}"]`);
+      const slot = document.querySelector(`.enemy-creature-slot[data-enemy-index="${idx}"]`);
       // Skip defeated/invisible slots - fall back to first alive enemy slot
       if (slot && !slot.classList.contains('defeated')) return slot;
       // If target is defeated, find first alive enemy slot for animation
-      const aliveSlot = document.querySelector('.enemy-robot-slot:not(.defeated):not(.befriended)');
+      const aliveSlot = document.querySelector('.enemy-creature-slot:not(.defeated):not(.befriended)');
       if (aliveSlot) return aliveSlot;
     }
   }
@@ -551,19 +551,19 @@ function getHpColor(pct) {
 
 function updateCreatureHpBars(creatures, allyHpMap) {
   if (!creatures) return;
-  const slots = document.querySelectorAll('#chip-row .robot-slot');
+  const slots = document.querySelectorAll('#chip-row .creature-slot');
   creatures.forEach((creature, i) => {
     const slot = slots[i];
     if (!slot || !creature) return;
     const currentHp = allyHpMap?.[creature.id] ? allyHpMap[creature.id].hp : creature.hp;
     const hpPct = Math.max(0, (currentHp / creature.maxHp) * 100);
-    const fill = slot.querySelector('.robot-hp-fill');
+    const fill = slot.querySelector('.creature-hp-fill');
     if (fill) {
       fill.style.width = `${hpPct}%`;
       fill.style.backgroundColor = getHpColor(hpPct);
     }
     // Update KO state
-    const icon = slot.querySelector('.robot-icon');
+    const icon = slot.querySelector('.creature-icon');
     if (icon) {
       if (currentHp <= 0) {
         icon.classList.add('ko');
@@ -572,7 +572,7 @@ function updateCreatureHpBars(creatures, allyHpMap) {
       }
     }
     // Update MP bar
-    const mpFill = slot.querySelector('.robot-mp-fill');
+    const mpFill = slot.querySelector('.creature-mp-fill');
     if (mpFill && creature.maxMp > 0) {
       const mpPct = Math.max(0, Math.min(100, (creature.mp / creature.maxMp) * 100));
       mpFill.style.width = `${mpPct}%`;
@@ -615,7 +615,7 @@ function showXpEvents(xpEvents) {
   const activeCreatures = state.run?.creatureParty?.active;
   if (!activeCreatures) return pendingMoveLearn;
 
-  const slots = document.querySelectorAll('#chip-row .robot-slot');
+  const slots = document.querySelectorAll('#chip-row .creature-slot');
 
   for (const event of xpEvents) {
     // Show XP popups for each creature that gained XP
@@ -932,7 +932,7 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
     } else {
       const actionArea = document.getElementById('action-area');
       if (actionArea) {
-        actionArea.innerHTML = `<div class="combat-robot-attack enemy">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
+        actionArea.innerHTML = `<div class="combat-creature-attack enemy">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
       }
     }
 
@@ -975,10 +975,10 @@ async function showKoSwapAnimations(result) {
     // Animate the KO'd creature dying
     const koIndex = swap.slot ?? -1;
     if (koIndex >= 0) {
-      const slots = document.querySelectorAll('#chip-row .robot-slot');
+      const slots = document.querySelectorAll('#chip-row .creature-slot');
       const dyingSlot = slots[koIndex];
       if (dyingSlot) {
-        dyingSlot.classList.add('robot-dying');
+        dyingSlot.classList.add('creature-dying');
         await delay(600);
       }
     }
@@ -990,29 +990,29 @@ async function showKoSwapAnimations(result) {
 
     // Update sprite and HP for the new creature with swap-in animation
     if (result.creatureParty?.active && koIndex >= 0) {
-      const slots = document.querySelectorAll('#chip-row .robot-slot');
+      const slots = document.querySelectorAll('#chip-row .creature-slot');
       const swapSlot = slots[koIndex];
       if (swapSlot) {
-        swapSlot.classList.remove('robot-dying');
-        swapSlot.classList.add('robot-swapping-in');
+        swapSlot.classList.remove('creature-dying');
+        swapSlot.classList.add('creature-swapping-in');
         const newCreature = result.creatureParty.active[koIndex];
         if (newCreature) {
-          const icon = swapSlot.querySelector('.robot-sprite-icon');
+          const icon = swapSlot.querySelector('.creature-sprite-icon');
           if (icon) configureCreatureImg(icon, newCreature.id, el => {
             el.style.display = 'none';
             const fallback = el.nextElementSibling;
             if (fallback) fallback.style.display = '';
           });
-          const hpFill = swapSlot.querySelector('.robot-hp-fill');
+          const hpFill = swapSlot.querySelector('.creature-hp-fill');
           if (hpFill) {
             const pct = Math.max(0, (newCreature.hp / newCreature.maxHp) * 100);
             hpFill.style.width = `${pct}%`;
             hpFill.style.backgroundColor = pct > 60 ? 'var(--hp-green)' : pct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
           }
-          const koIcon = swapSlot.querySelector('.robot-icon');
+          const koIcon = swapSlot.querySelector('.creature-icon');
           if (koIcon) koIcon.classList.remove('ko');
         }
-        setTimeout(() => swapSlot.classList.remove('robot-swapping-in'), 500);
+        setTimeout(() => swapSlot.classList.remove('creature-swapping-in'), 500);
       }
     }
     await delay(800);
@@ -1115,17 +1115,17 @@ async function executeCreatureMovesTurn(choices) {
           if (atk.category === 'heal') {
             // Heal: show green heal text
             if (actionArea) {
-              actionArea.innerHTML = `<div class="combat-robot-attack" style="color:#4CAF50">${atk.attackerName} uses ${atk.moveNameEn}! +${atk.healAmount || 0} HP</div>`;
+              actionArea.innerHTML = `<div class="combat-creature-attack" style="color:#4CAF50">${atk.attackerName} uses ${atk.moveNameEn}! +${atk.healAmount || 0} HP</div>`;
             }
           } else if (atk.category === 'buff' || atk.category === 'shield') {
             // Buff/shield: show blue text
             if (actionArea) {
-              actionArea.innerHTML = `<div class="combat-robot-attack" style="color:#64B5F6">${atk.attackerName} uses ${atk.moveNameEn}!${atk.effectApplied ? ' \u2192 ' + atk.effectApplied : ''}</div>`;
+              actionArea.innerHTML = `<div class="combat-creature-attack" style="color:#64B5F6">${atk.attackerName} uses ${atk.moveNameEn}!${atk.effectApplied ? ' \u2192 ' + atk.effectApplied : ''}</div>`;
             }
           } else if (atk.category === 'debuff') {
             // Debuff: show purple text
             if (actionArea) {
-              actionArea.innerHTML = `<div class="combat-robot-attack" style="color:#CE93D8">${atk.attackerName} uses ${atk.moveNameEn}!${atk.effectApplied ? ' \u2192 ' + atk.effectApplied : ''}</div>`;
+              actionArea.innerHTML = `<div class="combat-creature-attack" style="color:#CE93D8">${atk.attackerName} uses ${atk.moveNameEn}!${atk.effectApplied ? ' \u2192 ' + atk.effectApplied : ''}</div>`;
             }
           } else {
             // Damage/drain: show attack card via buildSplitAttackCard
@@ -1296,7 +1296,7 @@ async function executeCreaturePlayerAttack() {
           } else {
             const actionArea = document.getElementById('action-area');
             if (actionArea) {
-              actionArea.innerHTML = `<div class="combat-robot-attack">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
+              actionArea.innerHTML = `<div class="combat-creature-attack">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
             }
           }
 
@@ -1308,9 +1308,9 @@ async function executeCreaturePlayerAttack() {
 
           // Update MP bar for this attacker immediately after its attack
           const attackerSlotIdx = (result.creatureParty?.active || []).findIndex(r => r && r.id === atk.attackerId);
-          const attackerSlot = attackerSlotIdx >= 0 ? document.querySelectorAll('#chip-row .robot-slot')[attackerSlotIdx] : null;
+          const attackerSlot = attackerSlotIdx >= 0 ? document.querySelectorAll('#chip-row .creature-slot')[attackerSlotIdx] : null;
           if (attackerSlot && atk.attackerMp != null) {
-            const mpFill = attackerSlot.querySelector('.robot-mp-fill');
+            const mpFill = attackerSlot.querySelector('.creature-mp-fill');
             if (mpFill && atk.attackerMaxMp > 0) {
               const mpPct = Math.max(0, Math.min(100, (atk.attackerMp / atk.attackerMaxMp) * 100));
               mpFill.style.width = `${mpPct}%`;
@@ -1916,7 +1916,7 @@ async function executeBefriendAction() {
         });
 
         // Shake target enemy
-        const slots = document.querySelectorAll('.enemy-robot-slot');
+        const slots = document.querySelectorAll('.enemy-creature-slot');
         const targetSlot = slots[targetEnemyIndex];
         if (targetSlot) {
           targetSlot.classList.add('shake-animation');
@@ -1972,7 +1972,7 @@ async function executeBefriendAction() {
         // Mark enemy as befriended visually
         const captured = answerResult.befriend?.captured;
         if (captured?.id) {
-          const slot = document.querySelector(`.enemy-robot-slot[data-enemy-id="${captured.id}"]`);
+          const slot = document.querySelector(`.enemy-creature-slot[data-enemy-id="${captured.id}"]`);
           if (slot) slot.classList.add('befriended');
         }
 
@@ -1990,7 +1990,7 @@ async function executeBefriendAction() {
 
               const capturedId = replaceResult.captured?.id;
               if (capturedId) {
-                const slot = document.querySelector(`.enemy-robot-slot[data-enemy-id="${capturedId}"]`);
+                const slot = document.querySelector(`.enemy-creature-slot[data-enemy-id="${capturedId}"]`);
                 if (slot) slot.classList.add('befriended');
               }
               await delay(1200);

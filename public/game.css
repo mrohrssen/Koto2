@@ -260,7 +260,7 @@ html, body {
   display: block;
 }
 
-/* Enemy Robot Display */
+/* Enemy Creature Display */
 .enemy-element-icon {
   font-size: 14px;
   vertical-align: middle;
@@ -272,7 +272,7 @@ html, body {
   font-weight: normal;
 }
 
-.robot-enemy {
+.creature-enemy {
   border: none;
   border-radius: 0;
   padding: 0;
@@ -289,7 +289,7 @@ html, body {
   justify-content: center;
 }
 
-.robot-enemy .enemy-sprite {
+.creature-enemy .enemy-sprite {
   max-height: 90px;
   max-width: 90px;
   border-radius: 0;
@@ -307,7 +307,7 @@ html, body {
   padding-bottom: 25%;
 }
 
-.enemy-robot-slot {
+.enemy-creature-slot {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -317,19 +317,19 @@ html, body {
   max-width: 140px;
 }
 
-.enemy-robot-slot.defeated {
+.enemy-creature-slot.defeated {
   opacity: 0;
   transform: scale(0.5) translateY(20px);
   pointer-events: none;
 }
 
-.enemy-robot-slot.befriended {
+.enemy-creature-slot.befriended {
   opacity: 0;
   transform: translateY(-40px) scale(0.8);
   pointer-events: none;
 }
 
-.enemy-robot-icon {
+.enemy-creature-icon {
   width: auto;
   height: auto;
   border-radius: 0;
@@ -342,7 +342,7 @@ html, body {
   font-size: 24px;
 }
 
-.enemy-robot-sprite {
+.enemy-creature-sprite {
   max-height: 90px;
   max-width: 90px;
   width: auto;
@@ -351,11 +351,11 @@ html, body {
   border-radius: 0;
 }
 
-.enemy-robot-element {
+.enemy-creature-element {
   font-size: 36px;
 }
 
-.enemy-robot-level {
+.enemy-creature-level {
   position: absolute;
   bottom: -4px;
   right: -4px;
@@ -367,7 +367,7 @@ html, body {
   line-height: 1;
 }
 
-.enemy-robot-name {
+.enemy-creature-name {
   font-size: 12px;
   font-weight: 600;
   color: #fff;
@@ -382,7 +382,7 @@ html, body {
   border-radius: 6px;
 }
 
-.enemy-robot-hp-bar {
+.enemy-creature-hp-bar {
   width: 70px;
   height: 5px;
   background: #333;
@@ -390,7 +390,7 @@ html, body {
   overflow: hidden;
 }
 
-.enemy-robot-hp-fill {
+.enemy-creature-hp-fill {
   height: 100%;
   background: var(--hp-green);
   transition: width 0.3s, background-color 0.3s;
@@ -512,7 +512,7 @@ html, body {
   }
 }
 
-/* ===== CHIP ROW (shared container for robot-row) ===== */
+/* ===== CHIP ROW (shared container for creature-row) ===== */
 .chip-row {
   display: flex;
   justify-content: center;
@@ -901,7 +901,7 @@ html, body {
   border: 2px solid var(--defend-color);
 }
 
-.combat-robot-attack {
+.combat-creature-attack {
   font-size: 16px;
   font-weight: var(--font-weight-semi);
   color: var(--text-primary);
@@ -909,11 +909,11 @@ html, body {
   padding: 10px;
 }
 
-.combat-robot-attack.enemy {
+.combat-creature-attack.enemy {
   color: var(--accent-red);
 }
 
-.combat-robot-attack strong {
+.combat-creature-attack strong {
   font-size: 20px;
   font-weight: var(--font-weight-bold);
 }
@@ -1404,7 +1404,7 @@ html, body {
   padding: 16px;
 }
 
-/* ===== CHIP POPUP (shared container for robot-row) ===== */
+/* ===== CHIP POPUP (shared container for creature-row) ===== */
 .chip-popup {
   position: fixed;
   background: var(--bg-elevated);
@@ -2690,13 +2690,13 @@ html, body {
   z-index: 10001;
 }
 
-/* ===== ROBOT SLOTS ===== */
-.chip-row:has(.robot-slot) {
+/* ===== CREATURE SLOTS ===== */
+.chip-row:has(.creature-slot) {
   gap: 28px;
   padding: 8px 10px;
 }
 
-.robot-slot {
+.creature-slot {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2704,7 +2704,7 @@ html, body {
   cursor: pointer;
 }
 
-.robot-icon {
+.creature-icon {
   width: 110px;
   height: 110px;
   border-radius: 0;
@@ -2717,45 +2717,45 @@ html, body {
   font-size: 40px;
 }
 
-.robot-icon.empty {
+.creature-icon.empty {
   display: none;
 }
 
-.robot-icon.ko {
+.creature-icon.ko {
   opacity: 0.3;
   filter: grayscale(1);
 }
 
-.robot-slot.robot-dying {
-  animation: robot-death 0.6s ease-out forwards;
+.creature-slot.creature-dying {
+  animation: creature-death 0.6s ease-out forwards;
 }
 
-@keyframes robot-death {
+@keyframes creature-death {
   0% { opacity: 1; transform: scale(1); }
   30% { opacity: 0.8; transform: scale(1.05); filter: brightness(2); }
   100% { opacity: 0; transform: scale(0.5) translateY(10px); }
 }
 
-.robot-slot.robot-swapping-in {
-  animation: robot-swap-in 0.5s ease-out forwards;
+.creature-slot.creature-swapping-in {
+  animation: creature-swap-in 0.5s ease-out forwards;
 }
 
-@keyframes robot-swap-in {
+@keyframes creature-swap-in {
   0% { opacity: 0; transform: scale(0.5) translateY(20px); }
   60% { opacity: 1; transform: scale(1.1) translateY(-5px); }
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-.robot-icon.charged {
+.creature-icon.charged {
   box-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
 }
 
-.robot-slot.charged .robot-slot-name {
+.creature-slot.charged .creature-slot-name {
   animation: name-charged-glow 1.5s ease-in-out infinite;
   color: #FFD54F;
 }
 
-.robot-slot.charged .robot-ultimate-label {
+.creature-slot.charged .creature-ultimate-label {
   display: block;
 }
 
@@ -2764,7 +2764,7 @@ html, body {
   50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
 }
 
-.robot-ultimate-label {
+.creature-ultimate-label {
   display: none;
   font-size: 8px;
   color: #FFD54F;
@@ -2773,7 +2773,7 @@ html, body {
   line-height: 1;
 }
 
-.robot-level-badge {
+.creature-level-badge {
   position: absolute;
   bottom: -4px;
   right: -4px;
@@ -2785,7 +2785,7 @@ html, body {
   line-height: 1;
 }
 
-.robot-slot-name {
+.creature-slot-name {
   font-size: 9px;
   color: #555;
   font-weight: 600;
@@ -2799,18 +2799,18 @@ html, body {
   z-index: 2;
 }
 
-.robot-sprite-icon {
+.creature-sprite-icon {
   width: 110px;
   height: 110px;
   object-fit: contain;
   border-radius: 0;
 }
 
-.robot-element-icon {
+.creature-element-icon {
   font-size: 48px;
 }
 
-.robot-hp-bar {
+.creature-hp-bar {
   width: 64px;
   height: 8px;
   background: #333;
@@ -2818,25 +2818,25 @@ html, body {
   overflow: hidden;
 }
 
-.robot-hp-fill {
+.creature-hp-fill {
   height: 100%;
   background: var(--hp-green);
   transition: width 0.3s, background-color 0.3s;
 }
 
 /* XP Bar - hidden in combat, shown on level-up */
-.robot-xp-bar {
+.creature-xp-bar {
   display: none;
 }
 
-.robot-xp-fill {
+.creature-xp-fill {
   height: 100%;
   background: linear-gradient(90deg, #7C4DFF, #B388FF);
   border-radius: 2px;
   transition: width 0.5s ease-out;
 }
 
-.robot-charge-bar {
+.creature-charge-bar {
   display: flex;
   gap: 1px;
 }
@@ -2853,7 +2853,7 @@ html, body {
 }
 
 /* XP popup animation */
-.robot-xp-popup {
+.creature-xp-popup {
   position: absolute;
   top: 0;
   left: 50%;
@@ -2867,7 +2867,7 @@ html, body {
   white-space: nowrap;
 }
 
-.robot-levelup-popup {
+.creature-levelup-popup {
   position: absolute;
   top: -8px;
   left: 50%;
@@ -2882,7 +2882,7 @@ html, body {
 }
 
 /* Level-up glow effect */
-.robot-icon.level-up-glow {
+.creature-icon.level-up-glow {
   animation: levelUpGlow 1.5s ease-out;
 }
 
@@ -2893,7 +2893,7 @@ html, body {
 }
 
 /* Level badge pop animation */
-.robot-level-badge.level-badge-pop {
+.creature-level-badge.level-badge-pop {
   animation: badgePop 0.3s ease-out;
 }
 
@@ -2922,7 +2922,7 @@ html, body {
   100% { opacity: 0; transform: translateX(-50%) translateY(-40px); }
 }
 
-.poisoned .robot-hp-fill {
+.poisoned .creature-hp-fill {
   filter: hue-rotate(270deg);
 }
 
@@ -2948,18 +2948,18 @@ html, body {
   50% { filter: brightness(0.6) hue-rotate(270deg); }
 }
 
-.robot-popup-name { font-weight: bold; font-size: 14px; color: var(--text-primary); }
-.robot-popup-element { font-size: 12px; color: #aaa; margin: 4px 0; }
-.robot-popup-archetype {
+.creature-popup-name { font-weight: bold; font-size: 14px; color: var(--text-primary); }
+.creature-popup-element { font-size: 12px; color: #aaa; margin: 4px 0; }
+.creature-popup-archetype {
   font-size: 0.75rem;
   color: var(--text-secondary, #aaa);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.25rem;
 }
-.robot-popup-stats { font-size: 11px; color: #ccc; }
-.robot-popup-ultimate { font-size: 11px; color: #aaa; margin: 8px 0; }
-.robot-popup-ultimate-btn {
+.creature-popup-stats { font-size: 11px; color: #ccc; }
+.creature-popup-ultimate { font-size: 11px; color: #aaa; margin: 8px 0; }
+.creature-popup-ultimate-btn {
   width: 100%;
   padding: 8px;
   border: none;
@@ -2970,32 +2970,32 @@ html, body {
   background: var(--accent-gold, #FFD700);
   color: #000;
 }
-.robot-popup-ultimate-btn:disabled {
+.creature-popup-ultimate-btn:disabled {
   background: #333;
   color: #666;
   cursor: not-allowed;
 }
 
-/* Robot Swap in Popup */
-.robot-popup-swap-section {
+/* Creature Swap in Popup */
+.creature-popup-swap-section {
   margin-top: 8px;
   border-top: 1px solid #333;
   padding-top: 8px;
 }
 
-.robot-popup-swap-label {
+.creature-popup-swap-label {
   font-size: 10px;
   color: #888;
   margin-bottom: 4px;
 }
 
-.robot-popup-swap-list {
+.creature-popup-swap-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.robot-popup-swap-btn {
+.creature-popup-swap-btn {
   width: 100%;
   padding: 6px 8px;
   border: 1px solid #444;
@@ -3007,11 +3007,11 @@ html, body {
   text-align: left;
 }
 
-.robot-popup-swap-btn:active {
+.creature-popup-swap-btn:active {
   background: #333;
 }
 
-.robot-popup-rearrange-btn {
+.creature-popup-rearrange-btn {
   display: block;
   width: 100%;
   padding: 6px 10px;
@@ -3023,19 +3023,19 @@ html, body {
   font-size: 0.85em;
   cursor: pointer;
 }
-.robot-popup-rearrange-btn:active {
+.creature-popup-rearrange-btn:active {
   background: #333;
 }
 
-/* Robot Equip View (BUG B) */
-.robot-equip-list {
+/* Creature Equip View (BUG B) */
+.creature-equip-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 0 16px;
 }
 
-.robot-equip-slot {
+.creature-equip-slot {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -3046,20 +3046,20 @@ html, body {
   cursor: pointer;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.robot-equip-slot.empty {
+.creature-equip-slot.empty {
   justify-content: center;
   min-height: 50px;
   border: 1px dashed #444;
 }
-.robot-equip-slot.selected {
+.creature-equip-slot.selected {
   border-color: var(--accent-primary, #4fc3f7);
   box-shadow: 0 0 8px rgba(79, 195, 247, 0.4);
 }
-.robot-equip-slot:active {
+.creature-equip-slot:active {
   background: #252540;
 }
 
-.robot-equip-sprite {
+.creature-equip-sprite {
   width: 48px;
   height: 48px;
   border-radius: 50%;
@@ -3067,12 +3067,12 @@ html, body {
   flex-shrink: 0;
 }
 
-.robot-equip-info {
+.creature-equip-info {
   flex: 1;
   min-width: 0;
 }
 
-.robot-equip-name {
+.creature-equip-name {
   font-size: 0.95em;
   font-weight: 600;
   color: #e0e0e0;
@@ -3081,7 +3081,7 @@ html, body {
   text-overflow: ellipsis;
 }
 
-.robot-equip-stats {
+.creature-equip-stats {
   font-size: 0.8em;
   color: #aaa;
   margin-top: 2px;
@@ -3282,7 +3282,7 @@ html, body {
   will-change: transform, opacity;
 }
 
-/* Robot Collection Grid */
+/* Creature Collection Grid */
 .collection-select {
   position: absolute;
   inset: 0;
@@ -3405,7 +3405,7 @@ html, body {
   align-self: center;
 }
 
-.collection-cell .robot-name {
+.collection-cell .creature-name {
   position: absolute;
   bottom: 2px;
   left: 0;
@@ -4652,8 +4652,8 @@ html, body {
   text-align: center;
 }
 
-/* === MP Bar (robot-row) === */
-.robot-mp-bar {
+/* === MP Bar (creature-row) === */
+.creature-mp-bar {
   width: 64px;
   height: 8px;
   background: #333;
@@ -4663,14 +4663,14 @@ html, body {
   margin-top: 2px;
 }
 
-.robot-mp-fill {
+.creature-mp-fill {
   height: 100%;
   background: linear-gradient(90deg, #7c4dff, #448aff);
   border-radius: 3px;
   transition: width 0.3s;
 }
 
-.robot-mp-text {
+.creature-mp-text {
   position: absolute;
   top: 0;
   right: 2px;
@@ -4679,10 +4679,10 @@ html, body {
   line-height: 8px;
 }
 
-/* Move list in robot popup */
-.robot-popup-moves { margin-top: 8px; }
-.robot-popup-moves-label { font-size: 11px; color: #888; margin-bottom: 4px; }
-.robot-popup-move-row { font-size: 12px; padding: 2px 0; color: #ccc; }
+/* Move list in creature popup */
+.creature-popup-moves { margin-top: 8px; }
+.creature-popup-moves-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+.creature-popup-move-row { font-size: 12px; padding: 2px 0; color: #ccc; }
 
 /* === Move Learn Panel === */
 .move-learn-panel {

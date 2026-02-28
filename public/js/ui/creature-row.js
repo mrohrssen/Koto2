@@ -50,7 +50,7 @@ export function init({ swapCreatureCallback, rearrangeCreatureCallback }) {
   onSwapCreature = swapCreatureCallback;
   onRearrangeCreature = rearrangeCreatureCallback || null;
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.robot-slot') && !e.target.closest('.robot-popup')) {
+    if (!e.target.closest('.creature-slot') && !e.target.closest('.creature-popup')) {
       hidePopup();
     }
   });
@@ -76,7 +76,7 @@ export function render(creatures) {
   for (let i = 0; i < 3; i++) {
     const creature = creatures[i] || null;
     const slot = document.createElement('div');
-    slot.className = 'robot-slot' + (creature ? '' : ' empty');
+    slot.className = 'creature-slot' + (creature ? '' : ' empty');
     slot.dataset.index = i;
 
     if (creature) {
@@ -88,26 +88,26 @@ export function render(creatures) {
       const xpPct = Math.min(100, (creature.xp / xpNeeded) * 100);
 
       slot.innerHTML = `
-        <div class="robot-icon${isKO ? ' ko' : ''}"
+        <div class="creature-icon${isKO ? ' ko' : ''}"
              style="border-color: ${ELEMENT_COLORS[creature.element]}">
-          <img class="robot-sprite-icon" alt="">
-          <span class="robot-element-icon" style="display:none">${ELEMENT_ICONS[creature.element]}</span>
-          <span class="robot-level-badge">Lv${creature.level}</span>
+          <img class="creature-sprite-icon" alt="">
+          <span class="creature-element-icon" style="display:none">${ELEMENT_ICONS[creature.element]}</span>
+          <span class="creature-level-badge">Lv${creature.level}</span>
         </div>
-        <div class="robot-slot-name">${creature.nameEn}</div>
-        <div class="robot-hp-bar">
-          <div class="robot-hp-fill" style="width: ${hpPct}%; background-color: ${hpColor}"></div>
+        <div class="creature-slot-name">${creature.nameEn}</div>
+        <div class="creature-hp-bar">
+          <div class="creature-hp-fill" style="width: ${hpPct}%; background-color: ${hpColor}"></div>
         </div>
-        <div class="robot-xp-bar">
-          <div class="robot-xp-fill" style="width: ${xpPct}%"></div>
+        <div class="creature-xp-bar">
+          <div class="creature-xp-fill" style="width: ${xpPct}%"></div>
         </div>
-        <div class="robot-mp-bar">
-          <div class="robot-mp-fill" style="width:${(creature.mp / creature.maxMp) * 100}%"></div>
-          <span class="robot-mp-text">${creature.mp}/${creature.maxMp}</span>
+        <div class="creature-mp-bar">
+          <div class="creature-mp-fill" style="width:${(creature.mp / creature.maxMp) * 100}%"></div>
+          <span class="creature-mp-text">${creature.mp}/${creature.maxMp}</span>
         </div>
       `;
 
-      const spriteImg = slot.querySelector('.robot-sprite-icon');
+      const spriteImg = slot.querySelector('.creature-sprite-icon');
       if (isKO) {
         // Use static sprite for KO creatures (no idle animation)
         spriteImg.src = creatureStaticPath(creature.id);
@@ -152,17 +152,17 @@ function showPopup(index, creature) {
   const archetypeLabel = creature.archetype || 'Fighter';
 
   dom.chipPopup.innerHTML = `
-    <div class="robot-popup-name">${creature.name} (${creature.nameEn}) ${rarityStars(creature.rarity)}</div>
-    <div class="robot-popup-element">${ELEMENT_ICONS[creature.element]} ${creature.element}</div>
-    <div class="robot-popup-archetype">${archetypeLabel}</div>
-    <div class="robot-popup-stats">
+    <div class="creature-popup-name">${creature.name} (${creature.nameEn}) ${rarityStars(creature.rarity)}</div>
+    <div class="creature-popup-element">${ELEMENT_ICONS[creature.element]} ${creature.element}</div>
+    <div class="creature-popup-archetype">${archetypeLabel}</div>
+    <div class="creature-popup-stats">
       HP: ${creature.hp}/${creature.maxHp} | ATK: ${creature.attack} | MP: ${creature.mp}/${creature.maxMp}
     </div>
     ${!isKO ? `
-      <div class="robot-popup-moves">
-        <div class="robot-popup-moves-label">Moves:</div>
+      <div class="creature-popup-moves">
+        <div class="creature-popup-moves-label">Moves:</div>
         ${creature.moves.map(m => `
-          <div class="robot-popup-move-row">
+          <div class="creature-popup-move-row">
             <span style="color:${ELEMENT_COLORS[m.element] || '#888'}">●</span>
             ${m.name} (${m.nameEn}) — ${m.category} ${m.power}pw ${m.mpCost}mp
           </div>
@@ -170,11 +170,11 @@ function showPopup(index, creature) {
       </div>
     ` : ''}
     ${hasReserves ? `
-      <div class="robot-popup-swap-section">
-        <div class="robot-popup-swap-label">Swap with:</div>
-        <div class="robot-popup-swap-list">
+      <div class="creature-popup-swap-section">
+        <div class="creature-popup-swap-label">Swap with:</div>
+        <div class="creature-popup-swap-list">
           ${currentReserves.map((r, ri) => `
-            <button class="robot-popup-swap-btn" data-reserve-index="${ri}">
+            <button class="creature-popup-swap-btn" data-reserve-index="${ri}">
               ${ELEMENT_ICONS[r.element]} ${r.nameEn} (Lv${r.level}) ${r.hp}/${r.maxHp}HP
             </button>
           `).join('')}
@@ -182,11 +182,11 @@ function showPopup(index, creature) {
       </div>
     ` : ''}
     ${canRearrange ? `
-      <div class="robot-popup-swap-section">
-        <div class="robot-popup-swap-label">Swap position with:</div>
-        <div class="robot-popup-swap-list">
+      <div class="creature-popup-swap-section">
+        <div class="creature-popup-swap-label">Swap position with:</div>
+        <div class="creature-popup-swap-list">
           ${otherActives.map(entry => `
-            <button class="robot-popup-rearrange-btn" data-target-index="${entry.index}">
+            <button class="creature-popup-rearrange-btn" data-target-index="${entry.index}">
               ${ELEMENT_ICONS[entry.creature.element]} ${entry.creature.nameEn} (Lv${entry.creature.level})
             </button>
           `).join('')}
@@ -209,7 +209,7 @@ function showPopup(index, creature) {
   dom.chipPopup.classList.add('visible');
 
   // Swap button handlers (swap with reserves)
-  const swapBtns = dom.chipPopup.querySelectorAll('.robot-popup-swap-btn');
+  const swapBtns = dom.chipPopup.querySelectorAll('.creature-popup-swap-btn');
   swapBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const reserveIndex = parseInt(btn.dataset.reserveIndex, 10);
@@ -219,7 +219,7 @@ function showPopup(index, creature) {
   });
 
   // Rearrange button handlers (swap positions between active creatures)
-  const rearrangeBtns = dom.chipPopup.querySelectorAll('.robot-popup-rearrange-btn');
+  const rearrangeBtns = dom.chipPopup.querySelectorAll('.creature-popup-rearrange-btn');
   rearrangeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const targetIndex = parseInt(btn.dataset.targetIndex, 10);

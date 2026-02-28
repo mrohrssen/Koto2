@@ -66,11 +66,11 @@ export function showEnemy(enemy) {
     const icon = ELEMENT_ICONS[enemy.element] || '';
     dom.enemyName.innerHTML = `<span class="enemy-element-icon">${icon}</span> ${enemy.nameEn || enemy.name || 'Enemy'} ${rarityStars(enemy.rarity)} <span class="enemy-level-badge">Lv${enemy.level || 1}</span>`;
     dom.enemySpriteContainer.style.borderColor = ELEMENT_COLORS[enemy.element] || '';
-    dom.enemySpriteContainer.classList.add('robot-enemy');
+    dom.enemySpriteContainer.classList.add('creature-enemy');
   } else {
     dom.enemyName.textContent = enemy.nameEn || enemy.name || 'Enemy';
     dom.enemySpriteContainer.style.borderColor = '';
-    dom.enemySpriteContainer.classList.remove('robot-enemy');
+    dom.enemySpriteContainer.classList.remove('creature-enemy');
   }
 
   dom.enemyInfo.classList.add('visible');
@@ -131,23 +131,23 @@ export function showEnemies(enemies) {
     const hpPct = Math.max(0, (enemy.hp / enemy.maxHp) * 100);
 
     const slot = document.createElement('div');
-    slot.className = 'enemy-robot-slot';
+    slot.className = 'enemy-creature-slot';
     if (enemy.befriended) slot.classList.add('befriended');
     else if (enemy.hp <= 0) slot.classList.add('defeated');
     slot.dataset.enemyIndex = i;
     slot.dataset.enemyId = enemy.id;
     slot.innerHTML = `
-      <div class="enemy-robot-icon">
-        <img class="enemy-robot-sprite" alt="">
-        <span class="enemy-robot-element" style="display:none">${icon}</span>
-        <span class="enemy-robot-level" style="background-color: ${color}">Lv${enemy.level || 1}</span>
+      <div class="enemy-creature-icon">
+        <img class="enemy-creature-sprite" alt="">
+        <span class="enemy-creature-element" style="display:none">${icon}</span>
+        <span class="enemy-creature-level" style="background-color: ${color}">Lv${enemy.level || 1}</span>
       </div>
-      <div class="enemy-robot-name">${enemy.nameEn || enemy.name} ${rarityStars(enemy.rarity)}</div>
-      <div class="enemy-robot-hp-bar">
-        <div class="enemy-robot-hp-fill" style="width: ${hpPct}%"></div>
+      <div class="enemy-creature-name">${enemy.nameEn || enemy.name} ${rarityStars(enemy.rarity)}</div>
+      <div class="enemy-creature-hp-bar">
+        <div class="enemy-creature-hp-fill" style="width: ${hpPct}%"></div>
       </div>
     `;
-    const spriteImg = slot.querySelector('.enemy-robot-sprite');
+    const spriteImg = slot.querySelector('.enemy-creature-sprite');
     configureCreatureImg(spriteImg, enemy.id, el => {
       el.style.display = 'none';
       el.nextElementSibling.style.display = '';
@@ -160,12 +160,12 @@ export function showEnemies(enemies) {
 
 /** Update HP bar for a specific enemy by index (multi-enemy) */
 export function updateEnemyHPAtIndex(index, current, max) {
-  const slot = dom.enemySpriteContainer.querySelector(`.enemy-robot-slot[data-enemy-index="${index}"]`);
+  const slot = dom.enemySpriteContainer.querySelector(`.enemy-creature-slot[data-enemy-index="${index}"]`);
   if (!slot) {
     console.warn(`[Scene] No enemy slot found at index ${index}, skipping HP update`);
     return;
   }
-  const fill = slot.querySelector('.enemy-robot-hp-fill');
+  const fill = slot.querySelector('.enemy-creature-hp-fill');
   if (fill) {
     const pct = Math.max(0, Math.min(100, (current / max) * 100));
     fill.style.width = `${pct}%`;
@@ -313,7 +313,7 @@ export function showNpcTrainer(npcName, npcId) {
   dom.enemyHpBar.style.display = 'none';
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
   dom.enemySpriteContainer.style.borderColor = '';
-  dom.enemySpriteContainer.classList.remove('robot-enemy');
+  dom.enemySpriteContainer.classList.remove('creature-enemy');
 
   const spritePath = npcId
     ? `/assets/sprites/npcs/${npcId}.webp`
@@ -340,7 +340,7 @@ export function hideEnemy() {
   dom.enemyHpBar.style.display = '';
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = '';
   dom.enemySpriteContainer.style.borderColor = '';
-  dom.enemySpriteContainer.classList.remove('robot-enemy');
+  dom.enemySpriteContainer.classList.remove('creature-enemy');
   removePlaceholder();
 }
 
