@@ -4,11 +4,12 @@ import { ROOM_TYPES, generateFloorRooms, WORDS_PER_DISCOVERY, getRoomEntryNarrat
 
 describe('Word Discovery Room', () => {
   it('should generate wordDiscovery rooms in floor generation', () => {
-    // Run generation 100 times to verify room type can appear
+    // Room 0 is always encounter; rooms 1+ are branch pairs [roomA, roomB]
     let foundWordDiscovery = false;
     for (let i = 0; i < 100; i++) {
       const rooms = generateFloorRooms('okunomori', 5);
-      if (rooms.some(r => r.type === 'wordDiscovery')) {
+      const allRooms = rooms.flatMap(r => Array.isArray(r) ? r : [r]);
+      if (allRooms.some(r => r.type === 'wordDiscovery')) {
         foundWordDiscovery = true;
         break;
       }
@@ -19,11 +20,13 @@ describe('Word Discovery Room', () => {
   it('should create wordDiscovery room with correct structure', () => {
     // Force random to produce wordDiscovery (shrine=0-10%, quiz=10-20%, wordDiscovery=20-30%)
     const originalRandom = Math.random;
-    Math.random = () => 0.25; // 20-30% range = wordDiscovery
+    Math.random = () => 0.25;
 
     try {
-      const rooms = generateFloorRooms('okunomori', 1);
-      const room = rooms[0];
+      // Need 2+ rooms: room 0 is always encounter, room 1 is a branch pair
+      const rooms = generateFloorRooms('okunomori', 2);
+      const pair = rooms[1]; // branch pair [roomA, roomB]
+      const room = pair.find(r => r.type === 'wordDiscovery') || pair[0];
 
       assert.strictEqual(room.type, 'wordDiscovery');
       assert.deepStrictEqual(room.wordDiscovery, {

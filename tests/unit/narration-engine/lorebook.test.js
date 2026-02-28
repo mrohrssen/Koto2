@@ -19,12 +19,12 @@ describe('lorebook', () => {
   });
 
   describe('activateEntries', () => {
-    it('activates entries referenced by character card world keys', () => {
-      const result = activateEntries(['the_system', 'liberation']);
+    it('activates entries by key', () => {
+      const result = activateEntries(['the_world', 'the_disruption']);
       assert.ok(result.length >= 2);
       const ids = result.map(e => e.id);
-      assert.ok(ids.includes('the_system'));
-      assert.ok(ids.includes('liberation'));
+      assert.ok(ids.includes('the_world'));
+      assert.ok(ids.includes('the_disruption'));
     });
 
     it('respects maxEntriesPerPrompt cap', () => {
@@ -34,7 +34,7 @@ describe('lorebook', () => {
     });
 
     it('sorts by priority descending', () => {
-      const result = activateEntries(['the_system', 'liberation']);
+      const result = activateEntries(['the_world', 'the_disruption']);
       for (let i = 1; i < result.length; i++) {
         assert.ok(result[i - 1].priority >= result[i].priority,
           `${result[i - 1].id} (${result[i - 1].priority}) should be >= ${result[i].id} (${result[i].priority})`);
@@ -44,15 +44,15 @@ describe('lorebook', () => {
     it('returns empty array for unknown keys', () => {
       const result = activateEntries(['nonexistent_key']);
       assert.ok(Array.isArray(result));
+      assert.strictEqual(result.length, 0);
     });
 
     it('performs recursive keyword scanning', () => {
-      // Activating the_system should recursively activate corruption
-      // because the_system content mentions corruption-related keywords
-      const result = activateEntries(['the_system']);
+      // the_world content mentions "disruption" which is a keyword for the_disruption
+      const result = activateEntries(['the_world']);
       const ids = result.map(e => e.id);
-      assert.ok(ids.includes('the_system'));
-      // Just verify recursion runs without error -- actual activation depends on content
+      assert.ok(ids.includes('the_world'));
+      assert.ok(ids.includes('the_disruption'), 'should recursively activate the_disruption via keyword match');
     });
   });
 });
