@@ -18,6 +18,7 @@
  *   - data/items.json     - Item definitions
  *   - data/enemies.json   - Enemy definitions
  *   - data/bosses.json    - Boss definitions
+ *   - data/npcs.json      - NPC definitions
  */
 
 import express, { Router } from 'express';
@@ -29,6 +30,7 @@ import rateLimit from 'express-rate-limit';
 // ── Paths ──────────────────────────────────────────────────────────
 const DATA_DIR = join(process.cwd(), 'data');
 const SPRITE_DIR = join(process.cwd(), 'public', 'assets', 'sprites');
+const BG_DIR = join(process.cwd(), 'public', 'assets', 'backgrounds');
 const FEEDBACK_PATH = join(process.cwd(), 'tools', 'sprite-feedback.json');
 
 // ── Data loaders ───────────────────────────────────────────────────
@@ -47,6 +49,12 @@ function listWebp(category) {
   const dir = join(SPRITE_DIR, category);
   if (!existsSync(dir)) return [];
   return readdirSync(dir).filter(f => f.endsWith('.webp')).map(f => f.replace('.webp', ''));
+}
+
+function listBgWebp(subdir) {
+  const dir = subdir ? join(BG_DIR, subdir) : BG_DIR;
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter(f => f.endsWith('.webp'));
 }
 
 // ── Feedback persistence ───────────────────────────────────────────
@@ -69,7 +77,7 @@ function saveFeedback(data) {
 // ── Manifest builder ───────────────────────────────────────────────
 
 function buildManifest() {
-  const manifest = { creatures: [], moves: [], items: [], enemies: [], bosses: [] };
+  const manifest = { creatures: [], moves: [], items: [], enemies: [], bosses: [], npcs: [], backgrounds: [], player: [], starterVariants: [] };
 
   // Creatures
   const creatures = loadJSON('creatures.json') || [];
@@ -221,13 +229,116 @@ function buildManifest() {
     if (e.hasData === undefined) e.hasData = true;
   }
 
+  // NPCs
+  const npcs = loadJSON('npcs.json') || {};
+  for (const [npcId, n] of Object.entries(npcs)) {
+    manifest.npcs.push({
+      id: npcId,
+      name: n.name,
+      nameEn: n.nameEn,
+      area: n.area,
+      tier: n.tier,
+      spriteFile: `${npcId}.webp`,
+      hasSprite: spriteExists('npcs', `${npcId}.webp`),
+      hasData: true
+    });
+  }
+  // Orphan NPC sprites
+  const npcDataIds = new Set(Object.keys(npcs));
+  for (const file of listWebp('npcs')) {
+    if (!npcDataIds.has(file)) {
+      manifest.npcs.push({
+        id: file, name: null, nameEn: file,
+        spriteFile: `${file}.webp`, hasSprite: true, hasData: false
+      });
+    }
+  }
+
+  // Backgrounds - grouped by area + standalone root backgrounds
+  const areaDirs = existsSync(join(BG_DIR, 'areas'))
+    ? readdirSync(join(BG_DIR, 'areas'), { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name)
+    : [];
+  for (const area of areaDirs) {
+    const files = listBgWebp(join('areas', area));
+    manifest.backgrounds.push({
+      id: `area/${area}`,
+      name: null,
+      nameEn: area,
+      type: 'area',
+      files: files,
+      fileCount: files.length,
+      spriteFile: files[0] || null,
+      spritePath: `/assets/backgrounds/areas/${area}/`,
+      hasSprite: files.length > 0,
+      hasData: true
+    });
+  }
+  // Standalone root backgrounds (group by base name, e.g. floor1, floor1_1..5)
+  const rootBgFiles = listBgWebp(null);
+  const bgGroups = new Map();
+  for (const file of rootBgFiles) {
+    // Group: floor1.webp + floor1_1..5.webp -> "floor1"
+    const base = file.replace('.webp', '');
+    const match = base.match(/^(.+?)(?:_\d+)?$/);
+    const groupKey = match ? match[1] : base;
+    if (!bgGroups.has(groupKey)) bgGroups.set(groupKey, []);
+    bgGroups.get(groupKey).push(file);
+  }
+  for (const [groupKey, files] of bgGroups) {
+    manifest.backgrounds.push({
+      id: `bg/${groupKey}`,
+      name: null,
+      nameEn: groupKey,
+      type: 'standalone',
+      files: files.sort(),
+      fileCount: files.length,
+      spriteFile: files.sort()[0],
+      spritePath: '/assets/backgrounds/',
+      hasSprite: true,
+      hasData: true
+    });
+  }
+
+  // Player sprites
+  const playerFiles = listWebp('player');
+  for (const file of playerFiles) {
+    manifest.player.push({
+      id: file,
+      name: null,
+      nameEn: file,
+      spriteFile: `${file}.webp`,
+      hasSprite: true,
+      hasData: true
+    });
+  }
+
+  // Starter variants
+  const starterFiles = listWebp('starter-variants');
+  for (const file of starterFiles) {
+    // Extract creature base name (e.g. "timbark" from "timbark-a2")
+    const baseName = file.replace(/-[a-z]\d*$/, '');
+    manifest.starterVariants.push({
+      id: file,
+      name: null,
+      nameEn: file,
+      baseName: baseName,
+      spriteFile: `${file}.webp`,
+      hasSprite: true,
+      hasData: true
+    });
+  }
+
   // Summary counts
   manifest.summary = {
     creatures: { total: manifest.creatures.length, withSprite: manifest.creatures.filter(c => c.hasSprite).length, withIdle: manifest.creatures.filter(c => c.hasIdle).length },
     moves: { total: manifest.moves.length, withSprite: manifest.moves.filter(m => m.hasSprite).length },
     items: { total: manifest.items.length, withSprite: manifest.items.filter(i => i.hasSprite).length },
     enemies: { total: manifest.enemies.length, withSprite: manifest.enemies.filter(e => e.hasSprite).length },
-    bosses: { total: manifest.bosses.length, withSprite: manifest.bosses.filter(b => b.hasSprite).length }
+    bosses: { total: manifest.bosses.length, withSprite: manifest.bosses.filter(b => b.hasSprite).length },
+    npcs: { total: manifest.npcs.length, withSprite: manifest.npcs.filter(n => n.hasSprite).length },
+    backgrounds: { total: manifest.backgrounds.length, withSprite: manifest.backgrounds.filter(b => b.hasSprite).length },
+    player: { total: manifest.player.length, withSprite: manifest.player.filter(p => p.hasSprite).length },
+    starterVariants: { total: manifest.starterVariants.length, withSprite: manifest.starterVariants.filter(s => s.hasSprite).length }
   };
 
   return manifest;
