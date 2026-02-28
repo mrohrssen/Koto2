@@ -114,10 +114,10 @@ export function clear() {
   dom.actionArea.innerHTML = '';
 }
 
-// Show which robot is currently selecting
-export function setActiveLabel(robot) {
+// Show which creature is currently selecting
+export function setActiveLabel(creature) {
   const label = document.createElement('div');
   label.className = 'move-active-label';
-  label.textContent = `${robot.nameEn}'s turn`;
+  label.textContent = `${creature.nameEn}'s turn`;
   dom.actionArea.prepend(label);
 }

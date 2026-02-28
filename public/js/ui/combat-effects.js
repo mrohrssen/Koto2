@@ -376,9 +376,9 @@ export async function impactEnemyEffect(damage, enemyEl, enemyMaxHp = 0) {
  * Player takes damage
  * @param {number} damage - Damage taken
  * @param {Element} hpBarEl - Player HP bar element
- * @param {Element} robotRowEl - Robot row element (#chip-row)
+ * @param {Element} creatureRowEl - Creature row element (#chip-row)
  */
-export async function playerHitEffect(damage, hpBarEl, robotRowEl) {
+export async function playerHitEffect(damage, hpBarEl, creatureRowEl) {
   // 1. Hit stop (shorter than enemy)
   await hitStop(50);
 
@@ -388,9 +388,9 @@ export async function playerHitEffect(damage, hpBarEl, robotRowEl) {
   // 3. Red vignette
   showVignette(300);
 
-  // 4. Robot row shudders
-  if (robotRowEl) {
-    anime(robotRowEl.querySelectorAll('.robot-slot'), {
+  // 4. Creature row shudders
+  if (creatureRowEl) {
+    anime(creatureRowEl.querySelectorAll('.robot-slot'), {
       translateX: [-2, 2, -1, 0],
     }, {
       duration: 150,
@@ -404,9 +404,9 @@ export async function playerHitEffect(damage, hpBarEl, robotRowEl) {
   }
 }
 
-// ============ ROBOT COMBAT EFFECTS ============
+// ============ CREATURE COMBAT EFFECTS ============
 
-/** Element color mapping for robot attack orbs */
+/** Element color mapping for creature attack orbs */
 const ELEMENT_COLORS = {
   wood: '#4CAF50',
   fire: '#F44336',
@@ -416,28 +416,28 @@ const ELEMENT_COLORS = {
 };
 
 /**
- * Fire element-colored energy orbs from an allied robot to the enemy.
+ * Fire element-colored energy orbs from an allied creature to the enemy.
  * Reuses spawnSpeedLines for the projectile, plus pop and particle burst.
- * @param {Element} robotSlotEl - The .robot-slot element that is attacking
+ * @param {Element} creatureSlotEl - The .robot-slot element that is attacking
  * @param {Element} enemyEl - The enemy sprite element
- * @param {string} element - Robot element ('fire', 'water', 'wood', 'earth', 'metal')
+ * @param {string} element - Creature element ('fire', 'water', 'wood', 'earth', 'metal')
  * @param {number} damage - Damage dealt (for tier-based impact)
  * @param {number} enemyMaxHp - Enemy max HP (for tier calculation)
  */
-export async function fireRobotAttackEffect(robotSlotEl, enemyEl, element, damage = 0, enemyMaxHp = 0) {
-  if (!robotSlotEl || !enemyEl) return;
+export async function fireCreatureAttackEffect(creatureSlotEl, enemyEl, element, damage = 0, enemyMaxHp = 0) {
+  if (!creatureSlotEl || !enemyEl) return;
 
   const color = ELEMENT_COLORS[element] || '#fff';
 
-  // 1. Robot icon pops
-  const icon = robotSlotEl.querySelector('.robot-icon');
+  // 1. Creature icon pops
+  const icon = creatureSlotEl.querySelector('.robot-icon');
   if (icon) pop(icon, 1.2);
 
-  // 2. Fire element-colored orbs from robot to enemy
-  spawnSpeedLines(robotSlotEl, enemyEl, 3, color);
+  // 2. Fire element-colored orbs from creature to enemy
+  spawnSpeedLines(creatureSlotEl, enemyEl, 3, color);
 
-  // 3. Particles burst from robot in element color
-  spawnParticles(robotSlotEl, 4, color);
+  // 3. Particles burst from creature in element color
+  spawnParticles(creatureSlotEl, 4, color);
 
   // 4. Wait for orbs to arrive, then impact
   await delay(350);
@@ -447,19 +447,19 @@ export async function fireRobotAttackEffect(robotSlotEl, enemyEl, element, damag
 }
 
 /**
- * Fire element-colored energy orbs from the enemy to a targeted allied robot.
+ * Fire element-colored energy orbs from the enemy to a targeted allied creature.
  * @param {Element} enemyEl - The enemy sprite element
- * @param {Element} robotSlotEl - The targeted .robot-slot element
- * @param {string} element - Enemy robot element
+ * @param {Element} creatureSlotEl - The targeted .robot-slot element
+ * @param {string} element - Enemy creature element
  * @param {number} damage - Damage dealt
  */
-export async function enemyRobotAttackEffect(enemyEl, robotSlotEl, element, damage = 0) {
-  if (!enemyEl || !robotSlotEl) return;
+export async function enemyCreatureAttackEffect(enemyEl, creatureSlotEl, element, damage = 0) {
+  if (!enemyEl || !creatureSlotEl) return;
 
   const color = ELEMENT_COLORS[element] || '#fff';
 
-  // 1. Fire element-colored orbs from enemy to robot
-  spawnSpeedLines(enemyEl, robotSlotEl, 2, color);
+  // 1. Fire element-colored orbs from enemy to creature
+  spawnSpeedLines(enemyEl, creatureSlotEl, 2, color);
 
   // 2. Particles burst from enemy in element color
   spawnParticles(enemyEl, 3, color);
@@ -467,8 +467,8 @@ export async function enemyRobotAttackEffect(enemyEl, robotSlotEl, element, dama
   // 3. Wait for orbs to arrive
   await delay(300);
 
-  // 4. Flash the targeted robot
-  const icon = robotSlotEl.querySelector('.robot-icon');
+  // 4. Flash the targeted creature
+  const icon = creatureSlotEl.querySelector('.robot-icon');
   if (icon) flashElement(icon);
 
   // 5. Screen shake + vignette
@@ -481,7 +481,7 @@ export async function enemyRobotAttackEffect(enemyEl, robotSlotEl, element, dama
 /**
  * Visual effect for poison being applied to a target.
  * Adds a 'poisoned' class for persistent HP bar tint and spawns purple particles.
- * @param {Element} targetEl - The enemy slot or robot slot element being poisoned
+ * @param {Element} targetEl - The enemy slot or creature slot element being poisoned
  */
 export async function poisonApplyEffect(targetEl) {
   targetEl.classList.add('poisoned');
@@ -492,7 +492,7 @@ export async function poisonApplyEffect(targetEl) {
 /**
  * Visual effect for poison damage tick.
  * Shows a purple damage number and a brief purple pulse.
- * @param {Element} targetEl - The enemy slot or robot slot element taking poison damage
+ * @param {Element} targetEl - The enemy slot or creature slot element taking poison damage
  * @param {number} damage - Poison damage dealt
  */
 export async function poisonTickEffect(targetEl, damage) {
@@ -511,20 +511,20 @@ export async function poisonTickEffect(targetEl, damage) {
 // ============ HEAL EFFECTS ============
 
 /**
- * Show green heal number floating up from a robot slot.
- * Flashes the robot icon and spawns green particles.
- * @param {Element} robotSlotEl - The .robot-slot element being healed
+ * Show green heal number floating up from a creature slot.
+ * Flashes the creature icon and spawns green particles.
+ * @param {Element} creatureSlotEl - The .robot-slot element being healed
  * @param {number} healAmount - Amount of HP healed
  */
-export async function healEffect(robotSlotEl, healAmount) {
+export async function healEffect(creatureSlotEl, healAmount) {
   const popup = document.createElement('div');
   popup.className = 'heal-number';
   popup.textContent = `+${healAmount}`;
-  robotSlotEl.style.position = 'relative';
-  robotSlotEl.appendChild(popup);
+  creatureSlotEl.style.position = 'relative';
+  creatureSlotEl.appendChild(popup);
 
-  flashElement(robotSlotEl.querySelector('.robot-icon'), 1);
-  spawnParticles(robotSlotEl, 8, '#4CAF50');
+  flashElement(creatureSlotEl.querySelector('.robot-icon'), 1);
+  spawnParticles(creatureSlotEl, 8, '#4CAF50');
 
   await delay(1200);
   popup.remove();
@@ -533,18 +533,18 @@ export async function healEffect(robotSlotEl, healAmount) {
 // ============ XP POPUP EFFECTS ============
 
 /**
- * Show animated "+XP" text floating up from a robot slot element.
- * @param {Element} robotSlotEl - The .robot-slot element to show the popup over
+ * Show animated "+XP" text floating up from a creature slot element.
+ * @param {Element} creatureSlotEl - The .robot-slot element to show the popup over
  * @param {number} xpAmount - Amount of XP gained
  */
-export function showXpPopup(robotSlotEl, xpAmount) {
-  if (!robotSlotEl || !xpAmount) return;
+export function showXpPopup(creatureSlotEl, xpAmount) {
+  if (!creatureSlotEl || !xpAmount) return;
 
   const popup = document.createElement('div');
   popup.className = 'robot-xp-popup';
   popup.textContent = `+${xpAmount} XP`;
-  robotSlotEl.style.position = 'relative';
-  robotSlotEl.appendChild(popup);
+  creatureSlotEl.style.position = 'relative';
+  creatureSlotEl.appendChild(popup);
 
   anime(popup, {
     translateY: [0, -40],
@@ -558,14 +558,14 @@ export function showXpPopup(robotSlotEl, xpAmount) {
 }
 
 /**
- * Show animated "Level Up!" text floating up from a robot slot element.
- * @param {Element} robotSlotEl - The .robot-slot element
+ * Show animated "Level Up!" text floating up from a creature slot element.
+ * @param {Element} creatureSlotEl - The .robot-slot element
  * @param {number} newLevel - The new level reached
  * @param {number} [hpGain] - HP gained from this level-up
  * @param {number} [attackGain] - ATK gained from this level-up
  */
-export function showLevelUpPopup(robotSlotEl, newLevel, hpGain, attackGain) {
-  if (!robotSlotEl) return;
+export function showLevelUpPopup(creatureSlotEl, newLevel, hpGain, attackGain) {
+  if (!creatureSlotEl) return;
 
   const popup = document.createElement('div');
   popup.className = 'robot-levelup-popup';
@@ -578,18 +578,18 @@ export function showLevelUpPopup(robotSlotEl, newLevel, hpGain, attackGain) {
   }
   popup.textContent = text;
   popup.style.whiteSpace = 'pre-line';
-  robotSlotEl.style.position = 'relative';
-  robotSlotEl.appendChild(popup);
+  creatureSlotEl.style.position = 'relative';
+  creatureSlotEl.appendChild(popup);
 
-  // Flash the robot icon with a neon glow
-  const icon = robotSlotEl.querySelector('.robot-icon');
+  // Flash the creature icon with a neon glow
+  const icon = creatureSlotEl.querySelector('.robot-icon');
   if (icon) {
     icon.classList.add('level-up-glow');
     setTimeout(() => icon.classList.remove('level-up-glow'), 1500);
   }
 
   // Update level badge in DOM
-  const badge = robotSlotEl.querySelector('.robot-level-badge');
+  const badge = creatureSlotEl.querySelector('.robot-level-badge');
   if (badge) {
     badge.textContent = `Lv${newLevel}`;
     badge.classList.add('level-badge-pop');
@@ -664,7 +664,7 @@ const ULTIMATE_ELEMENT_CONFIG = {
  * Play the full ultimate visual effect for a given element.
  * Creates overlay particles, screen tint, and heavy shake.
  * @param {string} element - 'fire', 'water', 'earth', 'metal', 'wood'
- * @param {Element} sourceEl - Robot slot element (source of effect)
+ * @param {Element} sourceEl - Creature slot element (source of effect)
  * @param {Element[]} targetEls - Array of enemy elements to hit
  * @returns {Promise<void>} Resolves when animation is mostly complete
  */

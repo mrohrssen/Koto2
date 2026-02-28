@@ -2,7 +2,7 @@
  * @file post-combat-shop.js - Post-Combat Item Shop
  *
  * PURPOSE:
- * Shows 3 random items after each robot combat victory. Player picks one.
+ * Shows 3 random items after each creature combat victory. Player picks one.
  * Each item teaches a Japanese vocabulary word.
  * Stat boosts stack permanently for the run. Heals apply immediately.
  *

@@ -2,8 +2,8 @@
 // Shows targetable enemies or allies after a move is selected
 // Design: Full info card with sprite panel + kanji element badge
 import { dom } from '../dom.js';
-import { ELEMENT_COLORS } from './robot-row.js';
-import { configureRobotImg } from './sprite-utils.js';
+import { ELEMENT_COLORS } from './creature-row.js';
+import { configureCreatureImg } from './sprite-utils.js';
 
 const ELEMENT_KANJI = {
   fire: '火', water: '水', wood: '木',
@@ -70,7 +70,7 @@ function showTargets(targets, move, type) {
     const spriteImg = document.createElement('img');
     spriteImg.className = 'target-sprite-img';
     spriteImg.alt = target.nameEn || '';
-    configureRobotImg(spriteImg, target.id, (img) => {
+    configureCreatureImg(spriteImg, target.id, (img) => {
       img.style.display = 'none';
       // Show element emoji as fallback
       const fallback = document.createElement('span');

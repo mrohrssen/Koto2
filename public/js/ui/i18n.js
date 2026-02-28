@@ -14,7 +14,7 @@
  * Japanified: combat, collection, equip, shrine, quiz, level select, game
  *   over, item popups, buff overlay, flash card hints
  * Always English: auth, settings, bug report, speed review, menu sheet,
- *   leaderboard, error messages, stat abbreviations, robot/enemy names
+ *   leaderboard, error messages, stat abbreviations, creature/enemy names
  */
 
 let lang = 'en';
@@ -51,15 +51,15 @@ const strings = {
   // ── Collection / team select ──
   selectTeam:       { en: 'Select Your Team', ja: 'チーム選択' },
   startRun:         { en: 'Start Run ({0} monster{1})', ja: '出撃（{0}体）' },
-  newRobot:         { en: 'New: {0}!',       ja: '新規: {0}！' },
+  newCreature:      { en: 'New: {0}!',       ja: '新規: {0}！' },
 
   // ── Equip screens ──
   equippedChips:    { en: 'Equipped Chips',  ja: '装備チップ' },
   inventory:        { en: 'Inventory',       ja: 'インベントリ' },
   noChips:          { en: 'No chips in inventory', ja: 'チップがありません' },
   emptySlot:        { en: 'Empty',           ja: '空き' },
-  equippedRobots:   { en: 'Equipped Monsters (Front Line)', ja: '出撃モンスター（前衛）' },
-  reserveRobots:    { en: 'Reserve Monsters',  ja: '控えモンスター' },
+  equippedCreatures: { en: 'Equipped Monsters (Front Line)', ja: '出撃モンスター（前衛）' },
+  reserveCreatures: { en: 'Reserve Monsters',  ja: '控えモンスター' },
   noReserves:       { en: 'No reserve monsters', ja: '控えモンスターなし' },
   swapInstruction:  { en: 'Tap an equipped monster, then a reserve to swap them.', ja: '前衛→控えの順にタップで交代' },
 

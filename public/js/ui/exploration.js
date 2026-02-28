@@ -13,7 +13,7 @@
  * - renderExploring(): Show Proceed/Fight buttons for room navigation
  * - renderAreaComplete(): Show Continue button after area cleared
  * - renderRunEnded(): Show Return to Hub button
- * - renderShrine(): Show robot level-up selection
+ * - renderShrine(): Show creature level-up selection
  * - renderQuiz(): Show quiz question and reward selection
  *
  * DEPENDENCIES:
@@ -27,7 +27,7 @@ import * as speedReview from './speed-review.js';
 import { WhackAMoleGame } from './whack-a-mole.js';
 import { playSFX } from '../audio.js';
 import { speakNarration, prefetchNarration } from '../tts.js';
-import { robotBgUrl, configureRobotImg } from './sprite-utils.js';
+import { creatureBgUrl, configureCreatureImg } from './sprite-utils.js';
 import { t, isJapanified } from './i18n.js';
 
 const PATH_LEFT_SVG = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:4px"><path d="M10 18 C10 14 10 12 10 10 C10 8 8 6 4 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><circle cx="10" cy="18" r="1.5" fill="currentColor"/><path d="M10 18 C10 14 10 12 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.3"/></svg>`;
@@ -116,7 +116,7 @@ let apiGetDueWords = null;
 // Level select API functions
 let apiGetLevels = null;
 let apiSelectLevel = null;
-let apiGetRobotCollection = null;
+let apiGetCreatureCollection = null;
 let showCollectionSelect = null;
 
 export function init(callbacks) {
@@ -147,7 +147,7 @@ export function init(callbacks) {
   apiGetDueWords = callbacks.apiGetDueWords;
   apiGetLevels = callbacks.apiGetLevels;
   apiSelectLevel = callbacks.apiSelectLevel;
-  apiGetRobotCollection = callbacks.apiGetRobotCollection;
+  apiGetCreatureCollection = callbacks.apiGetCreatureCollection;
   showCollectionSelect = callbacks.showCollectionSelect;
   apiGetWhackAMolePool = callbacks.apiGetWhackAMolePool;
   apiCompleteWhackAMole = callbacks.apiCompleteWhackAMole;
@@ -189,34 +189,34 @@ function showInventory() {
     }
   }
 
-  // Collect temp effects from active robots
+  // Collect temp effects from active creatures
   const tempEffects = [];
-  const robots = gameState.creatureParty?.active || [];
-  for (const robot of robots) {
-    if (!robot?.activeEffects) continue;
-    for (const eff of robot.activeEffects) {
+  const creatures = gameState.creatureParty?.active || [];
+  for (const creature of creatures) {
+    if (!creature?.activeEffects) continue;
+    for (const eff of creature.activeEffects) {
       if (eff.type === 'temp_attack_flat') {
         tempEffects.push({
           icon: '⚔️',
-          name: `${robot.nameEn || robot.name} ATK +${eff.value}`,
+          name: `${creature.nameEn || creature.name} ATK +${eff.value}`,
           turns: eff.remainingTurns
         });
       } else if (eff.type === 'poison') {
         tempEffects.push({
           icon: '☠️',
-          name: `${robot.nameEn || robot.name} Poison`,
+          name: `${creature.nameEn || creature.name} Poison`,
           turns: eff.remainingTurns
         });
       } else if (eff.type === 'attack_buff') {
         tempEffects.push({
           icon: '🔥',
-          name: `${robot.nameEn || robot.name} ATK +${eff.percent}%`,
+          name: `${creature.nameEn || creature.name} ATK +${eff.percent}%`,
           turns: eff.remainingTurns
         });
       } else if (eff.type === 'shield' || eff.type === 'team_shield') {
         tempEffects.push({
           icon: '🛡️',
-          name: `${robot.nameEn || robot.name} Shield`,
+          name: `${creature.nameEn || creature.name} Shield`,
           turns: eff.remainingTurns
         });
       }
@@ -364,10 +364,10 @@ export async function renderLevelSelect() {
       const levelId = parseInt(card.dataset.levelId);
       playSFX('button-tap');
 
-      // Show starter robot selection before starting the run
+      // Show starter creature selection before starting the run
       let starterIds = null;
-      if (apiGetRobotCollection && showCollectionSelect) {
-        const collectionResult = await apiGetRobotCollection();
+      if (apiGetCreatureCollection && showCollectionSelect) {
+        const collectionResult = await apiGetCreatureCollection();
         const catalog = collectionResult?.catalog;
         const collection = collectionResult?.collection;
         if (catalog && catalog.length > 0) {
@@ -644,14 +644,14 @@ export function renderRunEnded() {
   });
 }
 
-/** Shrine phase - show robot roster for level-up */
+/** Shrine phase - show creature roster for level-up */
 export function renderShrine() {
   const gameState = getGameState();
   const creatureParty = gameState.run?.creatureParty;
 
   if (!creatureParty) {
     actions.setContent(`
-      <p style="text-align:center;color:var(--text-secondary)">No robots in party</p>
+      <p style="text-align:center;color:var(--text-secondary)">No creatures in party</p>
       <button class="action-btn action-btn-primary" id="shrine-skip-btn">続ける</button>
     `);
     document.getElementById('shrine-skip-btn')?.addEventListener('click', async () => {
@@ -661,22 +661,22 @@ export function renderShrine() {
     return;
   }
 
-  const allRobots = [
+  const allCreatures = [
     ...(creatureParty.active || []),
     ...(creatureParty.reserves || [])
   ].filter(Boolean);
 
-  const robotCards = allRobots.map(robot => {
-    const hpPercent = Math.floor((robot.hp / robot.maxHp) * 100);
+  const creatureCards = allCreatures.map(creature => {
+    const hpPercent = Math.floor((creature.hp / creature.maxHp) * 100);
     return `
-      <div class="shrine-chip-option" data-creature-id="${robot.id}">
-        <div class="shrine-chip-icon" style="border-color: var(--rarity-${robot.rarity || 'common'})">
-          <img class="shrine-chip-img" data-creature-id="${robot.id}" alt="">
+      <div class="shrine-chip-option" data-creature-id="${creature.id}">
+        <div class="shrine-chip-icon" style="border-color: var(--rarity-${creature.rarity || 'common'})">
+          <img class="shrine-chip-img" data-creature-id="${creature.id}" alt="">
         </div>
         <div class="shrine-chip-info">
-          <div class="shrine-chip-name">${robot.nameEn} Lv.${robot.level} <span class="shrine-chip-upgrade">\u2192 Lv.${robot.level + 1}</span></div>
-          <div class="shrine-chip-rarity ${robot.rarity || 'common'}">${robot.rarity} \u00B7 ${robot.element}</div>
-          <div class="shrine-chip-desc">HP: ${robot.hp}/${robot.maxHp} (${hpPercent}%) \u00B7 ATK: ${robot.attack}</div>
+          <div class="shrine-chip-name">${creature.nameEn} Lv.${creature.level} <span class="shrine-chip-upgrade">\u2192 Lv.${creature.level + 1}</span></div>
+          <div class="shrine-chip-rarity ${creature.rarity || 'common'}">${creature.rarity} \u00B7 ${creature.element}</div>
+          <div class="shrine-chip-desc">HP: ${creature.hp}/${creature.maxHp} (${hpPercent}%) \u00B7 ATK: ${creature.attack}</div>
         </div>
       </div>
     `;
@@ -684,12 +684,12 @@ export function renderShrine() {
 
   actions.setContent(`
     <h3 class="shrine-title">${t('chooseToTrain')}</h3>
-    <div class="shrine-chip-list">${robotCards}</div>
+    <div class="shrine-chip-list">${creatureCards}</div>
   `);
 
   // Wire up sprite images with proper idle->static fallback
   document.querySelectorAll('.shrine-chip-img').forEach(img => {
-    configureRobotImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
+    configureCreatureImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
   });
 
   if (shrineInProgress) return;
@@ -846,9 +846,9 @@ async function renderQuizRewards() {
   const gameState = getGameState();
   const creatureParty = gameState.run?.creatureParty;
 
-  // If a reward type was chosen that needs a robot, show robot picker
+  // If a reward type was chosen that needs a creature, show creature picker
   if (gameState._quizSelectedReward && gameState._quizSelectedReward !== 'credits') {
-    const allRobots = [
+    const allCreatures = [
       ...(creatureParty?.active || []),
       ...(creatureParty?.reserves || [])
     ].filter(Boolean);
@@ -856,29 +856,29 @@ async function renderQuizRewards() {
     const rewardType = gameState._quizSelectedReward;
     const label = rewardType === 'heal' ? t('chooseToHeal') : t('chooseToLevelUp');
 
-    const robotCards = allRobots.map(robot => {
+    const creatureCards = allCreatures.map(creature => {
       const hpText = rewardType === 'heal'
-        ? `HP: ${robot.hp}/${robot.maxHp}`
-        : `Lv.${robot.level} \u2192 Lv.${robot.level + 1}`;
+        ? `HP: ${creature.hp}/${creature.maxHp}`
+        : `Lv.${creature.level} \u2192 Lv.${creature.level + 1}`;
       return `
-        <div class="shrine-chip-option quiz-reward-robot" data-creature-id="${robot.id}" style="width:100%">
-          <div class="shrine-chip-icon" style="border-color: var(--rarity-${robot.rarity || 'common'})">
-            <img class="shrine-chip-img" data-creature-id="${robot.id}" alt="">
+        <div class="shrine-chip-option quiz-reward-robot" data-creature-id="${creature.id}" style="width:100%">
+          <div class="shrine-chip-icon" style="border-color: var(--rarity-${creature.rarity || 'common'})">
+            <img class="shrine-chip-img" data-creature-id="${creature.id}" alt="">
           </div>
           <div class="shrine-chip-info" style="padding:0.75rem">
-            <div class="shrine-chip-name">${robot.nameEn}</div>
-            <div class="shrine-chip-desc">${hpText} \u00B7 ATK: ${robot.attack}</div>
+            <div class="shrine-chip-name">${creature.nameEn}</div>
+            <div class="shrine-chip-desc">${hpText} \u00B7 ATK: ${creature.attack}</div>
           </div>
         </div>
       `;
     }).join('');
 
     sceneModule.showNarration(label, { speaker: 'Quiz Master', persistent: true });
-    actions.setContent(`<div class="shrine-chip-list" style="padding:0 1rem">${robotCards}</div>`);
+    actions.setContent(`<div class="shrine-chip-list" style="padding:0 1rem">${creatureCards}</div>`);
 
     // Wire up sprite images with proper idle->static fallback
     document.querySelectorAll('.shrine-chip-img').forEach(img => {
-      configureRobotImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
+      configureCreatureImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
     });
 
     const list = document.querySelector('.shrine-chip-list');
@@ -958,7 +958,7 @@ async function renderQuizRewards() {
         const proceedResult = await apiProceed();
         if (proceedResult?.state) { updateGameState(proceedResult.state); updateUI(); }
       } else {
-        // Heal or levelup — need robot picker
+        // Heal or levelup — need creature picker
         gameState._quizSelectedReward = rewardType;
         updateUI();
       }

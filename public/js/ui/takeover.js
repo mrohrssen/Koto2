@@ -3,7 +3,7 @@
  *
  * PURPOSE:
  * Manages full-screen overlay panels that slide in from the right. Used for
- * robot equipment, settings, and game over screens. Only one takeover
+ * creature equipment, settings, and game over screens. Only one takeover
  * can be active at a time.
  *
  * KEY EXPORTS:
@@ -15,11 +15,11 @@
  * - getContent(viewName): Get the content container for a view
  *
  * DEPENDENCIES:
- * - ../dom.js: DOM element references (robotEquipView, settingsView, etc.)
+ * - ../dom.js: DOM element references (creatureEquipView, settingsView, etc.)
  * - ../audio.js: Sound effects (takeover-open, takeover-close)
  *
  * AVAILABLE VIEWS:
- * - robotEquip: Robot team management
+ * - creatureEquip: Creature team management
  * - settings: API keys, audio, preferences
  * - gameover: Run end results
  */
@@ -31,13 +31,13 @@ const views = {};
 
 /** Initialize all takeover views and close buttons */
 export function init() {
-  views.robotEquip = dom.robotEquipView;
+  views.creatureEquip = dom.creatureEquipView;
   views.settings = dom.settingsView;
   views.gameover = dom.gameoverView;
   views.speedReview = dom.speedReviewView;
 
   // Close buttons
-  dom.robotEquipClose.addEventListener('click', () => close('robotEquip'));
+  dom.creatureEquipClose.addEventListener('click', () => close('creatureEquip'));
   dom.settingsClose.addEventListener('click', () => close('settings'));
   dom.speedReviewClose.addEventListener('click', () => close('speedReview'));
 }
@@ -73,7 +73,7 @@ export function isAnyActive() {
 /** Get content container for a view */
 export function getContent(viewName) {
   switch (viewName) {
-    case 'robotEquip': return dom.robotEquipContent;
+    case 'creatureEquip': return dom.creatureEquipContent;
     case 'settings': return dom.settingsContent;
     case 'gameover': return dom.gameoverContent;
     default: return null;

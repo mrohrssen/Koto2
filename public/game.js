@@ -89,7 +89,7 @@ import { dom } from './js/dom.js';
 import * as actions from './js/ui/actions.js';
 import * as takeover from './js/ui/takeover.js';
 import * as hpBar from './js/ui/hp-bar.js';
-import * as robotRow from './js/ui/robot-row.js';
+import * as creatureRow from './js/ui/creature-row.js';
 import * as postCombatShop from './js/ui/post-combat-shop.js';
 import * as scene from './js/ui/scene.js';
 import * as audio from './js/audio.js';
@@ -99,7 +99,7 @@ import * as leaderboard from './js/ui/leaderboard.js';
 import * as lookup from './js/ui/lookup.js';
 import * as bugReport from './js/ui/bug-report.js';
 import * as speedReview from './js/ui/speed-review.js';
-import { configureRobotImg, robotSpritePath, probeIdleSprites } from './js/ui/sprite-utils.js';
+import { configureCreatureImg, creatureSpritePath, probeIdleSprites } from './js/ui/sprite-utils.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 
 // API imports - these are the server communication functions
@@ -237,7 +237,7 @@ function updateStatusBar() {
 
 function updateScene() {
   if (gameState.phase === 'combat') {
-    // Robot combat uses enemies[] array; legacy uses single enemy
+    // Creature combat uses enemies[] array; legacy uses single enemy
     const enemies = gameState.combat?.enemies;
     if (enemies?.length > 1) {
       scene.showEnemies(enemies);
@@ -279,18 +279,18 @@ function updateChipRow() {
   }
 
   if (gameState.run?.creatureParty?.active?.length > 0) {
-    // Robot party active: render robot slots
-    robotRow.setReserves(gameState.run.creatureParty.reserves || []);
-    robotRow.render(gameState.run.creatureParty.active);
+    // Creature party active: render creature slots
+    creatureRow.setReserves(gameState.run.creatureParty.reserves || []);
+    creatureRow.render(gameState.run.creatureParty.active);
     return;
   }
 
-  // No robots, no chips - clear the row
+  // No creatures, no chips - clear the row
   dom.chipRow.innerHTML = '';
 }
 
 function updatePlayerHP() {
-  // In robot combat, individual robot HP bars handle health display
+  // In creature combat, individual creature HP bars handle health display
   if (gameState.run?.creatureParty?.active?.length > 0) {
     hpBar.setVisible(false);
     return;
@@ -395,12 +395,12 @@ async function loadGameState() {
   const data = await apiGetGameState();
   if (data.player) {
     updateGameState(data);
-    // Probe which robots have animated idle sprites (for background-image contexts)
-    const allRobotIds = [
+    // Probe which creatures have animated idle sprites (for background-image contexts)
+    const allCreatureIds = [
       ...(data.creatureParty?.active || []),
       ...(data.creatureParty?.reserves || []),
     ].filter(Boolean).map(r => r.id);
-    probeIdleSprites(allRobotIds);
+    probeIdleSprites(allCreatureIds);
   } else {
     updateGameState({ ...gameState, phase: 'no_save' });
   }
@@ -437,7 +437,7 @@ function removeCollectionOverlay() {
 async function startNewRun() {
   // Note: clearWordCache() moved to returnToHub() for earlier prefetching
 
-  // Fetch robot collection for team select
+  // Fetch creature collection for team select
   const collectionResult = await apiGetCreatureCollection();
   const catalog = collectionResult?.catalog;
   const collection = collectionResult?.collection;
@@ -606,7 +606,7 @@ function showCollectionSelect(catalog, collection) {
 
       // Configure animated idle sprites with static fallback
       overlay.querySelectorAll('img[data-creature-id]').forEach(img => {
-        configureRobotImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
+        configureCreatureImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
       });
 
       // Set background
@@ -616,8 +616,8 @@ function showCollectionSelect(catalog, collection) {
       document.querySelectorAll('.collection-cell').forEach(cell => {
         cell.addEventListener('click', () => {
           const id = cell.dataset.id;
-          const robot = sorted.find(r => r.id === id);
-          if (!robot) return;
+          const creature = sorted.find(r => r.id === id);
+          if (!creature) return;
 
           // Always update inspection (even for unowned)
           inspectedId = id;
@@ -627,14 +627,14 @@ function showCollectionSelect(catalog, collection) {
           if (owned) {
             if (selected.has(id)) {
               selected.delete(id);
-              usedPoints -= robot.pointCost;
+              usedPoints -= creature.pointCost;
             } else {
-              if (robot.pointCost > MAX_POINTS - usedPoints) {
+              if (creature.pointCost > MAX_POINTS - usedPoints) {
                 render();
                 return;
               }
               selected.add(id);
-              usedPoints += robot.pointCost;
+              usedPoints += creature.pointCost;
             }
           }
           render();
@@ -653,14 +653,14 @@ function showCollectionSelect(catalog, collection) {
 }
 
 function showCollectionToast(additions) {
-  for (const robot of additions) {
+  for (const creature of additions) {
     const toast = document.createElement('div');
     toast.className = 'collection-toast';
     toast.innerHTML = `
       <img />
-      <span class="toast-text">${t('newRobot', robot.nameEn)}</span>
+      <span class="toast-text">${t('newCreature', creature.nameEn)}</span>
     `;
-    configureRobotImg(toast.querySelector('img'), robot.id);
+    configureCreatureImg(toast.querySelector('img'), creature.id);
     document.body.appendChild(toast);
     setTimeout(() => {
       toast.style.animation = 'toastSlideOut 0.3s ease-in forwards';
@@ -670,10 +670,10 @@ function showCollectionToast(additions) {
 }
 
 async function startEncounter() {
-  const hasRobots = gameState.run?.creatureParty?.active?.length > 0;
+  const hasCreatures = gameState.run?.creatureParty?.active?.length > 0;
 
   let result;
-  if (hasRobots) {
+  if (hasCreatures) {
     result = await apiStartCreatureEncounter();
   } else if (gameState.phase === 'room_encounter') {
     result = await apiRoomEncounter();
@@ -684,8 +684,8 @@ async function startEncounter() {
   if (result?.state) {
     updateGameState(result.state);
     updateUI();
-    // Robot encounters don't have possessed dialogue
-    if (!hasRobots) {
+    // Creature encounters don't have possessed dialogue
+    if (!hasCreatures) {
       const enemy = gameState.combat?.enemy;
       if (result?.dialogue || enemy?.dialogue?.possessed) {
         const text = result.dialogue || (Array.isArray(enemy.dialogue.possessed)
@@ -724,7 +724,7 @@ function showVictoryModal(result) {
   audio.stopBGM();
   narrationBox.show('Victory!', { autoDismiss: 2000 });
 
-  // Show collection toast for newly befriended robots
+  // Show collection toast for newly befriended creatures
   if (result.newCollectionAdditions?.length > 0) {
     showCollectionToast(result.newCollectionAdditions);
   }
@@ -803,32 +803,32 @@ async function showPostCombatShopFlow() {
   }
 }
 
-// ============ ROBOT EQUIP UI ============
-async function openRobotEquipView() {
+// ============ CREATURE EQUIP UI ============
+async function openCreatureEquipView() {
   const party = gameState.run?.creatureParty;
   if (!party) return;
 
-  takeover.open('robotEquip');
-  const content = takeover.getContent('robotEquip');
+  takeover.open('creatureEquip');
+  const content = takeover.getContent('creatureEquip');
 
-  function renderRobotEquipContent() {
+  function renderCreatureEquipContent() {
     const active = party.active || [];
     const reserves = party.reserves || [];
 
-    const ELEMENT_ICONS = robotRow.ELEMENT_ICONS || { wood: '🌿', fire: '🔥', earth: '⛰️', metal: '⚙️', water: '💧' };
-    const ELEMENT_COLORS = robotRow.ELEMENT_COLORS || { wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63', metal: '#9E9E9E', water: '#2196F3' };
+    const ELEMENT_ICONS = creatureRow.ELEMENT_ICONS || { wood: '🌿', fire: '🔥', earth: '⛰️', metal: '⚙️', water: '💧' };
+    const ELEMENT_COLORS = creatureRow.ELEMENT_COLORS || { wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63', metal: '#9E9E9E', water: '#2196F3' };
     const rarityStars = (rarity) => { const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity]; return n ? `<span style="color:#FFD700">${n}★</span>` : ''; };
 
-    const activeHtml = active.map((robot, i) => {
-      if (!robot) return `<div class="robot-equip-slot empty" data-type="active" data-index="${i}"><span style="opacity:0.4">${t('emptySlot')}</span></div>`;
-      const hpPct = Math.max(0, (robot.hp / robot.maxHp) * 100);
+    const activeHtml = active.map((creature, i) => {
+      if (!creature) return `<div class="robot-equip-slot empty" data-type="active" data-index="${i}"><span style="opacity:0.4">${t('emptySlot')}</span></div>`;
+      const hpPct = Math.max(0, (creature.hp / creature.maxHp) * 100);
       return `
-        <div class="robot-equip-slot" data-type="active" data-index="${i}" data-creature-id="${robot.id}"
-             style="border-left: 3px solid ${ELEMENT_COLORS[robot.element] || '#666'}">
-          <img class="robot-equip-sprite" data-creature-id="${robot.id}" alt="">
+        <div class="robot-equip-slot" data-type="active" data-index="${i}" data-creature-id="${creature.id}"
+             style="border-left: 3px solid ${ELEMENT_COLORS[creature.element] || '#666'}">
+          <img class="robot-equip-sprite" data-creature-id="${creature.id}" alt="">
           <div class="robot-equip-info">
-            <div class="robot-equip-name">${ELEMENT_ICONS[robot.element] || ''} ${robot.nameEn} ${rarityStars(robot.rarity)} <span style="opacity:0.6">Lv${robot.level}</span></div>
-            <div class="robot-equip-stats">HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}</div>
+            <div class="robot-equip-name">${ELEMENT_ICONS[creature.element] || ''} ${creature.nameEn} ${rarityStars(creature.rarity)} <span style="opacity:0.6">Lv${creature.level}</span></div>
+            <div class="robot-equip-stats">HP: ${creature.hp}/${creature.maxHp} | ATK: ${creature.attack}</div>
             <div class="robot-hp-bar" style="width:100%;height:4px;margin-top:2px">
               <div class="robot-hp-fill" style="width:${hpPct}%;background-color:${getHpColor(hpPct)}"></div>
             </div>
@@ -837,16 +837,16 @@ async function openRobotEquipView() {
       `;
     }).join('');
 
-    const reservesHtml = reserves.length > 0 ? reserves.map((robot, i) => {
-      if (!robot) return '';
-      const hpPct = Math.max(0, (robot.hp / robot.maxHp) * 100);
+    const reservesHtml = reserves.length > 0 ? reserves.map((creature, i) => {
+      if (!creature) return '';
+      const hpPct = Math.max(0, (creature.hp / creature.maxHp) * 100);
       return `
-        <div class="robot-equip-slot" data-type="reserve" data-index="${i}" data-creature-id="${robot.id}"
-             style="border-left: 3px solid ${ELEMENT_COLORS[robot.element] || '#666'}">
-          <img class="robot-equip-sprite" data-creature-id="${robot.id}" alt="">
+        <div class="robot-equip-slot" data-type="reserve" data-index="${i}" data-creature-id="${creature.id}"
+             style="border-left: 3px solid ${ELEMENT_COLORS[creature.element] || '#666'}">
+          <img class="robot-equip-sprite" data-creature-id="${creature.id}" alt="">
           <div class="robot-equip-info">
-            <div class="robot-equip-name">${ELEMENT_ICONS[robot.element] || ''} ${robot.nameEn} ${rarityStars(robot.rarity)} <span style="opacity:0.6">Lv${robot.level}</span></div>
-            <div class="robot-equip-stats">HP: ${robot.hp}/${robot.maxHp} | ATK: ${robot.attack}</div>
+            <div class="robot-equip-name">${ELEMENT_ICONS[creature.element] || ''} ${creature.nameEn} ${rarityStars(creature.rarity)} <span style="opacity:0.6">Lv${creature.level}</span></div>
+            <div class="robot-equip-stats">HP: ${creature.hp}/${creature.maxHp} | ATK: ${creature.attack}</div>
             <div class="robot-hp-bar" style="width:100%;height:4px;margin-top:2px">
               <div class="robot-hp-fill" style="width:${hpPct}%;background-color:${getHpColor(hpPct)}"></div>
             </div>
@@ -856,16 +856,16 @@ async function openRobotEquipView() {
     }).join('') : `<p style="padding:16px;opacity:0.6;text-align:center">${t('noReserves')}</p>`;
 
     content.innerHTML = `
-      <h3 style="margin:16px">${t('equippedRobots')}</h3>
+      <h3 style="margin:16px">${t('equippedCreatures')}</h3>
       <div class="robot-equip-list">${activeHtml}</div>
-      <h3 style="margin:16px">${t('reserveRobots')}</h3>
+      <h3 style="margin:16px">${t('reserveCreatures')}</h3>
       <div class="robot-equip-list">${reservesHtml}</div>
       <p style="padding:8px 16px;opacity:0.5;font-size:0.8em;text-align:center">${t('swapInstruction')}</p>
     `;
 
     // Configure animated idle sprites with static fallback
     content.querySelectorAll('.robot-equip-sprite[data-creature-id]').forEach(img => {
-      configureRobotImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
+      configureCreatureImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
     });
 
     // Selection logic: tap active then reserve to swap
@@ -890,8 +890,8 @@ async function openRobotEquipView() {
           }
           selectedActive = null;
           selectedReserve = null;
-          renderRobotEquipContent(); // Re-render with updated data
-          updateChipRow(); // Update main UI robot row
+          renderCreatureEquipContent(); // Re-render with updated data
+          updateChipRow(); // Update main UI creature row
         }
       });
     });
@@ -913,8 +913,8 @@ async function openRobotEquipView() {
           }
           selectedActive = null;
           selectedReserve = null;
-          renderRobotEquipContent(); // Re-render with updated data
-          updateChipRow(); // Update main UI robot row
+          renderCreatureEquipContent(); // Re-render with updated data
+          updateChipRow(); // Update main UI creature row
         }
       });
     });
@@ -930,7 +930,7 @@ async function openRobotEquipView() {
     });
   }
 
-  renderRobotEquipContent();
+  renderCreatureEquipContent();
 }
 
 // ============ EVENT LISTENERS ============
@@ -939,10 +939,10 @@ function setupEventListeners() {
   modalsUI.initMenu();
   dom.menuBtn?.addEventListener('click', () => modalsUI.toggleMenu());
 
-  // Bots button opens robot equip view
+  // Bots button opens creature equip view
   dom.botsBtn?.addEventListener('click', () => {
     if (gameState.run?.creatureParty?.active?.length > 0) {
-      openRobotEquipView();
+      openCreatureEquipView();
     }
   });
 
@@ -1001,7 +1001,7 @@ async function initGame() {
   actions.init({
     equipBots: () => {
       if (gameState.run?.creatureParty?.active?.length > 0) {
-        openRobotEquipView();
+        openCreatureEquipView();
       }
     },
     contextAction: null,
@@ -1068,8 +1068,8 @@ async function initGame() {
     },
   });
 
-  robotRow.init({
-    swapRobotCallback: async (activeIndex, reserveIndex) => {
+  creatureRow.init({
+    swapCreatureCallback: async (activeIndex, reserveIndex) => {
       const result = await apiSwapCreature(activeIndex, reserveIndex);
       if (result.error) {
         console.error('Swap failed:', result.error);
@@ -1079,9 +1079,9 @@ async function initGame() {
       if (result.state) {
         updateGameState(result.state);
       }
-      // Re-render robot row with updated active roster
-      robotRow.setReserves(result.creatureParty?.reserves || []);
-      robotRow.render(result.creatureParty?.active || []);
+      // Re-render creature row with updated active roster
+      creatureRow.setReserves(result.creatureParty?.reserves || []);
+      creatureRow.render(result.creatureParty?.active || []);
       // If paid swap triggered enemy attacks, show them
       if (result.enemyAttacks?.length > 0) {
         for (const atk of result.enemyAttacks) {
@@ -1096,7 +1096,7 @@ async function initGame() {
       }
       updateUI();
     },
-    rearrangeRobotCallback: async (indexA, indexB) => {
+    rearrangeCreatureCallback: async (indexA, indexB) => {
       const result = await apiRearrangeCreatures(indexA, indexB);
       if (result?.error) {
         console.error('Rearrange failed:', result.error);
@@ -1105,8 +1105,8 @@ async function initGame() {
       if (result?.state) {
         updateGameState(result.state);
       }
-      robotRow.setReserves(result?.creatureParty?.reserves || []);
-      robotRow.render(result?.creatureParty?.active || []);
+      creatureRow.setReserves(result?.creatureParty?.reserves || []);
+      creatureRow.render(result?.creatureParty?.active || []);
     },
   });
 
@@ -1230,14 +1230,14 @@ async function initGame() {
     setCombatAnimationActive: (active) => { combatAnimationActive = active; },
     apiCreatureCombatCycle,
     showPostCombatShop: showPostCombatShopFlow,
-    apiBefriendReplace: (releaseRobotId) => apiBefriendReplace(releaseRobotId),
+    apiBefriendReplace: (releaseCreatureId) => apiBefriendReplace(releaseCreatureId),
     apiGetBefriendConversation,
     apiSubmitBefriendAnswer,
     apiStartNpcDialogue: startNpcDialogue,
     apiRespondNpcDialogue: respondNpcDialogue,
     showNpcSprite: (name, id) => scene.showNpcTrainer(name, id),
     hideNpcSprite: () => scene.hideNpcTrainer(),
-    updateRobotRowData: (robots) => robotRow.updateData(robots),
+    updateCreatureRowData: (creatures) => creatureRow.updateData(creatures),
   });
 
   // Initialize move/target selection UI for Pokemon-style combat

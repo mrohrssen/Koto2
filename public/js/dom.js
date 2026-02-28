@@ -33,7 +33,7 @@ export const dom = {
   get enemySprite() { return el('enemy-sprite'); },
   get sceneToast() { return el('scene-toast'); },
 
-  // Robot row (uses #chip-row element ID for backwards compatibility)
+  // Creature row (uses #chip-row element ID for backwards compatibility)
   get chipRow() { return el('chip-row'); },
 
   // Player HP
@@ -53,16 +53,16 @@ export const dom = {
   get botsBtn() { return el('bots-btn'); },
 
   // Takeover views
-  get robotEquipView() { return el('robot-equip-view'); },
-  get robotEquipClose() { return el('robot-equip-close'); },
-  get robotEquipContent() { return el('robot-equip-content'); },
+  get creatureEquipView() { return el('robot-equip-view'); },
+  get creatureEquipClose() { return el('robot-equip-close'); },
+  get creatureEquipContent() { return el('robot-equip-content'); },
   get settingsView() { return el('settings-view'); },
   get settingsClose() { return el('settings-close'); },
   get settingsContent() { return el('settings-content'); },
   get gameoverView() { return el('gameover-view'); },
   get gameoverContent() { return el('gameover-content'); },
 
-  // Robot popup (robot-row.js writes its own innerHTML; uses #chip-popup element ID)
+  // Creature popup (creature-row.js writes its own innerHTML; uses #chip-popup element ID)
   get chipPopup() { return el('chip-popup'); },
 
   // Lookup mode

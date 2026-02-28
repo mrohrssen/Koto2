@@ -13,7 +13,7 @@
  * - showShrineFox(): Display shrine fox NPC (no HP bar)
  * - showQuizMaster(): Display quiz master NPC (no HP bar)
  * - showWordDiscoveryNpc(): Display knowledge spirit NPC (no HP bar)
- * - showDealer(): Display robot dealer NPC (no HP bar)
+ * - showDealer(): Display creature dealer NPC (no HP bar)
  * - updateEnemyHP(current, max): Update enemy HP bar fill
  * - showToast(message, durationMs): Show auto-dismissing notification
  * - showDamageNumber(amount, { isCrit, isHeal, tierClass }): Floating damage text
@@ -23,12 +23,12 @@
  *
  * SPRITE LOADING:
  * - Enemy sprites load from /assets/sprites/enemies/{id}.webp
- * - Robot sprites load from /assets/sprites/robots/{id}.webp
+ * - Creature sprites load from /assets/sprites/robots/{id}.webp
  * - Falls back to emoji placeholder based on enemy personality if load fails
  */
 
 import { dom } from '../dom.js';
-import { configureRobotImg } from './sprite-utils.js';
+import { configureCreatureImg } from './sprite-utils.js';
 
 const ELEMENT_ICONS = {
   wood: '\u{1F33F}', fire: '\u{1F525}', earth: '\u26F0\uFE0F', metal: '\u2699\uFE0F', water: '\u{1F4A7}'
@@ -59,10 +59,10 @@ export function showEnemy(enemy) {
     return;
   }
 
-  // Check if this is a robot (has element property)
-  const isRobot = !!enemy.element;
+  // Check if this is a creature (has element property)
+  const isCreature = !!enemy.element;
 
-  if (isRobot) {
+  if (isCreature) {
     const icon = ELEMENT_ICONS[enemy.element] || '';
     dom.enemyName.innerHTML = `<span class="enemy-element-icon">${icon}</span> ${enemy.nameEn || enemy.name || 'Enemy'} ${rarityStars(enemy.rarity)} <span class="enemy-level-badge">Lv${enemy.level || 1}</span>`;
     dom.enemySpriteContainer.style.borderColor = ELEMENT_COLORS[enemy.element] || '';
@@ -82,11 +82,11 @@ export function showEnemy(enemy) {
     dom.enemySprite.classList.add('visible');
   };
 
-  if (isRobot && !enemy.sprite) {
+  if (isCreature && !enemy.sprite) {
     dom.enemySprite.addEventListener('load', onLoad, { once: true });
-    configureRobotImg(dom.enemySprite, enemy.id, () => {
+    configureCreatureImg(dom.enemySprite, enemy.id, () => {
       dom.enemySprite.classList.remove('visible');
-      showRobotPlaceholder(enemy);
+      showCreaturePlaceholder(enemy);
     });
   } else {
     const spritePath = enemy.sprite || `/assets/sprites/enemies/${enemy.id}.webp`;
@@ -99,7 +99,7 @@ export function showEnemy(enemy) {
   }
 }
 
-/** Show multiple enemy robots in horizontal row */
+/** Show multiple enemy creatures in horizontal row */
 export function showEnemies(enemies) {
   if (!enemies || enemies.length === 0) {
     hideEnemy();
@@ -148,7 +148,7 @@ export function showEnemies(enemies) {
       </div>
     `;
     const spriteImg = slot.querySelector('.enemy-robot-sprite');
-    configureRobotImg(spriteImg, enemy.id, el => {
+    configureCreatureImg(spriteImg, enemy.id, el => {
       el.style.display = 'none';
       el.nextElementSibling.style.display = '';
     });
@@ -192,7 +192,7 @@ function showPlaceholder(enemy) {
   dom.enemySpriteContainer.appendChild(el);
 }
 
-function showRobotPlaceholder(enemy) {
+function showCreaturePlaceholder(enemy) {
   removePlaceholder();
   const el = document.createElement('div');
   el.id = 'enemy-placeholder';

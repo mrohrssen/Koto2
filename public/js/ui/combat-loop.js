@@ -35,15 +35,15 @@ import {
   delay as effectDelay,
   getDamageTier,
   getTierClassName,
-  fireRobotAttackEffect,
-  enemyRobotAttackEffect,
+  fireCreatureAttackEffect,
+  enemyCreatureAttackEffect,
   showXpPopup,
   showLevelUpPopup,
   playUltimateAnimation,
   poisonTickEffect
 } from './combat-effects.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
-import { configureRobotImg, robotSpritePath } from './sprite-utils.js';
+import { configureCreatureImg, creatureSpritePath } from './sprite-utils.js';
 import { t } from './i18n.js';
 import { init as initMoveSelect, showMoves, clear as clearMoveSelect, setActiveLabel } from './move-select.js';
 import { init as initTargetSelect, showEnemies, showAllies, clear as clearTargetSelect } from './target-select.js';
@@ -89,8 +89,8 @@ function wrapWithRuby(word, reading, englishReading) {
 
 function buildSplitAttackCard(atk, isEnemy) {
   const theme = ELEMENT_THEME[atk.attackerElement] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
-  const spriteUrl = robotSpritePath(atk.attackerId);
-  const targetSprite = robotSpritePath(atk.targetId);
+  const spriteUrl = creatureSpritePath(atk.attackerId);
+  const targetSprite = creatureSpritePath(atk.targetId);
 
   const baseWordHtml = wrapWithRuby(atk.attackerBaseWord, atk.attackerBaseReading);
   const skillNameHtml = wrapWithRuby(atk.attackerSkillName, atk.attackerSkillReading);
@@ -215,7 +215,7 @@ let enemyAttackTimer = null;
 
 // Move-based combat state
 let moveChoices = [];
-let currentRobotIndex = 0;
+let currentCreatureIndex = 0;
 let pendingMove = null;
 
 // Callback references (set during init)
@@ -242,7 +242,7 @@ let getEnemyDialogueActive = null;
 let getDialogueDismissPromise = null;
 let showFlashCards = null;
 let setCombatAnimationActive = null;
-let apiRobotCombatCycle = null;
+let apiCreatureCombatCycle = null;
 let showPostCombatShop = null;
 let apiBefriendReplace = null;
 let apiGetBefriendConversation = null;
@@ -251,7 +251,7 @@ let apiStartNpcDialogue = null;
 let apiRespondNpcDialogue = null;
 let showNpcSprite = null;
 let hideNpcSprite = null;
-let updateRobotRowData = null;
+let updateCreatureRowData = null;
 
 // Utility
 let delay = null;
@@ -299,7 +299,7 @@ export function init(callbacks) {
   // Utility
   delay = callbacks.delay;
   setCombatAnimationActive = callbacks.setCombatAnimationActive;
-  apiRobotCombatCycle = callbacks.apiRobotCombatCycle;
+  apiCreatureCombatCycle = callbacks.apiCreatureCombatCycle;
   showPostCombatShop = callbacks.showPostCombatShop;
   apiBefriendReplace = callbacks.apiBefriendReplace;
   apiGetBefriendConversation = callbacks.apiGetBefriendConversation;
@@ -308,7 +308,7 @@ export function init(callbacks) {
   apiRespondNpcDialogue = callbacks.apiRespondNpcDialogue;
   showNpcSprite = callbacks.showNpcSprite;
   hideNpcSprite = callbacks.hideNpcSprite;
-  updateRobotRowData = callbacks.updateRobotRowData;
+  updateCreatureRowData = callbacks.updateCreatureRowData;
 }
 
 /**
@@ -333,33 +333,33 @@ export function initMoveUI() {
 
 /**
  * Start move selection for a new turn.
- * Replaces the old pauseForNextVocab flow for robot combat.
+ * Replaces the old pauseForNextVocab flow for creature combat.
  */
 export function startMoveSelection() {
   moveChoices = [];
-  currentRobotIndex = 0;
-  promptNextRobot();
+  currentCreatureIndex = 0;
+  promptNextCreature();
 }
 
-function promptNextRobot() {
+function promptNextCreature() {
   const state = getGameState();
   const allies = state.combat?.allies || state.run?.creatureParty?.active || [];
 
-  // Skip KO'd robots
-  while (currentRobotIndex < allies.length && (!allies[currentRobotIndex] || allies[currentRobotIndex].hp <= 0)) {
-    currentRobotIndex++;
+  // Skip KO'd creatures
+  while (currentCreatureIndex < allies.length && (!allies[currentCreatureIndex] || allies[currentCreatureIndex].hp <= 0)) {
+    currentCreatureIndex++;
   }
 
-  if (currentRobotIndex >= allies.length) {
-    // All robots have chosen -- execute the turn
-    executeRobotMovesTurn(moveChoices);
+  if (currentCreatureIndex >= allies.length) {
+    // All creatures have chosen -- execute the turn
+    executeCreatureMovesTurn(moveChoices);
     return;
   }
 
-  const robot = allies[currentRobotIndex];
+  const creature = allies[currentCreatureIndex];
   clearTargetSelect();
-  setActiveLabel(robot);
-  showMoves(robot, currentRobotIndex);
+  setActiveLabel(creature);
+  showMoves(creature, currentCreatureIndex);
 }
 
 function handleMoveSelected(move, creatureIndex) {
@@ -372,35 +372,35 @@ function handleMoveSelected(move, creatureIndex) {
     showAllies(state.combat?.allies || state.run?.creatureParty?.active || [], move);
   } else {
     // AoE or self -- no target needed, targetIndex -1
-    moveChoices.push({ creatureIndex: currentRobotIndex, moveId: move.id, targetIndex: -1 });
-    currentRobotIndex++;
-    promptNextRobot();
+    moveChoices.push({ creatureIndex: currentCreatureIndex, moveId: move.id, targetIndex: -1 });
+    currentCreatureIndex++;
+    promptNextCreature();
   }
 }
 
 function handleTargetSelected(targetIndex) {
-  moveChoices.push({ creatureIndex: currentRobotIndex, moveId: pendingMove.id, targetIndex });
+  moveChoices.push({ creatureIndex: currentCreatureIndex, moveId: pendingMove.id, targetIndex });
   pendingMove = null;
-  currentRobotIndex++;
-  promptNextRobot();
+  currentCreatureIndex++;
+  promptNextCreature();
 }
 
 function handleTargetCancelled() {
-  // Go back to move selection for this robot
+  // Go back to move selection for this creature
   pendingMove = null;
   const state = getGameState();
   const allies = state.combat?.allies || state.run?.creatureParty?.active || [];
-  const robot = allies[currentRobotIndex];
-  if (robot) {
+  const creature = allies[currentCreatureIndex];
+  if (creature) {
     clearTargetSelect();
-    setActiveLabel(robot);
-    showMoves(robot, currentRobotIndex);
+    setActiveLabel(creature);
+    showMoves(creature, currentCreatureIndex);
   }
 }
 
 function handleDefendSelected() {
-  // Execute defend turn immediately (all robots defend)
-  executeRobotDefendThenPause();
+  // Execute defend turn immediately (all creatures defend)
+  executeCreatureDefendThenPause();
 }
 
 // ============ STATE GETTERS/SETTERS ============
@@ -466,7 +466,7 @@ function showNextDualCardsFromQueue() {
     return;
   }
 
-  // Check if befriend is available (enemy robot <=50% HP; allow even if party full - will prompt release)
+  // Check if befriend is available (enemy creature <=50% HP; allow even if party full - will prompt release)
   const state = getGameState();
   const isCreatureCombat = state.combat?.isCreatureCombat;
   const enemies = state.combat?.enemies || [];
@@ -498,17 +498,17 @@ function showNextFlashCardFromQueue() {
 
 
 /**
- * Find a robot slot element by robot ID (matches against game state).
- * Works for both allied robot slots (attacker) and targeted robot slots.
+ * Find a creature slot element by creature ID (matches against game state).
+ * Works for both allied creature slots (attacker) and targeted creature slots.
  * @param {string} creatureId - The creature's ID
  * @returns {Element|null} The .robot-slot DOM element, or null
  */
 function findCreatureSlotByAttackerId(creatureId) {
   const state = getGameState();
-  const activeRobots = state.run?.creatureParty?.active;
-  if (!activeRobots) return null;
+  const activeCreatures = state.run?.creatureParty?.active;
+  if (!activeCreatures) return null;
 
-  const index = activeRobots.findIndex(r => r && r.id === creatureId);
+  const index = activeCreatures.findIndex(r => r && r.id === creatureId);
   if (index < 0) return null;
 
   const slots = document.querySelectorAll('#chip-row .robot-slot');
@@ -518,7 +518,7 @@ function findCreatureSlotByAttackerId(creatureId) {
 /**
  * Find the enemy slot element for a specific target in multi-enemy combat.
  * Falls back to the whole enemy-sprite-container for single-enemy fights.
- * @param {string} targetId - The enemy robot's ID
+ * @param {string} targetId - The enemy creature's ID
  * @param {Array} enemies - The enemies array from the result
  * @returns {Element} The specific enemy slot element or the container
  */
@@ -538,9 +538,9 @@ function findEnemyTargetElement(targetId, enemies) {
 }
 
 /**
- * Directly update robot HP bar widths in the DOM without triggering full updateUI.
+ * Directly update creature HP bar widths in the DOM without triggering full updateUI.
  * This avoids resetting enemy HP bars from stale game state during animations.
- * @param {Array} robots - The robot party active array (with final HP from server)
+ * @param {Array} creatures - The creature party active array (with final HP from server)
  * @param {Object} allyHpMap - Map of creatureId -> { hp, maxHp } with running HP values
  */
 function getHpColor(pct) {
@@ -549,14 +549,14 @@ function getHpColor(pct) {
   return 'var(--hp-red)';
 }
 
-function updateRobotHpBars(robots, allyHpMap) {
-  if (!robots) return;
+function updateCreatureHpBars(creatures, allyHpMap) {
+  if (!creatures) return;
   const slots = document.querySelectorAll('#chip-row .robot-slot');
-  robots.forEach((robot, i) => {
+  creatures.forEach((creature, i) => {
     const slot = slots[i];
-    if (!slot || !robot) return;
-    const currentHp = allyHpMap?.[robot.id] ? allyHpMap[robot.id].hp : robot.hp;
-    const hpPct = Math.max(0, (currentHp / robot.maxHp) * 100);
+    if (!slot || !creature) return;
+    const currentHp = allyHpMap?.[creature.id] ? allyHpMap[creature.id].hp : creature.hp;
+    const hpPct = Math.max(0, (currentHp / creature.maxHp) * 100);
     const fill = slot.querySelector('.robot-hp-fill');
     if (fill) {
       fill.style.width = `${hpPct}%`;
@@ -573,8 +573,8 @@ function updateRobotHpBars(robots, allyHpMap) {
     }
     // Update MP bar
     const mpFill = slot.querySelector('.robot-mp-fill');
-    if (mpFill && robot.maxMp > 0) {
-      const mpPct = Math.max(0, Math.min(100, (robot.mp / robot.maxMp) * 100));
+    if (mpFill && creature.maxMp > 0) {
+      const mpPct = Math.max(0, Math.min(100, (creature.mp / creature.maxMp) * 100));
       mpFill.style.width = `${mpPct}%`;
     }
   });
@@ -603,7 +603,7 @@ function showEnemyDamageDisplay(enemyAttack) {
 // ============ XP EVENT HANDLING ============
 
 /**
- * Process xpEvents from the backend and show animated XP popups over robot slots.
+ * Process xpEvents from the backend and show animated XP popups over creature slots.
  * Also handles level-up popups and updates the level badge in the DOM.
  * @param {Array} xpEvents - Array of { xpGrants: [...], levelUps: [...] }
  */
@@ -612,16 +612,16 @@ function showXpEvents(xpEvents) {
   if (!xpEvents || xpEvents.length === 0) return pendingMoveLearn;
 
   const state = getGameState();
-  const activeRobots = state.run?.creatureParty?.active;
-  if (!activeRobots) return pendingMoveLearn;
+  const activeCreatures = state.run?.creatureParty?.active;
+  if (!activeCreatures) return pendingMoveLearn;
 
   const slots = document.querySelectorAll('#chip-row .robot-slot');
 
   for (const event of xpEvents) {
-    // Show XP popups for each robot that gained XP
+    // Show XP popups for each creature that gained XP
     if (event.xpGrants) {
       for (const grant of event.xpGrants) {
-        const index = activeRobots.findIndex(r => r && r.id === grant.creatureId);
+        const index = activeCreatures.findIndex(r => r && r.id === grant.creatureId);
         if (index >= 0 && slots[index]) {
           showXpPopup(slots[index], grant.xp);
         }
@@ -631,16 +631,16 @@ function showXpEvents(xpEvents) {
     // Show level-up popups
     if (event.levelUps) {
       for (const lu of event.levelUps) {
-        const index = activeRobots.findIndex(r => r && r.id === lu.creatureId);
+        const index = activeCreatures.findIndex(r => r && r.id === lu.creatureId);
         if (index >= 0 && slots[index]) {
           // Slight delay so it appears after XP popup
           setTimeout(() => showLevelUpPopup(slots[index], lu.newLevel, lu.hpGain), 400);
         }
         // Collect move learns for later processing
         if (lu.newMove) {
-          const creature = activeRobots.find(r => r && r.id === lu.creatureId);
+          const creature = activeCreatures.find(r => r && r.id === lu.creatureId);
           if (creature) {
-            const creatureIdx = activeRobots.findIndex(r => r && r.id === lu.creatureId);
+            const creatureIdx = activeCreatures.findIndex(r => r && r.id === lu.creatureId);
             pendingMoveLearn.push({ creature, creatureIndex: creatureIdx, newMove: lu.newMove });
           }
         }
@@ -654,7 +654,7 @@ function showXpEvents(xpEvents) {
 /**
  * Process pending move-learn prompts after combat state sync.
  * For each pending item, checks if the move was auto-learned (already in moves array)
- * or needs replacement (robot has 4 moves). Shows UI prompt and calls backend API.
+ * or needs replacement (creature has 4 moves). Shows UI prompt and calls backend API.
  * @param {Array} pendingList - Array of { creature, creatureIndex, newMove }
  */
 async function processPendingMoveLearn(pendingList) {
@@ -835,7 +835,7 @@ export async function executePlayerAttack() {
   });
 }
 
-// ============ SHARED ROBOT COMBAT HELPERS ============
+// ============ SHARED CREATURE COMBAT HELPERS ============
 
 /** Show a floating text label above a target element (for status effects) */
 function showFloatingText(targetEl, text) {
@@ -913,7 +913,7 @@ function buildAllyHpMap(result) {
 }
 
 /**
- * Animate enemy attacks against player robots with real-time HP bar updates.
+ * Animate enemy attacks against player creatures with real-time HP bar updates.
  * @param {Object} result - Combat cycle result from server
  * @param {Object} allyHpMap - Running ally HP map (mutated in place)
  * @param {boolean} halved - If true, show "halved" damage text (defend mode)
@@ -940,12 +940,12 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
     showDamageNumber(atk.damage, true, false);
     playSFX('player-hit');
 
-    // Fire element-colored orb from specific attacking enemy to targeted robot
+    // Fire element-colored orb from specific attacking enemy to targeted creature
     const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies);
     const targetSlotEl = findCreatureSlotByAttackerId(atk.targetId);
     if (enemyEl && targetSlotEl && atk.attackerElement) {
       playAttackSound(atk.attackerElement);
-      await enemyRobotAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
+      await enemyCreatureAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
     } else {
       animatePlayerHurt();
     }
@@ -954,7 +954,7 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
     if (allyHpMap[atk.targetId]) {
       allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
     }
-    updateRobotHpBars(result.creatureParty?.active, allyHpMap);
+    updateCreatureHpBars(result.creatureParty?.active, allyHpMap);
 
     // Wait for tap (attack card) or fixed delay (fallback)
     if (attackCard) {
@@ -972,7 +972,7 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
 async function showKoSwapAnimations(result) {
   if (!result.koSwaps?.length) return;
   for (const swap of result.koSwaps) {
-    // Animate the KO'd robot dying
+    // Animate the KO'd creature dying
     const koIndex = swap.slot ?? -1;
     if (koIndex >= 0) {
       const slots = document.querySelectorAll('#chip-row .robot-slot');
@@ -988,24 +988,24 @@ async function showKoSwapAnimations(result) {
       actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${t('swapsIn', swap.replacement)}</div>`;
     }
 
-    // Update sprite and HP for the new robot with swap-in animation
+    // Update sprite and HP for the new creature with swap-in animation
     if (result.creatureParty?.active && koIndex >= 0) {
       const slots = document.querySelectorAll('#chip-row .robot-slot');
       const swapSlot = slots[koIndex];
       if (swapSlot) {
         swapSlot.classList.remove('robot-dying');
         swapSlot.classList.add('robot-swapping-in');
-        const newRobot = result.creatureParty.active[koIndex];
-        if (newRobot) {
+        const newCreature = result.creatureParty.active[koIndex];
+        if (newCreature) {
           const icon = swapSlot.querySelector('.robot-sprite-icon');
-          if (icon) configureRobotImg(icon, newRobot.id, el => {
+          if (icon) configureCreatureImg(icon, newCreature.id, el => {
             el.style.display = 'none';
             const fallback = el.nextElementSibling;
             if (fallback) fallback.style.display = '';
           });
           const hpFill = swapSlot.querySelector('.robot-hp-fill');
           if (hpFill) {
-            const pct = Math.max(0, (newRobot.hp / newRobot.maxHp) * 100);
+            const pct = Math.max(0, (newCreature.hp / newCreature.maxHp) * 100);
             hpFill.style.width = `${pct}%`;
             hpFill.style.backgroundColor = pct > 60 ? 'var(--hp-green)' : pct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
           }
@@ -1021,7 +1021,7 @@ async function showKoSwapAnimations(result) {
 
 /**
  * Sync final combat state with server-authoritative values.
- * Updates game state, robot row popup data, enemy HP bars, and ally HP bars.
+ * Updates game state, creature row popup data, enemy HP bars, and ally HP bars.
  * Avoids full updateUI to prevent DOM rebuild flicker.
  * @param {Object} result - Combat cycle result from server
  */
@@ -1043,9 +1043,9 @@ function syncFinalState(result) {
   }
   updateGameState(updates);
 
-  // Keep robot-row popup data in sync with latest MP/HP
-  if (result.creatureParty?.active && updateRobotRowData) {
-    updateRobotRowData(result.creatureParty.active);
+  // Keep creature-row popup data in sync with latest MP/HP
+  if (result.creatureParty?.active && updateCreatureRowData) {
+    updateCreatureRowData(result.creatureParty.active);
   }
   // Set final HP bars without full DOM rebuild
   if (result.enemies?.length > 1) {
@@ -1053,7 +1053,7 @@ function syncFinalState(result) {
   } else if (result.enemies?.[0]) {
     characterUI.updateEnemyHPBar({ current: result.enemies[0].hp, max: result.enemies[0].maxHp });
   }
-  updateRobotHpBars(result.creatureParty?.active, null);
+  updateCreatureHpBars(result.creatureParty?.active, null);
 }
 
 // ============ CREATURE COMBAT ORCHESTRATORS ============
@@ -1063,7 +1063,7 @@ function syncFinalState(result) {
  * Replaces the old executeCreaturePlayerAttack() for move-based flow.
  * @param {Array} choices - Array of { creatureIndex, moveId, targetIndex }
  */
-async function executeRobotMovesTurn(choices) {
+async function executeCreatureMovesTurn(choices) {
   if (!combatActive || playerAttackPending || getEnemyDialogueActive()) return;
   playerAttackPending = true;
 
@@ -1141,13 +1141,13 @@ async function executeRobotMovesTurn(choices) {
 
           // Fire visual effects
           playSFX('attack');
-          const robotSlotEl = findCreatureSlotByAttackerId(atk.attackerId);
+          const creatureSlotEl = findCreatureSlotByAttackerId(atk.attackerId);
           const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies);
 
-          if (atk.damage > 0 && robotSlotEl && enemyEl) {
+          if (atk.damage > 0 && creatureSlotEl && enemyEl) {
             playAttackSound(atk.moveElement || atk.attackerElement || 'neutral');
             const targetMaxHp = enemyHpMap[atk.targetId]?.maxHp || 100;
-            await fireRobotAttackEffect(robotSlotEl, enemyEl, atk.moveElement || 'neutral', atk.damage, targetMaxHp);
+            await fireCreatureAttackEffect(creatureSlotEl, enemyEl, atk.moveElement || 'neutral', atk.damage, targetMaxHp);
           } else if (atk.damage > 0) {
             animateEnemyHurt();
           }
@@ -1209,7 +1209,7 @@ async function executeRobotMovesTurn(choices) {
       // Sync state
       syncFinalState(result);
 
-      // Handle pending move learns (after state sync so robot data is current)
+      // Handle pending move learns (after state sync so creature data is current)
       if (allPendingMoveLearn.length > 0) {
         await processPendingMoveLearn(allPendingMoveLearn);
       }
@@ -1241,7 +1241,7 @@ async function executeRobotMovesTurn(choices) {
  * The backend processes both player and enemy phases in one call.
  * @deprecated Use executeCreatureMovesTurn instead for move-based combat
  */
-async function executeRobotPlayerAttack() {
+async function executeCreaturePlayerAttack() {
   if (!combatActive || playerAttackPending || combatPausedForVocab || getEnemyDialogueActive()) return;
 
   playerAttackPending = true;
@@ -1254,14 +1254,14 @@ async function executeRobotPlayerAttack() {
         body: JSON.stringify({ actionType: 'attack' })
       });
       const result = await response.json();
-      logger.info('[CombatLoop] Robot attack result:', { attacks: result.playerAttacks?.length });
+      logger.info('[CombatLoop] Creature attack result:', { attacks: result.playerAttacks?.length });
 
       if (result.error) {
         if (result.error === 'No active combat') {
           combatActive = false;
           return;
         }
-        console.error('Robot attack error:', result.error);
+        console.error('Creature attack error:', result.error);
         playerAttackPending = false;
         return;
       }
@@ -1280,7 +1280,7 @@ async function executeRobotPlayerAttack() {
         }
       }
 
-      // Show each allied robot's attack result sequentially with real-time HP
+      // Show each allied creature's attack result sequentially with real-time HP
       const allPendingMoveLearn2 = [];
       if (result.playerAttacks?.length > 0) {
         const killedEnemies = new Set();
@@ -1303,7 +1303,7 @@ async function executeRobotPlayerAttack() {
           // Fire effects while card is showing
           playSFX('attack');
 
-          const robotSlotEl = findCreatureSlotByAttackerId(atk.attackerId);
+          const creatureSlotEl = findCreatureSlotByAttackerId(atk.attackerId);
           const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies);
 
           // Update MP bar for this attacker immediately after its attack
@@ -1317,11 +1317,11 @@ async function executeRobotPlayerAttack() {
             }
           }
 
-          // Fire element-colored orb from robot to enemy with impact effects
-          if (robotSlotEl && enemyEl && atk.attackerElement) {
+          // Fire element-colored orb from creature to enemy with impact effects
+          if (creatureSlotEl && enemyEl && atk.attackerElement) {
             playAttackSound(atk.attackerElement);
             const targetMaxHp = enemyHpMap[atk.targetId]?.maxHp || 100;
-            await fireRobotAttackEffect(robotSlotEl, enemyEl, atk.attackerElement, atk.damage, targetMaxHp);
+            await fireCreatureAttackEffect(creatureSlotEl, enemyEl, atk.attackerElement, atk.damage, targetMaxHp);
           } else {
             animateEnemyHurt();
           }
@@ -1370,7 +1370,7 @@ async function executeRobotPlayerAttack() {
       // Sync authoritative state from server
       syncFinalState(result);
 
-      // Handle pending move learns (after state sync so robot data is current)
+      // Handle pending move learns (after state sync so creature data is current)
       if (allPendingMoveLearn2.length > 0) {
         await processPendingMoveLearn(allPendingMoveLearn2);
       }
@@ -1390,7 +1390,7 @@ async function executeRobotPlayerAttack() {
       showNextDualCardsFromQueue();
 
     } catch (error) {
-      console.error('Robot attack error:', error);
+      console.error('Creature attack error:', error);
       playerAttackPending = false;
       if (combatActive) {
         combatPausedForVocab = true;
@@ -1404,7 +1404,7 @@ async function executeRobotPlayerAttack() {
  * Execute creature defend — calls /creature-combat-cycle with 'defend'
  * Defend: all creatures regen MP, enemies attack with 50% damage
  */
-async function executeRobotDefendThenPause() {
+async function executeCreatureDefendThenPause() {
   if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
 
   enemyAttackPending = true;
@@ -1417,14 +1417,14 @@ async function executeRobotDefendThenPause() {
         body: JSON.stringify({ actionType: 'defend' })
       });
       const result = await response.json();
-      logger.info('[CombatLoop] Robot defend result:', { enemyAttacks: result.enemyAttacks?.length });
+      logger.info('[CombatLoop] Creature defend result:', { enemyAttacks: result.enemyAttacks?.length });
 
       if (result.error) {
         if (result.error === 'No active combat') {
           combatActive = false;
           return;
         }
-        console.error('Robot defend error:', result.error);
+        console.error('Creature defend error:', result.error);
         if (combatActive) {
           stopCombatLoop({ combatEnded: true, victory: false, error: true });
         }
@@ -1442,7 +1442,7 @@ async function executeRobotDefendThenPause() {
 
       // Update charge bars immediately for defend (BUG A fix)
       if (result.creatureParty?.active) {
-        updateRobotHpBars(result.creatureParty.active, null);
+        updateCreatureHpBars(result.creatureParty.active, null);
       }
       await delay(600);
 
@@ -1469,7 +1469,7 @@ async function executeRobotDefendThenPause() {
       startMoveSelection();
 
     } catch (error) {
-      console.error('Robot defend error:', error);
+      console.error('Creature defend error:', error);
       enemyAttackPending = false;
       if (combatActive) {
         startMoveSelection();
@@ -1598,11 +1598,11 @@ export function resumeCombatAfterVocab(grade, actionType = 'attack') {
   if (actionType === 'befriend') {
     executeBefriendAction();
   } else if (isCreatureCombat) {
-    // Robot combat: use robot-specific functions
+    // Creature combat: use creature-specific functions
     if (actionType === 'defend') {
-      executeRobotDefendThenPause();
+      executeCreatureDefendThenPause();
     } else {
-      executeRobotPlayerAttack();
+      executeCreaturePlayerAttack();
     }
   } else {
     // Legacy combat: use original functions
@@ -1715,8 +1715,8 @@ async function executeDefendThenPause() {
 }
 
 /**
- * Show a prompt for the player to choose which robot to release (or skip).
- * Returns the robot ID to release, or null if the player chose to let the befriended one go.
+ * Show a prompt for the player to choose which creature to release (or skip).
+ * Returns the creature ID to release, or null if the player chose to let the befriended one go.
  */
 function showBefriendReleasePrompt() {
   return new Promise((resolve) => {
@@ -1724,7 +1724,7 @@ function showBefriendReleasePrompt() {
     const party = state.run?.creatureParty;
     if (!party) { resolve(null); return; }
 
-    const allRobots = [
+    const allCreatures = [
       ...party.active.map((r, i) => ({ ...r, slot: 'active', index: i })),
       ...party.reserves.map((r, i) => ({ ...r, slot: 'reserve', index: i }))
     ].filter(r => r && r.id);
@@ -1737,7 +1737,7 @@ function showBefriendReleasePrompt() {
       <div class="befriend-release-panel">
         <div class="befriend-release-title">${t('partyFullTitle')}</div>
         <div class="befriend-release-list">
-          ${allRobots.map(r => `
+          ${allCreatures.map(r => `
             <button class="befriend-release-btn" data-creature-id="${r.id}">
               ${ELEM_ICONS[r.element] || ''} ${r.nameEn} (Lv${r.level}) - ${r.slot === 'active' ? t('equipped') : t('reserve')}
             </button>
@@ -1807,11 +1807,11 @@ function showBefriendTargetSelect(enemies) {
  * Show one round of befriend conversation.
  * Returns the selected option index.
  */
-function showConversationRound(round, roundNumber, robotName) {
+function showConversationRound(round, roundNumber, creatureName) {
   return new Promise((resolve) => {
-    // Show robot's line in narration box
+    // Show creature's line in narration box
     narration.showNarration(round.speaker, {
-      speaker: robotName,
+      speaker: creatureName,
       persistent: true
     });
 
@@ -1861,7 +1861,7 @@ function showAnswerFeedback(selectedIndex, correctIndex, correct) {
 }
 
 /**
- * Execute befriend action: 3-round conversation to capture low-HP enemy robot
+ * Execute befriend action: 3-round conversation to capture low-HP enemy creature
  */
 async function executeBefriendAction() {
   if (!combatActive) return;
@@ -1891,11 +1891,11 @@ async function executeBefriendAction() {
       }
 
     const { rounds, targetEnemy, targetEnemyIndex } = convoResult;
-    const robotName = targetEnemy?.nameEn || targetEnemy?.name || 'Robot';
+    const creatureName = targetEnemy?.nameEn || targetEnemy?.name || 'Creature';
 
     // 3-round conversation loop
     for (let i = 0; i < rounds.length; i++) {
-      const selectedIndex = await showConversationRound(rounds[i], i, robotName);
+      const selectedIndex = await showConversationRound(rounds[i], i, creatureName);
       const answerResult = await apiSubmitBefriendAnswer(i, selectedIndex);
 
       if (!answerResult) {
@@ -1912,7 +1912,7 @@ async function executeBefriendAction() {
       if (!answerResult.correct) {
         // --- FAILURE ---
         narration.showNarration('？？？', {
-          speaker: robotName, autoDismiss: 1000
+          speaker: creatureName, autoDismiss: 1000
         });
 
         // Shake target enemy
@@ -1965,7 +1965,7 @@ async function executeBefriendAction() {
       if (answerResult.conversationComplete) {
         // All 3 rounds correct!
         narration.showNarration('\u3058\u3083\u3042\u3001\u53cb\u9054\u306b\u306a\u308d\u3046\uff01', {
-          speaker: robotName, autoDismiss: 1500
+          speaker: creatureName, autoDismiss: 1500
         });
         playSFX('chip-skill');
 
