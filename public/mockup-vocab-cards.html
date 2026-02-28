@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design 4B — Arrow Impact Variations</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #e8edf3;
+    --bg-elevated: #ffffff;
+    --text-primary: #2a2e35;
+    --text-secondary: #8b92a0;
+    --text-muted: #b0b8c4;
+    --accent-cyan: #4fc3f7;
+    --accent-red: #ef5350;
+    --accent-green: #66bb6a;
+    --accent-blue: #42a5f5;
+    --accent-amber: #ffb74d;
+    --accent-purple: #ab47bc;
+    --attack-color: #ef5350;
+    --defend-color: #42a5f5;
+    --shadow-soft: 0 1px 4px rgba(0,0,0,0.06);
+    --shadow-elevated: 0 4px 16px rgba(0,0,0,0.10);
+    --card-radius: 12px;
+    --hp-green: #66bb6a;
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-weight-bold: 700;
+    --font-weight-semi: 600;
+  }
+
+  body {
+    font-family: var(--font-family);
+    background: #0d0d1a;
+    color: #fff;
+    padding: 20px 12px 40px;
+  }
+
+  h1 { text-align: center; font-size: 20px; margin-bottom: 4px; }
+  .subtitle { text-align: center; color: #666; font-size: 12px; margin-bottom: 24px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
+    gap: 24px;
+    max-width: 1800px;
+    margin: 0 auto;
+  }
+
+  .slot {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: #111125;
+  }
+  .slot-label {
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #4fc3f7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .slot-label .tag {
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(79,195,247,0.12);
+    color: #4fc3f7;
+    font-weight: 600;
+  }
+  .slot-note {
+    padding: 4px 14px 8px;
+    font-size: 10px;
+    color: #555;
+    line-height: 1.4;
+  }
+
+  /* ── Game screen replica ── */
+  .phone {
+    width: 430px;
+    margin: 0 auto;
+    height: 520px;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(160deg, #f0efe8, #e8edf3, #e0e4f0, #e8e0f0);
+    background-size: 300% 300%;
+    position: relative;
+    overflow: hidden;
+  }
+  .phone .scene {
+    height: 180px; flex-shrink: 0;
+    position: relative; overflow: hidden;
+  }
+  .phone .scene-bg {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: -40px;
+    background: url('/assets/backgrounds/floor1_1.webp') center top / cover;
+    mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  }
+  .phone .enemy-row {
+    position: absolute; bottom: 8px; left: 0; right: 0;
+    display: flex; justify-content: center; gap: 16px; z-index: 2;
+  }
+  .phone .enemy-unit { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .phone .enemy-unit img { width: 80px; height: 80px; object-fit: contain; image-rendering: pixelated; }
+  .phone .enemy-unit .ename {
+    font-size: 10px; font-weight: 600; color: #fff;
+    background: rgba(0,0,0,0.55); padding: 1px 6px; border-radius: 4px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+  }
+  .phone .enemy-unit .ehp { width: 60px; height: 4px; background: #333; border-radius: 2px; overflow: hidden; }
+  .phone .enemy-unit .ehp-fill { height: 100%; background: var(--accent-red); border-radius: 2px; }
+
+  .phone .chip-row { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 6px 10px; flex-shrink: 0; }
+  .phone .creature-slot { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .phone .creature-icon {
+    width: 28px; height: 28px; border-radius: 50%; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid rgba(0,0,0,0.1);
+  }
+  .phone .creature-icon img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+  .phone .creature-icon.active { border-color: var(--accent-cyan); box-shadow: 0 0 6px rgba(79,195,247,0.35); }
+  .phone .creature-icon.water { background: rgba(33,150,243,0.15); }
+  .phone .creature-icon.wood  { background: rgba(76,175,80,0.15); }
+  .phone .creature-icon.earth { background: rgba(141,110,99,0.15); }
+  .phone .creature-hp { width: 28px; height: 3px; background: rgba(0,0,0,0.08); border-radius: 1.5px; overflow: hidden; }
+  .phone .creature-hp-fill { height: 100%; background: var(--hp-green); border-radius: 1.5px; }
+  .phone .creature-charge { display: flex; gap: 1px; }
+  .phone .charge-seg { width: 4px; height: 3px; border-radius: 1px; background: rgba(0,0,0,0.06); border: 0.5px solid rgba(0,0,0,0.08); }
+  .phone .charge-seg.filled { background: var(--accent-purple); border-color: var(--accent-purple); }
+
+  .phone .player-hp { padding: 0 12px 6px; flex-shrink: 0; }
+  .phone .player-hp-bar { width: 100%; height: 14px; background: rgba(0,0,0,0.06); border-radius: 7px; overflow: hidden; position: relative; }
+  .phone .player-hp-fill { height: 100%; background: var(--hp-green); border-radius: 7px; }
+  .phone .player-hp-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+
+  .phone .action-area { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; padding: 12px 16px; }
+
+  .phone .toolbar { height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 24px; border-top: 1px solid rgba(0,0,0,0.04); }
+  .phone .tb-btn { width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.04); border: none; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text-muted); }
+
+  .el-water { --el: #2196F3; --el-bg: rgba(33,150,243,0.15); --el-light: #64B5F6; --el-border: rgba(33,150,243,0.4); }
+  .el-earth { --el: #8D6E63; --el-bg: rgba(141,110,99,0.15); --el-light: #BCAAA4; --el-border: rgba(141,110,99,0.4); }
+  .el-wood  { --el: #4CAF50; --el-bg: rgba(76,175,80,0.15); --el-light: #A5D6A7; --el-border: rgba(76,175,80,0.4); }
+
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Shared split card base ── */
+  .split-base {
+    width: 100%; max-width: 320px;
+    display: flex; border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--el-border);
+    animation: fadeSlideUp 250ms ease-out;
+  }
+  .split-base .left {
+    width: 72px;
+    background: linear-gradient(180deg, var(--el-bg), rgba(26,26,46,0.8));
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 8px 4px; gap: 3px; flex-shrink: 0;
+  }
+  .split-base .left img { width: 52px; height: 52px; object-fit: contain; image-rendering: pixelated; }
+  .split-base .left .name { font-size: 9px; color: var(--el-light); font-weight: 600; text-align: center; line-height: 1.1; }
+  .split-base .right {
+    flex: 1; background: rgba(26,26,46,0.92);
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .split-base .vocab-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; }
+  .split-base .vocab-row + .vocab-row { border-top: 1px solid rgba(255,255,255,0.04); }
+  .split-base .vocab-row img { width: 24px; height: 24px; object-fit: contain; border-radius: 5px; flex-shrink: 0; }
+  .split-base .vocab-row .jp { font-size: 18px; font-weight: 700; color: #fff; }
+  .split-base .vocab-row .sub { font-size: 10px; color: #777; margin-left: 4px; }
+  .split-base .vocab-row .tag {
+    font-size: 7px; padding: 1px 4px; border-radius: 3px;
+    font-weight: 700; text-transform: uppercase; margin-left: auto; flex-shrink: 0;
+  }
+  .split-base .vocab-row .tag.base { background: rgba(33,150,243,0.2); color: var(--el-light); }
+  .split-base .vocab-row .tag.atk  { background: rgba(244,67,54,0.3); color: #EF9A9A; }
+
+  /* ════════════════════════════════════════════════════════════
+     4B ORIGINAL — Red-tinted impact row
+     Arrow + enemy sprite + name, damage right-aligned
+     ════════════════════════════════════════════════════════════ */
+  .v4b-orig .impact-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: rgba(239,83,80,0.06);
+    border-top: 1px solid rgba(239,83,80,0.1);
+  }
+  .v4b-orig .impact-row .arrow { font-size: 12px; color: #555; }
+  .v4b-orig .impact-row img {
+    width: 20px; height: 20px;
+    object-fit: contain; image-rendering: pixelated;
+    border-radius: 50%; flex-shrink: 0; opacity: 0.8;
+  }
+  .v4b-orig .impact-row .tname { font-size: 12px; font-weight: 600; color: #ccc; }
+  .v4b-orig .impact-row .tdmg {
+    margin-left: auto;
+    font-size: 16px; font-weight: 700; color: var(--accent-red);
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     4B-i — Bolder damage, element-tinted arrow
+     Bigger -XX number, arrow uses element color instead of grey.
+     Impact row has slightly more padding for breathing room.
+     ════════════════════════════════════════════════════════════ */
+  .v4bi .impact-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 10px;
+    background: rgba(239,83,80,0.05);
+    border-top: 1px solid rgba(239,83,80,0.08);
+  }
+  .v4bi .impact-row .arrow {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--el-light);
+  }
+  .v4bi .impact-row img {
+    width: 22px; height: 22px;
+    object-fit: contain; image-rendering: pixelated;
+    border-radius: 6px; flex-shrink: 0;
+    border: 1.5px solid rgba(239,83,80,0.25);
+  }
+  .v4bi .impact-row .tname { font-size: 12px; font-weight: 600; color: #bbb; }
+  .v4bi .impact-row .tdmg {
+    margin-left: auto;
+    font-size: 18px; font-weight: 700; color: var(--accent-red);
+    letter-spacing: -0.5px;
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     4B-ii — Compact inline, no background tint
+     Impact info squeezed into a tighter line with no background
+     color change — blends with the dark right panel seamlessly.
+     Damage gets a subtle pill background.
+     ════════════════════════════════════════════════════════════ */
+  .v4bii .impact-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px 5px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+  .v4bii .impact-row .arrow { font-size: 10px; color: #555; }
+  .v4bii .impact-row img {
+    width: 18px; height: 18px;
+    object-fit: contain; image-rendering: pixelated;
+    border-radius: 50%; flex-shrink: 0; opacity: 0.7;
+  }
+  .v4bii .impact-row .tname { font-size: 11px; font-weight: 600; color: #888; }
+  .v4bii .impact-row .tdmg {
+    margin-left: auto;
+    font-size: 13px; font-weight: 700;
+    color: var(--accent-red);
+    background: rgba(239,83,80,0.12);
+    padding: 1px 7px;
+    border-radius: 4px;
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     4B-iii — Two-tone split: vocab rows + impact bar with
+     the enemy sprite sitting in a red-accented left gutter
+     mirroring the attacker's element gutter above
+     ════════════════════════════════════════════════════════════ */
+  .v4biii {
+    flex-wrap: wrap;
+  }
+  .v4biii .impact-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    background: rgba(26,26,46,0.96);
+    border-top: 1px solid rgba(239,83,80,0.15);
+  }
+  .v4biii .impact-bar .target-gutter {
+    width: 72px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 4px;
+    background: rgba(239,83,80,0.08);
+    flex-shrink: 0;
+    gap: 1px;
+  }
+  .v4biii .impact-bar .target-gutter img {
+    width: 28px; height: 28px;
+    object-fit: contain; image-rendering: pixelated;
+    opacity: 0.75;
+  }
+  .v4biii .impact-bar .target-gutter .tname {
+    font-size: 8px; color: #999; font-weight: 600;
+  }
+  .v4biii .impact-bar .impact-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+  }
+  .v4biii .impact-bar .arrow { font-size: 12px; color: var(--accent-red); opacity: 0.6; }
+  .v4biii .impact-bar .hit-text {
+    font-size: 11px; color: #888; font-weight: 500;
+  }
+  .v4biii .impact-bar .tdmg {
+    margin-left: auto;
+    font-size: 17px; font-weight: 700; color: var(--accent-red);
+  }
+</style>
+</head>
+<body>
+
+<h1>Design 4B — Arrow Impact Variations</h1>
+<p class="subtitle">Original + 3 refinements. All show Umarak → チョウリ for -22.</p>
+
+<div class="grid">
+
+<!-- ▸▸▸ 4B ORIGINAL ◂◂◂ -->
+<div class="slot">
+  <div class="slot-label">4B Original <span class="tag">baseline</span></div>
+  <div class="slot-note">The original 4B for reference. Red-tinted row, grey arrow, round sprite, damage right.</div>
+  <div class="phone">
+    <div class="scene"><div class="scene-bg"></div><div class="enemy-row"><div class="enemy-unit"><img src="/assets/sprites/creatures/chouri-idle.webp"><span class="ename">チョウリ Lv2</span><div class="ehp"><div class="ehp-fill" style="width:82%"></div></div></div></div></div>
+    <div class="chip-row">
+      <div class="creature-slot"><div class="creature-icon water"><img src="/assets/sprites/creatures/kamedor-idle.webp"></div><div class="creature-hp"><div class="creature-hp-fill" style="width:90%"></div></div><div class="creature-charge"><span class="charge-seg filled"></span><span class="charge-seg filled"></span><span class="charge-seg"></span><span class="charge-seg"></span><span class="charge-seg"></span></div></div>
+      <div class="creature-slot"><div class="creature-icon earth active"><img src="/assets/sprites/creatures/umarak-idle.webp"></div><div class="creature-hp"><div class="creature-hp-fill" style="width:70%"></div></div><div class="creature-charge"><span class="charge-seg filled"></span><span class="charge-seg filled"></span><span class="charge-seg filled"></span><span class="charge-seg"></span><span class="charge-seg"></span></div></div>
+      <div class="creature-slot"><div class="creature-icon wood"><img src="/assets/sprites/creatures/chouri-idle.webp"></div><div class="creature-hp"><div class="creature-hp-fill" style="width:100%"></div></div><div class="creature-charge"><span class="charge-seg"></span><span class="charge-seg"></span><span class="charge-seg"></span><span class="charge-seg"></span></div></div>
+    </div>
+    <div class="player-hp"><div class="player-hp-bar"><div class="player-hp-fill" style="width:72%"></div><span class="player-hp-text">115 / 160</span></div></div>
+    <div class="action-area">
+      <div class="split-base v4b-orig el-earth">
+        <div class="left"><img src="/assets/sprites/creatures/umarak-idle.webp"><span class="name">ウマラク</span></div>
+        <div class="right">
+          <div class="vocab-row"><img src="/assets/sprites/actions/horse.webp"><span class="jp">馬</span><span class="sub">うま · horse</span><span class="tag base">BASE</span></div>
+          <div class="vocab-row"><img src="/assets/sprites/actions/kick.webp"><span class="jp">蹴る</span><span class="sub">ける · Kick</span><span class="tag atk">ATK</span></div>
+          <div class="impact-row"><span class="arrow">→</span><img src="/assets/sprites/creatures/chouri-idle.webp"><span class="tname">チョウリ</span><span class="tdmg">-22</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="toolbar"><span class="tb-btn">⚔</span><span class="tb-btn">📦</span><span class="tb-btn">⚙</span></div>
+  </div>
+</div>
+
+<!-- ▸▸▸ 4B-i — Bolder Damage ◂◂◂ -->
+<div class="slot">
+  <div class="slot-label">4B-i — Bold Impact <span class="tag">bigger damage</span></div>
+  <div class="slot-note">Larger -22, element-colored arrow instead of grey. Enemy sprite gets a subtle red border. More punch.</div>
+  <div class="phone">
+    <div class="scene"><div class="scene-bg"></div><div class="enemy-row"><div class="enemy-unit"><img src="/assets/sprites/creatures/chouri-idle.webp"><span class="ename">チョウリ Lv2</span><div class="ehp"><div class="ehp-fill" style="width:82%"></div></div></div></div></div>
+    <div class="chip-row">
+      <div class="creature-slot"><div class="creature-icon water"><img src="/assets/sprites/creatures/kamedor-idle.webp"></div><div class="creature-hp"><div class="creature-hp-fill" style="width:90%"></div></div><div class="creature-charge"><span class="charge-seg filled"></span><span class="charge-seg filled"></span><span class="charge-seg"></span><span class="charge-seg"></span><span class="charge-seg"></span></div></div>
+      <div class="creature-slot"><div class="creature-icon earth active"><img src="/assets/sprites/creatures/umarak-idle.webp"></div><div class="creature-hp"><div class="creature-hp-fill" style="width:70%"></div></div><div class="creature-charge"><span class="charge-seg filled"></span><span class="charge-seg filled"></span><span class="charge-seg filled"></span><span class="charge-seg"></span><span class="charge-seg"></span></div></div>
+      <div class="creature-slot"><div class="creature-icon wood"><img src="/assets/sprites/creatures/chouri-idle.webp"></div><div class="creature-hp"><div class="creature-hp-fill" style="width:100%"></div></div><div class="creature-charge"><span class="charge-seg"></span><span class="charge-seg"></span><span class="charge-seg"></span><span class="charge-seg"></span></div></div>
+    </div>
+    <div class="player-hp"><div class="player-hp-bar"><div class="player-hp-fill" style="width:72%"></div><span class="player-hp-text">115 / 160</span></div></div>
+    <div class="action-area">
+      <div class="split-base v4bi el-earth">
+        <div class="left"><img src="/assets/sprites/creatures/umarak-idle.webp"><span class="name">ウマラク</span></div>
+        <div class="right">
+          <div class="vocab-row"><img src="/assets/sprites/actions/horse.webp"><span class="jp">馬</span><span class="sub">うま · horse</span><span class="tag base">BASE</span></div>
+          <div class="vocab-row"><img src="/assets/sprites/actions/kick.webp"><span class="jp">蹴る</span><span class="sub">ける · Kick</span><span class="tag atk">ATK</span></div>
+          <div class="impact-row"><span class="arrow">→</span><img src="/assets/sprites/creatures/chouri-idle.webp"><span class="tname">チョウリ</span><span class="tdmg">-22</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="toolbar"><span class="tb-btn">⚔</span><span class="tb-btn">📦</span><span class="tb-btn">⚙</span></div>
+  </div>
+</div>
+
+<!-- ▸▸▸ 4B-ii — Compact Pill ◂◂◂ -->
+<div class="slot">
+  <div class="slot-label">4B-ii — Compact Pill <span class="tag">subtle blend</span></div>
+  <div class="slot-note">No background tint — impact row blends with the dark panel. Smaller sprite, muted name, damage in a pill badge. Quieter.</div>
+  <div class="phone">
+    <div class="scene"><div class="scene-bg"></div><div class="enemy-row"><div class="enemy-unit"><img src="/assets/sprites/creatures/chouri-idle.webp"><span class="ename">チョウリ Lv2</span><div class="ehp"><div class="ehp-fill" style="width:82%"></div></div></div></div></div>
+    <div class="chip-row">
+      <div class="creature-slot"><div class="creature-icon water"><img src="/assets/sprites/creatures/kamedor-idle.webp"></div><div class="creature-hp"><div class="creature-hp-fill" style="width:90%"></div></div><div class="creature-charge"><span class="charge-seg filled"></span><span class="charge-seg filled"></span><span class="charge-seg"></span><span class="charge-seg"></span><span class="charge-seg"></span></div></div>
+      <div class="creature-slot"><div class="creature-icon earth active"><img src="/assets/sprites/creatures/umarak-idle.webp"></div><div class="creature-hp"><div class="creature-hp-fill" style="width:70%"></div></div><div class="creature-charge"><span class="charge-seg filled"></span><span class="charge-seg filled"></span><span class="charge-seg filled"></span><span class="charge-seg"></span><span class="charge-seg"></span></div></div>
+      <div class="creature-slot"><div class="creature-icon wood"><img src="/assets/sprites/creatures/chouri-idle.webp"></div><div class="creature-hp"><div class="creature-hp-fill" style="width:100%"></div></div><div class="creature-charge"><span class="charge-seg"></span><span class="charge-seg"></span><span class="charge-seg"></span><span class="charge-seg"></span></div></div>
+    </div>
+    <div class="player-hp"><div class="player-hp-bar"><div class="player-hp-fill" style="width:72%"></div><span class="player-hp-text">115 / 160</span></div></div>
+    <div class="action-area">
+      <div class="split-base v4bii el-earth">
+        <div class="left"><img src="/assets/sprites/creatures/umarak-idle.webp"><span class="name">ウマラク</span></div>
+        <div class="right">
+          <div class="vocab-row"><img src="/assets/sprites/actions/horse.webp"><span class="jp">馬</span><span class="sub">うま · horse</span><span class="tag base">BASE</span></div>
+          <div class="vocab-row"><img src="/assets/sprites/actions/kick.webp"><span class="jp">蹴る</span><span class="sub">ける · Kick</span><span class="tag atk">ATK</span></div>
+          <div class="impact-row"><span class="arrow">→</span><img src="/assets/sprites/creatures/chouri-idle.webp"><span class="tname">チョウリ</span><span class="tdmg">-22</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="toolbar"><span class="tb-btn">⚔</span><span class="tb-btn">📦</span><span class="tb-btn">⚙</span></div>
+  </div>
+</div>
+
+<!-- ▸▸▸ 4B-iii — Mirrored Gutter ◂◂◂ -->
+<div class="slot">
+  <div class="slot-label">4B-iii — Mirrored Gutter <span class="tag">two-tone footer</span></div>
+  <div class="slot-note">Impact bar spans full width. Left gutter mirrors attacker's panel but red-tinted with target sprite. Right shows arrow + damage.</div>
+  <div class="phone">
+    <div class="scene"><div class="scene-bg"></div><div class="enemy-row"><div class="enemy-unit"><img src="/assets/sprites/creatures/chouri-idle.webp"><span class="ename">チョウリ Lv2</span><div class="ehp"><div class="ehp-fill" style="width:82%"></div></div></div></div></div>
+    <div class="chip-row">
+      <div class="creature-slot"><div class="creature-icon water"><img src="/assets/sprites/creatures/kamedor-idle.webp"></div><div class="creature-hp"><div class="creature-hp-fill" style="width:90%"></div></div><div class="creature-charge"><span class="charge-seg filled"></span><span class="charge-seg filled"></span><span class="charge-seg"></span><span class="charge-seg"></span><span class="charge-seg"></span></div></div>
+      <div class="creature-slot"><div class="creature-icon earth active"><img src="/assets/sprites/creatures/umarak-idle.webp"></div><div class="creature-hp"><div class="creature-hp-fill" style="width:70%"></div></div><div class="creature-charge"><span class="charge-seg filled"></span><span class="charge-seg filled"></span><span class="charge-seg filled"></span><span class="charge-seg"></span><span class="charge-seg"></span></div></div>
+      <div class="creature-slot"><div class="creature-icon wood"><img src="/assets/sprites/creatures/chouri-idle.webp"></div><div class="creature-hp"><div class="creature-hp-fill" style="width:100%"></div></div><div class="creature-charge"><span class="charge-seg"></span><span class="charge-seg"></span><span class="charge-seg"></span><span class="charge-seg"></span></div></div>
+    </div>
+    <div class="player-hp"><div class="player-hp-bar"><div class="player-hp-fill" style="width:72%"></div><span class="player-hp-text">115 / 160</span></div></div>
+    <div class="action-area">
+      <div class="split-base v4biii el-earth">
+        <div class="left"><img src="/assets/sprites/creatures/umarak-idle.webp"><span class="name">ウマラク</span></div>
+        <div class="right">
+          <div class="vocab-row"><img src="/assets/sprites/actions/horse.webp"><span class="jp">馬</span><span class="sub">うま · horse</span><span class="tag base">BASE</span></div>
+          <div class="vocab-row"><img src="/assets/sprites/actions/kick.webp"><span class="jp">蹴る</span><span class="sub">ける · Kick</span><span class="tag atk">ATK</span></div>
+        </div>
+        <div class="impact-bar">
+          <div class="target-gutter"><img src="/assets/sprites/creatures/chouri-idle.webp"><span class="tname">チョウリ</span></div>
+          <div class="impact-content"><span class="arrow">→</span><span class="hit-text">Kick hits!</span><span class="tdmg">-22</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="toolbar"><span class="tb-btn">⚔</span><span class="tb-btn">📦</span><span class="tb-btn">⚙</span></div>
+  </div>
+</div>
+
+</div><!-- /grid -->
+</body>
+</html>
