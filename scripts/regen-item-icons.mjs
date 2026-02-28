@@ -250,7 +250,7 @@ async function main() {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-image' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-image-preview' });
 
     const outputPath = resolve(outputDir, `regen-batch-${idx}.png`);
 
