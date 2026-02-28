@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import { getManager, saveManager, removeManager } from '../../../src/game/manager-registry.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASE_DIR = join(__dirname, '../..');
+const BASE_DIR = join(__dirname, '../../..');
 const testSaveFile = join(BASE_DIR, '.jrpg-save-u_test123.json');
 
 describe('manager-registry', () => {

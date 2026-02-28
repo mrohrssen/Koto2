@@ -9,7 +9,7 @@ import {
 } from '../../../src/auth/users.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const TEST_FILE = join(__dirname, '../../.jrpg-users-test.json');
+const TEST_FILE = join(__dirname, '../../../.jrpg-users-test.json');
 
 describe('auth/users', () => {
   beforeEach(() => {

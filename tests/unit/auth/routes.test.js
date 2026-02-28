@@ -5,7 +5,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const TEST_USERS_FILE = join(__dirname, '../../.jrpg-users-routes-test.json');
+const TEST_USERS_FILE = join(__dirname, '../../../.jrpg-users-routes-test.json');
 
 // Set env before importing
 process.env.JWT_SECRET = 'test-secret-for-routes';
