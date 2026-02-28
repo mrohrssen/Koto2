@@ -32,10 +32,10 @@ describe('GET /api/game/discovery-words', () => {
     try { mkdirSync(TEST_CACHE_DIR, { recursive: true }); } catch {}
 
     // Import route factory
-    const { default: createRunRoutes } = await import('../../src/routes/game/run.js');
+    const { default: createRunRoutes } = await import('../../../src/routes/game/run.js');
 
     // Import vocab-manager to set up test data
-    const vm = await import('../../src/game/vocab-manager.js');
+    const vm = await import('../../../src/game/vocab-manager.js');
     vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
     vm.clearVocabManagerCache(TEST_USER_ID);
 
@@ -76,10 +76,10 @@ describe('GET /api/game/discovery-words', () => {
     try { mkdirSync(TEST_CACHE_DIR, { recursive: true }); } catch {}
 
     // Import route factory
-    const { default: createRunRoutes } = await import('../../src/routes/game/run.js');
+    const { default: createRunRoutes } = await import('../../../src/routes/game/run.js');
 
     // Import vocab-manager to set up test data
-    const vm = await import('../../src/game/vocab-manager.js');
+    const vm = await import('../../../src/game/vocab-manager.js');
     vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
     vm.clearVocabManagerCache(TEST_USER_ID);
 

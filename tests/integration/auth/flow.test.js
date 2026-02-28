@@ -5,15 +5,15 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const TEST_USERS = join(__dirname, '../../.jrpg-users-integration-test.json');
+const TEST_USERS = join(__dirname, '../../../.jrpg-users-integration-test.json');
 
 process.env.JWT_SECRET = 'integration-test-secret';
 process.env.ENCRYPTION_KEY = 'd'.repeat(64);
 process.env.ADMIN_SECRET = 'admin-integration-test';
 
-import createAuthRoutes from '../../src/auth/routes.js';
-import { verifyToken } from '../../src/auth/middleware.js';
-import { createInviteCode } from '../../src/auth/users.js';
+import createAuthRoutes from '../../../src/auth/routes.js';
+import { verifyToken } from '../../../src/auth/middleware.js';
+import { createInviteCode } from '../../../src/auth/users.js';
 
 describe('Auth Integration Flow', () => {
   let router;
