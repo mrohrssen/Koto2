@@ -4,6 +4,12 @@ import { dirname, join } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROBOT_DATA = JSON.parse(readFileSync(join(__dirname, '../../data/creatures.json'), 'utf8'));
+const MOVES_DATA = JSON.parse(readFileSync(join(__dirname, '../../data/moves.json'), 'utf8'));
+
+export const MOVES_BY_ID = {};
+for (const m of MOVES_DATA) {
+  MOVES_BY_ID[m.id] = m;
+}
 
 export const ROBOTS_BY_ID = {};
 const ROBOTS_BY_ELEMENT_RARITY = {};
@@ -54,6 +60,17 @@ export function instantiateRobot(templateId) {
   const mult = RARITY_MULTIPLIERS[template.rarity] || 1.0;
   const hp = Math.floor(template.baseHp * mult);
   const attack = Math.floor(template.baseAttack * mult);
+  const mp = Math.floor((template.baseMp || 80) * mult);
+
+  // Get moves learned at level 1
+  const moves = (template.learnset || [])
+    .filter(entry => entry.level <= 1)
+    .map(entry => {
+      const moveData = MOVES_BY_ID[entry.moveId];
+      if (!moveData) return null;
+      return { ...moveData };
+    })
+    .filter(Boolean);
 
   return {
     id: template.id,
@@ -70,21 +87,21 @@ export function instantiateRobot(templateId) {
     hp,
     maxHp: hp,
     attack,
+    mp,
+    maxMp: mp,
     baseHpTemplate: template.baseHp,
     baseAttackTemplate: template.baseAttack,
-    autoSkill: { ...template.autoSkill },
-    ultimate: {
-      ...template.ultimate,
-      charges: 0
-    }
+    baseMpTemplate: template.baseMp || 80,
+    moves
   };
 }
 
-export function getStatsForLevel(baseHp, baseAttack, level) {
+export function getStatsForLevel(baseHp, baseAttack, baseMp, level) {
   const mult = 1 + (level - 1) * 0.1;
   return {
     maxHp: Math.floor(baseHp * mult),
-    attack: Math.floor(baseAttack * mult)
+    attack: Math.floor(baseAttack * mult),
+    maxMp: Math.floor(baseMp * mult)
   };
 }
 
@@ -97,12 +114,42 @@ export function addXpToRobot(robot, xp) {
     const rarityMult = RARITY_MULTIPLIERS[robot.rarity] || 1.0;
     const baseHp = Math.floor((robot.baseHpTemplate || 100) * rarityMult);
     const baseAtk = Math.floor((robot.baseAttackTemplate || 10) * rarityMult);
-    const stats = getStatsForLevel(baseHp, baseAtk, robot.level);
+    const baseMp = Math.floor((robot.baseMpTemplate || 80) * rarityMult);
+    const stats = getStatsForLevel(baseHp, baseAtk, baseMp, robot.level);
     const hpDiff = stats.maxHp - robot.maxHp;
+    const mpDiff = stats.maxMp - (robot.maxMp || 0);
     robot.maxHp = stats.maxHp;
     robot.attack = stats.attack;
+    robot.maxMp = stats.maxMp;
     robot.hp += hpDiff;
-    levelUps.push({ level: robot.level, maxHp: stats.maxHp, attack: stats.attack, hpGain: hpDiff });
+    robot.mp = (robot.mp || 0) + mpDiff;
+
+    // Check for new move at this level
+    const template = ROBOTS_BY_ID[robot.id];
+    const newMoveEntry = template?.learnset?.find(e => e.level === robot.level);
+    let newMove = null;
+    if (newMoveEntry) {
+      const moveData = MOVES_BY_ID[newMoveEntry.moveId];
+      if (moveData && !(robot.moves || []).find(m => m.id === moveData.id)) {
+        newMove = { ...moveData };
+        if (!robot.moves) robot.moves = [];
+        if (robot.moves.length < 4) {
+          // Auto-learn if under max moves
+          robot.moves.push(newMove);
+        }
+        // If at max moves, the UI will need to handle replacement
+      }
+    }
+
+    levelUps.push({
+      level: robot.level,
+      maxHp: stats.maxHp,
+      attack: stats.attack,
+      maxMp: stats.maxMp,
+      hpGain: hpDiff,
+      mpGain: mpDiff,
+      newMove  // null if no new move, or the move object if one was learned
+    });
   }
   return levelUps;
 }
@@ -169,6 +216,20 @@ export function generateEnemyRobot(highestAllyLevel = 1, creaturePool = null) {
   const targetLevel = Math.max(1, highestAllyLevel + levelVariance);
   while (robot.level < targetLevel) {
     addXpToRobot(robot, xpToNextLevel(robot.level));
+  }
+
+  // Ensure enemy has ALL moves up to its level (addXpToRobot only auto-adds if < 4)
+  const tmpl = ROBOTS_BY_ID[robot.id];
+  if (tmpl?.learnset) {
+    if (!robot.moves) robot.moves = [];
+    for (const entry of tmpl.learnset) {
+      if (entry.level <= robot.level) {
+        const moveData = MOVES_BY_ID[entry.moveId];
+        if (moveData && !robot.moves.find(m => m.id === moveData.id)) {
+          robot.moves.push({ ...moveData });
+        }
+      }
+    }
   }
 
   return robot;

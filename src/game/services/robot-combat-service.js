@@ -5,12 +5,11 @@ import {
   selectTarget,
   addXpToRobot,
   generateEnemyRobot,
-  xpToNextLevel
+  xpToNextLevel,
+  MOVES_BY_ID
 } from '../robots.js';
 import {
   getBuffedAttack,
-  getBuffedAutoPower,
-  getBuffedUltimatePower,
   getBuffedElementMultiplier,
   applyDamageReduction
 } from './item-service.js';
@@ -25,108 +24,387 @@ import {
 export const CREDITS_PER_KILL = 15;
 export const BASE_KILL_XP = 10;
 
-export function processAttackTurn(allies, enemies, itemBuffs = null, robotParty = null) {
+/**
+ * Build a standard attack-result record used in the attacks[] array.
+ */
+function buildAttackRecord(robot, robotIndex, move, target, targetIndex, overrides = {}) {
+  return {
+    attackerIndex: robotIndex,
+    attackerId: robot.id,
+    attackerName: robot.nameEn,
+    attackerNameJp: robot.name,
+    moveId: move.id,
+    moveName: move.name,
+    moveNameEn: move.nameEn,
+    moveElement: move.element,
+    category: move.category,
+    targetIndex,
+    targetId: target.id,
+    targetName: target.nameEn,
+    targetNameJp: target.name,
+    damage: 0,
+    healAmount: 0,
+    effectApplied: null,
+    stab: false,
+    elementMultiplier: 1.0,
+    targetDefeated: false,
+    ...overrides
+  };
+}
+
+/**
+ * Resolve targets for a move based on its target type.
+ * @param {string} targetType - Move target type (single_enemy, all_enemies, single_ally, all_allies, self)
+ * @param {object[]} allies - Player's active robots
+ * @param {object[]} enemies - Enemy robots
+ * @param {number} targetIndex - Index provided by the player's choice
+ * @param {object} caster - The robot casting the move
+ * @returns {{ targets: object[], indices: number[] }} Resolved targets and their indices
+ */
+function resolveTargets(targetType, allies, enemies, targetIndex, caster) {
+  switch (targetType) {
+    case 'single_enemy': {
+      const t = enemies[targetIndex];
+      if (t && t.hp > 0) return { targets: [t], indices: [targetIndex] };
+      // Fallback: pick first alive enemy
+      for (let i = 0; i < enemies.length; i++) {
+        if (enemies[i].hp > 0) return { targets: [enemies[i]], indices: [i] };
+      }
+      return { targets: [], indices: [] };
+    }
+    case 'all_enemies': {
+      const targets = [];
+      const indices = [];
+      for (let i = 0; i < enemies.length; i++) {
+        if (enemies[i].hp > 0) { targets.push(enemies[i]); indices.push(i); }
+      }
+      return { targets, indices };
+    }
+    case 'single_ally': {
+      const t = allies[targetIndex];
+      if (t && t.hp > 0) return { targets: [t], indices: [targetIndex] };
+      // Fallback: pick first alive ally
+      for (let i = 0; i < allies.length; i++) {
+        if (allies[i].hp > 0) return { targets: [allies[i]], indices: [i] };
+      }
+      return { targets: [], indices: [] };
+    }
+    case 'all_allies': {
+      const targets = [];
+      const indices = [];
+      for (let i = 0; i < allies.length; i++) {
+        if (allies[i].hp > 0) { targets.push(allies[i]); indices.push(i); }
+      }
+      return { targets, indices };
+    }
+    case 'self': {
+      const idx = allies.indexOf(caster);
+      return { targets: [caster], indices: [idx >= 0 ? idx : 0] };
+    }
+    default:
+      return { targets: [], indices: [] };
+  }
+}
+
+/**
+ * Try to apply a move's status effect based on statusChance.
+ * Returns the effect name if applied, null otherwise.
+ */
+function tryApplyStatus(move, target, caster, allies) {
+  if (!move.statusEffect || !move.statusChance) return null;
+  if (Math.random() * 100 >= move.statusChance) return null;
+
+  const sourceId = caster.id;
+  const duration = move.statusDuration || 2;
+
+  switch (move.statusEffect) {
+    case 'poison': {
+      const damagePerTurn = Math.max(1, Math.floor((caster.attack / 10) * move.power * 0.2));
+      applyPoison(target, { damagePerTurn, duration, sourceId });
+      return 'poison';
+    }
+    case 'sleep':
+      applySleep(target, { duration, sourceId });
+      return 'sleep';
+    case 'stun':
+      applyStun(target, { sourceId });
+      return 'stun';
+    case 'confuse':
+      applyConfuse(target, { duration, sourceId });
+      return 'confuse';
+    case 'attack_buff':
+      applyAttackBuff(target, { percent: move.power || 25, duration, sourceId });
+      return 'attack_buff';
+    case 'haste':
+      applyHaste(target, { sourceId });
+      return 'haste';
+    case 'shield':
+      applyShield(target, { percent: move.power, duration, sourceId });
+      return 'shield';
+    case 'team_shield':
+      applyTeamShield(allies, { percent: move.power, duration, sourceId });
+      return 'team_shield';
+    case 'taunt':
+      applyTaunt(target, { duration, sourceId });
+      return 'taunt';
+    default:
+      return null;
+  }
+}
+
+/**
+ * Execute a single move for one robot. Returns array of attack records and xpEvents.
+ */
+function executeMove(robot, robotIndex, move, targetIndex, allies, enemies, itemBuffs, robotParty, defeatedEnemyIds) {
+  const attacks = [];
+  const xpEvents = [];
+  const stab = move.element !== 'neutral' && move.element === robot.element;
+  const stabMult = stab ? 1.5 : 1.0;
+
+  switch (move.category) {
+    case 'damage': {
+      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, robot);
+      for (let i = 0; i < targets.length; i++) {
+        const target = targets[i];
+        const tIdx = indices[i];
+        const elemMult = getElementMultiplier(move.element, target.element);
+        const variance = rollVariance();
+        let buffedAttack = itemBuffs ? getBuffedAttack(robot.attack, itemBuffs) : robot.attack;
+        buffedAttack = Math.floor((buffedAttack + getFlatAttackBonus(robot)) * getAttackMultiplier(robot));
+        const buffedElemMult = itemBuffs ? getBuffedElementMultiplier(elemMult * stabMult, itemBuffs) : elemMult * stabMult;
+        let damage = calculateRobotDamage(buffedAttack, move.power, buffedElemMult, variance);
+
+        const shieldReduction = getDamageReduction(target);
+        if (shieldReduction > 0) {
+          damage = Math.floor(damage * (1 - shieldReduction / 100));
+        }
+
+        target.hp = Math.max(0, target.hp - damage);
+        if (damage > 0) breakSleep(target);
+
+        const effectApplied = move.statusEffect ? tryApplyStatus(move, target, robot, allies) : null;
+        const targetDefeated = target.hp <= 0;
+
+        attacks.push(buildAttackRecord(robot, robotIndex, move, target, tIdx, {
+          damage, stab, elementMultiplier: elemMult, targetDefeated, effectApplied
+        }));
+
+        if (targetDefeated && !defeatedEnemyIds.has(target.id) && robotParty) {
+          defeatedEnemyIds.add(target.id);
+          const xpEvent = awardKillXp(robotParty, target.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks);
+          xpEvents.push({ enemyId: target.id, enemyName: target.nameEn, ...xpEvent });
+        }
+      }
+      break;
+    }
+
+    case 'drain': {
+      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, robot);
+      for (let i = 0; i < targets.length; i++) {
+        const target = targets[i];
+        const tIdx = indices[i];
+        const elemMult = getElementMultiplier(move.element, target.element);
+        const variance = rollVariance();
+        let buffedAttack = itemBuffs ? getBuffedAttack(robot.attack, itemBuffs) : robot.attack;
+        buffedAttack = Math.floor((buffedAttack + getFlatAttackBonus(robot)) * getAttackMultiplier(robot));
+        const buffedElemMult = itemBuffs ? getBuffedElementMultiplier(elemMult * stabMult, itemBuffs) : elemMult * stabMult;
+        let damage = calculateRobotDamage(buffedAttack, move.power, buffedElemMult, variance);
+
+        const shieldReduction = getDamageReduction(target);
+        if (shieldReduction > 0) {
+          damage = Math.floor(damage * (1 - shieldReduction / 100));
+        }
+
+        target.hp = Math.max(0, target.hp - damage);
+        if (damage > 0) breakSleep(target);
+
+        // Heal attacker for 50% of damage dealt
+        const healAmount = applyHeal(robot, Math.floor(damage * 0.5));
+
+        const effectApplied = move.statusEffect ? tryApplyStatus(move, target, robot, allies) : null;
+        const targetDefeated = target.hp <= 0;
+
+        attacks.push(buildAttackRecord(robot, robotIndex, move, target, tIdx, {
+          damage, healAmount, stab, elementMultiplier: elemMult, targetDefeated, effectApplied
+        }));
+
+        if (targetDefeated && !defeatedEnemyIds.has(target.id) && robotParty) {
+          defeatedEnemyIds.add(target.id);
+          const xpEvent = awardKillXp(robotParty, target.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks);
+          xpEvents.push({ enemyId: target.id, enemyName: target.nameEn, ...xpEvent });
+        }
+      }
+      break;
+    }
+
+    case 'heal': {
+      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, robot);
+      for (let i = 0; i < targets.length; i++) {
+        const target = targets[i];
+        const tIdx = indices[i];
+        const variance = rollVariance();
+        const healAmount = applyHeal(target, Math.floor((robot.attack / 10) * move.power * variance));
+
+        attacks.push(buildAttackRecord(robot, robotIndex, move, target, tIdx, {
+          healAmount
+        }));
+      }
+      break;
+    }
+
+    case 'buff': {
+      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, robot);
+      for (let i = 0; i < targets.length; i++) {
+        const target = targets[i];
+        const tIdx = indices[i];
+        const effectApplied = tryApplyStatus(move, target, robot, allies);
+
+        attacks.push(buildAttackRecord(robot, robotIndex, move, target, tIdx, {
+          effectApplied
+        }));
+      }
+      break;
+    }
+
+    case 'shield': {
+      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, robot);
+      if (move.target === 'all_allies') {
+        // Use applyTeamShield for all_allies
+        applyTeamShield(allies.filter(a => a.hp > 0), {
+          percent: move.power,
+          duration: move.statusDuration || 2,
+          sourceId: robot.id
+        });
+        for (let i = 0; i < targets.length; i++) {
+          const target = targets[i];
+          const tIdx = indices[i];
+          attacks.push(buildAttackRecord(robot, robotIndex, move, target, tIdx, {
+            effectApplied: 'team_shield'
+          }));
+        }
+      } else {
+        for (let i = 0; i < targets.length; i++) {
+          const target = targets[i];
+          const tIdx = indices[i];
+          applyShield(target, {
+            percent: move.power,
+            duration: move.statusDuration || 2,
+            sourceId: robot.id
+          });
+          attacks.push(buildAttackRecord(robot, robotIndex, move, target, tIdx, {
+            effectApplied: 'shield'
+          }));
+        }
+      }
+      break;
+    }
+
+    case 'debuff': {
+      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, robot);
+      for (let i = 0; i < targets.length; i++) {
+        const target = targets[i];
+        const tIdx = indices[i];
+        const effectApplied = tryApplyStatus(move, target, robot, allies);
+
+        attacks.push(buildAttackRecord(robot, robotIndex, move, target, tIdx, {
+          effectApplied
+        }));
+      }
+      break;
+    }
+
+    default:
+      break;
+  }
+
+  return { attacks, xpEvents };
+}
+
+/**
+ * Process a move-based attack turn. Each ally robot uses a specific move
+ * chosen by the player against a specific target.
+ *
+ * @param {object[]} allies - Player's active robots
+ * @param {object[]} enemies - Enemy robots
+ * @param {object[]} moveChoices - Array of { robotIndex, moveId, targetIndex }
+ * @param {object|null} itemBuffs - Active item buffs
+ * @param {object|null} robotParty - Full robot party (for XP awards)
+ * @returns {object} { attacks, allEnemiesDefeated, xpEvents, mpRegens }
+ */
+export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, robotParty = null) {
   const attacks = [];
   const xpEvents = [];
   const defeatedEnemyIds = new Set();
 
-  for (const robot of allies) {
-    if (robot.hp <= 0) continue;
-    if (isIncapacitated(robot)) continue;
-
-    const aliveEnemies = enemies.filter(e => e.hp > 0);
-    if (aliveEnemies.length === 0) break;
-
-    const attackCount = hasHaste(robot) ? 2 : 1;
-    if (hasHaste(robot)) consumeHaste(robot);
-
-    for (let strike = 0; strike < attackCount; strike++) {
-      const currentAliveEnemies = enemies.filter(e => e.hp > 0);
-      if (currentAliveEnemies.length === 0) break;
-
-      let target;
-      if (isConfused(robot)) {
-        const allAlive = [...allies, ...enemies].filter(c => c.hp > 0 && c.id !== robot.id);
-        target = allAlive[Math.floor(Math.random() * allAlive.length)];
-      } else {
-        target = selectTarget(robot, currentAliveEnemies);
-      }
-
-      const elemMult = getElementMultiplier(robot.autoSkill.element, target.element);
-      const variance = rollVariance();
-      let buffedAttack = itemBuffs ? getBuffedAttack(robot.attack, itemBuffs) : robot.attack;
-      buffedAttack = Math.floor((buffedAttack + getFlatAttackBonus(robot)) * getAttackMultiplier(robot));
-      const buffedPower = itemBuffs ? getBuffedAutoPower(robot.autoSkill.power, itemBuffs) : robot.autoSkill.power;
-      const buffedElemMult = itemBuffs ? getBuffedElementMultiplier(elemMult, itemBuffs) : elemMult;
-      let damage = calculateRobotDamage(buffedAttack, buffedPower, buffedElemMult, variance);
-
-      // Apply shield/team_shield damage reduction on target
-      const shieldReduction = getDamageReduction(target);
-      if (shieldReduction > 0) {
-        damage = Math.floor(damage * (1 - shieldReduction / 100));
-      }
-
-      target.hp = Math.max(0, target.hp - damage);
-
-      if (damage > 0) breakSleep(target);
-
-      // +1 ultimate charge only on first strike
-      if (strike === 0) {
-        robot.ultimate.charges = Math.min(
-          robot.ultimate.charges + 1,
-          robot.ultimate.chargesRequired
-        );
-      }
-
-      const targetDefeated = target.hp <= 0;
-
-      attacks.push({
-        attackerId: robot.id,
-        attackerName: robot.nameEn,
-        attackerNameJp: robot.name,
-        attackerBaseWord: robot.baseWord,
-        attackerBaseMeaning: robot.baseMeaning,
-        attackerSkillName: robot.autoSkill.name,
-        attackerSkillEn: robot.autoSkill.nameEn,
-        attackerElement: robot.element,
-        targetId: target.id,
-        targetName: target.nameEn,
-        targetNameJp: target.name,
-        attackerBaseReading: robot.baseReading,
-        attackerSkillReading: robot.autoSkill.reading,
-        damage,
-        elementMultiplier: elemMult,
-        targetDefeated,
-        attackerCharges: robot.ultimate.charges,
-        attackerChargesRequired: robot.ultimate.chargesRequired,
-      });
-
-      if (targetDefeated && !defeatedEnemyIds.has(target.id) && robotParty) {
-        defeatedEnemyIds.add(target.id);
-        const xpEvent = awardKillXp(robotParty, target.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks);
-        xpEvents.push({ enemyId: target.id, enemyName: target.nameEn, ...xpEvent });
-      }
+  // Collect robots that have haste (before processing moves)
+  const hastedRobotIndices = new Set();
+  for (let i = 0; i < allies.length; i++) {
+    if (allies[i] && allies[i].hp > 0 && hasHaste(allies[i])) {
+      hastedRobotIndices.add(i);
+      consumeHaste(allies[i]);
     }
   }
 
-  return { attacks, allEnemiesDefeated: enemies.every(e => e.hp <= 0), xpEvents };
+  // Process each move choice
+  for (const choice of moveChoices) {
+    const robot = allies[choice.robotIndex];
+    if (!robot || robot.hp <= 0) continue;
+    if (isIncapacitated(robot)) continue;
+
+    // If all enemies are dead, stop processing damage-oriented moves
+    const aliveEnemies = enemies.filter(e => e.hp > 0);
+    if (aliveEnemies.length === 0) break;
+
+    const move = (robot.moves || []).find(m => m.id === choice.moveId);
+    if (!move) continue;
+
+    // Check MP
+    if ((robot.mp || 0) < move.mpCost) continue;
+
+    // Deduct MP
+    robot.mp = (robot.mp || 0) - move.mpCost;
+
+    // Execute the move
+    const result = executeMove(robot, choice.robotIndex, move, choice.targetIndex, allies, enemies, itemBuffs, robotParty, defeatedEnemyIds);
+    attacks.push(...result.attacks);
+    xpEvents.push(...result.xpEvents);
+
+    // If this robot had haste, execute the same move a second time
+    if (hastedRobotIndices.has(choice.robotIndex)) {
+      // Don't charge MP again for haste extra action
+      const result2 = executeMove(robot, choice.robotIndex, move, choice.targetIndex, allies, enemies, itemBuffs, robotParty, defeatedEnemyIds);
+      attacks.push(...result2.attacks);
+      xpEvents.push(...result2.xpEvents);
+    }
+  }
+
+  // MP regen: each alive ally gets 12% of maxMp back
+  const mpRegens = [];
+  for (const robot of allies) {
+    if (robot.hp <= 0) continue;
+    const regen = Math.floor((robot.maxMp || 0) * 0.12);
+    robot.mp = Math.min(robot.maxMp || 0, (robot.mp || 0) + regen);
+    mpRegens.push({ robotId: robot.id, mp: robot.mp, maxMp: robot.maxMp, regen });
+  }
+
+  return {
+    attacks,
+    allEnemiesDefeated: enemies.every(e => e.hp <= 0),
+    xpEvents,
+    mpRegens
+  };
 }
 
 export function processDefendTurn(allies) {
-  const chargeUpdates = [];
+  // MP regen on defend (12% of maxMp)
+  const mpRegens = [];
   for (const robot of allies) {
     if (robot.hp <= 0) continue;
-    robot.ultimate.charges = Math.min(
-      robot.ultimate.charges + 1,
-      robot.ultimate.chargesRequired
-    );
-    chargeUpdates.push({
-      robotId: robot.id,
-      charges: robot.ultimate.charges,
-      chargesRequired: robot.ultimate.chargesRequired
-    });
+    const regen = Math.floor((robot.maxMp || 0) * 0.12);
+    robot.mp = Math.min(robot.maxMp || 0, (robot.mp || 0) + regen);
+    mpRegens.push({ robotId: robot.id, mp: robot.mp, maxMp: robot.maxMp, regen });
   }
-  return { chargeUpdates };
+  return { mpRegens };
 }
 
 export function processEnemyTurn(enemies, allies, defendActive = false, itemBuffs = null) {
@@ -137,6 +415,9 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
 
     const aliveAllies = allies.filter(a => a.hp > 0);
     if (aliveAllies.length === 0) break;
+
+    const move = (enemy.moves && enemy.moves.length > 0) ? enemy.moves[0] : null;
+    if (!move) continue;
 
     const attackCount = hasHaste(enemy) ? 2 : 1;
     if (hasHaste(enemy)) consumeHaste(enemy);
@@ -154,10 +435,10 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
         target = taunter || selectTarget(enemy, currentAliveAllies);
       }
 
-      const elemMult = getElementMultiplier(enemy.autoSkill.element, target.element);
+      const elemMult = getElementMultiplier(move.element, target.element);
       const variance = rollVariance();
       let buffedAttack = Math.floor(enemy.attack * getAttackMultiplier(enemy));
-      let damage = calculateRobotDamage(buffedAttack, enemy.autoSkill.power, elemMult, variance);
+      let damage = calculateRobotDamage(buffedAttack, move.power, elemMult, variance);
 
       if (defendActive) {
         damage = Math.floor(damage * 0.5);
@@ -175,33 +456,32 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
 
       if (damage > 0) breakSleep(target);
 
-      if (strike === 0) {
-        enemy.ultimate.charges = Math.min(
-          enemy.ultimate.charges + 1,
-          enemy.ultimate.chargesRequired
-        );
-      }
-
       attacks.push({
         attackerId: enemy.id,
         attackerName: enemy.nameEn,
         attackerNameJp: enemy.name,
-        attackerBaseWord: enemy.baseWord,
-        attackerBaseMeaning: enemy.baseMeaning,
-        attackerSkillName: enemy.autoSkill.name,
-        attackerSkillEn: enemy.autoSkill.nameEn,
-        attackerElement: enemy.element,
+        moveId: move.id,
+        moveName: move.name,
+        moveNameEn: move.nameEn,
+        moveElement: move.element,
+        category: 'damage',
         targetId: target.id,
         targetName: target.nameEn,
         targetNameJp: target.name,
-        attackerBaseReading: enemy.baseReading,
-        attackerSkillReading: enemy.autoSkill.reading,
         damage,
         elementMultiplier: elemMult,
         targetDefeated: target.hp <= 0,
       });
     }
   }
+
+  // MP regen for enemies (12% of maxMp)
+  for (const enemy of enemies) {
+    if (enemy.hp <= 0) continue;
+    const regen = Math.floor((enemy.maxMp || 0) * 0.12);
+    enemy.mp = Math.min(enemy.maxMp || 0, (enemy.mp || 0) + regen);
+  }
+
   return { attacks, allAlliesDefeated: allies.every(a => a.hp <= 0) };
 }
 
@@ -253,8 +533,7 @@ export function processBefriend(enemies, robotParty, targetEnemyIndex) {
   captured.befriended = true;
 
   // Reset for when it joins the party after combat
-  const capturedCopy = { ...captured, hp: captured.maxHp, befriended: false };
-  capturedCopy.ultimate = { ...captured.ultimate, charges: 0 };
+  const capturedCopy = { ...captured, hp: captured.maxHp, mp: captured.maxMp, befriended: false };
 
   // Store in pending list — added to party AFTER combat ends
   if (!robotParty.pendingCaptures) robotParty.pendingCaptures = [];
@@ -265,297 +544,6 @@ export function processBefriend(enemies, robotParty, targetEnemyIndex) {
     captured,
     capturedId: captured.id,
     allEnemiesDefeated: enemies.filter(e => e.hp > 0 && !e.befriended).length === 0
-  };
-}
-
-export function processUltimate(robot, enemies, itemBuffs = null, robotParty = null) {
-  if (robot.ultimate.charges < robot.ultimate.chargesRequired) {
-    return { success: false, reason: 'Not enough charges' };
-  }
-
-  const ultType = robot.ultimate.type || 'damage';
-  const ultTarget = robot.ultimate.target || 'all_enemies';
-
-  // Delegate non-damage types to their stub handlers
-  if (ultType === 'heal') {
-    return processHealUltimate(robot, enemies, itemBuffs, robotParty);
-  }
-  if (ultType === 'poison') {
-    return processPoisonUltimate(robot, enemies, itemBuffs, robotParty);
-  }
-
-  // Status effect ultimates
-  const STATUS_EFFECT_TYPES = ['sleep', 'stun', 'confuse', 'attack_buff', 'haste', 'shield', 'team_shield', 'taunt'];
-  if (STATUS_EFFECT_TYPES.includes(ultType)) {
-    return processStatusEffectUltimate(robot, ultType, enemies, robotParty);
-  }
-
-  // Determine targets based on targeting mode
-  let targets;
-  if (ultTarget === 'single_enemy') {
-    const selected = selectTarget(robot, enemies.filter(e => e.hp > 0));
-    targets = selected ? [selected] : [];
-  } else {
-    targets = enemies.filter(e => e.hp > 0);
-  }
-
-  const hits = [];
-  const xpEvents = [];
-  const defeatedEnemyIds = new Set();
-
-  for (const enemy of targets) {
-    const elemMult = getElementMultiplier(robot.ultimate.element, enemy.element);
-    const variance = rollVariance();
-    const baseAttack = (itemBuffs ? getBuffedAttack(robot.attack, itemBuffs) : robot.attack) + getFlatAttackBonus(robot);
-    const buffedPower = itemBuffs ? getBuffedUltimatePower(robot.ultimate.power, itemBuffs) : robot.ultimate.power;
-    const buffedElemMult = itemBuffs ? getBuffedElementMultiplier(elemMult, itemBuffs) : elemMult;
-    const damage = calculateRobotDamage(baseAttack, buffedPower, buffedElemMult, variance);
-    enemy.hp = Math.max(0, enemy.hp - damage);
-    const targetDefeated = enemy.hp <= 0;
-    hits.push({
-      targetId: enemy.id,
-      targetName: enemy.nameEn,
-      damage,
-      elementMultiplier: elemMult,
-      targetDefeated
-    });
-
-    // Award XP immediately when an enemy is killed by ultimate
-    if (targetDefeated && !defeatedEnemyIds.has(enemy.id) && robotParty) {
-      defeatedEnemyIds.add(enemy.id);
-      const xpEvent = awardKillXp(robotParty, enemy.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks);
-      xpEvents.push({ enemyId: enemy.id, enemyName: enemy.nameEn, ...xpEvent });
-    }
-  }
-
-  robot.ultimate.charges = 0;
-
-  return {
-    success: true,
-    type: 'damage',
-    robotId: robot.id,
-    robotName: robot.nameEn,
-    ultimateName: robot.ultimate.nameEn,
-    hits,
-    xpEvents,
-    allEnemiesDefeated: enemies.every(e => e.hp <= 0)
-  };
-}
-
-function processHealUltimate(robot, enemies, itemBuffs, robotParty) {
-  const healPower = robot.ultimate.power || 40;
-  const ultTarget = robot.ultimate.target || 'single_ally';
-  const healEvents = [];
-
-  if (ultTarget === 'single_ally') {
-    // Pick the alive ally with lowest HP% that has HP < maxHp
-    const candidates = (robotParty?.active || [])
-      .filter(r => r.hp > 0 && r.hp < r.maxHp);
-    if (candidates.length > 0) {
-      candidates.sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
-      const target = candidates[0];
-      const variance = rollVariance();
-      const healAmount = Math.max(1, Math.floor((robot.attack / 10) * healPower * variance));
-      const actualHealed = applyHeal(target, healAmount);
-      healEvents.push({
-        targetId: target.id,
-        targetName: target.nameEn,
-        healAmount: actualHealed,
-        targetHp: target.hp,
-        targetMaxHp: target.maxHp
-      });
-    }
-  } else {
-    // all_allies: target all alive allies
-    const targets = (robotParty?.active || []).filter(r => r.hp > 0);
-    for (const target of targets) {
-      const variance = rollVariance();
-      const healAmount = Math.max(1, Math.floor((robot.attack / 10) * healPower * variance));
-      const actualHealed = applyHeal(target, healAmount);
-      healEvents.push({
-        targetId: target.id,
-        targetName: target.nameEn,
-        healAmount: actualHealed,
-        targetHp: target.hp,
-        targetMaxHp: target.maxHp
-      });
-    }
-  }
-
-  robot.ultimate.charges = 0;
-
-  return {
-    success: true,
-    type: 'heal',
-    robotId: robot.id,
-    robotName: robot.nameEn,
-    ultimateName: robot.ultimate.nameEn,
-    healEvents,
-    hits: [],
-    xpEvents: [],
-    allEnemiesDefeated: false
-  };
-}
-
-function processPoisonUltimate(robot, enemies, itemBuffs, robotParty) {
-  const aliveEnemies = enemies.filter(e => e.hp > 0);
-  const ultTarget = robot.ultimate.target || 'all_enemies';
-
-  // Determine targets based on targeting mode
-  let targets;
-  if (ultTarget === 'single_enemy') {
-    const selected = selectTarget(robot, aliveEnemies);
-    targets = selected ? [selected] : [];
-  } else {
-    targets = aliveEnemies;
-  }
-
-  // Immediate damage uses half power
-  const immediatePower = Math.floor((robot.ultimate.power || 30) * 0.5);
-  // Poison damage-per-turn scales with attack and ultimate power
-  const damagePerTurn = Math.max(1, Math.floor((robot.attack / 10) * (robot.ultimate.power || 30) * 0.2));
-
-  const hits = [];
-  const xpEvents = [];
-  const defeatedEnemyIds = new Set();
-
-  for (const enemy of targets) {
-    const elemMult = getElementMultiplier(robot.ultimate.element, enemy.element);
-    const variance = rollVariance();
-    const buffedAttack = itemBuffs ? getBuffedAttack(robot.attack, itemBuffs) : robot.attack;
-    const buffedElemMult = itemBuffs ? getBuffedElementMultiplier(elemMult, itemBuffs) : elemMult;
-    const damage = calculateRobotDamage(buffedAttack, immediatePower, buffedElemMult, variance);
-    enemy.hp = Math.max(0, enemy.hp - damage);
-
-    const targetDefeated = enemy.hp <= 0;
-
-    // Apply poison only if target survived the immediate damage
-    if (!targetDefeated) {
-      applyPoison(enemy, { damagePerTurn, duration: 3, sourceId: robot.id });
-    }
-
-    hits.push({
-      targetId: enemy.id,
-      targetName: enemy.nameEn,
-      damage,
-      elementMultiplier: elemMult,
-      targetDefeated,
-      poisonApplied: !targetDefeated
-    });
-
-    // Award XP immediately when an enemy is killed
-    if (targetDefeated && !defeatedEnemyIds.has(enemy.id) && robotParty) {
-      defeatedEnemyIds.add(enemy.id);
-      const xpEvent = awardKillXp(robotParty, enemy.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks);
-      xpEvents.push({ enemyId: enemy.id, enemyName: enemy.nameEn, ...xpEvent });
-    }
-  }
-
-  robot.ultimate.charges = 0;
-
-  return {
-    success: true,
-    type: 'poison',
-    robotId: robot.id,
-    robotName: robot.nameEn,
-    ultimateName: robot.ultimate.nameEn,
-    hits,
-    xpEvents,
-    allEnemiesDefeated: enemies.every(e => e.hp <= 0)
-  };
-}
-
-function processStatusEffectUltimate(robot, effectType, enemies, robotParty) {
-  const ultTarget = robot.ultimate.target || 'single_enemy';
-  const power = robot.ultimate.power || 0;
-  const effectEvents = [];
-  const allies = robotParty?.active || [];
-
-  // Debuffs target enemies
-  if (['sleep', 'stun', 'confuse'].includes(effectType)) {
-    const aliveEnemies = enemies.filter(e => e.hp > 0);
-    let targets;
-    if (ultTarget === 'all_enemies') {
-      targets = aliveEnemies;
-    } else {
-      const selected = selectTarget(robot, aliveEnemies);
-      targets = selected ? [selected] : [];
-    }
-
-    for (const target of targets) {
-      if (effectType === 'sleep') applySleep(target, { duration: 2, sourceId: robot.id });
-      else if (effectType === 'stun') applyStun(target, { sourceId: robot.id });
-      else if (effectType === 'confuse') applyConfuse(target, { duration: 2, sourceId: robot.id });
-
-      effectEvents.push({
-        type: effectType,
-        targetId: target.id,
-        targetName: target.nameEn,
-      });
-    }
-  }
-
-  // Buffs target allies
-  if (['attack_buff', 'haste', 'shield'].includes(effectType)) {
-    let targets;
-    if (ultTarget === 'all_allies') {
-      targets = allies.filter(r => r.hp > 0);
-    } else {
-      // single_ally: pick ally with lowest HP%
-      const candidates = allies.filter(r => r.hp > 0);
-      candidates.sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
-      targets = candidates.length > 0 ? [candidates[0]] : [];
-    }
-
-    for (const target of targets) {
-      if (effectType === 'attack_buff') applyAttackBuff(target, { percent: power, duration: 2, sourceId: robot.id });
-      else if (effectType === 'haste') applyHaste(target, { sourceId: robot.id });
-      else if (effectType === 'shield') applyShield(target, { percent: power, duration: 2, sourceId: robot.id });
-
-      effectEvents.push({
-        type: effectType,
-        targetId: target.id,
-        targetName: target.nameEn,
-        percent: power || undefined,
-      });
-    }
-  }
-
-  // team_shield: all allies
-  if (effectType === 'team_shield') {
-    applyTeamShield(allies, { percent: power, duration: 2, sourceId: robot.id });
-    for (const ally of allies.filter(r => r.hp > 0)) {
-      effectEvents.push({
-        type: 'team_shield',
-        targetId: ally.id,
-        targetName: ally.nameEn,
-        percent: power,
-      });
-    }
-  }
-
-  // taunt: self
-  if (effectType === 'taunt') {
-    applyTaunt(robot, { duration: 2, sourceId: robot.id });
-    effectEvents.push({
-      type: 'taunt',
-      targetId: robot.id,
-      targetName: robot.nameEn,
-    });
-  }
-
-  robot.ultimate.charges = 0;
-
-  return {
-    success: true,
-    type: effectType,
-    robotId: robot.id,
-    robotName: robot.nameEn,
-    ultimateName: robot.ultimate.nameEn,
-    effectEvents,
-    hits: [],
-    xpEvents: [],
-    allEnemiesDefeated: false,
   };
 }
 
@@ -619,7 +607,10 @@ export function awardKillXp(robotParty, enemyLevel, xpMultiplier = 1.0, xpBalanc
         newLevel: lu.level,
         maxHp: lu.maxHp,
         attack: lu.attack,
-        hpGain: lu.hpGain
+        hpGain: lu.hpGain,
+        maxMp: lu.maxMp,
+        mpGain: lu.mpGain,
+        newMove: lu.newMove
       });
     }
   }

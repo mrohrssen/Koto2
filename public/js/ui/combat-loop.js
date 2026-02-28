@@ -45,6 +45,9 @@ import {
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
 import { configureRobotImg, robotSpritePath } from './sprite-utils.js';
 import { t } from './i18n.js';
+import { init as initMoveSelect, showMoves, clear as clearMoveSelect, setActiveLabel } from './move-select.js';
+import { init as initTargetSelect, showEnemies, showAllies, clear as clearTargetSelect } from './target-select.js';
+import { showLearnPrompt } from './move-learn.js';
 
 // ============ SPLIT ATTACK CARD ============
 
@@ -210,6 +213,11 @@ let pendingActionType = null; // 'attack' or 'defend' - set when card selected
 let playerAttackTimer = null;
 let enemyAttackTimer = null;
 
+// Move-based combat state
+let moveChoices = [];
+let currentRobotIndex = 0;
+let pendingMove = null;
+
 // Callback references (set during init)
 let getGameState = null;
 let updateGameState = null;
@@ -303,6 +311,98 @@ export function init(callbacks) {
   updateRobotRowData = callbacks.updateRobotRowData;
 }
 
+/**
+ * Initialize move/target selection UI callbacks.
+ * Called by game.js after combatLoop.init().
+ */
+export function initMoveUI() {
+  initMoveSelect({
+    onMoveSelectCb: handleMoveSelected,
+    onItemsOpenCb: () => {
+      console.log('[combat] Items button pressed — not yet implemented');
+    },
+    onMoveHelpCb: (move) => {
+      console.log('[combat] Move help:', move.nameEn, '—', move.meaning || move.description);
+    }
+  });
+  initTargetSelect({
+    onTargetSelectCb: handleTargetSelected,
+    onCancelCb: handleTargetCancelled
+  });
+}
+
+/**
+ * Start move selection for a new turn.
+ * Replaces the old pauseForNextVocab flow for robot combat.
+ */
+export function startMoveSelection() {
+  moveChoices = [];
+  currentRobotIndex = 0;
+  promptNextRobot();
+}
+
+function promptNextRobot() {
+  const state = getGameState();
+  const allies = state.combat?.allies || state.run?.robotParty?.active || [];
+
+  // Skip KO'd robots
+  while (currentRobotIndex < allies.length && (!allies[currentRobotIndex] || allies[currentRobotIndex].hp <= 0)) {
+    currentRobotIndex++;
+  }
+
+  if (currentRobotIndex >= allies.length) {
+    // All robots have chosen -- execute the turn
+    executeRobotMovesTurn(moveChoices);
+    return;
+  }
+
+  const robot = allies[currentRobotIndex];
+  clearTargetSelect();
+  setActiveLabel(robot);
+  showMoves(robot, currentRobotIndex);
+}
+
+function handleMoveSelected(move, robotIndex) {
+  pendingMove = move;
+  const state = getGameState();
+
+  if (move.target === 'single_enemy') {
+    showEnemies(state.combat?.enemies || [], move);
+  } else if (move.target === 'single_ally') {
+    showAllies(state.combat?.allies || state.run?.robotParty?.active || [], move);
+  } else {
+    // AoE or self -- no target needed, targetIndex -1
+    moveChoices.push({ robotIndex: currentRobotIndex, moveId: move.id, targetIndex: -1 });
+    currentRobotIndex++;
+    promptNextRobot();
+  }
+}
+
+function handleTargetSelected(targetIndex) {
+  moveChoices.push({ robotIndex: currentRobotIndex, moveId: pendingMove.id, targetIndex });
+  pendingMove = null;
+  currentRobotIndex++;
+  promptNextRobot();
+}
+
+function handleTargetCancelled() {
+  // Go back to move selection for this robot
+  pendingMove = null;
+  const state = getGameState();
+  const allies = state.combat?.allies || state.run?.robotParty?.active || [];
+  const robot = allies[currentRobotIndex];
+  if (robot) {
+    clearTargetSelect();
+    setActiveLabel(robot);
+    showMoves(robot, currentRobotIndex);
+  }
+}
+
+function handleDefendSelected() {
+  // Execute defend turn immediately (all robots defend)
+  executeRobotDefendThenPause();
+}
+
 // ============ STATE GETTERS/SETTERS ============
 
 /**
@@ -340,11 +440,18 @@ export function cleanupCombat() {
 }
 
 /**
- * Pause combat and show next vocab cards (for use after ultimates/external actions)
+ * Pause combat and show next move selection (for use after external actions like swaps).
+ * In move-based combat, this starts the move selection grid instead of flashcards.
  */
 export function pauseForNextVocab() {
-  combatPausedForVocab = true;
-  showNextDualCardsFromQueue();
+  const state = getGameState();
+  const isRobotCombat = state.combat?.isRobotCombat;
+  if (isRobotCombat) {
+    startMoveSelection();
+  } else {
+    combatPausedForVocab = true;
+    showNextDualCardsFromQueue();
+  }
 }
 
 function showNextDualCardsFromQueue() {
@@ -455,7 +562,7 @@ function updateRobotHpBars(robots, allyHpMap) {
       fill.style.width = `${hpPct}%`;
       fill.style.backgroundColor = getHpColor(hpPct);
     }
-    // Update KO state and charged glow
+    // Update KO state
     const icon = slot.querySelector('.robot-icon');
     if (icon) {
       if (currentHp <= 0) {
@@ -463,24 +570,12 @@ function updateRobotHpBars(robots, allyHpMap) {
       } else {
         icon.classList.remove('ko');
       }
-      const isCharged = robot.ultimate.charges >= robot.ultimate.chargesRequired;
-      if (isCharged) {
-        icon.classList.add('charged');
-      } else {
-        icon.classList.remove('charged');
-      }
     }
-    // Update charge bar segments
-    const chargeBar = slot.querySelector('.robot-charge-bar');
-    if (chargeBar) {
-      const segments = chargeBar.querySelectorAll('.charge-segment');
-      segments.forEach((seg, s) => {
-        if (s < robot.ultimate.charges) {
-          seg.classList.add('filled');
-        } else {
-          seg.classList.remove('filled');
-        }
-      });
+    // Update MP bar
+    const mpFill = slot.querySelector('.robot-mp-fill');
+    if (mpFill && robot.maxMp > 0) {
+      const mpPct = Math.max(0, Math.min(100, (robot.mp / robot.maxMp) * 100));
+      mpFill.style.width = `${mpPct}%`;
     }
   });
 }
@@ -513,11 +608,12 @@ function showEnemyDamageDisplay(enemyAttack) {
  * @param {Array} xpEvents - Array of { xpGrants: [...], levelUps: [...] }
  */
 function showXpEvents(xpEvents) {
-  if (!xpEvents || xpEvents.length === 0) return;
+  const pendingMoveLearn = [];
+  if (!xpEvents || xpEvents.length === 0) return pendingMoveLearn;
 
   const state = getGameState();
   const activeRobots = state.run?.robotParty?.active;
-  if (!activeRobots) return;
+  if (!activeRobots) return pendingMoveLearn;
 
   const slots = document.querySelectorAll('#chip-row .robot-slot');
 
@@ -540,6 +636,63 @@ function showXpEvents(xpEvents) {
           // Slight delay so it appears after XP popup
           setTimeout(() => showLevelUpPopup(slots[index], lu.newLevel, lu.hpGain), 400);
         }
+        // Collect move learns for later processing
+        if (lu.newMove) {
+          const robot = activeRobots.find(r => r && r.id === lu.robotId);
+          if (robot) {
+            const robotIdx = activeRobots.findIndex(r => r && r.id === lu.robotId);
+            pendingMoveLearn.push({ robot, robotIndex: robotIdx, newMove: lu.newMove });
+          }
+        }
+      }
+    }
+  }
+
+  return pendingMoveLearn;
+}
+
+/**
+ * Process pending move-learn prompts after combat state sync.
+ * For each pending item, checks if the move was auto-learned (already in moves array)
+ * or needs replacement (robot has 4 moves). Shows UI prompt and calls backend API.
+ * @param {Array} pendingList - Array of { robot, robotIndex, newMove }
+ */
+async function processPendingMoveLearn(pendingList) {
+  const state = getGameState();
+  const activeRobots = state.run?.robotParty?.active;
+  if (!activeRobots) return;
+
+  for (const item of pendingList) {
+    // Re-read robot from synced state (may have been updated by syncFinalState)
+    const robot = activeRobots.find(r => r && r.id === item.robot.id);
+    if (!robot) continue;
+    const robotIndex = activeRobots.findIndex(r => r && r.id === item.robot.id);
+
+    // Check if move was auto-learned (already in robot's moves after state sync)
+    const alreadyLearned = robot.moves?.some(m => m.id === item.newMove.id);
+
+    // Pass alreadyLearned flag so the prompt shows the right UI
+    // (after syncFinalState, auto-added moves make robot.moves.length == 4)
+    const result = await showLearnPrompt(robot, robotIndex, item.newMove, alreadyLearned);
+
+    if (result.action === 'skip') {
+      continue;
+    }
+
+    if (result.action === 'replace') {
+      // Call backend to replace the move
+      const response = await fetch(`${API_BASE}/api/game/learn-move`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          robotIndex: robotIndex,
+          newMoveId: item.newMove.id,
+          replaceIndex: result.replaceIndex
+        })
+      });
+      const data = await response.json();
+      if (data.state) {
+        updateGameState(data.state);
       }
     }
   }
@@ -557,18 +710,10 @@ export async function startCombatLoop() {
   combatActive = true;
   playerAttackPending = false;
   enemyAttackPending = false;
-  // Start paused - require vocab review before first attack
-  combatPausedForVocab = true;
+  combatPausedForVocab = false;
 
-  // Initialize word practice cards and wait for words to be ready
-  await wordPractice.initCombatWords();
-
-  // Show first dual flash cards now that words are loaded
-  showNextDualCardsFromQueue();
-
-  console.log('[Combat] Started paused - review a word to begin attacking');
-  // Combat starts paused, player must review a vocab word to earn first attack
-  // resumeCombatAfterVocab() will trigger the first executePlayerAttack()
+  // Start move selection for the first turn
+  startMoveSelection();
 }
 
 /**
@@ -898,7 +1043,7 @@ function syncFinalState(result) {
   }
   updateGameState(updates);
 
-  // Keep robot-row popup data in sync with latest charges/HP
+  // Keep robot-row popup data in sync with latest MP/HP
   if (result.robotParty?.active && updateRobotRowData) {
     updateRobotRowData(result.robotParty.active);
   }
@@ -914,8 +1059,187 @@ function syncFinalState(result) {
 // ============ ROBOT COMBAT ORCHESTRATORS ============
 
 /**
+ * Execute a full turn of robot moves — calls /robot-combat-cycle with 'attack' + moveChoices.
+ * Replaces the old executeRobotPlayerAttack() for move-based flow.
+ * @param {Array} choices - Array of { robotIndex, moveId, targetIndex }
+ */
+async function executeRobotMovesTurn(choices) {
+  if (!combatActive || playerAttackPending || getEnemyDialogueActive()) return;
+  playerAttackPending = true;
+
+  return withAnimationActive(async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/game/robot-combat-cycle`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ actionType: 'attack', moveChoices: choices })
+      });
+      const result = await response.json();
+
+      if (result.error) {
+        if (result.error === 'No active combat') {
+          combatActive = false;
+          return;
+        }
+        console.error('Move turn error:', result.error);
+        playerAttackPending = false;
+        return;
+      }
+
+      // Show poison/effect ticks
+      await showEffectEvents(result);
+
+      // Track enemy HP for progressive updates
+      const enemyHpMap = {};
+      if (result.enemies) {
+        for (const enemy of result.enemies) {
+          const dmgToThisEnemy = (result.playerAttacks || [])
+            .filter(a => a.targetId === enemy.id)
+            .reduce((sum, a) => sum + (a.damage || 0), 0);
+          enemyHpMap[enemy.id] = {
+            hp: Math.min(enemy.hp + dmgToThisEnemy, enemy.maxHp),
+            maxHp: enemy.maxHp,
+            index: result.enemies.indexOf(enemy)
+          };
+        }
+      }
+
+      // Show each attack result sequentially
+      const allPendingMoveLearn = [];
+      if (result.playerAttacks?.length > 0) {
+        const killedEnemies = new Set();
+        for (const atk of result.playerAttacks) {
+          let attackCard = null;
+          const actionArea = document.getElementById('action-area');
+
+          if (atk.category === 'heal') {
+            // Heal: show green heal text
+            if (actionArea) {
+              actionArea.innerHTML = `<div class="combat-robot-attack" style="color:#4CAF50">${atk.attackerName} uses ${atk.moveNameEn}! +${atk.healAmount || 0} HP</div>`;
+            }
+          } else if (atk.category === 'buff' || atk.category === 'shield') {
+            // Buff/shield: show blue text
+            if (actionArea) {
+              actionArea.innerHTML = `<div class="combat-robot-attack" style="color:#64B5F6">${atk.attackerName} uses ${atk.moveNameEn}!${atk.effectApplied ? ' \u2192 ' + atk.effectApplied : ''}</div>`;
+            }
+          } else if (atk.category === 'debuff') {
+            // Debuff: show purple text
+            if (actionArea) {
+              actionArea.innerHTML = `<div class="combat-robot-attack" style="color:#CE93D8">${atk.attackerName} uses ${atk.moveNameEn}!${atk.effectApplied ? ' \u2192 ' + atk.effectApplied : ''}</div>`;
+            }
+          } else {
+            // Damage/drain: show attack card via buildSplitAttackCard
+            const adaptedAtk = {
+              ...atk,
+              attackerSkillName: atk.moveName,
+              attackerSkillEn: atk.moveNameEn,
+              attackerSkillReading: atk.moveReading || '',
+              attackerElement: atk.moveElement || atk.attackerElement,
+            };
+            attackCard = insertAttackCard(adaptedAtk, false);
+          }
+
+          // Fire visual effects
+          playSFX('attack');
+          const robotSlotEl = findRobotSlotByAttackerId(atk.attackerId);
+          const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies);
+
+          if (atk.damage > 0 && robotSlotEl && enemyEl) {
+            playAttackSound(atk.moveElement || atk.attackerElement || 'neutral');
+            const targetMaxHp = enemyHpMap[atk.targetId]?.maxHp || 100;
+            await fireRobotAttackEffect(robotSlotEl, enemyEl, atk.moveElement || 'neutral', atk.damage, targetMaxHp);
+          } else if (atk.damage > 0) {
+            animateEnemyHurt();
+          }
+
+          // Show damage number for damage/drain
+          if (atk.damage > 0) {
+            showDamageNumber(atk.damage, false, false);
+          }
+
+          // Update enemy HP after each hit
+          if (atk.damage > 0 && enemyHpMap[atk.targetId]) {
+            enemyHpMap[atk.targetId].hp = Math.max(0, enemyHpMap[atk.targetId].hp - atk.damage);
+            const entry = enemyHpMap[atk.targetId];
+            if (result.enemies.length > 1) {
+              characterUI.updateEnemyHPAtIndex(entry.index, entry.hp, entry.maxHp);
+            } else {
+              characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
+            }
+          }
+
+          // XP popups on kill — collect pending move learns
+          if (atk.targetDefeated && !killedEnemies.has(atk.targetId) && result.xpEvents) {
+            killedEnemies.add(atk.targetId);
+            const xpEvent = result.xpEvents.find(ev => ev.enemyId === atk.targetId);
+            if (xpEvent) {
+              const pending = showXpEvents([xpEvent]);
+              if (pending?.length) allPendingMoveLearn.push(...pending);
+            }
+          }
+
+          // STAB indicator
+          if (atk.stab) {
+            const stabEl = document.createElement('div');
+            stabEl.className = 'stab-indicator';
+            stabEl.textContent = 'STAB!';
+            const actionArea2 = document.getElementById('action-area');
+            if (actionArea2) actionArea2.appendChild(stabEl);
+          }
+
+          // Wait for tap or fixed delay
+          if (attackCard) {
+            await waitForCardTap(attackCard);
+          } else {
+            await delay(800);
+          }
+        }
+      }
+
+      // Enemy attacks phase (reuse existing code)
+      const allyHpMap = buildAllyHpMap(result);
+      if (result.enemyAttacks?.length > 0) {
+        await delay(400);
+      }
+      await showEnemyAttacksAnimated(result, allyHpMap, false);
+
+      // KO swap animations
+      await showKoSwapAnimations(result);
+
+      // Sync state
+      syncFinalState(result);
+
+      // Handle pending move learns (after state sync so robot data is current)
+      if (allPendingMoveLearn.length > 0) {
+        await processPendingMoveLearn(allPendingMoveLearn);
+      }
+
+      if (result.combatEnded) {
+        if (result.victory) await delay(500);
+        stopCombatLoop(result);
+        return;
+      }
+
+      playerAttackPending = false;
+
+      // Start next turn's move selection
+      await delay(600);
+      startMoveSelection();
+
+    } catch (error) {
+      console.error('Move turn error:', error);
+      playerAttackPending = false;
+      if (combatActive) {
+        startMoveSelection();
+      }
+    }
+  });
+}
+
+/**
  * Execute robot player attack — calls /robot-combat-cycle with 'attack'
  * The backend processes both player and enemy phases in one call.
+ * @deprecated Use executeRobotMovesTurn instead for move-based combat
  */
 async function executeRobotPlayerAttack() {
   if (!combatActive || playerAttackPending || combatPausedForVocab || getEnemyDialogueActive()) return;
@@ -957,6 +1281,7 @@ async function executeRobotPlayerAttack() {
       }
 
       // Show each allied robot's attack result sequentially with real-time HP
+      const allPendingMoveLearn2 = [];
       if (result.playerAttacks?.length > 0) {
         const killedEnemies = new Set();
 
@@ -981,28 +1306,14 @@ async function executeRobotPlayerAttack() {
           const robotSlotEl = findRobotSlotByAttackerId(atk.attackerId);
           const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies);
 
-          // Update charge bar for this attacker immediately after its attack
+          // Update MP bar for this attacker immediately after its attack
           const attackerSlotIdx = (result.robotParty?.active || []).findIndex(r => r && r.id === atk.attackerId);
           const attackerSlot = attackerSlotIdx >= 0 ? document.querySelectorAll('#chip-row .robot-slot')[attackerSlotIdx] : null;
-          if (attackerSlot && atk.attackerCharges != null) {
-            const chargeBar = attackerSlot.querySelector('.robot-charge-bar');
-            if (chargeBar) {
-              const segments = chargeBar.querySelectorAll('.charge-segment');
-              segments.forEach((seg, s) => {
-                if (s < atk.attackerCharges) {
-                  seg.classList.add('filled');
-                } else {
-                  seg.classList.remove('filled');
-                }
-              });
-            }
-            const icon = attackerSlot.querySelector('.robot-icon');
-            if (icon) {
-              if (atk.attackerCharges >= atk.attackerChargesRequired) {
-                icon.classList.add('charged');
-              } else {
-                icon.classList.remove('charged');
-              }
+          if (attackerSlot && atk.attackerMp != null) {
+            const mpFill = attackerSlot.querySelector('.robot-mp-fill');
+            if (mpFill && atk.attackerMaxMp > 0) {
+              const mpPct = Math.max(0, Math.min(100, (atk.attackerMp / atk.attackerMaxMp) * 100));
+              mpFill.style.width = `${mpPct}%`;
             }
           }
 
@@ -1027,12 +1338,13 @@ async function executeRobotPlayerAttack() {
             }
           }
 
-          // Show XP popups when an enemy is killed (BUG B + C)
+          // Show XP popups when an enemy is killed (BUG B + C) — collect pending move learns
           if (atk.targetDefeated && !killedEnemies.has(atk.targetId) && result.xpEvents) {
             killedEnemies.add(atk.targetId);
             const xpEvent = result.xpEvents.find(ev => ev.enemyId === atk.targetId);
             if (xpEvent) {
-              showXpEvents([xpEvent]);
+              const pending = showXpEvents([xpEvent]);
+              if (pending?.length) allPendingMoveLearn2.push(...pending);
             }
           }
 
@@ -1057,6 +1369,11 @@ async function executeRobotPlayerAttack() {
 
       // Sync authoritative state from server
       syncFinalState(result);
+
+      // Handle pending move learns (after state sync so robot data is current)
+      if (allPendingMoveLearn2.length > 0) {
+        await processPendingMoveLearn(allPendingMoveLearn2);
+      }
 
       // Check combat end
       if (result.combatEnded) {
@@ -1085,7 +1402,7 @@ async function executeRobotPlayerAttack() {
 
 /**
  * Execute robot defend — calls /robot-combat-cycle with 'defend'
- * Defend: all robots gain +1 ultimate charge, enemies attack with 50% damage
+ * Defend: all robots regen MP, enemies attack with 50% damage
  */
 async function executeRobotDefendThenPause() {
   if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
@@ -1146,16 +1463,16 @@ async function executeRobotDefendThenPause() {
       }
 
       enemyAttackPending = false;
-      combatPausedForVocab = true;
-      await delay(1440);
-      showNextDualCardsFromQueue();
+
+      // Start next turn's move selection
+      await delay(600);
+      startMoveSelection();
 
     } catch (error) {
       console.error('Robot defend error:', error);
       enemyAttackPending = false;
       if (combatActive) {
-        combatPausedForVocab = true;
-        showNextDualCardsFromQueue();
+        startMoveSelection();
       }
     }
   });
@@ -1560,8 +1877,7 @@ async function executeBefriendAction() {
       if (eligible.length > 1) {
         enemyIndex = await showBefriendTargetSelect(enemies);
         if (enemyIndex < 0) {
-          combatPausedForVocab = true;
-          showNextDualCardsFromQueue();
+          startMoveSelection();
           return;
         }
       }
@@ -1570,7 +1886,7 @@ async function executeBefriendAction() {
       const convoResult = await apiGetBefriendConversation(enemyIndex);
       if (!convoResult || convoResult.error) {
         console.error('Befriend conversation error:', convoResult?.error || 'request failed');
-        showNextDualCardsFromQueue();
+        startMoveSelection();
         return;
       }
 
@@ -1585,8 +1901,7 @@ async function executeBefriendAction() {
       if (!answerResult) {
         // API error - recover gracefully by resuming normal combat
         logger.error("[CombatLoop] Befriend answer API returned null, resuming combat");
-        combatPausedForVocab = true;
-        showNextDualCardsFromQueue();
+        startMoveSelection();
         return;
       }
 
@@ -1642,8 +1957,7 @@ async function executeBefriendAction() {
         }
 
         // Resume normal combat
-        combatPausedForVocab = true;
-        showNextDualCardsFromQueue();
+        startMoveSelection();
         return;
       }
 
@@ -1737,8 +2051,7 @@ async function executeBefriendAction() {
         }
 
         // Continue combat
-        combatPausedForVocab = true;
-        showNextDualCardsFromQueue();
+        startMoveSelection();
         return;
       }
 

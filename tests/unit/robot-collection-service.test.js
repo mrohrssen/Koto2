@@ -63,14 +63,15 @@ describe('robot-collection-service', () => {
   });
 
   describe('getCollectionCatalog', () => {
-    it('includes full ultimate skill data', () => {
+    it('includes archetype and base stats', () => {
       const catalog = getCollectionCatalog([]);
       const kamedor = catalog.find(c => c.id === 'kamedor');
       assert.ok(kamedor, 'kamedor should exist in catalog');
-      assert.ok(kamedor.ultimate.power, 'ultimate should have power');
-      assert.ok(kamedor.ultimate.chargesRequired, 'ultimate should have chargesRequired');
-      assert.ok(kamedor.ultimate.type, 'ultimate should have type');
-      assert.ok(kamedor.ultimate.target, 'ultimate should have target');
+      assert.ok(kamedor.archetype, 'should have archetype');
+      assert.ok(kamedor.baseHp > 0, 'should have baseHp');
+      assert.ok(kamedor.baseAttack > 0, 'should have baseAttack');
+      assert.ok(kamedor.element, 'should have element');
+      assert.ok(kamedor.rarity, 'should have rarity');
     });
 
     it('includes archetype and modifier', () => {

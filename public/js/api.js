@@ -515,12 +515,8 @@ async function startRobotEncounter() {
   return apiCall('/start-robot-encounter', 'POST');
 }
 
-async function robotCombatCycle(actionType) {
-  return apiCall('/robot-combat-cycle', 'POST', { actionType });
-}
-
-async function useRobotUltimate(robotIndex) {
-  return apiCall('/use-robot-ultimate', 'POST', { robotIndex });
+async function robotCombatCycle(actionType, moveChoices = []) {
+  return apiCall('/robot-combat-cycle', 'POST', { actionType, moveChoices });
 }
 
 async function getRobotCollection() {
@@ -541,6 +537,10 @@ async function swapRobot(activeIndex, reserveIndex) {
 
 async function rearrangeRobots(indexA, indexB) {
   return apiCall('/rearrange-robots', 'POST', { indexA, indexB });
+}
+
+async function learnMove(robotIndex, newMoveId, replaceIndex) {
+  return apiCall('/learn-move', 'POST', { robotIndex, newMoveId, replaceIndex });
 }
 
 async function swapRobotEquip(activeIndex, reserveIndex) {
@@ -600,12 +600,12 @@ export {
   startEncounter,
   startRobotEncounter,
   robotCombatCycle,
-  useRobotUltimate,
   getRobotCollection,
   rollPostCombatShop,
   selectShopItem,
   swapRobot,
   rearrangeRobots,
+  learnMove,
   swapRobotEquip,
   befriendReplace,
   getBefriendConversation,

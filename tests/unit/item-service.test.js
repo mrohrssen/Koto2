@@ -13,7 +13,13 @@ import {
 
 // Mock robot for item tests — avoids dependency on creature data
 function mockRobot(hp = 100, maxHp = 100) {
-  return { hp, maxHp, element: 'fire', ultimate: { charges: 0, chargesRequired: 5 } };
+  return {
+    hp, maxHp, element: 'fire',
+    mp: 80, maxMp: 80,
+    moves: [{ id: 'test', name: 'test', nameEn: 'Test', category: 'damage', target: 'single_enemy', power: 20, mpCost: 10, element: 'fire' }],
+    // Legacy charge fields still used by chargeBoost code path
+    ultimate: { charges: 0, chargesRequired: 5 }
+  };
 }
 
 describe('Item Shop - Roll', () => {
@@ -47,7 +53,7 @@ describe('Item Shop - Roll', () => {
 describe('Item Buffs - Stat Boosts', () => {
   it('attack mult stacks per application', () => {
     const buffs = createItemBuffs();
-    const atkItem = { type: 'stat', effect: { field: 'attackMult', value: 0.02 } };
+    const atkItem = { type: 'boost', effect: { field: 'attackMult', value: 0.02 } };
     const party = { active: [mockRobot()], reserves: [] };
     applyItem(atkItem, party, buffs);
     assert.strictEqual(buffs.attackMult, 1.02);
@@ -75,28 +81,28 @@ describe('Item Buffs - Stat Boosts', () => {
     assert.strictEqual(applyDamageReduction(2, buffs), 1);
   });
 
-  it('compound bonus applies both stats (e.g. parents)', () => {
+  it('boost applies field stat correctly', () => {
     const buffs = createItemBuffs();
     const item = {
-      type: 'stat',
-      effect: { field: 'hpMult', value: 0.03, bonus: { field: 'flatDamageReduction', value: 1 } }
+      type: 'boost',
+      effect: { field: 'hpMult', value: 0.03 }
     };
     const party = { active: [mockRobot()], reserves: [] };
     applyItem(item, party, buffs);
     assert.strictEqual(buffs.hpMult, 1.03);
-    assert.strictEqual(buffs.flatDamageReduction, 1);
   });
 
-  it('penalty applies negative effect (e.g. sake)', () => {
+  it('boost applies flatDamageReduction additively', () => {
     const buffs = createItemBuffs();
     const item = {
-      type: 'stat',
-      effect: { field: 'attackMult', value: 0.05, penalty: { field: 'hpMult', value: -0.03 } }
+      type: 'boost',
+      effect: { field: 'flatDamageReduction', value: 2 }
     };
     const party = { active: [mockRobot()], reserves: [] };
     applyItem(item, party, buffs);
-    assert.strictEqual(buffs.attackMult, 1.05);
-    assert.strictEqual(buffs.hpMult, 0.97);
+    assert.strictEqual(buffs.flatDamageReduction, 2);
+    applyItem(item, party, buffs);
+    assert.strictEqual(buffs.flatDamageReduction, 4);
   });
 });
 
@@ -143,47 +149,43 @@ describe('Item Buffs - Heals', () => {
       active: [mockRobot(0)],
       reserves: [mockRobot(50)]
     };
-    const reviveItem = { type: 'heal', effect: { revivePercent: 0.3 } };
+    const reviveItem = { type: 'revive', effect: { revivePercent: 0.3 } };
     const buffs = createItemBuffs();
     applyItem(reviveItem, party, buffs);
     assert.strictEqual(party.active[0].hp, 30);
   });
 });
 
-describe('Item Buffs - Utility', () => {
+describe('Item Buffs - Charge', () => {
   it('chargeBoost adds charges to all robots', () => {
     const party = {
       active: [mockRobot()],
       reserves: []
     };
-    const chargeItem = { type: 'utility', effect: { chargeBoost: 2 } };
+    const chargeItem = { type: 'charge', effect: { chargeBoost: 2 } };
     const buffs = createItemBuffs();
     applyItem(chargeItem, party, buffs);
     assert.strictEqual(party.active[0].ultimate.charges, 2);
   });
+});
 
-  it('random utility applies stat boosts', () => {
+describe('Item Buffs - XP Items', () => {
+  it('xpCharm multiplies XP', () => {
     const buffs = createItemBuffs();
-    const item = { type: 'utility', effect: { random: true } };
+    const item = { type: 'xpCharm', effect: { value: 0.25 } };
     const party = { active: [mockRobot()], reserves: [] };
     applyItem(item, party, buffs);
-    const changed = buffs.attackMult !== 1.0 || buffs.hpMult !== 1.0 ||
-                    buffs.autoPowerMult !== 1.0 || buffs.ultimatePowerMult !== 1.0;
-    assert.ok(changed, 'random utility should boost at least one stat');
+    assert.strictEqual(buffs.xpMultiplier, 1.25);
   });
 
-  it('randomEpic boosts 3 random stats', () => {
+  it('xpBalance adds stacks', () => {
     const buffs = createItemBuffs();
-    const item = { type: 'utility', effect: { randomEpic: true } };
+    const item = { type: 'xpBalance', effect: { value: 1 } };
     const party = { active: [mockRobot()], reserves: [] };
     applyItem(item, party, buffs);
-    // Count how many stats changed
-    let changedCount = 0;
-    if (buffs.attackMult !== 1.0) changedCount++;
-    if (buffs.hpMult !== 1.0) changedCount++;
-    if (buffs.autoPowerMult !== 1.0) changedCount++;
-    if (buffs.ultimatePowerMult !== 1.0) changedCount++;
-    assert.ok(changedCount >= 1, 'randomEpic should boost multiple stats');
+    assert.strictEqual(buffs.xpBalanceStacks, 1);
+    applyItem(item, party, buffs);
+    assert.strictEqual(buffs.xpBalanceStacks, 2);
   });
 });
 

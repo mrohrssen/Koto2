@@ -64,7 +64,7 @@ import { derivePhase } from './phase-machine.js';
 import { CombatService, ExplorationService } from './services/index.js';
 import { logger } from '../logger.js';
 import { instantiateRobot, generateEnemyRobot, generateEnemyRobots } from './robots.js';
-import { processAttackTurn, processDefendTurn, processEnemyTurn, processBefriend, processUltimate, awardBattleXp, handleRobotKO, tickAllEffects, CREDITS_PER_KILL } from './services/robot-combat-service.js';
+import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleRobotKO, tickAllEffects, CREDITS_PER_KILL } from './services/robot-combat-service.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/robot-collection-service.js';
 import { selectNpcForEncounter, updateBond, recordEncounter } from './services/npc-service.js';
@@ -731,7 +731,7 @@ export class GameManager {
    * Execute one robot combat cycle
    * @param {string} actionType - 'attack' | 'defend' | 'befriend'
    */
-  robotCombatCycle(actionType = 'attack') {
+  robotCombatCycle(actionType = 'attack', moveChoices = []) {
     if (!this.combat?.active) {
       throw new Error('No active combat');
     }
@@ -743,7 +743,7 @@ export class GameManager {
     const effectEvents = tickAllEffects(this.combat.allies, this.combat.enemies);
 
     switch (actionType) {
-      case 'attack':  return this._handleRobotAttackTurn(effectEvents);
+      case 'attack':  return this._handleRobotAttackTurn(effectEvents, moveChoices);
       case 'defend':  return this._handleRobotDefendTurn(effectEvents);
       case 'befriend': return this._handleRobotBefriendTurn(effectEvents);
       default: throw new Error(`Unknown action: ${actionType}`);
@@ -757,8 +757,8 @@ export class GameManager {
    * @returns {Object} Combat cycle result
    * @private
    */
-  _handleRobotAttackTurn(effectEvents) {
-    const playerResult = processAttackTurn(this.combat.allies, this.combat.enemies, this.run.itemBuffs, this.run.robotParty);
+  _handleRobotAttackTurn(effectEvents, moveChoices) {
+    const playerResult = processMoveTurn(this.combat.allies, this.combat.enemies, moveChoices, this.run.itemBuffs, this.run.robotParty);
 
     // Award credits for kills
     if (playerResult.xpEvents?.length > 0) {
@@ -768,7 +768,7 @@ export class GameManager {
 
     // Check if all enemies defeated after player attack
     if (playerResult.allEnemiesDefeated) {
-      // XP already awarded per-kill in processAttackTurn (BUG C fix)
+      // XP already awarded per-kill in processMoveTurn
       const newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.encountersCompleted++;
@@ -781,6 +781,7 @@ export class GameManager {
         actionType: 'attack',
         playerAttacks: playerResult.attacks || [],
         xpEvents: playerResult.xpEvents || [],
+        mpRegens: playerResult.mpRegens || [],
         effectEvents,
         combatEnded: true,
         victory: true,
@@ -829,6 +830,7 @@ export class GameManager {
         playerAttacks: playerResult.attacks || [],
         enemyAttacks: enemyResult.attacks || [],
         xpEvents: playerResult.xpEvents || [],
+        mpRegens: playerResult.mpRegens || [],
         effectEvents,
         koSwaps,
         combatEnded: true,
@@ -847,6 +849,7 @@ export class GameManager {
       playerAttacks: playerResult.attacks || [],
       enemyAttacks: enemyResult.attacks || [],
       xpEvents: playerResult.xpEvents || [],
+      mpRegens: playerResult.mpRegens || [],
       effectEvents,
       befriend: null,
       koSwaps,
@@ -1038,55 +1041,6 @@ export class GameManager {
       allies: this.combat.allies,
       enemies: this.combat.enemies,
       robotParty: this.run.robotParty
-    };
-  }
-
-  /**
-   * Use a robot's ultimate ability
-   * @param {number} robotIndex - Index in allies array
-   */
-  useRobotUltimate(robotIndex) {
-    if (!this.combat?.active) {
-      throw new Error('No active combat');
-    }
-    const robot = this.combat.allies[robotIndex];
-    if (!robot) {
-      throw new Error('Invalid robot index');
-    }
-
-    const result = processUltimate(robot, this.combat.enemies, this.run.itemBuffs, this.run.robotParty);
-    if (!result.success) {
-      return result;
-    }
-
-    // Award credits for kills from ultimate
-    if (result.xpEvents?.length > 0) {
-      const killCredits = result.xpEvents.length * CREDITS_PER_KILL;
-      this.run.player.credits = (this.run.player.credits || 0) + killCredits;
-    }
-
-    // Check if all enemies defeated
-    let newCollectionAdditions = [];
-    if (result.allEnemiesDefeated) {
-      // XP already awarded per-kill in processUltimate (BUG C fix)
-      newCollectionAdditions = this._flushPendingCaptures();
-      this.combat.active = false;
-      this.run.encountersCompleted++;
-      // Mark room as interacted
-      const currentRoom = this.run.rooms?.[this.run.currentRoom];
-      if (currentRoom) {
-        currentRoom.interacted = true;
-      }
-    }
-
-    this.emitState();
-    return {
-      ...result,
-      combatEnded: result.allEnemiesDefeated,
-      victory: result.allEnemiesDefeated ? true : undefined,
-      robotParty: this.run.robotParty,
-      enemies: this.combat.enemies,
-      newCollectionAdditions
     };
   }
 

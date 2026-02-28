@@ -39,3 +39,6 @@ export * as combatAudio from './combat-audio.js';
 export * as spriteUtils from './sprite-utils.js';
 export * as i18n from './i18n.js';
 export * as whackAMole from './whack-a-mole.js';
+export * as moveSelect from './move-select.js';
+export * as targetSelect from './target-select.js';
+export * as moveLearn from './move-learn.js';

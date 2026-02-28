@@ -47,8 +47,10 @@ describe('Robot Instantiation', () => {
     assert.strictEqual(robot.maxHp, 75);
     assert.strictEqual(robot.hp, 75);
     assert.strictEqual(robot.attack, 8);
-    assert.strictEqual(robot.ultimate.charges, 0);
-    assert.strictEqual(robot.ultimate.chargesRequired, 4);
+    assert.strictEqual(robot.mp, 120);
+    assert.strictEqual(robot.maxMp, 120);
+    assert.ok(Array.isArray(robot.moves), 'should have moves array');
+    assert.ok(robot.moves.length >= 1, 'should have at least one move at level 1');
   });
 
   it('applies rarity multiplier for uncommon', () => {
@@ -74,16 +76,26 @@ describe('Robot Instantiation', () => {
     assert.strictEqual(robot.baseAttackTemplate, 8);
   });
 
-  it('has type and target on autoSkill', () => {
+  it('has category and target on first move', () => {
     const robot = instantiateRobot('hikaribon');
-    assert.strictEqual(robot.autoSkill.type, 'damage');
-    assert.strictEqual(robot.autoSkill.target, 'single_enemy');
+    const move0 = robot.moves[0];
+    assert.ok(move0.id, 'move should have id');
+    assert.ok(move0.category, 'move should have category');
+    assert.ok(move0.target, 'move should have target');
+    assert.ok(move0.element, 'move should have element');
+    assert.ok(typeof move0.mpCost === 'number', 'move should have mpCost');
   });
 
-  it('has type and target on ultimate', () => {
+  it('has multiple moves as creature levels up', () => {
     const robot = instantiateRobot('hikaribon');
-    assert.strictEqual(robot.ultimate.type, 'damage');
-    assert.strictEqual(robot.ultimate.target, 'all_enemies');
+    // At level 1, hikaribon has 1 move from its learnset
+    assert.ok(robot.moves.length >= 1, 'should have at least 1 move at level 1');
+    // Each move should have required fields
+    for (const move of robot.moves) {
+      assert.ok(move.id, 'move should have id');
+      assert.ok(move.name, 'move should have Japanese name');
+      assert.ok(move.nameEn, 'move should have English name');
+    }
   });
 
   it('includes baseReading from template', () => {
@@ -106,9 +118,10 @@ describe('Robot Damage', () => {
 
 describe('Robot Leveling', () => {
   it('+10% stats per level', () => {
-    const stats = getStatsForLevel(100, 20, 3);
+    const stats = getStatsForLevel(100, 20, 80, 3);
     assert.strictEqual(stats.maxHp, 120); // 100 * 1.2
     assert.strictEqual(stats.attack, 24); // 20 * 1.2
+    assert.strictEqual(stats.maxMp, 96); // 80 * 1.2
   });
 
   it('awards XP and levels up', () => {
