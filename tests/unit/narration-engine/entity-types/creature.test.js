@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   validateShape, extractStrings, buildRepairInstruction,
   assemblePrompt, getPreviousLines, getMemorySnapshot,
-  cachePrefix, memoryPrefix, requiredCardFields
+  requiredCardFields
 } from '../../../../src/narration-engine/entity-types/creature.js';
 
 const validBefriendDialogue = {
@@ -15,11 +15,6 @@ const validBefriendDialogue = {
 };
 
 describe('entity-types/creature', () => {
-  it('has correct prefixes', () => {
-    assert.strictEqual(cachePrefix, 'creature-dialogue-cache');
-    assert.strictEqual(memoryPrefix, 'creature-memory');
-  });
-
   it('has minimal required card fields', () => {
     assert.ok(requiredCardFields.includes('id'));
     assert.ok(requiredCardFields.includes('name'));

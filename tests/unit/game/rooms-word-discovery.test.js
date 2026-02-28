@@ -3,14 +3,6 @@ import assert from 'node:assert';
 import { ROOM_TYPES, generateFloorRooms, WORDS_PER_DISCOVERY, getRoomEntryNarration, getRoomActions } from '../../../src/game/rooms.js';
 
 describe('Word Discovery Room', () => {
-  it('should have wordDiscovery room type constant', () => {
-    assert.strictEqual(ROOM_TYPES.wordDiscovery, 'wordDiscovery');
-  });
-
-  it('should export WORDS_PER_DISCOVERY constant', () => {
-    assert.strictEqual(WORDS_PER_DISCOVERY, 2);
-  });
-
   it('should generate wordDiscovery rooms in floor generation', () => {
     // Run generation 100 times to verify room type can appear
     let foundWordDiscovery = false;

@@ -1,27 +1,22 @@
-import { describe, it, beforeEach } from 'node:test';
+import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert';
-import { existsSync, unlinkSync, mkdirSync } from 'fs';
+import { createTestTmpDir } from '../../helpers/tmp.js';
 
-const TEST_CACHE_DIR = '/tmp/test-vocab-new-words-cache/';
 const TEST_USER_ID = 'test-user';
+let tmp;
 
 describe('getNewWordsForDiscovery', () => {
-  beforeEach(() => {
-    try { mkdirSync(TEST_CACHE_DIR, { recursive: true }); } catch {}
-    const cacheFile = `${TEST_CACHE_DIR}vocab-cache-${TEST_USER_ID}.json`;
-    if (existsSync(cacheFile)) {
-      unlinkSync(cacheFile);
-    }
+  before(async () => {
+    tmp = await createTestTmpDir();
   });
 
-  it('should export getNewWordsForDiscovery function', async () => {
-    const vm = await import('../../../src/game/vocab-manager.js');
-    assert.strictEqual(typeof vm.getNewWordsForDiscovery, 'function');
+  after(async () => {
+    await tmp.cleanup();
   });
 
   it('should return words with state "new" sorted by rank', async () => {
     const vm = await import('../../../src/game/vocab-manager.js');
-    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
     vm.clearVocabManagerCache(TEST_USER_ID);
 
     // Manually set up cache with test data
@@ -46,7 +41,7 @@ describe('getNewWordsForDiscovery', () => {
 
   it('should return empty array when no new words', async () => {
     const vm = await import('../../../src/game/vocab-manager.js');
-    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
     vm.clearVocabManagerCache(TEST_USER_ID);
 
     const testCache = {
@@ -62,7 +57,7 @@ describe('getNewWordsForDiscovery', () => {
 
   it('should return fewer words if not enough available', async () => {
     const vm = await import('../../../src/game/vocab-manager.js');
-    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
     vm.clearVocabManagerCache(TEST_USER_ID);
 
     const testCache = {

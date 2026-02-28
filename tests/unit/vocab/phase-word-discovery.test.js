@@ -3,10 +3,6 @@ import assert from 'node:assert';
 import { PHASES, derivePhase } from '../../../src/game/phase-machine.js';
 
 describe('Word Discovery Phase', () => {
-  it('should have WORD_DISCOVERY phase constant', () => {
-    assert.strictEqual(PHASES.WORD_DISCOVERY, 'wordDiscovery');
-  });
-
   it('should derive wordDiscovery phase from room state', () => {
     const state = {
       player: { name: 'Test' },

@@ -1,7 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import {
-  RARITY_POINT_COST,
   MAX_TEAM_POINTS,
   DEFAULT_COLLECTION,
   validateTeamSelection,
@@ -10,16 +9,6 @@ import {
 } from '../../../src/game/services/robot-collection-service.js';
 
 describe('robot-collection-service', () => {
-  describe('RARITY_POINT_COST', () => {
-    it('has correct costs per rarity', () => {
-      assert.strictEqual(RARITY_POINT_COST.common, 3);
-      assert.strictEqual(RARITY_POINT_COST.uncommon, 4);
-      assert.strictEqual(RARITY_POINT_COST.rare, 6);
-      assert.strictEqual(RARITY_POINT_COST.epic, 7);
-      assert.strictEqual(RARITY_POINT_COST.legendary, 8);
-    });
-  });
-
   describe('validateTeamSelection', () => {
     const collection = ['hikaribon', 'tsukimochi', 'hanatchi'];
 

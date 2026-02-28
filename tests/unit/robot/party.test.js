@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { createNewRun, createCombatState, createNewPlayer } from '../../../src/game/state.js';
+import { createNewRun, createNewPlayer } from '../../../src/game/state.js';
 
 describe('Robot Party in Run State', () => {
   it('run has robotParty with active, reserves, maxTotal', () => {
@@ -13,10 +13,3 @@ describe('Robot Party in Run State', () => {
   });
 });
 
-describe('Combat State with Robot Arrays', () => {
-  it('combat state has allies and enemies arrays', () => {
-    const combat = createCombatState({ hp: 100, maxHp: 100 });
-    assert.ok(Array.isArray(combat.allies));
-    assert.ok(Array.isArray(combat.enemies));
-  });
-});

@@ -15,10 +15,6 @@ describe('createNewRun with branching support', () => {
 });
 
 describe('BRANCH_SELECTION phase', () => {
-  it('should have BRANCH_SELECTION in PHASES', () => {
-    assert.strictEqual(PHASES.BRANCH_SELECTION, 'branch_selection');
-  });
-
   it('should derive branch_selection when pendingBranch is true', () => {
     const state = {
       player: { name: 'Test' },
@@ -72,64 +68,3 @@ describe('generateFloorRooms with branching', () => {
   });
 });
 
-describe('proceedToNextRoom with branching', () => {
-  it('should set pendingBranch true when next room is a pair', () => {
-    const mockRun = {
-      active: true,
-      rooms: [
-        { type: 'encounter', explored: true, interacted: true },
-        [
-          { type: 'shrine', explored: false },
-          { type: 'quiz', explored: false }
-        ]
-      ],
-      currentRoom: 0,
-      pendingBranch: false,
-      roomsExplored: 1,
-      stats: { roomsExplored: 1 },
-      runStats: { roomsCleared: 0 }
-    };
-
-    // Simulate proceeding: check if next is pair
-    mockRun.currentRoom++;
-    const nextRoom = mockRun.rooms[mockRun.currentRoom];
-    if (Array.isArray(nextRoom)) {
-      mockRun.pendingBranch = true;
-    }
-
-    assert.strictEqual(mockRun.pendingBranch, true);
-    assert.strictEqual(mockRun.currentRoom, 1);
-  });
-});
-
-describe('ExplorationService.selectBranch logic', () => {
-  it('should replace pair with selected room and clear pendingBranch', () => {
-    // This tests the logic inline (not the actual service)
-    const mockRun = {
-      rooms: [
-        { id: 'room1', type: 'encounter', explored: true, interacted: true },
-        [
-          { id: 'room2a', type: 'shrine', explored: false },
-          { id: 'room2b', type: 'encounter', explored: false }
-        ]
-      ],
-      currentRoom: 1,
-      pendingBranch: true,
-      selectedRooms: [],
-      roomsExplored: 1
-    };
-
-    // Simulate selectBranch(0)
-    const pair = mockRun.rooms[mockRun.currentRoom];
-    const selectedRoom = pair[0];
-    mockRun.rooms[mockRun.currentRoom] = selectedRoom;
-    mockRun.selectedRooms.push(0);
-    selectedRoom.explored = true;
-    mockRun.roomsExplored++;
-    mockRun.pendingBranch = false;
-
-    assert.strictEqual(mockRun.rooms[1].id, 'room2a');
-    assert.strictEqual(mockRun.pendingBranch, false);
-    assert.deepStrictEqual(mockRun.selectedRooms, [0]);
-  });
-});

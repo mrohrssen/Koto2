@@ -83,11 +83,6 @@ describe('TextCache', () => {
 });
 
 describe('TextCache with entityType', () => {
-  it('uses creature prefix for creature type', () => {
-    const cache = new TextCache({ userId: 'test', entityType: 'creature', inMemory: true });
-    assert.ok(cache);
-  });
-
   it('getPreviousLines dispatches to entity type', () => {
     const cache = new TextCache({ entityType: 'creature', inMemory: true });
     const befriendDialogue = {

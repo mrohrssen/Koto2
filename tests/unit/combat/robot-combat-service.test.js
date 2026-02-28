@@ -243,7 +243,7 @@ describe('Robot Combat - Status Effects in Move Turn', () => {
     enemies2[0].maxHp = 9999;
     const result2 = processMoveTurn(allies, enemies2, moveChoices);
 
-    assert.ok(result2.attacks[0].damage > 0);
+    assert.ok(result2.attacks[0].damage > result1.attacks[0].damage, 'buffed damage should exceed unbuffed damage');
   });
 });
 
@@ -270,13 +270,21 @@ describe('Robot Combat - Status Effects in Enemy Turn', () => {
   });
 
   it('shield reduces damage to ally', () => {
-    const ally = instantiateRobot('hikaribon');
-    ally.activeEffects = [{ type: 'shield', percent: 50, remainingTurns: 2, sourceId: 'x' }];
-    const allies = [ally];
-    const enemies = [instantiateRobot('kamedor')];
-    const result = processEnemyTurn(enemies, allies);
-    assert.strictEqual(result.attacks.length, 1);
-    assert.ok(result.attacks[0].damage >= 0);
+    // First, measure unshielded damage
+    const unshieldedAlly = instantiateRobot('hikaribon');
+    unshieldedAlly.activeEffects = [];
+    const unshieldedEnemies = [instantiateRobot('kamedor')];
+    const unshieldedResult = processEnemyTurn(unshieldedEnemies, [unshieldedAlly]);
+
+    // Then, measure shielded damage
+    const shieldedAlly = instantiateRobot('hikaribon');
+    shieldedAlly.activeEffects = [{ type: 'shield', percent: 50, remainingTurns: 2, sourceId: 'x' }];
+    const shieldedEnemies = [instantiateRobot('kamedor')];
+    const shieldedResult = processEnemyTurn(shieldedEnemies, [shieldedAlly]);
+
+    assert.strictEqual(shieldedResult.attacks.length, 1);
+    assert.ok(shieldedResult.attacks[0].damage < unshieldedResult.attacks[0].damage,
+      'shielded damage should be less than unshielded damage');
   });
 
   it('damage wakes up sleeping ally', () => {
@@ -497,14 +505,25 @@ describe('Robot Combat - XP Balance Redistribution', () => {
 
 describe('Robot Combat - Temp Attack Flat Bonus', () => {
   it('processMoveTurn uses flat attack bonus from activeEffects', () => {
-    const ally = instantiateRobot('kamedor'); // has 'kamu' damage move
-    ally.activeEffects = [{ type: 'temp_attack_flat', value: 50, remainingTurns: 5 }];
-    const enemy = instantiateRobot('hikaribon');
-    const baseHp = enemy.hp;
-
+    // Measure unbuffed damage first
+    const unbuffedAlly = instantiateRobot('kamedor');
+    unbuffedAlly.activeEffects = [];
+    const unbuffedEnemy = instantiateRobot('hikaribon');
+    unbuffedEnemy.hp = 9999;
+    unbuffedEnemy.maxHp = 9999;
     const moveChoices = [{ robotIndex: 0, moveId: 'kamu', targetIndex: 0 }];
-    const result = processMoveTurn([ally], [enemy], moveChoices);
-    assert.ok(result.attacks.length >= 1);
-    assert.ok(enemy.hp < baseHp, 'enemy should take damage with flat buff');
+    const unbuffedResult = processMoveTurn([unbuffedAlly], [unbuffedEnemy], moveChoices);
+
+    // Measure buffed damage
+    const buffedAlly = instantiateRobot('kamedor');
+    buffedAlly.activeEffects = [{ type: 'temp_attack_flat', value: 50, remainingTurns: 5 }];
+    const buffedEnemy = instantiateRobot('hikaribon');
+    buffedEnemy.hp = 9999;
+    buffedEnemy.maxHp = 9999;
+    const buffedResult = processMoveTurn([buffedAlly], [buffedEnemy], moveChoices);
+
+    assert.ok(buffedResult.attacks.length >= 1);
+    assert.ok(buffedResult.attacks[0].damage > unbuffedResult.attacks[0].damage,
+      'flat-buffed damage should exceed unbuffed damage');
   });
 });

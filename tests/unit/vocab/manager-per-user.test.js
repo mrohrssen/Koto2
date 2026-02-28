@@ -3,38 +3,36 @@
  */
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, unlinkSync, mkdirSync, readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import * as jpdb from '../../../src/jpdb.js';
+import { createTestTmpDir } from '../../helpers/tmp.js';
 
-const TEST_CACHE_DIR = '/tmp/test-vocab-cache/';
+let tmp;
 
 describe('Per-user vocab cache', () => {
   // Import fresh module for each test run
   let vm;
 
   before(async () => {
-    try { mkdirSync(TEST_CACHE_DIR, { recursive: true }); } catch {}
+    tmp = await createTestTmpDir();
     // Dynamic import to get fresh module
     vm = await import('../../../src/game/vocab-manager.js');
   });
 
-  after(() => {
-    ['user1', 'user2'].forEach(userId => {
-      const file = `${TEST_CACHE_DIR}vocab-cache-${userId}.json`;
-      if (existsSync(file)) unlinkSync(file);
-    });
+  after(async () => {
+    await tmp.cleanup();
   });
 
   it('should create separate cache files for different users', () => {
-    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
     vm.clearVocabManagerCache('user1');
     vm.clearVocabManagerCache('user2');
 
     vm.addUsedWords(['word1', 'word2'], 'user1');
     vm.addUsedWords(['word3', 'word4'], 'user2');
 
-    const user1File = `${TEST_CACHE_DIR}vocab-cache-user1.json`;
-    const user2File = `${TEST_CACHE_DIR}vocab-cache-user2.json`;
+    const user1File = `${tmp.path}/vocab-cache-user1.json`;
+    const user2File = `${tmp.path}/vocab-cache-user2.json`;
 
     assert.ok(existsSync(user1File), 'User 1 cache file should exist');
     assert.ok(existsSync(user2File), 'User 2 cache file should exist');
@@ -49,7 +47,7 @@ describe('Per-user vocab cache', () => {
   });
 
   it('should throw error when userId is missing', () => {
-    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
 
     assert.throws(() => {
       vm.addUsedWords(['word'], undefined);
@@ -57,7 +55,7 @@ describe('Per-user vocab cache', () => {
   });
 
   it('should maintain separate word state caches per user', () => {
-    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
     vm.clearVocabManagerCache('user1');
     vm.clearVocabManagerCache('user2');
 
@@ -78,7 +76,7 @@ describe('Per-user vocab cache', () => {
   });
 
   it('should isolate getRecentlyUsedWords per user', () => {
-    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
     vm.clearVocabManagerCache('user1');
     vm.clearVocabManagerCache('user2');
 
@@ -100,7 +98,7 @@ describe('Per-user vocab cache', () => {
   });
 
   it('should isolate getNewWordsForDiscovery per user', () => {
-    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
     vm.clearVocabManagerCache('user1');
     vm.clearVocabManagerCache('user2');
 
@@ -126,7 +124,7 @@ describe('Per-user vocab cache', () => {
   });
 
   it('should build narration vocabulary from allowed states only', () => {
-    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
     vm.clearVocabManagerCache('user1');
 
     vm.setTestCache({
@@ -142,7 +140,7 @@ describe('Per-user vocab cache', () => {
   });
 
   it('should fall back to provided vocabulary when user cache has no allowed states', () => {
-    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
     vm.clearVocabManagerCache('user1');
 
     vm.setTestCache({
@@ -155,7 +153,7 @@ describe('Per-user vocab cache', () => {
   });
 
   it('should return vidSet alongside words from getNarrationVocabularyForUser', () => {
-    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
     vm.clearVocabManagerCache('user1');
 
     vm.setTestCache({
@@ -179,7 +177,7 @@ describe('Per-user vocab cache', () => {
   });
 
   it('should return empty vidSet when falling back to provided vocabulary', () => {
-    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
     vm.clearVocabManagerCache('user1');
 
     vm.setTestCache({
@@ -199,20 +197,17 @@ describe('JPDB per-user cache', () => {
   let vm;
 
   before(async () => {
-    try { mkdirSync(TEST_CACHE_DIR, { recursive: true }); } catch {}
+    if (!tmp) tmp = await createTestTmpDir();
     vm = await import('../../../src/game/vocab-manager.js');
   });
 
-  after(() => {
-    ['user1', 'user2'].forEach(userId => {
-      const file = `${TEST_CACHE_DIR}vocab-cache-${userId}.json`;
-      if (existsSync(file)) unlinkSync(file);
-    });
+  after(async () => {
+    await tmp.cleanup();
   });
 
   it('should invalidate only the specified user cache', () => {
-    jpdb.configure({ vocabCacheDir: TEST_CACHE_DIR });
-    vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
+    jpdb.configure({ vocabCacheDir: tmp.path + '/' });
+    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
 
     vm.clearVocabManagerCache('user1');
     vm.clearVocabManagerCache('user2');
@@ -232,18 +227,18 @@ describe('JPDB per-user cache', () => {
     jpdb.invalidateWordStateCache(123, 'user1');
 
     // Check user2's cache is untouched - word still has 'due'
-    const user2File = `${TEST_CACHE_DIR}vocab-cache-user2.json`;
+    const user2File = `${tmp.path}/vocab-cache-user2.json`;
     const user2Data = JSON.parse(readFileSync(user2File, 'utf-8'));
     assert.ok(user2Data.wordStateCache['テスト'].states.includes('due'), 'User2 cache should still have due state');
 
     // Check user1's cache has 'due' removed
-    const user1File = `${TEST_CACHE_DIR}vocab-cache-user1.json`;
+    const user1File = `${tmp.path}/vocab-cache-user1.json`;
     const user1Data = JSON.parse(readFileSync(user1File, 'utf-8'));
     assert.ok(!user1Data.wordStateCache['テスト'].states.includes('due'), 'User1 cache should not have due state');
   });
 
   it('should throw error when userId is missing for invalidateWordStateCache', () => {
-    jpdb.configure({ vocabCacheDir: TEST_CACHE_DIR });
+    jpdb.configure({ vocabCacheDir: tmp.path + '/' });
 
     assert.throws(() => {
       jpdb.invalidateWordStateCache(123, undefined);

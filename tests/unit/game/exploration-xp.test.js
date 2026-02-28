@@ -27,11 +27,4 @@ describe('Exploration XP - Cubic Curve Integration', () => {
     assert.strictEqual(robot.xp, 0);
   });
 
-  it('discovery XP is 20% of scaled kill XP', () => {
-    const enemyLevel = 10;
-    const BASE_KILL_XP = 10;
-    const killXp = BASE_KILL_XP * enemyLevel; // 100
-    const discoveryXp = Math.floor(killXp * 0.2); // 20
-    assert.strictEqual(discoveryXp, 20);
-  });
 });
