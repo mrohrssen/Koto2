@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { enforceVocabLimit, checkSentenceViolations } from '../../src/game/vocab-repair.js';
+import { enforceVocabLimit, checkSentenceViolations } from '../../../src/game/vocab-repair.js';
 
 describe('enforceVocabLimit with vidSet', () => {
   it('accepts vidSet parameter without error', async () => {

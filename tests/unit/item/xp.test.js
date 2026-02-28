@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { applyItem, createItemBuffs } from '../../src/game/services/item-service.js';
-import { instantiateRobot } from '../../src/game/robots.js';
+import { applyItem, createItemBuffs } from '../../../src/game/services/item-service.js';
+import { instantiateRobot } from '../../../src/game/robots.js';
 
 describe('EXP Charm Item', () => {
   it('xpCharm multiplies xpMultiplier by 1.25', () => {

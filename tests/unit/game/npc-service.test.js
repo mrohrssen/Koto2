@@ -11,7 +11,7 @@ import {
   getNpcBond,
   updateBond,
   recordEncounter
-} from '../../src/game/services/npc-service.js';
+} from '../../../src/game/services/npc-service.js';
 
 describe('NPC Service - loadNpcs', () => {
   it('loads all NPCs (5 entries)', () => {

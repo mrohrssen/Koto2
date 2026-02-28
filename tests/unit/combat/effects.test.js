@@ -7,7 +7,7 @@ import {
   isIncapacitated, isConfused, hasHaste, consumeHaste,
   getAttackMultiplier, getDamageReduction, getTauntTarget, breakSleep,
   applyTempAttackFlat, getFlatAttackBonus
-} from '../../src/game/combat/effects.js';
+} from '../../../src/game/combat/effects.js';
 
 describe('Combat Effects - Tick', () => {
   it('poison deals damage and decrements remaining turns', () => {

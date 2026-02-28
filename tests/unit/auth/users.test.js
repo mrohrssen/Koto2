@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import {
   loadUsers, saveUsers, createUser, findUserByUsername,
   findUserById, createInviteCode, useInviteCode, updateUserKeys
-} from '../../src/auth/users.js';
+} from '../../../src/auth/users.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEST_FILE = join(__dirname, '../../.jrpg-users-test.json');

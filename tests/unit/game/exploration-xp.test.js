@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { instantiateRobot, addXpToRobot, xpToNextLevel } from '../../src/game/robots.js';
+import { instantiateRobot, addXpToRobot, xpToNextLevel } from '../../../src/game/robots.js';
 
 describe('Exploration XP - Cubic Curve Integration', () => {
   it('shrine grants exactly 1 level when given xpToNextLevel(robotLevel)', () => {

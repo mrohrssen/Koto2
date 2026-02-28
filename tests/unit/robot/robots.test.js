@@ -11,7 +11,7 @@ import {
   getStatsForLevel,
   selectTarget,
   generateEnemyRobots
-} from '../../src/game/robots.js';
+} from '../../../src/game/robots.js';
 
 describe('Element Cycle', () => {
   it('wood beats earth (1.5x)', () => {

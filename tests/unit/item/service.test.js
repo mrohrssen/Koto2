@@ -9,7 +9,7 @@ import {
   getBuffedUltimatePower,
   getBuffedElementMultiplier,
   applyDamageReduction
-} from '../../src/game/services/item-service.js';
+} from '../../../src/game/services/item-service.js';
 
 // Mock robot for item tests — avoids dependency on creature data
 function mockRobot(hp = 100, maxHp = 100) {

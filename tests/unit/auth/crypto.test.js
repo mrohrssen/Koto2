@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { hashPassword, verifyPassword, encryptKeys, decryptKeys } from '../../src/auth/crypto.js';
+import { hashPassword, verifyPassword, encryptKeys, decryptKeys } from '../../../src/auth/crypto.js';
 
 describe('auth/crypto', () => {
   describe('password hashing', () => {

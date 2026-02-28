@@ -8,8 +8,8 @@ import {
   awardBattleXp,
   awardKillXp,
   tickAllEffects
-} from '../../src/game/services/robot-combat-service.js';
-import { instantiateRobot } from '../../src/game/robots.js';
+} from '../../../src/game/services/robot-combat-service.js';
+import { instantiateRobot } from '../../../src/game/robots.js';
 
 describe('Robot Combat - Move Turn', () => {
   it('each allied robot uses a move against the enemy', () => {

@@ -3,7 +3,7 @@ import assert from 'node:assert';
 
 describe('Server Logger', () => {
   it('should export logger with all methods', async () => {
-    const { logger } = await import('../../src/logger.js');
+    const { logger } = await import('../../../src/logger.js');
     assert.ok(typeof logger.debug === 'function');
     assert.ok(typeof logger.info === 'function');
     assert.ok(typeof logger.warn === 'function');
@@ -12,7 +12,7 @@ describe('Server Logger', () => {
   });
 
   it('should respect log level hierarchy', async () => {
-    const { logger } = await import('../../src/logger.js');
+    const { logger } = await import('../../../src/logger.js');
 
     // At 'error' level, only error should log
     logger.setLevel('error');

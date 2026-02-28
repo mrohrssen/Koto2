@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { tierFromRank, sleep, parseBatch, lookupVocab, vidVerify, resolveCommonForms } from '../../scripts/lib/jpdb-helpers.mjs';
+import { tierFromRank, sleep, parseBatch, lookupVocab, vidVerify, resolveCommonForms } from '../../../scripts/lib/jpdb-helpers.mjs';
 
 describe('tierFromRank', () => {
   it('returns common for rank 1-3000', () => {

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { instantiateRobot } from '../../src/game/robots.js';
+import { instantiateRobot } from '../../../src/game/robots.js';
 
 describe('Robot Swap', () => {
   it('swaps active robot with reserve', () => {

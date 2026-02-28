@@ -15,12 +15,12 @@ describe('getNewWordsForDiscovery', () => {
   });
 
   it('should export getNewWordsForDiscovery function', async () => {
-    const vm = await import('../../src/game/vocab-manager.js');
+    const vm = await import('../../../src/game/vocab-manager.js');
     assert.strictEqual(typeof vm.getNewWordsForDiscovery, 'function');
   });
 
   it('should return words with state "new" sorted by rank', async () => {
-    const vm = await import('../../src/game/vocab-manager.js');
+    const vm = await import('../../../src/game/vocab-manager.js');
     vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
     vm.clearVocabManagerCache(TEST_USER_ID);
 
@@ -45,7 +45,7 @@ describe('getNewWordsForDiscovery', () => {
   });
 
   it('should return empty array when no new words', async () => {
-    const vm = await import('../../src/game/vocab-manager.js');
+    const vm = await import('../../../src/game/vocab-manager.js');
     vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
     vm.clearVocabManagerCache(TEST_USER_ID);
 
@@ -61,7 +61,7 @@ describe('getNewWordsForDiscovery', () => {
   });
 
   it('should return fewer words if not enough available', async () => {
-    const vm = await import('../../src/game/vocab-manager.js');
+    const vm = await import('../../../src/game/vocab-manager.js');
     vm.configureVocabManager({ cacheDir: TEST_CACHE_DIR });
     vm.clearVocabManagerCache(TEST_USER_ID);
 

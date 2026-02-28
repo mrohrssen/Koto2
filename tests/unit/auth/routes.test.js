@@ -12,9 +12,9 @@ process.env.JWT_SECRET = 'test-secret-for-routes';
 process.env.ENCRYPTION_KEY = 'c'.repeat(64);
 process.env.ADMIN_SECRET = 'admin-test-secret';
 
-import { createInviteCode } from '../../src/auth/users.js';
-import { verifyToken } from '../../src/auth/middleware.js';
-import createAuthRoutes from '../../src/auth/routes.js';
+import { createInviteCode } from '../../../src/auth/users.js';
+import { verifyToken } from '../../../src/auth/middleware.js';
+import createAuthRoutes from '../../../src/auth/routes.js';
 
 describe('auth/routes', () => {
   beforeEach(() => {

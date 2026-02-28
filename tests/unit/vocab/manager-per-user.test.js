@@ -4,7 +4,7 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, unlinkSync, mkdirSync, readFileSync } from 'fs';
-import * as jpdb from '../../src/jpdb.js';
+import * as jpdb from '../../../src/jpdb.js';
 
 const TEST_CACHE_DIR = '/tmp/test-vocab-cache/';
 
@@ -15,7 +15,7 @@ describe('Per-user vocab cache', () => {
   before(async () => {
     try { mkdirSync(TEST_CACHE_DIR, { recursive: true }); } catch {}
     // Dynamic import to get fresh module
-    vm = await import('../../src/game/vocab-manager.js');
+    vm = await import('../../../src/game/vocab-manager.js');
   });
 
   after(() => {
@@ -200,7 +200,7 @@ describe('JPDB per-user cache', () => {
 
   before(async () => {
     try { mkdirSync(TEST_CACHE_DIR, { recursive: true }); } catch {}
-    vm = await import('../../src/game/vocab-manager.js');
+    vm = await import('../../../src/game/vocab-manager.js');
   });
 
   after(() => {

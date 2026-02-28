@@ -1,6 +1,6 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert';
-import { ROOM_TYPES, generateFloorRooms, WORDS_PER_DISCOVERY, getRoomEntryNarration, getRoomActions } from '../../src/game/rooms.js';
+import { ROOM_TYPES, generateFloorRooms, WORDS_PER_DISCOVERY, getRoomEntryNarration, getRoomActions } from '../../../src/game/rooms.js';
 
 describe('Word Discovery Room', () => {
   it('should have wordDiscovery room type constant', () => {

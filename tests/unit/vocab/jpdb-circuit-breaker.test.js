@@ -4,7 +4,7 @@ import assert from 'node:assert';
 // We'll test the circuit breaker by mocking fetch
 describe('JPDB Circuit Breaker', () => {
   it('should export circuit breaker state getters', async () => {
-    const { getCircuitBreakerState } = await import('../../src/jpdb.js');
+    const { getCircuitBreakerState } = await import('../../../src/jpdb.js');
     const state = getCircuitBreakerState();
     assert.ok('isOpen' in state, 'should have isOpen property');
     assert.ok('cooldownUntil' in state, 'should have cooldownUntil property');
@@ -13,7 +13,7 @@ describe('JPDB Circuit Breaker', () => {
 
 describe('jpdbFetch with circuit breaker', () => {
   it('should trip circuit breaker on 429 error', async () => {
-    const { tripCircuitBreaker, getCircuitBreakerState, resetCircuitBreaker } = await import('../../src/jpdb.js');
+    const { tripCircuitBreaker, getCircuitBreakerState, resetCircuitBreaker } = await import('../../../src/jpdb.js');
 
     resetCircuitBreaker();
     tripCircuitBreaker(429);
@@ -24,7 +24,7 @@ describe('jpdbFetch with circuit breaker', () => {
   });
 
   it('should extend cooldown on repeated failures', async () => {
-    const { tripCircuitBreaker, getCircuitBreakerState, resetCircuitBreaker } = await import('../../src/jpdb.js');
+    const { tripCircuitBreaker, getCircuitBreakerState, resetCircuitBreaker } = await import('../../../src/jpdb.js');
 
     resetCircuitBreaker();
     tripCircuitBreaker(429);

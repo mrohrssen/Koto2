@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { unlinkSync, existsSync, writeFileSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { getManager, saveManager, removeManager } from '../../src/game/manager-registry.js';
+import { getManager, saveManager, removeManager } from '../../../src/game/manager-registry.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASE_DIR = join(__dirname, '../..');

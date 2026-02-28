@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 // Set test secret before importing
 process.env.JWT_SECRET = 'test-secret-key-for-unit-tests-only';
 
-import { signToken, verifyToken, requireAuth } from '../../src/auth/middleware.js';
+import { signToken, verifyToken, requireAuth } from '../../../src/auth/middleware.js';
 
 describe('auth/middleware', () => {
   describe('signToken / verifyToken', () => {

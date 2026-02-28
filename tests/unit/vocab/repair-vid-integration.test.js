@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 
 // Mock parseText before importing vocab-repair
 const mockParseResults = [];
-await mock.module('../../src/jpdb.js', {
+await mock.module('../../../src/jpdb.js', {
   namedExports: {
     parseText: async (_apiKey, _text) => mockParseResults.shift() || []
   }
 });
 
-const { enforceVocabLimit, checkSentenceViolations } = await import('../../src/game/vocab-repair.js');
+const { enforceVocabLimit, checkSentenceViolations } = await import('../../../src/game/vocab-repair.js');
 
 describe('Vid-based matching integration', () => {
   it('accepts conjugated form when vid matches known vocabulary', async () => {

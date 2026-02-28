@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { PHASES, derivePhase } from '../../src/game/phase-machine.js';
+import { PHASES, derivePhase } from '../../../src/game/phase-machine.js';
 
 describe('Word Discovery Phase', () => {
   it('should have WORD_DISCOVERY phase constant', () => {

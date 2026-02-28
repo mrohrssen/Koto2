@@ -1,8 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { createNewRun, createNewPlayer } from '../../src/game/state.js';
-import { PHASES, derivePhase } from '../../src/game/phase-machine.js';
-import { generateFloorRooms, ROOM_TYPES } from '../../src/game/rooms.js';
+import { createNewRun, createNewPlayer } from '../../../src/game/state.js';
+import { PHASES, derivePhase } from '../../../src/game/phase-machine.js';
+import { generateFloorRooms, ROOM_TYPES } from '../../../src/game/rooms.js';
 
 describe('createNewRun with branching support', () => {
   it('should include pendingBranch and selectedRooms fields', () => {
