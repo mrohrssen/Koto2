@@ -2,8 +2,8 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { instantiateCreature } from '../../../src/game/creatures.js';
 
-describe('Robot Swap', () => {
-  it('swaps active robot with reserve', () => {
+describe('Creature Swap', () => {
+  it('swaps active creature with reserve', () => {
     const party = {
       active: [instantiateCreature('hikaribon'), instantiateCreature('tsukimochi'), instantiateCreature('hanatchi')],
       reserves: [instantiateCreature('nekotto'), instantiateCreature('kazenoko')],
@@ -20,7 +20,7 @@ describe('Robot Swap', () => {
     assert.strictEqual(party.reserves[0].element, 'water');
   });
 
-  it('can swap a KO robot out for a healthy reserve', () => {
+  it('can swap a KO creature out for a healthy reserve', () => {
     const party = {
       active: [instantiateCreature('hikaribon')],
       reserves: [instantiateCreature('tsukimochi')],

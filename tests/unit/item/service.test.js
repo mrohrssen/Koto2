@@ -11,8 +11,8 @@ import {
   applyDamageReduction
 } from '../../../src/game/services/item-service.js';
 
-// Mock robot for item tests — avoids dependency on creature data
-function mockRobot(hp = 100, maxHp = 100) {
+// Mock creature for item tests — avoids dependency on creature data
+function mockCreature(hp = 100, maxHp = 100) {
   return {
     hp, maxHp, element: 'fire',
     mp: 80, maxMp: 80,
@@ -54,7 +54,7 @@ describe('Item Buffs - Stat Boosts', () => {
   it('attack mult stacks per application', () => {
     const buffs = createItemBuffs();
     const atkItem = { type: 'boost', effect: { field: 'attackMult', value: 0.02 } };
-    const party = { active: [mockRobot()], reserves: [] };
+    const party = { active: [mockCreature()], reserves: [] };
     applyItem(atkItem, party, buffs);
     assert.strictEqual(buffs.attackMult, 1.02);
     applyItem(atkItem, party, buffs);
@@ -87,7 +87,7 @@ describe('Item Buffs - Stat Boosts', () => {
       type: 'boost',
       effect: { field: 'hpMult', value: 0.03 }
     };
-    const party = { active: [mockRobot()], reserves: [] };
+    const party = { active: [mockCreature()], reserves: [] };
     applyItem(item, party, buffs);
     assert.strictEqual(buffs.hpMult, 1.03);
   });
@@ -98,7 +98,7 @@ describe('Item Buffs - Stat Boosts', () => {
       type: 'boost',
       effect: { field: 'flatDamageReduction', value: 2 }
     };
-    const party = { active: [mockRobot()], reserves: [] };
+    const party = { active: [mockCreature()], reserves: [] };
     applyItem(item, party, buffs);
     assert.strictEqual(buffs.flatDamageReduction, 2);
     applyItem(item, party, buffs);
@@ -107,9 +107,9 @@ describe('Item Buffs - Stat Boosts', () => {
 });
 
 describe('Item Buffs - Heals', () => {
-  it('healPercent heals only the lowest HP robot', () => {
+  it('healPercent heals only the lowest HP creature', () => {
     const party = {
-      active: [mockRobot(50), mockRobot(30), mockRobot(70)],
+      active: [mockCreature(50), mockCreature(30), mockCreature(70)],
       reserves: []
     };
     const healItem = { type: 'heal', effect: { healPercent: 0.25 } };
@@ -120,9 +120,9 @@ describe('Item Buffs - Heals', () => {
     assert.strictEqual(party.active[2].hp, 70);
   });
 
-  it('healAllPercent heals all alive robots', () => {
+  it('healAllPercent heals all alive creatures', () => {
     const party = {
-      active: [mockRobot(50), mockRobot(60)],
+      active: [mockCreature(50), mockCreature(60)],
       reserves: []
     };
     const healAllItem = { type: 'heal', effect: { healAllPercent: 0.15 } };
@@ -132,9 +132,9 @@ describe('Item Buffs - Heals', () => {
     assert.strictEqual(party.active[1].hp, 75);  // 60 + 15
   });
 
-  it('healMostDamaged heals most damaged robot to full', () => {
+  it('healMostDamaged heals most damaged creature to full', () => {
     const party = {
-      active: [mockRobot(80), mockRobot(30)],
+      active: [mockCreature(80), mockCreature(30)],
       reserves: []
     };
     const patchItem = { type: 'heal', effect: { healMostDamaged: true } };
@@ -144,10 +144,10 @@ describe('Item Buffs - Heals', () => {
     assert.strictEqual(party.active[1].hp, 100);
   });
 
-  it('revivePercent restores one KO robot', () => {
+  it('revivePercent restores one KO creature', () => {
     const party = {
-      active: [mockRobot(0)],
-      reserves: [mockRobot(50)]
+      active: [mockCreature(0)],
+      reserves: [mockCreature(50)]
     };
     const reviveItem = { type: 'revive', effect: { revivePercent: 0.3 } };
     const buffs = createItemBuffs();
@@ -157,9 +157,9 @@ describe('Item Buffs - Heals', () => {
 });
 
 describe('Item Buffs - Charge', () => {
-  it('chargeBoost adds charges to all robots', () => {
+  it('chargeBoost adds charges to all creatures', () => {
     const party = {
-      active: [mockRobot()],
+      active: [mockCreature()],
       reserves: []
     };
     const chargeItem = { type: 'charge', effect: { chargeBoost: 2 } };
@@ -173,7 +173,7 @@ describe('Item Buffs - XP Items', () => {
   it('xpCharm multiplies XP', () => {
     const buffs = createItemBuffs();
     const item = { type: 'xpCharm', effect: { value: 0.25 } };
-    const party = { active: [mockRobot()], reserves: [] };
+    const party = { active: [mockCreature()], reserves: [] };
     applyItem(item, party, buffs);
     assert.strictEqual(buffs.xpMultiplier, 1.25);
   });
@@ -181,7 +181,7 @@ describe('Item Buffs - XP Items', () => {
   it('xpBalance adds stacks', () => {
     const buffs = createItemBuffs();
     const item = { type: 'xpBalance', effect: { value: 1 } };
-    const party = { active: [mockRobot()], reserves: [] };
+    const party = { active: [mockCreature()], reserves: [] };
     applyItem(item, party, buffs);
     assert.strictEqual(buffs.xpBalanceStacks, 1);
     applyItem(item, party, buffs);
@@ -190,10 +190,10 @@ describe('Item Buffs - XP Items', () => {
 });
 
 describe('Item Buffs - Temp Boost', () => {
-  it('tempBoost applies temp_attack_flat effect to all robots', () => {
-    const r1 = mockRobot();
+  it('tempBoost applies temp_attack_flat effect to all creatures', () => {
+    const r1 = mockCreature();
     r1.activeEffects = [];
-    const r2 = mockRobot();
+    const r2 = mockCreature();
     r2.activeEffects = [];
     const party = { active: [r1, r2], reserves: [] };
     const buffs = createItemBuffs();
@@ -209,8 +209,8 @@ describe('Item Buffs - Temp Boost', () => {
     assert.strictEqual(r2.activeEffects.length, 1);
   });
 
-  it('tempBoost does not permanently change robot.attack', () => {
-    const r1 = mockRobot();
+  it('tempBoost does not permanently change creature.attack', () => {
+    const r1 = mockCreature();
     r1.attack = 10;
     r1.activeEffects = [];
     const party = { active: [r1], reserves: [] };

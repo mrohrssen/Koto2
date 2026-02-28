@@ -23,7 +23,7 @@
  *
  * SPRITE LOADING:
  * - Enemy sprites load from /assets/sprites/enemies/{id}.webp
- * - Creature sprites load from /assets/sprites/robots/{id}.webp
+ * - Creature sprites load from /assets/sprites/creatures/{id}.webp
  * - Falls back to emoji placeholder based on enemy personality if load fails
  */
 

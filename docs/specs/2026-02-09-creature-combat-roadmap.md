@@ -1,13 +1,13 @@
-# Robot Combat Rewrite Roadmap (MVP -> V1 -> V2)
+# Creature Combat Rewrite Roadmap (MVP -> V1 -> V2)
 
 ## Summary
-Replace current chip-based combat with robot-vs-robot combat on a dedicated worktree, ship in three releases, and instrument gameplay so we can quickly decide whether the mode is fun or needs redesign.
+Replace current chip-based combat with creature-vs-creature combat on a dedicated worktree, ship in three releases, and instrument gameplay so we can quickly decide whether the mode is fun or needs redesign.
 
 Chosen constraints:
 - Full replacement (not a feature flag), but isolated in a new worktree.
 - Chips are fully removed from gameplay.
-- Runs start fresh every time with a random starter robot.
-- Up to 3 active allied robots if equipped; up to 6 total in-run (active + reserves).
+- Runs start fresh every time with a random starter creature.
+- Up to 3 active allied creatures if equipped; up to 6 total in-run (active + reserves).
 - Keep vocab review as the combat gate.
 - Archetypes deferred to V2, and only: `Striker`, `Tank`, `Trickster`.
 
@@ -16,20 +16,20 @@ Chosen constraints:
 2. Use:
    - `cd /Users/michia/Documents/jrpg`
    - `/usr/bin/git fetch origin`
-   - `/usr/bin/git worktree add /Users/michia/Documents/jrpg/.worktrees/codex-robot-combat -b codex/robot-combat`
+   - `/usr/bin/git worktree add /Users/michia/Documents/jrpg/.worktrees/codex-creature-combat -b codex/creature-combat`
 
 ## Architecture Changes (Decision-Complete)
 
 ### Data Model
-1. Add robot catalog and combat definitions.
-   - `/Users/michia/Documents/jrpg/data/robots.json`
-   - `/Users/michia/Documents/jrpg/data/robot-abilities.json`
+1. Add creature catalog and combat definitions.
+   - `/Users/michia/Documents/jrpg/data/creatures.json`
+   - `/Users/michia/Documents/jrpg/data/creature-abilities.json`
    - `/Users/michia/Documents/jrpg/data/element-relations.json`
-2. Add run-scoped robot state (no persistence across runs).
-   - `run.robotParty.active` (0-3 robots)
-   - `run.robotParty.reserves` (0-3 robots)
-   - `run.robotParty.maxTotal = 6`
-   - `run.robotBuffs` (carry-over buffs with remaining turns)
+2. Add run-scoped creature state (no persistence across runs).
+   - `run.creatureParty.active` (0-3 creatures)
+   - `run.creatureParty.reserves` (0-3 creatures)
+   - `run.creatureParty.maxTotal = 6`
+   - `run.creatureBuffs` (carry-over buffs with remaining turns)
 3. Replace combat state enemy singleton with future-proof arrays.
    - `combat.allies[]`
    - `combat.enemies[]` (MVP uses 1)
@@ -56,29 +56,29 @@ On enemy action:
 ### Keep and repurpose existing endpoints
 - `POST /api/game/combat-cycle`
   - request supports: `attackerType`, `actionType` (`attack`/`defend`)
-  - response returns robot-combat result payloads
+  - response returns creature-combat result payloads
 
 ### New endpoints
-1. `POST /api/game/use-robot-ultimate`
-   - body: `{ robotId, targetId? }`
+1. `POST /api/game/use-creature-ultimate`
+   - body: `{ creatureId, targetId? }`
 2. `POST /api/game/befriend`
    - available only when enemy HP <= 30% and party total < 6
-3. `POST /api/game/swap-robot` (V1)
-   - body: `{ outRobotId, inRobotId }`
-4. `GET /api/game/robot-party`
+3. `POST /api/game/swap-creature` (V1)
+   - body: `{ outCreatureId, inCreatureId }`
+4. `GET /api/game/creature-party`
    - returns active/reserve/bench state for UI
 
 ### Deprecated/removed behavior
 - Chip loadout/equip/use routes removed from active UI flow.
-- Chip row UI replaced by robot team panel.
+- Chip row UI replaced by creature team panel.
 
 ## Release Plan
 
 ## MVP (Playable Core)
-1. Replace current combat backend with robot combat engine.
-2. Run start gives 1 random starter from 3 generic common robots.
-3. Battle format: up to 3 active allies (if owned) vs exactly 1 enemy robot.
-4. Each robot has:
+1. Replace current combat backend with creature combat engine.
+2. Run start gives 1 random starter from 3 generic common creatures.
+3. Battle format: up to 3 active allies (if owned) vs exactly 1 enemy creature.
+4. Each creature has:
    - auto attack
    - ultimate (manual trigger with skill bar)
 5. Keep vocab dual-card loop as combat gate.
@@ -91,22 +91,22 @@ On enemy action:
 7. Befriend:
    - show third action when enemy <=30% HP
    - success is automatic in MVP
-   - captured robot added to reserves (up to 6 total)
+   - captured creature added to reserves (up to 6 total)
 8. Remove chips from combat/economy UI.
-9. Enemy generation uses robot templates + level scaling (no separate enemy file dependency for MVP path).
+9. Enemy generation uses creature templates + level scaling (no separate enemy file dependency for MVP path).
 
 MVP acceptance:
 - Start run, receive random starter, enter combat, complete turns via vocab.
 - Use at least one ultimate in combat.
-- Befriend works at <=30% HP and adds robot to run party.
+- Befriend works at <=30% HP and adds creature to run party.
 - Party never exceeds 6.
 
 ## V1 (System Depth)
-1. Add enemy team sizes: 1-3 robots.
+1. Add enemy team sizes: 1-3 creatures.
 2. Add in-combat swapping between active and reserves.
 3. Expand element statuses + synergy matrix for all five elements.
 4. Add EXP distribution and level-up:
-   - active robots receive bonus share
+   - active creatures receive bonus share
    - reserves receive reduced share
 5. Improve encounter scaling to match player team power and level.
 6. Add reusable generic content tiers common->legendary with stat/skill scaling.
@@ -201,6 +201,6 @@ Track per combat:
 - Full replacement occurs only on new worktree branch; `master` remains untouched.
 - Chips are removed from gameplay entirely.
 - Party/collection is run-scoped only, resets each run.
-- MVP enemies are always single-robot; multi-enemy starts in V1.
+- MVP enemies are always single-creature; multi-enemy starts in V1.
 - Archetypes are V2 only, limited to three classes.
 - Befriend is instant success in MVP; negotiation deferred to V2.

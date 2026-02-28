@@ -14,7 +14,7 @@ Playtesting with Playwright MCP fails when you improvise. You lose track of what
 4. **Screenshot at checkpoints.** Take a screenshot after each phase completes. Name it descriptively: `playtest-{phase}.png`.
 5. **Compare against expectations.** Every phase below lists what you SHOULD see. If reality doesn't match, that's a bug. Report it immediately.
 6. **Swipe, don't click, for cards.** Vocab flashcards require swiping (drag gesture), not clicking.
-7. **Use abilities when available.** If a robot's ultimate is charged, use it. If befriend is available, try it. Test every interaction path, not just the happy path.
+7. **Use abilities when available.** If a creature's ultimate is charged, use it. If befriend is available, try it. Test every interaction path, not just the happy path.
 8. **One thing at a time.** Don't rush through multiple interactions. Do one action, verify the result, then proceed.
 
 ## Pre-Playtest Setup
@@ -79,25 +79,25 @@ When a new feature is added:
 
 ---
 
-### Phase 1: Starter Selection (Robot Combat)
+### Phase 1: Starter Selection (Creature Combat)
 
-**Trigger:** Starting a new robot combat run.
+**Trigger:** Starting a new creature combat run.
 
 **Expected screen:**
 - Title: "Choose 2 Starters"
-- Subtitle: "Pick your active robot, then a reserve"
-- Grid of robot cards (subset of 25 templates from `data/robots.json`)
-- Each card: robot name, element icon (wood/fire/earth/metal/water), HP, ATK stats
+- Subtitle: "Pick your active creature, then a reserve"
+- Grid of creature cards (subset of 25 templates from `data/creatures.json`)
+- Each card: creature name, element icon (wood/fire/earth/metal/water), HP, ATK stats
 
 **Interactions:**
-1. Tap first robot card → highlights, subtitle changes to "Now pick a reserve robot"
-2. Tap second robot card → highlights, subtitle changes to "Ready!"
+1. Tap first creature card → highlights, subtitle changes to "Now pick a reserve creature"
+2. Tap second creature card → highlights, subtitle changes to "Ready!"
 3. Confirm button appears → tap it
 
 **What could go wrong:**
-- Empty grid (no robot cards rendered)
+- Empty grid (no creature cards rendered)
 - Subtitle doesn't update after each pick
-- Can pick the same robot twice
+- Can pick the same creature twice
 - Confirm button doesn't appear after two picks
 - Element icons or color coding missing
 - Stats show NaN or 0
@@ -137,17 +137,17 @@ When a new feature is added:
 - Branch selection or room navigation UI
 - Rooms may include: encounter, shrine, quiz, wordDiscovery, shop
 
-**Interactions:** Navigate until reaching a robot encounter room. Select it.
+**Interactions:** Navigate until reaching a creature encounter room. Select it.
 
 **Expected screen — Combat Start:**
-- **Top area:** 1-3 enemy robots in a horizontal row. Each enemy shows: element icon (56px colored circle), name, level badge, HP bar. If only 1 enemy, shows single sprite instead of row.
-- **Bottom area:** 3 ally robot slots. Each shows: element icon with colored border, HP bar (green-to-red gradient), charge bar (5 empty segments), level badge. Empty slots (if party < 3) should be visually distinct.
+- **Top area:** 1-3 enemy creatures in a horizontal row. Each enemy shows: element icon (56px colored circle), name, level badge, HP bar. If only 1 enemy, shows single sprite instead of row.
+- **Bottom area:** 3 ally creature slots. Each shows: element icon with colored border, HP bar (green-to-red gradient), charge bar (5 empty segments), level badge. Empty slots (if party < 3) should be visually distinct.
 - **Middle area:** Vocab flashcards should appear shortly — dual cards (attack / defend).
 
 **What could go wrong:**
 - 0 enemies generated (empty top area)
 - Enemy count exceeds 3
-- Ally slots don't match starter picks (wrong robots)
+- Ally slots don't match starter picks (wrong creatures)
 - HP bars show wrong values or are missing
 - Charge bars pre-filled instead of empty
 - Multi-enemy layout overlapping or broken
@@ -172,7 +172,7 @@ When a new feature is added:
 - Word gets graded
 - Attack animation plays:
   - Each alive ally fires an element-colored orb toward their targeted enemy
-  - Action text: "[RobotName] deals X damage" (may include "super effective!" for element advantage)
+  - Action text: "[CreatureName] deals X damage" (may include "super effective!" for element advantage)
   - Floating damage numbers appear on enemies
   - Enemy HP bars decrease progressively
 - Enemy counter-attack:
@@ -215,28 +215,28 @@ When a new feature is added:
 
 ---
 
-### Phase 6: Robot Swap (Free)
+### Phase 6: Creature Swap (Free)
 
 **Trigger:** Vocab cards are showing but you haven't swiped yet. This is the free swap window (`swapPhase: true`).
 
 **Interactions:**
-1. Tap an ally robot slot → popup appears
-2. Popup shows: robot name, element, HP and ATK stats, ultimate info (name, power, charges X/5)
+1. Tap an ally creature slot → popup appears
+2. Popup shows: creature name, element, HP and ATK stats, ultimate info (name, power, charges X/5)
 3. "Use Ultimate" button (greyed out if charges < 5)
-4. "Swap with:" section lists reserve robots as buttons (element icon, name, level, HP)
-5. Tap a reserve robot button
+4. "Swap with:" section lists reserve creatures as buttons (element icon, name, level, HP)
+5. Tap a reserve creature button
 
 **Expected after swap:**
 - Swap happens immediately, no action cost (free swap)
 - Popup closes
-- Ally row updates — tapped robot moves to reserves, selected reserve takes its slot
+- Ally row updates — tapped creature moves to reserves, selected reserve takes its slot
 - HP bars and charge bars transfer correctly
 
 **What could go wrong:**
 - Popup doesn't open on slot tap
 - Swap section missing (no reserves listed)
 - Tapping reserve does nothing
-- Wrong robot ends up in the slot
+- Wrong creature ends up in the slot
 - HP or charges reset after swap
 - Popup doesn't close after swap
 
@@ -244,19 +244,19 @@ When a new feature is added:
 
 ### Phase 7: Ultimate Ability
 
-**Trigger:** A robot's charge bar reaches 5/5 (after ~5 attack/defend turns). The charge bar should glow.
+**Trigger:** A creature's charge bar reaches 5/5 (after ~5 attack/defend turns). The charge bar should glow.
 
 **Interactions:**
-1. Tap the charged robot's slot → popup opens
+1. Tap the charged creature's slot → popup opens
 2. "Use Ultimate" button should be enabled (not greyed)
 3. Tap "Use Ultimate"
 
 **Expected after ultimate:**
-- `POST /api/game/use-robot-ultimate` fires
+- `POST /api/game/use-creature-ultimate` fires
 - AoE attack hits ALL enemies (not just one)
 - Damage numbers appear on every enemy
 - Enemy HP bars all decrease
-- Robot's charge bar resets to 0/5 (glow stops)
+- Creature's charge bar resets to 0/5 (glow stops)
 - Action text shows ultimate name and damage
 
 **What could go wrong:**
@@ -271,7 +271,7 @@ When a new feature is added:
 
 ### Phase 8: Befriend
 
-**Trigger:** Any enemy drops below 50% HP AND your party has room (fewer than 6 total robots: active + reserves).
+**Trigger:** Any enemy drops below 50% HP AND your party has room (fewer than 6 total creatures: active + reserves).
 
 **Expected screen change:** Vocab cards now show THREE options instead of two — attack / defend / befriend.
 
@@ -279,17 +279,17 @@ When a new feature is added:
 
 **Expected after swipe:**
 - Targets the lowest-HP enemy at or below 50% HP
-- Success: "[RobotName] was befriended!" message
+- Success: "[CreatureName] was befriended!" message
 - Captured enemy heals to full HP
 - Joins your party (active slot if < 3 active, otherwise reserves)
-- Ally row updates to show new robot
+- Ally row updates to show new creature
 - If that was the last enemy, combat ends → victory
 
 **What could go wrong:**
 - Befriend card never appears despite eligible enemy below 50% HP
 - Befriend targets wrong enemy (not lowest HP)
-- Befriend succeeds but robot doesn't appear in ally row
-- Robot joins with 0 HP instead of full
+- Befriend succeeds but creature doesn't appear in ally row
+- Creature joins with 0 HP instead of full
 - Party display doesn't update
 - Triple card layout broken (overlapping or cut off)
 
@@ -339,7 +339,7 @@ When a new feature is added:
 
 ## Regression Checks
 
-When new features are added on top of robot combat, replay relevant phases to verify nothing broke. Common regressions:
+When new features are added on top of creature combat, replay relevant phases to verify nothing broke. Common regressions:
 
 - **New UI elements overlapping** existing combat layout
 - **API response shape changes** breaking frontend expectations (missing fields, renamed keys)

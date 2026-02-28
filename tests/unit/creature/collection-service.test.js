@@ -8,7 +8,7 @@ import {
   getCollectionCatalog
 } from '../../../src/game/services/creature-collection-service.js';
 
-describe('robot-collection-service', () => {
+describe('creature-collection-service', () => {
   describe('validateTeamSelection', () => {
     const collection = ['hikaribon', 'tsukimochi', 'hanatchi'];
 
@@ -18,7 +18,7 @@ describe('robot-collection-service', () => {
       assert.strictEqual(result.totalCost, 6);
     });
 
-    it('accepts single robot', () => {
+    it('accepts single creature', () => {
       const result = validateTeamSelection(collection, ['hikaribon']);
       assert.strictEqual(result.valid, true);
       assert.strictEqual(result.totalCost, 3);
@@ -30,7 +30,7 @@ describe('robot-collection-service', () => {
       assert.match(result.reason, /at least 1/i);
     });
 
-    it('rejects robot not in collection', () => {
+    it('rejects creature not in collection', () => {
       const result = validateTeamSelection(collection, ['kitsunova']);
       assert.strictEqual(result.valid, false);
       assert.match(result.reason, /not in collection/i);
@@ -85,14 +85,14 @@ describe('robot-collection-service', () => {
   });
 
   describe('addToCollection', () => {
-    it('adds new robot ID', () => {
+    it('adds new creature ID', () => {
       const collection = ['hikaribon'];
       const result = addToCollection(collection, 'nimbulon');
       assert.strictEqual(result.added, true);
       assert.ok(result.collection.includes('nimbulon'));
     });
 
-    it('does not duplicate existing robot', () => {
+    it('does not duplicate existing creature', () => {
       const collection = ['hikaribon'];
       const result = addToCollection(collection, 'hikaribon');
       assert.strictEqual(result.added, false);

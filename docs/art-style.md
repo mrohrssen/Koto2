@@ -35,11 +35,11 @@ Everyday Tokyo citizens and dramatic bosses rendered as gacha-quality character 
 
 ### Chip Icons
 
-Everyday objects personified as cute chibi creature-robots. The object IS the character's body.
+Everyday objects personified as cute chibi creatures. The object IS the character's body.
 
 **Style keywords**: chibi character, gacha game art style, mobile game character icon, bright vivid colors, clean, simple background, cute
 
-**Subject range**: Onigiri with a face, scissors as a robot, speakers with limbs, books with wings. The object's function inspires its personality (scissors = sharp/precise, drum = energetic).
+**Subject range**: Onigiri with a face, scissors as a creature, speakers with limbs, books with wings. The object's function inspires its personality (scissors = sharp/precise, drum = energetic).
 
 **Must have**: Transparent background, immediately recognizable source object, cute/appealing personality
 

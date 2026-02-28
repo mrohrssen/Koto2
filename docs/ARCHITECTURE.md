@@ -7,7 +7,7 @@ This document describes the technical architecture of Koto. It covers the game f
 1. [Overview](#overview)
 2. [Frequency-Ordered Vocabulary Naming](#frequency-ordered-vocabulary-naming)
 3. [Game Flow and Phases](#game-flow-and-phases)
-4. [Robot Combat (Core Mechanic)](#robot-combat-core-mechanic)
+4. [Creature Combat (Core Mechanic)](#creature-combat-core-mechanic)
 5. [Combat System](#combat-system)
 5. [Area System (Exploration)](#area-system-exploration)
 6. [Vocabulary Integration (JPDB)](#vocabulary-integration-jpdb)
@@ -44,7 +44,7 @@ Everything the player encounters is named using real Japanese words from the **t
 
 | Entity | Word Class | Example |
 |--------|-----------|---------|
-| **Robots** | Object nouns + adjective | 赤いハンマーロボ (Red Hammer Bot) |
+| **Creatures** | Object nouns + adjective | 赤いハンマーロボ (Red Hammer Bot) |
 | **Enemies** | People nouns + adjective | 怒った先生 (Angry Teacher) |
 | **Locations** | Place nouns | 学校 (School), 病院 (Hospital) |
 | **Attacks/Skills** | Verbs | 教える (To Teach), 焼く (To Grill) |
@@ -60,7 +60,7 @@ Fight: 怒った先生 (Angry Teacher)
   - 教える (to teach)   → verb (attack name)
 ```
 
-**Robots** are named after everyday objects — things you'd point at in a room (hammer, scissors, battery, broom). Adjective modifiers create variety and teach a second word per entity.
+**Creatures** are named after everyday objects — things you'd point at in a room (hammer, scissors, battery, broom). Adjective modifiers create variety and teach a second word per entity.
 
 **Enemies** are named after real people and occupations — people you'd actually meet in Japan (student, teacher, doctor, shopkeeper, neighbor). Their attacks use **verbs that fit their identity**: the teacher 教える (teaches), the cook 焼く (grills), the doctor 治す (cures).
 
@@ -79,7 +79,7 @@ Players learn both adjective grammar patterns naturally by reading entity names.
 
 ### Writing System Exposure
 
-Object nouns for robots tend to include **katakana loanwords** (ハンマー, ナイフ, テーブル), while people and occupation nouns tend to use **kanji** (学生, 医者, 先生). This naturally exposes players to both writing systems.
+Object nouns for creatures tend to include **katakana loanwords** (ハンマー, ナイフ, テーブル), while people and occupation nouns tend to use **kanji** (学生, 医者, 先生). This naturally exposes players to both writing systems.
 
 ### Data Source
 
@@ -162,13 +162,13 @@ function derivePhase({ player, run, combat }) {
 
 ---
 
-## Robot Combat (Core Mechanic)
+## Creature Combat (Core Mechanic)
 
-Robots are the core combat unit. Players build a party of 3 active robots plus reserves.
+Creatures are the core combat unit. Players build a party of 3 active creatures plus reserves.
 
-### Robot Data
+### Creature Data
 
-Robots are defined in `data/robots.json` (starter robots) and `data/creatures.json` (wild creatures that can be befriended). Each robot has:
+Creatures are defined in `data/creatures.json`. Each creature has:
 
 - **Element:** wood, fire, earth, metal, or water (five-element cycle)
 - **Stats:** attack, maxHp
@@ -178,7 +178,7 @@ Robots are defined in `data/robots.json` (starter robots) and `data/creatures.js
 ### Damage Formula
 
 ```
-damage = calculateRobotDamage(attack, power, elementMultiplier, variance)
+damage = calculateCreatureDamage(attack, power, elementMultiplier, variance)
 ```
 
 Element matchups follow the Wu Xing cycle (wood > earth > water > fire > metal > wood), providing a 1.5x damage bonus on advantageous matchups.
@@ -188,13 +188,12 @@ Element matchups follow the Wu Xing cycle (wood > earth > water > fire > metal >
 Consumable items (`data/items.json`) provide buffs during combat (healing, stat boosts, element shields). Items are purchased from shops between encounters.
 
 **Files:**
-- `data/robots.json` - Starter robot definitions
-- `data/creatures.json` - Wild creature definitions
+- `data/creatures.json` - Creature definitions
 - `data/items.json` - Consumable item definitions
-- `src/game/services/robot-combat-service.js` - Robot combat logic
-- `src/game/services/robot-collection-service.js` - Robot party management
+- `src/game/services/creature-combat-service.js` - Creature combat logic
+- `src/game/services/creature-collection-service.js` - Creature party management
 - `src/game/services/item-service.js` - Item usage and inventory
-- `public/js/ui/robot-row.js` - Frontend robot party UI
+- `public/js/ui/creature-row.js` - Frontend creature party UI
 
 ---
 
@@ -216,7 +215,7 @@ Only two stats matter:
 ### Damage Formula
 
 ```
-damage = calculateRobotDamage(attack, power, elementMultiplier, variance)
+damage = calculateCreatureDamage(attack, power, elementMultiplier, variance)
 ```
 
 Element matchups provide bonus damage (1.5x for advantageous elements). Variance adds slight randomness to keep combat unpredictable.
@@ -243,7 +242,7 @@ Player always acts first.
 - `src/game/combat/player-actions.js` - Player attack execution
 - `src/game/combat/enemy.js` - Enemy AI and intents
 - `src/game/enemies.js` - Enemy definitions
-- `src/game/services/robot-combat-service.js` - Robot combat orchestration
+- `src/game/services/creature-combat-service.js` - Creature combat orchestration
 
 ### Combat Visual Effects
 
@@ -264,7 +263,7 @@ Anime-style visual feedback during combat, implemented in `public/js/ui/combat-e
 **Combat Moments:**
 | Moment | Effects | Trigger |
 |--------|---------|---------|
-| Robot Attack | Pop, particles, speed lines, screen pulse | Robot attacks |
+| Creature Attack | Pop, particles, speed lines, screen pulse | Creature attacks |
 | Enemy Damage | Hit stop, shake, flash, particles, recoil | Player attack lands |
 | Player Damage | Hit stop, heavy shake, red vignette | Enemy attack lands |
 | Big Damage (150+) | All above amplified: longer stop, double flash | High damage threshold |
@@ -313,7 +312,7 @@ The game takes place across 7 Tokyo wards, each representing a dungeon floor.
 | Type | Probability | Description |
 |------|-------------|-------------|
 | Encounter | 45% | Combat with SYSTEM-possessed citizen |
-| Shop | 20% | Buy items and recruit robots |
+| Shop | 20% | Buy items and recruit creatures |
 | Quiz | 20% | Knowledge test for rewards |
 | Word Discovery | 15% | Learn new vocabulary via flash cards |
 | Boss | 100% (last room) | Floor boss |
@@ -463,7 +462,7 @@ Earned from runs:
 | Meta-progression (essence, upgrades) | Yes | Yes |
 | Achievements | Yes | Yes |
 | Run state (HP, gold, floor) | No | No |
-| Robot party | No | No |
+| Creature party | No | No |
 
 **Files:**
 - `src/game/state.js` - State management and persistence
@@ -541,7 +540,7 @@ Located in `public/js/ui/`:
 | `actions.js` | Bottom action area, flash cards |
 | `exploration.js` | Hub, ward selection, room navigation |
 | `combat-loop.js` | Turn-based combat orchestration |
-| `robot-row.js` | Robot party display |
+| `creature-row.js` | Creature party display |
 | `scene.js` | Background, enemy sprite, enemy HP |
 | `narration-box.js` | Dialogue display |
 | `lookup.js` | Japanese word lookup mode |
@@ -619,8 +618,8 @@ store.set('combat', newCombatState);
 | Service | Purpose | File |
 |---------|---------|------|
 | CombatService | Combat mechanics | `src/game/services/combat-service.js` |
-| RobotCombatService | Robot combat logic | `src/game/services/robot-combat-service.js` |
-| RobotCollectionService | Robot party management | `src/game/services/robot-collection-service.js` |
+| CreatureCombatService | Creature combat logic | `src/game/services/creature-combat-service.js` |
+| CreatureCollectionService | Creature party management | `src/game/services/creature-collection-service.js` |
 | ItemService | Item usage and inventory | `src/game/services/item-service.js` |
 | ExplorationService | Room navigation | `src/game/services/exploration-service.js` |
 
@@ -674,7 +673,7 @@ store.set('combat', newCombatState);
     "maxHp": 100,
     "attack": 15,
     "gold": 250,
-    "robots": [/* active robot party */],
+    "creatures": [/* active creature party */],
     "items": [/* consumable items */]
   },
   "meta": {
@@ -761,8 +760,7 @@ store.set('combat', newCombatState);
 
 | File | Purpose |
 |------|---------|
-| `data/robots.json` | Starter robot definitions |
-| `data/creatures.json` | Wild creature definitions |
+| `data/creatures.json` | Creature definitions |
 | `data/items.json` | Consumable item definitions |
 | `data/enemies.json` | Enemy definitions |
 | `data/bosses.json` | Boss definitions |
@@ -774,7 +772,7 @@ store.set('combat', newCombatState);
 Despite what older documentation may suggest, the following features are **not implemented**:
 
 - No STR/AGI/VIT/INT/DEX/LUK stats (simplified to attack + maxHp)
-- No armor, weapons, or equipment slots (players use robots and consumable items only)
+- No armor, weapons, or equipment slots (players use creatures and consumable items only)
 - No class selection or skill trees
 - No hit/miss or critical hit system
 

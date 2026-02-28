@@ -11,42 +11,42 @@ import {
 
 describe('Combat Effects - Tick', () => {
   it('poison deals damage and decrements remaining turns', () => {
-    const robot = { id: 'test', nameEn: 'Test', hp: 100, maxHp: 100, activeEffects: [
+    const creature = { id: 'test', nameEn: 'Test', hp: 100, maxHp: 100, activeEffects: [
       { type: 'poison', remainingTurns: 3, damagePerTurn: 5, sourceId: 'attacker' }
     ]};
-    const events = tickEffects(robot);
-    assert.strictEqual(robot.hp, 95);
-    assert.strictEqual(robot.activeEffects[0].remainingTurns, 2);
+    const events = tickEffects(creature);
+    assert.strictEqual(creature.hp, 95);
+    assert.strictEqual(creature.activeEffects[0].remainingTurns, 2);
     assert.strictEqual(events.length, 1);
     assert.strictEqual(events[0].type, 'poison');
     assert.strictEqual(events[0].damage, 5);
   });
 
   it('removes expired effects', () => {
-    const robot = { id: 'test', nameEn: 'Test', hp: 100, maxHp: 100, activeEffects: [
+    const creature = { id: 'test', nameEn: 'Test', hp: 100, maxHp: 100, activeEffects: [
       { type: 'poison', remainingTurns: 1, damagePerTurn: 5, sourceId: 'attacker' }
     ]};
-    tickEffects(robot);
-    assert.strictEqual(robot.activeEffects.length, 0);
+    tickEffects(creature);
+    assert.strictEqual(creature.activeEffects.length, 0);
   });
 
   it('does not reduce HP below 1 from poison', () => {
-    const robot = { id: 'test', nameEn: 'Test', hp: 3, maxHp: 100, activeEffects: [
+    const creature = { id: 'test', nameEn: 'Test', hp: 3, maxHp: 100, activeEffects: [
       { type: 'poison', remainingTurns: 2, damagePerTurn: 10, sourceId: 'attacker' }
     ]};
-    tickEffects(robot);
-    assert.strictEqual(robot.hp, 1);
+    tickEffects(creature);
+    assert.strictEqual(creature.hp, 1);
   });
 
   it('handles empty activeEffects array', () => {
-    const robot = { hp: 100, maxHp: 100, activeEffects: [] };
-    const events = tickEffects(robot);
+    const creature = { hp: 100, maxHp: 100, activeEffects: [] };
+    const events = tickEffects(creature);
     assert.strictEqual(events.length, 0);
   });
 
   it('handles missing activeEffects field', () => {
-    const robot = { hp: 100, maxHp: 100 };
-    const events = tickEffects(robot);
+    const creature = { hp: 100, maxHp: 100 };
+    const events = tickEffects(creature);
     assert.strictEqual(events.length, 0);
   });
 });
@@ -83,7 +83,7 @@ describe('Combat Effects - Apply Heal', () => {
     assert.strictEqual(healed, 10);
   });
 
-  it('does not heal KOd robots', () => {
+  it('does not heal KOd creatures', () => {
     const target = { hp: 0, maxHp: 100 };
     const healed = applyHeal(target, 30);
     assert.strictEqual(target.hp, 0);
@@ -207,76 +207,76 @@ describe('Combat Effects - Apply Taunt', () => {
 
 describe('Combat Effects - Query Helpers', () => {
   it('isIncapacitated returns true for sleep', () => {
-    const robot = { activeEffects: [{ type: 'sleep', remainingTurns: 2 }] };
-    assert.strictEqual(isIncapacitated(robot), true);
+    const creature = { activeEffects: [{ type: 'sleep', remainingTurns: 2 }] };
+    assert.strictEqual(isIncapacitated(creature), true);
   });
 
   it('isIncapacitated returns true for stun', () => {
-    const robot = { activeEffects: [{ type: 'stun', remainingTurns: 1 }] };
-    assert.strictEqual(isIncapacitated(robot), true);
+    const creature = { activeEffects: [{ type: 'stun', remainingTurns: 1 }] };
+    assert.strictEqual(isIncapacitated(creature), true);
   });
 
   it('isIncapacitated returns false with no effects', () => {
-    const robot = { activeEffects: [] };
-    assert.strictEqual(isIncapacitated(robot), false);
+    const creature = { activeEffects: [] };
+    assert.strictEqual(isIncapacitated(creature), false);
   });
 
   it('isIncapacitated returns false when activeEffects is missing', () => {
-    const robot = {};
-    assert.strictEqual(isIncapacitated(robot), false);
+    const creature = {};
+    assert.strictEqual(isIncapacitated(creature), false);
   });
 
   it('isConfused returns true for confuse', () => {
-    const robot = { activeEffects: [{ type: 'confuse', remainingTurns: 2 }] };
-    assert.strictEqual(isConfused(robot), true);
+    const creature = { activeEffects: [{ type: 'confuse', remainingTurns: 2 }] };
+    assert.strictEqual(isConfused(creature), true);
   });
 
   it('isConfused returns false with no confuse', () => {
-    const robot = { activeEffects: [] };
-    assert.strictEqual(isConfused(robot), false);
+    const creature = { activeEffects: [] };
+    assert.strictEqual(isConfused(creature), false);
   });
 
   it('hasHaste returns true when haste effect present', () => {
-    const robot = { activeEffects: [{ type: 'haste', sourceId: 'x' }] };
-    assert.strictEqual(hasHaste(robot), true);
+    const creature = { activeEffects: [{ type: 'haste', sourceId: 'x' }] };
+    assert.strictEqual(hasHaste(creature), true);
   });
 
   it('consumeHaste removes the haste effect', () => {
-    const robot = { activeEffects: [{ type: 'haste', sourceId: 'x' }, { type: 'poison', remainingTurns: 2, damagePerTurn: 5, sourceId: 'y' }] };
-    consumeHaste(robot);
-    assert.strictEqual(hasHaste(robot), false);
-    assert.strictEqual(robot.activeEffects.length, 1);
+    const creature = { activeEffects: [{ type: 'haste', sourceId: 'x' }, { type: 'poison', remainingTurns: 2, damagePerTurn: 5, sourceId: 'y' }] };
+    consumeHaste(creature);
+    assert.strictEqual(hasHaste(creature), false);
+    assert.strictEqual(creature.activeEffects.length, 1);
   });
 
   it('getAttackMultiplier returns 1 with no buffs', () => {
-    const robot = { activeEffects: [] };
-    assert.strictEqual(getAttackMultiplier(robot), 1);
+    const creature = { activeEffects: [] };
+    assert.strictEqual(getAttackMultiplier(creature), 1);
   });
 
   it('getAttackMultiplier returns 1.3 with 30% attack buff', () => {
-    const robot = { activeEffects: [{ type: 'attack_buff', percent: 30, remainingTurns: 2 }] };
-    assert.strictEqual(getAttackMultiplier(robot), 1.3);
+    const creature = { activeEffects: [{ type: 'attack_buff', percent: 30, remainingTurns: 2 }] };
+    assert.strictEqual(getAttackMultiplier(creature), 1.3);
   });
 
   it('getDamageReduction returns 0 with no shields', () => {
-    const robot = { activeEffects: [] };
-    assert.strictEqual(getDamageReduction(robot), 0);
+    const creature = { activeEffects: [] };
+    assert.strictEqual(getDamageReduction(creature), 0);
   });
 
   it('getDamageReduction combines shield and team_shield', () => {
-    const robot = { activeEffects: [
+    const creature = { activeEffects: [
       { type: 'shield', percent: 30, remainingTurns: 2 },
       { type: 'team_shield', percent: 20, remainingTurns: 2 }
     ]};
-    assert.strictEqual(getDamageReduction(robot), 50);
+    assert.strictEqual(getDamageReduction(creature), 50);
   });
 
   it('getDamageReduction caps at 90', () => {
-    const robot = { activeEffects: [
+    const creature = { activeEffects: [
       { type: 'shield', percent: 60, remainingTurns: 2 },
       { type: 'team_shield', percent: 50, remainingTurns: 2 }
     ]};
-    assert.strictEqual(getDamageReduction(robot), 90);
+    assert.strictEqual(getDamageReduction(creature), 90);
   });
 
   it('getTauntTarget returns taunting ally', () => {
@@ -318,35 +318,35 @@ describe('Combat Effects - breakSleep', () => {
 
 describe('Combat Effects - Tick expands to all types', () => {
   it('decrements sleep remainingTurns and removes when expired', () => {
-    const robot = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
+    const creature = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
       { type: 'sleep', remainingTurns: 1, sourceId: 'x' }
     ]};
-    const events = tickEffects(robot);
-    assert.strictEqual(robot.activeEffects.length, 0);
+    const events = tickEffects(creature);
+    assert.strictEqual(creature.activeEffects.length, 0);
     assert.strictEqual(events.length, 1);
     assert.strictEqual(events[0].type, 'sleep_tick');
   });
 
   it('decrements attack_buff and keeps while remaining > 0', () => {
-    const robot = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
+    const creature = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
       { type: 'attack_buff', percent: 30, remainingTurns: 2, sourceId: 'x' }
     ]};
-    tickEffects(robot);
-    assert.strictEqual(robot.activeEffects.length, 1);
-    assert.strictEqual(robot.activeEffects[0].remainingTurns, 1);
+    tickEffects(creature);
+    assert.strictEqual(creature.activeEffects.length, 1);
+    assert.strictEqual(creature.activeEffects[0].remainingTurns, 1);
   });
 
   it('does not tick haste (no remainingTurns)', () => {
-    const robot = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
+    const creature = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
       { type: 'haste', sourceId: 'x' }
     ]};
-    tickEffects(robot);
-    assert.strictEqual(robot.activeEffects.length, 1, 'haste should persist through ticks');
+    tickEffects(creature);
+    assert.strictEqual(creature.activeEffects.length, 1, 'haste should persist through ticks');
   });
 });
 
 describe('Combat Effects - Temp Attack Flat', () => {
-  it('adds temp_attack_flat effect to robot', () => {
+  it('adds temp_attack_flat effect to creature', () => {
     const target = { hp: 100, maxHp: 100, activeEffects: [] };
     applyTempAttackFlat(target, { value: 3, duration: 5, sourceId: 'miso' });
     assert.strictEqual(target.activeEffects.length, 1);
@@ -379,36 +379,36 @@ describe('Combat Effects - getFlatAttackBonus', () => {
   });
 
   it('sums multiple temp_attack_flat effects', () => {
-    const robot = { activeEffects: [
+    const creature = { activeEffects: [
       { type: 'temp_attack_flat', value: 3, remainingTurns: 5 },
       { type: 'temp_attack_flat', value: 5, remainingTurns: 3 }
     ]};
-    assert.strictEqual(getFlatAttackBonus(robot), 8);
+    assert.strictEqual(getFlatAttackBonus(creature), 8);
   });
 
   it('ignores other effect types', () => {
-    const robot = { activeEffects: [
+    const creature = { activeEffects: [
       { type: 'temp_attack_flat', value: 3, remainingTurns: 5 },
       { type: 'attack_buff', percent: 30, remainingTurns: 2 }
     ]};
-    assert.strictEqual(getFlatAttackBonus(robot), 3);
+    assert.strictEqual(getFlatAttackBonus(creature), 3);
   });
 });
 
 describe('Combat Effects - Tick temp_attack_flat', () => {
   it('decrements remainingTurns each tick', () => {
-    const robot = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
+    const creature = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
       { type: 'temp_attack_flat', value: 3, remainingTurns: 3 }
     ]};
-    tickEffects(robot);
-    assert.strictEqual(robot.activeEffects[0].remainingTurns, 2);
+    tickEffects(creature);
+    assert.strictEqual(creature.activeEffects[0].remainingTurns, 2);
   });
 
   it('removes effect when remainingTurns hits 0', () => {
-    const robot = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
+    const creature = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
       { type: 'temp_attack_flat', value: 3, remainingTurns: 1 }
     ]};
-    tickEffects(robot);
-    assert.strictEqual(robot.activeEffects.length, 0);
+    tickEffects(creature);
+    assert.strictEqual(creature.activeEffects.length, 0);
   });
 });

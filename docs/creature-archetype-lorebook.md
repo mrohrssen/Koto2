@@ -202,7 +202,7 @@ All archetypes and status effects are implemented on master.
 
 ### Combat Mechanics
 
-- **Active effects:** `robot.activeEffects[]` array. Effects tick at start of each round. Expired effects auto-remove.
+- **Active effects:** `creature.activeEffects[]` array. Effects tick at start of each round. Expired effects auto-remove.
 - **Stacking:** Effects don't stack. Reapplication refreshes duration.
 - **Damage reduction:** `floor(damage * (1 - percent/100))`. Shield + team_shield stack additively, capped at 90%.
 - **Attack buff:** `floor(attack * (1 + percent/100))`. Multiple buffs stack additively.

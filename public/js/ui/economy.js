@@ -44,7 +44,7 @@ export async function renderDealerRoom(actionsModule) {
     return;
   }
 
-  const { offeredRobots: offeredCreatures, partyRobots: partyCreatures, credits, canBuy, sellCount, maxSells } = dealerData;
+  const { offeredCreatures, partyCreatures, credits, canBuy, sellCount, maxSells } = dealerData;
   const canSellMore = sellCount < maxSells;
 
   // Buy section

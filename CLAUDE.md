@@ -95,7 +95,7 @@ Branch prefixes: `feature/`, `fix/`, `refactor/`
 server.js              # Main Express server (50+ API endpoints)
 public/
   js/game.js           # Frontend coordinator
-  js/ui/               # UI modules (combat-loop, robot-row, lookup, etc.)
+  js/ui/               # UI modules (combat-loop, creature-row, lookup, etc.)
   game.css             # Game UI styling
   game.html            # Main game template
   assets/              # Sprites, backgrounds
@@ -109,9 +109,9 @@ src/
     rooms.js           # Ward system, room generation
     dm.js              # Dungeon Master narration
     combat/            # Combat mechanics (mechanics.js, player-actions.js, enemy.js)
-    services/          # Robot combat, collection, items, exploration
+    services/          # Creature combat, collection, items, exploration
 data/
-  robots.json          # Starter robot definitions
+  creatures.json       # Creature definitions
   creatures.json       # Wild creature definitions
   items.json           # Consumable item definitions
   enemies.json         # Enemy definitions
@@ -124,7 +124,7 @@ For detailed architecture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 - ES6 modules with imports/exports
 - Japanese names with English fallbacks: `name` (Japanese), `nameEn` (English)
-- Constants in ALL_CAPS: `ENEMIES`, `WARD_INFO`, `ROBOTS`
+- Constants in ALL_CAPS: `ENEMIES`, `WARD_INFO`, `CREATURES`
 - camelCase for variables/functions
 - Factory functions: `createNewPlayer()`, `generateEnemy()`, `createCombatState()`
 
@@ -175,7 +175,7 @@ await page.evaluate(() => window.__gameState?.phase);
 - Always `browser_snapshot` before interacting — refs change after every DOM update
 - Use `browser_take_screenshot` at checkpoints so the user can see visual state. **Delete screenshots after** they've been shown — run `rm <filename>` to avoid cluttering the repo
 - After server restart, wait 3s then verify with `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000`
-- Robot popups can accidentally open if you click a robot slot — dismiss with `page.evaluate(() => document.querySelector('.robot-popup')?.remove())`
+- Creature popups can accidentally open if you click a creature slot — dismiss with `page.evaluate(() => document.querySelector('.creature-popup')?.remove())`
 
 Update the guide when adding new features or discovering new interaction patterns.
 
@@ -186,7 +186,7 @@ Sprites are served with 1-year immutable cache headers. When regenerating sprite
 ## Common Mistakes to Avoid
 
 - **Don't reference iRO stats** - The game uses only `attack` and `maxHp`. No STR/AGI/VIT/INT/DEX/LUK.
-- **Don't add equipment systems** - Players use robots and consumable items only.
+- **Don't add equipment systems** - Players use creatures and consumable items only.
 - **Don't run `npx playwright test` directly** - Use the wrapper script or exact command above.
 - **Don't use Homebrew git** - Use `/usr/bin/git` to avoid library conflicts.
 - **Don't skip worktrees** - Multiple Claude sessions will conflict without them.

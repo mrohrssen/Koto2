@@ -295,8 +295,8 @@ export function createNewRun(player) {
 
     // Creature party (run-scoped)
     creatureParty: {
-      active: [],    // 0-3 deployed robots
-      reserves: [],  // 0-3 bench robots
+      active: [],    // 0-3 deployed creatures
+      reserves: [],  // 0-3 bench creatures
       maxTotal: 6
     },
 

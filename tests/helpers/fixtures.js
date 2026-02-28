@@ -1,5 +1,5 @@
-// Robot IDs used across test files
-export const TEST_ROBOTS = {
+// Creature IDs used across test files
+export const TEST_CREATURES = {
   KAZENOKO: 'kazenoko',
   KAMEDOR: 'kamedor',
   HIKARIBON: 'hikaribon',

@@ -640,14 +640,14 @@ export class GameManager {
     const highestLevel = Math.max(...this.run.creatureParty.active.map(r => r.level), 1);
     const isFirstBattle = (this.run.encountersCompleted || 0) === 0;
     const creaturePool = this.run.currentArea?.creatures || null;
-    const enemyRobots = generateEnemyCreatures(highestLevel, {
+    const enemyCreatures = generateEnemyCreatures(highestLevel, {
       maxEnemies: isFirstBattle ? 2 : undefined,
       creaturePool
     });
 
-    this.combat = createCombatState(enemyRobots[0]);
+    this.combat = createCombatState(enemyCreatures[0]);
     this.combat.allies = this.run.creatureParty.active;
-    this.combat.enemies = enemyRobots;
+    this.combat.enemies = enemyCreatures;
     this.combat.isCreatureCombat = true;
     this.combat.swapPhase = true; // Free swap available before first action
 
@@ -676,8 +676,8 @@ export class GameManager {
     this.emitState();
 
     return {
-      enemy: enemyRobots[0],
-      enemies: enemyRobots,
+      enemy: enemyCreatures[0],
+      enemies: enemyCreatures,
       allies: this.run.creatureParty.active,
       playerGoesFirst: true,
       npc: this.combat.npcData
@@ -801,7 +801,7 @@ export class GameManager {
         const replacement = handleCreatureKO(this.run.creatureParty, i);
         if (replacement) {
           koSwaps.push({ slot: i, replacement: replacement.nameEn });
-          logger.info('[RobotCombat] KO swap: slot', i, '→', replacement.nameEn);
+          logger.info('[CreatureCombat] KO swap: slot', i, '→', replacement.nameEn);
         }
       }
     }
@@ -881,7 +881,7 @@ export class GameManager {
         const replacement = handleCreatureKO(this.run.creatureParty, i);
         if (replacement) {
           koSwaps.push({ slot: i, replacement: replacement.nameEn });
-          logger.info('[RobotCombat] KO swap: slot', i, '→', replacement.nameEn);
+          logger.info('[CreatureCombat] KO swap: slot', i, '→', replacement.nameEn);
         }
       }
     }
@@ -986,7 +986,7 @@ export class GameManager {
         const replacement = handleCreatureKO(this.run.creatureParty, i);
         if (replacement) {
           koSwaps.push({ slot: i, replacement: replacement.nameEn });
-          logger.info('[RobotCombat] KO swap: slot', i, '→', replacement.nameEn);
+          logger.info('[CreatureCombat] KO swap: slot', i, '→', replacement.nameEn);
         }
       }
     }
@@ -1204,11 +1204,11 @@ export class GameManager {
 
   /**
    * Replace an existing creature with a befriended creature when roster is full.
-   * @param {string} releaseRobotId - ID of creature to release (must be in party)
+   * @param {string} releaseCreatureId - ID of creature to release (must be in party)
    * @param {Object} capturedCreature - The befriended enemy creature to add
    * @returns {Object} Result with updated party
    */
-  befriendReplace(releaseRobotId) {
+  befriendReplace(releaseCreatureId) {
     if (!this.combat?.active) throw new Error('No active combat');
     if (!this.run?.creatureParty) throw new Error('No creature party');
 
@@ -1232,10 +1232,10 @@ export class GameManager {
     }
 
     // Find the creature to release
-    let releaseIndex = party.active.findIndex(r => r && r.id === releaseRobotId);
+    let releaseIndex = party.active.findIndex(r => r && r.id === releaseCreatureId);
     let releaseFrom = 'active';
     if (releaseIndex === -1) {
-      releaseIndex = party.reserves.findIndex(r => r && r.id === releaseRobotId);
+      releaseIndex = party.reserves.findIndex(r => r && r.id === releaseCreatureId);
       releaseFrom = 'reserves';
     }
     if (releaseIndex === -1) {
@@ -1281,7 +1281,7 @@ export class GameManager {
     return {
       success: true,
       captured: capturedCopy,
-      released: releaseRobotId,
+      released: releaseCreatureId,
       allEnemiesDefeated,
       combatEnded: allEnemiesDefeated,
       victory: allEnemiesDefeated,

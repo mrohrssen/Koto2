@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { createNewRun, createNewPlayer } from '../../../src/game/state.js';
 
-describe('Robot Party in Run State', () => {
+describe('Creature Party in Run State', () => {
   it('run has creatureParty with active, reserves, maxTotal', () => {
     const player = createNewPlayer('Test');
     const run = createNewRun(player);

@@ -5,8 +5,8 @@
  * Falls back to static {creatureId}.webp when idle file 404s.
  */
 
-const BASE = '/assets/sprites/robots';
-const SPRITE_VERSION = '20260221';
+const BASE = '/assets/sprites/creatures';
+const SPRITE_VERSION = '20260228';
 
 const _noIdle = new Set();
 const _hasIdle = new Set();
