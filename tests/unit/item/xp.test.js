@@ -1,12 +1,12 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { applyItem, createItemBuffs } from '../../../src/game/services/item-service.js';
-import { instantiateRobot } from '../../../src/game/robots.js';
+import { instantiateCreature } from '../../../src/game/creatures.js';
 
 describe('EXP Charm Item', () => {
   it('xpCharm multiplies xpMultiplier by 1.25', () => {
     const itemBuffs = createItemBuffs();
-    const party = { active: [instantiateRobot('hikaribon')], reserves: [] };
+    const party = { active: [instantiateCreature('hikaribon')], reserves: [] };
     const item = { type: 'xpCharm', effect: { field: 'xpMultiplier', value: 0.25 } };
 
     applyItem(item, party, itemBuffs);
@@ -15,7 +15,7 @@ describe('EXP Charm Item', () => {
 
   it('xpCharm stacks multiplicatively', () => {
     const itemBuffs = createItemBuffs();
-    const party = { active: [instantiateRobot('hikaribon')], reserves: [] };
+    const party = { active: [instantiateCreature('hikaribon')], reserves: [] };
     const item = { type: 'xpCharm', effect: { field: 'xpMultiplier', value: 0.25 } };
 
     applyItem(item, party, itemBuffs);
@@ -28,7 +28,7 @@ describe('EXP Charm Item', () => {
 describe('EXP Balance Item', () => {
   it('xpBalance increments xpBalanceStacks', () => {
     const itemBuffs = createItemBuffs();
-    const party = { active: [instantiateRobot('hikaribon')], reserves: [] };
+    const party = { active: [instantiateCreature('hikaribon')], reserves: [] };
     const item = { type: 'xpBalance', effect: { field: 'xpBalanceStacks', value: 1 } };
 
     applyItem(item, party, itemBuffs);

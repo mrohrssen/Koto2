@@ -6,7 +6,7 @@ import {
   validateTeamSelection,
   addToCollection,
   getCollectionCatalog
-} from '../../../src/game/services/robot-collection-service.js';
+} from '../../../src/game/services/creature-collection-service.js';
 
 describe('robot-collection-service', () => {
   describe('validateTeamSelection', () => {

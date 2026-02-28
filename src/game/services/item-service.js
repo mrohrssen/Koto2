@@ -60,21 +60,21 @@ function applyStat(field, value, itemBuffs) {
   }
 }
 
-function applyChargeBoost(allRobots, amount) {
-  for (const robot of allRobots) {
-    robot.ultimate.charges = Math.min(
-      robot.ultimate.charges + amount,
-      robot.ultimate.chargesRequired
+function applyChargeBoost(allCreatures, amount) {
+  for (const creature of allCreatures) {
+    creature.ultimate.charges = Math.min(
+      creature.ultimate.charges + amount,
+      creature.ultimate.chargesRequired
     );
   }
 }
 
 export function applyItem(item, creatureParty, itemBuffs) {
-  const allRobots = [...creatureParty.active, ...creatureParty.reserves].filter(Boolean);
+  const allCreatures = [...creatureParty.active, ...creatureParty.reserves].filter(Boolean);
 
   if (item.type === 'heal') {
     if (item.effect.healPercent) {
-      const alive = allRobots.filter(r => r.hp > 0);
+      const alive = allCreatures.filter(r => r.hp > 0);
       if (alive.length > 0) {
         const lowest = alive.reduce((min, r) => r.hp < min.hp ? r : min, alive[0]);
         const heal = Math.floor(lowest.maxHp * item.effect.healPercent);
@@ -82,14 +82,14 @@ export function applyItem(item, creatureParty, itemBuffs) {
       }
     }
     if (item.effect.healAllPercent) {
-      const alive = allRobots.filter(r => r.hp > 0);
-      for (const robot of alive) {
-        const heal = Math.floor(robot.maxHp * item.effect.healAllPercent);
-        robot.hp = Math.min(robot.maxHp, robot.hp + heal);
+      const alive = allCreatures.filter(r => r.hp > 0);
+      for (const creature of alive) {
+        const heal = Math.floor(creature.maxHp * item.effect.healAllPercent);
+        creature.hp = Math.min(creature.maxHp, creature.hp + heal);
       }
     }
     if (item.effect.healMostDamaged) {
-      const alive = allRobots.filter(r => r.hp > 0);
+      const alive = allCreatures.filter(r => r.hp > 0);
       if (alive.length > 0) {
         const mostDamaged = alive.sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp))[0];
         mostDamaged.hp = mostDamaged.maxHp;
@@ -97,7 +97,7 @@ export function applyItem(item, creatureParty, itemBuffs) {
     }
     // Combo: some heal items also grant charges (e.g. strawberry milk)
     if (item.effect.chargeBoost) {
-      applyChargeBoost(allRobots, item.effect.chargeBoost);
+      applyChargeBoost(allCreatures, item.effect.chargeBoost);
     }
     return { applied: true };
   }
@@ -110,9 +110,9 @@ export function applyItem(item, creatureParty, itemBuffs) {
     // Temporary boost (e.g. miso soup: +3 attack for 5 turns)
     if (item.effect.tempBoost) {
       const tb = item.effect.tempBoost;
-      const targets = tb.target === 'all' ? allRobots : [allRobots[0]];
-      for (const robot of targets.filter(Boolean)) {
-        applyTempAttackFlat(robot, {
+      const targets = tb.target === 'all' ? allCreatures : [allCreatures[0]];
+      for (const creature of targets.filter(Boolean)) {
+        applyTempAttackFlat(creature, {
           value: tb.value,
           duration: tb.turns,
           sourceId: item.id,
@@ -124,14 +124,14 @@ export function applyItem(item, creatureParty, itemBuffs) {
 
   if (item.type === 'charge') {
     if (item.effect.chargeBoost) {
-      applyChargeBoost(allRobots, item.effect.chargeBoost);
+      applyChargeBoost(allCreatures, item.effect.chargeBoost);
     }
     return { applied: true };
   }
 
   if (item.type === 'revive') {
     if (item.effect.revivePercent) {
-      const kos = allRobots.filter(r => r.hp <= 0);
+      const kos = allCreatures.filter(r => r.hp <= 0);
       if (kos.length > 0) {
         const target = kos[Math.floor(Math.random() * kos.length)];
         target.hp = Math.floor(target.maxHp * item.effect.revivePercent);

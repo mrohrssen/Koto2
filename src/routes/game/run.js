@@ -12,7 +12,7 @@ import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
 import { lookupVocabularyBatch } from '../../jpdb.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
 import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswer } from '../../bunpro.js';
-import { validateTeamSelection } from '../../game/services/robot-collection-service.js';
+import { validateTeamSelection } from '../../game/services/creature-collection-service.js';
 import { queueTTSPrefetch } from '../../game/prefetch.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -86,7 +86,7 @@ export default function createRunRoutes({
     const gameManager = req.gameManager;
     const { starterId, starterIds } = req.body;
     try {
-      // Validate robot selection against collection
+      // Validate creature selection against collection
       const ids = starterIds || (starterId ? [starterId] : null);
       if (ids) {
         const meta = gameManager.getMeta();
@@ -148,7 +148,7 @@ export default function createRunRoutes({
         return res.status(400).json({ error: 'A run is already active' });
       }
 
-      // Validate robot selection against collection
+      // Validate creature selection against collection
       const ids = starterIds || (starterId ? [starterId] : null);
       if (ids) {
         const meta = gameManager.getMeta();
@@ -269,15 +269,15 @@ export default function createRunRoutes({
     }
   });
 
-  // Level up robot at shrine
+  // Level up creature at shrine
   router.post('/shrine-upgrade', (req, res) => {
     try {
       const gameManager = req.gameManager;
-      const { robotId } = req.body;
-      if (!robotId) {
-        return res.status(400).json({ error: 'robotId required' });
+      const { creatureId } = req.body;
+      if (!creatureId) {
+        return res.status(400).json({ error: 'creatureId required' });
       }
-      const result = gameManager.useShrine(robotId);
+      const result = gameManager.useShrine(creatureId);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -288,11 +288,11 @@ export default function createRunRoutes({
   router.post('/quiz-reward', (req, res) => {
     try {
       const gameManager = req.gameManager;
-      const { rewardType, robotId } = req.body;
+      const { rewardType, creatureId } = req.body;
       if (!rewardType) {
         return res.status(400).json({ error: 'rewardType required' });
       }
-      const result = gameManager.useQuizReward(rewardType, robotId);
+      const result = gameManager.useQuizReward(rewardType, creatureId);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {

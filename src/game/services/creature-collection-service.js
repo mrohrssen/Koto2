@@ -3,8 +3,8 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROBOT_DATA = JSON.parse(readFileSync(join(__dirname, '../../../data/creatures.json'), 'utf8'));
-const ROBOTS_BY_ID = Object.fromEntries(ROBOT_DATA.map(r => [r.id, r]));
+const CREATURE_DATA = JSON.parse(readFileSync(join(__dirname, '../../../data/creatures.json'), 'utf8'));
+const CREATURES_BY_ID = Object.fromEntries(CREATURE_DATA.map(r => [r.id, r]));
 
 export const RARITY_POINT_COST = {
   common: 3,
@@ -20,7 +20,7 @@ export const DEFAULT_COLLECTION = ['hikaribon', 'hanatchi', 'tsukimochi'];
 
 export function validateTeamSelection(collection, selectedIds) {
   if (!selectedIds || selectedIds.length === 0) {
-    return { valid: false, reason: 'Select at least 1 robot' };
+    return { valid: false, reason: 'Select at least 1 creature' };
   }
 
   for (const id of selectedIds) {
@@ -31,11 +31,11 @@ export function validateTeamSelection(collection, selectedIds) {
 
   let totalCost = 0;
   for (const id of selectedIds) {
-    const robot = ROBOTS_BY_ID[id];
-    if (!robot) {
-      return { valid: false, reason: `Unknown robot: ${id}` };
+    const creature = CREATURES_BY_ID[id];
+    if (!creature) {
+      return { valid: false, reason: `Unknown creature: ${id}` };
     }
-    totalCost += RARITY_POINT_COST[robot.rarity] || 3;
+    totalCost += RARITY_POINT_COST[creature.rarity] || 3;
   }
 
   if (totalCost > MAX_TEAM_POINTS) {
@@ -45,16 +45,16 @@ export function validateTeamSelection(collection, selectedIds) {
   return { valid: true, totalCost };
 }
 
-export function addToCollection(collection, robotId) {
-  if (collection.includes(robotId)) {
+export function addToCollection(collection, creatureId) {
+  if (collection.includes(creatureId)) {
     return { added: false, collection };
   }
-  collection.push(robotId);
+  collection.push(creatureId);
   return { added: true, collection };
 }
 
 export function getCollectionCatalog(collection, befriendCount = {}) {
-  return ROBOT_DATA.map(r => ({
+  return CREATURE_DATA.map(r => ({
     id: r.id,
     name: r.name,
     nameEn: r.nameEn,

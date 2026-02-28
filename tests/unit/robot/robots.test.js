@@ -3,15 +3,15 @@ import assert from 'node:assert';
 import {
   getElementMultiplier,
   ELEMENT_CYCLE,
-  instantiateRobot,
+  instantiateCreature,
   RARITY_MULTIPLIERS,
-  calculateRobotDamage,
-  addXpToRobot,
+  calculateCreatureDamage,
+  addXpToCreature,
   xpToNextLevel,
   getStatsForLevel,
   selectTarget,
-  generateEnemyRobots
-} from '../../../src/game/robots.js';
+  generateEnemyCreatures
+} from '../../../src/game/creatures.js';
 
 describe('Element Cycle', () => {
   it('wood beats earth (1.5x)', () => {
@@ -39,7 +39,7 @@ describe('Element Cycle', () => {
 
 describe('Robot Instantiation', () => {
   it('creates a level-1 common robot with base stats', () => {
-    const robot = instantiateRobot('hikaribon');
+    const robot = instantiateCreature('hikaribon');
     assert.strictEqual(robot.element, 'fire');
     assert.strictEqual(robot.rarity, 'common');
     assert.strictEqual(robot.level, 1);
@@ -54,30 +54,30 @@ describe('Robot Instantiation', () => {
   });
 
   it('applies rarity multiplier for uncommon', () => {
-    const robot = instantiateRobot('kaminarion');
+    const robot = instantiateCreature('kaminarion');
     assert.strictEqual(robot.maxHp, 110); // 100 * 1.1
     assert.strictEqual(robot.attack, 11); // 10 * 1.1
   });
 
   it('applies rarity multiplier for rare', () => {
-    const robot = instantiateRobot('kitsunova');
+    const robot = instantiateCreature('kitsunova');
     assert.strictEqual(robot.maxHp, 102); // 85 * 1.2
     assert.strictEqual(robot.attack, 10); // floor(9 * 1.2)
   });
 
   it('has archetype field', () => {
-    const robot = instantiateRobot('hikaribon');
+    const robot = instantiateCreature('hikaribon');
     assert.strictEqual(robot.archetype, 'Mage');
   });
 
   it('stores base template values for level-up calculations', () => {
-    const robot = instantiateRobot('hikaribon');
+    const robot = instantiateCreature('hikaribon');
     assert.strictEqual(robot.baseHpTemplate, 75);
     assert.strictEqual(robot.baseAttackTemplate, 8);
   });
 
   it('has category and target on first move', () => {
-    const robot = instantiateRobot('hikaribon');
+    const robot = instantiateCreature('hikaribon');
     const move0 = robot.moves[0];
     assert.ok(move0.id, 'move should have id');
     assert.ok(move0.category, 'move should have category');
@@ -87,7 +87,7 @@ describe('Robot Instantiation', () => {
   });
 
   it('has multiple moves as creature levels up', () => {
-    const robot = instantiateRobot('hikaribon');
+    const robot = instantiateCreature('hikaribon');
     // At level 1, hikaribon has 1 move from its learnset
     assert.ok(robot.moves.length >= 1, 'should have at least 1 move at level 1');
     // Each move should have required fields
@@ -99,19 +99,19 @@ describe('Robot Instantiation', () => {
   });
 
   it('includes baseReading from template', () => {
-    const robot = instantiateRobot('kamedor');
+    const robot = instantiateCreature('kamedor');
     assert.strictEqual(robot.baseReading, 'かめ');
   });
 });
 
 describe('Robot Damage', () => {
   it('calculates damage with element multiplier (seeded)', () => {
-    const dmg = calculateRobotDamage(20, 20, 1.5, 1.0);
+    const dmg = calculateCreatureDamage(20, 20, 1.5, 1.0);
     assert.strictEqual(dmg, 60); // (20/10) * 20 * 1.5 * 1.0
   });
 
   it('calculates damage neutral (1.0x)', () => {
-    const dmg = calculateRobotDamage(20, 20, 1.0, 1.0);
+    const dmg = calculateCreatureDamage(20, 20, 1.0, 1.0);
     assert.strictEqual(dmg, 40); // (20/10) * 20 * 1.0 * 1.0
   });
 });
@@ -125,15 +125,15 @@ describe('Robot Leveling', () => {
   });
 
   it('awards XP and levels up', () => {
-    const robot = instantiateRobot('hikaribon');
-    addXpToRobot(robot, 7);
+    const robot = instantiateCreature('hikaribon');
+    addXpToCreature(robot, 7);
     assert.strictEqual(robot.level, 2);
     assert.strictEqual(robot.xp, 0);
   });
 
   it('uses baseHpTemplate and baseAttackTemplate for level-up stats', () => {
     // Simulate a Tank archetype with non-default base stats
-    const robot = instantiateRobot('hikaribon');
+    const robot = instantiateCreature('hikaribon');
     robot.baseHpTemplate = 160;
     robot.baseAttackTemplate = 7;
     robot.maxHp = 160;
@@ -143,7 +143,7 @@ describe('Robot Leveling', () => {
     robot.level = 1;
     robot.xp = 0;
 
-    addXpToRobot(robot, 7); // Level up to 2
+    addXpToCreature(robot, 7); // Level up to 2
 
     assert.strictEqual(robot.level, 2);
     // Level 2: base * 1.1 => floor(160 * 1.1) = 176
@@ -163,30 +163,30 @@ describe('Robot Leveling', () => {
   });
 
   it('levels up with cubic curve (7 XP to reach L2)', () => {
-    const robot = instantiateRobot('hikaribon');
-    addXpToRobot(robot, 7);
+    const robot = instantiateCreature('hikaribon');
+    addXpToCreature(robot, 7);
     assert.strictEqual(robot.level, 2);
     assert.strictEqual(robot.xp, 0);
   });
 
   it('does not level up with 6 XP (needs 7)', () => {
-    const robot = instantiateRobot('hikaribon');
-    addXpToRobot(robot, 6);
+    const robot = instantiateCreature('hikaribon');
+    addXpToCreature(robot, 6);
     assert.strictEqual(robot.level, 1);
     assert.strictEqual(robot.xp, 6);
   });
 
   it('cascading multi-level-up from a single large XP grant', () => {
-    const robot = instantiateRobot('hikaribon');
+    const robot = instantiateCreature('hikaribon');
     // 7 (L1→2) + 19 (L2→3) = 26 needed for L3
-    addXpToRobot(robot, 26);
+    addXpToCreature(robot, 26);
     assert.strictEqual(robot.level, 3);
     assert.strictEqual(robot.xp, 0);
   });
 
-  it('addXpToRobot returns array of level-up events', () => {
-    const robot = instantiateRobot('hikaribon');
-    const levelUps = addXpToRobot(robot, 26);
+  it('addXpToCreature returns array of level-up events', () => {
+    const robot = instantiateCreature('hikaribon');
+    const levelUps = addXpToCreature(robot, 26);
     assert.strictEqual(levelUps.length, 2);
     assert.strictEqual(levelUps[0].level, 2);
     assert.strictEqual(levelUps[1].level, 3);
@@ -195,9 +195,9 @@ describe('Robot Leveling', () => {
     assert.ok(levelUps[0].hpGain >= 0);
   });
 
-  it('addXpToRobot returns empty array when no level-up', () => {
-    const robot = instantiateRobot('hikaribon');
-    const levelUps = addXpToRobot(robot, 3);
+  it('addXpToCreature returns empty array when no level-up', () => {
+    const robot = instantiateCreature('hikaribon');
+    const levelUps = addXpToCreature(robot, 3);
     assert.strictEqual(levelUps.length, 0);
     assert.strictEqual(robot.xp, 3);
   });
@@ -247,7 +247,7 @@ describe('Targeting AI', () => {
 
 describe('Multi-Enemy Generation', () => {
   it('generates 1-3 enemy robots', () => {
-    const enemies = generateEnemyRobots(1);
+    const enemies = generateEnemyCreatures(1);
     assert.ok(enemies.length >= 1 && enemies.length <= 3);
     for (const e of enemies) {
       assert.ok(e.element);
@@ -260,7 +260,7 @@ describe('Multi-Enemy Generation', () => {
     // Run multiple times to check variety
     const results = [];
     for (let i = 0; i < 20; i++) {
-      results.push(generateEnemyRobots(1));
+      results.push(generateEnemyCreatures(1));
     }
     // At least one result should have >1 enemy
     const hasMultiple = results.some(r => r.length > 1);

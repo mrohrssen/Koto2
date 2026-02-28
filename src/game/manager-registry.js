@@ -2,8 +2,8 @@ import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { GameManager } from './loop.js';
 import { DATA_DIR } from '../data-dir.js';
-import { ROBOTS_BY_ID } from './robots.js';
-import { DEFAULT_COLLECTION } from './services/robot-collection-service.js';
+import { CREATURES_BY_ID } from './creatures.js';
+import { DEFAULT_COLLECTION } from './services/creature-collection-service.js';
 
 const SAVE_VERSION = 2;
 
@@ -46,7 +46,7 @@ export function getManager(userId) {
           // Migrate: remove stale creature IDs and ensure defaults
           if (data.meta.creatureCollection) {
             const original = JSON.stringify(data.meta.creatureCollection);
-            data.meta.creatureCollection = data.meta.creatureCollection.filter(id => ROBOTS_BY_ID[id]);
+            data.meta.creatureCollection = data.meta.creatureCollection.filter(id => CREATURES_BY_ID[id]);
             for (const id of DEFAULT_COLLECTION) {
               if (!data.meta.creatureCollection.includes(id)) {
                 data.meta.creatureCollection.push(id);

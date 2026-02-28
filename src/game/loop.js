@@ -63,10 +63,10 @@ import { getRoomActions, getAreaSelectionOptions } from './rooms.js';
 import { derivePhase } from './phase-machine.js';
 import { CombatService, ExplorationService } from './services/index.js';
 import { logger } from '../logger.js';
-import { instantiateRobot, generateEnemyRobot, generateEnemyRobots } from './robots.js';
-import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleRobotKO, tickAllEffects, CREDITS_PER_KILL } from './services/robot-combat-service.js';
+import { instantiateCreature, generateEnemyCreature, generateEnemyCreatures } from './creatures.js';
+import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, CREDITS_PER_KILL } from './services/creature-combat-service.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
-import { addToCollection } from './services/robot-collection-service.js';
+import { addToCollection } from './services/creature-collection-service.js';
 import { selectNpcForEncounter, updateBond, recordEncounter } from './services/npc-service.js';
 
 // ============ GAME MANAGER ============
@@ -466,10 +466,10 @@ export class GameManager {
     // Area selection is required at start
     this.run.areaSelectionRequired = true;
 
-    // Initialize robot starter(s) if provided
+    // Initialize creature starter(s) if provided
     const ids = starterIds || (starterId ? [starterId] : null);
     if (ids && ids.length > 0) {
-      this.run.creatureParty.active = ids.map(id => instantiateRobot(id));
+      this.run.creatureParty.active = ids.map(id => instantiateCreature(id));
     }
 
     this.emitState();
@@ -540,7 +540,7 @@ export class GameManager {
   }
 
   /**
-   * Use a shrine to level up a robot
+   * Use a shrine to level up a creature
    */
   useShrine(robotId) {
     return this.explorationService.useShrine(robotId);
@@ -623,13 +623,13 @@ export class GameManager {
   }
 
 
-  // ============ ROBOT COMBAT ============
+  // ============ CREATURE COMBAT ============
 
   /**
-   * Start a robot encounter
-   * Generates an enemy robot and sets up combat state
+   * Start a creature encounter
+   * Generates an enemy creature and sets up combat state
    */
-  startRobotEncounter() {
+  startCreatureEncounter() {
     if (!this.run || !this.run.active) {
       throw new Error('No active run');
     }
@@ -640,7 +640,7 @@ export class GameManager {
     const highestLevel = Math.max(...this.run.creatureParty.active.map(r => r.level), 1);
     const isFirstBattle = (this.run.encountersCompleted || 0) === 0;
     const creaturePool = this.run.currentArea?.creatures || null;
-    const enemyRobots = generateEnemyRobots(highestLevel, {
+    const enemyRobots = generateEnemyCreatures(highestLevel, {
       maxEnemies: isFirstBattle ? 2 : undefined,
       creaturePool
     });
@@ -703,23 +703,23 @@ export class GameManager {
   _flushPendingCaptures() {
     const pending = this.run.creatureParty.pendingCaptures || [];
     const newAdditions = [];
-    for (const robot of pending) {
+    for (const creature of pending) {
       const total = this.run.creatureParty.active.length + this.run.creatureParty.reserves.length;
       if (total >= this.run.creatureParty.maxTotal) break;
       if (this.run.creatureParty.active.length < 3) {
-        this.run.creatureParty.active.push(robot);
+        this.run.creatureParty.active.push(creature);
       } else {
-        this.run.creatureParty.reserves.push(robot);
+        this.run.creatureParty.reserves.push(creature);
       }
-      if (this.meta && !robot.temporary) {
+      if (this.meta && !creature.temporary) {
         // Increment befriend counter (always, even if already owned)
         if (!this.meta.befriendCount) this.meta.befriendCount = {};
-        this.meta.befriendCount[robot.id] = (this.meta.befriendCount[robot.id] || 0) + 1;
+        this.meta.befriendCount[creature.id] = (this.meta.befriendCount[creature.id] || 0) + 1;
 
-        const result = addToCollection(this.meta.creatureCollection || [], robot.id);
+        const result = addToCollection(this.meta.creatureCollection || [], creature.id);
         if (result.added) {
           this.meta.creatureCollection = result.collection;
-          newAdditions.push({ id: robot.id, name: robot.name, nameEn: robot.nameEn, element: robot.element, rarity: robot.rarity });
+          newAdditions.push({ id: creature.id, name: creature.name, nameEn: creature.nameEn, element: creature.element, rarity: creature.rarity });
         }
       }
     }
@@ -728,10 +728,10 @@ export class GameManager {
   }
 
   /**
-   * Execute one robot combat cycle
+   * Execute one creature combat cycle
    * @param {string} actionType - 'attack' | 'defend' | 'befriend'
    */
-  robotCombatCycle(actionType = 'attack', moveChoices = []) {
+  creatureCombatCycle(actionType = 'attack', moveChoices = []) {
     if (!this.combat?.active) {
       throw new Error('No active combat');
     }
@@ -743,21 +743,21 @@ export class GameManager {
     const effectEvents = tickAllEffects(this.combat.allies, this.combat.enemies);
 
     switch (actionType) {
-      case 'attack':  return this._handleRobotAttackTurn(effectEvents, moveChoices);
-      case 'defend':  return this._handleRobotDefendTurn(effectEvents);
-      case 'befriend': return this._handleRobotBefriendTurn(effectEvents);
+      case 'attack':  return this._handleCreatureAttackTurn(effectEvents, moveChoices);
+      case 'defend':  return this._handleCreatureDefendTurn(effectEvents);
+      case 'befriend': return this._handleCreatureBefriendTurn(effectEvents);
       default: throw new Error(`Unknown action: ${actionType}`);
     }
   }
 
   /**
-   * Handle attack action in robot combat.
+   * Handle attack action in creature combat.
    * Player attacks, checks victory, then enemy turn with defeat/continuation.
    * @param {Array} effectEvents - Effect tick events from start of round
    * @returns {Object} Combat cycle result
    * @private
    */
-  _handleRobotAttackTurn(effectEvents, moveChoices) {
+  _handleCreatureAttackTurn(effectEvents, moveChoices) {
     const playerResult = processMoveTurn(this.combat.allies, this.combat.enemies, moveChoices, this.run.itemBuffs, this.run.creatureParty);
 
     // Award credits for kills
@@ -798,7 +798,7 @@ export class GameManager {
     const koSwaps = [];
     for (let i = 0; i < this.combat.allies.length; i++) {
       if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
-        const replacement = handleRobotKO(this.run.creatureParty, i);
+        const replacement = handleCreatureKO(this.run.creatureParty, i);
         if (replacement) {
           koSwaps.push({ slot: i, replacement: replacement.nameEn });
           logger.info('[RobotCombat] KO swap: slot', i, '→', replacement.nameEn);
@@ -810,11 +810,11 @@ export class GameManager {
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
     const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
     if (allAlliesKO) {
-      // Save any befriended robots to permanent collection before defeat
+      // Save any befriended creatures to permanent collection before defeat
       const pending = this.run.creatureParty.pendingCaptures || [];
-      for (const robot of pending) {
-        if (this.meta && !robot.temporary) {
-          const result = addToCollection(this.meta.creatureCollection || [], robot.id);
+      for (const creature of pending) {
+        if (this.meta && !creature.temporary) {
+          const result = addToCollection(this.meta.creatureCollection || [], creature.id);
           if (result.added) {
             this.meta.creatureCollection = result.collection;
           }
@@ -862,13 +862,13 @@ export class GameManager {
   }
 
   /**
-   * Handle defend action in robot combat.
+   * Handle defend action in creature combat.
    * Player defends (reduces incoming damage), then enemy turn with defeat/continuation.
    * @param {Array} effectEvents - Effect tick events from start of round
    * @returns {Object} Combat cycle result
    * @private
    */
-  _handleRobotDefendTurn(effectEvents) {
+  _handleCreatureDefendTurn(effectEvents) {
     processDefendTurn(this.combat.allies);
 
     // Enemy phase (defendActive = true reduces damage)
@@ -878,7 +878,7 @@ export class GameManager {
     const koSwaps = [];
     for (let i = 0; i < this.combat.allies.length; i++) {
       if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
-        const replacement = handleRobotKO(this.run.creatureParty, i);
+        const replacement = handleCreatureKO(this.run.creatureParty, i);
         if (replacement) {
           koSwaps.push({ slot: i, replacement: replacement.nameEn });
           logger.info('[RobotCombat] KO swap: slot', i, '→', replacement.nameEn);
@@ -890,11 +890,11 @@ export class GameManager {
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
     const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
     if (allAlliesKO) {
-      // Save any befriended robots to permanent collection before defeat
+      // Save any befriended creatures to permanent collection before defeat
       const pending = this.run.creatureParty.pendingCaptures || [];
-      for (const robot of pending) {
-        if (this.meta && !robot.temporary) {
-          const result = addToCollection(this.meta.creatureCollection || [], robot.id);
+      for (const creature of pending) {
+        if (this.meta && !creature.temporary) {
+          const result = addToCollection(this.meta.creatureCollection || [], creature.id);
           if (result.added) {
             this.meta.creatureCollection = result.collection;
           }
@@ -940,14 +940,14 @@ export class GameManager {
   }
 
   /**
-   * Handle befriend action in robot combat.
+   * Handle befriend action in creature combat.
    * Attempt to capture an enemy. If last enemy captured, victory.
    * Otherwise, enemy turn with defeat/continuation.
    * @param {Array} effectEvents - Effect tick events from start of round
    * @returns {Object} Combat cycle result
    * @private
    */
-  _handleRobotBefriendTurn(effectEvents) {
+  _handleCreatureBefriendTurn(effectEvents) {
     const targetIdx = this.combat.befriendConversation?.targetEnemyIndex;
     // Preserve targetEnemyIndex for befriendReplace (party-full flow)
     if (typeof targetIdx === 'number') this.combat.lastBefriendTargetIndex = targetIdx;
@@ -983,7 +983,7 @@ export class GameManager {
     const koSwaps = [];
     for (let i = 0; i < this.combat.allies.length; i++) {
       if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
-        const replacement = handleRobotKO(this.run.creatureParty, i);
+        const replacement = handleCreatureKO(this.run.creatureParty, i);
         if (replacement) {
           koSwaps.push({ slot: i, replacement: replacement.nameEn });
           logger.info('[RobotCombat] KO swap: slot', i, '→', replacement.nameEn);
@@ -995,11 +995,11 @@ export class GameManager {
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
     const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
     if (allAlliesKO) {
-      // Save any befriended robots to permanent collection before defeat
+      // Save any befriended creatures to permanent collection before defeat
       const pending = this.run.creatureParty.pendingCaptures || [];
-      for (const robot of pending) {
-        if (this.meta && !robot.temporary) {
-          const result = addToCollection(this.meta.creatureCollection || [], robot.id);
+      for (const creature of pending) {
+        if (this.meta && !creature.temporary) {
+          const result = addToCollection(this.meta.creatureCollection || [], creature.id);
           if (result.added) {
             this.meta.creatureCollection = result.collection;
           }
@@ -1076,18 +1076,18 @@ export class GameManager {
   }
 
   /**
-   * Swap an active robot with a reserve
+   * Swap an active creature with a reserve
    * @param {number} activeIndex - Index in creatureParty.active (0-2)
    * @param {number} reserveIndex - Index in creatureParty.reserves (0-2)
    * @returns {Object} Result with updated party and whether enemy attacks
    */
-  swapRobot(activeIndex, reserveIndex) {
+  swapCreature(activeIndex, reserveIndex) {
     if (!this.combat?.active) throw new Error('No active combat');
-    if (!this.run?.creatureParty) throw new Error('No robot party');
+    if (!this.run?.creatureParty) throw new Error('No creature party');
 
     const party = this.run.creatureParty;
-    if (!party.active[activeIndex]) throw new Error('Invalid active robot index');
-    if (!party.reserves[reserveIndex]) throw new Error('Invalid reserve robot index');
+    if (!party.active[activeIndex]) throw new Error('Invalid active creature index');
+    if (!party.reserves[reserveIndex]) throw new Error('Invalid reserve creature index');
 
     // Perform the swap
     const temp = party.active[activeIndex];
@@ -1111,7 +1111,7 @@ export class GameManager {
       // Handle KO'd allies after enemy attack
       for (let i = 0; i < this.combat.allies.length; i++) {
         if (this.combat.allies[i].hp <= 0) {
-          handleRobotKO(this.run.creatureParty, i);
+          handleCreatureKO(this.run.creatureParty, i);
         }
       }
       this.combat.allies = this.run.creatureParty.active;
@@ -1149,17 +1149,17 @@ export class GameManager {
   }
 
   /**
-   * Rearrange two active robots by swapping their positions (no reserves needed).
+   * Rearrange two active creatures by swapping their positions (no reserves needed).
    * Works both in and out of combat.
    * @param {number} indexA - First active slot index (0-2)
    * @param {number} indexB - Second active slot index (0-2)
    * @returns {Object} Result with updated party
    */
-  rearrangeRobots(indexA, indexB) {
-    if (!this.run?.creatureParty) throw new Error('No robot party');
+  rearrangeCreatures(indexA, indexB) {
+    if (!this.run?.creatureParty) throw new Error('No creature party');
     const party = this.run.creatureParty;
-    if (!party.active[indexA]) throw new Error('Invalid robot index A');
-    if (!party.active[indexB]) throw new Error('Invalid robot index B');
+    if (!party.active[indexA]) throw new Error('Invalid creature index A');
+    if (!party.active[indexB]) throw new Error('Invalid creature index B');
 
     // Swap positions
     const temp = party.active[indexA];
@@ -1179,16 +1179,16 @@ export class GameManager {
   }
 
   /**
-   * Swap an active robot with a reserve OUTSIDE of combat (equip screen).
+   * Swap an active creature with a reserve OUTSIDE of combat (equip screen).
    * @param {number} activeIndex - Index in creatureParty.active (0-2)
    * @param {number} reserveIndex - Index in creatureParty.reserves (0-2)
    * @returns {Object} Result with updated party
    */
-  swapRobotOutOfCombat(activeIndex, reserveIndex) {
-    if (!this.run?.creatureParty) throw new Error('No robot party');
+  swapCreatureOutOfCombat(activeIndex, reserveIndex) {
+    if (!this.run?.creatureParty) throw new Error('No creature party');
     const party = this.run.creatureParty;
-    if (!party.active[activeIndex]) throw new Error('Invalid active robot index');
-    if (!party.reserves[reserveIndex]) throw new Error('Invalid reserve robot index');
+    if (!party.active[activeIndex]) throw new Error('Invalid active creature index');
+    if (!party.reserves[reserveIndex]) throw new Error('Invalid reserve creature index');
 
     // Perform the swap
     const temp = party.active[activeIndex];
@@ -1203,14 +1203,14 @@ export class GameManager {
   }
 
   /**
-   * Replace an existing robot with a befriended robot when roster is full.
-   * @param {string} releaseRobotId - ID of robot to release (must be in party)
-   * @param {Object} capturedRobot - The befriended enemy robot to add
+   * Replace an existing creature with a befriended creature when roster is full.
+   * @param {string} releaseRobotId - ID of creature to release (must be in party)
+   * @param {Object} capturedCreature - The befriended enemy creature to add
    * @returns {Object} Result with updated party
    */
   befriendReplace(releaseRobotId) {
     if (!this.combat?.active) throw new Error('No active combat');
-    if (!this.run?.creatureParty) throw new Error('No robot party');
+    if (!this.run?.creatureParty) throw new Error('No creature party');
 
     const party = this.run.creatureParty;
     const enemies = this.combat.enemies;
@@ -1231,7 +1231,7 @@ export class GameManager {
       captured = eligible[0];
     }
 
-    // Find the robot to release
+    // Find the creature to release
     let releaseIndex = party.active.findIndex(r => r && r.id === releaseRobotId);
     let releaseFrom = 'active';
     if (releaseIndex === -1) {
@@ -1239,7 +1239,7 @@ export class GameManager {
       releaseFrom = 'reserves';
     }
     if (releaseIndex === -1) {
-      return { success: false, reason: 'Robot to release not found in party' };
+      return { success: false, reason: 'Creature to release not found in party' };
     }
 
     // Mark enemy as befriended (don't splice — preserve indices for frontend)
@@ -1250,7 +1250,7 @@ export class GameManager {
     const capturedCopy = { ...captured, hp: captured.maxHp, befriended: false };
     capturedCopy.ultimate = { ...captured.ultimate, charges: 0 };
 
-    // Release the old robot and queue the captured one for post-combat
+    // Release the old creature and queue the captured one for post-combat
     if (releaseFrom === 'active') {
       party.active.splice(releaseIndex, 1);
     } else {

@@ -1,13 +1,13 @@
 import {
-  calculateRobotDamage,
+  calculateCreatureDamage,
   getElementMultiplier,
   rollVariance,
   selectTarget,
-  addXpToRobot,
-  generateEnemyRobot,
+  addXpToCreature,
+  generateEnemyCreature,
   xpToNextLevel,
   MOVES_BY_ID
-} from '../robots.js';
+} from '../creatures.js';
 import {
   getBuffedAttack,
   getBuffedElementMultiplier,
@@ -27,12 +27,12 @@ export const BASE_KILL_XP = 10;
 /**
  * Build a standard attack-result record used in the attacks[] array.
  */
-function buildAttackRecord(robot, robotIndex, move, target, targetIndex, overrides = {}) {
+function buildAttackRecord(creature, creatureIndex, move, target, targetIndex, overrides = {}) {
   return {
-    attackerIndex: robotIndex,
-    attackerId: robot.id,
-    attackerName: robot.nameEn,
-    attackerNameJp: robot.name,
+    attackerIndex: creatureIndex,
+    attackerId: creature.id,
+    attackerName: creature.nameEn,
+    attackerNameJp: creature.name,
     moveId: move.id,
     moveName: move.name,
     moveNameEn: move.nameEn,
@@ -55,10 +55,10 @@ function buildAttackRecord(robot, robotIndex, move, target, targetIndex, overrid
 /**
  * Resolve targets for a move based on its target type.
  * @param {string} targetType - Move target type (single_enemy, all_enemies, single_ally, all_allies, self)
- * @param {object[]} allies - Player's active robots
- * @param {object[]} enemies - Enemy robots
+ * @param {object[]} allies - Player's active creatures
+ * @param {object[]} enemies - Enemy creatures
  * @param {number} targetIndex - Index provided by the player's choice
- * @param {object} caster - The robot casting the move
+ * @param {object} caster - The creature casting the move
  * @returns {{ targets: object[], indices: number[] }} Resolved targets and their indices
  */
 function resolveTargets(targetType, allies, enemies, targetIndex, caster) {
@@ -153,26 +153,26 @@ function tryApplyStatus(move, target, caster, allies) {
 }
 
 /**
- * Execute a single move for one robot. Returns array of attack records and xpEvents.
+ * Execute a single move for one creature. Returns array of attack records and xpEvents.
  */
-function executeMove(robot, robotIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds) {
+function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds) {
   const attacks = [];
   const xpEvents = [];
-  const stab = move.element !== 'neutral' && move.element === robot.element;
+  const stab = move.element !== 'neutral' && move.element === creature.element;
   const stabMult = stab ? 1.5 : 1.0;
 
   switch (move.category) {
     case 'damage': {
-      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, robot);
+      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, creature);
       for (let i = 0; i < targets.length; i++) {
         const target = targets[i];
         const tIdx = indices[i];
         const elemMult = getElementMultiplier(move.element, target.element);
         const variance = rollVariance();
-        let buffedAttack = itemBuffs ? getBuffedAttack(robot.attack, itemBuffs) : robot.attack;
-        buffedAttack = Math.floor((buffedAttack + getFlatAttackBonus(robot)) * getAttackMultiplier(robot));
+        let buffedAttack = itemBuffs ? getBuffedAttack(creature.attack, itemBuffs) : creature.attack;
+        buffedAttack = Math.floor((buffedAttack + getFlatAttackBonus(creature)) * getAttackMultiplier(creature));
         const buffedElemMult = itemBuffs ? getBuffedElementMultiplier(elemMult * stabMult, itemBuffs) : elemMult * stabMult;
-        let damage = calculateRobotDamage(buffedAttack, move.power, buffedElemMult, variance);
+        let damage = calculateCreatureDamage(buffedAttack, move.power, buffedElemMult, variance);
 
         const shieldReduction = getDamageReduction(target);
         if (shieldReduction > 0) {
@@ -182,10 +182,10 @@ function executeMove(robot, robotIndex, move, targetIndex, allies, enemies, item
         target.hp = Math.max(0, target.hp - damage);
         if (damage > 0) breakSleep(target);
 
-        const effectApplied = move.statusEffect ? tryApplyStatus(move, target, robot, allies) : null;
+        const effectApplied = move.statusEffect ? tryApplyStatus(move, target, creature, allies) : null;
         const targetDefeated = target.hp <= 0;
 
-        attacks.push(buildAttackRecord(robot, robotIndex, move, target, tIdx, {
+        attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
           damage, stab, elementMultiplier: elemMult, targetDefeated, effectApplied
         }));
 
@@ -199,16 +199,16 @@ function executeMove(robot, robotIndex, move, targetIndex, allies, enemies, item
     }
 
     case 'drain': {
-      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, robot);
+      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, creature);
       for (let i = 0; i < targets.length; i++) {
         const target = targets[i];
         const tIdx = indices[i];
         const elemMult = getElementMultiplier(move.element, target.element);
         const variance = rollVariance();
-        let buffedAttack = itemBuffs ? getBuffedAttack(robot.attack, itemBuffs) : robot.attack;
-        buffedAttack = Math.floor((buffedAttack + getFlatAttackBonus(robot)) * getAttackMultiplier(robot));
+        let buffedAttack = itemBuffs ? getBuffedAttack(creature.attack, itemBuffs) : creature.attack;
+        buffedAttack = Math.floor((buffedAttack + getFlatAttackBonus(creature)) * getAttackMultiplier(creature));
         const buffedElemMult = itemBuffs ? getBuffedElementMultiplier(elemMult * stabMult, itemBuffs) : elemMult * stabMult;
-        let damage = calculateRobotDamage(buffedAttack, move.power, buffedElemMult, variance);
+        let damage = calculateCreatureDamage(buffedAttack, move.power, buffedElemMult, variance);
 
         const shieldReduction = getDamageReduction(target);
         if (shieldReduction > 0) {
@@ -219,12 +219,12 @@ function executeMove(robot, robotIndex, move, targetIndex, allies, enemies, item
         if (damage > 0) breakSleep(target);
 
         // Heal attacker for 50% of damage dealt
-        const healAmount = applyHeal(robot, Math.floor(damage * 0.5));
+        const healAmount = applyHeal(creature, Math.floor(damage * 0.5));
 
-        const effectApplied = move.statusEffect ? tryApplyStatus(move, target, robot, allies) : null;
+        const effectApplied = move.statusEffect ? tryApplyStatus(move, target, creature, allies) : null;
         const targetDefeated = target.hp <= 0;
 
-        attacks.push(buildAttackRecord(robot, robotIndex, move, target, tIdx, {
+        attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
           damage, healAmount, stab, elementMultiplier: elemMult, targetDefeated, effectApplied
         }));
 
@@ -238,14 +238,14 @@ function executeMove(robot, robotIndex, move, targetIndex, allies, enemies, item
     }
 
     case 'heal': {
-      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, robot);
+      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, creature);
       for (let i = 0; i < targets.length; i++) {
         const target = targets[i];
         const tIdx = indices[i];
         const variance = rollVariance();
-        const healAmount = applyHeal(target, Math.floor((robot.attack / 10) * move.power * variance));
+        const healAmount = applyHeal(target, Math.floor((creature.attack / 10) * move.power * variance));
 
-        attacks.push(buildAttackRecord(robot, robotIndex, move, target, tIdx, {
+        attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
           healAmount
         }));
       }
@@ -253,13 +253,13 @@ function executeMove(robot, robotIndex, move, targetIndex, allies, enemies, item
     }
 
     case 'buff': {
-      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, robot);
+      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, creature);
       for (let i = 0; i < targets.length; i++) {
         const target = targets[i];
         const tIdx = indices[i];
-        const effectApplied = tryApplyStatus(move, target, robot, allies);
+        const effectApplied = tryApplyStatus(move, target, creature, allies);
 
-        attacks.push(buildAttackRecord(robot, robotIndex, move, target, tIdx, {
+        attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
           effectApplied
         }));
       }
@@ -267,18 +267,18 @@ function executeMove(robot, robotIndex, move, targetIndex, allies, enemies, item
     }
 
     case 'shield': {
-      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, robot);
+      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, creature);
       if (move.target === 'all_allies') {
         // Use applyTeamShield for all_allies
         applyTeamShield(allies.filter(a => a.hp > 0), {
           percent: move.power,
           duration: move.statusDuration || 2,
-          sourceId: robot.id
+          sourceId: creature.id
         });
         for (let i = 0; i < targets.length; i++) {
           const target = targets[i];
           const tIdx = indices[i];
-          attacks.push(buildAttackRecord(robot, robotIndex, move, target, tIdx, {
+          attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
             effectApplied: 'team_shield'
           }));
         }
@@ -289,9 +289,9 @@ function executeMove(robot, robotIndex, move, targetIndex, allies, enemies, item
           applyShield(target, {
             percent: move.power,
             duration: move.statusDuration || 2,
-            sourceId: robot.id
+            sourceId: creature.id
           });
-          attacks.push(buildAttackRecord(robot, robotIndex, move, target, tIdx, {
+          attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
             effectApplied: 'shield'
           }));
         }
@@ -300,13 +300,13 @@ function executeMove(robot, robotIndex, move, targetIndex, allies, enemies, item
     }
 
     case 'debuff': {
-      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, robot);
+      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, creature);
       for (let i = 0; i < targets.length; i++) {
         const target = targets[i];
         const tIdx = indices[i];
-        const effectApplied = tryApplyStatus(move, target, robot, allies);
+        const effectApplied = tryApplyStatus(move, target, creature, allies);
 
-        attacks.push(buildAttackRecord(robot, robotIndex, move, target, tIdx, {
+        attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
           effectApplied
         }));
       }
@@ -321,14 +321,14 @@ function executeMove(robot, robotIndex, move, targetIndex, allies, enemies, item
 }
 
 /**
- * Process a move-based attack turn. Each ally robot uses a specific move
+ * Process a move-based attack turn. Each ally creature uses a specific move
  * chosen by the player against a specific target.
  *
- * @param {object[]} allies - Player's active robots
- * @param {object[]} enemies - Enemy robots
- * @param {object[]} moveChoices - Array of { robotIndex, moveId, targetIndex }
+ * @param {object[]} allies - Player's active creatures
+ * @param {object[]} enemies - Enemy creatures
+ * @param {object[]} moveChoices - Array of { creatureIndex, moveId, targetIndex }
  * @param {object|null} itemBuffs - Active item buffs
- * @param {object|null} creatureParty - Full robot party (for XP awards)
+ * @param {object|null} creatureParty - Full creature party (for XP awards)
  * @returns {object} { attacks, allEnemiesDefeated, xpEvents, mpRegens }
  */
 export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, creatureParty = null) {
@@ -336,43 +336,43 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
   const xpEvents = [];
   const defeatedEnemyIds = new Set();
 
-  // Collect robots that have haste (before processing moves)
-  const hastedRobotIndices = new Set();
+  // Collect creatures that have haste (before processing moves)
+  const hastedCreatureIndices = new Set();
   for (let i = 0; i < allies.length; i++) {
     if (allies[i] && allies[i].hp > 0 && hasHaste(allies[i])) {
-      hastedRobotIndices.add(i);
+      hastedCreatureIndices.add(i);
       consumeHaste(allies[i]);
     }
   }
 
   // Process each move choice
   for (const choice of moveChoices) {
-    const robot = allies[choice.robotIndex];
-    if (!robot || robot.hp <= 0) continue;
-    if (isIncapacitated(robot)) continue;
+    const creature = allies[choice.robotIndex];
+    if (!creature || creature.hp <= 0) continue;
+    if (isIncapacitated(creature)) continue;
 
     // If all enemies are dead, stop processing damage-oriented moves
     const aliveEnemies = enemies.filter(e => e.hp > 0);
     if (aliveEnemies.length === 0) break;
 
-    const move = (robot.moves || []).find(m => m.id === choice.moveId);
+    const move = (creature.moves || []).find(m => m.id === choice.moveId);
     if (!move) continue;
 
     // Check MP
-    if ((robot.mp || 0) < move.mpCost) continue;
+    if ((creature.mp || 0) < move.mpCost) continue;
 
     // Deduct MP
-    robot.mp = (robot.mp || 0) - move.mpCost;
+    creature.mp = (creature.mp || 0) - move.mpCost;
 
     // Execute the move
-    const result = executeMove(robot, choice.robotIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds);
+    const result = executeMove(creature, choice.robotIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds);
     attacks.push(...result.attacks);
     xpEvents.push(...result.xpEvents);
 
-    // If this robot had haste, execute the same move a second time
-    if (hastedRobotIndices.has(choice.robotIndex)) {
+    // If this creature had haste, execute the same move a second time
+    if (hastedCreatureIndices.has(choice.robotIndex)) {
       // Don't charge MP again for haste extra action
-      const result2 = executeMove(robot, choice.robotIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds);
+      const result2 = executeMove(creature, choice.robotIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds);
       attacks.push(...result2.attacks);
       xpEvents.push(...result2.xpEvents);
     }
@@ -380,11 +380,11 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
 
   // MP regen: each alive ally gets 12% of maxMp back
   const mpRegens = [];
-  for (const robot of allies) {
-    if (robot.hp <= 0) continue;
-    const regen = Math.floor((robot.maxMp || 0) * 0.12);
-    robot.mp = Math.min(robot.maxMp || 0, (robot.mp || 0) + regen);
-    mpRegens.push({ robotId: robot.id, mp: robot.mp, maxMp: robot.maxMp, regen });
+  for (const creature of allies) {
+    if (creature.hp <= 0) continue;
+    const regen = Math.floor((creature.maxMp || 0) * 0.12);
+    creature.mp = Math.min(creature.maxMp || 0, (creature.mp || 0) + regen);
+    mpRegens.push({ creatureId: creature.id, mp: creature.mp, maxMp: creature.maxMp, regen });
   }
 
   return {
@@ -398,11 +398,11 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
 export function processDefendTurn(allies) {
   // MP regen on defend (12% of maxMp)
   const mpRegens = [];
-  for (const robot of allies) {
-    if (robot.hp <= 0) continue;
-    const regen = Math.floor((robot.maxMp || 0) * 0.12);
-    robot.mp = Math.min(robot.maxMp || 0, (robot.mp || 0) + regen);
-    mpRegens.push({ robotId: robot.id, mp: robot.mp, maxMp: robot.maxMp, regen });
+  for (const creature of allies) {
+    if (creature.hp <= 0) continue;
+    const regen = Math.floor((creature.maxMp || 0) * 0.12);
+    creature.mp = Math.min(creature.maxMp || 0, (creature.mp || 0) + regen);
+    mpRegens.push({ creatureId: creature.id, mp: creature.mp, maxMp: creature.maxMp, regen });
   }
   return { mpRegens };
 }
@@ -438,7 +438,7 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
       const elemMult = getElementMultiplier(move.element, target.element);
       const variance = rollVariance();
       let buffedAttack = Math.floor(enemy.attack * getAttackMultiplier(enemy));
-      let damage = calculateRobotDamage(buffedAttack, move.power, elemMult, variance);
+      let damage = calculateCreatureDamage(buffedAttack, move.power, elemMult, variance);
 
       if (defendActive) {
         damage = Math.floor(damage * 0.5);
@@ -486,27 +486,27 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
 }
 
 /**
- * Tick active effects on all robots (allies and enemies) at start of a combat round.
- * Wraps tickEffects for each alive robot and collects all events.
+ * Tick active effects on all creatures (allies and enemies) at start of a combat round.
+ * Wraps tickEffects for each alive creature and collects all events.
  *
- * @param {object[]} allies - Player's active robots
- * @param {object[]} enemies - Enemy robots
+ * @param {object[]} allies - Player's active creatures
+ * @param {object[]} enemies - Enemy creatures
  * @returns {object[]} Array of effect events (poison damage, etc.)
  */
 export function tickAllEffects(allies, enemies) {
   const events = [];
-  for (const robot of [...allies, ...enemies]) {
-    if (robot && robot.hp > 0) {
-      const robotEvents = tickEffects(robot);
-      events.push(...robotEvents);
+  for (const creature of [...allies, ...enemies]) {
+    if (creature && creature.hp > 0) {
+      const creatureEvents = tickEffects(creature);
+      events.push(...creatureEvents);
     }
   }
   return events;
 }
 
 export function processBefriend(enemies, creatureParty, targetEnemyIndex) {
-  const totalRobots = creatureParty.active.length + creatureParty.reserves.length + (creatureParty.pendingCaptures?.length || 0);
-  if (totalRobots >= creatureParty.maxTotal) {
+  const totalCreatures = creatureParty.active.length + creatureParty.reserves.length + (creatureParty.pendingCaptures?.length || 0);
+  if (totalCreatures >= creatureParty.maxTotal) {
     return { success: false, reason: 'Party full' };
   }
 
@@ -548,61 +548,61 @@ export function processBefriend(enemies, creatureParty, targetEnemyIndex) {
 }
 
 /**
- * Award XP to all alive equipped robots when an enemy is killed during combat.
+ * Award XP to all alive equipped creatures when an enemy is killed during combat.
  * XP scales with enemy level: BASE_KILL_XP * enemyLevel * xpMultiplier.
- * Active robots get 2 shares, reserves get 1 share.
- * When xpBalanceStacks > 0, XP is redistributed from overleveled to underleveled robots.
- * Returns per-robot XP amounts and any level-ups that occurred.
+ * Active creatures get 2 shares, reserves get 1 share.
+ * When xpBalanceStacks > 0, XP is redistributed from overleveled to underleveled creatures.
+ * Returns per-creature XP amounts and any level-ups that occurred.
  */
 export function awardKillXp(creatureParty, enemyLevel, xpMultiplier = 1.0, xpBalanceStacks = 0) {
   const baseXp = Math.floor(BASE_KILL_XP * enemyLevel * xpMultiplier);
-  const activeRobots = creatureParty.active.filter(r => r && r.hp > 0);
-  const reserveRobots = creatureParty.reserves.filter(r => r != null);
-  const totalShares = activeRobots.length * 2 + reserveRobots.length * 1;
+  const activeCreatures = creatureParty.active.filter(r => r && r.hp > 0);
+  const reserveCreatures = creatureParty.reserves.filter(r => r != null);
+  const totalShares = activeCreatures.length * 2 + reserveCreatures.length * 1;
   if (totalShares === 0) return { xpGrants: [], levelUps: [] };
 
   const perShare = baseXp / totalShares;
 
-  // Compute initial XP shares per robot
+  // Compute initial XP shares per creature
   const entries = [];
-  for (const robot of activeRobots) {
-    entries.push({ robot, xp: Math.floor(perShare * 2) });
+  for (const creature of activeCreatures) {
+    entries.push({ creature, xp: Math.floor(perShare * 2) });
   }
-  for (const robot of reserveRobots) {
-    entries.push({ robot, xp: Math.floor(perShare * 1) });
+  for (const creature of reserveCreatures) {
+    entries.push({ creature, xp: Math.floor(perShare * 1) });
   }
 
   // Apply EXP Balance redistribution
   if (xpBalanceStacks > 0 && entries.length > 1) {
-    const totalLevel = entries.reduce((sum, e) => sum + e.robot.level, 0);
+    const totalLevel = entries.reduce((sum, e) => sum + e.creature.level, 0);
     const meanLevel = Math.floor(totalLevel / entries.length);
     const totalXp = entries.reduce((sum, e) => sum + e.xp, 0);
-    const recipientCount = entries.filter(e => e.robot.level <= meanLevel).length;
+    const recipientCount = entries.filter(e => e.creature.level <= meanLevel).length;
 
     if (recipientCount > 0) {
       const splitXp = totalXp / recipientCount;
       const t = Math.min(0.2 * xpBalanceStacks, 0.8);
 
       for (const entry of entries) {
-        const isRecipient = entry.robot.level <= meanLevel;
+        const isRecipient = entry.creature.level <= meanLevel;
         const target = isRecipient ? splitXp : 0;
         entry.xp = Math.floor(entry.xp + (target - entry.xp) * t);
       }
     }
   }
 
-  // Award XP to robots and collect results
+  // Award XP to creatures and collect results
   const xpGrants = [];
   const levelUps = [];
 
   for (const entry of entries) {
-    const prevLevel = entry.robot.level;
-    const robotLevelUps = addXpToRobot(entry.robot, entry.xp);
-    xpGrants.push({ robotId: entry.robot.id, robotName: entry.robot.nameEn, xp: entry.xp });
-    for (const lu of robotLevelUps) {
+    const prevLevel = entry.creature.level;
+    const creatureLevelUps = addXpToCreature(entry.creature, entry.xp);
+    xpGrants.push({ creatureId: entry.creature.id, creatureName: entry.creature.nameEn, xp: entry.xp });
+    for (const lu of creatureLevelUps) {
       levelUps.push({
-        robotId: entry.robot.id,
-        robotName: entry.robot.nameEn,
+        creatureId: entry.creature.id,
+        creatureName: entry.creature.nameEn,
         oldLevel: prevLevel,
         newLevel: lu.level,
         maxHp: lu.maxHp,
@@ -619,19 +619,19 @@ export function awardKillXp(creatureParty, enemyLevel, xpMultiplier = 1.0, xpBal
 }
 
 export function awardBattleXp(creatureParty) {
-  // Befriend victory: each robot gains 1 full level worth of XP
-  for (const robot of creatureParty.active) {
-    if (robot) addXpToRobot(robot, xpToNextLevel(robot.level));
+  // Befriend victory: each creature gains 1 full level worth of XP
+  for (const creature of creatureParty.active) {
+    if (creature) addXpToCreature(creature, xpToNextLevel(creature.level));
   }
-  for (const robot of creatureParty.reserves) {
-    if (robot) addXpToRobot(robot, xpToNextLevel(robot.level));
+  for (const creature of creatureParty.reserves) {
+    if (creature) addXpToCreature(creature, xpToNextLevel(creature.level));
   }
 }
 
-export function handleRobotKO(creatureParty, koRobotIndex) {
+export function handleCreatureKO(creatureParty, koCreatureIndex) {
   if (creatureParty.reserves.length === 0) return null;
   const replacement = creatureParty.reserves.shift();
-  creatureParty.active[koRobotIndex] = replacement;
+  creatureParty.active[koCreatureIndex] = replacement;
   return replacement;
 }
 
@@ -676,7 +676,7 @@ export function handleBefriendAnswer(gameManager, { roundIndex, selectedIndex })
     const koSwaps = [];
     for (let i = 0; i < combat.allies.length; i++) {
       if (combat.allies[i] && combat.allies[i].hp <= 0) {
-        const replacement = handleRobotKO(gameManager.run.creatureParty, i);
+        const replacement = handleCreatureKO(gameManager.run.creatureParty, i);
         if (replacement) {
           koSwaps.push({ slot: i, replacement: replacement.nameEn });
         }
@@ -711,7 +711,7 @@ export function handleBefriendAnswer(gameManager, { roundIndex, selectedIndex })
     // All 3 rounds correct -- use existing befriend cycle
     combat.befriendConversation = null;
 
-    const result = gameManager.robotCombatCycle('befriend');
+    const result = gameManager.creatureCombatCycle('befriend');
 
     return {
       correct: true,

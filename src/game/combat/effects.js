@@ -5,31 +5,31 @@
  */
 
 /**
- * Process all active effects on a robot at start of a combat round.
+ * Process all active effects on a creature at start of a combat round.
  * - Poison: deals damagePerTurn (never reduces HP below 1), decrements remainingTurns
  * - Expired effects (remainingTurns <= 0 after decrement) are removed
  *
- * @param {object} robot - Robot with hp, maxHp, and optional activeEffects[]
+ * @param {object} creature - Creature with hp, maxHp, and optional activeEffects[]
  * @returns {object[]} Array of event objects describing what happened
  */
-export function tickEffects(robot) {
-  if (!robot.activeEffects || robot.activeEffects.length === 0) {
+export function tickEffects(creature) {
+  if (!creature.activeEffects || creature.activeEffects.length === 0) {
     return [];
   }
 
   const events = [];
 
-  for (const effect of robot.activeEffects) {
+  for (const effect of creature.activeEffects) {
     if (effect.type === 'poison') {
       // Deal damage but never reduce HP below 1 — poison can't kill
-      const actualDamage = Math.min(effect.damagePerTurn, robot.hp - 1);
+      const actualDamage = Math.min(effect.damagePerTurn, creature.hp - 1);
       const damage = Math.max(0, actualDamage);
-      robot.hp -= damage;
+      creature.hp -= damage;
       effect.remainingTurns -= 1;
       events.push({
         type: 'poison',
-        targetId: robot.id,
-        targetName: robot.nameEn,
+        targetId: creature.id,
+        targetName: creature.nameEn,
         damage,
         remainingTurns: effect.remainingTurns,
       });
@@ -41,15 +41,15 @@ export function tickEffects(robot) {
       effect.remainingTurns -= 1;
       events.push({
         type: effect.type + '_tick',
-        targetId: robot.id,
-        targetName: robot.nameEn,
+        targetId: creature.id,
+        targetName: creature.nameEn,
         remainingTurns: effect.remainingTurns,
       });
     }
   }
 
   // Remove expired effects (remainingTurns <= 0), keep haste (no remainingTurns)
-  robot.activeEffects = robot.activeEffects.filter(
+  creature.activeEffects = creature.activeEffects.filter(
     e => e.remainingTurns === undefined || e.remainingTurns > 0
   );
 
@@ -59,7 +59,7 @@ export function tickEffects(robot) {
 /**
  * Add a poison effect to a target's activeEffects array.
  *
- * @param {object} target - Robot or enemy to poison
+ * @param {object} target - Creature or enemy to poison
  * @param {object} opts
  * @param {number} opts.damagePerTurn - HP lost per tick
  * @param {number} opts.duration - Number of rounds the poison lasts
@@ -81,7 +81,7 @@ export function applyPoison(target, { damagePerTurn, duration, sourceId }) {
 /**
  * Restore HP to a target, capped at maxHp. Does nothing if target is KO'd (hp <= 0).
  *
- * @param {object} target - Robot with hp and maxHp
+ * @param {object} target - Creature with hp and maxHp
  * @param {number} amount - HP to restore
  * @returns {number} Actual HP restored (may be less than amount if near max, or 0 if KO'd)
  */
@@ -158,37 +158,37 @@ export function applyHeal(target, amount) {
 
 // ── Query helpers ──────────────────────────────────────────────────
 
-export function isIncapacitated(robot) {
-  if (!robot.activeEffects) return false;
-  return robot.activeEffects.some(e => e.type === 'sleep' || e.type === 'stun');
+export function isIncapacitated(creature) {
+  if (!creature.activeEffects) return false;
+  return creature.activeEffects.some(e => e.type === 'sleep' || e.type === 'stun');
 }
 
-export function isConfused(robot) {
-  if (!robot.activeEffects) return false;
-  return robot.activeEffects.some(e => e.type === 'confuse');
+export function isConfused(creature) {
+  if (!creature.activeEffects) return false;
+  return creature.activeEffects.some(e => e.type === 'confuse');
 }
 
-export function hasHaste(robot) {
-  if (!robot.activeEffects) return false;
-  return robot.activeEffects.some(e => e.type === 'haste');
+export function hasHaste(creature) {
+  if (!creature.activeEffects) return false;
+  return creature.activeEffects.some(e => e.type === 'haste');
 }
 
-export function consumeHaste(robot) {
-  if (!robot.activeEffects) return;
-  robot.activeEffects = robot.activeEffects.filter(e => e.type !== 'haste');
+export function consumeHaste(creature) {
+  if (!creature.activeEffects) return;
+  creature.activeEffects = creature.activeEffects.filter(e => e.type !== 'haste');
 }
 
-export function getAttackMultiplier(robot) {
-  if (!robot.activeEffects) return 1;
-  const totalPercent = robot.activeEffects
+export function getAttackMultiplier(creature) {
+  if (!creature.activeEffects) return 1;
+  const totalPercent = creature.activeEffects
     .filter(e => e.type === 'attack_buff')
     .reduce((sum, e) => sum + e.percent, 0);
   return 1 + totalPercent / 100;
 }
 
-export function getDamageReduction(robot) {
-  if (!robot.activeEffects) return 0;
-  const totalPercent = robot.activeEffects
+export function getDamageReduction(creature) {
+  if (!creature.activeEffects) return 0;
+  const totalPercent = creature.activeEffects
     .filter(e => e.type === 'shield' || e.type === 'team_shield')
     .reduce((sum, e) => sum + e.percent, 0);
   return Math.min(totalPercent, 90);
@@ -217,9 +217,9 @@ export function applyTempAttackFlat(target, { value, duration, sourceId }) {
   });
 }
 
-export function getFlatAttackBonus(robot) {
-  if (!robot.activeEffects) return 0;
-  return robot.activeEffects
+export function getFlatAttackBonus(creature) {
+  if (!creature.activeEffects) return 0;
+  return creature.activeEffects
     .filter(e => e.type === 'temp_attack_flat')
     .reduce((sum, e) => sum + e.value, 0);
 }

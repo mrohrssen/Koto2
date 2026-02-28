@@ -365,7 +365,7 @@ export function createCombatState(enemy) {
     enemy: { ...enemy },
 
     allies: [],    // references to run.creatureParty.active
-    enemies: [],   // MVP: single enemy robot
+    enemies: [],   // MVP: single enemy creature
 
     // Last action for DM narration
     lastAction: null,
@@ -373,7 +373,7 @@ export function createCombatState(enemy) {
     // Combat log
     log: [],
 
-    // Robot swap state
+    // Creature swap state
     swapPhase: true  // true = free swaps allowed, false = swap costs action
   };
 }

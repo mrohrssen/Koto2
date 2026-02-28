@@ -1,12 +1,12 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { instantiateRobot } from '../../../src/game/robots.js';
+import { instantiateCreature } from '../../../src/game/creatures.js';
 
 describe('Robot Swap', () => {
   it('swaps active robot with reserve', () => {
     const party = {
-      active: [instantiateRobot('hikaribon'), instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')],
-      reserves: [instantiateRobot('nekotto'), instantiateRobot('kazenoko')],
+      active: [instantiateCreature('hikaribon'), instantiateCreature('tsukimochi'), instantiateCreature('hanatchi')],
+      reserves: [instantiateCreature('nekotto'), instantiateCreature('kazenoko')],
       maxTotal: 6
     };
     const swappedOut = party.active[1]; // water
@@ -22,8 +22,8 @@ describe('Robot Swap', () => {
 
   it('can swap a KO robot out for a healthy reserve', () => {
     const party = {
-      active: [instantiateRobot('hikaribon')],
-      reserves: [instantiateRobot('tsukimochi')],
+      active: [instantiateCreature('hikaribon')],
+      reserves: [instantiateCreature('tsukimochi')],
       maxTotal: 6
     };
     party.active[0].hp = 0; // KO

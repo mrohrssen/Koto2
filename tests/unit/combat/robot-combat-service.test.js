@@ -8,14 +8,14 @@ import {
   awardBattleXp,
   awardKillXp,
   tickAllEffects
-} from '../../../src/game/services/robot-combat-service.js';
-import { instantiateRobot } from '../../../src/game/robots.js';
+} from '../../../src/game/services/creature-combat-service.js';
+import { instantiateCreature } from '../../../src/game/creatures.js';
 
 describe('Robot Combat - Move Turn', () => {
   it('each allied robot uses a move against the enemy', () => {
     // kazenoko has 'fuku' (damage, all_enemies, pow=15)
-    const allies = [instantiateRobot('kazenoko'), instantiateRobot('kamedor')];
-    const enemies = [instantiateRobot('hikaribon')];
+    const allies = [instantiateCreature('kazenoko'), instantiateCreature('kamedor')];
+    const enemies = [instantiateCreature('hikaribon')];
     // kamedor has 'kamu' (damage, single_enemy, pow=18)
     const moveChoices = [
       { robotIndex: 0, moveId: 'fuku', targetIndex: 0 },
@@ -27,9 +27,9 @@ describe('Robot Combat - Move Turn', () => {
   });
 
   it('skips KOd allies', () => {
-    const allies = [instantiateRobot('kazenoko'), instantiateRobot('kamedor')];
+    const allies = [instantiateCreature('kazenoko'), instantiateCreature('kamedor')];
     allies[0].hp = 0;
-    const enemies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateCreature('hikaribon')];
     const moveChoices = [
       { robotIndex: 0, moveId: 'fuku', targetIndex: 0 },
       { robotIndex: 1, moveId: 'kamu', targetIndex: 0 }
@@ -40,8 +40,8 @@ describe('Robot Combat - Move Turn', () => {
   });
 
   it('includes move fields in attack records', () => {
-    const allies = [instantiateRobot('kamedor')];
-    const enemies = [instantiateRobot('kazenoko')];
+    const allies = [instantiateCreature('kamedor')];
+    const enemies = [instantiateCreature('kazenoko')];
     const moveChoices = [
       { robotIndex: 0, moveId: 'kamu', targetIndex: 0 }
     ];
@@ -57,8 +57,8 @@ describe('Robot Combat - Move Turn', () => {
   });
 
   it('deducts MP when using a move', () => {
-    const allies = [instantiateRobot('kamedor')];
-    const enemies = [instantiateRobot('hikaribon')];
+    const allies = [instantiateCreature('kamedor')];
+    const enemies = [instantiateCreature('hikaribon')];
     const startMp = allies[0].mp;
     const moveCost = allies[0].moves.find(m => m.id === 'kamu').mpCost;
     const moveChoices = [
@@ -71,9 +71,9 @@ describe('Robot Combat - Move Turn', () => {
   });
 
   it('skips move if insufficient MP', () => {
-    const allies = [instantiateRobot('kamedor')];
+    const allies = [instantiateCreature('kamedor')];
     allies[0].mp = 0;
-    const enemies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateCreature('hikaribon')];
     const startHp = enemies[0].hp;
     const moveChoices = [
       { robotIndex: 0, moveId: 'kamu', targetIndex: 0 }
@@ -85,9 +85,9 @@ describe('Robot Combat - Move Turn', () => {
   });
 
   it('returns mpRegens for alive allies', () => {
-    const allies = [instantiateRobot('kamedor')];
+    const allies = [instantiateCreature('kamedor')];
     allies[0].mp = 0;
-    const enemies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateCreature('hikaribon')];
     const moveChoices = [];
     const result = processMoveTurn(allies, enemies, moveChoices);
     assert.ok(result.mpRegens.length >= 1);
@@ -97,7 +97,7 @@ describe('Robot Combat - Move Turn', () => {
 
 describe('Robot Combat - Defend Turn', () => {
   it('all robots gain MP regen on defend', () => {
-    const allies = [instantiateRobot('kamedor')];
+    const allies = [instantiateCreature('kamedor')];
     allies[0].mp = 10;
     const result = processDefendTurn(allies);
     assert.ok(result.mpRegens.length >= 1);
@@ -107,16 +107,16 @@ describe('Robot Combat - Defend Turn', () => {
 
 describe('Robot Combat - Enemy Turn', () => {
   it('enemy attacks allied robots using its first move', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('kamedor')]; // kamedor has 'kamu' (damage move)
+    const allies = [instantiateCreature('hikaribon')];
+    const enemies = [instantiateCreature('kamedor')]; // kamedor has 'kamu' (damage move)
     const result = processEnemyTurn(enemies, allies);
     assert.ok(result.attacks.length >= 1);
     assert.ok(allies[0].hp < allies[0].maxHp);
   });
 
   it('includes move fields in enemy attack records', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('kamedor')];
+    const allies = [instantiateCreature('hikaribon')];
+    const enemies = [instantiateCreature('kamedor')];
     const result = processEnemyTurn(enemies, allies);
     const atk = result.attacks[0];
     assert.strictEqual(atk.attackerNameJp, '\u30AB\u30E1\u30C9\u30EB');
@@ -129,9 +129,9 @@ describe('Robot Combat - Enemy Turn', () => {
 
 describe('Robot Combat - Befriend', () => {
   it('captures enemy at <=50% HP (marks befriended, hp=0)', () => {
-    const enemies = [instantiateRobot('kazenoko')];
+    const enemies = [instantiateCreature('kazenoko')];
     enemies[0].hp = 20;
-    const party = { active: [instantiateRobot('hikaribon')], reserves: [], maxTotal: 6 };
+    const party = { active: [instantiateCreature('hikaribon')], reserves: [], maxTotal: 6 };
     const result = processBefriend(enemies, party);
     assert.ok(result.success);
     // Enemy stays in array but is marked as befriended with 0 HP
@@ -141,18 +141,18 @@ describe('Robot Combat - Befriend', () => {
   });
 
   it('rejects befriend if no enemy <=50% HP', () => {
-    const enemies = [instantiateRobot('kazenoko')];
+    const enemies = [instantiateCreature('kazenoko')];
     enemies[0].hp = Math.floor(enemies[0].maxHp * 0.6); // 60% HP -- above threshold
-    const party = { active: [instantiateRobot('hikaribon')], reserves: [], maxTotal: 6 };
+    const party = { active: [instantiateCreature('hikaribon')], reserves: [], maxTotal: 6 };
     const result = processBefriend(enemies, party);
     assert.ok(!result.success);
   });
 
   it('captures the specified target by index instead of lowest HP', () => {
-    const enemies = [instantiateRobot('kazenoko'), instantiateRobot('kamedor')];
+    const enemies = [instantiateCreature('kazenoko'), instantiateCreature('kamedor')];
     enemies[0].hp = 10; // lower ratio
     enemies[1].hp = 50; // higher ratio but this is the target
-    const party = { active: [instantiateRobot('hikaribon')], reserves: [], maxTotal: 6 };
+    const party = { active: [instantiateCreature('hikaribon')], reserves: [], maxTotal: 6 };
     const result = processBefriend(enemies, party, 1); // target index 1
     assert.ok(result.success);
     // Should capture index 1 (kamedor), NOT index 0 (kazenoko)
@@ -162,11 +162,11 @@ describe('Robot Combat - Befriend', () => {
   });
 
   it('rejects befriend if party full (6)', () => {
-    const enemies = [instantiateRobot('kazenoko')];
+    const enemies = [instantiateCreature('kazenoko')];
     enemies[0].hp = 20;
     const party = {
-      active: [instantiateRobot('hikaribon'), instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')],
-      reserves: [instantiateRobot('nekotto'), instantiateRobot('kazenoko'), instantiateRobot('kaminarion')],
+      active: [instantiateCreature('hikaribon'), instantiateCreature('tsukimochi'), instantiateCreature('hanatchi')],
+      reserves: [instantiateCreature('nekotto'), instantiateCreature('kazenoko'), instantiateCreature('kaminarion')],
       maxTotal: 6
     };
     const result = processBefriend(enemies, party);
@@ -174,13 +174,13 @@ describe('Robot Combat - Befriend', () => {
   });
 
   it('rejects befriend if party + pendingCaptures reaches maxTotal', () => {
-    const enemies = [instantiateRobot('kazenoko'), instantiateRobot('kamedor')];
+    const enemies = [instantiateCreature('kazenoko'), instantiateCreature('kamedor')];
     enemies[0].hp = 20;
     enemies[1].hp = 20;
     const party = {
-      active: [instantiateRobot('hikaribon'), instantiateRobot('tsukimochi'), instantiateRobot('hanatchi')],
-      reserves: [instantiateRobot('nekotto'), instantiateRobot('kazenoko')],
-      pendingCaptures: [instantiateRobot('kaminarion')], // 5 in party + 1 pending = 6 = maxTotal
+      active: [instantiateCreature('hikaribon'), instantiateCreature('tsukimochi'), instantiateCreature('hanatchi')],
+      reserves: [instantiateCreature('nekotto'), instantiateCreature('kazenoko')],
+      pendingCaptures: [instantiateCreature('kaminarion')], // 5 in party + 1 pending = 6 = maxTotal
       maxTotal: 6
     };
     const result = processBefriend(enemies, party, 0);
@@ -191,9 +191,9 @@ describe('Robot Combat - Befriend', () => {
 
 describe('Robot Combat - Status Effects in Move Turn', () => {
   it('sleeping robot skips its move', () => {
-    const allies = [instantiateRobot('kamedor')];
+    const allies = [instantiateCreature('kamedor')];
     allies[0].activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
-    const enemies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateCreature('hikaribon')];
     const startHp = enemies[0].hp;
     const moveChoices = [{ robotIndex: 0, moveId: 'kamu', targetIndex: 0 }];
     const result = processMoveTurn(allies, enemies, moveChoices);
@@ -202,9 +202,9 @@ describe('Robot Combat - Status Effects in Move Turn', () => {
   });
 
   it('stunned robot skips its move', () => {
-    const allies = [instantiateRobot('kamedor')];
+    const allies = [instantiateCreature('kamedor')];
     allies[0].activeEffects = [{ type: 'stun', remainingTurns: 1, sourceId: 'x' }];
-    const enemies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateCreature('hikaribon')];
     const startHp = enemies[0].hp;
     const moveChoices = [{ robotIndex: 0, moveId: 'kamu', targetIndex: 0 }];
     const result = processMoveTurn(allies, enemies, moveChoices);
@@ -213,9 +213,9 @@ describe('Robot Combat - Status Effects in Move Turn', () => {
   });
 
   it('hasted robot attacks twice', () => {
-    const allies = [instantiateRobot('kamedor')];
+    const allies = [instantiateCreature('kamedor')];
     allies[0].activeEffects = [{ type: 'haste', sourceId: 'x' }];
-    const enemies = [instantiateRobot('hikaribon')];
+    const enemies = [instantiateCreature('hikaribon')];
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
     const moveChoices = [{ robotIndex: 0, moveId: 'kamu', targetIndex: 0 }];
@@ -225,8 +225,8 @@ describe('Robot Combat - Status Effects in Move Turn', () => {
   });
 
   it('attack-buffed robot deals more damage', () => {
-    const allies = [instantiateRobot('kamedor')];
-    const enemies = [instantiateRobot('hikaribon')];
+    const allies = [instantiateCreature('kamedor')];
+    const enemies = [instantiateCreature('hikaribon')];
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
 
@@ -238,7 +238,7 @@ describe('Robot Combat - Status Effects in Move Turn', () => {
     );
 
     allies[0].activeEffects = [{ type: 'attack_buff', percent: 100, remainingTurns: 2, sourceId: 'x' }];
-    const enemies2 = [instantiateRobot('hikaribon')];
+    const enemies2 = [instantiateCreature('hikaribon')];
     enemies2[0].hp = 9999;
     enemies2[0].maxHp = 9999;
     const result2 = processMoveTurn(allies, enemies2, moveChoices);
@@ -249,8 +249,8 @@ describe('Robot Combat - Status Effects in Move Turn', () => {
 
 describe('Robot Combat - Status Effects in Enemy Turn', () => {
   it('sleeping enemy skips its attack', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('kamedor')];
+    const allies = [instantiateCreature('hikaribon')];
+    const enemies = [instantiateCreature('kamedor')];
     enemies[0].activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
     const startHp = allies[0].hp;
     const result = processEnemyTurn(enemies, allies);
@@ -259,11 +259,11 @@ describe('Robot Combat - Status Effects in Enemy Turn', () => {
   });
 
   it('enemy respects taunt and targets taunting ally', () => {
-    const taunter = instantiateRobot('hikaribon');
+    const taunter = instantiateCreature('hikaribon');
     taunter.activeEffects = [{ type: 'taunt', remainingTurns: 2, sourceId: 'self' }];
-    const other = instantiateRobot('tsukimochi');
+    const other = instantiateCreature('tsukimochi');
     const allies = [other, taunter];
-    const enemies = [instantiateRobot('kamedor')]; // has damage move 'kamu'
+    const enemies = [instantiateCreature('kamedor')]; // has damage move 'kamu'
     const result = processEnemyTurn(enemies, allies);
     assert.strictEqual(result.attacks.length, 1);
     assert.strictEqual(result.attacks[0].targetId, taunter.id);
@@ -271,15 +271,15 @@ describe('Robot Combat - Status Effects in Enemy Turn', () => {
 
   it('shield reduces damage to ally', () => {
     // First, measure unshielded damage
-    const unshieldedAlly = instantiateRobot('hikaribon');
+    const unshieldedAlly = instantiateCreature('hikaribon');
     unshieldedAlly.activeEffects = [];
-    const unshieldedEnemies = [instantiateRobot('kamedor')];
+    const unshieldedEnemies = [instantiateCreature('kamedor')];
     const unshieldedResult = processEnemyTurn(unshieldedEnemies, [unshieldedAlly]);
 
     // Then, measure shielded damage
-    const shieldedAlly = instantiateRobot('hikaribon');
+    const shieldedAlly = instantiateCreature('hikaribon');
     shieldedAlly.activeEffects = [{ type: 'shield', percent: 50, remainingTurns: 2, sourceId: 'x' }];
-    const shieldedEnemies = [instantiateRobot('kamedor')];
+    const shieldedEnemies = [instantiateCreature('kamedor')];
     const shieldedResult = processEnemyTurn(shieldedEnemies, [shieldedAlly]);
 
     assert.strictEqual(shieldedResult.attacks.length, 1);
@@ -288,27 +288,27 @@ describe('Robot Combat - Status Effects in Enemy Turn', () => {
   });
 
   it('damage wakes up sleeping ally', () => {
-    const ally = instantiateRobot('hikaribon');
+    const ally = instantiateCreature('hikaribon');
     ally.activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
     const allies = [ally];
-    const enemies = [instantiateRobot('kamedor')];
+    const enemies = [instantiateCreature('kamedor')];
     processEnemyTurn(enemies, allies);
     assert.ok(!ally.activeEffects.some(e => e.type === 'sleep'));
   });
 
   it('confused enemy can hit its own allies', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('kamedor'), instantiateRobot('kazenoko')];
+    const allies = [instantiateCreature('hikaribon')];
+    const enemies = [instantiateCreature('kamedor'), instantiateCreature('kazenoko')];
     enemies[0].activeEffects = [{ type: 'confuse', remainingTurns: 2, sourceId: 'x' }];
     const result = processEnemyTurn(enemies, allies);
     assert.ok(result.attacks.length >= 1);
   });
 
   it('hasted enemy attacks twice', () => {
-    const allies = [instantiateRobot('hikaribon')];
+    const allies = [instantiateCreature('hikaribon')];
     allies[0].hp = 9999;
     allies[0].maxHp = 9999;
-    const enemies = [instantiateRobot('kamedor')];
+    const enemies = [instantiateCreature('kamedor')];
     enemies[0].activeEffects = [{ type: 'haste', sourceId: 'x' }];
     const result = processEnemyTurn(enemies, allies);
     assert.strictEqual(result.attacks.length, 2);
@@ -319,8 +319,8 @@ describe('Robot Combat - Status Effects in Enemy Turn', () => {
 describe('Robot Combat - XP', () => {
   it('awardBattleXp grants one full level to each robot', () => {
     const party = {
-      active: [instantiateRobot('hikaribon')],
-      reserves: [instantiateRobot('tsukimochi')]
+      active: [instantiateCreature('hikaribon')],
+      reserves: [instantiateCreature('tsukimochi')]
     };
     awardBattleXp(party);
     // Both should be L2 (each gets xpToNextLevel which is 1 full level)
@@ -332,7 +332,7 @@ describe('Robot Combat - XP', () => {
 describe('Robot Combat - Kill XP Scaling', () => {
   it('awardKillXp scales with enemy level (BASE_KILL_XP * enemyLevel)', () => {
     const party = {
-      active: [instantiateRobot('hikaribon')],
+      active: [instantiateCreature('hikaribon')],
       reserves: []
     };
     // 1 active (2 shares), 0 reserves = 2 total shares
@@ -343,7 +343,7 @@ describe('Robot Combat - Kill XP Scaling', () => {
 
   it('awardKillXp applies xpMultiplier', () => {
     const party = {
-      active: [instantiateRobot('hikaribon')],
+      active: [instantiateCreature('hikaribon')],
       reserves: []
     };
     // enemyLevel 5, multiplier 1.25: 10 * 5 * 1.25 = 62, perShare = 62/2 = 31, active = floor(31*2)=62
@@ -353,7 +353,7 @@ describe('Robot Combat - Kill XP Scaling', () => {
 
   it('awardKillXp returns levelUps from cubic curve', () => {
     const party = {
-      active: [instantiateRobot('hikaribon')],
+      active: [instantiateCreature('hikaribon')],
       reserves: []
     };
     // enemyLevel 10: 10 * 10 = 100 base, perShare = 100/2 = 50, active = 100
@@ -365,7 +365,7 @@ describe('Robot Combat - Kill XP Scaling', () => {
 
   it('awardKillXp defaults xpMultiplier to 1.0', () => {
     const party = {
-      active: [instantiateRobot('hikaribon')],
+      active: [instantiateCreature('hikaribon')],
       reserves: []
     };
     // enemyLevel 1: 10 * 1 * 1.0 = 10, perShare = 10/2 = 5, active = floor(5*2) = 10
@@ -376,8 +376,8 @@ describe('Robot Combat - Kill XP Scaling', () => {
 
 describe('Robot Combat - Effect Ticking', () => {
   it('tickAllEffects processes poison on enemies', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('tsukimochi')];
+    const allies = [instantiateCreature('hikaribon')];
+    const enemies = [instantiateCreature('tsukimochi')];
     enemies[0].activeEffects = [
       { type: 'poison', remainingTurns: 2, damagePerTurn: 5, sourceId: 'test' }
     ];
@@ -389,7 +389,7 @@ describe('Robot Combat - Effect Ticking', () => {
   });
 
   it('ticks effects on allies too', () => {
-    const allies = [instantiateRobot('hikaribon')];
+    const allies = [instantiateCreature('hikaribon')];
     allies[0].activeEffects = [
       { type: 'poison', remainingTurns: 1, damagePerTurn: 8, sourceId: 'enemy' }
     ];
@@ -400,8 +400,8 @@ describe('Robot Combat - Effect Ticking', () => {
   });
 
   it('skips dead robots', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('tsukimochi')];
+    const allies = [instantiateCreature('hikaribon')];
+    const enemies = [instantiateCreature('tsukimochi')];
     enemies[0].hp = 0;
     enemies[0].activeEffects = [
       { type: 'poison', remainingTurns: 2, damagePerTurn: 5, sourceId: 'test' }
@@ -411,8 +411,8 @@ describe('Robot Combat - Effect Ticking', () => {
   });
 
   it('returns empty array when no effects exist', () => {
-    const allies = [instantiateRobot('hikaribon')];
-    const enemies = [instantiateRobot('tsukimochi')];
+    const allies = [instantiateCreature('hikaribon')];
+    const enemies = [instantiateCreature('tsukimochi')];
     const events = tickAllEffects(allies, enemies);
     assert.strictEqual(events.length, 0);
   });
@@ -420,8 +420,8 @@ describe('Robot Combat - Effect Ticking', () => {
 
 describe('Robot Combat - Shield in Move Turn', () => {
   it('shielded enemy takes reduced damage from player moves', () => {
-    const allies = [instantiateRobot('kamedor')]; // 'kamu' does damage
-    const enemies = [instantiateRobot('hikaribon')];
+    const allies = [instantiateCreature('kamedor')]; // 'kamu' does damage
+    const enemies = [instantiateCreature('hikaribon')];
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
     // 90% shield -- should drastically reduce damage
@@ -433,8 +433,8 @@ describe('Robot Combat - Shield in Move Turn', () => {
   });
 
   it('player move wakes sleeping enemy', () => {
-    const allies = [instantiateRobot('kamedor')];
-    const enemies = [instantiateRobot('hikaribon')];
+    const allies = [instantiateCreature('kamedor')];
+    const enemies = [instantiateCreature('hikaribon')];
     enemies[0].activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
     const moveChoices = [{ robotIndex: 0, moveId: 'kamu', targetIndex: 0 }];
     processMoveTurn(allies, enemies, moveChoices);
@@ -444,11 +444,11 @@ describe('Robot Combat - Shield in Move Turn', () => {
 
 describe('Robot Combat - XP Balance Redistribution', () => {
   it('redistributes XP toward lower-leveled robots with 1 stack', () => {
-    const highLevel = instantiateRobot('hikaribon');
+    const highLevel = instantiateCreature('hikaribon');
     highLevel.level = 10;
     highLevel.xp = 0;
 
-    const lowLevel = instantiateRobot('tsukimochi');
+    const lowLevel = instantiateCreature('tsukimochi');
     lowLevel.level = 3;
     lowLevel.xp = 0;
 
@@ -462,42 +462,42 @@ describe('Robot Combat - XP Balance Redistribution', () => {
     // With 1 stack (t=0.2): low-level gets more, high-level gets less
     const result = awardKillXp(party, 10, 1.0, 1);
 
-    const highGrant = result.xpGrants.find(g => g.robotId === highLevel.id);
-    const lowGrant = result.xpGrants.find(g => g.robotId === lowLevel.id);
+    const highGrant = result.xpGrants.find(g => g.creatureId === highLevel.id);
+    const lowGrant = result.xpGrants.find(g => g.creatureId === lowLevel.id);
     assert.ok(lowGrant.xp > highGrant.xp, 'lower-level robot should receive more XP');
   });
 
   it('no redistribution with 0 balance stacks', () => {
-    const highLevel = instantiateRobot('hikaribon');
+    const highLevel = instantiateCreature('hikaribon');
     highLevel.level = 10;
-    const lowLevel = instantiateRobot('tsukimochi');
+    const lowLevel = instantiateCreature('tsukimochi');
     lowLevel.level = 3;
 
     const party = { active: [highLevel, lowLevel], reserves: [] };
     const result = awardKillXp(party, 10, 1.0, 0);
 
-    const highGrant = result.xpGrants.find(g => g.robotId === highLevel.id);
-    const lowGrant = result.xpGrants.find(g => g.robotId === lowLevel.id);
+    const highGrant = result.xpGrants.find(g => g.creatureId === highLevel.id);
+    const lowGrant = result.xpGrants.find(g => g.creatureId === lowLevel.id);
     assert.strictEqual(highGrant.xp, lowGrant.xp, 'both should get equal shares');
   });
 
   it('higher stacks redistribute more aggressively', () => {
-    const highLevel = instantiateRobot('hikaribon');
+    const highLevel = instantiateCreature('hikaribon');
     highLevel.level = 10;
-    const lowLevel = instantiateRobot('tsukimochi');
+    const lowLevel = instantiateCreature('tsukimochi');
     lowLevel.level = 3;
 
     // 1 stack
     const party1 = { active: [{ ...highLevel }, { ...lowLevel }], reserves: [] };
     const result1 = awardKillXp(party1, 10, 1.0, 1);
-    const low1 = result1.xpGrants.find(g => g.robotId === lowLevel.id).xp;
+    const low1 = result1.xpGrants.find(g => g.creatureId === lowLevel.id).xp;
 
     // 3 stacks
-    const party3 = { active: [instantiateRobot('hikaribon'), instantiateRobot('tsukimochi')], reserves: [] };
+    const party3 = { active: [instantiateCreature('hikaribon'), instantiateCreature('tsukimochi')], reserves: [] };
     party3.active[0].level = 10;
     party3.active[1].level = 3;
     const result3 = awardKillXp(party3, 10, 1.0, 3);
-    const low3 = result3.xpGrants.find(g => g.robotId === party3.active[1].id).xp;
+    const low3 = result3.xpGrants.find(g => g.creatureId === party3.active[1].id).xp;
 
     assert.ok(low3 > low1, 'more stacks should give underleveled robot even more XP');
   });
@@ -506,18 +506,18 @@ describe('Robot Combat - XP Balance Redistribution', () => {
 describe('Robot Combat - Temp Attack Flat Bonus', () => {
   it('processMoveTurn uses flat attack bonus from activeEffects', () => {
     // Measure unbuffed damage first
-    const unbuffedAlly = instantiateRobot('kamedor');
+    const unbuffedAlly = instantiateCreature('kamedor');
     unbuffedAlly.activeEffects = [];
-    const unbuffedEnemy = instantiateRobot('hikaribon');
+    const unbuffedEnemy = instantiateCreature('hikaribon');
     unbuffedEnemy.hp = 9999;
     unbuffedEnemy.maxHp = 9999;
     const moveChoices = [{ robotIndex: 0, moveId: 'kamu', targetIndex: 0 }];
     const unbuffedResult = processMoveTurn([unbuffedAlly], [unbuffedEnemy], moveChoices);
 
     // Measure buffed damage
-    const buffedAlly = instantiateRobot('kamedor');
+    const buffedAlly = instantiateCreature('kamedor');
     buffedAlly.activeEffects = [{ type: 'temp_attack_flat', value: 50, remainingTurns: 5 }];
-    const buffedEnemy = instantiateRobot('hikaribon');
+    const buffedEnemy = instantiateCreature('hikaribon');
     buffedEnemy.hp = 9999;
     buffedEnemy.maxHp = 9999;
     const buffedResult = processMoveTurn([buffedAlly], [buffedEnemy], moveChoices);

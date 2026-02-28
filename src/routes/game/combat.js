@@ -5,9 +5,9 @@
  */
 
 import { Router } from 'express';
-import { processEnemyTurn, handleRobotKO, handleBefriendAnswer } from '../../game/services/robot-combat-service.js';
-import { MOVES_BY_ID } from '../../game/robots.js';
-import { getCollectionCatalog } from '../../game/services/robot-collection-service.js';
+import { processEnemyTurn, handleCreatureKO, handleBefriendAnswer } from '../../game/services/creature-combat-service.js';
+import { MOVES_BY_ID } from '../../game/creatures.js';
+import { getCollectionCatalog } from '../../game/services/creature-collection-service.js';
 import { loadNpcs, shuffleOptions, updateBond, recordEncounter, handleNpcDialogueResponse } from '../../game/services/npc-service.js';
 import { buildVocabConfig } from './route-helpers.js';
 
@@ -84,13 +84,13 @@ export default function createCombatRoutes({
     }
   });
 
-  // ============ ROBOT COMBAT ============
+  // ============ CREATURE COMBAT ============
 
-  // Start robot encounter
+  // Start creature encounter
   router.post('/start-robot-encounter', async (req, res) => {
     const gameManager = req.gameManager;
     try {
-      const encounter = gameManager.startRobotEncounter();
+      const encounter = gameManager.startCreatureEncounter();
       req.saveGame();
       res.json({ ...encounter, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -98,7 +98,7 @@ export default function createCombatRoutes({
     }
   });
 
-  // Robot combat cycle
+  // Creature combat cycle
   // Attack: { actionType: 'attack', moveChoices: [{ robotIndex, moveId, targetIndex }] }
   // Defend: { actionType: 'defend' }
   // Befriend: { actionType: 'befriend', targetEnemyIndex }
@@ -106,7 +106,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     const { actionType, moveChoices } = req.body;
     try {
-      const result = gameManager.robotCombatCycle(actionType || 'attack', moveChoices || []);
+      const result = gameManager.creatureCombatCycle(actionType || 'attack', moveChoices || []);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -120,28 +120,28 @@ export default function createCombatRoutes({
     const { robotIndex, newMoveId, replaceIndex } = req.body;
     try {
       if (!gameManager.run?.creatureParty) throw new Error('No active run');
-      const robot = gameManager.run.creatureParty.active[robotIndex];
-      if (!robot) throw new Error('Invalid robot index');
+      const creature = gameManager.run.creatureParty.active[robotIndex];
+      if (!creature) throw new Error('Invalid creature index');
 
       const moveData = MOVES_BY_ID[newMoveId];
       if (!moveData) throw new Error('Invalid move ID');
 
-      if (typeof replaceIndex === 'number' && replaceIndex >= 0 && replaceIndex < robot.moves.length) {
-        robot.moves[replaceIndex] = { ...moveData };
-      } else if (robot.moves.length < 4) {
-        robot.moves.push({ ...moveData });
+      if (typeof replaceIndex === 'number' && replaceIndex >= 0 && replaceIndex < creature.moves.length) {
+        creature.moves[replaceIndex] = { ...moveData };
+      } else if (creature.moves.length < 4) {
+        creature.moves.push({ ...moveData });
       } else {
         throw new Error('Move slots full — must specify replaceIndex');
       }
 
       req.saveGame();
-      res.json({ success: true, moves: robot.moves, state: req.getEnrichedGameState() });
+      res.json({ success: true, moves: creature.moves, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
   });
 
-  // Get robot collection + catalog for team select
+  // Get creature collection + catalog for team select
   router.get('/robot-collection', (req, res) => {
     const gameManager = req.gameManager;
     try {
@@ -178,12 +178,12 @@ export default function createCombatRoutes({
     }
   });
 
-  // Robot swap (in combat)
+  // Creature swap (in combat)
   router.post('/swap-robot', (req, res) => {
     const gameManager = req.gameManager;
     const { activeIndex, reserveIndex } = req.body;
     try {
-      const result = gameManager.swapRobot(activeIndex, reserveIndex);
+      const result = gameManager.swapCreature(activeIndex, reserveIndex);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -191,12 +191,12 @@ export default function createCombatRoutes({
     }
   });
 
-  // Rearrange active robots (swap positions, works in and out of combat)
+  // Rearrange active creatures (swap positions, works in and out of combat)
   router.post('/rearrange-robots', (req, res) => {
     const gameManager = req.gameManager;
     const { indexA, indexB } = req.body;
     try {
-      const result = gameManager.rearrangeRobots(indexA, indexB);
+      const result = gameManager.rearrangeCreatures(indexA, indexB);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -204,12 +204,12 @@ export default function createCombatRoutes({
     }
   });
 
-  // Robot swap (out of combat, equip screen)
+  // Creature swap (out of combat, equip screen)
   router.post('/swap-robot-equip', (req, res) => {
     const gameManager = req.gameManager;
     const { activeIndex, reserveIndex } = req.body;
     try {
-      const result = gameManager.swapRobotOutOfCombat(activeIndex, reserveIndex);
+      const result = gameManager.swapCreatureOutOfCombat(activeIndex, reserveIndex);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -220,9 +220,9 @@ export default function createCombatRoutes({
   // Befriend and replace (full roster)
   router.post('/befriend-replace', (req, res) => {
     const gameManager = req.gameManager;
-    const { releaseRobotId } = req.body;
+    const { releaseCreatureId } = req.body;
     try {
-      const result = gameManager.befriendReplace(releaseRobotId);
+      const result = gameManager.befriendReplace(releaseCreatureId);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -237,11 +237,11 @@ export default function createCombatRoutes({
     const combat = gameManager.combat;
 
     if (!combat?.active || !combat.isCreatureCombat) {
-      return res.status(400).json({ error: 'No active robot combat' });
+      return res.status(400).json({ error: 'No active creature combat' });
     }
 
     if (combat.npcId) {
-      return res.status(400).json({ error: 'Cannot befriend NPC trainer robots' });
+      return res.status(400).json({ error: 'Cannot befriend NPC trainer creatures' });
     }
 
     const enemies = combat.enemies || [];

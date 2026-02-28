@@ -233,9 +233,9 @@ export function createRoom(type, areaId, roomNumber, totalRooms) {
     case ROOM_TYPES.dealer: {
       room.dealer = {
         visited: false,
-        offeredRobots: [],
-        soldRobots: [],
-        purchasedRobot: null
+        offeredCreatures: [],
+        soldCreatures: [],
+        purchasedCreature: null
       };
       break;
     }

@@ -27,7 +27,7 @@ import {
   ROOM_TYPES
 } from '../rooms.js';
 
-import { addXpToRobot, xpToNextLevel, instantiateRobot, getRobotBuyPrice, getRobotSellPrice, generateDealerRobots } from '../robots.js';
+import { addXpToCreature, xpToNextLevel, instantiateCreature, getCreatureBuyPrice, getCreatureSellPrice, generateDealerCreatures } from '../creatures.js';
 import { logger } from '../../logger.js';
 
 const AREA_BG_COUNT = 20;
@@ -328,7 +328,7 @@ export class ExplorationService {
 
   // ============ ROOM INTERACTIONS ============
 
-  useShrine(robotId) {
+  useShrine(creatureId) {
     const room = this.getCurrentRoom();
     if (!room || room.type !== 'shrine') {
       throw new Error('No shrine here');
@@ -338,48 +338,48 @@ export class ExplorationService {
       throw new Error('Shrine already used');
     }
 
-    // Find robot in party (active or reserves)
-    const allRobots = [
+    // Find creature in party (active or reserves)
+    const allCreatures = [
       ...this.gm.run.creatureParty.active,
       ...this.gm.run.creatureParty.reserves
     ].filter(Boolean);
 
-    const robot = allRobots.find(r => r.id === robotId);
-    if (!robot) {
-      throw new Error('Robot not in party');
+    const creature = allCreatures.find(r => r.id === creatureId);
+    if (!creature) {
+      throw new Error('Creature not in party');
     }
 
-    const prevLevel = robot.level;
-    const prevMaxHp = robot.maxHp;
-    const prevAttack = robot.attack;
+    const prevLevel = creature.level;
+    const prevMaxHp = creature.maxHp;
+    const prevAttack = creature.attack;
 
     // Grant one full level-up worth of XP (cubic curve)
-    addXpToRobot(robot, xpToNextLevel(robot.level));
+    addXpToCreature(creature, xpToNextLevel(creature.level));
 
     room.shrine.used = true;
     room.interacted = true;
 
-    logger.info('[Shrine] Robot leveled up:', {
-      robot: robot.nameEn, robotId, newLevel: robot.level
+    logger.info('[Shrine] Creature leveled up:', {
+      creature: creature.nameEn, creatureId, newLevel: creature.level
     });
 
-    this.gm.narrate(`修練場の力でモンスターが強化された！ Lv. ${robot.level}`);
+    this.gm.narrate(`修練場の力でモンスターが強化された！ Lv. ${creature.level}`);
     this.gm.emitState();
 
     return {
       type: 'shrine_upgrade',
-      robotId,
-      robotName: robot.nameEn,
+      creatureId,
+      creatureName: creature.nameEn,
       oldLevel: prevLevel,
-      newLevel: robot.level,
-      maxHp: robot.maxHp,
-      attack: robot.attack,
-      hpGain: robot.maxHp - prevMaxHp,
-      attackGain: robot.attack - prevAttack
+      newLevel: creature.level,
+      maxHp: creature.maxHp,
+      attack: creature.attack,
+      hpGain: creature.maxHp - prevMaxHp,
+      attackGain: creature.attack - prevAttack
     };
   }
 
-  useQuizReward(rewardType, robotId = null) {
+  useQuizReward(rewardType, creatureId = null) {
     const room = this.getCurrentRoom();
     if (!room || room.type !== 'quiz') {
       throw new Error('No quiz here');
@@ -393,28 +393,28 @@ export class ExplorationService {
 
     switch (rewardType) {
       case 'heal': {
-        if (!robotId) throw new Error('robotId required for heal reward');
-        const allRobots = [
+        if (!creatureId) throw new Error('creatureId required for heal reward');
+        const allCreatures = [
           ...this.gm.run.creatureParty.active,
           ...this.gm.run.creatureParty.reserves
         ].filter(Boolean);
-        const robot = allRobots.find(r => r.id === robotId);
-        if (!robot) throw new Error('Robot not in party');
-        robot.hp = robot.maxHp;
-        description = `${robot.nameEn} fully healed!`;
+        const creature = allCreatures.find(r => r.id === creatureId);
+        if (!creature) throw new Error('Creature not in party');
+        creature.hp = creature.maxHp;
+        description = `${creature.nameEn} fully healed!`;
         break;
       }
 
       case 'levelup': {
-        if (!robotId) throw new Error('robotId required for levelup reward');
-        const allRobots = [
+        if (!creatureId) throw new Error('creatureId required for levelup reward');
+        const allCreatures = [
           ...this.gm.run.creatureParty.active,
           ...this.gm.run.creatureParty.reserves
         ].filter(Boolean);
-        const robot = allRobots.find(r => r.id === robotId);
-        if (!robot) throw new Error('Robot not in party');
-        addXpToRobot(robot, xpToNextLevel(robot.level));
-        description = `${robot.nameEn} leveled up to Lv. ${robot.level}!`;
+        const creature = allCreatures.find(r => r.id === creatureId);
+        if (!creature) throw new Error('Creature not in party');
+        addXpToCreature(creature, xpToNextLevel(creature.level));
+        description = `${creature.nameEn} leveled up to Lv. ${creature.level}!`;
         break;
       }
 
@@ -455,7 +455,7 @@ export class ExplorationService {
     room.wordDiscovery.completed = true;
     room.interacted = true;
 
-    // Award small XP + credits for robot runs
+    // Award small XP + credits for creature runs
     const xpGrants = [];
     const levelUps = [];
     if (this.gm.run.creatureParty?.active?.length > 0) {
@@ -463,15 +463,15 @@ export class ExplorationService {
       const highestLevel = Math.max(...this.gm.run.creatureParty.active.filter(r => r && r.hp > 0).map(r => r.level), 1);
       const discoveryXp = Math.floor(BASE_KILL_XP * highestLevel * (this.gm.run.itemBuffs?.xpMultiplier || 1.0) * 0.2);
 
-      for (const robot of this.gm.run.creatureParty.active) {
-        if (!robot || robot.hp <= 0) continue;
-        const prevLevel = robot.level;
-        addXpToRobot(robot, discoveryXp);
-        xpGrants.push({ robotId: robot.id, robotName: robot.nameEn, xp: discoveryXp });
-        if (robot.level > prevLevel) {
+      for (const creature of this.gm.run.creatureParty.active) {
+        if (!creature || creature.hp <= 0) continue;
+        const prevLevel = creature.level;
+        addXpToCreature(creature, discoveryXp);
+        xpGrants.push({ creatureId: creature.id, creatureName: creature.nameEn, xp: discoveryXp });
+        if (creature.level > prevLevel) {
           levelUps.push({
-            robotId: robot.id, robotName: robot.nameEn,
-            oldLevel: prevLevel, newLevel: robot.level
+            creatureId: creature.id, creatureName: creature.nameEn,
+            oldLevel: prevLevel, newLevel: creature.level
           });
         }
       }
@@ -480,7 +480,7 @@ export class ExplorationService {
       const creditReward = Math.floor(15 * 0.2) + ((this.gm.run.areasCompleted || 0) + 1);
       this.gm.run.player.credits = (this.gm.run.player.credits || 0) + creditReward;
 
-      logger.info('[WordDiscovery] Robot rewards:', { discoveryXp, creditReward, xpGrants: xpGrants.length });
+      logger.info('[WordDiscovery] Creature rewards:', { discoveryXp, creditReward, xpGrants: xpGrants.length });
     }
 
     logger.info('[WordDiscovery] Room completed');
@@ -525,77 +525,77 @@ export class ExplorationService {
       throw new Error('No dealer here');
     }
 
-    // Lazily generate offered robots on first visit
-    if (!room.dealer.offeredRobots || room.dealer.offeredRobots.length === 0) {
+    // Lazily generate offered creatures on first visit
+    if (!room.dealer.offeredCreatures || room.dealer.offeredCreatures.length === 0) {
       const collectionIds = this.gm.player?.creatureCollection?.map(r => r.id) || [];
-      room.dealer.offeredRobots = generateDealerRobots(collectionIds);
+      room.dealer.offeredCreatures = generateDealerCreatures(collectionIds);
     }
 
     // Build party inventory with sell prices
-    const allRobots = [
+    const allCreatures = [
       ...this.gm.run.creatureParty.active.map((r, i) => r ? { ...r, slot: 'active', slotIndex: i } : null),
       ...this.gm.run.creatureParty.reserves.map((r, i) => r ? { ...r, slot: 'reserves', slotIndex: i } : null)
     ].filter(Boolean).map(r => ({
       ...r,
-      sellPrice: getRobotSellPrice(r.rarity, r.level)
+      sellPrice: getCreatureSellPrice(r.rarity, r.level)
     }));
 
     return {
       dealer: room.dealer,
-      offeredRobots: room.dealer.purchasedRobot ? [] : room.dealer.offeredRobots,
-      partyRobots: allRobots,
+      offeredCreatures: room.dealer.purchasedCreature ? [] : room.dealer.offeredCreatures,
+      partyCreatures: allCreatures,
       credits: this.gm.run.player.credits || 0,
-      canBuy: !room.dealer.purchasedRobot,
-      sellCount: room.dealer.soldRobots?.length || 0,
+      canBuy: !room.dealer.purchasedCreature,
+      sellCount: room.dealer.soldCreatures?.length || 0,
       maxSells: 2
     };
   }
 
   /**
-   * Sell a robot to the dealer
-   * @param {string} robotId - ID of robot to sell
+   * Sell a creature to the dealer
+   * @param {string} creatureId - ID of creature to sell
    */
-  dealerSell(robotId) {
+  dealerSell(creatureId) {
     const room = this.getCurrentRoom();
     if (!room || room.type !== 'dealer') {
       throw new Error('No dealer here');
     }
 
-    if ((room.dealer.soldRobots?.length || 0) >= 2) {
-      throw new Error('Already sold maximum robots (2)');
+    if ((room.dealer.soldCreatures?.length || 0) >= 2) {
+      throw new Error('Already sold maximum creatures (2)');
     }
 
-    // Find robot in party
-    const activeIdx = this.gm.run.creatureParty.active.findIndex(r => r?.id === robotId);
-    const reserveIdx = this.gm.run.creatureParty.reserves.findIndex(r => r?.id === robotId);
+    // Find creature in party
+    const activeIdx = this.gm.run.creatureParty.active.findIndex(r => r?.id === creatureId);
+    const reserveIdx = this.gm.run.creatureParty.reserves.findIndex(r => r?.id === creatureId);
 
     if (activeIdx === -1 && reserveIdx === -1) {
-      throw new Error('Robot not in party');
+      throw new Error('Creature not in party');
     }
 
-    // Can't sell last robot
-    const totalRobots = [
+    // Can't sell last creature
+    const totalCreatures = [
       ...this.gm.run.creatureParty.active,
       ...this.gm.run.creatureParty.reserves
     ].filter(Boolean).length;
 
-    if (totalRobots <= 1) {
-      throw new Error('Cannot sell your last robot');
+    if (totalCreatures <= 1) {
+      throw new Error('Cannot sell your last creature');
     }
 
-    const robot = activeIdx !== -1
+    const creature = activeIdx !== -1
       ? this.gm.run.creatureParty.active[activeIdx]
       : this.gm.run.creatureParty.reserves[reserveIdx];
 
-    const sellPrice = getRobotSellPrice(robot.rarity, robot.level);
+    const sellPrice = getCreatureSellPrice(creature.rarity, creature.level);
 
     // Remove from party
     if (activeIdx !== -1) {
       this.gm.run.creatureParty.active[activeIdx] = null;
       // Auto-fill from reserves if available
-      const reserveRobot = this.gm.run.creatureParty.reserves.shift();
-      if (reserveRobot) {
-        this.gm.run.creatureParty.active[activeIdx] = reserveRobot;
+      const reserveCreature = this.gm.run.creatureParty.reserves.shift();
+      if (reserveCreature) {
+        this.gm.run.creatureParty.active[activeIdx] = reserveCreature;
       }
     } else {
       this.gm.run.creatureParty.reserves.splice(reserveIdx, 1);
@@ -604,40 +604,40 @@ export class ExplorationService {
     // Add credits
     this.gm.run.player.credits = (this.gm.run.player.credits || 0) + sellPrice;
 
-    // Track sold robot
-    if (!room.dealer.soldRobots) room.dealer.soldRobots = [];
-    room.dealer.soldRobots.push({ robotId, sellPrice });
+    // Track sold creature
+    if (!room.dealer.soldCreatures) room.dealer.soldCreatures = [];
+    room.dealer.soldCreatures.push({ creatureId, sellPrice });
 
-    logger.info('[Dealer] Robot sold:', { robot: robot.nameEn, robotId, sellPrice });
-    this.gm.narrate(`${robot.nameEn}を${sellPrice}クレジットで売却した。`);
+    logger.info('[Dealer] Creature sold:', { creature: creature.nameEn, creatureId, sellPrice });
+    this.gm.narrate(`${creature.nameEn}を${sellPrice}クレジットで売却した。`);
     this.gm.emitState();
 
     return {
       success: true,
-      robotId,
-      robotName: robot.nameEn,
+      creatureId,
+      creatureName: creature.nameEn,
       creditsGained: sellPrice,
       creditsRemaining: this.gm.run.player.credits
     };
   }
 
   /**
-   * Buy the dealer's offered robot
+   * Buy the dealer's offered creature
    */
-  dealerBuy(robotId) {
+  dealerBuy(creatureId) {
     const room = this.getCurrentRoom();
     if (!room || room.type !== 'dealer') {
       throw new Error('No dealer here');
     }
 
-    if (room.dealer.purchasedRobot) {
+    if (room.dealer.purchasedCreature) {
       throw new Error('Already purchased from this dealer');
     }
 
-    // Find the offered robot
-    const offered = room.dealer.offeredRobots.find(r => r.id === robotId);
+    // Find the offered creature
+    const offered = room.dealer.offeredCreatures.find(r => r.id === creatureId);
     if (!offered) {
-      throw new Error('Robot not available at dealer');
+      throw new Error('Creature not available at dealer');
     }
 
     const price = offered.buyPrice;
@@ -648,39 +648,39 @@ export class ExplorationService {
     }
 
     // Check party size (max 6: 3 active + 3 reserves)
-    const totalRobots = [
+    const totalCreatures = [
       ...this.gm.run.creatureParty.active,
       ...this.gm.run.creatureParty.reserves
     ].filter(Boolean).length;
 
-    if (totalRobots >= 6) {
-      throw new Error('Party is full (max 6 robots)');
+    if (totalCreatures >= 6) {
+      throw new Error('Party is full (max 6 creatures)');
     }
 
     // Deduct credits
     this.gm.run.player.credits -= price;
 
-    // Add robot to party (mark as temporary -- won't enter collection)
-    const newRobot = { ...offered, temporary: true };
-    delete newRobot.buyPrice;
+    // Add creature to party (mark as temporary -- won't enter collection)
+    const newCreature = { ...offered, temporary: true };
+    delete newCreature.buyPrice;
 
     // Add to active if space, otherwise reserves
     const emptyActiveSlot = this.gm.run.creatureParty.active.findIndex(r => r === null);
     if (emptyActiveSlot !== -1) {
-      this.gm.run.creatureParty.active[emptyActiveSlot] = newRobot;
+      this.gm.run.creatureParty.active[emptyActiveSlot] = newCreature;
     } else {
-      this.gm.run.creatureParty.reserves.push(newRobot);
+      this.gm.run.creatureParty.reserves.push(newCreature);
     }
 
-    room.dealer.purchasedRobot = robotId;
+    room.dealer.purchasedCreature = creatureId;
 
-    logger.info('[Dealer] Robot purchased:', { robot: offered.nameEn, robotId, price });
+    logger.info('[Dealer] Creature purchased:', { creature: offered.nameEn, creatureId, price });
     this.gm.narrate(`${offered.nameEn}を${price}クレジットで雇った！`);
     this.gm.emitState();
 
     return {
       success: true,
-      robot: newRobot,
+      creature: newCreature,
       creditsSpent: price,
       creditsRemaining: this.gm.run.player.credits
     };
