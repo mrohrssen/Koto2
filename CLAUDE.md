@@ -191,6 +191,13 @@ Sprites are served with 1-year immutable cache headers. When regenerating sprite
 - **Don't use Read tool to "show" images** - The Read tool's image display does NOT render in the terminal. To show the user images, serve them via a local HTTP server and display in the Playwright MCP browser (e.g., `python3 -m http.server` then `browser_navigate`).
 - **Don't launch Playwright without asking first** - Always ask the user before opening a Playwright browser session. Chrome session conflicts are common and launching blindly breaks things.
 
+## Session Cleanup Rules
+
+- **Delete screenshots immediately** - You MUST `rm` any screenshot file within the same tool-call block where you take it, after it's been shown. Never leave PNGs in the repo.
+- **No files in repo root** - Never create files (PNGs, HTML, CSVs, logs) in the repo root. Use `tmp/` for throwaway files, `output/` for generated artifacts. Both are gitignored.
+- **Clean up worktrees** - Before ending a session, remove your worktree with `git worktree remove` if your branch has been merged.
+- **Never commit generated caches** - Runtime-generated files (`vocab-cache-*.json`, `npc-memory-*.json`, dialogue caches) must never be `git add`-ed. Check `.gitignore` covers them.
+
 ## Deployment
 
 - **Production URL**: https://jrpg-production.up.railway.app

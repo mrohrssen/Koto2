@@ -17,6 +17,8 @@ data/*
 !data/vocab-categories/
 data/npc-memory-test-*.json
 data/npc-dialogue-cache-test-*.json
+# Runtime-generated caches (rebuilt automatically per user)
+data/vocab-cache-*.json
 generate_assets.py
 generate_chip_icons.py
 fix_chip_icons*.py
