@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sprite Review Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#1a1a2e;color:#e0e0e0;font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
+
+/* Top bar */
+.topbar{position:sticky;top:0;z-index:100;background:#0f0f23;border-bottom:1px solid #1e2d4a;padding:8px 12px}
+.topbar-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tabs{display:flex;gap:4px;flex-shrink:0}
+.tab{padding:6px 12px;border:none;border-radius:6px;background:#16213e;color:#8899aa;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s}
+.tab:hover{background:#1e2d4a;color:#c0d0e0}
+.tab.active{background:#0f3460;color:#fff}
+.search{flex:1;min-width:120px;max-width:280px;padding:6px 10px;border:1px solid #1e2d4a;border-radius:6px;background:#16213e;color:#e0e0e0;font-size:13px;outline:none}
+.search:focus{border-color:#0f3460}
+.search::placeholder{color:#556}
+.toggle{display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid #1e2d4a;border-radius:6px;background:#16213e;color:#8899aa;cursor:pointer;font-size:12px;white-space:nowrap;user-select:none}
+.toggle.on{border-color:#e67e22;color:#e67e22;background:#2a1a0a}
+.toggle.flagged-on{border-color:#e74c3c;color:#e74c3c;background:#2a0a0a}
+.stats{font-size:12px;color:#667;white-space:nowrap;margin-left:auto}
+.refresh-btn{padding:4px 10px;border:1px solid #1e2d4a;border-radius:6px;background:#16213e;color:#8899aa;cursor:pointer;font-size:14px}
+.refresh-btn:hover{background:#1e2d4a;color:#e0e0e0}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;padding:12px}
+.card{background:#16213e;border-radius:8px;padding:10px;cursor:pointer;transition:all .15s;border:2px solid transparent;text-align:center;position:relative}
+.card:hover{border-color:#0f3460;transform:translateY(-2px)}
+.card-img-wrap{width:100px;height:100px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;position:relative}
+.card-img-wrap img{max-width:100%;max-height:100%;object-fit:contain}
+.card-img-wrap .placeholder{width:60px;height:60px;border-radius:8px;background:#0f0f23;display:flex;align-items:center;justify-content:center;color:#445;font-size:24px}
+.card-name{font-size:13px;font-weight:500;color:#e0e0e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-jp{font-size:11px;color:#667;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{position:absolute;top:4px;right:4px;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
+.badge-orphan{background:#e67e22;color:#fff}
+.badge-flagged{background:#e74c3c;color:#fff}
+.badge-missing{background:#555;color:#ccc}
+
+/* Creature idle animation - show idle by default, static on hover */
+.card-img-wrap .img-idle{display:block}
+.card-img-wrap .img-static{display:none}
+.card:hover .card-img-wrap .img-idle{display:none}
+.card:hover .card-img-wrap .img-static{display:block}
+
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+.overlay.open{display:flex}
+.modal{background:#16213e;border-radius:12px;padding:20px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
+.modal-close{position:absolute;top:10px;right:12px;background:none;border:none;color:#889;font-size:22px;cursor:pointer;padding:4px 8px}
+.modal-close:hover{color:#e0e0e0}
+.modal-sprites{display:flex;gap:16px;justify-content:center;margin:12px 0}
+.modal-sprites figure{text-align:center}
+.modal-sprites figcaption{font-size:11px;color:#667;margin-top:4px}
+.modal-sprites img{width:150px;height:150px;object-fit:contain}
+.modal-meta{margin:12px 0;font-size:13px;line-height:1.8}
+.modal-meta span{display:inline-block;padding:2px 8px;border-radius:4px;background:#0f0f23;margin:2px 4px 2px 0;font-size:12px}
+.modal h3{font-size:16px;margin-bottom:4px}
+.modal .jp-name{font-size:13px;color:#889;margin-bottom:8px}
+
+/* Feedback */
+.feedback-section{margin-top:16px;border-top:1px solid #1e2d4a;padding-top:12px}
+.feedback-section h4{font-size:13px;color:#889;margin-bottom:8px}
+.feedback-notes{list-style:none;margin-bottom:10px}
+.feedback-notes li{padding:6px 8px;background:#0f0f23;border-radius:4px;margin-bottom:4px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.feedback-notes li button{background:none;border:none;color:#e74c3c;cursor:pointer;font-size:14px;padding:0 4px}
+.feedback-row{display:flex;gap:6px}
+.feedback-input{flex:1;padding:6px 10px;border:1px solid #1e2d4a;border-radius:6px;background:#0f0f23;color:#e0e0e0;font-size:13px;outline:none}
+.feedback-input:focus{border-color:#0f3460}
+.btn{padding:6px 14px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500}
+.btn-flag{background:#e74c3c;color:#fff}
+.btn-flag:hover{background:#c0392b}
+.btn-clear{background:#333;color:#aaa;margin-top:8px;font-size:12px}
+.btn-clear:hover{background:#444;color:#e0e0e0}
+.empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:#556;font-size:14px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-row">
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-cat="creatures">Creatures</button>
+      <button class="tab" data-cat="moves">Actions</button>
+      <button class="tab" data-cat="items">Items</button>
+      <button class="tab" data-cat="enemies">Enemies</button>
+      <button class="tab" data-cat="bosses">Bosses</button>
+    </div>
+    <input class="search" id="search" type="text" placeholder="Search...">
+    <button class="toggle" id="orphanToggle">Orphans</button>
+    <button class="toggle" id="flaggedToggle">Flagged</button>
+    <span class="stats" id="stats"></span>
+    <button class="refresh-btn" id="refresh" title="Refresh">&#x21bb;</button>
+  </div>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────
+let manifest = null;
+let feedback = {};
+let activeCat = 'creatures';
+let searchText = '';
+let orphansOnly = false;
+let flaggedOnly = false;
+
+// ── Sprite paths ──────────────────────────────────────────────────
+const SPRITE_DIRS = {
+  creatures: '/assets/sprites/creatures/',
+  moves: '/assets/sprites/actions/',
+  items: '/assets/sprites/items/',
+  enemies: '/assets/sprites/enemies/',
+  bosses: '/assets/sprites/enemies/'
+};
+
+function feedbackKey(cat, item) {
+  const catKey = cat === 'moves' ? 'moves' : cat;
+  if (cat === 'moves') {
+    return 'moves/' + item.spriteFile.replace('.webp', '');
+  }
+  return catKey + '/' + item.id;
+}
+
+function getFeedback(cat, item) {
+  return feedback[feedbackKey(cat, item)] || null;
+}
+
+// ── Data loading ──────────────────────────────────────────────────
+async function loadData() {
+  const [mRes, fRes] = await Promise.all([
+    fetch('/dev/api/manifest'),
+    fetch('/dev/api/feedback')
+  ]);
+  manifest = await mRes.json();
+  feedback = await fRes.json();
+  render();
+}
+
+// ── Filtering ─────────────────────────────────────────────────────
+function getFiltered() {
+  let items = manifest[activeCat] || [];
+  if (searchText) {
+    const q = searchText.toLowerCase();
+    items = items.filter(it =>
+      (it.id && it.id.toLowerCase().includes(q)) ||
+      (it.name && it.name.toLowerCase().includes(q)) ||
+      (it.nameEn && it.nameEn.toLowerCase().includes(q))
+    );
+  }
+  if (orphansOnly) {
+    items = items.filter(it => it.hasData === false);
+  }
+  if (flaggedOnly) {
+    items = items.filter(it => {
+      const fb = getFeedback(activeCat, it);
+      return fb && fb.flagged;
+    });
+  }
+  return items;
+}
+
+// ── Render grid ───────────────────────────────────────────────────
+function render() {
+  if (!manifest) return;
+  const items = getFiltered();
+  const grid = document.getElementById('grid');
+  const summary = manifest.summary[activeCat];
+  const statsEl = document.getElementById('stats');
+
+  if (summary) {
+    const spriteCount = summary.withSprite !== undefined ? summary.withSprite : '?';
+    statsEl.textContent = spriteCount + '/' + summary.total + ' sprites';
+  } else {
+    statsEl.textContent = '';
+  }
+
+  if (items.length === 0) {
+    grid.innerHTML = '<div class="empty">No sprites found</div>';
+    return;
+  }
+
+  grid.innerHTML = items.map(it => {
+    const fb = getFeedback(activeCat, it);
+    const dir = SPRITE_DIRS[activeCat];
+    const isCreature = activeCat === 'creatures';
+    let badges = '';
+    if (it.hasData === false) badges += '<span class="badge badge-orphan">orphan</span>';
+    if (!it.hasSprite) badges += '<span class="badge badge-missing">no sprite</span>';
+    if (fb && fb.flagged) badges += '<span class="badge badge-flagged">' + (fb.notes ? fb.notes.length : 0) + '</span>';
+
+    let imgHtml;
+    if (!it.hasSprite) {
+      imgHtml = '<div class="placeholder">?</div>';
+    } else if (isCreature && it.hasIdle) {
+      imgHtml = '<img class="img-idle" src="' + dir + it.idleFile + '" loading="lazy" alt="' + esc(it.nameEn) + '" onerror="this.parentNode.innerHTML=\'<div class=placeholder>?</div>\'">'
+        + '<img class="img-static" src="' + dir + it.spriteFile + '" loading="lazy" alt="' + esc(it.nameEn) + '">';
+    } else {
+      imgHtml = '<img src="' + dir + it.spriteFile + '" loading="lazy" alt="' + esc(it.nameEn) + '" onerror="this.parentNode.innerHTML=\'<div class=placeholder>?</div>\'">';
+    }
+
+    return '<div class="card" data-id="' + esc(it.id) + '">'
+      + badges
+      + '<div class="card-img-wrap">' + imgHtml + '</div>'
+      + '<div class="card-name">' + esc(it.nameEn || it.id) + '</div>'
+      + '<div class="card-jp">' + esc(it.name || '') + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Modal ─────────────────────────────────────────────────────────
+function openModal(cat, item) {
+  const overlay = document.getElementById('overlay');
+  const modal = document.getElementById('modal');
+  const dir = SPRITE_DIRS[cat];
+  const fb = getFeedback(cat, item);
+  const key = feedbackKey(cat, item);
+
+  let spritesHtml = '';
+  if (cat === 'creatures') {
+    spritesHtml = '<div class="modal-sprites">';
+    if (item.hasSprite) spritesHtml += '<figure><img src="' + dir + item.spriteFile + '" alt="static"><figcaption>Static</figcaption></figure>';
+    if (item.hasIdle) spritesHtml += '<figure><img src="' + dir + item.idleFile + '" alt="idle"><figcaption>Idle (animated)</figcaption></figure>';
+    if (!item.hasSprite && !item.hasIdle) spritesHtml += '<div class="placeholder" style="width:150px;height:150px;font-size:40px">?</div>';
+    spritesHtml += '</div>';
+  } else {
+    spritesHtml = '<div class="modal-sprites">';
+    if (item.hasSprite) {
+      spritesHtml += '<figure><img src="' + dir + item.spriteFile + '" alt="sprite"></figure>';
+    } else {
+      spritesHtml += '<div class="placeholder" style="width:150px;height:150px;font-size:40px">?</div>';
+    }
+    spritesHtml += '</div>';
+  }
+
+  // Metadata tags
+  let metaHtml = '<div class="modal-meta">';
+  if (item.id) metaHtml += '<span>id: ' + esc(item.id) + '</span>';
+  if (item.element) metaHtml += '<span>' + esc(item.element) + '</span>';
+  if (item.category) metaHtml += '<span>' + esc(item.category) + '</span>';
+  if (item.tier !== undefined) metaHtml += '<span>T' + item.tier + '</span>';
+  if (item.rarity) metaHtml += '<span>' + esc(item.rarity) + '</span>';
+  if (item.type) metaHtml += '<span>' + esc(item.type) + '</span>';
+  if (item.floor !== undefined && item.floor !== null) metaHtml += '<span>Floor ' + item.floor + '</span>';
+  if (item.hasData === false) metaHtml += '<span style="background:#5a2d00;color:#e67e22">orphan</span>';
+  if (!item.hasSprite) metaHtml += '<span style="background:#333;color:#aaa">no sprite file</span>';
+  if (item.description) metaHtml += '<br><span style="background:transparent;color:#889;font-style:italic">' + esc(item.description) + '</span>';
+  metaHtml += '</div>';
+
+  // Feedback section
+  const notes = (fb && fb.notes) ? fb.notes : [];
+  let notesHtml = '';
+  if (notes.length > 0) {
+    notesHtml = '<ul class="feedback-notes">' + notes.map((n, i) =>
+      '<li>' + esc(n) + '<button data-rm="' + i + '" title="Remove">&times;</button></li>'
+    ).join('') + '</ul>';
+  }
+
+  modal.innerHTML = '<button class="modal-close">&times;</button>'
+    + '<h3>' + esc(item.nameEn || item.id) + '</h3>'
+    + '<div class="jp-name">' + esc(item.name || '') + '</div>'
+    + spritesHtml
+    + metaHtml
+    + '<div class="feedback-section">'
+    + '<h4>Feedback</h4>'
+    + notesHtml
+    + '<div class="feedback-row">'
+    + '<input class="feedback-input" id="fbInput" placeholder="Add a note...">'
+    + '<button class="btn btn-flag" id="fbAdd">Flag</button>'
+    + '</div>'
+    + (notes.length > 0 ? '<button class="btn btn-clear" id="fbClear">Clear all feedback</button>' : '')
+    + '</div>';
+
+  overlay.classList.add('open');
+
+  // Event handlers
+  modal.querySelector('.modal-close').onclick = closeModal;
+
+  document.getElementById('fbAdd').onclick = function() {
+    const input = document.getElementById('fbInput');
+    const note = input.value.trim();
+    if (!note) return;
+    if (!feedback[key]) feedback[key] = { notes: [], flagged: true, createdAt: new Date().toISOString() };
+    feedback[key].notes.push(note);
+    feedback[key].flagged = true;
+    feedback[key].updatedAt = new Date().toISOString();
+    saveFeedback();
+    openModal(cat, item); // re-render modal
+    render(); // update badge
+  };
+
+  const clearBtn = document.getElementById('fbClear');
+  if (clearBtn) {
+    clearBtn.onclick = function() {
+      delete feedback[key];
+      saveFeedback();
+      openModal(cat, item);
+      render();
+    };
+  }
+
+  // Remove individual note
+  modal.querySelectorAll('[data-rm]').forEach(btn => {
+    btn.onclick = function() {
+      const idx = parseInt(this.dataset.rm);
+      if (feedback[key] && feedback[key].notes) {
+        feedback[key].notes.splice(idx, 1);
+        if (feedback[key].notes.length === 0) {
+          delete feedback[key];
+        } else {
+          feedback[key].updatedAt = new Date().toISOString();
+        }
+        saveFeedback();
+        openModal(cat, item);
+        render();
+      }
+    };
+  });
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.remove('open');
+}
+
+async function saveFeedback() {
+  try {
+    await fetch('/dev/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(feedback)
+    });
+  } catch (e) {
+    console.error('Failed to save feedback:', e);
+  }
+}
+
+// ── Event wiring ──────────────────────────────────────────────────
+
+// Tabs
+document.getElementById('tabs').addEventListener('click', function(e) {
+  const tab = e.target.closest('.tab');
+  if (!tab) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  activeCat = tab.dataset.cat;
+  render();
+});
+
+// Search
+let searchTimer;
+document.getElementById('search').addEventListener('input', function() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(function() {
+    searchText = document.getElementById('search').value;
+    render();
+  }, 150);
+});
+
+// Orphan toggle
+document.getElementById('orphanToggle').addEventListener('click', function() {
+  orphansOnly = !orphansOnly;
+  this.classList.toggle('on', orphansOnly);
+  render();
+});
+
+// Flagged toggle
+document.getElementById('flaggedToggle').addEventListener('click', function() {
+  flaggedOnly = !flaggedOnly;
+  this.classList.toggle('flagged-on', flaggedOnly);
+  render();
+});
+
+// Refresh
+document.getElementById('refresh').addEventListener('click', loadData);
+
+// Card clicks -> modal
+document.getElementById('grid').addEventListener('click', function(e) {
+  const card = e.target.closest('.card');
+  if (!card) return;
+  const id = card.dataset.id;
+  const items = manifest[activeCat] || [];
+  const item = items.find(it => it.id === id);
+  if (item) openModal(activeCat, item);
+});
+
+// Close modal on overlay click
+document.getElementById('overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Close on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ── Init ──────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>

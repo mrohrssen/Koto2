@@ -20,7 +20,7 @@
  *   - data/bosses.json    - Boss definitions
  */
 
-import { Router } from 'express';
+import express, { Router } from 'express';
 import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
@@ -41,6 +41,12 @@ function loadJSON(filename) {
 
 function spriteExists(category, filename) {
   return existsSync(join(SPRITE_DIR, category, filename));
+}
+
+function listWebp(category) {
+  const dir = join(SPRITE_DIR, category);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter(f => f.endsWith('.webp')).map(f => f.replace('.webp', ''));
 }
 
 // ── Feedback persistence ───────────────────────────────────────────
@@ -157,6 +163,64 @@ function buildManifest() {
     });
   }
 
+  // Orphan sprites (files on disk with no data entry)
+  const creatureDataIds = new Set(creatures.map(c => c.id));
+  for (const file of listWebp('creatures')) {
+    if (file.endsWith('-idle')) continue;
+    if (!creatureDataIds.has(file)) {
+      manifest.creatures.push({
+        id: file, name: null, nameEn: file,
+        spriteFile: `${file}.webp`, idleFile: `${file}-idle.webp`,
+        hasSprite: true, hasIdle: listWebp('creatures').includes(`${file}-idle`),
+        hasData: false
+      });
+    }
+  }
+  // Tag creatures with data
+  for (const c of manifest.creatures) {
+    if (c.hasData === undefined) c.hasData = creatureDataIds.has(c.id);
+  }
+
+  const moveSlugSet = new Set(moves.map(m => m.nameEn ? m.nameEn.toLowerCase().replace(/\s+/g, '-') : m.id));
+  for (const file of listWebp('actions')) {
+    if (!moveSlugSet.has(file)) {
+      manifest.moves.push({
+        id: file, slug: file, name: null, nameEn: file,
+        spriteFile: `${file}.webp`, hasSprite: true, hasData: false
+      });
+    }
+  }
+  for (const m of manifest.moves) {
+    if (m.hasData === undefined) m.hasData = true;
+  }
+
+  const itemDataIds = new Set(items.map(i => i.id));
+  for (const file of listWebp('items')) {
+    if (!itemDataIds.has(file)) {
+      manifest.items.push({
+        id: file, name: null, nameEn: file,
+        spriteFile: `${file}.webp`, hasSprite: true, hasData: false
+      });
+    }
+  }
+  for (const i of manifest.items) {
+    if (i.hasData === undefined) i.hasData = true;
+  }
+
+  const enemyDataIds = new Set(Object.keys(enemies));
+  const bossIds = new Set(manifest.bosses.map(b => b.id));
+  for (const file of listWebp('enemies')) {
+    if (!enemyDataIds.has(file) && !bossIds.has(file)) {
+      manifest.enemies.push({
+        id: file, name: null, nameEn: file,
+        spriteFile: `${file}.webp`, hasSprite: true, hasData: false
+      });
+    }
+  }
+  for (const e of manifest.enemies) {
+    if (e.hasData === undefined) e.hasData = true;
+  }
+
   // Summary counts
   manifest.summary = {
     creatures: { total: manifest.creatures.length, withSprite: manifest.creatures.filter(c => c.hasSprite).length, withIdle: manifest.creatures.filter(c => c.hasIdle).length },
@@ -216,11 +280,17 @@ export function createDevRouter({ password }) {
   // ── Auth middleware ────────────────────────────────────────────
   function requireAuth(req, res, next) {
     if (!requiresAuth) return next();
+    // Login routes are always accessible
+    if (req.path === '/login') return next();
 
     const token = req.cookies?.dev_token || req.headers['x-dev-token'];
     if (isValidSession(token)) return next();
 
-    return res.status(401).json({ error: 'Unauthorized' });
+    // For API endpoints, return 401 JSON; for pages, redirect to login
+    if (req.path.startsWith('/api/') || req.path === '/auth') {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    return res.redirect('/dev/login');
   }
 
   // We need cookie-parser for this router. Use a lightweight inline parser
@@ -239,8 +309,42 @@ export function createDevRouter({ password }) {
   }
 
   router.use(parseCookies);
+  router.use(express.urlencoded({ extended: false }));
 
-  // ── POST /auth ────────────────────────────────────────────────
+  // ── GET /login ──────────────────────────────────────────────
+  router.get('/login', (req, res) => {
+    const err = req.query.err ? '<p class="error">Wrong password</p>' : '';
+    res.send(`<!DOCTYPE html><html><head><title>Dev Login</title>
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <style>body{font-family:system-ui;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#1a1a2e}
+      form{background:#16213e;padding:2rem;border-radius:8px;color:#e0e0e0}
+      input{padding:0.5rem;margin:0.5rem 0;border:1px solid #444;border-radius:4px;background:#0f0f23;color:#e0e0e0;width:200px;display:block}
+      button{padding:0.5rem 1rem;background:#0f3460;color:white;border:none;border-radius:4px;cursor:pointer;margin-top:0.5rem}
+      .error{color:#e74c3c;font-size:0.9em}</style></head>
+      <body><form method="POST" action="/dev/login">
+      <h3>Sprite Dashboard</h3>
+      <input type="password" name="password" placeholder="Password" autofocus>
+      <button type="submit">Login</button>
+      ${err}</form></body></html>`);
+  });
+
+  // ── POST /login ─────────────────────────────────────────────
+  router.post('/login', authLimiter, (req, res) => {
+    const submitted = req.body?.password;
+    if (!requiresAuth || submitted === password) {
+      const token = createSession();
+      res.cookie('dev_token', token, { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
+      return res.redirect('/dev/sprites');
+    }
+    return res.redirect('/dev/login?err=1');
+  });
+
+  // ── GET /sprites ────────────────────────────────────────────
+  router.get('/sprites', requireAuth, (_req, res) => {
+    res.sendFile(join(process.cwd(), 'public', 'dev-sprites.html'));
+  });
+
+  // ── POST /auth (API) ───────────────────────────────────────
   router.post('/auth', authLimiter, (req, res) => {
     if (!requiresAuth) {
       const token = createSession();
@@ -258,8 +362,8 @@ export function createDevRouter({ password }) {
     return res.status(403).json({ error: 'Wrong password' });
   });
 
-  // ── GET /manifest ─────────────────────────────────────────────
-  router.get('/manifest', requireAuth, (_req, res) => {
+  // ── GET /api/manifest ──────────────────────────────────────────
+  router.get('/api/manifest', requireAuth, (_req, res) => {
     try {
       const manifest = buildManifest();
       res.json(manifest);
@@ -269,13 +373,13 @@ export function createDevRouter({ password }) {
     }
   });
 
-  // ── GET /feedback ─────────────────────────────────────────────
-  router.get('/feedback', requireAuth, (_req, res) => {
+  // ── GET /api/feedback ──────────────────────────────────────────
+  router.get('/api/feedback', requireAuth, (_req, res) => {
     res.json(loadFeedback());
   });
 
-  // ── POST /feedback ────────────────────────────────────────────
-  router.post('/feedback', requireAuth, (req, res) => {
+  // ── POST /api/feedback ───────────────────────────────────────
+  router.post('/api/feedback', requireAuth, (req, res) => {
     try {
       const data = req.body;
       if (!data || typeof data !== 'object') {
