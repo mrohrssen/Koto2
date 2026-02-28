@@ -155,7 +155,7 @@ function tryApplyStatus(move, target, caster, allies) {
 /**
  * Execute a single move for one robot. Returns array of attack records and xpEvents.
  */
-function executeMove(robot, robotIndex, move, targetIndex, allies, enemies, itemBuffs, robotParty, defeatedEnemyIds) {
+function executeMove(robot, robotIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds) {
   const attacks = [];
   const xpEvents = [];
   const stab = move.element !== 'neutral' && move.element === robot.element;
@@ -189,9 +189,9 @@ function executeMove(robot, robotIndex, move, targetIndex, allies, enemies, item
           damage, stab, elementMultiplier: elemMult, targetDefeated, effectApplied
         }));
 
-        if (targetDefeated && !defeatedEnemyIds.has(target.id) && robotParty) {
+        if (targetDefeated && !defeatedEnemyIds.has(target.id) && creatureParty) {
           defeatedEnemyIds.add(target.id);
-          const xpEvent = awardKillXp(robotParty, target.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks);
+          const xpEvent = awardKillXp(creatureParty, target.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks);
           xpEvents.push({ enemyId: target.id, enemyName: target.nameEn, ...xpEvent });
         }
       }
@@ -228,9 +228,9 @@ function executeMove(robot, robotIndex, move, targetIndex, allies, enemies, item
           damage, healAmount, stab, elementMultiplier: elemMult, targetDefeated, effectApplied
         }));
 
-        if (targetDefeated && !defeatedEnemyIds.has(target.id) && robotParty) {
+        if (targetDefeated && !defeatedEnemyIds.has(target.id) && creatureParty) {
           defeatedEnemyIds.add(target.id);
-          const xpEvent = awardKillXp(robotParty, target.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks);
+          const xpEvent = awardKillXp(creatureParty, target.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks);
           xpEvents.push({ enemyId: target.id, enemyName: target.nameEn, ...xpEvent });
         }
       }
@@ -328,10 +328,10 @@ function executeMove(robot, robotIndex, move, targetIndex, allies, enemies, item
  * @param {object[]} enemies - Enemy robots
  * @param {object[]} moveChoices - Array of { robotIndex, moveId, targetIndex }
  * @param {object|null} itemBuffs - Active item buffs
- * @param {object|null} robotParty - Full robot party (for XP awards)
+ * @param {object|null} creatureParty - Full robot party (for XP awards)
  * @returns {object} { attacks, allEnemiesDefeated, xpEvents, mpRegens }
  */
-export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, robotParty = null) {
+export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, creatureParty = null) {
   const attacks = [];
   const xpEvents = [];
   const defeatedEnemyIds = new Set();
@@ -365,14 +365,14 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
     robot.mp = (robot.mp || 0) - move.mpCost;
 
     // Execute the move
-    const result = executeMove(robot, choice.robotIndex, move, choice.targetIndex, allies, enemies, itemBuffs, robotParty, defeatedEnemyIds);
+    const result = executeMove(robot, choice.robotIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds);
     attacks.push(...result.attacks);
     xpEvents.push(...result.xpEvents);
 
     // If this robot had haste, execute the same move a second time
     if (hastedRobotIndices.has(choice.robotIndex)) {
       // Don't charge MP again for haste extra action
-      const result2 = executeMove(robot, choice.robotIndex, move, choice.targetIndex, allies, enemies, itemBuffs, robotParty, defeatedEnemyIds);
+      const result2 = executeMove(robot, choice.robotIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds);
       attacks.push(...result2.attacks);
       xpEvents.push(...result2.xpEvents);
     }
@@ -504,9 +504,9 @@ export function tickAllEffects(allies, enemies) {
   return events;
 }
 
-export function processBefriend(enemies, robotParty, targetEnemyIndex) {
-  const totalRobots = robotParty.active.length + robotParty.reserves.length + (robotParty.pendingCaptures?.length || 0);
-  if (totalRobots >= robotParty.maxTotal) {
+export function processBefriend(enemies, creatureParty, targetEnemyIndex) {
+  const totalRobots = creatureParty.active.length + creatureParty.reserves.length + (creatureParty.pendingCaptures?.length || 0);
+  if (totalRobots >= creatureParty.maxTotal) {
     return { success: false, reason: 'Party full' };
   }
 
@@ -536,8 +536,8 @@ export function processBefriend(enemies, robotParty, targetEnemyIndex) {
   const capturedCopy = { ...captured, hp: captured.maxHp, mp: captured.maxMp, befriended: false };
 
   // Store in pending list — added to party AFTER combat ends
-  if (!robotParty.pendingCaptures) robotParty.pendingCaptures = [];
-  robotParty.pendingCaptures.push(capturedCopy);
+  if (!creatureParty.pendingCaptures) creatureParty.pendingCaptures = [];
+  creatureParty.pendingCaptures.push(capturedCopy);
 
   return {
     success: true,
@@ -554,10 +554,10 @@ export function processBefriend(enemies, robotParty, targetEnemyIndex) {
  * When xpBalanceStacks > 0, XP is redistributed from overleveled to underleveled robots.
  * Returns per-robot XP amounts and any level-ups that occurred.
  */
-export function awardKillXp(robotParty, enemyLevel, xpMultiplier = 1.0, xpBalanceStacks = 0) {
+export function awardKillXp(creatureParty, enemyLevel, xpMultiplier = 1.0, xpBalanceStacks = 0) {
   const baseXp = Math.floor(BASE_KILL_XP * enemyLevel * xpMultiplier);
-  const activeRobots = robotParty.active.filter(r => r && r.hp > 0);
-  const reserveRobots = robotParty.reserves.filter(r => r != null);
+  const activeRobots = creatureParty.active.filter(r => r && r.hp > 0);
+  const reserveRobots = creatureParty.reserves.filter(r => r != null);
   const totalShares = activeRobots.length * 2 + reserveRobots.length * 1;
   if (totalShares === 0) return { xpGrants: [], levelUps: [] };
 
@@ -618,20 +618,20 @@ export function awardKillXp(robotParty, enemyLevel, xpMultiplier = 1.0, xpBalanc
   return { xpGrants, levelUps };
 }
 
-export function awardBattleXp(robotParty) {
+export function awardBattleXp(creatureParty) {
   // Befriend victory: each robot gains 1 full level worth of XP
-  for (const robot of robotParty.active) {
+  for (const robot of creatureParty.active) {
     if (robot) addXpToRobot(robot, xpToNextLevel(robot.level));
   }
-  for (const robot of robotParty.reserves) {
+  for (const robot of creatureParty.reserves) {
     if (robot) addXpToRobot(robot, xpToNextLevel(robot.level));
   }
 }
 
-export function handleRobotKO(robotParty, koRobotIndex) {
-  if (robotParty.reserves.length === 0) return null;
-  const replacement = robotParty.reserves.shift();
-  robotParty.active[koRobotIndex] = replacement;
+export function handleRobotKO(creatureParty, koRobotIndex) {
+  if (creatureParty.reserves.length === 0) return null;
+  const replacement = creatureParty.reserves.shift();
+  creatureParty.active[koRobotIndex] = replacement;
   return replacement;
 }
 
@@ -676,13 +676,13 @@ export function handleBefriendAnswer(gameManager, { roundIndex, selectedIndex })
     const koSwaps = [];
     for (let i = 0; i < combat.allies.length; i++) {
       if (combat.allies[i] && combat.allies[i].hp <= 0) {
-        const replacement = handleRobotKO(gameManager.run.robotParty, i);
+        const replacement = handleRobotKO(gameManager.run.creatureParty, i);
         if (replacement) {
           koSwaps.push({ slot: i, replacement: replacement.nameEn });
         }
       }
     }
-    combat.allies = gameManager.run.robotParty.active;
+    combat.allies = gameManager.run.creatureParty.active;
 
     const allAlliesKO = combat.allies.every(a => !a || a.hp <= 0);
     if (allAlliesKO) {
@@ -720,7 +720,7 @@ export function handleBefriendAnswer(gameManager, { roundIndex, selectedIndex })
       befriend: result.befriend,
       combatEnded: result.combatEnded || false,
       victory: result.victory || false,
-      robotParty: result.robotParty,
+      creatureParty: result.creatureParty,
       enemies: combat.enemies,
       targetEnemy,
       needsDialogueRegen: true

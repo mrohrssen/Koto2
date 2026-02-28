@@ -24,7 +24,7 @@
  * Room: /game/room, /game/proceed, /game/interact-trap, /game/loot-body
  * Combat: /game/start-encounter, /game/start-boss, /game/combat-cycle, /game/combat-end-narration
  * Economy: /game/shop, /game/shop/buy, /game/refine, /game/open-treasure
- * Robots: /game/robot-party, /game/robot-swap
+ * Creatures: /game/robot-party, /game/robot-swap
  * Meta: /game/upgrades, /game/purchase-upgrade
  *
  * DEPENDENCIES:
@@ -285,6 +285,11 @@ if (gameSave && (!gameSave.version || gameSave.version < SAVE_VERSION)) {
   gameManager.loadPlayer(gameSave.player);
   console.log(`Loaded game save for ${gameSave.player.name}`);
 }
+// Migrate: rename robotCollection → creatureCollection (no version bump)
+if (gameSave?.meta?.robotCollection && !gameSave?.meta?.creatureCollection) {
+  gameSave.meta.creatureCollection = gameSave.meta.robotCollection;
+  delete gameSave.meta.robotCollection;
+}
 gameManager.initMeta(gameSave?.version >= SAVE_VERSION ? gameSave?.meta : null);
 if (gameSave?.meta && gameSave?.version >= SAVE_VERSION) {
   console.log(`Loaded meta-progression: ${gameSave.meta.essence} essence`);
@@ -416,7 +421,7 @@ function normalizeNarrationRequest(event, context = {}) {
   if (event === 'bossStart') {
     const isFinalBoss = Boolean(context?.isFinalBoss) || Number(context?.floor) === 7;
     const bossContext = context?.enemy || context?.boss || context || {};
-    // Preserve allies if present for robot-specific narration
+    // Preserve allies if present for creature-specific narration
     if (context?.allies) bossContext.allies = context.allies;
     return {
       event: isFinalBoss ? 'finalBossAppear' : 'bossAppear',

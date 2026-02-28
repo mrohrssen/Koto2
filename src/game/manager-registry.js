@@ -37,16 +37,22 @@ export function getManager(userId) {
               current: null
             };
           }
+          // Migrate: rename robotCollection → creatureCollection (no version bump)
+          if (data.meta.robotCollection && !data.meta.creatureCollection) {
+            data.meta.creatureCollection = data.meta.robotCollection;
+            delete data.meta.robotCollection;
+            needsSave = true;
+          }
           // Migrate: remove stale creature IDs and ensure defaults
-          if (data.meta.robotCollection) {
-            const original = JSON.stringify(data.meta.robotCollection);
-            data.meta.robotCollection = data.meta.robotCollection.filter(id => ROBOTS_BY_ID[id]);
+          if (data.meta.creatureCollection) {
+            const original = JSON.stringify(data.meta.creatureCollection);
+            data.meta.creatureCollection = data.meta.creatureCollection.filter(id => ROBOTS_BY_ID[id]);
             for (const id of DEFAULT_COLLECTION) {
-              if (!data.meta.robotCollection.includes(id)) {
-                data.meta.robotCollection.push(id);
+              if (!data.meta.creatureCollection.includes(id)) {
+                data.meta.creatureCollection.push(id);
               }
             }
-            if (JSON.stringify(data.meta.robotCollection) !== original) {
+            if (JSON.stringify(data.meta.creatureCollection) !== original) {
               needsSave = true;
             }
           }

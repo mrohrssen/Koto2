@@ -340,8 +340,8 @@ export class ExplorationService {
 
     // Find robot in party (active or reserves)
     const allRobots = [
-      ...this.gm.run.robotParty.active,
-      ...this.gm.run.robotParty.reserves
+      ...this.gm.run.creatureParty.active,
+      ...this.gm.run.creatureParty.reserves
     ].filter(Boolean);
 
     const robot = allRobots.find(r => r.id === robotId);
@@ -395,8 +395,8 @@ export class ExplorationService {
       case 'heal': {
         if (!robotId) throw new Error('robotId required for heal reward');
         const allRobots = [
-          ...this.gm.run.robotParty.active,
-          ...this.gm.run.robotParty.reserves
+          ...this.gm.run.creatureParty.active,
+          ...this.gm.run.creatureParty.reserves
         ].filter(Boolean);
         const robot = allRobots.find(r => r.id === robotId);
         if (!robot) throw new Error('Robot not in party');
@@ -408,8 +408,8 @@ export class ExplorationService {
       case 'levelup': {
         if (!robotId) throw new Error('robotId required for levelup reward');
         const allRobots = [
-          ...this.gm.run.robotParty.active,
-          ...this.gm.run.robotParty.reserves
+          ...this.gm.run.creatureParty.active,
+          ...this.gm.run.creatureParty.reserves
         ].filter(Boolean);
         const robot = allRobots.find(r => r.id === robotId);
         if (!robot) throw new Error('Robot not in party');
@@ -458,12 +458,12 @@ export class ExplorationService {
     // Award small XP + credits for robot runs
     const xpGrants = [];
     const levelUps = [];
-    if (this.gm.run.robotParty?.active?.length > 0) {
+    if (this.gm.run.creatureParty?.active?.length > 0) {
       const BASE_KILL_XP = 10;
-      const highestLevel = Math.max(...this.gm.run.robotParty.active.filter(r => r && r.hp > 0).map(r => r.level), 1);
+      const highestLevel = Math.max(...this.gm.run.creatureParty.active.filter(r => r && r.hp > 0).map(r => r.level), 1);
       const discoveryXp = Math.floor(BASE_KILL_XP * highestLevel * (this.gm.run.itemBuffs?.xpMultiplier || 1.0) * 0.2);
 
-      for (const robot of this.gm.run.robotParty.active) {
+      for (const robot of this.gm.run.creatureParty.active) {
         if (!robot || robot.hp <= 0) continue;
         const prevLevel = robot.level;
         addXpToRobot(robot, discoveryXp);
@@ -527,14 +527,14 @@ export class ExplorationService {
 
     // Lazily generate offered robots on first visit
     if (!room.dealer.offeredRobots || room.dealer.offeredRobots.length === 0) {
-      const collectionIds = this.gm.player?.robotCollection?.map(r => r.id) || [];
+      const collectionIds = this.gm.player?.creatureCollection?.map(r => r.id) || [];
       room.dealer.offeredRobots = generateDealerRobots(collectionIds);
     }
 
     // Build party inventory with sell prices
     const allRobots = [
-      ...this.gm.run.robotParty.active.map((r, i) => r ? { ...r, slot: 'active', slotIndex: i } : null),
-      ...this.gm.run.robotParty.reserves.map((r, i) => r ? { ...r, slot: 'reserves', slotIndex: i } : null)
+      ...this.gm.run.creatureParty.active.map((r, i) => r ? { ...r, slot: 'active', slotIndex: i } : null),
+      ...this.gm.run.creatureParty.reserves.map((r, i) => r ? { ...r, slot: 'reserves', slotIndex: i } : null)
     ].filter(Boolean).map(r => ({
       ...r,
       sellPrice: getRobotSellPrice(r.rarity, r.level)
@@ -566,8 +566,8 @@ export class ExplorationService {
     }
 
     // Find robot in party
-    const activeIdx = this.gm.run.robotParty.active.findIndex(r => r?.id === robotId);
-    const reserveIdx = this.gm.run.robotParty.reserves.findIndex(r => r?.id === robotId);
+    const activeIdx = this.gm.run.creatureParty.active.findIndex(r => r?.id === robotId);
+    const reserveIdx = this.gm.run.creatureParty.reserves.findIndex(r => r?.id === robotId);
 
     if (activeIdx === -1 && reserveIdx === -1) {
       throw new Error('Robot not in party');
@@ -575,8 +575,8 @@ export class ExplorationService {
 
     // Can't sell last robot
     const totalRobots = [
-      ...this.gm.run.robotParty.active,
-      ...this.gm.run.robotParty.reserves
+      ...this.gm.run.creatureParty.active,
+      ...this.gm.run.creatureParty.reserves
     ].filter(Boolean).length;
 
     if (totalRobots <= 1) {
@@ -584,21 +584,21 @@ export class ExplorationService {
     }
 
     const robot = activeIdx !== -1
-      ? this.gm.run.robotParty.active[activeIdx]
-      : this.gm.run.robotParty.reserves[reserveIdx];
+      ? this.gm.run.creatureParty.active[activeIdx]
+      : this.gm.run.creatureParty.reserves[reserveIdx];
 
     const sellPrice = getRobotSellPrice(robot.rarity, robot.level);
 
     // Remove from party
     if (activeIdx !== -1) {
-      this.gm.run.robotParty.active[activeIdx] = null;
+      this.gm.run.creatureParty.active[activeIdx] = null;
       // Auto-fill from reserves if available
-      const reserveRobot = this.gm.run.robotParty.reserves.shift();
+      const reserveRobot = this.gm.run.creatureParty.reserves.shift();
       if (reserveRobot) {
-        this.gm.run.robotParty.active[activeIdx] = reserveRobot;
+        this.gm.run.creatureParty.active[activeIdx] = reserveRobot;
       }
     } else {
-      this.gm.run.robotParty.reserves.splice(reserveIdx, 1);
+      this.gm.run.creatureParty.reserves.splice(reserveIdx, 1);
     }
 
     // Add credits
@@ -649,8 +649,8 @@ export class ExplorationService {
 
     // Check party size (max 6: 3 active + 3 reserves)
     const totalRobots = [
-      ...this.gm.run.robotParty.active,
-      ...this.gm.run.robotParty.reserves
+      ...this.gm.run.creatureParty.active,
+      ...this.gm.run.creatureParty.reserves
     ].filter(Boolean).length;
 
     if (totalRobots >= 6) {
@@ -665,11 +665,11 @@ export class ExplorationService {
     delete newRobot.buyPrice;
 
     // Add to active if space, otherwise reserves
-    const emptyActiveSlot = this.gm.run.robotParty.active.findIndex(r => r === null);
+    const emptyActiveSlot = this.gm.run.creatureParty.active.findIndex(r => r === null);
     if (emptyActiveSlot !== -1) {
-      this.gm.run.robotParty.active[emptyActiveSlot] = newRobot;
+      this.gm.run.creatureParty.active[emptyActiveSlot] = newRobot;
     } else {
-      this.gm.run.robotParty.reserves.push(newRobot);
+      this.gm.run.creatureParty.reserves.push(newRobot);
     }
 
     room.dealer.purchasedRobot = robotId;

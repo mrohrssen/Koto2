@@ -92,9 +92,9 @@ export class GameManager {
    */
   initMeta(metaData = null) {
     this.meta = metaData || createMetaProgression();
-    // Ensure robotCollection exists for saves created before this feature
-    if (!this.meta.robotCollection) {
-      this.meta.robotCollection = ['hikaribon', 'hanatchi', 'tsukimochi'];
+    // Ensure creatureCollection exists for saves created before this feature
+    if (!this.meta.creatureCollection) {
+      this.meta.creatureCollection = ['hikaribon', 'hanatchi', 'tsukimochi'];
     }
     return this.meta;
   }
@@ -360,7 +360,7 @@ export class GameManager {
         selectedRooms: this.run.selectedRooms,
         rooms: this.run.rooms,
         runStats: this.run.runStats,
-        robotParty: this.run.robotParty,
+        creatureParty: this.run.creatureParty,
         itemBuffs: this.run.itemBuffs || null,
         npcDialogue: this.run?.npcDialogue || null,
         postCombatShop: null,
@@ -377,7 +377,7 @@ export class GameManager {
         enemy: this.combat.enemy,
         allies: this.combat.allies || [],
         enemies: this.combat.enemies || [],
-        isRobotCombat: this.combat.isRobotCombat || false,
+        isCreatureCombat: this.combat.isCreatureCombat || false,
         intent: this.combat.intent,
         lastAction: this.combat.lastAction,
         npcId: this.combat.npcId || null,
@@ -469,7 +469,7 @@ export class GameManager {
     // Initialize robot starter(s) if provided
     const ids = starterIds || (starterId ? [starterId] : null);
     if (ids && ids.length > 0) {
-      this.run.robotParty.active = ids.map(id => instantiateRobot(id));
+      this.run.creatureParty.active = ids.map(id => instantiateRobot(id));
     }
 
     this.emitState();
@@ -637,7 +637,7 @@ export class GameManager {
       throw new Error('Combat already active');
     }
 
-    const highestLevel = Math.max(...this.run.robotParty.active.map(r => r.level), 1);
+    const highestLevel = Math.max(...this.run.creatureParty.active.map(r => r.level), 1);
     const isFirstBattle = (this.run.encountersCompleted || 0) === 0;
     const creaturePool = this.run.currentArea?.creatures || null;
     const enemyRobots = generateEnemyRobots(highestLevel, {
@@ -646,9 +646,9 @@ export class GameManager {
     });
 
     this.combat = createCombatState(enemyRobots[0]);
-    this.combat.allies = this.run.robotParty.active;
+    this.combat.allies = this.run.creatureParty.active;
     this.combat.enemies = enemyRobots;
-    this.combat.isRobotCombat = true;
+    this.combat.isCreatureCombat = true;
     this.combat.swapPhase = true; // Free swap available before first action
 
     // Assign area-locked NPC to this encounter
@@ -678,7 +678,7 @@ export class GameManager {
     return {
       enemy: enemyRobots[0],
       enemies: enemyRobots,
-      allies: this.run.robotParty.active,
+      allies: this.run.creatureParty.active,
       playerGoesFirst: true,
       npc: this.combat.npcData
     };
@@ -701,29 +701,29 @@ export class GameManager {
    * @returns {Array} New collection additions
    */
   _flushPendingCaptures() {
-    const pending = this.run.robotParty.pendingCaptures || [];
+    const pending = this.run.creatureParty.pendingCaptures || [];
     const newAdditions = [];
     for (const robot of pending) {
-      const total = this.run.robotParty.active.length + this.run.robotParty.reserves.length;
-      if (total >= this.run.robotParty.maxTotal) break;
-      if (this.run.robotParty.active.length < 3) {
-        this.run.robotParty.active.push(robot);
+      const total = this.run.creatureParty.active.length + this.run.creatureParty.reserves.length;
+      if (total >= this.run.creatureParty.maxTotal) break;
+      if (this.run.creatureParty.active.length < 3) {
+        this.run.creatureParty.active.push(robot);
       } else {
-        this.run.robotParty.reserves.push(robot);
+        this.run.creatureParty.reserves.push(robot);
       }
       if (this.meta && !robot.temporary) {
         // Increment befriend counter (always, even if already owned)
         if (!this.meta.befriendCount) this.meta.befriendCount = {};
         this.meta.befriendCount[robot.id] = (this.meta.befriendCount[robot.id] || 0) + 1;
 
-        const result = addToCollection(this.meta.robotCollection || [], robot.id);
+        const result = addToCollection(this.meta.creatureCollection || [], robot.id);
         if (result.added) {
-          this.meta.robotCollection = result.collection;
+          this.meta.creatureCollection = result.collection;
           newAdditions.push({ id: robot.id, name: robot.name, nameEn: robot.nameEn, element: robot.element, rarity: robot.rarity });
         }
       }
     }
-    this.run.robotParty.pendingCaptures = [];
+    this.run.creatureParty.pendingCaptures = [];
     return newAdditions;
   }
 
@@ -758,7 +758,7 @@ export class GameManager {
    * @private
    */
   _handleRobotAttackTurn(effectEvents, moveChoices) {
-    const playerResult = processMoveTurn(this.combat.allies, this.combat.enemies, moveChoices, this.run.itemBuffs, this.run.robotParty);
+    const playerResult = processMoveTurn(this.combat.allies, this.combat.enemies, moveChoices, this.run.itemBuffs, this.run.creatureParty);
 
     // Award credits for kills
     if (playerResult.xpEvents?.length > 0) {
@@ -785,7 +785,7 @@ export class GameManager {
         effectEvents,
         combatEnded: true,
         victory: true,
-        robotParty: this.run.robotParty,
+        creatureParty: this.run.creatureParty,
         enemies: this.combat.enemies,
         newCollectionAdditions
       };
@@ -798,29 +798,29 @@ export class GameManager {
     const koSwaps = [];
     for (let i = 0; i < this.combat.allies.length; i++) {
       if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
-        const replacement = handleRobotKO(this.run.robotParty, i);
+        const replacement = handleRobotKO(this.run.creatureParty, i);
         if (replacement) {
           koSwaps.push({ slot: i, replacement: replacement.nameEn });
           logger.info('[RobotCombat] KO swap: slot', i, '→', replacement.nameEn);
         }
       }
     }
-    this.combat.allies = this.run.robotParty.active;
+    this.combat.allies = this.run.creatureParty.active;
 
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
     const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
     if (allAlliesKO) {
       // Save any befriended robots to permanent collection before defeat
-      const pending = this.run.robotParty.pendingCaptures || [];
+      const pending = this.run.creatureParty.pendingCaptures || [];
       for (const robot of pending) {
         if (this.meta && !robot.temporary) {
-          const result = addToCollection(this.meta.robotCollection || [], robot.id);
+          const result = addToCollection(this.meta.creatureCollection || [], robot.id);
           if (result.added) {
-            this.meta.robotCollection = result.collection;
+            this.meta.creatureCollection = result.collection;
           }
         }
       }
-      this.run.robotParty.pendingCaptures = [];
+      this.run.creatureParty.pendingCaptures = [];
 
       this.combat.active = false;
       this.run.active = false;
@@ -836,7 +836,7 @@ export class GameManager {
         combatEnded: true,
         victory: false,
         turnCount: this.combat.turnCount,
-        robotParty: this.run.robotParty
+        creatureParty: this.run.creatureParty
       };
     }
 
@@ -857,7 +857,7 @@ export class GameManager {
       turnCount: this.combat.turnCount,
       allies: this.combat.allies,
       enemies: this.combat.enemies,
-      robotParty: this.run.robotParty
+      creatureParty: this.run.creatureParty
     };
   }
 
@@ -878,29 +878,29 @@ export class GameManager {
     const koSwaps = [];
     for (let i = 0; i < this.combat.allies.length; i++) {
       if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
-        const replacement = handleRobotKO(this.run.robotParty, i);
+        const replacement = handleRobotKO(this.run.creatureParty, i);
         if (replacement) {
           koSwaps.push({ slot: i, replacement: replacement.nameEn });
           logger.info('[RobotCombat] KO swap: slot', i, '→', replacement.nameEn);
         }
       }
     }
-    this.combat.allies = this.run.robotParty.active;
+    this.combat.allies = this.run.creatureParty.active;
 
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
     const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
     if (allAlliesKO) {
       // Save any befriended robots to permanent collection before defeat
-      const pending = this.run.robotParty.pendingCaptures || [];
+      const pending = this.run.creatureParty.pendingCaptures || [];
       for (const robot of pending) {
         if (this.meta && !robot.temporary) {
-          const result = addToCollection(this.meta.robotCollection || [], robot.id);
+          const result = addToCollection(this.meta.creatureCollection || [], robot.id);
           if (result.added) {
-            this.meta.robotCollection = result.collection;
+            this.meta.creatureCollection = result.collection;
           }
         }
       }
-      this.run.robotParty.pendingCaptures = [];
+      this.run.creatureParty.pendingCaptures = [];
 
       this.combat.active = false;
       this.run.active = false;
@@ -915,7 +915,7 @@ export class GameManager {
         combatEnded: true,
         victory: false,
         turnCount: this.combat.turnCount,
-        robotParty: this.run.robotParty
+        creatureParty: this.run.creatureParty
       };
     }
 
@@ -935,7 +935,7 @@ export class GameManager {
       turnCount: this.combat.turnCount,
       allies: this.combat.allies,
       enemies: this.combat.enemies,
-      robotParty: this.run.robotParty
+      creatureParty: this.run.creatureParty
     };
   }
 
@@ -951,11 +951,11 @@ export class GameManager {
     const targetIdx = this.combat.befriendConversation?.targetEnemyIndex;
     // Preserve targetEnemyIndex for befriendReplace (party-full flow)
     if (typeof targetIdx === 'number') this.combat.lastBefriendTargetIndex = targetIdx;
-    const befriendResult = processBefriend(this.combat.enemies, this.run.robotParty, targetIdx);
+    const befriendResult = processBefriend(this.combat.enemies, this.run.creatureParty, targetIdx);
 
     // Captured last enemy — immediate victory
     if (befriendResult.success && befriendResult.allEnemiesDefeated) {
-      awardBattleXp(this.run.robotParty);
+      awardBattleXp(this.run.creatureParty);
       const newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.encountersCompleted++;
@@ -970,7 +970,7 @@ export class GameManager {
         effectEvents,
         combatEnded: true,
         victory: true,
-        robotParty: this.run.robotParty,
+        creatureParty: this.run.creatureParty,
         enemies: this.combat.enemies,
         newCollectionAdditions
       };
@@ -983,29 +983,29 @@ export class GameManager {
     const koSwaps = [];
     for (let i = 0; i < this.combat.allies.length; i++) {
       if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
-        const replacement = handleRobotKO(this.run.robotParty, i);
+        const replacement = handleRobotKO(this.run.creatureParty, i);
         if (replacement) {
           koSwaps.push({ slot: i, replacement: replacement.nameEn });
           logger.info('[RobotCombat] KO swap: slot', i, '→', replacement.nameEn);
         }
       }
     }
-    this.combat.allies = this.run.robotParty.active;
+    this.combat.allies = this.run.creatureParty.active;
 
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
     const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
     if (allAlliesKO) {
       // Save any befriended robots to permanent collection before defeat
-      const pending = this.run.robotParty.pendingCaptures || [];
+      const pending = this.run.creatureParty.pendingCaptures || [];
       for (const robot of pending) {
         if (this.meta && !robot.temporary) {
-          const result = addToCollection(this.meta.robotCollection || [], robot.id);
+          const result = addToCollection(this.meta.creatureCollection || [], robot.id);
           if (result.added) {
-            this.meta.robotCollection = result.collection;
+            this.meta.creatureCollection = result.collection;
           }
         }
       }
-      this.run.robotParty.pendingCaptures = [];
+      this.run.creatureParty.pendingCaptures = [];
 
       this.combat.active = false;
       this.run.active = false;
@@ -1020,7 +1020,7 @@ export class GameManager {
         combatEnded: true,
         victory: false,
         turnCount: this.combat.turnCount,
-        robotParty: this.run.robotParty
+        creatureParty: this.run.creatureParty
       };
     }
 
@@ -1040,7 +1040,7 @@ export class GameManager {
       turnCount: this.combat.turnCount,
       allies: this.combat.allies,
       enemies: this.combat.enemies,
-      robotParty: this.run.robotParty
+      creatureParty: this.run.creatureParty
     };
   }
 
@@ -1064,28 +1064,28 @@ export class GameManager {
     if (!items || !items[itemIndex]) throw new Error('Invalid shop item');
 
     const selectedItem = items[itemIndex];
-    applyItem(selectedItem, this.run.robotParty, this.run.itemBuffs);
+    applyItem(selectedItem, this.run.creatureParty, this.run.itemBuffs);
     this.run._pendingShopItems = null;
 
     this.emitState();
     return {
       selected: selectedItem,
-      robotParty: this.run.robotParty,
+      creatureParty: this.run.creatureParty,
       itemBuffs: this.run.itemBuffs
     };
   }
 
   /**
    * Swap an active robot with a reserve
-   * @param {number} activeIndex - Index in robotParty.active (0-2)
-   * @param {number} reserveIndex - Index in robotParty.reserves (0-2)
+   * @param {number} activeIndex - Index in creatureParty.active (0-2)
+   * @param {number} reserveIndex - Index in creatureParty.reserves (0-2)
    * @returns {Object} Result with updated party and whether enemy attacks
    */
   swapRobot(activeIndex, reserveIndex) {
     if (!this.combat?.active) throw new Error('No active combat');
-    if (!this.run?.robotParty) throw new Error('No robot party');
+    if (!this.run?.creatureParty) throw new Error('No robot party');
 
-    const party = this.run.robotParty;
+    const party = this.run.creatureParty;
     if (!party.active[activeIndex]) throw new Error('Invalid active robot index');
     if (!party.reserves[reserveIndex]) throw new Error('Invalid reserve robot index');
 
@@ -1111,10 +1111,10 @@ export class GameManager {
       // Handle KO'd allies after enemy attack
       for (let i = 0; i < this.combat.allies.length; i++) {
         if (this.combat.allies[i].hp <= 0) {
-          handleRobotKO(this.run.robotParty, i);
+          handleRobotKO(this.run.creatureParty, i);
         }
       }
-      this.combat.allies = this.run.robotParty.active;
+      this.combat.allies = this.run.creatureParty.active;
 
       // Check defeat
       const allAlliesKO = this.combat.allies.every(a => a.hp <= 0);
@@ -1132,7 +1132,7 @@ export class GameManager {
         enemyAttacks: enemyResult.attacks,
         combatEnded: allAlliesKO,
         victory: false,
-        robotParty: party,
+        creatureParty: party,
         allies: this.combat.allies,
         enemies: this.combat.enemies
       };
@@ -1142,7 +1142,7 @@ export class GameManager {
     return {
       swapped: true,
       freeSwap: true,
-      robotParty: party,
+      creatureParty: party,
       allies: this.combat.allies,
       enemies: this.combat.enemies
     };
@@ -1156,8 +1156,8 @@ export class GameManager {
    * @returns {Object} Result with updated party
    */
   rearrangeRobots(indexA, indexB) {
-    if (!this.run?.robotParty) throw new Error('No robot party');
-    const party = this.run.robotParty;
+    if (!this.run?.creatureParty) throw new Error('No robot party');
+    const party = this.run.creatureParty;
     if (!party.active[indexA]) throw new Error('Invalid robot index A');
     if (!party.active[indexB]) throw new Error('Invalid robot index B');
 
@@ -1174,19 +1174,19 @@ export class GameManager {
     this.emitState();
     return {
       rearranged: true,
-      robotParty: party
+      creatureParty: party
     };
   }
 
   /**
    * Swap an active robot with a reserve OUTSIDE of combat (equip screen).
-   * @param {number} activeIndex - Index in robotParty.active (0-2)
-   * @param {number} reserveIndex - Index in robotParty.reserves (0-2)
+   * @param {number} activeIndex - Index in creatureParty.active (0-2)
+   * @param {number} reserveIndex - Index in creatureParty.reserves (0-2)
    * @returns {Object} Result with updated party
    */
   swapRobotOutOfCombat(activeIndex, reserveIndex) {
-    if (!this.run?.robotParty) throw new Error('No robot party');
-    const party = this.run.robotParty;
+    if (!this.run?.creatureParty) throw new Error('No robot party');
+    const party = this.run.creatureParty;
     if (!party.active[activeIndex]) throw new Error('Invalid active robot index');
     if (!party.reserves[reserveIndex]) throw new Error('Invalid reserve robot index');
 
@@ -1198,7 +1198,7 @@ export class GameManager {
     this.emitState();
     return {
       swapped: true,
-      robotParty: party
+      creatureParty: party
     };
   }
 
@@ -1210,9 +1210,9 @@ export class GameManager {
    */
   befriendReplace(releaseRobotId) {
     if (!this.combat?.active) throw new Error('No active combat');
-    if (!this.run?.robotParty) throw new Error('No robot party');
+    if (!this.run?.creatureParty) throw new Error('No robot party');
 
-    const party = this.run.robotParty;
+    const party = this.run.creatureParty;
     const enemies = this.combat.enemies;
 
     // Use the stored target from the befriend conversation
@@ -1285,7 +1285,7 @@ export class GameManager {
       allEnemiesDefeated,
       combatEnded: allEnemiesDefeated,
       victory: allEnemiesDefeated,
-      robotParty: party,
+      creatureParty: party,
       enemies,
       newCollectionAdditions
     };

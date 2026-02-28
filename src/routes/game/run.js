@@ -90,7 +90,7 @@ export default function createRunRoutes({
       const ids = starterIds || (starterId ? [starterId] : null);
       if (ids) {
         const meta = gameManager.getMeta();
-        const collection = meta.robotCollection || [];
+        const collection = meta.creatureCollection || [];
         const validation = validateTeamSelection(collection, ids);
         if (!validation.valid) {
           return res.status(400).json({ error: validation.reason });
@@ -152,7 +152,7 @@ export default function createRunRoutes({
       const ids = starterIds || (starterId ? [starterId] : null);
       if (ids) {
         const meta = gameManager.getMeta();
-        const collection = meta.robotCollection || [];
+        const collection = meta.creatureCollection || [];
         const validation = validateTeamSelection(collection, ids);
         if (!validation.valid) {
           return res.status(400).json({ error: validation.reason });

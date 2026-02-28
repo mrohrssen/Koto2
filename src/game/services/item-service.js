@@ -69,8 +69,8 @@ function applyChargeBoost(allRobots, amount) {
   }
 }
 
-export function applyItem(item, robotParty, itemBuffs) {
-  const allRobots = [...robotParty.active, ...robotParty.reserves].filter(Boolean);
+export function applyItem(item, creatureParty, itemBuffs) {
+  const allRobots = [...creatureParty.active, ...creatureParty.reserves].filter(Boolean);
 
   if (item.type === 'heal') {
     if (item.effect.healPercent) {

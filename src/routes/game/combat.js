@@ -119,8 +119,8 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     const { robotIndex, newMoveId, replaceIndex } = req.body;
     try {
-      if (!gameManager.run?.robotParty) throw new Error('No active run');
-      const robot = gameManager.run.robotParty.active[robotIndex];
+      if (!gameManager.run?.creatureParty) throw new Error('No active run');
+      const robot = gameManager.run.creatureParty.active[robotIndex];
       if (!robot) throw new Error('Invalid robot index');
 
       const moveData = MOVES_BY_ID[newMoveId];
@@ -146,7 +146,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     try {
       const meta = gameManager.getMeta();
-      const collection = meta.robotCollection || ['hikaribon', 'hanatchi', 'tsukimochi'];
+      const collection = meta.creatureCollection || ['hikaribon', 'hanatchi', 'tsukimochi'];
       const befriendCount = meta.befriendCount || {};
       res.json({ collection, catalog: getCollectionCatalog(collection, befriendCount) });
     } catch (error) {
@@ -236,7 +236,7 @@ export default function createCombatRoutes({
     const { enemyIndex } = req.body;
     const combat = gameManager.combat;
 
-    if (!combat?.active || !combat.isRobotCombat) {
+    if (!combat?.active || !combat.isCreatureCombat) {
       return res.status(400).json({ error: 'No active robot combat' });
     }
 

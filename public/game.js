@@ -278,10 +278,10 @@ function updateChipRow() {
     return;
   }
 
-  if (gameState.run?.robotParty?.active?.length > 0) {
+  if (gameState.run?.creatureParty?.active?.length > 0) {
     // Robot party active: render robot slots
-    robotRow.setReserves(gameState.run.robotParty.reserves || []);
-    robotRow.render(gameState.run.robotParty.active);
+    robotRow.setReserves(gameState.run.creatureParty.reserves || []);
+    robotRow.render(gameState.run.creatureParty.active);
     return;
   }
 
@@ -291,7 +291,7 @@ function updateChipRow() {
 
 function updatePlayerHP() {
   // In robot combat, individual robot HP bars handle health display
-  if (gameState.run?.robotParty?.active?.length > 0) {
+  if (gameState.run?.creatureParty?.active?.length > 0) {
     hpBar.setVisible(false);
     return;
   }
@@ -397,8 +397,8 @@ async function loadGameState() {
     updateGameState(data);
     // Probe which robots have animated idle sprites (for background-image contexts)
     const allRobotIds = [
-      ...(data.robotParty?.active || []),
-      ...(data.robotParty?.reserves || []),
+      ...(data.creatureParty?.active || []),
+      ...(data.creatureParty?.reserves || []),
     ].filter(Boolean).map(r => r.id);
     probeIdleSprites(allRobotIds);
   } else {
@@ -670,7 +670,7 @@ function showCollectionToast(additions) {
 }
 
 async function startEncounter() {
-  const hasRobots = gameState.run?.robotParty?.active?.length > 0;
+  const hasRobots = gameState.run?.creatureParty?.active?.length > 0;
 
   let result;
   if (hasRobots) {
@@ -805,7 +805,7 @@ async function showPostCombatShopFlow() {
 
 // ============ ROBOT EQUIP UI ============
 async function openRobotEquipView() {
-  const party = gameState.run?.robotParty;
+  const party = gameState.run?.creatureParty;
   if (!party) return;
 
   takeover.open('robotEquip');
@@ -882,10 +882,10 @@ async function openRobotEquipView() {
         if (selectedReserve !== null) {
           // Both selected: perform swap
           const result = await apiSwapRobotEquip(selectedActive, selectedReserve);
-          if (result?.robotParty) {
+          if (result?.creatureParty) {
             // Update party data in gameState immediately (BUG C fix)
-            party.active = result.robotParty.active;
-            party.reserves = result.robotParty.reserves;
+            party.active = result.creatureParty.active;
+            party.reserves = result.creatureParty.reserves;
             if (result.state) updateGameState(result.state);
           }
           selectedActive = null;
@@ -905,10 +905,10 @@ async function openRobotEquipView() {
         if (selectedActive !== null) {
           // Both selected: perform swap
           const result = await apiSwapRobotEquip(selectedActive, selectedReserve);
-          if (result?.robotParty) {
+          if (result?.creatureParty) {
             // Update party data in gameState immediately (BUG C fix)
-            party.active = result.robotParty.active;
-            party.reserves = result.robotParty.reserves;
+            party.active = result.creatureParty.active;
+            party.reserves = result.creatureParty.reserves;
             if (result.state) updateGameState(result.state);
           }
           selectedActive = null;
@@ -941,7 +941,7 @@ function setupEventListeners() {
 
   // Bots button opens robot equip view
   dom.botsBtn?.addEventListener('click', () => {
-    if (gameState.run?.robotParty?.active?.length > 0) {
+    if (gameState.run?.creatureParty?.active?.length > 0) {
       openRobotEquipView();
     }
   });
@@ -1000,7 +1000,7 @@ async function initGame() {
 
   actions.init({
     equipBots: () => {
-      if (gameState.run?.robotParty?.active?.length > 0) {
+      if (gameState.run?.creatureParty?.active?.length > 0) {
         openRobotEquipView();
       }
     },
@@ -1080,8 +1080,8 @@ async function initGame() {
         updateGameState(result.state);
       }
       // Re-render robot row with updated active roster
-      robotRow.setReserves(result.robotParty?.reserves || []);
-      robotRow.render(result.robotParty?.active || []);
+      robotRow.setReserves(result.creatureParty?.reserves || []);
+      robotRow.render(result.creatureParty?.active || []);
       // If paid swap triggered enemy attacks, show them
       if (result.enemyAttacks?.length > 0) {
         for (const atk of result.enemyAttacks) {
@@ -1105,8 +1105,8 @@ async function initGame() {
       if (result?.state) {
         updateGameState(result.state);
       }
-      robotRow.setReserves(result?.robotParty?.reserves || []);
-      robotRow.render(result?.robotParty?.active || []);
+      robotRow.setReserves(result?.creatureParty?.reserves || []);
+      robotRow.render(result?.creatureParty?.active || []);
     },
   });
 

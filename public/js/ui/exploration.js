@@ -191,7 +191,7 @@ function showInventory() {
 
   // Collect temp effects from active robots
   const tempEffects = [];
-  const robots = gameState.robotParty?.active || [];
+  const robots = gameState.creatureParty?.active || [];
   for (const robot of robots) {
     if (!robot?.activeEffects) continue;
     for (const eff of robot.activeEffects) {
@@ -647,9 +647,9 @@ export function renderRunEnded() {
 /** Shrine phase - show robot roster for level-up */
 export function renderShrine() {
   const gameState = getGameState();
-  const robotParty = gameState.run?.robotParty;
+  const creatureParty = gameState.run?.creatureParty;
 
-  if (!robotParty) {
+  if (!creatureParty) {
     actions.setContent(`
       <p style="text-align:center;color:var(--text-secondary)">No robots in party</p>
       <button class="action-btn action-btn-primary" id="shrine-skip-btn">続ける</button>
@@ -662,8 +662,8 @@ export function renderShrine() {
   }
 
   const allRobots = [
-    ...(robotParty.active || []),
-    ...(robotParty.reserves || [])
+    ...(creatureParty.active || []),
+    ...(creatureParty.reserves || [])
   ].filter(Boolean);
 
   const robotCards = allRobots.map(robot => {
@@ -844,13 +844,13 @@ export async function renderQuiz() {
 
 async function renderQuizRewards() {
   const gameState = getGameState();
-  const robotParty = gameState.run?.robotParty;
+  const creatureParty = gameState.run?.creatureParty;
 
   // If a reward type was chosen that needs a robot, show robot picker
   if (gameState._quizSelectedReward && gameState._quizSelectedReward !== 'credits') {
     const allRobots = [
-      ...(robotParty?.active || []),
-      ...(robotParty?.reserves || [])
+      ...(creatureParty?.active || []),
+      ...(creatureParty?.reserves || [])
     ].filter(Boolean);
 
     const rewardType = gameState._quizSelectedReward;

@@ -71,8 +71,8 @@ export function createMetaProgression() {
     // Achievements earned
     achievements: [],
 
-    // Permanent robot collection (persists across runs)
-    robotCollection: ['hikaribon', 'hanatchi', 'tsukimochi'],
+    // Permanent creature collection (persists across runs)
+    creatureCollection: ['hikaribon', 'hanatchi', 'tsukimochi'],
 
     // Befriend counts per creature (persists across runs)
     befriendCount: {},
@@ -293,8 +293,8 @@ export function createNewRun(player) {
     // Current encounter
     encounter: null,
 
-    // Robot party (run-scoped)
-    robotParty: {
+    // Creature party (run-scoped)
+    creatureParty: {
       active: [],    // 0-3 deployed robots
       reserves: [],  // 0-3 bench robots
       maxTotal: 6
@@ -364,7 +364,7 @@ export function createCombatState(enemy) {
 
     enemy: { ...enemy },
 
-    allies: [],    // references to run.robotParty.active
+    allies: [],    // references to run.creatureParty.active
     enemies: [],   // MVP: single enemy robot
 
     // Last action for DM narration
