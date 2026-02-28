@@ -38,19 +38,22 @@ npm start      # Production
 
 ## Testing
 
-**We do NOT use e2e test suites.** The `tests/e2e/` directory is legacy and unmaintained. Instead, playtest manually using the Playwright MCP browser (headless) — see the Playtesting section below.
+**Three-tier test system** — see `tests/README.md` for full conventions.
+
+```bash
+npm test              # Tier 1 (unit) + Tier 2 (integration) — must pass before merge
+npm run test:unit     # Unit tests with c8 coverage
+npm run test:integration  # Integration tests
+npm run test:smoke    # On-demand smoke tests (real AI calls, not a gate)
+npm run test:coverage # View HTML coverage report
+```
 
 **Syntax check after editing JS** (catches errors fast):
 ```bash
 node --check public/js/yourfile.js && echo "OK"
 ```
 
-### Quick Tests (no server needed)
-
-```bash
-npm run test:unit           # Unit tests only (154 tests)
-npm run test:integration    # Integration tests (14 tests)
-```
+CI runs Tier 1 + 2 on every push and PR via GitHub Actions. Coverage has a ratcheting floor — it can only go up. Playtest manually using the Playwright MCP browser for visual/UX verification.
 
 ## Git Workflow (Multi-Session Safe with Worktrees)
 

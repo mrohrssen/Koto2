@@ -26,7 +26,6 @@ regenerate_unique_enemies.py
 test-*.js
 test-results/
 tests/e2e/playwright-report/
-.github/workflows/
 ASSET-GENERATION-PLAN.md
 # Original PNGs (keep locally for regeneration, commit only WebP)
 public/assets/**/*.png

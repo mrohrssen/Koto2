@@ -1,0 +1,12 @@
+{
+  "check-coverage": true,
+  "lines": 55,
+  "reporter": ["text", "html"],
+  "report-dir": "tmp/coverage",
+  "all": false,
+  "exclude": [
+    "tests/**",
+    "scripts/**",
+    "public/**"
+  ]
+}
