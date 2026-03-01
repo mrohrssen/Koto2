@@ -6,7 +6,7 @@
  */
 
 const BASE = '/assets/sprites/creatures';
-const SPRITE_VERSION = '20260228';
+const SPRITE_VERSION = '20260301';
 
 const _noIdle = new Set();
 const _hasIdle = new Set();
