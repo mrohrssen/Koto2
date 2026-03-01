@@ -6,6 +6,11 @@
  * scaffolding stage (furigana + romaji + English → furigana + English → furigana only).
  */
 
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
+import { join } from 'path';
+
+export const TRACKER_DIR = join(import.meta.dirname, '../../data');
+
 // Scaffolding stage thresholds (exposure counts)
 const STAGE_THRESHOLDS = {
   NO_ROMAJI: 4,   // Drop romaji at 4+ exposures
@@ -113,4 +118,28 @@ export function getWordsAtStage(tracker, stage) {
   return Object.entries(tracker.words)
     .filter(([, data]) => data.stage === stage)
     .map(([word]) => word);
+}
+
+/**
+ * Load a player's word tracker from disk (or create fresh)
+ */
+export function loadWordTracker(userId, dir = TRACKER_DIR) {
+  const filePath = join(dir, `word-tracker-${userId}.json`);
+  try {
+    if (existsSync(filePath)) {
+      return JSON.parse(readFileSync(filePath, 'utf8'));
+    }
+  } catch (e) {
+    console.error(`[WordTracker] Failed to load for ${userId}:`, e.message);
+  }
+  return createWordTracker(userId);
+}
+
+/**
+ * Save a player's word tracker to disk
+ */
+export function saveWordTracker(tracker, dir = TRACKER_DIR) {
+  mkdirSync(dir, { recursive: true });
+  const filePath = join(dir, `word-tracker-${tracker.userId}.json`);
+  writeFileSync(filePath, JSON.stringify(tracker, null, 2));
 }
