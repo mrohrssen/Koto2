@@ -15,10 +15,14 @@ data/*
 !data/*.json
 !data/character-cards/
 !data/vocab-categories/
+!data/bootstrap-narrations/
+!data/bootstrap-narrations/**
 data/npc-memory-test-*.json
 data/npc-dialogue-cache-test-*.json
 # Runtime-generated caches (rebuilt automatically per user)
 data/vocab-cache-*.json
+# Word tracker (per-user, runtime-generated)
+data/word-tracker-*.json
 # Sprite quality pipeline
 !data/quality-refs/
 !data/quality-refs/**

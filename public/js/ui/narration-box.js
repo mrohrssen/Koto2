@@ -175,6 +175,7 @@ function handleClick(e) {
  * @param {string} [options.speaker] - Name label shown above text
  * @param {number} [options.autoDismiss] - Ms to auto-dismiss (no click needed)
  * @param {boolean} [options.persistent] - If true, stays visible until forceHide() is called
+ * @param {boolean} [options.html] - If true, text is pre-rendered HTML (e.g. bootstrap scaffolding)
  * @returns {Promise<void>} Resolves when dismissed
  */
 export async function show(text, options = {}) {
@@ -183,10 +184,15 @@ export async function show(text, options = {}) {
   const {
     speaker,
     autoDismiss,
-    persistent
+    persistent,
+    html
   } = options;
 
   const displayText = sourceText;
+  const setText = (el, val) => {
+    if (!el) return;
+    if (html) { el.innerHTML = val; } else { el.textContent = val; }
+  };
 
   if (requestId !== showRequestCounter) return;
 
@@ -202,24 +208,18 @@ export async function show(text, options = {}) {
   }
   clearPagination();
   if (autoDismiss) {
-    if (textEl) {
-      textEl.textContent = displayText;
-      lookup.refresh().catch(() => {});
-    }
+    setText(textEl, displayText);
+    if (textEl) lookup.refresh().catch(() => {});
   } else if (persistent) {
     // Persistent: truncate to 2 lines (no click-to-advance available)
-    const pages = paginateForTwoLines(displayText);
-    if (textEl) {
-      textEl.textContent = pages[0] || '';
-      lookup.refresh().catch(() => {});
-    }
+    const pages = html ? [displayText] : paginateForTwoLines(displayText);
+    setText(textEl, pages[0] || '');
+    if (textEl) lookup.refresh().catch(() => {});
   } else {
-    pagedText = paginateForTwoLines(displayText);
+    pagedText = html ? [displayText] : paginateForTwoLines(displayText);
     currentPage = 0;
-    if (textEl) {
-      textEl.textContent = pagedText[0] || '';
-      lookup.refresh().catch(() => {});
-    }
+    setText(textEl, pagedText[0] || '');
+    if (textEl) lookup.refresh().catch(() => {});
   }
   if (indicatorEl) indicatorEl.style.display = (autoDismiss || persistent) ? 'none' : '';
   if (box) box.classList.add('visible');

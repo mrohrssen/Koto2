@@ -487,6 +487,35 @@ html, body {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
+/* Bootstrap language scaffolding */
+.bootstrap-word {
+  display: inline;
+  white-space: nowrap;
+}
+
+.bootstrap-word ruby {
+  ruby-position: over;
+}
+
+.bootstrap-word ruby rt {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.scaffold-romaji {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-left: 1px;
+}
+
+.scaffold-english {
+  font-size: 10px;
+  color: var(--accent-primary, #64b5f6);
+  margin-left: 2px;
+}
+
 .narration-indicator {
   position: absolute;
   z-index: 1;
