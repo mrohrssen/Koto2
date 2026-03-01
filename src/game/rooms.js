@@ -186,14 +186,24 @@ export function generateFloorRooms(areaId, roomCount = 10, lastSpecialType = nul
   const totalSlots = roomCount;
   let prevSpecialType = lastSpecialType;
 
+  // Look up sub-areas for this area
+  const area = getAreaById(areaId);
+  const subAreas = area?.subAreas || [];
+
   for (let i = 0; i < roomCount; i++) {
     const roomNumber = i + 1;
 
     if (i === 0) {
       const room = generateSingleRoom(areaId, roomNumber, totalSlots, prevSpecialType, !forceRoomType, forceRoomType);
+      if (subAreas.length > 0) room.subArea = subAreas[i % subAreas.length];
       rooms.push(room);
     } else {
       const pair = generateBranchPair(areaId, roomNumber, totalSlots, prevSpecialType, encountersOnly, forceRoomType);
+      if (subAreas.length > 0) {
+        const sa = subAreas[i % subAreas.length];
+        pair[0].subArea = sa;
+        pair[1].subArea = sa;
+      }
       rooms.push(pair);
     }
   }
