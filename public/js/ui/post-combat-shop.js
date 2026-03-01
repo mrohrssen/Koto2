@@ -15,6 +15,7 @@
 import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
 import { t, isJapanified } from './i18n.js';
+import { prefetchWord, playWord } from '../tts.js';
 
 let onItemSelected = null;
 
@@ -64,11 +65,15 @@ export function show(items) {
     </div>
   `;
 
+  // Prefetch audio for all item words
+  items.forEach(item => { if (item.word) prefetchWord(item.word); });
+
   const cards = actionArea.querySelectorAll('.shop-item-card');
   cards.forEach(card => {
     card.addEventListener('click', () => {
       const index = parseInt(card.dataset.index, 10);
       playSFX('chip-equip');
+      if (items[index]?.word) playWord(items[index].word);
       cards.forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
       cards.forEach(c => c.style.pointerEvents = 'none');

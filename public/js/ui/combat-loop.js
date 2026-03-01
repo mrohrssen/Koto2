@@ -44,6 +44,7 @@ import {
 } from './combat-effects.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
 import { configureCreatureImg, creatureSpritePath } from './sprite-utils.js';
+import { prefetchWord, playWordPair } from '../tts.js';
 import { t } from './i18n.js';
 import { init as initMoveSelect, showMoves, clear as clearMoveSelect, setActiveLabel } from './move-select.js';
 import { init as initTargetSelect, showEnemies, showAllies, clear as clearTargetSelect } from './target-select.js';
@@ -155,6 +156,14 @@ function insertAttackCard(atk, isEnemy) {
   rows.forEach((row, i) => {
     setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
   });
+
+  // Prefetch and play base word + move name audio with a tiny gap
+  const baseWord = atk.attackerBaseWord;
+  const skillName = atk.attackerSkillName || atk.moveName;
+  if (baseWord) prefetchWord(baseWord);
+  if (skillName) prefetchWord(skillName);
+  // Play after a brief delay to let prefetch start (cached words resolve near-instantly)
+  setTimeout(() => playWordPair(baseWord, skillName), 50);
 
   return card;
 }

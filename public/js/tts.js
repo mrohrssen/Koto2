@@ -35,6 +35,7 @@ const MAX_NARRATION_CACHE = 10;
 // Word audio cache
 const wordAudioCache = new Map();
 let wordAudioEnabled = true;
+const WORD_SPEAKER_ID = 11; // 玄野武宏 (ノーマル) - clear pronunciation for dictionary words
 
 // UI audio (for short texts like chip names)
 let currentUiAudio = null;
@@ -322,7 +323,7 @@ export async function prefetchWord(word) {
     const response = await fetch(`${API_BASE}/api/tts/synthesize`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: word })
+      body: JSON.stringify({ text: word, speakerId: WORD_SPEAKER_ID })
     });
 
     if (!response.ok) {
@@ -364,6 +365,20 @@ export function playWord(word) {
     audio.play().catch(e => console.warn('[WordAudio] Playback failed:', e.message));
   } catch (e) {
     console.warn('[WordAudio] Error playing audio:', e.message);
+  }
+}
+
+/**
+ * Play two words in sequence with a small gap between them.
+ * @param {string} word1 - First word to play
+ * @param {string} word2 - Second word to play
+ * @param {number} gapMs - Gap between words in ms (default 150)
+ */
+export function playWordPair(word1, word2, gapMs = 150) {
+  if (!wordAudioEnabled || muted) return;
+  playWord(word1);
+  if (word2) {
+    setTimeout(() => playWord(word2), gapMs);
   }
 }
 
