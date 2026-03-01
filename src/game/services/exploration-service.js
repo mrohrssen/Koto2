@@ -211,7 +211,9 @@ export class ExplorationService {
         const areaId = this.gm.run.currentArea?.id || 'unknown';
         for (let i = 0; i < nextRoom.length; i++) {
           if (nextRoom[i].type !== forceRoomType) {
+            const subArea = nextRoom[i].subArea;
             nextRoom[i] = createRoom(forceRoomType, areaId, nextRoom[i].roomNumber, nextRoom[i].totalRooms);
+            if (subArea) nextRoom[i].subArea = subArea;
           }
         }
       }
@@ -233,6 +235,7 @@ export class ExplorationService {
     if (forceRoomType && ROOM_TYPES[forceRoomType] && nextRoom.type !== forceRoomType) {
       const areaId = this.gm.run.currentArea?.id || 'unknown';
       const replaced = createRoom(forceRoomType, areaId, nextRoom.roomNumber, nextRoom.totalRooms);
+      if (nextRoom.subArea) replaced.subArea = nextRoom.subArea;
       this.gm.run.rooms[this.gm.run.currentRoom] = replaced;
     }
     const room = this.gm.run.rooms[this.gm.run.currentRoom]; // re-read after possible replacement
@@ -293,7 +296,9 @@ export class ExplorationService {
 
     if (forceRoomType && ROOM_TYPES[forceRoomType] && selectedRoom.type !== forceRoomType) {
       const areaId = this.gm.run.currentArea?.id || 'unknown';
+      const subArea = selectedRoom.subArea;
       selectedRoom = createRoom(forceRoomType, areaId, selectedRoom.roomNumber, selectedRoom.totalRooms);
+      if (subArea) selectedRoom.subArea = subArea;
     }
 
     // Replace pair with selected room
