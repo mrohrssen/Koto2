@@ -3,6 +3,7 @@
     "id": "nagi",
     "name": "ナギ",
     "nameEn": "Nagi",
+    "speakerId": 13,
     "area": "okunomori",
     "tier": 1,
     "personality": {
@@ -46,6 +47,7 @@
     "id": "makoto",
     "name": "マコト",
     "nameEn": "Makoto",
+    "speakerId": 0,
     "area": "mahouno-gakkou",
     "tier": 1,
     "personality": {
@@ -89,6 +91,7 @@
     "id": "sora",
     "name": "ソラ",
     "nameEn": "Sora",
+    "speakerId": 0,
     "area": "kakureta-hama",
     "tier": 1,
     "personality": {
@@ -132,6 +135,7 @@
     "id": "toshio",
     "name": "トシオ",
     "nameEn": "Toshio",
+    "speakerId": 0,
     "area": "shizukana-kouen",
     "tier": 1,
     "personality": {
@@ -175,6 +179,7 @@
     "id": "fumi",
     "name": "フミ",
     "nameEn": "Fumi",
+    "speakerId": 0,
     "area": "himitsuno-toshokan",
     "tier": 1,
     "personality": {
