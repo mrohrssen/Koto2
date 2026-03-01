@@ -78,6 +78,7 @@ describe('TtsCache', () => {
     cache.load();
     const stats = cache.getStats();
     assert.equal(stats.loaded, true);
+    assert.equal(stats.generating, false);
     assert.equal(stats.wordCount, 1);
   });
 });

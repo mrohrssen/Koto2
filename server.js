@@ -354,9 +354,11 @@ function enrichRewardDrops(rewards) {
 // Mount auth routes (public, no auth required)
 app.use('/api/auth', createAuthRoutes());
 
-// TTS disk cache
+// TTS disk cache — loads existing manifest, or auto-generates on first boot
 const ttsCache = new TtsCache(join(__dirname, 'data', 'tts-cache'));
 ttsCache.load();
+const voicevoxUrl = process.env.VOICEVOX_URL || 'http://localhost:50021';
+ttsCache.generateIfMissing(join(__dirname, 'data'), voicevoxUrl);
 
 // Mount extracted route modules
 app.use('/api', createRoutes({
