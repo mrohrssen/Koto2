@@ -6,7 +6,7 @@ Reads PNG files from an input directory, runs technical quality checks
 per sprite type, and outputs a report. Each check returns pass/fail with detail.
 
 Usage:
-    python3 scripts/sprite-gate1.py --input <dir> --type <action|creature|item|boss|npc|background> [--json] [--move-rejected]
+    python3 scripts/sprite-gate1.py --input <dir> --type <action|creature|item|boss|npc|background> [--json] [--move-rejected] [--production]
 """
 
 import argparse
@@ -83,6 +83,22 @@ def get_content_mask(rgb_arr):
     diff = rgb_arr - white
     dist = np.sqrt(np.sum(diff ** 2, axis=2))
     return dist > BG_TOLERANCE
+
+
+def get_content_mask_alpha(img):
+    """
+    Return boolean mask using alpha channel for production sprites
+    (transparent background). True = content pixel (alpha > 0).
+    """
+    if img.mode != "RGBA":
+        # No alpha channel — fall back to white-background detection
+        return get_content_mask(get_rgb_array(img))
+    arr = np.array(img)
+    return arr[:, :, 3] > 0
+
+
+# Checks to skip in production mode (already BG-removed)
+PRODUCTION_SKIP_CHECKS = {"background_purity", "content_overflow", "fake_transparency"}
 
 
 # ---------------------------------------------------------------------------
@@ -296,7 +312,7 @@ def check_connected_silhouette(content_mask, sprite_type):
 # Orchestration
 # ---------------------------------------------------------------------------
 
-def validate_sprite(filepath, sprite_type):
+def validate_sprite(filepath, sprite_type, production=False):
     """Run all applicable checks on a single sprite file."""
     filename = os.path.basename(filepath)
     try:
@@ -310,16 +326,21 @@ def validate_sprite(filepath, sprite_type):
 
     # Precompute shared data
     rgb_arr = get_rgb_array(img)
-    content_mask = get_content_mask(rgb_arr)
+    if production:
+        content_mask = get_content_mask_alpha(img)
+    else:
+        content_mask = get_content_mask(rgb_arr)
 
     checks = []
 
     # Universal checks
     checks.append(check_dimensions(img, sprite_type))
-    checks.append(check_background_purity(rgb_arr, sprite_type))
+    if not production:
+        checks.append(check_background_purity(rgb_arr, sprite_type))
     checks.append(check_content_presence(content_mask, sprite_type))
-    checks.append(check_content_overflow(content_mask, sprite_type))
-    checks.append(check_fake_transparency(img, sprite_type))
+    if not production:
+        checks.append(check_content_overflow(content_mask, sprite_type))
+        checks.append(check_fake_transparency(img, sprite_type))
     checks.append(check_visual_complexity(rgb_arr, content_mask, sprite_type))
 
     # Type-specific checks
@@ -332,21 +353,24 @@ def validate_sprite(filepath, sprite_type):
     return {"file": filename, "passed": passed, "checks": checks}
 
 
-def scan_directory(input_dir, sprite_type):
-    """Scan input directory for PNG files and validate each."""
+def scan_directory(input_dir, sprite_type, production=False):
+    """Scan input directory for image files and validate each."""
     input_path = Path(input_dir)
     if not input_path.is_dir():
         print(f"Error: {input_dir} is not a directory", file=sys.stderr)
         sys.exit(2)
 
-    png_files = sorted(input_path.glob("*.png"))
-    if not png_files:
-        print(f"Warning: No PNG files found in {input_dir}", file=sys.stderr)
+    image_files = sorted(
+        [f for f in input_path.iterdir()
+         if f.suffix.lower() in (".png", ".webp")]
+    )
+    if not image_files:
+        print(f"Warning: No image files (PNG/WebP) found in {input_dir}", file=sys.stderr)
         return []
 
     results = []
-    for png_file in png_files:
-        result = validate_sprite(str(png_file), sprite_type)
+    for img_file in image_files:
+        result = validate_sprite(str(img_file), sprite_type, production=production)
         results.append(result)
     return results
 
@@ -403,9 +427,11 @@ def main():
                         help="Output JSON report to stdout")
     parser.add_argument("--move-rejected", action="store_true",
                         help="Move failed files to rejected/ subdirectory")
+    parser.add_argument("--production", action="store_true",
+                        help="Production mode: skip BG purity, overflow, and fake transparency checks (for already-processed sprites)")
     args = parser.parse_args()
 
-    results = scan_directory(args.input, args.type)
+    results = scan_directory(args.input, args.type, production=args.production)
 
     if args.json:
         print(json.dumps(results, indent=2, default=_json_default))
