@@ -198,6 +198,8 @@ function loadSettings() {
     gameTtsSpeakerId: 13, // Cool male narrator voice
     gameTtsSpeed: 0.9,
     gameTtsVolume: 1.0,
+    // Player voice gender ('boy' or 'girl')
+    voiceGender: 'boy',
     // Word Review Settings
     reviewType: 'typing',
     // Word Discovery Settings
