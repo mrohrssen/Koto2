@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateFloorRooms, getAreaById } from '../../../src/game/rooms.js';
+import { generateFloorRooms, getAreaById, getRoomEntryNarration, createRoom } from '../../../src/game/rooms.js';
 
 describe('Sub-area assignment', () => {
   it('assigns sub-areas to rooms when area has subAreas', () => {
@@ -37,5 +37,32 @@ describe('Sub-area assignment', () => {
     const rooms = generateFloorRooms('nonexistent-area', 4);
     assert.ok(rooms.length > 0, 'should still generate rooms');
     assert.strictEqual(rooms[0].subArea, undefined, 'no subArea when area has none');
+  });
+});
+
+describe('Sub-area narration', () => {
+  it('uses sub-area name in narration when present', () => {
+    const room = createRoom('encounter', 'okunomori', 3, 10);
+    room.subArea = { id: 'okunomori-pond', name: '小さな池', nameEn: 'Small Pond' };
+    const narration = getRoomEntryNarration(room);
+    assert.ok(narration.includes('小さな池'), 'narration should contain sub-area name');
+    assert.ok(narration.includes('3/10'), 'narration should contain room number');
+    assert.ok(!narration.includes('エリア'), 'narration should NOT contain エリア');
+  });
+
+  it('falls back to エリア format when no sub-area', () => {
+    const room = createRoom('encounter', 'okunomori', 3, 10);
+    const narration = getRoomEntryNarration(room);
+    assert.ok(narration.includes('エリア3/10'), 'should fall back to エリア format');
+  });
+
+  it('works for all room types with sub-area', () => {
+    const types = ['encounter', 'shrine', 'quiz', 'wordDiscovery', 'dealer', 'whackAMole'];
+    for (const type of types) {
+      const room = createRoom(type, 'okunomori', 2, 8);
+      room.subArea = { id: 'test', name: '古い橋', nameEn: 'Old Bridge' };
+      const narration = getRoomEntryNarration(room);
+      assert.ok(narration.includes('古い橋'), `${type} narration should use sub-area name`);
+    }
   });
 });

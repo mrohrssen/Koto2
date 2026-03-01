@@ -263,23 +263,25 @@ export function createRoom(type, areaId, roomNumber, totalRooms) {
  * Get narration for entering a room
  */
 export function getRoomEntryNarration(room) {
-  const roomNum = `エリア${room.roomNumber}/${room.totalRooms}`;
+  const locationLabel = room.subArea
+    ? `${room.subArea.name} — ${room.roomNumber}/${room.totalRooms}`
+    : `エリア${room.roomNumber}/${room.totalRooms}`;
 
   switch (room.type) {
     case ROOM_TYPES.encounter:
-      return `${roomNum}に入った。SYSTEM接続された市民がいる！`;
+      return `${locationLabel}に入った。SYSTEM接続された市民がいる！`;
     case ROOM_TYPES.shrine:
-      return `${roomNum}に入った。狐の祠がある。神秘的な力が感じられる...`;
+      return `${locationLabel}に入った。狐の祠がある。神秘的な力が感じられる...`;
     case ROOM_TYPES.quiz:
-      return `${roomNum}に入った。不思議な老人がいる...「質問に答えよ」`;
+      return `${locationLabel}に入った。不思議な老人がいる...「質問に答えよ」`;
     case ROOM_TYPES.wordDiscovery:
-      return `${roomNum}に入った。知識の泉がある...新しい言葉を発見できそうだ。`;
+      return `${locationLabel}に入った。知識の泉がある...新しい言葉を発見できそうだ。`;
     case ROOM_TYPES.dealer:
-      return `${roomNum}に入った。旅の行商人がいる...「珍しいモンスターがいるよ」`;
+      return `${locationLabel}に入った。旅の行商人がいる...「珍しいモンスターがいるよ」`;
     case ROOM_TYPES.whackAMole:
-      return `${roomNum}に入った。不思議なゲーム機がある...`;
+      return `${locationLabel}に入った。不思議なゲーム機がある...`;
     default:
-      return `${roomNum}に入った。`;
+      return `${locationLabel}に入った。`;
   }
 }
 
