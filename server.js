@@ -143,6 +143,7 @@ import { createDevRouter } from './src/routes/dev.js';
 import { dataPath } from './src/data-dir.js';
 import { logger } from './src/logger.js';
 import { TtsCache } from './src/services/tts-cache.js';
+import { TtsDialogueCache } from './src/services/tts-dialogue-cache.js';
 
 dotenv.config();
 
@@ -362,11 +363,48 @@ ttsCache.load();
 const voicevoxUrl = process.env.VOICEVOX_URL || 'http://localhost:50021';
 ttsCache.generateIfMissing(join(__dirname, 'data'), voicevoxUrl);
 
+// Per-user dialogue TTS cache
+const ttsDialogueCache = new TtsDialogueCache(join(__dirname, 'data', 'tts-dialogue'));
+
+// Build TTS options for narration engine dialogue generation
+function buildTtsOptions() {
+  if (!settings.gameTtsEnabled) return null;
+
+  const PLAYER_BOY_SPEAKER_ID = 11;
+  const PLAYER_GIRL_SPEAKER_ID = 2;
+  const CREATURE_SPEAKER_ID = 0;
+
+  const playerSpeakerId = settings.voiceGender === 'girl'
+    ? PLAYER_GIRL_SPEAKER_ID
+    : PLAYER_BOY_SPEAKER_ID;
+
+  return {
+    ttsDialogueCache,
+    playerSpeakerId,
+    getEntitySpeakerId: (entityId, entityType) => {
+      if (entityType === 'creature') return CREATURE_SPEAKER_ID;
+      try {
+        const npcs = JSON.parse(readFileSync(join(__dirname, 'data', 'npcs.json'), 'utf-8'));
+        return npcs[entityId]?.speakerId || 13;
+      } catch {
+        return 13;
+      }
+    },
+    synthesizeFn: async (text, speakerId) => {
+      return synthesize(text, speakerId, {
+        speedScale: settings.gameTtsSpeed ?? 0.9,
+        volumeScale: settings.gameTtsVolume ?? 1.0
+      });
+    }
+  };
+}
+
 // Mount extracted route modules
 app.use('/api', createRoutes({
   getSettings: () => settings,
   saveSettings: saveSettings,
   ttsCache,
+  ttsDialogueCache,
   enrichGameState,
   generateGameNarration,
   generateDoorHints: generateDoorHintsForRoute,
@@ -387,9 +425,9 @@ app.use('/api', createRoutes({
   getAllCreatureDialogueCache: (userId) =>
     getAllNpcDialogueCache(userId, 'creature'),
   queueMissingCreatureDialoguesFn: async (userId, aiConfig, vocabContext) =>
-    queueNpcDialogues(userId, chat, aiConfig, vocabContext, 'creature'),
+    queueNpcDialogues(userId, chat, aiConfig, vocabContext, 'creature', buildTtsOptions()),
   regenCreatureDialogueFn: async (userId, creatureId, aiConfig, vocabContext) =>
-    regenNpcDialogue(userId, creatureId, chat, aiConfig, vocabContext, 'creature'),
+    regenNpcDialogue(userId, creatureId, chat, aiConfig, vocabContext, 'creature', buildTtsOptions()),
   // NPC narration engine deps
   getNpcDialogueFromCache,
   getAllNpcDialogueCache,
@@ -397,11 +435,11 @@ app.use('/api', createRoutes({
   clearCreatureDialogueCache: (userId) =>
     clearNpcDialogueCache(userId, 'creature'),
   queueMissingNpcDialoguesFn: async (userId, aiConfig, vocabContext) => {
-    return queueNpcDialogues(userId, chat, aiConfig, vocabContext);
+    return queueNpcDialogues(userId, chat, aiConfig, vocabContext, 'npc', buildTtsOptions());
   },
   logNpcEncounterFn: logNpcEncounter,
   regenNpcDialogueFn: async (userId, npcId, aiConfig, vocabContext) => {
-    return regenNpcDialogue(userId, npcId, chat, aiConfig, vocabContext);
+    return regenNpcDialogue(userId, npcId, chat, aiConfig, vocabContext, 'npc', buildTtsOptions());
   },
   setNpcMemoryFlagFn: setNpcMemoryFlag,
   updateNpcMemoryBondFn: updateNpcMemoryBond,

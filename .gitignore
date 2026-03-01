@@ -21,6 +21,8 @@ data/npc-memory-test-*.json
 data/npc-dialogue-cache-test-*.json
 # Runtime-generated caches (rebuilt automatically per user)
 data/vocab-cache-*.json
+# Per-user dialogue TTS audio (runtime-generated)
+data/tts-dialogue/
 # Word tracker (per-user, runtime-generated)
 data/word-tracker-*.json
 # Sprite quality pipeline

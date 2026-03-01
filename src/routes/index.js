@@ -38,7 +38,8 @@ export default function createRoutes(deps) {
   // TTS routes: /api/tts/*
   router.use('/tts', createTTSRoutes({
     getSettings: deps.getSettings,
-    ttsCache: deps.ttsCache
+    ttsCache: deps.ttsCache,
+    ttsDialogueCache: deps.ttsDialogueCache
   }));
 
   // Vocab/JPDB routes: /api/vocab/*, /api/jpdb/*

@@ -7,7 +7,7 @@ import {
   getVersion as getVoicevoxVersion
 } from '../voicevox.js';
 
-export default function createTTSRoutes({ getSettings, ttsCache }) {
+export default function createTTSRoutes({ getSettings, ttsCache, ttsDialogueCache }) {
   const router = Router();
 
   // TTS status
@@ -71,6 +71,28 @@ export default function createTTSRoutes({ getSettings, ttsCache }) {
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
+  });
+
+  // Serve cached dialogue audio
+  router.get('/dialogue/:userId/:filename', (req, res) => {
+    const { userId, filename } = req.params;
+
+    if (!filename.match(/^[a-f0-9]{12}\.wav$/)) {
+      return res.status(400).json({ error: 'Invalid filename' });
+    }
+
+    if (!ttsDialogueCache) {
+      return res.status(404).json({ error: 'Dialogue TTS not available' });
+    }
+
+    const wav = ttsDialogueCache.lookup(userId, filename);
+    if (!wav) {
+      return res.status(404).json({ error: 'Audio not found' });
+    }
+
+    res.set('Content-Type', 'audio/wav');
+    res.set('Cache-Control', 'no-cache');
+    res.send(wav);
   });
 
   return router;
