@@ -192,6 +192,133 @@ describe('Gate 1 — Sprite Technical Validation', () => {
     });
   });
 
+  describe('centering checks', () => {
+    it('passes when creature content is centered', async () => {
+      const subDir = join(tmpDir, 'centering-pass');
+      mkdirSync(subDir, { recursive: true });
+
+      // Create a 1024x1024 creature image with centered content
+      await createValidCreatureSprite(join(subDir, 'centered.png'));
+
+      const results = await runGate1(subDir, 'creature');
+
+      assert.equal(results.length, 1);
+      const centerCheck = results[0].checks.find(c => c.name === 'centering');
+      assert.ok(centerCheck, 'centering check should be present for creature type');
+      assert.equal(centerCheck.passed, true, `Centering should pass: ${centerCheck.detail}`);
+    });
+
+    it('fails when creature content is pushed far left', async () => {
+      const subDir = join(tmpDir, 'centering-fail');
+      mkdirSync(subDir, { recursive: true });
+
+      const size = 1024;
+      const pixels = Buffer.alloc(size * size * 3, 255); // white background
+
+      // Draw content only in the left 20% of the image (columns 10-200)
+      const squareH = 400;
+      const yOff = Math.floor((size - squareH) / 2);
+      for (let y = yOff; y < yOff + squareH; y++) {
+        for (let x = 10; x < 200; x++) {
+          const idx = (y * size + x) * 3;
+          const bx = Math.floor(x / 8);
+          const by = Math.floor(y / 8);
+          pixels[idx] = (bx * 17 + by * 13) % 200;
+          pixels[idx + 1] = (bx * 23 + by * 7) % 180;
+          pixels[idx + 2] = (bx * 11 + by * 19) % 220;
+        }
+      }
+
+      await sharp(pixels, { raw: { width: size, height: size, channels: 3 } })
+        .png()
+        .toFile(join(subDir, 'left-heavy.png'));
+
+      const { stdout } = await runGate1Raw(subDir, 'creature');
+      const results = JSON.parse(stdout);
+
+      assert.equal(results.length, 1);
+      const centerCheck = results[0].checks.find(c => c.name === 'centering');
+      assert.ok(centerCheck, 'centering check should be present for creature type');
+      assert.equal(centerCheck.passed, false, `Centering should fail for far-left content: ${centerCheck.detail}`);
+    });
+  });
+
+  describe('connected silhouette checks', () => {
+    it('passes when item has one solid block of content', async () => {
+      const subDir = join(tmpDir, 'silhouette-pass');
+      mkdirSync(subDir, { recursive: true });
+
+      const size = 128;
+      const pixels = Buffer.alloc(size * size * 3, 255); // white background
+
+      // Draw one solid centered block of content with coarse color variation
+      // to stay within complexity bounds (8-200 clusters for 128x128)
+      const sq = 50;
+      const off = Math.floor((size - sq) / 2);
+      for (let y = off; y < off + sq; y++) {
+        for (let x = off; x < off + sq; x++) {
+          const idx = (y * size + x) * 3;
+          const bx = Math.floor(x / 10);
+          const by = Math.floor(y / 10);
+          pixels[idx] = (bx * 40 + by * 30) % 200;
+          pixels[idx + 1] = (bx * 60 + by * 20) % 180;
+          pixels[idx + 2] = (bx * 20 + by * 50) % 220;
+        }
+      }
+
+      await sharp(pixels, { raw: { width: size, height: size, channels: 3 } })
+        .png()
+        .toFile(join(subDir, 'connected.png'));
+
+      const results = await runGate1(subDir, 'item');
+
+      assert.equal(results.length, 1);
+      const silCheck = results[0].checks.find(c => c.name === 'connected_silhouette');
+      assert.ok(silCheck, 'connected_silhouette check should be present for item type');
+      assert.equal(silCheck.passed, true, `Connected silhouette should pass: ${silCheck.detail}`);
+    });
+
+    it('fails when item has two widely separated content blocks', async () => {
+      const subDir = join(tmpDir, 'silhouette-fail');
+      mkdirSync(subDir, { recursive: true });
+
+      const size = 128;
+      const pixels = Buffer.alloc(size * size * 3, 255); // white background
+
+      // Draw two small separated blocks — top-left and bottom-right
+      // Block 1: rows 10-30, cols 10-30
+      for (let y = 10; y < 30; y++) {
+        for (let x = 10; x < 30; x++) {
+          const idx = (y * size + x) * 3;
+          pixels[idx] = 50;
+          pixels[idx + 1] = 100;
+          pixels[idx + 2] = 150;
+        }
+      }
+      // Block 2: rows 90-110, cols 90-110
+      for (let y = 90; y < 110; y++) {
+        for (let x = 90; x < 110; x++) {
+          const idx = (y * size + x) * 3;
+          pixels[idx] = 150;
+          pixels[idx + 1] = 50;
+          pixels[idx + 2] = 100;
+        }
+      }
+
+      await sharp(pixels, { raw: { width: size, height: size, channels: 3 } })
+        .png()
+        .toFile(join(subDir, 'disconnected.png'));
+
+      const { stdout } = await runGate1Raw(subDir, 'item');
+      const results = JSON.parse(stdout);
+
+      assert.equal(results.length, 1);
+      const silCheck = results[0].checks.find(c => c.name === 'connected_silhouette');
+      assert.ok(silCheck, 'connected_silhouette check should be present for item type');
+      assert.equal(silCheck.passed, false, `Connected silhouette should fail for separated blocks: ${silCheck.detail}`);
+    });
+  });
+
   describe('transparency checks', () => {
     it('rejects semi-transparent pixels (alpha=128)', async () => {
       const subDir = join(tmpDir, 'semi-transparent');

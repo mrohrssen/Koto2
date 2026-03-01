@@ -11,7 +11,6 @@ Usage:
 
 import argparse
 import json
-import math
 import os
 import shutil
 import sys
@@ -185,7 +184,7 @@ def check_fake_transparency(img, sprite_type):
         white = np.array([255.0, 255.0, 255.0])
         diff = rgb_arr - white
         dist = np.sqrt(np.sum(diff ** 2, axis=2))
-        suspect_mask = (dist > 30) & (dist < 60)
+        suspect_mask = (dist > BG_TOLERANCE) & (dist < BG_TOLERANCE * 2)
         suspect_count = int(np.sum(suspect_mask))
         passed = suspect_count == 0
         detail = ("No fake transparency detected" if passed
@@ -299,8 +298,15 @@ def check_connected_silhouette(content_mask, sprite_type):
 
 def validate_sprite(filepath, sprite_type):
     """Run all applicable checks on a single sprite file."""
-    img = Image.open(filepath)
     filename = os.path.basename(filepath)
+    try:
+        img = Image.open(filepath)
+        img.load()  # Force full decode
+    except Exception as e:
+        return {"file": filename, "passed": False, "checks": [
+            {"name": "file_readable", "passed": False,
+             "detail": f"Could not open image: {e}"}
+        ]}
 
     # Precompute shared data
     rgb_arr = get_rgb_array(img)
