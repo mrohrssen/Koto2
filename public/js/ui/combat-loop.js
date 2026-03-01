@@ -44,7 +44,7 @@ import {
 } from './combat-effects.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
 import { configureCreatureImg, creatureSpritePath } from './sprite-utils.js';
-import { prefetchWord, playWordPair } from '../tts.js';
+import { prefetchWord, playWordPair, playDialogueAudio } from '../tts.js';
 import { t } from './i18n.js';
 import { init as initMoveSelect, showMoves, clear as clearMoveSelect, setActiveLabel } from './move-select.js';
 import { init as initTargetSelect, showEnemies, showAllies, clear as clearTargetSelect } from './target-select.js';
@@ -1899,12 +1899,20 @@ async function executeBefriendAction() {
         return;
       }
 
-    const { rounds, targetEnemy, targetEnemyIndex } = convoResult;
+    const { rounds, targetEnemy, targetEnemyIndex, userId: convoUserId } = convoResult;
     const creatureName = targetEnemy?.nameEn || targetEnemy?.name || 'Creature';
 
     // 3-round conversation loop
     for (let i = 0; i < rounds.length; i++) {
+      // Play creature speaker line audio if available (fire-and-forget)
+      if (rounds[i].speakerTts && convoUserId) {
+        playDialogueAudio(convoUserId, rounds[i].speakerTts);
+      }
       const selectedIndex = await showConversationRound(rounds[i], i, creatureName);
+      // Play selected option audio if available (fire-and-forget)
+      if (rounds[i].optionsTts?.[selectedIndex] && convoUserId) {
+        playDialogueAudio(convoUserId, rounds[i].optionsTts[selectedIndex]);
+      }
       const answerResult = await apiSubmitBefriendAnswer(i, selectedIndex);
 
       if (!answerResult) {
@@ -2218,6 +2226,10 @@ export async function showNpcGreeting(npcData) {
   if (!npcData?.greeting) return;
   const npcName = npcData.nameEn || npcData.name;
   if (showNpcSprite) showNpcSprite(npcName, npcData.id);
+  // Play greeting audio if available (fire-and-forget, don't block narration)
+  if (npcData.greetingTts && npcData.userId) {
+    playDialogueAudio(npcData.userId, npcData.greetingTts);
+  }
   await narration.showNarration(npcData.greeting, { speaker: npcName });
   if (hideNpcSprite) hideNpcSprite();
 }
@@ -2231,12 +2243,16 @@ export async function runNpcDialogue() {
   const dialogueData = await apiStartNpcDialogue();
   if (!dialogueData) return;
 
-  const { npc, freed, rounds } = dialogueData;
+  const { npc, freed, rounds, userId, greetingTts, freedTts } = dialogueData;
   const npcName = npc.nameEn || npc.name;
 
   // Show NPC sprite in scene area
   if (showNpcSprite) showNpcSprite(npcName, npc.id);
 
+  // Play freed narration audio if available (fire-and-forget)
+  if (freedTts && userId) {
+    playDialogueAudio(userId, freedTts);
+  }
   // Show freed narration (click to dismiss)
   await narration.showNarration(freed, { speaker: npcName });
 
@@ -2245,11 +2261,20 @@ export async function runNpcDialogue() {
   for (let i = 0; i < rounds.length; i++) {
     const round = rounds[i];
 
+    // Play NPC line audio if available (fire-and-forget)
+    if (round.npcLineTts && userId) {
+      playDialogueAudio(userId, round.npcLineTts);
+    }
     // Show NPC line (persistent so player can read while choosing)
     await narration.showNarration(round.npcLine, { speaker: npcName, persistent: true });
 
     // Show 3 response buttons (reuses befriend dialogue styling)
     const selectedIndex = await showNpcResponseOptions(round.options, i);
+
+    // Play selected option audio if available (fire-and-forget)
+    if (round.options[selectedIndex]?.tts && userId) {
+      playDialogueAudio(userId, round.options[selectedIndex].tts);
+    }
 
     // Hide narration
     if (narration.forceHideNarration) narration.forceHideNarration();

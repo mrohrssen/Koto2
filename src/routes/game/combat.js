@@ -92,6 +92,16 @@ export default function createCombatRoutes({
     try {
       const encounter = gameManager.startCreatureEncounter();
       req.saveGame();
+
+      // Enrich NPC data with TTS greeting from dialogue cache
+      if (encounter.npc?.id && getNpcDialogueFromCache) {
+        const cached = getNpcDialogueFromCache(req.user.id, encounter.npc.id);
+        if (cached?.greetingTts) {
+          encounter.npc.greetingTts = cached.greetingTts;
+          encounter.npc.userId = req.user.id;
+        }
+      }
+
       res.json({ ...encounter, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
@@ -284,13 +294,16 @@ export default function createCombatRoutes({
 
       req.saveGame();
 
-      // Return rounds WITHOUT correctIndex
+      // Return rounds WITHOUT correctIndex, but include TTS fields
       const clientRounds = rounds.map(r => ({
         speaker: r.speaker,
-        options: r.options
+        speakerTts: r.speakerTts || undefined,
+        options: r.options,
+        optionsTts: r.optionsTts || undefined
       }));
 
       res.json({
+        userId: req.user.id,
         targetEnemy: { name: target.name, nameEn: target.nameEn, element: target.element, id: target.id },
         rounds: clientRounds,
         targetEnemyIndex: targetIdx
@@ -368,6 +381,7 @@ export default function createCombatRoutes({
       const { shuffled, toneMap } = shuffleOptions(round.options);
       return {
         npcLine: round.npcLine,
+        npcLineTts: round.npcLineTts || null,
         options: shuffled,
         _toneMap: toneMap
       };
@@ -386,13 +400,17 @@ export default function createCombatRoutes({
 
     const clientRounds = preparedRounds.map(r => ({
       npcLine: r.npcLine,
+      npcLineTts: r.npcLineTts || undefined,
       options: r.options
     }));
 
     res.json({
+      userId: req.user.id,
       npc: { id: npc.id, name: npc.name, nameEn: npc.nameEn },
       greeting,
+      greetingTts: cached?.greetingTts || undefined,
       freed,
+      freedTts: cached?.freedLineTts || undefined,
       rounds: clientRounds
     });
   });

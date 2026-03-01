@@ -36,13 +36,14 @@ export function selectNpcForEncounter(areaId, alreadyUsedNpcIds) {
 }
 
 /**
- * Takes array of 3 options [{text, tone}, ...], returns
- * { shuffled: [{text}, ...], toneMap: [tone, tone, tone] }
- * using Fisher-Yates shuffle. The shuffled array strips the tone field.
+ * Takes array of 3 options [{text, tone, tts?}, ...], returns
+ * { shuffled: [{text, tts?}, ...], toneMap: [tone, tone, tone] }
+ * using Fisher-Yates shuffle. The shuffled array strips the tone field
+ * but preserves the optional tts field.
  */
 export function shuffleOptions(options) {
   // Create paired copies for shuffling
-  const paired = options.map(o => ({ text: o.text, tone: o.tone }));
+  const paired = options.map(o => ({ text: o.text, tone: o.tone, tts: o.tts }));
 
   // Fisher-Yates shuffle
   for (let i = paired.length - 1; i > 0; i--) {
@@ -51,7 +52,11 @@ export function shuffleOptions(options) {
   }
 
   return {
-    shuffled: paired.map(({ text }) => ({ text })),
+    shuffled: paired.map(({ text, tts }) => {
+      const opt = { text };
+      if (tts) opt.tts = tts;
+      return opt;
+    }),
     toneMap: paired.map(({ tone }) => tone)
   };
 }

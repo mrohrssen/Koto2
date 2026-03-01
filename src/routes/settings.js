@@ -44,6 +44,7 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
       gameTtsSpeakerId: settings.gameTtsSpeakerId || 13,
       gameTtsSpeed: settings.gameTtsSpeed || 0.9,
       gameTtsVolume: settings.gameTtsVolume || 1.0,
+      voiceGender: settings.voiceGender || 'boy',
       reviewType: settings.reviewType || 'dialog',
       dailyWordLimit: settings.dailyWordLimit ?? 10
     });
@@ -66,6 +67,13 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
     if (gameTtsSpeakerId !== undefined) settings.gameTtsSpeakerId = gameTtsSpeakerId;
     if (gameTtsSpeed !== undefined) settings.gameTtsSpeed = gameTtsSpeed;
     if (gameTtsVolume !== undefined) settings.gameTtsVolume = gameTtsVolume;
+
+    if (req.body.voiceGender !== undefined) {
+      const vg = req.body.voiceGender;
+      if (vg === 'boy' || vg === 'girl') {
+        settings.voiceGender = vg;
+      }
+    }
 
     if (reviewType !== undefined) settings.reviewType = reviewType;
 

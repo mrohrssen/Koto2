@@ -29,6 +29,7 @@ import * as audio from '../audio.js';
 import * as tts from '../tts.js';
 import { setLang } from './i18n.js';
 import { getAuthHeaders } from '../api.js';
+import { loadServerSettings, saveServerSettings } from '../settings.js';
 
 const MODEL_OPTIONS = {
   anthropic: [
@@ -89,8 +90,12 @@ export async function openSettings() {
   // Show loading state
   content.innerHTML = '<div style="padding:20px;text-align:center">Loading...</div>';
 
-  // Load current key info from server
-  const keyInfo = await settingsModule.loadApiKeysFromServer();
+  // Load current key info and server settings in parallel
+  const [keyInfo, serverSettings] = await Promise.all([
+    settingsModule.loadApiKeysFromServer(),
+    loadServerSettings()
+  ]);
+  const voiceGender = serverSettings.voiceGender || 'boy';
 
   content.innerHTML = `
     <h3 style="margin:16px">Settings</h3>
@@ -188,6 +193,13 @@ export async function openSettings() {
         <input type="range" id="settings-tts-volume" min="0" max="100"
           value="${Math.round(tts.getVolume() * 100)}" class="settings-range">
       </label>
+      <div class="settings-label" style="margin-top:8px">
+        Voice Gender
+        <div style="display:flex;gap:12px;margin-top:4px">
+          <label><input type="radio" name="voice-gender" value="boy" ${voiceGender === 'boy' ? 'checked' : ''}> Boy</label>
+          <label><input type="radio" name="voice-gender" value="girl" ${voiceGender === 'girl' ? 'checked' : ''}> Girl</label>
+        </div>
+      </div>
       <label class="settings-label">
         <input type="checkbox" id="settings-audio-muted"
           ${audio.isMuted() ? 'checked' : ''}>
@@ -263,6 +275,7 @@ export async function openSettings() {
     const sfxVol = parseInt(document.getElementById('settings-sfx-volume')?.value || '80') / 100;
     const ttsVol = parseInt(document.getElementById('settings-tts-volume')?.value || '100') / 100;
     const audioMuted = document.getElementById('settings-audio-muted')?.checked;
+    const selectedVoiceGender = document.querySelector('input[name="voice-gender"]:checked')?.value || 'boy';
 
     // Detect if AI provider or model changed (for cache clearing prompt)
     const prevModel = keyInfo.aiProvider === 'openrouter' ? keyInfo.openrouterModel : keyInfo.openaiModel;
@@ -331,6 +344,11 @@ export async function openSettings() {
     tts.setMuted(audioMuted);
     localStorage.setItem('jrpg_ttsVolume', String(ttsVol));
     if (audioMuted) { audio.mute(); } else { audio.unmute(); }
+
+    // Save voice gender to server settings
+    if (selectedVoiceGender !== voiceGender) {
+      await saveServerSettings({ voiceGender: selectedVoiceGender });
+    }
 
     sceneModule.showToast('Settings saved', 2000);
     takeover.close('settings');

@@ -293,6 +293,29 @@ export async function speakWithVoice(text, speakerId) {
 }
 
 /**
+ * Play a dialogue TTS file by its cached filename.
+ * @param {string} userId - The user ID
+ * @param {string} filename - The WAV filename from the dialogue cache
+ * @returns {Promise<void>}
+ */
+export async function playDialogueAudio(userId, filename) {
+  if (!ttsEnabled || muted || !filename) return;
+
+  stop();
+
+  const url = `${API_BASE}/api/tts/dialogue/${userId}/${filename}`;
+  const audio = new Audio(url);
+  audio.volume = Math.min(ttsVolume, 1.0);
+  currentAudio = audio;
+
+  return new Promise((resolve) => {
+    audio.onended = () => { currentAudio = null; resolve(); };
+    audio.onerror = () => { currentAudio = null; resolve(); };
+    audio.play().catch(() => { currentAudio = null; resolve(); });
+  });
+}
+
+/**
  * Stop any currently playing TTS audio and cancel pending requests
  */
 export function stop() {
