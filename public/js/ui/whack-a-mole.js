@@ -168,12 +168,12 @@ export class WhackAMoleGame {
     tileEl.classList.add('wam-flipped');
     const img = tileEl.querySelector('.wam-tile-img');
     if (img) img.src = this.pool[poolIdx].sprite;
-    anime({
-      targets: tileEl,
+    anime(tileEl, {
       scale: [0.8, 1],
       opacity: [0.5, 1],
+    }, {
       duration: 250,
-      easing: 'easeOutBack'
+      ease: 'out(3)',
     });
   }
 
@@ -261,13 +261,13 @@ export class WhackAMoleGame {
         plus.className = 'wam-plus-one';
         plus.textContent = '+1';
         tileEl.appendChild(plus);
-        anime({
-          targets: tileEl,
+        anime(tileEl, {
           scale: [1, 1.2, 1],
           rotate: [0, 8, 0],
+        }, {
           duration: 400,
-          easing: 'easeOutElastic(1, .6)',
-          complete: () => {
+          ease: 'out(3)',
+          onComplete: () => {
             tileEl.classList.remove('wam-hit');
             plus.remove();
           }
@@ -283,12 +283,12 @@ export class WhackAMoleGame {
 
       if (tileEl) {
         tileEl.classList.add('wam-miss');
-        anime({
-          targets: tileEl,
+        anime(tileEl, {
           translateX: [-6, 6, -4, 4, 0],
+        }, {
           duration: 300,
-          easing: 'easeInOutQuad',
-          complete: () => tileEl.classList.remove('wam-miss')
+          ease: 'inOut(2)',
+          onComplete: () => tileEl.classList.remove('wam-miss')
         });
       }
       try { this.playSFX('wrong'); } catch (e) { /* sfx optional */ }
