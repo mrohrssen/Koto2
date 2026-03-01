@@ -87,6 +87,37 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
 .modal-bg-gallery figcaption{font-size:10px;color:#667;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:#556;font-size:14px}
+
+/* Review tab */
+.review-entry{background:#16213e;border-radius:8px;padding:16px;margin-bottom:16px}
+.review-header{font-size:15px;font-weight:600;margin-bottom:12px;border-bottom:1px solid #1e2d4a;padding-bottom:8px}
+.review-header .jp{color:#889;font-weight:400;margin-left:8px}
+.review-candidates{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.review-candidate{background:#0f0f23;border-radius:8px;padding:12px;text-align:center;border:2px solid transparent;transition:border-color .15s}
+.review-candidate:hover{border-color:#0f3460}
+.review-candidate img{width:128px;height:128px;object-fit:contain;display:block;margin:0 auto 8px}
+.review-candidate.large img{width:200px;height:200px}
+.review-scores{font-size:12px;line-height:1.8;margin:8px 0}
+.review-scores .score{display:inline-block;padding:1px 6px;border-radius:3px;margin:1px}
+.score-green{background:#1a3a1a;color:#4ade80}
+.score-yellow{background:#3a3a1a;color:#fbbf24}
+.score-red{background:#3a1a1a;color:#f87171}
+.review-total{font-size:14px;font-weight:600;color:#8cf;margin-bottom:4px}
+.review-rejected{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.review-rejected-item{background:#1a1a1a;border-radius:6px;padding:8px;text-align:center;opacity:.5;font-size:11px;max-width:100px}
+.review-rejected-item img{width:64px;height:64px;object-fit:contain;filter:grayscale(1);display:block;margin:0 auto 4px}
+.review-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.btn-pick{background:#0f3460;color:#fff;padding:6px 14px;border:none;border-radius:6px;cursor:pointer;font-size:13px}
+.btn-pick:hover{background:#1a4a80}
+.btn-reject{background:#4a1a1a;color:#f87171;padding:6px 14px;border:none;border-radius:6px;cursor:pointer;font-size:13px}
+.btn-reject:hover{background:#5a2020}
+.btn-batch{background:#1a3a1a;color:#4ade80;padding:8px 18px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500;margin-bottom:12px}
+.btn-batch:hover{background:#2a4a2a}
+.reject-note-input{padding:6px 10px;border:1px solid #1e2d4a;border-radius:6px;background:#0f0f23;color:#e0e0e0;font-size:13px;outline:none;width:200px}
+.review-sort{margin-bottom:12px;display:flex;gap:8px;align-items:center;font-size:13px;color:#889}
+.review-sort select{padding:4px 8px;background:#0f0f23;color:#e0e0e0;border:1px solid #1e2d4a;border-radius:4px;font-size:13px}
+.review-list{padding:12px;display:block}
+.grid:has(.review-list){display:block}
 </style>
 </head>
 <body>
@@ -103,6 +134,7 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
       <button class="tab" data-cat="backgrounds">Backgrounds</button>
       <button class="tab" data-cat="player">Player</button>
       <button class="tab" data-cat="starterVariants">Variants</button>
+      <button class="tab" data-cat="review">Needs Review (<span id="review-count">0</span>)</button>
     </div>
     <input class="search" id="search" type="text" placeholder="Search...">
     <button class="toggle" id="orphanToggle">Orphans</button>
@@ -126,6 +158,8 @@ let activeCat = 'creatures';
 let searchText = '';
 let orphansOnly = false;
 let flaggedOnly = false;
+let reviewQueue = { pending: [] };
+let reviewSort = 'score-asc';
 
 // ── Sprite paths ──────────────────────────────────────────────────
 const SPRITE_DIRS = {
@@ -188,6 +222,7 @@ function getFiltered() {
 
 // ── Render grid ───────────────────────────────────────────────────
 function render() {
+  if (activeCat === 'review') { renderReview(); return; }
   if (!manifest) return;
   const items = getFiltered();
   const grid = document.getElementById('grid');
@@ -378,6 +413,257 @@ async function saveFeedback() {
   }
 }
 
+// ── Review Queue ──────────────────────────────────────────────────
+
+async function loadReviewQueue() {
+  try {
+    const res = await fetch('/dev/api/review-queue');
+    reviewQueue = await res.json();
+  } catch (e) {
+    console.error('Failed to load review queue:', e);
+    reviewQueue = { pending: [] };
+  }
+  document.getElementById('review-count').textContent = reviewQueue.pending.length;
+  renderReview();
+}
+
+function scoreClass(val) {
+  if (val >= 4) return 'score-green';
+  if (val >= 3) return 'score-yellow';
+  return 'score-red';
+}
+
+function renderReview() {
+  const grid = document.getElementById('grid');
+  const statsEl = document.getElementById('stats');
+  const pending = reviewQueue.pending || [];
+
+  statsEl.textContent = pending.length + ' pending review';
+
+  if (pending.length === 0) {
+    grid.innerHTML = '<div class="empty">No sprites pending review</div>';
+    return;
+  }
+
+  // Sort
+  let sorted = pending.slice();
+  if (reviewSort === 'score-asc') {
+    sorted.sort(function(a, b) {
+      var aScore = (a.candidates && a.candidates[0]) ? a.candidates[0].totalScore || 0 : 0;
+      var bScore = (b.candidates && b.candidates[0]) ? b.candidates[0].totalScore || 0 : 0;
+      return aScore - bScore;
+    });
+  } else if (reviewSort === 'name') {
+    sorted.sort(function(a, b) { return (a.id || '').localeCompare(b.id || ''); });
+  }
+
+  // Count entries with candidates for batch accept
+  var batchCount = sorted.filter(function(e) { return e.candidates && e.candidates.length > 0; }).length;
+
+  var html = '<div class="review-list">';
+
+  // Batch accept button
+  if (batchCount > 0) {
+    html += '<button class="btn-batch" id="batchAccept">Accept all top-scored (' + batchCount + ')</button>';
+  }
+
+  // Sort controls
+  html += '<div class="review-sort">'
+    + '<label>Sort by:</label>'
+    + '<select id="reviewSortSelect">'
+    + '<option value="score-asc"' + (reviewSort === 'score-asc' ? ' selected' : '') + '>Lowest score first</option>'
+    + '<option value="name"' + (reviewSort === 'name' ? ' selected' : '') + '>Name</option>'
+    + '</select>'
+    + '</div>';
+
+  for (var ei = 0; ei < sorted.length; ei++) {
+    var entry = sorted[ei];
+    var typeDir = typeDirForClient(entry.type);
+    var word = entry.word || '';
+
+    html += '<div class="review-entry" data-review-id="' + esc(entry.id) + '" data-review-type="' + esc(entry.type) + '">';
+
+    // Header
+    html += '<div class="review-header">'
+      + esc(entry.id)
+      + (word ? '<span class="jp">(' + esc(word) + ')</span>' : '')
+      + '</div>';
+
+    // Candidates
+    var candidates = entry.candidates || [];
+    if (candidates.length > 0) {
+      html += '<div class="review-candidates">';
+      for (var ci = 0; ci < candidates.length; ci++) {
+        var c = candidates[ci];
+        var imgSrc = '/dev/staging/' + typeDir + '/' + c.file;
+        html += '<div class="review-candidate' + (candidates.length <= 2 ? ' large' : '') + '">';
+        html += '<img src="' + esc(imgSrc) + '" alt="' + esc(c.file) + '" loading="lazy" onerror="this.style.display=\'none\'">';
+        html += '<div class="review-total">' + (c.totalScore || '?') + '/' + (c.maxScore || '15') + '</div>';
+        html += '<div class="review-scores">';
+        if (c.scores) {
+          var scoreKeys = Object.keys(c.scores);
+          for (var si = 0; si < scoreKeys.length; si++) {
+            var sk = scoreKeys[si];
+            var sv = c.scores[sk];
+            html += '<span class="score ' + scoreClass(sv) + '">' + esc(sk) + ':' + sv + '</span> ';
+          }
+        }
+        html += '</div>';
+        html += '<button class="btn-pick" data-pick-file="' + esc(c.file) + '">Pick</button>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+
+    // Rejected candidates
+    var rejected = entry.rejected || [];
+    if (rejected.length > 0) {
+      html += '<div class="review-rejected">';
+      for (var ri = 0; ri < rejected.length; ri++) {
+        var r = rejected[ri];
+        var rejImgSrc = '/dev/staging/' + typeDir + '/' + r.file;
+        html += '<div class="review-rejected-item" title="' + esc((r.gate || 'rejected') + (r.reason ? ': ' + r.reason : '')) + '">';
+        html += '<img src="' + esc(rejImgSrc) + '" alt="rejected" loading="lazy" onerror="this.style.display=\'none\'">';
+        html += '<div>' + esc(r.gate || 'rejected') + '</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+
+    // Actions
+    html += '<div class="review-actions">';
+    html += '<button class="btn-reject" data-reject-toggle="1">Reject All &rarr; Regen</button>';
+    html += '<span class="reject-note-wrap" style="display:none">';
+    html += '<input class="reject-note-input" placeholder="Note (optional)...">';
+    html += '<button class="btn-reject" data-reject-confirm="1">Confirm Reject</button>';
+    html += '</span>';
+    html += '</div>';
+
+    html += '</div>'; // .review-entry
+  }
+
+  html += '</div>'; // .review-list
+  grid.innerHTML = html;
+
+  // Wire up event delegation for review actions
+  wireReviewEvents();
+}
+
+function typeDirForClient(type) {
+  var map = {
+    action: 'actions',
+    creature: 'creatures',
+    item: 'items',
+    boss: 'bosses',
+    npc: 'npcs',
+    background: 'backgrounds'
+  };
+  return map[type] || type;
+}
+
+function wireReviewEvents() {
+  var grid = document.getElementById('grid');
+
+  // Sort select
+  var sortSelect = document.getElementById('reviewSortSelect');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', function() {
+      reviewSort = this.value;
+      renderReview();
+    });
+  }
+
+  // Batch accept
+  var batchBtn = document.getElementById('batchAccept');
+  if (batchBtn) {
+    batchBtn.addEventListener('click', async function() {
+      var pending = reviewQueue.pending || [];
+      var ids = [];
+      for (var i = 0; i < pending.length; i++) {
+        if (pending[i].candidates && pending[i].candidates.length > 0) {
+          ids.push({ id: pending[i].id, type: pending[i].type });
+        }
+      }
+      if (ids.length === 0) return;
+      batchBtn.disabled = true;
+      batchBtn.textContent = 'Accepting...';
+      try {
+        await fetch('/dev/api/review-queue/batch-accept', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: ids })
+        });
+        await loadReviewQueue();
+      } catch (e) {
+        console.error('Batch accept failed:', e);
+        batchBtn.disabled = false;
+        batchBtn.textContent = 'Accept all top-scored (' + ids.length + ')';
+      }
+    });
+  }
+
+  // Pick buttons
+  grid.addEventListener('click', async function(e) {
+    var pickBtn = e.target.closest('[data-pick-file]');
+    if (pickBtn) {
+      var entry = pickBtn.closest('.review-entry');
+      var id = entry.dataset.reviewId;
+      var type = entry.dataset.reviewType;
+      var file = pickBtn.dataset.pickFile;
+      pickBtn.disabled = true;
+      pickBtn.textContent = 'Picking...';
+      try {
+        await fetch('/dev/api/review-queue/pick', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: id, type: type, file: file })
+        });
+        await loadReviewQueue();
+      } catch (err) {
+        console.error('Pick failed:', err);
+        pickBtn.disabled = false;
+        pickBtn.textContent = 'Pick';
+      }
+      return;
+    }
+
+    // Reject toggle - show note input
+    var rejectToggle = e.target.closest('[data-reject-toggle]');
+    if (rejectToggle) {
+      var wrap = rejectToggle.closest('.review-actions').querySelector('.reject-note-wrap');
+      if (wrap) {
+        wrap.style.display = wrap.style.display === 'none' ? 'inline-flex' : 'none';
+      }
+      return;
+    }
+
+    // Reject confirm
+    var rejectConfirm = e.target.closest('[data-reject-confirm]');
+    if (rejectConfirm) {
+      var entryEl = rejectConfirm.closest('.review-entry');
+      var rId = entryEl.dataset.reviewId;
+      var rType = entryEl.dataset.reviewType;
+      var noteInput = entryEl.querySelector('.reject-note-input');
+      var note = noteInput ? noteInput.value.trim() : '';
+      rejectConfirm.disabled = true;
+      rejectConfirm.textContent = 'Rejecting...';
+      try {
+        await fetch('/dev/api/review-queue/reject', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: rId, type: rType, note: note })
+        });
+        await loadReviewQueue();
+      } catch (err) {
+        console.error('Reject failed:', err);
+        rejectConfirm.disabled = false;
+        rejectConfirm.textContent = 'Confirm Reject';
+      }
+      return;
+    }
+  });
+}
+
 // ── Event wiring ──────────────────────────────────────────────────
 
 // Tabs
@@ -387,7 +673,16 @@ document.getElementById('tabs').addEventListener('click', function(e) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   tab.classList.add('active');
   activeCat = tab.dataset.cat;
-  render();
+  // Show/hide search and filter controls for review tab
+  const hideForReview = activeCat === 'review';
+  document.getElementById('search').style.display = hideForReview ? 'none' : '';
+  document.getElementById('orphanToggle').style.display = hideForReview ? 'none' : '';
+  document.getElementById('flaggedToggle').style.display = hideForReview ? 'none' : '';
+  if (activeCat === 'review') {
+    loadReviewQueue();
+  } else {
+    render();
+  }
 });
 
 // Search
@@ -415,7 +710,13 @@ document.getElementById('flaggedToggle').addEventListener('click', function() {
 });
 
 // Refresh
-document.getElementById('refresh').addEventListener('click', loadData);
+document.getElementById('refresh').addEventListener('click', function() {
+  if (activeCat === 'review') {
+    loadReviewQueue();
+  } else {
+    loadData();
+  }
+});
 
 // Card clicks -> modal
 document.getElementById('grid').addEventListener('click', function(e) {

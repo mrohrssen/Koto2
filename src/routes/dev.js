@@ -622,6 +622,9 @@ export function createDevRouter({ password }) {
     }
   });
 
+  // ── Serve staging files for review UI ──────────────────────────────
+  router.use('/staging', requireAuth, express.static(join(process.cwd(), 'data', 'sprite-staging')));
+
   // ── POST /api/review-queue/batch-accept ──────────────────────────
   router.post('/api/review-queue/batch-accept', requireAuth, async (req, res) => {
     try {
