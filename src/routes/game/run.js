@@ -21,8 +21,10 @@ const quizQuestionsPath = join(__dirname, '../../data/quiz-questions.json');
 const levelsPath = join(__dirname, '../../../data/levels.json');
 const creaturesPath = join(__dirname, '../../../data/creatures.json');
 const itemsPath = join(__dirname, '../../../data/items.json');
+const movesPath = join(__dirname, '../../../data/moves.json');
 const allCreatures = JSON.parse(readFileSync(creaturesPath, 'utf8'));
 const allItems = JSON.parse(readFileSync(itemsPath, 'utf8'));
+const allMoves = JSON.parse(readFileSync(movesPath, 'utf8'));
 
 function loadQuizQuestions() {
   const data = JSON.parse(readFileSync(quizQuestionsPath, 'utf-8'));
@@ -491,32 +493,18 @@ export default function createRunRoutes({
         sprite: `/assets/sprites/items/${i.id}.webp`
       }));
 
-      // Creature ATK and ULT skills — icon tiles like food items
-      const skillPool = [];
-      for (const c of allCreatures) {
-        if (c.autoSkill?.word) {
-          const slug = (c.autoSkill.nameEn || '').toLowerCase().replace(/ /g, '-');
-          skillPool.push({
-            id: `${c.id}-atk`,
-            type: 'skill',
-            word: c.autoSkill.word,
-            reading: c.autoSkill.reading,
-            meaning: c.autoSkill.nameEn || c.autoSkill.name,
-            sprite: `/assets/sprites/actions/${slug}.webp`
-          });
-        }
-        if (c.ultimate?.word) {
-          const slug = (c.ultimate.nameEn || '').toLowerCase().replace(/ /g, '-');
-          skillPool.push({
-            id: `${c.id}-ult`,
-            type: 'skill',
-            word: c.ultimate.word,
-            reading: c.ultimate.reading,
-            meaning: c.ultimate.nameEn || c.ultimate.name,
-            sprite: `/assets/sprites/actions/${slug}.webp`
-          });
-        }
-      }
+      // Moves from moves.json — action icon tiles
+      const skillPool = allMoves.map(m => {
+        const slug = (m.nameEn || '').toLowerCase().replace(/ /g, '-');
+        return {
+          id: `move-${m.id}`,
+          type: 'skill',
+          word: m.name,
+          reading: m.reading,
+          meaning: m.nameEn || m.name,
+          sprite: `/assets/sprites/actions/${slug}.webp`
+        };
+      });
 
       const pool = [...creaturePool, ...itemPool, ...skillPool].sort(() => Math.random() - 0.5);
       res.json({ pool });
