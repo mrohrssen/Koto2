@@ -12,6 +12,7 @@ This document describes the **target vision** for Koto. Systems marked with ✅ 
 1. [Vision & Identity](#1-vision--identity)
 2. [World & Setting](#2-world--setting)
 3. [Story & Narrative Arc](#3-story--narrative-arc)
+3b. [The Translator](#3b-the-translator)
 4. [Core Learning Philosophy](#4-core-learning-philosophy)
 5. [The Vocabulary Architecture](#5-the-vocabulary-architecture)
 6. [Progressive Language System](#6-progressive-language-system)
@@ -95,6 +96,8 @@ Every name in the game teaches Japanese vocabulary:
 - **Player role:** Traveler investigating the disruption, calming creatures, befriending them
 - **Moment-to-moment:** Creature-vs-creature combat framed as calming/befriending encounters
 - **World state:** The disruption is ongoing; areas vary in severity
+- **Cid:** The first NPC the player meets. She gives the player the Translator — the wearable device that frames every language mechanic in the game (see Section 3b)
+- **The Translator:** A wearable companion device that helps the player understand the world, levels up with them, and is the in-world explanation for all language systems
 
 ### What Needs Design
 
@@ -103,8 +106,9 @@ Every name in the game teaches Japanese vocabulary:
 - **Antagonist:** Is there one? A rival? A force of nature? An organization?
 - **Escalation:** How does the threat grow across 50 areas and 10 stages of content?
 - **Climax and resolution:** What does "winning" look like narratively, beyond completing 10 areas?
-- **Character arc:** How does the player character change? Do they start as a novice and become a master?
-- **Thematic resonance:** The game teaches language through connection and understanding. The story should mirror this — perhaps the disruption is a communication breakdown, and the player's growing ability to understand Japanese *is* the narrative solution.
+- **Character arc:** How does the player character change? Do they start as a novice and become a master? The Translator's leveling arc (Section 3b) provides a mechanical backbone — the character's growing comprehension IS their character growth.
+- **Thematic resonance:** The game teaches language through connection and understanding. The story should mirror this — perhaps the disruption is a communication breakdown, and the player's growing ability to understand the world (via the Translator) *is* the narrative solution.
+- **Cid's arc:** Cid is established as the first NPC and Translator-giver. Her role beyond the prologue, her relationship to the main plot, and her personal story need design.
 - **NPC arcs:** How do key NPCs' stories interweave with the main plot?
 
 ### Design Constraints for Story
@@ -115,6 +119,85 @@ The story must serve the learning system, not compete with it:
 2. **Progressive revelation** — the story can only use concepts the player has words for. Early story beats use simple vocabulary; the full truth requires advanced words
 3. **Story motivates exploration** — plot beats should drive the player to new areas (new vocabulary tiers)
 4. **No skippable story** — if story text exists, it's learning content. Every line teaches words.
+
+---
+
+## 3b. The Translator 📋
+
+> **Working name.** "Translator" is a placeholder. The final in-game name should feel natural to the world, not describe its function literally.
+
+### The Core Framing
+
+**Koto is not a language learning game. It is a game set in a world the player doesn't yet understand, and the Translator is how they learn to navigate it.**
+
+The player never opens a study app. They never do flashcard drills. Instead, they wear a device that helps them make sense of the world around them — translating what they can't read, celebrating milestones as they become more capable, and gradually stepping back as they stop needing help. Every language learning mechanic in the game is something the Translator does. The player's relationship is with the device, not with a curriculum.
+
+This reframing is not cosmetic. It changes how every system feels:
+
+- SRS review → "Your Translator is reminding you of something you haven't seen in a while"
+- The i+1 constraint → "Your Translator only shows you what you're ready for"
+- Vocabulary lookup → "Asking your Translator what something means"
+- Word count milestones → "Your Translator celebrates that you can now understand 200 words the locals use"
+- Speed review → "Your Translator wants to go over some things before you head out"
+
+The player is never studying Japanese — they are learning to live in this world, and the Translator is their companion on that journey. Progress is celebrated not as academic achievement but as growing belonging: you can understand more of what people say, read more signs, follow more conversations. You are becoming a functioning member of this society, and the Translator tracks and cheers that growth.
+
+### Cid
+
+**Cid is the first NPC the player meets.** She gives the player the Translator. The details of this encounter — where it happens, what the player's backstory is, why they don't speak the language — are story decisions belonging to Section 3 when the narrative arc is designed. What matters here is the emotional beat: a friendly person sees that you're lost and gives you something to help. That act of kindness sets the tone for the entire game.
+
+Cid's name follows the game's naming philosophy — it teaches a Japanese vocabulary word (final word TBD). Her character design, personality, and role beyond the prologue are TBD, but she should remain a recurring presence throughout the game. She gave you the device that defines your experience of the world; that relationship matters.
+
+### What the Translator Does
+
+The Translator is a wearable device — always on, always accessible. It sits in the UI as a persistent icon the player can tap at any time. Its behavior changes as it levels up, but it is always present. It never retires.
+
+**Active functions:**
+
+| Function | What the player experiences | Underlying system |
+|---|---|---|
+| **Word substitution** | Early on, text appears mostly in English with Japanese words woven in. The Translator is "filling in" what you don't know yet. | Phase 1 bootstrap narration with tagged Japanese replacements |
+| **Scaffolding removal** | As you encounter a word more times, annotations fade — first romaji, then English, then furigana. The Translator trusts you with it now. | Progressive scaffold stripping based on exposure count |
+| **Full immersion** | Eventually, text is entirely in Japanese. The Translator isn't translating anymore — you don't need it to. | Phase 3 i+1 narration with full vocabulary validation |
+| **Popup dictionary** | Tap the Translator icon or tap any word on screen to get instant definitions, readings, and audio pronunciation. | JPDB integration + VOICEVOX TTS |
+| **Review nudges** | The Translator surfaces words you haven't encountered recently — in narration, creature spawns, NPC dialogue. It keeps your knowledge fresh. | SRS scheduling influencing word selection across all systems |
+| **Level broadcast** | NPCs and creatures adjust how they speak to you based on your Translator level. Early NPCs use simple words; late-game NPCs speak naturally. | Vocabulary-constrained AI prompts using the player's known word list |
+| **Progress celebration** | The Translator marks milestones — words understood, new thresholds reached, level-ups — framed as your growing connection to the world and its people. | Word count tracking, level thresholds, achievement system |
+
+**Passive functions:**
+
+- Always-visible Translator level in the UI — the player's measure of how well they understand this world
+- Subtle visual indicator when a new word appears (the Translator highlighting it)
+- Audio pronunciation on demand for any word on screen
+
+### Translator Levels
+
+The Translator levels up as the player's comprehension grows. This is the player's primary progression metric — not "words memorized" but Translator level. The number goes up, and the world opens up.
+
+Level thresholds and exact mechanics are TBD, but the design intent:
+
+| Level Range | Player Experience | Translator Behavior |
+|---|---|---|
+| **1–5** | Text is mostly English with Japanese words appearing. The world feels foreign but not overwhelming. | Heavy substitution. Full scaffolding (furigana + romaji + English). Frequent celebrations of early milestones. |
+| **6–15** | More Japanese, less English. The player starts recognizing words without help. | Mixed text. Scaffolding stripped progressively per word. Milestones shift toward "you understood that whole conversation." |
+| **16–30** | Text is almost entirely Japanese. English is rare. The player reads naturally. | Minimal intervention. Scaffolding only on new words. Milestones celebrate fluency moments. |
+| **30+** | Full Japanese. The Translator is quiet but proud. The player belongs here. | Passive mode — dictionary on demand, review nudges, but no substitution. Celebrates mastery. |
+
+The emotional arc of leveling: early levels feel like the Translator is doing all the work. Mid levels feel like a partnership. Late levels feel like the player has outgrown the training wheels but keeps the device as a trusted companion — a constant reminder of how far they've come and the friend who believed in them from day one.
+
+### Design Constraints
+
+1. **Frame progress as belonging, not academics.** The Translator celebrates milestones — but as "you understood that entire conversation" or "the shopkeeper didn't have to simplify for you," never as "you memorized 50 flashcards." Progress means becoming part of this world.
+
+2. **Leveling must feel earned through play, not study.** The Translator levels up because you explored, fought, talked to NPCs, and lived in this world — not because you completed drills. Even when the underlying mechanic IS spaced repetition, the surface experience is gameplay.
+
+3. **The Translator is a companion, not a teacher.** It helps, it celebrates, it nudges — but it doesn't quiz you, grade you, or lecture you. Think of it like a knowledgeable friend who wants you to succeed, not a tutor with a lesson plan.
+
+4. **Cid's gift must feel personal, not transactional.** The Translator isn't a quest reward or a shop purchase. It's a gift from the first person who was kind to you. That emotional origin colors every interaction with the device.
+
+5. **The Translator icon must always be accessible.** No matter what screen the player is on — combat, exploration, NPC dialogue, menus — they can tap the Translator for help. It's their safety net. Removing access would feel like losing a companion.
+
+6. **Never use the phrase "language learning."** No UI text, no NPC dialogue, no tutorial should frame the game as educational technology. The player is learning to understand this world and its people. The word "learn" is fine in-world ("you're learning the local language") but never meta ("you're learning Japanese vocabulary").
 
 ---
 
@@ -235,6 +318,8 @@ This means **the game is tailored to each player's vocabulary.** Two players at 
 
 ## 6. Progressive Language System
 
+> **In-world framing:** Everything in this section is what the Translator (Section 3b) does under the hood. The player experiences these phases as the Translator's behavior changing — not as system transitions. Phase 1 = "the Translator is filling in what you don't know." Phase 2 = "the Translator is stepping back." Phase 3 = "the Translator has gone quiet — you understand this world now."
+
 ### The Problem
 
 The i+1 system assumes a baseline vocabulary (*i* must exist before *i+1* makes sense). But new players know zero Japanese. How do you bootstrap the first 100 words?
@@ -293,11 +378,11 @@ Curated for high frequency (JPDB/WaniKani), game relevance, and narrative useful
 
 ### Minute 1: First Launch
 
-The player arrives in a bright, welcoming world. A short guided prologue introduces the setting in English with tagged Japanese words (Phase 1 bootstrap). They meet their first creature, learn what the disruption is, and set out.
+The player arrives in a bright, welcoming world. They meet **Cid** — the first friendly face — who gives them the **Translator**, a wearable device that will help them understand this world. The Translator immediately begins working: text appears in English with Japanese words woven in, each one highlighted and annotated. A short guided prologue introduces the setting, the disruption, and their first creature. The player sets out with the Translator as their constant companion.
 
 ### Hour 1: Learning the Loop
 
-The player explores their first area, encountering wild creatures in every room. Combat teaches them creature names (nouns) and move names (verbs) through split attack cards that must be read and swiped. Between encounters, room narration introduces grammar words in context. After clearing the area, they've learned 30–50 words without realizing they were studying.
+The player explores their first area, encountering wild creatures in every room. Combat teaches them creature names (nouns) and move names (verbs) through split attack cards that must be read and swiped. Between encounters, room narration introduces grammar words in context. The Translator celebrates early milestones — first 10 words understood, first conversation followed. After clearing the area, the player has learned 30–50 words without realizing it, because they weren't studying — they were exploring.
 
 ### Hours 2–5: The World Opens Up
 
