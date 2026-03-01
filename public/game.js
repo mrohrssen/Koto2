@@ -230,8 +230,16 @@ function updateUI() {
 }
 
 function updateStatusBar() {
-  const floor = gameState.run?.floor;
-  dom.floorIndicator.textContent = floor ? `F${floor}` : 'Hub';
+  const run = gameState.run;
+  if (run) {
+    const currentRoomIdx = run.currentRoom || 0;
+    const currentRoom = run.rooms?.[currentRoomIdx];
+    const activeRoom = Array.isArray(currentRoom) ? currentRoom[0] : currentRoom;
+    const subAreaName = activeRoom?.subArea?.nameEn;
+    dom.floorIndicator.textContent = subAreaName || `Area ${(run.areasCompleted || 0) + 1}`;
+  } else {
+    dom.floorIndicator.textContent = 'Hub';
+  }
   dom.essenceDisplay.textContent = gameState.meta?.essence || gameState.player?.essence || 0;
 }
 
