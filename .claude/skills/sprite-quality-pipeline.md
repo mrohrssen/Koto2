@@ -38,14 +38,32 @@ python3 scripts/sprite-gate1.py --input data/sprite-staging/<type> --type <type>
 - If all candidates for a sprite fail, regenerate with adjusted prompts (max 2 rounds)
 - After max retries, the sprite goes to the review queue as "generation failed"
 
-### Step 3: Gate 2 — AI Vision Judge
+### Step 3: Gate 2 — AI Vision Judge (Subagents)
+
+Dispatch parallel Claude Code subagents to evaluate Gate 1 survivors. Each subagent:
+1. Reads reference images from `data/quality-refs/<type>/` using the Read tool (vision)
+2. Reads the candidate image
+3. Evaluates concept clarity, style consistency, and readability (1-5 each)
+4. Returns JSON: `{ "file": "name.png", "concept": N, "style": N, "readability": N, "reasoning": "..." }`
+
+Collect all scores into a single JSON array and run:
 
 ```bash
 node scripts/sprite-gate2.mjs \
   --input data/sprite-staging/<type> \
   --type <type> \
+  --manifest <manifest.json> \
+  --scores <scores.json> \
+  [--output <path>]
+```
+
+**Fallback (Gemini, when subagents unavailable):**
+```bash
+node scripts/sprite-gate2.mjs \
+  --input data/sprite-staging/<type> \
+  --type <type> \
   --refs data/quality-refs/<type> \
-  --manifest <path-to-manifest>
+  --manifest <manifest.json>
 ```
 
 - If all candidates for a sprite fail, regenerate with critique feedback from the judge (max 2 rounds)

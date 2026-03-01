@@ -14,6 +14,7 @@
  *     --refs <refs-dir>      # Directory with 4-6 gold-standard reference sprites
  *     --manifest <path>      # JSON manifest mapping filenames to word/wordEn
  *     [--output <path>]      # Output path (default: <input>/gate2-results.json)
+ *     [--scores <path>]      # Pre-computed scores JSON (skips Gemini entirely)
  *
  * The manifest should be an array of objects with at least:
  *   { id/slug, word/name, wordEn/nameEn }
@@ -29,6 +30,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import {
   buildJudgePrompt,
   parseJudgeResponse,
+  clampScore,
 } from './sprite-gate2-lib.mjs';
 
 // ---------------------------------------------------------------------------
@@ -43,6 +45,7 @@ function parseCli() {
       refs:     { type: 'string' },
       manifest: { type: 'string' },
       output:   { type: 'string' },
+      scores:   { type: 'string' },
     },
     strict: true,
   });
@@ -51,15 +54,18 @@ function parseCli() {
   const type = args.values.type;
   const refs = args.values.refs;
   const manifest = args.values.manifest;
+  const scores = args.values.scores;
 
-  if (!input || !type || !refs || !manifest) {
+  // --refs is required unless --scores is provided (scores bypass Gemini entirely)
+  if (!input || !type || !manifest || (!refs && !scores)) {
     console.error('Usage: node scripts/sprite-gate2.mjs --input <dir> --type <type> --refs <refs-dir> --manifest <manifest.json> [--output <path>]');
+    console.error('       node scripts/sprite-gate2.mjs --input <dir> --type <type> --manifest <manifest.json> --scores <scores.json> [--output <path>]');
     process.exit(1);
   }
 
   const output = args.values.output || resolve(input, 'gate2-results.json');
 
-  return { input, type, refs, manifest, output };
+  return { input, type, refs, manifest, output, scores };
 }
 
 // ---------------------------------------------------------------------------
@@ -185,15 +191,7 @@ function delay(ms) {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  const { input, type, refs, manifest, output } = parseCli();
-
-  // Load reference images
-  const refParts = await loadReferenceImages(refs);
-  if (refParts.length === 0) {
-    console.error("No reference images found. Curate 4-6 gold-standard sprites first.");
-    process.exit(1);
-  }
-  console.error(`Loaded ${refParts.length} reference image(s) from ${refs}`);
+  const { input, type, refs, manifest, output, scores } = parseCli();
 
   // Load manifest
   const manifestMap = await loadManifest(manifest);
@@ -208,6 +206,68 @@ async function main() {
     process.exit(0);
   }
   console.error(`Found ${candidateFiles.length} candidate(s) in ${input}`);
+
+  // -----------------------------------------------------------------------
+  // Pre-computed scores path (skips Gemini entirely)
+  // -----------------------------------------------------------------------
+  if (scores) {
+    console.error(`Using pre-computed scores from ${scores}`);
+    const scoresData = JSON.parse(await readFile(scores, 'utf-8'));
+
+    // Build a lookup by filename
+    const scoreMap = new Map();
+    for (const entry of scoresData) {
+      scoreMap.set(entry.file, entry);
+    }
+
+    const results = [];
+    for (const filename of candidateFiles) {
+      const entry = findManifestEntry(filename, manifestMap);
+      const word = entry?.word || '';
+      const wordEn = entry?.wordEn || basename(filename, extname(filename));
+
+      const scoreEntry = scoreMap.get(filename);
+      if (!scoreEntry) {
+        console.error(`  [SKIP] No score found for ${filename}`);
+        results.push({
+          file: filename, word, wordEn,
+          concept: 0, style: 0, readability: 0, total: 0,
+          passed: false, reasoning: 'No score provided',
+        });
+        continue;
+      }
+
+      const concept = clampScore(scoreEntry.concept);
+      const style = clampScore(scoreEntry.style);
+      const readability = clampScore(scoreEntry.readability);
+      const total = concept + style + readability;
+      const passed = concept >= 3 && style >= 3 && readability >= 3;
+      const reasoning = scoreEntry.reasoning || '';
+
+      results.push({ file: filename, word, wordEn, concept, style, readability, total, passed, reasoning });
+      console.error(`  ${filename}: concept=${concept} style=${style} readability=${readability} total=${total} passed=${passed}`);
+    }
+
+    await writeFile(output, JSON.stringify(results, null, 2));
+    console.error(`\nResults written to ${output}`);
+
+    const passedCount = results.filter(r => r.passed).length;
+    const failedCount = results.filter(r => !r.passed).length;
+    console.error(`Summary: ${passedCount} passed, ${failedCount} failed out of ${results.length} candidates`);
+    return;
+  }
+
+  // -----------------------------------------------------------------------
+  // Gemini evaluation path (original behavior)
+  // -----------------------------------------------------------------------
+
+  // Load reference images
+  const refParts = await loadReferenceImages(refs);
+  if (refParts.length === 0) {
+    console.error("No reference images found. Curate 4-6 gold-standard sprites first.");
+    process.exit(1);
+  }
+  console.error(`Loaded ${refParts.length} reference image(s) from ${refs}`);
 
   // Set up Gemini
   const apiKey = process.env.GEMINI_API_KEY

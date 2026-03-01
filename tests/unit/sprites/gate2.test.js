@@ -5,6 +5,7 @@ import {
   buildJudgePrompt,
   parseJudgeResponse,
   buildCritiqueFeedback,
+  clampScore,
 } from '../../../scripts/sprite-gate2-lib.mjs';
 
 // ---------------------------------------------------------------------------
@@ -149,5 +150,18 @@ describe('Gate 2 — buildCritiqueFeedback', () => {
     assert.ok(feedback.includes('art style'), 'Should mention art style for low style');
     assert.ok(feedback.includes('unreadable'), 'Should mention unreadable for low readability');
     assert.ok(feedback.includes('heal'), 'Should include the English word');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// clampScore
+// ---------------------------------------------------------------------------
+
+describe('Gate 2 — clampScore', () => {
+  it('clamps values to 1-5 range', () => {
+    assert.equal(clampScore(0), 1);
+    assert.equal(clampScore(6), 5);
+    assert.equal(clampScore(3.7), 4);
+    assert.equal(clampScore('abc'), 0);
   });
 });

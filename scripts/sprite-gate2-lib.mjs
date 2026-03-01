@@ -17,7 +17,7 @@ export const MIN_SCORE = 3;
 // Score validation helper
 // ---------------------------------------------------------------------------
 
-function clampScore(val) {
+export function clampScore(val) {
   const n = Number(val);
   if (!Number.isFinite(n)) return 0;
   return Math.max(1, Math.min(5, Math.round(n)));
