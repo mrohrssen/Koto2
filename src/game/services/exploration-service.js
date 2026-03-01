@@ -37,6 +37,14 @@ function randomAreaBg(areaId) {
 }
 
 /**
+ * Get background for a room — uses sub-area background if available, otherwise random
+ */
+function getBackgroundForRoom(room, areaId) {
+  const activeRoom = Array.isArray(room) ? room[0] : room;
+  return activeRoom?.subArea?.background || randomAreaBg(areaId);
+}
+
+/**
  * ExplorationService - Handles dungeon exploration and room interactions
  */
 export class ExplorationService {
@@ -111,8 +119,9 @@ export class ExplorationService {
     this.gm.run.pendingBranch = false;
     this.gm.run.selectedRooms = [];
 
-    // Set background: random area-specific
-    this.gm.run.background = randomAreaBg(areaId);
+    // Set background: sub-area-specific if available, otherwise random
+    const firstRoom = this.gm.run.rooms[0];
+    this.gm.run.background = getBackgroundForRoom(firstRoom, areaId);
 
     // Mark first room as explored
     if (this.gm.run.rooms.length > 0) {
@@ -233,9 +242,9 @@ export class ExplorationService {
     this.gm.run.roomsExplored++;
     this.gm.run.stats.roomsExplored++;
 
-    // Vary background per room
+    // Vary background per room — sub-area-specific if available
     const areaId = this.gm.run.currentArea?.id || 'okunomori';
-    this.gm.run.background = randomAreaBg(areaId);
+    this.gm.run.background = getBackgroundForRoom(room, areaId);
 
     // Track room clears for counter chips
     if (this.gm.run.runStats) {
@@ -303,9 +312,9 @@ export class ExplorationService {
       this.gm.run.runStats.roomsCleared++;
     }
 
-    // Vary background per room
+    // Vary background per room — sub-area-specific if available
     const areaId = this.gm.run.currentArea?.id || 'okunomori';
-    this.gm.run.background = randomAreaBg(areaId);
+    this.gm.run.background = getBackgroundForRoom(selectedRoom, areaId);
 
     // Clear pending branch
     this.gm.run.pendingBranch = false;
