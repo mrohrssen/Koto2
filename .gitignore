@@ -19,6 +19,15 @@ data/npc-memory-test-*.json
 data/npc-dialogue-cache-test-*.json
 # Runtime-generated caches (rebuilt automatically per user)
 data/vocab-cache-*.json
+# Sprite quality pipeline
+!data/quality-refs/
+!data/quality-refs/**
+!data/sprite-staging/
+!data/sprite-staging/.gitkeep
+data/sprite-staging/**/*.png
+data/sprite-staging/**/*.webp
+data/sprite-staging/**/rejected/
+data/sprite-review-queue.json
 generate_assets.py
 generate_chip_icons.py
 fix_chip_icons*.py
