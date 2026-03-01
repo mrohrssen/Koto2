@@ -15,6 +15,7 @@ import createRunRoutes from './run.js';
 import createCombatRoutes from './combat.js';
 import createEconomyRoutes from './economy.js';
 import createMiscRoutes from './misc.js';
+import createBootstrapRoutes from './bootstrap.js';
 
 /**
  * Create game router
@@ -100,6 +101,9 @@ export default function createGameRoutes(deps) {
     clearNpcDialogueCache: deps.clearNpcDialogueCache,
     clearCreatureDialogueCache: deps.clearCreatureDialogueCache
   }));
+
+  // Mount bootstrap language system routes
+  router.use('/bootstrap', createBootstrapRoutes());
 
   return router;
 }
