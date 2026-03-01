@@ -1,9 +1,4 @@
-/**
- * @fileoverview TTS routes
- *
- * Handles /api/tts/* endpoints for VOICEVOX text-to-speech
- */
-
+// src/routes/tts.js — TTS routes with disk cache support
 import { Router } from 'express';
 import {
   isVoicevoxRunning,
@@ -11,13 +6,8 @@ import {
   synthesize,
   getVersion as getVoicevoxVersion
 } from '../voicevox.js';
-/**
- * Create TTS router
- * @param {object} deps - Dependencies
- * @param {function} deps.getSettings - Get current settings object
- * @returns {Router}
- */
-export default function createTTSRoutes({ getSettings }) {
+
+export default function createTTSRoutes({ getSettings, ttsCache }) {
   const router = Router();
 
   // TTS status
@@ -33,7 +23,8 @@ export default function createTTSRoutes({ getSettings }) {
       } catch (e) {}
     }
 
-    res.json({ running, version, speakers });
+    const cacheStats = ttsCache ? ttsCache.getStats() : { loaded: false, wordCount: 0 };
+    res.json({ running, version, speakers, cache: cacheStats });
   });
 
   // Get speakers
@@ -55,13 +46,27 @@ export default function createTTSRoutes({ getSettings }) {
       return res.status(400).json({ error: 'Text is required' });
     }
 
+    const resolvedSpeakerId = speakerId || 13;
+    const resolvedSpeed = speed ?? speedScale ?? settings.gameTtsSpeed ?? 0.9;
+
+    // Check disk cache first
+    if (ttsCache) {
+      const cached = ttsCache.lookup(text, resolvedSpeakerId, resolvedSpeed);
+      if (cached) {
+        res.set('Content-Type', 'audio/wav');
+        res.set('X-TTS-Cache', 'hit');
+        return res.send(cached);
+      }
+    }
+
     try {
-      const audioBuffer = await synthesize(text, speakerId || 13, {
-        speedScale: speed ?? speedScale ?? settings.gameTtsSpeed ?? 0.9,
+      const audioBuffer = await synthesize(text, resolvedSpeakerId, {
+        speedScale: resolvedSpeed,
         volumeScale: volumeScale ?? settings.gameTtsVolume ?? 1.0
       });
 
       res.set('Content-Type', 'audio/wav');
+      res.set('X-TTS-Cache', 'miss');
       res.send(Buffer.from(audioBuffer));
     } catch (error) {
       res.status(500).json({ error: error.message });

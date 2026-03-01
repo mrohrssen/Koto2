@@ -142,6 +142,7 @@ import createAuthRoutes from './src/auth/routes.js';
 import { createDevRouter } from './src/routes/dev.js';
 import { dataPath } from './src/data-dir.js';
 import { logger } from './src/logger.js';
+import { TtsCache } from './src/services/tts-cache.js';
 
 dotenv.config();
 
@@ -353,10 +354,15 @@ function enrichRewardDrops(rewards) {
 // Mount auth routes (public, no auth required)
 app.use('/api/auth', createAuthRoutes());
 
+// TTS disk cache
+const ttsCache = new TtsCache(join(__dirname, 'data', 'tts-cache'));
+ttsCache.load();
+
 // Mount extracted route modules
 app.use('/api', createRoutes({
   getSettings: () => settings,
   saveSettings: saveSettings,
+  ttsCache,
   enrichGameState,
   generateGameNarration,
   generateDoorHints: generateDoorHintsForRoute,
