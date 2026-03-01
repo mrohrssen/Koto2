@@ -32,6 +32,8 @@ const DATA_DIR = join(process.cwd(), 'data');
 const SPRITE_DIR = join(process.cwd(), 'public', 'assets', 'sprites');
 const BG_DIR = join(process.cwd(), 'public', 'assets', 'backgrounds');
 const FEEDBACK_PATH = join(process.cwd(), 'tools', 'sprite-feedback.json');
+const REVIEW_QUEUE_PATH = join(process.cwd(), 'data', 'sprite-review-queue.json');
+const STAGING_DIR = join(process.cwd(), 'data', 'sprite-staging');
 
 // ── Data loaders ───────────────────────────────────────────────────
 
@@ -72,6 +74,34 @@ function saveFeedback(data) {
   const dir = join(process.cwd(), 'tools');
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   writeFileSync(FEEDBACK_PATH, JSON.stringify(data, null, 2));
+}
+
+// ── Review queue persistence ──────────────────────────────────────
+
+function loadReviewQueue() {
+  if (!existsSync(REVIEW_QUEUE_PATH)) return { pending: [] };
+  try {
+    return JSON.parse(readFileSync(REVIEW_QUEUE_PATH, 'utf-8'));
+  } catch {
+    return { pending: [] };
+  }
+}
+
+function saveReviewQueue(data) {
+  writeFileSync(REVIEW_QUEUE_PATH, JSON.stringify(data, null, 2));
+}
+
+/** Map sprite type to its directory name under sprites/ or staging/ */
+function typeDirFor(type) {
+  const map = {
+    action: 'actions',
+    creature: 'creatures',
+    item: 'items',
+    boss: 'bosses',
+    npc: 'npcs',
+    background: 'backgrounds'
+  };
+  return map[type] || type;
 }
 
 // ── Manifest builder ───────────────────────────────────────────────
@@ -501,6 +531,149 @@ export function createDevRouter({ password }) {
     } catch (err) {
       console.error('[Dev] Feedback save error:', err.message);
       res.status(500).json({ error: 'Failed to save feedback' });
+    }
+  });
+
+  // ── GET /api/review-queue ──────────────────────────────────────
+  router.get('/api/review-queue', requireAuth, (_req, res) => {
+    try {
+      const data = loadReviewQueue();
+      res.json(data);
+    } catch (err) {
+      console.error('[Dev] Review queue load error:', err.message);
+      res.json({ pending: [] });
+    }
+  });
+
+  // ── POST /api/review-queue/pick ──────────────────────────────────
+  router.post('/api/review-queue/pick', requireAuth, async (req, res) => {
+    try {
+      const { id, type, file } = req.body || {};
+      if (!id || !type || !file) {
+        return res.status(400).json({ error: 'Missing id, type, or file' });
+      }
+
+      const queue = loadReviewQueue();
+      const idx = queue.pending.findIndex(e => e.id === id && e.type === type);
+      if (idx === -1) {
+        return res.status(404).json({ error: 'Entry not found in queue' });
+      }
+
+      const typeDir = typeDirFor(type);
+      const srcPath = join(STAGING_DIR, typeDir, file);
+      if (!existsSync(srcPath)) {
+        return res.status(404).json({ error: `Candidate file not found: ${file}` });
+      }
+
+      // Convert PNG to WebP and write to production sprites dir
+      const sharp = (await import('sharp')).default;
+      const pngBuffer = readFileSync(srcPath);
+      const webpBuffer = await sharp(pngBuffer).webp({ quality: 80 }).toBuffer();
+
+      const destDir = join(SPRITE_DIR, typeDir);
+      if (!existsSync(destDir)) mkdirSync(destDir, { recursive: true });
+      const destPath = join(destDir, `${id}.webp`);
+      writeFileSync(destPath, webpBuffer);
+
+      // Remove entry from queue and save
+      queue.pending.splice(idx, 1);
+      saveReviewQueue(queue);
+
+      res.json({ ok: true, dest: `/assets/sprites/${typeDir}/${id}.webp` });
+    } catch (err) {
+      console.error('[Dev] Review queue pick error:', err.message);
+      res.status(500).json({ error: 'Failed to pick candidate' });
+    }
+  });
+
+  // ── POST /api/review-queue/reject ────────────────────────────────
+  router.post('/api/review-queue/reject', requireAuth, (req, res) => {
+    try {
+      const { id, type, note } = req.body || {};
+      if (!id || !type) {
+        return res.status(400).json({ error: 'Missing id or type' });
+      }
+
+      const queue = loadReviewQueue();
+      const idx = queue.pending.findIndex(e => e.id === id && e.type === type);
+      if (idx === -1) {
+        return res.status(404).json({ error: 'Entry not found in queue' });
+      }
+
+      const entry = queue.pending[idx];
+      entry.rejectedByUser = true;
+      entry.regenNote = note || '';
+      entry.attempt = (entry.attempt || 1) + 1;
+
+      // Move all candidates to rejected with gate: 'human'
+      if (!entry.rejected) entry.rejected = [];
+      if (entry.candidates && entry.candidates.length > 0) {
+        for (const c of entry.candidates) {
+          entry.rejected.push({ ...c, gate: 'human' });
+        }
+        entry.candidates = [];
+      }
+
+      saveReviewQueue(queue);
+      res.json({ ok: true, attempt: entry.attempt });
+    } catch (err) {
+      console.error('[Dev] Review queue reject error:', err.message);
+      res.status(500).json({ error: 'Failed to reject entry' });
+    }
+  });
+
+  // ── POST /api/review-queue/batch-accept ──────────────────────────
+  router.post('/api/review-queue/batch-accept', requireAuth, async (req, res) => {
+    try {
+      const { ids } = req.body || {};
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ error: 'Missing or empty ids array' });
+      }
+
+      const sharp = (await import('sharp')).default;
+      const queue = loadReviewQueue();
+      const results = [];
+
+      for (const { id, type } of ids) {
+        const idx = queue.pending.findIndex(e => e.id === id && e.type === type);
+        if (idx === -1) {
+          results.push({ id, type, ok: false, error: 'Not found' });
+          continue;
+        }
+
+        const entry = queue.pending[idx];
+        // Pick the first candidate (highest score, already sorted)
+        const topCandidate = entry.candidates?.[0];
+        if (!topCandidate) {
+          results.push({ id, type, ok: false, error: 'No candidates' });
+          continue;
+        }
+
+        const typeDir = typeDirFor(type);
+        const srcPath = join(STAGING_DIR, typeDir, topCandidate.file);
+        if (!existsSync(srcPath)) {
+          results.push({ id, type, ok: false, error: 'File not found' });
+          continue;
+        }
+
+        // Convert and copy to production
+        const pngBuffer = readFileSync(srcPath);
+        const webpBuffer = await sharp(pngBuffer).webp({ quality: 80 }).toBuffer();
+
+        const destDir = join(SPRITE_DIR, typeDir);
+        if (!existsSync(destDir)) mkdirSync(destDir, { recursive: true });
+        writeFileSync(join(destDir, `${id}.webp`), webpBuffer);
+
+        // Remove from queue
+        queue.pending.splice(idx, 1);
+        results.push({ id, type, ok: true });
+      }
+
+      saveReviewQueue(queue);
+      res.json({ results, remaining: queue.pending.length });
+    } catch (err) {
+      console.error('[Dev] Review queue batch-accept error:', err.message);
+      res.status(500).json({ error: 'Failed to batch accept' });
     }
   });
 
