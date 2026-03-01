@@ -374,7 +374,7 @@ export function playWord(word) {
  * @param {string} word2 - Second word to play
  * @param {number} gapMs - Gap between words in ms (default 150)
  */
-export function playWordPair(word1, word2, gapMs = 150) {
+export function playWordPair(word1, word2, gapMs = 300) {
   if (!wordAudioEnabled || muted) return;
   playWord(word1);
   if (word2) {
