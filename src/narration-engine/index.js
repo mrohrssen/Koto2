@@ -62,7 +62,7 @@ export function clearDialogueCache(userId, entityType = 'npc') {
  * Queue generation for all entities that are missing or stale in cache.
  * Fire-and-forget — runs in background with concurrency limit.
  */
-export async function queueMissingDialogues(userId, chatFn, aiConfig, vocabContext, entityType = 'npc') {
+export async function queueMissingDialogues(userId, chatFn, aiConfig, vocabContext, entityType = 'npc', ttsOptions = null) {
   const vocab = vocabContext?.words || vocabContext || [];
   const vocabCount = Array.isArray(vocab) ? vocab.length : 0;
   const cards = loadCharacterCards(entityType === 'creature' ? 'creature' : 'npc');
@@ -94,7 +94,7 @@ export async function queueMissingDialogues(userId, chatFn, aiConfig, vocabConte
   for (let i = 0; i < toGenerate.length; i += CONCURRENCY) {
     const batch = toGenerate.slice(i, i + CONCURRENCY);
     await Promise.allSettled(
-      batch.map(id => generateAndCache(userId, id, chatFn, aiConfig, vocabContext, entityType))
+      batch.map(id => generateAndCache(userId, id, chatFn, aiConfig, vocabContext, entityType, ttsOptions))
     );
   }
 }
@@ -110,8 +110,8 @@ export function logEncounter(userId, entityId, outcome, summary, entityType = 'n
  * Regenerate dialogue for a single entity after an encounter.
  * Runs in background — returns a promise.
  */
-export async function regenerateDialogue(userId, entityId, chatFn, aiConfig, vocabContext, entityType = 'npc') {
-  return generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext, entityType);
+export async function regenerateDialogue(userId, entityId, chatFn, aiConfig, vocabContext, entityType = 'npc', ttsOptions = null) {
+  return generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext, entityType, ttsOptions);
 }
 
 /**
@@ -137,7 +137,7 @@ export function setNarrative(userId, entityId, narrative, entityType = 'npc') {
 
 // --- Internal ---
 
-async function generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext, entityType = 'npc') {
+async function generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext, entityType = 'npc', ttsOptions = null) {
   const cardType = entityType === 'creature' ? 'creature' : 'npc';
   const card = getCharacterCard(entityId, cardType);
   if (!card) {
@@ -211,10 +211,40 @@ async function generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext
     logger.info(`[${logTag}] Dialogue for ${entityId} repaired in ${attempts} attempt(s)`);
   }
 
+  // TTS synthesis (if cache + VOICEVOX available)
+  let ttsEnrichedDialogue = repairedDialogue;
+  if (ttsOptions?.ttsDialogueCache && ttsOptions?.synthesizeFn) {
+    try {
+      // Delete old TTS files for this entity
+      const oldCached = cache.get(entityId);
+      if (oldCached) {
+        const oldFiles = ttsOptions.ttsDialogueCache.collectTtsFiles(oldCached, entityType);
+        if (oldFiles.length > 0) {
+          ttsOptions.ttsDialogueCache.deleteFiles(userId, oldFiles);
+        }
+      }
+
+      const entitySpeakerId = ttsOptions.getEntitySpeakerId(entityId, entityType);
+      const playerSpeakerId = ttsOptions.playerSpeakerId;
+
+      ttsEnrichedDialogue = await ttsOptions.ttsDialogueCache.synthesizeDialogue(
+        userId, repairedDialogue, entityType, {
+          entitySpeakerId,
+          playerSpeakerId,
+          synthesizeFn: ttsOptions.synthesizeFn
+        }
+      );
+      logger.info(`[${logTag}] TTS audio generated for ${entityId}`);
+    } catch (err) {
+      logger.warn(`[${logTag}] TTS synthesis failed for ${entityId}: ${err.message}`);
+      // Continue without TTS — dialogue text is still cached
+    }
+  }
+
   const memSnap = entityTypeDef.getMemorySnapshot(mem);
 
   cache.set(entityId, {
-    ...repairedDialogue,
+    ...ttsEnrichedDialogue,
     npcId: entityId,
     generatedAt: new Date().toISOString(),
     vocabSnapshot: vocab.length,
