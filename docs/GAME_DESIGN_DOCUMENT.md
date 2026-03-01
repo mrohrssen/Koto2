@@ -19,15 +19,16 @@ This document describes the **target vision** for Koto. Systems marked with ✅ 
 8. [Creatures](#8-creatures)
 9. [Combat](#9-combat)
 10. [Exploration & Areas](#10-exploration--areas)
-11. [Items, Crafting & Equipment](#11-items-crafting--equipment)
-12. [Town & Base Building](#12-town--base-building)
-13. [NPCs & Social Systems](#13-npcs--social-systems)
-14. [Narration Engine](#14-narration-engine)
-15. [Meta-Progression](#15-meta-progression)
-16. [Content Roadmap](#16-content-roadmap)
-17. [Art Direction](#17-art-direction)
-18. [Audio & Music](#18-audio--music)
-19. [Design Principles & Constraints](#19-design-principles--constraints)
+11. [Mini-Games](#11-mini-games)
+12. [Items, Crafting & Equipment](#12-items-crafting--equipment)
+13. [Town & Base Building](#13-town--base-building)
+14. [NPCs & Social Systems](#14-npcs--social-systems)
+15. [Narration Engine](#15-narration-engine)
+16. [Meta-Progression](#16-meta-progression)
+17. [Content Roadmap](#17-content-roadmap)
+18. [Art Direction](#18-art-direction)
+19. [Audio & Music](#19-audio--music)
+20. [Design Principles & Constraints](#20-design-principles--constraints)
 
 ---
 
@@ -342,28 +343,36 @@ No two creatures share a base word or modifier. 500 creatures = 500 unique nouns
 
 ### Learning Through Combat
 
-The **split attack card** is the highest-repetition vocabulary mechanic in the game. Every time any creature acts in combat — the player's or the opponent's — the card displays the creature's base word with reading and English meaning. A player who fights 10 battles per session with 3 creatures sees creature words **100+ times per session**.
+Combat reinforces vocabulary through a three-phase turn structure:
 
-Cards must be **clicked** to flip (reveals word and meaning), then **swiped** to act (right = knew it/attack, left = didn't know/defend). This forces active engagement — the player can't skip reading the word.
+1. **Move Selection** — The player picks an action from a 2×2 grid. Each move is a vocabulary word displayed in Japanese (with furigana reading) alongside a large action icon image. The player sees the word, reads it, and chooses it as their action.
+
+2. **Creature Selection** — The player chooses which creature will perform the move. Each creature in the party displays its base word action icon, reinforcing the creature's identity word every time the player makes a selection.
+
+3. **Attack Outcome Card** — After the action resolves, a split card displays the creature's **base word** + the **action used** + the **target**, reinforcing all vocabulary involved. Enemy attacks also produce outcome cards, so the player sees Japanese words on every action in the fight — not just their own.
+
+A player who fights 10 battles per session with 3 creatures sees creature and move words **100+ times per session** across all three phases.
 
 ### Archetypes
 
-| Archetype | HP | ATK | Role | Ultimate |
-|---|---|---|---|---|
-| Fighter | 1.0x | 1.0x | Balanced damage dealer | High-power single-target |
-| Mage | 0.7–0.8x | 0.7–0.8x | Glass cannon | Devastating AoE (charges faster) |
-| Trickster | 0.8–0.9x | 0.8–0.9x | Status disruptor | Status effects (sleep, stun, confuse, poison) |
-| Tank/Healer | 1.5–1.75x | 0.7–0.8x | Resilient protector | Team heal or shield |
+| Archetype | Role | Ultimate |
+|---|---|---|
+| Fighter | Balanced damage dealer | High-power single-target |
+| Mage | Glass cannon | Devastating AoE (charges faster) |
+| Trickster | Status disruptor | Status effects (sleep, stun, confuse, poison) |
+| Tank/Healer | Resilient protector | Team heal or shield |
+
+Stats (HP, ATK) are determined at creature creation time, not by fixed archetype multipliers. Archetypes guide the creature's role and move pool, but each creature has unique stats.
 
 ### Rarity
 
-| Rarity | Stat Mult | Count | JPDB Range | Where Found |
-|---|---|:---:|---|---|
-| Common | 1.0x | 180 | rank 1–2,000 | Everywhere, early areas |
-| Uncommon | 1.1x | 160 | rank 2,001–3,500 | Mid/late areas |
-| Rare | 1.2x | 100 | rank 3,501–6,000 | Area-specific, 1–2 per area |
-| Epic | 1.3x | 40 | rank 6,000–10,000 | Cross-area rare spawns |
-| Legendary | 1.4x | 20 | rank 10,000+ | Unique boss creatures, quest rewards |
+| Rarity | Count | JPDB Range | Where Found |
+|---|:---:|---|---|
+| Common | 180 | rank 1–2,000 | Everywhere, early areas |
+| Uncommon | 160 | rank 2,001–3,500 | Mid/late areas |
+| Rare | 100 | rank 3,501–6,000 | Area-specific, 1–2 per area |
+| Epic | 40 | rank 6,000–10,000 | Cross-area rare spawns |
+| Legendary | 20 | rank 10,000+ | Unique boss creatures, quest rewards |
 
 Rarity is tied to word frequency — common words make common creatures, rare words make rare creatures. This means early-game creatures use the most useful, everyday vocabulary.
 
@@ -402,17 +411,28 @@ Only two stats matter:
 
 That's it. No STR/AGI/VIT/INT/DEX/LUK. No hit chance. No defense stat. Damage is: `attack × move_power × element_multiplier × variance(0.85–1.15)`.
 
+### Resources
+
+Each creature has three resources:
+- **HP** — health. Creature is knocked out at 0.
+- **MP** — spent to use moves. Each move has an MP cost (4–42). Higher-cost moves are more powerful. MP regenerates 12% of max per turn passively.
+- **XP** — experience. Creatures level up as they gain XP from combat.
+
 ### Turn Structure
 
-1. **Player's turn:** Choose a creature and a move. The split attack card shows the creature's base word and the move's verb — two vocabulary words per action.
-2. **Enemy intent:** The opponent creature's intended action is shown before it acts. The player can react (use items, switch creatures).
-3. **Resolution:** Damage applied, status effects processed.
-4. **Repeat** until one side's creatures are all knocked out.
+Each turn follows a three-phase flow that maximizes vocabulary exposure:
+
+1. **Move Selection** — For each alive creature, the player picks a move from a 2×2 grid. Each move displays its Japanese name (with furigana), action icon, power, and MP cost. Moves cost MP — if a creature is low on MP, it must use cheaper moves or defend to regenerate.
+2. **Target Selection** — The player picks an enemy (or ally, for heals/buffs) to target.
+3. **Attack Outcome** — A split card displays the creature's base word + the move used + the target. Enemy attacks also produce outcome cards. Every action in the fight reinforces vocabulary.
+
+After all player attacks resolve, enemies act. Then MP regenerates (12% of max) for all creatures. Repeat until one side is knocked out.
 
 ### Creature Party
 
 - **3 active + 3 reserves** (6 total)
 - **Point budget system:** Each creature costs rarity-based points (Common: 3, Uncommon: 4, Rare: 6, Epic: 7, Legendary: 8). Max budget: 10 points per team. This prevents stacking all legendaries.
+- Active creatures fight in combat; reserves can be swapped in during battle.
 - Knocked-out creatures can be revived with items.
 
 ### Moves
@@ -423,31 +443,25 @@ Every move is a Japanese verb. Move categories map verb types to gameplay effect
 |---|---|---|
 | Damage | Physical action, elemental | Deal damage |
 | Heal | Care, recovery, life | Restore HP |
-| Buff | Movement, perception, growth | Boost ally stats |
-| Debuff | Emotion, communication, mental | Lower enemy stats |
-| Shield | Defense, evasion, protection | Reduce damage |
+| Buff | Movement, perception, growth | Boost ally stats (e.g., haste, attack buff) |
+| Debuff | Emotion, communication, mental | Lower enemy stats or inflict status effects (confuse, poison, stun) |
+| Shield | Defense, evasion, protection | Reduce damage (shield, team shield) |
 | Drain | Transfer, taking | Damage + self-heal |
 
-Non-combat verbs make great moves: 眠る (sleep) = status move, 歌う (sing) = team buff, 騙す (deceive) = debuff. This lets the game teach verbs far beyond "hit" and "attack."
+Non-combat verbs make great moves: 眠る (sleep) = stun, 歌う (sing) = team buff, 騙す (deceive) = confuse, 溶かす (melt) = poison. This lets the game teach verbs far beyond "hit" and "attack."
 
 ### Move Progression
 
-Each creature has a learnset of 8–10 moves, unlocking new ones every 2–3 levels:
+Each creature has a learnset of 8–10 moves, unlocking new ones every 2–3 levels. A creature's move pool is anchored to its rarity — common creatures draw primarily from common (high-frequency) words, while rare creatures can draw from rarer words but also include common moves for SRS reinforcement.
 
-| Tier | JPDB Range | Count | When |
-|---|---|:---:|---|
-| Tier 1 | rank 500–2,000 | ~180 | Starter moves, levels 1–5 |
-| Tier 2 | rank 2,001–4,000 | ~220 | Levels 5–15 |
-| Tier 3 | rank 4,001–8,000 | ~130 | Levels 16–25 |
-| Tier 4 | rank 8,000+ | ~70 | Signature/prestige, level 25+ |
+| Creature Rarity | Primary Move JPDB Range | Also Includes |
+|---|---|---|
+| Common | rank 500–2,000 | — |
+| Uncommon | rank 2,001–4,000 | Common moves for review |
+| Rare | rank 4,001–8,000 | Common/uncommon moves for review |
+| Epic/Legendary | rank 8,000+ | Lower-tier moves for review |
 
-### Ultimate Abilities
-
-Each creature has a powerful ultimate that charges over multiple turns. Archetypes determine charge speed and effect:
-- **Fighters:** High single-target damage (5 turns to charge)
-- **Mages:** Devastating AoE (3–4 turns — charges faster)
-- **Tricksters:** Mass status effects
-- **Tanks/Healers:** Team-wide heal or shield
+This means a player using common creatures drills the most frequent verbs, while rare creatures introduce advanced vocabulary alongside familiar words — maintaining SRS repetition across the full range.
 
 ### Status Effects
 
@@ -483,9 +497,9 @@ The game targets **50 core areas** with **5–8 sub-areas each**, teaching ~330�
 
 ### Sub-Area Design ✅
 
-Sub-areas turn anonymous dungeon rooms into named Japanese locations. Each sub-area is `modifier + location noun`, drawn from a shared pool that repeats across biomes.
+Sub-areas turn anonymous dungeon rooms into named Japanese locations. Each sub-area is `modifier + location noun`, hardcoded per area — not drawn from a shared pool.
 
-**The key learning advantage:** Sub-area nouns repeat across different core areas. 池 (pond) appears in Deep Forest, Frozen Mountain, and Ruined Castle. The player sees the same word in 3+ different visual and narrative contexts — which is exactly how vocabulary sticks.
+Overlap between areas is allowed and intentional. A word like 池 (pond) might appear as a sub-area in both Deep Forest and Hidden Beach. This overlap reinforces natural word frequency — high-frequency words appear in more areas, low-frequency words appear in fewer. The player sees common words in many different visual and narrative contexts, which is exactly how vocabulary sticks.
 
 ### Room Types
 
@@ -506,11 +520,34 @@ After completing an area, the player chooses between 2 options for their next de
 
 ### Run Structure ✅
 
-A run consists of completing **10 areas** in sequence. Each area is a self-contained exploration with its own rooms, creatures, and sub-areas. Completing a run awards meta-progression rewards (essence).
+A run consists of completing **10 areas** in sequence. Each area is a self-contained exploration with its own rooms, creatures, and sub-areas. Completing a run awards gold for town building and meta-progression.
+
+**Target session length:** A single run should take **10–15 minutes** (to be refined through playtesting). The ideal daily gameplay loop is **~20 minutes** — enough for one run plus speed review — but players can do multiple 20-minute sessions if they want more.
 
 ---
 
-## 11. Items, Crafting & Equipment
+## 11. Mini-Games
+
+### Design Philosophy
+
+Mini-games are JRPG-style activities that test and reinforce vocabulary comprehension while disguising the learning. The goal is to use SRS-style spaced repetition for retention, but wrapped in gameplay that feels like fun — not study. The player should never feel like they're doing flashcard drills; they should feel like they're playing a game that happens to require Japanese knowledge.
+
+### Current Mini-Games
+
+**Whack-a-Mole** — Vocabulary words pop up and the player must quickly identify the correct meaning. Tests recall speed under pressure. Appears as a room type during area exploration.
+
+**Quiz Rooms** — Knowledge tests that require active vocabulary recall. The player answers questions using words they've learned, reinforcing retention through retrieval practice.
+
+### Design Principles
+
+- **Disguise the learning.** Every mini-game should feel like a natural part of the RPG world, not a study exercise bolted on. If it feels like a quiz, redesign it.
+- **Use SRS data.** Mini-games should prioritize words the player needs to review, drawing from the same SRS system that drives the rest of the game.
+- **Vary the cognitive demand.** Some mini-games test speed (whack-a-mole), some test recall (quiz), some test comprehension in context. Different retrieval modes strengthen different aspects of memory.
+- **Keep them short.** Mini-games appear as room types within exploration runs. They should take 30–60 seconds, not interrupt the flow of a run.
+
+---
+
+## 12. Items, Crafting & Equipment
 
 ### Consumable Items (~225 words) — Partially ✅
 
@@ -550,7 +587,7 @@ Three output channels:
 
 ---
 
-## 12. Town & Base Building
+## 13. Town & Base Building
 
 > 📋 **This system is designed but not yet implemented.**
 
@@ -582,7 +619,7 @@ Town buildings absorb the "structures" vocabulary that doesn't fit as creature n
 
 ---
 
-## 13. NPCs & Social Systems
+## 14. NPCs & Social Systems
 
 ### What NPCs Teach (~300 words)
 
@@ -621,7 +658,7 @@ NPCs remember past encounters: what happened, relationship bond level, player ch
 
 ---
 
-## 14. Narration Engine
+## 15. Narration Engine
 
 ### What It Teaches (~3,100–3,550 words)
 
@@ -662,21 +699,21 @@ These words genuinely cannot be attached to game objects. You can't name a creat
 
 ### Progressive Complexity
 
-Narration naturally grows richer as the player learns more words:
-- **Early game:** 部屋に入った。暗い。何かがいる。(Entered the room. Dark. Something is there.)
-- **Mid game:** 暗い部屋の奥から、小さな光が見える。静かに近づくと、何かが動いた。(From the back of the dark room, a small light is visible. Approaching quietly, something moved.)
-- **Late game:** Complex sentences with conjunctions, varied registers, literary vocabulary
+NPC dialogue naturally grows richer as the player learns more words. Each NPC encounter is a structured conversation: greeting → 3 rounds of dialogue (NPC line + 3 player response options) → outcome line. All text is i+1-validated Japanese.
 
-This progression is emergent, not scripted. As the player's known word count grows, the AI has more vocabulary available, and naturally produces more sophisticated text.
+- **Early game (~200 words):** Simple greetings and short responses. NPC: 「こんにちは！ここは何？」 Player options: 「はい」/「いいえ」/「わからない」
+- **Mid game (~1,000 words):** NPCs express personality and reference past encounters. NPC: 「また会ったね。今日は何を探している？」 Player options use varied tone (positive/neutral/negative).
+- **Late game (~3,000+ words):** Complex sentences, personality quirks, relationship callbacks, varied registers. NPCs remember encounter history and bond level, producing unique dialogue arcs.
+
+This progression is emergent, not scripted. As the player's known word count grows, the AI has more vocabulary available, and naturally produces more sophisticated dialogue.
 
 ### Multiple Touchpoints Per Session
 
-- Room entry descriptions (every room)
-- Combat narration (start, end, special events)
-- NPC dialogue framing
+- NPC dialogue encounters (greeting, 3 rounds of conversation, outcome)
+- Creature befriending dialogue
 - Area introduction text
-- Quest descriptions
-- Creature/item discovery text
+- Combat move names and attack outcome cards
+- Item and creature discovery
 
 ### Text-to-Speech ✅
 
@@ -688,78 +725,83 @@ All narration can be spoken aloud via VOICEVOX integration:
 
 ---
 
-## 15. Meta-Progression
+## 16. Meta-Progression
 
-### Essence (Cross-Run Currency) ✅
+### Town Building 📋
 
-Earned from exploration runs, spent on permanent upgrades:
-- 10 essence per area cleared
-- 100 essence bonus for completing a full run (10 areas)
-
-### Permanent Upgrades ✅
-
-| Upgrade | Effect | Max Level |
-|---|---|:---:|
-| Vitality | +10% max HP per level | 5 |
-| Attack Power | +2 ATK per level | 5 |
-| Starting Credits | +25 gold per level | 4 |
-| Credit Find | +10% gold earned per level | 5 |
-
-### Achievements ✅
-
-Major milestones that award essence: First Victory, Boss Slayer, Veteran Hunter, Dungeon Master, Thousand Slayer, Perfect Run.
+The player's town is the primary meta-progression system. Gold earned from runs is spent on constructing and upgrading buildings, each of which provides gameplay benefits (see Section 12: Town & Buildings). A growing town is visible proof of progress and creates a reason to keep running areas.
 
 ### Creature Collection ✅
 
-Persistent across runs. The player's creature roster grows over time — creatures befriended in one run are available in future runs. This gives permanent value to every exploration.
+Persistent across runs. The player's creature roster grows over time — creatures befriended in one run are available in future runs. This gives permanent value to every exploration. Combined with town building, these are the two pillars of long-term progression.
 
 ### What Persists vs. What Resets
 
 | Persists | Resets Each Run |
 |---|---|
-| Creature collection | Current HP/credits |
-| Meta-progression upgrades | Room progress |
-| Lifetime stats | Item buffs |
+| Creature collection | Current HP |
+| Town buildings & upgrades | Room progress |
+| Gold (currency) | Item buffs |
 | NPC relationships | Area selection |
 | Vocabulary knowledge | Combat state |
-| Achievement progress | |
 
 ---
 
-## 16. Content Roadmap
+## 17. Content Roadmap
 
 ### 10-Stage Cumulative Plan
 
 Each stage defines a **content tier** (what exists in the game world) and a **development milestone** (what to build). Stages are cumulative — each builds on the previous.
 
-| Stage | Words | JLPT | Areas | Creatures | Moves | NPCs | Key Milestone |
-|---|:---:|---|:---:|:---:|:---:|:---:|---|
-| 1 | 400 | — | 5 | 40 | 150 | 5 | Core loop proven |
-| 2 | 800 | — | 10 | 70 | 200 | 20 | Town + equipment + crafting debut |
-| 3 | 1,500 | — | 20 | 120 | 300 | 40 | All 8 systems online |
-| 4 | 2,200 | N5/N4 | 28 | 180 | 400 | 60 | Story quests, SRS review encounters |
-| 5 | 3,000 | N3 entry | 35 | 250 | 500 | 80 | Half creature roster, literary narration |
-| 6 | 3,800 | N3 | 40 | 300 | 600 | 95 | Endgame loops, town prosperity |
-| 7 | 4,400 | N2 entry | 43 | 350 | 700 | 105 | Post-game challenge areas |
-| 8 | 5,100 | N2 mid | 46 | 400 | 800 | 115 | Compound verb moves |
-| 9 | 5,700 | N2 | 48 | 450 | 900 | 125 | Polish and gap filling |
-| 10 | 6,300 | N2+ | 50 | 500 | 1,000 | 140 | Content complete |
+#### Stage 1 — Foundation
+**~400 words** | 5 areas, 40 creatures, 150 moves, 5 NPCs
 
-### Stage Narratives
+The tutorial and first explorations. Simple narration, basic grammar, most common words. Prove the core loop — combat teaches words, speed review reinforces, creature collection motivates exploration.
 
-**Stage 1 (Foundation):** The tutorial and first explorations. Simple narration, basic grammar, most common words. Prove the core loop — combat teaches words, speed review reinforces, creature collection motivates exploration.
+#### Stage 2 — First Expansion
+**~800 words** | 10 areas, 70 creatures, 200 moves, 20 NPCs
 
-**Stage 2 (First Expansion):** The world opens. Town building, equipment, crafting debut. The SRS begins actively curating area choices. 10 areas provide meaningful player choice.
+The world opens. Town building, equipment, crafting debut. The SRS begins actively curating area choices. 10 areas provide meaningful player choice.
 
-**Stage 3 (Core Systems Complete):** All 8 game systems are active. Town growing, rival trainers appear, crafting economy connects gathering → crafting → equipment/items. Quests send players to specific areas. Full SRS curation.
+#### Stage 3 — Core Systems Complete
+**~1,500 words** | 20 areas, 120 creatures, 300 moves, 40 NPCs
 
-**Stage 4 (N5/N4 Coverage):** The player can understand simple Japanese conversations. Story quests reveal world lore. Town is thriving. Review-focused encounters ensure no word is forgotten.
+All 8 game systems are active. Town growing, rival trainers appear, crafting economy connects gathering → crafting → equipment/items. Quests send players to specific areas. Full SRS curation.
 
-**Stage 5 (N3 Entry):** The player can read simple articles. Half the creature roster exists. Literary narration for advanced areas. The game world feels expansive.
+#### Stage 4 — N5/N4 Coverage
+**~2,200 words** | 28 areas, 180 creatures, 400 moves, 60 NPCs
 
-**Stages 6–9:** Progressive deepening — endgame loops, post-game content, compound verbs, keigo, multiple speech registers, prestige systems.
+The player can understand simple Japanese conversations. Story quests reveal world lore. Town is thriving. Review-focused encounters ensure no word is forgotten.
 
-**Stage 10 (Full Coverage):** 500 creatures, 1,000 moves, 50 areas, 140 NPCs, 35 town buildings. The player can read most Japanese text in daily life. Content complete.
+#### Stage 5 — N3 Entry
+**~3,000 words** | 35 areas, 250 creatures, 500 moves, 80 NPCs
+
+The player can read simple articles. Half the creature roster exists. Literary narration for advanced areas. The game world feels expansive.
+
+#### Stage 6 — N3
+**~3,800 words** | 40 areas, 300 creatures, 600 moves, 95 NPCs
+
+Endgame loops and town prosperity. The player's town is thriving with multiple upgraded buildings.
+
+#### Stage 7 — N2 Entry
+**~4,400 words** | 43 areas, 350 creatures, 700 moves, 105 NPCs
+
+Post-game challenge areas. Advanced vocabulary begins appearing in NPC dialogue and creature names.
+
+#### Stage 8 — N2 Mid
+**~5,100 words** | 46 areas, 400 creatures, 800 moves, 115 NPCs
+
+Compound verb moves. Complex sentence structures in NPC conversations. Multiple speech registers.
+
+#### Stage 9 — N2
+**~5,700 words** | 48 areas, 450 creatures, 900 moves, 125 NPCs
+
+Polish and gap filling. Keigo (polite speech) appears in NPC dialogue. Nearly complete creature roster.
+
+#### Stage 10 — Content Complete
+**~6,300 words (N2+)** | 50 areas, 500 creatures, 1,000 moves, 140 NPCs
+
+500 creatures, 1,000 moves, 50 areas, 140 NPCs, 35 town buildings. The player can read most Japanese text in daily life. Content complete.
 
 ### Art Asset Requirements
 
@@ -778,7 +820,7 @@ Each stage defines a **content tier** (what exists in the game world) and a **de
 
 ---
 
-## 17. Art Direction
+## 18. Art Direction
 
 ### Visual Identity
 
@@ -792,19 +834,19 @@ Each stage defines a **content tier** (what exists in the game world) and a **de
 
 All sprites must be **well-drawn illustrations, NOT pixel art.** This applies universally to creatures, NPCs, items, backgrounds, and action icons.
 
-**Creatures (1024x1024):** Objects personified as cute chibi creatures. Transparent background. Immediately recognizable source object. Cute, appealing personality.
+**Creatures (1024x1024):** Anime creature collector style — cel-shaded lighting, expressive eyes, dynamic poses. Generated via Gemini Flash using style reference images from existing approved creatures. Each creature is based on a real-world object/animal personified as a fantasy creature. White background (converted to transparent in pipeline). Immediately recognizable source concept. Appealing, collectible design.
 
 Each creature requires TWO assets: a static sprite (fallback) and a **looping idle animation** (animated WebP, 49 frames at 24fps, generated via ComfyUI WAN I2V pipeline).
 
-**Action/Item/Equipment icons (128x128):** Clean, readable at small sizes. Transparent background. Consistent style across all icons.
+**Action/Item/Equipment icons (128x128):** Clean, readable at small sizes. Transparent background. Consistent style across all icons. Generated via Gemini Flash.
 
-**Area backgrounds (1536x1024):** Anime-style environments. Eye-level camera. Vibrant colors, detailed architecture and nature. Blue sky, warm lighting.
+**Area backgrounds (1536x1024):** Anime-style environments. Eye-level camera. Vibrant colors, detailed architecture and nature. Blue sky, warm lighting. Generated via SDXL (Nova 1.6 checkpoint).
 
-**NPC illustrations (1024x1024):** Full-body character art in dynamic poses. Vibrant saturated colors. Transparent background. Gacha-quality character design.
+**NPC illustrations (1024x1024):** Full-body character art in dynamic poses. Vibrant saturated colors. Transparent background. Gacha-quality character design. Generated via SDXL (Nova 1.6 checkpoint).
 
 ### Generation Pipeline
 
-Sprites are generated using AI (Stable Diffusion SDXL with waiIllustrious checkpoint) and post-processed through a three-gate quality pipeline:
+Art generation models are always in flux as new models are tested. Current pipeline: **Gemini Flash** for creatures, items, and action icons; **SDXL Nova 1.6** for backgrounds and NPCs. All assets go through a quality pipeline:
 
 1. **Gate 1 (Technical):** Automated validation — correct dimensions, transparent background, no semi-transparent artifacts
 2. **Gate 2 (Vision Judge):** AI vision model evaluates art quality, style consistency, and recognizability
@@ -812,7 +854,7 @@ Sprites are generated using AI (Stable Diffusion SDXL with waiIllustrious checkp
 
 ---
 
-## 18. Audio & Music
+## 19. Audio & Music
 
 > 📋 **This section is a placeholder.** Audio systems exist but lack a holistic design document.
 
@@ -832,7 +874,7 @@ Sprites are generated using AI (Stable Diffusion SDXL with waiIllustrious checkp
 
 ---
 
-## 19. Design Principles & Constraints
+## 20. Design Principles & Constraints
 
 ### Immutable Rules
 
@@ -854,11 +896,11 @@ Sprites are generated using AI (Stable Diffusion SDXL with waiIllustrious checkp
 
 8. **Frequency rank determines progression.** High-frequency words appear in early stages. Low-frequency words are late-game content. The most useful words come first.
 
-9. **Overlap is a feature.** The same word appearing in creature names, area names, and narration strengthens retention through varied context.
+9. **Overlap reinforces natural frequency.** The same word appearing across creature names, area names, sub-areas, and narration strengthens retention — but overlap scales with word frequency. Common words appear in many systems; rare words appear in fewer. This mirrors how natural language works.
 
 10. **Compounds are allowed but never forced.** Items and equipment can be compound words with decomposition shown, or single words.
 
-11. **Sub-area pools are shared.** Sub-area location nouns and modifiers repeat across core areas, maximizing repetition in different contexts.
+11. **Sub-areas are hardcoded per area.** Each area has its own fixed set of sub-areas, not a shared pool. Overlap between areas is allowed and follows frequency — common location nouns may appear in multiple areas, rare ones in fewer.
 
 12. **Quests are delivery mechanisms.** They combine vocabulary from NPCs, areas, creatures, and narration. They don't own unique words.
 
