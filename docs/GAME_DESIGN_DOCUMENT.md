@@ -185,6 +185,26 @@ Level thresholds and exact mechanics are TBD, but the design intent:
 
 The emotional arc of leveling: early levels feel like the Translator is doing all the work. Mid levels feel like a partnership. Late levels feel like the player has outgrown the training wheels but keeps the device as a trusted companion — a constant reminder of how far they've come and the friend who believed in them from day one.
 
+### Translator Awareness
+
+The Translator doesn't just translate — it *watches*. It's always listening, always counting, always building a picture of the player's relationship with the language. This awareness is what makes it feel like a companion rather than a tool.
+
+**What the Translator tracks:**
+
+| What it knows | What it does with it | What the player feels |
+|---|---|---|
+| **Daily exposure** — how many Japanese words the player encountered today, this week, this month | Paces discovery so the player isn't overwhelmed. Limits new words per day based on how much they've been playing. | "The Translator knows when you've had enough for one day." |
+| **Per-word familiarity** — how many times the player has seen each specific word, across every system (combat, narration, NPC dialogue, signs) | Strips scaffolding progressively. A word seen 3 times still gets full annotations; a word seen 15 times appears bare. The Translator remembers what the player has absorbed. | "The Translator trusts you with this word now." |
+| **Most frequent words** — which words appear most in the player's experience, ranked by encounter count | Ensures variety. If the player keeps seeing 水 in every narration, the Translator steers new text toward underexposed words instead. Prevents comfort-zone stagnation. | "The Translator wants you to hear something new today." |
+| **New words discovered** — lifetime count and which words crossed from "never seen" to "encountered" | Drives Translator level-ups and milestone celebrations. The count is the core progression metric — not XP, not gold, but understanding. | "The Translator just registered your 500th word." |
+| **Word states from SRS** — which words are due for review, which are solidly known, which are slipping | Weaves due-for-review words into narration, NPC dialogue, and creature encounters. The world organically resurfaces words the player is about to forget. | "You haven't heard that word in a while — the shopkeeper just happened to use it." |
+| **Kanji coverage** — which kanji the player has encountered across all words | Tracks a separate dimension of literacy growth. Kanji milestone celebrations feel distinct from word milestones. | "The Translator noticed you can read 100 different kanji now." |
+| **Session patterns** — how much Japanese the player processes per play session, narrations seen, encounters completed | Adapts pacing. Short sessions get focused review; long sessions unlock more exploration and new discovery. | "The Translator adjusts to your rhythm." |
+
+The Translator's awareness creates a feedback loop: the more the player engages with the world, the more the Translator learns about them, and the better it can curate their experience. It's not tracking data for data's sake — every metric directly shapes what the player sees next. The Translator is building a model of the player's comprehension in real time, and using it to keep them in the sweet spot where everything is *almost* understandable.
+
+This is also what makes the Translator feel alive. It notices things. It remembers. When it celebrates a milestone, it's not a generic achievement popup — it's the Translator saying "I've been watching you grow, and I want you to know I noticed."
+
 ### Design Constraints
 
 1. **Frame progress as belonging, not academics.** The Translator celebrates milestones — but as "you understood that entire conversation" or "the shopkeeper didn't have to simplify for you," never as "you memorized 50 flashcards." Progress means becoming part of this world.
