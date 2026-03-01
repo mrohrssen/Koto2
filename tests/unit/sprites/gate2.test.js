@@ -68,6 +68,13 @@ describe('Gate 2 — parseJudgeResponse', () => {
     assert.equal(result2.passed, false);
   });
 
+  it('throws on non-JSON response', () => {
+    assert.throws(
+      () => parseJudgeResponse('I cannot evaluate this image.'),
+      { message: /Could not extract JSON/ }
+    );
+  });
+
   it('handles JSON wrapped in markdown code blocks', () => {
     const wrapped = '```json\n{\n  "concept": 4,\n  "style": 3,\n  "readability": 5,\n  "reasoning": "Wrapped in markdown."\n}\n```';
 

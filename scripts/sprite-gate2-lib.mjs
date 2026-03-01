@@ -8,6 +8,22 @@
  */
 
 // ---------------------------------------------------------------------------
+// Minimum passing score per criterion (exported for callers)
+// ---------------------------------------------------------------------------
+
+export const MIN_SCORE = 3;
+
+// ---------------------------------------------------------------------------
+// Score validation helper
+// ---------------------------------------------------------------------------
+
+function clampScore(val) {
+  const n = Number(val);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(1, Math.min(5, Math.round(n)));
+}
+
+// ---------------------------------------------------------------------------
 // Target display sizes by sprite type
 // ---------------------------------------------------------------------------
 
@@ -94,11 +110,11 @@ export function parseJudgeResponse(responseText) {
 
   const parsed = JSON.parse(jsonMatch[0]);
 
-  const concept = Number(parsed.concept);
-  const style = Number(parsed.style);
-  const readability = Number(parsed.readability);
+  const concept = clampScore(parsed.concept);
+  const style = clampScore(parsed.style);
+  const readability = clampScore(parsed.readability);
   const total = concept + style + readability;
-  const passed = concept >= 3 && style >= 3 && readability >= 3;
+  const passed = concept >= MIN_SCORE && style >= MIN_SCORE && readability >= MIN_SCORE;
   const reasoning = parsed.reasoning || '';
 
   return { concept, style, readability, total, passed, reasoning };
@@ -119,19 +135,19 @@ export function parseJudgeResponse(responseText) {
 export function buildCritiqueFeedback(bestResult, wordEn) {
   const parts = [];
 
-  if (bestResult.concept < 3) {
+  if (bestResult.concept < MIN_SCORE) {
     parts.push(
       `Previous attempt was not recognizable as '${wordEn}'. Make the visual concept much more literal and obvious.`
     );
   }
 
-  if (bestResult.style < 3) {
+  if (bestResult.style < MIN_SCORE) {
     parts.push(
       'Previous attempt did not match the art style. Study the reference images more carefully and match their rendering style, color palette, and level of detail.'
     );
   }
 
-  if (bestResult.readability < 3) {
+  if (bestResult.readability < MIN_SCORE) {
     parts.push(
       'Previous attempt was unreadable at display size. Simplify the design, increase contrast, and ensure key details are visible.'
     );

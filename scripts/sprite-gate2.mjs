@@ -302,4 +302,7 @@ async function main() {
   console.error(`Summary: ${passed} passed, ${failed} failed out of ${results.length} candidates`);
 }
 
-main();
+main().catch(err => {
+  console.error(`Fatal error: ${err.message}`);
+  process.exit(1);
+});
