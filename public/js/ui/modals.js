@@ -277,52 +277,7 @@ export async function openSettings() {
     const audioMuted = document.getElementById('settings-audio-muted')?.checked;
     const selectedVoiceGender = document.querySelector('input[name="voice-gender"]:checked')?.value || 'boy';
 
-    // Detect if AI provider or model changed (for cache clearing prompt)
-    const prevModel = keyInfo.aiProvider === 'openrouter' ? keyInfo.openrouterModel : keyInfo.openaiModel;
-    const modelChanged = (aiProvider && aiProvider !== keyInfo.aiProvider) ||
-      (model && model !== prevModel);
-
-    // Save API keys to server (only send non-empty values)
-    const keysToSave = {};
-    if (jpdbKey) keysToSave.jpdbApiKey = jpdbKey;
-    if (bunproToken) keysToSave.bunproToken = bunproToken;
-    if (aiKey) keysToSave.aiApiKey = aiKey;
-    if (aiProvider) keysToSave.aiProvider = aiProvider;
-    if (model) {
-      // Route the model to the correct field based on provider
-      if (aiProvider === 'openrouter') {
-        keysToSave.openrouterModel = model;
-      } else {
-        keysToSave.openaiModel = model;
-      }
-    }
-    if (jlptLevel) keysToSave.jlptLevel = jlptLevel;
-    if (!isNaN(dailyWordLimit)) {
-      keysToSave.dailyWordLimit = dailyWordLimit;
-    }
-
-    if (Object.keys(keysToSave).length > 0) {
-      const saved = await settingsModule.saveApiKeysToServer(keysToSave);
-      if (!saved) {
-        sceneModule.showToast('Failed to save API keys', 2000);
-        return;
-      }
-    }
-
-    // If AI model changed, offer to clear dialogue caches
-    if (modelChanged && confirm('You switched AI models. Clear cached dialogue so it regenerates with the new model?')) {
-      try {
-        await Promise.all([
-          fetch('/api/game/clear-npc-dialogue-cache', { method: 'POST', headers: getAuthHeaders() }),
-          fetch('/api/game/clear-creature-dialogue-cache', { method: 'POST', headers: getAuthHeaders() })
-        ]);
-        sceneModule.showToast('Dialogue cache cleared — will regenerate on next exploration', 3000);
-      } catch {
-        sceneModule.showToast('Failed to clear dialogue cache', 2000);
-      }
-    }
-
-    // Save local-only settings
+    // Apply local-only settings immediately (never blocked by server calls)
     const aiNarration = document.getElementById('settings-ai-narration')?.checked;
     if (settingsModule.setAiNarrationEnabled) {
       settingsModule.setAiNarrationEnabled(aiNarration);
@@ -344,6 +299,49 @@ export async function openSettings() {
     tts.setMuted(audioMuted);
     localStorage.setItem('jrpg_ttsVolume', String(ttsVol));
     if (audioMuted) { audio.mute(); } else { audio.unmute(); }
+
+    // Save API keys to server (only send non-empty values)
+    const keysToSave = {};
+    if (jpdbKey) keysToSave.jpdbApiKey = jpdbKey;
+    if (bunproToken) keysToSave.bunproToken = bunproToken;
+    if (aiKey) keysToSave.aiApiKey = aiKey;
+    if (aiProvider) keysToSave.aiProvider = aiProvider;
+    if (model) {
+      if (aiProvider === 'openrouter') {
+        keysToSave.openrouterModel = model;
+      } else {
+        keysToSave.openaiModel = model;
+      }
+    }
+    if (jlptLevel) keysToSave.jlptLevel = jlptLevel;
+    if (!isNaN(dailyWordLimit)) {
+      keysToSave.dailyWordLimit = dailyWordLimit;
+    }
+
+    if (Object.keys(keysToSave).length > 0) {
+      const saved = await settingsModule.saveApiKeysToServer(keysToSave);
+      if (!saved) {
+        sceneModule.showToast('Failed to save server settings', 2000);
+        return;
+      }
+    }
+
+    // Detect if AI provider or model changed (for cache clearing prompt)
+    const prevModel = keyInfo.aiProvider === 'openrouter' ? keyInfo.openrouterModel : keyInfo.openaiModel;
+    const modelChanged = (aiProvider && aiProvider !== keyInfo.aiProvider) ||
+      (model && model !== prevModel);
+
+    if (modelChanged && confirm('You switched AI models. Clear cached dialogue so it regenerates with the new model?')) {
+      try {
+        await Promise.all([
+          fetch('/api/game/clear-npc-dialogue-cache', { method: 'POST', headers: getAuthHeaders() }),
+          fetch('/api/game/clear-creature-dialogue-cache', { method: 'POST', headers: getAuthHeaders() })
+        ]);
+        sceneModule.showToast('Dialogue cache cleared — will regenerate on next exploration', 3000);
+      } catch {
+        sceneModule.showToast('Failed to clear dialogue cache', 2000);
+      }
+    }
 
     // Save voice gender to server settings
     if (selectedVoiceGender !== voiceGender) {
