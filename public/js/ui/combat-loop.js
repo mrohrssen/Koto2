@@ -518,7 +518,7 @@ function findCreatureSlotByAttackerId(creatureId) {
   const index = activeCreatures.findIndex(r => r && r.id === creatureId);
   if (index < 0) return null;
 
-  const slots = document.querySelectorAll('#chip-row .creature-slot');
+  const slots = document.querySelectorAll('#creature-row .creature-slot');
   return slots[index] || null;
 }
 
@@ -558,7 +558,7 @@ function getHpColor(pct) {
 
 function updateCreatureHpBars(creatures, allyHpMap) {
   if (!creatures) return;
-  const slots = document.querySelectorAll('#chip-row .creature-slot');
+  const slots = document.querySelectorAll('#creature-row .creature-slot');
   creatures.forEach((creature, i) => {
     const slot = slots[i];
     if (!slot || !creature) return;
@@ -622,7 +622,7 @@ function showXpEvents(xpEvents) {
   const activeCreatures = state.run?.creatureParty?.active;
   if (!activeCreatures) return pendingMoveLearn;
 
-  const slots = document.querySelectorAll('#chip-row .creature-slot');
+  const slots = document.querySelectorAll('#creature-row .creature-slot');
 
   for (const event of xpEvents) {
     // Show XP popups for each creature that gained XP
@@ -982,7 +982,7 @@ async function showKoSwapAnimations(result) {
     // Animate the KO'd creature dying
     const koIndex = swap.slot ?? -1;
     if (koIndex >= 0) {
-      const slots = document.querySelectorAll('#chip-row .creature-slot');
+      const slots = document.querySelectorAll('#creature-row .creature-slot');
       const dyingSlot = slots[koIndex];
       if (dyingSlot) {
         dyingSlot.classList.add('creature-dying');
@@ -997,7 +997,7 @@ async function showKoSwapAnimations(result) {
 
     // Update sprite and HP for the new creature with swap-in animation
     if (result.creatureParty?.active && koIndex >= 0) {
-      const slots = document.querySelectorAll('#chip-row .creature-slot');
+      const slots = document.querySelectorAll('#creature-row .creature-slot');
       const swapSlot = slots[koIndex];
       if (swapSlot) {
         swapSlot.classList.remove('creature-dying');
@@ -1315,7 +1315,7 @@ async function executeCreaturePlayerAttack() {
 
           // Update MP bar for this attacker immediately after its attack
           const attackerSlotIdx = (result.creatureParty?.active || []).findIndex(r => r && r.id === atk.attackerId);
-          const attackerSlot = attackerSlotIdx >= 0 ? document.querySelectorAll('#chip-row .creature-slot')[attackerSlotIdx] : null;
+          const attackerSlot = attackerSlotIdx >= 0 ? document.querySelectorAll('#creature-row .creature-slot')[attackerSlotIdx] : null;
           if (attackerSlot && atk.attackerMp != null) {
             const mpFill = attackerSlot.querySelector('.creature-mp-fill');
             if (mpFill && atk.attackerMaxMp > 0) {
@@ -1650,7 +1650,7 @@ async function executeDefendThenPause() {
       // Show defend indicator
       const actionArea = document.getElementById('action-area');
       if (actionArea) {
-        actionArea.innerHTML = `<div class="combat-defend-indicator">${t('defendingChip')}</div>`;
+        actionArea.innerHTML = `<div class="combat-defend-indicator">${t('defendingCreature')}</div>`;
       }
       await delay(600);
 
@@ -1768,15 +1768,15 @@ function showBefriendTargetSelect(enemies) {
     if (!actionArea) { resolve(-1); return; }
 
     const buttons = eligible.map(e => `
-      <div class="shrine-chip-option befriend-target-option" data-enemy-index="${e.index}" style="width:100%">
-        <div class="shrine-chip-info" style="padding:1rem; width:100%; text-align:center">
-          <div class="shrine-chip-name" style="color:#4CAF50">${e.nameEn || e.name} (HP: ${Math.round(e.hp / e.maxHp * 100)}%)</div>
+      <div class="shrine-creature-option befriend-target-option" data-enemy-index="${e.index}" style="width:100%">
+        <div class="shrine-creature-info" style="padding:1rem; width:100%; text-align:center">
+          <div class="shrine-creature-name" style="color:#4CAF50">${e.nameEn || e.name} (HP: ${Math.round(e.hp / e.maxHp * 100)}%)</div>
         </div>
       </div>
     `).join('');
 
     actionArea.innerHTML = `
-      <div class="shrine-chip-list" style="padding:0 1rem">
+      <div class="shrine-creature-list" style="padding:0 1rem">
         <div style="text-align:center; color:var(--text-secondary); margin-bottom:0.5rem">Who do you want to talk to?</div>
         ${buttons}
       </div>
@@ -1806,15 +1806,15 @@ function showConversationRound(round, roundNumber, creatureName) {
     if (!actionArea) { resolve(0); return; }
 
     const buttons = round.options.map((opt, idx) => `
-      <div class="shrine-chip-option befriend-answer-option" data-answer-index="${idx}" style="width:100%">
-        <div class="shrine-chip-info" style="padding:1rem; width:100%; text-align:center">
-          <div class="shrine-chip-name" style="color:var(--accent-primary)">${opt}</div>
+      <div class="shrine-creature-option befriend-answer-option" data-answer-index="${idx}" style="width:100%">
+        <div class="shrine-creature-info" style="padding:1rem; width:100%; text-align:center">
+          <div class="shrine-creature-name" style="color:var(--accent-primary)">${opt}</div>
         </div>
       </div>
     `).join('');
 
     actionArea.innerHTML = `
-      <div class="shrine-chip-list befriend-answer-list" style="padding:0 1rem">
+      <div class="shrine-creature-list befriend-answer-list" style="padding:0 1rem">
         ${buttons}
       </div>
     `;
@@ -2285,15 +2285,15 @@ function showNpcResponseOptions(options, roundNumber) {
     if (!actionArea) { resolve(0); return; }
 
     const buttons = options.map((option, idx) => `
-      <div class="shrine-chip-option befriend-answer-option" data-answer-index="${idx}" style="width:100%">
-        <div class="shrine-chip-info" style="padding:1rem; width:100%; text-align:center">
-          <div class="shrine-chip-name" style="color:var(--accent-primary)">${option.text}</div>
+      <div class="shrine-creature-option befriend-answer-option" data-answer-index="${idx}" style="width:100%">
+        <div class="shrine-creature-info" style="padding:1rem; width:100%; text-align:center">
+          <div class="shrine-creature-name" style="color:var(--accent-primary)">${option.text}</div>
         </div>
       </div>
     `).join('');
 
     actionArea.innerHTML = `
-      <div class="shrine-chip-list befriend-answer-list" style="padding:0 1rem">
+      <div class="shrine-creature-list befriend-answer-list" style="padding:0 1rem">
         ${buttons}
       </div>
     `;

@@ -3,7 +3,7 @@
  *
  * PURPOSE:
  * Renders 3 creature slots at the bottom of the combat screen using
- * dom.chipRow and dom.chipPopup containers. Shows creature-specific content:
+ * dom.creatureRow and dom.creaturePopup containers. Shows creature-specific content:
  * element icons, HP bars, MP bars, and move list popups.
  *
  * KEY EXPORTS:
@@ -12,8 +12,8 @@
  * - isPopupVisible(): Check if a creature popup is currently open
  *
  * DEPENDENCIES:
- * - ../dom.js: DOM element references (chipRow, chipPopup)
- * - ../audio.js: Sound effects (chip-skill)
+ * - ../dom.js: DOM element references (creatureRow, creaturePopup)
+ * - ../audio.js: Sound effects
  */
 
 import { dom } from '../dom.js';
@@ -69,7 +69,7 @@ export function updateData(creatures) {
 }
 
 export function render(creatures) {
-  const row = dom.chipRow;
+  const row = dom.creatureRow;
   row.innerHTML = '';
   currentActiveCreatures = creatures || [];
 
@@ -151,7 +151,7 @@ function showPopup(index, creature) {
 
   const archetypeLabel = creature.archetype || 'Fighter';
 
-  dom.chipPopup.innerHTML = `
+  dom.creaturePopup.innerHTML = `
     <div class="creature-popup-name">${creature.name} (${creature.nameEn}) ${rarityStars(creature.rarity)}</div>
     <div class="creature-popup-element">${ELEMENT_ICONS[creature.element]} ${creature.element}</div>
     <div class="creature-popup-archetype">${archetypeLabel}</div>
@@ -196,20 +196,20 @@ function showPopup(index, creature) {
   `;
 
   // Position popup centered above the creature slot, clamped to viewport
-  const slot = dom.chipRow.children[index];
+  const slot = dom.creatureRow.children[index];
   if (slot) {
     const rect = slot.getBoundingClientRect();
-    dom.chipPopup.style.bottom = `${window.innerHeight - rect.top + 8}px`;
-    dom.chipPopup.style.left = '50%';
-    dom.chipPopup.style.transform = 'translateX(-50%)';
-    dom.chipPopup.style.width = '85vw';
-    dom.chipPopup.style.maxWidth = '320px';
+    dom.creaturePopup.style.bottom = `${window.innerHeight - rect.top + 8}px`;
+    dom.creaturePopup.style.left = '50%';
+    dom.creaturePopup.style.transform = 'translateX(-50%)';
+    dom.creaturePopup.style.width = '85vw';
+    dom.creaturePopup.style.maxWidth = '320px';
   }
 
-  dom.chipPopup.classList.add('visible');
+  dom.creaturePopup.classList.add('visible');
 
   // Swap button handlers (swap with reserves)
-  const swapBtns = dom.chipPopup.querySelectorAll('.creature-popup-swap-btn');
+  const swapBtns = dom.creaturePopup.querySelectorAll('.creature-popup-swap-btn');
   swapBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const reserveIndex = parseInt(btn.dataset.reserveIndex, 10);
@@ -219,7 +219,7 @@ function showPopup(index, creature) {
   });
 
   // Rearrange button handlers (swap positions between active creatures)
-  const rearrangeBtns = dom.chipPopup.querySelectorAll('.creature-popup-rearrange-btn');
+  const rearrangeBtns = dom.creaturePopup.querySelectorAll('.creature-popup-rearrange-btn');
   rearrangeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const targetIndex = parseInt(btn.dataset.targetIndex, 10);
@@ -231,7 +231,7 @@ function showPopup(index, creature) {
 
 function hidePopup() {
   currentPopupIndex = -1;
-  dom.chipPopup.classList.remove('visible');
+  dom.creaturePopup.classList.remove('visible');
 }
 
 export function isPopupVisible() {

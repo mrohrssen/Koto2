@@ -31,7 +31,7 @@ const strings = {
 
   // ── Combat: actions ──
   defending:        { en: 'DEFENDING \u2014 50% damage, +1 charge', ja: '防御中 \u2014 ダメージ50%、チャージ+1' },
-  defendingChip:    { en: 'DEFENDING - 50% damage',                 ja: '防御中 \u2014 ダメージ50%' },
+  defendingCreature: { en: 'DEFENDING - 50% damage',                ja: '防御中 \u2014 ダメージ50%' },
   dealsDamage:      { en: '{0} deals {1} damage',   ja: '{0}が{1}ダメージ！' },
   dealsStrong:      { en: '{0} deals {1} damage (super effective!)',      ja: '{0}が{1}ダメージ！（効果抜群！）' },
   dealsWeak:        { en: '{0} deals {1} damage (not very effective...)', ja: '{0}が{1}ダメージ（いまひとつ...）' },
@@ -77,7 +77,7 @@ const strings = {
   // ── Exploration: badges ──
   new:              { en: 'NEW', ja: '新規' },
 
-  // ── Chip labels ──
+  // ── Creature labels ──
   passive:          { en: 'Passive',     ja: 'パッシブ' },
   skillColon:       { en: 'Skill: {0}',  ja: 'スキル: {0}' },
   noPassive:        { en: 'No passive effect', ja: 'パッシブ効果なし' },

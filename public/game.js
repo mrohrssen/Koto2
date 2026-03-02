@@ -219,7 +219,7 @@ function updateUI() {
   updateStatusBar();
 
   updateScene();
-  updateChipRow();
+  updateCreatureRow();
   updatePlayerHP();
   updateGameContent();
 
@@ -277,10 +277,10 @@ function updateScene() {
   }
 }
 
-function updateChipRow() {
+function updateCreatureRow() {
   // Hide row on hub and non-run phases
   if (!gameState.run && (gameState.phase === 'hub' || gameState.phase === 'no_save' || gameState.phase === 'area_selection')) {
-    dom.chipRow.innerHTML = '';
+    dom.creatureRow.innerHTML = '';
     return;
   }
 
@@ -291,8 +291,8 @@ function updateChipRow() {
     return;
   }
 
-  // No creatures, no chips - clear the row
-  dom.chipRow.innerHTML = '';
+  // No creatures - clear the row
+  dom.creatureRow.innerHTML = '';
 }
 
 function updatePlayerHP() {
@@ -493,12 +493,12 @@ function showCollectionSelect(catalog, collection) {
             <div class="cc-meta">
               <div class="cc-name">${fullName(r)}</div>
               <div class="cc-sub">${el} ${r.element.charAt(0).toUpperCase() + r.element.slice(1)} · ${r.archetype || ''}</div>
-              <div class="cc-chips">
-                <span class="cc-chip"><span class="cc-chip-val">${r.baseHp}</span>&nbsp;<span class="cc-chip-lbl">HP</span></span>
-                <span class="cc-chip"><span class="cc-chip-val">${r.baseAttack}</span>&nbsp;<span class="cc-chip-lbl">ATK</span></span>
-                <span class="cc-chip"><span class="cc-chip-val">${r.baseMp || '?'}</span>&nbsp;<span class="cc-chip-lbl">MP</span></span>
-                <span class="cc-chip"><span class="cc-chip-lbl">${RARITY_LABELS[r.rarity] || r.rarity}</span></span>
-                <span class="cc-chip"><span class="cc-chip-lbl">${r.pointCost} pts</span></span>
+              <div class="cc-creature-stats">
+                <span class="cc-stat"><span class="cc-stat-val">${r.baseHp}</span>&nbsp;<span class="cc-stat-lbl">HP</span></span>
+                <span class="cc-stat"><span class="cc-stat-val">${r.baseAttack}</span>&nbsp;<span class="cc-stat-lbl">ATK</span></span>
+                <span class="cc-stat"><span class="cc-stat-val">${r.baseMp || '?'}</span>&nbsp;<span class="cc-stat-lbl">MP</span></span>
+                <span class="cc-stat"><span class="cc-stat-lbl">${RARITY_LABELS[r.rarity] || r.rarity}</span></span>
+                <span class="cc-stat"><span class="cc-stat-lbl">${r.pointCost} pts</span></span>
               </div>
             </div>
           </div>
@@ -743,7 +743,7 @@ function showGameOverModal(result) {
     apiGetDueWords(reviewedWords).catch(e => console.warn('[Combat] End batch refresh failed:', e));
   }
 
-  updateChipRow();
+  updateCreatureRow();
   takeover.open('gameover');
   const content = takeover.getContent('gameover');
   const floor = gameState.run?.currentFloor || 1;
@@ -882,7 +882,7 @@ async function openCreatureEquipView() {
           selectedActive = null;
           selectedReserve = null;
           renderCreatureEquipContent(); // Re-render with updated data
-          updateChipRow(); // Update main UI creature row
+          updateCreatureRow(); // Update main UI creature row
         }
       });
     });
@@ -905,7 +905,7 @@ async function openCreatureEquipView() {
           selectedActive = null;
           selectedReserve = null;
           renderCreatureEquipContent(); // Re-render with updated data
-          updateChipRow(); // Update main UI creature row
+          updateCreatureRow(); // Update main UI creature row
         }
       });
     });

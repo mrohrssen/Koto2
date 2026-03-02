@@ -376,7 +376,7 @@ export async function impactEnemyEffect(damage, enemyEl, enemyMaxHp = 0) {
  * Player takes damage
  * @param {number} damage - Damage taken
  * @param {Element} hpBarEl - Player HP bar element
- * @param {Element} creatureRowEl - Creature row element (#chip-row)
+ * @param {Element} creatureRowEl - Creature row element (#creature-row)
  */
 export async function playerHitEffect(damage, hpBarEl, creatureRowEl) {
   // 1. Hit stop (shorter than enemy)

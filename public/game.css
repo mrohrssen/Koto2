@@ -541,8 +541,8 @@ html, body {
   }
 }
 
-/* ===== CHIP ROW (shared container for creature-row) ===== */
-.chip-row {
+/* ===== CREATURE ROW ===== */
+.creature-row {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1398,8 +1398,8 @@ html, body {
   padding: 16px;
 }
 
-/* ===== CHIP POPUP (shared container for creature-row) ===== */
-.chip-popup {
+/* ===== CREATURE POPUP ===== */
+.creature-popup {
   position: fixed;
   background: var(--bg-elevated);
   border-radius: 16px;
@@ -1411,7 +1411,7 @@ html, body {
   display: none;
 }
 
-.chip-popup.visible {
+.creature-popup.visible {
   display: block;
 }
 
@@ -1577,7 +1577,7 @@ html, body {
   color: var(--text-primary);
 }
 
-.shrine-chip-list {
+.shrine-creature-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1585,7 +1585,7 @@ html, body {
   width: 100%;
 }
 
-.shrine-chip-option {
+.shrine-creature-option {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1598,16 +1598,16 @@ html, body {
   transition: transform var(--transition-fast), opacity var(--transition-fast);
 }
 
-.shrine-chip-option:active {
+.shrine-creature-option:active {
   transform: scale(0.98);
 }
 
-.shrine-chip-option.disabled {
+.shrine-creature-option.disabled {
   opacity: 0.4;
   pointer-events: none;
 }
 
-.shrine-chip-icon {
+.shrine-creature-icon {
   width: 44px;
   height: 44px;
   min-width: 44px;
@@ -1621,37 +1621,37 @@ html, body {
   justify-content: center;
 }
 
-.shrine-chip-img {
+.shrine-creature-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.shrine-chip-info {
+.shrine-creature-info {
   flex: 1;
   min-width: 0;
 }
 
-.shrine-chip-name {
+.shrine-creature-name {
   font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 2px;
 }
 
-.shrine-chip-rarity {
+.shrine-creature-rarity {
   font-size: 11px;
   text-transform: capitalize;
   margin-bottom: 2px;
 }
 
-.shrine-chip-rarity.common { color: var(--rarity-common); }
-.shrine-chip-rarity.uncommon { color: var(--rarity-uncommon); }
-.shrine-chip-rarity.rare { color: var(--rarity-rare); }
-.shrine-chip-rarity.epic { color: var(--rarity-epic); }
-.shrine-chip-rarity.legendary { color: var(--rarity-legendary); }
+.shrine-creature-rarity.common { color: var(--rarity-common); }
+.shrine-creature-rarity.uncommon { color: var(--rarity-uncommon); }
+.shrine-creature-rarity.rare { color: var(--rarity-rare); }
+.shrine-creature-rarity.epic { color: var(--rarity-epic); }
+.shrine-creature-rarity.legendary { color: var(--rarity-legendary); }
 
-.shrine-chip-desc {
+.shrine-creature-desc {
   font-size: 12px;
   color: var(--text-secondary);
   line-height: 1.4;
@@ -1661,7 +1661,7 @@ html, body {
   overflow: hidden;
 }
 
-.shrine-chip-upgrade {
+.shrine-creature-upgrade {
   font-size: 13px;
   color: var(--accent-amber);
   font-weight: var(--font-weight-semi);
@@ -2685,7 +2685,7 @@ html, body {
 }
 
 /* ===== CREATURE SLOTS ===== */
-.chip-row:has(.creature-slot) {
+.creature-row:has(.creature-slot) {
   gap: 28px;
   padding: 8px 10px;
 }
@@ -3470,13 +3470,13 @@ html, body {
   margin-bottom: 4px;
 }
 
-.creature-card .cc-chips {
+.creature-card .cc-creature-stats {
   display: flex;
   gap: 5px;
   flex-wrap: wrap;
 }
 
-.creature-card .cc-chip {
+.creature-card .cc-stat {
   padding: 2px 7px;
   border-radius: 5px;
   font-size: 10px;
@@ -3487,8 +3487,8 @@ html, body {
   gap: 3px;
 }
 
-.creature-card .cc-chip-val { color: #fff; }
-.creature-card .cc-chip-lbl { color: #888; font-weight: normal; }
+.creature-card .cc-stat-val { color: #fff; }
+.creature-card .cc-stat-lbl { color: #888; font-weight: normal; }
 
 /* Skill split row */
 .creature-card .cc-skills {

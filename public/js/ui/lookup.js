@@ -250,16 +250,16 @@ function getTextElements() {
     findJapaneseTextElements(gameApp, elements);
   }
 
-  // Also search in visible takeovers (chip modals, etc.)
+  // Also search in visible takeovers (creature modals, etc.)
   const takeovers = document.querySelectorAll('.takeover.visible');
   for (const takeover of takeovers) {
     findJapaneseTextElements(takeover, elements);
   }
 
-  // Also search in chip popup when visible
-  const chipPopup = document.querySelector('.chip-popup.visible');
-  if (chipPopup) {
-    findJapaneseTextElements(chipPopup, elements);
+  // Also search in creature popup when visible
+  const creaturePopup = document.querySelector('.creature-popup.visible');
+  if (creaturePopup) {
+    findJapaneseTextElements(creaturePopup, elements);
   }
 
   return Array.from(elements);

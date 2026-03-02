@@ -56,10 +56,10 @@ export async function renderDealerRoom(actionsModule) {
       return `
         <div class="dealer-offer-card" style="margin-bottom:0.5rem">
           <div class="dealer-offer-top">
-            <div class="shrine-chip-icon" style="border-color: var(--rarity-${creature.rarity || 'common'})"><img src="${creatureSpritePath(creature.id)}" alt="${creature.nameEn}" style="width:100%;height:100%;object-fit:contain" /></div>
+            <div class="shrine-creature-icon" style="border-color: var(--rarity-${creature.rarity || 'common'})"><img src="${creatureSpritePath(creature.id)}" alt="${creature.nameEn}" style="width:100%;height:100%;object-fit:contain" /></div>
             <div class="dealer-offer-info">
               <div class="dealer-item-name">${creature.nameEn}</div>
-              <div class="shrine-chip-rarity ${creature.rarity || 'common'}">${creature.rarity} \u00B7 ${creature.element} \u00B7 Lv.${creature.level}</div>
+              <div class="shrine-creature-rarity ${creature.rarity || 'common'}">${creature.rarity} \u00B7 ${creature.element} \u00B7 Lv.${creature.level}</div>
               <div class="dealer-offer-desc">HP: ${creature.maxHp} \u00B7 ATK: ${creature.attack}</div>
             </div>
           </div>
@@ -83,11 +83,11 @@ export async function renderDealerRoom(actionsModule) {
     const slotBadge = creature.slot === 'active' ? '\u30A2\u30AF\u30C6\u30A3\u30D6' : '\u30EA\u30B6\u30FC\u30D6';
     return `
       <div class="dealer-inventory-item" data-creature-id="${creature.id}">
-        <div class="shrine-chip-icon" style="border-color: var(--rarity-${creature.rarity || 'common'})"><img src="${creatureSpritePath(creature.id)}" alt="${creature.nameEn}" style="width:100%;height:100%;object-fit:contain" /></div>
+        <div class="shrine-creature-icon" style="border-color: var(--rarity-${creature.rarity || 'common'})"><img src="${creatureSpritePath(creature.id)}" alt="${creature.nameEn}" style="width:100%;height:100%;object-fit:contain" /></div>
         <div class="dealer-item-info">
           <div class="dealer-item-name">${creature.nameEn} Lv.${creature.level}</div>
           <div class="dealer-item-meta">
-            <span class="shrine-chip-rarity ${creature.rarity || 'common'}">${creature.rarity}</span>
+            <span class="shrine-creature-rarity ${creature.rarity || 'common'}">${creature.rarity}</span>
             <span style="font-size:0.75rem;opacity:0.7">${slotBadge}</span>
           </div>
         </div>

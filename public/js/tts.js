@@ -37,7 +37,7 @@ const wordAudioCache = new Map();
 let wordAudioEnabled = true;
 const WORD_SPEAKER_ID = 11; // 玄野武宏 (ノーマル) - clear pronunciation for dictionary words
 
-// UI audio (for short texts like chip names)
+// UI audio (for short texts like creature names)
 let currentUiAudio = null;
 
 // ============ PERSONALITY SPEAKERS ============
@@ -241,7 +241,7 @@ export async function speakNarration(text) {
 }
 
 /**
- * Simple TTS for short text (chip names, UI feedback)
+ * Simple TTS for short text (creature names, UI feedback)
  * Doesn't interrupt narration or manage request cancellation
  */
 export async function speakText(text) {

@@ -33,8 +33,8 @@ export const dom = {
   get enemySprite() { return el('enemy-sprite'); },
   get sceneToast() { return el('scene-toast'); },
 
-  // Creature row (uses #chip-row element ID for backwards compatibility)
-  get chipRow() { return el('chip-row'); },
+  // Creature row
+  get creatureRow() { return el('creature-row'); },
 
   // Action area
   get actionArea() { return el('action-area'); },
@@ -56,8 +56,8 @@ export const dom = {
   get gameoverView() { return el('gameover-view'); },
   get gameoverContent() { return el('gameover-content'); },
 
-  // Creature popup (creature-row.js writes its own innerHTML; uses #chip-popup element ID)
-  get chipPopup() { return el('chip-popup'); },
+  // Creature popup (creature-row.js writes its own innerHTML)
+  get creaturePopup() { return el('creature-popup'); },
 
   // Lookup mode
   get lookupPopup() { return el('lookup-popup'); },

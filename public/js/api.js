@@ -308,7 +308,7 @@ async function shopSkip() {
   return apiCall('/shop-skip', 'POST');
 }
 
-/** Get dealer room state (inventory with sell prices, offered chip) */
+/** Get dealer room state (inventory with sell prices, offered creature) */
 async function getDealerState() {
   return apiCall('/dealer-state', 'GET');
 }
