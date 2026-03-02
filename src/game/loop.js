@@ -8,14 +8,13 @@
  * meta-progression. This is the main interface between server endpoints and game logic.
  *
  * ARCHITECTURE:
- * GameManager coordinates two services:
- * - CombatService (~800 lines) - Combat encounters, attacks, victory/defeat
+ * GameManager coordinates:
  * - ExplorationService (~950 lines) - Room navigation, shops, inventory
  *
  * GameManager retains:
  * - State assembly (getState, getPhase)
  * - Run lifecycle (startRun, forfeitRun)
- * - Meta-progression (essence, upgrades, achievements) - cross-cutting concern
+ * - Meta-progression (achievements) - cross-cutting concern
  * - Player management (createPlayer, loadPlayer)
  * - API surface (delegate methods for server compatibility)
  *
@@ -27,7 +26,7 @@
  * - this.player - Base player (persists between runs)
  * - this.run - Current run state (null when in hub)
  * - this.combat - Current combat (null when not fighting)
- * - this.meta - Meta-progression (essence, upgrades, achievements)
+ * - this.meta - Meta-progression (achievements, creature collection)
  *
  * GAME PHASES (via phase-machine.js):
  * - 'no_save' - No player exists
@@ -39,7 +38,6 @@
  * - 'area_complete' / 'run_complete' - Victory states
  *
  * DEPENDENCIES:
- * - ./services/combat-service.js - Combat logic
  * - ./services/exploration-service.js - Exploration logic
  * - ./phase-machine.js - Phase derivation
  * - ./state.js - State factories and meta-progression
@@ -50,18 +48,13 @@ import {
   createNewRun,
   createCombatState,
   createMetaProgression,
-  calculateEssenceReward,
-  getMetaUpgradeEffects,
-  META_UPGRADES,
   ACHIEVEMENTS,
   BASE_STARTING_CREDITS
 } from './state.js';
 
-import { generateEnemy, selectEnemyIntent } from './enemies.js';
-import { determineTurnOrder } from './combat.js';
 import { getRoomActions, getAreaSelectionOptions } from './rooms.js';
 import { derivePhase } from './phase-machine.js';
-import { CombatService, ExplorationService } from './services/index.js';
+import { ExplorationService } from './services/index.js';
 import { logger } from '../logger.js';
 import { instantiateCreature, generateEnemyCreature, generateEnemyCreatures } from './creatures.js';
 import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, CREDITS_PER_KILL } from './services/creature-combat-service.js';
@@ -81,7 +74,6 @@ export class GameManager {
     this.stateCallback = null;      // Called when state changes
 
     // Services (extracted from monolithic GameManager)
-    this.combatService = new CombatService(this);
     this.explorationService = new ExplorationService(this);
   }
 
@@ -106,98 +98,6 @@ export class GameManager {
     return this.meta || createMetaProgression();
   }
 
-  /**
-   * Get all upgrade effects for display
-   */
-  getMetaEffects() {
-    return getMetaUpgradeEffects(this.meta);
-  }
-
-  /**
-   * Get available upgrades with current levels and costs
-   */
-  getAvailableUpgrades() {
-    const upgrades = [];
-    const currentUpgrades = this.meta?.upgrades || {};
-
-    for (const [id, upgrade] of Object.entries(META_UPGRADES)) {
-      const currentLevel = currentUpgrades[id] || 0;
-      const nextLevel = currentLevel + 1;
-      const canUpgrade = nextLevel <= upgrade.maxLevel;
-      const cost = canUpgrade ? upgrade.costPerLevel[currentLevel] : null;
-
-      upgrades.push({
-        id,
-        name: upgrade.name,
-        nameEn: upgrade.nameEn,
-        description: upgrade.description,
-        currentLevel,
-        maxLevel: upgrade.maxLevel,
-        nextCost: cost,
-        canAfford: cost !== null && (this.meta?.essence || 0) >= cost,
-        maxed: !canUpgrade
-      });
-    }
-
-    return upgrades;
-  }
-
-  /**
-   * Purchase an upgrade
-   */
-  purchaseUpgrade(upgradeId) {
-    if (!this.meta) {
-      return { success: false, error: 'No meta-progression initialized' };
-    }
-
-    const upgrade = META_UPGRADES[upgradeId];
-    if (!upgrade) {
-      return { success: false, error: 'Unknown upgrade' };
-    }
-
-    const currentLevel = this.meta.upgrades[upgradeId] || 0;
-    if (currentLevel >= upgrade.maxLevel) {
-      return { success: false, error: 'Upgrade already maxed' };
-    }
-
-    const cost = upgrade.costPerLevel[currentLevel];
-    if (this.meta.essence < cost) {
-      return { success: false, error: 'Not enough essence' };
-    }
-
-    // Purchase!
-    this.meta.essence -= cost;
-    this.meta.upgrades[upgradeId] = currentLevel + 1;
-
-    this.emitState();
-
-    return {
-      success: true,
-      upgrade: {
-        id: upgradeId,
-        newLevel: currentLevel + 1,
-        cost
-      }
-    };
-  }
-
-  /**
-   * Award essence for a completed run
-   */
-  awardRunEssence(isVictory = false) {
-    if (!this.meta || !this.run) return { essence: 0 };
-
-    const essence = calculateEssenceReward(
-      this.run.stats,
-      this.run.areasCompleted || 0,
-      isVictory
-    );
-
-    this.meta.essence += essence;
-    this.meta.lifetimeStats.totalEssenceEarned += essence;
-
-    return { essence };
-  }
 
   /**
    * Update lifetime stats after a run
@@ -215,8 +115,6 @@ export class GameManager {
       stats.runsFailed++;
     }
 
-    stats.totalEnemiesDefeated += runStats.enemiesDefeated || 0;
-    stats.totalBossesDefeated += runStats.bossesDefeated || 0;
     stats.totalDamageDealt += runStats.damageDealt || 0;
     stats.totalDamageTaken += runStats.damageTaken || 0;
     stats.totalCreditsEarned += runStats.creditsEarned || 0;
@@ -254,12 +152,6 @@ export class GameManager {
       if (achievement.check(stats, runStats)) {
         this.meta.achievements.push(id);
 
-        // Award essence
-        if (achievement.reward?.essence) {
-          this.meta.essence += achievement.reward.essence;
-          this.meta.lifetimeStats.totalEssenceEarned += achievement.reward.essence;
-        }
-
         newAchievements.push({
           id,
           name: achievement.name,
@@ -271,30 +163,6 @@ export class GameManager {
     }
 
     return newAchievements;
-  }
-
-  /**
-   * Apply meta bonuses to player
-   */
-  applyMetaBonuses(player) {
-    if (!this.meta) return player;
-
-    const effects = getMetaUpgradeEffects(this.meta);
-
-    // HP bonus (percentage from vitality upgrade)
-    if (effects.maxHpPercent > 0) {
-      const bonus = Math.floor(player.maxHp * effects.maxHpPercent / 100);
-      player.maxHp += bonus;
-      player.hp += bonus;
-    }
-
-    // Attack bonus
-    player.attack += effects.attackBonus || 0;
-
-    // Starting credits
-    player.credits += effects.startingCredits || 0;
-
-    return player;
   }
 
   /**
@@ -363,8 +231,7 @@ export class GameManager {
         creatureParty: this.run.creatureParty,
         itemBuffs: this.run.itemBuffs || null,
         npcDialogue: this.run?.npcDialogue || null,
-        postCombatShop: null,
-        startingChipShop: null
+        postCombatShop: null
       } : null,
       room: currentRoom ? {
         ...currentRoom,
@@ -384,7 +251,6 @@ export class GameManager {
         npcData: this.combat.npcData || null
       } : null,
       meta: this.meta ? {
-        essence: this.meta.essence,
         lifetimeStats: this.meta.lifetimeStats,
         achievements: this.meta.achievements,
         levels: this.meta.levels || { highestUnlocked: 1, completed: [], current: null }
@@ -452,13 +318,8 @@ export class GameManager {
 
     logger.info('[GameManager] Run started:', { playerHp: this.run.player.hp });
 
-    // Reset credits to base starting value (before meta bonuses)
+    // Reset credits to base starting value
     this.run.player.credits = BASE_STARTING_CREDITS;
-
-    // Apply meta-progression bonuses to the run player
-    if (this.meta) {
-      this.applyMetaBonuses(this.run.player);
-    }
 
     // Reset HP to full at start of run
     this.run.player.hp = this.run.player.maxHp;
@@ -583,43 +444,6 @@ export class GameManager {
    */
   startRoomEncounter() {
     return this.explorationService.startRoomEncounter();
-  }
-
-
-  // ============ ENCOUNTER MANAGEMENT ============
-
-  /**
-   * Start a random encounter
-   */
-  startEncounter() {
-    return this.combatService.startEncounter();
-  }
-
-
-  // ============ COMBAT CYCLE ============
-
-  /**
-   * Execute one combat cycle (vocab-pause turn-based combat)
-   * @param {string} attackerType - 'player' or 'enemy'
-   * @param {string} actionType - 'attack' or 'defend'
-   * @returns {object} Result with attack data, HP values, and combat status
-   */
-  combatCycle(attackerType = 'player', actionType = 'attack') {
-    return this.combatService.executeCombatCycle(attackerType, actionType);
-  }
-
-  // ============ COMBAT RESOLUTION ============
-
-  _handleVictory() {
-    return this.combatService.handleVictory();
-  }
-
-  _handleDefeat() {
-    return this.combatService.handleDefeat();
-  }
-
-  _handleGameVictory() {
-    return this.combatService.handleGameVictory();
   }
 
 
@@ -1299,7 +1123,7 @@ export class GameManager {
   forfeitRun() {
     if (this.run) {
       logger.info('[GameManager] Run forfeited:', { areasCompleted: this.run.areasCompleted, roomsExplored: this.run.roomsExplored });
-      // Only award essence/stats if run was still active (not already ended by combat defeat)
+      // Only update stats if run was still active (not already ended by combat defeat)
       if (this.run.active) {
         this.run.active = false;
         // Clear current level tracking
@@ -1307,7 +1131,6 @@ export class GameManager {
           this.meta.levels.current = null;
         }
         this.run.stats.endTime = Date.now();
-        this.awardRunEssence(false);
         this.updateLifetimeStats(false);
         this.checkAchievements(this.run.stats);
       }
@@ -1341,57 +1164,6 @@ export class GameManager {
     this.emitState();
   }
 
-  // ============ DEBUG/TESTING ============
-
-  /**
-   * Force enter combat state for e2e testing
-   * Only works when debug mode is enabled
-   * @param {string} enemyId - Optional specific enemy ID to spawn
-   */
-  debugForceCombat(enemyId = null) {
-    // Ensure player exists
-    if (!this.player) {
-      this.createPlayer('TestPlayer');
-    }
-
-    // Ensure we have an active run
-    if (!this.run || !this.run.active) {
-      this.startRun();
-      // Auto-select first area for testing
-      if (this.run.areaSelectionRequired) {
-        this.selectArea('okunomori');
-      }
-    }
-
-    // Generate enemy using real enemy generation
-    const enemy = generateEnemy(1);
-
-    // Create real combat state
-    this.combat = createCombatState(enemy);
-    this.combat.turn = determineTurnOrder(this.run.player, enemy);
-    this.combat.intent = selectEnemyIntent(enemy, 1);
-
-    // Ensure current room reflects combat state
-    const currentRoom = this.getCurrentRoom();
-    if (currentRoom) {
-      currentRoom.type = 'encounter';
-      currentRoom.enemy = enemy;
-      currentRoom.interacted = false;
-    }
-
-    this.emitState();
-
-    return {
-      success: true,
-      enemy: {
-        name: enemy.name,
-        nameEn: enemy.nameEn,
-        hp: enemy.hp,
-        maxHp: enemy.maxHp
-      },
-      phase: this.getPhase()
-    };
-  }
 }
 
 // Export singleton instance

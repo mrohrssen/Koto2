@@ -24,7 +24,6 @@ import createBootstrapRoutes from './bootstrap.js';
  * @param {function} deps.generateGameNarration - Generate AI narration
  * @param {function} deps.cancelPendingPrefetches - Cancel pending prefetches
  * @param {function} deps.clearPrefetchCache - Clear prefetch cache
- * @param {function} deps.enrichRewardDrops - Enrich reward drops with item data
  * @param {function} deps.updateGameStatsWithEvent - Update game stats
  * @param {function} deps.saveGameStats - Save game stats
  * @param {function} deps.getGameStats - Get game stats object
@@ -73,7 +72,6 @@ export default function createGameRoutes(deps) {
   // Mount combat routes
   router.use(createCombatRoutes({
     generateGameNarration: deps.generateGameNarration,
-    enrichRewardDrops: deps.enrichRewardDrops,
     updateGameStatsWithEvent: deps.updateGameStatsWithEvent,
     saveGameStats: deps.saveGameStats,
     getGameStats: deps.getGameStats,

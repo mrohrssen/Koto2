@@ -54,7 +54,6 @@ export default function createRoutes(deps) {
     generateDoorHints: deps.generateDoorHints,
     cancelPendingPrefetches: deps.cancelPendingPrefetches,
     clearPrefetchCache: deps.clearPrefetchCache,
-    enrichRewardDrops: deps.enrichRewardDrops,
     updateGameStatsWithEvent: deps.updateGameStatsWithEvent,
     saveGameStats: deps.saveGameStats,
     getGameStats: deps.getGameStats,

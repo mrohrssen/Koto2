@@ -12,13 +12,10 @@
  * - createNewPlayer(name) - Player with attack, maxHp, credits
  * - createNewRun(player) - Run state: area loop, rooms, encounters
  * - createCombatState(enemy) - Combat instance for battle
- * - createMetaProgression() - Meta-save: essence, upgrades, achievements
+ * - createMetaProgression() - Meta-save: upgrades, achievements
  *
  * Meta-Progression:
- * - META_UPGRADES - Upgrade definitions (vitality, startingCredits, attackPower, creditFind)
  * - ACHIEVEMENTS - Achievement definitions and unlock conditions
- * - calculateEssenceReward(runStats, areasCompleted, isVictory) - Compute essence earned
- * - getMetaUpgradeEffects(meta) - Aggregate effects from purchased upgrades
  *
  * Persistence:
  * - saveGame(fs, player, completedRuns) - Save to .jrpg-save.json
@@ -41,9 +38,6 @@
  */
 export function createMetaProgression() {
   return {
-    // Meta currency
-    essence: 0,           // Shadow Essence - earned from runs
-
     // Purchased upgrades (key: upgrade ID, value: level purchased)
     upgrades: {},
 
@@ -52,17 +46,13 @@ export function createMetaProgression() {
       totalRuns: 0,
       runsCompleted: 0,      // Successfully cleared all 7 floors
       runsFailed: 0,
-      totalEnemiesDefeated: 0,
-      totalBossesDefeated: 0,
       totalDamageDealt: 0,
       totalDamageTaken: 0,
       totalCreditsEarned: 0,
-      totalEssenceEarned: 0,
       highestAreasCleared: 0,
       totalPlayTime: 0,      // in milliseconds
       firstPlayDate: null,
-      lastPlayDate: null,
-      liberationTracker: {}  // { enemyId: { count, firstLiberated } }
+      lastPlayDate: null
     },
 
     // Unlocked features (achievements unlock these)
@@ -94,50 +84,6 @@ export function createMetaProgression() {
 /** Base starting credits for each run (before meta-progression bonuses) */
 export const BASE_STARTING_CREDITS = 55;
 
-// ============ UPGRADE DEFINITIONS ============
-
-export const META_UPGRADES = {
-  vitality: {
-    id: 'vitality',
-    name: '生命力強化',
-    nameEn: 'Vitality',
-    description: 'Start with +10% Max HP per level',
-    maxLevel: 5,
-    costPerLevel: [50, 100, 200, 400, 800],
-    effect: (level) => ({ maxHpPercent: level * 10 })
-  },
-
-  startingCredits: {
-    id: 'startingCredits',
-    name: '財宝嗅覚',
-    nameEn: 'Treasure Sense',
-    description: 'Start each run with +25 credits per level',
-    maxLevel: 4,
-    costPerLevel: [30, 60, 120, 240],
-    effect: (level) => ({ startingCredits: level * 25 })
-  },
-
-  attackPower: {
-    id: 'attackPower',
-    name: '攻撃力上昇',
-    nameEn: 'Attack Power',
-    description: 'Start with +2 ATK per level',
-    maxLevel: 5,
-    costPerLevel: [75, 150, 300, 600, 1200],
-    effect: (level) => ({ attackBonus: level * 2 })
-  },
-
-  creditFind: {
-    id: 'creditFind',
-    name: 'クレジット発見率',
-    nameEn: 'Credit Find',
-    description: 'Earn +10% more credits per level',
-    maxLevel: 5,
-    costPerLevel: [50, 100, 200, 400, 800],
-    effect: (level) => ({ creditFindPercent: level * 10 })
-  }
-};
-
 // ============ ACHIEVEMENT DEFINITIONS ============
 
 export const ACHIEVEMENTS = {
@@ -147,7 +93,7 @@ export const ACHIEVEMENTS = {
     nameEn: 'First Victory',
     description: 'Defeat your first enemy',
     check: (stats) => stats.totalEnemiesDefeated >= 1,
-    reward: { essence: 20 }
+    reward: {}
   },
 
   bossSlayer: {
@@ -156,7 +102,7 @@ export const ACHIEVEMENTS = {
     nameEn: 'Boss Slayer',
     description: 'Defeat 5 bosses',
     check: (stats) => stats.totalBossesDefeated >= 5,
-    reward: { essence: 50 }
+    reward: {}
   },
 
   veteranHunter: {
@@ -165,7 +111,7 @@ export const ACHIEVEMENTS = {
     nameEn: 'Veteran Hunter',
     description: 'Complete 10 runs',
     check: (stats) => stats.totalRuns >= 10,
-    reward: { essence: 100 }
+    reward: {}
   },
 
   dungeonMaster: {
@@ -174,7 +120,7 @@ export const ACHIEVEMENTS = {
     nameEn: 'Dungeon Master',
     description: 'Clear 10 areas',
     check: (stats) => stats.runsCompleted >= 1,
-    reward: { essence: 200 }
+    reward: {}
   },
 
   thousandKills: {
@@ -183,7 +129,7 @@ export const ACHIEVEMENTS = {
     nameEn: 'Thousand Slayer',
     description: 'Defeat 1000 enemies total',
     check: (stats) => stats.totalEnemiesDefeated >= 1000,
-    reward: { essence: 300 }
+    reward: {}
   },
 
   perfectRun: {
@@ -192,67 +138,14 @@ export const ACHIEVEMENTS = {
     nameEn: 'Perfect Run',
     description: 'Clear the dungeon without dying',
     check: (stats, runStats) => runStats?.areasCleared >= 10,
-    reward: { essence: 150 }
+    reward: {}
   }
 };
-
-// ============ ESSENCE REWARD CALCULATION ============
-
-/**
- * Calculate essence reward for a completed run
- */
-export function calculateEssenceReward(runStats, areasCompleted, isVictory) {
-  let essence = 0;
-
-  // Base reward per area completed
-  essence += areasCompleted * 10;
-
-  // Bonus for full clear (10 areas)
-  if (isVictory) {
-    essence += 100;
-  }
-
-  // Bonus per 10 enemies
-  essence += Math.floor((runStats?.enemiesDefeated || 0) / 10) * 5;
-
-  return essence;
-}
-
-/**
- * Get all upgrade effects combined at their current levels
- */
-export function getMetaUpgradeEffects(metaProgression) {
-  const effects = {
-    maxHpPercent: 0,
-    startingCredits: 0,
-    attackBonus: 0,
-    creditFindPercent: 0
-  };
-
-  if (!metaProgression?.upgrades) return effects;
-
-  for (const [upgradeId, level] of Object.entries(metaProgression.upgrades)) {
-    if (level <= 0) continue;
-
-    const upgrade = META_UPGRADES[upgradeId];
-    if (!upgrade) continue;
-
-    const upgradeEffect = upgrade.effect(level);
-    for (const [key, value] of Object.entries(upgradeEffect)) {
-      if (typeof value === 'number') {
-        effects[key] = (effects[key] || 0) + value;
-      }
-    }
-  }
-
-  return effects;
-}
 
 // ============ DEFAULT PLAYER STATE ============
 export function createNewPlayer(name = "Hunter") {
   return {
     name,
-    class: 'hacker',
     hp: 100,
     maxHp: 100,
     attack: 0,
@@ -317,15 +210,12 @@ export function createNewRun(player) {
 
     // Run statistics
     stats: {
-      enemiesDefeated: 0,
-      bossesDefeated: 0,
       damageDealt: 0,
       damageTaken: 0,
       itemsUsed: 0,
       creditsEarned: 0,
       areasCleared: 0,
       roomsExplored: 0,
-      trapsDisarmed: 0,
       treasuresOpened: 0,
       startTime: Date.now(),
       endTime: null
@@ -334,21 +224,9 @@ export function createNewRun(player) {
     // Per-run tracking stats
     runStats: {
       kills: 0,
-      critsLanded: 0,
-      dodges: 0,
       roomsCleared: 0,
       damageDealt: 0,
-      damageHealed: 0,
-      statusesApplied: {
-        defrag: 0,
-        lag: 0,
-        bufferOverflow: 0,
-        corrupted: 0,
-        exposed: 0,
-        glitched: 0,
-        overheated: 0,
-        debug: 0
-      }
+      damageHealed: 0
     }
   };
 

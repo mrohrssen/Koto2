@@ -22,10 +22,10 @@
  * Run: /game/start-run, /game/forfeit, /game/enter-floor, /game/next-floor
  * Ward: /game/starting-wards, /game/select-starting-ward, /game/next-ward-options
  * Room: /game/room, /game/proceed, /game/interact-trap, /game/loot-body
- * Combat: /game/start-encounter, /game/start-boss, /game/combat-cycle, /game/combat-end-narration
+ * Combat: /game/start-encounter, /game/combat-end-narration
  * Economy: /game/shop, /game/shop/buy, /game/refine, /game/open-treasure
  * Creatures: /game/creature-party, /game/creature-swap
- * Meta: /game/upgrades, /game/purchase-upgrade
+ * Meta: /game/achievements, /game/lifetime-stats
  *
  * DEPENDENCIES:
  * - ./src/jpdb.js - JPDB API integration
@@ -33,7 +33,7 @@
  * - ./src/voicevox.js - TTS synthesis
  * - ./src/game/loop.js - GameManager class
  * - ./src/game/dm.js - AI narration generation
- * - ./src/game/state.js - State factories
+ * - ./src/game/state.js - State factories, achievements
  * - ./src/game-stats.js - Statistics tracking
  *
  * KEY INTERNAL FUNCTIONS:
@@ -109,7 +109,6 @@ import {
 import { GameManager } from './src/game/loop.js';
 import { generateNarration, getSimpleNarration } from './src/game/dm.js';
 import { ACHIEVEMENTS } from './src/game/state.js';
-import { getLiberationTrackerData } from './src/game/enemies.js';
 import {
   loadGameStats, saveGameStats, updateGameStatsWithNarration,
   updateGameStatsWithWords, updateGameStatsWithEvent,
@@ -297,7 +296,7 @@ if (gameSave?.meta?.robotCollection && !gameSave?.meta?.creatureCollection) {
 }
 gameManager.initMeta(gameSave?.version >= SAVE_VERSION ? gameSave?.meta : null);
 if (gameSave?.meta && gameSave?.version >= SAVE_VERSION) {
-  console.log(`Loaded meta-progression: ${gameSave.meta.essence} essence`);
+  console.log(`Loaded meta-progression`);
 }
 
 // Helper to enrich player data for frontend display
@@ -322,34 +321,6 @@ function enrichGameState(manager) {
     state.run.player = enrichPlayerItems(state.run.player);
   }
   return state;
-}
-
-function enrichRewardDrops(rewards) {
-  if (!rewards) return rewards;
-
-  const enriched = { ...rewards };
-
-  if (enriched.drops && Array.isArray(enriched.drops)) {
-    enriched.drops = enriched.drops.map(itemId => ({
-      id: itemId,
-      name: itemId,
-      slot: null,
-      type: 'consumable',
-      rarity: 'common'
-    }));
-  }
-
-  if (enriched.bossDrop) {
-    enriched.bossDrop = {
-      ...enriched.bossDrop,
-      name: enriched.bossDrop.itemId,
-      slot: null,
-      type: 'equipment',
-      rarity: 'epic'
-    };
-  }
-
-  return enriched;
 }
 
 // ============ API Routes ============
@@ -410,7 +381,6 @@ app.use('/api', createRoutes({
   generateDoorHints: generateDoorHintsForRoute,
   cancelPendingPrefetches,
   clearPrefetchCache,
-  enrichRewardDrops,
   updateGameStatsWithEvent,
   saveGameStats,
   getGameStats: () => gameStats,
