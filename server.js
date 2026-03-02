@@ -437,31 +437,11 @@ function trackNarrationStats(narration, jpdbApiKey = null, userId = null) {
 }
 
 const DM_EVENT_ALIASES = Object.freeze({
-  floorEnter: 'enterFloor',
   encounterStart: 'combatStart',
   shrine: 'shrineUse'
 });
 
 function normalizeNarrationRequest(event, context = {}) {
-  if (event === 'bossStart') {
-    const isFinalBoss = Boolean(context?.isFinalBoss) || Number(context?.floor) === 7;
-    const bossContext = context?.enemy || context?.boss || context || {};
-    // Preserve allies if present for creature-specific narration
-    if (context?.allies) bossContext.allies = context.allies;
-    return {
-      event: isFinalBoss ? 'finalBossAppear' : 'bossAppear',
-      context: bossContext
-    };
-  }
-
-  if (event === 'floorEnter') {
-    const floorValue = Number(context?.floor);
-    return {
-      event: 'enterFloor',
-      context: Number.isFinite(floorValue) ? floorValue : (context?.floor || context || 1)
-    };
-  }
-
   if (event === 'shrine') {
     if (typeof context === 'number') {
       return { event: 'shrineUse', context: { healed: context } };

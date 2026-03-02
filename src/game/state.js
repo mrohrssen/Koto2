@@ -44,7 +44,7 @@ export function createMetaProgression() {
     // Lifetime statistics
     lifetimeStats: {
       totalRuns: 0,
-      runsCompleted: 0,      // Successfully cleared all 7 floors
+      runsCompleted: 0,
       runsFailed: 0,
       totalDamageDealt: 0,
       totalDamageTaken: 0,
@@ -68,14 +68,7 @@ export function createMetaProgression() {
     befriendCount: {},
 
     // NPC bonds (persists across runs)
-    npcBonds: {},
-
-    // Level progression
-    levels: {
-      highestUnlocked: 1,
-      completed: [],
-      current: null
-    }
+    npcBonds: {}
   };
 }
 
@@ -91,17 +84,8 @@ export const ACHIEVEMENTS = {
     id: 'firstVictory',
     name: '初勝利',
     nameEn: 'First Victory',
-    description: 'Defeat your first enemy',
-    check: (stats) => stats.totalEnemiesDefeated >= 1,
-    reward: {}
-  },
-
-  bossSlayer: {
-    id: 'bossSlayer',
-    name: 'ボススレイヤー',
-    nameEn: 'Boss Slayer',
-    description: 'Defeat 5 bosses',
-    check: (stats) => stats.totalBossesDefeated >= 5,
+    description: 'Win your first combat encounter',
+    check: (stats) => stats.totalDamageDealt > 0,
     reward: {}
   },
 
@@ -118,17 +102,8 @@ export const ACHIEVEMENTS = {
     id: 'dungeonMaster',
     name: 'ダンジョンマスター',
     nameEn: 'Dungeon Master',
-    description: 'Clear 10 areas',
+    description: 'Clear all 10 areas in a run',
     check: (stats) => stats.runsCompleted >= 1,
-    reward: {}
-  },
-
-  thousandKills: {
-    id: 'thousandKills',
-    name: '千人斬り',
-    nameEn: 'Thousand Slayer',
-    description: 'Defeat 1000 enemies total',
-    check: (stats) => stats.totalEnemiesDefeated >= 1000,
     reward: {}
   },
 
@@ -136,7 +111,7 @@ export const ACHIEVEMENTS = {
     id: 'perfectRun',
     name: 'パーフェクトラン',
     nameEn: 'Perfect Run',
-    description: 'Clear the dungeon without dying',
+    description: 'Clear all 10 areas without failing',
     check: (stats, runStats) => runStats?.areasCleared >= 10,
     reward: {}
   }
@@ -157,7 +132,6 @@ export function createNewPlayer(name = "Hunter") {
 export function createNewRun(player) {
   const run = {
     active: true,
-    levelId: null,
 
     // Area loop system
     currentArea: null,           // full area object from staging JSON

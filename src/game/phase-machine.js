@@ -19,7 +19,6 @@
 export const PHASES = {
   NO_SAVE: 'no_save',
   HUB: 'hub',
-  LEVEL_SELECT: 'level_select',
   RUN_ENDED: 'run_ended',
 
   AREA_SELECTION: 'area_selection',
@@ -48,14 +47,8 @@ export const VALID_TRANSITIONS = {
   [PHASES.NO_SAVE]: [PHASES.HUB],
 
   [PHASES.HUB]: [
-    PHASES.LEVEL_SELECT,
     PHASES.AREA_SELECTION,
     PHASES.SHOP
-  ],
-
-  [PHASES.LEVEL_SELECT]: [
-    PHASES.HUB,
-    PHASES.AREA_SELECTION
   ],
 
   [PHASES.AREA_SELECTION]: [
@@ -131,13 +124,11 @@ export const VALID_TRANSITIONS = {
   ],
 
   [PHASES.RUN_COMPLETE]: [
-    PHASES.HUB,
-    PHASES.LEVEL_SELECT
+    PHASES.HUB
   ],
 
   [PHASES.RUN_ENDED]: [
-    PHASES.HUB,
-    PHASES.LEVEL_SELECT
+    PHASES.HUB
   ]
 };
 

@@ -194,9 +194,9 @@ function getIntentNarrationHint(intent) {
  */
 function getSampleNarrations(eventType) {
   let category = 'combat';
-  if (['roomEnter', 'enterFloor', 'runStart', 'treasureOpen', 'shrineUse'].includes(eventType)) {
+  if (['roomEnter', 'runStart', 'treasureOpen', 'shrineUse'].includes(eventType)) {
     category = 'exploration';
-  } else if (['victory', 'bossVictory', 'gameVictory'].includes(eventType)) {
+  } else if (['victory', 'gameVictory'].includes(eventType)) {
     category = 'victory';
   } else if (eventType === 'defeat') {
     category = 'defeat';
@@ -347,8 +347,8 @@ ${vocabList || '(基本的な言葉)'}
  * - Context-specific details (damage, enemy name, etc.)
  *
  * Event categories:
- * - Run lifecycle: runStart, enterFloor, floorClear, gameVictory
- * - Combat: combatStart, playerAttack, enemyAttack, victory, bossVictory, defeat
+ * - Run lifecycle: runStart, gameVictory
+ * - Combat: combatStart, playerAttack, enemyAttack, victory, defeat
  * - Exploration: roomEnter, shrineUse
  *
  * Usage: DM_PROMPTS.eventName(context) → string prompt
@@ -357,10 +357,6 @@ export const DM_PROMPTS = {
   // Run start
   runStart: () =>
     `ダンジョンの入り口。冒険が始まる。緊張と期待を描写。4-6文で。`,
-
-  // Floor entry
-  enterFloor: (floor) =>
-    `第${floor}階に入った。新しい階の雰囲気、空気、感覚を描写。4-6文で。`,
 
   // Combat start - enemy appears and speaks with initial intent
   combatStart: (ctx) => {
@@ -522,16 +518,6 @@ ${intentHint}
 獲得：${rewards.xp || 0}XP、${rewards.credits || 0}クレジット`;
   },
 
-  // Boss victory - dramatic final words
-  bossVictory: (ctx) => {
-    const enemy = ctx?.enemy || ctx || {};
-    const rewards = ctx?.rewards || {};
-    return `ボス「${enemy.name || 'ボス'}」を倒した！
-【必須】ボスの威厳ある最後の言葉「」。長めに。
-この重大な勝利を劇的に描写。5-7文で。
-${rewards.bossDrop ? `ドロップ：${rewards.bossDrop.name}` : ''}`;
-  },
-
   // Player defeat - enemy mocks
   defeat: (ctx) => {
     const enemy = ctx?.enemy || ctx || {};
@@ -540,13 +526,6 @@ ${rewards.bossDrop ? `ドロップ：${rewards.bossDrop.name}` : ''}`;
     return `${enemy.name || '敵'}に倒された...${allyHint}
 【必須】敵の勝利宣言「」。
 意識が遠のく。絶望の瞬間。4-6文で。`;
-  },
-
-  // Floor clear
-  floorClear: (ctx) => {
-    const floor = ctx?.floor || ctx || '?';
-    return `第${floor}階クリア！
-次への階段が見える。達成感と期待を描写。3-4文で。`;
   },
 
   // Game victory

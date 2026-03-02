@@ -11,7 +11,7 @@
  * - isJapanified(): Check if Japanese mode is active
  *
  * SCOPE:
- * Japanified: combat, collection, equip, shrine, quiz, level select, game
+ * Japanified: combat, collection, equip, shrine, quiz, game
  *   over, item popups, buff overlay, flash card hints
  * Always English: auth, settings, bug report, speed review, menu sheet,
  *   leaderboard, error messages, stat abbreviations, creature/enemy names

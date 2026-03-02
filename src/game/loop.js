@@ -222,7 +222,6 @@ export class GameManager {
         encountersCompleted: this.run.encountersCompleted,
         encountersNeeded: this.run.encountersNeeded,
         active: this.run.active,
-        levelId: this.run.levelId,
         stats: this.run.stats,
         pendingBranch: this.run.pendingBranch,
         selectedRooms: this.run.selectedRooms,
@@ -307,14 +306,6 @@ export class GameManager {
     }
 
     this.run = createNewRun(this.player);
-
-    // Track which level this run belongs to
-    if (levelId !== null) {
-      this.run.levelId = levelId;
-      if (this.meta?.levels) {
-        this.meta.levels.current = levelId;
-      }
-    }
 
     logger.info('[GameManager] Run started:', { playerHp: this.run.player.hp });
 

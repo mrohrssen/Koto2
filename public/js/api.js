@@ -102,33 +102,6 @@ async function getGameState() {
 
 
 /**
- * Get level definitions and player progress
- * @returns {Promise<object>} { levels, progress }
- */
-async function getLevels() {
-  try {
-    const response = await fetch('/api/game/levels', {
-      headers: getAuthHeaders()
-    });
-    return await response.json();
-  } catch (error) {
-    logger.error('[API] Failed to fetch levels:', error.message);
-    return { levels: [], progress: { highestUnlocked: 1, completed: [], current: null } };
-  }
-}
-
-/**
- * Select a level and start a run
- * @param {number} levelId - Level to start
- * @returns {Promise<object>} Result with state and narration
- */
-async function selectLevel(levelId, starterIds = null) {
-  const body = { levelId };
-  if (starterIds) body.starterIds = Array.isArray(starterIds) ? starterIds : [starterIds];
-  return apiCall('/levels/select', 'POST', body);
-}
-
-/**
  * Get server settings
  * @returns {Promise<object>} Settings object
  */
@@ -166,6 +139,34 @@ async function createPlayer(name, stats, statPoints) {
  */
 async function startRun(body = null) {
   return apiCall('/start-run', 'POST', body);
+}
+
+/**
+ * Get level definitions and player progress
+ * @returns {Promise<object>} { levels, progress }
+ */
+async function getLevels() {
+  try {
+    const response = await fetch('/api/game/levels', {
+      headers: getAuthHeaders()
+    });
+    return await response.json();
+  } catch (error) {
+    logger.error('[API] Failed to fetch levels:', error.message);
+    return { levels: [], progress: { highestUnlocked: 1, completed: [], current: null } };
+  }
+}
+
+/**
+ * Select a level and start a run
+ * @param {number} levelId - Level to start
+ * @param {Array|null} starterIds - Creature starter IDs
+ * @returns {Promise<object>} Result with state and narration
+ */
+async function selectLevel(levelId, starterIds = null) {
+  const body = { levelId };
+  if (starterIds) body.starterIds = Array.isArray(starterIds) ? starterIds : [starterIds];
+  return apiCall('/levels/select', 'POST', body);
 }
 
 /**
@@ -542,13 +543,13 @@ export {
   isApiLoading,
   // Game state endpoints
   getGameState,
-  getLevels,
-  selectLevel,
   getSettings,
   // Player management endpoints
   createPlayer,
   // Run management endpoints
   startRun,
+  getLevels,
+  selectLevel,
   forfeitRun,
   getAreaOptions,
   selectArea,
