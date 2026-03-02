@@ -370,9 +370,9 @@ const ttsDialogueCache = new TtsDialogueCache(join(__dirname, 'data', 'tts-dialo
 function buildTtsOptions() {
   if (!settings.gameTtsEnabled) return null;
 
-  const PLAYER_BOY_SPEAKER_ID = 11;
-  const PLAYER_GIRL_SPEAKER_ID = 2;
-  const CREATURE_SPEAKER_ID = 0;
+  const PLAYER_BOY_SPEAKER_ID = 11;    // 玄野武宏 ノーマル
+  const PLAYER_GIRL_SPEAKER_ID = 2;    // 四国めたん ノーマル
+  const CREATURE_SPEAKER_ID = 21;      // 剣崎雌雄 ノーマル
 
   const playerSpeakerId = settings.voiceGender === 'girl'
     ? PLAYER_GIRL_SPEAKER_ID
