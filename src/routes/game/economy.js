@@ -1,7 +1,7 @@
 /**
  * @fileoverview Economy routes
  *
- * Handles shop-skip, meta-progression upgrades, and dealer room
+ * Handles shop-skip and dealer room
  */
 
 import { Router } from 'express';
@@ -14,26 +14,6 @@ export default function createEconomyRoutes() {
     const gameManager = req.gameManager;
     try {
       const result = gameManager.skipShop();
-      req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Get available upgrades (meta-progression)
-  router.get('/upgrades', (req, res) => {
-    const gameManager = req.gameManager;
-    const upgrades = gameManager.getAvailableUpgrades();
-    res.json({ upgrades, meta: gameManager.meta });
-  });
-
-  // Purchase upgrade (meta-progression)
-  router.post('/purchase-upgrade', (req, res) => {
-    const gameManager = req.gameManager;
-    const { upgradeId } = req.body;
-    try {
-      const result = gameManager.purchaseUpgrade(upgradeId);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {

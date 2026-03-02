@@ -39,7 +39,6 @@ export const PHASES = {
   NPC_DIALOGUE: 'npc_dialogue',
 
   SHOP: 'shop',
-  BLACKSMITH: 'blacksmith',
   POST_COMBAT_SHOP: 'post_combat_shop',
 
   RUN_COMPLETE: 'run_complete'
@@ -51,8 +50,7 @@ export const VALID_TRANSITIONS = {
   [PHASES.HUB]: [
     PHASES.LEVEL_SELECT,
     PHASES.AREA_SELECTION,
-    PHASES.SHOP,
-    PHASES.BLACKSMITH
+    PHASES.SHOP
   ],
 
   [PHASES.LEVEL_SELECT]: [
@@ -70,8 +68,7 @@ export const VALID_TRANSITIONS = {
     PHASES.ROOM_ENCOUNTER,
     PHASES.WHACK_A_MOLE,
     PHASES.COMBAT,
-    PHASES.SHOP,
-    PHASES.BLACKSMITH
+    PHASES.SHOP
   ],
 
   [PHASES.ROOM]: [
@@ -80,7 +77,6 @@ export const VALID_TRANSITIONS = {
     PHASES.WHACK_A_MOLE,
     PHASES.COMBAT,
     PHASES.SHOP,
-    PHASES.BLACKSMITH,
     PHASES.EXPLORING
   ],
 
@@ -122,12 +118,6 @@ export const VALID_TRANSITIONS = {
   ],
 
   [PHASES.SHOP]: [
-    PHASES.ROOM,
-    PHASES.EXPLORING,
-    PHASES.HUB
-  ],
-
-  [PHASES.BLACKSMITH]: [
     PHASES.ROOM,
     PHASES.EXPLORING,
     PHASES.HUB

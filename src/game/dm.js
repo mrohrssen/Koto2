@@ -7,12 +7,10 @@
  *
  * Architecture inspired by SillyTavern's character card system:
  * - Character identity ("System" - the guiding voice)
- * - World context from lorebook (floor themes, enemy voices)
  * - Narration memory to prevent repetition
  * - Sample narrations to demonstrate desired style
  *
  * The DM system integrates with:
- * - lorebook.js: World-building content (floor lore, enemy personalities)
  * - vocab-repair.js: Post-generation vocabulary enforcement
  * - ai-providers.js: Multi-provider AI abstraction
  *
@@ -26,8 +24,6 @@
  * @module dm
  * @see docs/ARCHITECTURE.md for system overview
  */
-
-import { getFloorLore, getEnemyVoice, buildWorldContext } from './lorebook.js';
 
 // ============================================================================
 // NARRATION MEMORY SYSTEM
@@ -227,10 +223,9 @@ function getSampleNarrations(eventType) {
  * The prompt is structured in a specific order for maximum effectiveness:
  * 1. Identity: Who the AI is ("System" - the guiding voice)
  * 2. Examples: Sample narrations showing desired style
- * 3. World: Floor lore, enemy voices from lorebook
- * 4. Memory: Recent events to avoid repetition
- * 5. Techniques: Writing tips (sensory focus, rhythm, etc.)
- * 6. Vocabulary: The user's known words (constraint)
+ * 3. Memory: Recent events to avoid repetition
+ * 4. Techniques: Writing tips (sensory focus, rhythm, etc.)
+ * 5. Vocabulary: The user's known words (constraint)
  *
  * The entire prompt is in Japanese to get better Japanese output.
  *
@@ -254,18 +249,11 @@ export function buildDmSystemPrompt(gameState, vocabulary, jlptLevel, suggestedW
     : vocabulary;
   const vocabList = limitedVocab.join(', ');
 
-  // Get world context from lorebook
-  const worldContext = buildWorldContext(floor, enemy);
-
-  // Get enemy voice patterns if in combat
+  // Enemy description hint if in combat
   let enemyVoiceHint = '';
   if (enemy) {
-    const voice = getEnemyVoice(enemy.personality);
     enemyVoiceHint = `
-敵の話し方：${voice.speech}
-攻撃時：${voice.attack.join(' ')}
-痛み：${voice.hurt.join(' ')}
-死ぬ時：${voice.dying.join(' ')}`;
+敵：${enemy.name || '敵'}`;
   }
 
   // Get narration memory
@@ -306,14 +294,11 @@ ${samples.map((s, i) => `例${i + 1}：「${s}」`).join('\n')}
 
 敵の声は毎回変える。同じ言葉を2回使わない。
 
-=== 今の世界 ===
-${worldContext}
 ${enemyVoiceHint}
 
 ${memoryContext ? `=== 物語の記憶 ===\n${memoryContext}\n` : ''}
 === 今の場面 ===
-階：${floor}/7 | ${player?.name || 'Hunter'}（${player?.rank || 'E'}ランク、Lv.${player?.level || 1}）
-HP：${player?.hp || 0}/${player?.maxHp || 100} | SP：${player?.sp ?? player?.mp ?? 0}/${player?.maxSp ?? player?.maxMp ?? 50}
+${player?.name || 'Hunter'}（Lv.${player?.level || 1}）
 ${allies?.length ? `味方ロボット：${allies.filter(a => a && a.hp > 0).map(a => `${a.nameEn || a.name}(Lv.${a.level})`).join('、')}` : ''}
 ${enemy ? `敵：${enemy.name}（HP：${enemy.hp}/${enemy.maxHp}）` : ''}
 緊張度：${tension}
@@ -363,8 +348,8 @@ ${vocabList || '(基本的な言葉)'}
  *
  * Event categories:
  * - Run lifecycle: runStart, enterFloor, floorClear, gameVictory
- * - Combat: combatStart, playerAttack, playerMagic, enemyAttack, victory, bossVictory, defeat
- * - Exploration: roomEnter, shrineUse, bossAppear, finalBossAppear
+ * - Combat: combatStart, playerAttack, enemyAttack, victory, bossVictory, defeat
+ * - Exploration: roomEnter, shrineUse
  *
  * Usage: DM_PROMPTS.eventName(context) → string prompt
  */
@@ -381,7 +366,6 @@ export const DM_PROMPTS = {
   combatStart: (ctx) => {
     const enemy = ctx?.enemy || ctx || {};
     const intent = ctx?.intent;
-    const voice = getEnemyVoice(enemy.personality);
     const allyNames = ctx?.allies?.filter(a => a && a.hp > 0).map(a => a.nameEn || a.name) || [];
     const allyHint = allyNames.length > 0 ? `\n味方ロボット${allyNames.join('、')}が構える。` : '';
 
@@ -389,7 +373,7 @@ export const DM_PROMPTS = {
 
     return `${enemy.name}が現れた！${allyHint}
 見た目：${enemy.description || ''}
-【必須】敵が「」で最初の言葉を言う。${voice.description}
+【必須】敵が「」で最初の言葉を言う。
 ${intentHint}
 登場の瞬間、敵の動き、最初の言葉、敵の構え。4-6文で。`;
   },
@@ -438,36 +422,6 @@ ${intentHint}
     return `${dmg}ダメージ${crit ? '（クリティカル！）' : ''}！${intensity}！
 【必須】敵が痛みで「」と反応する。${intentHint}
 2-3文で。`;
-  },
-
-  // Player magic
-  playerMagic: (result) => {
-    const enemyIntent = result.enemyIntent;
-    const intentHint = enemyIntent ? `\n敵の構え：${getIntentNarrationHint(enemyIntent)}` : '';
-
-    if (result.healing) {
-      return `${result.skill?.name || '魔法'}で${result.healing}HP回復。
-光が体を包む。温かさを感じる。回復の瞬間を描写。${intentHint}
-4-6文で。`;
-    }
-    const crit = result.critical;
-    return `${result.skill?.name || '魔法'}！${result.damage}ダメージ${crit ? '（クリティカル）' : ''}
-【必須】敵が魔法に「」と反応。
-魔法の光、敵への影響、敵の言葉。${intentHint}
-4-6文で。`;
-  },
-
-  // Player item
-  playerItem: (result) => {
-    if (result.healing) {
-      return `${result.item?.name || 'アイテム'}を使用。${result.healing}HP回復。
-体が温かくなる感覚を描写。3-4文で。`;
-    }
-    if (result.spRestored || result.mpRestored) {
-      return `${result.item?.name || 'アイテム'}を使用。${result.spRestored || result.mpRestored}SP回復。
-魔力が満ちる感覚を描写。3-4文で。`;
-    }
-    return `${result.item?.name || 'アイテム'}を使った。効果を描写。3-4文で。`;
   },
 
   // Enemy attack - enemy taunts while attacking, show next intent
@@ -588,38 +542,11 @@ ${rewards.bossDrop ? `ドロップ：${rewards.bossDrop.name}` : ''}`;
 意識が遠のく。絶望の瞬間。4-6文で。`;
   },
 
-  // Flee success
-  fleeSuccess: () =>
-    `戦闘から逃げた。息が荒い。心臓が鳴る。逃走の緊張感を描写。3-4文で。`,
-
-  // Flee fail
-  fleeFail: () =>
-    `逃げられない！敵が道を塞ぐ。「」と敵が言う。失敗の恐怖を描写。4-5文で。`,
-
   // Floor clear
   floorClear: (ctx) => {
     const floor = ctx?.floor || ctx || '?';
     return `第${floor}階クリア！
 次への階段が見える。達成感と期待を描写。3-4文で。`;
-  },
-
-  // Boss appear
-  bossAppear: (ctx) => {
-    const boss = ctx?.boss || ctx || {};
-    const voice = getEnemyVoice(boss.personality || 'arrogant');
-    return `ボス「${boss.name || 'ボス'}」が現れた！
-${boss.description || ''}
-【必須】ボスが威厳を持って「」と話す。${voice.description}
-恐ろしい登場を劇的に描写。5-7文で。`;
-  },
-
-  // Final boss appear
-  finalBossAppear: (ctx) => {
-    const boss = ctx?.boss || ctx || {};
-    return `最終ボス「${boss.name || '影の君主'}」が現れた！
-${boss.description || '全ての影を支配する存在。'}
-【必須】最終ボスが冷たく「」と宣言する。
-究極の敵との対面を最大限に劇的に描写。6-8文で。`;
   },
 
   // Game victory
@@ -649,23 +576,6 @@ ${boss.description || '全ての影を支配する存在。'}
 取引の瞬間を描写。2-3文で。`;
   },
 
-  // ============ BLACKSMITH / REFINEMENT EVENTS ============
-
-  refineSuccess: (ctx) => {
-    const itemName = ctx?.itemName || '武器';
-    const newLevel = ctx?.newLevel || 1;
-    return `鍛冶屋が${itemName}を炎に入れる。金槌が鳴り響く。
-「できた！」+${newLevel}になった！
-成功の瞬間を描写。3-4文で。`;
-  },
-
-  refineFail: (ctx) => {
-    const itemName = ctx?.itemName || '武器';
-    return `鍛冶屋が${itemName}を慎重に叩く。しかし...パキッ！
-「すまない...」${itemName}が砕け散った。
-破壊の瞬間、悲しみを描写。3-4文で。`;
-  },
-
   // ============ ROOM EXPLORATION EVENTS ============
 
   roomEnter: (room) => {
@@ -680,9 +590,7 @@ ${boss.description || '全ての影を支配する存在。'}
       body: '倒れた冒険者。悲しい光景。',
       treasure: '宝箱が見える。罠か本物か。',
       shrine: '神聖な光。祠がある。',
-      merchant: '人の気配。商人だ。',
-      blacksmith: '炎の音。金槌の音。鍛冶屋だ。',
-      boss: '空気が変わった。強い敵がいる。'
+      merchant: '人の気配。商人だ。'
     };
 
     return `部屋${roomNum}/${total}に入った。
@@ -860,43 +768,21 @@ export async function generateNarration(chatFn, gameState, event, context, vocab
 function getFallbackNarration(event, context) {
   const fallbacks = {
     runStart: 'ダンジョンの入り口に立っている。暗い。冷たい空気。心臓が鳴る。冒険が始まる。',
-    enterFloor: getFloorNarration(context),
     combatStart: `${context?.name || '敵'}が現れた！「グルル...」敵の目が光る。戦いの準備をしろ！`,
     playerAttack: getAttackNarration(context),
-    playerMagic: '魔法を使った！光が敵を包む。「何だ...！」敵が驚く。',
-    playerItem: 'アイテムを使った。体が温かくなる。少し楽になった。',
     enemyAttack: getEnemyAttackNarration(context),
     victory: '敵が倒れる。「まさか...」最後の言葉が消える。勝利だ。',
     bossVictory: 'ボスが倒れる。「お前は...強かった...」長い戦いが終わった。よくやった！',
     defeat: '力が抜ける。「弱かったな...」敵の声が遠くなる。目の前が暗くなる...',
-    fleeSuccess: '逃げた！心臓が鳴る。息が荒い。また戦おう。',
-    fleeFail: '逃げられない！「逃がさない」敵が道を塞いでいる！',
     floorClear: '階をクリアした！次への階段が見える。進もう。',
-    bossAppear: `${context?.name || 'ボス'}が現れた！「来たか...」強い敵だ。覚悟しろ！`,
-    finalBossAppear: '影の君主が現れた！「終わりだ...」全ての影を支配する存在。これが最後の戦い。',
     gameVictory: 'ダンジョン制覇！影が消え、光が戻る。おめでとう、勇者よ！',
     rest: '安全な場所を見つけた。緊張が解ける。少し休める。',
     treasure: '宝箱を見つけた！開けてみよう。何があるだろう？',
     shopEnter: '商人に会った。「いらっしゃい」こんな場所に不思議だ。',
-    shopPurchase: '「ありがとう」商人が言う。アイテムを手に入れた。',
-    refineSuccess: `鍛冶屋が${context?.itemName || '武器'}を叩く。炎が舞う！「できた！」+${context?.newLevel || 1}になった！`,
-    refineFail: `鍛冶屋が${context?.itemName || '武器'}を叩く...パキッ！「すまない...」武器が砕け散った。`
+    shopPurchase: '「ありがとう」商人が言う。アイテムを手に入れた。'
   };
 
   return fallbacks[event] || '...';
-}
-
-function getFloorNarration(floor) {
-  const descriptions = {
-    1: '第1階に入った。暗い通路。水の音が響く。冷たい空気。冒険が始まる。',
-    2: '第2階。空気が重い。壁に古い文字。埃が舞う。過去の痕跡。',
-    3: '第3階。骨が散らばる。冷たい霧。死者の気配がする。',
-    4: '第4階。熱い！溶岩の光が見える。汗が流れる。',
-    5: '第5階。暗い森。木々が動く。何かが見ている。',
-    6: '第6階。巨大な骨。金が光る。竜の住処だ。',
-    7: '最後の階。影が渦巻く。玉座が見える。最終決戦の時だ。'
-  };
-  return descriptions[floor] || `第${floor}階に入った。新しい冒険が待っている。`;
 }
 
 function getAttackNarration(context) {

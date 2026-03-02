@@ -1,7 +1,7 @@
 /**
  * @fileoverview Combat routes
  *
- * Handles combat actions: combat-cycle, start-encounter, start-boss, combat-end-narration
+ * Handles creature combat, befriending, NPC dialogue, and combat-end-narration
  */
 
 import { Router } from 'express';
@@ -26,19 +26,6 @@ export default function createCombatRoutes({
   checkSentenceViolations
 }) {
   const router = Router();
-
-  // Combat cycle (vocab-pause turn-based)
-  router.post('/combat-cycle', (req, res) => {
-    const gameManager = req.gameManager;
-    const { attackerType, actionType } = req.body;
-    try {
-      const result = gameManager.combatCycle(attackerType || 'player', actionType);
-      req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
 
   // Combat end narration
   router.post('/combat-end-narration', async (req, res) => {
@@ -67,20 +54,6 @@ export default function createCombatRoutes({
       res.json({ narration, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Start encounter
-  router.post('/start-encounter', async (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      const encounter = gameManager.startEncounter();
-      const narration = null; // DM narration disabled — frontend discards this
-
-      req.saveGame();
-      res.json({ ...encounter, state: req.getEnrichedGameState(), narration });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
     }
   });
 

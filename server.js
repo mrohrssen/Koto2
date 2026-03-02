@@ -19,12 +19,11 @@
  * GAME ENDPOINTS:
  * State: /game/state, /game/meta, /game/achievements, /game/lifetime-stats
  * Player: /game/create-player
- * Run: /game/start-run, /game/forfeit, /game/enter-floor, /game/next-floor
- * Ward: /game/starting-wards, /game/select-starting-ward, /game/next-ward-options
- * Room: /game/room, /game/proceed, /game/interact-trap, /game/loot-body
- * Combat: /game/start-encounter, /game/combat-end-narration
- * Economy: /game/shop, /game/shop/buy, /game/refine, /game/open-treasure
- * Creatures: /game/creature-party, /game/creature-swap
+ * Run: /game/start-run, /game/forfeit, /game/select-area, /game/proceed
+ * Room: /game/room, /game/proceed, /game/room-encounter, /game/door-hints
+ * Combat: /game/start-creature-encounter, /game/creature-combat-cycle, /game/combat-end-narration
+ * Economy: /game/shop-skip, /game/dealer-state, /game/dealer-sell, /game/dealer-buy
+ * Creatures: /game/creature-collection, /game/swap-creature, /game/befriend-conversation
  * Meta: /game/achievements, /game/lifetime-stats
  *
  * DEPENDENCIES:

@@ -1,7 +1,7 @@
 /**
  * @fileoverview Miscellaneous game routes
  *
- * Handles debug, heal, session-start, post-combat-refresh, due-words, NPC cache
+ * Handles debug, session-start, post-combat-refresh, due-words, NPC cache
  */
 
 import { Router } from 'express';
@@ -46,49 +46,6 @@ export default function createMiscRoutes({
       const result = gameManager.debugForceCombat(enemyId);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Debug: Force blacksmith room
-  router.post('/debug-force-blacksmith', (req, res) => {
-    if (!getDebugMode()) {
-      return res.status(403).json({ error: 'Debug mode not enabled' });
-    }
-
-    const gameManager = req.gameManager;
-    try {
-      if (!gameManager.run) {
-        return res.status(400).json({ error: 'No active run' });
-      }
-
-      const room = {
-        id: 'debug_blacksmith',
-        type: 'blacksmith',
-        roomNumber: 1,
-        totalRooms: 5,
-        areaId: gameManager.run.currentArea?.id || 'okunomori',
-        explored: true,
-        interacted: false,
-        blacksmith: {
-          interacted: false,
-          successBonus: 0.02
-        }
-      };
-
-      if (!gameManager.run.rooms) {
-        gameManager.run.rooms = [room];
-        gameManager.run.currentRoom = 0;
-      } else {
-        gameManager.run.rooms[gameManager.run.currentRoom] = room;
-      }
-
-      gameManager.combat = null;
-      gameManager.run.postCombatShop = null;
-
-      req.saveGame();
-      res.json({ success: true, room, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -274,21 +231,6 @@ export default function createMiscRoutes({
     } catch (error) {
       console.error('Clear creature dialogue cache error:', error);
       res.status(500).json({ error: 'Failed to clear cache' });
-    }
-  });
-
-  // Heal
-  router.post('/heal', (req, res) => {
-    const gameManager = req.gameManager;
-    const { amount } = req.body;
-    const player = gameManager.run?.player || gameManager.player;
-    if (player) {
-      const healAmount = amount || 0;
-      player.hp = Math.min(player.hp + healAmount, player.maxHp);
-      req.saveGame();
-      res.json({ success: true, state: req.getEnrichedGameState() });
-    } else {
-      res.status(400).json({ error: 'No player' });
     }
   });
 

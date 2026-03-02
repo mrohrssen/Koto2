@@ -18,7 +18,6 @@ import { queueTTSPrefetch } from '../../game/prefetch.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const quizQuestionsPath = join(__dirname, '../../data/quiz-questions.json');
-const levelsPath = join(__dirname, '../../../data/levels.json');
 const creaturesPath = join(__dirname, '../../../data/creatures.json');
 const itemsPath = join(__dirname, '../../../data/items.json');
 const movesPath = join(__dirname, '../../../data/moves.json');
@@ -29,10 +28,6 @@ const allMoves = JSON.parse(readFileSync(movesPath, 'utf8'));
 function loadQuizQuestions() {
   const data = JSON.parse(readFileSync(quizQuestionsPath, 'utf-8'));
   return data.questions;
-}
-
-function loadLevels() {
-  return JSON.parse(readFileSync(levelsPath, 'utf-8'));
 }
 
 export default function createRunRoutes({
@@ -100,68 +95,6 @@ export default function createRunRoutes({
       }
 
       gameManager.startRun(null, starterId, starterIds);
-
-      const narration = null; // DM narration disabled — frontend discards this
-
-      req.saveGame();
-
-      queueBackgroundDialogues(req);
-
-      res.json({
-        state: req.getEnrichedGameState(),
-        narration
-      });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Get level definitions and player progress
-  router.get('/levels', (req, res) => {
-    try {
-      const levels = loadLevels();
-      const meta = req.gameManager.getMeta();
-      res.json({
-        levels,
-        progress: meta.levels || { highestUnlocked: 1, completed: [], current: null }
-      });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Select a level and start a run
-  router.post('/levels/select', async (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      const { levelId, starterId, starterIds } = req.body;
-      if (!levelId || typeof levelId !== 'number') {
-        return res.status(400).json({ error: 'levelId (number) required' });
-      }
-
-      const meta = gameManager.getMeta();
-      const levels = meta.levels || { highestUnlocked: 1, completed: [], current: null };
-
-      if (levelId > levels.highestUnlocked) {
-        return res.status(400).json({ error: 'Level not yet unlocked' });
-      }
-
-      if (gameManager.run?.active) {
-        return res.status(400).json({ error: 'A run is already active' });
-      }
-
-      // Validate creature selection against collection
-      const ids = starterIds || (starterId ? [starterId] : null);
-      if (ids) {
-        const meta = gameManager.getMeta();
-        const collection = meta.creatureCollection || [];
-        const validation = validateTeamSelection(collection, ids);
-        if (!validation.valid) {
-          return res.status(400).json({ error: validation.reason });
-        }
-      }
-
-      gameManager.startRun(levelId, starterId, starterIds);
 
       const narration = null; // DM narration disabled — frontend discards this
 
