@@ -93,7 +93,6 @@ import {
   chat,
   getProviders,
   getJLPTLevels,
-  buildSystemPrompt,
   JLPT_GRAMMAR
 } from './src/ai-providers.js';
 
