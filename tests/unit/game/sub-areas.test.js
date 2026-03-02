@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateFloorRooms, getAreaById, getRoomEntryNarration, createRoom } from '../../../src/game/rooms.js';
+import { generateAreaRooms, getAreaById, getRoomEntryNarration, createRoom } from '../../../src/game/rooms.js';
 
 describe('Sub-area assignment', () => {
   it('assigns sub-areas to rooms when area has subAreas', () => {
@@ -9,7 +9,7 @@ describe('Sub-area assignment', () => {
       // Skip if sub-area data not yet added — tested after Task 3
       return;
     }
-    const rooms = generateFloorRooms('okunomori', 6);
+    const rooms = generateAreaRooms('okunomori', 6);
     // First room is single
     assert.ok(rooms[0].subArea, 'first room should have a subArea');
     assert.ok(rooms[0].subArea.name, 'subArea should have a name');
@@ -26,15 +26,15 @@ describe('Sub-area assignment', () => {
   it('cycles through sub-areas when more rooms than sub-areas', () => {
     const area = getAreaById('okunomori');
     if (!area?.subAreas?.length) return;
-    const rooms = generateFloorRooms('okunomori', 10);
+    const rooms = generateAreaRooms('okunomori', 10);
     // With 6 sub-areas and 10 rooms, room 7 (index 6) should wrap to sub-area 0
     const getSubArea = (room) => Array.isArray(room) ? room[0].subArea : room.subArea;
     assert.strictEqual(getSubArea(rooms[6]).id, getSubArea(rooms[0]).id, 'should cycle back');
   });
 
   it('works gracefully when area has no subAreas', () => {
-    // generateFloorRooms should not crash if area lacks subAreas
-    const rooms = generateFloorRooms('nonexistent-area', 4);
+    // generateAreaRooms should not crash if area lacks subAreas
+    const rooms = generateAreaRooms('nonexistent-area', 4);
     assert.ok(rooms.length > 0, 'should still generate rooms');
     assert.strictEqual(rooms[0].subArea, undefined, 'no subArea when area has none');
   });

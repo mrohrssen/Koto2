@@ -1,6 +1,6 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert';
-import { ROOM_TYPES, generateFloorRooms, getRoomEntryNarration, getRoomActions } from '../../../src/game/rooms.js';
+import { ROOM_TYPES, generateAreaRooms, getRoomEntryNarration, getRoomActions } from '../../../src/game/rooms.js';
 import { GameManager } from '../../../src/game/loop.js';
 
 // ============ ROOM GENERATION ============
@@ -9,7 +9,7 @@ describe('Whack-a-Mole Room', () => {
   it('should generate whackAMole rooms in floor generation', () => {
     let found = false;
     for (let i = 0; i < 200; i++) {
-      const rooms = generateFloorRooms('okunomori', 5);
+      const rooms = generateAreaRooms('okunomori', 5);
       const allRooms = rooms.flatMap(r => Array.isArray(r) ? r : [r]);
       if (allRooms.some(r => r.type === 'whackAMole')) {
         found = true;
@@ -25,7 +25,7 @@ describe('Whack-a-Mole Room', () => {
     Math.random = () => 0.42;
 
     try {
-      const rooms = generateFloorRooms('okunomori', 2);
+      const rooms = generateAreaRooms('okunomori', 2);
       const pair = rooms[1];
       const room = pair.find(r => r.type === 'whackAMole') || pair[0];
 

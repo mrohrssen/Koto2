@@ -105,17 +105,13 @@ src/
   game/
     loop.js            # GameManager class (central coordinator)
     state.js           # State factories, meta-progression
-    enemies.js         # Enemy definitions, intent patterns
-    rooms.js           # Ward system, room generation
+    rooms.js           # Area system, room generation
     dm.js              # Dungeon Master narration
-    combat/            # Combat mechanics (mechanics.js, player-actions.js, enemy.js)
+    combat/effects.js  # Creature combat status effects
     services/          # Creature combat, collection, items, exploration
 data/
   creatures.json       # Creature definitions
-  creatures.json       # Wild creature definitions
   items.json           # Consumable item definitions
-  enemies.json         # Enemy definitions
-  bosses.json          # Boss definitions
 ```
 
 For detailed architecture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
@@ -124,9 +120,9 @@ For detailed architecture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 - ES6 modules with imports/exports
 - Japanese names with English fallbacks: `name` (Japanese), `nameEn` (English)
-- Constants in ALL_CAPS: `ENEMIES`, `WARD_INFO`, `CREATURES`
+- Constants in ALL_CAPS: `WARD_INFO`, `CREATURES`, `ROOM_TYPES`
 - camelCase for variables/functions
-- Factory functions: `createNewPlayer()`, `generateEnemy()`, `createCombatState()`
+- Factory functions: `createNewPlayer()`, `createNewRun()`, `generateAreaRooms()`
 
 ## API Endpoint Namespaces
 
@@ -185,7 +181,6 @@ Sprites are served with 1-year immutable cache headers. When regenerating sprite
 
 ## Common Mistakes to Avoid
 
-- **Don't reference iRO stats** - The game uses only `attack` and `maxHp`. No STR/AGI/VIT/INT/DEX/LUK.
 - **Don't add equipment systems** - Players use creatures and consumable items only.
 - **Don't run `npx playwright test` directly** - Use the wrapper script or exact command above.
 - **Don't use Homebrew git** - Use `/usr/bin/git` to avoid library conflicts.
@@ -241,3 +236,71 @@ Each bug report includes:
 - Delete old cache on deploy: `rm -f data/.jrpg-vocab-suggestions.json`
 - Each user's JPDB word states are now isolated
 - First speed review after deploy will rebuild the cache for each user
+
+
+
+## ComfyUI (Image Generation)
+
+A ComfyUI instance (RTX 3090, 24GB VRAM) is available via SSH reverse tunnel from the developer's local machine. A watchdog auto-restarts ComfyUI if it crashes or becomes unresponsive.
+
+- **API endpoint:** `http://127.0.0.1:8188` — use from server-side code, no auth needed
+- **Web UI:** `https://76.13.220.142` — self-signed cert, basic auth: `comfyui` / `832fw+i/oW+2Mol8gnzA`
+
+### Management
+
+```bash
+# Force restart ComfyUI (watchdog picks this up within ~30s)
+curl -s http://127.0.0.1:8189/restart
+
+# Check if restart server is alive
+curl -s http://127.0.0.1:8189/ping
+```
+
+If ComfyUI is unresponsive and you did NOT request a restart, the watchdog will auto-detect and restart it within ~90 seconds. You can speed this up by hitting the restart endpoint above.
+
+### ComfyUI Built-in Management
+
+```bash
+# Check if ComfyUI is up
+curl -s http://127.0.0.1:8188/system_stats | jq .system.comfyui_version
+
+# Interrupt current generation
+curl -s -X POST http://127.0.0.1:8188/interrupt
+
+# Clear the queue
+curl -s -X POST http://127.0.0.1:8188/queue \
+  -H "Content-Type: application/json" \
+  -d '{"clear": true}'
+
+# View queue status
+curl -s http://127.0.0.1:8188/queue
+
+# Free VRAM/RAM
+curl -s -X POST http://127.0.0.1:8188/free \
+  -H "Content-Type: application/json" \
+  -d '{"unload_models": true, "free_memory": true}'
+```
+
+### Generating Images
+
+```bash
+# Queue a workflow
+curl -s -X POST http://127.0.0.1:8188/prompt \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": <workflow_json>}'
+
+# Check history for a prompt
+curl -s "http://127.0.0.1:8188/history/<prompt_id>"
+
+# Download generated image
+curl -s "http://127.0.0.1:8188/view?filename=<name>&type=output" -o image.png
+
+# Upload an input image
+curl -s -X POST http://127.0.0.1:8188/upload/image -F "image=@myimage.png"
+
+# List available node types
+curl -s http://127.0.0.1:8188/object_info | jq 'keys'
+
+# Get info about a specific node type
+curl -s "http://127.0.0.1:8188/object_info/<NodeName>"
+```

@@ -15,7 +15,7 @@
  * - getAreaById(areaId) - Look up area by ID
  *
  * Room Generation:
- * - generateFloorRooms(areaId, roomCount) - Create room sequence for area
+ * - generateAreaRooms(areaId, roomCount) - Create room sequence for area
  * - getRoomEntryNarration(room) - Get narrative text for room type
  * - getRoomActions(room) - Get available actions for current room
  * Constants:
@@ -181,7 +181,7 @@ function generateBranchPair(areaId, roomNumber, totalRooms, excludeSpecialType =
  * Generate rooms for an area with branching
  * Structure: single first room + branch pairs (no boss)
  */
-export function generateFloorRooms(areaId, roomCount = 10, lastSpecialType = null, encountersOnly = false, forceRoomType = null) {
+export function generateAreaRooms(areaId, roomCount = 10, lastSpecialType = null, encountersOnly = false, forceRoomType = null) {
   const rooms = [];
   const totalSlots = roomCount;
   let prevSpecialType = lastSpecialType;

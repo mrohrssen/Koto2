@@ -1962,7 +1962,7 @@ async function executeBefriendAction() {
         narration.showNarration('\u3058\u3083\u3042\u3001\u53cb\u9054\u306b\u306a\u308d\u3046\uff01', {
           speaker: creatureName, autoDismiss: 1500
         });
-        playSFX('chip-skill');
+        playSFX('creature-skill');
 
         // Mark enemy as befriended visually
         const captured = answerResult.befriend?.captured;
@@ -1981,7 +1981,7 @@ async function executeBefriendAction() {
               if (actionArea) {
                 actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">${t('befriended', replaceResult.captured.nameEn)}</div>`;
               }
-              playSFX('chip-skill');
+              playSFX('creature-skill');
 
               const capturedId = replaceResult.captured?.id;
               if (capturedId) {

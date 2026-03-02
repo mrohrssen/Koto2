@@ -72,7 +72,7 @@ export function show(items) {
   cards.forEach(card => {
     card.addEventListener('click', () => {
       const index = parseInt(card.dataset.index, 10);
-      playSFX('chip-equip');
+      playSFX('creature-equip');
       if (items[index]?.word) playWord(items[index].word);
       cards.forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');

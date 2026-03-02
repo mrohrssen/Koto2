@@ -30,7 +30,7 @@ describe('manager-registry', () => {
   it('loads existing save file', () => {
     const saveData = {
       version: 2,
-      player: { name: 'TestPlayer', stats: { str: 5 }, hp: 100, maxHp: 100, level: 1, exp: 0, money: 0, inventory: [], equipment: {}, chips: { loadout: [], inventory: [] } },
+      player: { name: 'TestPlayer', stats: { str: 5 }, hp: 100, maxHp: 100, level: 1, exp: 0, money: 0, inventory: [], equipment: {}, creatures: { active: [], reserves: [] } },
       meta: { essence: 50, upgrades: [], achievements: [], lifetimeStats: {} }
     };
     writeFileSync(testSaveFile, JSON.stringify(saveData));

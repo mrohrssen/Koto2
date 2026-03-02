@@ -11,7 +11,7 @@ const AUDIO_VERSION = '20260212';
 
 const SFX_FILES = [
   'attack', 'player-hit', 'enemy-defeat', 'heal',
-  'swipe-right', 'swipe-left', 'chip-equip', 'chip-skill',
+  'swipe-right', 'swipe-left', 'creature-equip', 'creature-skill',
   'button-tap', 'takeover-open', 'takeover-close',
   'victory', 'defeat'
 ];
@@ -34,7 +34,7 @@ const PHASE_TRACKS = {
   exploration: 'explore',
   event: 'event',
   combat: 'battle',
-  victory: 'chip_shop',
+  victory: 'creature-shop',
   defeat: 'main',
   floorComplete: 'main',
   runComplete: 'main',

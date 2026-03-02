@@ -406,7 +406,7 @@ export async function renderAreaSelection() {
   const gameState = getGameState();
 
   // Skip if starting creature shop is active - creature selection will render instead
-  if (gameState.run?.startingChipShop?.active) {
+  if (gameState.run?.startingCreatureShop?.active) {
     return;
   }
 

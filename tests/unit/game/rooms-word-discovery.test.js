@@ -1,13 +1,13 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert';
-import { ROOM_TYPES, generateFloorRooms, WORDS_PER_DISCOVERY, getRoomEntryNarration, getRoomActions } from '../../../src/game/rooms.js';
+import { ROOM_TYPES, generateAreaRooms, WORDS_PER_DISCOVERY, getRoomEntryNarration, getRoomActions } from '../../../src/game/rooms.js';
 
 describe('Word Discovery Room', () => {
   it('should generate wordDiscovery rooms in floor generation', () => {
     // Room 0 is always encounter; rooms 1+ are branch pairs [roomA, roomB]
     let foundWordDiscovery = false;
     for (let i = 0; i < 100; i++) {
-      const rooms = generateFloorRooms('okunomori', 5);
+      const rooms = generateAreaRooms('okunomori', 5);
       const allRooms = rooms.flatMap(r => Array.isArray(r) ? r : [r]);
       if (allRooms.some(r => r.type === 'wordDiscovery')) {
         foundWordDiscovery = true;
@@ -24,7 +24,7 @@ describe('Word Discovery Room', () => {
 
     try {
       // Need 2+ rooms: room 0 is always encounter, room 1 is a branch pair
-      const rooms = generateFloorRooms('okunomori', 2);
+      const rooms = generateAreaRooms('okunomori', 2);
       const pair = rooms[1]; // branch pair [roomA, roomB]
       const room = pair.find(r => r.type === 'wordDiscovery') || pair[0];
 

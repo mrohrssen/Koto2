@@ -394,7 +394,7 @@ export class GameManager {
   }
 
   /**
-   * Refresh the post-combat shop with 3 new random chips
+   * Refresh the post-combat shop with 3 new random creatures
    */
   refreshPostCombatShop() {
     return this.explorationService.refreshPostCombatShop();

@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { createNewRun, createNewPlayer } from '../../../src/game/state.js';
 import { PHASES, derivePhase } from '../../../src/game/phase-machine.js';
-import { generateFloorRooms, ROOM_TYPES } from '../../../src/game/rooms.js';
+import { generateAreaRooms, ROOM_TYPES } from '../../../src/game/rooms.js';
 
 describe('createNewRun with branching support', () => {
   it('should include pendingBranch and selectedRooms fields', () => {
@@ -31,9 +31,9 @@ describe('BRANCH_SELECTION phase', () => {
   });
 });
 
-describe('generateFloorRooms with branching', () => {
+describe('generateAreaRooms with branching', () => {
   it('should generate first room as single, rest as branch pairs', () => {
-    const rooms = generateFloorRooms('okunomori', 4); // 4 room slots
+    const rooms = generateAreaRooms('okunomori', 4); // 4 room slots
 
     // First room: single (not an array)
     assert.strictEqual(Array.isArray(rooms[0]), false);
@@ -51,7 +51,7 @@ describe('generateFloorRooms with branching', () => {
   it('should not have duplicate special types in same branch', () => {
     // Run multiple times to catch randomness
     for (let i = 0; i < 20; i++) {
-      const rooms = generateFloorRooms('okunomori', 5);
+      const rooms = generateAreaRooms('okunomori', 5);
       for (let j = 1; j < rooms.length - 1; j++) {
         const pair = rooms[j];
         if (Array.isArray(pair)) {

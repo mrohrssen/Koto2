@@ -12,8 +12,8 @@ All SFX are from [Kenney.nl](https://kenney.nl) game asset packs, licensed under
 | heal.mp3 | [Interface Sounds](https://kenney.nl/assets/interface-sounds) | confirmation_002.ogg |
 | swipe-right.mp3 | [Interface Sounds](https://kenney.nl/assets/interface-sounds) | scroll_002.ogg |
 | swipe-left.mp3 | [Interface Sounds](https://kenney.nl/assets/interface-sounds) | scroll_004.ogg |
-| chip-equip.mp3 | [RPG Audio](https://kenney.nl/assets/rpg-audio) | metalClick.ogg |
-| chip-skill.mp3 | [Interface Sounds](https://kenney.nl/assets/interface-sounds) | pluck_001.ogg |
+| creature-equip.mp3 | [RPG Audio](https://kenney.nl/assets/rpg-audio) | metalClick.ogg |
+| creature-skill.mp3 | [Interface Sounds](https://kenney.nl/assets/interface-sounds) | pluck_001.ogg |
 | button-tap.mp3 | [Interface Sounds](https://kenney.nl/assets/interface-sounds) | click_003.ogg |
 | takeover-open.mp3 | [Interface Sounds](https://kenney.nl/assets/interface-sounds) | open_002.ogg |
 | takeover-close.mp3 | [Interface Sounds](https://kenney.nl/assets/interface-sounds) | close_002.ogg |

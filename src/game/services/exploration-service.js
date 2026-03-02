@@ -18,7 +18,7 @@
 import { generateEncounterCount } from '../state.js';
 
 import {
-  generateFloorRooms,
+  generateAreaRooms,
   getRoomEntryNarration,
   getRoomActions,
   getAreaSelectionOptions,
@@ -113,7 +113,7 @@ export class ExplorationService {
     this.gm.run.areaCleared = false;
 
     // Generate rooms for this area (no boss)
-    this.gm.run.rooms = generateFloorRooms(areaId, this.gm.run.encountersNeeded, null, false, forceRoomType);
+    this.gm.run.rooms = generateAreaRooms(areaId, this.gm.run.encountersNeeded, null, false, forceRoomType);
     this.gm.run.currentRoom = 0;
     this.gm.run.roomsExplored = 0;
     this.gm.run.pendingBranch = false;

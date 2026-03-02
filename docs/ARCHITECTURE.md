@@ -9,7 +9,7 @@ This document describes the technical architecture of Koto. It covers the game f
 3. [Game Flow and Phases](#game-flow-and-phases)
 4. [Creature Combat (Core Mechanic)](#creature-combat-core-mechanic)
 5. [Combat System](#combat-system)
-5. [Area System (Exploration)](#area-system-exploration)
+6. [Area System (Exploration)](#area-system-exploration)
 6. [Vocabulary Integration (JPDB)](#vocabulary-integration-jpdb)
 7. [AI Narration and TTS](#ai-narration-and-tts)
 8. [Meta-Progression](#meta-progression)
@@ -45,24 +45,24 @@ Everything the player encounters is named using real Japanese words from the **t
 | Entity | Word Class | Example |
 |--------|-----------|---------|
 | **Creatures** | Object nouns + adjective | 赤いハンマーロボ (Red Hammer Bot) |
-| **Enemies** | People nouns + adjective | 怒った先生 (Angry Teacher) |
+| **NPCs** | People nouns + adjective | 怒った先生 (Angry Teacher) |
 | **Locations** | Place nouns | 学校 (School), 病院 (Hospital) |
 | **Attacks/Skills** | Verbs | 教える (To Teach), 焼く (To Grill) |
 
 ### How It Teaches
 
-A single encounter can expose the player to **three word classes at once**:
+A single encounter can expose the player to **multiple word classes at once**:
 
 ```
-Fight: 怒った先生 (Angry Teacher)
+Meet: 怒った先生 (Angry Teacher)
   - 怒った (angry)      → adjective
   - 先生 (teacher)      → person noun
-  - 教える (to teach)   → verb (attack name)
+  - 教える (to teach)   → verb (creature move name)
 ```
 
 **Creatures** are named after everyday objects — things you'd point at in a room (hammer, scissors, battery, broom). Adjective modifiers create variety and teach a second word per entity.
 
-**Enemies** are named after real people and occupations — people you'd actually meet in Japan (student, teacher, doctor, shopkeeper, neighbor). Their attacks use **verbs that fit their identity**: the teacher 教える (teaches), the cook 焼く (grills), the doctor 治す (cures).
+**NPCs** are named after real people and occupations — people you'd actually meet in Japan (student, teacher, doctor, shopkeeper, neighbor).
 
 **Locations** are named after real places from the frequency list, reinforcing place vocabulary alongside the ward system.
 
@@ -105,15 +105,10 @@ src/game/phase-machine.js
 | `exploring` | Generic exploring state in dungeon |
 | `room` | In a room (general) |
 | `room_encounter` | Room has unhandled encounter |
-| `boss_ready` | At boss room, ready to fight |
-| `combat` | In active battle |
+| `combat` | In active creature battle |
 | `victory` | Just won combat (before rewards) |
 | `defeat` | Just lost combat |
-| `shop` | In merchant shop |
-| `blacksmith` | At blacksmith for upgrades |
-| `post_combat_shop` | Buying drops after combat |
-| `floor_complete` | Boss defeated, floor cleared |
-| `run_complete` | Beat final boss, game won |
+| `post_combat_shop` | Choosing reward after combat |
 | `run_ended` | Run finished (victory or defeat) |
 
 ### Key Transitions
@@ -134,11 +129,6 @@ NO_SAVE ──────► HUB ──────► WARD_SELECTION
                POST_COMBAT_SHOP  HUB               │
                         │                          │
                         └──────────────────────────┘
-
-Boss Victory Flow:
-VICTORY ──► FLOOR_COMPLETE ──► WARD_SELECTION (next ward)
-                              or
-                            RUN_COMPLETE ──► HUB (game won)
 ```
 
 ### Phase Derivation
@@ -199,16 +189,16 @@ Consumable items (`data/items.json`) provide buffs during combat (healing, stat 
 
 ## Combat System
 
-Combat is intentionally simplified to reduce cognitive load and keep focus on language learning.
+Combat is creature-based, intentionally simplified to reduce cognitive load and keep focus on language learning. Players deploy creatures that auto-battle; the player's role is reviewing vocabulary cards.
 
 ### Stats
 
-Only two stats matter:
+Creature stats:
 
 | Stat | Purpose |
 |------|---------|
-| `attack` | How much damage you deal |
-| `maxHp` | How much health you have |
+| `attack` | How much damage the creature deals |
+| `maxHp` | How much health the creature has |
 
 **No hit/miss, no crits, no defense stat.**
 
@@ -220,28 +210,8 @@ damage = calculateCreatureDamage(attack, power, elementMultiplier, variance)
 
 Element matchups provide bonus damage (1.5x for advantageous elements). Variance adds slight randomness to keep combat unpredictable.
 
-### Enemy Intents
-
-Enemies announce their intent before acting:
-
-| Intent | Effect |
-|--------|--------|
-| `attack` | Normal damage (1.0x) |
-| `heavy` | Heavy attack (2.0x) |
-| `defend` | Takes 0.5x damage this turn |
-| `special` | Varies by enemy |
-| `rage` | Enraged attack (1.5x) |
-
-### Turn Order
-
-Player always acts first.
-
 **Files:**
-- `src/game/stats.js` - Stat calculations
-- `src/game/combat/mechanics.js` - Damage formulas
-- `src/game/combat/player-actions.js` - Player attack execution
-- `src/game/combat/enemy.js` - Enemy AI and intents
-- `src/game/enemies.js` - Enemy definitions
+- `src/game/combat/effects.js` - Combat status effects
 - `src/game/services/creature-combat-service.js` - Creature combat orchestration
 
 ### Combat Visual Effects
@@ -327,10 +297,7 @@ The game takes place across 7 Tokyo wards, each representing a dungeon floor.
 | 7 | Tier 4 | Final |
 
 **Files:**
-- `src/game/rooms.js` - Room generation and ward paths
-- `src/game/enemies.js` - Enemy generation per tier
-- `data/enemies.json` - Enemy definitions
-- `data/bosses.json` - Boss definitions (7 floor bosses)
+- `src/game/rooms.js` - Room generation and area paths
 
 ---
 
@@ -410,7 +377,7 @@ AI output is constrained to the user's vocabulary level:
 
 Japanese text-to-speech synthesis:
 
-- 47+ speaker voices mapped to enemy personalities
+- 47+ speaker voices mapped to NPC personalities
 - Audio caching with 5-minute TTL
 - Deployed separately (VOICEVOX server)
 
@@ -427,42 +394,14 @@ Japanese text-to-speech synthesis:
 
 Progress persists across runs and sessions.
 
-### Essence (Shadow Currency)
-
-Earned from runs:
-- 10 essence per floor cleared
-- 100 essence completion bonus
-- +5 per 10 enemies defeated
-
-### Upgrades
-
-| Upgrade | Effect | Levels | Cost Range |
-|---------|--------|--------|------------|
-| Vitality | +10% maxHp per level | 5 | 50-800 |
-| Attack Power | +2 ATK per level | 5 | 75-1200 |
-| Treasure Sense | +25 starting gold | 4 | Variable |
-| Gold Find | +10% gold earned | 5 | Variable |
-
-### Achievements
-
-| Achievement | Requirement |
-|-------------|-------------|
-| First Victory | Win first combat |
-| Boss Slayer | Defeat a boss |
-| Veteran Hunter | 100 enemies defeated |
-| Dungeon Master | Clear floor 7 |
-| Thousand Slayer | 1000 enemies defeated |
-| Perfect Run | Complete run without dying |
-
 ### Persistence Model
 
 | Data | Persists Across Runs | Persists Across Sessions |
 |------|---------------------|-------------------------|
-| Player base stats | Yes | Yes |
-| Meta-progression (essence, upgrades) | Yes | Yes |
-| Achievements | Yes | Yes |
-| Run state (HP, gold, floor) | No | No |
-| Creature party | No | No |
+| Player profile | Yes | Yes |
+| Creature collection | Yes | Yes |
+| Run state (rooms, area) | No | No |
+| Active creature party | No | No |
 
 **Files:**
 - `src/game/state.js` - State management and persistence
@@ -617,11 +556,12 @@ store.set('combat', newCombatState);
 
 | Service | Purpose | File |
 |---------|---------|------|
-| CombatService | Combat mechanics | `src/game/services/combat-service.js` |
 | CreatureCombatService | Creature combat logic | `src/game/services/creature-combat-service.js` |
 | CreatureCollectionService | Creature party management | `src/game/services/creature-collection-service.js` |
 | ItemService | Item usage and inventory | `src/game/services/item-service.js` |
 | ExplorationService | Room navigation | `src/game/services/exploration-service.js` |
+| NpcService | NPC dialogue and memory | `src/game/services/npc-service.js` |
+| DoorHintService | Door hint generation | `src/game/services/door-hint-service.js` |
 
 ### Persistence
 
@@ -641,26 +581,6 @@ store.set('combat', newCombatState);
 
 ## Data Schemas
 
-### Enemy Definition (data/enemies.json)
-
-```javascript
-{
-  "id": "salary_man",
-  "name": "サラリーマン",
-  "nameEn": "Salary Man",
-  "tier": 1,
-  "baseHp": 30,
-  "baseAttack": 8,
-  "intents": ["attack", "attack", "heavy", "defend"],
-  "voicevoxSpeaker": 3,
-  "dialogue": {
-    "possessed": ["仕事...仕事...残業..."],
-    "liberation": ["あ...今何時だ?"],
-    "boss": null
-  }
-}
-```
-
 ### Save File (.jrpg-save-{userId}.json)
 
 ```javascript
@@ -668,30 +588,15 @@ store.set('combat', newCombatState);
   "version": 2,
   "player": {
     "name": "Player Name",
-    "class": "hacker",
-    "hp": 85,
-    "maxHp": 100,
-    "attack": 15,
     "gold": 250,
-    "creatures": [/* active creature party */],
+    "creatures": {
+      "active": [/* 0-3 deployed creatures */],
+      "reserves": [/* 0-3 bench creatures */]
+    },
     "items": [/* consumable items */]
   },
-  "meta": {
-    "essence": 1500,
-    "upgrades": {
-      "vitality": 2,
-      "attackPower": 1,
-      "treasureSense": 0,
-      "goldFind": 3
-    },
-    "lifetimeStats": {
-      "enemiesDefeated": 156,
-      "bossesDefeated": 4,
-      "runsCompleted": 2
-    },
-    "achievements": ["first_victory", "boss_slayer"]
-  },
-  "savedAt": "2024-01-15T10:30:00.000Z"
+  "meta": {},
+  "savedAt": "2026-01-15T10:30:00.000Z"
 }
 ```
 
@@ -705,27 +610,27 @@ store.set('combat', newCombatState);
 |------|---------|
 | `src/game/loop.js` | GameManager class (main orchestration) |
 | `src/game/phase-machine.js` | Phase state machine |
-| `src/game/state.js` | Player/run/combat state, meta-progression |
-| `src/game/stats.js` | Stat calculations |
-| `src/game/enemies.js` | Enemy generation and definitions |
-| `src/game/rooms.js` | Ward system and room generation |
+| `src/game/state.js` | Player/run state, persistence |
+| `src/game/rooms.js` | Area system and room generation |
 | `src/game/dm.js` | Dungeon Master narration |
+| `src/game/creatures.js` | Creature data loading |
 
 ### Combat
 
 | File | Purpose |
 |------|---------|
-| `src/game/combat/mechanics.js` | Damage formulas |
-| `src/game/combat/player-actions.js` | Player attack execution |
-| `src/game/combat/enemy.js` | Enemy AI |
-| `src/game/combat/rewards.js` | Combat reward generation |
+| `src/game/combat/effects.js` | Creature combat status effects |
 
 ### Services
 
 | File | Purpose |
 |------|---------|
-| `src/game/services/combat-service.js` | Combat business logic |
+| `src/game/services/creature-combat-service.js` | Creature combat orchestration |
+| `src/game/services/creature-collection-service.js` | Creature party management |
+| `src/game/services/item-service.js` | Item usage and inventory |
 | `src/game/services/exploration-service.js` | Exploration business logic |
+| `src/game/services/npc-service.js` | NPC dialogue and memory |
+| `src/game/services/door-hint-service.js` | Door hint generation |
 | `src/game/manager-registry.js` | Per-user GameManager instances |
 
 ### External APIs
@@ -762,8 +667,9 @@ store.set('combat', newCombatState);
 |------|---------|
 | `data/creatures.json` | Creature definitions |
 | `data/items.json` | Consumable item definitions |
-| `data/enemies.json` | Enemy definitions |
-| `data/bosses.json` | Boss definitions |
+| `data/moves.json` | Creature move definitions |
+| `data/npcs.json` | NPC definitions |
+| `data/door-hints.json` | Door hint templates |
 
 ---
 
@@ -771,9 +677,11 @@ store.set('combat', newCombatState);
 
 Despite what older documentation may suggest, the following features are **not implemented**:
 
-- No STR/AGI/VIT/INT/DEX/LUK stats (simplified to attack + maxHp)
+- No player-as-combatant (combat is creature-based)
+- No standalone enemy system (old possessed-citizen enemies were removed)
+- No boss encounters
 - No armor, weapons, or equipment slots (players use creatures and consumable items only)
 - No class selection or skill trees
-- No hit/miss or critical hit system
+- No essence currency or meta-upgrade system
 
 These were intentionally removed to keep the game simple and focus on language learning.
