@@ -249,7 +249,7 @@ export class ExplorationService {
     const areaId = this.gm.run.currentArea?.id || 'okunomori';
     this.gm.run.background = getBackgroundForRoom(room, areaId);
 
-    // Track room clears for counter chips
+    // Track room clears
     if (this.gm.run.runStats) {
       this.gm.run.runStats.roomsCleared++;
     }
@@ -312,7 +312,7 @@ export class ExplorationService {
     this.gm.run.roomsExplored++;
     this.gm.run.stats.roomsExplored++;
 
-    // Track room clears for counter chips
+    // Track room clears
     if (this.gm.run.runStats) {
       this.gm.run.runStats.roomsCleared++;
     }

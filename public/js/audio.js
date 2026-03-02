@@ -34,7 +34,6 @@ const PHASE_TRACKS = {
   exploration: 'explore',
   event: 'event',
   combat: 'battle',
-  boss: 'boss',
   victory: 'chip_shop',
   defeat: 'main',
   floorComplete: 'main',
@@ -44,12 +43,9 @@ const PHASE_TRACKS = {
 /**
  * Get the BGM track name for a game phase.
  * @param {string} phase - Current game phase
- * @param {boolean} isBossRoom - Whether currently in boss room
  * @returns {string} Track filename (without extension)
  */
-export function getTrackForPhase(phase, isBossRoom = false) {
-  if (phase === 'combat' && isBossRoom) return PHASE_TRACKS.boss;
-
+export function getTrackForPhase(phase) {
   const mapping = {
     hub: 'hub',
     exploring: 'exploration',
@@ -75,10 +71,9 @@ export function getTrackForPhase(phase, isBossRoom = false) {
 /**
  * Update BGM based on game phase. Only changes track if different.
  * @param {string} phase - Current game phase
- * @param {boolean} isBossRoom - Whether currently in boss room
  */
-export function updateBGMForPhase(phase, isBossRoom = false) {
-  const track = getTrackForPhase(phase, isBossRoom);
+export function updateBGMForPhase(phase) {
+  const track = getTrackForPhase(phase);
   if (track !== currentTrack) {
     currentTrack = track;
     playBGM(track);

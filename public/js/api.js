@@ -100,21 +100,6 @@ async function getGameState() {
   }
 }
 
-/**
- * Get meta-progression data (upgrades, essence, achievements)
- * @returns {Promise<object>} Upgrades data with essence count
- */
-async function getMetaProgression() {
-  try {
-    const response = await fetch('/api/game/upgrades', {
-      headers: getAuthHeaders()
-    });
-    return await response.json();
-  } catch (error) {
-    logger.error('[API] Failed to fetch meta-progression:', error.message);
-    return { essence: 0, upgrades: [] };
-  }
-}
 
 /**
  * Get level definitions and player progress
@@ -172,24 +157,6 @@ async function createPlayer(name, stats, statPoints) {
   return apiCall('/create-player', 'POST', { name, stats, statPoints });
 }
 
-/**
- * Purchase a meta-progression upgrade
- * @param {string} upgradeId - Upgrade identifier
- * @returns {Promise<object>} Result with success and upgrade info
- */
-async function purchaseUpgrade(upgradeId) {
-  try {
-    const response = await fetch('/api/game/purchase-upgrade', {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ upgradeId })
-    });
-    return await response.json();
-  } catch (error) {
-    logger.error('[API] Failed to purchase upgrade:', error.message);
-    return { success: false, error: 'Network error' };
-  }
-}
 
 // ============ RUN MANAGEMENT ENDPOINTS ============
 
@@ -575,13 +542,11 @@ export {
   isApiLoading,
   // Game state endpoints
   getGameState,
-  getMetaProgression,
   getLevels,
   selectLevel,
   getSettings,
   // Player management endpoints
   createPlayer,
-  purchaseUpgrade,
   // Run management endpoints
   startRun,
   forfeitRun,

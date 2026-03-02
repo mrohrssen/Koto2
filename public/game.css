@@ -554,41 +554,6 @@ html, body {
   border-top: none;
 }
 
-/* ===== PLAYER HP BAR ===== */
-.player-hp-container {
-  padding: 0 12px 6px;
-  background: transparent;
-  position: relative;
-  z-index: 1;
-}
-
-.player-hp-bar {
-  position: relative;
-  width: 100%;
-  height: 14px;
-  background: rgba(0,0,0,0.06);
-  border-radius: 7px;
-  overflow: hidden;
-}
-
-.player-hp-fill {
-  height: 100%;
-  border-radius: 7px;
-  transition: width 0.3s ease, background-color 0.3s ease;
-}
-
-.player-hp-text {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: var(--font-weight-semi);
-  color: white;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-}
-
 /* ===== ACTION AREA ===== */
 .action-area {
   flex: 1;

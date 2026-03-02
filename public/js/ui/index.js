@@ -13,7 +13,6 @@
  * EXPORTED MODULES:
  * - actions: Bottom action area and flash cards
  * - takeover: Full-screen slide-in panels
- * - hpBar: Player HP display
  * - scene: Background and enemy sprites
  * - character: HP bar coordinator
  * - exploration: Non-combat navigation
@@ -25,7 +24,6 @@
 
 export * as actions from './actions.js';
 export * as takeover from './takeover.js';
-export * as hpBar from './hp-bar.js';
 export * as scene from './scene.js';
 export * as character from './character.js';
 export * as exploration from './exploration.js';

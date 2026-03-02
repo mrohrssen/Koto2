@@ -88,7 +88,6 @@ import { playUltimateAnimation, screenShake, showXpPopup, showLevelUpPopup, heal
 import { dom } from './js/dom.js';
 import * as actions from './js/ui/actions.js';
 import * as takeover from './js/ui/takeover.js';
-import * as hpBar from './js/ui/hp-bar.js';
 import * as creatureRow from './js/ui/creature-row.js';
 import * as postCombatShop from './js/ui/post-combat-shop.js';
 import * as scene from './js/ui/scene.js';
@@ -225,8 +224,7 @@ function updateUI() {
   updateGameContent();
 
   // Update BGM based on current phase
-  const isBossRoom = gameState.run?.rooms?.[gameState.run?.currentRoom]?.isBossRoom;
-  audio.updateBGMForPhase(gameState.phase, isBossRoom);
+  audio.updateBGMForPhase(gameState.phase);
 }
 
 function updateStatusBar() {
@@ -298,22 +296,7 @@ function updateChipRow() {
 }
 
 function updatePlayerHP() {
-  // In creature combat, individual creature HP bars handle health display
-  if (gameState.run?.creatureParty?.active?.length > 0) {
-    hpBar.setVisible(false);
-    return;
-  }
-  // Hide HP bar on hub and non-combat phases
-  if (!gameState.phase || gameState.phase === 'hub' || gameState.phase === 'no_save' || gameState.phase === 'area_selection') {
-    hpBar.setVisible(false);
-    return;
-  }
-  if (gameState.player) {
-    hpBar.updatePlayerHP(gameState.player.hp, gameState.player.maxHp);
-    hpBar.setVisible(true);
-  } else {
-    hpBar.setVisible(false);
-  }
+  // Player HP display is now handled by individual creature HP bars
 }
 
 function updateGameContent() {
@@ -1126,7 +1109,6 @@ async function initGame() {
     updatePlayerHPBar: (hp) => {
       if (gameState.player) {
         gameState.player.hp = hp;
-        hpBar.updatePlayerHP(hp, gameState.player.maxHp);
       }
     },
     showDamageNumber: (dmg, isPlayer, isCrit) => scene.showDamageNumber(dmg, { isCrit }),
@@ -1194,7 +1176,6 @@ async function initGame() {
 
   characterUI.init({
     getGameState: () => gameState,
-    hpBar,
     scene,
   });
 

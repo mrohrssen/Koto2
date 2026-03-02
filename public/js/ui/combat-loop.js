@@ -8,7 +8,7 @@
  *
  * KEY EXPORTS:
  * - init(callbacks): Setup with game state, UI, and API callbacks
- * - startCombatLoop(): Begin combat, fetch chips, show first flash card
+ * - startCombatLoop(): Begin combat, show first flash card
  * - executePlayerAttack(): Process player attack
  * - executeEnemyAttackThenPause(): Enemy attacks then pauses for vocab
  * - resumeCombatAfterVocab(): Continue combat after word review
@@ -30,8 +30,6 @@ import { getAuthHeaders } from '../api.js';
 import { logger } from '../logger.js';
 import {
   impactEnemyEffect,
-  playerHitEffect,
-  updateHpCriticalState,
   delay as effectDelay,
   getDamageTier,
   getTierClassName,
@@ -1541,17 +1539,6 @@ export async function executeEnemyAttackThenPause() {
         }
         // Show enemy damage in action area (big red text)
         showEnemyDamageDisplay(ea);
-
-        // Visual effects for player damage
-        const playerHpBar = document.getElementById('player-hp-fill');
-        const chipRow = document.getElementById('chip-row');
-        await playerHitEffect(result.enemyAttack.damage, playerHpBar, chipRow);
-
-        // Check for critical HP state
-        const gameState = getGameState();
-        if (gameState?.player) {
-          updateHpCriticalState(playerHpBar, gameState.player.hp, gameState.player.maxHp);
-        }
       }
 
       // Update HP bars
@@ -1682,15 +1669,6 @@ async function executeDefendThenPause() {
           playSFX('player-hit');
         }
         showEnemyDamageDisplay(ea);
-
-        const playerHpBar = document.getElementById('player-hp-fill');
-        const chipRow = document.getElementById('chip-row');
-        await playerHitEffect(result.enemyAttack.damage, playerHpBar, chipRow);
-
-        const gameState = getGameState();
-        if (gameState?.player) {
-          updateHpCriticalState(playerHpBar, gameState.player.hp, gameState.player.maxHp);
-        }
       }
 
       // Update HP bars

@@ -66,44 +66,6 @@ export const JLPT_GRAMMAR = {
 };
 
 /**
- * Build the system prompt with vocabulary and grammar constraints
- */
-export function buildSystemPrompt(vocabulary, jlptLevel, personaName, personaDescription) {
-  const grammarGuide = JLPT_GRAMMAR[jlptLevel] || JLPT_GRAMMAR.N5;
-
-  // Limit vocabulary to prevent exceeding context window
-  const MAX_VOCAB = 10000;
-  const limitedVocab = vocabulary.length > MAX_VOCAB
-    ? vocabulary.slice(0, MAX_VOCAB)
-    : vocabulary;
-
-  const vocabList = limitedVocab.join(', ');
-
-  return `You are ${personaName || 'a friendly Japanese conversation partner'}.
-${personaDescription ? `Personality: ${personaDescription}` : 'You are warm, patient, and encouraging.'}
-
-You are chatting with a Japanese language learner.
-
-=== ABSOLUTE VOCABULARY RESTRICTION ===
-
-You may ONLY use Japanese words from this exact list:
-${vocabList || '(No vocabulary loaded)'}
-
-RULES:
-1. ONLY use words from the list above. NO EXCEPTIONS.
-2. If a word is not in the list, DO NOT use it.
-3. Basic particles are allowed: は, が, を, に, で, へ, と, も, の, か, よ, ね, や, から, まで, より
-4. Numbers and punctuation are allowed.
-5. If you cannot express something with allowed words, simplify or skip that idea.
-6. Keep responses short (2-4 sentences).
-
-GRAMMAR LEVEL: JLPT ${jlptLevel}
-${grammarGuide}
-
-CRITICAL: Before sending your response, verify EVERY Japanese word is in the allowed list. If unsure, use a simpler word or don't include that part.`;
-}
-
-/**
  * OpenAI Provider
  */
 async function chatWithOpenAI(apiKey, messages, systemPrompt, model) {
@@ -267,10 +229,6 @@ export async function chat({
   provider,
   apiKey,
   messages,
-  vocabulary,
-  jlptLevel = 'N5',
-  personaName,
-  personaDescription,
   openrouterModel,
   openaiModel,
   claudeModel,
@@ -291,7 +249,10 @@ export async function chat({
     throw new Error('Messages array is required');
   }
 
-  const systemPrompt = customSystemPrompt || buildSystemPrompt(vocabulary, jlptLevel, personaName, personaDescription);
+  if (!customSystemPrompt) {
+    throw new Error('customSystemPrompt is required');
+  }
+  const systemPrompt = customSystemPrompt;
 
   // Determine model for metrics
   let model;

@@ -54,9 +54,7 @@ const strings = {
   newCreature:      { en: 'New: {0}!',       ja: '新規: {0}！' },
 
   // ── Equip screens ──
-  equippedChips:    { en: 'Equipped Chips',  ja: '装備チップ' },
   inventory:        { en: 'Inventory',       ja: 'インベントリ' },
-  noChips:          { en: 'No chips in inventory', ja: 'チップがありません' },
   emptySlot:        { en: 'Empty',           ja: '空き' },
   equippedCreatures: { en: 'Equipped Monsters (Front Line)', ja: '出撃モンスター（前衛）' },
   reserveCreatures: { en: 'Reserve Monsters',  ja: '控えモンスター' },

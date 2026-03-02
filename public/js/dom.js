@@ -36,12 +36,6 @@ export const dom = {
   // Creature row (uses #chip-row element ID for backwards compatibility)
   get chipRow() { return el('chip-row'); },
 
-  // Player HP
-  get playerHpContainer() { return el('player-hp-container'); },
-  get playerHpBar() { return el('player-hp-bar'); },
-  get playerHpFill() { return el('player-hp-fill'); },
-  get playerHpText() { return el('player-hp-text'); },
-
   // Action area
   get actionArea() { return el('action-area'); },
 
