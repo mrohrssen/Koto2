@@ -1,0 +1,1 @@
+/root/Koto/.claude/plugins/koto-forge/1.1.0/skills/creature-forge//SKILL.md

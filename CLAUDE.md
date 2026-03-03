@@ -190,15 +190,15 @@ Update the guide when adding new features or discovering new interaction pattern
 
 Sprites are served with 1-year immutable cache headers. When regenerating sprites, **bump `SPRITE_VERSION`** in `public/js/ui/sprite-utils.js` so users' browsers fetch the new files. Use the date of generation (e.g. `'20250212'`).
 
-## Koto Forge Skills (Claude Code Plugin)
+## Koto Forge Skills (Claude Code Commands)
 
-Game content design skills are stored in `.claude/plugins/koto-forge/` and registered as a Claude Code plugin. On a fresh machine, run the setup script to install them:
+Game content design skills live in `.claude/plugins/koto-forge/1.1.0/skills/` and are registered as Claude Code commands via symlinks in `.claude/commands/`. On a fresh machine, run the setup script:
 
 ```bash
 bash scripts/setup-claude-skills.sh
 ```
 
-This symlinks the repo's plugin into Claude Code's plugin cache. Restart Claude Code after running.
+This symlinks each skill's `SKILL.md` into `.claude/commands/<skill-name>.md`. Restart Claude Code after running.
 
 **Available skills:**
 
