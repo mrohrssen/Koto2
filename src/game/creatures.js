@@ -188,6 +188,23 @@ export function rollRarity() {
   return 'common';
 }
 
+const PARTY_SIZE_MULTIPLIERS = {
+  1: 1.2,
+  2: 1.0,
+  3: 0.85
+};
+
+export function getEnemyLevel({ stage = 1, encounterIndex = 0, enemyCount = 1, playerLevel = 1 }) {
+  const stageBaseline = stage * 3;
+  const encounterBonus = stageBaseline * (encounterIndex * 0.08);
+  const rawLevel = stageBaseline + encounterBonus;
+  const sizeMultiplier = PARTY_SIZE_MULTIPLIERS[enemyCount] || 1.0;
+  const adjustedLevel = Math.round(rawLevel * sizeMultiplier);
+  const minLevel = Math.max(1, playerLevel - 5);
+  const maxLevel = playerLevel + 5;
+  return Math.max(minLevel, Math.min(adjustedLevel, maxLevel));
+}
+
 export function generateEnemyCreature(highestAllyLevel = 1, creaturePool = null) {
   let group;
 
