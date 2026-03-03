@@ -46,7 +46,8 @@
         "moveId": "ukabu",
         "level": 20
       }
-    ]
+    ],
+    "stage": 6
   },
   {
     "id": "umarak",
@@ -95,7 +96,8 @@
         "moveId": "fumu",
         "level": 20
       }
-    ]
+    ],
+    "stage": 7
   },
   {
     "id": "chouri",
@@ -140,7 +142,8 @@
         "moveId": "kakomu",
         "level": 16
       }
-    ]
+    ],
+    "stage": 10
   },
   {
     "id": "hebiveil",
@@ -185,7 +188,8 @@
         "moveId": "sakebu",
         "level": 16
       }
-    ]
+    ],
+    "stage": 8
   },
   {
     "id": "kumaro",
@@ -234,7 +238,8 @@
         "moveId": "katameru",
         "level": 20
       }
-    ]
+    ],
+    "stage": 6
   },
   {
     "id": "yuureimu",
@@ -279,7 +284,8 @@
         "moveId": "nagasu",
         "level": 16
       }
-    ]
+    ],
+    "stage": 9
   },
   {
     "id": "kazenoko",
@@ -324,7 +330,8 @@
         "moveId": "nigiru",
         "level": 16
       }
-    ]
+    ],
+    "stage": 5
   },
   {
     "id": "hikaribon",
@@ -373,7 +380,8 @@
         "moveId": "semeru",
         "level": 16
       }
-    ]
+    ],
+    "stage": 1
   },
   {
     "id": "kitsunova",
@@ -418,7 +426,8 @@
         "moveId": "ochiru",
         "level": 16
       }
-    ]
+    ],
+    "stage": 8
   },
   {
     "id": "tsukimochi",
@@ -467,7 +476,8 @@
         "moveId": "sosogu",
         "level": 16
       }
-    ]
+    ],
+    "stage": 5
   },
   {
     "id": "taiyoun",
@@ -512,7 +522,8 @@
         "moveId": "horobosu",
         "level": 16
       }
-    ]
+    ],
+    "stage": 3
   },
   {
     "id": "kaeroki",
@@ -561,7 +572,8 @@
         "moveId": "suberu",
         "level": 20
       }
-    ]
+    ],
+    "stage": 8
   },
   {
     "id": "kumonid",
@@ -606,7 +618,8 @@
         "moveId": "kagiru",
         "level": 16
       }
-    ]
+    ],
+    "stage": 8
   },
   {
     "id": "raioni",
@@ -655,7 +668,8 @@
         "moveId": "bakuhatsu",
         "level": 20
       }
-    ]
+    ],
+    "stage": 8
   },
   {
     "id": "ookamiru",
@@ -704,7 +718,8 @@
         "moveId": "hiku",
         "level": 20
       }
-    ]
+    ],
+    "stage": 9
   },
   {
     "id": "penginrok",
@@ -753,7 +768,8 @@
         "moveId": "ukabu",
         "level": 20
       }
-    ]
+    ],
+    "stage": 10
   },
   {
     "id": "irukami",
@@ -798,7 +814,8 @@
         "moveId": "sosogu",
         "level": 16
       }
-    ]
+    ],
+    "stage": 10
   },
   {
     "id": "hoshirin",
@@ -843,7 +860,8 @@
         "moveId": "semeru",
         "level": 16
       }
-    ]
+    ],
+    "stage": 5
   },
   {
     "id": "hanatchi",
@@ -892,7 +910,8 @@
         "moveId": "nobasu",
         "level": 16
       }
-    ]
+    ],
+    "stage": 6
   },
   {
     "id": "kujirath",
@@ -941,7 +960,8 @@
         "moveId": "ukabu",
         "level": 20
       }
-    ]
+    ],
+    "stage": 9
   },
   {
     "id": "nekotto",
@@ -986,7 +1006,8 @@
         "moveId": "kagiru",
         "level": 16
       }
-    ]
+    ],
+    "stage": 4
   },
   {
     "id": "kaminarion",
@@ -1035,7 +1056,8 @@
         "moveId": "musubu",
         "level": 20
       }
-    ]
+    ],
+    "stage": 8
   },
   {
     "id": "karasume",
@@ -1084,7 +1106,8 @@
         "moveId": "musubu",
         "level": 20
       }
-    ]
+    ],
+    "stage": 10
   },
   {
     "id": "usagira",
@@ -1130,7 +1153,8 @@
         "moveId": "osaeru",
         "level": 16
       }
-    ]
+    ],
+    "stage": 7
   },
   {
     "id": "nezumini",
@@ -1176,7 +1200,8 @@
         "moveId": "osaeru",
         "level": 16
       }
-    ]
+    ],
+    "stage": 7
   },
   {
     "id": "samegaron",
@@ -1225,7 +1250,8 @@
         "moveId": "suberu",
         "level": 20
       }
-    ]
+    ],
+    "stage": 10
   },
   {
     "id": "sarukkii",
@@ -1270,7 +1296,8 @@
         "moveId": "sakebu",
         "level": 16
       }
-    ]
+    ],
+    "stage": 8
   },
   {
     "id": "takogon",
@@ -1315,7 +1342,8 @@
         "moveId": "nagasu",
         "level": 16
       }
-    ]
+    ],
+    "stage": 8
   },
   {
     "id": "ryuugi",
@@ -1360,7 +1388,8 @@
         "moveId": "semeru",
         "level": 16
       }
-    ]
+    ],
+    "stage": 8
   },
   {
     "id": "hasamiden",
@@ -1410,7 +1439,8 @@
         "moveId": "musubu",
         "level": 20
       }
-    ]
+    ],
+    "stage": 9
   },
   {
     "id": "kasamii",
@@ -1459,7 +1489,8 @@
         "moveId": "ukabu",
         "level": 20
       }
-    ]
+    ],
+    "stage": 5
   },
   {
     "id": "honmo",
@@ -1504,7 +1535,8 @@
         "moveId": "nobasu",
         "level": 16
       }
-    ]
+    ],
+    "stage": 1
   },
   {
     "id": "makurami",
@@ -1553,7 +1585,8 @@
         "moveId": "kakureru",
         "level": 20
       }
-    ]
+    ],
+    "stage": 5
   },
   {
     "id": "ranpuuru",
@@ -1598,7 +1631,8 @@
         "moveId": "niramu",
         "level": 16
       }
-    ]
+    ],
+    "stage": 7
   },
   {
     "id": "supiikaazou",
@@ -1643,7 +1677,8 @@
         "moveId": "mawasu",
         "level": 16
       }
-    ]
+    ],
+    "stage": 8
   },
   {
     "id": "bakudango",
@@ -1692,7 +1727,8 @@
         "moveId": "chikazuku",
         "level": 20
       }
-    ]
+    ],
+    "stage": 7
   },
   {
     "id": "moufuwa",
@@ -1741,6 +1777,7 @@
         "moveId": "ochiru",
         "level": 20
       }
-    ]
+    ],
+    "stage": 4
   }
 ]
