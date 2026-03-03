@@ -562,6 +562,25 @@ export function processBefriend(enemies, creatureParty, targetEnemyIndex) {
 }
 
 /**
+ * Roll whether a creature accepts the player's talk attempt before befriending.
+ * Base chance depends on rarity; low HP gives a bonus. Capped at 95%.
+ * Pure function — does not mutate the enemy object.
+ * @param {Object} enemy - The enemy creature (needs hp, maxHp, rarity)
+ * @returns {{ accepted: boolean, chance: number }}
+ */
+const TALK_BASE_CHANCE = { common: 80, uncommon: 65, rare: 50, epic: 35, legendary: 20 };
+
+export function rollTalkAcceptance(enemy) {
+  const rarity = enemy.rarity || 'common';
+  const base = TALK_BASE_CHANCE[rarity] ?? TALK_BASE_CHANCE.common;
+  const hpPct = Math.round((enemy.hp / enemy.maxHp) * 100);
+  const hpBonus = hpPct <= 10 ? 15 : hpPct <= 25 ? 10 : 0;
+  const chance = Math.min(95, base + hpBonus);
+  const roll = Math.random() * 100;
+  return { accepted: roll < chance, chance };
+}
+
+/**
  * Award XP to all alive equipped creatures when an enemy is killed during combat.
  * XP scales with enemy level: BASE_KILL_XP * enemyLevel * xpMultiplier.
  * Active creatures get 2 shares, reserves get 1 share.

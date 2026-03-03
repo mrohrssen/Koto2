@@ -7,7 +7,8 @@ import {
   processBefriend,
   awardBattleXp,
   awardKillXp,
-  tickAllEffects
+  tickAllEffects,
+  rollTalkAcceptance
 } from '../../../src/game/services/creature-combat-service.js';
 import { instantiateCreature } from '../../../src/game/creatures.js';
 
@@ -525,5 +526,67 @@ describe('Creature Combat - Temp Attack Flat Bonus', () => {
     assert.ok(buffedResult.attacks.length >= 1);
     assert.ok(buffedResult.attacks[0].damage > unbuffedResult.attacks[0].damage,
       'flat-buffed damage should exceed unbuffed damage');
+  });
+});
+
+describe('rollTalkAcceptance', () => {
+  it('returns accepted boolean and computed chance (common at 30% HP → 80)', () => {
+    const enemy = instantiateCreature('hikaribon');
+    enemy.hp = Math.round(enemy.maxHp * 0.3);
+    const result = rollTalkAcceptance(enemy);
+    assert.strictEqual(typeof result.accepted, 'boolean');
+    assert.strictEqual(typeof result.chance, 'number');
+    assert.strictEqual(result.chance, 80); // common base, 30% HP = no bonus
+  });
+
+  it('gives higher chance at lower HP (common at 1 HP → 95)', () => {
+    const enemy = instantiateCreature('hikaribon');
+    enemy.hp = 1; // ~1% HP, hpBonus = 15 → 80+15=95 capped at 95
+    const result = rollTalkAcceptance(enemy);
+    assert.strictEqual(result.chance, 95);
+  });
+
+  it('gives lower chance for rarer creatures (legendary at 40% HP → 20)', () => {
+    const enemy = instantiateCreature('hikaribon');
+    enemy.rarity = 'legendary';
+    enemy.hp = Math.round(enemy.maxHp * 0.4);
+    const result = rollTalkAcceptance(enemy);
+    assert.strictEqual(result.chance, 20); // legendary base, 40% HP = no bonus
+  });
+
+  it('applies mid-bracket HP bonus (rare at 20% HP → 60)', () => {
+    const enemy = instantiateCreature('hikaribon');
+    enemy.rarity = 'rare';
+    enemy.hp = Math.round(enemy.maxHp * 0.2); // 20% HP → hpBonus = 10
+    const result = rollTalkAcceptance(enemy);
+    assert.strictEqual(result.chance, 60); // rare 50 + 10 bonus
+  });
+
+  it('caps chance at 95', () => {
+    const enemy = instantiateCreature('hikaribon');
+    // common base 80, set HP to 1% for +15 bonus = 95 (already at cap)
+    enemy.hp = 1;
+    const result = rollTalkAcceptance(enemy);
+    assert.ok(result.chance <= 95, 'chance should never exceed 95');
+    assert.strictEqual(result.chance, 95);
+  });
+
+  it('defaults to common rarity if rarity is missing', () => {
+    const enemy = instantiateCreature('hikaribon');
+    delete enemy.rarity;
+    enemy.hp = Math.round(enemy.maxHp * 0.5);
+    const result = rollTalkAcceptance(enemy);
+    assert.strictEqual(result.chance, 80); // common base, 50% HP = no bonus
+  });
+
+  it('does not mutate enemy object (pure function check)', () => {
+    const enemy = instantiateCreature('hikaribon');
+    const originalHp = enemy.hp;
+    const originalMaxHp = enemy.maxHp;
+    const originalRarity = enemy.rarity;
+    rollTalkAcceptance(enemy);
+    assert.strictEqual(enemy.hp, originalHp);
+    assert.strictEqual(enemy.maxHp, originalMaxHp);
+    assert.strictEqual(enemy.rarity, originalRarity);
   });
 });
