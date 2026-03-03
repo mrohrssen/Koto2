@@ -65,6 +65,18 @@ For each of 3 candidates:
 
 6. **Should thematically match** the creature's archetype, element, or concept.
 
+### Stage-Aware Modifier Selection
+
+Use the forge-discovery script to find stage-appropriate modifiers:
+
+```bash
+node scripts/forge-discovery.mjs --type creature-modifier --stage ${CREATURE_STAGE} --limit 20
+```
+
+This returns adjectives from `descriptors.json`, `emotions.json`, and `colors.json` filtered to the creature's stage. Use these as a starting pool — you may still use JPDB to look up additional words, but prefer words from this list as they are pre-verified for stage appropriateness.
+
+The `stage` value comes from the baton's `stage` field.
+
 ### JPDB Lookup
 
 Write a temp script to `/tmp/creature-identity-lookup.mjs` and run it:

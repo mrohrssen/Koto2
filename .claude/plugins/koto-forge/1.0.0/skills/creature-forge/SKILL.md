@@ -1,11 +1,11 @@
 ---
 name: creature-forge
-description: Design a new game creature from an English word. Generates name, Japanese vocab, combat skills, archetype, element, modifier, visual description, and concept art preview with JPDB frequency data. Triggers on "creature forge", "new creature", "design creature", "creature from word".
+description: Design a new game creature from an English word. Generates name, Japanese vocab, learnset, archetype, element, modifier, visual description, and concept art preview with JPDB frequency data. Triggers on "creature forge", "new creature", "design creature", "creature from word".
 ---
 
 # Creature Forge — Orchestrator
 
-Turn any English word into a collectible creature for NEO TOKYO: System Liberation, a Japanese vocabulary learning RPG.
+Turn any English word into a collectible creature for Koto, a Japanese vocabulary learning RPG.
 
 This skill is a **thin orchestrator**. It fires 4 subagents sequentially, each reading its own mini-skill file and a shared baton JSON. You (the main agent) handle input, JPDB base lookup, user interaction, image generation, and saving.
 
@@ -30,16 +30,16 @@ Parse skill arguments:
 
 ## Discovery Mode (no arguments)
 
-1. Read `data/creatures.json` and `data/new-creatures-staging.json`. Extract all `baseWord`/`baseMeaning` values as an exclusion set.
-2. Identify vocabulary gaps — common everyday nouns not yet represented (animals, tools, food, body parts, school items, nature, household, weather, clothing, vehicles, instruments).
-3. Suggest **5 candidates** (English words) not in the exclusion set.
-4. JPDB lookup for all 5 (see JPDB section). Present selection table:
+1. **Check stage gaps.** Run `node scripts/forge-discovery.mjs --gaps creature` to see which stages need creatures most.
+2. **Pick target stage.** Auto-pick the stage with the largest deficit, or let user specify.
+3. **Discover candidates.** Run `node scripts/forge-discovery.mjs --type creature-base --stage N --limit 10` to get stage-filtered noun candidates from `animals.json`, `objects.json`, and `nature.json`.
+4. Read `data/creatures.json` and `data/new-creatures-staging.json`. The discovery script already excludes existing baseWords.
+5. Present selection table:
 
-| # | English | Best Form | Reading | JPDB Rank | All Forms |
-|---|---------|-----------|---------|-----------|-----------|
-| 1 | scissors | ハサミ | はさみ | 13,900 | ハサミ(13,900), 鋏(17,000) |
+| # | Word | Reading | Meaning | JPDB Rank | WK Level | Stage | Source |
+|---|------|---------|---------|-----------|----------|-------|--------|
 
-5. User picks or provides their own word. Proceed to Phase 0.
+6. User picks or provides their own word. Proceed to Phase 0.
 
 ## Thematic Mode (brackets)
 
@@ -99,9 +99,9 @@ Save to `/tmp/creature-jpdb-lookup.mjs` and run with `node /tmp/creature-jpdb-lo
 3. **Read roster** from `data/creatures.json` and `data/new-creatures-staging.json` (skip if missing).
 4. **Extract slim roster data:**
    - `rosterNames`: flat array of all existing `nameEn` values
-   - `rosterVerbs`: array of `{word, count}` for all attack/ultimate verbs across roster
 5. **Compute tier ceilings** from the tier table above.
 6. **Build baton JSON** and write to `/tmp/creature-forge-{id}-baton.json`:
+7. **Compute stage** — Run: `node -e "import {getWordStrictStage} from './language/stage-utils.js'; console.log(getWordStrictStage('BASE_WORD', BASE_RANK))"` Or use WK level: `Math.ceil(wkLevel / 6)`
 
 ```json
 {
@@ -120,7 +120,8 @@ Save to `/tmp/creature-jpdb-lookup.mjs` and run with `node /tmp/creature-jpdb-lo
     "modCeiling": 20000
   },
   "rosterNames": ["Kamedor", "Irukami", "Chouri"],
-  "rosterVerbs": [{"word": "噛む", "count": 3}, {"word": "切る", "count": 2}]
+  "stage": 6,
+  "baseMp": 80
 }
 ```
 
@@ -155,19 +156,19 @@ Task tool (general-purpose, model: sonnet):
 
 Wait for completion. Read the baton to verify `nameCandidates` was added.
 
-### Subagent 2: Combat Vocab
+### Subagent 2: Learnset Builder
 
 ```
 Task tool (general-purpose, model: sonnet):
-  description: "Generate combat vocab for [baseMeaning]"
+  description: "Build learnset for [baseMeaning]"
   prompt: |
-    Read the skill file at $CLAUDE_PROJECT_DIR/.claude/plugins/koto-forge/1.0.0/skills/creature-forge/subskills/combat-vocab.md
+    Read the skill file at $CLAUDE_PROJECT_DIR/.claude/plugins/koto-forge/1.0.0/skills/creature-forge/subskills/learnset-builder.md
     Then read the baton at /tmp/creature-forge-{id}-baton.json
     Follow the skill instructions exactly.
     Write your output back to the baton file (read it, add your fields, write it back).
 ```
 
-Wait for completion. Read the baton to verify `attackCandidates` and `ultimateCandidates` were added.
+Wait for completion. Read the baton to verify `learnset` and `learnsetSummary` were added.
 
 ### Subagent 3: Identity & Modifier
 
@@ -197,13 +198,13 @@ Read the completed baton. Present ALL candidates in one consolidated view:
 | Word | Reading | Meaning | Rank | All Forms |
 |------|---------|---------|------|-----------|
 
-### Attack (pick A/B/C)
-| # | Japanese | Reading | Meaning | JPDB Rank | Raw Meanings |
-|---|----------|---------|---------|-----------|--------------|
+### Learnset (review)
+| Lv | Move | Japanese | Element | Category | Tier | Reason |
+|----|------|----------|---------|----------|------|--------|
 
-### Ultimate (pick A/B/C)
-| # | Japanese | Reading | Meaning | JPDB Rank | Raw Meanings |
-|---|----------|---------|---------|-----------|--------------|
+Summary: [N] total, [M] STAB, tier spread: T1: X, T2: Y, T3: Z
+
+User can request move swaps: "replace the level 12 move with something defensive"
 
 ### Archetype
 [Suggestion with reasoning — confirm or change]
@@ -230,8 +231,12 @@ The user makes all picks in one message.
   "baseRank": 13900,
   "frequencyTier": "epic",
   "visualTier": "rare",
-  "attack": { "word": "切る", "reading": "きる", "meaning": "Cut", "rank": 283 },
-  "ultimate": { "word": "砕く", "reading": "くだく", "meaning": "Crush", "rank": 5200 },
+  "stage": 6,
+  "baseMp": 80,
+  "learnset": [
+    { "moveId": "kamu", "level": 1 },
+    { "moveId": "nomu", "level": 5 }
+  ],
   "archetype": "Fighter",
   "element": "metal",
   "modifier": {
@@ -336,7 +341,9 @@ cp /tmp/creature-forge-${ID}-${VARIANT}.png data/creature-staging-images/${ID}.p
   "baseMeaning": "<english>",
   "baseRank": 1234,
   "rarity": "<common|uncommon|rare|epic|legendary>",
-  "visualTier": "<only if different from rarity>",
+  "baseHp": 100,
+  "baseAttack": 10,
+  "baseMp": 60,
   "modifier": {
     "word": "<japanese>",
     "reading": "<hiragana>",
@@ -346,21 +353,22 @@ cp /tmp/creature-forge-${ID}-${VARIANT}.png data/creature-staging-images/${ID}.p
   "element": "<lowercase>",
   "archetype": "<capitalized>",
   "description": "<chosen rich description>",
-  "autoSkill": {
-    "word": "<japanese>",
-    "reading": "<hiragana>",
-    "meaning": "<English-capitalized>",
-    "rank": 1234
-  },
-  "ultimate": {
-    "word": "<japanese>",
-    "reading": "<hiragana>",
-    "meaning": "<English-capitalized>",
-    "rank": 1234
-  },
+  "learnset": [
+    { "moveId": "kamu", "level": 1 },
+    { "moveId": "nomu", "level": 5 }
+  ],
+  "stage": 6,
   "createdAt": "YYYY-MM-DD"
 }
 ```
+
+**baseMp by archetype:**
+| Archetype | baseHp | baseAttack | baseMp |
+|-----------|--------|------------|--------|
+| Fighter | 100 | 10 | 60 |
+| Mage | 75 | 8 | 120 |
+| Trickster | 85 | 9 | 90 |
+| Tank/Healer | 160 | 8 | 80 |
 
 3. Append. Write back. Confirm: **"Saved [Name] to staging! [N] creatures now in data/new-creatures-staging.json."**
 
@@ -370,7 +378,7 @@ When the user requests changes:
 
 1. Parse for section references and feedback:
    - "redo names" → re-dispatch Subagent 1
-   - "redo attacks" → re-dispatch Subagent 2
+   - "redo learnset" → re-dispatch Subagent 2
    - "redo modifiers" → re-dispatch Subagent 3
    - "redo descriptions" / "redo visuals" → re-dispatch Subagent 4, then re-run Phase 4
    - "new images" → re-run Phase 4 only (with current descriptions)
@@ -381,16 +389,19 @@ When the user requests changes:
 
 - [ ] All JPDB ranks are real (from API calls)
 - [ ] All ranks use the most common spelling form
-- [ ] Attack/ultimate within tier skill ceiling
 - [ ] Modifier within tier modifier ceiling
 - [ ] **All English translations dictionary-accurate** — no embellishment, no transitivity changes
-- [ ] Base word, attack, and ultimate are three different words
 - [ ] Concept-visual alignment applied (Mouse Rule)
 - [ ] Description visual tone matches **visual tier**, not frequency tier
 - [ ] Mnemonic Clarity (Firefly Rule) — creature IS the concept
 - [ ] Name preserves full base reading as contiguous romaji substring
 - [ ] Katakana name correctly renders the romaji
 - [ ] "[Modifier]の[Base]" reads naturally in Japanese
-- [ ] Attack/ultimate verbs work as natural combat actions in Japanese
 - [ ] No duplicate id with existing creatures
 - [ ] Selected image saved to `data/creature-staging-images/{id}.png`
+- [ ] Learnset contains 4-6 moves from moves.json
+- [ ] At least 1 STAB move (same element as creature)
+- [ ] Learnset tier spread: mix of T1, T2, and T3 moves
+- [ ] All learnset moves have stage <= creature's stage
+- [ ] baseMp matches archetype (Fighter=60, Mage=120, Trickster=90, Tank/Healer=80)
+- [ ] stage field computed from baseWord + baseRank
