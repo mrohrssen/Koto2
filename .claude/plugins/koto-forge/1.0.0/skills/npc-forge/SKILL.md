@@ -5,7 +5,7 @@ description: Generate 5 area-matched NPCs with JPDB names, personalities, and ch
 
 # NPC Forge — Orchestrator
 
-Turn a game area into 5 personality-filled, JPDB-verified NPCs for NEO TOKYO: System Liberation, a Japanese vocabulary learning RPG.
+Turn a game area into 5 personality-filled, JPDB-verified NPCs for Koto, a Japanese vocabulary learning RPG.
 
 This skill is an **orchestrator**. The main agent handles area selection, user interaction, JPDB lookups, and saves. Subagents handle creative generation (concepts/naming and character cards).
 
@@ -48,6 +48,18 @@ Parse skill arguments:
 ```
 
 5. User picks an area by number or name. Proceed to Phase 1.
+
+### Stage-Aware NPC Discovery
+
+After area selection, discover occupation words for the area's stage:
+
+```bash
+node scripts/forge-discovery.mjs --type npc --stage ${AREA_STAGE} --limit 20
+```
+
+This returns person-nouns (occupations, social roles) from `occupations.json` and `social.json` filtered to the area's stage.
+
+Pass these candidates to the concept-naming subagent via the baton as `discoveredOccupations`.
 
 ---
 
@@ -200,17 +212,21 @@ For each of the 5 NPCs, present a formatted summary:
 **Quirk:** Talks to the fish like old friends, names every creature in the tanks
 
 **Goals:**
-- Possessed: Protect the tanks at all costs. The System turned her caretaking instinct into territorial aggression.
-- Glitching: Pauses mid-attack to murmur a fish's name, briefly lucid as she remembers feeding schedules.
-- Liberated: Worried about the fish surviving without her care. Asks the player to help check on the deeper tanks.
+- Default: Worried about the fish — asks the player if they've seen anything strange in the deeper tanks.
+- High Bond: Wants to share her marine biology knowledge and teach the player about ocean conservation.
+
+**Bond Hints:**
+- Bond 3: Shares the story of how she first fell in love with the ocean as a child.
+- Bond 5: Offers to give the player a rare item she found while cleaning the deep tanks.
+- Bond 10: Teaches the player a rare marine biology term and invites them to help name a new fish.
 
 **Backstory:** Was a marine biologist who studied at the aquarium for years. Knows the behavior of every species in the tanks.
 
 **World Knowledge:** the_system, liberation
 
 **Example Dialogue:**
-1. この水槽に近づかないで。私の…私たちの魚なの。
-2. あ…私、何を…？魚たちは大丈夫？ごはんの時間は…？
+1. あ、こんにちは。水族館に来てくれたんですね。
+2. この魚、名前はまだないんです。一緒に考えてくれませんか？
 3. 助けてくれてありがとう。でも…奥の水槽、見てくれませんか？
 ```
 
@@ -251,7 +267,7 @@ For each of the 5 NPCs, build a game data object from the locked baton + charact
     "rank": 600
   },
   "area": "suizokukan",
-  "tier": 1,
+  "stage": 7,
   "personality": {
     "traits": ["gentle", "nurturing"],
     "speechStyle": "Soft-spoken, uses polite forms, speaks slowly",
@@ -261,13 +277,7 @@ For each of the 5 NPCs, build a game data object from the locked baton + charact
 }
 ```
 
-**Tier assignment rules:**
-- Tier 1: Early-game areas (residential, nature, parks, academic)
-- Tier 2: Commercial/entertainment areas (shops, aquariums, theaters)
-- Tier 3: Urban center areas (transit hubs, downtown, office districts)
-- Tier 4: Corporate/government core areas (headquarters, labs, restricted zones)
-
-Use your judgment based on the area's theme and description. All 5 NPCs in a batch share the same tier (tied to their area).
+**Stage assignment:** NPCs inherit their stage from their area. Set `stage` to the area's stage number (1-10). This replaces the old tier system.
 
 ### 3.3 Build Character Card Objects
 
@@ -279,21 +289,25 @@ For each of the 5 NPCs, build a character card object:
     "id": "haruka",
     "name": "ハルカ",
     "nameEn": "Haruka",
-    "description": "A former marine researcher (研究者) who stayed behind when the aquarium closed under System control. Wears a faded lab coat over a wetsuit. Tier 1 — encountered in the Aquarium area.",
+    "description": "A marine researcher (研究者) who works at the aquarium caring for the tanks. Wears a faded lab coat over a wetsuit. Stage 7 — encountered in the Aquarium area.",
     "personality": "gentle, nurturing, soft-spoken, uses polite forms, speaks slowly",
     "quirk": "Talks to the fish like old friends, names every creature in the tanks",
     "goals": {
-      "possessed": "Protect the tanks at all costs. The System turned her caretaking instinct into territorial aggression.",
-      "glitching": "Pauses mid-attack to murmur a fish's name, briefly lucid as she remembers feeding schedules.",
-      "liberated": "Worried about the fish surviving without her care. Asks the player to help check on the deeper tanks."
+      "default": "Worried about the fish — asks the player if they've seen anything strange in the deeper tanks.",
+      "highBond": "Wants to share her marine biology knowledge and teach the player about ocean conservation."
+    },
+    "bondHints": {
+      "3": "Shares the story of how she first fell in love with the ocean as a child.",
+      "5": "Offers to give the player a rare item she found while cleaning the deep tanks.",
+      "10": "Teaches the player a rare marine biology term and invites them to help name a new fish."
     },
     "knowledge": {
       "personal": "Was a marine biologist who studied at the aquarium for years. Knows the behavior of every species in the tanks.",
       "world": ["the_system", "liberation"]
     },
     "exampleDialogue": [
-      "この水槽に近づかないで。私の…私たちの魚なの。",
-      "あ…私、何を…？魚たちは大丈夫？ごはんの時間は…？",
+      "あ、こんにちは。水族館に来てくれたんですね。",
+      "この魚、名前はまだないんです。一緒に考えてくれませんか？",
       "助けてくれてありがとう。でも…奥の水槽、見てくれませんか？"
     ]
   }
@@ -391,8 +405,8 @@ Run through this checklist before writing to staging files:
 - [ ] Names are natural Japanese given names written in katakana
 - [ ] No duplicate ids with existing NPCs (checked both `data/npcs.json` and `data/new-npcs-staging.json`)
 - [ ] All 5 NPCs assigned to the chosen area (same `area` field)
-- [ ] Tier is consistent and appropriate for the area
-- [ ] Character card goals cover all 3 states (possessed / glitching / liberated)
+- [ ] Stage inherited from area
+- [ ] Character card has default + highBond goals and bondHints for levels 3, 5, 10
 - [ ] `knowledge.world` includes relevant lorebook keys (always includes `the_system` and `liberation`)
 - [ ] 3 example dialogue lines per NPC (all Japanese, no English)
 - [ ] Example dialogue matches personality (formality, speech patterns, verbal tics)

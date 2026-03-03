@@ -20,6 +20,15 @@ Read the baton JSON file at the path provided to you. It contains:
 }
 ```
 
+### Stage-Aware Word Selection
+
+If the baton contains `discoveredOccupations` (from forge-discovery.mjs), use these as your primary candidate pool. They are already:
+- Filtered to the area's stage
+- Verified to exist in JPDB
+- Sorted by frequency rank
+
+You may supplement with your own ideas, but prefer the discovered candidates as they are stage-appropriate.
+
 ## Your Task
 
 Produce **5 NPC concepts**, each with:
@@ -34,7 +43,7 @@ Produce **5 NPC concepts**, each with:
 
 2. **Variety:** Don't make all 5 NPCs the same archetype. Mix occupations, ages, demeanors, and roles. Each NPC should teach a DIFFERENT person noun.
 
-3. **Human believability:** These are human NPCs who were working/living in the area when the System took over. They should feel like real people with relatable jobs or reasons to be there.
+3. **Human believability:** These are human NPCs who work, live, or spend time in the area. They should feel like real people with relatable jobs or reasons to be there.
 
 ### Vocab Word Selection
 
