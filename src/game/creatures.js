@@ -274,6 +274,30 @@ const ENEMY_COUNT_WEIGHTS = [
   { count: 3, weight: 10 }
 ];
 
+const ENCOUNTER_COUNT_TABLE = {
+  early: [   // encounterIndex 0-2
+    { count: 1, weight: 50 },
+    { count: 2, weight: 40 },
+    { count: 3, weight: 10 }
+  ],
+  mid: [     // encounterIndex 3-4
+    { count: 1, weight: 40 },
+    { count: 2, weight: 35 },
+    { count: 3, weight: 25 }
+  ],
+  late: [    // encounterIndex 5+
+    { count: 1, weight: 30 },
+    { count: 2, weight: 35 },
+    { count: 3, weight: 35 }
+  ]
+};
+
+export function getEnemyCountWeights(encounterIndex = 0) {
+  if (encounterIndex <= 2) return ENCOUNTER_COUNT_TABLE.early;
+  if (encounterIndex <= 4) return ENCOUNTER_COUNT_TABLE.mid;
+  return ENCOUNTER_COUNT_TABLE.late;
+}
+
 export function generateEnemyCreatures(highestAllyLevel = 1, { maxEnemies, creaturePool } = {}) {
   // Roll enemy count
   const totalWeight = ENEMY_COUNT_WEIGHTS.reduce((s, w) => s + w.weight, 0);

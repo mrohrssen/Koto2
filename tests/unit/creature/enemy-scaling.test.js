@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { getEnemyLevel, getRarityWeightsForStage } from '../../../src/game/creatures.js';
+import { getEnemyLevel, getRarityWeightsForStage, getEnemyCountWeights } from '../../../src/game/creatures.js';
 
 describe('getEnemyLevel', () => {
   it('computes baseline from stage', () => {
@@ -100,5 +100,43 @@ describe('getRarityWeightsForStage', () => {
   it('defaults to stage 1 weights when stage is undefined', () => {
     const weights = getRarityWeightsForStage(undefined);
     assert.strictEqual(weights.common, 80);
+  });
+});
+
+describe('getEnemyCountWeights', () => {
+  it('early encounters favor solo enemies', () => {
+    const weights = getEnemyCountWeights(0);
+    assert.deepStrictEqual(weights, [
+      { count: 1, weight: 50 },
+      { count: 2, weight: 40 },
+      { count: 3, weight: 10 }
+    ]);
+  });
+
+  it('mid encounters are balanced', () => {
+    const weights = getEnemyCountWeights(3);
+    assert.deepStrictEqual(weights, [
+      { count: 1, weight: 40 },
+      { count: 2, weight: 35 },
+      { count: 3, weight: 25 }
+    ]);
+  });
+
+  it('late encounters favor groups', () => {
+    const weights = getEnemyCountWeights(5);
+    assert.deepStrictEqual(weights, [
+      { count: 1, weight: 30 },
+      { count: 2, weight: 35 },
+      { count: 3, weight: 35 }
+    ]);
+  });
+
+  it('very late encounters use late weights', () => {
+    const weights = getEnemyCountWeights(10);
+    assert.deepStrictEqual(weights, [
+      { count: 1, weight: 30 },
+      { count: 2, weight: 35 },
+      { count: 3, weight: 35 }
+    ]);
   });
 });
