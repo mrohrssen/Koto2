@@ -40,6 +40,21 @@ const RARITY_WEIGHTS = {
   legendary: 1
 };
 
+const STAGE_RARITY_TABLE = {
+  early:  { common: 80, uncommon: 18, rare: 2, epic: 0 },   // stage 1-3
+  mid:    { common: 50, uncommon: 35, rare: 12, epic: 3 },   // stage 4-6
+  late:   { common: 30, uncommon: 30, rare: 25, epic: 15 },  // stage 7-9
+  endgame: { common: 20, uncommon: 30, rare: 30, epic: 20 }  // stage 10
+};
+
+export function getRarityWeightsForStage(stage) {
+  const s = stage || 1;
+  if (s <= 3) return { ...STAGE_RARITY_TABLE.early };
+  if (s <= 6) return { ...STAGE_RARITY_TABLE.mid };
+  if (s <= 9) return { ...STAGE_RARITY_TABLE.late };
+  return { ...STAGE_RARITY_TABLE.endgame };
+}
+
 export function xpToNextLevel(level) {
   return Math.pow(level + 1, 3) - Math.pow(level, 3);
 }
@@ -178,10 +193,11 @@ export function selectTarget(attacker, targets) {
   return alive.sort(byHpPct)[0];
 }
 
-export function rollRarity() {
-  const totalWeight = Object.values(RARITY_WEIGHTS).reduce((a, b) => a + b, 0);
+export function rollRarity(stage) {
+  const weights = stage != null ? getRarityWeightsForStage(stage) : RARITY_WEIGHTS;
+  const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
   let roll = Math.random() * totalWeight;
-  for (const [rarity, weight] of Object.entries(RARITY_WEIGHTS)) {
+  for (const [rarity, weight] of Object.entries(weights)) {
     roll -= weight;
     if (roll <= 0) return rarity;
   }

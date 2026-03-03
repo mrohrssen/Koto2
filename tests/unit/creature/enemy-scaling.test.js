@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { getEnemyLevel } from '../../../src/game/creatures.js';
+import { getEnemyLevel, getRarityWeightsForStage } from '../../../src/game/creatures.js';
 
 describe('getEnemyLevel', () => {
   it('computes baseline from stage', () => {
@@ -50,5 +50,55 @@ describe('getEnemyLevel', () => {
     const level = getEnemyLevel({ encounterIndex: 0, enemyCount: 2, playerLevel: 5 });
     // stageBaseline = 1 * 3 = 3
     assert.strictEqual(level, 3);
+  });
+});
+
+describe('getRarityWeightsForStage', () => {
+  it('stage 1 is heavily common-weighted, no epic', () => {
+    const weights = getRarityWeightsForStage(1);
+    assert.strictEqual(weights.common, 80);
+    assert.strictEqual(weights.uncommon, 18);
+    assert.strictEqual(weights.rare, 2);
+    assert.strictEqual(weights.epic, 0);
+    assert.strictEqual(weights.legendary, undefined);
+  });
+
+  it('stage 5 has moderate rarity spread', () => {
+    const weights = getRarityWeightsForStage(5);
+    assert.strictEqual(weights.common, 50);
+    assert.strictEqual(weights.uncommon, 35);
+    assert.strictEqual(weights.rare, 12);
+    assert.strictEqual(weights.epic, 3);
+    assert.strictEqual(weights.legendary, undefined);
+  });
+
+  it('stage 8 has rare/epic prevalent', () => {
+    const weights = getRarityWeightsForStage(8);
+    assert.strictEqual(weights.common, 30);
+    assert.strictEqual(weights.uncommon, 30);
+    assert.strictEqual(weights.rare, 25);
+    assert.strictEqual(weights.epic, 15);
+    assert.strictEqual(weights.legendary, undefined);
+  });
+
+  it('stage 10 is endgame distribution', () => {
+    const weights = getRarityWeightsForStage(10);
+    assert.strictEqual(weights.common, 20);
+    assert.strictEqual(weights.uncommon, 30);
+    assert.strictEqual(weights.rare, 30);
+    assert.strictEqual(weights.epic, 20);
+    assert.strictEqual(weights.legendary, undefined);
+  });
+
+  it('never includes legendary in wild encounters', () => {
+    for (let s = 1; s <= 10; s++) {
+      const weights = getRarityWeightsForStage(s);
+      assert.strictEqual(weights.legendary, undefined, `Stage ${s} should not have legendary`);
+    }
+  });
+
+  it('defaults to stage 1 weights when stage is undefined', () => {
+    const weights = getRarityWeightsForStage(undefined);
+    assert.strictEqual(weights.common, 80);
   });
 });
