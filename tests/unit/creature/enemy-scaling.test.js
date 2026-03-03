@@ -178,3 +178,40 @@ describe('generateEnemyCreatures with scaling', () => {
     }
   });
 });
+
+describe('Full scaling integration', () => {
+  it('stage 1 enemies are lower level than stage 7 enemies at same player level', () => {
+    const pool = ['hikaribon', 'kamedor', 'kazenoko'];
+    const s1 = generateEnemyCreatures(15, { stage: 1, encounterIndex: 0, creaturePool: pool });
+    const s7 = generateEnemyCreatures(15, { stage: 7, encounterIndex: 0, creaturePool: pool });
+    const avgS1 = s1.reduce((s, e) => s + e.level, 0) / s1.length;
+    const avgS7 = s7.reduce((s, e) => s + e.level, 0) / s7.length;
+    assert.ok(avgS7 >= avgS1, `Stage 7 (${avgS7}) should be >= Stage 1 (${avgS1})`);
+  });
+
+  it('later encounters produce higher average enemy levels', () => {
+    const pool = ['hikaribon', 'kamedor', 'kazenoko'];
+    let avgEarly = 0;
+    let avgLate = 0;
+    const trials = 30;
+    for (let i = 0; i < trials; i++) {
+      const early = generateEnemyCreatures(20, { stage: 5, encounterIndex: 0, creaturePool: pool });
+      const late = generateEnemyCreatures(20, { stage: 5, encounterIndex: 5, creaturePool: pool });
+      avgEarly += early.reduce((s, e) => s + e.level, 0) / early.length;
+      avgLate += late.reduce((s, e) => s + e.level, 0) / late.length;
+    }
+    avgEarly /= trials;
+    avgLate /= trials;
+    assert.ok(avgLate >= avgEarly, `Late encounters (${avgLate}) should be >= early (${avgEarly})`);
+  });
+
+  it('no enemy is ever legendary in wild encounters with stage', () => {
+    const pool = ['hikaribon', 'kamedor', 'kazenoko'];
+    for (let i = 0; i < 100; i++) {
+      const enemies = generateEnemyCreatures(30, { stage: 10, encounterIndex: 5, creaturePool: pool });
+      for (const e of enemies) {
+        assert.notStrictEqual(e.rarity, 'legendary', 'Should never get legendary in wild');
+      }
+    }
+  });
+});
