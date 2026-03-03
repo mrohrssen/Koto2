@@ -1,22 +1,23 @@
 ---
 name: area-forge
-description: Design a new game area from a Japanese location word. Looks up JPDB frequency, matches creatures from staging, writes a visual description for background generation, and saves to staging. Triggers on "area forge", "new area", "design area", "area from word".
+description: Design a new game area from a Japanese location word. Looks up JPDB frequency, computes stage, matches creatures from staging, generates sub-areas, writes visual descriptions for background generation, and saves to staging. Triggers on "area forge", "new area", "design area", "area from word".
 user_invocable: true
 ---
 
 # Area Forge — Lightweight Orchestrator
 
-Turn a Japanese location word into a themed game area for NEO TOKYO: System Liberation, a Japanese vocabulary learning RPG.
+Turn a Japanese location word into a themed game area for Koto, a Japanese vocabulary learning RPG.
 
-This skill is a **single-agent orchestrator**. No subagents, no baton relay. The main agent handles everything directly across 4 phases.
+This skill is a **single-agent orchestrator**. No subagents, no baton relay. The main agent handles everything directly across 5 phases.
 
 ## Quick Reference: The Flow
 
 ```
-Phase 0: JPDB Lookup        → resolve word, show rank + meanings
-Phase 1: Creature Matching   → scan staging, propose roster
-Phase 2: Visual Description  → write atmosphere text for background gen
-Phase 3: Save                → append to staging JSON
+Phase 0:   JPDB Lookup        → resolve word, show rank + meanings, compute stage
+Phase 1:   Creature Matching   → scan staging, propose stage-aligned roster
+Phase 2:   Visual Description  → write atmosphere text for background gen
+Phase 2.5: Sub-Area Generation → generate 6 named sub-areas with background descriptions
+Phase 3:   Save                → append to staging JSON
 ```
 
 ## Input Mode Detection
@@ -24,7 +25,22 @@ Phase 3: Save                → append to staging JSON
 Parse skill arguments:
 
 - **Direct mode:** `/area-forge aquarium` — word provided. JPDB lookup, proceed to Phase 1.
-- **Discovery mode:** `/area-forge` (no args) — brainstorm areas from creature roster. See Discovery Mode below.
+- **Discovery mode:** `/area-forge` (no args) — stage-aware discovery. See Discovery Mode below.
+
+---
+
+## Discovery Mode (no arguments)
+
+1. **Check stage gaps.** Run `node scripts/forge-discovery.mjs --gaps area` to see which stages need areas most.
+2. **Pick target stage.** Auto-pick the stage with the largest deficit, or let user specify with `--stage N`.
+3. **Discover candidates.** Run `node scripts/forge-discovery.mjs --type area --stage N --limit 10` to get stage-filtered location nouns from `locations.json` and `nature.json`.
+4. Also read `data/creatures.json` — group creatures by stage to see which stages have creatures but no areas.
+5. Present selection table:
+
+| # | Word | Reading | Meaning | JPDB Rank | Stage | Creatures at this stage |
+|---|------|---------|---------|-----------|-------|------------------------|
+
+6. User picks or provides their own word. Proceed to Phase 0.
 
 ---
 
@@ -59,31 +75,10 @@ Save to `/tmp/area-jpdb-lookup.mjs` and run with `node /tmp/area-jpdb-lookup.mjs
 
 3. Proceed to Phase 1.
 
-### Discovery Mode
-
-1. Read `data/new-creatures-staging.json` and `data/creatures.json` (skip if missing). Build exclusion set of existing area ids from `data/new-areas-staging.json` (if it exists).
-
-2. Group creatures by natural habitat affinity:
-   - **Aquatic** — water element + marine/aquatic base animals (dolphin, shark, whale, octopus, penguin, turtle, frog)
-   - **Forest/Nature** — wood element + woodland animals (snake, wolf, monkey, butterfly, flower)
-   - **Urban/Domestic** — object-based creatures (book, pillow, umbrella, scissors, speaker, lamp, bomb)
-   - **Celestial** — abstract/cosmic bases (star, moon, sun, light, lightning, wind)
-   - **Predator/Wild** — fighters with large animal bases (lion, bear, horse, dragon, crow)
-
-   These are starting heuristics — use judgment for creatures that span categories.
-
-3. For each cluster with 3+ creatures, brainstorm 1-2 Japanese location words where those creatures would naturally live. Aim for 5-7 total candidates.
-
-4. JPDB lookup ALL candidates in a single batch script (same pattern as Direct Mode, but with multiple words).
-
-5. Present selection table:
-
-| # | English | Japanese | Reading | Rank | Creature Fits | Raw Meanings |
-|---|---------|----------|---------|------|--------------|-------------|
-| 1 | Aquarium | 水族館 | すいぞくかん | 13,500 | Irukami, Samegaron, Kujirath, Takogon, Penginrok | [["aquarium"]] |
-| 2 | Forest | 森 | もり | 1,200 | Hebiveil, Ookamiru, Sarukkii, Chouri | [["forest"]] |
-
-6. User picks one (or provides their own word). Proceed to Phase 1.
+4. **Compute stage** for the area word using `language/stage-utils.js`:
+   - WK words: `stage = Math.ceil(wkLevel / 6)`
+   - Non-WK: lowest stage where `jpdbKanaCap >= rank`
+   - Or accept explicit `--stage N` from user input
 
 ---
 
@@ -96,13 +91,15 @@ Scan all creatures from `data/new-creatures-staging.json` and `data/creatures.js
 - **Element affinity** — the area has a dominant element and the creature shares it (e.g., aquarium = water-heavy)
 - **Thematic resonance** — the creature's description, modifier, or concept fits the area's vibe (e.g., Honmo the book creature → library, Ranpuuru the lamp → shrine at night)
 
+**Stage matching:** The area's creature pool should contain creatures at or near the area's stage. Prefer creatures where `creature.stage` is within ±1 of the area's stage. Creatures outside this range can be included for thematic fit but should not be the majority.
+
 Present matches:
 
-| Creature | Base | Element | Rarity | Why it fits |
-|----------|------|---------|--------|------------|
-| Irukami | dolphin | water | epic | Marine animal, natural aquarium inhabitant |
-| Samegaron | shark | water | epic | Deep sea predator, star exhibit |
-| Takogon | octopus | water | rare | Aquatic creature, reef-dweller |
+| Creature | Base | Element | Rarity | Stage | Why it fits |
+|----------|------|---------|--------|-------|------------|
+| Irukami | dolphin | water | epic | 7 | Marine animal, natural aquarium inhabitant |
+| Samegaron | shark | water | epic | 8 | Deep sea predator, star exhibit |
+| Takogon | octopus | water | rare | 7 | Aquatic creature, reef-dweller |
 
 User adjusts — can add/remove creatures from the roster. A creature can belong to multiple areas. **Minimum 3 creatures per area**, no maximum.
 
@@ -132,6 +129,38 @@ Present the description for approval. User can request edits before saving.
 
 ---
 
+## Phase 2.5: Sub-Area Generation
+
+Generate 6 named sub-areas for the area. Each sub-area is a Japanese location name using modifier + noun pattern.
+
+### Sub-Area Structure
+
+Each sub-area has:
+- `id` — lowercase romaji
+- `name` — Japanese name (modifier + の + location noun, or modifier + location noun)
+- `nameEn` — English name
+- `reading` — hiragana reading
+- `backgroundDescription` — 100-200 word visual description for background image generation
+
+### Generation Steps
+
+1. **Discover modifier candidates.** Run `node scripts/forge-discovery.mjs --type creature-modifier --stage N --limit 20` to get adjectives at the area's stage.
+2. **Pair modifiers with the area's location word** (or related location nouns from `locations.json`).
+3. Examples:
+   - Area: 森 (forest) → 静かな森 (quiet forest), 深い森 (deep forest), 光の森 (forest of light)
+   - Area: 水族館 (aquarium) → 暗い水族館 (dark aquarium), 古い水族館 (old aquarium)
+4. Each sub-area's background description should vary in lighting, mood, and specific features.
+5. Background descriptions follow the same guidelines as the main area description: fun fantasy, warm, no cyberpunk.
+
+### Present Sub-Areas
+
+| # | Name | Reading | English | Background Summary |
+|---|------|---------|---------|--------------------|
+
+User can adjust names, swap modifiers, or request regeneration.
+
+---
+
 ## Phase 3: Save
 
 1. Read `data/new-areas-staging.json` (or initialize `[]` if file is missing).
@@ -139,16 +168,26 @@ Present the description for approval. User can request edits before saving.
 
 ```json
 {
-  "id": "<lowercase-romaji-of-japanese-name>",
+  "id": "<lowercase-romaji>",
   "name": "<japanese-location-word>",
   "nameEn": "<English-translation>",
   "reading": "<hiragana-reading>",
   "rank": 13500,
   "meanings": [["aquarium"]],
+  "stage": 7,
   "theme": "<one-sentence thematic summary>",
-  "creatures": ["creature-id-1", "creature-id-2", "creature-id-3"],
+  "creatures": ["creature-id-1", "creature-id-2"],
   "description": "<200-400 word visual/atmosphere description>",
-  "tags": ["element-or-theme-tag-1", "tag-2", "tag-3"],
+  "subAreas": [
+    {
+      "id": "shizukana-izumi",
+      "name": "静かな泉",
+      "nameEn": "Quiet Spring",
+      "reading": "しずかないずみ",
+      "backgroundDescription": "A glassy pool fed by..."
+    }
+  ],
+  "tags": ["water", "aquatic"],
   "createdAt": "YYYY-MM-DD"
 }
 ```
@@ -163,6 +202,10 @@ Present the description for approval. User can request edits before saving.
 - [ ] JPDB rank is real (from API call, not guessed)
 - [ ] Raw meanings array shown to user and verified
 - [ ] English name is dictionary-accurate translation — no embellishment
+- [ ] Stage field computed from area word
+- [ ] 6 sub-areas generated with modifier + noun names
+- [ ] Creature pool stage-aligned (creatures within ±1 stage of area)
+- [ ] Sub-area background descriptions are visual only (no game mechanics)
 - [ ] At least 3 creatures assigned
 - [ ] Description is pure visual/atmosphere — no game mechanics, no creature descriptions
 - [ ] Description matches game aesthetic — fun fantasy, warm, playful. No cyberpunk.
@@ -174,4 +217,5 @@ Present the description for approval. User can request edits before saving.
 When the user requests changes:
 - "redo creatures" → re-run Phase 1 with adjusted matching
 - "redo description" → re-run Phase 2
+- "redo sub-areas" → re-run Phase 2.5
 - "change word" → go back to Phase 0
