@@ -654,6 +654,119 @@ The stages are organized by a **curated word list** that combines WaniKani level
 
 ---
 
+## Art Asset Requirements by Stage
+
+Every game object needs a visual asset. This section tracks what art is required at each stage and the current inventory.
+
+### Sprite Sizes
+
+| Asset Type | Size | Format |
+|---|---|---|
+| Creatures (static) | 1024x1024 | WebP, transparent background |
+| Creatures (idle animation) | 480x480 → trimmed to 330px | Animated WebP, transparent, 24fps looping |
+| NPCs / Rival trainers | 1024x1024 | WebP, transparent background |
+| Bosses | 1024x1024 | WebP, transparent background |
+| Moves (action icons) | 128x128 | WebP, transparent background |
+| Items | 128x128 | WebP, transparent background |
+| Equipment icons | 128x128 | WebP, transparent background |
+| Crafting resource icons | 128x128 | WebP, transparent background |
+| Area backgrounds | 1536x1024 | WebP, full bleed |
+| Town building art | TBD | TBD |
+
+All sprites must be well-drawn illustrations, NOT pixel art.
+
+**Creature sprites require TWO assets each:** a static sprite (fallback) and a looping idle animation (animated WebP, 49 frames at 24fps). The idle animation is generated via the ComfyUI WAN I2V pipeline — see `docs/creature-animation-pipeline.md` for the full workflow. This doubles the effective creature art count.
+
+### Current Inventory (as of 2026-03-01)
+
+| Asset Type | Count |
+|---|---:|
+| Creatures (static + idle) | 37 + 37 idle |
+| Moves (action icons) | 195 |
+| Items | 81 |
+| NPCs | 5 |
+| Bosses | 0 |
+| Equipment icons | 0 |
+| Crafting resource icons | 0 |
+| Area background sets | 5 areas x 20 variants |
+| Town building art | 0 |
+
+### Cumulative Asset Targets per Stage
+
+Each creature requires a static sprite AND an idle animation (2 files per creature).
+
+| Asset Type | S1 | S2 | S3 | S4 | S5 | S6 | S7 | S8 | S9 | S10 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Creatures (x2 each) | 40 | 70 | 120 | 180 | 250 | 300 | 350 | 400 | 450 | 500 |
+| Moves | 150 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 1,000 |
+| Items | 30 | 50 | 70 | 90 | 110 | 125 | 135 | 140 | 145 | 150 |
+| Equipment | — | 15 | 30 | 45 | 60 | 70 | 80 | 85 | 90 | 100 |
+| Crafting resources | — | 10 | 25 | 40 | 55 | 65 | 75 | 85 | 90 | 100 |
+| NPCs | 5 | 20 | 40 | 60 | 80 | 95 | 105 | 115 | 125 | 140 |
+| Area BG sets | 5 | 10 | 20 | 28 | 35 | 40 | 43 | 46 | 48 | 50 |
+| Town buildings | — | 5 | 12 | 18 | 22 | 25 | 28 | 30 | 32 | 35 |
+
+### New Art Required per Stage (Delta)
+
+| Asset Type | S1 | S2 | S3 | S4 | S5 | S6 | S7 | S8 | S9 | S10 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Creatures (x2 each) | — | +30 | +50 | +60 | +70 | +50 | +50 | +50 | +50 | +50 |
+| Moves | — | +5 | +100 | +100 | +100 | +100 | +100 | +100 | +100 | +100 |
+| Items | — | +20 | +20 | +20 | +20 | +15 | +10 | +5 | +5 | +5 |
+| Equipment | — | +15 | +15 | +15 | +15 | +10 | +10 | +5 | +5 | +10 |
+| Crafting resources | — | +10 | +15 | +15 | +15 | +10 | +10 | +10 | +5 | +10 |
+| NPCs | — | +15 | +20 | +20 | +20 | +15 | +10 | +10 | +10 | +15 |
+| Area BG sets | — | +5 | +10 | +8 | +7 | +5 | +3 | +3 | +2 | +2 |
+| Town buildings | — | +5 | +7 | +6 | +4 | +3 | +3 | +2 | +2 | +3 |
+
+Stage 1 is covered by the current inventory. Stage 2 is where new art production begins — equipment icons, crafting resources, town buildings, and 15 additional NPCs are the key new asset types.
+
+### Grand Total at Stage 10
+
+~2,825 unique art files: 500 creatures x 2 (static + idle animation) = 1,000 files, 1,000 move icons, 150 item icons, 100 equipment icons, 100 crafting icons, 140 NPCs, ~300 area backgrounds (50 areas x ~6 each), and 35 town building illustrations.
+
+### Freelance Art Budget Estimate
+
+Based on Fiverr commission market rates for fakemon/creature design, RPG icons, and 2D game backgrounds (as of early 2026).
+
+**Per-asset rates (bulk/batch pricing):**
+
+| Asset Type | Rate | Source |
+|---|---|---|
+| Creature (static illustration) | ~$15 | Fakemon commissions, $5–$25 range |
+| Creature (idle animation loop) | ~$10 | Simple breathing/sway loop, $5–$10 range |
+| Move/item/equip/craft icon | ~$4 | RPG skill icons in batch, $3–$5 range |
+| NPC (full illustration) | ~$20 | Same complexity as creatures |
+| Area background (full scene) | ~$30 | 2D game environments, $10–$45 range |
+| Town building illustration | ~$15 | Simpler than full scenes |
+
+**Cost per stage (new art only):**
+
+| Stage | Creatures | Icons | NPCs | Backgrounds | Town | Est. Total |
+|---|---|---|---|---|---|---|
+| S1 | covered | covered | covered | covered | — | ~$0 |
+| S2 | 30 x $25 | 50 x $4 | 15 x $20 | 30 x $30 | 5 x $15 | ~$2k |
+| S3 | 50 x $25 | 150 x $4 | 20 x $20 | 60 x $30 | 7 x $15 | ~$4k |
+| S4 | 60 x $25 | 150 x $4 | 20 x $20 | 48 x $30 | 6 x $15 | ~$4k |
+| S5 | 70 x $25 | 150 x $4 | 20 x $20 | 42 x $30 | 4 x $15 | ~$4k |
+| S6–S10 | 250 x $25 | 505 x $4 | 60 x $20 | 81 x $30 | 13 x $15 | ~$12k |
+| **Full game** | | | | | | **~$26k** |
+
+**Breakdown by category (full game):**
+
+| Category | Assets | Est. Cost |
+|---|---|---|
+| Creatures (static + idle) | 500 x 2 | ~$12.5k |
+| All icons (moves + items + equip + craft) | 1,350 | ~$5.5k |
+| NPCs | 140 | ~$2.8k |
+| Area backgrounds | ~300 | ~$9k |
+| Town buildings | 35 | ~$0.5k |
+| **Total** | **~2,825 files** | **~$26k** |
+
+Creatures are ~48% of total art spend. Backgrounds are ~35%. Icons are cheap in bulk.
+
+---
+
 ## Design Rules for Future Content
 
 1. **Every game object must teach at least 1 word.** No creature, item, NPC, area, or building exists without a vocabulary purpose.

@@ -118,6 +118,24 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
 .review-sort select{padding:4px 8px;background:#0f0f23;color:#e0e0e0;border:1px solid #1e2d4a;border-radius:4px;font-size:13px}
 .review-list{padding:12px;display:block}
 .grid:has(.review-list){display:block}
+
+/* QA failures tab */
+.qa-entry{background:#16213e;border-radius:8px;padding:12px;display:flex;gap:12px;align-items:center;margin-bottom:8px;border-left:3px solid #f87171}
+.qa-entry.qa-broken{border-left-color:#ff4444}
+.qa-entry img{width:80px;height:80px;object-fit:contain;flex-shrink:0;border-radius:4px;background:#0f0f23}
+.qa-info{flex:1;min-width:0}
+.qa-name{font-size:14px;font-weight:600;margin-bottom:4px}
+.qa-reason{font-size:12px;color:#889;line-height:1.5;word-break:break-word}
+.qa-scores{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.qa-score{font-size:11px;padding:2px 6px;border-radius:3px}
+.qa-total{font-size:13px;font-weight:600;flex-shrink:0;width:50px;text-align:center}
+.qa-total.t-broken{color:#ff4444}
+.qa-total.t-low{color:#f87171}
+.qa-total.t-mid{color:#fbbf24}
+.qa-summary{padding:12px;margin-bottom:12px;background:#1e1a2e;border-radius:8px;display:flex;gap:20px;flex-wrap:wrap;font-size:13px}
+.qa-summary .stat{text-align:center}
+.qa-summary .stat-val{font-size:22px;font-weight:700}
+.qa-summary .stat-label{color:#889;font-size:11px}
 </style>
 </head>
 <body>
@@ -135,6 +153,7 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
       <button class="tab" data-cat="player">Player</button>
       <button class="tab" data-cat="starterVariants">Variants</button>
       <button class="tab" data-cat="review">Needs Review (<span id="review-count">0</span>)</button>
+      <button class="tab" data-cat="qa" style="color:#f87171">QA Failures (<span id="qa-count">0</span>)</button>
     </div>
     <input class="search" id="search" type="text" placeholder="Search...">
     <button class="toggle" id="orphanToggle">Orphans</button>
@@ -160,6 +179,8 @@ let orphansOnly = false;
 let flaggedOnly = false;
 let reviewQueue = { pending: [] };
 let reviewSort = 'score-asc';
+let qaFailures = [];
+let qaSort = 'score-asc';
 
 // ── Sprite paths ──────────────────────────────────────────────────
 const SPRITE_DIRS = {
@@ -223,6 +244,7 @@ function getFiltered() {
 // ── Render grid ───────────────────────────────────────────────────
 function render() {
   if (activeCat === 'review') { renderReview(); return; }
+  if (activeCat === 'qa') { renderQA(); return; }
   if (!manifest) return;
   const items = getFiltered();
   const grid = document.getElementById('grid');
@@ -664,6 +686,97 @@ function wireReviewEvents() {
   });
 }
 
+// ── QA Failures ──────────────────────────────────────────────────
+
+async function loadQAFailures() {
+  try {
+    const res = await fetch('/dev/api/qa-failures');
+    qaFailures = await res.json();
+  } catch (e) {
+    console.error('Failed to load QA failures:', e);
+    qaFailures = [];
+  }
+  document.getElementById('qa-count').textContent = qaFailures.length;
+  if (activeCat === 'qa') renderQA();
+}
+
+function renderQA() {
+  var grid = document.getElementById('grid');
+  var statsEl = document.getElementById('stats');
+
+  if (qaFailures.length === 0) {
+    statsEl.textContent = 'No QA failures';
+    grid.innerHTML = '<div class="empty">All sprites passed QA</div>';
+    return;
+  }
+
+  // Sort
+  var sorted = qaFailures.slice();
+  if (qaSort === 'score-asc') {
+    sorted.sort(function(a, b) { return a.total - b.total; });
+  } else {
+    sorted.sort(function(a, b) { return a.id.localeCompare(b.id); });
+  }
+
+  // Summary stats
+  var broken = sorted.filter(function(f) { return f.total <= 5; }).length;
+  var pixelArt = sorted.filter(function(f) { return f.style <= 1; }).length;
+  var conceptFail = sorted.filter(function(f) { return f.concept < 3 && f.style >= 3; }).length;
+  var styleFail = sorted.filter(function(f) { return f.style < 3 && f.concept >= 3; }).length;
+
+  statsEl.textContent = sorted.length + ' failures';
+
+  var html = '<div class="review-list">';
+
+  // Summary bar
+  html += '<div class="qa-summary">';
+  html += '<div class="stat"><div class="stat-val" style="color:#f87171">' + sorted.length + '</div><div class="stat-label">Total Failures</div></div>';
+  html += '<div class="stat"><div class="stat-val" style="color:#ff4444">' + broken + '</div><div class="stat-label">Broken (T&le;5)</div></div>';
+  html += '<div class="stat"><div class="stat-val" style="color:#c084fc">' + pixelArt + '</div><div class="stat-label">Pixel Art (S&le;1)</div></div>';
+  html += '<div class="stat"><div class="stat-val" style="color:#fbbf24">' + conceptFail + '</div><div class="stat-label">Bad Concept</div></div>';
+  html += '<div class="stat"><div class="stat-val" style="color:#fb923c">' + styleFail + '</div><div class="stat-label">Bad Style</div></div>';
+  html += '</div>';
+
+  // Sort control
+  html += '<div class="review-sort">';
+  html += '<label>Sort by:</label>';
+  html += '<select id="qaSortSelect">';
+  html += '<option value="score-asc"' + (qaSort === 'score-asc' ? ' selected' : '') + '>Worst first</option>';
+  html += '<option value="name"' + (qaSort === 'name' ? ' selected' : '') + '>Name</option>';
+  html += '</select>';
+  html += '</div>';
+
+  for (var i = 0; i < sorted.length; i++) {
+    var f = sorted[i];
+    var totalClass = f.total <= 5 ? 't-broken' : f.total <= 8 ? 't-low' : 't-mid';
+    html += '<div class="qa-entry' + (f.total <= 5 ? ' qa-broken' : '') + '">';
+    html += '<img src="' + esc(f.path) + '" alt="' + esc(f.id) + '" loading="lazy" onerror="this.style.opacity=0.3">';
+    html += '<div class="qa-info">';
+    html += '<div class="qa-name">' + esc(f.wordEn || f.id) + '</div>';
+    html += '<div class="qa-scores">';
+    html += '<span class="qa-score ' + scoreClass(f.concept) + '">Concept:' + f.concept + '</span>';
+    html += '<span class="qa-score ' + scoreClass(f.style) + '">Style:' + f.style + '</span>';
+    html += '<span class="qa-score ' + scoreClass(f.readability) + '">Read:' + f.readability + '</span>';
+    html += '</div>';
+    if (f.reasoning) html += '<div class="qa-reason">' + esc(f.reasoning) + '</div>';
+    html += '</div>';
+    html += '<div class="qa-total ' + totalClass + '">' + f.total + '/15</div>';
+    html += '</div>';
+  }
+
+  html += '</div>';
+  grid.innerHTML = html;
+
+  // Sort handler
+  var sortSelect = document.getElementById('qaSortSelect');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', function() {
+      qaSort = this.value;
+      renderQA();
+    });
+  }
+}
+
 // ── Event wiring ──────────────────────────────────────────────────
 
 // Tabs
@@ -673,13 +786,15 @@ document.getElementById('tabs').addEventListener('click', function(e) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   tab.classList.add('active');
   activeCat = tab.dataset.cat;
-  // Show/hide search and filter controls for review tab
-  const hideForReview = activeCat === 'review';
-  document.getElementById('search').style.display = hideForReview ? 'none' : '';
-  document.getElementById('orphanToggle').style.display = hideForReview ? 'none' : '';
-  document.getElementById('flaggedToggle').style.display = hideForReview ? 'none' : '';
+  // Show/hide search and filter controls for review/qa tabs
+  const hideControls = activeCat === 'review' || activeCat === 'qa';
+  document.getElementById('search').style.display = hideControls ? 'none' : '';
+  document.getElementById('orphanToggle').style.display = hideControls ? 'none' : '';
+  document.getElementById('flaggedToggle').style.display = hideControls ? 'none' : '';
   if (activeCat === 'review') {
     loadReviewQueue();
+  } else if (activeCat === 'qa') {
+    loadQAFailures();
   } else {
     render();
   }
@@ -713,6 +828,8 @@ document.getElementById('flaggedToggle').addEventListener('click', function() {
 document.getElementById('refresh').addEventListener('click', function() {
   if (activeCat === 'review') {
     loadReviewQueue();
+  } else if (activeCat === 'qa') {
+    loadQAFailures();
   } else {
     loadData();
   }
@@ -739,7 +856,20 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ── Init ──────────────────────────────────────────────────────────
-loadData();
+async function init() {
+  // Check auth first — if API returns 401, redirect to login
+  const check = await fetch('/dev/api/manifest');
+  if (check.status === 401) {
+    window.location.href = '/dev/login';
+    return;
+  }
+  manifest = await check.json();
+  const fRes = await fetch('/dev/api/feedback');
+  feedback = await fRes.json();
+  render();
+  loadQAFailures();
+}
+init();
 </script>
 </body>
 </html>

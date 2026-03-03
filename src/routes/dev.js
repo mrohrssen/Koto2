@@ -534,6 +534,19 @@ export function createDevRouter({ password }) {
     }
   });
 
+  // ── GET /api/qa-failures ────────────────────────────────────────
+  const QA_FAILURES_PATH = join(DATA_DIR, 'sprite-qa-failures.json');
+  router.get('/api/qa-failures', requireAuth, (_req, res) => {
+    try {
+      if (!existsSync(QA_FAILURES_PATH)) return res.json([]);
+      const data = JSON.parse(readFileSync(QA_FAILURES_PATH, 'utf-8'));
+      res.json(data);
+    } catch (err) {
+      console.error('[Dev] QA failures load error:', err.message);
+      res.json([]);
+    }
+  });
+
   // ── GET /api/review-queue ──────────────────────────────────────
   router.get('/api/review-queue', requireAuth, (_req, res) => {
     try {
