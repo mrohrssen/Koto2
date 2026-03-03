@@ -18,24 +18,24 @@ echo "Plugin:  $PLUGIN_SRC"
 echo ""
 
 # 1. Verify plugin source exists
-if [ ! -f "$PLUGIN_SRC/1.0.0/.claude-plugin/plugin.json" ]; then
-  echo "ERROR: Plugin not found at $PLUGIN_SRC/1.0.0/"
+if [ ! -f "$PLUGIN_SRC/1.1.0/.claude-plugin/plugin.json" ]; then
+  echo "ERROR: Plugin not found at $PLUGIN_SRC/1.1.0/"
   echo "Make sure you're running this from the Koto repo root."
   exit 1
 fi
 
 # 2. Create cache directory and symlink
 mkdir -p "$(dirname "$CACHE_DIR")"
-if [ -L "$CACHE_DIR/1.0.0" ]; then
+if [ -L "$CACHE_DIR/1.1.0" ]; then
   echo "Symlink already exists, updating..."
-  rm "$CACHE_DIR/1.0.0"
-elif [ -d "$CACHE_DIR/1.0.0" ]; then
+  rm "$CACHE_DIR/1.1.0"
+elif [ -d "$CACHE_DIR/1.1.0" ]; then
   echo "Removing old cache copy..."
-  rm -rf "$CACHE_DIR/1.0.0"
+  rm -rf "$CACHE_DIR/1.1.0"
 fi
 mkdir -p "$CACHE_DIR"
-ln -s "$PLUGIN_SRC/1.0.0" "$CACHE_DIR/1.0.0"
-echo "Symlinked: $CACHE_DIR/1.0.0 -> $PLUGIN_SRC/1.0.0"
+ln -s "$PLUGIN_SRC/1.1.0" "$CACHE_DIR/1.1.0"
+echo "Symlinked: $CACHE_DIR/1.1.0 -> $PLUGIN_SRC/1.1.0"
 
 # 3. Register plugin in settings.json
 if [ ! -f "$SETTINGS" ]; then
