@@ -223,6 +223,14 @@ This is also what makes the Translator feel alive. It notices things. It remembe
 
 ## 4. Core Learning Philosophy
 
+### Emotional Association: The Core Principle
+
+**The entire purpose of Koto is to associate foreign words with emotional connections to imagery and real gameplay.**
+
+Traditional language learning might have you attach a randomly-googled image to a flashcard in an SRS app. Koto is fundamentally stronger than this because the player *plays the game* and develops genuine emotional connections to every component — creatures they've befriended, areas they've explored, items they've used in clutch moments, NPCs they've bonded with. As long as we successfully link each component to the correct foreign language word, and ensure that both the component and the word are interpreted properly, we will succeed in teaching the player a language — automatically and almost accidentally.
+
+This automatic, near-accidental language acquisition is the core principle from which all other design decisions flow. Because the learning happens invisibly through emotional engagement rather than conscious study, **the #1 priority of the game is to be fun.** If the game is genuinely fun, the learning takes care of itself. Every design decision in this document serves one of two goals: (1) ensure game components are correctly linked to their Japanese words, or (2) make the game as fun as possible. Goal 2 is where we spend most of our effort, because goal 1 is a solved problem once the architecture is right.
+
 ### Comprehensible Input (i+1)
 
 **Every piece of Japanese text shown to the player must contain only words they already know, plus at most 1 unknown word.** This is not a guideline — it is the entire purpose of the game. Showing unvalidated Japanese text is a critical bug.
