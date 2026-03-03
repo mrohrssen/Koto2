@@ -80,3 +80,68 @@ export function getContentWords(obj, type) {
 
   return words;
 }
+
+// ── suggestStage ────────────────────────────────────────────────────
+
+/**
+ * Suggest the best stage for a content object based on its vocabulary.
+ * Finds the lowest stage where the outlier percentage stays within budget.
+ * @param {Object} obj - The game object (creature, move, item, area)
+ * @param {string} type - 'creature' | 'move' | 'item' | 'area'
+ * @returns {{ stage: number, outlierPercent: number, medianRank: number, wordStages: Array }}
+ */
+export function suggestStage(obj, type) {
+  const words = getContentWords(obj, type);
+
+  // Score each word
+  const wordStages = words.map(w => ({
+    word: w.word,
+    rank: w.rank,
+    source: w.source,
+    strictStage: getWordStrictStage(w.word, w.rank),
+  }));
+
+  // Only count words with a non-null strict stage
+  const scorable = wordStages.filter(ws => ws.strictStage != null);
+
+  if (scorable.length === 0) {
+    return { stage: 1, outlierPercent: 0, medianRank: 0, wordStages: [] };
+  }
+
+  const maxOutlier = stageDefs.maxOutlierPercent;
+
+  // Find the lowest stage where outlier % <= budget
+  for (const s of stageDefs.stages) {
+    const outliers = scorable.filter(ws => ws.strictStage > s.stage).length;
+    const pct = Math.round((outliers / scorable.length) * 100);
+    if (pct <= maxOutlier) {
+      return {
+        stage: s.stage,
+        outlierPercent: pct,
+        medianRank: calcMedianRank(wordStages),
+        wordStages,
+      };
+    }
+  }
+
+  // Fallback: no stage fit within budget (should not happen since stage 10
+  // captures everything, but defensive)
+  return { stage: 10, outlierPercent: 0, medianRank: calcMedianRank(wordStages), wordStages };
+}
+
+/**
+ * Calculate the median of all word ranks, excluding rank 0 or null.
+ * @param {Array<{rank: number}>} wordStages
+ * @returns {number}
+ */
+function calcMedianRank(wordStages) {
+  const ranks = wordStages
+    .map(ws => ws.rank)
+    .filter(r => r != null && r > 0)
+    .sort((a, b) => a - b);
+
+  if (ranks.length === 0) return 0;
+  const mid = Math.floor(ranks.length / 2);
+  if (ranks.length % 2 === 1) return ranks[mid];
+  return (ranks[mid - 1] + ranks[mid]) / 2;
+}

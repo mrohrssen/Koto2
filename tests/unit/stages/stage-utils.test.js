@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { getWordStrictStage, getContentWords } from '../../../language/stage-utils.js';
+import { getWordStrictStage, getContentWords, suggestStage } from '../../../language/stage-utils.js';
 
 // ── getWordStrictStage ──────────────────────────────────────────────
 
@@ -145,5 +145,51 @@ describe('getContentWords', () => {
     const area = { id: 'empty-area' };
     const words = getContentWords(area, 'area');
     assert.strictEqual(words.length, 0);
+  });
+});
+
+// ── suggestStage ────────────────────────────────────────────────────
+
+describe('suggestStage', () => {
+  it('suggests stage 1 for all-stage-1 content', () => {
+    // 犬 is WK level 2 = stage 1, 大きい is WK level 1 = stage 1
+    const creature = { baseWord: '犬', baseRank: 1500, modifier: { word: '大きい', rank: 700 } };
+    const result = suggestStage(creature, 'creature');
+    assert.strictEqual(result.stage, 1);
+    assert.strictEqual(result.outlierPercent, 0);
+  });
+
+  it('suggests higher stage when words span stages', () => {
+    // 猫 = WK15 = stage 3, check that result stage is >= 3
+    const creature = { baseWord: '猫', baseRank: 1600, modifier: { word: '大きい', rank: 700 } };
+    const result = suggestStage(creature, 'creature');
+    assert.ok(result.stage >= 3);
+    assert.ok(result.outlierPercent <= 20);
+  });
+
+  it('returns medianRank and wordStages', () => {
+    const creature = { baseWord: '山', baseRank: 2000, modifier: { word: '大きい', rank: 700 } };
+    const result = suggestStage(creature, 'creature');
+    assert.strictEqual(typeof result.medianRank, 'number');
+    assert.ok(result.medianRank > 0);
+    assert.ok(Array.isArray(result.wordStages));
+    assert.strictEqual(result.wordStages.length, 2);
+    assert.ok(result.wordStages[0].strictStage != null);
+  });
+
+  it('handles single-word move', () => {
+    const move = { name: '走る', rank: 400 };
+    const result = suggestStage(move, 'move');
+    assert.strictEqual(result.stage, 1); // 走る is WK level 5 = stage 1
+    assert.strictEqual(result.outlierPercent, 0);
+    assert.strictEqual(result.wordStages.length, 1);
+  });
+
+  it('handles content with no scorable words', () => {
+    const item = { components: [] };
+    const result = suggestStage(item, 'item');
+    assert.strictEqual(result.stage, 1);
+    assert.strictEqual(result.outlierPercent, 0);
+    assert.strictEqual(result.medianRank, 0);
   });
 });
