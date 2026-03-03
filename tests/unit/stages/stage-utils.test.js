@@ -1,0 +1,149 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { getWordStrictStage, getContentWords } from '../../../language/stage-utils.js';
+
+// ── getWordStrictStage ──────────────────────────────────────────────
+
+describe('getWordStrictStage', () => {
+  it('assigns WK level 1-6 words to stage 1', () => {
+    // 山 is WK level 1 → Math.ceil(1/6) = 1
+    assert.strictEqual(getWordStrictStage('山', 2000), 1);
+  });
+
+  it('assigns WK level 7-12 words to stage 2', () => {
+    // 魚 is WK level 7 → Math.ceil(7/6) = 2
+    assert.strictEqual(getWordStrictStage('魚', 1800), 2);
+  });
+
+  it('assigns WK level 55-60 words to stage 10', () => {
+    // 蝶 is WK level 56 → Math.ceil(56/6) = 10
+    assert.strictEqual(getWordStrictStage('蝶', 8600), 10);
+  });
+
+  it('WK lookup takes priority over JPDB rank', () => {
+    // 山 is WK level 1, regardless of JPDB rank
+    assert.strictEqual(getWordStrictStage('山', 50000), 1);
+  });
+
+  it('uses JPDB rank for katakana words not in WaniKani', () => {
+    // カエル not in WK, rank 9900 → stage 8 (cap 12000)
+    assert.strictEqual(getWordStrictStage('カエル', 9900), 8);
+  });
+
+  it('uses JPDB rank for hiragana words not in WaniKani', () => {
+    // おにぎり not in WK, rank 9100 → stage 8 (cap 12000)
+    assert.strictEqual(getWordStrictStage('おにぎり', 9100), 8);
+  });
+
+  it('assigns stage 1 for non-WK word with rank <= 500', () => {
+    // ママ not in WK, rank 400 → stage 1 (cap 500)
+    assert.strictEqual(getWordStrictStage('ママ', 400), 1);
+  });
+
+  it('assigns stage 10 for non-WK word with rank beyond stage 9 cap', () => {
+    // ペンギン not in WK, rank 19500 → stage 10 (no cap)
+    assert.strictEqual(getWordStrictStage('ペンギン', 19500), 10);
+  });
+
+  it('returns null for unknown word with no rank', () => {
+    assert.strictEqual(getWordStrictStage('???', null), null);
+  });
+
+  it('returns null for unknown word with undefined rank', () => {
+    assert.strictEqual(getWordStrictStage('???', undefined), null);
+  });
+
+  it('assigns exact boundary rank to correct stage', () => {
+    // rank exactly 500 → stage 1 (cap is 500)
+    assert.strictEqual(getWordStrictStage('テスト', 500), 1);
+    // rank 501 → stage 2 (next cap is 1200)
+    assert.strictEqual(getWordStrictStage('テスト', 501), 2);
+  });
+
+  it('assigns rank 16001 to stage 10', () => {
+    // Above stage 9 cap (16000), stage 10 has null cap
+    assert.strictEqual(getWordStrictStage('テスト', 16001), 10);
+  });
+});
+
+// ── getContentWords ─────────────────────────────────────────────────
+
+describe('getContentWords', () => {
+  it('extracts baseWord and modifier from a creature', () => {
+    const creature = {
+      id: 'nekotto',
+      baseWord: '猫', baseMeaning: 'cat', baseRank: 1600,
+      modifier: { word: '鉄', meaning: 'Iron', rank: 2200 }
+    };
+    const words = getContentWords(creature, 'creature');
+    assert.strictEqual(words.length, 2);
+    assert.deepStrictEqual(words[0], { word: '猫', rank: 1600, source: 'baseWord' });
+    assert.deepStrictEqual(words[1], { word: '鉄', rank: 2200, source: 'modifier' });
+  });
+
+  it('handles creature with no modifier', () => {
+    const creature = {
+      id: 'test', baseWord: '犬', baseMeaning: 'dog', baseRank: 1500
+    };
+    const words = getContentWords(creature, 'creature');
+    assert.strictEqual(words.length, 1);
+    assert.deepStrictEqual(words[0], { word: '犬', rank: 1500, source: 'baseWord' });
+  });
+
+  it('extracts move name', () => {
+    const move = { id: 'hashiru', name: '走る', meaning: 'to run', rank: 400 };
+    const words = getContentWords(move, 'move');
+    assert.strictEqual(words.length, 1);
+    assert.deepStrictEqual(words[0], { word: '走る', rank: 400, source: 'name' });
+  });
+
+  it('extracts item components', () => {
+    const item = {
+      id: 'green-tea', word: '緑茶', meaning: 'green tea',
+      components: [
+        { word: '緑', rank: 2300 },
+        { word: '茶', rank: 4100 }
+      ]
+    };
+    const words = getContentWords(item, 'item');
+    assert.strictEqual(words.length, 2);
+    assert.deepStrictEqual(words[0], { word: '緑', rank: 2300, source: 'component' });
+    assert.deepStrictEqual(words[1], { word: '茶', rank: 4100, source: 'component' });
+  });
+
+  it('extracts single-component items', () => {
+    const item = {
+      id: 'sake', word: '酒', meaning: 'sake',
+      components: [{ word: '酒', rank: 1600 }]
+    };
+    const words = getContentWords(item, 'item');
+    assert.strictEqual(words.length, 1);
+    assert.deepStrictEqual(words[0], { word: '酒', rank: 1600, source: 'component' });
+  });
+
+  it('handles item with no components', () => {
+    const item = { id: 'empty', word: 'test', meaning: 'test' };
+    const words = getContentWords(item, 'item');
+    assert.strictEqual(words.length, 0);
+  });
+
+  it('extracts area vocabWords', () => {
+    const area = {
+      id: 'forest',
+      vocabWords: [
+        { word: '森', rank: 3200 },
+        { word: '木', rank: 800 }
+      ]
+    };
+    const words = getContentWords(area, 'area');
+    assert.strictEqual(words.length, 2);
+    assert.deepStrictEqual(words[0], { word: '森', rank: 3200, source: 'areaVocab' });
+    assert.deepStrictEqual(words[1], { word: '木', rank: 800, source: 'areaVocab' });
+  });
+
+  it('handles area with no vocabWords', () => {
+    const area = { id: 'empty-area' };
+    const words = getContentWords(area, 'area');
+    assert.strictEqual(words.length, 0);
+  });
+});
