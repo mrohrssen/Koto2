@@ -59,33 +59,44 @@ CI runs Tier 1 + 2 on every push and PR via GitHub Actions. Coverage has a ratch
 
 Multiple Claude sessions share the same repo. **Branches alone don't work** - switching branches in one terminal affects all terminals. Use **git worktrees** to isolate each session's work.
 
+**Always pull before starting work and push when done** to keep all machines in sync:
+
 ```bash
+# ============ SYNC: Pull latest before starting ============
+git pull origin master
+
 # ============ START: Create isolated worktree ============
-cd /Users/michia/Documents/jrpg
-/usr/bin/git fetch origin
-/usr/bin/git worktree add ../jrpg-wt-myfeature -b feature/my-feature-name
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+cd "$PROJECT_ROOT"
+git fetch origin
+git worktree add ../koto-wt-myfeature -b feature/my-feature-name
 
 # Work in the new directory (isolated from main repo)
-cd ../jrpg-wt-myfeature
+cd ../koto-wt-myfeature
 npm install  # If needed
 
-# ============ FINISH: Merge and cleanup ============
+# ============ FINISH: Merge, push, and cleanup ============
 # Commit your changes in the worktree
-/usr/bin/git add -A && /usr/bin/git commit -m "Your message"
+git add -A && git commit -m "Your message"
 
 # Go to main repo to merge
-cd /Users/michia/Documents/jrpg
-/usr/bin/git checkout master
-/usr/bin/git pull origin master
-/usr/bin/git merge feature/my-feature-name
-/usr/bin/git push origin master
+cd "$PROJECT_ROOT"
+git checkout master
+git pull origin master
+git merge feature/my-feature-name
+git push origin master
 
 # Remove the worktree and branch
-/usr/bin/git worktree remove ../jrpg-wt-myfeature
-/usr/bin/git branch -d feature/my-feature-name
+git worktree remove ../koto-wt-myfeature
+git branch -d feature/my-feature-name
 ```
 
 **Why worktrees?** Each worktree is a separate directory with its own branch. Multiple Claude sessions can work on different features simultaneously without conflicts.
+
+**GitHub sync rules:**
+- `git pull origin master` at the start of every session
+- `git push origin master` after merging completed work
+- Never force-push to master
 
 Branch prefixes: `feature/`, `fix/`, `refactor/`
 
@@ -178,6 +189,30 @@ Update the guide when adding new features or discovering new interaction pattern
 ## Sprite Cache Busting
 
 Sprites are served with 1-year immutable cache headers. When regenerating sprites, **bump `SPRITE_VERSION`** in `public/js/ui/sprite-utils.js` so users' browsers fetch the new files. Use the date of generation (e.g. `'20250212'`).
+
+## Koto Forge Skills (Claude Code Plugin)
+
+Game content design skills are stored in `.claude/plugins/koto-forge/` and registered as a Claude Code plugin. On a fresh machine, run the setup script to install them:
+
+```bash
+bash scripts/setup-claude-skills.sh
+```
+
+This symlinks the repo's plugin into Claude Code's plugin cache. Restart Claude Code after running.
+
+**Available skills:**
+
+| Skill | Trigger | Description |
+|-------|---------|-------------|
+| `creature-forge` | `/creature-forge [word]` | Design creatures from English words (5-phase, 4 subagents) |
+| `creature-animate` | `/creature-animate` | Animate staging PNGs into idle sprites via ComfyUI |
+| `item-forge` | `/item-forge` | Generate food-themed items in batches of 10 |
+| `area-forge` | `/area-forge [word]` | Design areas from Japanese location words |
+| `npc-forge` | `/npc-forge [area]` | Generate 5 area-matched NPCs with character cards |
+| `jpdb-frequency-lookup` | `/jpdb-frequency-lookup` | Enrich word lists with JPDB frequency ranks |
+| `sprite-quality-pipeline` | `/sprite-quality-pipeline` | Three-gate sprite quality enforcement |
+
+Skills use `process.cwd()` for project paths and `$CLAUDE_PROJECT_DIR` for sub-skill references — no hardcoded machine paths. Edit skills in the repo and changes take effect immediately (symlinked).
 
 ## Common Mistakes to Avoid
 
