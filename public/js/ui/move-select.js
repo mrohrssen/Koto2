@@ -85,7 +85,25 @@ function buildItemsCell() {
   return cell;
 }
 
-export function showMoves(creature, creatureIndex) {
+function buildBefriendCell(onBefriend) {
+  const cell = document.createElement('div');
+  cell.className = 'move-befriend-half';
+  cell.innerHTML = `<span class="move-items-emoji">💬</span><span class="move-items-label">はなす</span>`;
+  cell.addEventListener('click', () => {
+    if (onBefriend) onBefriend();
+  });
+  return cell;
+}
+
+function buildSplitCell(onBefriend) {
+  const wrap = document.createElement('div');
+  wrap.className = 'move-split-cell';
+  wrap.appendChild(buildBefriendCell(onBefriend));
+  wrap.appendChild(buildItemsCell());
+  return wrap;
+}
+
+export function showMoves(creature, creatureIndex, opts = {}) {
   const container = dom.actionArea;
   container.innerHTML = '';
 
@@ -104,8 +122,12 @@ export function showMoves(creature, creatureIndex) {
     grid.appendChild(cell);
   }
 
-  // Items button fills the last cell in the grid
-  grid.appendChild(buildItemsCell());
+  // Items button fills the last cell in the grid (split with befriend when available)
+  if (opts.befriendAvailable && opts.onBefriend) {
+    grid.appendChild(buildSplitCell(opts.onBefriend));
+  } else {
+    grid.appendChild(buildItemsCell());
+  }
 
   container.appendChild(grid);
 }
