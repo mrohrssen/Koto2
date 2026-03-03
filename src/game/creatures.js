@@ -221,15 +221,27 @@ export function getEnemyLevel({ stage = 1, encounterIndex = 0, enemyCount = 1, p
   return Math.max(minLevel, Math.min(adjustedLevel, maxLevel));
 }
 
-export function generateEnemyCreature(highestAllyLevel = 1, creaturePool = null) {
+export function generateEnemyCreature(targetLevel, creaturePool = null, stage = null) {
   let group;
 
   if (creaturePool && creaturePool.length > 0) {
     // Area-restricted: only spawn creatures from this area's pool
     group = CREATURE_DATA.filter(r => creaturePool.includes(r.id));
-    if (group.length === 0) group = CREATURE_DATA; // fallback if pool IDs don't match
+    if (group.length === 0) group = CREATURE_DATA;
+
+    // When stage is provided, filter pool by rolled rarity
+    if (stage != null) {
+      const rarity = rollRarity(stage);
+      const rarityFiltered = group.filter(r => r.rarity === rarity);
+      if (rarityFiltered.length > 0) group = rarityFiltered;
+    }
+  } else if (stage != null) {
+    // Stage-based without pool: filter all creatures by rolled rarity
+    const rarity = rollRarity(stage);
+    const rarityGroup = CREATURE_DATA.filter(r => r.rarity === rarity);
+    group = rarityGroup.length > 0 ? rarityGroup : CREATURE_DATA;
   } else {
-    // Random element+rarity selection (legacy/fallback)
+    // Legacy: random element+rarity selection
     const elements = ['wood', 'fire', 'earth', 'metal', 'water'];
     for (let attempts = 0; attempts < 20; attempts++) {
       const rarity = rollRarity();
@@ -245,8 +257,6 @@ export function generateEnemyCreature(highestAllyLevel = 1, creaturePool = null)
   const template = group[Math.floor(Math.random() * group.length)];
   const creature = instantiateCreature(template.id);
 
-  const levelVariance = Math.floor(Math.random() * 3) - 1;
-  const targetLevel = Math.max(1, highestAllyLevel + levelVariance);
   while (creature.level < targetLevel) {
     addXpToCreature(creature, xpToNextLevel(creature.level));
   }
@@ -298,12 +308,13 @@ export function getEnemyCountWeights(encounterIndex = 0) {
   return ENCOUNTER_COUNT_TABLE.late;
 }
 
-export function generateEnemyCreatures(highestAllyLevel = 1, { maxEnemies, creaturePool } = {}) {
-  // Roll enemy count
-  const totalWeight = ENEMY_COUNT_WEIGHTS.reduce((s, w) => s + w.weight, 0);
+export function generateEnemyCreatures(highestAllyLevel = 1, { maxEnemies, creaturePool, stage, encounterIndex } = {}) {
+  // Determine enemy count using encounter-aware weights when available
+  const countWeights = encounterIndex != null ? getEnemyCountWeights(encounterIndex) : ENEMY_COUNT_WEIGHTS;
+  const totalWeight = countWeights.reduce((s, w) => s + w.weight, 0);
   let roll = Math.random() * totalWeight;
   let enemyCount = 1;
-  for (const { count, weight } of ENEMY_COUNT_WEIGHTS) {
+  for (const { count, weight } of countWeights) {
     roll -= weight;
     if (roll <= 0) { enemyCount = count; break; }
   }
@@ -311,7 +322,20 @@ export function generateEnemyCreatures(highestAllyLevel = 1, { maxEnemies, creat
 
   const enemies = [];
   for (let i = 0; i < enemyCount; i++) {
-    enemies.push(generateEnemyCreature(highestAllyLevel, creaturePool));
+    let targetLevel;
+    if (stage != null) {
+      targetLevel = getEnemyLevel({
+        stage,
+        encounterIndex: encounterIndex || 0,
+        enemyCount,
+        playerLevel: highestAllyLevel
+      });
+    } else {
+      // Legacy: highestAllyLevel +/- 1
+      const levelVariance = Math.floor(Math.random() * 3) - 1;
+      targetLevel = Math.max(1, highestAllyLevel + levelVariance);
+    }
+    enemies.push(generateEnemyCreature(targetLevel, creaturePool, stage));
   }
   return enemies;
 }

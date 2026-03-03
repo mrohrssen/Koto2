@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { getEnemyLevel, getRarityWeightsForStage, getEnemyCountWeights } from '../../../src/game/creatures.js';
+import { getEnemyLevel, getRarityWeightsForStage, getEnemyCountWeights, generateEnemyCreatures } from '../../../src/game/creatures.js';
 
 describe('getEnemyLevel', () => {
   it('computes baseline from stage', () => {
@@ -138,5 +138,43 @@ describe('getEnemyCountWeights', () => {
       { count: 2, weight: 35 },
       { count: 3, weight: 35 }
     ]);
+  });
+});
+
+describe('generateEnemyCreatures with scaling', () => {
+  it('accepts stage and encounterIndex options', () => {
+    const enemies = generateEnemyCreatures(10, {
+      stage: 3,
+      encounterIndex: 2,
+      creaturePool: ['hikaribon', 'kamedor', 'kazenoko']
+    });
+    assert.ok(enemies.length >= 1 && enemies.length <= 3);
+    for (const e of enemies) {
+      assert.ok(e.level >= 1, `enemy level should be >= 1, got ${e.level}`);
+    }
+  });
+
+  it('enemies are higher level with higher stage', () => {
+    let avgLowStage = 0;
+    let avgHighStage = 0;
+    const trials = 50;
+    const pool = ['hikaribon', 'kamedor', 'kazenoko'];
+    for (let i = 0; i < trials; i++) {
+      const low = generateEnemyCreatures(15, { stage: 1, encounterIndex: 0, creaturePool: pool });
+      const high = generateEnemyCreatures(15, { stage: 7, encounterIndex: 0, creaturePool: pool });
+      avgLowStage += low.reduce((s, e) => s + e.level, 0) / low.length;
+      avgHighStage += high.reduce((s, e) => s + e.level, 0) / high.length;
+    }
+    avgLowStage /= trials;
+    avgHighStage /= trials;
+    assert.ok(avgHighStage > avgLowStage, `Stage 7 avg (${avgHighStage}) should be > Stage 1 avg (${avgLowStage})`);
+  });
+
+  it('still works with legacy call (no stage/encounterIndex)', () => {
+    const enemies = generateEnemyCreatures(5);
+    assert.ok(enemies.length >= 1 && enemies.length <= 3);
+    for (const e of enemies) {
+      assert.ok(e.hp > 0);
+    }
   });
 });
