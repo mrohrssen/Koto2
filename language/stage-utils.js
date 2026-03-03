@@ -129,6 +129,83 @@ export function suggestStage(obj, type) {
   return { stage: 10, outlierPercent: 0, medianRank: calcMedianRank(wordStages), wordStages };
 }
 
+// ── Reporting ───────────────────────────────────────────────────────
+
+/**
+ * Safely load a JSON array from a file path.
+ * @param {string} filePath - Absolute path to JSON file
+ * @returns {Array} Parsed array, or [] on any error
+ */
+function loadJsonSafe(filePath) {
+  try {
+    return JSON.parse(readFileSync(filePath, 'utf8'));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Generate a report for a single stage by scanning all content data files.
+ * Filters content by obj.stage === stageNumber, then computes word statistics.
+ * @param {number} stageNumber - Stage 1-10
+ * @returns {{ stage, totalWords, outlierCount, outlierPercent, medianRank, creatures, moves, items, areas }}
+ */
+export function getStageReport(stageNumber) {
+  const creatures = loadJsonSafe(join(__dirname, '..', 'data', 'creatures.json'));
+  const moves     = loadJsonSafe(join(__dirname, '..', 'data', 'moves.json'));
+  const items     = loadJsonSafe(join(__dirname, '..', 'data', 'items.json'));
+  const areas     = loadJsonSafe(join(__dirname, '..', 'data', 'new-areas-staging.json'));
+
+  const stageCreatures = creatures.filter(c => c.stage === stageNumber);
+  const stageMoves     = moves.filter(m => m.stage === stageNumber);
+  const stageItems     = items.filter(i => i.stage === stageNumber);
+  const stageAreas     = areas.filter(a => a.stage === stageNumber);
+
+  // Collect all vocabulary words from filtered content
+  const allWords = [
+    ...stageCreatures.flatMap(c => getContentWords(c, 'creature')),
+    ...stageMoves.flatMap(m => getContentWords(m, 'move')),
+    ...stageItems.flatMap(i => getContentWords(i, 'item')),
+    ...stageAreas.flatMap(a => getContentWords(a, 'area')),
+  ];
+
+  // Score each word
+  const wordStages = allWords.map(w => ({
+    word: w.word,
+    rank: w.rank,
+    source: w.source,
+    strictStage: getWordStrictStage(w.word, w.rank),
+  }));
+
+  const scorable = wordStages.filter(ws => ws.strictStage != null);
+  const outlierCount = scorable.filter(ws => ws.strictStage > stageNumber).length;
+  const outlierPercent = scorable.length > 0
+    ? Math.round((outlierCount / scorable.length) * 100)
+    : 0;
+
+  return {
+    stage: stageNumber,
+    totalWords: allWords.length,
+    outlierCount,
+    outlierPercent,
+    medianRank: calcMedianRank(wordStages),
+    creatures: stageCreatures.map(c => c.id),
+    moves: stageMoves.map(m => m.id),
+    items: stageItems.map(i => i.id),
+    areas: stageAreas.map(a => a.id),
+  };
+}
+
+/**
+ * Generate reports for all 10 stages.
+ * @returns {Array} Array of 10 stage report objects
+ */
+export function getFullReport() {
+  return Array.from({ length: 10 }, (_, i) => getStageReport(i + 1));
+}
+
+// ── Internal helpers ────────────────────────────────────────────────
+
 /**
  * Calculate the median of all word ranks, excluding rank 0 or null.
  * @param {Array<{rank: number}>} wordStages

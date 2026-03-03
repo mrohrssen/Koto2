@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { getWordStrictStage, getContentWords, suggestStage } from '../../../language/stage-utils.js';
+import { getWordStrictStage, getContentWords, suggestStage, getStageReport, getFullReport } from '../../../language/stage-utils.js';
 
 // ── getWordStrictStage ──────────────────────────────────────────────
 
@@ -191,5 +191,57 @@ describe('suggestStage', () => {
     assert.strictEqual(result.stage, 1);
     assert.strictEqual(result.outlierPercent, 0);
     assert.strictEqual(result.medianRank, 0);
+  });
+});
+
+// ── getStageReport ──────────────────────────────────────────────────
+
+describe('getStageReport', () => {
+  it('returns report with expected shape', () => {
+    const report = getStageReport(1);
+    assert.strictEqual(report.stage, 1);
+    assert.strictEqual(typeof report.totalWords, 'number');
+    assert.strictEqual(typeof report.outlierCount, 'number');
+    assert.strictEqual(typeof report.outlierPercent, 'number');
+    assert.strictEqual(typeof report.medianRank, 'number');
+    assert.ok(Array.isArray(report.creatures));
+    assert.ok(Array.isArray(report.moves));
+    assert.ok(Array.isArray(report.items));
+    assert.ok(Array.isArray(report.areas));
+  });
+
+  it('returns matching stage number', () => {
+    const report = getStageReport(5);
+    assert.strictEqual(report.stage, 5);
+  });
+
+  it('returns zero outlier percent when no content', () => {
+    // Before tagging, no content has stage assigned, so all reports are empty
+    const report = getStageReport(1);
+    // totalWords should be 0 since nothing is tagged yet
+    // outlierPercent should be 0 when no words
+    assert.strictEqual(report.outlierPercent, 0);
+  });
+});
+
+// ── getFullReport ───────────────────────────────────────────────────
+
+describe('getFullReport', () => {
+  it('returns array of 10 stage reports', () => {
+    const reports = getFullReport();
+    assert.strictEqual(reports.length, 10);
+    assert.strictEqual(reports[0].stage, 1);
+    assert.strictEqual(reports[9].stage, 10);
+  });
+
+  it('each report has the expected shape', () => {
+    const reports = getFullReport();
+    for (const r of reports) {
+      assert.ok('stage' in r);
+      assert.ok('totalWords' in r);
+      assert.ok('outlierCount' in r);
+      assert.ok('outlierPercent' in r);
+      assert.ok('medianRank' in r);
+    }
   });
 });
