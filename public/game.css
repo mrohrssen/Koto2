@@ -1099,7 +1099,7 @@ html, body {
 }
 
 .sac-vocab rt {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--text-secondary);
 }
@@ -4381,8 +4381,8 @@ html, body {
 }
 
 .move-furigana {
-  font-size: 9px;
-  color: var(--text-muted);
+  font-size: 14px;
+  color: var(--text-secondary);
   line-height: 1;
   letter-spacing: 0.5px;
 }

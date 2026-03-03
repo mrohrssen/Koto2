@@ -240,6 +240,17 @@ export async function openSettings() {
     }
   });
 
+  // Real-time volume slider feedback
+  document.getElementById('settings-bgm-volume')?.addEventListener('input', (e) => {
+    audio.setVolume('bgm', parseInt(e.target.value) / 100);
+  });
+  document.getElementById('settings-sfx-volume')?.addEventListener('input', (e) => {
+    audio.setVolume('sfx', parseInt(e.target.value) / 100);
+  });
+  document.getElementById('settings-tts-volume')?.addEventListener('input', (e) => {
+    tts.setVolume(parseInt(e.target.value) / 100);
+  });
+
   document.getElementById('settings-clear-dialogue-cache-btn')?.addEventListener('click', async (e) => {
     const btn = e.target;
     btn.disabled = true;
