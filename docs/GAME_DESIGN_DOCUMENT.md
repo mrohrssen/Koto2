@@ -1,6 +1,6 @@
 # Koto (琴) — Game Design Document
 
-**Last updated:** 2026-03-01
+**Last updated:** 2026-03-03
 **Status:** Living document — the single source of truth for Koto's game design vision.
 
 This document describes the **target vision** for Koto. Systems marked with ✅ are implemented; systems marked with 📋 are designed but unbuilt. Current implementation details live in [ARCHITECTURE.md](ARCHITECTURE.md); this document focuses on *where we're going*.
@@ -473,13 +473,24 @@ Stats (HP, ATK) are determined at creature creation time, not by fixed archetype
 
 | Rarity | Count | JPDB Range | Where Found |
 |---|:---:|---|---|
-| Common | 180 | rank 1–2,000 | Everywhere, early areas |
-| Uncommon | 160 | rank 2,001–3,500 | Mid/late areas |
-| Rare | 100 | rank 3,501–6,000 | Area-specific, 1–2 per area |
-| Epic | 40 | rank 6,000–10,000 | Cross-area rare spawns |
-| Legendary | 20 | rank 10,000+ | Unique boss creatures, quest rewards |
+| Common | 180 | rank 1–2,000 | Everywhere, dominant in stage 1–3 areas |
+| Uncommon | 160 | rank 2,001–3,500 | All areas, more common in stage 4+ |
+| Rare | 100 | rank 3,501–6,000 | Rare in wild (stage 4+), early-stage bosses |
+| Epic | 40 | rank 6,000–10,000 | Very rare in wild (stage 7+), mid-stage bosses |
+| Legendary | 20 | rank 10,000+ | **Boss-exclusive** — never in wild encounters |
 
 Rarity is tied to word frequency — common words make common creatures, rare words make rare creatures. This means early-game creatures use the most useful, everyday vocabulary.
+
+**Wild encounter rarity by stage:**
+
+| Rarity | Stage 1–3 | Stage 4–6 | Stage 7–9 | Stage 10 |
+|---|:---:|:---:|:---:|:---:|
+| Common | 80% | 50% | 30% | 20% |
+| Uncommon | 18% | 35% | 30% | 30% |
+| Rare | 2% | 12% | 25% | 30% |
+| Epic | 0% | 3% | 15% | 20% |
+
+Legendary creatures are never encountered in the wild — they are guardians of late-stage areas and can only be obtained by defeating and then befriending them in boss encounters.
 
 ### Element System (Wu Xing)
 
@@ -567,6 +578,38 @@ Each creature has a learnset of 8–10 moves, unlocking new ones every 2–3 lev
 | Epic/Legendary | rank 8,000+ | Lower-tier moves for review |
 
 This means a player using common creatures drills the most frequent verbs, while rare creatures introduce advanced vocabulary alongside familiar words — maintaining SRS repetition across the full range.
+
+### Enemy Scaling ✅
+
+Enemy difficulty scales with both **area stage** and **encounter progress** within an area, inspired by Pokerogue's wave-based system but adapted for Koto's shorter area runs.
+
+**Level formula:** `stageBaseline + encounterRamp`, clamped to player level ± 5.
+
+```
+stageBaseline = areaStage × 3
+encounterBonus = stageBaseline × (encounterIndex × 0.08)
+baseLevel = stageBaseline + encounterBonus
+```
+
+**Party size multiplier** adjusts per-creature level based on encounter size:
+
+| Enemy Count | Multiplier | Rationale |
+|---|---|---|
+| 1 (solo) | 1.2× | Must feel like a real threat alone |
+| 2 | 1.0× | Baseline |
+| 3 (group) | 0.85× | Individually weaker, collectively stronger |
+
+**Enemy count shifts with encounter progress** — early encounters in an area favor solo enemies; later encounters favor groups (more vocab cards per fight):
+
+| Encounter | 1 enemy | 2 enemies | 3 enemies |
+|---|---|---|---|
+| Early (0–2) | 50% | 40% | 10% |
+| Mid (3–4) | 40% | 35% | 25% |
+| Late (5+) | 30% | 35% | 35% |
+
+**XP scales with enemy level:** `(10 + enemyLevel × 2)` per kill, shared among the party. Higher-stage areas reward more XP, matching their increased difficulty.
+
+**Boss encounters** (📋 planned): Each area has a fixed guardian creature — a boss fight at the area's end. Boss level = `baseLevel × 1.25`, always solo. Bosses cannot be befriended on first encounter; defeat them first, then talk on the rematch. Early-stage bosses are rare creatures, mid-stage are epic, late-stage are legendary.
 
 ### Status Effects
 
