@@ -348,6 +348,89 @@ export function startMoveSelection() {
   promptNextCreature();
 }
 
+/** Check if befriend conditions are met: creature combat, 1 alive enemy at ≤50% HP, no NPC. */
+function isBefriendAvailable() {
+  const state = getGameState();
+  if (!state.combat?.isCreatureCombat || state.combat?.npcId) return false;
+  const enemies = state.combat.enemies || [];
+  const alive = enemies.filter(e => e.hp > 0 && !e.befriended);
+  if (alive.length !== 1) return false;
+  return (alive[0].hp / alive[0].maxHp) <= 0.5;
+}
+
+/** Handle the player tapping the はなす (Talk) button during move selection. */
+async function handleBefriendTalk() {
+  if (!combatActive) return;
+
+  return withAnimationActive(async () => {
+    try {
+      const resp = await fetch(`${API_BASE}/api/game/befriend-talk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin'
+      });
+      const result = await resp.json();
+
+      if (!result.accepted) {
+        // Creature refused — show rejection + enemy attack
+        const state = getGameState();
+        const enemies = state.combat?.enemies || [];
+        const alive = enemies.filter(e => e.hp > 0);
+        const creatureName = alive[0]?.nameEn || alive[0]?.name || 'Creature';
+
+        narration.showNarration(`${creatureName} refused to talk!`, { persistent: false });
+        if (delay) await delay(600);
+
+        // Apply enemy attacks from the response
+        if (result.enemyAttacks?.length) {
+          for (const atk of result.enemyAttacks) {
+            if (atk.targetIndex >= 0 && animatePlayerHurt) {
+              animatePlayerHurt(atk.targetIndex);
+            }
+            if (showDamageNumber && atk.targetIndex >= 0) {
+              showDamageNumber(atk.damage, atk.targetIndex, 'player');
+            }
+          }
+          if (delay) await delay(400);
+        }
+
+        // Update state with new HP values
+        if (result.allies || result.enemies) {
+          updateGameState({
+            combat: {
+              ...state.combat,
+              allies: result.allies || state.combat.allies,
+              enemies: result.enemies || state.combat.enemies
+            }
+          });
+          updateUI();
+          if (updateCreatureRowData) {
+            const updated = getGameState();
+            updateCreatureRowData(updated.run?.creatureParty, updated.combat);
+          }
+        }
+
+        if (result.combatEnded) {
+          combatActive = false;
+          if (showGameOverModal) showGameOverModal();
+          return;
+        }
+
+        // Resume move selection for next turn
+        startMoveSelection();
+        return;
+      }
+
+      // Accepted — launch the existing befriend conversation flow
+      await executeBefriendAction();
+
+    } catch (err) {
+      console.error('[CombatLoop] Befriend talk error:', err);
+      startMoveSelection();
+    }
+  });
+}
+
 function promptNextCreature() {
   const state = getGameState();
   const allies = state.combat?.allies || state.run?.creatureParty?.active || [];
@@ -366,7 +449,11 @@ function promptNextCreature() {
   const creature = allies[currentCreatureIndex];
   clearTargetSelect();
   setActiveLabel(creature);
-  showMoves(creature, currentCreatureIndex);
+  const befriendAvailable = isBefriendAvailable();
+  showMoves(creature, currentCreatureIndex, {
+    befriendAvailable,
+    onBefriend: befriendAvailable ? handleBefriendTalk : undefined
+  });
 }
 
 function handleMoveSelected(move, creatureIndex) {
