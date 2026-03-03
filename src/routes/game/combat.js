@@ -5,7 +5,7 @@
  */
 
 import { Router } from 'express';
-import { processEnemyTurn, handleCreatureKO, handleBefriendAnswer } from '../../game/services/creature-combat-service.js';
+import { processEnemyTurn, handleCreatureKO, handleBefriendAnswer, rollTalkAcceptance } from '../../game/services/creature-combat-service.js';
 import { MOVES_BY_ID } from '../../game/creatures.js';
 import { getCollectionCatalog } from '../../game/services/creature-collection-service.js';
 import { loadNpcs, shuffleOptions, updateBond, recordEncounter, handleNpcDialogueResponse } from '../../game/services/npc-service.js';
@@ -211,6 +211,70 @@ export default function createCombatRoutes({
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
+  });
+
+  // Gate: RNG check before befriend conversation
+  router.post('/befriend-talk', (req, res) => {
+    const gameManager = req.gameManager;
+    const combat = gameManager.combat;
+
+    if (!combat?.active || !combat.isCreatureCombat) {
+      return res.status(400).json({ error: 'No active creature combat' });
+    }
+
+    if (combat.npcId) {
+      return res.status(400).json({ error: 'Cannot befriend NPC trainer creatures' });
+    }
+
+    // Find exactly 1 alive, non-befriended enemy at ≤50% HP
+    const enemies = combat.enemies || [];
+    const eligible = enemies.filter(e => e.hp > 0 && !e.befriended && (e.hp / e.maxHp) <= 0.5);
+    if (eligible.length !== 1) {
+      return res.status(400).json({ error: 'No single eligible enemy for befriend talk' });
+    }
+
+    const target = eligible[0];
+    const { accepted, chance } = rollTalkAcceptance(target);
+
+    if (!accepted) {
+      // Rejection: enemy attacks (mirrors handleBefriendAnswer wrong-answer path)
+      const enemyResult = processEnemyTurn(
+        combat.enemies, combat.allies, false, gameManager.run?.itemBuffs
+      );
+
+      const koSwaps = [];
+      for (let i = 0; i < combat.allies.length; i++) {
+        if (combat.allies[i] && combat.allies[i].hp <= 0) {
+          const replacement = handleCreatureKO(gameManager.run.creatureParty, i);
+          if (replacement) {
+            koSwaps.push({ slot: i, replacement: replacement.nameEn });
+          }
+        }
+      }
+      combat.allies = gameManager.run.creatureParty.active;
+
+      const allAlliesKO = combat.allies.every(a => !a || a.hp <= 0);
+      if (allAlliesKO) {
+        combat.active = false;
+        gameManager.run.active = false;
+      }
+
+      req.saveGame();
+
+      return res.json({
+        accepted: false,
+        chance,
+        enemyAttacks: enemyResult.attacks || [],
+        koSwaps,
+        combatEnded: allAlliesKO,
+        allies: combat.allies,
+        enemies: combat.enemies
+      });
+    }
+
+    // Accepted: save and let frontend proceed to /befriend-conversation
+    req.saveGame();
+    res.json({ accepted: true, chance });
   });
 
   // Generate befriend conversation

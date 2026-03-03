@@ -4494,6 +4494,50 @@ html, body {
 .move-items-emoji { font-size: 36px; }
 .move-items-label { font-size: 28px; }
 
+/* Split cell: befriend + items side by side */
+.move-split-cell {
+  display: flex;
+  gap: 4px;
+  animation: moveCardIn 0.25s ease-out 0.18s both;
+}
+
+.move-split-cell .move-items-cell,
+.move-befriend-half {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1.5px solid rgba(255,255,255,0.5);
+  border-radius: var(--card-radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-bold);
+  box-shadow: var(--shadow-soft);
+  transition: background var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  flex: 1;
+  min-width: 0;
+}
+
+.move-split-cell .move-items-cell {
+  animation: none;
+}
+
+.move-befriend-half:active,
+.move-split-cell .move-items-cell:active {
+  background: var(--bg-card-hover);
+  transform: scale(0.97);
+}
+
+.move-befriend-half .move-items-emoji { font-size: 28px; }
+.move-befriend-half .move-items-label { font-size: 18px; }
+.move-split-cell .move-items-cell .move-items-emoji { font-size: 28px; }
+.move-split-cell .move-items-cell .move-items-label { font-size: 18px; }
+
 /* Active label */
 .move-active-label {
   text-align: center;
