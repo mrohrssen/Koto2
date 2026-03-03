@@ -1,11 +1,28 @@
 ---
 name: item-forge
-description: Generate food-themed game items in batches of 10 with JPDB frequency data. Triggers on "item forge", "new items", "forge items", "food items".
+description: Generate game items (consumables, equipment, crafting resources) with JPDB frequency data. Triggers on "item forge", "new items", "forge items".
 ---
 
 # Item Forge
 
-Generate 10 food-themed consumable items for NEO TOKYO: System Liberation. Each item is a Japanese food word (often compound) with JPDB frequency data driving its rarity and combat effect.
+Generate game items for Koto. Each item is a Japanese word (often compound) with JPDB frequency data driving its rarity and combat effect. Supports three item types: consumables (food-themed), equipment (persistent gear), and crafting resources.
+
+## Input Modes
+
+- `/item-forge` — default: 10 consumable food items
+- `/item-forge --type equipment` — generate equipment items
+- `/item-forge --type crafting` — generate crafting resources
+- `/item-forge --stage 3` — target specific stage
+- `/item-forge --type equipment --stage 5 --count 5` — full control
+
+## Discovery Mode (all types)
+
+1. **Check stage gaps.** Run `node scripts/forge-discovery.mjs --gaps item` to see which stages need items most.
+2. **Discover candidates by type:**
+   - Consumables: `node scripts/forge-discovery.mjs --type item-consumable --stage N --limit 20`
+   - Equipment: `node scripts/forge-discovery.mjs --type item-equipment --stage N --limit 20`
+   - Crafting: `node scripts/forge-discovery.mjs --type item-crafting --stage N --limit 20`
+3. Cross-ref existing items in `data/items.json` and `data/new-items-staging.json`.
 
 ## Workflow
 
@@ -13,21 +30,22 @@ You handle the entire pipeline autonomously. The user only sees the final polish
 
 ### Phase 1: Brainstorm Candidates
 
-Generate ~20-30 food item candidates. Each candidate needs:
+Generate ~20-30 item candidates. Each candidate needs:
 - `id`: kebab-case English name (e.g., `salmon-sushi`)
 - `compound`: the full Japanese word (e.g., `鮭寿司`)
 - `components`: array of component Japanese words (e.g., `["鮭", "寿司"]`)
 - `meaning`: English meaning (e.g., `salmon sushi`)
 - `reading`: expected reading (e.g., `さけずし`)
+- `itemType`: `"consumable"`, `"equipment"`, or `"crafting"`
 
-**Diversity targets:**
+**Diversity targets (consumables):**
 - Mix Japanese-origin foods (寿司, おにぎり, 味噌汁) and loanwords (チーズバーガー, ピザ)
 - Cover all food types: rice, noodles, sushi, bread, drinks, desserts, snacks, soups
 - Spread across difficulty tiers (don't make them all common or all legendary)
 - Smart compound combos: "salmon sushi", "melon bread", "curry rice", "green tea"
 - Single-word foods are fine too: ラーメン, うどん, おにぎり
 
-**Check for duplicates:** Read `data/new-items-staging.json` (if it exists). Skip any food whose `id` or `word` matches an existing entry.
+**Check for duplicates:** Read `data/new-items-staging.json` (if it exists). Skip any item whose `id` or `word` matches an existing entry.
 
 ### Phase 2: JPDB Lookup
 
@@ -72,6 +90,11 @@ Use the tier rank (rarest component) to determine rarity and assign effects:
 | 12,001-20,000 | epic | `revivePercent: 0.50`, compound effects, or `tempBoost` (schema only) |
 | 20,001-30,000 | legendary | `revivePercent: 1.0`, `tempBoost` (schema only), or multi-effect |
 
+| Type | Effect Options |
+|------|---------------|
+| xpCharm | `{ xpMultiplier: 0.25 }` — +25% XP multiplier (stacks) |
+| xpBalance | `{ xpBalance: true }` — redistribute XP toward lower-level creatures |
+
 Pick effects that feel thematic -- a hearty meal heals more, a caffeinated drink boosts attack, etc.
 
 **tempBoost schema** (not yet implemented in game code):
@@ -103,6 +126,7 @@ For each approved item, build the full item object:
   "word": "鮭寿司",
   "reading": "さけずし",
   "meaning": "salmon sushi",
+  "itemType": "consumable",
   "components": [
     { "word": "鮭", "reading": "さけ", "meanings": ["salmon"], "rank": 8521 },
     { "word": "寿司", "reading": "すし", "meanings": ["sushi"], "rank": 5890 }
@@ -110,6 +134,7 @@ For each approved item, build the full item object:
   "compoundRank": null,
   "rank": 8521,
   "rarity": "rare",
+  "stage": 4,
   "type": "heal",
   "effect": { "healMostDamaged": true },
   "description": "Heal the most damaged creature to full HP",
@@ -120,6 +145,53 @@ For each approved item, build the full item object:
 Read `data/new-items-staging.json` (or initialize `[]` if missing). Append approved items. Write back.
 
 Confirm: **"Saved N items to staging! X total items now in data/new-items-staging.json."**
+
+## Equipment Items
+
+Equipment is persistent (stays in creature collection), one slot per creature.
+
+### Equipment Fields
+
+| Field | Description |
+|-------|-------------|
+| `itemType` | `"equipment"` |
+| `slot` | `"weapon"` \| `"armor"` \| `"accessory"` |
+| `statBonus` | Object: `{ attackPercent, hpPercent, mpPercent, elementEdge }` (one or more) |
+| `creatureTypeRestriction` | Optional archetype or element restriction |
+
+### Equipment Effect Guidelines
+
+| Rarity | Stat Bonus Range |
+|--------|-----------------|
+| common | +3-5% one stat |
+| uncommon | +5-8% one stat or +3% two stats |
+| rare | +8-12% one stat or +5% two stats |
+| epic | +12-15% one stat or +8% two stats, may include elementEdge |
+| legendary | +15-20% or multi-stat + elementEdge |
+
+### Equipment Word Sources
+
+- Weapons: tool/weapon nouns in `objects.json` (剣 sword, 弓 bow, 杖 staff, 槍 spear)
+- Armor: defensive nouns (盾 shield, 鎧 armor, 兜 helmet)
+- Accessories: ornamental nouns (指輪 ring, 首飾り necklace, 腕輪 bracelet)
+- Compound preferred: 鉄の剣 (iron sword) teaches both 鉄 and 剣
+
+## Crafting Resources
+
+Crafting resources are run-scoped (gathered during runs, not persistent). They combine to create equipment or consumables.
+
+### Crafting Fields
+
+| Field | Description |
+|-------|-------------|
+| `itemType` | `"crafting"` |
+| `yieldsItemId` | ID of the item this crafts into |
+| `quantity` | How many of this resource needed per craft |
+
+### Crafting Word Sources
+
+- Raw materials from `nature.json` and `objects.json`: 鉄 (iron), 木 (wood), 石 (stone), 糸 (thread)
+- Compound word teaching: combining 鉄 + 剣 → 鉄の剣 teaches a compound
 
 ## Translation Accuracy Rules
 
