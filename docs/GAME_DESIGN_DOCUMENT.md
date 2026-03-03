@@ -508,7 +508,27 @@ A creature at the 病院 (hospital) speeds healing. One at the 市場 (market) u
 
 ### Befriending System ✅
 
-Wild creatures are befriended through a 3-round dialogue encounter. The player converses with the confused creature, choosing i+1-validated Japanese dialogue options. Successful calming = creature joins the team. This frames acquisition as communication and empathy, not capture.
+Wild creatures are befriended through a multi-step process that combines combat weakening, an RNG acceptance gate, and a 3-round dialogue encounter.
+
+**Step 1: Weaken the creature.** The befriend option only appears when exactly one enemy remains alive and is at **≤50% HP**. This forces the player to engage in combat first — befriending is earned, not free.
+
+**Step 2: RNG acceptance gate.** When the player initiates a befriend talk, the system rolls against a rarity-based acceptance chance before dialogue begins:
+
+| Rarity | Base Chance |
+|---|---|
+| Common | 80% |
+| Uncommon | 65% |
+| Rare | 50% |
+| Epic | 35% |
+| Legendary | 20% |
+
+An **HP bonus** rewards further weakening: +15% if the creature is at ≤10% HP, +10% if ≤25% HP. The total chance is capped at 95% — there's always risk.
+
+**If the roll fails:** The creature refuses and immediately attacks, dealing damage to the player's party. This is a real combat penalty, not just a "try again" — the player loses a turn and takes hits. If all allies are knocked out, the run ends. Otherwise, combat resumes from move selection.
+
+**Step 3: Dialogue encounter.** If the roll succeeds, a 3-round dialogue encounter begins. The player converses with the confused creature, choosing i+1-validated Japanese dialogue options. Successful calming = creature joins the team.
+
+This multi-gate design means rarer creatures are harder to befriend both because of lower RNG odds and the risk of taking damage on rejection. It frames acquisition as communication and empathy — but with real stakes.
 
 ---
 
@@ -540,7 +560,7 @@ Each turn follows a three-phase flow that maximizes vocabulary exposure:
 
 1. **Move Selection** — For each alive creature, the player picks a move from a 2×2 grid. Each move displays its Japanese name (with furigana), action icon, power, and MP cost. Moves cost MP — if a creature is low on MP, it must use cheaper moves or defend to regenerate.
 2. **Target Selection** — The player picks an enemy (or ally, for heals/buffs) to target.
-3. **Attack Outcome** — A split card displays the creature's base word + the move used + the target. Enemy attacks also produce outcome cards. Every action in the fight reinforces vocabulary.
+3. **Attack Outcome** — A split card displays the creature's base word + the move used + the target. Simultaneously, the creature's base word and move name are **spoken aloud** via TTS — the player sees and hears both words. Enemy attacks also produce outcome cards. Every action in the fight reinforces vocabulary through both visual and auditory channels.
 
 After all player attacks resolve, enemies act. Then MP regenerates (12% of max) for all creatures. Repeat until one side is knocked out.
 
@@ -713,6 +733,8 @@ Items teach food nouns, medicine words, katakana loanwords, and compound word fo
 | Battle tools | ~20 | Damage/debuff enemies | Action noun + object |
 | Field tools | ~15 | Navigation, discovery | Object + purpose |
 | Charms/talismans | ~15 | Buffs, elemental resistance | Element + charm |
+
+**Item audio:** When the player selects an item in the post-combat shop, its Japanese word is **spoken aloud** via TTS. All item words in the current shop are prefetched when the shop opens so playback is instant. This adds auditory reinforcement to item selection — the player hears the word they're buying.
 
 ### Equipment (~100 words) 📋
 
@@ -897,6 +919,31 @@ Persistent across runs. The player's creature roster grows over time — creatur
 
 ## 17. Content Roadmap
 
+### Stage Vocabulary Gates ✅
+
+Every stage has hard frequency constraints that determine which vocabulary — and therefore which creatures, moves, items, and areas — can exist at that tier. Two systems feed into stage assignment:
+
+**WaniKani words** use a direct formula: `stage = ceil(wkLevel / 6)`. WK levels 1–6 map to Stage 1, 7–12 to Stage 2, etc.
+
+**Non-WK words** use JPDB frequency rank. Each stage defines a maximum rank cap — a word belongs to the lowest stage whose cap accommodates its rank:
+
+| Stage | WK Levels | JPDB Rank Cap | ~Cumulative Words |
+|---|---|---|---|
+| 1 | 1–6 | ≤ 500 | ~400 |
+| 2 | 7–12 | ≤ 1,200 | ~800 |
+| 3 | 13–18 | ≤ 2,000 | ~1,500 |
+| 4 | 19–24 | ≤ 3,000 | ~2,200 |
+| 5 | 25–30 | ≤ 4,500 | ~3,000 |
+| 6 | 31–36 | ≤ 6,500 | ~3,800 |
+| 7 | 37–42 | ≤ 9,000 | ~4,400 |
+| 8 | 43–48 | ≤ 12,000 | ~5,100 |
+| 9 | 49–54 | ≤ 16,000 | ~5,700 |
+| 10 | 55–60 | No cap | ~6,300 |
+
+**Outlier budget:** When assigning content (a creature, move, item, or area) to a stage, up to **20%** of its vocabulary words may come from a higher stage. This allows thematic coherence without forcing every word in a creature's definition to fall within a single narrow band. The assignment algorithm (`suggestStage`) finds the lowest stage where the outlier percentage stays within budget.
+
+These gates are the backbone of content creation — they determine which words are available for creature names, move names, and area names at each tier of the game.
+
 ### 10-Stage Cumulative Plan
 
 Each stage defines a **content tier** (what exists in the game world) and a **development milestone** (what to build). Stages are cumulative — each builds on the previous.
@@ -1011,6 +1058,29 @@ Art generation models are always in flux as new models are tested. Current pipel
 - **Text-to-Speech (VOICEVOX):** 47+ Japanese voices for narration and NPC dialogue. Speaker assignment based on personality type (aggressive, calm, mysterious, etc.). Individual word pronunciation for vocabulary lookup.
 - **Background Music:** Area-specific BGM tracks. Ward-specific themes.
 - **Sound Effects:** Combat hit/miss sounds, UI interaction sounds, level-up fanfares.
+
+### Word Audio as Learning Tool ✅
+
+TTS isn't just for narration — it's a vocabulary reinforcement channel woven into core gameplay loops:
+
+- **Attack outcome cards** play the creature's base word + move name aloud in sequence (300ms gap). The player sees the kanji and hears the reading simultaneously — visual + auditory encoding for the same word.
+- **Item selection** plays the item's word when the player taps it in the post-combat shop. All shop item words are prefetched when the shop opens for instant playback.
+- **Vocabulary lookup** plays any tapped word on demand (existing).
+
+A dedicated **word speaker** (speaker 11, 玄野武宏 ノーマル) is used for dictionary-style word pronunciation, distinct from the narrator voice (speaker 13). This voice is clear and neutral — optimized for comprehension, not character.
+
+Audio playback is fire-and-forget — it never blocks gameplay flow. Words are prefetched before they're needed so playback is instant.
+
+### Player Voice Gender ✅
+
+The player can choose a **voice gender** (boy or girl) in settings. This controls the TTS voice used when the player's dialogue options are spoken during NPC and creature conversations:
+
+| Setting | Speaker | Voice |
+|---|---|---|
+| Boy (default) | Speaker 11 | 玄野武宏 ノーマル |
+| Girl | Speaker 2 | 四国めたん ノーマル |
+
+This is the only player customization that affects audio. NPC and creature voices are determined by their character cards, not the player's setting.
 
 ### What Needs Design
 
