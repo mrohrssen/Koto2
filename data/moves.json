@@ -15,7 +15,8 @@
     "statusChance": 100,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Rushes forward at full speed, gaining an extra action."
+    "description": "Rushes forward at full speed, gaining an extra action.",
+    "stage": 1
   },
   {
     "id": "kakureru",
@@ -33,7 +34,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Conceals oneself, reducing incoming damage."
+    "description": "Conceals oneself, reducing incoming damage.",
+    "stage": 5
   },
   {
     "id": "taosu",
@@ -51,7 +53,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Knocks the target down with a forceful blow."
+    "description": "Knocks the target down with a forceful blow.",
+    "stage": 4
   },
   {
     "id": "hanatsu",
@@ -69,7 +72,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Fires a burst of energy at the target."
+    "description": "Fires a burst of energy at the target.",
+    "stage": 3
   },
   {
     "id": "okoru",
@@ -87,7 +91,8 @@
     "statusChance": 75,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Flies into a rage, startling the target into confusion."
+    "description": "Flies into a rage, startling the target into confusion.",
+    "stage": 5
   },
   {
     "id": "kakomu",
@@ -105,7 +110,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 2,
-    "description": "Encircles all foes, striking from every direction."
+    "description": "Encircles all foes, striking from every direction.",
+    "stage": 3
   },
   {
     "id": "kowasu",
@@ -123,7 +129,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 2,
-    "description": "Smashes the target with destructive force."
+    "description": "Smashes the target with destructive force.",
+    "stage": 5
   },
   {
     "id": "shizumu",
@@ -141,7 +148,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 2,
-    "description": "Sinks beneath the surface, avoiding incoming attacks."
+    "description": "Sinks beneath the surface, avoiding incoming attacks.",
+    "stage": 8
   },
   {
     "id": "fusegu",
@@ -159,7 +167,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 2,
-    "description": "Shields an ally, defending against incoming attacks."
+    "description": "Shields an ally, defending against incoming attacks.",
+    "stage": 4
   },
   {
     "id": "mamoru",
@@ -177,7 +186,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Guards an ally, shielding them from harm."
+    "description": "Guards an ally, shielding them from harm.",
+    "stage": 3
   },
   {
     "id": "hiku",
@@ -195,7 +205,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Yanks the target off balance with a sharp pull."
+    "description": "Yanks the target off balance with a sharp pull.",
+    "stage": 1
   },
   {
     "id": "nagasu",
@@ -213,7 +224,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Sweeps the target away with a rush of water."
+    "description": "Sweeps the target away with a rush of water.",
+    "stage": 2
   },
   {
     "id": "naosu",
@@ -231,7 +243,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Mends an ally's wounds, restoring health."
+    "description": "Mends an ally's wounds, restoring health.",
+    "stage": 3
   },
   {
     "id": "kurushimu",
@@ -249,7 +262,8 @@
     "statusChance": 80,
     "statusDuration": 3,
     "tier": 1,
-    "description": "The target suffers, taking damage over time."
+    "description": "The target suffers, taking damage over time.",
+    "stage": 2
   },
   {
     "id": "osaeru",
@@ -267,7 +281,8 @@
     "statusChance": 75,
     "statusDuration": 1,
     "tier": 2,
-    "description": "Pins the target down, preventing them from acting."
+    "description": "Pins the target down, preventing them from acting.",
+    "stage": 5
   },
   {
     "id": "fumu",
@@ -285,7 +300,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Tramples the target underfoot."
+    "description": "Tramples the target underfoot.",
+    "stage": 6
   },
   {
     "id": "kizutsukeru",
@@ -303,7 +319,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 2,
-    "description": "Inflicts a deep wound on the target."
+    "description": "Inflicts a deep wound on the target.",
+    "stage": 6
   },
   {
     "id": "sasu",
@@ -321,7 +338,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 2,
-    "description": "Stabs the target with a sharp, precise thrust."
+    "description": "Stabs the target with a sharp, precise thrust.",
+    "stage": 4
   },
   {
     "id": "yaburu",
@@ -339,7 +357,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 2,
-    "description": "Tears through the target with raw force."
+    "description": "Tears through the target with raw force.",
+    "stage": 6
   },
   {
     "id": "nusumu",
@@ -357,7 +376,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 2,
-    "description": "Steals life force from the target, restoring own health."
+    "description": "Steals life force from the target, restoring own health.",
+    "stage": 5
   },
   {
     "id": "ganbaru",
@@ -375,7 +395,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Digs deep and does their best, boosting attack power."
+    "description": "Digs deep and does their best, boosting attack power.",
+    "stage": 5
   },
   {
     "id": "sasaeru",
@@ -393,7 +414,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Supports an ally, restoring their strength."
+    "description": "Supports an ally, restoring their strength.",
+    "stage": 2
   },
   {
     "id": "yureru",
@@ -411,7 +433,8 @@
     "statusChance": 75,
     "statusDuration": 2,
     "tier": 1,
-    "description": "The ground shakes, causing the target to sway and waver."
+    "description": "The ground shakes, causing the target to sway and waver.",
+    "stage": 8
   },
   {
     "id": "torimodosu",
@@ -429,7 +452,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 2,
-    "description": "Recovers lost strength, regaining health."
+    "description": "Recovers lost strength, regaining health.",
+    "stage": 7
   },
   {
     "id": "nobasu",
@@ -447,7 +471,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 2,
-    "description": "Extends an ally's power, strengthening their attack."
+    "description": "Extends an ally's power, strengthening their attack.",
+    "stage": 7
   },
   {
     "id": "tobasu",
@@ -465,7 +490,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 2,
-    "description": "Launches a blazing projectile at the target."
+    "description": "Launches a blazing projectile at the target.",
+    "stage": 4
   },
   {
     "id": "arau",
@@ -483,7 +509,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 2,
-    "description": "A wave washes over all foes, cleansing the field."
+    "description": "A wave washes over all foes, cleansing the field.",
+    "stage": 3
   },
   {
     "id": "oou",
@@ -501,7 +528,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 2,
-    "description": "Covers the entire party, reducing incoming damage."
+    "description": "Covers the entire party, reducing incoming damage.",
+    "stage": 9
   },
   {
     "id": "moeru",
@@ -519,7 +547,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 2,
-    "description": "Gets fired up, burning with fighting spirit."
+    "description": "Gets fired up, burning with fighting spirit.",
+    "stage": 5
   },
   {
     "id": "tsukamaeru",
@@ -537,7 +566,8 @@
     "statusChance": 75,
     "statusDuration": 1,
     "tier": 2,
-    "description": "Catches the target, restraining them from acting."
+    "description": "Catches the target, restraining them from acting.",
+    "stage": 3
   },
   {
     "id": "umeru",
@@ -555,7 +585,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 2,
-    "description": "Buries the target under a mound of earth."
+    "description": "Buries the target under a mound of earth.",
+    "stage": 4
   },
   {
     "id": "inoru",
@@ -573,7 +604,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 2,
-    "description": "Offers a prayer, raising all allies' attack power."
+    "description": "Offers a prayer, raising all allies' attack power.",
+    "stage": 4
   },
   {
     "id": "kuzusu",
@@ -591,7 +623,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 2,
-    "description": "Demolishes the target with crushing force."
+    "description": "Demolishes the target with crushing force.",
+    "stage": 7
   },
   {
     "id": "butsukeru",
@@ -609,7 +642,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 2,
-    "description": "Crashes into the target with full force."
+    "description": "Crashes into the target with full force.",
+    "stage": 4
   },
   {
     "id": "sosogu",
@@ -627,7 +661,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 2,
-    "description": "Pours a torrent of water down on all foes."
+    "description": "Pours a torrent of water down on all foes.",
+    "stage": 2
   },
   {
     "id": "tsuku",
@@ -645,7 +680,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 2,
-    "description": "Thrusts at the target with a sharp jab."
+    "description": "Thrusts at the target with a sharp jab.",
+    "stage": 4
   },
   {
     "id": "haeru",
@@ -663,7 +699,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 2,
-    "description": "New growth sprouts around the party, restoring vitality."
+    "description": "New growth sprouts around the party, restoring vitality.",
+    "stage": 1
   },
   {
     "id": "tokeru",
@@ -681,7 +718,8 @@
     "statusChance": 80,
     "statusDuration": 3,
     "tier": 2,
-    "description": "The target melts away, taking damage over time."
+    "description": "The target melts away, taking damage over time.",
+    "stage": 9
   },
   {
     "id": "afureru",
@@ -699,7 +737,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 3,
-    "description": "A flood overflows onto the battlefield, engulfing all foes."
+    "description": "A flood overflows onto the battlefield, engulfing all foes.",
+    "stage": 5
   },
   {
     "id": "utsu",
@@ -717,7 +756,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 3,
-    "description": "Shoots the target with a powerful blast."
+    "description": "Shoots the target with a powerful blast.",
+    "stage": 5
   },
   {
     "id": "semeru",
@@ -735,7 +775,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 3,
-    "description": "Launches a fierce assault on all enemies."
+    "description": "Launches a fierce assault on all enemies.",
+    "stage": 5
   },
   {
     "id": "idomu",
@@ -753,7 +794,8 @@
     "statusChance": 100,
     "statusDuration": 3,
     "tier": 3,
-    "description": "Issues a challenge, steeling resolve and boosting attack."
+    "description": "Issues a challenge, steeling resolve and boosting attack.",
+    "stage": 7
   },
   {
     "id": "yobu",
@@ -771,7 +813,8 @@
     "statusChance": 100,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Calls out to the whole team, spurring them to act faster."
+    "description": "Calls out to the whole team, spurring them to act faster.",
+    "stage": 4
   },
   {
     "id": "oshieru",
@@ -789,7 +832,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Teaches an ally a technique, boosting their attack power."
+    "description": "Teaches an ally a technique, boosting their attack power.",
+    "stage": 2
   },
   {
     "id": "nomu",
@@ -807,7 +851,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Takes a deep drink, restoring health."
+    "description": "Takes a deep drink, restoring health.",
+    "stage": 2
   },
   {
     "id": "chikazuku",
@@ -825,7 +870,8 @@
     "statusChance": 100,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Closes the distance, gaining an advantage for the next strike."
+    "description": "Closes the distance, gaining an advantage for the next strike.",
+    "stage": 2
   },
   {
     "id": "isogu",
@@ -843,7 +889,8 @@
     "statusChance": 100,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Hastens an ally, letting them act again quickly."
+    "description": "Hastens an ally, letting them act again quickly.",
+    "stage": 3
   },
   {
     "id": "naku",
@@ -861,7 +908,8 @@
     "statusChance": 60,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Lets out a piercing cry, rattling all enemies."
+    "description": "Lets out a piercing cry, rattling all enemies.",
+    "stage": 3
   },
   {
     "id": "watasu",
@@ -879,7 +927,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Passes restorative energy to an ally, healing their wounds."
+    "description": "Passes restorative energy to an ally, healing their wounds.",
+    "stage": 5
   },
   {
     "id": "suteru",
@@ -897,7 +946,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Hurls debris at the target, discarding it with force."
+    "description": "Hurls debris at the target, discarding it with force.",
+    "stage": 6
   },
   {
     "id": "nigiru",
@@ -915,7 +965,8 @@
     "statusChance": 40,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Grasps the target tightly, potentially stunning them."
+    "description": "Grasps the target tightly, potentially stunning them.",
+    "stage": 7
   },
   {
     "id": "utagau",
@@ -933,7 +984,8 @@
     "statusChance": 75,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Sows doubt in the target, confusing them."
+    "description": "Sows doubt in the target, confusing them.",
+    "stage": 3
   },
   {
     "id": "tetsudau",
@@ -951,7 +1003,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Helps an ally, restoring a small amount of health."
+    "description": "Helps an ally, restoring a small amount of health.",
+    "stage": 3
   },
   {
     "id": "koeru",
@@ -969,7 +1022,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Goes beyond normal limits, surging with power."
+    "description": "Goes beyond normal limits, surging with power.",
+    "stage": 2
   },
   {
     "id": "musubu",
@@ -987,7 +1041,8 @@
     "statusChance": 75,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Binds the target in place, preventing them from acting."
+    "description": "Binds the target in place, preventing them from acting.",
+    "stage": 2
   },
   {
     "id": "mitsumeru",
@@ -1005,7 +1060,8 @@
     "statusChance": 70,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Stares intently at the target, breaking their concentration."
+    "description": "Stares intently at the target, breaking their concentration.",
+    "stage": 3
   },
   {
     "id": "tachiagaru",
@@ -1023,7 +1079,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Stands up with renewed determination, boosting attack."
+    "description": "Stands up with renewed determination, boosting attack.",
+    "stage": 3
   },
   {
     "id": "furueru",
@@ -1041,7 +1098,8 @@
     "statusChance": 40,
     "statusDuration": 1,
     "tier": 1,
-    "description": "The ground trembles, shaking all enemies and stopping them in their tracks."
+    "description": "The ground trembles, shaking all enemies and stopping them in their tracks.",
+    "stage": 4
   },
   {
     "id": "sawaru",
@@ -1059,7 +1117,8 @@
     "statusChance": 80,
     "statusDuration": 3,
     "tier": 1,
-    "description": "Touches the target with a harmful grasp, poisoning them."
+    "description": "Touches the target with a harmful grasp, poisoning them.",
+    "stage": 4
   },
   {
     "id": "tobidasu",
@@ -1077,7 +1136,8 @@
     "statusChance": 100,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Jumps out suddenly, seizing the initiative."
+    "description": "Jumps out suddenly, seizing the initiative.",
+    "stage": 3
   },
   {
     "id": "makikomu",
@@ -1095,7 +1155,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "A swirling vortex swallows up all enemies."
+    "description": "A swirling vortex swallows up all enemies.",
+    "stage": 3
   },
   {
     "id": "mawasu",
@@ -1113,7 +1174,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Spins with force, striking the target."
+    "description": "Spins with force, striking the target.",
+    "stage": 2
   },
   {
     "id": "hirogeru",
@@ -1131,7 +1193,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Enlarges an ally, fortifying their defenses."
+    "description": "Enlarges an ally, fortifying their defenses.",
+    "stage": 1
   },
   {
     "id": "kamu",
@@ -1149,7 +1212,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Bites the target with sharp fangs."
+    "description": "Bites the target with sharp fangs.",
+    "stage": 7
   },
   {
     "id": "keru",
@@ -1167,7 +1231,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Kicks the target with a powerful leg."
+    "description": "Kicks the target with a powerful leg.",
+    "stage": 9
   },
   {
     "id": "tsukamu",
@@ -1185,7 +1250,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Seizes the target, dealing damage with a powerful grip."
+    "description": "Seizes the target, dealing damage with a powerful grip.",
+    "stage": 3
   },
   {
     "id": "tsubusu",
@@ -1203,7 +1269,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Crushes the target with overwhelming force."
+    "description": "Crushes the target with overwhelming force.",
+    "stage": 6
   },
   {
     "id": "yaku",
@@ -1221,7 +1288,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Roasts the target with intense heat."
+    "description": "Roasts the target with intense heat.",
+    "stage": 3
   },
   {
     "id": "nameru",
@@ -1239,7 +1307,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Licks the target with a slobbery tongue."
+    "description": "Licks the target with a slobbery tongue.",
+    "stage": 3
   },
   {
     "id": "nomikomu",
@@ -1257,7 +1326,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Swallows the target whole momentarily, dealing heavy damage."
+    "description": "Swallows the target whole momentarily, dealing heavy damage.",
+    "stage": 5
   },
   {
     "id": "maku",
@@ -1275,7 +1345,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Coils around the target, constricting tightly."
+    "description": "Coils around the target, constricting tightly.",
+    "stage": 5
   },
   {
     "id": "kurau",
@@ -1293,7 +1364,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Devours the target with a fierce bite."
+    "description": "Devours the target with a fierce bite.",
+    "stage": 5
   },
   {
     "id": "kudaku",
@@ -1311,7 +1383,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Smashes the target to pieces."
+    "description": "Smashes the target to pieces.",
+    "stage": 8
   },
   {
     "id": "kaku_scratch",
@@ -1329,7 +1402,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Scratches the target with sharp claws."
+    "description": "Scratches the target with sharp claws.",
+    "stage": 6
   },
   {
     "id": "utsu_beat",
@@ -1347,7 +1421,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Beats the target with a powerful blow."
+    "description": "Beats the target with a powerful blow.",
+    "stage": 1
   },
   {
     "id": "tsuibamu",
@@ -1365,7 +1440,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Pecks at the target with a sharp beak."
+    "description": "Pecks at the target with a sharp beak.",
+    "stage": 10
   },
   {
     "id": "tsuranuku",
@@ -1383,7 +1459,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Penetrates clean through the target."
+    "description": "Penetrates clean through the target.",
+    "stage": 9
   },
   {
     "id": "naguru",
@@ -1401,7 +1478,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Punches the target squarely."
+    "description": "Punches the target squarely.",
+    "stage": 8
   },
   {
     "id": "nageru",
@@ -1419,7 +1497,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Throws something at the target with force."
+    "description": "Throws something at the target with force.",
+    "stage": 2
   },
   {
     "id": "tataku",
@@ -1437,7 +1516,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Knocks the target with a solid strike."
+    "description": "Knocks the target with a solid strike.",
+    "stage": 3
   },
   {
     "id": "kiru",
@@ -1455,7 +1535,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Cuts the target with a swift blade."
+    "description": "Cuts the target with a swift blade.",
+    "stage": 1
   },
   {
     "id": "kiru_slice",
@@ -1473,7 +1554,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Slices the target with a lethal blade."
+    "description": "Slices the target with a lethal blade.",
+    "stage": 8
   },
   {
     "id": "furu",
@@ -1491,7 +1573,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Swings at the target with full force."
+    "description": "Swings at the target with full force.",
+    "stage": 5
   },
   {
     "id": "ateru",
@@ -1509,7 +1592,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Hits the target with pinpoint accuracy."
+    "description": "Hits the target with pinpoint accuracy.",
+    "stage": 2
   },
   {
     "id": "kogasu",
@@ -1527,7 +1611,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Scorches the target with searing heat."
+    "description": "Scorches the target with searing heat.",
+    "stage": 8
   },
   {
     "id": "shimeru",
@@ -1545,7 +1630,8 @@
     "statusChance": 40,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Tightens around the target, possibly immobilizing them."
+    "description": "Tightens around the target, possibly immobilizing them.",
+    "stage": 5
   },
   {
     "id": "kuitsuku",
@@ -1563,7 +1649,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Snaps at the target with a quick bite."
+    "description": "Snaps at the target with a quick bite.",
+    "stage": 7
   },
   {
     "id": "fuku",
@@ -1581,7 +1668,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "A fierce wind blows across all enemies."
+    "description": "A fierce wind blows across all enemies.",
+    "stage": 7
   },
   {
     "id": "fukitobasu",
@@ -1599,7 +1687,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Blows all enemies away with a powerful gust."
+    "description": "Blows all enemies away with a powerful gust.",
+    "stage": 7
   },
   {
     "id": "bakuhatsu",
@@ -1617,7 +1706,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "A massive explosion engulfs all enemies."
+    "description": "A massive explosion engulfs all enemies.",
+    "stage": 7
   },
   {
     "id": "fubuki",
@@ -1635,7 +1725,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "A raging blizzard batters all enemies."
+    "description": "A raging blizzard batters all enemies.",
+    "stage": 8
   },
   {
     "id": "horobosu",
@@ -1653,7 +1744,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Brings ruin upon all enemies."
+    "description": "Brings ruin upon all enemies.",
+    "stage": 8
   },
   {
     "id": "abareru",
@@ -1671,7 +1763,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Goes on a violent rampage, striking all enemies."
+    "description": "Goes on a violent rampage, striking all enemies.",
+    "stage": 4
   },
   {
     "id": "muragaru",
@@ -1689,7 +1782,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "A swarm descends on all enemies."
+    "description": "A swarm descends on all enemies.",
+    "stage": 8
   },
   {
     "id": "hikisaku",
@@ -1707,7 +1801,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Rips the target apart with savage force."
+    "description": "Rips the target apart with savage force.",
+    "stage": 8
   },
   {
     "id": "ochiru",
@@ -1725,7 +1820,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Something falls from above, crashing into the target."
+    "description": "Something falls from above, crashing into the target.",
+    "stage": 2
   },
   {
     "id": "madowasu",
@@ -1743,7 +1839,8 @@
     "statusChance": 80,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Bewilders the target, clouding their judgement."
+    "description": "Bewilders the target, clouding their judgement.",
+    "stage": 7
   },
   {
     "id": "norou",
@@ -1761,7 +1858,8 @@
     "statusChance": 90,
     "statusDuration": 3,
     "tier": 1,
-    "description": "Places a curse on the target, slowly draining life."
+    "description": "Places a curse on the target, slowly draining life.",
+    "stage": 8
   },
   {
     "id": "damasu",
@@ -1779,7 +1877,8 @@
     "statusChance": 80,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Tricks the target, confusing them."
+    "description": "Tricks the target, confusing them.",
+    "stage": 5
   },
   {
     "id": "niramu",
@@ -1797,7 +1896,8 @@
     "statusChance": 75,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Glares at the target, breaking their composure."
+    "description": "Glares at the target, breaking their composure.",
+    "stage": 5
   },
   {
     "id": "toraeru",
@@ -1815,7 +1915,8 @@
     "statusChance": 70,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Captures the target, holding them in place."
+    "description": "Captures the target, holding them in place.",
+    "stage": 5
   },
   {
     "id": "shibaru",
@@ -1833,7 +1934,8 @@
     "statusChance": 75,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Ties the target up, preventing them from moving."
+    "description": "Ties the target up, preventing them from moving.",
+    "stage": 10
   },
   {
     "id": "karamu",
@@ -1851,7 +1953,8 @@
     "statusChance": 65,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Entangles the target, restricting their movement."
+    "description": "Entangles the target, restricting their movement.",
+    "stage": 4
   },
   {
     "id": "sakebu",
@@ -1869,7 +1972,8 @@
     "statusChance": 50,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Shouts at the top of its lungs, startling all enemies."
+    "description": "Shouts at the top of its lungs, startling all enemies.",
+    "stage": 8
   },
   {
     "id": "houkou",
@@ -1887,7 +1991,8 @@
     "statusChance": 60,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Lets out a terrifying roar, shaking all enemies."
+    "description": "Lets out a terrifying roar, shaking all enemies.",
+    "stage": 7
   },
   {
     "id": "hibiku",
@@ -1905,7 +2010,8 @@
     "statusChance": 50,
     "statusDuration": 1,
     "tier": 1,
-    "description": "A sound resounds through the battlefield, rattling all enemies."
+    "description": "A sound resounds through the battlefield, rattling all enemies.",
+    "stage": 5
   },
   {
     "id": "kakeru_gallop",
@@ -1923,7 +2029,8 @@
     "statusChance": 100,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Gallops forward at full speed."
+    "description": "Gallops forward at full speed.",
+    "stage": 7
   },
   {
     "id": "mau",
@@ -1941,7 +2048,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Performs a graceful dance, building power."
+    "description": "Performs a graceful dance, building power.",
+    "stage": 6
   },
   {
     "id": "hikaru",
@@ -1959,7 +2067,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Shines brightly, gathering energy."
+    "description": "Shines brightly, gathering energy.",
+    "stage": 2
   },
   {
     "id": "bakeru",
@@ -1977,7 +2086,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Transforms, unlocking a more powerful form."
+    "description": "Transforms, unlocking a more powerful form.",
+    "stage": 2
   },
   {
     "id": "suberu",
@@ -1995,7 +2105,8 @@
     "statusChance": 100,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Slides swiftly, gaining speed."
+    "description": "Slides swiftly, gaining speed.",
+    "stage": 7
   },
   {
     "id": "tobu",
@@ -2013,7 +2124,8 @@
     "statusChance": 100,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Takes flight, soaring out of reach."
+    "description": "Takes flight, soaring out of reach.",
+    "stage": 4
   },
   {
     "id": "haneru",
@@ -2031,7 +2143,8 @@
     "statusChance": 100,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Leaps into the air, gaining speed."
+    "description": "Leaps into the air, gaining speed.",
+    "stage": 7
   },
   {
     "id": "hiraku",
@@ -2049,7 +2162,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Opens up, unleashing hidden potential."
+    "description": "Opens up, unleashing hidden potential.",
+    "stage": 2
   },
   {
     "id": "terasu",
@@ -2067,7 +2181,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Illuminates an ally, empowering them."
+    "description": "Illuminates an ally, empowering them.",
+    "stage": 6
   },
   {
     "id": "kagayaku",
@@ -2085,7 +2200,8 @@
     "statusChance": 100,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Sparkles with radiant light, inspiring all allies."
+    "description": "Sparkles with radiant light, inspiring all allies.",
+    "stage": 8
   },
   {
     "id": "ensou",
@@ -2103,7 +2219,8 @@
     "statusChance": 100,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Performs a stirring melody that inspires all allies."
+    "description": "Performs a stirring melody that inspires all allies.",
+    "stage": 7
   },
   {
     "id": "negau",
@@ -2121,7 +2238,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Makes a wish, restoring health to all allies."
+    "description": "Makes a wish, restoring health to all allies.",
+    "stage": 2
   },
   {
     "id": "saku",
@@ -2139,7 +2257,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Blooms with vitality, restoring health."
+    "description": "Blooms with vitality, restoring health.",
+    "stage": 8
   },
   {
     "id": "dakishimeru",
@@ -2157,7 +2276,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Embraces an ally warmly, restoring their health."
+    "description": "Embraces an ally warmly, restoring their health.",
+    "stage": 5
   },
   {
     "id": "mangetsu",
@@ -2175,7 +2295,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Moonlight bathes the team, restoring health to all."
+    "description": "Moonlight bathes the team, restoring health to all.",
+    "stage": 5
   },
   {
     "id": "katameru",
@@ -2193,7 +2314,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Hardens defenses, forming a protective shell."
+    "description": "Hardens defenses, forming a protective shell.",
+    "stage": 3
   },
   {
     "id": "moguru",
@@ -2211,7 +2333,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Dives underwater, avoiding incoming attacks."
+    "description": "Dives underwater, avoiding incoming attacks.",
+    "stage": 8
   },
   {
     "id": "tsutsumu",
@@ -2229,7 +2352,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Wraps an ally in a protective covering."
+    "description": "Wraps an ally in a protective covering.",
+    "stage": 7
   },
   {
     "id": "saegiru",
@@ -2247,7 +2371,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Blocks incoming attacks, shielding an ally."
+    "description": "Blocks incoming attacks, shielding an ally.",
+    "stage": 10
   },
   {
     "id": "tojiru",
@@ -2265,7 +2390,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Closes off, shielding from incoming attacks."
+    "description": "Closes off, shielding from incoming attacks.",
+    "stage": 4
   },
   {
     "id": "oyogu",
@@ -2283,7 +2409,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Swims evasively, dodging incoming attacks."
+    "description": "Swims evasively, dodging incoming attacks.",
+    "stage": 2
   },
   {
     "id": "hajikeru",
@@ -2301,7 +2428,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Bursts with energy, hitting all enemies."
+    "description": "Bursts with energy, hitting all enemies.",
+    "stage": 5
   },
   {
     "id": "tasukeru",
@@ -2319,7 +2447,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Helps an ally, restoring their health."
+    "description": "Helps an ally, restoring their health.",
+    "stage": 2
   },
   {
     "id": "naoru",
@@ -2337,7 +2466,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Recovers from injuries, healing naturally."
+    "description": "Recovers from injuries, healing naturally.",
+    "stage": 3
   },
   {
     "id": "yasumu",
@@ -2355,7 +2485,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Rests briefly, recovering health."
+    "description": "Rests briefly, recovering health.",
+    "stage": 1
   },
   {
     "id": "nemuru",
@@ -2373,7 +2504,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Falls into a deep sleep, recovering a large amount of health."
+    "description": "Falls into a deep sleep, recovering a large amount of health.",
+    "stage": 5
   },
   {
     "id": "atatameru",
@@ -2391,7 +2523,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Warms an ally with gentle heat, restoring health."
+    "description": "Warms an ally with gentle heat, restoring health.",
+    "stage": 3
   },
   {
     "id": "nuku",
@@ -2409,7 +2542,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Plucks energy from the target, restoring own health."
+    "description": "Plucks energy from the target, restoring own health.",
+    "stage": 5
   },
   {
     "id": "suu",
@@ -2427,7 +2561,8 @@
     "statusChance": 0,
     "statusDuration": 0,
     "tier": 1,
-    "description": "Inhales the target's energy, restoring own health."
+    "description": "Inhales the target's energy, restoring own health.",
+    "stage": 4
   },
   {
     "id": "mawaru",
@@ -2445,7 +2580,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Revolves rapidly, deflecting incoming attacks."
+    "description": "Revolves rapidly, deflecting incoming attacks.",
+    "stage": 1
   },
   {
     "id": "kamaeru",
@@ -2463,7 +2599,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Assumes a defensive stance, standing ready for anything."
+    "description": "Assumes a defensive stance, standing ready for anything.",
+    "stage": 5
   },
   {
     "id": "tamotsu",
@@ -2481,7 +2618,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Preserves a defensive stance, maintaining protection."
+    "description": "Preserves a defensive stance, maintaining protection.",
+    "stage": 2
   },
   {
     "id": "sakeru",
@@ -2499,7 +2637,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Nimbly dodges incoming attacks."
+    "description": "Nimbly dodges incoming attacks.",
+    "stage": 7
   },
   {
     "id": "taeru",
@@ -2517,7 +2656,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Endures incoming damage, standing firm."
+    "description": "Endures incoming damage, standing firm.",
+    "stage": 8
   },
   {
     "id": "kakusu",
@@ -2535,7 +2675,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Conceals an ally, hiding them from enemy attacks."
+    "description": "Conceals an ally, hiding them from enemy attacks.",
+    "stage": 5
   },
   {
     "id": "ukabu",
@@ -2553,7 +2694,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Floats upward, evading ground-level attacks."
+    "description": "Floats upward, evading ground-level attacks.",
+    "stage": 3
   },
   {
     "id": "nobiru",
@@ -2571,7 +2713,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Stretches out, gaining reach and power."
+    "description": "Stretches out, gaining reach and power.",
+    "stage": 6
   },
   {
     "id": "kasaneru",
@@ -2589,7 +2732,8 @@
     "statusChance": 100,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Stacks power, building strength over time."
+    "description": "Stacks power, building strength over time.",
+    "stage": 3
   },
   {
     "id": "naku_animal",
@@ -2607,7 +2751,8 @@
     "statusChance": 100,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Chirps an encouraging melody, inspiring all allies."
+    "description": "Chirps an encouraging melody, inspiring all allies.",
+    "stage": 2
   },
   {
     "id": "hanasu",
@@ -2625,7 +2770,8 @@
     "statusChance": 100,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Speaks words of encouragement, boosting an ally's power."
+    "description": "Speaks words of encouragement, boosting an ally's power.",
+    "stage": 2
   },
   {
     "id": "akirameru",
@@ -2643,7 +2789,8 @@
     "statusChance": 60,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Forces the target to abandon hope, freezing them in despair."
+    "description": "Forces the target to abandon hope, freezing them in despair.",
+    "stage": 4
   },
   {
     "id": "kagiru",
@@ -2661,7 +2808,8 @@
     "statusChance": 60,
     "statusDuration": 1,
     "tier": 1,
-    "description": "Restricts the target, limiting their movement."
+    "description": "Restricts the target, limiting their movement.",
+    "stage": 5
   },
   {
     "id": "kesu",
@@ -2679,7 +2827,8 @@
     "statusChance": 70,
     "statusDuration": 2,
     "tier": 1,
-    "description": "Extinguishes the target's focus, confusing them."
+    "description": "Extinguishes the target's focus, confusing them.",
+    "stage": 2
   },
   {
     "id": "kooru",
@@ -2697,6 +2846,7 @@
     "statusChance": 70,
     "statusDuration": 1,
     "tier": 1,
-    "description": "A freezing chill immobilizes the target."
+    "description": "A freezing chill immobilizes the target.",
+    "stage": 5
   }
 ]
