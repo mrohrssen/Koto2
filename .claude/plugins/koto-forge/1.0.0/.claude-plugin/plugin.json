@@ -1,10 +1,10 @@
 {
   "name": "koto-forge",
-  "description": "Koto game content forges: creature, item, area, NPC design pipelines with JPDB integration",
-  "version": "1.0.0",
+  "description": "Koto game content forges: creature, move, item, area, NPC design pipelines with JPDB integration and stage-aware vocabulary discovery",
+  "version": "1.1.0",
   "author": {
     "name": "Koto",
     "email": "noreply@koto.dev"
   },
-  "keywords": ["koto", "creature", "item", "area", "npc", "jpdb", "forge"]
+  "keywords": ["koto", "creature", "move", "item", "area", "npc", "jpdb", "forge", "stage"]
 }

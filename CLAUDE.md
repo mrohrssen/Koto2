@@ -204,11 +204,12 @@ This symlinks the repo's plugin into Claude Code's plugin cache. Restart Claude 
 
 | Skill | Trigger | Description |
 |-------|---------|-------------|
-| `creature-forge` | `/creature-forge [word]` | Design creatures from English words (5-phase, 4 subagents) |
+| `creature-forge` | `/creature-forge [word]` | Design creatures from English words (5-phase, learnset builder) |
 | `creature-animate` | `/creature-animate` | Animate staging PNGs into idle sprites via ComfyUI |
-| `item-forge` | `/item-forge` | Generate food-themed items in batches of 10 |
-| `area-forge` | `/area-forge [word]` | Design areas from Japanese location words |
-| `npc-forge` | `/npc-forge [area]` | Generate 5 area-matched NPCs with character cards |
+| `move-forge` | `/move-forge [verb]` | Design combat moves from Japanese verbs |
+| `item-forge` | `/item-forge [--type]` | Generate items (consumables, equipment, crafting resources) |
+| `area-forge` | `/area-forge [word]` | Design areas with sub-areas from Japanese location words |
+| `npc-forge` | `/npc-forge [area]` | Generate 5 area-matched NPCs with bond-based character cards |
 | `jpdb-frequency-lookup` | `/jpdb-frequency-lookup` | Enrich word lists with JPDB frequency ranks |
 | `sprite-quality-pipeline` | `/sprite-quality-pipeline` | Three-gate sprite quality enforcement |
 
@@ -216,7 +217,7 @@ Skills use `process.cwd()` for project paths and `$CLAUDE_PROJECT_DIR` for sub-s
 
 ## Common Mistakes to Avoid
 
-- **Don't add equipment systems** - Players use creatures and consumable items only.
+- **Don't add equipment systems without the plan** - Equipment is designed via `/item-forge --type equipment`. See `docs/plans/2026-03-02-equipment-crafting-town-mvp-design.md`.
 - **Don't run `npx playwright test` directly** - Use the wrapper script or exact command above.
 - **Don't use Homebrew git** - Use `/usr/bin/git` to avoid library conflicts.
 - **Don't skip worktrees** - Multiple Claude sessions will conflict without them.
