@@ -455,9 +455,13 @@ export class GameManager {
     const highestLevel = Math.max(...this.run.creatureParty.active.map(r => r.level), 1);
     const isFirstBattle = (this.run.encountersCompleted || 0) === 0;
     const creaturePool = this.run.currentArea?.creatures || null;
+    const stage = this.run.currentArea?.stage || null;
+    const encounterIndex = this.run.encountersCompleted || 0;
     const enemyCreatures = generateEnemyCreatures(highestLevel, {
       maxEnemies: isFirstBattle ? 2 : undefined,
-      creaturePool
+      creaturePool,
+      stage,
+      encounterIndex
     });
 
     this.combat = createCombatState(enemyCreatures[0]);
