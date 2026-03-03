@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "maxOutlierPercent": 20,
+  "stages": [
+    { "stage": 1, "wkLevels": [1, 6], "jpdbKanaCap": 500 },
+    { "stage": 2, "wkLevels": [7, 12], "jpdbKanaCap": 1200 },
+    { "stage": 3, "wkLevels": [13, 18], "jpdbKanaCap": 2000 },
+    { "stage": 4, "wkLevels": [19, 24], "jpdbKanaCap": 3000 },
+    { "stage": 5, "wkLevels": [25, 30], "jpdbKanaCap": 4500 },
+    { "stage": 6, "wkLevels": [31, 36], "jpdbKanaCap": 6500 },
+    { "stage": 7, "wkLevels": [37, 42], "jpdbKanaCap": 9000 },
+    { "stage": 8, "wkLevels": [43, 48], "jpdbKanaCap": 12000 },
+    { "stage": 9, "wkLevels": [49, 54], "jpdbKanaCap": 16000 },
+    { "stage": 10, "wkLevels": [55, 60], "jpdbKanaCap": null }
+  ]
+}
