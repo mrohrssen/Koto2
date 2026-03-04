@@ -38,31 +38,34 @@ describe('Element Cycle', () => {
 });
 
 describe('Creature Instantiation', () => {
-  it('creates a level-1 common creature with base stats', () => {
+  it('creates a level-5 common creature with scaled stats', () => {
     const creature = instantiateCreature('hikaribon');
     assert.strictEqual(creature.element, 'fire');
     assert.strictEqual(creature.rarity, 'common');
-    assert.strictEqual(creature.level, 1);
+    assert.strictEqual(creature.level, 5);
     assert.strictEqual(creature.xp, 0);
-    assert.strictEqual(creature.maxHp, 75);
-    assert.strictEqual(creature.hp, 75);
-    assert.strictEqual(creature.attack, 8);
-    assert.strictEqual(creature.mp, 120);
-    assert.strictEqual(creature.maxMp, 120);
+    // Level 5: base * 1.4 => floor(75 * 1.4) = 105
+    assert.strictEqual(creature.maxHp, 105);
+    assert.strictEqual(creature.hp, 105);
+    assert.strictEqual(creature.attack, 11); // floor(8 * 1.4)
+    assert.strictEqual(creature.mp, 168); // floor(120 * 1.4)
+    assert.strictEqual(creature.maxMp, 168);
     assert.ok(Array.isArray(creature.moves), 'should have moves array');
-    assert.ok(creature.moves.length >= 1, 'should have at least one move at level 1');
+    assert.ok(creature.moves.length >= 1, 'should have at least one move');
   });
 
-  it('applies rarity multiplier for uncommon', () => {
+  it('applies rarity multiplier for uncommon at level 5', () => {
     const creature = instantiateCreature('kaminarion');
-    assert.strictEqual(creature.maxHp, 110); // 100 * 1.1
-    assert.strictEqual(creature.attack, 11); // 10 * 1.1
+    // base*rarity: hp=110, atk=11. Level 5 (1.4x): hp=154, atk=15
+    assert.strictEqual(creature.maxHp, 154);
+    assert.strictEqual(creature.attack, 15);
   });
 
-  it('applies rarity multiplier for rare', () => {
+  it('applies rarity multiplier for rare at level 5', () => {
     const creature = instantiateCreature('kitsunova');
-    assert.strictEqual(creature.maxHp, 102); // 85 * 1.2
-    assert.strictEqual(creature.attack, 10); // floor(9 * 1.2)
+    // base*rarity: hp=102, atk=10. Level 5 (1.4x): hp=142, atk=14
+    assert.strictEqual(creature.maxHp, 142);
+    assert.strictEqual(creature.attack, 14);
   });
 
   it('has archetype field', () => {
@@ -88,8 +91,8 @@ describe('Creature Instantiation', () => {
 
   it('has multiple moves as creature levels up', () => {
     const creature = instantiateCreature('hikaribon');
-    // At level 1, hikaribon has 1 move from its learnset
-    assert.ok(creature.moves.length >= 1, 'should have at least 1 move at level 1');
+    // At level 5, hikaribon has moves from its learnset up to level 5
+    assert.ok(creature.moves.length >= 1, 'should have at least 1 move');
     // Each move should have required fields
     for (const move of creature.moves) {
       assert.ok(move.id, 'move should have id');
@@ -126,8 +129,9 @@ describe('Creature Leveling', () => {
 
   it('awards XP and levels up', () => {
     const creature = instantiateCreature('hikaribon');
-    addXpToCreature(creature, 7);
-    assert.strictEqual(creature.level, 2);
+    // Level 5→6 needs 6³ - 5³ = 91 XP
+    addXpToCreature(creature, 91);
+    assert.strictEqual(creature.level, 6);
     assert.strictEqual(creature.xp, 0);
   });
 
@@ -162,34 +166,36 @@ describe('Creature Leveling', () => {
     assert.strictEqual(xpToNextLevel(9), 271); // 10³ - 9³
   });
 
-  it('levels up with cubic curve (7 XP to reach L2)', () => {
+  it('levels up with cubic curve (91 XP to reach L6)', () => {
     const creature = instantiateCreature('hikaribon');
-    addXpToCreature(creature, 7);
-    assert.strictEqual(creature.level, 2);
+    // Level 5→6 needs 6³ - 5³ = 91
+    addXpToCreature(creature, 91);
+    assert.strictEqual(creature.level, 6);
     assert.strictEqual(creature.xp, 0);
   });
 
-  it('does not level up with 6 XP (needs 7)', () => {
+  it('does not level up with 90 XP (needs 91)', () => {
     const creature = instantiateCreature('hikaribon');
-    addXpToCreature(creature, 6);
-    assert.strictEqual(creature.level, 1);
-    assert.strictEqual(creature.xp, 6);
+    addXpToCreature(creature, 90);
+    assert.strictEqual(creature.level, 5);
+    assert.strictEqual(creature.xp, 90);
   });
 
   it('cascading multi-level-up from a single large XP grant', () => {
     const creature = instantiateCreature('hikaribon');
-    // 7 (L1→2) + 19 (L2→3) = 26 needed for L3
-    addXpToCreature(creature, 26);
-    assert.strictEqual(creature.level, 3);
+    // 91 (L5→6) + 127 (L6→7) = 218 needed for L7
+    addXpToCreature(creature, 218);
+    assert.strictEqual(creature.level, 7);
     assert.strictEqual(creature.xp, 0);
   });
 
   it('addXpToCreature returns array of level-up events', () => {
     const creature = instantiateCreature('hikaribon');
-    const levelUps = addXpToCreature(creature, 26);
+    // 91 (L5→6) + 127 (L6→7) = 218 needed for L7
+    const levelUps = addXpToCreature(creature, 218);
     assert.strictEqual(levelUps.length, 2);
-    assert.strictEqual(levelUps[0].level, 2);
-    assert.strictEqual(levelUps[1].level, 3);
+    assert.strictEqual(levelUps[0].level, 6);
+    assert.strictEqual(levelUps[1].level, 7);
     assert.ok(levelUps[0].maxHp > 0);
     assert.ok(levelUps[0].attack > 0);
     assert.ok(levelUps[0].hpGain >= 0);
@@ -197,9 +203,9 @@ describe('Creature Leveling', () => {
 
   it('addXpToCreature returns empty array when no level-up', () => {
     const creature = instantiateCreature('hikaribon');
-    const levelUps = addXpToCreature(creature, 3);
+    const levelUps = addXpToCreature(creature, 10);
     assert.strictEqual(levelUps.length, 0);
-    assert.strictEqual(creature.xp, 3);
+    assert.strictEqual(creature.xp, 10);
   });
 });
 

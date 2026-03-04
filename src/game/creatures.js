@@ -68,18 +68,24 @@ export function getElementMultiplier(attackerElement, defenderElement) {
   return 1.0;
 }
 
+const STARTING_LEVEL = 5;
+
 export function instantiateCreature(templateId) {
   const template = CREATURES_BY_ID[templateId];
   if (!template) throw new Error(`Creature template not found: ${templateId}`);
 
-  const mult = RARITY_MULTIPLIERS[template.rarity] || 1.0;
-  const hp = Math.floor(template.baseHp * mult);
-  const attack = Math.floor(template.baseAttack * mult);
-  const mp = Math.floor((template.baseMp || 80) * mult);
+  const rarityMult = RARITY_MULTIPLIERS[template.rarity] || 1.0;
+  const baseMp = template.baseMp || 80;
+  const { maxHp, attack, maxMp } = getStatsForLevel(
+    Math.floor(template.baseHp * rarityMult),
+    Math.floor(template.baseAttack * rarityMult),
+    Math.floor(baseMp * rarityMult),
+    STARTING_LEVEL
+  );
 
-  // Get moves learned at level 1
+  // Get all moves learned up to starting level
   const moves = (template.learnset || [])
-    .filter(entry => entry.level <= 1)
+    .filter(entry => entry.level <= STARTING_LEVEL)
     .map(entry => {
       const moveData = MOVES_BY_ID[entry.moveId];
       if (!moveData) return null;
@@ -97,16 +103,16 @@ export function instantiateCreature(templateId) {
     baseWord: template.baseWord,
     baseReading: template.baseReading,
     baseMeaning: template.baseMeaning,
-    level: 1,
+    level: STARTING_LEVEL,
     xp: 0,
-    hp,
-    maxHp: hp,
+    hp: maxHp,
+    maxHp,
     attack,
-    mp,
-    maxMp: mp,
+    mp: maxMp,
+    maxMp,
     baseHpTemplate: template.baseHp,
     baseAttackTemplate: template.baseAttack,
-    baseMpTemplate: template.baseMp || 80,
+    baseMpTemplate: baseMp,
     moves
   };
 }

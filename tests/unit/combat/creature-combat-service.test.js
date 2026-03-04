@@ -324,9 +324,9 @@ describe('Creature Combat - XP', () => {
       reserves: [instantiateCreature('tsukimochi')]
     };
     awardBattleXp(party);
-    // Both should be L2 (each gets xpToNextLevel which is 1 full level)
-    assert.strictEqual(party.active[0].level, 2);
-    assert.strictEqual(party.reserves[0].level, 2);
+    // Both should be L6 (each gets xpToNextLevel which is 1 full level)
+    assert.strictEqual(party.active[0].level, 6);
+    assert.strictEqual(party.reserves[0].level, 6);
   });
 });
 
@@ -358,10 +358,11 @@ describe('Creature Combat - Kill XP Scaling', () => {
       reserves: []
     };
     // enemyLevel 10: (10 + 10*2) = 30 base, perShare = 30/2 = 15, active = 30
-    // L1 needs 7 XP -> should level up multiple times
-    const result = awardKillXp(party, 10);
+    // L5 needs 91 XP to level up, so 30 XP won't level up
+    // Use higher enemy level to guarantee a level-up
+    const result = awardKillXp(party, 50);
     assert.ok(result.levelUps.length > 0);
-    assert.ok(party.active[0].level > 1);
+    assert.ok(party.active[0].level > 5);
   });
 
   it('awardKillXp defaults xpMultiplier to 1.0', () => {
