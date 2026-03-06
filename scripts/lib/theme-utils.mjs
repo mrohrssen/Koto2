@@ -30,6 +30,10 @@ const REQUIRED_WORD_STRINGS = ['word', 'reading', 'meaning'];
  * @returns {string[]} Array of error strings (empty means valid)
  */
 export function validateTheme(theme) {
+  if (!theme || typeof theme !== 'object') {
+    return ['theme must be a non-null object'];
+  }
+
   const errors = [];
 
   // Check required top-level fields
@@ -95,6 +99,9 @@ export function loadTheme(themeId) {
  * @returns {string} Absolute file path written
  */
 export function saveTheme(theme) {
+  if (!theme?.themeId) {
+    throw new Error('Cannot save theme without themeId');
+  }
   if (!existsSync(THEMES_DIR)) {
     mkdirSync(THEMES_DIR, { recursive: true });
   }
@@ -140,7 +147,7 @@ export function getThemeWords(themeId, { role, unassignedOnly } = {}) {
   }
 
   if (unassignedOnly) {
-    words = words.filter(w => !w.assigned);
+    words = words.filter(w => w.assigned == null);
   }
 
   return words;
