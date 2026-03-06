@@ -400,6 +400,499 @@ function writeCSV(entries, filepath) {
   writeFileSync(filepath, lines.join('\n') + '\n');
 }
 
+// ── Review HTML generation ────────────────────────────────────────────
+
+function generateReviewHTML(masterJson, config) {
+  const { themeId, areaWord, areaReading, areaMeaning, areaRank, words } = masterJson;
+  const wordCount = words.length;
+
+  // Truncate meanings for the embedded data to keep file size reasonable
+  const trimmedWords = words.map(w => ({
+    word: w.word,
+    reading: w.reading,
+    meaning: w.meaning.length > 120 ? w.meaning.slice(0, 117) + '...' : w.meaning,
+    rank: w.rank,
+    tier: w.tier,
+    pos: w.pos,
+    brainstorm: w.brainstorm,
+    jisho: w.jisho,
+    textbook: w.textbook,
+    scene: w.scene,
+    web: w.web,
+    consensus: w.consensus,
+  }));
+
+  const dataJson = JSON.stringify({
+    themeId,
+    areaWord,
+    areaReading,
+    areaMeaning,
+    areaRank,
+    words: trimmedWords,
+  });
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>${themeId} Theme Review</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, system-ui, sans-serif;
+    background: #0a0a0f; color: #e0e0e0;
+    padding-bottom: 64px; /* space for sticky footer */
+  }
+
+  /* ── Sticky header ── */
+  .header {
+    position: sticky; top: 0; z-index: 10;
+    background: #12121a; padding: 10px 14px 8px;
+    border-bottom: 1px solid #2a2a3a;
+  }
+  .header h1 { font-size: 17px; margin-bottom: 6px; color: #fff; }
+  .header h1 .count { color: #888; font-weight: 400; font-size: 14px; }
+
+  .search-row { display: flex; gap: 8px; margin-bottom: 6px; }
+  .search-row input {
+    flex: 1; padding: 6px 10px; border-radius: 8px; border: 1px solid #3a3a4a;
+    background: #1a1a2a; color: #e0e0e0; font-size: 14px; outline: none;
+  }
+  .search-row input:focus { border-color: #4a8aca; }
+
+  .filter-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 5px; align-items: center; }
+  .filter-label { font-size: 11px; color: #666; margin-right: 2px; }
+  .filter-btn {
+    padding: 3px 9px; border-radius: 12px; border: 1px solid #3a3a4a;
+    background: #1a1a2a; color: #aaa; font-size: 12px; cursor: pointer;
+  }
+  .filter-btn.active { background: #2a4a6a; border-color: #4a8aca; color: #fff; }
+
+  .controls-row { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin-bottom: 4px; }
+  .sort-btn {
+    padding: 2px 7px; border-radius: 10px; border: 1px solid #2a2a3a;
+    background: transparent; color: #888; font-size: 11px; cursor: pointer;
+  }
+  .sort-btn.active { color: #4a8aca; border-color: #4a8aca; }
+
+  .bulk-btn {
+    padding: 2px 8px; border-radius: 10px; border: 1px solid #3a5a3a;
+    background: transparent; color: #6a9a6a; font-size: 11px; cursor: pointer;
+    margin-left: auto;
+  }
+  .bulk-btn:active { background: #1a2a1a; }
+  .bulk-btn.uncheck { border-color: #5a3a3a; color: #9a6a6a; }
+  .bulk-btn.uncheck:active { background: #2a1a1a; }
+
+  .stats { font-size: 11px; color: #666; }
+
+  /* ── Table ── */
+  table { width: 100%; border-collapse: collapse; }
+  thead { position: sticky; top: 0; z-index: 5; }
+  th {
+    background: #16161f; padding: 5px 4px; font-size: 10px; color: #666;
+    border-bottom: 1px solid #2a2a3a; text-align: left; white-space: nowrap;
+  }
+  td { padding: 5px 4px; font-size: 13px; border-bottom: 1px solid #151520; }
+  tr { transition: background 0.1s; }
+  tr:hover { background: #1a1a2a; }
+  tr.checked { background: #141e14; }
+  tr.checked:hover { background: #1a2a1a; }
+
+  /* Checkbox column */
+  .cb-cell { width: 32px; min-width: 32px; text-align: center; }
+  .cb-cell input[type="checkbox"] {
+    width: 18px; height: 18px; cursor: pointer;
+    accent-color: #4ade80;
+  }
+
+  .word { font-size: 15px; font-weight: 600; }
+  .reading { font-size: 10px; color: #888; }
+  .meaning { font-size: 11px; color: #aaa; max-width: 200px; }
+  .rank { font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .tier-common { color: #4ade80; }
+  .tier-uncommon { color: #60a5fa; }
+  .tier-rare { color: #c084fc; }
+  .tier-epic { color: #fb923c; }
+  .tier-legendary { color: #f472b6; }
+
+  .method-cell { text-align: center; width: 24px; min-width: 24px; }
+  .yes { color: #4ade80; font-weight: bold; }
+  .no { color: #2a2a3a; }
+
+  .consensus {
+    text-align: center; font-weight: bold; font-size: 14px;
+    width: 28px; min-width: 28px;
+  }
+  .c5 { color: #fbbf24; }
+  .c4 { color: #4ade80; }
+  .c3 { color: #60a5fa; }
+  .c2 { color: #888; }
+  .c1 { color: #555; }
+
+  .method-header { writing-mode: vertical-rl; text-orientation: mixed; font-size: 9px; }
+
+  /* ── Sticky footer ── */
+  .footer {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
+    background: #12121a; border-top: 1px solid #2a2a3a;
+    padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer .selected-count { font-size: 14px; color: #aaa; }
+  .footer .selected-count .num { color: #4ade80; font-weight: 600; }
+  .submit-btn {
+    padding: 8px 20px; border-radius: 8px; border: none;
+    background: #2563eb; color: #fff; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background 0.15s, opacity 0.15s;
+  }
+  .submit-btn:hover { background: #3b82f6; }
+  .submit-btn:active { background: #1d4ed8; }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Toast notification */
+  .toast {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    padding: 16px 24px; border-radius: 12px; font-size: 15px; font-weight: 600;
+    z-index: 100; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+  .toast.success { background: #166534; color: #4ade80; border: 1px solid #22c55e; }
+  .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
+
+  @media (max-width: 600px) {
+    .meaning { max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    td, th { padding: 4px 2px; }
+    .header { padding: 8px 10px 6px; }
+    .footer { padding: 8px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>${escapeHTML(themeId)} Theme Review <span class="count">(${wordCount} words)</span></h1>
+  <div class="search-row">
+    <input type="text" id="search" placeholder="Search word, reading, or meaning...">
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Consensus:</span>
+    <button class="filter-btn consensus-filter active" data-filter="all">All</button>
+    <button class="filter-btn consensus-filter" data-filter="5">5/5</button>
+    <button class="filter-btn consensus-filter" data-filter="4">4+</button>
+    <button class="filter-btn consensus-filter" data-filter="3">3+</button>
+    <button class="filter-btn consensus-filter" data-filter="2">2+</button>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Tier:</span>
+    <button class="filter-btn tier-filter active" data-tier="all">All</button>
+    <button class="filter-btn tier-filter" data-tier="common" style="color:#4ade80">Common</button>
+    <button class="filter-btn tier-filter" data-tier="uncommon" style="color:#60a5fa">Uncommon</button>
+    <button class="filter-btn tier-filter" data-tier="rare" style="color:#c084fc">Rare</button>
+    <button class="filter-btn tier-filter" data-tier="epic" style="color:#fb923c">Epic</button>
+    <button class="filter-btn tier-filter" data-tier="legendary" style="color:#f472b6">Legendary</button>
+  </div>
+  <div class="controls-row">
+    <span class="filter-label">Sort:</span>
+    <button class="sort-btn active" data-sort="consensus">Consensus</button>
+    <button class="sort-btn" data-sort="rank">Rank</button>
+    <button class="sort-btn" data-sort="word">Word</button>
+    <button class="bulk-btn" id="checkAll">Check visible</button>
+    <button class="bulk-btn uncheck" id="uncheckAll">Uncheck visible</button>
+  </div>
+  <div class="stats" id="stats"></div>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th class="cb-cell"><input type="checkbox" id="headerCb" title="Toggle visible"></th>
+      <th>Word</th>
+      <th>Meaning</th>
+      <th class="rank">Rank</th>
+      <th class="method-cell"><span class="method-header">Brain</span></th>
+      <th class="method-cell"><span class="method-header">Jisho</span></th>
+      <th class="method-cell"><span class="method-header">Text</span></th>
+      <th class="method-cell"><span class="method-header">Scene</span></th>
+      <th class="method-cell"><span class="method-header">Web</span></th>
+      <th class="consensus">#</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+
+<div class="footer">
+  <div class="selected-count"><span class="num" id="selectedNum">0</span> of <span id="totalNum">${wordCount}</span> selected</div>
+  <button class="submit-btn" id="submitBtn" disabled>Submit</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DATA = ${dataJson};
+
+// State: checked words tracked by word string (unique key)
+const checkedWords = new Set();
+let currentFilter = 'all';
+let currentTier = 'all';
+let currentSort = 'consensus';
+let searchQuery = '';
+let submitting = false;
+
+function getVisibleRows() {
+  let rows = DATA.words;
+  if (currentFilter !== 'all') {
+    const min = parseInt(currentFilter);
+    rows = rows.filter(r => r.consensus >= min);
+  }
+  if (currentTier !== 'all') {
+    rows = rows.filter(r => r.tier === currentTier);
+  }
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    rows = rows.filter(r =>
+      r.word.includes(q) || r.reading.includes(q) || r.meaning.toLowerCase().includes(q)
+    );
+  }
+  if (currentSort === 'rank') {
+    rows = [...rows].sort((a, b) => {
+      if (a.rank == null && b.rank == null) return 0;
+      if (a.rank == null) return 1;
+      if (b.rank == null) return -1;
+      return a.rank - b.rank;
+    });
+  } else if (currentSort === 'word') {
+    rows = [...rows].sort((a, b) => a.word.localeCompare(b.word, 'ja'));
+  }
+  // default: consensus desc, rank asc (already sorted in data)
+  return rows;
+}
+
+function updateSelectedCount() {
+  document.getElementById('selectedNum').textContent = checkedWords.size;
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = checkedWords.size === 0 || submitting;
+}
+
+function render() {
+  const rows = getVisibleRows();
+  document.getElementById('stats').textContent = 'Showing ' + rows.length + ' words';
+
+  const tbody = document.getElementById('tbody');
+  const m = (v) => v ? '<span class="yes">Y</span>' : '<span class="no">\\u00b7</span>';
+  const html = rows.map(r => {
+    const tierClass = r.tier ? 'tier-' + r.tier : '';
+    const cClass = 'c' + r.consensus;
+    const isChecked = checkedWords.has(r.word);
+    const checkedClass = isChecked ? ' checked' : '';
+    const checkedAttr = isChecked ? ' checked' : '';
+    return '<tr class="' + checkedClass + '" data-word="' + escapeAttr(r.word) + '">' +
+      '<td class="cb-cell"><input type="checkbox"' + checkedAttr + '></td>' +
+      '<td><div class="word">' + esc(r.word) + '</div><div class="reading">' + esc(r.reading) + '</div></td>' +
+      '<td class="meaning">' + esc(r.meaning) + '</td>' +
+      '<td class="rank ' + tierClass + '">' + (r.rank != null ? r.rank : '\\u2014') + '</td>' +
+      '<td class="method-cell">' + m(r.brainstorm) + '</td>' +
+      '<td class="method-cell">' + m(r.jisho) + '</td>' +
+      '<td class="method-cell">' + m(r.textbook) + '</td>' +
+      '<td class="method-cell">' + m(r.scene) + '</td>' +
+      '<td class="method-cell">' + m(r.web) + '</td>' +
+      '<td class="consensus ' + cClass + '">' + r.consensus + '</td>' +
+      '</tr>';
+  }).join('');
+  tbody.innerHTML = html;
+
+  // Update header checkbox state
+  const visibleWords = rows.map(r => r.word);
+  const allVisibleChecked = visibleWords.length > 0 && visibleWords.every(w => checkedWords.has(w));
+  document.getElementById('headerCb').checked = allVisibleChecked;
+
+  updateSelectedCount();
+}
+
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function escapeAttr(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show ' + type;
+  setTimeout(() => { toast.className = 'toast'; }, 3000);
+}
+
+// ── Event: row checkbox clicks (delegated) ──
+document.getElementById('tbody').addEventListener('change', (e) => {
+  if (e.target.type !== 'checkbox') return;
+  const tr = e.target.closest('tr');
+  const word = tr.dataset.word;
+  if (e.target.checked) {
+    checkedWords.add(word);
+    tr.classList.add('checked');
+  } else {
+    checkedWords.delete(word);
+    tr.classList.remove('checked');
+  }
+  updateSelectedCount();
+  // Sync header checkbox
+  const visibleRows = getVisibleRows();
+  const allChecked = visibleRows.length > 0 && visibleRows.every(r => checkedWords.has(r.word));
+  document.getElementById('headerCb').checked = allChecked;
+});
+
+// ── Event: clicking row toggles checkbox ──
+document.getElementById('tbody').addEventListener('click', (e) => {
+  if (e.target.type === 'checkbox' || e.target.closest('input')) return;
+  const tr = e.target.closest('tr');
+  if (!tr) return;
+  const cb = tr.querySelector('input[type="checkbox"]');
+  if (cb) {
+    cb.checked = !cb.checked;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+});
+
+// ── Event: header checkbox toggles all visible ──
+document.getElementById('headerCb').addEventListener('change', (e) => {
+  const visibleRows = getVisibleRows();
+  if (e.target.checked) {
+    visibleRows.forEach(r => checkedWords.add(r.word));
+  } else {
+    visibleRows.forEach(r => checkedWords.delete(r.word));
+  }
+  render();
+});
+
+// ── Bulk actions ──
+document.getElementById('checkAll').addEventListener('click', () => {
+  const visibleRows = getVisibleRows();
+  visibleRows.forEach(r => checkedWords.add(r.word));
+  render();
+});
+
+document.getElementById('uncheckAll').addEventListener('click', () => {
+  const visibleRows = getVisibleRows();
+  visibleRows.forEach(r => checkedWords.delete(r.word));
+  render();
+});
+
+// ── Filter buttons ──
+document.querySelectorAll('.consensus-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.consensus-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    render();
+  });
+});
+
+document.querySelectorAll('.tier-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tier-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentTier = btn.dataset.tier;
+    render();
+  });
+});
+
+// ── Sort buttons ──
+document.querySelectorAll('.sort-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentSort = btn.dataset.sort;
+    render();
+  });
+});
+
+// ── Search ──
+document.getElementById('search').addEventListener('input', (e) => {
+  searchQuery = e.target.value;
+  render();
+});
+
+// ── Submit ──
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  if (submitting || checkedWords.size === 0) return;
+  submitting = true;
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  // Build POST body: only include words that are checked
+  const wordMap = new Map(DATA.words.map(w => [w.word, w]));
+  const selectedWords = [];
+  for (const w of checkedWords) {
+    const entry = wordMap.get(w);
+    if (entry) {
+      selectedWords.push({
+        word: entry.word,
+        reading: entry.reading,
+        meaning: entry.meaning,
+        rank: entry.rank,
+        tier: entry.tier,
+        pos: entry.pos,
+        consensus: entry.consensus,
+      });
+    }
+  }
+
+  const body = {
+    themeId: DATA.themeId,
+    areaWord: DATA.areaWord,
+    areaReading: DATA.areaReading,
+    areaMeaning: DATA.areaMeaning,
+    areaRank: DATA.areaRank,
+    words: selectedWords,
+  };
+
+  try {
+    const res = await fetch(window.location.origin + '/api/theme-pool/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error('HTTP ' + res.status + ': ' + text);
+    }
+    const result = await res.json();
+    showToast('Submitted ' + selectedWords.length + ' words!', 'success');
+    btn.textContent = 'Submitted!';
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+    btn.textContent = 'Submit';
+    btn.disabled = false;
+    submitting = false;
+  }
+});
+
+// Initial render
+render();
+</script>
+</body>
+</html>`;
+
+  const htmlPath = join(PROJECT_ROOT, 'tmp', `theme-${config.theme}-review.html`);
+  writeFileSync(htmlPath, html);
+  return htmlPath;
+}
+
+function escapeHTML(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 // ── Main ─────────────────────────────────────────────────────────────
 
 async function main() {
@@ -460,6 +953,10 @@ async function main() {
 
   writeCSV(masterList, csvPath);
   console.log(`  CSV:  ${csvPath}`);
+
+  // Step 8: Generate review HTML
+  const htmlPath = generateReviewHTML(masterJson, config);
+  console.log(`  HTML: ${htmlPath}`);
 
   // Summary
   console.log(`\n=== Done ===`);
