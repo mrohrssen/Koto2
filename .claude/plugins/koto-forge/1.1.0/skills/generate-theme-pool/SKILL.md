@@ -1,11 +1,13 @@
 ---
 name: generate-theme-pool
-description: Generate a theme pool file from category scanning + AI gap-fill + JPDB enrichment. Usage: /generate-theme-pool <theme-concept> [area-word]
+description: Generate a theme pool file from 5-method consensus + JPDB enrichment + human curation. Usage: /generate-theme-pool <theme-concept> [area-word]
 ---
 
 # Generate Theme Pool
 
-Generates a `language/themes/<themeId>.json` file using the 3-filter thematic-frequency hybrid algorithm.
+Generates a `language/themes/<themeId>.json` file using a **5-method consensus pipeline** followed by **human curation** via an interactive review UI.
+
+Five independent methods generate candidate words in parallel. Each word is tagged with how many methods found it (consensus score). Words are JPDB-enriched, then the user curates the final list via a browser-based review page with checkboxes.
 
 ## Input
 
@@ -19,99 +21,194 @@ Generates a `language/themes/<themeId>.json` file using the 3-filter thematic-fr
 3. Look up the area word via JPDB API (use `scripts/lib/jpdb-helpers.mjs` patterns — `parseBatch` then `lookupVocab`) to confirm rank and reading.
 4. Set `themeId` = lowercase English concept (e.g., "school", "ocean").
 
-## Phase 1: Category Scanning (Parallel Subagents)
+## Phase 1: Launch 5 Agents in Parallel
 
-**IMPORTANT: Use subagents, NOT paid AI APIs.**
+**IMPORTANT: Use subagents, NOT paid AI APIs.** All 5 agents run as background agents simultaneously.
 
-The 17 category files in `language/categories/` are too large for a single context. Dispatch **parallel subagents** to scan them.
+Each agent writes its output to `tmp/theme-{themeId}-N-{method}.json` as a JSON array of `[{word, reading, meaning}, ...]`.
 
-Split the 17+1 category files into 6 batches:
-
-| Batch | Files |
-|-------|-------|
-| 1 | `animals.json`, `nature.json`, `foods.json` |
-| 2 | `objects.json`, `clothing.json`, `body-parts.json` |
-| 3 | `actions.json`, `movement.json`, `combat.json` |
-| 4 | `descriptors.json`, `emotions.json`, `colors.json` |
-| 5 | `locations.json`, `occupations.json`, `social.json` |
-| 6 | `abstract.json`, `numbers-time.json` |
-
-For each batch, dispatch a **sonnet subagent** with this prompt:
+### Agent 1: Pure LLM Brainstorm (Opus)
 
 ```
-You are scanning Japanese vocabulary category files for words thematically
-associated with the concept: "{THEME_CONCEPT}"
+You are generating a comprehensive Japanese vocabulary list for the theme "{THEME}".
 
-Read these category files:
-{LIST_OF_FILE_PATHS}
+Brainstorm EVERY Japanese word a learner would want to know related to {THEME}. Be exhaustive. Organize by category:
 
-For each file, identify words that would naturally appear in or be associated
-with a {THEME_CONCEPT} setting. Include words that:
-- Name things found in this setting (objects, creatures, people, places)
-- Describe qualities of this setting (adjectives, modifiers)
-- Represent actions that happen in this setting (verbs)
+- People (who is involved in this setting)
+- Places (locations, rooms, areas)
+- Objects (things you'd find, use, see)
+- Subjects/Topics (if applicable)
+- Actions (verbs — what people DO in this setting)
+- Events (things that happen)
+- Time/Schedule (when things happen)
+- Emotions/States (how people feel, descriptors)
+- Abstract concepts (ideas, systems)
 
-Be INCLUSIVE — cast a wide net. It's better to include borderline words
-(they'll be filtered later) than to miss good ones.
+For each word provide: the Japanese word, its hiragana reading, and English meaning.
+IMPORTANT: Only include REAL Japanese words. If unsure, skip it.
 
-Return a JSON array of objects, each with: { word, reading, meaning, rank, source }
-where source is the filename (without .json).
-Return ONLY the JSON array, no other text.
+Write the output as a JSON array to {OUTPUT_PATH}:
+[{"word": "学校", "reading": "がっこう", "meaning": "school"}, ...]
 ```
 
-Each subagent reads its batch files using the Read tool and returns JSON.
-
-## Phase 2: AI Gap-Fill (Subagent)
-
-Dispatch one **opus subagent** to generate 20-30 additional thematic words NOT found in any category file:
+### Agent 2: Jisho.org Keyword Scraping (Opus)
 
 ```
-Generate 20-30 Japanese words thematically associated with "{THEME_CONCEPT}"
-that would NOT typically appear in general vocabulary category files.
+You are generating a Japanese vocabulary list for the theme "{THEME}" by searching jisho.org.
 
-Think about:
-- Specialized terminology for this setting
-- Compound words specific to this context
-- Less common but highly thematic words
+Search jisho.org's API with 50+ English seed keywords related to {THEME}:
+  https://jisho.org/api/v1/search/words?keyword=KEYWORD
 
-For each word, provide: { word, reading, meaning, source: "ai-generated" }
-Do NOT include rank (it will be looked up via JPDB).
-Return ONLY the JSON array, no other text.
+Think of every relevant keyword: people, places, objects, actions, events, equipment, etc.
+Also try Japanese keywords (e.g., the area word and related kanji compounds).
+
+For each search result:
+- Only include words clearly related to {THEME}
+- Prefer words tagged as "common"
+- Skip purely grammatical words
+- Deduplicate across searches
+
+Save as JSON array to {OUTPUT_PATH}:
+[{"word": "学校", "reading": "がっこう", "meaning": "school"}, ...]
 ```
 
-## Phase 3: Merge & Process
+### Agent 3: Textbook Curriculum Mining (Opus)
 
-1. Collect all subagent results into a single candidates array.
-2. Deduplicate by `word` field.
-3. Write merged candidates to `/tmp/theme-pool-{themeId}-candidates.json`.
-4. Run the processing script:
+```
+You are generating a Japanese vocabulary list for the theme "{THEME}" by mining real textbook vocabulary.
+
+Recall vocabulary from major Japanese textbook series that appears in {THEME}-related chapters:
+- Genki I & II
+- Minna no Nihongo I & II
+- Tobira (intermediate)
+- Irodori (Japan Foundation)
+- JLPT vocabulary lists (N5-N1)
+
+Include words from:
+- Dialogues set in {THEME} contexts
+- Chapter vocabulary lists for {THEME}-themed lessons
+- Classroom expressions and instructions related to {THEME}
+- JLPT questions commonly set in {THEME} contexts
+
+Only include words you are confident actually appear in Japanese textbooks.
+
+Save as JSON array to {OUTPUT_PATH}:
+[{"word": "学校", "reading": "がっこう", "meaning": "school"}, ...]
+```
+
+### Agent 4: Scene Walkthrough (Opus)
+
+```
+You are generating a Japanese vocabulary list for the theme "{THEME}" using a scene walkthrough.
+
+Mentally walk through a detailed experience of {THEME}. Narrate every moment in vivid detail and extract EVERY noun, verb, and adjective you encounter.
+
+{THEME_SCENES}
+
+For each scene, think cinematically: what would you SEE, DO, HEAR, FEEL? Extract every word.
+
+Be EXHAUSTIVE — every object, action, descriptor, person, place, and concept.
+
+Save as JSON array to {OUTPUT_PATH}:
+[{"word": "学校", "reading": "がっこう", "meaning": "school"}, ...]
+```
+
+The `{THEME_SCENES}` placeholder should be filled with 8-12 detailed scene descriptions appropriate to the theme. For example, for "school":
+- Morning: wake up, uniform, commute, shoe lockers
+- Classes: each subject, teacher, board work, notes
+- Lunch: cafeteria, bento, eating together
+- After school: clubs, cleaning, library, cram school
+- Events: sports day, cultural festival, field trips, exams, graduation
+
+### Agent 5: Web Lists Aggregation (Opus)
+
+```
+You are generating a Japanese vocabulary list for the theme "{THEME}" by searching the web for existing curated vocabulary lists.
+
+Search for these queries using WebSearch:
+- "Japanese {THEME} vocabulary list"
+- "Japanese {THEME} words"
+- "JLPT {THEME} vocabulary"
+- "{THEME} vocabulary for Japanese learners"
+- And 6-10 more relevant search queries
+
+For each promising result, use WebFetch to get the page and extract vocabulary.
+
+Good sources: Tofugu, WaniKani, JapanesePod101, FluentU, Reddit r/LearnJapanese, language learning blogs.
+
+Deduplicate and save as JSON array to {OUTPUT_PATH}:
+[{"word": "学校", "reading": "がっこう", "meaning": "school"}, ...]
+```
+
+## Phase 2: Enrich and Generate Review
+
+Once all 5 agents complete, run the consensus enrichment script:
 
 ```bash
-node scripts/generate-theme-pool.mjs --process /tmp/theme-pool-{themeId}-candidates.json \
+node scripts/theme-pool-consensus.mjs \
   --theme {themeId} \
   --area-word {areaWord} \
   --area-reading {areaReading} \
-  --area-meaning {areaMeaning}
+  --area-meaning {areaMeaning} \
+  --input tmp/theme-{themeId}-1-brainstorm.json \
+  --input tmp/theme-{themeId}-2-jisho.json \
+  --input tmp/theme-{themeId}-3-textbook.json \
+  --input tmp/theme-{themeId}-4-scene.json \
+  --input tmp/theme-{themeId}-5-web.json
 ```
 
 This script:
-- Enriches all candidates with JPDB frequency ranks
-- Filters out rank > 30,000 and null-rank words
-- Assigns roles based on POS (noun → creature/item/npc/sub-area, adj → modifier, verb → move/creature)
-- Cross-references against existing game data (creatures.json, moves.json, items.json, areas.json, npcs.json)
-- Computes avgRank and computedStage
-- Writes `language/themes/{themeId}.json`
+- Merges all 5 lists, tracking which methods found each word
+- Enriches via JPDB (frequency rank, POS, verified meanings)
+- Filters out rank > 30,000 and words JPDB can't parse
+- Generates three output files:
+  - `tmp/theme-{themeId}-master.json` — full word data
+  - `tmp/theme-{themeId}-master.csv` — spreadsheet format
+  - `tmp/theme-{themeId}-review.html` — interactive curation UI
 
-## Phase 4: Review & Present
+## Phase 3: Serve and Present
 
-1. Read the generated theme file.
-2. Present summary to user:
-   - Theme name, area word, computed stage
-   - Total word count, role breakdown
-   - Words with existing uses (already in game data)
-   - Top 10 creature candidates, top 10 item candidates, etc.
-3. Ask user if adjustments are needed.
-4. Run validation: `node scripts/generate-theme-pool.mjs --validate {themeId}`
+Start the review server if not already running:
+
+```bash
+pkill -f "python3 -m http.server 8766" 2>/dev/null
+cd tmp && nohup python3 -m http.server 8766 --bind 0.0.0.0 > /dev/null 2>&1 &
+```
+
+Present the review URL to the user:
+
+```
+Review URL: http://srv1438246.hstgr.cloud:8766/theme-{themeId}-review.html
+```
+
+Show summary stats:
+- Total words generated
+- Per-method counts
+- Consensus breakdown (5/5, 4/5, 3/5, etc.)
+- Tier distribution
+
+Tell the user:
+> Open the review URL on your phone or browser. Check the words you want in the final pool — all boxes start unchecked. Use the filters (consensus, tier) and "Check visible" button to work quickly. When done, hit Submit.
+
+## Phase 4: Confirm Submission
+
+After the user submits via the review UI, the server writes:
+- `language/themes/{themeId}.json` — the final theme pool
+- `language/themes/{themeId}.csv` — CSV export
+
+Validate the result:
+```bash
+node scripts/generate-theme-pool.mjs --validate {themeId}
+```
+
+Present final stats: word count, computed stage, role breakdown.
+
+## Phase 5: Commit
+
+```bash
+git add language/themes/{themeId}.json language/themes/{themeId}.csv
+git commit -m "feat: add {themeId} theme pool (N words, stage X)"
+```
 
 ## Output
 
