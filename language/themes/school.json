@@ -1,0 +1,4653 @@
+{
+  "themeId": "school",
+  "areaWord": "学校",
+  "areaReading": "がっこう",
+  "areaMeaning": "school",
+  "areaRank": 700,
+  "avgRank": 4203,
+  "computedStage": 5,
+  "generatedAt": "2026-03-06",
+  "words": [
+    {
+      "word": "帰る",
+      "reading": "かえる",
+      "meaning": "to return; to come home; to go home; to go back; to leave; to get home; to get to home plate",
+      "rank": 200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "movement",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "呼ぶ",
+      "reading": "よぶ",
+      "meaning": "to call out (to); to call; to invoke; to summon (a doctor, etc.); to invite; to designate; to name; to brand; to garner (support, etc.); to gather; to take as one's wife",
+      "rank": 200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": [
+        "move:yobu"
+      ]
+    },
+    {
+      "word": "話す",
+      "reading": "はなす",
+      "meaning": "to talk; to speak; to converse; to chat; to tell; to explain; to narrate; to mention; to describe; to discuss; to speak (a language)",
+      "rank": 200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": [
+        "move:hanasu"
+      ]
+    },
+    {
+      "word": "一緒に",
+      "reading": "いっしょに",
+      "meaning": "together (with); at the same time; in a lump",
+      "rank": 200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "開く",
+      "reading": "ひらく",
+      "meaning": "to open; to undo; to unseal; to unpack; to bloom; to unfold; to spread out; to open (for business, e.g. in the morning); to be wide (gap, etc.); to widen; to hold (meeting, party, etc.); to give; to open; to found (nation, dynasty, sect, etc.); to open (a new business); to set up; to establish; to start; to open (ports, borders, etc.); to open (an account); to open up (new land, path, etc.); to clear; to develop; to open (a file, etc.); to extract (root); to reduce (equation); to cut open (fish); to change (kanji into hiragana); to flare (e.g. skirt); to slacken (into a poor posture)",
+      "rank": 300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": [
+        "move:hiraku"
+      ]
+    },
+    {
+      "word": "心配",
+      "reading": "しんぱい",
+      "meaning": "worry; concern; anxiety; uneasiness; fear; care; help; aid; assistance",
+      "rank": 300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "教える",
+      "reading": "おしえる",
+      "meaning": "to teach; to instruct; to tell; to inform; to preach",
+      "rank": 300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": [
+        "move:oshieru"
+      ]
+    },
+    {
+      "word": "年",
+      "reading": "ねん",
+      "meaning": "year; counter for years (e.g. of an era), grades (e.g. school); period of an apprentice's contract (usu. ten years)",
+      "rank": 300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "numbers-time",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "飲む",
+      "reading": "のむ",
+      "meaning": "to drink; to gulp; to swallow; to take (medicine); to smoke (tobacco); to engulf; to overwhelm; to keep down; to suppress; to accept (e.g. demand, condition); to make light of; to conceal",
+      "rank": 400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": [
+        "move:nomu"
+      ]
+    },
+    {
+      "word": "本",
+      "reading": "ほん",
+      "meaning": "book; volume; script; this; present; main; head; real; regular; counter for long cylindrical things; counter for films, TV shows, etc.; counter for goals, home runs, etc.; counter for telephone calls",
+      "rank": 400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": [
+        "creature:honmo"
+      ]
+    },
+    {
+      "word": "走る",
+      "reading": "はしる",
+      "meaning": "to run; to run (of a vehicle); to drive; to travel; to move; to sail; to rush (to); to dash; to race; to retreat; to flee; to defect (to); to run away; to abscond; to elope; to flash (of lightning); to streak; to shoot (through; e.g. of pain); to run (through); to flare; to flit (e.g. across one's face); to spread quickly (of news, shock, etc.); to go (e.g. bad, to extremes); to become; to turn; to take to (e.g. crime); to get carried away by (e.g. one's emotions); to get involved in; to get wrapped up in; to run (through; of a road, street, etc.); to extend (e.g. of a mountain range); to stretch; to lie",
+      "rank": 400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "movement",
+      "assigned": null,
+      "existingUses": [
+        "move:hashiru"
+      ]
+    },
+    {
+      "word": "簡単",
+      "reading": "かんたん",
+      "meaning": "simple; easy; uncomplicated; brief; quick; light",
+      "rank": 400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "新しい",
+      "reading": "あたらしい",
+      "meaning": "new; novel; fresh; recent; latest; up-to-date; modern",
+      "rank": 400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "急ぐ",
+      "reading": "いそぐ",
+      "meaning": "to hurry; to rush; to hasten; to make something happen sooner",
+      "rank": 500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "movement",
+      "assigned": null,
+      "existingUses": [
+        "move:isogu"
+      ]
+    },
+    {
+      "word": "広い",
+      "reading": "ひろい",
+      "meaning": "spacious; vast; wide",
+      "rank": 500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": [
+        "area-mod:shizukana-kouen-wide-lawn",
+        "area-mod:himitsuno-toshokan-wide-desk",
+        "area-mod:mahouno-gakkou-spacious-classroom"
+      ]
+    },
+    {
+      "word": "光",
+      "reading": "ひかり",
+      "meaning": "light; illumination; ray; beam; gleam; glow; happiness; hope; influence; power; vision; eyesight",
+      "rank": 600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "nature",
+      "assigned": null,
+      "existingUses": [
+        "creature:hikaribon"
+      ]
+    },
+    {
+      "word": "頑張る",
+      "reading": "がんばる",
+      "meaning": "to persevere; to persist; to keep at it; to hang on; to hold out; to do one's best; to insist that; to stick to (one's opinion); to remain in a place; to stick to one's post; to refuse to budge",
+      "rank": 600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": [
+        "move:ganbaru"
+      ]
+    },
+    {
+      "word": "子供",
+      "reading": "こども",
+      "meaning": "child",
+      "rank": 600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "難しい",
+      "reading": "むずかしい",
+      "meaning": "difficult; hard; troublesome; complicated; serious (disease, problem, etc.); impossible; unfeasible; fussy; particular; fastidious; hard to please; displeased; gloomy; glum; sullen; serious (look); dirty; unclean; filthy; detestable; unpleasant; uncomfortable; creepy; spooky",
+      "rank": 700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "学校",
+      "reading": "がっこう",
+      "meaning": "school",
+      "rank": 700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "友達",
+      "reading": "ともだち",
+      "meaning": "friend; companion",
+      "rank": 700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "食事",
+      "reading": "しょくじ",
+      "meaning": "meal; dinner; diet",
+      "rank": 800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "涙",
+      "reading": "なみだ",
+      "meaning": "tear; tears; lachrymal secretion; sympathy",
+      "rank": 800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "body-parts",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "並ぶ",
+      "reading": "ならぶ",
+      "meaning": "to line up; to stand in a line; to rival; to match; to equal",
+      "rank": 800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "楽しむ",
+      "reading": "たのしむ",
+      "meaning": "to enjoy (oneself)",
+      "rank": 800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "会話",
+      "reading": "かいわ",
+      "meaning": "conversation",
+      "rank": 800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "正しい",
+      "reading": "ただしい",
+      "meaning": "right; correct; proper; righteous; just; honest; truthful; lawful",
+      "rank": 900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "興味",
+      "reading": "きょうみ",
+      "meaning": "interest (in something); curiosity (about something); zest (for)",
+      "rank": 900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "手伝う",
+      "reading": "てつだう",
+      "meaning": "to help; to assist; to aid; to contribute to; to be a factor in",
+      "rank": 900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": [
+        "move:tetsudau"
+      ]
+    },
+    {
+      "word": "雨",
+      "reading": "あめ",
+      "meaning": "rain; rainy day; rainy weather; the November suit (in hanafuda)",
+      "rank": 1000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "nature",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "席",
+      "reading": "せき",
+      "meaning": "seat; location (of a gathering, etc.); place; position; post",
+      "rank": 1000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "協力",
+      "reading": "きょうりょく",
+      "meaning": "cooperation; collaboration",
+      "rank": 1000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "間違う",
+      "reading": "まちがう",
+      "meaning": "to make a mistake; to be incorrect; to be mistaken",
+      "rank": 1100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "夏",
+      "reading": "なつ",
+      "meaning": "summer",
+      "rank": 1200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "nature",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "通う",
+      "reading": "かよう",
+      "meaning": "to go to and from (a place); to go back and forth between; to run between (e.g. bus, train, etc.); to ply between; to go to (school, work, etc.); to attend; to commute; to frequent; to circulate (e.g. blood, electricity); to be communicated (e.g. thought); to resemble",
+      "rank": 1200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "movement",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "古い",
+      "reading": "ふるい",
+      "meaning": "old; aged; ancient; antiquated; antique; timeworn; long; since long ago; time-honored; of the distant past; long-ago; stale; threadbare; hackneyed; corny; old-fashioned; outmoded; out-of-date",
+      "rank": 1200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": [
+        "creature-mod:honmo",
+        "area-mod:okunomori-old-hut",
+        "area-mod:mahouno-gakkou-old-gymnasium"
+      ]
+    },
+    {
+      "word": "得意",
+      "reading": "とくい",
+      "meaning": "satisfaction; pride; triumph; elation; one's strong point; one's forte; one's specialty; regular customer; regular client; patron",
+      "rank": 1200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "紹介",
+      "reading": "しょうかい",
+      "meaning": "introduction; presentation; referral; listing",
+      "rank": 1200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "努力",
+      "reading": "どりょく",
+      "meaning": "effort; exertion; endeavour; endeavor; hard work; striving",
+      "rank": 1200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "注意",
+      "reading": "ちゅうい",
+      "meaning": "attention; notice; heed; care; caution; precaution; advice; warning; caution",
+      "rank": 1200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "貸す",
+      "reading": "かす",
+      "meaning": "to lend; to loan; to rent out; to hire out",
+      "rank": 1300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "出かける",
+      "reading": "でかける",
+      "meaning": "to go out (e.g. on an excursion or outing); to leave; to depart; to start; to set out; to be about to leave; to be just going out",
+      "rank": 1300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "movement",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "学ぶ",
+      "reading": "まなぶ",
+      "meaning": "to study (in depth); to learn; to take lessons in",
+      "rank": 1300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "なくす",
+      "reading": "なくす",
+      "meaning": "to lose (something); to mislay; to get rid of; to eliminate; to remove",
+      "rank": 1300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "正確",
+      "reading": "せいかく",
+      "meaning": "accurate; correct; precise; exact",
+      "rank": 1300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "複雑",
+      "reading": "ふくざつ",
+      "meaning": "complex; complicated; intricate; mixed (feelings)",
+      "rank": 1300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "嬉しい",
+      "reading": "うれしい",
+      "meaning": "happy; glad; pleased; delighted; overjoyed; joyful; delightful; gratifying; pleasant",
+      "rank": 1300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "午後",
+      "reading": "ごご",
+      "meaning": "afternoon; p.m.",
+      "rank": 1300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "numbers-time",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "扉",
+      "reading": "とびら",
+      "meaning": "door; gate; opening; title page",
+      "rank": 1400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "床",
+      "reading": "ゆか",
+      "meaning": "floor; stage (for the narrator and the shamisen player); dining platform built across a river",
+      "rank": 1400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ドア",
+      "reading": "ドア",
+      "meaning": "door (Western-style, car, etc.)",
+      "rank": 1400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "立ち上がる",
+      "reading": "たちあがる",
+      "meaning": "to stand up; to get up; to rise; to recover; to take action; to start; to make the initial charge; to start up; to boot up",
+      "rank": 1400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "movement",
+      "assigned": null,
+      "existingUses": [
+        "move:tachiagaru"
+      ]
+    },
+    {
+      "word": "眺める",
+      "reading": "ながめる",
+      "meaning": "to look at; to gaze at; to watch; to stare at; to look out over; to get a view of; to admire (e.g. the scenery); to look on (from the sidelines); to stand by and watch; to observe",
+      "rank": 1400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "廊下",
+      "reading": "ろうか",
+      "meaning": "corridor; hallway; passageway",
+      "rank": 1400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": [
+        "area-loc:mahouno-gakkou-long-hallway"
+      ]
+    },
+    {
+      "word": "先輩",
+      "reading": "せんぱい",
+      "meaning": "senior (at work or school); superior; elder; older graduate; progenitor; old-timer",
+      "rank": 1400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "噂",
+      "reading": "うわさ",
+      "meaning": "rumour; rumor; report; hearsay; gossip; common talk",
+      "rank": 1400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "皆",
+      "reading": "みんな",
+      "meaning": "everyone; everybody; all; everything; all",
+      "rank": 1400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "謝る",
+      "reading": "あやまる",
+      "meaning": "to apologize; to apologise",
+      "rank": 1400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "少年",
+      "reading": "しょうねん",
+      "meaning": "boy; juvenile; young boy; youth; lad",
+      "rank": 1400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "犬",
+      "reading": "いぬ",
+      "meaning": "dog (Canis (lupus) familiaris); squealer; rat; snitch; informer; informant; spy; loser; asshole; counterfeit; inferior; useless; wasteful",
+      "rank": 1500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "おいしい",
+      "reading": "おいしい",
+      "meaning": "delicious; tasty; sweet; attractive; appealing; convenient; favorable; desirable; profitable",
+      "rank": 1500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "椅子",
+      "reading": "いす",
+      "meaning": "chair; stool; post; office; position",
+      "rank": 1500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "机",
+      "reading": "つくえ",
+      "meaning": "desk",
+      "rank": 1500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": [
+        "area-loc:himitsuno-toshokan-wide-desk"
+      ]
+    },
+    {
+      "word": "体",
+      "reading": "たい",
+      "meaning": "body; physique; posture; shape; form; style; substance; identity; reality; field; counter for humanoid forms (e.g. dolls, statues, corpses, etc.); typeface; type",
+      "rank": 1500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "body-parts",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "真剣",
+      "reading": "しんけん",
+      "meaning": "serious; earnest; real sword (as opposed to a wooden practice weapon)",
+      "rank": 1500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "黒",
+      "reading": "くろ",
+      "meaning": "black; black go stone; guilt; guilty person",
+      "rank": 1500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "colors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "階段",
+      "reading": "かいだん",
+      "meaning": "stairs; stairway; staircase",
+      "rank": 1500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": [
+        "area-loc:himitsuno-toshokan-dark-staircase"
+      ]
+    },
+    {
+      "word": "教室",
+      "reading": "きょうしつ",
+      "meaning": "classroom; lecture room; department (in a university); class; lessons; course; school (for a particular discipline); teaching establishment",
+      "rank": 1500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": [
+        "area-loc:mahouno-gakkou-spacious-classroom"
+      ]
+    },
+    {
+      "word": "生徒",
+      "reading": "せいと",
+      "meaning": "pupil; student; schoolchild",
+      "rank": 1500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": [
+        "npc:makoto"
+      ]
+    },
+    {
+      "word": "挨拶",
+      "reading": "あいさつ",
+      "meaning": "greeting; greetings; salutation; salute; condolences; congratulations; speech (congratulatory or appreciative); address; reply; response; revenge; retaliation; a fine thing to say; dialoging (with another Zen practitioner to ascertain their level of enlightenment); relationship (between people); connection; intervention; mediation; mediator",
+      "rank": 1500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "クラス",
+      "reading": "クラス",
+      "meaning": "class",
+      "rank": 1500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "話しかける",
+      "reading": "はなしかける",
+      "meaning": "to address (someone); to accost a person; to talk (to someone); to begin to talk; to start a conversation",
+      "rank": 1500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "猫",
+      "reading": "ねこ",
+      "meaning": "cat (esp. the domestic cat, Felis catus); shamisen; geisha; wheelbarrow; clay bed-warmer; bottom; submissive partner of a homosexual relationship",
+      "rank": 1600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": [
+        "creature:nekotto"
+      ]
+    },
+    {
+      "word": "お茶",
+      "reading": "おちゃ",
+      "meaning": "tea (usu. green); tea break (at work); tea ceremony",
+      "rank": 1600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "鍵",
+      "reading": "かぎ",
+      "meaning": "key; lock; key (to a problem); clue",
+      "rank": 1600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "汗",
+      "reading": "あせ",
+      "meaning": "sweat; perspiration; moisture; condensation; gulp; oops",
+      "rank": 1600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "body-parts",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "閉じる",
+      "reading": "とじる",
+      "meaning": "to close (e.g. book, eyes, meeting, etc.); to shut",
+      "rank": 1600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": [
+        "move:tojiru"
+      ]
+    },
+    {
+      "word": "真面目",
+      "reading": "まじめ",
+      "meaning": "serious; honest; sober; grave; earnest; steady",
+      "rank": 1600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "白",
+      "reading": "しろ",
+      "meaning": "white; innocence; innocent person; blank space; white go stone; white dragon tile; skewered grilled pig intestine",
+      "rank": 1600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "colors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "女子",
+      "reading": "じょし",
+      "meaning": "woman; girl",
+      "rank": 1600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "褒める",
+      "reading": "ほめる",
+      "meaning": "to praise; to commend; to compliment; to speak well of; to speak highly of",
+      "rank": 1600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "指示",
+      "reading": "しじ",
+      "meaning": "indication; denotation; designation; instructions; directions",
+      "rank": 1600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "知識",
+      "reading": "ちしき",
+      "meaning": "knowledge; information",
+      "rank": 1600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "箱",
+      "reading": "はこ",
+      "meaning": "box; case; chest; package; pack; crate; car (of a train, etc.); shamisen case; shamisen; public building; community building; man who carries a geisha's shamisen; receptacle for human waste; feces (faeces); counter for boxes (or boxed objects)",
+      "rank": 1700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "門",
+      "reading": "もん",
+      "meaning": "gate; branch of learning based on the teachings of a single master; division; phylum; counter for cannons",
+      "rank": 1700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "紙",
+      "reading": "かみ",
+      "meaning": "paper",
+      "rank": 1700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "天井",
+      "reading": "てんじょう",
+      "meaning": "ceiling; ceiling price; (price) ceiling",
+      "rank": 1700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": [
+        "area-loc:himitsuno-toshokan-shining-ceiling"
+      ]
+    },
+    {
+      "word": "苦手",
+      "reading": "にがて",
+      "meaning": "poor (at); weak (in); not very good (at); not one's cup of tea; not one's favorite",
+      "rank": 1700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "悔しい",
+      "reading": "くやしい",
+      "meaning": "frustrated (over a failure, humiliation or injustice); annoyed; chagrined; (bitterly) disappointed; bitter; vexed; frustrating; annoying; regrettable",
+      "rank": 1700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "赤",
+      "reading": "あか",
+      "meaning": "red; crimson; scarlet; red-containing colour (e.g. brown, pink, orange); Red (i.e. communist); red light (traffic); red ink (i.e. in finance or proof-reading); (in) the red; complete; total; perfect; obvious; copper; red 5-point card",
+      "rank": 1700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "colors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "趣味",
+      "reading": "しゅみ",
+      "meaning": "hobby; pastime; tastes; preference; liking",
+      "rank": 1700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "鳥",
+      "reading": "とり",
+      "meaning": "bird; bird meat (esp. chicken meat); fowl; poultry",
+      "rank": 1800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": [
+        "item:yakitori"
+      ]
+    },
+    {
+      "word": "道具",
+      "reading": "どうぐ",
+      "meaning": "tool; implement; instrument; utensil; apparatus; device; means; furniture",
+      "rank": 1800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "制服",
+      "reading": "せいふく",
+      "meaning": "uniform",
+      "rank": 1800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "clothing",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "投げる",
+      "reading": "なげる",
+      "meaning": "to throw; to hurl; to fling; to toss; to cast; to give up; to abandon; to throw away; to cast (a glance, shadow, doubt, etc.)",
+      "rank": 1800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": [
+        "move:nageru"
+      ]
+    },
+    {
+      "word": "洗う",
+      "reading": "あらう",
+      "meaning": "to wash; to cleanse; to rinse; to inquire into; to investigate; to purify (one's heart); to lave (e.g. shore); to wash over (e.g. deck); to sweep",
+      "rank": 1800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": [
+        "move:arau"
+      ]
+    },
+    {
+      "word": "焦る",
+      "reading": "あせる",
+      "meaning": "to be in a hurry; to be impatient; to be anxious (to do); to fret; to get a fright; to panic; to get flustered; to be startled",
+      "rank": 1800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "男の子",
+      "reading": "おとこのこ",
+      "meaning": "boy; son; baby boy; young man",
+      "rank": 1800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "告白",
+      "reading": "こくはく",
+      "meaning": "confession; acknowledgement; acknowledgment; confession of love; professing one's feelings; confession of sins (e.g. the confessional)",
+      "rank": 1800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "授業",
+      "reading": "じゅぎょう",
+      "meaning": "lesson; class work; teaching; instruction",
+      "rank": 1800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "魚",
+      "reading": "さかな",
+      "meaning": "fish",
+      "rank": 1900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "庭",
+      "reading": "にわ",
+      "meaning": "garden; yard; courtyard; field (of action); area",
+      "rank": 1900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "nature",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "春",
+      "reading": "はる",
+      "meaning": "spring; springtime; New Year; prime (of life); height (of one's prosperity); heyday; adolescence; puberty; sexuality; sexual desire",
+      "rank": 1900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "nature",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "騒ぐ",
+      "reading": "さわぐ",
+      "meaning": "to make noise; to make racket; to be noisy; to rustle; to swoosh; to make merry; to clamor; to clamour; to make a fuss; to kick up a fuss; to lose one's cool; to panic; to act flustered; to feel tense; to be uneasy; to be excited",
+      "rank": 1900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "並べる",
+      "reading": "ならべる",
+      "meaning": "to line up; to set up; to arrange in a line; to enumerate; to itemize; to be equal (to); to compare well (with); to be as good (as)",
+      "rank": 1900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "玄関",
+      "reading": "げんかん",
+      "meaning": "entrance; front door; entryway; entranceway; entry hall; vestibule; porch; foyer; mud room",
+      "rank": 1900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "大学",
+      "reading": "だいがく",
+      "meaning": "university; college; former central university of Kyoto (established under the ritsuryo system for the training of government administrators); the Great Learning (one of the Four Books)",
+      "rank": 1900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "応援",
+      "reading": "おうえん",
+      "meaning": "aid; assistance; help; support; reinforcement; cheering; rooting (for); support",
+      "rank": 1900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "男子",
+      "reading": "だんし",
+      "meaning": "boy; man; male",
+      "rank": 1900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "歴史",
+      "reading": "れきし",
+      "meaning": "history",
+      "rank": 1900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "才能",
+      "reading": "さいのう",
+      "meaning": "talent; ability",
+      "rank": 1900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "冬",
+      "reading": "ふゆ",
+      "meaning": "winter",
+      "rank": 2000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "nature",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "パン",
+      "reading": "パン",
+      "meaning": "bread; (sweet) pastry; staff of life; one's bread",
+      "rank": 2000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": [
+        "item:curry-bread"
+      ]
+    },
+    {
+      "word": "鏡",
+      "reading": "かがみ",
+      "meaning": "mirror; looking-glass; barrel head; page added at the beginning of a document mentioning its purpose, date, author, etc.; mirror-shaped mochi",
+      "rank": 2000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "間違える",
+      "reading": "まちがえる",
+      "meaning": "to make a mistake (in); to commit an error (e.g. in calculation); to confuse; to mistake something for something else",
+      "rank": 2000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "優秀",
+      "reading": "ゆうしゅう",
+      "meaning": "superior; excellent; brilliant; outstanding",
+      "rank": 2000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "懐かしい",
+      "reading": "なつかしい",
+      "meaning": "dear (old); fondly-remembered; beloved; missed; nostalgic",
+      "rank": 2000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": [
+        "creature-mod:supiikaazou"
+      ]
+    },
+    {
+      "word": "勇気",
+      "reading": "ゆうき",
+      "meaning": "courage; bravery; valour; valor; nerve; boldness",
+      "rank": 2000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "入り口",
+      "reading": "いりぐち",
+      "meaning": "entrance; entry; gate; approach; mouth",
+      "rank": 2000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "組",
+      "reading": "くみ",
+      "meaning": "class (of students); group (of people); party; team; crew; lot; bunch; set; crime family; organized-crime syndicate; set (of items); assortment; deck (of cards); pack; typesetting; composition",
+      "rank": 2000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "学生",
+      "reading": "がくせい",
+      "meaning": "student (esp. a university student)",
+      "rank": 2000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "訓練",
+      "reading": "くんれん",
+      "meaning": "training; drill; practice; discipline",
+      "rank": 2000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "動物",
+      "reading": "どうぶつ",
+      "meaning": "animal",
+      "rank": 2100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ご飯",
+      "reading": "ごはん",
+      "meaning": "cooked rice; meal",
+      "rank": 2100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": [
+        "item:bowl-of-rice"
+      ]
+    },
+    {
+      "word": "靴",
+      "reading": "くつ",
+      "meaning": "shoe; shoes; boots; footwear; footgear",
+      "rank": 2100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "clothing",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "丁寧",
+      "reading": "ていねい",
+      "meaning": "polite; courteous; civil; careful; close; thorough; conscientious",
+      "rank": 2100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "下手",
+      "reading": "へた",
+      "meaning": "unskillful; poor; awkward; imprudent; untactful",
+      "rank": 2100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "青",
+      "reading": "あお",
+      "meaning": "blue; azure; green; green light (traffic); black (horse coat color); blue 5-point card; immature; unripe; young",
+      "rank": 2100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "colors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "評価",
+      "reading": "ひょうか",
+      "meaning": "valuation; appraisal; evaluation; assessment; estimation; rating; judging; appreciation; recognition; acknowledgement; rating highly; praising",
+      "rank": 2100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "目標",
+      "reading": "もくひょう",
+      "meaning": "goal; target; aim; objective; mark; sign; landmark",
+      "rank": 2100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "生き物",
+      "reading": "いきもの",
+      "meaning": "living thing; living creature; animal; life",
+      "rank": 2200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "草",
+      "reading": "くさ",
+      "meaning": "grass; weed; herb; thatch; ninja; not genuine; substandard; LOL; haha",
+      "rank": 2200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "nature",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "蹴る",
+      "reading": "ける",
+      "meaning": "to kick; to refuse; to reject; to stamp (on the ground); to firmly press one's feet (against something)",
+      "rank": 2200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": [
+        "move:keru"
+      ]
+    },
+    {
+      "word": "閉める",
+      "reading": "しめる",
+      "meaning": "to close; to shut",
+      "rank": 2200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "高校",
+      "reading": "こうこう",
+      "meaning": "senior high school; high school",
+      "rank": 2200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "教師",
+      "reading": "きょうし",
+      "meaning": "teacher (classroom)",
+      "rank": 2200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "正解",
+      "reading": "せいかい",
+      "meaning": "correct; right; correct interpretation (answer, solution)",
+      "rank": 2200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "昼",
+      "reading": "ひる",
+      "meaning": "noon; midday; daytime; lunch",
+      "rank": 2200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "numbers-time",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "虫",
+      "reading": "むし",
+      "meaning": "insect; bug; cricket; moth; worm; roundworm; one's emotions; one's feelings; nervousness; fretfulness; person devoted to one thing; single-minded person; valve core; mushi (type of game played with a stripped deck)",
+      "rank": 2300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "字",
+      "reading": "じ",
+      "meaning": "character (esp. kanji); letter; written text; handwriting; penmanship; the ... word (e.g. \"the L word\" = \"love\")",
+      "rank": 2300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "トイレ",
+      "reading": "トイレ",
+      "meaning": "toilet; restroom; bathroom; lavatory",
+      "rank": 2300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "緑",
+      "reading": "みどり",
+      "meaning": "green; greenery (esp. fresh verdure)",
+      "rank": 2300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "colors",
+      "assigned": null,
+      "existingUses": [
+        "item:green-tea"
+      ]
+    },
+    {
+      "word": "舞台",
+      "reading": "ぶたい",
+      "meaning": "stage (theatre, theater); scene or setting (e.g. of novel, play, etc.)",
+      "rank": 2300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "会場",
+      "reading": "かいじょう",
+      "meaning": "assembly hall; meeting place; venue; grounds",
+      "rank": 2300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "発表",
+      "reading": "はっぴょう",
+      "meaning": "announcement; publication; presenting; statement; communique; making known; breaking (news story); expressing (one's opinion); releasing; unveiling",
+      "rank": 2300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "集団",
+      "reading": "しゅうだん",
+      "meaning": "group; mass",
+      "rank": 2300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "教育",
+      "reading": "きょういく",
+      "meaning": "education; schooling; training; instruction; teaching; upbringing; culture; cultivation; education",
+      "rank": 2300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ルール",
+      "reading": "ルール",
+      "meaning": "rule",
+      "rank": 2300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "時計",
+      "reading": "とけい",
+      "meaning": "clock; watch; timepiece",
+      "rank": 2400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": [
+        "item:hourglass"
+      ]
+    },
+    {
+      "word": "やる気",
+      "reading": "やるき",
+      "meaning": "willingness (e.g. to do something); eagerness; motivation; inspiration; determination; high aspirations",
+      "rank": 2400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "落ち込む",
+      "reading": "おちこむ",
+      "meaning": "to feel down; to feel sad; to be depressed; to be in low spirits; to be in a slump (business, economy, etc.); to be in an unfavourable condition; to fall into (e.g. a hole)",
+      "rank": 2400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "休み",
+      "reading": "やすみ",
+      "meaning": "rest; recess; respite; vacation; holiday; absence; suspension; dormancy (of a silkworm prior to moulting)",
+      "rank": 2400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "numbers-time",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ページ",
+      "reading": "ページ",
+      "meaning": "page",
+      "rank": 2500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "つまらない",
+      "reading": "つまらない",
+      "meaning": "dull; uninteresting; boring; tedious; insignificant; unimportant; trifling; trivial; worthless; absurd; foolish; silly; stupid; useless; pointless; disappointing",
+      "rank": 2500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "尊敬",
+      "reading": "そんけい",
+      "meaning": "respect; esteem; reverence; honour; honor",
+      "rank": 2500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "公園",
+      "reading": "こうえん",
+      "meaning": "(public) park",
+      "rank": 2500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "基本",
+      "reading": "きほん",
+      "meaning": "basics; fundamentals; basis; foundation",
+      "rank": 2500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "秋",
+      "reading": "あき",
+      "meaning": "autumn; fall",
+      "rank": 2600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "nature",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "野菜",
+      "reading": "やさい",
+      "meaning": "vegetable",
+      "rank": 2600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "食べ物",
+      "reading": "たべもの",
+      "meaning": "food",
+      "rank": 2600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "玉",
+      "reading": "たま",
+      "meaning": "ball; sphere; globe; orb; bead (of sweat, dew, etc.); drop; droplet; ball (in sports); pile (of noodles, etc.); bullet; bulb (i.e. a light bulb); lens (of glasses, etc.); bead (of an abacus); ball (i.e. a testicle); gem; jewel (esp. spherical; sometimes used figuratively); pearl; female entertainer (e.g. a geisha); person (when commenting on their nature); character; item, funds or person used as part of a plot; egg; coin; precious; beautiful; excellent",
+      "rank": 2600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "聴く",
+      "reading": "きく",
+      "meaning": "to hear; to listen (e.g. to music); to ask; to enquire; to query; to hear about; to hear of; to learn of; to follow (advice, order, etc.); to obey; to listen to; to comply with; to hear (e.g. a plea); to grant (a request); to accept (e.g. an argument); to give consideration to; to smell (esp. incense); to sample (a fragrance); to taste (alcohol); to try",
+      "rank": 2600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "拭く",
+      "reading": "ふく",
+      "meaning": "to wipe; to dry",
+      "rank": 2600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "眠い",
+      "reading": "ねむい",
+      "meaning": "sleepy; drowsy; somnolent",
+      "rank": 2600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": [
+        "creature-mod:tsukimochi"
+      ]
+    },
+    {
+      "word": "おとなしい",
+      "reading": "おとなしい",
+      "meaning": "obedient; docile; quiet",
+      "rank": 2600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "話し合う",
+      "reading": "はなしあう",
+      "meaning": "to discuss; to talk together",
+      "rank": 2600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "拍手",
+      "reading": "はくしゅ",
+      "meaning": "clapping hands; applause",
+      "rank": 2600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "指す",
+      "reading": "さす",
+      "meaning": "to point; to nominate; to select someone; to specify some person; to identify; to indicate; to point out; to play (a game of shogi); to move (a piece); to extend one's arm straight ahead (in dance)",
+      "rank": 2700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "挙げる",
+      "reading": "あげる",
+      "meaning": "to raise; to elevate; to do up (one's hair); to fly (a kite, etc.); to launch (fireworks, etc.); to surface (a submarine, etc.); to land (a boat); to show someone (into a room); to send someone (away); to enrol (one's child in school); to enroll; to increase (price, quality, status, etc.); to develop (talent, skill); to improve; to make (a loud sound); to raise (one's voice); to earn (something desirable); to praise; to give (an example, etc.); to cite; to summon up (all of one's energy, etc.); to arrest; to nominate; to bear (a child); to conduct (a ceremony, esp. a wedding); (of the tide) to come in; to vomit; to do for (the sake of someone else); to complete ...; to humbly do ...",
+      "rank": 2700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "退屈",
+      "reading": "たいくつ",
+      "meaning": "tedium; boredom; dullness; to feel bored; to get bored with; to get tired of",
+      "rank": 2700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "棚",
+      "reading": "たな",
+      "meaning": "shelf; ledge; rack; trellis",
+      "rank": 2800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "叱る",
+      "reading": "しかる",
+      "meaning": "to scold; to chide; to rebuke; to reprimand",
+      "rank": 2800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "悩み",
+      "reading": "なやみ",
+      "meaning": "trouble; troubles; worry; distress; sorrows; anguish; agony; problem",
+      "rank": 2800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "グループ",
+      "reading": "グループ",
+      "meaning": "group (usu. of people)",
+      "rank": 2800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "塗る",
+      "reading": "ぬる",
+      "meaning": "to paint; to plaster; to lacquer; to varnish; to spread; to smear; to put up (wallpaper)",
+      "rank": 2900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "記す",
+      "reading": "しるす",
+      "meaning": "to write down; to note; to jot down; to remember",
+      "rank": 2900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "争う",
+      "reading": "あらそう",
+      "meaning": "to compete; to contest; to contend; to quarrel; to argue; to dispute; to be at variance; to oppose; to deny (e.g. evidence)",
+      "rank": 2900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "熱心",
+      "reading": "ねっしん",
+      "meaning": "zealous; enthusiastic; ardent; fervent; keen; eager",
+      "rank": 2900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "小学校",
+      "reading": "しょうがっこう",
+      "meaning": "primary school; elementary school; grade school",
+      "rank": 2900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "成績",
+      "reading": "せいせき",
+      "meaning": "results; record; grades; marks",
+      "rank": 2900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "指導",
+      "reading": "しどう",
+      "meaning": "guidance; leadership; instruction; direction; coaching; shido (disciplinary action for a minor infringement of the rules of judo)",
+      "rank": 2900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "習う",
+      "reading": "ならう",
+      "meaning": "to take lessons in; to be taught; to learn (from a teacher); to study (under a teacher); to get training in",
+      "rank": 3000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "親切",
+      "reading": "しんせつ",
+      "meaning": "kind; gentle; considerate; generous; friendly; nice",
+      "rank": 3000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "議論",
+      "reading": "ぎろん",
+      "meaning": "argument; discussion; dispute; controversy",
+      "rank": 3000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "英語",
+      "reading": "えいご",
+      "meaning": "English (language)",
+      "rank": 3000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "課題",
+      "reading": "かだい",
+      "meaning": "subject; theme; issue; matter; homework; assignment; task; challenge; problem; question",
+      "rank": 3000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "出席",
+      "reading": "しゅっせき",
+      "meaning": "attendance; presence; appearance",
+      "rank": 3000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "見直す",
+      "reading": "みなおす",
+      "meaning": "to look at again; to re-examine (policy, estimate, plan, etc.); to review; to get a better opinion of; to see in a more positive light; to improve; to recover (market, illness, etc.)",
+      "rank": 3100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "頷く",
+      "reading": "うなずく",
+      "meaning": "to nod; to bow one's head in assent; to agree",
+      "rank": 3100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "学園",
+      "reading": "がくえん",
+      "meaning": "educational institution; school; academy; campus",
+      "rank": 3100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "お菓子",
+      "reading": "おかし",
+      "meaning": "confections; sweets; candy; cake",
+      "rank": 3200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "スカート",
+      "reading": "スカート",
+      "meaning": "skirt",
+      "rank": 3200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "clothing",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "照れる",
+      "reading": "てれる",
+      "meaning": "to be shy; to be bashful; to feel awkward; to feel embarrassed",
+      "rank": 3200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "チーム",
+      "reading": "チーム",
+      "meaning": "team",
+      "rank": 3200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "食堂",
+      "reading": "しょくどう",
+      "meaning": "dining room; dining hall; cafeteria; canteen; messroom; restaurant; eatery; snack bar; diner",
+      "rank": 3300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ドキドキ",
+      "reading": "ドキドキ",
+      "meaning": "thump-thump; bang-bang; pit-a-pat; pitapat; pitter-patter; to beat fast (of one's heart); to throb; to pound; to palpitate",
+      "rank": 3300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "通路",
+      "reading": "つうろ",
+      "meaning": "passage; pathway; roadway; avenue; aisle",
+      "rank": 3300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "室内",
+      "reading": "しつない",
+      "meaning": "indoor; inside the room",
+      "rank": 3300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "試合",
+      "reading": "しあい",
+      "meaning": "match; game; bout; contest",
+      "rank": 3300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "喧嘩",
+      "reading": "けんか",
+      "meaning": "quarrel; brawl; fight; squabble; scuffle; argument",
+      "rank": 3300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "親友",
+      "reading": "しんゆう",
+      "meaning": "close friend; bosom friend; buddy; crony; chum",
+      "rank": 3300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "問い",
+      "reading": "とい",
+      "meaning": "question; query",
+      "rank": 3300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "試験",
+      "reading": "しけん",
+      "meaning": "examination; exam; test; trial; experiment; test",
+      "rank": 3300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "卵",
+      "reading": "たまご",
+      "meaning": "eggs; egg; spawn; roe; (hen's) egg; (an expert) in the making; beginning; origin; infancy",
+      "rank": 3400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": [
+        "item:egg"
+      ]
+    },
+    {
+      "word": "駆ける",
+      "reading": "かける",
+      "meaning": "to run; to dash; to race; to gallop (on horseback); to canter; to advance (against one's enemy); to charge (on horseback)",
+      "rank": 3400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "movement",
+      "assigned": null,
+      "existingUses": [
+        "move:kakeru_gallop"
+      ]
+    },
+    {
+      "word": "跳ねる",
+      "reading": "はねる",
+      "meaning": "to jump; to leap; to prance; to spring up; to bound; to hop; to break up; to close; to come to an end; to hit (e.g. to have a car hit something or someone)",
+      "rank": 3400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "movement",
+      "assigned": null,
+      "existingUses": [
+        "move:haneru"
+      ]
+    },
+    {
+      "word": "羨ましい",
+      "reading": "うらやましい",
+      "meaning": "envious; jealous; enviable (position, etc.)",
+      "rank": 3400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "二階",
+      "reading": "にかい",
+      "meaning": "second floor; upstairs",
+      "rank": 3400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "大会",
+      "reading": "たいかい",
+      "meaning": "mass meeting; convention; rally; conference; assembly; gathering; tournament; competition; contest; meet; grand event",
+      "rank": 3400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "テスト",
+      "reading": "テスト",
+      "meaning": "examination; quiz; test; test; tryout; trial; rehearsal (in filming)",
+      "rank": 3400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "桜",
+      "reading": "さくら",
+      "meaning": "cherry tree; cherry blossom; fake buyer; paid audience; shill; seat filler; hired applauder; horse meat",
+      "rank": 3500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "nature",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "広場",
+      "reading": "ひろば",
+      "meaning": "public square; square; plaza; piazza; forum; open space; clearing",
+      "rank": 3500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": [
+        "area-loc:shizukana-kouen-small-plaza"
+      ]
+    },
+    {
+      "word": "屋上",
+      "reading": "おくじょう",
+      "meaning": "rooftop",
+      "rank": 3500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": [
+        "area-loc:mahouno-gakkou-high-rooftop"
+      ]
+    },
+    {
+      "word": "走り出す",
+      "reading": "はしりだす",
+      "meaning": "to begin to run; to start running; to break into a run",
+      "rank": 3600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "movement",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "憧れる",
+      "reading": "あこがれる",
+      "meaning": "to long for; to yearn after; to admire; to be attracted by",
+      "rank": 3600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "放課後",
+      "reading": "ほうかご",
+      "meaning": "after school (at the end of the day)",
+      "rank": 3600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "numbers-time",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "帽子",
+      "reading": "ぼうし",
+      "meaning": "hat; cap",
+      "rank": 3700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "clothing",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "手渡す",
+      "reading": "てわたす",
+      "meaning": "to hand over; to surrender",
+      "rank": 3700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "会長",
+      "reading": "かいちょう",
+      "meaning": "president (of a society); chairman",
+      "rank": 3700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "小学生",
+      "reading": "しょうがくせい",
+      "meaning": "elementary school student; primary school student; grade school student",
+      "rank": 3700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "夏休み",
+      "reading": "なつやすみ",
+      "meaning": "summer vacation; summer holiday",
+      "rank": 3700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "numbers-time",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "お昼",
+      "reading": "おひる",
+      "meaning": "lunch; noon; midday; daytime; waking up; getting up; rising",
+      "rank": 3800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ノート",
+      "reading": "ノート",
+      "meaning": "notebook; copy-book; exercise book; note; noting down; (musical) note; laptop (computer); notebook (computer)",
+      "rank": 3800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "出口",
+      "reading": "でぐち",
+      "meaning": "exit; gateway; way out; outlet; vent; leak",
+      "rank": 3800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "後輩",
+      "reading": "こうはい",
+      "meaning": "junior (at work, school, etc.); younger people; younger student",
+      "rank": 3800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "校舎",
+      "reading": "こうしゃ",
+      "meaning": "school building; schoolhouse",
+      "rank": 3800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "飼う",
+      "reading": "かう",
+      "meaning": "to keep (a pet or other animal); to have; to own; to raise; to rear; to feed",
+      "rank": 3900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "池",
+      "reading": "いけ",
+      "meaning": "pond",
+      "rank": 3900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "nature",
+      "assigned": null,
+      "existingUses": [
+        "area-loc:okunomori-small-pond"
+      ]
+    },
+    {
+      "word": "咲く",
+      "reading": "さく",
+      "meaning": "to bloom; to flower; to blossom; to open",
+      "rank": 3900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "nature",
+      "assigned": null,
+      "existingUses": [
+        "move:saku"
+      ]
+    },
+    {
+      "word": "鞄",
+      "reading": "かばん",
+      "meaning": "bag; satchel; briefcase; basket",
+      "rank": 3900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ゴミ",
+      "reading": "ゴミ",
+      "meaning": "rubbish; trash; garbage; refuse",
+      "rank": 3900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "電気",
+      "reading": "でんき",
+      "meaning": "electricity; (electric) light",
+      "rank": 3900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ボール",
+      "reading": "ボール",
+      "meaning": "ball; ball (pitch that falls outside of the strike zone); bowl; board (cardboard, pasteboard, etc.)",
+      "rank": 3900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "孤独",
+      "reading": "こどく",
+      "meaning": "solitude; loneliness; isolation",
+      "rank": 3900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": [
+        "creature-mod:ookamiru"
+      ]
+    },
+    {
+      "word": "部活",
+      "reading": "ぶかつ",
+      "meaning": "club activities; extracurricular activities",
+      "rank": 3900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "高校生",
+      "reading": "こうこうせい",
+      "meaning": "senior high school student",
+      "rank": 3900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "お弁当",
+      "reading": "おべんとう",
+      "meaning": "bento; Japanese box lunch",
+      "rank": 4000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "板",
+      "reading": "いた",
+      "meaning": "board; plank; sheet (of metal); plate (of glass); pane; slab; cutting board; chopping board; chef (esp. of high-end Japanese cuisine); cook; stage (i.e. at a theatre)",
+      "rank": 4000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "カーテン",
+      "reading": "カーテン",
+      "meaning": "curtain; curtains",
+      "rank": 4000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "メモ",
+      "reading": "メモ",
+      "meaning": "note; memo; memorandum",
+      "rank": 4000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "騒がしい",
+      "reading": "さわがしい",
+      "meaning": "noisy; boisterous; turbulent (era, etc.); troubled",
+      "rank": 4000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "誇り",
+      "reading": "ほこり",
+      "meaning": "pride; boast; credit (to)",
+      "rank": 4000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "弟子",
+      "reading": "でし",
+      "meaning": "pupil; disciple; adherent; follower; apprentice; young person; teacher's student-helper",
+      "rank": 4000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "いじめる",
+      "reading": "いじめる",
+      "meaning": "to ill-treat; to bully; to torment; to pick on; to tease; to be cruel to; to persecute; to be tough on (e.g. one's body); to treat harshly",
+      "rank": 4000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "列",
+      "reading": "れつ",
+      "meaning": "row; line; file; column; queue; rank; procession; company (of someone); group; ranks; sequence; counter for rows",
+      "rank": 4100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "弁当",
+      "reading": "べんとう",
+      "meaning": "bento; Japanese box lunch",
+      "rank": 4200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": [
+        "item:bento"
+      ]
+    },
+    {
+      "word": "ベンチ",
+      "reading": "ベンチ",
+      "meaning": "bench",
+      "rank": 4200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ハンカチ",
+      "reading": "ハンカチ",
+      "meaning": "handkerchief",
+      "rank": 4200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "clothing",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "試みる",
+      "reading": "こころみる",
+      "meaning": "to try; to attempt; to have a go (at something)",
+      "rank": 4200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "教授",
+      "reading": "きょうじゅ",
+      "meaning": "professor; teaching; instruction",
+      "rank": 4200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": [
+        "npc:fumi"
+      ]
+    },
+    {
+      "word": "自転車",
+      "reading": "じてんしゃ",
+      "meaning": "bicycle; bike",
+      "rank": 4300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "賢い",
+      "reading": "かしこい",
+      "meaning": "wise; clever; smart",
+      "rank": 4300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": [
+        "creature-mod:irukami"
+      ]
+    },
+    {
+      "word": "係",
+      "reading": "かかり",
+      "meaning": "charge; duty; person in charge; official; clerk; connection; linking",
+      "rank": 4300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "自己紹介",
+      "reading": "じこしょうかい",
+      "meaning": "self-introduction",
+      "rank": 4300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "班",
+      "reading": "はん",
+      "meaning": "group; party; team; squad; section",
+      "rank": 4300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "好奇心",
+      "reading": "こうきしん",
+      "meaning": "curiosity; inquisitiveness",
+      "rank": 4400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "中庭",
+      "reading": "なかにわ",
+      "meaning": "courtyard; quadrangle; middle court",
+      "rank": 4400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": [
+        "area-loc:mahouno-gakkou-small-courtyard"
+      ]
+    },
+    {
+      "word": "博士",
+      "reading": "はかせ",
+      "meaning": "expert; learned person; doctor; PhD; Dr.; instructor at the imperial court (ritsuryo period); pitch and length marks (to accompany a Buddhist liturgical chant, etc.)",
+      "rank": 4400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "上着",
+      "reading": "うわぎ",
+      "meaning": "coat; tunic; jacket; outer garment",
+      "rank": 4500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "clothing",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "生意気",
+      "reading": "なまいき",
+      "meaning": "impertinent; saucy; cheeky; impudent; audacious; cocky; pert; brash",
+      "rank": 4500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "職員",
+      "reading": "しょくいん",
+      "meaning": "staff member; employee; worker; personnel",
+      "rank": 4500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "監督",
+      "reading": "かんとく",
+      "meaning": "supervision; control; superintendence; direction; director; superintendent; supervisor; coach; foreman; manager; overseer; controller; boss",
+      "rank": 4500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "励ます",
+      "reading": "はげます",
+      "meaning": "to encourage; to cheer; to raise (the voice)",
+      "rank": 4500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "social",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "昼休み",
+      "reading": "ひるやすみ",
+      "meaning": "lunch break; noon recess; noon rest period",
+      "rank": 4600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "numbers-time",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "傘",
+      "reading": "かさ",
+      "meaning": "umbrella; parasol; something shaped like an umbrella or a conical hat; shade (of a lamp); mushroom cap; pileus",
+      "rank": 4700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": [
+        "creature:kasamii"
+      ]
+    },
+    {
+      "word": "合格",
+      "reading": "ごうかく",
+      "meaning": "success; passing (e.g. exam); eligibility",
+      "rank": 4700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "パソコン",
+      "reading": "パソコン",
+      "meaning": "personal computer; PC",
+      "rank": 4800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ペン",
+      "reading": "ペン",
+      "meaning": "pen",
+      "rank": 4800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "天気",
+      "reading": "てんき",
+      "meaning": "weather; the elements; fair weather; fine weather",
+      "rank": 4900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "nature",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "読み取る",
+      "reading": "よみとる",
+      "meaning": "to read and understand; to take in; to sense from external cues; to read (someone's) mind; to read (calibration, tape, etc.); to scan (bar code); to read (out)",
+      "rank": 4900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "プール",
+      "reading": "プール",
+      "meaning": "(swimming) pool; pool (billiards); pool (together)",
+      "rank": 5000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "知恵",
+      "reading": "ちえ",
+      "meaning": "wisdom; wit; sagacity; sense; intelligence; prajna (insight leading to enlightenment)",
+      "rank": 5000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "がっかり",
+      "reading": "がっかり",
+      "meaning": "to be disappointed; to be dejected; to be downhearted; to lose heart; to feel let down; to feel exhausted; to feel drained",
+      "rank": 5100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "チャイム",
+      "reading": "チャイム",
+      "meaning": "chime; bell (e.g. doorbell)",
+      "rank": 5200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ベル",
+      "reading": "ベル",
+      "meaning": "bell; bel; B",
+      "rank": 5300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "教科書",
+      "reading": "きょうかしょ",
+      "meaning": "textbook; coursebook; schoolbook",
+      "rank": 5300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ストレス",
+      "reading": "ストレス",
+      "meaning": "stress",
+      "rank": 5300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "封筒",
+      "reading": "ふうとう",
+      "meaning": "envelope",
+      "rank": 5500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "登校",
+      "reading": "とうこう",
+      "meaning": "attendance (at school); going to school",
+      "rank": 5500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "locations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "宿題",
+      "reading": "しゅくだい",
+      "meaning": "homework; assignment; pending issue; unresolved problem; open question",
+      "rank": 5700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "栄養",
+      "reading": "えいよう",
+      "meaning": "nutrition; nourishment",
+      "rank": 6000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "不良",
+      "reading": "ふりょう",
+      "meaning": "bad; poor; inferior; defective; delinquent; hoodlum; hooligan",
+      "rank": 6000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "学年",
+      "reading": "がくねん",
+      "meaning": "academic year; school year; year in school; grade in school",
+      "rank": 6000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "numbers-time",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "牛乳",
+      "reading": "ぎゅうにゅう",
+      "meaning": "(cow's) milk",
+      "rank": 6200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "旗",
+      "reading": "はた",
+      "meaning": "flag; banner (administrative division of Inner Mongolia)",
+      "rank": 6200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "学者",
+      "reading": "がくしゃ",
+      "meaning": "scholar",
+      "rank": 6500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ペット",
+      "reading": "ペット",
+      "meaning": "pet; trumpet",
+      "rank": 6600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "プレッシャー",
+      "reading": "プレッシャー",
+      "meaning": "pressure",
+      "rank": 6600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "数学",
+      "reading": "すうがく",
+      "meaning": "mathematics; arithmetic",
+      "rank": 6600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "忘れ物",
+      "reading": "わすれもの",
+      "meaning": "lost article; something forgotten",
+      "rank": 6700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "わくわく",
+      "reading": "わくわく",
+      "meaning": "trembling; getting nervous; excited; thrilled",
+      "rank": 6800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "楽器",
+      "reading": "がっき",
+      "meaning": "musical instrument",
+      "rank": 6900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "引き出し",
+      "reading": "ひきだし",
+      "meaning": "drawer; withdrawal (of money from an account); variety of knowledge and experience useful for handling things impromptu",
+      "rank": 6900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "憂鬱",
+      "reading": "ゆううつ",
+      "meaning": "depression; melancholy; dejection; gloom; despondency",
+      "rank": 6900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "集中力",
+      "reading": "しゅうちゅうりょく",
+      "meaning": "(powers of) concentration; ability to concentrate",
+      "rank": 7200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "競う",
+      "reading": "きそう",
+      "meaning": "to compete; to contend; to vie; to contest",
+      "rank": 7500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "actions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "清潔",
+      "reading": "せいけつ",
+      "meaning": "clean; hygienic; sanitary; pure; virtuous; immaculate",
+      "rank": 7500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "descriptors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "規則",
+      "reading": "きそく",
+      "meaning": "rule; regulation",
+      "rank": 7500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "水着",
+      "reading": "みずぎ",
+      "meaning": "bathing suit; swimsuit; swimmers",
+      "rank": 8200,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "clothing",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ウサギ",
+      "reading": "ウサギ",
+      "meaning": "rabbit; hare; coney; cony; lagomorph (esp. leporids)",
+      "rank": 8400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": [
+        "creature:usagira"
+      ]
+    },
+    {
+      "word": "ピアノ",
+      "reading": "ピアノ",
+      "meaning": "piano",
+      "rank": 8400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "委員長",
+      "reading": "いいんちょう",
+      "meaning": "(committee) chairman; president",
+      "rank": 8500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "担任",
+      "reading": "たんにん",
+      "meaning": "being in charge of (esp. a class or subject); taking charge of; class teacher; homeroom teacher; form teacher",
+      "rank": 8500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "蝶",
+      "reading": "ちょう",
+      "meaning": "butterfly",
+      "rank": 8600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": [
+        "creature:chouri"
+      ]
+    },
+    {
+      "word": "助手",
+      "reading": "じょしゅ",
+      "meaning": "assistant; helper; assistant (to a professor)",
+      "rank": 8600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "文化祭",
+      "reading": "ぶんかさい",
+      "meaning": "school festival; cultural festival; annual open day school event showcasing student talent",
+      "rank": 8600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "初心者",
+      "reading": "しょしんしゃ",
+      "meaning": "beginner",
+      "rank": 8700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "看護師",
+      "reading": "かんごし",
+      "meaning": "(hospital) nurse; registered nurse; RN",
+      "rank": 8700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "生徒会長",
+      "reading": "せいとかいちょう",
+      "meaning": "head of the student council; president of the student council",
+      "rank": 8800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "絵本",
+      "reading": "えほん",
+      "meaning": "picture book",
+      "rank": 8900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "転校",
+      "reading": "てんこう",
+      "meaning": "changing schools",
+      "rank": 8900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "おにぎり",
+      "reading": "おにぎり",
+      "meaning": "onigiri; rice ball (often triangular, sometimes with a filling and wrapped in nori)",
+      "rank": 9100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": [
+        "item:rice-ball"
+      ]
+    },
+    {
+      "word": "おやつ",
+      "reading": "おやつ",
+      "meaning": "between-meal snack; mid-afternoon (around 3 o'clock) snack; afternoon refreshment; afternoon tea",
+      "rank": 9100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "初恋",
+      "reading": "はつこい",
+      "meaning": "first love; puppy love",
+      "rank": 9100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "emotions",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "校長",
+      "reading": "こうちょう",
+      "meaning": "principal; headmaster",
+      "rank": 9400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ファイル",
+      "reading": "ファイル",
+      "meaning": "file",
+      "rank": 9500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "スピーカー",
+      "reading": "スピーカー",
+      "meaning": "speaker",
+      "rank": 9600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "objects",
+      "assigned": null,
+      "existingUses": [
+        "creature:supiikaazou"
+      ]
+    },
+    {
+      "word": "靴下",
+      "reading": "くつした",
+      "meaning": "socks; sock; stockings; stocking",
+      "rank": 9800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "clothing",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ネクタイ",
+      "reading": "ネクタイ",
+      "meaning": "tie; necktie",
+      "rank": 9800,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "clothing",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "カエル",
+      "reading": "カエル",
+      "meaning": "frog",
+      "rank": 9900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": [
+        "creature:kaeroki"
+      ]
+    },
+    {
+      "word": "ジャージ",
+      "reading": "ジャージ",
+      "meaning": "jersey (fabric); jersey; (sports) uniform; Jersey (cattle)",
+      "rank": 10100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "clothing",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "休み時間",
+      "reading": "やすみじかん",
+      "meaning": "recess; break time; break between classes; free period; recess time; recreation hour; time for recess",
+      "rank": 10100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "numbers-time",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "学期",
+      "reading": "がっき",
+      "meaning": "school term; semester",
+      "rank": 10300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "numbers-time",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "講師",
+      "reading": "こうし",
+      "meaning": "lecturer",
+      "rank": 10700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "occupations",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "黒板",
+      "reading": "こくばん",
+      "meaning": "blackboard",
+      "rank": 10700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "修学旅行",
+      "reading": "しゅうがくりょこう",
+      "meaning": "excursion; field trip; school trip",
+      "rank": 10700,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "花壇",
+      "reading": "かだん",
+      "meaning": "flower bed",
+      "rank": 10900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "nature",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "レポート",
+      "reading": "レポート",
+      "meaning": "report; paper; reportage",
+      "rank": 11300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "abstract",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "欠席",
+      "reading": "けっせき",
+      "meaning": "absence; non-attendance",
+      "rank": 11400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "木陰",
+      "reading": "こかげ",
+      "meaning": "shade of tree; bower",
+      "rank": 11500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "nature",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ブラウス",
+      "reading": "ブラウス",
+      "meaning": "blouse",
+      "rank": 11500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "clothing",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "昆虫",
+      "reading": "こんちゅう",
+      "meaning": "insect; bug",
+      "rank": 11600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "入学式",
+      "reading": "にゅうがくしき",
+      "meaning": "school entrance ceremony",
+      "rank": 12000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "卒業式",
+      "reading": "そつぎょうしき",
+      "meaning": "graduation ceremony; commencement",
+      "rank": 12000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "リュック",
+      "reading": "リュック",
+      "meaning": "rucksack; knapsack; backpack",
+      "rank": 12100,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "clothing",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "昼ご飯",
+      "reading": "ひるごはん",
+      "meaning": "lunch; midday meal",
+      "rank": 12900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "学食",
+      "reading": "がくしょく",
+      "meaning": "school cafeteria",
+      "rank": 13300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "foods",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "金魚",
+      "reading": "きんぎょ",
+      "meaning": "goldfish (Carassius auratus)",
+      "rank": 15500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "紺",
+      "reading": "こん",
+      "meaning": "navy blue; deep blue",
+      "rank": 15600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "colors",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "理科",
+      "reading": "りか",
+      "meaning": "science (inc. mathematics, medicine, etc.); natural science; science department (university); science course; science (as a school subject)",
+      "rank": 17300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "下駄箱",
+      "reading": "げたばこ",
+      "meaning": "shoe rack (in an entrance); cupboard (for shoes and clogs)",
+      "rank": 17600,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "体育祭",
+      "reading": "たいいくさい",
+      "meaning": "(school) athletic festival; sports day; field day",
+      "rank": 17900,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "給食",
+      "reading": "きゅうしょく",
+      "meaning": "provision of lunch (e.g. at office, school, etc.); providing a meal; lunch service",
+      "rank": 19500,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ランドセル",
+      "reading": "ランドセル",
+      "meaning": "firm-sided backpack made of leather, etc. (used by Japanese elementary schoolchildren, often red for girls and black for boys)",
+      "rank": 22300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "チョーク",
+      "reading": "チョーク",
+      "meaning": "chalk; choke; chock",
+      "rank": 23000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "算数",
+      "reading": "さんすう",
+      "meaning": "arithmetic",
+      "rank": 24000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "ai-generated",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "トンボ",
+      "reading": "トンボ",
+      "meaning": "dragonfly; damselfly",
+      "rank": 27000,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "バッタ",
+      "reading": "バッタ",
+      "meaning": "grasshopper; locust (of superfamily Acridoidea)",
+      "rank": 27400,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "カブトムシ",
+      "reading": "カブトムシ",
+      "meaning": "rhinoceros beetle (esp. the Japanese rhinoceros beetle, Trypoxylus dichotomus)",
+      "rank": 28300,
+      "roles": [
+        "creature",
+        "item"
+      ],
+      "source": "animals",
+      "assigned": null,
+      "existingUses": []
+    }
+  ]
+}
