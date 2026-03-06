@@ -45,6 +45,24 @@ export function getWordStrictStage(word, jpdbRank) {
   return 10;
 }
 
+// ── computeStageFromAvgRank ─────────────────────────────────────────
+
+/**
+ * Compute the game stage (1-10) from an average JPDB frequency rank.
+ * Uses the same jpdbKanaCap thresholds as getWordStrictStage.
+ * @param {number|null} avgRank - Average JPDB frequency rank
+ * @returns {number|null} Stage 1-10, or null if avgRank is null/undefined
+ */
+export function computeStageFromAvgRank(avgRank) {
+  if (avgRank == null) return null;
+
+  for (const s of stageDefs.stages) {
+    if (s.jpdbKanaCap === null) return s.stage; // Stage 10: no cap
+    if (avgRank <= s.jpdbKanaCap) return s.stage;
+  }
+  return 10;
+}
+
 // ── getContentWords ─────────────────────────────────────────────────
 
 /**

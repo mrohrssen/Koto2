@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { getWordStrictStage, getContentWords, suggestStage, getStageReport, getFullReport } from '../../../language/stage-utils.js';
+import { getWordStrictStage, getContentWords, suggestStage, getStageReport, getFullReport, computeStageFromAvgRank } from '../../../language/stage-utils.js';
 
 // ── getWordStrictStage ──────────────────────────────────────────────
 
@@ -63,6 +63,74 @@ describe('getWordStrictStage', () => {
   it('assigns rank 16001 to stage 10', () => {
     // Above stage 9 cap (16000), stage 10 has null cap
     assert.strictEqual(getWordStrictStage('テスト', 16001), 10);
+  });
+});
+
+// ── computeStageFromAvgRank ─────────────────────────────────────────
+
+describe('computeStageFromAvgRank', () => {
+  it('returns null for null input', () => {
+    assert.strictEqual(computeStageFromAvgRank(null), null);
+  });
+
+  it('returns null for undefined input', () => {
+    assert.strictEqual(computeStageFromAvgRank(undefined), null);
+  });
+
+  it('assigns avgRank 400 to stage 1 (<=500)', () => {
+    assert.strictEqual(computeStageFromAvgRank(400), 1);
+  });
+
+  it('assigns avgRank 500 to stage 1 (exact boundary)', () => {
+    assert.strictEqual(computeStageFromAvgRank(500), 1);
+  });
+
+  it('assigns avgRank 501 to stage 2 (just above stage 1 cap)', () => {
+    assert.strictEqual(computeStageFromAvgRank(501), 2);
+  });
+
+  it('assigns avgRank 800 to stage 2 (500 < 800 <= 1200)', () => {
+    assert.strictEqual(computeStageFromAvgRank(800), 2);
+  });
+
+  it('assigns avgRank 1200 to stage 2 (exact boundary)', () => {
+    assert.strictEqual(computeStageFromAvgRank(1200), 2);
+  });
+
+  it('assigns avgRank 2340 to stage 4 (2000 < 2340 <= 3000)', () => {
+    assert.strictEqual(computeStageFromAvgRank(2340), 4);
+  });
+
+  it('assigns avgRank 4500 to stage 5 (exact boundary)', () => {
+    assert.strictEqual(computeStageFromAvgRank(4500), 5);
+  });
+
+  it('assigns avgRank 6500 to stage 6 (exact boundary)', () => {
+    assert.strictEqual(computeStageFromAvgRank(6500), 6);
+  });
+
+  it('assigns avgRank 9000 to stage 7 (exact boundary)', () => {
+    assert.strictEqual(computeStageFromAvgRank(9000), 7);
+  });
+
+  it('assigns avgRank 12000 to stage 8 (exact boundary)', () => {
+    assert.strictEqual(computeStageFromAvgRank(12000), 8);
+  });
+
+  it('assigns avgRank 16000 to stage 9 (exact boundary)', () => {
+    assert.strictEqual(computeStageFromAvgRank(16000), 9);
+  });
+
+  it('assigns avgRank 16001 to stage 10 (above stage 9 cap)', () => {
+    assert.strictEqual(computeStageFromAvgRank(16001), 10);
+  });
+
+  it('assigns avgRank 50000 to stage 10 (far above all caps)', () => {
+    assert.strictEqual(computeStageFromAvgRank(50000), 10);
+  });
+
+  it('assigns avgRank 1 to stage 1 (very low rank)', () => {
+    assert.strictEqual(computeStageFromAvgRank(1), 1);
   });
 });
 
