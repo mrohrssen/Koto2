@@ -25,6 +25,16 @@ Parse skill arguments:
 - **No-args mode:** `/npc-forge` — list areas with NPC counts, user picks one. Go to Phase 0.
 - **Direct mode:** `/npc-forge suizokukan` — skip Phase 0, jump to Phase 1 for that area.
 
+## Theme Pool Mode: `/npc-forge --theme school`
+
+When `--theme <themeId>` is provided, the area is determined by the theme:
+
+1. Read `language/themes/school.json` for the area word and stage.
+2. Look up or create the area — skip Phase 0 area selection if the theme's area already exists in `data/areas.json` or `data/new-areas-staging.json`.
+3. Run `node scripts/forge-discovery.mjs --theme school --role npc --limit 20` for NPC base word candidates from the theme pool.
+4. Continue with Phase 1 (Concept & Naming) using theme pool candidates as `discoveredOccupations` in the baton.
+5. **After save:** Mark used words as assigned in the theme file via `markAssigned()` from `scripts/lib/theme-utils.mjs`.
+
 ---
 
 ## Phase 0: Area Selection (no-args only)

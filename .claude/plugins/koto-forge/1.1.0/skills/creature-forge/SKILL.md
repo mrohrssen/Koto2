@@ -45,6 +45,29 @@ Parse skill arguments:
 
 Same as Discovery but brainstorm 5 words fitting the theme (e.g., `[Schoolyard]` → chalk, backpack, bell, jump rope, swing).
 
+## Theme Pool Mode: `/creature-forge --theme school`
+
+When `--theme <themeId>` is provided, draw the base word from the theme pool instead of category files:
+
+1. Run `node scripts/forge-discovery.mjs --theme school --role creature --limit 10` to get unassigned creature-role words from the theme pool.
+2. Present candidates to user. User picks one.
+3. Continue with Phase 0 JPDB lookup as normal.
+4. **After Phase 5 (Save):** Mark the word as assigned in the theme file. Run a temp script:
+   ```javascript
+   import { markAssigned } from './scripts/lib/theme-utils.mjs';
+   markAssigned('school', '亀', 'creature:kamedor');
+   ```
+
+### Move Thematic Discovery (Theme Mode only)
+
+After the creature's concept and element are locked (Phase 2), suggest thematically fitting verb concepts for its learnset:
+
+1. Read `data/moves.json` for existing moves.
+2. Based on the creature's concept (e.g., fox → bite, sneak, howl, trick), identify verbs that match thematically.
+3. Cross-reference against existing moves — if matches exist, prioritize them for the learnset.
+4. If gaps exist (needed verbs don't have moves yet), flag them for future `/move-forge`.
+5. Pass the suggested move list to the learnset-builder subagent via the baton.
+
 ## Frequency-Rarity Tier System
 
 | Tier | JPDB Rank | Visual Style | Skill Preferred | Skill Ceiling | Mod Preferred | Mod Ceiling |

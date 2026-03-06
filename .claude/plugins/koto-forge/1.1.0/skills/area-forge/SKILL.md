@@ -42,6 +42,19 @@ Parse skill arguments:
 
 6. User picks or provides their own word. Proceed to Phase 0.
 
+## Theme Pool Mode: `/area-forge --theme school`
+
+When `--theme <themeId>` is provided, the area word, rank, and stage come from the theme file:
+
+1. Read `language/themes/school.json` for area word, reading, meaning, rank, computedStage.
+2. Skip JPDB lookup and forge-discovery for the area word (already determined by theme).
+3. For creature matching (Phase 1): prefer creatures whose `baseWord` appears in the theme pool's creature-role words. Run `node scripts/forge-discovery.mjs --theme school --role creature --includeAssigned` to see the full list.
+4. For sub-area generation (Phase 2.5):
+   - Run `node scripts/forge-discovery.mjs --theme school --role modifier --limit 10` for modifier candidates from the theme pool.
+   - Run `node scripts/forge-discovery.mjs --theme school --role sub-area --limit 10` for location noun candidates from the theme pool.
+   - Draw sub-area modifiers and locations from theme pool words first, falling back to forge-discovery category mode if not enough candidates.
+5. **After save:** Mark used modifier and location words as assigned in the theme file via `markAssigned()` from `scripts/lib/theme-utils.mjs`.
+
 ---
 
 ## Phase 0: Input & JPDB Lookup

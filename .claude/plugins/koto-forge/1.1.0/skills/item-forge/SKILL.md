@@ -15,6 +15,15 @@ Generate game items for Koto. Each item is a Japanese word (often compound) with
 - `/item-forge --stage 3` — target specific stage
 - `/item-forge --type equipment --stage 5 --count 5` — full control
 
+## Theme Pool Mode: `/item-forge --theme school`
+
+When `--theme <themeId>` is provided, draw item seed words from the theme pool:
+
+1. Run `node scripts/forge-discovery.mjs --theme school --role item --limit 20` to get unassigned item-role words from the theme pool.
+2. Use these words as seeds for compound item brainstorming (Phase 1).
+3. Prioritize items whose component words come from the theme pool.
+4. **After save:** Mark used words as assigned in the theme file via `markAssigned()` from `scripts/lib/theme-utils.mjs`.
+
 ## Discovery Mode (all types)
 
 1. **Check stage gaps.** Run `node scripts/forge-discovery.mjs --gaps item` to see which stages need items most.
