@@ -591,6 +591,125 @@ function generateDoorHintsForRoute(roomType1, roomType2) {
   return _generateDoorHints(roomType1, roomType2);
 }
 
+// ============ Theme Pool Submit ============
+
+app.post('/api/theme-pool/submit', async (req, res) => {
+  try {
+    const { themeId, areaWord, areaReading, areaMeaning, areaRank, words } = req.body;
+
+    // Validate required fields
+    if (!themeId || typeof themeId !== 'string') {
+      return res.status(400).json({ error: 'Missing or invalid themeId (must be a string)' });
+    }
+    if (!areaWord || typeof areaWord !== 'string') {
+      return res.status(400).json({ error: 'Missing or invalid areaWord (must be a string)' });
+    }
+    if (!areaReading || typeof areaReading !== 'string') {
+      return res.status(400).json({ error: 'Missing or invalid areaReading (must be a string)' });
+    }
+    if (!areaMeaning || typeof areaMeaning !== 'string') {
+      return res.status(400).json({ error: 'Missing or invalid areaMeaning (must be a string)' });
+    }
+    if (!Array.isArray(words) || words.length === 0) {
+      return res.status(400).json({ error: 'Missing or empty words array' });
+    }
+
+    // Dynamic import ESM helpers
+    const { assignRoles, crossReferenceExisting, computeThemeStats } =
+      await import('./scripts/lib/theme-pool-helpers.mjs');
+    const { saveTheme, validateTheme } = await import('./scripts/lib/theme-utils.mjs');
+
+    // Map JPDB short POS tags to the longer form expected by assignRoles
+    const wordsWithPosTag = words.map(w => {
+      let posTag = 'noun'; // default fallback
+      const pos = (w.pos || '').toLowerCase();
+      if (pos.includes('v')) {
+        posTag = 'godan verb';
+      } else if (pos.includes('adj')) {
+        posTag = 'adjective';
+      } else if (pos.includes('n')) {
+        posTag = 'noun';
+      }
+      return { ...w, posTag };
+    });
+
+    // Assign roles based on POS
+    const withRoles = assignRoles(wordsWithPosTag);
+
+    // Cross-reference existing game data
+    const withExisting = crossReferenceExisting(withRoles);
+
+    // Compute stats
+    const { avgRank, computedStage } = computeThemeStats(withExisting);
+
+    // Build theme object
+    const theme = {
+      themeId,
+      areaWord,
+      areaReading,
+      areaMeaning,
+      areaRank: areaRank || null,
+      avgRank,
+      computedStage,
+      generatedAt: new Date().toISOString().split('T')[0],
+      words: withExisting.map(w => ({
+        word: w.word,
+        reading: w.reading,
+        meaning: w.meaning,
+        rank: w.rank,
+        roles: w.roles,
+        source: w.source || 'consensus',
+        consensus: w.consensus,
+        assigned: null,
+        existingUses: w.existingUses || [],
+      }))
+    };
+
+    // Validate
+    const errors = validateTheme(theme);
+    if (errors.length > 0) {
+      return res.status(400).json({ error: 'Theme validation failed', errors });
+    }
+
+    // Save JSON
+    const savedPath = saveTheme(theme);
+
+    // Write CSV alongside JSON
+    const csvPath = savedPath.replace(/\.json$/, '.csv');
+    const csvHeader = 'word,reading,meaning,rank,source,existingUses';
+    const csvRows = theme.words.map(w => {
+      const escapeCsv = (val) => {
+        const str = String(val ?? '');
+        if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes(';')) {
+          return '"' + str.replace(/"/g, '""') + '"';
+        }
+        return str;
+      };
+      const existingStr = Array.isArray(w.existingUses) ? w.existingUses.join('; ') : '';
+      return [
+        escapeCsv(w.word),
+        escapeCsv(w.reading),
+        escapeCsv(w.meaning),
+        w.rank,
+        escapeCsv(w.source),
+        escapeCsv(existingStr)
+      ].join(',');
+    });
+    writeFileSync(csvPath, csvHeader + '\n' + csvRows.join('\n') + '\n', 'utf8');
+
+    res.json({
+      success: true,
+      themeId,
+      wordCount: words.length,
+      computedStage,
+      path: `language/themes/${themeId}.json`
+    });
+  } catch (error) {
+    console.error('[Theme Pool Submit] Error:', error);
+    res.status(500).json({ error: 'Failed to save theme pool', details: error.message });
+  }
+});
+
 // Serve game page
 app.get('/', (req, res) => {
   res.sendFile(join(__dirname, 'public', 'game.html'));
