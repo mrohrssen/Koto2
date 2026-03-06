@@ -5,7 +5,7 @@
  * PURPOSE:
  * Manages dungeon exploration through themed areas. Generates room sequences
  * for each area with encounters, optional shrine, quiz, word discovery, and
- * dealer rooms. Areas are loaded from data/new-areas-staging.json and selected
+ * dealer rooms. Areas are loaded from data/areas.json and selected
  * randomly (excluding the current area) when the player completes an area.
  *
  * KEY EXPORTS:
@@ -66,7 +66,7 @@ export const WORDS_PER_DISCOVERY = 2;
 
 const __rooms_dirname = dirname(fileURLToPath(import.meta.url));
 export const AREAS = JSON.parse(
-  readFileSync(join(__rooms_dirname, '../../data/new-areas-staging.json'), 'utf8')
+  readFileSync(join(__rooms_dirname, '../../data/areas.json'), 'utf8')
 );
 
 const AREAS_BY_ID = {};

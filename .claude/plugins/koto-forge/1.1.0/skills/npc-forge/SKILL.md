@@ -29,7 +29,7 @@ Parse skill arguments:
 
 ## Phase 0: Area Selection (no-args only)
 
-1. **Read area data** from `data/new-areas-staging.json`. If the file is missing, tell the user: **"No areas found. Run `/area-forge` first to create areas."** and stop.
+1. **Read area data** from both `data/areas.json` (production) and `data/new-areas-staging.json` (staging). Combine into a single list. If both are empty/missing, tell the user: **"No areas found. Run `/area-forge` first to create areas."** and stop.
 
 2. **Read existing NPCs** from two sources:
    - `data/npcs.json` — existing production NPCs (object keyed by id). Extract all ids and `nameEn` values.
@@ -67,7 +67,7 @@ Pass these candidates to the concept-naming subagent via the baton as `discovere
 
 ### 1.1 Build Baton
 
-Read the selected area object from `data/new-areas-staging.json`. Collect all existing NPC ids and names from both `data/npcs.json` and `data/new-npcs-staging.json`.
+Read the selected area object from `data/areas.json` or `data/new-areas-staging.json` (whichever contains it). Collect all existing NPC ids and names from both `data/npcs.json` and `data/new-npcs-staging.json`.
 
 Build baton JSON:
 
@@ -420,7 +420,8 @@ Run through this checklist before writing to staging files:
 
 | File | Format | Purpose |
 |------|--------|---------|
-| `data/new-areas-staging.json` | Array of area objects | Source of area data for selection |
+| `data/areas.json` | Array of area objects | Production areas (read-only) |
+| `data/new-areas-staging.json` | Array of area objects | Staging areas (new, not yet promoted) |
 | `data/npcs.json` | Object keyed by id | Existing production NPCs (read-only) |
 | `data/new-npcs-staging.json` | Array of NPC objects | Staging file for new NPC game data |
 | `data/character-cards/npcs.json` | Object keyed by id | Existing production character cards (read-only, reference for style) |

@@ -139,8 +139,11 @@ function loadUsedWords() {
     }
   }
 
-  // Areas: sub-area modifier and location words
-  const areas = loadJsonSafe(join(ROOT, 'data', 'new-areas-staging.json'));
+  // Areas: sub-area modifier and location words (prod + staging)
+  const areas = [
+    ...loadJsonSafe(join(ROOT, 'data', 'areas.json')),
+    ...loadJsonSafe(join(ROOT, 'data', 'new-areas-staging.json')),
+  ];
   for (const area of areas) {
     for (const sa of (area.subAreas || [])) {
       if (sa.modifier?.word) _usedWords.add(sa.modifier.word);
@@ -296,7 +299,10 @@ export function getStageGaps(type) {
       break;
     }
     case 'area': {
-      const areas = loadJsonSafe(join(ROOT, 'data', 'new-areas-staging.json'));
+      const areas = [
+        ...loadJsonSafe(join(ROOT, 'data', 'areas.json')),
+        ...loadJsonSafe(join(ROOT, 'data', 'new-areas-staging.json')),
+      ];
       for (const a of areas) {
         if (a.stage >= 1 && a.stage <= 10) counts[a.stage - 1]++;
       }

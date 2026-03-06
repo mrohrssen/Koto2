@@ -154,7 +154,10 @@ export function getStageReport(stageNumber) {
   const creatures = loadJsonSafe(join(__dirname, '..', 'data', 'creatures.json'));
   const moves     = loadJsonSafe(join(__dirname, '..', 'data', 'moves.json'));
   const items     = loadJsonSafe(join(__dirname, '..', 'data', 'items.json'));
-  const areas     = loadJsonSafe(join(__dirname, '..', 'data', 'new-areas-staging.json'));
+  const areas     = [
+    ...loadJsonSafe(join(__dirname, '..', 'data', 'areas.json')),
+    ...loadJsonSafe(join(__dirname, '..', 'data', 'new-areas-staging.json')),
+  ];
 
   const stageCreatures = creatures.filter(c => c.stage === stageNumber);
   const stageMoves     = moves.filter(m => m.stage === stageNumber);

@@ -163,7 +163,7 @@ User can adjust names, swap modifiers, or request regeneration.
 
 ## Phase 3: Save
 
-1. Read `data/new-areas-staging.json` (or initialize `[]` if file is missing).
+1. Read `data/new-areas-staging.json` (or initialize `[]` if file is missing). Also read `data/areas.json` for existing production areas.
 2. Build the area object:
 
 ```json
@@ -209,7 +209,7 @@ User can adjust names, swap modifiers, or request regeneration.
 - [ ] At least 3 creatures assigned
 - [ ] Description is pure visual/atmosphere — no game mechanics, no creature descriptions
 - [ ] Description matches game aesthetic — fun fantasy, warm, playful. No cyberpunk.
-- [ ] No duplicate id with existing areas in `data/new-areas-staging.json`
+- [ ] No duplicate id with existing areas in `data/areas.json` or `data/new-areas-staging.json`
 - [ ] `createdAt` set to today's date
 
 ## Re-roll Handling
