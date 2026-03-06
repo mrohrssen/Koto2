@@ -20,6 +20,7 @@ import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { parseArgs } from 'util';
+import { getThemeWords, listThemes, loadTheme } from './lib/theme-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -325,15 +326,68 @@ export function getStageGaps(type) {
   }));
 }
 
+// ── Theme-based discovery ────────────────────────────────────────────
+
+/**
+ * Discover candidate words from a theme pool, filtered by role and assignment status.
+ *
+ * @param {Object} opts
+ * @param {string} opts.themeId - Theme identifier
+ * @param {string} [opts.role] - Only include words with this role
+ * @param {number} [opts.limit=20] - Max results to return
+ * @param {boolean} [opts.includeAssigned=false] - Include words already assigned
+ * @returns {Array} Filtered, sorted word entries
+ */
+export function discoverFromTheme({ themeId, role, limit = 20, includeAssigned = false }) {
+  const words = getThemeWords(themeId, {
+    role,
+    unassignedOnly: !includeAssigned,
+  });
+  words.sort((a, b) => a.rank - b.rank);
+  return words.slice(0, limit);
+}
+
+/**
+ * Get status summaries for all theme pools.
+ *
+ * @returns {Array<{themeId, areaWord, areaMeaning, computedStage, totalWords, assignedCount, unassignedCount, roleBreakdown}>}
+ */
+export function getThemeStatus() {
+  const themeIds = listThemes();
+  return themeIds.map(themeId => {
+    const theme = loadTheme(themeId);
+    const assigned = theme.words.filter(w => w.assigned !== null && w.assigned !== undefined);
+    const roles = {};
+    for (const w of theme.words) {
+      for (const r of (w.roles || [])) {
+        roles[r] = (roles[r] || 0) + 1;
+      }
+    }
+    return {
+      themeId,
+      areaWord: theme.areaWord,
+      areaMeaning: theme.areaMeaning,
+      computedStage: theme.computedStage,
+      totalWords: theme.words.length,
+      assignedCount: assigned.length,
+      unassignedCount: theme.words.length - assigned.length,
+      roleBreakdown: roles,
+    };
+  });
+}
+
 // ── CLI mode ────────────────────────────────────────────────────────
 
 async function main() {
   const { values } = parseArgs({
     options: {
-      type:  { type: 'string', short: 't' },
-      stage: { type: 'string', short: 's' },
-      limit: { type: 'string', short: 'l' },
-      gaps:  { type: 'string', short: 'g' },
+      type:           { type: 'string', short: 't' },
+      stage:          { type: 'string', short: 's' },
+      limit:          { type: 'string', short: 'l' },
+      gaps:           { type: 'string', short: 'g' },
+      theme:          { type: 'string' },
+      role:           { type: 'string' },
+      'theme-status': { type: 'boolean' },
     },
     strict: false,
   });
@@ -361,6 +415,52 @@ async function main() {
     return;
   }
 
+  // Theme status mode
+  if (values['theme-status']) {
+    const statuses = getThemeStatus();
+    if (statuses.length === 0) {
+      console.log('\nNo theme pools found.');
+      return;
+    }
+    console.log(`\nTheme pool status (${statuses.length} themes)`);
+    console.log('─'.repeat(70));
+    for (const s of statuses) {
+      const roles = Object.entries(s.roleBreakdown).map(([r, c]) => `${r}:${c}`).join(', ');
+      console.log(`  ${s.themeId} — ${s.areaWord} (${s.areaMeaning}) [Stage ${s.computedStage}]`);
+      console.log(`    Words: ${s.totalWords} total, ${s.assignedCount} assigned, ${s.unassignedCount} available`);
+      console.log(`    Roles: ${roles}`);
+    }
+    console.log('─'.repeat(70));
+    return;
+  }
+
+  // Theme discovery mode
+  if (values.theme) {
+    const limit = parseInt(values.limit || '20', 10);
+    const results = discoverFromTheme({
+      themeId: values.theme,
+      role: values.role,
+      limit,
+    });
+
+    const roleLabel = values.role ? ` role=${values.role}` : '';
+    console.log(`\nTheme discovery: ${values.theme}${roleLabel} (limit ${limit})`);
+    console.log('─'.repeat(70));
+    console.log('Rank   Word        Reading       Meaning           Roles');
+    console.log('─'.repeat(70));
+
+    for (const r of results) {
+      const roles = (r.roles || []).join(', ');
+      console.log(
+        `${String(r.rank).padStart(5)}  ${r.word.padEnd(10)}  ${r.reading.padEnd(12)}  ${r.meaning.padEnd(16)}  ${roles}`
+      );
+    }
+
+    console.log('─'.repeat(70));
+    console.log(`${results.length} candidates found`);
+    return;
+  }
+
   // Word discovery mode
   const contentType = values.type;
   const targetStage = parseInt(values.stage || '5', 10);
@@ -370,6 +470,8 @@ async function main() {
     console.error('Usage:');
     console.error('  node scripts/forge-discovery.mjs --type creature-base --stage 3 --limit 5');
     console.error('  node scripts/forge-discovery.mjs --gaps creature');
+    console.error('  node scripts/forge-discovery.mjs --theme school --role creature --limit 10');
+    console.error('  node scripts/forge-discovery.mjs --theme-status');
     console.error('');
     console.error('Content types:', Object.keys(CATEGORY_MAP).join(', '));
     console.error('Gap types:', Object.keys(STAGE_TARGETS).join(', '));
