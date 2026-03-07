@@ -1,6 +1,6 @@
 # Koto (琴) — Game Design Document
 
-**Last updated:** 2026-03-03
+**Last updated:** 2026-03-07
 **Status:** Living document — the single source of truth for Koto's game design vision.
 
 This document describes the **target vision** for Koto. Systems marked with ✅ are implemented; systems marked with 📋 are designed but unbuilt. Current implementation details live in [ARCHITECTURE.md](ARCHITECTURE.md); this document focuses on *where we're going*.
@@ -341,6 +341,72 @@ The game world is organized by word frequency. Every area, creature, NPC, and it
 **The SRS curates the player's options, but the player always chooses.** After completing an area, they pick from 2–3 options — all appropriate for their vocabulary level. Within an area, which creatures spawn, which NPCs appear, and which items drop are all influenced by what words the player needs.
 
 This means **the game is tailored to each player's vocabulary.** Two players at different levels exploring the "same" area may encounter different creatures, different items, and different narration complexity.
+
+### Internal SRS & Vocabulary Pacing 📋
+
+> Full design: [`docs/plans/2026-03-07-internal-srs-design.md`](plans/2026-03-07-internal-srs-design.md)
+
+The current system relies entirely on JPDB (external) for SRS scheduling, with no internal tracking of word exposure or review intervals. Players encounter 100–300 new Japanese words per area with nothing gating how many arrive per session. The internal SRS solves this by building a vocabulary-aware content selection layer that runs alongside JPDB.
+
+**Seven interconnected systems compose the internal SRS:**
+
+#### System 1: Daily New-Word Budget
+
+Cap new word introductions to 10–20 per day (configurable). Budget resets at midnight JST. "New word" = a word the player has never been exposed to. Budget can go negative — gameplay is never blocked, but the system stops actively introducing new words once the budget is spent.
+
+Day-1 players get a higher budget (20–25) since everything is new. Budget normalizes after ~50 known words.
+
+#### System 2: Vocabulary Cost Function
+
+Every piece of content has a vocabulary cost — how many new words it introduces to this specific player. A creature's cost includes its base word, modifier, and all moves it would know at its spawn level. Because of the shared move pool, most "new" creatures cost only 1–3 words (common verbs like 噛む, 走る, 守る are learned early and reused across many creatures).
+
+| Word in new creature | Known? | Cost |
+|---|---|---|
+| 蛇 (snake) — base | No | +1 |
+| 赤い (red) — modifier | Yes (from another creature) | 0 |
+| 噛む (bite) — move | Yes (starter knows it) | 0 |
+| 隠れる (hide) — move | No | +1 |
+| **Total** | | **2 words** |
+
+#### System 3: Graduated Creature Reveal
+
+Areas have ~8 creature species. Exposing all 8 from Room 1 would introduce 40+ new words. Instead, the system reveals creatures progressively:
+
+- **First visit:** 2–3 cheapest creatures are "anchor" species (immediate spawn pool)
+- **Every ~3 encounters:** 1 new species revealed if budget allows
+- **Return visits:** Previously discovered creatures available immediately, 1–2 more can be revealed
+
+Narrative framing ties into the Translator: *"Your Translator identifies a creature you haven't seen before."* Remaining species are saved for return visits — rewarding area revisiting with discovery.
+
+#### System 4: Graduated Move Reveal
+
+New creature species appear at lower levels (fewer moves = fewer new words). First encounter with a species spawns it ~3 levels below the player. Subsequent encounters scale normally, gradually revealing more moves. This mirrors how the player's own creatures learn moves through leveling.
+
+#### System 5: SRS-Aware Content Selection
+
+All content selection becomes vocabulary-aware:
+
+- **Area selection:** Score areas by vocabulary overlap. Offer areas in the 60–80% overlap sweet spot (enough review + room for new words). Too high (>90%) = boring. Too low (<40%) = overwhelming.
+- **Creature encounters:** Priority order: (1) review-due creatures, (2) 1 new introduction if budget allows, (3) familiar filler for variety.
+- **Item shops:** Show mostly known items + 1–2 new items within budget.
+- **NPC encounters:** Select NPCs whose name/occupation words the player knows or is ready to learn.
+
+#### System 6: Review Scheduling
+
+The game never says "time for review!" — review happens naturally through content selection. Different gameplay actions provide different levels of reinforcement:
+
+| Game Action | SRS Effect |
+|---|---|
+| See word on attack card / in narration / in shop | Passive exposure — small interval boost |
+| Select move from grid | Active engagement — full interval update |
+| Quiz room / Whack-a-mole — correct | Hard test pass — large interval boost, ease increases |
+| Quiz room / Whack-a-mole — wrong | Hard test fail — interval resets, ease decreases |
+
+When a word's review interval expires, the SRS actively surfaces it: creatures carrying that word spawn more often, areas containing it are offered, narration includes it.
+
+#### System 7: JPDB Integration
+
+Internal SRS and JPDB run in parallel — internal SRS drives in-game content selection, JPDB remains the source of truth for external flashcard state. On session start, JPDB word states are imported (merge, don't overwrite). If JPDB says a word is "known" but internal SRS has never exposed it, trust JPDB — the player learned it externally.
 
 ---
 
