@@ -475,9 +475,32 @@ export function createDevRouter({ password }) {
     if (!requiresAuth || submitted === password) {
       const token = createSession();
       res.cookie('dev_token', token, { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
-      return res.redirect('/dev/sprites');
+      return res.redirect('/dev/');
     }
     return res.redirect('/dev/login?err=1');
+  });
+
+  // ── GET / (hub) ──────────────────────────────────────────────
+  router.get('/', requireAuth, (_req, res) => {
+    res.sendFile(join(process.cwd(), 'public', 'dev-hub.html'));
+  });
+
+  // ── GET /mockups ─────────────────────────────────────────────
+  router.get('/mockups', requireAuth, (_req, res) => {
+    res.sendFile(join(process.cwd(), 'public', 'dev-mockups.html'));
+  });
+
+  // ── GET /api/mockups ─────────────────────────────────────────
+  router.get('/api/mockups', requireAuth, (_req, res) => {
+    const pubDir = join(process.cwd(), 'public');
+    const files = readdirSync(pubDir)
+      .filter(f => f.startsWith('mockup-') && f.endsWith('.html'))
+      .sort()
+      .map(f => ({
+        file: f,
+        name: f.replace('mockup-', '').replace('.html', '').replace(/-/g, ' ')
+      }));
+    res.json(files);
   });
 
   // ── GET /sprites ────────────────────────────────────────────
