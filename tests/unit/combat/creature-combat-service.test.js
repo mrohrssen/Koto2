@@ -8,7 +8,8 @@ import {
   awardBattleXp,
   awardKillXp,
   tickAllEffects,
-  rollTalkAcceptance
+  rollTalkAcceptance,
+  executeNpcSkill
 } from '../../../src/game/services/creature-combat-service.js';
 import { instantiateCreature } from '../../../src/game/creatures.js';
 
@@ -589,5 +590,123 @@ describe('rollTalkAcceptance', () => {
     assert.strictEqual(enemy.hp, originalHp);
     assert.strictEqual(enemy.maxHp, originalMaxHp);
     assert.strictEqual(enemy.rarity, originalRarity);
+  });
+});
+
+describe('Creature Combat - executeNpcSkill', () => {
+  const npcData = {
+    id: 'nagi',
+    name: 'ナギ',
+    nameEn: 'Nagi',
+    element: 'neutral',
+    attack: 10,
+    baseWord: 'TBD',
+    baseReading: 'TBD',
+    baseMeaning: 'TBD'
+  };
+
+  const damageSkill = {
+    id: 'npc-aoe-attack', name: 'NPC Attack', nameEn: 'NPC Attack',
+    element: 'neutral', category: 'damage', target: 'all_enemies',
+    power: 8, mpCost: 0, statusEffect: null, statusChance: 0, statusDuration: 0
+  };
+
+  const healSkill = {
+    id: 'npc-aoe-heal', name: 'NPC Heal', nameEn: 'NPC Heal',
+    element: 'neutral', category: 'heal', target: 'all_allies',
+    power: 8, mpCost: 0, statusEffect: null, statusChance: 0, statusDuration: 0
+  };
+
+  const buffSkill = {
+    id: 'npc-aoe-buff', name: 'NPC Buff', nameEn: 'NPC Buff',
+    element: 'neutral', category: 'buff', target: 'all_allies',
+    power: 25, mpCost: 0, statusEffect: 'attack_buff', statusChance: 100, statusDuration: 2
+  };
+
+  const debuffSkill = {
+    id: 'npc-aoe-debuff', name: 'NPC Debuff', nameEn: 'NPC Debuff',
+    element: 'neutral', category: 'debuff', target: 'all_enemies',
+    power: 5, mpCost: 0, statusEffect: 'poison', statusChance: 100, statusDuration: 2
+  };
+
+  it('AOE damage hits all alive player creatures', () => {
+    const allies = [instantiateCreature('kazenoko'), instantiateCreature('kamedor')];
+    const enemies = [instantiateCreature('hikaribon')];
+    const hpBefore = allies.map(c => c.hp);
+
+    const result = executeNpcSkill(npcData, damageSkill, allies, enemies);
+
+    assert.ok(result.attacks.length >= 1, 'should produce attack records');
+    // Damage skill targets "all_enemies" from NPC perspective = player's allies
+    assert.ok(allies[0].hp < hpBefore[0], 'first ally should take damage');
+    assert.ok(allies[1].hp < hpBefore[1], 'second ally should take damage');
+  });
+
+  it('AOE heal heals NPC creatures', () => {
+    const allies = [instantiateCreature('kazenoko')];
+    const enemies = [instantiateCreature('hikaribon'), instantiateCreature('kamedor')];
+    // Damage NPC's creatures first
+    enemies[0].hp = Math.floor(enemies[0].maxHp / 2);
+    enemies[1].hp = Math.floor(enemies[1].maxHp / 2);
+    const hpBefore = enemies.map(c => c.hp);
+
+    const result = executeNpcSkill(npcData, healSkill, allies, enemies);
+
+    assert.ok(result.attacks.length >= 1, 'should produce attack records');
+    // Heal targets "all_allies" from NPC perspective = enemies array
+    assert.ok(enemies[0].hp > hpBefore[0], 'first NPC creature should be healed');
+    assert.ok(enemies[1].hp > hpBefore[1], 'second NPC creature should be healed');
+  });
+
+  it('AOE buff applies attack_buff to NPC creatures', () => {
+    const allies = [instantiateCreature('kazenoko')];
+    const enemies = [instantiateCreature('hikaribon')];
+
+    const result = executeNpcSkill(npcData, buffSkill, allies, enemies);
+
+    assert.ok(result.attacks.length >= 1, 'should produce attack records');
+    // Buff targets "all_allies" from NPC perspective = enemies array
+    const hasAttackBuff = enemies[0].activeEffects.some(e => e.type === 'attack_buff');
+    assert.ok(hasAttackBuff, 'NPC creature should have attack_buff effect');
+  });
+
+  it('AOE debuff applies poison to player creatures', () => {
+    const allies = [instantiateCreature('kazenoko'), instantiateCreature('kamedor')];
+    const enemies = [instantiateCreature('hikaribon')];
+
+    const result = executeNpcSkill(npcData, debuffSkill, allies, enemies);
+
+    assert.ok(result.attacks.length >= 1, 'should produce attack records');
+    // Debuff targets "all_enemies" from NPC perspective = player's allies
+    const hasPoison0 = allies[0].activeEffects.some(e => e.type === 'poison');
+    const hasPoison1 = allies[1].activeEffects.some(e => e.type === 'poison');
+    assert.ok(hasPoison0, 'first ally should have poison');
+    assert.ok(hasPoison1, 'second ally should have poison');
+  });
+
+  it('skips dead creatures for damage', () => {
+    const allies = [instantiateCreature('kazenoko'), instantiateCreature('kamedor')];
+    allies[0].hp = 0; // KO first ally
+    const enemies = [instantiateCreature('hikaribon')];
+    const hpBefore1 = allies[1].hp;
+
+    const result = executeNpcSkill(npcData, damageSkill, allies, enemies);
+
+    assert.ok(result.attacks.length >= 1, 'should produce attack records');
+    assert.strictEqual(allies[0].hp, 0, 'dead creature should stay at 0');
+    assert.ok(allies[1].hp < hpBefore1, 'alive ally should take damage');
+  });
+
+  it('returns attacks array in result', () => {
+    const allies = [instantiateCreature('kazenoko')];
+    const enemies = [instantiateCreature('hikaribon')];
+
+    const result = executeNpcSkill(npcData, damageSkill, allies, enemies);
+
+    assert.ok(Array.isArray(result.attacks), 'result should have attacks array');
+    assert.ok(result.attacks.length > 0, 'attacks should not be empty');
+    const atk = result.attacks[0];
+    assert.ok(atk.attackerName !== undefined, 'attack record should have attackerName');
+    assert.ok(atk.moveName !== undefined, 'attack record should have moveName');
   });
 });
