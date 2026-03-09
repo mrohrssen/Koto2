@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Content Browser — Koto Dev</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#1a1a2e;color:#e0e0e0;font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
+
+/* Top bar */
+.topbar{position:sticky;top:0;z-index:100;background:#0f0f23;border-bottom:1px solid #1e2d4a;padding:8px 12px}
+.topbar-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tabs{display:flex;gap:4px;flex-shrink:0;overflow-x:auto}
+.tab{padding:6px 12px;border:none;border-radius:6px;background:#16213e;color:#8899aa;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap}
+.tab:hover{background:#1e2d4a;color:#c0d0e0}
+.tab.active{background:#0f3460;color:#fff}
+.tab .badge{display:inline-block;min-width:18px;padding:1px 5px;border-radius:9px;background:#0f3460;color:#a0c4ff;font-size:11px;font-weight:600;margin-left:4px;text-align:center}
+.tab.active .badge{background:rgba(255,255,255,.2);color:#fff}
+.search{flex:1;min-width:120px;max-width:280px;padding:6px 10px;border:1px solid #1e2d4a;border-radius:6px;background:#16213e;color:#e0e0e0;font-size:13px;outline:none}
+.search:focus{border-color:#0f3460}
+.search::placeholder{color:#556}
+.stats{font-size:12px;color:#667;white-space:nowrap;margin-left:auto}
+
+/* Table container */
+.table-wrap{overflow-x:auto;padding:12px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:700px}
+thead th{position:sticky;top:0;background:#0f0f23;color:#a0c4ff;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.3px;padding:8px;text-align:left;border-bottom:2px solid #1e2d4a;cursor:pointer;user-select:none;white-space:nowrap}
+thead th:hover{color:#fff}
+thead th .sort-arrow{margin-left:3px;font-size:10px;opacity:.5}
+thead th.sorted .sort-arrow{opacity:1}
+tbody tr{border-bottom:1px solid #111528;transition:background .1s}
+tbody tr:nth-child(even){background:#16213e}
+tbody tr:nth-child(odd){background:#141a30}
+tbody tr:hover{background:#1a2848}
+tbody td{padding:6px 8px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+tbody td.ro{color:#8899aa}
+tbody td.editable{cursor:pointer}
+tbody td.editable:hover{background:rgba(15,52,96,.3)}
+tbody td.modified{border-left:3px solid #fbbf24;background:rgba(251,191,36,.06)}
+
+/* Inline edit */
+td .cell-input{width:100%;padding:3px 5px;border:1px solid #0f3460;border-radius:3px;background:#0f0f23;color:#e0e0e0;font-size:13px;font-family:inherit;outline:none}
+td .cell-input:focus{border-color:#a0c4ff;box-shadow:0 0 0 2px rgba(160,196,255,.15)}
+td select.cell-input{padding:2px 4px}
+
+/* Save bar */
+.save-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:#0f0f23;border-top:2px solid #0f3460;padding:10px 16px;display:flex;align-items:center;gap:12px;transform:translateY(100%);transition:transform .2s ease}
+.save-bar.visible{transform:translateY(0)}
+.save-bar .change-count{font-size:14px;color:#fbbf24;font-weight:600}
+.save-bar .spacer{flex:1}
+.btn{padding:7px 16px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s}
+.btn-save{background:#0f3460;color:#fff}
+.btn-save:hover{background:#1a4a80}
+.btn-discard{background:#333;color:#aaa}
+.btn-discard:hover{background:#444;color:#e0e0e0}
+
+/* Diff modal overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:none;align-items:center;justify-content:center;padding:16px}
+.overlay.open{display:flex}
+.modal{background:#16213e;border-radius:12px;padding:20px;max-width:700px;width:100%;max-height:85vh;overflow-y:auto;position:relative}
+.modal h3{font-size:16px;color:#a0c4ff;margin-bottom:12px}
+.modal-close{position:absolute;top:10px;right:12px;background:none;border:none;color:#889;font-size:22px;cursor:pointer;padding:4px 8px}
+.modal-close:hover{color:#e0e0e0}
+
+/* Diff table */
+.diff-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px}
+.diff-table th{background:#0f0f23;color:#a0c4ff;font-weight:600;font-size:12px;padding:6px 8px;text-align:left;border-bottom:1px solid #1e2d4a}
+.diff-table td{padding:6px 8px;border-bottom:1px solid #111528}
+.diff-old{color:#f87171;background:rgba(248,113,113,.06)}
+.diff-new{color:#4ade80;background:rgba(74,222,128,.06)}
+.diff-arrow{color:#667;padding:0 4px}
+
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+
+/* Toast */
+.toast{position:fixed;top:16px;right:16px;z-index:400;padding:10px 18px;border-radius:8px;font-size:14px;font-weight:500;color:#fff;opacity:0;transform:translateY(-10px);transition:all .3s ease;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.success{background:#166534}
+.toast.error{background:#991b1b}
+
+/* Empty state */
+.empty{text-align:center;padding:60px 20px;color:#556;font-size:14px}
+
+/* Loading */
+.loading{text-align:center;padding:60px 20px;color:#667;font-size:14px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-row">
+    <div class="tabs" id="tabs"></div>
+    <input class="search" id="search" type="text" placeholder="Search entries...">
+    <span class="stats" id="stats"></span>
+  </div>
+</div>
+
+<div class="table-wrap" id="tableWrap">
+  <div class="loading">Loading...</div>
+</div>
+
+<div class="save-bar" id="saveBar">
+  <span class="change-count" id="changeCount">0 changes</span>
+  <span class="spacer"></span>
+  <button class="btn btn-discard" id="btnDiscard">Discard</button>
+  <button class="btn btn-save" id="btnSave">Save Changes</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Column definitions ──────────────────────────────────────────
+var COLUMNS = {
+  creatures: [
+    { key: 'id', label: 'ID', ro: true },
+    { key: 'name', label: 'Name' },
+    { key: 'nameEn', label: 'Name (EN)' },
+    { key: 'element', label: 'Element', type: 'enum', options: ['fire','water','earth','wood','metal','neutral'] },
+    { key: 'rarity', label: 'Rarity', type: 'enum', options: ['common','uncommon','rare','epic','legendary'] },
+    { key: 'archetype', label: 'Archetype' },
+    { key: 'stage', label: 'Stage', type: 'num' },
+    { key: 'baseHp', label: 'HP', type: 'num' },
+    { key: 'baseAttack', label: 'ATK', type: 'num' },
+    { key: 'baseMp', label: 'MP', type: 'num' },
+    { key: 'learnset', label: 'Moves', ro: true, computed: function(row) { return row.learnset ? row.learnset.length : 0; } }
+  ],
+  moves: [
+    { key: 'id', label: 'ID', ro: true },
+    { key: 'name', label: 'Name' },
+    { key: 'nameEn', label: 'Name (EN)' },
+    { key: 'reading', label: 'Reading' },
+    { key: 'meaning', label: 'Meaning' },
+    { key: 'element', label: 'Element', type: 'enum', options: ['fire','water','earth','wood','metal','neutral'] },
+    { key: 'category', label: 'Category', type: 'enum', options: ['damage','buff','debuff','heal','shield','drain'] },
+    { key: 'power', label: 'Power', type: 'num' },
+    { key: 'mpCost', label: 'MP Cost', type: 'num' },
+    { key: 'tier', label: 'Tier', type: 'num' },
+    { key: 'stage', label: 'Stage', type: 'num' }
+  ],
+  items: [
+    { key: 'id', label: 'ID', ro: true },
+    { key: 'word', label: 'Word' },
+    { key: 'reading', label: 'Reading' },
+    { key: 'meaning', label: 'Meaning' },
+    { key: 'type', label: 'Type', type: 'enum', options: ['heal','damage','revive','status-cure','status-inflict','evolution','key','currency'] },
+    { key: 'rarity', label: 'Rarity', type: 'enum', options: ['common','uncommon','rare','epic','legendary'] },
+    { key: 'description', label: 'Effect' },
+    { key: 'stage', label: 'Stage', type: 'num' }
+  ],
+  npcs: [
+    { key: 'id', label: 'ID', ro: true },
+    { key: 'name', label: 'Name' },
+    { key: 'nameEn', label: 'Name (EN)' },
+    { key: 'area', label: 'Area' },
+    { key: 'tier', label: 'Tier', type: 'num' },
+    { key: 'skills', label: 'Skills', ro: true, computed: function(row) { return row.skills ? row.skills.length : 0; } },
+    { key: 'personality.traits', label: 'Traits', ro: true, computed: function(row) { return row.personality && row.personality.traits ? row.personality.traits.join(', ') : ''; } }
+  ],
+  'npc-skills': [
+    { key: 'id', label: 'ID', ro: true },
+    { key: 'name', label: 'Name' },
+    { key: 'nameEn', label: 'Name (EN)' },
+    { key: 'reading', label: 'Reading' },
+    { key: 'meaning', label: 'Meaning' },
+    { key: 'element', label: 'Element', type: 'enum', options: ['fire','water','earth','wood','metal','neutral'] },
+    { key: 'category', label: 'Category', type: 'enum', options: ['damage','buff','debuff','heal','shield','drain'] },
+    { key: 'power', label: 'Power', type: 'num' },
+    { key: 'mpCost', label: 'MP Cost', type: 'num' }
+  ],
+  areas: [
+    { key: 'id', label: 'ID', ro: true },
+    { key: 'name', label: 'Name' },
+    { key: 'nameEn', label: 'Name (EN)' },
+    { key: 'reading', label: 'Reading' },
+    { key: 'theme', label: 'Theme' },
+    { key: 'creatures', label: 'Creatures', ro: true, computed: function(row) { return row.creatures ? row.creatures.length : 0; } },
+    { key: 'subAreas', label: 'Sub-Areas', ro: true, computed: function(row) { return row.subAreas ? row.subAreas.length : 0; } }
+  ]
+};
+
+var TAB_ORDER = ['creatures', 'moves', 'items', 'npcs', 'npc-skills', 'areas'];
+var TAB_LABELS = {
+  creatures: 'Creatures',
+  moves: 'Moves',
+  items: 'Items',
+  npcs: 'NPCs',
+  'npc-skills': 'NPC Skills',
+  areas: 'Areas'
+};
+
+// ── State ──────────────────────────────────────────────────────
+var data = {};
+var pendingChanges = {};  // key: "type:id:field" -> { type, id, field, oldValue, newValue }
+var currentType = 'creatures';
+var sortCol = '';
+var sortDir = 'asc';
+var searchQuery = '';
+var activeEditCell = null;
+
+// ── Helpers ────────────────────────────────────────────────────
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function getNestedValue(obj, path) {
+  var parts = path.split('.');
+  var val = obj;
+  for (var i = 0; i < parts.length; i++) {
+    if (val == null) return undefined;
+    val = val[parts[i]];
+  }
+  return val;
+}
+
+function changeKey(type, id, field) {
+  return type + ':' + id + ':' + field;
+}
+
+function changeCount() {
+  return Object.keys(pendingChanges).length;
+}
+
+// ── Tab rendering ──────────────────────────────────────────────
+function renderTabs() {
+  var tabsEl = document.getElementById('tabs');
+  var html = '';
+  for (var i = 0; i < TAB_ORDER.length; i++) {
+    var t = TAB_ORDER[i];
+    var label = TAB_LABELS[t];
+    var count = data[t] ? data[t].length : 0;
+    var active = t === currentType ? ' active' : '';
+    html += '<button class="tab' + active + '" data-type="' + t + '">'
+      + esc(label) + '<span class="badge">' + count + '</span></button>';
+  }
+  tabsEl.innerHTML = html;
+}
+
+// ── Data loading ───────────────────────────────────────────────
+function loadTab(type) {
+  if (data[type]) {
+    currentType = type;
+    sortCol = '';
+    sortDir = 'asc';
+    renderTabs();
+    renderTable();
+    return;
+  }
+
+  currentType = type;
+  renderTabs();
+  document.getElementById('tableWrap').innerHTML = '<div class="loading">Loading ' + esc(TAB_LABELS[type]) + '...</div>';
+
+  fetch('/dev/api/content/' + type)
+    .then(function(res) {
+      if (res.status === 401) {
+        window.location.href = '/dev/login';
+        return null;
+      }
+      return res.json();
+    })
+    .then(function(entries) {
+      if (entries === null) return;
+      data[type] = entries;
+      sortCol = '';
+      sortDir = 'asc';
+      renderTabs();
+      renderTable();
+    })
+    .catch(function(err) {
+      console.error('Load error:', err);
+      document.getElementById('tableWrap').innerHTML = '<div class="empty">Failed to load data</div>';
+    });
+}
+
+// ── Table rendering ────────────────────────────────────────────
+function renderTable() {
+  var cols = COLUMNS[currentType];
+  if (!cols) return;
+
+  var entries = data[currentType] || [];
+  var statsEl = document.getElementById('stats');
+  statsEl.textContent = entries.length + ' entries';
+
+  // Filter by search
+  var filtered = entries;
+  if (searchQuery) {
+    var q = searchQuery.toLowerCase();
+    filtered = entries.filter(function(row) {
+      for (var c = 0; c < cols.length; c++) {
+        var col = cols[c];
+        var val;
+        if (col.computed) {
+          val = col.computed(row);
+        } else {
+          val = getNestedValue(row, col.key);
+        }
+        if (val !== undefined && val !== null && String(val).toLowerCase().indexOf(q) !== -1) {
+          return true;
+        }
+      }
+      return false;
+    });
+    statsEl.textContent = filtered.length + ' / ' + entries.length + ' entries';
+  }
+
+  // Sort
+  if (sortCol) {
+    var colDef = null;
+    for (var sc = 0; sc < cols.length; sc++) {
+      if (cols[sc].key === sortCol) { colDef = cols[sc]; break; }
+    }
+    if (colDef) {
+      filtered = filtered.slice().sort(function(a, b) {
+        var av, bv;
+        if (colDef.computed) {
+          av = colDef.computed(a);
+          bv = colDef.computed(b);
+        } else {
+          av = getNestedValue(a, colDef.key);
+          bv = getNestedValue(b, colDef.key);
+        }
+        if (av == null) av = '';
+        if (bv == null) bv = '';
+        if (colDef.type === 'num') {
+          av = Number(av) || 0;
+          bv = Number(bv) || 0;
+          return sortDir === 'asc' ? av - bv : bv - av;
+        }
+        av = String(av).toLowerCase();
+        bv = String(bv).toLowerCase();
+        if (av < bv) return sortDir === 'asc' ? -1 : 1;
+        if (av > bv) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+  }
+
+  if (filtered.length === 0) {
+    document.getElementById('tableWrap').innerHTML = '<div class="empty">No entries found</div>';
+    return;
+  }
+
+  // Build header
+  var html = '<table><thead><tr>';
+  for (var h = 0; h < cols.length; h++) {
+    var col = cols[h];
+    var sorted = col.key === sortCol;
+    var arrow = '';
+    if (sorted) {
+      arrow = sortDir === 'asc' ? '\u25B2' : '\u25BC';
+    } else {
+      arrow = '\u25B2';
+    }
+    html += '<th class="' + (sorted ? 'sorted' : '') + '" data-col="' + esc(col.key) + '">'
+      + esc(col.label)
+      + '<span class="sort-arrow">' + arrow + '</span>'
+      + '</th>';
+  }
+  html += '</tr></thead><tbody>';
+
+  // Build rows
+  for (var r = 0; r < filtered.length; r++) {
+    var row = filtered[r];
+    html += '<tr data-id="' + esc(row.id) + '">';
+    for (var ci = 0; ci < cols.length; ci++) {
+      var cd = cols[ci];
+      var val;
+      if (cd.computed) {
+        val = cd.computed(row);
+      } else {
+        val = getNestedValue(row, cd.key);
+      }
+      var displayVal = val !== undefined && val !== null ? val : '';
+      var isRo = cd.ro || false;
+      var ck = changeKey(currentType, row.id, cd.key);
+      var isModified = pendingChanges[ck] !== undefined;
+      var cls = isRo ? 'ro' : 'editable';
+      if (isModified) cls += ' modified';
+      html += '<td class="' + cls + '" data-field="' + esc(cd.key) + '" title="' + esc(String(displayVal)) + '">'
+        + esc(String(displayVal)) + '</td>';
+    }
+    html += '</tr>';
+  }
+
+  html += '</tbody></table>';
+  document.getElementById('tableWrap').innerHTML = html;
+}
+
+// ── Sorting ────────────────────────────────────────────────────
+function sortBy(colKey) {
+  if (sortCol === colKey) {
+    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortCol = colKey;
+    sortDir = 'asc';
+  }
+  renderTable();
+}
+
+// ── Inline editing ─────────────────────────────────────────────
+function startEdit(td, row, colDef) {
+  if (activeEditCell) {
+    cancelCurrentEdit();
+  }
+
+  var currentValue = getNestedValue(row, colDef.key);
+  if (currentValue === undefined || currentValue === null) currentValue = '';
+
+  // Check if there's a pending change for this cell
+  var ck = changeKey(currentType, row.id, colDef.key);
+  if (pendingChanges[ck]) {
+    currentValue = pendingChanges[ck].newValue;
+  }
+
+  var originalDisplay = td.textContent;
+  var input;
+
+  if (colDef.type === 'enum') {
+    input = document.createElement('select');
+    input.className = 'cell-input';
+    var opts = colDef.options || [];
+    for (var i = 0; i < opts.length; i++) {
+      var opt = document.createElement('option');
+      opt.value = opts[i];
+      opt.textContent = opts[i];
+      if (String(currentValue) === opts[i]) opt.selected = true;
+      input.appendChild(opt);
+    }
+  } else {
+    input = document.createElement('input');
+    input.className = 'cell-input';
+    input.type = colDef.type === 'num' ? 'number' : 'text';
+    input.value = String(currentValue);
+  }
+
+  td.textContent = '';
+  td.appendChild(input);
+  input.focus();
+  if (input.select) input.select();
+
+  activeEditCell = {
+    td: td,
+    input: input,
+    row: row,
+    colDef: colDef,
+    originalDisplay: originalDisplay,
+    originalValue: currentValue
+  };
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      commitCurrentEdit();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      cancelCurrentEdit();
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      commitCurrentEdit();
+      moveToNextEditable(td, e.shiftKey);
+    }
+  });
+
+  input.addEventListener('blur', function() {
+    // Delay to allow click events to register
+    setTimeout(function() {
+      if (activeEditCell && activeEditCell.input === input) {
+        commitCurrentEdit();
+      }
+    }, 100);
+  });
+}
+
+function commitCurrentEdit() {
+  if (!activeEditCell) return;
+  var td = activeEditCell.td;
+  var input = activeEditCell.input;
+  var row = activeEditCell.row;
+  var colDef = activeEditCell.colDef;
+
+  var newValue = input.value;
+  if (colDef.type === 'num') {
+    newValue = newValue === '' ? 0 : Number(newValue);
+  }
+
+  var originalValue = getNestedValue(row, colDef.key);
+  if (originalValue === undefined || originalValue === null) originalValue = colDef.type === 'num' ? 0 : '';
+
+  var ck = changeKey(currentType, row.id, colDef.key);
+
+  activeEditCell = null;
+
+  // Check if value actually changed from original data
+  if (String(newValue) !== String(originalValue)) {
+    pendingChanges[ck] = {
+      type: currentType,
+      id: row.id,
+      field: colDef.key,
+      oldValue: originalValue,
+      newValue: newValue
+    };
+    td.textContent = String(newValue);
+    td.classList.add('modified');
+  } else {
+    // Value reverted to original — remove from changes
+    delete pendingChanges[ck];
+    td.textContent = String(originalValue);
+    td.classList.remove('modified');
+  }
+
+  updateSaveBar();
+}
+
+function cancelCurrentEdit() {
+  if (!activeEditCell) return;
+  var td = activeEditCell.td;
+  var originalDisplay = activeEditCell.originalDisplay;
+  activeEditCell = null;
+  td.textContent = originalDisplay;
+}
+
+function moveToNextEditable(currentTd, reverse) {
+  var row = currentTd.parentElement;
+  var cells = Array.prototype.slice.call(row.querySelectorAll('td.editable'));
+  var idx = cells.indexOf(currentTd);
+  var nextIdx = reverse ? idx - 1 : idx + 1;
+
+  if (nextIdx >= 0 && nextIdx < cells.length) {
+    cells[nextIdx].click();
+  } else {
+    // Move to next/previous row
+    var nextRow = reverse ? row.previousElementSibling : row.nextElementSibling;
+    if (nextRow) {
+      var nextCells = nextRow.querySelectorAll('td.editable');
+      if (nextCells.length > 0) {
+        nextCells[reverse ? nextCells.length - 1 : 0].click();
+      }
+    }
+  }
+}
+
+// ── Save bar ───────────────────────────────────────────────────
+function updateSaveBar() {
+  var count = changeCount();
+  var bar = document.getElementById('saveBar');
+  var countEl = document.getElementById('changeCount');
+  countEl.textContent = count + (count === 1 ? ' change' : ' changes');
+  if (count > 0) {
+    bar.classList.add('visible');
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+
+// ── Diff modal ─────────────────────────────────────────────────
+function showDiff() {
+  var changes = Object.values(pendingChanges);
+  if (changes.length === 0) return;
+
+  var html = '<button class="modal-close" id="diffClose">&times;</button>';
+  html += '<h3>Review Changes</h3>';
+  html += '<table class="diff-table"><thead><tr>'
+    + '<th>Type</th><th>Entry ID</th><th>Field</th><th>Old</th><th></th><th>New</th>'
+    + '</tr></thead><tbody>';
+
+  for (var i = 0; i < changes.length; i++) {
+    var c = changes[i];
+    html += '<tr>'
+      + '<td>' + esc(c.type) + '</td>'
+      + '<td>' + esc(c.id) + '</td>'
+      + '<td>' + esc(c.field) + '</td>'
+      + '<td class="diff-old">' + esc(String(c.oldValue)) + '</td>'
+      + '<td class="diff-arrow">&rarr;</td>'
+      + '<td class="diff-new">' + esc(String(c.newValue)) + '</td>'
+      + '</tr>';
+  }
+
+  html += '</tbody></table>';
+  html += '<div class="modal-actions">'
+    + '<button class="btn btn-discard" id="diffCancel">Cancel</button>'
+    + '<button class="btn btn-save" id="diffConfirm">Confirm &amp; Save</button>'
+    + '</div>';
+
+  document.getElementById('modal').innerHTML = html;
+  document.getElementById('overlay').classList.add('open');
+
+  document.getElementById('diffClose').addEventListener('click', closeDiff);
+  document.getElementById('diffCancel').addEventListener('click', closeDiff);
+  document.getElementById('diffConfirm').addEventListener('click', function() {
+    closeDiff();
+    saveChanges();
+  });
+}
+
+function closeDiff() {
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// ── Save changes ───────────────────────────────────────────────
+function saveChanges() {
+  var allChanges = Object.values(pendingChanges);
+  if (allChanges.length === 0) return;
+
+  // Group changes by type
+  var grouped = {};
+  for (var i = 0; i < allChanges.length; i++) {
+    var c = allChanges[i];
+    if (!grouped[c.type]) grouped[c.type] = [];
+    grouped[c.type].push({ id: c.id, field: c.field, value: c.newValue });
+  }
+
+  var types = Object.keys(grouped);
+  var promises = types.map(function(type) {
+    return fetch('/dev/api/content/' + type, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ changes: grouped[type] })
+    }).then(function(res) { return res.json(); });
+  });
+
+  Promise.all(promises)
+    .then(function(results) {
+      var totalUpdated = 0;
+      var totalErrors = [];
+      for (var r = 0; r < results.length; r++) {
+        if (results[r].updated) totalUpdated += results[r].updated;
+        if (results[r].errors) totalErrors = totalErrors.concat(results[r].errors);
+      }
+
+      if (totalErrors.length > 0) {
+        showToast('Saved ' + totalUpdated + ' changes with ' + totalErrors.length + ' errors', 'error');
+      } else {
+        showToast('Saved ' + totalUpdated + ' changes', 'success');
+      }
+
+      // Clear pending changes and reload data
+      pendingChanges = {};
+      updateSaveBar();
+
+      // Invalidate cache for affected types
+      for (var t = 0; t < types.length; t++) {
+        delete data[types[t]];
+      }
+      loadTab(currentType);
+    })
+    .catch(function(err) {
+      console.error('Save error:', err);
+      showToast('Save failed: ' + err.message, 'error');
+    });
+}
+
+function discardChanges() {
+  pendingChanges = {};
+  updateSaveBar();
+  renderTable();
+}
+
+// ── Toast ──────────────────────────────────────────────────────
+function showToast(msg, type) {
+  var toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast ' + (type || 'success') + ' show';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(function() {
+    toast.classList.remove('show');
+  }, 2000);
+}
+
+// ── Search ─────────────────────────────────────────────────────
+function applySearch(query) {
+  searchQuery = query;
+  renderTable();
+}
+
+// ── Event wiring ───────────────────────────────────────────────
+
+// Tab clicks
+document.getElementById('tabs').addEventListener('click', function(e) {
+  var tab = e.target.closest('.tab');
+  if (!tab) return;
+  var type = tab.dataset.type;
+  if (type && type !== currentType) {
+    loadTab(type);
+  }
+});
+
+// Search
+var searchTimer;
+document.getElementById('search').addEventListener('input', function() {
+  clearTimeout(searchTimer);
+  var self = this;
+  searchTimer = setTimeout(function() {
+    applySearch(self.value);
+  }, 150);
+});
+
+// Column header sort clicks
+document.getElementById('tableWrap').addEventListener('click', function(e) {
+  // Header click for sorting
+  var th = e.target.closest('th[data-col]');
+  if (th) {
+    sortBy(th.dataset.col);
+    return;
+  }
+
+  // Cell click for editing
+  var td = e.target.closest('td.editable');
+  if (td && !td.querySelector('.cell-input')) {
+    var tr = td.closest('tr');
+    var rowId = tr.dataset.id;
+    var field = td.dataset.field;
+
+    var entries = data[currentType] || [];
+    var row = null;
+    for (var i = 0; i < entries.length; i++) {
+      if (entries[i].id === rowId) { row = entries[i]; break; }
+    }
+    if (!row) return;
+
+    var cols = COLUMNS[currentType];
+    var colDef = null;
+    for (var c = 0; c < cols.length; c++) {
+      if (cols[c].key === field) { colDef = cols[c]; break; }
+    }
+    if (!colDef || colDef.ro) return;
+
+    startEdit(td, row, colDef);
+  }
+});
+
+// Save bar buttons
+document.getElementById('btnSave').addEventListener('click', function() {
+  showDiff();
+});
+
+document.getElementById('btnDiscard').addEventListener('click', function() {
+  discardChanges();
+});
+
+// Close diff overlay on background click
+document.getElementById('overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeDiff();
+});
+
+// Escape key closes diff
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    if (document.getElementById('overlay').classList.contains('open')) {
+      closeDiff();
+    }
+  }
+});
+
+// ── Init ───────────────────────────────────────────────────────
+function init() {
+  // Auth check
+  fetch('/dev/api/content/creatures')
+    .then(function(res) {
+      if (res.status === 401) {
+        window.location.href = '/dev/login';
+        return null;
+      }
+      return res.json();
+    })
+    .then(function(entries) {
+      if (entries === null) return;
+      data.creatures = entries;
+
+      // Load counts for all tabs in background
+      var otherTypes = TAB_ORDER.filter(function(t) { return t !== 'creatures'; });
+      otherTypes.forEach(function(type) {
+        fetch('/dev/api/content/' + type)
+          .then(function(r) {
+            if (!r.ok) return null;
+            return r.json();
+          })
+          .then(function(d) {
+            if (d) data[type] = d;
+            renderTabs();
+          })
+          .catch(function() {});
+      });
+
+      renderTabs();
+      renderTable();
+    })
+    .catch(function(err) {
+      console.error('Init error:', err);
+      document.getElementById('tableWrap').innerHTML = '<div class="empty">Failed to connect to server</div>';
+    });
+}
+init();
+</script>
+</body>
+</html>
