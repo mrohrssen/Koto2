@@ -78,10 +78,13 @@ A mysterious disruption is spreading across the world, causing normally peaceful
 
 Every name in the game teaches Japanese vocabulary:
 
-- **Creatures** are named from Japanese words — a base noun (concrete object) plus a modifier (adjective)
+- **Creatures** are named from Japanese words — a base noun (concrete object) plus a modifier (adjective). The base noun should be something you could **hold, encounter, or imagine as a living thing** — not something you'd walk inside or on top of. (A desk, pencil, or hat can be a creature; an airplane, parking lot, or gymnasium cannot — those are sub-areas.)
 - **Areas** are named from Japanese location and nature words
-- **Items** are named from Japanese food and object words
+- **Sub-areas** are named from location nouns — places you'd **walk inside or on top of** (classroom, gate, bakery, airplane, parking lot)
+- **Items** are named from Japanese food and object words (consumables) or wearable/holdable objects (equipment)
 - **NPCs** are named from personality and nature nouns
+- **Moves** come from Japanese verbs — action verbs for creature moves, abstract/support verbs for player moves
+- **Player moves** use abstract verbs and action nouns (study, teach, inspect, delay) as AoE support abilities (buff/debuff/heal/damage)
 - Names are sourced from frequency-ranked word lists (JPDB deck 81). Learning comes first — names are **never** changed for lore or aesthetic reasons.
 
 ---

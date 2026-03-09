@@ -1,0 +1,24 @@
+{
+  "nagi": {
+    "counters": {
+      "encounters": 1,
+      "defeats": 0,
+      "liberations": 1
+    },
+    "flags": {
+      "liberated": true,
+      "befriended": false,
+      "betrayed": false
+    },
+    "encounterLog": [
+      {
+        "outcome": "positive",
+        "summary": "Bond change: 1",
+        "timestamp": "2026-02-18T13:31:37.404Z"
+      }
+    ],
+    "narrative": "",
+    "bond": 1,
+    "lastEncounter": "2026-02-18T13:31:37.404Z"
+  }
+}

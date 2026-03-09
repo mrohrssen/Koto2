@@ -1,0 +1,731 @@
+{
+  "themeId": "shopping-mall",
+  "areaWord": "市場",
+  "areaReading": "いちば",
+  "areaMeaning": "market/marketplace",
+  "areaRank": 5300,
+  "avgRank": 5428,
+  "computedStage": 6,
+  "generatedAt": "2026-03-08",
+  "words": [
+    {
+      "word": "買う",
+      "reading": "かう",
+      "meaning": "to buy; to purchase; to value; to have a high opinion; to stir; to provoke; to draw upon oneself",
+      "rank": 400,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "高い",
+      "reading": "たかい",
+      "meaning": "high; tall; expensive; high-priced; high (level); above average (in degree, quality, etc.); loud; high-pitched; shrill",
+      "rank": 300,
+      "roles": [
+        "modifier"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": [
+        "area-mod:himitsuno-toshokan-tall-bookshelf",
+        "area-mod:mahouno-gakkou-high-rooftop"
+      ]
+    },
+    {
+      "word": "選ぶ",
+      "reading": "えらぶ",
+      "meaning": "to choose; to select",
+      "rank": 400,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "服",
+      "reading": "ふく",
+      "meaning": "clothes (esp. Western clothes); counter for doses of medicine, gulps of tea, drags of a cigarette, etc.",
+      "rank": 700,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "お金",
+      "reading": "おかね",
+      "meaning": "money",
+      "rank": 1000,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "売る",
+      "reading": "うる",
+      "meaning": "to sell",
+      "rank": 1100,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "包む",
+      "reading": "つつむ",
+      "meaning": "to wrap up; to pack; to bundle; to do up; to cover; to envelop; to shroud; to engulf; to conceal (a feeling); to hide...",
+      "rank": 1100,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": [
+        "move:tsutsumu"
+      ]
+    },
+    {
+      "word": "靴",
+      "reading": "くつ",
+      "meaning": "shoe; shoes; boots; footwear; footgear",
+      "rank": 2100,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "安い",
+      "reading": "やすい",
+      "meaning": "cheap; inexpensive; calm; peaceful; quiet",
+      "rank": 2200,
+      "roles": [
+        "modifier"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "店員",
+      "reading": "てんいん",
+      "meaning": "employee (of a store); shop assistant; clerk; salesperson",
+      "rank": 3400,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "帽子",
+      "reading": "ぼうし",
+      "meaning": "hat; cap",
+      "rank": 3700,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "財布",
+      "reading": "さいふ",
+      "meaning": "purse; handbag; wallet",
+      "rank": 4100,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "本屋",
+      "reading": "ほんや",
+      "meaning": "bookstore; bookshop; publisher; main building",
+      "rank": 10200,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "レジ",
+      "reading": "レジ",
+      "meaning": "(cash) register; cashier",
+      "rank": 11100,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "本",
+      "reading": "ほん",
+      "meaning": "book; volume; script; this; present; main; head; real; regular; counter for long cylindrical things; counter for film...",
+      "rank": 400,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": [
+        "creature:honmo"
+      ]
+    },
+    {
+      "word": "円",
+      "reading": "えん",
+      "meaning": "yen (Japanese monetary unit); circle",
+      "rank": 1200,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "便利",
+      "reading": "べんり",
+      "meaning": "convenient; handy; useful",
+      "rank": 2600,
+      "roles": [
+        "modifier"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "お菓子",
+      "reading": "おかし",
+      "meaning": "confections; sweets; candy; cake",
+      "rank": 3200,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "通路",
+      "reading": "つうろ",
+      "meaning": "passage; pathway; roadway; avenue; aisle",
+      "rank": 3300,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "出口",
+      "reading": "でぐち",
+      "meaning": "exit; gateway; way out; outlet; vent; leak",
+      "rank": 3800,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "階",
+      "reading": "かい",
+      "meaning": "storey; story; floor; stairs; stage (in chronostratigraphy); counter for storeys and floors of a building",
+      "rank": 3800,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "洋服",
+      "reading": "ようふく",
+      "meaning": "Western-style clothes (cf. traditional Japanese clothes)",
+      "rank": 6700,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "駐車場",
+      "reading": "ちゅうしゃじょう",
+      "meaning": "parking lot; car park; carpark; parking garage",
+      "rank": 8900,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "閉店",
+      "reading": "へいてん",
+      "meaning": "closing up shop (for the day); stopping business; going out of business",
+      "rank": 13500,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "パン屋",
+      "reading": "パンや",
+      "meaning": "bakery; baker; pastry shop",
+      "rank": 14600,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "花屋",
+      "reading": "はなや",
+      "meaning": "florist; flower shop",
+      "rank": 18300,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "地下",
+      "reading": "ちか",
+      "meaning": "underground; below the ground; world of the dead; the grave; underground (activities, movement, etc.); secret; illega...",
+      "rank": 2000,
+      "roles": [
+        "modifier"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": [
+        "area-loc:himitsuno-toshokan-deep-underground"
+      ]
+    },
+    {
+      "word": "時計",
+      "reading": "とけい",
+      "meaning": "clock; watch; timepiece",
+      "rank": 2400,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": [
+        "item:hourglass"
+      ]
+    },
+    {
+      "word": "シャツ",
+      "reading": "シャツ",
+      "meaning": "shirt (undergarment); undershirt; singlet; shirt (outerwear; usu. with collar and buttons)",
+      "rank": 3600,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "スカート",
+      "reading": "スカート",
+      "meaning": "skirt",
+      "rank": 3200,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "コート",
+      "reading": "コート",
+      "meaning": "coat; coating",
+      "rank": 4500,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "家具",
+      "reading": "かぐ",
+      "meaning": "furniture",
+      "rank": 5800,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "商店街",
+      "reading": "しょうてんがい",
+      "meaning": "shopping district; shopping street; downtown",
+      "rank": 6000,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "店長",
+      "reading": "てんちょう",
+      "meaning": "shop manager",
+      "rank": 8300,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "商店",
+      "reading": "しょうてん",
+      "meaning": "shop; small store; business; firm",
+      "rank": 10800,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "配達",
+      "reading": "はいたつ",
+      "meaning": "delivery",
+      "rank": 12300,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "在庫",
+      "reading": "ざいこ",
+      "meaning": "stock; inventory",
+      "rank": 12700,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "デパート",
+      "reading": "デパート",
+      "meaning": "department store; department",
+      "rank": 12900,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "中古",
+      "reading": "ちゅうこ",
+      "meaning": "used; second-hand; old; Middle Ages (in Japan esp. Heian period)",
+      "rank": 20900,
+      "roles": [
+        "modifier"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "百貨店",
+      "reading": "ひゃっかてん",
+      "meaning": "(department) store; (department) stores",
+      "rank": 23300,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "大きい",
+      "reading": "おおきい",
+      "meaning": "big; large; great; loud; extensive; spacious; important; decisive; valuable; older; grown up",
+      "rank": 300,
+      "roles": [
+        "modifier"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "新しい",
+      "reading": "あたらしい",
+      "meaning": "new; novel; fresh; recent; latest; up-to-date; modern",
+      "rank": 400,
+      "roles": [
+        "modifier"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "小さい",
+      "reading": "ちいさい",
+      "meaning": "small; little; tiny; slight; below average (in degree, amount, etc.); minor; small; low (e.g. sound); soft (e.g. voic...",
+      "rank": 400,
+      "roles": [
+        "modifier"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "探す",
+      "reading": "さがす",
+      "meaning": "to search for; to look for; to hunt for; to seek; to search (a house, pocket, etc.); to search through; to rummage in...",
+      "rank": 600,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "着る",
+      "reading": "きる",
+      "meaning": "to wear (in modern Japanese, from the shoulders down); to put on; to bear (guilt, etc.)",
+      "rank": 700,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "並ぶ",
+      "reading": "ならぶ",
+      "meaning": "to line up; to stand in a line; to rival; to match; to equal",
+      "rank": 800,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "払う",
+      "reading": "はらう",
+      "meaning": "to pay (e.g. money, bill); to brush off; to wipe away; to clear away; to dust off; to cut off (e.g. branches); to dri...",
+      "rank": 1100,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    }
+  ]
+}

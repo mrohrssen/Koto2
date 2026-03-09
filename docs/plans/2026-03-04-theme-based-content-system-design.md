@@ -56,7 +56,8 @@ Location: `language/themes/<themeId>.json`
       "rank": 452,
       "roles": ["creature", "npc"],
       "source": "occupations",
-      "assigned": null
+      "assigned": null,
+      "existingUses": []
     },
     {
       "word": "机",
@@ -65,7 +66,8 @@ Location: `language/themes/<themeId>.json`
       "rank": 2100,
       "roles": ["item"],
       "source": "objects",
-      "assigned": null
+      "assigned": null,
+      "existingUses": ["item:tsukue-desk"]
     },
     {
       "word": "厳しい",
@@ -74,7 +76,8 @@ Location: `language/themes/<themeId>.json`
       "rank": 3400,
       "roles": ["modifier"],
       "source": "ai-generated",
-      "assigned": null
+      "assigned": null,
+      "existingUses": []
     }
   ]
 }
@@ -84,6 +87,7 @@ Field definitions:
 - **`roles`** — what this word can become: `creature`, `modifier`, `item`, `npc`, `sub-area`, `move`. A word can have multiple roles.
 - **`source`** — which category file it came from, or `"ai-generated"` for AI-filled gaps
 - **`assigned`** — `null` when available, set to `"creature:kamedor"` when forged
+- **`existingUses`** — array of existing assignments found during generation (e.g., `["creature:sensei", "move:teach"]`). Empty array if the word is not yet used anywhere. Words are never filtered out — this field lets you see redundancy at a glance.
 - **`avgRank`** — computed from all words in the pool. Determines stage.
 - **`computedStage`** — derived from `avgRank` using existing stage thresholds in `data/stage-definitions.json`
 
@@ -97,11 +101,15 @@ Script: `scripts/generate-theme-pool.mjs`
 node scripts/generate-theme-pool.mjs --theme "school" --area-word "学校"
 ```
 
+### Implementation note: use Opus subagents for category scanning
+
+The 17 category files are too large to process in a single context window. **Dispatch parallel Opus subagents** (via the Agent tool) to scan categories. Each subagent receives the theme concept and 1-3 category files, and returns its thematic word picks. The orchestrator merges results and deduplicates. This also applies to step 2 (AI gap-fill generation) — run it as a separate subagent call.
+
 Steps:
-1. Scan all 17 category files in `language/categories/`. AI selects words thematically associated with the theme concept.
-2. AI generates 20-30 additional thematic words not found in any category.
-3. JPDB batch lookup on all AI-generated candidates for frequency rank + verified readings.
-4. Filter out words already used (check creatures.json, moves.json, items.json, areas.json, npcs.json + staging files).
+1. **Dispatch subagents** to scan all 17 category files in `language/categories/`. Each subagent receives the theme name/concept and a batch of category files, and returns words it considers thematically associated. Run subagents in parallel to maximize throughput.
+2. A separate subagent generates 20-30 additional thematic words not found in any category.
+3. Orchestrator merges all subagent results, deduplicates, then runs JPDB batch lookup on all candidates for frequency rank + verified readings.
+4. Cross-reference words against existing data (creatures.json, moves.json, items.json, areas.json, npcs.json + staging files). Do NOT filter them out — instead, annotate each word with its existing assignments so redundancy is visible.
 5. Filter out rank > 30,000.
 6. Sort by JPDB rank ascending.
 7. Assign suggested `roles` based on POS (nouns → creature/item/npc/sub-area, adjectives → modifier, verbs → move/creature).

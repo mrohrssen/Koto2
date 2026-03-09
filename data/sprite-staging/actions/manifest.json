@@ -1,0 +1,977 @@
+[
+  {
+    "id": "abandon",
+    "word": "諦める",
+    "wordEn": "Abandon"
+  },
+  {
+    "id": "approach",
+    "word": "近づく",
+    "wordEn": "Approach"
+  },
+  {
+    "id": "assault",
+    "word": "攻める",
+    "wordEn": "Assault"
+  },
+  {
+    "id": "bear",
+    "word": "bear",
+    "wordEn": "Bear"
+  },
+  {
+    "id": "beat",
+    "word": "打つ",
+    "wordEn": "Beat"
+  },
+  {
+    "id": "bewilder",
+    "word": "惑わす",
+    "wordEn": "Bewilder"
+  },
+  {
+    "id": "bind",
+    "word": "結ぶ",
+    "wordEn": "Bind"
+  },
+  {
+    "id": "bite",
+    "word": "噛む",
+    "wordEn": "Bite"
+  },
+  {
+    "id": "blanket",
+    "word": "blanket",
+    "wordEn": "Blanket"
+  },
+  {
+    "id": "blizzard",
+    "word": "吹雪",
+    "wordEn": "Blizzard"
+  },
+  {
+    "id": "block",
+    "word": "遮る",
+    "wordEn": "Block"
+  },
+  {
+    "id": "bloom",
+    "word": "咲く",
+    "wordEn": "Bloom"
+  },
+  {
+    "id": "blow-away",
+    "word": "吹き飛ばす",
+    "wordEn": "Blow Away"
+  },
+  {
+    "id": "blow",
+    "word": "吹く",
+    "wordEn": "Blow"
+  },
+  {
+    "id": "bomb",
+    "word": "bomb",
+    "wordEn": "Bomb"
+  },
+  {
+    "id": "book",
+    "word": "book",
+    "wordEn": "Book"
+  },
+  {
+    "id": "bounce",
+    "word": "bounce",
+    "wordEn": "Bounce"
+  },
+  {
+    "id": "burn",
+    "word": "燃える",
+    "wordEn": "Burn"
+  },
+  {
+    "id": "burst",
+    "word": "弾ける",
+    "wordEn": "Burst"
+  },
+  {
+    "id": "bury",
+    "word": "埋める",
+    "wordEn": "Bury"
+  },
+  {
+    "id": "butterfly",
+    "word": "butterfly",
+    "wordEn": "Butterfly"
+  },
+  {
+    "id": "call",
+    "word": "呼ぶ",
+    "wordEn": "Call"
+  },
+  {
+    "id": "capture",
+    "word": "捉える",
+    "wordEn": "Capture"
+  },
+  {
+    "id": "cat",
+    "word": "cat",
+    "wordEn": "Cat"
+  },
+  {
+    "id": "catch",
+    "word": "捕まえる",
+    "wordEn": "Catch"
+  },
+  {
+    "id": "challenge",
+    "word": "挑む",
+    "wordEn": "Challenge"
+  },
+  {
+    "id": "chirp",
+    "word": "鳴く",
+    "wordEn": "Chirp"
+  },
+  {
+    "id": "chomp",
+    "word": "chomp",
+    "wordEn": "Chomp"
+  },
+  {
+    "id": "close",
+    "word": "閉じる",
+    "wordEn": "Close"
+  },
+  {
+    "id": "coil",
+    "word": "巻く",
+    "wordEn": "Coil"
+  },
+  {
+    "id": "conceal",
+    "word": "隠す",
+    "wordEn": "Conceal"
+  },
+  {
+    "id": "cover",
+    "word": "覆う",
+    "wordEn": "Cover"
+  },
+  {
+    "id": "crow",
+    "word": "crow",
+    "wordEn": "Crow"
+  },
+  {
+    "id": "crush",
+    "word": "潰す",
+    "wordEn": "Crush"
+  },
+  {
+    "id": "cry",
+    "word": "泣く",
+    "wordEn": "Cry"
+  },
+  {
+    "id": "cure",
+    "word": "直す",
+    "wordEn": "Cure"
+  },
+  {
+    "id": "curse",
+    "word": "呪う",
+    "wordEn": "Curse"
+  },
+  {
+    "id": "cut",
+    "word": "切る",
+    "wordEn": "Cut"
+  },
+  {
+    "id": "dance",
+    "word": "舞う",
+    "wordEn": "Dance"
+  },
+  {
+    "id": "dash",
+    "word": "走る",
+    "wordEn": "Dash"
+  },
+  {
+    "id": "deceive",
+    "word": "deceive",
+    "wordEn": "Deceive"
+  },
+  {
+    "id": "demolish",
+    "word": "崩す",
+    "wordEn": "Demolish"
+  },
+  {
+    "id": "destroy",
+    "word": "壊す",
+    "wordEn": "Destroy"
+  },
+  {
+    "id": "devour",
+    "word": "食らう",
+    "wordEn": "Devour"
+  },
+  {
+    "id": "dive",
+    "word": "潜る",
+    "wordEn": "Dive"
+  },
+  {
+    "id": "dodge",
+    "word": "避ける",
+    "wordEn": "Dodge"
+  },
+  {
+    "id": "dolphin",
+    "word": "dolphin",
+    "wordEn": "Dolphin"
+  },
+  {
+    "id": "doubt",
+    "word": "疑う",
+    "wordEn": "Doubt"
+  },
+  {
+    "id": "dragon",
+    "word": "dragon",
+    "wordEn": "Dragon"
+  },
+  {
+    "id": "drink",
+    "word": "飲む",
+    "wordEn": "Drink"
+  },
+  {
+    "id": "embrace",
+    "word": "抱きしめる",
+    "wordEn": "Embrace"
+  },
+  {
+    "id": "encircle",
+    "word": "囲む",
+    "wordEn": "Encircle"
+  },
+  {
+    "id": "endure",
+    "word": "耐える",
+    "wordEn": "Endure"
+  },
+  {
+    "id": "enlarge",
+    "word": "広げる",
+    "wordEn": "Enlarge"
+  },
+  {
+    "id": "entangle",
+    "word": "絡む",
+    "wordEn": "Entangle"
+  },
+  {
+    "id": "exceed",
+    "word": "超える",
+    "wordEn": "Exceed"
+  },
+  {
+    "id": "explosion",
+    "word": "爆発",
+    "wordEn": "Explosion"
+  },
+  {
+    "id": "extend",
+    "word": "伸ばす",
+    "wordEn": "Extend"
+  },
+  {
+    "id": "extinguish",
+    "word": "消す",
+    "wordEn": "Extinguish"
+  },
+  {
+    "id": "fall",
+    "word": "落ちる",
+    "wordEn": "Fall"
+  },
+  {
+    "id": "fire",
+    "word": "放つ",
+    "wordEn": "Fire"
+  },
+  {
+    "id": "float",
+    "word": "浮かぶ",
+    "wordEn": "Float"
+  },
+  {
+    "id": "flower",
+    "word": "flower",
+    "wordEn": "Flower"
+  },
+  {
+    "id": "fly",
+    "word": "飛ぶ",
+    "wordEn": "Fly"
+  },
+  {
+    "id": "fox",
+    "word": "fox",
+    "wordEn": "Fox"
+  },
+  {
+    "id": "freeze",
+    "word": "凍る",
+    "wordEn": "Freeze"
+  },
+  {
+    "id": "frog",
+    "word": "frog",
+    "wordEn": "Frog"
+  },
+  {
+    "id": "full-moon",
+    "word": "満月",
+    "wordEn": "Full Moon"
+  },
+  {
+    "id": "gallop",
+    "word": "駆ける",
+    "wordEn": "Gallop"
+  },
+  {
+    "id": "ghost",
+    "word": "ghost",
+    "wordEn": "Ghost"
+  },
+  {
+    "id": "glare",
+    "word": "睨む",
+    "wordEn": "Glare"
+  },
+  {
+    "id": "glitter",
+    "word": "glitter",
+    "wordEn": "Glitter"
+  },
+  {
+    "id": "grasp",
+    "word": "握る",
+    "wordEn": "Grasp"
+  },
+  {
+    "id": "guard",
+    "word": "防ぐ",
+    "wordEn": "Guard"
+  },
+  {
+    "id": "hand-over",
+    "word": "渡す",
+    "wordEn": "Hand Over"
+  },
+  {
+    "id": "harden",
+    "word": "固める",
+    "wordEn": "Harden"
+  },
+  {
+    "id": "heal",
+    "word": "治る",
+    "wordEn": "Heal"
+  },
+  {
+    "id": "help",
+    "word": "助ける",
+    "wordEn": "Help"
+  },
+  {
+    "id": "hide",
+    "word": "隠れる",
+    "wordEn": "Hide"
+  },
+  {
+    "id": "hit",
+    "word": "当てる",
+    "wordEn": "Hit"
+  },
+  {
+    "id": "horse",
+    "word": "horse",
+    "wordEn": "Horse"
+  },
+  {
+    "id": "hurry",
+    "word": "急ぐ",
+    "wordEn": "Hurry"
+  },
+  {
+    "id": "illuminate",
+    "word": "照らす",
+    "wordEn": "Illuminate"
+  },
+  {
+    "id": "inhale",
+    "word": "吸う",
+    "wordEn": "Inhale"
+  },
+  {
+    "id": "jump-out",
+    "word": "飛び出す",
+    "wordEn": "Jump Out"
+  },
+  {
+    "id": "jump",
+    "word": "jump",
+    "wordEn": "Jump"
+  },
+  {
+    "id": "kick",
+    "word": "蹴る",
+    "wordEn": "Kick"
+  },
+  {
+    "id": "knock",
+    "word": "叩く",
+    "wordEn": "Knock"
+  },
+  {
+    "id": "lamp",
+    "word": "lamp",
+    "wordEn": "Lamp"
+  },
+  {
+    "id": "launch",
+    "word": "飛ばす",
+    "wordEn": "Launch"
+  },
+  {
+    "id": "leap",
+    "word": "跳ねる",
+    "wordEn": "Leap"
+  },
+  {
+    "id": "lick",
+    "word": "舐める",
+    "wordEn": "Lick"
+  },
+  {
+    "id": "light",
+    "word": "light",
+    "wordEn": "Light"
+  },
+  {
+    "id": "lightning",
+    "word": "lightning",
+    "wordEn": "Lightning"
+  },
+  {
+    "id": "lion",
+    "word": "lion",
+    "wordEn": "Lion"
+  },
+  {
+    "id": "melt",
+    "word": "溶ける",
+    "wordEn": "Melt"
+  },
+  {
+    "id": "monkey",
+    "word": "monkey",
+    "wordEn": "Monkey"
+  },
+  {
+    "id": "moon",
+    "word": "moon",
+    "wordEn": "Moon"
+  },
+  {
+    "id": "mouse",
+    "word": "mouse",
+    "wordEn": "Mouse"
+  },
+  {
+    "id": "musical-performance",
+    "word": "musical-performance",
+    "wordEn": "Musical Performance"
+  },
+  {
+    "id": "octopus",
+    "word": "octopus",
+    "wordEn": "Octopus"
+  },
+  {
+    "id": "open",
+    "word": "開く",
+    "wordEn": "Open"
+  },
+  {
+    "id": "overflow",
+    "word": "溢れる",
+    "wordEn": "Overflow"
+  },
+  {
+    "id": "peck",
+    "word": "ついばむ",
+    "wordEn": "Peck"
+  },
+  {
+    "id": "penetrate",
+    "word": "貫く",
+    "wordEn": "Penetrate"
+  },
+  {
+    "id": "penguin",
+    "word": "penguin",
+    "wordEn": "Penguin"
+  },
+  {
+    "id": "performance",
+    "word": "演奏",
+    "wordEn": "Performance"
+  },
+  {
+    "id": "persevere",
+    "word": "頑張る",
+    "wordEn": "Persevere"
+  },
+  {
+    "id": "pierce",
+    "word": "刺す",
+    "wordEn": "Pierce"
+  },
+  {
+    "id": "pillow",
+    "word": "pillow",
+    "wordEn": "Pillow"
+  },
+  {
+    "id": "pin-down",
+    "word": "押さえる",
+    "wordEn": "Pin Down"
+  },
+  {
+    "id": "pluck",
+    "word": "抜く",
+    "wordEn": "Pluck"
+  },
+  {
+    "id": "pour",
+    "word": "注ぐ",
+    "wordEn": "Pour"
+  },
+  {
+    "id": "pray",
+    "word": "祈る",
+    "wordEn": "Pray"
+  },
+  {
+    "id": "preserve",
+    "word": "保つ",
+    "wordEn": "Preserve"
+  },
+  {
+    "id": "protect",
+    "word": "守る",
+    "wordEn": "Protect"
+  },
+  {
+    "id": "pull",
+    "word": "引く",
+    "wordEn": "Pull"
+  },
+  {
+    "id": "punch",
+    "word": "殴る",
+    "wordEn": "Punch"
+  },
+  {
+    "id": "rabbit",
+    "word": "rabbit",
+    "wordEn": "Rabbit"
+  },
+  {
+    "id": "rage",
+    "word": "怒る",
+    "wordEn": "Rage"
+  },
+  {
+    "id": "rampage",
+    "word": "暴れる",
+    "wordEn": "Rampage"
+  },
+  {
+    "id": "recover",
+    "word": "取り戻す",
+    "wordEn": "Recover"
+  },
+  {
+    "id": "resound",
+    "word": "響く",
+    "wordEn": "Resound"
+  },
+  {
+    "id": "rest",
+    "word": "休む",
+    "wordEn": "Rest"
+  },
+  {
+    "id": "restrict",
+    "word": "限る",
+    "wordEn": "Restrict"
+  },
+  {
+    "id": "revolve",
+    "word": "回る",
+    "wordEn": "Revolve"
+  },
+  {
+    "id": "rip",
+    "word": "引き裂く",
+    "wordEn": "Rip"
+  },
+  {
+    "id": "roar",
+    "word": "咆哮",
+    "wordEn": "Roar"
+  },
+  {
+    "id": "roast",
+    "word": "焼く",
+    "wordEn": "Roast"
+  },
+  {
+    "id": "ruin",
+    "word": "滅ぼす",
+    "wordEn": "Ruin"
+  },
+  {
+    "id": "scissors",
+    "word": "scissors",
+    "wordEn": "Scissors"
+  },
+  {
+    "id": "scorch",
+    "word": "焦がす",
+    "wordEn": "Scorch"
+  },
+  {
+    "id": "scratch",
+    "word": "掻く",
+    "wordEn": "Scratch"
+  },
+  {
+    "id": "scream",
+    "word": "scream",
+    "wordEn": "Scream"
+  },
+  {
+    "id": "seize",
+    "word": "つかむ",
+    "wordEn": "Seize"
+  },
+  {
+    "id": "shake",
+    "word": "揺れる",
+    "wordEn": "Shake"
+  },
+  {
+    "id": "shark",
+    "word": "shark",
+    "wordEn": "Shark"
+  },
+  {
+    "id": "shine",
+    "word": "光る",
+    "wordEn": "Shine"
+  },
+  {
+    "id": "shoot",
+    "word": "撃つ",
+    "wordEn": "Shoot"
+  },
+  {
+    "id": "shout",
+    "word": "叫ぶ",
+    "wordEn": "Shout"
+  },
+  {
+    "id": "slash",
+    "word": "slash",
+    "wordEn": "Slash"
+  },
+  {
+    "id": "sleep",
+    "word": "眠る",
+    "wordEn": "Sleep"
+  },
+  {
+    "id": "slice",
+    "word": "斬る",
+    "wordEn": "Slice"
+  },
+  {
+    "id": "slide",
+    "word": "滑る",
+    "wordEn": "Slide"
+  },
+  {
+    "id": "smash",
+    "word": "砕く",
+    "wordEn": "Smash"
+  },
+  {
+    "id": "snake",
+    "word": "snake",
+    "wordEn": "Snake"
+  },
+  {
+    "id": "snap",
+    "word": "食いつく",
+    "wordEn": "Snap"
+  },
+  {
+    "id": "sparkle",
+    "word": "輝く",
+    "wordEn": "Sparkle"
+  },
+  {
+    "id": "speak",
+    "word": "話す",
+    "wordEn": "Speak"
+  },
+  {
+    "id": "speaker",
+    "word": "speaker",
+    "wordEn": "Speaker"
+  },
+  {
+    "id": "spider",
+    "word": "spider",
+    "wordEn": "Spider"
+  },
+  {
+    "id": "spin",
+    "word": "回す",
+    "wordEn": "Spin"
+  },
+  {
+    "id": "sprout",
+    "word": "生える",
+    "wordEn": "Sprout"
+  },
+  {
+    "id": "stack",
+    "word": "重ねる",
+    "wordEn": "Stack"
+  },
+  {
+    "id": "stance",
+    "word": "構える",
+    "wordEn": "Stance"
+  },
+  {
+    "id": "stand-up",
+    "word": "立ち上がる",
+    "wordEn": "Stand Up"
+  },
+  {
+    "id": "star",
+    "word": "star",
+    "wordEn": "Star"
+  },
+  {
+    "id": "stare",
+    "word": "見つめる",
+    "wordEn": "Stare"
+  },
+  {
+    "id": "steal",
+    "word": "盗む",
+    "wordEn": "Steal"
+  },
+  {
+    "id": "step-on",
+    "word": "踏む",
+    "wordEn": "Step On"
+  },
+  {
+    "id": "stretch",
+    "word": "伸びる",
+    "wordEn": "Stretch"
+  },
+  {
+    "id": "strike",
+    "word": "ぶつける",
+    "wordEn": "Strike"
+  },
+  {
+    "id": "submerge",
+    "word": "沈む",
+    "wordEn": "Submerge"
+  },
+  {
+    "id": "suffer",
+    "word": "苦しむ",
+    "wordEn": "Suffer"
+  },
+  {
+    "id": "sun",
+    "word": "sun",
+    "wordEn": "Sun"
+  },
+  {
+    "id": "support",
+    "word": "支える",
+    "wordEn": "Support"
+  },
+  {
+    "id": "swallow-up",
+    "word": "巻き込む",
+    "wordEn": "Swallow Up"
+  },
+  {
+    "id": "swallow",
+    "word": "飲み込む",
+    "wordEn": "Swallow"
+  },
+  {
+    "id": "swarm",
+    "word": "群がる",
+    "wordEn": "Swarm"
+  },
+  {
+    "id": "swim",
+    "word": "泳ぐ",
+    "wordEn": "Swim"
+  },
+  {
+    "id": "swing",
+    "word": "振る",
+    "wordEn": "Swing"
+  },
+  {
+    "id": "teach",
+    "word": "教える",
+    "wordEn": "Teach"
+  },
+  {
+    "id": "tear-apart",
+    "word": "tear-apart",
+    "wordEn": "Tear Apart"
+  },
+  {
+    "id": "tear",
+    "word": "破る",
+    "wordEn": "Tear"
+  },
+  {
+    "id": "throw-away",
+    "word": "捨てる",
+    "wordEn": "Throw Away"
+  },
+  {
+    "id": "throw",
+    "word": "投げる",
+    "wordEn": "Throw"
+  },
+  {
+    "id": "thrust",
+    "word": "突く",
+    "wordEn": "Thrust"
+  },
+  {
+    "id": "tie",
+    "word": "縛る",
+    "wordEn": "Tie"
+  },
+  {
+    "id": "tighten",
+    "word": "締める",
+    "wordEn": "Tighten"
+  },
+  {
+    "id": "topple",
+    "word": "倒す",
+    "wordEn": "Topple"
+  },
+  {
+    "id": "touch",
+    "word": "触る",
+    "wordEn": "Touch"
+  },
+  {
+    "id": "transform",
+    "word": "化ける",
+    "wordEn": "Transform"
+  },
+  {
+    "id": "tremble",
+    "word": "震える",
+    "wordEn": "Tremble"
+  },
+  {
+    "id": "trick",
+    "word": "騙す",
+    "wordEn": "Trick"
+  },
+  {
+    "id": "turtle",
+    "word": "turtle",
+    "wordEn": "Turtle"
+  },
+  {
+    "id": "umbrella",
+    "word": "umbrella",
+    "wordEn": "Umbrella"
+  },
+  {
+    "id": "warm",
+    "word": "温める",
+    "wordEn": "Warm"
+  },
+  {
+    "id": "wash-away",
+    "word": "流す",
+    "wordEn": "Wash Away"
+  },
+  {
+    "id": "wash",
+    "word": "洗う",
+    "wordEn": "Wash"
+  },
+  {
+    "id": "whale",
+    "word": "whale",
+    "wordEn": "Whale"
+  },
+  {
+    "id": "wind",
+    "word": "wind",
+    "wordEn": "Wind"
+  },
+  {
+    "id": "wish",
+    "word": "願う",
+    "wordEn": "Wish"
+  },
+  {
+    "id": "wolf",
+    "word": "wolf",
+    "wordEn": "Wolf"
+  },
+  {
+    "id": "wound",
+    "word": "傷つける",
+    "wordEn": "Wound"
+  },
+  {
+    "id": "wrap",
+    "word": "包む",
+    "wordEn": "Wrap"
+  }
+]

@@ -853,7 +853,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   };
 
   try {
-    const res = await fetch(window.location.origin + '/api/theme-pool/submit', {
+    const res = await fetch('http://76.13.220.142:3000/api/theme-pool/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),

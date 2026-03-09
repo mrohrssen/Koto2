@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Item Sprites Review</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; color: #eee; font-family: system-ui, sans-serif; padding: 24px; }
+  h1 { text-align: center; margin-bottom: 8px; color: #e94560; }
+  .subtitle { text-align: center; color: #888; margin-bottom: 24px; }
+  .section { margin-bottom: 32px; }
+  .section h2 { color: #0f3460; background: #e94560; display: inline-block; padding: 4px 16px; border-radius: 4px; margin-bottom: 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+  .card {
+    background: #16213e; border: 2px solid #0f3460; border-radius: 8px;
+    padding: 12px; text-align: center; transition: border-color 0.2s;
+  }
+  .card:hover { border-color: #e94560; }
+  .card.highlight { border-color: #00ff88; box-shadow: 0 0 12px rgba(0,255,136,0.3); }
+  .card img { width: 96px; height: 96px; image-rendering: pixelated; background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px; border-radius: 4px; }
+  .card .name { margin-top: 8px; font-size: 13px; color: #ccc; }
+  .card .badge { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; }
+  .badge.new { background: #00ff88; color: #000; }
+  .badge.keepsake { background: #e94560; color: #fff; }
+  .badge.food { background: #f5a623; color: #000; }
+</style>
+</head>
+<body>
+<h1>Item Sprites Review</h1>
+<p class="subtitle">Checkerboard = transparent pixels &bull; Green border = changed this session</p>
+
+<div class="section">
+  <h2>Steam Fixed (Pink → White)</h2>
+  <div class="grid" id="steam"></div>
+</div>
+
+<div class="section">
+  <h2>Regenerated</h2>
+  <div class="grid" id="regen"></div>
+</div>
+
+<div class="section">
+  <h2>Other Keepsakes</h2>
+  <div class="grid" id="keepsakes"></div>
+</div>
+
+<div class="section">
+  <h2>Food Items</h2>
+  <div class="grid" id="food"></div>
+</div>
+
+<div class="section">
+  <h2>All Other Items</h2>
+  <div class="grid" id="other"></div>
+</div>
+
+<script>
+const bust = Date.now();
+const keepsakes = ['ring','fang','bone','katana','gemstone','jewel','needle','key'];
+const food = ['beer','bento','black-tea','bowl-of-rice','cake','cheesecake','chocolate',
+  'cup-of-coffee','curry-bread','egg','green-tea','gyoza','juice','miso-soup','natto',
+  'pork-soup','ramen','rice-ball','salmon-sushi','shrimp-tempura','strawberry-milk',
+  'takoyaki','water-bottle','yakitori','rice','sake','tea','meal','cooking','flavor'];
+const skip = new Set(['bell','claw',...keepsakes,...food]);
+
+const all = ["ally", "autumn", "beer", "bell", "bento", "black-tea", "bone", "book", "bowl-of-rice", "cake", "cheesecake", "chocolate", "claw", "clock", "clothes", "cooking", "cup-of-coffee", "curry-bread", "egg", "family", "fang", "feeling", "flavor", "friend", "gemstone", "green-tea", "gyoza", "heart", "jewel", "juice", "katana", "key", "letter", "lover", "map", "meal", "medicine", "miso-soup", "money", "mountain", "music", "name", "natto", "nature", "needle", "paper", "parents", "photograph", "pork-soup", "present", "promise", "ramen", "rice", "rice-ball", "riddle", "ring", "sake", "salmon-sushi", "sea", "senior", "shrimp-tempura", "siblings", "sky", "smell", "spring", "story", "strawberry-milk", "summer", "takoyaki", "tea", "thing", "time", "tool", "travel", "water", "water-bottle", "winter", "words", "yakitori"];
+const other = all.filter(n => !skip.has(n));
+
+function renderGrid(containerId, names, badgeClass, badgeText) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = names.map(n => `
+    <div class="card">
+      <img src="${n}.webp?v=${bust}" alt="${n}">
+      <div class="name">${n}</div>
+      ${badgeText ? `<span class="badge ${badgeClass}">${badgeText}</span>` : ''}
+    </div>
+  `).join('');
+}
+
+const regen = ['bell','claw','katana','key','chocolate'];
+const steamFixed = ['black-tea','cup-of-coffee','curry-bread','egg','gyoza','pork-soup','ramen','yakitori','takoyaki','sake'];
+
+function renderHighlight(containerId, names, badgeClass, badgeText) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = names.map(n => `
+    <div class="card highlight">
+      <img src="${n}.webp?v=${bust}" alt="${n}">
+      <div class="name">${n}</div>
+      <span class="badge ${badgeClass}">${badgeText}</span>
+    </div>
+  `).join('');
+}
+
+renderHighlight('regen', regen, 'new', 'REGEN');
+renderHighlight('steam', steamFixed, 'new', 'STEAM FIX');
+renderGrid('keepsakes', keepsakes, 'keepsake', 'keepsake');
+renderGrid('food', food, 'food', 'food');
+renderGrid('other', other, '', '');
+</script>
+</body>
+</html>

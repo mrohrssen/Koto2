@@ -1,0 +1,25 @@
+word,reading,meaning,rank,source,existingUses
+到着,とうちゃく,arrival,1300,consensus,
+案内,あんない,"guidance; leading (the way); showing around; information; notice; notification; announcement (of one's arrival); invi...",1200,consensus,
+荷物,にもつ,"luggage; baggage; package; burden; payload (of a packet, cell, etc.)",1600,consensus,
+出発,しゅっぱつ,departure,2200,consensus,
+検査,けんさ,"inspection (e.g. customs, factory); examination; scan (e.g. MRI, PET, etc.)",4600,consensus,
+飛行機,ひこうき,"aeroplane; airplane; aircraft",5400,consensus,
+乗客,じょうきゃく,passenger,7900,consensus,
+ゲート,ゲート,"gate (for entry, boarding, etc.); gate; logic element",8900,consensus,
+空港,くうこう,airport,10400,consensus,
+着陸,ちゃくりく,"landing; alighting; touch down",13700,consensus,
+パイロット,パイロット,pilot,13900,consensus,
+遅延,ちえん,"delay; latency",24100,consensus,
+パスポート,パスポート,passport,24300,consensus,
+乗る,のる,"to get on (train, plane, bus, ship, etc.); to get in; to board; to take; to embark; to get on (e.g. a footstool); to ...",400,consensus,
+飛ぶ,とぶ,"to fly; to soar; to jump; to leap; to spring; to bound; to hop; to spatter; to scatter; to splash; to fly (e.g. of sp...",700,consensus,move:tobu
+窓,まど,window,800,consensus,area-loc:himitsuno-toshokan-round-window
+旅行,りょこう,"travel; trip; journey; excursion; tour",2700,consensus,
+遅れる,おくれる,"to be late; to be delayed; to fall behind schedule; to be overdue; to fall behind (in a race, one's studies, etc.); t...",1200,consensus,
+座席,ざせき,seat,6900,consensus,
+飛行,ひこう,"aviation; flight; flying; to fly; to take a flight",8300,consensus,
+急ぐ,いそぐ,"to hurry; to rush; to hasten; to make something happen sooner",500,consensus,move:isogu
+待つ,まつ,"to wait; to await; to look forward to; to anticipate; to depend on; to need",200,consensus,
+便,びん,"flight (e.g. airline flight); trip (e.g. train trip); service; mail; post; letter; opportunity; chance",8100,consensus,
+降りる,おりる,"to descend (e.g. a mountain); to go down; to come down; to alight (e.g. from bus); to get off; to disembark; to dismo...",1000,consensus,

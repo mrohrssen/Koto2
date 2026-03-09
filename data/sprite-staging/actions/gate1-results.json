@@ -1,0 +1,7022 @@
+[
+  {
+    "file": "abandon.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "902 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "130 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "approach.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1005 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "185 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "assault.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1628 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "154 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "bear.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "558 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "197 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "beat.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "613 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "408 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "bewilder.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "6610 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "302 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "bind.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 97.7% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4155 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "217 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "bite.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (221, 47, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 97.3% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "2275 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "232 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "blanket.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 46, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "6292 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "144 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "blizzard.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 46, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 94.5% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "7809 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "263 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "block.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (221, 47, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.2% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4192 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "413 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "bloom.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 47, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.6% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5228 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "284 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "blow-away.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 45, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 93.6% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4960 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "361 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "blow.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (221, 47, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.1% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3093 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "284 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "bomb.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (220, 47, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 97.8% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4629 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "297 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "book.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (221, 47, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "7104 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "307 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "bounce.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (221, 47, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4698 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "319 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "burn.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 45, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4696 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "232 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "burst.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "6273 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "187 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "bury.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "715 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "165 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "butterfly.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.7% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "861 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "555 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "call.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.6% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "642 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "370 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "capture.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 46, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.7% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5905 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "424 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "cat.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "6817 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "321 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "catch.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.2% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "423 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "356 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "challenge.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.8% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1179 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "304 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "chirp.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.4% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "745 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "204 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "chomp.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 46, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.8% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4657 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "451 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "close.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 46, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5275 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "218 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "coil.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 46, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 97.2% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3365 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "183 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "conceal.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "603 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "552 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "cover.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 90.6% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "612 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "368 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "crow.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 45, 145)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4522 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "128 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "crush.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 45, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.6% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4607 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "125 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "cry.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 97.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1168 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "264 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "cure.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "520 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "159 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "curse.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 45, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "7246 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "305 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "cut.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 46, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 96.6% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1757 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "121 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "dance.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (221, 47, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.3% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3886 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "432 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "dash.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 94.7% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "476 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "538 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "deceive.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 46, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3936 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "274 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "demolish.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.8% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1137 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "170 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "destroy.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 45, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "7340 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "280 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "devour.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (221, 47, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.6% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5355 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "230 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "dive.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.7% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4588 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "309 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "dodge.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "766 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "280 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "dolphin.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 47, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5318 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "308 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "doubt.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "480 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "240 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "dragon.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 45, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5940 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "424 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "drink.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "641 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "354 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "embrace.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 46, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5984 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "344 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "encircle.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.8% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "538 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "59 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "endure.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "613 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "336 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "enlarge.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1038 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "168 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "entangle.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "8968 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "359 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "exceed.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 86.2% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "694 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "64 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "explosion.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 45, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4282 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "387 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "extend.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 97.5% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "514 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "392 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "extinguish.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.5% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "683 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "362 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "fall.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 47, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "2174 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "136 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "fire.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 94.4% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "645 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "293 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "float.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "440 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "78 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "flower.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 47, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3119 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "249 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "fly.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.5% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1333 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "269 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "fox.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "612 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "296 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "freeze.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "664 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "187 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "frog.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (221, 47, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4527 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "208 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "full-moon.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 46, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 53.8% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "9845 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "110 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "gallop.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 46, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4758 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "208 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "ghost.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 85.6% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "629 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "83 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "glare.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (221, 47, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.4% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "7242 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "296 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "glitter.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 45, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3397 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "124 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "grasp.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "420 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "152 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "guard.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "439 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "292 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "hand-over.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.8% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "799 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "217 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "harden.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (221, 47, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.6% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4596 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "270 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "heal.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "399 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "190 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "help.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "468 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "275 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "hide.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "637 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "150 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "hit.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 46, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3330 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "362 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "horse.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "750 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "222 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "hurry.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "399 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "308 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "illuminate.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 45, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.5% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3012 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "179 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "inhale.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 97.5% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "519 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "134 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "jump-out.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.2% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1710 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "221 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "jump.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.5% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3738 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "586 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "kick.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.7% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3651 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "266 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "knock.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.3% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "7866 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "272 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "lamp.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 46, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.8% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3601 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "259 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "launch.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "483 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "398 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "leap.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "704 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "205 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "lick.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 97.6% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5933 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "306 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "light.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1205 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "296 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "lightning.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3045 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "105 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "lion.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 46, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5459 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "245 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "melt.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "510 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "131 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "monkey.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4924 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "327 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "moon.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 82.1% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4210 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "73 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "mouse.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 45, 145)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.8% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "6128 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "284 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "musical-performance.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (220, 47, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.8% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "2739 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "335 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "octopus.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.7% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "6490 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "284 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "open.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (220, 47, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4603 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "418 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "overflow.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "755 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "393 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "peck.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 93.2% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4054 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "313 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "penetrate.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "598 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "198 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "penguin.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 46, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 75.2% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5873 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "238 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "performance.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "774 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "523 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "persevere.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "481 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "396 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "pierce.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (220, 47, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "2391 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "252 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "pillow.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 46, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 71.8% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5373 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "155 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "pin-down.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1358 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "159 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "pluck.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.5% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "778 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "303 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "pour.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "729 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "280 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "pray.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "593 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "221 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "preserve.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "511 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "451 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "protect.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 92.2% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "511 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "190 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "pull.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 97.1% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1191 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "207 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "punch.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 45, 145)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5567 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "220 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "rabbit.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 45, 145)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 82.7% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5113 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "185 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "rage.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "945 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "232 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "rampage.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 96.1% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "7276 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "256 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "recover.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "221 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "247 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "resound.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 83.4% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5828 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "58 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "rest.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.5% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "635 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "113 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "restrict.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.7% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "636 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "244 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "revolve.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "722 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "355 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "rip.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "996 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "228 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "roar.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 46, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.5% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5141 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "328 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "roast.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1164 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "326 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "ruin.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1307 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "171 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "scissors.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 45, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.6% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "2739 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "127 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "scorch.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (221, 48, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5067 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "439 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "scratch.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "2230 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "97 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "scream.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 45, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 94.5% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4540 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "243 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "seize.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 45, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5060 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "158 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "shake.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "424 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "266 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "shark.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.6% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4623 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "399 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "shine.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 45, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 97.4% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "2119 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "69 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "shoot.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "634 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "282 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "shout.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.1% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1281 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "246 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "slash.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (221, 48, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3185 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "285 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "sleep.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "591 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "360 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "slice.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 96.4% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "603 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "272 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "slide.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 46, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 95.7% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3859 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "275 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "smash.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.8% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4509 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "204 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "snake.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "535 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "147 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "snap.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.8% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "440 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "143 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "sparkle.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.8% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1692 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "180 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "speak.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 67.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "506 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "132 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "speaker.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 46, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 97.6% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4155 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "148 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "spider.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 45, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 95.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1687 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "219 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "spin.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "561 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "300 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "sprout.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "785 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "259 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "stack.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "449 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "153 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "stance.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "721 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "171 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "stand-up.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "71 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "60 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "star.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 47, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.5% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3226 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "188 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "stare.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.6% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "414 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "361 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "steal.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "976 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "114 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "step-on.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "633 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "149 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "stretch.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "730 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "143 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "strike.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (220, 47, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4672 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "393 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "submerge.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "566 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "142 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "suffer.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "820 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "247 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "sun.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 45, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5876 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "145 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "support.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 94.5% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "871 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "59 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "swallow-up.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "614 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "289 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "swallow.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 45, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 96.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3709 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "288 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "swarm.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 45, 145)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "9053 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "402 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "swim.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 142)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.5% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4723 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "448 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "swing.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (221, 48, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "2305 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "234 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "teach.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "997 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "223 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "tear-apart.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5161 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "236 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "tear.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "699 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "154 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "throw-away.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "436 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "125 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "throw.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (221, 48, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.7% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "3888 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "528 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "thrust.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.2% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "681 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "241 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "tie.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "915 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "217 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "tighten.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (221, 48, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.1% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "2916 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "300 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "topple.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.5% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1146 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "127 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "touch.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "137 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "77 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "transform.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (221, 48, 143)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5986 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "372 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "tremble.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "348 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "98 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "trick.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.1% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "542 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "158 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "turtle.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "586 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "335 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "umbrella.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (222, 45, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4833 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "152 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "warm.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "589 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "176 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "wash-away.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 92.2% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "730 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "392 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "wash.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 99.8% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "530 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": false,
+        "detail": "544 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "whale.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 44, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 97.5% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "4910 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "294 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "wind.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 93.1% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1041 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "360 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "wish.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 47, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "2942 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "83 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "wolf.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 46, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 98.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "5647 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "189 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "wound.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (0, 0, 0)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 100.0% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "1143 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "177 color clusters (range: 4-400)"
+      }
+    ]
+  },
+  {
+    "file": "wrap.png",
+    "passed": false,
+    "checks": [
+      {
+        "name": "dimensions",
+        "passed": true,
+        "detail": "Expected 128x128, got 128x128"
+      },
+      {
+        "name": "background_purity",
+        "passed": false,
+        "detail": "16 of 16 sample points are not white (first: (1, 1, (223, 47, 144)))"
+      },
+      {
+        "name": "content_presence",
+        "passed": true,
+        "detail": "Content covers 96.9% of canvas (minimum 5%)"
+      },
+      {
+        "name": "content_overflow",
+        "passed": false,
+        "detail": "1008 content pixels within 2px of border"
+      },
+      {
+        "name": "fake_transparency",
+        "passed": false,
+        "detail": "6761 pixels with alpha between 1-254"
+      },
+      {
+        "name": "visual_complexity",
+        "passed": true,
+        "detail": "168 color clusters (range: 4-400)"
+      }
+    ]
+  }
+]

@@ -1,0 +1,371 @@
+{
+  "themeId": "airport",
+  "areaWord": "空港",
+  "areaReading": "くうこう",
+  "areaMeaning": "airport",
+  "areaRank": 10400,
+  "avgRank": 6263,
+  "computedStage": 6,
+  "generatedAt": "2026-03-08",
+  "words": [
+    {
+      "word": "到着",
+      "reading": "とうちゃく",
+      "meaning": "arrival",
+      "rank": 1300,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "案内",
+      "reading": "あんない",
+      "meaning": "guidance; leading (the way); showing around; information; notice; notification; announcement (of one's arrival); invi...",
+      "rank": 1200,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "荷物",
+      "reading": "にもつ",
+      "meaning": "luggage; baggage; package; burden; payload (of a packet, cell, etc.)",
+      "rank": 1600,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "出発",
+      "reading": "しゅっぱつ",
+      "meaning": "departure",
+      "rank": 2200,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "検査",
+      "reading": "けんさ",
+      "meaning": "inspection (e.g. customs, factory); examination; scan (e.g. MRI, PET, etc.)",
+      "rank": 4600,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "飛行機",
+      "reading": "ひこうき",
+      "meaning": "aeroplane; airplane; aircraft",
+      "rank": 5400,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "乗客",
+      "reading": "じょうきゃく",
+      "meaning": "passenger",
+      "rank": 7900,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "ゲート",
+      "reading": "ゲート",
+      "meaning": "gate (for entry, boarding, etc.); gate; logic element",
+      "rank": 8900,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "空港",
+      "reading": "くうこう",
+      "meaning": "airport",
+      "rank": 10400,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "着陸",
+      "reading": "ちゃくりく",
+      "meaning": "landing; alighting; touch down",
+      "rank": 13700,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "パイロット",
+      "reading": "パイロット",
+      "meaning": "pilot",
+      "rank": 13900,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "遅延",
+      "reading": "ちえん",
+      "meaning": "delay; latency",
+      "rank": 24100,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "パスポート",
+      "reading": "パスポート",
+      "meaning": "passport",
+      "rank": 24300,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 5,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "乗る",
+      "reading": "のる",
+      "meaning": "to get on (train, plane, bus, ship, etc.); to get in; to board; to take; to embark; to get on (e.g. a footstool); to ...",
+      "rank": 400,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "飛ぶ",
+      "reading": "とぶ",
+      "meaning": "to fly; to soar; to jump; to leap; to spring; to bound; to hop; to spatter; to scatter; to splash; to fly (e.g. of sp...",
+      "rank": 700,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": [
+        "move:tobu"
+      ]
+    },
+    {
+      "word": "窓",
+      "reading": "まど",
+      "meaning": "window",
+      "rank": 800,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": [
+        "area-loc:himitsuno-toshokan-round-window"
+      ]
+    },
+    {
+      "word": "旅行",
+      "reading": "りょこう",
+      "meaning": "travel; trip; journey; excursion; tour",
+      "rank": 2700,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "遅れる",
+      "reading": "おくれる",
+      "meaning": "to be late; to be delayed; to fall behind schedule; to be overdue; to fall behind (in a race, one's studies, etc.); t...",
+      "rank": 1200,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "座席",
+      "reading": "ざせき",
+      "meaning": "seat",
+      "rank": 6900,
+      "roles": [
+        "modifier"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "飛行",
+      "reading": "ひこう",
+      "meaning": "aviation; flight; flying; to fly; to take a flight",
+      "rank": 8300,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 4,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "急ぐ",
+      "reading": "いそぐ",
+      "meaning": "to hurry; to rush; to hasten; to make something happen sooner",
+      "rank": 500,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": [
+        "move:isogu"
+      ]
+    },
+    {
+      "word": "待つ",
+      "reading": "まつ",
+      "meaning": "to wait; to await; to look forward to; to anticipate; to depend on; to need",
+      "rank": 200,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "便",
+      "reading": "びん",
+      "meaning": "flight (e.g. airline flight); trip (e.g. train trip); service; mail; post; letter; opportunity; chance",
+      "rank": 8100,
+      "roles": [
+        "creature",
+        "item",
+        "npc",
+        "sub-area"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": []
+    },
+    {
+      "word": "降りる",
+      "reading": "おりる",
+      "meaning": "to descend (e.g. a mountain); to go down; to come down; to alight (e.g. from bus); to get off; to disembark; to dismo...",
+      "rank": 1000,
+      "roles": [
+        "move",
+        "creature"
+      ],
+      "source": "consensus",
+      "consensus": 3,
+      "assigned": null,
+      "existingUses": []
+    }
+  ]
+}

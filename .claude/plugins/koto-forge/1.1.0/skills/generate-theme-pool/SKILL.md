@@ -14,6 +14,10 @@ Five independent methods generate candidate words in parallel. Each word is tagg
 - **Theme concept** (required): English concept word, e.g., "school", "ocean", "kitchen"
 - **Area word** (optional): Japanese location word, e.g., "学校". If not provided, the user picks from AI suggestions.
 
+## JPDB API Key
+
+The JPDB API key is stored at `data/.creature-forge-jpdb-key` (a single-line text file). Both `scripts/theme-pool-consensus.mjs` and `scripts/generate-theme-pool.mjs` auto-load it from this path. The `JPDB_API_KEY` env var is also accepted as an override. **Do not ask the user for the key — it's already in the repo.**
+
 ## Phase 0: Setup
 
 1. Parse args: theme concept and optional area word.

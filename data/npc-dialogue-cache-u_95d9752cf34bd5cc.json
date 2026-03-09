@@ -1,0 +1,68 @@
+{
+  "npc_01": {
+    "greeting": "やあ！勝負しよう！",
+    "defeatLine": "勝った！これで終わりだ。",
+    "freedLine": "本当にありがとう。助かった。",
+    "rounds": [
+      {
+        "npcLine": "やあ。システムが言う。勝負しよう。",
+        "options": [
+          {
+            "text": "行くよ！",
+            "tone": "positive"
+          },
+          {
+            "text": "いいよ。",
+            "tone": "neutral"
+          },
+          {
+            "text": "いや。",
+            "tone": "negative"
+          }
+        ]
+      },
+      {
+        "npcLine": "お前、強いか。試す。",
+        "options": [
+          {
+            "text": "やる！",
+            "tone": "positive"
+          },
+          {
+            "text": "わかった。",
+            "tone": "neutral"
+          },
+          {
+            "text": "やめる。",
+            "tone": "negative"
+          }
+        ]
+      },
+      {
+        "npcLine": "システムの命令だ。もう一回勝負しよう。勝ったら手を振る。",
+        "options": [
+          {
+            "text": "また行く！",
+            "tone": "positive"
+          },
+          {
+            "text": "少し休む。",
+            "tone": "neutral"
+          },
+          {
+            "text": "帰る。",
+            "tone": "negative"
+          }
+        ]
+      }
+    ],
+    "npcId": "npc_01",
+    "generatedAt": "2026-02-13T08:05:39.243Z",
+    "vocabSnapshot": 2300,
+    "memorySnapshot": {
+      "encounters": 0,
+      "bond": 0,
+      "liberated": false
+    }
+  }
+}
