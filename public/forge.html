@@ -52,6 +52,39 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .role-badge.npc{background:rgba(96,165,250,.2);color:#60a5fa}
 .role-badge.area,.role-badge.sub-area{background:rgba(251,191,36,.2);color:#fbbf24}
 .role-badge.npc-skill{background:rgba(251,146,60,.2);color:#fb923c}
+.role-badge.boss{background:rgba(239,68,68,.2);color:#ef4444}
+.role-badge.background{background:rgba(45,212,191,.2);color:#2dd4bf}
+
+/* ── Forge internal tabs ───────────────────────────────── */
+.forge-tabs{display:flex;gap:2px;padding:8px 12px;background:#0a0a1a;border-bottom:1px solid #1e2d4a}
+.forge-tab{padding:8px 16px;border:1px solid #1e2d4a;border-radius:6px;background:#16213e;color:#8899aa;cursor:pointer;font-size:14px;font-weight:600;min-height:40px;transition:all .15s}
+.forge-tab:hover{background:#1e2d4a;color:#c0d0e0}
+.forge-tab.active{background:#0f3460;color:#fff;border-color:#0f3460}
+
+/* ── Sprite variant grid ───────────────────────────────── */
+.variant-grid{display:flex;gap:8px;flex-wrap:wrap;padding:8px 0}
+.variant-card{position:relative;width:128px;height:128px;border:2px solid #1e2d4a;border-radius:8px;overflow:hidden;cursor:pointer;transition:all .15s;background:#0a0a1a}
+.variant-card:hover{border-color:#0f3460}
+.variant-card.selected{border-color:#4ade80;box-shadow:0 0 8px rgba(74,222,128,.3)}
+.variant-card img{width:100%;height:100%;object-fit:contain}
+.variant-card.error{border-color:#ef4444;opacity:.5;cursor:default}
+.variant-error{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#ef4444;text-align:center;padding:4px}
+
+/* ── Sprite job card ───────────────────────────────────── */
+.sprite-job{background:#16213e;border-radius:8px;padding:12px;margin-bottom:8px}
+.sprite-job-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.sprite-job-status{font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600}
+.sprite-job-status.queued{background:rgba(251,191,36,.2);color:#fbbf24}
+.sprite-job-status.running{background:rgba(96,165,250,.2);color:#60a5fa}
+.sprite-job-status.done{background:rgba(74,222,128,.2);color:#4ade80}
+.sprite-job-status.error{background:rgba(239,68,68,.2);color:#ef4444}
+.sprite-job-status.approved{background:rgba(167,139,250,.2);color:#a78bfa}
+.sprite-job-actions{display:flex;gap:6px;margin-top:8px}
+
+/* ── Sprite missing item row ───────────────────────────── */
+.sprite-row{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#16213e;border-radius:8px;min-height:48px;cursor:pointer;transition:background .15s}
+.sprite-row:hover{background:#1e2d4a}
+.sprite-row.selected{background:#0f3460;border:1px solid #2a6090}
 
 /* ── Batch Panel ────────────────────────────────────── */
 .batch-panel{background:#0f0f23;border-top:2px solid #0f3460;padding:12px;display:none}
@@ -181,6 +214,12 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
   <a href="/dev/mockups">Mockups</a>
 </nav>
 
+<!-- ── Forge Tabs ───────────────────────────────────── -->
+<div class="forge-tabs">
+  <button class="forge-tab active" data-tab="forge">Content Forge</button>
+  <button class="forge-tab" data-tab="sprites">Sprite Forge</button>
+</div>
+
 <!-- ── Header ────────────────────────────────────────── -->
 <div class="header">
   <div class="header-row">
@@ -254,6 +293,66 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
   </div>
   <div class="result-cards" id="resultCards"></div>
   <div class="empty-state" id="resultsEmpty">No forge results yet. Select words and submit a batch to start.</div>
+</div>
+
+<!-- ── Sprites Section ──────────────────────────────── -->
+<div id="spritesSection" style="display:none">
+  <!-- Type filter bar -->
+  <div class="filter-bar" id="spriteTypeFilter"></div>
+
+  <!-- Missing sprites list -->
+  <div class="section" id="spriteMissingList">
+    <div class="section-title">Missing Sprites <span id="spriteMissingCount" class="progress-text"></span></div>
+    <div id="spriteMissingItems" class="word-list"></div>
+  </div>
+
+  <!-- Bulk controls (shown when items selected) -->
+  <div class="batch-panel" id="spriteBulkPanel" style="display:none">
+    <div class="batch-header">
+      <h3>Generate <span id="spriteSelectedCount">0</span> sprites</h3>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+      <label style="font-size:13px;color:#889">Variants:</label>
+      <select id="spriteVariantCount" class="batch-role-select">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3" selected>3</option>
+        <option value="4">4</option>
+      </select>
+      <input id="spriteGlobalNotes" class="batch-notes" placeholder="Visual notes for all..." style="flex:1">
+      <button class="btn btn-primary" id="spriteGenerateBtn" disabled>Generate Selected</button>
+    </div>
+  </div>
+
+  <!-- Freeform generation -->
+  <details class="section" style="padding:12px">
+    <summary style="cursor:pointer;font-size:15px;font-weight:600;color:#889">Freeform Generation</summary>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;padding:8px 0">
+      <input id="freeformId" class="batch-notes" placeholder="ID (e.g. fire-sword)" style="min-width:120px;flex:1">
+      <select id="freeformType" class="batch-role-select">
+        <option value="item">Item</option>
+        <option value="move">Move</option>
+        <option value="creature">Creature</option>
+        <option value="boss">Boss</option>
+        <option value="npc">NPC</option>
+        <option value="background">Background</option>
+      </select>
+      <input id="freeformName" class="batch-notes" placeholder="Name" style="flex:1">
+      <input id="freeformDesc" class="batch-notes" placeholder="Visual description..." style="flex:2;min-width:200px">
+      <select id="freeformVariants" class="batch-role-select">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3" selected>3</option>
+      </select>
+      <button class="btn btn-primary" id="freeformGenBtn">Generate</button>
+    </div>
+  </details>
+
+  <!-- Active jobs -->
+  <div class="section" id="spriteJobsSection">
+    <div class="section-title">Generation Jobs</div>
+    <div id="spriteJobsList" class="word-list"></div>
+  </div>
 </div>
 
 <script>
@@ -1261,6 +1360,450 @@ $('addWordBtn').addEventListener('click', async function() {
   }
 });
 
+// ── Sprite Forge ─────────────────────────────────────────────────
+var spriteData = null;
+var selectedSprites = {};   // key: "type:id" -> item object
+var spriteTypeFilter = 'all';
+var spriteJobPollTimer = null;
+var spriteJobSelectedVariants = {};  // key: jobId -> variant index
+
+function switchTab(tabName) {
+  // Update tab buttons
+  var tabs = document.querySelectorAll('.forge-tab');
+  for (var i = 0; i < tabs.length; i++) {
+    if (tabs[i].getAttribute('data-tab') === tabName) {
+      tabs[i].classList.add('active');
+    } else {
+      tabs[i].classList.remove('active');
+    }
+  }
+
+  // Forge tab elements
+  var forgeEls = ['header', 'filterBar', 'wordListSection', 'batchPanel', 'resultsSection', 'addWordForm'];
+  // Find header element (it doesn't have an id, it's a .header div)
+  var headerEl = document.querySelector('.header');
+
+  if (tabName === 'sprites') {
+    // Hide forge elements
+    if (headerEl) headerEl.style.display = 'none';
+    for (var i = 0; i < forgeEls.length; i++) {
+      var el = $(forgeEls[i]);
+      if (el) el.style.display = 'none';
+    }
+    $('spritesSection').style.display = '';
+    loadSpritesTab();
+  } else {
+    // Show forge elements
+    if (headerEl) headerEl.style.display = '';
+    // filterBar and wordListSection visibility depends on whether a theme is loaded
+    if (currentTheme) {
+      var fb = $('filterBar');
+      if (fb) fb.style.display = '';
+      var wl = $('wordListSection');
+      if (wl) wl.style.display = '';
+    }
+    var bp = $('batchPanel');
+    if (bp) bp.style.display = '';
+    var rs = $('resultsSection');
+    if (rs) rs.style.display = '';
+    $('spritesSection').style.display = 'none';
+    // Stop sprite job polling
+    if (spriteJobPollTimer) {
+      clearInterval(spriteJobPollTimer);
+      spriteJobPollTimer = null;
+    }
+  }
+
+  // Update URL without reload
+  var url = new URL(window.location);
+  if (tabName === 'sprites') {
+    url.searchParams.set('tab', 'sprites');
+  } else {
+    url.searchParams.delete('tab');
+  }
+  history.replaceState(null, '', url);
+}
+
+// Tab click handlers
+document.addEventListener('click', function(e) {
+  var tab = e.target.closest('.forge-tab');
+  if (tab) {
+    switchTab(tab.getAttribute('data-tab'));
+  }
+});
+
+async function loadSpritesTab() {
+  try {
+    var res = await fetch('/api/sprite-forge/missing');
+    spriteData = await res.json();
+    renderSpriteTypeFilter(spriteData);
+    renderSpriteMissingList(spriteData, spriteTypeFilter);
+    startSpriteJobPolling();
+  } catch (e) {
+    $('spriteMissingItems').innerHTML = '<div class="empty-state">Failed to load missing sprites: ' + esc(e.message) + '</div>';
+  }
+}
+
+function renderSpriteTypeFilter(data) {
+  var container = $('spriteTypeFilter');
+  if (!data || !data.missing) { container.innerHTML = ''; return; }
+
+  // Count per type
+  var counts = {};
+  var total = 0;
+  for (var i = 0; i < data.missing.length; i++) {
+    var t = data.missing[i].type || 'unknown';
+    counts[t] = (counts[t] || 0) + 1;
+    total++;
+  }
+
+  var types = Object.keys(counts).sort();
+  var html = '<button class="filter-btn' + (spriteTypeFilter === 'all' ? ' active' : '') + '" data-sprite-filter="all">All (' + total + ')</button>';
+  for (var i = 0; i < types.length; i++) {
+    var t = types[i];
+    html += '<button class="filter-btn' + (spriteTypeFilter === t ? ' active' : '') + '" data-sprite-filter="' + esc(t) + '">' + esc(t.charAt(0).toUpperCase() + t.slice(1)) + ' (' + counts[t] + ')</button>';
+  }
+  container.innerHTML = html;
+
+  // Click handlers
+  container.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-sprite-filter]');
+    if (!btn) return;
+    spriteTypeFilter = btn.getAttribute('data-sprite-filter');
+    // Update active state
+    var btns = container.querySelectorAll('.filter-btn');
+    for (var j = 0; j < btns.length; j++) btns[j].classList.remove('active');
+    btn.classList.add('active');
+    renderSpriteMissingList(spriteData, spriteTypeFilter);
+  });
+}
+
+function renderSpriteMissingList(data, filter) {
+  var container = $('spriteMissingItems');
+  var countEl = $('spriteMissingCount');
+  if (!data || !data.missing) {
+    container.innerHTML = '<div class="empty-state">No missing sprites found.</div>';
+    if (countEl) countEl.textContent = '';
+    return;
+  }
+
+  var items = data.missing;
+  if (filter && filter !== 'all') {
+    items = items.filter(function(item) { return item.type === filter; });
+  }
+
+  if (countEl) countEl.textContent = '(' + items.length + ')';
+
+  if (items.length === 0) {
+    container.innerHTML = '<div class="empty-state">No missing sprites for this filter.</div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < items.length; i++) {
+    var item = items[i];
+    var key = item.type + ':' + item.id;
+    var isSelected = !!selectedSprites[key];
+    html += '<div class="sprite-row' + (isSelected ? ' selected' : '') + '" data-sprite-key="' + esc(key) + '">';
+    html += '<input type="checkbox"' + (isSelected ? ' checked' : '') + ' style="accent-color:#4ade80">';
+    html += '<span class="role-badge ' + esc(item.type) + '">' + esc(item.type) + '</span>';
+    if (item.name) html += '<strong style="color:#e0e0e0">' + esc(item.name) + '</strong>';
+    if (item.nameEn) html += '<span style="color:#889;font-size:13px">' + esc(item.nameEn) + '</span>';
+    html += '<span style="color:#556;font-size:12px;margin-left:auto">' + esc(item.id) + '</span>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+// Click handler for sprite rows
+document.addEventListener('click', function(e) {
+  var row = e.target.closest('.sprite-row');
+  if (!row) return;
+  var key = row.getAttribute('data-sprite-key');
+  if (!key) return;
+
+  if (selectedSprites[key]) {
+    delete selectedSprites[key];
+    row.classList.remove('selected');
+    row.querySelector('input[type="checkbox"]').checked = false;
+  } else {
+    // Find the item in spriteData
+    var parts = key.split(':');
+    var type = parts[0];
+    var id = parts.slice(1).join(':');
+    var item = null;
+    for (var i = 0; i < spriteData.missing.length; i++) {
+      if (spriteData.missing[i].type === type && spriteData.missing[i].id === id) {
+        item = spriteData.missing[i];
+        break;
+      }
+    }
+    if (item) {
+      selectedSprites[key] = item;
+      row.classList.add('selected');
+      row.querySelector('input[type="checkbox"]').checked = true;
+    }
+  }
+  updateSpriteBulkPanel();
+});
+
+function updateSpriteBulkPanel() {
+  var count = Object.keys(selectedSprites).length;
+  var panel = $('spriteBulkPanel');
+  var countEl = $('spriteSelectedCount');
+  var btn = $('spriteGenerateBtn');
+
+  if (count > 0) {
+    panel.style.display = '';
+    countEl.textContent = count;
+    btn.disabled = false;
+  } else {
+    panel.style.display = 'none';
+    btn.disabled = true;
+  }
+}
+
+// Generate selected sprites
+$('spriteGenerateBtn').addEventListener('click', function() {
+  generateSelected();
+});
+
+async function generateSelected() {
+  var keys = Object.keys(selectedSprites);
+  if (keys.length === 0) return;
+
+  var items = [];
+  for (var i = 0; i < keys.length; i++) {
+    items.push(selectedSprites[keys[i]]);
+  }
+
+  var variants = parseInt($('spriteVariantCount').value) || 3;
+  var notes = $('spriteGlobalNotes').value.trim();
+
+  var btn = $('spriteGenerateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  try {
+    var res = await fetch('/api/sprite-forge/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: items, variants: variants, notes: notes || undefined })
+    });
+    var data = await res.json();
+    if (data.error) {
+      alert('Failed: ' + data.error);
+    } else {
+      // Clear selection
+      selectedSprites = {};
+      updateSpriteBulkPanel();
+      renderSpriteMissingList(spriteData, spriteTypeFilter);
+      // Refresh jobs immediately
+      refreshSpriteJobs();
+    }
+  } catch (e) {
+    alert('Failed to submit: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Generate Selected';
+  }
+}
+
+// Freeform generation
+$('freeformGenBtn').addEventListener('click', async function() {
+  var id = $('freeformId').value.trim();
+  var type = $('freeformType').value;
+  var name = $('freeformName').value.trim();
+  var desc = $('freeformDesc').value.trim();
+  var variants = parseInt($('freeformVariants').value) || 3;
+
+  if (!id) { alert('ID is required'); return; }
+
+  var btn = $('freeformGenBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  try {
+    var res = await fetch('/api/sprite-forge/generate-freeform', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id, type: type, name: name || undefined, description: desc || undefined, variants: variants })
+    });
+    var data = await res.json();
+    if (data.error) {
+      alert('Failed: ' + data.error);
+    } else {
+      // Clear form
+      $('freeformId').value = '';
+      $('freeformName').value = '';
+      $('freeformDesc').value = '';
+      refreshSpriteJobs();
+    }
+  } catch (e) {
+    alert('Failed to submit: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Generate';
+  }
+});
+
+function startSpriteJobPolling() {
+  if (spriteJobPollTimer) clearInterval(spriteJobPollTimer);
+  refreshSpriteJobs();
+  spriteJobPollTimer = setInterval(refreshSpriteJobs, 3000);
+}
+
+async function refreshSpriteJobs() {
+  try {
+    var res = await fetch('/api/sprite-forge/jobs');
+    var data = await res.json();
+    renderSpriteJobs(data.jobs || []);
+  } catch (e) {
+    // silently ignore polling errors
+  }
+}
+
+function renderSpriteJobs(jobs) {
+  var container = $('spriteJobsList');
+  if (!jobs || jobs.length === 0) {
+    container.innerHTML = '<div class="empty-state">No generation jobs yet.</div>';
+    return;
+  }
+
+  // Sort: running first, then queued, then done, then error, then approved
+  var order = { running: 0, queued: 1, done: 2, error: 3, approved: 4 };
+  jobs.sort(function(a, b) {
+    var oa = order[a.status] !== undefined ? order[a.status] : 5;
+    var ob = order[b.status] !== undefined ? order[b.status] : 5;
+    return oa - ob;
+  });
+
+  var html = '';
+  for (var i = 0; i < jobs.length; i++) {
+    var job = jobs[i];
+    html += '<div class="sprite-job">';
+    html += '<div class="sprite-job-header">';
+    html += '<span class="sprite-job-status ' + esc(job.status) + '">' + esc(job.status) + '</span>';
+    html += '<span class="role-badge ' + esc(job.type || '') + '">' + esc(job.type || 'unknown') + '</span>';
+    html += '<strong style="color:#e0e0e0">' + esc(job.name || job.id) + '</strong>';
+    html += '<span style="color:#556;font-size:12px">' + esc(job.id) + '</span>';
+    if (job.error) {
+      html += '<span style="color:#ef4444;font-size:12px;margin-left:auto">' + esc(job.error) + '</span>';
+    }
+    html += '</div>';
+
+    // Show variants if done
+    if (job.status === 'done' && job.variants && job.variants.length > 0) {
+      var selectedVar = spriteJobSelectedVariants[job.jobId];
+      html += '<div class="variant-grid">';
+      for (var v = 0; v < job.variants.length; v++) {
+        var variant = job.variants[v];
+        if (variant.error) {
+          html += '<div class="variant-card error"><div class="variant-error">' + esc(variant.error) + '</div></div>';
+        } else {
+          var isSelected = selectedVar === v;
+          html += '<div class="variant-card' + (isSelected ? ' selected' : '') + '" data-job-id="' + esc(job.jobId) + '" data-variant="' + v + '">';
+          html += '<img src="' + esc(variant.url || variant.path) + '" alt="Variant ' + (v + 1) + '">';
+          html += '</div>';
+        }
+      }
+      html += '</div>';
+
+      // Action buttons
+      html += '<div class="sprite-job-actions">';
+      html += '<button class="btn btn-primary" data-approve-job="' + esc(job.jobId) + '"' + (selectedVar === undefined ? ' disabled title="Select a variant first"' : '') + '>Approve' + (selectedVar !== undefined ? ' #' + (selectedVar + 1) : '') + '</button>';
+      html += '<button class="btn btn-secondary" data-discard-job="' + esc(job.jobId) + '">Discard</button>';
+      html += '</div>';
+    }
+
+    // Show approved variant
+    if (job.status === 'approved' && job.approvedVariant !== undefined) {
+      var av = job.variants && job.variants[job.approvedVariant];
+      if (av) {
+        html += '<div class="variant-grid">';
+        html += '<div class="variant-card selected"><img src="' + esc(av.url || av.path) + '" alt="Approved"></div>';
+        html += '</div>';
+      }
+    }
+
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+// Variant selection and job actions
+document.addEventListener('click', function(e) {
+  // Variant card click
+  var variantCard = e.target.closest('.variant-card:not(.error)');
+  if (variantCard && variantCard.getAttribute('data-job-id')) {
+    var jobId = variantCard.getAttribute('data-job-id');
+    var variant = parseInt(variantCard.getAttribute('data-variant'));
+    spriteJobSelectedVariants[jobId] = variant;
+    refreshSpriteJobs();
+    return;
+  }
+
+  // Approve button
+  var approveBtn = e.target.closest('[data-approve-job]');
+  if (approveBtn && !approveBtn.disabled) {
+    var jobId = approveBtn.getAttribute('data-approve-job');
+    var variant = spriteJobSelectedVariants[jobId];
+    if (variant !== undefined) {
+      approveJob(jobId, variant);
+    }
+    return;
+  }
+
+  // Discard button
+  var discardBtn = e.target.closest('[data-discard-job]');
+  if (discardBtn) {
+    var jobId = discardBtn.getAttribute('data-discard-job');
+    discardJob(jobId);
+    return;
+  }
+});
+
+async function approveJob(jobId, variant) {
+  try {
+    var res = await fetch('/api/sprite-forge/approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jobId: jobId, variant: variant })
+    });
+    var data = await res.json();
+    if (data.error) {
+      alert('Approve failed: ' + data.error);
+    } else {
+      delete spriteJobSelectedVariants[jobId];
+      refreshSpriteJobs();
+      // Refresh missing list too
+      loadSpritesTab();
+    }
+  } catch (e) {
+    alert('Approve failed: ' + e.message);
+  }
+}
+
+async function discardJob(jobId) {
+  if (!confirm('Discard this job?')) return;
+  try {
+    var res = await fetch('/api/sprite-forge/discard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jobId: jobId })
+    });
+    var data = await res.json();
+    if (data.error) {
+      alert('Discard failed: ' + data.error);
+    } else {
+      delete spriteJobSelectedVariants[jobId];
+      refreshSpriteJobs();
+    }
+  } catch (e) {
+    alert('Discard failed: ' + e.message);
+  }
+}
+
 // ── Init ────────────────────────────────────────────────────────
 async function init() {
   await loadThemes();
@@ -1272,6 +1815,12 @@ async function init() {
   });
   if (pending.length > 0) {
     startPolling();
+  }
+
+  // Check if sprites tab requested
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('tab') === 'sprites') {
+    switchTab('sprites');
   }
 }
 
