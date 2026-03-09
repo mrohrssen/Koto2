@@ -90,7 +90,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc:yuuto",
       "existingUses": [
         "npc:makoto"
       ],
@@ -104,7 +104,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "area:",
       "existingUses": [
         "area-loc:mahouno-gakkou-spacious-classroom"
       ],
@@ -118,7 +118,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "creature:tsukueon",
       "existingUses": [
         "area-loc:himitsuno-toshokan-wide-desk"
       ],
@@ -132,7 +132,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "item:school-uniform",
       "existingUses": [],
       "wkDefinition": "Uniform"
     },
@@ -168,7 +168,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc:mio",
       "existingUses": [],
       "wkDefinition": "Student"
     },
@@ -276,7 +276,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "area:",
       "existingUses": [
         "area-loc:mahouno-gakkou-old-gymnasium"
       ],
@@ -374,7 +374,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "creature:honmo",
       "existingUses": [
         "creature:honmo"
       ],
@@ -400,7 +400,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc-skill:renshuu",
       "existingUses": [],
       "wkDefinition": "Practice, Training, Drill"
     },
@@ -412,7 +412,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc-skill:manabu",
       "existingUses": [],
       "wkDefinition": "To Learn, To Study In Depth, To Study"
     },
@@ -450,7 +450,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "creature:isurori",
       "existingUses": [],
       "wkDefinition": "Chair"
     },
@@ -462,7 +462,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "area:",
       "existingUses": [],
       "wkDefinition": "University, College, Uni"
     },
@@ -474,7 +474,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "area:",
       "existingUses": [],
       "wkDefinition": "High School, Senior High School"
     },
@@ -498,7 +498,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc:kanon",
       "existingUses": [],
       "wkDefinition": "Music"
     },
@@ -522,8 +522,10 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
-      "existingUses": [],
+      "assigned": "npc-modifier:mio",
+      "existingUses": [
+        "npc-modifier:mio"
+      ],
       "wkDefinition": "English Language, English"
     },
     {
@@ -534,7 +536,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "item:pen",
       "existingUses": [],
       "wkDefinition": null
     },
@@ -558,8 +560,10 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
-      "existingUses": [],
+      "assigned": "npc-modifier:yuuto",
+      "existingUses": [
+        "npc-modifier:yuuto"
+      ],
       "wkDefinition": "Fine Art, Art"
     },
     {
@@ -618,7 +622,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc-skill:kenkyuu",
       "existingUses": [],
       "wkDefinition": "Research, Investigation, Study"
     },
@@ -630,7 +634,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc:fumi",
       "existingUses": [
         "npc:fumi"
       ],

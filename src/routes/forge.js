@@ -190,15 +190,13 @@ export function createForgeRouter({ themesDir, dataDir }) {
               const ids = items.map(it => it.id).join('+');
               wordEntry.assigned = `${role}:${ids}`;
             }
-            // For multi-item results, also mark modifier words as used
-            if (items.length > 1) {
-              for (const item of items) {
-                const mod = item.modifier;
-                if (mod && mod.word) {
-                  const modEntry = theme.words.find(w => w.word === mod.word);
-                  if (modEntry && !modEntry.assigned) {
-                    modEntry.assigned = `${role}-modifier:${item.id}`;
-                  }
+            // Mark modifier words as used for all items
+            for (const item of items) {
+              const mod = item.modifier;
+              if (mod && mod.word) {
+                const modEntry = theme.words.find(w => w.word === mod.word);
+                if (modEntry && !modEntry.assigned) {
+                  modEntry.assigned = `${role}-modifier:${item.id}`;
                 }
               }
             }
@@ -281,6 +279,96 @@ export function createForgeRouter({ themesDir, dataDir }) {
     }
   }
 
+  // ── POST /reconcile ─────────────────────────────────────────
+  async function postReconcile(_req, res) {
+    try {
+      // Collect all used words from staging + production data
+      // Map: japaneseWord -> { role, id, type: 'base'|'modifier' }[]
+      const usedWords = new Map();
+
+      function trackWord(word, role, id, type) {
+        if (!word) return;
+        if (!usedWords.has(word)) usedWords.set(word, []);
+        usedWords.get(word).push({ role, id, type });
+      }
+
+      // Scan staging files
+      for (const [role, filename] of Object.entries(STAGING_FILES)) {
+        const filepath = join(dataDir, filename);
+        if (!existsSync(filepath)) continue;
+        const entries = JSON.parse(readFileSync(filepath, 'utf8'));
+        if (!Array.isArray(entries)) continue;
+        for (const entry of entries) {
+          if (entry.baseWord) trackWord(entry.baseWord, role, entry.id, 'base');
+          if (entry.modifier?.word) trackWord(entry.modifier.word, role, entry.id, 'modifier');
+          // NPC skills use word/verb directly
+          if (role === 'npc-skill' && entry.word) trackWord(entry.word, role, entry.id, 'base');
+          // Areas have sub-areas with location words
+          if (entry.subAreas && Array.isArray(entry.subAreas)) {
+            for (const sub of entry.subAreas) {
+              if (sub.locationWord) trackWord(sub.locationWord, role, sub.id || entry.id, 'base');
+              if (sub.modifier?.word) trackWord(sub.modifier.word, role, sub.id || entry.id, 'modifier');
+            }
+          }
+        }
+      }
+
+      // Scan production files
+      const prodFiles = { creature: 'creatures.json', item: 'items.json' };
+      for (const [role, filename] of Object.entries(prodFiles)) {
+        const filepath = join(dataDir, filename);
+        if (!existsSync(filepath)) continue;
+        const data = JSON.parse(readFileSync(filepath, 'utf8'));
+        const entries = Array.isArray(data) ? data : Object.values(data);
+        for (const entry of entries) {
+          if (entry.baseWord) trackWord(entry.baseWord, role, entry.id, 'base');
+          if (entry.modifier?.word) trackWord(entry.modifier.word, role, entry.id, 'modifier');
+        }
+      }
+
+      // Reconcile against each theme file
+      const themeFiles = readdirSync(themesDir).filter(f => f.endsWith('.json'));
+      let totalFixed = 0;
+      const fixes = [];
+
+      for (const file of themeFiles) {
+        const themePath = join(themesDir, file);
+        const theme = JSON.parse(readFileSync(themePath, 'utf8'));
+        if (!theme.words) continue;
+        let changed = false;
+
+        for (const wordEntry of theme.words) {
+          if (wordEntry.assigned) continue; // already assigned, skip
+          const uses = usedWords.get(wordEntry.word);
+          if (!uses || uses.length === 0) continue;
+
+          // Pick first use as the assignment
+          const use = uses[0];
+          const assignment = use.type === 'modifier'
+            ? `${use.role}-modifier:${use.id}`
+            : `${use.role}:${use.id}`;
+          wordEntry.assigned = assignment;
+          if (!wordEntry.existingUses) wordEntry.existingUses = [];
+          if (!wordEntry.existingUses.includes(assignment)) {
+            wordEntry.existingUses.push(assignment);
+          }
+          changed = true;
+          totalFixed++;
+          fixes.push({ theme: theme.themeId, word: wordEntry.word, assignment });
+        }
+
+        if (changed) {
+          writeFileSync(themePath, JSON.stringify(theme, null, 2));
+        }
+      }
+
+      res.json({ success: true, fixed: totalFixed, fixes });
+    } catch (error) {
+      console.error('[Forge] Reconcile error:', error);
+      res.status(500).json({ error: 'Failed to reconcile', details: error.message });
+    }
+  }
+
   // ── Mount routes ─────────────────────────────────────────────
   router.get('/themes', getThemes);
   router.get('/theme/:id', getTheme);
@@ -290,9 +378,10 @@ export function createForgeRouter({ themesDir, dataDir }) {
   router.post('/approve', postApprove);
   router.post('/discard', postDiscard);
   router.post('/theme/:id/word', postAddWord);
+  router.post('/reconcile', postReconcile);
 
   // Expose handlers for testing
-  router._handlers = { getThemes, getTheme, getQueue, postQueue, getResults, postApprove, postDiscard };
+  router._handlers = { getThemes, getTheme, getQueue, postQueue, getResults, postApprove, postDiscard, postReconcile };
 
   return router;
 }

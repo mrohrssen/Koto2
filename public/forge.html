@@ -34,6 +34,7 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .word-row{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#16213e;border-radius:8px;cursor:pointer;transition:background .15s;min-height:48px}
 .word-row:hover{background:#1e2d4a}
 .word-row.assigned{opacity:.5;cursor:default}
+.word-row.queued{opacity:.6;cursor:default}
 .word-row.selected{background:#0f3460;border:1px solid #2a6090}
 .word-check{width:20px;height:20px;flex-shrink:0;accent-color:#0f3460}
 .word-jp{font-weight:700;font-size:15px;white-space:nowrap}
@@ -234,6 +235,7 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     </select>
     <span class="progress-text" id="progressText"></span>
     <span class="stage-badge" id="stageBadge" style="display:none"></span>
+    <button class="btn btn-sm" id="reconcileBtn" title="Scan staging/production data and fix missing theme assignments" style="margin-left:8px;font-size:11px;padding:2px 8px">Reconcile</button>
   </div>
 </div>
 
@@ -431,6 +433,12 @@ async function loadTheme(themeId) {
     $('filterBar').style.display = '';
     $('wordListSection').style.display = '';
     $('addWordForm').style.display = '';
+    // Fetch queue state so queued words show as unavailable immediately
+    try {
+      var qRes = await fetch('/api/forge/queue');
+      var qData = await qRes.json();
+      queueJobs = qData.jobs || [];
+    } catch (_) { /* queue fetch is best-effort */ }
     renderWordList();
   } catch (e) {
     console.error('Failed to load theme:', e);
@@ -443,8 +451,9 @@ function getFilteredWords() {
   var words = currentTheme.words.slice();
 
   // Apply filter
+  var queuedWords = getQueuedWords();
   if (activeFilter === 'unassigned') {
-    words = words.filter(function(w) { return !w.assigned; });
+    words = words.filter(function(w) { return !w.assigned && !queuedWords[w.word]; });
   } else if (activeFilter !== 'all') {
     words = words.filter(function(w) {
       return w.roles && w.roles.indexOf(activeFilter) >= 0;
@@ -453,13 +462,24 @@ function getFilteredWords() {
 
   // Sort: unassigned first, then by rank ascending
   words.sort(function(a, b) {
-    var aAssigned = a.assigned ? 1 : 0;
-    var bAssigned = b.assigned ? 1 : 0;
+    var aAssigned = (a.assigned || queuedWords[a.word]) ? 1 : 0;
+    var bAssigned = (b.assigned || queuedWords[b.word]) ? 1 : 0;
     if (aAssigned !== bAssigned) return aAssigned - bAssigned;
     return (a.rank || 99999) - (b.rank || 99999);
   });
 
   return words;
+}
+
+function getQueuedWords() {
+  var queued = {};
+  for (var i = 0; i < queueJobs.length; i++) {
+    var j = queueJobs[i];
+    if (j.status === 'pending' || j.status === 'processing' || j.status === 'done') {
+      queued[j.word] = j.status;
+    }
+  }
+  return queued;
 }
 
 function renderWordList() {
@@ -473,16 +493,19 @@ function renderWordList() {
     return;
   }
 
+  var queuedWords = getQueuedWords();
   var html = '';
   for (var i = 0; i < words.length; i++) {
     var w = words[i];
     var isAssigned = !!w.assigned;
+    var isQueued = !!queuedWords[w.word];
+    var isUnavailable = isAssigned || isQueued;
     var isSelected = !!selectedWords[w.word];
 
-    html += '<div class="word-row' + (isAssigned ? ' assigned' : '') + (isSelected ? ' selected' : '') + '" data-word="' + esc(w.word) + '">';
+    html += '<div class="word-row' + (isAssigned ? ' assigned' : '') + (isQueued ? ' queued' : '') + (isSelected ? ' selected' : '') + '" data-word="' + esc(w.word) + '">';
 
     // Checkbox
-    html += '<input type="checkbox" class="word-check" ' + (isAssigned ? 'disabled' : '') + (isSelected ? ' checked' : '') + '>';
+    html += '<input type="checkbox" class="word-check" ' + (isUnavailable ? 'disabled' : '') + (isSelected ? ' checked' : '') + '>';
 
     // Word content
     html += '<span class="word-jp">' + esc(w.word) + '</span>';
@@ -500,9 +523,11 @@ function renderWordList() {
     }
     html += '</span>';
 
-    // Assignment or existing uses
+    // Assignment, queue status, or existing uses
     if (isAssigned) {
       html += '<span class="word-assigned-text">' + esc(w.assigned) + '</span>';
+    } else if (isQueued) {
+      html += '<span class="word-assigned-text">' + esc(queuedWords[w.word]) + '</span>';
     }
     if (w.existingUses && w.existingUses.length > 0) {
       html += '<span class="word-existing">Used: ' + esc(w.existingUses.join(', ')) + '</span>';
@@ -526,7 +551,8 @@ function truncMeaning(s) {
 function toggleWordSelection(wordStr) {
   if (!currentTheme) return;
   var wordObj = currentTheme.words.find(function(w) { return w.word === wordStr; });
-  if (!wordObj || wordObj.assigned) return;
+  var queued = getQueuedWords();
+  if (!wordObj || wordObj.assigned || queued[wordStr]) return;
 
   if (selectedWords[wordStr]) {
     delete selectedWords[wordStr];
@@ -683,7 +709,13 @@ async function pollResults() {
     var rData = await rRes.json();
     forgeResults = rData.results || [];
 
-    renderResults();
+    // Skip re-render if a reforge panel is open (avoids destroying user input)
+    var reforgeOpen = document.querySelector('.reforge-panel.visible');
+    if (!reforgeOpen) {
+      renderResults();
+    }
+    // Update word list to reflect queued status
+    renderWordList();
 
     // Check if we still have pending/processing jobs
     var pending = queueJobs.filter(function(j) {
@@ -821,11 +853,19 @@ function renderFieldsForRole(role, d, subId) {
 // ── Creature Fields ─────────────────────────────────────────────
 function renderCreatureFields(d, jobId) {
   var pfx = 'f-' + jobId + '-';
+  var m = d.modifier || {};
   var html = '<div class="field-grid">';
 
   html += fieldText(pfx, 'id', 'ID', d.id);
   html += fieldText(pfx, 'name', 'Name (Katakana)', d.name);
   html += fieldText(pfx, 'nameEn', 'Name EN', d.nameEn);
+  html += fieldText(pfx, 'baseWord', 'Base Word', d.baseWord);
+  html += fieldText(pfx, 'baseMeaning', 'Base Meaning', d.baseMeaning);
+  html += fieldNumber(pfx, 'baseRank', 'Base Rank', d.baseRank);
+  html += fieldText(pfx, 'modifier-word', 'Modifier', m.word);
+  html += fieldText(pfx, 'modifier-reading', 'Modifier Reading', m.reading);
+  html += fieldText(pfx, 'modifier-meaning', 'Modifier Meaning', m.meaning);
+  html += fieldNumber(pfx, 'modifier-rank', 'Modifier Rank', m.rank);
   html += fieldSelect(pfx, 'element', 'Element', d.element, ['fire', 'water', 'earth', 'wood', 'metal', 'neutral']);
   html += fieldSelect(pfx, 'archetype', 'Archetype', d.archetype, ['Fighter', 'Mage', 'Trickster', 'Tank-Healer']);
   html += fieldTextarea(pfx, 'description', 'Description', d.description, 3, true);
@@ -1311,9 +1351,28 @@ $('batchItems').addEventListener('input', function(e) {
   }
 });
 
-// Submit / Clear
+// Submit / Clear / Reconcile
 $('submitBatch').addEventListener('click', submitBatch);
 $('clearBatch').addEventListener('click', clearSelection);
+$('reconcileBtn').addEventListener('click', async function() {
+  var btn = $('reconcileBtn');
+  btn.disabled = true;
+  btn.textContent = 'Reconciling...';
+  try {
+    var res = await fetch('/api/forge/reconcile', { method: 'POST' });
+    var data = await res.json();
+    if (data.success) {
+      btn.textContent = data.fixed > 0 ? 'Fixed ' + data.fixed + '!' : 'All clean';
+      if (currentTheme) await loadTheme(currentTheme.themeId);
+    } else {
+      btn.textContent = 'Error';
+    }
+  } catch (e) {
+    btn.textContent = 'Error';
+    console.error('Reconcile failed:', e);
+  }
+  setTimeout(function() { btn.disabled = false; btn.textContent = 'Reconcile'; }, 2000);
+});
 
 // Results panel: card actions (delegated)
 $('resultCards').addEventListener('click', function(e) {

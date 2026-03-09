@@ -250,7 +250,7 @@
       ],
       "source": "consensus",
       "consensus": 4,
-      "assigned": null,
+      "assigned": "creature:honmo",
       "existingUses": [
         "creature:honmo"
       ],
