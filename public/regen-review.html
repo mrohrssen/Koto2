@@ -5,7 +5,11 @@
 <title>Regen Review - 72 Action Icons</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#1a1a2e;color:#e0e0e0;font-family:system-ui;padding:12px}
+body{background:#1a1a2e;color:#e0e0e0;font-family:system-ui}
+.dev-nav{display:flex;gap:2px;padding:6px 12px;background:#0a0a1a;border-bottom:1px solid #1e2d4a;overflow-x:auto}
+.dev-nav a{padding:5px 10px;border-radius:4px;font-size:12px;color:#667;text-decoration:none;white-space:nowrap;transition:all .15s}
+.dev-nav a:hover{color:#aab;background:#16213e}
+.dev-nav a.active{color:#8cf;background:#0f3460}
 h1{text-align:center;font-size:18px;margin-bottom:4px;color:#8cf}
 .summary{text-align:center;font-size:14px;color:#889;margin-bottom:16px}
 .summary .pass{color:#4ade80;font-weight:700}
@@ -19,6 +23,17 @@ h1{text-align:center;font-size:18px;margin-bottom:4px;color:#8cf}
 .fail-badge{position:absolute;top:4px;right:4px;background:#f87171;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px}
 </style>
 </head><body>
+<nav class="dev-nav">
+  <a href="/dev/">Hub</a>
+  <a href="/forge.html">Forge</a>
+  <a href="/dev/sprites">Sprites</a>
+  <a href="/dev/content">Content</a>
+  <a href="/creatures-gallery.html">Creatures</a>
+  <a href="/regen-review.html" class="active">Regen Review</a>
+  <a href="/assets/sprites/items/review.html">Items Review</a>
+  <a href="/dev/mockups">Mockups</a>
+</nav>
+<div style="padding:12px">
 <h1>Regenerated Action Icons</h1>
 <div class="summary">
   <span class="pass">70 passed</span> &middot;
@@ -890,5 +905,6 @@ h1{text-align:center;font-size:18px;margin-bottom:4px;color:#8cf}
     <div class="reason">Bandaged arm with visible wound. Instantly clear. Excellent style match.</div>
     
   </div>
+</div>
 </div>
 </body></html>

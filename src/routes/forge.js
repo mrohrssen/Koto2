@@ -226,6 +226,46 @@ export function createForgeRouter({ themesDir, dataDir }) {
     }
   }
 
+  // ── POST /theme/:id/word ─────────────────────────────────────
+  async function postAddWord(req, res) {
+    try {
+      const { id } = req.params;
+      const { word, reading, meaning, rank, roles } = req.body || {};
+      if (!word || !meaning) {
+        return res.status(400).json({ error: 'Missing required fields: word, meaning' });
+      }
+      const themePath = join(themesDir, `${id}.json`);
+      if (!existsSync(themePath)) {
+        return res.status(404).json({ error: `Theme '${id}' not found` });
+      }
+      const theme = JSON.parse(readFileSync(themePath, 'utf8'));
+      if (!theme.words) theme.words = [];
+
+      // Check for duplicate
+      if (theme.words.some(w => w.word === word)) {
+        return res.status(409).json({ error: `Word '${word}' already exists in this theme` });
+      }
+
+      const newWord = {
+        word,
+        reading: reading || '',
+        meaning,
+        rank: rank || null,
+        roles: roles || [],
+        source: 'manual',
+        consensus: 0,
+        assigned: null,
+        existingUses: []
+      };
+      theme.words.push(newWord);
+      writeFileSync(themePath, JSON.stringify(theme, null, 2));
+      res.json({ success: true, word: newWord });
+    } catch (error) {
+      console.error('[Forge] Error:', error);
+      res.status(500).json({ error: 'Failed to add word', details: error.message });
+    }
+  }
+
   // ── Mount routes ─────────────────────────────────────────────
   router.get('/themes', getThemes);
   router.get('/theme/:id', getTheme);
@@ -234,6 +274,7 @@ export function createForgeRouter({ themesDir, dataDir }) {
   router.get('/results', getResults);
   router.post('/approve', postApprove);
   router.post('/discard', postDiscard);
+  router.post('/theme/:id/word', postAddWord);
 
   // Expose handlers for testing
   router._handlers = { getThemes, getTheme, getQueue, postQueue, getResults, postApprove, postDiscard };

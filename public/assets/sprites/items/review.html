@@ -5,7 +5,11 @@
 <title>Item Sprites Review</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #1a1a2e; color: #eee; font-family: system-ui, sans-serif; padding: 24px; }
+  body { background: #1a1a2e; color: #eee; font-family: system-ui, sans-serif; }
+  .dev-nav{display:flex;gap:2px;padding:6px 12px;background:#0a0a1a;border-bottom:1px solid #1e2d4a;overflow-x:auto}
+  .dev-nav a{padding:5px 10px;border-radius:4px;font-size:12px;color:#667;text-decoration:none;white-space:nowrap;transition:all .15s}
+  .dev-nav a:hover{color:#aab;background:#16213e}
+  .dev-nav a.active{color:#8cf;background:#0f3460}
   h1 { text-align: center; margin-bottom: 8px; color: #e94560; }
   .subtitle { text-align: center; color: #888; margin-bottom: 24px; }
   .section { margin-bottom: 32px; }
@@ -26,6 +30,17 @@
 </style>
 </head>
 <body>
+<nav class="dev-nav">
+  <a href="/dev/">Hub</a>
+  <a href="/forge.html">Forge</a>
+  <a href="/dev/sprites">Sprites</a>
+  <a href="/dev/content">Content</a>
+  <a href="/creatures-gallery.html">Creatures</a>
+  <a href="/regen-review.html">Regen Review</a>
+  <a href="/assets/sprites/items/review.html" class="active">Items Review</a>
+  <a href="/dev/mockups">Mockups</a>
+</nav>
+<div style="padding:24px">
 <h1>Item Sprites Review</h1>
 <p class="subtitle">Checkerboard = transparent pixels &bull; Green border = changed this session</p>
 
@@ -97,5 +112,6 @@ renderGrid('keepsakes', keepsakes, 'keepsake', 'keepsake');
 renderGrid('food', food, 'food', 'food');
 renderGrid('other', other, '', '');
 </script>
+</div>
 </body>
 </html>

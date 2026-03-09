@@ -16,7 +16,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc-skill:npc-oshieru",
       "existingUses": [
         "move:oshieru"
       ]
@@ -29,7 +29,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc-skill:oboeru",
       "existingUses": []
     },
     {
@@ -40,7 +40,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc-skill:wasureru",
       "existingUses": []
     },
     {
@@ -301,7 +301,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "creature:kokubanrei",
       "existingUses": []
     },
     {
@@ -615,7 +615,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "item:scissors",
       "existingUses": [
         "creature:hasamiden"
       ]
@@ -628,7 +628,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc-skill:kangaeru",
       "existingUses": []
     },
     {
@@ -639,7 +639,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc-skill:shiru",
       "existingUses": []
     },
     {

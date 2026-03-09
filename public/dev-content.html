@@ -8,6 +8,12 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#1a1a2e;color:#e0e0e0;font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
 
+/* Dev nav */
+.dev-nav{display:flex;gap:2px;padding:6px 12px;background:#0a0a1a;border-bottom:1px solid #1e2d4a;overflow-x:auto}
+.dev-nav a{padding:5px 10px;border-radius:4px;font-size:12px;color:#667;text-decoration:none;white-space:nowrap;transition:all .15s}
+.dev-nav a:hover{color:#aab;background:#16213e}
+.dev-nav a.active{color:#8cf;background:#0f3460}
+
 /* Top bar */
 .topbar{position:sticky;top:0;z-index:100;background:#0f0f23;border-bottom:1px solid #1e2d4a;padding:8px 12px}
 .topbar-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -84,9 +90,63 @@ td select.cell-input{padding:2px 4px}
 
 /* Loading */
 .loading{text-align:center;padding:60px 20px;color:#667;font-size:14px}
+
+/* Expand toggle button in row */
+.expand-btn{background:none;border:none;color:#667;cursor:pointer;font-size:14px;padding:2px 6px;transition:all .15s;line-height:1}
+.expand-btn:hover{color:#a0c4ff}
+tr.expanded .expand-btn{color:#a0c4ff}
+
+/* Detail panel below row */
+.detail-row td{padding:0!important;border-bottom:2px solid #0f3460}
+.detail-panel{background:#0d1525;padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:16px 32px}
+.detail-panel .detail-section{display:flex;flex-direction:column;gap:6px}
+.detail-panel .detail-section.full-width{grid-column:1/-1}
+.detail-label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#667;font-weight:600}
+.detail-value{font-size:13px;color:#cdd;line-height:1.5}
+.detail-value.description-text{white-space:pre-wrap;max-height:120px;overflow-y:auto;color:#aab}
+
+/* Learnset editor */
+.learnset-section{grid-column:1/-1}
+.learnset-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+.learnset-table th{background:#0a0f1a;color:#667;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:6px 8px;text-align:left;border-bottom:1px solid #1e2d4a}
+.learnset-table td{padding:5px 8px;border-bottom:1px solid #111528;vertical-align:middle}
+.learnset-table tr:hover{background:rgba(15,52,96,.2)}
+.learnset-table .move-name{color:#a0c4ff;font-weight:500}
+.learnset-table .move-detail{color:#889;font-size:12px}
+.learnset-level-input{width:50px;padding:2px 5px;border:1px solid #1e2d4a;border-radius:3px;background:#0f0f23;color:#e0e0e0;font-size:13px;text-align:center}
+.learnset-level-input:focus{border-color:#a0c4ff;outline:none}
+.learnset-remove{background:none;border:none;color:#f87171;cursor:pointer;font-size:16px;padding:2px 6px;opacity:.5;transition:opacity .15s}
+.learnset-remove:hover{opacity:1}
+
+/* Add move row */
+.add-move-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+.move-select{flex:1;padding:5px 8px;border:1px solid #1e2d4a;border-radius:4px;background:#0f0f23;color:#e0e0e0;font-size:13px}
+.move-select:focus{border-color:#a0c4ff;outline:none}
+.add-move-btn{padding:5px 12px;border:1px solid #1e2d4a;border-radius:4px;background:#16213e;color:#a0c4ff;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s}
+.add-move-btn:hover{background:#1e2d4a;border-color:#a0c4ff}
+
+/* Element badges */
+.el-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:600;text-transform:uppercase}
+.el-fire{background:rgba(239,68,68,.15);color:#f87171}
+.el-water{background:rgba(59,130,246,.15);color:#60a5fa}
+.el-earth{background:rgba(217,119,6,.15);color:#fbbf24}
+.el-wood{background:rgba(34,197,94,.15);color:#4ade80}
+.el-metal{background:rgba(148,163,184,.15);color:#94a3b8}
+.el-neutral{background:rgba(107,114,128,.15);color:#9ca3af}
 </style>
 </head>
 <body>
+
+<nav class="dev-nav">
+  <a href="/dev/">Hub</a>
+  <a href="/forge.html">Forge</a>
+  <a href="/dev/sprites">Sprites</a>
+  <a href="/dev/content" class="active">Content</a>
+  <a href="/creatures-gallery.html">Creatures</a>
+  <a href="/regen-review.html">Regen Review</a>
+  <a href="/assets/sprites/items/review.html">Items Review</a>
+  <a href="/dev/mockups">Mockups</a>
+</nav>
 
 <div class="topbar">
   <div class="topbar-row">
@@ -117,6 +177,7 @@ td select.cell-input{padding:2px 4px}
 // ── Column definitions ──────────────────────────────────────────
 var COLUMNS = {
   creatures: [
+    { key: '_expand', label: '', ro: true, computed: function() { return ''; }, noSort: true },
     { key: 'id', label: 'ID', ro: true },
     { key: 'name', label: 'Name' },
     { key: 'nameEn', label: 'Name (EN)' },
@@ -127,6 +188,7 @@ var COLUMNS = {
     { key: 'baseHp', label: 'HP', type: 'num' },
     { key: 'baseAttack', label: 'ATK', type: 'num' },
     { key: 'baseMp', label: 'MP', type: 'num' },
+    { key: 'baseRank', label: 'Rank', type: 'num' },
     { key: 'learnset', label: 'Moves', ro: true, computed: function(row) { return row.learnset ? row.learnset.length : 0; } }
   ],
   moves: [
@@ -135,10 +197,14 @@ var COLUMNS = {
     { key: 'nameEn', label: 'Name (EN)' },
     { key: 'reading', label: 'Reading' },
     { key: 'meaning', label: 'Meaning' },
+    { key: 'rank', label: 'Rank', type: 'num' },
     { key: 'element', label: 'Element', type: 'enum', options: ['fire','water','earth','wood','metal','neutral'] },
     { key: 'category', label: 'Category', type: 'enum', options: ['damage','buff','debuff','heal','shield','drain'] },
     { key: 'power', label: 'Power', type: 'num' },
     { key: 'mpCost', label: 'MP Cost', type: 'num' },
+    { key: 'statusEffect', label: 'Status', type: 'enum', options: ['','poison','stun','confuse','haste','attack_buff','shield','team_shield'] },
+    { key: 'statusChance', label: 'Chance%', type: 'num' },
+    { key: 'statusDuration', label: 'Duration', type: 'num' },
     { key: 'tier', label: 'Tier', type: 'num' },
     { key: 'stage', label: 'Stage', type: 'num' }
   ],
@@ -147,17 +213,20 @@ var COLUMNS = {
     { key: 'word', label: 'Word' },
     { key: 'reading', label: 'Reading' },
     { key: 'meaning', label: 'Meaning' },
+    { key: 'rank', label: 'Rank', type: 'num' },
     { key: 'type', label: 'Type', type: 'enum', options: ['heal','damage','revive','status-cure','status-inflict','evolution','key','currency'] },
     { key: 'rarity', label: 'Rarity', type: 'enum', options: ['common','uncommon','rare','epic','legendary'] },
     { key: 'description', label: 'Effect' },
     { key: 'stage', label: 'Stage', type: 'num' }
   ],
   npcs: [
+    { key: '_expand', label: '', ro: true, computed: function() { return ''; }, noSort: true },
     { key: 'id', label: 'ID', ro: true },
     { key: 'name', label: 'Name' },
     { key: 'nameEn', label: 'Name (EN)' },
     { key: 'area', label: 'Area' },
     { key: 'tier', label: 'Tier', type: 'num' },
+    { key: 'baseRank', label: 'Rank', type: 'num' },
     { key: 'skills', label: 'Skills', ro: true, computed: function(row) { return row.skills ? row.skills.length : 0; } },
     { key: 'personality.traits', label: 'Traits', ro: true, computed: function(row) { return row.personality && row.personality.traits ? row.personality.traits.join(', ') : ''; } }
   ],
@@ -177,6 +246,7 @@ var COLUMNS = {
     { key: 'name', label: 'Name' },
     { key: 'nameEn', label: 'Name (EN)' },
     { key: 'reading', label: 'Reading' },
+    { key: 'rank', label: 'Rank', type: 'num' },
     { key: 'theme', label: 'Theme' },
     { key: 'creatures', label: 'Creatures', ro: true, computed: function(row) { return row.creatures ? row.creatures.length : 0; } },
     { key: 'subAreas', label: 'Sub-Areas', ro: true, computed: function(row) { return row.subAreas ? row.subAreas.length : 0; } }
@@ -201,6 +271,7 @@ var sortCol = '';
 var sortDir = 'asc';
 var searchQuery = '';
 var activeEditCell = null;
+var expandedRows = {};  // key: creature id -> true
 
 // ── Helpers ────────────────────────────────────────────────────
 function esc(s) {
@@ -357,19 +428,33 @@ function renderTable() {
     } else {
       arrow = '\u25B2';
     }
-    html += '<th class="' + (sorted ? 'sorted' : '') + '" data-col="' + esc(col.key) + '">'
-      + esc(col.label)
-      + '<span class="sort-arrow">' + arrow + '</span>'
-      + '</th>';
+    if (col.noSort) {
+      html += '<th style="width:28px"></th>';
+    } else {
+      html += '<th class="' + (sorted ? 'sorted' : '') + '" data-col="' + esc(col.key) + '">'
+        + esc(col.label)
+        + '<span class="sort-arrow">' + arrow + '</span>'
+        + '</th>';
+    }
   }
   html += '</tr></thead><tbody>';
 
   // Build rows
   for (var r = 0; r < filtered.length; r++) {
     var row = filtered[r];
-    html += '<tr data-id="' + esc(row.id) + '">';
+    var isExpanded = (currentType === 'creatures' || currentType === 'npcs') && expandedRows[row.id];
+    html += '<tr data-id="' + esc(row.id) + '"' + (isExpanded ? ' class="expanded"' : '') + '>';
     for (var ci = 0; ci < cols.length; ci++) {
       var cd = cols[ci];
+
+      // Expand button column
+      if (cd.key === '_expand') {
+        html += '<td class="ro" style="width:28px;text-align:center">'
+          + '<button class="expand-btn" data-expand="' + esc(row.id) + '">'
+          + (isExpanded ? '\u25BC' : '\u25B6') + '</button></td>';
+        continue;
+      }
+
       var val;
       if (cd.computed) {
         val = cd.computed(row);
@@ -386,10 +471,365 @@ function renderTable() {
         + esc(String(displayVal)) + '</td>';
     }
     html += '</tr>';
+
+    // Detail row for expanded entries
+    if (isExpanded) {
+      if (currentType === 'creatures') html += buildCreatureDetailRow(row, cols.length);
+      else if (currentType === 'npcs') html += buildNpcDetailRow(row, cols.length);
+    }
   }
 
   html += '</tbody></table>';
   document.getElementById('tableWrap').innerHTML = html;
+}
+
+// ── Detail panel (creature expand) ──────────────────────────────
+function buildCreatureDetailRow(creature, colSpan) {
+  var moves = data.moves || [];
+  var moveLookup = {};
+  for (var m = 0; m < moves.length; m++) {
+    moveLookup[moves[m].id] = moves[m];
+  }
+
+  var html = '<tr class="detail-row"><td colspan="' + colSpan + '"><div class="detail-panel">';
+
+  // Base word info
+  html += '<div class="detail-section">'
+    + '<span class="detail-label">Base Word</span>'
+    + '<span class="detail-value">' + esc(creature.baseWord || '') + ' (' + esc(creature.baseReading || '') + ') — ' + esc(creature.baseMeaning || '') + '</span>'
+    + '</div>';
+
+  // Modifier
+  var mod = creature.modifier;
+  if (mod) {
+    html += '<div class="detail-section">'
+      + '<span class="detail-label">Modifier</span>'
+      + '<span class="detail-value">' + esc(mod.word || '') + ' (' + esc(mod.reading || '') + ') — ' + esc(mod.meaning || '')
+      + (mod.rank ? ' [rank ' + mod.rank + ']' : '') + '</span>'
+      + '</div>';
+  }
+
+  // Base rank
+  html += '<div class="detail-section">'
+    + '<span class="detail-label">JPDB Rank</span>'
+    + '<span class="detail-value">' + (creature.baseRank || '—') + '</span>'
+    + '</div>';
+
+  // Created at
+  html += '<div class="detail-section">'
+    + '<span class="detail-label">Created</span>'
+    + '<span class="detail-value">' + esc(creature.createdAt || '—') + '</span>'
+    + '</div>';
+
+  // Description (full width)
+  html += '<div class="detail-section full-width">'
+    + '<span class="detail-label">Description</span>'
+    + '<span class="detail-value description-text">' + esc(creature.description || '—') + '</span>'
+    + '</div>';
+
+  // Learnset (full width)
+  html += '<div class="learnset-section">'
+    + '<span class="detail-label">Learnset</span>';
+
+  var learnset = creature.learnset || [];
+  if (learnset.length > 0) {
+    html += '<table class="learnset-table"><thead><tr>'
+      + '<th>Lv</th><th>Move</th><th>Name (EN)</th><th>Element</th><th>Category</th><th>Power</th><th>MP</th><th>Status</th><th></th>'
+      + '</tr></thead><tbody>';
+
+    for (var i = 0; i < learnset.length; i++) {
+      var entry = learnset[i];
+      var mv = moveLookup[entry.moveId];
+      html += '<tr data-creature="' + esc(creature.id) + '" data-move-idx="' + i + '">';
+      html += '<td><input class="learnset-level-input" type="number" min="1" max="99" value="' + (entry.level || 1)
+        + '" data-creature="' + esc(creature.id) + '" data-move-idx="' + i + '"></td>';
+
+      if (mv) {
+        html += '<td class="move-name">' + esc(mv.name) + ' <span class="move-detail">(' + esc(mv.reading) + ')</span></td>';
+        html += '<td>' + esc(mv.nameEn) + '</td>';
+        html += '<td><span class="el-badge el-' + esc(mv.element) + '">' + esc(mv.element) + '</span></td>';
+        html += '<td>' + esc(mv.category) + '</td>';
+        html += '<td>' + (mv.power || '—') + '</td>';
+        html += '<td>' + (mv.mpCost || '—') + '</td>';
+        html += '<td>' + (mv.statusEffect ? esc(mv.statusEffect) + ' ' + (mv.statusChance || '') + '%' : '—') + '</td>';
+      } else {
+        html += '<td class="move-name" style="color:#f87171">' + esc(entry.moveId) + ' (missing)</td>';
+        html += '<td colspan="6">—</td>';
+      }
+
+      html += '<td><button class="learnset-remove" data-creature="' + esc(creature.id) + '" data-move-idx="' + i + '" title="Remove move">&times;</button></td>';
+      html += '</tr>';
+    }
+    html += '</tbody></table>';
+  } else {
+    html += '<div style="color:#556;font-size:13px;margin-top:4px">No moves assigned</div>';
+  }
+
+  // Add move selector
+  html += '<div class="add-move-row">'
+    + '<select class="move-select" id="addMoveSelect_' + esc(creature.id) + '">'
+    + '<option value="">— Add a move —</option>';
+
+  // Build sorted move list, excluding already-assigned moves
+  var assignedIds = {};
+  for (var a = 0; a < learnset.length; a++) assignedIds[learnset[a].moveId] = true;
+  var sortedMoves = moves.filter(function(mv) { return !assignedIds[mv.id]; })
+    .sort(function(a, b) { return (a.name || '').localeCompare(b.name || ''); });
+
+  for (var s = 0; s < sortedMoves.length; s++) {
+    var sm = sortedMoves[s];
+    html += '<option value="' + esc(sm.id) + '">' + esc(sm.name) + ' / ' + esc(sm.nameEn)
+      + ' [' + esc(sm.element) + ' ' + esc(sm.category) + ' P' + (sm.power || 0) + ']</option>';
+  }
+
+  html += '</select>';
+  html += '<input class="learnset-level-input" type="number" min="1" max="99" value="1" id="addMoveLevel_' + esc(creature.id) + '" placeholder="Lv">';
+  html += '<button class="add-move-btn" data-creature="' + esc(creature.id) + '">Add</button>';
+  html += '</div>';  // add-move-row
+
+  html += '</div>';  // learnset-section
+  html += '</div></td></tr>';  // detail-panel, detail-row
+
+  return html;
+}
+
+function toggleExpand(entryId) {
+  if (expandedRows[entryId]) {
+    delete expandedRows[entryId];
+  } else {
+    expandedRows[entryId] = true;
+    // Ensure related data is loaded
+    var needed = currentType === 'npcs' ? 'npc-skills' : 'moves';
+    if (!data[needed]) {
+      fetch('/dev/api/content/' + needed)
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(d) {
+          if (d) { data[needed] = d; renderTabs(); }
+          renderTable();
+        });
+      return;
+    }
+  }
+  renderTable();
+}
+
+function addMoveToCreature(creatureId) {
+  var select = document.getElementById('addMoveSelect_' + creatureId);
+  var levelInput = document.getElementById('addMoveLevel_' + creatureId);
+  if (!select || !select.value) return;
+
+  var moveId = select.value;
+  var level = parseInt(levelInput.value) || 1;
+
+  var entries = data.creatures || [];
+  for (var i = 0; i < entries.length; i++) {
+    if (entries[i].id === creatureId) {
+      if (!entries[i].learnset) entries[i].learnset = [];
+      entries[i].learnset.push({ moveId: moveId, level: level });
+      // Sort by level
+      entries[i].learnset.sort(function(a, b) { return a.level - b.level; });
+      // Track change
+      trackLearnsetChange(creatureId, entries[i].learnset);
+      break;
+    }
+  }
+  renderTable();
+}
+
+function removeMoveFromCreature(creatureId, moveIdx) {
+  var entries = data.creatures || [];
+  for (var i = 0; i < entries.length; i++) {
+    if (entries[i].id === creatureId) {
+      if (entries[i].learnset && entries[i].learnset[moveIdx] !== undefined) {
+        entries[i].learnset.splice(moveIdx, 1);
+        trackLearnsetChange(creatureId, entries[i].learnset);
+      }
+      break;
+    }
+  }
+  renderTable();
+}
+
+function updateMoveLevel(creatureId, moveIdx, newLevel) {
+  var entries = data.creatures || [];
+  for (var i = 0; i < entries.length; i++) {
+    if (entries[i].id === creatureId) {
+      if (entries[i].learnset && entries[i].learnset[moveIdx] !== undefined) {
+        entries[i].learnset[moveIdx].level = parseInt(newLevel) || 1;
+        // Re-sort by level
+        entries[i].learnset.sort(function(a, b) { return a.level - b.level; });
+        trackLearnsetChange(creatureId, entries[i].learnset);
+      }
+      break;
+    }
+  }
+  // Don't re-render on every keystroke, just track the change
+}
+
+function trackLearnsetChange(creatureId, learnset) {
+  var ck = changeKey('creatures', creatureId, 'learnset');
+  pendingChanges[ck] = {
+    type: 'creatures',
+    id: creatureId,
+    field: 'learnset',
+    oldValue: '(learnset)',
+    newValue: JSON.parse(JSON.stringify(learnset))
+  };
+  updateSaveBar();
+}
+
+// ── NPC detail panel ────────────────────────────────────────────
+function buildNpcDetailRow(npc, colSpan) {
+  var skills = data['npc-skills'] || [];
+  var skillLookup = {};
+  for (var m = 0; m < skills.length; m++) {
+    skillLookup[skills[m].id] = skills[m];
+  }
+
+  var html = '<tr class="detail-row"><td colspan="' + colSpan + '"><div class="detail-panel">';
+
+  // Base word info
+  html += '<div class="detail-section">'
+    + '<span class="detail-label">Base Word</span>'
+    + '<span class="detail-value">' + esc(npc.baseWord || '') + ' (' + esc(npc.baseReading || '') + ') — ' + esc(npc.baseMeaning || '') + '</span>'
+    + '</div>';
+
+  // Modifier
+  var mod = npc.modifier;
+  if (mod) {
+    html += '<div class="detail-section">'
+      + '<span class="detail-label">Modifier</span>'
+      + '<span class="detail-value">' + esc(mod.word || '') + ' (' + esc(mod.reading || '') + ') — ' + esc(mod.meaning || '')
+      + (mod.rank ? ' [rank ' + mod.rank + ']' : '') + '</span>'
+      + '</div>';
+  }
+
+  // Personality
+  var personality = npc.personality;
+  if (personality) {
+    html += '<div class="detail-section">'
+      + '<span class="detail-label">Speech Style</span>'
+      + '<span class="detail-value">' + esc(personality.speechStyle || '') + '</span>'
+      + '</div>';
+    html += '<div class="detail-section">'
+      + '<span class="detail-label">Quirk</span>'
+      + '<span class="detail-value">' + esc(personality.quirk || '') + '</span>'
+      + '</div>';
+  }
+
+  // Greeting & defeat line
+  html += '<div class="detail-section">'
+    + '<span class="detail-label">Greeting</span>'
+    + '<span class="detail-value">' + esc(npc.greeting || '—') + '</span>'
+    + '</div>';
+  html += '<div class="detail-section">'
+    + '<span class="detail-label">Defeat Line</span>'
+    + '<span class="detail-value">' + esc(npc.defeatLine || '—') + '</span>'
+    + '</div>';
+
+  // Skills (full width)
+  html += '<div class="learnset-section">'
+    + '<span class="detail-label">Skills</span>';
+
+  var npcSkills = npc.skills || [];
+  if (npcSkills.length > 0) {
+    html += '<table class="learnset-table"><thead><tr>'
+      + '<th>Skill</th><th>Name (EN)</th><th>Element</th><th>Category</th><th>Power</th><th>MP</th><th>Status</th><th></th>'
+      + '</tr></thead><tbody>';
+
+    for (var i = 0; i < npcSkills.length; i++) {
+      var skillId = npcSkills[i];
+      var sk = skillLookup[skillId];
+      html += '<tr>';
+      if (sk) {
+        html += '<td class="move-name">' + esc(sk.name) + ' <span class="move-detail">(' + esc(sk.reading) + ')</span></td>';
+        html += '<td>' + esc(sk.nameEn) + '</td>';
+        html += '<td><span class="el-badge el-' + esc(sk.element) + '">' + esc(sk.element) + '</span></td>';
+        html += '<td>' + esc(sk.category) + '</td>';
+        html += '<td>' + (sk.power || '—') + '</td>';
+        html += '<td>' + (sk.mpCost || '—') + '</td>';
+        html += '<td>' + (sk.statusEffect ? esc(sk.statusEffect) + ' ' + (sk.statusChance || '') + '%' : '—') + '</td>';
+      } else {
+        html += '<td class="move-name" style="color:#f87171">' + esc(skillId) + ' (missing)</td>';
+        html += '<td colspan="6">—</td>';
+      }
+      html += '<td><button class="npc-skill-remove" data-npc="' + esc(npc.id) + '" data-skill-idx="' + i + '" title="Remove skill">&times;</button></td>';
+      html += '</tr>';
+    }
+    html += '</tbody></table>';
+  } else {
+    html += '<div style="color:#556;font-size:13px;margin-top:4px">No skills assigned</div>';
+  }
+
+  // Add skill selector
+  html += '<div class="add-move-row">'
+    + '<select class="move-select" id="addSkillSelect_' + esc(npc.id) + '">'
+    + '<option value="">— Add a skill —</option>';
+
+  var assignedIds = {};
+  for (var a = 0; a < npcSkills.length; a++) assignedIds[npcSkills[a]] = true;
+  var sortedSkills = skills.filter(function(sk) { return !assignedIds[sk.id]; })
+    .sort(function(a, b) { return (a.name || '').localeCompare(b.name || ''); });
+
+  for (var s = 0; s < sortedSkills.length; s++) {
+    var ss = sortedSkills[s];
+    html += '<option value="' + esc(ss.id) + '">' + esc(ss.name) + ' / ' + esc(ss.nameEn)
+      + ' [' + esc(ss.element) + ' ' + esc(ss.category) + ' P' + (ss.power || 0) + ']</option>';
+  }
+
+  html += '</select>';
+  html += '<button class="add-npc-skill-btn" data-npc="' + esc(npc.id) + '">Add</button>';
+  html += '</div>';
+
+  html += '</div>';  // learnset-section
+  html += '</div></td></tr>';
+
+  return html;
+}
+
+function addSkillToNpc(npcId) {
+  var select = document.getElementById('addSkillSelect_' + npcId);
+  if (!select || !select.value) return;
+
+  var skillId = select.value;
+  var entries = data.npcs ? Object.values(data.npcs) : [];
+  // npcs is object-keyed, find by id
+  var allNpcs = data.npcs || [];
+  for (var i = 0; i < allNpcs.length; i++) {
+    if (allNpcs[i].id === npcId) {
+      if (!allNpcs[i].skills) allNpcs[i].skills = [];
+      allNpcs[i].skills.push(skillId);
+      trackNpcSkillsChange(npcId, allNpcs[i].skills);
+      break;
+    }
+  }
+  renderTable();
+}
+
+function removeSkillFromNpc(npcId, skillIdx) {
+  var allNpcs = data.npcs || [];
+  for (var i = 0; i < allNpcs.length; i++) {
+    if (allNpcs[i].id === npcId) {
+      if (allNpcs[i].skills && allNpcs[i].skills[skillIdx] !== undefined) {
+        allNpcs[i].skills.splice(skillIdx, 1);
+        trackNpcSkillsChange(npcId, allNpcs[i].skills);
+      }
+      break;
+    }
+  }
+  renderTable();
+}
+
+function trackNpcSkillsChange(npcId, skills) {
+  var ck = changeKey('npcs', npcId, 'skills');
+  pendingChanges[ck] = {
+    type: 'npcs',
+    id: npcId,
+    field: 'skills',
+    oldValue: '(skills)',
+    newValue: JSON.parse(JSON.stringify(skills))
+  };
+  updateSaveBar();
 }
 
 // ── Sorting ────────────────────────────────────────────────────
@@ -487,6 +927,8 @@ function commitCurrentEdit() {
   var newValue = input.value;
   if (colDef.type === 'num') {
     newValue = newValue === '' ? 0 : Number(newValue);
+  } else if (colDef.type === 'enum' && newValue === '') {
+    newValue = null;
   }
 
   var originalValue = getNestedValue(row, colDef.key);
@@ -571,13 +1013,24 @@ function showDiff() {
 
   for (var i = 0; i < changes.length; i++) {
     var c = changes[i];
+    var oldDisplay, newDisplay;
+    if (c.field === 'learnset' && Array.isArray(c.newValue)) {
+      oldDisplay = c.oldValue;
+      newDisplay = c.newValue.map(function(e) { return e.moveId + ' @Lv' + e.level; }).join(', ');
+    } else if (c.field === 'skills' && Array.isArray(c.newValue)) {
+      oldDisplay = c.oldValue;
+      newDisplay = c.newValue.join(', ');
+    } else {
+      oldDisplay = String(c.oldValue);
+      newDisplay = String(c.newValue);
+    }
     html += '<tr>'
       + '<td>' + esc(c.type) + '</td>'
       + '<td>' + esc(c.id) + '</td>'
       + '<td>' + esc(c.field) + '</td>'
-      + '<td class="diff-old">' + esc(String(c.oldValue)) + '</td>'
+      + '<td class="diff-old">' + esc(oldDisplay) + '</td>'
       + '<td class="diff-arrow">&rarr;</td>'
-      + '<td class="diff-new">' + esc(String(c.newValue)) + '</td>'
+      + '<td class="diff-new">' + esc(newDisplay) + '</td>'
       + '</tr>';
   }
 
@@ -709,6 +1162,41 @@ document.getElementById('tableWrap').addEventListener('click', function(e) {
     return;
   }
 
+  // Expand button
+  var expandBtn = e.target.closest('.expand-btn');
+  if (expandBtn) {
+    toggleExpand(expandBtn.dataset.expand);
+    return;
+  }
+
+  // Add move button
+  var addBtn = e.target.closest('.add-move-btn');
+  if (addBtn) {
+    addMoveToCreature(addBtn.dataset.creature);
+    return;
+  }
+
+  // Remove move button (creatures)
+  var removeBtn = e.target.closest('.learnset-remove');
+  if (removeBtn) {
+    removeMoveFromCreature(removeBtn.dataset.creature, parseInt(removeBtn.dataset.moveIdx));
+    return;
+  }
+
+  // Add NPC skill button
+  var addNpcSkillBtn = e.target.closest('.add-npc-skill-btn');
+  if (addNpcSkillBtn) {
+    addSkillToNpc(addNpcSkillBtn.dataset.npc);
+    return;
+  }
+
+  // Remove NPC skill button
+  var removeNpcSkillBtn = e.target.closest('.npc-skill-remove');
+  if (removeNpcSkillBtn) {
+    removeSkillFromNpc(removeNpcSkillBtn.dataset.npc, parseInt(removeNpcSkillBtn.dataset.skillIdx));
+    return;
+  }
+
   // Cell click for editing
   var td = e.target.closest('td.editable');
   if (td && !td.querySelector('.cell-input')) {
@@ -731,6 +1219,14 @@ document.getElementById('tableWrap').addEventListener('click', function(e) {
     if (!colDef || colDef.ro) return;
 
     startEdit(td, row, colDef);
+  }
+});
+
+// Level input changes in learnset
+document.getElementById('tableWrap').addEventListener('change', function(e) {
+  var levelInput = e.target.closest('.learnset-level-input');
+  if (levelInput && levelInput.dataset.creature && levelInput.dataset.moveIdx !== undefined) {
+    updateMoveLevel(levelInput.dataset.creature, parseInt(levelInput.dataset.moveIdx), levelInput.value);
   }
 });
 

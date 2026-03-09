@@ -224,6 +224,7 @@ Skills use `process.cwd()` for project paths and `$CLAUDE_PROJECT_DIR` for sub-s
 - **Don't forget to bump `SPRITE_VERSION`** - After regenerating sprites, update it in `public/js/ui/sprite-utils.js` or users will see cached old sprites.
 - **Don't use Read tool to "show" images** - The Read tool's image display does NOT render in the terminal. To show the user images, serve them via a local HTTP server and display in the Playwright MCP browser (e.g., `python3 -m http.server` then `browser_navigate`).
 - **Don't launch Playwright without asking first** - Always ask the user before opening a Playwright browser session. Chrome session conflicts are common and launching blindly breaks things.
+- **Report non-JSON code changes during forging** - Forge subagents should only produce JSON data for `forge-results.json`. If a forge job requires new code (new effect types, new systems, engine changes), **always report this to the user** before or immediately after. Don't silently add new code paths — the user needs to approve structural changes separately from content.
 
 ## Session Cleanup Rules
 

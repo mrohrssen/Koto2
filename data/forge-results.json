@@ -1,0 +1,113 @@
+{
+  "results": [
+    {
+      "jobId": "forge_1773054747069_cq7aur",
+      "status": "complete",
+      "forgedAt": "2026-03-09T12:00:00.000Z",
+      "role": "npc-skill",
+      "word": "問題",
+      "themeId": "school",
+      "data": {
+        "id": "mondai",
+        "name": "問題",
+        "nameEn": "Math Problem",
+        "reading": "もんだい",
+        "meaning": "question (e.g. on a test); problem",
+        "rank": 300,
+        "element": "metal",
+        "category": "damage",
+        "target": "all_enemies",
+        "power": 18,
+        "mpCost": 0,
+        "statusEffect": null,
+        "statusChance": null,
+        "statusDuration": null,
+        "description": "Bombards all enemies with a barrage of unsolvable math problems, dealing precise metal-element damage."
+      },
+      "agentNotes": "Metal element chosen for precision/logic of math. AOE damage at power 18 as requested. No status effect — pure damage skill."
+    },
+    {
+      "jobId": "forge_1773054922530_zvzdzi",
+      "status": "complete",
+      "forgedAt": "2026-03-09T12:00:00.000Z",
+      "role": "npc",
+      "word": "先生",
+      "themeId": "school",
+      "data": [
+        {
+          "id": "kazuho",
+          "name": "カズホ",
+          "nameEn": "Kazuho",
+          "baseWord": "先生",
+          "baseReading": "せんせい",
+          "baseMeaning": "teacher",
+          "baseRank": 500,
+          "modifier": { "word": "数学", "reading": "すうがく", "meaning": "mathematics", "rank": 6600 },
+          "area": "mahouno-gakkou",
+          "tier": 1,
+          "personality": {
+            "traits": ["precise", "logical", "patient", "methodical"],
+            "speechStyle": "Speaks in measured, exact sentences, often quantifying things or framing observations as equations.",
+            "quirk": "Unconsciously taps out counting rhythms on any nearby surface while thinking."
+          },
+          "createdAt": "2026-03-09"
+        },
+        {
+          "id": "chiharu",
+          "name": "チハル",
+          "nameEn": "Chiharu",
+          "baseWord": "先生",
+          "baseReading": "せんせい",
+          "baseMeaning": "teacher",
+          "baseRank": 500,
+          "modifier": { "word": "歴史", "reading": "れきし", "meaning": "history", "rank": 1900 },
+          "area": "mahouno-gakkou",
+          "tier": 1,
+          "personality": {
+            "traits": ["nostalgic", "eloquent", "warm", "contemplative"],
+            "speechStyle": "Weaves every conversation into a story, often beginning with 'long ago' or 'there was a time when...'",
+            "quirk": "Carries a worn journal full of sketches and notes from places that may or may not exist anymore."
+          },
+          "createdAt": "2026-03-09"
+        },
+        {
+          "id": "rikka",
+          "name": "リッカ",
+          "nameEn": "Rikka",
+          "baseWord": "先生",
+          "baseReading": "せんせい",
+          "baseMeaning": "teacher",
+          "baseRank": 500,
+          "modifier": { "word": "科学", "reading": "かがく", "meaning": "science", "rank": 5400 },
+          "area": "mahouno-gakkou",
+          "tier": 1,
+          "personality": {
+            "traits": ["curious", "experimental", "enthusiastic", "absent-minded"],
+            "speechStyle": "Asks rapid-fire questions and answers them herself, peppering in hypotheses and exclamations of discovery.",
+            "quirk": "Always has scorch marks or stains on her sleeves from a recent experiment gone slightly sideways."
+          },
+          "createdAt": "2026-03-09"
+        },
+        {
+          "id": "genta",
+          "name": "ゲンタ",
+          "nameEn": "Genta",
+          "baseWord": "先生",
+          "baseReading": "せんせい",
+          "baseMeaning": "teacher",
+          "baseRank": 500,
+          "modifier": { "word": "体育", "reading": "たいいく", "meaning": "physical education", "rank": 8600 },
+          "area": "mahouno-gakkou",
+          "tier": 1,
+          "personality": {
+            "traits": ["energetic", "competitive", "boisterous", "encouraging"],
+            "speechStyle": "Speaks in short, punchy declarations like a coach giving a halftime speech, often ending sentences with rallying calls.",
+            "quirk": "Challenges everyone he meets to some form of physical contest, no matter how inappropriate the setting."
+          },
+          "createdAt": "2026-03-09"
+        }
+      ],
+      "agentNotes": "Generated 4 teacher NPCs as requested. Each uses 先生 as base word with subject-specific modifiers: 数学 (math), 歴史 (history), 科学 (science), 体育 (PE). User also requested updating theme pool assigned fields for these words."
+    }
+  ]
+}

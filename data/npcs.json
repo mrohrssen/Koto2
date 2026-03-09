@@ -6,13 +6,25 @@
     "speakerId": 13,
     "area": "okunomori",
     "tier": 1,
-    "baseWord": "TBD",
-    "baseReading": "TBD",
-    "baseMeaning": "TBD",
+    "baseWord": "住人",
+    "baseReading": "じゅうにん",
+    "baseMeaning": "dweller",
+    "baseRank": 3900,
+    "modifier": {
+      "word": "孤独",
+      "reading": "こどく",
+      "meaning": "Solitary",
+      "rank": 3900
+    },
     "attack": 10,
-    "skills": ["npc-aoe-attack", "npc-aoe-heal", "npc-aoe-buff", "npc-aoe-debuff"],
+    "skills": [],
     "personality": {
-      "traits": ["quiet", "self-reliant", "observant", "unhurried"],
+      "traits": [
+        "quiet",
+        "self-reliant",
+        "observant",
+        "unhurried"
+      ],
       "speechStyle": "Terse and unhurried, uses plain form without rudeness, long pauses between thoughts, says only what needs saying",
       "quirk": "Listens to the forest before answering — tilts his head toward the canopy as if checking with the trees first"
     },
@@ -24,29 +36,57 @@
         {
           "npcLine": "…システムに操られていたのか。…森を傷つけていなければいいが。",
           "options": [
-            { "text": "森は大丈夫だよ。心配しないで。", "tone": "positive" },
-            { "text": "そうみたいだね。", "tone": "neutral" },
-            { "text": "自分のことを心配しろよ。", "tone": "negative" }
+            {
+              "text": "森は大丈夫だよ。心配しないで。",
+              "tone": "positive"
+            },
+            {
+              "text": "そうみたいだね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "自分のことを心配しろよ。",
+              "tone": "negative"
+            }
           ]
         },
         {
           "npcLine": "…奥の苔が薄くなっている気がする。…胞子の動きも変だ。",
           "options": [
-            { "text": "一緒に確認しに行こうか？", "tone": "positive" },
-            { "text": "そうなのか。", "tone": "neutral" },
-            { "text": "苔のことはどうでもいい。", "tone": "negative" }
+            {
+              "text": "一緒に確認しに行こうか？",
+              "tone": "positive"
+            },
+            {
+              "text": "そうなのか。",
+              "tone": "neutral"
+            },
+            {
+              "text": "苔のことはどうでもいい。",
+              "tone": "negative"
+            }
           ]
         },
         {
           "npcLine": "…奥の道は複雑だ。案内してやる。…一人で行くと迷う。",
           "options": [
-            { "text": "ありがとう。助かるよ。", "tone": "positive" },
-            { "text": "考えておく。", "tone": "neutral" },
-            { "text": "一人で大丈夫だ。", "tone": "negative" }
+            {
+              "text": "ありがとう。助かるよ。",
+              "tone": "positive"
+            },
+            {
+              "text": "考えておく。",
+              "tone": "neutral"
+            },
+            {
+              "text": "一人で大丈夫だ。",
+              "tone": "negative"
+            }
           ]
         }
       ]
-    }
+    },
+    "createdAt": "2026-02-18"
   },
   "makoto": {
     "id": "makoto",
@@ -55,13 +95,25 @@
     "speakerId": 52,
     "area": "mahouno-gakkou",
     "tier": 1,
-    "baseWord": "TBD",
-    "baseReading": "TBD",
-    "baseMeaning": "TBD",
+    "baseWord": "生徒",
+    "baseReading": "せいと",
+    "baseMeaning": "student",
+    "baseRank": 1500,
+    "modifier": {
+      "word": "素直",
+      "reading": "すなお",
+      "meaning": "Honest",
+      "rank": 900
+    },
     "attack": 10,
-    "skills": ["npc-aoe-attack", "npc-aoe-heal", "npc-aoe-buff", "npc-aoe-debuff"],
+    "skills": [],
     "personality": {
-      "traits": ["earnest", "rule-following", "straightforward", "diligent"],
+      "traits": [
+        "earnest",
+        "rule-following",
+        "straightforward",
+        "diligent"
+      ],
       "speechStyle": "Polite and direct, uses です/ます forms without hesitation or hedging, states things plainly as he sees them",
       "quirk": "Always raises his hand before speaking, even in casual conversation"
     },
@@ -73,29 +125,57 @@
         {
           "npcLine": "僕、ずっと規則を守らないといけないと思って…でも、あの規則は偽物だったんですね。",
           "options": [
-            { "text": "システムのせいだよ。君は悪くない。", "tone": "positive" },
-            { "text": "そうみたいだね。", "tone": "neutral" },
-            { "text": "少しは自分で考えたら。", "tone": "negative" }
+            {
+              "text": "システムのせいだよ。君は悪くない。",
+              "tone": "positive"
+            },
+            {
+              "text": "そうみたいだね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "少しは自分で考えたら。",
+              "tone": "negative"
+            }
           ]
         },
         {
           "npcLine": "あの…庭のウサギたち、ちゃんとご飯もらえてるかな…。ヒマワリも気になります。",
           "options": [
-            { "text": "一緒に見に行こう！", "tone": "positive" },
-            { "text": "確認した方がいいかもね。", "tone": "neutral" },
-            { "text": "今はそれどころじゃないだろ。", "tone": "negative" }
+            {
+              "text": "一緒に見に行こう！",
+              "tone": "positive"
+            },
+            {
+              "text": "確認した方がいいかもね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "今はそれどころじゃないだろ。",
+              "tone": "negative"
+            }
           ]
         },
         {
           "npcLine": "あの、もし良ければ、一緒に学校の中を確認しませんか？他の生徒たちが心配で…",
           "options": [
-            { "text": "もちろん。一緒に確認しよう。", "tone": "positive" },
-            { "text": "時間があれば。", "tone": "neutral" },
-            { "text": "自分で行けよ。", "tone": "negative" }
+            {
+              "text": "もちろん。一緒に確認しよう。",
+              "tone": "positive"
+            },
+            {
+              "text": "時間があれば。",
+              "tone": "neutral"
+            },
+            {
+              "text": "自分で行けよ。",
+              "tone": "negative"
+            }
           ]
         }
       ]
-    }
+    },
+    "createdAt": "2026-02-18"
   },
   "sora": {
     "id": "sora",
@@ -104,13 +184,25 @@
     "speakerId": 32,
     "area": "kakureta-hama",
     "tier": 1,
-    "baseWord": "TBD",
-    "baseReading": "TBD",
-    "baseMeaning": "TBD",
+    "baseWord": "青年",
+    "baseReading": "せいねん",
+    "baseMeaning": "youth",
+    "baseRank": 2100,
+    "modifier": {
+      "word": "賑やか",
+      "reading": "にぎやか",
+      "meaning": "Lively",
+      "rank": 5200
+    },
     "attack": 10,
-    "skills": ["npc-aoe-attack", "npc-aoe-heal", "npc-aoe-buff", "npc-aoe-debuff"],
+    "skills": [],
     "personality": {
-      "traits": ["boisterous", "fearless", "territorial", "warm-hearted"],
+      "traits": [
+        "boisterous",
+        "fearless",
+        "territorial",
+        "warm-hearted"
+      ],
       "speechStyle": "Loud casual masculine speech (俺/だぜ/しろ), exclamation marks everywhere, zero polite forms, treats every interaction as a contest",
       "quirk": "Challenges everyone to race him to the far rocks — treats every interaction as a contest he's already winning"
     },
@@ -122,29 +214,57 @@
         {
           "npcLine": "マジかよ、俺操られてたのか！？くそー、ダセぇ！",
           "options": [
-            { "text": "誰でもやられるよ。気にするな。", "tone": "positive" },
-            { "text": "まあ、そういうことだ。", "tone": "neutral" },
-            { "text": "確かにダサいな。", "tone": "negative" }
+            {
+              "text": "誰でもやられるよ。気にするな。",
+              "tone": "positive"
+            },
+            {
+              "text": "まあ、そういうことだ。",
+              "tone": "neutral"
+            },
+            {
+              "text": "確かにダサいな。",
+              "tone": "negative"
+            }
           ]
         },
         {
           "npcLine": "潮だまりのヤドカリたち、大丈夫かな…。あいつら、潮が変わると場所移さないとダメなんだ。",
           "options": [
-            { "text": "見に行こうぜ！手伝うよ。", "tone": "positive" },
-            { "text": "そうなのか。", "tone": "neutral" },
-            { "text": "ヤドカリなんかほっとけよ。", "tone": "negative" }
+            {
+              "text": "見に行こうぜ！手伝うよ。",
+              "tone": "positive"
+            },
+            {
+              "text": "そうなのか。",
+              "tone": "neutral"
+            },
+            {
+              "text": "ヤドカリなんかほっとけよ。",
+              "tone": "negative"
+            }
           ]
         },
         {
           "npcLine": "なあ、あの岩まで競争しようぜ！負けたらジュース奢りな！",
           "options": [
-            { "text": "よし、やろう！負けないぞ！", "tone": "positive" },
-            { "text": "また今度な。", "tone": "neutral" },
-            { "text": "くだらない。", "tone": "negative" }
+            {
+              "text": "よし、やろう！負けないぞ！",
+              "tone": "positive"
+            },
+            {
+              "text": "また今度な。",
+              "tone": "neutral"
+            },
+            {
+              "text": "くだらない。",
+              "tone": "negative"
+            }
           ]
         }
       ]
-    }
+    },
+    "createdAt": "2026-02-18"
   },
   "toshio": {
     "id": "toshio",
@@ -153,13 +273,25 @@
     "speakerId": 53,
     "area": "shizukana-kouen",
     "tier": 1,
-    "baseWord": "TBD",
-    "baseReading": "TBD",
-    "baseMeaning": "TBD",
+    "baseWord": "老人",
+    "baseReading": "ろうじん",
+    "baseMeaning": "old person",
+    "baseRank": 3100,
+    "modifier": {
+      "word": "親切",
+      "reading": "しんせつ",
+      "meaning": "Kind",
+      "rank": 3000
+    },
     "attack": 10,
-    "skills": ["npc-aoe-attack", "npc-aoe-heal", "npc-aoe-buff", "npc-aoe-debuff"],
+    "skills": [],
     "personality": {
-      "traits": ["gentle", "patient", "warm", "talkative"],
+      "traits": [
+        "gentle",
+        "patient",
+        "warm",
+        "talkative"
+      ],
       "speechStyle": "Warm and unhurried, uses polite but slightly old-fashioned masculine expressions, occasionally trails off into reminiscences about the park",
       "quirk": "Names every plant, bird, and koi in the park and introduces them to visitors like old friends — calls the biggest koi 'Taro-kun'"
     },
@@ -171,29 +303,57 @@
         {
           "npcLine": "ツツジに水をやらないと…。太郎くんにもご飯を…あの子は食いしん坊でね。",
           "options": [
-            { "text": "太郎くん？鯉の名前ですか？かわいいですね。", "tone": "positive" },
-            { "text": "鯉ですか。", "tone": "neutral" },
-            { "text": "鯉に名前つけてるのか。", "tone": "negative" }
+            {
+              "text": "太郎くん？鯉の名前ですか？かわいいですね。",
+              "tone": "positive"
+            },
+            {
+              "text": "鯉ですか。",
+              "tone": "neutral"
+            },
+            {
+              "text": "鯉に名前つけてるのか。",
+              "tone": "negative"
+            }
           ]
         },
         {
           "npcLine": "あの花壇の様子、見てきてくれんかね？石灯篭のそばのやつだ。",
           "options": [
-            { "text": "もちろんです。一緒に見に行きましょう。", "tone": "positive" },
-            { "text": "時間があれば。", "tone": "neutral" },
-            { "text": "自分で見に行けばいいだろ。", "tone": "negative" }
+            {
+              "text": "もちろんです。一緒に見に行きましょう。",
+              "tone": "positive"
+            },
+            {
+              "text": "時間があれば。",
+              "tone": "neutral"
+            },
+            {
+              "text": "自分で見に行けばいいだろ。",
+              "tone": "negative"
+            }
           ]
         },
         {
           "npcLine": "…それと、少し話し相手になってくれると嬉しいんだが。ベンチに座らんかね。",
           "options": [
-            { "text": "喜んで。ゆっくり話しましょう。", "tone": "positive" },
-            { "text": "少しだけなら。", "tone": "neutral" },
-            { "text": "暇じゃないんだ。", "tone": "negative" }
+            {
+              "text": "喜んで。ゆっくり話しましょう。",
+              "tone": "positive"
+            },
+            {
+              "text": "少しだけなら。",
+              "tone": "neutral"
+            },
+            {
+              "text": "暇じゃないんだ。",
+              "tone": "negative"
+            }
           ]
         }
       ]
-    }
+    },
+    "createdAt": "2026-02-18"
   },
   "fumi": {
     "id": "fumi",
@@ -202,13 +362,25 @@
     "speakerId": 14,
     "area": "himitsuno-toshokan",
     "tier": 1,
-    "baseWord": "TBD",
-    "baseReading": "TBD",
-    "baseMeaning": "TBD",
+    "baseWord": "教授",
+    "baseReading": "きょうじゅ",
+    "baseMeaning": "professor",
+    "baseRank": 4200,
+    "modifier": {
+      "word": "詳しい",
+      "reading": "くわしい",
+      "meaning": "Knowledgeable",
+      "rank": 1000
+    },
     "attack": 10,
-    "skills": ["npc-aoe-attack", "npc-aoe-heal", "npc-aoe-buff", "npc-aoe-debuff"],
+    "skills": [],
     "personality": {
-      "traits": ["erudite", "meticulous", "patient", "absorbed"],
+      "traits": [
+        "erudite",
+        "meticulous",
+        "patient",
+        "absorbed"
+      ],
       "speechStyle": "Measured and precise, favors literary vocabulary and complex sentence structures, often references books mid-conversation, uses polite but slightly lecturing tone with gentle warmth underneath",
       "quirk": "Quotes passages from the library's books at seemingly random moments — but the quotes always turn out to be eerily relevant"
     },
@@ -220,28 +392,56 @@
         {
           "npcLine": "知識は共有されてこそ意味がある…教壇に立つ者として、忘れてはいけないことだったのに。",
           "options": [
-            { "text": "システムのせいです。先生は悪くないですよ。", "tone": "positive" },
-            { "text": "大変でしたね。", "tone": "neutral" },
-            { "text": "そうだな。忘れるなよ。", "tone": "negative" }
+            {
+              "text": "システムのせいです。先生は悪くないですよ。",
+              "tone": "positive"
+            },
+            {
+              "text": "大変でしたね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "そうだな。忘れるなよ。",
+              "tone": "negative"
+            }
           ]
         },
         {
           "npcLine": "この図書館には不思議な本がたくさんあるの。システムについて書かれたものも…",
           "options": [
-            { "text": "ぜひ見せてください！", "tone": "positive" },
-            { "text": "そうなんですか。", "tone": "neutral" },
-            { "text": "本で何がわかるんだ。", "tone": "negative" }
+            {
+              "text": "ぜひ見せてください！",
+              "tone": "positive"
+            },
+            {
+              "text": "そうなんですか。",
+              "tone": "neutral"
+            },
+            {
+              "text": "本で何がわかるんだ。",
+              "tone": "negative"
+            }
           ]
         },
         {
           "npcLine": "よかったら、いつでもここに来てちょうだい。一緒に調べましょう。",
           "options": [
-            { "text": "ありがとうございます。必ず来ます。", "tone": "positive" },
-            { "text": "考えておきます。", "tone": "neutral" },
-            { "text": "一人で調べてくれ。", "tone": "negative" }
+            {
+              "text": "ありがとうございます。必ず来ます。",
+              "tone": "positive"
+            },
+            {
+              "text": "考えておきます。",
+              "tone": "neutral"
+            },
+            {
+              "text": "一人で調べてくれ。",
+              "tone": "negative"
+            }
           ]
         }
       ]
-    }
+    },
+    "createdAt": "2026-02-18"
   }
 }
