@@ -1038,13 +1038,15 @@ async function showEffectEvents(result) {
         stun: 'スタン!',
         sleep: '眠り!',
         attack_buff: 'ATK UP!',
+        attack_debuff: 'ATK DOWN!',
         haste: 'ヘイスト!',
         shield: 'シールド!',
         team_shield: 'シールド!',
         defense_buff: 'DEF UP!',
         speed_buff: 'SPD UP!'
       };
-      const label = EFFECT_LABELS[event.type] || event.type;
+      const baseType = event.type.replace(/_tick$/, '');
+      const label = EFFECT_LABELS[baseType] || event.type;
       let targetEl = findCreatureSlotByAttackerId(event.targetId);
       if (!targetEl) {
         targetEl = findEnemyTargetElement(event.targetId, result.enemies);

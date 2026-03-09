@@ -142,6 +142,10 @@ export function applyTeamShield(allies, { percent, duration = 2, sourceId }) {
   }
 }
 
+export function applyAttackDebuff(target, { percent, duration = 2, sourceId }) {
+  applyOrRefresh(target, { type: 'attack_debuff', percent, remainingTurns: duration, sourceId });
+}
+
 export function applyTaunt(target, { duration = 2, sourceId }) {
   applyOrRefresh(target, { type: 'taunt', remainingTurns: duration, sourceId });
 }
@@ -180,10 +184,13 @@ export function consumeHaste(creature) {
 
 export function getAttackMultiplier(creature) {
   if (!creature.activeEffects) return 1;
-  const totalPercent = creature.activeEffects
+  const buffPercent = creature.activeEffects
     .filter(e => e.type === 'attack_buff')
     .reduce((sum, e) => sum + e.percent, 0);
-  return 1 + totalPercent / 100;
+  const debuffPercent = creature.activeEffects
+    .filter(e => e.type === 'attack_debuff')
+    .reduce((sum, e) => sum + e.percent, 0);
+  return Math.max(0.1, 1 + buffPercent / 100 - debuffPercent / 100);
 }
 
 export function getDamageReduction(creature) {

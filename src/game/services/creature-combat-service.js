@@ -16,7 +16,7 @@ import {
 import {
   applyHeal, applyPoison, tickEffects,
   applySleep, applyStun, applyConfuse,
-  applyAttackBuff, applyHaste, applyShield, applyTeamShield, applyTaunt,
+  applyAttackBuff, applyAttackDebuff, applyHaste, applyShield, applyTeamShield, applyTaunt,
   isIncapacitated, isConfused, hasHaste, consumeHaste,
   getAttackMultiplier, getDamageReduction, getTauntTarget, breakSleep,
   getFlatAttackBonus
@@ -142,6 +142,9 @@ function tryApplyStatus(move, target, caster, allies) {
     case 'attack_buff':
       applyAttackBuff(target, { percent: move.power || 25, duration, sourceId });
       return 'attack_buff';
+    case 'attack_debuff':
+      applyAttackDebuff(target, { percent: move.power || 25, duration, sourceId });
+      return 'attack_debuff';
     case 'haste':
       applyHaste(target, { sourceId });
       return 'haste';

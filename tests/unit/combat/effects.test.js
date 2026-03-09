@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import {
   tickEffects, applyPoison, applyHeal,
   applySleep, applyStun, applyConfuse,
-  applyAttackBuff, applyHaste, applyShield, applyTeamShield, applyTaunt,
+  applyAttackBuff, applyAttackDebuff, applyHaste, applyShield, applyTeamShield, applyTaunt,
   isIncapacitated, isConfused, hasHaste, consumeHaste,
   getAttackMultiplier, getDamageReduction, getTauntTarget, breakSleep,
   applyTempAttackFlat, getFlatAttackBonus
@@ -156,6 +156,46 @@ describe('Combat Effects - Apply Attack Buff', () => {
     assert.strictEqual(buffs.length, 1);
     assert.strictEqual(buffs[0].percent, 50);
     assert.strictEqual(buffs[0].remainingTurns, 2);
+  });
+});
+
+describe('Combat Effects - Apply Attack Debuff', () => {
+  it('adds attack_debuff with percent', () => {
+    const target = { hp: 100, maxHp: 100, activeEffects: [] };
+    applyAttackDebuff(target, { percent: 25, duration: 3, sourceId: 'debuffer-1' });
+    assert.strictEqual(target.activeEffects.length, 1);
+    assert.strictEqual(target.activeEffects[0].type, 'attack_debuff');
+    assert.strictEqual(target.activeEffects[0].percent, 25);
+    assert.strictEqual(target.activeEffects[0].remainingTurns, 3);
+  });
+
+  it('refreshes duration on reapplication', () => {
+    const target = { hp: 100, maxHp: 100, activeEffects: [
+      { type: 'attack_debuff', percent: 25, remainingTurns: 1, sourceId: 'old' }
+    ]};
+    applyAttackDebuff(target, { percent: 30, duration: 3, sourceId: 'new' });
+    const debuffs = target.activeEffects.filter(e => e.type === 'attack_debuff');
+    assert.strictEqual(debuffs.length, 1);
+    assert.strictEqual(debuffs[0].percent, 30);
+    assert.strictEqual(debuffs[0].remainingTurns, 3);
+  });
+
+  it('getAttackMultiplier reduces with attack_debuff', () => {
+    const creature = { activeEffects: [{ type: 'attack_debuff', percent: 25, remainingTurns: 2 }] };
+    assert.strictEqual(getAttackMultiplier(creature), 0.75);
+  });
+
+  it('getAttackMultiplier combines buff and debuff', () => {
+    const creature = { activeEffects: [
+      { type: 'attack_buff', percent: 50, remainingTurns: 2 },
+      { type: 'attack_debuff', percent: 25, remainingTurns: 2 }
+    ]};
+    assert.strictEqual(getAttackMultiplier(creature), 1.25);
+  });
+
+  it('getAttackMultiplier floors at 0.1', () => {
+    const creature = { activeEffects: [{ type: 'attack_debuff', percent: 200, remainingTurns: 2 }] };
+    assert.strictEqual(getAttackMultiplier(creature), 0.1);
   });
 });
 
