@@ -5,6 +5,9 @@ import { dirname, join } from 'path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 let _npcCache = null;
+let _npcSkillCache = null;
+
+const NPC_SKILL_CHANCE = 0.25;
 
 /**
  * Reads and caches data/npcs.json, returns the full NPC object.
@@ -17,15 +20,36 @@ export function loadNpcs() {
 }
 
 /**
- * Roll whether an NPC uses a skill this turn (~25% chance).
- * Returns the skill object or null.
- * @param {object} npc - Full NPC object (must have .skills array)
- * @returns {object|null} A skill from the NPC's skill list, or null
+ * Reads and caches data/npc-skills.json. Same pattern as loadNpcs().
+ */
+export function loadNpcSkills() {
+  if (!_npcSkillCache) {
+    _npcSkillCache = JSON.parse(readFileSync(join(__dirname, '../../../data/npc-skills.json'), 'utf8'));
+  }
+  return _npcSkillCache;
+}
+
+/**
+ * Returns resolved skill objects for a given NPC.
+ * @param {object} npc - NPC object with optional skills[] array of skill IDs
+ * @returns {object[]} Array of skill objects from npc-skills.json
+ */
+export function getNpcSkillsForNpc(npc) {
+  if (!npc.skills?.length) return [];
+  const allSkills = loadNpcSkills();
+  const skillMap = new Map(allSkills.map(s => [s.id, s]));
+  return npc.skills.map(id => skillMap.get(id)).filter(Boolean);
+}
+
+/**
+ * 25% chance to return a random skill from the NPC's skill list, else null.
+ * @param {object} npc - Full NPC object (must have .skills array of skill IDs)
+ * @returns {object|null} A skill object or null
  */
 export function rollNpcSkill(npc) {
-  const skills = npc.skills;
-  if (!skills || skills.length === 0) return null;
-  if (Math.random() >= 0.25) return null;
+  const skills = getNpcSkillsForNpc(npc);
+  if (skills.length === 0) return null;
+  if (Math.random() >= NPC_SKILL_CHANCE) return null;
   return skills[Math.floor(Math.random() * skills.length)];
 }
 

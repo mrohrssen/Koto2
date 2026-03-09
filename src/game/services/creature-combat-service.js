@@ -413,128 +413,31 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
  * @returns {{ attacks: object[] }}
  */
 export function executeNpcSkill(npcData, skill, allies, enemies) {
-  const attacks = [];
-  const power = skill.power || 30;
-  const element = skill.element || 'neutral';
-  const category = skill.category || 'damage';
-  const targetType = skill.target || 'single_enemy';
-
-  // Build a pseudo-creature for the NPC so we can reuse resolveTargets / damage helpers
-  const npcAsCaster = {
+  const pseudoCreature = {
     id: npcData.id,
     name: npcData.name,
     nameEn: npcData.nameEn,
-    attack: npcData.attack || 10,
     element: npcData.element || 'neutral',
-    baseWord: npcData.baseWord || '',
-    baseReading: npcData.baseReading || '',
-    baseMeaning: npcData.baseMeaning || '',
-    hp: 999, maxHp: 999, mp: 999, maxMp: 999
+    attack: npcData.attack || 10,
+    baseWord: npcData.baseWord,
+    baseReading: npcData.baseReading,
+    baseMeaning: npcData.baseMeaning,
+    activeEffects: [],
+    hp: 999,
+    maxHp: 999
   };
 
-  const stab = element !== 'neutral' && element === npcAsCaster.element;
-  const stabMult = stab ? 1.5 : 1.0;
+  // Flip perspective: NPC's "allies" are the enemies array, NPC's "enemies" are allies array
+  // executeMove resolveTargets uses: allies = caster's team, enemies = opposing team
+  const npcAllies = enemies;   // NPC's team (enemies from player perspective)
+  const npcEnemies = allies;   // NPC's opponents (player's creatures)
 
-  // Resolve targets based on skill.target type
-  let targets = [];
-  let indices = [];
+  // executeMove needs defeatedEnemyIds — NPC skills don't award XP
+  const defeatedEnemyIds = new Set();
 
-  if (category === 'heal') {
-    // Heal targets allies
-    if (targetType === 'all_allies') {
-      allies.forEach((a, i) => { if (a && a.hp > 0) { targets.push(a); indices.push(i); } });
-    } else {
-      // Heal the lowest-HP ally
-      let lowestIdx = -1;
-      let lowestPct = 2;
-      allies.forEach((a, i) => {
-        if (a && a.hp > 0) {
-          const pct = a.hp / a.maxHp;
-          if (pct < lowestPct) { lowestPct = pct; lowestIdx = i; }
-        }
-      });
-      if (lowestIdx >= 0) { targets.push(allies[lowestIdx]); indices.push(lowestIdx); }
-    }
+  const result = executeMove(pseudoCreature, -1, skill, 0, npcAllies, npcEnemies, null, null, defeatedEnemyIds);
 
-    for (let i = 0; i < targets.length; i++) {
-      const target = targets[i];
-      const variance = rollVariance();
-      const healAmount = Math.floor((npcAsCaster.attack / 10) * power * variance);
-      const actualHeal = applyHeal(target, healAmount);
-      attacks.push({
-        attackerId: npcAsCaster.id,
-        attackerName: npcAsCaster.nameEn,
-        attackerNameJp: npcAsCaster.name,
-        attackerElement: npcAsCaster.element,
-        attackerBaseWord: npcAsCaster.baseWord,
-        attackerBaseReading: npcAsCaster.baseReading,
-        attackerBaseMeaning: npcAsCaster.baseMeaning,
-        attackerSkillName: skill.name,
-        attackerSkillReading: skill.reading || '',
-        attackerSkillEn: skill.nameEn,
-        moveId: skill.id,
-        moveName: skill.name,
-        moveNameEn: skill.nameEn,
-        moveElement: element,
-        category: 'heal',
-        targetIndex: indices[i],
-        targetId: target.id,
-        targetName: target.nameEn,
-        targetNameJp: target.name,
-        damage: 0,
-        healAmount: actualHeal,
-        isNpcSkill: true
-      });
-    }
-  } else {
-    // Damage-oriented skill targets enemies
-    if (targetType === 'all_enemies') {
-      enemies.forEach((e, i) => { if (e.hp > 0) { targets.push(e); indices.push(i); } });
-    } else {
-      // Single target: pick first alive enemy
-      for (let i = 0; i < enemies.length; i++) {
-        if (enemies[i].hp > 0) { targets.push(enemies[i]); indices.push(i); break; }
-      }
-    }
-
-    for (let i = 0; i < targets.length; i++) {
-      const target = targets[i];
-      const elemMult = getElementMultiplier(element, target.element);
-      const variance = rollVariance();
-      const damage = calculateCreatureDamage(npcAsCaster.attack, power, elemMult * stabMult, variance);
-      target.hp = Math.max(0, target.hp - damage);
-
-      attacks.push({
-        attackerId: npcAsCaster.id,
-        attackerName: npcAsCaster.nameEn,
-        attackerNameJp: npcAsCaster.name,
-        attackerElement: npcAsCaster.element,
-        attackerBaseWord: npcAsCaster.baseWord,
-        attackerBaseReading: npcAsCaster.baseReading,
-        attackerBaseMeaning: npcAsCaster.baseMeaning,
-        attackerSkillName: skill.name,
-        attackerSkillReading: skill.reading || '',
-        attackerSkillEn: skill.nameEn,
-        moveId: skill.id,
-        moveName: skill.name,
-        moveNameEn: skill.nameEn,
-        moveElement: element,
-        category: 'damage',
-        targetIndex: indices[i],
-        targetId: target.id,
-        targetName: target.nameEn,
-        targetNameJp: target.name,
-        damage,
-        healAmount: 0,
-        stab,
-        elementMultiplier: elemMult,
-        targetDefeated: target.hp <= 0,
-        isNpcSkill: true
-      });
-    }
-  }
-
-  return { attacks };
+  return { attacks: result.attacks };
 }
 
 export function processDefendTurn(allies) {
