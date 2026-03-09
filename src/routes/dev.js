@@ -782,9 +782,11 @@ export function createDevRouter(opts) {
       let updated = 0;
       const errors = [];
 
+      const BLOCKED_FIELDS = new Set(['id', '__proto__', 'constructor', 'prototype']);
+
       for (const { id, field, value } of changes) {
-        if (field === 'id') {
-          errors.push(`Cannot modify 'id' field on ${id}`);
+        if (BLOCKED_FIELDS.has(field)) {
+          errors.push(`Cannot modify '${field}' field on ${id}`);
           continue;
         }
 
@@ -804,9 +806,11 @@ export function createDevRouter(opts) {
         updated++;
       }
 
-      // Write back in original format
-      const filePath = join(contentDataDir, CONTENT_FILES[type]);
-      writeFileSync(filePath, JSON.stringify(data, null, 2));
+      // Only write if something actually changed
+      if (updated > 0) {
+        const filePath = join(contentDataDir, CONTENT_FILES[type]);
+        writeFileSync(filePath, JSON.stringify(data, null, 2));
+      }
 
       return res.json({ ok: true, updated, errors });
     } catch (err) {
