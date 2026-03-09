@@ -42,6 +42,10 @@ import {
 } from './combat-effects.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
 import { configureCreatureImg, creatureSpritePath } from './sprite-utils.js';
+
+function npcSpritePath(npcId) {
+  return `/assets/sprites/npcs/${npcId}.webp`;
+}
 import { prefetchWord, playWordPair, playDialogueAudio } from '../tts.js';
 import { t } from './i18n.js';
 import { init as initMoveSelect, showMoves, clear as clearMoveSelect, setActiveLabel } from './move-select.js';
@@ -162,6 +166,72 @@ function insertAttackCard(atk, isEnemy) {
   if (skillName) prefetchWord(skillName);
   // Play after a brief delay to let prefetch start (cached words resolve near-instantly)
   setTimeout(() => playWordPair(baseWord, skillName), 50);
+
+  return card;
+}
+
+/**
+ * Build and insert a split attack card for an NPC skill hit.
+ * Uses NPC sprite instead of creature sprite.
+ */
+function insertNpcAttackCard(atk) {
+  const actionArea = document.getElementById('action-area');
+  if (!actionArea) return null;
+
+  const theme = ELEMENT_THEME[atk.moveElement] || ELEMENT_THEME['neutral'] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
+  const spriteUrl = npcSpritePath(atk.attackerId);
+  const targetSprite = creatureSpritePath(atk.targetId);
+
+  const baseWordHtml = wrapWithRuby(atk.attackerBaseWord, atk.attackerBaseReading);
+  const skillNameHtml = wrapWithRuby(atk.attackerSkillName, atk.attackerSkillReading);
+
+  const attackerNameJp = atk.attackerNameJp || atk.attackerName;
+  const attackerNameHtml = wrapWithRuby(attackerNameJp, attackerNameJp, atk.attackerName);
+
+  const damageSign = atk.damage > 0 ? `-${atk.damage}` : (atk.healAmount > 0 ? `+${atk.healAmount}` : '0');
+  const targetDisplayName = atk.targetNameJp || atk.targetName || '';
+  const targetNameHtml = wrapWithRuby(targetDisplayName, targetDisplayName, atk.targetName);
+
+  const baseIcon = actionIconPath(atk.attackerBaseMeaning);
+  const skillIcon = actionIconPath(atk.attackerSkillEn);
+
+  const html = `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
+    <div class="sac-left">
+      <img class="sac-sprite" src="${spriteUrl}" alt="">
+      <div class="sac-attacker-name">${attackerNameHtml}</div>
+    </div>
+    <div class="sac-right">
+      <div class="sac-row" data-row="0">
+        ${baseIcon ? `<img class="sac-action-icon" src="${baseIcon}" alt="" onerror="this.style.display='none'">` : ''}
+        <span class="sac-vocab">${baseWordHtml}</span>
+        <span class="sac-meaning">${atk.attackerBaseMeaning || ''}</span>
+        <span class="sac-tag sac-tag-base">BASE</span>
+      </div>
+      <div class="sac-row" data-row="1">
+        ${skillIcon ? `<img class="sac-action-icon" src="${skillIcon}" alt="" onerror="this.style.display='none'">` : ''}
+        <span class="sac-vocab">${skillNameHtml}</span>
+        <span class="sac-meaning">${atk.attackerSkillEn || ''}</span>
+        <span class="sac-tag sac-tag-atk">NPC</span>
+      </div>
+      <div class="sac-row sac-impact" data-row="2">
+        <span class="sac-impact-arrow">\u2192</span>
+        <img class="sac-impact-sprite" src="${targetSprite}" alt="">
+        <span class="sac-impact-name">${targetNameHtml}</span>
+        <span class="sac-damage">${damageSign}</span>
+      </div>
+    </div>
+    <span class="sac-continue" style="display:none">\u25BC</span>
+  </div>`;
+
+  actionArea.innerHTML = html;
+  const card = actionArea.querySelector('.split-attack-card');
+  if (!card) return null;
+
+  // Staggered row reveal (same as regular attack cards)
+  const rows = card.querySelectorAll('.sac-row');
+  rows.forEach((row, i) => {
+    setTimeout(() => row.classList.add('sac-row-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
+  });
 
   return card;
 }
@@ -1060,6 +1130,61 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
 }
 
 /**
+ * Show NPC skill attack cards sequentially (one per target).
+ * Each card is a vocab review opportunity showing NPC base word + skill name + target.
+ */
+async function showNpcSkillAttacksAnimated(result, allyHpMap) {
+  if (!result.npcSkillAttacks?.length) return;
+
+  // Brief NPC skill announcement
+  const actionArea = document.getElementById('action-area');
+  if (actionArea && result.npcSkillUsed) {
+    actionArea.innerHTML = `<div class="combat-creature-attack" style="color:#FFB74D;font-weight:bold">${result.npcSkillUsed.npcNameJp || result.npcSkillUsed.npcName} uses ${result.npcSkillUsed.skillNameEn}!</div>`;
+    await delay(600);
+  }
+
+  for (const atk of result.npcSkillAttacks) {
+    let attackCard = null;
+
+    if (atk.category === 'heal') {
+      if (actionArea) {
+        actionArea.innerHTML = `<div class="combat-creature-attack" style="color:#4CAF50">${atk.attackerName} heals ${atk.targetName}! +${atk.healAmount || 0} HP</div>`;
+      }
+    } else if (atk.category === 'buff' || atk.category === 'shield') {
+      if (actionArea) {
+        actionArea.innerHTML = `<div class="combat-creature-attack" style="color:#64B5F6">${atk.attackerName} buffs ${atk.targetName}!${atk.effectApplied ? ' \u2192 ' + atk.effectApplied : ''}</div>`;
+      }
+    } else if (atk.category === 'debuff') {
+      if (actionArea) {
+        actionArea.innerHTML = `<div class="combat-creature-attack" style="color:#CE93D8">${atk.attackerName} debuffs ${atk.targetName}!${atk.effectApplied ? ' \u2192 ' + atk.effectApplied : ''}</div>`;
+      }
+    } else {
+      // Damage: show split attack card
+      attackCard = insertNpcAttackCard(atk);
+    }
+
+    // Sound + visual effects for damage
+    if (atk.damage > 0) {
+      playSFX('player-hit');
+      showDamageNumber(atk.damage, true, false);
+      animatePlayerHurt();
+    }
+
+    // Update ally HP after NPC damage
+    if (atk.damage > 0 && allyHpMap && allyHpMap[atk.targetId]) {
+      allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
+      updateCreatureHpBars(result.creatureParty?.active, allyHpMap);
+    }
+
+    if (attackCard) {
+      await waitForCardTap(attackCard);
+    } else {
+      await delay(800);
+    }
+  }
+}
+
+/**
  * Show KO swap messages with death/swap-in animations (Bug F).
  * @param {Object} result - Combat cycle result from server
  */
@@ -1290,6 +1415,13 @@ async function executeCreatureMovesTurn(choices) {
         }
       }
 
+      // === NPC Skill Phase ===
+      if (result.npcSkillAttacks?.length > 0) {
+        const npcAllyHpMap = buildAllyHpMap(result);
+        await delay(400);
+        await showNpcSkillAttacksAnimated(result, npcAllyHpMap);
+      }
+
       // Enemy attacks phase (reuse existing code)
       const allyHpMap = buildAllyHpMap(result);
       if (result.enemyAttacks?.length > 0) {
@@ -1449,6 +1581,13 @@ async function executeCreaturePlayerAttack() {
             await delay(400);
           }
         }
+      }
+
+      // === NPC Skill Phase ===
+      if (result.npcSkillAttacks?.length > 0) {
+        const npcAllyHpMap = buildAllyHpMap(result);
+        await delay(400);
+        await showNpcSkillAttacksAnimated(result, npcAllyHpMap);
       }
 
       // Enemy attacks phase
