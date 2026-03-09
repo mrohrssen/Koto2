@@ -529,6 +529,11 @@ export function createDevRouter(opts) {
     res.sendFile(join(process.cwd(), 'public', 'dev-sprites.html'));
   });
 
+  // ── GET /content ──────────────────────────────────────────
+  router.get('/content', requireAuth, (_req, res) => {
+    res.sendFile(join(process.cwd(), 'public', 'dev-content.html'));
+  });
+
   // ── POST /auth (API) ───────────────────────────────────────
   router.post('/auth', authLimiter, (req, res) => {
     if (!requiresAuth) {
