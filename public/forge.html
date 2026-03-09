@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Forge Workbench</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;min-height:100vh}
+
+/* ── Header ─────────────────────────────────────────── */
+.header{position:sticky;top:0;z-index:100;background:#0f0f23;border-bottom:1px solid #1e2d4a;padding:10px 12px}
+.header-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.header h1{font-size:16px;font-weight:600;color:#e0e0e0;white-space:nowrap}
+.theme-select{flex:1;min-width:140px;max-width:300px;padding:8px 10px;border:1px solid #1e2d4a;border-radius:6px;background:#16213e;color:#e0e0e0;font-size:14px;outline:none;min-height:44px}
+.theme-select:focus{border-color:#0f3460}
+.progress-text{font-size:13px;color:#889;white-space:nowrap}
+.stage-badge{display:inline-block;padding:2px 8px;border-radius:4px;background:#0f3460;color:#8cf;font-size:12px;font-weight:600}
+
+/* ── Filter bar ─────────────────────────────────────── */
+.filter-bar{display:flex;gap:6px;padding:8px 12px;background:#0f0f23;border-bottom:1px solid #1e2d4a;overflow-x:auto;flex-wrap:wrap}
+.filter-btn{padding:6px 12px;border:1px solid #1e2d4a;border-radius:6px;background:#16213e;color:#8899aa;cursor:pointer;font-size:13px;font-weight:500;min-height:36px;white-space:nowrap;transition:all .15s}
+.filter-btn:hover{background:#1e2d4a;color:#c0d0e0}
+.filter-btn.active{background:#0f3460;color:#fff;border-color:#0f3460}
+
+/* ── Word List ──────────────────────────────────────── */
+.section{padding:12px}
+.section-title{font-size:15px;font-weight:600;margin-bottom:8px;color:#889}
+.word-list{display:flex;flex-direction:column;gap:6px}
+.word-row{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#16213e;border-radius:8px;cursor:pointer;transition:background .15s;min-height:48px}
+.word-row:hover{background:#1e2d4a}
+.word-row.assigned{opacity:.5;cursor:default}
+.word-row.selected{background:#0f3460;border:1px solid #2a6090}
+.word-check{width:20px;height:20px;flex-shrink:0;accent-color:#0f3460}
+.word-jp{font-weight:700;font-size:15px;white-space:nowrap}
+.word-reading{font-size:13px;color:#889;white-space:nowrap}
+.word-meaning{font-size:13px;color:#aab;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.word-rank{font-size:11px;color:#667;background:#0f0f23;padding:1px 6px;border-radius:3px;white-space:nowrap}
+.word-meta{display:flex;gap:4px;align-items:center;flex-wrap:wrap;flex-shrink:0}
+.word-assigned-text{font-size:11px;color:#667;font-style:italic}
+.word-existing{font-size:10px;color:#556;display:block;margin-top:2px}
+
+/* ── Role badges ────────────────────────────────────── */
+.role-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:600;white-space:nowrap}
+.role-badge.creature{background:rgba(167,139,250,.2);color:#a78bfa}
+.role-badge.move{background:rgba(244,114,182,.2);color:#f472b6}
+.role-badge.item{background:rgba(52,211,153,.2);color:#34d399}
+.role-badge.npc{background:rgba(96,165,250,.2);color:#60a5fa}
+.role-badge.area,.role-badge.sub-area{background:rgba(251,191,36,.2);color:#fbbf24}
+
+/* ── Batch Panel ────────────────────────────────────── */
+.batch-panel{background:#0f0f23;border-top:2px solid #0f3460;padding:12px;display:none}
+.batch-panel.visible{display:block}
+.batch-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.batch-header h3{font-size:14px;color:#8cf}
+.batch-count{font-size:13px;color:#889}
+.batch-items{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.batch-item{background:#16213e;border-radius:8px;padding:10px 12px}
+.batch-item-header{display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+.batch-item-word{font-weight:700;font-size:14px}
+.batch-item-meaning{font-size:13px;color:#889}
+.batch-item-controls{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.batch-role-select{padding:6px 8px;border:1px solid #1e2d4a;border-radius:6px;background:#0f0f23;color:#e0e0e0;font-size:13px;min-height:36px;outline:none}
+.batch-role-select:focus{border-color:#0f3460}
+.batch-notes{flex:1;min-width:140px;padding:6px 8px;border:1px solid #1e2d4a;border-radius:6px;background:#0f0f23;color:#e0e0e0;font-size:13px;resize:vertical;outline:none;min-height:36px;font-family:inherit}
+.batch-notes:focus{border-color:#0f3460}
+.batch-notes::placeholder{color:#556}
+.batch-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── Buttons ────────────────────────────────────────── */
+.btn{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500;min-height:44px;transition:all .15s}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:#0f3460;color:#fff}
+.btn-primary:hover:not(:disabled){background:#1a4a80}
+.btn-success{background:#166534;color:#4ade80}
+.btn-success:hover:not(:disabled){background:#1a7a3a}
+.btn-warning{background:#78350f;color:#fbbf24}
+.btn-warning:hover:not(:disabled){background:#92400e}
+.btn-danger{background:#7f1d1d;color:#f87171}
+.btn-danger:hover:not(:disabled){background:#991b1b}
+.btn-secondary{background:#333;color:#aaa}
+.btn-secondary:hover:not(:disabled){background:#444;color:#e0e0e0}
+
+/* ── Results Panel ──────────────────────────────────── */
+.results-section{padding:12px}
+.poll-status{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#16213e;border-radius:8px;margin-bottom:12px;font-size:13px;color:#889}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:#fbbf24;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.result-cards{display:flex;flex-direction:column;gap:12px}
+
+/* ── Result Card ────────────────────────────────────── */
+.result-card{background:#16213e;border-radius:8px;overflow:hidden;border-left:3px solid #0f3460}
+.result-card.creature{border-left-color:#a78bfa}
+.result-card.move{border-left-color:#f472b6}
+.result-card.item{border-left-color:#34d399}
+.result-card.npc{border-left-color:#60a5fa}
+.result-card-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(0,0,0,.2);cursor:pointer}
+.result-card-title{font-weight:600;font-size:14px}
+.result-card-role{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px}
+.result-card.creature .result-card-role{background:rgba(167,139,250,.2);color:#a78bfa}
+.result-card.move .result-card-role{background:rgba(244,114,182,.2);color:#f472b6}
+.result-card.item .result-card-role{background:rgba(52,211,153,.2);color:#34d399}
+.result-card.npc .result-card-role{background:rgba(96,165,250,.2);color:#60a5fa}
+.result-card-body{padding:12px}
+.result-card-body.collapsed{display:none}
+
+/* ── Form fields inside result cards ────────────────── */
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field-grid .full-width{grid-column:1/-1}
+.field-group{display:flex;flex-direction:column;gap:2px}
+.field-group label{font-size:11px;color:#667;text-transform:uppercase;letter-spacing:.5px}
+.field-group input,.field-group select,.field-group textarea{padding:6px 8px;border:1px solid #1e2d4a;border-radius:4px;background:#0f0f23;color:#e0e0e0;font-size:13px;outline:none;min-height:36px;font-family:inherit}
+.field-group input:focus,.field-group select:focus,.field-group textarea:focus{border-color:#0f3460}
+.field-group textarea{resize:vertical;min-height:60px}
+
+.agent-notes{margin-top:10px;padding:8px 10px;background:rgba(0,0,0,.2);border-radius:4px;font-size:12px;color:#889;font-style:italic;line-height:1.5}
+.agent-notes-label{font-size:10px;color:#556;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+
+/* ── Raw JSON toggle ────────────────────────────────── */
+.raw-json-toggle{font-size:12px;color:#556;cursor:pointer;padding:6px 0;border:none;background:none;text-decoration:underline}
+.raw-json-toggle:hover{color:#889}
+.raw-json-area{width:100%;min-height:120px;margin-top:6px;padding:8px;border:1px solid #1e2d4a;border-radius:4px;background:#0f0f23;color:#e0e0e0;font-family:'SF Mono',Menlo,Monaco,monospace;font-size:12px;resize:vertical;outline:none;display:none}
+.raw-json-area.visible{display:block}
+.raw-json-area:focus{border-color:#0f3460}
+
+/* ── Card actions ───────────────────────────────────── */
+.card-actions{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #1e2d4a;flex-wrap:wrap}
+
+/* ── Re-forge panel ─────────────────────────────────── */
+.reforge-panel{padding:10px 12px;background:rgba(120,53,15,.15);border-top:1px solid #78350f;display:none}
+.reforge-panel.visible{display:block}
+.reforge-row{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.reforge-notes{flex:1;min-width:140px;padding:6px 8px;border:1px solid #78350f;border-radius:4px;background:#0f0f23;color:#e0e0e0;font-size:13px;min-height:60px;resize:vertical;outline:none;font-family:inherit}
+.reforge-notes:focus{border-color:#fbbf24}
+.reforge-notes::placeholder{color:#556}
+
+/* ── Empty state ────────────────────────────────────── */
+.empty-state{text-align:center;padding:40px 20px;color:#556;font-size:14px}
+
+/* ── Mobile responsive ──────────────────────────────── */
+@media(max-width:480px){
+  .field-grid{grid-template-columns:1fr}
+  .header h1{font-size:14px}
+  .word-meaning{display:none}
+  .batch-item-controls{flex-direction:column}
+  .batch-notes{min-width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Header ────────────────────────────────────────── -->
+<div class="header">
+  <div class="header-row">
+    <h1>Forge Workbench</h1>
+    <select class="theme-select" id="themeSelect">
+      <option value="">Loading themes...</option>
+    </select>
+    <span class="progress-text" id="progressText"></span>
+    <span class="stage-badge" id="stageBadge" style="display:none"></span>
+  </div>
+</div>
+
+<!-- ── Filter bar ────────────────────────────────────── -->
+<div class="filter-bar" id="filterBar" style="display:none">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="unassigned">Unassigned</button>
+  <button class="filter-btn" data-filter="creature">Creature</button>
+  <button class="filter-btn" data-filter="move">Move</button>
+  <button class="filter-btn" data-filter="item">Item</button>
+  <button class="filter-btn" data-filter="npc">NPC</button>
+  <button class="filter-btn" data-filter="sub-area">Area</button>
+</div>
+
+<!-- ── Word List ─────────────────────────────────────── -->
+<div class="section" id="wordListSection" style="display:none">
+  <div class="section-title" id="wordListTitle">Words</div>
+  <div class="word-list" id="wordList"></div>
+</div>
+
+<!-- ── Batch Panel ───────────────────────────────────── -->
+<div class="batch-panel" id="batchPanel">
+  <div class="batch-header">
+    <h3>Batch Queue</h3>
+    <span class="batch-count" id="batchCount">0 selected</span>
+  </div>
+  <div class="batch-items" id="batchItems"></div>
+  <div class="batch-actions">
+    <button class="btn btn-primary" id="submitBatch">Submit Batch</button>
+    <button class="btn btn-secondary" id="clearBatch">Clear Selection</button>
+  </div>
+</div>
+
+<!-- ── Results Panel ─────────────────────────────────── -->
+<div class="results-section" id="resultsSection">
+  <div class="section-title">Forge Results</div>
+  <div class="poll-status" id="pollStatus" style="display:none">
+    <span class="pulse-dot"></span>
+    <span id="pollStatusText">Waiting for /forge-queue...</span>
+  </div>
+  <div class="result-cards" id="resultCards"></div>
+  <div class="empty-state" id="resultsEmpty">No forge results yet. Select words and submit a batch to start.</div>
+</div>
+
+<script>
+// ── State ───────────────────────────────────────────────────────
+var themes = [];
+var currentTheme = null;   // full theme object
+var selectedWords = {};    // keyed by word string -> { word, reading, meaning, rank, roles, role, notes }
+var activeFilter = 'all';
+var forgeResults = [];
+var queueJobs = [];
+var pollTimer = null;
+
+// ── Helpers ─────────────────────────────────────────────────────
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function $(id) { return document.getElementById(id); }
+
+// ── Theme Loading ───────────────────────────────────────────────
+async function loadThemes() {
+  try {
+    var res = await fetch('/api/forge/themes');
+    var data = await res.json();
+    themes = data.themes || [];
+    renderThemeSelect();
+  } catch (e) {
+    console.error('Failed to load themes:', e);
+    $('themeSelect').innerHTML = '<option value="">Failed to load themes</option>';
+  }
+}
+
+function renderThemeSelect() {
+  var sel = $('themeSelect');
+  var html = '<option value="">-- Select Theme --</option>';
+  for (var i = 0; i < themes.length; i++) {
+    var t = themes[i];
+    html += '<option value="' + esc(t.themeId) + '">'
+      + esc(t.areaWord) + ' (' + esc(t.areaMeaning) + ') - '
+      + t.assignedWords + '/' + t.totalWords + ' (' + t.progress + '%)'
+      + '</option>';
+  }
+  sel.innerHTML = html;
+}
+
+async function loadTheme(themeId) {
+  if (!themeId) {
+    currentTheme = null;
+    $('filterBar').style.display = 'none';
+    $('wordListSection').style.display = 'none';
+    $('progressText').textContent = '';
+    $('stageBadge').style.display = 'none';
+    return;
+  }
+  try {
+    var res = await fetch('/api/forge/theme/' + encodeURIComponent(themeId));
+    currentTheme = await res.json();
+    // Update progress display
+    var total = currentTheme.words ? currentTheme.words.length : 0;
+    var assigned = currentTheme.words ? currentTheme.words.filter(function(w) { return w.assigned; }).length : 0;
+    var pct = total > 0 ? Math.round((assigned / total) * 100) : 0;
+    $('progressText').textContent = assigned + '/' + total + ' words forged (' + pct + '%)';
+    if (currentTheme.computedStage != null) {
+      $('stageBadge').textContent = 'Stage ' + currentTheme.computedStage;
+      $('stageBadge').style.display = '';
+    } else {
+      $('stageBadge').style.display = 'none';
+    }
+    $('filterBar').style.display = '';
+    $('wordListSection').style.display = '';
+    renderWordList();
+  } catch (e) {
+    console.error('Failed to load theme:', e);
+  }
+}
+
+// ── Word List Rendering ─────────────────────────────────────────
+function getFilteredWords() {
+  if (!currentTheme || !currentTheme.words) return [];
+  var words = currentTheme.words.slice();
+
+  // Apply filter
+  if (activeFilter === 'unassigned') {
+    words = words.filter(function(w) { return !w.assigned; });
+  } else if (activeFilter !== 'all') {
+    words = words.filter(function(w) {
+      return w.roles && w.roles.indexOf(activeFilter) >= 0;
+    });
+  }
+
+  // Sort: unassigned first, then by rank ascending
+  words.sort(function(a, b) {
+    var aAssigned = a.assigned ? 1 : 0;
+    var bAssigned = b.assigned ? 1 : 0;
+    if (aAssigned !== bAssigned) return aAssigned - bAssigned;
+    return (a.rank || 99999) - (b.rank || 99999);
+  });
+
+  return words;
+}
+
+function renderWordList() {
+  var words = getFilteredWords();
+  var container = $('wordList');
+  var total = currentTheme.words ? currentTheme.words.length : 0;
+  $('wordListTitle').textContent = 'Words (' + words.length + (words.length < total ? ' of ' + total : '') + ')';
+
+  if (words.length === 0) {
+    container.innerHTML = '<div class="empty-state">No words match this filter</div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < words.length; i++) {
+    var w = words[i];
+    var isAssigned = !!w.assigned;
+    var isSelected = !!selectedWords[w.word];
+
+    html += '<div class="word-row' + (isAssigned ? ' assigned' : '') + (isSelected ? ' selected' : '') + '" data-word="' + esc(w.word) + '">';
+
+    // Checkbox
+    html += '<input type="checkbox" class="word-check" ' + (isAssigned ? 'disabled' : '') + (isSelected ? ' checked' : '') + '>';
+
+    // Word content
+    html += '<span class="word-jp">' + esc(w.word) + '</span>';
+    html += '<span class="word-reading">(' + esc(w.reading) + ')</span>';
+    html += '<span class="word-meaning">' + esc(truncMeaning(w.meaning)) + '</span>';
+
+    // Meta
+    html += '<span class="word-meta">';
+    if (w.rank) html += '<span class="word-rank">#' + w.rank + '</span>';
+    if (w.roles) {
+      for (var j = 0; j < w.roles.length; j++) {
+        html += '<span class="role-badge ' + esc(w.roles[j]) + '">' + esc(w.roles[j]) + '</span>';
+      }
+    }
+    html += '</span>';
+
+    // Assignment or existing uses
+    if (isAssigned) {
+      html += '<span class="word-assigned-text">' + esc(w.assigned) + '</span>';
+    }
+    if (w.existingUses && w.existingUses.length > 0) {
+      html += '<span class="word-existing">Used: ' + esc(w.existingUses.join(', ')) + '</span>';
+    }
+
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function truncMeaning(s) {
+  if (!s) return '';
+  // Show up to first semicolon or 50 chars
+  var idx = s.indexOf(';');
+  if (idx > 0 && idx < 50) return s.substring(0, idx);
+  if (s.length > 50) return s.substring(0, 50) + '...';
+  return s;
+}
+
+// ── Selection Management ────────────────────────────────────────
+function toggleWordSelection(wordStr) {
+  if (!currentTheme) return;
+  var wordObj = currentTheme.words.find(function(w) { return w.word === wordStr; });
+  if (!wordObj || wordObj.assigned) return;
+
+  if (selectedWords[wordStr]) {
+    delete selectedWords[wordStr];
+  } else {
+    selectedWords[wordStr] = {
+      word: wordObj.word,
+      reading: wordObj.reading,
+      meaning: wordObj.meaning,
+      rank: wordObj.rank,
+      roles: wordObj.roles || [],
+      role: (wordObj.roles && wordObj.roles.length > 0) ? wordObj.roles[0] : 'creature',
+      notes: ''
+    };
+  }
+  renderWordList();
+  renderBatchPanel();
+}
+
+function clearSelection() {
+  selectedWords = {};
+  renderWordList();
+  renderBatchPanel();
+}
+
+// ── Batch Panel ─────────────────────────────────────────────────
+function renderBatchPanel() {
+  var keys = Object.keys(selectedWords);
+  var panel = $('batchPanel');
+
+  if (keys.length === 0) {
+    panel.classList.remove('visible');
+    return;
+  }
+
+  panel.classList.add('visible');
+  $('batchCount').textContent = keys.length + ' selected';
+
+  var html = '';
+  for (var i = 0; i < keys.length; i++) {
+    var sw = selectedWords[keys[i]];
+    html += '<div class="batch-item" data-batch-word="' + esc(sw.word) + '">';
+
+    // Header
+    html += '<div class="batch-item-header">';
+    html += '<span class="batch-item-word">' + esc(sw.word) + '</span>';
+    html += '<span class="batch-item-meaning">' + esc(truncMeaning(sw.meaning)) + '</span>';
+    html += '</div>';
+
+    // Controls
+    html += '<div class="batch-item-controls">';
+
+    // Role dropdown
+    html += '<select class="batch-role-select" data-role-word="' + esc(sw.word) + '">';
+    for (var j = 0; j < sw.roles.length; j++) {
+      var r = sw.roles[j];
+      html += '<option value="' + esc(r) + '"' + (r === sw.role ? ' selected' : '') + '>' + esc(r) + '</option>';
+    }
+    html += '</select>';
+
+    // Notes
+    html += '<textarea class="batch-notes" data-notes-word="' + esc(sw.word) + '" rows="1" placeholder="Guidance notes for AI...">' + esc(sw.notes) + '</textarea>';
+
+    html += '</div>';
+    html += '</div>';
+  }
+  $('batchItems').innerHTML = html;
+}
+
+// ── Submit Batch ────────────────────────────────────────────────
+async function submitBatch() {
+  if (!currentTheme) return;
+  var keys = Object.keys(selectedWords);
+  if (keys.length === 0) return;
+
+  // Sync latest notes & roles from form
+  syncBatchInputs();
+
+  var jobs = keys.map(function(k) {
+    var sw = selectedWords[k];
+    return {
+      word: sw.word,
+      reading: sw.reading,
+      meaning: sw.meaning,
+      rank: sw.rank,
+      role: sw.role,
+      notes: sw.notes
+    };
+  });
+
+  var submitBtn = $('submitBatch');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Submitting...';
+
+  try {
+    var res = await fetch('/api/forge/queue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ themeId: currentTheme.themeId, jobs: jobs })
+    });
+    var data = await res.json();
+    if (data.success) {
+      clearSelection();
+      startPolling();
+    } else {
+      alert('Failed to submit: ' + (data.error || 'Unknown error'));
+    }
+  } catch (e) {
+    console.error('Submit failed:', e);
+    alert('Submit failed: ' + e.message);
+  }
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Submit Batch';
+}
+
+function syncBatchInputs() {
+  // Read current values from the DOM into selectedWords
+  var roleSelects = document.querySelectorAll('[data-role-word]');
+  for (var i = 0; i < roleSelects.length; i++) {
+    var sel = roleSelects[i];
+    var w = sel.getAttribute('data-role-word');
+    if (selectedWords[w]) selectedWords[w].role = sel.value;
+  }
+  var noteAreas = document.querySelectorAll('[data-notes-word]');
+  for (var j = 0; j < noteAreas.length; j++) {
+    var ta = noteAreas[j];
+    var w2 = ta.getAttribute('data-notes-word');
+    if (selectedWords[w2]) selectedWords[w2].notes = ta.value;
+  }
+}
+
+// ── Polling ─────────────────────────────────────────────────────
+function startPolling() {
+  if (pollTimer) return;
+  pollResults();
+  pollTimer = setInterval(pollResults, 3000);
+}
+
+function stopPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+}
+
+async function pollResults() {
+  try {
+    var qRes = await fetch('/api/forge/queue');
+    var qData = await qRes.json();
+    queueJobs = qData.jobs || [];
+
+    var rRes = await fetch('/api/forge/results');
+    var rData = await rRes.json();
+    forgeResults = rData.results || [];
+
+    renderResults();
+
+    // Check if we still have pending/processing jobs
+    var pending = queueJobs.filter(function(j) {
+      return j.status === 'pending' || j.status === 'processing';
+    });
+    if (pending.length === 0 && pollTimer) {
+      stopPolling();
+    }
+  } catch (e) {
+    console.error('Poll failed:', e);
+  }
+}
+
+// ── Results Rendering ───────────────────────────────────────────
+function renderResults() {
+  var container = $('resultCards');
+  var emptyEl = $('resultsEmpty');
+  var pollEl = $('pollStatus');
+
+  // Show poll status if pending jobs
+  var pending = queueJobs.filter(function(j) {
+    return j.status === 'pending' || j.status === 'processing';
+  });
+  if (pending.length > 0) {
+    pollEl.style.display = '';
+    $('pollStatusText').textContent = 'Waiting for /forge-queue... (' + pending.length + ' job' + (pending.length > 1 ? 's' : '') + ' pending)';
+  } else {
+    pollEl.style.display = 'none';
+  }
+
+  if (forgeResults.length === 0) {
+    emptyEl.style.display = '';
+    container.innerHTML = '';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  var html = '';
+  for (var i = 0; i < forgeResults.length; i++) {
+    html += renderResultCard(forgeResults[i]);
+  }
+  container.innerHTML = html;
+}
+
+function renderResultCard(result) {
+  var role = result.role || 'creature';
+  var data = result.data || {};
+  var jobId = result.jobId;
+
+  var html = '<div class="result-card ' + esc(role) + '" data-job-id="' + esc(jobId) + '">';
+
+  // Header
+  html += '<div class="result-card-header" data-toggle-card="' + esc(jobId) + '">';
+  html += '<span class="result-card-title">' + esc(data.nameEn || data.name || data.id || result.word || 'Result') + ' — ' + esc(result.word || '') + '</span>';
+  html += '<span class="result-card-role">' + esc(role) + '</span>';
+  html += '</div>';
+
+  // Body
+  html += '<div class="result-card-body" id="body-' + esc(jobId) + '">';
+
+  // Role-specific fields
+  if (role === 'creature') {
+    html += renderCreatureFields(data, jobId);
+  } else if (role === 'move') {
+    html += renderMoveFields(data, jobId);
+  } else if (role === 'item') {
+    html += renderItemFields(data, jobId);
+  } else if (role === 'npc') {
+    html += renderNpcFields(data, jobId);
+  } else {
+    // Generic: show raw JSON only
+    html += '<div class="field-group full-width">';
+    html += '<label>Data (JSON)</label>';
+    html += '<textarea class="raw-json-area visible" data-raw-json="' + esc(jobId) + '" rows="8">' + esc(JSON.stringify(data, null, 2)) + '</textarea>';
+    html += '</div>';
+  }
+
+  // Agent notes
+  if (result.agentNotes) {
+    html += '<div class="agent-notes">';
+    html += '<div class="agent-notes-label">Agent Notes</div>';
+    html += esc(result.agentNotes);
+    html += '</div>';
+  }
+
+  // Raw JSON toggle
+  if (role === 'creature' || role === 'move' || role === 'item' || role === 'npc') {
+    html += '<button class="raw-json-toggle" data-json-toggle="' + esc(jobId) + '">Show Raw JSON</button>';
+    html += '<textarea class="raw-json-area" data-raw-json="' + esc(jobId) + '" rows="8">' + esc(JSON.stringify(data, null, 2)) + '</textarea>';
+  }
+
+  html += '</div>'; // body
+
+  // Actions
+  html += '<div class="card-actions">';
+  html += '<button class="btn btn-success" data-approve="' + esc(jobId) + '">Approve &amp; Save</button>';
+  html += '<button class="btn btn-warning" data-reforge-toggle="' + esc(jobId) + '">Re-forge</button>';
+  html += '<button class="btn btn-danger" data-discard="' + esc(jobId) + '">Discard</button>';
+  html += '</div>';
+
+  // Re-forge panel (hidden)
+  html += '<div class="reforge-panel" id="reforge-' + esc(jobId) + '">';
+  html += '<div class="reforge-row">';
+  html += '<select class="batch-role-select" data-reforge-role="' + esc(jobId) + '">';
+  var allRoles = ['creature', 'move', 'item', 'npc'];
+  for (var r = 0; r < allRoles.length; r++) {
+    html += '<option value="' + allRoles[r] + '"' + (allRoles[r] === role ? ' selected' : '') + '>' + allRoles[r] + '</option>';
+  }
+  html += '</select>';
+  html += '<textarea class="reforge-notes" data-reforge-notes="' + esc(jobId) + '" rows="2" placeholder="What should be different this time..."></textarea>';
+  html += '<button class="btn btn-warning" data-reforge-submit="' + esc(jobId) + '">Submit Re-forge</button>';
+  html += '</div>';
+  html += '</div>';
+
+  html += '</div>'; // card
+  return html;
+}
+
+// ── Creature Fields ─────────────────────────────────────────────
+function renderCreatureFields(d, jobId) {
+  var pfx = 'f-' + jobId + '-';
+  var html = '<div class="field-grid">';
+
+  html += fieldText(pfx, 'id', 'ID', d.id);
+  html += fieldText(pfx, 'name', 'Name (Katakana)', d.name);
+  html += fieldText(pfx, 'nameEn', 'Name EN', d.nameEn);
+  html += fieldSelect(pfx, 'element', 'Element', d.element, ['fire', 'water', 'earth', 'wood', 'metal', 'neutral']);
+  html += fieldSelect(pfx, 'archetype', 'Archetype', d.archetype, ['Fighter', 'Mage', 'Trickster', 'Tank-Healer']);
+  html += fieldTextarea(pfx, 'description', 'Description', d.description, 3, true);
+
+  html += '</div>';
+  return html;
+}
+
+// ── Move Fields ─────────────────────────────────────────────────
+function renderMoveFields(d, jobId) {
+  var pfx = 'f-' + jobId + '-';
+  var html = '<div class="field-grid">';
+
+  html += fieldText(pfx, 'id', 'ID', d.id);
+  html += fieldText(pfx, 'name', 'Name', d.name);
+  html += fieldText(pfx, 'nameEn', 'Name EN', d.nameEn);
+  html += fieldText(pfx, 'reading', 'Reading', d.reading);
+  html += fieldText(pfx, 'meaning', 'Meaning', d.meaning);
+  html += fieldSelect(pfx, 'element', 'Element', d.element, ['fire', 'water', 'earth', 'wood', 'metal', 'neutral']);
+  html += fieldSelect(pfx, 'category', 'Category', d.category, ['damage', 'buff', 'debuff', 'heal', 'shield', 'drain']);
+  html += fieldSelect(pfx, 'target', 'Target', d.target, ['single_enemy', 'all_enemies', 'self', 'single_ally', 'all_allies']);
+  html += fieldNumber(pfx, 'power', 'Power', d.power);
+  html += fieldNumber(pfx, 'mpCost', 'MP Cost', d.mpCost);
+  html += fieldNumber(pfx, 'tier', 'Tier (1-3)', d.tier);
+  html += fieldNumber(pfx, 'stage', 'Stage', d.stage);
+  html += fieldText(pfx, 'statusEffect', 'Status Effect', d.statusEffect);
+  html += fieldNumber(pfx, 'statusChance', 'Status Chance', d.statusChance);
+  html += fieldNumber(pfx, 'statusDuration', 'Status Duration', d.statusDuration);
+  html += fieldTextarea(pfx, 'description', 'Description', d.description, 2, true);
+
+  html += '</div>';
+  return html;
+}
+
+// ── Item Fields ─────────────────────────────────────────────────
+function renderItemFields(d, jobId) {
+  var pfx = 'f-' + jobId + '-';
+  var html = '<div class="field-grid">';
+
+  html += fieldText(pfx, 'id', 'ID', d.id);
+  html += fieldText(pfx, 'word', 'Word', d.word);
+  html += fieldText(pfx, 'reading', 'Reading', d.reading);
+  html += fieldText(pfx, 'meaning', 'Meaning', d.meaning);
+  html += fieldSelect(pfx, 'rarity', 'Rarity', d.rarity, ['common', 'uncommon', 'rare', 'epic', 'legendary']);
+  html += fieldSelect(pfx, 'type', 'Type', d.type, ['heal', 'buff', 'revive', 'cure']);
+  html += fieldTextarea(pfx, 'effect', 'Effect (JSON)', typeof d.effect === 'object' ? JSON.stringify(d.effect, null, 2) : (d.effect || ''), 3, true);
+  html += fieldTextarea(pfx, 'description', 'Description', d.description, 2, true);
+  html += fieldTextarea(pfx, 'descriptionJa', 'Description JA', d.descriptionJa, 2, true);
+
+  html += '</div>';
+  return html;
+}
+
+// ── NPC Fields ──────────────────────────────────────────────────
+function renderNpcFields(d, jobId) {
+  var pfx = 'f-' + jobId + '-';
+  var p = d.personality || {};
+  var html = '<div class="field-grid">';
+
+  html += fieldText(pfx, 'id', 'ID', d.id);
+  html += fieldText(pfx, 'name', 'Name', d.name);
+  html += fieldText(pfx, 'nameEn', 'Name EN', d.nameEn);
+  html += fieldText(pfx, 'baseWord', 'Base Word', d.baseWord);
+  html += fieldText(pfx, 'baseMeaning', 'Base Meaning', d.baseMeaning);
+  html += fieldText(pfx, 'personality-traits', 'Personality Traits', Array.isArray(p.traits) ? p.traits.join(', ') : (p.traits || ''), true);
+  html += fieldTextarea(pfx, 'personality-speechStyle', 'Speech Style', p.speechStyle, 2, true);
+  html += fieldTextarea(pfx, 'personality-quirk', 'Quirk', p.quirk, 2, true);
+
+  html += '</div>';
+  return html;
+}
+
+// ── Field Helpers ───────────────────────────────────────────────
+function fieldText(pfx, key, label, value, fullWidth) {
+  return '<div class="field-group' + (fullWidth ? ' full-width' : '') + '">'
+    + '<label>' + esc(label) + '</label>'
+    + '<input type="text" id="' + esc(pfx + key) + '" value="' + esc(value || '') + '">'
+    + '</div>';
+}
+
+function fieldNumber(pfx, key, label, value) {
+  return '<div class="field-group">'
+    + '<label>' + esc(label) + '</label>'
+    + '<input type="number" id="' + esc(pfx + key) + '" value="' + esc(value != null ? String(value) : '') + '">'
+    + '</div>';
+}
+
+function fieldSelect(pfx, key, label, value, options) {
+  var html = '<div class="field-group">'
+    + '<label>' + esc(label) + '</label>'
+    + '<select id="' + esc(pfx + key) + '">';
+  for (var i = 0; i < options.length; i++) {
+    html += '<option value="' + esc(options[i]) + '"' + (options[i] === value ? ' selected' : '') + '>' + esc(options[i]) + '</option>';
+  }
+  html += '</select></div>';
+  return html;
+}
+
+function fieldTextarea(pfx, key, label, value, rows, fullWidth) {
+  return '<div class="field-group' + (fullWidth ? ' full-width' : '') + '">'
+    + '<label>' + esc(label) + '</label>'
+    + '<textarea id="' + esc(pfx + key) + '" rows="' + (rows || 2) + '">' + esc(value || '') + '</textarea>'
+    + '</div>';
+}
+
+// ── Collect Form Data ───────────────────────────────────────────
+function collectCardData(jobId) {
+  var result = forgeResults.find(function(r) { return r.jobId === jobId; });
+  if (!result) return null;
+
+  var role = result.role;
+  var pfx = 'f-' + jobId + '-';
+
+  function val(key) {
+    var el = document.getElementById(pfx + key);
+    return el ? el.value : '';
+  }
+  function numVal(key) {
+    var v = val(key);
+    return v !== '' ? Number(v) : null;
+  }
+
+  if (role === 'creature') {
+    return {
+      id: val('id'),
+      name: val('name'),
+      nameEn: val('nameEn'),
+      element: val('element'),
+      archetype: val('archetype'),
+      description: val('description')
+    };
+  } else if (role === 'move') {
+    var data = {
+      id: val('id'),
+      name: val('name'),
+      nameEn: val('nameEn'),
+      reading: val('reading'),
+      meaning: val('meaning'),
+      element: val('element'),
+      category: val('category'),
+      target: val('target'),
+      power: numVal('power'),
+      mpCost: numVal('mpCost'),
+      tier: numVal('tier'),
+      stage: numVal('stage'),
+      description: val('description')
+    };
+    var se = val('statusEffect');
+    if (se) {
+      data.statusEffect = se;
+      data.statusChance = numVal('statusChance');
+      data.statusDuration = numVal('statusDuration');
+    }
+    return data;
+  } else if (role === 'item') {
+    var effectStr = val('effect');
+    var effect;
+    try { effect = JSON.parse(effectStr); } catch (e) { effect = effectStr; }
+    return {
+      id: val('id'),
+      word: val('word'),
+      reading: val('reading'),
+      meaning: val('meaning'),
+      rarity: val('rarity'),
+      type: val('type'),
+      effect: effect,
+      description: val('description'),
+      descriptionJa: val('descriptionJa')
+    };
+  } else if (role === 'npc') {
+    var traitsStr = val('personality-traits');
+    var traits = traitsStr ? traitsStr.split(',').map(function(t) { return t.trim(); }).filter(Boolean) : [];
+    return {
+      id: val('id'),
+      name: val('name'),
+      nameEn: val('nameEn'),
+      baseWord: val('baseWord'),
+      baseMeaning: val('baseMeaning'),
+      personality: {
+        traits: traits,
+        speechStyle: val('personality-speechStyle'),
+        quirk: val('personality-quirk')
+      }
+    };
+  }
+
+  // Fallback: try to read raw JSON
+  var rawEl = document.querySelector('[data-raw-json="' + jobId + '"]');
+  if (rawEl) {
+    try { return JSON.parse(rawEl.value); } catch (e) { return result.data; }
+  }
+  return result.data;
+}
+
+// ── Actions ─────────────────────────────────────────────────────
+async function approveResult(jobId) {
+  var editedData = collectCardData(jobId);
+  if (!editedData) return;
+
+  // Check if raw JSON was edited - prefer it if visible and valid
+  var rawEl = document.querySelector('[data-raw-json="' + jobId + '"]');
+  if (rawEl && rawEl.classList.contains('visible')) {
+    try {
+      editedData = JSON.parse(rawEl.value);
+    } catch (e) {
+      // Keep form data if JSON is invalid
+    }
+  }
+
+  var btn = document.querySelector('[data-approve="' + jobId + '"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+  try {
+    var res = await fetch('/api/forge/approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jobId: jobId, editedData: editedData })
+    });
+    var data = await res.json();
+    if (data.success) {
+      // Remove card from DOM
+      var card = document.querySelector('[data-job-id="' + jobId + '"]');
+      if (card) card.remove();
+      // Remove from local state
+      forgeResults = forgeResults.filter(function(r) { return r.jobId !== jobId; });
+      if (forgeResults.length === 0) $('resultsEmpty').style.display = '';
+      // Refresh theme if loaded
+      if (currentTheme) loadTheme(currentTheme.themeId);
+    } else {
+      alert('Approve failed: ' + (data.error || 'Unknown'));
+      if (btn) { btn.disabled = false; btn.textContent = 'Approve & Save'; }
+    }
+  } catch (e) {
+    console.error('Approve failed:', e);
+    alert('Approve failed: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = 'Approve & Save'; }
+  }
+}
+
+async function discardResult(jobId) {
+  if (!confirm('Discard this result?')) return;
+
+  var btn = document.querySelector('[data-discard="' + jobId + '"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Discarding...'; }
+
+  try {
+    var res = await fetch('/api/forge/discard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jobId: jobId })
+    });
+    var data = await res.json();
+    if (data.success) {
+      var card = document.querySelector('[data-job-id="' + jobId + '"]');
+      if (card) card.remove();
+      forgeResults = forgeResults.filter(function(r) { return r.jobId !== jobId; });
+      if (forgeResults.length === 0) $('resultsEmpty').style.display = '';
+    } else {
+      alert('Discard failed: ' + (data.error || 'Unknown'));
+      if (btn) { btn.disabled = false; btn.textContent = 'Discard'; }
+    }
+  } catch (e) {
+    console.error('Discard failed:', e);
+    if (btn) { btn.disabled = false; btn.textContent = 'Discard'; }
+  }
+}
+
+function toggleReforge(jobId) {
+  var panel = $('reforge-' + jobId);
+  if (panel) {
+    panel.classList.toggle('visible');
+  }
+}
+
+async function submitReforge(jobId) {
+  var result = forgeResults.find(function(r) { return r.jobId === jobId; });
+  if (!result) return;
+
+  var roleEl = document.querySelector('[data-reforge-role="' + jobId + '"]');
+  var notesEl = document.querySelector('[data-reforge-notes="' + jobId + '"]');
+  var newRole = roleEl ? roleEl.value : result.role;
+  var newNotes = notesEl ? notesEl.value : '';
+
+  var btn = document.querySelector('[data-reforge-submit="' + jobId + '"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+
+  try {
+    var res = await fetch('/api/forge/queue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        themeId: result.themeId,
+        jobs: [{
+          word: result.word,
+          reading: result.data ? result.data.reading : '',
+          meaning: result.data ? (result.data.meaning || '') : '',
+          rank: null,
+          role: newRole,
+          notes: newNotes,
+          previousResult: result.data,
+          reforgeHistory: [{ jobId: jobId, role: result.role, notes: newNotes }]
+        }]
+      })
+    });
+    var data = await res.json();
+    if (data.success) {
+      // Discard old result
+      await fetch('/api/forge/discard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId: jobId })
+      });
+      var card = document.querySelector('[data-job-id="' + jobId + '"]');
+      if (card) card.remove();
+      forgeResults = forgeResults.filter(function(r) { return r.jobId !== jobId; });
+      startPolling();
+    } else {
+      alert('Re-forge failed: ' + (data.error || 'Unknown'));
+    }
+  } catch (e) {
+    console.error('Re-forge failed:', e);
+    alert('Re-forge failed: ' + e.message);
+  }
+  if (btn) { btn.disabled = false; btn.textContent = 'Submit Re-forge'; }
+}
+
+// ── Raw JSON two-way sync ───────────────────────────────────────
+function toggleRawJson(jobId) {
+  var area = document.querySelector('[data-raw-json="' + jobId + '"]');
+  var toggleBtn = document.querySelector('[data-json-toggle="' + jobId + '"]');
+  if (!area) return;
+
+  if (area.classList.contains('visible')) {
+    // Closing: sync raw JSON back to form fields
+    area.classList.remove('visible');
+    if (toggleBtn) toggleBtn.textContent = 'Show Raw JSON';
+    try {
+      var parsed = JSON.parse(area.value);
+      var result = forgeResults.find(function(r) { return r.jobId === jobId; });
+      if (result) {
+        result.data = parsed;
+        // Re-render just the body of this card
+        var body = $('body-' + jobId);
+        if (body) {
+          // Re-render by updating the whole results section
+          renderResults();
+        }
+      }
+    } catch (e) {
+      // Invalid JSON - leave form as-is
+    }
+  } else {
+    // Opening: sync form fields to raw JSON
+    var currentData = collectCardData(jobId);
+    if (currentData) {
+      area.value = JSON.stringify(currentData, null, 2);
+    }
+    area.classList.add('visible');
+    if (toggleBtn) toggleBtn.textContent = 'Hide Raw JSON';
+  }
+}
+
+// ── Event Delegation ────────────────────────────────────────────
+
+// Word list clicks
+$('wordList').addEventListener('click', function(e) {
+  var row = e.target.closest('.word-row');
+  if (!row) return;
+  var wordStr = row.getAttribute('data-word');
+  if (!wordStr) return;
+  toggleWordSelection(wordStr);
+});
+
+// Filter buttons
+$('filterBar').addEventListener('click', function(e) {
+  var btn = e.target.closest('.filter-btn');
+  if (!btn) return;
+  activeFilter = btn.getAttribute('data-filter');
+  document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderWordList();
+});
+
+// Theme selector
+$('themeSelect').addEventListener('change', function() {
+  var themeId = this.value;
+  selectedWords = {};
+  renderBatchPanel();
+  loadTheme(themeId);
+});
+
+// Batch panel: role/notes changes (delegated)
+$('batchItems').addEventListener('change', function(e) {
+  var roleSel = e.target.closest('[data-role-word]');
+  if (roleSel) {
+    var w = roleSel.getAttribute('data-role-word');
+    if (selectedWords[w]) selectedWords[w].role = roleSel.value;
+  }
+});
+$('batchItems').addEventListener('input', function(e) {
+  var notesTA = e.target.closest('[data-notes-word]');
+  if (notesTA) {
+    var w = notesTA.getAttribute('data-notes-word');
+    if (selectedWords[w]) selectedWords[w].notes = notesTA.value;
+  }
+});
+
+// Submit / Clear
+$('submitBatch').addEventListener('click', submitBatch);
+$('clearBatch').addEventListener('click', clearSelection);
+
+// Results panel: card actions (delegated)
+$('resultCards').addEventListener('click', function(e) {
+  // Card header toggle
+  var toggleHeader = e.target.closest('[data-toggle-card]');
+  if (toggleHeader) {
+    var jobId = toggleHeader.getAttribute('data-toggle-card');
+    var body = $('body-' + jobId);
+    if (body) body.classList.toggle('collapsed');
+    return;
+  }
+
+  // Approve
+  var approveBtn = e.target.closest('[data-approve]');
+  if (approveBtn) {
+    approveResult(approveBtn.getAttribute('data-approve'));
+    return;
+  }
+
+  // Discard
+  var discardBtn = e.target.closest('[data-discard]');
+  if (discardBtn) {
+    discardResult(discardBtn.getAttribute('data-discard'));
+    return;
+  }
+
+  // Re-forge toggle
+  var reforgeToggle = e.target.closest('[data-reforge-toggle]');
+  if (reforgeToggle) {
+    toggleReforge(reforgeToggle.getAttribute('data-reforge-toggle'));
+    return;
+  }
+
+  // Re-forge submit
+  var reforgeSubmit = e.target.closest('[data-reforge-submit]');
+  if (reforgeSubmit) {
+    submitReforge(reforgeSubmit.getAttribute('data-reforge-submit'));
+    return;
+  }
+
+  // Raw JSON toggle
+  var jsonToggle = e.target.closest('[data-json-toggle]');
+  if (jsonToggle) {
+    toggleRawJson(jsonToggle.getAttribute('data-json-toggle'));
+    return;
+  }
+});
+
+// ── Init ────────────────────────────────────────────────────────
+async function init() {
+  await loadThemes();
+  // Do initial poll for any existing results
+  await pollResults();
+  // If there are pending jobs, keep polling
+  var pending = queueJobs.filter(function(j) {
+    return j.status === 'pending' || j.status === 'processing';
+  });
+  if (pending.length > 0) {
+    startPolling();
+  }
+}
+
+init();
+</script>
+</body>
+</html>
