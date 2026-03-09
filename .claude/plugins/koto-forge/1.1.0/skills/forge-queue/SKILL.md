@@ -1,6 +1,6 @@
 ---
 name: forge-queue
-description: Process pending forge jobs from the dashboard queue. Spawns Opus subagents to generate creatures, moves, items, NPCs, and areas from theme pool words. Triggers on "forge queue", "forge-queue", "process forge jobs".
+description: Process pending forge jobs from the dashboard queue. Spawns Opus subagents to generate creatures, moves, items, NPCs, NPC skills, and areas from theme pool words. Triggers on "forge queue", "forge-queue", "process forge jobs".
 ---
 
 # Forge Queue Processor
@@ -12,7 +12,7 @@ Read `data/forge-queue.json`, process all pending jobs by spawning Opus subagent
 ```
 1. Read data/forge-queue.json → filter status: "pending"
 2. If none → "No pending forge jobs." → exit
-3. Sort by dependency: moves → creatures → areas → NPCs → items
+3. Sort by dependency: moves + npc-skills → creatures → areas → NPCs → items
 4. For each group: spawn Opus subagents (up to 3 parallel)
 5. Each subagent → generates content → returns JSON
 6. Write results to data/forge-results.json
@@ -44,20 +44,22 @@ Before spawning subagents, read the shared context they all need:
 2. **Existing moves:** `data/moves.json` + `data/new-moves-staging.json` — for learnset building and dedup
 3. **Existing items:** `data/new-items-staging.json` — for dedup
 4. **Existing NPCs:** `data/npcs.json` + `data/new-npcs-staging.json` — for name collision checks
-5. **Theme pool:** `language/themes/<themeId>.json` — for stage, area context, other assigned words
+5. **Existing NPC skills:** `data/npc-skills.json` + `data/new-npc-skills-staging.json` — for dedup
+6. **Theme pool:** `language/themes/<themeId>.json` — for stage, area context, other assigned words
 
 Summarize the context (don't paste entire files into prompts — extract what's needed):
 - List of existing creature IDs and names
 - List of existing move IDs
 - List of existing item IDs
 - List of existing NPC IDs and names
+- List of existing NPC skill IDs
 - Theme stage, area word, area meaning
 
 ## Step 3: Process by Dependency Group
 
 **Order matters.** Process groups sequentially because later groups depend on earlier ones:
 
-1. **Moves** — no dependencies
+1. **Moves + NPC Skills** — no dependencies
 2. **Creatures** — need moves for learnsets
 3. **Areas** — need creatures for rosters
 4. **NPCs** — need areas for context
@@ -99,6 +101,48 @@ Do NOT wrap in markdown code fences. Return raw JSON only.
 ```
 
 ### Role-Specific Rules & Schemas
+
+---
+
+#### NPC-SKILL Rules
+
+**Identical to MOVE rules** — NPC skills use the same verb-based design and the same schema fields. The only differences:
+
+1. **No `stage` or `tier` field** — NPC skills are not stage-gated
+2. **ID dedup** against `data/npc-skills.json` instead of `data/moves.json`
+3. **Target distribution** — NPC skills should have a mix: some `all_enemies`, some `all_allies`, some `single_enemy`, some `single_ally`, some `self`
+
+**Element:** Same as moves — based on verb semantics.
+
+**Category:** Same as moves — from verb type.
+
+**Power/Cost:**
+| Power Range | MP Cost Range |
+|-------------|---------------|
+| 5–30 | 0 |
+
+(NPC skills don't use MP — set mpCost to 0.)
+
+**Schema:**
+```json
+{
+  "id": "string (kebab-case from reading)",
+  "name": "string (Japanese verb)",
+  "nameEn": "string (1-2 word English)",
+  "reading": "string (hiragana)",
+  "meaning": "string (dictionary-accurate)",
+  "rank": "number (JPDB rank)",
+  "element": "fire|water|earth|wood|metal|neutral",
+  "category": "damage|buff|debuff|heal|shield|drain",
+  "target": "single_enemy|all_enemies|self|single_ally|all_allies",
+  "power": "number",
+  "mpCost": 0,
+  "statusEffect": "string|null",
+  "statusChance": "number|null",
+  "statusDuration": "number|null",
+  "description": "string (1 sentence)"
+}
+```
 
 ---
 

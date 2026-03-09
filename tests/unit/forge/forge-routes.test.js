@@ -248,6 +248,56 @@ describe('postApprove', () => {
   });
 });
 
+describe('postApprove npc-skill', () => {
+  it('writes npc-skill to npc-skills staging file', async () => {
+    const queuePath = join(dataDir, 'forge-queue.json');
+    writeFileSync(queuePath, JSON.stringify({
+      jobs: [{ id: 'j2', themeId: 'school', word: '守る', role: 'npc-skill', status: 'complete' }]
+    }));
+
+    const resultsPath = join(dataDir, 'forge-results.json');
+    writeFileSync(resultsPath, JSON.stringify({
+      results: [{
+        jobId: 'j2',
+        role: 'npc-skill',
+        themeId: 'school',
+        data: { id: 'mamoru', name: '守る', nameEn: 'Protect', element: 'earth', category: 'shield', target: 'all_allies', power: 10, mpCost: 0 }
+      }]
+    }));
+
+    writeTheme('school', [
+      { word: '守る', reading: 'まもる', meaning: 'to protect', rank: 800, roles: ['npc-skill'], assigned: null }
+    ]);
+
+    const router = createForgeRouter({ themesDir, dataDir });
+    const req = mockReq({
+      body: {
+        jobId: 'j2',
+        editedData: { id: 'mamoru', name: '守る', nameEn: 'Protect', element: 'earth', category: 'shield', target: 'all_allies', power: 10, mpCost: 0 }
+      }
+    });
+    const res = mockRes();
+
+    await router._handlers.postApprove(req, res);
+
+    assert.strictEqual(res.statusCode, 200);
+    assert.ok(res.body.success);
+    assert.strictEqual(res.body.role, 'npc-skill');
+
+    // Verify staging file was created with correct name
+    const stagingPath = join(dataDir, 'new-npc-skills-staging.json');
+    assert.ok(existsSync(stagingPath));
+    const staging = JSON.parse(readFileSync(stagingPath, 'utf8'));
+    assert.strictEqual(staging.length, 1);
+    assert.strictEqual(staging[0].id, 'mamoru');
+
+    // Verify theme word was marked assigned
+    const theme = JSON.parse(readFileSync(join(themesDir, 'school.json'), 'utf8'));
+    const word = theme.words.find(w => w.word === '守る');
+    assert.strictEqual(word.assigned, 'npc-skill:mamoru');
+  });
+});
+
 describe('postDiscard', () => {
   it('removes result and updates job status', async () => {
     // Set up queue with a job

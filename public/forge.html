@@ -47,6 +47,7 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .role-badge.item{background:rgba(52,211,153,.2);color:#34d399}
 .role-badge.npc{background:rgba(96,165,250,.2);color:#60a5fa}
 .role-badge.area,.role-badge.sub-area{background:rgba(251,191,36,.2);color:#fbbf24}
+.role-badge.npc-skill{background:rgba(251,146,60,.2);color:#fb923c}
 
 /* ── Batch Panel ────────────────────────────────────── */
 .batch-panel{background:#0f0f23;border-top:2px solid #0f3460;padding:12px;display:none}
@@ -94,6 +95,7 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .result-card.move{border-left-color:#f472b6}
 .result-card.item{border-left-color:#34d399}
 .result-card.npc{border-left-color:#60a5fa}
+.result-card.npc-skill{border-left-color:#fb923c}
 .result-card-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(0,0,0,.2);cursor:pointer}
 .result-card-title{font-weight:600;font-size:14px}
 .result-card-role{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px}
@@ -101,6 +103,7 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .result-card.move .result-card-role{background:rgba(244,114,182,.2);color:#f472b6}
 .result-card.item .result-card-role{background:rgba(52,211,153,.2);color:#34d399}
 .result-card.npc .result-card-role{background:rgba(96,165,250,.2);color:#60a5fa}
+.result-card.npc-skill .result-card-role{background:rgba(251,146,60,.2);color:#fb923c}
 .result-card-body{padding:12px}
 .result-card-body.collapsed{display:none}
 
@@ -169,6 +172,7 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
   <button class="filter-btn" data-filter="move">Move</button>
   <button class="filter-btn" data-filter="item">Item</button>
   <button class="filter-btn" data-filter="npc">NPC</button>
+  <button class="filter-btn" data-filter="npc-skill">NPC Skill</button>
   <button class="filter-btn" data-filter="sub-area">Area</button>
 </div>
 
@@ -591,6 +595,8 @@ function renderResultCard(result) {
     html += renderItemFields(data, jobId);
   } else if (role === 'npc') {
     html += renderNpcFields(data, jobId);
+  } else if (role === 'npc-skill') {
+    html += renderNpcSkillFields(data, jobId);
   } else {
     // Generic: show raw JSON only
     html += '<div class="field-group full-width">';
@@ -608,7 +614,7 @@ function renderResultCard(result) {
   }
 
   // Raw JSON toggle
-  if (role === 'creature' || role === 'move' || role === 'item' || role === 'npc') {
+  if (role === 'creature' || role === 'move' || role === 'item' || role === 'npc' || role === 'npc-skill') {
     html += '<button class="raw-json-toggle" data-json-toggle="' + esc(jobId) + '">Show Raw JSON</button>';
     html += '<textarea class="raw-json-area" data-raw-json="' + esc(jobId) + '" rows="8">' + esc(JSON.stringify(data, null, 2)) + '</textarea>';
   }
@@ -626,7 +632,7 @@ function renderResultCard(result) {
   html += '<div class="reforge-panel" id="reforge-' + esc(jobId) + '">';
   html += '<div class="reforge-row">';
   html += '<select class="batch-role-select" data-reforge-role="' + esc(jobId) + '">';
-  var allRoles = ['creature', 'move', 'item', 'npc'];
+  var allRoles = ['creature', 'move', 'item', 'npc', 'npc-skill'];
   for (var r = 0; r < allRoles.length; r++) {
     html += '<option value="' + allRoles[r] + '"' + (allRoles[r] === role ? ' selected' : '') + '>' + allRoles[r] + '</option>';
   }
@@ -715,6 +721,30 @@ function renderNpcFields(d, jobId) {
   html += fieldText(pfx, 'personality-traits', 'Personality Traits', Array.isArray(p.traits) ? p.traits.join(', ') : (p.traits || ''), true);
   html += fieldTextarea(pfx, 'personality-speechStyle', 'Speech Style', p.speechStyle, 2, true);
   html += fieldTextarea(pfx, 'personality-quirk', 'Quirk', p.quirk, 2, true);
+
+  html += '</div>';
+  return html;
+}
+
+// ── NPC Skill Fields ────────────────────────────────────────────
+function renderNpcSkillFields(d, jobId) {
+  var pfx = 'f-' + jobId + '-';
+  var html = '<div class="field-grid">';
+
+  html += fieldText(pfx, 'id', 'ID', d.id);
+  html += fieldText(pfx, 'name', 'Name', d.name);
+  html += fieldText(pfx, 'nameEn', 'Name EN', d.nameEn);
+  html += fieldText(pfx, 'reading', 'Reading', d.reading);
+  html += fieldText(pfx, 'meaning', 'Meaning', d.meaning);
+  html += fieldSelect(pfx, 'element', 'Element', d.element, ['fire', 'water', 'earth', 'wood', 'metal', 'neutral']);
+  html += fieldSelect(pfx, 'category', 'Category', d.category, ['damage', 'buff', 'debuff', 'heal', 'shield', 'drain']);
+  html += fieldSelect(pfx, 'target', 'Target', d.target, ['single_enemy', 'all_enemies', 'self', 'single_ally', 'all_allies']);
+  html += fieldNumber(pfx, 'power', 'Power', d.power);
+  html += fieldNumber(pfx, 'mpCost', 'MP Cost', d.mpCost);
+  html += fieldText(pfx, 'statusEffect', 'Status Effect', d.statusEffect);
+  html += fieldNumber(pfx, 'statusChance', 'Status Chance', d.statusChance);
+  html += fieldNumber(pfx, 'statusDuration', 'Status Duration', d.statusDuration);
+  html += fieldTextarea(pfx, 'description', 'Description', d.description, 2, true);
 
   html += '</div>';
   return html;
@@ -832,6 +862,27 @@ function collectCardData(jobId) {
         quirk: val('personality-quirk')
       }
     };
+  } else if (role === 'npc-skill') {
+    var data = {
+      id: val('id'),
+      name: val('name'),
+      nameEn: val('nameEn'),
+      reading: val('reading'),
+      meaning: val('meaning'),
+      element: val('element'),
+      category: val('category'),
+      target: val('target'),
+      power: numVal('power'),
+      mpCost: numVal('mpCost'),
+      description: val('description')
+    };
+    var se = val('statusEffect');
+    if (se) {
+      data.statusEffect = se;
+      data.statusChance = numVal('statusChance');
+      data.statusDuration = numVal('statusDuration');
+    }
+    return data;
   }
 
   // Fallback: try to read raw JSON

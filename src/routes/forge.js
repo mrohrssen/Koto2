@@ -37,7 +37,8 @@ const STAGING_FILES = {
   move: 'new-moves-staging.json',
   item: 'new-items-staging.json',
   npc: 'new-npcs-staging.json',
-  area: 'new-areas-staging.json'
+  area: 'new-areas-staging.json',
+  'npc-skill': 'new-npc-skills-staging.json'
 };
 
 /**
