@@ -57,10 +57,10 @@ import { derivePhase } from './phase-machine.js';
 import { ExplorationService } from './services/index.js';
 import { logger } from '../logger.js';
 import { instantiateCreature, generateEnemyCreature, generateEnemyCreatures } from './creatures.js';
-import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, CREDITS_PER_KILL } from './services/creature-combat-service.js';
+import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL } from './services/creature-combat-service.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/creature-collection-service.js';
-import { selectNpcForEncounter, updateBond, recordEncounter } from './services/npc-service.js';
+import { selectNpcForEncounter, updateBond, recordEncounter, loadNpcs, rollNpcSkill } from './services/npc-service.js';
 
 // ============ GAME MANAGER ============
 
@@ -486,7 +486,12 @@ export class GameManager {
         name: npc.name,
         nameEn: npc.nameEn,
         greeting: npc.greeting,
-        defeatLine: npc.defeatLine
+        defeatLine: npc.defeatLine,
+        attack: npc.attack || 10,
+        baseWord: npc.baseWord || '',
+        baseReading: npc.baseReading || '',
+        baseMeaning: npc.baseMeaning || '',
+        skills: npc.skills || []
       };
       if (!this.run.usedNpcIds) this.run.usedNpcIds = [];
       this.run.usedNpcIds.push(npc.id);
@@ -599,6 +604,8 @@ export class GameManager {
       return {
         actionType: 'attack',
         playerAttacks: playerResult.attacks || [],
+        npcSkillAttacks: [],
+        npcSkillUsed: null,
         xpEvents: playerResult.xpEvents || [],
         mpRegens: playerResult.mpRegens || [],
         effectEvents,
@@ -608,6 +615,63 @@ export class GameManager {
         enemies: this.combat.enemies,
         newCollectionAdditions
       };
+    }
+
+    // === NPC SKILL PHASE ===
+    let npcSkillAttacks = [];
+    let npcSkillUsed = null;
+    if (this.combat.npcId && this.combat.npcData) {
+      const fullNpc = loadNpcs()[this.combat.npcId];
+      if (fullNpc) {
+        const skill = rollNpcSkill(fullNpc);
+        if (skill) {
+          const npcCombat = {
+            id: fullNpc.id,
+            name: fullNpc.name,
+            nameEn: fullNpc.nameEn,
+            attack: fullNpc.attack || 10,
+            element: fullNpc.element || 'neutral',
+            baseWord: fullNpc.baseWord || '',
+            baseReading: fullNpc.baseReading || '',
+            baseMeaning: fullNpc.baseMeaning || ''
+          };
+          const skillResult = executeNpcSkill(npcCombat, skill, this.combat.allies, this.combat.enemies);
+          npcSkillAttacks = skillResult.attacks;
+          npcSkillUsed = {
+            skillId: skill.id,
+            skillName: skill.name,
+            skillNameEn: skill.nameEn,
+            npcName: fullNpc.nameEn,
+            npcNameJp: fullNpc.name
+          };
+          logger.info('[CreatureCombat] NPC skill used:', skill.nameEn, '→', npcSkillAttacks.length, 'hits');
+        }
+      }
+    }
+
+    // Check if NPC skill KO'd all player creatures
+    if (npcSkillAttacks.length > 0) {
+      const allAlliesKOAfterNpc = this.combat.allies.every(a => !a || a.hp <= 0);
+      if (allAlliesKOAfterNpc) {
+        this.combat.active = false;
+        this.run.active = false;
+        this.emitState();
+        return {
+          actionType: 'attack',
+          playerAttacks: playerResult.attacks || [],
+          npcSkillAttacks,
+          npcSkillUsed,
+          enemyAttacks: [],
+          xpEvents: playerResult.xpEvents || [],
+          mpRegens: playerResult.mpRegens || [],
+          effectEvents,
+          koSwaps: [],
+          combatEnded: true,
+          victory: false,
+          turnCount: this.combat.turnCount,
+          creatureParty: this.run.creatureParty
+        };
+      }
     }
 
     // Enemy phase
@@ -647,6 +711,8 @@ export class GameManager {
       return {
         actionType: 'attack',
         playerAttacks: playerResult.attacks || [],
+        npcSkillAttacks,
+        npcSkillUsed,
         enemyAttacks: enemyResult.attacks || [],
         xpEvents: playerResult.xpEvents || [],
         mpRegens: playerResult.mpRegens || [],
@@ -666,6 +732,8 @@ export class GameManager {
     return {
       actionType: 'attack',
       playerAttacks: playerResult.attacks || [],
+      npcSkillAttacks,
+      npcSkillUsed,
       enemyAttacks: enemyResult.attacks || [],
       xpEvents: playerResult.xpEvents || [],
       mpRegens: playerResult.mpRegens || [],

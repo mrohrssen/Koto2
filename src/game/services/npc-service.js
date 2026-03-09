@@ -17,6 +17,19 @@ export function loadNpcs() {
 }
 
 /**
+ * Roll whether an NPC uses a skill this turn (~25% chance).
+ * Returns the skill object or null.
+ * @param {object} npc - Full NPC object (must have .skills array)
+ * @returns {object|null} A skill from the NPC's skill list, or null
+ */
+export function rollNpcSkill(npc) {
+  const skills = npc.skills;
+  if (!skills || skills.length === 0) return null;
+  if (Math.random() >= 0.25) return null;
+  return skills[Math.floor(Math.random() * skills.length)];
+}
+
+/**
  * Picks the NPC assigned to areaId, skipping if already used.
  * Returns null if no matching NPC is available.
  */
