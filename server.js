@@ -138,6 +138,7 @@ import createRoutes from './src/routes/index.js';
 import createAuthRoutes from './src/auth/routes.js';
 import { createDevRouter } from './src/routes/dev.js';
 import { createForgeRouter } from './src/routes/forge.js';
+import { createSpriteForgeRouter } from './src/routes/sprite-forge.js';
 import { dataPath } from './src/data-dir.js';
 import { logger } from './src/logger.js';
 import { TtsCache } from './src/services/tts-cache.js';
@@ -715,6 +716,11 @@ app.post('/api/theme-pool/submit', async (req, res) => {
 app.use('/api/forge', createForgeRouter({
   themesDir: join(__dirname, 'language', 'themes'),
   dataDir: join(__dirname, 'data')
+}));
+
+// ============ Sprite Forge ============
+app.use('/api/sprite-forge', createSpriteForgeRouter({
+  projectRoot: __dirname
 }));
 
 // Serve game page
