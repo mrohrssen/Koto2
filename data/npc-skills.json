@@ -1,0 +1,62 @@
+[
+  {
+    "id": "npc-aoe-attack",
+    "name": "NPC Attack",
+    "nameEn": "NPC Attack",
+    "reading": "",
+    "meaning": "attack",
+    "element": "neutral",
+    "category": "damage",
+    "target": "all_enemies",
+    "power": 8,
+    "mpCost": 0,
+    "statusEffect": null,
+    "statusChance": 0,
+    "statusDuration": 0
+  },
+  {
+    "id": "npc-aoe-heal",
+    "name": "NPC Heal",
+    "nameEn": "NPC Heal",
+    "reading": "",
+    "meaning": "heal",
+    "element": "neutral",
+    "category": "heal",
+    "target": "all_allies",
+    "power": 8,
+    "mpCost": 0,
+    "statusEffect": null,
+    "statusChance": 0,
+    "statusDuration": 0
+  },
+  {
+    "id": "npc-aoe-buff",
+    "name": "NPC Buff",
+    "nameEn": "NPC Buff",
+    "reading": "",
+    "meaning": "buff",
+    "element": "neutral",
+    "category": "buff",
+    "target": "all_allies",
+    "power": 25,
+    "mpCost": 0,
+    "statusEffect": "attack_buff",
+    "statusChance": 100,
+    "statusDuration": 2
+  },
+  {
+    "id": "npc-aoe-debuff",
+    "name": "NPC Debuff",
+    "nameEn": "NPC Debuff",
+    "reading": "",
+    "meaning": "debuff",
+    "element": "neutral",
+    "category": "debuff",
+    "target": "all_enemies",
+    "power": 5,
+    "mpCost": 0,
+    "statusEffect": "poison",
+    "statusChance": 100,
+    "statusDuration": 2
+  }
+]
