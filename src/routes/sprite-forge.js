@@ -97,6 +97,12 @@ function slugify(str) {
   return str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 
+/** Validate an ID/type string against path traversal */
+const SAFE_ID_RE = /^[a-z0-9_-]+$/i;
+function isSafeId(str) {
+  return typeof str === 'string' && str.length > 0 && SAFE_ID_RE.test(str);
+}
+
 function generateJobId() {
   const ts = Date.now();
   const rand = randomBytes(4).toString('hex');
@@ -187,48 +193,31 @@ function comfyUploadImage(filePath) {
   });
 }
 
-function comfyQueueAndWait(workflow, timeout = 120000) {
-  return new Promise(async (resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('ComfyUI generation timed out')), timeout);
-    try {
-      const result = await comfyFetch('/prompt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: workflow }),
-      });
-      if (!result.prompt_id) {
-        clearTimeout(timer);
-        return reject(new Error('No prompt_id returned from ComfyUI'));
-      }
-      const promptId = result.prompt_id;
-
-      // Poll history until done
-      const pollInterval = 2000;
-      const poll = async () => {
-        try {
-          const history = await comfyFetch(`/history/${promptId}`);
-          if (history[promptId] && history[promptId].outputs) {
-            clearTimeout(timer);
-            resolve(history[promptId]);
-            return;
-          }
-          // Check for error status
-          if (history[promptId] && history[promptId].status?.status_str === 'error') {
-            clearTimeout(timer);
-            reject(new Error('ComfyUI generation failed: ' + JSON.stringify(history[promptId].status)));
-            return;
-          }
-          setTimeout(poll, pollInterval);
-        } catch (err) {
-          setTimeout(poll, pollInterval);
-        }
-      };
-      setTimeout(poll, pollInterval);
-    } catch (err) {
-      clearTimeout(timer);
-      reject(err);
-    }
+async function comfyQueueAndWait(workflow, timeout = 120000) {
+  const result = await comfyFetch('/prompt', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt: workflow }),
   });
+  const promptId = result.prompt_id;
+  if (!promptId) throw new Error('No prompt_id from ComfyUI');
+
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    await new Promise(r => setTimeout(r, 2000));
+    try {
+      const history = await comfyFetch(`/history/${promptId}`);
+      if (history[promptId]) {
+        if (history[promptId].status?.status_str === 'error') {
+          throw new Error('ComfyUI workflow error');
+        }
+        if (history[promptId].outputs) return history[promptId];
+      }
+    } catch (e) {
+      if (e.message === 'ComfyUI workflow error') throw e;
+    }
+  }
+  throw new Error('ComfyUI generation timed out');
 }
 
 function comfyDownloadImage(history, nodeId) {
@@ -244,30 +233,25 @@ function comfyDownloadImage(history, nodeId) {
 
 let _geminiModel = null;
 
-function getGeminiModel(projectRoot) {
+async function getGeminiModel(projectRoot) {
   if (_geminiModel) return _geminiModel;
-  // Dynamic import workaround: we import at module level
-  // But we lazy-init the model since we need the key
   const keyPath = join(projectRoot, 'data', '.creature-forge-gemini-key');
   if (!existsSync(keyPath)) {
     throw new Error('Gemini API key not found at data/.creature-forge-gemini-key');
   }
   const apiKey = readFileSync(keyPath, 'utf8').trim();
 
-  // We'll use dynamic import for the Gemini SDK
-  return { apiKey, keyPath };
-}
-
-async function geminiGenerate(projectRoot, prompt, styleRefParts = []) {
-  const { apiKey } = getGeminiModel(projectRoot);
-
-  // Dynamic import of the Gemini SDK
   const { GoogleGenerativeAI } = await import('@google/generative-ai');
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
+  _geminiModel = genAI.getGenerativeModel({
     model: 'gemini-2.0-flash-preview-image-generation',
     generationConfig: { responseModalities: ['image', 'text'] },
   });
+  return _geminiModel;
+}
+
+async function geminiGenerate(projectRoot, prompt, styleRefParts = []) {
+  const model = await getGeminiModel(projectRoot);
 
   const parts = [...styleRefParts, { text: prompt }];
   const result = await model.generateContent(parts);
@@ -664,6 +648,9 @@ export function createSpriteForgeRouter({ projectRoot }) {
         if (!item.id || !item.type) {
           continue; // skip invalid items
         }
+        if (!isSafeId(item.id) || !isSafeId(item.type)) {
+          return res.status(400).json({ error: `Invalid id or type: must match ${SAFE_ID_RE}` });
+        }
 
         const job = {
           id: generateJobId(),
@@ -704,6 +691,9 @@ export function createSpriteForgeRouter({ projectRoot }) {
       const { id, type, name, nameEn, description, notes, variants } = req.body || {};
       if (!id || !type) {
         return res.status(400).json({ error: 'Missing required fields: id, type' });
+      }
+      if (!isSafeId(id) || !isSafeId(type)) {
+        return res.status(400).json({ error: `Invalid id or type: must match ${SAFE_ID_RE}` });
       }
 
       const job = {
@@ -827,7 +817,7 @@ export function createSpriteForgeRouter({ projectRoot }) {
 
       const ext = variantResult.fullPath.endsWith('.webp') ? 'webp' : 'png';
       res.setHeader('Content-Type', `image/${ext}`);
-      res.send(readFileSync(variantResult.fullPath));
+      res.sendFile(variantResult.fullPath);
     } catch (error) {
       console.error('[SpriteForge] Error serving variant:', error);
       res.status(500).json({ error: 'Failed to serve variant', details: error.message });
@@ -894,7 +884,7 @@ export function createSpriteForgeRouter({ projectRoot }) {
 
       res.json({
         success: true,
-        deployed: webpDest,
+        deployed: `${deployDir}/${fileName}.webp`,
         type: job.type,
         itemId: job.itemId,
       });
