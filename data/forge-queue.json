@@ -109,7 +109,7 @@
       "notes": "Can we make it \"math problem\" which does aoe damage",
       "previousResult": null,
       "reforgeHistory": [],
-      "status": "complete",
+      "status": "discarded",
       "submittedAt": "2026-03-09T11:12:27.069Z"
     },
     {
@@ -123,8 +123,78 @@
       "notes": "we should have a few types of teachers. math teacher, history teacher, science teacher, physical education teacher. then update those words as used in our forge workbench too.",
       "previousResult": null,
       "reforgeHistory": [],
-      "status": "complete",
+      "status": "approved",
       "submittedAt": "2026-03-09T11:15:22.530Z"
+    },
+    {
+      "id": "forge_1773056248433_9is161",
+      "themeId": "school",
+      "word": "研究",
+      "reading": "けんきゅう",
+      "meaning": "study; research; investigation",
+      "rank": 1200,
+      "role": "npc-skill",
+      "notes": "",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "pending",
+      "submittedAt": "2026-03-09T11:37:28.433Z"
+    },
+    {
+      "id": "forge_1773056248433_q5aau2",
+      "themeId": "school",
+      "word": "練習",
+      "reading": "れんしゅう",
+      "meaning": "practice; training; drill; (an) exercise; workout",
+      "rank": 1100,
+      "role": "npc-skill",
+      "notes": "",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "pending",
+      "submittedAt": "2026-03-09T11:37:28.433Z"
+    },
+    {
+      "id": "forge_1773056248433_17igld",
+      "themeId": "school",
+      "word": "学ぶ",
+      "reading": "まなぶ",
+      "meaning": "to study (in depth); to learn; to take lessons in",
+      "rank": 1300,
+      "role": "npc-skill",
+      "notes": "",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "pending",
+      "submittedAt": "2026-03-09T11:37:28.433Z"
+    },
+    {
+      "id": "forge_1773056248433_5v89a2",
+      "themeId": "school",
+      "word": "音楽",
+      "reading": "おんがく",
+      "meaning": "music",
+      "rank": 2200,
+      "role": "npc",
+      "notes": "music student",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "pending",
+      "submittedAt": "2026-03-09T11:37:28.433Z"
+    },
+    {
+      "id": "forge_1773056279828_1mw2ke",
+      "themeId": "school",
+      "word": "制服",
+      "reading": "せいふく",
+      "meaning": "uniform",
+      "rank": 1800,
+      "role": "item",
+      "notes": "school uniform - HP boost ",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "pending",
+      "submittedAt": "2026-03-09T11:37:59.828Z"
     }
   ]
 }

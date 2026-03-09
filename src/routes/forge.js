@@ -166,8 +166,9 @@ export function createForgeRouter({ themesDir, dataDir }) {
         staging = JSON.parse(readFileSync(stagingPath, 'utf8'));
       }
 
-      // 3. Push editedData to staging array
-      staging.push(editedData);
+      // 3. Push editedData to staging array (handle single or array)
+      const items = Array.isArray(editedData) ? editedData : [editedData];
+      staging.push(...items);
 
       // 4. Write staging file
       writeFileSync(stagingPath, JSON.stringify(staging, null, 2));
@@ -178,16 +179,30 @@ export function createForgeRouter({ themesDir, dataDir }) {
         const themePath = join(themesDir, `${themeId}.json`);
         if (existsSync(themePath)) {
           const theme = JSON.parse(readFileSync(themePath, 'utf8'));
-          // Find the job in the queue to get the word
           const queue = readQueue(queuePath);
           const job = queue.jobs.find(j => j.id === jobId);
           const wordToMatch = job ? job.word : null;
+
           if (wordToMatch && theme.words) {
+            // Assign the base word
             const wordEntry = theme.words.find(w => w.word === wordToMatch);
             if (wordEntry) {
-              wordEntry.assigned = `${role}:${editedData.id}`;
-              writeFileSync(themePath, JSON.stringify(theme, null, 2));
+              const ids = items.map(it => it.id).join('+');
+              wordEntry.assigned = `${role}:${ids}`;
             }
+            // For multi-item results, also mark modifier words as used
+            if (items.length > 1) {
+              for (const item of items) {
+                const mod = item.modifier;
+                if (mod && mod.word) {
+                  const modEntry = theme.words.find(w => w.word === mod.word);
+                  if (modEntry && !modEntry.assigned) {
+                    modEntry.assigned = `${role}-modifier:${item.id}`;
+                  }
+                }
+              }
+            }
+            writeFileSync(themePath, JSON.stringify(theme, null, 2));
           }
         }
       }

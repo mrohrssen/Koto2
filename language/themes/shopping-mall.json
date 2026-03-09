@@ -20,7 +20,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Buy"
     },
     {
       "word": "高い",
@@ -36,7 +37,8 @@
       "existingUses": [
         "area-mod:himitsuno-toshokan-tall-bookshelf",
         "area-mod:mahouno-gakkou-high-rooftop"
-      ]
+      ],
+      "wkDefinition": "Tall, High, Expensive"
     },
     {
       "word": "選ぶ",
@@ -50,7 +52,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Choose"
     },
     {
       "word": "服",
@@ -66,7 +69,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Clothes, Clothing"
     },
     {
       "word": "お金",
@@ -82,7 +86,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Money"
     },
     {
       "word": "売る",
@@ -96,7 +101,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Sell Something"
     },
     {
       "word": "包む",
@@ -112,7 +118,8 @@
       "assigned": null,
       "existingUses": [
         "move:tsutsumu"
-      ]
+      ],
+      "wkDefinition": "To Wrap, To Wrap Up, To Envelop"
     },
     {
       "word": "靴",
@@ -128,7 +135,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Shoes"
     },
     {
       "word": "安い",
@@ -141,7 +149,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Cheap, Inexpensive"
     },
     {
       "word": "店員",
@@ -157,7 +166,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Shop Staff, Store Staff, Store Employee, Shop Employee, Clerk, Shop Assistant"
     },
     {
       "word": "帽子",
@@ -173,7 +183,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Hat, Cap"
     },
     {
       "word": "財布",
@@ -189,7 +200,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Wallet, Purse"
     },
     {
       "word": "本屋",
@@ -205,7 +217,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Bookstore, Bookshop"
     },
     {
       "word": "レジ",
@@ -221,7 +234,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "本",
@@ -239,7 +253,8 @@
       "assigned": null,
       "existingUses": [
         "creature:honmo"
-      ]
+      ],
+      "wkDefinition": "Book"
     },
     {
       "word": "円",
@@ -255,7 +270,8 @@
       "source": "consensus",
       "consensus": 4,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "便利",
@@ -268,7 +284,8 @@
       "source": "consensus",
       "consensus": 4,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Convenient, Handy, Useful"
     },
     {
       "word": "お菓子",
@@ -284,7 +301,8 @@
       "source": "consensus",
       "consensus": 4,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Snack Foods, Candy, Pastries, Sweets"
     },
     {
       "word": "通路",
@@ -300,7 +318,8 @@
       "source": "consensus",
       "consensus": 4,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "出口",
@@ -316,7 +335,8 @@
       "source": "consensus",
       "consensus": 4,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Exit"
     },
     {
       "word": "階",
@@ -332,7 +352,8 @@
       "source": "consensus",
       "consensus": 4,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "洋服",
@@ -348,7 +369,8 @@
       "source": "consensus",
       "consensus": 4,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Clothes, Western Clothing, Western Style Clothes"
     },
     {
       "word": "駐車場",
@@ -364,7 +386,8 @@
       "source": "consensus",
       "consensus": 4,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Parking Lot"
     },
     {
       "word": "閉店",
@@ -378,7 +401,8 @@
       "source": "consensus",
       "consensus": 4,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Store Closed, Closed Store, Closing A Store, Closing Down A Store"
     },
     {
       "word": "パン屋",
@@ -394,7 +418,8 @@
       "source": "consensus",
       "consensus": 4,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "花屋",
@@ -410,7 +435,8 @@
       "source": "consensus",
       "consensus": 4,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "地下",
@@ -425,7 +451,8 @@
       "assigned": null,
       "existingUses": [
         "area-loc:himitsuno-toshokan-deep-underground"
-      ]
+      ],
+      "wkDefinition": "Underground, Basement, Cellar"
     },
     {
       "word": "時計",
@@ -443,7 +470,8 @@
       "assigned": null,
       "existingUses": [
         "item:hourglass"
-      ]
+      ],
+      "wkDefinition": "Watch, Clock"
     },
     {
       "word": "シャツ",
@@ -459,7 +487,8 @@
       "source": "consensus",
       "consensus": 3,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "スカート",
@@ -475,7 +504,8 @@
       "source": "consensus",
       "consensus": 3,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "コート",
@@ -491,7 +521,8 @@
       "source": "consensus",
       "consensus": 3,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "家具",
@@ -507,7 +538,8 @@
       "source": "consensus",
       "consensus": 3,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Furniture"
     },
     {
       "word": "商店街",
@@ -523,7 +555,8 @@
       "source": "consensus",
       "consensus": 3,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Shopping District, Shopping Arcade, Shopping Street"
     },
     {
       "word": "店長",
@@ -539,7 +572,8 @@
       "source": "consensus",
       "consensus": 3,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "商店",
@@ -555,7 +589,8 @@
       "source": "consensus",
       "consensus": 3,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "配達",
@@ -569,7 +604,8 @@
       "source": "consensus",
       "consensus": 3,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "在庫",
@@ -585,7 +621,8 @@
       "source": "consensus",
       "consensus": 3,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "デパート",
@@ -601,7 +638,8 @@
       "source": "consensus",
       "consensus": 3,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Department Store"
     },
     {
       "word": "中古",
@@ -614,7 +652,8 @@
       "source": "consensus",
       "consensus": 3,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Secondhand, Used"
     },
     {
       "word": "百貨店",
@@ -630,7 +669,8 @@
       "source": "consensus",
       "consensus": 3,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "大きい",
@@ -643,7 +683,8 @@
       "source": "consensus",
       "consensus": 4,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Big, Large"
     },
     {
       "word": "新しい",
@@ -656,7 +697,8 @@
       "source": "consensus",
       "consensus": 4,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "New"
     },
     {
       "word": "小さい",
@@ -669,7 +711,8 @@
       "source": "consensus",
       "consensus": 4,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Small, Little"
     },
     {
       "word": "探す",
@@ -683,7 +726,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Look For, To Search For"
     },
     {
       "word": "着る",
@@ -697,7 +741,8 @@
       "source": "consensus",
       "consensus": 3,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Wear, To Put On"
     },
     {
       "word": "並ぶ",
@@ -711,7 +756,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Line Up, To Be Lined Up, To Stand In Line, To Be On Par"
     },
     {
       "word": "払う",
@@ -725,7 +771,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Pay, To Brush Off"
     }
   ]
 }

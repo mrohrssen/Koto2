@@ -19,7 +19,8 @@
       "assigned": "npc-skill:npc-oshieru",
       "existingUses": [
         "move:oshieru"
-      ]
+      ],
+      "wkDefinition": "To Teach, To Tell"
     },
     {
       "word": "覚える",
@@ -30,7 +31,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": "npc-skill:oboeru",
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Memorize, To Remember, To Learn, To Pick Up"
     },
     {
       "word": "忘れる",
@@ -41,7 +43,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": "npc-skill:wasureru",
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Forget, To Forget Something"
     },
     {
       "word": "問題",
@@ -52,7 +55,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Problem, Question"
     },
     {
       "word": "先生",
@@ -62,8 +66,9 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
-      "existingUses": []
+      "assigned": "npc:kazuho+chiharu+rikka+genta",
+      "existingUses": [],
+      "wkDefinition": "Teacher, Sensei"
     },
     {
       "word": "学校",
@@ -74,7 +79,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "School"
     },
     {
       "word": "生徒",
@@ -87,7 +93,8 @@
       "assigned": null,
       "existingUses": [
         "npc:makoto"
-      ]
+      ],
+      "wkDefinition": "Student, Pupil"
     },
     {
       "word": "教室",
@@ -100,7 +107,8 @@
       "assigned": null,
       "existingUses": [
         "area-loc:mahouno-gakkou-spacious-classroom"
-      ]
+      ],
+      "wkDefinition": "Classroom"
     },
     {
       "word": "机",
@@ -113,7 +121,8 @@
       "assigned": null,
       "existingUses": [
         "area-loc:himitsuno-toshokan-wide-desk"
-      ]
+      ],
+      "wkDefinition": "Desk"
     },
     {
       "word": "制服",
@@ -124,7 +133,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Uniform"
     },
     {
       "word": "授業",
@@ -135,7 +145,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Lesson, Class, Teaching"
     },
     {
       "word": "歴史",
@@ -145,8 +156,9 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
-      "existingUses": []
+      "assigned": "npc-modifier:chiharu",
+      "existingUses": [],
+      "wkDefinition": "History"
     },
     {
       "word": "学生",
@@ -157,7 +169,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Student"
     },
     {
       "word": "教育",
@@ -168,7 +181,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Education"
     },
     {
       "word": "食堂",
@@ -179,7 +193,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Cafeteria, Dining Hall, Diner"
     },
     {
       "word": "試験",
@@ -190,7 +205,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Examination, Test, Experiment"
     },
     {
       "word": "後輩",
@@ -201,7 +217,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Junior, One's Junior"
     },
     {
       "word": "図書館",
@@ -212,7 +229,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Library"
     },
     {
       "word": "教科書",
@@ -223,7 +241,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Textbook"
     },
     {
       "word": "数学",
@@ -233,8 +252,9 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
-      "existingUses": []
+      "assigned": "npc-modifier:kazuho",
+      "existingUses": [],
+      "wkDefinition": "Mathematics, Math, Maths"
     },
     {
       "word": "宿題",
@@ -245,7 +265,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Homework"
     },
     {
       "word": "体育館",
@@ -258,7 +279,8 @@
       "assigned": null,
       "existingUses": [
         "area-loc:mahouno-gakkou-old-gymnasium"
-      ]
+      ],
+      "wkDefinition": null
     },
     {
       "word": "体育",
@@ -268,8 +290,9 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
-      "existingUses": []
+      "assigned": "npc-modifier:genta",
+      "existingUses": [],
+      "wkDefinition": "PE Class, PE, Physical Education, Gym Class"
     },
     {
       "word": "校長",
@@ -280,7 +303,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "鉛筆",
@@ -291,7 +315,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Pencil"
     },
     {
       "word": "黒板",
@@ -302,7 +327,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": "creature:kokubanrei",
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Blackboard"
     },
     {
       "word": "地理",
@@ -313,7 +339,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Geography"
     },
     {
       "word": "辞書",
@@ -324,7 +351,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Dictionary"
     },
     {
       "word": "読む",
@@ -335,7 +363,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Read"
     },
     {
       "word": "本",
@@ -348,7 +377,8 @@
       "assigned": null,
       "existingUses": [
         "creature:honmo"
-      ]
+      ],
+      "wkDefinition": "Book"
     },
     {
       "word": "勉強",
@@ -359,7 +389,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Studies, Study"
     },
     {
       "word": "練習",
@@ -370,7 +401,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Practice, Training, Drill"
     },
     {
       "word": "学ぶ",
@@ -381,7 +413,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Learn, To Study In Depth, To Study"
     },
     {
       "word": "先輩",
@@ -392,7 +425,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Senior, Older Graduate, Superior"
     },
     {
       "word": "廊下",
@@ -405,7 +439,8 @@
       "assigned": null,
       "existingUses": [
         "area-loc:mahouno-gakkou-long-hallway"
-      ]
+      ],
+      "wkDefinition": "Corridor, Hallway"
     },
     {
       "word": "椅子",
@@ -416,7 +451,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Chair"
     },
     {
       "word": "大学",
@@ -427,7 +463,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "University, College, Uni"
     },
     {
       "word": "高校",
@@ -438,7 +475,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "High School, Senior High School"
     },
     {
       "word": "教師",
@@ -449,7 +487,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Teacher"
     },
     {
       "word": "音楽",
@@ -460,7 +499,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Music"
     },
     {
       "word": "小学校",
@@ -471,7 +511,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Elementary School, Primary School, Grade School"
     },
     {
       "word": "英語",
@@ -482,7 +523,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "English Language, English"
     },
     {
       "word": "ペン",
@@ -493,7 +535,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "物理",
@@ -504,7 +547,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "美術",
@@ -515,7 +559,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Fine Art, Art"
     },
     {
       "word": "化学",
@@ -526,7 +571,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": null
     },
     {
       "word": "留学生",
@@ -537,7 +583,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Exchange Student, International Student, Foreign Student"
     },
     {
       "word": "分かる",
@@ -548,7 +595,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Understand, To Be Understandable"
     },
     {
       "word": "質問",
@@ -559,7 +607,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Question"
     },
     {
       "word": "研究",
@@ -570,7 +619,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Research, Investigation, Study"
     },
     {
       "word": "教授",
@@ -583,7 +633,8 @@
       "assigned": null,
       "existingUses": [
         "npc:fumi"
-      ]
+      ],
+      "wkDefinition": "Professor, Teaching"
     },
     {
       "word": "科学",
@@ -593,8 +644,9 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
-      "existingUses": []
+      "assigned": "npc-modifier:rikka",
+      "existingUses": [],
+      "wkDefinition": "Science"
     },
     {
       "word": "文学",
@@ -605,7 +657,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "Literature"
     },
     {
       "word": "ハサミ",
@@ -618,7 +671,8 @@
       "assigned": "item:scissors",
       "existingUses": [
         "creature:hasamiden"
-      ]
+      ],
+      "wkDefinition": null
     },
     {
       "word": "考える",
@@ -629,7 +683,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": "npc-skill:kangaeru",
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Think About, To Consider, To Give Thought"
     },
     {
       "word": "知る",
@@ -640,7 +695,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": "npc-skill:shiru",
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Know, To Learn, To Find Out"
     },
     {
       "word": "書く",
@@ -651,7 +707,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Write"
     },
     {
       "word": "答える",
@@ -662,7 +719,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Answer, To Reply, To Respond"
     },
     {
       "word": "調べる",
@@ -673,7 +731,8 @@
       "source": "consensus",
       "consensus": 5,
       "assigned": null,
-      "existingUses": []
+      "existingUses": [],
+      "wkDefinition": "To Investigate, To Examine, To Research, To Look Into"
     }
   ]
 }

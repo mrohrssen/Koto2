@@ -16,7 +16,12 @@
     "area": "okunomori",
     "tier": 1,
     "personality": {
-      "traits": ["quiet", "self-reliant", "observant", "unhurried"],
+      "traits": [
+        "quiet",
+        "self-reliant",
+        "observant",
+        "unhurried"
+      ],
       "speechStyle": "Terse and unhurried, uses plain form without rudeness, long pauses between thoughts, says only what needs saying",
       "quirk": "Listens to the forest before answering — tilts his head toward the canopy as if checking with the trees first"
     },
@@ -39,7 +44,12 @@
     "area": "mahouno-gakkou",
     "tier": 1,
     "personality": {
-      "traits": ["earnest", "rule-following", "straightforward", "diligent"],
+      "traits": [
+        "earnest",
+        "rule-following",
+        "straightforward",
+        "diligent"
+      ],
       "speechStyle": "Polite and direct, uses です/ます forms without hesitation or hedging, states things plainly as he sees them",
       "quirk": "Always raises his hand before speaking, even in casual conversation"
     },
@@ -62,7 +72,12 @@
     "area": "kakureta-hama",
     "tier": 1,
     "personality": {
-      "traits": ["boisterous", "fearless", "territorial", "warm-hearted"],
+      "traits": [
+        "boisterous",
+        "fearless",
+        "territorial",
+        "warm-hearted"
+      ],
       "speechStyle": "Loud casual masculine speech (俺/だぜ/しろ), exclamation marks everywhere, zero polite forms, treats every interaction as a contest",
       "quirk": "Challenges everyone to race him to the far rocks — treats every interaction as a contest he's already winning"
     },
@@ -85,7 +100,12 @@
     "area": "shizukana-kouen",
     "tier": 1,
     "personality": {
-      "traits": ["gentle", "patient", "warm", "talkative"],
+      "traits": [
+        "gentle",
+        "patient",
+        "warm",
+        "talkative"
+      ],
       "speechStyle": "Warm and unhurried, uses polite but slightly old-fashioned masculine expressions, occasionally trails off into reminiscences about the park",
       "quirk": "Names every plant, bird, and koi in the park and introduces them to visitors like old friends — calls the biggest koi 'Taro-kun'"
     },
@@ -108,10 +128,127 @@
     "area": "himitsuno-toshokan",
     "tier": 1,
     "personality": {
-      "traits": ["erudite", "meticulous", "patient", "absorbed"],
+      "traits": [
+        "erudite",
+        "meticulous",
+        "patient",
+        "absorbed"
+      ],
       "speechStyle": "Measured and precise, favors literary vocabulary and complex sentence structures, often references books mid-conversation, uses polite but slightly lecturing tone with gentle warmth underneath",
       "quirk": "Quotes passages from the library's books at seemingly random moments — but the quotes always turn out to be eerily relevant"
     },
     "createdAt": "2026-02-18"
+  },
+  {
+    "id": "kazuho",
+    "name": "カズホ",
+    "nameEn": "Kazuho",
+    "baseWord": "先生",
+    "baseReading": "せんせい",
+    "baseMeaning": "teacher",
+    "baseRank": 500,
+    "modifier": {
+      "word": "数学",
+      "reading": "すうがく",
+      "meaning": "mathematics",
+      "rank": 6600
+    },
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "personality": {
+      "traits": [
+        "precise",
+        "logical",
+        "patient",
+        "methodical"
+      ],
+      "speechStyle": "Speaks in measured, exact sentences, often quantifying things or framing observations as equations.",
+      "quirk": "Unconsciously taps out counting rhythms on any nearby surface while thinking."
+    },
+    "createdAt": "2026-03-09"
+  },
+  {
+    "id": "chiharu",
+    "name": "チハル",
+    "nameEn": "Chiharu",
+    "baseWord": "先生",
+    "baseReading": "せんせい",
+    "baseMeaning": "teacher",
+    "baseRank": 500,
+    "modifier": {
+      "word": "歴史",
+      "reading": "れきし",
+      "meaning": "history",
+      "rank": 1900
+    },
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "personality": {
+      "traits": [
+        "nostalgic",
+        "eloquent",
+        "warm",
+        "contemplative"
+      ],
+      "speechStyle": "Weaves every conversation into a story, often beginning with 'long ago' or 'there was a time when...'",
+      "quirk": "Carries a worn journal full of sketches and notes from places that may or may not exist anymore."
+    },
+    "createdAt": "2026-03-09"
+  },
+  {
+    "id": "rikka",
+    "name": "リッカ",
+    "nameEn": "Rikka",
+    "baseWord": "先生",
+    "baseReading": "せんせい",
+    "baseMeaning": "teacher",
+    "baseRank": 500,
+    "modifier": {
+      "word": "科学",
+      "reading": "かがく",
+      "meaning": "science",
+      "rank": 5400
+    },
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "personality": {
+      "traits": [
+        "curious",
+        "experimental",
+        "enthusiastic",
+        "absent-minded"
+      ],
+      "speechStyle": "Asks rapid-fire questions and answers them herself, peppering in hypotheses and exclamations of discovery.",
+      "quirk": "Always has scorch marks or stains on her sleeves from a recent experiment gone slightly sideways."
+    },
+    "createdAt": "2026-03-09"
+  },
+  {
+    "id": "genta",
+    "name": "ゲンタ",
+    "nameEn": "Genta",
+    "baseWord": "先生",
+    "baseReading": "せんせい",
+    "baseMeaning": "teacher",
+    "baseRank": 500,
+    "modifier": {
+      "word": "体育",
+      "reading": "たいいく",
+      "meaning": "physical education",
+      "rank": 8600
+    },
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "personality": {
+      "traits": [
+        "energetic",
+        "competitive",
+        "boisterous",
+        "encouraging"
+      ],
+      "speechStyle": "Speaks in short, punchy declarations like a coach giving a halftime speech, often ending sentences with rallying calls.",
+      "quirk": "Challenges everyone he meets to some form of physical contest."
+    },
+    "createdAt": "2026-03-09"
   }
 ]

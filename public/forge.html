@@ -39,6 +39,7 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .word-jp{font-weight:700;font-size:15px;white-space:nowrap}
 .word-reading{font-size:13px;color:#889;white-space:nowrap}
 .word-meaning{font-size:13px;color:#aab;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.word-wk{font-size:12px;color:#d4a;flex:0 0 auto;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .word-rank{font-size:11px;color:#667;background:#0f0f23;padding:1px 6px;border-radius:3px;white-space:nowrap}
 .word-meta{display:flex;gap:4px;align-items:center;flex-wrap:wrap;flex-shrink:0}
 .word-assigned-text{font-size:11px;color:#667;font-style:italic}
@@ -153,6 +154,9 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .field-group input:focus,.field-group select:focus,.field-group textarea:focus{border-color:#0f3460}
 .field-group textarea{resize:vertical;min-height:60px}
 
+.multi-item-section{margin-bottom:12px;padding:10px;border:1px solid #1e2d4a;border-radius:6px;background:rgba(15,52,96,.15)}
+.multi-item-section+.multi-item-section{margin-top:8px}
+.multi-item-header{font-size:14px;font-weight:600;color:#8cf;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1e2d4a}
 .agent-notes{margin-top:10px;padding:8px 10px;background:rgba(0,0,0,.2);border-radius:4px;font-size:12px;color:#889;font-style:italic;line-height:1.5}
 .agent-notes-label{font-size:10px;color:#556;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
 
@@ -195,6 +199,7 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
   .field-grid{grid-template-columns:1fr}
   .header h1{font-size:14px}
   .word-meaning{display:none}
+  .word-wk{display:none}
   .batch-item-controls{flex-direction:column}
   .batch-notes{min-width:100%}
 }
@@ -483,6 +488,7 @@ function renderWordList() {
     html += '<span class="word-jp">' + esc(w.word) + '</span>';
     html += '<span class="word-reading">(' + esc(w.reading) + ')</span>';
     html += '<span class="word-meaning">' + esc(truncMeaning(w.meaning)) + '</span>';
+    if (w.wkDefinition) html += '<span class="word-wk" title="WK: ' + esc(w.wkDefinition) + '">WK: ' + esc(truncMeaning(w.wkDefinition)) + '</span>';
 
     // Meta
     html += '<span class="word-meta">';
@@ -726,35 +732,35 @@ function renderResultCard(result) {
   var role = result.role || 'creature';
   var data = result.data || {};
   var jobId = result.jobId;
+  var isMulti = Array.isArray(data);
 
   var html = '<div class="result-card ' + esc(role) + '" data-job-id="' + esc(jobId) + '">';
 
   // Header
   html += '<div class="result-card-header" data-toggle-card="' + esc(jobId) + '">';
-  html += '<span class="result-card-title">' + esc(data.nameEn || data.name || data.id || result.word || 'Result') + ' — ' + esc(result.word || '') + '</span>';
-  html += '<span class="result-card-role">' + esc(role) + '</span>';
+  if (isMulti) {
+    html += '<span class="result-card-title">' + esc(result.word || 'Result') + ' (' + data.length + ' items)</span>';
+  } else {
+    html += '<span class="result-card-title">' + esc(data.nameEn || data.name || data.id || result.word || 'Result') + ' — ' + esc(result.word || '') + '</span>';
+  }
+  html += '<span class="result-card-role">' + esc(role) + (isMulti ? ' x' + data.length : '') + '</span>';
   html += '</div>';
 
   // Body
   html += '<div class="result-card-body" id="body-' + esc(jobId) + '">';
 
-  // Role-specific fields
-  if (role === 'creature') {
-    html += renderCreatureFields(data, jobId);
-  } else if (role === 'move') {
-    html += renderMoveFields(data, jobId);
-  } else if (role === 'item') {
-    html += renderItemFields(data, jobId);
-  } else if (role === 'npc') {
-    html += renderNpcFields(data, jobId);
-  } else if (role === 'npc-skill') {
-    html += renderNpcSkillFields(data, jobId);
+  if (isMulti) {
+    // Render each item as a numbered sub-section
+    for (var idx = 0; idx < data.length; idx++) {
+      var item = data[idx];
+      var subId = jobId + '-' + idx;
+      html += '<div class="multi-item-section" data-multi-index="' + idx + '">';
+      html += '<div class="multi-item-header">' + esc((idx + 1) + '. ' + (item.nameEn || item.name || item.id || '')) + '</div>';
+      html += renderFieldsForRole(role, item, subId);
+      html += '</div>';
+    }
   } else {
-    // Generic: show raw JSON only
-    html += '<div class="field-group full-width">';
-    html += '<label>Data (JSON)</label>';
-    html += '<textarea class="raw-json-area visible" data-raw-json="' + esc(jobId) + '" rows="8">' + esc(JSON.stringify(data, null, 2)) + '</textarea>';
-    html += '</div>';
+    html += renderFieldsForRole(role, data, jobId);
   }
 
   // Agent notes
@@ -795,6 +801,20 @@ function renderResultCard(result) {
   html += '</div>';
 
   html += '</div>'; // card
+  return html;
+}
+
+// ── Role Field Dispatcher ───────────────────────────────────────
+function renderFieldsForRole(role, d, subId) {
+  if (role === 'creature') return renderCreatureFields(d, subId);
+  if (role === 'move') return renderMoveFields(d, subId);
+  if (role === 'item') return renderItemFields(d, subId);
+  if (role === 'npc') return renderNpcFields(d, subId);
+  if (role === 'npc-skill') return renderNpcSkillFields(d, subId);
+  var html = '<div class="field-group full-width">';
+  html += '<label>Data (JSON)</label>';
+  html += '<textarea class="raw-json-area visible" rows="8">' + esc(JSON.stringify(d, null, 2)) + '</textarea>';
+  html += '</div>';
   return html;
 }
 
@@ -865,11 +885,16 @@ function renderNpcFields(d, jobId) {
   var p = d.personality || {};
   var html = '<div class="field-grid">';
 
+  var m = d.modifier || {};
   html += fieldText(pfx, 'id', 'ID', d.id);
   html += fieldText(pfx, 'name', 'Name', d.name);
   html += fieldText(pfx, 'nameEn', 'Name EN', d.nameEn);
   html += fieldText(pfx, 'baseWord', 'Base Word', d.baseWord);
   html += fieldText(pfx, 'baseMeaning', 'Base Meaning', d.baseMeaning);
+  html += fieldText(pfx, 'modifier-word', 'Modifier', m.word);
+  html += fieldText(pfx, 'modifier-reading', 'Modifier Reading', m.reading);
+  html += fieldText(pfx, 'modifier-meaning', 'Modifier Meaning', m.meaning);
+  html += fieldNumber(pfx, 'modifier-rank', 'Modifier Rank', m.rank);
   html += fieldText(pfx, 'personality-traits', 'Personality Traits', Array.isArray(p.traits) ? p.traits.join(', ') : (p.traits || ''), true);
   html += fieldTextarea(pfx, 'personality-speechStyle', 'Speech Style', p.speechStyle, 2, true);
   html += fieldTextarea(pfx, 'personality-quirk', 'Quirk', p.quirk, 2, true);
@@ -936,13 +961,7 @@ function fieldTextarea(pfx, key, label, value, rows, fullWidth) {
 }
 
 // ── Collect Form Data ───────────────────────────────────────────
-function collectCardData(jobId) {
-  var result = forgeResults.find(function(r) { return r.jobId === jobId; });
-  if (!result) return null;
-
-  var role = result.role;
-  var pfx = 'f-' + jobId + '-';
-
+function collectSingleItem(role, origData, pfx) {
   function val(key) {
     var el = document.getElementById(pfx + key);
     return el ? el.value : '';
@@ -952,8 +971,7 @@ function collectCardData(jobId) {
     return v !== '' ? Number(v) : null;
   }
 
-  // Start from full original data, then override with form edits
-  var base = result.data ? JSON.parse(JSON.stringify(result.data)) : {};
+  var base = origData ? JSON.parse(JSON.stringify(origData)) : {};
 
   if (role === 'creature') {
     return Object.assign(base, {
@@ -1011,6 +1029,12 @@ function collectCardData(jobId) {
       nameEn: val('nameEn'),
       baseWord: val('baseWord'),
       baseMeaning: val('baseMeaning'),
+      modifier: {
+        word: val('modifier-word'),
+        reading: val('modifier-reading'),
+        meaning: val('modifier-meaning'),
+        rank: numVal('modifier-rank')
+      },
       personality: {
         traits: traits,
         speechStyle: val('personality-speechStyle'),
@@ -1040,12 +1064,38 @@ function collectCardData(jobId) {
     return Object.assign(base, edits);
   }
 
-  // Fallback: try to read raw JSON
-  var rawEl = document.querySelector('[data-raw-json="' + jobId + '"]');
-  if (rawEl) {
-    try { return JSON.parse(rawEl.value); } catch (e) { return result.data; }
+  return base;
+}
+
+function collectCardData(jobId) {
+  var result = forgeResults.find(function(r) { return r.jobId === jobId; });
+  if (!result) return null;
+
+  var role = result.role;
+  var data = result.data;
+
+  // Handle multi-item results (array of items)
+  if (Array.isArray(data)) {
+    var items = [];
+    for (var i = 0; i < data.length; i++) {
+      var pfx = 'f-' + jobId + '-' + i + '-';
+      items.push(collectSingleItem(role, data[i], pfx));
+    }
+    return items;
   }
-  return result.data;
+
+  // Single item
+  var pfx = 'f-' + jobId + '-';
+  var collected = collectSingleItem(role, data, pfx);
+
+  // Fallback: try to read raw JSON
+  if (!collected || Object.keys(collected).length === 0) {
+    var rawEl = document.querySelector('[data-raw-json="' + jobId + '"]');
+    if (rawEl) {
+      try { return JSON.parse(rawEl.value); } catch (e) { return result.data; }
+    }
+  }
+  return collected;
 }
 
 // ── Actions ─────────────────────────────────────────────────────
