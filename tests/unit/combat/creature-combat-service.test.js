@@ -8,7 +8,8 @@ import {
   awardBattleXp,
   awardKillXp,
   tickAllEffects,
-  rollTalkAcceptance
+  rollTalkAcceptance,
+  executeNpcSkill
 } from '../../../src/game/services/creature-combat-service.js';
 import { instantiateCreature } from '../../../src/game/creatures.js';
 
@@ -589,5 +590,90 @@ describe('rollTalkAcceptance', () => {
     assert.strictEqual(enemy.hp, originalHp);
     assert.strictEqual(enemy.maxHp, originalMaxHp);
     assert.strictEqual(enemy.rarity, originalRarity);
+  });
+});
+
+describe('executeNpcSkill', () => {
+  function makeCreature(id, hp, maxHp, attack, element) {
+    return { id, name: id, nameEn: id, element, hp, maxHp, attack, baseWord: 'w', baseReading: 'r', baseMeaning: 'm', activeEffects: [], moves: [], level: 5 };
+  }
+
+  const npcData = {
+    id: 'nagi',
+    name: 'ナギ',
+    nameEn: 'Nagi',
+    attack: 10,
+    baseWord: '凪',
+    baseReading: 'なぎ',
+    baseMeaning: 'calm',
+    element: 'neutral'
+  };
+
+  it('AOE damage hits all alive player creatures', () => {
+    const skill = { id: 'npc-aoe-attack', name: 'Storm', nameEn: 'Storm', reading: 'あらし', meaning: 'storm', element: 'neutral', category: 'damage', target: 'all_enemies', power: 8, statusEffect: null, statusChance: 0, statusDuration: 0 };
+    const allies = [makeCreature('a1', 50, 50, 8, 'water'), makeCreature('a2', 40, 40, 6, 'fire')];
+    const enemies = [makeCreature('e1', 30, 30, 5, 'wood')];
+
+    const result = executeNpcSkill(npcData, skill, allies, enemies);
+
+    assert.ok(Array.isArray(result.attacks), 'should return attacks array');
+    assert.strictEqual(result.attacks.length, 2, 'should hit both alive player creatures');
+    for (const atk of result.attacks) {
+      assert.strictEqual(atk.attackerId, 'nagi');
+      assert.strictEqual(atk.attackerBaseWord, '凪');
+      assert.ok(atk.damage > 0, 'should deal damage');
+    }
+    assert.ok(allies[0].hp < 50, 'first creature should take damage');
+    assert.ok(allies[1].hp < 40, 'second creature should take damage');
+  });
+
+  it('AOE heal heals all alive NPC creatures', () => {
+    const skill = { id: 'npc-aoe-heal', name: 'Heal', nameEn: 'Heal', reading: '', meaning: 'heal', element: 'neutral', category: 'heal', target: 'all_allies', power: 8, statusEffect: null, statusChance: 0, statusDuration: 0 };
+    const allies = [makeCreature('a1', 50, 50, 8, 'water')];
+    const enemies = [makeCreature('e1', 15, 30, 5, 'wood'), makeCreature('e2', 10, 30, 5, 'fire')];
+
+    const result = executeNpcSkill(npcData, skill, allies, enemies);
+
+    assert.strictEqual(result.attacks.length, 2, 'should heal both alive NPC creatures');
+    for (const atk of result.attacks) {
+      assert.ok(atk.healAmount > 0, 'should have heal amount');
+    }
+    assert.ok(enemies[0].hp > 15, 'first NPC creature should be healed');
+  });
+
+  it('AOE buff applies to all alive NPC creatures', () => {
+    const skill = { id: 'npc-aoe-buff', name: 'Buff', nameEn: 'Buff', reading: '', meaning: 'buff', element: 'neutral', category: 'buff', target: 'all_allies', power: 25, statusEffect: 'attack_buff', statusChance: 100, statusDuration: 2 };
+    const allies = [makeCreature('a1', 50, 50, 8, 'water')];
+    const enemies = [makeCreature('e1', 30, 30, 5, 'wood')];
+
+    const result = executeNpcSkill(npcData, skill, allies, enemies);
+
+    assert.strictEqual(result.attacks.length, 1, 'should buff 1 alive NPC creature');
+    assert.strictEqual(result.attacks[0].effectApplied, 'attack_buff');
+    assert.ok(enemies[0].activeEffects.some(e => e.type === 'attack_buff'), 'NPC creature should have attack buff');
+  });
+
+  it('AOE debuff targets all alive player creatures', () => {
+    const skill = { id: 'npc-aoe-debuff', name: 'Debuff', nameEn: 'Debuff', reading: '', meaning: 'debuff', element: 'neutral', category: 'debuff', target: 'all_enemies', power: 5, statusEffect: 'poison', statusChance: 100, statusDuration: 2 };
+    const allies = [makeCreature('a1', 50, 50, 8, 'water'), makeCreature('a2', 40, 40, 6, 'fire')];
+    const enemies = [makeCreature('e1', 30, 30, 5, 'wood')];
+
+    const result = executeNpcSkill(npcData, skill, allies, enemies);
+
+    assert.strictEqual(result.attacks.length, 2, 'should debuff both alive player creatures');
+    for (const atk of result.attacks) {
+      assert.strictEqual(atk.effectApplied, 'poison');
+    }
+  });
+
+  it('skips dead creatures', () => {
+    const skill = { id: 'npc-aoe-attack', name: 'Storm', nameEn: 'Storm', reading: '', meaning: 'storm', element: 'neutral', category: 'damage', target: 'all_enemies', power: 8, statusEffect: null, statusChance: 0 };
+    const allies = [makeCreature('a1', 50, 50, 8, 'water'), makeCreature('a2', 0, 40, 6, 'fire')];
+    const enemies = [];
+
+    const result = executeNpcSkill(npcData, skill, allies, enemies);
+
+    assert.strictEqual(result.attacks.length, 1, 'should only hit alive creatures');
+    assert.strictEqual(result.attacks[0].targetId, 'a1');
   });
 });
