@@ -403,11 +403,32 @@ function isValidSession(token) {
  * Create dev tools router
  * @param {object} opts
  * @param {string} opts.password - Required password (empty string = no auth needed)
+ * @param {string} [opts.dataDir] - Override data directory (for tests)
  * @returns {Router}
  */
-export function createDevRouter({ password }) {
+export function createDevRouter(opts) {
+  const { password } = opts;
   const router = Router();
   const requiresAuth = password.length > 0;
+  const contentDataDir = opts.dataDir || DATA_DIR;
+
+  // ── Content file mapping ──────────────────────────────────────────
+  const CONTENT_FILES = {
+    creatures: 'creatures.json',
+    moves: 'moves.json',
+    items: 'items.json',
+    npcs: 'npcs.json',
+    'npc-skills': 'npc-skills.json',
+    areas: 'areas.json'
+  };
+
+  function loadContentFile(type) {
+    const filename = CONTENT_FILES[type];
+    if (!filename) return null;
+    const filePath = join(contentDataDir, filename);
+    if (!existsSync(filePath)) return null;
+    return JSON.parse(readFileSync(filePath, 'utf-8'));
+  }
 
   // Rate limit auth attempts
   const authLimiter = rateLimit({
@@ -713,6 +734,84 @@ export function createDevRouter({ password }) {
     } catch (err) {
       console.error('[Dev] Review queue batch-accept error:', err.message);
       res.status(500).json({ error: 'Failed to batch accept' });
+    }
+  });
+
+  // ── GET /api/content/:type ──────────────────────────────────────────
+  router.get('/api/content/:type', requireAuth, (req, res) => {
+    const { type } = req.params;
+    if (!CONTENT_FILES[type]) {
+      return res.status(400).json({ error: `Unknown content type: ${type}` });
+    }
+
+    try {
+      const data = loadContentFile(type);
+      if (data === null) return res.json([]);
+
+      // npcs.json is an object keyed by NPC ID — normalize to array
+      if (type === 'npcs' && !Array.isArray(data)) {
+        return res.json(Object.values(data));
+      }
+
+      return res.json(data);
+    } catch (err) {
+      console.error(`[Dev] Content load error (${type}):`, err.message);
+      return res.status(500).json({ error: 'Failed to load content' });
+    }
+  });
+
+  // ── PATCH /api/content/:type ────────────────────────────────────────
+  router.patch('/api/content/:type', requireAuth, (req, res) => {
+    const { type } = req.params;
+    if (!CONTENT_FILES[type]) {
+      return res.status(400).json({ error: `Unknown content type: ${type}` });
+    }
+
+    const { changes } = req.body || {};
+    if (!Array.isArray(changes) || changes.length === 0) {
+      return res.status(400).json({ error: 'Missing or empty changes array' });
+    }
+
+    try {
+      const data = loadContentFile(type);
+      if (data === null) {
+        return res.status(404).json({ error: `Content file not found for type: ${type}` });
+      }
+
+      const isObject = type === 'npcs' && !Array.isArray(data);
+      let updated = 0;
+      const errors = [];
+
+      for (const { id, field, value } of changes) {
+        if (field === 'id') {
+          errors.push(`Cannot modify 'id' field on ${id}`);
+          continue;
+        }
+
+        let entry;
+        if (isObject) {
+          entry = data[id];
+        } else {
+          entry = data.find(e => e.id === id);
+        }
+
+        if (!entry) {
+          errors.push(`Entry not found: ${id}`);
+          continue;
+        }
+
+        entry[field] = value;
+        updated++;
+      }
+
+      // Write back in original format
+      const filePath = join(contentDataDir, CONTENT_FILES[type]);
+      writeFileSync(filePath, JSON.stringify(data, null, 2));
+
+      return res.json({ ok: true, updated, errors });
+    } catch (err) {
+      console.error(`[Dev] Content patch error (${type}):`, err.message);
+      return res.status(500).json({ error: 'Failed to patch content' });
     }
   });
 
