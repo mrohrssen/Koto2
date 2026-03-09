@@ -1572,13 +1572,22 @@ async function generateSelected() {
   var keys = Object.keys(selectedSprites);
   if (keys.length === 0) return;
 
-  var items = [];
-  for (var i = 0; i < keys.length; i++) {
-    items.push(selectedSprites[keys[i]]);
-  }
-
   var variants = parseInt($('spriteVariantCount').value) || 3;
   var notes = $('spriteGlobalNotes').value.trim();
+
+  var items = [];
+  for (var i = 0; i < keys.length; i++) {
+    var item = selectedSprites[keys[i]];
+    items.push({
+      id: item.id,
+      type: item.type,
+      name: item.name,
+      nameEn: item.nameEn,
+      description: item.description || '',
+      notes: notes,
+      variants: variants
+    });
+  }
 
   var btn = $('spriteGenerateBtn');
   btn.disabled = true;
@@ -1588,7 +1597,7 @@ async function generateSelected() {
     var res = await fetch('/api/sprite-forge/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: items, variants: variants, notes: notes || undefined })
+      body: JSON.stringify({ items: items })
     });
     var data = await res.json();
     if (data.error) {
@@ -1693,17 +1702,17 @@ function renderSpriteJobs(jobs) {
     html += '</div>';
 
     // Show variants if done
-    if (job.status === 'done' && job.variants && job.variants.length > 0) {
-      var selectedVar = spriteJobSelectedVariants[job.jobId];
+    if (job.status === 'done' && job.variantResults && job.variantResults.length > 0) {
+      var selectedVar = spriteJobSelectedVariants[job.id];
       html += '<div class="variant-grid">';
-      for (var v = 0; v < job.variants.length; v++) {
-        var variant = job.variants[v];
+      for (var v = 0; v < job.variantResults.length; v++) {
+        var variant = job.variantResults[v];
         if (variant.error) {
           html += '<div class="variant-card error"><div class="variant-error">' + esc(variant.error) + '</div></div>';
         } else {
           var isSelected = selectedVar === v;
-          html += '<div class="variant-card' + (isSelected ? ' selected' : '') + '" data-job-id="' + esc(job.jobId) + '" data-variant="' + v + '">';
-          html += '<img src="' + esc(variant.url || variant.path) + '" alt="Variant ' + (v + 1) + '">';
+          html += '<div class="variant-card' + (isSelected ? ' selected' : '') + '" data-job-id="' + esc(job.id) + '" data-variant="' + v + '">';
+          html += '<img src="/api/sprite-forge/jobs/' + encodeURIComponent(job.id) + '/variant/' + variant.variant + '" alt="Variant ' + (v + 1) + '">';
           html += '</div>';
         }
       }
@@ -1711,17 +1720,17 @@ function renderSpriteJobs(jobs) {
 
       // Action buttons
       html += '<div class="sprite-job-actions">';
-      html += '<button class="btn btn-primary" data-approve-job="' + esc(job.jobId) + '"' + (selectedVar === undefined ? ' disabled title="Select a variant first"' : '') + '>Approve' + (selectedVar !== undefined ? ' #' + (selectedVar + 1) : '') + '</button>';
-      html += '<button class="btn btn-secondary" data-discard-job="' + esc(job.jobId) + '">Discard</button>';
+      html += '<button class="btn btn-primary" data-approve-job="' + esc(job.id) + '"' + (selectedVar === undefined ? ' disabled title="Select a variant first"' : '') + '>Approve' + (selectedVar !== undefined ? ' #' + (selectedVar + 1) : '') + '</button>';
+      html += '<button class="btn btn-secondary" data-discard-job="' + esc(job.id) + '">Discard</button>';
       html += '</div>';
     }
 
     // Show approved variant
     if (job.status === 'approved' && job.approvedVariant !== undefined) {
-      var av = job.variants && job.variants[job.approvedVariant];
+      var av = job.variantResults && job.variantResults[job.approvedVariant];
       if (av) {
         html += '<div class="variant-grid">';
-        html += '<div class="variant-card selected"><img src="' + esc(av.url || av.path) + '" alt="Approved"></div>';
+        html += '<div class="variant-card selected"><img src="/api/sprite-forge/jobs/' + encodeURIComponent(job.id) + '/variant/' + av.variant + '" alt="Approved"></div>';
         html += '</div>';
       }
     }
