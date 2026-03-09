@@ -10,7 +10,10 @@ import {
   shuffleOptions,
   getNpcBond,
   updateBond,
-  recordEncounter
+  recordEncounter,
+  loadNpcSkills,
+  getNpcSkillsForNpc,
+  rollNpcSkill
 } from '../../../src/game/services/npc-service.js';
 
 describe('NPC Service - loadNpcs', () => {
@@ -216,5 +219,67 @@ describe('NPC Service - recordEncounter', () => {
     recordEncounter(meta, 'npc_01');
     assert.ok(meta.npcBonds, 'npcBonds should be created');
     assert.strictEqual(meta.npcBonds.npc_01.encounters, 1);
+  });
+});
+
+describe('NPC Service - loadNpcSkills', () => {
+  it('loads NPC skills array', () => {
+    const skills = loadNpcSkills();
+    assert.ok(Array.isArray(skills), 'should return array');
+    assert.ok(skills.length >= 4, 'should have at least 4 skills');
+  });
+
+  it('each skill has required move fields', () => {
+    const skills = loadNpcSkills();
+    for (const skill of skills) {
+      assert.ok(skill.id, `skill missing id`);
+      assert.ok(skill.category, `${skill.id} missing category`);
+      assert.ok(skill.target, `${skill.id} missing target`);
+      assert.ok(typeof skill.power === 'number', `${skill.id} missing power`);
+    }
+  });
+});
+
+describe('NPC Service - getNpcSkillsForNpc', () => {
+  it('returns skill objects for an NPC with skills', () => {
+    const npcs = loadNpcs();
+    const npc = Object.values(npcs).find(n => n.skills?.length > 0);
+    if (!npc) return;
+    const skills = getNpcSkillsForNpc(npc);
+    assert.ok(Array.isArray(skills), 'should return array');
+    assert.ok(skills.length > 0, 'should have skills');
+    assert.ok(skills[0].id, 'skill objects should have id');
+  });
+
+  it('returns empty array for NPC without skills', () => {
+    const skills = getNpcSkillsForNpc({ id: 'fake', skills: [] });
+    assert.deepStrictEqual(skills, []);
+  });
+
+  it('returns empty array for NPC with no skills field', () => {
+    const skills = getNpcSkillsForNpc({ id: 'fake' });
+    assert.deepStrictEqual(skills, []);
+  });
+});
+
+describe('NPC Service - rollNpcSkill', () => {
+  it('returns null when NPC has no skills', () => {
+    const result = rollNpcSkill({ id: 'fake', skills: [] });
+    assert.strictEqual(result, null);
+  });
+
+  it('returns a skill object or null (probabilistic)', () => {
+    const npcs = loadNpcs();
+    const npc = Object.values(npcs).find(n => n.skills?.length > 0);
+    if (!npc) return;
+    let gotSkill = false;
+    let gotNull = false;
+    for (let i = 0; i < 100; i++) {
+      const result = rollNpcSkill(npc);
+      if (result) { gotSkill = true; assert.ok(result.id, 'returned skill should have id'); }
+      else gotNull = true;
+    }
+    assert.ok(gotSkill, 'should return a skill at least once in 100 rolls');
+    assert.ok(gotNull, 'should return null at least once in 100 rolls');
   });
 });

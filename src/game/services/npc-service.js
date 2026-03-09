@@ -5,6 +5,9 @@ import { dirname, join } from 'path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 let _npcCache = null;
+let _npcSkillCache = null;
+
+const NPC_SKILL_CHANCE = 0.25;
 
 /**
  * Reads and caches data/npcs.json, returns the full NPC object.
@@ -161,4 +164,34 @@ export function recordEncounter(meta, npcId) {
   entry.encounters += 1;
   entry.lastInteraction = new Date().toISOString().slice(0, 10);
   return entry;
+}
+
+/**
+ * Reads and caches data/npc-skills.json. Same pattern as loadNpcs().
+ */
+export function loadNpcSkills() {
+  if (!_npcSkillCache) {
+    _npcSkillCache = JSON.parse(readFileSync(join(__dirname, '../../../data/npc-skills.json'), 'utf8'));
+  }
+  return _npcSkillCache;
+}
+
+/**
+ * Returns resolved skill objects for a given NPC.
+ */
+export function getNpcSkillsForNpc(npc) {
+  if (!npc.skills?.length) return [];
+  const allSkills = loadNpcSkills();
+  const skillMap = new Map(allSkills.map(s => [s.id, s]));
+  return npc.skills.map(id => skillMap.get(id)).filter(Boolean);
+}
+
+/**
+ * 25% chance to return a random skill from the NPC's skill list, else null.
+ */
+export function rollNpcSkill(npc) {
+  const skills = getNpcSkillsForNpc(npc);
+  if (skills.length === 0) return null;
+  if (Math.random() >= NPC_SKILL_CHANCE) return null;
+  return skills[Math.floor(Math.random() * skills.length)];
 }
