@@ -69,6 +69,15 @@ describe('writeResult', () => {
     assert.strictEqual(results.results.length, 1);
     assert.strictEqual(results.results[0].jobId, 'forge_1');
   });
+
+  it('replaces existing result with same jobId', () => {
+    const path = join(testDir, 'results.json');
+    forgeData.writeResult(path, { jobId: 'forge_1', status: 'complete', data: { name: 'v1' } });
+    forgeData.writeResult(path, { jobId: 'forge_1', status: 'complete', data: { name: 'v2' } });
+    const results = forgeData.readResults(path);
+    assert.strictEqual(results.results.length, 1);
+    assert.strictEqual(results.results[0].data.name, 'v2');
+  });
 });
 
 describe('updateJobStatus', () => {
