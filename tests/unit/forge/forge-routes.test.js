@@ -64,14 +64,14 @@ describe('getThemes', () => {
     await router._handlers.getThemes(req, res);
 
     assert.strictEqual(res.statusCode, 200);
-    assert.ok(Array.isArray(res.body));
-    assert.strictEqual(res.body.length, 1);
+    assert.ok(Array.isArray(res.body.themes));
+    assert.strictEqual(res.body.themes.length, 1);
 
-    const theme = res.body[0];
-    assert.strictEqual(theme.id, 'school');
+    const theme = res.body.themes[0];
+    assert.strictEqual(theme.themeId, 'school');
     assert.strictEqual(theme.totalWords, 3);
     assert.strictEqual(theme.assignedWords, 1);
-    assert.strictEqual(theme.unassignedWords, 2);
+    assert.strictEqual(theme.progress, 33);
   });
 });
 
@@ -222,7 +222,9 @@ describe('postApprove', () => {
     await router._handlers.postApprove(req, res);
 
     assert.strictEqual(res.statusCode, 200);
-    assert.ok(res.body.ok);
+    assert.ok(res.body.success);
+    assert.strictEqual(res.body.role, 'creature');
+    assert.strictEqual(res.body.id, 'oshieru');
 
     // Verify staging file was created
     const stagingPath = join(dataDir, 'new-creatures-staging.json');
@@ -272,7 +274,7 @@ describe('postDiscard', () => {
     await router._handlers.postDiscard(req, res);
 
     assert.strictEqual(res.statusCode, 200);
-    assert.ok(res.body.ok);
+    assert.ok(res.body.success);
 
     // Verify result was removed
     const results = JSON.parse(readFileSync(resultsPath, 'utf8'));

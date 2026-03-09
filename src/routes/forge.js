@@ -61,17 +61,17 @@ export function createForgeRouter({ themesDir, dataDir }) {
         const words = theme.words || [];
         const assigned = words.filter(w => w.assigned);
         return {
-          id: theme.themeId,
+          themeId: theme.themeId,
           areaWord: theme.areaWord,
           areaReading: theme.areaReading,
           areaMeaning: theme.areaMeaning,
           computedStage: theme.computedStage,
           totalWords: words.length,
           assignedWords: assigned.length,
-          unassignedWords: words.length - assigned.length
+          progress: words.length > 0 ? Math.round((assigned.length / words.length) * 100) : 0
         };
       });
-      res.json(themes);
+      res.json({ themes });
     } catch (error) {
       console.error('[Forge] Error:', error);
       res.status(500).json({ error: 'Failed to list themes', details: error.message });
@@ -116,7 +116,7 @@ export function createForgeRouter({ themesDir, dataDir }) {
         return res.status(400).json({ error: 'Missing or empty required field: jobs' });
       }
       const created = appendJobs(queuePath, jobs, themeId);
-      res.json({ jobs: created });
+      res.json({ success: true, added: created.length, jobs: created });
     } catch (error) {
       console.error('[Forge] Error:', error);
       res.status(500).json({ error: 'Failed to append jobs', details: error.message });
@@ -197,7 +197,7 @@ export function createForgeRouter({ themesDir, dataDir }) {
       // 7. Update job status to 'approved' in queue
       updateJobStatus(queuePath, jobId, 'approved');
 
-      res.json({ ok: true });
+      res.json({ success: true, role, id: editedData.id });
     } catch (error) {
       console.error('[Forge] Error:', error);
       res.status(500).json({ error: 'Failed to approve result', details: error.message });
@@ -218,7 +218,7 @@ export function createForgeRouter({ themesDir, dataDir }) {
       // 2. Update job status to 'discarded' in queue
       updateJobStatus(queuePath, jobId, 'discarded');
 
-      res.json({ ok: true });
+      res.json({ success: true });
     } catch (error) {
       console.error('[Forge] Error:', error);
       res.status(500).json({ error: 'Failed to discard result', details: error.message });
