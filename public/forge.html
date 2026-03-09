@@ -9,6 +9,10 @@
 body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;min-height:100vh}
 
 /* ── Header ─────────────────────────────────────────── */
+.dev-nav{display:flex;gap:2px;padding:6px 12px;background:#0a0a1a;border-bottom:1px solid #1e2d4a;overflow-x:auto}
+.dev-nav a{padding:5px 10px;border-radius:4px;font-size:12px;color:#667;text-decoration:none;white-space:nowrap;transition:all .15s}
+.dev-nav a:hover{color:#aab;background:#16213e}
+.dev-nav a.active{color:#8cf;background:#0f3460}
 .header{position:sticky;top:0;z-index:100;background:#0f0f23;border-bottom:1px solid #1e2d4a;padding:10px 12px}
 .header-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .header h1{font-size:16px;font-weight:600;color:#e0e0e0;white-space:nowrap}
@@ -140,6 +144,19 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 /* ── Empty state ────────────────────────────────────── */
 .empty-state{text-align:center;padding:40px 20px;color:#556;font-size:14px}
 
+/* ── Add Word Form ─────────────────────────────────── */
+.add-word-form{padding:10px 12px;background:#0f0f23;border-radius:8px;margin-top:8px}
+.add-word-form summary{font-size:13px;color:#889;cursor:pointer;padding:4px 0;user-select:none}
+.add-word-form summary:hover{color:#aab}
+.add-word-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
+.add-word-fields input,.add-word-fields select{padding:6px 8px;border:1px solid #1e2d4a;border-radius:4px;background:#16213e;color:#e0e0e0;font-size:13px;outline:none;min-height:36px}
+.add-word-fields input:focus,.add-word-fields select:focus{border-color:#0f3460}
+.add-word-fields input::placeholder{color:#556}
+.add-word-row{display:flex;gap:6px;margin-top:6px;align-items:center}
+@media(max-width:480px){
+  .add-word-fields{grid-template-columns:1fr}
+}
+
 /* ── Mobile responsive ──────────────────────────────── */
 @media(max-width:480px){
   .field-grid{grid-template-columns:1fr}
@@ -151,6 +168,18 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 </style>
 </head>
 <body>
+
+<!-- ── Dev Nav ──────────────────────────────────────── -->
+<nav class="dev-nav">
+  <a href="/dev/">Hub</a>
+  <a href="/forge.html" class="active">Forge</a>
+  <a href="/dev/sprites">Sprites</a>
+  <a href="/dev/content">Content</a>
+  <a href="/creatures-gallery.html">Creatures</a>
+  <a href="/regen-review.html">Regen Review</a>
+  <a href="/assets/sprites/items/review.html">Items Review</a>
+  <a href="/dev/mockups">Mockups</a>
+</nav>
 
 <!-- ── Header ────────────────────────────────────────── -->
 <div class="header">
@@ -180,6 +209,27 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 <div class="section" id="wordListSection" style="display:none">
   <div class="section-title" id="wordListTitle">Words</div>
   <div class="word-list" id="wordList"></div>
+  <details class="add-word-form" id="addWordForm" style="display:none">
+    <summary>+ Add custom word</summary>
+    <div class="add-word-fields">
+      <input type="text" id="addWordKanji" placeholder="Word (e.g. 消す)">
+      <input type="text" id="addWordReading" placeholder="Reading (e.g. けす)">
+      <input type="text" id="addWordMeaning" placeholder="Meaning (e.g. to erase)">
+    </div>
+    <div class="add-word-row">
+      <input type="number" id="addWordRank" placeholder="Rank" style="width:80px">
+      <select id="addWordRole" style="width:auto">
+        <option value="">No role</option>
+        <option value="creature">Creature</option>
+        <option value="move">Move</option>
+        <option value="item">Item</option>
+        <option value="npc">NPC</option>
+        <option value="npc-skill">NPC Skill</option>
+        <option value="sub-area">Area</option>
+      </select>
+      <button class="btn btn-primary" id="addWordBtn" style="padding:6px 12px;min-height:36px">Add</button>
+    </div>
+  </details>
 </div>
 
 <!-- ── Batch Panel ───────────────────────────────────── -->
@@ -255,6 +305,7 @@ async function loadTheme(themeId) {
     currentTheme = null;
     $('filterBar').style.display = 'none';
     $('wordListSection').style.display = 'none';
+    $('addWordForm').style.display = 'none';
     $('progressText').textContent = '';
     $('stageBadge').style.display = 'none';
     return;
@@ -275,6 +326,7 @@ async function loadTheme(themeId) {
     }
     $('filterBar').style.display = '';
     $('wordListSection').style.display = '';
+    $('addWordForm').style.display = '';
     renderWordList();
   } catch (e) {
     console.error('Failed to load theme:', e);
@@ -421,10 +473,11 @@ function renderBatchPanel() {
     // Controls
     html += '<div class="batch-item-controls">';
 
-    // Role dropdown
+    // Role dropdown (all types available for any word)
+    var allBatchRoles = ['creature', 'move', 'item', 'npc', 'npc-skill', 'area'];
     html += '<select class="batch-role-select" data-role-word="' + esc(sw.word) + '">';
-    for (var j = 0; j < sw.roles.length; j++) {
-      var r = sw.roles[j];
+    for (var j = 0; j < allBatchRoles.length; j++) {
+      var r = allBatchRoles[j];
       html += '<option value="' + esc(r) + '"' + (r === sw.role ? ' selected' : '') + '>' + esc(r) + '</option>';
     }
     html += '</select>';
@@ -632,7 +685,7 @@ function renderResultCard(result) {
   html += '<div class="reforge-panel" id="reforge-' + esc(jobId) + '">';
   html += '<div class="reforge-row">';
   html += '<select class="batch-role-select" data-reforge-role="' + esc(jobId) + '">';
-  var allRoles = ['creature', 'move', 'item', 'npc', 'npc-skill'];
+  var allRoles = ['creature', 'move', 'item', 'npc', 'npc-skill', 'area'];
   for (var r = 0; r < allRoles.length; r++) {
     html += '<option value="' + allRoles[r] + '"' + (allRoles[r] === role ? ' selected' : '') + '>' + allRoles[r] + '</option>';
   }
@@ -698,7 +751,7 @@ function renderItemFields(d, jobId) {
   html += fieldText(pfx, 'reading', 'Reading', d.reading);
   html += fieldText(pfx, 'meaning', 'Meaning', d.meaning);
   html += fieldSelect(pfx, 'rarity', 'Rarity', d.rarity, ['common', 'uncommon', 'rare', 'epic', 'legendary']);
-  html += fieldSelect(pfx, 'type', 'Type', d.type, ['heal', 'buff', 'revive', 'cure']);
+  html += fieldSelect(pfx, 'type', 'Type', d.type, ['heal', 'buff', 'revive', 'cure', 'boost', 'charge']);
   html += fieldTextarea(pfx, 'effect', 'Effect (JSON)', typeof d.effect === 'object' ? JSON.stringify(d.effect, null, 2) : (d.effect || ''), 3, true);
   html += fieldTextarea(pfx, 'description', 'Description', d.description, 2, true);
   html += fieldTextarea(pfx, 'descriptionJa', 'Description JA', d.descriptionJa, 2, true);
@@ -800,17 +853,20 @@ function collectCardData(jobId) {
     return v !== '' ? Number(v) : null;
   }
 
+  // Start from full original data, then override with form edits
+  var base = result.data ? JSON.parse(JSON.stringify(result.data)) : {};
+
   if (role === 'creature') {
-    return {
+    return Object.assign(base, {
       id: val('id'),
       name: val('name'),
       nameEn: val('nameEn'),
       element: val('element'),
       archetype: val('archetype'),
       description: val('description')
-    };
+    });
   } else if (role === 'move') {
-    var data = {
+    var edits = {
       id: val('id'),
       name: val('name'),
       nameEn: val('nameEn'),
@@ -827,16 +883,16 @@ function collectCardData(jobId) {
     };
     var se = val('statusEffect');
     if (se) {
-      data.statusEffect = se;
-      data.statusChance = numVal('statusChance');
-      data.statusDuration = numVal('statusDuration');
+      edits.statusEffect = se;
+      edits.statusChance = numVal('statusChance');
+      edits.statusDuration = numVal('statusDuration');
     }
-    return data;
+    return Object.assign(base, edits);
   } else if (role === 'item') {
     var effectStr = val('effect');
     var effect;
     try { effect = JSON.parse(effectStr); } catch (e) { effect = effectStr; }
-    return {
+    return Object.assign(base, {
       id: val('id'),
       word: val('word'),
       reading: val('reading'),
@@ -846,11 +902,11 @@ function collectCardData(jobId) {
       effect: effect,
       description: val('description'),
       descriptionJa: val('descriptionJa')
-    };
+    });
   } else if (role === 'npc') {
     var traitsStr = val('personality-traits');
     var traits = traitsStr ? traitsStr.split(',').map(function(t) { return t.trim(); }).filter(Boolean) : [];
-    return {
+    return Object.assign(base, {
       id: val('id'),
       name: val('name'),
       nameEn: val('nameEn'),
@@ -861,9 +917,9 @@ function collectCardData(jobId) {
         speechStyle: val('personality-speechStyle'),
         quirk: val('personality-quirk')
       }
-    };
+    });
   } else if (role === 'npc-skill') {
-    var data = {
+    var edits = {
       id: val('id'),
       name: val('name'),
       nameEn: val('nameEn'),
@@ -878,11 +934,11 @@ function collectCardData(jobId) {
     };
     var se = val('statusEffect');
     if (se) {
-      data.statusEffect = se;
-      data.statusChance = numVal('statusChance');
-      data.statusDuration = numVal('statusDuration');
+      edits.statusEffect = se;
+      edits.statusChance = numVal('statusChance');
+      edits.statusDuration = numVal('statusDuration');
     }
-    return data;
+    return Object.assign(base, edits);
   }
 
   // Fallback: try to read raw JSON
@@ -1154,6 +1210,54 @@ $('resultCards').addEventListener('click', function(e) {
   if (jsonToggle) {
     toggleRawJson(jsonToggle.getAttribute('data-json-toggle'));
     return;
+  }
+});
+
+// ── Add Custom Word ─────────────────────────────────────────────
+$('addWordBtn').addEventListener('click', async function() {
+  if (!currentTheme) return;
+  var word = $('addWordKanji').value.trim();
+  var reading = $('addWordReading').value.trim();
+  var meaning = $('addWordMeaning').value.trim();
+  var rank = $('addWordRank').value ? Number($('addWordRank').value) : null;
+  var role = $('addWordRole').value || null;
+
+  if (!word || !meaning) {
+    alert('Word and meaning are required.');
+    return;
+  }
+
+  var btn = $('addWordBtn');
+  btn.disabled = true;
+  btn.textContent = 'Adding...';
+
+  try {
+    var body = { word: word, reading: reading, meaning: meaning };
+    if (rank) body.rank = rank;
+    if (role) body.roles = [role];
+    var res = await fetch('/api/forge/theme/' + currentTheme.themeId + '/word', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    var data = await res.json();
+    if (data.success) {
+      // Clear form
+      $('addWordKanji').value = '';
+      $('addWordReading').value = '';
+      $('addWordMeaning').value = '';
+      $('addWordRank').value = '';
+      $('addWordRole').value = '';
+      // Reload theme to show new word
+      await loadTheme(currentTheme.themeId);
+    } else {
+      alert('Failed to add word: ' + (data.error || 'Unknown'));
+    }
+  } catch (e) {
+    alert('Failed to add word: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Add';
   }
 });
 
