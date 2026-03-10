@@ -62,19 +62,40 @@ export function showEnemy(enemy) {
   // Check if this is a creature (has element property)
   const isCreature = !!enemy.element;
 
+  // Remove any previous compact overlays
+  removeCompactOverlays();
+
   if (isCreature) {
-    const icon = ELEMENT_ICONS[enemy.element] || '';
-    dom.enemyName.innerHTML = `<span class="enemy-element-icon">${icon}</span> ${enemy.nameEn || enemy.name || 'Enemy'} ${rarityStars(enemy.rarity)} <span class="enemy-level-badge">Lv${enemy.level || 1}</span>`;
+    // Use compact display (same style as multi-enemy) — hide the big info pill
+    dom.enemyInfo.classList.remove('visible');
+    dom.enemyHpBar.style.display = 'none';
+    dom.enemyName.textContent = '';
     dom.enemySpriteContainer.style.borderColor = ELEMENT_COLORS[enemy.element] || '';
     dom.enemySpriteContainer.classList.add('creature-enemy');
+
+    // Add compact name badge, level badge, and hp bar after sprite loads
+    const nameBadge = document.createElement('div');
+    nameBadge.className = 'enemy-creature-name-badge';
+    nameBadge.innerHTML = `${enemy.nameEn || enemy.name || 'Enemy'} ${rarityStars(enemy.rarity)}`;
+    dom.enemySpriteContainer.appendChild(nameBadge);
+
+    const levelBadge = document.createElement('span');
+    levelBadge.className = 'creature-level-badge-enemy';
+    levelBadge.textContent = `Lv${enemy.level || 1}`;
+    dom.enemySpriteContainer.appendChild(levelBadge);
+
+    const hpBar = document.createElement('div');
+    hpBar.className = 'enemy-compact-hp-bar';
+    const hpPct = Math.max(0, Math.min(100, (enemy.hp / enemy.maxHp) * 100));
+    hpBar.innerHTML = `<div class="enemy-compact-hp-fill" style="width:${hpPct}%"></div>`;
+    dom.enemySpriteContainer.appendChild(hpBar);
   } else {
     dom.enemyName.textContent = enemy.nameEn || enemy.name || 'Enemy';
     dom.enemySpriteContainer.style.borderColor = '';
     dom.enemySpriteContainer.classList.remove('creature-enemy');
+    dom.enemyInfo.classList.add('visible');
+    updateEnemyHP(enemy.hp, enemy.maxHp);
   }
-
-  dom.enemyInfo.classList.add('visible');
-  updateEnemyHP(enemy.hp, enemy.maxHp);
 
   // Construct sprite path from enemy ID
   const onLoad = () => {
@@ -97,6 +118,21 @@ export function showEnemy(enemy) {
     };
     dom.enemySprite.onload = onLoad;
   }
+}
+
+/** Update compact HP bar for single creature enemy */
+export function updateCompactEnemyHP(current, max) {
+  const fill = dom.enemySpriteContainer.querySelector('.enemy-compact-hp-fill');
+  if (fill) {
+    const pct = Math.max(0, Math.min(100, (current / max) * 100));
+    fill.style.width = `${pct}%`;
+  }
+}
+
+function removeCompactOverlays() {
+  dom.enemySpriteContainer.querySelector('.enemy-creature-name-badge')?.remove();
+  dom.enemySpriteContainer.querySelector('.creature-level-badge-enemy')?.remove();
+  dom.enemySpriteContainer.querySelector('.enemy-compact-hp-bar')?.remove();
 }
 
 /** Show multiple enemy creatures in horizontal row */
@@ -341,6 +377,7 @@ export function hideEnemy() {
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = '';
   dom.enemySpriteContainer.style.borderColor = '';
   dom.enemySpriteContainer.classList.remove('creature-enemy');
+  removeCompactOverlays();
   removePlaceholder();
 }
 
@@ -349,6 +386,9 @@ export function updateEnemyHP(current, max) {
   const pct = Math.max(0, Math.min(100, (current / max) * 100));
   dom.enemyHpFill.style.width = `${pct}%`;
   dom.enemyHpText.textContent = `${current} / ${max}`;
+  // Also update compact HP bar if present (single creature enemy)
+  const compactFill = dom.enemySpriteContainer.querySelector('.enemy-compact-hp-fill');
+  if (compactFill) compactFill.style.width = `${pct}%`;
 }
 
 /** Show floating toast message in scene (auto-dismisses) */

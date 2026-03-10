@@ -154,6 +154,47 @@ html, body {
   content: '\2726 ';
 }
 
+/* ===== AREA HEADER PILL ===== */
+.area-header-pill {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 3px 12px;
+  z-index: 10;
+  text-align: center;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity var(--transition-med);
+  pointer-events: none;
+}
+
+.area-header-pill.visible {
+  opacity: 1;
+}
+
+.area-header-name {
+  font-size: 10px;
+  color: rgba(255,255,255,0.95);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.area-header-sep {
+  font-size: 10px;
+  color: rgba(255,255,255,0.4);
+}
+
+.area-header-sub {
+  font-size: 8px;
+  color: rgba(255,255,255,0.65);
+  font-weight: 500;
+}
+
 /* ===== SCENE AREA ===== */
 .scene-area {
   position: relative;
@@ -276,23 +317,61 @@ html, body {
   border: none;
   border-radius: 0;
   padding: 0;
-  width: 90px;
-  height: 90px;
+  width: auto;
+  height: auto;
   padding-top: 0;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
 }
 
 .creature-enemy .enemy-sprite {
   max-height: 90px;
   max-width: 90px;
   border-radius: 0;
+}
+
+/* Compact name/hp overlay for single creature enemy */
+.creature-enemy .enemy-creature-name-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.6);
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.creature-enemy .enemy-compact-hp-bar {
+  width: 70px;
+  height: 5px;
+  background: #333;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.creature-enemy .enemy-compact-hp-fill {
+  height: 100%;
+  background: var(--hp-green);
+  transition: width 0.3s, background-color 0.3s;
+}
+
+.creature-enemy .creature-level-badge-enemy {
+  position: absolute;
+  bottom: 18px;
+  right: calc(50% - 49px);
+  font-size: 8px;
+  background: var(--text-primary);
+  color: #fff;
+  padding: 1px 3px;
+  border-radius: 3px;
+  line-height: 1;
+  z-index: 3;
 }
 
 /* Multi-Enemy Row */
@@ -2779,17 +2858,23 @@ html, body {
 }
 
 .creature-slot-name {
-  font-size: 9px;
-  color: #555;
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: #fff;
+  font-size: 8px;
   font-weight: 600;
-  text-align: center;
+  padding: 1px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 3;
   max-width: 110px;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-top: 1px;
-  position: relative;
-  z-index: 2;
 }
 
 .creature-sprite-icon {

@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Combat Area Header — Mockup</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+    .dev-nav{display:flex;gap:2px;padding:6px 12px;background:#0a0a1a;border-bottom:1px solid #1e2d4a;overflow-x:auto}
+    .dev-nav a{padding:5px 10px;border-radius:4px;font-size:12px;color:#667;text-decoration:none;white-space:nowrap;transition:all .15s}
+    .dev-nav a:hover{color:#aab;background:#16213e}
+    .dev-nav a.active{color:#8cf;background:#0f3460}
+
+    h1 { text-align: center; color: #a0c4ff; font-size: 1.3rem; margin: 1.5rem 0 0.5rem; }
+    .subtitle { text-align: center; color: #667; font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+    .options-row {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+      padding: 0 16px 2rem;
+    }
+
+    .option-card {
+      background: #16213e;
+      border: 2px solid #0f3460;
+      border-radius: 12px;
+      overflow: hidden;
+      width: 375px;
+      flex-shrink: 0;
+      transition: border-color 0.2s;
+    }
+    .option-card:hover { border-color: #4fc3f7; }
+
+    .option-label {
+      padding: 10px 14px;
+      background: #0f3460;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #a0c4ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .option-desc {
+      padding: 8px 14px;
+      font-size: 0.8rem;
+      color: #8b92a0;
+      border-bottom: 1px solid #0f3460;
+      line-height: 1.4;
+    }
+
+    /* ===== Phone frame ===== */
+    .phone-frame {
+      background: #e8edf3;
+      aspect-ratio: 9/19.5;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ===== Scene area ===== */
+    .scene-area {
+      position: relative;
+      height: 32%;
+      min-height: 150px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .scene-bg {
+      position: absolute;
+      inset: 0;
+      bottom: -40px;
+      background: url('/assets/backgrounds/areas/mahouno-gakkou-new-high-school.webp') center top / cover;
+      mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    }
+
+    /* Enemy creature slot (compact — same as multi-enemy style) */
+    .enemy-sprite-area {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      padding-top: 30px;
+      gap: 2px;
+    }
+    .enemy-creature-icon {
+      position: relative;
+    }
+    .enemy-sprite-area img {
+      height: 90px;
+      object-fit: contain;
+    }
+    .enemy-creature-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.6);
+      padding: 2px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    .enemy-creature-level {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      font-size: 8px;
+      background: #2a2e35;
+      color: #fff;
+      padding: 1px 3px;
+      border-radius: 3px;
+      line-height: 1;
+    }
+    .enemy-creature-hp-bar {
+      width: 70px;
+      height: 5px;
+      background: #333;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .enemy-creature-hp-fill {
+      height: 100%;
+      width: 65%;
+      background: #66bb6a;
+      border-radius: 2px;
+    }
+
+    /* ===== Creature row ===== */
+    .creature-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 28px;
+      padding: 8px 10px;
+      position: relative;
+      z-index: 1;
+    }
+    .creature-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+    .creature-icon {
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .creature-icon img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+    .creature-level-badge {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      font-size: 8px;
+      background: #2a2e35;
+      color: #fff;
+      padding: 1px 3px;
+      border-radius: 3px;
+      line-height: 1;
+    }
+    .creature-slot-name {
+      font-size: 9px;
+      color: #555;
+      font-weight: 600;
+      text-align: center;
+      max-width: 80px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .creature-hp-bar {
+      width: 56px;
+      height: 6px;
+      background: #ddd;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .creature-hp-fill {
+      height: 100%;
+      background: #66bb6a;
+      border-radius: 3px;
+    }
+
+    /* ===== Action area ===== */
+    .action-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: #e8edf3;
+      position: relative;
+    }
+    .action-area::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,0.4) 2px, transparent 2px),
+        radial-gradient(circle, rgba(255,255,255,0.3) 2.5px, transparent 2.5px);
+      background-size: 44px 44px, 64px 64px;
+      pointer-events: none;
+    }
+    .action-btn {
+      width: 100%;
+      max-width: 280px;
+      padding: 12px 0;
+      border: none;
+      border-radius: 16px;
+      background: #fff;
+      color: #2a2e35;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      position: relative;
+      z-index: 1;
+    }
+    .action-btn.primary {
+      background: #4fc3f7;
+      color: #fff;
+    }
+
+    /* ===== Mini toolbar ===== */
+    .mini-toolbar {
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      background: #f5f7fa;
+      border-top: 1px solid #dde3eb;
+      flex-shrink: 0;
+    }
+    .toolbar-btn {
+      font-size: 18px;
+      color: #8b92a0;
+    }
+
+    /* ============================================ */
+    /* OPTION-SPECIFIC STYLES                       */
+    /* ============================================ */
+
+    /* --- Option A: Frosted pill overlaying scene top --- */
+    .area-header-pill {
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 3px 12px;
+      z-index: 10;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .area-header-pill .area-name {
+      font-size: 10px;
+      color: rgba(255,255,255,0.95);
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .area-header-pill .sub-area-name {
+      font-size: 8px;
+      color: rgba(255,255,255,0.65);
+      font-weight: 500;
+    }
+
+    /* --- Option B: Thin strip above scene --- */
+    .area-header-strip {
+      background: #1a1a2e;
+      padding: 4px 0;
+      text-align: center;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .area-header-strip .area-name {
+      font-size: 10px;
+      color: #a0c4ff;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .area-header-strip .separator {
+      color: #445;
+      margin: 0 5px;
+      font-size: 8px;
+    }
+    .area-header-strip .sub-area-name {
+      font-size: 10px;
+      color: #8b92a0;
+      font-weight: 500;
+    }
+
+    /* --- Option C: Embedded in scene top-left --- */
+    .area-header-corner {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      z-index: 10;
+    }
+    .area-header-corner .area-name {
+      font-size: 10px;
+      color: rgba(255,255,255,0.9);
+      font-weight: 700;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
+    .area-header-corner .sub-area-name {
+      font-size: 8px;
+      color: rgba(255,255,255,0.6);
+      font-weight: 500;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    }
+
+    /* --- Creature name overlay on sprite --- */
+    .creature-name-overlay {
+      position: absolute;
+      bottom: -2px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(4px);
+      color: #fff;
+      font-size: 8px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 6px;
+      white-space: nowrap;
+      z-index: 3;
+    }
+
+    /* Pros/cons */
+    .pros-cons {
+      padding: 10px 14px;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      color: #8b92a0;
+    }
+    .pros-cons strong { color: #66bb6a; }
+    .pros-cons .con { color: #ef5350; }
+  </style>
+</head>
+<body>
+<nav class="dev-nav">
+  <a href="/dev/">Hub</a>
+  <a href="/forge.html">Forge</a>
+  <a href="/dev/sprites">Sprites</a>
+  <a href="/dev/content">Content</a>
+  <a href="/creatures-gallery.html">Creatures</a>
+  <a href="/regen-review.html">Regen Review</a>
+  <a href="/assets/sprites/items/review.html">Items Review</a>
+  <a href="/dev/mockups" class="active">Mockups</a>
+</nav>
+
+<h1>Combat Area Header</h1>
+<p class="subtitle">Area / sub-area always visible during combat &bull; creature names on sprites</p>
+
+<div class="options-row">
+
+  <!-- ========== OPTION A: Frosted pill overlay ========== -->
+  <div class="option-card">
+    <div class="option-label">
+      <span>A &mdash; Frosted Pill Overlay</span>
+      <span class="badge">RECOMMENDED</span>
+    </div>
+    <div class="option-desc">
+      Semi-transparent pill floats over the scene background, above the enemy info.
+      Minimal vertical space cost &mdash; overlaps the existing background area.
+    </div>
+    <div class="phone-frame">
+      <!-- Area header: frosted pill -->
+      <div class="scene-area">
+        <div class="scene-bg"></div>
+        <div class="area-header-pill">
+          <span class="area-name">魔法の学校</span>
+          <span class="sub-area-name"> · New High School</span>
+        </div>
+        <div class="enemy-sprite-area">
+          <div class="enemy-creature-icon">
+            <img src="/assets/sprites/creatures/hikaribon.webp" alt="Hikaribon">
+            <span class="enemy-creature-level">Lv5</span>
+          </div>
+          <div class="enemy-creature-name">🔥 Hikaribon ★</div>
+          <div class="enemy-creature-hp-bar"><div class="enemy-creature-hp-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="creature-row">
+        <div class="creature-slot">
+          <div class="creature-icon">
+            <img src="/assets/sprites/creatures/nekotto.webp" alt="">
+            <span class="creature-level-badge">Lv4</span>
+            <span class="creature-name-overlay">Nekotto</span>
+          </div>
+          <div class="creature-hp-bar"><div class="creature-hp-fill" style="width:80%"></div></div>
+        </div>
+        <div class="creature-slot">
+          <div class="creature-icon">
+            <img src="/assets/sprites/creatures/kazenoko.webp" alt="">
+            <span class="creature-level-badge">Lv3</span>
+            <span class="creature-name-overlay">Kazenoko</span>
+          </div>
+          <div class="creature-hp-bar"><div class="creature-hp-fill" style="width:100%"></div></div>
+        </div>
+        <div class="creature-slot">
+          <div class="creature-icon">
+            <img src="/assets/sprites/creatures/bakudango.webp" alt="">
+            <span class="creature-level-badge">Lv5</span>
+            <span class="creature-name-overlay">Bakudango</span>
+          </div>
+          <div class="creature-hp-bar"><div class="creature-hp-fill" style="width:55%"></div></div>
+        </div>
+      </div>
+
+      <div class="action-area">
+        <button class="action-btn primary">⚔️ Fight</button>
+        <button class="action-btn">🔍 Investigate</button>
+      </div>
+
+      <div class="mini-toolbar">
+        <span class="toolbar-btn">◯</span>
+        <span class="toolbar-btn">▦▦</span>
+        <span class="toolbar-btn">≡</span>
+      </div>
+    </div>
+    <div class="pros-cons">
+      <strong>+</strong> Zero vertical space cost (overlaps background)<br>
+      <strong>+</strong> Reads naturally at a glance<br>
+      <strong>+</strong> Dark glass looks premium on any background<br>
+      <span class="con">−</span> Could overlap very tall enemy sprites (rare)
+    </div>
+  </div>
+
+  <!-- ========== OPTION B: Thin strip bar ========== -->
+  <div class="option-card">
+    <div class="option-label">
+      <span>B &mdash; Thin Strip Bar</span>
+    </div>
+    <div class="option-desc">
+      Dedicated dark strip above the scene. Always fully readable.
+      Costs ~20px of vertical space.
+    </div>
+    <div class="phone-frame">
+      <!-- Area header: strip bar -->
+      <div class="area-header-strip">
+        <span class="area-name">魔法の学校</span>
+        <span class="separator">›</span>
+        <span class="sub-area-name">New High School</span>
+      </div>
+
+      <div class="scene-area">
+        <div class="scene-bg"></div>
+        <div class="enemy-sprite-area">
+          <div class="enemy-creature-icon">
+            <img src="/assets/sprites/creatures/hikaribon.webp" alt="Hikaribon">
+            <span class="enemy-creature-level">Lv5</span>
+          </div>
+          <div class="enemy-creature-name">🔥 Hikaribon ★</div>
+          <div class="enemy-creature-hp-bar"><div class="enemy-creature-hp-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="creature-row">
+        <div class="creature-slot">
+          <div class="creature-icon">
+            <img src="/assets/sprites/creatures/nekotto.webp" alt="">
+            <span class="creature-level-badge">Lv4</span>
+            <span class="creature-name-overlay">Nekotto</span>
+          </div>
+          <div class="creature-hp-bar"><div class="creature-hp-fill" style="width:80%"></div></div>
+        </div>
+        <div class="creature-slot">
+          <div class="creature-icon">
+            <img src="/assets/sprites/creatures/kazenoko.webp" alt="">
+            <span class="creature-level-badge">Lv3</span>
+            <span class="creature-name-overlay">Kazenoko</span>
+          </div>
+          <div class="creature-hp-bar"><div class="creature-hp-fill" style="width:100%"></div></div>
+        </div>
+        <div class="creature-slot">
+          <div class="creature-icon">
+            <img src="/assets/sprites/creatures/bakudango.webp" alt="">
+            <span class="creature-level-badge">Lv5</span>
+            <span class="creature-name-overlay">Bakudango</span>
+          </div>
+          <div class="creature-hp-bar"><div class="creature-hp-fill" style="width:55%"></div></div>
+        </div>
+      </div>
+
+      <div class="action-area">
+        <button class="action-btn primary">⚔️ Fight</button>
+        <button class="action-btn">🔍 Investigate</button>
+      </div>
+
+      <div class="mini-toolbar">
+        <span class="toolbar-btn">◯</span>
+        <span class="toolbar-btn">▦▦</span>
+        <span class="toolbar-btn">≡</span>
+      </div>
+    </div>
+    <div class="pros-cons">
+      <strong>+</strong> Always 100% readable regardless of background<br>
+      <strong>+</strong> Clear visual boundary — area info is "chrome"<br>
+      <span class="con">−</span> Uses ~20px of vertical space<br>
+      <span class="con">−</span> Dark bar can feel heavy / break immersion
+    </div>
+  </div>
+
+  <!-- ========== OPTION C: Corner text ========== -->
+  <div class="option-card">
+    <div class="option-label">
+      <span>C &mdash; Corner Text</span>
+    </div>
+    <div class="option-desc">
+      Area name sits in the top-left of the scene with a text shadow.
+      Minimal, game-like, but readability depends on background brightness.
+    </div>
+    <div class="phone-frame">
+      <div class="scene-area">
+        <div class="scene-bg"></div>
+        <div class="area-header-corner">
+          <div class="area-name">魔法の学校</div>
+          <div class="sub-area-name">New High School</div>
+        </div>
+        <div class="enemy-sprite-area">
+          <div class="enemy-creature-icon">
+            <img src="/assets/sprites/creatures/hikaribon.webp" alt="Hikaribon">
+            <span class="enemy-creature-level">Lv5</span>
+          </div>
+          <div class="enemy-creature-name">🔥 Hikaribon ★</div>
+          <div class="enemy-creature-hp-bar"><div class="enemy-creature-hp-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="creature-row">
+        <div class="creature-slot">
+          <div class="creature-icon">
+            <img src="/assets/sprites/creatures/nekotto.webp" alt="">
+            <span class="creature-level-badge">Lv4</span>
+            <span class="creature-name-overlay">Nekotto</span>
+          </div>
+          <div class="creature-hp-bar"><div class="creature-hp-fill" style="width:80%"></div></div>
+        </div>
+        <div class="creature-slot">
+          <div class="creature-icon">
+            <img src="/assets/sprites/creatures/kazenoko.webp" alt="">
+            <span class="creature-level-badge">Lv3</span>
+            <span class="creature-name-overlay">Kazenoko</span>
+          </div>
+          <div class="creature-hp-bar"><div class="creature-hp-fill" style="width:100%"></div></div>
+        </div>
+        <div class="creature-slot">
+          <div class="creature-icon">
+            <img src="/assets/sprites/creatures/bakudango.webp" alt="">
+            <span class="creature-level-badge">Lv5</span>
+            <span class="creature-name-overlay">Bakudango</span>
+          </div>
+          <div class="creature-hp-bar"><div class="creature-hp-fill" style="width:55%"></div></div>
+        </div>
+      </div>
+
+      <div class="action-area">
+        <button class="action-btn primary">⚔️ Fight</button>
+        <button class="action-btn">🔍 Investigate</button>
+      </div>
+
+      <div class="mini-toolbar">
+        <span class="toolbar-btn">◯</span>
+        <span class="toolbar-btn">▦▦</span>
+        <span class="toolbar-btn">≡</span>
+      </div>
+    </div>
+    <div class="pros-cons">
+      <strong>+</strong> Zero vertical space cost<br>
+      <strong>+</strong> Very minimal, doesn't compete with enemy info<br>
+      <span class="con">−</span> Harder to read on bright/busy backgrounds<br>
+      <span class="con">−</span> Can overlap enemy sprite on small screens
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

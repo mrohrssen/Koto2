@@ -93,8 +93,8 @@ export function render(creatures) {
           <img class="creature-sprite-icon" alt="">
           <span class="creature-element-icon" style="display:none">${ELEMENT_ICONS[creature.element]}</span>
           <span class="creature-level-badge">Lv${creature.level}</span>
+          <span class="creature-slot-name">${creature.nameEn}</span>
         </div>
-        <div class="creature-slot-name">${creature.nameEn}</div>
         <div class="creature-hp-bar">
           <div class="creature-hp-fill" style="width: ${hpPct}%; background-color: ${hpColor}"></div>
         </div>

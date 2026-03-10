@@ -233,8 +233,26 @@ function updateStatusBar() {
     const activeRoom = Array.isArray(currentRoom) ? currentRoom[0] : currentRoom;
     const subAreaName = activeRoom?.subArea?.nameEn;
     dom.floorIndicator.textContent = subAreaName || `Area ${(run.areasCompleted || 0) + 1}`;
+
+    // Update area header pill
+    const areaName = run.currentArea?.name;
+    const sep = dom.areaHeaderPill.querySelector('.area-header-sep');
+    if (areaName && subAreaName) {
+      dom.areaHeaderName.textContent = areaName;
+      dom.areaHeaderSub.textContent = subAreaName;
+      if (sep) sep.style.display = '';
+      dom.areaHeaderPill.classList.add('visible');
+    } else if (areaName) {
+      dom.areaHeaderName.textContent = areaName;
+      dom.areaHeaderSub.textContent = '';
+      if (sep) sep.style.display = 'none';
+      dom.areaHeaderPill.classList.add('visible');
+    } else {
+      dom.areaHeaderPill.classList.remove('visible');
+    }
   } else {
     dom.floorIndicator.textContent = 'Hub';
+    dom.areaHeaderPill.classList.remove('visible');
   }
   dom.essenceDisplay.textContent = gameState.meta?.essence || gameState.player?.essence || 0;
 }
