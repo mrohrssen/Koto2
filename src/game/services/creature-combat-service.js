@@ -376,6 +376,11 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
 
     // Execute the move
     const result = executeMove(creature, choice.creatureIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds);
+    // Annotate attacks with post-deduction MP so frontend can update bars immediately
+    for (const atk of result.attacks) {
+      atk.attackerMp = creature.mp;
+      atk.attackerMaxMp = creature.maxMp || 0;
+    }
     attacks.push(...result.attacks);
     xpEvents.push(...result.xpEvents);
 
@@ -383,6 +388,10 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
     if (hastedCreatureIndices.has(choice.creatureIndex)) {
       // Don't charge MP again for haste extra action
       const result2 = executeMove(creature, choice.creatureIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds);
+      for (const atk of result2.attacks) {
+        atk.attackerMp = creature.mp;
+        atk.attackerMaxMp = creature.maxMp || 0;
+      }
       attacks.push(...result2.attacks);
       xpEvents.push(...result2.xpEvents);
     }
