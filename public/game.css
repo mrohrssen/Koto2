@@ -319,12 +319,12 @@ html, body {
   padding: 0;
   width: auto;
   height: auto;
-  padding-top: 0;
+  padding-top: 40px;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 2px;
 }
 
@@ -3047,7 +3047,7 @@ html, body {
 }
 
 .creature-popup-name { font-weight: bold; font-size: 14px; color: var(--text-primary); }
-.creature-popup-element { font-size: 12px; color: #aaa; margin: 4px 0; }
+.creature-popup-element { font-size: 12px; color: #666; margin: 4px 0; }
 .creature-popup-archetype {
   font-size: 0.75rem;
   color: var(--text-secondary, #aaa);
@@ -3055,7 +3055,7 @@ html, body {
   letter-spacing: 0.05em;
   margin-bottom: 0.25rem;
 }
-.creature-popup-stats { font-size: 11px; color: #ccc; }
+.creature-popup-stats { font-size: 11px; color: #444; }
 .creature-popup-ultimate { font-size: 11px; color: #aaa; margin: 8px 0; }
 .creature-popup-ultimate-btn {
   width: 100%;
@@ -4804,6 +4804,13 @@ html, body {
   margin-top: 1px;
 }
 
+.target-baseword {
+  font-size: 11px;
+  color: #666;
+  margin-top: 2px;
+  font-style: italic;
+}
+
 .target-stats {
   display: flex;
   align-items: center;
@@ -4880,8 +4887,8 @@ html, body {
 
 /* Move list in creature popup */
 .creature-popup-moves { margin-top: 8px; }
-.creature-popup-moves-label { font-size: 11px; color: #888; margin-bottom: 4px; }
-.creature-popup-move-row { font-size: 12px; padding: 2px 0; color: #ccc; }
+.creature-popup-moves-label { font-size: 11px; color: #666; margin-bottom: 4px; }
+.creature-popup-move-row { font-size: 12px; padding: 2px 0; color: #444; }
 
 /* === Move Learn Panel === */
 .move-learn-panel {

@@ -90,9 +90,13 @@ function showTargets(targets, move, type) {
     // Info panel
     const infoPanel = document.createElement('div');
     infoPanel.className = 'target-info-panel';
+    const baseWordLine = target.baseWord
+      ? `<div class="target-baseword">${target.baseWord}${target.baseReading ? ` (${target.baseReading})` : ''} — ${target.baseMeaning || ''}</div>`
+      : '';
     infoPanel.innerHTML = `
       <div class="target-jp">${target.name}</div>
       <div class="target-en">${target.nameEn}</div>
+      ${baseWordLine}
       <div class="target-stats">
         <span class="target-lv">Lv${target.level}</span>
         <div class="target-hp-bar">

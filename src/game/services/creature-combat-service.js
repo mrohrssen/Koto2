@@ -388,11 +388,11 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
     }
   }
 
-  // MP regen: each alive ally gets 12% of maxMp back
+  // MP regen: each alive ally gets 5% of maxMp back
   const mpRegens = [];
   for (const creature of allies) {
     if (creature.hp <= 0) continue;
-    const regen = Math.floor((creature.maxMp || 0) * 0.12);
+    const regen = Math.floor((creature.maxMp || 0) * 0.05);
     creature.mp = Math.min(creature.maxMp || 0, (creature.mp || 0) + regen);
     mpRegens.push({ creatureId: creature.id, mp: creature.mp, maxMp: creature.maxMp, regen });
   }

@@ -67,8 +67,8 @@ describe('Creature Combat - Move Turn', () => {
       { creatureIndex: 0, moveId: 'kamu', targetIndex: 0 }
     ];
     processMoveTurn(allies, enemies, moveChoices);
-    // MP should decrease by move cost, then regen 12% of maxMp
-    const expectedMp = Math.min(allies[0].maxMp, startMp - moveCost + Math.floor(allies[0].maxMp * 0.12));
+    // MP should decrease by move cost, then regen 5% of maxMp
+    const expectedMp = Math.min(allies[0].maxMp, startMp - moveCost + Math.floor(allies[0].maxMp * 0.05));
     assert.strictEqual(allies[0].mp, expectedMp);
   });
 

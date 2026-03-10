@@ -509,9 +509,13 @@ async function handleBefriendTalk() {
     try {
       const resp = await fetch(`${API_BASE}/api/game/befriend-talk`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin'
+        headers: getAuthHeaders()
       });
+      if (!resp.ok) {
+        console.error('[CombatLoop] Befriend talk HTTP error:', resp.status);
+        startMoveSelection();
+        return;
+      }
       const result = await resp.json();
 
       if (!result.accepted) {
