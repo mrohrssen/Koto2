@@ -137,7 +137,7 @@
       "notes": "",
       "previousResult": null,
       "reforgeHistory": [],
-      "status": "pending",
+      "status": "discarded",
       "submittedAt": "2026-03-09T11:37:28.433Z"
     },
     {
@@ -151,7 +151,7 @@
       "notes": "",
       "previousResult": null,
       "reforgeHistory": [],
-      "status": "pending",
+      "status": "discarded",
       "submittedAt": "2026-03-09T11:37:28.433Z"
     },
     {
@@ -165,7 +165,7 @@
       "notes": "",
       "previousResult": null,
       "reforgeHistory": [],
-      "status": "pending",
+      "status": "approved",
       "submittedAt": "2026-03-09T11:37:28.433Z"
     },
     {
@@ -179,7 +179,7 @@
       "notes": "music student",
       "previousResult": null,
       "reforgeHistory": [],
-      "status": "pending",
+      "status": "approved",
       "submittedAt": "2026-03-09T11:37:28.433Z"
     },
     {
@@ -193,8 +193,730 @@
       "notes": "school uniform - HP boost ",
       "previousResult": null,
       "reforgeHistory": [],
-      "status": "pending",
+      "status": "discarded",
       "submittedAt": "2026-03-09T11:37:59.828Z"
+    },
+    {
+      "id": "forge_1773058082549_hi0pyj",
+      "themeId": "school",
+      "word": "生徒",
+      "reading": "せいと",
+      "meaning": "pupil; student; schoolchild",
+      "rank": 1500,
+      "role": "npc",
+      "notes": "needs a school related modifier (what kind of student is he? ideally one not used yet)",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T12:08:02.549Z"
+    },
+    {
+      "id": "forge_1773058082549_em37zx",
+      "themeId": "school",
+      "word": "教室",
+      "reading": "きょうしつ",
+      "meaning": "classroom; lecture room; department (in a university); class; lessons; course; school (for a particular discipline); ...",
+      "rank": 1500,
+      "role": "area",
+      "notes": "sub-area inside school",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "queued",
+      "submittedAt": "2026-03-09T12:08:02.549Z"
+    },
+    {
+      "id": "forge_1773058082549_suzia7",
+      "themeId": "school",
+      "word": "机",
+      "reading": "つくえ",
+      "meaning": "desk",
+      "rank": 1500,
+      "role": "creature",
+      "notes": "desk come alive creature",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T12:08:02.549Z"
+    },
+    {
+      "id": "forge_1773058082549_tz1ts1",
+      "themeId": "school",
+      "word": "椅子",
+      "reading": "いす",
+      "meaning": "chair; stool; post; office; position",
+      "rank": 1500,
+      "role": "creature",
+      "notes": "chair come alive",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T12:08:02.549Z"
+    },
+    {
+      "id": "forge_1773058082549_y4v0uf",
+      "themeId": "school",
+      "word": "制服",
+      "reading": "せいふく",
+      "meaning": "uniform",
+      "rank": 1800,
+      "role": "creature",
+      "notes": "school uniform - add shp",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "discarded",
+      "submittedAt": "2026-03-09T12:08:02.549Z"
+    },
+    {
+      "id": "forge_1773058082549_x47716",
+      "themeId": "school",
+      "word": "大学",
+      "reading": "だいがく",
+      "meaning": "university; college; former central university of Kyoto (established under the ritsuryo system for the training of go...",
+      "rank": 1900,
+      "role": "area",
+      "notes": "sub area inside school ",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "queued",
+      "submittedAt": "2026-03-09T12:08:02.549Z"
+    },
+    {
+      "id": "forge_1773058082549_vnevb1",
+      "themeId": "school",
+      "word": "学生",
+      "reading": "がくせい",
+      "meaning": "student (esp. a university student)",
+      "rank": 2000,
+      "role": "npc",
+      "notes": "university student",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "discarded",
+      "submittedAt": "2026-03-09T12:08:02.549Z"
+    },
+    {
+      "id": "forge_1773058082549_uqb332",
+      "themeId": "school",
+      "word": "高校",
+      "reading": "こうこう",
+      "meaning": "senior high school; high school",
+      "rank": 2200,
+      "role": "area",
+      "notes": "sub area",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "queued",
+      "submittedAt": "2026-03-09T12:08:02.549Z"
+    },
+    {
+      "id": "forge_1773058082549_8lkhwt",
+      "themeId": "school",
+      "word": "ペン",
+      "reading": "ペン",
+      "meaning": "pen",
+      "rank": 4800,
+      "role": "item",
+      "notes": "adds attack",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T12:08:02.549Z"
+    },
+    {
+      "id": "forge_1773058082549_f3qp41",
+      "themeId": "school",
+      "word": "体育館",
+      "reading": "たいいくかん",
+      "meaning": "gymnasium",
+      "rank": 8500,
+      "role": "area",
+      "notes": "sub area inside school",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "queued",
+      "submittedAt": "2026-03-09T12:08:02.549Z"
+    },
+    {
+      "id": "forge_1773059071059_c6xpze",
+      "themeId": "school",
+      "word": "制服",
+      "reading": "せいふく",
+      "meaning": "uniform",
+      "rank": null,
+      "role": "item",
+      "notes": "You need to make this japanese name school uniform not just uniform",
+      "previousResult": {
+        "id": "school-uniform",
+        "word": "制服",
+        "reading": "せいふく",
+        "meaning": "uniform",
+        "components": [
+          {
+            "word": "制",
+            "reading": "せい",
+            "meanings": [
+              "system",
+              "law",
+              "regulation"
+            ],
+            "rank": 7233
+          },
+          {
+            "word": "服",
+            "reading": "ふく",
+            "meanings": [
+              "clothes",
+              "clothing",
+              "garment"
+            ],
+            "rank": 566
+          }
+        ],
+        "compoundRank": 1608,
+        "rank": 7233,
+        "rarity": "rare",
+        "type": "boost",
+        "effect": {
+          "field": "hpMult",
+          "value": 0.05
+        },
+        "description": "Increase one creature's HP by 5%",
+        "descriptionJa": "クリーチャー1体のHPを5%アップ",
+        "stage": 5
+      },
+      "reforgeHistory": [
+        {
+          "jobId": "forge_1773056279828_1mw2ke",
+          "role": "item",
+          "notes": "You need to make this japanese name school uniform not just uniform"
+        }
+      ],
+      "status": "approved",
+      "submittedAt": "2026-03-09T12:24:31.059Z"
+    },
+    {
+      "id": "forge_1773059106890_21uxnl",
+      "themeId": "school",
+      "word": "学生",
+      "reading": "",
+      "meaning": "",
+      "rank": null,
+      "role": "npc",
+      "notes": "What is a research student???",
+      "previousResult": {
+        "id": "haruki",
+        "name": "ハルキ",
+        "nameEn": "Haruki",
+        "baseWord": "学生",
+        "baseReading": "がくせい",
+        "baseMeaning": "student (esp. a university student)",
+        "baseRank": 2000,
+        "modifier": {
+          "word": "研究",
+          "reading": "けんきゅう",
+          "meaning": "research / study",
+          "rank": 1200
+        },
+        "area": "mahouno-gakkou",
+        "tier": 1,
+        "personality": {
+          "traits": [
+            "intellectual",
+            "calm",
+            "slightly absent-minded",
+            "earnest"
+          ],
+          "speechStyle": "Speaks in measured, thoughtful sentences, often pausing to consider his words before continuing.",
+          "quirk": "Constantly jots observations in a small notebook, even mid-conversation, muttering that everything could be research material."
+        },
+        "createdAt": "2026-03-09"
+      },
+      "reforgeHistory": [
+        {
+          "jobId": "forge_1773058082549_vnevb1",
+          "role": "npc",
+          "notes": "What is a research student???"
+        }
+      ],
+      "status": "approved",
+      "submittedAt": "2026-03-09T12:25:06.890Z"
+    },
+    {
+      "id": "forge_1773059192282_pq674b",
+      "themeId": "school",
+      "word": "練習",
+      "reading": "れんしゅう",
+      "meaning": "practice; training; drill; exercise",
+      "rank": null,
+      "role": "npc-skill",
+      "notes": "Make it haste",
+      "previousResult": {
+        "id": "renshuu",
+        "name": "練習",
+        "nameEn": "Practice",
+        "reading": "れんしゅう",
+        "meaning": "practice; training; drill; exercise",
+        "rank": 1100,
+        "element": "neutral",
+        "category": "shield",
+        "target": "single_ally",
+        "power": 18,
+        "mpCost": 0,
+        "statusEffect": "shield",
+        "statusChance": 100,
+        "statusDuration": 2,
+        "description": "Drills an ally through repeated practice, raising a protective shield for 2 turns."
+      },
+      "reforgeHistory": [
+        {
+          "jobId": "forge_1773056248433_q5aau2",
+          "role": "npc-skill",
+          "notes": "Make it haste"
+        }
+      ],
+      "status": "approved",
+      "submittedAt": "2026-03-09T12:26:32.282Z"
+    },
+    {
+      "id": "forge_1773059216218_4x5wpy",
+      "themeId": "school",
+      "word": "研究",
+      "reading": "けんきゅう",
+      "meaning": "study; research; investigation",
+      "rank": null,
+      "role": "npc-skill",
+      "notes": "Make it reduce attack 1 enemy for 3 turns",
+      "previousResult": {
+        "id": "kenkyuu",
+        "name": "研究",
+        "nameEn": "Research",
+        "reading": "けんきゅう",
+        "meaning": "study; research; investigation",
+        "rank": 1200,
+        "element": "metal",
+        "category": "shield",
+        "target": "all_allies",
+        "power": 15,
+        "mpCost": 0,
+        "statusEffect": "shield",
+        "statusChance": 100,
+        "statusDuration": 2,
+        "description": "Conducts thorough research to anticipate enemy tactics, shielding all allies for 2 turns."
+      },
+      "reforgeHistory": [
+        {
+          "jobId": "forge_1773056248433_9is161",
+          "role": "npc-skill",
+          "notes": "Make it reduce attack 1 enemy for 3 turns"
+        }
+      ],
+      "status": "approved",
+      "submittedAt": "2026-03-09T12:26:56.218Z"
+    },
+    {
+      "id": "forge_1773063100046_g40v6r",
+      "themeId": "school",
+      "word": "留学生",
+      "reading": "りゅうがくせい",
+      "meaning": "overseas student; exchange student",
+      "rank": 20200,
+      "role": "npc",
+      "notes": "should be a \"foreign exchange student\"",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:31:40.046Z"
+    },
+    {
+      "id": "forge_1773063451503_i9phwm",
+      "themeId": "school",
+      "word": "図書館",
+      "reading": "としょかん",
+      "meaning": "library",
+      "rank": 4300,
+      "role": "area",
+      "notes": "sub area inside school",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:37:31.503Z"
+    },
+    {
+      "id": "forge_1773063451503_tzcfro",
+      "themeId": "school",
+      "word": "廊下",
+      "reading": "ろうか",
+      "meaning": "corridor; hallway; passageway",
+      "rank": 1400,
+      "role": "area",
+      "notes": "sub area inside school",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:37:31.503Z"
+    },
+    {
+      "id": "forge_1773063451503_6m40r1",
+      "themeId": "school",
+      "word": "校長",
+      "reading": "こうちょう",
+      "meaning": "principal; headmaster",
+      "rank": 9400,
+      "role": "npc",
+      "notes": "should be the most powerful npc in school",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:37:31.503Z"
+    },
+    {
+      "id": "forge_1773063451503_tmsx7i",
+      "themeId": "school",
+      "word": "鉛筆",
+      "reading": "えんぴつ",
+      "meaning": "pencil",
+      "rank": 10500,
+      "role": "item",
+      "notes": "persistent item ",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:37:31.503Z"
+    },
+    {
+      "id": "forge_1773063451503_jodpyb",
+      "themeId": "school",
+      "word": "辞書",
+      "reading": "じしょ",
+      "meaning": "dictionary; lexicon; letter of resignation",
+      "rank": 12500,
+      "role": "item",
+      "notes": "persistent item",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:37:31.503Z"
+    },
+    {
+      "id": "forge_1773063451503_kjkbef",
+      "themeId": "school",
+      "word": "留学生",
+      "reading": "りゅうがくせい",
+      "meaning": "overseas student; exchange student",
+      "rank": 20200,
+      "role": "npc",
+      "notes": "",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:37:31.503Z"
+    },
+    {
+      "id": "forge_1773064426318_e8q25o",
+      "themeId": "school",
+      "word": "調べる",
+      "reading": "しらべる",
+      "meaning": "to examine; to look up; to investigate; to check up; to sense; to study; to inquire; to search",
+      "rank": 500,
+      "role": "npc-skill",
+      "notes": "",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:53:46.318Z"
+    },
+    {
+      "id": "forge_1773064426318_qtyu8m",
+      "themeId": "school",
+      "word": "分かる",
+      "reading": "わかる",
+      "meaning": "to understand; to comprehend; to grasp; to see; to get; to follow; to become clear; to be known; to be discovered; to...",
+      "rank": 500,
+      "role": "npc-skill",
+      "notes": "",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:53:46.318Z"
+    },
+    {
+      "id": "forge_1773064426318_5hplea",
+      "themeId": "school",
+      "word": "読む",
+      "reading": "よむ",
+      "meaning": "to read; to recite (e.g. a sutra); to chant; to predict; to guess; to forecast; to read (someone's thoughts); to see ...",
+      "rank": 400,
+      "role": "npc-skill",
+      "notes": "",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:53:46.318Z"
+    },
+    {
+      "id": "forge_1773064426318_q0rmxb",
+      "themeId": "school",
+      "word": "書く",
+      "reading": "かく",
+      "meaning": "to write; to compose; to pen; to draw; to paint",
+      "rank": 300,
+      "role": "npc-skill",
+      "notes": "",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:53:46.318Z"
+    },
+    {
+      "id": "forge_1773064426318_og8kic",
+      "themeId": "school",
+      "word": "先輩",
+      "reading": "せんぱい",
+      "meaning": "senior (at work or school); superior; elder; older graduate; progenitor; old-timer",
+      "rank": 1400,
+      "role": "npc",
+      "notes": "senior student",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "discarded",
+      "submittedAt": "2026-03-09T13:53:46.318Z"
+    },
+    {
+      "id": "forge_1773064426318_wuhm2q",
+      "themeId": "school",
+      "word": "食堂",
+      "reading": "しょくどう",
+      "meaning": "dining room; dining hall; cafeteria; canteen; messroom; restaurant; eatery; snack bar; diner",
+      "rank": 3300,
+      "role": "area",
+      "notes": "cafeteria sub area",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:53:46.318Z"
+    },
+    {
+      "id": "forge_1773064426318_whfb3x",
+      "themeId": "school",
+      "word": "教科書",
+      "reading": "きょうかしょ",
+      "meaning": "textbook; coursebook; schoolbook",
+      "rank": 5300,
+      "role": "item",
+      "notes": "hp buff",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:53:46.318Z"
+    },
+    {
+      "id": "forge_1773064426318_69haf2",
+      "themeId": "school",
+      "word": "宿題",
+      "reading": "しゅくだい",
+      "meaning": "homework; assignment; pending issue; unresolved problem; open question",
+      "rank": 5700,
+      "role": "npc-skill",
+      "notes": "[subject] homework -> should be relevant to a few of our teachers/professors",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "discarded",
+      "submittedAt": "2026-03-09T13:53:46.318Z"
+    },
+    {
+      "id": "forge_1773064426318_bqxmq0",
+      "themeId": "school",
+      "word": "化学",
+      "reading": "かがく",
+      "meaning": "chemistry",
+      "rank": 16100,
+      "role": "npc",
+      "notes": "chemistry professor? teacher? ",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:53:46.318Z"
+    },
+    {
+      "id": "forge_1773064426318_qn6za7",
+      "themeId": "school",
+      "word": "地理",
+      "reading": "ちり",
+      "meaning": "geography",
+      "rank": 14000,
+      "role": "npc",
+      "notes": "geography professor? teacher? ",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:53:46.318Z"
+    },
+    {
+      "id": "forge_1773064426318_7p3otf",
+      "themeId": "school",
+      "word": "文学",
+      "reading": "ぶんがく",
+      "meaning": "literature",
+      "rank": 9700,
+      "role": "npc",
+      "notes": "literature professor? teacher? ",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:53:46.318Z"
+    },
+    {
+      "id": "forge_1773064426318_tbcrb9",
+      "themeId": "school",
+      "word": "後輩",
+      "reading": "こうはい",
+      "meaning": "junior (at work, school, etc.); younger people; younger student",
+      "rank": 3800,
+      "role": "npc",
+      "notes": "not sure how to best use this, but make it school relevant",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:53:46.318Z"
+    },
+    {
+      "id": "forge_1773064426318_e6xo5e",
+      "themeId": "school",
+      "word": "試験",
+      "reading": "しけん",
+      "meaning": "examination; exam; test; trial; experiment; test",
+      "rank": 3300,
+      "role": "move",
+      "notes": "Call it investigate",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:53:46.318Z"
+    },
+    {
+      "id": "forge_1773064426318_ov6ibb",
+      "themeId": "school",
+      "word": "小学校",
+      "reading": "しょうがっこう",
+      "meaning": "primary school; elementary school; grade school",
+      "rank": 2900,
+      "role": "area",
+      "notes": "sub area",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:53:46.318Z"
+    },
+    {
+      "id": "forge_1773064426318_c3gu8j",
+      "themeId": "school",
+      "word": "授業",
+      "reading": "じゅぎょう",
+      "meaning": "lesson; class work; teaching; instruction",
+      "rank": 1800,
+      "role": "npc-skill",
+      "notes": "[subject] lesson -> should be relevant to a few of our teachers/professors",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:53:46.318Z"
+    },
+    {
+      "id": "forge_1773064559975_v6ze7r",
+      "themeId": "school",
+      "word": "問題",
+      "reading": "もんだい",
+      "meaning": "question (e.g. on a test); problem; problem (e.g. societal, political); question; issue; subject (e.g. of research); ...",
+      "rank": 300,
+      "role": "npc-skill",
+      "notes": "seems like we could make some npc relevant skills here with this (chemistry question, math question etc)",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-09T13:55:59.975Z"
+    },
+    {
+      "id": "forge_1773065148247_nbm249",
+      "themeId": "school",
+      "word": "宿題",
+      "reading": "しゅくだい",
+      "meaning": "homework; assignment",
+      "rank": null,
+      "role": "npc-skill",
+      "notes": "should be an aoe confuse ",
+      "previousResult": {
+        "id": "shukudai",
+        "name": "宿題",
+        "nameEn": "Homework",
+        "reading": "しゅくだい",
+        "meaning": "homework; assignment",
+        "rank": 5700,
+        "element": "neutral",
+        "category": "damage",
+        "target": "all_enemies",
+        "power": 18,
+        "mpCost": 0,
+        "statusEffect": null,
+        "statusChance": null,
+        "statusDuration": null,
+        "description": "Assigns a mountain of homework that overwhelms all enemies."
+      },
+      "reforgeHistory": [
+        {
+          "jobId": "forge_1773064426318_69haf2",
+          "role": "npc-skill",
+          "notes": "should be an aoe confuse "
+        }
+      ],
+      "status": "approved",
+      "submittedAt": "2026-03-09T14:05:48.247Z"
+    },
+    {
+      "id": "forge_1773065230765_wrq8z9",
+      "themeId": "school",
+      "word": "先輩",
+      "reading": "",
+      "meaning": "",
+      "rank": null,
+      "role": "npc",
+      "notes": "Don't we already use kind somewhere else?",
+      "previousResult": {
+        "id": "haruki",
+        "name": "ハルキ",
+        "nameEn": "Haruki",
+        "baseWord": "先輩",
+        "baseReading": "せんぱい",
+        "baseMeaning": "senior (at work or school)",
+        "baseRank": 1400,
+        "modifier": {
+          "word": "優しい",
+          "reading": "やさしい",
+          "meaning": "kind; gentle",
+          "rank": 1100
+        },
+        "area": "mahouno-gakkou",
+        "tier": 1,
+        "personality": {
+          "traits": [
+            "thoughtful",
+            "mentoring",
+            "calm",
+            "reliable"
+          ],
+          "speechStyle": "Speaks with a calm, supportive tone, naturally guiding conversations to help younger students.",
+          "quirk": "Always has a paperback novel tucked under one arm, even during gym class."
+        },
+        "createdAt": "2026-03-09"
+      },
+      "reforgeHistory": [
+        {
+          "jobId": "forge_1773064426318_og8kic",
+          "role": "npc",
+          "notes": "Don't we already use kind somewhere else?"
+        }
+      ],
+      "status": "approved",
+      "submittedAt": "2026-03-09T14:07:10.765Z"
     }
   ]
 }

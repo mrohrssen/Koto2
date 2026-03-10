@@ -78,9 +78,9 @@ for (const area of AREAS) {
  * Get 2 random area options, excluding the current area
  */
 export function getAreaSelectionOptions(excludeAreaId = null) {
-  const pool = AREAS.filter(a => a.id !== excludeAreaId);
-  const shuffled = pool.sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, 2);
+  // TODO: MVP lock — only offer the school area. Remove this to restore full area selection.
+  const school = AREAS.find(a => a.id === 'mahouno-gakkou');
+  return school ? [school] : [];
 }
 
 /**

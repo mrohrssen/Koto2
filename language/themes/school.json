@@ -54,7 +54,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc-skill:mondai",
       "existingUses": [],
       "wkDefinition": "Problem, Question"
     },
@@ -104,7 +104,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": "area:",
+      "assigned": null,
       "existingUses": [
         "area-loc:mahouno-gakkou-spacious-classroom"
       ],
@@ -144,7 +144,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc-skill:jugyou",
       "existingUses": [],
       "wkDefinition": "Lesson, Class, Teaching"
     },
@@ -192,7 +192,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "area:shokudou",
       "existingUses": [],
       "wkDefinition": "Cafeteria, Dining Hall, Diner"
     },
@@ -204,7 +204,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "move:shiken",
       "existingUses": [],
       "wkDefinition": "Examination, Test, Experiment"
     },
@@ -216,7 +216,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc:haruto",
       "existingUses": [],
       "wkDefinition": "Junior, One's Junior"
     },
@@ -228,7 +228,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "area:toshokan",
       "existingUses": [],
       "wkDefinition": "Library"
     },
@@ -240,7 +240,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "item:textbook",
       "existingUses": [],
       "wkDefinition": "Textbook"
     },
@@ -264,7 +264,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc-skill:shukudai",
       "existingUses": [],
       "wkDefinition": "Homework"
     },
@@ -276,7 +276,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": "area:",
+      "assigned": null,
       "existingUses": [
         "area-loc:mahouno-gakkou-old-gymnasium"
       ],
@@ -302,7 +302,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc:tesshou",
       "existingUses": [],
       "wkDefinition": null
     },
@@ -314,7 +314,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "item:pencil",
       "existingUses": [],
       "wkDefinition": "Pencil"
     },
@@ -338,7 +338,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc:tamaki",
       "existingUses": [],
       "wkDefinition": "Geography"
     },
@@ -350,7 +350,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "item:dictionary",
       "existingUses": [],
       "wkDefinition": "Dictionary"
     },
@@ -362,7 +362,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc-skill:yomu",
       "existingUses": [],
       "wkDefinition": "To Read"
     },
@@ -424,7 +424,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc:renjiro",
       "existingUses": [],
       "wkDefinition": "Senior, Older Graduate, Superior"
     },
@@ -436,7 +436,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "area:rouka",
       "existingUses": [
         "area-loc:mahouno-gakkou-long-hallway"
       ],
@@ -462,7 +462,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": "area:",
+      "assigned": "area:daigaku",
       "existingUses": [],
       "wkDefinition": "University, College, Uni"
     },
@@ -474,7 +474,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": "area:",
+      "assigned": "area:koukou",
       "existingUses": [],
       "wkDefinition": "High School, Senior High School"
     },
@@ -510,7 +510,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "area:shougakkou",
       "existingUses": [],
       "wkDefinition": "Elementary School, Primary School, Grade School"
     },
@@ -574,7 +574,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc:shinobu",
       "existingUses": [],
       "wkDefinition": null
     },
@@ -586,7 +586,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc:leon",
       "existingUses": [],
       "wkDefinition": "Exchange Student, International Student, Foreign Student"
     },
@@ -598,7 +598,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc-skill:wakaru",
       "existingUses": [],
       "wkDefinition": "To Understand, To Be Understandable"
     },
@@ -660,7 +660,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc:fumika",
       "existingUses": [],
       "wkDefinition": "Literature"
     },
@@ -710,7 +710,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc-skill:npc-kaku",
       "existingUses": [],
       "wkDefinition": "To Write"
     },
@@ -734,7 +734,7 @@
       "roles": [],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "npc-skill:shiraberu",
       "existingUses": [],
       "wkDefinition": "To Investigate, To Examine, To Research, To Look Into"
     }

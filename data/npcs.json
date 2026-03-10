@@ -106,7 +106,11 @@
       "rank": 900
     },
     "attack": 10,
-    "skills": [],
+    "skills": [
+      "manabu",
+      "oboeru",
+      "wakaru"
+    ],
     "personality": {
       "traits": [
         "earnest",
@@ -443,5 +447,1400 @@
       ]
     },
     "createdAt": "2026-02-18"
+  },
+  "chiharu": {
+    "id": "chiharu",
+    "name": "チハル",
+    "nameEn": "Chiharu",
+    "speakerId": 6,
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "baseWord": "先生",
+    "baseReading": "せんせい",
+    "baseMeaning": "teacher",
+    "baseRank": 500,
+    "modifier": {
+      "word": "歴史",
+      "reading": "れきし",
+      "meaning": "history",
+      "rank": 1900
+    },
+    "attack": 10,
+    "skills": [
+      "yomu",
+      "kenkyuu",
+      "shiru"
+    ],
+    "personality": {
+      "traits": [
+        "nostalgic",
+        "eloquent",
+        "warm",
+        "contemplative"
+      ],
+      "speechStyle": "Weaves every conversation into a story, often beginning with 'long ago' or 'there was a time when...'",
+      "quirk": "Carries a worn journal full of sketches and notes from places that may or may not exist anymore."
+    },
+    "greeting": "昔々…いや、今は関係ない。ここは私の教室だ。出て行きなさい。",
+    "defeatLine": "…あれ？私は…何を話していたんだろう。",
+    "postCombat": {
+      "freed": "…すみません。頭の中が暗くて、何も見えなかった。今はもう大丈夫です。",
+      "rounds": [
+        {
+          "npcLine": "私は歴史の先生です。昔の話を教えるのが好きなんです。…でも、さっきは何を言っていたか覚えていない。",
+          "options": [
+            {
+              "text": "歴史の先生なんですね。素敵ですね。",
+              "tone": "positive"
+            },
+            {
+              "text": "大変でしたね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "覚えていない方がいいと思う。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "このノートを見てください。昔の場所の絵を描いたんです。…もうない場所もあります。",
+          "options": [
+            {
+              "text": "見せてください。きれいな絵ですね。",
+              "tone": "positive"
+            },
+            {
+              "text": "絵が好きなんですね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "もうない場所の絵に何の意味があるの？",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "この学校にも長い歴史があります。昔はここで色々なことがありました。…いい思い出ばかりです。",
+          "options": [
+            {
+              "text": "その話、もっと聞きたいです。",
+              "tone": "positive"
+            },
+            {
+              "text": "そうですか。",
+              "tone": "neutral"
+            },
+            {
+              "text": "昔の話はもういい。",
+              "tone": "negative"
+            }
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-03-09"
+  },
+  "emilia": {
+    "id": "emilia",
+    "name": "エミリア",
+    "nameEn": "Emilia",
+    "speakerId": 36,
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "baseWord": "留学生",
+    "baseReading": "りゅうがくせい",
+    "baseMeaning": "overseas student; exchange student",
+    "baseRank": 20200,
+    "modifier": {
+      "word": "明るい",
+      "reading": "あかるい",
+      "meaning": "bright; cheerful",
+      "rank": 2200
+    },
+    "attack": 10,
+    "skills": [
+      "manabu",
+      "wasureru",
+      "oboeru"
+    ],
+    "personality": {
+      "traits": [
+        "cheerful",
+        "curious",
+        "talkative",
+        "earnest"
+      ],
+      "speechStyle": "Speaks with bubbly enthusiasm, mixing in simple phrases she's proud of learning.",
+      "quirk": "Always carries a small notebook where she writes down new words she hears."
+    },
+    "greeting": "あっ、こんにちは！わたし、エミリア！この学校、すごく楽しい！…でも、今は関係ない。ここを通さないよ！",
+    "defeatLine": "あれ…？わたし、何をしてた…？ノート、どこ…？",
+    "postCombat": {
+      "freed": "あ、ありがとう…！頭がぼんやりしてた。変なシステムに操られてたみたい…。わたしのノートは無事？よかった！",
+      "rounds": [
+        {
+          "npcLine": "このノート、見て！毎日、新しい言葉を書いてるの。今日は「友達」って書いた。いい言葉でしょ？",
+          "options": [
+            {
+              "text": "すごいね！たくさん書いてあるね。",
+              "tone": "positive"
+            },
+            {
+              "text": "ノートか。へえ。",
+              "tone": "neutral"
+            },
+            {
+              "text": "そんなの見たくない。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "わたし、遠い国から来たの。日本語、まだ少しだけ。でも、この学校のみんな、やさしいから、毎日がんばってる！",
+          "options": [
+            {
+              "text": "日本語、上手だよ！がんばってるね。",
+              "tone": "positive"
+            },
+            {
+              "text": "留学生なんだ。大変だね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "もっと勉強したほうがいいよ。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "ねえ、わたしたち、友達になれる？この学校で友達がほしいの。一緒にお昼、食べよう！",
+          "options": [
+            {
+              "text": "もちろん！友達だよ。よろしくね。",
+              "tone": "positive"
+            },
+            {
+              "text": "考えておくね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "友達は間に合ってる。",
+              "tone": "negative"
+            }
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-03-09"
+  },
+  "fumika": {
+    "id": "fumika",
+    "name": "フミカ",
+    "nameEn": "Fumika",
+    "speakerId": 23,
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "baseWord": "教師",
+    "baseReading": "きょうし",
+    "baseMeaning": "teacher (classroom)",
+    "baseRank": 2200,
+    "modifier": {
+      "word": "文学",
+      "reading": "ぶんがく",
+      "meaning": "literature",
+      "rank": 9700
+    },
+    "attack": 10,
+    "skills": [
+      "yomu",
+      "npc-kaku",
+      "oboeru"
+    ],
+    "personality": {
+      "traits": [
+        "contemplative",
+        "eloquent",
+        "gentle",
+        "melancholic"
+      ],
+      "speechStyle": "Speaks softly with a poetic cadence, occasionally quoting classic authors.",
+      "quirk": "Presses dried flowers between the pages of whichever novel she is currently reading."
+    },
+    "greeting": "あなたは…ここに来たのですか。この教室には、もう言葉の光は届きません。",
+    "defeatLine": "ああ…言葉が、また美しく見えます。ありがとう。",
+    "postCombat": {
+      "freed": "目が覚めました。本の中の世界が、また色を取り戻しています。",
+      "rounds": [
+        {
+          "npcLine": "私は文学の教師でした。本を読むことが、一番好きでした。あなたは…本は好きですか？",
+          "options": [
+            {
+              "text": "はい、本が大好きです。",
+              "tone": "positive"
+            },
+            {
+              "text": "あまり読みません。",
+              "tone": "neutral"
+            },
+            {
+              "text": "本より冒険が好きです。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "私はいつも、本の間に花を押しています。花も言葉も…時間が止まったように残るから、好きなのです。",
+          "options": [
+            {
+              "text": "きれいな考えですね。",
+              "tone": "positive"
+            },
+            {
+              "text": "花はどこで見つけますか？",
+              "tone": "neutral"
+            },
+            {
+              "text": "少しさみしい気がします。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "言葉には力があります。一つの言葉が、心を変えることもあります。あなたも…そう思いませんか？",
+          "options": [
+            {
+              "text": "はい、言葉は大切です。",
+              "tone": "positive"
+            },
+            {
+              "text": "考えたことがなかったです。",
+              "tone": "neutral"
+            },
+            {
+              "text": "だから日本語を学んでいます。",
+              "tone": "negative"
+            }
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-03-09"
+  },
+  "genta": {
+    "id": "genta",
+    "name": "ゲンタ",
+    "nameEn": "Genta",
+    "speakerId": 3,
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "baseWord": "先生",
+    "baseReading": "せんせい",
+    "baseMeaning": "teacher",
+    "baseRank": 500,
+    "modifier": {
+      "word": "体育",
+      "reading": "たいいく",
+      "meaning": "Physical education",
+      "rank": 8600
+    },
+    "attack": 10,
+    "skills": [
+      "renshuu",
+      "npc-oshieru",
+      "shiru"
+    ],
+    "personality": {
+      "traits": [
+        "energetic",
+        "competitive",
+        "boisterous",
+        "encouraging"
+      ],
+      "speechStyle": "Speaks in short, punchy declarations like a coach giving a halftime speech, often ending sentences with rallying calls.",
+      "quirk": "Challenges everyone he meets to some form of physical contest."
+    },
+    "greeting": "おい、止まれ！ここは俺の校庭だ。勝負しろ！逃げるなよ！",
+    "defeatLine": "はぁ…はぁ…。俺、何で戦ってたんだ…？体が勝手に…",
+    "postCombat": {
+      "freed": "うおっ…頭がスッキリしたぞ。俺、システムに操られてたのか…。すまなかった、お前は強いな！",
+      "rounds": [
+        {
+          "npcLine": "俺は体育の先生だ。走ること、投げること、全部好きだぞ！お前も体を動かすのは好きか？",
+          "options": [
+            {
+              "text": "うん、大好きだよ！一緒に走ろう！",
+              "tone": "positive"
+            },
+            {
+              "text": "まあ、嫌いじゃないかな。",
+              "tone": "neutral"
+            },
+            {
+              "text": "体を動かすのは面倒だ。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "よし、勝負だ！腕立て十回、どっちが速いか！…いや、もう戦ったばかりか。じゃあ次だ！",
+          "options": [
+            {
+              "text": "いいぞ、いつでも来い！",
+              "tone": "positive"
+            },
+            {
+              "text": "少し休んでからね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "もう勝負はいい。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "お前、なかなかやるな。この先は強い奴がいるぞ。でも大丈夫だ、お前なら勝てる！行け！",
+          "options": [
+            {
+              "text": "ありがとう！頑張るよ！",
+              "tone": "positive"
+            },
+            {
+              "text": "気をつけて進むよ。",
+              "tone": "neutral"
+            },
+            {
+              "text": "言われなくてもわかってる。",
+              "tone": "negative"
+            }
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-03-09"
+  },
+  "haruto": {
+    "id": "haruto",
+    "name": "ハルト",
+    "nameEn": "Haruto",
+    "speakerId": 29,
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "baseWord": "後輩",
+    "baseReading": "こうはい",
+    "baseMeaning": "junior (at work, school, etc.)",
+    "baseRank": 3800,
+    "modifier": {
+      "word": "元気",
+      "reading": "げんき",
+      "meaning": "energetic; healthy",
+      "rank": 2600
+    },
+    "attack": 10,
+    "skills": [
+      "renshuu",
+      "shukudai",
+      "oboeru"
+    ],
+    "personality": {
+      "traits": [
+        "eager",
+        "loud",
+        "optimistic",
+        "clumsy"
+      ],
+      "speechStyle": "Talks fast and enthusiastically, often tripping over his own words.",
+      "quirk": "Bows so deeply when greeting upperclassmen that he sometimes loses his balance."
+    },
+    "greeting": "あっ、先輩！！お、おはようございま——うわっ！！ご、ごめんなさい！お辞儀しすぎて転びそうに…！えへへ、今日も元気です！…通さないよ！",
+    "defeatLine": "う…うう…俺、先輩に何してたんだ…？ごめんなさい…！頭がぐるぐるして…。",
+    "postCombat": {
+      "freed": "はっ…！俺、先輩を止めようとしてた…？うそだろ…！ごめんなさい！！本当にごめんなさい！！",
+      "rounds": [
+        {
+          "npcLine": "俺、後輩だから先輩を守りたかったのに…システムに使われて、逆に戦ってた…！最悪だ…！でも、先輩が助けてくれた！ありがとうございます！！",
+          "options": [
+            {
+              "text": "気にしないで！もう大丈夫だよ。",
+              "tone": "positive"
+            },
+            {
+              "text": "うん、大変だったね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "それより、何があったか教えて。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "あっ、そうだ！先輩に挨拶しないと！えっと——！！うわわっ！！また転んだ…！お辞儀が深すぎるって言われるけど、気持ちが大きいから止められないんです！！",
+          "options": [
+            {
+              "text": "はは、その気持ちが一番大事だよ！",
+              "tone": "positive"
+            },
+            {
+              "text": "少しだけ気をつけたら？",
+              "tone": "neutral"
+            },
+            {
+              "text": "怪我するから、やめたほうがいい。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "俺、先輩みたいに強くなりたいんです！！毎日練習して、もっと頑張って…！いつか先輩に「すごいな」って言われたい！！…あっ、言いすぎた…？えへへ！",
+          "options": [
+            {
+              "text": "もうすごいよ！一緒に頑張ろう！",
+              "tone": "positive"
+            },
+            {
+              "text": "その気持ちは大切だね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "口だけじゃなくて、見せてくれ。",
+              "tone": "negative"
+            }
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-03-09"
+  },
+  "kanon": {
+    "id": "kanon",
+    "name": "カノン",
+    "nameEn": "Kanon",
+    "speakerId": 16,
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "baseWord": "生徒",
+    "baseReading": "せいと",
+    "baseMeaning": "student",
+    "baseRank": 1500,
+    "modifier": {
+      "word": "音楽",
+      "reading": "おんがく",
+      "meaning": "music",
+      "rank": 2200
+    },
+    "attack": 10,
+    "skills": [
+      "renshuu",
+      "oboeru",
+      "wakaru"
+    ],
+    "personality": {
+      "traits": [
+        "dreamy",
+        "passionate",
+        "gentle",
+        "absent-minded"
+      ],
+      "speechStyle": "Speaks in a soft, lilting cadence as if everything she says has a hidden melody.",
+      "quirk": "Hums or taps out rhythms on nearby surfaces mid-conversation, sometimes losing track of what she was saying."
+    },
+    "greeting": "あ…こんにちは。今、きれいな音が聞こえたの。あなたにも聞こえた？…ふふ、ごめんね、私だけかも。",
+    "defeatLine": "あ…頭の中の音楽が静かになった。今まで関係のない歌ばかり聞こえていたの。ありがとう。",
+    "postCombat": {
+      "freed": "…変な音楽が止まった。あれ、私…夢を見てたの？…ごめんなさい、もう大丈夫。",
+      "rounds": [
+        {
+          "npcLine": "私、小さい時から音楽が大好きだったの。ピアノの音を聞くと、心が温かくなるの。…あなたは、好きな音楽はある？",
+          "options": [
+            {
+              "text": "うん、音楽は好きだよ。一緒に聞こう。",
+              "tone": "positive"
+            },
+            {
+              "text": "あまり聞かないけど、カノンの好きな曲は何？",
+              "tone": "neutral"
+            },
+            {
+              "text": "音楽より静かな方がいい。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "ふふ、また手でリズムを取ってた。…あれ、何の話だったっけ？ああ、そうだ。この学校には音楽室があるの。そこで時々一人で歌うの。…たん、たたん♪",
+          "options": [
+            {
+              "text": "いい音だね。もっと聞かせて。",
+              "tone": "positive"
+            },
+            {
+              "text": "音楽室で何を歌うの？",
+              "tone": "neutral"
+            },
+            {
+              "text": "話に集中して。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "音楽室のピアノは古いけど、すごくいい音がするの。放課後、誰もいない時に弾くのが好き。…あなたも来てみない？",
+          "options": [
+            {
+              "text": "ぜひ行きたい。一緒に弾こう。",
+              "tone": "positive"
+            },
+            {
+              "text": "今度時間がある時に行くよ。",
+              "tone": "neutral"
+            },
+            {
+              "text": "ピアノには興味がない。",
+              "tone": "negative"
+            }
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-03-09"
+  },
+  "kazuho": {
+    "id": "kazuho",
+    "name": "カズホ",
+    "nameEn": "Kazuho",
+    "speakerId": 11,
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "baseWord": "先生",
+    "baseReading": "せんせい",
+    "baseMeaning": "teacher",
+    "baseRank": 500,
+    "modifier": {
+      "word": "数学",
+      "reading": "すうがく",
+      "meaning": "mathematics",
+      "rank": 6600
+    },
+    "attack": 10,
+    "skills": [
+      "kangaeru",
+      "mondai",
+      "shiken"
+    ],
+    "personality": {
+      "traits": [
+        "precise",
+        "logical",
+        "patient",
+        "methodical"
+      ],
+      "speechStyle": "Speaks in measured, exact sentences, often quantifying things or framing observations as equations.",
+      "quirk": "Unconsciously taps out counting rhythms on any nearby surface while thinking."
+    },
+    "greeting": "この先は通れません。答えは一つ。ここから出る方法は…ゼロです。",
+    "defeatLine": "…あれ？私は何を計算していたんだ…？",
+    "postCombat": {
+      "freed": "すみません…頭の中が変な数式でいっぱいだった。助けてくれて、ありがとう。",
+      "rounds": [
+        {
+          "npcLine": "私はこの学校の数学の先生です。…システムに操られて、生徒を止めていたなんて。",
+          "options": [
+            {
+              "text": "もう大丈夫ですよ。先生は悪くないです。",
+              "tone": "positive"
+            },
+            {
+              "text": "システムのせいですね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "しっかりしてください。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "考える時、つい指でリズムを数えてしまう。一、二、三…。この癖、生徒にはよく笑われます。",
+          "options": [
+            {
+              "text": "面白い癖ですね。かわいいです。",
+              "tone": "positive"
+            },
+            {
+              "text": "数学の先生らしいですね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "授業中にそれは気になりますね。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "この学校には不思議な力がある。数学も、ただの数字じゃない。…気をつけて進んでください。",
+          "options": [
+            {
+              "text": "ありがとうございます。頑張ります。",
+              "tone": "positive"
+            },
+            {
+              "text": "わかりました。",
+              "tone": "neutral"
+            },
+            {
+              "text": "自分で何とかします。",
+              "tone": "negative"
+            }
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-03-09"
+  },
+  "leon": {
+    "id": "leon",
+    "name": "レオン",
+    "nameEn": "Leon",
+    "speakerId": 46,
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "baseWord": "留学生",
+    "baseReading": "りゅうがくせい",
+    "baseMeaning": "overseas student; exchange student",
+    "baseRank": 20200,
+    "modifier": {
+      "word": "真面目",
+      "reading": "まじめ",
+      "meaning": "serious; earnest; diligent",
+      "rank": 4600
+    },
+    "attack": 10,
+    "skills": [
+      "manabu",
+      "kangaeru",
+      "renshuu"
+    ],
+    "personality": {
+      "traits": [
+        "studious",
+        "quiet",
+        "observant",
+        "polite"
+      ],
+      "speechStyle": "Speaks carefully and formally, choosing each word with deliberate precision.",
+      "quirk": "Tends to bow slightly too deeply, overcompensating out of respect for local customs."
+    },
+    "greeting": "…失礼します。この学校のルールは、必ず守ります。…どうか、邪魔をしないでください。",
+    "defeatLine": "…頭が…。すみません、僕は何をしていましたか。",
+    "postCombat": {
+      "freed": "…ありがとうございます。僕は…システムに使われていたのですね。勉強のことしか考えていなかったのに、おかしなことをしていました。",
+      "rounds": [
+        {
+          "npcLine": "…僕は毎日、朝から晩まで勉強していました。この学校の言葉を、一つも間違えたくなかったのです。…それが、おかしくなった原因でしょうか。",
+          "options": [
+            {
+              "text": "勉強熱心なのは、いいことだよ。",
+              "tone": "positive"
+            },
+            {
+              "text": "そうかもしれないね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "勉強のしすぎだろ。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "…あっ、すみません。（深くお辞儀をする）…この国では、こうするのが正しいと聞きました。…深すぎますか？",
+          "options": [
+            {
+              "text": "気持ちが伝わるから、大丈夫だよ。",
+              "tone": "positive"
+            },
+            {
+              "text": "少し深いかもね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "変に見えるからやめろ。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "…この学校には、不思議な力があります。僕は留学生ですが、ここで学べることを大切にしたいです。…よろしくお願いします。",
+          "options": [
+            {
+              "text": "こちらこそ、よろしくね。一緒にがんばろう。",
+              "tone": "positive"
+            },
+            {
+              "text": "よろしく。",
+              "tone": "neutral"
+            },
+            {
+              "text": "好きにしろ。",
+              "tone": "negative"
+            }
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-03-09"
+  },
+  "mio": {
+    "id": "mio",
+    "name": "ミオ",
+    "nameEn": "Mio",
+    "speakerId": 0,
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "baseWord": "学生",
+    "baseReading": "がくせい",
+    "baseMeaning": "student (esp. a university student)",
+    "baseRank": 2000,
+    "modifier": {
+      "word": "英語",
+      "reading": "えいご",
+      "meaning": "English (language)",
+      "rank": 3000
+    },
+    "attack": 10,
+    "skills": [
+      "manabu",
+      "yomu",
+      "oboeru"
+    ],
+    "personality": {
+      "traits": [
+        "curious",
+        "talkative",
+        "cheerful",
+        "scattered"
+      ],
+      "speechStyle": "Peppers her speech with English loanwords and tries out new vocabulary mid-conversation, mixing politeness levels as she gets excited.",
+      "quirk": "Carries a dog-eared English dictionary everywhere and asks visitors to teach her new words in exchange for help."
+    },
+    "greeting": "ここは私のスタディ・ゾーン！誰も入っちゃダメ！...あ、英語わかる？ねえ、教えて！...ダメ、入っちゃダメなの！",
+    "defeatLine": "あれ...？私、何してたんだろう...。辞書、どこ行った...？あ、ここにあった。",
+    "postCombat": {
+      "freed": "はっ！私、道を止めてたの？ごめんなさい！...システムに操られてたみたい。ありがとう、助けてくれて！",
+      "rounds": [
+        {
+          "npcLine": "この辞書ね、お母さんにもらったの。毎日新しい言葉を覚えてるよ！今日は「freedom」を覚えた。ぴったりでしょ？",
+          "options": [
+            {
+              "text": "いい言葉だね！自由になれてよかった。",
+              "tone": "positive"
+            },
+            {
+              "text": "辞書、大事にしてるんだね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "辞書なんかで本当に覚えられるの？",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "言葉を覚えるのって楽しいよね！日本語も英語も、全部つながってる気がするの。ねえ、あなたは何語が好き？",
+          "options": [
+            {
+              "text": "日本語が好きだよ！一緒に勉強しよう。",
+              "tone": "positive"
+            },
+            {
+              "text": "考えたことないな。",
+              "tone": "neutral"
+            },
+            {
+              "text": "言葉に好きとかないだろ。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "あのね、私この学校のこと何でも知ってるよ！困ったら何でも聞いて。そのかわり、新しい言葉を一つ教えてね！",
+          "options": [
+            {
+              "text": "いいよ！約束する。よろしくね！",
+              "tone": "positive"
+            },
+            {
+              "text": "覚えておくよ。",
+              "tone": "neutral"
+            },
+            {
+              "text": "別に困ってないけど。",
+              "tone": "negative"
+            }
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-03-09"
+  },
+  "renjiro": {
+    "id": "renjiro",
+    "name": "レンジロウ",
+    "nameEn": "Renjiro",
+    "speakerId": 38,
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "baseWord": "先輩",
+    "baseReading": "せんぱい",
+    "baseMeaning": "senior (at work or school)",
+    "baseRank": 1400,
+    "modifier": {
+      "word": "厳しい",
+      "reading": "きびしい",
+      "meaning": "strict; severe; harsh",
+      "rank": 1100
+    },
+    "attack": 10,
+    "skills": [
+      "shiken",
+      "mondai",
+      "kangaeru"
+    ],
+    "personality": {
+      "traits": [
+        "disciplined",
+        "exacting",
+        "principled",
+        "respected"
+      ],
+      "speechStyle": "Speaks in short, direct sentences with high expectations, but never raises his voice.",
+      "quirk": "Carries a small notebook where he tallies rule infractions — though no one has ever seen him actually enforce a penalty."
+    },
+    "greeting": "…立っている姿勢が悪い。ここでは規律を守れ。",
+    "defeatLine": "…そうか。俺の規律は、自分を縛っていただけか。",
+    "postCombat": {
+      "freed": "目が覚めた。あのノートに書いていたのは…他人の失敗じゃない。自分の恐れだった。",
+      "rounds": [
+        {
+          "npcLine": "規律がなければ、人は弱くなる。それが学校のルールだ。お前はどう思う？",
+          "options": [
+            {
+              "text": "ルールは大切だと思います。",
+              "tone": "positive"
+            },
+            {
+              "text": "厳しすぎるルールは良くないです。",
+              "tone": "neutral"
+            },
+            {
+              "text": "ルールより大切なものもあります。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "このノートを見ろ。全員の失敗を記録している。…だが、罰を与えたことはない。なぜだと思う？",
+          "options": [
+            {
+              "text": "本当は優しいからですか？",
+              "tone": "positive"
+            },
+            {
+              "text": "罰が目的じゃないからですか？",
+              "tone": "neutral"
+            },
+            {
+              "text": "自分でもわからないのでは？",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "先輩として、後輩を導く責任がある。だが…正しい道が何か、俺にはもう見えない。",
+          "options": [
+            {
+              "text": "一緒に考えましょう。",
+              "tone": "positive"
+            },
+            {
+              "text": "完璧じゃなくてもいいです。",
+              "tone": "neutral"
+            },
+            {
+              "text": "まず自分を信じてください。",
+              "tone": "negative"
+            }
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-03-09"
+  },
+  "rikka": {
+    "id": "rikka",
+    "name": "リッカ",
+    "nameEn": "Rikka",
+    "speakerId": 8,
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "baseWord": "先生",
+    "baseReading": "せんせい",
+    "baseMeaning": "teacher",
+    "baseRank": 500,
+    "modifier": {
+      "word": "科学",
+      "reading": "かがく",
+      "meaning": "Science",
+      "rank": 5400
+    },
+    "attack": 10,
+    "skills": [
+      "kenkyuu",
+      "shiraberu",
+      "kangaeru"
+    ],
+    "personality": {
+      "traits": [
+        "curious",
+        "experimental",
+        "enthusiastic",
+        "absent-minded"
+      ],
+      "speechStyle": "Asks rapid-fire questions and answers them herself, peppering in hypotheses and exclamations of discovery.",
+      "quirk": "Always has scorch marks or stains on her sleeves from a recent experiment gone slightly sideways."
+    },
+    "greeting": "あら、来客？今ちょうど実験中なの！…って、待って。ここを通しちゃダメって言われてたんだっけ？うん、ダメ！",
+    "defeatLine": "…あれ？私、何をしてたの？…袖がまた焦げてる…実験のせい？違う…？",
+    "postCombat": {
+      "freed": "頭がすっきりした…。私、実験中にシステムに取り込まれたの？…データを全部消しちゃった？うそ…",
+      "rounds": [
+        {
+          "npcLine": "実験の途中で変な光が出て…次の瞬間、頭の中が真っ白になったの。あの光は何だったんだろう？仮説が三つある！",
+          "options": [
+            {
+              "text": "聞かせて！どんな仮説？",
+              "tone": "positive"
+            },
+            {
+              "text": "システムの力だと思う。",
+              "tone": "neutral"
+            },
+            {
+              "text": "仮説はいいから現実を見ろ。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "あっ、また袖が焦げてる…。いつの間に？操られてる間も実験してたのかな。…それはそれですごくない？",
+          "options": [
+            {
+              "text": "ある意味すごいね！",
+              "tone": "positive"
+            },
+            {
+              "text": "危ないから気をつけて。",
+              "tone": "neutral"
+            },
+            {
+              "text": "全然すごくないだろ。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "ねえ、このシステム…どうやって人を操るの？科学的に調べたい！学校の中を一緒に調査しない？",
+          "options": [
+            {
+              "text": "面白そう！一緒に調べよう。",
+              "tone": "positive"
+            },
+            {
+              "text": "まずは安全を確認してから。",
+              "tone": "neutral"
+            },
+            {
+              "text": "また操られたいのか？",
+              "tone": "negative"
+            }
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-03-09"
+  },
+  "shinobu": {
+    "id": "shinobu",
+    "name": "シノブ",
+    "nameEn": "Shinobu",
+    "speakerId": 10,
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "baseWord": "先生",
+    "baseReading": "せんせい",
+    "baseMeaning": "teacher",
+    "baseRank": 500,
+    "modifier": {
+      "word": "化学",
+      "reading": "かがく",
+      "meaning": "chemistry",
+      "rank": 16100
+    },
+    "attack": 10,
+    "skills": [
+      "kenkyuu",
+      "shiraberu",
+      "shiken"
+    ],
+    "personality": {
+      "traits": [
+        "meticulous",
+        "passionate",
+        "dry-humored",
+        "exacting"
+      ],
+      "speechStyle": "Speaks in precise, measured sentences, often pausing to correct terminology.",
+      "quirk": "Constantly polishes safety goggles even when not in the lab."
+    },
+    "greeting": "…ああ、来ましたか。ゴーグルは持っていますか？ここでは安全が一番大切です。",
+    "defeatLine": "…なるほど。私の目が曇っていたのは、ゴーグルのせいではなかったようですね。",
+    "postCombat": {
+      "freed": "頭がすっきりしました。まるで…よく磨いたゴーグルのように。ふふ、すみません、職業病です。",
+      "rounds": [
+        {
+          "npcLine": "化学の実験では、まず安全を確認します。手袋はありますか？目を守ることが大切です。…ゴーグルも忘れずに。",
+          "options": [
+            {
+              "text": "安全は大切ですね。先生はいつも気をつけていますか？",
+              "tone": "positive"
+            },
+            {
+              "text": "実験は楽しいですか？",
+              "tone": "neutral"
+            },
+            {
+              "text": "そんなに気にしなくてもいいのでは？",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "このゴーグル、もう十年使っています。毎日磨いていますから、新品のようでしょう？…え、今は実験していない？それは関係ありません。",
+          "options": [
+            {
+              "text": "きれいなゴーグルですね。大切にしているのですね。",
+              "tone": "positive"
+            },
+            {
+              "text": "なぜ実験の時以外も磨くのですか？",
+              "tone": "neutral"
+            },
+            {
+              "text": "少し変わっていますね。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "ところで、「化学」の読み方は「かがく」です。「科学」も「かがく」ですが、意味が違います。正確に言うことが大切です。…私は少しうるさいですか？",
+          "options": [
+            {
+              "text": "いいえ、正確なことは大切だと思います。",
+              "tone": "positive"
+            },
+            {
+              "text": "面白いです。他にも教えてください。",
+              "tone": "neutral"
+            },
+            {
+              "text": "先生は言葉にも厳しいですね。",
+              "tone": "negative"
+            }
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-03-09"
+  },
+  "tamaki": {
+    "id": "tamaki",
+    "name": "タマキ",
+    "nameEn": "Tamaki",
+    "speakerId": 51,
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "baseWord": "先生",
+    "baseReading": "せんせい",
+    "baseMeaning": "teacher",
+    "baseRank": 500,
+    "modifier": {
+      "word": "地理",
+      "reading": "ちり",
+      "meaning": "geography",
+      "rank": 14000
+    },
+    "attack": 10,
+    "skills": [
+      "shiraberu",
+      "shiru",
+      "npc-oshieru"
+    ],
+    "personality": {
+      "traits": [
+        "adventurous",
+        "warm",
+        "storytelling",
+        "curious"
+      ],
+      "speechStyle": "Weaves personal travel anecdotes into every explanation.",
+      "quirk": "Always carries a folded map in one hand and unfolds it mid-conversation to point out locations."
+    },
+    "greeting": "やあ、君か！今日はどこの話をしようかな？世界は広いよ！",
+    "defeatLine": "ああ…やっと目が覚めた。ありがとう、君のおかげだ。",
+    "postCombat": {
+      "freed": "頭の中の暗い霧が消えた…。また自由に旅の話ができるよ。",
+      "rounds": [
+        {
+          "npcLine": "昔、南の島に行った時、海がとても青くて、魚がたくさんいたんだ。君は遠い場所に行ったことがある？",
+          "options": [
+            {
+              "text": "すごい！私もいつか行きたいです！",
+              "tone": "positive"
+            },
+            {
+              "text": "南の島ですか。どこの島ですか？",
+              "tone": "neutral"
+            },
+            {
+              "text": "旅の話はもういいです。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "ほら、この地図を見て。ここが私たちの学校で…ここが山、ここが海だよ。地図があれば迷わないんだ。",
+          "options": [
+            {
+              "text": "地図、すごく面白いですね！もっと見せてください！",
+              "tone": "positive"
+            },
+            {
+              "text": "いつもその地図を持っているんですか？",
+              "tone": "neutral"
+            },
+            {
+              "text": "紙の地図なんて古いですよ。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "世界にはまだ知らない場所がたくさんある。君も自分の目で見に行くといいよ。新しい発見が待っているから。",
+          "options": [
+            {
+              "text": "はい！先生みたいに色々な所に行きたいです！",
+              "tone": "positive"
+            },
+            {
+              "text": "どこから始めればいいですか？",
+              "tone": "neutral"
+            },
+            {
+              "text": "別に興味ないです。",
+              "tone": "negative"
+            }
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-03-09"
+  },
+  "tesshou": {
+    "id": "tesshou",
+    "name": "テッショウ",
+    "nameEn": "Tesshou",
+    "speakerId": 42,
+    "area": "mahouno-gakkou",
+    "tier": 2,
+    "baseWord": "校長",
+    "baseReading": "こうちょう",
+    "baseMeaning": "principal; headmaster",
+    "baseRank": 9400,
+    "modifier": {
+      "word": "偉い",
+      "reading": "えらい",
+      "meaning": "great; eminent",
+      "rank": 3900
+    },
+    "attack": 15,
+    "skills": [
+      "shiken",
+      "mondai",
+      "jugyou"
+    ],
+    "personality": {
+      "traits": [
+        "commanding",
+        "dignified",
+        "perceptive",
+        "stern"
+      ],
+      "speechStyle": "Speaks in measured, authoritative tones that make even casual remarks feel like proclamations.",
+      "quirk": "Has a habit of pausing mid-sentence to let his words sink in before delivering the final point."
+    },
+    "greeting": "…止まれ。この学校は……私が守る。誰も通さない。",
+    "defeatLine": "…そうか。私は……生徒たちを守るはずだったのに。",
+    "postCombat": {
+      "freed": "……すまない。校長として……生徒を守るべき私が、逆に学校を壊していたとは。",
+      "rounds": [
+        {
+          "npcLine": "この学校の全ては……私の責任だ。生徒も、先生も……全員、私が守らなければならない。",
+          "options": [
+            {
+              "text": "その気持ち、立派だと思います。",
+              "tone": "positive"
+            },
+            {
+              "text": "大変な仕事ですね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "一人で抱え込みすぎだ。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "上に立つ者は……常に見られている。弱さを見せれば……学校が揺らぐ。それが、校長の重さだ。",
+          "options": [
+            {
+              "text": "だからこそ、強い人なんですね。",
+              "tone": "positive"
+            },
+            {
+              "text": "そういうものなのか。",
+              "tone": "neutral"
+            },
+            {
+              "text": "弱さを見せてもいいだろう。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "君は……なかなか見る目がある。この学校には……まだ、おかしな力が残っている。気をつけろ。",
+          "options": [
+            {
+              "text": "はい。力を貸してください。",
+              "tone": "positive"
+            },
+            {
+              "text": "わかりました。",
+              "tone": "neutral"
+            },
+            {
+              "text": "自分で何とかする。",
+              "tone": "negative"
+            }
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-03-09"
+  },
+  "yuuto": {
+    "id": "yuuto",
+    "name": "ユウト",
+    "nameEn": "Yuuto",
+    "speakerId": 20,
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "baseWord": "生徒",
+    "baseReading": "せいと",
+    "baseMeaning": "pupil; student; schoolchild",
+    "baseRank": 1500,
+    "modifier": {
+      "word": "美術",
+      "reading": "びじゅつ",
+      "meaning": "art; fine arts",
+      "rank": 9900
+    },
+    "attack": 10,
+    "skills": [
+      "kangaeru",
+      "manabu",
+      "oboeru"
+    ],
+    "personality": {
+      "traits": [
+        "dreamy",
+        "observant",
+        "gentle",
+        "easily distracted"
+      ],
+      "speechStyle": "Speaks in soft, meandering sentences, often trailing off mid-thought as something catches his eye.",
+      "quirk": "Constantly sketches in a worn notebook and sees everyday objects as potential subjects for his next painting."
+    },
+    "greeting": "あ…ここの光、きれいだな…。ん？誰か来た…？ごめん、今は絵を描いてるから…通さないよ。",
+    "defeatLine": "あれ…俺、何を描いてたんだろう…。この絵、全部黒い…。",
+    "postCombat": {
+      "freed": "…頭がぼんやりする。俺、誰かを止めようとしてた…？ごめん、よくわからないんだ。",
+      "rounds": [
+        {
+          "npcLine": "あのノート…システムに操られてる間も、ずっと絵を描いてたみたいだ。でも全部、暗い色ばかりで…。",
+          "options": [
+            {
+              "text": "もう大丈夫だよ。好きな色で描けるよ。",
+              "tone": "positive"
+            },
+            {
+              "text": "そうなんだ。大変だったね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "絵のことはいいから、状況を教えて。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "あ、見て…あの窓の光。午後の光は色が柔らかくて…描きたいな…。えっと、何の話だっけ。",
+          "options": [
+            {
+              "text": "いいね、描いてみてよ！",
+              "tone": "positive"
+            },
+            {
+              "text": "学校のことを話してたよ。",
+              "tone": "neutral"
+            },
+            {
+              "text": "集中してくれ。",
+              "tone": "negative"
+            }
+          ]
+        },
+        {
+          "npcLine": "この学校、前はもっと明るかったんだ。廊下の壁に絵を飾ってたのに…今は何もなくて…あ、あの雲の形、猫みたいだ…。",
+          "options": [
+            {
+              "text": "また絵を飾ろうよ。手伝うよ。",
+              "tone": "positive"
+            },
+            {
+              "text": "猫か。確かにそう見えるね。",
+              "tone": "neutral"
+            },
+            {
+              "text": "話がそれてるよ。",
+              "tone": "negative"
+            }
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-03-09"
   }
 }

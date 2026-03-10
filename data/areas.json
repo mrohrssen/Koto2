@@ -654,7 +654,10 @@
       "nekotto",
       "supiikaazou",
       "chouri",
-      "hikaribon"
+      "hikaribon",
+      "kokubanrei",
+      "isurori",
+      "tsukueon"
     ],
     "description": "The Magic School stands at the top of a terraced hill, its entrance framed by a wide stone arch draped in flowering wisteria that blooms in impossible colors — soft gold, pale rose, and shimmering silver. The main building follows the shape of a traditional Japanese school — long, three-storied, with tall windows — but built from warm sandstone and polished timber instead of concrete, every surface etched with faint sigils that catch the light at odd angles.\n\nInside, the hallways are wide and sun-flooded, their wooden floors worn smooth by generations of hurrying feet. Shoe cubbies line the entryway in neat rows, some glowing faintly where a student left a charm behind. Floating paper lanterns in pale amber drift along the ceiling at walking pace, casting warm pools of light that follow anyone who passes beneath them. Classroom doors stand open, revealing desks arranged in tidy grids beneath chalkboards where yesterday's equations still shimmer — the chalk itself luminous, the diagrams slowly rotating in place like living blueprints.\n\nThe school garden sprawls behind the main building in a riot of overgrown enchantment. Sunflowers track movement instead of sunlight, turning their broad faces to follow passersby. Morning glories climb wire trellises and open their blooms in sequence like a slow wave. A small wooden rabbit hutch sits in one corner surrounded by clover that grows in spiraling patterns, and nearby, a weathered equipment shed leans against the gymnasium wall, its sliding door ajar to reveal stacked floor mats and nets that fold themselves when no one is looking.\n\nOn the rooftop, a low stone wall encloses a broad open space where the sky feels enormous and near. The wind carries the faint melody of a music room piano drifting up through open windows below, the notes occasionally visible as tiny motes of golden light rising from the instrument. Spirit wisps in soft amber and pale green float lazily above the stairwell. The whole building hums with the quiet, hopeful energy of a place where knowledge is alive — chalk dust and cherry blossoms, warm light and the echo of bells.",
     "tags": [
@@ -672,6 +675,7 @@
         "name": "広い教室",
         "reading": "ひろいきょうしつ",
         "nameEn": "Spacious Classroom",
+        "description": "A wide, sun-filled classroom with rows of wooden desks arranged in neat grids beneath a high ceiling. Tall windows line one wall, letting in broad shafts of morning light that warm the polished floorboards. A large chalkboard dominates the front wall, faint traces of yesterday's lesson still shimmering in luminous chalk. Paper cranes dangle from strings tied to the ceiling beams, turning slowly in the draft from an open window.",
         "modifier": {
           "word": "広い",
           "reading": "ひろい",
@@ -691,6 +695,7 @@
         "name": "長い廊下",
         "reading": "ながいろうか",
         "nameEn": "Long Hallway",
+        "description": "A stretching corridor of polished hardwood that runs the full length of the school building. Shoe-lockers and notice boards line both sides, and floating paper lanterns in pale amber drift along the ceiling at walking pace. Afternoon light pours through evenly spaced windows, casting long golden rectangles across the floor. The faint echo of footsteps carries from somewhere around the next corner.",
         "modifier": {
           "word": "長い",
           "reading": "ながい",
@@ -710,6 +715,7 @@
         "name": "高い屋上",
         "reading": "たかいおくじょう",
         "nameEn": "High Rooftop",
+        "description": "A broad open rooftop enclosed by a low stone wall, high above the school grounds. The sky feels enormous and close, stretching in every direction over terraced hills and distant treelines. Wind carries the faint melody of a piano drifting up through open windows below, the notes occasionally visible as tiny motes of golden light. Spirit wisps in soft amber and pale green float lazily above the stairwell entrance.",
         "modifier": {
           "word": "高い",
           "reading": "たかい",
@@ -729,6 +735,7 @@
         "name": "小さな中庭",
         "reading": "ちいさななかにわ",
         "nameEn": "Small Courtyard",
+        "description": "A quiet inner garden tucked between the school's main building and its gymnasium wing. A single cherry tree stands at the center, its branches draped over a weathered wooden bench. Clover grows in spiraling patterns across the flagstone path, and a small rabbit hutch sits in one corner surrounded by potted herbs. The walls of the surrounding buildings block most of the wind, making the courtyard feel sheltered and still.",
         "modifier": {
           "word": "小さな",
           "reading": "ちいさな",
@@ -748,6 +755,7 @@
         "name": "古い体育館",
         "reading": "ふるいたいいくかん",
         "nameEn": "Old Gymnasium",
+        "description": "A large, echo-filled gymnasium with a high arched ceiling and a worn wooden floor marked with faded court lines. Stacked floor mats lean against one wall beside a rack of bamboo practice swords, and a climbing rope hangs motionless from a steel beam overhead. The windows are set high, letting in dusty shafts of light that catch on the chalk powder still lingering in the air from the last class. A storage room door at the far end stands slightly ajar, revealing folded nets that slowly fold themselves when no one is watching.",
         "modifier": {
           "word": "古い",
           "reading": "ふるい",
@@ -763,23 +771,104 @@
         "background": "areas/mahouno-gakkou/mahouno-gakkou_14.webp"
       },
       {
-        "id": "mahouno-gakkou-red-roof",
-        "name": "赤い屋根",
-        "reading": "あかいやね",
-        "nameEn": "Red Roof",
+        "id": "mahouno-gakkou-mysterious-library",
+        "name": "不思議な図書館",
+        "reading": "ふしぎなとしょかん",
+        "nameEn": "Mysterious Library",
+        "description": "Towering shelves of enchanted books line every wall, their spines glowing faintly with arcane script. Dust motes drift through shafts of light from tall arched windows, and the air smells of old paper and ink. Somewhere deep among the stacks, pages rustle on their own.",
         "modifier": {
-          "word": "赤い",
-          "reading": "あかい",
-          "meaning": "red",
-          "rank": 900
+          "word": "不思議",
+          "reading": "ふしぎ",
+          "meaning": "mysterious; strange; wonderful",
+          "rank": 700
         },
         "location": {
-          "word": "屋根",
-          "reading": "やね",
-          "meaning": "roof",
-          "rank": 2500
+          "word": "図書館",
+          "reading": "としょかん",
+          "meaning": "library",
+          "rank": 4300
         },
         "background": "areas/mahouno-gakkou/mahouno-gakkou_17.webp"
+      },
+      {
+        "id": "mahouno-gakkou-delicious-cafeteria",
+        "name": "美味しい食堂",
+        "reading": "おいしいしょくどう",
+        "nameEn": "Delicious Cafeteria",
+        "description": "A warm, bustling dining hall filled with long wooden tables and the aroma of freshly cooked meals. Enchanted serving trays glide between the kitchen and the seats, delivering steaming bowls and plates. Chatter and laughter fill the high-ceilinged room, punctuated by the occasional clatter of dropped chopsticks.",
+        "modifier": {
+          "word": "美味しい",
+          "reading": "おいしい",
+          "meaning": "delicious; tasty",
+          "rank": 1500
+        },
+        "location": {
+          "word": "食堂",
+          "reading": "しょくどう",
+          "meaning": "cafeteria; dining hall",
+          "rank": 3300
+        },
+        "background": "areas/mahouno-gakkou/mahouno-gakkou_20.webp"
+      },
+      {
+        "id": "mahouno-gakkou-simple-elementary-school",
+        "name": "地味な小学校",
+        "reading": "じみなしょうがっこう",
+        "nameEn": "Simple Elementary School",
+        "description": "A bright, cheerful wing of the school with smaller desks and colorful drawings pinned to every surface. The rooms here feel simpler and more welcoming, with wide windows letting in plenty of sunlight. Young students' practice spells have left harmless sparkle marks on the walls and ceiling.",
+        "modifier": {
+          "word": "地味",
+          "reading": "じみ",
+          "meaning": "plain; simple; subdued",
+          "rank": 3700
+        },
+        "location": {
+          "word": "小学校",
+          "reading": "しょうがっこう",
+          "meaning": "elementary school; primary school",
+          "rank": 2900
+        },
+        "background": "areas/mahouno-gakkou/mahouno-gakkou_23.webp"
+      },
+      {
+        "id": "mahouno-gakkou-new-high-school",
+        "name": "新しい高校",
+        "reading": "あたらしいこうこう",
+        "nameEn": "New High School",
+        "description": "A recently constructed wing with clean lines and polished floors that still smell faintly of fresh varnish. The hallways are wide and well-lit by tall rectangular windows set into pale concrete walls, and rows of steel lockers line both sides, some decorated with stickers and small paper charms left by their owners. Homeroom classrooms have sliding doors that glide on smooth tracks, revealing clusters of newer wooden desks with built-in shelves underneath. A glass-walled corridor connects the wing to the main building, offering a view of the school garden below where clubs practice after hours. The notice boards are layered thick with flyers — sports tournaments, festival committees, study groups — pinned over older flyers in an ever-growing collage. At the end of the second floor, a music room leaks faint piano notes through its soundproofed door, and a trophy case at the main stairwell landing holds polished cups and ribbons from recent competitions. Everything here feels modern and cared-for, the wood still pale, the paint unchipped, the brass door handles not yet worn smooth by years of use.",
+        "modifier": {
+          "word": "新しい",
+          "reading": "あたらしい",
+          "meaning": "new; fresh; modern",
+          "rank": 400
+        },
+        "location": {
+          "word": "高校",
+          "reading": "こうこう",
+          "meaning": "senior high school; high school",
+          "rank": 2200
+        },
+        "background": "areas/mahouno-gakkou/mahouno-gakkou_26.webp"
+      },
+      {
+        "id": "mahouno-gakkou-splendid-university",
+        "name": "立派な大学",
+        "reading": "りっぱなだいがく",
+        "nameEn": "Splendid University",
+        "description": "The university wing rises behind the main school building, connected by a covered stone walkway lined with climbing ivy. Its entrance is a pair of tall oak doors beneath a carved stone arch, and stepping through reveals a vaulted atrium floored in dark polished wood that echoes with each footstep. Lecture halls are arranged in steep tiered semicircles, their curved desks worn dark and smooth from generations of note-taking, each seat fitted with a small brass reading lamp. Tall bookshelves line the corridors between rooms, stuffed with thick volumes and rolled parchment tied with colored thread. On the top floor, a research laboratory stretches the full length of the wing — wide tables cluttered with crystal prisms, brass measuring instruments, and open notebooks where ink diagrams continue drawing themselves long after the pen was set down. The hallway ceilings are higher here than anywhere else in the school, and floating lanterns burn a cooler, steadier white light instead of the warm amber found elsewhere. Framed portraits of past headmasters and distinguished scholars hang along the main corridor, their painted eyes following anyone who passes with patient, knowing expressions.",
+        "modifier": {
+          "word": "立派",
+          "reading": "りっぱ",
+          "meaning": "splendid; fine; imposing",
+          "rank": 1200
+        },
+        "location": {
+          "word": "大学",
+          "reading": "だいがく",
+          "meaning": "university; college",
+          "rank": 1900
+        },
+        "background": "areas/mahouno-gakkou/mahouno-gakkou_29.webp"
       }
     ],
     "stage": 1

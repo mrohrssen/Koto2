@@ -17,10 +17,10 @@ import {
 } from '../../../src/game/services/npc-service.js';
 
 describe('NPC Service - loadNpcs', () => {
-  it('loads all NPCs (5 entries)', () => {
+  it('loads all NPCs (20 entries)', () => {
     const npcs = loadNpcs();
     const ids = Object.keys(npcs);
-    assert.strictEqual(ids.length, 5, `Expected 5 NPCs, got ${ids.length}`);
+    assert.strictEqual(ids.length, 20, `Expected 20 NPCs, got ${ids.length}`);
   });
 
   it('nagi exists', () => {

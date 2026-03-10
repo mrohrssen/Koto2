@@ -91,6 +91,9 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 /* ── Batch Panel ────────────────────────────────────── */
 .batch-panel{background:#0f0f23;border-top:2px solid #0f3460;padding:12px;display:none}
 .batch-panel.visible{display:block}
+/* ── Sprite Bulk Sticky Bar ────────────────────────── */
+.sprite-bulk-sticky{position:fixed;bottom:0;left:0;right:0;z-index:200;background:#0f0f23;border-top:2px solid #0f3460;padding:12px 16px;display:none;box-shadow:0 -4px 20px rgba(0,0,0,.5)}
+.sprite-bulk-sticky.visible{display:block}
 .batch-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .batch-header h3{font-size:14px;color:#8cf}
 .batch-count{font-size:13px;color:#889}
@@ -120,6 +123,13 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .btn-danger:hover:not(:disabled){background:#991b1b}
 .btn-secondary{background:#333;color:#aaa}
 .btn-secondary:hover:not(:disabled){background:#444;color:#e0e0e0}
+
+/* ── Toast notification ─────────────────────────────── */
+.forge-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:300;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;color:#fff;opacity:0;transition:opacity .3s;pointer-events:none}
+.forge-toast.visible{opacity:1}
+.forge-toast.success{background:#166534;border:1px solid #4ade80}
+.forge-toast.error{background:#7f1d1d;border:1px solid #f87171}
+.forge-toast.info{background:#0f3460;border:1px solid #60a5fa}
 
 /* ── Results Panel ──────────────────────────────────── */
 .results-section{padding:12px}
@@ -207,6 +217,7 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 </style>
 </head>
 <body>
+<div class="forge-toast" id="forgeToast"></div>
 
 <!-- ── Dev Nav ──────────────────────────────────────── -->
 <nav class="dev-nav">
@@ -313,23 +324,7 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     <div id="spriteMissingItems" class="word-list"></div>
   </div>
 
-  <!-- Bulk controls (shown when items selected) -->
-  <div class="batch-panel" id="spriteBulkPanel" style="display:none">
-    <div class="batch-header">
-      <h3>Generate <span id="spriteSelectedCount">0</span> sprites</h3>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
-      <label style="font-size:13px;color:#889">Variants:</label>
-      <select id="spriteVariantCount" class="batch-role-select">
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3" selected>3</option>
-        <option value="4">4</option>
-      </select>
-      <input id="spriteGlobalNotes" class="batch-notes" placeholder="Visual notes for all..." style="flex:1">
-      <button class="btn btn-primary" id="spriteGenerateBtn" disabled>Generate Selected</button>
-    </div>
-  </div>
+  <!-- Bulk controls moved to sticky bottom bar -->
 
   <!-- Freeform generation -->
   <details class="section" style="padding:12px">
@@ -362,6 +357,22 @@ body{background:#1a1a2e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
   </div>
 </div>
 
+<!-- Sprite bulk sticky bottom bar -->
+<div class="sprite-bulk-sticky" id="spriteBulkPanel">
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <h3 style="font-size:14px;color:#8cf;margin:0;white-space:nowrap">Generate <span id="spriteSelectedCount">0</span> sprites</h3>
+    <label style="font-size:13px;color:#889">Variants:</label>
+    <select id="spriteVariantCount" class="batch-role-select">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3" selected>3</option>
+      <option value="4">4</option>
+    </select>
+    <input id="spriteGlobalNotes" class="batch-notes" placeholder="Visual notes..." style="flex:1;min-width:120px">
+    <button class="btn btn-primary" id="spriteGenerateBtn" disabled>Generate</button>
+  </div>
+</div>
+
 <script>
 // ── State ───────────────────────────────────────────────────────
 var themes = [];
@@ -379,6 +390,18 @@ function esc(s) {
 }
 
 function $(id) { return document.getElementById(id); }
+
+// Toast notifications
+var toastTimer = null;
+function showToast(msg, type) {
+  type = type || 'info';
+  var el = $('forgeToast');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'forge-toast ' + type + ' visible';
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { el.classList.remove('visible'); }, 4000);
+}
 
 // ── Theme Loading ───────────────────────────────────────────────
 async function loadThemes() {
@@ -773,7 +796,7 @@ function renderResultCard(result) {
   if (isMulti) {
     html += '<span class="result-card-title">' + esc(result.word || 'Result') + ' (' + data.length + ' items)</span>';
   } else {
-    html += '<span class="result-card-title">' + esc(data.nameEn || data.name || data.id || result.word || 'Result') + ' — ' + esc(result.word || '') + '</span>';
+    html += '<span class="result-card-title">' + esc(data.nameEn || data.meaning || data.name || data.id || result.word || 'Result') + ' — ' + esc(result.word || data.word || '') + '</span>';
   }
   html += '<span class="result-card-role">' + esc(role) + (isMulti ? ' x' + data.length : '') + '</span>';
   html += '</div>';
@@ -787,7 +810,7 @@ function renderResultCard(result) {
       var item = data[idx];
       var subId = jobId + '-' + idx;
       html += '<div class="multi-item-section" data-multi-index="' + idx + '">';
-      html += '<div class="multi-item-header">' + esc((idx + 1) + '. ' + (item.nameEn || item.name || item.id || '')) + '</div>';
+      html += '<div class="multi-item-header">' + esc((idx + 1) + '. ' + (item.nameEn || item.meaning || item.name || item.id || '')) + '</div>';
       html += renderFieldsForRole(role, item, subId);
       html += '</div>';
     }
@@ -1475,6 +1498,7 @@ var selectedSprites = {};   // key: "type:id" -> item object
 var spriteTypeFilter = 'all';
 var spriteJobPollTimer = null;
 var spriteJobSelectedVariants = {};  // key: jobId -> variant index
+var spriteJobNotes = {};  // key: jobId -> feedback text
 
 function switchTab(tabName) {
   // Update tab buttons
@@ -1617,6 +1641,7 @@ function renderSpriteMissingList(data, filter) {
     html += '<input type="checkbox"' + (isSelected ? ' checked' : '') + ' style="accent-color:#4ade80">';
     html += '<span class="role-badge ' + esc(item.type) + '">' + esc(item.type) + '</span>';
     if (item.name) html += '<strong style="color:#e0e0e0">' + esc(item.name) + '</strong>';
+    if (item.reading) html += '<span style="color:#667;font-size:13px">' + esc(item.reading) + '</span>';
     if (item.nameEn) html += '<span style="color:#889;font-size:13px">' + esc(item.nameEn) + '</span>';
     html += '<span style="color:#556;font-size:12px;margin-left:auto">' + esc(item.id) + '</span>';
     html += '</div>';
@@ -1663,11 +1688,11 @@ function updateSpriteBulkPanel() {
   var btn = $('spriteGenerateBtn');
 
   if (count > 0) {
-    panel.style.display = '';
+    panel.classList.add('visible');
     countEl.textContent = count;
     btn.disabled = false;
   } else {
-    panel.style.display = 'none';
+    panel.classList.remove('visible');
     btn.disabled = true;
   }
 }
@@ -1710,20 +1735,26 @@ async function generateSelected() {
     });
     var data = await res.json();
     if (data.error) {
-      alert('Failed: ' + data.error);
+      showToast('Failed: ' + data.error, 'error');
     } else {
+      var count = (data.jobs || []).length;
+      showToast('Queued ' + count + ' sprite job' + (count !== 1 ? 's' : '') + ' — generating...', 'success');
       // Clear selection
       selectedSprites = {};
       updateSpriteBulkPanel();
       renderSpriteMissingList(spriteData, spriteTypeFilter);
-      // Refresh jobs immediately
+      // Refresh jobs and scroll to them
       refreshSpriteJobs();
+      setTimeout(function() {
+        var jobsEl = $('spriteJobsSection');
+        if (jobsEl) jobsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
     }
   } catch (e) {
-    alert('Failed to submit: ' + e.message);
+    showToast('Failed to submit: ' + e.message, 'error');
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Generate Selected';
+    btn.textContent = 'Generate';
   }
 }
 
@@ -1749,16 +1780,21 @@ $('freeformGenBtn').addEventListener('click', async function() {
     });
     var data = await res.json();
     if (data.error) {
-      alert('Failed: ' + data.error);
+      showToast('Failed: ' + data.error, 'error');
     } else {
+      showToast('Queued freeform sprite job — generating...', 'success');
       // Clear form
       $('freeformId').value = '';
       $('freeformName').value = '';
       $('freeformDesc').value = '';
       refreshSpriteJobs();
+      setTimeout(function() {
+        var jobsEl = $('spriteJobsSection');
+        if (jobsEl) jobsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
     }
   } catch (e) {
-    alert('Failed to submit: ' + e.message);
+    showToast('Failed to submit: ' + e.message, 'error');
   } finally {
     btn.disabled = false;
     btn.textContent = 'Generate';
@@ -1783,6 +1819,16 @@ async function refreshSpriteJobs() {
 
 function renderSpriteJobs(jobs) {
   var container = $('spriteJobsList');
+  // Skip re-render if user is focused on a feedback input
+  if (document.activeElement && (document.activeElement.getAttribute('data-regen-notes') || document.activeElement.getAttribute('data-prompt-positive') || document.activeElement.getAttribute('data-prompt-negative') || document.activeElement.getAttribute('data-prompt-single'))) {
+    return;
+  }
+  // Save any in-progress feedback text
+  var noteInputs = container.querySelectorAll('[data-regen-notes]');
+  for (var n = 0; n < noteInputs.length; n++) {
+    var jid = noteInputs[n].getAttribute('data-regen-notes');
+    if (noteInputs[n].value) spriteJobNotes[jid] = noteInputs[n].value;
+  }
   if (!jobs || jobs.length === 0) {
     container.innerHTML = '<div class="empty-state">No generation jobs yet.</div>';
     return;
@@ -1804,7 +1850,9 @@ function renderSpriteJobs(jobs) {
     html += '<span class="sprite-job-status ' + esc(job.status) + '">' + esc(job.status) + '</span>';
     html += '<span class="role-badge ' + esc(job.type || '') + '">' + esc(job.type || 'unknown') + '</span>';
     html += '<strong style="color:#e0e0e0">' + esc(job.name || job.id) + '</strong>';
-    html += '<span style="color:#556;font-size:12px">' + esc(job.id) + '</span>';
+    if (job.nameEn) html += '<span style="color:#889;font-size:13px">' + esc(job.nameEn) + '</span>';
+    if (job.description) html += '<span style="color:#9ab;font-size:12px">' + esc(job.description.split('.')[0]) + '</span>';
+    html += '<span style="color:#556;font-size:12px">' + esc(job.itemId) + '</span>';
     if (job.error) {
       html += '<span style="color:#ef4444;font-size:12px;margin-left:auto">' + esc(job.error) + '</span>';
     }
@@ -1827,14 +1875,51 @@ function renderSpriteJobs(jobs) {
       }
       html += '</div>';
 
-      // Action buttons
+      // Prompt editor + action buttons
+      html += '<div style="margin-top:8px">';
+      if (job.prompt && typeof job.prompt === 'object') {
+        // ComfyUI type — positive/negative
+        html += '<label style="color:#9ab;font-size:12px">Positive prompt</label>';
+        html += '<textarea data-prompt-positive="' + esc(job.id) + '" rows="3" style="width:100%;margin-bottom:4px;background:#1a1a2e;color:#e0e0e0;border:1px solid #334;border-radius:4px;padding:6px;font-size:12px;font-family:monospace">' + esc(job.prompt.positive || '') + '</textarea>';
+        html += '<label style="color:#9ab;font-size:12px">Negative prompt</label>';
+        html += '<textarea data-prompt-negative="' + esc(job.id) + '" rows="2" style="width:100%;margin-bottom:8px;background:#1a1a2e;color:#e0e0e0;border:1px solid #334;border-radius:4px;padding:6px;font-size:12px;font-family:monospace">' + esc(job.prompt.negative || '') + '</textarea>';
+      } else if (job.prompt) {
+        // Gemini type — single prompt
+        html += '<label style="color:#9ab;font-size:12px">Prompt</label>';
+        html += '<textarea data-prompt-single="' + esc(job.id) + '" rows="4" style="width:100%;margin-bottom:8px;background:#1a1a2e;color:#e0e0e0;border:1px solid #334;border-radius:4px;padding:6px;font-size:12px;font-family:monospace">' + esc(job.prompt) + '</textarea>';
+      } else {
+        html += '<input class="batch-notes" data-regen-notes="' + esc(job.id) + '" placeholder="Feedback..." style="width:100%;margin-bottom:8px">';
+      }
       html += '<div class="sprite-job-actions">';
       html += '<button class="btn btn-primary" data-approve-job="' + esc(job.id) + '"' + (selectedVar === undefined ? ' disabled title="Select a variant first"' : '') + '>Approve' + (selectedVar !== undefined ? ' #' + (selectedVar + 1) : '') + '</button>';
+      html += '<button class="btn btn-warning" data-regen-job="' + esc(job.id) + '">Regenerate</button>';
       html += '<button class="btn btn-secondary" data-discard-job="' + esc(job.id) + '">Discard</button>';
+      html += '</div>';
       html += '</div>';
     }
 
     // Show approved variant
+    // Regenerate option for error jobs
+    if (job.status === 'error') {
+      html += '<div style="margin-top:8px">';
+      if (job.prompt && typeof job.prompt === 'object') {
+        html += '<label style="color:#9ab;font-size:12px">Positive prompt</label>';
+        html += '<textarea data-prompt-positive="' + esc(job.id) + '" rows="3" style="width:100%;margin-bottom:4px;background:#1a1a2e;color:#e0e0e0;border:1px solid #334;border-radius:4px;padding:6px;font-size:12px;font-family:monospace">' + esc(job.prompt.positive || '') + '</textarea>';
+        html += '<label style="color:#9ab;font-size:12px">Negative prompt</label>';
+        html += '<textarea data-prompt-negative="' + esc(job.id) + '" rows="2" style="width:100%;margin-bottom:8px;background:#1a1a2e;color:#e0e0e0;border:1px solid #334;border-radius:4px;padding:6px;font-size:12px;font-family:monospace">' + esc(job.prompt.negative || '') + '</textarea>';
+      } else if (job.prompt) {
+        html += '<label style="color:#9ab;font-size:12px">Prompt</label>';
+        html += '<textarea data-prompt-single="' + esc(job.id) + '" rows="4" style="width:100%;margin-bottom:8px;background:#1a1a2e;color:#e0e0e0;border:1px solid #334;border-radius:4px;padding:6px;font-size:12px;font-family:monospace">' + esc(job.prompt) + '</textarea>';
+      } else {
+        html += '<input class="batch-notes" data-regen-notes="' + esc(job.id) + '" placeholder="Feedback notes for retry..." style="width:100%;margin-bottom:8px">';
+      }
+      html += '<div class="sprite-job-actions">';
+      html += '<button class="btn btn-warning" data-regen-job="' + esc(job.id) + '">Retry</button>';
+      html += '<button class="btn btn-secondary" data-discard-job="' + esc(job.id) + '">Discard</button>';
+      html += '</div>';
+      html += '</div>';
+    }
+
     if (job.status === 'approved' && job.approvedVariant !== undefined) {
       var av = job.variantResults && job.variantResults[job.approvedVariant];
       if (av) {
@@ -1847,6 +1932,12 @@ function renderSpriteJobs(jobs) {
     html += '</div>';
   }
   container.innerHTML = html;
+  // Restore saved feedback text
+  var restored = container.querySelectorAll('[data-regen-notes]');
+  for (var n = 0; n < restored.length; n++) {
+    var jid = restored[n].getAttribute('data-regen-notes');
+    if (spriteJobNotes[jid]) restored[n].value = spriteJobNotes[jid];
+  }
 }
 
 // Variant selection and job actions
@@ -1869,6 +1960,26 @@ document.addEventListener('click', function(e) {
     if (variant !== undefined) {
       approveJob(jobId, variant);
     }
+    return;
+  }
+
+  // Regenerate button
+  var regenBtn = e.target.closest('[data-regen-job]');
+  if (regenBtn) {
+    var jobId = regenBtn.getAttribute('data-regen-job');
+    // Read prompt from textareas if present
+    var posEl = document.querySelector('[data-prompt-positive="' + jobId + '"]');
+    var negEl = document.querySelector('[data-prompt-negative="' + jobId + '"]');
+    var singleEl = document.querySelector('[data-prompt-single="' + jobId + '"]');
+    var notesInput = document.querySelector('[data-regen-notes="' + jobId + '"]');
+    var prompt = null;
+    if (posEl && negEl) {
+      prompt = { positive: posEl.value.trim(), negative: negEl.value.trim() };
+    } else if (singleEl) {
+      prompt = singleEl.value.trim();
+    }
+    var notes = notesInput ? notesInput.value.trim() : '';
+    regenerateJob(jobId, notes, prompt);
     return;
   }
 
@@ -1899,6 +2010,28 @@ async function approveJob(jobId, variant) {
     }
   } catch (e) {
     alert('Approve failed: ' + e.message);
+  }
+}
+
+async function regenerateJob(jobId, notes, prompt) {
+  try {
+    var body = { jobId: jobId, notes: notes };
+    if (prompt) body.prompt = prompt;
+    var res = await fetch('/api/sprite-forge/regenerate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    var data = await res.json();
+    if (data.error) {
+      showToast('Regenerate failed: ' + data.error, 'error');
+    } else {
+      showToast('Regenerating with feedback...', 'success');
+      delete spriteJobSelectedVariants[jobId];
+      refreshSpriteJobs();
+    }
+  } catch (e) {
+    showToast('Regenerate failed: ' + e.message, 'error');
   }
 }
 

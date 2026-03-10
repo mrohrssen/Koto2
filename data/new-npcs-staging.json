@@ -199,6 +199,7 @@
     "id": "rikka",
     "name": "リッカ",
     "nameEn": "Rikka",
+    "gender": "female",
     "baseWord": "先生",
     "baseReading": "せんせい",
     "baseMeaning": "teacher",
@@ -227,6 +228,7 @@
     "id": "genta",
     "name": "ゲンタ",
     "nameEn": "Genta",
+    "gender": "male",
     "baseWord": "先生",
     "baseReading": "せんせい",
     "baseMeaning": "teacher",
@@ -248,6 +250,320 @@
       ],
       "speechStyle": "Speaks in short, punchy declarations like a coach giving a halftime speech, often ending sentences with rallying calls.",
       "quirk": "Challenges everyone he meets to some form of physical contest."
+    },
+    "createdAt": "2026-03-09"
+  },
+  {
+    "id": "yuuto",
+    "name": "ユウト",
+    "nameEn": "Yuuto",
+    "gender": "male",
+    "baseWord": "生徒",
+    "baseReading": "せいと",
+    "baseMeaning": "pupil; student; schoolchild",
+    "baseRank": 1500,
+    "modifier": {
+      "word": "美術",
+      "reading": "びじゅつ",
+      "meaning": "art; fine arts",
+      "rank": 9900
+    },
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "personality": {
+      "traits": [
+        "dreamy",
+        "observant",
+        "gentle",
+        "easily distracted"
+      ],
+      "speechStyle": "Speaks in soft, meandering sentences, often trailing off mid-thought as something catches his eye.",
+      "quirk": "Constantly sketches in a worn notebook and sees everyday objects as potential subjects for his next painting."
+    },
+    "createdAt": "2026-03-09"
+  },
+  {
+    "id": "kanon",
+    "name": "カノン",
+    "nameEn": "Kanon",
+    "baseWord": "生徒",
+    "baseReading": "せいと",
+    "baseMeaning": "student",
+    "baseRank": 1500,
+    "modifier": {
+      "word": "音楽",
+      "reading": "おんがく",
+      "meaning": "music",
+      "rank": 2200
+    },
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "personality": {
+      "traits": [
+        "dreamy",
+        "passionate",
+        "gentle",
+        "absent-minded"
+      ],
+      "speechStyle": "Speaks in a soft, lilting cadence as if everything she says has a hidden melody.",
+      "quirk": "Hums or taps out rhythms on nearby surfaces mid-conversation, sometimes losing track of what she was saying."
+    },
+    "createdAt": "2026-03-09"
+  },
+  {
+    "id": "mio",
+    "name": "ミオ",
+    "nameEn": "Mio",
+    "gender": "female",
+    "baseWord": "学生",
+    "baseReading": "がくせい",
+    "baseMeaning": "student (esp. a university student)",
+    "baseRank": 2000,
+    "modifier": {
+      "word": "英語",
+      "reading": "えいご",
+      "meaning": "English (language)",
+      "rank": 3000
+    },
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "personality": {
+      "traits": [
+        "curious",
+        "talkative",
+        "cheerful",
+        "scattered"
+      ],
+      "speechStyle": "Peppers her speech with English loanwords and tries out new vocabulary mid-conversation, mixing politeness levels as she gets excited.",
+      "quirk": "Carries a dog-eared English dictionary everywhere and asks visitors to teach her new words in exchange for help."
+    },
+    "createdAt": "2026-03-09"
+  },
+  {
+    "id": "emilia",
+    "name": "エミリア",
+    "nameEn": "Emilia",
+    "baseWord": "留学生",
+    "baseReading": "りゅうがくせい",
+    "baseMeaning": "overseas student; exchange student",
+    "baseRank": 20200,
+    "modifier": {
+      "word": "明るい",
+      "reading": "あかるい",
+      "meaning": "bright; cheerful",
+      "rank": 2200
+    },
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "personality": {
+      "traits": [
+        "cheerful",
+        "curious",
+        "talkative",
+        "earnest"
+      ],
+      "speechStyle": "Speaks with bubbly enthusiasm, mixing in simple phrases she's proud of learning.",
+      "quirk": "Always carries a small notebook where she writes down new words she hears."
+    },
+    "createdAt": "2026-03-09"
+  },
+  {
+    "id": "leon",
+    "name": "レオン",
+    "nameEn": "Leon",
+    "gender": "male",
+    "baseWord": "留学生",
+    "baseReading": "りゅうがくせい",
+    "baseMeaning": "overseas student; exchange student",
+    "baseRank": 20200,
+    "modifier": {
+      "word": "真面目",
+      "reading": "まじめ",
+      "meaning": "serious; earnest; diligent",
+      "rank": 4600
+    },
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "personality": {
+      "traits": [
+        "studious",
+        "quiet",
+        "observant",
+        "polite"
+      ],
+      "speechStyle": "Speaks carefully and formally, choosing each word with deliberate precision.",
+      "quirk": "Tends to bow slightly too deeply, overcompensating out of respect for local customs."
+    },
+    "createdAt": "2026-03-09"
+  },
+  {
+    "id": "tesshou",
+    "name": "テッショウ",
+    "nameEn": "Tesshou",
+    "baseWord": "校長",
+    "baseReading": "こうちょう",
+    "baseMeaning": "principal; headmaster",
+    "baseRank": 9400,
+    "modifier": {
+      "word": "偉い",
+      "reading": "えらい",
+      "meaning": "great; eminent",
+      "rank": 3900
+    },
+    "area": "mahouno-gakkou",
+    "tier": 2,
+    "personality": {
+      "traits": [
+        "commanding",
+        "dignified",
+        "perceptive",
+        "stern"
+      ],
+      "speechStyle": "Speaks in measured, authoritative tones that make even casual remarks feel like proclamations.",
+      "quirk": "Has a habit of pausing mid-sentence to let his words sink in before delivering the final point."
+    },
+    "createdAt": "2026-03-09"
+  },
+  {
+    "id": "shinobu",
+    "name": "シノブ",
+    "nameEn": "Shinobu",
+    "gender": "female",
+    "baseWord": "先生",
+    "baseReading": "せんせい",
+    "baseMeaning": "teacher",
+    "baseRank": 500,
+    "modifier": {
+      "word": "化学",
+      "reading": "かがく",
+      "meaning": "chemistry",
+      "rank": 16100
+    },
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "personality": {
+      "traits": [
+        "meticulous",
+        "passionate",
+        "dry-humored",
+        "exacting"
+      ],
+      "speechStyle": "Speaks in precise, measured sentences, often pausing to correct terminology.",
+      "quirk": "Constantly polishes safety goggles even when not in the lab."
+    },
+    "createdAt": "2026-03-09"
+  },
+  {
+    "id": "tamaki",
+    "name": "タマキ",
+    "nameEn": "Tamaki",
+    "baseWord": "先生",
+    "baseReading": "せんせい",
+    "baseMeaning": "teacher",
+    "baseRank": 500,
+    "modifier": {
+      "word": "地理",
+      "reading": "ちり",
+      "meaning": "geography",
+      "rank": 14000
+    },
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "personality": {
+      "traits": [
+        "adventurous",
+        "warm",
+        "storytelling",
+        "curious"
+      ],
+      "speechStyle": "Weaves personal travel anecdotes into every explanation.",
+      "quirk": "Always carries a folded map in one hand and unfolds it mid-conversation to point out locations."
+    },
+    "createdAt": "2026-03-09"
+  },
+  {
+    "id": "fumika",
+    "name": "フミカ",
+    "nameEn": "Fumika",
+    "gender": "female",
+    "baseWord": "教師",
+    "baseReading": "きょうし",
+    "baseMeaning": "teacher (classroom)",
+    "baseRank": 2200,
+    "modifier": {
+      "word": "文学",
+      "reading": "ぶんがく",
+      "meaning": "literature",
+      "rank": 9700
+    },
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "personality": {
+      "traits": [
+        "contemplative",
+        "eloquent",
+        "gentle",
+        "melancholic"
+      ],
+      "speechStyle": "Speaks softly with a poetic cadence, occasionally quoting classic authors.",
+      "quirk": "Presses dried flowers between the pages of whichever novel she is currently reading."
+    },
+    "createdAt": "2026-03-09"
+  },
+  {
+    "id": "haruto",
+    "name": "ハルト",
+    "nameEn": "Haruto",
+    "gender": "male",
+    "baseWord": "後輩",
+    "baseReading": "こうはい",
+    "baseMeaning": "junior (at work, school, etc.)",
+    "baseRank": 3800,
+    "modifier": {
+      "word": "元気",
+      "reading": "げんき",
+      "meaning": "energetic; healthy",
+      "rank": 2600
+    },
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "personality": {
+      "traits": [
+        "eager",
+        "loud",
+        "optimistic",
+        "clumsy"
+      ],
+      "speechStyle": "Talks fast and enthusiastically, often tripping over his own words.",
+      "quirk": "Bows so deeply when greeting upperclassmen that he sometimes loses his balance."
+    },
+    "createdAt": "2026-03-09"
+  },
+  {
+    "id": "renjiro",
+    "name": "レンジロウ",
+    "nameEn": "Renjiro",
+    "baseWord": "先輩",
+    "baseReading": "せんぱい",
+    "baseMeaning": "senior (at work or school)",
+    "baseRank": 1400,
+    "modifier": {
+      "word": "厳しい",
+      "reading": "きびしい",
+      "meaning": "strict; severe; harsh",
+      "rank": 1100
+    },
+    "area": "mahouno-gakkou",
+    "tier": 1,
+    "personality": {
+      "traits": [
+        "disciplined",
+        "exacting",
+        "principled",
+        "respected"
+      ],
+      "speechStyle": "Speaks in short, direct sentences with high expectations, but never raises his voice.",
+      "quirk": "Carries a small notebook where he tallies rule infractions — though no one has ever seen him actually enforce a penalty."
     },
     "createdAt": "2026-03-09"
   }

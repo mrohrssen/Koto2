@@ -197,8 +197,6 @@ Do NOT wrap in markdown code fences. Return raw JSON only.
   "element": "fire|water|earth|wood|metal|neutral",
   "archetype": "Fighter|Mage|Trickster|Tank/Healer",
   "description": "string (visual description)",
-  "autoSkill": { "word": "string", "reading": "string", "meaning": "string", "rank": "number" },
-  "ultimate": { "word": "string", "reading": "string", "meaning": "string", "rank": "number" },
   "createdAt": "string (YYYY-MM-DD)"
 }
 ```

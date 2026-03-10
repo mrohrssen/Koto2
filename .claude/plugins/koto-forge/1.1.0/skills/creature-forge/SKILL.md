@@ -302,8 +302,6 @@ Wait for completion. Read the visuals JSON to verify `richDescriptions` and `art
   "element": "metal",
   "archetype": "Fighter",
   "visualTier": "rare",
-  "attack": "Cut",
-  "ultimate": "Crush",
   "a": "[art brief A]",
   "b": "[art brief B]",
   "c": "[art brief C]",

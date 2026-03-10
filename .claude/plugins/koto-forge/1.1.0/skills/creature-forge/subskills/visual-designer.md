@@ -18,7 +18,6 @@ Read the locked identity JSON at the path provided to you:
   "frequencyTier": "rare",
   "visualTier": "rare",
   "attack": { "word": "噛む", "meaning": "Bite", ... },
-  "ultimate": { "word": "固める", "meaning": "Harden", ... },
   "archetype": "Tank/Healer",
   "element": "water",
   "modifier": { "word": "古代", "meaning": "Ancient", "appearanceSketch": "..." }

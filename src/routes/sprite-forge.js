@@ -46,11 +46,18 @@ const TYPE_CONFIG = {
     idField: 'id',
   },
   move: {
-    dataFiles: ['moves.json'],
+    dataFiles: ['moves.json', 'new-moves-staging.json'],
     spriteDir: 'public/assets/sprites/actions',
     ext: '.webp',
     idField: 'nameEn',
     slugify: true,  // lowercase, spaces→hyphens
+  },
+  'npc-skill': {
+    dataFiles: ['new-npc-skills-staging.json'],
+    spriteDir: 'public/assets/sprites/actions',
+    ext: '.webp',
+    idField: 'nameEn',
+    slugify: true,
   },
   npc: {
     dataFiles: ['new-npcs-staging.json'],
@@ -81,6 +88,7 @@ const DEPLOY_DIRS = {
   creature: 'public/assets/sprites/creatures',
   item: 'public/assets/sprites/items',
   move: 'public/assets/sprites/actions',
+  'npc-skill': 'public/assets/sprites/actions',
   boss: 'public/assets/sprites/bosses',
   npc: 'public/assets/sprites/npcs',
   background: 'public/assets/backgrounds/areas',
@@ -88,7 +96,7 @@ const DEPLOY_DIRS = {
 
 // ── Gemini types vs ComfyUI types ────────────────────────────────────────
 
-const GEMINI_TYPES = new Set(['item', 'move', 'creature']);
+const GEMINI_TYPES = new Set(['item', 'move', 'npc-skill', 'creature']);
 const COMFYUI_TYPES = new Set(['boss', 'npc', 'background']);
 
 // ── Helpers ──────────────────────────────────────────────────────────────
@@ -209,12 +217,16 @@ async function comfyQueueAndWait(workflow, timeout = 120000) {
       const history = await comfyFetch(`/history/${promptId}`);
       if (history[promptId]) {
         if (history[promptId].status?.status_str === 'error') {
-          throw new Error('ComfyUI workflow error');
+          const msgs = history[promptId].status?.messages || [];
+          const errMsg = msgs.find(m => m[0] === 'execution_error');
+          const detail = errMsg?.[1]?.exception_message || 'unknown';
+          console.error(`[SpriteForge] ComfyUI workflow error: ${detail}`);
+          throw new Error(`ComfyUI workflow error: ${detail}`);
         }
         if (history[promptId].outputs) return history[promptId];
       }
     } catch (e) {
-      if (e.message === 'ComfyUI workflow error') throw e;
+      if (e.message.startsWith('ComfyUI workflow error')) throw e;
     }
   }
   throw new Error('ComfyUI generation timed out');
@@ -244,7 +256,7 @@ async function getGeminiModel(projectRoot) {
   const { GoogleGenerativeAI } = await import('@google/generative-ai');
   const genAI = new GoogleGenerativeAI(apiKey);
   _geminiModel = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash-preview-image-generation',
+    model: 'gemini-3.1-flash-image-preview',
     generationConfig: { responseModalities: ['image', 'text'] },
   });
   return _geminiModel;
@@ -268,8 +280,21 @@ async function geminiGenerate(projectRoot, prompt, styleRefParts = []) {
   throw new Error('No image in Gemini response');
 }
 
-function loadStyleRefs(projectRoot) {
-  const dir = join(projectRoot, 'data', 'creature-forge-style-refs');
+const QUALITY_REF_DIRS = {
+  creature: 'data/quality-refs/creatures',
+  item: 'data/quality-refs/items',
+  move: 'data/quality-refs/actions',
+  'npc-skill': 'data/quality-refs/actions',
+  npc: 'data/quality-refs/npcs',
+  boss: 'data/quality-refs/bosses',
+  background: 'data/quality-refs/backgrounds',
+};
+
+function loadStyleRefs(projectRoot, type) {
+  const refDir = QUALITY_REF_DIRS[type];
+  const dir = refDir
+    ? join(projectRoot, refDir)
+    : join(projectRoot, 'data', 'creature-forge-style-refs');
   if (!existsSync(dir)) return [];
 
   const parts = [];
@@ -298,7 +323,18 @@ async function rmbgViaComfyUI(inputPngPath) {
     },
     '2': {
       class_type: 'RMBG',
-      inputs: { image: ['1', 0] }
+      inputs: {
+        image: ['1', 0],
+        model: 'RMBG-2.0',
+        sensitivity: 1.0,
+        process_res: 1024,
+        mask_blur: 0,
+        mask_offset: 0,
+        invert_output: false,
+        refine_foreground: false,
+        background: 'Alpha',
+        background_color: '#222222',
+      }
     },
     '3': {
       class_type: 'SaveImage',
@@ -324,20 +360,26 @@ function buildItemPrompt(entry) {
     entry.description || '',
     'The icon should be fully opaque (no transparency within the item shape).',
     'No text, no labels, no UI frames. Just the item on a flat magenta field.',
+    'This game does not use pixel art, match the reference images.',
     'Designed to read clearly at 128×128 pixels.',
   ].filter(Boolean).join('\n');
 }
 
 function buildMovePrompt(entry) {
-  return [
-    'Use the same art style as the reference images — these are creature sprites from the same game.',
-    'Draw a single skill/vocabulary icon for a video game ability button on a solid magenta (#FF00FF) background.',
-    `The ability is: ${entry.nameEn}.${entry.notes ? ' ' + entry.notes : ''}`,
-    entry.description || '',
+  const lines = [
+    'Use the same art style as the reference images — these are action icons from the same game.',
+    'Draw a single skill/vocabulary icon for a video game ability button on a solid white background.',
+    `The ability is: ${entry.nameEn}. A new language learner should know the meaning of the word just by seeing this icon.`,
     'This is NOT a character — it is an RPG ability button icon.',
-    'No text, no labels, no UI frames. Just the icon on a flat magenta field.',
+    'No text, no labels, no UI frames. Just the icon on a flat white background.',
+    'No semi transparent pixels or glow allowed.',
+    'This game does not use pixel art, match the reference images.',
     'Designed to read clearly at 128×128 pixels.',
-  ].filter(Boolean).join('\n');
+  ];
+  if (entry.notes) {
+    lines.push(`IMPORTANT FEEDBACK: ${entry.notes}`);
+  }
+  return lines.join('\n');
 }
 
 function buildCreaturePrompt(entry) {
@@ -346,6 +388,7 @@ function buildCreaturePrompt(entry) {
     entry.notes || '',
     'Solid white (#FFFFFF) background, no shadows, full body, front-facing idle pose.',
     'No text, no UI elements.',
+    'This game does not use pixel art, match the reference images.',
   ].filter(Boolean).join('\n');
 }
 
@@ -353,8 +396,8 @@ function buildComfyCharacterPrompt(entry) {
   const base = entry.description || `A character named ${entry.nameEn}`;
   const notes = entry.notes || '';
   return {
-    positive: `${base} ${notes}, anime style, game character portrait, detailed, high quality, full body, transparent background`.trim(),
-    negative: 'text, watermark, signature, blurry, low quality, deformed, extra limbs, bad anatomy, frame, border',
+    positive: `solo, one person, single character, ${base} ${notes}, dynamic pose standing upright, anime style, game character portrait, detailed, high quality, full body, transparent background`.trim(),
+    negative: 'text, watermark, signature, blurry, low quality, deformed, extra limbs, bad anatomy, frame, border, multiple people',
   };
 }
 
@@ -369,7 +412,7 @@ function buildComfyBackgroundPrompt(entry) {
 
 // ── ComfyUI SDXL workflow builders ────────────────────────────────────────
 
-const SDXL_MODEL = 'waiIllustriousSDXL_v160.safetensors';
+const SDXL_MODEL = 'novaAnimeXL_ilV160.safetensors';
 
 function buildCharacterWorkflow(positive, negative) {
   return {
@@ -410,7 +453,18 @@ function buildCharacterWorkflow(positive, negative) {
     },
     '7': {
       class_type: 'RMBG',
-      inputs: { image: ['6', 0] }
+      inputs: {
+        image: ['6', 0],
+        model: 'RMBG-2.0',
+        sensitivity: 1.0,
+        process_res: 1024,
+        mask_blur: 0,
+        mask_offset: 0,
+        invert_output: false,
+        refine_foreground: false,
+        background: 'Alpha',
+        background_color: '#222222',
+      }
     },
     '8': {
       class_type: 'SaveImage',
@@ -471,15 +525,20 @@ function buildBackgroundWorkflow(positive, negative) {
 
 // ── Generation pipelines ─────────────────────────────────────────────────
 
-async function generateGeminiVariant(projectRoot, entry, variantIndex, stagingDir) {
+async function generateGeminiVariant(projectRoot, entry, variantIndex, stagingDir, job) {
   const type = entry.type;
   let prompt;
-  if (type === 'item') prompt = buildItemPrompt(entry);
-  else if (type === 'move') prompt = buildMovePrompt(entry);
+  if (job?.promptOverride) {
+    prompt = job.promptOverride;
+  } else if (type === 'item') prompt = buildItemPrompt(entry);
+  else if (type === 'move' || type === 'npc-skill') prompt = buildMovePrompt(entry);
   else prompt = buildCreaturePrompt(entry);
 
-  // Load style refs for all Gemini types
-  const styleRefs = loadStyleRefs(projectRoot);
+  // Store the prompt used on the job for display/editing
+  if (job) job.prompt = prompt;
+
+  // Load type-appropriate style refs
+  const styleRefs = loadStyleRefs(projectRoot, type);
 
   const imageBuffer = await geminiGenerate(projectRoot, prompt, styleRefs);
 
@@ -511,13 +570,22 @@ async function generateGeminiVariant(projectRoot, entry, variantIndex, stagingDi
   return { variant: variantIndex, path: `variant-${variantIndex}.webp`, fullPath: webpPath };
 }
 
-async function generateComfyVariant(entry, variantIndex, stagingDir) {
+async function generateComfyVariant(entry, variantIndex, stagingDir, job) {
   const type = entry.type;
   const isBackground = type === 'background';
 
-  const prompts = isBackground
-    ? buildComfyBackgroundPrompt(entry)
-    : buildComfyCharacterPrompt(entry);
+  let prompts;
+  if (job?.promptOverride) {
+    // promptOverride is { positive, negative } for ComfyUI types
+    prompts = job.promptOverride;
+  } else {
+    prompts = isBackground
+      ? buildComfyBackgroundPrompt(entry)
+      : buildComfyCharacterPrompt(entry);
+  }
+
+  // Store the prompt used on the job for display/editing
+  if (job) job.prompt = { positive: prompts.positive, negative: prompts.negative };
 
   const workflow = isBackground
     ? buildBackgroundWorkflow(prompts.positive, prompts.negative)
@@ -567,14 +635,11 @@ export function createSpriteForgeRouter({ projectRoot }) {
 
   function getMissing(_req, res) {
     try {
-      const result = {};
+      const missing = [];
 
       for (const [type, config] of Object.entries(TYPE_CONFIG)) {
         // Skip types with no data files (like boss)
-        if (config.dataFiles.length === 0) {
-          result[type] = { total: 0, missing: 0, existing: 0, items: [] };
-          continue;
-        }
+        if (config.dataFiles.length === 0) continue;
 
         // Load and merge entries from all data files
         const seen = new Set();
@@ -595,7 +660,6 @@ export function createSpriteForgeRouter({ projectRoot }) {
 
         // Check which entries are missing sprites
         const spriteDir = join(projectRoot, config.spriteDir);
-        const missingEntries = [];
 
         for (const entry of allEntries) {
           const id = entry._spriteId;
@@ -608,25 +672,59 @@ export function createSpriteForgeRouter({ projectRoot }) {
           }
 
           if (!exists) {
-            missingEntries.push({
-              id: entry[config.idField],
-              name: entry.name || '',
-              nameEn: entry.nameEn || '',
+            // Build a rich description for NPCs from their personality/modifier data
+            let description = entry.description || '';
+            if (!description && type === 'npc') {
+              const parts = [];
+              const role = entry.baseMeaning || '';
+              const mod = entry.modifier?.meaning?.toLowerCase() || '';
+              const gender = entry.gender || '';
+              // Role as standalone phrase: "teacher at the school", "researcher at the aquarium"
+              if (role) parts.push(role);
+              if (gender) parts.push(gender);
+              if (mod) parts.push(mod);
+              const traits = entry.personality?.traits;
+              if (Array.isArray(traits) && traits.length > 0) {
+                parts.push(traits.join(', '));
+              }
+              description = parts.join(', ');
+            }
+
+            missing.push({
+              type,
+              id: entry._spriteId,
+              name: entry.name || entry.word || '',
+              nameEn: entry.nameEn || entry.meaning || '',
+              reading: entry.baseReading || entry.reading || '',
               source: entry._source,
-              description: entry.description || '',
+              description,
             });
           }
-        }
 
-        result[type] = {
-          total: allEntries.length,
-          missing: missingEntries.length,
-          existing: allEntries.length - missingEntries.length,
-          items: missingEntries,
-        };
+          // For background type, also scan sub-areas
+          if (type === 'background' && Array.isArray(entry.subAreas)) {
+            const bgRoot = join(projectRoot, 'public/assets/backgrounds');
+            for (const sub of entry.subAreas) {
+              if (!sub.id || !sub.background) continue;
+              const bgPath = join(bgRoot, sub.background);
+              if (!existsSync(bgPath)) {
+                missing.push({
+                  type: 'background',
+                  id: sub.id,
+                  name: sub.name || '',
+                  nameEn: sub.nameEn || '',
+                  reading: sub.reading || '',
+                  source: entry._source,
+                  description: sub.description || '',
+                  parentArea: entry._spriteId,
+                });
+              }
+            }
+          }
+        }
       }
 
-      res.json(result);
+      res.json({ missing });
     } catch (error) {
       console.error('[SpriteForge] Error scanning missing:', error);
       res.status(500).json({ error: 'Failed to scan missing sprites', details: error.message });
@@ -745,13 +843,13 @@ export function createSpriteForgeRouter({ projectRoot }) {
             result = await generateGeminiVariant(projectRoot, {
               ...job,
               type: job.type,
-            }, v, stagingDir);
+            }, v, stagingDir, job);
             job.stage = `rmbg variant ${v + 1}/${job.variants}`;
           } else {
             result = await generateComfyVariant({
               ...job,
               type: job.type,
-            }, v, stagingDir);
+            }, v, stagingDir, job);
           }
           job.variantResults.push(result);
         } catch (err) {
@@ -924,6 +1022,60 @@ export function createSpriteForgeRouter({ projectRoot }) {
     }
   }
 
+  // ── POST /regenerate ─────────────────────────────────────────────────
+
+  function postRegenerate(req, res) {
+    try {
+      const { jobId, notes, prompt } = req.body || {};
+      if (!jobId) {
+        return res.status(400).json({ error: 'Missing required field: jobId' });
+      }
+
+      const oldJob = jobs.get(jobId);
+      if (!oldJob) {
+        return res.status(404).json({ error: 'Job not found' });
+      }
+
+      // Clean up old staging files
+      const oldStagingDir = join(stagingRoot, oldJob.type, oldJob.itemId);
+      if (existsSync(oldStagingDir)) {
+        rmSync(oldStagingDir, { recursive: true, force: true });
+      }
+
+      // Create new job with feedback notes appended
+      const newJob = {
+        id: generateJobId(),
+        type: oldJob.type,
+        itemId: oldJob.itemId,
+        name: oldJob.name,
+        nameEn: oldJob.nameEn,
+        description: oldJob.description,
+        notes: notes || oldJob.notes || '',
+        promptOverride: prompt || null,
+        variants: oldJob.variants,
+        status: 'queued',
+        stage: 'queued',
+        variantResults: [],
+        error: null,
+        createdAt: new Date().toISOString(),
+      };
+
+      // Remove old job, add new one
+      jobs.delete(jobId);
+      jobs.set(newJob.id, newJob);
+
+      // Fire async generation
+      runGenerationPipeline(newJob).catch(err => {
+        console.error(`[SpriteForge] Pipeline error for ${newJob.id}:`, err);
+      });
+
+      res.json({ success: true, job: newJob });
+    } catch (error) {
+      console.error('[SpriteForge] Error regenerating:', error);
+      res.status(500).json({ error: 'Failed to regenerate', details: error.message });
+    }
+  }
+
   // ── Mount routes ─────────────────────────────────────────────────────
 
   router.get('/missing', getMissing);
@@ -933,6 +1085,7 @@ export function createSpriteForgeRouter({ projectRoot }) {
   router.post('/generate-freeform', postGenerateFreeform);
   router.post('/approve', postApprove);
   router.post('/discard', postDiscard);
+  router.post('/regenerate', postRegenerate);
 
   return router;
 }

@@ -43,5 +43,95 @@
         "level": 20
       }
     ]
+  },
+  {
+    "id": "isurori",
+    "name": "イスロリ",
+    "nameEn": "Isurori",
+    "baseWord": "椅子",
+    "baseReading": "いす",
+    "baseMeaning": "chair; stool",
+    "baseRank": 1500,
+    "modifier": {
+      "word": "古い",
+      "reading": "ふるい",
+      "meaning": "old; aged; ancient",
+      "rank": 570
+    },
+    "element": "wood",
+    "archetype": "Trickster",
+    "description": "A wooden school chair that has sprung to life, its four legs now acting as nimble limbs that skitter across classroom floors. Its seat tilts expressively like a head, and the backrest fans out into a pair of flat wooden wings that let it glide short distances. Glowing grain-line patterns pulse across its surface in pale green, hinting at the forest spirit that animates it. A mischievous creature, it loves to scuttle underfoot and trip the unwary, spinning in place with gleeful rattling sounds.",
+    "learnset": [
+      {
+        "moveId": "mawaru",
+        "level": 1
+      },
+      {
+        "moveId": "haeru",
+        "level": 3
+      },
+      {
+        "moveId": "kakomu",
+        "level": 5
+      },
+      {
+        "moveId": "karamu",
+        "level": 7
+      },
+      {
+        "moveId": "kakureru",
+        "level": 9
+      },
+      {
+        "moveId": "kurau",
+        "level": 11
+      }
+    ],
+    "createdAt": "2026-03-09"
+  },
+  {
+    "id": "tsukueon",
+    "name": "ツクエオン",
+    "nameEn": "Tsukueon",
+    "baseWord": "机",
+    "baseReading": "つくえ",
+    "baseMeaning": "desk",
+    "baseRank": 1500,
+    "modifier": {
+      "word": "丈夫",
+      "reading": "じょうぶ",
+      "meaning": "sturdy / durable",
+      "rank": 4200
+    },
+    "element": "wood",
+    "archetype": "Fighter",
+    "description": "A stout wooden school desk that has sprung to life, its four legs stomping about with surprising agility. Its flip-top lid opens and closes like a chattering mouth, revealing a glowing interior where notebooks and pencils rattle around like teeth. Leafy vines curl from its joints and drawer handles, hinting at the living wood within. Its surface is covered in carved protective runes that shimmer faintly green, and a small potted plant sprouts cheerfully from one corner like a crest.",
+    "learnset": [
+      {
+        "moveId": "haeru",
+        "level": 1
+      },
+      {
+        "moveId": "hirogeru",
+        "level": 2
+      },
+      {
+        "moveId": "sasaeru",
+        "level": 4
+      },
+      {
+        "moveId": "kakomu",
+        "level": 6
+      },
+      {
+        "moveId": "katameru",
+        "level": 8
+      },
+      {
+        "moveId": "kakureru",
+        "level": 10
+      }
+    ],
+    "createdAt": "2026-03-09"
   }
 ]

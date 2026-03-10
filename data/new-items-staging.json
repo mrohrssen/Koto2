@@ -25,8 +25,192 @@
       "field": "attackMult",
       "value": 0.05
     },
-    "description": "Permanently increase one creature's attack by 5%",
-    "descriptionJa": "クリーチャー1体の攻撃力を5%永続アップ",
+    "description": "Increase one creature's attack by 5%",
+    "descriptionJa": "クリーチャー1体の攻撃力を5%アップ",
+    "stage": 5
+  },
+  {
+    "id": "pen",
+    "word": "ペン",
+    "reading": "ペン",
+    "meaning": "pen",
+    "components": [
+      {
+        "word": "ペン",
+        "reading": "ペン",
+        "meanings": [
+          "pen"
+        ],
+        "rank": 4800
+      }
+    ],
+    "compoundRank": 4800,
+    "rank": 4800,
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "attackMult",
+      "value": 0.02
+    },
+    "description": "Increase one creature's attack by 2%",
+    "descriptionJa": "クリーチャー1体の攻撃力を2%アップ",
+    "stage": 5
+  },
+  {
+    "id": "school-uniform",
+    "word": "学生服",
+    "reading": "がくせいふく",
+    "meaning": "school uniform",
+    "components": [
+      {
+        "word": "学生",
+        "reading": "がくせい",
+        "meanings": [
+          "student"
+        ],
+        "rank": 2000
+      },
+      {
+        "word": "服",
+        "reading": "ふく",
+        "meanings": [
+          "clothes",
+          "clothing",
+          "garment"
+        ],
+        "rank": 566
+      }
+    ],
+    "compoundRank": 1132,
+    "rank": 2000,
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "hpMult",
+      "value": 0.05
+    },
+    "description": "Increase one creature's HP by 5%",
+    "descriptionJa": "クリーチャー1体のHPを5%アップ",
+    "stage": 5
+  },
+  {
+    "id": "pencil",
+    "word": "鉛筆",
+    "reading": "えんぴつ",
+    "meaning": "pencil",
+    "components": [
+      {
+        "word": "鉛",
+        "reading": "なまり",
+        "meanings": [
+          "lead (metal)"
+        ],
+        "rank": 15000
+      },
+      {
+        "word": "筆",
+        "reading": "ふで",
+        "meanings": [
+          "writing brush"
+        ],
+        "rank": 8500
+      }
+    ],
+    "compoundRank": 10500,
+    "rank": 15000,
+    "rarity": "epic",
+    "type": "boost",
+    "effect": {
+      "field": "attackMult",
+      "value": 0.03
+    },
+    "description": "Increase one creature's attack by 3%",
+    "descriptionJa": "クリーチャー1体の攻撃力を3%アップ",
+    "stage": 5
+  },
+  {
+    "id": "dictionary",
+    "word": "辞書",
+    "reading": "じしょ",
+    "meaning": "dictionary",
+    "components": [
+      {
+        "word": "辞",
+        "reading": "じ",
+        "meanings": [
+          "word",
+          "term",
+          "resignation"
+        ],
+        "rank": 12500
+      },
+      {
+        "word": "書",
+        "reading": "しょ",
+        "meanings": [
+          "write",
+          "book"
+        ],
+        "rank": 2500
+      }
+    ],
+    "compoundRank": 12500,
+    "rank": 12500,
+    "rarity": "epic",
+    "type": "boost",
+    "effect": {
+      "field": "mpMult",
+      "value": 0.03
+    },
+    "description": "Increase one creature's MP by 3%",
+    "descriptionJa": "クリーチャー1体のMPを3%アップ",
+    "stage": 5
+  },
+  {
+    "id": "textbook",
+    "word": "教科書",
+    "reading": "きょうかしょ",
+    "meaning": "textbook",
+    "components": [
+      {
+        "word": "教",
+        "reading": "きょう",
+        "meanings": [
+          "teach",
+          "instruction"
+        ],
+        "rank": 3000
+      },
+      {
+        "word": "科",
+        "reading": "か",
+        "meanings": [
+          "department",
+          "course",
+          "section"
+        ],
+        "rank": 5000
+      },
+      {
+        "word": "書",
+        "reading": "しょ",
+        "meanings": [
+          "write",
+          "book"
+        ],
+        "rank": 2500
+      }
+    ],
+    "compoundRank": 5300,
+    "rank": 5000,
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "hpMult",
+      "value": 0.03
+    },
+    "description": "Increase one creature's HP by 3%",
+    "descriptionJa": "クリーチャー1体のHPを3%アップ",
     "stage": 5
   }
 ]
