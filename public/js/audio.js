@@ -241,7 +241,7 @@ export function setVolume(type, val) {
   } else if (type === 'bgm') {
     bgmVolume = clamped;
     localStorage.setItem('jrpg_bgmVolume', String(clamped));
-    if (bgmElement && !muted) bgmElement.volume = clamped;
+    if (bgmElement) bgmElement.volume = muted ? 0 : clamped;
   }
 }
 
@@ -266,6 +266,7 @@ export function unmute() {
   muted = false;
   localStorage.removeItem('jrpg_audioMuted');
   if (bgmElement) bgmElement.volume = bgmVolume;
+  if (audioCtx?.state === 'suspended') audioCtx.resume();
 }
 
 /** Check mute state */

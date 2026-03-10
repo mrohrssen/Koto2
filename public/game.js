@@ -231,15 +231,16 @@ function updateStatusBar() {
     const currentRoomIdx = run.currentRoom || 0;
     const currentRoom = run.rooms?.[currentRoomIdx];
     const activeRoom = Array.isArray(currentRoom) ? currentRoom[0] : currentRoom;
-    const subAreaName = activeRoom?.subArea?.nameEn;
-    dom.floorIndicator.textContent = subAreaName || `Area ${(run.areasCompleted || 0) + 1}`;
+    const subAreaNameEn = activeRoom?.subArea?.nameEn;
+    const subAreaNameJa = activeRoom?.subArea?.name;
+    dom.floorIndicator.textContent = subAreaNameEn || `Area ${(run.areasCompleted || 0) + 1}`;
 
     // Update area header pill
     const areaName = run.currentArea?.name;
     const sep = dom.areaHeaderPill.querySelector('.area-header-sep');
-    if (areaName && subAreaName) {
+    if (areaName && subAreaNameJa) {
       dom.areaHeaderName.textContent = areaName;
-      dom.areaHeaderSub.textContent = subAreaName;
+      dom.areaHeaderSub.textContent = subAreaNameJa;
       if (sep) sep.style.display = '';
       dom.areaHeaderPill.classList.add('visible');
     } else if (areaName) {
@@ -964,6 +965,11 @@ function setupEventListeners() {
 
 // ============ INITIALIZATION ============
 document.addEventListener('DOMContentLoaded', async () => {
+  // Lock to portrait orientation (PWA + mobile browsers)
+  if (screen.orientation?.lock) {
+    screen.orientation.lock('portrait-primary').catch(() => {});
+  }
+
   // Initialize auth UI
   auth.init({
     onAuthenticated: () => initGame()

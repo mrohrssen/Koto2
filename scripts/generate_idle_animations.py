@@ -40,13 +40,13 @@ import urllib.error
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 CREATURES_JSON = os.path.join(PROJECT_ROOT, "data", "creatures.json")
-SPRITE_DIR = os.path.join(PROJECT_ROOT, "public", "assets", "sprites", "robots")
+SPRITE_DIR = os.path.join(PROJECT_ROOT, "public", "assets", "sprites", "creatures")
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "output", "animated-sprites")
 TMP_DIR = os.path.join(PROJECT_ROOT, "tmp", "idle-gen")
 
-COMFYUI_URL = os.environ.get("COMFYUI_URL", "http://10.5.0.2:8188")
+COMFYUI_URL = os.environ.get("COMFYUI_URL", "http://127.0.0.1:8188")
 
-GAME_SPRITE_DIR = os.path.join(PROJECT_ROOT, "public", "assets", "sprites", "robots")
+GAME_SPRITE_DIR = os.path.join(PROJECT_ROOT, "public", "assets", "sprites", "creatures")
 CHROMA_KEY_COLOR = (255, 0, 255)  # Magenta — game-dev standard, no creature uses this color
 
 # --- Proven idle animation settings (from wan-comfyui-working-workflow.md) ---
@@ -209,7 +209,7 @@ def build_workflow(server_filename, positive_prompt, negative_prompt, seed):
             "6_high": {
                 "class_type": "WanVideoModelLoader",
                 "inputs": {
-                    "model": "wan2.2_i2v_high_noise_14B_Q4_K_S.gguf",
+                    "model": "wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors",
                     "base_precision": "bf16",
                     "quantization": "disabled",
                     "load_device": "main_device",
@@ -218,7 +218,7 @@ def build_workflow(server_filename, positive_prompt, negative_prompt, seed):
             "6_low": {
                 "class_type": "WanVideoModelLoader",
                 "inputs": {
-                    "model": "wan2.2_i2v_low_noise_14B_Q4_K_S.gguf",
+                    "model": "wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors",
                     "base_precision": "bf16",
                     "quantization": "disabled",
                     "load_device": "main_device",

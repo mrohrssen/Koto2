@@ -102,12 +102,21 @@ function buildSplitAttackCard(atk, isEnemy) {
   const attackerNameJp = atk.attackerNameJp || atk.attackerName;
   const attackerNameHtml = wrapWithRuby(attackerNameJp, attackerNameJp, atk.attackerName);
 
-  const damageSign = atk.damage > 0 ? `-${atk.damage}` : '0';
+  let damageSign;
+  if (atk.healAmount > 0) damageSign = `+${atk.healAmount}`;
+  else if (atk.damage > 0) damageSign = `-${atk.damage}`;
+  else if (atk.effectApplied) damageSign = atk.effectApplied;
+  else damageSign = '0';
   const targetDisplayName = atk.targetNameJp || atk.targetName || '';
   const targetNameHtml = wrapWithRuby(targetDisplayName, targetDisplayName, atk.targetName);
 
   const baseIcon = actionIconPath(atk.attackerBaseMeaning);
   const skillIcon = actionIconPath(atk.attackerSkillEn);
+
+  const cat = atk.category || 'damage';
+  const tagLabel = { heal: 'HEAL', buff: 'BUFF', shield: 'DEF', debuff: 'DBF', drain: 'ATK' }[cat] || 'ATK';
+  const tagClass = { heal: 'sac-tag-heal', buff: 'sac-tag-buff', shield: 'sac-tag-buff', debuff: 'sac-tag-debuff' }[cat] || 'sac-tag-atk';
+  const damageClass = (atk.healAmount > 0) ? 'sac-heal' : 'sac-damage';
 
   return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
     <div class="sac-left">
@@ -125,13 +134,13 @@ function buildSplitAttackCard(atk, isEnemy) {
         ${skillIcon ? `<img class="sac-action-icon" src="${skillIcon}" alt="" onerror="this.style.display='none'">` : ''}
         <span class="sac-vocab">${skillNameHtml}</span>
         <span class="sac-meaning">${atk.attackerSkillEn || ''}</span>
-        <span class="sac-tag sac-tag-atk">ATK</span>
+        <span class="sac-tag ${tagClass}">${tagLabel}</span>
       </div>
       <div class="sac-row sac-impact" data-row="2">
         <span class="sac-impact-arrow">\u2192</span>
         <img class="sac-impact-sprite" src="${targetSprite}" alt="">
         <span class="sac-impact-name">${targetNameHtml}</span>
-        <span class="sac-damage">${damageSign}</span>
+        <span class="${damageClass}">${damageSign}</span>
       </div>
     </div>
     <span class="sac-continue" style="display:none">\u25BC</span>
@@ -188,12 +197,21 @@ function insertNpcAttackCard(atk) {
   const attackerNameJp = atk.attackerNameJp || atk.attackerName;
   const attackerNameHtml = wrapWithRuby(attackerNameJp, attackerNameJp, atk.attackerName);
 
-  const damageSign = atk.damage > 0 ? `-${atk.damage}` : (atk.healAmount > 0 ? `+${atk.healAmount}` : '0');
+  let damageSign;
+  if (atk.healAmount > 0) damageSign = `+${atk.healAmount}`;
+  else if (atk.damage > 0) damageSign = `-${atk.damage}`;
+  else if (atk.effectApplied) damageSign = atk.effectApplied;
+  else damageSign = '0';
   const targetDisplayName = atk.targetNameJp || atk.targetName || '';
   const targetNameHtml = wrapWithRuby(targetDisplayName, targetDisplayName, atk.targetName);
 
   const baseIcon = actionIconPath(atk.attackerBaseMeaning);
   const skillIcon = actionIconPath(atk.attackerSkillEn);
+
+  const cat = atk.category || 'damage';
+  const tagLabel = { heal: 'HEAL', buff: 'BUFF', shield: 'DEF', debuff: 'DBF', drain: 'NPC' }[cat] || 'NPC';
+  const tagClass = { heal: 'sac-tag-heal', buff: 'sac-tag-buff', shield: 'sac-tag-buff', debuff: 'sac-tag-debuff' }[cat] || 'sac-tag-atk';
+  const damageClass = (atk.healAmount > 0) ? 'sac-heal' : 'sac-damage';
 
   const html = `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
     <div class="sac-left">
@@ -211,13 +229,13 @@ function insertNpcAttackCard(atk) {
         ${skillIcon ? `<img class="sac-action-icon" src="${skillIcon}" alt="" onerror="this.style.display='none'">` : ''}
         <span class="sac-vocab">${skillNameHtml}</span>
         <span class="sac-meaning">${atk.attackerSkillEn || ''}</span>
-        <span class="sac-tag sac-tag-atk">NPC</span>
+        <span class="sac-tag ${tagClass}">${tagLabel}</span>
       </div>
       <div class="sac-row sac-impact" data-row="2">
         <span class="sac-impact-arrow">\u2192</span>
         <img class="sac-impact-sprite" src="${targetSprite}" alt="">
         <span class="sac-impact-name">${targetNameHtml}</span>
-        <span class="sac-damage">${damageSign}</span>
+        <span class="${damageClass}">${damageSign}</span>
       </div>
     </div>
     <span class="sac-continue" style="display:none">\u25BC</span>
@@ -232,6 +250,13 @@ function insertNpcAttackCard(atk) {
   rows.forEach((row, i) => {
     setTimeout(() => row.classList.add('sac-row-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
   });
+
+  // TTS for NPC base word + skill name
+  const baseWord = atk.attackerBaseWord;
+  const skillName = atk.attackerSkillName || atk.moveName;
+  if (baseWord) prefetchWord(baseWord);
+  if (skillName) prefetchWord(skillName);
+  setTimeout(() => playWordPair(baseWord, skillName), 50);
 
   return card;
 }
@@ -399,7 +424,55 @@ export function initMoveUI() {
       console.log('[combat] Items button pressed — not yet implemented');
     },
     onMoveHelpCb: (move) => {
-      console.log('[combat] Move help:', move.nameEn, '—', move.meaning || move.description);
+      // Remove existing popup
+      document.querySelector('.move-help-backdrop')?.remove();
+      document.querySelector('.move-help-popup')?.remove();
+
+      const STATUS_LABELS = {
+        poison: 'Poison', stun: 'Stun', confuse: 'Confuse',
+        shield: 'Shield', team_shield: 'Team Shield',
+        attack_buff: 'Atk Buff', haste: 'Haste',
+        attack_debuff: 'Atk Debuff'
+      };
+      const CAT_LABELS = {
+        damage: 'Attack', drain: 'Drain', heal: 'Heal',
+        shield: 'Shield', buff: 'Buff', debuff: 'Debuff'
+      };
+
+      let statsHtml = '';
+      statsHtml += `<span class="mhp-stat">${CAT_LABELS[move.category] || move.category}</span>`;
+      if (move.power > 0) statsHtml += `<span class="mhp-stat">Power ${move.power}</span>`;
+      statsHtml += `<span class="mhp-stat">${move.mpCost} MP</span>`;
+      if (move.element) statsHtml += `<span class="mhp-stat">${move.element}</span>`;
+      if (move.statusEffect) {
+        const label = STATUS_LABELS[move.statusEffect] || move.statusEffect;
+        const dur = move.statusDuration ? ` ${move.statusDuration}T` : '';
+        statsHtml += `<span class="mhp-stat">${label}${dur}</span>`;
+      }
+      if (move.target && move.target !== 'enemy') statsHtml += `<span class="mhp-stat">Target: ${move.target}</span>`;
+
+      const backdrop = document.createElement('div');
+      backdrop.className = 'move-help-backdrop';
+
+      const popup = document.createElement('div');
+      popup.className = 'move-help-popup';
+      popup.innerHTML = `
+        <div class="mhp-name">${move.name}</div>
+        <div class="mhp-reading">${move.reading || ''}</div>
+        <div class="mhp-meaning">${move.nameEn || ''}</div>
+        <div class="mhp-stats">${statsHtml}</div>
+        ${move.description ? `<div class="mhp-desc">${move.description}</div>` : ''}
+      `;
+
+      const dismiss = () => {
+        backdrop.remove();
+        popup.remove();
+      };
+      backdrop.addEventListener('click', dismiss);
+      popup.addEventListener('click', dismiss);
+
+      document.body.appendChild(backdrop);
+      document.body.appendChild(popup);
     }
   });
   initTargetSelect({
@@ -451,17 +524,21 @@ async function handleBefriendTalk() {
         narration.showNarration(`${creatureName} refused to talk!`, { persistent: false });
         if (delay) await delay(600);
 
-        // Apply enemy attacks from the response
+        // Show enemy counter-attacks as split attack cards
         if (result.enemyAttacks?.length) {
           for (const atk of result.enemyAttacks) {
-            if (atk.targetIndex >= 0 && animatePlayerHurt) {
-              animatePlayerHurt(atk.targetIndex);
+            const card = insertAttackCard(atk, true);
+            if (atk.damage > 0) {
+              playSFX('player-hit');
+              if (animatePlayerHurt) animatePlayerHurt(atk.targetIndex ?? 0);
+              if (showDamageNumber) showDamageNumber(atk.damage, true, false);
             }
-            if (showDamageNumber && atk.targetIndex >= 0) {
-              showDamageNumber(atk.damage, atk.targetIndex, 'player');
+            if (card) {
+              await waitForCardTap(card);
+            } else {
+              if (delay) await delay(400);
             }
           }
-          if (delay) await delay(400);
         }
 
         // Update state with new HP values
@@ -1148,22 +1225,7 @@ async function showNpcSkillAttacksAnimated(result, allyHpMap) {
   for (const atk of result.npcSkillAttacks) {
     let attackCard = null;
 
-    if (atk.category === 'heal') {
-      if (actionArea) {
-        actionArea.innerHTML = `<div class="combat-creature-attack" style="color:#4CAF50">${atk.attackerName} heals ${atk.targetName}! +${atk.healAmount || 0} HP</div>`;
-      }
-    } else if (atk.category === 'buff' || atk.category === 'shield') {
-      if (actionArea) {
-        actionArea.innerHTML = `<div class="combat-creature-attack" style="color:#64B5F6">${atk.attackerName} buffs ${atk.targetName}!${atk.effectApplied ? ' \u2192 ' + atk.effectApplied : ''}</div>`;
-      }
-    } else if (atk.category === 'debuff') {
-      if (actionArea) {
-        actionArea.innerHTML = `<div class="combat-creature-attack" style="color:#CE93D8">${atk.attackerName} debuffs ${atk.targetName}!${atk.effectApplied ? ' \u2192 ' + atk.effectApplied : ''}</div>`;
-      }
-    } else {
-      // Damage: show split attack card
-      attackCard = insertNpcAttackCard(atk);
-    }
+    attackCard = insertNpcAttackCard(atk);
 
     // Sound + visual effects for damage
     if (atk.damage > 0) {
@@ -1333,23 +1395,7 @@ async function executeCreatureMovesTurn(choices) {
           let attackCard = null;
           const actionArea = document.getElementById('action-area');
 
-          if (atk.category === 'heal') {
-            // Heal: show green heal text
-            if (actionArea) {
-              actionArea.innerHTML = `<div class="combat-creature-attack" style="color:#4CAF50">${atk.attackerName} uses ${atk.moveNameEn}! +${atk.healAmount || 0} HP</div>`;
-            }
-          } else if (atk.category === 'buff' || atk.category === 'shield') {
-            // Buff/shield: show blue text
-            if (actionArea) {
-              actionArea.innerHTML = `<div class="combat-creature-attack" style="color:#64B5F6">${atk.attackerName} uses ${atk.moveNameEn}!${atk.effectApplied ? ' \u2192 ' + atk.effectApplied : ''}</div>`;
-            }
-          } else if (atk.category === 'debuff') {
-            // Debuff: show purple text
-            if (actionArea) {
-              actionArea.innerHTML = `<div class="combat-creature-attack" style="color:#CE93D8">${atk.attackerName} uses ${atk.moveNameEn}!${atk.effectApplied ? ' \u2192 ' + atk.effectApplied : ''}</div>`;
-            }
-          } else {
-            // Damage/drain: show attack card via buildSplitAttackCard
+          {
             const adaptedAtk = {
               ...atk,
               attackerSkillName: atk.moveName,

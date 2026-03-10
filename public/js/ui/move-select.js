@@ -1,6 +1,7 @@
 // public/js/ui/move-select.js
 // Renders a 2x2 grid of the active creature's moves
 import { dom } from '../dom.js';
+import { prefetchWord, playWord } from '../tts.js';
 
 const STATUS_ICONS = {
   poison: '☠', stun: '⚡', confuse: '😵',
@@ -38,6 +39,12 @@ function buildMoveCell(move, canAfford) {
   const powerIcon = CATEGORY_ICONS[move.category] || '★';
   const powerText = move.power > 0 ? `${powerIcon} ${move.power}` : `${powerIcon}`;
 
+  // MP cost — warn if missing (debug aid for "0 MP" bug)
+  const mpCost = move.mpCost ?? 0;
+  if (!move.mpCost && move.mpCost !== 0) {
+    console.warn('[MoveSelect] Move missing mpCost:', move.id, move.nameEn, JSON.stringify(Object.keys(move)));
+  }
+
   // Status pill
   let statusHtml = '';
   if (move.statusEffect) {
@@ -61,7 +68,7 @@ function buildMoveCell(move, canAfford) {
     <div class="move-stats">
       <span class="move-power">${powerText}</span>
       ${statusHtml}
-      <span class="move-cost">${move.mpCost} MP</span>
+      <span class="move-cost">${mpCost} MP</span>
     </div>
     <div class="move-help-btn" data-move-id="${move.id}">?</div>
   `;
@@ -107,26 +114,44 @@ export function showMoves(creature, creatureIndex, opts = {}) {
   const container = dom.actionArea;
   container.innerHTML = '';
 
+  // Debug: log creature moves data to trace "0 MP" bug
+  if (creature.moves?.some(m => !m.mpCost && m.mpCost !== 0)) {
+    console.warn('[MoveSelect] showMoves — creature has moves with missing mpCost:',
+      creature.nameEn, creature.moves.map(m => ({ id: m.id, mpCost: m.mpCost })));
+  }
+
   const grid = document.createElement('div');
   grid.className = 'move-grid';
 
   for (const move of creature.moves) {
-    const canAfford = creature.mp >= move.mpCost;
+    const canAfford = creature.mp >= (move.mpCost || 0);
     const cell = buildMoveCell(move, canAfford);
 
     if (canAfford) {
       cell.addEventListener('click', () => {
+        if (move.name) playWord(move.name);
         if (onMoveSelect) onMoveSelect(move, creatureIndex);
       });
     }
     grid.appendChild(cell);
   }
 
-  // Items button fills the last cell in the grid (split with befriend when available)
+  // Items button fills the last cell in the grid
+  // Only split with befriend when 3+ moves (otherwise there's room for both as full cells)
   if (opts.befriendAvailable && opts.onBefriend) {
-    grid.appendChild(buildSplitCell(opts.onBefriend));
+    if (creature.moves.length <= 2) {
+      grid.appendChild(buildBefriendCell(opts.onBefriend));
+      grid.appendChild(buildItemsCell());
+    } else {
+      grid.appendChild(buildSplitCell(opts.onBefriend));
+    }
   } else {
     grid.appendChild(buildItemsCell());
+  }
+
+  // Prefetch TTS audio for all moves
+  for (const move of creature.moves) {
+    if (move.name) prefetchWord(move.name);
   }
 
   container.appendChild(grid);

@@ -240,14 +240,30 @@ export async function openSettings() {
     }
   });
 
+  // Auto-unmute when any volume slider is adjusted
+  function autoUnmute() {
+    const muteCheckbox = document.getElementById('settings-audio-muted');
+    if (muteCheckbox?.checked) {
+      muteCheckbox.checked = false;
+      audio.unmute();
+      tts.setMuted(false);
+    }
+  }
+
   // Real-time volume slider feedback
   document.getElementById('settings-bgm-volume')?.addEventListener('input', (e) => {
+    autoUnmute();
     audio.setVolume('bgm', parseInt(e.target.value) / 100);
   });
+  let sfxTestTimeout;
   document.getElementById('settings-sfx-volume')?.addEventListener('input', (e) => {
+    autoUnmute();
     audio.setVolume('sfx', parseInt(e.target.value) / 100);
+    clearTimeout(sfxTestTimeout);
+    sfxTestTimeout = setTimeout(() => audio.playSFX('button-tap'), 300);
   });
   document.getElementById('settings-tts-volume')?.addEventListener('input', (e) => {
+    autoUnmute();
     tts.setVolume(parseInt(e.target.value) / 100);
   });
 

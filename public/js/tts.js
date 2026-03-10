@@ -113,6 +113,7 @@ export function getVolume() {
 
 export function setVolume(volume) {
   ttsVolume = volume;
+  localStorage.setItem('jrpg_ttsVolume', String(volume));
 }
 
 export function setMuted(val) {

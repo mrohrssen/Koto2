@@ -97,7 +97,7 @@ function buildMoveCard(move, badge) {
     <div class="move-learn-card-name">${move.name} <small>${move.nameEn}</small></div>
     <div class="move-learn-card-stats">
       <span>${powerLabel} ${powerValue}</span>
-      <span>${move.mpCost}MP</span>
+      <span>${move.mpCost ?? 0}MP</span>
       <span class="move-learn-card-element" style="color:${ELEMENT_COLORS[move.element] || ELEMENT_COLORS.neutral}">${move.element}</span>
     </div>
   `;

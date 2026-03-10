@@ -15,7 +15,7 @@ import random
 import os
 import sys
 
-COMFYUI_URL = "http://10.5.0.2:8188"
+COMFYUI_URL = os.environ.get("COMFYUI_URL", "http://127.0.0.1:8188")
 
 STYLE = (
     "anime game background art, bright vibrant colors, warm sunlight, "

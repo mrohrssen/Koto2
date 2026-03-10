@@ -1218,6 +1218,26 @@ html, body {
   color: #D32F2F;
 }
 
+.sac-tag-heal {
+  background: rgba(76,175,80,0.1);
+  color: #388E3C;
+}
+
+.sac-tag-buff {
+  background: rgba(33,150,243,0.1);
+  color: #1976D2;
+}
+
+.sac-tag-debuff {
+  background: rgba(156,39,176,0.1);
+  color: #7B1FA2;
+}
+
+.sac-heal {
+  color: #388E3C;
+  font-weight: 700;
+}
+
 /* Impact row */
 .sac-impact {
   background: rgba(239,83,80,0.06);
@@ -4530,13 +4550,13 @@ html, body {
   position: absolute;
   top: 4px;
   right: 4px;
-  width: 18px;
-  height: 18px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   border: 1px solid var(--border-subtle);
   background: rgba(255,255,255,0.5);
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: bold;
   display: flex;
   align-items: center;
@@ -4549,6 +4569,63 @@ html, body {
 .move-help-btn:active {
   background: var(--bg-elevated);
   color: var(--text-primary);
+}
+
+.move-help-popup {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  background: var(--bg-elevated, #fff);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 20px;
+  min-width: 260px;
+  max-width: 340px;
+  animation: moveHelpIn 0.18s ease-out;
+}
+@keyframes moveHelpIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+.move-help-popup .mhp-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.move-help-popup .mhp-reading {
+  font-size: 0.9rem;
+  color: var(--text-muted, #888);
+  margin-bottom: 8px;
+}
+.move-help-popup .mhp-meaning {
+  font-size: 1rem;
+  color: var(--text-secondary, #555);
+  margin-bottom: 12px;
+}
+.move-help-popup .mhp-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.move-help-popup .mhp-stat {
+  background: var(--surface-2, #f0f0f0);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+}
+.move-help-popup .mhp-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted, #888);
+  line-height: 1.4;
+}
+.move-help-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.3);
 }
 
 /* Items cell (in the 2x2 grid) — same card feel */
@@ -4899,4 +4976,25 @@ html, body {
 }
 .move-learn-skip-btn {
   opacity: 0.6;
+}
+
+/* Landscape rotation blocker */
+.landscape-blocker {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #f0f4ff;
+  color: #333;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-family: inherit;
+  font-size: 1.2rem;
+  text-align: center;
+  padding: 32px;
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  .landscape-blocker { display: flex; }
 }

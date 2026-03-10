@@ -164,7 +164,7 @@ function showPopup(index, creature) {
         ${creature.moves.map(m => `
           <div class="creature-popup-move-row">
             <span style="color:${ELEMENT_COLORS[m.element] || '#888'}">●</span>
-            ${m.name} (${m.nameEn}) — ${m.category} ${m.power}pw ${m.mpCost}mp
+            ${m.name} (${m.nameEn}) — ${m.category} ${m.power}pw ${m.mpCost ?? 0}mp
           </div>
         `).join('')}
       </div>
