@@ -5,6 +5,8 @@ import { dirname, join } from 'path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CREATURE_DATA = JSON.parse(readFileSync(join(__dirname, '../../../data/creatures.json'), 'utf8'));
 const CREATURES_BY_ID = Object.fromEntries(CREATURE_DATA.map(r => [r.id, r]));
+const MOVES_DATA = JSON.parse(readFileSync(join(__dirname, '../../../data/moves.json'), 'utf8'));
+const MOVES_BY_ID = Object.fromEntries(MOVES_DATA.map(m => [m.id, m]));
 
 export const RARITY_POINT_COST = {
   common: 3,
@@ -62,6 +64,7 @@ export function getCollectionCatalog(collection, befriendCount = {}) {
     rarity: r.rarity,
     baseHp: r.baseHp,
     baseAttack: r.baseAttack,
+    baseMp: r.baseMp,
     archetype: r.archetype,
     area: r.area,
     baseWord: r.baseWord,
@@ -69,6 +72,13 @@ export function getCollectionCatalog(collection, befriendCount = {}) {
     modifier: r.modifier || null,
     autoSkill: r.autoSkill,
     ultimate: r.ultimate,
+    learnset: (r.learnset || []).map(entry => ({
+      level: entry.level,
+      moveId: entry.moveId,
+      nameEn: MOVES_BY_ID[entry.moveId]?.nameEn || entry.moveId,
+      name: MOVES_BY_ID[entry.moveId]?.name || '',
+      element: MOVES_BY_ID[entry.moveId]?.element || 'neutral'
+    })),
     pointCost: RARITY_POINT_COST[r.rarity] || 3,
     owned: collection.includes(r.id),
     befriendCount: befriendCount[r.id] || 0

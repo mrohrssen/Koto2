@@ -3592,7 +3592,7 @@ html, body {
 }
 
 .creature-card .cc-stat-val { color: #fff; }
-.creature-card .cc-stat-lbl { color: #888; font-weight: normal; }
+.creature-card .cc-stat-lbl { color: #ccc; font-weight: normal; }
 
 /* Skill split row */
 .creature-card .cc-skills {
