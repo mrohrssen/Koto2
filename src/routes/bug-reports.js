@@ -54,7 +54,7 @@ export default function createBugReportRoutes() {
       res.json({ success: true, reportId: `${safeName}-${Date.now()}` });
     } catch (error) {
       console.error('Bug report error:', error);
-      res.status(500).json({ error: 'Failed to save bug report' });
+      res.status(500).json({ error: 'Failed to save bug report', detail: error.message });
     }
   });
 
