@@ -12,10 +12,41 @@ import { dataPath } from '../data-dir.js';
 import { findUserByUsername } from '../auth/users.js';
 
 const BUG_REPORTS_DIR = dataPath('bug-reports');
+const MAX_REPORTS = 50;
 
 // Ensure directory exists
 if (!existsSync(BUG_REPORTS_DIR)) {
   mkdirSync(BUG_REPORTS_DIR, { recursive: true });
+}
+
+/** Prune oldest reports beyond MAX_REPORTS limit */
+function pruneOldReports() {
+  try {
+    const dirs = readdirSync(BUG_REPORTS_DIR, { withFileTypes: true })
+      .filter(d => d.isDirectory())
+      .map(d => {
+        const reportPath = join(BUG_REPORTS_DIR, d.name, 'report.json');
+        let timestamp = 0;
+        if (existsSync(reportPath)) {
+          try {
+            const data = JSON.parse(readFileSync(reportPath, 'utf-8'));
+            timestamp = new Date(data.timestamp).getTime() || 0;
+          } catch { /* use 0 */ }
+        }
+        return { name: d.name, timestamp };
+      })
+      .sort((a, b) => b.timestamp - a.timestamp); // newest first
+
+    if (dirs.length <= MAX_REPORTS) return;
+
+    const toDelete = dirs.slice(MAX_REPORTS);
+    for (const dir of toDelete) {
+      rmSync(join(BUG_REPORTS_DIR, dir.name), { recursive: true });
+    }
+    console.log(`Pruned ${toDelete.length} old bug reports (kept ${MAX_REPORTS})`);
+  } catch (err) {
+    console.error('Bug report prune error:', err.message);
+  }
 }
 
 export default function createBugReportRoutes() {
@@ -52,6 +83,9 @@ export default function createBugReportRoutes() {
       writeFileSync(join(reportDir, 'report.json'), JSON.stringify(report, null, 2));
 
       res.json({ success: true, reportId: `${safeName}-${Date.now()}` });
+
+      // Async cleanup - don't block response
+      setImmediate(pruneOldReports);
     } catch (error) {
       console.error('Bug report error:', error);
       res.status(500).json({ error: 'Failed to save bug report', detail: error.message });
