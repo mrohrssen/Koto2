@@ -548,6 +548,7 @@ async function handleBefriendTalk() {
         // Update state with new HP values
         if (result.allies || result.enemies) {
           updateGameState({
+            ...state,
             combat: {
               ...state.combat,
               allies: result.allies || state.combat.allies,
