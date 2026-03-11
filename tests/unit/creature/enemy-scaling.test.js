@@ -3,53 +3,50 @@ import assert from 'node:assert';
 import { getEnemyLevel, getRarityWeightsForStage, getEnemyCountWeights, generateEnemyCreatures } from '../../../src/game/creatures.js';
 
 describe('getEnemyLevel', () => {
-  it('computes baseline from stage', () => {
-    // Stage 1, encounter 0, 2 enemies (1.0x), player level 5
-    const level = getEnemyLevel({ stage: 1, encounterIndex: 0, enemyCount: 2, playerLevel: 5 });
-    // stageBaseline = 1 * 3 = 3, encounterBonus = 0, partySizeMult = 1.0 → 3, clamp [1,10] → 3
-    assert.strictEqual(level, 3);
+  it('returns level 1 at encounter 0 (before variance)', () => {
+    // base = 1 + 0/2 + (0/25)^2 = 1
+    // With variance of -2 to +2, result should be 1-3 (clamped to >= 1)
+    const level = getEnemyLevel({ totalEncounters: 0, enemyCount: 2 });
+    assert.ok(level >= 1 && level <= 3, `Expected 1-3, got ${level}`);
   });
 
-  it('ramps with encounter index', () => {
-    // Stage 3, encounter 5, 2 enemies, player level 13
-    const level = getEnemyLevel({ stage: 3, encounterIndex: 5, enemyCount: 2, playerLevel: 13 });
-    // stageBaseline = 9, encounterBonus = 9 * (5 * 0.08) = 3.6, total = 12.6, round = 13, clamp [8,18] → 13
-    assert.strictEqual(level, 13);
+  it('scales with total encounters', () => {
+    // base = 1 + 10/2 + (10/25)^2 = 1 + 5 + 0.16 = 6.16
+    const level = getEnemyLevel({ totalEncounters: 10, enemyCount: 2 });
+    assert.ok(level >= 4 && level <= 8, `Expected ~6 ± 2, got ${level}`);
+  });
+
+  it('accelerates at higher encounter counts', () => {
+    // base = 1 + 20/2 + (20/25)^2 = 1 + 10 + 0.64 = 11.64
+    const level = getEnemyLevel({ totalEncounters: 20, enemyCount: 2 });
+    assert.ok(level >= 10 && level <= 14, `Expected ~12 ± 2, got ${level}`);
   });
 
   it('applies solo multiplier (1.2x) for 1 enemy', () => {
-    const level = getEnemyLevel({ stage: 3, encounterIndex: 0, enemyCount: 1, playerLevel: 11 });
-    // stageBaseline = 9, encounterBonus = 0, * 1.2 = 10.8, round = 11, clamp [6,16] → 11
-    assert.strictEqual(level, 11);
+    // base = 1 + 10/2 + (10/25)^2 ≈ 6.16, * 1.2 ≈ 7.4
+    const level = getEnemyLevel({ totalEncounters: 10, enemyCount: 1 });
+    assert.ok(level >= 5 && level <= 10, `Expected ~7 ± 2, got ${level}`);
   });
 
   it('applies group multiplier (0.85x) for 3 enemies', () => {
-    const level = getEnemyLevel({ stage: 3, encounterIndex: 0, enemyCount: 3, playerLevel: 8 });
-    // stageBaseline = 9, encounterBonus = 0, * 0.85 = 7.65, round = 8, clamp [3,13] → 8
-    assert.strictEqual(level, 8);
-  });
-
-  it('clamps to playerLevel + 5 max', () => {
-    // Stage 10, encounter 5 → high raw level, but player is only level 10
-    const level = getEnemyLevel({ stage: 10, encounterIndex: 5, enemyCount: 1, playerLevel: 10 });
-    assert.strictEqual(level, 15); // 10 + 5
-  });
-
-  it('clamps to playerLevel - 5 min (floor 1)', () => {
-    // Stage 1, encounter 0, 3 enemies → low raw level, player is level 20
-    const level = getEnemyLevel({ stage: 1, encounterIndex: 0, enemyCount: 3, playerLevel: 20 });
-    assert.strictEqual(level, 15); // 20 - 5
+    // base ≈ 6.16, * 0.85 ≈ 5.24
+    const level = getEnemyLevel({ totalEncounters: 10, enemyCount: 3 });
+    assert.ok(level >= 3 && level <= 7, `Expected ~5 ± 2, got ${level}`);
   });
 
   it('never returns below 1', () => {
-    const level = getEnemyLevel({ stage: 1, encounterIndex: 0, enemyCount: 3, playerLevel: 1 });
-    assert.ok(level >= 1);
+    for (let i = 0; i < 50; i++) {
+      const level = getEnemyLevel({ totalEncounters: 0, enemyCount: 3 });
+      assert.ok(level >= 1, `Expected >= 1, got ${level}`);
+    }
   });
 
-  it('defaults to stage 1 when stage is undefined', () => {
-    const level = getEnemyLevel({ encounterIndex: 0, enemyCount: 2, playerLevel: 5 });
-    // stageBaseline = 1 * 3 = 3
-    assert.strictEqual(level, 3);
+  it('produces variance across multiple calls', () => {
+    const levels = new Set();
+    for (let i = 0; i < 50; i++) {
+      levels.add(getEnemyLevel({ totalEncounters: 10, enemyCount: 2 }));
+    }
+    assert.ok(levels.size > 1, 'Expected some variance in levels');
   });
 });
 
@@ -142,9 +139,9 @@ describe('getEnemyCountWeights', () => {
 });
 
 describe('generateEnemyCreatures with scaling', () => {
-  it('accepts stage and encounterIndex options', () => {
+  it('accepts totalEncounters option', () => {
     const enemies = generateEnemyCreatures(10, {
-      stage: 3,
+      totalEncounters: 5,
       encounterIndex: 2,
       creaturePool: ['hikaribon', 'kamedor', 'kazenoko']
     });
@@ -154,23 +151,23 @@ describe('generateEnemyCreatures with scaling', () => {
     }
   });
 
-  it('enemies are higher level with higher stage', () => {
-    let avgLowStage = 0;
-    let avgHighStage = 0;
+  it('higher totalEncounters produces higher level enemies', () => {
+    let avgLow = 0;
+    let avgHigh = 0;
     const trials = 50;
     const pool = ['hikaribon', 'kamedor', 'kazenoko'];
     for (let i = 0; i < trials; i++) {
-      const low = generateEnemyCreatures(15, { stage: 1, encounterIndex: 0, creaturePool: pool });
-      const high = generateEnemyCreatures(15, { stage: 7, encounterIndex: 0, creaturePool: pool });
-      avgLowStage += low.reduce((s, e) => s + e.level, 0) / low.length;
-      avgHighStage += high.reduce((s, e) => s + e.level, 0) / high.length;
+      const low = generateEnemyCreatures(15, { totalEncounters: 2, encounterIndex: 0, creaturePool: pool });
+      const high = generateEnemyCreatures(15, { totalEncounters: 20, encounterIndex: 0, creaturePool: pool });
+      avgLow += low.reduce((s, e) => s + e.level, 0) / low.length;
+      avgHigh += high.reduce((s, e) => s + e.level, 0) / high.length;
     }
-    avgLowStage /= trials;
-    avgHighStage /= trials;
-    assert.ok(avgHighStage > avgLowStage, `Stage 7 avg (${avgHighStage}) should be > Stage 1 avg (${avgLowStage})`);
+    avgLow /= trials;
+    avgHigh /= trials;
+    assert.ok(avgHigh > avgLow, `20 encounters avg (${avgHigh}) should be > 2 encounters avg (${avgLow})`);
   });
 
-  it('still works with legacy call (no stage/encounterIndex)', () => {
+  it('still works with legacy call (no totalEncounters)', () => {
     const enemies = generateEnemyCreatures(5);
     assert.ok(enemies.length >= 1 && enemies.length <= 3);
     for (const e of enemies) {
@@ -180,35 +177,26 @@ describe('generateEnemyCreatures with scaling', () => {
 });
 
 describe('Full scaling integration', () => {
-  it('stage 1 enemies are lower level than stage 7 enemies at same player level', () => {
-    const pool = ['hikaribon', 'kamedor', 'kazenoko'];
-    const s1 = generateEnemyCreatures(15, { stage: 1, encounterIndex: 0, creaturePool: pool });
-    const s7 = generateEnemyCreatures(15, { stage: 7, encounterIndex: 0, creaturePool: pool });
-    const avgS1 = s1.reduce((s, e) => s + e.level, 0) / s1.length;
-    const avgS7 = s7.reduce((s, e) => s + e.level, 0) / s7.length;
-    assert.ok(avgS7 >= avgS1, `Stage 7 (${avgS7}) should be >= Stage 1 (${avgS1})`);
-  });
-
   it('later encounters produce higher average enemy levels', () => {
     const pool = ['hikaribon', 'kamedor', 'kazenoko'];
     let avgEarly = 0;
     let avgLate = 0;
     const trials = 30;
     for (let i = 0; i < trials; i++) {
-      const early = generateEnemyCreatures(20, { stage: 5, encounterIndex: 0, creaturePool: pool });
-      const late = generateEnemyCreatures(20, { stage: 5, encounterIndex: 5, creaturePool: pool });
+      const early = generateEnemyCreatures(20, { totalEncounters: 2, encounterIndex: 0, creaturePool: pool });
+      const late = generateEnemyCreatures(20, { totalEncounters: 15, encounterIndex: 5, creaturePool: pool });
       avgEarly += early.reduce((s, e) => s + e.level, 0) / early.length;
       avgLate += late.reduce((s, e) => s + e.level, 0) / late.length;
     }
     avgEarly /= trials;
     avgLate /= trials;
-    assert.ok(avgLate >= avgEarly, `Late encounters (${avgLate}) should be >= early (${avgEarly})`);
+    assert.ok(avgLate > avgEarly, `Late encounters (${avgLate}) should be > early (${avgEarly})`);
   });
 
   it('no enemy is ever legendary in wild encounters with stage', () => {
     const pool = ['hikaribon', 'kamedor', 'kazenoko'];
     for (let i = 0; i < 100; i++) {
-      const enemies = generateEnemyCreatures(30, { stage: 10, encounterIndex: 5, creaturePool: pool });
+      const enemies = generateEnemyCreatures(30, { stage: 10, totalEncounters: 20, encounterIndex: 5, creaturePool: pool });
       for (const e of enemies) {
         assert.notStrictEqual(e.rarity, 'legendary', 'Should never get legendary in wild');
       }

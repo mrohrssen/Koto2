@@ -108,7 +108,7 @@ export class ExplorationService {
     const areaId = this.gm.run.currentArea?.id || 'unknown';
 
     // Reset per-area state
-    this.gm.run.encountersCompleted = 0;
+    this.gm.run.currentAreaEncounters = 0;
     this.gm.run.encountersNeeded = generateEncounterCount();
     this.gm.run.areaCleared = false;
 

@@ -151,8 +151,9 @@ export function createNewRun(player) {
     selectedRooms: [],
 
     // Current area progress
-    encountersCompleted: 0,
+    currentAreaEncounters: 0,
     encountersNeeded: 0,
+    totalEncounters: 0,
 
     // Player state for this run (copy so we can reset)
     player: JSON.parse(JSON.stringify(player)),

@@ -216,15 +216,11 @@ const PARTY_SIZE_MULTIPLIERS = {
   3: 0.85
 };
 
-export function getEnemyLevel({ stage = 1, encounterIndex = 0, enemyCount = 1, playerLevel = 1 }) {
-  const stageBaseline = stage * 3;
-  const encounterBonus = stageBaseline * (encounterIndex * 0.08);
-  const rawLevel = stageBaseline + encounterBonus;
+export function getEnemyLevel({ totalEncounters = 0, enemyCount = 1 }) {
+  const base = 1 + totalEncounters / 2 + Math.pow(totalEncounters / 25, 2);
   const sizeMultiplier = PARTY_SIZE_MULTIPLIERS[enemyCount] || 1.0;
-  const adjustedLevel = Math.round(rawLevel * sizeMultiplier);
-  const minLevel = Math.max(1, playerLevel - 5);
-  const maxLevel = playerLevel + 5;
-  return Math.max(minLevel, Math.min(adjustedLevel, maxLevel));
+  const variance = Math.floor(Math.random() * 5) - 2; // -2 to +2
+  return Math.max(1, Math.round(base * sizeMultiplier) + variance);
 }
 
 export function generateEnemyCreature(targetLevel, creaturePool = null, stage = null) {
@@ -314,7 +310,7 @@ export function getEnemyCountWeights(encounterIndex = 0) {
   return ENCOUNTER_COUNT_TABLE.late;
 }
 
-export function generateEnemyCreatures(highestAllyLevel = 1, { maxEnemies, creaturePool, stage, encounterIndex } = {}) {
+export function generateEnemyCreatures(highestAllyLevel = 1, { maxEnemies, creaturePool, stage, encounterIndex, totalEncounters } = {}) {
   // Determine enemy count using encounter-aware weights when available
   const countWeights = encounterIndex != null ? getEnemyCountWeights(encounterIndex) : ENEMY_COUNT_WEIGHTS;
   const totalWeight = countWeights.reduce((s, w) => s + w.weight, 0);
@@ -328,19 +324,10 @@ export function generateEnemyCreatures(highestAllyLevel = 1, { maxEnemies, creat
 
   const enemies = [];
   for (let i = 0; i < enemyCount; i++) {
-    let targetLevel;
-    if (stage != null) {
-      targetLevel = getEnemyLevel({
-        stage,
-        encounterIndex: encounterIndex || 0,
-        enemyCount,
-        playerLevel: highestAllyLevel
-      });
-    } else {
-      // Legacy: highestAllyLevel +/- 1
-      const levelVariance = Math.floor(Math.random() * 3) - 1;
-      targetLevel = Math.max(1, highestAllyLevel + levelVariance);
-    }
+    const targetLevel = getEnemyLevel({
+      totalEncounters: totalEncounters || 0,
+      enemyCount
+    });
     enemies.push(generateEnemyCreature(targetLevel, creaturePool, stage));
   }
   return enemies;

@@ -219,8 +219,9 @@ export class GameManager {
         currentRoom: this.run.currentRoom,
         totalRooms: this.run.rooms?.length || 0,
         roomsExplored: this.run.roomsExplored,
-        encountersCompleted: this.run.encountersCompleted,
+        currentAreaEncounters: this.run.currentAreaEncounters,
         encountersNeeded: this.run.encountersNeeded,
+        totalEncounters: this.run.totalEncounters || 0,
         active: this.run.active,
         stats: this.run.stats,
         pendingBranch: this.run.pendingBranch,
@@ -453,15 +454,17 @@ export class GameManager {
     }
 
     const highestLevel = Math.max(...this.run.creatureParty.active.map(r => r.level), 1);
-    const isFirstBattle = (this.run.encountersCompleted || 0) === 0;
+    const isFirstBattle = (this.run.currentAreaEncounters || 0) === 0;
     const creaturePool = this.run.currentArea?.creatures || null;
     const stage = this.run.currentArea?.stage || null;
-    const encounterIndex = this.run.encountersCompleted || 0;
+    const encounterIndex = this.run.currentAreaEncounters || 0;
+    const totalEncounters = this.run.totalEncounters || 0;
     const enemyCreatures = generateEnemyCreatures(highestLevel, {
       maxEnemies: isFirstBattle ? 2 : undefined,
       creaturePool,
       stage,
-      encounterIndex
+      encounterIndex,
+      totalEncounters
     });
 
     this.combat = createCombatState(enemyCreatures[0]);
@@ -595,7 +598,8 @@ export class GameManager {
       // XP already awarded per-kill in processMoveTurn
       const newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
-      this.run.encountersCompleted++;
+      this.run.currentAreaEncounters++;
+      this.run.totalEncounters = (this.run.totalEncounters || 0) + 1;
       const currentRoom = this.run.rooms?.[this.run.currentRoom];
       if (currentRoom) {
         currentRoom.interacted = true;
@@ -845,7 +849,8 @@ export class GameManager {
       awardBattleXp(this.run.creatureParty);
       const newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
-      this.run.encountersCompleted++;
+      this.run.currentAreaEncounters++;
+      this.run.totalEncounters = (this.run.totalEncounters || 0) + 1;
       const currentRoom = this.run.rooms?.[this.run.currentRoom];
       if (currentRoom) {
         currentRoom.interacted = true;
@@ -1156,7 +1161,8 @@ export class GameManager {
       awardBattleXp(party);
       newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
-      this.run.encountersCompleted++;
+      this.run.currentAreaEncounters++;
+      this.run.totalEncounters = (this.run.totalEncounters || 0) + 1;
       // Mark room as interacted
       const currentRoom = this.run.rooms?.[this.run.currentRoom];
       if (currentRoom) {
