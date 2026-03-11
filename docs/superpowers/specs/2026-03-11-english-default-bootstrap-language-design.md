@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-11
 **Status:** Design approved
-**Supersedes:** `docs/plans/2026-03-01-bootstrap-language-system-plan.md` (Phase 1/2 tagged-text approach), GDD Sections 3b/6 (Translator device, multi-stage scaffolding). This spec replaces those designs with a simpler two-mode system. The existing `bootstrap-renderer.js`, `bootstrap-parser.js`, `bootstrap-api.js`, and `word-tracker.js` code from the old approach should be rewritten or discarded during implementation.
+**Relationship to GDD:** This is the MVP implementation of the GDD's bootstrap language system (Sections 3b/6). The Translator device remains the in-world framing for all language scaffolding. Features not in this MVP (multi-stage scaffolding, romaji support, Translator level celebrations, hand-curated word curriculum) can be layered on later. The existing `bootstrap-renderer.js`, `bootstrap-parser.js`, `bootstrap-api.js`, and `word-tracker.js` code was built for a different approach and should be rewritten or discarded during implementation.
 
 ## Summary
 
