@@ -16,6 +16,7 @@ import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
 import { t, isJapanified } from './i18n.js';
 import { prefetchWord, playWord } from '../tts.js';
+import { renderJpFirst, renderEnFirst } from './bootstrap-client.js';
 
 let onItemSelected = null;
 
@@ -50,14 +51,17 @@ export function show(items) {
         ${items.map((item, i) => {
           const rarityColor = RARITY_COLORS[item.rarity] || RARITY_COLORS.common;
           const icon = TYPE_ICONS[item.type] || '📦';
+          const itemNameHtml = renderJpFirst(item.word, item.reading, item.meaning);
+          const itemDescHtml = item.descriptionTagged
+            ? renderEnFirst(item.descriptionTagged)
+            : (isJapanified() && item.descriptionJa ? item.descriptionJa : item.description);
           return `
           <div class="shop-item-card" data-index="${i}" style="border-color: ${rarityColor}40">
             <div class="shop-item-rarity-badge" style="background: ${rarityColor}">${(item.rarity || 'common').toUpperCase()}</div>
             <img class="shop-item-sprite" src="/assets/sprites/items/${item.id}.webp?v=20260220" alt="${item.meaning}" />
             <div class="shop-item-info">
-              <div class="shop-item-word">${item.word}</div>
-              <div class="shop-item-reading">${item.reading} · <span class="shop-item-meaning">${item.meaning}</span></div>
-              <div class="shop-item-effect">${icon} ${isJapanified() && item.descriptionJa ? item.descriptionJa : item.description}</div>
+              <div class="shop-item-word">${itemNameHtml}</div>
+              <div class="shop-item-effect">${icon} ${itemDescHtml}</div>
             </div>
           </div>
         `}).join('')}

@@ -2,6 +2,7 @@
 // Renders a 2x2 grid of the active creature's moves
 import { dom } from '../dom.js';
 import { prefetchWord, playWord } from '../tts.js';
+import { renderJpFirst, renderEnFirst } from './bootstrap-client.js';
 
 const STATUS_ICONS = {
   poison: '☠', stun: '⚡', confuse: '😵',
@@ -53,6 +54,11 @@ function buildMoveCell(move, canAfford) {
     statusHtml = `<span class="move-status-pill">${sIcon} ${move.statusEffect.replace('_', ' ')} ${durText}</span>`;
   }
 
+  const moveNameHtml = renderJpFirst(move.name, move.reading, move.meaning);
+  const moveDescHtml = move.descriptionTagged
+    ? renderEnFirst(move.descriptionTagged)
+    : move.description;
+
   cell.innerHTML = `
     <div class="move-hero">
       <div class="move-icon">
@@ -61,8 +67,8 @@ function buildMoveCell(move, canAfford) {
              alt="">
       </div>
       <div class="move-name-block">
-        <div class="move-furigana">${move.reading || ''}</div>
-        <div class="move-name-jp">${move.name}</div>
+        <div class="move-name-jp">${moveNameHtml}</div>
+        ${moveDescHtml ? `<div class="move-description">${moveDescHtml}</div>` : ''}
       </div>
     </div>
     <div class="move-stats">

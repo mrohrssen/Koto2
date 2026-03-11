@@ -29,6 +29,7 @@
 
 import { dom } from '../dom.js';
 import { configureCreatureImg } from './sprite-utils.js';
+import { renderJpFirst, esc as escHtml } from './bootstrap-client.js';
 
 const ELEMENT_ICONS = {
   wood: '\u{1F33F}', fire: '\u{1F525}', earth: '\u26F0\uFE0F', metal: '\u2699\uFE0F', water: '\u{1F4A7}'
@@ -340,11 +341,15 @@ export function hideChippy() {
 }
 
 /** Show NPC trainer in scene (no HP bar) */
-export function showNpcTrainer(npcName, npcId) {
+export function showNpcTrainer(npcName, npcId, npc) {
   // Clear multi-enemy row from combat
   dom.enemySpriteContainer.querySelector('.multi-enemy-row')?.remove();
 
-  dom.enemyName.textContent = npcName;
+  const roleHtml = npc?.role
+    ? ' — ' + renderJpFirst(npc.role.word, npc.role.reading, npc.role.meaning)
+    : '';
+  const npcNameHtml = `${escHtml(npcName)}${roleHtml}`;
+  dom.enemyName.innerHTML = npcNameHtml;
   dom.enemyInfo.classList.add('visible');
   dom.enemyHpBar.style.display = 'none';
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
