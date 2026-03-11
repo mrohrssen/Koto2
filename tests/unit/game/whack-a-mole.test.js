@@ -20,8 +20,8 @@ describe('Whack-a-Mole Room', () => {
 
   it('should create whackAMole room with correct structure', () => {
     const originalRandom = Math.random;
-    // shrine=0-10%, quiz=10-20%, wordDiscovery=20-30%, dealer=30-40%, whackAMole=40-45%
-    Math.random = () => 0.42;
+    // shrine=0-10%, wordDiscovery=10-20%, dealer=20-30%, whackAMole=30-35%
+    Math.random = () => 0.32;
 
     try {
       const rooms = generateAreaRooms('okunomori', 2);

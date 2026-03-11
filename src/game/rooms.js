@@ -107,7 +107,6 @@ export const ROOM_TYPES = {
  */
 function isSpecialType(type) {
   return type === ROOM_TYPES.shrine ||
-         type === ROOM_TYPES.quiz ||
          type === ROOM_TYPES.wordDiscovery ||
          type === ROOM_TYPES.dealer ||
          type === ROOM_TYPES.whackAMole;
@@ -118,7 +117,6 @@ function isSpecialType(type) {
  */
 function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType = null, encountersOnly = false, forceRoomType = null) {
   const SHRINE_CHANCE = 0.10;
-  const QUIZ_CHANCE = 0.10;
   const WORD_DISCOVERY_CHANCE = 0.10;
   const DEALER_CHANCE = 0.10;
   const WHACK_A_MOLE_CHANCE = 0.05;
@@ -138,13 +136,11 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
       const roll = Math.random();
       if (roll < SHRINE_CHANCE) {
         type = ROOM_TYPES.shrine;
-      } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE) {
-        type = ROOM_TYPES.quiz;
-      } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE + WORD_DISCOVERY_CHANCE) {
+      } else if (roll < SHRINE_CHANCE + WORD_DISCOVERY_CHANCE) {
         type = ROOM_TYPES.wordDiscovery;
-      } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE) {
+      } else if (roll < SHRINE_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE) {
         type = ROOM_TYPES.dealer;
-      } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE + WHACK_A_MOLE_CHANCE) {
+      } else if (roll < SHRINE_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE + WHACK_A_MOLE_CHANCE) {
         type = ROOM_TYPES.whackAMole;
       } else {
         type = ROOM_TYPES.encounter;

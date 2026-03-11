@@ -16,9 +16,9 @@ describe('Word Discovery Room', () => {
   });
 
   it('should create wordDiscovery room with correct structure', () => {
-    // Force random to produce wordDiscovery (shrine=0-10%, quiz=10-20%, wordDiscovery=20-30%)
+    // Force random to produce wordDiscovery (shrine=0-10%, wordDiscovery=10-20%)
     const originalRandom = Math.random;
-    Math.random = () => 0.25;
+    Math.random = () => 0.15;
 
     try {
       const rooms = generateAreaRooms('okunomori', 2);
