@@ -100,6 +100,7 @@ import * as bugReport from './js/ui/bug-report.js';
 import * as speedReview from './js/ui/speed-review.js';
 import { configureCreatureImg, creatureSpritePath, probeIdleSprites } from './js/ui/sprite-utils.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
+import { setKnownWords } from './js/ui/bootstrap-client.js';
 
 // API imports - these are the server communication functions
 import {
@@ -398,6 +399,20 @@ function showEnemyDialogue(text, type = 'possessed') {
 }
 
 // ============ API CALLS ============
+async function loadKnownWords() {
+  try {
+    const resp = await fetch('/api/game/known-words', {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      setKnownWords(data.words);
+    }
+  } catch (e) {
+    console.warn('Failed to load known words:', e);
+  }
+}
+
 async function loadGameState() {
   const data = await apiGetGameState();
   if (data.player) {
@@ -1259,6 +1274,7 @@ async function initGame() {
     }
   });
 
+  await loadKnownWords();
   await loadGameState();
 
   // Warm JPDB cache on session start

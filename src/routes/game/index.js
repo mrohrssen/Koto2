@@ -16,6 +16,7 @@ import createCombatRoutes from './combat.js';
 import createEconomyRoutes from './economy.js';
 import createMiscRoutes from './misc.js';
 import createBootstrapRoutes from './bootstrap.js';
+import { createKnownWordsRoutes } from './known-words.js';
 
 /**
  * Create game router
@@ -101,6 +102,9 @@ export default function createGameRoutes(deps) {
 
   // Mount bootstrap language system routes
   router.use('/bootstrap', createBootstrapRoutes());
+
+  // Mount known-words routes
+  router.use('/known-words', createKnownWordsRoutes());
 
   return router;
 }
