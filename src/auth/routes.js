@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { signToken, requireAuth } from './middleware.js';
 import { verifyPassword, decryptKeys, encryptKeys } from './crypto.js';
 import {
@@ -6,6 +7,10 @@ import {
   useInviteCode, createInviteCode, loadUsers, saveUsers
 } from './users.js';
 import { dataPath } from '../data-dir.js';
+import { parseWordList } from '../game/bootstrap/word-list-parser.js';
+import { createWordKnowledge, seedKnownWords, saveWordKnowledge } from '../game/bootstrap/word-knowledge.js';
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 1024 * 1024 } });
 
 const DEFAULT_USERS_FILE = dataPath('.jrpg-users.json');
 
@@ -71,6 +76,17 @@ export default function createAuthRoutes(options = {}) {
       if (!isPermanentCode) {
         useInviteCode(inviteCode, user.id, usersFile);
       }
+
+      // Seed word knowledge from uploaded word list
+      const wk = createWordKnowledge(user.id);
+      if (req.file) {
+        const words = parseWordList(req.file.buffer.toString('utf-8'));
+        if (words.length > 0) {
+          seedKnownWords(wk, words);
+        }
+      }
+      saveWordKnowledge(wk);
+
       const token = signToken(user);
       res.json({ token, user: { id: user.id, username: user.username } });
     } catch (err) {
@@ -223,7 +239,7 @@ export default function createAuthRoutes(options = {}) {
   }
 
   // Mount routes
-  router.post('/register', register);
+  router.post('/register', upload.single('wordList'), register);
   router.post('/login', login);
   router.get('/me', requireAuth, me);
   router.put('/api-keys', requireAuth, updateKeys);
