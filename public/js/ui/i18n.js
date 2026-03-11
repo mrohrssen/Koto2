@@ -17,7 +17,14 @@
  *   leaderboard, error messages, stat abbreviations, creature/enemy names
  */
 
+import { renderEnFirst } from './bootstrap-client.js';
+
 let lang = 'en';
+
+function escHtml(s) {
+  if (typeof s !== 'string') return String(s);
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
 const strings = {
   // ── Combat: damage labels ──
@@ -155,11 +162,20 @@ export function setLang(l) {
 export function t(key, ...args) {
   const entry = strings[key];
   if (!entry) return key;
-  let str = entry[lang] || entry.en;
-  for (let i = 0; i < args.length; i++) {
-    str = str.replace(`{${i}}`, args[i]);
+
+  // If tagged version exists, render through bootstrap en-first renderer
+  if (entry.tagged) {
+    let str = entry.tagged;
+    // Escape interpolation args to prevent XSS
+    args.forEach((a, i) => { str = str.replace(`{${i}}`, escHtml(a)); });
+    return renderEnFirst(str);
   }
-  return str;
+
+  // Fallback to current behavior
+  const str = entry[lang] || entry.en || key;
+  let result = str;
+  args.forEach((a, i) => { result = result.replace(`{${i}}`, a); });
+  return result;
 }
 
 /**
