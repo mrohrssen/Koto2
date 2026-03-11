@@ -369,6 +369,19 @@ export function hideNpcTrainer() {
   hideEnemy();
 }
 
+/** Show NPC skill pills in the enemy skill bar */
+export function showNpcSkills(skills) {
+  if (!dom.enemySkillBar || !skills?.length) return;
+  dom.enemySkillBar.innerHTML = '';
+  for (const skill of skills) {
+    const pill = document.createElement('span');
+    pill.className = 'npc-skill-pill';
+    pill.textContent = `${skill.name} ${skill.nameEn}`;
+    dom.enemySkillBar.appendChild(pill);
+  }
+  dom.enemySkillBar.style.display = 'flex';
+}
+
 /** Hide enemy from scene */
 export function hideEnemy() {
   dom.enemySprite.classList.remove('visible');

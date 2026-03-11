@@ -268,6 +268,11 @@ function updateScene() {
       const enemy = enemies?.[0] || gameState.combat?.enemy;
       if (enemy) scene.showEnemy(enemy);
     }
+    // Show NPC skill bar if this encounter has an NPC
+    const npcSkills = gameState.combat?.npcData?.skills;
+    if (npcSkills?.length) {
+      scene.showNpcSkills(npcSkills);
+    }
   } else if (gameState.phase === 'shrine') {
     scene.showShrineFox();
   } else if (gameState.phase === 'quiz') {

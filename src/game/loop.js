@@ -60,7 +60,7 @@ import { instantiateCreature, generateEnemyCreature, generateEnemyCreatures } fr
 import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL } from './services/creature-combat-service.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/creature-collection-service.js';
-import { selectNpcForEncounter, updateBond, recordEncounter, loadNpcs, rollNpcSkill } from './services/npc-service.js';
+import { selectNpcForEncounter, updateBond, recordEncounter, loadNpcs, rollNpcSkill, getNpcSkillsForNpc } from './services/npc-service.js';
 
 // ============ GAME MANAGER ============
 
@@ -494,7 +494,7 @@ export class GameManager {
         baseWord: npc.baseWord || '',
         baseReading: npc.baseReading || '',
         baseMeaning: npc.baseMeaning || '',
-        skills: npc.skills || []
+        skills: getNpcSkillsForNpc(npc)
       };
       if (!this.run.usedNpcIds) this.run.usedNpcIds = [];
       this.run.usedNpcIds.push(npc.id);

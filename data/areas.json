@@ -828,7 +828,7 @@
           "meaning": "elementary school; primary school",
           "rank": 2900
         },
-        "background": "areas/mahouno-gakkou/mahouno-gakkou_23.webp"
+        "background": "areas/mahouno-gakkou-simple-elementary-school.webp"
       },
       {
         "id": "mahouno-gakkou-new-high-school",
@@ -848,7 +848,7 @@
           "meaning": "senior high school; high school",
           "rank": 2200
         },
-        "background": "areas/mahouno-gakkou/mahouno-gakkou_26.webp"
+        "background": "areas/mahouno-gakkou-new-high-school.webp"
       },
       {
         "id": "mahouno-gakkou-splendid-university",
@@ -868,7 +868,7 @@
           "meaning": "university; college",
           "rank": 1900
         },
-        "background": "areas/mahouno-gakkou/mahouno-gakkou_29.webp"
+        "background": "areas/mahouno-gakkou-splendid-university.webp"
       }
     ],
     "stage": 1

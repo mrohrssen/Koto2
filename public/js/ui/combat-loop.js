@@ -2489,6 +2489,8 @@ export async function showNpcGreeting(npcData) {
   }
   await narration.showNarration(npcData.greeting, { speaker: npcName });
   if (hideNpcSprite) hideNpcSprite();
+  // Re-render combat scene — hideNpcSprite clears the enemy sprite area
+  if (updateUI) updateUI();
 }
 
 /**

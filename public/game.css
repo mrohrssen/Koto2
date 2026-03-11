@@ -277,6 +277,20 @@ html, body {
 
 .enemy-skill-bar {
   display: none;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.npc-skill-pill {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255, 183, 77, 0.2);
+  color: #E65100;
+  border: 1px solid rgba(255, 183, 77, 0.4);
+  white-space: nowrap;
 }
 
 .enemy-sprite-container {
