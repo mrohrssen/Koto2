@@ -6,9 +6,20 @@
 
 **Architecture:** A bootstrap renderer with two display modes (`jp-first`, `en-first`) processes pre-tagged static text against a player's known-words set. Dialogue remains Japanese (i+1). New users upload a word list at registration. Features that don't fit the MVP (narration, Chippy, doors, quizzes) are stubbed out.
 
-**Tech Stack:** Node.js/Express backend, vanilla JS frontend, existing i18n system, FSRS (future — interim word tracker for now)
+**Tech Stack:** Node.js/Express backend, vanilla JS frontend, existing i18n system, interim word-knowledge service (FSRS replacement comes later)
 
 **Spec:** `docs/superpowers/specs/2026-03-11-english-default-bootstrap-language-design.md`
+
+**Revision notes (v2):** This plan corrects issues found in v1 review:
+- Fixed XSS risk in `t()` when returning HTML with interpolated arguments
+- Fixed registration endpoint to handle both JSON and multipart requests
+- Removed false-premise Task 14 (NPCs don't have static greeting/defeatLine/postCombat fields)
+- Added tasks for speed review → markKnown() bridge and combat → registerExposure() bridge
+- Added migration handling for existing runs with `pendingBranch: true`
+- Fixed duplicate Task 12 numbering
+- Expanded cleanup task to include all old bootstrap files (routes, curriculum, tests)
+- Added known-words loading to game init flow via Store pattern
+- Clarified pre-tagging scope and translation accuracy requirements
 
 ---
 
@@ -47,7 +58,7 @@ describe('parseTaggedText', () => {
     ]);
   });
 
-  it('parses tagged word with empty kanji (kana-only)', () => {
+  it('parses tagged word with empty reading (katakana words)', () => {
     const result = parseTaggedText('{CRITICAL HIT|クリティカル|}');
     assert.deepStrictEqual(result, [
       { type: 'word', english: 'CRITICAL HIT', kanji: 'クリティカル', reading: '' }
@@ -76,6 +87,15 @@ describe('parseTaggedText', () => {
     assert.equal(result[0].kanji, '火');
     assert.equal(result[1].kanji, '水');
   });
+
+  it('does not match interpolation tokens like {0} or {1}', () => {
+    const result = parseTaggedText('{0} deals {1} {damage|ダメージ|}');
+    assert.equal(result.length, 3);
+    assert.equal(result[0].type, 'text');
+    assert.equal(result[0].content, '{0} deals {1} ');
+    assert.equal(result[1].type, 'word');
+    assert.equal(result[1].english, 'damage');
+  });
 });
 ```
 
@@ -89,7 +109,9 @@ Expected: FAIL — module not found
 ```js
 // src/game/bootstrap/parser.js
 
-const TAG_RE = /\{([^|]*)\|([^|]*)\|([^}]*)\}/g;
+// Matches {english|kanji|reading} — requires exactly 2 pipes.
+// Does NOT match {0}, {1} interpolation tokens (no pipes).
+const TAG_RE = /\{([^|{}]*)\|([^|{}]*)\|([^|}]*)\}/g;
 
 /**
  * Parse text with {english|kanji|reading} tags into segments.
@@ -125,7 +147,7 @@ export function parseTaggedText(text) {
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `node --test tests/unit/bootstrap-parser.test.js`
-Expected: All 6 tests PASS
+Expected: All 7 tests PASS
 
 - [ ] **Step 5: Commit**
 
@@ -173,7 +195,6 @@ describe('renderJpFirst', () => {
     const html = renderJpFirst('クリティカル', '', 'critical', new Set());
     assert.ok(html.includes('クリティカル'));
     assert.ok(html.includes('critical'));
-    // No ruby rt if reading is empty
     assert.ok(!html.includes('<rt>'));
   });
 });
@@ -203,9 +224,15 @@ describe('renderEnFirst', () => {
       '{monster|モンスター|もんすたー} deals 28 {damage|ダメージ|}',
       new Set(['ダメージ'])
     );
-    assert.ok(html.includes('monster')); // unknown, stays English
-    assert.ok(html.includes('ダメージ')); // known, swapped
-    assert.ok(html.includes(' deals 28 ')); // untagged stays
+    assert.ok(html.includes('monster'));
+    assert.ok(html.includes('ダメージ'));
+    assert.ok(html.includes(' deals 28 '));
+  });
+
+  it('HTML-escapes all output', () => {
+    const html = renderEnFirst('{<script>|悪|あく}', new Set());
+    assert.ok(!html.includes('<script>'));
+    assert.ok(html.includes('&lt;script&gt;'));
   });
 });
 ```
@@ -232,7 +259,7 @@ import { parseTaggedText } from './parser.js';
  */
 export function renderJpFirst(kanji, reading, english, knownWords) {
   const isKnown = knownWords.has(kanji);
-  let html = '<span class="word">';
+  let html = '<span class="bs-word">';
 
   if (reading) {
     html += `<ruby>${esc(kanji)}<rt>${esc(reading)}</rt></ruby>`;
@@ -241,7 +268,7 @@ export function renderJpFirst(kanji, reading, english, knownWords) {
   }
 
   if (!isKnown && english) {
-    html += `<span class="word-en">${esc(english)}</span>`;
+    html += `<span class="bs-word-en">${esc(english)}</span>`;
   }
 
   html += '</span>';
@@ -261,23 +288,25 @@ export function renderEnFirst(taggedText, knownWords) {
     if (seg.type === 'text') return esc(seg.content);
     const isKnown = knownWords.has(seg.kanji);
     if (!isKnown) return esc(seg.english);
-    // Known: show Japanese with ruby
     if (seg.reading) {
-      return `<span class="word"><ruby>${esc(seg.kanji)}<rt>${esc(seg.reading)}</rt></ruby></span>`;
+      return `<span class="bs-word"><ruby>${esc(seg.kanji)}<rt>${esc(seg.reading)}</rt></ruby></span>`;
     }
-    return `<span class="word">${esc(seg.kanji)}</span>`;
+    return `<span class="bs-word">${esc(seg.kanji)}</span>`;
   }).join('');
 }
 
 function esc(s) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  if (!s) return '';
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 ```
+
+**Note:** CSS classes use `bs-word` / `bs-word-en` prefix to avoid colliding with any existing `.word` class in the codebase.
 
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `node --test tests/unit/bootstrap-renderer.test.js`
-Expected: All 7 tests PASS
+Expected: All 8 tests PASS
 
 - [ ] **Step 5: Commit**
 
@@ -291,6 +320,8 @@ git commit -m "feat: bootstrap renderer with jp-first and en-first display modes
 ### Task 3: Word Knowledge Service (Interim)
 
 Build the interim word knowledge tracker that will later be replaced by FSRS. Tracks words as "seen" (exposed) or "known" (recalled in speed review).
+
+**Context:** The old `word-tracker.js` uses a 4-stage exposure system. This replaces it with a simpler binary seen/known model per the spec.
 
 **Files:**
 - Create: `src/game/bootstrap/word-knowledge.js`
@@ -444,7 +475,7 @@ export function saveWordKnowledge(wk) {
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `node --test tests/unit/word-knowledge.test.js`
-Expected: All 7 tests PASS
+Expected: All 6 tests PASS
 
 - [ ] **Step 5: Commit**
 
@@ -458,6 +489,8 @@ git commit -m "feat: interim word knowledge service (seen/known tracking)"
 ### Task 4: Word List Upload — Server Endpoint
 
 Add a server endpoint for uploading a `.txt` word list during registration, and a helper to parse it.
+
+**Compatibility note:** Adding `multer` middleware to the register route does NOT break JSON requests. Multer only activates for `multipart/form-data` Content-Type. For `application/json` requests, multer is a no-op and `express.json()` (already configured globally) populates `req.body` as usual. Both JSON and multipart registration requests will work.
 
 **Files:**
 - Create: `src/game/bootstrap/word-list-parser.js`
@@ -501,6 +534,11 @@ describe('parseWordList', () => {
     const words = parseWordList('森\n森\n火\n');
     assert.deepStrictEqual(words, ['森', '火']);
   });
+
+  it('skips lines with only ASCII (likely comments or headers)', () => {
+    const words = parseWordList('# My word list\n森\nknown words:\n火\n');
+    assert.deepStrictEqual(words, ['森', '火']);
+  });
 });
 ```
 
@@ -514,8 +552,12 @@ Expected: FAIL — module not found
 ```js
 // src/game/bootstrap/word-list-parser.js
 
+// Matches any CJK, hiragana, or katakana character
+const HAS_JAPANESE_RE = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/;
+
 /**
  * Parse a text file of Japanese words (one per line) into a deduplicated array.
+ * Skips blank lines and lines with no Japanese characters.
  * @param {string} text - Raw text content
  * @returns {string[]} Array of unique words
  */
@@ -525,7 +567,7 @@ export function parseWordList(text) {
   const words = [];
   for (const line of text.split(/\r?\n/)) {
     const word = line.trim();
-    if (word && !seen.has(word)) {
+    if (word && HAS_JAPANESE_RE.test(word) && !seen.has(word)) {
       seen.add(word);
       words.push(word);
     }
@@ -537,33 +579,36 @@ export function parseWordList(text) {
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `node --test tests/unit/word-list-parser.test.js`
-Expected: All 6 tests PASS
+Expected: All 7 tests PASS
 
-- [ ] **Step 5: Add word list upload to registration endpoint**
+- [ ] **Step 5: Install multer dependency**
 
-Modify `src/auth/routes.js` — add `multer` for file upload handling on the register endpoint. After successful registration, parse the uploaded file and seed the player's word knowledge.
+Run: `npm install multer`
+
+- [ ] **Step 6: Add word list upload to registration endpoint**
+
+Modify `src/auth/routes.js`. Add imports at the top:
 
 ```js
-// At top of src/auth/routes.js, add:
 import multer from 'multer';
 import { parseWordList } from '../game/bootstrap/word-list-parser.js';
 import { createWordKnowledge, seedKnownWords, saveWordKnowledge } from '../game/bootstrap/word-knowledge.js';
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 1024 * 1024 } }); // 1MB max
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 1024 * 1024 } });
 ```
 
-Modify the POST /api/auth/register handler (line 42 in routes.js):
-- Add `upload.single('wordList')` middleware
-- After successful user creation, check `req.file`
-- If file exists, parse it and seed word knowledge
+Add `upload.single('wordList')` middleware to the register route (line ~42):
 
 ```js
-// Change the register route from:
+// Change from:
 //   router.post('/register', async (req, res) => {
 // To:
-//   router.post('/register', upload.single('wordList'), async (req, res) => {
+router.post('/register', upload.single('wordList'), async (req, res) => {
+```
 
-// After the existing user creation success block (around line 73), add:
+After the existing user creation success block (around line ~73), add word knowledge seeding:
+
+```js
 // Seed word knowledge from uploaded word list
 const wk = createWordKnowledge(user.id);
 if (req.file) {
@@ -575,14 +620,10 @@ if (req.file) {
 saveWordKnowledge(wk);
 ```
 
-- [ ] **Step 6: Install multer dependency**
-
-Run: `npm install multer`
-
 - [ ] **Step 7: Run existing auth tests to check for regressions**
 
-Run: `npm test -- --grep auth`
-Expected: Existing tests still pass
+Run: `npm test`
+Expected: Existing tests still pass (multer is a no-op for JSON requests)
 
 - [ ] **Step 8: Commit**
 
@@ -603,10 +644,9 @@ Add a file upload input to the registration form.
 
 - [ ] **Step 1: Add file input to the registration form HTML**
 
-Modify `public/game.html`. Find the auth form area. Add a file input that's only visible on the register tab:
+Modify `public/game.html`. Find the auth form area (search for `invite` to find the invite code field). Add after the invite code field:
 
 ```html
-<!-- Add after the invite code field in the auth form -->
 <div id="wordListField" class="auth-field" style="display:none;">
   <label for="word-list-upload" class="auth-label">Known Words (.txt)</label>
   <input type="file" id="word-list-upload" accept=".txt" class="auth-input">
@@ -616,13 +656,13 @@ Modify `public/game.html`. Find the auth form area. Add a file input that's only
 
 - [ ] **Step 2: Show/hide the file input based on active tab**
 
-Modify `public/js/ui/auth.js` around line 46-52 where tab switching happens. Show the wordListField when register tab is active, hide on login tab:
+Modify `public/js/ui/auth.js` around line 46-52 where tab switching happens:
 
 ```js
-// In the register tab handler, add:
+// In the register tab click handler, add:
 document.getElementById('wordListField').style.display = '';
 
-// In the login tab handler, add:
+// In the login tab click handler, add:
 document.getElementById('wordListField').style.display = 'none';
 ```
 
@@ -631,7 +671,7 @@ document.getElementById('wordListField').style.display = 'none';
 Modify `public/js/ui/auth.js` in `handleSubmit()` (around line 109-151). When registering, use `FormData` instead of JSON to support file upload:
 
 ```js
-// In handleSubmit, replace the fetch call for registration with:
+// Replace the existing fetch call for registration with:
 if (currentTab === 'register') {
   const formData = new FormData();
   formData.append('username', username);
@@ -645,20 +685,16 @@ if (currentTab === 'register') {
     method: 'POST',
     body: formData  // No Content-Type header — browser sets multipart boundary
   });
-  // ... rest of response handling
+  // ... rest of response handling unchanged
 }
 ```
 
-Note: The server register endpoint now receives multipart form data instead of JSON. Multer populates `req.body` with text fields from multipart, so existing `req.body.username` etc. still work. However, **existing auth tests** that send JSON bodies to `/api/auth/register` will break because multer doesn't parse JSON. Those tests must be updated to send `multipart/form-data` or the route needs conditional middleware (check Content-Type and use multer only for multipart). The simpler approach: use `upload.single('wordList')` which is a no-op when no file field is present, and ensure the frontend always sends FormData for registration (even without a file).
+**Note:** The login path continues to send JSON as before — only registration changes.
 
-- [ ] **Step 4: Update existing auth tests to use FormData**
-
-Find auth tests that POST to `/api/auth/register` with JSON bodies and update them to send multipart form data, or add the `multer` middleware conditionally.
-
-- [ ] **Step 5: Test manually — register with and without a word file**
+- [ ] **Step 4: Syntax check**
 
 Run: `node --check public/js/ui/auth.js && echo "OK"`
-Expected: OK (syntax check passes)
+Expected: OK
 
 - [ ] **Step 5: Commit**
 
@@ -669,29 +705,29 @@ git commit -m "feat: word list file upload in registration UI"
 
 ---
 
-## Chunk 2: Stub Out Features
+## Chunk 2: Feature Stubs
 
 ### Task 6: Remove Door Branching — Auto-Advance
 
 Remove the door selection UI and Chippy hints. Rooms auto-advance without player choice.
 
+**Migration for existing saves:** Players mid-run may have `pendingBranch: true` in their saved state. The phase machine (line 147 of `src/game/phase-machine.js`) checks this field and transitions to `BRANCH_SELECTION` phase. We must handle this gracefully: if `pendingBranch` is true, auto-select door 0 (first room) and clear the flag, rather than crashing or showing a removed UI.
+
 **Files:**
 - Modify: `src/game/rooms.js` — stop generating branch pairs, generate single rooms only
-- Modify: `public/js/ui/exploration.js` — remove `renderBranchSelection()` calls and DOOR_INTROS
-- Modify: `src/game/loop.js` — remove branch/door selection logic
+- Modify: `src/game/phase-machine.js` — remove BRANCH_SELECTION phase, auto-resolve pendingBranch
 - Modify: `src/game/services/exploration-service.js` — remove branch selection handling
-- Modify: `src/game/phase-machine.js` — remove pendingBranch phase transitions if present
-- Modify: `src/routes/game/run.js` — remove choose-door/selectBranch route
-- Modify: `public/js/api.js` — remove apiSelectBranch/apiDoorHints calls
-- Delete or update: `tests/unit/game/branching-rooms.test.js`
+- Modify: `src/routes/game/run.js` — remove select-branch and door-hints endpoints
+- Modify: `public/js/ui/exploration.js` — remove `renderBranchSelection()` and DOOR_INTROS
+- Modify: `public/js/api.js` — remove selectBranch/doorHints calls
+- Modify: `src/game/state.js` — remove `pendingBranch` from `createNewRun()`
 
 - [ ] **Step 1: Modify room generation to produce single rooms only**
 
-In `src/game/rooms.js`, modify `generateAreaRooms()` (lines 184-212). Currently it generates branch pairs for rooms after the first. Change it to generate single rooms for all positions:
+In `src/game/rooms.js`, modify `generateAreaRooms()` (lines 184-212). Replace the branch-pair logic (lines 193-208) with single room generation:
 
 ```js
-// In generateAreaRooms(), replace the branch-pair logic (lines 193-208) with:
-// Generate single rooms for all positions
+// Replace the for-loop that generates branch pairs with:
 for (let i = 0; i < roomCount; i++) {
   const room = generateSingleRoom(areaId, i + 1, roomCount, lastSpecialType, encountersOnly, forceRoomType);
   if (room.type !== 'encounter') lastSpecialType = room.type;
@@ -699,34 +735,73 @@ for (let i = 0; i < roomCount; i++) {
 }
 ```
 
-Remove `generateBranchPair()` function (lines 167-178) — it's no longer called.
+Remove `generateBranchPair()` function (lines 167-178).
 
-- [ ] **Step 2: Remove branch selection rendering from exploration.js**
+- [ ] **Step 2: Auto-resolve pendingBranch in phase machine**
+
+In `src/game/phase-machine.js`, find the `BRANCH_SELECTION` phase check (line ~147):
+
+```js
+// Replace:
+//   if (run.pendingBranch) return PHASES.BRANCH_SELECTION;
+// With:
+if (run.pendingBranch) {
+  // Migration: auto-select first door for saves created before door removal.
+  // When pendingBranch is true, the rooms array already contains all generated
+  // rooms (including branch pairs). The flag just means the player hadn't
+  // chosen a door yet. Clearing the flag lets the phase machine fall through
+  // to the normal EXPLORING phase, which advances to the next room in the array.
+  // The first room of each branch pair is at the current index, so no room
+  // selection logic is needed — the player simply continues forward.
+  run.pendingBranch = false;
+}
+```
+
+Remove `BRANCH_SELECTION` from the `PHASES` enum (line ~33).
+
+- [ ] **Step 3: Remove select-branch and door-hints API endpoints**
+
+In `src/routes/game/run.js`:
+- Remove `POST /select-branch` handler (lines ~155-168)
+- Remove `POST /door-hints` handler (lines ~171-193)
+
+In `public/js/api.js`:
+- Remove `selectBranch()` and `doorHints()` exported functions
+
+- [ ] **Step 4: Remove branch selection UI**
 
 In `public/js/ui/exploration.js`:
-- Delete the `DOOR_INTROS` array (lines 51-73)
-- Remove or stub `renderBranchSelection()` (lines 406-520) — replace with a no-op that auto-advances
-- In `renderExploring()`, remove any conditional that checks for pending branches and calls `renderBranchSelection()`
+- Delete the `DOOR_INTROS` array (lines 52-73)
+- Remove `renderBranchSelection()` function (lines 406-520+)
+- In `renderExploring()`, remove any conditional that checks for pending branches
 
-The room advancement flow should be: finish current room → auto-advance to next room in the rooms array.
+- [ ] **Step 5: Remove pendingBranch from new run state**
 
-- [ ] **Step 3: Remove pendingBranch from run state**
+In `src/game/state.js`, `createNewRun()` (line ~150), remove the `pendingBranch: false` field.
 
-In `src/game/state.js`, `createNewRun()` (line 132+), remove the `pendingBranch` field if present.
+- [ ] **Step 6: Delete branching test file and run tests**
 
-- [ ] **Step 4: Remove choose-door API endpoint references**
-
-Search `server.js` for `/api/game/choose-door` or `selectBranch` and remove or stub the endpoint. Search `loop.js` for branch selection handling.
-
-- [ ] **Step 5: Run tests**
-
-Run: `npm test`
-Expected: Tests pass (some may need updating if they reference branching)
-
-- [ ] **Step 6: Commit**
+Delete `tests/unit/game/branching-rooms.test.js` — this file tests `generateBranchPair()` and branch selection logic which no longer exist:
 
 ```bash
-git add src/game/rooms.js public/js/ui/exploration.js src/game/state.js src/game/loop.js server.js
+rm -f tests/unit/game/branching-rooms.test.js
+```
+
+Then search for any other test files referencing branching:
+
+```bash
+grep -rln 'pendingBranch\|selectBranch\|generateBranchPair\|BRANCH_SELECTION' tests/ --include='*.js'
+```
+
+For each file found: if the entire test file is about branching, delete it. If only some tests reference branching, remove those specific test cases.
+
+Run: `npm test`
+Expected: All tests pass
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add src/game/rooms.js src/game/phase-machine.js src/game/services/exploration-service.js src/routes/game/run.js public/js/ui/exploration.js public/js/api.js src/game/state.js
 git commit -m "feat: remove door branching, auto-advance to next room"
 ```
 
@@ -739,12 +814,11 @@ Remove DM narration boxes, Chippy references, and quiz rooms from the room pool.
 **Files:**
 - Modify: `src/game/rooms.js` — remove quiz from room type pool
 - Modify: `public/js/ui/exploration.js` — remove narration box calls during exploration
-- Modify: `src/game/dm.js` — stub or skip narration generation
-- Modify: `public/js/ui/scene.js` — remove Chippy sprite references if any
+- Modify: `src/game/dm.js` — stub narration generation (keep file, just short-circuit)
 
 - [ ] **Step 1: Remove quiz from room generation**
 
-In `src/game/rooms.js`, `generateSingleRoom()` (lines 119-178), remove `quiz` from the special room type selection. It should no longer appear in the room chance rates (line 120-124).
+In `src/game/rooms.js`, `generateSingleRoom()` (lines ~119-166), remove `quiz` from the special room type chances:
 
 ```js
 // Change the special room chance rates to exclude quiz:
@@ -752,20 +826,30 @@ In `src/game/rooms.js`, `generateSingleRoom()` (lines 119-178), remove `quiz` fr
 // After:  shrine 10%, wordDiscovery 10%, dealer 10%, whackAMole 5%
 ```
 
-- [ ] **Step 2: Remove narration from room entry**
+- [ ] **Step 2: Delete narration calls from room entry**
 
-In `public/js/ui/exploration.js`, find where `sceneModule.showNarration()` or `narration-box` is called during room transitions. Remove these calls so rooms load directly without narration text.
+In `public/js/ui/exploration.js`, search for these patterns and **delete the call sites** (not the called functions — those live in other modules):
 
-The room entry narration from `getRoomEntryNarration()` in rooms.js should no longer be displayed. Either skip the call or don't pass it to the narration box.
+```bash
+grep -n 'showNarration\|narration-box\|getRoomEntryNarration' public/js/ui/exploration.js
+```
 
-- [ ] **Step 3: Remove Chippy speaker references**
+For each match: delete the function call and any surrounding conditional that exists only to trigger narration. If the narration call is inside an `async` block that `await`s it, remove the entire await statement. The goal is that room transitions skip directly to rendering the room content without showing a narration overlay.
 
-Search exploration.js for `'チッピー'` speaker references and remove them. The Chippy sprite setup in scene rendering should be skipped.
+- [ ] **Step 3: Delete Chippy speaker references**
+
+In `public/js/ui/exploration.js`, search for Chippy-related code:
+
+```bash
+grep -n "チッピー\|showChippy\|chippy" public/js/ui/exploration.js
+```
+
+For each match: delete the Chippy sprite setup code, the speaker name assignment, and any TTS calls that specifically use `'チッピー'` as the speaker. These are all within `renderBranchSelection()` which was already removed in Task 6 Step 4. Verify no other functions reference Chippy — if they do, delete those references too.
 
 - [ ] **Step 4: Run tests**
 
 Run: `npm test`
-Expected: Tests pass (update any quiz-related tests)
+Expected: Tests pass
 
 - [ ] **Step 5: Commit**
 
@@ -778,7 +862,14 @@ git commit -m "feat: stub out narration boxes, Chippy, and quiz rooms"
 
 ## Chunk 3: Data Changes
 
-**Note on content authoring scope:** Tasks 9-10 require pre-tagging i18n strings and item/move descriptions with `{english|kanji|reading}` markers. This is a significant manual effort — each tagged word must use dictionary-accurate Japanese per project rules. The implementer should verify translations against JPDB or a dictionary. Expect ~30 i18n strings and ~300+ item/move descriptions to tag.
+**Note on content authoring scope:** Tasks 9-10 require pre-tagging strings with `{english|kanji|reading}` markers. This is a significant manual effort. Each tagged word **must use dictionary-accurate Japanese** per project CLAUDE.md rules — verify against JPDB or a dictionary. When in doubt, leave the word untagged (English-only) rather than tag it with an inaccurate translation.
+
+**Tagging guidelines:**
+- Only tag content words (nouns, verbs, adjectives) — not function words (the, a, for, of)
+- Only tag words where the Japanese equivalent is natural and commonly used
+- For katakana loanwords (ダメージ, クリティカル), leave reading field empty: `{damage|ダメージ|}`
+- For kanji words, always include the reading: `{heal|回復|かいふく}`
+- Leave numbers, stats (HP, ATK, %), and proper nouns untagged
 
 ### Task 8: Add NPC Role Field
 
@@ -789,25 +880,26 @@ Add a `role` field to each NPC in npcs.json with a Japanese word for their occup
 
 - [ ] **Step 1: Read current NPC data to understand the full schema**
 
-Run: `node -e "const d = require('./data/character-cards/npcs.json'); console.log(Object.keys(d).length, 'NPCs'); console.log(Object.keys(d[Object.keys(d)[0]]))"`
+Run: `node -e "const d = JSON.parse(require('fs').readFileSync('./data/character-cards/npcs.json','utf-8')); console.log(Object.keys(d).length, 'NPCs'); console.log(JSON.stringify(d[Object.keys(d)[0]], null, 2).slice(0, 500))"`
 
 Review the full list of NPCs and determine appropriate role words for each.
 
 - [ ] **Step 2: Add role field to each NPC**
 
-For each NPC, add a `role` object with `word`, `reading`, and `meaning`. Example roles:
+For each NPC, add a `role` object with `word`, `reading`, and `meaning`. Choose roles that match the NPC's personality and area. Use JPDB-verified words with accurate translations.
 
+Example roles:
 ```json
-{
-  "role": { "word": "隠者", "reading": "いんじゃ", "meaning": "hermit" }
-}
+{ "role": { "word": "隠者", "reading": "いんじゃ", "meaning": "hermit" } }
+{ "role": { "word": "商人", "reading": "しょうにん", "meaning": "merchant" } }
+{ "role": { "word": "学者", "reading": "がくしゃ", "meaning": "scholar" } }
 ```
 
-Choose roles that match the NPC's personality and area. Use JPDB-verified words with accurate translations.
+**Translation accuracy:** Show the exact JPDB `meanings` array for each word you look up. Do not paraphrase.
 
 - [ ] **Step 3: Validate JSON syntax**
 
-Run: `node -e "require('./data/character-cards/npcs.json'); console.log('OK')"`
+Run: `node -e "JSON.parse(require('fs').readFileSync('./data/character-cards/npcs.json','utf-8')); console.log('OK')"`
 Expected: OK
 
 - [ ] **Step 4: Commit**
@@ -821,17 +913,20 @@ git commit -m "data: add role field to all NPCs for bootstrap name display"
 
 ### Task 9: Pre-Tag i18n Strings
 
-Add `{english|kanji|reading}` tags to all i18n strings in `public/js/ui/i18n.js` so the en-first renderer can swap them.
+Add `{english|kanji|reading}` tags to i18n strings so the en-first renderer can swap learned words.
 
 **Files:**
 - Modify: `public/js/ui/i18n.js` — add a `tagged` field alongside `en`/`ja` for each string
 
-- [ ] **Step 1: Design the tagged string storage**
+- [ ] **Step 1: Read the current i18n strings**
 
-Add a `tagged` key to each entry in the `strings` object. This contains the English text with `{english|kanji|reading}` tags. The renderer will use `tagged` when available, falling back to `en`.
+Read `public/js/ui/i18n.js` to see all entries in the `strings` object (lines ~22-96).
+
+- [ ] **Step 2: Add tagged versions**
+
+For each i18n entry, add a `tagged` key containing the English text with `{english|kanji|reading}` tags. Only tag words that have clear, dictionary-verified Japanese equivalents.
 
 ```js
-// Example:
 criticalHit: {
   en: 'CRITICAL HIT!',
   ja: 'クリティカル！',
@@ -840,24 +935,18 @@ criticalHit: {
 dealsDamage: {
   en: '{0} deals {1} damage!',
   ja: '{0}が{1}ダメージ！',
-  tagged: '{0} {deals|与える|あたえる} {1} {damage|ダメージ|}!'
+  tagged: '{0} deals {1} {damage|ダメージ|}!'
 },
 ```
 
-- [ ] **Step 2: Add tagged versions of all i18n strings**
-
-Go through every entry in the `strings` object (lines 22-96 of i18n.js) and add a `tagged` field. Only tag words that have clear Japanese equivalents. Leave function words and formatting tokens (`{0}`, `{1}`) as-is.
-
-Note: No separate `tTagged()` function needed — Task 11 modifies `t()` directly to handle tagged strings via the bootstrap renderer.
-
-Note: The `{0}` interpolation tokens do not conflict with the `{english|kanji|reading}` tag format because interpolation tokens have no `|` pipes, so the parser regex won't match them. Interpolation is performed first (replacing `{0}` with the argument), then the result is passed to `renderEnFirst()`. Interpolated arguments must be plain text (no `{` or `|` characters).
+**Important:** `{0}`, `{1}` interpolation tokens do NOT conflict with `{english|kanji|reading}` tags because interpolation tokens have no `|` pipes. The parser regex requires exactly 2 pipes. Interpolation is performed first (replacing `{0}` with the argument value), then the result is passed to `renderEnFirst()`.
 
 - [ ] **Step 3: Syntax check**
 
 Run: `node --check public/js/ui/i18n.js && echo "OK"`
 Expected: OK
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
 git add public/js/ui/i18n.js
@@ -871,12 +960,12 @@ git commit -m "feat: add tagged i18n strings for bootstrap en-first rendering"
 Add `{english|kanji|reading}` tags to `description` fields in items.json and moves.json.
 
 **Files:**
-- Modify: `data/items.json` — add `descriptionTagged` field
-- Modify: `data/moves.json` — add `descriptionTagged` field
+- Modify: `data/items.json` — add `descriptionTagged` field to each item
+- Modify: `data/moves.json` — add `descriptionTagged` field to each move
 
 - [ ] **Step 1: Add descriptionTagged to items**
 
-For each item in items.json, add a `descriptionTagged` field. Tag English words that have Japanese equivalents in the game vocabulary. Leave mechanical terms (HP, %, numbers) untagged.
+For each item in items.json, add a `descriptionTagged` field. Tag English words that have Japanese equivalents. Leave mechanical terms (HP, %, numbers) untagged.
 
 ```json
 {
@@ -892,13 +981,13 @@ Same approach for moves.json:
 ```json
 {
   "description": "Rushes forward at full speed, gaining an extra action.",
-  "descriptionTagged": "{Rushes|突進|とっしん} forward at full {speed|速度|そくど}, gaining an extra {action|行動|こうどう}."
+  "descriptionTagged": "Rushes forward at full {speed|速度|そくど}, gaining an extra {action|行動|こうどう}."
 }
 ```
 
 - [ ] **Step 3: Validate JSON syntax**
 
-Run: `node -e "require('./data/items.json'); require('./data/moves.json'); console.log('OK')"`
+Run: `node -e "JSON.parse(require('fs').readFileSync('./data/items.json','utf-8')); JSON.parse(require('fs').readFileSync('./data/moves.json','utf-8')); console.log('OK')"`
 Expected: OK
 
 - [ ] **Step 4: Commit**
@@ -914,7 +1003,7 @@ git commit -m "data: add tagged descriptions for bootstrap en-first rendering"
 
 ### Task 11: CSS for Bootstrap Word Rendering
 
-Add CSS styles for the bootstrap word display classes used by the renderer. **Must be done before Tasks 12-14** which output these CSS classes.
+Add CSS styles for the bootstrap word display classes used by the renderer. **Must be done before Tasks 12-15** which output these CSS classes.
 
 **Files:**
 - Modify: `public/game.css`
@@ -923,27 +1012,33 @@ Add CSS styles for the bootstrap word display classes used by the renderer. **Mu
 
 ```css
 /* Bootstrap language scaffolding */
-.word {
+.bs-word {
   display: inline;
   white-space: nowrap;
 }
 
-.word ruby {
+.bs-word ruby {
   ruby-position: over;
 }
 
-.word rt {
+.bs-word rt {
   font-size: 0.55em;
   color: var(--text-muted, #8ab4d8);
   font-weight: normal;
 }
 
-.word-en {
+.bs-word-en {
   font-size: 0.6em;
   color: var(--text-dim, #a0a0a0);
   display: block;
   text-align: center;
   line-height: 1.1;
+}
+
+.creature-subtitle {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-muted);
 }
 ```
 
@@ -956,22 +1051,19 @@ git commit -m "style: add CSS for bootstrap word rendering (ruby + english annot
 
 ---
 
-### Task 12: Wire Bootstrap Renderer into i18n System
+### Task 12: Client-Side Bootstrap Renderer Module
 
-Connect the bootstrap renderer to the i18n `t()` function so combat text, prompts, and labels use the en-first renderer.
+Create a browser-compatible bootstrap renderer. The server-side renderer (Task 2) uses Node imports; the client needs a standalone version with module-level known-words state.
 
 **Files:**
-- Modify: `public/js/ui/i18n.js` — add bootstrap rendering path
-- Create: `public/js/ui/bootstrap-client.js` — client-side renderer (browser version)
+- Create: `public/js/ui/bootstrap-client.js`
 
 - [ ] **Step 1: Create client-side bootstrap renderer**
-
-The server-side renderer (`src/game/bootstrap/renderer.js`) uses Node imports. Create a browser-compatible version:
 
 ```js
 // public/js/ui/bootstrap-client.js
 
-const TAG_RE = /\{([^|]*)\|([^|]*)\|([^}]*)\}/g;
+const TAG_RE = /\{([^|{}]*)\|([^|{}]*)\|([^|}]*)\}/g;
 
 let _knownWords = new Set();
 
@@ -994,9 +1086,9 @@ export function renderEnFirst(taggedText) {
   return taggedText.replace(TAG_RE, (_, english, kanji, reading) => {
     if (!_knownWords.has(kanji)) return esc(english);
     if (reading) {
-      return `<span class="word"><ruby>${esc(kanji)}<rt>${esc(reading)}</rt></ruby></span>`;
+      return `<span class="bs-word"><ruby>${esc(kanji)}<rt>${esc(reading)}</rt></ruby></span>`;
     }
-    return `<span class="word">${esc(kanji)}</span>`;
+    return `<span class="bs-word">${esc(kanji)}</span>`;
   });
 }
 
@@ -1005,57 +1097,65 @@ export function renderEnFirst(taggedText) {
  * Always shows kanji + furigana. Shows English if word is unknown.
  */
 export function renderJpFirst(kanji, reading, english) {
-  let html = '<span class="word">';
+  let html = '<span class="bs-word">';
   if (reading) {
     html += `<ruby>${esc(kanji)}<rt>${esc(reading)}</rt></ruby>`;
   } else {
     html += esc(kanji);
   }
   if (!_knownWords.has(kanji) && english) {
-    html += `<span class="word-en">${esc(english)}</span>`;
+    html += `<span class="bs-word-en">${esc(english)}</span>`;
   }
   html += '</span>';
   return html;
 }
 
-function esc(s) {
+/** HTML-escape a string. Exported for use by other UI modules that mix bootstrap output with plain text. */
+export function esc(s) {
   if (!s) return '';
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 ```
 
-- [ ] **Step 2: Add an API endpoint to fetch the player's known words**
+- [ ] **Step 2: Syntax check**
 
-In `server.js`, add a GET endpoint that returns the player's known words:
+Run: `node --check public/js/ui/bootstrap-client.js && echo "OK"`
+Expected: OK
 
-```js
-// GET /api/game/known-words
-app.get('/api/game/known-words', authMiddleware, (req, res) => {
-  const wk = loadWordKnowledge(req.user.id) || createWordKnowledge(req.user.id);
-  res.json({ words: Object.keys(wk.known) });
-});
+- [ ] **Step 3: Commit**
+
+```bash
+git add public/js/ui/bootstrap-client.js
+git commit -m "feat: client-side bootstrap renderer module"
 ```
 
-- [ ] **Step 3: Load known words on game start**
+---
 
-In `public/js/game.js`, after authentication, fetch the known words and set them in the client renderer:
+### Task 13: Wire Bootstrap into i18n System
 
-```js
-import { setKnownWords } from './ui/bootstrap-client.js';
+Connect the bootstrap renderer to the i18n `t()` function so combat text and UI strings use the en-first renderer.
 
-// After auth, before rendering:
-const kwResp = await fetch('/api/game/known-words', { headers: authHeaders() });
-const kwData = await kwResp.json();
-setKnownWords(kwData.words);
-```
+**XSS safety:** `t()` now returns HTML. Interpolated arguments (`{0}`, `{1}`) are player-visible data like creature names and damage numbers. These must be HTML-escaped before insertion to prevent XSS. The `renderEnFirst()` function escapes its own output, but interpolation happens *before* rendering, so raw args could inject HTML.
 
-- [ ] **Step 4: Integrate with i18n t() function**
+**Files:**
+- Modify: `public/js/ui/i18n.js` — add bootstrap rendering path to `t()`
 
-Modify `public/js/ui/i18n.js` — update `t()` to use the bootstrap renderer when tagged strings are available:
+- [ ] **Step 1: Read current t() implementation**
+
+Read `public/js/ui/i18n.js` to see the exact `t()` function signature and implementation (lines ~98-129).
+
+- [ ] **Step 2: Modify t() to use bootstrap rendering**
 
 ```js
 import { renderEnFirst } from './bootstrap-client.js';
 
+// Add this helper at module level:
+function escHtml(s) {
+  if (typeof s !== 'string') return String(s);
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Modify the t() function:
 export function t(key, ...args) {
   const entry = strings[key];
   if (!entry) return key;
@@ -1063,7 +1163,9 @@ export function t(key, ...args) {
   // If tagged version exists, render through bootstrap
   if (entry.tagged) {
     let str = entry.tagged;
-    args.forEach((a, i) => { str = str.replace(`{${i}}`, a); });
+    // Escape interpolation args to prevent XSS — args may contain
+    // user-visible data (creature names, numbers, etc.)
+    args.forEach((a, i) => { str = str.replace(`{${i}}`, escHtml(a)); });
     return renderEnFirst(str);
   }
 
@@ -1075,86 +1177,70 @@ export function t(key, ...args) {
 }
 ```
 
-- [ ] **Step 5: Audit and fix all `t()` callers that use textContent**
+- [ ] **Step 3: Audit t() call sites for innerHTML vs textContent**
 
-Since `t()` can now return HTML (with `<ruby>` tags), every call site that assigns `t()` output to `textContent` will break (showing raw HTML to the user). Run:
+Search for how `t()` output is used in the DOM:
 
-```bash
-grep -rn '\.textContent.*\bt(' public/js/ --include='*.js'
-grep -rn '\.innerText.*\bt(' public/js/ --include='*.js'
-```
+Run: `grep -rn '\.textContent.*\bt(' public/js/ --include='*.js'`
+Run: `grep -rn '\.innerText.*\bt(' public/js/ --include='*.js'`
+Run: `grep -rn 'innerHTML.*\bt(' public/js/ --include='*.js'`
 
-For each match, change `textContent` to `innerHTML`. Be careful not to introduce XSS — `t()` output is from trusted static strings, so `innerHTML` is safe here.
+Based on code exploration, `t()` output is used in template literals for `innerHTML` assignment (not `textContent`), so no changes needed at call sites. But verify this by running the grep — if any `textContent` assignments exist, change them to `innerHTML`.
 
-- [ ] **Step 6: Ensure known words load before rendering**
+- [ ] **Step 4: Syntax check**
 
-In `public/js/game.js`, the known-words fetch (`/api/game/known-words`) must complete before any UI rendering that uses the bootstrap renderer. Structure the init flow as:
-
-```js
-// 1. Authenticate
-// 2. Fetch known words → setKnownWords()
-// 3. Fetch game state → render UI
-```
-
-If the game currently renders immediately after auth, add an await for the known-words fetch before the first render call.
-
-- [ ] **Step 7: Syntax check all modified files**
-
-Run: `node --check public/js/ui/i18n.js && node --check public/js/ui/bootstrap-client.js && echo "OK"`
+Run: `node --check public/js/ui/i18n.js && echo "OK"`
 Expected: OK
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add public/js/ui/bootstrap-client.js public/js/ui/i18n.js public/js/game.js server.js
-git commit -m "feat: wire bootstrap renderer into i18n system"
+git add public/js/ui/i18n.js
+git commit -m "feat: wire bootstrap en-first renderer into i18n t() function"
 ```
 
 ---
 
-### Task 12: Update Creature Card to Show Full Name
+### Task 14: Update Creature Card to Show Full Name
 
 Modify creature display to show the full creature identity (English name + Japanese base word + modifier subtitle).
+
+**Data fields available** (from `data/creatures.json`):
+- `creature.nameEn` — English name (e.g., "Kamedor")
+- `creature.baseWord` — Base kanji (e.g., "亀")
+- `creature.baseReading` — Base reading (e.g., "かめ")
+- `creature.baseMeaning` — Base English meaning (e.g., "turtle")
+- `creature.modifier.word` — Modifier kanji (e.g., "古代")
+- `creature.modifier.reading` — Modifier reading (e.g., "こだい")
+- `creature.modifier.meaning` — Modifier English meaning (e.g., "Ancient")
 
 **Files:**
 - Modify: `public/js/ui/creature-row.js` — update `render()` and `showPopup()` to show subtitle
 
-- [ ] **Step 1: Update creature slot rendering**
+- [ ] **Step 1: Read creature-row.js**
 
-In `public/js/ui/creature-row.js`, `render()` (lines 71-129). Currently line 96 shows `creature.nameEn`. Add the Japanese subtitle below using jp-first rendering:
+Read `public/js/ui/creature-row.js` to understand the current rendering (focus on lines 71-129 for `render()` and lines 141-230 for `showPopup()`).
+
+- [ ] **Step 2: Add import and subtitle rendering**
 
 ```js
 import { renderJpFirst } from './bootstrap-client.js';
 
-// In the creature slot HTML (around line 96), change the name display:
-// Before: <span class="creature-name">${creature.nameEn}</span>
-// After:
+// In the creature slot HTML (around line 96 where creature.nameEn is shown),
+// add the Japanese subtitle below the English name:
 const subtitle = creature.modifier
   ? renderJpFirst(creature.modifier.word, creature.modifier.reading, creature.modifier.meaning)
     + 'の'
     + renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning)
   : renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning);
 
-// HTML:
-// <span class="creature-name">${creature.nameEn}</span>
+// Add to the slot HTML after the creature name span:
 // <span class="creature-subtitle">${subtitle}</span>
 ```
 
-- [ ] **Step 2: Update creature popup**
+- [ ] **Step 3: Update creature popup with same subtitle**
 
-In `showPopup()` (lines 141-230), add the same subtitle to the popup header.
-
-- [ ] **Step 3: Add CSS for creature subtitle**
-
-In `public/game.css`, add (the `.word` and `.word-en` base styles are already added in Task 11):
-
-```css
-.creature-subtitle {
-  font-size: 11px;
-  line-height: 1.4;
-  color: var(--text-muted);
-}
-```
+In `showPopup()` (lines 141-230), add the same subtitle to the popup header area.
 
 - [ ] **Step 4: Syntax check**
 
@@ -1164,13 +1250,13 @@ Expected: OK
 - [ ] **Step 5: Commit**
 
 ```bash
-git add public/js/ui/creature-row.js public/game.css
+git add public/js/ui/creature-row.js
 git commit -m "feat: show full creature name with jp-first bootstrap subtitle"
 ```
 
 ---
 
-### Task 13: Update Move, Item, and NPC Displays
+### Task 15: Update Move, Item, and NPC Displays
 
 Wire bootstrap rendering into move-select, post-combat-shop, and NPC name displays.
 
@@ -1179,63 +1265,70 @@ Wire bootstrap rendering into move-select, post-combat-shop, and NPC name displa
 - Modify: `public/js/ui/post-combat-shop.js` — render item names with jp-first, descriptions with en-first
 - Modify: `public/js/ui/scene.js` — render NPC names with role using jp-first
 
-- [ ] **Step 1: Update move name display**
+- [ ] **Step 1: Read move-select.js**
 
-In `public/js/ui/move-select.js`, `buildMoveCell()` (lines 56-74). Use jp-first for the move name:
+Read `public/js/ui/move-select.js` (lines 31-83, `buildMoveCell()`).
 
-```js
-import { renderJpFirst } from './bootstrap-client.js';
-import { renderEnFirst } from './bootstrap-client.js';
-
-// Replace the move name display (around line 65) with:
-const moveName = renderJpFirst(move.name, move.reading, move.meaning);
-
-// For move description, use en-first with tagged text:
-const moveDesc = move.descriptionTagged
-  ? renderEnFirst(move.descriptionTagged)
-  : move.description;
-```
-
-- [ ] **Step 2: Update item display in post-combat shop**
-
-In `public/js/ui/post-combat-shop.js` (lines 50-63). Use jp-first for item name, en-first for description:
+- [ ] **Step 2: Update move name display**
 
 ```js
 import { renderJpFirst, renderEnFirst } from './bootstrap-client.js';
 
-// Item name (around line 58):
-const itemName = renderJpFirst(item.word, item.reading, item.meaning);
+// In buildMoveCell() around line 65, the move name is already displayed as Japanese.
+// Add jp-first rendering for the move name to include English annotation for unknown words:
+// Replace direct move.name usage with:
+const moveNameHtml = renderJpFirst(move.name, move.reading, move.meaning);
+
+// For move description, use en-first with tagged text if available:
+const moveDescHtml = move.descriptionTagged
+  ? renderEnFirst(move.descriptionTagged)
+  : move.description;
+```
+
+Note: `move.name` is already Japanese (kanji), `move.reading` is the furigana, and `move.meaning` is the English translation. These field names are confirmed from `data/moves.json`.
+
+- [ ] **Step 3: Read and update post-combat-shop.js**
+
+Read `public/js/ui/post-combat-shop.js` (lines 42-83).
+
+```js
+import { renderJpFirst, renderEnFirst } from './bootstrap-client.js';
+
+// Item name (around line 58, where item.word is displayed):
+const itemNameHtml = renderJpFirst(item.word, item.reading, item.meaning);
 
 // Item description (around line 60):
-const itemDesc = item.descriptionTagged
+const itemDescHtml = item.descriptionTagged
   ? renderEnFirst(item.descriptionTagged)
   : item.description;
 ```
 
-- [ ] **Step 3: Update NPC name display**
+- [ ] **Step 4: Read and update scene.js for NPC names**
 
-In `public/js/ui/scene.js`, where NPC names are shown (showNpcTrainer around line 343). Add role display:
+Read `public/js/ui/scene.js` — find `showNpcTrainer` (around line 282).
 
 ```js
-import { renderJpFirst } from './bootstrap-client.js';
+import { renderJpFirst, esc as escHtml } from './bootstrap-client.js';
 
-// NPC name display:
+// NPC name display — add role if available:
 const roleHtml = npc.role
   ? ' — ' + renderJpFirst(npc.role.word, npc.role.reading, npc.role.meaning)
   : '';
-const npcNameHtml = `${esc(npc.nameEn)}${roleHtml}`;
+const npcNameHtml = `${escHtml(npc.nameEn)}${roleHtml}`;
 ```
 
-- [ ] **Step 4: Audit innerHTML vs textContent**
+Note: `esc` is exported from `bootstrap-client.js` (as `escHtml` via named import) for HTML-escaping plain text. The NPC's `role` field is added in Task 8. If a session doesn't have Task 8 data yet, `npc.role` will be undefined and this gracefully falls back to showing just the name.
 
-Since bootstrap rendering outputs HTML (`<ruby>`, `<span>`), all places that set `textContent` with bootstrap output must switch to `innerHTML`. Search for all locations where creature names, move names, item names, or i18n strings are set via `textContent` and update them.
+- [ ] **Step 5: Ensure all display assignments use innerHTML**
 
-- [ ] **Step 5: Syntax check all modified files**
+Since bootstrap rendering outputs HTML (`<ruby>`, `<span>`), verify that all places where rendered output is inserted use `innerHTML` (not `textContent`). These UI modules already use template literals in `innerHTML` assignment, so this should be a no-op verification.
+
+- [ ] **Step 6: Syntax check all modified files**
 
 Run: `node --check public/js/ui/move-select.js && node --check public/js/ui/post-combat-shop.js && node --check public/js/ui/scene.js && echo "OK"`
 Expected: OK
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add public/js/ui/move-select.js public/js/ui/post-combat-shop.js public/js/ui/scene.js
@@ -1244,46 +1337,193 @@ git commit -m "feat: wire bootstrap renderer into move, item, and NPC displays"
 
 ---
 
-## Chunk 5: NPC Dialogue Changes
+## Chunk 5: System Integration
 
-### Task 14: Replace Static NPC Strings with Dynamic Generation
+### Task 16: Known-Words API + Game Init Loading
 
-Remove static `greeting`, `defeatLine`, and `postCombat` strings from NPC data. These should be dynamically generated by the AI dialogue system, i+1 constrained.
+Add a server endpoint to fetch the player's known words, and load them into the client-side bootstrap renderer on game start.
+
+**Context:** The frontend uses a Store pattern (`public/js/store.js`) with `store.subscribe()` for reactive rendering. Known words must be loaded before any rendering that uses the bootstrap renderer. The game init flow is:
+1. Auth → token in localStorage
+2. `getGameState()` → fetches `/api/game/state`
+3. Store subscribers re-render based on phase
+
+Known words must load between steps 1 and 3.
 
 **Files:**
-- Modify: `data/character-cards/npcs.json` — remove static dialogue strings
-- Modify: `src/narration-engine/index.js` — ensure greeting/defeatLine/postCombat are generated dynamically
-- Check: `src/game/loop.js` — ensure NPC encounters fetch dynamic dialogue
+- Create: `src/routes/game/known-words.js` — new route module for known-words endpoint
+- Modify: `src/routes/game/index.js` — mount the new route module
+- Modify: `public/js/game.js` — load known words before first render
 
-- [ ] **Step 1: Audit where greeting/defeatLine/postCombat are used**
+- [ ] **Step 1: Read src/routes/game/index.js to understand route structure**
 
-Search the codebase for references to these fields:
+Read `src/routes/game/index.js` to see how sub-route modules are mounted (e.g., `router.use('/state', ...)`, `router.use('/run', ...)`).
 
-Run: `grep -rn 'greeting\|defeatLine\|postCombat' src/ public/ --include='*.js'`
+- [ ] **Step 2: Create known-words route module**
 
-Identify every place these are read from NPC data.
+Create `src/routes/game/known-words.js` following the pattern of existing sub-route files:
 
-- [ ] **Step 2: Replace static string reads with dynamic dialogue fetches**
-
-For each usage found, replace the static field access with a call to the narration engine. The narration engine already generates NPC dialogue via `queueMissingDialogues()` and `getDialogueFromCache()` (see `src/narration-engine/index.js` lines 43-100).
-
-The key integration point: wherever the game reads `npc.greeting` or `npc.defeatLine`, replace with:
 ```js
-const dialogue = getDialogueFromCache(userId, npcId, 'npc');
-// Use dialogue.greeting / dialogue.defeatLine if available
-// If not cached yet, skip dialogue (don't block on generation)
+// src/routes/game/known-words.js
+import { Router } from 'express';
+import { loadWordKnowledge, createWordKnowledge } from '../../game/bootstrap/word-knowledge.js';
+
+export function createKnownWordsRoutes() {
+  const router = Router();
+
+  // GET /api/game/known-words
+  router.get('/', (req, res) => {
+    const wk = loadWordKnowledge(req.user.id) || createWordKnowledge(req.user.id);
+    res.json({ words: Object.keys(wk.known) });
+  });
+
+  return router;
+}
 ```
 
-The narration engine's prompt assembly already receives `vocabContext` with the player's known words for i+1 constraint. Ensure the greeting/defeatLine/postCombat dialogue types are included in the `queueMissingDialogues()` batch so they're pre-generated.
+- [ ] **Step 3: Mount in game route index**
 
-- [ ] **Step 3: Remove static dialogue strings from npcs.json**
+In `src/routes/game/index.js`, add:
 
-Remove `greeting`, `defeatLine`, and `postCombat` fields from each NPC entry. **Keep `exampleDialogue`** — it's used as few-shot examples in the AI prompt for dialogue generation, not for direct display to the player.
+```js
+import { createKnownWordsRoutes } from './known-words.js';
 
-- [ ] **Step 4: Validate JSON**
+// Add alongside other route mountings:
+router.use('/known-words', createKnownWordsRoutes());
+```
 
-Run: `node -e "require('./data/character-cards/npcs.json'); console.log('OK')"`
+- [ ] **Step 4: Read game.js to understand init flow**
+
+Read `public/js/game.js` (focus on the initialization sequence — imports, auth callbacks, first `getGameState()` call).
+
+- [ ] **Step 5: Load known words on game start**
+
+In `public/js/game.js`, after auth succeeds but before the first game state fetch/render:
+
+```js
+import { setKnownWords } from './ui/bootstrap-client.js';
+
+// After auth is confirmed, before first render:
+async function loadKnownWords() {
+  try {
+    const resp = await fetch('/api/game/known-words', {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      setKnownWords(data.words);
+    }
+  } catch (e) {
+    console.warn('Failed to load known words:', e);
+    // Non-fatal — bootstrap renderer will treat all words as unknown
+  }
+}
+```
+
+Call `loadKnownWords()` in the init flow, awaiting it before the first `getGameState()` call.
+
+- [ ] **Step 6: Syntax check**
+
+Run: `node --check public/js/game.js && echo "OK"`
 Expected: OK
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add src/routes/game/known-words.js src/routes/game/index.js public/js/game.js
+git commit -m "feat: known-words API endpoint and client-side loading on game start"
+```
+
+---
+
+### Task 17: Bridge Speed Review → markKnown()
+
+When a player successfully recalls a word in speed review, mark it as "known" in the word-knowledge service. This is what drives the bootstrap renderer to hide English annotations.
+
+**Context:** Speed review currently goes through JPDB (`POST /api/vocab/jpdb/review` in `src/routes/vocab.js` lines 69-117). When a review grade indicates successful recall, we also call `markKnown()` in the new word-knowledge service.
+
+**Files:**
+- Modify: `src/routes/vocab.js` — add markKnown call after successful JPDB review
+- Modify: `public/js/game.js` or relevant UI — refresh known words after speed review session
+
+- [ ] **Step 1: Read the JPDB review endpoint**
+
+Read `src/routes/vocab.js` lines 69-117 to understand how grades are processed.
+
+- [ ] **Step 2: Add `wordText` to the frontend review request**
+
+The JPDB review endpoint (`POST /api/jpdb/review`) currently receives only `{ vid, sid, grade, isDiscovery }` — no word text. The frontend speed review UI (`public/js/ui/speed-review.js`) already has the full word object (with `word` field) from the due-words response. The simplest approach is to include the word text in the review request.
+
+In `public/js/ui/speed-review.js`, find where `sendReview(word.vid, word.sid, grade)` is called (around line 48). Change it to also pass the word text:
+
+```js
+// Change from:
+const reviewPromise = state.callbacks?.sendReview(word.vid, word.sid, grade);
+// To:
+const reviewPromise = state.callbacks?.sendReview(word.vid, word.sid, grade, word.word);
+```
+
+In `public/js/game.js`, update the callback (around line 1000):
+
+```js
+// Change from:
+sendReview: (vid, sid, grade) => apiSendJpdbReview(vid, sid, grade),
+// To:
+sendReview: (vid, sid, grade, wordText) => apiSendJpdbReview(vid, sid, grade, false, wordText),
+```
+
+In `public/js/api.js`, update `apiSendJpdbReview` to include `wordText` in the request body:
+
+```js
+// Add wordText to the POST body:
+body: JSON.stringify({ vid, sid, grade, isDiscovery, wordText })
+```
+
+- [ ] **Step 3: Add markKnown call to the server review endpoint**
+
+In `src/routes/vocab.js`, add import at top:
+
+```js
+import { loadWordKnowledge, createWordKnowledge, markKnown, saveWordKnowledge } from '../game/bootstrap/word-knowledge.js';
+```
+
+In the review handler (lines 69-117), after the successful `reviewVocabulary()` call and before the response, add:
+
+```js
+// Mark word as known in bootstrap system on successful recall
+// Grade mapping: 1=nothing, 2=hard, 3=okay, 4=easy, 5=perfect
+// Grade >= 3 means the player successfully recalled the word
+const { wordText } = req.body;
+if (grade >= 3 && wordText) {
+  const wk = loadWordKnowledge(req.user.id) || createWordKnowledge(req.user.id);
+  markKnown(wk, wordText);
+  saveWordKnowledge(wk);
+}
+```
+
+- [ ] **Step 4: Refresh known words on client after speed review session ends**
+
+
+In `public/js/ui/speed-review.js`, find the function that runs when the speed review session finishes (the "done" or "close" handler). Add a call to reload known words:
+
+```js
+import { setKnownWords } from './bootstrap-client.js';
+
+// At the end of the speed review session (when modal closes or cards exhausted):
+try {
+  const resp = await fetch('/api/game/known-words', {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (resp.ok) {
+    const data = await resp.json();
+    setKnownWords(data.words);
+  }
+} catch (e) {
+  // Non-fatal
+}
+```
+
+This ensures the UI immediately reflects newly learned words after speed review.
 
 - [ ] **Step 5: Run tests**
 
@@ -1293,57 +1533,121 @@ Expected: Tests pass
 - [ ] **Step 6: Commit**
 
 ```bash
-git add data/character-cards/npcs.json src/narration-engine/index.js src/game/loop.js
-git commit -m "feat: replace static NPC dialogue strings with dynamic i+1 generation"
+git add src/routes/vocab.js public/js/ui/speed-review.js public/js/game.js public/js/api.js
+git commit -m "feat: bridge speed review to word-knowledge markKnown"
 ```
 
 ---
 
-## Chunk 6: Cleanup and Integration
+### Task 18: Bridge Combat/Gameplay → registerExposure()
 
-### Task 15: Remove Old Bootstrap System Code
+When words are shown to the player during gameplay (combat vocab cards), register them as "seen" in the word-knowledge service. This feeds the speed review queue with words to quiz.
+
+**Context:** The primary word exposure point is `POST /api/vocab/due-words` in `src/routes/vocab.js` (lines 33-49). This endpoint returns full word objects with a `word` field (the kanji/kana text) via `getDueWordsWithMeanings()` from `src/jpdb.js`. Every word returned here is about to be shown to the player as a flashcard.
+
+**Files:**
+- Modify: `src/routes/vocab.js` — register exposures when vocab cards are served
+
+- [ ] **Step 1: Read the due-words endpoint**
+
+Read `src/routes/vocab.js` lines 33-49 to confirm the response structure. The endpoint calls `getDueWordsWithMeanings()` which returns `{ words: [{ word, reading, meanings, vid, sid }, ...], source }`.
+
+- [ ] **Step 2: Add exposure registration to the due-words endpoint**
+
+In `src/routes/vocab.js`, add import at top (may already be added from Task 17):
+
+```js
+import { loadWordKnowledge, createWordKnowledge, registerExposure, saveWordKnowledge } from '../game/bootstrap/word-knowledge.js';
+```
+
+In the `POST /api/vocab/due-words` handler, after `getDueWordsWithMeanings()` returns successfully and before `res.json(result)`, add:
+
+```js
+// Register word exposures in bootstrap system
+if (result.words && result.words.length > 0) {
+  try {
+    const wk = loadWordKnowledge(req.user.id) || createWordKnowledge(req.user.id);
+    for (const w of result.words) {
+      if (w.word) registerExposure(wk, w.word);
+    }
+    saveWordKnowledge(wk);
+  } catch (e) {
+    // Non-fatal — don't break card serving if exposure tracking fails
+    console.warn('[vocab/due-words] Failed to record exposures:', e.message);
+  }
+}
+```
+
+This registers every vocab card word as "seen" when the server sends it to the client. The `registerExposure()` call is idempotent — calling it multiple times for the same word just increments the exposure count.
+
+- [ ] **Step 3: Run tests**
+
+Run: `npm test`
+Expected: Tests pass
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add src/routes/vocab.js
+git commit -m "feat: register word exposures when serving vocab cards"
+```
+
+---
+
+## Chunk 6: Cleanup & Verification
+
+### Task 19: Remove Old Bootstrap System Code
 
 Remove the old bootstrap files that are incompatible with the new system.
 
-**Files:**
-- Delete: `src/game/bootstrap-renderer.js`
-- Delete: `src/game/bootstrap-parser.js`
-- Delete: `src/game/bootstrap-api.js`
-- Delete: `src/game/word-tracker.js`
-- Delete: `src/game/bootstrap-narrations.js`
-- Delete: `data/bootstrap-narrations/prologue.json`
-- Delete: corresponding test files
-- Modify: `server.js` — remove old bootstrap API routes
+**Files to delete:**
+- `src/game/bootstrap-renderer.js` (81 lines — old 4-field renderer)
+- `src/game/bootstrap-parser.js` (56 lines — old 4-field parser)
+- `src/game/bootstrap-api.js` (95 lines — old API handlers)
+- `src/game/bootstrap-narrations.js` (30 lines — prologue scene loader)
+- `src/game/bootstrap-curriculum.js` (44 lines — word curriculum)
+- `src/game/word-tracker.js` (146 lines — old exposure tracker)
+- `src/routes/game/bootstrap.js` (32 lines — old route definitions)
+- `data/bootstrap-narrations/prologue.json` (narration data)
+- `data/bootstrap-curriculum.json` (curriculum data)
 
-- [ ] **Step 1: Find and remove old bootstrap route registrations**
+**Test files to delete:**
+- `tests/unit/game/bootstrap-parser.test.js`
+- `tests/unit/game/bootstrap-renderer.test.js`
+- `tests/unit/game/bootstrap-narrations.test.js`
+- `tests/unit/game/bootstrap-curriculum.test.js`
+- `tests/unit/game/bootstrap-api.test.js`
+- `tests/unit/game/word-tracker.test.js`
+- `tests/unit/game/word-tracker-persistence.test.js`
+- `tests/integration/game/bootstrap-narration-flow.test.js`
 
-Search server.js for bootstrap API endpoint registrations:
+**Files to modify:**
+- `src/routes/game/index.js` — remove bootstrap route mounting (line ~104)
 
-Run: `grep -n 'bootstrap' server.js`
+- [ ] **Step 1: Remove bootstrap route mounting**
 
-Remove the route handlers for `/api/game/bootstrap/*`.
+In `src/routes/game/index.js`, find and remove the line:
+```js
+router.use('/bootstrap', createBootstrapRoutes());
+```
+And its import.
 
-- [ ] **Step 2: Delete old files**
+- [ ] **Step 2: Search for remaining imports of deleted modules**
+
+Run: `grep -rn 'bootstrap-renderer\|bootstrap-parser\|bootstrap-api\|word-tracker\|bootstrap-narrations\|bootstrap-curriculum' src/ server.js public/ tests/ --include='*.js'`
+
+Remove all references found.
+
+- [ ] **Step 3: Delete old files**
 
 ```bash
-rm src/game/bootstrap-renderer.js src/game/bootstrap-parser.js src/game/bootstrap-api.js src/game/word-tracker.js src/game/bootstrap-narrations.js
+rm -f src/game/bootstrap-renderer.js src/game/bootstrap-parser.js src/game/bootstrap-api.js src/game/bootstrap-narrations.js src/game/bootstrap-curriculum.js src/game/word-tracker.js
+rm -f src/routes/game/bootstrap.js
 rm -rf data/bootstrap-narrations/
+rm -f data/bootstrap-curriculum.json
+rm -f tests/unit/game/bootstrap-parser.test.js tests/unit/game/bootstrap-renderer.test.js tests/unit/game/bootstrap-narrations.test.js tests/unit/game/bootstrap-curriculum.test.js tests/unit/game/bootstrap-api.test.js tests/unit/game/word-tracker.test.js tests/unit/game/word-tracker-persistence.test.js
+rm -f tests/integration/game/bootstrap-narration-flow.test.js
 ```
-
-Find and delete corresponding test files:
-
-```bash
-find tests/ -name '*bootstrap*' -o -name '*word-tracker*' | head -20
-# Then delete them
-```
-
-- [ ] **Step 3: Remove imports of deleted modules**
-
-Search for any remaining imports of the deleted modules:
-
-Run: `grep -rn 'bootstrap-renderer\|bootstrap-parser\|bootstrap-api\|word-tracker\|bootstrap-narrations' src/ server.js`
-
-Remove all references.
 
 - [ ] **Step 4: Run tests**
 
@@ -1353,27 +1657,35 @@ Expected: Tests pass (old bootstrap tests were deleted, no remaining references)
 - [ ] **Step 5: Commit**
 
 ```bash
-git add -A
+git add -u
 git commit -m "chore: remove old bootstrap system code (replaced by new bootstrap/)"
 ```
 
+Note: `git add -u` stages only modifications and deletions of tracked files — it will NOT stage untracked files. This is safer than `git add -A` which would stage everything.
+
 ---
 
-### Task 16: Add word-knowledge files to .gitignore
+### Task 20: Update .gitignore
 
-Ensure per-user word knowledge files aren't committed.
+Ensure per-user word knowledge files aren't committed. Update existing patterns.
 
 **Files:**
 - Modify: `.gitignore`
 
-- [ ] **Step 1: Add pattern to .gitignore**
+- [ ] **Step 1: Read current .gitignore**
+
+Read `.gitignore` to see existing patterns (including `data/word-tracker-*.json` on line ~27).
+
+- [ ] **Step 2: Add/update patterns**
 
 ```
-# Per-user word knowledge (runtime-generated)
+# Per-user word knowledge (runtime-generated, replaces word-tracker)
 data/word-knowledge-*.json
 ```
 
-- [ ] **Step 2: Commit**
+The existing `data/word-tracker-*.json` pattern can be removed once all users have migrated (leave it for now as old files may still exist on disk).
+
+- [ ] **Step 3: Commit**
 
 ```bash
 git add .gitignore
@@ -1382,9 +1694,9 @@ git commit -m "chore: gitignore per-user word knowledge files"
 
 ---
 
-### Task 17: Integration Test — Full Bootstrap Flow
+### Task 21: Integration Tests
 
-Write an integration test that validates the full flow: parse tagged text → check against known words → render correct HTML.
+Write integration tests that validate the full bootstrap flow.
 
 **Files:**
 - Create: `tests/integration/bootstrap-integration.test.js`
@@ -1405,7 +1717,7 @@ import {
 describe('bootstrap integration', () => {
   it('en-first: fully unknown player sees all English', () => {
     const wk = createWordKnowledge('test');
-    const known = getKnownWords(wk);
+    const known = getKnownWords(wk); // Returns Set<string> — see Task 3 implementation
     const html = renderEnFirst(
       '{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 10% of max HP',
       known
@@ -1424,9 +1736,9 @@ describe('bootstrap integration', () => {
       '{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 10% of max HP',
       known
     );
-    assert.ok(html.includes('回復')); // known word swapped
-    assert.ok(html.includes('かいふく')); // furigana
-    assert.ok(html.includes('creatures')); // unknown stays English
+    assert.ok(html.includes('回復'));
+    assert.ok(html.includes('かいふく'));
+    assert.ok(html.includes('creatures'));
   });
 
   it('jp-first: unknown word shows English annotation', () => {
@@ -1448,9 +1760,32 @@ describe('bootstrap integration', () => {
   it('word knowledge lifecycle: seen → reviewed → known', () => {
     const wk = createWordKnowledge('test');
     registerExposure(wk, '森');
-    assert.ok(!isWordKnown(wk, '森')); // seen but not known
+    assert.ok(!isWordKnown(wk, '森'));
     markKnown(wk, '森');
-    assert.ok(isWordKnown(wk, '森')); // known after review
+    assert.ok(isWordKnown(wk, '森'));
+  });
+
+  it('interpolation tokens {0} coexist with tagged words', () => {
+    const known = new Set(['ダメージ']);
+    // Simulate what t() does: interpolate first, then render
+    let str = '{0} deals {1} {damage|ダメージ|}!';
+    str = str.replace('{0}', 'Kamedor').replace('{1}', '28');
+    const html = renderEnFirst(str, known);
+    assert.ok(html.includes('Kamedor'));
+    assert.ok(html.includes('28'));
+    assert.ok(html.includes('ダメージ'));
+    assert.ok(!html.includes('damage'));
+  });
+
+  it('XSS in interpolated args is escaped', () => {
+    const known = new Set();
+    // Simulate t() with escaping (as implemented in Task 13)
+    let str = '{0} deals {1} {damage|ダメージ|}!';
+    const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    str = str.replace('{0}', escHtml('<script>alert(1)</script>')).replace('{1}', escHtml('28'));
+    const html = renderEnFirst(str, known);
+    assert.ok(!html.includes('<script>'));
+    assert.ok(html.includes('&lt;script&gt;'));
   });
 });
 ```
@@ -1458,7 +1793,7 @@ describe('bootstrap integration', () => {
 - [ ] **Step 2: Run the integration test**
 
 Run: `node --test tests/integration/bootstrap-integration.test.js`
-Expected: All 5 tests PASS
+Expected: All 7 tests PASS
 
 - [ ] **Step 3: Commit**
 
@@ -1469,16 +1804,16 @@ git commit -m "test: bootstrap integration tests for full render pipeline"
 
 ---
 
-### Task 18: Final Verification
+### Task 22: Final Verification
 
-Run full test suite and do a syntax check on all modified JS files.
+Run full test suite and syntax check all new/modified JS files.
 
 - [ ] **Step 1: Run full test suite**
 
 Run: `npm test`
 Expected: All tests pass
 
-- [ ] **Step 2: Syntax check all new/modified frontend files**
+- [ ] **Step 2: Syntax check all new frontend files**
 
 ```bash
 node --check public/js/ui/bootstrap-client.js && \
@@ -1488,7 +1823,9 @@ node --check public/js/ui/creature-row.js && \
 node --check public/js/ui/move-select.js && \
 node --check public/js/ui/post-combat-shop.js && \
 node --check public/js/ui/scene.js && \
+node --check public/js/ui/speed-review.js && \
 node --check public/js/ui/exploration.js && \
+node --check public/js/game.js && \
 echo "All OK"
 ```
 Expected: All OK
@@ -1500,6 +1837,8 @@ node --check src/game/bootstrap/parser.js && \
 node --check src/game/bootstrap/renderer.js && \
 node --check src/game/bootstrap/word-knowledge.js && \
 node --check src/game/bootstrap/word-list-parser.js && \
+node --check src/routes/game/known-words.js && \
+node --check src/routes/vocab.js && \
 echo "All OK"
 ```
 Expected: All OK
@@ -1509,9 +1848,11 @@ Expected: All OK
 Run: `npm start &` then `sleep 3 && curl -s -o /dev/null -w "%{http_code}" http://localhost:3000`
 Expected: 200
 
+Kill the background process after verification.
+
 - [ ] **Step 5: Final commit if any cleanup needed**
 
 ```bash
-git add -A && git status
+git status
 # Only commit if there are changes
 ```
