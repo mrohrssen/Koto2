@@ -1007,7 +1007,7 @@ async function initGame() {
   leaderboard.init();
   bugReport.init();
   speedReview.init({
-    sendReview: (vid, sid, grade) => apiSendJpdbReview(vid, sid, grade),
+    sendReview: (vid, sid, grade, wordText) => apiSendJpdbReview(vid, sid, grade, wordText),
     playTTS: (word) => tts.playWord(word),
     prefetchTTS: (word) => tts.prefetchWord(word),
     refreshQueue: async (reviewedWords = []) => {

@@ -15,6 +15,7 @@ import {
 import { addReview } from '../auth/users.js';
 import { requireAuth, optionalAuth, attachUserKeys } from '../auth/middleware.js';
 import { incrementDiscoveryCount, getDiscoveryStatus } from '../word-tracking.js';
+import { loadWordKnowledge, createWordKnowledge, markKnown, registerExposure, saveWordKnowledge } from '../game/bootstrap/word-knowledge.js';
 
 /**
  * Create vocab router
@@ -41,6 +42,20 @@ export default function createVocabRoutes({ getSettings }) {
     try {
       const { getDueWordsWithMeanings } = await import('../jpdb.js');
       const result = await getDueWordsWithMeanings(jpdbApiKey, 1000, [], req.user.id, reviewedWords);
+
+      // Register word exposures in bootstrap system
+      if (result.words && result.words.length > 0) {
+        try {
+          const wk = loadWordKnowledge(req.user.id) || createWordKnowledge(req.user.id);
+          for (const w of result.words) {
+            if (w.word) registerExposure(wk, w.word);
+          }
+          saveWordKnowledge(wk);
+        } catch (e) {
+          console.warn('[vocab/due-words] Failed to record exposures:', e.message);
+        }
+      }
+
       res.json(result);
     } catch (error) {
       console.error('[vocab/due-words] Error:', error);
@@ -67,7 +82,7 @@ export default function createVocabRoutes({ getSettings }) {
 
   // Review vocabulary in JPDB
   router.post('/jpdb/review', requireAuth, attachUserKeys, async (req, res) => {
-    const { vid, sid, grade, isDiscovery } = req.body;
+    const { vid, sid, grade, isDiscovery, wordText } = req.body;
     const jpdbApiKey = req.userKeys?.jpdbApiKey;
 
     if (!jpdbApiKey) {
@@ -98,6 +113,17 @@ export default function createVocabRoutes({ getSettings }) {
 
       // Track review for leaderboard
       addReview(req.user.id);
+
+      // Mark word as known in bootstrap system on successful recall (grade >= 3)
+      if (grade >= 3 && wordText) {
+        try {
+          const wk = loadWordKnowledge(userId) || createWordKnowledge(userId);
+          markKnown(wk, wordText);
+          saveWordKnowledge(wk);
+        } catch (e) {
+          console.warn('[jpdb/review] Failed to mark word as known:', e.message);
+        }
+      }
 
       // If discovery mode, increment counter
       if (isDiscovery) {

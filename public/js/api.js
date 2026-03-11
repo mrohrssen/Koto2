@@ -335,15 +335,16 @@ async function completeWhackAMole(score) {
  * @param {number} vid - Vocabulary ID
  * @param {number} sid - Sense ID
  * @param {number} grade - Review grade (1-5)
+ * @param {string} [wordText] - The Japanese word text (for bootstrap word-knowledge tracking)
  * @param {boolean} isDiscovery - Whether this is a discovery room review
  */
-async function sendJpdbReview(vid, sid, grade, isDiscovery = false) {
+async function sendJpdbReview(vid, sid, grade, wordText = null, isDiscovery = false) {
   console.log('[JPDB Review API] sendJpdbReview called:', { vid, sid, grade, isDiscovery });
   try {
     const response = await fetch('/api/jpdb/review', {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ vid, sid, grade, isDiscovery })
+      body: JSON.stringify({ vid, sid, grade, isDiscovery, wordText })
     });
     const result = await response.json();
     console.log('[JPDB Review API] Response:', result);

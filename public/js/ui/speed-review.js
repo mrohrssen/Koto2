@@ -9,6 +9,7 @@ import { dom } from '../dom.js';
 import { playSFX, playBGMRandomStart, playBGM } from '../audio.js';
 import * as takeover from './takeover.js';
 import { animate as anime } from '../lib/anime.esm.min.js';
+import { setKnownWords } from './bootstrap-client.js';
 
 // Module state
 let state = {
@@ -46,7 +47,7 @@ function flushPendingReview() {
 
   // Send the review and track the promise
   if (word.vid !== undefined && word.sid !== undefined) {
-    const reviewPromise = state.callbacks?.sendReview(word.vid, word.sid, grade);
+    const reviewPromise = state.callbacks?.sendReview(word.vid, word.sid, grade, word.word);
     if (reviewPromise && reviewPromise.then) {
       state.reviewPromises.push(reviewPromise);
       // Clean up completed promises
@@ -601,6 +602,20 @@ async function handleExit() {
 
   for (const slot of dom.speedReviewSlots) {
     slot.innerHTML = '';
+  }
+
+  // Refresh known words so bootstrap rendering reflects newly learned words
+  try {
+    const token = localStorage.getItem('authToken');
+    const resp = await fetch('/api/game/known-words', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      setKnownWords(data.words);
+    }
+  } catch (e) {
+    // Non-fatal
   }
 
   // Close handled by takeover.js click listener
