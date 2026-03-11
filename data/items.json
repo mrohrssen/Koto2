@@ -32,6 +32,7 @@
       "healAllPercent": 0.1
     },
     "description": "Heal all creatures for 10% of max HP",
+    "descriptionTagged": "{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 10% of max HP",
     "descriptionJa": "全クリーチャーのHPを10%回復",
     "stage": 6
   },
@@ -72,6 +73,7 @@
       "value": 0.02
     },
     "description": "Increase one creature's attack by 2%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} {attack|攻撃|こうげき} by 2%",
     "descriptionJa": "クリーチャー1体の攻撃力を2%アップ",
     "stage": 5
   },
@@ -108,6 +110,7 @@
       "healMostDamaged": true
     },
     "description": "Heal the most damaged creature to full HP",
+    "descriptionTagged": "{Heal|回復|かいふく} the most {damaged|ダメージ|} {creature|生き物|いきもの} to full HP",
     "descriptionJa": "最もダメージを受けたクリーチャーを全回復",
     "stage": 6
   },
@@ -145,6 +148,7 @@
       "chargeBoost": 2
     },
     "description": "Grant +2 charge to one creature",
+    "descriptionTagged": "Grant +2 charge to one {creature|生き物|いきもの}",
     "descriptionJa": "クリーチャー1体のチャージを2増加",
     "stage": 6
   },
@@ -172,6 +176,7 @@
       "value": 0.03
     },
     "description": "Increase one creature's attack by 3%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} {attack|攻撃|こうげき} by 3%",
     "descriptionJa": "クリーチャー1体の攻撃力を3%アップ",
     "stage": 8
   },
@@ -209,6 +214,7 @@
       "revivePercent": 0.5
     },
     "description": "Revive a fallen creature at 50% HP",
+    "descriptionTagged": "Revive a fallen {creature|生き物|いきもの} at 50% HP",
     "descriptionJa": "倒れたクリーチャーをHP50%で復活",
     "stage": 9
   },
@@ -253,6 +259,7 @@
       }
     },
     "description": "Boost all creatures' attack by 3 for 5 turns",
+    "descriptionTagged": "Boost all {creatures'|生き物|いきもの} {attack|攻撃|こうげき} by 3 for 5 {turns|ターン|}",
     "descriptionJa": "全クリーチャーの攻撃力を5ターン+3",
     "stage": 6
   },
@@ -288,6 +295,7 @@
       "chargeBoost": 1
     },
     "description": "Heal all creatures for 15% HP and grant +1 charge",
+    "descriptionTagged": "{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 15% HP and grant +1 charge",
     "descriptionJa": "全クリーチャーのHPを15%回復し、チャージを1増加",
     "stage": 10
   },
@@ -323,6 +331,7 @@
       "revivePercent": 1
     },
     "description": "Revive a fallen creature at full HP",
+    "descriptionTagged": "Revive a fallen {creature|生き物|いきもの} at full HP",
     "descriptionJa": "倒れたクリーチャーをHP全快で復活",
     "stage": 6
   },
@@ -364,6 +373,7 @@
       }
     },
     "description": "Boost all creatures' attack by 5 for 5 turns",
+    "descriptionTagged": "Boost all {creatures'|生き物|いきもの} {attack|攻撃|こうげき} by 5 for 5 {turns|ターン|}",
     "descriptionJa": "全クリーチャーの攻撃力を5ターン+5",
     "stage": 10
   },
@@ -405,6 +415,7 @@
       "chargeBoost": 2
     },
     "description": "Grant +2 charge to one creature",
+    "descriptionTagged": "Grant +2 charge to one {creature|生き物|いきもの}",
     "descriptionJa": "クリーチャー1体のチャージを2増加",
     "stage": 8
   },
@@ -431,6 +442,7 @@
       "healPercent": 0.2
     },
     "description": "Heal one creature for 20% of max HP",
+    "descriptionTagged": "{Heal|回復|かいふく} one {creature|生き物|いきもの} for 20% of max HP",
     "descriptionJa": "クリーチャー1体のHPを20%回復",
     "stage": 3
   },
@@ -458,6 +470,7 @@
       "healPercent": 0.2
     },
     "description": "Heal one creature for 20% of max HP",
+    "descriptionTagged": "{Heal|回復|かいふく} one {creature|生き物|いきもの} for 20% of max HP",
     "descriptionJa": "クリーチャー1体のHPを20%回復",
     "stage": 3
   },
@@ -485,6 +498,7 @@
       "value": 0.02
     },
     "description": "Increase one creature's attack by 2%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} {attack|攻撃|こうげき} by 2%",
     "descriptionJa": "クリーチャー1体の攻撃力を2%アップ",
     "stage": 1
   },
@@ -514,6 +528,7 @@
       "healAllPercent": 0.1
     },
     "description": "Heal all creatures for 10% of max HP",
+    "descriptionTagged": "{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 10% of max HP",
     "descriptionJa": "全クリーチャーのHPを10%回復",
     "stage": 6
   },
@@ -540,6 +555,7 @@
       "healAllPercent": 0.15
     },
     "description": "Heal all creatures for 15% of max HP",
+    "descriptionTagged": "{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 15% of max HP",
     "descriptionJa": "全クリーチャーのHPを15%回復",
     "stage": 5
   },
@@ -566,6 +582,7 @@
       "healAllPercent": 0.15
     },
     "description": "Heal all creatures for 15% of max HP",
+    "descriptionTagged": "{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 15% of max HP",
     "descriptionJa": "全クリーチャーのHPを15%回復",
     "stage": 3
   },
@@ -605,6 +622,7 @@
       "healAllPercent": 0.1
     },
     "description": "Heal all creatures for 10% of max HP",
+    "descriptionTagged": "{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 10% of max HP",
     "descriptionJa": "全クリーチャーのHPを10%回復",
     "stage": 7
   },
@@ -632,6 +650,7 @@
       "healAllPercent": 0.1
     },
     "description": "Heal all creatures for 10% of max HP",
+    "descriptionTagged": "{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 10% of max HP",
     "descriptionJa": "全クリーチャーのHPを10%回復",
     "stage": 6
   },
@@ -659,6 +678,7 @@
       "value": 0.02
     },
     "description": "Increase one creature's attack by 2%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} {attack|攻撃|こうげき} by 2%",
     "descriptionJa": "クリーチャー1体の攻撃力を2%アップ",
     "stage": 6
   },
@@ -685,6 +705,7 @@
       "healMostDamaged": true
     },
     "description": "Heal the most damaged creature to full HP",
+    "descriptionTagged": "{Heal|回復|かいふく} the most {damaged|ダメージ|} {creature|生き物|いきもの} to full HP",
     "descriptionJa": "最もダメージを受けたクリーチャーを全回復",
     "stage": 7
   },
@@ -711,6 +732,7 @@
       "chargeBoost": 2
     },
     "description": "Grant +2 charge to one creature",
+    "descriptionTagged": "Grant +2 charge to one {creature|生き物|いきもの}",
     "descriptionJa": "クリーチャー1体のチャージを2増加",
     "stage": 7
   },
@@ -737,6 +759,7 @@
       "revivePercent": 0.5
     },
     "description": "Revive a fallen creature at 50% HP",
+    "descriptionTagged": "Revive a fallen {creature|生き物|いきもの} at 50% HP",
     "descriptionJa": "倒れたクリーチャーをHP50%で復活",
     "stage": 6
   },
@@ -771,6 +794,7 @@
       "revivePercent": 1
     },
     "description": "Revive a fallen creature at full HP",
+    "descriptionTagged": "Revive a fallen {creature|生き物|いきもの} at full HP",
     "descriptionJa": "倒れたクリーチャーをHP全快で復活",
     "stage": 10
   },
@@ -802,6 +826,7 @@
       }
     },
     "description": "Boost all creatures' attack by 5 for 5 turns",
+    "descriptionTagged": "Boost all {creatures'|生き物|いきもの} {attack|攻撃|こうげき} by 5 for 5 {turns|ターン|}",
     "descriptionJa": "全クリーチャーの攻撃力を5ターン+5",
     "stage": 10
   },
@@ -837,6 +862,7 @@
       "value": 0.25
     },
     "description": "Amplify battle XP by 25% (stacks multiplicatively)",
+    "descriptionTagged": "Amplify battle XP by 25% (stacks multiplicatively)",
     "descriptionJa": "戦闘経験値を25%増幅（重複可）",
     "stage": 6
   },
@@ -866,6 +892,7 @@
       "value": 1
     },
     "description": "Redistribute XP toward lower-leveled creatures",
+    "descriptionTagged": "Redistribute XP toward lower-leveled {creatures|生き物|いきもの}",
     "descriptionJa": "経験値を低レベルの仲間に再分配する",
     "stage": 9
   },
@@ -896,6 +923,7 @@
       "value": 0.05
     },
     "description": "Increase one creature's attack by 5%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} {attack|攻撃|こうげき} by 5%",
     "descriptionJa": "クリーチャー1体の攻撃力を5%アップ"
   },
   {
@@ -922,6 +950,7 @@
       "value": 0.02
     },
     "description": "Increase one creature's attack by 2%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} {attack|攻撃|こうげき} by 2%",
     "descriptionJa": "クリーチャー1体の攻撃力を2%アップ"
   },
   {
@@ -958,6 +987,7 @@
       "value": 0.05
     },
     "description": "Increase one creature's HP by 5%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} HP by 5%",
     "descriptionJa": "クリーチャー1体のHPを5%アップ"
   },
   {
@@ -992,6 +1022,7 @@
       "value": 0.03
     },
     "description": "Increase one creature's attack by 3%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} {attack|攻撃|こうげき} by 3%",
     "descriptionJa": "クリーチャー1体の攻撃力を3%アップ"
   },
   {
@@ -1029,6 +1060,7 @@
       "value": 0.03
     },
     "description": "Increase one creature's MP by 3%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} MP by 3%",
     "descriptionJa": "クリーチャー1体のMPを3%アップ"
   },
   {
@@ -1075,6 +1107,7 @@
       "value": 0.03
     },
     "description": "Increase one creature's HP by 3%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} HP by 3%",
     "descriptionJa": "クリーチャー1体のHPを3%アップ"
   }
 ]
