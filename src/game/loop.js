@@ -224,8 +224,6 @@ export class GameManager {
         totalEncounters: this.run.totalEncounters || 0,
         active: this.run.active,
         stats: this.run.stats,
-        pendingBranch: this.run.pendingBranch,
-        selectedRooms: this.run.selectedRooms,
         rooms: this.run.rooms,
         runStats: this.run.runStats,
         creatureParty: this.run.creatureParty,
@@ -358,14 +356,6 @@ export class GameManager {
    */
   proceedToNextRoom(forceRoomType = null) {
     return this.explorationService.proceedToNextRoom(forceRoomType);
-  }
-
-  /**
-   * Select a branch door in a branching room
-   * @param {number} doorIndex - Index of door to select (0 or 1)
-   */
-  selectBranch(doorIndex, forceRoomType = null) {
-    return this.explorationService.selectBranch(doorIndex, forceRoomType);
   }
 
   // ============ POST-COMBAT SHOP ============

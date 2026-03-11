@@ -123,7 +123,6 @@ import {
   queueTTSPrefetch
 } from './src/game/prefetch.js';
 import { enforceVocabLimit, checkSentenceViolations } from './src/game/vocab-repair.js';
-import { generateDoorHints as _generateDoorHints } from './src/game/services/door-hint-service.js';
 import {
   getDialogueFromCache as getNpcDialogueFromCache,
   getAllDialogueCache as getAllNpcDialogueCache,
@@ -378,7 +377,6 @@ app.use('/api', createRoutes({
   ttsDialogueCache,
   enrichGameState,
   generateGameNarration,
-  generateDoorHints: generateDoorHintsForRoute,
   cancelPendingPrefetches,
   clearPrefetchCache,
   updateGameStatsWithEvent,
@@ -587,10 +585,6 @@ async function generateGameNarration(event, context, userKeys = {}) {
   trackNarrationStats(narration, jpdbApiKey, userId);
 
   return narration;
-}
-
-function generateDoorHintsForRoute(roomType1, roomType2) {
-  return _generateDoorHints(roomType1, roomType2);
 }
 
 // ============ Theme Pool Submit ============

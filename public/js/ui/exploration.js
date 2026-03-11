@@ -30,9 +30,6 @@ import { speakNarration, prefetchNarration } from '../tts.js';
 import { creatureBgUrl, configureCreatureImg } from './sprite-utils.js';
 import { t, isJapanified } from './i18n.js';
 
-const PATH_LEFT_SVG = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:4px"><path d="M10 18 C10 14 10 12 10 10 C10 8 8 6 4 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><circle cx="10" cy="18" r="1.5" fill="currentColor"/><path d="M10 18 C10 14 10 12 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.3"/></svg>`;
-const PATH_RIGHT_SVG = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:4px"><path d="M10 18 C10 14 10 12 10 10 C10 8 12 6 16 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><circle cx="10" cy="18" r="1.5" fill="currentColor"/><path d="M10 18 C10 14 10 12 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.3"/></svg>`;
-
 let getGameState = null;
 let updateGameState = null;
 let updateUI = null;
@@ -44,33 +41,6 @@ let returnToHub = null;
 
 // Module-level guard to prevent multiple shrine clicks across re-renders
 let shrineInProgress = false;
-
-// Request counter to invalidate stale renderBranchSelection invocations
-let branchSelectionRequestId = 0;
-
-// Chippy's natural transition phrases for left/right door hints (20 pairs)
-const DOOR_INTROS = [
-  { left: '左の道だけど…', right: 'で、右の道は…' },
-  { left: '左の方はね…', right: '右の方はね…' },
-  { left: 'まず左の道から。', right: 'それから右の道。' },
-  { left: '左の道からいくよ。', right: '次、右の道。' },
-  { left: '左側の道…', right: 'そして右側は…' },
-  { left: 'えっとね、左の道は…', right: 'んで、右の道は…' },
-  { left: '左の道の奥から…', right: '右の道の奥からは…' },
-  { left: '左から感じるのは…', right: '右から感じるのは…' },
-  { left: '左の道、ちょっと気になる。', right: '右の道も見てみると…' },
-  { left: 'こっちの左の道はね…', right: 'あっちの右の道は…' },
-  { left: '左の道に近づくと…', right: '右の道に近づくと…' },
-  { left: 'まずは左！', right: 'そして右！' },
-  { left: '左の方、嗅いでみると…', right: '右の方、嗅いでみると…' },
-  { left: '左の方に耳を当てると…', right: '右の方に耳を当てると…' },
-  { left: '左の道に触れてみた。', right: '右の道にも触れてみた。' },
-  { left: 'ねえ、左の道なんだけど…', right: 'で、右の道はっていうと…' },
-  { left: '左の気配は…', right: '右の気配は…' },
-  { left: '左の道、覗いてみたよ。', right: '右の道も覗いてみた。' },
-  { left: 'うーん、左はね…', right: 'うーん、右はね…' },
-  { left: '左の道の向こうは…', right: '右の道の向こうは…' },
-];
 
 // Module-level state for word discovery (persists across gameState updates)
 // This prevents infinite narration loops when updateGameState() replaces room object
@@ -101,10 +71,6 @@ let apiGetDiscoveryStatus = null;
 let apiCompleteDiscovery = null;
 let apiSwipeWord = null;
 let apiPostCombatRefresh = null;
-
-// Branch selection API
-let apiSelectBranch = null;
-let apiDoorHints = null;
 
 // Whack-a-Mole API
 let apiGetWhackAMolePool = null;
@@ -139,8 +105,6 @@ export function init(callbacks) {
   apiCompleteDiscovery = callbacks.apiCompleteDiscovery;
   apiSwipeWord = callbacks.apiSwipeWord;
   apiPostCombatRefresh = callbacks.apiPostCombatRefresh;
-  apiSelectBranch = callbacks.apiSelectBranch;
-  apiDoorHints = callbacks.apiDoorHints;
   apiGetDueWords = callbacks.apiGetDueWords;
   apiGetCreatureCollection = callbacks.apiGetCreatureCollection;
   showCollectionSelect = callbacks.showCollectionSelect;
@@ -395,113 +359,6 @@ export function renderExploring() {
   });
   document.getElementById('proceed-btn')?.addEventListener('click', async () => {
     const result = await apiProceed();
-    if (result?.state) {
-      updateGameState(result.state);
-      updateUI();
-    }
-  });
-}
-
-/** Branch selection phase - Chippy senses what's behind each door */
-export async function renderBranchSelection() {
-  const myRequestId = ++branchSelectionRequestId;
-  const gameState = getGameState();
-  const currentRoomIndex = gameState.run?.currentRoom;
-  const pair = gameState.run?.rooms?.[currentRoomIndex];
-
-  // Helper: returns true if this invocation has been superseded
-  const isStale = () =>
-    myRequestId !== branchSelectionRequestId ||
-    getGameState().phase !== 'branch_selection';
-
-  if (!Array.isArray(pair) || pair.length !== 2) {
-    console.error('[BranchSelection] Invalid room pair');
-    return;
-  }
-
-  // Show Chippy sprite and two-door background
-  sceneModule.showChippy();
-  const areaBg = gameState.run?.background;
-  sceneModule.setBackground(areaBg ? `/assets/backgrounds/${areaBg}` : '/assets/backgrounds/branch_doors.webp');
-
-  // Show greyed-out door buttons while Chippy narrates
-  actions.setContent(`
-    <button class="action-btn action-btn-secondary branch-option disabled" data-door="0" disabled>${PATH_LEFT_SVG} 左の道</button>
-    <button class="action-btn action-btn-secondary branch-option disabled" data-door="1" disabled>${PATH_RIGHT_SVG} 右の道</button>
-    <button class="action-btn action-btn-primary" id="branch-proceed-btn" disabled>進む</button>
-  `);
-
-  // Fetch AI-remixed door hints from backend
-  let door1Hint = '何かを感じる...';
-  let door2Hint = '何かを感じる...';
-
-  try {
-    const result = await apiDoorHints();
-    if (isStale()) return;
-    if (result?.hints) {
-      door1Hint = result.hints.door1;
-      door2Hint = result.hints.door2;
-    }
-  } catch (e) {
-    console.warn('[BranchSelection] Failed to fetch door hints:', e);
-  }
-
-  if (isStale()) return;
-
-  // Prepend natural left/right transition phrase so player knows which door Chippy means
-  const intro = DOOR_INTROS[Math.floor(Math.random() * DOOR_INTROS.length)];
-  door1Hint = intro.left + door1Hint;
-  door2Hint = intro.right + door2Hint;
-
-  // Show door 1 hint with Chippy as speaker, auto-play TTS
-  // Prefetch door 2 audio while user reads door 1
-  prefetchNarration(door2Hint);
-  speakNarration(door1Hint);
-  await sceneModule.showNarration(door1Hint, { speaker: 'チッピー' });
-  if (isStale()) return;
-
-  // Show door 2 hint with Chippy as speaker, auto-play TTS (already prefetched)
-  speakNarration(door2Hint);
-  await sceneModule.showNarration(door2Hint, { speaker: 'チッピー' });
-  if (isStale()) return;
-
-  // Now show the door selection UI
-  let selectedDoor = null;
-
-  actions.setContent(`
-    <button class="action-btn action-btn-secondary branch-option" data-door="0">${PATH_LEFT_SVG} 左の道</button>
-    <button class="action-btn action-btn-secondary branch-option" data-door="1">${PATH_RIGHT_SVG} 右の道</button>
-    <button class="action-btn action-btn-primary" id="branch-proceed-btn" disabled>進む</button>
-  `);
-
-  // Allow re-reading hints by clicking doors before confirming
-  document.querySelectorAll('.branch-option').forEach(el => {
-    el.addEventListener('click', () => {
-      if (isStale()) return;
-      document.querySelectorAll('.branch-option').forEach(o => o.classList.remove('selected'));
-      el.classList.add('selected');
-      selectedDoor = parseInt(el.dataset.door, 10);
-      const btn = document.getElementById('branch-proceed-btn');
-      if (btn) btn.disabled = false;
-
-      // Re-show the hint for the clicked door
-      const hint = selectedDoor === 0 ? door1Hint : door2Hint;
-      speakNarration(hint);
-      sceneModule.showNarration(hint, { speaker: 'チッピー', persistent: true });
-    });
-  });
-
-  document.getElementById('branch-proceed-btn')?.addEventListener('click', async () => {
-    if (selectedDoor === null) return;
-
-    // Invalidate stale branch selection callbacks
-    branchSelectionRequestId++;
-
-    // Hide persistent narration and Chippy
-    if (sceneModule.forceHideNarration) sceneModule.forceHideNarration();
-    sceneModule.hideChippy();
-
-    const result = await apiSelectBranch(selectedDoor);
     if (result?.state) {
       updateGameState(result.state);
       updateUI();

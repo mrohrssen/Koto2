@@ -116,8 +116,6 @@ export class ExplorationService {
     this.gm.run.rooms = generateAreaRooms(areaId, this.gm.run.encountersNeeded, null, false, forceRoomType);
     this.gm.run.currentRoom = 0;
     this.gm.run.roomsExplored = 0;
-    this.gm.run.pendingBranch = false;
-    this.gm.run.selectedRooms = [];
 
     // Set background: sub-area-specific if available, otherwise random
     const firstRoom = this.gm.run.rooms[0];
@@ -205,32 +203,6 @@ export class ExplorationService {
 
     const nextRoom = this.gm.run.rooms[this.gm.run.currentRoom];
 
-    // Check if next room is a branch pair
-    if (Array.isArray(nextRoom)) {
-      if (forceRoomType && ROOM_TYPES[forceRoomType]) {
-        const areaId = this.gm.run.currentArea?.id || 'unknown';
-        for (let i = 0; i < nextRoom.length; i++) {
-          if (nextRoom[i].type !== forceRoomType) {
-            const subArea = nextRoom[i].subArea;
-            nextRoom[i] = createRoom(forceRoomType, areaId, nextRoom[i].roomNumber, nextRoom[i].totalRooms);
-            if (subArea) nextRoom[i].subArea = subArea;
-          }
-        }
-      }
-      this.gm.run.pendingBranch = true;
-      this.gm.emitState();
-
-      logger.info('[Exploration] Branch point reached:', { roomIndex: this.gm.run.currentRoom });
-
-      return {
-        isBranch: true,
-        options: [
-          { door: 0, type: nextRoom[0].type, room: nextRoom[0] },
-          { door: 1, type: nextRoom[1].type, room: nextRoom[1] }
-        ]
-      };
-    }
-
     // Single room - override type if forceRoomType is set
     if (forceRoomType && ROOM_TYPES[forceRoomType] && nextRoom.type !== forceRoomType) {
       const areaId = this.gm.run.currentArea?.id || 'unknown';
@@ -266,76 +238,6 @@ export class ExplorationService {
       roomNumber: this.gm.run.currentRoom + 1,
       totalRooms: this.gm.run.rooms.length,
       actions: getRoomActions(room),
-      narration
-    };
-  }
-
-  /**
-   * Select a door at a branch point
-   * @param {number} doorIndex - 0 for door 1, 1 for door 2
-   */
-  selectBranch(doorIndex, forceRoomType = null) {
-    if (!this.gm.run || !this.gm.run.active) {
-      throw new Error('No active run');
-    }
-
-    if (!this.gm.run.pendingBranch) {
-      throw new Error('No branch selection pending');
-    }
-
-    const pair = this.gm.run.rooms[this.gm.run.currentRoom];
-    if (!Array.isArray(pair) || pair.length !== 2) {
-      throw new Error('Current room is not a branch pair');
-    }
-
-    if (doorIndex !== 0 && doorIndex !== 1) {
-      throw new Error('Invalid door index');
-    }
-
-    let selectedRoom = pair[doorIndex];
-
-    if (forceRoomType && ROOM_TYPES[forceRoomType] && selectedRoom.type !== forceRoomType) {
-      const areaId = this.gm.run.currentArea?.id || 'unknown';
-      const subArea = selectedRoom.subArea;
-      selectedRoom = createRoom(forceRoomType, areaId, selectedRoom.roomNumber, selectedRoom.totalRooms);
-      if (subArea) selectedRoom.subArea = subArea;
-    }
-
-    // Replace pair with selected room
-    this.gm.run.rooms[this.gm.run.currentRoom] = selectedRoom;
-
-    // Track the choice
-    this.gm.run.selectedRooms.push(doorIndex);
-
-    // Mark as explored
-    selectedRoom.explored = true;
-    this.gm.run.roomsExplored++;
-    this.gm.run.stats.roomsExplored++;
-
-    // Track room clears
-    if (this.gm.run.runStats) {
-      this.gm.run.runStats.roomsCleared++;
-    }
-
-    // Vary background per room — sub-area-specific if available
-    const areaId = this.gm.run.currentArea?.id || 'okunomori';
-    this.gm.run.background = getBackgroundForRoom(selectedRoom, areaId);
-
-    // Clear pending branch
-    this.gm.run.pendingBranch = false;
-
-    // Get narration for new room
-    const narration = getRoomEntryNarration(selectedRoom);
-    this.gm.narrate(narration);
-    this.gm.emitState();
-
-    logger.info('[Exploration] Branch selected:', { door: doorIndex, roomType: selectedRoom.type });
-
-    return {
-      room: selectedRoom,
-      roomNumber: this.gm.run.currentRoom + 1,
-      totalRooms: this.gm.run.rooms.length,
-      actions: getRoomActions(selectedRoom),
       narration
     };
   }

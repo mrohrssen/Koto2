@@ -55,7 +55,6 @@ export function getTrackForPhase(phase) {
     quiz: 'event',
     wordDiscovery: 'event',
     ward_selection: 'exploration',
-    branch_selection: 'exploration',
     combat: 'combat',
     victory: 'victory',
     post_combat_shop: 'victory',

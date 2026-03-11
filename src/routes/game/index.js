@@ -60,7 +60,6 @@ export default function createGameRoutes(deps) {
   // Mount run routes
   router.use(createRunRoutes({
     generateGameNarration: deps.generateGameNarration,
-    generateDoorHints: deps.generateDoorHints,
     cancelPendingPrefetches: deps.cancelPendingPrefetches,
     clearPrefetchCache: deps.clearPrefetchCache,
     queueMissingCreatureDialoguesFn: deps.queueMissingCreatureDialoguesFn,

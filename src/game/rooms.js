@@ -162,24 +162,7 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
 }
 
 /**
- * Generate a pair of rooms for a branch choice
- */
-function generateBranchPair(areaId, roomNumber, totalRooms, excludeSpecialType = null, encountersOnly = false, forceRoomType = null) {
-  const room1 = generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType, encountersOnly, forceRoomType);
-
-  let room2ExcludeType = excludeSpecialType;
-  if (isSpecialType(room1.type)) {
-    room2ExcludeType = room1.type;
-  }
-
-  const room2 = generateSingleRoom(areaId, roomNumber, totalRooms, room2ExcludeType, encountersOnly, forceRoomType);
-
-  return [room1, room2];
-}
-
-/**
- * Generate rooms for an area with branching
- * Structure: single first room + branch pairs (no boss)
+ * Generate rooms for an area (single rooms only, no branching)
  */
 export function generateAreaRooms(areaId, roomCount = 10, lastSpecialType = null, encountersOnly = false, forceRoomType = null) {
   const rooms = [];
@@ -191,21 +174,10 @@ export function generateAreaRooms(areaId, roomCount = 10, lastSpecialType = null
   const subAreas = area?.subAreas || [];
 
   for (let i = 0; i < roomCount; i++) {
-    const roomNumber = i + 1;
-
-    if (i === 0) {
-      const room = generateSingleRoom(areaId, roomNumber, totalSlots, prevSpecialType, !forceRoomType, forceRoomType);
-      if (subAreas.length > 0) room.subArea = subAreas[i % subAreas.length];
-      rooms.push(room);
-    } else {
-      const pair = generateBranchPair(areaId, roomNumber, totalSlots, prevSpecialType, encountersOnly, forceRoomType);
-      if (subAreas.length > 0) {
-        const sa = subAreas[i % subAreas.length];
-        pair[0].subArea = sa;
-        pair[1].subArea = sa;
-      }
-      rooms.push(pair);
-    }
+    const room = generateSingleRoom(areaId, i + 1, totalSlots, prevSpecialType, encountersOnly, forceRoomType);
+    if (room.type !== 'encounter') prevSpecialType = room.type;
+    if (subAreas.length > 0) room.subArea = subAreas[i % subAreas.length];
+    rooms.push(room);
   }
 
   return rooms;

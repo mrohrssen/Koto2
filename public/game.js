@@ -123,8 +123,6 @@ import {
   getDiscoveryWords as apiGetDiscoveryWords,
   getDiscoveryStatus as apiGetDiscoveryStatus,
   completeDiscovery as apiCompleteDiscovery,
-  selectBranch as apiSelectBranch,
-  doorHints as apiDoorHints,
   parseJpdbText,
   lookupJpdbWord,
   lookupJpdbBatch,
@@ -352,10 +350,6 @@ function updateGameContent() {
       break;
     case 'whackAMole':
       explorationUI.renderWhackAMole();
-      break;
-    case 'branch_selection':
-      console.log('[DEBUG] branch_selection phase. pendingBranch:', gameState.run?.pendingBranch, 'currentRoom:', gameState.run?.currentRoom, 'rooms:', gameState.run?.rooms);
-      explorationUI.renderBranchSelection();
       break;
     case 'combat':
       // Clear stale buttons; flash card will be rendered by combat-loop
@@ -1167,8 +1161,6 @@ async function initGame() {
     apiGetDiscoveryWords,
     apiGetDiscoveryStatus,
     apiCompleteDiscovery,
-    apiSelectBranch,
-    apiDoorHints,
     apiSwipeWord: (vid, sid, grade, isDiscovery) => apiSendJpdbReview(vid, sid, grade, isDiscovery),
     apiPostCombatRefresh: (words) => fetch('/api/game/post-combat-refresh', {
       method: 'POST',

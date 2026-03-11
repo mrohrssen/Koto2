@@ -30,8 +30,6 @@ export const PHASES = {
   WORD_DISCOVERY: 'wordDiscovery',
   DEALER: 'dealer',
   WHACK_A_MOLE: 'whackAMole',
-  BRANCH_SELECTION: 'branch_selection',
-
   COMBAT: 'combat',
   VICTORY: 'victory',
   DEFEAT: 'defeat',
@@ -144,7 +142,10 @@ export function derivePhase(state) {
   if (!run.active) return PHASES.RUN_ENDED;
 
   if (run.areaSelectionRequired) return PHASES.AREA_SELECTION;
-  if (run.pendingBranch) return PHASES.BRANCH_SELECTION;
+  if (run.pendingBranch) {
+    // Migration: auto-select first door for saves created before door removal.
+    run.pendingBranch = false;
+  }
   if (combat?.active) return PHASES.COMBAT;
   if (run.npcDialogue?.active) return PHASES.NPC_DIALOGUE;
   if (run.postCombatShop?.active) return PHASES.POST_COMBAT_SHOP;

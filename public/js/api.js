@@ -229,18 +229,6 @@ async function roomEncounter() {
   return apiCall('/room-encounter', 'POST');
 }
 
-/** Select a branch door at a branching room
- * @param {string} door - Door identifier ('left' or 'right')
- */
-async function selectBranch(door) {
-  return apiCall('/select-branch', 'POST', { door, forceRoomType: getForceRoomType() });
-}
-
-/** Fetch Chippy's door hints for current branch point */
-async function doorHints() {
-  return apiCall('/door-hints', 'POST');
-}
-
 /** Upgrade creature at shrine */
 async function shrineUpgrade(creatureId) {
   return apiCall('/shrine-upgrade', 'POST', { creatureId });
@@ -556,8 +544,6 @@ export {
   // Room exploration endpoints
   proceed,
   roomEncounter,
-  selectBranch,
-  doorHints,
   shrineUpgrade,
   quizReward,
   getQuizQuestion,

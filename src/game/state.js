@@ -146,10 +146,6 @@ export function createNewRun(player) {
     currentRoom: 0,
     roomsExplored: 0,
 
-    // Branching room selection
-    pendingBranch: false,
-    selectedRooms: [],
-
     // Current area progress
     currentAreaEncounters: 0,
     encountersNeeded: 0,

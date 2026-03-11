@@ -51,7 +51,6 @@ export default function createRoutes(deps) {
   router.use('/game', createGameRoutes({
     enrichGameState: deps.enrichGameState,
     generateGameNarration: deps.generateGameNarration,
-    generateDoorHints: deps.generateDoorHints,
     cancelPendingPrefetches: deps.cancelPendingPrefetches,
     clearPrefetchCache: deps.clearPrefetchCache,
     updateGameStatsWithEvent: deps.updateGameStatsWithEvent,
