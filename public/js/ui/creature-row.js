@@ -18,6 +18,7 @@
 
 import { dom } from '../dom.js';
 import { configureCreatureImg, creatureStaticPath } from './sprite-utils.js';
+import { renderJpFirst } from './bootstrap-client.js';
 
 function rarityStars(rarity) {
   const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity];
@@ -87,6 +88,12 @@ export function render(creatures) {
       const xpNeeded = Math.pow(creature.level + 1, 3) - Math.pow(creature.level, 3);
       const xpPct = Math.min(100, (creature.xp / xpNeeded) * 100);
 
+      const subtitle = creature.modifier
+        ? renderJpFirst(creature.modifier.word, creature.modifier.reading, creature.modifier.meaning)
+          + 'の'
+          + renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning)
+        : renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning);
+
       slot.innerHTML = `
         <div class="creature-icon${isKO ? ' ko' : ''}"
              style="border-color: ${ELEMENT_COLORS[creature.element]}">
@@ -94,6 +101,7 @@ export function render(creatures) {
           <span class="creature-element-icon" style="display:none">${ELEMENT_ICONS[creature.element]}</span>
           <span class="creature-level-badge">Lv${creature.level}</span>
           <span class="creature-slot-name">${creature.nameEn}</span>
+          <span class="creature-subtitle">${subtitle}</span>
         </div>
         <div class="creature-hp-bar">
           <div class="creature-hp-fill" style="width: ${hpPct}%; background-color: ${hpColor}"></div>
@@ -151,8 +159,15 @@ function showPopup(index, creature) {
 
   const archetypeLabel = creature.archetype || 'Fighter';
 
+  const popupSubtitle = creature.modifier
+    ? renderJpFirst(creature.modifier.word, creature.modifier.reading, creature.modifier.meaning)
+      + 'の'
+      + renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning)
+    : renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning);
+
   dom.creaturePopup.innerHTML = `
     <div class="creature-popup-name">${creature.name} (${creature.nameEn}) ${rarityStars(creature.rarity)}</div>
+    <div class="creature-popup-subtitle">${popupSubtitle}</div>
     <div class="creature-popup-element">${ELEMENT_ICONS[creature.element]} ${creature.element}</div>
     <div class="creature-popup-archetype">${archetypeLabel}</div>
     <div class="creature-popup-stats">
