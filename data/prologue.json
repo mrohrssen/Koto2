@@ -1,37 +1,37 @@
 [
   {
     "id": "prologue-01-opening",
-    "speaker": null,
+    "speaker": "Cid",
     "narration": "A {mysterious|不思議|ふしぎ} {light|光|ひかり} fills the {sky|空|そら}. Countless {star|星|ほし} trails spiral down across the horizon — not falling, but dancing. Something {new|新しい|あたらしい} is about to begin."
   },
   {
     "id": "prologue-02-world",
-    "speaker": null,
+    "speaker": "Cid",
     "narration": "Welcome to a {world|世界|せかい} alive with wonder! Every {mountain|山|やま} here touches the sky. Every deep {forest|森|もり} hums with {secret|秘密|ひみつ} life. The {wind|風|かぜ} carries tale after tale from beyond your wildest {dream|夢|ゆめ}."
   },
   {
     "id": "prologue-03-creatures",
-    "speaker": null,
+    "speaker": "Cid",
     "narration": "And in this {world|世界|せかい} — creatures! Hundreds of them! {Big|大きい|おおきい} ones that tower over the treetops. {Small|小さい|ちいさい} ones that nap in {flower|花|はな} petals. Every single one has a {name|名前|なまえ}, a personality, and a {story|物語|ものがたり} waiting to be told."
   },
   {
     "id": "prologue-04-partnership",
-    "speaker": null,
+    "speaker": "Cid",
     "narration": "Here, creatures aren't pets — they're partners. Every {person|人|ひと} in this {world|世界|せかい} has a creature by their side. They explore together. They {protect|守る|まもる} each other. A creature isn't something you own — it's a {friend|友達|ともだち}."
   },
   {
     "id": "prologue-05-disruption",
-    "speaker": null,
+    "speaker": "Cid",
     "narration": "But lately... something is wrong. A {mysterious|不思議|ふしぎ} disruption is spreading across the land. Creatures that were once {gentle|優しい|やさしい} and peaceful have become confused and wild. The {wind|風|かぜ} itself feels uneasy."
   },
   {
     "id": "prologue-06-you-arrive",
-    "speaker": null,
+    "speaker": "Cid",
     "narration": "This is where YOUR {story|物語|ものがたり} begins. You've just arrived in this {world|世界|せかい} — a {traveler|旅人|たびびと} from far away. You can't {read|読む|よむ} the signs. You can't {understand|分かる|わかる} the {language|言葉|ことば}. Every {voice|声|こえ} sounds like {beautiful|美しい|うつくしい} noise. But you're here for a reason."
   },
   {
     "id": "prologue-07-meet-cid",
-    "speaker": null,
+    "speaker": "Cid",
     "narration": "\"Hey! Over here!\" A {person|人|ひと} is waving at you from the edge of a {forest|森|もり}. She has a {bright|明るい|あかるい} grin, and she doesn't seem the least bit surprised to {see|見る|みる} you."
   },
   {
@@ -46,12 +46,12 @@
   },
   {
     "id": "prologue-10-translator-on",
-    "speaker": null,
+    "speaker": "Cid",
     "narration": "You put the Translator on. Something shifts. The {light|光|ひかり} around you seems to pulse, and the {sky|空|そら} feels closer somehow. Every {word|言葉|ことば} that was invisible before starts shimmering into focus. Everything here has a {name|名前|なまえ} — and now you can start to {read|読む|よむ} them."
   },
   {
     "id": "prologue-11-first-creature",
-    "speaker": null,
+    "speaker": "Cid",
     "narration": "A rustle in the tall {grass|草|くさ} — something leaps out! A {small|小さい|ちいさい} creature tumbles to your feet. It has {big|大きい|おおきい}, curious eyes and despite its size, you can feel it — this creature is {strong|強い|つよい}."
   },
   {

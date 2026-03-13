@@ -5038,10 +5038,8 @@ html, body {
 
 .bs-word-en {
   font-size: 0.6em;
-  color: var(--text-dim, #a0a0a0);
-  display: block;
-  text-align: center;
-  line-height: 1.1;
+  color: var(--accent-primary, #64b5f6);
+  margin-left: 2px;
 }
 
 .creature-subtitle {
