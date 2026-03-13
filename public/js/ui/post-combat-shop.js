@@ -16,7 +16,7 @@ import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
 import { t, isJapanified } from './i18n.js';
 import { prefetchWord, playWord } from '../tts.js';
-import { renderJpFirst, renderEnFirst } from './bootstrap-client.js';
+import { renderJpFirst, renderEnFirst, flushExposures } from './bootstrap-client.js';
 
 let onItemSelected = null;
 
@@ -68,6 +68,9 @@ export function show(items) {
       </div>
     </div>
   `;
+
+  // Report i+1 word exposures to server
+  flushExposures();
 
   // Prefetch audio for all item words
   items.forEach(item => { if (item.word) prefetchWord(item.word); });

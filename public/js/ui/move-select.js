@@ -2,7 +2,7 @@
 // Renders a 2x2 grid of the active creature's moves
 import { dom } from '../dom.js';
 import { prefetchWord, playWord } from '../tts.js';
-import { renderJpFirst, renderEnFirst } from './bootstrap-client.js';
+import { renderJpFirst, renderEnFirst, flushExposures } from './bootstrap-client.js';
 
 const STATUS_ICONS = {
   poison: '☠', stun: '⚡', confuse: '😵',
@@ -154,6 +154,9 @@ export function showMoves(creature, creatureIndex, opts = {}) {
   } else {
     grid.appendChild(buildItemsCell());
   }
+
+  // Report i+1 word exposures to server
+  flushExposures();
 
   // Prefetch TTS audio for all moves
   for (const move of creature.moves) {

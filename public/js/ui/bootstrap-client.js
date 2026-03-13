@@ -3,6 +3,7 @@
 const TAG_RE = /\{([^|{}]*)\|([^|{}]*)\|([^|}]*)\}/g;
 
 let _knownWords = new Set();
+const _pendingExposures = new Set();
 
 /** Set the player's known words (called on game load). */
 export function setKnownWords(words) {
@@ -46,6 +47,7 @@ export function renderEnFirst(taggedText) {
       }
       if (!isKnown) {
         html += `<span class="bs-word-en">${esc(english)}</span>`;
+        _pendingExposures.add(kanji);
       }
       html += '</span>';
       return html;
@@ -71,6 +73,26 @@ export function renderJpFirst(kanji, reading, english) {
   }
   html += '</span>';
   return html;
+}
+
+/**
+ * Flush pending i+1 word exposures to the server.
+ * Call after rendering a batch of UI (e.g. after shop items are displayed).
+ */
+export function flushExposures() {
+  if (_pendingExposures.size === 0) return;
+  const words = [..._pendingExposures];
+  _pendingExposures.clear();
+  const token = localStorage.getItem('authToken');
+  if (!token) return;
+  fetch('/api/game/known-words/expose', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ words })
+  }).catch(() => {});
 }
 
 /** HTML-escape a string. Exported for use by other UI modules. */
