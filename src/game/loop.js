@@ -251,7 +251,8 @@ export class GameManager {
       meta: this.meta ? {
         lifetimeStats: this.meta.lifetimeStats,
         achievements: this.meta.achievements,
-        levels: this.meta.levels || { highestUnlocked: 1, completed: [], current: null }
+        levels: this.meta.levels || { highestUnlocked: 1, completed: [], current: null },
+        prologueComplete: this.meta.prologueComplete || false
       } : null,
       phase: this.getPhase()
     };

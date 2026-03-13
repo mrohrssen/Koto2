@@ -100,7 +100,7 @@ import * as bugReport from './js/ui/bug-report.js';
 import * as speedReview from './js/ui/speed-review.js';
 import { configureCreatureImg, creatureSpritePath, probeIdleSprites } from './js/ui/sprite-utils.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
-import { setKnownWords } from './js/ui/bootstrap-client.js';
+import { setKnownWords, renderEnFirst, flushExposures } from './js/ui/bootstrap-client.js';
 
 // API imports - these are the server communication functions
 import {
@@ -442,11 +442,38 @@ async function warmJpdbCache() {
   }
 }
 
+// ============ PROLOGUE ============
+let _prologueCache = null;
+
+async function playPrologue() {
+  if (!_prologueCache) {
+    const resp = await fetch('/api/game/prologue', { headers: getAuthHeaders() });
+    if (!resp.ok) return;
+    _prologueCache = await resp.json();
+  }
+
+  for (const scene of _prologueCache) {
+    const html = renderEnFirst(scene.narration);
+    await narrationBox.show(html, {
+      html: true,
+      speaker: scene.speaker || undefined
+    });
+    flushExposures();
+  }
+
+  // Mark prologue as complete on server
+  await fetch('/api/game/prologue-complete', {
+    method: 'POST',
+    headers: getAuthHeaders()
+  });
+}
+
 // ============ GAME ACTIONS ============
 async function createCharacter() {
   const result = await apiCreatePlayer('Hacker', {}, 0);
   if (result?.state) {
     updateGameState(result.state);
+    await playPrologue();
     updateUI();
   }
 }
@@ -1276,6 +1303,11 @@ async function initGame() {
 
   await loadKnownWords();
   await loadGameState();
+
+  // Show prologue for returning players who haven't completed it
+  if (gameState.player && !gameState.meta?.prologueComplete) {
+    await playPrologue();
+  }
 
   // Warm JPDB cache on session start
   warmJpdbCache();

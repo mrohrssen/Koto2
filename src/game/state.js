@@ -68,7 +68,10 @@ export function createMetaProgression() {
     befriendCount: {},
 
     // NPC bonds (persists across runs)
-    npcBonds: {}
+    npcBonds: {},
+
+    // Whether the intro prologue has been shown
+    prologueComplete: false
   };
 }
 

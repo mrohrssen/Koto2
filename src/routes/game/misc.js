@@ -5,6 +5,9 @@
  */
 
 import { Router } from 'express';
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import {
   getDueWordsWithMeanings,
   fetchDueWordsDirectly,
@@ -14,6 +17,9 @@ import {
   performFullParse,
   updateWordStates
 } from '../../game/vocab-manager.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export default function createMiscRoutes({
   getDebugMode,
@@ -332,6 +338,25 @@ export default function createMiscRoutes({
       console.error('[Due Words] Error:', error.message);
       res.status(500).json({ error: error.message });
     }
+  });
+
+  // Get prologue scenes
+  let _prologueCache = null;
+  router.get('/prologue', (_req, res) => {
+    if (!_prologueCache) {
+      const filePath = join(__dirname, '../../../data/prologue.json');
+      _prologueCache = JSON.parse(readFileSync(filePath, 'utf-8'));
+    }
+    res.json(_prologueCache);
+  });
+
+  // Mark prologue as completed
+  router.post('/prologue-complete', (req, res) => {
+    const gameManager = req.gameManager;
+    const meta = gameManager.getMeta();
+    meta.prologueComplete = true;
+    req.saveGame();
+    res.json({ ok: true });
   });
 
   return router;
