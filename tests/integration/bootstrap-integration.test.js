@@ -9,17 +9,20 @@ import {
 } from '../../src/game/bootstrap/word-knowledge.js';
 
 describe('bootstrap integration', () => {
-  it('en-first: fully unknown player sees all English', () => {
+  it('en-first: fully unknown player sees i+1 teaching word', () => {
     const wk = createWordKnowledge('test');
     const known = getKnownWords(wk);
     const html = renderEnFirst(
       '{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 10% of max HP',
       known
     );
-    assert.ok(html.includes('Heal'));
+    // First unknown word (回復) is taught: shown in Japanese with English annotation
+    assert.ok(html.includes('回復'), 'i+1 word should show kanji');
+    assert.ok(html.includes('かいふく'), 'i+1 word should show reading');
+    assert.ok(html.includes('Heal'), 'i+1 word should have English annotation');
+    // Second unknown word (生き物) stays English
     assert.ok(html.includes('creatures'));
-    assert.ok(!html.includes('回復'));
-    assert.ok(!html.includes('生き物'));
+    assert.ok(!html.includes('生き物'), 'only one unknown word should be taught');
   });
 
   it('en-first: known words render as Japanese', () => {

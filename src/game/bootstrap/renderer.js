@@ -24,19 +24,37 @@ export function renderJpFirst(kanji, reading, english, knownWords) {
 }
 
 /**
- * Render a tagged string in en-first mode.
- * Known words show as Japanese with ruby, unknown words show as English.
+ * Render a tagged string in en-first mode (i+1).
+ * Known words → Japanese with ruby (reinforcement).
+ * One unknown word → Japanese with ruby + English annotation (teaching).
+ * Remaining unknown words → plain English.
  */
 export function renderEnFirst(taggedText, knownWords) {
   const segments = parseTaggedText(taggedText);
+
+  // Find the first unknown word to teach (i+1)
+  const wordSegs = segments.filter(s => s.type === 'word');
+  const teachKanji = wordSegs.find(s => !knownWords.has(s.kanji))?.kanji || null;
+
   return segments.map(seg => {
     if (seg.type === 'text') return esc(seg.content);
     const isKnown = knownWords.has(seg.kanji);
-    if (!isKnown) return esc(seg.english);
-    if (seg.reading) {
-      return `<span class="bs-word"><ruby>${esc(seg.kanji)}<rt>${esc(seg.reading)}</rt></ruby></span>`;
+
+    if (isKnown || seg.kanji === teachKanji) {
+      let html = '<span class="bs-word">';
+      if (seg.reading) {
+        html += `<ruby>${esc(seg.kanji)}<rt>${esc(seg.reading)}</rt></ruby>`;
+      } else {
+        html += esc(seg.kanji);
+      }
+      if (!isKnown) {
+        html += `<span class="bs-word-en">${esc(seg.english)}</span>`;
+      }
+      html += '</span>';
+      return html;
     }
-    return `<span class="bs-word">${esc(seg.kanji)}</span>`;
+
+    return esc(seg.english);
   }).join('');
 }
 

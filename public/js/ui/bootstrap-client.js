@@ -15,17 +15,43 @@ export function getKnownWords() {
 }
 
 /**
- * Render tagged text in en-first mode.
- * Known words show as Japanese with ruby, unknown stay English.
+ * Render tagged text in en-first mode (i+1).
+ * Known words → Japanese with ruby (reinforcement).
+ * One unknown word → Japanese with ruby + English annotation (teaching).
+ * Remaining unknown words → plain English.
  */
 export function renderEnFirst(taggedText) {
   if (!taggedText) return '';
+
+  // Two-pass: find first unknown word to teach (i+1)
+  const unknowns = [];
+  let idx = 0;
+  taggedText.replace(TAG_RE, (_, _e, kanji) => {
+    if (!_knownWords.has(kanji)) unknowns.push(idx);
+    idx++;
+  });
+  const teachIdx = unknowns.length > 0 ? unknowns[0] : -1;
+
+  let wordIndex = 0;
   return taggedText.replace(TAG_RE, (_, english, kanji, reading) => {
-    if (!_knownWords.has(kanji)) return esc(english);
-    if (reading) {
-      return `<span class="bs-word"><ruby>${esc(kanji)}<rt>${esc(reading)}</rt></ruby></span>`;
+    const i = wordIndex++;
+    const isKnown = _knownWords.has(kanji);
+
+    if (isKnown || i === teachIdx) {
+      let html = '<span class="bs-word">';
+      if (reading) {
+        html += `<ruby>${esc(kanji)}<rt>${esc(reading)}</rt></ruby>`;
+      } else {
+        html += esc(kanji);
+      }
+      if (!isKnown) {
+        html += `<span class="bs-word-en">${esc(english)}</span>`;
+      }
+      html += '</span>';
+      return html;
     }
-    return `<span class="bs-word">${esc(kanji)}</span>`;
+
+    return esc(english);
   });
 }
 
