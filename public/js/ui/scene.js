@@ -295,6 +295,28 @@ export function showWordDiscoveryNpc() {
   };
 }
 
+/** Show Cid guide NPC in prologue (no HP bar) */
+export function showCid() {
+  dom.enemyName.textContent = 'Cid';
+  dom.enemyInfo.classList.add('visible');
+  dom.enemyHpBar.style.display = 'none';
+  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
+
+  dom.enemySprite.src = '/assets/sprites/npcs/cid.webp';
+  dom.enemySprite.onerror = () => {
+    dom.enemySprite.classList.remove('visible');
+  };
+  dom.enemySprite.onload = () => {
+    removePlaceholder();
+    dom.enemySprite.classList.add('visible');
+  };
+}
+
+/** Hide Cid from scene */
+export function hideCid() {
+  hideEnemy();
+}
+
 /** Show traveling merchant NPC (shop merchant, no HP bar) */
 export function showDealer() {
   dom.enemyName.textContent = 'Traveling Merchant';

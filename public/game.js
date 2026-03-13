@@ -452,14 +452,23 @@ async function playPrologue() {
     _prologueCache = await resp.json();
   }
 
-  for (const scene of _prologueCache) {
-    const html = renderEnFirst(scene.narration);
+  for (const prologueScene of _prologueCache) {
+    // Show/hide Cid sprite based on speaker
+    if (prologueScene.speaker === 'Cid') {
+      scene.showCid();
+    } else {
+      scene.hideCid();
+    }
+
+    const html = renderEnFirst(prologueScene.narration);
     await narrationBox.show(html, {
       html: true,
-      speaker: scene.speaker || undefined
+      speaker: prologueScene.speaker || undefined
     });
     flushExposures();
   }
+
+  scene.hideCid();
 
   // Mark prologue as complete on server
   await fetch('/api/game/prologue-complete', {
