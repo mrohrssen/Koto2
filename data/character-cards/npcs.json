@@ -15,6 +15,7 @@
       "personal": "Worked an unremarkable desk job in the city for fifteen years before walking away one day and never going back. Built a small shelter in the deepest part of the forest and has lived there since, learning every trail, stream, and tree by name. Was already alone when the System arrived — barely noticed anything had changed until his quiet protectiveness turned into something he could not control.",
       "world": ["the_system", "liberation"]
     },
+    "role": { "word": "隠者", "reading": "いんじゃ", "meaning": "hermit" },
     "exampleDialogue": [
       "…ここから先は、俺の森だ。帰れ。",
       "…鳥が鳴いてる。…あぁ、すまない。俺は何をしていた。…森は、無事か？",
@@ -37,6 +38,7 @@
       "personal": "Was a model student at the Magic School — always first to arrive, last to leave. Loved tending the enchanted garden before class, feeding the rabbits and watching the sunflowers track his path. Was reviewing chalk diagrams in the hallway when the System's influence seeped through the floating lanterns overhead.",
       "world": ["the_system", "liberation"]
     },
+    "role": { "word": "学生", "reading": "がくせい", "meaning": "student" },
     "exampleDialogue": [
       "あの、ここは許可なく通れません。学校の規則ですから…従ってください。",
       "え…？僕、何をしてたんだろう…。規則、規則って…あの規則、本物だったのかな…",
@@ -59,6 +61,7 @@
       "personal": "Discovered the hidden passage to the cove as a teenager and has treated it as his personal kingdom ever since. Knows every tide pool, every rock formation, and exactly when the passage floods at high tide. Was splashing through the shallows shouting at seagulls when the System took him.",
       "world": ["the_system", "liberation"]
     },
+    "role": { "word": "漁師", "reading": "りょうし", "meaning": "fisher" },
     "exampleDialogue": [
       "おい！ここは俺の海だ！入りたきゃ俺を倒してからにしろ！",
       "…あれ？波の音…潮、もう満ちてきてるのか？…ヤドカリたちは…",
@@ -81,6 +84,7 @@
       "personal": "Retired years ago and made the park his second home. Knows every tree by the year it was planted and every koi by the pattern on its scales. Was sitting on his usual bench watching cherry blossoms drift across the pond when the System's haze settled over him.",
       "world": ["the_system", "liberation", "ward_1"]
     },
+    "role": { "word": "庭師", "reading": "にわし", "meaning": "gardener" },
     "exampleDialogue": [
       "おや…ここに何の用かね？この公園は…誰にも渡さんよ。",
       "…はっ。あれ…？鯉にご飯、あげたかな…。あぁ、すまんね、助けてくれたのか。",
@@ -103,6 +107,7 @@
       "personal": "Was a literature professor at a university in Neo Tokyo. Stumbled upon the Secret Library while tracing a citation in a rare manuscript and has been cataloging its collection ever since — books that shouldn't exist, written in languages that predate known history. Was so absorbed in reading that she barely noticed the System's arrival.",
       "world": ["the_system", "liberation", "corruption"]
     },
+    "role": { "word": "学者", "reading": "がくしゃ", "meaning": "scholar" },
     "exampleDialogue": [
       "この本棚に触れないで。ここの知識は全て…私だけのものよ。誰にも渡さない。",
       "あら…私、何を…？学生たちへの講義が…ああ、そうだ、本の続きを読まなくちゃ…",

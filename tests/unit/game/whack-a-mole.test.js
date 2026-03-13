@@ -10,8 +10,7 @@ describe('Whack-a-Mole Room', () => {
     let found = false;
     for (let i = 0; i < 200; i++) {
       const rooms = generateAreaRooms('okunomori', 5);
-      const allRooms = rooms.flatMap(r => Array.isArray(r) ? r : [r]);
-      if (allRooms.some(r => r.type === 'whackAMole')) {
+      if (rooms.some(r => r.type === 'whackAMole')) {
         found = true;
         break;
       }
@@ -21,14 +20,12 @@ describe('Whack-a-Mole Room', () => {
 
   it('should create whackAMole room with correct structure', () => {
     const originalRandom = Math.random;
-    // shrine=0-10%, quiz=10-20%, wordDiscovery=20-30%, dealer=30-40%, whackAMole=40-45%
-    Math.random = () => 0.42;
+    // shrine=0-10%, wordDiscovery=10-20%, dealer=20-30%, whackAMole=30-35%
+    Math.random = () => 0.32;
 
     try {
       const rooms = generateAreaRooms('okunomori', 2);
-      const pair = rooms[1];
-      const room = pair.find(r => r.type === 'whackAMole') || pair[0];
-
+      const room = rooms[1]; // single room
       assert.strictEqual(room.type, 'whackAMole');
       assert.deepStrictEqual(room.whackAMole, { score: 0, completed: false });
     } finally {
@@ -77,7 +74,6 @@ describe('Whack-a-Mole Pool', () => {
     createRunRoutes = mod.default;
     router = createRunRoutes({
       generateGameNarration: async () => 'test',
-      generateDoorHints: async () => [],
       cancelPendingPrefetches: () => {},
       clearPrefetchCache: () => {},
       queueMissingCreatureDialoguesFn: () => {},

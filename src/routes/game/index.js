@@ -15,7 +15,7 @@ import createRunRoutes from './run.js';
 import createCombatRoutes from './combat.js';
 import createEconomyRoutes from './economy.js';
 import createMiscRoutes from './misc.js';
-import createBootstrapRoutes from './bootstrap.js';
+import { createKnownWordsRoutes } from './known-words.js';
 
 /**
  * Create game router
@@ -60,7 +60,6 @@ export default function createGameRoutes(deps) {
   // Mount run routes
   router.use(createRunRoutes({
     generateGameNarration: deps.generateGameNarration,
-    generateDoorHints: deps.generateDoorHints,
     cancelPendingPrefetches: deps.cancelPendingPrefetches,
     clearPrefetchCache: deps.clearPrefetchCache,
     queueMissingCreatureDialoguesFn: deps.queueMissingCreatureDialoguesFn,
@@ -100,8 +99,8 @@ export default function createGameRoutes(deps) {
     clearCreatureDialogueCache: deps.clearCreatureDialogueCache
   }));
 
-  // Mount bootstrap language system routes
-  router.use('/bootstrap', createBootstrapRoutes());
+  // Mount known-words routes
+  router.use('/known-words', createKnownWordsRoutes());
 
   return router;
 }

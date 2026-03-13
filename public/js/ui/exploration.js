@@ -26,12 +26,8 @@
 import * as speedReview from './speed-review.js';
 import { WhackAMoleGame } from './whack-a-mole.js';
 import { playSFX } from '../audio.js';
-import { speakNarration, prefetchNarration } from '../tts.js';
 import { creatureBgUrl, configureCreatureImg } from './sprite-utils.js';
 import { t, isJapanified } from './i18n.js';
-
-const PATH_LEFT_SVG = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:4px"><path d="M10 18 C10 14 10 12 10 10 C10 8 8 6 4 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><circle cx="10" cy="18" r="1.5" fill="currentColor"/><path d="M10 18 C10 14 10 12 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.3"/></svg>`;
-const PATH_RIGHT_SVG = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:4px"><path d="M10 18 C10 14 10 12 10 10 C10 8 12 6 16 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><circle cx="10" cy="18" r="1.5" fill="currentColor"/><path d="M10 18 C10 14 10 12 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.3"/></svg>`;
 
 let getGameState = null;
 let updateGameState = null;
@@ -44,33 +40,6 @@ let returnToHub = null;
 
 // Module-level guard to prevent multiple shrine clicks across re-renders
 let shrineInProgress = false;
-
-// Request counter to invalidate stale renderBranchSelection invocations
-let branchSelectionRequestId = 0;
-
-// Chippy's natural transition phrases for left/right door hints (20 pairs)
-const DOOR_INTROS = [
-  { left: '左の道だけど…', right: 'で、右の道は…' },
-  { left: '左の方はね…', right: '右の方はね…' },
-  { left: 'まず左の道から。', right: 'それから右の道。' },
-  { left: '左の道からいくよ。', right: '次、右の道。' },
-  { left: '左側の道…', right: 'そして右側は…' },
-  { left: 'えっとね、左の道は…', right: 'んで、右の道は…' },
-  { left: '左の道の奥から…', right: '右の道の奥からは…' },
-  { left: '左から感じるのは…', right: '右から感じるのは…' },
-  { left: '左の道、ちょっと気になる。', right: '右の道も見てみると…' },
-  { left: 'こっちの左の道はね…', right: 'あっちの右の道は…' },
-  { left: '左の道に近づくと…', right: '右の道に近づくと…' },
-  { left: 'まずは左！', right: 'そして右！' },
-  { left: '左の方、嗅いでみると…', right: '右の方、嗅いでみると…' },
-  { left: '左の方に耳を当てると…', right: '右の方に耳を当てると…' },
-  { left: '左の道に触れてみた。', right: '右の道にも触れてみた。' },
-  { left: 'ねえ、左の道なんだけど…', right: 'で、右の道はっていうと…' },
-  { left: '左の気配は…', right: '右の気配は…' },
-  { left: '左の道、覗いてみたよ。', right: '右の道も覗いてみた。' },
-  { left: 'うーん、左はね…', right: 'うーん、右はね…' },
-  { left: '左の道の向こうは…', right: '右の道の向こうは…' },
-];
 
 // Module-level state for word discovery (persists across gameState updates)
 // This prevents infinite narration loops when updateGameState() replaces room object
@@ -101,10 +70,6 @@ let apiGetDiscoveryStatus = null;
 let apiCompleteDiscovery = null;
 let apiSwipeWord = null;
 let apiPostCombatRefresh = null;
-
-// Branch selection API
-let apiSelectBranch = null;
-let apiDoorHints = null;
 
 // Whack-a-Mole API
 let apiGetWhackAMolePool = null;
@@ -139,8 +104,6 @@ export function init(callbacks) {
   apiCompleteDiscovery = callbacks.apiCompleteDiscovery;
   apiSwipeWord = callbacks.apiSwipeWord;
   apiPostCombatRefresh = callbacks.apiPostCombatRefresh;
-  apiSelectBranch = callbacks.apiSelectBranch;
-  apiDoorHints = callbacks.apiDoorHints;
   apiGetDueWords = callbacks.apiGetDueWords;
   apiGetCreatureCollection = callbacks.apiGetCreatureCollection;
   showCollectionSelect = callbacks.showCollectionSelect;
@@ -402,113 +365,6 @@ export function renderExploring() {
   });
 }
 
-/** Branch selection phase - Chippy senses what's behind each door */
-export async function renderBranchSelection() {
-  const myRequestId = ++branchSelectionRequestId;
-  const gameState = getGameState();
-  const currentRoomIndex = gameState.run?.currentRoom;
-  const pair = gameState.run?.rooms?.[currentRoomIndex];
-
-  // Helper: returns true if this invocation has been superseded
-  const isStale = () =>
-    myRequestId !== branchSelectionRequestId ||
-    getGameState().phase !== 'branch_selection';
-
-  if (!Array.isArray(pair) || pair.length !== 2) {
-    console.error('[BranchSelection] Invalid room pair');
-    return;
-  }
-
-  // Show Chippy sprite and two-door background
-  sceneModule.showChippy();
-  const areaBg = gameState.run?.background;
-  sceneModule.setBackground(areaBg ? `/assets/backgrounds/${areaBg}` : '/assets/backgrounds/branch_doors.webp');
-
-  // Show greyed-out door buttons while Chippy narrates
-  actions.setContent(`
-    <button class="action-btn action-btn-secondary branch-option disabled" data-door="0" disabled>${PATH_LEFT_SVG} 左の道</button>
-    <button class="action-btn action-btn-secondary branch-option disabled" data-door="1" disabled>${PATH_RIGHT_SVG} 右の道</button>
-    <button class="action-btn action-btn-primary" id="branch-proceed-btn" disabled>進む</button>
-  `);
-
-  // Fetch AI-remixed door hints from backend
-  let door1Hint = '何かを感じる...';
-  let door2Hint = '何かを感じる...';
-
-  try {
-    const result = await apiDoorHints();
-    if (isStale()) return;
-    if (result?.hints) {
-      door1Hint = result.hints.door1;
-      door2Hint = result.hints.door2;
-    }
-  } catch (e) {
-    console.warn('[BranchSelection] Failed to fetch door hints:', e);
-  }
-
-  if (isStale()) return;
-
-  // Prepend natural left/right transition phrase so player knows which door Chippy means
-  const intro = DOOR_INTROS[Math.floor(Math.random() * DOOR_INTROS.length)];
-  door1Hint = intro.left + door1Hint;
-  door2Hint = intro.right + door2Hint;
-
-  // Show door 1 hint with Chippy as speaker, auto-play TTS
-  // Prefetch door 2 audio while user reads door 1
-  prefetchNarration(door2Hint);
-  speakNarration(door1Hint);
-  await sceneModule.showNarration(door1Hint, { speaker: 'チッピー' });
-  if (isStale()) return;
-
-  // Show door 2 hint with Chippy as speaker, auto-play TTS (already prefetched)
-  speakNarration(door2Hint);
-  await sceneModule.showNarration(door2Hint, { speaker: 'チッピー' });
-  if (isStale()) return;
-
-  // Now show the door selection UI
-  let selectedDoor = null;
-
-  actions.setContent(`
-    <button class="action-btn action-btn-secondary branch-option" data-door="0">${PATH_LEFT_SVG} 左の道</button>
-    <button class="action-btn action-btn-secondary branch-option" data-door="1">${PATH_RIGHT_SVG} 右の道</button>
-    <button class="action-btn action-btn-primary" id="branch-proceed-btn" disabled>進む</button>
-  `);
-
-  // Allow re-reading hints by clicking doors before confirming
-  document.querySelectorAll('.branch-option').forEach(el => {
-    el.addEventListener('click', () => {
-      if (isStale()) return;
-      document.querySelectorAll('.branch-option').forEach(o => o.classList.remove('selected'));
-      el.classList.add('selected');
-      selectedDoor = parseInt(el.dataset.door, 10);
-      const btn = document.getElementById('branch-proceed-btn');
-      if (btn) btn.disabled = false;
-
-      // Re-show the hint for the clicked door
-      const hint = selectedDoor === 0 ? door1Hint : door2Hint;
-      speakNarration(hint);
-      sceneModule.showNarration(hint, { speaker: 'チッピー', persistent: true });
-    });
-  });
-
-  document.getElementById('branch-proceed-btn')?.addEventListener('click', async () => {
-    if (selectedDoor === null) return;
-
-    // Invalidate stale branch selection callbacks
-    branchSelectionRequestId++;
-
-    // Hide persistent narration and Chippy
-    if (sceneModule.forceHideNarration) sceneModule.forceHideNarration();
-    sceneModule.hideChippy();
-
-    const result = await apiSelectBranch(selectedDoor);
-    if (result?.state) {
-      updateGameState(result.state);
-      updateUI();
-    }
-  });
-}
-
 /** Area complete — proceed to area selection */
 export function renderAreaComplete() {
   const gameState = getGameState();
@@ -623,252 +479,14 @@ export function renderShrine() {
   }
 }
 
-/** Quiz phase - question then reward selection */
+/** Quiz phase - stubbed out (quiz rooms removed from bootstrap MVP) */
 export async function renderQuiz() {
-  const gameState = getGameState();
-
-  // Stage tracking: undefined = intro, 'question' = show question, 'reward' = pick reward, 'failed' = wrong answer
-  if (gameState._quizStage === 'reward') {
-    await renderQuizRewards();
-    return;
-  }
-
-  if (gameState._quizStage === 'failed') {
-    // Wrong answer - proceed to next room with no reward
-    delete gameState._quizStage;
-    delete gameState._quizQuestion;
-    const proceedResult = await apiProceed();
-    if (proceedResult?.state) {
-      updateGameState(proceedResult.state);
-      updateUI();
-    }
-    return;
-  }
-
-  // Fetch question if not already fetched
-  if (!gameState._quizQuestion) {
-    const question = await apiGetQuizQuestion();
-    if (question.error) {
-      sceneModule.showNarration('クイズの問題を読み込めませんでした...', { autoDismiss: 2000 });
-      return;
-    }
-    gameState._quizQuestion = question;
-  }
-
-  const question = gameState._quizQuestion;
-
-  // Show intro dialogue first (click to continue)
-  if (gameState._quizStage !== 'question') {
-    actions.setContent(''); // Clear actions while showing intro
-    // Prefetch question audio while user reads intro
-    prefetchNarration(question.question);
-    speakNarration('この問題に答えれば、ご褒美をあげよう。');
-    await sceneModule.showNarration('この問題に答えれば、ご褒美をあげよう。', { speaker: 'Quiz Master' });
-    gameState._quizStage = 'question';
+  // Quiz rooms are not in the room pool for the bootstrap language MVP.
+  // If somehow reached, auto-proceed.
+  const result = await apiProceed();
+  if (result?.state) {
+    updateGameState(result.state);
     updateUI();
-    return;
-  }
-
-  // Show question in narration box (persistent - stays until we hide it)
-  let questionText = question.question;
-  if (question.translation) {
-    questionText += `\n\n(${question.translation})`;
-  }
-  speakNarration(question.question);
-  sceneModule.showNarration(questionText, { speaker: 'Quiz Master', persistent: true });
-
-  // Build answer buttons - full width with padding
-  const answerButtons = question.options.map((opt, idx) => `
-    <div class="shrine-creature-option quiz-answer-option" data-answer-index="${idx}" style="width:100%">
-      <div class="shrine-creature-info" style="padding:1rem; width:100%; text-align:center">
-        <div class="shrine-creature-name" style="color:var(--accent-primary)">${opt}</div>
-      </div>
-    </div>
-  `).join('');
-
-  // Show answer buttons in actions area
-  actions.setContent(`
-    <div class="shrine-creature-list quiz-answer-list" style="padding:0 1rem">${answerButtons}</div>
-  `);
-
-  const list = document.querySelector('.quiz-answer-list');
-  if (list && !list.dataset.bound) {
-    list.dataset.bound = '1';
-    list.addEventListener('click', async (e) => {
-      const option = e.target.closest('.quiz-answer-option');
-      if (!option || list.dataset.answered) return;
-      list.dataset.answered = '1';
-
-      const selectedIndex = parseInt(option.dataset.answerIndex, 10);
-
-      // Submit answer to server (pass bunproMeta if available)
-      const result = await apiSubmitQuizAnswer(question.id, selectedIndex, question._bunproMeta);
-
-      if (result.error) {
-        sceneModule.showNarration('エラーが発生しました...', { autoDismiss: 2000 });
-        list.dataset.answered = '';
-        // Reset button styling for retry
-        document.querySelectorAll('.quiz-answer-option').forEach((o) => {
-          o.style.pointerEvents = '';
-          o.style.opacity = '';
-          o.style.borderColor = '';
-          o.style.boxShadow = '';
-        });
-        return;
-      }
-
-      // Show visual feedback on buttons
-      document.querySelectorAll('.quiz-answer-option').forEach((o, idx) => {
-        o.style.pointerEvents = 'none';
-        if (idx === result.correctIndex) {
-          o.style.borderColor = 'var(--success-color, #4ade80)';
-          o.style.boxShadow = '0 0 10px var(--success-color, #4ade80)';
-        } else if (idx === selectedIndex && !result.correct) {
-          o.style.borderColor = 'var(--danger-color, #ef4444)';
-          o.style.boxShadow = '0 0 10px var(--danger-color, #ef4444)';
-        } else {
-          o.style.opacity = '0.5';
-        }
-      });
-
-      // Hide the persistent question narration, then show Quiz Master's response
-      if (sceneModule.forceHideNarration) sceneModule.forceHideNarration();
-      await sceneModule.showNarration(result.response, { speaker: 'Quiz Master' });
-
-      // Proceed based on result
-      if (result.correct) {
-        gameState._quizStage = 'reward';
-        delete gameState._quizQuestion;
-        updateUI();
-      } else {
-        gameState._quizStage = 'failed';
-        updateUI();
-      }
-    });
-  }
-}
-
-async function renderQuizRewards() {
-  const gameState = getGameState();
-  const creatureParty = gameState.run?.creatureParty;
-
-  // If a reward type was chosen that needs a creature, show creature picker
-  if (gameState._quizSelectedReward && gameState._quizSelectedReward !== 'credits') {
-    const allCreatures = [
-      ...(creatureParty?.active || []),
-      ...(creatureParty?.reserves || [])
-    ].filter(Boolean);
-
-    const rewardType = gameState._quizSelectedReward;
-    const label = rewardType === 'heal' ? t('chooseToHeal') : t('chooseToLevelUp');
-
-    const creatureCards = allCreatures.map(creature => {
-      const hpText = rewardType === 'heal'
-        ? `HP: ${creature.hp}/${creature.maxHp}`
-        : `Lv.${creature.level} \u2192 Lv.${creature.level + 1}`;
-      return `
-        <div class="shrine-creature-option quiz-reward-creature" data-creature-id="${creature.id}" style="width:100%">
-          <div class="shrine-creature-icon" style="border-color: var(--rarity-${creature.rarity || 'common'})">
-            <img class="shrine-creature-img" data-creature-id="${creature.id}" alt="">
-          </div>
-          <div class="shrine-creature-info" style="padding:0.75rem">
-            <div class="shrine-creature-name">${creature.nameEn}</div>
-            <div class="shrine-creature-desc">${hpText} \u00B7 ATK: ${creature.attack}</div>
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    sceneModule.showNarration(label, { speaker: 'Quiz Master', persistent: true });
-    actions.setContent(`<div class="shrine-creature-list" style="padding:0 1rem">${creatureCards}</div>`);
-
-    // Wire up sprite images with proper idle->static fallback
-    document.querySelectorAll('.shrine-creature-img').forEach(img => {
-      configureCreatureImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
-    });
-
-    const list = document.querySelector('.shrine-creature-list');
-    if (list && !list.dataset.bound) {
-      list.dataset.bound = '1';
-      list.addEventListener('click', async (e) => {
-        const option = e.target.closest('.quiz-reward-creature');
-        if (!option || list.dataset.used) return;
-        list.dataset.used = '1';
-
-        document.querySelectorAll('.quiz-reward-creature').forEach(o => {
-          o.style.opacity = '0.5'; o.style.pointerEvents = 'none';
-        });
-
-        const creatureId = option.dataset.creatureId;
-        const result = await apiQuizReward(rewardType, creatureId);
-        if (result?.state) { updateGameState(result.state); }
-
-        if (sceneModule.forceHideNarration) sceneModule.forceHideNarration();
-        sceneModule.showNarration(result?.description || 'Reward claimed!', { autoDismiss: 2000 });
-
-        delete getGameState()._quizStage;
-        delete getGameState()._quizSelectedReward;
-        const proceedResult = await apiProceed();
-        if (proceedResult?.state) { updateGameState(proceedResult.state); updateUI(); }
-      });
-    }
-    return;
-  }
-
-  // Show reward choices
-  sceneModule.showNarration('\u3054\u8912\u7F8E\u3092\u9078\u3079\u3002', { speaker: 'Quiz Master', persistent: true });
-
-  actions.setContent(`
-    <div class="shrine-creature-list" style="padding:0 1rem">
-      <div class="shrine-creature-option quiz-reward-option" data-reward="heal" style="width:100%">
-        <div class="shrine-creature-info" style="padding:1rem; width:100%">
-          <div class="shrine-creature-name">\u30ED\u30DC\u30C3\u30C8\u56DE\u5FA9</div>
-          <div class="shrine-creature-desc">1\u4F53\u306E\u30ED\u30DC\u30C3\u30C8\u3092\u5168\u56DE\u5FA9\u3059\u308B</div>
-        </div>
-      </div>
-      <div class="shrine-creature-option quiz-reward-option" data-reward="levelup" style="width:100%">
-        <div class="shrine-creature-info" style="padding:1rem; width:100%">
-          <div class="shrine-creature-name">\u30ED\u30DC\u30C3\u30C8\u4FEE\u7DF4</div>
-          <div class="shrine-creature-desc">1\u4F53\u306E\u30ED\u30DC\u30C3\u30C8\u3092\u30EC\u30D9\u30EB\u30A2\u30C3\u30D7</div>
-        </div>
-      </div>
-      <div class="shrine-creature-option quiz-reward-option" data-reward="credits" style="width:100%">
-        <div class="shrine-creature-info" style="padding:1rem; width:100%">
-          <div class="shrine-creature-name">\u30AF\u30EC\u30B8\u30C3\u30C8</div>
-          <div class="shrine-creature-desc">\u30AF\u30EC\u30B8\u30C3\u30C8\u3092\u7372\u5F97\u3059\u308B</div>
-        </div>
-      </div>
-    </div>
-  `);
-
-  const list = document.querySelector('.shrine-creature-list');
-  if (list) {
-    list.addEventListener('click', async (e) => {
-      const option = e.target.closest('.quiz-reward-option');
-      if (!option || list.dataset.used) return;
-      list.dataset.used = '1';
-
-      const rewardType = option.dataset.reward;
-
-      if (rewardType === 'credits') {
-        document.querySelectorAll('.quiz-reward-option').forEach(o => {
-          o.style.opacity = '0.5'; o.style.pointerEvents = 'none';
-        });
-
-        const result = await apiQuizReward(rewardType);
-        if (result?.state) { updateGameState(result.state); }
-        if (sceneModule.forceHideNarration) sceneModule.forceHideNarration();
-        sceneModule.showNarration(result?.description || 'Credits earned!', { autoDismiss: 2000 });
-
-        delete getGameState()._quizStage;
-        const proceedResult = await apiProceed();
-        if (proceedResult?.state) { updateGameState(proceedResult.state); updateUI(); }
-      } else {
-        // Heal or levelup — need creature picker
-        gameState._quizSelectedReward = rewardType;
-        updateUI();
-      }
-    });
   }
 }
 
@@ -928,19 +546,8 @@ export async function renderWordDiscovery() {
     discoveryState.dailyLimit = status.dailyLimit;
     discoveryState.atLimit = status.atLimit;
 
-    // Show today's count
-    await sceneModule.showNarration(
-      `今日は ${status.todayCount} 個の新しい言葉を学びました！`,
-      { speaker: 'Quiz Master' }
-    );
-
-    // If at limit, show "come back tomorrow" and skip room
+    // If at limit, skip room silently
     if (status.atLimit) {
-      await sceneModule.showNarration(
-        'また明日来てね！',
-        { speaker: 'Quiz Master' }
-      );
-
       const completeResult = await apiCompleteDiscovery();
       if (completeResult?.state) {
         updateGameState(completeResult.state);
@@ -956,11 +563,6 @@ export async function renderWordDiscovery() {
 
   // If we hit the limit mid-room, stop
   if (discoveryState.atLimit) {
-    await sceneModule.showNarration(
-      'また明日来てね！',
-      { speaker: 'Quiz Master' }
-    );
-
     const completeResult = await apiCompleteDiscovery();
     if (completeResult?.state) {
       updateGameState(completeResult.state);
@@ -977,14 +579,10 @@ export async function renderWordDiscovery() {
   if (!discoveryState.fetched) {
     discoveryState.fetched = true;
 
-    // Show intro narration
-    await sceneModule.showNarration('新しい言葉を発見しよう！', { speaker: 'Quiz Master' });
-
     const result = await apiGetDiscoveryWords(discovery.wordsToLearn);
 
     if (!result.available || result.words.length === 0) {
       // No new words available - mark complete on server first
-      await sceneModule.showNarration('今は新しい言葉がないようだ。また来よう！', { speaker: 'Quiz Master' });
       const completeResult = await apiCompleteDiscovery();
       if (completeResult?.state) {
         updateGameState(completeResult.state);
@@ -1015,8 +613,6 @@ export async function renderWordDiscovery() {
     const learnedWords = words.map(w => w.word);
     apiPostCombatRefresh?.(learnedWords).catch(() => {});
 
-    await sceneModule.showNarration('素晴らしい！新しい言葉を覚えた！', { speaker: 'Quiz Master' });
-
     const proceedResult = await apiProceed();
     if (proceedResult?.state) {
       updateGameState(proceedResult.state);
@@ -1027,12 +623,6 @@ export async function renderWordDiscovery() {
 
   // Show current word's flash card
   const currentWord = words[currentIndex];
-
-  // Show helper text in narration
-  sceneModule.showNarration(`${currentIndex + 1}/${words.length}: スワイプして覚えよう`, {
-    speaker: 'Quiz Master',
-    persistent: true
-  });
 
   actions.showFlashCards([currentWord], { discoveryMode: true });
 

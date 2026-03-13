@@ -13,7 +13,6 @@ import { lookupVocabularyBatch } from '../../jpdb.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
 import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswer } from '../../bunpro.js';
 import { validateTeamSelection } from '../../game/services/creature-collection-service.js';
-import { queueTTSPrefetch } from '../../game/prefetch.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -32,7 +31,6 @@ function loadQuizQuestions() {
 
 export default function createRunRoutes({
   generateGameNarration,
-  generateDoorHints,
   cancelPendingPrefetches,
   clearPrefetchCache,
   queueMissingCreatureDialoguesFn,
@@ -146,47 +144,6 @@ export default function createRunRoutes({
 
       req.saveGame();
       res.json({ room, state: req.getEnrichedGameState(), narration });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Select branch door
-  router.post('/select-branch', async (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      const { door, forceRoomType } = req.body;
-      if (door !== 0 && door !== 1) {
-        return res.status(400).json({ error: 'door must be 0 or 1' });
-      }
-      const result = gameManager.selectBranch(door, forceRoomType || null);
-      req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  // Get Chippy's door hints for branch selection
-  router.post('/door-hints', (req, res) => {
-    const gameManager = req.gameManager;
-    try {
-      if (!gameManager.run?.pendingBranch) {
-        return res.status(400).json({ error: 'No branch selection pending' });
-      }
-
-      const pair = gameManager.run.rooms[gameManager.run.currentRoom];
-      if (!Array.isArray(pair) || pair.length !== 2) {
-        return res.status(400).json({ error: 'Current room is not a branch pair' });
-      }
-
-      const hints = generateDoorHints(pair[0].type, pair[1].type);
-
-      // Prefetch TTS audio for each door hint
-      if (hints.door1) queueTTSPrefetch(hints.door1);
-      if (hints.door2) queueTTSPrefetch(hints.door2);
-
-      res.json({ hints });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }

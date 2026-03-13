@@ -46,10 +46,12 @@ export function init(callbacks) {
         inviteField.classList.remove('hidden');
         submitBtn.textContent = 'Register';
         document.getElementById('auth-password').autocomplete = 'new-password';
+        document.getElementById('wordListField').style.display = '';
       } else {
         inviteField.classList.add('hidden');
         submitBtn.textContent = 'Login';
         document.getElementById('auth-password').autocomplete = 'current-password';
+        document.getElementById('wordListField').style.display = 'none';
       }
       hideError();
     });
@@ -122,17 +124,31 @@ async function handleSubmit(callbacks) {
   }
 
   hideError();
-  const endpoint = currentTab === 'login' ? '/api/auth/login' : '/api/auth/register';
-  const body = currentTab === 'login'
-    ? { username, password }
-    : { username, password, inviteCode };
 
-  try {
-    const res = await fetch(endpoint, {
+  let fetchOptions;
+  if (currentTab === 'register') {
+    const formData = new FormData();
+    formData.append('username', username);
+    formData.append('password', password);
+    formData.append('inviteCode', inviteCode);
+    const fileInput = document.getElementById('word-list-upload');
+    if (fileInput.files.length > 0) {
+      formData.append('wordList', fileInput.files[0]);
+    }
+    fetchOptions = { method: 'POST', body: formData };
+  } else {
+    fetchOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
+      body: JSON.stringify({ username, password })
+    };
+  }
+
+  try {
+    const res = await fetch(
+      currentTab === 'login' ? '/api/auth/login' : '/api/auth/register',
+      fetchOptions
+    );
     const data = await res.json();
 
     if (!res.ok) {

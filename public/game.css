@@ -5019,3 +5019,31 @@ html, body {
 @media (orientation: landscape) and (max-height: 600px) {
   .landscape-blocker { display: flex; }
 }
+
+/* Bootstrap language scaffolding */
+.bs-word {
+  display: inline;
+  white-space: nowrap;
+}
+
+.bs-word ruby {
+  ruby-position: over;
+}
+
+.bs-word rt {
+  font-size: 0.55em;
+  color: var(--text-muted, #8ab4d8);
+  font-weight: normal;
+}
+
+.bs-word-en {
+  font-size: 0.6em;
+  color: var(--accent-primary, #64b5f6);
+  margin-left: 2px;
+}
+
+.creature-subtitle {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}

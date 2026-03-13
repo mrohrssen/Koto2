@@ -107,7 +107,6 @@ export const ROOM_TYPES = {
  */
 function isSpecialType(type) {
   return type === ROOM_TYPES.shrine ||
-         type === ROOM_TYPES.quiz ||
          type === ROOM_TYPES.wordDiscovery ||
          type === ROOM_TYPES.dealer ||
          type === ROOM_TYPES.whackAMole;
@@ -118,7 +117,6 @@ function isSpecialType(type) {
  */
 function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType = null, encountersOnly = false, forceRoomType = null) {
   const SHRINE_CHANCE = 0.10;
-  const QUIZ_CHANCE = 0.10;
   const WORD_DISCOVERY_CHANCE = 0.10;
   const DEALER_CHANCE = 0.10;
   const WHACK_A_MOLE_CHANCE = 0.05;
@@ -138,13 +136,11 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
       const roll = Math.random();
       if (roll < SHRINE_CHANCE) {
         type = ROOM_TYPES.shrine;
-      } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE) {
-        type = ROOM_TYPES.quiz;
-      } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE + WORD_DISCOVERY_CHANCE) {
+      } else if (roll < SHRINE_CHANCE + WORD_DISCOVERY_CHANCE) {
         type = ROOM_TYPES.wordDiscovery;
-      } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE) {
+      } else if (roll < SHRINE_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE) {
         type = ROOM_TYPES.dealer;
-      } else if (roll < SHRINE_CHANCE + QUIZ_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE + WHACK_A_MOLE_CHANCE) {
+      } else if (roll < SHRINE_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE + WHACK_A_MOLE_CHANCE) {
         type = ROOM_TYPES.whackAMole;
       } else {
         type = ROOM_TYPES.encounter;
@@ -162,24 +158,7 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
 }
 
 /**
- * Generate a pair of rooms for a branch choice
- */
-function generateBranchPair(areaId, roomNumber, totalRooms, excludeSpecialType = null, encountersOnly = false, forceRoomType = null) {
-  const room1 = generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType, encountersOnly, forceRoomType);
-
-  let room2ExcludeType = excludeSpecialType;
-  if (isSpecialType(room1.type)) {
-    room2ExcludeType = room1.type;
-  }
-
-  const room2 = generateSingleRoom(areaId, roomNumber, totalRooms, room2ExcludeType, encountersOnly, forceRoomType);
-
-  return [room1, room2];
-}
-
-/**
- * Generate rooms for an area with branching
- * Structure: single first room + branch pairs (no boss)
+ * Generate rooms for an area (single rooms only, no branching)
  */
 export function generateAreaRooms(areaId, roomCount = 10, lastSpecialType = null, encountersOnly = false, forceRoomType = null) {
   const rooms = [];
@@ -191,21 +170,10 @@ export function generateAreaRooms(areaId, roomCount = 10, lastSpecialType = null
   const subAreas = area?.subAreas || [];
 
   for (let i = 0; i < roomCount; i++) {
-    const roomNumber = i + 1;
-
-    if (i === 0) {
-      const room = generateSingleRoom(areaId, roomNumber, totalSlots, prevSpecialType, !forceRoomType, forceRoomType);
-      if (subAreas.length > 0) room.subArea = subAreas[i % subAreas.length];
-      rooms.push(room);
-    } else {
-      const pair = generateBranchPair(areaId, roomNumber, totalSlots, prevSpecialType, encountersOnly, forceRoomType);
-      if (subAreas.length > 0) {
-        const sa = subAreas[i % subAreas.length];
-        pair[0].subArea = sa;
-        pair[1].subArea = sa;
-      }
-      rooms.push(pair);
-    }
+    const room = generateSingleRoom(areaId, i + 1, totalSlots, prevSpecialType, encountersOnly, forceRoomType);
+    if (room.type !== 'encounter') prevSpecialType = room.type;
+    if (subAreas.length > 0) room.subArea = subAreas[i % subAreas.length];
+    rooms.push(room);
   }
 
   return rooms;

@@ -703,42 +703,8 @@ correctIndexの位置をラウンドごとに変えてください（0,1,2をシ
  * );
  */
 export async function generateNarration(chatFn, gameState, event, context, vocabulary, jlptLevel, aiConfig, suggestedWords = null) {
-  // Store current event for sample selection
-  gameState.currentEvent = event;
-
-  // Build the prompt
-  const promptFn = DM_PROMPTS[event];
-  if (!promptFn) {
-    console.warn(`Unknown DM event: ${event}`);
-    return null;
-  }
-
-  const userPrompt = typeof promptFn === 'function' ? promptFn(context) : promptFn;
-  const systemPrompt = buildDmSystemPrompt(gameState, vocabulary, jlptLevel, suggestedWords);
-
-  try {
-    const response = await chatFn({
-      provider: aiConfig.provider,
-      apiKey: aiConfig.apiKey,
-      messages: [{ role: 'user', content: userPrompt }],
-      vocabulary: vocabulary,
-      jlptLevel: jlptLevel,
-      customSystemPrompt: systemPrompt,
-      openaiModel: aiConfig.openaiModel,
-      openrouterModel: aiConfig.openrouterModel,
-      purpose: 'narration'
-    });
-
-    // Add successful narration to memory
-    if (response) {
-      addToNarrationMemory(response, event);
-    }
-
-    return response;
-  } catch (error) {
-    console.error('DM narration error:', error);
-    return getFallbackNarration(event, context);
-  }
+  // Stubbed out for bootstrap language MVP — narration boxes are not shown during this phase.
+  return null;
 }
 
 /**

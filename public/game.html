@@ -200,6 +200,11 @@
           <input type="text" id="auth-username" placeholder="Username" autocomplete="username" />
           <input type="password" id="auth-password" placeholder="Password" autocomplete="current-password" />
           <input type="text" id="auth-invite" placeholder="Invite Code" class="hidden" />
+          <div id="wordListField" style="display:none;">
+            <label for="word-list-upload" style="display:block;font-size:0.85em;margin-bottom:4px;opacity:0.8;">Known Words (.txt) — optional</label>
+            <input type="file" id="word-list-upload" accept=".txt" style="width:100%;box-sizing:border-box;">
+            <small style="display:block;font-size:0.75em;opacity:0.6;margin-top:2px;">One Japanese word per line</small>
+          </div>
           <button class="btn-primary" id="auth-submit">Login</button>
           <p class="auth-error hidden" id="auth-error"></p>
         </div>

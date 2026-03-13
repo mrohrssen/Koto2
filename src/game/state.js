@@ -68,7 +68,10 @@ export function createMetaProgression() {
     befriendCount: {},
 
     // NPC bonds (persists across runs)
-    npcBonds: {}
+    npcBonds: {},
+
+    // Whether the intro prologue has been shown
+    prologueComplete: false
   };
 }
 
@@ -145,10 +148,6 @@ export function createNewRun(player) {
     rooms: [],
     currentRoom: 0,
     roomsExplored: 0,
-
-    // Branching room selection
-    pendingBranch: false,
-    selectedRooms: [],
 
     // Current area progress
     currentAreaEncounters: 0,

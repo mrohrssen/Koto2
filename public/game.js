@@ -100,6 +100,7 @@ import * as bugReport from './js/ui/bug-report.js';
 import * as speedReview from './js/ui/speed-review.js';
 import { configureCreatureImg, creatureSpritePath, probeIdleSprites } from './js/ui/sprite-utils.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
+import { setKnownWords, renderEnFirst, flushExposures } from './js/ui/bootstrap-client.js';
 
 // API imports - these are the server communication functions
 import {
@@ -123,8 +124,6 @@ import {
   getDiscoveryWords as apiGetDiscoveryWords,
   getDiscoveryStatus as apiGetDiscoveryStatus,
   completeDiscovery as apiCompleteDiscovery,
-  selectBranch as apiSelectBranch,
-  doorHints as apiDoorHints,
   parseJpdbText,
   lookupJpdbWord,
   lookupJpdbBatch,
@@ -353,10 +352,6 @@ function updateGameContent() {
     case 'whackAMole':
       explorationUI.renderWhackAMole();
       break;
-    case 'branch_selection':
-      console.log('[DEBUG] branch_selection phase. pendingBranch:', gameState.run?.pendingBranch, 'currentRoom:', gameState.run?.currentRoom, 'rooms:', gameState.run?.rooms);
-      explorationUI.renderBranchSelection();
-      break;
     case 'combat':
       // Clear stale buttons; flash card will be rendered by combat-loop
       if (!combatLoopUI.isCombatActive()) {
@@ -404,6 +399,20 @@ function showEnemyDialogue(text, type = 'possessed') {
 }
 
 // ============ API CALLS ============
+async function loadKnownWords() {
+  try {
+    const resp = await fetch('/api/game/known-words', {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      setKnownWords(data.words);
+    }
+  } catch (e) {
+    console.warn('Failed to load known words:', e);
+  }
+}
+
 async function loadGameState() {
   const data = await apiGetGameState();
   if (data.player) {
@@ -433,11 +442,47 @@ async function warmJpdbCache() {
   }
 }
 
+// ============ PROLOGUE ============
+let _prologueCache = null;
+
+async function playPrologue() {
+  if (!_prologueCache) {
+    const resp = await fetch('/api/game/prologue', { headers: getAuthHeaders() });
+    if (!resp.ok) return;
+    _prologueCache = await resp.json();
+  }
+
+  for (const prologueScene of _prologueCache) {
+    // Show/hide Cid sprite based on speaker
+    if (prologueScene.speaker === 'Cid') {
+      scene.showCid();
+    } else {
+      scene.hideCid();
+    }
+
+    const html = renderEnFirst(prologueScene.narration);
+    await narrationBox.show(html, {
+      html: true,
+      speaker: prologueScene.speaker || undefined
+    });
+    flushExposures();
+  }
+
+  scene.hideCid();
+
+  // Mark prologue as complete on server
+  await fetch('/api/game/prologue-complete', {
+    method: 'POST',
+    headers: getAuthHeaders()
+  });
+}
+
 // ============ GAME ACTIONS ============
 async function createCharacter() {
   const result = await apiCreatePlayer('Hacker', {}, 0);
   if (result?.state) {
     updateGameState(result.state);
+    await playPrologue();
     updateUI();
   }
 }
@@ -998,7 +1043,7 @@ async function initGame() {
   leaderboard.init();
   bugReport.init();
   speedReview.init({
-    sendReview: (vid, sid, grade) => apiSendJpdbReview(vid, sid, grade),
+    sendReview: (vid, sid, grade, wordText) => apiSendJpdbReview(vid, sid, grade, wordText),
     playTTS: (word) => tts.playWord(word),
     prefetchTTS: (word) => tts.prefetchWord(word),
     refreshQueue: async (reviewedWords = []) => {
@@ -1167,8 +1212,6 @@ async function initGame() {
     apiGetDiscoveryWords,
     apiGetDiscoveryStatus,
     apiCompleteDiscovery,
-    apiSelectBranch,
-    apiDoorHints,
     apiSwipeWord: (vid, sid, grade, isDiscovery) => apiSendJpdbReview(vid, sid, grade, isDiscovery),
     apiPostCombatRefresh: (words) => fetch('/api/game/post-combat-refresh', {
       method: 'POST',
@@ -1267,7 +1310,13 @@ async function initGame() {
     }
   });
 
+  await loadKnownWords();
   await loadGameState();
+
+  // Show prologue for returning players who haven't completed it
+  if (gameState.player && !gameState.meta?.prologueComplete) {
+    await playPrologue();
+  }
 
   // Warm JPDB cache on session start
   warmJpdbCache();

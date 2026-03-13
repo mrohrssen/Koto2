@@ -17,76 +17,126 @@
  *   leaderboard, error messages, stat abbreviations, creature/enemy names
  */
 
+import { renderEnFirst } from './bootstrap-client.js';
+
 let lang = 'en';
+
+function escHtml(s) {
+  if (typeof s !== 'string') return String(s);
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
 const strings = {
   // ── Combat: damage labels ──
-  criticalHit:      { en: 'CRITICAL HIT!',   ja: 'クリティカル！' },
-  perfectDodge:     { en: 'PERFECT DODGE!',   ja: '完全回避！' },
-  dodged:           { en: 'DODGED!',          ja: '回避！' },
+  criticalHit:      { en: 'CRITICAL HIT!',   ja: 'クリティカル！',
+                      tagged: '{CRITICAL HIT|クリティカル|}!' },
+  perfectDodge:     { en: 'PERFECT DODGE!',   ja: '完全回避！',
+                      tagged: 'PERFECT {DODGE|回避|かいひ}!' },
+  dodged:           { en: 'DODGED!',          ja: '回避！',
+                      tagged: '{DODGED|回避|かいひ}!' },
   miss:             { en: 'MISS!',            ja: 'ミス！' },
-  critical:         { en: 'CRITICAL!',        ja: 'クリティカル！' },
-  superEffective:   { en: 'super effective!', ja: '効果抜群！' },
+  critical:         { en: 'CRITICAL!',        ja: 'クリティカル！',
+                      tagged: '{CRITICAL|クリティカル|}!' },
+  superEffective:   { en: 'super effective!', ja: '効果抜群！',
+                      tagged: 'super {effective|効果抜群|こうかばつぐん}!' },
   notVeryEffective: { en: 'not very effective...', ja: 'いまひとつ...' },
 
   // ── Combat: actions ──
-  defending:        { en: 'DEFENDING \u2014 50% damage, +1 charge', ja: '防御中 \u2014 ダメージ50%、チャージ+1' },
-  defendingCreature: { en: 'DEFENDING - 50% damage',                ja: '防御中 \u2014 ダメージ50%' },
-  dealsDamage:      { en: '{0} deals {1} damage',   ja: '{0}が{1}ダメージ！' },
-  dealsStrong:      { en: '{0} deals {1} damage (super effective!)',      ja: '{0}が{1}ダメージ！（効果抜群！）' },
-  dealsWeak:        { en: '{0} deals {1} damage (not very effective...)', ja: '{0}が{1}ダメージ（いまひとつ...）' },
-  dealsHalved:      { en: '{0} deals {1} (halved)',  ja: '{0}が{1}（半減）' },
+  defending:        { en: 'DEFENDING \u2014 50% damage, +1 charge', ja: '防御中 \u2014 ダメージ50%、チャージ+1',
+                      tagged: '{DEFENDING|防御中|ぼうぎょちゅう} \u2014 50% {damage|ダメージ|}, +1 {charge|チャージ|}' },
+  defendingCreature: { en: 'DEFENDING - 50% damage',                ja: '防御中 \u2014 ダメージ50%',
+                      tagged: '{DEFENDING|防御中|ぼうぎょちゅう} - 50% {damage|ダメージ|}' },
+  dealsDamage:      { en: '{0} deals {1} damage',   ja: '{0}が{1}ダメージ！',
+                      tagged: '{0} deals {1} {damage|ダメージ|}' },
+  dealsStrong:      { en: '{0} deals {1} damage (super effective!)',      ja: '{0}が{1}ダメージ！（効果抜群！）',
+                      tagged: '{0} deals {1} {damage|ダメージ|} (super {effective|効果抜群|こうかばつぐん}!)' },
+  dealsWeak:        { en: '{0} deals {1} damage (not very effective...)', ja: '{0}が{1}ダメージ（いまひとつ...）',
+                      tagged: '{0} deals {1} {damage|ダメージ|} (not very effective...)' },
+  dealsHalved:      { en: '{0} deals {1} (halved)',  ja: '{0}が{1}（半減）',
+                      tagged: '{0} deals {1} ({halved|半減|はんげん})' },
   swapsIn:          { en: '{0} swaps in!',           ja: '{0}が交代！' },
-  befriended:       { en: 'BEFRIENDED {0}!',         ja: '{0}と友達になった！' },
-  letItGo:          { en: 'Let it go...',             ja: '見送った…' },
-  cascade:          { en: 'Cascade: +{0}',            ja: 'カスケード: +{0}' },
+  befriended:       { en: 'BEFRIENDED {0}!',         ja: '{0}と友達になった！',
+                      tagged: '{BEFRIENDED|友達になった|ともだちになった} {0}!' },
+  letItGo:          { en: 'Let it go...',             ja: '見送った…',
+                      tagged: '{Let it go|見送った|みおくった}...' },
+  cascade:          { en: 'Cascade: +{0}',            ja: 'カスケード: +{0}',
+                      tagged: '{Cascade|カスケード|}: +{0}' },
 
   // ── Combat: befriend ──
-  partyFullTitle:   { en: 'Party Full! Choose a monster to release:', ja: 'パーティが満員！誰をリリースする？' },
-  equipped:         { en: 'Equipped',     ja: '装備中' },
-  reserve:          { en: 'Reserve',      ja: '控え' },
-  letItGoBtn:       { en: 'Let it go (skip)', ja: '見送る（スキップ）' },
-  roundLabel:       { en: 'Round {0}/3',  ja: 'ラウンド {0}/3' },
+  partyFullTitle:   { en: 'Party Full! Choose a monster to release:', ja: 'パーティが満員！誰をリリースする？',
+                      tagged: 'Party Full! Choose a monster to {release|リリース|}:' },
+  equipped:         { en: 'Equipped',     ja: '装備中',
+                      tagged: '{Equipped|装備中|そうびちゅう}' },
+  reserve:          { en: 'Reserve',      ja: '控え',
+                      tagged: '{Reserve|控え|ひかえ}' },
+  letItGoBtn:       { en: 'Let it go (skip)', ja: '見送る（スキップ）',
+                      tagged: '{Let it go|見送る|みおくる} (skip)' },
+  roundLabel:       { en: 'Round {0}/3',  ja: 'ラウンド {0}/3',
+                      tagged: '{Round|ラウンド|} {0}/3' },
 
   // ── Collection / team select ──
-  selectTeam:       { en: 'Select Your Team', ja: 'チーム選択' },
-  startRun:         { en: 'Start Run ({0} monster{1})', ja: '出撃（{0}体）' },
-  newCreature:      { en: 'New: {0}!',       ja: '新規: {0}！' },
+  selectTeam:       { en: 'Select Your Team', ja: 'チーム選択',
+                      tagged: '{Select|選択|せんたく} Your Team' },
+  startRun:         { en: 'Start Run ({0} monster{1})', ja: '出撃（{0}体）',
+                      tagged: 'Start {Run|出撃|しゅつげき} ({0} monster{1})' },
+  newCreature:      { en: 'New: {0}!',       ja: '新規: {0}！',
+                      tagged: '{New|新規|しんき}: {0}!' },
 
   // ── Equip screens ──
-  inventory:        { en: 'Inventory',       ja: 'インベントリ' },
-  emptySlot:        { en: 'Empty',           ja: '空き' },
-  equippedCreatures: { en: 'Equipped Monsters (Front Line)', ja: '出撃モンスター（前衛）' },
-  reserveCreatures: { en: 'Reserve Monsters',  ja: '控えモンスター' },
-  noReserves:       { en: 'No reserve monsters', ja: '控えモンスターなし' },
-  swapInstruction:  { en: 'Tap an equipped monster, then a reserve to swap them.', ja: '前衛→控えの順にタップで交代' },
+  inventory:        { en: 'Inventory',       ja: 'インベントリ',
+                      tagged: '{Inventory|インベントリ|}' },
+  emptySlot:        { en: 'Empty',           ja: '空き',
+                      tagged: '{Empty|空き|あき}' },
+  equippedCreatures: { en: 'Equipped Monsters (Front Line)', ja: '出撃モンスター（前衛）',
+                      tagged: '{Equipped|装備中|そうびちゅう} Monsters (Front Line)' },
+  reserveCreatures: { en: 'Reserve Monsters',  ja: '控えモンスター',
+                      tagged: '{Reserve|控え|ひかえ} Monsters' },
+  noReserves:       { en: 'No reserve monsters', ja: '控えモンスターなし',
+                      tagged: 'No {reserve|控え|ひかえ} monsters' },
+  swapInstruction:  { en: 'Tap an equipped monster, then a reserve to swap them.', ja: '前衛→控えの順にタップで交代',
+                      tagged: 'Tap an {equipped|装備中|そうびちゅう} monster, then a {reserve|控え|ひかえ} to swap them.' },
 
   // ── Game over ──
-  defeated:         { en: 'Defeated',           ja: '敗北' },
-  runEnded:         { en: 'Your run has ended.', ja: '探索は終了した。' },
-  floorRooms:       { en: 'Floor {0} · {1} rooms cleared', ja: 'フロア{0}・{1}部屋クリア' },
+  defeated:         { en: 'Defeated',           ja: '敗北',
+                      tagged: '{Defeated|敗北|はいぼく}' },
+  runEnded:         { en: 'Your run has ended.', ja: '探索は終了した。',
+                      tagged: 'Your {run|探索|たんさく} has ended.' },
+  floorRooms:       { en: 'Floor {0} · {1} rooms cleared', ja: 'フロア{0}・{1}部屋クリア',
+                      tagged: 'Floor {0} · {1} {rooms|部屋|へや} {cleared|クリア|}' },
 
   // ── Shrine ──
-  chooseToTrain:    { en: 'Choose a monster to train', ja: '修練するモンスターを選べ' },
-  leveledUp:        { en: '{0} leveled up to Lv. {1}!', ja: '{0}がLv.{1}にレベルアップ！' },
+  chooseToTrain:    { en: 'Choose a monster to train', ja: '修練するモンスターを選べ',
+                      tagged: 'Choose a monster to {train|修練|しゅうれん}' },
+  leveledUp:        { en: '{0} leveled up to Lv. {1}!', ja: '{0}がLv.{1}にレベルアップ！',
+                      tagged: '{0} {leveled up|レベルアップ|} to Lv. {1}!' },
 
   // ── Quiz rewards ──
-  chooseToHeal:     { en: 'Choose a monster to heal',     ja: '回復するモンスターを選べ' },
-  chooseToLevelUp:  { en: 'Choose a monster to level up', ja: 'レベルアップするモンスターを選べ' },
+  chooseToHeal:     { en: 'Choose a monster to heal',     ja: '回復するモンスターを選べ',
+                      tagged: 'Choose a monster to {heal|回復|かいふく}' },
+  chooseToLevelUp:  { en: 'Choose a monster to level up', ja: 'レベルアップするモンスターを選べ',
+                      tagged: 'Choose a monster to {level up|レベルアップ|}' },
 
   // ── Exploration: badges ──
-  new:              { en: 'NEW', ja: '新規' },
+  new:              { en: 'NEW', ja: '新規',
+                      tagged: '{NEW|新規|しんき}' },
 
   // ── Creature labels ──
-  passive:          { en: 'Passive',     ja: 'パッシブ' },
-  skillColon:       { en: 'Skill: {0}',  ja: 'スキル: {0}' },
-  noPassive:        { en: 'No passive effect', ja: 'パッシブ効果なし' },
-  noSkill:          { en: 'No skill',     ja: 'スキルなし' },
-  ready:            { en: 'Ready!',       ja: '発動可能！' },
-  charging:         { en: 'Charging {0}/{1}', ja: 'チャージ中 {0}/{1}' },
+  passive:          { en: 'Passive',     ja: 'パッシブ',
+                      tagged: '{Passive|パッシブ|}' },
+  skillColon:       { en: 'Skill: {0}',  ja: 'スキル: {0}',
+                      tagged: '{Skill|スキル|}: {0}' },
+  noPassive:        { en: 'No passive effect', ja: 'パッシブ効果なし',
+                      tagged: 'No {passive|パッシブ|} {effect|効果|こうか}' },
+  noSkill:          { en: 'No skill',     ja: 'スキルなし',
+                      tagged: 'No {skill|スキル|}' },
+  ready:            { en: 'Ready!',       ja: '発動可能！',
+                      tagged: '{Ready|発動可能|はつどうかのう}!' },
+  charging:         { en: 'Charging {0}/{1}', ja: 'チャージ中 {0}/{1}',
+                      tagged: '{Charging|チャージ中|} {0}/{1}' },
 
   // ── Post-combat shop ──
-  chooseReward:     { en: 'Choose a Reward', ja: '報酬を選べ' },
+  chooseReward:     { en: 'Choose a Reward', ja: '報酬を選べ',
+                      tagged: 'Choose a {Reward|報酬|ほうしゅう}' },
 
   // ── Flash card hints ──
   hintCombat:       { en: '\u2190 didn\'t know \u00A0|\u00A0 knew it \u2192',
@@ -112,11 +162,20 @@ export function setLang(l) {
 export function t(key, ...args) {
   const entry = strings[key];
   if (!entry) return key;
-  let str = entry[lang] || entry.en;
-  for (let i = 0; i < args.length; i++) {
-    str = str.replace(`{${i}}`, args[i]);
+
+  // If tagged version exists, render through bootstrap en-first renderer
+  if (entry.tagged) {
+    let str = entry.tagged;
+    // Escape interpolation args to prevent XSS
+    args.forEach((a, i) => { str = str.replace(`{${i}}`, escHtml(a)); });
+    return renderEnFirst(str);
   }
-  return str;
+
+  // Fallback to current behavior
+  const str = entry[lang] || entry.en || key;
+  let result = str;
+  args.forEach((a, i) => { result = result.replace(`{${i}}`, a); });
+  return result;
 }
 
 /**

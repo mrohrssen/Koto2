@@ -229,18 +229,6 @@ async function roomEncounter() {
   return apiCall('/room-encounter', 'POST');
 }
 
-/** Select a branch door at a branching room
- * @param {string} door - Door identifier ('left' or 'right')
- */
-async function selectBranch(door) {
-  return apiCall('/select-branch', 'POST', { door, forceRoomType: getForceRoomType() });
-}
-
-/** Fetch Chippy's door hints for current branch point */
-async function doorHints() {
-  return apiCall('/door-hints', 'POST');
-}
-
 /** Upgrade creature at shrine */
 async function shrineUpgrade(creatureId) {
   return apiCall('/shrine-upgrade', 'POST', { creatureId });
@@ -347,15 +335,16 @@ async function completeWhackAMole(score) {
  * @param {number} vid - Vocabulary ID
  * @param {number} sid - Sense ID
  * @param {number} grade - Review grade (1-5)
+ * @param {string} [wordText] - The Japanese word text (for bootstrap word-knowledge tracking)
  * @param {boolean} isDiscovery - Whether this is a discovery room review
  */
-async function sendJpdbReview(vid, sid, grade, isDiscovery = false) {
+async function sendJpdbReview(vid, sid, grade, wordText = null, isDiscovery = false) {
   console.log('[JPDB Review API] sendJpdbReview called:', { vid, sid, grade, isDiscovery });
   try {
     const response = await fetch('/api/jpdb/review', {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ vid, sid, grade, isDiscovery })
+      body: JSON.stringify({ vid, sid, grade, isDiscovery, wordText })
     });
     const result = await response.json();
     console.log('[JPDB Review API] Response:', result);
@@ -556,8 +545,6 @@ export {
   // Room exploration endpoints
   proceed,
   roomEncounter,
-  selectBranch,
-  doorHints,
   shrineUpgrade,
   quizReward,
   getQuizQuestion,

@@ -29,6 +29,7 @@
 
 import { dom } from '../dom.js';
 import { configureCreatureImg } from './sprite-utils.js';
+import { renderJpFirst, esc as escHtml } from './bootstrap-client.js';
 
 const ELEMENT_ICONS = {
   wood: '\u{1F33F}', fire: '\u{1F525}', earth: '\u26F0\uFE0F', metal: '\u2699\uFE0F', water: '\u{1F4A7}'
@@ -294,6 +295,28 @@ export function showWordDiscoveryNpc() {
   };
 }
 
+/** Show Cid guide NPC in prologue (no HP bar) */
+export function showCid() {
+  dom.enemyName.textContent = 'Cid';
+  dom.enemyInfo.classList.add('visible');
+  dom.enemyHpBar.style.display = 'none';
+  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
+
+  dom.enemySprite.src = '/assets/sprites/npcs/cid.webp';
+  dom.enemySprite.onerror = () => {
+    dom.enemySprite.classList.remove('visible');
+  };
+  dom.enemySprite.onload = () => {
+    removePlaceholder();
+    dom.enemySprite.classList.add('visible');
+  };
+}
+
+/** Hide Cid from scene */
+export function hideCid() {
+  hideEnemy();
+}
+
 /** Show traveling merchant NPC (shop merchant, no HP bar) */
 export function showDealer() {
   dom.enemyName.textContent = 'Traveling Merchant';
@@ -340,11 +363,15 @@ export function hideChippy() {
 }
 
 /** Show NPC trainer in scene (no HP bar) */
-export function showNpcTrainer(npcName, npcId) {
+export function showNpcTrainer(npcName, npcId, npc) {
   // Clear multi-enemy row from combat
   dom.enemySpriteContainer.querySelector('.multi-enemy-row')?.remove();
 
-  dom.enemyName.textContent = npcName;
+  const roleHtml = npc?.role
+    ? ' — ' + renderJpFirst(npc.role.word, npc.role.reading, npc.role.meaning)
+    : '';
+  const npcNameHtml = `${escHtml(npcName)}${roleHtml}`;
+  dom.enemyName.innerHTML = npcNameHtml;
   dom.enemyInfo.classList.add('visible');
   dom.enemyHpBar.style.display = 'none';
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
