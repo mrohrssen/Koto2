@@ -4,6 +4,7 @@
 import { dom } from '../dom.js';
 import { ELEMENT_COLORS } from './creature-row.js';
 import { configureCreatureImg } from './sprite-utils.js';
+import { renderJpFirst } from './bootstrap-client.js';
 
 const ELEMENT_KANJI = {
   fire: '火', water: '水', wood: '木',
@@ -42,7 +43,7 @@ function showTargets(targets, move, type) {
 
   const header = document.createElement('div');
   header.className = 'target-header';
-  header.innerHTML = `<span class="target-move-name">${move.name}</span> ${move.nameEn} → Select target`;
+  header.innerHTML = `<span class="target-move-name">${renderJpFirst(move.name, move.reading, move.nameEn)}</span> → Select target`;
   container.appendChild(header);
 
   const list = document.createElement('div');
@@ -91,7 +92,7 @@ function showTargets(targets, move, type) {
     const infoPanel = document.createElement('div');
     infoPanel.className = 'target-info-panel';
     const baseWordLine = target.baseWord
-      ? `<div class="target-baseword">${target.baseWord}${target.baseReading ? ` (${target.baseReading})` : ''} — ${target.baseMeaning || ''}</div>`
+      ? `<div class="target-baseword">${renderJpFirst(target.baseWord, target.baseReading, target.baseMeaning)}</div>`
       : '';
     infoPanel.innerHTML = `
       <div class="target-jp">${target.name}</div>

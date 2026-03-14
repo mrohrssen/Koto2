@@ -4,6 +4,7 @@
 // If 4 moves: shows new move + current 4 moves, player picks one to replace or skips
 
 import { dom } from '../dom.js';
+import { renderJpFirst } from './bootstrap-client.js';
 
 const ELEMENT_COLORS = {
   wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63',
@@ -23,7 +24,7 @@ export function showLearnPrompt(creature, creatureIndex, newMove, alreadyLearned
     // Header: "[Creature] wants to learn [Move]!"
     const header = document.createElement('div');
     header.className = 'move-learn-header';
-    header.innerHTML = `<strong>${creature.nameEn || creature.name}</strong> wants to learn<br><span class="move-learn-new-name" style="color:${ELEMENT_COLORS[newMove.element] || ELEMENT_COLORS.neutral}">${newMove.name} (${newMove.nameEn})</span>`;
+    header.innerHTML = `<strong>${creature.nameEn || creature.name}</strong> wants to learn<br><span class="move-learn-new-name" style="color:${ELEMENT_COLORS[newMove.element] || ELEMENT_COLORS.neutral}">${renderJpFirst(newMove.name, newMove.reading, newMove.nameEn)}</span>`;
     panel.appendChild(header);
 
     // New move details
@@ -94,7 +95,7 @@ function buildMoveCard(move, badge) {
 
   card.innerHTML = `
     ${badgeHtml}
-    <div class="move-learn-card-name">${move.name} <small>${move.nameEn}</small></div>
+    <div class="move-learn-card-name">${renderJpFirst(move.name, move.reading, move.nameEn)}</div>
     <div class="move-learn-card-stats">
       <span>${powerLabel} ${powerValue}</span>
       <span>${move.mpCost ?? 0}MP</span>

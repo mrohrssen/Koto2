@@ -15,6 +15,8 @@
 
 import { creatureSpritePath } from './sprite-utils.js';
 import * as narrationBox from './narration-box.js';
+import { t } from './i18n.js';
+import { flushExposures } from './bootstrap-client.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -63,24 +65,24 @@ export async function renderDealerRoom(actionsModule) {
               <div class="dealer-offer-desc">HP: ${creature.maxHp} \u00B7 ATK: ${creature.attack}</div>
             </div>
           </div>
-          <button class="dealer-buy-btn action-btn action-btn-primary" data-creature-id="${creature.id}" ${btnDisabled}>${creature.buyPrice}cr で仲間に</button>
+          <button class="dealer-buy-btn action-btn action-btn-primary" data-creature-id="${creature.id}" ${btnDisabled}>${t('dealerBuyBtn', creature.buyPrice)}</button>
         </div>
       `;
     }).join('');
 
     buyHtml = `
-      <div class="dealer-section-title">仲間モンスター</div>
+      <div class="dealer-section-title">${t('dealerCompanions')}</div>
       ${creatureCards}
     `;
   } else if (!canBuy) {
-    buyHtml = '<div class="dealer-section-title" style="opacity:0.5">\u8CFC\u5165\u6E08\u307F</div>';
+    buyHtml = `<div class="dealer-section-title" style="opacity:0.5">${t('dealerSoldOut')}</div>`;
   }
 
   // Sell section
-  const sellLabel = canSellMore ? `\u58F2\u5374 (${sellCount}/${maxSells})` : `\u58F2\u5374\u4E0A\u9650 (${maxSells}/${maxSells})`;
+  const sellLabel = canSellMore ? t('dealerSell', sellCount, maxSells) : t('dealerSellLimit', maxSells, maxSells);
   const partyHtml = partyCreatures.length > 0 ? partyCreatures.map(creature => {
     const hpPercent = Math.floor((creature.hp / creature.maxHp) * 100);
-    const slotBadge = creature.slot === 'active' ? '\u30A2\u30AF\u30C6\u30A3\u30D6' : '\u30EA\u30B6\u30FC\u30D6';
+    const slotBadge = creature.slot === 'active' ? t('dealerActive') : t('dealerReserve');
     return `
       <div class="dealer-inventory-item" data-creature-id="${creature.id}">
         <div class="shrine-creature-icon" style="border-color: var(--rarity-${creature.rarity || 'common'})"><img src="${creatureSpritePath(creature.id)}" alt="${creature.nameEn}" style="width:100%;height:100%;object-fit:contain" /></div>
@@ -92,11 +94,11 @@ export async function renderDealerRoom(actionsModule) {
           </div>
         </div>
         <button class="dealer-sell-btn" data-creature-id="${creature.id}" data-sell-price="${creature.sellPrice}" ${!canSellMore ? 'disabled' : ''}>
-          \u58F2 ${creature.sellPrice}cr
+          ${t('dealerSellBtn', creature.sellPrice)}
         </button>
       </div>
     `;
-  }).join('') : '<p style="text-align:center;color:var(--text-secondary)">モンスターがいない</p>';
+  }).join('') : `<p style="text-align:center;color:var(--text-secondary)">${t('dealerEmpty')}</p>`;
 
   actionsModule.setContent(`
     <div class="dealer-room">
@@ -108,12 +110,15 @@ export async function renderDealerRoom(actionsModule) {
       <div class="dealer-inventory-list">
         ${partyHtml}
       </div>
-      <button class="dealer-leave-btn action-btn action-btn-secondary">\u7ACB\u3061\u53BB\u308B</button>
+      <button class="dealer-leave-btn action-btn action-btn-secondary">${t('dealerLeave')}</button>
     </div>
   `);
 
   // Show dealer greeting via standard narration system
-  narrationBox.show('いらっしゃい！珍しいモンスターが入荷したよ！', { speaker: '行商人' });
+  narrationBox.show(t('dealerGreeting'), {
+    speaker: { name: '行商人', reading: 'ぎょうしょうにん', meaning: 'traveling merchant' },
+    html: true
+  });
 
   // Wire buy buttons
   document.querySelectorAll('.dealer-buy-btn').forEach(btn => {
@@ -156,4 +161,6 @@ export async function renderDealerRoom(actionsModule) {
     if (result?.state) { updateGameState(result.state); }
     updateUI();
   });
+
+  flushExposures();
 }

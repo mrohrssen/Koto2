@@ -403,7 +403,7 @@ export function showNpcSkills(skills) {
   for (const skill of skills) {
     const pill = document.createElement('span');
     pill.className = 'npc-skill-pill';
-    pill.textContent = `${skill.name} ${skill.nameEn}`;
+    pill.innerHTML = renderJpFirst(skill.name, skill.reading, skill.nameEn);
     dom.enemySkillBar.appendChild(pill);
   }
   dom.enemySkillBar.style.display = 'flex';

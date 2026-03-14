@@ -5079,6 +5079,20 @@ html, body {
   opacity: 0.8;
 }
 
+/* ── Suppress mini-card inside attack cards (meaning already shown via .sac-meaning) ── */
+.sac-vocab .bs-word:has(.bs-word-en) {
+  display: inline;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.sac-vocab .bs-word-en { display: none; }
+
+/* ── Compact mini-card inside floating effect text ── */
+.floating-effect-text .bs-word:has(.bs-word-en) {
+  padding: 1px 3px;
+}
+
 .creature-subtitle {
   font-size: 11px;
   line-height: 1.4;

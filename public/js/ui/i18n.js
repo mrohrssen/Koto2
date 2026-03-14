@@ -143,6 +143,46 @@ const strings = {
                       ja: '\u2190 知らない \u00A0|\u00A0 知ってた \u2192' },
   hintDiscovery:    { en: '\u2190 learn \u00A0|\u00A0 learn \u2192',
                       ja: '\u2190 覚える \u00A0|\u00A0 覚える \u2192' },
+
+  // ── Dealer room ──
+  dealerCompanions:   { en: 'Companion Monsters',  ja: '仲間モンスター',
+                        tagged: '{Companion|仲間|なかま} Monsters' },
+  dealerSoldOut:      { en: 'Sold Out',             ja: '購入済み',
+                        tagged: '{Sold Out|購入済み|こうにゅうずみ}' },
+  dealerSell:         { en: 'Sell ({0}/{1})',        ja: '売却 ({0}/{1})',
+                        tagged: '{Sell|売却|ばいきゃく} ({0}/{1})' },
+  dealerSellLimit:    { en: 'Sell Limit ({0}/{1})',  ja: '売却上限 ({0}/{1})',
+                        tagged: '{Sell Limit|売却上限|ばいきゃくじょうげん} ({0}/{1})' },
+  dealerActive:       { en: 'Active',               ja: 'アクティブ',
+                        tagged: '{Active|アクティブ|}' },
+  dealerReserve:      { en: 'Reserve',              ja: 'リザーブ',
+                        tagged: '{Reserve|リザーブ|}' },
+  dealerSellBtn:      { en: 'Sell {0}cr',           ja: '売 {0}cr',
+                        tagged: '{Sell|売|う} {0}cr' },
+  dealerLeave:        { en: 'Leave',                ja: '立ち去る',
+                        tagged: '{Leave|立ち去る|たちさる}' },
+  dealerBuyBtn:       { en: '{0}cr \u2014 befriend', ja: '{0}cr で仲間に',
+                        tagged: '{0}cr \u2014 {befriend|仲間に|なかまに}' },
+  dealerGreeting:     { en: 'Welcome! Rare monsters just arrived!',
+                        ja: 'いらっしゃい！珍しいモンスターが入荷したよ！',
+                        tagged: '{Welcome|いらっしゃい|}! {Rare|珍しい|めずらしい} monsters just {arrived|入荷した|にゅうかした}!' },
+  dealerEmpty:        { en: 'No monsters available', ja: 'モンスターがいない',
+                        tagged: 'No monsters {available|いない|}' },
+
+  // ── Status effects ──
+  effectConfuse:    { en: 'CONFUSE!',   ja: '混乱!',     tagged: '{CONFUSE|混乱|こんらん}!' },
+  effectStun:       { en: 'STUN!',      ja: 'スタン!',    tagged: '{STUN|スタン|}!' },
+  effectSleep:      { en: 'SLEEP!',     ja: '眠り!',     tagged: '{SLEEP|眠り|ねむり}!' },
+  effectAtkUp:      { en: 'ATK UP!',    ja: 'ATK UP!' },
+  effectAtkDown:    { en: 'ATK DOWN!',  ja: 'ATK DOWN!' },
+  effectHaste:      { en: 'HASTE!',     ja: 'ヘイスト!',  tagged: '{HASTE|ヘイスト|}!' },
+  effectShield:     { en: 'SHIELD!',    ja: 'シールド!',  tagged: '{SHIELD|シールド|}!' },
+  effectDefUp:      { en: 'DEF UP!',    ja: 'DEF UP!' },
+  effectSpdUp:      { en: 'SPD UP!',    ja: 'SPD UP!' },
+
+  // ── Action buttons ──
+  equipMonsters:    { en: 'Monster Equipment', ja: 'モンスター装備',
+                      tagged: 'Monster {Equipment|装備|そうび}' },
 };
 
 /**

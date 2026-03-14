@@ -100,7 +100,7 @@ import * as bugReport from './js/ui/bug-report.js';
 import * as speedReview from './js/ui/speed-review.js';
 import { configureCreatureImg, creatureSpritePath, probeIdleSprites } from './js/ui/sprite-utils.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
-import { setKnownWords, renderEnFirst, flushExposures } from './js/ui/bootstrap-client.js';
+import { setKnownWords, renderEnFirst, renderJpFirst, flushExposures } from './js/ui/bootstrap-client.js';
 
 // API imports - these are the server communication functions
 import {
@@ -239,7 +239,14 @@ function updateStatusBar() {
     const sep = dom.areaHeaderPill.querySelector('.area-header-sep');
     if (areaName && subAreaNameJa) {
       dom.areaHeaderName.textContent = areaName;
-      dom.areaHeaderSub.textContent = subAreaNameJa;
+      const subArea = activeRoom?.subArea;
+      if (subArea?.modifier && subArea?.location) {
+        dom.areaHeaderSub.innerHTML =
+          renderJpFirst(subArea.modifier.word, subArea.modifier.reading, subArea.modifier.meaning)
+          + renderJpFirst(subArea.location.word, subArea.location.reading, subArea.location.meaning);
+      } else {
+        dom.areaHeaderSub.textContent = subAreaNameJa;
+      }
       if (sep) sep.style.display = '';
       dom.areaHeaderPill.classList.add('visible');
     } else if (areaName) {

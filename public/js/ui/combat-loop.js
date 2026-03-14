@@ -28,6 +28,8 @@
 import { playSFX } from '../audio.js';
 import { getAuthHeaders } from '../api.js';
 import { logger } from '../logger.js';
+import { renderJpFirst } from './bootstrap-client.js';
+import { t } from './i18n.js';
 import {
   impactEnemyEffect,
   delay as effectDelay,
@@ -47,7 +49,6 @@ function npcSpritePath(npcId) {
   return `/assets/sprites/npcs/${npcId}.webp`;
 }
 import { prefetchWord, playWordPair, playDialogueAudio } from '../tts.js';
-import { t } from './i18n.js';
 import { init as initMoveSelect, showMoves, clear as clearMoveSelect, setActiveLabel } from './move-select.js';
 import { init as initTargetSelect, showEnemies, showAllies, clear as clearTargetSelect } from './target-select.js';
 import { showLearnPrompt } from './move-learn.js';
@@ -95,10 +96,10 @@ function buildSplitAttackCard(atk, isEnemy) {
   const spriteUrl = creatureSpritePath(atk.attackerId);
   const targetSprite = creatureSpritePath(atk.targetId);
 
-  const baseWordHtml = wrapWithRuby(atk.attackerBaseWord, atk.attackerBaseReading);
-  const skillNameHtml = wrapWithRuby(atk.attackerSkillName, atk.attackerSkillReading);
+  const baseWordHtml = renderJpFirst(atk.attackerBaseWord, atk.attackerBaseReading, atk.attackerBaseMeaning);
+  const skillNameHtml = renderJpFirst(atk.attackerSkillName, atk.attackerSkillReading, atk.attackerSkillEn);
 
-  // Creature names: use English name as furigana for katakana
+  // Creature names: use English name as furigana for katakana (not teaching targets)
   const attackerNameJp = atk.attackerNameJp || atk.attackerName;
   const attackerNameHtml = wrapWithRuby(attackerNameJp, attackerNameJp, atk.attackerName);
 
@@ -191,8 +192,8 @@ function insertNpcAttackCard(atk) {
   const spriteUrl = npcSpritePath(atk.attackerId);
   const targetSprite = creatureSpritePath(atk.targetId);
 
-  const baseWordHtml = wrapWithRuby(atk.attackerBaseWord, atk.attackerBaseReading);
-  const skillNameHtml = wrapWithRuby(atk.attackerSkillName, atk.attackerSkillReading);
+  const baseWordHtml = renderJpFirst(atk.attackerBaseWord, atk.attackerBaseReading, atk.attackerBaseMeaning);
+  const skillNameHtml = renderJpFirst(atk.attackerSkillName, atk.attackerSkillReading, atk.attackerSkillEn);
 
   const attackerNameJp = atk.attackerNameJp || atk.attackerName;
   const attackerNameHtml = wrapWithRuby(attackerNameJp, attackerNameJp, atk.attackerName);
@@ -1088,7 +1089,7 @@ function showFloatingText(targetEl, text) {
   const rect = targetEl.getBoundingClientRect();
   const popup = document.createElement('div');
   popup.className = 'floating-effect-text';
-  popup.textContent = text;
+  popup.innerHTML = text;
   popup.style.left = `${rect.left + rect.width / 2}px`;
   popup.style.top = `${rect.top}px`;
   document.body.appendChild(popup);
@@ -1116,16 +1117,16 @@ async function showEffectEvents(result) {
       }
     } else if (event.type !== 'poison') {
       const EFFECT_LABELS = {
-        confuse: '混乱!',
-        stun: 'スタン!',
-        sleep: '眠り!',
-        attack_buff: 'ATK UP!',
-        attack_debuff: 'ATK DOWN!',
-        haste: 'ヘイスト!',
-        shield: 'シールド!',
-        team_shield: 'シールド!',
-        defense_buff: 'DEF UP!',
-        speed_buff: 'SPD UP!'
+        confuse: t('effectConfuse'),
+        stun: t('effectStun'),
+        sleep: t('effectSleep'),
+        attack_buff: t('effectAtkUp'),
+        attack_debuff: t('effectAtkDown'),
+        haste: t('effectHaste'),
+        shield: t('effectShield'),
+        team_shield: t('effectShield'),
+        defense_buff: t('effectDefUp'),
+        speed_buff: t('effectSpdUp')
       };
       const baseType = event.type.replace(/_tick$/, '');
       const label = EFFECT_LABELS[baseType] || event.type;
