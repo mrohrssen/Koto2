@@ -587,15 +587,24 @@ html, body {
 }
 
 .bootstrap-word:has(.scaffold-english) {
-  background: rgba(100, 181, 246, 0.10);
-  padding: 1px 5px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: baseline;
+  margin: 0 3px;
+  border: 1px solid rgba(100, 181, 246, 0.25);
   border-radius: 6px;
-  border-bottom: 1.5px solid rgba(100, 181, 246, 0.30);
-  margin: 0 1px;
+  padding: 2px 6px 1px;
+  gap: 0;
 }
 
 .bootstrap-word ruby {
   ruby-position: over;
+}
+
+.bootstrap-word:has(.scaffold-english) ruby {
+  line-height: 1;
+  margin-bottom: -3px;
 }
 
 .bootstrap-word ruby rt {
@@ -612,11 +621,10 @@ html, body {
 }
 
 .scaffold-english {
-  font-size: 10px;
+  font-size: 0.5em;
   color: var(--accent-primary, #64b5f6);
-  margin-left: 3px;
-  font-style: italic;
-  opacity: 0.85;
+  line-height: 1;
+  opacity: 0.8;
 }
 
 .narration-indicator {
@@ -5036,17 +5044,26 @@ html, body {
   white-space: nowrap;
 }
 
-/* Teaching word (has English annotation) — subtle highlight pill */
+/* Teaching word — mini card with English below */
 .bs-word:has(.bs-word-en) {
-  background: rgba(100, 181, 246, 0.10);
-  padding: 1px 5px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: baseline;
+  margin: 0 3px;
+  border: 1px solid rgba(100, 181, 246, 0.25);
   border-radius: 6px;
-  border-bottom: 1.5px solid rgba(100, 181, 246, 0.30);
-  margin: 0 1px;
+  padding: 2px 6px 1px;
+  gap: 0;
 }
 
 .bs-word ruby {
   ruby-position: over;
+}
+
+.bs-word:has(.bs-word-en) ruby {
+  line-height: 1;
+  margin-bottom: -3px;
 }
 
 .bs-word rt {
@@ -5056,11 +5073,10 @@ html, body {
 }
 
 .bs-word-en {
-  font-size: 0.65em;
+  font-size: 0.5em;
   color: var(--accent-primary, #64b5f6);
-  margin-left: 3px;
-  font-style: italic;
-  opacity: 0.85;
+  line-height: 1;
+  opacity: 0.8;
 }
 
 .creature-subtitle {
