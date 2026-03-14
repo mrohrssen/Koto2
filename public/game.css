@@ -572,7 +572,7 @@ html, body {
   z-index: 1;
   color: #2f3a45;
   font-size: clamp(16px, 4.25vw, 24px);
-  line-height: 1.45;
+  line-height: 1.65;
   font-weight: 500;
   font-family: 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', var(--font-family);
   white-space: pre-wrap;
@@ -580,10 +580,18 @@ html, body {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-/* Bootstrap language scaffolding */
+/* Bootstrap language scaffolding (legacy class names) */
 .bootstrap-word {
   display: inline;
   white-space: nowrap;
+}
+
+.bootstrap-word:has(.scaffold-english) {
+  background: rgba(100, 181, 246, 0.10);
+  padding: 1px 5px;
+  border-radius: 6px;
+  border-bottom: 1.5px solid rgba(100, 181, 246, 0.30);
+  margin: 0 1px;
 }
 
 .bootstrap-word ruby {
@@ -606,7 +614,9 @@ html, body {
 .scaffold-english {
   font-size: 10px;
   color: var(--accent-primary, #64b5f6);
-  margin-left: 2px;
+  margin-left: 3px;
+  font-style: italic;
+  opacity: 0.85;
 }
 
 .narration-indicator {
@@ -5026,6 +5036,15 @@ html, body {
   white-space: nowrap;
 }
 
+/* Teaching word (has English annotation) — subtle highlight pill */
+.bs-word:has(.bs-word-en) {
+  background: rgba(100, 181, 246, 0.10);
+  padding: 1px 5px;
+  border-radius: 6px;
+  border-bottom: 1.5px solid rgba(100, 181, 246, 0.30);
+  margin: 0 1px;
+}
+
 .bs-word ruby {
   ruby-position: over;
 }
@@ -5037,9 +5056,11 @@ html, body {
 }
 
 .bs-word-en {
-  font-size: 0.6em;
+  font-size: 0.65em;
   color: var(--accent-primary, #64b5f6);
-  margin-left: 2px;
+  margin-left: 3px;
+  font-style: italic;
+  opacity: 0.85;
 }
 
 .creature-subtitle {
