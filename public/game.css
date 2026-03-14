@@ -572,7 +572,7 @@ html, body {
   z-index: 1;
   color: #2f3a45;
   font-size: clamp(16px, 4.25vw, 24px);
-  line-height: 1.45;
+  line-height: 1.65;
   font-weight: 500;
   font-family: 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', var(--font-family);
   white-space: pre-wrap;
@@ -580,14 +580,31 @@ html, body {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-/* Bootstrap language scaffolding */
+/* Bootstrap language scaffolding (legacy class names) */
 .bootstrap-word {
   display: inline;
   white-space: nowrap;
 }
 
+.bootstrap-word:has(.scaffold-english) {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: baseline;
+  margin: 0 3px;
+  border: 1px solid rgba(100, 181, 246, 0.25);
+  border-radius: 6px;
+  padding: 2px 6px 1px;
+  gap: 0;
+}
+
 .bootstrap-word ruby {
   ruby-position: over;
+}
+
+.bootstrap-word:has(.scaffold-english) ruby {
+  line-height: 1;
+  margin-bottom: -3px;
 }
 
 .bootstrap-word ruby rt {
@@ -604,9 +621,10 @@ html, body {
 }
 
 .scaffold-english {
-  font-size: 10px;
+  font-size: 0.5em;
   color: var(--accent-primary, #64b5f6);
-  margin-left: 2px;
+  line-height: 1;
+  opacity: 0.8;
 }
 
 .narration-indicator {
@@ -5026,8 +5044,26 @@ html, body {
   white-space: nowrap;
 }
 
+/* Teaching word — mini card with English below */
+.bs-word:has(.bs-word-en) {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: baseline;
+  margin: 0 3px;
+  border: 1px solid rgba(100, 181, 246, 0.25);
+  border-radius: 6px;
+  padding: 2px 6px 1px;
+  gap: 0;
+}
+
 .bs-word ruby {
   ruby-position: over;
+}
+
+.bs-word:has(.bs-word-en) ruby {
+  line-height: 1;
+  margin-bottom: -3px;
 }
 
 .bs-word rt {
@@ -5037,9 +5073,10 @@ html, body {
 }
 
 .bs-word-en {
-  font-size: 0.6em;
+  font-size: 0.5em;
   color: var(--accent-primary, #64b5f6);
-  margin-left: 2px;
+  line-height: 1;
+  opacity: 0.8;
 }
 
 .creature-subtitle {

@@ -211,6 +211,10 @@ export async function openSettings() {
         style="width:100%;background:var(--surface-2);color:var(--text)">Clear Dialogue Cache</button>
       <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Regenerates all NPC and creature dialogue on next exploration. Useful after switching AI models.</small>
 
+      <button class="action-btn" id="settings-reset-prologue-btn"
+        style="width:100%;background:var(--surface-2);color:var(--text);margin-top:10px">Reset Prologue</button>
+      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Replay the intro prologue on next page load.</small>
+
       <button class="action-btn action-btn-primary" id="settings-save-btn"
         style="margin-top:20px;width:100%">Save</button>
     </div>
@@ -286,6 +290,25 @@ export async function openSettings() {
     } catch {
       btn.textContent = 'Error';
       setTimeout(() => { btn.textContent = 'Clear Dialogue Cache'; btn.disabled = false; }, 2000);
+    }
+  });
+
+  document.getElementById('settings-reset-prologue-btn')?.addEventListener('click', async (e) => {
+    const btn = e.target;
+    btn.disabled = true;
+    btn.textContent = 'Resetting...';
+    try {
+      const resp = await fetch('/api/game/prologue-reset', { method: 'POST', headers: getAuthHeaders() });
+      if (resp.ok) {
+        btn.textContent = 'Done — reload to replay';
+        setTimeout(() => { btn.textContent = 'Reset Prologue'; btn.disabled = false; }, 3000);
+      } else {
+        btn.textContent = 'Failed';
+        setTimeout(() => { btn.textContent = 'Reset Prologue'; btn.disabled = false; }, 2000);
+      }
+    } catch {
+      btn.textContent = 'Error';
+      setTimeout(() => { btn.textContent = 'Reset Prologue'; btn.disabled = false; }, 2000);
     }
   });
 

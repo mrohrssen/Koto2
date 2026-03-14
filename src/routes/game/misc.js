@@ -359,5 +359,14 @@ export default function createMiscRoutes({
     res.json({ ok: true });
   });
 
+  // Reset prologue so it plays again
+  router.post('/prologue-reset', (req, res) => {
+    const gameManager = req.gameManager;
+    const meta = gameManager.getMeta();
+    meta.prologueComplete = false;
+    req.saveGame();
+    res.json({ ok: true });
+  });
+
   return router;
 }
