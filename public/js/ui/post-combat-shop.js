@@ -31,7 +31,7 @@ const RARITY_COLORS = {
 const TYPE_ICONS = {
   heal: '💚',
   boost: '⬆️',
-  charge: '⚡',
+  mpRestore: '🔵',
   revive: '💫',
   keepsake: '🔒'
 };

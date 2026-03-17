@@ -143,13 +143,13 @@
     "compoundRank": 39200,
     "rank": 6300,
     "rarity": "rare",
-    "type": "charge",
+    "type": "mpRestore",
     "effect": {
-      "chargeBoost": 2
+      "mpRestorePercent": 0.25
     },
-    "description": "Grant +2 charge to one creature",
-    "descriptionTagged": "Grant +2 charge to one {creature|生き物|いきもの}",
-    "descriptionJa": "クリーチャー1体のチャージを2増加",
+    "description": "Restore 25% MP to all creatures",
+    "descriptionTagged": "{Restore|回復|かいふく} 25% MP to all {creatures|生き物|いきもの}",
+    "descriptionJa": "全クリーチャーのMPを25%回復",
     "stage": 6
   },
   {
@@ -291,12 +291,11 @@
     "rarity": "epic",
     "type": "heal",
     "effect": {
-      "healAllPercent": 0.15,
-      "chargeBoost": 1
+      "healAllPercent": 0.15
     },
-    "description": "Heal all creatures for 15% HP and grant +1 charge",
-    "descriptionTagged": "{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 15% HP and grant +1 charge",
-    "descriptionJa": "全クリーチャーのHPを15%回復し、チャージを1増加",
+    "description": "Heal all creatures for 15% HP",
+    "descriptionTagged": "{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 15% HP",
+    "descriptionJa": "全クリーチャーのHPを15%回復",
     "stage": 10
   },
   {
@@ -410,13 +409,13 @@
     "compoundRank": 13700,
     "rank": 9700,
     "rarity": "rare",
-    "type": "charge",
+    "type": "mpRestore",
     "effect": {
-      "chargeBoost": 2
+      "mpRestorePercent": 0.25
     },
-    "description": "Grant +2 charge to one creature",
-    "descriptionTagged": "Grant +2 charge to one {creature|生き物|いきもの}",
-    "descriptionJa": "クリーチャー1体のチャージを2増加",
+    "description": "Restore 25% MP to all creatures",
+    "descriptionTagged": "{Restore|回復|かいふく} 25% MP to all {creatures|生き物|いきもの}",
+    "descriptionJa": "全クリーチャーのMPを25%回復",
     "stage": 8
   },
   {
@@ -727,13 +726,13 @@
     "compoundRank": 8600,
     "rank": 8600,
     "rarity": "rare",
-    "type": "charge",
+    "type": "mpRestore",
     "effect": {
-      "chargeBoost": 2
+      "mpRestorePercent": 0.25
     },
-    "description": "Grant +2 charge to one creature",
-    "descriptionTagged": "Grant +2 charge to one {creature|生き物|いきもの}",
-    "descriptionJa": "クリーチャー1体のチャージを2増加",
+    "description": "Restore 25% MP to all creatures",
+    "descriptionTagged": "{Restore|回復|かいふく} 25% MP to all {creatures|生き物|いきもの}",
+    "descriptionJa": "全クリーチャーのMPを25%回復",
     "stage": 7
   },
   {
