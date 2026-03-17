@@ -98,6 +98,7 @@ import * as leaderboard from './js/ui/leaderboard.js';
 import * as lookup from './js/ui/lookup.js';
 import * as bugReport from './js/ui/bug-report.js';
 import * as speedReview from './js/ui/speed-review.js';
+import * as metaShop from './js/ui/meta-shop.js';
 import { configureCreatureImg, creatureSpritePath, probeIdleSprites } from './js/ui/sprite-utils.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, renderEnFirst, renderJpFirst, flushExposures } from './js/ui/bootstrap-client.js';
@@ -1259,6 +1260,11 @@ async function initGame() {
     showCollectionSelect,
     apiGetWhackAMolePool,
     apiCompleteWhackAMole,
+  });
+
+  metaShop.init({
+    getGameState: () => gameState,
+    updateGameState
   });
 
   economyUI.init({

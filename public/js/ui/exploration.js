@@ -28,6 +28,7 @@ import { WhackAMoleGame } from './whack-a-mole.js';
 import { playSFX } from '../audio.js';
 import { creatureBgUrl, configureCreatureImg } from './sprite-utils.js';
 import { t, isJapanified } from './i18n.js';
+import * as metaShop from './meta-shop.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -244,11 +245,15 @@ function closeInventory() {
   }
 }
 
-/** Hub phase — show Speed Review + Equip Bots + Infiltrate buttons */
+/** Hub phase — show Speed Review + Upgrades + Infiltrate buttons */
 export function renderHub() {
+  const gameState = getGameState();
+  const tokens = gameState.meta?.progressionTokens || 0;
+
   actions.setContent(`
     <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px;">
       <button class="action-btn action-btn-secondary" id="speed-review-btn">\uD83D\uDCDA 速習</button>
+      <button class="action-btn action-btn-secondary" id="upgrades-btn">\u2B06\uFE0F Upgrades${tokens > 0 ? ` (${tokens})` : ''}</button>
       <button class="action-btn action-btn-primary" id="context-action-btn">\u26A1 潜入</button>
     </div>
   `);
@@ -262,6 +267,11 @@ export function renderHub() {
     } else {
       sceneModule.showNarration('復習する言葉がありません', { autoDismiss: 2000 });
     }
+  });
+
+  document.getElementById('upgrades-btn')?.addEventListener('click', () => {
+    playSFX('button-tap');
+    metaShop.show();
   });
 
   document.getElementById('context-action-btn')?.addEventListener('click', () => {
