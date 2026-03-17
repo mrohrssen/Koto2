@@ -1313,7 +1313,7 @@ async function initGame() {
     apiSubmitBefriendAnswer,
     apiStartNpcDialogue: startNpcDialogue,
     apiRespondNpcDialogue: respondNpcDialogue,
-    showNpcSprite: (name, id) => scene.showNpcTrainer(name, id),
+    showNpcSprite: (name, id, npc) => scene.showNpcTrainer(name, id, npc),
     hideNpcSprite: () => scene.hideNpcTrainer(),
     updateCreatureRowData: (creatures) => creatureRow.updateData(creatures),
   });

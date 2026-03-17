@@ -249,7 +249,7 @@ function insertNpcAttackCard(atk) {
   // Staggered row reveal (same as regular attack cards)
   const rows = card.querySelectorAll('.sac-row');
   rows.forEach((row, i) => {
-    setTimeout(() => row.classList.add('sac-row-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
+    setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
   });
 
   // TTS for NPC base word + skill name
@@ -2483,7 +2483,7 @@ export async function stopCombatLoop(result) {
 export async function showNpcGreeting(npcData) {
   if (!npcData?.greeting) return;
   const npcName = npcData.nameEn || npcData.name;
-  if (showNpcSprite) showNpcSprite(npcName, npcData.id);
+  if (showNpcSprite) showNpcSprite(npcName, npcData.id, npcData);
   // Play greeting audio if available (fire-and-forget, don't block narration)
   if (npcData.greetingTts && npcData.userId) {
     playDialogueAudio(npcData.userId, npcData.greetingTts);
@@ -2507,7 +2507,7 @@ export async function runNpcDialogue() {
   const npcName = npc.nameEn || npc.name;
 
   // Show NPC sprite in scene area
-  if (showNpcSprite) showNpcSprite(npcName, npc.id);
+  if (showNpcSprite) showNpcSprite(npcName, npc.id, npc);
 
   // Play freed narration audio if available (fire-and-forget)
   if (freedTts && userId) {
