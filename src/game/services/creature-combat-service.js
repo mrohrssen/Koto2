@@ -165,7 +165,7 @@ function tryApplyStatus(move, target, caster, allies) {
 /**
  * Execute a single move for one creature. Returns array of attack records and xpEvents.
  */
-function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds) {
+function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds, metaMults = null) {
   const attacks = [];
   const xpEvents = [];
   const stab = move.element !== 'neutral' && move.element === creature.element;
@@ -375,7 +375,7 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
     creature.mp = (creature.mp || 0) - move.mpCost;
 
     // Execute the move
-    const result = executeMove(creature, choice.creatureIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds);
+    const result = executeMove(creature, choice.creatureIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds, metaMults);
     // Annotate attacks with post-deduction MP so frontend can update bars immediately
     for (const atk of result.attacks) {
       atk.attackerMp = creature.mp;
@@ -387,7 +387,7 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
     // If this creature had haste, execute the same move a second time
     if (hastedCreatureIndices.has(choice.creatureIndex)) {
       // Don't charge MP again for haste extra action
-      const result2 = executeMove(creature, choice.creatureIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds);
+      const result2 = executeMove(creature, choice.creatureIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIds, metaMults);
       for (const atk of result2.attacks) {
         atk.attackerMp = creature.mp;
         atk.attackerMaxMp = creature.maxMp || 0;
