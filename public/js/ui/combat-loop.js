@@ -28,7 +28,7 @@
 import { playSFX } from '../audio.js';
 import { getAuthHeaders } from '../api.js';
 import { logger } from '../logger.js';
-import { renderJpFirst, renderEnFirst } from './bootstrap-client.js';
+import { renderJpFirst, renderEnFirst, flushExposures } from './bootstrap-client.js';
 import { t } from './i18n.js';
 import {
   impactEnemyEffect,
@@ -474,6 +474,7 @@ export function initMoveUI() {
 
       document.body.appendChild(backdrop);
       document.body.appendChild(popup);
+      flushExposures();
     }
   });
   initTargetSelect({
