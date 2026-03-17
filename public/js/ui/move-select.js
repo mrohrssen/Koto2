@@ -54,7 +54,7 @@ function buildMoveCell(move, canAfford) {
     statusHtml = `<span class="move-status-pill">${sIcon} ${move.statusEffect.replace('_', ' ')} ${durText}</span>`;
   }
 
-  const moveNameHtml = renderJpFirst(move.name, move.reading, move.meaning);
+  const moveNameHtml = renderJpFirst(move.name, move.reading, move.nameEn);
 
   cell.innerHTML = `
     <div class="move-hero">
