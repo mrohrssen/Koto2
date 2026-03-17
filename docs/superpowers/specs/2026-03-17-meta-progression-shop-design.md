@@ -6,7 +6,7 @@ A simple meta progression shop accessible from the hub. Players earn Progression
 
 ## Currency: Progression Tokens
 
-- **Earning:** 1 token awarded per boss defeated (end of each area)
+- **Earning:** 1 token awarded per boss defeated or befriended (end of each area)
 - **Storage:** `meta.progressionTokens` (integer, default 0, persists across runs)
 - **Spending:** At the hub shop only
 
@@ -100,13 +100,13 @@ Add `progressionTokens` and `upgrades` to `getState()` in `src/game/loop.js` so 
 
 ### Token Award
 
-When a boss is defeated (in GameManager or combat service), increment:
+When a boss is defeated or befriended (in GameManager or combat service), increment:
 
 ```javascript
 this.meta.progressionTokens += 1;
 ```
 
-This hooks into the existing boss defeat flow (separate work — boss implementation is out of scope for this spec).
+This hooks into the existing boss defeat/befriend flow (separate work — boss implementation is out of scope for this spec).
 
 ### API Endpoints
 
@@ -215,7 +215,7 @@ Simple panel/modal showing:
 
 ## Out of Scope
 
-- Boss implementation (tokens will be awarded when bosses exist)
+- Boss implementation (tokens will be awarded when bosses exist — on defeat or befriend)
 - Japanese vocab on upgrade names (meta system, not a learning moment)
 - New sprites or art for the shop
 - Achievement integration
