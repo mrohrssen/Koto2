@@ -388,58 +388,58 @@
       "speechStyle": "Measured and precise, favors literary vocabulary and complex sentence structures, often references books mid-conversation, uses polite but slightly lecturing tone with gentle warmth underneath",
       "quirk": "Quotes passages from the library's books at seemingly random moments — but the quotes always turn out to be eerily relevant"
     },
-    "greeting": "この本棚に触れないで。ここの知識は全て…私だけのものよ。誰にも渡さない。",
-    "defeatLine": "あら…私、何を…？学生たちへの講義が…ああ、そうだ、本の続きを読まなくちゃ…",
+    "greeting": "Don't touch these {shelves|棚|たな}. This {knowledge|知識|ちしき} belongs to me alone — I won't share it with anyone.",
+    "defeatLine": "Oh… what was I… ? My {lecture|講義|こうぎ} for the students… ah yes, I still have pages left to read…",
     "postCombat": {
-      "freed": "…ありがとう。私、本を独り占めしようとしていたのね…。恥ずかしい限りだわ。",
+      "freed": "…Thank you. I was trying to keep all the {books|本|ほん} for myself… How embarrassing.",
       "rounds": [
         {
-          "npcLine": "知識は共有されてこそ意味がある…教壇に立つ者として、忘れてはいけないことだったのに。",
+          "npcLine": "{Knowledge|知識|ちしき} only has meaning when it's shared — as someone who stands at the lectern, that's something I should never have forgotten.",
           "options": [
             {
-              "text": "システムのせいです。先生は悪くないですよ。",
+              "text": "It was the system's fault. You did nothing wrong.",
               "tone": "positive"
             },
             {
-              "text": "大変でしたね。",
+              "text": "That must have been hard.",
               "tone": "neutral"
             },
             {
-              "text": "そうだな。忘れるなよ。",
+              "text": "True. Don't forget it again.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "この図書館には不思議な本がたくさんあるの。システムについて書かれたものも…",
+          "npcLine": "This {library|図書館|としょかん} holds so many remarkable books — some even written about the system itself…",
           "options": [
             {
-              "text": "ぜひ見せてください！",
+              "text": "Please show me!",
               "tone": "positive"
             },
             {
-              "text": "そうなんですか。",
+              "text": "Is that right.",
               "tone": "neutral"
             },
             {
-              "text": "本で何がわかるんだ。",
+              "text": "What can books tell you, really.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "よかったら、いつでもここに来てちょうだい。一緒に調べましょう。",
+          "npcLine": "Come back whenever you like — we can {investigate|調べる|しらべる} together.",
           "options": [
             {
-              "text": "ありがとうございます。必ず来ます。",
+              "text": "Thank you. I'll definitely be back.",
               "tone": "positive"
             },
             {
-              "text": "考えておきます。",
+              "text": "I'll think about it.",
               "tone": "neutral"
             },
             {
-              "text": "一人で調べてくれ。",
+              "text": "I'd rather search alone.",
               "tone": "negative"
             }
           ]
@@ -481,58 +481,58 @@
       "speechStyle": "Weaves every conversation into a story, often beginning with 'long ago' or 'there was a time when...'",
       "quirk": "Carries a worn journal full of sketches and notes from places that may or may not exist anymore."
     },
-    "greeting": "昔々…いや、今は関係ない。ここは私の教室だ。出て行きなさい。",
-    "defeatLine": "…あれ？私は…何を話していたんだろう。",
+    "greeting": "Long ago… no, that's not important right now. This is my {classroom|教室|きょうしつ}. Please leave.",
+    "defeatLine": "…Hm? What was I… saying just now? Something about a {story|話|はなし}…",
     "postCombat": {
-      "freed": "…すみません。頭の中が暗くて、何も見えなかった。今はもう大丈夫です。",
+      "freed": "…I'm sorry. There was a {darkness|暗さ|くらさ} in my mind — I couldn't see anything clearly. I'm all right now.",
       "rounds": [
         {
-          "npcLine": "私は歴史の先生です。昔の話を教えるのが好きなんです。…でも、さっきは何を言っていたか覚えていない。",
+          "npcLine": "I'm a {history|歴史|れきし} teacher. I love telling old stories… But I can't remember what I was saying just now.",
           "options": [
             {
-              "text": "歴史の先生なんですね。素敵ですね。",
+              "text": "A {history|歴史|れきし} teacher — how wonderful.",
               "tone": "positive"
             },
             {
-              "text": "大変でしたね。",
+              "text": "That must have been hard.",
               "tone": "neutral"
             },
             {
-              "text": "覚えていない方がいいと思う。",
+              "text": "Maybe it's better you don't remember.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "このノートを見てください。昔の場所の絵を描いたんです。…もうない場所もあります。",
+          "npcLine": "Look at this {notebook|ノート|ノート} — I've drawn sketches of old places. Some of them don't exist anymore…",
           "options": [
             {
-              "text": "見せてください。きれいな絵ですね。",
+              "text": "Let me see. What beautiful drawings.",
               "tone": "positive"
             },
             {
-              "text": "絵が好きなんですね。",
+              "text": "You really love drawing.",
               "tone": "neutral"
             },
             {
-              "text": "もうない場所の絵に何の意味があるの？",
+              "text": "What's the point of drawing lost places?",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "この学校にも長い歴史があります。昔はここで色々なことがありました。…いい思い出ばかりです。",
+          "npcLine": "This {school|学校|がっこう} has a long history too. So many things happened here once… All good memories.",
           "options": [
             {
-              "text": "その話、もっと聞きたいです。",
+              "text": "I'd love to hear more.",
               "tone": "positive"
             },
             {
-              "text": "そうですか。",
+              "text": "I see.",
               "tone": "neutral"
             },
             {
-              "text": "昔の話はもういい。",
+              "text": "Old stories don't interest me.",
               "tone": "negative"
             }
           ]
