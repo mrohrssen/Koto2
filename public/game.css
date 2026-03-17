@@ -167,7 +167,7 @@ html, body {
   padding: 3px 12px;
   z-index: 10;
   text-align: center;
-  white-space: nowrap;
+  white-space: normal;
   opacity: 0;
   transition: opacity var(--transition-med);
   pointer-events: none;

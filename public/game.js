@@ -236,9 +236,17 @@ function updateStatusBar() {
 
     // Update area header pill
     const areaName = run.currentArea?.name;
+    const area = run.currentArea;
     const sep = dom.areaHeaderPill.querySelector('.area-header-sep');
     if (areaName && subAreaNameJa) {
-      dom.areaHeaderName.textContent = areaName;
+      if (area?.modifierWord?.meaning && area?.locationWord?.meaning) {
+        dom.areaHeaderName.innerHTML =
+          renderJpFirst(area.modifierWord.word, area.modifierWord.reading, area.modifierWord.meaning)
+          + (area.particle || '')
+          + renderJpFirst(area.locationWord.word, area.locationWord.reading, area.locationWord.meaning);
+      } else {
+        dom.areaHeaderName.textContent = areaName;
+      }
       const subArea = activeRoom?.subArea;
       if (subArea?.modifier && subArea?.location) {
         dom.areaHeaderSub.innerHTML =
@@ -250,7 +258,14 @@ function updateStatusBar() {
       if (sep) sep.style.display = '';
       dom.areaHeaderPill.classList.add('visible');
     } else if (areaName) {
-      dom.areaHeaderName.textContent = areaName;
+      if (area?.modifierWord?.meaning && area?.locationWord?.meaning) {
+        dom.areaHeaderName.innerHTML =
+          renderJpFirst(area.modifierWord.word, area.modifierWord.reading, area.modifierWord.meaning)
+          + (area.particle || '')
+          + renderJpFirst(area.locationWord.word, area.locationWord.reading, area.locationWord.meaning);
+      } else {
+        dom.areaHeaderName.textContent = areaName;
+      }
       dom.areaHeaderSub.textContent = '';
       if (sep) sep.style.display = 'none';
       dom.areaHeaderPill.classList.add('visible');
