@@ -588,6 +588,15 @@ export class ExplorationService {
       this.gm.run.creatureParty.reserves.push(newCreature);
     }
 
+    // Apply meta progression bonuses to purchased creature
+    if (this.gm.run.metaHpMult > 1) {
+      newCreature.maxHp = Math.floor(newCreature.maxHp * this.gm.run.metaHpMult);
+      newCreature.hp = newCreature.maxHp;
+    }
+    if (this.gm.run.metaAtkMult > 1) {
+      newCreature.attack = Math.floor(newCreature.attack * this.gm.run.metaAtkMult);
+    }
+
     room.dealer.purchasedCreature = creatureId;
 
     logger.info('[Dealer] Creature purchased:', { creature: offered.nameEn, creatureId, price });

@@ -61,8 +61,21 @@ import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, 
 import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/creature-collection-service.js';
 import { selectNpcForEncounter, updateBond, recordEncounter, loadNpcs, rollNpcSkill, getNpcSkillsForNpc } from './services/npc-service.js';
+import { getMetaMultipliers } from './services/meta-shop-service.js';
 
 // ============ GAME MANAGER ============
+
+/** Apply meta progression HP/ATK bonuses to a creature using run multipliers */
+function applyMetaBonuses(creature, run) {
+  if (!creature || !run) return;
+  if (run.metaHpMult > 1) {
+    creature.maxHp = Math.floor(creature.maxHp * run.metaHpMult);
+    creature.hp = creature.maxHp;
+  }
+  if (run.metaAtkMult > 1) {
+    creature.attack = Math.floor(creature.attack * run.metaAtkMult);
+  }
+}
 
 export class GameManager {
   constructor() {
@@ -327,6 +340,19 @@ export class GameManager {
       this.run.creatureParty.active = ids.map(id => instantiateCreature(id));
     }
 
+    // Apply meta progression bonuses
+    const metaMults = getMetaMultipliers(this.meta);
+    this.run.metaHpMult = metaMults.hpMult;
+    this.run.metaAtkMult = metaMults.atkMult;
+
+    // Apply HP/ATK bonuses to starting creatures
+    for (const creature of this.run.creatureParty.active) {
+      applyMetaBonuses(creature, this.run);
+    }
+
+    // Fold XP bonus into itemBuffs base
+    this.run.itemBuffs.xpMultiplier = metaMults.xpMult;
+
     this.emitState();
 
     return {
@@ -555,6 +581,7 @@ export class GameManager {
       } else {
         this.run.creatureParty.reserves.push(creature);
       }
+      applyMetaBonuses(creature, this.run);
       if (this.meta && !creature.temporary) {
         // Increment befriend counter (always, even if already owned)
         if (!this.meta.befriendCount) this.meta.befriendCount = {};
@@ -605,7 +632,8 @@ export class GameManager {
    * @private
    */
   _handleCreatureAttackTurn(effectEvents, moveChoices) {
-    const playerResult = processMoveTurn(this.combat.allies, this.combat.enemies, moveChoices, this.run.itemBuffs, this.run.creatureParty);
+    const metaMults = { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 };
+    const playerResult = processMoveTurn(this.combat.allies, this.combat.enemies, moveChoices, this.run.itemBuffs, this.run.creatureParty, metaMults);
 
     // Award credits for kills
     if (playerResult.xpEvents?.length > 0) {
@@ -635,6 +663,8 @@ export class GameManager {
         if (!this.run.bossesDefeated) this.run.bossesDefeated = [];
         if (!this.run.bossesDefeated.includes(bossId)) {
           this.run.bossesDefeated.push(bossId);
+          // Award progression token for boss defeat
+          this.meta.progressionTokens = (this.meta.progressionTokens || 0) + 1;
         }
       }
 
@@ -896,11 +926,15 @@ export class GameManager {
 
     // Captured last enemy — immediate victory
     if (befriendResult.success && befriendResult.allEnemiesDefeated) {
-      awardBattleXp(this.run.creatureParty);
+      awardBattleXp(this.run.creatureParty, { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 });
       const newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.currentAreaEncounters++;
       this.run.totalEncounters = (this.run.totalEncounters || 0) + 1;
+      // Award progression token for boss befriend
+      if (this.combat.isBoss) {
+        this.meta.progressionTokens = (this.meta.progressionTokens || 0) + 1;
+      }
       const currentRoom = this.run.rooms?.[this.run.currentRoom];
       if (currentRoom) {
         currentRoom.interacted = true;
@@ -1208,7 +1242,7 @@ export class GameManager {
 
     let newCollectionAdditions = [];
     if (allEnemiesDefeated) {
-      awardBattleXp(party);
+      awardBattleXp(party, { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 });
       newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.currentAreaEncounters++;

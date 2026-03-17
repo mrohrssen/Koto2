@@ -201,7 +201,7 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
 
         if (targetDefeated && !defeatedEnemyIds.has(target.id) && creatureParty) {
           defeatedEnemyIds.add(target.id);
-          const xpEvent = awardKillXp(creatureParty, target.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks);
+          const xpEvent = awardKillXp(creatureParty, target.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks, metaMults);
           xpEvents.push({ enemyId: target.id, enemyName: target.nameEn, ...xpEvent });
         }
       }
@@ -240,7 +240,7 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
 
         if (targetDefeated && !defeatedEnemyIds.has(target.id) && creatureParty) {
           defeatedEnemyIds.add(target.id);
-          const xpEvent = awardKillXp(creatureParty, target.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks);
+          const xpEvent = awardKillXp(creatureParty, target.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks, metaMults);
           xpEvents.push({ enemyId: target.id, enemyName: target.nameEn, ...xpEvent });
         }
       }
@@ -341,7 +341,7 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
  * @param {object|null} creatureParty - Full creature party (for XP awards)
  * @returns {object} { attacks, allEnemiesDefeated, xpEvents, mpRegens }
  */
-export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, creatureParty = null) {
+export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, creatureParty = null, metaMults = null) {
   const attacks = [];
   const xpEvents = [];
   const defeatedEnemyIds = new Set();
@@ -637,7 +637,7 @@ export function rollTalkAcceptance(enemy) {
  * When xpBalanceStacks > 0, XP is redistributed from overleveled to underleveled creatures.
  * Returns per-creature XP amounts and any level-ups that occurred.
  */
-export function awardKillXp(creatureParty, enemyLevel, xpMultiplier = 1.0, xpBalanceStacks = 0) {
+export function awardKillXp(creatureParty, enemyLevel, xpMultiplier = 1.0, xpBalanceStacks = 0, metaMults = null) {
   const baseXp = Math.floor((BASE_KILL_XP + enemyLevel * 2) * xpMultiplier);
   const activeCreatures = creatureParty.active.filter(r => r && r.hp > 0);
   const reserveCreatures = creatureParty.reserves.filter(r => r != null);
@@ -680,7 +680,7 @@ export function awardKillXp(creatureParty, enemyLevel, xpMultiplier = 1.0, xpBal
 
   for (const entry of entries) {
     const prevLevel = entry.creature.level;
-    const creatureLevelUps = addXpToCreature(entry.creature, entry.xp);
+    const creatureLevelUps = addXpToCreature(entry.creature, entry.xp, metaMults);
     xpGrants.push({ creatureId: entry.creature.id, creatureName: entry.creature.nameEn, xp: entry.xp });
     for (const lu of creatureLevelUps) {
       levelUps.push({
@@ -701,13 +701,13 @@ export function awardKillXp(creatureParty, enemyLevel, xpMultiplier = 1.0, xpBal
   return { xpGrants, levelUps };
 }
 
-export function awardBattleXp(creatureParty) {
+export function awardBattleXp(creatureParty, metaMults = null) {
   // Befriend victory: each creature gains 1 full level worth of XP
   for (const creature of creatureParty.active) {
-    if (creature) addXpToCreature(creature, xpToNextLevel(creature.level));
+    if (creature) addXpToCreature(creature, xpToNextLevel(creature.level), metaMults);
   }
   for (const creature of creatureParty.reserves) {
-    if (creature) addXpToCreature(creature, xpToNextLevel(creature.level));
+    if (creature) addXpToCreature(creature, xpToNextLevel(creature.level), metaMults);
   }
 }
 

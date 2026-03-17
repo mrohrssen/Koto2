@@ -68,6 +68,7 @@ export function buyUpgrade(meta, upgradeId) {
  * @returns {{ hpMult: number, atkMult: number, xpMult: number }}
  */
 export function getMetaMultipliers(meta) {
+  if (!meta) return { hpMult: 1.0, atkMult: 1.0, xpMult: 1.0 };
   const upgrades = meta.upgrades || {};
   const hpLevel = upgrades.hp_boost || 0;
   const atkLevel = upgrades.atk_boost || 0;

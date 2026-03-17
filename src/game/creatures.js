@@ -126,7 +126,7 @@ export function getStatsForLevel(baseHp, baseAttack, baseMp, level) {
   };
 }
 
-export function addXpToCreature(creature, xp) {
+export function addXpToCreature(creature, xp, metaMults = null) {
   creature.xp += xp;
   const levelUps = [];
   while (creature.xp >= xpToNextLevel(creature.level)) {
@@ -137,11 +137,21 @@ export function addXpToCreature(creature, xp) {
     const baseAtk = Math.floor((creature.baseAttackTemplate || 10) * rarityMult);
     const baseMp = Math.floor((creature.baseMpTemplate || 80) * rarityMult);
     const stats = getStatsForLevel(baseHp, baseAtk, baseMp, creature.level);
-    const hpDiff = stats.maxHp - creature.maxHp;
+    let hpDiff = stats.maxHp - creature.maxHp;
     const mpDiff = stats.maxMp - (creature.maxMp || 0);
     creature.maxHp = stats.maxHp;
     creature.attack = stats.attack;
     creature.maxMp = stats.maxMp;
+    // Re-apply meta progression bonuses after level-up stat recalculation
+    if (metaMults) {
+      if (metaMults.hpMult > 1) {
+        creature.maxHp = Math.floor(creature.maxHp * metaMults.hpMult);
+        hpDiff = Math.floor(hpDiff * metaMults.hpMult);
+      }
+      if (metaMults.atkMult > 1) {
+        creature.attack = Math.floor(creature.attack * metaMults.atkMult);
+      }
+    }
     creature.hp += hpDiff;
     creature.mp = (creature.mp || 0) + mpDiff;
 
