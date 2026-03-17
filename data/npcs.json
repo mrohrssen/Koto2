@@ -210,58 +210,58 @@
       "speechStyle": "Loud casual masculine speech (俺/だぜ/しろ), exclamation marks everywhere, zero polite forms, treats every interaction as a contest",
       "quirk": "Challenges everyone to race him to the far rocks — treats every interaction as a contest he's already winning"
     },
-    "greeting": "おい！ここは俺の海だ！入りたきゃ俺を倒してからにしろ！",
-    "defeatLine": "…あれ？波の音…潮、もう満ちてきてるのか？…ヤドカリたちは…",
+    "greeting": "Hey! This {beach|浜|はま} is MINE! You wanna be here, you gotta beat me first!",
+    "defeatLine": "…huh? The {waves|波|なみ}… the tide's already coming in? …the hermit crabs…",
     "postCombat": {
-      "freed": "よっしゃー！自由だー！…って、俺なんで戦ってたんだ？",
+      "freed": "YEAH! I'm {free|自由|じゆう}! …wait, why was I even fighting you?",
       "rounds": [
         {
-          "npcLine": "マジかよ、俺操られてたのか！？くそー、ダセぇ！",
+          "npcLine": "No way — I was being {controlled|操る|あやつる}!? Ugh, that is SO uncool!",
           "options": [
             {
-              "text": "誰でもやられるよ。気にするな。",
+              "text": "It happens to anyone. Don't sweat it.",
               "tone": "positive"
             },
             {
-              "text": "まあ、そういうことだ。",
+              "text": "Yeah, that's basically what happened.",
               "tone": "neutral"
             },
             {
-              "text": "確かにダサいな。",
+              "text": "Pretty uncool, yeah.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "潮だまりのヤドカリたち、大丈夫かな…。あいつら、潮が変わると場所移さないとダメなんだ。",
+          "npcLine": "Hey, I'm worried about the hermit crabs in the {tide pools|潮だまり|しおだまり}… when the tide shifts they gotta move or they get stranded.",
           "options": [
             {
-              "text": "見に行こうぜ！手伝うよ。",
+              "text": "Let's go check! I'll help.",
               "tone": "positive"
             },
             {
-              "text": "そうなのか。",
+              "text": "Huh, didn't know that.",
               "tone": "neutral"
             },
             {
-              "text": "ヤドカリなんかほっとけよ。",
+              "text": "They'll figure it out.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "なあ、あの岩まで競争しようぜ！負けたらジュース奢りな！",
+          "npcLine": "Hey, {race|競争|きょうそう} me to those rocks out there! Loser buys drinks!",
           "options": [
             {
-              "text": "よし、やろう！負けないぞ！",
+              "text": "You're on! I won't lose!",
               "tone": "positive"
             },
             {
-              "text": "また今度な。",
+              "text": "Maybe next time.",
               "tone": "neutral"
             },
             {
-              "text": "くだらない。",
+              "text": "Not interested.",
               "tone": "negative"
             }
           ]
@@ -299,58 +299,58 @@
       "speechStyle": "Warm and unhurried, uses polite but slightly old-fashioned masculine expressions, occasionally trails off into reminiscences about the park",
       "quirk": "Names every plant, bird, and koi in the park and introduces them to visitors like old friends — calls the biggest koi 'Taro-kun'"
     },
-    "greeting": "おや…ここに何の用かね？この公園は…誰にも渡さんよ。",
-    "defeatLine": "…はっ。あれ…？鯉にご飯、あげたかな…。",
+    "greeting": "Oh my… what brings you to this {park|公園|こうえん}? I won't give it up to anyone, I'm afraid.",
+    "defeatLine": "…oh. Wait…? Did I feed the {koi|鯉|こい} today…?",
     "postCombat": {
-      "freed": "あぁ、すまんね、助けてくれたのか。…わしは何をしていたんだろう。",
+      "freed": "Oh my… you helped me. I'm grateful. I can't quite remember what I was {thinking|考える|かんがえる}.",
       "rounds": [
         {
-          "npcLine": "ツツジに水をやらないと…。太郎くんにもご飯を…あの子は食いしん坊でね。",
+          "npcLine": "I need to water the azaleas… and Taro-kun needs his {food|餌|えさ}… that one's quite the little glutton.",
           "options": [
             {
-              "text": "太郎くん？鯉の名前ですか？かわいいですね。",
+              "text": "Taro-kun? Is that the koi? What a great name.",
               "tone": "positive"
             },
             {
-              "text": "鯉ですか。",
+              "text": "The koi, you mean.",
               "tone": "neutral"
             },
             {
-              "text": "鯉に名前つけてるのか。",
+              "text": "You named a fish.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "あの花壇の様子、見てきてくれんかね？石灯篭のそばのやつだ。",
+          "npcLine": "Would you mind checking on the {flower bed|花壇|かだん} for me? The one by the stone lantern.",
           "options": [
             {
-              "text": "もちろんです。一緒に見に行きましょう。",
+              "text": "Of course — let's go together.",
               "tone": "positive"
             },
             {
-              "text": "時間があれば。",
+              "text": "If I get a chance.",
               "tone": "neutral"
             },
             {
-              "text": "自分で見に行けばいいだろ。",
+              "text": "You can check it yourself.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "…それと、少し話し相手になってくれると嬉しいんだが。ベンチに座らんかね。",
+          "npcLine": "…and, well, if you wouldn't mind staying a while — it would be nice to have someone to {talk|話す|はなす} with. Come sit on the bench.",
           "options": [
             {
-              "text": "喜んで。ゆっくり話しましょう。",
+              "text": "Gladly. Let's take our time.",
               "tone": "positive"
             },
             {
-              "text": "少しだけなら。",
+              "text": "Just a little while.",
               "tone": "neutral"
             },
             {
-              "text": "暇じゃないんだ。",
+              "text": "I don't have time.",
               "tone": "negative"
             }
           ]
@@ -388,58 +388,58 @@
       "speechStyle": "Measured and precise, favors literary vocabulary and complex sentence structures, often references books mid-conversation, uses polite but slightly lecturing tone with gentle warmth underneath",
       "quirk": "Quotes passages from the library's books at seemingly random moments — but the quotes always turn out to be eerily relevant"
     },
-    "greeting": "この本棚に触れないで。ここの知識は全て…私だけのものよ。誰にも渡さない。",
-    "defeatLine": "あら…私、何を…？学生たちへの講義が…ああ、そうだ、本の続きを読まなくちゃ…",
+    "greeting": "Don't touch these {shelves|棚|たな}. This {knowledge|知識|ちしき} belongs to me alone — I won't share it with anyone.",
+    "defeatLine": "Oh… what was I… ? My {lecture|講義|こうぎ} for the students… ah yes, I still have pages left to read…",
     "postCombat": {
-      "freed": "…ありがとう。私、本を独り占めしようとしていたのね…。恥ずかしい限りだわ。",
+      "freed": "…Thank you. I was trying to keep all the {books|本|ほん} for myself… How embarrassing.",
       "rounds": [
         {
-          "npcLine": "知識は共有されてこそ意味がある…教壇に立つ者として、忘れてはいけないことだったのに。",
+          "npcLine": "{Knowledge|知識|ちしき} only has meaning when it's shared — as someone who stands at the lectern, that's something I should never have forgotten.",
           "options": [
             {
-              "text": "システムのせいです。先生は悪くないですよ。",
+              "text": "It was the system's fault. You did nothing wrong.",
               "tone": "positive"
             },
             {
-              "text": "大変でしたね。",
+              "text": "That must have been hard.",
               "tone": "neutral"
             },
             {
-              "text": "そうだな。忘れるなよ。",
+              "text": "True. Don't forget it again.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "この図書館には不思議な本がたくさんあるの。システムについて書かれたものも…",
+          "npcLine": "This {library|図書館|としょかん} holds so many remarkable books — some even written about the system itself…",
           "options": [
             {
-              "text": "ぜひ見せてください！",
+              "text": "Please show me!",
               "tone": "positive"
             },
             {
-              "text": "そうなんですか。",
+              "text": "Is that right.",
               "tone": "neutral"
             },
             {
-              "text": "本で何がわかるんだ。",
+              "text": "What can books tell you, really.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "よかったら、いつでもここに来てちょうだい。一緒に調べましょう。",
+          "npcLine": "Come back whenever you like — we can {investigate|調べる|しらべる} together.",
           "options": [
             {
-              "text": "ありがとうございます。必ず来ます。",
+              "text": "Thank you. I'll definitely be back.",
               "tone": "positive"
             },
             {
-              "text": "考えておきます。",
+              "text": "I'll think about it.",
               "tone": "neutral"
             },
             {
-              "text": "一人で調べてくれ。",
+              "text": "I'd rather search alone.",
               "tone": "negative"
             }
           ]
@@ -481,58 +481,58 @@
       "speechStyle": "Weaves every conversation into a story, often beginning with 'long ago' or 'there was a time when...'",
       "quirk": "Carries a worn journal full of sketches and notes from places that may or may not exist anymore."
     },
-    "greeting": "昔々…いや、今は関係ない。ここは私の教室だ。出て行きなさい。",
-    "defeatLine": "…あれ？私は…何を話していたんだろう。",
+    "greeting": "Long ago… no, that's not important right now. This is my {classroom|教室|きょうしつ}. Please leave.",
+    "defeatLine": "…Hm? What was I… saying just now? Something about a {story|話|はなし}…",
     "postCombat": {
-      "freed": "…すみません。頭の中が暗くて、何も見えなかった。今はもう大丈夫です。",
+      "freed": "…I'm sorry. There was a {darkness|暗さ|くらさ} in my mind — I couldn't see anything clearly. I'm all right now.",
       "rounds": [
         {
-          "npcLine": "私は歴史の先生です。昔の話を教えるのが好きなんです。…でも、さっきは何を言っていたか覚えていない。",
+          "npcLine": "I'm a {history|歴史|れきし} teacher. I love telling old stories… But I can't remember what I was saying just now.",
           "options": [
             {
-              "text": "歴史の先生なんですね。素敵ですね。",
+              "text": "A {history|歴史|れきし} teacher — how wonderful.",
               "tone": "positive"
             },
             {
-              "text": "大変でしたね。",
+              "text": "That must have been hard.",
               "tone": "neutral"
             },
             {
-              "text": "覚えていない方がいいと思う。",
+              "text": "Maybe it's better you don't remember.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "このノートを見てください。昔の場所の絵を描いたんです。…もうない場所もあります。",
+          "npcLine": "Look at this {notebook|ノート|ノート} — I've drawn sketches of old places. Some of them don't exist anymore…",
           "options": [
             {
-              "text": "見せてください。きれいな絵ですね。",
+              "text": "Let me see. What beautiful drawings.",
               "tone": "positive"
             },
             {
-              "text": "絵が好きなんですね。",
+              "text": "You really love drawing.",
               "tone": "neutral"
             },
             {
-              "text": "もうない場所の絵に何の意味があるの？",
+              "text": "What's the point of drawing lost places?",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "この学校にも長い歴史があります。昔はここで色々なことがありました。…いい思い出ばかりです。",
+          "npcLine": "This {school|学校|がっこう} has a long history too. So many things happened here once… All good memories.",
           "options": [
             {
-              "text": "その話、もっと聞きたいです。",
+              "text": "I'd love to hear more.",
               "tone": "positive"
             },
             {
-              "text": "そうですか。",
+              "text": "I see.",
               "tone": "neutral"
             },
             {
-              "text": "昔の話はもういい。",
+              "text": "Old stories don't interest me.",
               "tone": "negative"
             }
           ]
@@ -574,58 +574,58 @@
       "speechStyle": "Speaks with bubbly enthusiasm, mixing in simple phrases she's proud of learning.",
       "quirk": "Always carries a small notebook where she writes down new words she hears."
     },
-    "greeting": "あっ、こんにちは！わたし、エミリア！この学校、すごく楽しい！…でも、今は関係ない。ここを通さないよ！",
-    "defeatLine": "あれ…？わたし、何をしてた…？ノート、どこ…？",
+    "greeting": "Oh! Hello! I'm Emilia — a {foreign exchange student|留学生|りゅうがくせい} here. This school is amazing… but I can't let you pass right now!",
+    "defeatLine": "Huh…? What was I doing…? Where's my {notebook|ノート|ノート}…?",
     "postCombat": {
-      "freed": "あ、ありがとう…！頭がぼんやりしてた。変なシステムに操られてたみたい…。わたしのノートは無事？よかった！",
+      "freed": "Oh, thank you…! My head felt so foggy. I think some strange system was controlling me… Is my {notebook|ノート|ノート} okay? Oh good!",
       "rounds": [
         {
-          "npcLine": "このノート、見て！毎日、新しい言葉を書いてるの。今日は「友達」って書いた。いい言葉でしょ？",
+          "npcLine": "Look at my notebook! Every day I write down new {words|言葉|ことば}. Today I wrote '{friend|友達|ともだち}.' That's a good one, right?",
           "options": [
             {
-              "text": "すごいね！たくさん書いてあるね。",
+              "text": "That's amazing — so many {words|言葉|ことば}!",
               "tone": "positive"
             },
             {
-              "text": "ノートか。へえ。",
+              "text": "A notebook, huh.",
               "tone": "neutral"
             },
             {
-              "text": "そんなの見たくない。",
+              "text": "I'm not interested.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "わたし、遠い国から来たの。日本語、まだ少しだけ。でも、この学校のみんな、やさしいから、毎日がんばってる！",
+          "npcLine": "I came from a country far away. My {Japanese|日本語|にほんご} is still a little rough — but everyone here is so kind, so I keep at it every day!",
           "options": [
             {
-              "text": "日本語、上手だよ！がんばってるね。",
+              "text": "Your {Japanese|日本語|にほんご} is great!",
               "tone": "positive"
             },
             {
-              "text": "留学生なんだ。大変だね。",
+              "text": "Being an exchange student must be hard.",
               "tone": "neutral"
             },
             {
-              "text": "もっと勉強したほうがいいよ。",
+              "text": "You should study more.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "ねえ、わたしたち、友達になれる？この学校で友達がほしいの。一緒にお昼、食べよう！",
+          "npcLine": "Hey, do you think we could be {friends|友達|ともだち}? I really want someone to eat lunch with at this school!",
           "options": [
             {
-              "text": "もちろん！友達だよ。よろしくね。",
+              "text": "Of course — {friends|友達|ともだち} it is!",
               "tone": "positive"
             },
             {
-              "text": "考えておくね。",
+              "text": "I'll think about it.",
               "tone": "neutral"
             },
             {
-              "text": "友達は間に合ってる。",
+              "text": "I have enough friends already.",
               "tone": "negative"
             }
           ]
@@ -667,58 +667,58 @@
       "speechStyle": "Speaks softly with a poetic cadence, occasionally quoting classic authors.",
       "quirk": "Presses dried flowers between the pages of whichever novel she is currently reading."
     },
-    "greeting": "あなたは…ここに来たのですか。この教室には、もう言葉の光は届きません。",
-    "defeatLine": "ああ…言葉が、また美しく見えます。ありがとう。",
+    "greeting": "You came here… to this classroom. The light of {words|言葉|ことば} no longer reaches this place.",
+    "defeatLine": "Ah… {words|言葉|ことば} look beautiful again. Thank you.",
     "postCombat": {
-      "freed": "目が覚めました。本の中の世界が、また色を取り戻しています。",
+      "freed": "I've come back to myself. The {world|世界|せかい} inside my books has its colours again.",
       "rounds": [
         {
-          "npcLine": "私は文学の教師でした。本を読むことが、一番好きでした。あなたは…本は好きですか？",
+          "npcLine": "I was a {literature|文学|ぶんがく} teacher. Reading was what I loved most. Do you… like books?",
           "options": [
             {
-              "text": "はい、本が大好きです。",
+              "text": "Yes, I love {books|本|ほん}.",
               "tone": "positive"
             },
             {
-              "text": "あまり読みません。",
+              "text": "I don't read much.",
               "tone": "neutral"
             },
             {
-              "text": "本より冒険が好きです。",
+              "text": "I prefer adventure to books.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "私はいつも、本の間に花を押しています。花も言葉も…時間が止まったように残るから、好きなのです。",
+          "npcLine": "I always press dried flowers between the pages of whatever I'm {reading|読む|よむ}. Flowers and words both — they stay as if time has stopped.",
           "options": [
             {
-              "text": "きれいな考えですね。",
+              "text": "That's a beautiful way to think.",
               "tone": "positive"
             },
             {
-              "text": "花はどこで見つけますか？",
+              "text": "Where do you find the flowers?",
               "tone": "neutral"
             },
             {
-              "text": "少しさみしい気がします。",
+              "text": "It sounds a little lonely.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "言葉には力があります。一つの言葉が、心を変えることもあります。あなたも…そう思いませんか？",
+          "npcLine": "{Words|言葉|ことば} hold power. A single word can change a {heart|心|こころ}. Don't you think so?",
           "options": [
             {
-              "text": "はい、言葉は大切です。",
+              "text": "Yes — {words|言葉|ことば} matter.",
               "tone": "positive"
             },
             {
-              "text": "考えたことがなかったです。",
+              "text": "I hadn't thought about it.",
               "tone": "neutral"
             },
             {
-              "text": "だから日本語を学んでいます。",
+              "text": "That's why I'm learning Japanese.",
               "tone": "negative"
             }
           ]
@@ -760,58 +760,58 @@
       "speechStyle": "Speaks in short, punchy declarations like a coach giving a halftime speech, often ending sentences with rallying calls.",
       "quirk": "Challenges everyone he meets to some form of physical contest."
     },
-    "greeting": "おい、止まれ！ここは俺の校庭だ。勝負しろ！逃げるなよ！",
-    "defeatLine": "はぁ…はぁ…。俺、何で戦ってたんだ…？体が勝手に…",
+    "greeting": "Hey, stop right there! This is my {schoolyard|校庭|こうてい}. Let's {compete|勝負|しょうぶ} — no running away!",
+    "defeatLine": "Hah… hah… why was I {fighting|戦う|たたかう}…? My {body|体|からだ} just… moved on its own…",
     "postCombat": {
-      "freed": "うおっ…頭がスッキリしたぞ。俺、システムに操られてたのか…。すまなかった、お前は強いな！",
+      "freed": "Whoa… my head cleared up. The system was controlling me…? Sorry about that — but you're {strong|強い|つよい}!",
       "rounds": [
         {
-          "npcLine": "俺は体育の先生だ。走ること、投げること、全部好きだぞ！お前も体を動かすのは好きか？",
+          "npcLine": "I'm a PE {teacher|先生|せんせい}. Running, throwing — I love it all! Do you like moving your body too?",
           "options": [
             {
-              "text": "うん、大好きだよ！一緒に走ろう！",
+              "text": "Yeah! Let's {run|走る|はしる} together!",
               "tone": "positive"
             },
             {
-              "text": "まあ、嫌いじゃないかな。",
+              "text": "Not bad, I guess.",
               "tone": "neutral"
             },
             {
-              "text": "体を動かすのは面倒だ。",
+              "text": "Too much {effort|努力|どりょく}.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "よし、勝負だ！腕立て十回、どっちが速いか！…いや、もう戦ったばかりか。じゃあ次だ！",
+          "npcLine": "Alright, {contest|勝負|しょうぶ} time! Ten push-ups — who's faster? …Well, we just fought. Fine, next time!",
           "options": [
             {
-              "text": "いいぞ、いつでも来い！",
+              "text": "I'm ready anytime!",
               "tone": "positive"
             },
             {
-              "text": "少し休んでからね。",
+              "text": "Let me {rest|休む|やすむ} first.",
               "tone": "neutral"
             },
             {
-              "text": "もう勝負はいい。",
+              "text": "No more competing.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "お前、なかなかやるな。この先は強い奴がいるぞ。でも大丈夫だ、お前なら勝てる！行け！",
+          "npcLine": "You've got real {ability|実力|じつりょく}. There are strong opponents ahead — but you can beat them. Go!",
           "options": [
             {
-              "text": "ありがとう！頑張るよ！",
+              "text": "Thanks! I'll do my best!",
               "tone": "positive"
             },
             {
-              "text": "気をつけて進むよ。",
+              "text": "I'll be careful.",
               "tone": "neutral"
             },
             {
-              "text": "言われなくてもわかってる。",
+              "text": "I already knew that.",
               "tone": "negative"
             }
           ]
@@ -853,58 +853,58 @@
       "speechStyle": "Talks fast and enthusiastically, often tripping over his own words.",
       "quirk": "Bows so deeply when greeting upperclassmen that he sometimes loses his balance."
     },
-    "greeting": "あっ、先輩！！お、おはようございま——うわっ！！ご、ごめんなさい！お辞儀しすぎて転びそうに…！えへへ、今日も元気です！…通さないよ！",
-    "defeatLine": "う…うう…俺、先輩に何してたんだ…？ごめんなさい…！頭がぐるぐるして…。",
+    "greeting": "Ah, {senpai|先輩|せんぱい}!! G-good mor—whoops!! S-sorry! I bowed too deep… hehe, full of {energy|元気|げんき} today! …But you can't pass!",
+    "defeatLine": "Ugh… w-what was I doing to you, {senpai|先輩|せんぱい}…? I'm so sorry…! My head's spinning…",
     "postCombat": {
-      "freed": "はっ…！俺、先輩を止めようとしてた…？うそだろ…！ごめんなさい！！本当にごめんなさい！！",
+      "freed": "Huh…! I was trying to stop you…? No way…! I'm so sorry!! I'm really, truly sorry!!",
       "rounds": [
         {
-          "npcLine": "俺、後輩だから先輩を守りたかったのに…システムに使われて、逆に戦ってた…！最悪だ…！でも、先輩が助けてくれた！ありがとうございます！！",
+          "npcLine": "I'm your {junior|後輩|こうはい}, so I wanted to protect you… but the system used me to fight you instead…! That's the worst… but you saved me! Thank you so much!!",
           "options": [
             {
-              "text": "気にしないで！もう大丈夫だよ。",
+              "text": "Don't worry about it! You're {safe|安全|あんぜん} now.",
               "tone": "positive"
             },
             {
-              "text": "うん、大変だったね。",
+              "text": "Yeah, that was rough.",
               "tone": "neutral"
             },
             {
-              "text": "それより、何があったか教えて。",
+              "text": "Tell me what happened.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "あっ、そうだ！先輩に挨拶しないと！えっと——！！うわわっ！！また転んだ…！お辞儀が深すぎるって言われるけど、気持ちが大きいから止められないんです！！",
+          "npcLine": "Oh right, I have to greet you properly! Um— !! Whoops!! Fell again…! People say I bow too deep, but I can't help it — the {feeling|気持ち|きもち} is just too big!!",
           "options": [
             {
-              "text": "はは、その気持ちが一番大事だよ！",
+              "text": "Ha, that feeling matters most!",
               "tone": "positive"
             },
             {
-              "text": "少しだけ気をつけたら？",
+              "text": "Just be a little careful.",
               "tone": "neutral"
             },
             {
-              "text": "怪我するから、やめたほうがいい。",
+              "text": "You could get an {injury|怪我|けが}.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "俺、先輩みたいに強くなりたいんです！！毎日練習して、もっと頑張って…！いつか先輩に「すごいな」って言われたい！！…あっ、言いすぎた…？えへへ！",
+          "npcLine": "I want to become as {strong|強い|つよい} as you, senpai!! Practicing every day, pushing harder… I want you to say \"nice\" to me someday!! …Oh, was that too much? Hehe!",
           "options": [
             {
-              "text": "もうすごいよ！一緒に頑張ろう！",
+              "text": "You already are! Let's {practice|練習|れんしゅう} together!",
               "tone": "positive"
             },
             {
-              "text": "その気持ちは大切だね。",
+              "text": "That feeling is important.",
               "tone": "neutral"
             },
             {
-              "text": "口だけじゃなくて、見せてくれ。",
+              "text": "Show me, don't just talk.",
               "tone": "negative"
             }
           ]
@@ -946,58 +946,58 @@
       "speechStyle": "Speaks in a soft, lilting cadence as if everything she says has a hidden melody.",
       "quirk": "Hums or taps out rhythms on nearby surfaces mid-conversation, sometimes losing track of what she was saying."
     },
-    "greeting": "あ…こんにちは。今、きれいな音が聞こえたの。あなたにも聞こえた？…ふふ、ごめんね、私だけかも。",
-    "defeatLine": "あ…頭の中の音楽が静かになった。今まで関係のない歌ばかり聞こえていたの。ありがとう。",
+    "greeting": "Oh…hello. I just heard the most beautiful {sound|音|おと}. Did you catch it too? …Heh, maybe it was just me.",
+    "defeatLine": "Ah…the {music|音楽|おんがく} in my head finally went quiet. It’s been playing the wrong songs. Thank you.",
     "postCombat": {
-      "freed": "…変な音楽が止まった。あれ、私…夢を見てたの？…ごめんなさい、もう大丈夫。",
+      "freed": "…The strange {music|音楽|おんがく} stopped. Wait — was I dreaming? …I’m sorry. I’m okay now.",
       "rounds": [
         {
-          "npcLine": "私、小さい時から音楽が大好きだったの。ピアノの音を聞くと、心が温かくなるの。…あなたは、好きな音楽はある？",
+          "npcLine": "I’ve loved {music|音楽|おんがく} since I was small. When I hear piano, my {heart|心|こころ} just… warms up. Do you have a favorite kind?",
           "options": [
             {
-              "text": "うん、音楽は好きだよ。一緒に聞こう。",
+              "text": "I love music. Let’s listen together.",
               "tone": "positive"
             },
             {
-              "text": "あまり聞かないけど、カノンの好きな曲は何？",
+              "text": "What’s your favorite {song|曲|きょく}?",
               "tone": "neutral"
             },
             {
-              "text": "音楽より静かな方がいい。",
+              "text": "I actually prefer silence.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "ふふ、また手でリズムを取ってた。…あれ、何の話だったっけ？ああ、そうだ。この学校には音楽室があるの。そこで時々一人で歌うの。…たん、たたん♪",
+          "npcLine": "Heh, I was tapping out a rhythm again. …Wait, what were we talking about? Oh right — there’s a {music room|音楽室|おんがくしつ} here. I sing there alone sometimes. …*ta-ta-tan* ♪",
           "options": [
             {
-              "text": "いい音だね。もっと聞かせて。",
+              "text": "That sounds lovely. Sing more.",
               "tone": "positive"
             },
             {
-              "text": "音楽室で何を歌うの？",
+              "text": "What do you {sing|歌う|うたう} there?",
               "tone": "neutral"
             },
             {
-              "text": "話に集中して。",
+              "text": "Focus on talking, please.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "音楽室のピアノは古いけど、すごくいい音がするの。放課後、誰もいない時に弾くのが好き。…あなたも来てみない？",
+          "npcLine": "The piano in the {music room|音楽室|おんがくしつ} is old, but it has a wonderful tone. I love playing it {after school|放課後|ほうかご}, when no one’s around. Want to come sometime?",
           "options": [
             {
-              "text": "ぜひ行きたい。一緒に弾こう。",
+              "text": "I’d love that. Let’s play together.",
               "tone": "positive"
             },
             {
-              "text": "今度時間がある時に行くよ。",
+              "text": "Maybe next time.",
               "tone": "neutral"
             },
             {
-              "text": "ピアノには興味がない。",
+              "text": "Piano isn’t really my thing.",
               "tone": "negative"
             }
           ]
@@ -1039,58 +1039,58 @@
       "speechStyle": "Speaks in measured, exact sentences, often quantifying things or framing observations as equations.",
       "quirk": "Unconsciously taps out counting rhythms on any nearby surface while thinking."
     },
-    "greeting": "この先は通れません。答えは一つ。ここから出る方法は…ゼロです。",
-    "defeatLine": "…あれ？私は何を計算していたんだ…？",
+    "greeting": "You cannot pass. The {answer|答え|こたえ} is simple. Ways out of here: zero.",
+    "defeatLine": "…Wait. What was I {calculating|計算|けいさん}…?",
     "postCombat": {
-      "freed": "すみません…頭の中が変な数式でいっぱいだった。助けてくれて、ありがとう。",
+      "freed": "I apologize… My head was full of strange {formulas|数式|すうしき}. Thank you for helping me.",
       "rounds": [
         {
-          "npcLine": "私はこの学校の数学の先生です。…システムに操られて、生徒を止めていたなんて。",
+          "npcLine": "I’m the {mathematics|数学|すうがく} {teacher|先生|せんせい} here. To think I was blocking {students|生徒|せいと}… under that system’s control.",
           "options": [
             {
-              "text": "もう大丈夫ですよ。先生は悪くないです。",
+              "text": "It wasn’t your fault, teacher.",
               "tone": "positive"
             },
             {
-              "text": "システムのせいですね。",
+              "text": "The system is to blame.",
               "tone": "neutral"
             },
             {
-              "text": "しっかりしてください。",
+              "text": "Pull yourself together.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "考える時、つい指でリズムを数えてしまう。一、二、三…。この癖、生徒にはよく笑われます。",
+          "npcLine": "When I think, I unconsciously count with my fingers. One, two, three… My {students|生徒|せいと} always laugh at that habit.",
           "options": [
             {
-              "text": "面白い癖ですね。かわいいです。",
+              "text": "It’s a charming habit.",
               "tone": "positive"
             },
             {
-              "text": "数学の先生らしいですね。",
+              "text": "Very fitting for a {math|数学|すうがく} teacher.",
               "tone": "neutral"
             },
             {
-              "text": "授業中にそれは気になりますね。",
+              "text": "It would distract me in class.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "この学校には不思議な力がある。数学も、ただの数字じゃない。…気をつけて進んでください。",
+          "npcLine": "This school holds a {mysterious|不思議|ふしぎ} power. Even {mathematics|数学|すうがく} is more than numbers here. Please be careful going forward.",
           "options": [
             {
-              "text": "ありがとうございます。頑張ります。",
+              "text": "Thank you. I’ll do my best.",
               "tone": "positive"
             },
             {
-              "text": "わかりました。",
+              "text": "Understood.",
               "tone": "neutral"
             },
             {
-              "text": "自分で何とかします。",
+              "text": "I’ll manage on my own.",
               "tone": "negative"
             }
           ]
@@ -1132,58 +1132,58 @@
       "speechStyle": "Speaks carefully and formally, choosing each word with deliberate precision.",
       "quirk": "Tends to bow slightly too deeply, overcompensating out of respect for local customs."
     },
-    "greeting": "…失礼します。この学校のルールは、必ず守ります。…どうか、邪魔をしないでください。",
-    "defeatLine": "…頭が…。すみません、僕は何をしていましたか。",
+    "greeting": "Out of my way — I'm {studying|勉強|べんきょう} here. Unless you think you can keep up with me?",
+    "defeatLine": "My {head|頭|あたま}… what was I doing? That was… beneath me.",
     "postCombat": {
-      "freed": "…ありがとうございます。僕は…システムに使われていたのですね。勉強のことしか考えていなかったのに、おかしなことをしていました。",
+      "freed": "I was being {used|使う|つかう} by that system? Unacceptable. I don't lose control. Thank you — don't read too much into it.",
       "rounds": [
         {
-          "npcLine": "…僕は毎日、朝から晩まで勉強していました。この学校の言葉を、一つも間違えたくなかったのです。…それが、おかしくなった原因でしょうか。",
+          "npcLine": "I study from dawn to dusk every day. Not a single {mistake|間違い|まちがい} — that's my standard. You wouldn't understand.",
           "options": [
             {
-              "text": "勉強熱心なのは、いいことだよ。",
+              "text": "That kind of {effort|努力|どりょく} is impressive.",
               "tone": "positive"
             },
             {
-              "text": "そうかもしれないね。",
+              "text": "Sounds exhausting.",
               "tone": "neutral"
             },
             {
-              "text": "勉強のしすぎだろ。",
+              "text": "Nobody's perfect, you know.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "…あっ、すみません。（深くお辞儀をする）…この国では、こうするのが正しいと聞きました。…深すぎますか？",
+          "npcLine": "I came here as an {exchange student|留学生|りゅうがくせい} to be the best — not to make friends. Though… you're less annoying than most.",
           "options": [
             {
-              "text": "気持ちが伝わるから、大丈夫だよ。",
+              "text": "I'll take that as a compliment.",
               "tone": "positive"
             },
             {
-              "text": "少し深いかもね。",
+              "text": "Fair enough.",
               "tone": "neutral"
             },
             {
-              "text": "変に見えるからやめろ。",
+              "text": "You're kind of rude, you know.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "…この学校には、不思議な力があります。僕は留学生ですが、ここで学べることを大切にしたいです。…よろしくお願いします。",
+          "npcLine": "This {school|学校|がっこう} has real power — I felt it the moment I arrived. I intend to master everything it has to offer.",
           "options": [
             {
-              "text": "こちらこそ、よろしくね。一緒にがんばろう。",
+              "text": "Maybe we can {learn|学ぶ|まなぶ} together.",
               "tone": "positive"
             },
             {
-              "text": "よろしく。",
+              "text": "Good luck with that.",
               "tone": "neutral"
             },
             {
-              "text": "好きにしろ。",
+              "text": "Don't get too full of yourself.",
               "tone": "negative"
             }
           ]
@@ -1225,58 +1225,58 @@
       "speechStyle": "Peppers her speech with English loanwords and tries out new vocabulary mid-conversation, mixing politeness levels as she gets excited.",
       "quirk": "Carries a dog-eared English dictionary everywhere and asks visitors to teach her new words in exchange for help."
     },
-    "greeting": "ここは私のスタディ・ゾーン！誰も入っちゃダメ！...あ、英語わかる？ねえ、教えて！...ダメ、入っちゃダメなの！",
-    "defeatLine": "あれ...？私、何してたんだろう...。辞書、どこ行った...？あ、ここにあった。",
+    "greeting": "Oh! I didn't hear you come in… s-sorry. Are you lost? This {school|学校|がっこう} can be confusing at first.",
+    "defeatLine": "Huh…? What was I doing…? My {dictionary|辞書|じしょ} — where did it go? Oh, here it is.",
     "postCombat": {
-      "freed": "はっ！私、道を止めてたの？ごめんなさい！...システムに操られてたみたい。ありがとう、助けてくれて！",
+      "freed": "I was blocking your {path|道|みち}? I'm so sorry! I didn't realize… thank you for helping me.",
       "rounds": [
         {
-          "npcLine": "この辞書ね、お母さんにもらったの。毎日新しい言葉を覚えてるよ！今日は「freedom」を覚えた。ぴったりでしょ？",
+          "npcLine": "My mom gave me this dictionary. I try to learn one new {word|言葉|ことば} every day. Today I learned 'freedom' — fitting, right?",
           "options": [
             {
-              "text": "いい言葉だね！自由になれてよかった。",
+              "text": "That's a beautiful habit.",
               "tone": "positive"
             },
             {
-              "text": "辞書、大事にしてるんだね。",
+              "text": "You really treasure that dictionary.",
               "tone": "neutral"
             },
             {
-              "text": "辞書なんかで本当に覚えられるの？",
+              "text": "Does that actually help you remember?",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "言葉を覚えるのって楽しいよね！日本語も英語も、全部つながってる気がするの。ねえ、あなたは何語が好き？",
+          "npcLine": "Learning {language|言語|げんご} is so wonderful… Japanese, English — they all connect somehow, don't you think?",
           "options": [
             {
-              "text": "日本語が好きだよ！一緒に勉強しよう。",
+              "text": "I love Japanese! Let's study together.",
               "tone": "positive"
             },
             {
-              "text": "考えたことないな。",
+              "text": "I never thought about it that way.",
               "tone": "neutral"
             },
             {
-              "text": "言葉に好きとかないだろ。",
+              "text": "They're pretty different, actually.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "あのね、私この学校のこと何でも知ってるよ！困ったら何でも聞いて。そのかわり、新しい言葉を一つ教えてね！",
+          "npcLine": "Um… if you ever get {lost|迷う|まよう} around here, I know every corner of this school. Just ask me, okay?",
           "options": [
             {
-              "text": "いいよ！約束する。よろしくね！",
+              "text": "That's so kind — I'll remember that.",
               "tone": "positive"
             },
             {
-              "text": "覚えておくよ。",
+              "text": "Good to know.",
               "tone": "neutral"
             },
             {
-              "text": "別に困ってないけど。",
+              "text": "I think I can manage on my own.",
               "tone": "negative"
             }
           ]
@@ -1318,58 +1318,58 @@
       "speechStyle": "Speaks in short, direct sentences with high expectations, but never raises his voice.",
       "quirk": "Carries a small notebook where he tallies rule infractions — though no one has ever seen him actually enforce a penalty."
     },
-    "greeting": "…立っている姿勢が悪い。ここでは規律を守れ。",
-    "defeatLine": "…そうか。俺の規律は、自分を縛っていただけか。",
+    "greeting": "Your {posture|姿勢|しせい} is poor. In this place, you will maintain {discipline|規律|きりつ}.",
+    "defeatLine": "...I see. My {discipline|規律|きりつ} was only binding myself.",
     "postCombat": {
-      "freed": "目が覚めた。あのノートに書いていたのは…他人の失敗じゃない。自分の恐れだった。",
+      "freed": "My head is clear now. What I wrote in that {notebook|ノート|ノート}... it wasn't others' failures. It was my own {fear|恐れ|おそれ}.",
       "rounds": [
         {
-          "npcLine": "規律がなければ、人は弱くなる。それが学校のルールだ。お前はどう思う？",
+          "npcLine": "Without {discipline|規律|きりつ}, a person grows weak. That is this school's rule. What do you think?",
           "options": [
             {
-              "text": "ルールは大切だと思います。",
+              "text": "I think {rules|規律|きりつ} matter.",
               "tone": "positive"
             },
             {
-              "text": "厳しすぎるルールは良くないです。",
+              "text": "Rules that are too strict cause harm.",
               "tone": "neutral"
             },
             {
-              "text": "ルールより大切なものもあります。",
+              "text": "Some things matter more than rules.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "このノートを見ろ。全員の失敗を記録している。…だが、罰を与えたことはない。なぜだと思う？",
+          "npcLine": "Look at this {notebook|ノート|ノート} — I've recorded every failure. But I've never once issued a {penalty|罰|ばつ}. Why do you suppose that is?",
           "options": [
             {
-              "text": "本当は優しいからですか？",
+              "text": "Because you're kind at heart?",
               "tone": "positive"
             },
             {
-              "text": "罰が目的じゃないからですか？",
+              "text": "{Punishment|罰|ばつ} was never the point?",
               "tone": "neutral"
             },
             {
-              "text": "自分でもわからないのでは？",
+              "text": "Perhaps you don't know yourself.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "先輩として、後輩を導く責任がある。だが…正しい道が何か、俺にはもう見えない。",
+          "npcLine": "As a {senior|先輩|せんぱい}, I have a duty to guide those below me. But... what the right {path|道|みち} is — I can no longer see it.",
           "options": [
             {
-              "text": "一緒に考えましょう。",
+              "text": "Let's figure it out together.",
               "tone": "positive"
             },
             {
-              "text": "完璧じゃなくてもいいです。",
+              "text": "You don't have to be {perfect|完璧|かんぺき}.",
               "tone": "neutral"
             },
             {
-              "text": "まず自分を信じてください。",
+              "text": "Start by trusting yourself.",
               "tone": "negative"
             }
           ]
@@ -1411,58 +1411,58 @@
       "speechStyle": "Asks rapid-fire questions and answers them herself, peppering in hypotheses and exclamations of discovery.",
       "quirk": "Always has scorch marks or stains on her sleeves from a recent experiment gone slightly sideways."
     },
-    "greeting": "あら、来客？今ちょうど実験中なの！…って、待って。ここを通しちゃダメって言われてたんだっけ？うん、ダメ！",
-    "defeatLine": "…あれ？私、何をしてたの？…袖がまた焦げてる…実験のせい？違う…？",
+    "greeting": "Oh, a visitor? I'm right in the middle of an {experiment|実験|じっけん}! ...Wait. Was I not supposed to let anyone through? Yeah — no entry!",
+    "defeatLine": "...Huh? What was I doing? ...My sleeve has a {scorch mark|焦げ|こげ} again... from the experiment? Or... not?",
     "postCombat": {
-      "freed": "頭がすっきりした…。私、実験中にシステムに取り込まれたの？…データを全部消しちゃった？うそ…",
+      "freed": "My head cleared up! Did the system capture me mid-{experiment|実験|じっけん}? ...Did I lose all my {data|データ|データ}? No way...",
       "rounds": [
         {
-          "npcLine": "実験の途中で変な光が出て…次の瞬間、頭の中が真っ白になったの。あの光は何だったんだろう？仮説が三つある！",
+          "npcLine": "In the middle of my {experiment|実験|じっけん}, a strange light appeared... and the next moment my mind went completely blank. What was that light? I have three {hypotheses|仮説|かせつ}!",
           "options": [
             {
-              "text": "聞かせて！どんな仮説？",
+              "text": "Tell me! What are they?",
               "tone": "positive"
             },
             {
-              "text": "システムの力だと思う。",
+              "text": "I think it was the system.",
               "tone": "neutral"
             },
             {
-              "text": "仮説はいいから現実を見ろ。",
+              "text": "Skip the theories — face reality.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "あっ、また袖が焦げてる…。いつの間に？操られてる間も実験してたのかな。…それはそれですごくない？",
+          "npcLine": "Oh, my sleeve has a {scorch mark|焦げ|こげ} again... When did that happen? Was I still running {experiments|実験|じっけん} while controlled? ...Isn't that kind of impressive?",
           "options": [
             {
-              "text": "ある意味すごいね！",
+              "text": "In a way, yeah — impressive!",
               "tone": "positive"
             },
             {
-              "text": "危ないから気をつけて。",
+              "text": "It's {dangerous|危ない|あぶない} — be careful.",
               "tone": "neutral"
             },
             {
-              "text": "全然すごくないだろ。",
+              "text": "No, that's not impressive at all.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "ねえ、このシステム…どうやって人を操るの？科学的に調べたい！学校の中を一緒に調査しない？",
+          "npcLine": "Hey — how does this system actually {control|操る|あやつる} people? I want to {investigate|調べる|しらべる} it scientifically! Want to search the school with me?",
           "options": [
             {
-              "text": "面白そう！一緒に調べよう。",
+              "text": "Sounds fun — let's investigate!",
               "tone": "positive"
             },
             {
-              "text": "まずは安全を確認してから。",
+              "text": "Let's confirm it's {safe|安全|あんぜん} first.",
               "tone": "neutral"
             },
             {
-              "text": "また操られたいのか？",
+              "text": "Do you want to get controlled again?",
               "tone": "negative"
             }
           ]
@@ -1504,58 +1504,58 @@
       "speechStyle": "Speaks in precise, measured sentences, often pausing to correct terminology.",
       "quirk": "Constantly polishes safety goggles even when not in the lab."
     },
-    "greeting": "…ああ、来ましたか。ゴーグルは持っていますか？ここでは安全が一番大切です。",
-    "defeatLine": "…なるほど。私の目が曇っていたのは、ゴーグルのせいではなかったようですね。",
+    "greeting": "Ah. You're here. Do you have your goggles? In {chemistry|化学|かがく}, {safety|安全|あんぜん} comes first.",
+    "defeatLine": "…I see. The cloudiness in my vision was not, it seems, caused by my goggles.",
     "postCombat": {
-      "freed": "頭がすっきりしました。まるで…よく磨いたゴーグルのように。ふふ、すみません、職業病です。",
+      "freed": "My head is clear now. Like a freshly polished lens. …Forgive me — occupational habit.",
       "rounds": [
         {
-          "npcLine": "化学の実験では、まず安全を確認します。手袋はありますか？目を守ることが大切です。…ゴーグルも忘れずに。",
+          "npcLine": "In a {chemistry|化学|かがく} experiment, you verify {safety|安全|あんぜん} before anything else. Do you have gloves? Eye protection is not optional. …And don't forget your goggles.",
           "options": [
             {
-              "text": "安全は大切ですね。先生はいつも気をつけていますか？",
+              "text": "Safety matters. Do you always follow your own rules?",
               "tone": "positive"
             },
             {
-              "text": "実験は楽しいですか？",
+              "text": "Do you enjoy {experiments|実験|じっけん}?",
               "tone": "neutral"
             },
             {
-              "text": "そんなに気にしなくてもいいのでは？",
+              "text": "Isn't that a bit excessive?",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "このゴーグル、もう十年使っています。毎日磨いていますから、新品のようでしょう？…え、今は実験していない？それは関係ありません。",
+          "npcLine": "These goggles are ten years old. I {polish|磨く|みがく} them every day — they look new, don't they? …You say I'm not in the lab right now? That is not relevant.",
           "options": [
             {
-              "text": "きれいなゴーグルですね。大切にしているのですね。",
+              "text": "They're spotless. You take great care of them.",
               "tone": "positive"
             },
             {
-              "text": "なぜ実験の時以外も磨くのですか？",
+              "text": "Why polish them outside the lab?",
               "tone": "neutral"
             },
             {
-              "text": "少し変わっていますね。",
+              "text": "That's a little unusual.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "ところで、「化学」の読み方は「かがく」です。「科学」も「かがく」ですが、意味が違います。正確に言うことが大切です。…私は少しうるさいですか？",
+          "npcLine": "Incidentally — {chemistry|化学|かがく} and {science|科学|かがく} share the reading かがく, but mean different things. Precision in {language|言葉|ことば} matters. …Am I being pedantic?",
           "options": [
             {
-              "text": "いいえ、正確なことは大切だと思います。",
+              "text": "Not at all. Precision is important.",
               "tone": "positive"
             },
             {
-              "text": "面白いです。他にも教えてください。",
+              "text": "Interesting. Tell me more.",
               "tone": "neutral"
             },
             {
-              "text": "先生は言葉にも厳しいですね。",
+              "text": "You're strict about words too, aren't you.",
               "tone": "negative"
             }
           ]
@@ -1597,58 +1597,58 @@
       "speechStyle": "Weaves personal travel anecdotes into every explanation.",
       "quirk": "Always carries a folded map in one hand and unfolds it mid-conversation to point out locations."
     },
-    "greeting": "やあ、君か！今日はどこの話をしようかな？世界は広いよ！",
-    "defeatLine": "ああ…やっと目が覚めた。ありがとう、君のおかげだ。",
+    "greeting": "Ah, there you are! Come, look at this {map|地図|ちず} — the {world|世界|せかい} is so much bigger than this school!",
+    "defeatLine": "Ah… I'm awake. Thank you — you brought me back.",
     "postCombat": {
-      "freed": "頭の中の暗い霧が消えた…。また自由に旅の話ができるよ。",
+      "freed": "The {darkness|暗さ|くらさ} in my head has lifted… I can talk about my travels again.",
       "rounds": [
         {
-          "npcLine": "昔、南の島に行った時、海がとても青くて、魚がたくさんいたんだ。君は遠い場所に行ったことがある？",
+          "npcLine": "Once, on a southern {island|島|しま}, the sea was so blue and the fish were everywhere. Have you ever been somewhere far away?",
           "options": [
             {
-              "text": "すごい！私もいつか行きたいです！",
+              "text": "Sounds amazing! I want to {go|行く|いく} someday!",
               "tone": "positive"
             },
             {
-              "text": "南の島ですか。どこの島ですか？",
+              "text": "A southern island — which one?",
               "tone": "neutral"
             },
             {
-              "text": "旅の話はもういいです。",
+              "text": "I don't want to hear {travel|旅|たび} stories.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "ほら、この地図を見て。ここが私たちの学校で…ここが山、ここが海だよ。地図があれば迷わないんだ。",
+          "npcLine": "Here — look at this {map|地図|ちず}. Here is our school, here is the mountain, here is the sea. As long as you have a map, you won't {get lost|迷う|まよう}.",
           "options": [
             {
-              "text": "地図、すごく面白いですね！もっと見せてください！",
+              "text": "That map is fascinating! Show me more!",
               "tone": "positive"
             },
             {
-              "text": "いつもその地図を持っているんですか？",
+              "text": "Do you always carry it with you?",
               "tone": "neutral"
             },
             {
-              "text": "紙の地図なんて古いですよ。",
+              "text": "Paper {maps|地図|ちず} feel old-fashioned.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "世界にはまだ知らない場所がたくさんある。君も自分の目で見に行くといいよ。新しい発見が待っているから。",
+          "npcLine": "There are still so many {places|場所|ばしょ} in the world you haven't seen. Go and {discover|発見|はっけん} them yourself — something new is waiting.",
           "options": [
             {
-              "text": "はい！先生みたいに色々な所に行きたいです！",
+              "text": "Yes! I want to {travel|旅|たび} like you!",
               "tone": "positive"
             },
             {
-              "text": "どこから始めればいいですか？",
+              "text": "Where should I start?",
               "tone": "neutral"
             },
             {
-              "text": "別に興味ないです。",
+              "text": "I'm not really interested.",
               "tone": "negative"
             }
           ]
@@ -1690,58 +1690,58 @@
       "speechStyle": "Speaks in measured, authoritative tones that make even casual remarks feel like proclamations.",
       "quirk": "Has a habit of pausing mid-sentence to let his words sink in before delivering the final point."
     },
-    "greeting": "…止まれ。この学校は……私が守る。誰も通さない。",
-    "defeatLine": "…そうか。私は……生徒たちを守るはずだったのに。",
+    "greeting": "…{Stop|止まれ|とまれ}. This {school|学校|がっこう}…… I will protect it. No one passes.",
+    "defeatLine": "…I see. I was supposed to {protect|守る|まもる} the students…",
     "postCombat": {
-      "freed": "……すまない。校長として……生徒を守るべき私が、逆に学校を壊していたとは。",
+      "freed": "……Forgive me. As {principal|校長|こうちょう}…… I, who should protect the students — I was destroying the school instead.",
       "rounds": [
         {
-          "npcLine": "この学校の全ては……私の責任だ。生徒も、先生も……全員、私が守らなければならない。",
+          "npcLine": "Everything in this {school|学校|がっこう}…… is my {responsibility|責任|せきにん}. Students, teachers…… every last one, I must protect them.",
           "options": [
             {
-              "text": "その気持ち、立派だと思います。",
+              "text": "That's admirable.",
               "tone": "positive"
             },
             {
-              "text": "大変な仕事ですね。",
+              "text": "That sounds like a heavy burden.",
               "tone": "neutral"
             },
             {
-              "text": "一人で抱え込みすぎだ。",
+              "text": "You're carrying too much alone.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "上に立つ者は……常に見られている。弱さを見せれば……学校が揺らぐ。それが、校長の重さだ。",
+          "npcLine": "Those who {stand|立つ|たつ} above…… are always watched. Show {weakness|弱さ|よわさ}…… and the school shakes. That is the weight of a principal.",
           "options": [
             {
-              "text": "だからこそ、強い人なんですね。",
+              "text": "That's why you're so strong.",
               "tone": "positive"
             },
             {
-              "text": "そういうものなのか。",
+              "text": "I suppose that's how it is.",
               "tone": "neutral"
             },
             {
-              "text": "弱さを見せてもいいだろう。",
+              "text": "It's okay to show weakness.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "君は……なかなか見る目がある。この学校には……まだ、おかしな力が残っている。気をつけろ。",
+          "npcLine": "You…… have a sharp eye. In this school…… a strange {power|力|ちから} still remains. Be careful.",
           "options": [
             {
-              "text": "はい。力を貸してください。",
+              "text": "Lend me your {strength|力|ちから}.",
               "tone": "positive"
             },
             {
-              "text": "わかりました。",
+              "text": "Understood.",
               "tone": "neutral"
             },
             {
-              "text": "自分で何とかする。",
+              "text": "I'll handle it myself.",
               "tone": "negative"
             }
           ]
@@ -1783,58 +1783,58 @@
       "speechStyle": "Speaks in soft, meandering sentences, often trailing off mid-thought as something catches his eye.",
       "quirk": "Constantly sketches in a worn notebook and sees everyday objects as potential subjects for his next painting."
     },
-    "greeting": "あ…ここの光、きれいだな…。ん？誰か来た…？ごめん、今は絵を描いてるから…通さないよ。",
-    "defeatLine": "あれ…俺、何を描いてたんだろう…。この絵、全部黒い…。",
+    "greeting": "Ah… the {light|光|ひかり} here is beautiful… Hm? Someone came…? Sorry, I'm {drawing|描く|かく} right now… I can't let you pass.",
+    "defeatLine": "Wait… what was I drawing…? This {picture|絵|え}, it's all black…",
     "postCombat": {
-      "freed": "…頭がぼんやりする。俺、誰かを止めようとしてた…？ごめん、よくわからないんだ。",
+      "freed": "…My head is fuzzy. Was I trying to stop someone…? Sorry, I don't really {understand|わかる|わかる} what happened.",
       "rounds": [
         {
-          "npcLine": "あのノート…システムに操られてる間も、ずっと絵を描いてたみたいだ。でも全部、暗い色ばかりで…。",
+          "npcLine": "That {notebook|ノート|ノート}… it seems I kept {drawing|描く|かく} the whole time the system had me. But every {picture|絵|え} was full of dark colors…",
           "options": [
             {
-              "text": "もう大丈夫だよ。好きな色で描けるよ。",
+              "text": "You're free now. Draw whatever {colors|色|いろ} you like.",
               "tone": "positive"
             },
             {
-              "text": "そうなんだ。大変だったね。",
+              "text": "That sounds rough.",
               "tone": "neutral"
             },
             {
-              "text": "絵のことはいいから、状況を教えて。",
+              "text": "Forget the drawings — tell me what happened.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "あ、見て…あの窓の光。午後の光は色が柔らかくて…描きたいな…。えっと、何の話だっけ。",
+          "npcLine": "Oh, look… that {light|光|ひかり} through the window. Afternoon light has such soft {color|色|いろ}… I want to paint it… Wait, what were we talking about?",
           "options": [
             {
-              "text": "いいね、描いてみてよ！",
+              "text": "Go ahead and paint it!",
               "tone": "positive"
             },
             {
-              "text": "学校のことを話してたよ。",
+              "text": "We were talking about the school.",
               "tone": "neutral"
             },
             {
-              "text": "集中してくれ。",
+              "text": "Stay focused.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "この学校、前はもっと明るかったんだ。廊下の壁に絵を飾ってたのに…今は何もなくて…あ、あの雲の形、猫みたいだ…。",
+          "npcLine": "This school used to be so much brighter. We had {pictures|絵|え} hanging in the hallways… now there's nothing… oh, that cloud looks like a cat…",
           "options": [
             {
-              "text": "また絵を飾ろうよ。手伝うよ。",
+              "text": "Let's put the {pictures|絵|え} back up. I'll help.",
               "tone": "positive"
             },
             {
-              "text": "猫か。確かにそう見えるね。",
+              "text": "A cat, huh. I can see it.",
               "tone": "neutral"
             },
             {
-              "text": "話がそれてるよ。",
+              "text": "You're getting off track.",
               "tone": "negative"
             }
           ]
