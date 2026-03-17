@@ -5138,3 +5138,70 @@ html, body {
   line-height: 1.4;
   color: var(--text-muted);
 }
+
+/* ── Shop help button ── */
+.shop-help-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent-primary, #64b5f6);
+  background: rgba(100, 181, 246, 0.15);
+  color: var(--accent-primary, #64b5f6);
+  font-size: 0.7rem;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.shop-item-card { position: relative; }
+
+.shop-stat-pill {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  margin: 1px 2px;
+  white-space: nowrap;
+}
+
+/* ── Item help popup ── */
+.item-help-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.item-help-popup {
+  background: var(--surface, #1a1a2e);
+  border: 1px solid var(--accent-primary, #64b5f6);
+  border-radius: 12px;
+  padding: 1.2rem;
+  max-width: 320px;
+  width: 100%;
+}
+.item-help-name {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+.item-help-pills {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.item-help-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #8ab4d8);
+  line-height: 1.4;
+}
