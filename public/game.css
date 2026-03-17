@@ -157,14 +157,13 @@ html, body {
 /* ===== AREA HEADER PILL ===== */
 .area-header-pill {
   position: absolute;
-  top: 6px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.45);
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.5);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 3px 12px;
+  padding: 6px 14px;
   z-index: 10;
   text-align: center;
   white-space: normal;
@@ -178,19 +177,19 @@ html, body {
 }
 
 .area-header-name {
-  font-size: 10px;
+  font-size: 14px;
   color: rgba(255,255,255,0.95);
   font-weight: 600;
   letter-spacing: 0.3px;
 }
 
 .area-header-sep {
-  font-size: 10px;
+  font-size: 14px;
   color: rgba(255,255,255,0.4);
 }
 
 .area-header-sub {
-  font-size: 8px;
+  font-size: 12px;
   color: rgba(255,255,255,0.65);
   font-weight: 500;
 }
