@@ -43,7 +43,7 @@ export async function show() {
     </div>
   `;
 
-  document.getElementById('game-container').appendChild(panel);
+  document.body.appendChild(panel);
 
   // Close button
   document.getElementById('meta-shop-close-btn')?.addEventListener('click', () => {
