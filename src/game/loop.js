@@ -758,6 +758,34 @@ export class GameManager {
     }
     this.combat.allies = this.run.creatureParty.active;
 
+    // Check if all enemies died during enemy phase (e.g. confusion self-hit)
+    const allEnemiesDown = this.combat.enemies.every(e => e.hp <= 0 || e.befriended);
+    if (allEnemiesDown) {
+      const newCollectionAdditions = this._flushPendingCaptures();
+      this.combat.active = false;
+      this.run.currentAreaEncounters++;
+      this.run.totalEncounters = (this.run.totalEncounters || 0) + 1;
+      const currentRoom = this.run.rooms?.[this.run.currentRoom];
+      if (currentRoom) currentRoom.interacted = true;
+      this.emitState();
+      return {
+        actionType: 'attack',
+        playerAttacks: playerResult.attacks || [],
+        npcSkillAttacks,
+        npcSkillUsed,
+        enemyAttacks: enemyResult.attacks || [],
+        xpEvents: playerResult.xpEvents || [],
+        mpRegens: playerResult.mpRegens || [],
+        effectEvents,
+        koSwaps,
+        combatEnded: true,
+        victory: true,
+        creatureParty: this.run.creatureParty,
+        enemies: this.combat.enemies,
+        newCollectionAdditions
+      };
+    }
+
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
     const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
     if (allAlliesKO) {

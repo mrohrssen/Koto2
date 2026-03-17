@@ -616,7 +616,24 @@ function handleMoveSelected(move, creatureIndex) {
   const state = getGameState();
 
   if (move.target === 'single_enemy') {
-    showEnemies(state.combat?.enemies || [], move);
+    const enemies = state.combat?.enemies || [];
+    const alive = enemies.filter(e => e.hp > 0 && !e.befriended);
+    if (alive.length === 0) {
+      // No valid targets — skip target selection, auto-advance
+      moveChoices.push({ creatureIndex: currentCreatureIndex, moveId: move.id, targetIndex: -1 });
+      currentCreatureIndex++;
+      promptNextCreature();
+      return;
+    }
+    if (alive.length === 1) {
+      // Single target — auto-select, skip UI
+      const autoIdx = enemies.indexOf(alive[0]);
+      moveChoices.push({ creatureIndex: currentCreatureIndex, moveId: move.id, targetIndex: autoIdx });
+      currentCreatureIndex++;
+      promptNextCreature();
+      return;
+    }
+    showEnemies(enemies, move);
   } else if (move.target === 'single_ally') {
     showAllies(state.combat?.allies || state.run?.creatureParty?.active || [], move);
   } else {

@@ -118,6 +118,13 @@ function showTargets(targets, move, type) {
 
   container.appendChild(list);
 
+  // If no targetable enemies survived the filter, auto-cancel
+  if (list.children.length === 0) {
+    console.warn('[TargetSelect] No targetable enemies found — auto-cancelling');
+    if (onCancel) onCancel();
+    return;
+  }
+
   // Cancel button
   const cancelBtn = document.createElement('button');
   cancelBtn.className = 'target-cancel-btn';
