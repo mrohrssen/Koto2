@@ -496,6 +496,7 @@ export function startMoveSelection() {
 function isBefriendAvailable() {
   const state = getGameState();
   if (!state.combat?.isCreatureCombat || state.combat?.npcId) return false;
+  if (state.combat?.befriendUsedThisTurn) return false;
   const enemies = state.combat.enemies || [];
   const alive = enemies.filter(e => e.hp > 0 && !e.befriended);
   if (alive.length !== 1) return false;

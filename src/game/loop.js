@@ -246,7 +246,8 @@ export class GameManager {
         intent: this.combat.intent,
         lastAction: this.combat.lastAction,
         npcId: this.combat.npcId || null,
-        npcData: this.combat.npcData || null
+        npcData: this.combat.npcData || null,
+        befriendUsedThisTurn: this.combat.befriendUsedThisTurn || false
       } : null,
       meta: this.meta ? {
         lifetimeStats: this.meta.lifetimeStats,
@@ -556,6 +557,9 @@ export class GameManager {
 
     // Once an action is committed, free swap window closes
     this.combat.swapPhase = false;
+
+    // Reset per-turn befriend guard for next turn
+    this.combat.befriendUsedThisTurn = false;
 
     // Tick active effects at start of round (poison damage, etc.)
     const effectEvents = tickAllEffects(this.combat.allies, this.combat.enemies);

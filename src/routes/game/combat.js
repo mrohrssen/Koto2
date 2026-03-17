@@ -226,6 +226,11 @@ export default function createCombatRoutes({
       return res.status(400).json({ error: 'Cannot befriend NPC trainer creatures' });
     }
 
+    // Per-turn befriend guard — only one attempt per turn
+    if (combat.befriendUsedThisTurn) {
+      return res.status(400).json({ error: 'Already attempted befriend this turn' });
+    }
+
     // Find exactly 1 alive, non-befriended enemy at ≤50% HP
     const enemies = combat.enemies || [];
     const eligible = enemies.filter(e => e.hp > 0 && !e.befriended && (e.hp / e.maxHp) <= 0.5);
@@ -235,6 +240,7 @@ export default function createCombatRoutes({
 
     const target = eligible[0];
     const { accepted, chance } = rollTalkAcceptance(target);
+    combat.befriendUsedThisTurn = true;
 
     if (!accepted) {
       // Rejection: enemy attacks (mirrors handleBefriendAnswer wrong-answer path)
