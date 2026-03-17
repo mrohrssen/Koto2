@@ -627,6 +627,46 @@ html, body {
   opacity: 0.8;
 }
 
+.narration-text.garbled {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.12em;
+  opacity: 0.55;
+}
+
+.narration-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.narration-choices:empty {
+  display: none;
+}
+
+.narration-choice-btn {
+  background: rgba(100, 181, 246, 0.1);
+  border: 1.5px solid rgba(100, 181, 246, 0.4);
+  border-radius: 10px;
+  padding: 10px 16px;
+  color: #2f6e8e;
+  font-size: clamp(14px, 3.8vw, 20px);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+}
+
+.narration-choice-btn:hover,
+.narration-choice-btn:active {
+  background: rgba(100, 181, 246, 0.25);
+  border-color: rgba(100, 181, 246, 0.7);
+  transform: translateX(4px);
+}
+
 .narration-indicator {
   position: absolute;
   z-index: 1;

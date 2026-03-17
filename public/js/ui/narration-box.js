@@ -32,6 +32,7 @@ const box = document.getElementById('narration-box');
 const textEl = document.getElementById('narration-text');
 const speakerEl = document.getElementById('narration-speaker');
 const indicatorEl = box?.querySelector('.narration-indicator');
+const choicesEl = document.getElementById('narration-choices');
 
 let dismissResolve = null;
 let dismissTimer = null;
@@ -138,9 +139,11 @@ function paginateForTwoLines(text) {
   return pages.length > 0 ? pages : [source];
 }
 
-function hide() {
+function hide(value) {
   if (box) box.classList.remove('visible');
   clearPagination();
+  if (choicesEl) choicesEl.innerHTML = '';
+  if (textEl) textEl.classList.remove('garbled');
   if (dismissTimer) {
     clearTimeout(dismissTimer);
     dismissTimer = null;
@@ -148,7 +151,7 @@ function hide() {
   if (dismissResolve) {
     const resolve = dismissResolve;
     dismissResolve = null;
-    resolve();
+    resolve(value);
   }
 }
 
@@ -186,7 +189,9 @@ export async function show(text, options = {}) {
     speaker,
     autoDismiss,
     persistent,
-    html
+    html,
+    choices,
+    garbled
   } = options;
 
   const displayText = sourceText;
@@ -226,9 +231,32 @@ export async function show(text, options = {}) {
     setText(textEl, pagedText[0] || '');
     if (textEl) lookup.refresh().catch(() => {});
   }
-  if (indicatorEl) indicatorEl.style.display = (autoDismiss || persistent) ? 'none' : '';
+  if (textEl) textEl.classList.toggle('garbled', !!garbled);
+  const hasChoices = choices?.length > 0;
+  if (indicatorEl) indicatorEl.style.display = (autoDismiss || persistent || hasChoices) ? 'none' : '';
   if (box) box.classList.add('visible');
   console.log(`[NarrationBox] Final displayed text: ${displayText}`);
+
+  // Choices mode: show text + choice buttons, resolve with choice id on click
+  if (hasChoices) {
+    return new Promise(resolve => {
+      dismissResolve = resolve;
+      if (choicesEl) {
+        choicesEl.innerHTML = '';
+        for (const choice of choices) {
+          const btn = document.createElement('button');
+          btn.className = 'narration-choice-btn';
+          btn.textContent = choice.text;
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.removeEventListener('click', handleClick, true);
+            hide(choice.id || choice.text);
+          });
+          choicesEl.appendChild(btn);
+        }
+      }
+    });
+  }
 
   // Persistent mode: show but don't register click handler, resolve immediately
   if (persistent) {
@@ -260,6 +288,8 @@ export function forceHide() {
   document.removeEventListener('click', handleClick, true);
   if (box) box.classList.remove('visible');
   clearPagination();
+  if (choicesEl) choicesEl.innerHTML = '';
+  if (textEl) textEl.classList.remove('garbled');
   if (dismissTimer) {
     clearTimeout(dismissTimer);
     dismissTimer = null;

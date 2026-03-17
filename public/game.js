@@ -467,11 +467,25 @@ async function playPrologue() {
       scene.hideCid();
     }
 
-    const html = renderEnFirst(prologueScene.narration);
-    await narrationBox.show(html, {
+    // Garbled lines: show raw text, no bootstrap rendering
+    if (prologueScene.type === 'garbled') {
+      await narrationBox.show(prologueScene.narration, {
+        speaker: prologueScene.speaker || undefined,
+        garbled: true
+      });
+      continue;
+    }
+
+    const showOpts = {
       html: true,
       speaker: prologueScene.speaker || undefined
-    });
+    };
+    if (prologueScene.choices) {
+      showOpts.choices = prologueScene.choices;
+    }
+
+    const html = prologueScene.narration ? renderEnFirst(prologueScene.narration) : '';
+    await narrationBox.show(html, showOpts);
     flushExposures();
   }
 

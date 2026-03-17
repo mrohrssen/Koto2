@@ -1,212 +1,95 @@
 [
   {
-    "id": "prologue-01a-opening",
+    "id": "prologue-01-garbled",
     "speaker": "Cid",
-    "narration": "A {mysterious|不思議|ふしぎ} {light|光|ひかり} fills the {sky|空|そら}. Countless {star|星|ほし} trails spiral down across the horizon."
+    "type": "garbled",
+    "narration": "????????? ????? ????????! ??? ?????? ????????? ???!"
   },
   {
-    "id": "prologue-01b-opening",
+    "id": "prologue-02-garbled",
     "speaker": "Cid",
-    "narration": "Not falling, but dancing. Something {new|新しい|あたらしい} is about to begin."
+    "type": "garbled",
+    "narration": "??? ???? ??????? ?? ??? ?????? ???????? ????!"
   },
   {
-    "id": "prologue-02a-world",
+    "id": "prologue-03-understand",
     "speaker": "Cid",
-    "narration": "Welcome to a {world|世界|せかい} alive with wonder! Every {mountain|山|やま} here touches the {sky|空|そら}."
+    "narration": "Oh wait... I don't think you can understand a word I'm saying. ...Do you understand me NOW?",
+    "choices": [{ "text": "Yes, I understand!", "id": "yes" }]
   },
   {
-    "id": "prologue-02b-world",
+    "id": "prologue-04-translator",
     "speaker": "Cid",
-    "narration": "Every deep {forest|森|もり} hums with {secret|秘密|ひみつ} life. The {wind|風|かぜ} carries tale after tale from beyond your wildest {dream|夢|ゆめ}."
+    "narration": "Ha! I knew it — you're a traveler from far away. Here, take this — it's called the Translator."
   },
   {
-    "id": "prologue-03a-creatures",
+    "id": "prologue-05-translator-on",
     "speaker": "Cid",
-    "narration": "And in this {world|世界|せかい} — creatures! {Big|大きい|おおきい} ones that tower over the treetops."
+    "narration": "Wear it, and you'll start to understand our {world|世界|せかい} — one {word|言葉|ことば} at a time. It grows as YOU grow."
   },
   {
-    "id": "prologue-03b-creatures",
+    "id": "prologue-06-intro",
     "speaker": "Cid",
-    "narration": "{Small|小さい|ちいさい} ones that nap in {flower|花|はな} petals. Every single one has a {name|名前|なまえ} and a {story|物語|ものがたり} waiting to be told."
+    "narration": "My {name|名前|なまえ} is Cid! I {help|助ける|たすける} newcomers find their {way|道|みち}."
   },
   {
-    "id": "prologue-04a-partnership",
+    "id": "prologue-07-world",
     "speaker": "Cid",
-    "narration": "Here, creatures aren't pets — they're partners. Every {person|人|ひと} has a creature by their side."
+    "narration": "Welcome to a {world|世界|せかい} alive with wonder! Every {mountain|山|やま} touches the {sky|空|そら}, and every {forest|森|もり} hums with {secret|秘密|ひみつ} life."
   },
   {
-    "id": "prologue-04b-partnership",
+    "id": "prologue-08-creatures",
     "speaker": "Cid",
-    "narration": "They explore together. They {protect|守る|まもる} each other. A creature isn't something you own — it's a {friend|友達|ともだち}."
+    "narration": "And in this {world|世界|せかい} — creatures! {Big|大きい|おおきい} ones that tower over treetops, {small|小さい|ちいさい} ones that nap in {flower|花|はな} petals."
   },
   {
-    "id": "prologue-05a-disruption",
+    "id": "prologue-09-partners",
     "speaker": "Cid",
-    "narration": "But lately... something is wrong. A {mysterious|不思議|ふしぎ} disruption is spreading across the land."
+    "narration": "Here, creatures aren't pets — they're partners. Every {person|人|ひと} has a creature by their side. They {protect|守る|まもる} each other. A creature is a {friend|友達|ともだち}."
   },
   {
-    "id": "prologue-05b-disruption",
+    "id": "prologue-10-disruption",
     "speaker": "Cid",
-    "narration": "Creatures that were once {gentle|優しい|やさしい} and peaceful have become confused and wild. The {wind|風|かぜ} itself feels uneasy."
+    "narration": "But lately... a {mysterious|不思議|ふしぎ} disruption is spreading. Creatures that were once {gentle|優しい|やさしい} have become confused and wild."
   },
   {
-    "id": "prologue-06a-you-arrive",
+    "id": "prologue-11-calming",
     "speaker": "Cid",
-    "narration": "This is where YOUR {story|物語|ものがたり} begins. You've just arrived — a {traveler|旅人|たびびと} from far away."
+    "narration": "We don't hurt them — we calm them. Be {gentle|優しい|やさしい} enough, and they might just decide to join you!"
   },
   {
-    "id": "prologue-06b-you-arrive",
+    "id": "prologue-12-combat",
     "speaker": "Cid",
-    "narration": "You can't {read|読む|よむ} the signs. You can't {understand|分かる|わかる} the {language|言葉|ことば}."
+    "narration": "Every creature knows special moves, and every move has a {name|名前|なまえ}. The more you {learn|覚える|おぼえる}, the {strong|強い|つよい}er your team becomes!"
   },
   {
-    "id": "prologue-06c-you-arrive",
+    "id": "prologue-13-exploration",
     "speaker": "Cid",
-    "narration": "Every {voice|声|こえ} sounds like {beautiful|美しい|うつくしい} noise. But you're here for a reason."
+    "narration": "There's a whole {world|世界|せかい} waiting — deep {forest|森|もり}, rushing {water|水|みず}, roaring {fire|火|ひ}. Every {place|場所|ばしょ} teaches you something {new|新しい|あたらしい}."
   },
   {
-    "id": "prologue-07-meet-cid",
+    "id": "prologue-14-items",
     "speaker": "Cid",
-    "narration": "\"Hey! Over here!\" A {person|人|ひと} is waving at you from the edge of a {forest|森|もり}."
+    "narration": "Along the {road|道|みち}, you'll find {food|食べ物|たべもの} to heal your team and rare ingredients to {make|作る|つくる} something amazing."
   },
   {
-    "id": "prologue-07b-meet-cid",
+    "id": "prologue-15-town",
     "speaker": "Cid",
-    "narration": "She has a {bright|明るい|あかるい} grin, and she doesn't seem the least bit surprised to {see|見る|みる} you."
+    "narration": "And when you need a break — you'll build your own {town|町|まち}! Start {small|小さい|ちいさい}, grow it {big|大きい|おおきい}."
   },
   {
-    "id": "prologue-08a-cid-intro",
+    "id": "prologue-16-npcs",
     "speaker": "Cid",
-    "narration": "\"My {name|名前|なまえ} is Cid! I {help|助ける|たすける} newcomers find their {way|道|みち}.\""
+    "narration": "{Talk|話す|はなす} to every {person|人|ひと} you meet. This {world|世界|せかい} runs on {heart|心|こころ} — the bond between you and everyone around you."
   },
   {
-    "id": "prologue-08b-cid-intro",
+    "id": "prologue-17-someday",
     "speaker": "Cid",
-    "narration": "\"You look completely lost — but that's fine, everyone starts somewhere.\" She winks. \"I've got just the thing for you.\""
+    "narration": "Right now the Translator is doing the heavy lifting — readings, meanings, everything. But someday? You'll just... {understand|分かる|わかる}."
   },
   {
-    "id": "prologue-09a-translator",
+    "id": "prologue-18-sendoff",
     "speaker": "Cid",
-    "narration": "She holds out a {small|小さい|ちいさい} glowing device. \"This is the Translator.\""
-  },
-  {
-    "id": "prologue-09b-translator",
-    "speaker": "Cid",
-    "narration": "\"Wear it, and you'll start to {understand|分かる|わかる} our {world|世界|せかい} — a little more each {day|日|ひ}.\""
-  },
-  {
-    "id": "prologue-09c-translator",
-    "speaker": "Cid",
-    "narration": "\"It grows as YOU grow. The more you explore, the sharper it gets.\""
-  },
-  {
-    "id": "prologue-10a-translator-on",
-    "speaker": "Cid",
-    "narration": "You put the Translator on. Something shifts. The {light|光|ひかり} around you seems to pulse."
-  },
-  {
-    "id": "prologue-10b-translator-on",
-    "speaker": "Cid",
-    "narration": "Every {word|言葉|ことば} that was invisible before starts shimmering into focus. Now you can start to {read|読む|よむ} them."
-  },
-  {
-    "id": "prologue-11a-first-creature",
-    "speaker": "Cid",
-    "narration": "A rustle in the tall {grass|草|くさ} — something leaps out! A {small|小さい|ちいさい} creature tumbles to your feet."
-  },
-  {
-    "id": "prologue-11b-first-creature",
-    "speaker": "Cid",
-    "narration": "It has {big|大きい|おおきい}, curious eyes — and despite its size, you can feel it. This creature is {strong|強い|つよい}."
-  },
-  {
-    "id": "prologue-12a-creature-chooses",
-    "speaker": "Cid",
-    "narration": "Cid gasps. \"No way — it chose YOU! That almost never happens with newcomers!\""
-  },
-  {
-    "id": "prologue-12b-creature-chooses",
-    "speaker": "Cid",
-    "narration": "The creature chirps: \"{Yes|はい|はい}!\" It bumps its {head|頭|あたま} against your {hand|手|て}. Just like that — your first {friend|友達|ともだち}."
-  },
-  {
-    "id": "prologue-13a-calming",
-    "speaker": "Cid",
-    "narration": "\"Here's the most {important|大切|たいせつ} thing,\" Cid says. \"Those confused creatures out there? You don't hurt them.\""
-  },
-  {
-    "id": "prologue-13b-calming",
-    "speaker": "Cid",
-    "narration": "\"You calm them. Your team works together to {help|助ける|たすける} them — and if you're {gentle|優しい|やさしい} enough, they might just join you.\""
-  },
-  {
-    "id": "prologue-14a-combat",
-    "speaker": "Cid",
-    "narration": "\"Every creature knows special moves, and every move has a {name|名前|なまえ}.\""
-  },
-  {
-    "id": "prologue-14b-combat",
-    "speaker": "Cid",
-    "narration": "\"The more you {learn|覚える|おぼえる}, the {strong|強い|つよい}er your team becomes. Every {word|言葉|ことば} deepens your bond.\""
-  },
-  {
-    "id": "prologue-15a-exploration",
-    "speaker": "Cid",
-    "narration": "\"There's a whole {world|世界|せかい} waiting for you. Deep {forest|森|もり} thick with mystery.\""
-  },
-  {
-    "id": "prologue-15b-exploration",
-    "speaker": "Cid",
-    "narration": "\"Rushing {water|水|みず} and roaring {fire|火|ひ}. Every {place|場所|ばしょ} you visit teaches you something {new|新しい|あたらしい}.\""
-  },
-  {
-    "id": "prologue-16a-items",
-    "speaker": "Cid",
-    "narration": "\"Along the {road|道|みち}, you'll find {food|食べ物|たべもの} to heal your team and rare ingredients to collect.\""
-  },
-  {
-    "id": "prologue-16b-items",
-    "speaker": "Cid",
-    "narration": "\"Combine two things and discover what they {make|作る|つくる} — you'd be amazed what a little creativity can cook up!\""
-  },
-  {
-    "id": "prologue-17a-town",
-    "speaker": "Cid",
-    "narration": "\"And when you need a break from adventuring — you'll build your own {town|町|まち}!\""
-  },
-  {
-    "id": "prologue-17b-town",
-    "speaker": "Cid",
-    "narration": "\"Start {small|小さい|ちいさい}, then grow it into something {big|大きい|おおきい}. Your creatures can {live|住む|すむ} and work there too.\""
-  },
-  {
-    "id": "prologue-18a-npcs",
-    "speaker": "Cid",
-    "narration": "\"One more thing — {talk|話す|はなす} to every {person|人|ひと} you meet. They have wisdom and {story|物語|ものがたり} worth hearing.\""
-  },
-  {
-    "id": "prologue-18b-npcs",
-    "speaker": "Cid",
-    "narration": "\"This {world|世界|せかい} runs on {heart|心|こころ} — the bond between you and your creatures, between you and everyone you meet.\""
-  },
-  {
-    "id": "prologue-19-translator-growth",
-    "speaker": "Cid",
-    "narration": "\"Your Translator will grow with you. Right now it's working hard — showing you readings, meanings, translations.\""
-  },
-  {
-    "id": "prologue-19b-translator-growth",
-    "speaker": "Cid",
-    "narration": "\"But someday? You won't need any of that. You'll just... {understand|分かる|わかる}. And that {day|日|ひ} will {come|来る|くる} sooner than you think.\""
-  },
-  {
-    "id": "prologue-20a-sendoff",
-    "speaker": "Cid",
-    "narration": "Cid gives you a warm {smile|笑顔|えがお}. \"{Thank you|ありがとう|ありがとう} for coming to this {world|世界|せかい}.\""
-  },
-  {
-    "id": "prologue-20b-sendoff",
-    "speaker": "Cid",
-    "narration": "She points toward the {mountain|山|やま}. \"Now {go|行く|いく}! Your {adventure|冒険|ぼうけん} is out there — and your {friend|友達|ともだち} is right beside you.\""
+    "narration": "That {day|日|ひ} will {come|来る|くる} sooner than you think. Now {go|行く|いく}! Your {adventure|冒険|ぼうけん} starts here — and your first {friend|友達|ともだち} is right beside you."
   }
 ]
