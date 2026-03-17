@@ -43,6 +43,13 @@ export function getManager(userId) {
             delete data.meta.robotCollection;
             needsSave = true;
           }
+          // Migrate: add progressionTokens and upgrades if missing from old saves
+          if (data.meta.progressionTokens === undefined) {
+            data.meta.progressionTokens = 0;
+          }
+          if (!data.meta.upgrades) {
+            data.meta.upgrades = {};
+          }
           // Migrate: remove stale creature IDs and ensure defaults
           if (data.meta.creatureCollection) {
             const original = JSON.stringify(data.meta.creatureCollection);

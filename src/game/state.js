@@ -41,6 +41,9 @@ export function createMetaProgression() {
     // Purchased upgrades (key: upgrade ID, value: level purchased)
     upgrades: {},
 
+    // Progression tokens earned from boss defeats/befriends
+    progressionTokens: 0,
+
     // Lifetime statistics
     lifetimeStats: {
       totalRuns: 0,
