@@ -5121,10 +5121,11 @@ html, body {
 
 /* ── Suppress mini-card inside attack cards (meaning already shown via .sac-meaning) ── */
 .sac-vocab .bs-word:has(.bs-word-en) {
-  display: inline;
+  display: inline-block;
   border: none;
   padding: 0;
   margin: 0;
+  vertical-align: baseline;
 }
 .sac-vocab .bs-word-en { display: none; }
 
