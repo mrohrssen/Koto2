@@ -17,8 +17,6 @@ function mockCreature(hp = 100, maxHp = 100) {
     hp, maxHp, element: 'fire',
     mp: 80, maxMp: 80,
     moves: [{ id: 'test', name: 'test', nameEn: 'Test', category: 'damage', target: 'single_enemy', power: 20, mpCost: 10, element: 'fire' }],
-    // Legacy charge fields still used by chargeBoost code path
-    ultimate: { charges: 0, chargesRequired: 5 }
   };
 }
 
@@ -156,16 +154,31 @@ describe('Item Buffs - Heals', () => {
   });
 });
 
-describe('Item Buffs - Charge', () => {
-  it('chargeBoost adds charges to all creatures', () => {
-    const party = {
-      active: [mockCreature()],
-      reserves: []
-    };
-    const chargeItem = { type: 'charge', effect: { chargeBoost: 2 } };
+describe('Item Buffs - MP Restore', () => {
+  it('mpRestore restores MP to all alive creatures', () => {
+    const r1 = mockCreature();
+    r1.mp = 20; r1.maxMp = 80;
+    const r2 = mockCreature();
+    r2.mp = 0; r2.maxMp = 80;
+    const dead = mockCreature(0);
+    dead.mp = 0; dead.maxMp = 80;
+    const party = { active: [r1, r2, dead], reserves: [] };
     const buffs = createItemBuffs();
-    applyItem(chargeItem, party, buffs);
-    assert.strictEqual(party.active[0].ultimate.charges, 2);
+    const item = { type: 'mpRestore', effect: { mpRestorePercent: 0.25 } };
+    applyItem(item, party, buffs);
+    assert.strictEqual(r1.mp, 40);   // 20 + 25% of 80 = 40
+    assert.strictEqual(r2.mp, 20);   // 0 + 25% of 80 = 20
+    assert.strictEqual(dead.mp, 0);  // dead creatures not affected
+  });
+
+  it('mpRestore does not exceed maxMp', () => {
+    const r1 = mockCreature();
+    r1.mp = 70; r1.maxMp = 80;
+    const party = { active: [r1], reserves: [] };
+    const buffs = createItemBuffs();
+    const item = { type: 'mpRestore', effect: { mpRestorePercent: 0.5 } };
+    applyItem(item, party, buffs);
+    assert.strictEqual(r1.mp, 80);  // capped at maxMp
   });
 });
 

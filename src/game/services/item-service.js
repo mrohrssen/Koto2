@@ -60,14 +60,6 @@ function applyStat(field, value, itemBuffs) {
   }
 }
 
-function applyChargeBoost(allCreatures, amount) {
-  for (const creature of allCreatures) {
-    creature.ultimate.charges = Math.min(
-      creature.ultimate.charges + amount,
-      creature.ultimate.chargesRequired
-    );
-  }
-}
 
 export function applyItem(item, creatureParty, itemBuffs) {
   const allCreatures = [...creatureParty.active, ...creatureParty.reserves].filter(Boolean);
@@ -95,10 +87,6 @@ export function applyItem(item, creatureParty, itemBuffs) {
         mostDamaged.hp = mostDamaged.maxHp;
       }
     }
-    // Combo: some heal items also grant charges (e.g. strawberry milk)
-    if (item.effect.chargeBoost) {
-      applyChargeBoost(allCreatures, item.effect.chargeBoost);
-    }
     return { applied: true };
   }
 
@@ -122,9 +110,11 @@ export function applyItem(item, creatureParty, itemBuffs) {
     return { applied: true };
   }
 
-  if (item.type === 'charge') {
-    if (item.effect.chargeBoost) {
-      applyChargeBoost(allCreatures, item.effect.chargeBoost);
+  if (item.type === 'mpRestore') {
+    const alive = allCreatures.filter(r => r.hp > 0);
+    for (const creature of alive) {
+      const restore = Math.floor((creature.maxMp || 0) * (item.effect.mpRestorePercent || 0));
+      creature.mp = Math.min(creature.maxMp || 0, (creature.mp || 0) + restore);
     }
     return { applied: true };
   }

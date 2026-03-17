@@ -31,10 +31,28 @@ const RARITY_COLORS = {
 const TYPE_ICONS = {
   heal: '💚',
   boost: '⬆️',
-  charge: '⚡',
+  mpRestore: '🔵',
   revive: '💫',
   keepsake: '🔒'
 };
+
+function buildStatPills(item) {
+  const effect = item.effect || {};
+  const pills = [];
+  if (effect.healPercent) pills.push(`💚 +${Math.round(effect.healPercent * 100)}% HP`);
+  if (effect.healAllPercent) pills.push(`💚 +${Math.round(effect.healAllPercent * 100)}% all`);
+  if (effect.healMostDamaged) pills.push('💚 Full heal (weakest)');
+  if (effect.mpRestorePercent) pills.push(`🔵 +${Math.round(effect.mpRestorePercent * 100)}% MP`);
+  if (effect.revivePercent) pills.push(`💫 Revive ${Math.round(effect.revivePercent * 100)}%`);
+  if (effect.field === 'attackMult') pills.push(`⬆️ ATK +${Math.round(effect.value * 100)}%`);
+  if (effect.field === 'defenseMult') pills.push(`🛡️ DEF +${Math.round(effect.value * 100)}%`);
+  if (effect.field === 'flatDamageReduction') pills.push(`🛡️ -${effect.value} dmg`);
+  if (effect.field === 'elementEdge') pills.push(`✨ Elem +${Math.round(effect.value * 100)}%`);
+  if (effect.tempBoost) pills.push(`⬆️ +${effect.tempBoost.value} ATK (${effect.tempBoost.turns}t)`);
+  if (item.type === 'xpCharm') pills.push(`✨ XP ×${(1 + (effect.value || 0)).toFixed(2)}`);
+  if (item.type === 'xpBalance') pills.push(`⚖️ XP balance +${effect.value || 0}`);
+  return pills.map(p => `<span class="shop-stat-pill">${p}</span>`).join('');
+}
 
 export function init({ itemSelectedCallback }) {
   onItemSelected = itemSelectedCallback;
@@ -56,12 +74,13 @@ export function show(items) {
             ? renderEnFirst(item.descriptionTagged)
             : (isJapanified() && item.descriptionJa ? item.descriptionJa : item.description);
           return `
-          <div class="shop-item-card" data-index="${i}" style="border-color: ${rarityColor}40">
+          <div class="shop-item-card" data-index="${i}" style="border-color: ${rarityColor}40; position: relative;">
             <div class="shop-item-rarity-badge" style="background: ${rarityColor}">${(item.rarity || 'common').toUpperCase()}</div>
+            <button class="shop-help-btn" data-item-index="${i}">?</button>
             <img class="shop-item-sprite" src="/assets/sprites/items/${item.id}.webp?v=20260220" alt="${item.meaning}" />
             <div class="shop-item-info">
               <div class="shop-item-word">${itemNameHtml}</div>
-              <div class="shop-item-effect">${icon} ${itemDescHtml}</div>
+              <div class="shop-item-effect">${buildStatPills(item)}</div>
             </div>
           </div>
         `}).join('')}
@@ -85,6 +104,32 @@ export function show(items) {
       card.classList.add('selected');
       cards.forEach(c => c.style.pointerEvents = 'none');
       if (onItemSelected) onItemSelected(index);
+    });
+  });
+
+  // Help button (?) — show item detail popup
+  actionArea.querySelectorAll('.shop-help-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.itemIndex);
+      const item = items[idx];
+      if (!item) return;
+      document.querySelector('.item-help-backdrop')?.remove();
+      const nameHtml = renderJpFirst(item.word, item.reading, item.meaning);
+      const descHtml = item.descriptionTagged
+        ? renderEnFirst(item.descriptionTagged)
+        : (item.description || '');
+      const backdrop = document.createElement('div');
+      backdrop.className = 'item-help-backdrop';
+      backdrop.innerHTML = `
+        <div class="item-help-popup">
+          <div class="item-help-name">${nameHtml}</div>
+          <div class="item-help-pills">${buildStatPills(item)}</div>
+          <div class="item-help-desc">${descHtml}</div>
+        </div>
+      `;
+      backdrop.addEventListener('click', () => backdrop.remove());
+      document.body.appendChild(backdrop);
     });
   });
 }

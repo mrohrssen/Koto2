@@ -5,6 +5,20 @@
     "nameEn": "Deep Forest",
     "reading": "おくのもり",
     "rank": 1400,
+    "particle": "の",
+    "modifierWord": {
+      "word": "奥",
+      "reading": "おく",
+      "meaning": "inner part; depths",
+      "rank": 2600,
+      "meanings": ["inner part; inside; interior; depths (e.g. of a forest)"]
+    },
+    "locationWord": {
+      "word": "森",
+      "reading": "もり",
+      "meaning": "forest",
+      "rank": 1400
+    },
     "meanings": [
       [
         "inner part; inside; interior; depths (e.g. of a forest)"
@@ -164,12 +178,20 @@
     "modifierWord": {
       "word": "静か",
       "reading": "しずか",
+      "meaning": "quiet; silent",
       "rank": 700,
       "meanings": [
         "quiet; silent",
         "slow; unhurried",
         "calm; peaceful"
       ]
+    },
+    "particle": "な",
+    "locationWord": {
+      "word": "公園",
+      "reading": "こうえん",
+      "meaning": "park",
+      "rank": 2500
     },
     "theme": "A sun-dappled Japanese park with flower beds, a koi pond, arched bridges, and spirit wisps drifting among the blossoms",
     "creatures": [
@@ -323,6 +345,7 @@
     "modifierWord": {
       "word": "秘密",
       "reading": "ひみつ",
+      "meaning": "secret",
       "rank": 1100,
       "meanings": [
         "secret; secrecy; confidentiality; privacy",
@@ -330,6 +353,13 @@
         "secret (e.g. to success)",
         "esoteric teachings"
       ]
+    },
+    "particle": "の",
+    "locationWord": {
+      "word": "図書館",
+      "reading": "としょかん",
+      "meaning": "library",
+      "rank": 3800
     },
     "theme": "A hidden library that appears only to those meant to find it — an impossible spiral tower of warm wood and sandstone, filled with floating lanterns, self-turning pages, and whispering books",
     "creatures": [
@@ -481,12 +511,20 @@
       ]
     ],
     "modifierWord": {
-      "word": "隠れる",
-      "reading": "かくれる",
+      "word": "隠れた",
+      "reading": "かくれた",
+      "meaning": "hidden",
       "rank": 1000,
       "meanings": [
         "to hide; to be hidden; to conceal oneself; to disappear"
       ]
+    },
+    "particle": "",
+    "locationWord": {
+      "word": "浜",
+      "reading": "はま",
+      "meaning": "beach",
+      "rank": 6500
     },
     "theme": "A secret crescent cove hidden behind sea cliffs, accessible only through a narrow passage at low tide — sheltered, sun-drenched, and teeming with spirit-touched marine life",
     "creatures": [
@@ -640,10 +678,18 @@
     "modifierWord": {
       "word": "魔法",
       "reading": "まほう",
+      "meaning": "magic",
       "rank": 3100,
       "meanings": [
         "magic; witchcraft; sorcery; spell"
       ]
+    },
+    "particle": "の",
+    "locationWord": {
+      "word": "学校",
+      "reading": "がっこう",
+      "meaning": "school",
+      "rank": 600
     },
     "theme": "A traditional Japanese school building enchanted with gentle magic — floating lanterns, luminous chalk, self-folding nets, and a rooftop where piano notes rise as golden motes",
     "creatures": [
