@@ -409,6 +409,12 @@ export function initMoveUI() {
         shield: 'Shield', buff: 'Buff', debuff: 'Debuff'
       };
 
+      const TARGET_LABELS = {
+        single_enemy: 'Single Target', all_enemies: 'All Targets',
+        self: 'Self', single_ally: 'Single Ally', all_allies: 'All Allies',
+        enemy: 'Single Target'
+      };
+
       let statsHtml = '';
       statsHtml += `<span class="mhp-stat">${CAT_LABELS[move.category] || move.category}</span>`;
       if (move.power > 0) statsHtml += `<span class="mhp-stat">Power ${move.power}</span>`;
@@ -419,7 +425,14 @@ export function initMoveUI() {
         const dur = move.statusDuration ? ` ${move.statusDuration}T` : '';
         statsHtml += `<span class="mhp-stat">${label}${dur}</span>`;
       }
-      if (move.target && move.target !== 'enemy') statsHtml += `<span class="mhp-stat">Target: ${move.target}</span>`;
+      if (move.target && move.target !== 'enemy') {
+        statsHtml += `<span class="mhp-stat">${TARGET_LABELS[move.target] || move.target}</span>`;
+      }
+
+      const moveNameHtml = renderJpFirst(move.name, move.reading, move.meaning);
+      const descHtml = move.descriptionTagged
+        ? renderEnFirst(move.descriptionTagged)
+        : (move.description || '');
 
       const backdrop = document.createElement('div');
       backdrop.className = 'move-help-backdrop';
@@ -427,11 +440,9 @@ export function initMoveUI() {
       const popup = document.createElement('div');
       popup.className = 'move-help-popup';
       popup.innerHTML = `
-        <div class="mhp-name">${move.name}</div>
-        <div class="mhp-reading">${move.reading || ''}</div>
-        <div class="mhp-meaning">${move.nameEn || ''}</div>
+        <div class="mhp-name">${moveNameHtml}</div>
         <div class="mhp-stats">${statsHtml}</div>
-        ${move.description ? `<div class="mhp-desc">${move.description}</div>` : ''}
+        ${descHtml ? `<div class="mhp-desc">${descHtml}</div>` : ''}
       `;
 
       const dismiss = () => {
