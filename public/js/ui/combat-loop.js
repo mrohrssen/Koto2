@@ -28,7 +28,7 @@
 import { playSFX } from '../audio.js';
 import { getAuthHeaders } from '../api.js';
 import { logger } from '../logger.js';
-import { renderJpFirst } from './bootstrap-client.js';
+import { renderJpFirst, renderEnFirst } from './bootstrap-client.js';
 import { t } from './i18n.js';
 import {
   impactEnemyEffect,
@@ -2486,7 +2486,7 @@ export async function showNpcGreeting(npcData) {
   if (npcData.greetingTts && npcData.userId) {
     playDialogueAudio(npcData.userId, npcData.greetingTts);
   }
-  await narration.showNarration(npcData.greeting, { speaker: npcName });
+  await narration.showNarration(renderEnFirst(npcData.greeting), { speaker: npcName, html: true });
   if (hideNpcSprite) hideNpcSprite();
   // Re-render combat scene — hideNpcSprite clears the enemy sprite area
   if (updateUI) updateUI();
@@ -2512,7 +2512,7 @@ export async function runNpcDialogue() {
     playDialogueAudio(userId, freedTts);
   }
   // Show freed narration (click to dismiss)
-  await narration.showNarration(freed, { speaker: npcName });
+  await narration.showNarration(renderEnFirst(freed), { speaker: npcName, html: true });
 
   let totalDelta = 0;
 
@@ -2524,7 +2524,7 @@ export async function runNpcDialogue() {
       playDialogueAudio(userId, round.npcLineTts);
     }
     // Show NPC line (persistent so player can read while choosing)
-    await narration.showNarration(round.npcLine, { speaker: npcName, persistent: true });
+    await narration.showNarration(renderEnFirst(round.npcLine), { speaker: npcName, persistent: true, html: true });
 
     // Show 3 response buttons (reuses befriend dialogue styling)
     const selectedIndex = await showNpcResponseOptions(round.options, i);
@@ -2567,7 +2567,7 @@ function showNpcResponseOptions(options, roundNumber) {
     const buttons = options.map((option, idx) => `
       <div class="shrine-creature-option befriend-answer-option" data-answer-index="${idx}" style="width:100%">
         <div class="shrine-creature-info" style="padding:1rem; width:100%; text-align:center">
-          <div class="shrine-creature-name" style="color:var(--accent-primary)">${option.text}</div>
+          <div class="shrine-creature-name" style="color:var(--accent-primary)">${renderEnFirst(option.text)}</div>
         </div>
       </div>
     `).join('');
