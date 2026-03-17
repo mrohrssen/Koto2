@@ -670,6 +670,7 @@
     "nameEn": "Magic School",
     "reading": "まほうのがっこう",
     "rank": 700,
+    "bossCreatureId": "ishino-kyojin",
     "meanings": [
       [
         "school"
@@ -703,7 +704,8 @@
       "hikaribon",
       "kokubanrei",
       "isurori",
-      "tsukueon"
+      "tsukueon",
+      "ishino-kyojin"
     ],
     "description": "The Magic School stands at the top of a terraced hill, its entrance framed by a wide stone arch draped in flowering wisteria that blooms in impossible colors — soft gold, pale rose, and shimmering silver. The main building follows the shape of a traditional Japanese school — long, three-storied, with tall windows — but built from warm sandstone and polished timber instead of concrete, every surface etched with faint sigils that catch the light at odd angles.\n\nInside, the hallways are wide and sun-flooded, their wooden floors worn smooth by generations of hurrying feet. Shoe cubbies line the entryway in neat rows, some glowing faintly where a student left a charm behind. Floating paper lanterns in pale amber drift along the ceiling at walking pace, casting warm pools of light that follow anyone who passes beneath them. Classroom doors stand open, revealing desks arranged in tidy grids beneath chalkboards where yesterday's equations still shimmer — the chalk itself luminous, the diagrams slowly rotating in place like living blueprints.\n\nThe school garden sprawls behind the main building in a riot of overgrown enchantment. Sunflowers track movement instead of sunlight, turning their broad faces to follow passersby. Morning glories climb wire trellises and open their blooms in sequence like a slow wave. A small wooden rabbit hutch sits in one corner surrounded by clover that grows in spiraling patterns, and nearby, a weathered equipment shed leans against the gymnasium wall, its sliding door ajar to reveal stacked floor mats and nets that fold themselves when no one is looking.\n\nOn the rooftop, a low stone wall encloses a broad open space where the sky feels enormous and near. The wind carries the faint melody of a music room piano drifting up through open windows below, the notes occasionally visible as tiny motes of golden light rising from the instrument. Spirit wisps in soft amber and pale green float lazily above the stairwell. The whole building hums with the quiet, hopeful energy of a place where knowledge is alive — chalk dust and cherry blossoms, warm light and the echo of bells.",
     "tags": [

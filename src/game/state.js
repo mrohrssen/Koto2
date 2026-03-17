@@ -154,6 +154,9 @@ export function createNewRun(player) {
     encountersNeeded: 0,
     totalEncounters: 0,
 
+    // Boss tracking — boss can be befriended on rematch only
+    bossesDefeated: [],
+
     // Player state for this run (copy so we can reset)
     player: JSON.parse(JSON.stringify(player)),
 

@@ -18,9 +18,9 @@ Pipeline per creature:
 6. Deploy both to game sprites directory
 
 Requirements:
-  - ComfyUI running at COMFYUI_URL (default: http://10.5.0.2:8188)
+  - ComfyUI running at COMFYUI_URL (default: http://127.0.0.1:8188)
   - Wan 2.2 models (high-noise + low-noise 14B Q4)
-  - RMBG-2.0 model in ComfyUI
+  - BiRefNet model in ComfyUI
   - Pillow: pip install Pillow
 
 Usage:
@@ -182,15 +182,14 @@ def build_rmbg_workflow(server_filename, creature_id, frame_idx):
                 "inputs": {"image": server_filename},
             },
             "2": {
-                "class_type": "RMBG",
+                "class_type": "BiRefNetRMBG",
                 "inputs": {
                     "image": ["1", 0],
-                    "model": "RMBG-2.0",
-                    "sensitivity": 1.0,
-                    "process_res": 1024,
+                    "model": "BiRefNet-general",
                     "mask_blur": 0,
                     "mask_offset": 0,
                     "invert_output": False,
+                    "refine_foreground": True,
                     "background": "Alpha",
                 },
             },
@@ -427,7 +426,7 @@ def main():
         print(f"\n[{timestamp()}] RMBG-ONLY MODE: Processing existing raw animations...\n")
         if not args.dry_run:
             if not verify_comfyui():
-                print("\nStart ComfyUI first on 10.5.0.2")
+                print("\nStart ComfyUI first on 127.0.0.1")
                 sys.exit(1)
         success = 0
         for c, staging_path in available:
@@ -455,7 +454,7 @@ def main():
     if not args.dry_run:
         print(f"\n[{timestamp()}] Verifying ComfyUI connection...")
         if not verify_comfyui():
-            print("\nStart ComfyUI first on 10.5.0.2")
+            print("\nStart ComfyUI first on 127.0.0.1")
             sys.exit(1)
         print()
 

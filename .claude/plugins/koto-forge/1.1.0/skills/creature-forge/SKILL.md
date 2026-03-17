@@ -171,7 +171,7 @@ Fire 3 subagents one at a time. Each reads its mini-skill and the baton, does it
 Task tool (general-purpose, model: sonnet):
   description: "Generate name candidates for [baseMeaning]"
   prompt: |
-    Read the skill file at $CLAUDE_PROJECT_DIR/.claude/plugins/koto-forge/1.0.0/skills/creature-forge/subskills/name-vocab.md
+    Read the skill file at $CLAUDE_PROJECT_DIR/.claude/plugins/koto-forge/1.1.0/skills/creature-forge/subskills/name-vocab.md
     Then read the baton at /tmp/creature-forge-{id}-baton.json
     Follow the skill instructions exactly.
     Write your output back to the baton file (read it, add your fields, write it back).
@@ -185,7 +185,7 @@ Wait for completion. Read the baton to verify `nameCandidates` was added.
 Task tool (general-purpose, model: sonnet):
   description: "Build learnset for [baseMeaning]"
   prompt: |
-    Read the skill file at $CLAUDE_PROJECT_DIR/.claude/plugins/koto-forge/1.0.0/skills/creature-forge/subskills/learnset-builder.md
+    Read the skill file at $CLAUDE_PROJECT_DIR/.claude/plugins/koto-forge/1.1.0/skills/creature-forge/subskills/learnset-builder.md
     Then read the baton at /tmp/creature-forge-{id}-baton.json
     Follow the skill instructions exactly.
     Write your output back to the baton file (read it, add your fields, write it back).
@@ -199,7 +199,7 @@ Wait for completion. Read the baton to verify `learnset` and `learnsetSummary` w
 Task tool (general-purpose, model: sonnet):
   description: "Generate identity + modifier for [baseMeaning]"
   prompt: |
-    Read the skill file at $CLAUDE_PROJECT_DIR/.claude/plugins/koto-forge/1.0.0/skills/creature-forge/subskills/identity-modifier.md
+    Read the skill file at $CLAUDE_PROJECT_DIR/.claude/plugins/koto-forge/1.1.0/skills/creature-forge/subskills/identity-modifier.md
     Then read the baton at /tmp/creature-forge-{id}-baton.json
     Follow the skill instructions exactly.
     Write your output back to the baton file (read it, add your fields, write it back).
@@ -280,7 +280,7 @@ The user makes all picks in one message.
 Task tool (general-purpose, model: opus):
   description: "Design visuals for [name]"
   prompt: |
-    Read the skill file at $CLAUDE_PROJECT_DIR/.claude/plugins/koto-forge/1.0.0/skills/creature-forge/subskills/visual-designer.md
+    Read the skill file at $CLAUDE_PROJECT_DIR/.claude/plugins/koto-forge/1.1.0/skills/creature-forge/subskills/visual-designer.md
     Then read the locked identity at /tmp/creature-forge-{id}-locked.json
     Follow the skill instructions exactly.
     Write your output to /tmp/creature-forge-{id}-visuals.json

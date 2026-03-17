@@ -1929,5 +1929,41 @@
       }
     ],
     "stage": 5
+  },
+  {
+    "id": "ishino-kyojin",
+    "name": "石の巨人",
+    "nameEn": "Stone Giant",
+    "element": "earth",
+    "rarity": "rare",
+    "baseHp": 200,
+    "baseAttack": 9,
+    "baseWord": "巨人",
+    "baseReading": "きょじん",
+    "baseMeaning": "giant; great man",
+    "baseRank": 4900,
+    "archetype": "Tank/Healer",
+    "description": "Less humanoid than most golems — an oversized boulder torso sits atop stubby legs, with long arms that drag near the ground like a gorilla's. Its head is just a rounded mossy rock with two deep dark eye-hollows emitting faint teal light. Ancient runes spiral across its rough unfinished surface, and ferns sprout from every crack in its joints where decades of rain have settled. It hunches in the school courtyard, tilting its head as if listening to lessons it has guarded for centuries.",
+    "modifier": {
+      "word": "石",
+      "reading": "いし",
+      "meaning": "Stone",
+      "rank": 1500
+    },
+    "createdAt": "2026-03-17",
+    "baseMp": 60,
+    "learnset": [
+      { "moveId": "fumu", "level": 1 },
+      { "moveId": "katameru", "level": 3 },
+      { "moveId": "kudaku", "level": 5 },
+      { "moveId": "umeru", "level": 8 },
+      { "moveId": "taeru", "level": 11 },
+      { "moveId": "kuzusu", "level": 16 }
+    ],
+    "bossDialogue": {
+      "appear": "何世紀もの間、この学校を守ってきた。お前の旅はここで終わりだ！",
+      "defeat": "お前は...強かった...この学校を...頼んだぞ..."
+    },
+    "stage": 1
   }
 ]

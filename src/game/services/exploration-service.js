@@ -112,7 +112,7 @@ export class ExplorationService {
     this.gm.run.encountersNeeded = generateEncounterCount();
     this.gm.run.areaCleared = false;
 
-    // Generate rooms for this area (no boss)
+    // Generate rooms for this area (boss appended if configured)
     this.gm.run.rooms = generateAreaRooms(areaId, this.gm.run.encountersNeeded, null, false, forceRoomType);
     this.gm.run.currentRoom = 0;
     this.gm.run.roomsExplored = 0;

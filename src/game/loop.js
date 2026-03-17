@@ -56,7 +56,7 @@ import { getRoomActions, getAreaSelectionOptions } from './rooms.js';
 import { derivePhase } from './phase-machine.js';
 import { ExplorationService } from './services/index.js';
 import { logger } from '../logger.js';
-import { instantiateCreature, generateEnemyCreature, generateEnemyCreatures } from './creatures.js';
+import { instantiateCreature, generateEnemyCreature, generateEnemyCreatures, getEnemyLevel, CREATURES_BY_ID } from './creatures.js';
 import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL } from './services/creature-combat-service.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/creature-collection-service.js';
@@ -445,34 +445,48 @@ export class GameManager {
       throw new Error('Combat already active');
     }
 
+    // Check if current room is a boss room
+    const currentRoom = this.run.rooms?.[this.run.currentRoom];
+    const isBoss = currentRoom?.type === 'boss' && !!currentRoom?.boss?.creatureId;
+
     const highestLevel = Math.max(...this.run.creatureParty.active.map(r => r.level), 1);
     const isFirstBattle = (this.run.currentAreaEncounters || 0) === 0;
     const creaturePool = this.run.currentArea?.creatures || null;
     const stage = this.run.currentArea?.stage || null;
     const encounterIndex = this.run.currentAreaEncounters || 0;
     const totalEncounters = this.run.totalEncounters || 0;
-    const enemyCreatures = generateEnemyCreatures(highestLevel, {
-      maxEnemies: isFirstBattle ? 2 : undefined,
-      creaturePool,
-      stage,
-      encounterIndex,
-      totalEncounters
-    });
+
+    let enemyCreatures;
+    if (isBoss) {
+      // Boss: solo creature, level × 1.25
+      const bossLevel = Math.round(getEnemyLevel({ totalEncounters, enemyCount: 1 }) * 1.25);
+      const bossCreature = generateEnemyCreature(bossLevel, [currentRoom.boss.creatureId], stage);
+      enemyCreatures = [bossCreature];
+    } else {
+      enemyCreatures = generateEnemyCreatures(highestLevel, {
+        maxEnemies: isFirstBattle ? 2 : undefined,
+        creaturePool,
+        stage,
+        encounterIndex,
+        totalEncounters
+      });
+    }
 
     this.combat = createCombatState(enemyCreatures[0]);
     this.combat.allies = this.run.creatureParty.active;
     this.combat.enemies = enemyCreatures;
     this.combat.isCreatureCombat = true;
+    this.combat.isBoss = isBoss;
     this.combat.swapPhase = true; // Free swap available before first action
 
-    // Assign area-locked NPC to this encounter
+    // Assign area-locked NPC to this encounter (skip for boss fights)
     // - Never on the first encounter of a run
     // - ~15% chance per encounter after the first
     // - One NPC per area, skipped if already met
     const NPC_ENCOUNTER_CHANCE = 0.15;
     const areaId = this.run.currentArea?.id || null;
     const usedNpcIds = this.run.usedNpcIds || [];
-    const npcRoll = !isFirstBattle && Math.random() < NPC_ENCOUNTER_CHANCE;
+    const npcRoll = !isBoss && !isFirstBattle && Math.random() < NPC_ENCOUNTER_CHANCE;
     const npc = npcRoll ? selectNpcForEncounter(areaId, usedNpcIds) : null;
     if (npc) {
       this.combat.npcId = npc.id;
@@ -492,6 +506,14 @@ export class GameManager {
       this.run.usedNpcIds.push(npc.id);
     }
 
+    // Boss speaks on encounter
+    if (isBoss && enemyCreatures[0]) {
+      const bossTemplate = CREATURES_BY_ID[currentRoom.boss.creatureId];
+      if (bossTemplate?.bossDialogue?.appear) {
+        this.narrate(bossTemplate.bossDialogue.appear);
+      }
+    }
+
     this.emitState();
 
     return {
@@ -499,7 +521,8 @@ export class GameManager {
       enemies: enemyCreatures,
       allies: this.run.creatureParty.active,
       playerGoesFirst: true,
-      npc: this.combat.npcData
+      npc: this.combat.npcData,
+      isBoss
     };
   }
 
@@ -599,6 +622,20 @@ export class GameManager {
       if (currentRoom) {
         currentRoom.interacted = true;
       }
+
+      // Boss defeat: dialogue + track for befriend-on-rematch
+      if (this.combat.isBoss && this.combat.enemies?.[0]?.id) {
+        const bossId = this.combat.enemies[0].id;
+        const bossTemplate = CREATURES_BY_ID[bossId];
+        if (bossTemplate?.bossDialogue?.defeat) {
+          this.narrate(bossTemplate.bossDialogue.defeat);
+        }
+        if (!this.run.bossesDefeated) this.run.bossesDefeated = [];
+        if (!this.run.bossesDefeated.includes(bossId)) {
+          this.run.bossesDefeated.push(bossId);
+        }
+      }
+
       this.emitState();
       return {
         actionType: 'attack',
@@ -834,6 +871,22 @@ export class GameManager {
    * @private
    */
   _handleCreatureBefriendTurn(effectEvents) {
+    // Boss can only be befriended on rematch (after first defeat)
+    if (this.combat.isBoss) {
+      const bossId = this.combat.enemies?.[0]?.id;
+      if (!this.run.bossesDefeated?.includes(bossId)) {
+        return {
+          actionType: 'befriend',
+          befriend: { success: false, reason: 'boss_first_defeat' },
+          effectEvents,
+          combatEnded: false,
+          allies: this.combat.allies,
+          enemies: this.combat.enemies,
+          creatureParty: this.run.creatureParty
+        };
+      }
+    }
+
     const targetIdx = this.combat.befriendConversation?.targetEnemyIndex;
     // Preserve targetEnemyIndex for befriendReplace (party-full flow)
     if (typeof targetIdx === 'number') this.combat.lastBefriendTargetIndex = targetIdx;

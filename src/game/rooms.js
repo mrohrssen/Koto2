@@ -19,10 +19,10 @@
  * - getRoomEntryNarration(room) - Get narrative text for room type
  * - getRoomActions(room) - Get available actions for current room
  * Constants:
- * - ROOM_TYPES - Encounter, shrine, quiz, wordDiscovery, dealer
+ * - ROOM_TYPES - Encounter, shrine, quiz, wordDiscovery, dealer, boss
  *
  * ROOM SEQUENCE:
- * Each area: N rooms (encounters + special rooms). No boss room.
+ * Each area: N rooms (encounters + special rooms). Boss room appended if area has bossCreatureId.
  * Post-combat shop appears after enemy defeats.
  */
 
@@ -97,7 +97,8 @@ export const ROOM_TYPES = {
   quiz: 'quiz',
   wordDiscovery: 'wordDiscovery',
   dealer: 'dealer',
-  whackAMole: 'whackAMole'
+  whackAMole: 'whackAMole',
+  boss: 'boss'
 };
 
 // ============ ROOM GENERATION ============
@@ -176,6 +177,14 @@ export function generateAreaRooms(areaId, roomCount = 10, lastSpecialType = null
     rooms.push(room);
   }
 
+  // Append boss room as final room if area has a boss
+  if (area?.bossCreatureId) {
+    const bossRoom = createRoom(ROOM_TYPES.boss, areaId, rooms.length + 1, rooms.length + 1);
+    bossRoom.boss = { creatureId: area.bossCreatureId };
+    if (subAreas.length > 0) bossRoom.subArea = subAreas[rooms.length % subAreas.length];
+    rooms.push(bossRoom);
+  }
+
   return rooms;
 }
 
@@ -220,6 +229,9 @@ export function createRoom(type, areaId, roomNumber, totalRooms) {
     case ROOM_TYPES.whackAMole:
       room.whackAMole = { score: 0, completed: false };
       break;
+    case ROOM_TYPES.boss:
+      room.boss = { defeated: false };
+      break;
   }
 
   return room;
@@ -248,6 +260,8 @@ export function getRoomEntryNarration(room) {
       return `${locationLabel}に入った。旅の行商人がいる...「珍しいモンスターがいるよ」`;
     case ROOM_TYPES.whackAMole:
       return `${locationLabel}に入った。不思議なゲーム機がある...`;
+    case ROOM_TYPES.boss:
+      return `${locationLabel}に入った。巨大な影が現れた...`;
     default:
       return `${locationLabel}に入った。`;
   }
@@ -263,7 +277,8 @@ export function getRoomActions(room) {
   const isUnfinishedWordDiscovery = room.type === 'wordDiscovery' && !room.interacted;
   const isUnfinishedDealer = room.type === 'dealer' && !room.interacted;
   const isUnfinishedWhackAMole = room.type === 'whackAMole' && !room.interacted;
-  if (!isUnfinishedEncounter && !isUnfinishedWordDiscovery && !isUnfinishedDealer && !isUnfinishedWhackAMole) {
+  const isUnfinishedBoss = room.type === 'boss' && !room.interacted;
+  if (!isUnfinishedEncounter && !isUnfinishedWordDiscovery && !isUnfinishedDealer && !isUnfinishedWhackAMole && !isUnfinishedBoss) {
     actions.push({ id: 'proceed', name: '進む', description: '次のエリアへ進む' });
   }
 
@@ -293,6 +308,11 @@ export function getRoomActions(room) {
     case ROOM_TYPES.whackAMole:
       if (!room.interacted) {
         actions.push({ id: 'play_whack_a_mole', name: 'プレイ', description: 'ゲームをプレイする' });
+      }
+      break;
+    case ROOM_TYPES.boss:
+      if (!room.interacted) {
+        actions.push({ id: 'fight', name: 'ボス戦', description: 'ボスに挑む' });
       }
       break;
   }
