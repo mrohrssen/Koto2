@@ -36,12 +36,12 @@ NPC combat screen shows blank white box where the NPC skill attack card should a
 
 Creature attack cards work because `insertAttackCard()` at `combat-loop.js:169` correctly uses `sac-visible`.
 
-**Secondary issue:** `game.js:1302` defines `showNpcSprite: (name, id) => scene.showNpcTrainer(name, id)` — drops the 3rd `npc` parameter. `showNpcTrainer(npcName, npcId, npc)` at `scene.js:366` uses `npc` to render the NPC's role via `renderJpFirst()`. Without it, role display silently fails.
+**Secondary issue:** `game.js:1316` defines `showNpcSprite: (name, id) => scene.showNpcTrainer(name, id)` — drops the 3rd `npc` parameter. `showNpcTrainer(npcName, npcId, npc)` at `scene.js:366` uses `npc` to render the NPC's role via `renderJpFirst()`. Without it, role display silently fails.
 
 ### Fix
 
 1. **`combat-loop.js:252`** — Change `'sac-row-visible'` to `'sac-visible'`
-2. **`game.js:1302`** — Change `(name, id) => scene.showNpcTrainer(name, id)` to `(name, id, npc) => scene.showNpcTrainer(name, id, npc)`
+2. **`game.js:1316`** — Change `(name, id) => scene.showNpcTrainer(name, id)` to `(name, id, npc) => scene.showNpcTrainer(name, id, npc)`
 3. **`combat-loop.js:2497`** — Change `showNpcSprite(npcName, npcData.id)` to `showNpcSprite(npcName, npcData.id, npcData)`
 4. **`combat-loop.js:2521`** — Change `showNpcSprite(npcName, npc.id)` to `showNpcSprite(npcName, npc.id, npc)`
 
