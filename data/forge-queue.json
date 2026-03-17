@@ -917,6 +917,34 @@
       ],
       "status": "approved",
       "submittedAt": "2026-03-09T14:07:10.765Z"
+    },
+    {
+      "id": "forge_1773208185873_7rj6t9",
+      "themeId": "airport",
+      "word": "荷物",
+      "reading": "にもつ",
+      "meaning": "luggage; baggage; package; burden; payload (of a packet, cell, etc.)",
+      "rank": 1600,
+      "role": "item",
+      "notes": "this item should add hp to a creature ",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "approved",
+      "submittedAt": "2026-03-11T05:49:45.873Z"
+    },
+    {
+      "id": "forge_1773208365144_x1fgki",
+      "themeId": "shopping-mall",
+      "word": "本屋",
+      "reading": "ほんや",
+      "meaning": "bookstore; bookshop; publisher; main building",
+      "rank": 10200,
+      "role": "area",
+      "notes": "sub area of shopping mall",
+      "previousResult": null,
+      "reforgeHistory": [],
+      "status": "pending",
+      "submittedAt": "2026-03-11T05:52:45.144Z"
     }
   ]
 }

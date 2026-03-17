@@ -51,7 +51,7 @@
       ],
       "source": "consensus",
       "consensus": 5,
-      "assigned": null,
+      "assigned": "item:luggage",
       "existingUses": [],
       "wkDefinition": "Luggage, Baggage, Load"
     },

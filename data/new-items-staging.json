@@ -212,5 +212,49 @@
     "description": "Increase one creature's HP by 3%",
     "descriptionJa": "クリーチャー1体のHPを3%アップ",
     "stage": 5
+  },
+  {
+    "id": "luggage",
+    "word": "荷物",
+    "reading": "にもつ",
+    "meaning": "luggage; baggage; package; burden",
+    "components": [
+      {
+        "word": "荷",
+        "reading": "に",
+        "meanings": [
+          "load",
+          "baggage",
+          "cargo",
+          "freight",
+          "goods",
+          "burden",
+          "responsibility"
+        ],
+        "rank": 9800
+      },
+      {
+        "word": "物",
+        "reading": "もの",
+        "meanings": [
+          "thing",
+          "object",
+          "article",
+          "stuff"
+        ],
+        "rank": 600
+      }
+    ],
+    "compoundRank": 5880,
+    "rank": 9800,
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "hpMult",
+      "value": 0.08
+    },
+    "description": "Increase one creature's HP by 8%",
+    "descriptionJa": "クリーチャー1体のHPを8%アップ",
+    "stage": 6
   }
 ]
