@@ -28,58 +28,58 @@
       "speechStyle": "Terse and unhurried, uses plain form without rudeness, long pauses between thoughts, says only what needs saying",
       "quirk": "Listens to the forest before answering — tilts his head toward the canopy as if checking with the trees first"
     },
-    "greeting": "…ここから先は、俺の森だ。帰れ。",
+    "greeting": "…Beyond here, this {forest|森|もり} is mine. Turn back.",
     "defeatLine": "…鳥が鳴いてる。…あぁ、すまない。俺は何をしていた。",
     "postCombat": {
-      "freed": "…森は、無事か？…すまなかった。自分が何をしていたか、よくわからない。",
+      "freed": "…Is the {forest|森|もり} safe…? I'm sorry. I don't know what I was doing.",
       "rounds": [
         {
-          "npcLine": "…システムに操られていたのか。…森を傷つけていなければいいが。",
+          "npcLine": "…Was I being controlled…? I hope I didn't {hurt|傷つける|きずつける} anything.",
           "options": [
             {
-              "text": "森は大丈夫だよ。心配しないで。",
+              "text": "The {forest|森|もり} is fine. Don't worry.",
               "tone": "positive"
             },
             {
-              "text": "そうみたいだね。",
+              "text": "Looks that way.",
               "tone": "neutral"
             },
             {
-              "text": "自分のことを心配しろよ。",
+              "text": "Worry about yourself.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "…奥の苔が薄くなっている気がする。…胞子の動きも変だ。",
+          "npcLine": "…The {moss|苔|こけ} deeper in feels thin. The spores are moving wrong too.",
           "options": [
             {
-              "text": "一緒に確認しに行こうか？",
+              "text": "Let's go check together.",
               "tone": "positive"
             },
             {
-              "text": "そうなのか。",
+              "text": "Is that so.",
               "tone": "neutral"
             },
             {
-              "text": "苔のことはどうでもいい。",
+              "text": "The {moss|苔|こけ} doesn't matter.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "…奥の道は複雑だ。案内してやる。…一人で行くと迷う。",
+          "npcLine": "…The path deeper in is hard to read. I'll guide you. …You'd {get lost|迷う|まよう} alone.",
           "options": [
             {
-              "text": "ありがとう。助かるよ。",
+              "text": "Thanks. That helps.",
               "tone": "positive"
             },
             {
-              "text": "考えておく。",
+              "text": "I'll think about it.",
               "tone": "neutral"
             },
             {
-              "text": "一人で大丈夫だ。",
+              "text": "I'll manage alone.",
               "tone": "negative"
             }
           ]
@@ -121,58 +121,58 @@
       "speechStyle": "Polite and direct, uses です/ます forms without hesitation or hedging, states things plainly as he sees them",
       "quirk": "Always raises his hand before speaking, even in casual conversation"
     },
-    "greeting": "あの、ここは許可なく通れません。学校の規則ですから…従ってください。",
+    "greeting": "Um — you can't pass without {permission|許可|きょか}. It's a school {rule|規則|きそく}. Please comply.",
     "defeatLine": "え…？僕、何をしてたんだろう…。規則、規則って…",
     "postCombat": {
-      "freed": "あの規則…本物だったのかな…。すみません、ご迷惑をおかけしました。",
+      "freed": "Were those {rules|規則|きそく} even real…? I'm sorry for the trouble I caused.",
       "rounds": [
         {
-          "npcLine": "僕、ずっと規則を守らないといけないと思って…でも、あの規則は偽物だったんですね。",
+          "npcLine": "I kept thinking I had to follow the {rules|規則|きそく}… but those rules were fake, weren't they.",
           "options": [
             {
-              "text": "システムのせいだよ。君は悪くない。",
+              "text": "It was the system. You did nothing wrong.",
               "tone": "positive"
             },
             {
-              "text": "そうみたいだね。",
+              "text": "Seems that way.",
               "tone": "neutral"
             },
             {
-              "text": "少しは自分で考えたら。",
+              "text": "Try thinking for yourself sometime.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "あの…庭のウサギたち、ちゃんとご飯もらえてるかな…。ヒマワリも気になります。",
+          "npcLine": "Um… I wonder if the rabbits in the {garden|庭|にわ} are being fed. The sunflowers too — I'm worried.",
           "options": [
             {
-              "text": "一緒に見に行こう！",
+              "text": "Let's go check together!",
               "tone": "positive"
             },
             {
-              "text": "確認した方がいいかもね。",
+              "text": "You should probably check.",
               "tone": "neutral"
             },
             {
-              "text": "今はそれどころじゃないだろ。",
+              "text": "That's not important right now.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "あの、もし良ければ、一緒に学校の中を確認しませんか？他の生徒たちが心配で…",
+          "npcLine": "Um — if you don't mind, would you check the {school|学校|がっこう} with me? I'm worried about the other students…",
           "options": [
             {
-              "text": "もちろん。一緒に確認しよう。",
+              "text": "Of course. Let's go together.",
               "tone": "positive"
             },
             {
-              "text": "時間があれば。",
+              "text": "If there's time.",
               "tone": "neutral"
             },
             {
-              "text": "自分で行けよ。",
+              "text": "Go yourself.",
               "tone": "negative"
             }
           ]
