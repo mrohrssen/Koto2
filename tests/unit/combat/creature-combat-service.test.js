@@ -332,15 +332,15 @@ describe('Creature Combat - XP', () => {
 });
 
 describe('Creature Combat - Kill XP Scaling', () => {
-  it('awardKillXp scales with enemy level (BASE_KILL_XP + enemyLevel*2)', () => {
+  it('awardKillXp scales with enemy level (BASE_KILL_XP * enemyLevel * 2)', () => {
     const party = {
       active: [instantiateCreature('hikaribon')],
       reserves: []
     };
     // 1 active (2 shares), 0 reserves = 2 total shares
-    // enemyLevel 5: (10 + 5*2) = 20 base XP, perShare = 20/2 = 10, active gets floor(10*2) = 20
+    // enemyLevel 5: 25 * 5 * 2 = 250 base XP, perShare = 250/2 = 125, active gets floor(125*2) = 250
     const result = awardKillXp(party, 5);
-    assert.strictEqual(result.xpGrants[0].xp, 20);
+    assert.strictEqual(result.xpGrants[0].xp, 250);
   });
 
   it('awardKillXp applies xpMultiplier', () => {
@@ -348,9 +348,9 @@ describe('Creature Combat - Kill XP Scaling', () => {
       active: [instantiateCreature('hikaribon')],
       reserves: []
     };
-    // enemyLevel 5, multiplier 1.25: (10 + 5*2) * 1.25 = 25, perShare = 25/2 = 12.5, active = floor(12.5*2)=25
+    // enemyLevel 5, multiplier 1.25: 25 * 5 * 2 * 1.25 = 312, perShare = 312/2 = 156, active = floor(156*2)=312
     const result = awardKillXp(party, 5, 1.25);
-    assert.strictEqual(result.xpGrants[0].xp, 25);
+    assert.strictEqual(result.xpGrants[0].xp, 312);
   });
 
   it('awardKillXp returns levelUps from cubic curve', () => {
@@ -358,10 +358,9 @@ describe('Creature Combat - Kill XP Scaling', () => {
       active: [instantiateCreature('hikaribon')],
       reserves: []
     };
-    // enemyLevel 10: (10 + 10*2) = 30 base, perShare = 30/2 = 15, active = 30
-    // L5 needs 91 XP to level up, so 30 XP won't level up
-    // Use higher enemy level to guarantee a level-up
-    const result = awardKillXp(party, 50);
+    // enemyLevel 5: 25 * 5 * 2 = 250 base XP, active gets 250
+    // L5 needs 91 XP to level up, so 250 XP will cause multiple level-ups
+    const result = awardKillXp(party, 5);
     assert.ok(result.levelUps.length > 0);
     assert.ok(party.active[0].level > 5);
   });
@@ -371,9 +370,9 @@ describe('Creature Combat - Kill XP Scaling', () => {
       active: [instantiateCreature('hikaribon')],
       reserves: []
     };
-    // enemyLevel 1: (10 + 1*2) * 1.0 = 12, perShare = 12/2 = 6, active = floor(6*2) = 12
+    // enemyLevel 1: 25 * 1 * 2 * 1.0 = 50, perShare = 50/2 = 25, active = floor(25*2) = 50
     const result = awardKillXp(party, 1);
-    assert.strictEqual(result.xpGrants[0].xp, 12);
+    assert.strictEqual(result.xpGrants[0].xp, 50);
   });
 });
 
@@ -460,8 +459,8 @@ describe('Creature Combat - XP Balance Redistribution', () => {
       reserves: []
     };
 
-    // enemyLevel 10: base = (10+10*2)*1.0 = 30
-    // Without balance: 2 active = 4 shares, perShare=7.5, each gets 15
+    // enemyLevel 10: base = 25*10*2*1.0 = 500
+    // Without balance: 2 active = 4 shares, perShare=125, each gets 250
     // With 1 stack (t=0.2): low-level gets more, high-level gets less
     const result = awardKillXp(party, 10, 1.0, 1);
 

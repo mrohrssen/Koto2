@@ -22,7 +22,7 @@ import {
   getFlatAttackBonus
 } from '../combat/effects.js';
 export const CREDITS_PER_KILL = 15;
-export const BASE_KILL_XP = 10;
+export const BASE_KILL_XP = 25;
 
 /**
  * Build a standard attack-result record used in the attacks[] array.
@@ -632,13 +632,13 @@ export function rollTalkAcceptance(enemy) {
 
 /**
  * Award XP to all alive equipped creatures when an enemy is killed during combat.
- * XP scales with enemy level: (BASE_KILL_XP + enemyLevel * 2) * xpMultiplier.
+ * XP scales with enemy level: BASE_KILL_XP * enemyLevel * 2 * xpMultiplier.
  * Active creatures get 2 shares, reserves get 1 share.
  * When xpBalanceStacks > 0, XP is redistributed from overleveled to underleveled creatures.
  * Returns per-creature XP amounts and any level-ups that occurred.
  */
 export function awardKillXp(creatureParty, enemyLevel, xpMultiplier = 1.0, xpBalanceStacks = 0, metaMults = null) {
-  const baseXp = Math.floor((BASE_KILL_XP + enemyLevel * 2) * xpMultiplier);
+  const baseXp = Math.floor(BASE_KILL_XP * enemyLevel * 2 * xpMultiplier);
   const activeCreatures = creatureParty.active.filter(r => r && r.hp > 0);
   const reserveCreatures = creatureParty.reserves.filter(r => r != null);
   const totalShares = activeCreatures.length * 2 + reserveCreatures.length * 1;
