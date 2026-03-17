@@ -210,58 +210,58 @@
       "speechStyle": "Loud casual masculine speech (俺/だぜ/しろ), exclamation marks everywhere, zero polite forms, treats every interaction as a contest",
       "quirk": "Challenges everyone to race him to the far rocks — treats every interaction as a contest he's already winning"
     },
-    "greeting": "おい！ここは俺の海だ！入りたきゃ俺を倒してからにしろ！",
-    "defeatLine": "…あれ？波の音…潮、もう満ちてきてるのか？…ヤドカリたちは…",
+    "greeting": "Hey! This {beach|浜|はま} is MINE! You wanna be here, you gotta beat me first!",
+    "defeatLine": "…huh? The {waves|波|なみ}… the tide's already coming in? …the hermit crabs…",
     "postCombat": {
-      "freed": "よっしゃー！自由だー！…って、俺なんで戦ってたんだ？",
+      "freed": "YEAH! I'm {free|自由|じゆう}! …wait, why was I even fighting you?",
       "rounds": [
         {
-          "npcLine": "マジかよ、俺操られてたのか！？くそー、ダセぇ！",
+          "npcLine": "No way — I was being {controlled|操る|あやつる}!? Ugh, that is SO uncool!",
           "options": [
             {
-              "text": "誰でもやられるよ。気にするな。",
+              "text": "It happens to anyone. Don't sweat it.",
               "tone": "positive"
             },
             {
-              "text": "まあ、そういうことだ。",
+              "text": "Yeah, that's basically what happened.",
               "tone": "neutral"
             },
             {
-              "text": "確かにダサいな。",
+              "text": "Pretty uncool, yeah.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "潮だまりのヤドカリたち、大丈夫かな…。あいつら、潮が変わると場所移さないとダメなんだ。",
+          "npcLine": "Hey, I'm worried about the hermit crabs in the {tide pools|潮だまり|しおだまり}… when the tide shifts they gotta move or they get stranded.",
           "options": [
             {
-              "text": "見に行こうぜ！手伝うよ。",
+              "text": "Let's go check! I'll help.",
               "tone": "positive"
             },
             {
-              "text": "そうなのか。",
+              "text": "Huh, didn't know that.",
               "tone": "neutral"
             },
             {
-              "text": "ヤドカリなんかほっとけよ。",
+              "text": "They'll figure it out.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "なあ、あの岩まで競争しようぜ！負けたらジュース奢りな！",
+          "npcLine": "Hey, {race|競争|きょうそう} me to those rocks out there! Loser buys drinks!",
           "options": [
             {
-              "text": "よし、やろう！負けないぞ！",
+              "text": "You're on! I won't lose!",
               "tone": "positive"
             },
             {
-              "text": "また今度な。",
+              "text": "Maybe next time.",
               "tone": "neutral"
             },
             {
-              "text": "くだらない。",
+              "text": "Not interested.",
               "tone": "negative"
             }
           ]
@@ -299,58 +299,58 @@
       "speechStyle": "Warm and unhurried, uses polite but slightly old-fashioned masculine expressions, occasionally trails off into reminiscences about the park",
       "quirk": "Names every plant, bird, and koi in the park and introduces them to visitors like old friends — calls the biggest koi 'Taro-kun'"
     },
-    "greeting": "おや…ここに何の用かね？この公園は…誰にも渡さんよ。",
-    "defeatLine": "…はっ。あれ…？鯉にご飯、あげたかな…。",
+    "greeting": "Oh my… what brings you to this {park|公園|こうえん}? I won't give it up to anyone, I'm afraid.",
+    "defeatLine": "…oh. Wait…? Did I feed the {koi|鯉|こい} today…?",
     "postCombat": {
-      "freed": "あぁ、すまんね、助けてくれたのか。…わしは何をしていたんだろう。",
+      "freed": "Oh my… you helped me. I'm grateful. I can't quite remember what I was {thinking|考える|かんがえる}.",
       "rounds": [
         {
-          "npcLine": "ツツジに水をやらないと…。太郎くんにもご飯を…あの子は食いしん坊でね。",
+          "npcLine": "I need to water the azaleas… and Taro-kun needs his {food|餌|えさ}… that one's quite the little glutton.",
           "options": [
             {
-              "text": "太郎くん？鯉の名前ですか？かわいいですね。",
+              "text": "Taro-kun? Is that the koi? What a great name.",
               "tone": "positive"
             },
             {
-              "text": "鯉ですか。",
+              "text": "The koi, you mean.",
               "tone": "neutral"
             },
             {
-              "text": "鯉に名前つけてるのか。",
+              "text": "You named a fish.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "あの花壇の様子、見てきてくれんかね？石灯篭のそばのやつだ。",
+          "npcLine": "Would you mind checking on the {flower bed|花壇|かだん} for me? The one by the stone lantern.",
           "options": [
             {
-              "text": "もちろんです。一緒に見に行きましょう。",
+              "text": "Of course — let's go together.",
               "tone": "positive"
             },
             {
-              "text": "時間があれば。",
+              "text": "If I get a chance.",
               "tone": "neutral"
             },
             {
-              "text": "自分で見に行けばいいだろ。",
+              "text": "You can check it yourself.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "…それと、少し話し相手になってくれると嬉しいんだが。ベンチに座らんかね。",
+          "npcLine": "…and, well, if you wouldn't mind staying a while — it would be nice to have someone to {talk|話す|はなす} with. Come sit on the bench.",
           "options": [
             {
-              "text": "喜んで。ゆっくり話しましょう。",
+              "text": "Gladly. Let's take our time.",
               "tone": "positive"
             },
             {
-              "text": "少しだけなら。",
+              "text": "Just a little while.",
               "tone": "neutral"
             },
             {
-              "text": "暇じゃないんだ。",
+              "text": "I don't have time.",
               "tone": "negative"
             }
           ]
@@ -1132,58 +1132,58 @@
       "speechStyle": "Speaks carefully and formally, choosing each word with deliberate precision.",
       "quirk": "Tends to bow slightly too deeply, overcompensating out of respect for local customs."
     },
-    "greeting": "…失礼します。この学校のルールは、必ず守ります。…どうか、邪魔をしないでください。",
-    "defeatLine": "…頭が…。すみません、僕は何をしていましたか。",
+    "greeting": "Out of my way — I'm {studying|勉強|べんきょう} here. Unless you think you can keep up with me?",
+    "defeatLine": "My {head|頭|あたま}… what was I doing? That was… beneath me.",
     "postCombat": {
-      "freed": "…ありがとうございます。僕は…システムに使われていたのですね。勉強のことしか考えていなかったのに、おかしなことをしていました。",
+      "freed": "I was being {used|使う|つかう} by that system? Unacceptable. I don't lose control. Thank you — don't read too much into it.",
       "rounds": [
         {
-          "npcLine": "…僕は毎日、朝から晩まで勉強していました。この学校の言葉を、一つも間違えたくなかったのです。…それが、おかしくなった原因でしょうか。",
+          "npcLine": "I study from dawn to dusk every day. Not a single {mistake|間違い|まちがい} — that's my standard. You wouldn't understand.",
           "options": [
             {
-              "text": "勉強熱心なのは、いいことだよ。",
+              "text": "That kind of {effort|努力|どりょく} is impressive.",
               "tone": "positive"
             },
             {
-              "text": "そうかもしれないね。",
+              "text": "Sounds exhausting.",
               "tone": "neutral"
             },
             {
-              "text": "勉強のしすぎだろ。",
+              "text": "Nobody's perfect, you know.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "…あっ、すみません。（深くお辞儀をする）…この国では、こうするのが正しいと聞きました。…深すぎますか？",
+          "npcLine": "I came here as an {exchange student|留学生|りゅうがくせい} to be the best — not to make friends. Though… you're less annoying than most.",
           "options": [
             {
-              "text": "気持ちが伝わるから、大丈夫だよ。",
+              "text": "I'll take that as a compliment.",
               "tone": "positive"
             },
             {
-              "text": "少し深いかもね。",
+              "text": "Fair enough.",
               "tone": "neutral"
             },
             {
-              "text": "変に見えるからやめろ。",
+              "text": "You're kind of rude, you know.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "…この学校には、不思議な力があります。僕は留学生ですが、ここで学べることを大切にしたいです。…よろしくお願いします。",
+          "npcLine": "This {school|学校|がっこう} has real power — I felt it the moment I arrived. I intend to master everything it has to offer.",
           "options": [
             {
-              "text": "こちらこそ、よろしくね。一緒にがんばろう。",
+              "text": "Maybe we can {learn|学ぶ|まなぶ} together.",
               "tone": "positive"
             },
             {
-              "text": "よろしく。",
+              "text": "Good luck with that.",
               "tone": "neutral"
             },
             {
-              "text": "好きにしろ。",
+              "text": "Don't get too full of yourself.",
               "tone": "negative"
             }
           ]
