@@ -1412,7 +1412,7 @@
       "quirk": "Always has scorch marks or stains on her sleeves from a recent experiment gone slightly sideways."
     },
     "greeting": "Oh, a visitor? I'm right in the middle of an {experiment|実験|じっけん}! ...Wait. Was I not supposed to let anyone through? Yeah — no entry!",
-    "defeatLine": "...Huh? What was I doing? ...My sleeve is {scorched|焦げる|こげる} again... from the experiment? Or... not?",
+    "defeatLine": "...Huh? What was I doing? ...My sleeve has a {scorch mark|焦げ|こげ} again... from the experiment? Or... not?",
     "postCombat": {
       "freed": "My head cleared up! Did the system capture me mid-{experiment|実験|じっけん}? ...Did I lose all my {data|データ|データ}? No way...",
       "rounds": [
@@ -1434,7 +1434,7 @@
           ]
         },
         {
-          "npcLine": "Oh, my sleeve is {scorched|焦げる|こげる} again... When did that happen? Was I still running {experiments|実験|じっけん} while controlled? ...Isn't that kind of impressive?",
+          "npcLine": "Oh, my sleeve has a {scorch mark|焦げ|こげ} again... When did that happen? Was I still running {experiments|実験|じっけん} while controlled? ...Isn't that kind of impressive?",
           "options": [
             {
               "text": "In a way, yeah — impressive!",
@@ -1507,55 +1507,55 @@
     "greeting": "Ah. You're here. Do you have your goggles? In {chemistry|化学|かがく}, {safety|安全|あんぜん} comes first.",
     "defeatLine": "…I see. The cloudiness in my vision was not, it seems, caused by my goggles.",
     "postCombat": {
-      "freed": "頭がすっきりしました。まるで…よく磨いたゴーグルのように。ふふ、すみません、職業病です。",
+      "freed": "My head is clear now. Like a freshly polished lens. …Forgive me — occupational habit.",
       "rounds": [
         {
-          "npcLine": "化学の実験では、まず安全を確認します。手袋はありますか？目を守ることが大切です。…ゴーグルも忘れずに。",
+          "npcLine": "In a {chemistry|化学|かがく} experiment, you verify {safety|安全|あんぜん} before anything else. Do you have gloves? Eye protection is not optional. …And don't forget your goggles.",
           "options": [
             {
-              "text": "安全は大切ですね。先生はいつも気をつけていますか？",
+              "text": "Safety matters. Do you always follow your own rules?",
               "tone": "positive"
             },
             {
-              "text": "実験は楽しいですか？",
+              "text": "Do you enjoy {experiments|実験|じっけん}?",
               "tone": "neutral"
             },
             {
-              "text": "そんなに気にしなくてもいいのでは？",
+              "text": "Isn't that a bit excessive?",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "このゴーグル、もう十年使っています。毎日磨いていますから、新品のようでしょう？…え、今は実験していない？それは関係ありません。",
+          "npcLine": "These goggles are ten years old. I {polish|磨く|みがく} them every day — they look new, don't they? …You say I'm not in the lab right now? That is not relevant.",
           "options": [
             {
-              "text": "きれいなゴーグルですね。大切にしているのですね。",
+              "text": "They're spotless. You take great care of them.",
               "tone": "positive"
             },
             {
-              "text": "なぜ実験の時以外も磨くのですか？",
+              "text": "Why polish them outside the lab?",
               "tone": "neutral"
             },
             {
-              "text": "少し変わっていますね。",
+              "text": "That's a little unusual.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "ところで、「化学」の読み方は「かがく」です。「科学」も「かがく」ですが、意味が違います。正確に言うことが大切です。…私は少しうるさいですか？",
+          "npcLine": "Incidentally — {chemistry|化学|かがく} and {science|科学|かがく} share the reading かがく, but mean different things. Precision in {language|言葉|ことば} matters. …Am I being pedantic?",
           "options": [
             {
-              "text": "いいえ、正確なことは大切だと思います。",
+              "text": "Not at all. Precision is important.",
               "tone": "positive"
             },
             {
-              "text": "面白いです。他にも教えてください。",
+              "text": "Interesting. Tell me more.",
               "tone": "neutral"
             },
             {
-              "text": "先生は言葉にも厳しいですね。",
+              "text": "You're strict about words too, aren't you.",
               "tone": "negative"
             }
           ]
@@ -1597,58 +1597,58 @@
       "speechStyle": "Weaves personal travel anecdotes into every explanation.",
       "quirk": "Always carries a folded map in one hand and unfolds it mid-conversation to point out locations."
     },
-    "greeting": "やあ、君か！今日はどこの話をしようかな？世界は広いよ！",
-    "defeatLine": "ああ…やっと目が覚めた。ありがとう、君のおかげだ。",
+    "greeting": "Ah, there you are! Come, look at this {map|地図|ちず} — the {world|世界|せかい} is so much bigger than this school!",
+    "defeatLine": "Ah… I'm awake. Thank you — you brought me back.",
     "postCombat": {
-      "freed": "頭の中の暗い霧が消えた…。また自由に旅の話ができるよ。",
+      "freed": "The {darkness|暗さ|くらさ} in my head has lifted… I can talk about my travels again.",
       "rounds": [
         {
-          "npcLine": "昔、南の島に行った時、海がとても青くて、魚がたくさんいたんだ。君は遠い場所に行ったことがある？",
+          "npcLine": "Once, on a southern {island|島|しま}, the sea was so blue and the fish were everywhere. Have you ever been somewhere far away?",
           "options": [
             {
-              "text": "すごい！私もいつか行きたいです！",
+              "text": "Sounds amazing! I want to {go|行く|いく} someday!",
               "tone": "positive"
             },
             {
-              "text": "南の島ですか。どこの島ですか？",
+              "text": "A southern island — which one?",
               "tone": "neutral"
             },
             {
-              "text": "旅の話はもういいです。",
+              "text": "I don't want to hear {travel|旅|たび} stories.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "ほら、この地図を見て。ここが私たちの学校で…ここが山、ここが海だよ。地図があれば迷わないんだ。",
+          "npcLine": "Here — look at this {map|地図|ちず}. Here is our school, here is the mountain, here is the sea. As long as you have a map, you won't {get lost|迷う|まよう}.",
           "options": [
             {
-              "text": "地図、すごく面白いですね！もっと見せてください！",
+              "text": "That map is fascinating! Show me more!",
               "tone": "positive"
             },
             {
-              "text": "いつもその地図を持っているんですか？",
+              "text": "Do you always carry it with you?",
               "tone": "neutral"
             },
             {
-              "text": "紙の地図なんて古いですよ。",
+              "text": "Paper {maps|地図|ちず} feel old-fashioned.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "世界にはまだ知らない場所がたくさんある。君も自分の目で見に行くといいよ。新しい発見が待っているから。",
+          "npcLine": "There are still so many {places|場所|ばしょ} in the world you haven't seen. Go and {discover|発見|はっけん} them yourself — something new is waiting.",
           "options": [
             {
-              "text": "はい！先生みたいに色々な所に行きたいです！",
+              "text": "Yes! I want to {travel|旅|たび} like you!",
               "tone": "positive"
             },
             {
-              "text": "どこから始めればいいですか？",
+              "text": "Where should I start?",
               "tone": "neutral"
             },
             {
-              "text": "別に興味ないです。",
+              "text": "I'm not really interested.",
               "tone": "negative"
             }
           ]
