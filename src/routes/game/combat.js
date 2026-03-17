@@ -44,11 +44,9 @@ export default function createCombatRoutes({
         });
         saveGameStats(gameStats);
 
-        narration = isBoss
-          ? 'ボスが倒れる。「お前は...強かった...」長い戦いが終わった。よくやった！'
-          : '敵が倒れる。「まさか...」最後の言葉が消える。勝利だ。';
+        narration = null;
       } else {
-        narration = '力が抜ける。「弱かったな...」敵の声が遠くなる。目の前が暗くなる...';
+        narration = null;
       }
 
       res.json({ narration, state: req.getEnrichedGameState() });

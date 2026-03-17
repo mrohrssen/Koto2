@@ -2456,7 +2456,6 @@ export async function stopCombatLoop(result) {
     console.error('Error getting combat end narration:', error);
     // Fallback narration
     if (result.victory) {
-      await narration.showNarration('市民解放！');
       const gs2 = getGameState();
       if (gs2?.combat?.npcId) {
         await runNpcDialogue();
@@ -2468,7 +2467,6 @@ export async function stopCombatLoop(result) {
       showVictoryModal(result);
       wordPractice.prefetchCombatWords();
     } else {
-      await narration.showNarration('敗北...');
       showGameOverModal(result);
     }
   }
