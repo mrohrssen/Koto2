@@ -93,55 +93,30 @@ function wrapWithRuby(word, reading, englishReading) {
 
 function buildSplitAttackCard(atk, isEnemy) {
   const theme = ELEMENT_THEME[atk.attackerElement] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
-  const spriteUrl = creatureSpritePath(atk.attackerId);
-  const targetSprite = creatureSpritePath(atk.targetId);
-
-  const baseWordHtml = renderJpFirst(atk.attackerBaseWord, atk.attackerBaseReading, atk.attackerBaseMeaning);
-  const skillNameHtml = renderJpFirst(atk.attackerSkillName, atk.attackerSkillReading, atk.attackerSkillEn);
-
-  // Creature names: use English name as furigana for katakana (not teaching targets)
-  const attackerNameJp = atk.attackerNameJp || atk.attackerName;
-  const attackerNameHtml = wrapWithRuby(attackerNameJp, attackerNameJp, atk.attackerName);
-
-  let damageSign;
-  if (atk.healAmount > 0) damageSign = `+${atk.healAmount}`;
-  else if (atk.damage > 0) damageSign = `-${atk.damage}`;
-  else if (atk.effectApplied) damageSign = atk.effectApplied;
-  else damageSign = '0';
   const targetDisplayName = atk.targetNameJp || atk.targetName || '';
   const targetNameHtml = wrapWithRuby(targetDisplayName, targetDisplayName, atk.targetName);
 
-  const baseIcon = actionIconPath(atk.attackerBaseMeaning);
-  const skillIcon = actionIconPath(atk.attackerSkillEn);
+  // Move name with furigana
+  const moveName = atk.attackerSkillName || atk.moveName;
+  const moveReading = atk.attackerSkillReading || atk.moveReading || '';
+  const moveEn = atk.attackerSkillEn || atk.moveNameEn || '';
+  const moveNameHtml = renderJpFirst(moveName, moveReading, moveEn);
 
-  const cat = atk.category || 'damage';
-  const tagLabel = { heal: 'HEAL', buff: 'BUFF', shield: 'DEF', debuff: 'DBF', drain: 'ATK' }[cat] || 'ATK';
-  const tagClass = { heal: 'sac-tag-heal', buff: 'sac-tag-buff', shield: 'sac-tag-buff', debuff: 'sac-tag-debuff' }[cat] || 'sac-tag-atk';
-  const damageClass = (atk.healAmount > 0) ? 'sac-heal' : 'sac-damage';
+  // Damage/heal/effect label
+  let resultText;
+  if (atk.healAmount > 0) resultText = `+${atk.healAmount} HP`;
+  else if (atk.damage > 0) resultText = `-${atk.damage}`;
+  else if (atk.effectApplied) resultText = atk.effectApplied;
+  else resultText = 'Miss';
+  const resultClass = (atk.healAmount > 0) ? 'sac-heal' : 'sac-damage';
 
   return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
-    <div class="sac-left">
-      <img class="sac-sprite" src="${spriteUrl}" alt="">
-      <div class="sac-attacker-name">${attackerNameHtml}</div>
-    </div>
-    <div class="sac-right">
-      <div class="sac-row" data-row="0">
-        ${baseIcon ? `<img class="sac-action-icon" src="${baseIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        <span class="sac-vocab">${baseWordHtml}</span>
-        <span class="sac-meaning">${atk.attackerBaseMeaning || ''}</span>
-        <span class="sac-tag sac-tag-base">BASE</span>
-      </div>
-      <div class="sac-row" data-row="1">
-        ${skillIcon ? `<img class="sac-action-icon" src="${skillIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        <span class="sac-vocab">${skillNameHtml}</span>
-        <span class="sac-meaning">${atk.attackerSkillEn || ''}</span>
-        <span class="sac-tag ${tagClass}">${tagLabel}</span>
-      </div>
-      <div class="sac-row sac-impact" data-row="2">
-        <span class="sac-impact-arrow">\u2192</span>
-        <img class="sac-impact-sprite" src="${targetSprite}" alt="">
-        <span class="sac-impact-name">${targetNameHtml}</span>
-        <span class="${damageClass}">${damageSign}</span>
+    <div class="sac-body">
+      <div class="sac-move-name">${moveNameHtml}</div>
+      <div class="sac-move-en">${moveEn}</div>
+      <div class="sac-result">
+        <span class="sac-target-name">${targetNameHtml}</span>
+        <span class="${resultClass}">${resultText}</span>
       </div>
     </div>
     <span class="sac-continue" style="display:none">\u25BC</span>
@@ -162,12 +137,6 @@ function insertAttackCard(atk, isEnemy) {
 
   const card = actionArea.querySelector('.split-attack-card');
   if (!card) return null;
-
-  // Staggered row reveal
-  const rows = card.querySelectorAll('.sac-row');
-  rows.forEach((row, i) => {
-    setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
-  });
 
   // Prefetch and play base word + move name audio with a tiny gap
   const baseWord = atk.attackerBaseWord;
