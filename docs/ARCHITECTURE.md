@@ -406,6 +406,10 @@ Progress persists across runs and sessions.
 **Files:**
 - `src/game/state.js` - State management and persistence
 
+### Progression Tokens & Upgrades
+
+Players earn 1 Progression Token per boss defeated or befriended. Tokens are spent at the hub shop on permanent upgrades (HP Boost, XP Boost, ATK Boost) with 5 levels each. Upgrade definitions live in `data/meta-upgrades.json`. Purchase logic is in `src/game/services/meta-shop-service.js`. Bonuses apply as percentage multipliers baked into creature stats at run start and creature creation.
+
 ---
 
 ## Logging System
@@ -682,6 +686,4 @@ Despite what older documentation may suggest, the following features are **not i
 - No boss encounters
 - No armor, weapons, or equipment slots (players use creatures and consumable items only)
 - No class selection or skill trees
-- No essence currency or meta-upgrade system
-
 These were intentionally removed to keep the game simple and focus on language learning.
