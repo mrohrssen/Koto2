@@ -760,58 +760,58 @@
       "speechStyle": "Speaks in short, punchy declarations like a coach giving a halftime speech, often ending sentences with rallying calls.",
       "quirk": "Challenges everyone he meets to some form of physical contest."
     },
-    "greeting": "おい、止まれ！ここは俺の校庭だ。勝負しろ！逃げるなよ！",
-    "defeatLine": "はぁ…はぁ…。俺、何で戦ってたんだ…？体が勝手に…",
+    "greeting": "Hey, stop right there! This is my {schoolyard|校庭|こうてい}. Let's {compete|勝負|しょうぶ} — no running away!",
+    "defeatLine": "Hah… hah… why was I {fighting|戦う|たたかう}…? My {body|体|からだ} just… moved on its own…",
     "postCombat": {
-      "freed": "うおっ…頭がスッキリしたぞ。俺、システムに操られてたのか…。すまなかった、お前は強いな！",
+      "freed": "Whoa… my head cleared up. The system was controlling me…? Sorry about that — but you're {strong|強い|つよい}!",
       "rounds": [
         {
-          "npcLine": "俺は体育の先生だ。走ること、投げること、全部好きだぞ！お前も体を動かすのは好きか？",
+          "npcLine": "I'm a PE {teacher|先生|せんせい}. Running, throwing — I love it all! Do you like moving your body too?",
           "options": [
             {
-              "text": "うん、大好きだよ！一緒に走ろう！",
+              "text": "Yeah! Let's {run|走る|はしる} together!",
               "tone": "positive"
             },
             {
-              "text": "まあ、嫌いじゃないかな。",
+              "text": "Not bad, I guess.",
               "tone": "neutral"
             },
             {
-              "text": "体を動かすのは面倒だ。",
+              "text": "Too much {effort|努力|どりょく}.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "よし、勝負だ！腕立て十回、どっちが速いか！…いや、もう戦ったばかりか。じゃあ次だ！",
+          "npcLine": "Alright, {contest|勝負|しょうぶ} time! Ten push-ups — who's faster? …Well, we just fought. Fine, next time!",
           "options": [
             {
-              "text": "いいぞ、いつでも来い！",
+              "text": "I'm ready anytime!",
               "tone": "positive"
             },
             {
-              "text": "少し休んでからね。",
+              "text": "Let me {rest|休む|やすむ} first.",
               "tone": "neutral"
             },
             {
-              "text": "もう勝負はいい。",
+              "text": "No more competing.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "お前、なかなかやるな。この先は強い奴がいるぞ。でも大丈夫だ、お前なら勝てる！行け！",
+          "npcLine": "You've got real {ability|実力|じつりょく}. There are strong opponents ahead — but you can beat them. Go!",
           "options": [
             {
-              "text": "ありがとう！頑張るよ！",
+              "text": "Thanks! I'll do my best!",
               "tone": "positive"
             },
             {
-              "text": "気をつけて進むよ。",
+              "text": "I'll be careful.",
               "tone": "neutral"
             },
             {
-              "text": "言われなくてもわかってる。",
+              "text": "I already knew that.",
               "tone": "negative"
             }
           ]
@@ -853,58 +853,58 @@
       "speechStyle": "Talks fast and enthusiastically, often tripping over his own words.",
       "quirk": "Bows so deeply when greeting upperclassmen that he sometimes loses his balance."
     },
-    "greeting": "あっ、先輩！！お、おはようございま——うわっ！！ご、ごめんなさい！お辞儀しすぎて転びそうに…！えへへ、今日も元気です！…通さないよ！",
-    "defeatLine": "う…うう…俺、先輩に何してたんだ…？ごめんなさい…！頭がぐるぐるして…。",
+    "greeting": "Ah, {senpai|先輩|せんぱい}!! G-good mor—whoops!! S-sorry! I bowed too deep… hehe, full of {energy|元気|げんき} today! …But you can't pass!",
+    "defeatLine": "Ugh… w-what was I doing to you, {senpai|先輩|せんぱい}…? I'm so sorry…! My head's spinning…",
     "postCombat": {
-      "freed": "はっ…！俺、先輩を止めようとしてた…？うそだろ…！ごめんなさい！！本当にごめんなさい！！",
+      "freed": "Huh…! I was trying to stop you…? No way…! I'm so sorry!! I'm really, truly sorry!!",
       "rounds": [
         {
-          "npcLine": "俺、後輩だから先輩を守りたかったのに…システムに使われて、逆に戦ってた…！最悪だ…！でも、先輩が助けてくれた！ありがとうございます！！",
+          "npcLine": "I'm your {junior|後輩|こうはい}, so I wanted to protect you… but the system used me to fight you instead…! That's the worst… but you saved me! Thank you so much!!",
           "options": [
             {
-              "text": "気にしないで！もう大丈夫だよ。",
+              "text": "Don't worry about it! You're {safe|安全|あんぜん} now.",
               "tone": "positive"
             },
             {
-              "text": "うん、大変だったね。",
+              "text": "Yeah, that was rough.",
               "tone": "neutral"
             },
             {
-              "text": "それより、何があったか教えて。",
+              "text": "Tell me what happened.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "あっ、そうだ！先輩に挨拶しないと！えっと——！！うわわっ！！また転んだ…！お辞儀が深すぎるって言われるけど、気持ちが大きいから止められないんです！！",
+          "npcLine": "Oh right, I have to greet you properly! Um— !! Whoops!! Fell again…! People say I bow too deep, but I can't help it — the {feeling|気持ち|きもち} is just too big!!",
           "options": [
             {
-              "text": "はは、その気持ちが一番大事だよ！",
+              "text": "Ha, that feeling matters most!",
               "tone": "positive"
             },
             {
-              "text": "少しだけ気をつけたら？",
+              "text": "Just be a little careful.",
               "tone": "neutral"
             },
             {
-              "text": "怪我するから、やめたほうがいい。",
+              "text": "You could get an {injury|怪我|けが}.",
               "tone": "negative"
             }
           ]
         },
         {
-          "npcLine": "俺、先輩みたいに強くなりたいんです！！毎日練習して、もっと頑張って…！いつか先輩に「すごいな」って言われたい！！…あっ、言いすぎた…？えへへ！",
+          "npcLine": "I want to become as {strong|強い|つよい} as you, senpai!! Practicing every day, pushing harder… I want you to say \"nice\" to me someday!! …Oh, was that too much? Hehe!",
           "options": [
             {
-              "text": "もうすごいよ！一緒に頑張ろう！",
+              "text": "You already are! Let's {practice|練習|れんしゅう} together!",
               "tone": "positive"
             },
             {
-              "text": "その気持ちは大切だね。",
+              "text": "That feeling is important.",
               "tone": "neutral"
             },
             {
-              "text": "口だけじゃなくて、見せてくれ。",
+              "text": "Show me, don't just talk.",
               "tone": "negative"
             }
           ]
