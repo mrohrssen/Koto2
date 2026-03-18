@@ -63,10 +63,12 @@ describe('Skill Master Room', () => {
 
     const finishedViaInteracted = createRoom('skillMaster', 'okunomori', 2, 5);
     finishedViaInteracted.interacted = true;
+    finishedViaInteracted.skillMaster.completed = false;
     const finishedViaInteractedActions = getRoomActions(finishedViaInteracted);
-    assert.ok(
+    assert.strictEqual(
       finishedViaInteractedActions.find(a => a.id === 'proceed'),
-      'proceed should be available after interacted'
+      undefined,
+      'proceed should not be available after interacted unless completed'
     );
 
     const finishedViaCompletedFlag = createRoom('skillMaster', 'okunomori', 2, 5);

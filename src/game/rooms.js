@@ -286,7 +286,7 @@ export function getRoomActions(room) {
   const isUnfinishedEncounter = room.type === 'encounter' && !room.interacted;
   const isUnfinishedWordDiscovery = room.type === 'wordDiscovery' && !room.interacted;
   const isUnfinishedDealer = room.type === 'dealer' && !room.interacted;
-  const isUnfinishedSkillMaster = room.type === 'skillMaster' && !room.interacted && !room.skillMaster?.completed;
+  const isUnfinishedSkillMaster = room.type === 'skillMaster' && room.skillMaster?.completed !== true;
   const isUnfinishedWhackAMole = room.type === 'whackAMole' && !room.interacted;
   const isUnfinishedBoss = room.type === 'boss' && !room.interacted;
   if (!isUnfinishedEncounter && !isUnfinishedWordDiscovery && !isUnfinishedDealer && !isUnfinishedSkillMaster && !isUnfinishedWhackAMole && !isUnfinishedBoss) {
