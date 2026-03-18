@@ -711,14 +711,14 @@ describe('Creature Combat - executeNpcSkill', () => {
   });
 });
 
-describe('Befriend conversation failure resets turn guard', () => {
-  it('resets befriendUsedThisTurn after wrong answer', () => {
+describe('Befriend conversation failure keeps initiator slot spent', () => {
+  it('does not clear befriendAttemptedSlots after wrong answer', () => {
     const ally = instantiateCreature('hikaribon');
     const enemy = instantiateCreature('nekotto');
 
     const combat = {
       active: true,
-      befriendUsedThisTurn: true,
+      befriendAttemptedSlots: { 0: true },
       befriendConversation: {
         active: true,
         targetEnemyIndex: 0,
@@ -733,17 +733,16 @@ describe('Befriend conversation failure resets turn guard', () => {
 
     const gameManager = {
       run: {
-        creatureParty: { active: combat.allies, bench: [] },
+        creatureParty: { active: combat.allies, reserves: [], bench: [] },
         itemBuffs: null
       },
       combat
     };
 
-    // Call with wrong answer (selectedIndex=0, correctIndex=2)
     const result = handleBefriendAnswer(gameManager, { roundIndex: 0, selectedIndex: 0 });
 
     assert.strictEqual(result.correct, false);
-    assert.strictEqual(combat.befriendUsedThisTurn, false,
-      'befriendUsedThisTurn should reset after failed conversation');
+    assert.strictEqual(combat.befriendAttemptedSlots[0], true,
+      'initiator still marked after failed befriend quiz');
   });
 });

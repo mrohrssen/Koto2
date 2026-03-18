@@ -125,6 +125,9 @@ export class ExplorationService {
     if (this.gm.run.rooms.length > 0) {
       this.gm.run.rooms[0].explored = true;
       this.gm.run.roomsExplored = 1;
+      // totalEncounters is used as a global "rooms entered" counter for scaling.
+      // Count the first room immediately when entering an area.
+      this.gm.run.totalEncounters = (this.gm.run.totalEncounters || 0) + 1;
     }
 
     const areaName = this.gm.run.currentArea?.nameEn || areaId;
@@ -216,6 +219,9 @@ export class ExplorationService {
     room.explored = true;
     this.gm.run.roomsExplored++;
     this.gm.run.stats.roomsExplored++;
+
+    // Increment global room counter for enemy scaling (all room types).
+    this.gm.run.totalEncounters = (this.gm.run.totalEncounters || 0) + 1;
 
     // Vary background per room — sub-area-specific if available
     const areaId = this.gm.run.currentArea?.id || 'okunomori';

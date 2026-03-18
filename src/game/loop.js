@@ -260,7 +260,7 @@ export class GameManager {
         lastAction: this.combat.lastAction,
         npcId: this.combat.npcId || null,
         npcData: this.combat.npcData || null,
-        befriendUsedThisTurn: this.combat.befriendUsedThisTurn || false
+        befriendAttemptedSlots: this.combat.befriendAttemptedSlots || {}
       } : null,
       meta: this.meta ? {
         lifetimeStats: this.meta.lifetimeStats,
@@ -610,9 +610,6 @@ export class GameManager {
     // Once an action is committed, free swap window closes
     this.combat.swapPhase = false;
 
-    // Reset per-turn befriend guard for next turn
-    this.combat.befriendUsedThisTurn = false;
-
     // Tick active effects at start of round (poison damage, etc.)
     const effectEvents = tickAllEffects(this.combat.allies, this.combat.enemies);
 
@@ -632,6 +629,9 @@ export class GameManager {
    * @private
    */
   _handleCreatureAttackTurn(effectEvents, moveChoices) {
+    // New player move round — each creature may try はなす again
+    this.combat.befriendAttemptedSlots = {};
+
     const metaMults = { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 };
     const playerResult = processMoveTurn(this.combat.allies, this.combat.enemies, moveChoices, this.run.itemBuffs, this.run.creatureParty, metaMults);
 
@@ -647,7 +647,6 @@ export class GameManager {
       const newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.currentAreaEncounters++;
-      this.run.totalEncounters = (this.run.totalEncounters || 0) + 1;
       const currentRoom = this.run.rooms?.[this.run.currentRoom];
       if (currentRoom) {
         currentRoom.interacted = true;
@@ -764,7 +763,6 @@ export class GameManager {
       const newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.currentAreaEncounters++;
-      this.run.totalEncounters = (this.run.totalEncounters || 0) + 1;
       const currentRoom = this.run.rooms?.[this.run.currentRoom];
       if (currentRoom) currentRoom.interacted = true;
       this.emitState();
@@ -852,6 +850,7 @@ export class GameManager {
    * @private
    */
   _handleCreatureDefendTurn(effectEvents) {
+    this.combat.befriendAttemptedSlots = {};
     processDefendTurn(this.combat.allies);
 
     // Enemy phase (defendActive = true reduces damage)
@@ -935,6 +934,7 @@ export class GameManager {
     if (this.combat.isBoss) {
       const bossId = this.combat.enemies?.[0]?.id;
       if (!this.run.bossesDefeated?.includes(bossId)) {
+        this.combat.befriendAttemptedSlots = {};
         return {
           actionType: 'befriend',
           befriend: { success: false, reason: 'boss_first_defeat' },
@@ -947,8 +947,10 @@ export class GameManager {
       }
     }
 
-    const targetIdx = this.combat.befriendConversation?.targetEnemyIndex;
-    // Preserve targetEnemyIndex for befriendReplace (party-full flow)
+    const targetIdx =
+      typeof this.combat.befriendConversation?.targetEnemyIndex === 'number'
+        ? this.combat.befriendConversation.targetEnemyIndex
+        : this.combat.lastBefriendTargetIndex;
     if (typeof targetIdx === 'number') this.combat.lastBefriendTargetIndex = targetIdx;
     const befriendResult = processBefriend(this.combat.enemies, this.run.creatureParty, targetIdx);
 
@@ -958,7 +960,6 @@ export class GameManager {
       const newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.currentAreaEncounters++;
-      this.run.totalEncounters = (this.run.totalEncounters || 0) + 1;
       // Award progression token for boss befriend
       if (this.combat.isBoss) {
         this.meta.progressionTokens = (this.meta.progressionTokens || 0) + 1;
@@ -1030,6 +1031,7 @@ export class GameManager {
 
     this.combat.turnCount++;
     this.combat.swapPhase = true;
+    this.combat.befriendAttemptedSlots = {};
     this.emitState();
 
     return {
@@ -1274,7 +1276,6 @@ export class GameManager {
       newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.currentAreaEncounters++;
-      this.run.totalEncounters = (this.run.totalEncounters || 0) + 1;
       // Mark room as interacted
       const currentRoom = this.run.rooms?.[this.run.currentRoom];
       if (currentRoom) {

@@ -179,7 +179,8 @@ function handleClick(e) {
  * @param {string} [options.speaker] - Name label shown above text
  * @param {number} [options.autoDismiss] - Ms to auto-dismiss (no click needed)
  * @param {boolean} [options.persistent] - If true, stays visible until forceHide() is called
- * @param {boolean} [options.html] - If true, text is pre-rendered HTML (e.g. bootstrap scaffolding)
+ * @param {boolean} [options.html] - If true, text is pre-rendered HTML (e.g. renderEnFirst).
+ *   Otherwise textContent is used — do not pass i18n t() for tagged keys (use tPlain or html:true).
  * @returns {Promise<void>} Resolves when dismissed
  */
 export async function show(text, options = {}) {

@@ -29,7 +29,7 @@ import { playSFX } from '../audio.js';
 import { getAuthHeaders } from '../api.js';
 import { logger } from '../logger.js';
 import { renderJpFirst, renderEnFirst, flushExposures } from './bootstrap-client.js';
-import { t } from './i18n.js';
+import { t, tPlain } from './i18n.js';
 import {
   impactEnemyEffect,
   delay as effectDelay,
@@ -504,33 +504,85 @@ export function startMoveSelection() {
   promptNextCreature();
 }
 
-/** Check if befriend conditions are met: creature combat, 1 alive enemy at ≤50% HP, no NPC. */
-function isBefriendAvailable() {
+function isBefriendSlotBlocked(slot) {
+  return !!(getGameState().combat?.befriendAttemptedSlots?.[slot]);
+}
+
+/** Per-creature: はなす available if this slot has not already spent their action on befriend this round. */
+function isBefriendAvailableForSlot(slot) {
   const state = getGameState();
   if (!state.combat?.isCreatureCombat || state.combat?.npcId) return false;
-  if (state.combat?.befriendUsedThisTurn) return false;
+  if (isBefriendSlotBlocked(slot)) return false;
   const enemies = state.combat.enemies || [];
   const alive = enemies.filter(e => e.hp > 0 && !e.befriended);
   if (alive.length !== 1) return false;
   return (alive[0].hp / alive[0].maxHp) <= 0.5;
 }
 
+function getMoveSelectBefriendOpts(slot) {
+  const befriendAvailable = isBefriendAvailableForSlot(slot);
+  return {
+    befriendAvailable,
+    onBefriend: befriendAvailable ? handleBefriendTalk : undefined
+  };
+}
+
+function mergeBefriendSlotsFromTalkResponse(result) {
+  if (!result?.befriendAttemptedSlots || !getGameState().combat) return;
+  const gs = getGameState();
+  updateGameState({
+    ...gs,
+    combat: {
+      ...gs.combat,
+      befriendAttemptedSlots: { ...result.befriendAttemptedSlots }
+    }
+  });
+}
+
+/** After はなす uses a creature's turn (any outcome), continue move picks for the rest of the party. */
+function resumeMoveSelectionAfterBefriendSpend(actingSlot) {
+  if (actingSlot == null || typeof actingSlot !== 'number') {
+    startMoveSelection();
+    return;
+  }
+  currentCreatureIndex = actingSlot + 1;
+  promptNextCreature();
+}
+
 /** Handle the player tapping the はなす (Talk) button during move selection. */
 async function handleBefriendTalk() {
   if (!combatActive) return;
+  const actingSlot = currentCreatureIndex;
 
   return withAnimationActive(async () => {
     try {
       const resp = await fetch(`${API_BASE}/api/game/befriend-talk`, {
         method: 'POST',
-        headers: getAuthHeaders()
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ creatureIndex: actingSlot })
       });
       if (!resp.ok) {
+        let msg = tPlain('befriendTalkBlocked');
+        try {
+          const err = await resp.json();
+          if (err?.error) msg = `${msg} (${String(err.error)})`;
+        } catch { /* ignore */ }
         console.error('[CombatLoop] Befriend talk HTTP error:', resp.status);
-        startMoveSelection();
+        if (narration?.showNarration) narration.showNarration(msg, { persistent: false });
+        const gs = getGameState();
+        const allies = gs.combat?.allies || gs.run?.creatureParty?.active || [];
+        const creature = allies[actingSlot];
+        if (creature) {
+          clearTargetSelect();
+          setActiveLabel(creature);
+          showMoves(creature, actingSlot, getMoveSelectBefriendOpts(actingSlot));
+        } else {
+          startMoveSelection();
+        }
         return;
       }
       const result = await resp.json();
+      mergeBefriendSlotsFromTalkResponse(result);
 
       if (!result.accepted) {
         // Creature refused — show rejection + enemy attack
@@ -582,17 +634,16 @@ async function handleBefriendTalk() {
           return;
         }
 
-        // Resume move selection for next turn
-        startMoveSelection();
+        resumeMoveSelectionAfterBefriendSpend(actingSlot);
         return;
       }
 
       // Accepted — launch the existing befriend conversation flow
-      await executeBefriendAction();
+      await executeBefriendAction(actingSlot);
 
     } catch (err) {
       console.error('[CombatLoop] Befriend talk error:', err);
-      startMoveSelection();
+      resumeMoveSelectionAfterBefriendSpend(actingSlot);
     }
   });
 }
@@ -615,11 +666,7 @@ function promptNextCreature() {
   const creature = allies[currentCreatureIndex];
   clearTargetSelect();
   setActiveLabel(creature);
-  const befriendAvailable = isBefriendAvailable();
-  showMoves(creature, currentCreatureIndex, {
-    befriendAvailable,
-    onBefriend: befriendAvailable ? handleBefriendTalk : undefined
-  });
+  showMoves(creature, currentCreatureIndex, getMoveSelectBefriendOpts(currentCreatureIndex));
 }
 
 function handleMoveSelected(move, creatureIndex) {
@@ -671,7 +718,7 @@ function handleTargetCancelled() {
   if (creature) {
     clearTargetSelect();
     setActiveLabel(creature);
-    showMoves(creature, currentCreatureIndex);
+    showMoves(creature, currentCreatureIndex, getMoveSelectBefriendOpts(currentCreatureIndex));
   }
 }
 
@@ -2159,9 +2206,10 @@ function showAnswerFeedback(selectedIndex, correctIndex, correct) {
 }
 
 /**
- * Execute befriend action: 3-round conversation to capture low-HP enemy creature
+ * Execute befriend action: 3-round conversation to capture low-HP enemy creature.
+ * @param {number|null} actingCreatureSlot - Party index that spent their turn on はなす; null = flash-card path.
  */
-async function executeBefriendAction() {
+async function executeBefriendAction(actingCreatureSlot = null) {
   if (!combatActive) return;
 
   return withAnimationActive(async () => {
@@ -2175,7 +2223,7 @@ async function executeBefriendAction() {
       if (eligible.length > 1) {
         enemyIndex = await showBefriendTargetSelect(enemies);
         if (enemyIndex < 0) {
-          startMoveSelection();
+          resumeMoveSelectionAfterBefriendSpend(actingCreatureSlot);
           return;
         }
       }
@@ -2183,8 +2231,17 @@ async function executeBefriendAction() {
       // Fetch conversation from server
       const convoResult = await apiGetBefriendConversation(enemyIndex);
       if (!convoResult || convoResult.error) {
-        console.error('Befriend conversation error:', convoResult?.error || 'request failed');
-        startMoveSelection();
+        const errMsg = convoResult?.error || 'request failed';
+        console.error('Befriend conversation error:', errMsg);
+        if (narration?.showNarration) {
+          const detail = String(errMsg);
+          const fromApi = convoResult?.error && detail.length > 0;
+          narration.showNarration(
+            fromApi ? detail : (/generation|failed|load/i.test(detail) ? tPlain('befriendDialogueUnavailable') : tPlain('befriendFailedGeneric')),
+            { persistent: false }
+          );
+        }
+        resumeMoveSelectionAfterBefriendSpend(actingCreatureSlot);
         return;
       }
 
@@ -2205,9 +2262,8 @@ async function executeBefriendAction() {
       const answerResult = await apiSubmitBefriendAnswer(i, selectedIndex);
 
       if (!answerResult) {
-        // API error - recover gracefully by resuming normal combat
         logger.error("[CombatLoop] Befriend answer API returned null, resuming combat");
-        startMoveSelection();
+        resumeMoveSelectionAfterBefriendSpend(actingCreatureSlot);
         return;
       }
 
@@ -2217,9 +2273,8 @@ async function executeBefriendAction() {
 
       if (!answerResult.correct) {
         // --- FAILURE ---
-        narration.showNarration('？？？', {
-          speaker: creatureName, autoDismiss: 1000
-        });
+        // Click-to-continue (no auto-dismiss) so players can read it.
+        await narration.showNarration('？？？', { speaker: creatureName });
 
         // Shake target enemy
         const slots = document.querySelectorAll('.enemy-creature-slot');
@@ -2262,28 +2317,18 @@ async function executeBefriendAction() {
           return;
         }
 
-        // Resume normal combat
-        startMoveSelection();
+        resumeMoveSelectionAfterBefriendSpend(actingCreatureSlot);
         return;
       }
 
       // --- CORRECT ---
       if (answerResult.conversationComplete) {
-        // All 3 rounds correct!
-        narration.showNarration('\u3058\u3083\u3042\u3001\u53cb\u9054\u306b\u306a\u308d\u3046\uff01', {
-          speaker: creatureName, autoDismiss: 1500
-        });
-        playSFX('creature-skill');
+        const br = answerResult.befriend;
+        const captured = br?.captured;
 
-        // Mark enemy as befriended visually
-        const captured = answerResult.befriend?.captured;
-        if (captured?.id) {
-          const slot = document.querySelector(`.enemy-creature-slot[data-enemy-id="${captured.id}"]`);
-          if (slot) slot.classList.add('befriended');
-        }
-
-        if (answerResult.befriend?.reason === 'Party full') {
-          // Party full — prompt release
+        if (br?.reason === 'Party full') {
+          narration.showNarration(tPlain('befriendPartyFullLine', creatureName), { persistent: false });
+          await delay(600);
           const releaseChoice = await showBefriendReleasePrompt();
           if (releaseChoice && apiBefriendReplace) {
             const replaceResult = await apiBefriendReplace(releaseChoice);
@@ -2306,7 +2351,6 @@ async function executeBefriendAction() {
                 return;
               }
 
-              // Update state from replace result
               const gs = getGameState();
               if (replaceResult.state) {
                 updateGameState(replaceResult.state);
@@ -2317,37 +2361,64 @@ async function executeBefriendAction() {
                   run: { ...gs.run, creatureParty: replaceResult.creatureParty }
                 });
               }
+            } else if (narration?.showNarration) {
+              narration.showNarration(tPlain('befriendSwapFailed'), { persistent: false });
+              await delay(1200);
             }
           } else {
-            // Let it go
             const actionArea = document.getElementById('action-area');
             if (actionArea) {
               actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #9E9E9E;">${t('letItGo')}</div>`;
             }
             await delay(800);
           }
-        } else {
-          // Normal success
-          const actionArea = document.getElementById('action-area');
-          if (actionArea && captured) {
-            actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">${t('befriended', captured.nameEn)}</div>`;
-          }
-          await delay(1200);
 
-          // Update state
-          if (answerResult.state) {
-            updateGameState(answerResult.state);
-          } else {
-            const gs = getGameState();
-            if (gs.combat && answerResult.enemies) {
-              updateGameState({
-                ...gs,
-                combat: { ...gs.combat, enemies: answerResult.enemies },
-                ...(answerResult.creatureParty && {
-                  run: { ...gs.run, creatureParty: answerResult.creatureParty }
-                })
-              });
-            }
+          if (answerResult.combatEnded) {
+            stopCombatLoop({ combatEnded: true, victory: answerResult.victory || false });
+            return;
+          }
+          startMoveSelection();
+          return;
+        }
+
+        if (br && !br.success) {
+          if (br.reason === 'boss_first_defeat' && narration?.showNarration) {
+            narration.showNarration(tPlain('befriendBossFirst'), { persistent: false });
+          } else if (narration?.showNarration) {
+            narration.showNarration(tPlain('befriendFailedGeneric'), { persistent: false });
+          }
+          await delay(1400);
+          resumeMoveSelectionAfterBefriendSpend(actingCreatureSlot);
+          return;
+        }
+
+        playSFX('creature-skill');
+        // Click-to-continue (no auto-dismiss) so players can read it.
+        await narration.showNarration('\u3058\u3083\u3042\u3001\u53cb\u9054\u306b\u306a\u308d\u3046\uff01', { speaker: creatureName });
+
+        if (captured?.id) {
+          const slot = document.querySelector(`.enemy-creature-slot[data-enemy-id="${captured.id}"]`);
+          if (slot) slot.classList.add('befriended');
+        }
+
+        const actionArea = document.getElementById('action-area');
+        if (actionArea && captured) {
+          actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">${t('befriended', captured.nameEn)}</div>`;
+        }
+        await delay(1200);
+
+        if (answerResult.state) {
+          updateGameState(answerResult.state);
+        } else {
+          const gs = getGameState();
+          if (gs.combat && answerResult.enemies) {
+            updateGameState({
+              ...gs,
+              combat: { ...gs.combat, enemies: answerResult.enemies },
+              ...(answerResult.creatureParty && {
+                run: { ...gs.run, creatureParty: answerResult.creatureParty }
+              })
+            });
           }
         }
 
@@ -2356,7 +2427,6 @@ async function executeBefriendAction() {
           return;
         }
 
-        // Continue combat
         startMoveSelection();
         return;
       }
@@ -2367,6 +2437,10 @@ async function executeBefriendAction() {
 
     } catch (error) {
       console.error('Befriend conversation error:', error);
+      if (narration?.showNarration) {
+        narration.showNarration(tPlain('befriendFailedGeneric'), { persistent: false });
+      }
+      resumeMoveSelectionAfterBefriendSpend(actingCreatureSlot);
     }
   });
 }

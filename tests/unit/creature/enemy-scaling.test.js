@@ -4,34 +4,34 @@ import { getEnemyLevel, getRarityWeightsForStage, getEnemyCountWeights, generate
 
 describe('getEnemyLevel', () => {
   it('returns level 1 at encounter 0 (before variance)', () => {
-    // base = 1 + 0/2 + (0/25)^2 = 1
-    // With variance of -2 to +2, result should be 1-3 (clamped to >= 1)
+    // base = 2 + 0/2 + (0/25)^2 = 2
+    // With variance of -1 to +1, result should be 1-3 (clamped to >= 1)
     const level = getEnemyLevel({ totalEncounters: 0, enemyCount: 2 });
     assert.ok(level >= 1 && level <= 3, `Expected 1-3, got ${level}`);
   });
 
   it('scales with total encounters', () => {
-    // base = 1 + 10/2 + (10/25)^2 = 1 + 5 + 0.16 = 6.16
+    // base = 2 + 10/2 + (10/25)^2 = 2 + 5 + 0.16 = 7.16
     const level = getEnemyLevel({ totalEncounters: 10, enemyCount: 2 });
-    assert.ok(level >= 4 && level <= 8, `Expected ~6 ± 2, got ${level}`);
+    assert.ok(level >= 6 && level <= 8, `Expected ~7 ± 1, got ${level}`);
   });
 
   it('accelerates at higher encounter counts', () => {
-    // base = 1 + 20/2 + (20/25)^2 = 1 + 10 + 0.64 = 11.64
+    // base = 2 + 20/2 + (20/25)^2 = 2 + 10 + 0.64 = 12.64
     const level = getEnemyLevel({ totalEncounters: 20, enemyCount: 2 });
-    assert.ok(level >= 10 && level <= 14, `Expected ~12 ± 2, got ${level}`);
+    assert.ok(level >= 12 && level <= 14, `Expected ~13 ± 1, got ${level}`);
   });
 
   it('applies solo multiplier (1.2x) for 1 enemy', () => {
-    // base = 1 + 10/2 + (10/25)^2 ≈ 6.16, * 1.2 ≈ 7.4
+    // base = 2 + 10/2 + (10/25)^2 ≈ 7.16, * 1.2 ≈ 8.6
     const level = getEnemyLevel({ totalEncounters: 10, enemyCount: 1 });
-    assert.ok(level >= 5 && level <= 10, `Expected ~7 ± 2, got ${level}`);
+    assert.ok(level >= 8 && level <= 10, `Expected ~9 ± 1, got ${level}`);
   });
 
   it('applies group multiplier (0.85x) for 3 enemies', () => {
-    // base ≈ 6.16, * 0.85 ≈ 5.24
+    // base ≈ 7.16, * 0.85 ≈ 6.09
     const level = getEnemyLevel({ totalEncounters: 10, enemyCount: 3 });
-    assert.ok(level >= 3 && level <= 7, `Expected ~5 ± 2, got ${level}`);
+    assert.ok(level >= 5 && level <= 7, `Expected ~6 ± 1, got ${level}`);
   });
 
   it('never returns below 1', () => {

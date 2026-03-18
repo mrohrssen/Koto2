@@ -35,9 +35,10 @@ export function getAuthHeaders() {
  * @param {function} onError - Error handler callback (receives error message)
  * @returns {Promise<object|null>} Response data or null on error
  */
-async function apiCall(endpoint, method = 'POST', body = null, onError = null) {
+async function apiCall(endpoint, method = 'POST', body = null, onError = null, opts = {}) {
   logger.debug('[API] Request:', { endpoint, method });
-  if (isLoading) {
+  const bypassGate = opts.bypassLoadingGate === true;
+  if (!bypassGate && isLoading) {
     logger.warn('[API] Request blocked - loading:', { endpoint });
     return null;
   }
@@ -55,6 +56,9 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null) {
     const data = await response.json();
 
     if (!response.ok) {
+      if (opts.returnErrorBody) {
+        return { error: data.error || `HTTP ${response.status}` };
+      }
       throw new Error(data.error || 'API call failed');
     }
 
@@ -510,11 +514,13 @@ async function befriendReplace(releaseCreatureId) {
 
 async function getBefriendConversation(enemyIndex) {
   return apiCall('/befriend-conversation', 'POST',
-    typeof enemyIndex === 'number' ? { enemyIndex } : {});
+    typeof enemyIndex === 'number' ? { enemyIndex } : {}, null,
+    { bypassLoadingGate: true, returnErrorBody: true });
 }
 
 async function submitBefriendAnswer(roundIndex, selectedIndex) {
-  return apiCall('/befriend-answer', 'POST', { roundIndex, selectedIndex });
+  return apiCall('/befriend-answer', 'POST', { roundIndex, selectedIndex }, null,
+    { bypassLoadingGate: true });
 }
 
 // ============ NPC DIALOGUE ENDPOINTS ============

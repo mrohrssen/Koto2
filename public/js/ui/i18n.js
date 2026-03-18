@@ -73,6 +73,24 @@ const strings = {
                       tagged: '{Let it go|見送る|みおくる} (skip)' },
   roundLabel:       { en: 'Round {0}/3',  ja: 'ラウンド {0}/3',
                       tagged: '{Round|ラウンド|} {0}/3' },
+  befriendBossFirst: { en: 'Beat this boss once, then you can befriend them on a rematch.',
+                      ja: '一度倒すと、再戦で仲間にできる。',
+                      tagged: 'Beat this boss once, then you can {befriend|仲間に|なかまに} them on a rematch.' },
+  befriendFailedGeneric: { en: 'Befriend did not work. Combat continues.',
+                      ja: '仲間にならなかった。戦闘は続く。',
+                      tagged: '{Befriend|仲間|なかま} did not work. Combat continues.' },
+  befriendDialogueUnavailable: { en: 'Befriend chat could not load. Try again or use attack.',
+                      ja: '会話を読み込めなかった。もう一度か攻撃を。',
+                      tagged: 'Befriend chat could not load. Try again or use {attack|攻撃|こうげき}.' },
+  befriendSwapFailed: { en: 'Could not swap party members. Try again.',
+                      ja: '入れ替えできなかった。もう一度。',
+                      tagged: 'Could not {swap|入れ替え|いれかえ} party members. Try again.' },
+  befriendTalkBlocked: { en: 'Cannot talk right now (try another action).',
+                      ja: '今は話せない（別の行動を）。',
+                      tagged: 'Cannot talk right now (try another {action|行動|こうどう}).' },
+  befriendPartyFullLine: { en: '{0} wants to join — but your party is full!',
+                      ja: '{0}が仲間になりたがっている — パーティ満員！',
+                      tagged: '{0} wants to join — but your party is {full|満員|まんいん}!' },
 
   // ── Collection / team select ──
   selectTeam:       { en: 'Select Your Team', ja: 'チーム選択',
@@ -215,6 +233,20 @@ export function t(key, ...args) {
   const str = entry[lang] || entry.en || key;
   let result = str;
   args.forEach((a, i) => { result = result.replace(`{${i}}`, a); });
+  return result;
+}
+
+/**
+ * Plain UI string (en/ja only) — no HTML. Use for narration, toasts, and
+ * anywhere text is assigned with textContent; t() tagged strings are HTML.
+ */
+export function tPlain(key, ...args) {
+  const entry = strings[key];
+  if (!entry) return key;
+  let result = entry[lang] || entry.en || key;
+  args.forEach((a, i) => {
+    result = String(result).replace(`{${i}}`, a == null ? '' : String(a));
+  });
   return result;
 }
 

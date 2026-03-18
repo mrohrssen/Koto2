@@ -70,7 +70,7 @@ export function getElementMultiplier(attackerElement, defenderElement) {
 
 const STARTING_LEVEL = 5;
 
-export function instantiateCreature(templateId) {
+export function instantiateCreature(templateId, startingLevel = STARTING_LEVEL) {
   const template = CREATURES_BY_ID[templateId];
   if (!template) throw new Error(`Creature template not found: ${templateId}`);
 
@@ -80,12 +80,12 @@ export function instantiateCreature(templateId) {
     Math.floor(template.baseHp * rarityMult),
     Math.floor(template.baseAttack * rarityMult),
     Math.floor(baseMp * rarityMult),
-    STARTING_LEVEL
+    startingLevel
   );
 
   // Get all moves learned up to starting level
   const moves = (template.learnset || [])
-    .filter(entry => entry.level <= STARTING_LEVEL)
+    .filter(entry => entry.level <= startingLevel)
     .map(entry => {
       const moveData = MOVES_BY_ID[entry.moveId];
       if (!moveData) return null;
@@ -103,7 +103,7 @@ export function instantiateCreature(templateId) {
     baseWord: template.baseWord,
     baseReading: template.baseReading,
     baseMeaning: template.baseMeaning,
-    level: STARTING_LEVEL,
+    level: startingLevel,
     xp: 0,
     hp: maxHp,
     maxHp,
@@ -227,10 +227,14 @@ const PARTY_SIZE_MULTIPLIERS = {
 };
 
 export function getEnemyLevel({ totalEncounters = 0, enemyCount = 1 }) {
-  const base = 1 + totalEncounters / 2 + Math.pow(totalEncounters / 25, 2);
+  // Start early fights around level 2, then ramp with a gentle linear term
+  // plus a quadratic acceleration term for later runs.
+  const base = 2 + totalEncounters / 2 + Math.pow(totalEncounters / 25, 2);
   const sizeMultiplier = PARTY_SIZE_MULTIPLIERS[enemyCount] || 1.0;
-  const variance = Math.floor(Math.random() * 5) - 2; // -2 to +2
-  return Math.max(1, Math.round(base * sizeMultiplier) + variance);
+  // Keep some randomness, but small enough that "later fights feel harder"
+  // instead of occasionally regressing due to variance overwhelming the +0.5/encounter slope.
+  const variance = Math.floor(Math.random() * 3) - 1; // -1 to +1
+  return Math.max(1, Math.round((base * sizeMultiplier) + variance));
 }
 
 export function generateEnemyCreature(targetLevel, creaturePool = null, stage = null) {
@@ -267,7 +271,9 @@ export function generateEnemyCreature(targetLevel, creaturePool = null, stage = 
   }
 
   const template = group[Math.floor(Math.random() * group.length)];
-  const creature = instantiateCreature(template.id);
+  // Enemies should be able to start below the player-party starting level.
+  // Instantiate at level 1 and level up to the target.
+  const creature = instantiateCreature(template.id, 1);
 
   while (creature.level < targetLevel) {
     addXpToCreature(creature, xpToNextLevel(creature.level));

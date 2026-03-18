@@ -748,9 +748,8 @@ export function handleBefriendAnswer(gameManager, { roundIndex, selectedIndex })
   const correct = selectedIndex === round.correctIndex;
 
   if (!correct) {
-    // Failure: clear conversation, reset turn guard, enemies attack
+    // Failure: clear conversation; initiator's slot stays marked (turn spent)
     combat.befriendConversation = null;
-    combat.befriendUsedThisTurn = false;
 
     const enemyResult = processEnemyTurn(
       combat.enemies, combat.allies, false, gameManager.run?.itemBuffs
@@ -792,7 +791,8 @@ export function handleBefriendAnswer(gameManager, { roundIndex, selectedIndex })
   convo.currentRound++;
 
   if (convo.currentRound >= 3) {
-    // All 3 rounds correct -- use existing befriend cycle
+    // Preserve target BEFORE clearing convo — _handleCreatureBefriendTurn runs after convo is nulled
+    combat.lastBefriendTargetIndex = convo.targetEnemyIndex;
     combat.befriendConversation = null;
 
     const result = gameManager.creatureCombatCycle('befriend');

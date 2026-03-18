@@ -9,7 +9,7 @@ import { processEnemyTurn, handleCreatureKO, handleBefriendAnswer, rollTalkAccep
 import { MOVES_BY_ID } from '../../game/creatures.js';
 import { getCollectionCatalog } from '../../game/services/creature-collection-service.js';
 import { loadNpcs, shuffleOptions, updateBond, recordEncounter, handleNpcDialogueResponse } from '../../game/services/npc-service.js';
-import { buildVocabConfig } from './route-helpers.js';
+import { buildVocabConfig, buildBefriendDialogueVocabConfig } from './route-helpers.js';
 
 export default function createCombatRoutes({
   updateGameStatsWithEvent,
@@ -26,6 +26,32 @@ export default function createCombatRoutes({
   checkSentenceViolations
 }) {
   const router = Router();
+
+  function buildDevFallbackBefriendRounds(targetEnemy) {
+    const nameEn = targetEnemy?.nameEn || 'Creature';
+    return [
+      {
+        speaker: `${nameEn}: ...?`,
+        options: ['Offer food', 'Speak calmly', 'Threaten it'],
+        correctIndex: 1
+      },
+      {
+        speaker: `${nameEn}: (watches you closely)`,
+        options: ['Back away slowly', 'Hold out your hand', 'Throw a rock'],
+        correctIndex: 1
+      },
+      {
+        speaker: `${nameEn}: ...!`,
+        options: ['Smile and wait', 'Shout louder', 'Turn your back'],
+        correctIndex: 0
+      }
+    ];
+  }
+
+  function allowDevBefriendFallback() {
+    // Explicit opt-in only. Keeps i+1 Japanese rules safe in production.
+    return process.env.DEV_BEFRIEND_FALLBACK === '1';
+  }
 
   // Combat end narration
   router.post('/combat-end-narration', async (req, res) => {
@@ -224,9 +250,17 @@ export default function createCombatRoutes({
       return res.status(400).json({ error: 'Cannot befriend NPC trainer creatures' });
     }
 
-    // Per-turn befriend guard — only one attempt per turn
-    if (combat.befriendUsedThisTurn) {
-      return res.status(400).json({ error: 'Already attempted befriend this turn' });
+    const creatureIndex = req.body?.creatureIndex;
+    if (typeof creatureIndex !== 'number' || creatureIndex < 0 || !Number.isInteger(creatureIndex)) {
+      return res.status(400).json({ error: 'creatureIndex required (active party slot)' });
+    }
+    const allies = combat.allies || [];
+    if (!allies[creatureIndex] || allies[creatureIndex].hp <= 0) {
+      return res.status(400).json({ error: 'Invalid creature slot for befriend' });
+    }
+    if (!combat.befriendAttemptedSlots) combat.befriendAttemptedSlots = {};
+    if (combat.befriendAttemptedSlots[creatureIndex]) {
+      return res.status(400).json({ error: 'This creature already used their turn on befriend' });
     }
 
     // Find exactly 1 alive, non-befriended enemy at ≤50% HP
@@ -237,8 +271,8 @@ export default function createCombatRoutes({
     }
 
     const target = eligible[0];
+    combat.befriendAttemptedSlots[creatureIndex] = true;
     const { accepted, chance } = rollTalkAcceptance(target);
-    combat.befriendUsedThisTurn = true;
 
     if (!accepted) {
       // Rejection: enemy attacks (mirrors handleBefriendAnswer wrong-answer path)
@@ -272,13 +306,18 @@ export default function createCombatRoutes({
         koSwaps,
         combatEnded: allAlliesKO,
         allies: combat.allies,
-        enemies: combat.enemies
+        enemies: combat.enemies,
+        befriendAttemptedSlots: { ...combat.befriendAttemptedSlots }
       });
     }
 
     // Accepted: save and let frontend proceed to /befriend-conversation
     req.saveGame();
-    res.json({ accepted: true, chance });
+    res.json({
+      accepted: true,
+      chance,
+      befriendAttemptedSlots: { ...combat.befriendAttemptedSlots }
+    });
   });
 
   // Generate befriend conversation
@@ -307,25 +346,53 @@ export default function createCombatRoutes({
     }
 
     try {
-      // Try cached dialogue first, generate on-demand if missing
       let cached = getCreatureDialogueFromCache?.(req.user.id, target.id);
       if (!cached?.rounds) {
-        const vocabConfig = buildVocabConfig(req, getUserVocabulary, checkSentenceViolations);
-        if (vocabConfig) {
-          console.log(`[CreatureDialogue] No cached dialogue for ${target.id}, generating on-demand`);
-          await regenCreatureDialogueFn(
-            req.user.id, target.id, vocabConfig.aiConfig,
-            { words: vocabConfig.vocabulary, checkViolationsFn: vocabConfig.checkViolationsFn }
-          );
-          cached = getCreatureDialogueFromCache?.(req.user.id, target.id);
+        const vocabConfig = buildBefriendDialogueVocabConfig(req, getUserVocabulary, checkSentenceViolations);
+        if (!vocabConfig) {
+          if (allowDevBefriendFallback()) {
+            const rounds = buildDevFallbackBefriendRounds(target);
+
+            combat.lastBefriendTargetIndex = targetIdx;
+            combat.befriendConversation = {
+              targetEnemyIndex: targetIdx,
+              rounds,
+              currentRound: 0,
+              active: true
+            };
+            req.saveGame();
+
+            return res.json({
+              userId: req.user.id,
+              targetEnemy: { name: target.name, nameEn: target.nameEn, element: target.element, id: target.id },
+              rounds: rounds.map(r => ({ speaker: r.speaker, options: r.options })),
+              targetEnemyIndex: targetIdx,
+              devFallback: true
+            });
+          }
+
+          console.warn('[BefriendConversation] No AI config: add API keys in Settings or set OPENAI_API_KEY (etc.) in .env');
+          return res.status(503).json({
+            error: 'Befriend dialogue needs an AI API key. Add one in Settings, or for local play set OPENAI_API_KEY in .env.'
+          });
         }
+        console.log(`[CreatureDialogue] No cached dialogue for ${target.id}, generating on-demand`);
+        await regenCreatureDialogueFn(
+          req.user.id, target.id, vocabConfig.aiConfig,
+          { words: vocabConfig.vocabulary, checkViolationsFn: vocabConfig.checkViolationsFn }
+        );
+        cached = getCreatureDialogueFromCache?.(req.user.id, target.id);
       }
 
       const rounds = cached?.rounds;
       if (!rounds) {
-        return res.status(503).json({ error: 'Creature dialogue generation failed' });
+        console.error(`[BefriendConversation] Generation produced no cache for ${target.id} (AI error, vocab repair, or missing creature data)`);
+        return res.status(503).json({
+          error: 'Creature dialogue generation failed. Check server logs; try again or ensure JPDB + AI keys work.'
+        });
       }
 
+      combat.lastBefriendTargetIndex = targetIdx;
       combat.befriendConversation = {
         targetEnemyIndex: targetIdx,
         rounds,
