@@ -24,6 +24,101 @@ import {
 export const CREDITS_PER_KILL = 15;
 export const BASE_KILL_XP = 25;
 
+function toActivePartySkillIdSet(runPartySkills) {
+  if (!runPartySkills) return new Set();
+  const ids = [];
+  for (const entry of runPartySkills) {
+    if (!entry) continue;
+    if (typeof entry === 'string') ids.push(entry);
+    else if (typeof entry === 'object' && typeof entry.id === 'string') ids.push(entry.id);
+  }
+  return new Set(ids.filter(Boolean));
+}
+
+function isQualifyingPlayerAttackRecord(record) {
+  if (!record || typeof record !== 'object') return false;
+  if (typeof record.attackerIndex !== 'number' || record.attackerIndex < 0) return false;
+  const cat = record.category;
+  const isDamageCat = cat === 'damage' || cat === 'drain';
+  const hasDamage = typeof record.damage === 'number' && record.damage > 0;
+  return isDamageCat || hasDamage;
+}
+
+function rollProc(procChance) {
+  const chance = Number(procChance) || 0;
+  if (chance <= 0) return false;
+  return Math.random() < chance;
+}
+
+export function applyPartySkillsAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat }) {
+  const active = toActivePartySkillIdSet(runPartySkills);
+  if (!active.size) return;
+  if (!Array.isArray(attacks) || attacks.length === 0) return;
+  if (!combat) return;
+  if (typeof combat.partyHitCounter !== 'number') combat.partyHitCounter = 0;
+
+  for (const record of attacks) {
+    if (!isQualifyingPlayerAttackRecord(record)) continue;
+
+    // Combat-scoped counter increments on every qualifying player attack record
+    combat.partyHitCounter += 1;
+
+    const attacker = allies?.[record.attackerIndex] || null;
+    const isSuperEffective = (record.elementMultiplier || 1) > 1;
+
+    // battleRhythm: every Nth qualifying hit deals bonus damage
+    if (active.has('battleRhythm')) {
+      const everyNthHit = 5;
+      const bonusDamageMult = 0.5;
+      if (everyNthHit > 0 && (combat.partyHitCounter % everyNthHit) === 0) {
+        const baseDamage = Math.max(0, Number(record.damage) || 0);
+        const bonus = Math.floor(baseDamage * bonusDamageMult);
+        const targetIndex = record.targetIndex;
+        const target = (typeof targetIndex === 'number') ? enemies?.[targetIndex] : null;
+        if (target && target.hp > 0 && bonus > 0) {
+          target.hp = Math.max(0, target.hp - bonus);
+          record.damage = baseDamage + bonus;
+          if (target.hp <= 0) record.targetDefeated = true;
+        }
+      }
+    }
+
+    // superEffectiveMend / hasteSpark / guardPulse: only on super-effective hits
+    if (isSuperEffective) {
+      if (active.has('superEffectiveMend') && rollProc(0.20)) {
+        const healPct = 0.10;
+        for (const ally of allies || []) {
+          if (!ally || ally.hp <= 0) continue;
+          const amount = Math.floor((ally.maxHp || 0) * healPct);
+          if (amount > 0) applyHeal(ally, amount);
+        }
+      }
+
+      if (active.has('hasteSpark') && attacker && attacker.hp > 0 && rollProc(0.25)) {
+        applyHaste(attacker, { sourceId: 'partySkill-hasteSpark' });
+      }
+
+      if (active.has('guardPulse') && rollProc(0.20)) {
+        applyTeamShield((allies || []).filter(a => a && a.hp > 0), {
+          percent: 10,
+          duration: 2,
+          sourceId: 'partySkill-guardPulse'
+        });
+      }
+    }
+
+    // finisherFeast: on defeating an enemy via qualifying player attack record
+    if (active.has('finisherFeast') && record.targetDefeated === true) {
+      const healPct = 0.05;
+      for (const ally of allies || []) {
+        if (!ally || ally.hp <= 0) continue;
+        const amount = Math.floor((ally.maxHp || 0) * healPct);
+        if (amount > 0) applyHeal(ally, amount);
+      }
+    }
+  }
+}
+
 /**
  * Build a standard attack-result record used in the attacks[] array.
  */

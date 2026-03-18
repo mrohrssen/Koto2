@@ -57,7 +57,7 @@ import { derivePhase } from './phase-machine.js';
 import { ExplorationService } from './services/index.js';
 import { logger } from '../logger.js';
 import { instantiateCreature, generateEnemyCreature, generateEnemyCreatures, getEnemyLevel, CREATURES_BY_ID } from './creatures.js';
-import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL } from './services/creature-combat-service.js';
+import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL, applyPartySkillsAfterPlayerAttacks } from './services/creature-combat-service.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/creature-collection-service.js';
 import { selectNpcForEncounter, updateBond, recordEncounter, loadNpcs, rollNpcSkill, getNpcSkillsForNpc } from './services/npc-service.js';
@@ -635,6 +635,15 @@ export class GameManager {
 
     const metaMults = { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 };
     const playerResult = processMoveTurn(this.combat.allies, this.combat.enemies, moveChoices, this.run.itemBuffs, this.run.creatureParty, metaMults);
+
+    // Party skills proc only on player attack records (post-process processMoveTurn output)
+    applyPartySkillsAfterPlayerAttacks({
+      attacks: playerResult.attacks,
+      allies: this.combat.allies,
+      enemies: this.combat.enemies,
+      runPartySkills: this.run.partySkills,
+      combat: this.combat
+    });
 
     // Award credits for kills
     if (playerResult.xpEvents?.length > 0) {

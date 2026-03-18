@@ -229,6 +229,9 @@ export function createCombatState(enemy) {
     allies: [],    // references to run.creatureParty.active
     enemies: [],   // MVP: single enemy creature
 
+    // Party skills (combat-scoped)
+    partyHitCounter: 0,
+
     // Last action for DM narration
     lastAction: null,
 
