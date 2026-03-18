@@ -497,7 +497,13 @@ async function playPrologue() {
     _prologueCache = await resp.json();
   }
 
+  let lastChoiceId = null;
+
   for (const prologueScene of _prologueCache) {
+    if (prologueScene.conditional && prologueScene.conditional !== lastChoiceId) {
+      continue;
+    }
+
     // Show/hide Cid sprite based on speaker
     if (prologueScene.speaker === 'Cid') {
       scene.showCid();
@@ -523,7 +529,19 @@ async function playPrologue() {
     }
 
     const html = prologueScene.narration ? renderEnFirst(prologueScene.narration) : '';
-    await narrationBox.show(html, showOpts);
+    const result = await narrationBox.show(html, showOpts);
+    if (prologueScene.choices) {
+      lastChoiceId = result;
+    }
+
+    if (prologueScene.id === 'prologue-hiragana-question' && result === 'kana-no') {
+      await fetch('/api/game/kana-mode', {
+        method: 'POST',
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: true })
+      });
+    }
+
     flushExposures();
   }
 

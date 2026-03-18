@@ -368,5 +368,15 @@ export default function createMiscRoutes({
     res.json({ ok: true });
   });
 
+  // Toggle kana mode (hiragana-first learning path)
+  router.post('/kana-mode', (req, res) => {
+    const gameManager = req.gameManager;
+    const meta = gameManager.getMeta();
+    const { enabled } = req.body;
+    meta.kanaMode = !!enabled;
+    req.saveGame();
+    res.json({ ok: true, kanaMode: meta.kanaMode });
+  });
+
   return router;
 }
