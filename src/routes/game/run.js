@@ -39,6 +39,32 @@ export default function createRunRoutes({
   checkSentenceViolations
 }) {
   const router = Router();
+  const SPEED_REVIEW_TRANSITION_ERROR_CODES = new Set([
+    'SPEED_REVIEW_TRANSITION_CONFLICT',
+    'ROOM_STATE_CONFLICT',
+    'INVALID_ROOM_STATE',
+    'CONFLICT'
+  ]);
+  const SPEED_REVIEW_TRANSITION_ERROR_MESSAGES = [
+    'No active run',
+    'Speed review room not found',
+    'Room is not a speed review room',
+    'Speed review room state missing',
+    'Speed review snapshot not initialized',
+    'commitIndex is outside snapshot bounds',
+    'Commit does not match server snapshot order',
+    'already completed'
+  ];
+
+  function isSpeedReviewRoomTransitionError(error) {
+    const code = typeof error?.code === 'string' ? error.code : '';
+    if (SPEED_REVIEW_TRANSITION_ERROR_CODES.has(code)) {
+      return true;
+    }
+
+    const message = String(error?.message || '');
+    return SPEED_REVIEW_TRANSITION_ERROR_MESSAGES.some(knownMessage => message.includes(knownMessage));
+  }
 
   /** Fire-and-forget: queue missing creature + NPC dialogues for current run */
   function queueBackgroundDialogues(req) {
@@ -359,6 +385,70 @@ export default function createRunRoutes({
     } catch (error) {
       console.error('[Discovery] Error completing discovery:', error.message);
       res.status(400).json({ error: error.message });
+    }
+  });
+
+  router.post('/speed-review-room/start', async (req, res) => {
+    const { roomId } = req.body || {};
+    if (!roomId) {
+      return res.status(400).json({ error: 'roomId is required' });
+    }
+
+    try {
+      const gameManager = req.gameManager;
+      const result = await gameManager.startSpeedReviewRoom({
+        roomId,
+        userId: req.user?.id,
+        jpdbApiKey: req.userKeys?.jpdbApiKey
+      });
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      const status = isSpeedReviewRoomTransitionError(error) ? 409 : 500;
+      res.status(status).json({ error: error.message });
+    }
+  });
+
+  router.post('/speed-review-room/progress', (req, res) => {
+    const { roomId, vid, sid, commitIndex } = req.body || {};
+    if (!roomId) {
+      return res.status(400).json({ error: 'roomId is required' });
+    }
+    if (vid === undefined || vid === null) {
+      return res.status(400).json({ error: 'vid is required' });
+    }
+    if (sid === undefined || sid === null) {
+      return res.status(400).json({ error: 'sid is required' });
+    }
+    if (!Number.isInteger(commitIndex) || commitIndex < 0) {
+      return res.status(400).json({ error: 'commitIndex must be an integer >= 0' });
+    }
+
+    try {
+      const gameManager = req.gameManager;
+      const result = gameManager.recordSpeedReviewRoomCommit({ roomId, vid, sid, commitIndex });
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      const status = isSpeedReviewRoomTransitionError(error) ? 409 : 500;
+      res.status(status).json({ error: error.message });
+    }
+  });
+
+  router.post('/speed-review-room/complete', (req, res) => {
+    const { roomId } = req.body || {};
+    if (!roomId) {
+      return res.status(400).json({ error: 'roomId is required' });
+    }
+
+    try {
+      const gameManager = req.gameManager;
+      const result = gameManager.completeSpeedReviewRoom({ roomId });
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      const status = isSpeedReviewRoomTransitionError(error) ? 409 : 500;
+      res.status(status).json({ error: error.message });
     }
   });
 

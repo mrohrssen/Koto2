@@ -21,7 +21,18 @@ let state = {
   callbacks: null,     // API callbacks
   pendingReview: null, // { word, slotIndex, grade, direction, timerId }
   reviewPromises: [],  // Track in-flight review HTTP requests
-  inactivityTimer: null // 30-second inactivity timer
+  inactivityTimer: null, // 30-second inactivity timer
+  session: {
+    mode: 'hub',
+    maxCards: null,
+    onCommittedReview: null,
+    onComplete: null,
+    canCloseEarly: true,
+    committedReviews: 0,
+    completionTriggered: false,
+    commitDeliveryChain: Promise.resolve(),
+    completing: false
+  }
 };
 
 // Swipe handling per slot
@@ -34,33 +45,135 @@ const RING_CIRCUMFERENCE = 100.53; // 2 * PI * 16 (radius)
 const BATCH_REFRESH_SIZE = 10; // Refresh queue after this many reviews
 const INACTIVITY_TIMEOUT_MS = 30000; // 30 seconds of no activity triggers sync
 
+function resolveSessionOptions(options = {}) {
+  const mode = options.mode === 'room' ? 'room' : 'hub';
+  return {
+    mode,
+    maxCards: Number.isInteger(options.maxCards) && options.maxCards > 0
+      ? options.maxCards
+      : (mode === 'room' ? 10 : null),
+    onCommittedReview: typeof options.onCommittedReview === 'function' ? options.onCommittedReview : null,
+    onComplete: typeof options.onComplete === 'function' ? options.onComplete : null,
+    canCloseEarly: typeof options.canCloseEarly === 'boolean' ? options.canCloseEarly : mode === 'hub',
+    committedReviews: 0,
+    completionTriggered: false,
+    commitDeliveryChain: Promise.resolve(),
+    completing: false
+  };
+}
+
+function canCloseNow() {
+  if (state.session.mode !== 'room') return true;
+  if (state.session.canCloseEarly) return true;
+  return state.session.completionTriggered;
+}
+
+function updateCloseButtonAvailability() {
+  const closeBtn = dom.speedReviewClose;
+  if (!closeBtn) return;
+  const enabled = canCloseNow();
+  closeBtn.disabled = !enabled;
+  closeBtn.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+}
+
+function clearRoomCompletionError() {
+  const existing = document.getElementById('speed-review-room-error');
+  if (existing) existing.remove();
+}
+
+function showRoomCompletionError(errorMessage) {
+  if (state.session.mode !== 'room') return;
+  const container = dom.speedReviewEmpty;
+  if (!container) return;
+
+  clearRoomCompletionError();
+
+  const panel = document.createElement('div');
+  panel.id = 'speed-review-room-error';
+  panel.style.marginTop = '12px';
+  panel.style.padding = '10px';
+  panel.style.border = '1px solid rgba(255,80,80,0.7)';
+  panel.style.borderRadius = '8px';
+  panel.style.background = 'rgba(60, 0, 0, 0.35)';
+  panel.style.textAlign = 'center';
+  panel.innerHTML = `
+    <div style="font-size:12px;margin-bottom:8px;color:#ffb7b7;">
+      ${escapeHtml(errorMessage || 'Review sync failed. Please retry.')}
+    </div>
+    <button id="speed-review-room-retry-btn" class="action-btn action-btn-primary">Retry Sync</button>
+  `;
+  container.appendChild(panel);
+
+  document.getElementById('speed-review-room-retry-btn')?.addEventListener('click', () => {
+    playSFX('button-tap');
+    clearRoomCompletionError();
+    void handleCompletion();
+  });
+}
+
 /**
  * Flush any pending review (send to JPDB immediately)
  */
 function flushPendingReview() {
-  if (!state.pendingReview) return;
+  if (!state.pendingReview) return null;
 
   const { word, grade, timerId } = state.pendingReview;
+  const direction = state.pendingReview.direction;
 
   // Clear the timer
   if (timerId) clearTimeout(timerId);
 
-  // Send the review and track the promise
+  const tasks = [];
   if (word.vid !== undefined && word.sid !== undefined) {
-    const reviewPromise = state.callbacks?.sendReview(word.vid, word.sid, grade, word.word);
-    if (reviewPromise && reviewPromise.then) {
-      state.reviewPromises.push(reviewPromise);
-      // Clean up completed promises
-      reviewPromise.finally(() => {
-        const idx = state.reviewPromises.indexOf(reviewPromise);
-        if (idx !== -1) state.reviewPromises.splice(idx, 1);
-      });
+    tasks.push(Promise.resolve(state.callbacks?.sendReview(word.vid, word.sid, grade, word.word)));
+    if (state.session.onCommittedReview) {
+      const enqueueCommit = async () => {
+        const commitIndex = state.session.committedReviews;
+        const result = await state.session.onCommittedReview({
+          word,
+          grade,
+          direction,
+          commitIndex
+        });
+        if (result?.error) {
+          throw new Error(result.error);
+        }
+        // Increment commit index only after successful server commit.
+        state.session.committedReviews += 1;
+        return result;
+      };
+      const commitPromise = state.session.commitDeliveryChain.then(enqueueCommit);
+      // Keep the chain strict; if a commit fails, subsequent commits remain blocked
+      // to avoid accidental commit-index desync.
+      state.session.commitDeliveryChain = commitPromise;
+      tasks.push(commitPromise);
     }
   }
 
   // Clear pending state
   state.pendingReview = null;
   updateUndoButton(false);
+  updateCloseButtonAvailability();
+
+  if (tasks.length === 0) {
+    return null;
+  }
+
+  const reviewPromise = state.session.mode === 'room'
+    ? Promise.all(tasks)
+    : Promise.allSettled(tasks).then((results) => {
+      const rejected = results.find(result => result.status === 'rejected');
+      if (rejected) {
+        console.warn('[SpeedReview] Pending review callback failed:', rejected.reason);
+      }
+      return results;
+    });
+  state.reviewPromises.push(reviewPromise);
+  reviewPromise.finally(() => {
+    const idx = state.reviewPromises.indexOf(reviewPromise);
+    if (idx !== -1) state.reviewPromises.splice(idx, 1);
+  });
+  return reviewPromise;
 }
 
 /**
@@ -95,11 +208,19 @@ async function handleInactivityTimeout() {
   // Wait for all in-flight reviews to complete
   if (state.reviewPromises.length > 0) {
     console.log(`[SpeedReview] Waiting for ${state.reviewPromises.length} pending reviews...`);
-    await Promise.all(state.reviewPromises);
+    try {
+      await Promise.all(state.reviewPromises);
+    } catch (error) {
+      if (state.session.mode === 'room') {
+        showRoomCompletionError(error?.message || 'Review sync failed. Please retry.');
+      } else {
+        console.warn('[SpeedReview] Inactivity sync failed:', error);
+      }
+    }
   }
 
   // Refresh the queue if there are pending batch reviews
-  if (state.reviewedBatch.length > 0) {
+  if (state.session.mode === 'hub' && state.reviewedBatch.length > 0) {
     await triggerBatchRefresh();
   }
 
@@ -235,6 +356,12 @@ function restoreCard(slotIndex, word, direction) {
 export function init(callbacks) {
   state.callbacks = callbacks;
 
+  dom.speedReviewClose.addEventListener('click', (event) => {
+    if (canCloseNow()) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, true);
+
   // Close button handler is set up in takeover.js init
   // But we need to handle exit logic
   dom.speedReviewClose.addEventListener('click', handleExit);
@@ -262,21 +389,29 @@ function prefetchQueueAudio(count) {
  * Start Speed Review mode
  * @param {Array} words - Array of word objects { word, reading, meanings, vid, sid }
  */
-export function start(words) {
+export function start(words, options = {}) {
   if (!words || words.length === 0) {
     console.log('[SpeedReview] No words to review');
     return false;
   }
 
+  const session = resolveSessionOptions(options);
+  const initialWords = session.mode === 'room' && session.maxCards
+    ? words.slice(0, session.maxCards)
+    : [...words];
+
   // Initialize state
-  state.queue = [...words];
-  state.initialQueueSize = words.length;
+  state.queue = initialWords;
+  state.initialQueueSize = initialWords.length;
   state.reviewedCount = 0;
   state.reviewedBatch = [];
   state.activeCards = [null, null, null];
   state.pendingReview = null;
   state.reviewPromises = [];
+  state.session = session;
   updateUndoButton(false);
+  clearRoomCompletionError();
+  updateCloseButtonAvailability();
 
   // Start inactivity timer
   resetInactivityTimer();
@@ -515,7 +650,7 @@ async function gradeCard(slotIndex, word, direction) {
   popCounter();
 
   // Check for batch refresh (every 10 cards instead of 50)
-  if (state.reviewedBatch.length >= BATCH_REFRESH_SIZE) {
+  if (state.session.mode === 'hub' && state.reviewedBatch.length >= BATCH_REFRESH_SIZE) {
     await triggerBatchRefresh();
   }
 
@@ -529,6 +664,7 @@ async function gradeCard(slotIndex, word, direction) {
  * Trigger batch refresh - fetch fresh queue from JPDB
  */
 async function triggerBatchRefresh() {
+  if (state.session.mode !== 'hub') return;
   if (!state.callbacks?.refreshQueue) return;
 
   console.log('[SpeedReview] Triggering batch refresh...');
@@ -569,6 +705,48 @@ function checkEmpty() {
     dom.speedReviewEmpty.style.display = 'flex';
     // Celebrate!
     setTimeout(celebrateCompletion, 100);
+    void handleCompletion();
+  }
+}
+
+async function handleCompletion() {
+  if (state.session.completing) return;
+  if (state.session.completionTriggered) return;
+  state.session.completing = true;
+
+  try {
+    flushPendingReview();
+    if (state.reviewPromises.length > 0) {
+      await Promise.all(state.reviewPromises);
+    }
+
+    if (state.session.onComplete) {
+      if (state.session.mode === 'room' && state.session.committedReviews < state.reviewedCount) {
+        throw new Error('Review sync incomplete. Some cards are not committed yet.');
+      }
+      await state.session.onComplete({
+        committedReviews: state.session.committedReviews
+      });
+    }
+
+    state.session.completionTriggered = true;
+    clearRoomCompletionError();
+    updateCloseButtonAvailability();
+
+    if (state.session.mode === 'room') {
+      await handleExit();
+      takeover.close('speedReview');
+    }
+  } catch (error) {
+    state.session.completionTriggered = false;
+    updateCloseButtonAvailability();
+    if (state.session.mode === 'room') {
+      showRoomCompletionError(error?.message || 'Review completion failed. Please retry.');
+      return;
+    }
+    console.warn('[SpeedReview] Completion callback failed:', error);
+  } finally {
+    state.session.completing = false;
   }
 }
 
@@ -576,6 +754,8 @@ function checkEmpty() {
  * Handle exit from Speed Review
  */
 async function handleExit() {
+  if (!canCloseNow()) return;
+
   // Clear inactivity timer
   clearInactivityTimer();
 
@@ -589,12 +769,14 @@ async function handleExit() {
   }
 
   // Trigger final batch refresh if any pending
-  if (state.reviewedBatch.length > 0) {
+  if (state.session.mode === 'hub' && state.reviewedBatch.length > 0) {
     await triggerBatchRefresh();
   }
 
-  // Restore hub music
-  playBGM('main');
+  if (state.session.mode === 'hub') {
+    // Restore hub music
+    playBGM('main');
+  }
 
   // Reset UI
   dom.speedReviewContent.style.display = 'flex';

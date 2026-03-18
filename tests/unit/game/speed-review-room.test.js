@@ -1,0 +1,301 @@
+import { describe, it, mock } from 'node:test';
+import assert from 'node:assert';
+import { ROOM_TYPES, createRoom, generateAreaRooms, getRoomActions } from '../../../src/game/rooms.js';
+import { GameManager } from '../../../src/game/loop.js';
+import { instantiateCreature } from '../../../src/game/creatures.js';
+
+describe('Speed Review Room', () => {
+  it('includes ROOM_TYPES.speedReviewRoom', () => {
+    assert.strictEqual(ROOM_TYPES.speedReviewRoom, 'speedReviewRoom');
+  });
+
+  it('can generate speedReviewRoom from random room pool', () => {
+    let foundSpeedReviewRoom = false;
+    for (let i = 0; i < 300; i++) {
+      const rooms = generateAreaRooms('okunomori', 6);
+      if (rooms.some(room => room.type === ROOM_TYPES.speedReviewRoom)) {
+        foundSpeedReviewRoom = true;
+        break;
+      }
+    }
+    assert.strictEqual(foundSpeedReviewRoom, true, 'speedReviewRoom should appear in area generation');
+  });
+
+  it('creates speedReviewRoom with the expected state payload', () => {
+    const room = createRoom(ROOM_TYPES.speedReviewRoom, 'okunomori', 1, 6);
+    assert.deepStrictEqual(room.speedReviewRoom, {
+      targetCards: 10,
+      reviewedCards: 0,
+      completed: false,
+      snapshotWordKeys: [],
+      awardedReviewKeys: [],
+      pendingReviewKeys: [],
+      settled: true
+    });
+  });
+
+  it('blocks proceed before interaction and allows proceed after completion', () => {
+    const unfinishedRoom = {
+      type: ROOM_TYPES.speedReviewRoom,
+      interacted: false,
+      speedReviewRoom: { completed: false }
+    };
+    const finishedRoom = {
+      type: ROOM_TYPES.speedReviewRoom,
+      interacted: true,
+      speedReviewRoom: { completed: true }
+    };
+
+    assert.strictEqual(
+      getRoomActions(unfinishedRoom).some(action => action.id === 'proceed'),
+      false
+    );
+    assert.strictEqual(
+      getRoomActions(finishedRoom).some(action => action.id === 'proceed'),
+      true
+    );
+  });
+
+  it('counts as a normal entered room for progression counters via enter/proceed path', () => {
+    const gm = new GameManager('test-speed-review-room-counter');
+    gm.createPlayer('CounterTestPlayer');
+    gm.startRun({ areaId: 'okunomori' });
+
+    gm.selectArea('okunomori', 'speedReviewRoom');
+    assert.strictEqual(gm.run.rooms[0].type, ROOM_TYPES.speedReviewRoom);
+    assert.strictEqual(gm.run.totalEncounters, 1, 'entering area should count first room');
+
+    gm.run.rooms[gm.run.currentRoom].interacted = true;
+    const proceedResult = gm.proceedToNextRoom();
+
+    assert.strictEqual(proceedResult.room.type, ROOM_TYPES.speedReviewRoom);
+    assert.strictEqual(gm.run.currentRoom, 1);
+    assert.strictEqual(gm.run.totalEncounters, 2, 'proceeding should count next room');
+    assert.strictEqual(gm.run.roomsExplored, 2, 'roomsExplored should increment on proceed');
+    assert.strictEqual(gm.run.stats.roomsExplored, 1, 'run stats roomsExplored should increment on proceed');
+  });
+});
+
+describe('Speed Review Room - Task 2 service behavior', () => {
+  function createHarness() {
+    const gm = new GameManager();
+    gm.createPlayer('SpeedReviewTester');
+    gm.startRun();
+    gm.selectArea('okunomori', 'speedReviewRoom');
+    const room = gm.run.rooms[gm.run.currentRoom];
+    return { gm, room };
+  }
+
+  function makeWord(idx) {
+    return {
+      word: `単語${idx}`,
+      reading: `たんご${idx}`,
+      meanings: [`word-${idx}`],
+      vid: 1000 + idx,
+      sid: 2000 + idx
+    };
+  }
+
+  it('creates server-authoritative snapshot up to 10 cards and reuses persisted order on re-entry', async () => {
+    const { gm, room } = createHarness();
+    const firstBatch = Array.from({ length: 12 }, (_, idx) => makeWord(idx));
+    const secondBatch = Array.from({ length: 12 }, (_, idx) => makeWord(idx + 100));
+
+    const started = await gm.startSpeedReviewRoom({
+      roomId: room.id,
+      userId: 'task2-user',
+      jpdbApiKey: 'task2-key',
+      dueWordsProvider: async () => ({ words: firstBatch, source: 'test' })
+    });
+
+    assert.strictEqual(started.reusedSnapshot, false);
+    assert.strictEqual(started.snapshotWords.length, 10);
+    assert.deepStrictEqual(
+      started.snapshotWordKeys,
+      firstBatch.slice(0, 10).map(word => `${word.vid}:${word.sid}`)
+    );
+
+    const restarted = await gm.startSpeedReviewRoom({
+      roomId: room.id,
+      userId: 'task2-user',
+      jpdbApiKey: 'task2-key',
+      dueWordsProvider: async () => ({ words: secondBatch, source: 'test' })
+    });
+
+    assert.strictEqual(restarted.reusedSnapshot, true);
+    assert.deepStrictEqual(restarted.snapshotWordKeys, started.snapshotWordKeys);
+    assert.deepStrictEqual(restarted.snapshotWords, started.snapshotWords);
+  });
+
+  it('validates commit index/order and awards XP exactly once per canonical server review key', async () => {
+    const { gm, room } = createHarness();
+    const words = [makeWord(1), makeWord(2), makeWord(3)];
+
+    const c1 = instantiateCreature('hikaribon');
+    c1.level = 5;
+    c1.hp = c1.maxHp;
+    c1.xp = 0;
+
+    const c2 = instantiateCreature('hanatchi');
+    c2.level = 3;
+    c2.hp = c2.maxHp;
+    c2.xp = 0;
+
+    const c3 = instantiateCreature('tsukimochi');
+    c3.level = 8;
+    c3.hp = 0; // dead creature should not receive speed-review XP
+    c3.xp = 0;
+
+    gm.run.creatureParty.active = [c1, c2, c3];
+    await gm.startSpeedReviewRoom({
+      roomId: room.id,
+      userId: 'task2-user',
+      jpdbApiKey: 'task2-key',
+      dueWordsProvider: async () => ({ words, source: 'test' })
+    });
+
+    assert.throws(
+      () => gm.recordSpeedReviewRoomCommit({
+        roomId: room.id,
+        commitIndex: 0,
+        vid: words[1].vid,
+        sid: words[1].sid
+      }),
+      /snapshot order/
+    );
+
+    const first = gm.recordSpeedReviewRoomCommit({
+      roomId: room.id,
+      commitIndex: 0,
+      vid: words[0].vid,
+      sid: words[0].sid
+    });
+    assert.strictEqual(first.reviewKey, `${room.id}:0:${words[0].vid}:${words[0].sid}`);
+    assert.strictEqual(first.alreadyCommitted, false);
+    assert.strictEqual(c1.xp, 10, 'highest living level=5 => discovery XP should be 10');
+    assert.strictEqual(c2.xp, 10);
+    assert.strictEqual(c3.xp, 0);
+
+    const second = gm.recordSpeedReviewRoomCommit({
+      roomId: room.id,
+      commitIndex: 0,
+      vid: words[0].vid,
+      sid: words[0].sid
+    });
+    assert.strictEqual(second.alreadyCommitted, true);
+    assert.strictEqual(c1.xp, 10, 'idempotent retry should not double-award XP');
+    assert.strictEqual(c2.xp, 10);
+    assert.strictEqual(c3.xp, 0);
+  });
+
+  it('completes when reviewedCards reaches min(targetCards, snapshot size)', async () => {
+    const { gm, room } = createHarness();
+    const words = [makeWord(10), makeWord(11), makeWord(12)];
+    gm.run.creatureParty.active = [instantiateCreature('hikaribon')];
+
+    const started = await gm.startSpeedReviewRoom({
+      roomId: room.id,
+      userId: 'task2-user',
+      jpdbApiKey: 'task2-key',
+      dueWordsProvider: async () => ({ words, source: 'test' })
+    });
+    assert.strictEqual(started.requiredCards, 3);
+    assert.strictEqual(gm.run.rooms[gm.run.currentRoom].interacted, false);
+
+    gm.recordSpeedReviewRoomCommit({ roomId: room.id, commitIndex: 0, vid: words[0].vid, sid: words[0].sid });
+    gm.recordSpeedReviewRoomCommit({ roomId: room.id, commitIndex: 1, vid: words[1].vid, sid: words[1].sid });
+    const third = gm.recordSpeedReviewRoomCommit({ roomId: room.id, commitIndex: 2, vid: words[2].vid, sid: words[2].sid });
+
+    assert.strictEqual(third.reviewedCards, 3);
+    assert.strictEqual(third.completed, true);
+    assert.strictEqual(gm.run.rooms[gm.run.currentRoom].interacted, true);
+  });
+
+  it('keeps pending review keys for retry and does not block room completion', async () => {
+    const { gm, room } = createHarness();
+    const words = [makeWord(30)];
+    gm.run.creatureParty.active = [instantiateCreature('hikaribon')];
+
+    await gm.startSpeedReviewRoom({
+      roomId: room.id,
+      userId: 'task2-user',
+      jpdbApiKey: 'task2-key',
+      dueWordsProvider: async () => ({ words, source: 'test' })
+    });
+
+    const failingSettlement = mock.method(
+      gm.explorationService,
+      '_applySpeedReviewXpForReviewKey',
+      () => {
+        throw new Error('synthetic XP settlement failure');
+      }
+    );
+
+    const pendingResult = gm.recordSpeedReviewRoomCommit({
+      roomId: room.id,
+      commitIndex: 0,
+      vid: words[0].vid,
+      sid: words[0].sid
+    });
+
+    assert.strictEqual(pendingResult.completed, true, 'completion should not block on settlement');
+    assert.strictEqual(pendingResult.pendingReviewKeys.length, 1);
+    assert.strictEqual(pendingResult.settled, false);
+
+    failingSettlement.mock.restore();
+
+    const completed = gm.completeSpeedReviewRoom({ roomId: room.id });
+    assert.strictEqual(completed.completed, true);
+    assert.strictEqual(completed.pendingReviewKeys.length, 0, 'pending keys should be retried and cleared');
+    assert.strictEqual(completed.awardedReviewKeys.length, 1);
+    assert.strictEqual(completed.settled, true);
+  });
+
+  it('retries pending speed-review XP settlement during normal state sync via getState()', async () => {
+    const { gm, room } = createHarness();
+    const words = [makeWord(50)];
+    const creature = instantiateCreature('hikaribon');
+    creature.level = 5;
+    creature.hp = creature.maxHp;
+    creature.xp = 0;
+    gm.run.creatureParty.active = [creature];
+
+    await gm.startSpeedReviewRoom({
+      roomId: room.id,
+      userId: 'task2-user',
+      jpdbApiKey: 'task2-key',
+      dueWordsProvider: async () => ({ words, source: 'test' })
+    });
+
+    const failingSettlement = mock.method(
+      gm.explorationService,
+      '_applySpeedReviewXpForReviewKey',
+      () => {
+        throw new Error('synthetic XP settlement failure');
+      }
+    );
+
+    gm.recordSpeedReviewRoomCommit({
+      roomId: room.id,
+      commitIndex: 0,
+      vid: words[0].vid,
+      sid: words[0].sid
+    });
+
+    assert.strictEqual(room.speedReviewRoom.pendingReviewKeys.length, 1);
+    assert.strictEqual(room.speedReviewRoom.awardedReviewKeys.length, 0);
+    assert.strictEqual(creature.xp, 0);
+
+    failingSettlement.mock.restore();
+
+    const syncedState = gm.getState();
+    assert.ok(syncedState, 'state sync should return state object');
+    assert.strictEqual(room.speedReviewRoom.pendingReviewKeys.length, 0, 'state sync should trigger retry settlement');
+    assert.strictEqual(room.speedReviewRoom.awardedReviewKeys.length, 1);
+    assert.strictEqual(creature.xp, 10, 'settled retry should award XP exactly once');
+
+    // Additional state syncs should remain idempotent (no extra XP)
+    gm.getState();
+    assert.strictEqual(creature.xp, 10);
+  });
+});

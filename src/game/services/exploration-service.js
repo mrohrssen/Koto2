@@ -29,6 +29,7 @@ import {
 
 import { addXpToCreature, xpToNextLevel, instantiateCreature, getCreatureBuyPrice, getCreatureSellPrice, generateDealerCreatures } from '../creatures.js';
 import { logger } from '../../logger.js';
+import { getDueWordsWithMeanings } from '../../jpdb.js';
 
 const AREA_BG_COUNT = 20;
 function randomAreaBg(areaId) {
@@ -42,6 +43,19 @@ function randomAreaBg(areaId) {
 function getBackgroundForRoom(room, areaId) {
   const activeRoom = Array.isArray(room) ? room[0] : room;
   return activeRoom?.subArea?.background || randomAreaBg(areaId);
+}
+
+function calculateDiscoveryXpForRun(run) {
+  const BASE_KILL_XP = 10;
+  const livingActives = run?.creatureParty?.active?.filter(creature => creature && creature.hp > 0) || [];
+  const highestLevel = livingActives.length > 0
+    ? Math.max(...livingActives.map(creature => creature.level), 1)
+    : 1;
+  return Math.floor(BASE_KILL_XP * highestLevel * (run?.itemBuffs?.xpMultiplier || 1.0) * 0.2);
+}
+
+function buildSpeedReviewWordKey(vid, sid) {
+  return `${String(vid)}:${String(sid)}`;
 }
 
 /**
@@ -381,9 +395,7 @@ export class ExplorationService {
     const xpGrants = [];
     const levelUps = [];
     if (this.gm.run.creatureParty?.active?.length > 0) {
-      const BASE_KILL_XP = 10;
-      const highestLevel = Math.max(...this.gm.run.creatureParty.active.filter(r => r && r.hp > 0).map(r => r.level), 1);
-      const discoveryXp = Math.floor(BASE_KILL_XP * highestLevel * (this.gm.run.itemBuffs?.xpMultiplier || 1.0) * 0.2);
+      const discoveryXp = calculateDiscoveryXpForRun(this.gm.run);
 
       for (const creature of this.gm.run.creatureParty.active) {
         if (!creature || creature.hp <= 0) continue;
@@ -653,6 +665,233 @@ export class ExplorationService {
 
     // Start encounter using CombatService via GameManager
     return this.gm.startEncounter();
+  }
+
+  _getSpeedReviewRoomById(roomId) {
+    if (!this.gm.run?.rooms?.length) {
+      throw new Error('No active run');
+    }
+    const room = this.gm.run.rooms.find(candidate => candidate.id === roomId);
+    if (!room) {
+      throw new Error('Speed review room not found');
+    }
+    if (room.type !== ROOM_TYPES.speedReviewRoom) {
+      throw new Error('Room is not a speed review room');
+    }
+    if (!room.speedReviewRoom) {
+      throw new Error('Speed review room state missing');
+    }
+    return room;
+  }
+
+  _sanitizeSpeedReviewWord(word) {
+    return {
+      word: word.word,
+      reading: word.reading,
+      meanings: Array.isArray(word.meanings) ? word.meanings : [],
+      vid: word.vid,
+      sid: word.sid
+    };
+  }
+
+  _getSpeedReviewCompletionTarget(roomState) {
+    return Math.min(roomState.targetCards || 0, roomState.snapshotWordKeys?.length || 0);
+  }
+
+  _syncSpeedReviewCompletion(room) {
+    const roomState = room.speedReviewRoom;
+    const completionTarget = this._getSpeedReviewCompletionTarget(roomState);
+    if ((roomState.reviewedCards || 0) >= completionTarget) {
+      roomState.completed = true;
+      room.interacted = true;
+    }
+    return completionTarget;
+  }
+
+  _buildSpeedReviewRoomResponse(room, extras = {}) {
+    const roomState = room.speedReviewRoom;
+    const completionTarget = this._getSpeedReviewCompletionTarget(roomState);
+    return {
+      roomId: room.id,
+      snapshotWords: Array.isArray(roomState.snapshotWords) ? roomState.snapshotWords : [],
+      snapshotWordKeys: Array.isArray(roomState.snapshotWordKeys) ? roomState.snapshotWordKeys : [],
+      reviewedCards: roomState.reviewedCards || 0,
+      targetCards: roomState.targetCards || 0,
+      requiredCards: completionTarget,
+      awardedReviewKeys: Array.isArray(roomState.awardedReviewKeys) ? roomState.awardedReviewKeys : [],
+      pendingReviewKeys: Array.isArray(roomState.pendingReviewKeys) ? roomState.pendingReviewKeys : [],
+      settled: roomState.settled !== false,
+      completed: !!roomState.completed,
+      interacted: !!room.interacted,
+      ...extras
+    };
+  }
+
+  _applySpeedReviewXpForReviewKey(room, reviewKey) {
+    const roomState = room.speedReviewRoom;
+    if (roomState.awardedReviewKeys.includes(reviewKey)) {
+      return { reviewKey, xpAwarded: false, alreadyAwarded: true };
+    }
+
+    const livingActives = this.gm.run?.creatureParty?.active?.filter(creature => creature && creature.hp > 0) || [];
+    const discoveryXp = calculateDiscoveryXpForRun(this.gm.run);
+    for (const creature of livingActives) {
+      addXpToCreature(creature, discoveryXp);
+    }
+
+    roomState.awardedReviewKeys.push(reviewKey);
+    return {
+      reviewKey,
+      xpAwarded: true,
+      xpPerCreature: discoveryXp,
+      rewardedCreatureIds: livingActives.map(creature => creature.id)
+    };
+  }
+
+  settleSpeedReviewRoomPendingRewards({ roomId } = {}) {
+    if (!this.gm.run?.rooms?.length) {
+      return { settled: true, pendingReviewKeys: [] };
+    }
+
+    const roomsToSettle = roomId
+      ? [this._getSpeedReviewRoomById(roomId)]
+      : this.gm.run.rooms.filter(room => room.type === ROOM_TYPES.speedReviewRoom && room.speedReviewRoom);
+
+    let settled = true;
+    const settledReviewKeys = [];
+
+    for (const room of roomsToSettle) {
+      const roomState = room.speedReviewRoom;
+      const pendingReviewKeys = Array.isArray(roomState.pendingReviewKeys) ? roomState.pendingReviewKeys : [];
+      const nextPending = [];
+
+      for (const reviewKey of pendingReviewKeys) {
+        if (roomState.awardedReviewKeys.includes(reviewKey)) {
+          continue;
+        }
+
+        try {
+          this._applySpeedReviewXpForReviewKey(room, reviewKey);
+          settledReviewKeys.push(reviewKey);
+        } catch (error) {
+          settled = false;
+          nextPending.push(reviewKey);
+        }
+      }
+
+      roomState.pendingReviewKeys = nextPending;
+      roomState.settled = nextPending.length === 0;
+    }
+
+    if (settledReviewKeys.length > 0) {
+      this.gm.emitState();
+    }
+
+    return {
+      settled,
+      settledReviewKeys
+    };
+  }
+
+  async startSpeedReviewRoom({ roomId, userId, jpdbApiKey, dueWordsProvider } = {}) {
+    if (!roomId) {
+      throw new Error('roomId is required');
+    }
+
+    const room = this._getSpeedReviewRoomById(roomId);
+    const roomState = room.speedReviewRoom;
+
+    this.settleSpeedReviewRoomPendingRewards({ roomId: room.id });
+
+    if (roomState.snapshotInitialized) {
+      this._syncSpeedReviewCompletion(room);
+      return this._buildSpeedReviewRoomResponse(room, { reusedSnapshot: true });
+    }
+
+    const targetCards = Math.max(0, Number(roomState.targetCards) || 10);
+    const fetchDueWords = dueWordsProvider || getDueWordsWithMeanings;
+    let dueWords = [];
+
+    if (jpdbApiKey && userId) {
+      const result = await fetchDueWords(jpdbApiKey, 1000, [], userId, []);
+      dueWords = Array.isArray(result?.words) ? result.words : [];
+    }
+
+    const snapshotWords = dueWords.slice(0, targetCards).map(word => this._sanitizeSpeedReviewWord(word));
+    roomState.snapshotWords = snapshotWords;
+    roomState.snapshotWordKeys = snapshotWords.map(word => buildSpeedReviewWordKey(word.vid, word.sid));
+    roomState.snapshotInitialized = true;
+    roomState.reviewedCards = Math.max(0, Number(roomState.reviewedCards) || 0);
+    roomState.awardedReviewKeys = Array.isArray(roomState.awardedReviewKeys) ? roomState.awardedReviewKeys : [];
+    roomState.pendingReviewKeys = Array.isArray(roomState.pendingReviewKeys) ? roomState.pendingReviewKeys : [];
+    roomState.settled = roomState.pendingReviewKeys.length === 0;
+
+    this._syncSpeedReviewCompletion(room);
+    this.gm.emitState();
+
+    return this._buildSpeedReviewRoomResponse(room, { reusedSnapshot: false });
+  }
+
+  recordSpeedReviewRoomCommit({ roomId, vid, sid, commitIndex } = {}) {
+    if (!roomId) {
+      throw new Error('roomId is required');
+    }
+    if (!Number.isInteger(commitIndex) || commitIndex < 0) {
+      throw new Error('commitIndex must be an integer >= 0');
+    }
+
+    const room = this._getSpeedReviewRoomById(roomId);
+    const roomState = room.speedReviewRoom;
+    if (!roomState.snapshotInitialized) {
+      throw new Error('Speed review snapshot not initialized');
+    }
+
+    this.settleSpeedReviewRoomPendingRewards({ roomId: room.id });
+
+    const completionTarget = this._getSpeedReviewCompletionTarget(roomState);
+    if (commitIndex >= completionTarget) {
+      throw new Error('commitIndex is outside snapshot bounds');
+    }
+
+    const expectedWordKey = roomState.snapshotWordKeys[commitIndex];
+    const committedWordKey = buildSpeedReviewWordKey(vid, sid);
+    if (expectedWordKey !== committedWordKey) {
+      throw new Error('Commit does not match server snapshot order');
+    }
+
+    const reviewKey = `${room.id}:${commitIndex}:${String(vid)}:${String(sid)}`;
+    if (roomState.awardedReviewKeys.includes(reviewKey) || roomState.pendingReviewKeys.includes(reviewKey)) {
+      this._syncSpeedReviewCompletion(room);
+      return this._buildSpeedReviewRoomResponse(room, {
+        reviewKey,
+        alreadyCommitted: true
+      });
+    }
+
+    roomState.reviewedCards = (roomState.reviewedCards || 0) + 1;
+    roomState.pendingReviewKeys.push(reviewKey);
+
+    this.settleSpeedReviewRoomPendingRewards({ roomId: room.id });
+    this._syncSpeedReviewCompletion(room);
+    this.gm.emitState();
+
+    return this._buildSpeedReviewRoomResponse(room, {
+      reviewKey,
+      alreadyCommitted: false
+    });
+  }
+
+  completeSpeedReviewRoom({ roomId } = {}) {
+    if (!roomId) {
+      throw new Error('roomId is required');
+    }
+    const room = this._getSpeedReviewRoomById(roomId);
+
+    this.settleSpeedReviewRoomPendingRewards({ roomId: room.id });
+    this._syncSpeedReviewCompletion(room);
+    this.gm.emitState();
+
+    return this._buildSpeedReviewRoomResponse(room);
   }
 
 }

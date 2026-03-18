@@ -98,6 +98,7 @@ export const ROOM_TYPES = {
   wordDiscovery: 'wordDiscovery',
   dealer: 'dealer',
   whackAMole: 'whackAMole',
+  speedReviewRoom: 'speedReviewRoom',
   boss: 'boss'
 };
 
@@ -110,7 +111,8 @@ function isSpecialType(type) {
   return type === ROOM_TYPES.shrine ||
          type === ROOM_TYPES.wordDiscovery ||
          type === ROOM_TYPES.dealer ||
-         type === ROOM_TYPES.whackAMole;
+         type === ROOM_TYPES.whackAMole ||
+         type === ROOM_TYPES.speedReviewRoom;
 }
 
 /**
@@ -121,6 +123,7 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
   const WORD_DISCOVERY_CHANCE = 0.10;
   const DEALER_CHANCE = 0.10;
   const WHACK_A_MOLE_CHANCE = 0.05;
+  const SPEED_REVIEW_ROOM_CHANCE = 0.05;
 
   const queuedType = popTestRoomType();
   let type;
@@ -143,6 +146,8 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
         type = ROOM_TYPES.dealer;
       } else if (roll < SHRINE_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE + WHACK_A_MOLE_CHANCE) {
         type = ROOM_TYPES.whackAMole;
+      } else if (roll < SHRINE_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE + WHACK_A_MOLE_CHANCE + SPEED_REVIEW_ROOM_CHANCE) {
+        type = ROOM_TYPES.speedReviewRoom;
       } else {
         type = ROOM_TYPES.encounter;
       }
@@ -229,6 +234,17 @@ export function createRoom(type, areaId, roomNumber, totalRooms) {
     case ROOM_TYPES.whackAMole:
       room.whackAMole = { score: 0, completed: false };
       break;
+    case ROOM_TYPES.speedReviewRoom:
+      room.speedReviewRoom = {
+        targetCards: 10,
+        reviewedCards: 0,
+        completed: false,
+        snapshotWordKeys: [],
+        awardedReviewKeys: [],
+        pendingReviewKeys: [],
+        settled: true
+      };
+      break;
     case ROOM_TYPES.boss:
       room.boss = { defeated: false };
       break;
@@ -260,6 +276,8 @@ export function getRoomEntryNarration(room) {
       return `${locationLabel}に入った。旅の行商人がいる...「珍しいモンスターがいるよ」`;
     case ROOM_TYPES.whackAMole:
       return `${locationLabel}に入った。不思議なゲーム機がある...`;
+    case ROOM_TYPES.speedReviewRoom:
+      return `${locationLabel}に入った。記憶の装置がある...復習を始めよう。`;
     case ROOM_TYPES.boss:
       return `${locationLabel}に入った。巨大な影が現れた...`;
     default:
@@ -277,8 +295,9 @@ export function getRoomActions(room) {
   const isUnfinishedWordDiscovery = room.type === 'wordDiscovery' && !room.interacted;
   const isUnfinishedDealer = room.type === 'dealer' && !room.interacted;
   const isUnfinishedWhackAMole = room.type === 'whackAMole' && !room.interacted;
+  const isUnfinishedSpeedReviewRoom = room.type === 'speedReviewRoom' && !room.interacted;
   const isUnfinishedBoss = room.type === 'boss' && !room.interacted;
-  if (!isUnfinishedEncounter && !isUnfinishedWordDiscovery && !isUnfinishedDealer && !isUnfinishedWhackAMole && !isUnfinishedBoss) {
+  if (!isUnfinishedEncounter && !isUnfinishedWordDiscovery && !isUnfinishedDealer && !isUnfinishedWhackAMole && !isUnfinishedSpeedReviewRoom && !isUnfinishedBoss) {
     actions.push({ id: 'proceed', name: '進む', description: '次のエリアへ進む' });
   }
 
@@ -299,6 +318,8 @@ export function getRoomActions(room) {
       }
       break;
     case ROOM_TYPES.wordDiscovery:
+      break;
+    case ROOM_TYPES.speedReviewRoom:
       break;
     case ROOM_TYPES.dealer:
       if (!room.dealer?.visited) {
