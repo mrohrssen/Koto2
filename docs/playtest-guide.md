@@ -135,7 +135,7 @@ When a new feature is added:
 
 **Expected screen:**
 - Branch selection or room navigation UI
-- Rooms may include: encounter, shrine, quiz, wordDiscovery, shop
+- Rooms may include: encounter, shrine, quiz, wordDiscovery, speedReviewRoom, shop
 
 **Interactions:** Navigate until reaching a creature encounter room. Select it.
 
@@ -152,6 +152,47 @@ When a new feature is added:
 - Charge bars pre-filled instead of empty
 - Multi-enemy layout overlapping or broken
 - Vocab cards never appear
+
+---
+
+### Phase 3A: Speed Review Room (Run Room)
+
+**Trigger:** In Settings, set **Force Room Type** to `Speed Review Room`, then enter/proceed to a room.
+
+**Expected screen:**
+- Existing Speed Review takeover UI opens (same visuals/audio/interaction feel as hub mode)
+- Session is room-gated: close is disabled until required reviews are committed
+- Up to 10 cards are reviewed from a room snapshot (fewer if due list is shorter)
+
+**Interactions:**
+1. Swipe cards normally (with optional undo window behavior)
+2. Continue until the room session ends and returns to exploration
+3. Verify proceed action is available only after room completion
+
+**Checklist (must pass):**
+- [ ] Room starts only when entered room type is `speedReviewRoom` (no takeover in non-speed-review rooms)
+- [ ] First entry creates a server-authoritative card snapshot and `targetCards` count
+- [ ] Re-entering/reloading the same room preserves card order and current `reviewedCards` progress
+- [ ] Only committed reviews advance progress (undo-cancelled swipes do **not** count)
+- [ ] Completion threshold is `min(targetCards, snapshot size)` and cannot exceed snapshot size
+- [ ] Proceed remains blocked before completion and unlocks immediately after completion
+- [ ] XP is settled exactly once per committed server review key (no duplicate XP on retry)
+- [ ] Pending XP settlement retries do not block room completion or room exit
+
+**Quick regression checks:**
+1. Start run with forced `Speed Review Room`; confirm takeover opens immediately on room entry.
+2. Commit 1-2 cards, then reload the page; confirm same card order and preserved progress.
+3. Use undo on one card; confirm progress does not increment for the cancelled action.
+4. Complete enough committed cards to hit the room threshold; verify return to room/exploration and proceed enabled.
+5. Continue normal play for a few state syncs (open/close menu, move room, etc.); verify no duplicate XP popups/awards.
+
+**What could go wrong:**
+- Room opens without takeover, or uses different UI than hub speed review
+- More than 10 committed cards are accepted for a room
+- Undo-cancelled review increments room progress or grants XP
+- Proceed becomes available before room completion
+- Reloading mid-room changes card order/progress (snapshot should be stable)
+- Progress endpoint retry causes duplicate XP (should be exactly-once per committed review key)
 
 ---
 

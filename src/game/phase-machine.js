@@ -30,6 +30,7 @@ export const PHASES = {
   WORD_DISCOVERY: 'wordDiscovery',
   DEALER: 'dealer',
   WHACK_A_MOLE: 'whackAMole',
+  SPEED_REVIEW_ROOM: 'speedReviewRoom',
   COMBAT: 'combat',
   VICTORY: 'victory',
   DEFEAT: 'defeat',
@@ -58,6 +59,7 @@ export const VALID_TRANSITIONS = {
     PHASES.ROOM,
     PHASES.ROOM_ENCOUNTER,
     PHASES.WHACK_A_MOLE,
+    PHASES.SPEED_REVIEW_ROOM,
     PHASES.COMBAT,
     PHASES.SHOP
   ],
@@ -66,6 +68,7 @@ export const VALID_TRANSITIONS = {
     PHASES.ROOM,
     PHASES.ROOM_ENCOUNTER,
     PHASES.WHACK_A_MOLE,
+    PHASES.SPEED_REVIEW_ROOM,
     PHASES.COMBAT,
     PHASES.SHOP,
     PHASES.EXPLORING
@@ -115,6 +118,7 @@ export const VALID_TRANSITIONS = {
   ],
 
   [PHASES.WHACK_A_MOLE]: [PHASES.ROOM],
+  [PHASES.SPEED_REVIEW_ROOM]: [PHASES.ROOM],
 
   [PHASES.AREA_COMPLETE]: [
     PHASES.AREA_SELECTION,
@@ -163,6 +167,7 @@ export function derivePhase(state) {
     if (currentRoom.type === 'wordDiscovery' && !currentRoom.interacted) return PHASES.WORD_DISCOVERY;
     if (currentRoom.type === 'dealer' && !currentRoom.interacted) return 'dealer';
     if (currentRoom.type === 'whackAMole' && !currentRoom.interacted) return PHASES.WHACK_A_MOLE;
+    if (currentRoom.type === 'speedReviewRoom' && !currentRoom.interacted) return PHASES.SPEED_REVIEW_ROOM;
     if ((currentRoom.type === 'encounter' || currentRoom.type === 'boss') && !currentRoom.interacted) return PHASES.ROOM_ENCOUNTER;
     return PHASES.ROOM;
   }

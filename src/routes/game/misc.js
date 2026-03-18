@@ -135,6 +135,39 @@ export default function createMiscRoutes({
           gameManager.run.currentRoom = 0;
           break;
         }
+        case 'speedReviewRoom': {
+          if (!gameManager.run || !gameManager.run.active) {
+            gameManager.startRun();
+            if (gameManager.run.areaSelectionRequired) {
+              gameManager.selectArea('okunomori');
+            }
+          }
+          gameManager.run.areaSelectionRequired = false;
+          gameManager.run.areaCleared = false;
+          gameManager.combat = null;
+          gameManager.run.postCombatShop = null;
+          const speedReviewRoom = {
+            id: 'debug_speed_review_room',
+            type: 'speedReviewRoom',
+            roomNumber: 1,
+            totalRooms: 3,
+            areaId: gameManager.run.currentArea?.id || 'okunomori',
+            explored: true,
+            interacted: false,
+            speedReviewRoom: {
+              targetCards: 10,
+              reviewedCards: 0,
+              completed: false,
+              snapshotWordKeys: [],
+              awardedReviewKeys: [],
+              pendingReviewKeys: [],
+              settled: true
+            }
+          };
+          gameManager.run.rooms = [speedReviewRoom];
+          gameManager.run.currentRoom = 0;
+          break;
+        }
         default:
           return res.status(400).json({ error: `Unsupported phase: ${phase}` });
       }

@@ -52,7 +52,7 @@ import {
   BASE_STARTING_CREDITS
 } from './state.js';
 
-import { getRoomActions, getAreaSelectionOptions } from './rooms.js';
+import { getRoomActions, getAreaSelectionOptions, ROOM_TYPES } from './rooms.js';
 import { derivePhase } from './phase-machine.js';
 import { ExplorationService } from './services/index.js';
 import { logger } from '../logger.js';
@@ -215,6 +215,15 @@ export class GameManager {
    */
   getState() {
     const currentRoom = this.run?.rooms?.[this.run?.currentRoom] || null;
+    const hasPendingSpeedReviewKeys = this.run?.rooms?.some(
+      room => room?.type === ROOM_TYPES.speedReviewRoom && (room.speedReviewRoom?.pendingReviewKeys?.length || 0) > 0
+    );
+    const shouldSettleSpeedReview = currentRoom?.type === ROOM_TYPES.speedReviewRoom || hasPendingSpeedReviewKeys;
+
+    if (shouldSettleSpeedReview) {
+      this.settleSpeedReviewRoomPendingRewards();
+    }
+
     const player = this.run?.player || this.player;
 
     return {
@@ -428,6 +437,22 @@ export class GameManager {
    */
   completeWordDiscovery() {
     return this.explorationService.completeWordDiscovery();
+  }
+
+  async startSpeedReviewRoom({ roomId, userId, jpdbApiKey, dueWordsProvider } = {}) {
+    return this.explorationService.startSpeedReviewRoom({ roomId, userId, jpdbApiKey, dueWordsProvider });
+  }
+
+  recordSpeedReviewRoomCommit({ roomId, vid, sid, commitIndex } = {}) {
+    return this.explorationService.recordSpeedReviewRoomCommit({ roomId, vid, sid, commitIndex });
+  }
+
+  completeSpeedReviewRoom({ roomId } = {}) {
+    return this.explorationService.completeSpeedReviewRoom({ roomId });
+  }
+
+  settleSpeedReviewRoomPendingRewards({ roomId } = {}) {
+    return this.explorationService.settleSpeedReviewRoomPendingRewards({ roomId });
   }
 
   completeWhackAMole(score) {

@@ -78,9 +78,18 @@ let apiCompleteWhackAMole = null;
 
 // Speed review API
 let apiGetDueWords = null;
+let apiStartSpeedReviewRoom = null;
+let apiProgressSpeedReviewRoom = null;
+let apiCompleteSpeedReviewRoom = null;
 
 let apiGetCreatureCollection = null;
 let showCollectionSelect = null;
+
+let speedReviewRoomLaunchState = {
+  roomId: null,
+  starting: false
+};
+let speedReviewRoomCommitChain = Promise.resolve();
 
 export function init(callbacks) {
   getGameState = callbacks.getGameState;
@@ -106,6 +115,9 @@ export function init(callbacks) {
   apiSwipeWord = callbacks.apiSwipeWord;
   apiPostCombatRefresh = callbacks.apiPostCombatRefresh;
   apiGetDueWords = callbacks.apiGetDueWords;
+  apiStartSpeedReviewRoom = callbacks.apiStartSpeedReviewRoom;
+  apiProgressSpeedReviewRoom = callbacks.apiProgressSpeedReviewRoom;
+  apiCompleteSpeedReviewRoom = callbacks.apiCompleteSpeedReviewRoom;
   apiGetCreatureCollection = callbacks.apiGetCreatureCollection;
   showCollectionSelect = callbacks.showCollectionSelect;
   apiGetWhackAMolePool = callbacks.apiGetWhackAMolePool;
@@ -655,6 +667,112 @@ export async function renderWordDiscovery() {
     document.dispatchEvent(new CustomEvent('discovery-card-swiped', { detail: e.detail }));
   };
   document.addEventListener('test-swipe', testSwipeHandler, { once: true });
+}
+
+function getActiveSpeedReviewRoom(gameState) {
+  if (gameState.room?.type === 'speedReviewRoom') {
+    return gameState.room;
+  }
+
+  const roomIndex = gameState.run?.currentRoom;
+  const fromRun = Number.isInteger(roomIndex) ? gameState.run?.rooms?.[roomIndex] : null;
+  if (fromRun?.type === 'speedReviewRoom') {
+    return fromRun;
+  }
+
+  return null;
+}
+
+export async function renderSpeedReviewRoom() {
+  const gameState = getGameState();
+  const room = getActiveSpeedReviewRoom(gameState);
+  if (!room?.id) {
+    return;
+  }
+
+  if (speedReview.isActive() && speedReviewRoomLaunchState.roomId === room.id) {
+    return;
+  }
+
+  if (speedReviewRoomLaunchState.starting) {
+    return;
+  }
+
+  speedReviewRoomLaunchState.starting = true;
+  speedReviewRoomLaunchState.roomId = room.id;
+  speedReviewRoomCommitChain = Promise.resolve();
+  actions.setContent('');
+
+  try {
+    const startResult = await apiStartSpeedReviewRoom(room.id);
+    const hasValidSnapshot = Array.isArray(startResult?.snapshotWords);
+    const startSucceeded = !!startResult && !startResult.error && hasValidSnapshot;
+    if (startResult?.state) {
+      updateGameState(startResult.state);
+    }
+
+    if (!startSucceeded) {
+      console.warn('[SpeedReviewRoom] Start failed or returned invalid payload; skipping auto-complete');
+      speedReviewRoomLaunchState.roomId = null;
+      return;
+    }
+
+    const snapshotWords = startResult.snapshotWords;
+    if (snapshotWords.length === 0) {
+      const completeResult = await apiCompleteSpeedReviewRoom(room.id);
+      if (completeResult?.state) {
+        updateGameState(completeResult.state);
+      }
+      speedReviewRoomLaunchState.roomId = null;
+      updateUI();
+      return;
+    }
+
+    speedReview.start(snapshotWords, {
+      mode: 'room',
+      maxCards: 10,
+      canCloseEarly: false,
+      onCommittedReview: async ({ word, commitIndex }) => {
+        speedReviewRoomCommitChain = speedReviewRoomCommitChain.then(async () => {
+          let lastError = null;
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+              const progressResult = await apiProgressSpeedReviewRoom(room.id, word.vid, word.sid, commitIndex);
+              if (!progressResult || progressResult.error) {
+                throw new Error(progressResult?.error || 'No response from speed review room progress API');
+              }
+              if (progressResult?.state) {
+                updateGameState(progressResult.state);
+              }
+              return progressResult;
+            } catch (error) {
+              lastError = error;
+              if (attempt < 3) {
+                await new Promise(resolve => setTimeout(resolve, 250 * attempt));
+              }
+            }
+          }
+          throw lastError || new Error('Failed to commit speed review room progress');
+        });
+        try {
+          return await speedReviewRoomCommitChain;
+        } catch (error) {
+          console.error('[SpeedReviewRoom] Commit failed after retries:', error);
+          throw error;
+        }
+      },
+      onComplete: async () => {
+        const completeResult = await apiCompleteSpeedReviewRoom(room.id);
+        if (completeResult?.state) {
+          updateGameState(completeResult.state);
+        }
+        speedReviewRoomLaunchState.roomId = null;
+        updateUI();
+      }
+    });
+  } finally {
+    speedReviewRoomLaunchState.starting = false;
+  }
 }
 
 // ============ WHACK-A-MOLE MINI GAME ============
