@@ -176,6 +176,10 @@ export class ExplorationService {
       throw new Error('Must complete encounter before proceeding');
     }
 
+    if (currentRoom.type === 'skillMaster' && currentRoom.skillMaster?.completed !== true) {
+      throw new Error('Must complete Skill Master before proceeding');
+    }
+
     // Move to next room
     this.gm.run.currentRoom++;
 
