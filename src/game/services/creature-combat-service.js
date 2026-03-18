@@ -748,8 +748,9 @@ export function handleBefriendAnswer(gameManager, { roundIndex, selectedIndex })
   const correct = selectedIndex === round.correctIndex;
 
   if (!correct) {
-    // Failure: clear conversation, enemies attack
+    // Failure: clear conversation, reset turn guard, enemies attack
     combat.befriendConversation = null;
+    combat.befriendUsedThisTurn = false;
 
     const enemyResult = processEnemyTurn(
       combat.enemies, combat.allies, false, gameManager.run?.itemBuffs

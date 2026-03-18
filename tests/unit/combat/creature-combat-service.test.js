@@ -9,7 +9,8 @@ import {
   awardKillXp,
   tickAllEffects,
   rollTalkAcceptance,
-  executeNpcSkill
+  executeNpcSkill,
+  handleBefriendAnswer
 } from '../../../src/game/services/creature-combat-service.js';
 import { instantiateCreature } from '../../../src/game/creatures.js';
 
@@ -707,5 +708,42 @@ describe('Creature Combat - executeNpcSkill', () => {
     const atk = result.attacks[0];
     assert.ok(atk.attackerName !== undefined, 'attack record should have attackerName');
     assert.ok(atk.moveName !== undefined, 'attack record should have moveName');
+  });
+});
+
+describe('Befriend conversation failure resets turn guard', () => {
+  it('resets befriendUsedThisTurn after wrong answer', () => {
+    const ally = instantiateCreature('hikaribon');
+    const enemy = instantiateCreature('nekotto');
+
+    const combat = {
+      active: true,
+      befriendUsedThisTurn: true,
+      befriendConversation: {
+        active: true,
+        targetEnemyIndex: 0,
+        currentRound: 0,
+        rounds: [
+          { correctIndex: 2 }
+        ]
+      },
+      allies: [ally],
+      enemies: [enemy]
+    };
+
+    const gameManager = {
+      run: {
+        creatureParty: { active: combat.allies, bench: [] },
+        itemBuffs: null
+      },
+      combat
+    };
+
+    // Call with wrong answer (selectedIndex=0, correctIndex=2)
+    const result = handleBefriendAnswer(gameManager, { roundIndex: 0, selectedIndex: 0 });
+
+    assert.strictEqual(result.correct, false);
+    assert.strictEqual(combat.befriendUsedThisTurn, false,
+      'befriendUsedThisTurn should reset after failed conversation');
   });
 });
