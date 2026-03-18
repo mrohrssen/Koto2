@@ -240,7 +240,7 @@ function showInventory() {
       `).join('')
     : '';
 
-  const hasAnything = activeBuffs.length > 0 || tempEffects.length > 0;
+  const hasAnything = activeBuffs.length > 0 || tempEffects.length > 0 || partySkills.length > 0;
 
   const buffsHtml = activeBuffs.length > 0
     ? activeBuffs.map(b => `
@@ -258,8 +258,9 @@ function showInventory() {
   const partySkillsHtml = partySkills.length > 0
     ? `<div class="inventory-section-label" style="font-size:11px;color:var(--text-secondary);margin:12px 0 4px;padding:0 4px">Party Skills</div>` +
       partySkills.map(s => {
-        const meta = skillMasterState.catalogById?.[s.id] || PARTY_SKILL_CATALOG_FALLBACK?.[s.id];
-        const name = meta?.name || s.id;
+        const skillId = typeof s === 'string' ? s : (s?.id || s?.skillId);
+        const meta = skillMasterState.catalogById?.[skillId] || PARTY_SKILL_CATALOG_FALLBACK?.[skillId];
+        const name = meta?.name || skillId;
         const desc = meta?.desc || '';
         return `
           <div class="inventory-item">
@@ -772,7 +773,7 @@ export async function renderWhackAMole() {
 /** Skill Master room — placeholder UI (to be expanded in later task) */
 export async function renderSkillMaster() {
   const gameState = getGameState();
-  const room = getActiveRoomFromRun(gameState.run);
+  const room = gameState.room || getActiveRoomFromRun(gameState.run);
   const roomId = room?.id || room?.type || 'unknown';
 
   // Reset per-room cache
@@ -810,20 +811,14 @@ export async function renderSkillMaster() {
   // Fetch offers once per room
   if (!skillMasterState.fetched) {
     skillMasterState.fetched = true;
-    const resp = await apiSkillMasterOffers?.();
-    const offered = resp?.offered || resp?.offers || resp?.skills || room?.skillMaster?.offered;
-    if (Array.isArray(offered) && offered.length > 0) {
-      skillMasterState.offered = offered;
-      for (const s of offered) {
-        if (!s?.id) continue;
-        skillMasterState.catalogById[s.id] = {
-          name: s.name || PARTY_SKILL_CATALOG_FALLBACK?.[s.id]?.name || s.id,
-          desc: s.desc || PARTY_SKILL_CATALOG_FALLBACK?.[s.id]?.desc || ''
-        };
-      }
-    } else {
-      // allow retry on next render if server returned nothing
+    const fetchRoomId = roomId;
+    let resp;
+    try {
+      resp = await apiSkillMasterOffers?.();
+    } catch (err) {
+      // Allow retry on next render and avoid caching a bad state
       skillMasterState.fetched = false;
+      skillMasterState.offered = null;
       actions.setContent(`
         <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
           <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">Skill Master</div>
@@ -835,9 +830,43 @@ export async function renderSkillMaster() {
       `);
       document.getElementById('skillmaster-retry-btn')?.addEventListener('click', () => {
         skillMasterState.fetched = false;
+        skillMasterState.offered = null;
         renderSkillMaster();
       });
       return;
+    }
+
+    // Stale async guard: room changed while awaiting offers
+    if (skillMasterState.roomId !== fetchRoomId) return;
+
+    const offered = resp?.offered || resp?.offers || resp?.skills || room?.skillMaster?.offered;
+    if (!Array.isArray(offered) || offered.length === 0) {
+      skillMasterState.fetched = false;
+      skillMasterState.offered = null;
+      actions.setContent(`
+        <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
+          <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">Skill Master</div>
+          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">
+            Failed to load offers.
+          </div>
+          <button class="action-btn action-btn-primary" id="skillmaster-retry-btn">Retry</button>
+        </div>
+      `);
+      document.getElementById('skillmaster-retry-btn')?.addEventListener('click', () => {
+        skillMasterState.fetched = false;
+        skillMasterState.offered = null;
+        renderSkillMaster();
+      });
+      return;
+    }
+
+    skillMasterState.offered = offered;
+    for (const s of offered) {
+      if (!s?.id) continue;
+      skillMasterState.catalogById[s.id] = {
+        name: s.name || PARTY_SKILL_CATALOG_FALLBACK?.[s.id]?.name || s.id,
+        desc: s.desc || PARTY_SKILL_CATALOG_FALLBACK?.[s.id]?.desc || ''
+      };
     }
   }
 
@@ -868,12 +897,25 @@ export async function renderSkillMaster() {
       choosing = true;
       const skillId = el.dataset.skillId;
       playSFX('button-tap');
-      document.querySelectorAll('.ward-option[data-skill-id]').forEach(btn => {
+      const buttons = Array.from(document.querySelectorAll('.ward-option[data-skill-id]'));
+      buttons.forEach(btn => {
         btn.disabled = true;
         btn.style.opacity = '0.6';
       });
 
-      const result = await apiSkillMasterChoose?.(skillId);
+      let result;
+      try {
+        result = await apiSkillMasterChoose?.(skillId);
+      } catch (err) {
+        choosing = false;
+        buttons.forEach(btn => {
+          btn.disabled = false;
+          btn.style.opacity = '';
+        });
+        sceneModule?.showNarration?.('選択に失敗しました。', { autoDismiss: 1800 });
+        return;
+      }
+
       if (result?.state) {
         updateGameState(result.state);
         updateUI();
@@ -881,8 +923,11 @@ export async function renderSkillMaster() {
       }
 
       choosing = false;
-      sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
-      renderSkillMaster();
+      buttons.forEach(btn => {
+        btn.disabled = false;
+        btn.style.opacity = '';
+      });
+      sceneModule?.showNarration?.('選択に失敗しました。', { autoDismiss: 1800 });
     });
   });
 }
