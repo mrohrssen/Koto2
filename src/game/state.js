@@ -173,6 +173,10 @@ export function createNewRun(player) {
       maxTotal: 6
     },
 
+    // Party skills (run-scoped, server-owned)
+    // Stored as array of objects: { id: string }
+    partySkills: [],
+
     // Item buff stacking (run-scoped)
     itemBuffs: {
       attackMult: 1.0,

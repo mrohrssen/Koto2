@@ -149,6 +149,30 @@ export default function createRunRoutes({
     }
   });
 
+  // Skill Master: get offers (idempotent per room)
+  router.post('/skill-master-offers', async (req, res) => {
+    try {
+      const { offered } = req.gameManager.explorationService.getSkillMasterOffers();
+      req.saveGame();
+      res.json({ offered, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Skill Master: choose one offer
+  router.post('/skill-master-choose', async (req, res) => {
+    try {
+      const { skillId } = req.body || {};
+      if (!skillId) return res.status(400).json({ error: 'skillId required' });
+      const result = req.gameManager.explorationService.chooseSkillMasterOffer(skillId);
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   // Start room encounter (marks room, then starts combat)
   router.post('/room-encounter', async (req, res) => {
     const gameManager = req.gameManager;

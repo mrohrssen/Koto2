@@ -240,6 +240,7 @@ export class GameManager {
         rooms: this.run.rooms,
         runStats: this.run.runStats,
         creatureParty: this.run.creatureParty,
+        partySkills: this.run.partySkills || [],
         itemBuffs: this.run.itemBuffs || null,
         npcDialogue: this.run?.npcDialogue || null,
         postCombatShop: null
