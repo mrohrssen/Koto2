@@ -239,9 +239,9 @@ export function createCombatState(enemy) {
 
 // ============ ENCOUNTER GENERATION ============
 export function generateEncounterCount() {
-  // Areas have 8-12 rooms
-  const min = 8;
-  const max = 12;
+  // Areas have 16-24 rooms
+  const min = 16;
+  const max = 24;
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
