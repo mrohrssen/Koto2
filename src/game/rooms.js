@@ -251,10 +251,6 @@ export function createRoom(type, areaId, roomNumber, totalRooms) {
  * Get narration for entering a room
  */
 export function getRoomEntryNarration(room) {
-  if (room.type === ROOM_TYPES.skillMaster) {
-    return `Skill Master — Room ${room.roomNumber}/${room.totalRooms}`;
-  }
-
   const locationLabel = room.subArea
     ? `${room.subArea.name} — ${room.roomNumber}/${room.totalRooms}`
     : `エリア${room.roomNumber}/${room.totalRooms}`;
