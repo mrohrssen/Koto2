@@ -1155,6 +1155,13 @@ async function initGame() {
         document.dispatchEvent(new CustomEvent('discovery-card-swiped', { detail: direction }));
         return;
       }
+
+      // Kana mode: route to kana handler, skip JPDB review
+      if (combatLoopUI.isKanaRoundInProgress()) {
+        combatLoopUI.handleKanaSwipe(direction);
+        return;
+      }
+
       // Combat mode: grade based on swipe direction and pass action type
       const grade = direction === 'right' ? 4 : 1;
       const actionType = window._pendingCombatAction || 'attack';
