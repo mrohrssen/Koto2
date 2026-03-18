@@ -74,7 +74,10 @@ export function createMetaProgression() {
     npcBonds: {},
 
     // Whether the intro prologue has been shown
-    prologueComplete: false
+    prologueComplete: false,
+
+    // Whether the player is in hiragana learning mode
+    kanaMode: false
   };
 }
 

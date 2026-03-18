@@ -268,7 +268,8 @@ export class GameManager {
         levels: this.meta.levels || { highestUnlocked: 1, completed: [], current: null },
         prologueComplete: this.meta.prologueComplete || false,
         progressionTokens: this.meta.progressionTokens || 0,
-        upgrades: this.meta.upgrades || {}
+        upgrades: this.meta.upgrades || {},
+        kanaMode: this.meta.kanaMode || false
       } : null,
       phase: this.getPhase()
     };
