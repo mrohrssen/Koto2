@@ -1190,9 +1190,10 @@ html, body {
 }
 
 .sac-move-name rt {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 400;
   color: var(--text-secondary);
+  line-height: 1;
 }
 
 .sac-move-en {
@@ -5009,15 +5010,15 @@ html, body {
   opacity: 0.8;
 }
 
-/* ── Suppress mini-card inside attack cards (meaning already shown via .sac-meaning) ── */
-.sac-vocab .bs-word:has(.bs-word-en) {
+/* ── Suppress mini-card border inside attack cards ── */
+.sac-body .bs-word:has(.bs-word-en) {
   display: inline-block;
   border: none;
   padding: 0;
   margin: 0;
   vertical-align: baseline;
 }
-.sac-vocab .bs-word-en { display: none; }
+.sac-body .bs-word-en { display: none; }
 
 /* ── Compact mini-card inside floating effect text ── */
 .floating-effect-text .bs-word:has(.bs-word-en) {
