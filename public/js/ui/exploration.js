@@ -131,23 +131,23 @@ const BUFF_DISPLAY = {
 };
 
 const PARTY_SKILL_CATALOG_FALLBACK = {
-  super_effective_mend: {
+  superEffectiveMend: {
     name: 'Super-Effective Mend',
     desc: 'Strong hits can heal the whole party.'
   },
-  haste_spark: {
+  hasteSpark: {
     name: 'Haste Spark',
     desc: 'Strong hits can grant the attacker haste.'
   },
-  guard_pulse: {
+  guardPulse: {
     name: 'Guard Pulse',
     desc: 'Strong hits can shield the whole party.'
   },
-  battle_rhythm: {
+  battleRhythm: {
     name: 'Battle Rhythm',
     desc: 'Every 5th party attack deals bonus damage.'
   },
-  finisher_feast: {
+  finisherFeast: {
     name: 'Finisher Feast',
     desc: 'Defeating an enemy can heal the whole party.'
   }
