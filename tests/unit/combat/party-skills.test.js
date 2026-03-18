@@ -110,7 +110,7 @@ test('guardPulse: procs only on super-effective qualifying player records and ap
 
 test('battleRhythm: every 5th qualifying hit deals bonus damage and updates the same record', () => {
   const allies = [makeAlly({ id: 'a1', hp: 50, maxHp: 100 })];
-  const enemies = [makeEnemy({ id: 'e1', hp: 100, maxHp: 100 })];
+  const enemies = [makeEnemy({ id: 'e1', hp: 3, maxHp: 100 })];
   const combat = { partyHitCounter: 4 };
   const attacks = [{
     attackerIndex: 0,
@@ -130,8 +130,8 @@ test('battleRhythm: every 5th qualifying hit deals bonus damage and updates the 
   });
 
   assert.equal(combat.partyHitCounter, 5);
-  assert.equal(attacks[0].damage, 16); // 11 + floor(11*0.5)=5
-  assert.equal(enemies[0].hp, 95); // only bonus damage applied here
+  assert.equal(attacks[0].damage, 13); // 11 + bonusApplied(2); bonus cannot KO
+  assert.equal(enemies[0].hp, 1);
 });
 
 test('finisherFeast: heals party on defeated target from qualifying player record', () => {
@@ -170,8 +170,8 @@ test('does not trigger or increment counter on non-qualifying records (NPC skill
       { attackerIndex: -1, category: 'damage', damage: 50, elementMultiplier: 2, targetIndex: 0, targetDefeated: false },
       // Heal category should not qualify
       { attackerIndex: 0, category: 'heal', damage: 0, elementMultiplier: 2, targetIndex: 0, targetDefeated: false },
-      // Damage category but zero damage doesn't qualify by "damage > 0" and also doesn't meet category damage/drain? (it does) — so explicitly make it non-damage category with 0 damage.
-      { attackerIndex: 0, category: 'buff', damage: 0, elementMultiplier: 2, targetIndex: 0, targetDefeated: false },
+      // Damage category but zero damage should not qualify (requires damage > 0).
+      { attackerIndex: 0, category: 'damage', damage: 0, elementMultiplier: 2, targetIndex: 0, targetDefeated: false },
     ];
 
     applyPartySkillsAfterPlayerAttacks({

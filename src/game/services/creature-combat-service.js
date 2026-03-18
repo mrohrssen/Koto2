@@ -41,7 +41,7 @@ function isQualifyingPlayerAttackRecord(record) {
   const cat = record.category;
   const isDamageCat = cat === 'damage' || cat === 'drain';
   const hasDamage = typeof record.damage === 'number' && record.damage > 0;
-  return isDamageCat || hasDamage;
+  return isDamageCat && hasDamage;
 }
 
 function rollProc(procChance) {
@@ -73,12 +73,28 @@ export function applyPartySkillsAfterPlayerAttacks({ attacks, allies, enemies, r
       if (everyNthHit > 0 && (combat.partyHitCounter % everyNthHit) === 0) {
         const baseDamage = Math.max(0, Number(record.damage) || 0);
         const bonus = Math.floor(baseDamage * bonusDamageMult);
-        const targetIndex = record.targetIndex;
-        const target = (typeof targetIndex === 'number') ? enemies?.[targetIndex] : null;
-        if (target && target.hp > 0 && bonus > 0) {
-          target.hp = Math.max(0, target.hp - bonus);
-          record.damage = baseDamage + bonus;
-          if (target.hp <= 0) record.targetDefeated = true;
+
+        let target = null;
+        if (record.targetId && Array.isArray(enemies)) {
+          target = enemies.find(e => e && e.id === record.targetId) || null;
+        }
+        if (!target) {
+          const targetIndex = record.targetIndex;
+          target = (typeof targetIndex === 'number') ? enemies?.[targetIndex] : null;
+        }
+
+        if (target && target.hp > 1 && bonus > 0) {
+          const shieldReduction = getDamageReduction(target);
+          const reducedBonus = shieldReduction > 0
+            ? Math.floor(bonus * (1 - shieldReduction / 100))
+            : bonus;
+
+          const bonusApplied = Math.min(reducedBonus, Math.max(0, target.hp - 1));
+          if (bonusApplied > 0) {
+            target.hp -= bonusApplied;
+            record.damage = baseDamage + bonusApplied;
+            breakSleep(target);
+          }
         }
       }
     }
