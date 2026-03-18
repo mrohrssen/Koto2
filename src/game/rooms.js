@@ -97,6 +97,7 @@ export const ROOM_TYPES = {
   quiz: 'quiz',
   wordDiscovery: 'wordDiscovery',
   dealer: 'dealer',
+  skillMaster: 'skillMaster',
   whackAMole: 'whackAMole',
   boss: 'boss'
 };
@@ -110,6 +111,7 @@ function isSpecialType(type) {
   return type === ROOM_TYPES.shrine ||
          type === ROOM_TYPES.wordDiscovery ||
          type === ROOM_TYPES.dealer ||
+         type === ROOM_TYPES.skillMaster ||
          type === ROOM_TYPES.whackAMole;
 }
 
@@ -120,6 +122,7 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
   const SHRINE_CHANCE = 0.10;
   const WORD_DISCOVERY_CHANCE = 0.10;
   const DEALER_CHANCE = 0.10;
+  const SKILL_MASTER_CHANCE = 0.05;
   const WHACK_A_MOLE_CHANCE = 0.05;
 
   const queuedType = popTestRoomType();
@@ -141,7 +144,9 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
         type = ROOM_TYPES.wordDiscovery;
       } else if (roll < SHRINE_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE) {
         type = ROOM_TYPES.dealer;
-      } else if (roll < SHRINE_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE + WHACK_A_MOLE_CHANCE) {
+      } else if (roll < SHRINE_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE + SKILL_MASTER_CHANCE) {
+        type = ROOM_TYPES.skillMaster;
+      } else if (roll < SHRINE_CHANCE + WORD_DISCOVERY_CHANCE + DEALER_CHANCE + SKILL_MASTER_CHANCE + WHACK_A_MOLE_CHANCE) {
         type = ROOM_TYPES.whackAMole;
       } else {
         type = ROOM_TYPES.encounter;
@@ -226,6 +231,9 @@ export function createRoom(type, areaId, roomNumber, totalRooms) {
       };
       break;
     }
+    case ROOM_TYPES.skillMaster:
+      room.skillMaster = { offered: null, chosenId: null, completed: false };
+      break;
     case ROOM_TYPES.whackAMole:
       room.whackAMole = { score: 0, completed: false };
       break;
@@ -243,6 +251,10 @@ export function createRoom(type, areaId, roomNumber, totalRooms) {
  * Get narration for entering a room
  */
 export function getRoomEntryNarration(room) {
+  if (room.type === ROOM_TYPES.skillMaster) {
+    return `Skill Master — Room ${room.roomNumber}/${room.totalRooms}`;
+  }
+
   const locationLabel = room.subArea
     ? `${room.subArea.name} — ${room.roomNumber}/${room.totalRooms}`
     : `エリア${room.roomNumber}/${room.totalRooms}`;
@@ -258,6 +270,8 @@ export function getRoomEntryNarration(room) {
       return `${locationLabel}に入った。知識の泉がある...新しい言葉を発見できそうだ。`;
     case ROOM_TYPES.dealer:
       return `${locationLabel}に入った。旅の行商人がいる...「珍しいモンスターがいるよ」`;
+    case ROOM_TYPES.skillMaster:
+      return `Skill Master — Room ${room.roomNumber}/${room.totalRooms}`;
     case ROOM_TYPES.whackAMole:
       return `${locationLabel}に入った。不思議なゲーム機がある...`;
     case ROOM_TYPES.boss:
@@ -276,9 +290,10 @@ export function getRoomActions(room) {
   const isUnfinishedEncounter = room.type === 'encounter' && !room.interacted;
   const isUnfinishedWordDiscovery = room.type === 'wordDiscovery' && !room.interacted;
   const isUnfinishedDealer = room.type === 'dealer' && !room.interacted;
+  const isUnfinishedSkillMaster = room.type === 'skillMaster' && !room.interacted && !room.skillMaster?.completed;
   const isUnfinishedWhackAMole = room.type === 'whackAMole' && !room.interacted;
   const isUnfinishedBoss = room.type === 'boss' && !room.interacted;
-  if (!isUnfinishedEncounter && !isUnfinishedWordDiscovery && !isUnfinishedDealer && !isUnfinishedWhackAMole && !isUnfinishedBoss) {
+  if (!isUnfinishedEncounter && !isUnfinishedWordDiscovery && !isUnfinishedDealer && !isUnfinishedSkillMaster && !isUnfinishedWhackAMole && !isUnfinishedBoss) {
     actions.push({ id: 'proceed', name: '進む', description: '次のエリアへ進む' });
   }
 
@@ -303,6 +318,11 @@ export function getRoomActions(room) {
     case ROOM_TYPES.dealer:
       if (!room.dealer?.visited) {
         actions.push({ id: 'dealer_trade', name: '取引', description: '行商人と取引する' });
+      }
+      break;
+    case ROOM_TYPES.skillMaster:
+      if (!room.interacted && !room.skillMaster?.completed) {
+        actions.push({ id: 'skill_master_choose', name: 'Skills', description: 'Choose 1 of 3 party skills' });
       }
       break;
     case ROOM_TYPES.whackAMole:
