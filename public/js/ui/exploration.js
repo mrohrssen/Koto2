@@ -912,7 +912,7 @@ export async function renderSkillMaster() {
           btn.disabled = false;
           btn.style.opacity = '';
         });
-        sceneModule?.showNarration?.('選択に失敗しました。', { autoDismiss: 1800 });
+        sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
         return;
       }
 
@@ -927,7 +927,7 @@ export async function renderSkillMaster() {
         btn.disabled = false;
         btn.style.opacity = '';
       });
-      sceneModule?.showNarration?.('選択に失敗しました。', { autoDismiss: 1800 });
+      sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
     });
   });
 }
