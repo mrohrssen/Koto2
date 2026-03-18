@@ -163,7 +163,7 @@ export function derivePhase(state) {
     if (currentRoom.type === 'wordDiscovery' && !currentRoom.interacted) return PHASES.WORD_DISCOVERY;
     if (currentRoom.type === 'dealer' && !currentRoom.interacted) return 'dealer';
     if (currentRoom.type === 'whackAMole' && !currentRoom.interacted) return PHASES.WHACK_A_MOLE;
-    if (currentRoom.type === 'encounter' && !currentRoom.interacted) return PHASES.ROOM_ENCOUNTER;
+    if ((currentRoom.type === 'encounter' || currentRoom.type === 'boss') && !currentRoom.interacted) return PHASES.ROOM_ENCOUNTER;
     return PHASES.ROOM;
   }
 
