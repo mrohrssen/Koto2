@@ -2628,6 +2628,35 @@ export async function stopCombatLoop(result) {
       await narration.showNarration(narrationResult.narration);
     }
 
+    // After combat victory, check for kana graduation
+    if (result?.victory) {
+      const currentState = getGameState();
+      if (currentState.meta?.kanaMode) {
+        try {
+          const statsResp = await fetch(`${API_BASE}/api/game/kana-stats`, {
+            headers: getAuthHeaders()
+          });
+          const stats = await statsResp.json();
+          if (stats.graduated) {
+            // Disable kana mode
+            await fetch(`${API_BASE}/api/game/kana-mode`, {
+              method: 'POST',
+              headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+              body: JSON.stringify({ enabled: false })
+            });
+            // Show Cid graduation message
+            await narration.showNarration(
+              "Incredible progress! You've learned the entire Hiragana alphabet. " +
+              "I've upgraded your Translator — from now on, you'll be able to command " +
+              "your creatures directly using Japanese vocabulary!"
+            );
+          }
+        } catch (e) {
+          console.error('[KanaMode] Graduation check failed:', e);
+        }
+      }
+    }
+
     // NOW animate enemy defeat - after player has read the narration
     if (result.victory) {
       animateEnemyDefeat();
