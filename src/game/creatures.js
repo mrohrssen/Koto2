@@ -164,7 +164,7 @@ export function addXpToCreature(creature, xp, metaMults = null) {
       if (moveData && !(creature.moves || []).find(m => m.id === moveData.id)) {
         newMove = { ...moveData };
         if (!creature.moves) creature.moves = [];
-        if (creature.moves.length < 4) {
+        if (creature.moves.length < 3) {
           // Auto-learn if under max moves
           creature.moves.push(newMove);
         }
@@ -273,7 +273,7 @@ export function generateEnemyCreature(targetLevel, creaturePool = null, stage = 
     addXpToCreature(creature, xpToNextLevel(creature.level));
   }
 
-  // Ensure enemy has ALL moves up to its level (addXpToCreature only auto-adds if < 4)
+  // Ensure enemy has ALL moves up to its level (addXpToCreature only auto-adds if < 3)
   const tmpl = CREATURES_BY_ID[creature.id];
   if (tmpl?.learnset) {
     if (!creature.moves) creature.moves = [];

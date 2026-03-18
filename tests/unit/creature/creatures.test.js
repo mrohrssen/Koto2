@@ -251,6 +251,27 @@ describe('Targeting AI', () => {
   });
 });
 
+describe('Move learning cap', () => {
+  it('does not auto-learn a 4th move when creature already has 3', () => {
+    // hikaribon starts at level 5 with 3 moves (learnset: lv1 hanatsu, lv1 hikaru, lv5 bakuhatsu)
+    // At level 9 it would learn abareru — this should NOT auto-push
+    const creature = instantiateCreature('hikaribon');
+    assert.strictEqual(creature.moves.length, 3, 'precondition: hikaribon starts with 3 moves at level 5');
+
+    // Give enough XP to reach level 9+ (triggers abareru learn attempt)
+    const levelUps = addXpToCreature(creature, 5000);
+
+    // Verify a level-up with newMove actually occurred (test isn't vacuously passing)
+    const levelWithMove = levelUps.find(lu => lu.newMove);
+    assert.ok(levelWithMove, 'a level-up should have attempted to teach a new move');
+    assert.ok(levelWithMove.newMove.id, 'newMove should have an id for replacement UI');
+
+    // The move should NOT have been auto-pushed — creature still has 3 moves
+    assert.strictEqual(creature.moves.length, 3,
+      `creature should not exceed 3 moves, got ${creature.moves.length}`);
+  });
+});
+
 describe('Multi-Enemy Generation', () => {
   it('generates 1-3 enemy creatures', () => {
     const enemies = generateEnemyCreatures(1);

@@ -918,7 +918,7 @@ async function processPendingMoveLearn(pendingList) {
     const alreadyLearned = creature.moves?.some(m => m.id === item.newMove.id);
 
     // Pass alreadyLearned flag so the prompt shows the right UI
-    // (after syncFinalState, auto-added moves make creature.moves.length == 4)
+    // (after syncFinalState, auto-added moves make creature.moves.length == 3)
     const result = await showLearnPrompt(creature, creatureIndex, item.newMove, alreadyLearned);
 
     if (result.action === 'skip') {

@@ -1,7 +1,7 @@
 // public/js/ui/move-learn.js
 // Shows when a creature levels up and learns a new move
-// If < 4 moves: shows "Learned [move]!" confirmation
-// If 4 moves: shows new move + current 4 moves, player picks one to replace or skips
+// If < 3 moves: shows "Learned [move]!" confirmation
+// If 3 moves: shows new move + current 3 moves, player picks one to replace or skips
 
 import { dom } from '../dom.js';
 import { renderJpFirst } from './bootstrap-client.js';
@@ -31,7 +31,7 @@ export function showLearnPrompt(creature, creatureIndex, newMove, alreadyLearned
     const newCard = buildMoveCard(newMove, 'NEW');
     panel.appendChild(newCard);
 
-    if (alreadyLearned || creature.moves.length < 4) {
+    if (alreadyLearned || creature.moves.length < 3) {
       // Auto-learned, just show confirmation
       const msg = document.createElement('div');
       msg.className = 'move-learn-auto';

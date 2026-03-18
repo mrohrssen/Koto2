@@ -109,7 +109,7 @@ export default function createCombatRoutes({
 
       if (typeof replaceIndex === 'number' && replaceIndex >= 0 && replaceIndex < creature.moves.length) {
         creature.moves[replaceIndex] = { ...moveData };
-      } else if (creature.moves.length < 4) {
+      } else if (creature.moves.length < 3) {
         creature.moves.push({ ...moveData });
       } else {
         throw new Error('Move slots full — must specify replaceIndex');
