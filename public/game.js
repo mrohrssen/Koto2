@@ -125,6 +125,9 @@ import {
   getDiscoveryWords as apiGetDiscoveryWords,
   getDiscoveryStatus as apiGetDiscoveryStatus,
   completeDiscovery as apiCompleteDiscovery,
+  startSpeedReviewRoom as apiStartSpeedReviewRoom,
+  progressSpeedReviewRoom as apiProgressSpeedReviewRoom,
+  completeSpeedReviewRoom as apiCompleteSpeedReviewRoom,
   parseJpdbText,
   lookupJpdbWord,
   lookupJpdbBatch,
@@ -299,7 +302,7 @@ function updateScene() {
     scene.showShrineFox();
   } else if (gameState.phase === 'quiz') {
     scene.showQuizMaster();
-  } else if (gameState.phase === 'wordDiscovery') {
+  } else if (gameState.phase === 'wordDiscovery' || gameState.phase === 'speedReviewRoom') {
     scene.showWordDiscoveryNpc();
   } else if (gameState.phase === 'dealer') {
     scene.showDealer();
@@ -310,7 +313,7 @@ function updateScene() {
     scene.setBackground('/assets/backgrounds/shrine_background.webp');
   } else if (gameState.phase === 'quiz') {
     scene.setBackground('/assets/backgrounds/quiz_master_background.webp');
-  } else if (gameState.phase === 'wordDiscovery') {
+  } else if (gameState.phase === 'wordDiscovery' || gameState.phase === 'speedReviewRoom') {
     scene.setBackground('/assets/backgrounds/word_discovery_background.webp');
   } else if (gameState.phase === 'dealer') {
     scene.setBackground('/assets/backgrounds/dealer_background.webp');
@@ -374,6 +377,9 @@ function updateGameContent() {
       break;
     case 'wordDiscovery':
       explorationUI.renderWordDiscovery();
+      break;
+    case 'speedReviewRoom':
+      explorationUI.renderSpeedReviewRoom();
       break;
     case 'dealer':
       economyUI.renderDealerRoom(actions);
@@ -1112,6 +1118,21 @@ async function initGame() {
     refreshQueue: async (reviewedWords = []) => {
       const result = await apiGetDueWords(reviewedWords);
       return result?.words || [];
+    },
+    startRoomSession: async ({ roomId }) => {
+      const result = await apiStartSpeedReviewRoom(roomId);
+      if (result?.state) updateGameState(result.state);
+      return result;
+    },
+    commitRoomReview: async ({ roomId, word, commitIndex }) => {
+      const result = await apiProgressSpeedReviewRoom(roomId, word.vid, word.sid, commitIndex);
+      if (result?.state) updateGameState(result.state);
+      return result;
+    },
+    completeRoomSession: async ({ roomId }) => {
+      const result = await apiCompleteSpeedReviewRoom(roomId);
+      if (result?.state) updateGameState(result.state);
+      return result;
     }
   });
 
@@ -1282,6 +1303,9 @@ async function initGame() {
       body: JSON.stringify({ words })
     }),
     apiGetDueWords,
+    apiStartSpeedReviewRoom,
+    apiProgressSpeedReviewRoom,
+    apiCompleteSpeedReviewRoom,
     apiGetCreatureCollection,
     showCollectionSelect,
     apiGetWhackAMolePool,

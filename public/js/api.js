@@ -470,6 +470,27 @@ async function completeDiscovery() {
   return apiCall('/complete-discovery', 'POST');
 }
 
+/** Initialize speed review room snapshot for current room */
+async function startSpeedReviewRoom(roomId) {
+  return apiCall('/speed-review-room/start', 'POST', { roomId });
+}
+
+/** Record one committed review card in speed review room */
+async function progressSpeedReviewRoom(roomId, vid, sid, commitIndex) {
+  return apiCall(
+    '/speed-review-room/progress',
+    'POST',
+    { roomId, vid, sid, commitIndex },
+    null,
+    { bypassLoadingGate: true }
+  );
+}
+
+/** Mark speed review room as complete/reconciled */
+async function completeSpeedReviewRoom(roomId) {
+  return apiCall('/speed-review-room/complete', 'POST', { roomId });
+}
+
 // ============ CREATURE COMBAT ============
 
 async function startCreatureEncounter() {
@@ -588,6 +609,9 @@ export {
   lookupJpdbBatch,
   getDiscoveryWords,
   getDiscoveryStatus,
-  completeDiscovery
+  completeDiscovery,
+  startSpeedReviewRoom,
+  progressSpeedReviewRoom,
+  completeSpeedReviewRoom
   // Note: getDueWords is exported inline
 };
