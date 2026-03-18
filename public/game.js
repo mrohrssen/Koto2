@@ -147,6 +147,8 @@ import {
   respondNpcDialogue,
   getWhackAMolePool as apiGetWhackAMolePool,
   completeWhackAMole as apiCompleteWhackAMole,
+  skillMasterOffers as apiSkillMasterOffers,
+  skillMasterChoose as apiSkillMasterChoose,
 } from './js/api.js';
 
 const API_BASE = '';
@@ -1289,6 +1291,8 @@ async function initGame() {
     showCollectionSelect,
     apiGetWhackAMolePool,
     apiCompleteWhackAMole,
+    apiSkillMasterOffers,
+    apiSkillMasterChoose,
   });
 
   metaShop.init({
