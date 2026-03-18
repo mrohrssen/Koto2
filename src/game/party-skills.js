@@ -1,39 +1,33 @@
 export const PARTY_SKILLS_CATALOG = {
-  hardyCrew: {
-    id: 'hardyCrew',
-    name: 'Hardy Crew',
-    desc: 'Increase party max HP by 10% for this run.',
-    params: { hpMult: 1.1 }
+  superEffectiveMend: {
+    id: 'superEffectiveMend',
+    name: 'Super-Effective Mend',
+    desc: 'On a proc, heal a small portion of max HP.',
+    params: { procChance: 0.20, healPct: 0.10 }
   },
-  sharpEdge: {
-    id: 'sharpEdge',
-    name: 'Sharp Edge',
-    desc: 'Increase party damage by 8% for this run.',
-    params: { damageMult: 1.08 }
+  hasteSpark: {
+    id: 'hasteSpark',
+    name: 'Haste Spark',
+    desc: 'On a proc, gain a burst of speed.',
+    params: { procChance: 0.25 }
   },
-  steadyHands: {
-    id: 'steadyHands',
-    name: 'Steady Hands',
-    desc: 'Increase accuracy for this run.',
-    params: { accuracyBonus: 0.05 }
+  guardPulse: {
+    id: 'guardPulse',
+    name: 'Guard Pulse',
+    desc: 'On a proc, grant a small shield for a short duration.',
+    params: { procChance: 0.20, shieldPct: 0.10, durationTurns: 2 }
   },
-  quickStudy: {
-    id: 'quickStudy',
-    name: 'Quick Study',
-    desc: 'Gain 10% more XP for this run.',
-    params: { xpMult: 1.1 }
+  battleRhythm: {
+    id: 'battleRhythm',
+    name: 'Battle Rhythm',
+    desc: 'Every Nth hit deals bonus damage.',
+    params: { everyNthHit: 5, bonusDamageMult: 0.5 }
   },
-  thickHide: {
-    id: 'thickHide',
-    name: 'Thick Hide',
-    desc: 'Reduce incoming damage by 1 for this run.',
-    params: { flatDamageReduction: 1 }
-  },
-  luckyFinds: {
-    id: 'luckyFinds',
-    name: 'Lucky Finds',
-    desc: 'Gain 10% more credits for this run.',
-    params: { creditsMult: 1.1 }
+  finisherFeast: {
+    id: 'finisherFeast',
+    name: 'Finisher Feast',
+    desc: 'Heal a small portion of max HP after finishing an enemy.',
+    params: { healPct: 0.05 }
   }
 };
 
