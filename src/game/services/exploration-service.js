@@ -472,6 +472,18 @@ export class ExplorationService {
       room.skillMaster = { offered: null, chosenId: null, completed: false };
     }
 
+    if (room.skillMaster.completed === true && room.skillMaster.chosenId) {
+      if (skillId === room.skillMaster.chosenId) {
+        if (!this.gm.run) throw new Error('No active run');
+        if (!Array.isArray(this.gm.run.partySkills)) this.gm.run.partySkills = [];
+        return {
+          chosenId: room.skillMaster.chosenId,
+          partySkills: this.gm.run.partySkills
+        };
+      }
+      throw new Error('Skill Master already completed');
+    }
+
     const offeredIds = Array.isArray(room.skillMaster.offered) ? room.skillMaster.offered : [];
     if (!offeredIds.includes(skillId)) {
       throw new Error('Invalid Skill Master offer');

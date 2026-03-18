@@ -25,8 +25,9 @@ describe('Skill Master service', () => {
     try {
       const { room, svc } = makeGmWithSkillMasterRoom();
       const first = svc.getSkillMasterOffers();
+      const firstOfferedIds = [...(room.skillMaster.offered || [])];
       const second = svc.getSkillMasterOffers();
-      assert.deepStrictEqual(room.skillMaster.offered, room.skillMaster.offered, 'offered ids should persist');
+      assert.deepStrictEqual(room.skillMaster.offered, firstOfferedIds, 'offered ids should persist');
       assert.deepStrictEqual(second, first, 'second call should return same offers');
     } finally {
       Math.random = originalRandom;
