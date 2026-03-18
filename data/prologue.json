@@ -28,6 +28,21 @@
     "narration": "Wear it, and you'll start to understand our {world|世界|せかい} — one {word|言葉|ことば} at a time. It grows as YOU grow."
   },
   {
+    "id": "prologue-hiragana-question",
+    "speaker": "Cid",
+    "narration": "One quick thing — do you know our local alphabet, Hiragana?",
+    "choices": [
+      { "text": "Yes, I already know Hiragana", "id": "kana-yes" },
+      { "text": "No, teach it to me!", "id": "kana-no" }
+    ]
+  },
+  {
+    "id": "prologue-hiragana-response",
+    "speaker": "Cid",
+    "conditional": "kana-no",
+    "narration": "Ah... I see. Here, let me set up your Translator! In the future you'll be able to command your creatures using native Japanese, but right now I've just set the Translator to prioritize teaching you Hiragana. Now you'll just worry about learning Hiragana and your Translator will handle the commands until you get the hang of things."
+  },
+  {
     "id": "prologue-06-intro",
     "speaker": "Cid",
     "narration": "My {name|名前|なまえ} is Cid! I {help|助ける|たすける} newcomers find their {way|道|みち}."

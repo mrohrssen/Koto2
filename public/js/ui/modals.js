@@ -75,11 +75,15 @@ function buildModelOptions(provider, selectedModel) {
 let takeover = null;
 let sceneModule = null;
 let settingsModule = null;
+let getGameState = null;
+let updateGameState = null;
 
 export function init(callbacks) {
   takeover = callbacks.takeover;
   sceneModule = callbacks.scene;
   settingsModule = callbacks.settings;
+  getGameState = callbacks.getGameState || null;
+  updateGameState = callbacks.updateGameState || null;
 }
 
 /** Open settings takeover */
@@ -96,6 +100,7 @@ export async function openSettings() {
     loadServerSettings()
   ]);
   const voiceGender = serverSettings.voiceGender || 'boy';
+  const kanaMode = getGameState?.()?.meta?.kanaMode ?? false;
 
   content.innerHTML = `
     <h3 style="margin:16px">Settings</h3>
@@ -176,6 +181,12 @@ export async function openSettings() {
         <input type="checkbox" id="settings-japanify-ui"
           ${settingsModule.isJapanifyUIEnabled?.() ? 'checked' : ''}>
         日本語 UI
+      </label>
+      <label class="settings-label" style="margin-top:8px">
+        <input type="checkbox" id="settings-kana-mode"
+          ${kanaMode ? 'checked' : ''}>
+        Hiragana Learning Mode
+        <small style="color:#888;font-size:0.85em;display:block;margin-top:2px">Practice hiragana in combat — cards are auto-answered and kana questions appear instead</small>
       </label>
 
       <h4 style="margin:20px 0 8px;color:var(--accent)">Audio</h4>
@@ -397,6 +408,28 @@ export async function openSettings() {
     // Save voice gender to server settings
     if (selectedVoiceGender !== voiceGender) {
       await saveServerSettings({ voiceGender: selectedVoiceGender });
+    }
+
+    // Save kana mode to server (updates meta.kanaMode)
+    const kanaModeEnabled = document.getElementById('settings-kana-mode')?.checked ?? false;
+    if (kanaModeEnabled !== kanaMode) {
+      try {
+        const resp = await fetch('/api/game/kana-mode', {
+          method: 'POST',
+          headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: kanaModeEnabled }),
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          if (updateGameState && getGameState) {
+            const current = getGameState();
+            updateGameState({ ...current, meta: { ...current.meta, kanaMode: data.kanaMode } });
+          }
+        }
+      } catch {
+        sceneModule.showToast('Failed to save kana mode', 2000);
+        return;
+      }
     }
 
     sceneModule.showToast('Settings saved', 2000);

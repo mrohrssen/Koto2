@@ -26,6 +26,8 @@ data/word-knowledge-*.json
 data/tts-dialogue/
 # Word tracker (per-user, runtime-generated)
 data/word-tracker-*.json
+# SRS decks (per-user, runtime-generated)
+data/srs-*.json
 # Sprite quality pipeline
 !data/quality-refs/
 !data/quality-refs/**

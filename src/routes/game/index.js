@@ -17,6 +17,7 @@ import createEconomyRoutes from './economy.js';
 import createMiscRoutes from './misc.js';
 import { createKnownWordsRoutes } from './known-words.js';
 import createMetaShopRoutes from './meta-shop.js';
+import createKanaRoutes from './kana.js';
 
 /**
  * Create game router
@@ -102,6 +103,9 @@ export default function createGameRoutes(deps) {
     clearNpcDialogueCache: deps.clearNpcDialogueCache,
     clearCreatureDialogueCache: deps.clearCreatureDialogueCache
   }));
+
+  // Mount kana routes
+  router.use(createKanaRoutes());
 
   // Mount known-words routes
   router.use('/known-words', createKnownWordsRoutes());
