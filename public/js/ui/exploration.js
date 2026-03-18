@@ -481,10 +481,8 @@ export function renderShrine() {
       const result = await apiShrineUpgrade(creatureId);
       if (result?.state) { updateGameState(result.state); }
       sceneModule.showNarration(t('leveledUp', result?.creatureName || 'Creature', result?.newLevel || '?'), { autoDismiss: 2000 });
-
-      const proceedResult = await apiProceed();
       shrineInProgress = false;
-      if (proceedResult?.state) { updateGameState(proceedResult.state); updateUI(); }
+      updateUI(); // phase becomes 'room' → auto-proceed advances
     });
   }
 }
@@ -562,11 +560,7 @@ export async function renderWordDiscovery() {
       if (completeResult?.state) {
         updateGameState(completeResult.state);
       }
-      const proceedResult = await apiProceed();
-      if (proceedResult?.state) {
-        updateGameState(proceedResult.state);
-        updateUI();
-      }
+      updateUI(); // phase becomes 'room' → auto-proceed advances
       return;
     }
   }
@@ -577,11 +571,7 @@ export async function renderWordDiscovery() {
     if (completeResult?.state) {
       updateGameState(completeResult.state);
     }
-    const proceedResult = await apiProceed();
-    if (proceedResult?.state) {
-      updateGameState(proceedResult.state);
-      updateUI();
-    }
+    updateUI(); // phase becomes 'room' → auto-proceed advances
     return;
   }
 
@@ -597,11 +587,7 @@ export async function renderWordDiscovery() {
       if (completeResult?.state) {
         updateGameState(completeResult.state);
       }
-      const proceedResult = await apiProceed();
-      if (proceedResult?.state) {
-        updateGameState(proceedResult.state);
-        updateUI();
-      }
+      updateUI(); // phase becomes 'room' → auto-proceed advances
       return;
     }
 
@@ -623,11 +609,7 @@ export async function renderWordDiscovery() {
     const learnedWords = words.map(w => w.word);
     apiPostCombatRefresh?.(learnedWords).catch(() => {});
 
-    const proceedResult = await apiProceed();
-    if (proceedResult?.state) {
-      updateGameState(proceedResult.state);
-      updateUI();
-    }
+    updateUI(); // phase becomes 'room' → auto-proceed advances
     return;
   }
 

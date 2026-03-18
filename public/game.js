@@ -356,9 +356,15 @@ function updateGameContent() {
       explorationUI.renderAreaSelection();
       break;
     case 'exploring':
-    case 'room':
-    case 'room_encounter':
       explorationUI.renderExploring();
+      break;
+    case 'room_encounter':
+      // Auto-start combat — skip the "Fight" button
+      startEncounter();
+      break;
+    case 'room':
+      // Auto-advance past completed rooms — skip the "Proceed" dead state
+      autoProceed();
       break;
     case 'shrine':
       explorationUI.renderShrine();
@@ -393,6 +399,22 @@ function updateGameContent() {
     case 'run_ended':
       explorationUI.renderRunEnded();
       break;
+  }
+}
+
+// ============ AUTO-PROCEED ============
+let autoProceedInFlight = false;
+async function autoProceed() {
+  if (autoProceedInFlight) return;
+  autoProceedInFlight = true;
+  try {
+    const result = await apiProceed();
+    if (result?.state) {
+      updateGameState(result.state);
+      updateUI();
+    }
+  } finally {
+    autoProceedInFlight = false;
   }
 }
 
@@ -764,7 +786,10 @@ function showCollectionToast(additions) {
   }
 }
 
+let encounterStarting = false;
 async function startEncounter() {
+  if (encounterStarting) return;
+  encounterStarting = true;
   const hasCreatures = gameState.run?.creatureParty?.active?.length > 0;
 
   let result;
@@ -776,6 +801,7 @@ async function startEncounter() {
     result = await apiStartEncounter();
   }
 
+  encounterStarting = false;
   if (result?.state) {
     updateGameState(result.state);
     updateUI();
