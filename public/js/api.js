@@ -554,6 +554,18 @@ async function respondNpcDialogue(roundIndex, selectedIndex) {
   return apiCall('/npc-dialogue-respond', 'POST', { roundIndex, selectedIndex });
 }
 
+// ============ SKILL MASTER ENDPOINTS ============
+
+/** Get 3 skill offers for the Skill Master room */
+async function skillMasterOffers() {
+  return apiCall('/skill-master-offers', 'POST');
+}
+
+/** Choose a skill offer in the Skill Master room */
+async function skillMasterChoose(skillId) {
+  return apiCall('/skill-master-choose', 'POST', { skillId });
+}
+
 export {
   apiCall,
   isApiLoading,
@@ -612,6 +624,9 @@ export {
   completeDiscovery,
   startSpeedReviewRoom,
   progressSpeedReviewRoom,
-  completeSpeedReviewRoom
+  completeSpeedReviewRoom,
+  // Skill master endpoints
+  skillMasterOffers,
+  skillMasterChoose
   // Note: getDueWords is exported inline
 };

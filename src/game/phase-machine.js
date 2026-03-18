@@ -31,6 +31,7 @@ export const PHASES = {
   DEALER: 'dealer',
   WHACK_A_MOLE: 'whackAMole',
   SPEED_REVIEW_ROOM: 'speedReviewRoom',
+  SKILL_MASTER: 'skillMaster',
   COMBAT: 'combat',
   VICTORY: 'victory',
   DEFEAT: 'defeat',
@@ -59,6 +60,7 @@ export const VALID_TRANSITIONS = {
     PHASES.ROOM,
     PHASES.ROOM_ENCOUNTER,
     PHASES.WHACK_A_MOLE,
+    PHASES.SKILL_MASTER,
     PHASES.SPEED_REVIEW_ROOM,
     PHASES.COMBAT,
     PHASES.SHOP
@@ -68,6 +70,7 @@ export const VALID_TRANSITIONS = {
     PHASES.ROOM,
     PHASES.ROOM_ENCOUNTER,
     PHASES.WHACK_A_MOLE,
+    PHASES.SKILL_MASTER,
     PHASES.SPEED_REVIEW_ROOM,
     PHASES.COMBAT,
     PHASES.SHOP,
@@ -118,6 +121,7 @@ export const VALID_TRANSITIONS = {
   ],
 
   [PHASES.WHACK_A_MOLE]: [PHASES.ROOM],
+  [PHASES.SKILL_MASTER]: [PHASES.ROOM],
   [PHASES.SPEED_REVIEW_ROOM]: [PHASES.ROOM],
 
   [PHASES.AREA_COMPLETE]: [
@@ -168,6 +172,7 @@ export function derivePhase(state) {
     if (currentRoom.type === 'dealer' && !currentRoom.interacted) return 'dealer';
     if (currentRoom.type === 'whackAMole' && !currentRoom.interacted) return PHASES.WHACK_A_MOLE;
     if (currentRoom.type === 'speedReviewRoom' && !currentRoom.interacted) return PHASES.SPEED_REVIEW_ROOM;
+    if (currentRoom.type === 'skillMaster' && currentRoom.skillMaster?.completed !== true) return PHASES.SKILL_MASTER;
     if ((currentRoom.type === 'encounter' || currentRoom.type === 'boss') && !currentRoom.interacted) return PHASES.ROOM_ENCOUNTER;
     return PHASES.ROOM;
   }

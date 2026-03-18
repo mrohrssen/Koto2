@@ -176,6 +176,10 @@ export function createNewRun(player) {
       maxTotal: 6
     },
 
+    // Party skills (run-scoped, server-owned)
+    // Stored as array of objects: { id: string }
+    partySkills: [],
+
     // Item buff stacking (run-scoped)
     itemBuffs: {
       attackMult: 1.0,
@@ -227,6 +231,9 @@ export function createCombatState(enemy) {
 
     allies: [],    // references to run.creatureParty.active
     enemies: [],   // MVP: single enemy creature
+
+    // Party skills (combat-scoped)
+    partyHitCounter: 0,
 
     // Last action for DM narration
     lastAction: null,

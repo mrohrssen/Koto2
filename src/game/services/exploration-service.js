@@ -30,6 +30,7 @@ import {
 import { addXpToCreature, xpToNextLevel, instantiateCreature, getCreatureBuyPrice, getCreatureSellPrice, generateDealerCreatures } from '../creatures.js';
 import { logger } from '../../logger.js';
 import { getDueWordsWithMeanings } from '../../jpdb.js';
+import { rollSkillMasterOffers, getPartySkillDisplay } from '../party-skills.js';
 
 const AREA_BG_COUNT = 20;
 function randomAreaBg(areaId) {
@@ -187,6 +188,10 @@ export class ExplorationService {
     // Can't proceed if encounter not completed
     if (currentRoom.type === 'encounter' && !currentRoom.interacted) {
       throw new Error('Must complete encounter before proceeding');
+    }
+
+    if (currentRoom.type === 'skillMaster' && currentRoom.skillMaster?.completed !== true) {
+      throw new Error('Must complete Skill Master before proceeding');
     }
 
     // Move to next room
@@ -446,6 +451,78 @@ export class ExplorationService {
     this.gm.run.player.credits = (this.gm.run.player.credits || 0) + creditsAwarded;
 
     return { type: 'whack_a_mole_complete', score: clampedScore, creditsAwarded };
+  }
+
+  // ============ SKILL MASTER ROOM ============
+
+  getSkillMasterOffers() {
+    const room = this.getCurrentRoom();
+    if (!room || room.type !== 'skillMaster') {
+      throw new Error('No Skill Master here');
+    }
+    if (!room.skillMaster) {
+      room.skillMaster = { offered: null, chosenId: null, completed: false };
+    }
+
+    // Idempotent within room: once offered IDs exist, keep them
+    if (!Array.isArray(room.skillMaster.offered)) {
+      const ownedSkillIds = (this.gm.run?.partySkills || []).map(s => s?.id).filter(Boolean);
+      const offeredIds = rollSkillMasterOffers({ ownedSkillIds, count: 3 });
+      room.skillMaster.offered = offeredIds;
+    }
+
+    const offered = (room.skillMaster.offered || [])
+      .map(id => getPartySkillDisplay(id))
+      .filter(Boolean);
+
+    this.gm.emitState();
+    return { offered };
+  }
+
+  chooseSkillMasterOffer(skillId) {
+    const room = this.getCurrentRoom();
+    if (!room || room.type !== 'skillMaster') {
+      throw new Error('No Skill Master here');
+    }
+    if (!room.skillMaster) {
+      room.skillMaster = { offered: null, chosenId: null, completed: false };
+    }
+
+    if (room.skillMaster.completed === true && room.skillMaster.chosenId) {
+      if (skillId === room.skillMaster.chosenId) {
+        if (!this.gm.run) throw new Error('No active run');
+        if (!Array.isArray(this.gm.run.partySkills)) this.gm.run.partySkills = [];
+        return {
+          chosenId: room.skillMaster.chosenId,
+          partySkills: this.gm.run.partySkills
+        };
+      }
+      throw new Error('Skill Master already completed');
+    }
+
+    const offeredIds = Array.isArray(room.skillMaster.offered) ? room.skillMaster.offered : [];
+    if (!offeredIds.includes(skillId)) {
+      throw new Error('Invalid Skill Master offer');
+    }
+
+    if (!this.gm.run) throw new Error('No active run');
+    if (!Array.isArray(this.gm.run.partySkills)) this.gm.run.partySkills = [];
+
+    // No duplicates: choosing an already-owned skill is a no-op
+    const alreadyOwned = this.gm.run.partySkills.some(s => s?.id === skillId);
+    if (!alreadyOwned) {
+      this.gm.run.partySkills.push({ id: skillId });
+    }
+
+    room.skillMaster.chosenId = skillId;
+    room.skillMaster.completed = true;
+    room.interacted = true;
+
+    this.gm.emitState();
+    return {
+      chosenId: skillId,
+      partySkills: this.gm.run.partySkills
+    };
   }
 
   // ============ DEALER ROOM ============

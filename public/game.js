@@ -150,6 +150,8 @@ import {
   respondNpcDialogue,
   getWhackAMolePool as apiGetWhackAMolePool,
   completeWhackAMole as apiCompleteWhackAMole,
+  skillMasterOffers as apiSkillMasterOffers,
+  skillMasterChoose as apiSkillMasterChoose,
 } from './js/api.js';
 
 const API_BASE = '';
@@ -386,6 +388,9 @@ function updateGameContent() {
       break;
     case 'whackAMole':
       explorationUI.renderWhackAMole();
+      break;
+    case 'skillMaster':
+      explorationUI.renderSkillMaster();
       break;
     case 'combat':
       // Clear stale buttons; flash card will be rendered by combat-loop
@@ -1335,6 +1340,8 @@ async function initGame() {
     showCollectionSelect,
     apiGetWhackAMolePool,
     apiCompleteWhackAMole,
+    apiSkillMasterOffers,
+    apiSkillMasterChoose,
   });
 
   metaShop.init({

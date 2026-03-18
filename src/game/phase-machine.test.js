@@ -1,0 +1,49 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+import { derivePhase, PHASES } from './phase-machine.js';
+
+function baseState(overrides = {}) {
+  const { run: runOverrides = {}, ...rest } = overrides;
+  return {
+    player: { id: 'p1' },
+    run: {
+      active: true,
+      areaSelectionRequired: false,
+      pendingBranch: false,
+      areaCleared: false,
+      areasCompleted: 0,
+      areasToWin: 10,
+      currentRoom: 0,
+      rooms: [{ type: 'encounter', interacted: true }],
+      ...runOverrides,
+    },
+    combat: null,
+    ...rest,
+  };
+}
+
+test('derivePhase returns skillMaster when skillMaster room incomplete', () => {
+  const state = baseState({
+    run: {
+      rooms: [{
+        type: 'skillMaster',
+        skillMaster: { completed: false },
+      }],
+    },
+  });
+  assert.equal(derivePhase(state), PHASES.SKILL_MASTER);
+});
+
+test('derivePhase returns room when skillMaster room completed', () => {
+  const state = baseState({
+    run: {
+      rooms: [{
+        type: 'skillMaster',
+        skillMaster: { completed: true },
+      }],
+    },
+  });
+  assert.equal(derivePhase(state), PHASES.ROOM);
+});
+
