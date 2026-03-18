@@ -1333,6 +1333,8 @@ async function initGame() {
     takeover,
     scene,
     settings,
+    getGameState: () => gameState,
+    updateGameState,
   });
 
   characterUI.init({
