@@ -1434,9 +1434,10 @@ async function executeCreatureMovesTurn(choices) {
           {
             const adaptedAtk = {
               ...atk,
-              attackerSkillName: atk.moveName,
-              attackerSkillEn: atk.moveNameEn,
-              attackerSkillReading: atk.moveReading || '',
+              attackerSkillName: atk.moveName || atk.attackerSkillName,
+              attackerSkillEn: atk.moveNameEn || atk.attackerSkillEn,
+              // Server uses attackerSkillReading; moveReading is rarely set — don't wipe furigana
+              attackerSkillReading: atk.moveReading || atk.attackerSkillReading || '',
               attackerElement: atk.moveElement || atk.attackerElement,
             };
             attackCard = insertAttackCard(adaptedAtk, false);
