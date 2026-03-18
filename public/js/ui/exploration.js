@@ -708,36 +708,14 @@ export async function renderWhackAMole() {
 
 /** Skill Master room — placeholder UI (to be expanded in later task) */
 export async function renderSkillMaster() {
-  const gameState = getGameState();
-  const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
-
-  // If already completed, just proceed.
-  if (room?.skillMaster?.completed === true) {
-    const result = await apiProceed();
-    if (result?.state) {
-      updateGameState(result.state);
-      updateUI();
-    }
-    return;
-  }
-
   actions.setContent(`
     <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:360px;">
       <div style="text-align:center;font-weight:700;">Skill Master</div>
       <div style="text-align:center;color:var(--text-secondary);font-size:13px;">
-        Coming soon.
+        Choose a skill (coming next task).
       </div>
-      <button class="action-btn action-btn-primary" id="skill-master-continue-btn">Continue</button>
     </div>
   `);
-
-  document.getElementById('skill-master-continue-btn')?.addEventListener('click', async () => {
-    const result = await apiProceed();
-    if (result?.state) {
-      updateGameState(result.state);
-      updateUI();
-    }
-  });
 }
 
 function startWhackAMoleGame(pool) {
