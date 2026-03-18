@@ -2644,11 +2644,15 @@ export async function stopCombatLoop(result) {
               headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
               body: JSON.stringify({ enabled: false })
             });
+            // Update local state so UI reflects graduation immediately
+            const current = getGameState();
+            updateGameState({ ...current, meta: { ...current.meta, kanaMode: false } });
             // Show Cid graduation message
             await narration.showNarration(
               "Incredible progress! You've learned the entire Hiragana alphabet. " +
               "I've upgraded your Translator — from now on, you'll be able to command " +
-              "your creatures directly using Japanese vocabulary!"
+              "your creatures directly using Japanese vocabulary!",
+              { speaker: 'Cid' }
             );
           }
         } catch (e) {

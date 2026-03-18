@@ -27,12 +27,16 @@ export default function createKanaRoutes() {
     if (!char || !['again', 'good'].includes(grade)) {
       return res.status(400).json({ error: 'char and grade (again|good) required' });
     }
-    const result = reviewKanaCard(userId, char, grade);
-    if (!result) {
-      return res.status(404).json({ error: `Card not found: ${char}` });
+    try {
+      const result = reviewKanaCard(userId, char, grade);
+      if (!result) {
+        return res.status(404).json({ error: `Card not found: ${char}` });
+      }
+      const stats = getKanaStats(userId);
+      res.json({ card: result, stats });
+    } catch (e) {
+      return res.status(404).json({ error: e.message });
     }
-    const stats = getKanaStats(userId);
-    res.json({ card: result, stats });
   });
 
   // GET /api/game/kana-stats — get kana learning progress
