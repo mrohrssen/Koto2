@@ -381,6 +381,9 @@ function updateGameContent() {
     case 'whackAMole':
       explorationUI.renderWhackAMole();
       break;
+    case 'skillMaster':
+      explorationUI.renderSkillMaster();
+      break;
     case 'combat':
       // Clear stale buttons; flash card will be rendered by combat-loop
       if (!combatLoopUI.isCombatActive()) {
