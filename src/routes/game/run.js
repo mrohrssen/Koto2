@@ -15,6 +15,7 @@ import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswe
 import { validateTeamSelection } from '../../game/services/creature-collection-service.js';
 import { rollFriendlyNpcOffers } from '../../game/services/exploration-service.js';
 import { applyItem } from '../../game/services/item-service.js';
+import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -196,6 +197,79 @@ export default function createRunRoutes({
       const result = req.gameManager.explorationService.chooseSkillMasterOffer(skillId);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // NPC Battle: get skill offers for post-battle reward (idempotent per room)
+  router.post('/npc-battle-skill-offers', async (req, res) => {
+    try {
+      const gm = req.gameManager;
+      const room = gm.getCurrentRoom();
+      if (!room || room.type !== 'npcBattle') {
+        return res.status(400).json({ error: 'Not in an NPC battle room' });
+      }
+      if (!room.npcBattle?.skillSelectionPending) {
+        return res.status(400).json({ error: 'NPC battle skill selection not pending' });
+      }
+
+      // Generate offers if not already generated (idempotent)
+      if (!Array.isArray(room.npcBattle.offered)) {
+        const ownedSkillIds = (gm.run?.partySkills || []).map(s => s?.id).filter(Boolean);
+        const offeredIds = rollSkillMasterOffers({ ownedSkillIds, count: 3 });
+        room.npcBattle.offered = offeredIds;
+        req.saveGame();
+      }
+
+      const offered = (room.npcBattle.offered || [])
+        .map(id => getPartySkillDisplay(id))
+        .filter(Boolean);
+
+      res.json({ offered, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // NPC Battle: choose one skill offer
+  router.post('/npc-battle-skill-choose', async (req, res) => {
+    try {
+      const { skillId } = req.body || {};
+      if (!skillId) return res.status(400).json({ error: 'skillId required' });
+
+      const gm = req.gameManager;
+      const room = gm.getCurrentRoom();
+      if (!room || room.type !== 'npcBattle') {
+        return res.status(400).json({ error: 'Not in an NPC battle room' });
+      }
+      if (!room.npcBattle?.skillSelectionPending) {
+        return res.status(400).json({ error: 'NPC battle skill selection not pending' });
+      }
+      if (room.npcBattle.chosenSkillId) {
+        return res.status(400).json({ error: 'Skill already chosen for this room' });
+      }
+
+      const offeredIds = Array.isArray(room.npcBattle.offered) ? room.npcBattle.offered : [];
+      if (!offeredIds.includes(skillId)) {
+        return res.status(400).json({ error: 'Invalid skill choice' });
+      }
+
+      if (!gm.run) throw new Error('No active run');
+      if (!Array.isArray(gm.run.partySkills)) gm.run.partySkills = [];
+
+      // No duplicates
+      const alreadyOwned = gm.run.partySkills.some(s => s?.id === skillId);
+      if (!alreadyOwned) {
+        gm.run.partySkills.push({ id: skillId });
+      }
+
+      room.npcBattle.chosenSkillId = skillId;
+      room.npcBattle.skillSelectionPending = false;
+      room.interacted = true;
+
+      req.saveGame();
+      res.json({ chosenId: skillId, partySkills: gm.run.partySkills, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }

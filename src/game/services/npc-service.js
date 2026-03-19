@@ -142,6 +142,14 @@ export function handleNpcDialogueResponse(gameManager, { roundIndex, selectedInd
 
     gameManager.run.npcDialogue = null;
 
+    // If the current room is an npcBattle room, mark skill selection as pending
+    // instead of returning straight to exploring. The player must pick a party skill.
+    const currentRoom = gameManager.run?.rooms?.[gameManager.run?.currentRoom];
+    if (currentRoom?.type === 'npcBattle') {
+      if (!currentRoom.npcBattle) currentRoom.npcBattle = {};
+      currentRoom.npcBattle.skillSelectionPending = true;
+    }
+
     return {
       tone,
       delta,

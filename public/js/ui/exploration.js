@@ -1260,3 +1260,152 @@ function startWhackAMoleGame(pool) {
     playSFX
   }).start();
 }
+
+// ============ NPC BATTLE SKILL REWARD ============
+
+/** Module-level state for npc battle skill selection to avoid refetch loops */
+let npcBattleSkillState = {
+  roomId: null,
+  fetched: false,
+  offered: null,
+  choosing: false
+};
+
+/**
+ * NPC Battle skill reward — shown after NPC dialogue completes.
+ * Player picks 1 of 3 party skills as a reward for winning the NPC battle.
+ * @param {object} opts - { onSkillChosen(skillId), fetchOffers() }
+ */
+export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers } = {}) {
+  const gameState = getGameState();
+  const room = gameState.room || getActiveRoomFromRun(gameState.run);
+  const roomId = room?.id || room?.type || 'unknown-npcbattle';
+
+  // Reset per-room cache when room changes
+  if (npcBattleSkillState.roomId !== roomId) {
+    npcBattleSkillState = {
+      roomId,
+      fetched: false,
+      offered: null,
+      choosing: false
+    };
+  }
+
+  // If already completed (e.g. reload after choosing), just show confirmation
+  if (!room?.npcBattle?.skillSelectionPending && room?.interacted) {
+    actions.setContent(`
+      <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:360px;">
+        <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">NPC Battle</div>
+        <div style="text-align:center;color:var(--text-secondary);font-size:13px;">
+          Skill acquired.
+        </div>
+      </div>
+    `);
+    return;
+  }
+
+  // Show loading state immediately
+  actions.setContent(`
+    <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
+      <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">NPC Battle Reward</div>
+      <div style="text-align:center;color:var(--text-secondary);font-size:13px;">
+        Choose one skill.
+      </div>
+      <div style="text-align:center;color:var(--text-muted);font-size:12px;">Loading offers…</div>
+    </div>
+  `);
+
+  // Fetch offers once per room
+  if (!npcBattleSkillState.fetched) {
+    npcBattleSkillState.fetched = true;
+    const fetchRoomId = roomId;
+    let resp;
+    try {
+      resp = await fetchOffers?.();
+    } catch (err) {
+      npcBattleSkillState.fetched = false;
+      npcBattleSkillState.offered = null;
+      actions.setContent(`
+        <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
+          <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">NPC Battle Reward</div>
+          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">
+            Failed to load offers.
+          </div>
+          <button class="action-btn action-btn-primary" id="npcbattle-skill-retry-btn">Retry</button>
+        </div>
+      `);
+      document.getElementById('npcbattle-skill-retry-btn')?.addEventListener('click', () => {
+        npcBattleSkillState.fetched = false;
+        npcBattleSkillState.offered = null;
+        renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
+      });
+      return;
+    }
+
+    // Stale async guard: room changed while awaiting
+    if (npcBattleSkillState.roomId !== fetchRoomId) return;
+
+    const offered = resp?.offered || resp?.offers || resp?.skills || room?.npcBattle?.offered;
+    if (!Array.isArray(offered) || offered.length === 0) {
+      npcBattleSkillState.fetched = false;
+      npcBattleSkillState.offered = null;
+      actions.setContent(`
+        <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
+          <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">NPC Battle Reward</div>
+          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">
+            No skills available.
+          </div>
+        </div>
+      `);
+      return;
+    }
+
+    npcBattleSkillState.offered = offered;
+  }
+
+  const offers = npcBattleSkillState.offered || [];
+  const cardsHtml = offers.slice(0, 3).map(s => `
+    <button class="ward-option" data-skill-id="${s.id}" style="text-align:left">
+      <div style="font-weight:800">${s.name || s.id}</div>
+      <div style="margin-top:4px;color:var(--text-secondary);font-size:12px;line-height:1.3">
+        ${s.desc || ''}
+      </div>
+    </button>
+  `).join('');
+
+  actions.setContent(`
+    <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:420px;">
+      <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">NPC Battle Reward</div>
+      <div style="text-align:center;color:var(--text-secondary);font-size:13px;">
+        Victory! Choose one party skill.
+      </div>
+      <div class="ward-selection-list" style="gap:10px">${cardsHtml}</div>
+    </div>
+  `);
+
+  document.querySelectorAll('.ward-option[data-skill-id]').forEach(el => {
+    el.addEventListener('click', async () => {
+      if (npcBattleSkillState.choosing) return;
+      npcBattleSkillState.choosing = true;
+      const skillId = el.dataset.skillId;
+      playSFX('button-tap');
+
+      const buttons = Array.from(document.querySelectorAll('.ward-option[data-skill-id]'));
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+      });
+
+      try {
+        await onSkillChosen?.(skillId);
+      } catch (err) {
+        npcBattleSkillState.choosing = false;
+        buttons.forEach(btn => {
+          btn.disabled = false;
+          btn.style.opacity = '';
+        });
+        sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
+      }
+    });
+  });
+}

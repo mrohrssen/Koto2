@@ -185,6 +185,7 @@ export function derivePhase(state) {
     if (currentRoom.type === 'speedReviewRoom' && !currentRoom.interacted) return PHASES.SPEED_REVIEW_ROOM;
     if (currentRoom.type === 'skillMaster' && currentRoom.skillMaster?.completed !== true) return PHASES.SKILL_MASTER;
     if (currentRoom.type === 'friendlyNpc' && !currentRoom.interacted) return PHASES.FRIENDLY_NPC;
+    if (currentRoom.type === 'npcBattle' && currentRoom.npcBattle?.skillSelectionPending) return PHASES.NPC_SKILL_SELECTION;
     if ((currentRoom.type === 'encounter' || currentRoom.type === 'boss' || currentRoom.type === 'npcBattle') && !currentRoom.interacted) return PHASES.ROOM_ENCOUNTER;
     return PHASES.ROOM;
   }

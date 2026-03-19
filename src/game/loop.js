@@ -504,9 +504,10 @@ export class GameManager {
       throw new Error('Combat already active');
     }
 
-    // Check if current room is a boss room
+    // Check if current room is a boss room or npcBattle room
     const currentRoom = this.run.rooms?.[this.run.currentRoom];
     const isBoss = currentRoom?.type === 'boss' && !!currentRoom?.boss?.creatureId;
+    const isNpcBattle = currentRoom?.type === 'npcBattle';
 
     const highestLevel = Math.max(...this.run.creatureParty.active.map(r => r.level), 1);
     const isFirstBattle = (this.run.currentAreaEncounters || 0) === 0;
@@ -521,6 +522,15 @@ export class GameManager {
       const bossLevel = Math.round(getEnemyLevel({ totalEncounters, enemyCount: 1 }) * 1.25);
       const bossCreature = generateEnemyCreature(bossLevel, [currentRoom.boss.creatureId], stage);
       enemyCreatures = [bossCreature];
+    } else if (isNpcBattle) {
+      // NPC Battle: always 3 enemies at level × 1.1
+      const baseLevel = getEnemyLevel({ totalEncounters, enemyCount: 3 });
+      const npcBattleLevel = Math.round(baseLevel * 1.1);
+      enemyCreatures = [
+        generateEnemyCreature(npcBattleLevel, creaturePool, stage),
+        generateEnemyCreature(npcBattleLevel, creaturePool, stage),
+        generateEnemyCreature(npcBattleLevel, creaturePool, stage)
+      ];
     } else {
       enemyCreatures = generateEnemyCreatures(highestLevel, {
         maxEnemies: isFirstBattle ? 2 : undefined,
@@ -538,9 +548,20 @@ export class GameManager {
     this.combat.isBoss = isBoss;
     this.combat.swapPhase = true; // Free swap available before first action
 
-    // Koto2 MVP: random NPC overlay disabled — NPCs now only appear in deterministic
-    // npcBattle rooms, not randomly during regular encounters.
-    // Previously used NPC_ENCOUNTER_CHANCE = 0.15 here to randomly assign an NPC.
+    // NPC Battle rooms: always assign an NPC from the area's roster
+    if (isNpcBattle) {
+      const areaId = this.run.currentArea?.id || null;
+      const allNpcs = loadNpcs();
+      const areaEntries = Object.values(allNpcs).filter(npc => !areaId || npc.area === areaId || !npc.area);
+      const fallbackEntries = areaEntries.length > 0 ? areaEntries : Object.values(allNpcs);
+      if (fallbackEntries.length > 0) {
+        const npc = fallbackEntries[Math.floor(Math.random() * fallbackEntries.length)];
+        this.combat.npcId = npc.id;
+        this.combat.npcData = { id: npc.id, name: npc.name, nameEn: npc.nameEn };
+      }
+    }
+    // Note: for regular encounters, random NPC overlay is disabled (Koto2 MVP).
+    // NPCs only appear in deterministic npcBattle rooms.
 
     // Boss speaks on encounter
     if (isBoss && enemyCreatures[0]) {
@@ -558,7 +579,8 @@ export class GameManager {
       allies: this.run.creatureParty.active,
       playerGoesFirst: true,
       npc: this.combat.npcData,
-      isBoss
+      isBoss,
+      isNpcBattle
     };
   }
 

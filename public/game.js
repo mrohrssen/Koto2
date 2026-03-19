@@ -154,6 +154,8 @@ import {
   skillMasterChoose as apiSkillMasterChoose,
   getFriendlyNpcOffers as apiGetFriendlyNpcOffers,
   chooseFriendlyNpcItem as apiChooseFriendlyNpcItem,
+  npcBattleSkillOffers as apiNpcBattleSkillOffers,
+  npcBattleSkillChoose as apiNpcBattleSkillChoose,
 } from './js/api.js';
 
 const API_BASE = '';
@@ -396,6 +398,18 @@ function updateGameContent() {
       break;
     case 'friendlyNpc':
       explorationUI.renderFriendlyNpc();
+      break;
+    case 'npc_skill_selection':
+      explorationUI.renderNpcBattleSkillSelection({
+        onSkillChosen: async (skillId) => {
+          const result = await apiNpcBattleSkillChoose(skillId);
+          if (result?.state) {
+            updateGameState(result.state);
+            updateUI();
+          }
+        },
+        fetchOffers: apiNpcBattleSkillOffers
+      });
       break;
     case 'combat':
       // Clear stale buttons; flash card will be rendered by combat-loop

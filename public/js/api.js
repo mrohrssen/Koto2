@@ -578,6 +578,18 @@ async function chooseFriendlyNpcItem(itemId) {
   return apiCall('/friendly-npc-choose', 'POST', { itemId });
 }
 
+// ============ NPC BATTLE SKILL REWARD ENDPOINTS ============
+
+/** Get 3 skill offers for the NPC battle post-victory reward (idempotent per room) */
+async function npcBattleSkillOffers() {
+  return apiCall('/npc-battle-skill-offers', 'POST');
+}
+
+/** Choose a skill from the NPC battle reward */
+async function npcBattleSkillChoose(skillId) {
+  return apiCall('/npc-battle-skill-choose', 'POST', { skillId });
+}
+
 export {
   apiCall,
   isApiLoading,
@@ -642,6 +654,9 @@ export {
   skillMasterChoose,
   // Friendly NPC endpoints
   getFriendlyNpcOffers,
-  chooseFriendlyNpcItem
+  chooseFriendlyNpcItem,
+  // NPC battle skill reward endpoints
+  npcBattleSkillOffers,
+  npcBattleSkillChoose
   // Note: getDueWords is exported inline
 };
