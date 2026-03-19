@@ -124,11 +124,12 @@ export class ExplorationService {
 
     // Reset per-area state
     this.gm.run.currentAreaEncounters = 0;
-    this.gm.run.encountersNeeded = generateEncounterCount();
+    // encountersNeeded is kept for backwards-compat with other code, but room count is now fixed at 30
+    this.gm.run.encountersNeeded = 30;
     this.gm.run.areaCleared = false;
 
-    // Generate rooms for this area (boss appended if configured)
-    this.gm.run.rooms = generateAreaRooms(areaId, this.gm.run.encountersNeeded, null, false, forceRoomType);
+    // Generate rooms for this area (fixed 30-room structure for Koto2)
+    this.gm.run.rooms = generateAreaRooms(areaId);
     this.gm.run.currentRoom = 0;
     this.gm.run.roomsExplored = 0;
 

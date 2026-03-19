@@ -100,7 +100,9 @@ export const ROOM_TYPES = {
   skillMaster: 'skillMaster',
   whackAMole: 'whackAMole',
   speedReviewRoom: 'speedReviewRoom',
-  boss: 'boss'
+  boss: 'boss',
+  npcBattle: 'npcBattle',
+  friendlyNpc: 'friendlyNpc'
 };
 
 // ============ ROOM GENERATION ============
@@ -169,34 +171,82 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
 }
 
 /**
- * Generate rooms for an area (single rooms only, no branching)
+ * Generate rooms for an area — Koto2: fixed 30-room structure
+ * Fixed positions: indices 5, 11, 17, 23 = npcBattle; index 29 = boss
+ * Remaining 25 slots: ~50/50 split between encounter and friendlyNpc
+ *
+ * @param {string} areaId - Area ID to generate rooms for
+ * @param {number} [_roomCount] - Ignored (kept for backwards-compat); rooms are always 30
+ * @param {*} [_lastSpecialType] - Ignored
+ * @param {boolean} [_encountersOnly] - Ignored
+ * @param {*} [_forceRoomType] - Ignored
  */
-export function generateAreaRooms(areaId, roomCount = 10, lastSpecialType = null, encountersOnly = false, forceRoomType = null) {
-  const rooms = [];
-  const totalSlots = roomCount;
-  let prevSpecialType = lastSpecialType;
+export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encountersOnly, _forceRoomType) {
+  const TOTAL_ROOMS = 30;
+  const NPC_BATTLE_INDICES = new Set([5, 11, 17, 23]);
+  const BOSS_INDEX = 29;
 
   // Look up sub-areas for this area
   const area = getAreaById(areaId);
   const subAreas = area?.subAreas || [];
 
-  for (let i = 0; i < roomCount; i++) {
-    const room = generateSingleRoom(areaId, i + 1, totalSlots, prevSpecialType, encountersOnly, forceRoomType);
-    if (room.type !== 'encounter') prevSpecialType = room.type;
+  const rooms = [];
+
+  for (let i = 0; i < TOTAL_ROOMS; i++) {
+    let type;
+
+    if (NPC_BATTLE_INDICES.has(i)) {
+      type = ROOM_TYPES.npcBattle;
+    } else if (i === BOSS_INDEX) {
+      type = ROOM_TYPES.boss;
+    } else {
+      // ~50/50 split between encounter and friendlyNpc
+      type = Math.random() < 0.5 ? ROOM_TYPES.encounter : ROOM_TYPES.friendlyNpc;
+    }
+
+    const room = createRoom(type, areaId, i + 1, TOTAL_ROOMS);
+
     if (subAreas.length > 0) room.subArea = subAreas[i % subAreas.length];
+
     rooms.push(room);
   }
 
-  // Append boss room as final room if area has a boss
+  // Attach boss creature if area has one
   if (area?.bossCreatureId) {
-    const bossRoom = createRoom(ROOM_TYPES.boss, areaId, rooms.length + 1, rooms.length + 1);
-    bossRoom.boss = { creatureId: area.bossCreatureId };
-    if (subAreas.length > 0) bossRoom.subArea = subAreas[rooms.length % subAreas.length];
-    rooms.push(bossRoom);
+    rooms[BOSS_INDEX].boss = { creatureId: area.bossCreatureId, defeated: false };
   }
 
   return rooms;
 }
+
+/*
+ * OLD generateAreaRooms (16-24 rooms, variable special room types) — commented out for Koto2 rework:
+ *
+ * export function generateAreaRooms_OLD(areaId, roomCount = 10, lastSpecialType = null, encountersOnly = false, forceRoomType = null) {
+ *   const rooms = [];
+ *   const totalSlots = roomCount;
+ *   let prevSpecialType = lastSpecialType;
+ *
+ *   const area = getAreaById(areaId);
+ *   const subAreas = area?.subAreas || [];
+ *
+ *   for (let i = 0; i < roomCount; i++) {
+ *     const room = generateSingleRoom(areaId, i + 1, totalSlots, prevSpecialType, encountersOnly, forceRoomType);
+ *     if (room.type !== 'encounter') prevSpecialType = room.type;
+ *     if (subAreas.length > 0) room.subArea = subAreas[i % subAreas.length];
+ *     rooms.push(room);
+ *   }
+ *
+ *   if (area?.bossCreatureId) {
+ *     const bossRoom = createRoom(ROOM_TYPES.boss, areaId, rooms.length + 1, rooms.length + 1);
+ *     bossRoom.boss = { creatureId: area.bossCreatureId };
+ *     if (subAreas.length > 0) bossRoom.subArea = subAreas[rooms.length % subAreas.length];
+ *     rooms.push(bossRoom);
+ *   }
+ *
+ *   return rooms;
+ * }
+ */
 
 /**
  * Create a room object
@@ -256,6 +306,14 @@ export function createRoom(type, areaId, roomNumber, totalRooms) {
     case ROOM_TYPES.boss:
       room.boss = { defeated: false };
       break;
+    case ROOM_TYPES.npcBattle:
+      room.npcBattle = {};
+      break;
+    case ROOM_TYPES.friendlyNpc: {
+      const offerCategory = Math.random() < 0.5 ? 'food' : 'weapon';
+      room.friendlyNpc = { offerCategory, offered: null, chosenId: null, completed: false };
+      break;
+    }
   }
 
   return room;
@@ -290,6 +348,10 @@ export function getRoomEntryNarration(room) {
       return `${locationLabel}に入った。記憶の装置がある...復習を始めよう。`;
     case ROOM_TYPES.boss:
       return `${locationLabel}に入った。巨大な影が現れた...`;
+    case ROOM_TYPES.friendlyNpc:
+      return `${locationLabel}に入った。A friendly face greets you.`;
+    case ROOM_TYPES.npcBattle:
+      return `${locationLabel}に入った。A challenger blocks your path!`;
     default:
       return `${locationLabel}に入った。`;
   }
@@ -308,7 +370,9 @@ export function getRoomActions(room) {
   const isUnfinishedWhackAMole = room.type === 'whackAMole' && !room.interacted;
   const isUnfinishedSpeedReviewRoom = room.type === 'speedReviewRoom' && !room.interacted;
   const isUnfinishedBoss = room.type === 'boss' && !room.interacted;
-  if (!isUnfinishedEncounter && !isUnfinishedWordDiscovery && !isUnfinishedDealer && !isUnfinishedSkillMaster && !isUnfinishedWhackAMole && !isUnfinishedSpeedReviewRoom && !isUnfinishedBoss) {
+  const isUnfinishedFriendlyNpc = room.type === 'friendlyNpc' && !room.friendlyNpc?.completed;
+  const isUnfinishedNpcBattle = room.type === 'npcBattle' && !room.interacted;
+  if (!isUnfinishedEncounter && !isUnfinishedWordDiscovery && !isUnfinishedDealer && !isUnfinishedSkillMaster && !isUnfinishedWhackAMole && !isUnfinishedSpeedReviewRoom && !isUnfinishedBoss && !isUnfinishedFriendlyNpc && !isUnfinishedNpcBattle) {
     actions.push({ id: 'proceed', name: '進む', description: '次のエリアへ進む' });
   }
 
@@ -350,6 +414,16 @@ export function getRoomActions(room) {
     case ROOM_TYPES.boss:
       if (!room.interacted) {
         actions.push({ id: 'fight', name: 'ボス戦', description: 'ボスに挑む' });
+      }
+      break;
+    case ROOM_TYPES.friendlyNpc:
+      if (!room.friendlyNpc?.completed) {
+        actions.push({ id: 'friendly_npc_interact', name: '話す', description: 'フレンドリーなNPCと話す' });
+      }
+      break;
+    case ROOM_TYPES.npcBattle:
+      if (!room.interacted) {
+        actions.push({ id: 'start_encounter', name: '戦う', description: '挑戦者と戦う' });
       }
       break;
   }
