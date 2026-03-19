@@ -17,7 +17,7 @@
  */
 
 import { dom } from '../dom.js';
-import { configureCreatureImg, creatureStaticPath } from './sprite-utils.js';
+import { configureCreatureImg, replaceWithTextSprite } from './sprite-utils.js';
 import { renderJpFirst } from './bootstrap-client.js';
 
 function rarityStars(rarity) {
@@ -116,18 +116,10 @@ export function render(creatures) {
       `;
 
       const spriteImg = slot.querySelector('.creature-sprite-icon');
+      // MVP: use text sprite for all creatures (KO or alive)
+      const textSprite = replaceWithTextSprite(spriteImg, creature.baseWord || creature.name, creature.element);
       if (isKO) {
-        // Use static sprite for KO creatures (no idle animation)
-        spriteImg.src = creatureStaticPath(creature.id);
-        spriteImg.onerror = () => {
-          spriteImg.style.display = 'none';
-          spriteImg.nextElementSibling.style.display = '';
-        };
-      } else {
-        configureCreatureImg(spriteImg, creature.id, el => {
-          el.style.display = 'none';
-          el.nextElementSibling.style.display = '';
-        });
+        textSprite.style.opacity = '0.45';
       }
 
       slot.addEventListener('click', () => togglePopup(i));

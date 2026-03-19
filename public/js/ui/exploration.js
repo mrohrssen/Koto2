@@ -26,7 +26,7 @@
 import * as speedReview from './speed-review.js';
 import { WhackAMoleGame } from './whack-a-mole.js';
 import { playSFX } from '../audio.js';
-import { creatureBgUrl, configureCreatureImg } from './sprite-utils.js';
+import { creatureBgUrl, replaceWithTextSprite } from './sprite-utils.js';
 import { t, isJapanified } from './i18n.js';
 import * as metaShop from './meta-shop.js';
 
@@ -534,9 +534,11 @@ export function renderShrine() {
     <div class="shrine-creature-list">${creatureCards}</div>
   `);
 
-  // Wire up sprite images with proper idle->static fallback
+  // MVP: replace placeholder imgs with text sprites
   document.querySelectorAll('.shrine-creature-img').forEach(img => {
-    configureCreatureImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
+    const cid = img.dataset.creatureId;
+    const creature = allCreatures.find(c => c.id === cid);
+    replaceWithTextSprite(img, creature?.baseWord || creature?.name || cid, creature?.element);
   });
 
   if (shrineInProgress) return;

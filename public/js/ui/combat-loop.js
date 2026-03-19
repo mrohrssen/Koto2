@@ -43,7 +43,7 @@ import {
   poisonTickEffect
 } from './combat-effects.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
-import { configureCreatureImg, creatureSpritePath } from './sprite-utils.js';
+import { configureCreatureImg, creatureSpritePath, replaceWithTextSprite } from './sprite-utils.js';
 
 function npcSpritePath(npcId) {
   return `/assets/sprites/npcs/${npcId}.webp`;
@@ -1468,11 +1468,8 @@ async function showKoSwapAnimations(result) {
         const newCreature = result.creatureParty.active[koIndex];
         if (newCreature) {
           const icon = swapSlot.querySelector('.creature-sprite-icon');
-          if (icon) configureCreatureImg(icon, newCreature.id, el => {
-            el.style.display = 'none';
-            const fallback = el.nextElementSibling;
-            if (fallback) fallback.style.display = '';
-          });
+          // MVP: replace with text sprite
+          if (icon) replaceWithTextSprite(icon, newCreature.baseWord || newCreature.name, newCreature.element);
           const hpFill = swapSlot.querySelector('.creature-hp-fill');
           if (hpFill) {
             const pct = Math.max(0, (newCreature.hp / newCreature.maxHp) * 100);

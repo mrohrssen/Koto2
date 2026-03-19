@@ -28,7 +28,7 @@
  */
 
 import { dom } from '../dom.js';
-import { configureCreatureImg } from './sprite-utils.js';
+import { configureCreatureImg, createTextSprite } from './sprite-utils.js';
 import { renderJpFirst, esc as escHtml } from './bootstrap-client.js';
 
 const ELEMENT_ICONS = {
@@ -98,18 +98,10 @@ export function showEnemy(enemy) {
     updateEnemyHP(enemy.hp, enemy.maxHp);
   }
 
-  // Construct sprite path from enemy ID
-  const onLoad = () => {
-    removePlaceholder();
-    dom.enemySprite.classList.add('visible');
-  };
-
   if (isCreature && !enemy.sprite) {
-    dom.enemySprite.addEventListener('load', onLoad, { once: true });
-    configureCreatureImg(dom.enemySprite, enemy.id, () => {
-      dom.enemySprite.classList.remove('visible');
-      showCreaturePlaceholder(enemy);
-    });
+    // MVP: show text sprite immediately instead of loading an image
+    dom.enemySprite.classList.remove('visible');
+    showCreaturePlaceholder(enemy);
   } else {
     const spritePath = enemy.sprite || `/assets/sprites/enemies/${enemy.id}.webp`;
     dom.enemySprite.src = spritePath;
@@ -117,7 +109,10 @@ export function showEnemy(enemy) {
       dom.enemySprite.classList.remove('visible');
       showPlaceholder(enemy);
     };
-    dom.enemySprite.onload = onLoad;
+    dom.enemySprite.onload = () => {
+      removePlaceholder();
+      dom.enemySprite.classList.add('visible');
+    };
   }
 }
 
@@ -185,10 +180,7 @@ export function showEnemies(enemies) {
       </div>
     `;
     const spriteImg = slot.querySelector('.enemy-creature-sprite');
-    configureCreatureImg(spriteImg, enemy.id, el => {
-      el.style.display = 'none';
-      el.nextElementSibling.style.display = '';
-    });
+    configureCreatureImg(spriteImg, enemy.id, null, enemy);
     row.appendChild(slot);
   }
 
@@ -231,11 +223,13 @@ function showPlaceholder(enemy) {
 
 function showCreaturePlaceholder(enemy) {
   removePlaceholder();
-  const el = document.createElement('div');
+  const el = createTextSprite(enemy.baseWord || enemy.name, enemy.element);
   el.id = 'enemy-placeholder';
-  const color = ELEMENT_COLORS[enemy.element] || '#666';
-  el.style.cssText = `width:90px;height:90px;border-radius:50%;background:transparent;border:none;display:flex;align-items:center;justify-content:center;font-size:48px;z-index:2;position:relative;`;
-  el.textContent = ELEMENT_ICONS[enemy.element] || '\u{1F916}';
+  el.style.width = '90px';
+  el.style.height = '90px';
+  el.style.fontSize = '2rem';
+  el.style.position = 'relative';
+  el.style.zIndex = '2';
   dom.enemySpriteContainer.appendChild(el);
 }
 

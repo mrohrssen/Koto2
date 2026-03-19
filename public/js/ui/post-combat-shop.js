@@ -77,7 +77,7 @@ export function show(items) {
           <div class="shop-item-card" data-index="${i}" style="border-color: ${rarityColor}40; position: relative;">
             <div class="shop-item-rarity-badge" style="background: ${rarityColor}">${(item.rarity || 'common').toUpperCase()}</div>
             <button class="shop-help-btn" data-item-index="${i}">?</button>
-            <img class="shop-item-sprite" src="/assets/sprites/items/${item.id}.webp?v=20260220" alt="${item.meaning}" />
+            <div class="text-sprite shop-item-sprite">${item.word || '？'}</div>
             <div class="shop-item-info">
               <div class="shop-item-word">${itemNameHtml}</div>
               <div class="shop-item-effect">${buildStatPills(item)}</div>
