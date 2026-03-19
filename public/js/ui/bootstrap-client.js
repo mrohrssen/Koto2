@@ -1,5 +1,7 @@
 // public/js/ui/bootstrap-client.js
 
+import { toRomaji } from './romaji.js';
+
 const TAG_RE = /\{([^|{}]*)\|([^|{}]*)\|([^|}]*)\}/g;
 
 let _knownWords = new Set();
@@ -41,9 +43,9 @@ export function renderEnFirst(taggedText) {
     if (isKnown || i === teachIdx) {
       let html = '<span class="bs-word">';
       if (reading) {
-        html += `<ruby>${esc(kanji)}<rt>${esc(reading)}</rt></ruby>`;
+        html += `<ruby>${esc(reading)}<rt>${esc(toRomaji(reading))}</rt></ruby>`;
       } else {
-        html += esc(kanji);
+        html += esc(reading || kanji);
       }
       if (!isKnown) {
         html += `<span class="bs-word-en">${esc(english)}</span>`;
@@ -64,9 +66,9 @@ export function renderEnFirst(taggedText) {
 export function renderJpFirst(kanji, reading, english) {
   let html = '<span class="bs-word">';
   if (reading) {
-    html += `<ruby>${esc(kanji)}<rt>${esc(reading)}</rt></ruby>`;
+    html += `<ruby>${esc(reading)}<rt>${esc(toRomaji(reading))}</rt></ruby>`;
   } else {
-    html += esc(kanji);
+    html += esc(reading || kanji);
   }
   if (!_knownWords.has(kanji) && english) {
     html += `<span class="bs-word-en">${esc(english)}</span>`;
