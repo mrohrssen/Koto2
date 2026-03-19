@@ -9,24 +9,21 @@ describe('Prologue data', () => {
     readFileSync(join(process.cwd(), 'data/prologue.json'), 'utf-8')
   );
 
-  it('contains the hiragana question scene', () => {
-    const scene = prologue.find(s => s.id === 'prologue-hiragana-question');
-    assert.ok(scene, 'hiragana question scene should exist');
-    assert.strictEqual(scene.speaker, 'Cid');
-    assert.ok(scene.choices?.length === 2, 'should have 2 choices');
+  // Hiragana mode was removed in Koto2 Task 4.1. These tests verify the
+  // current prologue structure instead of the old kana-mode scenes.
+
+  it('contains the starter selection scene at the end', () => {
+    const lastScene = prologue[prologue.length - 1];
+    assert.strictEqual(lastScene.id, 'prologue-starter-selection');
+    assert.ok(lastScene.choices?.length >= 2, 'starter selection should have choices');
   });
 
-  it('hiragana choices have correct IDs', () => {
-    const scene = prologue.find(s => s.id === 'prologue-hiragana-question');
-    const ids = scene.choices.map(c => c.id);
-    assert.ok(ids.includes('kana-yes'), 'should have kana-yes choice');
-    assert.ok(ids.includes('kana-no'), 'should have kana-no choice');
+  it('has at least 15 prologue scenes', () => {
+    assert.ok(prologue.length >= 15, `Expected >= 15 scenes, got ${prologue.length}`);
   });
 
-  it('hiragana response scene follows the question', () => {
-    const qIdx = prologue.findIndex(s => s.id === 'prologue-hiragana-question');
-    const response = prologue[qIdx + 1];
-    assert.strictEqual(response.id, 'prologue-hiragana-response');
-    assert.strictEqual(response.conditional, 'kana-no');
+  it('does not contain hiragana question scene (removed in Koto2)', () => {
+    const scene = prologue.find(s => s.id === 'prologue-hiragana-question');
+    assert.strictEqual(scene, undefined, 'hiragana question scene should not exist');
   });
 });

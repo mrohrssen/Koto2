@@ -37,15 +37,17 @@ describe('creature-collection-service', () => {
     });
 
     it('rejects selection over budget', () => {
-      const bigCollection = ['hikaribon', 'tsukimochi', 'hanatchi', 'kazenoko', 'kumaro'];
-      const result = validateTeamSelection(bigCollection, ['hikaribon', 'tsukimochi', 'hanatchi', 'kumaro']);
+      // 4 commons = 12 points, exceeds 10-point budget
+      const bigCollection = ['hikaribon', 'tsukimochi', 'hanatchi', 'kazenoko'];
+      const result = validateTeamSelection(bigCollection, ['hikaribon', 'tsukimochi', 'hanatchi', 'kazenoko']);
       assert.strictEqual(result.valid, false);
       assert.match(result.reason, /exceeds.*budget/i);
     });
 
     it('accepts exactly 10 points', () => {
-      const coll = ['hikaribon', 'tsukimochi', 'kumaro'];
-      const result = validateTeamSelection(coll, ['hikaribon', 'tsukimochi', 'kumaro']);
+      // kaminarion is uncommon (4 pts) + hikaribon (3) + tsukimochi (3) = 10
+      const coll = ['hikaribon', 'tsukimochi', 'kaminarion'];
+      const result = validateTeamSelection(coll, ['hikaribon', 'tsukimochi', 'kaminarion']);
       assert.strictEqual(result.valid, true);
       assert.strictEqual(result.totalCost, 10);
     });

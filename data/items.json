@@ -1,110 +1,1112 @@
 [
   {
-    "id": "onigiri",
-    "word": "おにぎり",
-    "reading": "おにぎり",
-    "meaning": "rice ball",
-    "rarity": "common",
-    "type": "heal",
-    "effect": {
-      "healPercent": 0.25
-    },
-    "description": "Heal the weakest creature for 25% of max HP",
-    "descriptionJa": "最も弱ったクリーチャーのHPを25%回復"
-  },
-  {
-    "id": "miso-soup",
-    "word": "みそしる",
-    "reading": "みそしる",
-    "meaning": "miso soup",
-    "rarity": "common",
+    "id": "curry-bread",
+    "word": "カレーパン",
+    "reading": "かれーぱん",
+    "meaning": "curry bread",
+    "components": [
+      {
+        "word": "カレー",
+        "reading": "カレー",
+        "meanings": [
+          "curry (esp. Japanese curry)",
+          "rice and curry"
+        ],
+        "rank": 4600
+      },
+      {
+        "word": "パン",
+        "reading": "パン",
+        "meanings": [
+          "bread; (sweet) pastry",
+          "staff of life; one's bread"
+        ],
+        "rank": 2000
+      }
+    ],
+    "compoundRank": 39900,
+    "rank": 4600,
+    "rarity": "uncommon",
     "type": "heal",
     "effect": {
       "healAllPercent": 0.1
     },
     "description": "Heal all creatures for 10% of max HP",
-    "descriptionJa": "全クリーチャーのHPを10%回復"
+    "descriptionTagged": "{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 10% of max HP",
+    "descriptionJa": "全クリーチャーのHPを10%回復",
+    "stage": 6
   },
   {
-    "id": "bento",
-    "word": "べんとう",
-    "reading": "べんとう",
-    "meaning": "bento box",
+    "id": "green-tea",
+    "word": "緑茶",
+    "reading": "りょくちゃ",
+    "meaning": "green tea",
+    "components": [
+      {
+        "word": "緑",
+        "reading": "みどり",
+        "meanings": [
+          "green",
+          "greenery (esp. fresh verdure)"
+        ],
+        "rank": 2300
+      },
+      {
+        "word": "茶",
+        "reading": "ちゃ",
+        "meanings": [
+          "tea",
+          "tea plant (Camellia sinensis)",
+          "tea preparation; making tea",
+          "brown",
+          "mockery"
+        ],
+        "rank": 4100
+      }
+    ],
+    "compoundRank": 22300,
+    "rank": 4100,
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "attackMult",
+      "value": 0.02
+    },
+    "description": "Increase one creature's attack by 2%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} {attack|攻撃|こうげき} by 2%",
+    "descriptionJa": "クリーチャー1体の攻撃力を2%アップ",
+    "stage": 5
+  },
+  {
+    "id": "cheesecake",
+    "word": "チーズケーキ",
+    "reading": "ちーずけーき",
+    "meaning": "cheesecake",
+    "components": [
+      {
+        "word": "チーズ",
+        "reading": "チーズ",
+        "meanings": [
+          "cheese",
+          "tee (piping); T-joint",
+          "cheese (said when taking a photograph)"
+        ],
+        "rank": 6300
+      },
+      {
+        "word": "ケーキ",
+        "reading": "ケーキ",
+        "meanings": [
+          "cake"
+        ],
+        "rank": 3500
+      }
+    ],
+    "compoundRank": 30100,
+    "rank": 6300,
+    "rarity": "rare",
+    "type": "heal",
+    "effect": {
+      "healMostDamaged": true
+    },
+    "description": "Heal the most damaged creature to full HP",
+    "descriptionTagged": "{Heal|回復|かいふく} the most {damaged|ダメージ|} {creature|生き物|いきもの} to full HP",
+    "descriptionJa": "最もダメージを受けたクリーチャーを全回復",
+    "stage": 6
+  },
+  {
+    "id": "pork-soup",
+    "word": "豚汁",
+    "reading": "とんじる",
+    "meaning": "pork soup",
+    "components": [
+      {
+        "word": "豚",
+        "reading": "ぶた",
+        "meanings": [
+          "pig (Sus scrofa domesticus)",
+          "pork",
+          "fatso; fatty"
+        ],
+        "rank": 5500
+      },
+      {
+        "word": "汁",
+        "reading": "しる",
+        "meanings": [
+          "juice; sap",
+          "soup; broth"
+        ],
+        "rank": 6300
+      }
+    ],
+    "compoundRank": 39200,
+    "rank": 6300,
+    "rarity": "rare",
+    "type": "mpRestore",
+    "effect": {
+      "mpRestorePercent": 0.25
+    },
+    "description": "Restore 25% MP to all creatures",
+    "descriptionTagged": "{Restore|回復|かいふく} 25% MP to all {creatures|生き物|いきもの}",
+    "descriptionJa": "全クリーチャーのMPを25%回復",
+    "stage": 6
+  },
+  {
+    "id": "rice-ball",
+    "word": "おにぎり",
+    "reading": "おにぎり",
+    "meaning": "rice ball",
+    "components": [
+      {
+        "word": "おにぎり",
+        "reading": "おにぎり",
+        "meanings": [
+          "onigiri; rice ball (often triangular, sometimes with a filling and wrapped in nori)"
+        ],
+        "rank": 9100
+      }
+    ],
+    "compoundRank": 9100,
+    "rank": 9100,
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "attackMult",
+      "value": 0.03
+    },
+    "description": "Increase one creature's attack by 3%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} {attack|攻撃|こうげき} by 3%",
+    "descriptionJa": "クリーチャー1体の攻撃力を3%アップ",
+    "stage": 8
+  },
+  {
+    "id": "yakitori",
+    "word": "焼き鳥",
+    "reading": "やきとり",
+    "meaning": "grilled chicken skewer",
+    "components": [
+      {
+        "word": "焼き",
+        "reading": "やき",
+        "meanings": [
+          "cooking, esp. frying or stir-frying; heating",
+          "tempering",
+          "-ware"
+        ],
+        "rank": 12400
+      },
+      {
+        "word": "鳥",
+        "reading": "とり",
+        "meanings": [
+          "bird",
+          "bird meat (esp. chicken meat); fowl; poultry"
+        ],
+        "rank": 1800
+      }
+    ],
+    "compoundRank": 22600,
+    "rank": 12400,
+    "rarity": "epic",
+    "type": "revive",
+    "effect": {
+      "revivePercent": 0.5
+    },
+    "description": "Revive a fallen creature at 50% HP",
+    "descriptionTagged": "Revive a fallen {creature|生き物|いきもの} at 50% HP",
+    "descriptionJa": "倒れたクリーチャーをHP50%で復活",
+    "stage": 9
+  },
+  {
+    "id": "miso-soup",
+    "word": "味噌汁",
+    "reading": "みそしる",
+    "meaning": "miso soup",
+    "components": [
+      {
+        "word": "味噌",
+        "reading": "みそ",
+        "meanings": [
+          "miso; fermented condiment usu. made from soybeans",
+          "innards (from crabs, shrimps, etc.) resembling miso",
+          "key (main) point; good part (of something)",
+          "weakling; weak person",
+          "try"
+        ],
+        "rank": 13100
+      },
+      {
+        "word": "汁",
+        "reading": "しる",
+        "meanings": [
+          "juice; sap",
+          "soup; broth"
+        ],
+        "rank": 6300
+      }
+    ],
+    "compoundRank": 10500,
+    "rank": 13100,
+    "rarity": "epic",
+    "type": "boost",
+    "effect": {
+      "tempBoost": {
+        "field": "attack",
+        "value": 3,
+        "turns": 5,
+        "target": "all"
+      }
+    },
+    "description": "Boost all creatures' attack by 3 for 5 turns",
+    "descriptionTagged": "Boost all {creatures'|生き物|いきもの} {attack|攻撃|こうげき} by 3 for 5 {turns|ターン|}",
+    "descriptionJa": "全クリーチャーの攻撃力を5ターン+3",
+    "stage": 6
+  },
+  {
+    "id": "strawberry-milk",
+    "word": "いちごミルク",
+    "reading": "いちごみるく",
+    "meaning": "strawberry milk",
+    "components": [
+      {
+        "word": "いちご",
+        "reading": "いちご",
+        "meanings": [
+          "strawberry (esp. the garden strawberry, Fragaria x ananassa)"
+        ],
+        "rank": 18600
+      },
+      {
+        "word": "ミルク",
+        "reading": "ミルク",
+        "meanings": [
+          "milk"
+        ],
+        "rank": 5800
+      }
+    ],
+    "compoundRank": null,
+    "rank": 18600,
+    "rarity": "epic",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.15
+    },
+    "description": "Heal all creatures for 15% HP",
+    "descriptionTagged": "{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 15% HP",
+    "descriptionJa": "全クリーチャーのHPを15%回復",
+    "stage": 10
+  },
+  {
+    "id": "salmon-sushi",
+    "word": "鮭寿司",
+    "reading": "さけずし",
+    "meaning": "salmon sushi",
+    "components": [
+      {
+        "word": "鮭",
+        "reading": "さけ",
+        "meanings": [
+          "salmon (Salmonidae spp.)",
+          "chum salmon (Oncorhynchus keta)"
+        ],
+        "rank": 21500
+      },
+      {
+        "word": "寿司",
+        "reading": "すし",
+        "meanings": [
+          "sushi; anything made with vinegared rice (may also contain vegetables, spices, fish, or other delicacies)"
+        ],
+        "rank": 13900
+      }
+    ],
+    "compoundRank": null,
+    "rank": 21500,
+    "rarity": "legendary",
+    "type": "revive",
+    "effect": {
+      "revivePercent": 1
+    },
+    "description": "Revive a fallen creature at full HP",
+    "descriptionTagged": "Revive a fallen {creature|生き物|いきもの} at full HP",
+    "descriptionJa": "倒れたクリーチャーをHP全快で復活",
+    "stage": 6
+  },
+  {
+    "id": "takoyaki",
+    "word": "たこ焼き",
+    "reading": "たこやき",
+    "meaning": "takoyaki",
+    "components": [
+      {
+        "word": "たこ",
+        "reading": "たこ",
+        "meanings": [
+          "octopus"
+        ],
+        "rank": 23600
+      },
+      {
+        "word": "焼き",
+        "reading": "やき",
+        "meanings": [
+          "cooking, esp. frying or stir-frying; heating",
+          "tempering",
+          "-ware"
+        ],
+        "rank": 12400
+      }
+    ],
+    "compoundRank": 14500,
+    "rank": 23600,
+    "rarity": "legendary",
+    "type": "boost",
+    "effect": {
+      "tempBoost": {
+        "field": "attack",
+        "value": 5,
+        "turns": 5,
+        "target": "all"
+      }
+    },
+    "description": "Boost all creatures' attack by 5 for 5 turns",
+    "descriptionTagged": "Boost all {creatures'|生き物|いきもの} {attack|攻撃|こうげき} by 5 for 5 {turns|ターン|}",
+    "descriptionJa": "全クリーチャーの攻撃力を5ターン+5",
+    "stage": 10
+  },
+  {
+    "id": "water-bottle",
+    "word": "水筒",
+    "reading": "すいとう",
+    "meaning": "water bottle",
+    "components": [
+      {
+        "word": "水",
+        "reading": "みず",
+        "meanings": [
+          "water (esp. cool, fresh water, e.g. drinking water)",
+          "fluid (esp. in an animal tissue); liquid",
+          "flood; floodwaters",
+          "water offered to wrestlers just prior to a bout",
+          "break granted to wrestlers engaged in a prolonged bout"
+        ],
+        "rank": 400
+      },
+      {
+        "word": "筒",
+        "reading": "つつ",
+        "meanings": [
+          "pipe; tube; cylinder",
+          "gun barrel",
+          "gun; cannon",
+          "well lining; well curb"
+        ],
+        "rank": 9700
+      }
+    ],
+    "compoundRank": 13700,
+    "rank": 9700,
+    "rarity": "rare",
+    "type": "mpRestore",
+    "effect": {
+      "mpRestorePercent": 0.25
+    },
+    "description": "Restore 25% MP to all creatures",
+    "descriptionTagged": "{Restore|回復|かいふく} 25% MP to all {creatures|生き物|いきもの}",
+    "descriptionJa": "全クリーチャーのMPを25%回復",
+    "stage": 8
+  },
+  {
+    "id": "sake",
+    "word": "酒",
+    "reading": "さけ",
+    "meaning": "sake; alcohol",
+    "components": [
+      {
+        "word": "酒",
+        "reading": "しゅ",
+        "meanings": [
+          "alcohol; sake"
+        ],
+        "rank": 1600
+      }
+    ],
+    "compoundRank": 1600,
+    "rank": 1600,
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healPercent": 0.2
+    },
+    "description": "Heal one creature for 20% of max HP",
+    "descriptionTagged": "{Heal|回復|かいふく} one {creature|生き物|いきもの} for 20% of max HP",
+    "descriptionJa": "クリーチャー1体のHPを20%回復",
+    "stage": 3
+  },
+  {
+    "id": "bowl-of-rice",
+    "word": "ご飯",
+    "reading": "ごはん",
+    "meaning": "bowl of rice",
+    "components": [
+      {
+        "word": "ご飯",
+        "reading": "ごはん",
+        "meanings": [
+          "cooked rice",
+          "meal"
+        ],
+        "rank": 2100
+      }
+    ],
+    "compoundRank": 2100,
+    "rank": 2100,
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healPercent": 0.2
+    },
+    "description": "Heal one creature for 20% of max HP",
+    "descriptionTagged": "{Heal|回復|かいふく} one {creature|生き物|いきもの} for 20% of max HP",
+    "descriptionJa": "クリーチャー1体のHPを20%回復",
+    "stage": 3
+  },
+  {
+    "id": "cup-of-coffee",
+    "word": "コーヒー",
+    "reading": "こーひー",
+    "meaning": "cup of coffee",
+    "components": [
+      {
+        "word": "コーヒー",
+        "reading": "コーヒー",
+        "meanings": [
+          "coffee"
+        ],
+        "rank": 3300
+      }
+    ],
+    "compoundRank": 3300,
+    "rank": 3300,
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "attackMult",
+      "value": 0.02
+    },
+    "description": "Increase one creature's attack by 2%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} {attack|攻撃|こうげき} by 2%",
+    "descriptionJa": "クリーチャー1体の攻撃力を2%アップ",
+    "stage": 1
+  },
+  {
+    "id": "egg",
+    "word": "卵",
+    "reading": "たまご",
+    "meaning": "egg",
+    "components": [
+      {
+        "word": "卵",
+        "reading": "たまご",
+        "meanings": [
+          "eggs; egg; spawn; roe",
+          "(hen's) egg",
+          "(an expert) in the making",
+          "beginning; origin; infancy"
+        ],
+        "rank": 3400
+      }
+    ],
+    "compoundRank": 3400,
+    "rank": 3400,
     "rarity": "uncommon",
     "type": "heal",
     "effect": {
-      "healAllPercent": 0.2
+      "healAllPercent": 0.1
     },
-    "description": "Heal all creatures for 20% of max HP",
-    "descriptionJa": "全クリーチャーのHPを20%回復"
+    "description": "Heal all creatures for 10% of max HP",
+    "descriptionTagged": "{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 10% of max HP",
+    "descriptionJa": "全クリーチャーのHPを10%回復",
+    "stage": 6
+  },
+  {
+    "id": "cake",
+    "word": "ケーキ",
+    "reading": "けーき",
+    "meaning": "cake",
+    "components": [
+      {
+        "word": "ケーキ",
+        "reading": "ケーキ",
+        "meanings": [
+          "cake"
+        ],
+        "rank": 3500
+      }
+    ],
+    "compoundRank": 3500,
+    "rank": 3500,
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.15
+    },
+    "description": "Heal all creatures for 15% of max HP",
+    "descriptionTagged": "{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 15% of max HP",
+    "descriptionJa": "全クリーチャーのHPを15%回復",
+    "stage": 5
+  },
+  {
+    "id": "bento",
+    "word": "弁当",
+    "reading": "べんとう",
+    "meaning": "bento",
+    "components": [
+      {
+        "word": "弁当",
+        "reading": "べんとう",
+        "meanings": [
+          "bento; Japanese box lunch"
+        ],
+        "rank": 4200
+      }
+    ],
+    "compoundRank": 4200,
+    "rank": 4200,
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.15
+    },
+    "description": "Heal all creatures for 15% of max HP",
+    "descriptionTagged": "{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 15% of max HP",
+    "descriptionJa": "全クリーチャーのHPを15%回復",
+    "stage": 3
+  },
+  {
+    "id": "black-tea",
+    "word": "紅茶",
+    "reading": "こうちゃ",
+    "meaning": "black tea",
+    "components": [
+      {
+        "word": "紅",
+        "reading": "こう",
+        "meanings": [
+          "deep red; crimson",
+          "rouge; lipstick"
+        ],
+        "rank": 4900
+      },
+      {
+        "word": "茶",
+        "reading": "ちゃ",
+        "meanings": [
+          "tea",
+          "tea plant (Camellia sinensis)",
+          "tea preparation; making tea",
+          "brown",
+          "mockery"
+        ],
+        "rank": 4100
+      }
+    ],
+    "compoundRank": 3400,
+    "rank": 4900,
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.1
+    },
+    "description": "Heal all creatures for 10% of max HP",
+    "descriptionTagged": "{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 10% of max HP",
+    "descriptionJa": "全クリーチャーのHPを10%回復",
+    "stage": 7
+  },
+  {
+    "id": "juice",
+    "word": "ジュース",
+    "reading": "じゅーす",
+    "meaning": "juice",
+    "components": [
+      {
+        "word": "ジュース",
+        "reading": "ジュース",
+        "meanings": [
+          "juice",
+          "soft drink (usu. fruit-based); sweetened drink"
+        ],
+        "rank": 5000
+      }
+    ],
+    "compoundRank": 5000,
+    "rank": 5000,
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.1
+    },
+    "description": "Heal all creatures for 10% of max HP",
+    "descriptionTagged": "{Heal|回復|かいふく} all {creatures|生き物|いきもの} for 10% of max HP",
+    "descriptionJa": "全クリーチャーのHPを10%回復",
+    "stage": 6
+  },
+  {
+    "id": "beer",
+    "word": "ビール",
+    "reading": "びーる",
+    "meaning": "beer",
+    "components": [
+      {
+        "word": "ビール",
+        "reading": "ビール",
+        "meanings": [
+          "beer"
+        ],
+        "rank": 5000
+      }
+    ],
+    "compoundRank": 5000,
+    "rank": 5000,
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "attackMult",
+      "value": 0.02
+    },
+    "description": "Increase one creature's attack by 2%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} {attack|攻撃|こうげき} by 2%",
+    "descriptionJa": "クリーチャー1体の攻撃力を2%アップ",
+    "stage": 6
   },
   {
     "id": "ramen",
     "word": "ラーメン",
     "reading": "らーめん",
     "meaning": "ramen",
-    "rarity": "uncommon",
+    "components": [
+      {
+        "word": "ラーメン",
+        "reading": "ラーメン",
+        "meanings": [
+          "ramen; Chinese-style noodles"
+        ],
+        "rank": 9000
+      }
+    ],
+    "compoundRank": 9000,
+    "rank": 9000,
+    "rarity": "rare",
     "type": "heal",
     "effect": {
       "healMostDamaged": true
     },
-    "description": "Fully restore the most damaged creature",
-    "descriptionJa": "最も傷ついたクリーチャーを全回復"
+    "description": "Heal the most damaged creature to full HP",
+    "descriptionTagged": "{Heal|回復|かいふく} the most {damaged|ダメージ|} {creature|生き物|いきもの} to full HP",
+    "descriptionJa": "最もダメージを受けたクリーチャーを全回復",
+    "stage": 7
   },
   {
-    "id": "katana",
-    "word": "かたな",
-    "reading": "かたな",
-    "meaning": "katana",
-    "rarity": "common",
+    "id": "chocolate",
+    "word": "チョコレート",
+    "reading": "ちょこれーと",
+    "meaning": "chocolate",
+    "components": [
+      {
+        "word": "チョコレート",
+        "reading": "チョコレート",
+        "meanings": [
+          "chocolate"
+        ],
+        "rank": 8600
+      }
+    ],
+    "compoundRank": 8600,
+    "rank": 8600,
+    "rarity": "rare",
+    "type": "mpRestore",
+    "effect": {
+      "mpRestorePercent": 0.25
+    },
+    "description": "Restore 25% MP to all creatures",
+    "descriptionTagged": "{Restore|回復|かいふく} 25% MP to all {creatures|生き物|いきもの}",
+    "descriptionJa": "全クリーチャーのMPを25%回復",
+    "stage": 7
+  },
+  {
+    "id": "natto",
+    "word": "納豆",
+    "reading": "なっとう",
+    "meaning": "natto",
+    "components": [
+      {
+        "word": "納豆",
+        "reading": "なっとう",
+        "meanings": [
+          "natto (fermented soybeans)"
+        ],
+        "rank": 19000
+      }
+    ],
+    "compoundRank": 19000,
+    "rank": 19000,
+    "rarity": "epic",
+    "type": "revive",
+    "effect": {
+      "revivePercent": 0.5
+    },
+    "description": "Revive a fallen creature at 50% HP",
+    "descriptionTagged": "Revive a fallen {creature|生き物|いきもの} at 50% HP",
+    "descriptionJa": "倒れたクリーチャーをHP50%で復活",
+    "stage": 6
+  },
+  {
+    "id": "shrimp-tempura",
+    "word": "海老天ぷら",
+    "reading": "えびてんぷら",
+    "meaning": "shrimp tempura",
+    "components": [
+      {
+        "word": "海老",
+        "reading": "えび",
+        "meanings": [
+          "prawn; shrimp; lobster; crayfish"
+        ],
+        "rank": 21900
+      },
+      {
+        "word": "天ぷら",
+        "reading": "てんぷら",
+        "meanings": [
+          "tempura; deep-fried fish and vegetables in a light batter"
+        ],
+        "rank": 20300
+      }
+    ],
+    "compoundRank": null,
+    "rank": 21900,
+    "rarity": "legendary",
+    "type": "revive",
+    "effect": {
+      "revivePercent": 1
+    },
+    "description": "Revive a fallen creature at full HP",
+    "descriptionTagged": "Revive a fallen {creature|生き物|いきもの} at full HP",
+    "descriptionJa": "倒れたクリーチャーをHP全快で復活",
+    "stage": 10
+  },
+  {
+    "id": "gyoza",
+    "word": "餃子",
+    "reading": "ぎょうざ",
+    "meaning": "gyoza",
+    "components": [
+      {
+        "word": "餃子",
+        "reading": "ギョーザ",
+        "meanings": [
+          "gyoza; pot sticker; crescent-shaped pan-fried dumplings stuffed with minced pork and vegetables"
+        ],
+        "rank": 24400
+      }
+    ],
+    "compoundRank": 24400,
+    "rank": 24400,
+    "rarity": "legendary",
+    "type": "boost",
+    "effect": {
+      "tempBoost": {
+        "field": "attack",
+        "value": 5,
+        "turns": 5,
+        "target": "all"
+      }
+    },
+    "description": "Boost all creatures' attack by 5 for 5 turns",
+    "descriptionTagged": "Boost all {creatures'|生き物|いきもの} {attack|攻撃|こうげき} by 5 for 5 {turns|ターン|}",
+    "descriptionJa": "全クリーチャーの攻撃力を5ターン+5",
+    "stage": 10
+  },
+  {
+    "id": "hourglass",
+    "word": "砂時計",
+    "reading": "すなどけい",
+    "meaning": "hourglass",
+    "components": [
+      {
+        "word": "砂",
+        "reading": "すな",
+        "meanings": [
+          "sand; grit"
+        ],
+        "rank": 3400
+      },
+      {
+        "word": "時計",
+        "reading": "とけい",
+        "meanings": [
+          "clock; watch; timepiece"
+        ],
+        "rank": 2400
+      }
+    ],
+    "compoundRank": 28400,
+    "rank": 3400,
+    "rarity": "legendary",
+    "type": "xpCharm",
+    "effect": {
+      "field": "xpMultiplier",
+      "value": 0.25
+    },
+    "description": "Amplify battle XP by 25% (stacks multiplicatively)",
+    "descriptionTagged": "Amplify battle XP by 25% (stacks multiplicatively)",
+    "descriptionJa": "戦闘経験値を25%増幅（重複可）",
+    "stage": 6
+  },
+  {
+    "id": "balance-scales",
+    "word": "天秤",
+    "reading": "てんびん",
+    "meaning": "balance scales",
+    "components": [
+      {
+        "word": "天秤",
+        "reading": "てんびん",
+        "meanings": [
+          "(balance) scales",
+          "shoulder carrying pole",
+          "steelyard"
+        ],
+        "rank": 15000
+      }
+    ],
+    "compoundRank": 15000,
+    "rank": 15000,
+    "rarity": "legendary",
+    "type": "xpBalance",
+    "effect": {
+      "field": "xpBalanceStacks",
+      "value": 1
+    },
+    "description": "Redistribute XP toward lower-leveled creatures",
+    "descriptionTagged": "Redistribute XP toward lower-leveled {creatures|生き物|いきもの}",
+    "descriptionJa": "経験値を低レベルの仲間に再分配する",
+    "stage": 9
+  },
+  {
+    "id": "scissors",
+    "word": "ハサミ",
+    "reading": "はさみ",
+    "meaning": "scissors",
+    "components": [
+      {
+        "word": "ハサミ",
+        "reading": "はさみ",
+        "meanings": [
+          "scissors",
+          "shears",
+          "clippers",
+          "hole punch"
+        ],
+        "rank": 13900
+      }
+    ],
+    "compoundRank": 13900,
+    "rank": 13900,
+    "rarity": "epic",
     "type": "boost",
     "effect": {
       "field": "attackMult",
       "value": 0.05
     },
-    "description": "Increase all creatures' attack by 5%",
-    "descriptionJa": "全クリーチャーの攻撃力を5%アップ"
+    "description": "Increase one creature's attack by 5%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} {attack|攻撃|こうげき} by 5%",
+    "descriptionJa": "クリーチャー1体の攻撃力を5%アップ"
   },
   {
-    "id": "shield",
-    "word": "たて",
-    "reading": "たて",
-    "meaning": "shield",
-    "rarity": "common",
-    "type": "boost",
-    "effect": {
-      "field": "flatDamageReduction",
-      "value": 2
-    },
-    "description": "Reduce incoming damage by 2",
-    "descriptionJa": "受けるダメージを2減らす"
-  },
-  {
-    "id": "sword",
-    "word": "けん",
-    "reading": "けん",
-    "meaning": "sword",
+    "id": "pen",
+    "word": "ペン",
+    "reading": "ペン",
+    "meaning": "pen",
+    "components": [
+      {
+        "word": "ペン",
+        "reading": "ペン",
+        "meanings": [
+          "pen"
+        ],
+        "rank": 4800
+      }
+    ],
+    "compoundRank": 4800,
+    "rank": 4800,
     "rarity": "uncommon",
     "type": "boost",
     "effect": {
       "field": "attackMult",
-      "value": 0.1
+      "value": 0.02
     },
-    "description": "Increase all creatures' attack by 10%",
-    "descriptionJa": "全クリーチャーの攻撃力を10%アップ"
+    "description": "Increase one creature's attack by 2%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} {attack|攻撃|こうげき} by 2%",
+    "descriptionJa": "クリーチャー1体の攻撃力を2%アップ"
   },
   {
-    "id": "armor",
-    "word": "よろい",
-    "reading": "よろい",
-    "meaning": "armor",
+    "id": "school-uniform",
+    "word": "学生服",
+    "reading": "がくせいふく",
+    "meaning": "school uniform",
+    "components": [
+      {
+        "word": "学生",
+        "reading": "がくせい",
+        "meanings": [
+          "student"
+        ],
+        "rank": 2000
+      },
+      {
+        "word": "服",
+        "reading": "ふく",
+        "meanings": [
+          "clothes",
+          "clothing",
+          "garment"
+        ],
+        "rank": 566
+      }
+    ],
+    "compoundRank": 1132,
+    "rank": 2000,
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "hpMult",
+      "value": 0.05
+    },
+    "description": "Increase one creature's HP by 5%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} HP by 5%",
+    "descriptionJa": "クリーチャー1体のHPを5%アップ"
+  },
+  {
+    "id": "pencil",
+    "word": "鉛筆",
+    "reading": "えんぴつ",
+    "meaning": "pencil",
+    "components": [
+      {
+        "word": "鉛",
+        "reading": "なまり",
+        "meanings": [
+          "lead (metal)"
+        ],
+        "rank": 15000
+      },
+      {
+        "word": "筆",
+        "reading": "ふで",
+        "meanings": [
+          "writing brush"
+        ],
+        "rank": 8500
+      }
+    ],
+    "compoundRank": 10500,
+    "rank": 15000,
+    "rarity": "epic",
+    "type": "boost",
+    "effect": {
+      "field": "attackMult",
+      "value": 0.03
+    },
+    "description": "Increase one creature's attack by 3%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} {attack|攻撃|こうげき} by 3%",
+    "descriptionJa": "クリーチャー1体の攻撃力を3%アップ"
+  },
+  {
+    "id": "dictionary",
+    "word": "辞書",
+    "reading": "じしょ",
+    "meaning": "dictionary",
+    "components": [
+      {
+        "word": "辞",
+        "reading": "じ",
+        "meanings": [
+          "word",
+          "term",
+          "resignation"
+        ],
+        "rank": 12500
+      },
+      {
+        "word": "書",
+        "reading": "しょ",
+        "meanings": [
+          "write",
+          "book"
+        ],
+        "rank": 2500
+      }
+    ],
+    "compoundRank": 12500,
+    "rank": 12500,
+    "rarity": "epic",
+    "type": "boost",
+    "effect": {
+      "field": "mpMult",
+      "value": 0.03
+    },
+    "description": "Increase one creature's MP by 3%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} MP by 3%",
+    "descriptionJa": "クリーチャー1体のMPを3%アップ"
+  },
+  {
+    "id": "textbook",
+    "word": "教科書",
+    "reading": "きょうかしょ",
+    "meaning": "textbook",
+    "components": [
+      {
+        "word": "教",
+        "reading": "きょう",
+        "meanings": [
+          "teach",
+          "instruction"
+        ],
+        "rank": 3000
+      },
+      {
+        "word": "科",
+        "reading": "か",
+        "meanings": [
+          "department",
+          "course",
+          "section"
+        ],
+        "rank": 5000
+      },
+      {
+        "word": "書",
+        "reading": "しょ",
+        "meanings": [
+          "write",
+          "book"
+        ],
+        "rank": 2500
+      }
+    ],
+    "compoundRank": 5300,
+    "rank": 5000,
     "rarity": "uncommon",
     "type": "boost",
     "effect": {
-      "field": "flatDamageReduction",
-      "value": 5
+      "field": "hpMult",
+      "value": 0.03
     },
-    "description": "Reduce incoming damage by 5",
-    "descriptionJa": "受けるダメージを5減らす"
+    "description": "Increase one creature's HP by 3%",
+    "descriptionTagged": "Increase one {creature's|生き物|いきもの} HP by 3%",
+    "descriptionJa": "クリーチャー1体のHPを3%アップ"
   }
 ]

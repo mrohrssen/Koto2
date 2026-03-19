@@ -130,65 +130,16 @@ describe('Creature Combat - Enemy Turn', () => {
   });
 });
 
-describe('Creature Combat - Befriend', () => {
-  it('captures enemy at <=50% HP (marks befriended, hp=0)', () => {
+describe('Creature Combat - Befriend (disabled in Koto2)', () => {
+  // Old befriend mechanic disabled in Koto2 — replaced by name quiz on kill.
+  // These tests verify the disabled state returns the expected rejection.
+  it('processBefriend always returns disabled reason', () => {
     const enemies = [instantiateCreature('kazenoko')];
     enemies[0].hp = 20;
     const party = { active: [instantiateCreature('hikaribon')], reserves: [], maxTotal: 6 };
     const result = processBefriend(enemies, party);
-    assert.ok(result.success);
-    // Enemy stays in array but is marked as befriended with 0 HP
-    assert.strictEqual(enemies[0].hp, 0);
-    assert.strictEqual(enemies[0].befriended, true);
-    assert.strictEqual(party.pendingCaptures.length, 1);
-  });
-
-  it('rejects befriend if no enemy <=50% HP', () => {
-    const enemies = [instantiateCreature('kazenoko')];
-    enemies[0].hp = Math.floor(enemies[0].maxHp * 0.6); // 60% HP -- above threshold
-    const party = { active: [instantiateCreature('hikaribon')], reserves: [], maxTotal: 6 };
-    const result = processBefriend(enemies, party);
     assert.ok(!result.success);
-  });
-
-  it('captures the specified target by index instead of lowest HP', () => {
-    const enemies = [instantiateCreature('kazenoko'), instantiateCreature('kamedor')];
-    enemies[0].hp = 10; // lower ratio
-    enemies[1].hp = 50; // higher ratio but this is the target
-    const party = { active: [instantiateCreature('hikaribon')], reserves: [], maxTotal: 6 };
-    const result = processBefriend(enemies, party, 1); // target index 1
-    assert.ok(result.success);
-    // Should capture index 1 (kamedor), NOT index 0 (kazenoko)
-    assert.strictEqual(enemies[1].befriended, true);
-    assert.strictEqual(enemies[1].hp, 0);
-    assert.ok(!enemies[0].befriended); // index 0 should be untouched
-  });
-
-  it('rejects befriend if party full (6)', () => {
-    const enemies = [instantiateCreature('kazenoko')];
-    enemies[0].hp = 20;
-    const party = {
-      active: [instantiateCreature('hikaribon'), instantiateCreature('tsukimochi'), instantiateCreature('hanatchi')],
-      reserves: [instantiateCreature('nekotto'), instantiateCreature('kazenoko'), instantiateCreature('kaminarion')],
-      maxTotal: 6
-    };
-    const result = processBefriend(enemies, party);
-    assert.ok(!result.success);
-  });
-
-  it('rejects befriend if party + pendingCaptures reaches maxTotal', () => {
-    const enemies = [instantiateCreature('kazenoko'), instantiateCreature('kamedor')];
-    enemies[0].hp = 20;
-    enemies[1].hp = 20;
-    const party = {
-      active: [instantiateCreature('hikaribon'), instantiateCreature('tsukimochi'), instantiateCreature('hanatchi')],
-      reserves: [instantiateCreature('nekotto'), instantiateCreature('kazenoko')],
-      pendingCaptures: [instantiateCreature('kaminarion')], // 5 in party + 1 pending = 6 = maxTotal
-      maxTotal: 6
-    };
-    const result = processBefriend(enemies, party, 0);
-    assert.ok(!result.success);
-    assert.strictEqual(result.reason, 'Party full');
+    assert.strictEqual(result.reason, 'Befriend mechanic disabled in Koto2');
   });
 });
 

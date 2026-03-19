@@ -1,1 +1,382 @@
-[]
+[
+  {
+    "id": "kamedor",
+    "name": "カメドル",
+    "nameEn": "Kamedor",
+    "element": "water",
+    "rarity": "common",
+    "baseHp": 160,
+    "baseAttack": 8,
+    "baseWord": "亀",
+    "baseReading": "かめ",
+    "baseMeaning": "turtle",
+    "baseRank": 9300,
+    "archetype": "Tank/Healer",
+    "modifier": {
+      "word": "古代",
+      "reading": "こだい",
+      "meaning": "Ancient",
+      "rank": 5500
+    },
+    "createdAt": "2026-02-14",
+    "baseMp": 80,
+    "learnset": [
+      {
+        "moveId": "kamu",
+        "level": 1
+      },
+      {
+        "moveId": "nomu",
+        "level": 5
+      },
+      {
+        "moveId": "nemuru",
+        "level": 9
+      },
+      {
+        "moveId": "katameru",
+        "level": 12
+      },
+      {
+        "moveId": "watasu",
+        "level": 16
+      },
+      {
+        "moveId": "ukabu",
+        "level": 20
+      }
+    ],
+    "stage": 6
+  },
+  {
+    "id": "kazenoko",
+    "name": "カゼノコ",
+    "nameEn": "Kazenoko",
+    "element": "earth",
+    "rarity": "common",
+    "baseHp": 75,
+    "baseAttack": 8,
+    "baseWord": "風",
+    "baseReading": "かぜ",
+    "baseMeaning": "wind",
+    "baseRank": 800,
+    "archetype": "Mage",
+    "modifier": {
+      "word": "冷たい",
+      "reading": "つめたい",
+      "meaning": "Cold",
+      "rank": 800
+    },
+    "createdAt": "2026-02-16",
+    "baseMp": 120,
+    "learnset": [
+      {
+        "moveId": "fuku",
+        "level": 1
+      },
+      {
+        "moveId": "kasaneru",
+        "level": 5
+      },
+      {
+        "moveId": "kakeru_gallop",
+        "level": 9
+      },
+      {
+        "moveId": "fukitobasu",
+        "level": 12
+      },
+      {
+        "moveId": "nigiru",
+        "level": 16
+      }
+    ],
+    "stage": 5
+  },
+  {
+    "id": "hikaribon",
+    "name": "ヒカリボン",
+    "nameEn": "Hikaribon",
+    "element": "fire",
+    "rarity": "common",
+    "baseHp": 75,
+    "baseAttack": 8,
+    "baseWord": "光",
+    "baseReading": "ひかり",
+    "baseMeaning": "light",
+    "baseRank": 600,
+    "archetype": "Mage",
+    "modifier": {
+      "word": "明るい",
+      "reading": "あかるい",
+      "meaning": "Bright",
+      "rank": 1000
+    },
+    "createdAt": "2026-02-16",
+    "baseMp": 120,
+    "learnset": [
+      {
+        "moveId": "hanatsu",
+        "level": 1
+      },
+      {
+        "moveId": "hikaru",
+        "level": 1
+      },
+      {
+        "moveId": "bakuhatsu",
+        "level": 5
+      },
+      {
+        "moveId": "abareru",
+        "level": 9
+      },
+      {
+        "moveId": "kagayaku",
+        "level": 12
+      },
+      {
+        "moveId": "semeru",
+        "level": 16
+      }
+    ],
+    "stage": 1
+  },
+  {
+    "id": "kitsunova",
+    "name": "キツノヴァ",
+    "nameEn": "Kitsunova",
+    "element": "fire",
+    "rarity": "rare",
+    "baseHp": 85,
+    "baseAttack": 9,
+    "baseWord": "狐",
+    "baseReading": "きつね",
+    "baseMeaning": "fox",
+    "baseRank": 8600,
+    "archetype": "Trickster",
+    "modifier": {
+      "word": "ずるい",
+      "reading": "ずるい",
+      "meaning": "Sly",
+      "rank": 3800
+    },
+    "createdAt": "2026-02-16",
+    "baseMp": 90,
+    "learnset": [
+      {
+        "moveId": "damasu",
+        "level": 1
+      },
+      {
+        "moveId": "okoru",
+        "level": 5
+      },
+      {
+        "moveId": "tokeru",
+        "level": 9
+      },
+      {
+        "moveId": "bakeru",
+        "level": 12
+      },
+      {
+        "moveId": "ochiru",
+        "level": 16
+      }
+    ],
+    "stage": 8
+  },
+  {
+    "id": "tsukimochi",
+    "name": "ツキモチ",
+    "nameEn": "Tsukimochi",
+    "element": "water",
+    "rarity": "common",
+    "baseHp": 75,
+    "baseAttack": 8,
+    "baseWord": "月",
+    "baseReading": "つき",
+    "baseMeaning": "moon",
+    "baseRank": 1100,
+    "archetype": "Mage",
+    "modifier": {
+      "word": "眠い",
+      "reading": "ねむい",
+      "meaning": "Sleepy",
+      "rank": 2600
+    },
+    "createdAt": "2026-02-17",
+    "baseMp": 120,
+    "learnset": [
+      {
+        "moveId": "nagasu",
+        "level": 1
+      },
+      {
+        "moveId": "terasu",
+        "level": 1
+      },
+      {
+        "moveId": "makikomu",
+        "level": 5
+      },
+      {
+        "moveId": "arau",
+        "level": 9
+      },
+      {
+        "moveId": "mangetsu",
+        "level": 12
+      },
+      {
+        "moveId": "sosogu",
+        "level": 16
+      }
+    ],
+    "stage": 5
+  },
+  {
+    "id": "hanatchi",
+    "name": "ハナッチ",
+    "nameEn": "Hanatchi",
+    "element": "wood",
+    "rarity": "common",
+    "baseHp": 75,
+    "baseAttack": 8,
+    "baseWord": "花",
+    "baseReading": "はな",
+    "baseMeaning": "flower",
+    "baseRank": 800,
+    "archetype": "Mage",
+    "modifier": {
+      "word": "甘い",
+      "reading": "あまい",
+      "meaning": "Sweet",
+      "rank": 800
+    },
+    "createdAt": "2026-02-17",
+    "baseMp": 120,
+    "learnset": [
+      {
+        "moveId": "utsu_beat",
+        "level": 1
+      },
+      {
+        "moveId": "tsutsumu",
+        "level": 1
+      },
+      {
+        "moveId": "kakomu",
+        "level": 5
+      },
+      {
+        "moveId": "nobiru",
+        "level": 9
+      },
+      {
+        "moveId": "saku",
+        "level": 12
+      },
+      {
+        "moveId": "nobasu",
+        "level": 16
+      }
+    ],
+    "stage": 6
+  },
+  {
+    "id": "nekotto",
+    "name": "ネコット",
+    "nameEn": "Nekotto",
+    "element": "metal",
+    "rarity": "common",
+    "baseHp": 85,
+    "baseAttack": 9,
+    "baseWord": "猫",
+    "baseReading": "ねこ",
+    "baseMeaning": "cat",
+    "baseRank": 1600,
+    "archetype": "Trickster",
+    "modifier": {
+      "word": "鉄",
+      "reading": "てつ",
+      "meaning": "Iron",
+      "rank": 2200
+    },
+    "createdAt": "2026-02-17",
+    "baseMp": 90,
+    "learnset": [
+      {
+        "moveId": "kaku_scratch",
+        "level": 1
+      },
+      {
+        "moveId": "musubu",
+        "level": 5
+      },
+      {
+        "moveId": "nuku",
+        "level": 9
+      },
+      {
+        "moveId": "niramu",
+        "level": 12
+      },
+      {
+        "moveId": "kagiru",
+        "level": 16
+      }
+    ],
+    "stage": 4
+  },
+  {
+    "id": "kaminarion",
+    "name": "カミナリオン",
+    "nameEn": "Kaminarion",
+    "element": "metal",
+    "rarity": "uncommon",
+    "baseHp": 100,
+    "baseAttack": 10,
+    "baseWord": "雷",
+    "baseReading": "かみなり",
+    "baseMeaning": "lightning",
+    "baseRank": 3600,
+    "archetype": "Fighter",
+    "modifier": {
+      "word": "激しい",
+      "reading": "はげしい",
+      "meaning": "Violent",
+      "rank": 800
+    },
+    "createdAt": "2026-02-17",
+    "baseMp": 60,
+    "learnset": [
+      {
+        "moveId": "utsu_beat",
+        "level": 1
+      },
+      {
+        "moveId": "kiru",
+        "level": 5
+      },
+      {
+        "moveId": "mawasu",
+        "level": 9
+      },
+      {
+        "moveId": "hajikeru",
+        "level": 12
+      },
+      {
+        "moveId": "kizutsukeru",
+        "level": 16
+      },
+      {
+        "moveId": "musubu",
+        "level": 20
+      }
+    ],
+    "stage": 8
+  }
+]
