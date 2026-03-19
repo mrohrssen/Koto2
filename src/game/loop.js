@@ -534,32 +534,9 @@ export class GameManager {
     this.combat.isBoss = isBoss;
     this.combat.swapPhase = true; // Free swap available before first action
 
-    // Assign area-locked NPC to this encounter (skip for boss fights)
-    // - Never on the first encounter of a run
-    // - ~15% chance per encounter after the first
-    // - One NPC per area, skipped if already met
-    const NPC_ENCOUNTER_CHANCE = 0.15;
-    const areaId = this.run.currentArea?.id || null;
-    const usedNpcIds = this.run.usedNpcIds || [];
-    const npcRoll = !isBoss && !isFirstBattle && Math.random() < NPC_ENCOUNTER_CHANCE;
-    const npc = npcRoll ? selectNpcForEncounter(areaId, usedNpcIds) : null;
-    if (npc) {
-      this.combat.npcId = npc.id;
-      this.combat.npcData = {
-        id: npc.id,
-        name: npc.name,
-        nameEn: npc.nameEn,
-        greeting: npc.greeting,
-        defeatLine: npc.defeatLine,
-        attack: npc.attack || 10,
-        baseWord: npc.baseWord || '',
-        baseReading: npc.baseReading || '',
-        baseMeaning: npc.baseMeaning || '',
-        skills: getNpcSkillsForNpc(npc)
-      };
-      if (!this.run.usedNpcIds) this.run.usedNpcIds = [];
-      this.run.usedNpcIds.push(npc.id);
-    }
+    // Koto2 MVP: random NPC overlay disabled — NPCs now only appear in deterministic
+    // npcBattle rooms, not randomly during regular encounters.
+    // Previously used NPC_ENCOUNTER_CHANCE = 0.15 here to randomly assign an NPC.
 
     // Boss speaks on encounter
     if (isBoss && enemyCreatures[0]) {
@@ -1088,12 +1065,10 @@ export class GameManager {
 
   /**
    * Roll 3 random items for the post-combat shop
+   * Koto2 MVP: post-combat shop disabled, friendly NPC rooms replace this
    */
   rollPostCombatShop() {
-    if (!this.run) throw new Error('No run');
-    const items = rollShopItems();
-    this.run._pendingShopItems = items;
-    return { items };
+    return null;
   }
 
   /**
