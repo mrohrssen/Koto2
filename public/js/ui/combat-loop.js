@@ -504,10 +504,11 @@ export function initMoveUI() {
  */
 export function startMoveSelection() {
   const state = getGameState();
-  if (state.meta?.kanaMode) {
-    startKanaCombatRound();
-    return;
-  }
+  // Kana combat mode disabled — move-based combat always runs (Task 8.1)
+  // if (state.meta?.kanaMode) {
+  //   startKanaCombatRound();
+  //   return;
+  // }
   moveChoices = [];
   currentCreatureIndex = 0;
   promptNextCreature();
@@ -624,10 +625,11 @@ function isBefriendAvailableForSlot(slot) {
 }
 
 function getMoveSelectBefriendOpts(slot) {
-  const befriendAvailable = isBefriendAvailableForSlot(slot);
+  // Old befriend button disabled — befriend now triggers via 10% kill roll (Task 8.2)
+  // const befriendAvailable = isBefriendAvailableForSlot(slot);
   return {
-    befriendAvailable,
-    onBefriend: befriendAvailable ? handleBefriendTalk : undefined
+    befriendAvailable: false,
+    onBefriend: undefined
   };
 }
 
@@ -894,24 +896,10 @@ function showNextDualCardsFromQueue() {
     return;
   }
 
-  // Check if befriend is available (enemy creature <=50% HP; allow even if party full - will prompt release)
-  const state = getGameState();
-  const isCreatureCombat = state.combat?.isCreatureCombat;
-  const enemies = state.combat?.enemies || [];
-  const party = state.run?.creatureParty;
-  const anyEnemyBefriendable = enemies.some(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.5);
-  const befriendAvailable = isCreatureCombat && anyEnemyBefriendable && party && !state.combat?.npcId;
-
-  if (befriendAvailable && showFlashCards) {
-    // Get a third word for the befriend card
-    const thirdWord = wordPractice.getNextCombatWord?.();
-    if (thirdWord) {
-      showFlashCards([words.attackWord, words.defendWord, thirdWord]);
-    } else {
-      // Not enough words for triple, fall back to dual
-      showFlashCards([words.attackWord, words.defendWord]);
-    }
-  } else if (showFlashCards) {
+  // Old befriend flash-card path disabled — befriend now triggers via 10% kill roll (Task 8.2)
+  // const anyEnemyBefriendable = enemies.some(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.5);
+  // const befriendAvailable = isCreatureCombat && anyEnemyBefriendable && party && !state.combat?.npcId;
+  if (showFlashCards) {
     showFlashCards([words.attackWord, words.defendWord]);
   }
 }
@@ -2059,9 +2047,11 @@ export function resumeCombatAfterVocab(grade, actionType = 'attack') {
   const state = getGameState();
   const isCreatureCombat = state.combat?.isCreatureCombat;
 
-  if (actionType === 'befriend') {
-    executeBefriendAction();
-  } else if (isCreatureCombat) {
+  // Old befriend action handler disabled — befriend now triggers via 10% kill roll (Task 8.2)
+  // if (actionType === 'befriend') {
+  //   executeBefriendAction();
+  // } else
+  if (isCreatureCombat) {
     // Creature combat: use creature-specific functions
     if (actionType === 'defend') {
       executeCreatureDefendThenPause();
@@ -2821,38 +2811,35 @@ export async function stopCombatLoop(result) {
       await narration.showNarration(narrationResult.narration);
     }
 
-    // After combat victory, check for kana graduation
-    if (result?.victory) {
-      const currentState = getGameState();
-      if (currentState.meta?.kanaMode) {
-        try {
-          const statsResp = await fetch(`${API_BASE}/api/game/kana-stats`, {
-            headers: getAuthHeaders()
-          });
-          const stats = await statsResp.json();
-          if (stats.graduated) {
-            // Disable kana mode
-            await fetch(`${API_BASE}/api/game/kana-mode`, {
-              method: 'POST',
-              headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-              body: JSON.stringify({ enabled: false })
-            });
-            // Update local state so UI reflects graduation immediately
-            const current = getGameState();
-            updateGameState({ ...current, meta: { ...current.meta, kanaMode: false } });
-            // Show Cid graduation message
-            await narration.showNarration(
-              "Incredible progress! You've learned the entire Hiragana alphabet. " +
-              "I've upgraded your Translator — from now on, you'll be able to command " +
-              "your creatures directly using Japanese vocabulary!",
-              { speaker: 'Cid' }
-            );
-          }
-        } catch (e) {
-          console.error('[KanaMode] Graduation check failed:', e);
-        }
-      }
-    }
+    // Kana graduation check disabled — kana combat mode disabled (Task 8.1)
+    // if (result?.victory) {
+    //   const currentState = getGameState();
+    //   if (currentState.meta?.kanaMode) {
+    //     try {
+    //       const statsResp = await fetch(`${API_BASE}/api/game/kana-stats`, {
+    //         headers: getAuthHeaders()
+    //       });
+    //       const stats = await statsResp.json();
+    //       if (stats.graduated) {
+    //         await fetch(`${API_BASE}/api/game/kana-mode`, {
+    //           method: 'POST',
+    //           headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+    //           body: JSON.stringify({ enabled: false })
+    //         });
+    //         const current = getGameState();
+    //         updateGameState({ ...current, meta: { ...current.meta, kanaMode: false } });
+    //         await narration.showNarration(
+    //           "Incredible progress! You've learned the entire Hiragana alphabet. " +
+    //           "I've upgraded your Translator — from now on, you'll be able to command " +
+    //           "your creatures directly using Japanese vocabulary!",
+    //           { speaker: 'Cid' }
+    //         );
+    //       }
+    //     } catch (e) {
+    //       console.error('[KanaMode] Graduation check failed:', e);
+    //     }
+    //   }
+    // }
 
     // NOW animate enemy defeat - after player has read the narration
     if (result.victory) {
