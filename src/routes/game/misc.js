@@ -411,5 +411,29 @@ export default function createMiscRoutes({
     res.json({ ok: true, kanaMode: meta.kanaMode });
   });
 
+  // Select starter creature during prologue
+  router.post('/select-starter', async (req, res) => {
+    const { starterId } = req.body;
+    const starterMap = {
+      'starter-fire': 'fire-starter',
+      'starter-water': 'water-starter',
+      'starter-wood': 'wood-starter'
+    };
+    const creatureId = starterMap[starterId];
+    if (!creatureId) {
+      return res.status(400).json({ error: 'Invalid starter' });
+    }
+    const gm = req.gameManager;
+    if (!gm.meta.starterCreatureId) {
+      gm.meta.starterCreatureId = creatureId;
+    }
+    if (!gm.meta.creatureCollection) gm.meta.creatureCollection = [];
+    if (!gm.meta.creatureCollection.includes(creatureId)) {
+      gm.meta.creatureCollection.push(creatureId);
+    }
+    await req.saveGame();
+    res.json({ starterId: creatureId, state: gm.getState() });
+  });
+
   return router;
 }

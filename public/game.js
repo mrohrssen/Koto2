@@ -545,11 +545,19 @@ async function playPrologue() {
       lastChoiceId = result;
     }
 
-    if (prologueScene.id === 'prologue-hiragana-question' && result === 'kana-no') {
-      await fetch('/api/game/kana-mode', {
+    // if (prologueScene.id === 'prologue-hiragana-question' && result === 'kana-no') {
+    //   await fetch('/api/game/kana-mode', {
+    //     method: 'POST',
+    //     headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ enabled: true })
+    //   });
+    // }
+
+    if (prologueScene.id === 'prologue-starter-selection' && result) {
+      await fetch('/api/game/select-starter', {
         method: 'POST',
         headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: true })
+        body: JSON.stringify({ starterId: result })
       });
     }
 
