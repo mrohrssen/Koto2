@@ -3333,6 +3333,130 @@ html, body {
   background: var(--bg-card-hover);
 }
 
+/* ===== BEFRIEND NAME QUIZ ===== */
+
+.befriend-quiz-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+}
+
+.befriend-quiz-prompt {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.befriend-quiz-actions {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  justify-content: center;
+}
+
+.befriend-quiz-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 28px;
+  border: 2px solid var(--text-muted);
+  border-radius: 12px;
+  background: var(--bg-panel);
+  cursor: pointer;
+  min-width: 110px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.befriend-quiz-btn:active {
+  background: var(--bg-card-hover);
+}
+
+.befriend-fight-btn {
+  border-color: rgba(244, 67, 54, 0.4);
+}
+.befriend-fight-btn:active {
+  border-color: #F44336;
+  background: rgba(244, 67, 54, 0.1);
+}
+
+.befriend-talk-btn {
+  border-color: rgba(76, 175, 80, 0.4);
+}
+.befriend-talk-btn:active {
+  border-color: #4CAF50;
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.befriend-btn-jp {
+  font-size: 1.2em;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.befriend-btn-en {
+  font-size: 0.75em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.befriend-quiz-names {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+}
+
+.befriend-quiz-question {
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.befriend-name-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.befriend-name-btn {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--text-muted);
+  border-radius: 10px;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.befriend-name-btn:active {
+  background: var(--bg-card-hover);
+  border-color: var(--accent, #4fc3f7);
+}
+
+.befriend-name-btn.selected {
+  border-color: var(--accent, #4fc3f7);
+  background: rgba(79, 195, 247, 0.15);
+}
+
+.befriend-name-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* ===== ULTIMATE ANIMATION OVERLAYS ===== */
 
 /* Screen tint overlay */

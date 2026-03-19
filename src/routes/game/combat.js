@@ -237,6 +237,49 @@ export default function createCombatRoutes({
     }
   });
 
+  // ============ BEFRIEND NAME QUIZ (Koto2) ============
+
+  // Get current befriend quiz state
+  router.post('/befriend-quiz', (req, res) => {
+    const gm = req.gameManager;
+    const quiz = gm.getBefriendQuiz();
+    if (!quiz) {
+      return res.status(400).json({ error: 'No active befriend quiz' });
+    }
+    res.json(quiz);
+  });
+
+  // Answer befriend quiz (Fight or Talk)
+  router.post('/befriend-quiz-answer', (req, res) => {
+    const { action, answerId } = req.body;
+    const gm = req.gameManager;
+
+    if (action === 'fight') {
+      const result = gm.handleBefriendFight();
+      if (result.error) {
+        return res.status(400).json({ error: result.error });
+      }
+      req.saveGame();
+      return res.json({ ...result, state: req.getEnrichedGameState() });
+    }
+
+    if (action === 'talk') {
+      if (!answerId) {
+        return res.status(400).json({ error: 'answerId required for talk action' });
+      }
+      const result = gm.handleBefriendQuizAnswer(answerId);
+      if (result.error) {
+        return res.status(400).json({ error: result.error });
+      }
+      req.saveGame();
+      return res.json({ ...result, state: req.getEnrichedGameState() });
+    }
+
+    res.status(400).json({ error: 'Invalid action — must be "fight" or "talk"' });
+  });
+
+  // ============ OLD BEFRIEND SYSTEM ============
+
   // Gate: RNG check before befriend conversation
   router.post('/befriend-talk', (req, res) => {
     const gameManager = req.gameManager;

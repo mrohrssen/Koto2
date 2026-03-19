@@ -1648,6 +1648,15 @@ async function executeCreatureMovesTurn(choices) {
         }
       }
 
+      // === BEFRIEND NAME QUIZ CHECK ===
+      // If the killing blow triggered the befriend quiz, show it instead of continuing combat
+      if (result.befriendQuizTriggered && result.befriendQuiz) {
+        syncFinalState(result);
+        playerAttackPending = false;
+        await renderBefriendQuiz(result.befriendQuiz, result);
+        return;
+      }
+
       // === NPC Skill Phase ===
       if (result.npcSkillAttacks?.length > 0) {
         const npcAllyHpMap = buildAllyHpMap(result);
@@ -2158,6 +2167,193 @@ async function executeDefendThenPause() {
       }
     }
   });
+}
+
+// ============ BEFRIEND NAME QUIZ UI (Koto2) ============
+
+/**
+ * Show the befriend name quiz UI.
+ * The creature says "まって!!" (wait!!), player chooses Fight or Talk.
+ * If Talk, creature asks "なまえは？" and shows 3 English name buttons.
+ * @param {Object} quizData - { creatureId, creatureName, creatureNameEn, options: [{id, name}] }
+ * @param {Object} result - The combat cycle result (for state sync)
+ * @returns {Promise<void>}
+ */
+async function renderBefriendQuiz(quizData, result) {
+  const creatureName = quizData.creatureNameEn || quizData.creatureName || 'Creature';
+
+  // Show "まって!!" narration
+  await narration.showNarration('まって！！', { speaker: creatureName });
+
+  // Show Fight / Talk choice
+  const actionChoice = await new Promise((resolve) => {
+    const actionArea = document.getElementById('action-area');
+    if (!actionArea) { resolve('fight'); return; }
+
+    actionArea.innerHTML = `
+      <div class="befriend-quiz-choice">
+        <div class="befriend-quiz-prompt">${creatureName} wants to talk!</div>
+        <div class="befriend-quiz-actions">
+          <button class="befriend-quiz-btn befriend-fight-btn">
+            <span class="befriend-btn-jp">たたかう</span>
+            <span class="befriend-btn-en">Fight</span>
+          </button>
+          <button class="befriend-quiz-btn befriend-talk-btn">
+            <span class="befriend-btn-jp">はなす</span>
+            <span class="befriend-btn-en">Talk</span>
+          </button>
+        </div>
+      </div>
+    `;
+
+    actionArea.querySelector('.befriend-fight-btn').addEventListener('click', () => resolve('fight'));
+    actionArea.querySelector('.befriend-talk-btn').addEventListener('click', () => resolve('talk'));
+  });
+
+  if (actionChoice === 'fight') {
+    // Kill the creature — call fight endpoint
+    const fightResult = await fetch(`${API_BASE}/api/game/befriend-quiz-answer`, {
+      method: 'POST',
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'fight' })
+    }).then(r => r.json());
+
+    if (fightResult.state) {
+      updateGameState(fightResult.state);
+    }
+
+    // Sync final state
+    syncFinalState(fightResult);
+
+    if (fightResult.combatEnded) {
+      stopCombatLoop(fightResult);
+    }
+    return;
+  }
+
+  // Talk path — show "なまえは？" and name options
+  await narration.showNarration('なまえは？', { speaker: creatureName });
+
+  const selectedId = await new Promise((resolve) => {
+    const actionArea = document.getElementById('action-area');
+    if (!actionArea) { resolve(null); return; }
+
+    const optionsHtml = quizData.options.map(opt => `
+      <button class="befriend-name-btn" data-answer-id="${opt.id}">
+        ${opt.name}
+      </button>
+    `).join('');
+
+    actionArea.innerHTML = `
+      <div class="befriend-quiz-names">
+        <div class="befriend-quiz-question">What is this creature's name?</div>
+        <div class="befriend-name-options">
+          ${optionsHtml}
+        </div>
+      </div>
+    `;
+
+    actionArea.querySelectorAll('.befriend-name-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Highlight selected
+        actionArea.querySelectorAll('.befriend-name-btn').forEach(b => b.disabled = true);
+        btn.classList.add('selected');
+        resolve(btn.dataset.answerId);
+      });
+    });
+  });
+
+  if (!selectedId) return;
+
+  // Submit answer
+  const answerResult = await fetch(`${API_BASE}/api/game/befriend-quiz-answer`, {
+    method: 'POST',
+    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'talk', answerId: selectedId })
+  }).then(r => r.json());
+
+  if (answerResult.correct) {
+    // Befriended!
+    playSFX('creature-skill');
+    await narration.showNarration('じゃあ、友達になろう！', { speaker: creatureName });
+
+    const capturedId = answerResult.capturedId;
+    if (capturedId) {
+      const slot = document.querySelector(`.enemy-creature-slot[data-enemy-id="${capturedId}"]`);
+      if (slot) slot.classList.add('befriended');
+    }
+
+    const actionArea = document.getElementById('action-area');
+    if (actionArea) {
+      actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">${t('befriended', answerResult.capturedName || creatureName)}</div>`;
+    }
+    await delay(1200);
+
+    if (answerResult.state) {
+      updateGameState(answerResult.state);
+    }
+    syncFinalState(answerResult);
+
+    if (answerResult.combatEnded) {
+      stopCombatLoop({ ...answerResult, victory: true });
+    }
+    return;
+  }
+
+  // Wrong answer — creature fights back
+  await narration.showNarration('ちがう！', { speaker: creatureName });
+
+  // Show counter-attack
+  if (answerResult.counterAttack?.length > 0) {
+    for (const atk of answerResult.counterAttack) {
+      const card = insertAttackCard(atk, true);
+      if (atk.damage > 0) {
+        playSFX('player-hit');
+        if (animatePlayerHurt) animatePlayerHurt(atk.targetIndex ?? 0);
+        if (showDamageNumber) showDamageNumber(atk.damage, true, false);
+      }
+      if (card) {
+        await waitForCardTap(card);
+      } else {
+        if (delay) await delay(400);
+      }
+    }
+  }
+
+  // Update state after counter-attack
+  if (answerResult.allies || answerResult.enemies) {
+    const gs = getGameState();
+    if (gs.combat) {
+      updateGameState({
+        ...gs,
+        combat: {
+          ...gs.combat,
+          ...(answerResult.allies && { allies: answerResult.allies }),
+          ...(answerResult.enemies && { enemies: answerResult.enemies })
+        },
+        ...(answerResult.creatureParty && {
+          run: { ...gs.run, creatureParty: answerResult.creatureParty }
+        })
+      });
+      updateUI();
+      if (updateCreatureRowData) {
+        const updated = getGameState();
+        updateCreatureRowData(updated.run?.creatureParty, updated.combat);
+      }
+    }
+  }
+
+  if (answerResult.combatEnded) {
+    combatActive = false;
+    if (answerResult.victory === false) {
+      if (showGameOverModal) showGameOverModal();
+    }
+    return;
+  }
+
+  // Combat resumes — start next move selection
+  await delay(600);
+  startMoveSelection();
 }
 
 /**

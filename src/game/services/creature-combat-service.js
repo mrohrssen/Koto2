@@ -6,7 +6,8 @@ import {
   addXpToCreature,
   generateEnemyCreature,
   xpToNextLevel,
-  MOVES_BY_ID
+  MOVES_BY_ID,
+  CREATURES_BY_ID
 } from '../creatures.js';
 import {
   getBuffedAttack,
@@ -679,7 +680,176 @@ export function tickAllEffects(allies, enemies) {
   return events;
 }
 
+// ============ BEFRIEND NAME QUIZ (Koto2) ============
+
+const BEFRIEND_QUIZ_CHANCE = 0.10; // 10% chance on killing blow to last enemy
+
+/**
+ * Check if the befriend quiz should trigger when all enemies are defeated.
+ * Returns true if the 10% roll succeeds and the quiz should fire.
+ * @param {object[]} enemies - Enemy creatures array
+ * @returns {boolean}
+ */
+export function shouldTriggerBefriendQuiz(enemies) {
+  // Find the last enemy that just died (hp === 0, was alive this turn)
+  const justDefeated = enemies.filter(e => e.hp <= 0 && !e.befriended);
+  if (justDefeated.length === 0) return false;
+  return Math.random() < BEFRIEND_QUIZ_CHANCE;
+}
+
+/**
+ * Generate a name quiz for a creature. Returns 3 English name options (1 correct, 2 wrong).
+ * Wrong answers come from other creatures in the game (CREATURE_DATA), excluding the target.
+ * @param {object} creature - The enemy creature to quiz about
+ * @returns {{ creatureId: string, creatureName: string, options: Array<{ id: string, name: string, correct: boolean }> }}
+ */
+export function generateBefriendQuiz(creature) {
+  // Get wrong answers: other creature English names from the creature catalog
+  const allCreatureIds = Object.keys(CREATURES_BY_ID);
+  const wrongCandidates = allCreatureIds
+    .filter(id => id !== creature.id)
+    .map(id => CREATURES_BY_ID[id])
+    .filter(Boolean)
+    .map(c => c.nameEn);
+
+  // Shuffle and take 2
+  const shuffled = wrongCandidates.sort(() => Math.random() - 0.5);
+  const wrongNames = shuffled.slice(0, 2);
+
+  // If not enough wrong options (empty creature data), use generic names
+  while (wrongNames.length < 2) {
+    wrongNames.push(wrongNames.length === 0 ? 'Unknown Creature' : 'Mystery Beast');
+  }
+
+  // Build options array (shuffled)
+  const options = [
+    { id: creature.id, name: creature.nameEn, correct: true },
+    { id: 'wrong-1', name: wrongNames[0], correct: false },
+    { id: 'wrong-2', name: wrongNames[1], correct: false }
+  ].sort(() => Math.random() - 0.5);
+
+  return { creatureId: creature.id, creatureName: creature.name, options };
+}
+
+/**
+ * Process the player's answer to a befriend quiz.
+ * @param {string} answerId - The id from the selected option
+ * @param {object} combat - The combat state object
+ * @param {object} creatureParty - The player's creature party
+ * @returns {{ correct: boolean, befriended?: boolean, counterAttack?: object }}
+ */
+export function processBefriendQuizAnswer(answerId, combat, creatureParty) {
+  const quiz = combat.befriendQuiz;
+  if (!quiz) return { error: 'No active befriend quiz' };
+
+  const targetIndex = quiz.targetIndex;
+  const target = combat.enemies[targetIndex];
+  if (!target) return { error: 'Target creature not found' };
+
+  // Check if the answer is correct
+  const correctOption = quiz.options.find(o => o.correct);
+  const isCorrect = answerId === correctOption?.id;
+
+  if (isCorrect) {
+    // Befriend the creature: mark as captured, add to pending
+    target.hp = 0;
+    target.befriended = true;
+
+    const capturedCopy = { ...target, hp: target.maxHp, mp: target.maxMp, befriended: false };
+
+    if (!creatureParty.pendingCaptures) creatureParty.pendingCaptures = [];
+    creatureParty.pendingCaptures.push(capturedCopy);
+
+    // Clear quiz state
+    combat.befriendQuiz = null;
+
+    return {
+      correct: true,
+      befriended: true,
+      capturedId: target.id,
+      capturedName: target.nameEn,
+      allEnemiesDefeated: combat.enemies.every(e => e.hp <= 0 || e.befriended)
+    };
+  }
+
+  // Wrong answer: creature fights back
+  // Give the creature a free attack on a random alive ally
+  const aliveAllies = (combat.allies || []).filter(a => a && a.hp > 0);
+  let counterAttack = null;
+
+  if (aliveAllies.length > 0 && target.moves?.length > 0) {
+    const move = target.moves[0];
+    const allyTarget = aliveAllies[Math.floor(Math.random() * aliveAllies.length)];
+    const elemMult = getElementMultiplier(move.element, allyTarget.element);
+    const variance = rollVariance();
+    let damage = calculateCreatureDamage(target.attack, move.power, elemMult, variance);
+    allyTarget.hp = Math.max(0, allyTarget.hp - damage);
+
+    counterAttack = {
+      attackerId: target.id,
+      attackerName: target.nameEn,
+      attackerNameJp: target.name,
+      attackerElement: target.element,
+      attackerBaseWord: target.baseWord,
+      attackerBaseReading: target.baseReading,
+      attackerBaseMeaning: target.baseMeaning,
+      attackerSkillName: move.name,
+      attackerSkillReading: move.reading,
+      attackerSkillEn: move.nameEn,
+      moveId: move.id,
+      moveName: move.name,
+      moveNameEn: move.nameEn,
+      moveElement: move.element,
+      category: 'damage',
+      targetId: allyTarget.id,
+      targetName: allyTarget.nameEn,
+      targetNameJp: allyTarget.name,
+      damage,
+      elementMultiplier: elemMult,
+      targetDefeated: allyTarget.hp <= 0
+    };
+  }
+
+  // Reset quiz state — combat resumes normally
+  combat.befriendQuiz = null;
+
+  return {
+    correct: false,
+    counterAttack: counterAttack ? [counterAttack] : [],
+    allies: combat.allies,
+    enemies: combat.enemies
+  };
+}
+
+/**
+ * Resolve the "Fight" choice in befriend quiz — kill the creature, finalize victory.
+ * @param {object} combat - The combat state
+ * @returns {{ killed: true }}
+ */
+export function resolveBefriendFight(combat) {
+  const quiz = combat.befriendQuiz;
+  if (!quiz) return { error: 'No active befriend quiz' };
+
+  const target = combat.enemies[quiz.targetIndex];
+  if (target) {
+    target.hp = 0;
+  }
+
+  combat.befriendQuiz = null;
+
+  return {
+    killed: true,
+    allEnemiesDefeated: combat.enemies.every(e => e.hp <= 0 || e.befriended)
+  };
+}
+
+// ============ OLD BEFRIEND (DISABLED) ============
+
 export function processBefriend(enemies, creatureParty, targetEnemyIndex) {
+  // Old befriend mechanic disabled in Koto2 — replaced by name quiz on kill
+  return { success: false, reason: 'Befriend mechanic disabled in Koto2' };
+
+  /* eslint-disable no-unreachable */
   const totalCreatures = creatureParty.active.length + creatureParty.reserves.length + (creatureParty.pendingCaptures?.length || 0);
   if (totalCreatures >= creatureParty.maxTotal) {
     return { success: false, reason: 'Party full' };

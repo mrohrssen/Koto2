@@ -533,6 +533,16 @@ async function befriendReplace(releaseCreatureId) {
   return apiCall('/befriend-replace', 'POST', { releaseCreatureId });
 }
 
+/** Get the current befriend quiz options */
+async function getBefriendQuiz() {
+  return apiCall('/befriend-quiz', 'POST');
+}
+
+/** Answer a befriend quiz (action: 'fight' or 'talk', answerId for talk) */
+async function answerBefriendQuiz(action, answerId = null) {
+  return apiCall('/befriend-quiz-answer', 'POST', { action, answerId });
+}
+
 async function getBefriendConversation(enemyIndex) {
   return apiCall('/befriend-conversation', 'POST',
     typeof enemyIndex === 'number' ? { enemyIndex } : {}, null,
@@ -624,6 +634,8 @@ export {
   learnMove,
   swapCreatureEquip,
   befriendReplace,
+  getBefriendQuiz,
+  answerBefriendQuiz,
   getBefriendConversation,
   submitBefriendAnswer,
   // NPC dialogue endpoints
