@@ -94,6 +94,10 @@ let speedReviewRoomCommitChain = Promise.resolve();
 let apiSkillMasterOffers = null;
 let apiSkillMasterChoose = null;
 
+// Friendly NPC API
+let apiGetFriendlyNpcOffers = null;
+let apiChooseFriendlyNpcItem = null;
+
 export function init(callbacks) {
   getGameState = callbacks.getGameState;
   updateGameState = callbacks.updateGameState;
@@ -127,6 +131,8 @@ export function init(callbacks) {
   apiCompleteWhackAMole = callbacks.apiCompleteWhackAMole;
   apiSkillMasterOffers = callbacks.apiSkillMasterOffers;
   apiSkillMasterChoose = callbacks.apiSkillMasterChoose;
+  apiGetFriendlyNpcOffers = callbacks.apiGetFriendlyNpcOffers;
+  apiChooseFriendlyNpcItem = callbacks.apiChooseFriendlyNpcItem;
 }
 
 // ============ INVENTORY OVERLAY ============
@@ -1047,6 +1053,200 @@ export async function renderSkillMaster() {
         btn.style.opacity = '';
       });
       sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
+    });
+  });
+}
+
+// ============ FRIENDLY NPC ROOM ============
+
+/** Module-level state to avoid refetch across re-renders */
+let friendlyNpcState = {
+  roomId: null,
+  fetched: false,
+  offered: null,
+  choosing: false
+};
+
+const FRIENDLY_NPC_TYPE_ICONS = {
+  heal: '💚',
+  boost: '⬆️'
+};
+
+function buildFriendlyNpcStatPills(item) {
+  const effect = item.effect || {};
+  const pills = [];
+  if (effect.healPercent) pills.push(`💚 +${Math.round(effect.healPercent * 100)}% HP (weakest)`);
+  if (effect.healAllPercent) pills.push(`💚 +${Math.round(effect.healAllPercent * 100)}% all HP`);
+  if (effect.healMostDamaged) pills.push('💚 Full heal (most damaged)');
+  if (effect.field === 'attackMult') pills.push(`⬆️ ATK +${Math.round(effect.value * 100)}%`);
+  if (effect.field === 'flatDamageReduction') pills.push(`🛡️ -${effect.value} dmg`);
+  if (effect.field === 'elementEdge') pills.push(`✨ Elem +${Math.round(effect.value * 100)}%`);
+  return pills.map(p => `<span class="shop-stat-pill">${p}</span>`).join('');
+}
+
+/**
+ * Friendly NPC room — shows 3 item cards (food=heal or weapon=boost).
+ * Player picks one; item is applied immediately.
+ */
+export async function renderFriendlyNpc() {
+  const gameState = getGameState();
+  const room = gameState.room || getActiveRoomFromRun(gameState.run);
+  const roomId = room?.id || room?.type || 'unknown';
+
+  // Reset per-room state when entering a new room
+  if (friendlyNpcState.roomId !== roomId) {
+    friendlyNpcState = {
+      roomId,
+      fetched: false,
+      offered: null,
+      choosing: false
+    };
+  }
+
+  // If room already completed (e.g., after reload), show proceed
+  if (room?.interacted || room?.friendlyNpc?.completed) {
+    actions.setContent(`
+      <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:360px;">
+        <div style="text-align:center;font-weight:800;">アイテムをもらった！</div>
+        <div style="text-align:center;color:var(--text-secondary);font-size:13px;">Item received.</div>
+      </div>
+    `);
+    return;
+  }
+
+  // Show loading state immediately
+  actions.setContent(`
+    <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
+      <div style="text-align:center;font-weight:800;">フレンドリーNPC</div>
+      <div style="text-align:center;color:var(--text-secondary);font-size:13px;">Choose a gift.</div>
+      <div style="text-align:center;color:var(--text-muted);font-size:12px;">Loading offers…</div>
+    </div>
+  `);
+
+  // Fetch offers once per room
+  if (!friendlyNpcState.fetched) {
+    friendlyNpcState.fetched = true;
+    const fetchRoomId = roomId;
+    let resp;
+    try {
+      resp = await apiGetFriendlyNpcOffers?.();
+    } catch (err) {
+      friendlyNpcState.fetched = false;
+      friendlyNpcState.offered = null;
+      actions.setContent(`
+        <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
+          <div style="text-align:center;font-weight:800;">フレンドリーNPC</div>
+          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">Failed to load offers.</div>
+          <button class="action-btn action-btn-primary" id="friendly-npc-retry-btn">Retry</button>
+        </div>
+      `);
+      document.getElementById('friendly-npc-retry-btn')?.addEventListener('click', () => {
+        friendlyNpcState.fetched = false;
+        friendlyNpcState.offered = null;
+        renderFriendlyNpc();
+      });
+      return;
+    }
+
+    // Stale async guard: room changed while awaiting
+    if (friendlyNpcState.roomId !== fetchRoomId) return;
+
+    const offered = resp?.offered || room?.friendlyNpc?.offered;
+    if (!Array.isArray(offered) || offered.length === 0) {
+      friendlyNpcState.fetched = false;
+      friendlyNpcState.offered = null;
+      actions.setContent(`
+        <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
+          <div style="text-align:center;font-weight:800;">フレンドリーNPC</div>
+          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">No items available.</div>
+          <button class="action-btn action-btn-primary" id="friendly-npc-retry-btn">Retry</button>
+        </div>
+      `);
+      document.getElementById('friendly-npc-retry-btn')?.addEventListener('click', () => {
+        friendlyNpcState.fetched = false;
+        friendlyNpcState.offered = null;
+        renderFriendlyNpc();
+      });
+      return;
+    }
+
+    friendlyNpcState.offered = offered;
+    if (resp?.state) {
+      updateGameState(resp.state);
+    }
+  }
+
+  const offers = friendlyNpcState.offered || [];
+
+  const cardsHtml = offers.map((item, i) => {
+    const icon = FRIENDLY_NPC_TYPE_ICONS[item.type] || '📦';
+    const pills = buildFriendlyNpcStatPills(item);
+    return `
+      <div class="shop-item-card" data-item-id="${item.id}" data-index="${i}" style="position:relative;">
+        <div class="text-sprite shop-item-sprite">${item.word || '？'}</div>
+        <div class="shop-item-info">
+          <div class="shop-item-word">${icon} ${item.word} <span style="color:var(--text-secondary);font-size:12px">(${item.reading})</span></div>
+          <div class="shop-item-word" style="font-size:12px;opacity:0.8">${item.meaning}</div>
+          <div class="shop-item-effect">${pills}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  actions.setContent(`
+    <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:420px;">
+      <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">フレンドリーNPC</div>
+      <div style="text-align:center;color:var(--text-secondary);font-size:13px;">
+        Choose a gift. (${room?.friendlyNpc?.offerCategory === 'food' ? '🍱 Food' : '⚔️ Weapon'})
+      </div>
+      <div class="shop-items" style="gap:10px">${cardsHtml}</div>
+    </div>
+  `);
+
+  const cards = document.querySelectorAll('.shop-item-card[data-item-id]');
+  cards.forEach(card => {
+    card.addEventListener('click', async () => {
+      if (friendlyNpcState.choosing) return;
+      friendlyNpcState.choosing = true;
+      const itemId = card.dataset.itemId;
+
+      playSFX('creature-equip');
+
+      // Visually mark selected and disable others
+      cards.forEach(c => {
+        c.style.pointerEvents = 'none';
+        c.style.opacity = '0.5';
+      });
+      card.classList.add('selected');
+      card.style.opacity = '1';
+
+      let result;
+      try {
+        result = await apiChooseFriendlyNpcItem?.(itemId);
+      } catch (err) {
+        friendlyNpcState.choosing = false;
+        cards.forEach(c => {
+          c.style.pointerEvents = '';
+          c.style.opacity = '';
+        });
+        card.classList.remove('selected');
+        sceneModule?.showNarration?.('Failed to choose item.', { autoDismiss: 1800 });
+        return;
+      }
+
+      if (result?.state) {
+        updateGameState(result.state);
+        updateUI();
+        return;
+      }
+
+      friendlyNpcState.choosing = false;
+      cards.forEach(c => {
+        c.style.pointerEvents = '';
+        c.style.opacity = '';
+      });
+      card.classList.remove('selected');
+      sceneModule?.showNarration?.('Failed to choose item.', { autoDismiss: 1800 });
     });
   });
 }

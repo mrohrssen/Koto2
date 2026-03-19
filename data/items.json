@@ -1,1 +1,110 @@
-[]
+[
+  {
+    "id": "onigiri",
+    "word": "おにぎり",
+    "reading": "おにぎり",
+    "meaning": "rice ball",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healPercent": 0.25
+    },
+    "description": "Heal the weakest creature for 25% of max HP",
+    "descriptionJa": "最も弱ったクリーチャーのHPを25%回復"
+  },
+  {
+    "id": "miso-soup",
+    "word": "みそしる",
+    "reading": "みそしる",
+    "meaning": "miso soup",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.1
+    },
+    "description": "Heal all creatures for 10% of max HP",
+    "descriptionJa": "全クリーチャーのHPを10%回復"
+  },
+  {
+    "id": "bento",
+    "word": "べんとう",
+    "reading": "べんとう",
+    "meaning": "bento box",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.2
+    },
+    "description": "Heal all creatures for 20% of max HP",
+    "descriptionJa": "全クリーチャーのHPを20%回復"
+  },
+  {
+    "id": "ramen",
+    "word": "ラーメン",
+    "reading": "らーめん",
+    "meaning": "ramen",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healMostDamaged": true
+    },
+    "description": "Fully restore the most damaged creature",
+    "descriptionJa": "最も傷ついたクリーチャーを全回復"
+  },
+  {
+    "id": "katana",
+    "word": "かたな",
+    "reading": "かたな",
+    "meaning": "katana",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "attackMult",
+      "value": 0.05
+    },
+    "description": "Increase all creatures' attack by 5%",
+    "descriptionJa": "全クリーチャーの攻撃力を5%アップ"
+  },
+  {
+    "id": "shield",
+    "word": "たて",
+    "reading": "たて",
+    "meaning": "shield",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "flatDamageReduction",
+      "value": 2
+    },
+    "description": "Reduce incoming damage by 2",
+    "descriptionJa": "受けるダメージを2減らす"
+  },
+  {
+    "id": "sword",
+    "word": "けん",
+    "reading": "けん",
+    "meaning": "sword",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "attackMult",
+      "value": 0.1
+    },
+    "description": "Increase all creatures' attack by 10%",
+    "descriptionJa": "全クリーチャーの攻撃力を10%アップ"
+  },
+  {
+    "id": "armor",
+    "word": "よろい",
+    "reading": "よろい",
+    "meaning": "armor",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "flatDamageReduction",
+      "value": 5
+    },
+    "description": "Reduce incoming damage by 5",
+    "descriptionJa": "受けるダメージを5減らす"
+  }
+]

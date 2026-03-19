@@ -152,6 +152,8 @@ import {
   completeWhackAMole as apiCompleteWhackAMole,
   skillMasterOffers as apiSkillMasterOffers,
   skillMasterChoose as apiSkillMasterChoose,
+  getFriendlyNpcOffers as apiGetFriendlyNpcOffers,
+  chooseFriendlyNpcItem as apiChooseFriendlyNpcItem,
 } from './js/api.js';
 
 const API_BASE = '';
@@ -391,6 +393,9 @@ function updateGameContent() {
       break;
     case 'skillMaster':
       explorationUI.renderSkillMaster();
+      break;
+    case 'friendlyNpc':
+      explorationUI.renderFriendlyNpc();
       break;
     case 'combat':
       // Clear stale buttons; flash card will be rendered by combat-loop
@@ -1350,6 +1355,8 @@ async function initGame() {
     apiCompleteWhackAMole,
     apiSkillMasterOffers,
     apiSkillMasterChoose,
+    apiGetFriendlyNpcOffers,
+    apiChooseFriendlyNpcItem,
   });
 
   metaShop.init({

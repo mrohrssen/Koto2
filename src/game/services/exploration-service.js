@@ -31,6 +31,36 @@ import { addXpToCreature, xpToNextLevel, instantiateCreature, getCreatureBuyPric
 import { logger } from '../../logger.js';
 import { getDueWordsWithMeanings } from '../../jpdb.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../party-skills.js';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __dirname_exploration = dirname(fileURLToPath(import.meta.url));
+const DEFAULT_ITEMS_PATH = join(__dirname_exploration, '../../../data/items.json');
+
+/**
+ * Roll 3 item offers for a friendly NPC room.
+ * @param {'food'|'weapon'} category - 'food' maps to heal items, 'weapon' maps to boost items
+ * @param {Array} [itemPool] - Optional override item pool (defaults to data/items.json)
+ * @returns {Array} Up to 3 item objects matching the category
+ */
+export function rollFriendlyNpcOffers(category, itemPool = null) {
+  if (!itemPool) {
+    try {
+      itemPool = JSON.parse(readFileSync(DEFAULT_ITEMS_PATH, 'utf8'));
+    } catch (e) {
+      itemPool = [];
+    }
+  }
+
+  // Map category to item type
+  const typeFilter = category === 'food' ? 'heal' : 'boost';
+  const eligible = itemPool.filter(item => item.type === typeFilter);
+
+  // Randomly select up to 3 without duplicates
+  const shuffled = [...eligible].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, 3).map(item => ({ ...item }));
+}
 
 const AREA_BG_COUNT = 20;
 function randomAreaBg(areaId) {

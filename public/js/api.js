@@ -566,6 +566,18 @@ async function skillMasterChoose(skillId) {
   return apiCall('/skill-master-choose', 'POST', { skillId });
 }
 
+// ============ FRIENDLY NPC ENDPOINTS ============
+
+/** Get 3 item offers from a friendly NPC (idempotent per room) */
+async function getFriendlyNpcOffers() {
+  return apiCall('/friendly-npc-offers', 'POST');
+}
+
+/** Choose one item from the friendly NPC's offers */
+async function chooseFriendlyNpcItem(itemId) {
+  return apiCall('/friendly-npc-choose', 'POST', { itemId });
+}
+
 export {
   apiCall,
   isApiLoading,
@@ -627,6 +639,9 @@ export {
   completeSpeedReviewRoom,
   // Skill master endpoints
   skillMasterOffers,
-  skillMasterChoose
+  skillMasterChoose,
+  // Friendly NPC endpoints
+  getFriendlyNpcOffers,
+  chooseFriendlyNpcItem
   // Note: getDueWords is exported inline
 };

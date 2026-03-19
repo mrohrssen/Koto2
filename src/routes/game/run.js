@@ -13,6 +13,8 @@ import { lookupVocabularyBatch } from '../../jpdb.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
 import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswer } from '../../bunpro.js';
 import { validateTeamSelection } from '../../game/services/creature-collection-service.js';
+import { rollFriendlyNpcOffers } from '../../game/services/exploration-service.js';
+import { applyItem } from '../../game/services/item-service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -524,6 +526,59 @@ export default function createRunRoutes({
       const result = req.gameManager.completeWhackAMole(score);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  // Friendly NPC: get item offers (idempotent per room)
+  router.post('/friendly-npc-offers', async (req, res) => {
+    try {
+      const gm = req.gameManager;
+      const room = gm.getCurrentRoom();
+      if (!room || room.type !== 'friendlyNpc') {
+        return res.status(400).json({ error: 'Not in a friendly NPC room' });
+      }
+      // Generate offers if not already generated (idempotent)
+      if (!room.friendlyNpc.offered) {
+        room.friendlyNpc.offered = rollFriendlyNpcOffers(room.friendlyNpc.offerCategory, allItems);
+        req.saveGame();
+      }
+      res.json({ offered: room.friendlyNpc.offered, state: req.getEnrichedGameState() });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  // Friendly NPC: choose one offered item
+  router.post('/friendly-npc-choose', async (req, res) => {
+    try {
+      const { itemId } = req.body;
+      if (!itemId) {
+        return res.status(400).json({ error: 'itemId required' });
+      }
+      const gm = req.gameManager;
+      const room = gm.getCurrentRoom();
+      if (!room || room.type !== 'friendlyNpc') {
+        return res.status(400).json({ error: 'Not in a friendly NPC room' });
+      }
+      if (!room.friendlyNpc.offered) {
+        return res.status(400).json({ error: 'No offers generated yet' });
+      }
+      if (room.friendlyNpc.completed) {
+        return res.status(400).json({ error: 'Friendly NPC already completed' });
+      }
+      const item = room.friendlyNpc.offered.find(i => i.id === itemId);
+      if (!item) {
+        return res.status(400).json({ error: 'Invalid item choice' });
+      }
+      // Apply item effect to run state
+      applyItem(item, gm.run.creatureParty, gm.run.itemBuffs);
+      room.friendlyNpc.chosenId = itemId;
+      room.friendlyNpc.completed = true;
+      room.interacted = true;
+      req.saveGame();
+      res.json({ chosen: item, state: req.getEnrichedGameState() });
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
