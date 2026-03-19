@@ -47,3 +47,21 @@ test('derivePhase returns room when skillMaster room completed', () => {
   assert.equal(derivePhase(state), PHASES.ROOM);
 });
 
+test('should derive friendlyNpc phase for uninteracted friendlyNpc room', () => {
+  const state = baseState({
+    run: {
+      rooms: [{ type: 'friendlyNpc', interacted: false }],
+    },
+  });
+  assert.equal(derivePhase(state), PHASES.FRIENDLY_NPC);
+});
+
+test('should derive room_encounter for uninteracted npcBattle room', () => {
+  const state = baseState({
+    run: {
+      rooms: [{ type: 'npcBattle', interacted: false }],
+    },
+  });
+  assert.equal(derivePhase(state), PHASES.ROOM_ENCOUNTER);
+});
+

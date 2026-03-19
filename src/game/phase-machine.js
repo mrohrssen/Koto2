@@ -36,6 +36,8 @@ export const PHASES = {
   VICTORY: 'victory',
   DEFEAT: 'defeat',
   NPC_DIALOGUE: 'npc_dialogue',
+  FRIENDLY_NPC: 'friendlyNpc',
+  NPC_SKILL_SELECTION: 'npc_skill_selection',
 
   SHOP: 'shop',
   POST_COMBAT_SHOP: 'post_combat_shop',
@@ -101,7 +103,16 @@ export const VALID_TRANSITIONS = {
     PHASES.ROOM,
     PHASES.EXPLORING,
     PHASES.AREA_COMPLETE,
-    PHASES.RUN_COMPLETE
+    PHASES.RUN_COMPLETE,
+    PHASES.NPC_SKILL_SELECTION
+  ],
+
+  [PHASES.FRIENDLY_NPC]: [
+    PHASES.EXPLORING
+  ],
+
+  [PHASES.NPC_SKILL_SELECTION]: [
+    PHASES.EXPLORING
   ],
 
   [PHASES.DEFEAT]: [
@@ -173,7 +184,8 @@ export function derivePhase(state) {
     if (currentRoom.type === 'whackAMole' && !currentRoom.interacted) return PHASES.WHACK_A_MOLE;
     if (currentRoom.type === 'speedReviewRoom' && !currentRoom.interacted) return PHASES.SPEED_REVIEW_ROOM;
     if (currentRoom.type === 'skillMaster' && currentRoom.skillMaster?.completed !== true) return PHASES.SKILL_MASTER;
-    if ((currentRoom.type === 'encounter' || currentRoom.type === 'boss') && !currentRoom.interacted) return PHASES.ROOM_ENCOUNTER;
+    if (currentRoom.type === 'friendlyNpc' && !currentRoom.interacted) return PHASES.FRIENDLY_NPC;
+    if ((currentRoom.type === 'encounter' || currentRoom.type === 'boss' || currentRoom.type === 'npcBattle') && !currentRoom.interacted) return PHASES.ROOM_ENCOUNTER;
     return PHASES.ROOM;
   }
 
