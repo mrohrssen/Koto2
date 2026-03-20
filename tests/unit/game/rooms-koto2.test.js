@@ -61,7 +61,7 @@ describe('Koto2 30-room generation', () => {
     const friendlyRooms = rooms.filter(r => r.type === 'friendlyNpc');
     for (const room of friendlyRooms) {
       assert.ok(
-        room.friendlyNpc?.offerCategory === 'food' || room.friendlyNpc?.offerCategory === 'weapon',
+        room.friendlyNpc?.offerCategory === 'food' || room.friendlyNpc?.offerCategory === 'equipment',
         `friendlyNpc room missing valid offerCategory`
       );
     }

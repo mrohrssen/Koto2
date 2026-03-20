@@ -310,7 +310,7 @@ export function createRoom(type, areaId, roomNumber, totalRooms) {
       room.npcBattle = {};
       break;
     case ROOM_TYPES.friendlyNpc: {
-      const offerCategory = Math.random() < 0.5 ? 'food' : 'weapon';
+      const offerCategory = Math.random() < 0.5 ? 'food' : 'equipment';
       room.friendlyNpc = { offerCategory, offered: null, chosenId: null, completed: false };
       break;
     }

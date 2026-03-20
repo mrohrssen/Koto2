@@ -1197,7 +1197,7 @@ export async function renderFriendlyNpc() {
     <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:420px;">
       <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">フレンドリーNPC</div>
       <div style="text-align:center;color:var(--text-secondary);font-size:13px;">
-        Choose a gift. (${room?.friendlyNpc?.offerCategory === 'food' ? '🍱 Food' : '⚔️ Weapon'})
+        Choose a gift. (${room?.friendlyNpc?.offerCategory === 'food' ? '🍱 Food' : '🛡️ Equipment'})
       </div>
       <div class="shop-items" style="gap:10px">${cardsHtml}</div>
     </div>

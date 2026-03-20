@@ -40,7 +40,7 @@ const DEFAULT_ITEMS_PATH = join(__dirname_exploration, '../../../data/items.json
 
 /**
  * Roll 3 item offers for a friendly NPC room.
- * @param {'food'|'weapon'} category - 'food' maps to heal items, 'weapon' maps to boost items
+ * @param {'food'|'equipment'} category - Filters items by their category field
  * @param {Array} [itemPool] - Optional override item pool (defaults to data/items.json)
  * @returns {Array} Up to 3 item objects matching the category
  */
@@ -53,9 +53,8 @@ export function rollFriendlyNpcOffers(category, itemPool = null) {
     }
   }
 
-  // Map category to item type
-  const typeFilter = category === 'food' ? 'heal' : 'boost';
-  const eligible = itemPool.filter(item => item.type === typeFilter);
+  // Filter by item category field (food or equipment)
+  const eligible = itemPool.filter(item => item.category === category);
 
   // Randomly select up to 3 without duplicates
   const shuffled = [...eligible].sort(() => Math.random() - 0.5);
