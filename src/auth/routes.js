@@ -125,8 +125,12 @@ export default function createAuthRoutes(options = {}) {
   function me(req, res) {
     const user = findUserById(req.user.id, usersFile);
     if (!user) {
-      // In test mode, return a mock user profile so the frontend proceeds
-      if (process.env.NODE_ENV === 'test' || process.env.SKIP_AUTH === 'true') {
+      // Mock profile for tests, explicit skip, or local non-production when JWT is valid but user row is missing.
+      if (
+        process.env.NODE_ENV === 'test' ||
+        process.env.SKIP_AUTH === 'true' ||
+        process.env.NODE_ENV !== 'production'
+      ) {
         return res.json({ id: req.user.id, username: req.user.username, apiKeys: {} });
       }
       return res.status(404).json({ error: 'User not found' });

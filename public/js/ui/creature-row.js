@@ -30,6 +30,13 @@ let onSwapCreature = null;
 let onRearrangeCreature = null;
 let currentReserves = [];
 let currentActiveCreatures = [];
+/** @type {() => object|undefined|null} */
+let getItemBuffs = null;
+
+function effectiveAttack(creature) {
+  const mult = getItemBuffs?.()?.attackMult ?? 1;
+  return Math.floor(creature.attack * mult);
+}
 
 export const ELEMENT_COLORS = {
   wood: '#4CAF50',
@@ -47,9 +54,10 @@ export const ELEMENT_ICONS = {
   water: '💧'
 };
 
-export function init({ swapCreatureCallback, rearrangeCreatureCallback }) {
+export function init({ swapCreatureCallback, rearrangeCreatureCallback, getItemBuffs: getBuffs }) {
   onSwapCreature = swapCreatureCallback;
   onRearrangeCreature = rearrangeCreatureCallback || null;
+  getItemBuffs = typeof getBuffs === 'function' ? getBuffs : null;
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.creature-slot') && !e.target.closest('.creature-popup')) {
       hidePopup();
@@ -163,7 +171,7 @@ function showPopup(index, creature) {
     <div class="creature-popup-element">${ELEMENT_ICONS[creature.element]} ${creature.element}</div>
     <div class="creature-popup-archetype">${archetypeLabel}</div>
     <div class="creature-popup-stats">
-      HP: ${creature.hp}/${creature.maxHp} | ATK: ${creature.attack} | MP: ${creature.mp}/${creature.maxMp}
+      HP: ${creature.hp}/${creature.maxHp} | ATK: ${effectiveAttack(creature)} | MP: ${creature.mp}/${creature.maxMp}
     </div>
     ${!isKO ? `
       <div class="creature-popup-moves">

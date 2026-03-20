@@ -56,7 +56,14 @@ import { getRoomActions, getAreaSelectionOptions, ROOM_TYPES } from './rooms.js'
 import { derivePhase } from './phase-machine.js';
 import { ExplorationService } from './services/index.js';
 import { logger } from '../logger.js';
-import { instantiateCreature, generateEnemyCreature, generateEnemyCreatures, getEnemyLevel, CREATURES_BY_ID } from './creatures.js';
+import {
+  clampEarlyAreaEnemyLevel,
+  instantiateCreature,
+  generateEnemyCreature,
+  generateEnemyCreatures,
+  getEnemyLevel,
+  CREATURES_BY_ID
+} from './creatures.js';
 import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL, applyPartySkillsAfterPlayerAttacks, shouldTriggerBefriendQuiz, generateBefriendQuiz, processBefriendQuizAnswer, resolveBefriendFight } from './services/creature-combat-service.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/creature-collection-service.js';
@@ -519,13 +526,17 @@ export class GameManager {
     let enemyCreatures;
     if (isBoss) {
       // Boss: solo creature, level × 1.25
-      const bossLevel = Math.round(getEnemyLevel({ totalEncounters, enemyCount: 1 }) * 1.25);
+      let bossLevel = Math.round(
+        getEnemyLevel({ totalEncounters, enemyCount: 1, stage }) * 1.25
+      );
+      bossLevel = clampEarlyAreaEnemyLevel(bossLevel, stage);
       const bossCreature = generateEnemyCreature(bossLevel, [currentRoom.boss.creatureId], stage);
       enemyCreatures = [bossCreature];
     } else if (isNpcBattle) {
       // NPC Battle: always 3 enemies at level × 1.1
-      const baseLevel = getEnemyLevel({ totalEncounters, enemyCount: 3 });
-      const npcBattleLevel = Math.round(baseLevel * 1.1);
+      const baseLevel = getEnemyLevel({ totalEncounters, enemyCount: 3, stage });
+      let npcBattleLevel = Math.round(baseLevel * 1.1);
+      npcBattleLevel = clampEarlyAreaEnemyLevel(npcBattleLevel, stage);
       enemyCreatures = [
         generateEnemyCreature(npcBattleLevel, creaturePool, stage),
         generateEnemyCreature(npcBattleLevel, creaturePool, stage),

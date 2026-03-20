@@ -226,7 +226,16 @@ const PARTY_SIZE_MULTIPLIERS = {
   3: 0.85
 };
 
-export function getEnemyLevel({ totalEncounters = 0, enemyCount = 1 }) {
+/**
+ * Stage-1 (and starter) areas: keep wild enemies at Lv 1–2 so they stay below/ahead of
+ * a Lv5 starter party without run-wide grind on the same formula.
+ */
+export function clampEarlyAreaEnemyLevel(level, stage) {
+  if (stage == null || stage > 1) return level;
+  return Math.min(Math.max(1, level), 2);
+}
+
+export function getEnemyLevel({ totalEncounters = 0, enemyCount = 1, stage = null } = {}) {
   // Start early fights around level 2, then ramp with a gentle linear term
   // plus a quadratic acceleration term for later runs.
   const base = 2 + totalEncounters / 2 + Math.pow(totalEncounters / 25, 2);
@@ -234,7 +243,9 @@ export function getEnemyLevel({ totalEncounters = 0, enemyCount = 1 }) {
   // Keep some randomness, but small enough that "later fights feel harder"
   // instead of occasionally regressing due to variance overwhelming the +0.5/encounter slope.
   const variance = Math.floor(Math.random() * 3) - 1; // -1 to +1
-  return Math.max(1, Math.round((base * sizeMultiplier) + variance));
+  let level = Math.max(1, Math.round((base * sizeMultiplier) + variance));
+  level = clampEarlyAreaEnemyLevel(level, stage);
+  return level;
 }
 
 export function generateEnemyCreature(targetLevel, creaturePool = null, stage = null) {
@@ -342,7 +353,8 @@ export function generateEnemyCreatures(highestAllyLevel = 1, { maxEnemies, creat
   for (let i = 0; i < enemyCount; i++) {
     const targetLevel = getEnemyLevel({
       totalEncounters: totalEncounters || 0,
-      enemyCount
+      enemyCount,
+      stage: stage ?? null
     });
     enemies.push(generateEnemyCreature(targetLevel, creaturePool, stage));
   }

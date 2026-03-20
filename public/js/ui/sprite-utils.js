@@ -14,6 +14,15 @@ const SPRITE_VERSION = '20260317';
 const _noIdle = new Set();
 const _hasIdle = new Set();
 
+/** Kanji shown on text sprites when only element is known (matches starter/base words in data). */
+const ELEMENT_DISPLAY_WORD = {
+  fire: '火',
+  water: '水',
+  wood: '木',
+  earth: '石',
+  metal: '鉄'
+};
+
 /** Idle path (or static if known to 404). */
 export function creatureSpritePath(id) {
   if (_noIdle.has(id)) return `${BASE}/${id}.webp?v=${SPRITE_VERSION}`;
@@ -70,9 +79,12 @@ export function replaceWithTextSprite(img, word, element) {
  * @param {Object} [creature] - Optional creature data { baseWord, name, element }
  */
 export function configureCreatureImg(img, id, finalFallback, creature) {
-  const word = creature?.baseWord || creature?.name || '？';
   const element = creature?.element || '';
-  replaceWithTextSprite(img, word, element);
+  let word = creature?.baseWord || creature?.name;
+  if (!word && element && ELEMENT_DISPLAY_WORD[element]) {
+    word = ELEMENT_DISPLAY_WORD[element];
+  }
+  replaceWithTextSprite(img, word || '？', element);
 }
 
 /**

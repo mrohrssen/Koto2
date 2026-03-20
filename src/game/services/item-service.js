@@ -60,6 +60,21 @@ function applyStat(field, value, itemBuffs) {
   }
 }
 
+/**
+ * Scale all party creatures' HP when itemBuffs.hpMult changes (equipment HP boosts).
+ * Combat still uses raw maxHp on the creature object; this keeps stored HP in sync with the multiplier.
+ * @param {{ active: Array, reserves: Array }} creatureParty
+ * @param {number} ratio - newHpMult / oldHpMult (e.g. 1.1 / 1.0 after +10%)
+ */
+export function scalePartyHpForBuffRatio(creatureParty, ratio) {
+  if (!creatureParty || !Number.isFinite(ratio) || ratio <= 0 || ratio === 1) return;
+  const all = [...(creatureParty.active || []), ...(creatureParty.reserves || [])].filter(Boolean);
+  for (const c of all) {
+    c.maxHp = Math.max(1, Math.floor(c.maxHp * ratio));
+    c.hp = Math.min(c.maxHp, Math.max(0, Math.floor(c.hp * ratio)));
+  }
+}
+
 
 export function applyItem(item, creatureParty, itemBuffs, targetIndex = null) {
   const allCreatures = [...creatureParty.active, ...creatureParty.reserves].filter(Boolean);
@@ -95,7 +110,12 @@ export function applyItem(item, creatureParty, itemBuffs, targetIndex = null) {
 
   if (item.type === 'boost') {
     if (item.effect.field && item.effect.value) {
-      applyStat(item.effect.field, item.effect.value, itemBuffs);
+      const field = item.effect.field;
+      const prevHpMult = itemBuffs.hpMult;
+      applyStat(field, item.effect.value, itemBuffs);
+      if (field === 'hpMult' && itemBuffs.hpMult !== prevHpMult) {
+        scalePartyHpForBuffRatio(creatureParty, itemBuffs.hpMult / prevHpMult);
+      }
     }
     if (item.effect.tempBoost) {
       const tb = item.effect.tempBoost;
@@ -133,8 +153,12 @@ export function applyItem(item, creatureParty, itemBuffs, targetIndex = null) {
   }
 
   if (item.type === 'keepsake') {
+    const prevHpMult = itemBuffs.hpMult;
     for (const [field, value] of Object.entries(item.effect)) {
       applyStat(field, value, itemBuffs);
+    }
+    if (itemBuffs.hpMult !== prevHpMult) {
+      scalePartyHpForBuffRatio(creatureParty, itemBuffs.hpMult / prevHpMult);
     }
     return { applied: true };
   }

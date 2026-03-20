@@ -355,8 +355,13 @@ function updatePlayerHP() {
 function updateGameContent() {
   switch (gameState.phase) {
     case 'no_save':
-      actions.setContent('<button class="action-btn action-btn-primary" id="new-game-btn">ニューゲーム</button>');
-      document.getElementById('new-game-btn')?.addEventListener('click', createCharacter);
+      // During prologue (player exists, not complete), leave action area for prologue CTAs only.
+      if (!gameState.player || gameState.meta?.prologueComplete === true) {
+        actions.setContent('<button class="action-btn action-btn-primary" id="new-game-btn">ニューゲーム</button>');
+        document.getElementById('new-game-btn')?.addEventListener('click', createCharacter);
+      } else {
+        actions.clear();
+      }
       break;
     case 'hub':
       explorationUI.renderHub();
@@ -527,7 +532,40 @@ async function playPrologue() {
     _prologueCache = await resp.json();
   }
 
+  actions.clear();
+
   let lastChoiceId = null;
+
+  function showPrologueChoices(choices) {
+    // Same stacking pattern as `exploration.renderHub()`.
+    // `align-self: stretch` is required because `#action-area` uses flex column + `align-items: center`,
+    // otherwise shrink-wrapped width follows the narrowest label (~127–220px) instead of full rail.
+    actions.setContent(`
+      <div style="display:flex;flex-direction:column;align-items:stretch;gap:12px;align-self:stretch;width:100%;max-width:340px;box-sizing:border-box;">
+        ${choices.map((choice) => {
+          const choiceId = choice.id ?? choice.text;
+          const choiceText = choice.text ?? choiceId;
+          const safeId = String(choiceId).replace(/"/g, '&quot;');
+          return `
+            <button type="button" class="action-btn action-btn-primary" data-choice-id="${safeId}">
+              ${escapeHtml(choiceText)}
+            </button>
+          `;
+        }).join('')}
+      </div>
+    `);
+
+    return new Promise((resolve) => {
+      document.querySelectorAll('#action-area button[data-choice-id]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const choiceId = btn.dataset.choiceId || btn.textContent;
+          actions.clear();
+          narrationBox.forceHide();
+          resolve(choiceId);
+        }, { once: true });
+      });
+    });
+  }
 
   for (const prologueScene of _prologueCache) {
     if (prologueScene.conditional && prologueScene.conditional !== lastChoiceId) {
@@ -554,14 +592,16 @@ async function playPrologue() {
       html: true,
       speaker: prologueScene.speaker || undefined
     };
-    if (prologueScene.choices) {
-      showOpts.choices = prologueScene.choices;
-    }
 
     const html = prologueScene.narration ? renderEnFirst(prologueScene.narration) : '';
-    const result = await narrationBox.show(html, showOpts);
-    if (prologueScene.choices) {
+    let result = undefined;
+
+    if (prologueScene.choices?.length > 0) {
+      await narrationBox.show(html, { ...showOpts, persistent: true });
+      result = await showPrologueChoices(prologueScene.choices);
       lastChoiceId = result;
+    } else {
+      await narrationBox.show(html, showOpts);
     }
 
     // if (prologueScene.id === 'prologue-hiragana-question' && result === 'kana-no') {
@@ -573,11 +613,15 @@ async function playPrologue() {
     // }
 
     if (prologueScene.id === 'prologue-starter-selection' && result) {
-      await fetch('/api/game/select-starter', {
+      const resp = await fetch('/api/game/select-starter', {
         method: 'POST',
         headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ starterId: result })
       });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data?.state) updateGameState(data.state);
+      }
     }
 
     flushExposures();
@@ -586,10 +630,19 @@ async function playPrologue() {
   scene.hideCid();
 
   // Mark prologue as complete on server
-  await fetch('/api/game/prologue-complete', {
+  const completeResp = await fetch('/api/game/prologue-complete', {
     method: 'POST',
     headers: getAuthHeaders()
   });
+  if (completeResp.ok) {
+    updateGameState({
+      ...gameState,
+      meta: {
+        ...(gameState.meta || {}),
+        prologueComplete: true
+      }
+    });
+  }
 }
 
 // ============ GAME ACTIONS ============
@@ -777,9 +830,11 @@ function showCollectionSelect(catalog, collection) {
         </button>
       `;
 
-      // Configure animated idle sprites with static fallback
+      // Text sprites need catalog row for baseWord / name (MVP)
       overlay.querySelectorAll('img[data-creature-id]').forEach(img => {
-        configureCreatureImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
+        const cid = img.dataset.creatureId;
+        const row = sorted.find(r => r.id === cid);
+        configureCreatureImg(img, cid, el => { el.style.display = 'none'; }, row);
       });
 
       // Set background
@@ -833,7 +888,12 @@ function showCollectionToast(additions) {
       <img />
       <span class="toast-text">${t('newCreature', creature.nameEn)}</span>
     `;
-    configureCreatureImg(toast.querySelector('img'), creature.id);
+    configureCreatureImg(
+      toast.querySelector('img'),
+      creature.id,
+      null,
+      { id: creature.id, name: creature.name, nameEn: creature.nameEn, element: creature.element }
+    );
     document.body.appendChild(toast);
     setTimeout(() => {
       toast.style.animation = 'toastSlideOut 0.3s ease-in forwards';
@@ -1040,9 +1100,13 @@ async function openCreatureEquipView() {
       <p style="padding:8px 16px;opacity:0.5;font-size:0.8em;text-align:center">${t('swapInstruction')}</p>
     `;
 
-    // Configure animated idle sprites with static fallback
+    const partyById = new Map();
+    for (const c of [...active, ...reserves]) {
+      if (c?.id) partyById.set(c.id, c);
+    }
     content.querySelectorAll('.creature-equip-sprite[data-creature-id]').forEach(img => {
-      configureCreatureImg(img, img.dataset.creatureId, el => { el.style.display = 'none'; });
+      const cid = img.dataset.creatureId;
+      configureCreatureImg(img, cid, el => { el.style.display = 'none'; }, partyById.get(cid));
     });
 
     // Selection logic: tap active then reserve to swap
@@ -1273,6 +1337,7 @@ async function initGame() {
   });
 
   creatureRow.init({
+    getItemBuffs: () => gameState.run?.itemBuffs,
     swapCreatureCallback: async (activeIndex, reserveIndex) => {
       const result = await apiSwapCreature(activeIndex, reserveIndex);
       if (result.error) {

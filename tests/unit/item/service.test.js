@@ -85,9 +85,27 @@ describe('Item Buffs - Stat Boosts', () => {
       type: 'boost',
       effect: { field: 'hpMult', value: 0.03 }
     };
-    const party = { active: [mockCreature()], reserves: [] };
+    const creature = mockCreature();
+    const party = { active: [creature], reserves: [] };
     applyItem(item, party, buffs);
     assert.strictEqual(buffs.hpMult, 1.03);
+    assert.strictEqual(creature.maxHp, 103);
+    assert.strictEqual(creature.hp, 103);
+  });
+
+  it('hpMult boost stacks and rescales party HP each time', () => {
+    const buffs = createItemBuffs();
+    const item = { type: 'boost', effect: { field: 'hpMult', value: 0.10 } };
+    const c = mockCreature(50, 100);
+    const party = { active: [c], reserves: [] };
+    applyItem(item, party, buffs);
+    assert.strictEqual(buffs.hpMult, 1.1);
+    assert.strictEqual(c.maxHp, 110);
+    assert.strictEqual(c.hp, 55);
+    applyItem(item, party, buffs);
+    assert.ok(Math.abs(buffs.hpMult - 1.2) < 1e-9);
+    assert.strictEqual(c.maxHp, 120);
+    assert.strictEqual(c.hp, 60);
   });
 
   it('boost applies flatDamageReduction additively', () => {

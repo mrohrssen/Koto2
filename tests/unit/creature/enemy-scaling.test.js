@@ -1,6 +1,12 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { getEnemyLevel, getRarityWeightsForStage, getEnemyCountWeights, generateEnemyCreatures } from '../../../src/game/creatures.js';
+import {
+  clampEarlyAreaEnemyLevel,
+  getEnemyLevel,
+  getRarityWeightsForStage,
+  getEnemyCountWeights,
+  generateEnemyCreatures
+} from '../../../src/game/creatures.js';
 
 describe('getEnemyLevel', () => {
   it('returns level 1 at encounter 0 (before variance)', () => {
@@ -39,6 +45,20 @@ describe('getEnemyLevel', () => {
       const level = getEnemyLevel({ totalEncounters: 0, enemyCount: 3 });
       assert.ok(level >= 1, `Expected >= 1, got ${level}`);
     }
+  });
+
+  it('stage 1 caps wild enemy level at 2 even with many run encounters', () => {
+    for (let i = 0; i < 30; i++) {
+      const level = getEnemyLevel({ totalEncounters: 50, enemyCount: 1, stage: 1 });
+      assert.ok(level >= 1 && level <= 2, `Expected 1-2 for stage 1, got ${level}`);
+    }
+  });
+
+  it('clampEarlyAreaEnemyLevel only applies for stage <= 1', () => {
+    assert.strictEqual(clampEarlyAreaEnemyLevel(5, 2), 5);
+    assert.strictEqual(clampEarlyAreaEnemyLevel(5, null), 5);
+    assert.strictEqual(clampEarlyAreaEnemyLevel(5, 1), 2);
+    assert.strictEqual(clampEarlyAreaEnemyLevel(0, 1), 1);
   });
 
   it('produces variance across multiple calls', () => {
