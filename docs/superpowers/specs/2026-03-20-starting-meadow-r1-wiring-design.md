@@ -83,17 +83,17 @@ Source: `tmp/content-templates/items r1.csv`
 
 Source: `tmp/content-templates/npcs r1.csv`
 
-| ID | kanji | reading | nameEn | personality | greeting | defeatLine |
-|----|-------|---------|--------|-------------|----------|------------|
-| kodomo | 子供 | こども | Child | Fun loving | こんにちわ! | いいね! |
-| otona | 大人 | おとな | Adult | Mature | こんにちわ! | いいね! |
-| otokonoko | 男の子 | おとこのこ | Boy | Energetic | こんにちわ! | いいね! |
-| onnanoko | 女の子 | おんなのこ | Girl | Shy | こんにちわ! | いいね! |
+| ID | kanji | reading | nameEn | personality | greeting | defeatLine | skills |
+|----|-------|---------|--------|-------------|----------|------------|--------|
+| kodomo | 子供 | こども | Child | Fun loving | こんにちわ! | いいね! | [asobu] |
+| otona | 大人 | おとな | Adult | Mature | こんにちわ! | いいね! | [hataraku] |
+| otokonoko | 男の子 | おとこのこ | Boy | Energetic | こんにちわ! | いいね! | [hashiru] |
+| onnanoko | 女の子 | おんなのこ | Girl | Shy | こんにちわ! | いいね! | [utau] |
 
 - Greetings and defeat lines used as-is (simple Japanese, no tagged formatting)
 - Area set to Starting Meadow ID
 - All tier 1
-- Wire skills to npc-skills.json entries
+- Each NPC's `skills` array references IDs from `npc-skills.json` (used by `rollNpcSkill()` during NPC battle combat)
 
 ### NPC Skills (4 skills)
 
