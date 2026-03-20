@@ -6,10 +6,10 @@ export function buildItemEffectPills(item) {
   const effect = item.effect || {};
   const pills = [];
   if (effect.healPercent) pills.push(`💚 +${Math.round(effect.healPercent * 100)}% HP`);
-  if (effect.healAllPercent) pills.push(`💚 +${Math.round(effect.healAllPercent * 100)}% all`);
+  if (effect.healAllPercent) pills.push(`💚 +${Math.round(effect.healAllPercent * 100)}% HP`);
   if (effect.healMostDamaged) pills.push('💚 Full heal (weakest)');
   if (effect.mpRestorePercent) {
-    pills.push(`🔵 +${Math.round(effect.mpRestorePercent * 100)}% max MP (party)`);
+    pills.push(`🔵 +${Math.round(effect.mpRestorePercent * 100)}% max MP`);
   }
   if (effect.revivePercent) pills.push(`💫 Revive ${Math.round(effect.revivePercent * 100)}%`);
   if (effect.field === 'attackMult') pills.push(`⬆️ ATK +${Math.round(effect.value * 100)}%`);

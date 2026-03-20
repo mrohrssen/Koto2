@@ -131,6 +131,40 @@ describe('Creature Combat - Enemy Turn', () => {
     assert.ok(allies[0].hp < allies[0].maxHp);
   });
 
+  it('targets a random alive ally when no taunt', () => {
+    const alliesBase = [instantiateCreature('ki'), instantiateCreature('ishi')];
+    const enemiesBase = [instantiateCreature('mizu')]; // has 'tataku' (damage move)
+
+    const originalRandom = Math.random;
+    try {
+      // Force pick slot 1 (second ally)
+      Math.random = (() => {
+        const seq = [0.99, 0.0]; // [targetPicker, varianceRoll]
+        let i = 0;
+        return () => seq[i++] ?? seq[seq.length - 1];
+      })();
+      const allies = alliesBase.map(a => ({ ...a }));
+      const enemies = enemiesBase.map(e => ({ ...e }));
+      const result1 = processEnemyTurn(enemies, allies);
+      assert.ok(result1.attacks.length >= 1);
+      assert.strictEqual(result1.attacks[0].targetIndex, 1);
+
+      // Force pick slot 0 (first ally)
+      Math.random = (() => {
+        const seq = [0.01, 0.0]; // [targetPicker, varianceRoll]
+        let i = 0;
+        return () => seq[i++] ?? seq[seq.length - 1];
+      })();
+      const allies2 = alliesBase.map(a => ({ ...a }));
+      const enemies2 = enemiesBase.map(e => ({ ...e }));
+      const result2 = processEnemyTurn(enemies2, allies2);
+      assert.ok(result2.attacks.length >= 1);
+      assert.strictEqual(result2.attacks[0].targetIndex, 0);
+    } finally {
+      Math.random = originalRandom;
+    }
+  });
+
   it('includes move fields in enemy attack records', () => {
     const allies = [instantiateCreature('ki')];
     const enemies = [instantiateCreature('mizu')];

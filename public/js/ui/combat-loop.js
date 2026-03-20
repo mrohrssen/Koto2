@@ -43,7 +43,7 @@ import {
   poisonTickEffect
 } from './combat-effects.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
-import { configureCreatureImg, creatureSpritePath, replaceWithTextSprite } from './sprite-utils.js';
+import { configureCreatureImg, replaceWithTextSprite } from './sprite-utils.js';
 
 function npcSpritePath(npcId) {
   return `/assets/sprites/npcs/${npcId}.webp`;
@@ -93,8 +93,8 @@ function wrapWithRuby(word, reading, englishReading) {
 
 function buildSplitAttackCard(atk, isEnemy) {
   const theme = ELEMENT_THEME[atk.attackerElement] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
-  const spriteUrl = creatureSpritePath(atk.attackerId);
-  const targetSprite = creatureSpritePath(atk.targetId);
+  const attackerText = atk.attackerBaseWord || atk.attackerNameJp || atk.attackerName || '';
+  const targetText = atk.targetNameJp || atk.targetName || '';
 
   const baseWordHtml = renderJpFirst(atk.attackerBaseWord, atk.attackerBaseReading, atk.attackerBaseMeaning);
   const skillNameHtml = renderJpFirst(atk.attackerSkillName, atk.attackerSkillReading, atk.attackerSkillEn);
@@ -121,7 +121,7 @@ function buildSplitAttackCard(atk, isEnemy) {
 
   return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
     <div class="sac-left">
-      <img class="sac-sprite" src="${spriteUrl}" alt="">
+      <div class="sac-sprite sac-text-sprite ${atk.attackerElement}">${attackerText}</div>
       <div class="sac-attacker-name">${attackerNameHtml}</div>
     </div>
     <div class="sac-right">
@@ -139,7 +139,7 @@ function buildSplitAttackCard(atk, isEnemy) {
       </div>
       <div class="sac-row sac-impact" data-row="2">
         <span class="sac-impact-arrow">\u2192</span>
-        <img class="sac-impact-sprite" src="${targetSprite}" alt="">
+        <div class="sac-impact-sprite sac-impact-text ${atk.attackerElement}">${targetText}</div>
         <span class="sac-impact-name">${targetNameHtml}</span>
         <span class="${damageClass}">${damageSign}</span>
       </div>
@@ -190,7 +190,7 @@ function insertNpcAttackCard(atk) {
 
   const theme = ELEMENT_THEME[atk.moveElement] || ELEMENT_THEME['neutral'] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
   const spriteUrl = npcSpritePath(atk.attackerId);
-  const targetSprite = creatureSpritePath(atk.targetId);
+  const targetText = atk.targetNameJp || atk.targetName || '';
 
   const baseWordHtml = renderJpFirst(atk.attackerBaseWord, atk.attackerBaseReading, atk.attackerBaseMeaning);
   const skillNameHtml = renderJpFirst(atk.attackerSkillName, atk.attackerSkillReading, atk.attackerSkillEn);
@@ -234,7 +234,7 @@ function insertNpcAttackCard(atk) {
       </div>
       <div class="sac-row sac-impact" data-row="2">
         <span class="sac-impact-arrow">\u2192</span>
-        <img class="sac-impact-sprite" src="${targetSprite}" alt="">
+        <div class="sac-impact-sprite sac-impact-text ${atk.moveElement || 'neutral'}">${targetText}</div>
         <span class="sac-impact-name">${targetNameHtml}</span>
         <span class="${damageClass}">${damageSign}</span>
       </div>

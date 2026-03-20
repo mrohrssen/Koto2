@@ -1232,6 +1232,26 @@ html, body {
   background: rgba(0,0,0,0.03);
 }
 
+.sac-text-sprite {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  color: var(--text-primary);
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sac-text-sprite.fire  { color: #e74c3c; }
+.sac-text-sprite.water { color: #3498db; }
+.sac-text-sprite.wood  { color: #27ae60; }
+.sac-text-sprite.earth { color: #8B4513; }
+.sac-text-sprite.metal { color: #95a5a6; }
+
 .sac-attacker-name {
   font-size: 10px;
   margin-top: 4px;
@@ -1364,6 +1384,26 @@ html, body {
   border: none;
   flex-shrink: 0;
 }
+
+.sac-impact-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  user-select: none;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sac-impact-text.fire  { color: #e74c3c; }
+.sac-impact-text.water { color: #3498db; }
+.sac-impact-text.wood  { color: #27ae60; }
+.sac-impact-text.earth { color: #8B4513; }
+.sac-impact-text.metal { color: #95a5a6; }
 
 .sac-impact-name {
   font-size: 12px;

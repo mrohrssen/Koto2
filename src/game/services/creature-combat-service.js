@@ -2,7 +2,6 @@ import {
   calculateCreatureDamage,
   getElementMultiplier,
   rollVariance,
-  selectTarget,
   addXpToCreature,
   generateEnemyCreature,
   xpToNextLevel,
@@ -623,7 +622,8 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
         target = allAlive[Math.floor(Math.random() * allAlive.length)];
       } else {
         const taunter = getTauntTarget(currentAliveAllies);
-        target = taunter || selectTarget(enemy, currentAliveAllies);
+        // Randomize non-taunt targeting so enemies don't always focus slot 0.
+        target = taunter || currentAliveAllies[Math.floor(Math.random() * currentAliveAllies.length)];
       }
 
       const variance = rollVariance();

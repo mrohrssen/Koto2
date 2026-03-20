@@ -102,81 +102,142 @@ export function scalePartyHpForBuffRatio(creatureParty, ratio) {
 
 export function applyItem(item, creatureParty, itemBuffs, targetIndex = null) {
   if (!creatureParty) return { applied: false };
+  // Note: `itemBuffs` is currently used for combat-time modifiers like XP multiplier.
+  // Equipment/food stat effects (ATK/HP/MP/HEAL/REVIVE) are single-creature gifts in Koto2,
+  // so we apply those directly to the target creature instead of broadcasting to the party.
   if (itemBuffs) ensureItemBuffShape(itemBuffs);
   const allCreatures = [...creatureParty.active, ...creatureParty.reserves].filter(Boolean);
   const targetCreature = targetIndex !== null ? creatureParty.active[targetIndex] : null;
+  const aliveCreatures = allCreatures.filter(r => r.hp > 0);
+  const defaultTarget = (creatureParty.active || []).find(c => c && c.hp > 0)
+    || aliveCreatures.find(c => c) || null;
 
   if (item.type === 'heal') {
+    // All heal variants are single-creature gifts.
+    // If a specific target is provided, heal only that creature (when eligible).
+    // Otherwise, fall back to "most damaged" (or first alive).
     if (item.effect.healPercent) {
-      const target = targetCreature && targetCreature.hp > 0 ? targetCreature : (() => {
-        const alive = allCreatures.filter(r => r.hp > 0);
-        return alive.length > 0 ? alive.reduce((min, r) => r.hp < min.hp ? r : min, alive[0]) : null;
-      })();
-      if (target && target.hp > 0) {
+      const target = (targetCreature && targetCreature.hp > 0)
+        ? targetCreature
+        : (() => {
+          if (!aliveCreatures.length) return null;
+          // Most damaged by HP ratio.
+          return aliveCreatures
+            .slice()
+            .sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp))[0] || aliveCreatures[0];
+        })();
+      if (target) {
         const heal = Math.floor(target.maxHp * item.effect.healPercent);
         target.hp = Math.min(target.maxHp, target.hp + heal);
+        return { applied: true };
       }
     }
+
     if (item.effect.healAllPercent) {
-      const alive = allCreatures.filter(r => r.hp > 0);
-      for (const creature of alive) {
-        const heal = Math.floor(creature.maxHp * item.effect.healAllPercent);
-        creature.hp = Math.min(creature.maxHp, creature.hp + heal);
+      // Backward compatibility for older item schemas:
+      // treat "all" as "the chosen creature".
+      const target = (targetCreature && targetCreature.hp > 0) ? targetCreature : defaultTarget;
+      if (target) {
+        const heal = Math.floor(target.maxHp * item.effect.healAllPercent);
+        target.hp = Math.min(target.maxHp, target.hp + heal);
+        return { applied: true };
       }
     }
+
     if (item.effect.healMostDamaged) {
-      const alive = allCreatures.filter(r => r.hp > 0);
-      if (alive.length > 0) {
-        const mostDamaged = alive.sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp))[0];
-        mostDamaged.hp = mostDamaged.maxHp;
+      const target = (targetCreature && targetCreature.hp > 0)
+        ? targetCreature
+        : (() => {
+          if (!aliveCreatures.length) return null;
+          return aliveCreatures
+            .slice()
+            .sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp))[0] || aliveCreatures[0];
+        })();
+      if (target) {
+        target.hp = target.maxHp;
+        return { applied: true };
       }
     }
-    return { applied: true };
+
+    return { applied: false };
   }
 
   if (item.type === 'boost') {
-    if (!itemBuffs) return { applied: false };
+    const itemBuffsSafe = itemBuffs || null;
+    // Single-creature boosts: apply directly to the chosen creature stats.
+    // (Do not broadcast via `itemBuffs`, since combat-time `itemBuffs` are party-wide today.)
+    const target = targetCreature || defaultTarget;
+    if (!target) return { applied: false };
+
     if (item.effect.field != null && item.effect.value != null) {
       const field = item.effect.field;
-      const prevHpMult = itemBuffs.hpMult;
-      applyStat(field, item.effect.value, itemBuffs);
-      if (field === 'hpMult' && itemBuffs.hpMult !== prevHpMult) {
-        scalePartyHpForBuffRatio(creatureParty, itemBuffs.hpMult / prevHpMult);
+      const value = Number(item.effect.value);
+      if (Number.isFinite(value)) {
+        if (field === 'attackMult') {
+          const prevMult = Number.isFinite(target._itemAttackMult) ? target._itemAttackMult : 1.0;
+          const nextMult = prevMult + value;
+          if (prevMult > 0 && nextMult > 0) {
+            const ratio = nextMult / prevMult;
+            const attack = Number(target.attack) || 0;
+            target.attack = Math.max(1, Math.floor(attack * ratio));
+            target._itemAttackMult = nextMult;
+          }
+        } else if (field === 'hpMult') {
+          const prevMult = Number.isFinite(target._itemHpMult) ? target._itemHpMult : 1.0;
+          const nextMult = prevMult + value;
+          if (prevMult > 0 && nextMult > 0) {
+            const ratio = nextMult / prevMult;
+            target.maxHp = Math.max(1, Math.floor(target.maxHp * ratio));
+            target.hp = Math.min(target.maxHp, Math.max(0, Math.floor(target.hp * ratio)));
+            target._itemHpMult = nextMult;
+          }
+        } else {
+          // Unsupported single-creature stat field; fall back to run-scoped itemBuffs.
+          // This keeps older items working, but may still behave like a party buff.
+          if (itemBuffsSafe) applyStat(field, value, itemBuffsSafe);
+        }
       }
     }
+
     if (item.effect.tempBoost) {
+      // Temporary flat attack bonuses are also single-target in Koto2 gifts.
       const tb = item.effect.tempBoost;
-      const targets = tb.target === 'all' ? allCreatures : [allCreatures[0]];
-      for (const creature of targets.filter(Boolean)) {
-        applyTempAttackFlat(creature, {
-          value: tb.value,
-          duration: tb.turns,
-          sourceId: item.id,
-        });
-      }
+      applyTempAttackFlat(target, {
+        value: tb.value,
+        duration: tb.turns,
+        sourceId: item.id,
+      });
     }
+
     return { applied: true };
   }
 
   if (item.type === 'mpRestore') {
-    const alive = allCreatures.filter(r => r.hp > 0);
-    for (const creature of alive) {
-      const restore = Math.floor((creature.maxMp || 0) * (item.effect.mpRestorePercent || 0));
-      creature.mp = Math.min(creature.maxMp || 0, (creature.mp || 0) + restore);
-    }
+    const target = (targetCreature && targetCreature.hp > 0) ? targetCreature : defaultTarget;
+    if (!target) return { applied: false };
+    const restore = Math.floor((target.maxMp || 0) * (item.effect.mpRestorePercent || 0));
+    target.mp = Math.min(target.maxMp || 0, (target.mp || 0) + restore);
     return { applied: true };
   }
 
   if (item.type === 'revive') {
     if (item.effect.revivePercent) {
-      const kos = allCreatures.filter(r => r.hp <= 0);
-      const target = (targetCreature && targetCreature.hp <= 0) ? targetCreature
-        : (kos.length > 0 ? kos[Math.floor(Math.random() * kos.length)] : null);
-      if (target) {
-        target.hp = Math.floor(target.maxHp * item.effect.revivePercent);
+      const reviveTarget = (() => {
+        // If user selected a target, revive only that creature (when KO'd).
+        if (targetCreature) {
+          return targetCreature.hp <= 0 ? targetCreature : null;
+        }
+        // No explicit target: revive one random KO'd creature (legacy fallback).
+        const kos = allCreatures.filter(r => r.hp <= 0);
+        return kos.length > 0 ? kos[Math.floor(Math.random() * kos.length)] : null;
+      })();
+
+      if (reviveTarget) {
+        reviveTarget.hp = Math.floor(reviveTarget.maxHp * item.effect.revivePercent);
+        return { applied: true };
       }
     }
-    return { applied: true };
+    return { applied: false };
   }
 
   if (item.type === 'keepsake') {

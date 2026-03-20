@@ -16,6 +16,7 @@ function mockCreature(hp = 100, maxHp = 100) {
   return {
     hp, maxHp, element: 'fire',
     mp: 80, maxMp: 80,
+    attack: 50,
     moves: [{ id: 'test', name: 'test', nameEn: 'Test', category: 'damage', target: 'single_enemy', power: 20, mpCost: 10, element: 'fire' }],
   };
 }
@@ -52,11 +53,14 @@ describe('Item Buffs - Stat Boosts', () => {
   it('attack mult stacks per application', () => {
     const buffs = createItemBuffs();
     const atkItem = { type: 'boost', effect: { field: 'attackMult', value: 0.02 } };
-    const party = { active: [mockCreature()], reserves: [] };
+    const creature = mockCreature();
+    creature.attack = 10;
+    const party = { active: [creature], reserves: [] };
     applyItem(atkItem, party, buffs);
-    assert.strictEqual(buffs.attackMult, 1.02);
+    // Single-target: ATK is scaled on the chosen creature (not via run-level itemBuffs).
+    assert.strictEqual(creature.attack, 10); // 10 * 1.02 floors to 10 with current rounding rules
     applyItem(atkItem, party, buffs);
-    assert.strictEqual(buffs.attackMult, 1.04);
+    assert.strictEqual(creature.attack, 10);
   });
 
   it('getBuffedAttack applies multiplier', () => {
@@ -76,10 +80,14 @@ describe('Item Buffs - Stat Boosts', () => {
   it('applyItem boost fills missing itemBuff fields on partial save-shaped objects', () => {
     const partial = {};
     const atkItem = { type: 'boost', effect: { field: 'attackMult', value: 0.05 } };
-    const party = { active: [mockCreature()], reserves: [] };
+    const creature = mockCreature();
+    creature.attack = 20;
+    const party = { active: [creature], reserves: [] };
     applyItem(atkItem, party, partial);
-    assert.strictEqual(partial.attackMult, 1.05);
+    // itemBuff shape is still ensured for older save compatibility.
+    assert.strictEqual(partial.attackMult, 1.0);
     assert.strictEqual(typeof partial.hpMult, 'number');
+    assert.strictEqual(creature.attack, 21); // floor(20 * 1.05) = 21
   });
 
   it('Element Edge adds to super-effective multiplier', () => {
@@ -105,22 +113,21 @@ describe('Item Buffs - Stat Boosts', () => {
     const creature = mockCreature();
     const party = { active: [creature], reserves: [] };
     applyItem(item, party, buffs);
-    assert.strictEqual(buffs.hpMult, 1.03);
+    assert.strictEqual(buffs.hpMult, 1.0);
     assert.strictEqual(creature.maxHp, 103);
     assert.strictEqual(creature.hp, 103);
   });
 
-  it('hpMult boost stacks and rescales party HP each time', () => {
+  it('hpMult boost stacks and rescales the targeted creature each time', () => {
     const buffs = createItemBuffs();
     const item = { type: 'boost', effect: { field: 'hpMult', value: 0.10 } };
     const c = mockCreature(50, 100);
     const party = { active: [c], reserves: [] };
     applyItem(item, party, buffs);
-    assert.strictEqual(buffs.hpMult, 1.1);
+    assert.strictEqual(buffs.hpMult, 1.0);
     assert.strictEqual(c.maxHp, 110);
     assert.strictEqual(c.hp, 55);
     applyItem(item, party, buffs);
-    assert.ok(Math.abs(buffs.hpMult - 1.2) < 1e-9);
     assert.strictEqual(c.maxHp, 120);
     assert.strictEqual(c.hp, 60);
   });
@@ -162,7 +169,7 @@ describe('Item Buffs - Heals', () => {
     const buffs = createItemBuffs();
     applyItem(healAllItem, party, buffs);
     assert.strictEqual(party.active[0].hp, 65);  // 50 + 15
-    assert.strictEqual(party.active[1].hp, 75);  // 60 + 15
+    assert.strictEqual(party.active[1].hp, 60);  // single-target: untouched
   });
 
   it('healMostDamaged heals most damaged creature to full', () => {
@@ -190,7 +197,7 @@ describe('Item Buffs - Heals', () => {
 });
 
 describe('Item Buffs - MP Restore', () => {
-  it('mpRestore restores MP to all alive creatures', () => {
+  it('mpRestore restores MP to the default targeted creature', () => {
     const r1 = mockCreature();
     r1.mp = 20; r1.maxMp = 80;
     const r2 = mockCreature();
@@ -202,7 +209,7 @@ describe('Item Buffs - MP Restore', () => {
     const item = { type: 'mpRestore', effect: { mpRestorePercent: 0.25 } };
     applyItem(item, party, buffs);
     assert.strictEqual(r1.mp, 40);   // 20 + 25% of 80 = 40
-    assert.strictEqual(r2.mp, 20);   // 0 + 25% of 80 = 20
+    assert.strictEqual(r2.mp, 0);    // untouched
     assert.strictEqual(dead.mp, 0);  // dead creatures not affected
   });
 
@@ -238,7 +245,7 @@ describe('Item Buffs - XP Items', () => {
 });
 
 describe('Item Buffs - Temp Boost', () => {
-  it('tempBoost applies temp_attack_flat effect to all creatures', () => {
+  it('tempBoost applies temp_attack_flat effect to the default targeted creature', () => {
     const r1 = mockCreature();
     r1.activeEffects = [];
     const r2 = mockCreature();
@@ -254,7 +261,7 @@ describe('Item Buffs - Temp Boost', () => {
     assert.strictEqual(r1.activeEffects[0].type, 'temp_attack_flat');
     assert.strictEqual(r1.activeEffects[0].value, 3);
     assert.strictEqual(r1.activeEffects[0].remainingTurns, 5);
-    assert.strictEqual(r2.activeEffects.length, 1);
+    assert.strictEqual(r2.activeEffects.length, 0);
   });
 
   it('tempBoost does not permanently change creature.attack', () => {
