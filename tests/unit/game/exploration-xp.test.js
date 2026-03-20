@@ -4,7 +4,7 @@ import { instantiateCreature, addXpToCreature, xpToNextLevel } from '../../../sr
 
 describe('Exploration XP - Cubic Curve Integration', () => {
   it('shrine grants exactly 1 level when given xpToNextLevel(creatureLevel)', () => {
-    const creature = instantiateCreature('hikaribon');
+    const creature = instantiateCreature('hi');
     creature.level = 5;
     creature.xp = 0;
 
@@ -16,7 +16,7 @@ describe('Exploration XP - Cubic Curve Integration', () => {
   });
 
   it('shrine grants exactly 1 level even at high levels', () => {
-    const creature = instantiateCreature('hikaribon');
+    const creature = instantiateCreature('hi');
     creature.level = 20;
     creature.xp = 0;
 

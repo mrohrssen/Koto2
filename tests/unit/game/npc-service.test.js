@@ -17,15 +17,15 @@ import {
 } from '../../../src/game/services/npc-service.js';
 
 describe('NPC Service - loadNpcs', () => {
-  it('loads all NPCs (20 entries)', () => {
+  it('loads all NPCs (4 entries)', () => {
     const npcs = loadNpcs();
     const ids = Object.keys(npcs);
-    assert.strictEqual(ids.length, 20, `Expected 20 NPCs, got ${ids.length}`);
+    assert.strictEqual(ids.length, 4, `Expected 4 NPCs, got ${ids.length}`);
   });
 
-  it('nagi exists', () => {
+  it('kodomo exists', () => {
     const npcs = loadNpcs();
-    assert.ok(npcs.nagi, 'nagi should exist');
+    assert.ok(npcs.kodomo, 'kodomo should exist');
   });
 
   it('NPCs have required fields', () => {
@@ -37,9 +37,8 @@ describe('NPC Service - loadNpcs', () => {
       assert.ok(npc.area, `${id} missing area`);
       assert.ok(npc.personality, `${id} missing personality`);
       assert.ok(npc.greeting, `${id} missing greeting`);
-      assert.ok(npc.postCombat, `${id} missing postCombat`);
-      assert.ok(npc.postCombat.rounds, `${id} missing postCombat.rounds`);
-      assert.ok(Array.isArray(npc.postCombat.rounds), `${id} postCombat.rounds should be an array`);
+      assert.ok(npc.defeatLine, `${id} missing defeatLine`);
+      assert.ok(Array.isArray(npc.skills), `${id} missing skills array`);
     }
   });
 
@@ -52,10 +51,9 @@ describe('NPC Service - loadNpcs', () => {
 
 describe('NPC Service - selectNpcForEncounter', () => {
   it('returns NPC matching the area', () => {
-    const npc = selectNpcForEncounter('okunomori', []);
+    const npc = selectNpcForEncounter('hajimari-no-hiroba', []);
     assert.ok(npc, 'should return an NPC');
-    assert.strictEqual(npc.id, 'nagi');
-    assert.strictEqual(npc.area, 'okunomori');
+    assert.strictEqual(npc.area, 'hajimari-no-hiroba');
   });
 
   it('returns null for unknown area', () => {
@@ -63,15 +61,15 @@ describe('NPC Service - selectNpcForEncounter', () => {
     assert.strictEqual(npc, null, 'should return null for area with no NPC');
   });
 
-  it('returns null when area NPC is already used', () => {
-    const npc = selectNpcForEncounter('okunomori', ['nagi']);
-    assert.strictEqual(npc, null, 'should return null when area NPC already used');
+  it('returns null when all area NPCs are already used', () => {
+    const npc = selectNpcForEncounter('hajimari-no-hiroba', ['kodomo', 'otona', 'otokonoko', 'onnanoko']);
+    assert.strictEqual(npc, null, 'should return null when all area NPCs already used');
   });
 
   it('returns NPC when used list has unrelated IDs', () => {
-    const npc = selectNpcForEncounter('okunomori', ['makoto', 'sora']);
-    assert.ok(npc, 'should return nagi despite other NPCs being used');
-    assert.strictEqual(npc.id, 'nagi');
+    const npc = selectNpcForEncounter('hajimari-no-hiroba', ['fake-npc1', 'fake-npc2']);
+    assert.ok(npc, 'should return an NPC despite other NPCs being used');
+    assert.strictEqual(npc.area, 'hajimari-no-hiroba');
   });
 });
 

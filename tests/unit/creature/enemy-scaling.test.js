@@ -143,7 +143,7 @@ describe('generateEnemyCreatures with scaling', () => {
     const enemies = generateEnemyCreatures(10, {
       totalEncounters: 5,
       encounterIndex: 2,
-      creaturePool: ['hikaribon', 'kamedor', 'kazenoko']
+      creaturePool: ['hi', 'mizu', 'ki']
     });
     assert.ok(enemies.length >= 1 && enemies.length <= 3);
     for (const e of enemies) {
@@ -155,7 +155,7 @@ describe('generateEnemyCreatures with scaling', () => {
     let avgLow = 0;
     let avgHigh = 0;
     const trials = 50;
-    const pool = ['hikaribon', 'kamedor', 'kazenoko'];
+    const pool = ['hi', 'mizu', 'ki'];
     for (let i = 0; i < trials; i++) {
       const low = generateEnemyCreatures(15, { totalEncounters: 2, encounterIndex: 0, creaturePool: pool });
       const high = generateEnemyCreatures(15, { totalEncounters: 20, encounterIndex: 0, creaturePool: pool });
@@ -178,7 +178,7 @@ describe('generateEnemyCreatures with scaling', () => {
 
 describe('Full scaling integration', () => {
   it('later encounters produce higher average enemy levels', () => {
-    const pool = ['hikaribon', 'kamedor', 'kazenoko'];
+    const pool = ['hi', 'mizu', 'ki'];
     let avgEarly = 0;
     let avgLate = 0;
     const trials = 30;
@@ -194,7 +194,7 @@ describe('Full scaling integration', () => {
   });
 
   it('no enemy is ever legendary in wild encounters with stage', () => {
-    const pool = ['hikaribon', 'kamedor', 'kazenoko'];
+    const pool = ['hi', 'mizu', 'ki'];
     for (let i = 0; i < 100; i++) {
       const enemies = generateEnemyCreatures(30, { stage: 10, totalEncounters: 20, encounterIndex: 5, creaturePool: pool });
       for (const e of enemies) {

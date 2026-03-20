@@ -10,16 +10,16 @@ import {
 
 describe('creature-collection-service', () => {
   describe('validateTeamSelection', () => {
-    const collection = ['hikaribon', 'tsukimochi', 'hanatchi'];
+    const collection = ['hi', 'mizu', 'ki'];
 
     it('accepts valid selection within budget', () => {
-      const result = validateTeamSelection(collection, ['hikaribon', 'tsukimochi']);
+      const result = validateTeamSelection(collection, ['hi', 'mizu']);
       assert.strictEqual(result.valid, true);
       assert.strictEqual(result.totalCost, 6);
     });
 
     it('accepts single creature', () => {
-      const result = validateTeamSelection(collection, ['hikaribon']);
+      const result = validateTeamSelection(collection, ['hi']);
       assert.strictEqual(result.valid, true);
       assert.strictEqual(result.totalCost, 3);
     });
@@ -31,74 +31,73 @@ describe('creature-collection-service', () => {
     });
 
     it('rejects creature not in collection', () => {
-      const result = validateTeamSelection(collection, ['kitsunova']);
+      const result = validateTeamSelection(collection, ['nonexistent']);
       assert.strictEqual(result.valid, false);
       assert.match(result.reason, /not in collection/i);
     });
 
     it('rejects selection over budget', () => {
       // 4 commons = 12 points, exceeds 10-point budget
-      const bigCollection = ['hikaribon', 'tsukimochi', 'hanatchi', 'kazenoko'];
-      const result = validateTeamSelection(bigCollection, ['hikaribon', 'tsukimochi', 'hanatchi', 'kazenoko']);
+      const bigCollection = ['hi', 'mizu', 'ki', 'ishi'];
+      const result = validateTeamSelection(bigCollection, ['hi', 'mizu', 'ki', 'ishi']);
       assert.strictEqual(result.valid, false);
       assert.match(result.reason, /exceeds.*budget/i);
     });
 
-    it('accepts exactly 10 points', () => {
-      // kaminarion is uncommon (4 pts) + hikaribon (3) + tsukimochi (3) = 10
-      const coll = ['hikaribon', 'tsukimochi', 'kaminarion'];
-      const result = validateTeamSelection(coll, ['hikaribon', 'tsukimochi', 'kaminarion']);
+    it('accepts exactly 9 points (3 commons)', () => {
+      // All R1 creatures are common (3 pts each): 3 * 3 = 9
+      const coll = ['hi', 'mizu', 'ki'];
+      const result = validateTeamSelection(coll, ['hi', 'mizu', 'ki']);
       assert.strictEqual(result.valid, true);
-      assert.strictEqual(result.totalCost, 10);
+      assert.strictEqual(result.totalCost, 9);
     });
   });
 
   describe('getCollectionCatalog', () => {
     it('includes archetype and base stats', () => {
       const catalog = getCollectionCatalog([]);
-      const kamedor = catalog.find(c => c.id === 'kamedor');
-      assert.ok(kamedor, 'kamedor should exist in catalog');
-      assert.ok(kamedor.archetype, 'should have archetype');
-      assert.ok(kamedor.baseHp > 0, 'should have baseHp');
-      assert.ok(kamedor.baseAttack > 0, 'should have baseAttack');
-      assert.ok(kamedor.element, 'should have element');
-      assert.ok(kamedor.rarity, 'should have rarity');
+      const hi = catalog.find(c => c.id === 'hi');
+      assert.ok(hi, 'hi should exist in catalog');
+      assert.ok(hi.archetype, 'should have archetype');
+      assert.ok(hi.baseHp > 0, 'should have baseHp');
+      assert.ok(hi.baseAttack > 0, 'should have baseAttack');
+      assert.ok(hi.element, 'should have element');
+      assert.ok(hi.rarity, 'should have rarity');
     });
 
-    it('includes archetype and modifier', () => {
+    it('includes archetype and element', () => {
       const catalog = getCollectionCatalog([]);
-      const kamedor = catalog.find(c => c.id === 'kamedor');
-      assert.strictEqual(kamedor.archetype, 'Tank/Healer');
-      assert.ok(kamedor.modifier, 'should have modifier');
-      assert.strictEqual(kamedor.modifier.meaning, 'Ancient');
+      const hi = catalog.find(c => c.id === 'hi');
+      assert.strictEqual(hi.archetype, 'Fighter');
+      assert.strictEqual(hi.element, 'fire');
     });
 
     it('includes befriendCount from meta', () => {
-      const catalog = getCollectionCatalog(['kamedor'], { kamedor: 5 });
-      const kamedor = catalog.find(c => c.id === 'kamedor');
-      assert.strictEqual(kamedor.befriendCount, 5);
+      const catalog = getCollectionCatalog(['hi'], { hi: 5 });
+      const hi = catalog.find(c => c.id === 'hi');
+      assert.strictEqual(hi.befriendCount, 5);
     });
 
     it('defaults befriendCount to 0', () => {
       const catalog = getCollectionCatalog([]);
-      const kamedor = catalog.find(c => c.id === 'kamedor');
-      assert.strictEqual(kamedor.befriendCount, 0);
+      const hi = catalog.find(c => c.id === 'hi');
+      assert.strictEqual(hi.befriendCount, 0);
     });
   });
 
   describe('addToCollection', () => {
     it('adds new creature ID', () => {
-      const collection = ['hikaribon'];
-      const result = addToCollection(collection, 'nimbulon');
+      const collection = ['hi'];
+      const result = addToCollection(collection, 'mizu');
       assert.strictEqual(result.added, true);
-      assert.ok(result.collection.includes('nimbulon'));
+      assert.ok(result.collection.includes('mizu'));
     });
 
     it('does not duplicate existing creature', () => {
-      const collection = ['hikaribon'];
-      const result = addToCollection(collection, 'hikaribon');
+      const collection = ['hi'];
+      const result = addToCollection(collection, 'hi');
       assert.strictEqual(result.added, false);
-      assert.strictEqual(result.collection.filter(id => id === 'hikaribon').length, 1);
+      assert.strictEqual(result.collection.filter(id => id === 'hi').length, 1);
     });
   });
 });

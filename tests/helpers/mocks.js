@@ -62,7 +62,7 @@ export function createTestPlayer(overrides = {}) {
  */
 export function createTestRun(overrides = {}) {
   const player = createTestPlayer();
-  const run = createNewRun(player, 'okunomori');
+  const run = createNewRun(player, 'hajimari-no-hiroba');
   return { ...run, ...overrides };
 }
 

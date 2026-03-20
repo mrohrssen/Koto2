@@ -16,13 +16,11 @@ import { instantiateCreature } from '../../../src/game/creatures.js';
 
 describe('Creature Combat - Move Turn', () => {
   it('each allied creature uses a move against the enemy', () => {
-    // kazenoko has 'fuku' (damage, all_enemies, pow=15)
-    const allies = [instantiateCreature('kazenoko'), instantiateCreature('kamedor')];
-    const enemies = [instantiateCreature('hikaribon')];
-    // kamedor has 'kamu' (damage, single_enemy, pow=18)
+    const allies = [instantiateCreature('hi'), instantiateCreature('mizu')];
+    const enemies = [instantiateCreature('ki')];
     const moveChoices = [
-      { creatureIndex: 0, moveId: 'fuku', targetIndex: 0 },
-      { creatureIndex: 1, moveId: 'kamu', targetIndex: 0 }
+      { creatureIndex: 0, moveId: 'tataku', targetIndex: 0 },
+      { creatureIndex: 1, moveId: 'tataku', targetIndex: 0 }
     ];
     const result = processMoveTurn(allies, enemies, moveChoices);
     assert.ok(result.attacks.length >= 1);
@@ -30,42 +28,42 @@ describe('Creature Combat - Move Turn', () => {
   });
 
   it('skips KOd allies', () => {
-    const allies = [instantiateCreature('kazenoko'), instantiateCreature('kamedor')];
+    const allies = [instantiateCreature('hi'), instantiateCreature('mizu')];
     allies[0].hp = 0;
-    const enemies = [instantiateCreature('hikaribon')];
+    const enemies = [instantiateCreature('ki')];
     const moveChoices = [
-      { creatureIndex: 0, moveId: 'fuku', targetIndex: 0 },
-      { creatureIndex: 1, moveId: 'kamu', targetIndex: 0 }
+      { creatureIndex: 0, moveId: 'tataku', targetIndex: 0 },
+      { creatureIndex: 1, moveId: 'tataku', targetIndex: 0 }
     ];
     const result = processMoveTurn(allies, enemies, moveChoices);
-    // Only kamedor (index 1) should attack
+    // Only mizu (index 1) should attack
     assert.strictEqual(result.attacks.length, 1);
   });
 
   it('includes move fields in attack records', () => {
-    const allies = [instantiateCreature('kamedor')];
-    const enemies = [instantiateCreature('kazenoko')];
+    const allies = [instantiateCreature('mizu')];
+    const enemies = [instantiateCreature('hi')];
     const moveChoices = [
-      { creatureIndex: 0, moveId: 'kamu', targetIndex: 0 }
+      { creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }
     ];
     const result = processMoveTurn(allies, enemies, moveChoices);
     const atk = result.attacks[0];
-    assert.strictEqual(atk.attackerId, 'kamedor');
+    assert.strictEqual(atk.attackerId, 'mizu');
     assert.ok(atk.attackerNameJp, 'should have attacker Japanese name');
-    assert.strictEqual(atk.moveId, 'kamu');
+    assert.strictEqual(atk.moveId, 'tataku');
     assert.ok(atk.moveName, 'should have move Japanese name');
-    assert.strictEqual(atk.moveNameEn, 'Bite');
+    assert.strictEqual(atk.moveNameEn, 'Strike');
     assert.ok(atk.targetNameJp, 'should have target Japanese name');
-    assert.strictEqual(atk.targetId, 'kazenoko');
+    assert.strictEqual(atk.targetId, 'hi');
   });
 
   it('deducts MP when using a move', () => {
-    const allies = [instantiateCreature('kamedor')];
-    const enemies = [instantiateCreature('hikaribon')];
+    const allies = [instantiateCreature('mizu')];
+    const enemies = [instantiateCreature('ki')];
     const startMp = allies[0].mp;
-    const moveCost = allies[0].moves.find(m => m.id === 'kamu').mpCost;
+    const moveCost = allies[0].moves.find(m => m.id === 'tataku').mpCost;
     const moveChoices = [
-      { creatureIndex: 0, moveId: 'kamu', targetIndex: 0 }
+      { creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }
     ];
     processMoveTurn(allies, enemies, moveChoices);
     // MP should decrease by move cost, then regen 5% of maxMp
@@ -74,12 +72,12 @@ describe('Creature Combat - Move Turn', () => {
   });
 
   it('skips move if insufficient MP', () => {
-    const allies = [instantiateCreature('kamedor')];
+    const allies = [instantiateCreature('mizu')];
     allies[0].mp = 0;
-    const enemies = [instantiateCreature('hikaribon')];
+    const enemies = [instantiateCreature('ki')];
     const startHp = enemies[0].hp;
     const moveChoices = [
-      { creatureIndex: 0, moveId: 'kamu', targetIndex: 0 }
+      { creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }
     ];
     const result = processMoveTurn(allies, enemies, moveChoices);
     assert.strictEqual(result.attacks.length, 0);
@@ -88,9 +86,9 @@ describe('Creature Combat - Move Turn', () => {
   });
 
   it('returns mpRegens for alive allies', () => {
-    const allies = [instantiateCreature('kamedor')];
+    const allies = [instantiateCreature('mizu')];
     allies[0].mp = 0;
-    const enemies = [instantiateCreature('hikaribon')];
+    const enemies = [instantiateCreature('ki')];
     const moveChoices = [];
     const result = processMoveTurn(allies, enemies, moveChoices);
     assert.ok(result.mpRegens.length >= 1);
@@ -100,7 +98,7 @@ describe('Creature Combat - Move Turn', () => {
 
 describe('Creature Combat - Defend Turn', () => {
   it('all creatures gain MP regen on defend', () => {
-    const allies = [instantiateCreature('kamedor')];
+    const allies = [instantiateCreature('mizu')];
     allies[0].mp = 10;
     const result = processDefendTurn(allies);
     assert.ok(result.mpRegens.length >= 1);
@@ -110,23 +108,23 @@ describe('Creature Combat - Defend Turn', () => {
 
 describe('Creature Combat - Enemy Turn', () => {
   it('enemy attacks allied creatures using its first move', () => {
-    const allies = [instantiateCreature('hikaribon')];
-    const enemies = [instantiateCreature('kamedor')]; // kamedor has 'kamu' (damage move)
+    const allies = [instantiateCreature('ki')];
+    const enemies = [instantiateCreature('mizu')]; // mizu has 'tataku' (damage move)
     const result = processEnemyTurn(enemies, allies);
     assert.ok(result.attacks.length >= 1);
     assert.ok(allies[0].hp < allies[0].maxHp);
   });
 
   it('includes move fields in enemy attack records', () => {
-    const allies = [instantiateCreature('hikaribon')];
-    const enemies = [instantiateCreature('kamedor')];
+    const allies = [instantiateCreature('ki')];
+    const enemies = [instantiateCreature('mizu')];
     const result = processEnemyTurn(enemies, allies);
     const atk = result.attacks[0];
-    assert.strictEqual(atk.attackerNameJp, '\u30AB\u30E1\u30C9\u30EB');
-    assert.strictEqual(atk.moveId, 'kamu');
+    assert.strictEqual(atk.attackerNameJp, '\u6C34');
+    assert.strictEqual(atk.moveId, 'tataku');
     assert.ok(atk.moveName);
     assert.ok(atk.moveNameEn);
-    assert.strictEqual(atk.targetNameJp, '\u30D2\u30AB\u30EA\u30DC\u30F3');
+    assert.strictEqual(atk.targetNameJp, '\u6728');
   });
 });
 
@@ -134,9 +132,9 @@ describe('Creature Combat - Befriend (disabled in Koto2)', () => {
   // Old befriend mechanic disabled in Koto2 — replaced by name quiz on kill.
   // These tests verify the disabled state returns the expected rejection.
   it('processBefriend always returns disabled reason', () => {
-    const enemies = [instantiateCreature('kazenoko')];
+    const enemies = [instantiateCreature('hi')];
     enemies[0].hp = 20;
-    const party = { active: [instantiateCreature('hikaribon')], reserves: [], maxTotal: 6 };
+    const party = { active: [instantiateCreature('ki')], reserves: [], maxTotal: 6 };
     const result = processBefriend(enemies, party);
     assert.ok(!result.success);
     assert.strictEqual(result.reason, 'Befriend mechanic disabled in Koto2');
@@ -145,54 +143,54 @@ describe('Creature Combat - Befriend (disabled in Koto2)', () => {
 
 describe('Creature Combat - Status Effects in Move Turn', () => {
   it('sleeping creature skips its move', () => {
-    const allies = [instantiateCreature('kamedor')];
+    const allies = [instantiateCreature('mizu')];
     allies[0].activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
-    const enemies = [instantiateCreature('hikaribon')];
+    const enemies = [instantiateCreature('ki')];
     const startHp = enemies[0].hp;
-    const moveChoices = [{ creatureIndex: 0, moveId: 'kamu', targetIndex: 0 }];
+    const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
     const result = processMoveTurn(allies, enemies, moveChoices);
     assert.strictEqual(result.attacks.length, 0);
     assert.strictEqual(enemies[0].hp, startHp, 'enemy should not take damage');
   });
 
   it('stunned creature skips its move', () => {
-    const allies = [instantiateCreature('kamedor')];
+    const allies = [instantiateCreature('mizu')];
     allies[0].activeEffects = [{ type: 'stun', remainingTurns: 1, sourceId: 'x' }];
-    const enemies = [instantiateCreature('hikaribon')];
+    const enemies = [instantiateCreature('ki')];
     const startHp = enemies[0].hp;
-    const moveChoices = [{ creatureIndex: 0, moveId: 'kamu', targetIndex: 0 }];
+    const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
     const result = processMoveTurn(allies, enemies, moveChoices);
     assert.strictEqual(result.attacks.length, 0);
     assert.strictEqual(enemies[0].hp, startHp);
   });
 
   it('hasted creature attacks twice', () => {
-    const allies = [instantiateCreature('kamedor')];
+    const allies = [instantiateCreature('mizu')];
     allies[0].activeEffects = [{ type: 'haste', sourceId: 'x' }];
-    const enemies = [instantiateCreature('hikaribon')];
+    const enemies = [instantiateCreature('ki')];
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
-    const moveChoices = [{ creatureIndex: 0, moveId: 'kamu', targetIndex: 0 }];
+    const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
     const result = processMoveTurn(allies, enemies, moveChoices);
     assert.strictEqual(result.attacks.length, 2, 'hasted creature should attack twice');
     assert.ok(!allies[0].activeEffects.some(e => e.type === 'haste'));
   });
 
   it('attack-buffed creature deals more damage', () => {
-    const allies = [instantiateCreature('kamedor')];
-    const enemies = [instantiateCreature('hikaribon')];
+    const allies = [instantiateCreature('mizu')];
+    const enemies = [instantiateCreature('ki')];
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
 
-    const moveChoices = [{ creatureIndex: 0, moveId: 'kamu', targetIndex: 0 }];
+    const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
     const result1 = processMoveTurn(
       [{ ...allies[0], activeEffects: [] }],
       [{ ...enemies[0] }],
-      [{ creatureIndex: 0, moveId: 'kamu', targetIndex: 0 }]
+      [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }]
     );
 
     allies[0].activeEffects = [{ type: 'attack_buff', percent: 100, remainingTurns: 2, sourceId: 'x' }];
-    const enemies2 = [instantiateCreature('hikaribon')];
+    const enemies2 = [instantiateCreature('ki')];
     enemies2[0].hp = 9999;
     enemies2[0].maxHp = 9999;
     const result2 = processMoveTurn(allies, enemies2, moveChoices);
@@ -203,8 +201,8 @@ describe('Creature Combat - Status Effects in Move Turn', () => {
 
 describe('Creature Combat - Status Effects in Enemy Turn', () => {
   it('sleeping enemy skips its attack', () => {
-    const allies = [instantiateCreature('hikaribon')];
-    const enemies = [instantiateCreature('kamedor')];
+    const allies = [instantiateCreature('ki')];
+    const enemies = [instantiateCreature('mizu')];
     enemies[0].activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
     const startHp = allies[0].hp;
     const result = processEnemyTurn(enemies, allies);
@@ -213,11 +211,11 @@ describe('Creature Combat - Status Effects in Enemy Turn', () => {
   });
 
   it('enemy respects taunt and targets taunting ally', () => {
-    const taunter = instantiateCreature('hikaribon');
+    const taunter = instantiateCreature('ki');
     taunter.activeEffects = [{ type: 'taunt', remainingTurns: 2, sourceId: 'self' }];
-    const other = instantiateCreature('tsukimochi');
+    const other = instantiateCreature('ishi');
     const allies = [other, taunter];
-    const enemies = [instantiateCreature('kamedor')]; // has damage move 'kamu'
+    const enemies = [instantiateCreature('mizu')]; // has damage move 'tataku'
     const result = processEnemyTurn(enemies, allies);
     assert.strictEqual(result.attacks.length, 1);
     assert.strictEqual(result.attacks[0].targetId, taunter.id);
@@ -225,15 +223,15 @@ describe('Creature Combat - Status Effects in Enemy Turn', () => {
 
   it('shield reduces damage to ally', () => {
     // First, measure unshielded damage
-    const unshieldedAlly = instantiateCreature('hikaribon');
+    const unshieldedAlly = instantiateCreature('ki');
     unshieldedAlly.activeEffects = [];
-    const unshieldedEnemies = [instantiateCreature('kamedor')];
+    const unshieldedEnemies = [instantiateCreature('mizu')];
     const unshieldedResult = processEnemyTurn(unshieldedEnemies, [unshieldedAlly]);
 
     // Then, measure shielded damage
-    const shieldedAlly = instantiateCreature('hikaribon');
+    const shieldedAlly = instantiateCreature('ki');
     shieldedAlly.activeEffects = [{ type: 'shield', percent: 50, remainingTurns: 2, sourceId: 'x' }];
-    const shieldedEnemies = [instantiateCreature('kamedor')];
+    const shieldedEnemies = [instantiateCreature('mizu')];
     const shieldedResult = processEnemyTurn(shieldedEnemies, [shieldedAlly]);
 
     assert.strictEqual(shieldedResult.attacks.length, 1);
@@ -242,27 +240,27 @@ describe('Creature Combat - Status Effects in Enemy Turn', () => {
   });
 
   it('damage wakes up sleeping ally', () => {
-    const ally = instantiateCreature('hikaribon');
+    const ally = instantiateCreature('ki');
     ally.activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
     const allies = [ally];
-    const enemies = [instantiateCreature('kamedor')];
+    const enemies = [instantiateCreature('mizu')];
     processEnemyTurn(enemies, allies);
     assert.ok(!ally.activeEffects.some(e => e.type === 'sleep'));
   });
 
   it('confused enemy can hit its own allies', () => {
-    const allies = [instantiateCreature('hikaribon')];
-    const enemies = [instantiateCreature('kamedor'), instantiateCreature('kazenoko')];
+    const allies = [instantiateCreature('ki')];
+    const enemies = [instantiateCreature('mizu'), instantiateCreature('hi')];
     enemies[0].activeEffects = [{ type: 'confuse', remainingTurns: 2, sourceId: 'x' }];
     const result = processEnemyTurn(enemies, allies);
     assert.ok(result.attacks.length >= 1);
   });
 
   it('hasted enemy attacks twice', () => {
-    const allies = [instantiateCreature('hikaribon')];
+    const allies = [instantiateCreature('ki')];
     allies[0].hp = 9999;
     allies[0].maxHp = 9999;
-    const enemies = [instantiateCreature('kamedor')];
+    const enemies = [instantiateCreature('mizu')];
     enemies[0].activeEffects = [{ type: 'haste', sourceId: 'x' }];
     const result = processEnemyTurn(enemies, allies);
     assert.strictEqual(result.attacks.length, 2);
@@ -273,8 +271,8 @@ describe('Creature Combat - Status Effects in Enemy Turn', () => {
 describe('Creature Combat - XP', () => {
   it('awardBattleXp grants one full level to each creature', () => {
     const party = {
-      active: [instantiateCreature('hikaribon')],
-      reserves: [instantiateCreature('tsukimochi')]
+      active: [instantiateCreature('ki')],
+      reserves: [instantiateCreature('ishi')]
     };
     awardBattleXp(party);
     // Both should be L6 (each gets xpToNextLevel which is 1 full level)
@@ -286,7 +284,7 @@ describe('Creature Combat - XP', () => {
 describe('Creature Combat - Kill XP Scaling', () => {
   it('awardKillXp scales with enemy level (BASE_KILL_XP * enemyLevel * 2)', () => {
     const party = {
-      active: [instantiateCreature('hikaribon')],
+      active: [instantiateCreature('ki')],
       reserves: []
     };
     // 1 active (2 shares), 0 reserves = 2 total shares
@@ -297,7 +295,7 @@ describe('Creature Combat - Kill XP Scaling', () => {
 
   it('awardKillXp applies xpMultiplier', () => {
     const party = {
-      active: [instantiateCreature('hikaribon')],
+      active: [instantiateCreature('ki')],
       reserves: []
     };
     // enemyLevel 5, multiplier 1.25: 25 * 5 * 2 * 1.25 = 312, perShare = 312/2 = 156, active = floor(156*2)=312
@@ -307,7 +305,7 @@ describe('Creature Combat - Kill XP Scaling', () => {
 
   it('awardKillXp returns levelUps from cubic curve', () => {
     const party = {
-      active: [instantiateCreature('hikaribon')],
+      active: [instantiateCreature('ki')],
       reserves: []
     };
     // enemyLevel 5: 25 * 5 * 2 = 250 base XP, active gets 250
@@ -319,7 +317,7 @@ describe('Creature Combat - Kill XP Scaling', () => {
 
   it('awardKillXp defaults xpMultiplier to 1.0', () => {
     const party = {
-      active: [instantiateCreature('hikaribon')],
+      active: [instantiateCreature('ki')],
       reserves: []
     };
     // enemyLevel 1: 25 * 1 * 2 * 1.0 = 50, perShare = 50/2 = 25, active = floor(25*2) = 50
@@ -330,8 +328,8 @@ describe('Creature Combat - Kill XP Scaling', () => {
 
 describe('Creature Combat - Effect Ticking', () => {
   it('tickAllEffects processes poison on enemies', () => {
-    const allies = [instantiateCreature('hikaribon')];
-    const enemies = [instantiateCreature('tsukimochi')];
+    const allies = [instantiateCreature('ki')];
+    const enemies = [instantiateCreature('ishi')];
     enemies[0].activeEffects = [
       { type: 'poison', remainingTurns: 2, damagePerTurn: 5, sourceId: 'test' }
     ];
@@ -343,7 +341,7 @@ describe('Creature Combat - Effect Ticking', () => {
   });
 
   it('ticks effects on allies too', () => {
-    const allies = [instantiateCreature('hikaribon')];
+    const allies = [instantiateCreature('ki')];
     allies[0].activeEffects = [
       { type: 'poison', remainingTurns: 1, damagePerTurn: 8, sourceId: 'enemy' }
     ];
@@ -354,8 +352,8 @@ describe('Creature Combat - Effect Ticking', () => {
   });
 
   it('skips dead creatures', () => {
-    const allies = [instantiateCreature('hikaribon')];
-    const enemies = [instantiateCreature('tsukimochi')];
+    const allies = [instantiateCreature('ki')];
+    const enemies = [instantiateCreature('ishi')];
     enemies[0].hp = 0;
     enemies[0].activeEffects = [
       { type: 'poison', remainingTurns: 2, damagePerTurn: 5, sourceId: 'test' }
@@ -365,8 +363,8 @@ describe('Creature Combat - Effect Ticking', () => {
   });
 
   it('returns empty array when no effects exist', () => {
-    const allies = [instantiateCreature('hikaribon')];
-    const enemies = [instantiateCreature('tsukimochi')];
+    const allies = [instantiateCreature('ki')];
+    const enemies = [instantiateCreature('ishi')];
     const events = tickAllEffects(allies, enemies);
     assert.strictEqual(events.length, 0);
   });
@@ -374,23 +372,23 @@ describe('Creature Combat - Effect Ticking', () => {
 
 describe('Creature Combat - Shield in Move Turn', () => {
   it('shielded enemy takes reduced damage from player moves', () => {
-    const allies = [instantiateCreature('kamedor')]; // 'kamu' does damage
-    const enemies = [instantiateCreature('hikaribon')];
+    const allies = [instantiateCreature('mizu')]; // 'tataku' does damage
+    const enemies = [instantiateCreature('ki')];
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
     // 90% shield -- should drastically reduce damage
     enemies[0].activeEffects = [{ type: 'shield', percent: 90, remainingTurns: 2, sourceId: 'x' }];
-    const moveChoices = [{ creatureIndex: 0, moveId: 'kamu', targetIndex: 0 }];
+    const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
     const result = processMoveTurn(allies, enemies, moveChoices);
     // With 90% shield, damage should be very small
     assert.ok(result.attacks[0].damage < allies[0].attack);
   });
 
   it('player move wakes sleeping enemy', () => {
-    const allies = [instantiateCreature('kamedor')];
-    const enemies = [instantiateCreature('hikaribon')];
+    const allies = [instantiateCreature('mizu')];
+    const enemies = [instantiateCreature('ki')];
     enemies[0].activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
-    const moveChoices = [{ creatureIndex: 0, moveId: 'kamu', targetIndex: 0 }];
+    const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
     processMoveTurn(allies, enemies, moveChoices);
     assert.ok(!enemies[0].activeEffects.some(e => e.type === 'sleep'));
   });
@@ -398,11 +396,11 @@ describe('Creature Combat - Shield in Move Turn', () => {
 
 describe('Creature Combat - XP Balance Redistribution', () => {
   it('redistributes XP toward lower-leveled creatures with 1 stack', () => {
-    const highLevel = instantiateCreature('hikaribon');
+    const highLevel = instantiateCreature('ki');
     highLevel.level = 10;
     highLevel.xp = 0;
 
-    const lowLevel = instantiateCreature('tsukimochi');
+    const lowLevel = instantiateCreature('ishi');
     lowLevel.level = 3;
     lowLevel.xp = 0;
 
@@ -422,9 +420,9 @@ describe('Creature Combat - XP Balance Redistribution', () => {
   });
 
   it('no redistribution with 0 balance stacks', () => {
-    const highLevel = instantiateCreature('hikaribon');
+    const highLevel = instantiateCreature('ki');
     highLevel.level = 10;
-    const lowLevel = instantiateCreature('tsukimochi');
+    const lowLevel = instantiateCreature('ishi');
     lowLevel.level = 3;
 
     const party = { active: [highLevel, lowLevel], reserves: [] };
@@ -436,9 +434,9 @@ describe('Creature Combat - XP Balance Redistribution', () => {
   });
 
   it('higher stacks redistribute more aggressively', () => {
-    const highLevel = instantiateCreature('hikaribon');
+    const highLevel = instantiateCreature('ki');
     highLevel.level = 10;
-    const lowLevel = instantiateCreature('tsukimochi');
+    const lowLevel = instantiateCreature('ishi');
     lowLevel.level = 3;
 
     // 1 stack
@@ -447,7 +445,7 @@ describe('Creature Combat - XP Balance Redistribution', () => {
     const low1 = result1.xpGrants.find(g => g.creatureId === lowLevel.id).xp;
 
     // 3 stacks
-    const party3 = { active: [instantiateCreature('hikaribon'), instantiateCreature('tsukimochi')], reserves: [] };
+    const party3 = { active: [instantiateCreature('ki'), instantiateCreature('ishi')], reserves: [] };
     party3.active[0].level = 10;
     party3.active[1].level = 3;
     const result3 = awardKillXp(party3, 10, 1.0, 3);
@@ -460,18 +458,18 @@ describe('Creature Combat - XP Balance Redistribution', () => {
 describe('Creature Combat - Temp Attack Flat Bonus', () => {
   it('processMoveTurn uses flat attack bonus from activeEffects', () => {
     // Measure unbuffed damage first
-    const unbuffedAlly = instantiateCreature('kamedor');
+    const unbuffedAlly = instantiateCreature('mizu');
     unbuffedAlly.activeEffects = [];
-    const unbuffedEnemy = instantiateCreature('hikaribon');
+    const unbuffedEnemy = instantiateCreature('ki');
     unbuffedEnemy.hp = 9999;
     unbuffedEnemy.maxHp = 9999;
-    const moveChoices = [{ creatureIndex: 0, moveId: 'kamu', targetIndex: 0 }];
+    const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
     const unbuffedResult = processMoveTurn([unbuffedAlly], [unbuffedEnemy], moveChoices);
 
     // Measure buffed damage
-    const buffedAlly = instantiateCreature('kamedor');
+    const buffedAlly = instantiateCreature('mizu');
     buffedAlly.activeEffects = [{ type: 'temp_attack_flat', value: 50, remainingTurns: 5 }];
-    const buffedEnemy = instantiateCreature('hikaribon');
+    const buffedEnemy = instantiateCreature('ki');
     buffedEnemy.hp = 9999;
     buffedEnemy.maxHp = 9999;
     const buffedResult = processMoveTurn([buffedAlly], [buffedEnemy], moveChoices);
@@ -483,8 +481,8 @@ describe('Creature Combat - Temp Attack Flat Bonus', () => {
 });
 
 describe('rollTalkAcceptance', () => {
-  it('returns accepted boolean and computed chance (common at 30% HP → 80)', () => {
-    const enemy = instantiateCreature('hikaribon');
+  it('returns accepted boolean and computed chance (common at 30% HP -> 80)', () => {
+    const enemy = instantiateCreature('ki');
     enemy.hp = Math.round(enemy.maxHp * 0.3);
     const result = rollTalkAcceptance(enemy);
     assert.strictEqual(typeof result.accepted, 'boolean');
@@ -492,31 +490,31 @@ describe('rollTalkAcceptance', () => {
     assert.strictEqual(result.chance, 80); // common base, 30% HP = no bonus
   });
 
-  it('gives higher chance at lower HP (common at 1 HP → 95)', () => {
-    const enemy = instantiateCreature('hikaribon');
-    enemy.hp = 1; // ~1% HP, hpBonus = 15 → 80+15=95 capped at 95
+  it('gives higher chance at lower HP (common at 1 HP -> 95)', () => {
+    const enemy = instantiateCreature('ki');
+    enemy.hp = 1; // ~1% HP, hpBonus = 15 -> 80+15=95 capped at 95
     const result = rollTalkAcceptance(enemy);
     assert.strictEqual(result.chance, 95);
   });
 
-  it('gives lower chance for rarer creatures (legendary at 40% HP → 20)', () => {
-    const enemy = instantiateCreature('hikaribon');
+  it('gives lower chance for rarer creatures (legendary at 40% HP -> 20)', () => {
+    const enemy = instantiateCreature('ki');
     enemy.rarity = 'legendary';
     enemy.hp = Math.round(enemy.maxHp * 0.4);
     const result = rollTalkAcceptance(enemy);
     assert.strictEqual(result.chance, 20); // legendary base, 40% HP = no bonus
   });
 
-  it('applies mid-bracket HP bonus (rare at 20% HP → 60)', () => {
-    const enemy = instantiateCreature('hikaribon');
+  it('applies mid-bracket HP bonus (rare at 20% HP -> 60)', () => {
+    const enemy = instantiateCreature('ki');
     enemy.rarity = 'rare';
-    enemy.hp = Math.round(enemy.maxHp * 0.2); // 20% HP → hpBonus = 10
+    enemy.hp = Math.round(enemy.maxHp * 0.2); // 20% HP -> hpBonus = 10
     const result = rollTalkAcceptance(enemy);
     assert.strictEqual(result.chance, 60); // rare 50 + 10 bonus
   });
 
   it('caps chance at 95', () => {
-    const enemy = instantiateCreature('hikaribon');
+    const enemy = instantiateCreature('ki');
     // common base 80, set HP to 1% for +15 bonus = 95 (already at cap)
     enemy.hp = 1;
     const result = rollTalkAcceptance(enemy);
@@ -525,7 +523,7 @@ describe('rollTalkAcceptance', () => {
   });
 
   it('defaults to common rarity if rarity is missing', () => {
-    const enemy = instantiateCreature('hikaribon');
+    const enemy = instantiateCreature('ki');
     delete enemy.rarity;
     enemy.hp = Math.round(enemy.maxHp * 0.5);
     const result = rollTalkAcceptance(enemy);
@@ -533,7 +531,7 @@ describe('rollTalkAcceptance', () => {
   });
 
   it('does not mutate enemy object (pure function check)', () => {
-    const enemy = instantiateCreature('hikaribon');
+    const enemy = instantiateCreature('ki');
     const originalHp = enemy.hp;
     const originalMaxHp = enemy.maxHp;
     const originalRarity = enemy.rarity;
@@ -546,14 +544,14 @@ describe('rollTalkAcceptance', () => {
 
 describe('Creature Combat - executeNpcSkill', () => {
   const npcData = {
-    id: 'nagi',
-    name: 'ナギ',
-    nameEn: 'Nagi',
+    id: 'kodomo',
+    name: '\u5B50\u4F9B',
+    nameEn: 'Child',
     element: 'neutral',
     attack: 10,
-    baseWord: 'TBD',
-    baseReading: 'TBD',
-    baseMeaning: 'TBD'
+    baseWord: '\u5B50\u4F9B',
+    baseReading: '\u3053\u3069\u3082',
+    baseMeaning: 'child'
   };
 
   const damageSkill = {
@@ -581,8 +579,8 @@ describe('Creature Combat - executeNpcSkill', () => {
   };
 
   it('AOE damage hits all alive player creatures', () => {
-    const allies = [instantiateCreature('kazenoko'), instantiateCreature('kamedor')];
-    const enemies = [instantiateCreature('hikaribon')];
+    const allies = [instantiateCreature('hi'), instantiateCreature('mizu')];
+    const enemies = [instantiateCreature('ki')];
     const hpBefore = allies.map(c => c.hp);
 
     const result = executeNpcSkill(npcData, damageSkill, allies, enemies);
@@ -594,8 +592,8 @@ describe('Creature Combat - executeNpcSkill', () => {
   });
 
   it('AOE heal heals NPC creatures', () => {
-    const allies = [instantiateCreature('kazenoko')];
-    const enemies = [instantiateCreature('hikaribon'), instantiateCreature('kamedor')];
+    const allies = [instantiateCreature('hi')];
+    const enemies = [instantiateCreature('ki'), instantiateCreature('mizu')];
     // Damage NPC's creatures first
     enemies[0].hp = Math.floor(enemies[0].maxHp / 2);
     enemies[1].hp = Math.floor(enemies[1].maxHp / 2);
@@ -610,8 +608,8 @@ describe('Creature Combat - executeNpcSkill', () => {
   });
 
   it('AOE buff applies attack_buff to NPC creatures', () => {
-    const allies = [instantiateCreature('kazenoko')];
-    const enemies = [instantiateCreature('hikaribon')];
+    const allies = [instantiateCreature('hi')];
+    const enemies = [instantiateCreature('ki')];
 
     const result = executeNpcSkill(npcData, buffSkill, allies, enemies);
 
@@ -622,8 +620,8 @@ describe('Creature Combat - executeNpcSkill', () => {
   });
 
   it('AOE debuff applies poison to player creatures', () => {
-    const allies = [instantiateCreature('kazenoko'), instantiateCreature('kamedor')];
-    const enemies = [instantiateCreature('hikaribon')];
+    const allies = [instantiateCreature('hi'), instantiateCreature('mizu')];
+    const enemies = [instantiateCreature('ki')];
 
     const result = executeNpcSkill(npcData, debuffSkill, allies, enemies);
 
@@ -636,9 +634,9 @@ describe('Creature Combat - executeNpcSkill', () => {
   });
 
   it('skips dead creatures for damage', () => {
-    const allies = [instantiateCreature('kazenoko'), instantiateCreature('kamedor')];
+    const allies = [instantiateCreature('hi'), instantiateCreature('mizu')];
     allies[0].hp = 0; // KO first ally
-    const enemies = [instantiateCreature('hikaribon')];
+    const enemies = [instantiateCreature('ki')];
     const hpBefore1 = allies[1].hp;
 
     const result = executeNpcSkill(npcData, damageSkill, allies, enemies);
@@ -649,8 +647,8 @@ describe('Creature Combat - executeNpcSkill', () => {
   });
 
   it('returns attacks array in result', () => {
-    const allies = [instantiateCreature('kazenoko')];
-    const enemies = [instantiateCreature('hikaribon')];
+    const allies = [instantiateCreature('hi')];
+    const enemies = [instantiateCreature('ki')];
 
     const result = executeNpcSkill(npcData, damageSkill, allies, enemies);
 
@@ -664,8 +662,8 @@ describe('Creature Combat - executeNpcSkill', () => {
 
 describe('Befriend conversation failure keeps initiator slot spent', () => {
   it('does not clear befriendAttemptedSlots after wrong answer', () => {
-    const ally = instantiateCreature('hikaribon');
-    const enemy = instantiateCreature('nekotto');
+    const ally = instantiateCreature('ki');
+    const enemy = instantiateCreature('tetsu');
 
     const combat = {
       active: true,

@@ -5,25 +5,25 @@ import { instantiateCreature } from '../../../src/game/creatures.js';
 describe('Creature Swap', () => {
   it('swaps active creature with reserve', () => {
     const party = {
-      active: [instantiateCreature('hikaribon'), instantiateCreature('tsukimochi'), instantiateCreature('hanatchi')],
-      reserves: [instantiateCreature('nekotto'), instantiateCreature('kazenoko')],
+      active: [instantiateCreature('hi'), instantiateCreature('mizu'), instantiateCreature('ki')],
+      reserves: [instantiateCreature('ishi'), instantiateCreature('tetsu')],
       maxTotal: 6
     };
     const swappedOut = party.active[1]; // water
-    const swappedIn = party.reserves[0]; // metal
+    const swappedIn = party.reserves[0]; // earth
 
     // Perform swap
     party.active[1] = swappedIn;
     party.reserves[0] = swappedOut;
 
-    assert.strictEqual(party.active[1].element, 'metal');
+    assert.strictEqual(party.active[1].element, 'earth');
     assert.strictEqual(party.reserves[0].element, 'water');
   });
 
   it('can swap a KO creature out for a healthy reserve', () => {
     const party = {
-      active: [instantiateCreature('hikaribon')],
-      reserves: [instantiateCreature('tsukimochi')],
+      active: [instantiateCreature('hi')],
+      reserves: [instantiateCreature('ishi')],
       maxTotal: 6
     };
     party.active[0].hp = 0; // KO

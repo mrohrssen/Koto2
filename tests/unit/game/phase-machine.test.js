@@ -9,7 +9,7 @@ describe('derivePhase – boss rooms', () => {
       run: {
         active: true,
         areaComplete: false,
-        rooms: [{ type: 'boss', interacted: false, boss: { creatureId: 'nekotto' } }],
+        rooms: [{ type: 'boss', interacted: false, boss: { creatureId: 'tetsu' } }],
         currentRoom: 0,
         creatureParty: { active: [{ hp: 10 }] }
       }
@@ -23,7 +23,7 @@ describe('derivePhase – boss rooms', () => {
       run: {
         active: true,
         areaComplete: false,
-        rooms: [{ type: 'boss', interacted: true, boss: { creatureId: 'nekotto' } }],
+        rooms: [{ type: 'boss', interacted: true, boss: { creatureId: 'tetsu' } }],
         currentRoom: 0,
         creatureParty: { active: [{ hp: 10 }] }
       }

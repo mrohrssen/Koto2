@@ -1,9 +1,10 @@
 // Creature IDs used across test files
 export const TEST_CREATURES = {
-  KAZENOKO: 'kazenoko',
-  KAMEDOR: 'kamedor',
-  HIKARIBON: 'hikaribon',
-  KAMINARION: 'kaminarion',
+  HI: 'hi',
+  MIZU: 'mizu',
+  KI: 'ki',
+  ISHI: 'ishi',
+  TETSU: 'tetsu',
 };
 
 // Vocab words used across test files
@@ -17,11 +18,10 @@ export const TEST_VOCAB = {
 
 // NPC IDs
 export const TEST_NPCS = {
-  NAGI: 'nagi',
-  MAKOTO: 'makoto',
-  SORA: 'sora',
-  KATSURO: 'katsuro',
-  YUKIE: 'yukie',
+  KODOMO: 'kodomo',
+  OTONA: 'otona',
+  OTOKONOKO: 'otokonoko',
+  ONNANOKO: 'onnanoko',
 };
 
 // User IDs for integration tests
@@ -32,4 +32,4 @@ export const TEST_USERS = {
 };
 
 // First area for game tests
-export const TEST_AREA = 'okunomori';
+export const TEST_AREA = 'hajimari-no-hiroba';

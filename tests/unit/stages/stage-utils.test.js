@@ -284,9 +284,9 @@ describe('getStageReport', () => {
   });
 
   it('returns zero outlier percent when no content', () => {
-    // Before tagging, no content has stage assigned, so all reports are empty
-    const report = getStageReport(1);
-    // totalWords should be 0 since nothing is tagged yet
+    // Use a stage with no content to verify outlierPercent is 0 when empty
+    const report = getStageReport(9);
+    // totalWords should be 0 since no R1 content is tagged stage 9
     // outlierPercent should be 0 when no words
     assert.strictEqual(report.outlierPercent, 0);
   });

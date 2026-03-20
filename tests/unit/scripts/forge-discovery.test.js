@@ -134,18 +134,18 @@ describe('discoverWords', () => {
     assert.ok(results.length > 0);
   });
 
-  it('excludes words already used in creatures.json (e.g. 亀)', async () => {
-    // 亀 is baseWord in creatures.json — should NOT appear in results
+  it('excludes words already used in creatures.json (e.g. 火)', async () => {
+    // 火 is baseWord in creatures.json — should NOT appear in results
     const results = await discoverWords({ contentType: 'creature-base', targetStage: 10, limit: 200 });
-    const kameResult = results.find(r => r.word === '亀');
-    assert.strictEqual(kameResult, undefined, '亀 should be excluded (already in creatures.json)');
+    const hiResult = results.find(r => r.word === '火');
+    assert.strictEqual(hiResult, undefined, '火 should be excluded (already in creatures.json)');
   });
 
-  it('excludes words already used in moves.json (e.g. 走る)', async () => {
-    // 走る is name in moves.json — should NOT appear in move results
+  it('excludes words already used in moves.json (e.g. 叩く)', async () => {
+    // 叩く is name in moves.json — should NOT appear in move results
     const results = await discoverWords({ contentType: 'move', targetStage: 10, limit: 500 });
-    const hashiruResult = results.find(r => r.word === '走る');
-    assert.strictEqual(hashiruResult, undefined, '走る should be excluded (already in moves.json)');
+    const tatakuResult = results.find(r => r.word === '叩く');
+    assert.strictEqual(tatakuResult, undefined, '叩く should be excluded (already in moves.json)');
   });
 
   it('results are sorted by rank (most common first)', async () => {

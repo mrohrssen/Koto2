@@ -16,50 +16,62 @@ before(async () => {
 
 describe('crossReferenceExisting', () => {
   it('annotates a word found as creature baseWord', () => {
-    const candidates = [{ word: '亀', rank: 9300 }];
+    // R1 creature 'hi' has baseWord '火'
+    const candidates = [{ word: '\u706B', rank: 574 }];
     const result = crossReferenceExisting(candidates);
     assert.ok(Array.isArray(result[0].existingUses));
-    assert.ok(result[0].existingUses.includes('creature:kamedor'));
+    assert.ok(result[0].existingUses.includes('creature:hi'));
   });
 
   it('annotates a word found as creature modifier', () => {
-    const candidates = [{ word: '古代', rank: 5500 }];
+    // R1 creatures have no modifier field, so no word should match creature-mod
+    // Test that a non-matching word has empty existingUses
+    const candidates = [{ word: '\u53E4\u4EE3', rank: 5500 }];
     const result = crossReferenceExisting(candidates);
-    assert.ok(result[0].existingUses.includes('creature-mod:kamedor'));
+    const creatureModUses = result[0].existingUses.filter(u => u.startsWith('creature-mod:'));
+    assert.strictEqual(creatureModUses.length, 0, 'R1 creatures have no modifier field');
   });
 
   it('annotates a word found as a move name', () => {
-    const candidates = [{ word: '走る', rank: 400 }];
+    // R1 move 'tataku' has name '叩く'
+    const candidates = [{ word: '\u53E9\u304F', rank: 1400 }];
     const result = crossReferenceExisting(candidates);
-    assert.ok(result[0].existingUses.includes('move:hashiru'));
+    assert.ok(result[0].existingUses.includes('move:tataku'));
   });
 
   it('annotates a word found as an item component', () => {
-    const candidates = [{ word: 'カレー', rank: 4600 }];
+    // R1 items have no components field, so no word should match item:
+    const candidates = [{ word: '\u30AB\u30EC\u30FC', rank: 4600 }];
     const result = crossReferenceExisting(candidates);
-    assert.ok(result[0].existingUses.includes('item:curry-bread'));
+    const itemUses = result[0].existingUses.filter(u => u.startsWith('item:'));
+    assert.strictEqual(itemUses.length, 0, 'R1 items have no components field');
   });
 
   it('annotates a word found as area sub-area modifier', () => {
-    const candidates = [{ word: '小さな', rank: 300 }];
+    // R1 area has subAreas: [], so no word should match area-mod:
+    const candidates = [{ word: '\u5C0F\u3055\u306A', rank: 300 }];
     const result = crossReferenceExisting(candidates);
-    assert.ok(result[0].existingUses.includes('area-mod:okunomori-small-pond'));
+    const areaModUses = result[0].existingUses.filter(u => u.startsWith('area-mod:'));
+    assert.strictEqual(areaModUses.length, 0, 'R1 area has empty subAreas');
   });
 
   it('annotates a word found as area sub-area location', () => {
-    const candidates = [{ word: '池', rank: 3000 }];
+    // R1 area has subAreas: [], so no word should match area-loc:
+    const candidates = [{ word: '\u6C60', rank: 3000 }];
     const result = crossReferenceExisting(candidates);
-    assert.ok(result[0].existingUses.includes('area-loc:okunomori-small-pond'));
+    const areaLocUses = result[0].existingUses.filter(u => u.startsWith('area-loc:'));
+    assert.strictEqual(areaLocUses.length, 0, 'R1 area has empty subAreas');
   });
 
   it('annotates a word found as NPC baseWord', () => {
-    const candidates = [{ word: '住人', rank: 3900 }];
+    // R1 NPC 'kodomo' has baseWord '子供'
+    const candidates = [{ word: '\u5B50\u4F9B', rank: 836 }];
     const result = crossReferenceExisting(candidates);
-    assert.ok(result[0].existingUses.includes('npc:nagi'));
+    assert.ok(result[0].existingUses.includes('npc:kodomo'));
   });
 
   it('returns empty existingUses for unknown words', () => {
-    const candidates = [{ word: '宇宙船', rank: 15000 }];
+    const candidates = [{ word: '\u5B87\u5B99\u8239', rank: 15000 }];
     const result = crossReferenceExisting(candidates);
     assert.ok(Array.isArray(result[0].existingUses));
     assert.strictEqual(result[0].existingUses.length, 0);
@@ -67,28 +79,28 @@ describe('crossReferenceExisting', () => {
 
   it('does not remove any candidates (only annotates)', () => {
     const candidates = [
-      { word: '亀', rank: 9300 },
-      { word: '宇宙船', rank: 15000 },
+      { word: '\u706B', rank: 574 },
+      { word: '\u5B87\u5B99\u8239', rank: 15000 },
     ];
     const result = crossReferenceExisting(candidates);
     assert.strictEqual(result.length, 2);
   });
 
   it('preserves existing properties on candidates', () => {
-    const candidates = [{ word: '亀', rank: 9300, reading: 'かめ', meaning: 'turtle' }];
+    const candidates = [{ word: '\u706B', rank: 574, reading: '\u3072', meaning: 'fire' }];
     const result = crossReferenceExisting(candidates);
-    assert.strictEqual(result[0].word, '亀');
-    assert.strictEqual(result[0].rank, 9300);
-    assert.strictEqual(result[0].reading, 'かめ');
-    assert.strictEqual(result[0].meaning, 'turtle');
+    assert.strictEqual(result[0].word, '\u706B');
+    assert.strictEqual(result[0].rank, 574);
+    assert.strictEqual(result[0].reading, '\u3072');
+    assert.strictEqual(result[0].meaning, 'fire');
   });
 
   it('handles word used in multiple places', () => {
-    // '道' appears as area-loc in multiple sub-areas
-    const candidates = [{ word: '道', rank: 600 }];
+    // '子供' appears as NPC baseWord for 'kodomo'
+    const candidates = [{ word: '\u5B50\u4F9B', rank: 836 }];
     const result = crossReferenceExisting(candidates);
-    assert.ok(result[0].existingUses.length >= 2);
-    assert.ok(result[0].existingUses.some(u => u.startsWith('area-loc:')));
+    assert.ok(result[0].existingUses.length >= 1);
+    assert.ok(result[0].existingUses.some(u => u.startsWith('npc:')));
   });
 
   it('handles empty candidates array', () => {
@@ -179,13 +191,13 @@ describe('filterCandidates', () => {
 
 describe('assignRoles', () => {
   it('assigns noun roles: creature, item, npc, sub-area', () => {
-    const candidates = [{ word: '猫', posTag: 'noun' }];
+    const candidates = [{ word: '\u732B', posTag: 'noun' }];
     const result = assignRoles(candidates);
     assert.deepStrictEqual(result[0].roles.sort(), ['creature', 'item', 'npc', 'sub-area'].sort());
   });
 
   it('assigns independent noun same as noun', () => {
-    const candidates = [{ word: '犬', posTag: 'independent noun' }];
+    const candidates = [{ word: '\u72AC', posTag: 'independent noun' }];
     const result = assignRoles(candidates);
     assert.ok(result[0].roles.includes('creature'));
     assert.ok(result[0].roles.includes('item'));
@@ -194,108 +206,108 @@ describe('assignRoles', () => {
   });
 
   it('assigns proper noun same as noun', () => {
-    const candidates = [{ word: '東京', posTag: 'proper noun' }];
+    const candidates = [{ word: '\u6771\u4EAC', posTag: 'proper noun' }];
     const result = assignRoles(candidates);
     assert.ok(result[0].roles.includes('creature'));
   });
 
   it('assigns adjective role: modifier', () => {
-    const candidates = [{ word: '大きい', posTag: 'い adjective' }];
+    const candidates = [{ word: '\u5927\u304D\u3044', posTag: '\u3044 adjective' }];
     const result = assignRoles(candidates);
     assert.deepStrictEqual(result[0].roles, ['modifier']);
   });
 
-  it('assigns な adjective role: modifier', () => {
-    const candidates = [{ word: '静か', posTag: 'な adjective' }];
+  it('assigns \u306A adjective role: modifier', () => {
+    const candidates = [{ word: '\u9759\u304B', posTag: '\u306A adjective' }];
     const result = assignRoles(candidates);
     assert.deepStrictEqual(result[0].roles, ['modifier']);
   });
 
-  it('assigns の adjective role: modifier', () => {
-    const candidates = [{ word: '本当', posTag: 'の adjective' }];
+  it('assigns \u306E adjective role: modifier', () => {
+    const candidates = [{ word: '\u672C\u5F53', posTag: '\u306E adjective' }];
     const result = assignRoles(candidates);
     assert.deepStrictEqual(result[0].roles, ['modifier']);
   });
 
   it('assigns plain adjective role: modifier', () => {
-    const candidates = [{ word: '新しい', posTag: 'adjective' }];
+    const candidates = [{ word: '\u65B0\u3057\u3044', posTag: 'adjective' }];
     const result = assignRoles(candidates);
     assert.deepStrictEqual(result[0].roles, ['modifier']);
   });
 
   it('assigns verb roles: move, creature', () => {
-    const candidates = [{ word: '食べる', posTag: 'ichidan verb' }];
+    const candidates = [{ word: '\u98DF\u3079\u308B', posTag: 'ichidan verb' }];
     const result = assignRoles(candidates);
     assert.deepStrictEqual(result[0].roles.sort(), ['creature', 'move'].sort());
   });
 
   it('assigns godan verb roles: move, creature', () => {
-    const candidates = [{ word: '書く', posTag: 'godan verb' }];
+    const candidates = [{ word: '\u66F8\u304F', posTag: 'godan verb' }];
     const result = assignRoles(candidates);
     assert.ok(result[0].roles.includes('move'));
     assert.ok(result[0].roles.includes('creature'));
   });
 
-  it('assigns する verb roles: move, creature', () => {
-    const candidates = [{ word: '勉強する', posTag: 'する verb' }];
+  it('assigns \u3059\u308B verb roles: move, creature', () => {
+    const candidates = [{ word: '\u52C9\u5F37\u3059\u308B', posTag: '\u3059\u308B verb' }];
     const result = assignRoles(candidates);
     assert.ok(result[0].roles.includes('move'));
     assert.ok(result[0].roles.includes('creature'));
   });
 
   it('assigns transitive verb roles: move, creature', () => {
-    const candidates = [{ word: '開ける', posTag: 'transitive verb' }];
+    const candidates = [{ word: '\u958B\u3051\u308B', posTag: 'transitive verb' }];
     const result = assignRoles(candidates);
     assert.ok(result[0].roles.includes('move'));
     assert.ok(result[0].roles.includes('creature'));
   });
 
   it('assigns intransitive verb roles: move, creature', () => {
-    const candidates = [{ word: '開く', posTag: 'intransitive verb' }];
+    const candidates = [{ word: '\u958B\u304F', posTag: 'intransitive verb' }];
     const result = assignRoles(candidates);
     assert.ok(result[0].roles.includes('move'));
     assert.ok(result[0].roles.includes('creature'));
   });
 
   it('assigns plain "verb" POS roles: move, creature', () => {
-    const candidates = [{ word: '行く', posTag: 'verb' }];
+    const candidates = [{ word: '\u884C\u304F', posTag: 'verb' }];
     const result = assignRoles(candidates);
     assert.ok(result[0].roles.includes('move'));
     assert.ok(result[0].roles.includes('creature'));
   });
 
   it('assigns safe defaults for unknown POS: creature, item', () => {
-    const candidates = [{ word: '何か', posTag: 'particle' }];
+    const candidates = [{ word: '\u4F55\u304B', posTag: 'particle' }];
     const result = assignRoles(candidates);
     assert.deepStrictEqual(result[0].roles.sort(), ['creature', 'item'].sort());
   });
 
   it('assigns safe defaults when posTag is missing', () => {
-    const candidates = [{ word: '何か' }];
+    const candidates = [{ word: '\u4F55\u304B' }];
     const result = assignRoles(candidates);
     assert.deepStrictEqual(result[0].roles.sort(), ['creature', 'item'].sort());
   });
 
   it('assigns safe defaults when posTag is null', () => {
-    const candidates = [{ word: '何か', posTag: null }];
+    const candidates = [{ word: '\u4F55\u304B', posTag: null }];
     const result = assignRoles(candidates);
     assert.deepStrictEqual(result[0].roles.sort(), ['creature', 'item'].sort());
   });
 
   it('deduplicates roles', () => {
     // Even if multiple POS tags match, roles should be unique
-    const candidates = [{ word: '走る', posTag: 'godan verb' }];
+    const candidates = [{ word: '\u8D70\u308B', posTag: 'godan verb' }];
     const result = assignRoles(candidates);
     const uniqueRoles = [...new Set(result[0].roles)];
     assert.strictEqual(result[0].roles.length, uniqueRoles.length);
   });
 
   it('preserves existing properties on candidates', () => {
-    const candidates = [{ word: '猫', posTag: 'noun', rank: 1000, reading: 'ねこ' }];
+    const candidates = [{ word: '\u732B', posTag: 'noun', rank: 1000, reading: '\u306D\u3053' }];
     const result = assignRoles(candidates);
-    assert.strictEqual(result[0].word, '猫');
+    assert.strictEqual(result[0].word, '\u732B');
     assert.strictEqual(result[0].rank, 1000);
-    assert.strictEqual(result[0].reading, 'ねこ');
+    assert.strictEqual(result[0].reading, '\u306D\u3053');
   });
 
   it('handles empty array', () => {
