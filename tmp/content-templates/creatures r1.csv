@@ -1,0 +1,6 @@
+id,jpName,enName,element,baseWord,baseReading,baseMeaning,baseHp,baseAttack,baseMp,archetype,isStarter,move1_id,move1_level,move2_id,move2_level,move3_id,move3_level,move4_id,move4_level
+,火,Fire,fire,火,ひ,Fire,50,10,50,Fighter,yes,Strike,1,Flame,7,Burn,12,,
+,水,Water,water,水,みず,Water,50,10,50,Fighter,yes,Strike,1,,,,,,
+,木,Tree,wood,木,き,Tree,50,10,50,Fighter,yes,Strike,1,,,,,,
+,石,Stone,earth,石,いし,Stone,50,10,50,Fighter,no,Strike,1,,,,,,
+,鉄,Iron,metal,鉄,てつ,Iron,50,10,50,Fighter,no,Strike,1,,,,,,

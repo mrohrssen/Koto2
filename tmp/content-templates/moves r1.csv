@@ -1,0 +1,4 @@
+id,jpName,enName,reading,element,type,power,accuracy,target,mpCost,jpFrequency,
+,叩く,Strike,たたく,neutral,attack,10,100,single,5,1400,
+,炎,Flame,ほのお,fire,attack,15,100,single,12,1600,
+,燃える,Burn,もえる,fire,attack,25,100,single,20,1900,

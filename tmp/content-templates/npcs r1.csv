@@ -1,0 +1,5 @@
+id,nameJP,nameEn,baseReading,personality,greeting,defeatLine,Skill1,Skill1En,Skill1 Description,Skill2,Skill2 Description
+,,Child,こども,Fun loving,こんにちわ!,いいね!,あそぶ,Play,Attacks all enemies for 10 attack power,,
+,,Adult,おとな ,Mature,こんにちわ!,いいね!,はたらく,Work,Attacks all enemies for 10 attack power,,
+,,Boy,おとこのこ ,Energetic,こんにちわ!,いいね!,はしる,Run,Heals all of NPC’s creatures 10%,,
+,,Girl,おんなのこ,Shy,こんにちわ!,いいね!,うたう,Sing,Heals all of NPC’s creatures 10%,,

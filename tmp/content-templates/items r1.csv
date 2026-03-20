@@ -1,0 +1,10 @@
+id,nameJP,reading,nameEn,category,effect_type,Target,effect_value
+,,おちゃ,Tea,food,mpRestore,single,20
+,,とうふ,Tofu,food,attackMult,all,2
+,,りんご,Apple,food,healPercent,single,15
+,,たまご,Egg,food,attackMult,single,5
+,,いちご,Strawberry,food,Revive,Single,1
+,刀,かたな,Katana,equipment,attackMult,single,10
+,本,ほん,Book,equipment,hpMult,single,10
+,,くつ,Shoes,equipment,mpMult,single,10
+,,ぼうし,Hat,equipment,hpMult,single,5
