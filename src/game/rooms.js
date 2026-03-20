@@ -78,9 +78,9 @@ for (const area of AREAS) {
  * Get 2 random area options, excluding the current area
  */
 export function getAreaSelectionOptions(excludeAreaId = null) {
-  // TODO: MVP lock — only offer the school area. Remove this to restore full area selection.
-  const school = AREAS.find(a => a.id === 'mahouno-gakkou');
-  return school ? [school] : [];
+  // TODO: MVP lock — only offer the Starting Meadow area. Remove this to restore full area selection.
+  const meadow = AREAS.find(a => a.id === 'hajimari-no-hiroba');
+  return meadow ? [meadow] : [];
 }
 
 /**

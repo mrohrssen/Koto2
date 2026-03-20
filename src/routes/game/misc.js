@@ -415,9 +415,9 @@ export default function createMiscRoutes({
   router.post('/select-starter', async (req, res) => {
     const { starterId } = req.body;
     const starterMap = {
-      'starter-fire': 'fire-starter',
-      'starter-water': 'water-starter',
-      'starter-wood': 'wood-starter'
+      'starter-fire': 'hi',
+      'starter-water': 'mizu',
+      'starter-wood': 'ki'
     };
     const creatureId = starterMap[starterId];
     if (!creatureId) {
