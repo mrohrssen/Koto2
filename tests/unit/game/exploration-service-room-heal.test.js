@@ -1,0 +1,74 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { ExplorationService } from '../../../src/game/services/exploration-service.js';
+import { createRoom } from '../../../src/game/rooms.js';
+
+function makeGmWithRoomsAndParty({ rooms, creatureParty }) {
+  return {
+    run: {
+      active: true,
+      rooms,
+      currentRoom: 0,
+      roomsExplored: 1,
+      totalEncounters: 1,
+      stats: { roomsExplored: 0, areasCleared: 0 },
+      areasCompleted: 0,
+      areasToWin: 99,
+      areaPath: [],
+      currentArea: { id: 'okunomori', nameEn: 'Okunomori' },
+      background: null,
+      areaCleared: false,
+      areaSelectionRequired: false,
+      player: { credits: 0 },
+      runStats: { roomsCleared: 0 },
+      creatureParty
+    },
+    narrate() {},
+    emitState() {}
+  };
+}
+
+describe('ExplorationService room heal (5% per room entry)', () => {
+  it('heals all living creatures and never revives KO creatures', () => {
+    const room1 = createRoom('friendlyNpc', 'okunomori', 1, 2);
+    const room2 = createRoom('friendlyNpc', 'okunomori', 2, 2);
+    const aliveA = { id: 'a', hp: 50, maxHp: 100 };
+    const aliveB = { id: 'b', hp: 10, maxHp: 200 };
+    const deadC = { id: 'c', hp: 0, maxHp: 120 };
+
+    const gm = makeGmWithRoomsAndParty({
+      rooms: [room1, room2],
+      creatureParty: {
+        active: [aliveA, deadC],
+        reserves: [aliveB]
+      }
+    });
+
+    const svc = new ExplorationService(gm);
+    svc.proceedToNextRoom();
+
+    assert.strictEqual(aliveA.hp, 55); // +5% of 100 = 5
+    assert.strictEqual(aliveB.hp, 20); // +5% of 200 = 10
+    assert.strictEqual(deadC.hp, 0, "KO creatures must remain KO'd between rooms");
+  });
+
+  it('caps healing at maxHp', () => {
+    const room1 = createRoom('friendlyNpc', 'okunomori', 1, 2);
+    const room2 = createRoom('friendlyNpc', 'okunomori', 2, 2);
+    const nearMax = { id: 'a', hp: 98, maxHp: 100 }; // heal would be +5 -> cap at 100
+
+    const gm = makeGmWithRoomsAndParty({
+      rooms: [room1, room2],
+      creatureParty: {
+        active: [nearMax],
+        reserves: []
+      }
+    });
+
+    const svc = new ExplorationService(gm);
+    svc.proceedToNextRoom();
+
+    assert.strictEqual(nearMax.hp, 100);
+  });
+});
+

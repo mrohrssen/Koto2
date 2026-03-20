@@ -31,12 +31,14 @@ import { addXpToCreature, xpToNextLevel, instantiateCreature, getCreatureBuyPric
 import { logger } from '../../logger.js';
 import { getDueWordsWithMeanings } from '../../jpdb.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../party-skills.js';
+import { applyHeal } from '../combat/effects.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const __dirname_exploration = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ITEMS_PATH = join(__dirname_exploration, '../../../data/items.json');
+const ROOM_HEAL_PERCENT = 0.05; // 5% maxHp on each room entry, skipping KO'd creatures
 
 /**
  * Roll 3 item offers for a friendly NPC room.
@@ -101,6 +103,28 @@ export class ExplorationService {
    */
   constructor(gameManager) {
     this.gm = gameManager;
+  }
+
+  /**
+   * Heal living creatures when entering a new room.
+   * KO'd creatures (hp <= 0) must remain KO'd unless a revive happens elsewhere.
+   */
+  _healAllLivingCreaturesForRoomEntry() {
+    const party = this.gm.run?.creatureParty;
+    if (!party) return;
+
+    const active = Array.isArray(party.active) ? party.active : [];
+    const reserves = Array.isArray(party.reserves) ? party.reserves : [];
+    const allCreatures = [...active, ...reserves].filter(Boolean);
+
+    for (const creature of allCreatures) {
+      if (!creature || typeof creature.hp !== 'number' || creature.hp <= 0) continue; // never revive here
+      if (typeof creature.maxHp !== 'number') continue;
+
+      const healAmount = Math.floor(creature.maxHp * ROOM_HEAL_PERCENT);
+      if (healAmount <= 0) continue;
+      applyHeal(creature, healAmount);
+    }
   }
 
   // ============ AREA SELECTION ============
@@ -177,6 +201,9 @@ export class ExplorationService {
       // totalEncounters is used as a global "rooms entered" counter for scaling.
       // Count the first room immediately when entering an area.
       this.gm.run.totalEncounters = (this.gm.run.totalEncounters || 0) + 1;
+
+      // Per-room regen: heal all living creatures on first room entry too.
+      this._healAllLivingCreaturesForRoomEntry();
     }
 
     const areaName = this.gm.run.currentArea?.nameEn || areaId;
@@ -290,6 +317,9 @@ export class ExplorationService {
 
     // Increment global room counter for enemy scaling (all room types).
     this.gm.run.totalEncounters = (this.gm.run.totalEncounters || 0) + 1;
+
+    // Per-room regen: heal all living creatures between rooms.
+    this._healAllLivingCreaturesForRoomEntry();
 
     // Vary background per room — sub-area-specific if available
     const areaId = this.gm.run.currentArea?.id || 'okunomori';

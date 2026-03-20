@@ -48,7 +48,7 @@ describe('Creature Instantiation', () => {
     // Level 5: base * 1.4 => floor(50 * 1.4) = 70
     assert.strictEqual(creature.maxHp, 70);
     assert.strictEqual(creature.hp, 70);
-    assert.strictEqual(creature.attack, 14); // floor(10 * 1.4)
+    assert.strictEqual(creature.attack, 28); // floor(20 * 1.4)
     assert.strictEqual(creature.defense, 7); // floor(5 * 1.4)
     assert.strictEqual(creature.mp, 70); // floor(50 * 1.4)
     assert.strictEqual(creature.maxMp, 70);
@@ -59,18 +59,18 @@ describe('Creature Instantiation', () => {
   it('applies rarity multiplier for uncommon at level 5', () => {
     // All R1 creatures are common; test with a common creature and verify the formula
     const creature = instantiateCreature('mizu');
-    // common rarity: mult=1.0, base 50/10/50. Level 5 (1.4x): hp=70, atk=14, def=7
+    // common rarity: mult=1.0, base 50/20/50. Level 5 (1.4x): hp=70, atk=28, def=7
     assert.strictEqual(creature.maxHp, 70);
-    assert.strictEqual(creature.attack, 14);
+    assert.strictEqual(creature.attack, 28);
     assert.strictEqual(creature.defense, 7);
   });
 
   it('applies rarity multiplier for rare at level 5', () => {
     // All R1 creatures are common; verify a different creature
     const creature = instantiateCreature('ki');
-    // common rarity: mult=1.0, base 50/10/50. Level 5 (1.4x): hp=70, atk=14, def=7
+    // common rarity: mult=1.0, base 50/20/50. Level 5 (1.4x): hp=70, atk=28, def=7
     assert.strictEqual(creature.maxHp, 70);
-    assert.strictEqual(creature.attack, 14);
+    assert.strictEqual(creature.attack, 28);
     assert.strictEqual(creature.defense, 7);
   });
 
@@ -82,7 +82,7 @@ describe('Creature Instantiation', () => {
   it('stores base template values for level-up calculations', () => {
     const creature = instantiateCreature('hi');
     assert.strictEqual(creature.baseHpTemplate, 50);
-    assert.strictEqual(creature.baseAttackTemplate, 10);
+    assert.strictEqual(creature.baseAttackTemplate, 20);
     assert.strictEqual(creature.baseDefenseTemplate, 5);
   });
 

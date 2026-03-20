@@ -8,7 +8,7 @@
     "rarity": "common",
     "type": "mpRestore",
     "effect": { "mpRestorePercent": 0.20 },
-    "description": "Restores 20% MP to the selected creature.",
+    "description": "Restores 20% MP to all creatures.",
     "stage": 1,
     "createdAt": "2026-03-20"
   },
@@ -21,7 +21,7 @@
     "rarity": "common",
     "type": "boost",
     "effect": { "field": "attackMult", "value": 0.02 },
-    "description": "Boosts selected creature ATK by 2%.",
+    "description": "Boosts party attack by 2%.",
     "stage": 1,
     "createdAt": "2026-03-20"
   },
@@ -34,7 +34,7 @@
     "rarity": "common",
     "type": "heal",
     "effect": { "healPercent": 0.15 },
-    "description": "Heals selected creature for 15% of max HP.",
+    "description": "Heals the most damaged creature for 15% of max HP.",
     "stage": 1,
     "createdAt": "2026-03-20"
   },
@@ -47,7 +47,7 @@
     "rarity": "common",
     "type": "boost",
     "effect": { "field": "attackMult", "value": 0.05 },
-    "description": "Boosts selected creature ATK by 5%.",
+    "description": "Boosts party attack by 5%.",
     "stage": 1,
     "createdAt": "2026-03-20"
   },
@@ -60,7 +60,7 @@
     "rarity": "uncommon",
     "type": "revive",
     "effect": { "revivePercent": 1.0 },
-    "description": "Revives the selected KO'd creature at full HP.",
+    "description": "Revives a fallen creature at full HP.",
     "stage": 1,
     "createdAt": "2026-03-20"
   },
@@ -73,7 +73,7 @@
     "rarity": "uncommon",
     "type": "boost",
     "effect": { "field": "attackMult", "value": 0.10 },
-    "description": "Boosts selected creature ATK by 10%.",
+    "description": "Boosts party attack by 10%.",
     "stage": 1,
     "createdAt": "2026-03-20"
   },
@@ -86,7 +86,7 @@
     "rarity": "common",
     "type": "boost",
     "effect": { "field": "hpMult", "value": 0.10 },
-    "description": "Boosts selected creature HP by 10%.",
+    "description": "Boosts party HP by 10%.",
     "stage": 1,
     "createdAt": "2026-03-20"
   },
@@ -99,7 +99,7 @@
     "rarity": "common",
     "type": "mpRestore",
     "effect": { "mpRestorePercent": 0.10 },
-    "description": "Restores 10% MP to the selected creature.",
+    "description": "Restores 10% MP to all creatures.",
     "stage": 1,
     "createdAt": "2026-03-20"
   },
@@ -112,7 +112,7 @@
     "rarity": "common",
     "type": "boost",
     "effect": { "field": "hpMult", "value": 0.05 },
-    "description": "Boosts selected creature HP by 5%.",
+    "description": "Boosts party HP by 5%.",
     "stage": 1,
     "createdAt": "2026-03-20"
   }

@@ -755,6 +755,17 @@ html, body {
   z-index: 1;
 }
 
+/* Keep action buttons centered even when a wrapper uses align-items:stretch */
+#action-area > div .action-btn {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Hub: ensure "速習" stays the intended size */
+#action-area #speed-review-btn {
+  font-size: 14px !important;
+}
+
 @keyframes action-area-gradient {
   0%, 100% { background-position: 0% 50%; }
   25% { background-position: 100% 0%; }
