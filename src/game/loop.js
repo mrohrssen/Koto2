@@ -369,13 +369,15 @@ export class GameManager {
     this.run.areaSelectionRequired = true;
 
     // Initialize creature starter(s) if provided
-    // Prefer the prologue-chosen starter creature from meta (at level 5)
+    // If the player explicitly selected `starterIds` for this run, honor that.
+    // Only fall back to the prologue-chosen starter stored in meta when no
+    // explicit starter selection was provided.
     const metaStarterId = this.meta?.starterCreatureId;
     const ids = starterIds || (starterId ? [starterId] : null);
-    if (metaStarterId) {
-      this.run.creatureParty.active = [instantiateCreature(metaStarterId, 5)];
-    } else if (ids && ids.length > 0) {
+    if (ids && ids.length > 0) {
       this.run.creatureParty.active = ids.map(id => instantiateCreature(id));
+    } else if (metaStarterId) {
+      this.run.creatureParty.active = [instantiateCreature(metaStarterId, 5)];
     }
 
     // Apply meta progression bonuses
