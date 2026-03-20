@@ -919,12 +919,17 @@ function showNextFlashCardFromQueue() {
  * @param {string} creatureId - The creature's ID
  * @returns {Element|null} The .creature-slot DOM element, or null
  */
-function findCreatureSlotByAttackerId(creatureId) {
+function findCreatureSlotByAttackerId(creatureId, allyIndex = null) {
   const state = getGameState();
   const activeCreatures = state.run?.creatureParty?.active;
   if (!activeCreatures) return null;
 
-  const index = activeCreatures.findIndex(r => r && r.id === creatureId);
+  let index = -1;
+  if (typeof allyIndex === 'number' && allyIndex >= 0 && allyIndex < activeCreatures.length) {
+    index = allyIndex;
+  } else if (creatureId) {
+    index = activeCreatures.findIndex(r => r && r.id === creatureId);
+  }
   if (index < 0) return null;
 
   const slots = document.querySelectorAll('#creature-row .creature-slot');
@@ -934,13 +939,19 @@ function findCreatureSlotByAttackerId(creatureId) {
 /**
  * Find the enemy slot element for a specific target in multi-enemy combat.
  * Falls back to the whole enemy-sprite-container for single-enemy fights.
- * @param {string} targetId - The enemy creature's ID
+ * @param {string} targetId - Enemy template id (fallback when enemyIndex missing)
  * @param {Array} enemies - The enemies array from the result
+ * @param {number|null} enemyIndex - Slot in `enemies` (authoritative when duplicate species)
  * @returns {Element} The specific enemy slot element or the container
  */
-function findEnemyTargetElement(targetId, enemies) {
+function findEnemyTargetElement(targetId, enemies, enemyIndex = null) {
   if (enemies && enemies.length > 1) {
-    const idx = enemies.findIndex(e => e.id === targetId);
+    let idx = -1;
+    if (typeof enemyIndex === 'number' && enemyIndex >= 0 && enemyIndex < enemies.length) {
+      idx = enemyIndex;
+    } else if (targetId) {
+      idx = enemies.findIndex(e => e && e.id === targetId);
+    }
     if (idx >= 0) {
       const slot = document.querySelector(`.enemy-creature-slot[data-enemy-index="${idx}"]`);
       // Skip defeated/invisible slots - fall back to first alive enemy slot
@@ -1276,10 +1287,16 @@ async function showEffectEvents(result) {
   if (!result.effectEvents?.length) return;
   for (const event of result.effectEvents) {
     if (event.type === 'poison' && event.damage > 0) {
-      // Find target element — could be ally or enemy
-      let targetEl = findCreatureSlotByAttackerId(event.targetId);
+      // Find target element — could be ally or enemy (use slot index when duplicate ids)
+      let targetEl = null;
+      if (event.targetSide === 'ally' && typeof event.targetIndex === 'number') {
+        targetEl = findCreatureSlotByAttackerId(event.targetId, event.targetIndex);
+      } else if (event.targetSide === 'enemy' && typeof event.targetIndex === 'number') {
+        targetEl = document.querySelector(`.enemy-creature-slot[data-enemy-index="${event.targetIndex}"]`);
+      }
+      if (!targetEl) targetEl = findCreatureSlotByAttackerId(event.targetId);
       if (!targetEl) {
-        targetEl = findEnemyTargetElement(event.targetId, result.enemies);
+        targetEl = findEnemyTargetElement(event.targetId, result.enemies, event.targetIndex);
       }
       if (targetEl) {
         await poisonTickEffect(targetEl, event.damage);
@@ -1299,9 +1316,15 @@ async function showEffectEvents(result) {
       };
       const baseType = event.type.replace(/_tick$/, '');
       const label = EFFECT_LABELS[baseType] || event.type;
-      let targetEl = findCreatureSlotByAttackerId(event.targetId);
+      let targetEl = null;
+      if (event.targetSide === 'ally' && typeof event.targetIndex === 'number') {
+        targetEl = findCreatureSlotByAttackerId(event.targetId, event.targetIndex);
+      } else if (event.targetSide === 'enemy' && typeof event.targetIndex === 'number') {
+        targetEl = document.querySelector(`.enemy-creature-slot[data-enemy-index="${event.targetIndex}"]`);
+      }
+      if (!targetEl) targetEl = findCreatureSlotByAttackerId(event.targetId);
       if (!targetEl) {
-        targetEl = findEnemyTargetElement(event.targetId, result.enemies);
+        targetEl = findEnemyTargetElement(event.targetId, result.enemies, event.targetIndex);
       }
       if (targetEl) {
         showFloatingText(targetEl, label);
@@ -1320,14 +1343,34 @@ async function showEffectEvents(result) {
 function buildAllyHpMap(result) {
   const allyHpMap = {};
   if (result.allies) {
-    for (const ally of result.allies) {
+    result.allies.forEach((ally, i) => {
+      if (!ally) return;
       const dmgToThisAlly = (result.enemyAttacks || [])
-        .filter(a => a.targetId === ally.id)
+        .filter(a => (typeof a.targetIndex === 'number' ? a.targetIndex === i : a.targetId === ally.id))
         .reduce((sum, a) => sum + a.damage, 0);
       allyHpMap[ally.id] = { hp: ally.hp + dmgToThisAlly, maxHp: ally.maxHp };
-    }
+    });
   }
   return allyHpMap;
+}
+
+/** Pre-player-attack enemy HP for animating bars — keyed by enemy slot index (not template id). */
+function buildEnemyHpMapForPlayerAttacks(result) {
+  const map = {};
+  const enemies = result.enemies || [];
+  const attacks = result.playerAttacks || [];
+  enemies.forEach((enemy, i) => {
+    if (!enemy) return;
+    const dmgToThisEnemy = attacks
+      .filter(a => (typeof a.targetIndex === 'number' ? a.targetIndex === i : a.targetId === enemy.id))
+      .reduce((sum, a) => sum + (a.damage || 0), 0);
+    map[i] = {
+      hp: Math.min(enemy.hp + dmgToThisEnemy, enemy.maxHp),
+      maxHp: enemy.maxHp,
+      index: i
+    };
+  });
+  return map;
 }
 
 /**
@@ -1359,8 +1402,8 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
     playSFX('player-hit');
 
     // Fire element-colored orb from specific attacking enemy to targeted creature
-    const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies);
-    const targetSlotEl = findCreatureSlotByAttackerId(atk.targetId);
+    const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies, atk.attackerIndex);
+    const targetSlotEl = findCreatureSlotByAttackerId(atk.targetId, atk.targetIndex);
     if (enemyEl && targetSlotEl && atk.attackerElement) {
       playAttackSound(atk.attackerElement);
       await enemyCreatureAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
@@ -1369,8 +1412,10 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
     }
 
     // Update targeted ally's running HP in the DOM directly (avoid full updateUI)
-    if (allyHpMap[atk.targetId]) {
-      allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
+    const damagedAlly = typeof atk.targetIndex === 'number' ? result.allies?.[atk.targetIndex] : null;
+    const hpMapKey = damagedAlly?.id ?? atk.targetId;
+    if (hpMapKey && allyHpMap[hpMapKey]) {
+      allyHpMap[hpMapKey].hp = Math.max(0, allyHpMap[hpMapKey].hp - atk.damage);
     }
     updateCreatureHpBars(result.creatureParty?.active, allyHpMap);
 
@@ -1544,20 +1589,8 @@ async function executeCreatureMovesTurn(choices) {
       // Show poison/effect ticks
       await showEffectEvents(result);
 
-      // Track enemy HP for progressive updates
-      const enemyHpMap = {};
-      if (result.enemies) {
-        for (const enemy of result.enemies) {
-          const dmgToThisEnemy = (result.playerAttacks || [])
-            .filter(a => a.targetId === enemy.id)
-            .reduce((sum, a) => sum + (a.damage || 0), 0);
-          enemyHpMap[enemy.id] = {
-            hp: Math.min(enemy.hp + dmgToThisEnemy, enemy.maxHp),
-            maxHp: enemy.maxHp,
-            index: result.enemies.indexOf(enemy)
-          };
-        }
-      }
+      // Track enemy HP for progressive updates (slot index — duplicate species share id)
+      const enemyHpMap = buildEnemyHpMapForPlayerAttacks(result);
 
       // Show each attack result sequentially
       const allPendingMoveLearn = [];
@@ -1582,11 +1615,14 @@ async function executeCreatureMovesTurn(choices) {
           // Fire visual effects
           playSFX('attack');
           const creatureSlotEl = findCreatureSlotByAttackerId(atk.attackerId);
-          const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies);
+          const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies, atk.targetIndex);
 
           if (atk.damage > 0 && creatureSlotEl && enemyEl) {
             playAttackSound(atk.moveElement || atk.attackerElement || 'neutral');
-            const targetMaxHp = enemyHpMap[atk.targetId]?.maxHp || 100;
+            const tIdx = atk.targetIndex;
+            const targetMaxHp = (typeof tIdx === 'number' && enemyHpMap[tIdx]?.maxHp)
+              ? enemyHpMap[tIdx].maxHp
+              : (result.enemies?.[0]?.maxHp ?? 100);
             await fireCreatureAttackEffect(creatureSlotEl, enemyEl, atk.moveElement || 'neutral', atk.damage, targetMaxHp);
           } else if (atk.damage > 0) {
             animateEnemyHurt();
@@ -1598,20 +1634,27 @@ async function executeCreatureMovesTurn(choices) {
           }
 
           // Update enemy HP after each hit
-          if (atk.damage > 0 && enemyHpMap[atk.targetId]) {
-            enemyHpMap[atk.targetId].hp = Math.max(0, enemyHpMap[atk.targetId].hp - atk.damage);
-            const entry = enemyHpMap[atk.targetId];
-            if (result.enemies.length > 1) {
-              characterUI.updateEnemyHPAtIndex(entry.index, entry.hp, entry.maxHp);
-            } else {
-              characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
+          if (atk.damage > 0) {
+            const tIdx = atk.targetIndex;
+            if (typeof tIdx === 'number' && enemyHpMap[tIdx]) {
+              enemyHpMap[tIdx].hp = Math.max(0, enemyHpMap[tIdx].hp - atk.damage);
+              const entry = enemyHpMap[tIdx];
+              if (result.enemies.length > 1) {
+                characterUI.updateEnemyHPAtIndex(entry.index, entry.hp, entry.maxHp);
+              } else {
+                characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
+              }
             }
           }
 
           // XP popups on kill — collect pending move learns
-          if (atk.targetDefeated && !killedEnemies.has(atk.targetId) && result.xpEvents) {
-            killedEnemies.add(atk.targetId);
-            const xpEvent = result.xpEvents.find(ev => ev.enemyId === atk.targetId);
+          const killKey = typeof atk.targetIndex === 'number' ? `idx:${atk.targetIndex}` : `id:${atk.targetId}`;
+          if (atk.targetDefeated && !killedEnemies.has(killKey) && result.xpEvents) {
+            killedEnemies.add(killKey);
+            const xpEvent = result.xpEvents.find(ev =>
+              (typeof atk.targetIndex === 'number' && ev.enemyIndex === atk.targetIndex)
+              || (typeof atk.targetIndex !== 'number' && ev.enemyId === atk.targetId)
+            );
             if (xpEvent) {
               const pending = showXpEvents([xpEvent]);
               if (pending?.length) allPendingMoveLearn.push(...pending);
@@ -1725,16 +1768,7 @@ async function executeCreaturePlayerAttack() {
       // Show poison/effect ticks
       await showEffectEvents(result);
 
-      // Track each enemy's HP for progressive updates during player attacks
-      const enemyHpMap = {};
-      if (result.enemies) {
-        for (const enemy of result.enemies) {
-          const dmgToThisEnemy = (result.playerAttacks || [])
-            .filter(a => a.targetId === enemy.id)
-            .reduce((sum, a) => sum + a.damage, 0);
-          enemyHpMap[enemy.id] = { hp: Math.min(enemy.hp + dmgToThisEnemy, enemy.maxHp), maxHp: enemy.maxHp, index: result.enemies.indexOf(enemy) };
-        }
-      }
+      const enemyHpMap = buildEnemyHpMapForPlayerAttacks(result);
 
       // Show each allied creature's attack result sequentially with real-time HP
       const allPendingMoveLearn2 = [];
@@ -1760,7 +1794,7 @@ async function executeCreaturePlayerAttack() {
           playSFX('attack');
 
           const creatureSlotEl = findCreatureSlotByAttackerId(atk.attackerId);
-          const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies);
+          const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies, atk.targetIndex);
 
           // Update MP bar for this attacker immediately after its attack
           const attackerSlotIdx = (result.creatureParty?.active || []).findIndex(r => r && r.id === atk.attackerId);
@@ -1776,7 +1810,10 @@ async function executeCreaturePlayerAttack() {
           // Fire element-colored orb from creature to enemy with impact effects
           if (creatureSlotEl && enemyEl && atk.attackerElement) {
             playAttackSound(atk.attackerElement);
-            const targetMaxHp = enemyHpMap[atk.targetId]?.maxHp || 100;
+            const tIdx = atk.targetIndex;
+            const targetMaxHp = (typeof tIdx === 'number' && enemyHpMap[tIdx]?.maxHp)
+              ? enemyHpMap[tIdx].maxHp
+              : (result.enemies?.[0]?.maxHp ?? 100);
             await fireCreatureAttackEffect(creatureSlotEl, enemyEl, atk.attackerElement, atk.damage, targetMaxHp);
           } else {
             animateEnemyHurt();
@@ -1784,9 +1821,9 @@ async function executeCreaturePlayerAttack() {
 
           showDamageNumber(atk.damage, false, false);
           // Update enemy HP bar after each hit
-          if (enemyHpMap[atk.targetId]) {
-            enemyHpMap[atk.targetId].hp = Math.max(0, enemyHpMap[atk.targetId].hp - atk.damage);
-            const entry = enemyHpMap[atk.targetId];
+          if (typeof atk.targetIndex === 'number' && enemyHpMap[atk.targetIndex]) {
+            const entry = enemyHpMap[atk.targetIndex];
+            entry.hp = Math.max(0, entry.hp - atk.damage);
             if (result.enemies.length > 1) {
               characterUI.updateEnemyHPAtIndex(entry.index, entry.hp, entry.maxHp);
             } else {
@@ -1795,9 +1832,13 @@ async function executeCreaturePlayerAttack() {
           }
 
           // Show XP popups when an enemy is killed (BUG B + C) — collect pending move learns
-          if (atk.targetDefeated && !killedEnemies.has(atk.targetId) && result.xpEvents) {
-            killedEnemies.add(atk.targetId);
-            const xpEvent = result.xpEvents.find(ev => ev.enemyId === atk.targetId);
+          const killKey2 = typeof atk.targetIndex === 'number' ? `idx:${atk.targetIndex}` : `id:${atk.targetId}`;
+          if (atk.targetDefeated && !killedEnemies.has(killKey2) && result.xpEvents) {
+            killedEnemies.add(killKey2);
+            const xpEvent = result.xpEvents.find(ev =>
+              (typeof atk.targetIndex === 'number' && ev.enemyIndex === atk.targetIndex)
+              || (typeof atk.targetIndex !== 'number' && ev.enemyId === atk.targetId)
+            );
             if (xpEvent) {
               const pending = showXpEvents([xpEvent]);
               if (pending?.length) allPendingMoveLearn2.push(...pending);
@@ -2268,8 +2309,13 @@ async function renderBefriendQuiz(quizData, result) {
     await narration.showNarration('じゃあ、友達になろう！', { speaker: creatureName });
 
     const capturedId = answerResult.capturedId;
-    if (capturedId) {
-      const slot = document.querySelector(`.enemy-creature-slot[data-enemy-id="${capturedId}"]`);
+    const capturedIdx = answerResult.capturedIndex;
+    if (capturedId != null || capturedIdx != null) {
+      const slot = (typeof capturedIdx === 'number'
+        ? document.querySelector(`.enemy-creature-slot[data-enemy-index="${capturedIdx}"]`)
+        : null) || (capturedId
+        ? document.querySelector(`.enemy-creature-slot[data-enemy-id="${capturedId}"]`)
+        : null);
       if (slot) slot.classList.add('befriended');
     }
 
@@ -2627,8 +2673,13 @@ async function executeBefriendAction(actingCreatureSlot = null) {
               playSFX('creature-skill');
 
               const capturedId = replaceResult.captured?.id;
-              if (capturedId) {
-                const slot = document.querySelector(`.enemy-creature-slot[data-enemy-id="${capturedId}"]`);
+              const capturedIdx = replaceResult.capturedIndex;
+              if (capturedId != null || capturedIdx != null) {
+                const slot = (typeof capturedIdx === 'number'
+                  ? document.querySelector(`.enemy-creature-slot[data-enemy-index="${capturedIdx}"]`)
+                  : null) || (capturedId
+                  ? document.querySelector(`.enemy-creature-slot[data-enemy-id="${capturedId}"]`)
+                  : null);
                 if (slot) slot.classList.add('befriended');
               }
               await delay(1200);
@@ -2683,8 +2734,12 @@ async function executeBefriendAction(actingCreatureSlot = null) {
         // Click-to-continue (no auto-dismiss) so players can read it.
         await narration.showNarration('\u3058\u3083\u3042\u3001\u53cb\u9054\u306b\u306a\u308d\u3046\uff01', { speaker: creatureName });
 
-        if (captured?.id) {
-          const slot = document.querySelector(`.enemy-creature-slot[data-enemy-id="${captured.id}"]`);
+        if (captured?.id || typeof targetEnemyIndex === 'number') {
+          const slot = (typeof targetEnemyIndex === 'number'
+            ? document.querySelector(`.enemy-creature-slot[data-enemy-index="${targetEnemyIndex}"]`)
+            : null) || (captured?.id
+            ? document.querySelector(`.enemy-creature-slot[data-enemy-id="${captured.id}"]`)
+            : null);
           if (slot) slot.classList.add('befriended');
         }
 

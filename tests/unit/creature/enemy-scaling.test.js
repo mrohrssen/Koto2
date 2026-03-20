@@ -1,7 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import {
-  clampEarlyAreaEnemyLevel,
   getEnemyLevel,
   getRarityWeightsForStage,
   getEnemyCountWeights,
@@ -9,35 +8,37 @@ import {
 } from '../../../src/game/creatures.js';
 
 describe('getEnemyLevel', () => {
-  it('returns level 1 at encounter 0 (before variance)', () => {
-    // base = 2 + 0/2 + (0/25)^2 = 2
-    // With variance of -1 to +1, result should be 1-3 (clamped to >= 1)
-    const level = getEnemyLevel({ totalEncounters: 0, enemyCount: 2 });
-    assert.ok(level >= 1 && level <= 3, `Expected 1-3, got ${level}`);
+  it('early totalEncounters 0–1 stay in Lv 1–2 from formula alone', () => {
+    for (let i = 0; i < 40; i++) {
+      const duo0 = getEnemyLevel({ totalEncounters: 0, enemyCount: 2 });
+      const duo1 = getEnemyLevel({ totalEncounters: 1, enemyCount: 2 });
+      const solo1 = getEnemyLevel({ totalEncounters: 1, enemyCount: 1 });
+      assert.ok(duo0 >= 1 && duo0 <= 2, `te=0 duo expected 1-2, got ${duo0}`);
+      assert.ok(duo1 >= 1 && duo1 <= 2, `te=1 duo expected 1-2, got ${duo1}`);
+      assert.ok(solo1 >= 1 && solo1 <= 2, `te=1 solo expected 1-2, got ${solo1}`);
+    }
   });
 
   it('scales with total encounters', () => {
-    // base = 2 + 10/2 + (10/25)^2 = 2 + 5 + 0.16 = 7.16
+    // base = 1 + 9/2 + (10/25)^2 = 5.66
     const level = getEnemyLevel({ totalEncounters: 10, enemyCount: 2 });
-    assert.ok(level >= 6 && level <= 8, `Expected ~7 ± 1, got ${level}`);
+    assert.ok(level >= 5 && level <= 7, `Expected ~6 ± 1, got ${level}`);
   });
 
   it('accelerates at higher encounter counts', () => {
-    // base = 2 + 20/2 + (20/25)^2 = 2 + 10 + 0.64 = 12.64
+    // base = 1 + 19/2 + (20/25)^2 ≈ 11.14
     const level = getEnemyLevel({ totalEncounters: 20, enemyCount: 2 });
-    assert.ok(level >= 12 && level <= 14, `Expected ~13 ± 1, got ${level}`);
+    assert.ok(level >= 10 && level <= 12, `Expected ~11 ± 1, got ${level}`);
   });
 
   it('applies solo multiplier (1.2x) for 1 enemy', () => {
-    // base = 2 + 10/2 + (10/25)^2 ≈ 7.16, * 1.2 ≈ 8.6
     const level = getEnemyLevel({ totalEncounters: 10, enemyCount: 1 });
-    assert.ok(level >= 8 && level <= 10, `Expected ~9 ± 1, got ${level}`);
+    assert.ok(level >= 6 && level <= 8, `Expected ~7 ± 1, got ${level}`);
   });
 
   it('applies group multiplier (0.85x) for 3 enemies', () => {
-    // base ≈ 7.16, * 0.85 ≈ 6.09
     const level = getEnemyLevel({ totalEncounters: 10, enemyCount: 3 });
-    assert.ok(level >= 5 && level <= 7, `Expected ~6 ± 1, got ${level}`);
+    assert.ok(level >= 4 && level <= 6, `Expected ~5 ± 1, got ${level}`);
   });
 
   it('never returns below 1', () => {
@@ -47,18 +48,9 @@ describe('getEnemyLevel', () => {
     }
   });
 
-  it('stage 1 caps wild enemy level at 2 even with many run encounters', () => {
-    for (let i = 0; i < 30; i++) {
-      const level = getEnemyLevel({ totalEncounters: 50, enemyCount: 1, stage: 1 });
-      assert.ok(level >= 1 && level <= 2, `Expected 1-2 for stage 1, got ${level}`);
-    }
-  });
-
-  it('clampEarlyAreaEnemyLevel only applies for stage <= 1', () => {
-    assert.strictEqual(clampEarlyAreaEnemyLevel(5, 2), 5);
-    assert.strictEqual(clampEarlyAreaEnemyLevel(5, null), 5);
-    assert.strictEqual(clampEarlyAreaEnemyLevel(5, 1), 2);
-    assert.strictEqual(clampEarlyAreaEnemyLevel(0, 1), 1);
+  it('high totalEncounters produces high levels (no early-game cap)', () => {
+    const level = getEnemyLevel({ totalEncounters: 50, enemyCount: 1 });
+    assert.ok(level >= 25, `Expected strong scaling at te=50 solo, got ${level}`);
   });
 
   it('produces variance across multiple calls', () => {

@@ -29,6 +29,7 @@ import { playSFX } from '../audio.js';
 import { creatureBgUrl, replaceWithTextSprite } from './sprite-utils.js';
 import { t, isJapanified } from './i18n.js';
 import * as metaShop from './meta-shop.js';
+import { buildItemEffectPills } from './item-effect-pills.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -519,6 +520,16 @@ export function renderShrine() {
     ...(creatureParty.reserves || [])
   ].filter(Boolean);
 
+  const atkMult = Number(gameState.run?.itemBuffs?.attackMult) || 1;
+  const shrineDisplayAtk = (base) => {
+    const n = Math.max(1, Math.floor(Number(base) || 0));
+    const raw = n * atkMult;
+    if (atkMult <= 1) return Math.max(1, Math.floor(raw));
+    let o = Math.floor(raw);
+    if (o === n && raw > n + 1e-9) o = n + 1;
+    return Math.max(1, o);
+  };
+
   const creatureCards = allCreatures.map(creature => {
     const hpPercent = Math.floor((creature.hp / creature.maxHp) * 100);
     return `
@@ -529,7 +540,7 @@ export function renderShrine() {
         <div class="shrine-creature-info">
           <div class="shrine-creature-name">${creature.nameEn} Lv.${creature.level} <span class="shrine-creature-upgrade">\u2192 Lv.${creature.level + 1}</span></div>
           <div class="shrine-creature-rarity ${creature.rarity || 'common'}">${creature.rarity} \u00B7 ${creature.element}</div>
-          <div class="shrine-creature-desc">HP: ${creature.hp}/${creature.maxHp} (${hpPercent}%) \u00B7 ATK: ${creature.attack}</div>
+          <div class="shrine-creature-desc">HP: ${creature.hp}/${creature.maxHp} (${hpPercent}%) \u00B7 ATK: ${shrineDisplayAtk(creature.attack)}</div>
         </div>
       </div>
     `;
@@ -1044,6 +1055,7 @@ export async function renderSkillMaster() {
       if (result?.state) {
         updateGameState(result.state);
         updateUI();
+        choosing = false;
         return;
       }
 
@@ -1052,7 +1064,7 @@ export async function renderSkillMaster() {
         btn.disabled = false;
         btn.style.opacity = '';
       });
-      sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
+      sceneModule?.showNarration?.('Could not apply skill choice. Try again.', { autoDismiss: 2200 });
     });
   });
 }
@@ -1069,20 +1081,11 @@ let friendlyNpcState = {
 
 const FRIENDLY_NPC_TYPE_ICONS = {
   heal: '💚',
-  boost: '⬆️'
+  boost: '⬆️',
+  mpRestore: '🔵',
+  revive: '💫',
+  keepsake: '🔒'
 };
-
-function buildFriendlyNpcStatPills(item) {
-  const effect = item.effect || {};
-  const pills = [];
-  if (effect.healPercent) pills.push(`💚 +${Math.round(effect.healPercent * 100)}% HP (weakest)`);
-  if (effect.healAllPercent) pills.push(`💚 +${Math.round(effect.healAllPercent * 100)}% all HP`);
-  if (effect.healMostDamaged) pills.push('💚 Full heal (most damaged)');
-  if (effect.field === 'attackMult') pills.push(`⬆️ ATK +${Math.round(effect.value * 100)}%`);
-  if (effect.field === 'flatDamageReduction') pills.push(`🛡️ -${effect.value} dmg`);
-  if (effect.field === 'elementEdge') pills.push(`✨ Elem +${Math.round(effect.value * 100)}%`);
-  return pills.map(p => `<span class="shop-stat-pill">${p}</span>`).join('');
-}
 
 /**
  * Friendly NPC room — shows 3 item cards (food=heal or weapon=boost).
@@ -1180,7 +1183,7 @@ export async function renderFriendlyNpc() {
 
   const cardsHtml = offers.map((item, i) => {
     const icon = FRIENDLY_NPC_TYPE_ICONS[item.type] || '📦';
-    const pills = buildFriendlyNpcStatPills(item);
+    const pills = buildItemEffectPills(item);
     return `
       <div class="shop-item-card" data-item-id="${item.id}" data-index="${i}" style="position:relative;">
         <div class="text-sprite shop-item-sprite">${item.word || '？'}</div>
@@ -1244,8 +1247,11 @@ export async function renderFriendlyNpc() {
         </div>
       `);
 
+      let creatureChoiceSent = false;
       document.querySelectorAll('.creature-target-card').forEach(tCard => {
         tCard.addEventListener('click', async () => {
+          if (creatureChoiceSent) return;
+          creatureChoiceSent = true;
           const targetIdx = parseInt(tCard.dataset.creatureIndex, 10);
           tCard.classList.add('selected');
           document.querySelectorAll('.creature-target-card').forEach(c => {
@@ -1264,8 +1270,15 @@ export async function renderFriendlyNpc() {
 
           if (result?.state) {
             updateGameState(result.state);
+            friendlyNpcState.choosing = false;
             updateUI();
+            return;
           }
+
+          // API returned null (e.g. loading gate) or success body missing state — recover UI
+          friendlyNpcState.choosing = false;
+          sceneModule?.showNarration?.('Could not apply item. Tap to try again.', { autoDismiss: 2200 });
+          renderFriendlyNpc();
         });
       });
     });
@@ -1420,12 +1433,13 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       try {
         await onSkillChosen?.(skillId);
       } catch (err) {
-        npcBattleSkillState.choosing = false;
+        sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
         buttons.forEach(btn => {
           btn.disabled = false;
           btn.style.opacity = '';
         });
-        sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
+      } finally {
+        npcBattleSkillState.choosing = false;
       }
     });
   });

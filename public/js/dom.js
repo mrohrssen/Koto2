@@ -35,6 +35,7 @@ export const dom = {
   get enemyHpText() { return el('enemy-hp-text'); },
   get enemySkillBar() { return el('enemy-skill-bar'); },
   get enemySpriteContainer() { return el('enemy-sprite-container'); },
+  get roomProgressBadge() { return el('room-progress-badge'); },
   get enemySprite() { return el('enemy-sprite'); },
   get sceneToast() { return el('scene-toast'); },
 

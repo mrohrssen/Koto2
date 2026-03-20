@@ -65,6 +65,23 @@ describe('Item Buffs - Stat Boosts', () => {
     assert.strictEqual(getBuffedAttack(10, buffs), 11);
   });
 
+  it('getBuffedAttack bumps by at least 1 when small % would floor to same integer', () => {
+    const buffs = createItemBuffs();
+    buffs.attackMult = 1.02;
+    assert.strictEqual(getBuffedAttack(20, buffs), 21);
+    buffs.attackMult = 1.05;
+    assert.strictEqual(getBuffedAttack(20, buffs), 21);
+  });
+
+  it('applyItem boost fills missing itemBuff fields on partial save-shaped objects', () => {
+    const partial = {};
+    const atkItem = { type: 'boost', effect: { field: 'attackMult', value: 0.05 } };
+    const party = { active: [mockCreature()], reserves: [] };
+    applyItem(atkItem, party, partial);
+    assert.strictEqual(partial.attackMult, 1.05);
+    assert.strictEqual(typeof partial.hpMult, 'number');
+  });
+
   it('Element Edge adds to super-effective multiplier', () => {
     const buffs = createItemBuffs();
     buffs.elementEdge = 0.10;

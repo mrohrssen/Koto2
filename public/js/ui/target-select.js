@@ -51,6 +51,7 @@ function showTargets(targets, move, type) {
 
   targets.forEach((target, i) => {
     if (target.hp <= 0) return; // Skip KO'd targets
+    if (type === 'enemy' && target.befriended) return;
 
     const elemColor = ELEMENT_COLORS[target.element] || '#888';
     const elemKanji = ELEMENT_KANJI[target.element] || '—';

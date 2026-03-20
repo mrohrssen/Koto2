@@ -32,7 +32,7 @@ All gameplay systems are wired up and ready. 853 unit tests + 10 integration tes
 | **Room generation** | Fixed 30 rooms: ~12 encounters, ~13 friendly NPCs, 4 NPC battles (rooms 6/12/18/24), 1 boss (room 30) |
 | **Friendly NPC rooms** | Offer 3 items from one category (food or weapon). Player picks 1. Reuses shop UI. |
 | **NPC battle rooms** | 3 enemies at 1.1x level, guaranteed NPC interference. Reward = pick 1 of 3 party skills. |
-| **Befriend** | Old ≤50% HP mechanic disabled. New: 10% chance on killing blow → "まって!!" → Fight/Talk → English name quiz (3 options). |
+| **Befriend** | Old ≤50% HP mechanic disabled. New: 50% chance on killing blow → "まって!!" → Fight/Talk → English name quiz (3 options). |
 | **Display** | Bootstrap: kanji slot → hiragana, hiragana slot → romaji. Sprites → text placeholders (kanji tinted by element). |
 | **Prologue** | Hiragana question removed. Starter creature pick added (ひ fire / みず water / き wood) at level 5. |
 | **Disabled** | Kana combat, old befriend, post-combat shop, random NPC overlay, shrine/dealer/quiz/whack-a-mole/speed review/word discovery rooms (code intact, just excluded from generation) |

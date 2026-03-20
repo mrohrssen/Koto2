@@ -52,11 +52,35 @@ export function rollShopItems() {
   return selected;
 }
 
+const MULT_FIELDS = new Set(['attackMult', 'hpMult', 'autoPowerMult', 'ultimatePowerMult', 'xpMultiplier']);
+
 function applyStat(field, value, itemBuffs) {
+  if (!itemBuffs || value == null || Number.isNaN(Number(value))) return;
+  const delta = Number(value);
   if (field === 'flatDamageReduction') {
-    itemBuffs[field] = (itemBuffs[field] || 0) + value;
-  } else if (itemBuffs[field] !== undefined) {
-    itemBuffs[field] = (itemBuffs[field] || 1.0) + value;
+    itemBuffs[field] = (itemBuffs[field] || 0) + delta;
+    return;
+  }
+  if (MULT_FIELDS.has(field)) {
+    const prev = itemBuffs[field] ?? 1.0;
+    itemBuffs[field] = prev + delta;
+    return;
+  }
+  if (field === 'elementEdge') {
+    itemBuffs.elementEdge = (itemBuffs.elementEdge || 0) + delta;
+    return;
+  }
+  if (itemBuffs[field] !== undefined) {
+    itemBuffs[field] = (itemBuffs[field] || 1.0) + delta;
+  }
+}
+
+/** Merge missing keys so old/partial saves still receive food & equipment boosts */
+function ensureItemBuffShape(itemBuffs) {
+  if (!itemBuffs || typeof itemBuffs !== 'object') return;
+  const defaults = createItemBuffs();
+  for (const key of Object.keys(defaults)) {
+    if (itemBuffs[key] === undefined) itemBuffs[key] = defaults[key];
   }
 }
 
@@ -77,6 +101,8 @@ export function scalePartyHpForBuffRatio(creatureParty, ratio) {
 
 
 export function applyItem(item, creatureParty, itemBuffs, targetIndex = null) {
+  if (!creatureParty) return { applied: false };
+  if (itemBuffs) ensureItemBuffShape(itemBuffs);
   const allCreatures = [...creatureParty.active, ...creatureParty.reserves].filter(Boolean);
   const targetCreature = targetIndex !== null ? creatureParty.active[targetIndex] : null;
 
@@ -109,7 +135,8 @@ export function applyItem(item, creatureParty, itemBuffs, targetIndex = null) {
   }
 
   if (item.type === 'boost') {
-    if (item.effect.field && item.effect.value) {
+    if (!itemBuffs) return { applied: false };
+    if (item.effect.field != null && item.effect.value != null) {
       const field = item.effect.field;
       const prevHpMult = itemBuffs.hpMult;
       applyStat(field, item.effect.value, itemBuffs);
@@ -153,6 +180,7 @@ export function applyItem(item, creatureParty, itemBuffs, targetIndex = null) {
   }
 
   if (item.type === 'keepsake') {
+    if (!itemBuffs) return { applied: false };
     const prevHpMult = itemBuffs.hpMult;
     for (const [field, value] of Object.entries(item.effect)) {
       applyStat(field, value, itemBuffs);
@@ -164,11 +192,13 @@ export function applyItem(item, creatureParty, itemBuffs, targetIndex = null) {
   }
 
   if (item.type === 'xpCharm') {
+    if (!itemBuffs) return { applied: false };
     itemBuffs.xpMultiplier = (itemBuffs.xpMultiplier || 1.0) * (1 + item.effect.value);
     return { applied: true };
   }
 
   if (item.type === 'xpBalance') {
+    if (!itemBuffs) return { applied: false };
     itemBuffs.xpBalanceStacks = (itemBuffs.xpBalanceStacks || 0) + item.effect.value;
     return { applied: true };
   }
@@ -176,8 +206,19 @@ export function applyItem(item, creatureParty, itemBuffs, targetIndex = null) {
   return { applied: false };
 }
 
+/**
+ * Attack used in combat after run-scoped item multipliers (food, equipment).
+ * Small % boosts (e.g. +2% at ATK 20) must still increase damage vs pure floor(20*1.02)=20.
+ */
 export function getBuffedAttack(baseAttack, itemBuffs) {
-  return Math.floor(baseAttack * (itemBuffs?.attackMult || 1.0));
+  const mult = itemBuffs?.attackMult ?? 1.0;
+  const n = Math.max(1, Math.floor(Number(baseAttack) || 0));
+  if (!(mult > 0)) return n;
+  const raw = n * mult;
+  if (mult <= 1) return Math.max(1, Math.floor(raw));
+  let out = Math.floor(raw);
+  if (out === n && raw > n + 1e-9) out = n + 1;
+  return Math.max(1, out);
 }
 
 export function getBuffedAutoPower(basePower, itemBuffs) {

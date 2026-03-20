@@ -10,7 +10,8 @@ import {
   xpToNextLevel,
   getStatsForLevel,
   selectTarget,
-  generateEnemyCreatures
+  generateEnemyCreatures,
+  syncCreatureDefense
 } from '../../../src/game/creatures.js';
 
 describe('Element Cycle', () => {
@@ -48,6 +49,7 @@ describe('Creature Instantiation', () => {
     assert.strictEqual(creature.maxHp, 70);
     assert.strictEqual(creature.hp, 70);
     assert.strictEqual(creature.attack, 14); // floor(10 * 1.4)
+    assert.strictEqual(creature.defense, 7); // floor(5 * 1.4)
     assert.strictEqual(creature.mp, 70); // floor(50 * 1.4)
     assert.strictEqual(creature.maxMp, 70);
     assert.ok(Array.isArray(creature.moves), 'should have moves array');
@@ -57,17 +59,19 @@ describe('Creature Instantiation', () => {
   it('applies rarity multiplier for uncommon at level 5', () => {
     // All R1 creatures are common; test with a common creature and verify the formula
     const creature = instantiateCreature('mizu');
-    // common rarity: mult=1.0, base 50/10/50. Level 5 (1.4x): hp=70, atk=14
+    // common rarity: mult=1.0, base 50/10/50. Level 5 (1.4x): hp=70, atk=14, def=7
     assert.strictEqual(creature.maxHp, 70);
     assert.strictEqual(creature.attack, 14);
+    assert.strictEqual(creature.defense, 7);
   });
 
   it('applies rarity multiplier for rare at level 5', () => {
     // All R1 creatures are common; verify a different creature
     const creature = instantiateCreature('ki');
-    // common rarity: mult=1.0, base 50/10/50. Level 5 (1.4x): hp=70, atk=14
+    // common rarity: mult=1.0, base 50/10/50. Level 5 (1.4x): hp=70, atk=14, def=7
     assert.strictEqual(creature.maxHp, 70);
     assert.strictEqual(creature.attack, 14);
+    assert.strictEqual(creature.defense, 7);
   });
 
   it('has archetype field', () => {
@@ -79,6 +83,7 @@ describe('Creature Instantiation', () => {
     const creature = instantiateCreature('hi');
     assert.strictEqual(creature.baseHpTemplate, 50);
     assert.strictEqual(creature.baseAttackTemplate, 10);
+    assert.strictEqual(creature.baseDefenseTemplate, 5);
   });
 
   it('has category and target on first move', () => {
@@ -109,24 +114,51 @@ describe('Creature Instantiation', () => {
   });
 });
 
+describe('syncCreatureDefense', () => {
+  it('fills missing template and defense from catalog + level', () => {
+    const c = instantiateCreature('hi', 6);
+    delete c.baseDefenseTemplate;
+    delete c.defense;
+    syncCreatureDefense(c);
+    assert.strictEqual(c.baseDefenseTemplate, 5);
+    assert.strictEqual(c.defense, 8); // round(5 * 1.5) at L6
+  });
+});
+
 describe('Creature Damage', () => {
-  it('calculates damage with element multiplier (seeded)', () => {
-    const dmg = calculateCreatureDamage(20, 20, 1.5, 1.0);
-    assert.strictEqual(dmg, 60); // (20/10) * 20 * 1.5 * 1.0
+  it('calculates damage with level, DEF, and type multiplier', () => {
+    // L5, atk 14, def 7, power 10, neutral: inner=(2+2)*10*14/7=80, base=10, *1.5 *1 = 15
+    const dmg = calculateCreatureDamage({
+      attackerLevel: 5,
+      attack: 14,
+      defenderDefense: 7,
+      power: 10,
+      typeMultiplier: 1.5,
+      variance: 1.0
+    });
+    assert.strictEqual(dmg, 15);
   });
 
-  it('calculates damage neutral (1.0x)', () => {
-    const dmg = calculateCreatureDamage(20, 20, 1.0, 1.0);
-    assert.strictEqual(dmg, 40); // (20/10) * 20 * 1.0 * 1.0
+  it('calculates damage neutral (1.0x type)', () => {
+    const dmg = calculateCreatureDamage({
+      attackerLevel: 5,
+      attack: 14,
+      defenderDefense: 7,
+      power: 10,
+      typeMultiplier: 1.0,
+      variance: 1.0
+    });
+    assert.strictEqual(dmg, 10);
   });
 });
 
 describe('Creature Leveling', () => {
   it('+10% stats per level', () => {
-    const stats = getStatsForLevel(100, 20, 80, 3);
+    const stats = getStatsForLevel(100, 20, 80, 3, 5);
     assert.strictEqual(stats.maxHp, 120); // 100 * 1.2
     assert.strictEqual(stats.attack, 24); // 20 * 1.2
     assert.strictEqual(stats.maxMp, 96); // 80 * 1.2
+    assert.strictEqual(stats.defense, 6); // 5 * 1.2
   });
 
   it('awards XP and levels up', () => {
@@ -142,9 +174,11 @@ describe('Creature Leveling', () => {
     const creature = instantiateCreature('hi');
     creature.baseHpTemplate = 160;
     creature.baseAttackTemplate = 7;
+    creature.baseDefenseTemplate = 5;
     creature.maxHp = 160;
     creature.hp = 160;
     creature.attack = 7;
+    creature.defense = 5;
     creature.rarity = 'common';
     creature.level = 1;
     creature.xp = 0;
@@ -156,6 +190,7 @@ describe('Creature Leveling', () => {
     assert.strictEqual(creature.maxHp, 176);
     // Level 2: base * 1.1 => floor(7 * 1.1) = 7
     assert.strictEqual(creature.attack, 7);
+    assert.strictEqual(creature.defense, 6); // round(5 * 1.1)
     // HP should have increased by the same diff
     assert.strictEqual(creature.hp, 176);
   });

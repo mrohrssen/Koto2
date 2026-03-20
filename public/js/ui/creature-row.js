@@ -33,9 +33,16 @@ let currentActiveCreatures = [];
 /** @type {() => object|undefined|null} */
 let getItemBuffs = null;
 
+/** Match server getBuffedAttack (item-service): small % boosts still add at least +1 when floor would erase them */
 function effectiveAttack(creature) {
-  const mult = getItemBuffs?.()?.attackMult ?? 1;
-  return Math.floor(creature.attack * mult);
+  const mult = Number(getItemBuffs?.()?.attackMult) || 1;
+  const n = Math.max(1, Math.floor(Number(creature?.attack) || 0));
+  if (!(mult > 0)) return n;
+  const raw = n * mult;
+  if (mult <= 1) return Math.max(1, Math.floor(raw));
+  let out = Math.floor(raw);
+  if (out === n && raw > n + 1e-9) out = n + 1;
+  return Math.max(1, out);
 }
 
 export const ELEMENT_COLORS = {
@@ -96,12 +103,6 @@ export function render(creatures) {
       const xpNeeded = Math.pow(creature.level + 1, 3) - Math.pow(creature.level, 3);
       const xpPct = Math.min(100, (creature.xp / xpNeeded) * 100);
 
-      const subtitle = creature.modifier
-        ? renderJpFirst(creature.modifier.word, creature.modifier.reading, creature.modifier.meaning)
-          + 'の'
-          + renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning)
-        : renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning);
-
       slot.innerHTML = `
         <div class="creature-icon${isKO ? ' ko' : ''}"
              style="border-color: ${ELEMENT_COLORS[creature.element]}">
@@ -109,7 +110,6 @@ export function render(creatures) {
           <span class="creature-element-icon" style="display:none">${ELEMENT_ICONS[creature.element]}</span>
           <span class="creature-level-badge">Lv${creature.level}</span>
           <span class="creature-slot-name">${creature.nameEn}</span>
-          <span class="creature-subtitle">${subtitle}</span>
         </div>
         <div class="creature-hp-bar">
           <div class="creature-hp-fill" style="width: ${hpPct}%; background-color: ${hpColor}"></div>
@@ -171,7 +171,7 @@ function showPopup(index, creature) {
     <div class="creature-popup-element">${ELEMENT_ICONS[creature.element]} ${creature.element}</div>
     <div class="creature-popup-archetype">${archetypeLabel}</div>
     <div class="creature-popup-stats">
-      HP: ${creature.hp}/${creature.maxHp} | ATK: ${effectiveAttack(creature)} | MP: ${creature.mp}/${creature.maxMp}
+      HP: ${creature.hp}/${creature.maxHp} | ATK: ${effectiveAttack(creature)} | DEF: ${creature.defense ?? 5} | MP: ${creature.mp}/${creature.maxMp}
     </div>
     ${!isKO ? `
       <div class="creature-popup-moves">

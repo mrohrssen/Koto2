@@ -57,11 +57,12 @@ import { derivePhase } from './phase-machine.js';
 import { ExplorationService } from './services/index.js';
 import { logger } from '../logger.js';
 import {
-  clampEarlyAreaEnemyLevel,
   instantiateCreature,
   generateEnemyCreature,
   generateEnemyCreatures,
   getEnemyLevel,
+  syncPartyCreatureDefense,
+  syncCreatureDefense,
   CREATURES_BY_ID
 } from './creatures.js';
 import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL, applyPartySkillsAfterPlayerAttacks, shouldTriggerBefriendQuiz, generateBefriendQuiz, processBefriendQuizAnswer, resolveBefriendFight } from './services/creature-combat-service.js';
@@ -229,6 +230,21 @@ export class GameManager {
 
     if (shouldSettleSpeedReview) {
       this.settleSpeedReviewRoomPendingRewards();
+    }
+
+    // Keep DEF in sync with level (rounded scaling + backfill for saves missing defense / baseDefenseTemplate).
+    if (this.run?.creatureParty) {
+      syncPartyCreatureDefense(this.run.creatureParty);
+    }
+    if (this.combat?.allies?.length) {
+      for (const c of this.combat.allies) {
+        if (c) syncCreatureDefense(c);
+      }
+    }
+    if (this.combat?.enemies?.length) {
+      for (const c of this.combat.enemies) {
+        if (c) syncCreatureDefense(c);
+      }
     }
 
     const player = this.run?.player || this.player;
@@ -526,17 +542,15 @@ export class GameManager {
     let enemyCreatures;
     if (isBoss) {
       // Boss: solo creature, level × 1.25
-      let bossLevel = Math.round(
-        getEnemyLevel({ totalEncounters, enemyCount: 1, stage }) * 1.25
+      const bossLevel = Math.round(
+        getEnemyLevel({ totalEncounters, enemyCount: 1 }) * 1.25
       );
-      bossLevel = clampEarlyAreaEnemyLevel(bossLevel, stage);
       const bossCreature = generateEnemyCreature(bossLevel, [currentRoom.boss.creatureId], stage);
       enemyCreatures = [bossCreature];
     } else if (isNpcBattle) {
       // NPC Battle: always 3 enemies at level × 1.1
-      const baseLevel = getEnemyLevel({ totalEncounters, enemyCount: 3, stage });
-      let npcBattleLevel = Math.round(baseLevel * 1.1);
-      npcBattleLevel = clampEarlyAreaEnemyLevel(npcBattleLevel, stage);
+      const baseLevel = getEnemyLevel({ totalEncounters, enemyCount: 3 });
+      const npcBattleLevel = Math.round(baseLevel * 1.1);
       enemyCreatures = [
         generateEnemyCreature(npcBattleLevel, creaturePool, stage),
         generateEnemyCreature(npcBattleLevel, creaturePool, stage),
@@ -693,7 +707,7 @@ export class GameManager {
 
     // Check if all enemies defeated after player attack
     if (playerResult.allEnemiesDefeated) {
-      // Befriend quiz trigger: 10% chance when killing blow would end combat
+      // Befriend quiz trigger: 50% chance when killing blow would end combat
       // Not for boss fights or NPC battles
       if (!this.combat.isBoss && !this.combat.npcId && shouldTriggerBefriendQuiz(this.combat.enemies)) {
         // Find the last enemy that just died and revive it to 1 HP
@@ -704,7 +718,9 @@ export class GameManager {
 
           // Un-award the XP for this creature (it didn't actually die)
           // The xpEvents for this creature will be re-awarded if the player fights
-          const revokedXpEvents = playerResult.xpEvents.filter(ev => ev.enemyId !== lastKilled.id);
+          const revokedXpEvents = playerResult.xpEvents.filter(ev =>
+            (typeof ev.enemyIndex === 'number' ? ev.enemyIndex !== targetIndex : ev.enemyId !== lastKilled.id)
+          );
 
           // Generate the quiz
           const quiz = generateBefriendQuiz(lastKilled);
@@ -727,6 +743,7 @@ export class GameManager {
             effectEvents,
             befriendQuizTriggered: true,
             befriendQuiz: {
+              targetIndex,
               creatureId: lastKilled.id,
               creatureName: lastKilled.name,
               creatureNameEn: lastKilled.nameEn,

@@ -94,6 +94,22 @@ describe('Creature Combat - Move Turn', () => {
     assert.ok(result.mpRegens.length >= 1);
     assert.ok(result.mpRegens[0].regen > 0, 'should regen some MP');
   });
+
+  it('awards separate XP per enemy slot when two instances share template id', () => {
+    const allies = [instantiateCreature('mizu'), instantiateCreature('ki')];
+    const enemies = [instantiateCreature('hi'), instantiateCreature('hi')];
+    enemies[0].hp = 1;
+    enemies[1].hp = 1;
+    const party = { active: allies, reserves: [], pendingCaptures: [] };
+    const moveChoices = [
+      { creatureIndex: 0, moveId: 'tataku', targetIndex: 0 },
+      { creatureIndex: 1, moveId: 'tataku', targetIndex: 1 }
+    ];
+    const result = processMoveTurn(allies, enemies, moveChoices, null, party);
+    assert.strictEqual(result.xpEvents.length, 2);
+    assert.ok(result.xpEvents.some(ev => ev.enemyIndex === 0));
+    assert.ok(result.xpEvents.some(ev => ev.enemyIndex === 1));
+  });
 });
 
 describe('Creature Combat - Defend Turn', () => {
@@ -125,6 +141,8 @@ describe('Creature Combat - Enemy Turn', () => {
     assert.ok(atk.moveName);
     assert.ok(atk.moveNameEn);
     assert.strictEqual(atk.targetNameJp, '\u6728');
+    assert.strictEqual(atk.attackerIndex, 0);
+    assert.strictEqual(atk.targetIndex, 0);
   });
 });
 
@@ -338,6 +356,8 @@ describe('Creature Combat - Effect Ticking', () => {
     assert.ok(enemies[0].hp < startHp);
     assert.strictEqual(events.length, 1);
     assert.strictEqual(events[0].type, 'poison');
+    assert.strictEqual(events[0].targetSide, 'enemy');
+    assert.strictEqual(events[0].targetIndex, 0);
   });
 
   it('ticks effects on allies too', () => {
@@ -349,6 +369,8 @@ describe('Creature Combat - Effect Ticking', () => {
     const events = tickAllEffects(allies, []);
     assert.ok(allies[0].hp < startHp);
     assert.strictEqual(allies[0].activeEffects.length, 0);
+    assert.strictEqual(events[0].targetSide, 'ally');
+    assert.strictEqual(events[0].targetIndex, 0);
   });
 
   it('skips dead creatures', () => {

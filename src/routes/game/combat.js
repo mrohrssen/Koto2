@@ -523,13 +523,57 @@ export default function createCombatRoutes({
     // Try AI-generated dialogue from cache first
     const cached = getNpcDialogueFromCache?.(req.user.id, combat.npcId);
 
-    // Use cached data if available, otherwise fall back to static npcs.json
-    const greeting = cached?.greeting || npc.greeting;
-    const freed = cached?.freedLine || npc.postCombat.freed;
-    const sourceRounds = cached?.rounds || npc.postCombat.rounds;
+    // Use cached data if available, otherwise fall back to a safe default.
+    // Many NPCs in `data/npcs.json` currently only define `greeting`/`defeatLine` (no `postCombat`),
+    // so we must guard against missing fields here to avoid crashing (500).
+    const greeting =
+      cached?.greeting ||
+      // Prefer an English-only fallback when cache is missing.
+      'Nice work. Let’s talk after the battle.';
 
-    const preparedRounds = sourceRounds.map(round => {
-      const { shuffled, toneMap } = shuffleOptions(round.options);
+    const freed =
+      cached?.freedLine ||
+      // Avoid relying on missing npc.postCombat.freed
+      'Good training. We’ll see how you do next time.';
+
+    const sourceRounds =
+      cached?.rounds ||
+      npc.postCombat?.rounds ||
+      null;
+
+    const defaultRounds = [
+      {
+        npcLine: 'You are really getting stronger.',
+        options: [
+          { text: 'That’s true.', tone: 'positive' },
+          { text: 'Maybe…', tone: 'neutral' },
+          { text: 'Leave me alone.', tone: 'negative' }
+        ]
+      },
+      {
+        npcLine: 'We can train together if you want.',
+        options: [
+          { text: 'Yes, let’s train.', tone: 'positive' },
+          { text: 'Not now.', tone: 'neutral' },
+          { text: 'No thanks.', tone: 'negative' }
+        ]
+      },
+      {
+        npcLine: 'I trust your choices.',
+        options: [
+          { text: 'Thank you!', tone: 'positive' },
+          { text: 'Okay.', tone: 'neutral' },
+          { text: 'Never!', tone: 'negative' }
+        ]
+      }
+    ];
+
+    const roundsToPrepare = Array.isArray(sourceRounds) && sourceRounds.length > 0
+      ? sourceRounds
+      : defaultRounds;
+
+    const preparedRounds = roundsToPrepare.map(round => {
+      const { shuffled, toneMap } = shuffleOptions(round.options || []);
       return {
         npcLine: round.npcLine,
         npcLineTts: round.npcLineTts || null,

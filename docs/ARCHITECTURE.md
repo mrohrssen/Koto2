@@ -167,9 +167,14 @@ Creatures are defined in `data/creatures.json`. Each creature has:
 
 ### Damage Formula
 
+Level-aware damage (see `calculateCreatureDamage` in `src/game/creatures.js`):
+
 ```
-damage = calculateCreatureDamage(attack, power, elementMultiplier, variance)
+base = floor(((2 * level / 5 + 2) * power * ATK / DEF) / 10 + 2)
+damage = max(1, floor(base * typeMultiplier * variance))
 ```
+
+`typeMultiplier` combines element matchup × STAB (1.5× same element as move) × item element edge when applicable. **DEF** scales with level like HP/ATK (`baseDefense` in `data/creatures.json`, default 5).
 
 Element matchups follow the Wu Xing cycle (wood > earth > water > fire > metal > wood), providing a 1.5x damage bonus on advantageous matchups.
 
@@ -197,16 +202,15 @@ Creature stats:
 
 | Stat | Purpose |
 |------|---------|
-| `attack` | How much damage the creature deals |
+| `attack` | How much damage the creature deals (in formula numerator) |
+| `defense` | Reduces damage taken (in formula denominator); scales per level |
 | `maxHp` | How much health the creature has |
 
-**No hit/miss, no crits, no defense stat.**
+**No hit/miss, no crit rolls** (type multiplier + variance only).
 
 ### Damage Formula
 
-```
-damage = calculateCreatureDamage(attack, power, elementMultiplier, variance)
-```
+Same as Creature Combat section: level, ATK, DEF, move power, type multiplier (element × STAB × item edge), and variance (~0.8–1.2).
 
 Element matchups provide bonus damage (1.5x for advantageous elements). Variance adds slight randomness to keep combat unpredictable.
 

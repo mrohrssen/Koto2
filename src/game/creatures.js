@@ -76,11 +76,13 @@ export function instantiateCreature(templateId, startingLevel = STARTING_LEVEL) 
 
   const rarityMult = RARITY_MULTIPLIERS[template.rarity] || 1.0;
   const baseMp = template.baseMp || 80;
-  const { maxHp, attack, maxMp } = getStatsForLevel(
+  const baseDef = template.baseDefense ?? 5;
+  const { maxHp, attack, maxMp, defense } = getStatsForLevel(
     Math.floor(template.baseHp * rarityMult),
     Math.floor(template.baseAttack * rarityMult),
     Math.floor(baseMp * rarityMult),
-    startingLevel
+    startingLevel,
+    Math.floor(baseDef * rarityMult)
   );
 
   // Get all moves learned up to starting level
@@ -108,22 +110,54 @@ export function instantiateCreature(templateId, startingLevel = STARTING_LEVEL) 
     hp: maxHp,
     maxHp,
     attack,
+    defense,
     mp: maxMp,
     maxMp,
     baseHpTemplate: template.baseHp,
     baseAttackTemplate: template.baseAttack,
+    baseDefenseTemplate: baseDef,
     baseMpTemplate: baseMp,
     moves
   };
 }
 
-export function getStatsForLevel(baseHp, baseAttack, baseMp, level) {
+export function getStatsForLevel(baseHp, baseAttack, baseMp, level, baseDefense = 5) {
   const mult = 1 + (level - 1) * 0.1;
   return {
     maxHp: Math.floor(baseHp * mult),
     attack: Math.floor(baseAttack * mult),
-    maxMp: Math.floor(baseMp * mult)
+    maxMp: Math.floor(baseMp * mult),
+    // Round DEF so low baseDefense (e.g. 5) still bumps most levels (floor caused long plateaus vs ATK).
+    defense: Math.max(1, Math.round(baseDefense * mult))
   };
+}
+
+/**
+ * Recompute `creature.defense` from level + templates (and fill missing `baseDefenseTemplate`).
+ * Call after load/resume so older saves and pre-DEF creatures match combat math.
+ */
+export function syncCreatureDefense(creature) {
+  if (!creature || !creature.id) return;
+  const template = CREATURES_BY_ID[creature.id];
+  if (creature.baseDefenseTemplate == null) {
+    creature.baseDefenseTemplate = template?.baseDefense ?? 5;
+  }
+  const rarityMult = RARITY_MULTIPLIERS[creature.rarity] || 1.0;
+  const baseDef = Math.floor((creature.baseDefenseTemplate ?? 5) * rarityMult);
+  const level = Math.max(1, creature.level || 1);
+  const mult = 1 + (level - 1) * 0.1;
+  creature.defense = Math.max(1, Math.round(baseDef * mult));
+}
+
+/** Apply {@link syncCreatureDefense} to all slots in a party (active + reserves). */
+export function syncPartyCreatureDefense(party) {
+  if (!party) return;
+  for (const c of party.active || []) {
+    if (c) syncCreatureDefense(c);
+  }
+  for (const c of party.reserves || []) {
+    if (c) syncCreatureDefense(c);
+  }
 }
 
 export function addXpToCreature(creature, xp, metaMults = null) {
@@ -136,11 +170,13 @@ export function addXpToCreature(creature, xp, metaMults = null) {
     const baseHp = Math.floor((creature.baseHpTemplate || 100) * rarityMult);
     const baseAtk = Math.floor((creature.baseAttackTemplate || 10) * rarityMult);
     const baseMp = Math.floor((creature.baseMpTemplate || 80) * rarityMult);
-    const stats = getStatsForLevel(baseHp, baseAtk, baseMp, creature.level);
+    const baseDef = Math.floor((creature.baseDefenseTemplate ?? 5) * rarityMult);
+    const stats = getStatsForLevel(baseHp, baseAtk, baseMp, creature.level, baseDef);
     let hpDiff = stats.maxHp - creature.maxHp;
     const mpDiff = stats.maxMp - (creature.maxMp || 0);
     creature.maxHp = stats.maxHp;
     creature.attack = stats.attack;
+    creature.defense = stats.defense;
     creature.maxMp = stats.maxMp;
     // Re-apply meta progression bonuses after level-up stat recalculation
     if (metaMults) {
@@ -176,6 +212,7 @@ export function addXpToCreature(creature, xp, metaMults = null) {
       level: creature.level,
       maxHp: stats.maxHp,
       attack: stats.attack,
+      defense: stats.defense,
       maxMp: stats.maxMp,
       hpGain: hpDiff,
       mpGain: mpDiff,
@@ -185,8 +222,28 @@ export function addXpToCreature(creature, xp, metaMults = null) {
   return levelUps;
 }
 
-export function calculateCreatureDamage(attack, abilityPower, elementMultiplier, variance) {
-  return Math.max(1, Math.floor((attack / 10) * abilityPower * elementMultiplier * variance));
+/**
+ * Damage formula (level-aware, DEF mitigates):
+ * floor(((2*Lv/5 + 2) * Power * ATK / DEF) / 10 + 2) * typeMult * variance
+ * typeMult combines element effectiveness × STAB (and item element edge when applied upstream).
+ */
+export function calculateCreatureDamage({
+  attackerLevel,
+  attack,
+  defenderDefense,
+  power,
+  typeMultiplier,
+  variance
+}) {
+  const def = Math.max(1, Math.floor(Number(defenderDefense) || 1));
+  const atk = Math.max(1, Math.floor(Number(attack) || 1));
+  const lvl = Math.max(1, Number(attackerLevel) || 1);
+  const pow = Math.max(1, Number(power) || 1);
+  const inner = (2 * lvl / 5 + 2) * pow * atk / def;
+  const base = Math.floor(inner / 10 + 2);
+  const tm = Number(typeMultiplier) > 0 ? typeMultiplier : 1;
+  const v = Number(variance) > 0 ? variance : 1;
+  return Math.max(1, Math.floor(base * tm * v));
 }
 
 export function rollVariance() {
@@ -226,26 +283,18 @@ const PARTY_SIZE_MULTIPLIERS = {
   3: 0.85
 };
 
-/**
- * Stage-1 (and starter) areas: keep wild enemies at Lv 1–2 so they stay below/ahead of
- * a Lv5 starter party without run-wide grind on the same formula.
- */
-export function clampEarlyAreaEnemyLevel(level, stage) {
-  if (stage == null || stage > 1) return level;
-  return Math.min(Math.max(1, level), 2);
-}
-
-export function getEnemyLevel({ totalEncounters = 0, enemyCount = 1, stage = null } = {}) {
-  // Start early fights around level 2, then ramp with a gentle linear term
-  // plus a quadratic acceleration term for later runs.
-  const base = 2 + totalEncounters / 2 + Math.pow(totalEncounters / 25, 2);
+export function getEnemyLevel({ totalEncounters = 0, enemyCount = 1 } = {}) {
+  // Base ~1 for totalEncounters 0–1 (first exploration steps), so party multipliers + variance
+  // naturally land on Lv 1–2 early. Linear ramp uses (totalEncounters - 1) so scaling kicks in
+  // from the second counted room onward; quadratic term adds late-run acceleration.
+  const quad = Math.pow(totalEncounters / 25, 2);
+  const linear = Math.max(0, totalEncounters - 1) / 2;
+  const base = 1 + linear + quad;
   const sizeMultiplier = PARTY_SIZE_MULTIPLIERS[enemyCount] || 1.0;
   // Keep some randomness, but small enough that "later fights feel harder"
   // instead of occasionally regressing due to variance overwhelming the +0.5/encounter slope.
   const variance = Math.floor(Math.random() * 3) - 1; // -1 to +1
-  let level = Math.max(1, Math.round((base * sizeMultiplier) + variance));
-  level = clampEarlyAreaEnemyLevel(level, stage);
-  return level;
+  return Math.max(1, Math.round(base * sizeMultiplier + variance));
 }
 
 export function generateEnemyCreature(targetLevel, creaturePool = null, stage = null) {
@@ -353,8 +402,7 @@ export function generateEnemyCreatures(highestAllyLevel = 1, { maxEnemies, creat
   for (let i = 0; i < enemyCount; i++) {
     const targetLevel = getEnemyLevel({
       totalEncounters: totalEncounters || 0,
-      enemyCount,
-      stage: stage ?? null
+      enemyCount
     });
     enemies.push(generateEnemyCreature(targetLevel, creaturePool, stage));
   }

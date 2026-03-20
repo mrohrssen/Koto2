@@ -287,6 +287,20 @@ function updateStatusBar() {
     dom.areaHeaderPill.classList.remove('visible');
   }
   dom.essenceDisplay.textContent = gameState.meta?.essence || gameState.player?.essence || 0;
+
+  // Room X / total in current area (fixed 30-room layout)
+  const rpb = dom.roomProgressBadge;
+  if (rpb) {
+    const r = gameState.run;
+    if (r?.active && Array.isArray(r.rooms) && r.rooms.length > 0) {
+      const total = r.totalRooms || r.rooms.length;
+      const idx = Number.isInteger(r.currentRoom) ? r.currentRoom : 0;
+      const current = Math.min(idx + 1, total);
+      rpb.textContent = `${current}/${total}`;
+    } else {
+      rpb.textContent = '';
+    }
+  }
 }
 
 function updateScene() {
@@ -408,10 +422,11 @@ function updateGameContent() {
       explorationUI.renderNpcBattleSkillSelection({
         onSkillChosen: async (skillId) => {
           const result = await apiNpcBattleSkillChoose(skillId);
-          if (result?.state) {
-            updateGameState(result.state);
-            updateUI();
+          if (!result?.state) {
+            throw new Error(result?.error || 'No game state from server');
           }
+          updateGameState(result.state);
+          updateUI();
         },
         fetchOffers: apiNpcBattleSkillOffers
       });
@@ -731,6 +746,7 @@ function showCollectionSelect(catalog, collection) {
               <div class="cc-creature-stats">
                 <span class="cc-stat"><span class="cc-stat-val">${r.baseHp}</span>&nbsp;<span class="cc-stat-lbl">HP</span></span>
                 <span class="cc-stat"><span class="cc-stat-val">${r.baseAttack}</span>&nbsp;<span class="cc-stat-lbl">ATK</span></span>
+                <span class="cc-stat"><span class="cc-stat-val">${r.baseDefense ?? 5}</span>&nbsp;<span class="cc-stat-lbl">DEF</span></span>
                 <span class="cc-stat"><span class="cc-stat-val">${r.baseMp || '?'}</span>&nbsp;<span class="cc-stat-lbl">MP</span></span>
                 <span class="cc-stat"><span class="cc-stat-lbl">${RARITY_LABELS[r.rarity] || r.rarity}</span></span>
                 <span class="cc-stat"><span class="cc-stat-lbl">${r.pointCost} pts</span></span>
@@ -1051,6 +1067,16 @@ async function openCreatureEquipView() {
   function renderCreatureEquipContent() {
     const active = party.active || [];
     const reserves = party.reserves || [];
+    /** Match combat + creature-row: item food/equipment attackMult */
+    const atkMult = Number(gameState.run?.itemBuffs?.attackMult) || 1;
+    const displayAtk = (base) => {
+      const n = Math.max(1, Math.floor(Number(base) || 0));
+      const raw = n * atkMult;
+      if (atkMult <= 1) return Math.max(1, Math.floor(raw));
+      let o = Math.floor(raw);
+      if (o === n && raw > n + 1e-9) o = n + 1;
+      return Math.max(1, o);
+    };
 
     const ELEMENT_ICONS = creatureRow.ELEMENT_ICONS || { wood: '🌿', fire: '🔥', earth: '⛰️', metal: '⚙️', water: '💧' };
     const ELEMENT_COLORS = creatureRow.ELEMENT_COLORS || { wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63', metal: '#9E9E9E', water: '#2196F3' };
@@ -1065,7 +1091,7 @@ async function openCreatureEquipView() {
           <img class="creature-equip-sprite" data-creature-id="${creature.id}" alt="">
           <div class="creature-equip-info">
             <div class="creature-equip-name">${ELEMENT_ICONS[creature.element] || ''} ${creature.nameEn} ${rarityStars(creature.rarity)} <span style="opacity:0.6">Lv${creature.level}</span></div>
-            <div class="creature-equip-stats">HP: ${creature.hp}/${creature.maxHp} | ATK: ${creature.attack}</div>
+            <div class="creature-equip-stats">HP: ${creature.hp}/${creature.maxHp} | ATK: ${displayAtk(creature.attack)}</div>
             <div class="creature-hp-bar" style="width:100%;height:4px;margin-top:2px">
               <div class="creature-hp-fill" style="width:${hpPct}%;background-color:${getHpColor(hpPct)}"></div>
             </div>
@@ -1083,7 +1109,7 @@ async function openCreatureEquipView() {
           <img class="creature-equip-sprite" data-creature-id="${creature.id}" alt="">
           <div class="creature-equip-info">
             <div class="creature-equip-name">${ELEMENT_ICONS[creature.element] || ''} ${creature.nameEn} ${rarityStars(creature.rarity)} <span style="opacity:0.6">Lv${creature.level}</span></div>
-            <div class="creature-equip-stats">HP: ${creature.hp}/${creature.maxHp} | ATK: ${creature.attack}</div>
+            <div class="creature-equip-stats">HP: ${creature.hp}/${creature.maxHp} | ATK: ${displayAtk(creature.attack)}</div>
             <div class="creature-hp-bar" style="width:100%;height:4px;margin-top:2px">
               <div class="creature-hp-fill" style="width:${hpPct}%;background-color:${getHpColor(hpPct)}"></div>
             </div>

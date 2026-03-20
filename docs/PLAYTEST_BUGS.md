@@ -100,3 +100,21 @@ Format per entry:
 - `What I’m seeing`: ATK line used base `creature.attack` while combat used `attackMult`; `hpMult` buffs updated `itemBuffs` but did not scale party `maxHp`/`hp`, so equipment HP had no effect.
 - `Expected`: Popup (and party) reflect effective ATK and HP after equipment.
 - `Resolution (code)`: Scale party HP when `hpMult` increases in `applyItem`; popup ATK uses `run.itemBuffs.attackMult` (`creature-row.js` + `game.js` init).
+
+### Bug 14: Unowned collection cells show full-color text sprite (should be greyed out)
+- `When/Context`: Team select / collection grid; creature not in collection (`unowned`).
+- `DOM Path`: `div.game-app > div.collection-select > div.collection-grid > div.collection-cell.unowned[1] > div.text-sprite.metal`
+- `Position`: `top=197px, left=344px, width=64px, height=64px` (example from playtest)
+- `HTML Element`: `<div class="text-sprite metal" data-cursor-element-id="cursor-el-1">鉄</div>`
+- `What I’m seeing`: Unknown/unowned slots render the kanji text sprite in **full element color** (same as owned).
+- `Expected`: Unowned creatures should show a **greyed-out** (silhouette / desaturated) version of their sprite — not the full-color treatment — so locked entries read clearly as not yet befriended. (Note: `.collection-cell.unowned img` already uses a dark/grey filter in CSS; **text sprites** are `div.text-sprite` and are not covered by that rule.)
+- `Resolution (code)`: `public/game.css` — `.collection-cell.unowned .text-sprite { filter: grayscale(1) brightness(0.55); opacity: 0.85; }`
+
+### Bug 15: Creature row slot shows bootstrap JP line (`bs-word` / `ひhi fire`) — remove from combat UI
+- `When/Context`: Combat; bottom creature party row (`#creature-row`), inside a filled slot.
+- `DOM Path`: `div.game-app > div#creature-row > div.creature-slot > div.creature-icon > span.creature-subtitle > span.bs-word`
+- `Position`: `top=314px, left=368px, width=25px, height=25px` (example)
+- `HTML Element`: `<span class="bs-word" data-cursor-element-id="cursor-el-177">ひhi fire</span>` (ruby/romaji/English from `renderJpFirst` in `public/js/ui/creature-row.js`)
+- `What I’m seeing`: Extra subtitle line under the creature name on each slot; reads like vocabulary bootstrap, not desired on the row.
+- `Expected`: **Do not render** this line on the creature slot (remove `creature-subtitle` markup / `renderJpFirst` usage for the row only, or equivalent). Popup subtitle behavior can stay or be decided separately.
+- `Resolution (code)`: `public/js/ui/creature-row.js` — removed slot `creature-subtitle` / `renderJpFirst` block from combat row; popup still uses `creature-popup-subtitle` + `renderJpFirst`.
