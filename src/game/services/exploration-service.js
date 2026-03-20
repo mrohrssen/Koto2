@@ -72,7 +72,11 @@ function randomAreaBg(areaId) {
  */
 function getBackgroundForRoom(room, areaId) {
   const activeRoom = Array.isArray(room) ? room[0] : room;
-  return activeRoom?.subArea?.background || randomAreaBg(areaId);
+  if (activeRoom?.subArea?.background) return activeRoom.subArea.background;
+  // Fall back to area-level background if available
+  const area = getAreaById(areaId);
+  if (area?.background) return area.background;
+  return randomAreaBg(areaId);
 }
 
 function calculateDiscoveryXpForRun(run) {
