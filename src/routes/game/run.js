@@ -627,7 +627,7 @@ export default function createRunRoutes({
   // Friendly NPC: choose one offered item
   router.post('/friendly-npc-choose', async (req, res) => {
     try {
-      const { itemId } = req.body;
+      const { itemId, targetCreatureIndex } = req.body;
       if (!itemId) {
         return res.status(400).json({ error: 'itemId required' });
       }
@@ -647,7 +647,8 @@ export default function createRunRoutes({
         return res.status(400).json({ error: 'Invalid item choice' });
       }
       // Apply item effect to run state
-      applyItem(item, gm.run.creatureParty, gm.run.itemBuffs);
+      const targetIdx = Number.isInteger(targetCreatureIndex) ? targetCreatureIndex : null;
+      applyItem(item, gm.run.creatureParty, gm.run.itemBuffs, targetIdx);
       room.friendlyNpc.chosenId = itemId;
       room.friendlyNpc.completed = true;
       room.interacted = true;

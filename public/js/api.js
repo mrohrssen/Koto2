@@ -584,8 +584,10 @@ async function getFriendlyNpcOffers() {
 }
 
 /** Choose one item from the friendly NPC's offers */
-async function chooseFriendlyNpcItem(itemId) {
-  return apiCall('/friendly-npc-choose', 'POST', { itemId });
+async function chooseFriendlyNpcItem(itemId, targetCreatureIndex = null) {
+  const body = { itemId };
+  if (targetCreatureIndex !== null) body.targetCreatureIndex = targetCreatureIndex;
+  return apiCall('/friendly-npc-choose', 'POST', body);
 }
 
 // ============ NPC BATTLE SKILL REWARD ENDPOINTS ============

@@ -1220,33 +1220,54 @@ export async function renderFriendlyNpc() {
       card.classList.add('selected');
       card.style.opacity = '1';
 
-      let result;
-      try {
-        result = await apiChooseFriendlyNpcItem?.(itemId);
-      } catch (err) {
-        friendlyNpcState.choosing = false;
-        cards.forEach(c => {
-          c.style.pointerEvents = '';
-          c.style.opacity = '';
+      // Show creature targeting UI
+      const gameState = getGameState();
+      const party = gameState.run?.creatureParty?.active || [];
+      const creatureCards = party.map((creature, idx) => {
+        if (!creature) return '';
+        const hpPct = Math.round((creature.hp / creature.maxHp) * 100);
+        return `
+          <div class="shop-item-card creature-target-card" data-creature-index="${idx}"
+               style="cursor:pointer;text-align:center;padding:12px;">
+            <div style="font-weight:800;font-size:16px;">${creature.name}</div>
+            <div style="font-size:12px;color:var(--text-secondary);">${creature.nameEn} Lv.${creature.level}</div>
+            <div style="font-size:11px;margin-top:4px;">HP: ${creature.hp}/${creature.maxHp} (${hpPct}%)</div>
+          </div>
+        `;
+      }).join('');
+
+      actions.setContent(`
+        <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:420px;">
+          <div style="text-align:center;font-weight:800;">どのクリーチャーに？</div>
+          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">Choose a creature.</div>
+          <div class="shop-items" style="gap:10px">${creatureCards}</div>
+        </div>
+      `);
+
+      document.querySelectorAll('.creature-target-card').forEach(tCard => {
+        tCard.addEventListener('click', async () => {
+          const targetIdx = parseInt(tCard.dataset.creatureIndex, 10);
+          tCard.classList.add('selected');
+          document.querySelectorAll('.creature-target-card').forEach(c => {
+            c.style.pointerEvents = 'none';
+          });
+
+          let result;
+          try {
+            result = await apiChooseFriendlyNpcItem?.(itemId, targetIdx);
+          } catch (err) {
+            friendlyNpcState.choosing = false;
+            sceneModule?.showNarration?.('Failed to choose item.', { autoDismiss: 1800 });
+            renderFriendlyNpc();
+            return;
+          }
+
+          if (result?.state) {
+            updateGameState(result.state);
+            updateUI();
+          }
         });
-        card.classList.remove('selected');
-        sceneModule?.showNarration?.('Failed to choose item.', { autoDismiss: 1800 });
-        return;
-      }
-
-      if (result?.state) {
-        updateGameState(result.state);
-        updateUI();
-        return;
-      }
-
-      friendlyNpcState.choosing = false;
-      cards.forEach(c => {
-        c.style.pointerEvents = '';
-        c.style.opacity = '';
       });
-      card.classList.remove('selected');
-      sceneModule?.showNarration?.('Failed to choose item.', { autoDismiss: 1800 });
     });
   });
 }

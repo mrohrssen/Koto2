@@ -236,3 +236,38 @@ describe('Item Buffs - Temp Boost', () => {
     assert.strictEqual(r1.attack, 10, 'attack should not be permanently modified');
   });
 });
+
+describe('Item Buffs - Target Index', () => {
+  it('applyItem with targetIndex applies heal to specific creature', () => {
+    const party = {
+      active: [
+        { id: 'hi', hp: 30, maxHp: 50, mp: 50, maxMp: 50 },
+        { id: 'mizu', hp: 50, maxHp: 50, mp: 50, maxMp: 50 },
+        null
+      ],
+      reserves: []
+    };
+    const itemBuffs = createItemBuffs();
+    const item = { type: 'heal', effect: { healPercent: 0.5 } };
+    applyItem(item, party, itemBuffs, 0);
+    // 30 + floor(50*0.5) = 55, capped at maxHp 50
+    assert.strictEqual(party.active[0].hp, 50);
+    assert.strictEqual(party.active[1].hp, 50); // untouched
+  });
+
+  it('applyItem with targetIndex revives specific KOd creature', () => {
+    const party = {
+      active: [
+        { id: 'hi', hp: 0, maxHp: 50, mp: 50, maxMp: 50 },
+        { id: 'mizu', hp: 0, maxHp: 50, mp: 50, maxMp: 50 },
+        null
+      ],
+      reserves: []
+    };
+    const itemBuffs = createItemBuffs();
+    const item = { type: 'revive', effect: { revivePercent: 1.0 } };
+    applyItem(item, party, itemBuffs, 0);
+    assert.strictEqual(party.active[0].hp, 50); // revived at full
+    assert.strictEqual(party.active[1].hp, 0); // still KO
+  });
+});

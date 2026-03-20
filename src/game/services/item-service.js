@@ -61,16 +61,19 @@ function applyStat(field, value, itemBuffs) {
 }
 
 
-export function applyItem(item, creatureParty, itemBuffs) {
+export function applyItem(item, creatureParty, itemBuffs, targetIndex = null) {
   const allCreatures = [...creatureParty.active, ...creatureParty.reserves].filter(Boolean);
+  const targetCreature = targetIndex !== null ? creatureParty.active[targetIndex] : null;
 
   if (item.type === 'heal') {
     if (item.effect.healPercent) {
-      const alive = allCreatures.filter(r => r.hp > 0);
-      if (alive.length > 0) {
-        const lowest = alive.reduce((min, r) => r.hp < min.hp ? r : min, alive[0]);
-        const heal = Math.floor(lowest.maxHp * item.effect.healPercent);
-        lowest.hp = Math.min(lowest.maxHp, lowest.hp + heal);
+      const target = targetCreature && targetCreature.hp > 0 ? targetCreature : (() => {
+        const alive = allCreatures.filter(r => r.hp > 0);
+        return alive.length > 0 ? alive.reduce((min, r) => r.hp < min.hp ? r : min, alive[0]) : null;
+      })();
+      if (target && target.hp > 0) {
+        const heal = Math.floor(target.maxHp * item.effect.healPercent);
+        target.hp = Math.min(target.maxHp, target.hp + heal);
       }
     }
     if (item.effect.healAllPercent) {
@@ -91,11 +94,9 @@ export function applyItem(item, creatureParty, itemBuffs) {
   }
 
   if (item.type === 'boost') {
-    // Permanent stat boost (e.g. green tea: +2% attack)
     if (item.effect.field && item.effect.value) {
       applyStat(item.effect.field, item.effect.value, itemBuffs);
     }
-    // Temporary boost (e.g. miso soup: +3 attack for 5 turns)
     if (item.effect.tempBoost) {
       const tb = item.effect.tempBoost;
       const targets = tb.target === 'all' ? allCreatures : [allCreatures[0]];
@@ -122,8 +123,9 @@ export function applyItem(item, creatureParty, itemBuffs) {
   if (item.type === 'revive') {
     if (item.effect.revivePercent) {
       const kos = allCreatures.filter(r => r.hp <= 0);
-      if (kos.length > 0) {
-        const target = kos[Math.floor(Math.random() * kos.length)];
+      const target = (targetCreature && targetCreature.hp <= 0) ? targetCreature
+        : (kos.length > 0 ? kos[Math.floor(Math.random() * kos.length)] : null);
+      if (target) {
         target.hp = Math.floor(target.maxHp * item.effect.revivePercent);
       }
     }
