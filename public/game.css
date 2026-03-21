@@ -246,10 +246,14 @@ html, body {
   gap: 4px;
 }
 
-/* Diagonal stagger — both lean same direction (back=left, front=right) */
-.formation .formation-slot:nth-child(1) { margin-left: 24px; }
-.formation .formation-slot:nth-child(2) { margin-left: 36px; }
-.formation .formation-slot:nth-child(3) { margin-left: 48px; }
+/* Diagonal stagger — player leans right, enemy leans left */
+.player-formation .formation-slot:nth-child(1) { margin-left: 12px; }
+.player-formation .formation-slot:nth-child(2) { margin-left: 24px; }
+.player-formation .formation-slot:nth-child(3) { margin-left: 36px; }
+
+.enemy-formation .formation-slot:nth-child(1) { margin-right: 12px; }
+.enemy-formation .formation-slot:nth-child(2) { margin-right: 24px; }
+.enemy-formation .formation-slot:nth-child(3) { margin-right: 36px; }
 
 /* Subtle depth scaling: back 90%, mid 95%, front 100% */
 .formation .formation-slot:nth-child(1) { transform: scale(0.9); }
@@ -436,8 +440,8 @@ html, body {
   z-index: 2;
   display: none;
   align-items: flex-end;
-  justify-content: center;
-  padding-top: 40px;
+  justify-content: flex-end;
+  padding: 40px 24px 8px;
 }
 
 .npc-display.visible {
