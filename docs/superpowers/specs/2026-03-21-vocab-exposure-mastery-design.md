@@ -50,6 +50,8 @@ Track every time a Japanese word is shown alongside its English meaning. After 5
 }
 ```
 
+**Important: `loadSrsData()` and `saveSrsData()` must be extended.** The existing functions only serialize/deserialize `data.kana.cards` dates. They must also handle `data.vocab.cards` — serialize `due` and `last_review` Date objects to ISO strings on save, and deserialize them back on load. Without this, vocab card dates will be lost on server restart.
+
 **Vocab card shape:**
 
 ```js
@@ -168,9 +170,6 @@ reviewVocabCard(userId, word, grade)
 
 getVocabDueCount(userId)
   → Returns count of due vocab cards (for hub badge).
-
-getVocabDueCount(userId)
-  → Returns count of due vocab cards (for hub badge).
 ```
 
 ### Mastery State
@@ -182,7 +181,7 @@ A word is **mastered** after its first "good" grade in speed review — English 
 **Implementation:** The simplest approach — when a vocab card is graded "good", add the word to the `known` map in `word-knowledge-{userId}.json` via `markKnown(wk, word)`. This is already the mechanism that `_knownWords` is populated from. No new mastery tracking field needed.
 
 **Un-mastery on failure:** When a vocab card is graded "again" in a future review:
-- Remove the word from the `known` map in word-knowledge
+- Remove the word from the `known` map in word-knowledge (requires a new `unmarkKnown(wk, wordId)` function in `word-knowledge.js` — `delete wk.known[wordId]`)
 - Reset `seen[word].exposures` to 0 (or add an `exposuresSinceLastReview` field)
 - English starts showing again in gameplay
 - After 5 more exposures, card becomes due again
@@ -227,33 +226,33 @@ Two options for tracking "5 exposures since last failure":
 
 ### Rendering Surfaces to Consolidate
 
-These locations currently render Japanese + English without going through `renderJpFirst()` and need to be updated:
+These locations currently render Japanese + English without going through `renderJpFirst()` and need to be updated. Search for the pattern described to find the exact lines (line numbers drift):
 
-| File | Lines | Current Pattern | What to Change |
-|------|-------|-----------------|----------------|
-| `creature-row.js` | 234 | `${name} (${nameEn})` in popup title | Use `renderJpFirst(name, baseReading, nameEn)` |
-| `creature-row.js` | 248 | `${m.name} (${m.nameEn})` in popup moves | Use `renderJpFirst(m.name, m.reading, m.nameEn)` |
-| `creature-row.js` | 96 | `${item.word} (${item.nameEn})` in equipment | Use `renderJpFirst(item.word, item.reading, item.nameEn)` |
-| `target-select.js` | 88-94 | Separate divs for JP and EN name | Use `renderJpFirst()` in single div |
-| `post-combat-shop.js` | 141 | `${baseReading} (${nameEn})` | Use `renderJpFirst()` |
-| `exploration.js` | 1189-1190 | Separate lines for item word + nameEn | Use `renderJpFirst()` |
-| `exploration.js` | 1233-1234 | Separate divs for creature JP + EN | Use `renderJpFirst()` |
-| `exploration.js` | 539 | `${nameEn} Lv.${level}` | Use `renderJpFirst()` + level |
-| `combat-loop.js` | 2425 | `${nameEn} (Lv${level})` | Use `renderJpFirst()` + level |
+| File | Context | Current Pattern | What to Change |
+|------|---------|-----------------|----------------|
+| `creature-row.js` | Creature popup title | `${creature.name} (${creature.nameEn})` | Use `renderJpFirst(creature.name, creature.baseReading, creature.nameEn)` |
+| `creature-row.js` | Popup move list | `${m.name} (${m.nameEn})` | Use `renderJpFirst(m.name, m.reading, m.nameEn)` |
+| `creature-row.js` | Popup equipment list | `${item.word} (${item.nameEn})` | Use `renderJpFirst(item.word, item.reading, item.nameEn)` |
+| `target-select.js` | Target creature name | Separate divs: `target.name` + `target.nameEn` | Use `renderJpFirst()` in single element |
+| `post-combat-shop.js` | Creature target selection | `${c.baseReading} (${c.nameEn})` | Use `renderJpFirst()` |
+| `exploration.js` | Friendly NPC item card | Separate divs: `item.word` + `item.nameEn` | Use `renderJpFirst()` |
+| `exploration.js` | Friendly NPC creature target | Separate divs: `creature.name` + `creature.nameEn` | Use `renderJpFirst()` |
+| `exploration.js` | Shrine upgrade creature card | `${creature.nameEn} Lv.${creature.level}` | Use `renderJpFirst()` + level |
+| `combat-loop.js` | Multi-enemy picker buttons | `${r.nameEn} (Lv${r.level})` | Use `renderJpFirst()` + level |
 
 **Surfaces that show English-only (no Japanese alongside) — no change needed:**
-- `creature-row.js` lines 259, 271 (reserve/rearrange buttons — `nameEn` only)
-- `economy.js` lines 63, 90 (dealer — `nameEn` only)
-- `move-select.js` line 173 (active creature label — `nameEn` only)
-- `combat-loop.js` lines 2651, 2728 (befriend confirmation — `nameEn` only)
+- `creature-row.js` — reserve swap and rearrange buttons (`nameEn` only)
+- `economy.js` — dealer buy/sell cards (`nameEn` only)
+- `move-select.js` — active creature turn label (`nameEn` only)
+- `combat-loop.js` — befriend confirmation text (`nameEn` only)
 
-**Surfaces already using `renderJpFirst()` — no change needed:**
-- `move-select.js` line 57 (move cells)
-- `move-learn.js` lines 27, 98 (move learn prompt)
-- `target-select.js` line 46 (move target header)
-- `combat-loop.js` lines 100, 198 (split attack cards)
-- `post-combat-shop.js` lines 55, 101-104 (shop item cards)
-- `creature-row.js` lines 227-231 (popup subtitle)
+**Surfaces already using `renderJpFirst()` — just need exposure tracking added (already covered by the `renderJpFirst` change):**
+- `move-select.js` — move cells
+- `move-learn.js` — move learn prompt, replacement list
+- `target-select.js` — move target header
+- `combat-loop.js` — split attack cards (base word + skill name)
+- `post-combat-shop.js` — shop item cards, item help popup
+- `creature-row.js` — popup subtitle (base word + modifier)
 
 ### What's NOT Changing
 
