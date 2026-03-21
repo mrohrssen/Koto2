@@ -103,6 +103,7 @@ import { configureCreatureImg, creatureSpritePath, probeIdleSprites } from './js
 import { showDialogueChoices } from './js/ui/dialogue-choices.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, renderEnFirst, renderJpFirst, flushExposures } from './js/ui/bootstrap-client.js';
+import { enterEnemiesOneByOne, playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
 
 // API imports - these are the server communication functions
 import {
@@ -471,6 +472,7 @@ async function autoProceed() {
     const result = await apiProceed();
     if (result?.state) {
       updateGameState(result.state);
+      await playRoomTransition(result.state);
       updateUI();
     }
   } finally {
@@ -920,8 +922,25 @@ async function startEncounter() {
   encounterStarting = false;
   if (result?.state) {
     updateGameState(result.state);
+
+    // For NPC battles: play NPC intro before rendering combat
+    if (result?.npc && hasCreatures) {
+      await playNpcBattleIntro(
+        result.npc,
+        (name, id, npc) => scene.showNpcTrainer(name, id, npc),
+        () => scene.hideNpcTrainer()
+      );
+    }
+
+    // Hide enemy formation before updateUI to prevent visual flash
+    if (hasCreatures && gameState.combat?.enemies?.length) {
+      const ef = document.getElementById('enemy-formation');
+      if (ef) ef.style.visibility = 'hidden';
+    }
+
     updateUI();
-    // Creature encounters don't have possessed dialogue
+
+    // Non-creature encounters: show possessed dialogue (legacy path)
     if (!hasCreatures) {
       const enemy = gameState.combat?.enemy;
       if (result?.dialogue || enemy?.dialogue?.possessed) {
@@ -931,10 +950,14 @@ async function startEncounter() {
         await showEnemyDialogue(text, 'possessed');
       }
     }
-    // Show NPC greeting before combat starts
-    if (result?.npc) {
-      await combatLoopUI.showNpcGreeting(result.npc);
+
+    // Creature encounters: animate enemies entering one-by-one
+    if (hasCreatures && gameState.combat?.enemies?.length) {
+      const ef = document.getElementById('enemy-formation');
+      if (ef) ef.style.visibility = 'visible';
+      await enterEnemiesOneByOne(gameState.combat.enemies);
     }
+
     await delay(300);
     startCombatLoop();
   }
