@@ -331,7 +331,7 @@ export function renderHub() {
   const tokens = gameState.meta?.progressionTokens || 0;
 
   actions.setContent(`
-    <div style="display:flex;flex-direction:column;align-items:stretch;gap:12px;align-self:stretch;width:100%;max-width:340px;box-sizing:border-box;">
+    <div style="display:flex;flex-direction:column;align-items:stretch;gap:12px;width:100%;max-width:340px;margin:0 auto;box-sizing:border-box;">
       <button class="action-btn action-btn-secondary" id="speed-review-btn">\uD83D\uDCDA 速習</button>
       <button class="action-btn action-btn-secondary" id="upgrades-btn">\u2B06\uFE0F 強化${tokens > 0 ? ` (${tokens})` : ''}</button>
       <button class="action-btn action-btn-primary" id="context-action-btn">\u26A1 潜入</button>
