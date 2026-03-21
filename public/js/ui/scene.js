@@ -3,52 +3,44 @@
  *
  * PURPOSE:
  * Manages the main scene area including background images, enemy/NPC sprites,
- * HP bars, toast notifications, and floating damage numbers. Provides the
- * visual context for combat and exploration phases.
+ * formation rendering, HP bars, toast notifications, and floating damage numbers.
+ * Provides the visual context for combat and exploration phases.
  *
  * KEY EXPORTS:
  * - setBackground(imagePath): Set scene background image
- * - showEnemy(enemy): Display enemy sprite and HP bar
+ * - showFormation(side, creatures): Render creatures into a formation container
+ * - showPlayerFormation(creatures): Render player party into player formation
+ * - hideFormation(side): Clear a formation container
+ * - showEnemy(enemy): Display enemy (creature via formation, NPC via npc-display)
  * - hideEnemy(): Remove enemy from scene
+ * - showEnemies(enemies): Display multiple enemy creatures via formation
+ * - hideEnemies(): Remove all enemies from scene
  * - showShrineFox(): Display shrine fox NPC (no HP bar)
  * - showQuizMaster(): Display quiz master NPC (no HP bar)
  * - showWordDiscoveryNpc(): Display knowledge spirit NPC (no HP bar)
  * - showDealer(): Display creature dealer NPC (no HP bar)
  * - updateEnemyHP(current, max): Update enemy HP bar fill
  * - showToast(message, durationMs): Show auto-dismissing notification
- * - showDamageNumber(amount, { isCrit, isHeal, tierClass }): Floating damage text
+ * - showDamageNumber(amount, { isCrit, isHeal, tierClass, targetEl }): Floating damage text
  *
  * DEPENDENCIES:
  * - ../dom.js: DOM element references (sceneBackground, enemySprite, etc.)
  *
  * SPRITE LOADING:
- * - Enemy sprites load from /assets/sprites/enemies/{id}.webp
- * - Creature sprites load from /assets/sprites/creatures/{id}.webp
+ * - NPC sprites load from /assets/sprites/enemies/{id}.webp or /assets/sprites/npcs/{id}.webp
+ * - Creature sprites use text-sprite placeholders (baseWord + element color)
  * - Falls back to emoji placeholder based on enemy personality if load fails
  */
 
 import { dom } from '../dom.js';
-import { configureCreatureImg, createTextSprite } from './sprite-utils.js';
+import { createTextSprite } from './sprite-utils.js';
 import { renderJpFirst, esc as escHtml } from './bootstrap-client.js';
 import { toRomaji } from './romaji.js';
 
-const ELEMENT_ICONS = {
-  wood: '\u{1F33F}', fire: '\u{1F525}', earth: '\u26F0\uFE0F', metal: '\u2699\uFE0F', water: '\u{1F4A7}'
-};
-
-const ELEMENT_COLORS = {
-  wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63', metal: '#9E9E9E', water: '#2196F3'
-};
-
-/** Render creature name as hiragana with romaji ruby — matches creature-slot-name style */
+/** Render creature name as hiragana with romaji ruby -- matches creature-slot-name style */
 function creatureNameRuby(creature) {
   const reading = creature.baseReading || creature.name || '';
   return `<ruby>${reading}<rt>${toRomaji(reading)}</rt></ruby>`;
-}
-
-function rarityStars(rarity) {
-  const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity];
-  return n ? `<span style="color:#FFD700">${n}★</span>` : '';
 }
 
 /** Set scene background image */
@@ -60,7 +52,105 @@ export function setBackground(imagePath) {
   }
 }
 
-/** Show enemy in scene */
+/* ------------------------------------------------------------------ */
+/*  Formation rendering                                                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Render creatures into a formation container (player or enemy side).
+ * @param {'player'|'enemy'} side
+ * @param {Array} creatures - array of 1-3 creature objects
+ */
+export function showFormation(side, creatures) {
+  const container = side === 'player' ? dom.playerFormation : dom.enemyFormation;
+  container.innerHTML = '';
+
+  if (!creatures || creatures.length === 0) return;
+
+  // Slot placement: 1->middle, 2->top+bottom, 3->all three
+  let slots;
+  if (creatures.length === 1) {
+    slots = [null, creatures[0], null];
+  } else if (creatures.length === 2) {
+    slots = [creatures[0], null, creatures[1]];
+  } else {
+    slots = [creatures[0], creatures[1], creatures[2]];
+  }
+
+  slots.forEach((creature, visualIndex) => {
+    if (!creature) return;
+
+    const dataIndex = creatures.indexOf(creature);
+    const slotEl = document.createElement('div');
+    slotEl.className = 'formation-slot';
+    slotEl.dataset.index = dataIndex;
+    slotEl.dataset.creatureId = creature.id || '';
+
+    // Sprite
+    const spriteEl = document.createElement('div');
+    spriteEl.className = 'formation-sprite';
+    if (creature.currentHp <= 0 || creature.hp <= 0) spriteEl.classList.add('ko');
+    if (creature.spriteImg) {
+      const img = document.createElement('img');
+      img.src = creature.spriteImg;
+      img.alt = creature.name || '';
+      img.style.maxWidth = '100%';
+      img.style.maxHeight = '100%';
+      img.style.objectFit = 'contain';
+      spriteEl.appendChild(img);
+    } else {
+      // Use text-sprite style: baseWord with element color
+      const textSprite = createTextSprite(creature.baseWord || creature.name, creature.element);
+      textSprite.style.width = '100%';
+      textSprite.style.height = '100%';
+      textSprite.style.fontSize = '1.4rem';
+      spriteEl.appendChild(textSprite);
+    }
+    slotEl.appendChild(spriteEl);
+
+    // Name
+    const nameEl = document.createElement('div');
+    nameEl.className = 'formation-slot-name';
+    nameEl.innerHTML = creatureNameRuby(creature);
+    slotEl.appendChild(nameEl);
+
+    // HP bar
+    const hpBar = document.createElement('div');
+    hpBar.className = 'formation-hp-bar';
+    const hpFill = document.createElement('div');
+    hpFill.className = 'formation-hp-fill';
+    const curHp = creature.currentHp ?? creature.hp ?? 0;
+    const maxHp = creature.maxHp ?? 1;
+    const hpPct = maxHp > 0 ? Math.max(0, curHp / maxHp * 100) : 0;
+    hpFill.style.width = hpPct + '%';
+    hpFill.style.backgroundColor = hpPct > 50 ? 'var(--hp-green)' : hpPct > 25 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+    hpBar.appendChild(hpFill);
+    slotEl.appendChild(hpBar);
+
+    // Charged state
+    if (creature.ultimateCharge >= (creature.ultimateChargeMax || 100)) {
+      slotEl.classList.add('charged');
+      spriteEl.classList.add('charged');
+    }
+
+    container.appendChild(slotEl);
+  });
+}
+
+export function showPlayerFormation(creatures) {
+  showFormation('player', creatures);
+}
+
+export function hideFormation(side) {
+  const container = side === 'player' ? dom.playerFormation : dom.enemyFormation;
+  container.innerHTML = '';
+}
+
+/* ------------------------------------------------------------------ */
+/*  Enemy display                                                      */
+/* ------------------------------------------------------------------ */
+
+/** Show enemy in scene - creatures use formation, NPCs use npc-display */
 export function showEnemy(enemy) {
   if (!enemy) {
     hideEnemy();
@@ -70,46 +160,23 @@ export function showEnemy(enemy) {
   // Check if this is a creature (has element property)
   const isCreature = !!enemy.element;
 
-  // Remove any previous compact overlays
-  removeCompactOverlays();
-
   if (isCreature) {
-    // Use compact display (same style as multi-enemy) — hide the big info pill
+    // Use formation display -- hide the NPC display and info pill
+    dom.npcDisplay.classList.remove('visible');
+    dom.enemySprite.src = '';
+    dom.enemySprite.classList.remove('visible');
     dom.enemyInfo.classList.remove('visible');
     dom.enemyHpBar.style.display = 'none';
     dom.enemyName.textContent = '';
-    dom.enemySpriteContainer.style.borderColor = ELEMENT_COLORS[enemy.element] || '';
-    dom.enemySpriteContainer.classList.add('creature-enemy');
-
-    // Add compact name badge, level badge, and hp bar after sprite loads
-    const nameBadge = document.createElement('div');
-    nameBadge.className = 'enemy-creature-name-badge';
-    nameBadge.innerHTML = `${creatureNameRuby(enemy)} ${rarityStars(enemy.rarity)}`;
-    dom.enemySpriteContainer.appendChild(nameBadge);
-
-    const levelBadge = document.createElement('span');
-    levelBadge.className = 'creature-level-badge-enemy';
-    levelBadge.textContent = `Lv${enemy.level || 1}`;
-    dom.enemySpriteContainer.appendChild(levelBadge);
-
-    const hpBar = document.createElement('div');
-    hpBar.className = 'enemy-compact-hp-bar';
-    const hpPct = Math.max(0, Math.min(100, (enemy.hp / enemy.maxHp) * 100));
-    hpBar.innerHTML = `<div class="enemy-compact-hp-fill" style="width:${hpPct}%"></div>`;
-    dom.enemySpriteContainer.appendChild(hpBar);
+    showFormation('enemy', [enemy]);
   } else {
+    // NPC enemy -- show in npc-display with info pill
+    hideFormation('enemy');
+    dom.npcDisplay.classList.add('visible');
     dom.enemyName.textContent = enemy.nameEn || enemy.name || 'Enemy';
-    dom.enemySpriteContainer.style.borderColor = '';
-    dom.enemySpriteContainer.classList.remove('creature-enemy');
     dom.enemyInfo.classList.add('visible');
     updateEnemyHP(enemy.hp, enemy.maxHp);
-  }
 
-  if (isCreature && !enemy.sprite) {
-    // MVP: show text sprite immediately instead of loading an image
-    dom.enemySprite.classList.remove('visible');
-    showCreaturePlaceholder(enemy);
-  } else {
     const spritePath = enemy.sprite || `/assets/sprites/enemies/${enemy.id}.webp`;
     dom.enemySprite.src = spritePath;
     dom.enemySprite.onerror = () => {
@@ -123,88 +190,30 @@ export function showEnemy(enemy) {
   }
 }
 
-/** Update compact HP bar for single creature enemy */
-export function updateCompactEnemyHP(current, max) {
-  const fill = dom.enemySpriteContainer.querySelector('.enemy-compact-hp-fill');
-  if (fill) {
-    const pct = Math.max(0, Math.min(100, (current / max) * 100));
-    fill.style.width = `${pct}%`;
-  }
-}
-
-function removeCompactOverlays() {
-  dom.enemySpriteContainer.querySelector('.enemy-creature-name-badge')?.remove();
-  dom.enemySpriteContainer.querySelector('.creature-level-badge-enemy')?.remove();
-  dom.enemySpriteContainer.querySelector('.enemy-compact-hp-bar')?.remove();
-}
-
-/** Show multiple enemy creatures in horizontal row */
+/** Show multiple enemy creatures via formation */
 export function showEnemies(enemies) {
-  if (!enemies || enemies.length === 0) {
-    hideEnemy();
-    return;
-  }
-  if (enemies.length === 1) {
-    showEnemy(enemies[0]);
-    return;
-  }
-
-  // Clear existing single-enemy display
+  if (!enemies || enemies.length === 0) return;
+  dom.npcDisplay.classList.remove('visible');
+  dom.enemySprite.src = '';
   dom.enemySprite.classList.remove('visible');
-  removePlaceholder();
-  // Hide the single-enemy info bar entirely for multi-enemy
   dom.enemyInfo.classList.remove('visible');
   dom.enemyHpBar.style.display = 'none';
   dom.enemyName.textContent = '';
-
-  // Remove any previous multi-enemy container
-  dom.enemySpriteContainer.querySelector('.multi-enemy-row')?.remove();
-
-  const row = document.createElement('div');
-  row.className = 'multi-enemy-row';
-
-  for (let i = 0; i < enemies.length; i++) {
-    const enemy = enemies[i];
-    const icon = ELEMENT_ICONS[enemy.element] || '';
-    const color = ELEMENT_COLORS[enemy.element] || '#666';
-    const hpPct = Math.max(0, (enemy.hp / enemy.maxHp) * 100);
-
-    const slot = document.createElement('div');
-    slot.className = 'enemy-creature-slot';
-    if (enemy.befriended) slot.classList.add('befriended');
-    else if (enemy.hp <= 0) slot.classList.add('defeated');
-    slot.dataset.enemyIndex = i;
-    slot.dataset.enemyId = enemy.id;
-    slot.innerHTML = `
-      <div class="enemy-creature-icon">
-        <img class="enemy-creature-sprite" alt="">
-        <span class="enemy-creature-element" style="display:none">${icon}</span>
-        <span class="enemy-creature-level" style="background-color: ${color}">Lv${enemy.level || 1}</span>
-      </div>
-      <div class="enemy-creature-name">${creatureNameRuby(enemy)} ${rarityStars(enemy.rarity)}</div>
-      <div class="enemy-creature-hp-bar">
-        <div class="enemy-creature-hp-fill" style="width: ${hpPct}%"></div>
-      </div>
-    `;
-    const spriteImg = slot.querySelector('.enemy-creature-sprite');
-    configureCreatureImg(spriteImg, enemy.id, null, enemy);
-    row.appendChild(slot);
-  }
-
-  dom.enemySpriteContainer.appendChild(row);
+  showFormation('enemy', enemies);
 }
 
-/** Update HP bar for a specific enemy by index (multi-enemy) */
+/** Update HP bar for a specific enemy by index (formation slots) */
 export function updateEnemyHPAtIndex(index, current, max) {
-  const slot = dom.enemySpriteContainer.querySelector(`.enemy-creature-slot[data-enemy-index="${index}"]`);
+  const slot = dom.enemyFormation.querySelector(`.formation-slot[data-index="${index}"]`);
   if (!slot) {
     console.warn(`[Scene] No enemy slot found at index ${index}, skipping HP update`);
     return;
   }
-  const fill = slot.querySelector('.enemy-creature-hp-fill');
+  const fill = slot.querySelector('.formation-hp-fill');
   if (fill) {
-    const pct = Math.max(0, Math.min(100, (current / max) * 100));
-    fill.style.width = `${pct}%`;
+    const pct = max > 0 ? Math.max(0, current / max * 100) : 0;
+    fill.style.width = pct + '%';
+    fill.style.backgroundColor = pct > 50 ? 'var(--hp-green)' : pct > 25 ? 'var(--hp-yellow)' : 'var(--hp-red)';
   }
   // Delay defeated fade so HP bar drain animation (0.3s) completes first
   if (current <= 0 && !slot.classList.contains('defeated')) {
@@ -215,44 +224,41 @@ export function updateEnemyHPAtIndex(index, current, max) {
 /** Hide all enemies (single and multi) */
 export function hideEnemies() {
   hideEnemy();
-  dom.enemySpriteContainer.querySelector('.multi-enemy-row')?.remove();
+  hideFormation('enemy');
 }
+
+/* ------------------------------------------------------------------ */
+/*  Placeholders (NPC fallback sprites)                                */
+/* ------------------------------------------------------------------ */
 
 function showPlaceholder(enemy) {
   removePlaceholder();
   const el = document.createElement('div');
   el.id = 'enemy-placeholder';
   el.style.cssText = 'width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:2;position:relative;';
-  const emojiMap = { stressed: '😰', aggressive: '😡', calm: '😐', shy: '😳', cheerful: '😊', mysterious: '🎭', arrogant: '😤', kind: '🥺', rushed: '😤' };
-  el.textContent = emojiMap[enemy.personality] || '👤';
-  dom.enemySpriteContainer.appendChild(el);
-}
-
-function showCreaturePlaceholder(enemy) {
-  removePlaceholder();
-  const el = createTextSprite(enemy.baseWord || enemy.name, enemy.element);
-  el.id = 'enemy-placeholder';
-  el.style.width = '90px';
-  el.style.height = '90px';
-  el.style.fontSize = '2rem';
-  el.style.position = 'relative';
-  el.style.zIndex = '2';
-  dom.enemySpriteContainer.appendChild(el);
+  const emojiMap = { stressed: '\u{1F630}', aggressive: '\u{1F621}', calm: '\u{1F610}', shy: '\u{1F633}', cheerful: '\u{1F60A}', mysterious: '\u{1F3AD}', arrogant: '\u{1F624}', kind: '\u{1F97A}', rushed: '\u{1F624}' };
+  el.textContent = emojiMap[enemy.personality] || '\u{1F464}';
+  dom.npcDisplay.appendChild(el);
 }
 
 function removePlaceholder() {
   document.getElementById('enemy-placeholder')?.remove();
 }
 
-/** Show shrine fox in scene (no HP bar) */
-export function showShrineFox() {
-  dom.enemyName.textContent = 'Shrine Fox';
+/* ------------------------------------------------------------------ */
+/*  NPC display functions                                              */
+/* ------------------------------------------------------------------ */
+
+/** Helper: show an NPC sprite in the npc-display area (no HP bar) */
+function showNpcInDisplay(name, spritePath) {
+  dom.npcDisplay.classList.add('visible');
+  hideFormation('enemy');
+  dom.enemyName.textContent = name;
   dom.enemyInfo.classList.add('visible');
-  // Hide HP bar and skill bar
   dom.enemyHpBar.style.display = 'none';
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
 
-  dom.enemySprite.src = '/assets/sprites/shrine_fox.webp';
+  dom.enemySprite.src = spritePath;
   dom.enemySprite.onerror = () => {
     dom.enemySprite.classList.remove('visible');
   };
@@ -260,57 +266,26 @@ export function showShrineFox() {
     removePlaceholder();
     dom.enemySprite.classList.add('visible');
   };
+}
+
+/** Show shrine fox in scene (no HP bar) */
+export function showShrineFox() {
+  showNpcInDisplay('Shrine Fox', '/assets/sprites/shrine_fox.webp');
 }
 
 /** Show quiz master in scene (no HP bar) */
 export function showQuizMaster() {
-  dom.enemyName.textContent = 'Quiz Master';
-  dom.enemyInfo.classList.add('visible');
-  dom.enemyHpBar.style.display = 'none';
-  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
-
-  dom.enemySprite.src = '/assets/sprites/quiz_master.webp';
-  dom.enemySprite.onerror = () => {
-    dom.enemySprite.classList.remove('visible');
-  };
-  dom.enemySprite.onload = () => {
-    removePlaceholder();
-    dom.enemySprite.classList.add('visible');
-  };
+  showNpcInDisplay('Quiz Master', '/assets/sprites/quiz_master.webp');
 }
 
 /** Show word discovery NPC (knowledge scholar spirit, no HP bar) */
 export function showWordDiscoveryNpc() {
-  dom.enemyName.textContent = 'Knowledge Spirit';
-  dom.enemyInfo.classList.add('visible');
-  dom.enemyHpBar.style.display = 'none';
-  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
-
-  dom.enemySprite.src = '/assets/sprites/word_discovery_npc.webp';
-  dom.enemySprite.onerror = () => {
-    dom.enemySprite.classList.remove('visible');
-  };
-  dom.enemySprite.onload = () => {
-    removePlaceholder();
-    dom.enemySprite.classList.add('visible');
-  };
+  showNpcInDisplay('Knowledge Spirit', '/assets/sprites/word_discovery_npc.webp');
 }
 
 /** Show Cid guide NPC in prologue (no HP bar) */
 export function showCid() {
-  dom.enemyName.textContent = 'Cid';
-  dom.enemyInfo.classList.add('visible');
-  dom.enemyHpBar.style.display = 'none';
-  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
-
-  dom.enemySprite.src = '/assets/sprites/npcs/cid.webp';
-  dom.enemySprite.onerror = () => {
-    dom.enemySprite.classList.remove('visible');
-  };
-  dom.enemySprite.onload = () => {
-    removePlaceholder();
-    dom.enemySprite.classList.add('visible');
-  };
+  showNpcInDisplay('Cid', '/assets/sprites/npcs/cid.webp');
 }
 
 /** Hide Cid from scene */
@@ -320,23 +295,13 @@ export function hideCid() {
 
 /** Show traveling merchant NPC (shop merchant, no HP bar) */
 export function showDealer() {
-  dom.enemyName.textContent = 'Traveling Merchant';
-  dom.enemyInfo.classList.add('visible');
-  dom.enemyHpBar.style.display = 'none';
-  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
-
-  dom.enemySprite.src = '/assets/sprites/traveling_merchant.webp';
-  dom.enemySprite.onerror = () => {
-    dom.enemySprite.classList.remove('visible');
-  };
-  dom.enemySprite.onload = () => {
-    removePlaceholder();
-    dom.enemySprite.classList.add('visible');
-  };
+  showNpcInDisplay('Traveling Merchant', '/assets/sprites/traveling_merchant.webp');
 }
 
 /** Show Chippy companion sprite (no HP bar) */
 export function showChippy() {
+  dom.npcDisplay.classList.add('visible');
+  hideFormation('enemy');
   dom.enemyName.textContent = 'Chippy';
   dom.enemyInfo.classList.add('visible');
   dom.enemyHpBar.style.display = 'none';
@@ -350,7 +315,7 @@ export function showChippy() {
     el.id = 'enemy-placeholder';
     el.style.cssText = 'width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:2;position:relative;';
     el.textContent = '\u2728';
-    dom.enemySpriteContainer.appendChild(el);
+    dom.npcDisplay.appendChild(el);
   };
   dom.enemySprite.onload = () => {
     removePlaceholder();
@@ -365,19 +330,17 @@ export function hideChippy() {
 
 /** Show NPC trainer in scene (no HP bar) */
 export function showNpcTrainer(npcName, npcId, npc) {
-  // Clear multi-enemy row from combat
-  dom.enemySpriteContainer.querySelector('.multi-enemy-row')?.remove();
+  dom.npcDisplay.classList.add('visible');
+  hideFormation('enemy');
 
   const roleHtml = npc?.role
-    ? ' — ' + renderJpFirst(npc.role.word, npc.role.reading, npc.role.meaning)
+    ? ' \u2014 ' + renderJpFirst(npc.role.word, npc.role.reading, npc.role.meaning)
     : '';
   const npcNameHtml = `${escHtml(npcName)}${roleHtml}`;
   dom.enemyName.innerHTML = npcNameHtml;
   dom.enemyInfo.classList.add('visible');
   dom.enemyHpBar.style.display = 'none';
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
-  dom.enemySpriteContainer.style.borderColor = '';
-  dom.enemySpriteContainer.classList.remove('creature-enemy');
 
   const spritePath = npcId
     ? `/assets/sprites/npcs/${npcId}.webp`
@@ -412,24 +375,24 @@ export function showNpcSkills(skills) {
 
 /** Hide enemy from scene */
 export function hideEnemy() {
+  dom.npcDisplay.classList.remove('visible');
+  dom.enemySprite.src = '';
   dom.enemySprite.classList.remove('visible');
   dom.enemyInfo.classList.remove('visible');
   dom.enemyHpBar.style.display = '';
-  if (dom.enemySkillBar) dom.enemySkillBar.style.display = '';
-  dom.enemySpriteContainer.style.borderColor = '';
-  dom.enemySpriteContainer.classList.remove('creature-enemy');
-  removeCompactOverlays();
+  if (dom.enemySkillBar) {
+    dom.enemySkillBar.innerHTML = '';
+    dom.enemySkillBar.style.display = '';
+  }
+  hideFormation('enemy');
   removePlaceholder();
 }
 
-/** Update enemy HP bar and text */
+/** Update enemy HP bar and text (NPC boss fights with info pill) */
 export function updateEnemyHP(current, max) {
   const pct = Math.max(0, Math.min(100, (current / max) * 100));
   dom.enemyHpFill.style.width = `${pct}%`;
   dom.enemyHpText.textContent = `${current} / ${max}`;
-  // Also update compact HP bar if present (single creature enemy)
-  const compactFill = dom.enemySpriteContainer.querySelector('.enemy-compact-hp-fill');
-  if (compactFill) compactFill.style.width = `${pct}%`;
 }
 
 /** Show floating toast message in scene (auto-dismisses) */
@@ -447,8 +410,9 @@ export function showToast(message, durationMs = 3000) {
  * @param {boolean} options.isCrit - Is critical hit
  * @param {boolean} options.isHeal - Is healing
  * @param {string} options.tierClass - Tier CSS class (dmg-light, dmg-normal, dmg-solid, dmg-big, dmg-massive)
+ * @param {HTMLElement} options.targetEl - Optional target element to position damage near
  */
-export function showDamageNumber(amount, { isCrit = false, isHeal = false, tierClass = '' } = {}) {
+export function showDamageNumber(amount, { isCrit = false, isHeal = false, tierClass = '', targetEl } = {}) {
   const el = document.createElement('div');
 
   // Build class list: base + tier + modifiers
@@ -460,8 +424,10 @@ export function showDamageNumber(amount, { isCrit = false, isHeal = false, tierC
 
   el.textContent = isHeal ? `+${amount}` : amount;
 
-  // Position near enemy sprite
-  const container = dom.enemySpriteContainer;
+  // Position near target: explicit target > enemy formation slot > npc display > enemy formation container
+  const container = targetEl
+    || dom.enemyFormation.querySelector('.formation-slot')
+    || (dom.npcDisplay.classList.contains('visible') ? dom.npcDisplay : dom.enemyFormation);
   const rect = container.getBoundingClientRect();
   el.style.left = `${rect.width / 2}px`;
   el.style.top = `${rect.height * 0.3}px`;
