@@ -100,6 +100,7 @@ import * as bugReport from './js/ui/bug-report.js';
 import * as speedReview from './js/ui/speed-review.js';
 import * as metaShop from './js/ui/meta-shop.js';
 import { configureCreatureImg, creatureSpritePath, probeIdleSprites } from './js/ui/sprite-utils.js';
+import { showDialogueChoices } from './js/ui/dialogue-choices.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, renderEnFirst, renderJpFirst, flushExposures } from './js/ui/bootstrap-client.js';
 
@@ -548,39 +549,9 @@ async function playPrologue() {
   }
 
   actions.clear();
+  scene.setBackground('/assets/backgrounds/areas/hajimari-no-hiroba/hajimari-no-hiroba_01.webp');
 
   let lastChoiceId = null;
-
-  function showPrologueChoices(choices) {
-    // Same stacking pattern as `exploration.renderHub()`.
-    // `align-self: stretch` is required because `#action-area` uses flex column + `align-items: center`,
-    // otherwise shrink-wrapped width follows the narrowest label (~127–220px) instead of full rail.
-    actions.setContent(`
-      <div style="display:flex;flex-direction:column;align-items:stretch;gap:12px;align-self:stretch;width:100%;max-width:340px;box-sizing:border-box;">
-        ${choices.map((choice) => {
-          const choiceId = choice.id ?? choice.text;
-          const choiceText = choice.text ?? choiceId;
-          const safeId = String(choiceId).replace(/"/g, '&quot;');
-          return `
-            <button type="button" class="action-btn action-btn-primary" data-choice-id="${safeId}">
-              ${escapeHtml(choiceText)}
-            </button>
-          `;
-        }).join('')}
-      </div>
-    `);
-
-    return new Promise((resolve) => {
-      document.querySelectorAll('#action-area button[data-choice-id]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const choiceId = btn.dataset.choiceId || btn.textContent;
-          actions.clear();
-          narrationBox.forceHide();
-          resolve(choiceId);
-        }, { once: true });
-      });
-    });
-  }
 
   for (const prologueScene of _prologueCache) {
     if (prologueScene.conditional && prologueScene.conditional !== lastChoiceId) {
@@ -613,7 +584,11 @@ async function playPrologue() {
 
     if (prologueScene.choices?.length > 0) {
       await narrationBox.show(html, { ...showOpts, persistent: true });
-      result = await showPrologueChoices(prologueScene.choices);
+      const choiceIdx = await showDialogueChoices(prologueScene.choices);
+      actions.clear();
+      narrationBox.forceHide();
+      const chosen = prologueScene.choices[choiceIdx];
+      result = chosen.id ?? chosen.text;
       lastChoiceId = result;
     } else {
       await narrationBox.show(html, showOpts);
@@ -1042,11 +1017,23 @@ async function showPostCombatShopFlow() {
 
     return new Promise((resolve) => {
       postCombatShop.init({
-        itemSelectedCallback: async (index) => {
-          const selectResult = await apiSelectShopItem(index);
-          if (selectResult?.state) updateGameState(selectResult.state);
-          postCombatShop.hide();
-          resolve();
+        itemSelectedCallback: async (itemIdx) => {
+          // Show creature target picker
+          const active = gameState.run?.creatureParty?.active?.filter(Boolean) || [];
+          if (active.length <= 1) {
+            // Only one creature — auto-target
+            const selectResult = await apiSelectShopItem(itemIdx, 0);
+            if (selectResult?.state) updateGameState(selectResult.state);
+            postCombatShop.hide();
+            resolve();
+          } else {
+            postCombatShop.showTargetPicker(active, async (targetIdx) => {
+              const selectResult = await apiSelectShopItem(itemIdx, targetIdx);
+              if (selectResult?.state) updateGameState(selectResult.state);
+              postCombatShop.hide();
+              resolve();
+            });
+          }
         }
       });
       postCombatShop.show(shopResult.items);
@@ -1364,6 +1351,7 @@ async function initGame() {
 
   creatureRow.init({
     getItemBuffs: () => gameState.run?.itemBuffs,
+    getEquippedItems: () => gameState.run?.equippedItems || [],
     swapCreatureCallback: async (activeIndex, reserveIndex) => {
       const result = await apiSwapCreature(activeIndex, reserveIndex);
       if (result.error) {
