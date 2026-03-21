@@ -389,8 +389,9 @@ export async function playerHitEffect(damage, hpBarEl, creatureRowEl) {
   showVignette(300);
 
   // 4. Creature row shudders
-  if (creatureRowEl) {
-    anime(creatureRowEl.querySelectorAll('.creature-slot'), {
+  const playerFormation = document.getElementById('player-formation');
+  if (playerFormation) {
+    anime(playerFormation.querySelectorAll('.formation-slot'), {
       translateX: [-2, 2, -1, 0],
     }, {
       duration: 150,
@@ -430,7 +431,7 @@ export async function fireCreatureAttackEffect(creatureSlotEl, enemyEl, element,
   const color = ELEMENT_COLORS[element] || '#fff';
 
   // 1. Creature icon pops
-  const icon = creatureSlotEl.querySelector('.creature-icon');
+  const icon = creatureSlotEl.querySelector('.formation-sprite');
   if (icon) pop(icon, 1.2);
 
   // 2. Fire element-colored orbs from creature to enemy
@@ -468,7 +469,7 @@ export async function enemyCreatureAttackEffect(enemyEl, creatureSlotEl, element
   await delay(300);
 
   // 4. Flash the targeted creature
-  const icon = creatureSlotEl.querySelector('.creature-icon');
+  const icon = creatureSlotEl.querySelector('.formation-sprite');
   if (icon) flashElement(icon);
 
   // 5. Screen shake + vignette
@@ -523,7 +524,7 @@ export async function healEffect(creatureSlotEl, healAmount) {
   creatureSlotEl.style.position = 'relative';
   creatureSlotEl.appendChild(popup);
 
-  flashElement(creatureSlotEl.querySelector('.creature-icon'), 1);
+  flashElement(creatureSlotEl.querySelector('.formation-sprite'), 1);
   spawnParticles(creatureSlotEl, 8, '#4CAF50');
 
   await delay(1200);
@@ -582,18 +583,10 @@ export function showLevelUpPopup(creatureSlotEl, newLevel, hpGain, attackGain) {
   creatureSlotEl.appendChild(popup);
 
   // Flash the creature icon with a neon glow
-  const icon = creatureSlotEl.querySelector('.creature-icon');
+  const icon = creatureSlotEl.querySelector('.formation-sprite');
   if (icon) {
     icon.classList.add('level-up-glow');
     setTimeout(() => icon.classList.remove('level-up-glow'), 1500);
-  }
-
-  // Update level badge in DOM
-  const badge = creatureSlotEl.querySelector('.creature-level-badge');
-  if (badge) {
-    badge.textContent = `Lv${newLevel}`;
-    badge.classList.add('level-badge-pop');
-    setTimeout(() => badge.classList.remove('level-badge-pop'), 600);
   }
 
   anime(popup, {
