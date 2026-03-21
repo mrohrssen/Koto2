@@ -472,7 +472,10 @@ export async function enemyCreatureAttackEffect(enemyEl, creatureSlotEl, element
   const icon = creatureSlotEl.querySelector('.formation-sprite');
   if (icon) flashElement(icon);
 
-  // 5. Screen shake + vignette
+  // 5. Recoil the targeted creature left
+  recoil(creatureSlotEl, 4, 'left');
+
+  // 6. Screen shake + vignette
   screenShake('medium');
   showVignette(200);
 }
