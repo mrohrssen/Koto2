@@ -43,7 +43,8 @@ import {
   poisonTickEffect
 } from './combat-effects.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
-import { configureCreatureImg, creatureSpritePath, replaceWithTextSprite } from './sprite-utils.js';
+import { replaceWithTextSprite } from './sprite-utils.js';
+import { toRomaji } from './romaji.js';
 
 function npcSpritePath(npcId) {
   return `/assets/sprites/npcs/${npcId}.webp`;
@@ -52,6 +53,7 @@ import { prefetchWord, playWordPair, playDialogueAudio } from '../tts.js';
 import { init as initMoveSelect, showMoves, clear as clearMoveSelect, setActiveLabel } from './move-select.js';
 import { init as initTargetSelect, showEnemies, showAllies, clear as clearTargetSelect } from './target-select.js';
 import { showLearnPrompt } from './move-learn.js';
+import { showDialogueChoices } from './dialogue-choices.js';
 
 // ============ SPLIT ATTACK CARD ============
 
@@ -93,8 +95,6 @@ function wrapWithRuby(word, reading, englishReading) {
 
 function buildSplitAttackCard(atk, isEnemy) {
   const theme = ELEMENT_THEME[atk.attackerElement] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
-  const spriteUrl = creatureSpritePath(atk.attackerId);
-  const targetSprite = creatureSpritePath(atk.targetId);
 
   const baseWordHtml = renderJpFirst(atk.attackerBaseWord, atk.attackerBaseReading, atk.attackerBaseMeaning);
   const skillNameHtml = renderJpFirst(atk.attackerSkillName, atk.attackerSkillReading, atk.attackerSkillEn);
@@ -119,9 +119,12 @@ function buildSplitAttackCard(atk, isEnemy) {
   const tagClass = { heal: 'sac-tag-heal', buff: 'sac-tag-buff', shield: 'sac-tag-buff', debuff: 'sac-tag-debuff' }[cat] || 'sac-tag-atk';
   const damageClass = (atk.healAmount > 0) ? 'sac-heal' : 'sac-damage';
 
+  const attackerWord = atk.attackerBaseWord || atk.attackerName || '？';
+  const targetWord = atk.targetBaseWord || atk.targetName || '？';
+
   return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
     <div class="sac-left">
-      <img class="sac-sprite" src="${spriteUrl}" alt="">
+      <div class="text-sprite ${atk.attackerElement || ''}">${attackerWord}</div>
       <div class="sac-attacker-name">${attackerNameHtml}</div>
     </div>
     <div class="sac-right">
@@ -139,7 +142,7 @@ function buildSplitAttackCard(atk, isEnemy) {
       </div>
       <div class="sac-row sac-impact" data-row="2">
         <span class="sac-impact-arrow">\u2192</span>
-        <img class="sac-impact-sprite" src="${targetSprite}" alt="">
+        <div class="text-sprite ${atk.targetElement || ''}">${targetWord}</div>
         <span class="sac-impact-name">${targetNameHtml}</span>
         <span class="${damageClass}">${damageSign}</span>
       </div>
@@ -190,7 +193,6 @@ function insertNpcAttackCard(atk) {
 
   const theme = ELEMENT_THEME[atk.moveElement] || ELEMENT_THEME['neutral'] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
   const spriteUrl = npcSpritePath(atk.attackerId);
-  const targetSprite = creatureSpritePath(atk.targetId);
 
   const baseWordHtml = renderJpFirst(atk.attackerBaseWord, atk.attackerBaseReading, atk.attackerBaseMeaning);
   const skillNameHtml = renderJpFirst(atk.attackerSkillName, atk.attackerSkillReading, atk.attackerSkillEn);
@@ -214,6 +216,8 @@ function insertNpcAttackCard(atk) {
   const tagClass = { heal: 'sac-tag-heal', buff: 'sac-tag-buff', shield: 'sac-tag-buff', debuff: 'sac-tag-debuff' }[cat] || 'sac-tag-atk';
   const damageClass = (atk.healAmount > 0) ? 'sac-heal' : 'sac-damage';
 
+  const targetWord = atk.targetBaseWord || atk.targetName || '？';
+
   const html = `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
     <div class="sac-left">
       <img class="sac-sprite" src="${spriteUrl}" alt="">
@@ -234,7 +238,7 @@ function insertNpcAttackCard(atk) {
       </div>
       <div class="sac-row sac-impact" data-row="2">
         <span class="sac-impact-arrow">\u2192</span>
-        <img class="sac-impact-sprite" src="${targetSprite}" alt="">
+        <div class="text-sprite ${atk.targetElement || ''}">${targetWord}</div>
         <span class="sac-impact-name">${targetNameHtml}</span>
         <span class="${damageClass}">${damageSign}</span>
       </div>
@@ -2211,10 +2215,11 @@ async function executeDefendThenPause() {
  * @returns {Promise<void>}
  */
 async function renderBefriendQuiz(quizData, result) {
-  const creatureName = quizData.creatureNameEn || quizData.creatureName || 'Creature';
+  const reading = quizData.creatureBaseReading || quizData.creatureName || '';
+  const creatureSpeaker = { name: reading, reading: toRomaji(reading), meaning: '' };
 
   // Show "まって!!" narration
-  await narration.showNarration('まって！！', { speaker: creatureName });
+  await narration.showNarration('まって！！', { speaker: creatureSpeaker });
 
   // Show Fight / Talk choice
   const actionChoice = await new Promise((resolve) => {
@@ -2223,7 +2228,7 @@ async function renderBefriendQuiz(quizData, result) {
 
     actionArea.innerHTML = `
       <div class="befriend-quiz-choice">
-        <div class="befriend-quiz-prompt">${creatureName} wants to talk!</div>
+        <div class="befriend-quiz-prompt"><ruby>${reading}<rt>${toRomaji(reading)}</rt></ruby> wants to talk!</div>
         <div class="befriend-quiz-actions">
           <button class="befriend-quiz-btn befriend-fight-btn">
             <span class="befriend-btn-jp">たたかう</span>
@@ -2263,7 +2268,7 @@ async function renderBefriendQuiz(quizData, result) {
   }
 
   // Talk path — show "なまえは？" and name options
-  await narration.showNarration('なまえは？', { speaker: creatureName });
+  await narration.showNarration('なまえは？', { speaker: creatureSpeaker });
 
   const selectedId = await new Promise((resolve) => {
     const actionArea = document.getElementById('action-area');
@@ -2306,7 +2311,7 @@ async function renderBefriendQuiz(quizData, result) {
   if (answerResult.correct) {
     // Befriended!
     playSFX('creature-skill');
-    await narration.showNarration('じゃあ、友達になろう！', { speaker: creatureName });
+    await narration.showNarration('じゃあ、友達になろう！', { speaker: creatureSpeaker });
 
     const capturedId = answerResult.capturedId;
     const capturedIdx = answerResult.capturedIndex;
@@ -2337,7 +2342,7 @@ async function renderBefriendQuiz(quizData, result) {
   }
 
   // Wrong answer — creature fights back
-  await narration.showNarration('ちがう！', { speaker: creatureName });
+  await narration.showNarration('ちがう！', { speaker: creatureSpeaker });
 
   // Show counter-attack
   if (answerResult.counterAttack?.length > 0) {
@@ -2486,38 +2491,13 @@ function showBefriendTargetSelect(enemies) {
  * Returns the selected option index.
  */
 function showConversationRound(round, roundNumber, creatureName) {
-  return new Promise((resolve) => {
-    // Show creature's line in narration box
-    narration.showNarration(round.speaker, {
-      speaker: creatureName,
-      persistent: true
-    });
-
-    const actionArea = document.getElementById('action-area');
-    if (!actionArea) { resolve(0); return; }
-
-    const buttons = round.options.map((opt, idx) => `
-      <div class="shrine-creature-option befriend-answer-option" data-answer-index="${idx}" style="width:100%">
-        <div class="shrine-creature-info" style="padding:1rem; width:100%; text-align:center">
-          <div class="shrine-creature-name" style="color:var(--accent-primary)">${opt}</div>
-        </div>
-      </div>
-    `).join('');
-
-    actionArea.innerHTML = `
-      <div class="shrine-creature-list befriend-answer-list" style="padding:0 1rem">
-        ${buttons}
-      </div>
-    `;
-
-    const list = actionArea.querySelector('.befriend-answer-list');
-    list.addEventListener('click', (e) => {
-      const opt = e.target.closest('.befriend-answer-option');
-      if (!opt || list.dataset.answered) return;
-      list.dataset.answered = '1';
-      resolve(parseInt(opt.dataset.answerIndex, 10));
-    });
+  // Show creature's line in narration box
+  narration.showNarration(round.speaker, {
+    speaker: creatureName,
+    persistent: true
   });
+
+  return showDialogueChoices(round.options);
 }
 
 /**
@@ -2607,7 +2587,7 @@ async function executeBefriendAction(actingCreatureSlot = null) {
       if (!answerResult.correct) {
         // --- FAILURE ---
         // Click-to-continue (no auto-dismiss) so players can read it.
-        await narration.showNarration('？？？', { speaker: creatureName });
+        await narration.showNarration('？？？', { speaker: creatureSpeaker });
 
         // Shake target enemy
         const slots = document.querySelectorAll('.enemy-creature-slot');
@@ -2732,7 +2712,7 @@ async function executeBefriendAction(actingCreatureSlot = null) {
 
         playSFX('creature-skill');
         // Click-to-continue (no auto-dismiss) so players can read it.
-        await narration.showNarration('\u3058\u3083\u3042\u3001\u53cb\u9054\u306b\u306a\u308d\u3046\uff01', { speaker: creatureName });
+        await narration.showNarration('\u3058\u3083\u3042\u3001\u53cb\u9054\u306b\u306a\u308d\u3046\uff01', { speaker: creatureSpeaker });
 
         if (captured?.id || typeof targetEnemyIndex === 'number') {
           const slot = (typeof targetEnemyIndex === 'number'
@@ -3004,7 +2984,7 @@ export async function runNpcDialogue() {
     await narration.showNarration(renderEnFirst(round.npcLine), { speaker: npcName, persistent: true, html: true });
 
     // Show 3 response buttons (reuses befriend dialogue styling)
-    const selectedIndex = await showNpcResponseOptions(round.options, i);
+    const selectedIndex = await showDialogueChoices(round.options);
 
     // Play selected option audio if available (fire-and-forget)
     if (round.options[selectedIndex]?.tts && userId) {
@@ -3034,35 +3014,6 @@ export async function runNpcDialogue() {
   showBondSummary(npcName, totalDelta);
   await delay(2200);
   document.querySelector('.bond-summary')?.remove();
-}
-
-function showNpcResponseOptions(options, roundNumber) {
-  return new Promise(resolve => {
-    const actionArea = document.getElementById('action-area');
-    if (!actionArea) { resolve(0); return; }
-
-    const buttons = options.map((option, idx) => `
-      <div class="shrine-creature-option befriend-answer-option" data-answer-index="${idx}" style="width:100%">
-        <div class="shrine-creature-info" style="padding:1rem; width:100%; text-align:center">
-          <div class="shrine-creature-name" style="color:var(--accent-primary)">${renderEnFirst(option.text)}</div>
-        </div>
-      </div>
-    `).join('');
-
-    actionArea.innerHTML = `
-      <div class="shrine-creature-list befriend-answer-list" style="padding:0 1rem">
-        ${buttons}
-      </div>
-    `;
-
-    const list = actionArea.querySelector('.befriend-answer-list');
-    list.addEventListener('click', (e) => {
-      const opt = e.target.closest('.befriend-answer-option');
-      if (!opt || list.dataset.answered) return;
-      list.dataset.answered = '1';
-      resolve(parseInt(opt.dataset.answerIndex, 10));
-    });
-  });
 }
 
 function showBondFeedback(tone, delta) {
