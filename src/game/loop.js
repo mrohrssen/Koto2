@@ -587,7 +587,10 @@ export class GameManager {
       if (fallbackEntries.length > 0) {
         const npc = fallbackEntries[Math.floor(Math.random() * fallbackEntries.length)];
         this.combat.npcId = npc.id;
-        this.combat.npcData = { id: npc.id, name: npc.name, nameEn: npc.nameEn };
+        this.combat.npcData = {
+          id: npc.id, name: npc.name, nameEn: npc.nameEn,
+          greeting: npc.greeting, speakerId: npc.speakerId
+        };
       }
     }
     // Note: for regular encounters, random NPC overlay is disabled (Koto2 MVP).
