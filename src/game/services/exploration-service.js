@@ -374,7 +374,7 @@ export class ExplorationService {
     const prevAttack = creature.attack;
 
     // Grant one full level-up worth of XP (cubic curve)
-    addXpToCreature(creature, xpToNextLevel(creature.level));
+    addXpToCreature(creature, xpToNextLevel(creature.level), null, this.gm.run?.itemBuffs);
 
     room.shrine.used = true;
     room.interacted = true;
@@ -433,7 +433,7 @@ export class ExplorationService {
         ].filter(Boolean);
         const creature = allCreatures.find(r => r.id === creatureId);
         if (!creature) throw new Error('Creature not in party');
-        addXpToCreature(creature, xpToNextLevel(creature.level));
+        addXpToCreature(creature, xpToNextLevel(creature.level), null, this.gm.run?.itemBuffs);
         description = `${creature.nameEn} leveled up to Lv. ${creature.level}!`;
         break;
       }
@@ -484,7 +484,7 @@ export class ExplorationService {
       for (const creature of this.gm.run.creatureParty.active) {
         if (!creature || creature.hp <= 0) continue;
         const prevLevel = creature.level;
-        addXpToCreature(creature, discoveryXp);
+        addXpToCreature(creature, discoveryXp, null, this.gm.run?.itemBuffs);
         xpGrants.push({ creatureId: creature.id, creatureName: creature.nameEn, xp: discoveryXp });
         if (creature.level > prevLevel) {
           levelUps.push({
@@ -892,7 +892,7 @@ export class ExplorationService {
     const livingActives = this.gm.run?.creatureParty?.active?.filter(creature => creature && creature.hp > 0) || [];
     const discoveryXp = calculateDiscoveryXpForRun(this.gm.run);
     for (const creature of livingActives) {
-      addXpToCreature(creature, discoveryXp);
+      addXpToCreature(creature, discoveryXp, null, this.gm.run?.itemBuffs);
     }
 
     roomState.awardedReviewKeys.push(reviewKey);

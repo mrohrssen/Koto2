@@ -19,6 +19,7 @@
 import { dom } from '../dom.js';
 import { configureCreatureImg, replaceWithTextSprite } from './sprite-utils.js';
 import { renderJpFirst } from './bootstrap-client.js';
+import { toRomaji } from './romaji.js';
 
 function rarityStars(rarity) {
   const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity];
@@ -33,16 +34,76 @@ let currentActiveCreatures = [];
 /** @type {() => object|undefined|null} */
 let getItemBuffs = null;
 
-/** Match server getBuffedAttack (item-service): small % boosts still add at least +1 when floor would erase them */
+/** Level multiplier matching server getStatsForLevel */
+function levelMult(level) {
+  return 1 + ((level || 1) - 1) * 0.1;
+}
+
+/** Match server getBuffedAttack (item-service): base bonus + % mult */
 function effectiveAttack(creature) {
-  const mult = Number(getItemBuffs?.()?.attackMult) || 1;
-  const n = Math.max(1, Math.floor(Number(creature?.attack) || 0));
-  if (!(mult > 0)) return n;
+  const buffs = creature?.itemBuffs;
+  let n = Math.max(1, Math.floor(Number(creature?.attack) || 0));
+  // Flat base bonus scaled by level (equipment)
+  const bonus = buffs?.baseAttackBonus || 0;
+  if (bonus && creature?.level) {
+    n += Math.floor(bonus * levelMult(creature.level));
+  }
+  // % multiplier (food items)
+  const mult = Number(buffs?.attackMult) || 1;
+  if (!(mult > 0) || mult === 1.0) return n;
   const raw = n * mult;
   if (mult <= 1) return Math.max(1, Math.floor(raw));
   let out = Math.floor(raw);
   if (out === n && raw > n + 1e-9) out = n + 1;
   return Math.max(1, out);
+}
+
+/** Calculate total ATK bonus from all item buffs for display */
+function attackBonus(creature) {
+  const base = Math.max(1, Math.floor(Number(creature?.attack) || 0));
+  return effectiveAttack(creature) - base;
+}
+
+/** Build per-creature item buffs + equipment sections for popup */
+function buildBuffsSummary(creature) {
+  let html = '';
+  const buffs = creature?.itemBuffs;
+
+  // Food / consumable buffs (% multipliers)
+  if (buffs) {
+    const lines = [];
+    if (buffs.attackMult > 1.0) lines.push(`ATK ×${buffs.attackMult.toFixed(2)}`);
+    if (buffs.flatDamageReduction > 0) lines.push(`DMG Reduce ${buffs.flatDamageReduction}`);
+    if (buffs.elementEdge > 0) lines.push(`Elem Edge +${buffs.elementEdge}`);
+    if (lines.length > 0) {
+      html += `
+        <div class="creature-popup-buffs">
+          <div class="creature-popup-buffs-label">Item Buffs:</div>
+          <div class="creature-popup-buffs-list">${lines.join(' · ')}</div>
+        </div>`;
+    }
+  }
+
+  // Equipment list with per-item effects
+  const equipped = creature?.equippedItems || [];
+  if (equipped.length > 0) {
+    const lm = levelMult(creature?.level);
+    html += `
+      <div class="creature-popup-equipment">
+        <div class="creature-popup-equipment-label">Equipment:</div>
+        ${equipped.map(item => {
+          const desc = item.description || '';
+          return `<div class="creature-popup-equipment-row">${item.word} (${item.nameEn}) <span class="equip-effect">${desc}</span></div>`;
+        }).join('')}
+        <div class="creature-popup-equipment-totals">
+          ${buffs?.baseAttackBonus > 0 ? `ATK +${Math.floor(buffs.baseAttackBonus * lm)}` : ''}
+          ${buffs?.baseHpBonus > 0 ? ` HP +${Math.floor(buffs.baseHpBonus * lm)}` : ''}
+          ${buffs?.baseMpBonus > 0 ? ` MP +${Math.floor(buffs.baseMpBonus * lm)}` : ''}
+        </div>
+      </div>`;
+  }
+
+  return html;
 }
 
 export const ELEMENT_COLORS = {
@@ -61,10 +122,14 @@ export const ELEMENT_ICONS = {
   water: '💧'
 };
 
-export function init({ swapCreatureCallback, rearrangeCreatureCallback, getItemBuffs: getBuffs }) {
+/** @type {() => Array|undefined|null} */
+let getEquippedItems = null;
+
+export function init({ swapCreatureCallback, rearrangeCreatureCallback, getItemBuffs: getBuffs, getEquippedItems: getEquip }) {
   onSwapCreature = swapCreatureCallback;
   onRearrangeCreature = rearrangeCreatureCallback || null;
   getItemBuffs = typeof getBuffs === 'function' ? getBuffs : null;
+  getEquippedItems = typeof getEquip === 'function' ? getEquip : null;
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.creature-slot') && !e.target.closest('.creature-popup')) {
       hidePopup();
@@ -109,7 +174,7 @@ export function render(creatures) {
           <img class="creature-sprite-icon" alt="">
           <span class="creature-element-icon" style="display:none">${ELEMENT_ICONS[creature.element]}</span>
           <span class="creature-level-badge">Lv${creature.level}</span>
-          <span class="creature-slot-name">${creature.nameEn}</span>
+          <span class="creature-slot-name"><ruby>${creature.baseReading || creature.name}<rt>${toRomaji(creature.baseReading || '')}</rt></ruby></span>
         </div>
         <div class="creature-hp-bar">
           <div class="creature-hp-fill" style="width: ${hpPct}%; background-color: ${hpColor}"></div>
@@ -171,8 +236,9 @@ function showPopup(index, creature) {
     <div class="creature-popup-element">${ELEMENT_ICONS[creature.element]} ${creature.element}</div>
     <div class="creature-popup-archetype">${archetypeLabel}</div>
     <div class="creature-popup-stats">
-      HP: ${creature.hp}/${creature.maxHp} | ATK: ${effectiveAttack(creature)} | DEF: ${creature.defense ?? 5} | MP: ${creature.mp}/${creature.maxMp}
+      HP: ${creature.hp}/${creature.maxHp} | ATK: ${effectiveAttack(creature)}${attackBonus(creature) > 0 ? ` <span class="buff-bonus">(+${attackBonus(creature)})</span>` : ''} | DEF: ${creature.defense ?? 5} | MP: ${creature.mp}/${creature.maxMp}
     </div>
+    ${buildBuffsSummary(creature)}
     ${!isKO ? `
       <div class="creature-popup-moves">
         <div class="creature-popup-moves-label">Moves:</div>

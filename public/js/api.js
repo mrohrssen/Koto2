@@ -509,8 +509,8 @@ async function rollPostCombatShop() {
   return apiCall('/creature-shop-roll', 'POST');
 }
 
-async function selectShopItem(itemIndex) {
-  return apiCall('/creature-shop-select', 'POST', { itemIndex });
+async function selectShopItem(itemIndex, targetIndex = 0) {
+  return apiCall('/creature-shop-select', 'POST', { itemIndex, targetIndex });
 }
 
 async function swapCreature(activeIndex, reserveIndex) {

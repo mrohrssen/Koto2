@@ -19,12 +19,13 @@ export function createItemBuffs() {
   return {
     attackMult: 1.0,
     hpMult: 1.0,
-    autoPowerMult: 1.0,
-    ultimatePowerMult: 1.0,
     elementEdge: 0,
     flatDamageReduction: 0,
     xpMultiplier: 1.0,
-    xpBalanceStacks: 0
+    xpBalanceStacks: 0,
+    baseAttackBonus: 0,
+    baseHpBonus: 0,
+    baseMpBonus: 0
   };
 }
 
@@ -52,12 +53,17 @@ export function rollShopItems() {
   return selected;
 }
 
-const MULT_FIELDS = new Set(['attackMult', 'hpMult', 'autoPowerMult', 'ultimatePowerMult', 'xpMultiplier']);
+const MULT_FIELDS = new Set(['attackMult', 'hpMult', 'xpMultiplier']);
+const BASE_BONUS_FIELDS = new Set(['baseAttackBonus', 'baseHpBonus', 'baseMpBonus']);
 
 function applyStat(field, value, itemBuffs) {
   if (!itemBuffs || value == null || Number.isNaN(Number(value))) return;
   const delta = Number(value);
   if (field === 'flatDamageReduction') {
+    itemBuffs[field] = (itemBuffs[field] || 0) + delta;
+    return;
+  }
+  if (BASE_BONUS_FIELDS.has(field)) {
     itemBuffs[field] = (itemBuffs[field] || 0) + delta;
     return;
   }
@@ -100,11 +106,45 @@ export function scalePartyHpForBuffRatio(creatureParty, ratio) {
 }
 
 
-export function applyItem(item, creatureParty, itemBuffs, targetIndex = null) {
+/** Level multiplier matching getStatsForLevel in creatures.js */
+function levelMult(level) {
+  return 1 + ((level || 1) - 1) * 0.1;
+}
+
+/**
+ * Adjust a single creature's maxHp/maxMp when its base bonus changes.
+ */
+function applyBaseBonusToCreature(creature, itemBuffs, prevHpBonus, prevMpBonus) {
+  if (!creature) return;
+  const mult = levelMult(creature.level);
+  const hpDelta = (itemBuffs.baseHpBonus || 0) - prevHpBonus;
+  const mpDelta = (itemBuffs.baseMpBonus || 0) - prevMpBonus;
+  if (hpDelta !== 0) {
+    const gain = Math.floor(hpDelta * mult);
+    creature.maxHp = Math.max(1, creature.maxHp + gain);
+    if (gain > 0) creature.hp = Math.min(creature.maxHp, creature.hp + gain);
+    else creature.hp = Math.min(creature.maxHp, Math.max(0, creature.hp));
+  }
+  if (mpDelta !== 0) {
+    const gain = Math.floor(mpDelta * mult);
+    creature.maxMp = Math.max(0, (creature.maxMp || 0) + gain);
+    if (gain > 0) creature.mp = Math.min(creature.maxMp, (creature.mp || 0) + gain);
+    else creature.mp = Math.min(creature.maxMp, Math.max(0, creature.mp || 0));
+  }
+}
+
+/** Ensure target creature has an itemBuffs object, create if missing */
+function ensureCreatureBuffs(creature) {
+  if (!creature.itemBuffs) creature.itemBuffs = createItemBuffs();
+  ensureItemBuffShape(creature.itemBuffs);
+  if (!creature.equippedItems) creature.equippedItems = [];
+}
+
+export function applyItem(item, creatureParty, _itemBuffs, targetIndex = null) {
   if (!creatureParty) return { applied: false };
-  if (itemBuffs) ensureItemBuffShape(itemBuffs);
   const allCreatures = [...creatureParty.active, ...creatureParty.reserves].filter(Boolean);
-  const targetCreature = targetIndex !== null ? creatureParty.active[targetIndex] : null;
+  const targetCreature = targetIndex !== null ? creatureParty.active[targetIndex] : allCreatures[0];
+  if (targetCreature) ensureCreatureBuffs(targetCreature);
 
   if (item.type === 'heal') {
     if (item.effect.healPercent) {
@@ -135,34 +175,55 @@ export function applyItem(item, creatureParty, itemBuffs, targetIndex = null) {
   }
 
   if (item.type === 'boost') {
-    if (!itemBuffs) return { applied: false };
+    if (!targetCreature) return { applied: false };
+    const buffs = targetCreature.itemBuffs;
+    const prevHpBonus = buffs.baseHpBonus || 0;
+    const prevMpBonus = buffs.baseMpBonus || 0;
+    const prevHpMult = buffs.hpMult ?? 1.0;
+    // Single stat: { field, value }
     if (item.effect.field != null && item.effect.value != null) {
-      const field = item.effect.field;
-      const prevHpMult = itemBuffs.hpMult;
-      applyStat(field, item.effect.value, itemBuffs);
-      if (field === 'hpMult' && itemBuffs.hpMult !== prevHpMult) {
-        scalePartyHpForBuffRatio(creatureParty, itemBuffs.hpMult / prevHpMult);
+      applyStat(item.effect.field, item.effect.value, buffs);
+    }
+    // Multi stat: { stats: [{ field, value }, ...] }
+    if (item.effect.stats) {
+      for (const { field, value } of item.effect.stats) {
+        applyStat(field, value, buffs);
       }
+    }
+    // Scale this creature's HP/MP for base bonus changes
+    if ((buffs.baseHpBonus || 0) !== prevHpBonus || (buffs.baseMpBonus || 0) !== prevMpBonus) {
+      applyBaseBonusToCreature(targetCreature, buffs, prevHpBonus, prevMpBonus);
+    }
+    // Scale creature HP when hpMult changes (food items)
+    const newHpMult = buffs.hpMult ?? 1.0;
+    if (newHpMult !== prevHpMult) {
+      const ratio = newHpMult / prevHpMult;
+      targetCreature.maxHp = Math.max(1, Math.floor(targetCreature.maxHp * ratio));
+      targetCreature.hp = Math.min(targetCreature.maxHp, Math.max(0, Math.floor(targetCreature.hp * ratio)));
     }
     if (item.effect.tempBoost) {
       const tb = item.effect.tempBoost;
-      const targets = tb.target === 'all' ? allCreatures : [allCreatures[0]];
-      for (const creature of targets.filter(Boolean)) {
-        applyTempAttackFlat(creature, {
-          value: tb.value,
-          duration: tb.turns,
-          sourceId: item.id,
-        });
-      }
+      applyTempAttackFlat(targetCreature, {
+        value: tb.value,
+        duration: tb.turns,
+        sourceId: item.id,
+      });
+    }
+    // Track equipment
+    if (item.category === 'equipment') {
+      targetCreature.equippedItems.push({ id: item.id, word: item.word, reading: item.reading, nameEn: item.nameEn, meaning: item.meaning, description: item.description });
     }
     return { applied: true };
   }
 
   if (item.type === 'mpRestore') {
-    const alive = allCreatures.filter(r => r.hp > 0);
-    for (const creature of alive) {
-      const restore = Math.floor((creature.maxMp || 0) * (item.effect.mpRestorePercent || 0));
-      creature.mp = Math.min(creature.maxMp || 0, (creature.mp || 0) + restore);
+    const target = targetCreature && targetCreature.hp > 0 ? targetCreature : (() => {
+      const alive = allCreatures.filter(r => r.hp > 0);
+      return alive.length > 0 ? alive.reduce((min, r) => (r.mp / (r.maxMp || 1)) < (min.mp / (min.maxMp || 1)) ? r : min, alive[0]) : null;
+    })();
+    if (target) {
+      const restore = Math.floor((target.maxMp || 0) * (item.effect.mpRestorePercent || 0));
+      target.mp = Math.min(target.maxMp || 0, (target.mp || 0) + restore);
     }
     return { applied: true };
   }
@@ -180,26 +241,25 @@ export function applyItem(item, creatureParty, itemBuffs, targetIndex = null) {
   }
 
   if (item.type === 'keepsake') {
-    if (!itemBuffs) return { applied: false };
-    const prevHpMult = itemBuffs.hpMult;
+    if (!targetCreature) return { applied: false };
+    const buffs = targetCreature.itemBuffs;
     for (const [field, value] of Object.entries(item.effect)) {
-      applyStat(field, value, itemBuffs);
-    }
-    if (itemBuffs.hpMult !== prevHpMult) {
-      scalePartyHpForBuffRatio(creatureParty, itemBuffs.hpMult / prevHpMult);
+      applyStat(field, value, buffs);
     }
     return { applied: true };
   }
 
   if (item.type === 'xpCharm') {
-    if (!itemBuffs) return { applied: false };
-    itemBuffs.xpMultiplier = (itemBuffs.xpMultiplier || 1.0) * (1 + item.effect.value);
+    if (!targetCreature) return { applied: false };
+    const buffs = targetCreature.itemBuffs;
+    buffs.xpMultiplier = (buffs.xpMultiplier || 1.0) * (1 + item.effect.value);
     return { applied: true };
   }
 
   if (item.type === 'xpBalance') {
-    if (!itemBuffs) return { applied: false };
-    itemBuffs.xpBalanceStacks = (itemBuffs.xpBalanceStacks || 0) + item.effect.value;
+    if (!targetCreature) return { applied: false };
+    const buffs = targetCreature.itemBuffs;
+    buffs.xpBalanceStacks = (buffs.xpBalanceStacks || 0) + item.effect.value;
     return { applied: true };
   }
 
@@ -207,26 +267,27 @@ export function applyItem(item, creatureParty, itemBuffs, targetIndex = null) {
 }
 
 /**
- * Attack used in combat after run-scoped item multipliers (food, equipment).
- * Small % boosts (e.g. +2% at ATK 20) must still increase damage vs pure floor(20*1.02)=20.
+ * Attack used in combat after run-scoped item buffs (food % + equipment base bonus).
+ * baseAttackBonus is scaled by creature level so it compounds like natural stats.
+ * @param {number} baseAttack - Creature's leveled attack stat
+ * @param {object} itemBuffs - Run-scoped item buff object
+ * @param {number} [level] - Creature level (for scaling base bonus)
  */
-export function getBuffedAttack(baseAttack, itemBuffs) {
+export function getBuffedAttack(baseAttack, itemBuffs, level) {
+  let n = Math.max(1, Math.floor(Number(baseAttack) || 0));
+  // Flat base bonus scaled by level (equipment)
+  const bonus = itemBuffs?.baseAttackBonus || 0;
+  if (bonus && level) {
+    n += Math.floor(bonus * levelMult(level));
+  }
+  // % multiplier (food items)
   const mult = itemBuffs?.attackMult ?? 1.0;
-  const n = Math.max(1, Math.floor(Number(baseAttack) || 0));
-  if (!(mult > 0)) return n;
+  if (!(mult > 0) || mult === 1.0) return n;
   const raw = n * mult;
   if (mult <= 1) return Math.max(1, Math.floor(raw));
   let out = Math.floor(raw);
   if (out === n && raw > n + 1e-9) out = n + 1;
   return Math.max(1, out);
-}
-
-export function getBuffedAutoPower(basePower, itemBuffs) {
-  return Math.floor(basePower * (itemBuffs?.autoPowerMult || 1.0));
-}
-
-export function getBuffedUltimatePower(basePower, itemBuffs) {
-  return Math.floor(basePower * (itemBuffs?.ultimatePowerMult || 1.0));
 }
 
 export function getBuffedElementMultiplier(baseMult, itemBuffs) {

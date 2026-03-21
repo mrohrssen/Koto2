@@ -1072,7 +1072,7 @@ export class GameManager {
 
     // Captured last enemy — immediate victory
     if (befriendResult.success && befriendResult.allEnemiesDefeated) {
-      awardBattleXp(this.run.creatureParty, { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 });
+      awardBattleXp(this.run.creatureParty, { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 }, this.run.itemBuffs);
       const newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.currentAreaEncounters++;
@@ -1177,21 +1177,21 @@ export class GameManager {
   /**
    * Player selects one item from the post-combat shop
    * @param {number} itemIndex - 0, 1, or 2
+   * @param {number} targetIndex - which active creature receives the item
    */
-  selectShopItem(itemIndex) {
+  selectShopItem(itemIndex, targetIndex = 0) {
     if (!this.run) throw new Error('No run');
     const items = this.run._pendingShopItems;
     if (!items || !items[itemIndex]) throw new Error('Invalid shop item');
 
     const selectedItem = items[itemIndex];
-    applyItem(selectedItem, this.run.creatureParty, this.run.itemBuffs);
+    applyItem(selectedItem, this.run.creatureParty, null, targetIndex);
     this.run._pendingShopItems = null;
 
     this.emitState();
     return {
       selected: selectedItem,
-      creatureParty: this.run.creatureParty,
-      itemBuffs: this.run.itemBuffs
+      creatureParty: this.run.creatureParty
     };
   }
 
@@ -1386,7 +1386,7 @@ export class GameManager {
 
     let newCollectionAdditions = [];
     if (allEnemiesDefeated) {
-      awardBattleXp(party, { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 });
+      awardBattleXp(party, { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 }, this.run.itemBuffs);
       newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.currentAreaEncounters++;
@@ -1441,7 +1441,7 @@ export class GameManager {
 
     if (result.correct && result.allEnemiesDefeated) {
       // Victory via befriend
-      awardBattleXp(this.run.creatureParty, { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 });
+      awardBattleXp(this.run.creatureParty, { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 }, this.run.itemBuffs);
       const newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.currentAreaEncounters++;

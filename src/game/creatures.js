@@ -117,7 +117,9 @@ export function instantiateCreature(templateId, startingLevel = STARTING_LEVEL) 
     baseAttackTemplate: template.baseAttack,
     baseDefenseTemplate: baseDef,
     baseMpTemplate: baseMp,
-    moves
+    moves,
+    itemBuffs: null,
+    equippedItems: []
   };
 }
 
@@ -160,7 +162,7 @@ export function syncPartyCreatureDefense(party) {
   }
 }
 
-export function addXpToCreature(creature, xp, metaMults = null) {
+export function addXpToCreature(creature, xp, metaMults = null, _itemBuffs = null) {
   creature.xp += xp;
   const levelUps = [];
   while (creature.xp >= xpToNextLevel(creature.level)) {
@@ -172,12 +174,17 @@ export function addXpToCreature(creature, xp, metaMults = null) {
     const baseMp = Math.floor((creature.baseMpTemplate || 80) * rarityMult);
     const baseDef = Math.floor((creature.baseDefenseTemplate ?? 5) * rarityMult);
     const stats = getStatsForLevel(baseHp, baseAtk, baseMp, creature.level, baseDef);
-    let hpDiff = stats.maxHp - creature.maxHp;
-    const mpDiff = stats.maxMp - (creature.maxMp || 0);
-    creature.maxHp = stats.maxHp;
+    // Equipment base bonuses scale with level (per-creature)
+    const cBuffs = creature.itemBuffs || _itemBuffs;
+    const lMult = 1 + (creature.level - 1) * 0.1;
+    const equipHpBonus = cBuffs?.baseHpBonus ? Math.floor(cBuffs.baseHpBonus * lMult) : 0;
+    const equipMpBonus = cBuffs?.baseMpBonus ? Math.floor(cBuffs.baseMpBonus * lMult) : 0;
+    let hpDiff = (stats.maxHp + equipHpBonus) - creature.maxHp;
+    const mpDiff = (stats.maxMp + equipMpBonus) - (creature.maxMp || 0);
+    creature.maxHp = stats.maxHp + equipHpBonus;
     creature.attack = stats.attack;
     creature.defense = stats.defense;
-    creature.maxMp = stats.maxMp;
+    creature.maxMp = stats.maxMp + equipMpBonus;
     // Re-apply meta progression bonuses after level-up stat recalculation
     if (metaMults) {
       if (metaMults.hpMult > 1) {

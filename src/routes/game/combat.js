@@ -175,9 +175,9 @@ export default function createCombatRoutes({
 
   router.post('/creature-shop-select', (req, res) => {
     const gameManager = req.gameManager;
-    const { itemIndex } = req.body;
+    const { itemIndex, targetIndex } = req.body;
     try {
-      const result = gameManager.selectShopItem(itemIndex);
+      const result = gameManager.selectShopItem(itemIndex, targetIndex ?? 0);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {

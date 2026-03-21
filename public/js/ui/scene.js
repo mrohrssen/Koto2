@@ -30,6 +30,7 @@
 import { dom } from '../dom.js';
 import { configureCreatureImg, createTextSprite } from './sprite-utils.js';
 import { renderJpFirst, esc as escHtml } from './bootstrap-client.js';
+import { toRomaji } from './romaji.js';
 
 const ELEMENT_ICONS = {
   wood: '\u{1F33F}', fire: '\u{1F525}', earth: '\u26F0\uFE0F', metal: '\u2699\uFE0F', water: '\u{1F4A7}'
@@ -38,6 +39,12 @@ const ELEMENT_ICONS = {
 const ELEMENT_COLORS = {
   wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63', metal: '#9E9E9E', water: '#2196F3'
 };
+
+/** Render creature name as hiragana with romaji ruby — matches creature-slot-name style */
+function creatureNameRuby(creature) {
+  const reading = creature.baseReading || creature.name || '';
+  return `<ruby>${reading}<rt>${toRomaji(reading)}</rt></ruby>`;
+}
 
 function rarityStars(rarity) {
   const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity];
@@ -77,7 +84,7 @@ export function showEnemy(enemy) {
     // Add compact name badge, level badge, and hp bar after sprite loads
     const nameBadge = document.createElement('div');
     nameBadge.className = 'enemy-creature-name-badge';
-    nameBadge.innerHTML = `${enemy.nameEn || enemy.name || 'Enemy'} ${rarityStars(enemy.rarity)}`;
+    nameBadge.innerHTML = `${creatureNameRuby(enemy)} ${rarityStars(enemy.rarity)}`;
     dom.enemySpriteContainer.appendChild(nameBadge);
 
     const levelBadge = document.createElement('span');
@@ -174,7 +181,7 @@ export function showEnemies(enemies) {
         <span class="enemy-creature-element" style="display:none">${icon}</span>
         <span class="enemy-creature-level" style="background-color: ${color}">Lv${enemy.level || 1}</span>
       </div>
-      <div class="enemy-creature-name">${enemy.nameEn || enemy.name} ${rarityStars(enemy.rarity)}</div>
+      <div class="enemy-creature-name">${creatureNameRuby(enemy)} ${rarityStars(enemy.rarity)}</div>
       <div class="enemy-creature-hp-bar">
         <div class="enemy-creature-hp-fill" style="width: ${hpPct}%"></div>
       </div>

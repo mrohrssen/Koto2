@@ -52,7 +52,7 @@ export function show(items) {
         ${items.map((item, i) => {
           const rarityColor = RARITY_COLORS[item.rarity] || RARITY_COLORS.common;
           const icon = TYPE_ICONS[item.type] || '📦';
-          const itemNameHtml = renderJpFirst(item.word, item.reading, item.meaning);
+          const itemNameHtml = renderJpFirst(item.word, item.reading, item.nameEn);
           const itemDescHtml = item.descriptionTagged
             ? renderEnFirst(item.descriptionTagged)
             : (isJapanified() && item.descriptionJa ? item.descriptionJa : item.description);
@@ -98,7 +98,7 @@ export function show(items) {
       const item = items[idx];
       if (!item) return;
       document.querySelector('.item-help-backdrop')?.remove();
-      const nameHtml = renderJpFirst(item.word, item.reading, item.meaning);
+      const nameHtml = renderJpFirst(item.word, item.reading, item.nameEn);
       const descHtml = item.descriptionTagged
         ? renderEnFirst(item.descriptionTagged)
         : (item.description || '');
@@ -113,6 +113,47 @@ export function show(items) {
       `;
       backdrop.addEventListener('click', () => backdrop.remove());
       document.body.appendChild(backdrop);
+    });
+  });
+}
+
+const ELEMENT_ICONS = { wood: '🌿', fire: '🔥', earth: '⛰️', metal: '⚙️', water: '💧' };
+
+/**
+ * Show creature target picker after item selection.
+ * @param {Array} creatures - Active creatures to choose from
+ * @param {Function} onPicked - Callback with (targetIndex)
+ */
+export function showTargetPicker(creatures, onPicked) {
+  const actionArea = dom.actionArea;
+  if (!actionArea) return;
+
+  actionArea.innerHTML = `
+    <div class="post-combat-shop">
+      <div class="shop-title">Apply to which creature?</div>
+      <div class="shop-items">
+        ${creatures.map((c, i) => {
+          if (!c) return '';
+          return `
+            <div class="shop-item-card target-pick-card" data-target="${i}" style="border-color: #4fc3f740">
+              <div class="text-sprite ${c.element || ''}">${c.baseWord || c.name || '？'}</div>
+              <div class="shop-item-info">
+                <div class="shop-item-word">${ELEMENT_ICONS[c.element] || ''} ${c.baseReading || c.name} (${c.nameEn})</div>
+                <div class="shop-item-effect" style="font-size:11px;color:#888">Lv${c.level} · HP ${c.hp}/${c.maxHp}</div>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+
+  actionArea.querySelectorAll('.target-pick-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const idx = parseInt(card.dataset.target, 10);
+      playSFX('creature-equip');
+      actionArea.querySelectorAll('.target-pick-card').forEach(c => c.style.pointerEvents = 'none');
+      card.classList.add('selected');
+      if (onPicked) onPicked(idx);
     });
   });
 }

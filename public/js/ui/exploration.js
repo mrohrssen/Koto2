@@ -142,8 +142,6 @@ export function init(callbacks) {
 const BUFF_DISPLAY = {
   attackMult:        { name: '攻撃強化',     nameEn: 'ATK Boost',       icon: '⚔️', default: 1.0, format: v => `+${Math.round((v - 1.0) * 100)}%` },
   hpMult:            { name: '体力強化',     nameEn: 'HP Boost',        icon: '❤️', default: 1.0, format: v => `+${Math.round((v - 1.0) * 100)}%` },
-  autoPowerMult:     { name: '自動攻撃強化', nameEn: 'Auto Power',      icon: '🔄', default: 1.0, format: v => `+${Math.round((v - 1.0) * 100)}%` },
-  ultimatePowerMult: { name: '必殺技強化',   nameEn: 'Ultimate Power',  icon: '💥', default: 1.0, format: v => `+${Math.round((v - 1.0) * 100)}%` },
   elementEdge:       { name: '属性強化',     nameEn: 'Element Edge',    icon: '🔷', default: 0,   format: v => `+${v.toFixed(2)}` },
   flatDamageReduction: { name: '装甲強化',   nameEn: 'Thick Armor',     icon: '🛡️', default: 0,   format: v => `-${v} dmg` }
 };
@@ -1189,7 +1187,7 @@ export async function renderFriendlyNpc() {
         <div class="text-sprite shop-item-sprite">${item.word || '？'}</div>
         <div class="shop-item-info">
           <div class="shop-item-word">${icon} ${item.word} <span style="color:var(--text-secondary);font-size:12px">(${item.reading})</span></div>
-          <div class="shop-item-word" style="font-size:12px;opacity:0.8">${item.meaning}</div>
+          <div class="shop-item-word" style="font-size:12px;opacity:0.8">${item.nameEn}</div>
           <div class="shop-item-effect">${pills}</div>
         </div>
       </div>

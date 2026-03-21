@@ -180,16 +180,20 @@ export function createNewRun(player) {
     // Stored as array of objects: { id: string }
     partySkills: [],
 
+    // Equipment items picked up this run (for UI display)
+    equippedItems: [],
+
     // Item buff stacking (run-scoped)
     itemBuffs: {
       attackMult: 1.0,
       hpMult: 1.0,
-      autoPowerMult: 1.0,
-      ultimatePowerMult: 1.0,
       elementEdge: 0,
       flatDamageReduction: 0,
       xpMultiplier: 1.0,
-      xpBalanceStacks: 0
+      xpBalanceStacks: 0,
+      baseAttackBonus: 0,
+      baseHpBonus: 0,
+      baseMpBonus: 0
     },
 
     // Run history for DM context
