@@ -108,11 +108,19 @@ export function showFormation(side, creatures) {
     spriteEl.appendChild(img);
     slotEl.appendChild(spriteEl);
 
+    // Info row: name + bars inline
+    const infoRow = document.createElement('div');
+    infoRow.className = 'formation-info';
+
     // Name
     const nameEl = document.createElement('div');
     nameEl.className = 'formation-slot-name';
     nameEl.innerHTML = creatureNameRuby(creature);
-    slotEl.appendChild(nameEl);
+    infoRow.appendChild(nameEl);
+
+    // Bars container
+    const barsEl = document.createElement('div');
+    barsEl.className = 'formation-bars';
 
     // HP bar
     const hpBar = document.createElement('div');
@@ -125,7 +133,7 @@ export function showFormation(side, creatures) {
     hpFill.style.width = hpPct + '%';
     hpFill.style.backgroundColor = hpPct > 50 ? 'var(--hp-green)' : hpPct > 25 ? 'var(--hp-yellow)' : 'var(--hp-red)';
     hpBar.appendChild(hpFill);
-    slotEl.appendChild(hpBar);
+    barsEl.appendChild(hpBar);
 
     // MP bar (player creatures only)
     if (side === 'player' && creature.maxMp > 0) {
@@ -142,8 +150,11 @@ export function showFormation(side, creatures) {
       mpText.className = 'formation-mp-text';
       mpText.textContent = `${curMp}/${mpMax}`;
       mpBar.appendChild(mpText);
-      slotEl.appendChild(mpBar);
+      barsEl.appendChild(mpBar);
     }
+
+    infoRow.appendChild(barsEl);
+    slotEl.appendChild(infoRow);
 
     // Charged state
     if (creature.ultimateCharge >= (creature.ultimateChargeMax || 100)) {
