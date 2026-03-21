@@ -24,7 +24,7 @@
     "description": "A peaceful meadow at the edge of town, where creatures roam freely.",
     "tags": ["meadow", "starter", "open"],
     "subAreas": [],
-    "background": "backgrounds/areas/hajimari-no-hiroba/hajimari-no-hiroba_01.webp",
+    "background": "areas/hajimari-no-hiroba/hajimari-no-hiroba_01.webp",
     "stage": 1,
     "createdAt": "2026-03-20"
   }
