@@ -207,11 +207,12 @@ html, body {
 .scene-area {
   position: relative;
   z-index: 1;
-  height: 37vh;
+  height: 40vh;
   min-height: 220px;
   flex-shrink: 0;
   overflow: visible;
   background: transparent;
+  border-bottom: 2px solid #3498db;
 }
 
 .scene-background {
@@ -271,8 +272,8 @@ html, body {
 }
 
 .formation-sprite {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1356,7 +1357,8 @@ html, body {
   flex-shrink: 0;
 }
 
-.sac-impact-sprite {
+.sac-impact-sprite,
+.sac-impact .sac-creature-sprite {
   width: 20px;
   height: 20px;
   border-radius: 4px;

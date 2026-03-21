@@ -730,14 +730,17 @@ const BEFRIEND_QUIZ_CHANCE = 0.50; // 50% chance on killing blow to last enemy
 
 /**
  * Check if the befriend quiz should trigger when all enemies are defeated.
- * Returns true if the 50% roll succeeds and the quiz should fire.
+ * Returns true if the roll succeeds and the quiz should fire.
  * @param {object[]} enemies - Enemy creatures array
+ * @param {object} [options]
+ * @param {boolean} [options.guaranteed] - If true, always trigger (new player protection)
  * @returns {boolean}
  */
-export function shouldTriggerBefriendQuiz(enemies) {
+export function shouldTriggerBefriendQuiz(enemies, { guaranteed = false } = {}) {
   // Find the last enemy that just died (hp === 0, was alive this turn)
   const justDefeated = enemies.filter(e => e.hp <= 0 && !e.befriended);
   if (justDefeated.length === 0) return false;
+  if (guaranteed) return true;
   return Math.random() < BEFRIEND_QUIZ_CHANCE;
 }
 

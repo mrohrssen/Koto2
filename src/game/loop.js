@@ -559,8 +559,11 @@ export class GameManager {
         generateEnemyCreature(npcBattleLevel, creaturePool, stage)
       ];
     } else {
+      // New player protection: if player only has 1 creature, force 1 enemy
+      const totalCreatures = this.run.creatureParty.active.length + (this.run.creatureParty.reserves?.length || 0);
+      const isStarterOnly = totalCreatures <= 1;
       enemyCreatures = generateEnemyCreatures(highestLevel, {
-        maxEnemies: isFirstBattle ? 2 : undefined,
+        maxEnemies: isStarterOnly ? 1 : (isFirstBattle ? 2 : undefined),
         creaturePool,
         stage,
         encounterIndex,
@@ -711,7 +714,10 @@ export class GameManager {
     if (playerResult.allEnemiesDefeated) {
       // Befriend quiz trigger: 50% chance when killing blow would end combat
       // Not for boss fights or NPC battles
-      if (!this.combat.isBoss && !this.combat.npcId && shouldTriggerBefriendQuiz(this.combat.enemies)) {
+      // New player protection: guarantee befriend when player only has 1 creature
+      const totalOwnedCreatures = this.run.creatureParty.active.length + (this.run.creatureParty.reserves?.length || 0);
+      const guaranteeBefriend = totalOwnedCreatures <= 1;
+      if (!this.combat.isBoss && !this.combat.npcId && shouldTriggerBefriendQuiz(this.combat.enemies, { guaranteed: guaranteeBefriend })) {
         // Find the last enemy that just died and revive it to 1 HP
         const lastKilled = [...this.combat.enemies].reverse().find(e => e.hp <= 0 && !e.befriended);
         if (lastKilled) {
