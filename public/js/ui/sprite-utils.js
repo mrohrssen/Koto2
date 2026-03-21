@@ -9,7 +9,7 @@
  */
 
 const BASE = '/assets/sprites/creatures';
-const SPRITE_VERSION = '20260317';
+const SPRITE_VERSION = '20260321';
 
 const _noIdle = new Set();
 const _hasIdle = new Set();
@@ -67,15 +67,11 @@ export function replaceWithTextSprite(img, word, element) {
 }
 
 /**
- * Configure a creature display slot using a text sprite instead of an image.
- * This is the MVP replacement for configureCreatureImg().
+ * Configure a creature display slot — loads real sprite with text-sprite fallback.
  *
- * Replaces the <img> with a <div class="text-sprite {element}"> containing
- * the creature's Japanese base word. The original img is removed from the DOM.
- *
- * @param {HTMLImageElement} img - The placeholder <img> to replace
- * @param {string} id - Creature ID (unused in MVP, kept for API compatibility)
- * @param {Function|null} finalFallback - Ignored in MVP (no image loading)
+ * @param {HTMLImageElement} img - The placeholder <img> to configure
+ * @param {string} id - Creature ID
+ * @param {Function|null} finalFallback - Called if image fails (optional)
  * @param {Object} [creature] - Optional creature data { baseWord, name, element }
  */
 export function configureCreatureImg(img, id, finalFallback, creature) {
@@ -84,7 +80,32 @@ export function configureCreatureImg(img, id, finalFallback, creature) {
   if (!word && element && ELEMENT_DISPLAY_WORD[element]) {
     word = ELEMENT_DISPLAY_WORD[element];
   }
-  replaceWithTextSprite(img, word || '？', element);
+  img.src = creatureStaticPath(id);
+  img.alt = word || '';
+  img.style.maxWidth = '100%';
+  img.style.maxHeight = '100%';
+  img.style.objectFit = 'contain';
+  img.onerror = () => {
+    replaceWithTextSprite(img, word || '？', element);
+    if (finalFallback) finalFallback(img);
+  };
+}
+
+/**
+ * Return an HTML string for a creature sprite <img> that falls back to text sprite on error.
+ * Use in template literals where you'd previously write a text-sprite <div>.
+ * @param {string} id - Creature ID
+ * @param {string} [word] - Fallback Japanese word (baseWord or name)
+ * @param {string} [element] - Element type for fallback color class
+ * @param {string} [extraClass] - Additional CSS class(es) for the <img>
+ * @returns {string} HTML string
+ */
+export function creatureSpriteHtml(id, word, element, extraClass) {
+  const src = creatureStaticPath(id);
+  const cls = extraClass ? ` class="${extraClass}"` : '';
+  const fallbackWord = (word || '？').replace(/"/g, '&quot;');
+  const elClass = element || '';
+  return `<img${cls} src="${src}" alt="${fallbackWord}" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.outerHTML='<div class=\\'text-sprite ${elClass}\\'>${fallbackWord}</div>'">`;
 }
 
 /**

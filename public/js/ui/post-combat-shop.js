@@ -18,6 +18,7 @@ import { t, isJapanified } from './i18n.js';
 import { prefetchWord, playWord } from '../tts.js';
 import { renderJpFirst, renderEnFirst, flushExposures } from './bootstrap-client.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
+import { creatureSpriteHtml } from './sprite-utils.js';
 
 let onItemSelected = null;
 
@@ -136,7 +137,7 @@ export function showTargetPicker(creatures, onPicked) {
           if (!c) return '';
           return `
             <div class="shop-item-card target-pick-card" data-target="${i}" style="border-color: #4fc3f740">
-              <div class="text-sprite ${c.element || ''}">${c.baseWord || c.name || '？'}</div>
+              ${creatureSpriteHtml(c.id, c.baseWord || c.name, c.element)}
               <div class="shop-item-info">
                 <div class="shop-item-word">${ELEMENT_ICONS[c.element] || ''} ${c.baseReading || c.name} (${c.nameEn})</div>
                 <div class="shop-item-effect" style="font-size:11px;color:#888">Lv${c.level} · HP ${c.hp}/${c.maxHp}</div>

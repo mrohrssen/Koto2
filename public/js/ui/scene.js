@@ -33,7 +33,7 @@
  */
 
 import { dom } from '../dom.js';
-import { createTextSprite } from './sprite-utils.js';
+import { createTextSprite, creatureStaticPath } from './sprite-utils.js';
 import { renderJpFirst, esc as escHtml } from './bootstrap-client.js';
 import { toRomaji } from './romaji.js';
 
@@ -90,22 +90,22 @@ export function showFormation(side, creatures) {
     const spriteEl = document.createElement('div');
     spriteEl.className = 'formation-sprite';
     if (creature.currentHp <= 0 || creature.hp <= 0) spriteEl.classList.add('ko');
-    if (creature.spriteImg) {
-      const img = document.createElement('img');
-      img.src = creature.spriteImg;
-      img.alt = creature.name || '';
-      img.style.maxWidth = '100%';
-      img.style.maxHeight = '100%';
-      img.style.objectFit = 'contain';
-      spriteEl.appendChild(img);
-    } else {
-      // Use text-sprite style: baseWord with element color
+    const spriteSrc = creature.spriteImg || creatureStaticPath(creature.id);
+    const img = document.createElement('img');
+    img.src = spriteSrc;
+    img.alt = creature.name || '';
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '100%';
+    img.style.objectFit = 'contain';
+    img.onerror = () => {
+      // Fall back to text sprite if image doesn't exist
       const textSprite = createTextSprite(creature.baseWord || creature.name, creature.element);
       textSprite.style.width = '100%';
       textSprite.style.height = '100%';
       textSprite.style.fontSize = '1.4rem';
-      spriteEl.appendChild(textSprite);
-    }
+      spriteEl.replaceChild(textSprite, img);
+    };
+    spriteEl.appendChild(img);
     slotEl.appendChild(spriteEl);
 
     // Name

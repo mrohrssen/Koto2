@@ -3,7 +3,7 @@
 // Design: Full info card with sprite panel + kanji element badge
 import { dom } from '../dom.js';
 import { ELEMENT_COLORS } from './creature-row.js';
-import { replaceWithTextSprite } from './sprite-utils.js';
+import { replaceWithTextSprite, creatureStaticPath } from './sprite-utils.js';
 import { renderJpFirst } from './bootstrap-client.js';
 
 const ELEMENT_KANJI = {
@@ -69,11 +69,18 @@ function showTargets(targets, move, type) {
     spritePanel.className = 'target-sprite-panel';
     spritePanel.style.background = elemTint;
 
-    // MVP: use text sprite instead of loading image
     const spriteImg = document.createElement('img');
     spriteImg.className = 'target-sprite-img';
-    const textSprite = replaceWithTextSprite(spriteImg, target.baseWord || target.name, target.element);
-    spritePanel.appendChild(textSprite);
+    spriteImg.src = creatureStaticPath(target.id);
+    spriteImg.alt = target.baseWord || target.name || '';
+    spriteImg.style.maxWidth = '100%';
+    spriteImg.style.maxHeight = '100%';
+    spriteImg.style.objectFit = 'contain';
+    spriteImg.onerror = () => {
+      const ts = replaceWithTextSprite(spriteImg, target.baseWord || target.name, target.element);
+      spritePanel.appendChild(ts);
+    };
+    spritePanel.appendChild(spriteImg);
 
     // Element kanji badge
     const badge = document.createElement('span');
