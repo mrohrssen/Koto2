@@ -219,12 +219,170 @@ html, body {
   top: 0;
   left: 0;
   right: 0;
-  bottom: -80px;
+  bottom: 0;
   background-size: cover;
   background-position: center top;
   z-index: 0;
-  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+}
+
+/* ===== BATTLE STAGE ===== */
+.battle-stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  padding: 40px 12px 8px;
+}
+
+.formation {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 4px;
+}
+
+/* Diagonal stagger — both lean same direction (back=left, front=right) */
+.formation .formation-slot:nth-child(1) { margin-left: 24px; }
+.formation .formation-slot:nth-child(2) { margin-left: 36px; }
+.formation .formation-slot:nth-child(3) { margin-left: 48px; }
+
+/* Subtle depth scaling: back 90%, mid 95%, front 100% */
+.formation .formation-slot:nth-child(1) { transform: scale(0.9); }
+.formation .formation-slot:nth-child(2) { transform: scale(0.95); }
+.formation .formation-slot:nth-child(3) { /* scale(1.0) is default */ }
+
+/* Enemy sprites flipped to face left */
+.enemy-formation .formation-sprite img,
+.enemy-formation .formation-sprite {
+  transform: scaleX(-1);
+}
+
+/* ===== FORMATION SLOTS ===== */
+.formation-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  position: relative;
+}
+
+.formation-sprite {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+}
+
+.formation-slot-name {
+  font-size: 13px;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.formation-hp-bar {
+  width: 56px;
+  height: 5px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.formation-hp-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+/* ===== FORMATION ANIMATIONS ===== */
+.formation-slot.creature-dying {
+  animation: creature-death 0.6s ease-out forwards;
+}
+
+@keyframes creature-death {
+  0% { opacity: 1; transform: scale(1); }
+  30% { opacity: 0.8; transform: scale(1.05); filter: brightness(2); }
+  100% { opacity: 0; transform: scale(0.5) translateY(10px); }
+}
+
+.formation-slot.creature-swapping-in {
+  animation: creature-swap-in 0.5s ease-out forwards;
+}
+
+@keyframes creature-swap-in {
+  0% { opacity: 0; transform: scale(0.5) translateY(20px); }
+  60% { opacity: 1; transform: scale(1.1) translateY(-5px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.formation-slot.charged .formation-slot-name {
+  animation: name-charged-glow 1.5s ease-in-out infinite;
+  color: #FFD54F;
+}
+
+@keyframes name-charged-glow {
+  0%, 100% { text-shadow: 0 0 4px rgba(255, 215, 0, 0.4); }
+  50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
+}
+
+.formation-sprite.ko {
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+
+.formation-sprite.charged {
+  box-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
+}
+
+.enemy-formation .formation-slot.defeated {
+  opacity: 0;
+  transform: scale(0.5) translateY(20px);
+  transition: opacity 0.5s, transform 0.5s;
+  pointer-events: none;
+}
+
+.enemy-formation .formation-slot.befriended {
+  opacity: 0;
+  transform: translateY(-40px) scale(0.8);
+  transition: opacity 0.6s, transform 0.6s;
+  pointer-events: none;
+}
+
+.formation-sprite.level-up-glow {
+  animation: levelUpGlow 1.5s ease-out;
+}
+
+@keyframes levelUpGlow {
+  0% { filter: brightness(1); }
+  30% { filter: brightness(1.8) drop-shadow(0 0 8px rgba(130, 100, 255, 0.6)); }
+  100% { filter: brightness(1); }
+}
+
+/* ===== NPC DISPLAY ===== */
+.npc-display {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  padding-top: 40px;
+}
+
+.npc-display.visible {
+  display: flex;
 }
 
 .enemy-info {
@@ -301,17 +459,6 @@ html, body {
   white-space: nowrap;
 }
 
-.enemy-sprite-container {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  padding-top: 40px;
-}
-
 /* Room index within current area (e.g. 7/30) — right side of area header pill */
 .room-progress-badge {
   display: none;
@@ -356,170 +503,6 @@ html, body {
   font-size: 10px;
   color: #aaa;
   font-weight: normal;
-}
-
-.creature-enemy {
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  width: auto;
-  height: auto;
-  padding-top: 40px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 2px;
-}
-
-.creature-enemy .enemy-sprite {
-  max-height: 90px;
-  max-width: 90px;
-  border-radius: 0;
-}
-
-/* Compact name/hp overlay for single creature enemy */
-.creature-enemy .enemy-creature-name-badge {
-  font-size: 15px;
-  font-weight: 600;
-  color: #fff;
-  text-align: center;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.6);
-  background: rgba(0,0,0,0.6);
-  padding: 2px 8px;
-  border-radius: 6px;
-  white-space: nowrap;
-}
-.creature-enemy .enemy-creature-name-badge rt { font-size: 60%; }
-
-.creature-enemy .enemy-compact-hp-bar {
-  width: 70px;
-  height: 5px;
-  background: #333;
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.creature-enemy .enemy-compact-hp-fill {
-  height: 100%;
-  background: var(--hp-green);
-  transition: width 0.3s, background-color 0.3s;
-}
-
-.creature-enemy .creature-level-badge-enemy {
-  position: absolute;
-  bottom: 18px;
-  right: calc(50% - 49px);
-  font-size: 8px;
-  background: var(--text-primary);
-  color: #fff;
-  padding: 1px 3px;
-  border-radius: 3px;
-  line-height: 1;
-  z-index: 3;
-}
-
-/* Multi-Enemy Row */
-.multi-enemy-row {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  gap: 12px;
-  width: 100%;
-  height: 100%;
-  padding: 0 8px;
-  padding-bottom: 25%;
-}
-
-.enemy-creature-slot {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  transition: opacity 0.5s, transform 0.5s;
-  flex: 1;
-  max-width: 140px;
-}
-
-.enemy-creature-slot.defeated {
-  opacity: 0;
-  transform: scale(0.5) translateY(20px);
-  pointer-events: none;
-}
-
-.enemy-creature-slot.befriended {
-  opacity: 0;
-  transform: translateY(-40px) scale(0.8);
-  pointer-events: none;
-}
-
-.enemy-creature-icon {
-  width: auto;
-  height: auto;
-  border-radius: 0;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  background: transparent;
-  font-size: 24px;
-}
-
-.enemy-creature-sprite {
-  max-height: 90px;
-  max-width: 90px;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  border-radius: 0;
-}
-
-.enemy-creature-element {
-  font-size: 36px;
-}
-
-.enemy-creature-level {
-  position: absolute;
-  bottom: -4px;
-  right: -4px;
-  font-size: 8px;
-  background: var(--text-primary);
-  color: #fff;
-  padding: 1px 3px;
-  border-radius: 3px;
-  line-height: 1;
-}
-
-.enemy-creature-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: #fff;
-  max-width: 120px;
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.6);
-  background: rgba(0,0,0,0.6);
-  padding: 2px 8px;
-  border-radius: 6px;
-}
-.enemy-creature-name rt { font-size: 60%; }
-
-.enemy-creature-hp-bar {
-  width: 70px;
-  height: 5px;
-  background: #333;
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.enemy-creature-hp-fill {
-  height: 100%;
-  background: var(--hp-green);
-  transition: width 0.3s, background-color 0.3s;
 }
 
 .scene-toast {
@@ -689,19 +672,6 @@ html, body {
     transform: translateY(2px);
     text-shadow: 0 0 9px rgba(85, 196, 233, 0.65);
   }
-}
-
-/* ===== CREATURE ROW ===== */
-.creature-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  background: transparent;
-  position: relative;
-  z-index: 1;
-  border-top: none;
 }
 
 /* ===== ACTION AREA ===== */
@@ -2910,122 +2880,6 @@ html, body {
   z-index: 10001;
 }
 
-/* ===== CREATURE SLOTS ===== */
-.creature-row:has(.creature-slot) {
-  gap: 28px;
-  padding: 8px 10px;
-}
-
-.creature-slot {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  cursor: pointer;
-}
-
-.creature-icon {
-  width: 110px;
-  height: 110px;
-  border-radius: 0;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  background: transparent;
-  font-size: 40px;
-}
-
-.creature-icon.empty {
-  display: none;
-}
-
-.creature-icon.ko {
-  opacity: 0.3;
-  filter: grayscale(1);
-}
-
-.creature-slot.creature-dying {
-  animation: creature-death 0.6s ease-out forwards;
-}
-
-@keyframes creature-death {
-  0% { opacity: 1; transform: scale(1); }
-  30% { opacity: 0.8; transform: scale(1.05); filter: brightness(2); }
-  100% { opacity: 0; transform: scale(0.5) translateY(10px); }
-}
-
-.creature-slot.creature-swapping-in {
-  animation: creature-swap-in 0.5s ease-out forwards;
-}
-
-@keyframes creature-swap-in {
-  0% { opacity: 0; transform: scale(0.5) translateY(20px); }
-  60% { opacity: 1; transform: scale(1.1) translateY(-5px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-.creature-icon.charged {
-  box-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
-}
-
-.creature-slot.charged .creature-slot-name {
-  animation: name-charged-glow 1.5s ease-in-out infinite;
-  color: #FFD54F;
-}
-
-.creature-slot.charged .creature-ultimate-label {
-  display: block;
-}
-
-@keyframes name-charged-glow {
-  0%, 100% { text-shadow: 0 0 4px rgba(255, 215, 0, 0.4); }
-  50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
-}
-
-.creature-ultimate-label {
-  display: none;
-  font-size: 8px;
-  color: #FFD54F;
-  text-align: center;
-  letter-spacing: 0.5px;
-  line-height: 1;
-}
-
-.creature-level-badge {
-  position: absolute;
-  bottom: -4px;
-  right: -4px;
-  font-size: 9px;
-  background: var(--text-primary);
-  color: #fff;
-  padding: 1px 3px;
-  border-radius: 3px;
-  line-height: 1;
-}
-
-.creature-slot-name {
-  position: absolute;
-  bottom: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.55);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 6px;
-  white-space: nowrap;
-  z-index: 3;
-  max-width: 110px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.creature-slot-name rt { font-size: 60%; }
-
 .creature-sprite-icon {
   width: 110px;
   height: 110px;
@@ -3035,32 +2889,6 @@ html, body {
 
 .creature-element-icon {
   font-size: 48px;
-}
-
-.creature-hp-bar {
-  width: 64px;
-  height: 8px;
-  background: #333;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.creature-hp-fill {
-  height: 100%;
-  background: var(--hp-green);
-  transition: width 0.3s, background-color 0.3s;
-}
-
-/* XP Bar - hidden in combat, shown on level-up */
-.creature-xp-bar {
-  display: none;
-}
-
-.creature-xp-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #7C4DFF, #B388FF);
-  border-radius: 2px;
-  transition: width 0.5s ease-out;
 }
 
 .creature-charge-bar {
@@ -3077,57 +2905,6 @@ html, body {
 
 .charge-segment.filled {
   background: var(--accent-gold, #FFD700);
-}
-
-/* XP popup animation */
-.creature-xp-popup {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 13px;
-  font-weight: bold;
-  color: #4FC3F7;
-  text-shadow: 0 0 6px rgba(79, 195, 247, 0.7), 0 1px 2px rgba(0,0,0,0.8);
-  pointer-events: none;
-  z-index: 100;
-  white-space: nowrap;
-}
-
-.creature-levelup-popup {
-  position: absolute;
-  top: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 14px;
-  font-weight: bold;
-  color: #FFD700;
-  text-shadow: 0 0 8px rgba(255, 215, 0, 0.8), 0 1px 2px rgba(0,0,0,0.8);
-  pointer-events: none;
-  z-index: 101;
-  white-space: nowrap;
-}
-
-/* Level-up glow effect */
-.creature-icon.level-up-glow {
-  animation: levelUpGlow 1.5s ease-out;
-}
-
-@keyframes levelUpGlow {
-  0% { box-shadow: 0 0 5px #7C4DFF, 0 0 15px #7C4DFF; }
-  50% { box-shadow: 0 0 15px #B388FF, 0 0 30px #7C4DFF, 0 0 45px #B388FF; }
-  100% { box-shadow: none; }
-}
-
-/* Level badge pop animation */
-.creature-level-badge.level-badge-pop {
-  animation: badgePop 0.3s ease-out;
-}
-
-@keyframes badgePop {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.3); }
-  100% { transform: scale(1); }
 }
 
 .heal-number {
@@ -3147,10 +2924,6 @@ html, body {
 @keyframes float-up {
   0% { opacity: 1; transform: translateX(-50%) translateY(0); }
   100% { opacity: 0; transform: translateX(-50%) translateY(-40px); }
-}
-
-.poisoned .creature-hp-fill {
-  filter: hue-rotate(270deg);
 }
 
 .poison-tick-number {
@@ -5124,33 +4897,6 @@ html, body {
   font-size: 13px;
   cursor: pointer;
   text-align: center;
-}
-
-/* === MP Bar (creature-row) === */
-.creature-mp-bar {
-  width: 64px;
-  height: 8px;
-  background: #333;
-  border-radius: 3px;
-  overflow: hidden;
-  position: relative;
-  margin-top: 2px;
-}
-
-.creature-mp-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #7c4dff, #448aff);
-  border-radius: 3px;
-  transition: width 0.3s;
-}
-
-.creature-mp-text {
-  position: absolute;
-  top: 0;
-  right: 2px;
-  font-size: 8px;
-  color: rgba(255,255,255,0.8);
-  line-height: 8px;
 }
 
 /* Item buffs in creature popup */
