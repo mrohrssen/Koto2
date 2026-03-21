@@ -30,6 +30,7 @@ import { creatureBgUrl, replaceWithTextSprite } from './sprite-utils.js';
 import { t, isJapanified } from './i18n.js';
 import * as metaShop from './meta-shop.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
+import { playRoomTransition } from './room-transition.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -450,6 +451,7 @@ export function renderExploring() {
     const result = await apiProceed();
     if (result?.state) {
       updateGameState(result.state);
+      await playRoomTransition(result.state);
       updateUI();
     }
   });
@@ -508,7 +510,11 @@ export function renderShrine() {
     `);
     document.getElementById('shrine-skip-btn')?.addEventListener('click', async () => {
       const result = await apiProceed();
-      if (result?.state) { updateGameState(result.state); updateUI(); }
+      if (result?.state) {
+        updateGameState(result.state);
+        await playRoomTransition(result.state);
+        updateUI();
+      }
     });
     return;
   }
@@ -586,6 +592,7 @@ export async function renderQuiz() {
   const result = await apiProceed();
   if (result?.state) {
     updateGameState(result.state);
+    await playRoomTransition(result.state);
     updateUI();
   }
 }
@@ -632,6 +639,7 @@ export async function renderWordDiscovery() {
       const result = await apiProceed();
       if (result?.state) {
         updateGameState(result.state);
+        await playRoomTransition(result.state);
         updateUI();
       }
     });
