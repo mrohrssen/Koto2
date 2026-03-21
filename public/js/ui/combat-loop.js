@@ -2490,7 +2490,7 @@ function showBefriendTargetSelect(enemies) {
  * Show one round of befriend conversation.
  * Returns the selected option index.
  */
-function showConversationRound(round, roundNumber, creatureName) {
+function showConversationRound(round, creatureName) {
   // Show creature's line in narration box
   narration.showNarration(round.speaker, {
     speaker: creatureName,
@@ -2567,7 +2567,7 @@ async function executeBefriendAction(actingCreatureSlot = null) {
       if (rounds[i].speakerTts && convoUserId) {
         playDialogueAudio(convoUserId, rounds[i].speakerTts);
       }
-      const selectedIndex = await showConversationRound(rounds[i], i, creatureName);
+      const selectedIndex = await showConversationRound(rounds[i], creatureName);
       // Play selected option audio if available (fire-and-forget)
       if (rounds[i].optionsTts?.[selectedIndex] && convoUserId) {
         playDialogueAudio(convoUserId, rounds[i].optionsTts[selectedIndex]);
