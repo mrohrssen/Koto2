@@ -54,6 +54,7 @@ import { init as initMoveSelect, showMoves, clear as clearMoveSelect, setActiveL
 import { init as initTargetSelect, showEnemies, showAllies, clear as clearTargetSelect } from './target-select.js';
 import { showLearnPrompt } from './move-learn.js';
 import { showDialogueChoices } from './dialogue-choices.js';
+import { playNpcSkillAnimation } from './room-transition.js';
 
 // ============ SPLIT ATTACK CARD ============
 
@@ -380,6 +381,18 @@ async function withAnimationActive(fn) {
   } finally {
     if (setCombatAnimationActive) setCombatAnimationActive(false);
   }
+}
+
+/** Get NPC data from current combat state */
+function getCombatNpcData() {
+  const state = getGameState();
+  return state?.combat?.npcData || null;
+}
+
+/** Get current enemy creatures for re-rendering after NPC skill animation */
+function getCombatEnemies() {
+  const state = getGameState();
+  return state?.combat?.enemies || [];
 }
 
 /**
@@ -1691,8 +1704,15 @@ async function executeCreatureMovesTurn(choices) {
       // === NPC Skill Phase ===
       if (result.npcSkillAttacks?.length > 0) {
         const npcAllyHpMap = buildAllyHpMap(result);
-        await delay(400);
-        await showNpcSkillAttacksAnimated(result, npcAllyHpMap);
+        const npcData = getCombatNpcData();
+        if (npcData) {
+          await playNpcSkillAnimation(npcData, showNpcSprite, hideNpcSprite, async () => {
+            await showNpcSkillAttacksAnimated(result, npcAllyHpMap);
+          }, getCombatEnemies());
+        } else {
+          await delay(400);
+          await showNpcSkillAttacksAnimated(result, npcAllyHpMap);
+        }
       }
 
       // Enemy attacks phase (reuse existing code)
@@ -1846,8 +1866,15 @@ async function executeCreaturePlayerAttack() {
       // === NPC Skill Phase ===
       if (result.npcSkillAttacks?.length > 0) {
         const npcAllyHpMap = buildAllyHpMap(result);
-        await delay(400);
-        await showNpcSkillAttacksAnimated(result, npcAllyHpMap);
+        const npcData = getCombatNpcData();
+        if (npcData) {
+          await playNpcSkillAnimation(npcData, showNpcSprite, hideNpcSprite, async () => {
+            await showNpcSkillAttacksAnimated(result, npcAllyHpMap);
+          }, getCombatEnemies());
+        } else {
+          await delay(400);
+          await showNpcSkillAttacksAnimated(result, npcAllyHpMap);
+        }
       }
 
       // Enemy attacks phase
