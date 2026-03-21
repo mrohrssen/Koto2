@@ -279,7 +279,7 @@ function removePlaceholder() {
 /* ------------------------------------------------------------------ */
 
 /** Helper: show an NPC sprite in the npc-display area (no HP bar) */
-function showNpcInDisplay(name, spritePath) {
+export function showNpcInDisplay(name, spritePath) {
   dom.npcDisplay.classList.add('visible');
   hideFormation('enemy');
   dom.enemyName.textContent = name;
