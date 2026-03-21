@@ -32,6 +32,7 @@ import { logger } from '../../logger.js';
 import { getDueWordsWithMeanings } from '../../jpdb.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../party-skills.js';
 import { applyHeal } from '../combat/effects.js';
+import { loadNpcs } from './npc-service.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -328,6 +329,17 @@ export class ExplorationService {
     // Track room clears
     if (this.gm.run.runStats) {
       this.gm.run.runStats.roomsCleared++;
+    }
+
+    // Assign area NPC to friendlyNpc rooms for transition display
+    if (room.type === 'friendlyNpc' && !room.npc) {
+      const npcs = loadNpcs();
+      const areaId = this.gm.run.currentArea?.id || null;
+      const areaNpcs = Object.values(npcs).filter(n => !areaId || n.area === areaId || !n.area);
+      if (areaNpcs.length > 0) {
+        const picked = areaNpcs[Math.floor(Math.random() * areaNpcs.length)];
+        room.npc = { id: picked.id, name: picked.name, nameEn: picked.nameEn };
+      }
     }
 
     // Get narration for new room
