@@ -381,7 +381,7 @@ html, body {
 
 /* Compact name/hp overlay for single creature enemy */
 .creature-enemy .enemy-creature-name-badge {
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 600;
   color: #fff;
   text-align: center;
@@ -391,6 +391,7 @@ html, body {
   border-radius: 6px;
   white-space: nowrap;
 }
+.creature-enemy .enemy-creature-name-badge rt { font-size: 60%; }
 
 .creature-enemy .enemy-compact-hp-bar {
   width: 70px;
@@ -492,10 +493,10 @@ html, body {
 }
 
 .enemy-creature-name {
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 600;
   color: #fff;
-  max-width: 100px;
+  max-width: 120px;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -505,6 +506,7 @@ html, body {
   padding: 2px 8px;
   border-radius: 6px;
 }
+.enemy-creature-name rt { font-size: 60%; }
 
 .enemy-creature-hp-bar {
   width: 70px;
@@ -662,42 +664,6 @@ html, body {
   font-family: 'Courier New', monospace;
   letter-spacing: 0.12em;
   opacity: 0.55;
-}
-
-.narration-choices {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
-  position: relative;
-  z-index: 1;
-}
-
-.narration-choices:empty {
-  display: none;
-}
-
-.narration-choice-btn {
-  background: var(--accent-cyan);
-  border: none;
-  border-radius: var(--card-radius);
-  padding: 14px 16px;
-  color: white;
-  font-size: clamp(14px, 3.8vw, 18px);
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  text-align: center;
-  transition: background 0.2s, transform 0.1s;
-  box-shadow: var(--shadow-soft);
-  -webkit-tap-highlight-color: transparent;
-  width: 100%;
-}
-
-.narration-choice-btn:hover,
-.narration-choice-btn:active {
-  background: #39b0e4;
-  transform: scale(0.96);
 }
 
 .narration-indicator {
@@ -3048,7 +3014,7 @@ html, body {
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   color: #fff;
-  font-size: 8px;
+  font-size: 15px;
   font-weight: 600;
   padding: 1px 6px;
   border-radius: 6px;
@@ -3058,6 +3024,7 @@ html, body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.creature-slot-name rt { font-size: 60%; }
 
 .creature-sprite-icon {
   width: 110px;
@@ -5185,6 +5152,19 @@ html, body {
   color: rgba(255,255,255,0.8);
   line-height: 8px;
 }
+
+/* Item buffs in creature popup */
+.creature-popup-buffs { margin-top: 6px; padding: 4px 8px; background: rgba(76, 175, 80, 0.08); border-radius: 6px; border: 1px solid rgba(76, 175, 80, 0.2); }
+.creature-popup-buffs-label { font-size: 10px; color: #4CAF50; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.creature-popup-buffs-list { font-size: 11px; color: #388E3C; margin-top: 2px; }
+.buff-bonus { color: #4CAF50; font-size: 0.9em; }
+
+/* Equipment in creature popup */
+.creature-popup-equipment { margin-top: 6px; padding: 4px 8px; background: rgba(33, 150, 243, 0.08); border-radius: 6px; border: 1px solid rgba(33, 150, 243, 0.2); }
+.creature-popup-equipment-label { font-size: 10px; color: #1976D2; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.creature-popup-equipment-row { font-size: 11px; color: #333; padding: 1px 0; }
+.creature-popup-equipment-row .equip-effect { color: #1976D2; font-size: 10px; }
+.creature-popup-equipment-totals { font-size: 11px; color: #1565C0; font-weight: 600; margin-top: 2px; }
 
 /* Move list in creature popup */
 .creature-popup-moves { margin-top: 8px; }
