@@ -348,7 +348,7 @@ function updateScene() {
 function updateCreatureRow() {
   // Hide row on hub and non-run phases
   if (!gameState.run && (gameState.phase === 'hub' || gameState.phase === 'no_save' || gameState.phase === 'area_selection')) {
-    dom.creatureRow.innerHTML = '';
+    scene.hideFormation('player');
     return;
   }
 
@@ -360,7 +360,7 @@ function updateCreatureRow() {
   }
 
   // No creatures - clear the row
-  dom.creatureRow.innerHTML = '';
+  scene.hideFormation('player');
 }
 
 function updatePlayerHP() {
@@ -1403,7 +1403,11 @@ async function initGame() {
         gameState.player.hp = hp;
       }
     },
-    showDamageNumber: (dmg, isPlayer, isCrit) => scene.showDamageNumber(dmg, { isCrit }),
+    showDamageNumber: (dmg, isPlayer, isCrit) => {
+      const formation = isPlayer ? dom.playerFormation : dom.enemyFormation;
+      const targetEl = formation.querySelector('.formation-slot') || formation;
+      scene.showDamageNumber(dmg, { isCrit, targetEl });
+    },
     resumeCombatAfterVocab: () => resumeCombatAfterVocab(),
     isCombatActive: () => combatLoopUI.isCombatActive(),
     isEnemyDialogueActive: () => enemyDialogueActive,
@@ -1489,7 +1493,11 @@ async function initGame() {
     narration: { showNarration: (text, opts) => narrationBox.show(text, opts), forceHideNarration: () => narrationBox.forceHide() },
     wordPractice,
     characterUI,
-    showDamageNumber: (dmg, isPlayer, isCrit, isDot, isHeal, specialType, tierClass) => scene.showDamageNumber(dmg, { isCrit, isHeal, tierClass }),
+    showDamageNumber: (dmg, isPlayer, isCrit, isDot, isHeal, specialType, tierClass) => {
+      const formation = isPlayer ? dom.playerFormation : dom.enemyFormation;
+      const targetEl = formation.querySelector('.formation-slot') || formation;
+      scene.showDamageNumber(dmg, { isCrit, isHeal, tierClass, targetEl });
+    },
     showDotDamage: (dmg) => scene.showDamageNumber(dmg, { isCrit: false }),
     animateEnemyHurt: () => {},
     animatePlayerHurt: () => {},
