@@ -333,12 +333,16 @@ export class ExplorationService {
 
     // Assign area NPC to friendlyNpc rooms for transition display
     if (room.type === 'friendlyNpc' && !room.npc) {
-      const npcs = loadNpcs();
-      const areaId = this.gm.run.currentArea?.id || null;
-      const areaNpcs = Object.values(npcs).filter(n => !areaId || n.area === areaId || !n.area);
-      if (areaNpcs.length > 0) {
-        const picked = areaNpcs[Math.floor(Math.random() * areaNpcs.length)];
-        room.npc = { id: picked.id, name: picked.name, nameEn: picked.nameEn };
+      try {
+        const npcs = loadNpcs();
+        const npcAreaId = this.gm.run.currentArea?.id || null;
+        const areaNpcs = Object.values(npcs).filter(n => !npcAreaId || n.area === npcAreaId || !n.area);
+        if (areaNpcs.length > 0) {
+          const picked = areaNpcs[Math.floor(Math.random() * areaNpcs.length)];
+          room.npc = { id: picked.id, name: picked.name, nameEn: picked.nameEn };
+        }
+      } catch (err) {
+        logger.error('[Exploration] Failed to assign NPC to friendlyNpc room:', err.message);
       }
     }
 
@@ -347,7 +351,7 @@ export class ExplorationService {
     this.gm.narrate(narration);
     this.gm.emitState();
 
-    logger.info('[Exploration] Proceeded to room:', { type: room.type, index: this.gm.run.currentRoom });
+    logger.info('[Exploration] Proceeded to room:', { type: room.type, index: this.gm.run.currentRoom, hasNpc: !!room.npc, npcId: room.npc?.id });
 
     return {
       room,

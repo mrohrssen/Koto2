@@ -155,6 +155,7 @@ export async function playRoomTransition(gameState) {
 
   const roomType = room.type;
 
+
   if (roomType === 'friendlyNpc') {
     const npc = room.npc;
     if (npc) {
