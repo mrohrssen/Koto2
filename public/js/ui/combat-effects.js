@@ -358,7 +358,7 @@ export async function impactEnemyEffect(damage, enemyEl, enemyMaxHp = 0) {
 
   // 5. Enemy recoils (scaled by tier)
   if (enemyEl) {
-    const recoilDistance = [2, 4, 6, 8, 12][tier];
+    const recoilDistance = [2, 4, 6, 7, 8][tier];
     recoil(enemyEl, recoilDistance, 'right');
   }
 
