@@ -2,24 +2,23 @@
  * @file creature-row.js - Creature Slots Display
  *
  * PURPOSE:
- * Renders 3 creature slots at the bottom of the combat screen using
- * dom.creatureRow and dom.creaturePopup containers. Shows creature-specific content:
- * element icons, HP bars, MP bars, and move list popups.
+ * Renders the player formation in the scene area using showFormation() from scene.js,
+ * then attaches popup click handlers to the resulting .formation-slot elements.
+ * Shows creature details in a popup: element icons, HP/MP stats, move list, swap buttons.
  *
  * KEY EXPORTS:
  * - init({ swapCreatureCallback, rearrangeCreatureCallback }): Setup callbacks
- * - render(creatures): Draw all 3 creature slots
+ * - render(creatures): Draw all 3 creature slots via scene.js formation
  * - isPopupVisible(): Check if a creature popup is currently open
  *
  * DEPENDENCIES:
- * - ../dom.js: DOM element references (creatureRow, creaturePopup)
- * - ../audio.js: Sound effects
+ * - ../dom.js: DOM element references (playerFormation, creaturePopup)
+ * - ./scene.js: showFormation(), hideFormation()
  */
 
 import { dom } from '../dom.js';
-import { configureCreatureImg, replaceWithTextSprite } from './sprite-utils.js';
+import { showFormation, hideFormation } from './scene.js';
 import { renderJpFirst } from './bootstrap-client.js';
-import { toRomaji } from './romaji.js';
 
 function rarityStars(rarity) {
   const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity];
@@ -31,6 +30,7 @@ let onSwapCreature = null;
 let onRearrangeCreature = null;
 let currentReserves = [];
 let currentActiveCreatures = [];
+let _creatures = [];
 /** @type {() => object|undefined|null} */
 let getItemBuffs = null;
 
@@ -131,7 +131,7 @@ export function init({ swapCreatureCallback, rearrangeCreatureCallback, getItemB
   getItemBuffs = typeof getBuffs === 'function' ? getBuffs : null;
   getEquippedItems = typeof getEquip === 'function' ? getEquip : null;
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.creature-slot') && !e.target.closest('.creature-popup')) {
+    if (!e.target.closest('.formation-slot') && !e.target.closest('.creature-popup')) {
       hidePopup();
     }
   });
@@ -150,55 +150,18 @@ export function updateData(creatures) {
 }
 
 export function render(creatures) {
-  const row = dom.creatureRow;
-  row.innerHTML = '';
+  _creatures = creatures;
   currentActiveCreatures = creatures || [];
+  showFormation('player', creatures);
 
-  for (let i = 0; i < 3; i++) {
-    const creature = creatures[i] || null;
-    const slot = document.createElement('div');
-    slot.className = 'creature-slot' + (creature ? '' : ' empty');
-    slot.dataset.index = i;
-
-    if (creature) {
-      const hpPct = Math.max(0, (creature.hp / creature.maxHp) * 100);
-      const isKO = creature.hp <= 0;
-      const hpColor = hpPct > 60 ? 'var(--hp-green)' : hpPct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
-      // Must match xpToNextLevel() in src/game/creatures.js
-      const xpNeeded = Math.pow(creature.level + 1, 3) - Math.pow(creature.level, 3);
-      const xpPct = Math.min(100, (creature.xp / xpNeeded) * 100);
-
-      slot.innerHTML = `
-        <div class="creature-icon${isKO ? ' ko' : ''}"
-             style="border-color: ${ELEMENT_COLORS[creature.element]}">
-          <img class="creature-sprite-icon" alt="">
-          <span class="creature-element-icon" style="display:none">${ELEMENT_ICONS[creature.element]}</span>
-          <span class="creature-level-badge">Lv${creature.level}</span>
-          <span class="creature-slot-name"><ruby>${creature.baseReading || creature.name}<rt>${toRomaji(creature.baseReading || '')}</rt></ruby></span>
-        </div>
-        <div class="creature-hp-bar">
-          <div class="creature-hp-fill" style="width: ${hpPct}%; background-color: ${hpColor}"></div>
-        </div>
-        <div class="creature-xp-bar">
-          <div class="creature-xp-fill" style="width: ${xpPct}%"></div>
-        </div>
-        <div class="creature-mp-bar">
-          <div class="creature-mp-fill" style="width:${(creature.mp / creature.maxMp) * 100}%"></div>
-          <span class="creature-mp-text">${creature.mp}/${creature.maxMp}</span>
-        </div>
-      `;
-
-      const spriteImg = slot.querySelector('.creature-sprite-icon');
-      // MVP: use text sprite for all creatures (KO or alive)
-      const textSprite = replaceWithTextSprite(spriteImg, creature.baseWord || creature.name, creature.element);
-      if (isKO) {
-        textSprite.style.opacity = '0.45';
-      }
-
-      slot.addEventListener('click', () => togglePopup(i));
-    }
-    row.appendChild(slot);
-  }
+  // Attach popup click handlers to formation slots
+  const slots = dom.playerFormation.querySelectorAll('.formation-slot');
+  slots.forEach(slot => {
+    const idx = parseInt(slot.dataset.index, 10);
+    slot.addEventListener('click', () => {
+      if (_creatures[idx]) togglePopup(idx);
+    });
+  });
 }
 
 function togglePopup(index) {
@@ -276,17 +239,15 @@ function showPopup(index, creature) {
     ` : ''}
   `;
 
-  // Position popup centered above the creature slot, clamped to viewport
-  const slot = dom.creatureRow.children[index];
+  // Position relative to formation slot
+  const slot = dom.playerFormation.querySelector(`.formation-slot[data-index="${index}"]`);
   if (slot) {
     const rect = slot.getBoundingClientRect();
-    dom.creaturePopup.style.bottom = `${window.innerHeight - rect.top + 8}px`;
-    dom.creaturePopup.style.left = '50%';
-    dom.creaturePopup.style.transform = 'translateX(-50%)';
-    dom.creaturePopup.style.width = '85vw';
-    dom.creaturePopup.style.maxWidth = '320px';
+    dom.creaturePopup.style.position = 'fixed';
+    dom.creaturePopup.style.left = rect.left + 'px';
+    dom.creaturePopup.style.top = (rect.bottom + 8) + 'px';
+    dom.creaturePopup.style.bottom = 'auto';
   }
-
   dom.creaturePopup.classList.add('visible');
 
   // Swap button handlers (swap with reserves)
