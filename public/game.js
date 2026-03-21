@@ -327,6 +327,15 @@ function updateScene() {
     scene.showWordDiscoveryNpc();
   } else if (gameState.phase === 'dealer') {
     scene.showDealer();
+  } else if (gameState.phase === 'friendlyNpc') {
+    // Preserve NPC sprite placed by room transition
+    const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
+    const npc = room?.npc;
+    if (npc) {
+      scene.showNpcTrainer(npc.nameEn || npc.name, npc.id, npc);
+    }
+  } else if (gameState.phase === 'whackAMole') {
+    scene.showNpcInDisplay('Game Master', '/assets/sprites/npcs/game-master.webp');
   } else {
     scene.hideEnemies();
   }
