@@ -561,6 +561,7 @@ export default function createRunRoutes({
         word: c.baseWord,
         reading: c.baseReading,
         meaning: c.baseMeaning,
+        element: c.element || '',
         sprite: `/assets/sprites/creatures/${c.id}.webp`
       }));
 

@@ -508,7 +508,7 @@ export class ExplorationService {
   }
 
   /**
-   * Complete whack-a-mole game and award credits
+   * Complete whack-a-mole game and award XP per successful flip to all party
    */
   completeWhackAMole(score) {
     const room = this.getCurrentRoom();
@@ -517,7 +517,7 @@ export class ExplorationService {
     }
 
     if (room.interacted) {
-      return { type: 'whack_a_mole_complete', alreadyComplete: true, score: room.whackAMole.score, creditsAwarded: 0 };
+      return { type: 'whack_a_mole_complete', alreadyComplete: true, score: room.whackAMole.score, creditsAwarded: 0, xpGrants: [], levelUps: [] };
     }
 
     const clampedScore = Math.max(0, Math.floor(score || 0));
@@ -529,7 +529,32 @@ export class ExplorationService {
     const creditsAwarded = clampedScore;
     this.gm.run.player.credits = (this.gm.run.player.credits || 0) + creditsAwarded;
 
-    return { type: 'whack_a_mole_complete', score: clampedScore, creditsAwarded };
+    // Award per-flip XP to all party (active + reserves)
+    const xpGrants = [];
+    const levelUps = [];
+    const perFlipXp = calculateDiscoveryXpForRun(this.gm.run);
+    const totalXp = perFlipXp * clampedScore;
+
+    if (totalXp > 0) {
+      const allCreatures = [
+        ...(this.gm.run.creatureParty?.active || []),
+        ...(this.gm.run.creatureParty?.reserves || [])
+      ].filter(c => c != null);
+
+      for (const creature of allCreatures) {
+        const prevLevel = creature.level;
+        addXpToCreature(creature, totalXp, null, this.gm.run?.itemBuffs);
+        xpGrants.push({ creatureId: creature.id, creatureName: creature.nameEn, xp: totalXp });
+        if (creature.level > prevLevel) {
+          levelUps.push({
+            creatureId: creature.id, creatureName: creature.nameEn,
+            oldLevel: prevLevel, newLevel: creature.level
+          });
+        }
+      }
+    }
+
+    return { type: 'whack_a_mole_complete', score: clampedScore, creditsAwarded, xpGrants, levelUps };
   }
 
   // ============ SKILL MASTER ROOM ============

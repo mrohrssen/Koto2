@@ -26,31 +26,34 @@ describe('Koto2 30-room generation', () => {
     assert.equal(rooms[29].type, 'boss');
   });
 
-  it('should fill remaining rooms with encounter and friendlyNpc only', () => {
+  it('should fill remaining rooms with encounter, friendlyNpc, or whackAMole', () => {
     const rooms = generateAreaRooms('test-area');
     const fixedIndices = new Set([5, 11, 17, 23, 29]);
+    const allowedTypes = new Set(['encounter', 'friendlyNpc', 'whackAMole']);
     const otherRooms = rooms.filter((_, i) => !fixedIndices.has(i));
     for (const room of otherRooms) {
       assert.ok(
-        room.type === 'encounter' || room.type === 'friendlyNpc',
+        allowedTypes.has(room.type),
         `Unexpected room type: ${room.type} at room ${room.roomNumber}`
       );
     }
   });
 
-  it('should have roughly even split of encounter and friendlyNpc', () => {
+  it('should have roughly even split of encounter and friendlyNpc with some whackAMole', () => {
     const rooms = generateAreaRooms('test-area');
     const fixedIndices = new Set([5, 11, 17, 23, 29]);
     const otherRooms = rooms.filter((_, i) => !fixedIndices.has(i));
     const encounters = otherRooms.filter(r => r.type === 'encounter').length;
     const friendlyNpcs = otherRooms.filter(r => r.type === 'friendlyNpc').length;
-    assert.ok(encounters >= 10 && encounters <= 15, `Encounter count ${encounters} out of range`);
-    assert.ok(friendlyNpcs >= 10 && friendlyNpcs <= 15, `FriendlyNpc count ${friendlyNpcs} out of range`);
+    const wam = otherRooms.filter(r => r.type === 'whackAMole').length;
+    assert.ok(encounters >= 5 && encounters <= 18, `Encounter count ${encounters} out of range`);
+    assert.ok(friendlyNpcs >= 5 && friendlyNpcs <= 18, `FriendlyNpc count ${friendlyNpcs} out of range`);
+    assert.ok(wam >= 0 && wam <= 8, `WhackAMole count ${wam} out of range`);
   });
 
   it('should not generate disabled room types', () => {
     const rooms = generateAreaRooms('test-area');
-    const disabledTypes = ['shrine', 'quiz', 'wordDiscovery', 'dealer', 'whackAMole', 'speedReviewRoom'];
+    const disabledTypes = ['shrine', 'quiz', 'wordDiscovery', 'dealer', 'speedReviewRoom'];
     for (const room of rooms) {
       assert.ok(!disabledTypes.includes(room.type), `Disabled room type found: ${room.type}`);
     }

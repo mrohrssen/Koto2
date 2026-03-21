@@ -166,8 +166,30 @@ export class WhackAMoleGame {
     const tileEl = document.querySelector(`.wam-tile[data-index="${index}"]`);
     if (!tileEl) return;
     tileEl.classList.add('wam-flipped');
-    const img = tileEl.querySelector('.wam-tile-img');
-    if (img) img.src = this.pool[poolIdx].sprite;
+    const backEl = tileEl.querySelector('.wam-tile-back');
+    if (!backEl) return;
+
+    // Remove any previous text-sprite fallback
+    const oldText = backEl.querySelector('.text-sprite');
+    if (oldText) oldText.remove();
+
+    const img = backEl.querySelector('.wam-tile-img');
+    const item = this.pool[poolIdx];
+    if (img) {
+      img.style.display = '';
+      img.src = item.sprite;
+      img.onerror = () => {
+        // Fallback to kanji text sprite when image missing
+        img.style.display = 'none';
+        const div = document.createElement('div');
+        div.className = 'text-sprite' + (item.element ? ` ${item.element}` : '');
+        div.textContent = item.word || '\uFF1F';
+        div.style.width = '100%';
+        div.style.height = '100%';
+        div.style.fontSize = '2rem';
+        backEl.appendChild(div);
+      };
+    }
     anime(tileEl, {
       scale: [0.8, 1],
       opacity: [0.5, 1],
@@ -314,18 +336,29 @@ export class WhackAMoleGame {
     clearTimeout(this.flipTimeout);
     clearInterval(this.timerInterval);
 
+    let xpGrants = [];
+    let levelUps = [];
     try {
       const result = await this.apiCompleteWhackAMole(this.score);
       this.updateGameState(result.state);
+      xpGrants = result.xpGrants || [];
+      levelUps = result.levelUps || [];
     } catch (err) {
       // Still show results even if save fails
     }
+
+    const xpPerCreature = xpGrants.length > 0 ? xpGrants[0].xp : 0;
+    const levelUpHtml = levelUps.length > 0
+      ? levelUps.map(lu => `<div class="wam-results-levelup">${lu.creatureName} Lv${lu.oldLevel} \u2192 ${lu.newLevel}!</div>`).join('')
+      : '';
 
     this.actions.setContent(`
       <div class="wam-container">
         <div class="wam-results">
           <div class="wam-results-title">\u30BF\u30A4\u30E0\u30A2\u30C3\u30D7!</div>
           <div class="wam-results-score">\u2605 ${this.score}</div>
+          ${xpPerCreature > 0 ? `<div class="wam-results-xp">+${xpPerCreature} XP to party</div>` : ''}
+          ${levelUpHtml}
           <div class="wam-results-credits">${this.score} credits earned</div>
           <button class="action-btn action-btn-primary wam-continue-btn">Continue</button>
         </div>

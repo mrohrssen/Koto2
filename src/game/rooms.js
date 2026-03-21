@@ -200,8 +200,14 @@ export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encount
     } else if (i === BOSS_INDEX) {
       type = ROOM_TYPES.boss;
     } else {
-      // ~50/50 split between encounter and friendlyNpc
-      type = Math.random() < 0.5 ? ROOM_TYPES.encounter : ROOM_TYPES.friendlyNpc;
+      const roll = Math.random();
+      if (roll < 0.10) {
+        type = ROOM_TYPES.whackAMole;
+      } else if (roll < 0.55) {
+        type = ROOM_TYPES.encounter;
+      } else {
+        type = ROOM_TYPES.friendlyNpc;
+      }
     }
 
     const room = createRoom(type, areaId, i + 1, TOTAL_ROOMS);

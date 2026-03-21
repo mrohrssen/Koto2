@@ -4494,6 +4494,20 @@ html, body {
   color: var(--accent-amber);
 }
 
+.wam-results-xp {
+  font-size: 1.1rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--accent-cyan, #00bcd4);
+  margin-bottom: 4px;
+}
+
+.wam-results-levelup {
+  font-size: 0.95rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--accent-amber);
+  margin-bottom: 2px;
+}
+
 .wam-results-credits {
   font-size: 1rem;
   color: var(--text-secondary);
