@@ -34,13 +34,13 @@ export const dom = {
   get enemyHpFill() { return el('enemy-hp-fill'); },
   get enemyHpText() { return el('enemy-hp-text'); },
   get enemySkillBar() { return el('enemy-skill-bar'); },
-  get enemySpriteContainer() { return el('enemy-sprite-container'); },
+  get battleStage() { return el('battle-stage'); },
+  get playerFormation() { return el('player-formation'); },
+  get enemyFormation() { return el('enemy-formation'); },
+  get npcDisplay() { return el('npc-display'); },
   get roomProgressBadge() { return el('room-progress-badge'); },
   get enemySprite() { return el('enemy-sprite'); },
   get sceneToast() { return el('scene-toast'); },
-
-  // Creature row
-  get creatureRow() { return el('creature-row'); },
 
   // Action area
   get actionArea() { return el('action-area'); },
