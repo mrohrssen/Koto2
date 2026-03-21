@@ -35,20 +35,27 @@ export function bouncePlayerParty(duration = 500) {
  */
 export function slideFromRight(element, duration = 400) {
   if (!element) return Promise.resolve();
-  element.style.transform = 'translateX(100vw)';
   element.style.opacity = '1';
 
+  let resolved = false;
   return new Promise(resolve => {
+    const done = () => {
+      if (resolved) return;
+      resolved = true;
+      element.style.transform = '';
+      resolve();
+    };
+
     anime(element, {
       translateX: [window.innerWidth, 0],
     }, {
       duration,
       ease: 'outBack',
-      onComplete: () => {
-        element.style.transform = '';
-        resolve();
-      }
+      onComplete: done
     });
+
+    // Safety timeout in case onComplete doesn't fire
+    setTimeout(done, duration + 100);
   });
 }
 
@@ -58,17 +65,24 @@ export function slideFromRight(element, duration = 400) {
 export function slideToRight(element, duration = 300) {
   if (!element) return Promise.resolve();
 
+  let resolved = false;
   return new Promise(resolve => {
+    const done = () => {
+      if (resolved) return;
+      resolved = true;
+      element.style.transform = 'translateX(100vw)';
+      resolve();
+    };
+
     anime(element, {
       translateX: [0, window.innerWidth],
     }, {
       duration,
       ease: 'inQuad',
-      onComplete: () => {
-        element.style.transform = 'translateX(100vw)';
-        resolve();
-      }
+      onComplete: done
     });
+
+    setTimeout(done, duration + 100);
   });
 }
 
@@ -79,14 +93,24 @@ export function fadeIn(element, duration = 300) {
   if (!element) return Promise.resolve();
   element.style.opacity = '0';
 
+  let resolved = false;
   return new Promise(resolve => {
+    const done = () => {
+      if (resolved) return;
+      resolved = true;
+      element.style.opacity = '1';
+      resolve();
+    };
+
     anime(element, {
       opacity: [0, 1],
     }, {
       duration,
       ease: 'outQuad',
-      onComplete: resolve
+      onComplete: done
     });
+
+    setTimeout(done, duration + 100);
   });
 }
 
@@ -96,14 +120,23 @@ export function fadeIn(element, duration = 300) {
 export function fadeOut(element, duration = 300) {
   if (!element) return Promise.resolve();
 
+  let resolved = false;
   return new Promise(resolve => {
+    const done = () => {
+      if (resolved) return;
+      resolved = true;
+      resolve();
+    };
+
     anime(element, {
       opacity: [1, 0],
     }, {
       duration,
       ease: 'outQuad',
-      onComplete: resolve
+      onComplete: done
     });
+
+    setTimeout(done, duration + 100);
   });
 }
 
