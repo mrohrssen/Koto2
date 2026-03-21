@@ -921,7 +921,7 @@ function showNextFlashCardFromQueue() {
  * Find a creature slot element by creature ID (matches against game state).
  * Works for both allied creature slots (attacker) and targeted creature slots.
  * @param {string} creatureId - The creature's ID
- * @returns {Element|null} The .creature-slot DOM element, or null
+ * @returns {Element|null} The .formation-slot DOM element, or null
  */
 function findCreatureSlotByAttackerId(creatureId, allyIndex = null) {
   const state = getGameState();
@@ -936,36 +936,24 @@ function findCreatureSlotByAttackerId(creatureId, allyIndex = null) {
   }
   if (index < 0) return null;
 
-  const slots = document.querySelectorAll('#creature-row .creature-slot');
+  const slots = document.querySelectorAll('#player-formation .formation-slot');
   return slots[index] || null;
 }
 
 /**
- * Find the enemy slot element for a specific target in multi-enemy combat.
- * Falls back to the whole enemy-sprite-container for single-enemy fights.
+ * Find the enemy slot element for a specific target in formation-based combat.
+ * Falls back to npc-display or the whole enemy-formation container.
  * @param {string} targetId - Enemy template id (fallback when enemyIndex missing)
  * @param {Array} enemies - The enemies array from the result
  * @param {number|null} enemyIndex - Slot in `enemies` (authoritative when duplicate species)
  * @returns {Element} The specific enemy slot element or the container
  */
 function findEnemyTargetElement(targetId, enemies, enemyIndex = null) {
-  if (enemies && enemies.length > 1) {
-    let idx = -1;
-    if (typeof enemyIndex === 'number' && enemyIndex >= 0 && enemyIndex < enemies.length) {
-      idx = enemyIndex;
-    } else if (targetId) {
-      idx = enemies.findIndex(e => e && e.id === targetId);
-    }
-    if (idx >= 0) {
-      const slot = document.querySelector(`.enemy-creature-slot[data-enemy-index="${idx}"]`);
-      // Skip defeated/invisible slots - fall back to first alive enemy slot
-      if (slot && !slot.classList.contains('defeated')) return slot;
-      // If target is defeated, find first alive enemy slot for animation
-      const aliveSlot = document.querySelector('.enemy-creature-slot:not(.defeated):not(.befriended)');
-      if (aliveSlot) return aliveSlot;
-    }
-  }
-  return document.getElementById('enemy-sprite-container');
+  const slot = document.querySelector(`#enemy-formation .formation-slot[data-index="${enemyIndex}"]`);
+  if (slot) return slot;
+  const npcDisplay = document.getElementById('npc-display');
+  if (npcDisplay && npcDisplay.classList.contains('visible')) return npcDisplay;
+  return document.getElementById('enemy-formation');
 }
 
 /**
@@ -982,31 +970,25 @@ function getHpColor(pct) {
 
 function updateCreatureHpBars(creatures, allyHpMap) {
   if (!creatures) return;
-  const slots = document.querySelectorAll('#creature-row .creature-slot');
+  const slots = document.querySelectorAll('#player-formation .formation-slot');
   creatures.forEach((creature, i) => {
     const slot = slots[i];
     if (!slot || !creature) return;
     const currentHp = allyHpMap?.[creature.id] ? allyHpMap[creature.id].hp : creature.hp;
     const hpPct = Math.max(0, (currentHp / creature.maxHp) * 100);
-    const fill = slot.querySelector('.creature-hp-fill');
+    const fill = slot.querySelector('.formation-hp-fill');
     if (fill) {
       fill.style.width = `${hpPct}%`;
       fill.style.backgroundColor = getHpColor(hpPct);
     }
     // Update KO state
-    const icon = slot.querySelector('.creature-icon');
+    const icon = slot.querySelector('.formation-sprite');
     if (icon) {
       if (currentHp <= 0) {
         icon.classList.add('ko');
       } else {
         icon.classList.remove('ko');
       }
-    }
-    // Update MP bar
-    const mpFill = slot.querySelector('.creature-mp-fill');
-    if (mpFill && creature.maxMp > 0) {
-      const mpPct = Math.max(0, Math.min(100, (creature.mp / creature.maxMp) * 100));
-      mpFill.style.width = `${mpPct}%`;
     }
   });
 }
@@ -1046,7 +1028,7 @@ function showXpEvents(xpEvents) {
   const activeCreatures = state.run?.creatureParty?.active;
   if (!activeCreatures) return pendingMoveLearn;
 
-  const slots = document.querySelectorAll('#creature-row .creature-slot');
+  const slots = document.querySelectorAll('#player-formation .formation-slot');
 
   for (const event of xpEvents) {
     // Show XP popups for each creature that gained XP
@@ -1296,7 +1278,7 @@ async function showEffectEvents(result) {
       if (event.targetSide === 'ally' && typeof event.targetIndex === 'number') {
         targetEl = findCreatureSlotByAttackerId(event.targetId, event.targetIndex);
       } else if (event.targetSide === 'enemy' && typeof event.targetIndex === 'number') {
-        targetEl = document.querySelector(`.enemy-creature-slot[data-enemy-index="${event.targetIndex}"]`);
+        targetEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${event.targetIndex}"]`);
       }
       if (!targetEl) targetEl = findCreatureSlotByAttackerId(event.targetId);
       if (!targetEl) {
@@ -1324,7 +1306,7 @@ async function showEffectEvents(result) {
       if (event.targetSide === 'ally' && typeof event.targetIndex === 'number') {
         targetEl = findCreatureSlotByAttackerId(event.targetId, event.targetIndex);
       } else if (event.targetSide === 'enemy' && typeof event.targetIndex === 'number') {
-        targetEl = document.querySelector(`.enemy-creature-slot[data-enemy-index="${event.targetIndex}"]`);
+        targetEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${event.targetIndex}"]`);
       }
       if (!targetEl) targetEl = findCreatureSlotByAttackerId(event.targetId);
       if (!targetEl) {
@@ -1482,7 +1464,7 @@ async function showKoSwapAnimations(result) {
     // Animate the KO'd creature dying
     const koIndex = swap.slot ?? -1;
     if (koIndex >= 0) {
-      const slots = document.querySelectorAll('#creature-row .creature-slot');
+      const slots = document.querySelectorAll('#player-formation .formation-slot');
       const dyingSlot = slots[koIndex];
       if (dyingSlot) {
         dyingSlot.classList.add('creature-dying');
@@ -1497,23 +1479,23 @@ async function showKoSwapAnimations(result) {
 
     // Update sprite and HP for the new creature with swap-in animation
     if (result.creatureParty?.active && koIndex >= 0) {
-      const slots = document.querySelectorAll('#creature-row .creature-slot');
+      const slots = document.querySelectorAll('#player-formation .formation-slot');
       const swapSlot = slots[koIndex];
       if (swapSlot) {
         swapSlot.classList.remove('creature-dying');
         swapSlot.classList.add('creature-swapping-in');
         const newCreature = result.creatureParty.active[koIndex];
         if (newCreature) {
-          const icon = swapSlot.querySelector('.creature-sprite-icon');
+          const icon = swapSlot.querySelector('.formation-sprite img');
           // MVP: replace with text sprite
           if (icon) replaceWithTextSprite(icon, newCreature.baseWord || newCreature.name, newCreature.element);
-          const hpFill = swapSlot.querySelector('.creature-hp-fill');
+          const hpFill = swapSlot.querySelector('.formation-hp-fill');
           if (hpFill) {
             const pct = Math.max(0, (newCreature.hp / newCreature.maxHp) * 100);
             hpFill.style.width = `${pct}%`;
             hpFill.style.backgroundColor = pct > 60 ? 'var(--hp-green)' : pct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
           }
-          const koIcon = swapSlot.querySelector('.creature-icon');
+          const koIcon = swapSlot.querySelector('.formation-sprite');
           if (koIcon) koIcon.classList.remove('ko');
         }
         setTimeout(() => swapSlot.classList.remove('creature-swapping-in'), 500);
@@ -1547,7 +1529,7 @@ function syncFinalState(result) {
   }
   updateGameState(updates);
 
-  // Keep creature-row popup data in sync with latest MP/HP
+  // Keep formation popup data in sync with latest HP
   if (result.creatureParty?.active && updateCreatureRowData) {
     updateCreatureRowData(result.creatureParty.active);
   }
@@ -1799,17 +1781,6 @@ async function executeCreaturePlayerAttack() {
 
           const creatureSlotEl = findCreatureSlotByAttackerId(atk.attackerId);
           const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies, atk.targetIndex);
-
-          // Update MP bar for this attacker immediately after its attack
-          const attackerSlotIdx = (result.creatureParty?.active || []).findIndex(r => r && r.id === atk.attackerId);
-          const attackerSlot = attackerSlotIdx >= 0 ? document.querySelectorAll('#creature-row .creature-slot')[attackerSlotIdx] : null;
-          if (attackerSlot && atk.attackerMp != null) {
-            const mpFill = attackerSlot.querySelector('.creature-mp-fill');
-            if (mpFill && atk.attackerMaxMp > 0) {
-              const mpPct = Math.max(0, Math.min(100, (atk.attackerMp / atk.attackerMaxMp) * 100));
-              mpFill.style.width = `${mpPct}%`;
-            }
-          }
 
           // Fire element-colored orb from creature to enemy with impact effects
           if (creatureSlotEl && enemyEl && atk.attackerElement) {
@@ -2317,9 +2288,9 @@ async function renderBefriendQuiz(quizData, result) {
     const capturedIdx = answerResult.capturedIndex;
     if (capturedId != null || capturedIdx != null) {
       const slot = (typeof capturedIdx === 'number'
-        ? document.querySelector(`.enemy-creature-slot[data-enemy-index="${capturedIdx}"]`)
+        ? document.querySelector(`#enemy-formation .formation-slot[data-index="${capturedIdx}"]`)
         : null) || (capturedId
-        ? document.querySelector(`.enemy-creature-slot[data-enemy-id="${capturedId}"]`)
+        ? document.querySelector(`#enemy-formation .formation-slot[data-creature-id="${capturedId}"]`)
         : null);
       if (slot) slot.classList.add('befriended');
     }
@@ -2464,7 +2435,7 @@ function showBefriendTargetSelect(enemies) {
     if (!actionArea) { resolve(-1); return; }
 
     const buttons = eligible.map(e => `
-      <div class="shrine-creature-option befriend-target-option" data-enemy-index="${e.index}" style="width:100%">
+      <div class="shrine-creature-option befriend-target-option" data-index="${e.index}" style="width:100%">
         <div class="shrine-creature-info" style="padding:1rem; width:100%; text-align:center">
           <div class="shrine-creature-name" style="color:#4CAF50">${e.nameEn || e.name} (HP: ${Math.round(e.hp / e.maxHp * 100)}%)</div>
         </div>
@@ -2481,7 +2452,7 @@ function showBefriendTargetSelect(enemies) {
     actionArea.addEventListener('click', (e) => {
       const opt = e.target.closest('.befriend-target-option');
       if (!opt) return;
-      resolve(parseInt(opt.dataset.enemyIndex, 10));
+      resolve(parseInt(opt.dataset.index, 10));
     });
   });
 }
@@ -2590,7 +2561,7 @@ async function executeBefriendAction(actingCreatureSlot = null) {
         await narration.showNarration('？？？', { speaker: creatureSpeaker });
 
         // Shake target enemy
-        const slots = document.querySelectorAll('.enemy-creature-slot');
+        const slots = document.querySelectorAll('#enemy-formation .formation-slot');
         const targetSlot = slots[targetEnemyIndex];
         if (targetSlot) {
           targetSlot.classList.add('shake-animation');
@@ -2656,9 +2627,9 @@ async function executeBefriendAction(actingCreatureSlot = null) {
               const capturedIdx = replaceResult.capturedIndex;
               if (capturedId != null || capturedIdx != null) {
                 const slot = (typeof capturedIdx === 'number'
-                  ? document.querySelector(`.enemy-creature-slot[data-enemy-index="${capturedIdx}"]`)
+                  ? document.querySelector(`#enemy-formation .formation-slot[data-index="${capturedIdx}"]`)
                   : null) || (capturedId
-                  ? document.querySelector(`.enemy-creature-slot[data-enemy-id="${capturedId}"]`)
+                  ? document.querySelector(`#enemy-formation .formation-slot[data-creature-id="${capturedId}"]`)
                   : null);
                 if (slot) slot.classList.add('befriended');
               }
@@ -2716,9 +2687,9 @@ async function executeBefriendAction(actingCreatureSlot = null) {
 
         if (captured?.id || typeof targetEnemyIndex === 'number') {
           const slot = (typeof targetEnemyIndex === 'number'
-            ? document.querySelector(`.enemy-creature-slot[data-enemy-index="${targetEnemyIndex}"]`)
+            ? document.querySelector(`#enemy-formation .formation-slot[data-index="${targetEnemyIndex}"]`)
             : null) || (captured?.id
-            ? document.querySelector(`.enemy-creature-slot[data-enemy-id="${captured.id}"]`)
+            ? document.querySelector(`#enemy-formation .formation-slot[data-creature-id="${captured.id}"]`)
             : null);
           if (slot) slot.classList.add('befriended');
         }
