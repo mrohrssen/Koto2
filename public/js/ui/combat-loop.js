@@ -990,6 +990,15 @@ function updateCreatureHpBars(creatures, allyHpMap) {
         icon.classList.remove('ko');
       }
     }
+    // Update MP bar
+    const mpFill = slot.querySelector('.formation-mp-fill');
+    const mpText = slot.querySelector('.formation-mp-text');
+    if (mpFill && creature.maxMp > 0) {
+      const curMp = creature.currentMp ?? creature.mp ?? 0;
+      const mpPct = Math.max(0, (curMp / creature.maxMp) * 100);
+      mpFill.style.width = `${mpPct}%`;
+      if (mpText) mpText.textContent = `${curMp}/${creature.maxMp}`;
+    }
   });
 }
 

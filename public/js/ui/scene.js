@@ -127,6 +127,24 @@ export function showFormation(side, creatures) {
     hpBar.appendChild(hpFill);
     slotEl.appendChild(hpBar);
 
+    // MP bar (player creatures only)
+    if (side === 'player' && creature.maxMp > 0) {
+      const mpBar = document.createElement('div');
+      mpBar.className = 'formation-mp-bar';
+      const mpFill = document.createElement('div');
+      mpFill.className = 'formation-mp-fill';
+      const curMp = creature.currentMp ?? creature.mp ?? 0;
+      const mpMax = creature.maxMp ?? 1;
+      const mpPct = mpMax > 0 ? Math.max(0, curMp / mpMax * 100) : 0;
+      mpFill.style.width = mpPct + '%';
+      mpBar.appendChild(mpFill);
+      const mpText = document.createElement('span');
+      mpText.className = 'formation-mp-text';
+      mpText.textContent = `${curMp}/${mpMax}`;
+      mpBar.appendChild(mpText);
+      slotEl.appendChild(mpBar);
+    }
+
     // Charged state
     if (creature.ultimateCharge >= (creature.ultimateChargeMax || 100)) {
       slotEl.classList.add('charged');
