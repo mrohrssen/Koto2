@@ -122,13 +122,12 @@ function buildSplitAttackCard(atk, isEnemy) {
   const attackerWord = atk.attackerBaseWord || atk.attackerName || '？';
   const targetWord = atk.targetBaseWord || atk.targetName || '？';
 
-  // Flip enemy sprites to face left: attacker when enemy attacks, target when player attacks
-  const attackerSpriteClass = isEnemy ? 'sac-creature-sprite sac-sprite-enemy' : 'sac-creature-sprite';
+  // Flip target enemy sprite to face left when player attacks
   const targetSpriteClass = isEnemy ? 'sac-creature-sprite' : 'sac-creature-sprite sac-sprite-enemy';
 
   return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
     <div class="sac-left">
-      ${creatureSpriteHtml(atk.attackerId, attackerWord, atk.attackerElement, attackerSpriteClass)}
+      ${creatureSpriteHtml(atk.attackerId, attackerWord, atk.attackerElement, 'sac-creature-sprite')}
       <div class="sac-attacker-name">${attackerNameHtml}</div>
     </div>
     <div class="sac-right">
