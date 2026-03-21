@@ -31,13 +31,14 @@ Extract from `showNpcResponseOptions()` a reusable function that any dialogue fl
 
 ```js
 // Signature
-showDialogueChoices(options, { renderFn = renderEnFirst } = {}) => Promise<index>
+showDialogueChoices(options) => Promise<index>
 ```
 
-- Renders into `#action-area` with `shrine-creature-option befriend-answer-option` classes
-- Each option is `{ text: string }` or plain string
+- Renders into `#action-area` via `document.getElementById('action-area').innerHTML` (matching gold standard)
+- Each option is `{ text: string, ... }` or plain string — normalized as `typeof opt === 'string' ? opt : opt.text`
+- Text rendered via `renderEnFirst()` for vocab markup (safe no-op on plain English; also fixes latent XSS in befriend conversation which previously injected raw strings)
 - Returns selected index
-- `renderFn` defaults to `renderEnFirst()` — plain English text passes through unchanged
+- Callers that need an ID (e.g. prologue) map the index back: `options[index].id`
 
 This function lives in a shared location importable by both `game.js` (prologue) and `combat-loop.js`.
 
@@ -46,11 +47,13 @@ This function lives in a shared location importable by both `game.js` (prologue)
 **Prologue (`playPrologue` in `game.js`):**
 - Delete `showPrologueChoices()` entirely
 - Use persistent narration + `showDialogueChoices()` for choice scenes
-- Choice text goes through `renderEnFirst()` (no-op on plain English)
+- Map returned index back to choice ID: `const idx = await showDialogueChoices(choices); lastChoiceId = choices[idx].id ?? choices[idx].text;`
+- After choice resolves, caller must `narrationBox.forceHide()` (previously done inside `showPrologueChoices`'s click handler)
 
 **Befriend conversation (`showConversationRound` in `combat-loop.js`):**
 - Replace inline button rendering with `showDialogueChoices()`
 - Keep the existing narration call (persistent, with speaker)
+- Note: befriend options are plain strings — `showDialogueChoices` normalizes these via `typeof opt === 'string' ? opt : opt.text` and renders through `renderEnFirst()` (fixes latent XSS from raw string injection)
 
 **NPC post-combat dialogue (`runNpcDialogue` in `combat-loop.js`):**
 - Replace `showNpcResponseOptions()` call with `showDialogueChoices()`
