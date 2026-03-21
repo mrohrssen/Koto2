@@ -1,4 +1,8 @@
 import { animate as anime } from '../lib/anime.esm.min.js';
+import { showNpcTrainer, showNpcInDisplay, showDealer, showFormation } from './scene.js';
+import { speakText } from '../tts.js';
+import * as narrationBox from './narration-box.js';
+import { renderEnFirst } from './bootstrap-client.js';
 
 /**
  * Bounce player formation slots in place.
@@ -101,4 +105,125 @@ export function fadeOut(element, duration = 300) {
       onComplete: resolve
     });
   });
+}
+
+/**
+ * Play the room entrance transition.
+ * Called between updateGameState() and updateUI() after apiProceed().
+ */
+export async function playRoomTransition(gameState) {
+  const hasCreatures = gameState.run?.creatureParty?.active?.length > 0;
+  const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
+  if (!room) return;
+
+  if (hasCreatures) {
+    await bouncePlayerParty(500);
+  }
+
+  const roomType = room.type;
+
+  if (roomType === 'friendlyNpc') {
+    const npc = room.npc;
+    if (npc) {
+      showNpcTrainer(npc.nameEn || npc.name, npc.id, npc);
+      const npcDisplay = document.getElementById('npc-display');
+      await slideFromRight(npcDisplay);
+    }
+  } else if (roomType === 'whackAMole') {
+    showNpcInDisplay('Game Master', '/assets/sprites/npcs/game-master.webp');
+    const npcDisplay = document.getElementById('npc-display');
+    await slideFromRight(npcDisplay);
+  } else if (roomType === 'dealer') {
+    showDealer();
+    const npcDisplay = document.getElementById('npc-display');
+    await slideFromRight(npcDisplay);
+  }
+}
+
+/**
+ * Animate enemy creatures entering one-by-one from the right.
+ * Call AFTER showFormation('enemy', enemies) has rendered the slots.
+ */
+export async function enterEnemiesOneByOne(enemies) {
+  const formation = document.getElementById('enemy-formation');
+  if (!formation) return;
+
+  const slots = formation.querySelectorAll('.formation-slot');
+  if (!slots.length) return;
+
+  slots.forEach(slot => {
+    slot.style.transform = 'translateX(100vw)';
+  });
+
+  for (let i = 0; i < slots.length; i++) {
+    const slot = slots[i];
+    const creature = enemies[i];
+
+    await slideFromRight(slot, 400);
+
+    if (creature) {
+      speakText(creature.baseReading || creature.baseWord || creature.name);
+    }
+
+    if (i < slots.length - 1) {
+      await new Promise(r => setTimeout(r, 700));
+    }
+  }
+
+  await new Promise(r => setTimeout(r, 200));
+}
+
+/**
+ * Play NPC battle intro: NPC slides in, says greeting, slides out.
+ */
+export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSpriteFn) {
+  if (!npcData) return;
+
+  const npcName = npcData.nameEn || npcData.name;
+
+  showNpcSpriteFn(npcName, npcData.id, npcData);
+  const npcDisplay = document.getElementById('npc-display');
+  await slideFromRight(npcDisplay);
+
+  if (npcData.greeting) {
+    speakText(npcData.greeting);
+    await narrationBox.show(renderEnFirst(npcData.greeting), { speaker: npcName, html: true });
+  }
+
+  await slideToRight(npcDisplay);
+  hideNpcSpriteFn();
+}
+
+/**
+ * Wrap NPC skill activation with slide-in/out animation.
+ * Note: showNpcSpriteFn calls showNpcTrainer which destroys enemy formation,
+ * so we re-render it after NPC slides out.
+ */
+export async function playNpcSkillAnimation(npcData, showNpcSpriteFn, hideNpcSpriteFn, skillCallback, enemies) {
+  const enemyFormation = document.getElementById('enemy-formation');
+  const npcName = npcData?.nameEn || npcData?.name;
+
+  if (enemyFormation) await fadeOut(enemyFormation);
+
+  if (npcData && showNpcSpriteFn) {
+    showNpcSpriteFn(npcName, npcData.id, npcData);
+    const npcDisplay = document.getElementById('npc-display');
+    await slideFromRight(npcDisplay);
+  }
+
+  await skillCallback();
+
+  const npcDisplay = document.getElementById('npc-display');
+  if (npcDisplay) await slideToRight(npcDisplay);
+  if (hideNpcSpriteFn) hideNpcSpriteFn();
+
+  if (enemies?.length) {
+    showFormation('enemy', enemies);
+  }
+
+  const freshFormation = document.getElementById('enemy-formation');
+  if (freshFormation) {
+    freshFormation.style.opacity = '0';
+    await fadeIn(freshFormation);
+  }
 }
