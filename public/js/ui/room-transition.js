@@ -156,20 +156,23 @@ export async function playRoomTransition(gameState) {
   const roomType = room.type;
 
 
+  // Pre-position npc-display offscreen before making visible (prevents flash)
+  const npcDisplay = document.getElementById('npc-display');
+
   if (roomType === 'friendlyNpc') {
     const npc = room.npc;
     if (npc) {
+      if (npcDisplay) npcDisplay.style.transform = 'translateX(100vw)';
       showNpcTrainer(npc.nameEn || npc.name, npc.id, npc);
-      const npcDisplay = document.getElementById('npc-display');
       await slideFromRight(npcDisplay);
     }
   } else if (roomType === 'whackAMole') {
+    if (npcDisplay) npcDisplay.style.transform = 'translateX(100vw)';
     showNpcInDisplay('Game Master', '/assets/sprites/npcs/game-master.webp');
-    const npcDisplay = document.getElementById('npc-display');
     await slideFromRight(npcDisplay);
   } else if (roomType === 'dealer') {
+    if (npcDisplay) npcDisplay.style.transform = 'translateX(100vw)';
     showDealer();
-    const npcDisplay = document.getElementById('npc-display');
     await slideFromRight(npcDisplay);
   }
 }
@@ -215,11 +218,19 @@ export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSprite
 
   const npcName = npcData.nameEn || npcData.name;
 
-  showNpcSpriteFn(npcName, npcData.id, npcData);
+  // Pre-position npc-display offscreen BEFORE making it visible
+  // to prevent a flash of the NPC at its final CSS position
   const npcDisplay = document.getElementById('npc-display');
+  if (npcDisplay) npcDisplay.style.transform = 'translateX(100vw)';
+
+  showNpcSpriteFn(npcName, npcData.id, npcData);
   await slideFromRight(npcDisplay);
 
+  // Show greeting narration (click-to-continue)
+  console.log('[NpcBattleIntro] npcData.greeting:', npcData.greeting, 'npcName:', npcName);
   if (npcData.greeting) {
+    // Clear any stale narration state before showing greeting
+    narrationBox.forceHide();
     speakText(npcData.greeting);
     await narrationBox.show(renderEnFirst(npcData.greeting), { speaker: npcName, html: true });
   }
@@ -240,8 +251,10 @@ export async function playNpcSkillAnimation(npcData, showNpcSpriteFn, hideNpcSpr
   if (enemyFormation) await fadeOut(enemyFormation);
 
   if (npcData && showNpcSpriteFn) {
-    showNpcSpriteFn(npcName, npcData.id, npcData);
+    // Pre-position offscreen before making visible
     const npcDisplay = document.getElementById('npc-display');
+    if (npcDisplay) npcDisplay.style.transform = 'translateX(100vw)';
+    showNpcSpriteFn(npcName, npcData.id, npcData);
     await slideFromRight(npcDisplay);
   }
 
