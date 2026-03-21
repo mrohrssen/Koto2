@@ -152,25 +152,46 @@ Key details:
 
 **Existing kana code patterns are verified correct:** `GRADE_MAP = { again: Rating.Again, good: Rating.Good }` works because `result[1]` and `result[Rating.Again]` reference the same object.
 
-### New FSRS Functions
+### Unified SRS Library
 
-Add to `internal-srs.js` (or a new `internal-srs-vocab.js` if cleaner):
+**Do NOT create separate SRS systems for kana and vocab.** Refactor `internal-srs.js` into a single generalized system where kana and vocab are both "decks" — collections of FSRS cards with deck-specific metadata. The core FSRS operations (create card, grade card, query due cards, serialize/deserialize) should be deck-agnostic.
+
+**Architecture:**
 
 ```
-createVocabCard(userId, word, meaning, reading)
-  → Creates FSRS card if none exists for this word. Card is immediately due.
-
-getVocabDueCards(userId)
-  → Returns all vocab cards where due <= now. These populate the speed review queue.
-
-reviewVocabCard(userId, word, grade)
-  → Grades a card ('again' or 'good'). Returns updated card.
-  → On 'again': also resets exposure counter in word-knowledge (see below).
-  → On 'good': marks word as mastered in word-knowledge.
-
-getVocabDueCount(userId)
-  → Returns count of due vocab cards (for hub badge).
+internal-srs.js (unified)
+├── Generic deck operations (work with any deck)
+│   ├── createCard(userId, deckName, cardId, metadata)
+│   ├── gradeCard(userId, deckName, cardId, grade)
+│   ├── getDueCards(userId, deckName)
+│   ├── getDueCount(userId, deckName)
+│   └── getCard(userId, deckName, cardId)
+│
+├── Kana-specific helpers (thin wrappers)
+│   ├── initKanaDeck(userId)        — seeds 71 hiragana cards
+│   ├── getNextKanaCard(userId)     — filters by unlocked rows
+│   └── getKanaStats(userId)        — includes graduation logic
+│
+└── Vocab-specific helpers (thin wrappers)
+    ├── createVocabCard(userId, word, meaning, reading)
+    └── reviewVocabCard(userId, word, grade)
+        → On 'again': also resets exposure counter in word-knowledge
+        → On 'good': marks word as mastered in word-knowledge
 ```
+
+**Storage stays the same** — `srs-{userId}.json` with deck keys:
+
+```js
+{
+  "kana": { "cards": [ ... ] },
+  "vocab": { "cards": [ ... ] },
+  // future decks (kanji, grammar, etc.) just add keys
+}
+```
+
+**The refactor:** Extract the common FSRS patterns from the existing kana functions (`reviewKanaCard`'s card-building, grading, and merging logic) into generic deck operations. The kana-specific logic (row unlocking, graduation checks) stays as thin wrappers that call the generic layer. Vocab functions are also thin wrappers. This means adding a third deck type in the future is just adding a new key and optional helpers — no new FSRS plumbing.
+
+**Card identity:** Each deck uses its own ID field — kana uses `char`, vocab uses `word`. The generic layer takes a `cardId` parameter and a `findFn` to locate cards in the deck's array.
 
 ### Mastery State
 
