@@ -43,7 +43,7 @@ import {
   poisonTickEffect
 } from './combat-effects.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
-import { replaceWithTextSprite } from './sprite-utils.js';
+import { replaceWithTextSprite, creatureSpriteHtml, creatureStaticPath } from './sprite-utils.js';
 import { toRomaji } from './romaji.js';
 
 function npcSpritePath(npcId) {
@@ -122,9 +122,13 @@ function buildSplitAttackCard(atk, isEnemy) {
   const attackerWord = atk.attackerBaseWord || atk.attackerName || '？';
   const targetWord = atk.targetBaseWord || atk.targetName || '？';
 
+  // Flip enemy sprites to face left: attacker when enemy attacks, target when player attacks
+  const attackerSpriteClass = isEnemy ? 'sac-creature-sprite sac-sprite-enemy' : 'sac-creature-sprite';
+  const targetSpriteClass = isEnemy ? 'sac-creature-sprite' : 'sac-creature-sprite sac-sprite-enemy';
+
   return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
     <div class="sac-left">
-      <div class="text-sprite ${atk.attackerElement || ''}">${attackerWord}</div>
+      ${creatureSpriteHtml(atk.attackerId, attackerWord, atk.attackerElement, attackerSpriteClass)}
       <div class="sac-attacker-name">${attackerNameHtml}</div>
     </div>
     <div class="sac-right">
@@ -142,7 +146,7 @@ function buildSplitAttackCard(atk, isEnemy) {
       </div>
       <div class="sac-row sac-impact" data-row="2">
         <span class="sac-impact-arrow">\u2192</span>
-        <div class="text-sprite ${atk.targetElement || ''}">${targetWord}</div>
+        ${creatureSpriteHtml(atk.targetId, targetWord, atk.targetElement, targetSpriteClass)}
         <span class="sac-impact-name">${targetNameHtml}</span>
         <span class="${damageClass}">${damageSign}</span>
       </div>
@@ -238,7 +242,7 @@ function insertNpcAttackCard(atk) {
       </div>
       <div class="sac-row sac-impact" data-row="2">
         <span class="sac-impact-arrow">\u2192</span>
-        <div class="text-sprite ${atk.targetElement || ''}">${targetWord}</div>
+        ${creatureSpriteHtml(atk.targetId, targetWord, atk.targetElement, 'sac-creature-sprite')}
         <span class="sac-impact-name">${targetNameHtml}</span>
         <span class="${damageClass}">${damageSign}</span>
       </div>
@@ -1496,8 +1500,10 @@ async function showKoSwapAnimations(result) {
         const newCreature = result.creatureParty.active[koIndex];
         if (newCreature) {
           const icon = swapSlot.querySelector('.formation-sprite img');
-          // MVP: replace with text sprite
-          if (icon) replaceWithTextSprite(icon, newCreature.baseWord || newCreature.name, newCreature.element);
+          if (icon) {
+            icon.src = creatureStaticPath(newCreature.id);
+            icon.alt = newCreature.baseWord || newCreature.name || '';
+          }
           const hpFill = swapSlot.querySelector('.formation-hp-fill');
           if (hpFill) {
             const pct = Math.max(0, (newCreature.hp / newCreature.maxHp) * 100);
