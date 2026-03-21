@@ -1509,7 +1509,7 @@ html, body {
   z-index: 101;
   transform: translateY(100%);
   transition: transform var(--transition-med);
-  padding: 8px 0 calc(16px + env(safe-area-inset-bottom, var(--safe-area-inset-bottom, 0px)));
+  padding: 4px 0 calc(4px + env(safe-area-inset-bottom, var(--safe-area-inset-bottom, 0px)));
 }
 
 .menu-sheet.visible {
@@ -1521,7 +1521,7 @@ html, body {
   height: 4px;
   background: var(--border-medium);
   border-radius: 2px;
-  margin: 8px auto 16px;
+  margin: 6px auto 8px;
 }
 
 .menu-item {
@@ -1529,7 +1529,7 @@ html, body {
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 14px 24px;
+  padding: 10px 24px;
   border: none;
   background: transparent;
   font-size: 15px;
