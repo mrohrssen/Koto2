@@ -81,7 +81,7 @@ const KATAKANA_RE = /[\u30A0-\u30FF]/;
 /** Map an English skill/base name to the action icon sprite path. */
 function actionIconPath(nameEn) {
   if (!nameEn) return '';
-  return `/assets/sprites/actions/${nameEn.toLowerCase().replace(/ /g, '-')}.webp`;
+  return `/assets/sprites/actions/${nameEn.toLowerCase().replace(/ /g, '-')}.webp?v=20260322`;
 }
 
 function wrapWithRuby(word, reading, englishReading) {

@@ -59,7 +59,7 @@ function buildMoveCell(move, canAfford) {
   cell.innerHTML = `
     <div class="move-hero">
       <div class="move-icon">
-        <img src="/assets/sprites/actions/${slug}.webp"
+        <img src="/assets/sprites/actions/${slug}.webp?v=20260322"
              onerror="this.parentElement.textContent='${iconFallback}'; this.remove();"
              alt="">
       </div>
