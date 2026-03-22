@@ -766,7 +766,7 @@ export function tickAllEffects(allies, enemies) {
 
 // ============ BEFRIEND NAME QUIZ (Koto2) ============
 
-const BEFRIEND_QUIZ_CHANCE = 0.50; // 50% chance on killing blow to last enemy
+const BEFRIEND_QUIZ_CHANCE = 0.10; // 10% chance on killing blow to last enemy
 
 /**
  * Check if the befriend quiz should trigger when all enemies are defeated.
