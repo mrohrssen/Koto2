@@ -225,7 +225,7 @@ export function showEnemy(enemy) {
     dom.enemyInfo.classList.add('visible');
     updateEnemyHP(enemy.hp, enemy.maxHp);
 
-    const spritePath = enemy.sprite || `/assets/sprites/enemies/${enemy.id}.webp`;
+    const spritePath = enemy.sprite || `/assets/sprites/enemies/${enemy.id}.webp?v=${SPRITE_VERSION}`;
     dom.enemySprite.src = spritePath;
     dom.enemySprite.onerror = () => {
       dom.enemySprite.classList.remove('visible');
@@ -318,17 +318,17 @@ export function showNpcInDisplay(name, spritePath) {
 
 /** Show shrine fox in scene (no HP bar) */
 export function showShrineFox() {
-  showNpcInDisplay('Shrine Fox', '/assets/sprites/shrine_fox.webp');
+  showNpcInDisplay('Shrine Fox', `/assets/sprites/shrine_fox.webp?v=${SPRITE_VERSION}`);
 }
 
 /** Show quiz master in scene (no HP bar) */
 export function showQuizMaster() {
-  showNpcInDisplay('Quiz Master', '/assets/sprites/quiz_master.webp');
+  showNpcInDisplay('Quiz Master', `/assets/sprites/quiz_master.webp?v=${SPRITE_VERSION}`);
 }
 
 /** Show word discovery NPC (knowledge scholar spirit, no HP bar) */
 export function showWordDiscoveryNpc() {
-  showNpcInDisplay('Knowledge Spirit', '/assets/sprites/word_discovery_npc.webp');
+  showNpcInDisplay('Knowledge Spirit', `/assets/sprites/word_discovery_npc.webp?v=${SPRITE_VERSION}`);
 }
 
 /** Show Cid guide NPC in prologue (no HP bar) */
@@ -343,7 +343,7 @@ export function hideCid() {
 
 /** Show traveling merchant NPC (shop merchant, no HP bar) */
 export function showDealer() {
-  showNpcInDisplay('Traveling Merchant', '/assets/sprites/traveling_merchant.webp');
+  showNpcInDisplay('Traveling Merchant', `/assets/sprites/traveling_merchant.webp?v=${SPRITE_VERSION}`);
 }
 
 /** Show Chippy companion sprite (no HP bar) */
@@ -355,7 +355,7 @@ export function showChippy() {
   dom.enemyHpBar.style.display = 'none';
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
 
-  dom.enemySprite.src = '/assets/sprites/chippy.webp';
+  dom.enemySprite.src = `/assets/sprites/chippy.webp?v=${SPRITE_VERSION}`;
   dom.enemySprite.onerror = () => {
     dom.enemySprite.classList.remove('visible');
     removePlaceholder();
@@ -392,7 +392,7 @@ export function showNpcTrainer(npcName, npcId, npc) {
 
   const spritePath = npcId
     ? `/assets/sprites/npcs/${npcId}.webp?v=${SPRITE_VERSION}`
-    : '/assets/sprites/enemies/systemExecutive.webp';
+    : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
   dom.enemySprite.src = spritePath;
   dom.enemySprite.onerror = () => {
     dom.enemySprite.classList.remove('visible');

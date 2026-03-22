@@ -17,6 +17,7 @@ import { rollFriendlyNpcOffers } from '../../game/services/exploration-service.j
 import { applyItem } from '../../game/services/item-service.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
 
+const SPRITE_VERSION = '20260321';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const quizQuestionsPath = join(__dirname, '../../data/quiz-questions.json');
@@ -562,7 +563,7 @@ export default function createRunRoutes({
         reading: c.baseReading,
         meaning: c.baseMeaning,
         element: c.element || '',
-        sprite: `/assets/sprites/creatures/${c.id}.webp`
+        sprite: `/assets/sprites/creatures/${c.id}.webp?v=${SPRITE_VERSION}`
       }));
 
       const itemPool = allItems.map(i => ({
@@ -571,7 +572,7 @@ export default function createRunRoutes({
         word: i.word,
         reading: i.reading,
         meaning: i.meaning,
-        sprite: `/assets/sprites/items/${i.id}.webp`
+        sprite: `/assets/sprites/items/${i.id}.webp?v=${SPRITE_VERSION}`
       }));
 
       // Moves from moves.json — action icon tiles
@@ -583,7 +584,7 @@ export default function createRunRoutes({
           word: m.name,
           reading: m.reading,
           meaning: m.nameEn || m.name,
-          sprite: `/assets/sprites/actions/${slug}.webp`
+          sprite: `/assets/sprites/actions/${slug}.webp?v=${SPRITE_VERSION}`
         };
       });
 
