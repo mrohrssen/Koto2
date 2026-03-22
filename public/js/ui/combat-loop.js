@@ -46,11 +46,11 @@ import {
   flashElement
 } from './combat-effects.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
-import { replaceWithTextSprite, creatureSpriteHtml, creatureStaticPath } from './sprite-utils.js';
+import { replaceWithTextSprite, creatureSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
 import { toRomaji } from './romaji.js';
 
 function npcSpritePath(npcId) {
-  return `/assets/sprites/npcs/${npcId}.webp`;
+  return `/assets/sprites/npcs/${npcId}.webp?v=${SPRITE_VERSION}`;
 }
 import { prefetchWord, playWordPair, playDialogueAudio } from '../tts.js';
 import { init as initMoveSelect, showMoves, clear as clearMoveSelect, setActiveLabel } from './move-select.js';

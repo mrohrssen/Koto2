@@ -333,7 +333,7 @@ export function showWordDiscoveryNpc() {
 
 /** Show Cid guide NPC in prologue (no HP bar) */
 export function showCid() {
-  showNpcInDisplay('Cid', '/assets/sprites/npcs/cid.webp');
+  showNpcInDisplay('Cid', `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`);
 }
 
 /** Hide Cid from scene */
@@ -391,7 +391,7 @@ export function showNpcTrainer(npcName, npcId, npc) {
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
 
   const spritePath = npcId
-    ? `/assets/sprites/npcs/${npcId}.webp`
+    ? `/assets/sprites/npcs/${npcId}.webp?v=${SPRITE_VERSION}`
     : '/assets/sprites/enemies/systemExecutive.webp';
   dom.enemySprite.src = spritePath;
   dom.enemySprite.onerror = () => {

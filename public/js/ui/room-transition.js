@@ -1,5 +1,6 @@
 import { animate as anime } from '../lib/anime.esm.min.js';
 import { showNpcTrainer, showNpcInDisplay, showDealer, showFormation } from './scene.js';
+import { SPRITE_VERSION } from './sprite-utils.js';
 import { speakText } from '../tts.js';
 import * as narrationBox from './narration-box.js';
 import { renderEnFirst } from './bootstrap-client.js';
@@ -168,7 +169,7 @@ export async function playRoomTransition(gameState) {
     }
   } else if (roomType === 'whackAMole') {
     if (npcDisplay) npcDisplay.style.transform = 'translateX(100vw)';
-    showNpcInDisplay('Game Master', '/assets/sprites/npcs/game-master.webp');
+    showNpcInDisplay('Game Master', `/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`);
     await slideFromRight(npcDisplay);
   } else if (roomType === 'dealer') {
     if (npcDisplay) npcDisplay.style.transform = 'translateX(100vw)';
