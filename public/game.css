@@ -546,7 +546,7 @@ html, body {
 }
 
 .enemy-sprite {
-  max-height: 256px;
+  max-height: 230px;
   max-width: 100%;
   object-fit: contain;
   display: none;
