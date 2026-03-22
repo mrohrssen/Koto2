@@ -260,6 +260,12 @@ html, body {
 .formation .formation-slot:nth-child(2) { transform: scale(0.95); }
 .formation .formation-slot:nth-child(3) { /* scale(1.0) is default */ }
 
+/* Boss encounters: 2x sprite size */
+.boss-encounter .formation-sprite {
+  width: 120px;
+  height: 120px;
+}
+
 /* Enemy sprites flipped to face left (only flip container, not img inside) */
 .enemy-formation .formation-sprite {
   transform: scaleX(-1);

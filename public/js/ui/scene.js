@@ -62,9 +62,10 @@ export function setBackground(imagePath) {
  * @param {'player'|'enemy'} side
  * @param {Array} creatures - array of 1-3 creature objects
  */
-export function showFormation(side, creatures) {
+export function showFormation(side, creatures, { isBoss = false } = {}) {
   const container = side === 'player' ? dom.playerFormation : dom.enemyFormation;
   container.innerHTML = '';
+  container.classList.toggle('boss-encounter', isBoss);
 
   if (!creatures || creatures.length === 0) return;
 
@@ -199,7 +200,7 @@ export function hideFormation(side) {
 /* ------------------------------------------------------------------ */
 
 /** Show enemy in scene - creatures use formation, NPCs use npc-display */
-export function showEnemy(enemy) {
+export function showEnemy(enemy, { isBoss = false } = {}) {
   if (!enemy) {
     hideEnemy();
     return;
@@ -216,7 +217,7 @@ export function showEnemy(enemy) {
     dom.enemyInfo.classList.remove('visible');
     dom.enemyHpBar.style.display = 'none';
     dom.enemyName.textContent = '';
-    showFormation('enemy', [enemy]);
+    showFormation('enemy', [enemy], { isBoss });
   } else {
     // NPC enemy -- show in npc-display with info pill
     hideFormation('enemy');
@@ -239,7 +240,7 @@ export function showEnemy(enemy) {
 }
 
 /** Show multiple enemy creatures via formation */
-export function showEnemies(enemies) {
+export function showEnemies(enemies, { isBoss = false } = {}) {
   if (!enemies || enemies.length === 0) return;
   dom.npcDisplay.classList.remove('visible');
   dom.enemySprite.src = '';
@@ -247,7 +248,7 @@ export function showEnemies(enemies) {
   dom.enemyInfo.classList.remove('visible');
   dom.enemyHpBar.style.display = 'none';
   dom.enemyName.textContent = '';
-  showFormation('enemy', enemies);
+  showFormation('enemy', enemies, { isBoss });
 }
 
 /** Update HP bar for a specific enemy by index (formation slots) */

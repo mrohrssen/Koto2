@@ -543,11 +543,12 @@ export class GameManager {
 
     let enemyCreatures;
     if (isBoss) {
-      // Boss: solo creature, level × 1.25
+      // Boss: solo creature, level × 1.25, double HP
       const bossLevel = Math.round(
         getEnemyLevel({ totalEncounters, enemyCount: 1 }) * 1.25
       );
       const bossCreature = generateEnemyCreature(bossLevel, [currentRoom.boss.creatureId], stage);
+      bossCreature.hp = bossCreature.maxHp *= 2;
       enemyCreatures = [bossCreature];
     } else if (isNpcBattle) {
       // NPC Battle: always 3 enemies at level × 1.1

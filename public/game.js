@@ -309,11 +309,12 @@ function updateScene() {
   if (gameState.phase === 'combat') {
     // Creature combat uses enemies[] array; legacy uses single enemy
     const enemies = gameState.combat?.enemies;
+    const isBoss = !!gameState.combat?.isBoss;
     if (enemies?.length > 1) {
-      scene.showEnemies(enemies);
+      scene.showEnemies(enemies, { isBoss });
     } else {
       const enemy = enemies?.[0] || gameState.combat?.enemy;
-      if (enemy) scene.showEnemy(enemy);
+      if (enemy) scene.showEnemy(enemy, { isBoss });
     }
     // Show NPC skill bar if this encounter has an NPC
     const npcSkills = gameState.combat?.npcData?.skills;
