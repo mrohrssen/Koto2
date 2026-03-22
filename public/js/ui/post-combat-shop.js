@@ -18,7 +18,7 @@ import { t, isJapanified } from './i18n.js';
 import { prefetchWord, playWord } from '../tts.js';
 import { renderJpFirst, renderEnFirst, flushExposures } from './bootstrap-client.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
-import { creatureSpriteHtml } from './sprite-utils.js';
+import { creatureSpriteHtml, itemSpriteHtml } from './sprite-utils.js';
 
 let onItemSelected = null;
 
@@ -61,7 +61,7 @@ export function show(items) {
           <div class="shop-item-card" data-index="${i}" style="border-color: ${rarityColor}40; position: relative;">
             <div class="shop-item-rarity-badge" style="background: ${rarityColor}">${(item.rarity || 'common').toUpperCase()}</div>
             <button class="shop-help-btn" data-item-index="${i}">?</button>
-            <div class="text-sprite shop-item-sprite">${item.word || '？'}</div>
+            <div class="shop-item-sprite">${itemSpriteHtml(item.id, item.word)}</div>
             <div class="shop-item-info">
               <div class="shop-item-word">${itemNameHtml}</div>
               <div class="shop-item-effect">${buildItemEffectPills(item)}</div>

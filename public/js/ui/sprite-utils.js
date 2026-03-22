@@ -109,6 +109,18 @@ export function creatureSpriteHtml(id, word, element, extraClass) {
 }
 
 /**
+ * Return an HTML string for an item sprite <img> that falls back to text sprite on error.
+ * @param {string} id - Item ID (matches filename in /assets/sprites/items/)
+ * @param {string} [word] - Fallback Japanese word
+ * @returns {string} HTML string
+ */
+export function itemSpriteHtml(id, word) {
+  const src = `/assets/sprites/items/${id}.webp?v=${SPRITE_VERSION}`;
+  const fallbackWord = (word || '？').replace(/"/g, '&quot;');
+  return `<img class="shop-item-sprite-img" src="${src}" alt="${fallbackWord}" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.outerHTML='<div class=\\'text-sprite shop-item-sprite\\'>${fallbackWord}</div>'">`;
+}
+
+/**
  * CSS background-image url() string.
  * Uses cache — returns idle if known, static otherwise.
  */
