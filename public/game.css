@@ -1229,6 +1229,24 @@ html, body {
   font-weight: var(--font-weight-bold);
 }
 
+/* ===== PARTY SKILL PROC ANNOUNCEMENT ===== */
+.party-skill-proc {
+  font-size: 13px;
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+  padding: 4px 8px;
+  margin-top: 4px;
+  animation: proc-fade-in 0.3s ease-out;
+}
+.party-skill-proc.proc-damage { color: var(--accent-amber); }
+.party-skill-proc.proc-heal { color: var(--accent-green); }
+.party-skill-proc.proc-buff { color: var(--accent-cyan); }
+
+@keyframes proc-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* ===== SPLIT ATTACK CARD ===== */
 .split-attack-card {
   display: flex;

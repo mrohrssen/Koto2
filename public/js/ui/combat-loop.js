@@ -40,7 +40,10 @@ import {
   showXpPopup,
   showLevelUpPopup,
   playUltimateAnimation,
-  poisonTickEffect
+  poisonTickEffect,
+  healEffect,
+  spawnParticles,
+  flashElement
 } from './combat-effects.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
 import { replaceWithTextSprite, creatureSpriteHtml, creatureStaticPath } from './sprite-utils.js';
@@ -1346,6 +1349,70 @@ async function showEffectEvents(result) {
 }
 
 /**
+ * Show party skill proc visuals inline after a player attack.
+ * @param {Object} atk - The attack record with optional partySkillProcs array
+ */
+async function showPartySkillProcs(atk) {
+  if (!atk.partySkillProcs?.length) return;
+
+  const actionArea = document.getElementById('action-area');
+  const allAllySlots = document.querySelectorAll('#player-formation .formation-slot');
+
+  for (const proc of atk.partySkillProcs) {
+    // Show skill name announcement in action area
+    if (actionArea) {
+      const procEl = document.createElement('div');
+      procEl.className = 'party-skill-proc';
+
+      let detail = '';
+      if (proc.type === 'bonusDamage') {
+        detail = ` +${proc.bonusDamage}`;
+        procEl.classList.add('proc-damage');
+      } else if (proc.type === 'healAll') {
+        detail = ` +${proc.healAmount} HP`;
+        procEl.classList.add('proc-heal');
+      } else if (proc.type === 'haste') {
+        procEl.classList.add('proc-buff');
+      } else if (proc.type === 'teamShield') {
+        procEl.classList.add('proc-buff');
+      }
+
+      procEl.textContent = `${proc.skillName}!${detail}`;
+      actionArea.appendChild(procEl);
+    }
+
+    // Visual effects by type
+    if (proc.type === 'bonusDamage') {
+      const enemyEl = findEnemyTargetElement(atk.targetId, null, atk.targetIndex);
+      if (enemyEl) spawnParticles(enemyEl, 6, '#FFB74D');
+    } else if (proc.type === 'healAll') {
+      allAllySlots.forEach(slot => {
+        const sprite = slot.querySelector('.formation-sprite');
+        if (sprite && !sprite.classList.contains('ko')) {
+          healEffect(slot, proc.healAmount);
+        }
+      });
+    } else if (proc.type === 'haste') {
+      const attackerSlot = findCreatureSlotByAttackerId(atk.attackerId);
+      if (attackerSlot) {
+        spawnParticles(attackerSlot, 8, '#4fc3f7');
+        const sprite = attackerSlot.querySelector('.formation-sprite');
+        if (sprite) flashElement(sprite, 1);
+      }
+    } else if (proc.type === 'teamShield') {
+      allAllySlots.forEach(slot => {
+        const sprite = slot.querySelector('.formation-sprite');
+        if (sprite && !sprite.classList.contains('ko')) {
+          spawnParticles(slot, 6, '#42A5F5');
+        }
+      });
+    }
+
+    await delay(600);
+  }
+}
+
+/**
  * Build a map of ally HP before enemy attacks for progressive DOM updates.
  * Reconstructs pre-enemy-attack HP by adding back damage dealt to each ally.
  * @param {Object} result - Combat cycle result from server
@@ -1683,6 +1750,9 @@ async function executeCreatureMovesTurn(choices) {
             if (actionArea2) actionArea2.appendChild(stabEl);
           }
 
+          // Show party skill procs inline after this attack
+          await showPartySkillProcs(atk);
+
           // Wait for tap or fixed delay
           if (attackCard) {
             await waitForCardTap(attackCard);
@@ -1853,6 +1923,9 @@ async function executeCreaturePlayerAttack() {
               if (pending?.length) allPendingMoveLearn2.push(...pending);
             }
           }
+
+          // Show party skill procs inline after this attack
+          await showPartySkillProcs(atk);
 
           // Wait for tap (attack card) or fixed delay (fallback)
           if (attackCard) {

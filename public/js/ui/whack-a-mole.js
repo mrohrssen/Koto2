@@ -1,4 +1,5 @@
 import { animate as anime } from '../lib/anime.esm.min.js';
+import { toRomaji } from './romaji.js';
 
 /**
  * @file whack-a-mole.js - Word-Match Mini Game
@@ -106,8 +107,8 @@ export class WhackAMoleGame {
           <div class="wam-timer" id="wam-timer">${this._formatTime(this.timeLeft)}</div>
         </div>
         <div class="wam-word-card">
-          <div class="wam-word-kanji">${target.word}</div>
-          <div class="wam-word-reading">${target.reading}</div>
+          <div class="wam-word-kanji">${target.reading}</div>
+          <div class="wam-word-reading">${toRomaji(target.reading)}</div>
           <div class="wam-word-timer-bar"><div class="wam-word-timer-fill" id="wam-word-timer-fill"></div></div>
         </div>
         <div class="wam-grid" id="wam-grid">
@@ -144,8 +145,8 @@ export class WhackAMoleGame {
     const target = this.pool[this.targetIndex];
     const kanji = document.querySelector('.wam-word-kanji');
     const reading = document.querySelector('.wam-word-reading');
-    if (kanji) kanji.textContent = target.word;
-    if (reading) reading.textContent = target.reading;
+    if (kanji) kanji.textContent = target.reading;
+    if (reading) reading.textContent = toRomaji(target.reading);
   }
 
   _updateScoreDisplay() {
