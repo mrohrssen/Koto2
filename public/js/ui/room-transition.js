@@ -226,8 +226,6 @@ export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSprite
   showNpcSpriteFn(npcName, npcData.id, npcData);
   await slideFromRight(npcDisplay);
 
-  // Show greeting narration (click-to-continue)
-  console.log('[NpcBattleIntro] npcData.greeting:', npcData.greeting, 'npcName:', npcName);
   if (npcData.greeting) {
     // Clear any stale narration state before showing greeting
     narrationBox.forceHide();
