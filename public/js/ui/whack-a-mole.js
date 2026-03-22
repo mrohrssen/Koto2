@@ -273,9 +273,7 @@ export class WhackAMoleGame {
     if (this._isCorrectTile(index)) {
       // HIT
       this.score++;
-      this.timeLeft = Math.min(this.timeLeft + 2, 99);
       this._updateScoreDisplay();
-      this._updateTimerDisplay();
 
       // Non-blocking celebration
       if (tileEl) {
