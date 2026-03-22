@@ -17,9 +17,9 @@ import {
 import {
   applyHeal, applyPoison, tickEffects,
   applySleep, applyStun, applyConfuse,
-  applyAttackBuff, applyAttackDebuff, applyHaste, applyShield, applyTeamShield, applyTaunt,
+  applyAttackBuff, applyAttackDebuff, applyDefenseBuff, applyHaste, applyShield, applyTeamShield, applyTaunt,
   isIncapacitated, isConfused, hasHaste, consumeHaste,
-  getAttackMultiplier, getDamageReduction, getTauntTarget, breakSleep,
+  getAttackMultiplier, getDefenseMultiplier, getDamageReduction, getTauntTarget, breakSleep,
   getFlatAttackBonus
 } from '../combat/effects.js';
 export const CREDITS_PER_KILL = 15;
@@ -40,7 +40,7 @@ function rollMoveDamage(attacker, target, move, _itemBuffs, variance) {
   return calculateCreatureDamage({
     attackerLevel: Math.max(1, attacker.level || 1),
     attack: buffedAttack,
-    defenderDefense: target.defense ?? 5,
+    defenderDefense: Math.floor((target.defense ?? 5) * getDefenseMultiplier(target)),
     power: move.power,
     typeMultiplier: typeMult,
     variance
@@ -302,6 +302,9 @@ function tryApplyStatus(move, target, caster, allies) {
     case 'attack_buff':
       applyAttackBuff(target, { percent: move.power || 25, duration, sourceId });
       return 'attack_buff';
+    case 'defense_buff':
+      applyDefenseBuff(target, { percent: move.power || 25, duration, sourceId });
+      return 'defense_buff';
     case 'attack_debuff':
       applyAttackDebuff(target, { percent: move.power || 25, duration, sourceId });
       return 'attack_debuff';
@@ -633,7 +636,21 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
     const aliveAllies = allies.filter(a => a.hp > 0);
     if (aliveAllies.length === 0) break;
 
-    const move = (enemy.moves && enemy.moves.length > 0) ? enemy.moves[0] : null;
+    // Enemy AI: 50% strongest attack move, 50% random move
+    let move = null;
+    if (enemy.moves && enemy.moves.length > 0) {
+      if (Math.random() < 0.5) {
+        // Pick the highest-power damage move
+        const damageMoves = enemy.moves.filter(m => m.category === 'damage');
+        if (damageMoves.length > 0) {
+          move = damageMoves.reduce((best, m) => (m.power || 0) > (best.power || 0) ? m : best);
+        } else {
+          move = enemy.moves[Math.floor(Math.random() * enemy.moves.length)];
+        }
+      } else {
+        move = enemy.moves[Math.floor(Math.random() * enemy.moves.length)];
+      }
+    }
     if (!move) continue;
 
     const attackCount = hasHaste(enemy) ? 2 : 1;
@@ -662,7 +679,7 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
       let damage = calculateCreatureDamage({
         attackerLevel: Math.max(1, enemy.level || 1),
         attack: buffedAttack,
-        defenderDefense: target.defense ?? 5,
+        defenderDefense: Math.floor((target.defense ?? 5) * getDefenseMultiplier(target)),
         power: move.power,
         typeMultiplier: typeMult,
         variance

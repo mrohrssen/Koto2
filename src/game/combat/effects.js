@@ -119,6 +119,10 @@ export function applyAttackBuff(target, { percent, duration = 2, sourceId }) {
   applyOrRefresh(target, { type: 'attack_buff', percent, remainingTurns: duration, sourceId });
 }
 
+export function applyDefenseBuff(target, { percent, duration = 2, sourceId }) {
+  applyOrRefresh(target, { type: 'defense_buff', percent, remainingTurns: duration, sourceId });
+}
+
 export function applyHaste(target, { sourceId }) {
   if (!target.activeEffects) {
     target.activeEffects = [];
@@ -191,6 +195,14 @@ export function getAttackMultiplier(creature) {
     .filter(e => e.type === 'attack_debuff')
     .reduce((sum, e) => sum + e.percent, 0);
   return Math.max(0.1, 1 + buffPercent / 100 - debuffPercent / 100);
+}
+
+export function getDefenseMultiplier(creature) {
+  if (!creature.activeEffects) return 1;
+  const buffPercent = creature.activeEffects
+    .filter(e => e.type === 'defense_buff')
+    .reduce((sum, e) => sum + e.percent, 0);
+  return Math.max(1, 1 + buffPercent / 100);
 }
 
 export function getDamageReduction(creature) {
