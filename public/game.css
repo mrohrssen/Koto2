@@ -284,33 +284,74 @@ html, body {
   font-size: 32px;
 }
 
+/* Charcoal Steel HUD box */
 .formation-info {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  background: linear-gradient(180deg, #181c20 0%, #101214 100%);
+  border: 1.5px solid #4a5560;
+  border-radius: 5px;
+  padding: 3px 7px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(100,120,140,0.06);
+}
+
+.formation-name-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 32px;
+  flex-shrink: 0;
+}
+
+.formation-romaji {
+  font-size: 9px;
+  font-weight: 700;
+  color: #8a9099;
+  line-height: 1.15;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.formation-hira {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.15;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 
 .formation-bars {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex: 1;
+  min-width: 44px;
 }
 
-.formation-slot-name {
-  font-size: 13px;
-  font-weight: 600;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-  color: #fff;
-  white-space: nowrap;
+.formation-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.formation-bar-label {
+  font-size: 8px;
+  font-weight: 700;
+  color: #5a646e;
+  width: 14px;
+  text-align: right;
   flex-shrink: 0;
 }
 
 .formation-hp-bar {
-  width: 40px;
-  height: 4px;
-  background: rgba(0,0,0,0.3);
+  flex: 1;
+  height: 6px;
+  background: rgba(0,0,0,0.4);
   border-radius: 3px;
   overflow: hidden;
+  border: 0.5px solid rgba(80,90,100,0.25);
 }
 
 .formation-hp-fill {
@@ -320,32 +361,19 @@ html, body {
 }
 
 .formation-mp-bar {
-  width: 40px;
-  height: 4px;
-  background: rgba(0,0,0,0.3);
+  flex: 1;
+  height: 6px;
+  background: rgba(0,0,0,0.4);
   border-radius: 3px;
   overflow: hidden;
-  position: relative;
+  border: 0.5px solid rgba(80,90,100,0.25);
 }
 
 .formation-mp-fill {
   height: 100%;
   border-radius: 3px;
-  background: var(--accent-lavender);
+  background: linear-gradient(90deg, #2277bb, #3399dd);
   transition: width 0.3s ease;
-}
-
-.formation-mp-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 7px;
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 0 0 2px rgba(0,0,0,0.8);
-  white-space: nowrap;
-  line-height: 1;
 }
 
 /* ===== FORMATION ANIMATIONS ===== */
@@ -374,7 +402,7 @@ html, body {
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-.formation-slot.charged .formation-slot-name {
+.formation-slot.charged .formation-romaji {
   animation: name-charged-glow 1.5s ease-in-out infinite;
   color: #FFD54F;
 }
