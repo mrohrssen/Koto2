@@ -33,7 +33,7 @@
  */
 
 import { dom } from '../dom.js';
-import { createTextSprite, creatureStaticPath } from './sprite-utils.js';
+import { createTextSprite, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
 import { renderJpFirst, esc as escHtml } from './bootstrap-client.js';
 import { toRomaji } from './romaji.js';
 
@@ -46,7 +46,8 @@ function creatureNameRuby(creature) {
 /** Set scene background image */
 export function setBackground(imagePath) {
   if (imagePath) {
-    dom.sceneBackground.style.backgroundImage = `url('${imagePath}')`;
+    const sep = imagePath.includes('?') ? '&' : '?';
+    dom.sceneBackground.style.backgroundImage = `url('${imagePath}${sep}v=${SPRITE_VERSION}')`;
   } else {
     dom.sceneBackground.style.backgroundImage = 'none';
   }

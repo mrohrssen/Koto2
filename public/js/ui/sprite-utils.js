@@ -9,7 +9,7 @@
  */
 
 const BASE = '/assets/sprites/creatures';
-const SPRITE_VERSION = '20260321';
+export const SPRITE_VERSION = '20260321';
 
 const _noIdle = new Set();
 const _hasIdle = new Set();
