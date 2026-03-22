@@ -319,15 +319,27 @@ export class WhackAMoleGame {
   }
 
   _advanceToNextWord() {
-    const oldTarget = this.targetIndex;
-    do {
-      this.targetIndex = Math.floor(Math.random() * this.pool.length);
-    } while (this.targetIndex === oldTarget && this.pool.length > 1);
+    // Pick the next target from tiles already face-up on the board.
+    // This prevents the tell where the newly-flipped tile is always the answer.
+    const faceUpEntries = this.tiles
+      .map((t, i) => ({ tile: t, index: i }))
+      .filter(e => e.tile.faceUp && e.tile.poolIndex >= 0 && e.tile.poolIndex !== this.targetIndex);
+
+    if (faceUpEntries.length > 0) {
+      const pick = faceUpEntries[Math.floor(Math.random() * faceUpEntries.length)];
+      this.targetIndex = pick.tile.poolIndex;
+    } else {
+      // Fallback: pick random (shouldn't happen — board always has 4-5 tiles)
+      const oldTarget = this.targetIndex;
+      do {
+        this.targetIndex = Math.floor(Math.random() * this.pool.length);
+      } while (this.targetIndex === oldTarget && this.pool.length > 1);
+      this._ensureCorrectTileVisible();
+    }
 
     this.wordTimeLeft = this.WORD_TIME_LIMIT;
     this._updateWordCard();
     this._updateWordTimerBar();
-    this._ensureCorrectTileVisible();
   }
 
   async _endGame() {
