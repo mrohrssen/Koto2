@@ -294,12 +294,17 @@ export function spawnSpeedLines(fromEl, toEl, count = 3, color = 'rgba(255,255,2
  */
 export function recoil(targets, distance = 5, direction = 'right') {
   const sign = direction === 'right' ? 1 : -1;
+  const els = targets instanceof NodeList || Array.isArray(targets) ? targets
+    : targets instanceof Element ? [targets] : document.querySelectorAll(targets);
 
   anime(targets, {
     translateX: [0, sign * distance, 0],
   }, {
     duration: 200,
-    ease: 'outElastic(1, 0.5)'
+    ease: 'outElastic(1, 0.5)',
+    onComplete: () => {
+      els.forEach(el => { if (el?.style) el.style.transform = ''; });
+    }
   });
 }
 
@@ -309,11 +314,17 @@ export function recoil(targets, distance = 5, direction = 'right') {
  * @param {number} scale - Max scale
  */
 export function pop(targets, scale = 1.15) {
+  const els = targets instanceof NodeList || Array.isArray(targets) ? targets
+    : targets instanceof Element ? [targets] : document.querySelectorAll(targets);
+
   anime(targets, {
     scale: [1, scale, 1],
   }, {
     duration: 300,
-    ease: 'outBack'
+    ease: 'outBack',
+    onComplete: () => {
+      els.forEach(el => { if (el?.style) el.style.transform = ''; });
+    }
   });
 }
 
@@ -391,11 +402,15 @@ export async function playerHitEffect(damage, hpBarEl, creatureRowEl) {
   // 4. Creature row shudders
   const playerFormation = document.getElementById('player-formation');
   if (playerFormation) {
-    anime(playerFormation.querySelectorAll('.formation-slot'), {
+    const slots = playerFormation.querySelectorAll('.formation-slot');
+    anime(slots, {
       translateX: [-2, 2, -1, 0],
     }, {
       duration: 150,
-      ease: 'outQuad'
+      ease: 'outQuad',
+      onComplete: () => {
+        slots.forEach(s => { s.style.transform = ''; });
+      }
     });
   }
 
