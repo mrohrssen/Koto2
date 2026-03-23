@@ -43,7 +43,8 @@ import {
   poisonTickEffect,
   healEffect,
   spawnParticles,
-  flashElement
+  flashElement,
+  clearFormationTransforms
 } from './combat-effects.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
 import { replaceWithTextSprite, creatureSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
@@ -1634,6 +1635,9 @@ function syncFinalState(result) {
     characterUI.updateEnemyHPBar({ current: result.enemies[0].hp, max: result.enemies[0].maxHp });
   }
   updateCreatureHpBars(result.creatureParty?.active, null);
+
+  // Clear any stale inline transforms left by interrupted anime.js animations
+  clearFormationTransforms();
 }
 
 // ============ CREATURE COMBAT ORCHESTRATORS ============
@@ -2874,6 +2878,9 @@ export async function stopCombatLoop(result) {
   playerAttackPending = false;
   enemyAttackPending = false;
   combatPausedForVocab = false;
+
+  // Final cleanup: clear any stale inline transforms on formation slots
+  clearFormationTransforms();
 
   // Hide word practice cards and close modal
   wordPractice.hideWordCards();

@@ -49,6 +49,19 @@ const CONFIG = {
 export const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
+ * Clear any stale inline transforms left by anime.js on formation slots.
+ * Anime.js sets style.transform during animations, overriding CSS depth-scaling
+ * (scale(0.9), scale(0.95)). If onComplete doesn't fire (e.g. animation interrupted),
+ * the inline style persists and creatures appear shifted.
+ */
+export function clearFormationTransforms() {
+  const pf = document.getElementById('player-formation');
+  if (pf) pf.querySelectorAll('.formation-slot').forEach(s => { s.style.transform = ''; });
+  const ef = document.getElementById('enemy-formation');
+  if (ef) ef.querySelectorAll('.formation-slot').forEach(s => { s.style.transform = ''; });
+}
+
+/**
  * Calculate damage tier based on % of enemy max HP
  * @param {number} damage - Damage dealt
  * @param {number} enemyMaxHp - Enemy's maximum HP
@@ -297,15 +310,18 @@ export function recoil(targets, distance = 5, direction = 'right') {
   const els = targets instanceof NodeList || Array.isArray(targets) ? targets
     : targets instanceof Element ? [targets] : document.querySelectorAll(targets);
 
+  const cleanup = () => {
+    els.forEach(el => { if (el?.style) el.style.transform = ''; });
+  };
   anime(targets, {
     translateX: [0, sign * distance, 0],
   }, {
     duration: 200,
     ease: 'outElastic(1, 0.5)',
-    onComplete: () => {
-      els.forEach(el => { if (el?.style) el.style.transform = ''; });
-    }
+    onComplete: cleanup
   });
+  // Fallback cleanup in case onComplete doesn't fire (animation interrupted)
+  setTimeout(cleanup, 250);
 }
 
 /**
@@ -317,15 +333,18 @@ export function pop(targets, scale = 1.15) {
   const els = targets instanceof NodeList || Array.isArray(targets) ? targets
     : targets instanceof Element ? [targets] : document.querySelectorAll(targets);
 
+  const cleanup = () => {
+    els.forEach(el => { if (el?.style) el.style.transform = ''; });
+  };
   anime(targets, {
     scale: [1, scale, 1],
   }, {
     duration: 300,
     ease: 'outBack',
-    onComplete: () => {
-      els.forEach(el => { if (el?.style) el.style.transform = ''; });
-    }
+    onComplete: cleanup
   });
+  // Fallback cleanup in case onComplete doesn't fire (animation interrupted)
+  setTimeout(cleanup, 350);
 }
 
 // ============ COMBAT MOMENTS ============
@@ -403,15 +422,18 @@ export async function playerHitEffect(damage, hpBarEl, creatureRowEl) {
   const playerFormation = document.getElementById('player-formation');
   if (playerFormation) {
     const slots = playerFormation.querySelectorAll('.formation-slot');
+    const cleanup = () => {
+      slots.forEach(s => { s.style.transform = ''; });
+    };
     anime(slots, {
       translateX: [-2, 2, -1, 0],
     }, {
       duration: 150,
       ease: 'outQuad',
-      onComplete: () => {
-        slots.forEach(s => { s.style.transform = ''; });
-      }
+      onComplete: cleanup
     });
+    // Fallback cleanup in case onComplete doesn't fire (animation interrupted)
+    setTimeout(cleanup, 200);
   }
 
   // 5. HP bar flash before drain
@@ -562,7 +584,6 @@ export function showXpPopup(creatureSlotEl, xpAmount) {
   const popup = document.createElement('div');
   popup.className = 'creature-xp-popup';
   popup.textContent = `+${xpAmount} XP`;
-  creatureSlotEl.style.position = 'relative';
   creatureSlotEl.appendChild(popup);
 
   anime(popup, {
@@ -597,7 +618,6 @@ export function showLevelUpPopup(creatureSlotEl, newLevel, hpGain, attackGain) {
   }
   popup.textContent = text;
   popup.style.whiteSpace = 'pre-line';
-  creatureSlotEl.style.position = 'relative';
   creatureSlotEl.appendChild(popup);
 
   // Flash the creature icon with a neon glow
