@@ -39,7 +39,7 @@ export class WhackAMoleGame {
 
     // Game state
     this.score = 0;
-    this.timeLeft = 30.0;
+    this.timeLeft = 12.0;
     this.targetIndex = 0;
     this.tiles = Array(9).fill(null).map(() => ({ faceUp: false, poolIndex: -1 }));
     this.gameOver = false;
@@ -137,8 +137,8 @@ export class WhackAMoleGame {
     if (!el) return;
     const secs = Math.max(0, Math.ceil(this.timeLeft));
     el.textContent = secs.toString().padStart(2, '0');
-    el.classList.toggle('wam-timer-warn', this.timeLeft <= 10 && this.timeLeft > 5);
-    el.classList.toggle('wam-timer-danger', this.timeLeft <= 5);
+    el.classList.toggle('wam-timer-warn', this.timeLeft <= 6 && this.timeLeft > 3);
+    el.classList.toggle('wam-timer-danger', this.timeLeft <= 3);
   }
 
   _updateWordCard() {
