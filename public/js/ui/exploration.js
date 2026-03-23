@@ -1085,14 +1085,6 @@ let friendlyNpcState = {
   choosing: false
 };
 
-const FRIENDLY_NPC_TYPE_ICONS = {
-  heal: '💚',
-  boost: '⬆️',
-  mpRestore: '🔵',
-  revive: '💫',
-  keepsake: '🔒'
-};
-
 /**
  * Friendly NPC room — shows 3 item cards (food=heal or weapon=boost).
  * Player picks one; item is applied immediately.
@@ -1188,13 +1180,12 @@ export async function renderFriendlyNpc() {
   const offers = friendlyNpcState.offered || [];
 
   const cardsHtml = offers.map((item, i) => {
-    const icon = FRIENDLY_NPC_TYPE_ICONS[item.type] || '📦';
     const pills = buildItemEffectPills(item);
     return `
       <div class="shop-item-card" data-item-id="${item.id}" data-index="${i}" style="position:relative;">
         <div class="shop-item-sprite">${itemSpriteHtml(item.id, item.word)}</div>
         <div class="shop-item-info">
-          <div class="shop-item-word">${icon} ${item.word} <span style="color:var(--text-secondary);font-size:12px">(${item.reading})</span></div>
+          <div class="shop-item-word">${item.word} <span style="color:var(--text-secondary);font-size:12px">(${item.reading})</span></div>
           <div class="shop-item-word" style="font-size:12px;opacity:0.8">${item.nameEn}</div>
           <div class="shop-item-effect">${pills}</div>
         </div>
