@@ -26,7 +26,7 @@
 import * as speedReview from './speed-review.js';
 import { WhackAMoleGame } from './whack-a-mole.js';
 import { playSFX } from '../audio.js';
-import { creatureBgUrl, replaceWithTextSprite } from './sprite-utils.js';
+import { creatureBgUrl, replaceWithTextSprite, itemSpriteHtml } from './sprite-utils.js';
 import { t, isJapanified } from './i18n.js';
 import * as metaShop from './meta-shop.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
@@ -1192,7 +1192,7 @@ export async function renderFriendlyNpc() {
     const pills = buildItemEffectPills(item);
     return `
       <div class="shop-item-card" data-item-id="${item.id}" data-index="${i}" style="position:relative;">
-        <div class="text-sprite shop-item-sprite">${item.word || '？'}</div>
+        <div class="shop-item-sprite">${itemSpriteHtml(item.id, item.word)}</div>
         <div class="shop-item-info">
           <div class="shop-item-word">${icon} ${item.word} <span style="color:var(--text-secondary);font-size:12px">(${item.reading})</span></div>
           <div class="shop-item-word" style="font-size:12px;opacity:0.8">${item.nameEn}</div>
