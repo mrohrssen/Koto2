@@ -255,9 +255,11 @@ html, body {
 .enemy-formation .formation-slot:nth-child(2) { margin-right: 24px; }
 .enemy-formation .formation-slot:nth-child(3) { margin-right: 36px; }
 
-/* Subtle depth scaling: back 90%, mid 95%, front 100% */
-.formation .formation-slot:nth-child(1) { transform: scale(0.9); }
-.formation .formation-slot:nth-child(2) { transform: scale(0.95); }
+/* Subtle depth scaling: back 90%, mid 95%, front 100%
+   Uses CSS `scale` property (not `transform: scale()`) so anime.js combat
+   animations on style.transform can never override the depth scaling. */
+.formation .formation-slot:nth-child(1) { scale: 0.9; }
+.formation .formation-slot:nth-child(2) { scale: 0.95; }
 .formation .formation-slot:nth-child(3) { /* scale(1.0) is default */ }
 
 /* Boss encounters: 2x sprite size */
@@ -273,6 +275,7 @@ html, body {
 
 /* ===== FORMATION SLOTS ===== */
 .formation-slot {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -443,6 +446,19 @@ html, body {
 
 .formation-sprite.level-up-glow {
   animation: levelUpGlow 1.5s ease-out;
+}
+
+.creature-xp-popup {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  font-size: 12px;
+  font-weight: 700;
+  color: #4fc3f7;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+  pointer-events: none;
 }
 
 .creature-levelup-popup {
