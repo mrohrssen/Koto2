@@ -109,9 +109,6 @@ html, body {
      the real bottom edge, with dvh/vh fallbacks for older engines. */
   position: fixed;
   inset: 0;
-  /* Give the flex container a definite block size so the bottom toolbar
-     stays in-flow instead of being pushed below the viewport in Safari. */
-  height: 100%;
   max-width: 430px;
   margin: 0 auto;
   background: linear-gradient(160deg, #f0efe8, #e8edf3, #e0e4f0, #e8e0f0);
