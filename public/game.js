@@ -221,9 +221,17 @@ function getHpColor(pct) {
 }
 
 // ============ UI UPDATES ============
+
+// Guard flag: when true, updateUI() will NOT call narrationBox.forceHide().
+// Set during NPC battle intro so the greeting narration isn't killed by stray updateUI() calls.
+let sceneTransitionActive = false;
+
 function updateUI() {
-  // Clear any persistent narration on phase transitions
-  narrationBox.forceHide();
+  // Clear any persistent narration on phase transitions — but NOT during scene transitions
+  // like the NPC battle intro, where narration is intentionally showing.
+  if (!sceneTransitionActive) {
+    narrationBox.forceHide();
+  }
 
   updateStatusBar();
 
@@ -920,23 +928,34 @@ async function startEncounter() {
     result = await apiStartEncounter();
   }
 
-  encounterStarting = false;
-  if (result?.state) {
+  if (!result?.state) {
+    encounterStarting = false;
+    return;
+  }
+
+  try {
     updateGameState(result.state);
 
-    // For NPC battles: play NPC intro before rendering combat
+    // For NPC battles: play NPC intro before rendering combat.
+    // Lock scene transition so updateUI() won't kill the greeting narration.
     if (result?.npc && hasCreatures) {
-      await playNpcBattleIntro(
-        result.npc,
-        (name, id, npc) => scene.showNpcTrainer(name, id, npc),
-        () => scene.hideNpcTrainer()
-      );
+      sceneTransitionActive = true;
+      try {
+        await playNpcBattleIntro(
+          result.npc,
+          (name, id, npc) => scene.showNpcTrainer(name, id, npc),
+          () => scene.hideNpcTrainer()
+        );
+      } finally {
+        sceneTransitionActive = false;
+      }
     }
 
-    // Hide enemy formation before updateUI to prevent visual flash
-    if (hasCreatures && gameState.combat?.enemies?.length) {
-      const ef = document.getElementById('enemy-formation');
-      if (ef) ef.style.visibility = 'hidden';
+    // Hide enemy formation before updateUI to prevent visual flash.
+    // Set opacity:0 (not visibility:hidden) so layout is computed but nothing paints.
+    const ef = document.getElementById('enemy-formation');
+    if (hasCreatures && gameState.combat?.enemies?.length && ef) {
+      ef.style.opacity = '0';
     }
 
     updateUI();
@@ -954,13 +973,16 @@ async function startEncounter() {
 
     // Creature encounters: animate enemies entering one-by-one
     if (hasCreatures && gameState.combat?.enemies?.length) {
-      const ef = document.getElementById('enemy-formation');
-      if (ef) ef.style.visibility = 'visible';
+      const freshEf = document.getElementById('enemy-formation');
+      if (freshEf) freshEf.style.opacity = '1';
       await enterEnemiesOneByOne(gameState.combat.enemies);
     }
 
     await delay(300);
     startCombatLoop();
+  } finally {
+    encounterStarting = false;
+    sceneTransitionActive = false;
   }
 }
 

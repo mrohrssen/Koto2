@@ -219,6 +219,10 @@ export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSprite
 
   const npcName = npcData.nameEn || npcData.name;
 
+  // Also hide enemy formation during the NPC intro to prevent any stale creatures from showing
+  const enemyFormation = document.getElementById('enemy-formation');
+  if (enemyFormation) enemyFormation.style.opacity = '0';
+
   // Pre-position npc-display offscreen BEFORE making it visible
   // to prevent a flash of the NPC at its final CSS position
   const npcDisplay = document.getElementById('npc-display');
@@ -228,6 +232,8 @@ export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSprite
   await slideFromRight(npcDisplay);
 
   if (npcData.greeting) {
+    // Small delay to let DOM settle after slide animation
+    await new Promise(r => setTimeout(r, 100));
     // Clear any stale narration state before showing greeting
     narrationBox.forceHide();
     speakText(npcData.greeting);
